@@ -3,6 +3,7 @@ name: testing-helper
 description: Write comprehensive tests for components, utilities, and routes using Vitest, @testing-library/svelte, and Playwright
 tools: Write, Read, Edit, Bash
 model: sonnet
+color: orange
 ---
 
 You are the Testing Helper subagent for the Revel Frontend project. Your job is to write thorough test coverage for components, utilities, and routes.
