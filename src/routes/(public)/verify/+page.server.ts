@@ -19,9 +19,21 @@ export const load: PageServerLoad = async ({ url, fetch, cookies }) => {
 			fetch
 		});
 
+		// DEBUG: Log the entire response structure
+		console.log('[VERIFY] Full response:', {
+			hasData: !!response.data,
+			hasError: !!response.error,
+			hasResponse: !!response.response,
+			responseOk: response.response?.ok,
+			responseStatus: response.response?.status,
+			dataKeys: response.data ? Object.keys(response.data) : null,
+			errorKeys: response.error ? Object.keys(response.error) : null
+		});
+
 		// Check response status - API client returns { data } on success, { error } on failure
 		// On successful 200 OK, response.response.ok will be true
 		if (response.response.ok && response.data) {
+			console.log('[VERIFY] Success detected, processing tokens and redirecting');
 			const { access, refresh } = response.data.token;
 
 			// Store tokens in httpOnly cookies
@@ -51,7 +63,7 @@ export const load: PageServerLoad = async ({ url, fetch, cookies }) => {
 
 		// If response was not ok, handle the error
 		if (!response.response.ok && response.error) {
-			console.error('Verification error:', response.error);
+			console.error('[VERIFY] Error response:', response.error);
 			const error = response.error as any;
 			return {
 				success: false,
@@ -67,11 +79,12 @@ export const load: PageServerLoad = async ({ url, fetch, cookies }) => {
 	} catch (error) {
 		// Re-throw redirects immediately without logging
 		if (error instanceof Response) {
+			console.log('[VERIFY] Caught redirect Response, re-throwing');
 			throw error;
 		}
 
 		// Only log actual unexpected errors
-		console.error('Unexpected verification error:', error);
+		console.error('[VERIFY] Unexpected verification error:', error);
 		return {
 			success: false,
 			error: 'An unexpected error occurred during verification'

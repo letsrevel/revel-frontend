@@ -36,16 +36,28 @@ export const actions = {
 				fetch
 			});
 
+			// DEBUG: Log the entire response structure
+			console.log('[REGISTER] Full response:', {
+				hasData: !!response.data,
+				hasError: !!response.error,
+				hasResponse: !!response.response,
+				responseOk: response.response?.ok,
+				responseStatus: response.response?.status,
+				dataKeys: response.data ? Object.keys(response.data) : null,
+				errorKeys: response.error ? Object.keys(response.error) : null
+			});
+
 			// Check response status - API client returns { data } on success, { error } on failure
 			// On successful 201 Created, response.response.ok will be true
 			if (response.response.ok && response.data) {
+				console.log('[REGISTER] Success detected, redirecting to check-email');
 				// Success - redirect to check-email page
 				throw redirect(303, `/register/check-email?email=${encodeURIComponent(validation.data.email)}`);
 			}
 
 			// If response was not ok, handle the error
 			if (!response.response.ok && response.error) {
-				console.error('Registration error:', response.error);
+				console.error('[REGISTER] Error response:', response.error);
 
 				// The error structure from the API client varies
 				// Try to extract error message from different possible structures
@@ -90,11 +102,12 @@ export const actions = {
 		} catch (error) {
 			// Re-throw redirects immediately without logging
 			if (error instanceof Response) {
+				console.log('[REGISTER] Caught redirect Response, re-throwing');
 				throw error;
 			}
 
 			// Only log actual unexpected errors
-			console.error('Unexpected registration error:', error);
+			console.error('[REGISTER] Unexpected registration error:', error);
 			return fail(500, {
 				errors: { form: 'An unexpected error occurred. Please try again.' },
 				email: data.email
