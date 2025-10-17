@@ -132,22 +132,10 @@
 					</p>
 				{/if}
 
-				<!-- Password Strength Indicator -->
+				<!-- Password Strength Indicator with Requirements -->
 				{#if password}
-					<PasswordStrengthIndicator {password} />
+					<PasswordStrengthIndicator {password} showRequirements={true} />
 				{/if}
-
-				<!-- Password Requirements -->
-				<div id="password-requirements" class="text-xs text-muted-foreground">
-					<p class="font-medium">Password must contain:</p>
-					<ul class="mt-1 space-y-0.5 pl-4">
-						<li>At least 8 characters</li>
-						<li>One uppercase letter</li>
-						<li>One lowercase letter</li>
-						<li>One number</li>
-						<li>One special character</li>
-					</ul>
-				</div>
 			</div>
 
 			<!-- Confirm Password Field -->

@@ -6,6 +6,13 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { Toaster } from 'svelte-sonner';
+	import type { LayoutData } from './$types';
+
+	interface Props {
+		data: LayoutData;
+	}
+
+	let { data }: Props = $props();
 
 	const queryClient = new QueryClient({
 		defaultOptions: {
@@ -17,7 +24,12 @@
 
 	// Initialize app on mount
 	onMount(async () => {
-		// Initialize auth (will try to refresh token if cookie exists)
+		// If we have an access token from server, set it in auth store
+		if (data.auth.accessToken) {
+			authStore.setAccessToken(data.auth.accessToken);
+		}
+
+		// Initialize auth (will fetch user data if access token exists)
 		await authStore.initialize();
 
 		// Fetch backend version

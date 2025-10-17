@@ -40,17 +40,26 @@ class AuthStore {
 
 	/**
 	 * Initialize auth state (called on app startup)
-	 * Attempts to refresh token if refresh cookie exists
+	 * If access token exists in memory, fetch user data
+	 * Otherwise, attempts to refresh token if refresh cookie exists
 	 */
 	async initialize(): Promise<void> {
 		this._isLoading = true;
 		try {
-			// Try to refresh the access token
-			// If refresh token cookie exists, this will work
-			await this.refreshAccessToken();
+			// If we already have an access token (set from server), fetch user data
+			if (this._accessToken) {
+				console.log('[AUTH] Access token found, fetching user data');
+				await this.fetchUserData();
+				await this.fetchPermissions();
+			} else {
+				// Try to refresh the access token
+				// If refresh token cookie exists, this will work
+				console.log('[AUTH] No access token, attempting refresh');
+				await this.refreshAccessToken();
+			}
 		} catch (error) {
 			// No valid refresh token, user needs to login
-			console.log('No valid session found');
+			console.log('[AUTH] No valid session found');
 		} finally {
 			this._isLoading = false;
 		}
