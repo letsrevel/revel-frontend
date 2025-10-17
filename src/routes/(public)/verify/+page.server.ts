@@ -1,4 +1,4 @@
-import { redirect } from '@sveltejs/kit';
+import { redirect, isRedirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { accountVerifyEmail7D56Cf04 } from '$lib/api/generated/sdk.gen';
 
@@ -78,8 +78,8 @@ export const load: PageServerLoad = async ({ url, fetch, cookies }) => {
 		};
 	} catch (error) {
 		// Re-throw redirects immediately without logging
-		if (error instanceof Response) {
-			console.log('[VERIFY] Caught redirect Response, re-throwing');
+		if (isRedirect(error)) {
+			console.log('[VERIFY] Caught redirect, re-throwing');
 			throw error;
 		}
 

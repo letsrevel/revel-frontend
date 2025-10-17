@@ -1,4 +1,4 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { fail, redirect, isRedirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import { registerSchema } from '$lib/schemas/auth';
 import { accountRegisterCed95Cc4 } from '$lib/api/generated/sdk.gen';
@@ -101,8 +101,8 @@ export const actions = {
 			});
 		} catch (error) {
 			// Re-throw redirects immediately without logging
-			if (error instanceof Response) {
-				console.log('[REGISTER] Caught redirect Response, re-throwing');
+			if (isRedirect(error)) {
+				console.log('[REGISTER] Caught redirect, re-throwing');
 				throw error;
 			}
 

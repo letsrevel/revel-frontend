@@ -1,4 +1,4 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { fail, redirect, isRedirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import { loginSchema, otpSchema } from '$lib/schemas/auth';
 import {
@@ -93,7 +93,7 @@ export const actions = {
 			});
 		} catch (error) {
 			// Re-throw redirects immediately without logging
-			if (error instanceof Response) {
+			if (isRedirect(error)) {
 				throw error;
 			}
 
@@ -183,7 +183,7 @@ export const actions = {
 			});
 		} catch (error) {
 			// Re-throw redirects immediately without logging
-			if (error instanceof Response) {
+			if (isRedirect(error)) {
 				throw error;
 			}
 
