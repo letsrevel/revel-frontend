@@ -20,9 +20,10 @@ export const load: PageServerLoad = async ({ url, fetch, cookies }) => {
 		});
 
 		if (response.error) {
+			const error = response.error as any;
 			return {
 				success: false,
-				error: (response.error as any).message || 'Verification failed'
+				error: error?.detail || error?.message || 'Verification failed'
 			};
 		}
 

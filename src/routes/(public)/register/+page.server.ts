@@ -37,11 +37,30 @@ export const actions = {
 			});
 
 			if (response.error) {
-				// Check for specific errors
-				const errorMessage = (response.error as any).message || 'Registration failed';
+				console.error('Registration error:', response.error);
 
-				// Email already exists
-				if (errorMessage.toLowerCase().includes('email') && errorMessage.toLowerCase().includes('exists')) {
+				// The error structure from the API client varies
+				// Try to extract error message from different possible structures
+				let errorMessage = 'Registration failed';
+				const error = response.error as any;
+
+				if (typeof error === 'string') {
+					errorMessage = error;
+				} else if (error.detail) {
+					errorMessage = error.detail;
+				} else if (error.message) {
+					errorMessage = error.message;
+				} else if (error.email) {
+					// Field-specific error
+					return fail(400, {
+						errors: { email: Array.isArray(error.email) ? error.email[0] : error.email },
+						email: data.email
+					});
+				}
+
+				// Check for specific error patterns
+				if (errorMessage.toLowerCase().includes('already') ||
+				    errorMessage.toLowerCase().includes('exist')) {
 					return fail(400, {
 						errors: { email: 'An account with this email already exists' },
 						email: data.email
@@ -62,6 +81,7 @@ export const actions = {
 				throw error; // Re-throw redirect
 			}
 
+			console.error('Unexpected registration error:', error);
 			return fail(500, {
 				errors: { form: 'An unexpected error occurred. Please try again.' },
 				email: data.email

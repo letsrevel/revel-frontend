@@ -19,7 +19,8 @@
 			const response = await accountResendVerificationEmailC633D16D();
 
 			if (response.error) {
-				resendError = response.error.message || 'Failed to resend verification email';
+				const error = response.error as any;
+				resendError = error?.detail || error?.message || 'Failed to resend verification email';
 			} else {
 				resendSuccess = true;
 			}

@@ -50,8 +50,9 @@ export const actions = {
 					};
 				}
 
-				// Handle other errors
-				const errorMessage = (response.error as any).message || 'Login failed';
+				// Handle other errors - 4xx errors have { detail: string } body
+				const error = response.error as any;
+				const errorMessage = error?.detail || error?.message || 'Login failed';
 				return fail(400, {
 					errors: { form: errorMessage },
 					email: data.email
@@ -134,8 +135,10 @@ export const actions = {
 			});
 
 			if (response.error) {
+				const error = response.error as any;
+				const errorMessage = error?.detail || 'Invalid code. Please try again.';
 				return fail(400, {
-					errors: { code: 'Invalid code. Please try again.' },
+					errors: { code: errorMessage },
 					requires2FA: true,
 					tempToken: data.tempToken
 				});
