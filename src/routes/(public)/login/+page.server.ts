@@ -38,29 +38,19 @@ export const actions = {
 				fetch
 			});
 
-			if (response.error) {
-				// Check if 2FA is required
-				if (response.data && 'type' in response.data && response.data.type === 'otp') {
-					// Return temp token for 2FA step
-					return {
-						requires2FA: true,
-						tempToken: response.data.token,
-						email: data.email,
-						rememberMe: data.rememberMe
-					};
-				}
-
-				// Handle other errors - 4xx errors have { detail: string } body
-				const error = response.error as any;
-				const errorMessage = error?.detail || error?.message || 'Login failed';
-				return fail(400, {
-					errors: { form: errorMessage },
-					email: data.email
-				});
+			// Check if 2FA is required (response has data with type='otp')
+			if (response.data && 'type' in response.data && response.data.type === 'otp') {
+				// 2FA required - return temp token for next step
+				return {
+					requires2FA: true,
+					tempToken: response.data.token,
+					email: data.email,
+					rememberMe: data.rememberMe
+				};
 			}
 
-			// Success - store tokens and redirect
-			if (response.data && 'access' in response.data) {
+			// Success - check if we have tokens
+			if (response.response.ok && response.data && 'access' in response.data) {
 				const { access, refresh } = response.data;
 
 				// Store access token (15 minutes)
@@ -85,6 +75,16 @@ export const actions = {
 				// Redirect to returnUrl or dashboard
 				const returnUrl = url.searchParams.get('returnUrl') || '/dashboard';
 				throw redirect(303, returnUrl);
+			}
+
+			// If we reach here, there was an error
+			if (!response.response.ok && response.error) {
+				const error = response.error as any;
+				const errorMessage = error?.detail || error?.message || 'Login failed';
+				return fail(400, {
+					errors: { form: errorMessage },
+					email: data.email
+				});
 			}
 
 			return fail(400, {
@@ -137,18 +137,8 @@ export const actions = {
 				fetch
 			});
 
-			if (response.error) {
-				const error = response.error as any;
-				const errorMessage = error?.detail || 'Invalid code. Please try again.';
-				return fail(400, {
-					errors: { code: errorMessage },
-					requires2FA: true,
-					tempToken: data.tempToken
-				});
-			}
-
-			// Success - store tokens and redirect
-			if (response.data) {
+			// Success - check if we have tokens
+			if (response.response.ok && response.data) {
 				const { access, refresh } = response.data;
 
 				// Store access token (15 minutes)
@@ -173,6 +163,17 @@ export const actions = {
 				// Redirect to returnUrl or dashboard
 				const returnUrl = url.searchParams.get('returnUrl') || '/dashboard';
 				throw redirect(303, returnUrl);
+			}
+
+			// If we reach here, there was an error
+			if (!response.response.ok && response.error) {
+				const error = response.error as any;
+				const errorMessage = error?.detail || 'Invalid code. Please try again.';
+				return fail(400, {
+					errors: { code: errorMessage },
+					requires2FA: true,
+					tempToken: data.tempToken
+				});
 			}
 
 			return fail(400, {

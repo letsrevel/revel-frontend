@@ -19,8 +19,9 @@ export const load: PageServerLoad = async ({ url, fetch, cookies }) => {
 			fetch
 		});
 
-		// Check for success first
-		if (response.data) {
+		// Check response status - API client returns { data } on success, { error } on failure
+		// On successful 200 OK, response.response.ok will be true
+		if (response.response.ok && response.data) {
 			const { access, refresh } = response.data.token;
 
 			// Store tokens in httpOnly cookies
@@ -48,8 +49,8 @@ export const load: PageServerLoad = async ({ url, fetch, cookies }) => {
 			throw redirect(303, '/dashboard');
 		}
 
-		// If no data, check for errors
-		if (response.error) {
+		// If response was not ok, handle the error
+		if (!response.response.ok && response.error) {
 			console.error('Verification error:', response.error);
 			const error = response.error as any;
 			return {

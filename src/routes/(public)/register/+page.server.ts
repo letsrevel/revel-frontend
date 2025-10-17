@@ -36,14 +36,15 @@ export const actions = {
 				fetch
 			});
 
-			// Check for success first (201 Created)
-			if (response.data) {
+			// Check response status - API client returns { data } on success, { error } on failure
+			// On successful 201 Created, response.response.ok will be true
+			if (response.response.ok && response.data) {
 				// Success - redirect to check-email page
 				throw redirect(303, `/register/check-email?email=${encodeURIComponent(validation.data.email)}`);
 			}
 
-			// If no data, check for errors
-			if (response.error) {
+			// If response was not ok, handle the error
+			if (!response.response.ok && response.error) {
 				console.error('Registration error:', response.error);
 
 				// The error structure from the API client varies
