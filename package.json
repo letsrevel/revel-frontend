@@ -25,6 +25,7 @@
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^5.0.0",
 		"@testing-library/svelte": "^5.2.8",
+		"@testing-library/user-event": "^14.6.1",
 		"@types/node": "^22.10.2",
 		"@typescript-eslint/eslint-plugin": "^8.17.0",
 		"@typescript-eslint/parser": "^8.17.0",
