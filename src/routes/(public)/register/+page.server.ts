@@ -36,6 +36,13 @@ export const actions = {
 				fetch
 			});
 
+			// Check for success first (201 Created)
+			if (response.data) {
+				// Success - redirect to check-email page
+				throw redirect(303, `/register/check-email?email=${encodeURIComponent(validation.data.email)}`);
+			}
+
+			// If no data, check for errors
 			if (response.error) {
 				console.error('Registration error:', response.error);
 
@@ -74,8 +81,11 @@ export const actions = {
 				});
 			}
 
-			// Success - redirect to check-email page
-			throw redirect(303, `/register/check-email?email=${encodeURIComponent(validation.data.email)}`);
+			// Neither data nor error (shouldn't happen)
+			return fail(500, {
+				errors: { form: 'Invalid response from server' },
+				email: data.email
+			});
 		} catch (error) {
 			if (error instanceof Response) {
 				throw error; // Re-throw redirect

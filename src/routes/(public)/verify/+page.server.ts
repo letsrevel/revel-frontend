@@ -19,15 +19,7 @@ export const load: PageServerLoad = async ({ url, fetch, cookies }) => {
 			fetch
 		});
 
-		if (response.error) {
-			const error = response.error as any;
-			return {
-				success: false,
-				error: error?.detail || error?.message || 'Verification failed'
-			};
-		}
-
-		// Success! The backend returns user and token object
+		// Check for success first
 		if (response.data) {
 			const { access, refresh } = response.data.token;
 
@@ -56,14 +48,27 @@ export const load: PageServerLoad = async ({ url, fetch, cookies }) => {
 			throw redirect(303, '/dashboard');
 		}
 
+		// If no data, check for errors
+		if (response.error) {
+			console.error('Verification error:', response.error);
+			const error = response.error as any;
+			return {
+				success: false,
+				error: error?.detail || error?.message || 'Verification failed'
+			};
+		}
+
+		// Neither data nor error (shouldn't happen)
 		return {
-			success: true
+			success: false,
+			error: 'Invalid response from server'
 		};
 	} catch (error) {
 		if (error instanceof Response) {
 			throw error; // Re-throw redirect
 		}
 
+		console.error('Unexpected verification error:', error);
 		return {
 			success: false,
 			error: 'An unexpected error occurred during verification'
