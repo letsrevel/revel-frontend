@@ -164,15 +164,108 @@ This project includes specialized Claude Code subagents for common development t
 
 **See `.claude/agents/README.md` for detailed subagent documentation.**
 
+## Git Workflow
+
+**CRITICAL:** Always use feature branches and Pull Requests. **NEVER commit directly to `main`**.
+
+### Standard Workflow
+
+1. **Create a feature branch** before starting work:
+   ```bash
+   git checkout -b feature/issue-number-description
+   # or
+   git checkout -b fix/issue-number-description
+   ```
+
+2. **Do all the work** on the feature branch
+   - Make commits as you progress
+   - Keep commits focused and atomic
+   - Use conventional commit messages (see below)
+
+3. **Commit changes** to the feature branch
+   - **ALWAYS ask user for confirmation before committing**
+   - Show what will be committed with `git status`
+   - Draft the commit message for user review
+
+4. **Push the branch**:
+   ```bash
+   git push -u origin feature/issue-number-description
+   ```
+
+5. **Create a Pull Request**:
+   ```bash
+   gh pr create --title "Title" --body "Description"
+   ```
+
+6. **Wait for review** before merging to main
+
+### Benefits of This Workflow
+- Code review opportunities
+- CI/CD checks before merging
+- Clean git history
+- Easy rollback capabilities
+- Track what went into each PR
+
+### Branch Naming Convention
+- `feature/issue-number-description` - New features (e.g., `feature/3-base-layouts`)
+- `fix/issue-number-description` - Bug fixes (e.g., `fix/42-mobile-nav-scroll`)
+- `refactor/description` - Code refactoring
+- `docs/description` - Documentation updates
+- `test/description` - Test additions/updates
+- `chore/description` - Maintenance tasks
+
+### Commit Message Format
+
+Follow conventional commits:
+- `feat:` or `feat(scope):` - New feature
+- `fix:` or `fix(scope):` - Bug fix
+- `docs:` - Documentation changes
+- `style:` - Code style changes (formatting, etc.)
+- `refactor:` - Code refactoring
+- `test:` - Adding or updating tests
+- `chore:` - Maintenance tasks
+
+Always end commits with:
+```
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+### IMPORTANT: Always Ask Before Committing
+
+**Never commit without explicit user approval.** Always:
+1. Show `git status` with files to be committed
+2. Draft the commit message
+3. Ask: "Ready to commit these changes?"
+4. Wait for user confirmation
+5. Only then execute the commit
+
 ## Development Commands
 
 This project uses npm/pnpm scripts for development tasks:
 
 ### Primary Development Commands
-- `pnpm dev` - Start development server with hot reload
+- `pnpm dev` - Start development server with hot reload (accessible on local network via 0.0.0.0)
 - `pnpm build` - Build production-ready application
 - `pnpm preview` - Preview production build locally
 - `pnpm generate:api` - Generate TypeScript API client from backend OpenAPI spec
+
+#### Mobile Testing
+
+The dev server is configured to listen on `0.0.0.0` (all network interfaces) for mobile testing:
+
+```bash
+pnpm dev
+# Server runs on: http://localhost:5173
+# Network access: http://YOUR_LOCAL_IP:5173
+```
+
+To find your local IP:
+- **macOS/Linux**: `ifconfig | grep "inet " | grep -v 127.0.0.1`
+- **Windows**: `ipconfig`
+
+Look for your local network IP (usually `192.168.x.x` or `10.0.x.x`). Access from phone/tablet on same WiFi network.
 
 ### Code Quality
 - `pnpm check` - Run SvelteKit type checking and validation
