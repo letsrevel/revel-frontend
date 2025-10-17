@@ -1,0 +1,41 @@
+{
+	"extends": "./.svelte-kit/tsconfig.json",
+	"compilerOptions": {
+		"allowJs": true,
+		"checkJs": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		"sourceMap": true,
+		"strict": true,
+		"noImplicitAny": true,
+		"strictNullChecks": true,
+		"strictFunctionTypes": true,
+		"strictBindCallApply": true,
+		"strictPropertyInitialization": true,
+		"noImplicitThis": true,
+		"alwaysStrict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+		"moduleResolution": "bundler",
+		"module": "ESNext",
+		"target": "ES2022",
+		"paths": {
+			"$lib": ["./src/lib"],
+			"$lib/*": ["./src/lib/*"],
+			"$components": ["./src/lib/components"],
+			"$components/*": ["./src/lib/components/*"],
+			"$utils": ["./src/lib/utils"],
+			"$utils/*": ["./src/lib/utils/*"],
+			"$stores": ["./src/lib/stores"],
+			"$stores/*": ["./src/lib/stores/*"],
+			"$api": ["./src/lib/api"],
+			"$api/*": ["./src/lib/api/*"]
+		}
+	},
+	"include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.js", "src/**/*.svelte"],
+	"exclude": ["node_modules"]
+}
