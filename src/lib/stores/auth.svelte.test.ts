@@ -58,11 +58,7 @@ describe('AuthStore', () => {
 			is_active: true,
 			first_name: 'Test',
 			last_name: 'User',
-			birthday: null,
-			phone_number: null,
-			location_city: null,
-			totp_enabled: false,
-			registration_method: 'email'
+			totp_active: false
 		};
 
 		const mockPermissions: OrganizationPermissionsSchema = {
@@ -86,6 +82,7 @@ describe('AuthStore', () => {
 					refresh: 'mock-refresh-token'
 				},
 				error: undefined,
+				request: {} as Request,
 				response: {} as Response
 			});
 
@@ -93,6 +90,7 @@ describe('AuthStore', () => {
 			vi.mocked(accountMe0E4E4784).mockResolvedValue({
 				data: mockUser,
 				error: undefined,
+				request: {} as Request,
 				response: {} as Response
 			});
 
@@ -100,6 +98,7 @@ describe('AuthStore', () => {
 			vi.mocked(permissionMyPermissionsC9C10303).mockResolvedValue({
 				data: mockPermissions,
 				error: undefined,
+				request: {} as Request,
 				response: {} as Response
 			});
 
@@ -115,6 +114,7 @@ describe('AuthStore', () => {
 			vi.mocked(authObtainToken88D8C7F5).mockResolvedValue({
 				data: undefined,
 				error: { message: 'Invalid credentials' } as any,
+				request: {} as Request,
 				response: {} as Response
 			});
 
@@ -128,6 +128,7 @@ describe('AuthStore', () => {
 					type: 'otp'
 				},
 				error: undefined,
+				request: {} as Request,
 				response: {} as Response
 			});
 
@@ -147,11 +148,7 @@ describe('AuthStore', () => {
 			is_active: true,
 			first_name: 'Test',
 			last_name: 'User',
-			birthday: null,
-			phone_number: null,
-			location_city: null,
-			totp_enabled: true,
-			registration_method: 'email'
+			totp_active: true
 		};
 
 		it('should successfully login with valid OTP', async () => {
@@ -162,18 +159,21 @@ describe('AuthStore', () => {
 					refresh: 'mock-refresh-token'
 				},
 				error: undefined,
+				request: {} as Request,
 				response: {} as Response
 			});
 
 			vi.mocked(accountMe0E4E4784).mockResolvedValue({
 				data: mockUser,
 				error: undefined,
+				request: {} as Request,
 				response: {} as Response
 			});
 
 			vi.mocked(permissionMyPermissionsC9C10303).mockResolvedValue({
 				data: { organization_permissions: {} },
 				error: undefined,
+				request: {} as Request,
 				response: {} as Response
 			});
 
@@ -187,6 +187,7 @@ describe('AuthStore', () => {
 			vi.mocked(authObtainTokenWithOtpCa173D18).mockResolvedValue({
 				data: undefined,
 				error: { message: 'Invalid OTP' } as any,
+				request: {} as Request,
 				response: {} as Response
 			});
 
@@ -206,6 +207,7 @@ describe('AuthStore', () => {
 					refresh: 'refresh'
 				},
 				error: undefined,
+				request: {} as Request,
 				response: {} as Response
 			});
 
@@ -215,12 +217,14 @@ describe('AuthStore', () => {
 					email: 'test@example.com'
 				} as RevelUserSchema,
 				error: undefined,
+				request: {} as Request,
 				response: {} as Response
 			});
 
 			vi.mocked(permissionMyPermissionsC9C10303).mockResolvedValue({
 				data: { organization_permissions: {} },
 				error: undefined,
+				request: {} as Request,
 				response: {} as Response
 			});
 
