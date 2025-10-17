@@ -92,10 +92,13 @@ export const actions = {
 				email: data.email
 			});
 		} catch (error) {
+			// Re-throw redirects immediately without logging
 			if (error instanceof Response) {
-				throw error; // Re-throw redirect
+				throw error;
 			}
 
+			// Only log actual unexpected errors
+			console.error('Unexpected login error:', error);
 			return fail(500, {
 				errors: { form: 'An unexpected error occurred. Please try again.' },
 				email: data.email
@@ -178,10 +181,13 @@ export const actions = {
 				tempToken: data.tempToken
 			});
 		} catch (error) {
+			// Re-throw redirects immediately without logging
 			if (error instanceof Response) {
-				throw error; // Re-throw redirect
+				throw error;
 			}
 
+			// Only log actual unexpected errors
+			console.error('Unexpected 2FA verification error:', error);
 			return fail(500, {
 				errors: { code: 'An unexpected error occurred. Please try again.' },
 				requires2FA: true,

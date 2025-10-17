@@ -53,10 +53,13 @@
 		<form
 			method="POST"
 			use:enhance={() => {
+				// Prevent duplicate submissions
+				if (isSubmitting) return;
 				isSubmitting = true;
+
 				return async ({ update }) => {
-					await update();
 					isSubmitting = false;
+					await update();
 				};
 			}}
 			class="space-y-6"

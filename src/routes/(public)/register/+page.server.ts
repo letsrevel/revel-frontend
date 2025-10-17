@@ -87,10 +87,12 @@ export const actions = {
 				email: data.email
 			});
 		} catch (error) {
+			// Re-throw redirects immediately without logging
 			if (error instanceof Response) {
-				throw error; // Re-throw redirect
+				throw error;
 			}
 
+			// Only log actual unexpected errors
 			console.error('Unexpected registration error:', error);
 			return fail(500, {
 				errors: { form: 'An unexpected error occurred. Please try again.' },

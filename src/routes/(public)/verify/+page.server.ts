@@ -64,10 +64,12 @@ export const load: PageServerLoad = async ({ url, fetch, cookies }) => {
 			error: 'Invalid response from server'
 		};
 	} catch (error) {
+		// Re-throw redirects immediately without logging
 		if (error instanceof Response) {
-			throw error; // Re-throw redirect
+			throw error;
 		}
 
+		// Only log actual unexpected errors
 		console.error('Unexpected verification error:', error);
 		return {
 			success: false,

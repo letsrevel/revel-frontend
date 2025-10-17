@@ -63,10 +63,13 @@
 				method="POST"
 				action="?/login"
 				use:enhance={() => {
+					// Prevent duplicate submissions
+					if (isSubmitting) return;
 					isSubmitting = true;
+
 					return async ({ update }) => {
-						await update();
 						isSubmitting = false;
+						await update();
 					};
 				}}
 				class="space-y-6"
@@ -178,10 +181,13 @@
 				method="POST"
 				action="?/verify2FA"
 				use:enhance={() => {
+					// Prevent duplicate submissions
+					if (isSubmitting) return;
 					isSubmitting = true;
+
 					return async ({ update }) => {
-						await update();
 						isSubmitting = false;
+						await update();
 					};
 				}}
 				class="space-y-6"
