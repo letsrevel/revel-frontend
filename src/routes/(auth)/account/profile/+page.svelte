@@ -49,6 +49,7 @@
 
 	let success = $derived(form?.success || false);
 	let errors = $derived((form?.errors || {}) as Record<string, string>);
+	let email = $derived(data.user?.email || '');
 </script>
 
 <svelte:head>
@@ -95,7 +96,7 @@
 			<input
 				id="email"
 				type="email"
-				value={data.user?.email || ''}
+				value={email}
 				disabled
 				class="flex h-10 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm text-muted-foreground cursor-not-allowed"
 			/>
