@@ -4,14 +4,7 @@ import type { PageServerLoad } from './$types';
 import type { UserEventStatus } from '$lib/utils/eligibility';
 
 export const load: PageServerLoad = async ({ params, locals, fetch }) => {
-	const { slug } = params;
-
-	// TODO: For now, we need both org_slug and event_slug
-	// We'll need to adjust the route structure to match /org/[org_slug]/events/[event_slug]
-	// For testing, extract org from event slug if formatted as "org-slug--event-slug"
-	const parts = slug.split('--');
-	const org_slug = parts[0] || slug;
-	const event_slug = parts[1] || slug;
+	const { org_slug, event_slug } = params;
 
 	try {
 		// Fetch event details (public, SSR for SEO)
