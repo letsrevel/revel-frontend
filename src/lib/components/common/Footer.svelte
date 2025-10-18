@@ -58,10 +58,7 @@
 				<h3 class="mb-4 text-lg font-semibold">Resources</h3>
 				<ul class="space-y-2 text-sm">
 					<li>
-						<a
-							href="/events"
-							class="text-muted-foreground transition-colors hover:text-foreground"
-						>
+						<a href="/events" class="text-muted-foreground transition-colors hover:text-foreground">
 							Browse Events
 						</a>
 					</li>

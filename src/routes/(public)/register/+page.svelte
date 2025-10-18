@@ -26,7 +26,10 @@
 
 <svelte:head>
 	<title>Create Account - Revel</title>
-	<meta name="description" content="Create your Revel account to start organizing and attending community events" />
+	<meta
+		name="description"
+		content="Create your Revel account to start organizing and attending community events"
+	/>
 </svelte:head>
 
 <div class="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
@@ -34,17 +37,12 @@
 		<!-- Header -->
 		<div class="text-center">
 			<h1 class="text-3xl font-bold tracking-tight">Create your account</h1>
-			<p class="mt-2 text-muted-foreground">
-				Join Revel to discover and organize community events
-			</p>
+			<p class="mt-2 text-muted-foreground">Join Revel to discover and organize community events</p>
 		</div>
 
 		<!-- Error Summary -->
 		{#if hasErrors && errors.form}
-			<div
-				role="alert"
-				class="rounded-md border border-destructive bg-destructive/10 p-4"
-			>
+			<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">
 				<p class="text-sm font-medium text-destructive">{errors.form}</p>
 			</div>
 		{/if}
@@ -66,9 +64,7 @@
 		>
 			<!-- Email Field -->
 			<div class="space-y-2">
-				<label for="email" class="block text-sm font-medium">
-					Email address
-				</label>
+				<label for="email" class="block text-sm font-medium"> Email address </label>
 				<input
 					id="email"
 					name="email"
@@ -93,9 +89,7 @@
 
 			<!-- Password Field -->
 			<div class="space-y-2">
-				<label for="password" class="block text-sm font-medium">
-					Password
-				</label>
+				<label for="password" class="block text-sm font-medium"> Password </label>
 				<div class="relative">
 					<input
 						id="password"
@@ -105,7 +99,9 @@
 						required
 						bind:value={password}
 						aria-invalid={!!errors.password}
-						aria-describedby={errors.password ? 'password-error password-requirements' : 'password-requirements'}
+						aria-describedby={errors.password
+							? 'password-error password-requirements'
+							: 'password-requirements'}
 						disabled={isSubmitting}
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.password
 							? 'border-destructive'
@@ -140,9 +136,7 @@
 
 			<!-- Confirm Password Field -->
 			<div class="space-y-2">
-				<label for="confirmPassword" class="block text-sm font-medium">
-					Confirm password
-				</label>
+				<label for="confirmPassword" class="block text-sm font-medium"> Confirm password </label>
 				<div class="relative">
 					<input
 						id="confirmPassword"
@@ -193,7 +187,14 @@
 					class="mt-1 h-4 w-4 rounded border-input text-primary transition-colors focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 				/>
 				<label for="acceptTerms" class="text-sm">
-					I accept the <a href="/legal/terms" class="text-primary underline-offset-4 hover:underline">Terms of Service</a> and <a href="/legal/privacy" class="text-primary underline-offset-4 hover:underline">Privacy Policy</a>
+					I accept the <a
+						href="/legal/terms"
+						class="text-primary underline-offset-4 hover:underline">Terms of Service</a
+					>
+					and
+					<a href="/legal/privacy" class="text-primary underline-offset-4 hover:underline"
+						>Privacy Policy</a
+					>
 				</label>
 			</div>
 			{#if errors.acceptTerms}
@@ -220,9 +221,7 @@
 		<!-- Login Link -->
 		<div class="text-center text-sm">
 			<span class="text-muted-foreground">Already have an account?</span>
-			<a href="/login" class="ml-1 text-primary underline-offset-4 hover:underline">
-				Sign in
-			</a>
+			<a href="/login" class="ml-1 text-primary underline-offset-4 hover:underline"> Sign in </a>
 		</div>
 	</div>
 </div>

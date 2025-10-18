@@ -108,7 +108,5 @@
 		<p class="text-sm text-destructive" role="alert">{error}</p>
 	{/if}
 
-	<p class="text-sm text-muted-foreground">
-		Enter the 6-digit code from your authenticator app.
-	</p>
+	<p class="text-sm text-muted-foreground">Enter the 6-digit code from your authenticator app.</p>
 </div>

@@ -156,9 +156,7 @@
 						disabled={isSubmitting}
 						class="h-4 w-4 rounded border-input text-primary transition-colors focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 					/>
-					<label for="rememberMe" class="text-sm">
-						Remember me for 30 days
-					</label>
+					<label for="rememberMe" class="text-sm"> Remember me for 30 days </label>
 				</div>
 
 				<!-- Submit Button -->

@@ -25,6 +25,7 @@ Revel is built for diverse, inclusive communities. We expect all contributors to
 If you find a bug, please check our [GitHub Issues](https://github.com/letsrevel/revel-frontend/issues) first to see if it's already been reported.
 
 **To report a new bug:**
+
 1. Open a new issue with a clear, descriptive title
 2. Describe the steps to reproduce the bug
 3. Include expected vs. actual behavior
@@ -33,6 +34,7 @@ If you find a bug, please check our [GitHub Issues](https://github.com/letsrevel
 6. Label the issue as `bug`
 
 **Example:**
+
 ```
 Title: Event RSVP button not working on mobile Safari
 
@@ -77,6 +79,7 @@ New to open source? Welcome! Here's how to get started:
 #### Development Setup
 
 **Prerequisites:**
+
 - Node.js 20+ (we recommend using [nvm](https://github.com/nvm-sh/nvm))
 - pnpm 9+ (`npm install -g pnpm`)
 - Git
@@ -87,27 +90,32 @@ New to open source? Welcome! Here's how to get started:
 1. **Fork the repository** on GitHub
 
 2. **Clone your fork:**
+
    ```bash
    git clone https://github.com/YOUR-USERNAME/revel-frontend.git
    cd revel-frontend
    ```
 
 3. **Add upstream remote:**
+
    ```bash
    git remote add upstream https://github.com/letsrevel/revel-frontend.git
    ```
 
 4. **Install dependencies:**
+
    ```bash
    pnpm install
    ```
 
 5. **Generate API client** (requires backend running):
+
    ```bash
    pnpm generate:api
    ```
 
 6. **Start development server:**
+
    ```bash
    pnpm dev
    ```
@@ -129,6 +137,7 @@ git checkout -b feature/your-feature-name
 ```
 
 **Branch naming conventions:**
+
 - `feature/` - New features (e.g., `feature/event-rsvp`)
 - `fix/` - Bug fixes (e.g., `fix/mobile-button-click`)
 - `refactor/` - Code refactoring (e.g., `refactor/api-client`)
@@ -140,6 +149,7 @@ git checkout -b feature/your-feature-name
 **IMPORTANT:** Read [CLAUDE.md](CLAUDE.md) for detailed development guidelines.
 
 **Key principles:**
+
 1. **TypeScript strict mode** - All code must be fully typed
 2. **Svelte 5 Runes** - Use modern Svelte 5 syntax (`$state`, `$derived`, etc.)
 3. **Mobile-first design** - Design for mobile, enhance for desktop
@@ -147,6 +157,7 @@ git checkout -b feature/your-feature-name
 5. **Test your code** - Write unit, integration, or E2E tests as appropriate
 
 **Before writing code:**
+
 - Understand the existing codebase structure
 - Check if similar functionality exists
 - Consider accessibility implications
@@ -162,11 +173,13 @@ We enforce code quality with automated tools:
 - **TypeScript:** Type checking (`pnpm check`)
 
 **Run before committing:**
+
 ```bash
 pnpm check && pnpm lint && pnpm format && pnpm test
 ```
 
 **Style guidelines:**
+
 - Use `const` over `let` when possible
 - Prefer descriptive names over short ones
 - Add comments for complex logic
@@ -185,6 +198,7 @@ pnpm check && pnpm lint && pnpm format && pnpm test
 - ✅ **Responsive:** Works on all screen sizes
 
 **Test accessibility:**
+
 1. Navigate your feature using only the keyboard (Tab, Enter, Escape)
 2. Use a screen reader (VoiceOver on macOS, NVDA on Windows)
 3. Check color contrast with browser DevTools
@@ -194,6 +208,7 @@ pnpm check && pnpm lint && pnpm format && pnpm test
 ### Testing
 
 **We require tests for:**
+
 - New features
 - Bug fixes (add a regression test)
 - Public API changes
@@ -201,11 +216,13 @@ pnpm check && pnpm lint && pnpm format && pnpm test
 **Types of tests:**
 
 1. **Unit tests** (Vitest) - Pure functions, utilities, stores
+
    ```bash
    pnpm test
    ```
 
 2. **Component tests** (@testing-library/svelte) - Component behavior
+
    ```bash
    pnpm test
    ```
@@ -216,6 +233,7 @@ pnpm check && pnpm lint && pnpm format && pnpm test
    ```
 
 **Writing good tests:**
+
 - Test behavior, not implementation
 - Use descriptive test names
 - Follow AAA pattern (Arrange, Act, Assert)
@@ -227,6 +245,7 @@ pnpm check && pnpm lint && pnpm format && pnpm test
 We use [Conventional Commits](https://www.conventionalcommits.org/) for clear commit history:
 
 **Format:**
+
 ```
 type(scope): description
 
@@ -236,6 +255,7 @@ type(scope): description
 ```
 
 **Types:**
+
 - `feat:` - New feature
 - `fix:` - Bug fix
 - `docs:` - Documentation changes
@@ -245,6 +265,7 @@ type(scope): description
 - `chore:` - Build process, dependencies, tooling
 
 **Examples:**
+
 ```bash
 git commit -m "feat(events): add RSVP confirmation modal"
 git commit -m "fix(auth): resolve token refresh loop on logout"
@@ -252,6 +273,7 @@ git commit -m "docs(readme): update installation instructions"
 ```
 
 **Commit guidelines:**
+
 - Keep commits focused (one logical change per commit)
 - Write clear, descriptive messages
 - Reference issues when applicable: `fixes #123`
@@ -259,6 +281,7 @@ git commit -m "docs(readme): update installation instructions"
 ### Pushing and Creating a Pull Request
 
 1. **Push your branch:**
+
    ```bash
    git push origin feature/your-feature-name
    ```
@@ -279,15 +302,19 @@ git commit -m "docs(readme): update installation instructions"
    - Any new dependencies
 
 **Example PR description:**
+
 ```markdown
 ## What Changed
+
 Added RSVP confirmation modal to event detail pages.
 
 ## Why
+
 Users were confused about whether their RSVP was submitted successfully.
 This modal provides clear feedback.
 
 ## Testing
+
 1. Navigate to any event detail page
 2. Click "RSVP to Event"
 3. Verify modal appears with confirmation message
@@ -295,12 +322,14 @@ This modal provides clear feedback.
 5. Test on mobile viewport
 
 ## Accessibility
+
 - Modal traps focus (keyboard accessible)
 - Escape key closes modal
 - ARIA labels added for screen readers
 - Color contrast meets WCAG AA
 
 ## Screenshots
+
 [Include screenshots]
 
 Closes #42
@@ -339,6 +368,7 @@ All PRs require review before merging:
 ### What We're Looking For
 
 **We especially welcome contributions that:**
+
 - Improve accessibility
 - Enhance mobile experience
 - Add or improve tests
@@ -350,6 +380,7 @@ All PRs require review before merging:
 ### What to Avoid
 
 **Please don't:**
+
 - Submit large PRs without prior discussion
 - Introduce breaking changes without consensus
 - Compromise accessibility for aesthetics
@@ -372,6 +403,7 @@ All PRs require review before merging:
 ## 🏆 Recognition
 
 All contributors are recognized in our:
+
 - GitHub contributors page
 - Release notes
 - Annual contributor highlights

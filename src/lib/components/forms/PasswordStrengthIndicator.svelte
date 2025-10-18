@@ -51,7 +51,9 @@
 		aria-valuemax={5}
 		aria-label="Password strength"
 	>
-		<div class="h-full transition-all duration-300 {barColor}" style="width: {widthPercentage}%"
+		<div
+			class="h-full transition-all duration-300 {barColor}"
+			style="width: {widthPercentage}%"
 		></div>
 	</div>
 
@@ -66,7 +68,11 @@
 	<!-- Requirements checklist -->
 	{#if showRequirements && password.length > 0}
 		<div class="space-y-1.5 text-xs">
-			<div class="flex items-center gap-2 {hasMinLength ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}">
+			<div
+				class="flex items-center gap-2 {hasMinLength
+					? 'text-green-600 dark:text-green-400'
+					: 'text-muted-foreground'}"
+			>
 				{#if hasMinLength}
 					<Check class="h-3.5 w-3.5" aria-hidden="true" />
 				{:else}
@@ -75,7 +81,11 @@
 				<span>At least 8 characters</span>
 			</div>
 
-			<div class="flex items-center gap-2 {hasUppercase ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}">
+			<div
+				class="flex items-center gap-2 {hasUppercase
+					? 'text-green-600 dark:text-green-400'
+					: 'text-muted-foreground'}"
+			>
 				{#if hasUppercase}
 					<Check class="h-3.5 w-3.5" aria-hidden="true" />
 				{:else}
@@ -84,7 +94,11 @@
 				<span>One uppercase letter</span>
 			</div>
 
-			<div class="flex items-center gap-2 {hasLowercase ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}">
+			<div
+				class="flex items-center gap-2 {hasLowercase
+					? 'text-green-600 dark:text-green-400'
+					: 'text-muted-foreground'}"
+			>
 				{#if hasLowercase}
 					<Check class="h-3.5 w-3.5" aria-hidden="true" />
 				{:else}
@@ -93,7 +107,11 @@
 				<span>One lowercase letter</span>
 			</div>
 
-			<div class="flex items-center gap-2 {hasDigit ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}">
+			<div
+				class="flex items-center gap-2 {hasDigit
+					? 'text-green-600 dark:text-green-400'
+					: 'text-muted-foreground'}"
+			>
 				{#if hasDigit}
 					<Check class="h-3.5 w-3.5" aria-hidden="true" />
 				{:else}
@@ -102,7 +120,11 @@
 				<span>One number</span>
 			</div>
 
-			<div class="flex items-center gap-2 {hasSpecial ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}">
+			<div
+				class="flex items-center gap-2 {hasSpecial
+					? 'text-green-600 dark:text-green-400'
+					: 'text-muted-foreground'}"
+			>
 				{#if hasSpecial}
 					<Check class="h-3.5 w-3.5" aria-hidden="true" />
 				{:else}

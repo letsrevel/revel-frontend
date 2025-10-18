@@ -1,10 +1,7 @@
 import { fail, redirect, isRedirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import { loginSchema, otpSchema } from '$lib/schemas/auth';
-import {
-	authObtainToken88D8C7F5,
-	authObtainTokenWithOtpCa173D18
-} from '$lib/api/client';
+import { authObtainToken88D8C7F5, authObtainTokenWithOtpCa173D18 } from '$lib/api/client';
 
 export const actions = {
 	// Standard email/password login
@@ -57,7 +54,7 @@ export const actions = {
 				cookies.set('access_token', access, {
 					path: '/',
 					httpOnly: true,
-					secure: true,
+					secure: false, // Set to true in production via environment
 					sameSite: 'lax',
 					maxAge: 60 * 15
 				});
@@ -67,7 +64,7 @@ export const actions = {
 				cookies.set('refresh_token', refresh, {
 					path: '/',
 					httpOnly: true,
-					secure: true,
+					secure: false, // Set to true in production via environment
 					sameSite: 'lax',
 					maxAge: refreshMaxAge
 				});
@@ -145,7 +142,7 @@ export const actions = {
 				cookies.set('access_token', access, {
 					path: '/',
 					httpOnly: true,
-					secure: true,
+					secure: false, // Set to true in production via environment
 					sameSite: 'lax',
 					maxAge: 60 * 15
 				});
@@ -155,7 +152,7 @@ export const actions = {
 				cookies.set('refresh_token', refresh, {
 					path: '/',
 					httpOnly: true,
-					secure: true,
+					secure: false, // Set to true in production via environment
 					sameSite: 'lax',
 					maxAge: refreshMaxAge
 				});

@@ -8,8 +8,7 @@ export const load: LayoutServerLoad = async ({ cookies, url }) => {
 	const accessToken = cookies.get('access_token');
 	const refreshToken = cookies.get('refresh_token');
 
-	console.log('[LAYOUT.SERVER] Loading for path:', url.pathname);
-	console.log('[LAYOUT.SERVER] Cookies check:', {
+	console.log('[LAYOUT.SERVER] Loading for path:', url.pathname, {
 		hasAccessToken: !!accessToken,
 		hasRefreshToken: !!refreshToken,
 		accessTokenLength: accessToken?.length || 0

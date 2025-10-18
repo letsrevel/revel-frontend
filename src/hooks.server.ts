@@ -15,7 +15,6 @@ export const handle: Handle = async ({ event, resolve }) => {
 			// For now, we'll handle this client-side
 			// In production, you'd want to validate the token server-side
 			// and set event.locals.user
-
 			// Example of what this would look like:
 			// const user = await verifyRefreshToken(refreshToken);
 			// event.locals.user = user;

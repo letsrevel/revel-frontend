@@ -52,7 +52,10 @@ export const actions = {
 			if (response.response.ok && response.data) {
 				console.log('[REGISTER] Success detected, redirecting to check-email');
 				// Success - redirect to check-email page
-				throw redirect(303, `/register/check-email?email=${encodeURIComponent(validation.data.email)}`);
+				throw redirect(
+					303,
+					`/register/check-email?email=${encodeURIComponent(validation.data.email)}`
+				);
 			}
 
 			// If response was not ok, handle the error
@@ -79,8 +82,10 @@ export const actions = {
 				}
 
 				// Check for specific error patterns
-				if (errorMessage.toLowerCase().includes('already') ||
-				    errorMessage.toLowerCase().includes('exist')) {
+				if (
+					errorMessage.toLowerCase().includes('already') ||
+					errorMessage.toLowerCase().includes('exist')
+				) {
 					return fail(400, {
 						errors: { email: 'An account with this email already exists' },
 						email: data.email

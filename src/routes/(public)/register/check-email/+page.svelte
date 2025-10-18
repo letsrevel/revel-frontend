@@ -49,9 +49,7 @@
 		<!-- Header -->
 		<div class="space-y-2">
 			<h1 class="text-3xl font-bold tracking-tight">Check your email</h1>
-			<p class="text-muted-foreground">
-				We've sent a verification link to:
-			</p>
+			<p class="text-muted-foreground">We've sent a verification link to:</p>
 			{#if email}
 				<p class="font-medium">{email}</p>
 			{/if}
@@ -59,19 +57,13 @@
 
 		<!-- Instructions -->
 		<div class="space-y-4 text-sm text-muted-foreground">
-			<p>
-				Click the link in the email to verify your account and complete registration.
-			</p>
-			<p>
-				If you don't see the email, check your spam folder.
-			</p>
+			<p>Click the link in the email to verify your account and complete registration.</p>
+			<p>If you don't see the email, check your spam folder.</p>
 		</div>
 
 		<!-- Resend Section -->
 		<div class="space-y-3 border-t pt-6">
-			<p class="text-sm text-muted-foreground">
-				Didn't receive the email?
-			</p>
+			<p class="text-sm text-muted-foreground">Didn't receive the email?</p>
 
 			{#if resendSuccess}
 				<div
@@ -108,9 +100,7 @@
 
 		<!-- Back to Login -->
 		<div class="text-sm">
-			<a href="/login" class="text-primary underline-offset-4 hover:underline">
-				Back to login
-			</a>
+			<a href="/login" class="text-primary underline-offset-4 hover:underline"> Back to login </a>
 		</div>
 	</div>
 </div>

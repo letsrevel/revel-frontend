@@ -33,10 +33,11 @@
 		{ href: '/my-organizations', label: 'My Organizations', icon: Building2 }
 	];
 
-	async function handleLogout() {
-		await authStore.logout();
+	function handleLogout() {
 		if (onItemClick) onItemClick();
-		goto('/');
+		// Navigate to logout endpoint which clears cookies and redirects
+		// The $effect in root layout will handle clearing client-side state
+		goto('/logout');
 	}
 
 	function handleItemClick() {

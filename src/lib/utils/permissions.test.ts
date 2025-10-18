@@ -109,9 +109,9 @@ describe('Permission Utilities', () => {
 			expect(canPerformActionOnEvent(mockPermissions, 'org-owner', 'event-1', 'edit_event')).toBe(
 				true
 			);
-			expect(
-				canPerformActionOnEvent(mockPermissions, 'org-owner', 'event-1', 'delete_event')
-			).toBe(true);
+			expect(canPerformActionOnEvent(mockPermissions, 'org-owner', 'event-1', 'delete_event')).toBe(
+				true
+			);
 		});
 
 		it('should use event override when available', () => {
@@ -121,9 +121,9 @@ describe('Permission Utilities', () => {
 			);
 
 			// Override says delete_event = true for event-1 (even though default is false)
-			expect(
-				canPerformActionOnEvent(mockPermissions, 'org-staff', 'event-1', 'delete_event')
-			).toBe(true);
+			expect(canPerformActionOnEvent(mockPermissions, 'org-staff', 'event-1', 'delete_event')).toBe(
+				true
+			);
 		});
 
 		it('should fall back to default permissions when no override', () => {
@@ -131,9 +131,9 @@ describe('Permission Utilities', () => {
 			expect(canPerformActionOnEvent(mockPermissions, 'org-staff', 'event-2', 'create_event')).toBe(
 				true
 			);
-			expect(
-				canPerformActionOnEvent(mockPermissions, 'org-staff', 'event-2', 'delete_event')
-			).toBe(false);
+			expect(canPerformActionOnEvent(mockPermissions, 'org-staff', 'event-2', 'delete_event')).toBe(
+				false
+			);
 		});
 
 		it('should fall back to default when override does not specify action', () => {

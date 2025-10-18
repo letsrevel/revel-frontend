@@ -5,6 +5,7 @@ This directory contains specialized Claude Code subagents for the Revel Frontend
 ## What are Subagents?
 
 Subagents are:
+
 - **Specialized AI assistants** focused on specific tasks
 - **Separate context windows** that don't pollute the main conversation
 - **Reusable** across different features and work sessions
@@ -15,14 +16,17 @@ Think of them as expert teammates you can call upon for specialized work.
 ## Available Subagents
 
 ### 🔄 api-sync
+
 **Description:** Regenerate TypeScript API client from backend OpenAPI specification
 
 **Use when:**
+
 - Backend API has changed
 - Adding new endpoints
 - API types are out of sync
 
 **Invocation:**
+
 ```
 "The backend API changed. Use the api-sync subagent to update the frontend."
 ```
@@ -30,14 +34,17 @@ Think of them as expert teammates you can call upon for specialized work.
 ---
 
 ### 🧩 component-creator
+
 **Description:** Create new Svelte 5 components with proper structure, TypeScript, accessibility, and mobile-first design
 
 **Use when:**
+
 - Building new UI components
 - Adding feature-specific components
 - Creating reusable elements
 
 **Invocation:**
+
 ```
 "Create an EventCard component. Use the component-creator subagent."
 ```
@@ -45,14 +52,17 @@ Think of them as expert teammates you can call upon for specialized work.
 ---
 
 ### 🛣️ route-creator
+
 **Description:** Create new SvelteKit routes with proper SSR/CSR configuration and TypeScript types
 
 **Use when:**
+
 - Adding new pages
 - Creating API endpoints
 - Setting up protected routes
 
 **Invocation:**
+
 ```
 "Create the event listing route. Use the route-creator subagent."
 ```
@@ -60,15 +70,18 @@ Think of them as expert teammates you can call upon for specialized work.
 ---
 
 ### ✅ testing-helper
+
 **Description:** Write comprehensive tests using Vitest, @testing-library/svelte, and Playwright
 
 **Use when:**
+
 - Testing new features
 - Writing unit tests
 - Creating E2E tests
 - Ensuring test coverage
 
 **Invocation:**
+
 ```
 "Write tests for the EventCard component. Use the testing-helper subagent."
 ```
@@ -76,15 +89,18 @@ Think of them as expert teammates you can call upon for specialized work.
 ---
 
 ### ♿ accessibility-checker
+
 **Description:** Audit and ensure WCAG 2.1 AA compliance
 
 **Use when:**
+
 - Before merging features
 - During code review
 - After design changes
 - Creating new components
 
 **Invocation:**
+
 ```
 "Check accessibility of the login form. Use the accessibility-checker subagent."
 ```
@@ -92,9 +108,11 @@ Think of them as expert teammates you can call upon for specialized work.
 ---
 
 ### 📋 project-manager
+
 **Description:** Plan features, create GitHub issues, break down tasks
 
 **Use when:**
+
 - Planning new features
 - Creating GitHub issues
 - Breaking down large tasks
@@ -102,6 +120,7 @@ Think of them as expert teammates you can call upon for specialized work.
 - Tracking implementation progress
 
 **Invocation:**
+
 ```
 "Plan the event RSVP feature. Use the project-manager subagent."
 ```
@@ -145,6 +164,7 @@ Manage subagents interactively:
 ```
 
 This opens an interface to:
+
 - View all available subagents
 - Edit subagent configurations
 - Test subagent behavior
@@ -155,14 +175,16 @@ This opens an interface to:
 
 **You:** "I want to add event RSVP functionality."
 
-**Claude Code:** *Invokes project-manager subagent*
+**Claude Code:** _Invokes project-manager subagent_
+
 - Creates technical design
 - Breaks down into tasks
 - Creates GitHub issues
 
 **You:** "Create the RSVPButton component."
 
-**Claude Code:** *Invokes component-creator subagent*
+**Claude Code:** _Invokes component-creator subagent_
+
 - Creates Svelte 5 component with Runes
 - Adds accessibility features
 - Implements mobile-first design
@@ -170,7 +192,8 @@ This opens an interface to:
 
 **You:** "Check if this component is accessible."
 
-**Claude Code:** *Invokes accessibility-checker subagent*
+**Claude Code:** _Invokes accessibility-checker subagent_
+
 - Audits WCAG 2.1 AA compliance
 - Checks keyboard navigation
 - Verifies ARIA usage
@@ -178,7 +201,8 @@ This opens an interface to:
 
 **You:** "Write comprehensive tests for it."
 
-**Claude Code:** *Invokes testing-helper subagent*
+**Claude Code:** _Invokes testing-helper subagent_
+
 - Creates unit tests
 - Adds component interaction tests
 - Includes accessibility tests
@@ -200,14 +224,14 @@ Subagents are stored as Markdown files with YAML frontmatter. You can edit them:
 ---
 name: your-subagent-name
 description: When this subagent should be invoked
-tools: Bash, Read, Write  # Optional: limit tool access
-model: inherit  # Optional: sonnet, opus, haiku, or inherit
+tools: Bash, Read, Write # Optional: limit tool access
+model: inherit # Optional: sonnet, opus, haiku, or inherit
 ---
-
 Your custom system prompt here...
 ```
 
 **Location:**
+
 - Project-level: `.claude/agents/` (version controlled, team-wide)
 - User-level: `~/.claude/agents/` (personal, all projects)
 
@@ -230,14 +254,14 @@ Together, they provide comprehensive AI assistance for the project.
 
 ## Quick Reference
 
-| Task | Subagent | Command |
-|------|----------|---------|
-| Update API types | `api-sync` | "Use api-sync subagent" |
-| New component | `component-creator` | "Use component-creator subagent" |
-| New page/route | `route-creator` | "Use route-creator subagent" |
-| Write tests | `testing-helper` | "Use testing-helper subagent" |
+| Task                | Subagent                | Command                              |
+| ------------------- | ----------------------- | ------------------------------------ |
+| Update API types    | `api-sync`              | "Use api-sync subagent"              |
+| New component       | `component-creator`     | "Use component-creator subagent"     |
+| New page/route      | `route-creator`         | "Use route-creator subagent"         |
+| Write tests         | `testing-helper`        | "Use testing-helper subagent"        |
 | Check accessibility | `accessibility-checker` | "Use accessibility-checker subagent" |
-| Plan feature | `project-manager` | "Use project-manager subagent" |
+| Plan feature        | `project-manager`       | "Use project-manager subagent"       |
 
 ## Resources
 

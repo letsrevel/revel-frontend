@@ -7,8 +7,7 @@
 
 	<div class="prose prose-slate dark:prose-invert max-w-none">
 		<p class="text-muted-foreground">
-			Terms of Service content will be loaded from the backend at <code>/api/legal/tos</code> once
-			implemented.
+			Terms of Service content will be loaded from the backend at <code>/api/legal/tos</code> once implemented.
 		</p>
 	</div>
 </div>

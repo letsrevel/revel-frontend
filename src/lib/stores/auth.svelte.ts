@@ -44,24 +44,34 @@ class AuthStore {
 	 * Otherwise, attempts to refresh token if refresh cookie exists
 	 */
 	async initialize(): Promise<void> {
+		console.log('[AUTH STORE] initialize() called', {
+			hasAccessToken: !!this._accessToken
+		});
 		this._isLoading = true;
 		try {
 			// If we already have an access token (set from server), fetch user data
 			if (this._accessToken) {
-				console.log('[AUTH] Access token found, fetching user data');
+				console.log('[AUTH STORE] Has access token, fetching user data');
 				await this.fetchUserData();
+				console.log('[AUTH STORE] User data fetched successfully');
 				await this.fetchPermissions();
+				console.log('[AUTH STORE] Permissions fetched successfully');
 			} else {
 				// Try to refresh the access token
 				// If refresh token cookie exists, this will work
-				console.log('[AUTH] No access token, attempting refresh');
+				console.log('[AUTH STORE] No access token, attempting refresh');
 				await this.refreshAccessToken();
 			}
 		} catch (error) {
 			// No valid refresh token, user needs to login
-			console.log('[AUTH] No valid session found');
+			// Silent fail - user will be redirected to login by route guard
+			console.log('[AUTH STORE] Initialize failed:', error);
 		} finally {
 			this._isLoading = false;
+			console.log('[AUTH STORE] initialize() complete', {
+				isAuthenticated: this.isAuthenticated,
+				hasUser: !!this._user
+			});
 		}
 	}
 
@@ -165,22 +175,31 @@ class AuthStore {
 	 * Fetch current user data
 	 */
 	private async fetchUserData(): Promise<void> {
-		const { data, error } = await accountMe0E4E4784({
-			headers: this.getAuthHeaders()
-		});
+		try {
+			const { data, error } = await accountMe0E4E4784({
+				headers: this.getAuthHeaders()
+			});
 
-		if (error || !data) {
-			throw new Error('Failed to fetch user data');
+			if (error || !data) {
+				throw new Error('Failed to fetch user data');
+			}
+
+			this._user = data;
+		} catch (err) {
+			// Check if this is a network error (likely ad blocker)
+			if (err instanceof TypeError && err.message === 'Failed to fetch') {
+				console.error('⚠️  API request blocked! Please disable your ad blocker for localhost:8000');
+				console.error('   Common culprits: uBlock Origin, Privacy Badger, Brave Shields');
+			}
+			throw err;
 		}
-
-		this._user = data;
 	}
 
 	/**
 	 * Fetch user permissions
 	 */
 	private async fetchPermissions(): Promise<void> {
-		const { data, error} = await permissionMyPermissionsC9C10303({
+		const { data, error } = await permissionMyPermissionsC9C10303({
 			headers: this.getAuthHeaders()
 		});
 

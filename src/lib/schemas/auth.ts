@@ -91,13 +91,7 @@ export function calculatePasswordStrength(password: string): {
 	score = Math.min(score, 4);
 
 	const labels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'];
-	const colors = [
-		'bg-red-500',
-		'bg-orange-500',
-		'bg-yellow-500',
-		'bg-blue-500',
-		'bg-green-500'
-	];
+	const colors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-blue-500', 'bg-green-500'];
 
 	return {
 		score,

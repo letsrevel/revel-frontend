@@ -1,17 +1,24 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import AuthLayout from '$lib/components/common/AuthLayout.svelte';
 
-	// Protect authenticated routes
+	interface Props {
+		children: import('svelte').Snippet;
+	}
+
+	let { children }: Props = $props();
+
+	// Debug: log when this layout mounts
 	onMount(() => {
-		if (!authStore.isAuthenticated) {
-			goto('/login');
-		}
+		console.log('[AUTH LAYOUT] Mounted on authenticated route', {
+			isAuthenticated: authStore.isAuthenticated,
+			hasUser: !!authStore.user,
+			hasAccessToken: !!authStore.accessToken
+		});
 	});
 </script>
 
 <AuthLayout>
-	<slot />
+	{@render children()}
 </AuthLayout>
