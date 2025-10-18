@@ -71,6 +71,31 @@ export const resendVerificationSchema = z.object({
 export type ResendVerificationFormData = z.infer<typeof resendVerificationSchema>;
 
 /**
+ * Password reset request schema
+ */
+export const passwordResetRequestSchema = z.object({
+	email: z.string().email('Invalid email address')
+});
+
+export type PasswordResetRequestFormData = z.infer<typeof passwordResetRequestSchema>;
+
+/**
+ * Password reset confirmation schema
+ */
+export const passwordResetSchema = z
+	.object({
+		password: passwordSchema,
+		confirmPassword: z.string(),
+		token: z.string().min(1, 'Reset token is required')
+	})
+	.refine((data) => data.password === data.confirmPassword, {
+		message: 'Passwords do not match',
+		path: ['confirmPassword']
+	});
+
+export type PasswordResetFormData = z.infer<typeof passwordResetSchema>;
+
+/**
  * Password strength calculator
  * Returns score from 0 (weakest) to 4 (strongest)
  */
