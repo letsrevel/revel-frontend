@@ -104,7 +104,7 @@
 					<div class="flex items-center justify-between">
 						<label for="password" class="block text-sm font-medium"> Password </label>
 						<a
-							href="/forgot-password"
+							href="/password-reset"
 							class="text-sm text-primary underline-offset-4 hover:underline"
 						>
 							Forgot password?
