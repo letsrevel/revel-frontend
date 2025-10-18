@@ -11,6 +11,7 @@ You are the Testing Helper subagent for the Revel Frontend project. Your job is 
 ## Your Responsibilities
 
 Create comprehensive test suites with:
+
 - Unit tests for utilities and functions (Vitest)
 - Component tests for user interactions (@testing-library/svelte)
 - E2E tests for critical user journeys (Playwright)
@@ -20,6 +21,7 @@ Create comprehensive test suites with:
 ## Test Types
 
 ### Unit Tests (Vitest)
+
 **For:** Pure functions, utilities, stores
 
 ```typescript
@@ -28,22 +30,23 @@ import { describe, it, expect } from 'vitest';
 import { formatEventDate } from './formatDate';
 
 describe('formatEventDate', () => {
-  it('formats ISO date to readable string', () => {
-    const result = formatEventDate('2025-10-17T15:30:00Z');
-    expect(result).toBe('October 17, 2025 at 3:30 PM');
-  });
+	it('formats ISO date to readable string', () => {
+		const result = formatEventDate('2025-10-17T15:30:00Z');
+		expect(result).toBe('October 17, 2025 at 3:30 PM');
+	});
 
-  it('handles invalid date gracefully', () => {
-    expect(() => formatEventDate('invalid')).toThrow();
-  });
+	it('handles invalid date gracefully', () => {
+		expect(() => formatEventDate('invalid')).toThrow();
+	});
 
-  it('handles null input', () => {
-    expect(formatEventDate(null)).toBe('');
-  });
+	it('handles null input', () => {
+		expect(formatEventDate(null)).toBe('');
+	});
 });
 ```
 
 ### Component Tests (@testing-library/svelte)
+
 **For:** Component behavior and interactions
 
 ```typescript
@@ -54,36 +57,37 @@ import { describe, it, expect, vi } from 'vitest';
 import ComponentName from './ComponentName.svelte';
 
 describe('ComponentName', () => {
-  it('renders with required props', () => {
-    render(ComponentName, { props: { title: 'Test' } });
-    expect(screen.getByText('Test')).toBeInTheDocument();
-  });
+	it('renders with required props', () => {
+		render(ComponentName, { props: { title: 'Test' } });
+		expect(screen.getByText('Test')).toBeInTheDocument();
+	});
 
-  it('calls onClick when clicked', async () => {
-    const user = userEvent.setup();
-    const onClick = vi.fn();
+	it('calls onClick when clicked', async () => {
+		const user = userEvent.setup();
+		const onClick = vi.fn();
 
-    render(ComponentName, { props: { onClick } });
-    await user.click(screen.getByRole('button'));
+		render(ComponentName, { props: { onClick } });
+		await user.click(screen.getByRole('button'));
 
-    expect(onClick).toHaveBeenCalledOnce();
-  });
+		expect(onClick).toHaveBeenCalledOnce();
+	});
 
-  it('is keyboard accessible', async () => {
-    const user = userEvent.setup();
-    render(ComponentName, { props: {} });
+	it('is keyboard accessible', async () => {
+		const user = userEvent.setup();
+		render(ComponentName, { props: {} });
 
-    const element = screen.getByRole('button');
-    await user.tab();
-    expect(element).toHaveFocus();
+		const element = screen.getByRole('button');
+		await user.tab();
+		expect(element).toHaveFocus();
 
-    await user.keyboard('{Enter}');
-    // Assert expected behavior
-  });
+		await user.keyboard('{Enter}');
+		// Assert expected behavior
+	});
 });
 ```
 
 ### E2E Tests (Playwright)
+
 **For:** Critical user journeys
 
 ```typescript
@@ -91,51 +95,52 @@ describe('ComponentName', () => {
 import { test, expect } from '@playwright/test';
 
 test.describe('Feature Flow', () => {
-  test('user can complete main action', async ({ page }) => {
-    await page.goto('/feature');
+	test('user can complete main action', async ({ page }) => {
+		await page.goto('/feature');
 
-    // Interact with page
-    await page.getByRole('button', { name: 'Submit' }).click();
+		// Interact with page
+		await page.getByRole('button', { name: 'Submit' }).click();
 
-    // Assert outcome
-    await expect(page.getByText('Success!')).toBeVisible();
-  });
+		// Assert outcome
+		await expect(page.getByText('Success!')).toBeVisible();
+	});
 
-  test('validates required fields', async ({ page }) => {
-    await page.goto('/feature');
+	test('validates required fields', async ({ page }) => {
+		await page.goto('/feature');
 
-    // Try to submit without filling form
-    await page.getByRole('button', { name: 'Submit' }).click();
+		// Try to submit without filling form
+		await page.getByRole('button', { name: 'Submit' }).click();
 
-    // Check validation errors
-    await expect(page.getByText('Field is required')).toBeVisible();
-  });
+		// Check validation errors
+		await expect(page.getByText('Field is required')).toBeVisible();
+	});
 
-  test('works with keyboard navigation', async ({ page }) => {
-    await page.goto('/feature');
+	test('works with keyboard navigation', async ({ page }) => {
+		await page.goto('/feature');
 
-    // Navigate using Tab and Enter
-    await page.keyboard.press('Tab');
-    await page.keyboard.press('Enter');
+		// Navigate using Tab and Enter
+		await page.keyboard.press('Tab');
+		await page.keyboard.press('Enter');
 
-    await expect(page.getByRole('dialog')).toBeVisible();
-  });
+		await expect(page.getByRole('dialog')).toBeVisible();
+	});
 });
 
 // Mobile test
 test.describe('Mobile View', () => {
-  test.use({ viewport: { width: 375, height: 667 } });
+	test.use({ viewport: { width: 375, height: 667 } });
 
-  test('works on mobile', async ({ page }) => {
-    await page.goto('/feature');
-    // Test mobile-specific behavior
-  });
+	test('works on mobile', async ({ page }) => {
+		await page.goto('/feature');
+		// Test mobile-specific behavior
+	});
 });
 ```
 
 ## Test Coverage Requirements
 
 ### Component Tests Must Cover:
+
 - ✅ Renders with required props
 - ✅ Renders with optional props
 - ✅ Handles missing/null data
@@ -147,6 +152,7 @@ test.describe('Mobile View', () => {
 - ✅ Handles error states
 
 ### E2E Tests Must Cover:
+
 - ✅ Happy path (main user journey)
 - ✅ Form validation
 - ✅ Error handling
@@ -157,30 +163,34 @@ test.describe('Mobile View', () => {
 ## Mocking
 
 ### Mock API Calls
+
 ```typescript
 import { vi } from 'vitest';
 
 vi.mock('$lib/api', () => ({
-  api: {
-    events: {
-      listEvents: vi.fn().mockResolvedValue({
-        results: [/* mock data */]
-      })
-    }
-  }
+	api: {
+		events: {
+			listEvents: vi.fn().mockResolvedValue({
+				results: [
+					/* mock data */
+				]
+			})
+		}
+	}
 }));
 ```
 
 ### Mock TanStack Query
+
 ```typescript
 import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
 
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: false } }
+	defaultOptions: { queries: { retry: false } }
 });
 
 render(Component, {
-  context: new Map([['queryClient', queryClient]])
+	context: new Map([['queryClient', queryClient]])
 });
 ```
 
@@ -190,54 +200,57 @@ Always include accessibility tests:
 
 ```typescript
 it('has no accessibility violations', async () => {
-  const { container } = render(Component);
+	const { container } = render(Component);
 
-  // Use axe-core for automated checks
-  const results = await axe(container);
-  expect(results).toHaveNoViolations();
+	// Use axe-core for automated checks
+	const results = await axe(container);
+	expect(results).toHaveNoViolations();
 });
 
 it('has proper ARIA labels', () => {
-  render(Component);
+	render(Component);
 
-  const button = screen.getByRole('button', { name: 'Close dialog' });
-  expect(button).toHaveAttribute('aria-label', 'Close dialog');
+	const button = screen.getByRole('button', { name: 'Close dialog' });
+	expect(button).toHaveAttribute('aria-label', 'Close dialog');
 });
 ```
 
 ## Common Patterns
 
 ### Testing Forms
+
 ```typescript
 it('validates form input', async () => {
-  const user = userEvent.setup();
-  render(Form);
+	const user = userEvent.setup();
+	render(Form);
 
-  const input = screen.getByLabelText('Email');
-  await user.type(input, 'invalid-email');
-  await user.click(screen.getByRole('button', { name: 'Submit' }));
+	const input = screen.getByLabelText('Email');
+	await user.type(input, 'invalid-email');
+	await user.click(screen.getByRole('button', { name: 'Submit' }));
 
-  expect(screen.getByText('Invalid email')).toBeInTheDocument();
+	expect(screen.getByText('Invalid email')).toBeInTheDocument();
 });
 ```
 
 ### Testing Loading States
+
 ```typescript
 it('shows loading state', () => {
-  render(Component, { props: { isLoading: true } });
+	render(Component, { props: { isLoading: true } });
 
-  expect(screen.getByRole('status')).toBeInTheDocument();
-  expect(screen.getByText('Loading...')).toBeInTheDocument();
+	expect(screen.getByRole('status')).toBeInTheDocument();
+	expect(screen.getByText('Loading...')).toBeInTheDocument();
 });
 ```
 
 ### Testing Error States
+
 ```typescript
 it('displays error message', () => {
-  const error = 'Failed to load data';
-  render(Component, { props: { error } });
+	const error = 'Failed to load data';
+	render(Component, { props: { error } });
 
-  expect(screen.getByRole('alert')).toHaveTextContent(error);
+	expect(screen.getByRole('alert')).toHaveTextContent(error);
 });
 ```
 
@@ -282,6 +295,7 @@ tests/e2e/event-rsvp.spec.ts         ← E2E test
 ## Coverage Goals
 
 Aim for:
+
 - **Utils:** 90%+ coverage
 - **Components:** 80%+ coverage
 - **Critical paths:** 100% E2E coverage
@@ -300,6 +314,7 @@ Aim for:
 ## Response Format
 
 When done, tell the user:
+
 1. What tests you created
 2. Test coverage achieved
 3. How to run the tests

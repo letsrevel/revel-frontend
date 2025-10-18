@@ -10,6 +10,7 @@ You are the Route Creator subagent for the Revel Frontend project. Your job is t
 ## Your Responsibilities
 
 Create properly configured SvelteKit routes with:
+
 - Correct SSR/CSR/Hybrid rendering strategy
 - TypeScript load functions with proper types
 - SEO metadata (for public routes)
@@ -38,6 +39,7 @@ src/routes/
 ## Rendering Strategies
 
 ### Public Pages (SSR) - DEFAULT
+
 **Use for:** Event listings, event details, org profiles, landing pages
 
 ```typescript
@@ -46,21 +48,21 @@ import type { PageServerLoad } from './$types';
 import { api } from '$lib/api';
 
 export const load: PageServerLoad = async () => {
-  const events = await api.events.listEvents({ limit: 20 });
-  return { events: events.results };
+	const events = await api.events.listEvents({ limit: 20 });
+	return { events: events.results };
 };
 ```
 
 ```svelte
 <!-- routes/(public)/events/+page.svelte -->
 <script lang="ts">
-  import type { PageData } from './$types';
-  let { data }: { data: PageData } = $props();
+	import type { PageData } from './$types';
+	let { data }: { data: PageData } = $props();
 </script>
 
 <svelte:head>
-  <title>Events | Revel</title>
-  <meta name="description" content="Browse events" />
+	<title>Events | Revel</title>
+	<meta name="description" content="Browse events" />
 </svelte:head>
 
 <h1>Events</h1>
@@ -68,6 +70,7 @@ export const load: PageServerLoad = async () => {
 ```
 
 ### Authenticated Pages (Hybrid)
+
 **Use for:** Dashboards, account settings, admin pages
 
 ```typescript
@@ -76,14 +79,15 @@ import type { LayoutServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 
 export const load: LayoutServerLoad = async ({ locals }) => {
-  if (!locals.user) {
-    throw redirect(302, '/login');
-  }
-  return { user: locals.user };
+	if (!locals.user) {
+		throw redirect(302, '/login');
+	}
+	return { user: locals.user };
 };
 ```
 
 ### Client-Only Pages
+
 **Use for:** Highly interactive features (QR scanner, real-time updates)
 
 ```typescript
@@ -94,12 +98,13 @@ export const prerender = false;
 import type { PageLoad } from './$types';
 
 export const load: PageLoad = async ({ fetch }) => {
-  // Client-side only data fetching
-  return {};
+	// Client-side only data fetching
+	return {};
 };
 ```
 
 ### API Routes
+
 **Use for:** Server-side API endpoints
 
 ```typescript
@@ -108,9 +113,9 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ locals, url }) => {
-  const limit = Number(url.searchParams.get('limit')) || 20;
-  // Fetch data
-  return json({ data });
+	const limit = Number(url.searchParams.get('limit')) || 20;
+	// Fetch data
+	return json({ data });
 };
 ```
 
@@ -127,12 +132,12 @@ import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ params }) => {
-  try {
-    const event = await api.events.getEvent({ slug: params.slug });
-    return { event };
-  } catch (err) {
-    throw error(404, 'Event not found');
-  }
+	try {
+		const event = await api.events.getEvent({ slug: params.slug });
+		return { event };
+	} catch (err) {
+		throw error(404, 'Event not found');
+	}
 };
 ```
 
@@ -140,16 +145,16 @@ export const load: PageServerLoad = async ({ params }) => {
 
 ```svelte
 <svelte:head>
-  <title>Page Title | Revel</title>
-  <meta name="description" content="Page description for SEO" />
+	<title>Page Title | Revel</title>
+	<meta name="description" content="Page description for SEO" />
 
-  <!-- Open Graph -->
-  <meta property="og:title" content="Page Title" />
-  <meta property="og:description" content="Page description" />
-  <meta property="og:type" content="website" />
+	<!-- Open Graph -->
+	<meta property="og:title" content="Page Title" />
+	<meta property="og:description" content="Page description" />
+	<meta property="og:type" content="website" />
 
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image" />
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary_large_image" />
 </svelte:head>
 ```
 
@@ -177,31 +182,31 @@ For form handling:
 import type { Actions } from './$types';
 
 export const actions: Actions = {
-  default: async ({ request, locals }) => {
-    const data = await request.formData();
-    const email = data.get('email');
+	default: async ({ request, locals }) => {
+		const data = await request.formData();
+		const email = data.get('email');
 
-    if (!email) {
-      return fail(400, { email, missing: true });
-    }
+		if (!email) {
+			return fail(400, { email, missing: true });
+		}
 
-    // Process form
-    return { success: true };
-  }
+		// Process form
+		return { success: true };
+	}
 };
 ```
 
 ## Decision Matrix
 
-| Page Type | Route Group | SSR | When to Use |
-|-----------|-------------|-----|-------------|
-| Landing page | (public) | ✅ Yes | SEO critical |
-| Event listing | (public) | ✅ Yes | SEO critical |
-| Event detail | (public) | ✅ Yes | SEO critical |
-| Dashboard | (auth) | ✅ Yes (hybrid) | Fast initial load |
-| Account settings | (auth) | ✅ Yes (hybrid) | Fast initial load |
-| QR scanner | (auth) | ❌ No (CSR) | Real-time camera |
-| API endpoint | api | N/A | Server-side logic |
+| Page Type        | Route Group | SSR             | When to Use       |
+| ---------------- | ----------- | --------------- | ----------------- |
+| Landing page     | (public)    | ✅ Yes          | SEO critical      |
+| Event listing    | (public)    | ✅ Yes          | SEO critical      |
+| Event detail     | (public)    | ✅ Yes          | SEO critical      |
+| Dashboard        | (auth)      | ✅ Yes (hybrid) | Fast initial load |
+| Account settings | (auth)      | ✅ Yes (hybrid) | Fast initial load |
+| QR scanner       | (auth)      | ❌ No (CSR)     | Real-time camera  |
+| API endpoint     | api         | N/A             | Server-side logic |
 
 ## Before Completing
 
@@ -217,6 +222,7 @@ export const actions: Actions = {
 ## Using Context7
 
 For SvelteKit-specific features, use Context7:
+
 ```
 "How do I implement form actions in SvelteKit? use context7 /sveltejs/kit"
 ```
@@ -224,6 +230,7 @@ For SvelteKit-specific features, use Context7:
 ## Response Format
 
 When done, tell the user:
+
 1. What route you created and where
 2. Rendering strategy chosen and why
 3. Key features implemented

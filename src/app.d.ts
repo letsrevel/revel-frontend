@@ -1,14 +1,12 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
+import type { RevelUserSchema } from '$lib/api';
+
 declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			user?: {
-				id: string;
-				email: string;
-				accessToken?: string;
-			} | null;
+			user?: (RevelUserSchema & { accessToken?: string }) | null;
 		}
 		// interface PageData {}
 		// interface PageState {}

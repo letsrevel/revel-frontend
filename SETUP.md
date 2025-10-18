@@ -11,6 +11,7 @@ You need Node.js 20 or higher. We recommend using **nvm** (Node Version Manager)
 #### Install nvm (if not already installed)
 
 **macOS/Linux:**
+
 ```bash
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
 
@@ -33,6 +34,7 @@ nvm alias default 22
 ```
 
 Verify installation:
+
 ```bash
 node --version  # Should show v22.x.x
 ```
@@ -42,27 +44,32 @@ node --version  # Should show v22.x.x
 pnpm is a fast, disk-space efficient package manager. This project requires pnpm 9+.
 
 #### Option 1: Install via npm (Recommended)
+
 ```bash
 npm install -g pnpm@9
 ```
 
 #### Option 2: Install via standalone script
+
 ```bash
 curl -fsSL https://get.pnpm.io/install.sh | sh -
 ```
 
 #### Option 3: Install via Homebrew (macOS)
+
 ```bash
 brew install pnpm
 ```
 
 #### Option 4: Install via Corepack (Node.js 16.13+)
+
 ```bash
 corepack enable
 corepack prepare pnpm@9 --activate
 ```
 
 Verify installation:
+
 ```bash
 pnpm --version  # Should show 9.x.x
 ```
@@ -93,6 +100,7 @@ The frontend needs the Revel backend running to function properly.
 Follow the setup instructions in the [backend repository](https://github.com/letsrevel/revel-backend).
 
 Quick start:
+
 ```bash
 cd ..
 git clone https://github.com/letsrevel/revel-backend.git
@@ -157,21 +165,25 @@ NODE_ENV=development
 ## Verify Everything Works
 
 ### 1. Check TypeScript compilation
+
 ```bash
 pnpm check
 ```
 
 ### 2. Run linting
+
 ```bash
 pnpm lint
 ```
 
 ### 3. Run tests
+
 ```bash
 pnpm test
 ```
 
 ### 4. Build for production
+
 ```bash
 pnpm build
 ```
@@ -185,6 +197,7 @@ If all commands succeed, you're ready to start developing! 🎉
 ### "pnpm: command not found"
 
 **Solution:**
+
 1. Make sure you installed pnpm globally: `npm install -g pnpm@9`
 2. Restart your terminal
 3. Verify with: `pnpm --version`
@@ -192,6 +205,7 @@ If all commands succeed, you're ready to start developing! 🎉
 ### "Cannot connect to backend"
 
 **Solution:**
+
 1. Make sure the backend is running: `cd ../revel-backend && make run`
 2. Check it's accessible: `curl http://localhost:8000/api/docs`
 3. Update `.env` if backend is on a different port
@@ -199,6 +213,7 @@ If all commands succeed, you're ready to start developing! 🎉
 ### "API client generation fails"
 
 **Solution:**
+
 1. Ensure backend is running and accessible
 2. Check backend OpenAPI is available: `curl http://localhost:8000/api/openapi.json`
 3. Try again: `pnpm generate:api`
@@ -206,6 +221,7 @@ If all commands succeed, you're ready to start developing! 🎉
 ### "TypeScript errors in generated API client"
 
 **Solution:**
+
 1. Delete the generated folder: `rm -rf src/lib/api/generated`
 2. Regenerate: `pnpm generate:api`
 3. If errors persist, check if backend OpenAPI spec is valid
@@ -213,6 +229,7 @@ If all commands succeed, you're ready to start developing! 🎉
 ### "Module not found" errors
 
 **Solution:**
+
 1. Delete `node_modules` and lockfile: `rm -rf node_modules pnpm-lock.yaml`
 2. Reinstall: `pnpm install`
 3. Clear SvelteKit cache: `rm -rf .svelte-kit`
@@ -230,56 +247,63 @@ If all commands succeed, you're ready to start developing! 🎉
 
 ## Useful Commands Reference
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start development server |
-| `pnpm build` | Build for production |
-| `pnpm preview` | Preview production build |
-| `pnpm check` | TypeScript type checking |
-| `pnpm check:watch` | Type checking in watch mode |
-| `pnpm lint` | Run ESLint |
-| `pnpm format` | Format with Prettier |
-| `pnpm test` | Run unit tests |
-| `pnpm test:ui` | Run tests with UI |
-| `pnpm test:e2e` | Run E2E tests |
-| `pnpm generate:api` | Generate API client |
-| `npx shadcn-svelte@latest add [component]` | Add UI component |
+| Command                                    | Description                 |
+| ------------------------------------------ | --------------------------- |
+| `pnpm dev`                                 | Start development server    |
+| `pnpm build`                               | Build for production        |
+| `pnpm preview`                             | Preview production build    |
+| `pnpm check`                               | TypeScript type checking    |
+| `pnpm check:watch`                         | Type checking in watch mode |
+| `pnpm lint`                                | Run ESLint                  |
+| `pnpm format`                              | Format with Prettier        |
+| `pnpm test`                                | Run unit tests              |
+| `pnpm test:ui`                             | Run tests with UI           |
+| `pnpm test:e2e`                            | Run E2E tests               |
+| `pnpm generate:api`                        | Generate API client         |
+| `npx shadcn-svelte@latest add [component]` | Add UI component            |
 
 ---
 
 ## Development Workflow
 
 1. **Pull latest changes:**
+
    ```bash
    git pull origin main
    ```
 
 2. **Create feature branch:**
+
    ```bash
    git checkout -b feature/your-feature
    ```
 
 3. **Install/update dependencies:**
+
    ```bash
    pnpm install
    ```
 
 4. **Update API client (if backend changed):**
+
    ```bash
    pnpm generate:api
    ```
 
 5. **Start development:**
+
    ```bash
    pnpm dev
    ```
 
 6. **Before committing:**
+
    ```bash
    pnpm check && pnpm lint && pnpm format && pnpm test
    ```
 
 7. **Commit and push:**
+
    ```bash
    git add .
    git commit -m "feat: add your feature"

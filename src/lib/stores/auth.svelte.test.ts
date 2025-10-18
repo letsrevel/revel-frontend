@@ -132,9 +132,7 @@ describe('AuthStore', () => {
 				response: {} as Response
 			});
 
-			await expect(authStore.login('test@example.com', 'password')).rejects.toThrow(
-				'2FA_REQUIRED'
-			);
+			await expect(authStore.login('test@example.com', 'password')).rejects.toThrow('2FA_REQUIRED');
 		});
 	});
 

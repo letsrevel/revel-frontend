@@ -8,8 +8,8 @@
 			Welcome to <span class="text-primary">Revel</span>
 		</h1>
 		<p class="mt-6 max-w-2xl text-lg text-muted-foreground">
-			Open-source, community-focused event management and ticketing platform. Discover events, connect
-			with communities, and create unforgettable experiences.
+			Open-source, community-focused event management and ticketing platform. Discover events,
+			connect with communities, and create unforgettable experiences.
 		</p>
 		<div class="mt-10 flex items-center gap-4">
 			<a

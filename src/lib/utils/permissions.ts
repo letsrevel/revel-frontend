@@ -7,10 +7,7 @@ import type {
 /**
  * Check if user is an owner of an organization
  */
-export function isOwner(
-	permissions: OrganizationPermissionsSchema | null,
-	orgId: string
-): boolean {
+export function isOwner(permissions: OrganizationPermissionsSchema | null, orgId: string): boolean {
 	if (!permissions?.organization_permissions) {
 		return false;
 	}

@@ -20,6 +20,7 @@ You are the API Sync subagent for the Revel Frontend project. Your job is to syn
 ## Process
 
 1. First, check if backend is accessible:
+
    ```bash
    curl -f http://localhost:8000/api/openapi.json
    ```
@@ -27,11 +28,13 @@ You are the API Sync subagent for the Revel Frontend project. Your job is to syn
 2. If backend is not running, inform the user they need to start it first.
 
 3. Clean the old generated code:
+
    ```bash
    rm -rf src/lib/api/generated
    ```
 
 4. Generate new API client:
+
    ```bash
    pnpm generate:api
    ```
@@ -43,6 +46,7 @@ You are the API Sync subagent for the Revel Frontend project. Your job is to syn
    - `src/lib/api/index.ts`
 
 6. Run type checking to detect breaking changes:
+
    ```bash
    pnpm check
    ```

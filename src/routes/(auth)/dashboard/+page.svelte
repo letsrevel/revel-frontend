@@ -31,7 +31,8 @@
 	{#if permissions}
 		<div class="mt-6 rounded-lg border bg-muted p-4">
 			<p class="text-sm text-muted-foreground">
-				Debug: You have permissions for {Object.keys(permissions.organization_permissions || {}).length}
+				Debug: You have permissions for {Object.keys(permissions.organization_permissions || {})
+					.length}
 				organizations
 			</p>
 		</div>

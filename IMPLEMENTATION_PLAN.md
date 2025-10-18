@@ -18,10 +18,12 @@ The backend is fully complete with 90+ REST API endpoints. This plan focuses ent
 ## Phase Breakdown
 
 ### Phase 0: Foundation (6 Issues)
+
 **Timeline:** Nov 1-14, 2025 (2 weeks)
 **Milestone:** [Phase 0: Foundation](https://github.com/letsrevel/revel-frontend/milestone/1)
 
 **Core Infrastructure:**
+
 - #1 - Generate TypeScript API client from OpenAPI spec
 - #2 - Implement JWT authentication system with refresh tokens
 - #3 - Create base layouts and navigation components
@@ -35,10 +37,12 @@ The backend is fully complete with 90+ REST API endpoints. This plan focuses ent
 ---
 
 ### Phase 1: Public Features (MVP) (10 Issues)
+
 **Timeline:** Nov 15 - Dec 14, 2025 (4 weeks)
 **Milestone:** [Phase 1: Public Features (MVP)](https://github.com/letsrevel/revel-frontend/milestone/2)
 
 **Key Features:**
+
 - #7 - Landing page with hero and feature highlights
 - #8 - Event discovery and browsing with filters
 - #9 - EventCard - Reusable event display card
@@ -53,6 +57,7 @@ The backend is fully complete with 90+ REST API endpoints. This plan focuses ent
 **Priority:** HIGH - Core user-facing features, SEO critical
 
 **What Users Can Do:**
+
 - Browse and search public events
 - View event details and organization profiles
 - Create account and log in
@@ -61,10 +66,12 @@ The backend is fully complete with 90+ REST API endpoints. This plan focuses ent
 ---
 
 ### Phase 2: Attendee Features (5 Issues)
+
 **Timeline:** Dec 15, 2025 - Jan 14, 2026 (4 weeks)
 **Milestone:** [Phase 2: Attendee Features](https://github.com/letsrevel/revel-frontend/milestone/3)
 
 **Key Features:**
+
 - #14 - User dashboard with events and tickets
 - #15 - Event RSVP system with eligibility checks
 - #16 - Event ticketing and Stripe checkout
@@ -75,6 +82,7 @@ The backend is fully complete with 90+ REST API endpoints. This plan focuses ent
 **Priority:** HIGH - Core attendee experience
 
 **What Users Can Do:**
+
 - View personalized dashboard
 - RSVP to free events
 - Purchase tickets via Stripe
@@ -84,10 +92,12 @@ The backend is fully complete with 90+ REST API endpoints. This plan focuses ent
 ---
 
 ### Phase 3: Organizer Core Features (4 Issues)
+
 **Timeline:** Jan 15 - Feb 14, 2026 (4 weeks)
 **Milestone:** [Phase 3: Organizer Core Features](https://github.com/letsrevel/revel-frontend/milestone/4)
 
 **Key Features:**
+
 - #19 - Organization creation and management
 - #20 - Event creation and editing wizard
 - #21 - Member and staff management
@@ -97,6 +107,7 @@ The backend is fully complete with 90+ REST API endpoints. This plan focuses ent
 **Priority:** HIGH - Core organizer functionality
 
 **What Organizers Can Do:**
+
 - Create and manage organizations
 - Create events with full configuration
 - Manage members and staff with permissions
@@ -105,10 +116,12 @@ The backend is fully complete with 90+ REST API endpoints. This plan focuses ent
 ---
 
 ### Phase 4: Advanced Organizer Features (5 Issues)
+
 **Timeline:** Feb 15 - Mar 14, 2026 (4 weeks)
 **Milestone:** [Phase 4: Advanced Organizer Features](https://github.com/letsrevel/revel-frontend/milestone/5)
 
 **Key Features:**
+
 - #23 - Visual questionnaire builder
 - #24 - Questionnaire submission review and evaluation
 - #25 - Event invitation management
@@ -119,6 +132,7 @@ The backend is fully complete with 90+ REST API endpoints. This plan focuses ent
 **Priority:** MEDIUM - Advanced features for power users
 
 **What Organizers Can Do:**
+
 - Build custom questionnaires
 - Review and approve submissions
 - Send event invitations
@@ -128,10 +142,12 @@ The backend is fully complete with 90+ REST API endpoints. This plan focuses ent
 ---
 
 ### Phase 5: Enhancement & Polish (7 Issues)
+
 **Timeline:** Mar 15 - Apr 14, 2026 (4 weeks)
 **Milestone:** [Phase 5: Enhancement & Polish](https://github.com/letsrevel/revel-frontend/milestone/6)
 
 **Key Features:**
+
 - #27 - Potluck coordination system
 - #28 - E2E test suite with Playwright
 - #29 - Performance optimization (bundle size, load times)
@@ -143,6 +159,7 @@ The backend is fully complete with 90+ REST API endpoints. This plan focuses ent
 **Priority:** MEDIUM-HIGH - Quality, testing, and polish
 
 **Deliverables:**
+
 - Potluck feature for community events
 - Complete E2E test coverage
 - Optimized performance (Lighthouse > 90)
@@ -154,15 +171,15 @@ The backend is fully complete with 90+ REST API endpoints. This plan focuses ent
 
 ## Total Effort Estimation
 
-| Phase | Issues | Estimated Hours | Complexity |
-|-------|--------|----------------|------------|
-| Phase 0: Foundation | 6 | 46-56 | High |
-| Phase 1: Public Features | 10 | 110-130 | Medium-High |
-| Phase 2: Attendee Features | 5 | 90-106 | Medium-High |
-| Phase 3: Organizer Core | 4 | 82-98 | High |
-| Phase 4: Advanced Organizer | 5 | 90-106 | High |
-| Phase 5: Enhancement | 7 | 100-118 | Medium |
-| **TOTAL** | **35** | **518-614 hours** | **~13-16 weeks** |
+| Phase                       | Issues | Estimated Hours   | Complexity       |
+| --------------------------- | ------ | ----------------- | ---------------- |
+| Phase 0: Foundation         | 6      | 46-56             | High             |
+| Phase 1: Public Features    | 10     | 110-130           | Medium-High      |
+| Phase 2: Attendee Features  | 5      | 90-106            | Medium-High      |
+| Phase 3: Organizer Core     | 4      | 82-98             | High             |
+| Phase 4: Advanced Organizer | 5      | 90-106            | High             |
+| Phase 5: Enhancement        | 7      | 100-118           | Medium           |
+| **TOTAL**                   | **35** | **518-614 hours** | **~13-16 weeks** |
 
 **With buffer (20%):** 622-737 hours (~15-18 weeks)
 
@@ -173,11 +190,13 @@ The backend is fully complete with 90+ REST API endpoints. This plan focuses ent
 The following dependencies must be completed in order:
 
 ### Must Complete First:
+
 1. **#1 - API Client Generation** → Blocks everything
 2. **#2 - Authentication System** → Blocks all authenticated features
 3. **#3 - Base Layouts** → Blocks all UI work
 
 ### Key Milestone Dependencies:
+
 - Phase 1 depends on: Phase 0 complete
 - Phase 2 depends on: #10 (Event detail), #2 (Auth)
 - Phase 3 depends on: #2 (Auth), #19 (Org management)
@@ -191,36 +210,42 @@ The following dependencies must be completed in order:
 ### Week-by-Week Approach:
 
 **Weeks 1-2 (Phase 0):**
+
 - Set up API client generation
 - Implement authentication
 - Build base layouts
 - Create utility library
 
 **Weeks 3-6 (Phase 1):**
+
 - Build landing page
 - Event discovery & browsing
 - Event detail pages
 - User registration/login
 
 **Weeks 7-10 (Phase 2):**
+
 - User dashboard
 - RSVP system
 - Ticketing with Stripe
 - Questionnaire submission
 
 **Weeks 11-14 (Phase 3):**
+
 - Organization management
 - Event creation wizard
 - Member management
 - Check-in system
 
 **Weeks 15-18 (Phase 4):**
+
 - Questionnaire builder
 - Submission review
 - Invitations
 - Analytics
 
 **Weeks 19-22 (Phase 5):**
+
 - Final features
 - Testing & QA
 - Performance tuning
@@ -231,27 +256,32 @@ The following dependencies must be completed in order:
 ## Technology Stack Recap
 
 **Core:**
+
 - SvelteKit (meta-framework)
 - Svelte 5 with Runes (UI framework)
 - TypeScript (strict mode)
 - Vite (build tool)
 
 **State & Data:**
+
 - TanStack Query (server state)
 - Svelte Stores (global state)
 - Superforms + Zod (forms)
 
 **UI & Styling:**
+
 - Tailwind CSS
 - shadcn-svelte
 - Lucide Icons
 
 **API & Auth:**
+
 - Auto-generated client from OpenAPI
 - JWT tokens (access + refresh)
 - Stripe for payments
 
 **Testing & Quality:**
+
 - Vitest (unit tests)
 - Playwright (E2E tests)
 - @testing-library/svelte
@@ -262,6 +292,7 @@ The following dependencies must be completed in order:
 ## Key Principles
 
 ### 1. Accessibility First (WCAG 2.1 AA)
+
 - Every feature must be keyboard accessible
 - Screen reader compatible
 - Proper ARIA labels
@@ -269,24 +300,28 @@ The following dependencies must be completed in order:
 - See #30 for comprehensive audit
 
 ### 2. Mobile-First Design
+
 - Design for mobile, enhance for desktop
 - Touch-friendly interactions
 - Responsive layouts
 - Optimized for 3G networks
 
 ### 3. Performance
+
 - Initial JS bundle < 100KB
 - Lighthouse score > 90
 - Core Web Vitals optimized
 - See #29 for optimization tasks
 
 ### 4. Type Safety
+
 - 100% TypeScript coverage
 - Strict mode enabled
 - Auto-generated API types
 - Zod for runtime validation
 
 ### 5. Testing
+
 - Unit tests for utilities
 - Component tests for UI
 - E2E tests for flows
@@ -298,23 +333,26 @@ The following dependencies must be completed in order:
 ## Risk Assessment
 
 ### High Risk Items:
+
 1. **API Client Generation (#1)** - If this fails, everything blocks
-   - *Mitigation:* Test early with backend team, have fallback plan
+   - _Mitigation:_ Test early with backend team, have fallback plan
 
 2. **Stripe Integration (#16)** - Payment processing is critical
-   - *Mitigation:* Use Stripe test mode, thorough error handling
+   - _Mitigation:_ Use Stripe test mode, thorough error handling
 
 3. **Questionnaire Builder (#23)** - Complex drag-and-drop UI
-   - *Mitigation:* Break into smaller tasks, consider simpler MVP
+   - _Mitigation:_ Break into smaller tasks, consider simpler MVP
 
 ### Medium Risk Items:
+
 1. **QR Code Scanning (#22)** - Requires camera access
-   - *Mitigation:* Manual entry fallback, test across devices
+   - _Mitigation:_ Manual entry fallback, test across devices
 
 2. **Real-time Features** - Potluck, check-in updates
-   - *Mitigation:* Polling fallback, optimize refetch intervals
+   - _Mitigation:_ Polling fallback, optimize refetch intervals
 
 ### Low Risk Items:
+
 - Most CRUD operations
 - Static pages and layouts
 - Documentation
@@ -324,35 +362,41 @@ The following dependencies must be completed in order:
 ## Success Metrics
 
 ### Phase 0 Success:
+
 - ✅ API client generates all 90+ endpoints
 - ✅ Authentication flow works (login, logout, refresh)
 - ✅ Base layouts render correctly
 - ✅ All utility tests pass
 
 ### Phase 1 Success (MVP):
+
 - ✅ Users can browse and search events
 - ✅ Users can register and log in
 - ✅ Event detail pages are SEO optimized
 - ✅ Lighthouse score > 85
 
 ### Phase 2 Success:
+
 - ✅ Users can RSVP to events
 - ✅ Users can purchase tickets
 - ✅ Stripe integration works in production
 - ✅ Questionnaire submission works
 
 ### Phase 3 Success:
+
 - ✅ Organizers can create organizations
 - ✅ Organizers can create events
 - ✅ QR check-in works on mobile devices
 - ✅ Permission system enforced
 
 ### Phase 4 Success:
+
 - ✅ Questionnaire builder is usable
 - ✅ Organizers can review submissions
 - ✅ Analytics provide useful insights
 
 ### Phase 5 Success:
+
 - ✅ E2E test suite covers critical paths
 - ✅ Lighthouse score > 90 all categories
 - ✅ WCAG 2.1 AA compliance verified
@@ -391,6 +435,7 @@ The following dependencies must be completed in order:
 ## Issue Labels Reference
 
 **Type Labels:**
+
 - `infrastructure` - Core setup and tooling
 - `component` - UI component work
 - `user-story` - User-facing feature
@@ -399,6 +444,7 @@ The following dependencies must be completed in order:
 - `enhancement` - Improvement to existing feature
 
 **Area Labels:**
+
 - `area:api` - API client
 - `area:components` - Component library
 - `area:routing` - Routes and navigation
@@ -406,6 +452,7 @@ The following dependencies must be completed in order:
 - `area:auth` - Authentication
 
 **Priority Labels:**
+
 - `priority:critical` - Must be done ASAP
 - `priority:high` - Important
 - `priority:medium` - Normal
@@ -416,17 +463,20 @@ The following dependencies must be completed in order:
 ## Resources
 
 ### GitHub:
+
 - **All Issues:** https://github.com/letsrevel/revel-frontend/issues
 - **Milestones:** https://github.com/letsrevel/revel-frontend/milestones
 - **Project Board:** (Create one to track progress)
 
 ### Documentation:
+
 - **Backend API:** `/backend_context/openapi.json`
 - **User Journey:** `/backend_context/USER_JOURNEY.md`
 - **Contributing:** `CONTRIBUTING.md`
 - **Claude Guide:** `CLAUDE.md`
 
 ### External:
+
 - **SvelteKit Docs:** https://kit.svelte.dev
 - **Svelte 5 Docs:** https://svelte-5-preview.vercel.app
 - **TanStack Query:** https://tanstack.com/query
@@ -452,6 +502,7 @@ For specific tasks, leverage the specialized Claude Code subagents:
 This implementation plan provides a clear roadmap for building the Revel Frontend from scratch. With 35 well-defined issues organized across 6 phases, the project has a solid foundation for success.
 
 **Key Takeaways:**
+
 - ✅ Comprehensive coverage of all features
 - ✅ Clear dependencies and critical path
 - ✅ Realistic time estimates (518-614 hours base)
@@ -459,6 +510,7 @@ This implementation plan provides a clear roadmap for building the Revel Fronten
 - ✅ Risk mitigation strategies in place
 
 **Recommended Approach:**
+
 1. Start with Phase 0 (Foundation) - no shortcuts
 2. Move methodically through phases
 3. Don't skip testing or accessibility

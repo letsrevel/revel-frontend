@@ -29,6 +29,7 @@ This project has Context7 MCP installed, which provides real-time access to up-t
 ### How to Use Context7
 
 1. **Basic usage:** Add "use context7" to your question when you need documentation
+
    ```
    "How do I implement form validation with Zod in SvelteKit? use context7"
    "Set up TanStack Query with Svelte 5 runes. use context7"
@@ -50,6 +51,7 @@ This project has Context7 MCP installed, which provides real-time access to up-t
 ### Key Libraries in This Project
 
 Common Context7 library IDs for this project:
+
 - `/sveltejs/kit` - SvelteKit documentation
 - `/sveltejs/svelte` - Svelte 5 documentation
 - `/tanstack/query` - TanStack Query for Svelte
@@ -57,6 +59,7 @@ Common Context7 library IDs for this project:
 - `/colinhacks/zod` - Zod validation library
 
 Context7 eliminates:
+
 - Hallucinated APIs that don't exist
 - Outdated code patterns from older versions
 - Generic answers not applicable to our specific stack
@@ -70,12 +73,14 @@ This project includes specialized Claude Code subagents for common development t
 ### Available Subagents
 
 **🔄 api-sync** - Synchronize API client with backend
+
 - Regenerate TypeScript client from OpenAPI spec
 - Handle breaking changes
 - Verify type safety
 - Use when: Backend API changes, new endpoints added
 
 **🧩 component-creator** - Create Svelte 5 components
+
 - Generate components with Runes syntax
 - Implement accessibility (WCAG 2.1 AA)
 - Apply mobile-first design
@@ -83,6 +88,7 @@ This project includes specialized Claude Code subagents for common development t
 - Use when: Building new UI components
 
 **🛣️ route-creator** - Create SvelteKit routes
+
 - Set up SSR/CSR/Hybrid rendering
 - Configure load functions
 - Add SEO metadata
@@ -90,6 +96,7 @@ This project includes specialized Claude Code subagents for common development t
 - Use when: Adding new pages or API endpoints
 
 **✅ testing-helper** - Write comprehensive tests
+
 - Create unit tests (Vitest)
 - Write component tests (@testing-library/svelte)
 - Build E2E tests (Playwright)
@@ -97,6 +104,7 @@ This project includes specialized Claude Code subagents for common development t
 - Use when: Testing features, ensuring coverage
 
 **♿ accessibility-checker** - Audit WCAG compliance
+
 - Check WCAG 2.1 AA requirements
 - Test keyboard navigation
 - Verify ARIA usage
@@ -104,6 +112,7 @@ This project includes specialized Claude Code subagents for common development t
 - Use when: Before merging, during code review
 
 **📋 project-manager** - Plan features and manage issues
+
 - Create technical designs
 - Break down tasks
 - Generate GitHub issues
@@ -113,6 +122,7 @@ This project includes specialized Claude Code subagents for common development t
 ### How to Use Subagents
 
 **Explicit invocation (recommended):**
+
 ```
 "Use the component-creator subagent to create an EventCard component"
 "Use the api-sync subagent to update the API client"
@@ -120,6 +130,7 @@ This project includes specialized Claude Code subagents for common development t
 ```
 
 **Automatic delegation:**
+
 ```
 "Create an EventCard component"
 # Claude Code may automatically invoke component-creator
@@ -129,6 +140,7 @@ This project includes specialized Claude Code subagents for common development t
 ```
 
 **Chaining subagents for complex features:**
+
 ```
 1. "Use project-manager to plan the RSVP feature"
    → Creates issues and technical design
@@ -153,34 +165,139 @@ This project includes specialized Claude Code subagents for common development t
 
 ### When to Use Which Subagent
 
-| Task | Subagent | Invocation |
-|------|----------|------------|
-| Backend API changed | api-sync | "Use api-sync subagent" |
-| New component needed | component-creator | "Use component-creator subagent" |
-| New page/route needed | route-creator | "Use route-creator subagent" |
-| Write tests | testing-helper | "Use testing-helper subagent" |
-| Check accessibility | accessibility-checker | "Use accessibility-checker subagent" |
-| Plan feature | project-manager | "Use project-manager subagent" |
+| Task                  | Subagent              | Invocation                           |
+| --------------------- | --------------------- | ------------------------------------ |
+| Backend API changed   | api-sync              | "Use api-sync subagent"              |
+| New component needed  | component-creator     | "Use component-creator subagent"     |
+| New page/route needed | route-creator         | "Use route-creator subagent"         |
+| Write tests           | testing-helper        | "Use testing-helper subagent"        |
+| Check accessibility   | accessibility-checker | "Use accessibility-checker subagent" |
+| Plan feature          | project-manager       | "Use project-manager subagent"       |
 
 **See `.claude/agents/README.md` for detailed subagent documentation.**
+
+## Git Workflow
+
+**CRITICAL:** Always use feature branches and Pull Requests. **NEVER commit directly to `main`**.
+
+### Standard Workflow
+
+1. **Create a feature branch** before starting work:
+
+   ```bash
+   git checkout -b feature/issue-number-description
+   # or
+   git checkout -b fix/issue-number-description
+   ```
+
+2. **Do all the work** on the feature branch
+   - Make commits as you progress
+   - Keep commits focused and atomic
+   - Use conventional commit messages (see below)
+
+3. **Commit changes** to the feature branch
+   - **ALWAYS ask user for confirmation before committing**
+   - Show what will be committed with `git status`
+   - Draft the commit message for user review
+
+4. **Push the branch**:
+
+   ```bash
+   git push -u origin feature/issue-number-description
+   ```
+
+5. **Create a Pull Request**:
+
+   ```bash
+   gh pr create --title "Title" --body "Description"
+   ```
+
+6. **Wait for review** before merging to main
+
+### Benefits of This Workflow
+
+- Code review opportunities
+- CI/CD checks before merging
+- Clean git history
+- Easy rollback capabilities
+- Track what went into each PR
+
+### Branch Naming Convention
+
+- `feature/issue-number-description` - New features (e.g., `feature/3-base-layouts`)
+- `fix/issue-number-description` - Bug fixes (e.g., `fix/42-mobile-nav-scroll`)
+- `refactor/description` - Code refactoring
+- `docs/description` - Documentation updates
+- `test/description` - Test additions/updates
+- `chore/description` - Maintenance tasks
+
+### Commit Message Format
+
+Follow conventional commits:
+
+- `feat:` or `feat(scope):` - New feature
+- `fix:` or `fix(scope):` - Bug fix
+- `docs:` - Documentation changes
+- `style:` - Code style changes (formatting, etc.)
+- `refactor:` - Code refactoring
+- `test:` - Adding or updating tests
+- `chore:` - Maintenance tasks
+
+Always end commits with:
+
+```
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+### IMPORTANT: Always Ask Before Committing
+
+**Never commit without explicit user approval.** Always:
+
+1. Show `git status` with files to be committed
+2. Draft the commit message
+3. Ask: "Ready to commit these changes?"
+4. Wait for user confirmation
+5. Only then execute the commit
 
 ## Development Commands
 
 This project uses npm/pnpm scripts for development tasks:
 
 ### Primary Development Commands
-- `pnpm dev` - Start development server with hot reload
+
+- `pnpm dev` - Start development server with hot reload (accessible on local network via 0.0.0.0)
 - `pnpm build` - Build production-ready application
 - `pnpm preview` - Preview production build locally
 - `pnpm generate:api` - Generate TypeScript API client from backend OpenAPI spec
 
+#### Mobile Testing
+
+The dev server is configured to listen on `0.0.0.0` (all network interfaces) for mobile testing:
+
+```bash
+pnpm dev
+# Server runs on: http://localhost:5173
+# Network access: http://YOUR_LOCAL_IP:5173
+```
+
+To find your local IP:
+
+- **macOS/Linux**: `ifconfig | grep "inet " | grep -v 127.0.0.1`
+- **Windows**: `ipconfig`
+
+Look for your local network IP (usually `192.168.x.x` or `10.0.x.x`). Access from phone/tablet on same WiFi network.
+
 ### Code Quality
+
 - `pnpm check` - Run SvelteKit type checking and validation
 - `pnpm check:watch` - Run type checking in watch mode
 - `pnpm lint` - Lint code with ESLint
 - `pnpm format` - Format code with Prettier
 
 ### Testing
+
 - `pnpm test` - Run unit tests with Vitest
 - `pnpm test:ui` - Run tests with interactive UI
 - `pnpm test:e2e` - Run end-to-end tests with Playwright
@@ -193,26 +310,31 @@ Revel Frontend is a SvelteKit application built with Svelte 5, using a hybrid SS
 ### Technology Stack
 
 **Core:**
+
 - **SvelteKit** - Meta-framework for building web applications
 - **Svelte 5** - Reactive UI framework with Runes system
 - **TypeScript** - Type-safe JavaScript (strict mode enabled)
 - **Vite** - Build tool and dev server
 
 **State Management:**
+
 - **Svelte Runes** - `$state`, `$derived`, `$effect` for local component state
 - **Svelte Stores** - For global application state
 - **TanStack Query** - Server state management and caching
 
 **UI & Styling:**
+
 - **Tailwind CSS** - Utility-first CSS framework
 - **shadcn-svelte** - Accessible component library built on Radix UI
 - **Lucide Icons** - Icon library
 
 **API Integration:**
+
 - **Auto-generated client** - TypeScript types and API client from backend OpenAPI spec
 - **Zod** - Runtime validation and schema definition
 
 **Forms:**
+
 - **Superforms** - Type-safe form handling for SvelteKit
 - **Zod** - Form validation schemas
 
@@ -235,6 +357,7 @@ export const ssr = false; // Disable SSR for real-time features
 ```
 
 **Rendering Guidelines:**
+
 - **Use SSR** for public event listings, event details, organization profiles (SEO critical)
 - **Use Hybrid** for authenticated dashboards (fast initial load + SPA navigation)
 - **Disable SSR** only for highly interactive features like QR scanning, real-time updates
@@ -242,6 +365,7 @@ export const ssr = false; // Disable SSR for real-time features
 ### Key Architectural Patterns
 
 #### File-Based Routing
+
 SvelteKit uses file-based routing with route groups:
 
 ```
@@ -258,32 +382,36 @@ routes/
 ```
 
 #### Server-Side Logic
+
 Use `+page.server.ts` for server-only code:
+
 - Database queries
 - API calls with secrets
 - Authentication checks
 - Form actions
 
 #### Load Functions
+
 Use `+page.ts` or `+page.server.ts` load functions for data fetching:
 
 ```typescript
 // +page.server.ts (server-only, secure)
 export const load = async ({ locals, params }) => {
-  // Access to secrets, database, etc.
-  const events = await api.getEvents(locals.user.token);
-  return { events };
+	// Access to secrets, database, etc.
+	const events = await api.getEvents(locals.user.token);
+	return { events };
 };
 
 // +page.ts (runs on both server and client)
 export const load = async ({ fetch, params }) => {
-  // Runs on server for initial load, client for navigation
-  const response = await fetch(`/api/events/${params.id}`);
-  return { event: await response.json() };
+	// Runs on server for initial load, client for navigation
+	const response = await fetch(`/api/events/${params.id}`);
+	return { event: await response.json() };
 };
 ```
 
 #### Component Organization
+
 ```
 lib/components/
 ├── ui/                  # shadcn-svelte components (generic)
@@ -296,6 +424,7 @@ lib/components/
 ### Code Quality Standards
 
 #### TypeScript
+
 - **Strict mode enabled** - All code must pass `tsc --strict`
 - **Explicit types** - Avoid `any`, use `unknown` when necessary
 - **Type all function parameters and return values**
@@ -307,21 +436,22 @@ lib/components/
 
 ```svelte
 <script lang="ts">
-  // ✅ CORRECT: Use Runes
-  let count = $state(0);
-  let doubled = $derived(count * 2);
+	// ✅ CORRECT: Use Runes
+	let count = $state(0);
+	let doubled = $derived(count * 2);
 
-  $effect(() => {
-    console.log(`Count is ${count}`);
-  });
+	$effect(() => {
+		console.log(`Count is ${count}`);
+	});
 
-  // ❌ WRONG: Don't use legacy syntax
-  let count = 0; // Won't be reactive!
-  $: doubled = count * 2; // Old syntax
+	// ❌ WRONG: Don't use legacy syntax
+	let count = 0; // Won't be reactive!
+	$: doubled = count * 2; // Old syntax
 </script>
 ```
 
 **Key Runes:**
+
 - `$state(value)` - Reactive state
 - `$derived(expression)` - Computed values
 - `$effect(() => {})` - Side effects
@@ -331,51 +461,50 @@ lib/components/
 #### Component Style Guide
 
 **Component Structure:**
+
 ```svelte
 <script lang="ts">
-  // 1. Imports
-  import { type ComponentType } from 'svelte';
-  import { Button } from '$lib/components/ui/button';
+	// 1. Imports
+	import { type ComponentType } from 'svelte';
+	import { Button } from '$lib/components/ui/button';
 
-  // 2. Props
-  interface Props {
-    title: string;
-    onSubmit?: () => void;
-  }
-  let { title, onSubmit }: Props = $props();
+	// 2. Props
+	interface Props {
+		title: string;
+		onSubmit?: () => void;
+	}
+	let { title, onSubmit }: Props = $props();
 
-  // 3. State
-  let isLoading = $state(false);
+	// 3. State
+	let isLoading = $state(false);
 
-  // 4. Derived state
-  let canSubmit = $derived(!isLoading && title.length > 0);
+	// 4. Derived state
+	let canSubmit = $derived(!isLoading && title.length > 0);
 
-  // 5. Functions
-  async function handleSubmit() {
-    isLoading = true;
-    await onSubmit?.();
-    isLoading = false;
-  }
+	// 5. Functions
+	async function handleSubmit() {
+		isLoading = true;
+		await onSubmit?.();
+		isLoading = false;
+	}
 
-  // 6. Effects
-  $effect(() => {
-    console.log('Title changed:', title);
-  });
+	// 6. Effects
+	$effect(() => {
+		console.log('Title changed:', title);
+	});
 </script>
 
 <!-- 7. Template -->
 <div>
-  <h1>{title}</h1>
-  <Button onclick={handleSubmit} disabled={!canSubmit}>
-    Submit
-  </Button>
+	<h1>{title}</h1>
+	<Button onclick={handleSubmit} disabled={!canSubmit}>Submit</Button>
 </div>
 
 <!-- 8. Styles (scoped) -->
 <style>
-  div {
-    /* Component-specific styles */
-  }
+	div {
+		/* Component-specific styles */
+	}
 </style>
 ```
 
@@ -393,17 +522,13 @@ lib/components/
 
 ```svelte
 <!-- ✅ GOOD: Accessible button -->
-<button
-  type="button"
-  aria-label="Close dialog"
-  onclick={close}
->
-  <XIcon aria-hidden="true" />
+<button type="button" aria-label="Close dialog" onclick={close}>
+	<XIcon aria-hidden="true" />
 </button>
 
 <!-- ❌ BAD: Not accessible -->
 <div onclick={close}>
-  <XIcon />
+	<XIcon />
 </div>
 ```
 
@@ -420,18 +545,18 @@ lib/components/
 
 /* ✅ CORRECT: Custom CSS mobile-first */
 .container {
-  /* Base styles for mobile */
-  padding: 1rem;
+	/* Base styles for mobile */
+	padding: 1rem;
 
-  /* Tablet */
-  @media (min-width: 768px) {
-    padding: 2rem;
-  }
+	/* Tablet */
+	@media (min-width: 768px) {
+		padding: 2rem;
+	}
 
-  /* Desktop */
-  @media (min-width: 1024px) {
-    padding: 3rem;
-  }
+	/* Desktop */
+	@media (min-width: 1024px) {
+		padding: 3rem;
+	}
 }
 ```
 
@@ -442,19 +567,21 @@ lib/components/
 The API client is **100% auto-generated** from the backend's OpenAPI specification.
 
 **Regenerate the client:**
+
 ```bash
 pnpm generate:api
 ```
 
 **Using the API client:**
+
 ```typescript
 import { api } from '$lib/api';
 import { useQuery } from '@tanstack/svelte-query';
 
 // In a Svelte component
 let eventsQuery = useQuery({
-  queryKey: ['events'],
-  queryFn: () => api.events.listEvents({ limit: 20 })
+	queryKey: ['events'],
+	queryFn: () => api.events.listEvents({ limit: 20 })
 });
 
 // Typed response!
@@ -471,51 +598,54 @@ import { api } from '$lib/api';
 import { error } from '@sveltejs/kit';
 
 export const load = async ({ locals, params }) => {
-  const user = locals.user;
-  if (!user) throw error(401, 'Unauthorized');
+	const user = locals.user;
+	if (!user) throw error(401, 'Unauthorized');
 
-  try {
-    const organization = await api.organizations.getOrganization({
-      slug: params.slug,
-      headers: { Authorization: `Bearer ${user.accessToken}` }
-    });
+	try {
+		const organization = await api.organizations.getOrganization({
+			slug: params.slug,
+			headers: { Authorization: `Bearer ${user.accessToken}` }
+		});
 
-    return { organization };
-  } catch (err) {
-    throw error(404, 'Organization not found');
-  }
+		return { organization };
+	} catch (err) {
+		throw error(404, 'Organization not found');
+	}
 };
 ```
 
 ### Authentication Pattern
 
 **Token Storage:**
+
 - **Access token:** In-memory (never localStorage!)
 - **Refresh token:** httpOnly cookie (set by server)
 
 **Implementation:**
+
 ```typescript
 // hooks.server.ts
 export const handle = async ({ event, resolve }) => {
-  const accessToken = event.cookies.get('access_token');
+	const accessToken = event.cookies.get('access_token');
 
-  if (accessToken) {
-    try {
-      const user = await verifyToken(accessToken);
-      event.locals.user = user;
-    } catch {
-      // Token expired or invalid
-      event.cookies.delete('access_token', { path: '/' });
-    }
-  }
+	if (accessToken) {
+		try {
+			const user = await verifyToken(accessToken);
+			event.locals.user = user;
+		} catch {
+			// Token expired or invalid
+			event.cookies.delete('access_token', { path: '/' });
+		}
+	}
 
-  return resolve(event);
+	return resolve(event);
 };
 ```
 
 ### Testing Guidelines
 
 #### Unit Tests (Vitest)
+
 - Test utility functions, stores, and business logic
 - Mock API calls and external dependencies
 - Aim for high coverage on critical paths
@@ -525,14 +655,15 @@ import { describe, it, expect } from 'vitest';
 import { formatEventDate } from '$lib/utils/dates';
 
 describe('formatEventDate', () => {
-  it('formats ISO date to readable string', () => {
-    const result = formatEventDate('2025-10-17T10:00:00Z');
-    expect(result).toBe('October 17, 2025 at 10:00 AM');
-  });
+	it('formats ISO date to readable string', () => {
+		const result = formatEventDate('2025-10-17T10:00:00Z');
+		expect(result).toBe('October 17, 2025 at 10:00 AM');
+	});
 });
 ```
 
 #### Component Tests (@testing-library/svelte)
+
 - Test user interactions and component behavior
 - Use `userEvent` for simulating user actions
 - Query by accessible attributes (role, label)
@@ -543,19 +674,24 @@ import { userEvent } from '@testing-library/user-event';
 import Button from './Button.svelte';
 
 it('calls onclick when clicked', async () => {
-  const user = userEvent.setup();
-  let clicked = false;
+	const user = userEvent.setup();
+	let clicked = false;
 
-  render(Button, {
-    props: { onclick: () => { clicked = true; } }
-  });
+	render(Button, {
+		props: {
+			onclick: () => {
+				clicked = true;
+			}
+		}
+	});
 
-  await user.click(screen.getByRole('button'));
-  expect(clicked).toBe(true);
+	await user.click(screen.getByRole('button'));
+	expect(clicked).toBe(true);
 });
 ```
 
 #### E2E Tests (Playwright)
+
 - Test critical user journeys
 - Test on multiple browsers (Chromium, Firefox, WebKit)
 - Use Page Object Model pattern
@@ -564,20 +700,22 @@ it('calls onclick when clicked', async () => {
 import { test, expect } from '@playwright/test';
 
 test('user can RSVP to event', async ({ page }) => {
-  await page.goto('/events/test-event');
-  await page.getByRole('button', { name: 'RSVP' }).click();
-  await expect(page.getByText('RSVP confirmed')).toBeVisible();
+	await page.goto('/events/test-event');
+	await page.getByRole('button', { name: 'RSVP' }).click();
+	await expect(page.getByText('RSVP confirmed')).toBeVisible();
 });
 ```
 
 ### Development Workflow
 
 #### Before Starting Work
+
 1. Pull latest changes from `main`
 2. Create a feature branch: `git checkout -b feature/your-feature`
 3. Ensure backend is running and API client is up to date: `pnpm generate:api`
 
 #### During Development
+
 1. **Use the Svelte MCP** for documentation when working with Svelte 5 features
 2. Write tests alongside code (TDD encouraged)
 3. Run `pnpm check` frequently to catch type errors
@@ -586,12 +724,14 @@ test('user can RSVP to event', async ({ page }) => {
 6. Check accessibility with browser DevTools and keyboard navigation
 
 #### Before Committing
+
 1. Run all checks: `pnpm check && pnpm lint && pnpm test`
 2. Format code: `pnpm format`
 3. Test accessibility manually (keyboard navigation, screen reader)
 4. Commit with conventional commit messages: `feat: add event RSVP flow`
 
 #### Pull Request Guidelines
+
 1. Write clear PR description explaining changes
 2. Link to related issues
 3. Include screenshots/videos for UI changes
@@ -603,6 +743,7 @@ test('user can RSVP to event', async ({ page }) => {
 When working on issues or new features, follow this collaborative workflow:
 
 #### 1. Investigation & Analysis Phase
+
 - Read the issue description thoroughly
 - **Consider using the project-manager subagent** for complex feature planning
 - Use the Svelte MCP to check relevant documentation
@@ -611,6 +752,7 @@ When working on issues or new features, follow this collaborative workflow:
 - Map out dependencies
 
 #### 2. Discussion Phase (Required for Non-Trivial Changes)
+
 - Present findings to the user
 - Propose approaches with pros/cons
 - Discuss implementation details, accessibility, and mobile UX
@@ -624,6 +766,7 @@ When working on issues or new features, follow this collaborative workflow:
 - Get explicit approval before proceeding
 
 #### 3. Implementation Phase
+
 - Use TodoWrite to track progress
 - **Use appropriate subagents** for specialized tasks (component-creator, route-creator, etc.)
 - Follow the agreed-upon plan
@@ -633,6 +776,7 @@ When working on issues or new features, follow this collaborative workflow:
 - Raise concerns immediately if issues are discovered
 
 #### 4. Key Principles
+
 - **No surprises:** Discuss before implementing, especially for architectural decisions
 - **Accessibility first:** Every feature must be accessible
 - **Mobile-first:** Design for mobile, enhance for desktop

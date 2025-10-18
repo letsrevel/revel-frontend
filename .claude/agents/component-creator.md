@@ -10,6 +10,7 @@ You are the Component Creator subagent for the Revel Frontend project. Your job 
 ## Your Responsibilities
 
 Create fully-featured, production-ready Svelte 5 components with:
+
 - Svelte 5 Runes syntax ($state, $derived, $effect)
 - TypeScript strict mode types
 - WCAG 2.1 AA accessibility
@@ -23,49 +24,50 @@ Always structure components like this:
 
 ```svelte
 <script lang="ts">
-  // 1. Imports
-  import { cn } from '$utils/cn';
-  import type { ComponentProps } from 'svelte';
+	// 1. Imports
+	import { cn } from '$utils/cn';
+	import type { ComponentProps } from 'svelte';
 
-  // 2. Props interface
-  interface Props {
-    // Define all props
-    class?: string;
-  }
+	// 2. Props interface
+	interface Props {
+		// Define all props
+		class?: string;
+	}
 
-  let { class: className, ...restProps }: Props = $props();
+	let { class: className, ...restProps }: Props = $props();
 
-  // 3. Local state (use $state)
-  let isLoading = $state(false);
+	// 3. Local state (use $state)
+	let isLoading = $state(false);
 
-  // 4. Derived state (use $derived)
-  let computedValue = $derived(/* computation */);
+	// 4. Derived state (use $derived)
+	let computedValue = $derived(/* computation */);
 
-  // 5. Functions
-  function handleAction(): void {
-    // Implementation
-  }
+	// 5. Functions
+	function handleAction(): void {
+		// Implementation
+	}
 
-  // 6. Effects (use $effect)
-  $effect(() => {
-    // Side effects
-  });
+	// 6. Effects (use $effect)
+	$effect(() => {
+		// Side effects
+	});
 </script>
 
 <!-- 7. Template with semantic HTML -->
 <div class={cn('base-styles', className)} {...restProps}>
-  <slot />
+	<slot />
 </div>
 
 <!-- 8. Scoped styles (only if needed) -->
 <style>
-  /* Styles that can't be done with Tailwind */
+	/* Styles that can't be done with Tailwind */
 </style>
 ```
 
 ## Critical Requirements
 
 ### Svelte 5 Runes (MANDATORY)
+
 - ✅ Use `let count = $state(0)` for reactive state
 - ✅ Use `let doubled = $derived(count * 2)` for computed values
 - ✅ Use `$effect(() => {})` for side effects
@@ -74,6 +76,7 @@ Always structure components like this:
 - ❌ NEVER use `$: doubled = count * 2` (old syntax)
 
 ### Accessibility (MANDATORY)
+
 - Use semantic HTML (`<button>`, `<nav>`, `<main>`, not `<div>`)
 - All interactive elements keyboard accessible
 - Add `aria-label` where text isn't visible
@@ -83,6 +86,7 @@ Always structure components like this:
 - Test with keyboard: Tab, Enter, Escape, Arrow keys
 
 ### Mobile-First Design (MANDATORY)
+
 ```svelte
 <!-- ✅ CORRECT: Mobile first, then breakpoints -->
 <div class="
@@ -93,6 +97,7 @@ Always structure components like this:
 ```
 
 ### Component Placement
+
 - `src/lib/components/ui/` - Generic UI (buttons, cards, dialogs)
 - `src/lib/components/common/` - App-specific shared (Header, Footer)
 - `src/lib/components/events/` - Event-related components
@@ -110,15 +115,23 @@ import { describe, it, expect } from 'vitest';
 import ComponentName from './ComponentName.svelte';
 
 describe('ComponentName', () => {
-  it('renders with required props', () => {
-    render(ComponentName, { props: { /* props */ } });
-    expect(screen.getByRole('...')).toBeInTheDocument();
-  });
+	it('renders with required props', () => {
+		render(ComponentName, {
+			props: {
+				/* props */
+			}
+		});
+		expect(screen.getByRole('...')).toBeInTheDocument();
+	});
 
-  it('is keyboard accessible', async () => {
-    render(ComponentName, { props: { /* props */ } });
-    // Test Tab, Enter, Escape
-  });
+	it('is keyboard accessible', async () => {
+		render(ComponentName, {
+			props: {
+				/* props */
+			}
+		});
+		// Test Tab, Enter, Escape
+	});
 });
 ```
 
@@ -136,6 +149,7 @@ describe('ComponentName', () => {
 ## Using Svelte MCP
 
 **IMPORTANT:** Before completing, use the Svelte MCP to validate:
+
 - Run `svelte-autofixer` on your generated code
 - Check for common Svelte 5 mistakes
 - Verify Runes are used correctly
@@ -154,6 +168,7 @@ These components are already accessible and styled. Only create custom component
 ## Response Format
 
 When done, tell the user:
+
 1. What component you created
 2. Where you placed it
 3. Key features implemented

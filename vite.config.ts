@@ -10,6 +10,7 @@ export default defineConfig({
 		setupFiles: ['./vitest.setup.ts']
 	},
 	server: {
+		host: '0.0.0.0', // Listen on all network interfaces for mobile testing
 		port: 5173,
 		strictPort: false
 	}

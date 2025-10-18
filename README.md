@@ -29,12 +29,14 @@ This frontend embodies Revel's core values:
 ## 💻 Tech Stack
 
 ### Core Framework
+
 - **SvelteKit** - Meta-framework with hybrid SSR/CSR rendering
 - **Svelte 5** - Modern reactive framework with Runes for fine-grained reactivity
 - **TypeScript** - Strict mode for type safety throughout the application
 - **Vite** - Lightning-fast build tool and dev server
 
 ### Rendering Strategy
+
 - **Hybrid SSR/CSR Approach:**
   - Server-Side Rendering (SSR) for public pages (SEO, fast initial load)
   - Client-Side Rendering (CSR) for authenticated dashboards
@@ -42,25 +44,30 @@ This frontend embodies Revel's core values:
   - Per-page rendering control for optimal performance
 
 ### UI & Styling
+
 - **Tailwind CSS** - Utility-first CSS framework
 - **shadcn-svelte** - Accessible, customizable component library
 - **Lucide Icons** - Beautiful, consistent icon set
 
 ### API & Data Management
+
 - **Auto-Generated API Client** - TypeScript types and client generated from backend OpenAPI spec
 - **TanStack Query (Svelte)** - Powerful server state management
 - **Zod** - Runtime type validation and schema definition
 
 ### Forms & Validation
+
 - **Superforms** - Type-safe form handling for SvelteKit
 - **Zod** - Schema-based form validation
 
 ### Authentication
+
 - **JWT-based** - Access tokens (in-memory) + refresh tokens (httpOnly cookies)
 - **Google SSO** - OAuth2 integration
 - **TOTP Support** - Two-factor authentication
 
 ### Testing & Quality
+
 - **Vitest** - Fast unit testing framework
 - **Playwright** - End-to-end testing
 - **@testing-library/svelte** - Component testing
@@ -73,6 +80,7 @@ This frontend embodies Revel's core values:
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 20+ (LTS recommended)
 - pnpm 9+ (preferred) or npm
 - The Revel backend running locally (see [backend repo](https://github.com/letsrevel/revel-backend))
@@ -80,23 +88,28 @@ This frontend embodies Revel's core values:
 ### Installation
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/letsrevel/revel-frontend.git
    cd revel-frontend
    ```
 
 2. **Install dependencies:**
+
    ```bash
    pnpm install
    ```
 
 3. **Generate API client from backend OpenAPI spec:**
+
    ```bash
    pnpm generate:api
    ```
-   *Note: Ensure the backend is running and accessible at `http://localhost:8000`*
+
+   _Note: Ensure the backend is running and accessible at `http://localhost:8000`_
 
 4. **Start the development server:**
+
    ```bash
    pnpm dev
    ```
@@ -108,19 +121,19 @@ This frontend embodies Revel's core values:
 
 ## 📜 Available Commands
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start development server with hot reload |
-| `pnpm build` | Build production-ready application |
-| `pnpm preview` | Preview production build locally |
+| Command             | Description                                      |
+| ------------------- | ------------------------------------------------ |
+| `pnpm dev`          | Start development server with hot reload         |
+| `pnpm build`        | Build production-ready application               |
+| `pnpm preview`      | Preview production build locally                 |
 | `pnpm generate:api` | Generate TypeScript API client from OpenAPI spec |
-| `pnpm test` | Run unit tests with Vitest |
-| `pnpm test:ui` | Run tests with interactive UI |
-| `pnpm test:e2e` | Run end-to-end tests with Playwright |
-| `pnpm lint` | Lint code with ESLint |
-| `pnpm format` | Format code with Prettier |
-| `pnpm check` | Run SvelteKit type checking and validation |
-| `pnpm check:watch` | Run type checking in watch mode |
+| `pnpm test`         | Run unit tests with Vitest                       |
+| `pnpm test:ui`      | Run tests with interactive UI                    |
+| `pnpm test:e2e`     | Run end-to-end tests with Playwright             |
+| `pnpm lint`         | Lint code with ESLint                            |
+| `pnpm format`       | Format code with Prettier                        |
+| `pnpm check`        | Run SvelteKit type checking and validation       |
+| `pnpm check:watch`  | Run type checking in watch mode                  |
 
 ---
 
@@ -162,6 +175,7 @@ revel-frontend/
 ## 🎨 Key Features Implementation
 
 ### Public Features (SSR)
+
 - **Event Discovery:** Browse and search public events with filters
 - **Event Details:** Rich event pages with maps, schedules, and ticketing info
 - **Organization Profiles:** Public organization pages
@@ -169,12 +183,14 @@ revel-frontend/
 - **SEO Optimized:** Meta tags, Open Graph, structured data
 
 ### Authenticated Features (Hybrid SSR/CSR)
+
 - **User Dashboard:** View RSVPs, tickets, and upcoming events
 - **Event RSVP/Ticketing:** Secure checkout flow with Stripe integration
 - **Questionnaire Submission:** Dynamic form rendering and validation
 - **Profile Management:** Edit profile, manage 2FA, GDPR data export/deletion
 
 ### Organizer Features (CSR)
+
 - **Organization Management:** Create/edit organizations, manage members and staff
 - **Event Creation:** Rich event builder with ticket tiers and settings
 - **Questionnaire Builder:** Visual builder for admission screening
@@ -183,6 +199,7 @@ revel-frontend/
 - **Analytics Dashboard:** Event metrics and attendance insights
 
 ### Highly Interactive Features (CSR-Only)
+
 - **Real-Time Check-In:** Live QR code scanning with instant feedback
 - **Potluck Coordinator:** Real-time item claiming and updates
 - **Live Chat:** (Future) Event-specific messaging
@@ -221,6 +238,7 @@ We are committed to making Revel accessible to everyone:
 We welcome contributions from developers of all skill levels! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to get started.
 
 **Before contributing:**
+
 - Check [open issues](https://github.com/letsrevel/revel-frontend/issues) for tasks
 - Read our [Code of Conduct](CODE_OF_CONDUCT.md)
 - Review the [CLAUDE.md](CLAUDE.md) file for development guidelines
