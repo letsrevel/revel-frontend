@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { enhance, applyAction } from '$app/forms';
 	import type { PageData, ActionData } from './$types';
 	import { COMMON_PRONOUNS } from '$lib/schemas/profile';
 	import { Loader2, Check } from 'lucide-svelte';
@@ -14,31 +14,11 @@
 	let isSubmitting = $state(false);
 	let manuallyShowingCustom = $state(false);
 
-	// Form state
+	// Form state - initialize from data.user on page load
 	let firstName = $state(data.user?.first_name || '');
 	let lastName = $state(data.user?.last_name || '');
 	let preferredName = $state(data.user?.preferred_name || '');
 	let pronouns = $state(data.user?.pronouns || '');
-
-	// Sync form state when data changes (after successful submission)
-	$effect(() => {
-		if (form?.success && data.user) {
-			firstName = data.user.first_name || '';
-			lastName = data.user.last_name || '';
-			preferredName = data.user.preferred_name || '';
-			pronouns = data.user.pronouns || '';
-		}
-	});
-
-	// Restore form values on validation errors
-	$effect(() => {
-		if (form?.errors) {
-			if (form.first_name !== undefined) firstName = form.first_name;
-			if (form.last_name !== undefined) lastName = form.last_name;
-			if (form.preferred_name !== undefined) preferredName = form.preferred_name;
-			if (form.pronouns !== undefined) pronouns = form.pronouns;
-		}
-	});
 
 	// Check if current pronouns is custom (not in common list)
 	let showCustomPronouns = $derived(
@@ -49,6 +29,7 @@
 
 	let success = $derived(form?.success || false);
 	let errors = $derived((form?.errors || {}) as Record<string, string>);
+	// Email comes from data.user (populated by load function)
 	let email = $derived(data.user?.email || '');
 </script>
 
@@ -84,9 +65,23 @@
 		use:enhance={() => {
 			if (isSubmitting) return;
 			isSubmitting = true;
-			return async ({ update }) => {
+			return async ({ result }) => {
 				isSubmitting = false;
-				await update();
+				// Don't call update() - it clears the form prop
+				// Instead, manually update the form fields from the result
+				if (result.type === 'success' && result.data?.user) {
+					console.log('[Enhance] Got success result with user:', result.data.user);
+					firstName = result.data.user.first_name || '';
+					lastName = result.data.user.last_name || '';
+					preferredName = result.data.user.preferred_name || '';
+					pronouns = result.data.user.pronouns || '';
+					// Show success message by triggering a manual update with the result
+					// This will set the form prop without reloading
+					await applyAction(result);
+				} else if (result.type === 'failure') {
+					// On validation errors, apply the result to show errors
+					await applyAction(result);
+				}
 			};
 		}}
 		class="space-y-6"
