@@ -96,6 +96,15 @@ export const passwordResetSchema = z
 export type PasswordResetFormData = z.infer<typeof passwordResetSchema>;
 
 /**
+ * Account deletion confirmation schema
+ */
+export const accountDeletionConfirmSchema = z.object({
+	token: z.string().min(1, 'Deletion token is required')
+});
+
+export type AccountDeletionConfirmFormData = z.infer<typeof accountDeletionConfirmSchema>;
+
+/**
  * Password strength calculator
  * Returns score from 0 (weakest) to 4 (strongest)
  */
