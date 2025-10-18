@@ -10,9 +10,11 @@
 
 	let inputs: HTMLInputElement[] = [];
 
-	// Derive digits from value instead of using $state
+	// Create array of 6 digit slots - always render all 6 inputs
 	let digits = $derived.by(() => {
-		return value.padEnd(6, '').slice(0, 6).split('');
+		const valueDigits = value.split('').slice(0, 6);
+		// Always return exactly 6 items, filling with empty strings
+		return Array.from({ length: 6 }, (_, i) => valueDigits[i] || '');
 	});
 
 	function updateValue(newDigits: string[]) {
@@ -97,9 +99,9 @@
 				onpaste={i === 0 ? handlePaste : undefined}
 				aria-label="Digit {i + 1}"
 				aria-invalid={!!error}
-				class="h-12 w-12 rounded-md border border-input bg-background text-center text-lg font-semibold transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {error
+				class="h-12 w-12 rounded-md border-2 {error
 					? 'border-destructive'
-					: ''}"
+					: 'border-gray-300 dark:border-gray-600'} bg-white text-center text-lg font-semibold text-gray-900 transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-800 dark:text-gray-100"
 			/>
 		{/each}
 	</div>
@@ -109,4 +111,7 @@
 	{/if}
 
 	<p class="text-sm text-muted-foreground">Enter the 6-digit code from your authenticator app.</p>
+
+	<!-- Hidden input for form submission -->
+	<input type="hidden" name="code" {value} />
 </div>

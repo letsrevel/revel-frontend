@@ -1,23 +1,44 @@
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { otpSetupOtp50C46262, otpVerifyOtp8B0E5Aea, otpDisableOtp90Ac408E } from '$lib/api/client';
+import {
+	otpSetupOtp50C46262,
+	otpEnableOtp421A36Ab,
+	otpDisableOtp90Ac408E,
+	accountMe0E4E4784
+} from '$lib/api/client';
 import { z } from 'zod';
 
 /**
  * Load current user's 2FA status
+ * Fetches fresh user data from the API to ensure totp_active is up-to-date
  */
-export const load: PageServerLoad = async ({ locals }) => {
-	const user = locals.user;
+export const load: PageServerLoad = async ({ cookies, depends }) => {
+	depends('app:user');
 
-	if (!user) {
+	const accessToken = cookies.get('access_token');
+
+	if (!accessToken) {
 		return {
 			totpActive: false
 		};
 	}
 
-	return {
-		totpActive: user.totp_active || false
-	};
+	try {
+		const { data } = await accountMe0E4E4784({
+			headers: {
+				Authorization: `Bearer ${accessToken}`
+			}
+		});
+
+		return {
+			totpActive: data?.totp_active || false
+		};
+	} catch (error) {
+		console.error('Failed to fetch user data:', error);
+		return {
+			totpActive: false
+		};
+	}
 };
 
 /**
@@ -35,31 +56,41 @@ export const actions: Actions = {
 		}
 
 		try {
+			console.log('[Server] Starting 2FA setup...');
 			const response = await otpSetupOtp50C46262({
 				headers: {
 					Authorization: `Bearer ${accessToken}`
 				}
 			});
 
+			console.log('[Server] OTP setup response:', response);
+
 			if (response.data) {
-				return {
+				console.log('[Server] Response data:', response.data);
+				// Backend returns 'uri', not 'provisioning_uri'
+				console.log('[Server] Provisioning URI:', response.data.uri);
+				const result = {
 					success: true,
-					provisioningUri: response.data.provisioning_uri
+					provisioningUri: response.data.uri
 				};
+				console.log('[Server] Returning:', result);
+				return result;
 			}
 
 			if (response.error) {
 				const error = response.error as any;
+				console.error('[Server] Error response:', error);
 				return fail(400, {
 					errors: { form: error?.detail || '2FA is already enabled' }
 				});
 			}
 
+			console.error('[Server] No data and no error in response');
 			return fail(500, {
 				errors: { form: 'Failed to setup 2FA' }
 			});
 		} catch (error) {
-			console.error('2FA setup error:', error);
+			console.error('[Server] 2FA setup error:', error);
 			return fail(500, {
 				errors: { form: 'An unexpected error occurred' }
 			});
@@ -90,9 +121,9 @@ export const actions: Actions = {
 		}
 
 		try {
-			const response = await otpVerifyOtp8B0E5Aea({
+			const response = await otpEnableOtp421A36Ab({
 				body: {
-					code: validation.data
+					otp: validation.data
 				},
 				headers: {
 					Authorization: `Bearer ${accessToken}`
@@ -151,7 +182,7 @@ export const actions: Actions = {
 		try {
 			const response = await otpDisableOtp90Ac408E({
 				body: {
-					code: validation.data
+					otp: validation.data
 				},
 				headers: {
 					Authorization: `Bearer ${accessToken}`

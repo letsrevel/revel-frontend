@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { enhance, applyAction } from '$app/forms';
 	import { invalidate } from '$app/navigation';
 	import { Shield, CheckCircle, XCircle, AlertCircle, Copy, Check } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
@@ -16,7 +16,6 @@
 
 	// State management
 	let isEnabling = $state(false);
-	let isDisabling = $state(false);
 	let showSetupFlow = $state(false);
 	let showDisableFlow = $state(false);
 	let qrCodeDataUrl = $state<string>('');
@@ -29,6 +28,28 @@
 	let provisioningUri = $derived(form?.provisioningUri);
 	let setupSuccess = $derived(form?.verified);
 	let disableSuccess = $derived(form?.disabled);
+
+	// Debug logging - track all reactive changes
+	$effect(() => {
+		console.log('[2FA Debug] Reactive state changed:', {
+			'form (full object)': form,
+			provisioningUri: provisioningUri,
+			setupSuccess: setupSuccess,
+			disableSuccess: disableSuccess,
+			showSetupFlow: showSetupFlow,
+			totpActive: totpActive
+		});
+	});
+
+	// Track showSetupFlow changes specifically
+	$effect(() => {
+		console.log('[2FA Debug] showSetupFlow changed to:', showSetupFlow);
+	});
+
+	// Track provisioningUri changes specifically
+	$effect(() => {
+		console.log('[2FA Debug] provisioningUri changed to:', provisioningUri);
+	});
 
 	// Extract manual entry code from provisioning URI
 	let manualEntryCode = $derived.by(() => {
@@ -102,7 +123,6 @@
 	function cancelDisable() {
 		showDisableFlow = false;
 		otpCode = '';
-		isDisabling = false;
 	}
 </script>
 
@@ -171,12 +191,25 @@
 								method="POST"
 								action="?/setup"
 								use:enhance={() => {
+									console.log('[2FA Setup] Form submission starting');
 									isEnabling = true;
 									return async ({ result }) => {
+										console.log('[2FA Setup] Result received:', {
+											type: result.type,
+											status: result.status,
+											data: result.data
+										});
 										isEnabling = false;
 										if (result.type === 'success') {
+											console.log('[2FA Setup] Success! Calling applyAction...');
+											// Apply action to update form prop
+											await applyAction(result);
+											console.log('[2FA Setup] applyAction complete. Setting showSetupFlow = true');
 											showSetupFlow = true;
+											console.log('[2FA Setup] showSetupFlow set to:', showSetupFlow);
 										} else if (result.type === 'failure') {
+											console.log('[2FA Setup] Failure:', result.data);
+											await applyAction(result);
 											const errors = result.data?.errors;
 											toast.error(errors?.form || 'Failed to start 2FA setup');
 										}
@@ -196,107 +229,117 @@
 				{/if}
 
 				<!-- Setup Flow -->
-				{#if showSetupFlow && provisioningUri}
+				{#if showSetupFlow}
 					<div class="mt-6 rounded-lg border bg-muted/50 p-6">
 						<h3 class="font-semibold">Set up Two-Factor Authentication</h3>
 
-						<!-- Step 1: Scan QR Code -->
-						<div class="mt-4">
-							<p class="text-sm text-muted-foreground">
-								<span class="font-medium">Step 1:</span> Scan this QR code with your authenticator app
-								(Google Authenticator, Authy, 1Password, etc.)
-							</p>
+						{#if provisioningUri}
+							<!-- Step 1: Scan QR Code -->
+							<div class="mt-4">
+								<p class="text-sm text-muted-foreground">
+									<span class="font-medium">Step 1:</span> Scan this QR code with your authenticator
+									app (Google Authenticator, Authy, 1Password, etc.)
+								</p>
 
-							{#if qrCodeDataUrl}
-								<div class="mt-4 flex justify-center">
-									<img src={qrCodeDataUrl} alt="QR code for 2FA setup" class="rounded-lg" />
-								</div>
-							{:else}
-								<div class="mt-4 flex justify-center">
-									<div class="flex h-64 w-64 items-center justify-center rounded-lg bg-muted">
-										<p class="text-sm text-muted-foreground">Generating QR code...</p>
+								{#if qrCodeDataUrl}
+									<div class="mt-4 flex justify-center">
+										<img src={qrCodeDataUrl} alt="QR code for 2FA setup" class="rounded-lg" />
 									</div>
-								</div>
-							{/if}
-
-							<!-- Manual Entry Option -->
-							{#if manualEntryCode}
-								<details class="mt-4">
-									<summary class="cursor-pointer text-sm font-medium text-primary">
-										Can't scan? Enter manually
-									</summary>
-									<div class="mt-2 rounded-md bg-background p-3">
-										<p class="text-xs text-muted-foreground">Enter this code in your app:</p>
-										<div class="mt-2 flex items-center gap-2">
-											<code class="flex-1 rounded bg-muted px-3 py-2 font-mono text-sm">
-												{manualEntryCode}
-											</code>
-											<button
-												type="button"
-												onclick={copyManualCode}
-												class="rounded-md p-2 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
-												aria-label="Copy code to clipboard"
-											>
-												{#if manualEntryCopied}
-													<Check class="h-4 w-4 text-green-600" aria-hidden="true" />
-												{:else}
-													<Copy class="h-4 w-4" aria-hidden="true" />
-												{/if}
-											</button>
+								{:else}
+									<div class="mt-4 flex justify-center">
+										<div class="flex h-64 w-64 items-center justify-center rounded-lg bg-muted">
+											<p class="text-sm text-muted-foreground">Generating QR code...</p>
 										</div>
 									</div>
-								</details>
-							{/if}
-						</div>
+								{/if}
 
-						<!-- Step 2: Verify Code -->
-						<div class="mt-6">
-							<p class="text-sm text-muted-foreground">
-								<span class="font-medium">Step 2:</span> Enter the 6-digit code from your authenticator
-								app to verify
-							</p>
+								<!-- Manual Entry Option -->
+								{#if manualEntryCode}
+									<details class="mt-4">
+										<summary class="cursor-pointer text-sm font-medium text-primary">
+											Can't scan? Enter manually
+										</summary>
+										<div class="mt-2 rounded-md bg-background p-3">
+											<p class="text-xs text-muted-foreground">Enter this code in your app:</p>
+											<div class="mt-2 flex items-center gap-2">
+												<code class="flex-1 rounded bg-muted px-3 py-2 font-mono text-sm">
+													{manualEntryCode}
+												</code>
+												<button
+													type="button"
+													onclick={copyManualCode}
+													class="rounded-md p-2 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
+													aria-label="Copy code to clipboard"
+												>
+													{#if manualEntryCopied}
+														<Check class="h-4 w-4 text-green-600" aria-hidden="true" />
+													{:else}
+														<Copy class="h-4 w-4" aria-hidden="true" />
+													{/if}
+												</button>
+											</div>
+										</div>
+									</details>
+								{/if}
+							</div>
 
-							<form
-								method="POST"
-								action="?/verify"
-								use:enhance={() => {
-									isSubmitting = true;
-									return async ({ result }) => {
-										isSubmitting = false;
-										if (result.type === 'failure') {
-											const errors = result.data?.errors;
-											toast.error(errors?.code || errors?.form || 'Verification failed');
-										}
-									};
-								}}
-							>
-								<div class="mt-4">
-									<TwoFactorInput bind:value={otpCode} />
-									{#if form?.errors?.code}
-										<p class="mt-2 text-sm text-destructive" role="alert">
-											{form.errors.code}
-										</p>
-									{/if}
+							<!-- Step 2: Verify Code -->
+							<div class="mt-6">
+								<p class="text-sm text-muted-foreground">
+									<span class="font-medium">Step 2:</span> Enter the 6-digit code from your authenticator
+									app to verify
+								</p>
+
+								<form
+									method="POST"
+									action="?/verify"
+									use:enhance={() => {
+										isSubmitting = true;
+										return async ({ result }) => {
+											isSubmitting = false;
+											await applyAction(result);
+											if (result.type === 'failure') {
+												const errors = result.data?.errors;
+												toast.error(errors?.code || errors?.form || 'Verification failed');
+											}
+										};
+									}}
+								>
+									<div class="mt-4">
+										<TwoFactorInput bind:value={otpCode} />
+										{#if form?.errors?.code}
+											<p class="mt-2 text-sm text-destructive" role="alert">
+												{form.errors.code}
+											</p>
+										{/if}
+									</div>
+
+									<div class="mt-6 flex gap-3">
+										<button
+											type="submit"
+											disabled={otpCode.length !== 6 || isSubmitting}
+											class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50"
+										>
+											{isSubmitting ? 'Verifying...' : 'Verify and Enable 2FA'}
+										</button>
+										<button
+											type="button"
+											onclick={cancelSetup}
+											class="rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+										>
+											Cancel
+										</button>
+									</div>
+								</form>
+							</div>
+						{:else}
+							<!-- Loading provisioning URI -->
+							<div class="mt-4 flex justify-center">
+								<div class="flex h-64 w-64 items-center justify-center rounded-lg bg-muted">
+									<p class="text-sm text-muted-foreground">Loading setup data...</p>
 								</div>
-
-								<div class="mt-6 flex gap-3">
-									<button
-										type="submit"
-										disabled={otpCode.length !== 6 || isSubmitting}
-										class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50"
-									>
-										{isSubmitting ? 'Verifying...' : 'Verify and Enable 2FA'}
-									</button>
-									<button
-										type="button"
-										onclick={cancelSetup}
-										class="rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-									>
-										Cancel
-									</button>
-								</div>
-							</form>
-						</div>
+							</div>
+						{/if}
 					</div>
 				{/if}
 
@@ -319,6 +362,7 @@
 										isSubmitting = true;
 										return async ({ result }) => {
 											isSubmitting = false;
+											await applyAction(result);
 											if (result.type === 'failure') {
 												const errors = result.data?.errors;
 												toast.error(errors?.code || errors?.form || 'Failed to disable 2FA');
