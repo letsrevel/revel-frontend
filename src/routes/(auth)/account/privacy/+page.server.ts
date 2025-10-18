@@ -1,7 +1,52 @@
 import { fail, type Actions } from '@sveltejs/kit';
-import { accountDeleteAccountRequestCd42D2B8 } from '$lib/api/generated';
+import {
+	accountDeleteAccountRequestCd42D2B8,
+	accountExportData61D5Dc17
+} from '$lib/api/generated';
 
 export const actions: Actions = {
+	exportData: async ({ cookies }) => {
+		const accessToken = cookies.get('access_token');
+
+		if (!accessToken) {
+			return fail(401, {
+				errors: {
+					exportForm: 'You must be logged in to export your data'
+				}
+			});
+		}
+
+		try {
+			await accountExportData61D5Dc17({
+				headers: {
+					Authorization: `Bearer ${accessToken}`
+				}
+			});
+
+			return {
+				exportSuccess: true
+			};
+		} catch (error: any) {
+			console.error('Data export request error:', error);
+
+			// Check for rate limiting (429 Too Many Requests)
+			if (error?.response?.status === 429) {
+				return fail(429, {
+					errors: {
+						exportForm:
+							'You can only request a data export once every 24 hours. Please try again later.'
+					}
+				});
+			}
+
+			return fail(500, {
+				errors: {
+					exportForm: 'Failed to request data export. Please try again.'
+				}
+			});
+		}
+	},
+
 	requestDeletion: async ({ cookies }) => {
 		const accessToken = cookies.get('access_token');
 
