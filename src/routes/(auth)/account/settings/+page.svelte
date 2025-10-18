@@ -16,7 +16,6 @@
 	let isSubmitting = $state(false);
 
 	// Form state - initialize from data.preferences on page load
-	// Note: visibility is used in bind:group below (line 101)
 	let visibility = $state(
 		data.preferences?.show_me_on_attendee_list || VISIBILITY_OPTIONS[0].value
 	);
@@ -24,6 +23,17 @@
 	let silenceAll = $state(data.preferences?.silence_all_notifications ?? false);
 	let selectedCity = $state<CitySchema | null>(data.preferences?.city || null);
 	let overwriteChildren = $state(false);
+
+	// Debug logging - fixed to use closures
+	$effect(() => {
+		console.log('[Settings] State:', {
+			visibility,
+			eventReminders,
+			silenceAll,
+			selectedCity,
+			preferences: data.preferences
+		});
+	});
 
 	let success = $derived(form?.success || false);
 	let errors = $derived((form?.errors || {}) as Record<string, string>);
@@ -93,25 +103,29 @@
 				<p class="text-sm text-muted-foreground">Control who can see you on attendee lists</p>
 			</div>
 
-			<div class="space-y-3">
-				<div id="visibility-label" class="block text-sm font-medium">Show me on attendee lists</div>
-				<div class="space-y-2" role="radiogroup" aria-labelledby="visibility-label">
+			<div class="space-y-2">
+				<label for="visibility-select" class="block text-sm font-medium">
+					Show me on attendee lists
+				</label>
+				<select
+					id="visibility-select"
+					name="show_me_on_attendee_list"
+					bind:value={visibility}
+					disabled={isSubmitting}
+					aria-invalid={!!errors.show_me_on_attendee_list}
+					aria-describedby={errors.show_me_on_attendee_list ? 'visibility-error' : undefined}
+					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.show_me_on_attendee_list
+						? 'border-destructive'
+						: ''}"
+				>
 					{#each VISIBILITY_OPTIONS as option (option.value)}
-						<label class="flex items-center gap-3 cursor-pointer">
-							<input
-								type="radio"
-								name="show_me_on_attendee_list"
-								value={option.value}
-								bind:group={visibility}
-								disabled={isSubmitting}
-								class="h-4 w-4 border-input text-primary transition-colors focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-							/>
-							<span class="text-sm">{option.label}</span>
-						</label>
+						<option value={option.value}>{option.label}</option>
 					{/each}
-				</div>
+				</select>
 				{#if errors.show_me_on_attendee_list}
-					<p class="text-sm text-destructive" role="alert">{errors.show_me_on_attendee_list}</p>
+					<p id="visibility-error" class="text-sm text-destructive" role="alert">
+						{errors.show_me_on_attendee_list}
+					</p>
 				{/if}
 			</div>
 		</section>
@@ -198,8 +212,12 @@
 				error={errors.city_id}
 			/>
 
-			<!-- Hidden input for form submission -->
-			<input type="hidden" name="city_id" value={selectedCity?.id || ''} />
+			<!-- Hidden input for form submission - send empty string when null to explicitly clear -->
+			{#if selectedCity?.id}
+				<input type="hidden" name="city_id" value={selectedCity.id} />
+			{:else}
+				<input type="hidden" name="city_id" value="" />
+			{/if}
 		</section>
 
 		<!-- Cascade Option -->

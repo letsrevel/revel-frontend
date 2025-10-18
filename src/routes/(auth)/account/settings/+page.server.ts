@@ -46,11 +46,12 @@ export const actions: Actions = {
 		}
 
 		const formData = await request.formData();
+		const cityIdValue = formData.get('city_id') as string;
 		const data = {
 			show_me_on_attendee_list: formData.get('show_me_on_attendee_list') as string,
 			event_reminders: formData.get('event_reminders') === 'true',
 			silence_all_notifications: formData.get('silence_all_notifications') === 'true',
-			city_id: formData.get('city_id') ? parseInt(formData.get('city_id') as string) : null,
+			city_id: cityIdValue && cityIdValue !== '' ? parseInt(cityIdValue) : null,
 			overwrite_children: formData.get('overwrite_children') === 'true'
 		};
 
@@ -69,13 +70,17 @@ export const actions: Actions = {
 		}
 
 		try {
+			const payload = {
+				show_me_on_attendee_list: result.data.show_me_on_attendee_list,
+				event_reminders: result.data.event_reminders,
+				silence_all_notifications: result.data.silence_all_notifications,
+				city_id: result.data.city_id
+			};
+
+			console.log('[Settings] Sending preferences update:', payload);
+
 			const response = await userpreferencesUpdateGlobalPreferencesAd4C4758({
-				body: {
-					show_me_on_attendee_list: result.data.show_me_on_attendee_list,
-					event_reminders: result.data.event_reminders,
-					silence_all_notifications: result.data.silence_all_notifications,
-					city_id: result.data.city_id
-				},
+				body: payload,
 				query: {
 					overwrite_children: result.data.overwrite_children
 				},

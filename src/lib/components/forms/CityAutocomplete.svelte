@@ -19,7 +19,7 @@
 	let showDropdown = $state(false);
 	let selectedIndex = $state(-1);
 	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-	let inputElement: HTMLInputElement | null = null;
+	let inputElement = $state<HTMLInputElement | null>(null);
 
 	// Format city for display
 	function formatCity(city: CitySchema): string {
