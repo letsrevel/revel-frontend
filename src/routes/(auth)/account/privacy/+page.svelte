@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { ActionData } from './$types';
-	import { Trash2, AlertTriangle, Mail, Loader2 } from 'lucide-svelte';
+	import { Trash2, AlertTriangle, Mail, Loader2, Download, Check } from 'lucide-svelte';
 
 	interface Props {
 		form: ActionData;
@@ -13,9 +13,11 @@
 	let showDeletionModal = $state(false);
 	let confirmed = $state(false);
 	let isSubmitting = $state(false);
+	let isExporting = $state(false);
 
-	// Success state - derive from form
+	// Success states
 	let success = $derived(form?.success || false);
+	let exportSuccess = $derived(form?.exportSuccess || false);
 
 	// Error handling
 	let errors = $derived((form?.errors || {}) as Record<string, string>);
@@ -77,20 +79,110 @@
 		</div>
 	{/if}
 
-	<!-- Data Export Section (Future) -->
-	<section class="mb-12">
-		<h2 class="text-xl font-semibold">Export Your Data</h2>
-		<p class="mt-2 text-sm text-muted-foreground">
-			Request a copy of all your data in JSON format. You can export your data once every 24
-			hours.
-		</p>
-		<button
-			type="button"
-			disabled
-			class="mt-4 inline-flex h-10 items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-		>
-			Export Data (Coming Soon)
-		</button>
+	<!-- Data Export Section -->
+	<section class="mb-12 rounded-lg border border-border bg-card p-6">
+		<div class="flex items-start gap-4">
+			<div
+				class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary/10"
+			>
+				<Download class="h-6 w-6 text-primary" aria-hidden="true" />
+			</div>
+			<div class="flex-1">
+				<h2 class="text-xl font-semibold">Export Your Data</h2>
+				<p class="mt-2 text-sm text-muted-foreground">
+					Request a complete copy of your Revel data in JSON format. This includes your profile,
+					event history, RSVPs, and organization memberships.
+				</p>
+
+				<!-- Export Success Message -->
+				{#if exportSuccess}
+					<div
+						role="status"
+						class="mt-4 rounded-md border border-green-500 bg-green-50 p-4 dark:bg-green-950"
+					>
+						<div class="flex items-start gap-2">
+							<Check
+								class="h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400"
+								aria-hidden="true"
+							/>
+							<div class="flex-1">
+								<p class="text-sm font-medium text-green-800 dark:text-green-200">
+									Data export request received
+								</p>
+								<p class="mt-1 text-sm text-green-700 dark:text-green-300">
+									We'll email you a download link when your data export is ready. This usually takes
+									a few minutes.
+								</p>
+							</div>
+						</div>
+					</div>
+				{/if}
+
+				<!-- Export Error Message -->
+				{#if errors.exportForm}
+					<div role="alert" class="mt-4 rounded-md border border-destructive bg-destructive/10 p-4">
+						<p class="text-sm font-medium text-destructive">{errors.exportForm}</p>
+					</div>
+				{/if}
+
+				<div class="mt-4">
+					<h3 class="text-sm font-medium">What's included:</h3>
+					<ul class="mt-2 space-y-1 text-sm text-muted-foreground">
+						<li class="flex items-center gap-2">
+							<span class="text-primary">•</span>
+							Profile information and account settings
+						</li>
+						<li class="flex items-center gap-2">
+							<span class="text-primary">•</span>
+							Event RSVPs and ticket information
+						</li>
+						<li class="flex items-center gap-2">
+							<span class="text-primary">•</span>
+							Questionnaire submissions and responses
+						</li>
+						<li class="flex items-center gap-2">
+							<span class="text-primary">•</span>
+							Organization memberships and roles
+						</li>
+					</ul>
+				</div>
+
+				<form
+					method="POST"
+					action="?/exportData"
+					use:enhance={() => {
+						if (isExporting) return;
+						isExporting = true;
+
+						return async ({ update }) => {
+							isExporting = false;
+							await update();
+						};
+					}}
+					class="mt-6"
+				>
+					<button
+						type="submit"
+						disabled={isExporting || exportSuccess}
+						class="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+					>
+						{#if isExporting}
+							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
+							<span>Requesting Export...</span>
+						{:else if exportSuccess}
+							<Check class="h-4 w-4" aria-hidden="true" />
+							<span>Export Requested</span>
+						{:else}
+							<Download class="h-4 w-4" aria-hidden="true" />
+							<span>Request Data Export</span>
+						{/if}
+					</button>
+					<p class="mt-2 text-xs text-muted-foreground">
+						You can request a data export once every 24 hours
+					</p>
+				</form>
+			</div>
+		</div>
 	</section>
 
 	<!-- Account Deletion Section -->
