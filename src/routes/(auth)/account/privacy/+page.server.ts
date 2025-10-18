@@ -2,10 +2,10 @@ import { fail, type Actions } from '@sveltejs/kit';
 import { accountDeleteAccountRequestCd42D2B8 } from '$lib/api/generated';
 
 export const actions: Actions = {
-	requestDeletion: async ({ locals }) => {
-		const user = locals.user;
+	requestDeletion: async ({ cookies }) => {
+		const accessToken = cookies.get('access_token');
 
-		if (!user) {
+		if (!accessToken) {
 			return fail(401, {
 				errors: {
 					form: 'You must be logged in to delete your account'
@@ -17,7 +17,7 @@ export const actions: Actions = {
 			// Call backend API to send deletion confirmation email
 			await accountDeleteAccountRequestCd42D2B8({
 				headers: {
-					Authorization: `Bearer ${user.accessToken}`
+					Authorization: `Bearer ${accessToken}`
 				}
 			});
 
