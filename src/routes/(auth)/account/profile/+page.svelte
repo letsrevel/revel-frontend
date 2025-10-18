@@ -71,10 +71,11 @@
 				// Instead, manually update the form fields from the result
 				if (result.type === 'success' && result.data?.user) {
 					console.log('[Enhance] Got success result with user:', result.data.user);
-					firstName = result.data.user.first_name || '';
-					lastName = result.data.user.last_name || '';
-					preferredName = result.data.user.preferred_name || '';
-					pronouns = result.data.user.pronouns || '';
+					const user = result.data.user as typeof data.user;
+					firstName = user?.first_name || '';
+					lastName = user?.last_name || '';
+					preferredName = user?.preferred_name || '';
+					pronouns = user?.pronouns || '';
 					// Show success message by triggering a manual update with the result
 					// This will set the form prop without reloading
 					await applyAction(result);

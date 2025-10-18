@@ -196,8 +196,8 @@
 									return async ({ result }) => {
 										console.log('[2FA Setup] Result received:', {
 											type: result.type,
-											status: result.status,
-											data: result.data
+											status: 'status' in result ? result.status : undefined,
+											data: 'data' in result ? result.data : undefined
 										});
 										isEnabling = false;
 										if (result.type === 'success') {
@@ -207,10 +207,10 @@
 											console.log('[2FA Setup] applyAction complete. Setting showSetupFlow = true');
 											showSetupFlow = true;
 											console.log('[2FA Setup] showSetupFlow set to:', showSetupFlow);
-										} else if (result.type === 'failure') {
+										} else if (result.type === 'failure' && result.data) {
 											console.log('[2FA Setup] Failure:', result.data);
 											await applyAction(result);
-											const errors = result.data?.errors;
+											const errors = (result.data as any)?.errors;
 											toast.error(errors?.form || 'Failed to start 2FA setup');
 										}
 									};
@@ -298,8 +298,8 @@
 										return async ({ result }) => {
 											isSubmitting = false;
 											await applyAction(result);
-											if (result.type === 'failure') {
-												const errors = result.data?.errors;
+											if (result.type === 'failure' && result.data) {
+												const errors = (result.data as any)?.errors;
 												toast.error(errors?.code || errors?.form || 'Verification failed');
 											}
 										};
@@ -307,7 +307,7 @@
 								>
 									<div class="mt-4">
 										<TwoFactorInput bind:value={otpCode} />
-										{#if form?.errors?.code}
+										{#if form?.errors && 'code' in form.errors && form.errors.code}
 											<p class="mt-2 text-sm text-destructive" role="alert">
 												{form.errors.code}
 											</p>
@@ -363,8 +363,8 @@
 										return async ({ result }) => {
 											isSubmitting = false;
 											await applyAction(result);
-											if (result.type === 'failure') {
-												const errors = result.data?.errors;
+											if (result.type === 'failure' && result.data) {
+												const errors = (result.data as any)?.errors;
 												toast.error(errors?.code || errors?.form || 'Failed to disable 2FA');
 											}
 										};
@@ -372,7 +372,7 @@
 								>
 									<div class="mt-4">
 										<TwoFactorInput bind:value={otpCode} />
-										{#if form?.errors?.code}
+										{#if form?.errors && 'code' in form.errors && form.errors.code}
 											<p class="mt-2 text-sm text-destructive" role="alert">
 												{form.errors.code}
 											</p>
