@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { User, Settings, LogOut, Building2 } from 'lucide-svelte';
+	import { User, Settings, LogOut, Building2, Shield } from 'lucide-svelte';
 
 	interface Props {
 		mobile?: boolean;
@@ -29,6 +29,7 @@
 	// Menu items
 	const menuItems = [
 		{ href: '/account/profile', label: 'Profile', icon: User },
+		{ href: '/account/security', label: 'Security', icon: Shield },
 		{ href: '/account/settings', label: 'Settings', icon: Settings },
 		{ href: '/my-organizations', label: 'My Organizations', icon: Building2 }
 	];
