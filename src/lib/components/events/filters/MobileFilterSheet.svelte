@@ -7,6 +7,8 @@
 	import DateFilter from './DateFilter.svelte';
 	import TagsFilter from './TagsFilter.svelte';
 	import EventTypeFilter from './EventTypeFilter.svelte';
+	import CityFilter from './CityFilter.svelte';
+	import OrderByFilter from './OrderByFilter.svelte';
 
 	interface Props {
 		filters: FilterState;
@@ -43,6 +45,20 @@
 	function handleChangeEventType(type: FilterState['eventType']): void {
 		onUpdateFilters({ eventType: type });
 	}
+
+	function handleChangeCity(city: { id: number; name: string; country: string } | null): void {
+		onUpdateFilters({ cityId: city?.id });
+	}
+
+	function handleChangeOrderBy(orderBy: FilterState['orderBy']): void {
+		onUpdateFilters({ orderBy });
+	}
+
+	// Derive selected city object from cityId
+	let selectedCity = $derived.by(() => {
+		if (!filters.cityId) return null;
+		return null;
+	});
 
 	function handleApply(): void {
 		onClose();
@@ -123,6 +139,15 @@
 		<!-- Scrollable filter content -->
 		<div class="flex-1 overflow-y-auto overscroll-contain px-6 py-4">
 			<div class="space-y-6">
+				<!-- Order By Filter (Top Priority) -->
+				<OrderByFilter
+					orderBy={filters.orderBy ?? 'distance'}
+					onChangeOrderBy={handleChangeOrderBy}
+				/>
+
+				<!-- Divider -->
+				<div class="border-t" role="separator"></div>
+
 				<!-- Search Input -->
 				<div class="space-y-2">
 					<label for="mobile-event-search" class="text-sm font-medium">Search</label>
@@ -145,6 +170,15 @@
 				<!-- Divider -->
 				<div class="border-t" role="separator"></div>
 
+				<!-- City Filter -->
+				<CityFilter
+					selectedCity={selectedCity}
+					onChangeCity={handleChangeCity}
+				/>
+
+				<!-- Divider -->
+				<div class="border-t" role="separator"></div>
+
 				<!-- Event Type Filter -->
 				<EventTypeFilter
 					eventType={filters.eventType}
@@ -160,7 +194,7 @@
 					onToggleTag={handleToggleTag}
 				/>
 
-				<!-- Future filters: Location, Organization, Visibility -->
+				<!-- Future filters: Organization, Visibility -->
 			</div>
 		</div>
 

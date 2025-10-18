@@ -56,7 +56,9 @@ export const actions: Actions = {
 					errors.form = 'Invalid or expired reset token. Please request a new password reset.';
 				} else if (apiErrors.password1 || apiErrors.password2) {
 					errors.password =
-						apiErrors.password1?.[0] || apiErrors.password2?.[0] || 'Password does not meet requirements';
+						apiErrors.password1?.[0] ||
+						apiErrors.password2?.[0] ||
+						'Password does not meet requirements';
 				} else if (apiErrors.non_field_errors) {
 					errors.form = apiErrors.non_field_errors[0] || 'Password reset failed';
 				} else {

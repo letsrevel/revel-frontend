@@ -25,7 +25,10 @@
 	// Computed values
 	let formattedDate = $derived(formatEventDate(event.start));
 	let screenReaderDate = $derived(formatEventDateForScreenReader(event.start));
-	let locationDisplay = $derived(event.city?.name || 'TBD');
+	let locationDisplay = $derived.by(() => {
+		if (!event.city) return 'TBD';
+		return event.city.country ? `${event.city.name}, ${event.city.country}` : event.city.name;
+	});
 	let accessDisplay = $derived(
 		getEventAccessDisplay(event, false, false) // TODO: Pass actual user membership status
 	);

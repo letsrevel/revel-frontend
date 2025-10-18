@@ -158,9 +158,7 @@
 </script>
 
 <div class="relative w-full">
-	<label for="city-search" class="block text-sm font-medium mb-2">
-		Preferred City
-	</label>
+	<label for="city-search" class="mb-2 block text-sm font-medium"> Preferred City </label>
 
 	<div class="relative">
 		{#if value}
@@ -201,13 +199,13 @@
 					onkeydown={handleKeydown}
 					onfocus={handleFocus}
 					onblur={handleBlur}
-					disabled={disabled}
+					{disabled}
 					placeholder="Search for a city..."
 					aria-invalid={!!error}
 					aria-describedby={error ? 'city-error' : undefined}
 					aria-autocomplete="list"
 					aria-controls="city-results"
-					class="flex h-10 w-full rounded-md border border-input bg-background pl-9 pr-9 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {error
+					class="flex h-10 w-full rounded-md border border-input bg-background py-2 pl-9 pr-9 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {error
 						? 'border-destructive'
 						: ''}"
 				/>

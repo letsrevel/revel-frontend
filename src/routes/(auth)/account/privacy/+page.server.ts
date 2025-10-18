@@ -1,8 +1,5 @@
 import { fail, type Actions } from '@sveltejs/kit';
-import {
-	accountDeleteAccountRequestCd42D2B8,
-	accountExportData61D5Dc17
-} from '$lib/api/generated';
+import { accountDeleteAccountRequestCd42D2B8, accountExportData61D5Dc17 } from '$lib/api/generated';
 
 export const actions: Actions = {
 	exportData: async ({ cookies }) => {

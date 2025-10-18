@@ -7,6 +7,8 @@
 	import DateFilter from './DateFilter.svelte';
 	import TagsFilter from './TagsFilter.svelte';
 	import EventTypeFilter from './EventTypeFilter.svelte';
+	import CityFilter from './CityFilter.svelte';
+	import OrderByFilter from './OrderByFilter.svelte';
 
 	interface Props {
 		filters: FilterState;
@@ -40,6 +42,23 @@
 	function handleChangeEventType(type: FilterState['eventType']): void {
 		onUpdateFilters({ eventType: type });
 	}
+
+	function handleChangeCity(city: { id: number; name: string; country: string } | null): void {
+		onUpdateFilters({ cityId: city?.id });
+	}
+
+	function handleChangeOrderBy(orderBy: FilterState['orderBy']): void {
+		onUpdateFilters({ orderBy });
+	}
+
+	// Derive selected city object from cityId
+	let selectedCity = $derived.by(() => {
+		if (!filters.cityId) return null;
+		// We don't have the full city object, just the ID
+		// In a real implementation, you might want to store the full city object in the URL
+		// or fetch it. For now, we'll just track the ID and let the component handle it.
+		return null;
+	});
 </script>
 
 <aside
@@ -76,6 +95,15 @@
 	<!-- Divider -->
 	<div class="border-t" role="separator"></div>
 
+	<!-- Order By Filter (Top Priority) -->
+	<OrderByFilter
+		orderBy={filters.orderBy ?? 'distance'}
+		onChangeOrderBy={handleChangeOrderBy}
+	/>
+
+	<!-- Divider -->
+	<div class="border-t" role="separator"></div>
+
 	<!-- Search Input -->
 	<div class="space-y-2">
 		<label for="event-search" class="text-sm font-medium">Search</label>
@@ -98,6 +126,15 @@
 	<!-- Divider -->
 	<div class="border-t" role="separator"></div>
 
+	<!-- City Filter -->
+	<CityFilter
+		selectedCity={selectedCity}
+		onChangeCity={handleChangeCity}
+	/>
+
+	<!-- Divider -->
+	<div class="border-t" role="separator"></div>
+
 	<!-- Event Type Filter -->
 	<EventTypeFilter
 		eventType={filters.eventType}
@@ -113,7 +150,7 @@
 		onToggleTag={handleToggleTag}
 	/>
 
-	<!-- Future filters: Location, Organization, Visibility -->
+	<!-- Future filters: Organization, Visibility -->
 
 	<!-- Footer hint -->
 	{#if activeFilterCount > 0}

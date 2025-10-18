@@ -219,9 +219,7 @@
 
 			<!-- Back to Login Link -->
 			<div class="text-center text-sm">
-				<a href="/login" class="text-primary underline-offset-4 hover:underline">
-					Back to login
-				</a>
+				<a href="/login" class="text-primary underline-offset-4 hover:underline"> Back to login </a>
 			</div>
 		{/if}
 	</div>

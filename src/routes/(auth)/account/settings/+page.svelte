@@ -141,7 +141,7 @@
 				<!-- Event Reminders -->
 				<div class="flex items-center justify-between">
 					<div class="flex-1">
-						<label for="event-reminders" class="text-sm font-medium cursor-pointer">
+						<label for="event-reminders" class="cursor-pointer text-sm font-medium">
 							Event reminders
 						</label>
 						<p class="text-xs text-muted-foreground">
@@ -159,7 +159,7 @@
 							class="peer sr-only"
 						/>
 						<div
-							class="peer h-6 w-11 rounded-full bg-input after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-border after:bg-background after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-disabled:cursor-not-allowed peer-disabled:opacity-50 peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2"
+							class="peer h-6 w-11 rounded-full bg-input after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-border after:bg-background after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
 						></div>
 					</label>
 				</div>
@@ -170,12 +170,10 @@
 				<!-- Silence All Notifications -->
 				<div class="flex items-center justify-between">
 					<div class="flex-1">
-						<label for="silence-all" class="text-sm font-medium cursor-pointer">
+						<label for="silence-all" class="cursor-pointer text-sm font-medium">
 							Silence all notifications
 						</label>
-						<p class="text-xs text-muted-foreground">
-							Disable all email and push notifications
-						</p>
+						<p class="text-xs text-muted-foreground">Disable all email and push notifications</p>
 					</div>
 					<label class="relative inline-flex cursor-pointer items-center">
 						<input
@@ -188,7 +186,7 @@
 							class="peer sr-only"
 						/>
 						<div
-							class="peer h-6 w-11 rounded-full bg-input after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-border after:bg-background after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-disabled:cursor-not-allowed peer-disabled:opacity-50 peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2"
+							class="peer h-6 w-11 rounded-full bg-input after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-border after:bg-background after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
 						></div>
 					</label>
 				</div>
@@ -202,7 +200,9 @@
 		<section class="space-y-4">
 			<div>
 				<h2 class="text-lg font-semibold">Location</h2>
-				<p class="text-sm text-muted-foreground">Set your preferred city for event recommendations</p>
+				<p class="text-sm text-muted-foreground">
+					Set your preferred city for event recommendations
+				</p>
 			</div>
 
 			<CityAutocomplete
@@ -222,9 +222,7 @@
 
 		<!-- Cascade Option -->
 		<section class="space-y-4">
-			<div
-				class="rounded-md border border-orange-500/30 bg-orange-50/50 p-4 dark:bg-orange-950/20"
-			>
+			<div class="rounded-md border border-orange-500/30 bg-orange-50/50 p-4 dark:bg-orange-950/20">
 				<div class="flex items-start gap-3">
 					<AlertTriangle
 						class="h-5 w-5 flex-shrink-0 text-orange-600 dark:text-orange-400"
@@ -236,12 +234,12 @@
 								Apply to all my preferences
 							</h3>
 							<p class="mt-1 text-xs text-orange-700 dark:text-orange-300">
-								Check this to apply these settings to all your organization, series, and event-specific
-								preferences. This will override any custom preferences you've set.
+								Check this to apply these settings to all your organization, series, and
+								event-specific preferences. This will override any custom preferences you've set.
 							</p>
 						</div>
 
-						<label class="flex items-center gap-2 cursor-pointer">
+						<label class="flex cursor-pointer items-center gap-2">
 							<input
 								id="overwrite-children"
 								type="checkbox"

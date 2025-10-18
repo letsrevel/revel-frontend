@@ -33,13 +33,13 @@
 		{#if success}
 			<!-- Success State -->
 			<div class="text-center">
-				<div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-950">
+				<div
+					class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-950"
+				>
 					<CheckCircle class="h-8 w-8 text-green-600 dark:text-green-400" aria-hidden="true" />
 				</div>
 				<h1 class="text-3xl font-bold tracking-tight">Account Deleted</h1>
-				<p class="mt-2 text-muted-foreground">
-					Your account has been permanently deleted
-				</p>
+				<p class="mt-2 text-muted-foreground">Your account has been permanently deleted</p>
 			</div>
 
 			<div
@@ -51,7 +51,8 @@
 						Your Revel account and all associated data have been permanently deleted.
 					</p>
 					<p class="text-green-700 dark:text-green-300">
-						Thank you for using Revel. If you change your mind, you can create a new account anytime.
+						Thank you for using Revel. If you change your mind, you can create a new account
+						anytime.
 					</p>
 				</div>
 			</div>
@@ -68,7 +69,9 @@
 		{:else if !token}
 			<!-- Missing Token Error -->
 			<div class="text-center">
-				<div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
+				<div
+					class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10"
+				>
 					<AlertTriangle class="h-8 w-8 text-destructive" aria-hidden="true" />
 				</div>
 				<h1 class="text-3xl font-bold tracking-tight">Invalid Link</h1>
@@ -80,7 +83,8 @@
 			<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">
 				<p class="text-sm font-medium text-destructive">Invalid or missing deletion token</p>
 				<p class="mt-2 text-sm text-muted-foreground">
-					The account deletion link is invalid or has expired. If you still want to delete your account, please request a new deletion link from your account settings.
+					The account deletion link is invalid or has expired. If you still want to delete your
+					account, please request a new deletion link from your account settings.
 				</p>
 			</div>
 
@@ -95,7 +99,9 @@
 		{:else}
 			<!-- Confirmation Form -->
 			<div class="text-center">
-				<div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
+				<div
+					class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10"
+				>
 					<AlertTriangle class="h-8 w-8 text-destructive" aria-hidden="true" />
 				</div>
 				<h1 class="text-3xl font-bold tracking-tight">Confirm Account Deletion</h1>
@@ -157,14 +163,14 @@
 				<div class="flex gap-3">
 					<a
 						href="/"
-						class="flex-1 inline-flex h-10 items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+						class="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					>
 						Cancel
 					</a>
 					<button
 						type="submit"
 						disabled={isSubmitting}
-						class="flex-1 inline-flex h-10 items-center justify-center gap-2 rounded-md bg-destructive px-4 py-2 text-sm font-semibold text-destructive-foreground transition-colors hover:bg-destructive/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+						class="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-md bg-destructive px-4 py-2 text-sm font-semibold text-destructive-foreground transition-colors hover:bg-destructive/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						{#if isSubmitting}
 							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />

@@ -41,9 +41,15 @@
 
 		{#if success}
 			<!-- Success State -->
-			<div role="status" class="rounded-md border border-green-500 bg-green-50 p-6 dark:bg-green-950">
+			<div
+				role="status"
+				class="rounded-md border border-green-500 bg-green-50 p-6 dark:bg-green-950"
+			>
 				<div class="flex items-start gap-3">
-					<Mail class="h-6 w-6 flex-shrink-0 text-green-600 dark:text-green-400" aria-hidden="true" />
+					<Mail
+						class="h-6 w-6 flex-shrink-0 text-green-600 dark:text-green-400"
+						aria-hidden="true"
+					/>
 					<div class="flex-1 space-y-3">
 						<p class="text-sm font-medium text-green-800 dark:text-green-200">
 							Password reset email sent

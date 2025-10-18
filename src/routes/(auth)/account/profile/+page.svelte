@@ -45,10 +45,15 @@
 	</div>
 
 	{#if success}
-		<div role="status" class="mb-6 rounded-md border border-green-500 bg-green-50 p-4 dark:bg-green-950">
+		<div
+			role="status"
+			class="mb-6 rounded-md border border-green-500 bg-green-50 p-4 dark:bg-green-950"
+		>
 			<div class="flex items-center gap-2">
 				<Check class="h-5 w-5 text-green-600 dark:text-green-400" aria-hidden="true" />
-				<p class="text-sm font-medium text-green-800 dark:text-green-200">Profile updated successfully</p>
+				<p class="text-sm font-medium text-green-800 dark:text-green-200">
+					Profile updated successfully
+				</p>
 			</div>
 		</div>
 	{/if}
@@ -94,7 +99,7 @@
 				type="email"
 				value={email}
 				disabled
-				class="flex h-10 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm text-muted-foreground cursor-not-allowed"
+				class="flex h-10 w-full cursor-not-allowed rounded-md border border-input bg-muted px-3 py-2 text-sm text-muted-foreground"
 			/>
 			<p class="text-xs text-muted-foreground">Email cannot be changed</p>
 		</div>
@@ -111,10 +116,14 @@
 					aria-invalid={!!errors.first_name}
 					aria-describedby={errors.first_name ? 'first-name-error' : undefined}
 					disabled={isSubmitting}
-					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.first_name ? 'border-destructive' : ''}"
+					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.first_name
+						? 'border-destructive'
+						: ''}"
 				/>
 				{#if errors.first_name}
-					<p id="first-name-error" class="text-sm text-destructive" role="alert">{errors.first_name}</p>
+					<p id="first-name-error" class="text-sm text-destructive" role="alert">
+						{errors.first_name}
+					</p>
 				{/if}
 			</div>
 
@@ -129,10 +138,14 @@
 					aria-invalid={!!errors.last_name}
 					aria-describedby={errors.last_name ? 'last-name-error' : undefined}
 					disabled={isSubmitting}
-					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.last_name ? 'border-destructive' : ''}"
+					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.last_name
+						? 'border-destructive'
+						: ''}"
 				/>
 				{#if errors.last_name}
-					<p id="last-name-error" class="text-sm text-destructive" role="alert">{errors.last_name}</p>
+					<p id="last-name-error" class="text-sm text-destructive" role="alert">
+						{errors.last_name}
+					</p>
 				{/if}
 			</div>
 		</div>
@@ -148,12 +161,16 @@
 				aria-invalid={!!errors.preferred_name}
 				aria-describedby={errors.preferred_name ? 'preferred-name-error' : undefined}
 				disabled={isSubmitting}
-				class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.preferred_name ? 'border-destructive' : ''}"
+				class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.preferred_name
+					? 'border-destructive'
+					: ''}"
 				placeholder="What should we call you?"
 			/>
 			<p class="text-xs text-muted-foreground">This is how you'll appear throughout Revel</p>
 			{#if errors.preferred_name}
-				<p id="preferred-name-error" class="text-sm text-destructive" role="alert">{errors.preferred_name}</p>
+				<p id="preferred-name-error" class="text-sm text-destructive" role="alert">
+					{errors.preferred_name}
+				</p>
 			{/if}
 		</div>
 
@@ -171,7 +188,9 @@
 						aria-describedby={errors.pronouns ? 'pronouns-error' : undefined}
 						disabled={isSubmitting}
 						maxlength="10"
-						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.pronouns ? 'border-destructive' : ''}"
+						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.pronouns
+							? 'border-destructive'
+							: ''}"
 						placeholder="e.g., ze/zir"
 					/>
 					<button
