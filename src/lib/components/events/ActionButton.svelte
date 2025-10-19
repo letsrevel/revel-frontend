@@ -73,9 +73,9 @@
 		if (!userStatus) return 'primary';
 
 		if (isRSVP(userStatus)) {
-			// RSVP status can be 'approved' | 'rejected' | 'pending review'
-			if (userStatus.status === 'rejected') return 'destructive';
-			if (userStatus.status === 'approved') return 'success';
+			// RSVP status is 'yes' | 'no' | 'maybe'
+			if (userStatus.status === 'yes') return 'success';
+			if (userStatus.status === 'no') return 'destructive';
 			return 'secondary';
 		}
 
@@ -125,9 +125,9 @@
 	aria-live="polite"
 >
 	<span class="flex items-center justify-center gap-2">
-		{#if userStatus && isRSVP(userStatus) && userStatus.status === 'approved'}
+		{#if userStatus && isRSVP(userStatus) && userStatus.status === 'yes'}
 			<Check class="h-5 w-5" aria-hidden="true" />
-		{:else if userStatus && isRSVP(userStatus) && userStatus.status === 'rejected'}
+		{:else if userStatus && isRSVP(userStatus) && userStatus.status === 'no'}
 			<X class="h-5 w-5" aria-hidden="true" />
 		{:else if userStatus && (isTicket(userStatus) || (isEligibility(userStatus) && userStatus.next_step === 'purchase_ticket'))}
 			<Ticket class="h-5 w-5" aria-hidden="true" />

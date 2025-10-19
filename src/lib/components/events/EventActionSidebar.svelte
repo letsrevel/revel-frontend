@@ -6,6 +6,7 @@
 	import EventStatusBadge from './EventStatusBadge.svelte';
 	import EventQuickInfo from './EventQuickInfo.svelte';
 	import ActionButton from './ActionButton.svelte';
+	import EventRSVP from './EventRSVP.svelte';
 	import EligibilityStatusDisplay from './EligibilityStatusDisplay.svelte';
 	import { Check, Ticket } from 'lucide-svelte';
 
@@ -32,7 +33,8 @@
 		if (!userStatus) return false;
 
 		if (isRSVP(userStatus)) {
-			return userStatus.status === 'approved';
+			// User is attending if they RSVP'd 'yes'
+			return userStatus.status === 'yes';
 		}
 
 		if (isTicket(userStatus)) {
@@ -48,7 +50,7 @@
 	let attendanceStatusText = $derived.by(() => {
 		if (!userStatus) return null;
 
-		if (isRSVP(userStatus) && userStatus.status === 'approved') {
+		if (isRSVP(userStatus) && userStatus.status === 'yes') {
 			return "You're attending";
 		}
 
@@ -93,6 +95,9 @@
 		)
 	);
 
+	// State for showing RSVP management
+	let showManageRSVP = $state(false);
+
 	/**
 	 * Handle view ticket/manage RSVP action
 	 */
@@ -106,8 +111,8 @@
 		}
 
 		if (isRSVP(userStatus)) {
-			// TODO: Navigate to RSVP management page
-			console.log('Manage RSVP:', userStatus);
+			// Toggle RSVP management view
+			showManageRSVP = !showManageRSVP;
 			return;
 		}
 	}
@@ -158,14 +163,27 @@
 			</div>
 		{/if}
 
-		<!-- Primary Action Button (if not attending) -->
+		<!-- Primary Action (if not attending) -->
 		{#if !isAttending}
-			<ActionButton
-				{userStatus}
-				requiresTicket={event.requires_ticket}
-				{isAuthenticated}
-				class="w-full"
-			/>
+			<!-- RSVP Flow for non-ticketed events -->
+			{#if !event.requires_ticket}
+				<EventRSVP
+					eventId={event.id}
+					eventName={event.name}
+					initialStatus={userStatus}
+					{isAuthenticated}
+					requiresTicket={event.requires_ticket}
+					{event}
+				/>
+			{:else}
+				<!-- Ticket purchase flow -->
+				<ActionButton
+					{userStatus}
+					requiresTicket={event.requires_ticket}
+					{isAuthenticated}
+					class="w-full"
+				/>
+			{/if}
 		{/if}
 
 		<!-- Secondary Actions (if user is attending) -->
@@ -178,9 +196,21 @@
 				{#if userStatus && isTicket(userStatus)}
 					View Ticket
 				{:else}
-					Manage RSVP
+					{showManageRSVP ? 'Hide' : 'Change'} RSVP
 				{/if}
 			</button>
+
+			<!-- Show EventRSVP when managing -->
+			{#if showManageRSVP && isRSVP(userStatus)}
+				<EventRSVP
+					eventId={event.id}
+					eventName={event.name}
+					initialStatus={userStatus}
+					{isAuthenticated}
+					requiresTicket={event.requires_ticket}
+					{event}
+				/>
+			{/if}
 		{/if}
 
 		<!-- Quick Info Section -->
@@ -189,8 +219,8 @@
 			<EventQuickInfo {event} variant="compact" />
 		</div>
 
-		<!-- Eligibility Section (if not allowed) -->
-		{#if shouldShowEligibility && userStatus && isEligibility(userStatus)}
+		<!-- Eligibility Section (only for ticket events where EventRSVP doesn't handle it) -->
+		{#if shouldShowEligibility && userStatus && isEligibility(userStatus) && event.requires_ticket}
 			<div class="border-t pt-4">
 				<h3 class="mb-2 text-sm font-semibold">Eligibility Status</h3>
 				<EligibilityStatusDisplay eligibility={userStatus} />
