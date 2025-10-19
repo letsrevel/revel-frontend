@@ -2,11 +2,15 @@ import { error } from '@sveltejs/kit';
 import {
 	eventGetEventBySlugs559C2Da7,
 	eventGetMyEventStatus34Fbf248,
-	potluckListPotluckItems6Efb6Eb9
+	potluckListPotluckItems6Efb6Eb9,
+	permissionMyPermissionsC74726Aa
 } from '$lib/api';
 import type { PageServerLoad } from './$types';
 import type { UserEventStatus } from '$lib/utils/eligibility';
-import type { PotluckItemRetrieveSchema } from '$lib/api/generated/types.gen';
+import type {
+	PotluckItemRetrieveSchema,
+	OrganizationPermissionsSchema
+} from '$lib/api/generated/types.gen';
 
 export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 	const { org_slug, event_slug } = params;
@@ -72,10 +76,30 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 			}
 		}
 
+		// Fetch user permissions (requires authentication)
+		let userPermissions: OrganizationPermissionsSchema | null = null;
+		if (locals.user) {
+			try {
+				const permissionsResponse = await permissionMyPermissionsC74726Aa({
+					fetch,
+					headers
+				});
+
+				if (permissionsResponse.data) {
+					userPermissions = permissionsResponse.data;
+				}
+			} catch (err) {
+				// If permissions fail to load, continue without them
+				// User will have limited permissions by default
+				console.error('Failed to fetch user permissions:', err);
+			}
+		}
+
 		return {
 			event,
 			userStatus,
 			potluckItems,
+			userPermissions,
 			// Explicitly pass authentication state to the page
 			isAuthenticated: !!locals.user
 		};

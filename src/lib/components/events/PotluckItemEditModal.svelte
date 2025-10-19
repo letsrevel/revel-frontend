@@ -1,28 +1,35 @@
 <script lang="ts">
-	import type { PotluckItemRetrieveSchema } from '$lib/api/generated/types.gen';
+	import type { PotluckItemRetrieveSchema, ItemTypes } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import { X } from 'lucide-svelte';
 
 	interface Props {
-		item: PotluckItemRetrieveSchema;
+		item?: PotluckItemRetrieveSchema | null; // null/undefined for create mode
 		isOpen: boolean;
+		hasManagePermission: boolean; // For showing claim checkbox in create mode
+		errorMessage?: string | null; // Error message to display inside modal
 		onSubmit: (data: {
 			name: string;
 			item_type: string;
 			quantity: string | null;
 			note: string | null;
+			claimItem?: boolean; // Only used in create mode
 		}) => void;
 		onCancel: () => void;
 		class?: string;
 	}
 
-	let { item, isOpen, onSubmit, onCancel, class: className }: Props = $props();
+	let { item = null, isOpen, hasManagePermission, errorMessage = null, onSubmit, onCancel, class: className }: Props = $props();
 
-	// Form state - initialize with item data
-	let name = $state(item.name);
-	let itemType = $state(item.item_type);
-	let quantity = $state(item.quantity || '');
+	// Determine if we're in create or edit mode
+	let isCreateMode = $derived(!item);
+
+	// Form state - initialize with item data (edit) or empty (create)
+	let name = $state(item?.name || '');
+	let itemType = $state<ItemTypes>((item?.item_type as ItemTypes) || 'food');
+	let quantity = $state(item?.quantity || '');
 	let note = $state(''); // Note is not in retrieve schema, only note_html
+	let claimItem = $state(true); // For create mode with manage permission
 
 	// Item type options
 	const ITEM_TYPE_OPTIONS = [
@@ -50,13 +57,23 @@
 		return name.trim().length > 0 && name.trim().length <= 100 && itemType.trim().length > 0;
 	});
 
-	// Reset form when item changes
+	// Reset form when modal opens/closes or item changes
 	$effect(() => {
 		if (isOpen) {
-			name = item.name;
-			itemType = item.item_type;
-			quantity = item.quantity || '';
-			note = '';
+			if (item) {
+				// Edit mode - populate with item data
+				name = item.name;
+				itemType = item.item_type as ItemTypes;
+				quantity = item.quantity || '';
+				note = '';
+			} else {
+				// Create mode - reset to defaults
+				name = '';
+				itemType = 'food';
+				quantity = '';
+				note = '';
+				claimItem = true;
+			}
 			errors = {};
 		}
 	});
@@ -90,12 +107,14 @@
 		}
 
 		// Submit the form
-		onSubmit({
+		const data = {
 			name: name.trim(),
 			item_type: itemType,
 			quantity: quantity.trim() || null,
-			note: note.trim() || null
-		});
+			note: note.trim() || null,
+			...(isCreateMode && hasManagePermission && { claimItem })
+		};
+		onSubmit(data);
 	}
 
 	function handleCancel() {
@@ -131,7 +150,13 @@
 		)}
 	>
 		<div class="mb-4 flex items-center justify-between">
-			<h2 id="edit-modal-title" class="text-lg font-semibold">Edit potluck item</h2>
+			<h2 id="edit-modal-title" class="text-lg font-semibold">
+				{isCreateMode
+					? hasManagePermission
+						? 'Add potluck item'
+						: "Add item you'll bring"
+					: 'Edit potluck item'}
+			</h2>
 			<button
 				type="button"
 				onclick={handleCancel}
@@ -143,6 +168,20 @@
 		</div>
 
 		<form onsubmit={handleSubmit} class="space-y-4">
+			<!-- Error banner (inside modal) -->
+			{#if errorMessage}
+				<div
+					class="flex items-start gap-3 rounded-md border border-destructive/50 bg-destructive/10 p-3"
+					role="alert"
+					aria-live="assertive"
+				>
+					<span class="text-lg" aria-hidden="true">⚠️</span>
+					<div class="flex-1">
+						<p class="text-sm font-medium text-destructive">{errorMessage}</p>
+					</div>
+				</div>
+			{/if}
+
 			<!-- Item Name -->
 			<div>
 				<label for="edit-item-name" class="mb-1.5 block text-sm font-medium">
@@ -243,6 +282,24 @@
 				<p class="mt-1 text-xs text-muted-foreground">Basic markdown supported</p>
 			</div>
 
+			<!-- Claim checkbox (create mode for staff/owners only) -->
+			{#if isCreateMode && hasManagePermission}
+				<div class="flex items-center gap-2">
+					<input
+						id="claim-item"
+						type="checkbox"
+						bind:checked={claimItem}
+						class="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
+					/>
+					<label
+						for="claim-item"
+						class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+					>
+						I'll bring this item
+					</label>
+				</div>
+			{/if}
+
 			<!-- Action buttons -->
 			<div class="flex items-center justify-end gap-2 pt-2">
 				<button
@@ -262,7 +319,11 @@
 							: 'cursor-not-allowed bg-muted text-muted-foreground opacity-60'
 					)}
 				>
-					Save changes
+					{isCreateMode
+						? hasManagePermission && !claimItem
+							? 'Add as suggestion'
+							: 'Add & claim'
+						: 'Save changes'}
 				</button>
 			</div>
 		</form>

@@ -8,6 +8,7 @@
 	import PotluckSection from '$lib/components/events/PotluckSection.svelte';
 	import { generateEventStructuredData, structuredDataToJsonLd } from '$lib/utils/structured-data';
 	import { isRSVP, isTicket } from '$lib/utils/eligibility';
+	import { getPotluckPermissions } from '$lib/utils/permissions';
 
 	let { data }: { data: PageData } = $props();
 
@@ -36,9 +37,16 @@
 		return false;
 	});
 
-	// Check if user is organizer
-	// TODO: Get this from a separate endpoint or event permissions
-	let isOrganizer = $derived(false);
+	// Compute permissions for potluck management
+	let potluckPermissions = $derived(
+		getPotluckPermissions(
+			data.userPermissions,
+			event.organization.id,
+			event.id,
+			event.potluck_open,
+			hasRSVPd
+		)
+	);
 </script>
 
 <svelte:head>
@@ -98,7 +106,7 @@
 				<!-- Always show if items exist, controlled by the section itself -->
 				<PotluckSection
 					{event}
-					{isOrganizer}
+					permissions={potluckPermissions}
 					isAuthenticated={data.isAuthenticated}
 					{hasRSVPd}
 					initialItems={data.potluckItems}
