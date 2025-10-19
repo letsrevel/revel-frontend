@@ -42,7 +42,7 @@
 	let canInteract = $derived(isAuthenticated && (hasRSVPd || isOrganizer));
 
 	// Query: Fetch potluck items
-	const itemsQuery = createQuery({
+	const itemsQuery = createQuery(() => ({
 		queryKey: ['potluck-items', event.id],
 		queryFn: async (): Promise<PotluckItemRetrieveSchema[]> => {
 			const response = await fetch(`/api/events/${event.id}/potluck`, {
@@ -52,13 +52,9 @@
 			return response.json();
 		},
 		initialData: initialItems,
-		get refetchInterval() {
-			return isExpanded ? 5000 : false;
-		},
-		get enabled() {
-			return isAuthenticated;
-		}
-	});
+		refetchInterval: isExpanded ? 5000 : false,
+		enabled: isAuthenticated
+	}));
 
 	// Mutation: Create item
 	const createItemMutation = createMutation<
@@ -229,7 +225,7 @@
 
 	// Computed: Filter and group items
 	let filteredItems = $derived.by(() => {
-		const items = $itemsQuery.data || [];
+		const items = itemsQuery.data || [];
 
 		// Apply search filter
 		let filtered = items;
@@ -282,7 +278,7 @@
 
 	// Stats
 	let stats = $derived.by(() => {
-		const items = $itemsQuery.data || [];
+		const items = itemsQuery.data || [];
 		return {
 			total: items.length,
 			claimed: items.filter((i) => i.is_assigned).length,
@@ -321,7 +317,7 @@
 	}
 
 	function handleFormSubmit(data: PotluckItemCreateSchema & { claimItem?: boolean }) {
-		$createItemMutation.mutate(data);
+		createItemMutation.mutate(data);
 	}
 
 	function handleFormCancel() {
@@ -329,15 +325,15 @@
 	}
 
 	function handleClaim(itemId: string) {
-		$claimItemMutation.mutate(itemId);
+		claimItemMutation.mutate(itemId);
 	}
 
 	function handleUnclaim(itemId: string) {
-		$unclaimItemMutation.mutate(itemId);
+		unclaimItemMutation.mutate(itemId);
 	}
 
 	function handleEdit(itemId: string) {
-		const item = $itemsQuery.data?.find((i) => i.id === itemId);
+		const item = itemsQuery.data?.find((i) => i.id === itemId);
 		if (item) {
 			editingItem = item;
 		}
@@ -350,7 +346,7 @@
 		note: string | null;
 	}) {
 		if (editingItem && editingItem.id) {
-			$updateItemMutation.mutate({ itemId: editingItem.id, data });
+			updateItemMutation.mutate({ itemId: editingItem.id, data });
 		}
 	}
 
@@ -360,7 +356,7 @@
 
 	function handleDelete(itemId: string) {
 		if (confirm('Are you sure you want to delete this item?')) {
-			$deleteItemMutation.mutate(itemId);
+			deleteItemMutation.mutate(itemId);
 		}
 	}
 </script>
@@ -436,7 +432,7 @@
 			{/if}
 
 			<!-- Loading state -->
-			{#if $itemsQuery.isLoading}
+			{#if itemsQuery.isLoading}
 				<div class="py-12 text-center">
 					<div
 						class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
@@ -445,7 +441,7 @@
 						<span class="sr-only">Loading potluck items...</span>
 					</div>
 				</div>
-			{:else if $itemsQuery.isError}
+			{:else if itemsQuery.isError}
 				<!-- Error state -->
 				<div class="rounded-md border border-destructive/50 bg-destructive/10 p-4 text-center">
 					<p class="text-sm text-destructive">Failed to load potluck items. Please try again.</p>

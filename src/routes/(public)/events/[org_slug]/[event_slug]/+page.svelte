@@ -7,42 +7,65 @@
 	import OrganizationInfo from '$lib/components/events/OrganizationInfo.svelte';
 	import PotluckSection from '$lib/components/events/PotluckSection.svelte';
 	import { generateEventStructuredData, structuredDataToJsonLd } from '$lib/utils/structured-data';
+	import { isRSVP, isTicket } from '$lib/utils/eligibility';
 
 	let { data }: { data: PageData } = $props();
 
+	// Create mutable copy of event for client-side updates (like attendee count)
+	let event = $state(data.event);
+
 	// Get structured data for SEO
 	let structuredData = $derived(
-		generateEventStructuredData(data.event, `${page.url.origin}${page.url.pathname}`)
+		generateEventStructuredData(event, `${page.url.origin}${page.url.pathname}`)
 	);
 	let jsonLd = $derived(structuredDataToJsonLd(structuredData));
+
+	// Check if user has RSVP'd
+	let hasRSVPd = $derived.by(() => {
+		if (!data.userStatus) return false;
+
+		if (isRSVP(data.userStatus)) {
+			return data.userStatus.status === 'yes';
+		}
+
+		if (isTicket(data.userStatus)) {
+			return data.userStatus.status === 'active' || data.userStatus.status === 'checked_in';
+		}
+
+		return false;
+	});
+
+	// Check if user is organizer
+	// TODO: Get this from a separate endpoint or event permissions
+	let isOrganizer = $derived(false);
 </script>
 
 <svelte:head>
-	<title>{data.event.name} | Revel</title>
+	<title>{event.name} | Revel</title>
 	<meta
 		name="description"
-		content={data.event.description?.slice(0, 160) ||
-			`Join ${data.event.name} organized by ${data.event.organization.name}`}
+		content={event.description?.slice(0, 160) ||
+			`Join ${event.name} organized by ${event.organization.name}`}
 	/>
 
 	<!-- Open Graph -->
 	<meta property="og:type" content="event" />
-	<meta property="og:title" content={data.event.name} />
-	<meta property="og:description" content={data.event.description || `Join ${data.event.name}`} />
-	{#if data.event.cover_art}
-		<meta property="og:image" content={data.event.cover_art} />
+	<meta property="og:title" content={event.name} />
+	<meta property="og:description" content={event.description || `Join ${event.name}`} />
+	{#if event.cover_art}
+		<meta property="og:image" content={event.cover_art} />
 	{/if}
 	<meta property="og:url" content={page.url.href} />
 
 	<!-- Twitter Card -->
 	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:title" content={data.event.name} />
+	<meta name="twitter:title" content={event.name} />
 	<meta
 		name="twitter:description"
-		content={data.event.description?.slice(0, 200) || `Join ${data.event.name}`}
+		content={event.description?.slice(0, 200) || `Join ${event.name}`}
 	/>
-	{#if data.event.cover_art}
-		<meta name="twitter:image" content={data.event.cover_art} />
+	{#if event.cover_art}
+		<meta name="twitter:image" content={event.cover_art} />
 	{/if}
 
 	<!-- Structured Data (JSON-LD) -->
@@ -51,14 +74,14 @@
 
 <div class="min-h-screen bg-background">
 	<!-- Event Header -->
-	<EventHeader event={data.event} class="mb-8" />
+	<EventHeader {event} class="mb-8" />
 
 	<!-- Main Content -->
 	<div class="container mx-auto px-6 pb-16 md:px-8">
 		<!-- Mobile Action Card (at top, prominent) -->
 		<div class="mb-8 lg:hidden">
 			<EventActionSidebar
-				event={data.event}
+				{event}
 				userStatus={data.userStatus}
 				isAuthenticated={data.isAuthenticated}
 				variant="card"
@@ -68,21 +91,21 @@
 		<div class="grid gap-8 lg:grid-cols-3">
 			<!-- Left Column: Event Details -->
 			<div class="space-y-8 lg:col-span-2">
-				<EventDetails event={data.event} />
+				<EventDetails {event} />
 
 				<!-- Potluck Section -->
 				<!-- Always show if items exist, controlled by the section itself -->
 				<PotluckSection
-					event={data.event}
-					isOrganizer={data.userStatus?.is_organizer ?? false}
+					{event}
+					{isOrganizer}
 					isAuthenticated={data.isAuthenticated}
-					hasRSVPd={data.userStatus?.status === 'going' || data.userStatus?.status === 'checked_in'}
+					{hasRSVPd}
 					initialItems={data.potluckItems}
 				/>
 
 				<!-- Organization Info (below details on mobile, hidden on desktop) -->
 				<div class="lg:hidden">
-					<OrganizationInfo organization={data.event.organization} />
+					<OrganizationInfo organization={event.organization} />
 				</div>
 			</div>
 
@@ -90,14 +113,14 @@
 			<aside class="hidden lg:col-span-1 lg:block">
 				<div class="space-y-6">
 					<EventActionSidebar
-						event={data.event}
+						{event}
 						userStatus={data.userStatus}
 						isAuthenticated={data.isAuthenticated}
 						variant="sidebar"
 					/>
 
 					<!-- Organization Info (desktop only) -->
-					<OrganizationInfo organization={data.event.organization} />
+					<OrganizationInfo organization={event.organization} />
 				</div>
 			</aside>
 		</div>

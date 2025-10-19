@@ -6,14 +6,28 @@ import type {
 } from '$lib/api/generated/types.gen';
 
 /**
+ * RSVP answer type (what backend actually returns)
+ * Note: The generated type says 'approved' | 'rejected' | 'pending review' but that's incorrect.
+ * The backend actually returns the user's answer: 'yes' | 'no' | 'maybe'
+ */
+export type RsvpAnswer = 'yes' | 'no' | 'maybe';
+
+/**
+ * EventRsvpSchema with corrected status type
+ */
+export type EventRsvpSchemaActual = Omit<EventRsvpSchema, 'status'> & {
+	status: RsvpAnswer;
+};
+
+/**
  * User status returned from /my-status endpoint
  */
-export type UserEventStatus = EventRsvpSchema | EventTicketSchema | EventUserEligibility;
+export type UserEventStatus = EventRsvpSchemaActual | EventTicketSchema | EventUserEligibility;
 
 /**
  * Type guard to check if status is an RSVP
  */
-export function isRSVP(status: UserEventStatus): status is EventRsvpSchema {
+export function isRSVP(status: UserEventStatus): status is EventRsvpSchemaActual {
 	return 'status' in status && !('tier' in status) && !('allowed' in status);
 }
 
@@ -149,11 +163,11 @@ export function getEligibilityExplanation(eligibility: EventUserEligibility): st
 /**
  * Get RSVP status display text
  */
-export function getRSVPStatusText(status: EventRsvpSchema['status']): string {
-	// EventRsvpSchema.status is 'approved' | 'rejected' | 'pending review'
-	if (status === 'approved') return "You're attending";
-	if (status === 'rejected') return 'RSVP rejected';
-	if (status === 'pending review') return 'RSVP pending review';
+export function getRSVPStatusText(status: RsvpAnswer): string {
+	// Backend returns the user's actual answer: 'yes' | 'no' | 'maybe'
+	if (status === 'yes') return "You're attending";
+	if (status === 'maybe') return 'You might attend';
+	if (status === 'no') return "You're not attending";
 	return 'RSVP status unknown';
 }
 

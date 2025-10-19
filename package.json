@@ -50,7 +50,7 @@
 		"vitest": "^2.1.8"
 	},
 	"dependencies": {
-		"@tanstack/svelte-query": "^5.62.7",
+		"@tanstack/svelte-query": "^6.0.3",
 		"bits-ui": "^1.0.3",
 		"clsx": "^2.1.1",
 		"lucide-svelte": "^0.469.0",
