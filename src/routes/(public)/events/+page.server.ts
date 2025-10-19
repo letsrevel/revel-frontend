@@ -2,9 +2,7 @@ import type { PageServerLoad } from './$types';
 import { eventListEventsDacbb89B } from '$lib/api';
 import { error as svelteKitError } from '@sveltejs/kit';
 
-export const load: PageServerLoad = async ({ url, fetch }) => {
-	console.log('[Events Load] Loading with URL:', url.toString());
-
+export const load: PageServerLoad = async ({ url, fetch, locals }) => {
 	// Parse query parameters
 	const search = url.searchParams.get('search') || undefined;
 	const page = parseInt(url.searchParams.get('page') || '1');
@@ -18,7 +16,7 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 	const tagsParam = url.searchParams.get('tags');
 	const tags = tagsParam ? tagsParam.split(',').filter(Boolean) : undefined;
 	const includePast = url.searchParams.get('include_past') === 'true';
-	const orderBy = url.searchParams.get('order_by') || 'start';
+	const orderBy = url.searchParams.get('order_by') || 'distance';
 
 	try {
 		// Prepare query parameters
@@ -35,22 +33,28 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 			order_by: orderBy as 'start' | '-start' | 'distance'
 		};
 
-		console.log('[Events Load] API Query Params:', queryParams);
+		// Prepare headers with authentication if user is logged in
+		const headers: HeadersInit = {};
+		if (locals.user?.accessToken) {
+			headers['Authorization'] = `Bearer ${locals.user.accessToken}`;
+		}
 
-		// Call the API with SSR-compatible fetch
+		// Call the API with SSR-compatible fetch and auth headers
 		const response = await eventListEventsDacbb89B({
 			fetch,
-			query: queryParams
+			query: queryParams,
+			headers
 		});
 
 		// Handle API errors
 		if (response.error) {
-			console.error('Failed to fetch events:', response.error);
+			console.error('[Events Load] Failed to fetch events:', response.error);
 			throw svelteKitError(500, 'Failed to load events. Please try again later.');
 		}
 
 		// Type guard: ensure response.data exists
 		if (!response.data) {
+			console.error('[Events Load] Invalid API response - no data');
 			throw svelteKitError(500, 'Invalid API response');
 		}
 
