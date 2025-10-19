@@ -20,7 +20,7 @@
 
 	let {
 		event,
-		userStatus,
+		userStatus = $bindable(),
 		isAuthenticated,
 		variant = 'sidebar',
 		class: className
@@ -170,7 +170,7 @@
 				<EventRSVP
 					eventId={event.id}
 					eventName={event.name}
-					initialStatus={userStatus}
+					bind:userStatus
 					{isAuthenticated}
 					requiresTicket={event.requires_ticket}
 					{event}
@@ -201,11 +201,11 @@
 			</button>
 
 			<!-- Show EventRSVP when managing -->
-			{#if showManageRSVP && isRSVP(userStatus)}
+			{#if showManageRSVP && userStatus && isRSVP(userStatus)}
 				<EventRSVP
 					eventId={event.id}
 					eventName={event.name}
-					initialStatus={userStatus}
+					bind:userStatus
 					{isAuthenticated}
 					requiresTicket={event.requires_ticket}
 					{event}

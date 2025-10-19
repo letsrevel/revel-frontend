@@ -6,7 +6,7 @@
 	interface Props {
 		item: PotluckItemRetrieveSchema;
 		isOrganizer: boolean;
-		canClaim: boolean; // User is authenticated and RSVP'd
+		canClaim: boolean; // User is authenticated and RSVP'd "yes"
 		onClaim: (id: string) => void;
 		onUnclaim: (id: string) => void;
 		onEdit?: (id: string) => void;
@@ -62,7 +62,7 @@
 	let buttonText = $derived.by(() => {
 		if (item.is_owned) return 'Unclaim';
 		if (item.is_assigned) return '(Already claimed)';
-		if (!canClaim) return 'RSVP to claim';
+		if (!canClaim) return 'RSVP "Yes" to claim';
 		return "I'll bring this";
 	});
 

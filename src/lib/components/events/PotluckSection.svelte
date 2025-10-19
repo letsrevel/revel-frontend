@@ -38,8 +38,11 @@
 	let selectedCategory = $state<string>('all');
 	let editingItem = $state<PotluckItemRetrieveSchema | null>(null);
 
-	// Can user interact with potluck
-	let canInteract = $derived(isAuthenticated && (hasRSVPd || isOrganizer));
+	// Can user claim items (must have RSVP'd "yes")
+	let canClaim = $derived(isAuthenticated && hasRSVPd);
+
+	// Can user add items (RSVP'd or organizer)
+	let canAddItems = $derived(isAuthenticated && (hasRSVPd || isOrganizer));
 
 	// Query: Fetch potluck items
 	const itemsQuery = createQuery(() => ({
@@ -395,7 +398,7 @@
 		<div id="potluck-content" class="space-y-4 p-4">
 			<!-- Add item button & search -->
 			<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-				{#if canInteract}
+				{#if canAddItems}
 					<button
 						type="button"
 						onclick={handleAddClick}
@@ -453,7 +456,7 @@
 						<p class="text-sm text-muted-foreground">No items match your search.</p>
 					{:else}
 						<p class="text-muted-foreground">No items yet!</p>
-						{#if canInteract}
+						{#if canAddItems}
 							<p class="mt-2 text-sm text-muted-foreground">
 								Be the first to add something you'll bring.
 							</p>
@@ -473,7 +476,7 @@
 									<PotluckItem
 										{item}
 										{isOrganizer}
-										canClaim={canInteract}
+										{canClaim}
 										onClaim={handleClaim}
 										onUnclaim={handleUnclaim}
 										onEdit={handleEdit}

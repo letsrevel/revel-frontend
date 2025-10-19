@@ -16,7 +16,7 @@ Smart component for managing event RSVP flow with eligibility checks, optimistic
 <EventRSVP
   eventId="event-123"
   eventName="Summer Block Party"
-  initialStatus={userStatus}
+  bind:userStatus
   {isAuthenticated}
   requiresTicket={false}
 />
@@ -28,7 +28,7 @@ Smart component for managing event RSVP flow with eligibility checks, optimistic
 |------|------|----------|-------------|
 | `eventId` | `string` | Yes | Event ID for RSVP submission |
 | `eventName` | `string` | Yes | Event name for success message display |
-| `initialStatus` | `UserEventStatus \| null` | Yes | User's current status (RSVP, ticket, or eligibility) |
+| `userStatus` | `UserEventStatus \| null` | Yes | User's current status (RSVP, ticket, or eligibility) - bindable prop |
 | `isAuthenticated` | `boolean` | Yes | Whether user is logged in |
 | `requiresTicket` | `boolean` | Yes | If true, component won't render (ticket events use different flow) |
 | `class` | `string` | No | Additional CSS classes |
@@ -75,7 +75,7 @@ The component is designed to work seamlessly in the EventActionSidebar:
     <EventRSVP
       eventId={event.id}
       eventName={event.name}
-      initialStatus={userStatus}
+      bind:userStatus
       {isAuthenticated}
       requiresTicket={event.requires_ticket}
     />
