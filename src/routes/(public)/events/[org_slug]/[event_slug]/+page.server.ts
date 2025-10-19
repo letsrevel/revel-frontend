@@ -41,7 +41,9 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 
 		return {
 			event,
-			userStatus
+			userStatus,
+			// Explicitly pass authentication state to the page
+			isAuthenticated: !!locals.user
 		};
 	} catch (err) {
 		// Handle different error types
