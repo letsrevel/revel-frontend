@@ -70,10 +70,10 @@ The badge displays one of the following statuses based on priority:
 
 ## Props
 
-| Prop    | Type                | Required | Default | Description                          |
-| ------- | ------------------- | -------- | ------- | ------------------------------------ |
-| `event` | `EventDetailSchema` | Yes      | -       | The event object to display          |
-| `class` | `string`            | No       | -       | Additional CSS classes to apply      |
+| Prop    | Type                | Required | Default | Description                     |
+| ------- | ------------------- | -------- | ------- | ------------------------------- |
+| `event` | `EventDetailSchema` | Yes      | -       | The event object to display     |
+| `class` | `string`            | No       | -       | Additional CSS classes to apply |
 
 ## Status Determination Logic
 
@@ -82,25 +82,25 @@ The component uses the following logic to determine status (in priority order):
 ### 1. Cancelled
 
 ```typescript
-event.status === 'rejected'
+event.status === 'rejected';
 ```
 
 ### 2. Full
 
 ```typescript
-event.max_attendees > 0 && event.attendee_count >= event.max_attendees
+event.max_attendees > 0 && event.attendee_count >= event.max_attendees;
 ```
 
 ### 3. Past
 
 ```typescript
-new Date(event.end) < new Date()
+new Date(event.end) < new Date();
 ```
 
 ### 4. Ongoing
 
 ```typescript
-new Date(event.start) <= new Date() && new Date() <= new Date(event.end)
+new Date(event.start) <= new Date() && new Date() <= new Date(event.end);
 ```
 
 ### 5. Happening Today

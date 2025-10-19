@@ -17,6 +17,8 @@ export type CreateClientConfig<T extends ClientOptions = ClientOptions2> = (
 
 export const client = createClient(
 	createConfig<ClientOptions2>({
-		baseUrl: 'http://localhost:8000'
+		baseUrl: 'http://localhost:8000',
+		// Include credentials (cookies) in all requests for authentication
+		credentials: 'include'
 	})
 );

@@ -5,10 +5,8 @@
 	import EventDetails from '$lib/components/events/EventDetails.svelte';
 	import EventActionSidebar from '$lib/components/events/EventActionSidebar.svelte';
 	import OrganizationInfo from '$lib/components/events/OrganizationInfo.svelte';
-	import {
-		generateEventStructuredData,
-		structuredDataToJsonLd
-	} from '$lib/utils/structured-data';
+	import PotluckSection from '$lib/components/events/PotluckSection.svelte';
+	import { generateEventStructuredData, structuredDataToJsonLd } from '$lib/utils/structured-data';
 
 	let { data }: { data: PageData } = $props();
 
@@ -21,7 +19,11 @@
 
 <svelte:head>
 	<title>{data.event.name} | Revel</title>
-	<meta name="description" content={data.event.description?.slice(0, 160) || `Join ${data.event.name} organized by ${data.event.organization.name}`} />
+	<meta
+		name="description"
+		content={data.event.description?.slice(0, 160) ||
+			`Join ${data.event.name} organized by ${data.event.organization.name}`}
+	/>
 
 	<!-- Open Graph -->
 	<meta property="og:type" content="event" />
@@ -35,7 +37,10 @@
 	<!-- Twitter Card -->
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content={data.event.name} />
-	<meta name="twitter:description" content={data.event.description?.slice(0, 200) || `Join ${data.event.name}`} />
+	<meta
+		name="twitter:description"
+		content={data.event.description?.slice(0, 200) || `Join ${data.event.name}`}
+	/>
 	{#if data.event.cover_art}
 		<meta name="twitter:image" content={data.event.cover_art} />
 	{/if}
@@ -62,11 +67,21 @@
 
 		<div class="grid gap-8 lg:grid-cols-3">
 			<!-- Left Column: Event Details -->
-			<div class="lg:col-span-2">
+			<div class="space-y-8 lg:col-span-2">
 				<EventDetails event={data.event} />
 
+				<!-- Potluck Section -->
+				<!-- Always show if items exist, controlled by the section itself -->
+				<PotluckSection
+					event={data.event}
+					isOrganizer={data.userStatus?.is_organizer ?? false}
+					isAuthenticated={data.isAuthenticated}
+					hasRSVPd={data.userStatus?.status === 'going' || data.userStatus?.status === 'checked_in'}
+					initialItems={data.potluckItems}
+				/>
+
 				<!-- Organization Info (below details on mobile, hidden on desktop) -->
-				<div class="mt-8 lg:hidden">
+				<div class="lg:hidden">
 					<OrganizationInfo organization={data.event.organization} />
 				</div>
 			</div>

@@ -3,10 +3,7 @@
 	import type { UserEventStatus } from './types';
 	import { cn } from '$lib/utils/cn';
 	import { formatEventDate, formatEventDateForScreenReader, isEventPast } from '$lib/utils/date';
-	import {
-		getEventAccessDisplay,
-		getEventFallbackGradient
-	} from '$lib/utils/event';
+	import { getEventAccessDisplay, getEventFallbackGradient } from '$lib/utils/event';
 	import { Calendar, MapPin, Ticket } from 'lucide-svelte';
 	import EventBadges from './EventBadges.svelte';
 

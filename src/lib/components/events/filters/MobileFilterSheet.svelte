@@ -20,7 +20,15 @@
 		class?: string;
 	}
 
-	let { filters, totalCount, isOpen, onUpdateFilters, onClearFilters, onClose, class: className }: Props = $props();
+	let {
+		filters,
+		totalCount,
+		isOpen,
+		onUpdateFilters,
+		onClearFilters,
+		onClose,
+		class: className
+	}: Props = $props();
 
 	// Computed values
 	let activeFilterCount = $derived(countActiveFilters(filters));
@@ -162,37 +170,25 @@
 				<div class="border-t" role="separator"></div>
 
 				<!-- Date Filter -->
-				<DateFilter
-					includePast={filters.includePast ?? false}
-					onTogglePast={handleTogglePast}
-				/>
+				<DateFilter includePast={filters.includePast ?? false} onTogglePast={handleTogglePast} />
 
 				<!-- Divider -->
 				<div class="border-t" role="separator"></div>
 
 				<!-- City Filter -->
-				<CityFilter
-					selectedCity={selectedCity}
-					onChangeCity={handleChangeCity}
-				/>
+				<CityFilter {selectedCity} onChangeCity={handleChangeCity} />
 
 				<!-- Divider -->
 				<div class="border-t" role="separator"></div>
 
 				<!-- Event Type Filter -->
-				<EventTypeFilter
-					eventType={filters.eventType}
-					onChangeEventType={handleChangeEventType}
-				/>
+				<EventTypeFilter eventType={filters.eventType} onChangeEventType={handleChangeEventType} />
 
 				<!-- Divider -->
 				<div class="border-t" role="separator"></div>
 
 				<!-- Tags Filter -->
-				<TagsFilter
-					selectedTags={filters.tags ?? []}
-					onToggleTag={handleToggleTag}
-				/>
+				<TagsFilter selectedTags={filters.tags ?? []} onToggleTag={handleToggleTag} />
 
 				<!-- Future filters: Organization, Visibility -->
 			</div>
@@ -217,7 +213,8 @@
 					onclick={handleApply}
 					class="rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				>
-					Show {totalCount} {totalCount === 1 ? 'event' : 'events'}
+					Show {totalCount}
+					{totalCount === 1 ? 'event' : 'events'}
 				</button>
 			</div>
 		</div>

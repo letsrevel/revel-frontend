@@ -113,9 +113,12 @@
 	class={cn(
 		'w-full rounded-md px-6 py-3 font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
 		variant === 'primary' && 'bg-primary text-primary-foreground hover:bg-primary/90',
-		variant === 'secondary' && 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
-		variant === 'success' && 'bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600',
-		variant === 'destructive' && 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+		variant === 'secondary' &&
+			'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+		variant === 'success' &&
+			'bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600',
+		variant === 'destructive' &&
+			'bg-destructive text-destructive-foreground hover:bg-destructive/90',
 		isDisabled && 'cursor-not-allowed opacity-50',
 		className
 	)}

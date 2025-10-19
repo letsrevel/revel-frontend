@@ -34,12 +34,13 @@
 				<h3 class="text-lg font-semibold">{organization.name}</h3>
 				{#if organization.description}
 					<p class="mt-1 text-sm text-muted-foreground">
-						{organization.description.slice(0, 100)}{organization.description.length > 100 ? '...' : ''}
+						{organization.description.slice(0, 100)}{organization.description.length > 100
+							? '...'
+							: ''}
 					</p>
 				{/if}
 			</div>
 		</div>
-
 
 		<!-- View Profile Link -->
 		<div class="mt-6">

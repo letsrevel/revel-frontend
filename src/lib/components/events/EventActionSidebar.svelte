@@ -17,8 +17,13 @@
 		class?: string;
 	}
 
-	let { event, userStatus, isAuthenticated, variant = 'sidebar', class: className }: Props =
-		$props();
+	let {
+		event,
+		userStatus,
+		isAuthenticated,
+		variant = 'sidebar',
+		class: className
+	}: Props = $props();
 
 	/**
 	 * Check if user is attending (has approved RSVP or active ticket)

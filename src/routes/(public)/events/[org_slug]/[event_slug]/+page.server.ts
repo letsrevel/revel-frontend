@@ -1,7 +1,12 @@
 import { error } from '@sveltejs/kit';
-import { eventGetEventBySlugs1A75C6Ea, eventGetMyEventStatusEb40C7Df } from '$lib/api';
+import {
+	eventGetEventBySlugs559C2Da7,
+	eventGetMyEventStatus34Fbf248,
+	potluckListPotluckItems6Efb6Eb9
+} from '$lib/api';
 import type { PageServerLoad } from './$types';
 import type { UserEventStatus } from '$lib/utils/eligibility';
+import type { PotluckItemRetrieveSchema } from '$lib/api/generated/types.gen';
 
 export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 	const { org_slug, event_slug } = params;
@@ -14,7 +19,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 		}
 
 		// Fetch event details (pass auth to see private events)
-		const eventResponse = await eventGetEventBySlugs1A75C6Ea({
+		const eventResponse = await eventGetEventBySlugs559C2Da7({
 			fetch,
 			path: { org_slug, event_slug },
 			headers
@@ -31,7 +36,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 
 		if (locals.user) {
 			try {
-				const statusResponse = await eventGetMyEventStatusEb40C7Df({
+				const statusResponse = await eventGetMyEventStatus34Fbf248({
 					fetch,
 					path: { event_id: event.id },
 					headers
@@ -47,9 +52,30 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 			}
 		}
 
+		// Fetch potluck items (requires authentication)
+		let potluckItems: PotluckItemRetrieveSchema[] = [];
+		if (locals.user) {
+			try {
+				const potluckResponse = await potluckListPotluckItems6Efb6Eb9({
+					fetch,
+					path: { event_id: event.id },
+					headers
+				});
+
+				if (potluckResponse.data) {
+					potluckItems = potluckResponse.data;
+				}
+			} catch (err) {
+				// If potluck items fail to load, continue without them
+				// User will see empty state in the UI
+				console.error('Failed to fetch potluck items:', err);
+			}
+		}
+
 		return {
 			event,
 			userStatus,
+			potluckItems,
 			// Explicitly pass authentication state to the page
 			isAuthenticated: !!locals.user
 		};

@@ -78,19 +78,11 @@
 	);
 
 	// Item classes based on variant
-	let itemClasses = $derived(
-		cn(
-			'flex items-start gap-2',
-			variant === 'detailed' && 'gap-3'
-		)
-	);
+	let itemClasses = $derived(cn('flex items-start gap-2', variant === 'detailed' && 'gap-3'));
 
 	// Icon classes based on variant
 	let iconClasses = $derived(
-		cn(
-			'shrink-0 text-muted-foreground',
-			variant === 'detailed' ? 'h-5 w-5' : 'h-4 w-4'
-		)
+		cn('shrink-0 text-muted-foreground', variant === 'detailed' ? 'h-5 w-5' : 'h-4 w-4')
 	);
 
 	// Text wrapper classes
