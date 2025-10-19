@@ -2,10 +2,11 @@
 	import type { PotluckItemRetrieveSchema } from '$lib/api/generated/types.gen';
 	import { Edit2, Trash2 } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
+	import { canEditPotluckItem, canDeletePotluckItem } from '$lib/utils/permissions';
 
 	interface Props {
 		item: PotluckItemRetrieveSchema;
-		isOrganizer: boolean;
+		hasManagePermission: boolean; // User has manage_event permission
 		canClaim: boolean; // User is authenticated and RSVP'd "yes"
 		onClaim: (id: string) => void;
 		onUnclaim: (id: string) => void;
@@ -16,7 +17,7 @@
 
 	let {
 		item,
-		isOrganizer,
+		hasManagePermission,
 		canClaim,
 		onClaim,
 		onUnclaim,
@@ -24,6 +25,25 @@
 		onDelete,
 		class: className
 	}: Props = $props();
+
+	// Compute permissions for this specific item
+	// is_owned is optional and should only be true if explicitly true
+	let canEdit = $derived(canEditPotluckItem(item.is_owned === true, hasManagePermission));
+	let canDelete = $derived(canDeletePotluckItem(item.is_owned === true, hasManagePermission));
+
+	// Debug logging for permissions
+	$effect(() => {
+		console.log('[PotluckItem] Permission check:', {
+			item_id: item.id,
+			item_name: item.name,
+			is_owned: item.is_owned,
+			is_assigned: item.is_assigned,
+			hasManagePermission,
+			canEdit,
+			canDelete,
+			canClaim
+		});
+	});
 
 	// Item type display names mapping
 	const ITEM_TYPE_LABELS: Record<string, string> = {
@@ -159,7 +179,7 @@
 	<!-- Divider -->
 	<div class="border-t border-border"></div>
 
-	<!-- Action row: Claim button + Organizer actions -->
+	<!-- Action row: Claim button + Edit/Delete actions -->
 	<div class="flex items-center gap-2">
 		<!-- Claim/Unclaim button -->
 		<button
@@ -179,25 +199,29 @@
 			{buttonText}
 		</button>
 
-		<!-- Organizer actions (Edit/Delete) - Desktop only -->
-		{#if isOrganizer && onEdit && onDelete}
-			<div class="hidden items-center gap-1 md:flex">
-				<button
-					type="button"
-					onclick={handleEditClick}
-					aria-label={`Edit ${item.name}`}
-					class="flex h-10 w-10 items-center justify-center rounded-md border border-input bg-background text-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				>
-					<Edit2 class="h-4 w-4" aria-hidden="true" />
-				</button>
-				<button
-					type="button"
-					onclick={handleDeleteClick}
-					aria-label={`Delete ${item.name}`}
-					class="flex h-10 w-10 items-center justify-center rounded-md border border-input bg-background text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				>
-					<Trash2 class="h-4 w-4" aria-hidden="true" />
-				</button>
+		<!-- Edit/Delete actions - Shown if user can edit or delete -->
+		{#if (canEdit && onEdit) || (canDelete && onDelete)}
+			<div class="flex items-center gap-1">
+				{#if canEdit && onEdit}
+					<button
+						type="button"
+						onclick={handleEditClick}
+						aria-label={`Edit ${item.name}`}
+						class="flex h-10 w-10 items-center justify-center rounded-md border border-input bg-background text-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>
+						<Edit2 class="h-4 w-4" aria-hidden="true" />
+					</button>
+				{/if}
+				{#if canDelete && onDelete}
+					<button
+						type="button"
+						onclick={handleDeleteClick}
+						aria-label={`Delete ${item.name}`}
+						class="flex h-10 w-10 items-center justify-center rounded-md border border-input bg-background text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>
+						<Trash2 class="h-4 w-4" aria-hidden="true" />
+					</button>
+				{/if}
 			</div>
 		{/if}
 	</div>

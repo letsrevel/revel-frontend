@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { PotluckItemCreateSchema } from '$lib/api/generated/types.gen';
+	import type { PotluckItemCreateSchema, ItemTypes } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import { X } from 'lucide-svelte';
 
@@ -15,7 +15,7 @@
 
 	// Form state
 	let name = $state('');
-	let itemType = $state<string>('food');
+	let itemType = $state<ItemTypes>('food');
 	let quantity = $state('');
 	let note = $state('');
 	let claimItem = $state(true); // Default to claiming the item

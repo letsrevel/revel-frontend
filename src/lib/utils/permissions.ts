@@ -203,3 +203,80 @@ export function getPermissionDeniedMessage(
 
 	return actionMessages[action] || `You do not have permission to ${action}`;
 }
+
+/**
+ * Compute potluck-specific permissions for a user
+ *
+ * @param permissions - The user's organization permissions
+ * @param orgId - The ID of the organization
+ * @param eventId - The ID of the event
+ * @param potluckOpen - Whether potluck is open to regular attendees
+ * @param hasRSVPd - Whether the user has RSVP'd "yes" to the event
+ * @returns Object with permission flags for potluck operations
+ */
+export function getPotluckPermissions(
+	permissions: OrganizationPermissionsSchema | null,
+	orgId: string,
+	eventId: string,
+	potluckOpen: boolean,
+	hasRSVPd: boolean
+): {
+	canCreate: boolean;
+	hasManagePermission: boolean;
+} {
+	const hasManagePermission = canPerformActionOnEvent(permissions, orgId, eventId, 'manage_event');
+
+	// User can create if:
+	// 1. They have manage_event permission (staff/owner), OR
+	// 2. They RSVP'd AND potluck is open
+	const canCreate = hasManagePermission || (hasRSVPd && potluckOpen);
+
+	console.log('[Permissions] getPotluckPermissions:', {
+		orgId,
+		eventId,
+		potluckOpen,
+		hasRSVPd,
+		hasManagePermission,
+		canCreate,
+		isOwner: permissions?.organization_permissions?.[orgId] === 'owner'
+	});
+
+	return {
+		canCreate,
+		hasManagePermission
+	};
+}
+
+/**
+ * Check if user can edit a specific potluck item
+ *
+ * @param isOwned - Whether the user owns the item (is_owned from API)
+ * @param hasManagePermission - Whether the user has manage_event permission
+ * @returns true if user can edit this item
+ */
+export function canEditPotluckItem(isOwned: boolean, hasManagePermission: boolean): boolean {
+	const canEdit = isOwned || hasManagePermission;
+	console.log('[Permissions] canEditPotluckItem:', {
+		isOwned,
+		hasManagePermission,
+		canEdit
+	});
+	return canEdit;
+}
+
+/**
+ * Check if user can delete a specific potluck item
+ *
+ * @param isOwned - Whether the user owns the item (is_owned from API)
+ * @param hasManagePermission - Whether the user has manage_event permission
+ * @returns true if user can delete this item
+ */
+export function canDeletePotluckItem(isOwned: boolean, hasManagePermission: boolean): boolean {
+	const canDelete = isOwned || hasManagePermission;
+	console.log('[Permissions] canDeletePotluckItem:', {
+		isOwned,
+		hasManagePermission,
+		canDelete
+	});
+	return canDelete;
+}

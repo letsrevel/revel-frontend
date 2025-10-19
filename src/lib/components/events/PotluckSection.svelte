@@ -6,14 +6,16 @@
 		EventDetailSchema
 	} from '$lib/api/generated/types.gen';
 	import PotluckItem from './PotluckItem.svelte';
-	import PotluckItemForm from './PotluckItemForm.svelte';
 	import PotluckItemEditModal from './PotluckItemEditModal.svelte';
 	import { cn } from '$lib/utils/cn';
 	import { ChevronDown, ChevronUp, Plus } from 'lucide-svelte';
 
 	interface Props {
 		event: EventDetailSchema;
-		isOrganizer: boolean;
+		permissions: {
+			canCreate: boolean;
+			hasManagePermission: boolean;
+		};
 		isAuthenticated: boolean;
 		hasRSVPd: boolean;
 		initialItems?: PotluckItemRetrieveSchema[];
@@ -22,7 +24,7 @@
 
 	let {
 		event,
-		isOrganizer,
+		permissions,
 		isAuthenticated,
 		hasRSVPd,
 		initialItems = [],
@@ -33,16 +35,13 @@
 
 	// Section state
 	let isExpanded = $state(hasRSVPd); // Default expanded if user RSVP'd
-	let isFormOpen = $state(false);
+	let isModalOpen = $state(false);
 	let searchQuery = $state('');
 	let selectedCategory = $state<string>('all');
 	let editingItem = $state<PotluckItemRetrieveSchema | null>(null);
 
 	// Can user claim items (must have RSVP'd "yes")
 	let canClaim = $derived(isAuthenticated && hasRSVPd);
-
-	// Can user add items (RSVP'd or organizer)
-	let canAddItems = $derived(isAuthenticated && (hasRSVPd || isOrganizer));
 
 	// Query: Fetch potluck items
 	const itemsQuery = createQuery(() => ({
@@ -58,6 +57,10 @@
 		refetchInterval: isExpanded ? 5000 : false,
 		enabled: isAuthenticated
 	}));
+
+	// Error state
+	let errorMessage = $state<string | null>(null); // For non-modal errors (claim/unclaim)
+	let modalErrorMessage = $state<string | null>(null); // For modal errors (create/update)
 
 	// Mutation: Create item
 	const createItemMutation = createMutation<
@@ -80,11 +83,17 @@
 					note: data.note || undefined
 				})
 			});
-			if (!createResponse.ok) throw new Error('Failed to create item');
+
+			if (!createResponse.ok) {
+				if (createResponse.status === 403) {
+					throw new Error('You do not have permission to create potluck items');
+				}
+				throw new Error('Failed to create item');
+			}
 			const createdItem = await createResponse.json();
 
-			// If organizer chose not to claim, we're done
-			if (isOrganizer && !data.claimItem) {
+			// If user with manage permission chose not to claim, we're done
+			if (permissions.hasManagePermission && !data.claimItem) {
 				return createdItem;
 			}
 
@@ -93,26 +102,51 @@
 				method: 'POST',
 				credentials: 'include'
 			});
-			if (!claimResponse.ok) throw new Error('Failed to claim item');
+
+			if (!claimResponse.ok) {
+				if (claimResponse.status === 403) {
+					throw new Error('You do not have permission to claim this item');
+				}
+				throw new Error('Failed to claim item');
+			}
 			return claimResponse.json();
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['potluck-items', event.id] });
-			isFormOpen = false;
+			isModalOpen = false;
+			editingItem = null;
+			modalErrorMessage = null;
+		},
+		onError: (error) => {
+			modalErrorMessage = error.message;
 		}
 	}));
 
 	// Mutation: Claim item
-	const claimItemMutation = createMutation<PotluckItemRetrieveSchema, Error, string>(() => ({
+	const claimItemMutation = createMutation<
+		PotluckItemRetrieveSchema,
+		Error,
+		string,
+		{ previousItems: PotluckItemRetrieveSchema[] | undefined }
+	>(() => ({
 		mutationFn: async (itemId: string): Promise<PotluckItemRetrieveSchema> => {
 			const response = await fetch(`/api/events/${event.id}/potluck/${itemId}/claim`, {
 				method: 'POST',
 				credentials: 'include'
 			});
-			if (!response.ok) throw new Error('Failed to claim item');
+
+			if (!response.ok) {
+				if (response.status === 403) {
+					throw new Error('You do not have permission to claim this item');
+				}
+				throw new Error('Failed to claim item');
+			}
 			return response.json();
 		},
 		onMutate: async (itemId: string) => {
+			// Clear previous errors
+			errorMessage = null;
+
 			// Optimistic update
 			await queryClient.cancelQueries({ queryKey: ['potluck-items', event.id] });
 			const previousItems = queryClient.getQueryData<PotluckItemRetrieveSchema[]>([
@@ -128,7 +162,10 @@
 
 			return { previousItems };
 		},
-		onError: (_err, _itemId, context) => {
+		onError: (err, _itemId, context) => {
+			// Set error message
+			errorMessage = err.message;
+
 			// Rollback on error
 			if (context?.previousItems) {
 				queryClient.setQueryData(['potluck-items', event.id], context.previousItems);
@@ -136,20 +173,35 @@
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['potluck-items', event.id] });
+			errorMessage = null;
 		}
 	}));
 
 	// Mutation: Unclaim item
-	const unclaimItemMutation = createMutation<PotluckItemRetrieveSchema, Error, string>(() => ({
+	const unclaimItemMutation = createMutation<
+		PotluckItemRetrieveSchema,
+		Error,
+		string,
+		{ previousItems: PotluckItemRetrieveSchema[] | undefined }
+	>(() => ({
 		mutationFn: async (itemId: string): Promise<PotluckItemRetrieveSchema> => {
 			const response = await fetch(`/api/events/${event.id}/potluck/${itemId}/claim`, {
 				method: 'DELETE',
 				credentials: 'include'
 			});
-			if (!response.ok) throw new Error('Failed to unclaim item');
+
+			if (!response.ok) {
+				if (response.status === 403) {
+					throw new Error('You do not have permission to unclaim this item');
+				}
+				throw new Error('Failed to unclaim item');
+			}
 			return response.json();
 		},
 		onMutate: async (itemId: string) => {
+			// Clear previous errors
+			errorMessage = null;
+
 			// Optimistic update
 			await queryClient.cancelQueries({ queryKey: ['potluck-items', event.id] });
 			const previousItems = queryClient.getQueryData<PotluckItemRetrieveSchema[]>([
@@ -165,7 +217,10 @@
 
 			return { previousItems };
 		},
-		onError: (_err, _itemId, context) => {
+		onError: (err, _itemId, context) => {
+			// Set error message
+			errorMessage = err.message;
+
 			// Rollback on error
 			if (context?.previousItems) {
 				queryClient.setQueryData(['potluck-items', event.id], context.previousItems);
@@ -173,6 +228,7 @@
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['potluck-items', event.id] });
+			errorMessage = null;
 		}
 	}));
 
@@ -192,6 +248,13 @@
 			itemId: string;
 			data: { name: string; item_type: string; quantity: string | null; note: string | null };
 		}): Promise<PotluckItemRetrieveSchema> => {
+			console.log('[PotluckSection] Updating item:', {
+				itemId,
+				data,
+				event_id: event.id,
+				hasManagePermission: permissions.hasManagePermission
+			});
+
 			const response = await fetch(`/api/events/${event.id}/potluck/${itemId}`, {
 				method: 'PATCH',
 				headers: { 'Content-Type': 'application/json' },
@@ -203,26 +266,87 @@
 					note: data.note || undefined
 				})
 			});
-			if (!response.ok) throw new Error('Failed to update item');
-			return response.json();
+
+			console.log('[PotluckSection] Update response:', {
+				status: response.status,
+				ok: response.ok
+			});
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.error('[PotluckSection] Update failed:', {
+					status: response.status,
+					errorText
+				});
+
+				if (response.status === 403) {
+					throw new Error('You do not have permission to edit this item');
+				}
+				throw new Error('Failed to update item');
+			}
+
+			const updatedItem = await response.json();
+			console.log('[PotluckSection] Update successful:', {
+				itemId: updatedItem.id,
+				is_owned: updatedItem.is_owned,
+				is_assigned: updatedItem.is_assigned
+			});
+
+			return updatedItem;
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['potluck-items', event.id] });
+			isModalOpen = false;
 			editingItem = null;
+			modalErrorMessage = null;
+		},
+		onError: (error) => {
+			console.error('[PotluckSection] Update mutation error:', error);
+			modalErrorMessage = error.message;
 		}
 	}));
 
 	// Mutation: Delete item (organizer only)
 	const deleteItemMutation = createMutation<void, Error, string>(() => ({
 		mutationFn: async (itemId: string): Promise<void> => {
+			console.log('[PotluckSection] Deleting item:', {
+				itemId,
+				event_id: event.id,
+				hasManagePermission: permissions.hasManagePermission
+			});
+
 			const response = await fetch(`/api/events/${event.id}/potluck/${itemId}`, {
 				method: 'DELETE',
 				credentials: 'include'
 			});
-			if (!response.ok) throw new Error('Failed to delete item');
+
+			console.log('[PotluckSection] Delete response:', {
+				status: response.status,
+				ok: response.ok
+			});
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.error('[PotluckSection] Delete failed:', {
+					status: response.status,
+					errorText
+				});
+
+				if (response.status === 403) {
+					throw new Error('You do not have permission to delete this item');
+				}
+				throw new Error('Failed to delete item');
+			}
+
+			console.log('[PotluckSection] Delete successful');
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['potluck-items', event.id] });
+			errorMessage = null;
+		},
+		onError: (error) => {
+			console.error('[PotluckSection] Delete mutation error:', error);
+			errorMessage = error.message;
 		}
 	}));
 
@@ -316,15 +440,31 @@
 	}
 
 	function handleAddClick() {
-		isFormOpen = true;
+		editingItem = null; // Ensure we're in create mode
+		modalErrorMessage = null; // Clear previous modal errors
+		isModalOpen = true;
 	}
 
-	function handleFormSubmit(data: PotluckItemCreateSchema & { claimItem?: boolean }) {
-		createItemMutation.mutate(data);
+	function handleModalSubmit(data: {
+		name: string;
+		item_type: string;
+		quantity: string | null;
+		note: string | null;
+		claimItem?: boolean;
+	}) {
+		if (editingItem && editingItem.id) {
+			// Edit mode
+			updateItemMutation.mutate({ itemId: editingItem.id, data });
+		} else {
+			// Create mode
+			createItemMutation.mutate(data as PotluckItemCreateSchema & { claimItem?: boolean });
+		}
 	}
 
-	function handleFormCancel() {
-		isFormOpen = false;
+	function handleModalCancel() {
+		isModalOpen = false;
+		editingItem = null;
+		modalErrorMessage = null; // Clear modal errors on cancel
 	}
 
 	function handleClaim(itemId: string) {
@@ -339,22 +479,9 @@
 		const item = itemsQuery.data?.find((i) => i.id === itemId);
 		if (item) {
 			editingItem = item;
+			modalErrorMessage = null; // Clear previous modal errors
+			isModalOpen = true;
 		}
-	}
-
-	function handleEditSubmit(data: {
-		name: string;
-		item_type: string;
-		quantity: string | null;
-		note: string | null;
-	}) {
-		if (editingItem && editingItem.id) {
-			updateItemMutation.mutate({ itemId: editingItem.id, data });
-		}
-	}
-
-	function handleEditCancel() {
-		editingItem = null;
 	}
 
 	function handleDelete(itemId: string) {
@@ -396,22 +523,52 @@
 	<!-- Content (expandable) -->
 	{#if isExpanded}
 		<div id="potluck-content" class="space-y-4 p-4">
+			<!-- Error banner -->
+			{#if errorMessage}
+				<div
+					class="flex items-start gap-3 rounded-md border border-destructive/50 bg-destructive/10 p-3"
+					role="alert"
+					aria-live="assertive"
+				>
+					<span class="text-lg" aria-hidden="true">⚠️</span>
+					<div class="flex-1">
+						<p class="text-sm font-medium text-destructive">{errorMessage}</p>
+					</div>
+					<button
+						type="button"
+						onclick={() => (errorMessage = null)}
+						aria-label="Dismiss error"
+						class="rounded-md p-1 text-destructive transition-colors hover:bg-destructive/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>
+						<span class="text-sm font-semibold" aria-hidden="true">✕</span>
+					</button>
+				</div>
+			{/if}
+
+			<!-- Info banner for potluck closed state -->
+			{#if !permissions.canCreate && hasRSVPd}
+				<div
+					class="flex items-start gap-3 rounded-md border border-muted-foreground/20 bg-muted/50 p-3"
+					role="status"
+				>
+					<span class="text-lg" aria-hidden="true">🔒</span>
+					<div class="flex-1 text-sm">
+						<p class="font-medium">Item creation is currently closed by organizers.</p>
+						<p class="mt-1 text-muted-foreground">You can still claim items below!</p>
+					</div>
+				</div>
+			{/if}
+
 			<!-- Add item button & search -->
 			<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-				{#if canAddItems}
+				{#if permissions.canCreate}
 					<button
 						type="button"
 						onclick={handleAddClick}
-						disabled={!event.potluck_open && !isOrganizer}
-						class={cn(
-							'inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-							event.potluck_open || isOrganizer
-								? 'bg-primary text-primary-foreground hover:bg-primary/90'
-								: 'cursor-not-allowed bg-muted text-muted-foreground opacity-60'
-						)}
+						class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						<Plus class="h-4 w-4" aria-hidden="true" />
-						{isOrganizer ? 'Add potluck item' : "Add item you'll bring"}
+						{permissions.hasManagePermission ? 'Add potluck item' : "Add item you'll bring"}
 					</button>
 				{/if}
 
@@ -423,16 +580,6 @@
 					class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:w-64"
 				/>
 			</div>
-
-			<!-- Add item form -->
-			{#if isFormOpen}
-				<PotluckItemForm
-					{isOrganizer}
-					isOpen={isFormOpen}
-					onSubmit={handleFormSubmit}
-					onCancel={handleFormCancel}
-				/>
-			{/if}
 
 			<!-- Loading state -->
 			{#if itemsQuery.isLoading}
@@ -456,7 +603,7 @@
 						<p class="text-sm text-muted-foreground">No items match your search.</p>
 					{:else}
 						<p class="text-muted-foreground">No items yet!</p>
-						{#if canAddItems}
+						{#if permissions.canCreate}
 							<p class="mt-2 text-sm text-muted-foreground">
 								Be the first to add something you'll bring.
 							</p>
@@ -475,12 +622,12 @@
 								{#each items as item (item.id)}
 									<PotluckItem
 										{item}
-										{isOrganizer}
 										{canClaim}
+										hasManagePermission={permissions.hasManagePermission}
 										onClaim={handleClaim}
 										onUnclaim={handleUnclaim}
 										onEdit={handleEdit}
-										onDelete={isOrganizer ? handleDelete : undefined}
+										onDelete={handleDelete}
 									/>
 								{/each}
 							</div>
@@ -492,12 +639,12 @@
 	{/if}
 </section>
 
-<!-- Edit item modal -->
-{#if editingItem}
-	<PotluckItemEditModal
-		item={editingItem}
-		isOpen={!!editingItem}
-		onSubmit={handleEditSubmit}
-		onCancel={handleEditCancel}
-	/>
-{/if}
+<!-- Create/Edit item modal -->
+<PotluckItemEditModal
+	item={editingItem}
+	isOpen={isModalOpen}
+	hasManagePermission={permissions.hasManagePermission}
+	errorMessage={modalErrorMessage}
+	onSubmit={handleModalSubmit}
+	onCancel={handleModalCancel}
+/>
