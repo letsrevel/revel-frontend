@@ -11,8 +11,9 @@
 
 	let { data }: { data: PageData } = $props();
 
-	// Create mutable copy of event for client-side updates (like attendee count)
+	// Create mutable copies for client-side updates
 	let event = $state(data.event);
+	let userStatus = $state(data.userStatus);
 
 	// Get structured data for SEO
 	let structuredData = $derived(
@@ -20,16 +21,16 @@
 	);
 	let jsonLd = $derived(structuredDataToJsonLd(structuredData));
 
-	// Check if user has RSVP'd
+	// Check if user has RSVP'd (reactive to userStatus changes)
 	let hasRSVPd = $derived.by(() => {
-		if (!data.userStatus) return false;
+		if (!userStatus) return false;
 
-		if (isRSVP(data.userStatus)) {
-			return data.userStatus.status === 'yes';
+		if (isRSVP(userStatus)) {
+			return userStatus.status === 'yes';
 		}
 
-		if (isTicket(data.userStatus)) {
-			return data.userStatus.status === 'active' || data.userStatus.status === 'checked_in';
+		if (isTicket(userStatus)) {
+			return userStatus.status === 'active' || userStatus.status === 'checked_in';
 		}
 
 		return false;
@@ -82,7 +83,7 @@
 		<div class="mb-8 lg:hidden">
 			<EventActionSidebar
 				{event}
-				userStatus={data.userStatus}
+				bind:userStatus
 				isAuthenticated={data.isAuthenticated}
 				variant="card"
 			/>
@@ -114,7 +115,7 @@
 				<div class="space-y-6">
 					<EventActionSidebar
 						{event}
-						userStatus={data.userStatus}
+						bind:userStatus
 						isAuthenticated={data.isAuthenticated}
 						variant="sidebar"
 					/>

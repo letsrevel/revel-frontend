@@ -11,6 +11,7 @@
 	} from '$lib/utils/eligibility';
 	import { cn } from '$lib/utils/cn';
 	import RSVPButtons from './RSVPButtons.svelte';
+	import ConfirmDialog from '../common/ConfirmDialog.svelte';
 	import { Check, AlertCircle, ClipboardList, UserPlus, Mail } from 'lucide-svelte';
 
 	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
@@ -18,7 +19,7 @@
 	interface Props {
 		eventId: string;
 		eventName: string;
-		initialStatus: UserEventStatus | null;
+		userStatus: UserEventStatus | null;
 		isAuthenticated: boolean;
 		requiresTicket: boolean;
 		event?: EventDetailSchema;
@@ -28,7 +29,7 @@
 	let {
 		eventId,
 		eventName,
-		initialStatus,
+		userStatus = $bindable(),
 		isAuthenticated,
 		requiresTicket,
 		event,
@@ -37,14 +38,18 @@
 
 	const queryClient = useQueryClient();
 
-	// Local state
-	let userStatus = $state<UserEventStatus | null>(initialStatus);
+	// Store initial status for reset functionality
+	let initialStatus = $state<UserEventStatus | null>(userStatus);
 	let showSuccess = $state(false);
 	let successMessage = $state('');
 	let successType = $state<'yes' | 'maybe' | 'no'>('yes');
 	let errorMessage = $state<string | null>(null);
 	// Track the user's RSVP answer separately (backend only returns status, not the answer)
 	let userAnswer = $state<'yes' | 'no' | 'maybe' | null>(null);
+	// Warning dialog state
+	let showWarningDialog = $state(false);
+	let pendingAnswer = $state<'yes' | 'no' | 'maybe' | null>(null);
+	let claimedItemsCount = $state<number>(0);
 
 	// Mutation: RSVP to event
 	const rsvpMutation = createMutation(() => ({
@@ -131,10 +136,65 @@
 	}));
 
 	/**
+	 * Check if user has claimed potluck items
+	 */
+	async function checkClaimedItems(): Promise<number> {
+		try {
+			const response = await fetch(`/api/events/${eventId}/potluck`, {
+				credentials: 'include'
+			});
+			if (!response.ok) return 0;
+
+			const items = await response.json();
+			const claimedByUser = items.filter((item: { is_owned: boolean }) => item.is_owned);
+			return claimedByUser.length;
+		} catch {
+			return 0;
+		}
+	}
+
+	/**
 	 * Handle RSVP selection
 	 */
-	function handleRSVPSelect(answer: 'yes' | 'no' | 'maybe'): void {
+	async function handleRSVPSelect(answer: 'yes' | 'no' | 'maybe'): Promise<void> {
+		// Check if user is changing from "yes" to "maybe" or "no"
+		const wasAttendingYes = currentRsvpAnswer === 'yes';
+		const isChangingToNotYes = answer === 'maybe' || answer === 'no';
+
+		if (wasAttendingYes && isChangingToNotYes) {
+			// Check if user has claimed items
+			const count = await checkClaimedItems();
+			claimedItemsCount = count;
+
+			if (count > 0) {
+				// Show warning dialog
+				pendingAnswer = answer;
+				showWarningDialog = true;
+				return;
+			}
+		}
+
+		// No warning needed, proceed with RSVP
 		rsvpMutation.mutate(answer);
+	}
+
+	/**
+	 * Handle warning dialog confirmation
+	 */
+	function handleWarningConfirm(): void {
+		showWarningDialog = false;
+		if (pendingAnswer) {
+			rsvpMutation.mutate(pendingAnswer);
+			pendingAnswer = null;
+		}
+	}
+
+	/**
+	 * Handle warning dialog cancellation
+	 */
+	function handleWarningCancel(): void {
+		showWarningDialog = false;
+		pendingAnswer = null;
 	}
 
 	/**
@@ -399,4 +459,18 @@
 			</div>
 		{/if}
 	</div>
+
+	<!-- Warning Dialog for Claimed Items -->
+	<ConfirmDialog
+		isOpen={showWarningDialog}
+		title="Unclaim Potluck Items?"
+		message={claimedItemsCount === 1
+			? "You've claimed 1 potluck item for this event. Changing your RSVP to \"Maybe\" or \"No\" will automatically unclaim this item. Are you sure you want to proceed?"
+			: `You've claimed ${claimedItemsCount} potluck items for this event. Changing your RSVP to "Maybe" or "No" will automatically unclaim all these items. Are you sure you want to proceed?`}
+		confirmText="Yes, change RSVP"
+		cancelText="Cancel"
+		variant="warning"
+		onConfirm={handleWarningConfirm}
+		onCancel={handleWarningCancel}
+	/>
 {/if}
