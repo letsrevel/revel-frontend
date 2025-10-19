@@ -123,7 +123,7 @@ export function filtersToApiParams(filters: EventFilters) {
 		visibility: filters.visibility,
 		tags: filters.tags,
 		include_past: filters.includePast ?? false,
-		order_by: filters.orderBy ?? 'start',
+		order_by: filters.orderBy ?? 'distance', // Default to 'distance' (nearest first)
 		page: filters.page ?? 1,
 		page_size: filters.pageSize ?? 20
 	};
@@ -143,7 +143,7 @@ export function hasActiveFilters(filters: EventFilters): boolean {
 		filters.visibility ||
 		(filters.tags && filters.tags.length > 0) ||
 		filters.includePast ||
-		(filters.orderBy && filters.orderBy !== 'start')
+		(filters.orderBy && filters.orderBy !== 'distance') // 'distance' is now the default
 	);
 }
 
@@ -162,7 +162,7 @@ export function countActiveFilters(filters: EventFilters): number {
 	if (filters.visibility) count++;
 	if (filters.tags && filters.tags.length > 0) count += filters.tags.length;
 	if (filters.includePast) count++;
-	if (filters.orderBy && filters.orderBy !== 'start') count++;
+	if (filters.orderBy && filters.orderBy !== 'distance') count++; // 'distance' is now the default
 
 	return count;
 }
@@ -267,9 +267,10 @@ export function getFilterDescriptions(filters: EventFilters): string[] {
 
 	if (filters.orderBy === '-start') {
 		descriptions.push(`Sorted: Latest first`);
-	} else if (filters.orderBy === 'distance') {
-		descriptions.push(`Sorted: Nearest first`);
+	} else if (filters.orderBy === 'start') {
+		descriptions.push(`Sorted: Soonest first`);
 	}
+	// Don't show description for 'distance' as it's the default
 
 	return descriptions;
 }

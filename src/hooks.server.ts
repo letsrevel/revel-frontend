@@ -1,12 +1,13 @@
 import type { Handle } from '@sveltejs/kit';
-import { tokenRefresh } from '$lib/api/generated';
+import { tokenRefresh, accountMe0E4E4784 } from '$lib/api/generated';
 
 /**
  * Server-side hooks for authentication
  * Handles JWT refresh token management via httpOnly cookies
+ * Populates event.locals.user for server-side load functions
  */
 export const handle: Handle = async ({ event, resolve }) => {
-	const accessToken = event.cookies.get('access_token');
+	let accessToken = event.cookies.get('access_token');
 	const refreshToken = event.cookies.get('refresh_token');
 
 	console.log('[HOOKS] Request:', {
@@ -39,12 +40,45 @@ export const handle: Handle = async ({ event, resolve }) => {
 					sameSite: 'lax',
 					maxAge: 60 * 15 // 15 minutes (typical JWT expiry)
 				});
+				// Update accessToken variable so we can fetch user data below
+				accessToken = data.access;
 			}
 		} catch (error) {
 			console.error('[HOOKS] Token refresh error:', error);
 			// Clear invalid tokens
 			event.cookies.delete('refresh_token', { path: '/', httpOnly: true, sameSite: 'lax' });
 			event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
+		}
+	}
+
+	// If we have an access token, fetch user data and populate locals.user
+	if (accessToken) {
+		console.log('[HOOKS] Access token exists, fetching user data');
+		try {
+			const { data, error } = await accountMe0E4E4784({
+				headers: {
+					Authorization: `Bearer ${accessToken}`
+				}
+			});
+
+			if (error || !data) {
+				console.error('[HOOKS] Failed to fetch user data:', error);
+				// Token is invalid, clear cookies
+				event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
+				event.cookies.delete('refresh_token', { path: '/', httpOnly: true, sameSite: 'lax' });
+			} else {
+				console.log('[HOOKS] User data fetched successfully:', data.email);
+				// Populate locals.user for server-side load functions
+				event.locals.user = {
+					...data,
+					accessToken
+				};
+			}
+		} catch (error) {
+			console.error('[HOOKS] Error fetching user data:', error);
+			// Token is invalid, clear cookies
+			event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
+			event.cookies.delete('refresh_token', { path: '/', httpOnly: true, sameSite: 'lax' });
 		}
 	}
 
