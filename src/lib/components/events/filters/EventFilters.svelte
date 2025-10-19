@@ -96,10 +96,7 @@
 	<div class="border-t" role="separator"></div>
 
 	<!-- Order By Filter (Top Priority) -->
-	<OrderByFilter
-		orderBy={filters.orderBy ?? 'distance'}
-		onChangeOrderBy={handleChangeOrderBy}
-	/>
+	<OrderByFilter orderBy={filters.orderBy ?? 'distance'} onChangeOrderBy={handleChangeOrderBy} />
 
 	<!-- Divider -->
 	<div class="border-t" role="separator"></div>
@@ -118,37 +115,25 @@
 	<div class="border-t" role="separator"></div>
 
 	<!-- Date Filter -->
-	<DateFilter
-		includePast={filters.includePast ?? false}
-		onTogglePast={handleTogglePast}
-	/>
+	<DateFilter includePast={filters.includePast ?? false} onTogglePast={handleTogglePast} />
 
 	<!-- Divider -->
 	<div class="border-t" role="separator"></div>
 
 	<!-- City Filter -->
-	<CityFilter
-		selectedCity={selectedCity}
-		onChangeCity={handleChangeCity}
-	/>
+	<CityFilter {selectedCity} onChangeCity={handleChangeCity} />
 
 	<!-- Divider -->
 	<div class="border-t" role="separator"></div>
 
 	<!-- Event Type Filter -->
-	<EventTypeFilter
-		eventType={filters.eventType}
-		onChangeEventType={handleChangeEventType}
-	/>
+	<EventTypeFilter eventType={filters.eventType} onChangeEventType={handleChangeEventType} />
 
 	<!-- Divider -->
 	<div class="border-t" role="separator"></div>
 
 	<!-- Tags Filter -->
-	<TagsFilter
-		selectedTags={filters.tags ?? []}
-		onToggleTag={handleToggleTag}
-	/>
+	<TagsFilter selectedTags={filters.tags ?? []} onToggleTag={handleToggleTag} />
 
 	<!-- Future filters: Organization, Visibility -->
 

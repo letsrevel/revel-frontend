@@ -5,7 +5,12 @@
 	import { EventCard } from '$lib/components/events';
 	import { EventFilters, MobileFilterSheet } from '$lib/components/events/filters';
 	import { Calendar, Filter } from 'lucide-svelte';
-	import { parseFilters, filtersToParams, clearFilters, countActiveFilters } from '$lib/utils/filters';
+	import {
+		parseFilters,
+		filtersToParams,
+		clearFilters,
+		countActiveFilters
+	} from '$lib/utils/filters';
 	import type { EventFilters as FilterState } from '$lib/utils/filters';
 
 	interface Props {
@@ -40,7 +45,7 @@
 
 		// Reset to page 1 when filters change (not pagination)
 		const nonPaginationChanged = Object.keys(updates).some(
-			key => key !== 'page' && key !== 'pageSize'
+			(key) => key !== 'page' && key !== 'pageSize'
 		);
 		if (nonPaginationChanged) {
 			newFilters.page = 1;
@@ -254,7 +259,7 @@
 	<!-- Mobile Filter Sheet -->
 	<MobileFilterSheet
 		filters={currentFilters}
-		totalCount={totalCount}
+		{totalCount}
 		isOpen={isMobileFilterOpen}
 		onUpdateFilters={handleUpdateFilters}
 		onClearFilters={handleClearFilters}

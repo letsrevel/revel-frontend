@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types';
-import { eventListEventsDacbb89B } from '$lib/api';
+import { eventListEventsFbe8B973 } from '$lib/api';
 import { error as svelteKitError } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ url, fetch, locals }) => {
@@ -40,7 +40,7 @@ export const load: PageServerLoad = async ({ url, fetch, locals }) => {
 		}
 
 		// Call the API with SSR-compatible fetch and auth headers
-		const response = await eventListEventsDacbb89B({
+		const response = await eventListEventsFbe8B973({
 			fetch,
 			query: queryParams,
 			headers

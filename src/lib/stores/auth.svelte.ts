@@ -1,9 +1,9 @@
 import type { RevelUserSchema, OrganizationPermissionsSchema } from '$lib/types/auth';
 import {
-	authObtainToken88D8C7F5,
-	authObtainTokenWithOtpCa173D18,
-	accountMe0E4E4784,
-	permissionMyPermissionsC9C10303
+	authObtainToken89D16376,
+	authObtainTokenWithOtpC7428120,
+	accountMeD8441F6B,
+	permissionMyPermissionsC74726Aa
 } from '$lib/api/client';
 
 /**
@@ -81,7 +81,7 @@ class AuthStore {
 	async login(username: string, password: string): Promise<void> {
 		this._isLoading = true;
 		try {
-			const { data, error } = await authObtainToken88D8C7F5({
+			const { data, error } = await authObtainToken89D16376({
 				body: {
 					username,
 					password
@@ -124,7 +124,7 @@ class AuthStore {
 	async loginWithOTP(tempToken: string, otpCode: string): Promise<void> {
 		this._isLoading = true;
 		try {
-			const { data, error } = await authObtainTokenWithOtpCa173D18({
+			const { data, error } = await authObtainTokenWithOtpC7428120({
 				body: {
 					token: tempToken,
 					otp: otpCode
@@ -176,7 +176,7 @@ class AuthStore {
 	 */
 	private async fetchUserData(): Promise<void> {
 		try {
-			const { data, error } = await accountMe0E4E4784({
+			const { data, error } = await accountMeD8441F6B({
 				headers: this.getAuthHeaders()
 			});
 
@@ -199,7 +199,7 @@ class AuthStore {
 	 * Fetch user permissions
 	 */
 	private async fetchPermissions(): Promise<void> {
-		const { data, error } = await permissionMyPermissionsC9C10303({
+		const { data, error } = await permissionMyPermissionsC74726Aa({
 			headers: this.getAuthHeaders()
 		});
 

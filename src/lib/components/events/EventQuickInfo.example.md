@@ -18,6 +18,7 @@ Display critical event metadata in a scannable format with icons. Used in sideba
 ## Variants
 
 ### Compact (Default)
+
 Minimal layout, perfect for sidebars:
 
 ```svelte
@@ -25,6 +26,7 @@ Minimal layout, perfect for sidebars:
 ```
 
 ### Detailed
+
 More spacing and larger text for prominent display:
 
 ```svelte
@@ -37,13 +39,14 @@ More spacing and larger text for prominent display:
 <EventQuickInfo
 	event={data.event}
 	variant="compact"
-	class="mt-4 rounded-lg border p-4 bg-muted/50"
+	class="mt-4 rounded-lg border bg-muted/50 p-4"
 />
 ```
 
 ## Information Displayed
 
 The component automatically shows:
+
 - **Date & Time**: Formatted start date/time
 - **Location**: City name (with country if available), or "Location TBD"
 - **Event Type**: Public, Private, or Members Only
@@ -64,15 +67,16 @@ The component automatically shows:
 
 ```typescript
 interface Props {
-	event: EventDetailSchema;     // Required: Event data from API
-	variant?: 'compact' | 'detailed';  // Optional: Display variant (default: 'compact')
-	class?: string;                // Optional: Additional CSS classes
+	event: EventDetailSchema; // Required: Event data from API
+	variant?: 'compact' | 'detailed'; // Optional: Display variant (default: 'compact')
+	class?: string; // Optional: Additional CSS classes
 }
 ```
 
 ## Examples in Context
 
 ### Event Detail Sidebar
+
 ```svelte
 <aside class="space-y-6 lg:w-80">
 	<Card>
@@ -87,17 +91,16 @@ interface Props {
 ```
 
 ### Event Preview Modal
+
 ```svelte
 <Dialog>
 	<DialogContent>
 		<DialogHeader>
 			<DialogTitle>{event.name}</DialogTitle>
 		</DialogHeader>
-		<EventQuickInfo event={event} variant="detailed" class="my-4" />
+		<EventQuickInfo {event} variant="detailed" class="my-4" />
 		<DialogFooter>
-			<Button href="/events/{event.organization.slug}/{event.slug}">
-				View Full Details
-			</Button>
+			<Button href="/events/{event.organization.slug}/{event.slug}">View Full Details</Button>
 		</DialogFooter>
 	</DialogContent>
 </Dialog>
@@ -106,6 +109,7 @@ interface Props {
 ## Warning States
 
 The component automatically highlights:
+
 - **Near Capacity**: Text turns to warning color when < 10 spots remain
 - **RSVP Deadline Soon**: Text turns to warning color when < 24 hours remain
 

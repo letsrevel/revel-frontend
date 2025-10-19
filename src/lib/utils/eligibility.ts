@@ -43,7 +43,7 @@ export function getNextStepMessage(nextStep: NextStep): string {
 		wait_to_retake_questionnaire: 'You can retake the questionnaire soon',
 		request_invitation: 'Request an invitation to attend this private event',
 		become_member: 'Join the organization to attend this members-only event',
-		join_waitlist: "This event is full, but you can join the waitlist",
+		join_waitlist: 'This event is full, but you can join the waitlist',
 		wait_for_event_to_open: 'Check back when registration opens'
 	};
 

@@ -2,7 +2,7 @@
 	import type { CitySchema } from '$lib/api/generated/types.gen';
 	import { MapPin, X } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
-	import { cityListCitiesC59C4645 } from '$lib/api';
+	import { cityListCities0Bf56Bd4 } from '$lib/api';
 
 	interface Props {
 		selectedCity?: { id: number; name: string; country: string } | null;
@@ -29,7 +29,7 @@
 		isSearching = true;
 
 		try {
-			const response = await cityListCitiesC59C4645({
+			const response = await cityListCities0Bf56Bd4({
 				query: {
 					search: query,
 					page: 1,
@@ -96,7 +96,9 @@
 
 	{#if selectedCity}
 		<!-- Selected City Display -->
-		<div class="flex items-center justify-between rounded-md border border-input bg-background px-3 py-2">
+		<div
+			class="flex items-center justify-between rounded-md border border-input bg-background px-3 py-2"
+		>
 			<div class="flex-1">
 				<div class="text-sm font-medium">{selectedCity.name}</div>
 				<div class="text-xs text-muted-foreground">{selectedCity.country}</div>
@@ -114,7 +116,10 @@
 		<!-- City Search Input -->
 		<div class="relative">
 			<div class="relative">
-				<MapPin class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+				<MapPin
+					class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+					aria-hidden="true"
+				/>
 				<input
 					type="text"
 					value={searchQuery}
@@ -130,7 +135,9 @@
 
 			<!-- Search Results Dropdown -->
 			{#if isDropdownOpen && searchResults.length > 0}
-				<div class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-input bg-popover shadow-md">
+				<div
+					class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-input bg-popover shadow-md"
+				>
 					{#each searchResults as city (city.id)}
 						<button
 							type="button"
@@ -150,13 +157,13 @@
 			<!-- Loading State -->
 			{#if isSearching}
 				<div class="absolute right-3 top-1/2 -translate-y-1/2">
-					<div class="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+					<div
+						class="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"
+					></div>
 				</div>
 			{/if}
 		</div>
 
-		<p class="text-xs text-muted-foreground">
-			Filter events by city location
-		</p>
+		<p class="text-xs text-muted-foreground">Filter events by city location</p>
 	{/if}
 </div>

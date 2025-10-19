@@ -1,5 +1,5 @@
 import type { Handle } from '@sveltejs/kit';
-import { tokenRefresh, accountMe0E4E4784 } from '$lib/api/generated';
+import { tokenRefresh, accountMeD8441F6B } from '$lib/api/generated';
 
 /**
  * Server-side hooks for authentication
@@ -55,7 +55,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	if (accessToken) {
 		console.log('[HOOKS] Access token exists, fetching user data');
 		try {
-			const { data, error } = await accountMe0E4E4784({
+			const { data, error } = await accountMeD8441F6B({
 				headers: {
 					Authorization: `Bearer ${accessToken}`
 				}

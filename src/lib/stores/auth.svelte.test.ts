@@ -4,17 +4,17 @@ import type { RevelUserSchema, OrganizationPermissionsSchema } from '$lib/types/
 
 // Mock the API client
 vi.mock('$lib/api/client', () => ({
-	authObtainToken88D8C7F5: vi.fn(),
-	authObtainTokenWithOtpCa173D18: vi.fn(),
-	accountMe0E4E4784: vi.fn(),
-	permissionMyPermissionsC9C10303: vi.fn()
+	authObtainToken89D16376: vi.fn(),
+	authObtainTokenWithOtpC7428120: vi.fn(),
+	accountMeD8441F6B: vi.fn(),
+	permissionMyPermissionsC74726Aa: vi.fn()
 }));
 
 import {
-	authObtainToken88D8C7F5,
-	authObtainTokenWithOtpCa173D18,
-	accountMe0E4E4784,
-	permissionMyPermissionsC9C10303
+	authObtainToken89D16376,
+	authObtainTokenWithOtpC7428120,
+	accountMeD8441F6B,
+	permissionMyPermissionsC74726Aa
 } from '$lib/api/client';
 
 describe('AuthStore', () => {
@@ -75,7 +75,7 @@ describe('AuthStore', () => {
 
 		it('should successfully login with valid credentials', async () => {
 			// Mock successful login
-			vi.mocked(authObtainToken88D8C7F5).mockResolvedValue({
+			vi.mocked(authObtainToken89D16376).mockResolvedValue({
 				data: {
 					username: 'test@example.com',
 					access: 'mock-access-token',
@@ -87,7 +87,7 @@ describe('AuthStore', () => {
 			});
 
 			// Mock user data fetch
-			vi.mocked(accountMe0E4E4784).mockResolvedValue({
+			vi.mocked(accountMeD8441F6B).mockResolvedValue({
 				data: mockUser,
 				error: undefined,
 				request: {} as Request,
@@ -95,7 +95,7 @@ describe('AuthStore', () => {
 			});
 
 			// Mock permissions fetch
-			vi.mocked(permissionMyPermissionsC9C10303).mockResolvedValue({
+			vi.mocked(permissionMyPermissionsC74726Aa).mockResolvedValue({
 				data: mockPermissions,
 				error: undefined,
 				request: {} as Request,
@@ -111,7 +111,7 @@ describe('AuthStore', () => {
 		});
 
 		it('should throw error for invalid credentials', async () => {
-			vi.mocked(authObtainToken88D8C7F5).mockResolvedValue({
+			vi.mocked(authObtainToken89D16376).mockResolvedValue({
 				data: undefined,
 				error: { message: 'Invalid credentials' } as any,
 				request: {} as Request,
@@ -122,7 +122,7 @@ describe('AuthStore', () => {
 		});
 
 		it('should throw 2FA_REQUIRED for users with 2FA enabled', async () => {
-			vi.mocked(authObtainToken88D8C7F5).mockResolvedValue({
+			vi.mocked(authObtainToken89D16376).mockResolvedValue({
 				data: {
 					token: 'temp-token',
 					type: 'otp'
@@ -150,7 +150,7 @@ describe('AuthStore', () => {
 		};
 
 		it('should successfully login with valid OTP', async () => {
-			vi.mocked(authObtainTokenWithOtpCa173D18).mockResolvedValue({
+			vi.mocked(authObtainTokenWithOtpC7428120).mockResolvedValue({
 				data: {
 					username: 'test@example.com',
 					access: 'mock-access-token',
@@ -161,14 +161,14 @@ describe('AuthStore', () => {
 				response: {} as Response
 			});
 
-			vi.mocked(accountMe0E4E4784).mockResolvedValue({
+			vi.mocked(accountMeD8441F6B).mockResolvedValue({
 				data: mockUser,
 				error: undefined,
 				request: {} as Request,
 				response: {} as Response
 			});
 
-			vi.mocked(permissionMyPermissionsC9C10303).mockResolvedValue({
+			vi.mocked(permissionMyPermissionsC74726Aa).mockResolvedValue({
 				data: { organization_permissions: {} },
 				error: undefined,
 				request: {} as Request,
@@ -182,7 +182,7 @@ describe('AuthStore', () => {
 		});
 
 		it('should throw error for invalid OTP', async () => {
-			vi.mocked(authObtainTokenWithOtpCa173D18).mockResolvedValue({
+			vi.mocked(authObtainTokenWithOtpC7428120).mockResolvedValue({
 				data: undefined,
 				error: { message: 'Invalid OTP' } as any,
 				request: {} as Request,
@@ -198,7 +198,7 @@ describe('AuthStore', () => {
 	describe('Logout', () => {
 		it('should clear all auth state', async () => {
 			// First login
-			vi.mocked(authObtainToken88D8C7F5).mockResolvedValue({
+			vi.mocked(authObtainToken89D16376).mockResolvedValue({
 				data: {
 					username: 'test@example.com',
 					access: 'token',
@@ -209,7 +209,7 @@ describe('AuthStore', () => {
 				response: {} as Response
 			});
 
-			vi.mocked(accountMe0E4E4784).mockResolvedValue({
+			vi.mocked(accountMeD8441F6B).mockResolvedValue({
 				data: {
 					id: '123',
 					email: 'test@example.com'
@@ -219,7 +219,7 @@ describe('AuthStore', () => {
 				response: {} as Response
 			});
 
-			vi.mocked(permissionMyPermissionsC9C10303).mockResolvedValue({
+			vi.mocked(permissionMyPermissionsC74726Aa).mockResolvedValue({
 				data: { organization_permissions: {} },
 				error: undefined,
 				request: {} as Request,

@@ -43,7 +43,7 @@
 	{#if event.description_html}
 		<section aria-labelledby="description-heading">
 			<h2 id="description-heading" class="mb-3 text-xl font-semibold">About this event</h2>
-			<div class="prose prose-sm max-w-none dark:prose-invert">
+			<div class="prose prose-sm dark:prose-invert max-w-none">
 				{@html event.description_html}
 			</div>
 		</section>
@@ -139,9 +139,7 @@
 			<h2 id="tags-heading" class="mb-3 text-xl font-semibold">Tags</h2>
 			<div class="flex flex-wrap gap-2">
 				{#each event.tags as tag (tag)}
-					<span
-						class="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary"
-					>
+					<span class="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
 						{tag}
 					</span>
 				{/each}
@@ -169,9 +167,12 @@
 
 	<!-- Invitation Message (if private event) -->
 	{#if event.event_type === 'private' && event.invitation_message_html}
-		<section aria-labelledby="invitation-heading" class="rounded-lg border-2 border-primary/20 bg-primary/5 p-4">
+		<section
+			aria-labelledby="invitation-heading"
+			class="rounded-lg border-2 border-primary/20 bg-primary/5 p-4"
+		>
 			<h2 id="invitation-heading" class="mb-2 text-lg font-semibold">Invitation Details</h2>
-			<div class="prose prose-sm max-w-none dark:prose-invert">
+			<div class="prose prose-sm dark:prose-invert max-w-none">
 				{@html event.invitation_message_html}
 			</div>
 		</section>

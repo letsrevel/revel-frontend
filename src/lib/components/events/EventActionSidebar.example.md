@@ -103,11 +103,7 @@ Typical pattern for event detail pages:
 		<p class="text-destructive">Failed to load event</p>
 	</div>
 {:else if $eventQuery.data}
-	<EventActionSidebar
-		event={$eventQuery.data}
-		userStatus={userStatus}
-		isAuthenticated={isAuthenticated}
-	/>
+	<EventActionSidebar event={$eventQuery.data} {userStatus} {isAuthenticated} />
 {/if}
 ```
 
@@ -172,12 +168,7 @@ const eligibilityStatus: EventUserEligibility = {
 - Stays visible as user scrolls
 
 ```svelte
-<EventActionSidebar
-	{event}
-	{userStatus}
-	{isAuthenticated}
-	variant="sidebar"
-/>
+<EventActionSidebar {event} {userStatus} {isAuthenticated} variant="sidebar" />
 ```
 
 ### Card Variant
@@ -187,12 +178,7 @@ const eligibilityStatus: EventUserEligibility = {
 - Best for mobile layouts or inline use
 
 ```svelte
-<EventActionSidebar
-	{event}
-	{userStatus}
-	{isAuthenticated}
-	variant="card"
-/>
+<EventActionSidebar {event} {userStatus} {isAuthenticated} variant="card" />
 ```
 
 ## Behavior Examples

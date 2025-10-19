@@ -1,6 +1,6 @@
 import { fail, type Actions } from '@sveltejs/kit';
 import { passwordResetSchema } from '$lib/schemas/auth';
-import { accountResetPassword25F8Cca4 } from '$lib/api/generated';
+import { accountResetPassword11226E1B } from '$lib/api/generated';
 
 export const actions: Actions = {
 	resetPassword: async ({ request }) => {
@@ -31,7 +31,7 @@ export const actions: Actions = {
 
 		try {
 			// Call backend API to reset password
-			await accountResetPassword25F8Cca4({
+			await accountResetPassword11226E1B({
 				body: {
 					password1: result.data.password,
 					password2: result.data.confirmPassword,

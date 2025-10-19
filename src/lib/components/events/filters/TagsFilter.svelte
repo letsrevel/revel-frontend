@@ -59,7 +59,8 @@
 
 	{#if selectedTags.length > 0}
 		<p class="text-xs text-muted-foreground">
-			{selectedTags.length} {selectedTags.length === 1 ? 'tag' : 'tags'} selected
+			{selectedTags.length}
+			{selectedTags.length === 1 ? 'tag' : 'tags'} selected
 		</p>
 	{/if}
 </div>

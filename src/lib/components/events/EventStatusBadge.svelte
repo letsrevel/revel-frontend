@@ -1,14 +1,7 @@
 <script lang="ts">
 	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
-	import {
-		Calendar,
-		Clock,
-		CheckCircle,
-		XCircle,
-		AlertCircle,
-		type Icon
-	} from 'lucide-svelte';
+	import { Calendar, Clock, CheckCircle, XCircle, AlertCircle, type Icon } from 'lucide-svelte';
 	import type { ComponentType } from 'svelte';
 
 	interface Props {

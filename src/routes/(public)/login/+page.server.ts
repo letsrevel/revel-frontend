@@ -1,7 +1,7 @@
 import { fail, redirect, isRedirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import { loginSchema, otpSchema } from '$lib/schemas/auth';
-import { authObtainToken88D8C7F5, authObtainTokenWithOtpCa173D18 } from '$lib/api/client';
+import { authObtainToken89D16376, authObtainTokenWithOtpC7428120 } from '$lib/api/client';
 
 export const actions = {
 	// Standard email/password login
@@ -27,7 +27,7 @@ export const actions = {
 
 		try {
 			// Call backend login API
-			const response = await authObtainToken88D8C7F5({
+			const response = await authObtainToken89D16376({
 				body: {
 					username: validation.data.email,
 					password: validation.data.password
@@ -126,7 +126,7 @@ export const actions = {
 
 		try {
 			// Verify OTP with backend
-			const response = await authObtainTokenWithOtpCa173D18({
+			const response = await authObtainTokenWithOtpC7428120({
 				body: {
 					token: data.tempToken,
 					otp: validation.data.code

@@ -31,7 +31,9 @@
 
 	<div class="space-y-2" role="radiogroup" aria-label="Event type filter">
 		{#each options as option (option.label)}
-			<label class="flex cursor-pointer items-start gap-3 rounded-md p-2 transition-colors hover:bg-accent">
+			<label
+				class="flex cursor-pointer items-start gap-3 rounded-md p-2 transition-colors hover:bg-accent"
+			>
 				<input
 					type="radio"
 					name="event-type"

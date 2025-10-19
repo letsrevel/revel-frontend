@@ -1,6 +1,6 @@
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { accountMe0E4E4784, accountUpdateProfile646B0Fb3 } from '$lib/api/generated';
+import { accountMeD8441F6B, accountUpdateProfile0Abfea16 } from '$lib/api/generated';
 import { profileUpdateSchema } from '$lib/schemas/profile';
 
 export const load: PageServerLoad = async ({ cookies }) => {
@@ -13,7 +13,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 	}
 
 	try {
-		const { data } = await accountMe0E4E4784({
+		const { data } = await accountMeD8441F6B({
 			headers: {
 				Authorization: `Bearer ${accessToken}`
 			}
@@ -65,7 +65,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			const response = await accountUpdateProfile646B0Fb3({
+			const response = await accountUpdateProfile0Abfea16({
 				body: result.data,
 				headers: {
 					Authorization: `Bearer ${accessToken}`

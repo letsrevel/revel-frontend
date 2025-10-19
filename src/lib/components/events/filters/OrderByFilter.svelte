@@ -33,10 +33,10 @@
 		<div class="relative">
 			<button
 				type="button"
-				onmouseenter={() => showTooltip = true}
-				onmouseleave={() => showTooltip = false}
-				onfocus={() => showTooltip = true}
-				onblur={() => showTooltip = false}
+				onmouseenter={() => (showTooltip = true)}
+				onmouseleave={() => (showTooltip = false)}
+				onfocus={() => (showTooltip = true)}
+				onblur={() => (showTooltip = false)}
 				class="rounded-sm p-0.5 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				aria-label="Sort order information"
 			>
@@ -44,13 +44,18 @@
 			</button>
 
 			{#if showTooltip}
-				<div class="absolute bottom-full left-0 z-50 mb-2 w-64 rounded-md border bg-popover p-3 text-xs text-popover-foreground shadow-md">
+				<div
+					class="absolute bottom-full left-0 z-50 mb-2 w-64 rounded-md border bg-popover p-3 text-xs text-popover-foreground shadow-md"
+				>
 					<p class="font-medium">Distance Sorting</p>
 					<p class="mt-1 text-muted-foreground">
-						"Nearest First" uses your approximate location from IP address or your selected city in account settings.
+						"Nearest First" uses your approximate location from IP address or your selected city in
+						account settings.
 					</p>
 					<!-- Tooltip arrow -->
-					<div class="absolute left-2 top-full h-2 w-2 -translate-y-1 rotate-45 border-b border-r bg-popover"></div>
+					<div
+						class="absolute left-2 top-full h-2 w-2 -translate-y-1 rotate-45 border-b border-r bg-popover"
+					></div>
 				</div>
 			{/if}
 		</div>
@@ -70,6 +75,6 @@
 	</select>
 
 	<p class="text-xs text-muted-foreground">
-		{options.find(o => o.value === orderBy)?.description || ''}
+		{options.find((o) => o.value === orderBy)?.description || ''}
 	</p>
 </div>
