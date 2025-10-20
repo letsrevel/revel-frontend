@@ -1,4 +1,4 @@
-import { writeFileSync } from 'fs';
+import { writeFileSync, readFileSync } from 'fs';
 import { createClient } from '@hey-api/openapi-ts';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000';
@@ -23,6 +23,23 @@ try {
 			asClass: false
 		}
 	});
+
+	console.log('✅ API client generated!');
+	console.log('📝 Removing hash suffixes from function names...');
+
+	// Remove hash suffixes from generated SDK
+	const sdkPath = './src/lib/api/generated/sdk.gen.ts';
+	let sdkContent = readFileSync(sdkPath, 'utf-8');
+
+	// Replace function names with hash suffixes (e.g., accountMe08B35537 -> accountMe)
+	// Pattern: export const functionName[Hash] = -> export const functionName =
+	sdkContent = sdkContent.replace(/export const ([a-zA-Z]+)[0-9A-Fa-f]{8,}/g, 'export const $1');
+
+	// Also replace in function calls within the file
+	sdkContent = sdkContent.replace(/\b([a-zA-Z]+)[0-9A-Fa-f]{8,}\(/g, '$1(');
+
+	writeFileSync(sdkPath, sdkContent);
+	console.log('✅ Hash suffixes removed from SDK!');
 
 	// Create index.ts to export everything
 	const indexContent = `// Re-export everything from generated API
