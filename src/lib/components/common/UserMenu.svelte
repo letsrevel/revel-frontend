@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { createQuery } from '@tanstack/svelte-query';
+	import { dashboardDashboardOrganizations88A0E87D } from '$lib/api/generated/sdk.gen';
 	import { User, Settings, LogOut, Building2, Shield, Lock } from 'lucide-svelte';
 
 	interface Props {
@@ -12,6 +14,29 @@
 
 	let dropdownOpen = $state(false);
 	let user = $derived(authStore.user);
+	let accessToken = $derived(authStore.accessToken);
+
+	// Fetch user's organizations (where they are owner or staff)
+	const organizationsQuery = createQuery(() => ({
+		queryKey: ['user-organizations'],
+		queryFn: async () => {
+			if (!accessToken) return [];
+
+			const response = await dashboardDashboardOrganizations88A0E87D({
+				headers: {
+					Authorization: `Bearer ${accessToken}`
+				},
+				query: {
+					page_size: 50 // Get up to 50 orgs
+				}
+			});
+
+			return response.data?.results || [];
+		},
+		enabled: !!accessToken
+	}));
+
+	let userOrganizations = $derived(organizationsQuery.data || []);
 
 	// Get user initials for avatar
 	let userInitials = $derived(() => {
@@ -31,8 +56,7 @@
 		{ href: '/account/profile', label: 'Profile', icon: User },
 		{ href: '/account/security', label: 'Security', icon: Shield },
 		{ href: '/account/privacy', label: 'Privacy & Data', icon: Lock },
-		{ href: '/account/settings', label: 'Settings', icon: Settings },
-		{ href: '/my-organizations', label: 'My Organizations', icon: Building2 }
+		{ href: '/account/settings', label: 'Settings', icon: Settings }
 	];
 
 	function handleLogout() {
@@ -91,9 +115,36 @@
 			</a>
 		{/each}
 
+		<!-- Organizations Section (Mobile) -->
+		{#if userOrganizations.length > 0}
+			<div class="space-y-2 border-t pt-4">
+				<div class="px-4 text-sm font-semibold text-muted-foreground">My Organizations</div>
+				{#each userOrganizations as org}
+					<div class="space-y-1">
+						<a
+							href="/org/{org.slug}"
+							class="flex items-center gap-3 rounded-md px-4 py-2 text-base transition-colors hover:bg-accent hover:text-accent-foreground"
+							onclick={handleItemClick}
+						>
+							<Building2 class="h-5 w-5" aria-hidden="true" />
+							<span class="flex-1 truncate">{org.name}</span>
+						</a>
+						<a
+							href="/org/{org.slug}/admin"
+							class="ml-12 flex items-center gap-2 rounded-md px-4 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+							onclick={handleItemClick}
+						>
+							<Shield class="h-4 w-4" aria-hidden="true" />
+							<span>Admin Dashboard</span>
+						</a>
+					</div>
+				{/each}
+			</div>
+		{/if}
+
 		<button
 			type="button"
-			class="flex w-full items-center gap-3 rounded-md px-4 py-3 text-base text-destructive transition-colors hover:bg-destructive/10"
+			class="mt-4 flex w-full items-center gap-3 rounded-md border-t px-4 py-3 pt-6 text-base text-destructive transition-colors hover:bg-destructive/10"
 			onclick={handleLogout}
 		>
 			<LogOut class="h-5 w-5" aria-hidden="true" />
@@ -121,7 +172,7 @@
 
 		{#if dropdownOpen}
 			<div
-				class="absolute right-0 mt-2 w-56 origin-top-right rounded-md border bg-popover shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+				class="absolute right-0 z-[60] mt-2 w-56 origin-top-right rounded-md border bg-popover shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
 				role="menu"
 				aria-orientation="vertical"
 			>
@@ -145,7 +196,43 @@
 							<span>{item.label}</span>
 						</a>
 					{/each}
+				</div>
 
+				<!-- Organizations Section -->
+				{#if userOrganizations.length > 0}
+					<div class="border-t">
+						<div class="p-1">
+							<div class="px-3 py-2 text-xs font-semibold text-muted-foreground">
+								My Organizations
+							</div>
+							{#each userOrganizations as org}
+								<div class="space-y-1">
+									<a
+										href="/org/{org.slug}"
+										class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+										onclick={handleItemClick}
+										role="menuitem"
+									>
+										<Building2 class="h-4 w-4" aria-hidden="true" />
+										<span class="flex-1 truncate">{org.name}</span>
+									</a>
+									<a
+										href="/org/{org.slug}/admin"
+										class="ml-7 flex items-center gap-2 rounded-sm px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+										onclick={handleItemClick}
+										role="menuitem"
+									>
+										<Shield class="h-3 w-3" aria-hidden="true" />
+										<span>Admin Dashboard</span>
+									</a>
+								</div>
+							{/each}
+						</div>
+					</div>
+				{/if}
+
+				<!-- Logout -->
+				<div class="border-t p-1">
 					<button
 						type="button"
 						class="flex w-full items-center gap-3 rounded-sm px-3 py-2 text-sm text-destructive transition-colors hover:bg-destructive/10"

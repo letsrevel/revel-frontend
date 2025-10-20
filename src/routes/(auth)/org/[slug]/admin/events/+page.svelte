@@ -5,6 +5,7 @@
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { eventadminUpdateEventStatusBf5Ec3E2 } from '$lib/api/generated/sdk.gen';
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import { cn } from '$lib/utils/cn';
 	import {
 		Plus,
@@ -21,7 +22,7 @@
 	let { data }: { data: PageData } = $props();
 
 	const organization = $derived($page.data.organization);
-	const user = $derived($page.data.user);
+	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
 
 	// Update event status mutation
@@ -36,7 +37,7 @@
 			const response = await eventadminUpdateEventStatusBf5Ec3E2({
 				path: { event_id: eventId, status },
 				headers: {
-					Authorization: `Bearer ${user.accessToken}`
+					Authorization: `Bearer ${accessToken}`
 				}
 			});
 
@@ -82,7 +83,7 @@
 	 * Navigate to public event page
 	 */
 	function viewEvent(eventSlug: string): void {
-		goto(`/org/${organization.slug}/events/${eventSlug}`);
+		goto(`/events/${organization.slug}/${eventSlug}`);
 	}
 
 	/**
