@@ -63,9 +63,63 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 			if (error || !data) {
 				console.error('[HOOKS] Failed to fetch user data:', error);
-				// Token is invalid, clear cookies
-				event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
-				event.cookies.delete('refresh_token', { path: '/', httpOnly: true, sameSite: 'lax' });
+
+				// If we have a refresh token, try to refresh the access token
+				if (refreshToken) {
+					console.log('[HOOKS] Access token expired, attempting refresh');
+					try {
+						const refreshResponse = await tokenRefresh({
+							body: {
+								refresh: refreshToken
+							}
+						});
+
+						if (refreshResponse.error || !refreshResponse.data || !refreshResponse.data.access) {
+							console.error('[HOOKS] Token refresh failed:', refreshResponse.error);
+							// Invalid refresh token, clear all cookies
+							event.cookies.delete('refresh_token', { path: '/', httpOnly: true, sameSite: 'lax' });
+							event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
+						} else {
+							console.log('[HOOKS] Token refresh successful, retrying user fetch');
+							// Set the new access token cookie
+							event.cookies.set('access_token', refreshResponse.data.access, {
+								path: '/',
+								httpOnly: true,
+								sameSite: 'lax',
+								maxAge: 60 * 15 // 15 minutes
+							});
+
+							// Retry fetching user data with new token
+							const retryResponse = await accountMeD8441F6B({
+								headers: {
+									Authorization: `Bearer ${refreshResponse.data.access}`
+								}
+							});
+
+							if (retryResponse.data) {
+								console.log('[HOOKS] User data fetched successfully after refresh:', retryResponse.data.email);
+								event.locals.user = {
+									...retryResponse.data,
+									accessToken: refreshResponse.data.access
+								};
+							} else {
+								console.error('[HOOKS] Failed to fetch user data after refresh');
+								// Clear cookies if still failing
+								event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
+								event.cookies.delete('refresh_token', { path: '/', httpOnly: true, sameSite: 'lax' });
+							}
+						}
+					} catch (refreshError) {
+						console.error('[HOOKS] Error during token refresh:', refreshError);
+						// Clear invalid tokens
+						event.cookies.delete('refresh_token', { path: '/', httpOnly: true, sameSite: 'lax' });
+						event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
+					}
+				} else {
+					// No refresh token available, clear access token
+					console.log('[HOOKS] No refresh token available, clearing access token');
+					event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
+				}
 			} else {
 				console.log('[HOOKS] User data fetched successfully:', data.email);
 				// Populate locals.user for server-side load functions
