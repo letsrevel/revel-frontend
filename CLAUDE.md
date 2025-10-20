@@ -2,6 +2,71 @@
 
 This file provides guidance to Claude Code (claude.ai/code) and other AI assistants when working with code in this repository.
 
+## Tracking Project Progress
+
+**IMPORTANT:** Before starting any feature or issue, always check if it has already been completed or is in progress.
+
+### How to Check Implementation Status
+
+1. **Check closed PRs for recent work:**
+   ```bash
+   gh pr list --state closed --limit 20
+   # Or search for specific features:
+   gh pr list --state closed --search "potluck"
+   ```
+
+2. **Check existing implementation:**
+   - Look in `src/routes/` for existing pages
+   - Check `src/lib/components/` for reusable components
+   - Search for API endpoint usage: `grep -r "api\." src/`
+
+3. **Review the Implementation Plan:**
+   - Check `IMPLEMENTATION_PLAN.md` for current status
+   - The plan is updated regularly with completed features
+   - Look for ✅ (complete), ⏳ (in progress), ❌ (not started)
+
+4. **Verify backend API coverage:**
+   - Read `backend_context/openapi.json` for available endpoints
+   - Check `backend_context/USER_JOURNEY.md` for intended flows
+   - Test endpoints with the API client to ensure they work
+
+5. **Check open issues:**
+   ```bash
+   gh issue list --state open
+   # Check if an issue is outdated:
+   gh issue view <number>
+   ```
+
+### Before Creating New Features
+
+1. **Verify it doesn't exist:** Run the app and test the feature
+2. **Check for partial implementations:** Some features may be partially complete
+3. **Look for related PRs:** The feature might be in review
+4. **Update stale issues:** If an issue is complete, close it with a comment
+
+### Common Completed Features (as of Oct 2025)
+
+- ✅ Authentication (login, register, 2FA, password reset)
+- ✅ Event browsing and discovery
+- ✅ Event RSVP system
+- ✅ Potluck coordination
+- ✅ User profile management
+- ✅ GDPR compliance (data export, account deletion)
+- ✅ User settings and preferences
+
+### Features In Progress
+
+- ⏳ User dashboard enhancement
+- ⏳ Mobile optimization for potluck
+
+### Not Yet Implemented
+
+- ❌ Event ticketing with Stripe
+- ❌ Questionnaire submission
+- ❌ Organization management
+- ❌ Event creation wizard
+- ❌ QR code check-in
+
 ## Using the Svelte MCP
 
 This project uses Svelte 5 and SvelteKit. When working with Svelte code, you should leverage the Svelte MCP for documentation and best practices.
@@ -710,9 +775,12 @@ test('user can RSVP to event', async ({ page }) => {
 
 #### Before Starting Work
 
-1. Pull latest changes from `main`
-2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Ensure backend is running and API client is up to date: `pnpm generate:api`
+1. **Check if the feature already exists** - Run the app and test it
+2. **Review closed PRs** - Check recent implementations
+3. **Check IMPLEMENTATION_PLAN.md** - See current project status
+4. Pull latest changes from `main`
+5. Create a feature branch: `git checkout -b feature/your-feature`
+6. Ensure backend is running and API client is up to date: `pnpm generate:api`
 
 #### During Development
 
@@ -744,6 +812,7 @@ When working on issues or new features, follow this collaborative workflow:
 
 #### 1. Investigation & Analysis Phase
 
+- **Check if it's already done** - Test the feature, check closed PRs
 - Read the issue description thoroughly
 - **Consider using the project-manager subagent** for complex feature planning
 - Use the Svelte MCP to check relevant documentation
@@ -785,6 +854,7 @@ When working on issues or new features, follow this collaborative workflow:
 
 ## Notes to Claude
 
+- **Check if features exist before building them** - Many features are already implemented
 - **Use subagents proactively** - Delegate specialized tasks to the appropriate subagent for better focus and results
 - **Always use the Svelte MCP** when working with Svelte 5 code - the Runes system is fundamentally different from Svelte 3/4
 - **Run `svelte-autofixer`** on all generated Svelte code before presenting to users

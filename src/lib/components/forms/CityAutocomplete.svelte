@@ -8,9 +8,11 @@
 		onSelect: (city: CitySchema | null) => void;
 		disabled?: boolean;
 		error?: string;
+		label?: string;
+		description?: string;
 	}
 
-	let { value, onSelect, disabled = false, error }: Props = $props();
+	let { value, onSelect, disabled = false, error, label = 'Preferred City', description = 'Select your preferred city for event recommendations' }: Props = $props();
 
 	// Component state
 	let searchQuery = $state('');
@@ -158,7 +160,7 @@
 </script>
 
 <div class="relative w-full">
-	<label for="city-search" class="mb-2 block text-sm font-medium"> Preferred City </label>
+	<label for="city-search" class="mb-2 block text-sm font-medium">{label}</label>
 
 	<div class="relative">
 		{#if value}
@@ -254,7 +256,9 @@
 		</p>
 	{/if}
 
-	<p class="mt-2 text-xs text-muted-foreground">
-		Select your preferred city for event recommendations
-	</p>
+	{#if description}
+		<p class="mt-2 text-xs text-muted-foreground">
+			{description}
+		</p>
+	{/if}
 </div>
