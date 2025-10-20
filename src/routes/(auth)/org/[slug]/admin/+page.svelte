@@ -35,8 +35,7 @@
 			icon: Settings,
 			href: `/org/${organization.slug}/admin/settings`,
 			color: 'text-purple-600 dark:text-purple-400',
-			bgColor: 'bg-purple-50 dark:bg-purple-950',
-			badge: 'Coming Soon'
+			bgColor: 'bg-purple-50 dark:bg-purple-950'
 		},
 		{
 			title: 'Analytics',
