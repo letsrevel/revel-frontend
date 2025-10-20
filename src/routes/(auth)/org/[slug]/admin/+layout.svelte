@@ -17,10 +17,18 @@
 	let currentPath = $derived($page.url.pathname);
 
 	// Admin navigation items
-	const navItems = [{ href: `/org/${data.organization.slug}/admin/events`, label: 'Events' }];
+	const navItems = [
+		{ href: `/org/${data.organization.slug}/admin`, label: 'Dashboard' },
+		{ href: `/org/${data.organization.slug}/admin/events`, label: 'Events' }
+	];
 
 	// Check if link is active
 	function isActive(href: string): boolean {
+		// For the dashboard (admin root), only match exact path
+		if (href.endsWith('/admin')) {
+			return currentPath === href;
+		}
+		// For other paths, match exact or starting with path + '/'
 		return currentPath === href || currentPath.startsWith(href + '/');
 	}
 
