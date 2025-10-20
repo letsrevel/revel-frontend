@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import { Calendar, Users, Settings, BarChart3, FileText, Plus } from 'lucide-svelte';
+	import HTMLDescription from '$lib/components/common/HTMLDescription.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -13,7 +14,7 @@
 	const quickActions = $derived([
 		{
 			title: 'Events',
-			description: 'Manage your organization\'s events',
+			description: "Manage your organization's events",
 			icon: Calendar,
 			href: `/org/${organization.slug}/admin/events`,
 			color: 'text-blue-600 dark:text-blue-400',
@@ -126,7 +127,7 @@
 					<!-- Hover Indicator (only for enabled cards) -->
 					{#if !isDisabled}
 						<div
-							class="absolute inset-0 rounded-lg ring-2 ring-primary opacity-0 transition-opacity group-hover:opacity-100"
+							class="absolute inset-0 rounded-lg opacity-0 ring-2 ring-primary transition-opacity group-hover:opacity-100"
 							aria-hidden="true"
 						></div>
 					{/if}
@@ -168,11 +169,15 @@
 					<dt class="text-sm font-medium text-muted-foreground">Your Role</dt>
 					<dd class="mt-1">
 						{#if data.isOwner}
-							<span class="inline-flex items-center rounded-md bg-primary/10 px-2 py-1 text-sm font-medium text-primary">
+							<span
+								class="inline-flex items-center rounded-md bg-primary/10 px-2 py-1 text-sm font-medium text-primary"
+							>
 								Owner
 							</span>
 						{:else if data.isStaff}
-							<span class="inline-flex items-center rounded-md bg-accent px-2 py-1 text-sm font-medium">
+							<span
+								class="inline-flex items-center rounded-md bg-accent px-2 py-1 text-sm font-medium"
+							>
 								Staff
 							</span>
 						{/if}
@@ -181,10 +186,12 @@
 			</dl>
 
 			<!-- Description -->
-			{#if organization.description}
+			{#if organization.description_html}
 				<div class="mt-6 border-t pt-4">
 					<dt class="text-sm font-medium text-muted-foreground">Description</dt>
-					<dd class="mt-2 text-sm leading-relaxed">{organization.description}</dd>
+					<dd class="mt-2">
+						<HTMLDescription html={organization.description_html} class="prose-sm" />
+					</dd>
 				</div>
 			{/if}
 		</div>
@@ -192,13 +199,16 @@
 
 	<!-- Permissions Notice (for staff members) -->
 	{#if data.isStaff && !data.isOwner}
-		<div class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950">
+		<div
+			class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950"
+		>
 			<div class="flex gap-3">
 				<FileText class="h-5 w-5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
 				<div class="flex-1">
 					<h3 class="font-medium text-blue-900 dark:text-blue-100">Staff Member Permissions</h3>
 					<p class="mt-1 text-sm text-blue-700 dark:text-blue-300">
-						Your access to admin features is determined by the permissions granted to you by the organization owner. Some features may be restricted.
+						Your access to admin features is determined by the permissions granted to you by the
+						organization owner. Some features may be restricted.
 					</p>
 				</div>
 			</div>

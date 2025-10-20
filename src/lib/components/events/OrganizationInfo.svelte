@@ -8,6 +8,23 @@
 	}
 
 	let { organization, class: className }: Props = $props();
+
+	// Backend URL for images
+	const BACKEND_URL = 'http://localhost:8000';
+
+	// Helper function to get full image URL
+	function getImageUrl(path: string | null | undefined): string | null {
+		if (!path) return null;
+		// If path is already a full URL, return it
+		if (path.startsWith('http://') || path.startsWith('https://')) {
+			return path;
+		}
+		// Otherwise, prepend backend URL
+		return `${BACKEND_URL}${path}`;
+	}
+
+	// Compute full logo URL
+	const logoUrl = $derived(getImageUrl(organization.logo));
 </script>
 
 <section aria-labelledby="organizer-heading" class={cn('space-y-4', className)}>
@@ -16,9 +33,9 @@
 	<div class="rounded-lg border bg-card p-6">
 		<!-- Organization Header -->
 		<div class="flex items-start gap-4">
-			{#if organization.logo}
+			{#if logoUrl}
 				<img
-					src={organization.logo}
+					src={logoUrl}
 					alt="{organization.name} logo"
 					class="h-16 w-16 rounded-lg object-cover"
 				/>

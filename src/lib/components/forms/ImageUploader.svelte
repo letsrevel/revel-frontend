@@ -39,6 +39,8 @@
 		error?: string;
 		/** Additional CSS classes */
 		class?: string;
+		/** Aspect ratio for preview: 'square' or 'wide' (default: 'wide') */
+		aspectRatio?: 'square' | 'wide';
 		/** Callback fired when file is selected */
 		onFileSelect?: (file: File | null) => void;
 	}
@@ -54,6 +56,7 @@
 		disabled = false,
 		error,
 		class: className,
+		aspectRatio = 'wide',
 		onFileSelect
 	}: Props = $props();
 
@@ -89,7 +92,17 @@
 	function validateFile(file: File): string | null {
 		// Check file type
 		const acceptedTypes = accept.split(',').map((type) => type.trim());
-		if (!acceptedTypes.includes(file.type)) {
+		const isValid = acceptedTypes.some((type) => {
+			if (type.endsWith('/*')) {
+				// Handle wildcard types like "image/*"
+				const prefix = type.slice(0, -2);
+				return file.type.startsWith(prefix);
+			}
+			// Handle specific types like "image/png"
+			return file.type === type;
+		});
+
+		if (!isValid) {
 			return `Please select a valid image file (${accept})`;
 		}
 
@@ -200,18 +213,24 @@
 
 	{#if previewUrl}
 		<!-- Image Preview -->
-		<div class="relative rounded-lg border-2 border-gray-300 dark:border-gray-600 overflow-hidden">
+		<div
+			class="relative mx-auto overflow-hidden rounded-lg border-2 border-gray-300 dark:border-gray-600"
+			class:aspect-square={aspectRatio === 'square'}
+			class:max-w-xs={aspectRatio === 'square'}
+			class:max-w-2xl={aspectRatio === 'wide'}
+		>
 			<img
 				src={previewUrl}
 				alt="Preview"
-				class="w-full h-64 object-cover"
+				class="h-full w-full object-cover"
+				class:h-48={aspectRatio === 'wide'}
 			/>
 
 			{#if !disabled}
 				<button
 					type="button"
 					onclick={removeImage}
-					class="absolute top-2 right-2 rounded-full bg-destructive p-2 text-white shadow-lg hover:bg-destructive/90 transition-colors focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-2"
+					class="absolute right-2 top-2 rounded-full bg-destructive p-2 text-white shadow-lg transition-colors hover:bg-destructive/90 focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-2"
 					aria-label="Remove image"
 				>
 					<X class="h-4 w-4" aria-hidden="true" />
@@ -219,7 +238,7 @@
 			{/if}
 
 			{#if value}
-				<div class="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-2 text-xs">
+				<div class="absolute bottom-0 left-0 right-0 bg-black/70 p-2 text-xs text-white">
 					<p class="truncate">{value.name}</p>
 					<p class="text-gray-300">{formatFileSize(value.size)}</p>
 				</div>
@@ -239,25 +258,20 @@
 			aria-label="Upload image"
 			aria-describedby={error ? `${inputId}-error` : `${inputId}-hint`}
 			class={cn(
-				'flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition-all cursor-pointer',
+				'flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition-all',
 				'hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-800/50',
 				'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
 				isDragging && 'border-primary bg-primary/5',
-				error
-					? 'border-destructive'
-					: 'border-gray-300 dark:border-gray-600',
+				error ? 'border-destructive' : 'border-gray-300 dark:border-gray-600',
 				disabled && 'cursor-not-allowed opacity-50 hover:border-gray-300 hover:bg-transparent'
 			)}
 		>
 			<Upload
-				class={cn(
-					'h-12 w-12 mb-4',
-					isDragging ? 'text-primary' : 'text-muted-foreground'
-				)}
+				class={cn('mb-4 h-12 w-12', isDragging ? 'text-primary' : 'text-muted-foreground')}
 				aria-hidden="true"
 			/>
 
-			<p class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
+			<p class="mb-1 text-sm font-medium text-gray-900 dark:text-gray-100">
 				{#if isDragging}
 					Drop image here
 				{:else}
@@ -266,7 +280,10 @@
 			</p>
 
 			<p id="{inputId}-hint" class="text-xs text-muted-foreground">
-				{accept.split(',').map(type => type.split('/')[1].toUpperCase()).join(', ')} up to {formatFileSize(maxSize)}
+				{accept
+					.split(',')
+					.map((type) => type.split('/')[1].toUpperCase())
+					.join(', ')} up to {formatFileSize(maxSize)}
 			</p>
 		</div>
 	{/if}
