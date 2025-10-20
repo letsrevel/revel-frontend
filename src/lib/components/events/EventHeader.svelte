@@ -12,6 +12,23 @@
 
 	let { event, class: className }: Props = $props();
 
+	// Backend URL for images
+	const BACKEND_URL = 'http://localhost:8000';
+
+	// Helper function to get full image URL
+	function getImageUrl(path: string | null | undefined): string | null {
+		if (!path) return null;
+		// If path is already a full URL, return it
+		if (path.startsWith('http://') || path.startsWith('https://')) {
+			return path;
+		}
+		// Otherwise, prepend backend URL
+		return `${BACKEND_URL}${path}`;
+	}
+
+	// Compute organization logo URL
+	const orgLogoUrl = $derived(getImageUrl(event.organization.logo));
+
 	// Compute location display
 	let locationDisplay = $derived.by(() => {
 		if (!event.city) return event.address || 'Location TBD';
@@ -100,9 +117,9 @@
 			href="/org/{event.organization.slug}"
 			class="group -mt-8 inline-flex items-center gap-3 rounded-lg bg-background p-3 shadow-lg ring-1 ring-border transition-all hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 		>
-			{#if event.organization.logo}
+			{#if orgLogoUrl}
 				<img
-					src={event.organization.logo}
+					src={orgLogoUrl}
 					alt="{event.organization.name} logo"
 					class="h-12 w-12 rounded-md object-cover"
 				/>
