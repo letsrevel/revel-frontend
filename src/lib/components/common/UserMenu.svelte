@@ -172,7 +172,7 @@
 
 		{#if dropdownOpen}
 			<div
-				class="absolute right-0 mt-2 w-56 origin-top-right rounded-md border bg-popover shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+				class="absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-md border bg-popover shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
 				role="menu"
 				aria-orientation="vertical"
 			>
