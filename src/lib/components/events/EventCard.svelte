@@ -16,6 +16,20 @@
 
 	let { event, variant = 'standard', userStatus = null, class: className }: Props = $props();
 
+	// Backend URL for images
+	const BACKEND_URL = 'http://localhost:8000';
+
+	// Helper function to get full image URL
+	function getImageUrl(path: string | null | undefined): string | null {
+		if (!path) return null;
+		// If path is already a full URL, return it
+		if (path.startsWith('http://') || path.startsWith('https://')) {
+			return path;
+		}
+		// Otherwise, prepend backend URL
+		return `${BACKEND_URL}${path}`;
+	}
+
 	// Image state
 	let imageError = $state(false);
 
@@ -32,8 +46,9 @@
 	let fallbackGradient = $derived(getEventFallbackGradient(event.id));
 	let isPast = $derived(isEventPast(event.end));
 
-	// Image URL with fallback
+	// Image URLs with backend URL prepended
 	let imageUrl = $derived(event.cover_art && !imageError ? event.cover_art : null);
+	let orgLogoUrl = $derived(getImageUrl(event.organization.logo));
 
 	// Accessible card label for screen readers
 	let accessibleLabel = $derived.by(() => {
@@ -97,10 +112,10 @@
 		{:else}
 			<!-- Fallback gradient with organization logo -->
 			<div class={cn('h-full w-full bg-gradient-to-br', fallbackGradient)}>
-				{#if event.organization.logo}
+				{#if orgLogoUrl}
 					<div class="flex h-full w-full items-center justify-center p-8">
 						<img
-							src={event.organization.logo}
+							src={orgLogoUrl}
 							alt=""
 							class="max-h-full max-w-full object-contain opacity-80"
 							loading="lazy"
