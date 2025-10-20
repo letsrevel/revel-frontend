@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
-	import { eventRsvpEvent29565362 } from '$lib/api/generated/sdk.gen';
+	import { eventRsvpEvent } from '$lib/api/generated/sdk.gen';
 	import type { UserEventStatus } from '$lib/utils/eligibility';
 	import {
 		isRSVP,
@@ -54,7 +54,7 @@
 	// Mutation: RSVP to event
 	const rsvpMutation = createMutation(() => ({
 		mutationFn: async (answer: 'yes' | 'no' | 'maybe') => {
-			const response = await eventRsvpEvent29565362({
+			const response = await eventRsvpEvent({
 				path: { event_id: eventId, answer }
 			});
 

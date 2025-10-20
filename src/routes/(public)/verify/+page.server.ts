@@ -1,6 +1,6 @@
 import { redirect, isRedirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { accountVerifyEmail559273Ec } from '$lib/api/generated/sdk.gen';
+import { accountVerifyEmail } from '$lib/api/generated/sdk.gen';
 
 export const load: PageServerLoad = async ({ url, fetch, cookies }) => {
 	const token = url.searchParams.get('token');
@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ url, fetch, cookies }) => {
 		console.log('[VERIFY] Starting verification for token');
 
 		// Verify the email token
-		const response = await accountVerifyEmail559273Ec({
+		const response = await accountVerifyEmail({
 			body: { token },
 			fetch
 		});

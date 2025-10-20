@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { Mail, Loader2 } from 'lucide-svelte';
-	import { accountResendVerificationEmailF37Edb18 } from '$lib/api/generated/sdk.gen';
+	import { accountResendVerificationEmail } from '$lib/api/generated/sdk.gen';
 
 	let email = $derived($page.url.searchParams.get('email') || '');
 	let isResending = $state(false);
@@ -16,7 +16,7 @@
 		resendSuccess = false;
 
 		try {
-			const response = await accountResendVerificationEmailF37Edb18();
+			const response = await accountResendVerificationEmail();
 
 			if (response.error) {
 				const error = response.error as any;

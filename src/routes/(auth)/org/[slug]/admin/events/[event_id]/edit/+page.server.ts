@@ -2,10 +2,10 @@ import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import type { CitySchema } from '$lib/api/generated/types.gen';
 import {
-	eventGetEventFf8A7B2A,
-	userpreferencesGetGeneralPreferencesA39613Ae,
-	dashboardDashboardEventSeriesAc85Def8,
-	questionnaireListOrgQuestionnairesE0A0441C
+	eventGetEvent,
+	userpreferencesGetGeneralPreferences,
+	dashboardDashboardEventSeries,
+	questionnaireListOrgQuestionnaires
 } from '$lib/api';
 
 export const load: PageServerLoad = async ({ parent, params, locals, fetch }) => {
@@ -24,7 +24,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch }) =>
 	// Load event
 	let event;
 	try {
-		const eventResponse = await eventGetEventFf8A7B2A({
+		const eventResponse = await eventGetEvent({
 			fetch,
 			path: { event_id: params.event_id },
 			headers
@@ -66,7 +66,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch }) =>
 	// Load user preferences for city default
 	let userCity: CitySchema | null = null;
 	try {
-		const preferencesResponse = await userpreferencesGetGeneralPreferencesA39613Ae({
+		const preferencesResponse = await userpreferencesGetGeneralPreferences({
 			fetch,
 			headers
 		});
@@ -79,7 +79,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch }) =>
 	// Load organization's event series for dropdown
 	const eventSeries = [];
 	try {
-		const seriesResponse = await dashboardDashboardEventSeriesAc85Def8({
+		const seriesResponse = await dashboardDashboardEventSeries({
 			fetch,
 			headers
 		});
@@ -95,7 +95,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch }) =>
 	// Load organization's questionnaires for dropdown
 	const questionnaires = [];
 	try {
-		const questionnairesResponse = await questionnaireListOrgQuestionnairesE0A0441C({
+		const questionnairesResponse = await questionnaireListOrgQuestionnaires({
 			fetch,
 			headers
 		});

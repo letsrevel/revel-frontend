@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { dashboardDashboardOrganizations88A0E87D } from '$lib/api/generated/sdk.gen';
+	import { dashboardDashboardOrganizations } from '$lib/api/generated/sdk.gen';
 	import { User, Settings, LogOut, Building2, Shield, Lock } from 'lucide-svelte';
 
 	interface Props {
@@ -22,7 +22,7 @@
 		queryFn: async () => {
 			if (!accessToken) return [];
 
-			const response = await dashboardDashboardOrganizations88A0E87D({
+			const response = await dashboardDashboardOrganizations({
 				headers: {
 					Authorization: `Bearer ${accessToken}`
 				},

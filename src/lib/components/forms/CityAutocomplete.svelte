@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { cityListCities0Bf56Bd4 } from '$lib/api/generated';
+	import { cityListCities } from '$lib/api/generated';
 	import type { CitySchema } from '$lib/api/generated';
 	import { Search, X, Loader2, MapPin } from 'lucide-svelte';
 
@@ -45,7 +45,7 @@
 		isSearching = true;
 
 		try {
-			const response = await cityListCities0Bf56Bd4({
+			const response = await cityListCities({
 				query: {
 					search: query,
 					page_size: 10

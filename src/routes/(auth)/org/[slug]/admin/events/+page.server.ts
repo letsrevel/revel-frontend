@@ -1,4 +1,4 @@
-import { eventListEventsFbe8B973 } from '$lib/api/generated/sdk.gen';
+import { eventListEvents } from '$lib/api/generated/sdk.gen';
 import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 
@@ -15,7 +15,7 @@ export const load: PageServerLoad = async ({ parent, locals, fetch }) => {
 	};
 
 	// Get all events for this organization (including past events)
-	const eventsResponse = await eventListEventsFbe8B973({
+	const eventsResponse = await eventListEvents({
 		fetch,
 		headers,
 		query: {

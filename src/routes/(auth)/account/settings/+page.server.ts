@@ -1,8 +1,8 @@
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import {
-	userpreferencesGetGeneralPreferencesA39613Ae,
-	userpreferencesUpdateGlobalPreferencesC1D4E2Fb
+	userpreferencesGetGeneralPreferences,
+	userpreferencesUpdateGlobalPreferences
 } from '$lib/api/generated';
 import { generalPreferencesSchema } from '$lib/schemas/preferences';
 
@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 	}
 
 	try {
-		const { data } = await userpreferencesGetGeneralPreferencesA39613Ae({
+		const { data } = await userpreferencesGetGeneralPreferences({
 			headers: {
 				Authorization: `Bearer ${accessToken}`
 			}
@@ -79,7 +79,7 @@ export const actions: Actions = {
 
 			console.log('[Settings] Sending preferences update:', payload);
 
-			const response = await userpreferencesUpdateGlobalPreferencesC1D4E2Fb({
+			const response = await userpreferencesUpdateGlobalPreferences({
 				body: payload,
 				query: {
 					overwrite_children: result.data.overwrite_children

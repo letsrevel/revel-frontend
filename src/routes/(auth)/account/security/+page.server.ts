@@ -1,10 +1,10 @@
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import {
-	otpSetupOtpF64Ec583,
-	otpEnableOtp28Bc4B07,
-	otpDisableOtp18769720,
-	accountMeD8441F6B
+	otpSetupOtp,
+	otpEnableOtp,
+	otpDisableOtp,
+	accountMe
 } from '$lib/api/client';
 import { z } from 'zod';
 
@@ -24,7 +24,7 @@ export const load: PageServerLoad = async ({ cookies, depends }) => {
 	}
 
 	try {
-		const { data } = await accountMeD8441F6B({
+		const { data } = await accountMe({
 			headers: {
 				Authorization: `Bearer ${accessToken}`
 			}
@@ -57,7 +57,7 @@ export const actions: Actions = {
 
 		try {
 			console.log('[Server] Starting 2FA setup...');
-			const response = await otpSetupOtpF64Ec583({
+			const response = await otpSetupOtp({
 				headers: {
 					Authorization: `Bearer ${accessToken}`
 				}
@@ -121,7 +121,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			const response = await otpEnableOtp28Bc4B07({
+			const response = await otpEnableOtp({
 				body: {
 					otp: validation.data
 				},
@@ -180,7 +180,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			const response = await otpDisableOtp18769720({
+			const response = await otpDisableOtp({
 				body: {
 					otp: validation.data
 				},

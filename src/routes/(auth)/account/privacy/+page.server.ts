@@ -1,5 +1,5 @@
 import { fail, type Actions } from '@sveltejs/kit';
-import { accountDeleteAccountRequestBfed9E9C, accountExportDataFb4E5B30 } from '$lib/api/generated';
+import { accountDeleteAccountRequest, accountExportData } from '$lib/api/generated';
 
 export const actions: Actions = {
 	exportData: async ({ cookies }) => {
@@ -14,7 +14,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			await accountExportDataFb4E5B30({
+			await accountExportData({
 				headers: {
 					Authorization: `Bearer ${accessToken}`
 				}
@@ -57,7 +57,7 @@ export const actions: Actions = {
 
 		try {
 			// Call backend API to send deletion confirmation email
-			await accountDeleteAccountRequestBfed9E9C({
+			await accountDeleteAccountRequest({
 				headers: {
 					Authorization: `Bearer ${accessToken}`
 				}

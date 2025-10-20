@@ -2,7 +2,7 @@
 	import type { CitySchema } from '$lib/api/generated/types.gen';
 	import { MapPin, X } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
-	import { cityListCities0Bf56Bd4 } from '$lib/api';
+	import { cityListCities } from '$lib/api';
 
 	interface Props {
 		selectedCity?: { id: number; name: string; country: string } | null;
@@ -29,7 +29,7 @@
 		isSearching = true;
 
 		try {
-			const response = await cityListCities0Bf56Bd4({
+			const response = await cityListCities({
 				query: {
 					search: query,
 					page: 1,

@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
-	import { eventadminUpdateEventStatusBf5Ec3E2 } from '$lib/api/generated/sdk.gen';
+	import { eventadminUpdateEventStatus } from '$lib/api/generated/sdk.gen';
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { cn } from '$lib/utils/cn';
@@ -34,7 +34,7 @@
 			eventId: string;
 			status: 'draft' | 'open' | 'closed' | 'deleted';
 		}) => {
-			const response = await eventadminUpdateEventStatusBf5Ec3E2({
+			const response = await eventadminUpdateEventStatus({
 				path: { event_id: eventId, status },
 				headers: {
 					Authorization: `Bearer ${accessToken}`

@@ -1,7 +1,7 @@
 import { fail, redirect, isRedirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import { registerSchema } from '$lib/schemas/auth';
-import { accountRegisterE40E7009 } from '$lib/api/generated/sdk.gen';
+import { accountRegister } from '$lib/api/generated/sdk.gen';
 
 export const actions = {
 	default: async ({ request, fetch }) => {
@@ -27,7 +27,7 @@ export const actions = {
 
 		try {
 			// Call backend registration API
-			const response = await accountRegisterE40E7009({
+			const response = await accountRegister({
 				body: {
 					email: validation.data.email,
 					password1: validation.data.password,

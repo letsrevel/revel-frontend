@@ -1,6 +1,6 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { potluckClaimPotluckItem0Dd0D7Bb, potluckUnclaimPotluckItemE366C231 } from '$lib/api';
+import { potluckClaimPotluckItem, potluckUnclaimPotluckItem } from '$lib/api';
 
 /**
  * POST /api/events/[event_id]/potluck/[item_id]/claim
@@ -12,7 +12,7 @@ export const POST: RequestHandler = async ({ params, locals }) => {
 	}
 
 	try {
-		const response = await potluckClaimPotluckItem0Dd0D7Bb({
+		const response = await potluckClaimPotluckItem({
 			path: { event_id: params.event_id, item_id: params.item_id },
 			headers: {
 				Authorization: `Bearer ${locals.user.accessToken}`
@@ -40,7 +40,7 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 	}
 
 	try {
-		const response = await potluckUnclaimPotluckItemE366C231({
+		const response = await potluckUnclaimPotluckItem({
 			path: { event_id: params.event_id, item_id: params.item_id },
 			headers: {
 				Authorization: `Bearer ${locals.user.accessToken}`

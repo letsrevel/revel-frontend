@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
-		organizationadminCreateEvent83140B46,
-		eventadminUpdateEvent64Fc71Fe,
-		eventadminUploadLogoF6692Dc9,
-		eventadminUploadCoverArtDa4Cff21
+		organizationadminCreateEvent,
+		eventadminUpdateEvent,
+		eventadminUploadLogo,
+		eventadminUploadCoverArt
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		EventCreateSchema,
@@ -102,7 +102,7 @@
 	// Create event mutation
 	const createEventMutation = createMutation(() => ({
 		mutationFn: async (data: EventCreateSchema) => {
-			const response = await organizationadminCreateEvent83140B46({
+			const response = await organizationadminCreateEvent({
 				path: { slug: organization.slug },
 				body: data
 			});
@@ -134,7 +134,7 @@
 			id: string;
 			data: Partial<EventEditSchema>;
 		}) => {
-			const response = await eventadminUpdateEvent64Fc71Fe({
+			const response = await eventadminUpdateEvent({
 				path: { event_id: id },
 				body: data as EventEditSchema
 			});
@@ -159,7 +159,7 @@
 	// Upload logo mutation
 	const uploadLogoMutation = createMutation(() => ({
 		mutationFn: async ({ id, file }: { id: string; file: File }) => {
-			const response = await eventadminUploadLogoF6692Dc9({
+			const response = await eventadminUploadLogo({
 				path: { event_id: id },
 				body: { logo: file }
 			});
@@ -175,7 +175,7 @@
 	// Upload cover art mutation
 	const uploadCoverArtMutation = createMutation(() => ({
 		mutationFn: async ({ id, file }: { id: string; file: File }) => {
-			const response = await eventadminUploadCoverArtDa4Cff21({
+			const response = await eventadminUploadCoverArt({
 				path: { event_id: id },
 				body: { cover_art: file }
 			});

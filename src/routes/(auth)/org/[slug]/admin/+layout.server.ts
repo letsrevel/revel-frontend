@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
-import { organizationGetOrganization0E4473A5, permissionMyPermissionsC74726Aa } from '$lib/api';
+import { organizationGetOrganization, permissionMyPermissions } from '$lib/api';
 
 export const load: LayoutServerLoad = async ({ locals, params, fetch }) => {
 	const user = locals.user;
@@ -17,7 +17,7 @@ export const load: LayoutServerLoad = async ({ locals, params, fetch }) => {
 
 	try {
 		// Load organization
-		const orgResponse = await organizationGetOrganization0E4473A5({
+		const orgResponse = await organizationGetOrganization({
 			fetch,
 			path: { slug: params.slug },
 			headers
@@ -30,7 +30,7 @@ export const load: LayoutServerLoad = async ({ locals, params, fetch }) => {
 		const organization = orgResponse.data;
 
 		// Load user permissions
-		const permissionsResponse = await permissionMyPermissionsC74726Aa({
+		const permissionsResponse = await permissionMyPermissions({
 			fetch,
 			headers
 		});

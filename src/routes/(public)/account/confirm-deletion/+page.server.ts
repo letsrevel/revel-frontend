@@ -1,6 +1,6 @@
 import { fail, type Actions } from '@sveltejs/kit';
 import { accountDeletionConfirmSchema } from '$lib/schemas/auth';
-import { accountDeleteAccountConfirmDf87109A } from '$lib/api/generated';
+import { accountDeleteAccountConfirm } from '$lib/api/generated';
 
 export const actions: Actions = {
 	confirmDeletion: async ({ request, cookies }) => {
@@ -25,7 +25,7 @@ export const actions: Actions = {
 
 		try {
 			// Call backend API to confirm account deletion
-			await accountDeleteAccountConfirmDf87109A({
+			await accountDeleteAccountConfirm({
 				body: {
 					token: result.data.token
 				}

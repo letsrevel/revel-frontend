@@ -1,6 +1,6 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { potluckUpdatePotluckItem5A2Cc5Ea, potluckDeletePotluckItem957A382B } from '$lib/api';
+import { potluckUpdatePotluckItem, potluckDeletePotluckItem } from '$lib/api';
 
 /**
  * PATCH /api/events/[event_id]/potluck/[item_id]
@@ -21,7 +21,7 @@ export const PATCH: RequestHandler = async ({ request, params, locals }) => {
 			body
 		});
 
-		const response = await potluckUpdatePotluckItem5A2Cc5Ea({
+		const response = await potluckUpdatePotluckItem({
 			path: { event_id: params.event_id, item_id: params.item_id },
 			body: {
 				name: body.name,
@@ -83,7 +83,7 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 			user: locals.user.id
 		});
 
-		await potluckDeletePotluckItem957A382B({
+		await potluckDeletePotluckItem({
 			path: { event_id: params.event_id, item_id: params.item_id },
 			headers: {
 				Authorization: `Bearer ${locals.user.accessToken}`

@@ -4,7 +4,7 @@
 	import type { PageData } from './$types';
 	import EventWizard from '$lib/components/events/admin/EventWizard.svelte';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
-	import { eventadminUpdateEventStatusBf5Ec3E2 } from '$lib/api/generated/sdk.gen';
+	import { eventadminUpdateEventStatus } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { CheckCircle, XCircle, FileEdit, Trash2 } from 'lucide-svelte';
 
@@ -23,7 +23,7 @@
 		mutationFn: async (status: 'draft' | 'open' | 'closed' | 'deleted') => {
 			if (!accessToken) throw new Error('Not authenticated');
 
-			const response = await eventadminUpdateEventStatusBf5Ec3E2({
+			const response = await eventadminUpdateEventStatus({
 				path: { event_id: event.id, status },
 				headers: {
 					Authorization: `Bearer ${accessToken}`

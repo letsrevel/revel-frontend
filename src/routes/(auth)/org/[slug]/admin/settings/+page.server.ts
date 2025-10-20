@@ -1,6 +1,6 @@
 import { fail, type Actions, error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { organizationadminUpdateOrganizationB598Bf4D } from '$lib/api/generated';
+import { organizationadminUpdateOrganization } from '$lib/api/generated';
 
 /**
  * Load organization data for the settings page
@@ -88,7 +88,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			const { data, error: apiError } = await organizationadminUpdateOrganizationB598Bf4D({
+			const { data, error: apiError } = await organizationadminUpdateOrganization({
 				path: {
 					slug: oldSlug
 				},
