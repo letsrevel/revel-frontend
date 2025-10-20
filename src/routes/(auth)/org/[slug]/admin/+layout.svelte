@@ -55,7 +55,7 @@
 <div class="min-h-screen bg-background">
 	<!-- Admin Header -->
 	<header
-		class="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+		class="sticky top-16 z-30 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
 	>
 		<div class="container mx-auto px-4">
 			<!-- Top Bar -->
@@ -65,7 +65,7 @@
 					<button
 						type="button"
 						onclick={toggleMobileMenu}
-						class="md:hidden rounded-md p-2 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+						class="rounded-md p-2 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
 						aria-label="Toggle navigation menu"
 						aria-expanded={mobileMenuOpen}
 					>
@@ -91,10 +91,7 @@
 			</div>
 
 			<!-- Breadcrumbs (Desktop only) -->
-			<nav
-				class="hidden border-t py-3 md:block"
-				aria-label="Breadcrumb"
-			>
+			<nav class="hidden border-t py-3 md:block" aria-label="Breadcrumb">
 				<ol class="flex items-center gap-2 text-sm">
 					{#each breadcrumbs as crumb, i}
 						{#if i > 0}
@@ -114,16 +111,15 @@
 			</nav>
 
 			<!-- Desktop Navigation -->
-			<nav
-				class="hidden border-t md:block"
-				aria-label="Admin navigation"
-			>
+			<nav class="hidden border-t md:block" aria-label="Admin navigation">
 				<ul class="flex gap-6">
 					{#each navItems as item}
 						<li>
 							<a
 								href={item.href}
-								class="block border-b-2 py-4 text-sm font-medium transition-colors {isActive(item.href)
+								class="block border-b-2 py-4 text-sm font-medium transition-colors {isActive(
+									item.href
+								)
 									? 'border-primary text-foreground'
 									: 'border-transparent text-muted-foreground hover:text-foreground'}"
 								aria-current={isActive(item.href) ? 'page' : undefined}
@@ -140,10 +136,7 @@
 	<!-- Mobile Navigation -->
 	{#if mobileMenuOpen}
 		<div class="md:hidden">
-			<nav
-				class="border-b bg-background px-4 py-3"
-				aria-label="Mobile admin navigation"
-			>
+			<nav class="border-b bg-background px-4 py-3" aria-label="Mobile admin navigation">
 				<!-- Breadcrumbs -->
 				<div class="mb-4 border-b pb-3">
 					<h2 class="mb-2 text-xs font-semibold uppercase text-muted-foreground">Navigation</h2>

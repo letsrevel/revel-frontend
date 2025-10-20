@@ -153,7 +153,7 @@
 	</div>
 {:else}
 	<!-- Desktop User Menu -->
-	<div class="relative z-50" data-user-menu>
+	<div class="relative" data-user-menu>
 		<button
 			type="button"
 			class="flex items-center gap-2 rounded-md p-2 transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring"
@@ -172,7 +172,7 @@
 
 		{#if dropdownOpen}
 			<div
-				class="absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-md border bg-popover shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+				class="absolute right-0 z-[60] mt-2 w-56 origin-top-right rounded-md border bg-popover shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
 				role="menu"
 				aria-orientation="vertical"
 			>
