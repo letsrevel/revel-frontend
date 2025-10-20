@@ -26,7 +26,10 @@
 		return `${BACKEND_URL}${path}`;
 	}
 
-	// Compute organization logo URL
+	// Compute image URLs with backend URL prepended
+	const eventCoverArtUrl = $derived(getImageUrl(event.cover_art));
+	const orgCoverArtUrl = $derived(getImageUrl(event.organization.cover_art));
+	const coverImageUrl = $derived(eventCoverArtUrl || orgCoverArtUrl);
 	const orgLogoUrl = $derived(getImageUrl(event.organization.logo));
 
 	// Compute location display
@@ -58,9 +61,9 @@
 <header class={cn('relative w-full overflow-hidden', className)}>
 	<!-- Cover Image or Gradient -->
 	<div class="relative h-64 w-full md:h-96">
-		{#if event.cover_art}
+		{#if coverImageUrl}
 			<img
-				src={event.cover_art}
+				src={coverImageUrl}
 				alt="{event.name} cover image"
 				class="h-full w-full object-cover"
 				loading="eager"

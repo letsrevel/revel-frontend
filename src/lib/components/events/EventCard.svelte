@@ -46,8 +46,10 @@
 	let fallbackGradient = $derived(getEventFallbackGradient(event.id));
 	let isPast = $derived(isEventPast(event.end));
 
-	// Image URLs with backend URL prepended
-	let imageUrl = $derived(event.cover_art && !imageError ? event.cover_art : null);
+	// Image URLs with backend URL prepended and fallback to organization
+	let eventCoverArtUrl = $derived(getImageUrl(event.cover_art));
+	let orgCoverArtUrl = $derived(getImageUrl(event.organization.cover_art));
+	let imageUrl = $derived(!imageError ? eventCoverArtUrl || orgCoverArtUrl : null);
 	let orgLogoUrl = $derived(getImageUrl(event.organization.logo));
 
 	// Accessible card label for screen readers
