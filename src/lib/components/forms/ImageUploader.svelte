@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { cn } from '$lib/utils/cn';
-	import { Upload, X, Image as ImageIcon } from 'lucide-svelte';
+	import { Upload, X } from 'lucide-svelte';
 
 	/**
 	 * ImageUploader Component
@@ -66,18 +66,17 @@
 	// Drag state
 	let isDragging = $state(false);
 
-	// Preview URL state (from selected file or existing preview)
-	let previewUrl = $state<string | null>(preview);
+	// Track if user has explicitly removed the preview
+	let previewRemoved = $state(false);
+
+	// Track preview URL from file selection
+	let selectedFilePreview = $state<string | null>(null);
 
 	// File input reference
 	let fileInput: HTMLInputElement;
 
-	// Sync preview URL with prop
-	$effect(() => {
-		if (preview && !value) {
-			previewUrl = preview;
-		}
-	});
+	// Computed preview URL: selected file preview, or existing preview if not removed
+	const previewUrl = $derived(selectedFilePreview || (!previewRemoved && preview) || null);
 
 	// Format file size for display
 	function formatFileSize(bytes: number): string {
@@ -118,7 +117,8 @@
 	function handleFileSelect(file: File | null): void {
 		if (!file) {
 			value = null;
-			previewUrl = preview;
+			selectedFilePreview = null;
+			previewRemoved = false;
 			onFileSelect?.(null);
 			return;
 		}
@@ -131,12 +131,13 @@
 		}
 
 		value = file;
+		previewRemoved = false;
 		onFileSelect?.(file);
 
 		// Generate preview URL
 		const reader = new FileReader();
 		reader.onloadend = () => {
-			previewUrl = reader.result as string;
+			selectedFilePreview = reader.result as string;
 		};
 		reader.readAsDataURL(file);
 	}
@@ -178,7 +179,8 @@
 	// Remove selected image
 	function removeImage(): void {
 		value = null;
-		previewUrl = preview;
+		selectedFilePreview = null;
+		previewRemoved = true;
 		if (fileInput) {
 			fileInput.value = '';
 		}

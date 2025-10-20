@@ -18,22 +18,73 @@
 		CheckSquare,
 		Hash
 	} from 'lucide-svelte';
+	import ImageUploader from '$lib/components/forms/ImageUploader.svelte';
+	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 
 	interface Props {
-		formData: Partial<EventCreateSchema> & { tags?: string[] };
+		formData: Partial<EventCreateSchema> & {
+			tags?: string[];
+			logo?: string;
+			cover_art?: string;
+			organization_logo?: string;
+			organization_cover_art?: string;
+		};
 		eventSeries?: EventSeriesRetrieveSchema[];
 		questionnaires?: QuestionnaireSchema[];
 		onUpdate: (data: Partial<EventCreateSchema> & { tags?: string[] }) => void;
-		onUpdateImages: (data: { logo?: File | null; coverArt?: File | null }) => void;
+		onUpdateImages: (data: {
+			logo?: File | null;
+			coverArt?: File | null;
+			deleteLogo?: boolean;
+			deleteCoverArt?: boolean;
+		}) => void;
 	}
 
-	let { formData, eventSeries = [], questionnaires = [], onUpdate, onUpdateImages }: Props = $props();
+	let {
+		formData,
+		eventSeries = [],
+		questionnaires = [],
+		onUpdate,
+		onUpdateImages
+	}: Props = $props();
+
+	// Backend URL for images
+	const BACKEND_URL = 'http://localhost:8000';
 
 	// Accordion state
 	let openSections = $state<Set<string>>(new Set(['basic']));
 
 	// Tag input state
 	let tagInput = $state('');
+
+	// Description state (for MarkdownEditor)
+	let description = $state(formData.description || '');
+
+	// Image state
+	let logoFile = $state<File | null>(null);
+	let coverArtFile = $state<File | null>(null);
+
+	// Sync description with formData when it changes externally
+	$effect(() => {
+		description = formData.description || '';
+	});
+
+	// Helper function to get full image URL
+	function getImageUrl(path: string | null | undefined): string | null {
+		if (!path) return null;
+		// If path is already a full URL, return it
+		if (path.startsWith('http://') || path.startsWith('https://')) {
+			return path;
+		}
+		// Otherwise, prepend backend URL
+		return `${BACKEND_URL}${path}`;
+	}
+
+	// Compute image URLs with fallback to organization
+	const logoUrl = $derived(getImageUrl(formData.logo) || getImageUrl(formData.organization_logo));
+	const coverArtUrl = $derived(
+		getImageUrl(formData.cover_art) || getImageUrl(formData.organization_cover_art)
+	);
 
 	/**
 	 * Toggle accordion section
@@ -49,14 +100,43 @@
 	}
 
 	/**
-	 * Handle file upload
+	 * Handle logo file select
 	 */
-	function handleFileUpload(type: 'logo' | 'coverArt', e: Event): void {
-		const input = e.target as HTMLInputElement;
-		const file = input.files?.[0];
-		if (file) {
-			onUpdateImages({ [type]: file });
-		}
+	function handleLogoFileSelect(file: File | null): void {
+		logoFile = file;
+		onUpdateImages({ logo: file, deleteLogo: false });
+	}
+
+	/**
+	 * Handle cover art file select
+	 */
+	function handleCoverArtFileSelect(file: File | null): void {
+		coverArtFile = file;
+		onUpdateImages({ coverArt: file, deleteCoverArt: false });
+	}
+
+	/**
+	 * Handle logo removal
+	 */
+	function handleRemoveLogo(): void {
+		logoFile = null;
+		onUpdateImages({ logo: null, deleteLogo: true });
+	}
+
+	/**
+	 * Handle cover art removal
+	 */
+	function handleRemoveCoverArt(): void {
+		coverArtFile = null;
+		onUpdateImages({ coverArt: null, deleteCoverArt: true });
+	}
+
+	/**
+	 * Handle description changes
+	 */
+	function handleDescriptionChange(value: string): void {
+		description = value;
+		onUpdate({ description: value });
 	}
 
 	/**
@@ -114,18 +194,14 @@
 		{#if isSectionOpen('basic')}
 			<div class="space-y-4 p-4">
 				<!-- Description -->
-				<div class="space-y-2">
-					<label for="description" class="block text-sm font-medium"> Description </label>
-					<textarea
-						id="description"
-						value={formData.description || ''}
-						oninput={(e) => onUpdate({ description: e.currentTarget.value })}
-						placeholder="Describe your event in detail..."
-						rows={6}
-						class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-					></textarea>
-					<p class="text-xs text-muted-foreground">Supports Markdown formatting</p>
-				</div>
+				<MarkdownEditor
+					bind:value={description}
+					id="description"
+					label="Description"
+					placeholder="Describe your event in detail..."
+					rows={8}
+					onValueChange={handleDescriptionChange}
+				/>
 
 				<!-- Address -->
 				<div class="space-y-2">
@@ -187,13 +263,16 @@
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					/>
 					<p class="text-xs text-muted-foreground">
-						Last date and time to {formData.requires_ticket ? 'purchase tickets' : 'RSVP'} (timezone: {Intl.DateTimeFormat().resolvedOptions().timeZone})
+						Last date and time to {formData.requires_ticket ? 'purchase tickets' : 'RSVP'} (timezone:
+						{Intl.DateTimeFormat().resolvedOptions().timeZone})
 					</p>
 				</div>
 
 				{#if formData.requires_ticket}
 					<!-- Free for Members (tickets only) -->
-					<label class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent">
+					<label
+						class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+					>
 						<input
 							type="checkbox"
 							checked={formData.free_for_members || false}
@@ -209,7 +288,9 @@
 					</label>
 
 					<!-- Free for Staff (tickets only) -->
-					<label class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent">
+					<label
+						class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+					>
 						<input
 							type="checkbox"
 							checked={formData.free_for_staff || false}
@@ -218,11 +299,13 @@
 						/>
 						<div class="flex-1">
 							<div class="font-medium">Free for Staff</div>
-							<div class="text-sm text-muted-foreground">Staff members don't need to pay for tickets</div>
+							<div class="text-sm text-muted-foreground">
+								Staff members don't need to pay for tickets
+							</div>
 						</div>
 					</label>
 
-					<p class="text-sm text-muted-foreground italic">
+					<p class="text-sm italic text-muted-foreground">
 						Note: Ticket tier management will be available in a future update
 					</p>
 				{/if}
@@ -253,15 +336,14 @@
 			<div class="space-y-4 p-4">
 				<!-- Max Attendees -->
 				<div class="space-y-2">
-					<label for="max-attendees" class="block text-sm font-medium">
-						Maximum Attendees
-					</label>
+					<label for="max-attendees" class="block text-sm font-medium"> Maximum Attendees </label>
 					<input
 						id="max-attendees"
 						type="number"
 						min="1"
 						value={formData.max_attendees || ''}
-						oninput={(e) => onUpdate({ max_attendees: parseInt(e.currentTarget.value) || undefined })}
+						oninput={(e) =>
+							onUpdate({ max_attendees: parseInt(e.currentTarget.value) || undefined })}
 						placeholder="Unlimited"
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					/>
@@ -269,7 +351,9 @@
 				</div>
 
 				<!-- Waitlist Open -->
-				<label class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent">
+				<label
+					class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+				>
 					<input
 						type="checkbox"
 						checked={formData.waitlist_open || false}
@@ -337,7 +421,8 @@
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						/>
 						<p class="text-xs text-muted-foreground">
-							When ticket check-in becomes available (timezone: {Intl.DateTimeFormat().resolvedOptions().timeZone})
+							When ticket check-in becomes available (timezone: {Intl.DateTimeFormat().resolvedOptions()
+								.timeZone})
 						</p>
 					</div>
 
@@ -354,13 +439,16 @@
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						/>
 						<p class="text-xs text-muted-foreground">
-							When ticket check-in is no longer available (timezone: {Intl.DateTimeFormat().resolvedOptions().timeZone})
+							When ticket check-in is no longer available (timezone: {Intl.DateTimeFormat().resolvedOptions()
+								.timeZone})
 						</p>
 					</div>
 				{/if}
 
 				<!-- Potluck Open -->
-				<label class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent">
+				<label
+					class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+				>
 					<input
 						type="checkbox"
 						checked={formData.potluck_open || false}
@@ -438,9 +526,7 @@
 				<!-- Event Series -->
 				{#if eventSeries.length > 0}
 					<div class="space-y-2">
-						<label for="event-series" class="block text-sm font-medium">
-							Event Series
-						</label>
+						<label for="event-series" class="block text-sm font-medium"> Event Series </label>
 						<select
 							id="event-series"
 							value={formData.event_series_id || ''}
@@ -458,9 +544,7 @@
 				<!-- Questionnaire -->
 				{#if questionnaires.length > 0}
 					<div class="space-y-2">
-						<label for="questionnaire" class="block text-sm font-medium">
-							Questionnaire
-						</label>
+						<label for="questionnaire" class="block text-sm font-medium"> Questionnaire </label>
 						<select
 							id="questionnaire"
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
@@ -500,36 +584,41 @@
 		</button>
 
 		{#if isSectionOpen('media')}
-			<div class="space-y-4 p-4">
+			<div class="space-y-6 p-4">
 				<!-- Logo Upload -->
-				<div class="space-y-2">
-					<label for="logo-upload" class="block text-sm font-medium"> Event Logo </label>
-					<input
-						id="logo-upload"
-						type="file"
-						accept="image/*"
-						onchange={(e) => handleFileUpload('logo', e)}
-						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors file:mr-4 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-1 file:text-sm file:font-medium file:text-foreground hover:file:bg-muted/80 focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-					/>
-					<p class="text-xs text-muted-foreground">
-						Recommended: Square image, at least 400x400px
-					</p>
-				</div>
+				<ImageUploader
+					bind:value={logoFile}
+					preview={logoUrl}
+					label="Event Logo"
+					aspectRatio="square"
+					accept="image/jpeg,image/png,image/webp"
+					maxSize={5 * 1024 * 1024}
+					onFileSelect={(file) => {
+						if (file) handleLogoFileSelect(file);
+						else handleRemoveLogo();
+					}}
+				/>
+				<p class="-mt-4 text-xs text-muted-foreground">
+					Recommended: Square image, at least 400x400px. Falls back to organization logo if not set.
+				</p>
 
 				<!-- Cover Art Upload -->
-				<div class="space-y-2">
-					<label for="cover-art-upload" class="block text-sm font-medium"> Cover Art </label>
-					<input
-						id="cover-art-upload"
-						type="file"
-						accept="image/*"
-						onchange={(e) => handleFileUpload('coverArt', e)}
-						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors file:mr-4 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-1 file:text-sm file:font-medium file:text-foreground hover:file:bg-muted/80 focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-					/>
-					<p class="text-xs text-muted-foreground">
-						Recommended: 16:9 aspect ratio, at least 1200x675px
-					</p>
-				</div>
+				<ImageUploader
+					bind:value={coverArtFile}
+					preview={coverArtUrl}
+					label="Cover Art"
+					aspectRatio="wide"
+					accept="image/jpeg,image/png,image/webp"
+					maxSize={5 * 1024 * 1024}
+					onFileSelect={(file) => {
+						if (file) handleCoverArtFileSelect(file);
+						else handleRemoveCoverArt();
+					}}
+				/>
+				<p class="-mt-4 text-xs text-muted-foreground">
+					Recommended: 16:9 aspect ratio, at least 1200x675px. Falls back to organization cover if
+					not set.
+				</p>
 			</div>
 		{/if}
 	</div>

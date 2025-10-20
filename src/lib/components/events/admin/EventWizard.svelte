@@ -4,7 +4,9 @@
 		organizationadminCreateEvent,
 		eventadminUpdateEvent,
 		eventadminUploadLogo,
-		eventadminUploadCoverArt
+		eventadminUploadCoverArt,
+		eventadminDeleteLogo,
+		eventadminDeleteCoverArt
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		EventCreateSchema,
@@ -68,8 +70,16 @@
 		return date.toISOString();
 	}
 
-	// Form data state (matches EventCreateSchema)
-	let formData = $state<Partial<EventCreateSchema> & { tags?: string[] }>({
+	// Form data state (matches EventCreateSchema + additional image URLs)
+	let formData = $state<
+		Partial<EventCreateSchema> & {
+			tags?: string[];
+			logo?: string;
+			cover_art?: string;
+			organization_logo?: string;
+			organization_cover_art?: string;
+		}
+	>({
 		name: existingEvent?.name || '',
 		start: toDateTimeLocal(existingEvent?.start) || '',
 		end: toDateTimeLocal(existingEvent?.end) || '',
@@ -89,12 +99,18 @@
 		check_in_ends_at: toDateTimeLocal(existingEvent?.check_in_ends_at) || null,
 		potluck_open: existingEvent?.potluck_open || false,
 		event_series_id: existingEvent?.event_series?.id || null,
-		tags: existingEvent?.tags || []
+		tags: existingEvent?.tags || [],
+		logo: existingEvent?.logo || undefined,
+		cover_art: existingEvent?.cover_art || undefined,
+		organization_logo: organization.logo || undefined,
+		organization_cover_art: organization.cover_art || undefined
 	});
 
 	// Image uploads (separate from form data)
 	let logoFile = $state<File | null>(null);
 	let coverArtFile = $state<File | null>(null);
+	let deleteLogo = $state(false);
+	let deleteCoverArt = $state(false);
 
 	// Validation errors
 	let validationErrors = $state<Record<string, string>>({});
@@ -127,13 +143,7 @@
 
 	// Update event mutation
 	const updateEventMutation = createMutation(() => ({
-		mutationFn: async ({
-			id,
-			data
-		}: {
-			id: string;
-			data: Partial<EventEditSchema>;
-		}) => {
+		mutationFn: async ({ id, data }: { id: string; data: Partial<EventEditSchema> }) => {
 			const response = await eventadminUpdateEvent({
 				path: { event_id: id },
 				body: data as EventEditSchema
@@ -182,6 +192,36 @@
 
 			if (!response.data) {
 				throw new Error('Failed to upload cover art');
+			}
+
+			return response.data;
+		}
+	}));
+
+	// Delete logo mutation
+	const deleteLogoMutation = createMutation(() => ({
+		mutationFn: async (id: string) => {
+			const response = await eventadminDeleteLogo({
+				path: { event_id: id }
+			});
+
+			if (response.error) {
+				throw new Error('Failed to delete logo');
+			}
+
+			return response.data;
+		}
+	}));
+
+	// Delete cover art mutation
+	const deleteCoverArtMutation = createMutation(() => ({
+		mutationFn: async (id: string) => {
+			const response = await eventadminDeleteCoverArt({
+				path: { event_id: id }
+			});
+
+			if (response.error) {
+				throw new Error('Failed to delete cover art');
 			}
 
 			return response.data;
@@ -250,6 +290,9 @@
 
 			// Move to Step 2
 			currentStep = 2;
+
+			// Scroll to top for better UX
+			window.scrollTo({ top: 0, behavior: 'smooth' });
 		} catch (error) {
 			console.error('Step 1 submission error:', error);
 		} finally {
@@ -289,7 +332,17 @@
 
 			await updateEventMutation.mutateAsync({ id: eventId, data: updateData });
 
-			// Upload images if provided
+			// Handle logo deletion
+			if (deleteLogo) {
+				await deleteLogoMutation.mutateAsync(eventId);
+			}
+
+			// Handle cover art deletion
+			if (deleteCoverArt) {
+				await deleteCoverArtMutation.mutateAsync(eventId);
+			}
+
+			// Upload images if provided (after deletion to ensure clean state)
 			if (logoFile) {
 				await uploadLogoMutation.mutateAsync({ id: eventId, file: logoFile });
 			}
@@ -323,19 +376,38 @@
 	/**
 	 * Update form data
 	 */
-	function updateFormData(updates: Partial<EventCreateSchema> & { tags?: string[] }): void {
+	function updateFormData(
+		updates: Partial<EventCreateSchema> & {
+			tags?: string[];
+			logo?: string;
+			cover_art?: string;
+			organization_logo?: string;
+			organization_cover_art?: string;
+		}
+	): void {
 		formData = { ...formData, ...updates };
 	}
 
 	/**
 	 * Update images
 	 */
-	function updateImages(data: { logo?: File | null; coverArt?: File | null }): void {
+	function updateImages(data: {
+		logo?: File | null;
+		coverArt?: File | null;
+		deleteLogo?: boolean;
+		deleteCoverArt?: boolean;
+	}): void {
 		if (data.logo !== undefined) {
 			logoFile = data.logo;
 		}
 		if (data.coverArt !== undefined) {
 			coverArtFile = data.coverArt;
+		}
+		if (data.deleteLogo !== undefined) {
+			deleteLogo = data.deleteLogo;
+		}
+		if (data.deleteCoverArt !== undefined) {
+			deleteCoverArt = data.deleteCoverArt;
 		}
 	}
 
