@@ -153,7 +153,7 @@
 	</div>
 {:else}
 	<!-- Desktop User Menu -->
-	<div class="relative" data-user-menu>
+	<div class="relative z-50" data-user-menu>
 		<button
 			type="button"
 			class="flex items-center gap-2 rounded-md p-2 transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring"

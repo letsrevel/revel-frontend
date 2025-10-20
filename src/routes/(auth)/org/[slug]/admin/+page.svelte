@@ -21,7 +21,7 @@
 		},
 		{
 			title: 'Members',
-			description: 'Manage team members and permissions',
+			description: 'Manage members and staff',
 			icon: Users,
 			href: `/org/${organization.slug}/admin/members`,
 			color: 'text-green-600 dark:text-green-400',
