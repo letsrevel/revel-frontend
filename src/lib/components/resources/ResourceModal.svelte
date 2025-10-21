@@ -23,7 +23,7 @@
 	let fieldErrors = $state<Record<string, string>>({});
 
 	// Create mutation
-	const createMutation = createMutation(() => ({
+	const createResourceMutation = createMutation(() => ({
 		mutationFn: async (formData: FormData) => {
 			const response = await organizationadminCreateResource({
 				path: { slug: organizationSlug },
@@ -58,7 +58,7 @@
 	}));
 
 	// Update mutation
-	const updateMutation = createMutation(() => ({
+	const updateResourceMutation = createMutation(() => ({
 		mutationFn: async (formData: FormData) => {
 			if (!resource?.id) {
 				throw new Error('Resource ID is required for update');
@@ -101,9 +101,9 @@
 		fieldErrors = {};
 
 		if (resource) {
-			updateMutation.mutate(formData);
+			updateResourceMutation.mutate(formData);
 		} else {
-			createMutation.mutate(formData);
+			createResourceMutation.mutate(formData);
 		}
 	}
 
@@ -119,7 +119,9 @@
 		}
 	}
 
-	const isSubmitting = $derived($createMutation.isPending || $updateMutation.isPending);
+	const isSubmitting = $derived(
+		createResourceMutation.isPending || updateResourceMutation.isPending
+	);
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
