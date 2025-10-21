@@ -29,127 +29,101 @@
 			const file = formData.get('file') as File | null;
 			const resourceType = formData.get('resource_type') as string;
 
-			// For file uploads, we need to send multipart/form-data
-			// For link/text, we send JSON
-			if (resourceType === 'file') {
+			// Backend now expects multipart/form-data with individual form fields
+			// Build multipart form data
+			const multipartData = new FormData();
+
+			// Add all schema fields as individual form fields
+			multipartData.append('resource_type', resourceType);
+
+			const name = formData.get('name');
+			if (name) multipartData.append('name', name as string);
+
+			const description = formData.get('description');
+			if (description) multipartData.append('description', description as string);
+
+			const visibility = formData.get('visibility') || 'members-only';
+			multipartData.append('visibility', visibility as string);
+
+			const displayOnOrgPage = formData.get('display_on_organization_page');
+			multipartData.append('display_on_organization_page', displayOnOrgPage || 'true');
+
+			// Add type-specific fields
+			if (resourceType === 'link') {
+				const linkValue = formData.get('link') as string;
+				if (!linkValue || linkValue.trim() === '') {
+					throw new Error('Link URL is required for link resources');
+				}
+				multipartData.append('link', linkValue.trim());
+			} else if (resourceType === 'text') {
+				const textValue = formData.get('text') as string;
+				if (!textValue || textValue.trim() === '') {
+					throw new Error('Text content is required for text resources');
+				}
+				multipartData.append('text', textValue.trim());
+			} else if (resourceType === 'file') {
 				if (!file) {
 					throw new Error('File is required for file resources');
 				}
-
-				// Create multipart form data with all fields
-				const multipartData = new FormData();
-				multipartData.append('file', file);
-
-				// Add JSON payload as form fields
-				const payload: any = {
-					resource_type: resourceType,
-					name: formData.get('name') || null,
-					description: formData.get('description') || null,
-					visibility: formData.get('visibility') || 'members-only',
-					display_on_organization_page: formData.get('display_on_organization_page') === 'true'
-				};
-
-				// Parse event_ids if present
-				const eventIdsStr = formData.get('event_ids') as string | null;
-				if (eventIdsStr) {
-					try {
-						payload.event_ids = JSON.parse(eventIdsStr);
-					} catch {
-						payload.event_ids = [];
-					}
-				}
-
-				// Append payload as JSON string or individual fields
-				multipartData.append('payload', JSON.stringify(payload));
-
-				console.log('[ResourceModal] Creating file resource with multipart:', {
-					fileName: file.name,
-					payload
-				});
-
-				// Use fetch directly for multipart (SDK forces application/json)
-				const response = await fetch(
-					`http://localhost:8000/api/organization-admin/${organizationSlug}/resources`,
-					{
-						method: 'POST',
-						headers: {
-							Authorization: `Bearer ${accessToken}`
-							// Don't set Content-Type - browser will set it with boundary
-						},
-						body: multipartData
-					}
-				);
-
-				if (!response.ok) {
-					const error = await response.json();
-					throw new Error(error.detail || 'Failed to create resource');
-				}
-
-				return await response.json();
-			} else {
-				// For link and text, send JSON
-				const body: any = {
-					resource_type: resourceType,
-					name: formData.get('name') || null,
-					description: formData.get('description') || null,
-					visibility: formData.get('visibility') || 'members-only',
-					display_on_organization_page: formData.get('display_on_organization_page') === 'true'
-				};
-
-				// Add type-specific fields
-				if (resourceType === 'link') {
-					const linkValue = formData.get('link') as string;
-					if (!linkValue || linkValue.trim() === '') {
-						throw new Error('Link URL is required for link resources');
-					}
-					body.link = linkValue.trim();
-				} else if (resourceType === 'text') {
-					const textValue = formData.get('text') as string;
-					if (!textValue || textValue.trim() === '') {
-						throw new Error('Text content is required for text resources');
-					}
-					body.text = textValue.trim();
-				}
-
-				// Parse event_ids if present
-				const eventIdsStr = formData.get('event_ids') as string | null;
-				if (eventIdsStr) {
-					try {
-						body.event_ids = JSON.parse(eventIdsStr);
-					} catch {
-						body.event_ids = [];
-					}
-				}
-
-				console.log('[ResourceModal] Creating link/text resource:', {
-					resourceType,
-					body
-				});
-
-				const response = await organizationadminCreateResource({
-					path: { slug: organizationSlug },
-					body,
-					headers: {
-						Authorization: `Bearer ${accessToken}`
-					}
-				});
-
-				if (response.error) {
-					const errorDetail =
-						typeof response.error === 'object' &&
-						response.error !== null &&
-						'detail' in response.error
-							? (response.error.detail as string)
-							: 'Failed to create resource';
-					throw new Error(errorDetail);
-				}
-
-				if (!response.data) {
-					throw new Error('Failed to create resource');
-				}
-
-				return response.data;
+				// File will be added as query parameter in URL
 			}
+
+			// Parse and add event_ids if present
+			const eventIdsStr = formData.get('event_ids') as string | null;
+			if (eventIdsStr) {
+				try {
+					const eventIds = JSON.parse(eventIdsStr);
+					// For form-data, arrays need to be sent as multiple fields or JSON string
+					eventIds.forEach((id: string) => {
+						multipartData.append('event_ids', id);
+					});
+				} catch (e) {
+					// Ignore parsing errors
+				}
+			}
+
+			// Add file to form data if present (not as query param)
+			if (file) {
+				multipartData.append('file', file);
+			}
+
+			const url = `http://localhost:8000/api/organization-admin/${organizationSlug}/resources`;
+
+			console.log('[ResourceModal] Creating resource with form data:', {
+				resourceType,
+				fileName: file?.name,
+				fileSize: file?.size,
+				fileType: file?.type
+			});
+
+			// Log what's in the FormData
+			console.log('[ResourceModal] FormData contents:');
+			for (const [key, value] of multipartData.entries()) {
+				if (value instanceof File) {
+					console.log(
+						`  ${key}: File(name="${value.name}", size=${value.size}, type="${value.type}")`
+					);
+				} else {
+					console.log(`  ${key}: ${value}`);
+				}
+			}
+
+			// Use fetch directly (SDK might not handle form-data properly)
+			const response = await fetch(url, {
+				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${accessToken}`
+					// Don't set Content-Type - browser will set it with boundary for multipart
+				},
+				body: multipartData
+			});
+
+			if (!response.ok) {
+				const error = await response.json();
+				throw new Error(error.detail || 'Failed to create resource');
+			}
+
+			return await response.json();
 		},
 		onSuccess: () => {
 			onSuccess();
