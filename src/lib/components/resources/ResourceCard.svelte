@@ -71,7 +71,15 @@
 	// Get resource content preview
 	const contentPreview = $derived.by(() => {
 		if (resource.resource_type === 'file') {
-			return resource.file ? new URL(resource.file).pathname.split('/').pop() : 'No file attached';
+			if (!resource.file) return 'No file attached';
+			// Extract filename from path (handle both URLs and paths)
+			try {
+				// Try as URL first (for absolute URLs)
+				return new URL(resource.file).pathname.split('/').pop() || 'Unknown file';
+			} catch {
+				// If not a valid URL, treat as path
+				return resource.file.split('/').pop() || 'Unknown file';
+			}
 		} else if (resource.resource_type === 'link') {
 			return resource.link || 'No link provided';
 		} else if (resource.resource_type === 'text') {

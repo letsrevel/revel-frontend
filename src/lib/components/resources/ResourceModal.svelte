@@ -89,25 +89,6 @@
 
 			const url = `http://localhost:8000/api/organization-admin/${organizationSlug}/resources`;
 
-			console.log('[ResourceModal] Creating resource with form data:', {
-				resourceType,
-				fileName: file?.name,
-				fileSize: file?.size,
-				fileType: file?.type
-			});
-
-			// Log what's in the FormData
-			console.log('[ResourceModal] FormData contents:');
-			for (const [key, value] of multipartData.entries()) {
-				if (value instanceof File) {
-					console.log(
-						`  ${key}: File(name="${value.name}", size=${value.size}, type="${value.type}")`
-					);
-				} else {
-					console.log(`  ${key}: ${value}`);
-				}
-			}
-
 			// Use fetch directly (SDK might not handle form-data properly)
 			const response = await fetch(url, {
 				method: 'POST',
