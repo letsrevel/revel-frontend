@@ -2,6 +2,7 @@
 	import type { PageData } from './$types';
 	import { page } from '$app/state';
 	import { MapPin, Settings } from 'lucide-svelte';
+	import ResourceCard from '$lib/components/resources/ResourceCard.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -50,6 +51,11 @@
 	}
 
 	let fallbackGradient = $derived(getOrgFallbackGradient(organization.id));
+
+	// Filter resources to show only those marked for display on org page
+	const displayedResources = $derived(
+		data.resources.filter((resource) => resource.display_on_organization_page)
+	);
 </script>
 
 <svelte:head>
@@ -179,6 +185,31 @@
 				<h2 id="description-heading" class="sr-only">About {organization.name}</h2>
 				<div class="prose prose-slate dark:prose-invert max-w-none">
 					<p>{organization.description}</p>
+				</div>
+			</section>
+		{/if}
+
+		<!-- Resources Section -->
+		{#if displayedResources.length > 0}
+			<section aria-labelledby="resources-heading" class="mb-12">
+				<div class="mb-6 flex items-center justify-between">
+					<div>
+						<h2 id="resources-heading" class="text-2xl font-bold">Resources</h2>
+						<p class="mt-1 text-sm text-muted-foreground">
+							Helpful documents, links, and information from {organization.name}
+						</p>
+					</div>
+					<a
+						href="/org/{organization.slug}/resources"
+						class="text-sm font-medium text-primary hover:underline"
+					>
+						View all
+					</a>
+				</div>
+				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+					{#each displayedResources as resource (resource.id)}
+						<ResourceCard {resource} />
+					{/each}
 				</div>
 			</section>
 		{/if}

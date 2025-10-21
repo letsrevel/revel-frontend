@@ -147,27 +147,33 @@
 			</div>
 		</div>
 
-		<!-- Actions -->
-		<div class="flex shrink-0 items-center gap-1">
-			<button
-				type="button"
-				onclick={handleEdit}
-				disabled={isDeleting}
-				class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-				aria-label="Edit resource"
-			>
-				<Edit class="h-4 w-4" aria-hidden="true" />
-			</button>
-			<button
-				type="button"
-				onclick={handleDelete}
-				disabled={isDeleting}
-				class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-				aria-label="Delete resource"
-			>
-				<Trash2 class="h-4 w-4" aria-hidden="true" />
-			</button>
-		</div>
+		<!-- Actions (only show if callbacks are provided) -->
+		{#if onEdit || onDelete}
+			<div class="flex shrink-0 items-center gap-1">
+				{#if onEdit}
+					<button
+						type="button"
+						onclick={handleEdit}
+						disabled={isDeleting}
+						class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+						aria-label="Edit resource"
+					>
+						<Edit class="h-4 w-4" aria-hidden="true" />
+					</button>
+				{/if}
+				{#if onDelete}
+					<button
+						type="button"
+						onclick={handleDelete}
+						disabled={isDeleting}
+						class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+						aria-label="Delete resource"
+					>
+						<Trash2 class="h-4 w-4" aria-hidden="true" />
+					</button>
+				{/if}
+			</div>
+		{/if}
 	</div>
 
 	<!-- Description -->

@@ -6,7 +6,10 @@
 		eventadminUploadLogo,
 		eventadminUploadCoverArt,
 		eventadminDeleteLogo,
-		eventadminDeleteCoverArt
+		eventadminDeleteCoverArt,
+		eventListResources,
+		organizationadminGetResource,
+		organizationadminUpdateResource
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		EventCreateSchema,
@@ -52,6 +55,26 @@
 	let errorMessage = $state<string | null>(null);
 	let successMessage = $state<string | null>(null);
 	let selectedResourceIds = $state<string[]>([]);
+	let initialResourceIds = $state<string[]>([]); // Track initial state for comparison
+
+	// Fetch and pre-select resources when editing an existing event
+	$effect(() => {
+		if (existingEvent?.id) {
+			// Fetch resources for this event
+			eventListResources({
+				path: {
+					event_id: existingEvent.id
+				}
+			}).then((response) => {
+				if (response.data?.results) {
+					// Extract resource IDs and set them as selected
+					const resourceIds = response.data.results.map((resource) => resource.id);
+					selectedResourceIds = resourceIds;
+					initialResourceIds = [...resourceIds]; // Store initial state
+				}
+			});
+		}
+	});
 
 	/**
 	 * Convert ISO datetime to datetime-local format (YYYY-MM-DDTHH:mm)
@@ -231,6 +254,80 @@
 	}));
 
 	/**
+	 * Save resource associations for the event
+	 * Updates resources to add/remove the event ID from their event_ids array
+	 */
+	async function saveResourceAssociations(currentEventId: string): Promise<void> {
+		// Determine which resources were added and removed
+		const addedResourceIds = selectedResourceIds.filter((id) => !initialResourceIds.includes(id));
+		const removedResourceIds = initialResourceIds.filter((id) => !selectedResourceIds.includes(id));
+
+		// Update all affected resources
+		const updatePromises: Promise<unknown>[] = [];
+
+		// Add event to newly selected resources
+		for (const resourceId of addedResourceIds) {
+			const promise = (async () => {
+				// Fetch current resource state
+				const resourceResponse = await organizationadminGetResource({
+					path: {
+						slug: organization.slug,
+						resource_id: resourceId
+					}
+				});
+
+				if (resourceResponse.data) {
+					const currentEventIds = resourceResponse.data.event_ids || [];
+					// Add this event if not already present
+					if (!currentEventIds.includes(currentEventId)) {
+						await organizationadminUpdateResource({
+							path: {
+								slug: organization.slug,
+								resource_id: resourceId
+							},
+							body: {
+								event_ids: [...currentEventIds, currentEventId]
+							}
+						});
+					}
+				}
+			})();
+			updatePromises.push(promise);
+		}
+
+		// Remove event from deselected resources
+		for (const resourceId of removedResourceIds) {
+			const promise = (async () => {
+				// Fetch current resource state
+				const resourceResponse = await organizationadminGetResource({
+					path: {
+						slug: organization.slug,
+						resource_id: resourceId
+					}
+				});
+
+				if (resourceResponse.data) {
+					const currentEventIds = resourceResponse.data.event_ids || [];
+					// Remove this event
+					await organizationadminUpdateResource({
+						path: {
+							slug: organization.slug,
+							resource_id: resourceId
+						},
+						body: {
+							event_ids: currentEventIds.filter((id) => id !== currentEventId)
+						}
+					});
+				}
+			})();
+			updatePromises.push(promise);
+		}
+
+		// Wait for all updates to complete
+		await Promise.all(updatePromises);
+	}
+
+	/**
 	 * Validate Step 1 (Essentials)
 	 */
 	function validateStep1(): boolean {
@@ -352,6 +449,9 @@
 			if (coverArtFile) {
 				await uploadCoverArtMutation.mutateAsync({ id: eventId, file: coverArtFile });
 			}
+
+			// Save resource associations
+			await saveResourceAssociations(eventId);
 
 			// Invalidate queries
 			queryClient.invalidateQueries({ queryKey: ['events'] });

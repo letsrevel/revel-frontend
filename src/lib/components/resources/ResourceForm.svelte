@@ -38,6 +38,21 @@
 	// Event assignment
 	let selectedEventIds = $state<string[]>(resource?.event_ids || []);
 
+	// Sync form state when resource prop changes
+	$effect(() => {
+		// Reset all form fields when resource changes
+		resourceType = (resource?.resource_type as 'file' | 'link' | 'text') || 'file';
+		name = resource?.name || '';
+		description = resource?.description || '';
+		visibility = resource?.visibility || 'public';
+		displayOnOrgPage = resource?.display_on_organization_page !== false;
+		link = resource?.link || '';
+		text = resource?.text || '';
+		selectedEventIds = resource?.event_ids || [];
+		file = null;
+		validationErrors = {};
+	});
+
 	// File input reference
 	let fileInput: HTMLInputElement;
 
