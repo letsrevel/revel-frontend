@@ -27,22 +27,35 @@
 		mutationFn: async (formData: FormData) => {
 			// Extract file if present
 			const file = formData.get('file') as File | null;
+			const resourceType = formData.get('resource_type') as string;
 
 			// Build JSON body
 			const body: any = {
-				resource_type: formData.get('resource_type'),
+				resource_type: resourceType,
 				name: formData.get('name') || null,
 				description: formData.get('description') || null,
 				visibility: formData.get('visibility') || 'members-only',
 				display_on_organization_page: formData.get('display_on_organization_page') === 'true'
 			};
 
-			// Add type-specific fields
-			const resourceType = formData.get('resource_type');
+			// Add type-specific fields - MUST include exactly ONE
 			if (resourceType === 'link') {
-				body.link = formData.get('link') || null;
+				const linkValue = formData.get('link') as string;
+				if (!linkValue || linkValue.trim() === '') {
+					throw new Error('Link URL is required for link resources');
+				}
+				body.link = linkValue.trim();
 			} else if (resourceType === 'text') {
-				body.text = formData.get('text') || null;
+				const textValue = formData.get('text') as string;
+				if (!textValue || textValue.trim() === '') {
+					throw new Error('Text content is required for text resources');
+				}
+				body.text = textValue.trim();
+			} else if (resourceType === 'file') {
+				if (!file) {
+					throw new Error('File is required for file resources');
+				}
+				// File is sent via query parameter, not in body
 			}
 
 			// Parse event_ids if present
@@ -54,6 +67,13 @@
 					body.event_ids = [];
 				}
 			}
+
+			console.log('[ResourceModal] Creating resource:', {
+				resourceType,
+				body,
+				hasFile: !!file,
+				fileName: file?.name
+			});
 
 			const response = await organizationadminCreateResource({
 				path: { slug: organizationSlug },
@@ -95,15 +115,19 @@
 				throw new Error('Resource ID is required for update');
 			}
 
-			// Build JSON body (update schema has all optional fields except what's provided)
+			// Build JSON body (update schema has all optional fields)
 			const body: any = {};
 
 			// Only include fields that are present in the form
 			const name = formData.get('name');
-			if (name !== null) body.name = name || null;
+			if (name !== null && name !== '') {
+				body.name = (name as string).trim();
+			}
 
 			const description = formData.get('description');
-			if (description !== null) body.description = description || null;
+			if (description !== null && description !== '') {
+				body.description = (description as string).trim();
+			}
 
 			const visibility = formData.get('visibility');
 			if (visibility) body.visibility = visibility;
@@ -113,12 +137,17 @@
 				body.display_on_organization_page = displayOnOrgPage === 'true';
 			}
 
-			// Add type-specific fields
+			// Add type-specific fields based on the resource type
+			// For updates, only include if the field has a value
 			const link = formData.get('link');
-			if (link !== null) body.link = link || null;
+			if (link !== null && link !== '') {
+				body.link = (link as string).trim();
+			}
 
 			const text = formData.get('text');
-			if (text !== null) body.text = text || null;
+			if (text !== null && text !== '') {
+				body.text = (text as string).trim();
+			}
 
 			// Parse event_ids if present
 			const eventIdsStr = formData.get('event_ids') as string | null;
@@ -129,6 +158,11 @@
 					body.event_ids = [];
 				}
 			}
+
+			console.log('[ResourceModal] Updating resource:', {
+				resourceId: resource.id,
+				body
+			});
 
 			const response = await organizationadminUpdateResource({
 				path: { slug: organizationSlug, resource_id: resource.id },
