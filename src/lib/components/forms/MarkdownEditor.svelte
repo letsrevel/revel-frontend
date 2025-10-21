@@ -61,7 +61,7 @@
 	let showPreview = $state(false);
 
 	// Reference to textarea for formatting operations
-	let textarea: HTMLTextAreaElement;
+	let textarea = $state<HTMLTextAreaElement>();
 
 	function handleInput(event: Event): void {
 		const target = event.target as HTMLTextAreaElement;

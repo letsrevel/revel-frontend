@@ -1,10 +1,17 @@
-import { organizationListResources } from '$lib/api/generated/sdk.gen';
+import { organizationListResources, organizationRetrieveOrganization } from '$lib/api/generated/sdk.gen';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params, parent, fetch }) => {
-	// Get organization from parent layout
-	const { organization } = await parent();
+export const load: PageServerLoad = async ({ params, fetch }) => {
+	// Fetch organization details
+	const organizationResponse = await organizationRetrieveOrganization({
+		fetch,
+		path: { slug: params.slug }
+	});
+
+	if (organizationResponse.error) {
+		throw error(404, 'Organization not found');
+	}
 
 	// Fetch public resources for this organization
 	const resourcesResponse = await organizationListResources({
@@ -17,7 +24,7 @@ export const load: PageServerLoad = async ({ params, parent, fetch }) => {
 	}
 
 	return {
-		organization,
+		organization: organizationResponse.data,
 		resources: resourcesResponse.data?.results || []
 	};
 };

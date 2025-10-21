@@ -29,7 +29,7 @@
 		queryFn: async () => {
 			const response = await eventListEvents({
 				query: {
-					organization_slug: organizationSlug,
+					organization: organizationSlug,
 					limit: 100 // Get a large number of events for assignment
 				},
 				headers: {
