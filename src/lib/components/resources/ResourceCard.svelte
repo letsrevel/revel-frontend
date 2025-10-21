@@ -102,7 +102,11 @@
 	function handleResourceClick() {
 		if (resource.resource_type === 'file' && resource.file) {
 			// Open file in new tab (browser will download if it can't display)
-			window.open(resource.file, '_blank');
+			// Files are stored on backend, so prepend backend URL if path is relative
+			const fileUrl = resource.file.startsWith('http')
+				? resource.file
+				: `http://localhost:8000${resource.file}`;
+			window.open(fileUrl, '_blank');
 		} else if (resource.resource_type === 'link' && resource.link) {
 			// Open link in new tab
 			window.open(resource.link, '_blank');

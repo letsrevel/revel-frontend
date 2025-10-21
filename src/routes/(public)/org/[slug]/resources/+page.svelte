@@ -47,7 +47,11 @@
 
 	function openResource(resource: AdditionalResourceSchema) {
 		if (resource.resource_type === 'file' && resource.file) {
-			window.open(resource.file, '_blank');
+			// Files are stored on backend, so prepend backend URL if path is relative
+			const fileUrl = resource.file.startsWith('http')
+				? resource.file
+				: `http://localhost:8000${resource.file}`;
+			window.open(fileUrl, '_blank');
 		} else if (resource.resource_type === 'link' && resource.link) {
 			window.open(resource.link, '_blank');
 		}
