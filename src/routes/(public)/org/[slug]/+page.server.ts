@@ -1,5 +1,9 @@
 import { error } from '@sveltejs/kit';
-import { organizationGetOrganization, permissionMyPermissions } from '$lib/api';
+import {
+	organizationGetOrganization,
+	permissionMyPermissions,
+	organizationListResources
+} from '$lib/api';
 import type { PageServerLoad } from './$types';
 import type { OrganizationPermissionsSchema } from '$lib/api/generated/types.gen';
 import { canPerformAction } from '$lib/utils/permissions';
@@ -27,6 +31,14 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 
 		const organization = orgResponse.data;
 
+		// Fetch public resources for this organization
+		const resourcesResponse = await organizationListResources({
+			fetch,
+			path: { slug }
+		});
+
+		const resources = resourcesResponse.data?.results || [];
+
 		// Check if user can edit this organization (requires authentication)
 		let canEdit = false;
 		if (locals.user) {
@@ -50,6 +62,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 
 		return {
 			organization,
+			resources,
 			canEdit,
 			// Explicitly pass authentication state to the page
 			isAuthenticated: !!locals.user
