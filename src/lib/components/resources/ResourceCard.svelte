@@ -98,6 +98,22 @@
 			onDelete?.(resource.id);
 		}
 	}
+
+	function handleResourceClick() {
+		if (resource.resource_type === 'file' && resource.file) {
+			// Open file in new tab (browser will download if it can't display)
+			window.open(resource.file, '_blank');
+		} else if (resource.resource_type === 'link' && resource.link) {
+			// Open link in new tab
+			window.open(resource.link, '_blank');
+		}
+		// For text type, we don't open anything - the content is shown in the preview
+	}
+
+	const isClickable = $derived(
+		(resource.resource_type === 'file' && resource.file) ||
+			(resource.resource_type === 'link' && resource.link)
+	);
 </script>
 
 <article
@@ -158,11 +174,23 @@
 	{/if}
 
 	<!-- Content Preview -->
-	<div class="rounded-md bg-muted/50 px-3 py-2 text-sm">
-		<p class="truncate text-muted-foreground">
-			{contentPreview}
-		</p>
-	</div>
+	{#if isClickable}
+		<button
+			type="button"
+			onclick={handleResourceClick}
+			class="w-full rounded-md bg-muted/50 px-3 py-2 text-left text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+		>
+			<p class="truncate text-muted-foreground">
+				{contentPreview}
+			</p>
+		</button>
+	{:else}
+		<div class="rounded-md bg-muted/50 px-3 py-2 text-sm">
+			<p class="truncate text-muted-foreground">
+				{contentPreview}
+			</p>
+		</div>
+	{/if}
 
 	<!-- Footer Metadata -->
 	<div class="flex flex-wrap items-center gap-3 text-xs">
