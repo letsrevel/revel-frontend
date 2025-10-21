@@ -25,9 +25,40 @@
 	// Create mutation
 	const createResourceMutation = createMutation(() => ({
 		mutationFn: async (formData: FormData) => {
+			// Extract file if present
+			const file = formData.get('file') as File | null;
+
+			// Build JSON body
+			const body: any = {
+				resource_type: formData.get('resource_type'),
+				name: formData.get('name') || null,
+				description: formData.get('description') || null,
+				visibility: formData.get('visibility') || 'members-only',
+				display_on_organization_page: formData.get('display_on_organization_page') === 'true'
+			};
+
+			// Add type-specific fields
+			const resourceType = formData.get('resource_type');
+			if (resourceType === 'link') {
+				body.link = formData.get('link') || null;
+			} else if (resourceType === 'text') {
+				body.text = formData.get('text') || null;
+			}
+
+			// Parse event_ids if present
+			const eventIdsStr = formData.get('event_ids') as string | null;
+			if (eventIdsStr) {
+				try {
+					body.event_ids = JSON.parse(eventIdsStr);
+				} catch {
+					body.event_ids = [];
+				}
+			}
+
 			const response = await organizationadminCreateResource({
 				path: { slug: organizationSlug },
-				body: formData as any,
+				body,
+				query: file ? { file } : undefined,
 				headers: {
 					Authorization: `Bearer ${accessToken}`
 				}
@@ -64,9 +95,44 @@
 				throw new Error('Resource ID is required for update');
 			}
 
+			// Build JSON body (update schema has all optional fields except what's provided)
+			const body: any = {};
+
+			// Only include fields that are present in the form
+			const name = formData.get('name');
+			if (name !== null) body.name = name || null;
+
+			const description = formData.get('description');
+			if (description !== null) body.description = description || null;
+
+			const visibility = formData.get('visibility');
+			if (visibility) body.visibility = visibility;
+
+			const displayOnOrgPage = formData.get('display_on_organization_page');
+			if (displayOnOrgPage !== null) {
+				body.display_on_organization_page = displayOnOrgPage === 'true';
+			}
+
+			// Add type-specific fields
+			const link = formData.get('link');
+			if (link !== null) body.link = link || null;
+
+			const text = formData.get('text');
+			if (text !== null) body.text = text || null;
+
+			// Parse event_ids if present
+			const eventIdsStr = formData.get('event_ids') as string | null;
+			if (eventIdsStr !== null) {
+				try {
+					body.event_ids = JSON.parse(eventIdsStr);
+				} catch {
+					body.event_ids = [];
+				}
+			}
+
 			const response = await organizationadminUpdateResource({
 				path: { slug: organizationSlug, resource_id: resource.id },
-				body: formData as any,
+				body,
 				headers: {
 					Authorization: `Bearer ${accessToken}`
 				}
@@ -161,6 +227,7 @@
 				backdropElement.removeEventListener('scroll', handleScroll);
 			};
 		}
+		return undefined;
 	});
 </script>
 
