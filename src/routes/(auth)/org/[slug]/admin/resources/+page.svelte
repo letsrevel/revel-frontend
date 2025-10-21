@@ -212,7 +212,7 @@
 			{resources}
 			onEdit={handleEdit}
 			onDelete={handleDelete}
-			isDeleting={$deleteMutation.isPending}
+			isDeleting={deleteMutation.isPending}
 		/>
 	{/if}
 </div>
