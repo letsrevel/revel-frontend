@@ -130,11 +130,14 @@
 	<div class="flex items-start justify-between gap-3">
 		<div class="flex min-w-0 flex-1 items-start gap-3">
 			<!-- Icon -->
-			<div
-				class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary"
-			>
-				<svelte:component this={icon} class="h-5 w-5" aria-hidden="true" />
-			</div>
+			{#if icon}
+				{@const IconComponent = icon}
+				<div
+					class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary"
+				>
+					<IconComponent class="h-5 w-5" aria-hidden="true" />
+				</div>
+			{/if}
 
 			<!-- Title and Type -->
 			<div class="min-w-0 flex-1">
@@ -205,10 +208,13 @@
 	<!-- Footer Metadata -->
 	<div class="flex flex-wrap items-center gap-3 text-xs">
 		<!-- Visibility Badge -->
-		<div class="flex items-center gap-1.5 {visibilityInfo.color}">
-			<svelte:component this={visibilityInfo.icon} class="h-3.5 w-3.5" aria-hidden="true" />
-			<span>{visibilityInfo.label}</span>
-		</div>
+		{#if visibilityInfo.icon}
+			{@const VisibilityIcon = visibilityInfo.icon}
+			<div class="flex items-center gap-1.5 {visibilityInfo.color}">
+				<VisibilityIcon class="h-3.5 w-3.5" aria-hidden="true" />
+				<span>{visibilityInfo.label}</span>
+			</div>
+		{/if}
 
 		<!-- Display on Org Page Badge -->
 		{#if resource.display_on_organization_page}

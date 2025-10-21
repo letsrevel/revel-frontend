@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
-	import { FileText, Link as LinkIcon, AlignLeft, Upload } from 'lucide-svelte';
+	import { FileText, Link as LinkIcon, AlignLeft } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import ResourceAssignment from './ResourceAssignment.svelte';
@@ -52,9 +52,6 @@
 		file = null;
 		validationErrors = {};
 	});
-
-	// File input reference
-	let fileInput: HTMLInputElement;
 
 	// Validation
 	let validationErrors = $state<Record<string, string>>({});

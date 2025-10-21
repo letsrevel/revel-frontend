@@ -31,20 +31,6 @@
 		return result;
 	});
 
-	// Get resource icon
-	function getResourceIcon(type: string) {
-		switch (type) {
-			case 'file':
-				return 'FileText';
-			case 'link':
-				return 'Link';
-			case 'text':
-				return 'AlignLeft';
-			default:
-				return 'FileText';
-		}
-	}
-
 	function openResource(resource: AdditionalResourceSchema) {
 		if (resource.resource_type === 'file' && resource.file) {
 			// Files are stored on backend, so prepend backend URL if path is relative

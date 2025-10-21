@@ -21,24 +21,27 @@
 	});
 
 	let eventTypeDisplay = $derived.by(() => {
-		switch (event.event_type) {
+		switch (event.visibility) {
 			case 'public':
 				return 'Public Event';
 			case 'private':
 				return 'Private Event';
 			case 'members-only':
 				return 'Members Only';
+			case 'staff-only':
+				return 'Staff Only';
 			default:
 				return 'Event';
 		}
 	});
 
 	let eventTypeIcon = $derived.by(() => {
-		switch (event.event_type) {
+		switch (event.visibility) {
 			case 'public':
 				return Globe;
 			case 'private':
 			case 'members-only':
+			case 'staff-only':
 				return Building2;
 			default:
 				return Globe;

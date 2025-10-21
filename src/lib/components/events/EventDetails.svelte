@@ -166,7 +166,7 @@
 	{/if}
 
 	<!-- Invitation Message (if private event) -->
-	{#if event.event_type === 'private' && event.invitation_message_html}
+	{#if event.visibility === 'private' && event.invitation_message_html}
 		<section
 			aria-labelledby="invitation-heading"
 			class="rounded-lg border-2 border-primary/20 bg-primary/5 p-4"

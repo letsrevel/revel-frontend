@@ -139,6 +139,7 @@
 	{:else}
 		<div class="space-y-2">
 			{#each resources as resource (resource.id)}
+				{@const ResourceIcon = getResourceIcon(resource.resource_type)}
 				<button
 					type="button"
 					onclick={() => resource.id && toggleResource(resource.id)}
@@ -176,11 +177,7 @@
 					<!-- Resource Icon & Info -->
 					<div class="flex min-w-0 flex-1 items-center gap-2">
 						<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-muted">
-							<svelte:component
-								this={getResourceIcon(resource.resource_type)}
-								class="h-4 w-4 text-muted-foreground"
-								aria-hidden="true"
-							/>
+							<ResourceIcon class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
 						</div>
 
 						<div class="min-w-0 flex-1">

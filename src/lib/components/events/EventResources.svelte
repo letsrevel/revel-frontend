@@ -43,6 +43,7 @@
 
 		<div class="space-y-3">
 			{#each resources as resource (resource.id)}
+				{@const IconComponent = getIcon(resource.resource_type)}
 				<article
 					class="flex items-start gap-4 rounded-md border p-4 transition-all hover:bg-accent/50"
 				>
@@ -50,11 +51,7 @@
 					<div
 						class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary"
 					>
-						<svelte:component
-							this={getIcon(resource.resource_type)}
-							class="h-5 w-5"
-							aria-hidden="true"
-						/>
+						<IconComponent class="h-5 w-5" aria-hidden="true" />
 					</div>
 
 					<!-- Content -->
