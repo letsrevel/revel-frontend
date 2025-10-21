@@ -6,6 +6,7 @@
 	import EventActionSidebar from '$lib/components/events/EventActionSidebar.svelte';
 	import OrganizationInfo from '$lib/components/events/OrganizationInfo.svelte';
 	import PotluckSection from '$lib/components/events/PotluckSection.svelte';
+	import EventResources from '$lib/components/events/EventResources.svelte';
 	import { generateEventStructuredData, structuredDataToJsonLd } from '$lib/utils/structured-data';
 	import { isRSVP, isTicket } from '$lib/utils/eligibility';
 	import { getPotluckPermissions } from '$lib/utils/permissions';
@@ -111,6 +112,9 @@
 					{hasRSVPd}
 					initialItems={data.potluckItems}
 				/>
+
+				<!-- Resources Section -->
+				<EventResources resources={data.resources} />
 
 				<!-- Organization Info (below details on mobile, hidden on desktop) -->
 				<div class="lg:hidden">

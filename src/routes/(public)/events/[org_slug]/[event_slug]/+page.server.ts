@@ -3,13 +3,15 @@ import {
 	eventGetEventBySlugs,
 	eventGetMyEventStatus,
 	potluckListPotluckItems,
-	permissionMyPermissions
+	permissionMyPermissions,
+	eventListResources
 } from '$lib/api';
 import type { PageServerLoad } from './$types';
 import type { UserEventStatus } from '$lib/utils/eligibility';
 import type {
 	PotluckItemRetrieveSchema,
-	OrganizationPermissionsSchema
+	OrganizationPermissionsSchema,
+	AdditionalResourceSchema
 } from '$lib/api/generated/types.gen';
 
 export const load: PageServerLoad = async ({ params, locals, fetch }) => {
@@ -95,11 +97,28 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 			}
 		}
 
+		// Fetch event resources (public endpoint)
+		let resources: AdditionalResourceSchema[] = [];
+		try {
+			const resourcesResponse = await eventListResources({
+				fetch,
+				path: { event_id: event.id }
+			});
+
+			if (resourcesResponse.data) {
+				resources = resourcesResponse.data.results || [];
+			}
+		} catch (err) {
+			// If resources fail to load, continue without them
+			console.error('Failed to fetch event resources:', err);
+		}
+
 		return {
 			event,
 			userStatus,
 			potluckItems,
 			userPermissions,
+			resources,
 			// Explicitly pass authentication state to the page
 			isAuthenticated: !!locals.user
 		};
