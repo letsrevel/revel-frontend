@@ -21,6 +21,7 @@
 	import { cn } from '$lib/utils/cn';
 	import EssentialsStep from './EssentialsStep.svelte';
 	import DetailsStep from './DetailsStep.svelte';
+	import EventResources from './EventResources.svelte';
 	import { ChevronLeft, Save } from 'lucide-svelte';
 
 	interface Props {
@@ -45,11 +46,12 @@
 	const queryClient = useQueryClient();
 
 	// State management
-	let currentStep = $state<1 | 2>(1);
+	let currentStep = $state<1 | 2 | 3>(1);
 	let eventId = $state<string | null>(existingEvent?.id || null);
 	let isSaving = $state(false);
 	let errorMessage = $state<string | null>(null);
 	let successMessage = $state<string | null>(null);
+	let selectedResourceIds = $state<string[]>([]);
 
 	/**
 	 * Convert ISO datetime to datetime-local format (YYYY-MM-DDTHH:mm)
@@ -510,6 +512,16 @@
 				onUpdate={updateFormData}
 				onUpdateImages={updateImages}
 			/>
+
+			<!-- Resources (only show if event has been created) -->
+			{#if eventId}
+				<EventResources
+					organizationSlug={organization.slug}
+					{eventId}
+					{selectedResourceIds}
+					onSelectionChange={(ids) => (selectedResourceIds = ids)}
+				/>
+			{/if}
 
 			<!-- Save & Exit button -->
 			<div class="flex justify-end">
