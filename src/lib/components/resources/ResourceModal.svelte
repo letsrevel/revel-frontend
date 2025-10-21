@@ -25,80 +25,128 @@
 	// Create mutation
 	const createResourceMutation = createMutation(() => ({
 		mutationFn: async (formData: FormData) => {
-			// Extract file if present
+			// Extract values
 			const file = formData.get('file') as File | null;
 			const resourceType = formData.get('resource_type') as string;
 
-			// Build JSON body
-			const body: any = {
-				resource_type: resourceType,
-				name: formData.get('name') || null,
-				description: formData.get('description') || null,
-				visibility: formData.get('visibility') || 'members-only',
-				display_on_organization_page: formData.get('display_on_organization_page') === 'true'
-			};
-
-			// Add type-specific fields - MUST include exactly ONE
-			if (resourceType === 'link') {
-				const linkValue = formData.get('link') as string;
-				if (!linkValue || linkValue.trim() === '') {
-					throw new Error('Link URL is required for link resources');
-				}
-				body.link = linkValue.trim();
-			} else if (resourceType === 'text') {
-				const textValue = formData.get('text') as string;
-				if (!textValue || textValue.trim() === '') {
-					throw new Error('Text content is required for text resources');
-				}
-				body.text = textValue.trim();
-			} else if (resourceType === 'file') {
+			// For file uploads, we need to send multipart/form-data
+			// For link/text, we send JSON
+			if (resourceType === 'file') {
 				if (!file) {
 					throw new Error('File is required for file resources');
 				}
-				// File is sent via query parameter, not in body
-			}
 
-			// Parse event_ids if present
-			const eventIdsStr = formData.get('event_ids') as string | null;
-			if (eventIdsStr) {
-				try {
-					body.event_ids = JSON.parse(eventIdsStr);
-				} catch {
-					body.event_ids = [];
+				// Create multipart form data with all fields
+				const multipartData = new FormData();
+				multipartData.append('file', file);
+
+				// Add JSON payload as form fields
+				const payload: any = {
+					resource_type: resourceType,
+					name: formData.get('name') || null,
+					description: formData.get('description') || null,
+					visibility: formData.get('visibility') || 'members-only',
+					display_on_organization_page: formData.get('display_on_organization_page') === 'true'
+				};
+
+				// Parse event_ids if present
+				const eventIdsStr = formData.get('event_ids') as string | null;
+				if (eventIdsStr) {
+					try {
+						payload.event_ids = JSON.parse(eventIdsStr);
+					} catch {
+						payload.event_ids = [];
+					}
 				}
-			}
 
-			console.log('[ResourceModal] Creating resource:', {
-				resourceType,
-				body,
-				hasFile: !!file,
-				fileName: file?.name
-			});
+				// Append payload as JSON string or individual fields
+				multipartData.append('payload', JSON.stringify(payload));
 
-			const response = await organizationadminCreateResource({
-				path: { slug: organizationSlug },
-				body,
-				query: file ? { file } : undefined,
-				headers: {
-					Authorization: `Bearer ${accessToken}`
+				console.log('[ResourceModal] Creating file resource with multipart:', {
+					fileName: file.name,
+					payload
+				});
+
+				// Use fetch directly for multipart (SDK forces application/json)
+				const response = await fetch(`/api/organization-admin/${organizationSlug}/resources`, {
+					method: 'POST',
+					headers: {
+						Authorization: `Bearer ${accessToken}`
+						// Don't set Content-Type - browser will set it with boundary
+					},
+					body: multipartData
+				});
+
+				if (!response.ok) {
+					const error = await response.json();
+					throw new Error(error.detail || 'Failed to create resource');
 				}
-			});
 
-			if (response.error) {
-				const errorDetail =
-					typeof response.error === 'object' &&
-					response.error !== null &&
-					'detail' in response.error
-						? (response.error.detail as string)
-						: 'Failed to create resource';
-				throw new Error(errorDetail);
+				return await response.json();
+			} else {
+				// For link and text, send JSON
+				const body: any = {
+					resource_type: resourceType,
+					name: formData.get('name') || null,
+					description: formData.get('description') || null,
+					visibility: formData.get('visibility') || 'members-only',
+					display_on_organization_page: formData.get('display_on_organization_page') === 'true'
+				};
+
+				// Add type-specific fields
+				if (resourceType === 'link') {
+					const linkValue = formData.get('link') as string;
+					if (!linkValue || linkValue.trim() === '') {
+						throw new Error('Link URL is required for link resources');
+					}
+					body.link = linkValue.trim();
+				} else if (resourceType === 'text') {
+					const textValue = formData.get('text') as string;
+					if (!textValue || textValue.trim() === '') {
+						throw new Error('Text content is required for text resources');
+					}
+					body.text = textValue.trim();
+				}
+
+				// Parse event_ids if present
+				const eventIdsStr = formData.get('event_ids') as string | null;
+				if (eventIdsStr) {
+					try {
+						body.event_ids = JSON.parse(eventIdsStr);
+					} catch {
+						body.event_ids = [];
+					}
+				}
+
+				console.log('[ResourceModal] Creating link/text resource:', {
+					resourceType,
+					body
+				});
+
+				const response = await organizationadminCreateResource({
+					path: { slug: organizationSlug },
+					body,
+					headers: {
+						Authorization: `Bearer ${accessToken}`
+					}
+				});
+
+				if (response.error) {
+					const errorDetail =
+						typeof response.error === 'object' &&
+						response.error !== null &&
+						'detail' in response.error
+							? (response.error.detail as string)
+							: 'Failed to create resource';
+					throw new Error(errorDetail);
+				}
+
+				if (!response.data) {
+					throw new Error('Failed to create resource');
+				}
+
+				return response.data;
 			}
-
-			if (!response.data) {
-				throw new Error('Failed to create resource');
-			}
-
-			return response.data;
 		},
 		onSuccess: () => {
 			onSuccess();
