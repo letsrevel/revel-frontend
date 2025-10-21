@@ -68,14 +68,17 @@
 				});
 
 				// Use fetch directly for multipart (SDK forces application/json)
-				const response = await fetch(`/api/organization-admin/${organizationSlug}/resources`, {
-					method: 'POST',
-					headers: {
-						Authorization: `Bearer ${accessToken}`
-						// Don't set Content-Type - browser will set it with boundary
-					},
-					body: multipartData
-				});
+				const response = await fetch(
+					`http://localhost:8000/api/organization-admin/${organizationSlug}/resources`,
+					{
+						method: 'POST',
+						headers: {
+							Authorization: `Bearer ${accessToken}`
+							// Don't set Content-Type - browser will set it with boundary
+						},
+						body: multipartData
+					}
+				);
 
 				if (!response.ok) {
 					const error = await response.json();
@@ -271,46 +274,8 @@
 		createResourceMutation.isPending || updateResourceMutation.isPending
 	);
 
-	// Debugging: Log scroll behavior and dimensions
 	let backdropElement: HTMLDivElement;
 	let modalElement: HTMLDivElement;
-
-	$effect(() => {
-		if (backdropElement && modalElement) {
-			console.log('[ResourceModal] Modal opened - Dimensions:', {
-				viewport: {
-					width: window.innerWidth,
-					height: window.innerHeight
-				},
-				backdrop: {
-					scrollHeight: backdropElement.scrollHeight,
-					clientHeight: backdropElement.clientHeight,
-					scrollTop: backdropElement.scrollTop
-				},
-				modal: {
-					scrollHeight: modalElement.scrollHeight,
-					clientHeight: modalElement.clientHeight,
-					offsetTop: modalElement.offsetTop
-				}
-			});
-
-			// Log scroll events
-			const handleScroll = () => {
-				console.log('[ResourceModal] Scroll event:', {
-					scrollTop: backdropElement.scrollTop,
-					scrollHeight: backdropElement.scrollHeight,
-					clientHeight: backdropElement.clientHeight
-				});
-			};
-
-			backdropElement.addEventListener('scroll', handleScroll);
-
-			return () => {
-				backdropElement.removeEventListener('scroll', handleScroll);
-			};
-		}
-		return undefined;
-	});
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
