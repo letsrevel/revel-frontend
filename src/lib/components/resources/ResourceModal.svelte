@@ -128,7 +128,7 @@
 
 <!-- Modal Backdrop -->
 <div
-	class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4 backdrop-blur-sm md:items-center"
+	class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 p-4 backdrop-blur-sm"
 	onclick={handleBackdropClick}
 	role="dialog"
 	aria-modal="true"
@@ -136,7 +136,7 @@
 >
 	<!-- Modal Content -->
 	<div
-		class="relative w-full max-w-2xl rounded-lg bg-background p-6 shadow-xl md:p-8"
+		class="relative my-8 w-full max-w-2xl rounded-lg bg-background p-6 shadow-xl md:p-8"
 		onclick={(e) => e.stopPropagation()}
 	>
 		<!-- Header -->
