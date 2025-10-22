@@ -42,31 +42,34 @@ class AuthStore {
 	/**
 	 * Initialize auth state (called on app startup)
 	 * If access token exists in memory, fetch user data
-	 * Otherwise, attempts to refresh token if refresh cookie exists
+	 * Note: This should only be called when we have an access token
+	 * Token refresh is handled automatically by the API interceptor on 401 responses
 	 */
 	async initialize(): Promise<void> {
 		console.log('[AUTH STORE] initialize() called', {
 			hasAccessToken: !!this._accessToken
 		});
+
+		// Only initialize if we have an access token
+		// Don't attempt to refresh here - that's handled by the API interceptor
+		if (!this._accessToken) {
+			console.log('[AUTH STORE] No access token, skipping initialization');
+			return;
+		}
+
 		this._isLoading = true;
 		try {
-			// If we already have an access token (set from server), fetch user data
-			if (this._accessToken) {
-				console.log('[AUTH STORE] Has access token, fetching user data');
-				await this.fetchUserData();
-				console.log('[AUTH STORE] User data fetched successfully');
-				await this.fetchPermissions();
-				console.log('[AUTH STORE] Permissions fetched successfully');
-			} else {
-				// Try to refresh the access token
-				// If refresh token cookie exists, this will work
-				console.log('[AUTH STORE] No access token, attempting refresh');
-				await this.refreshAccessToken();
-			}
+			console.log('[AUTH STORE] Has access token, fetching user data');
+			await this.fetchUserData();
+			console.log('[AUTH STORE] User data fetched successfully');
+			await this.fetchPermissions();
+			console.log('[AUTH STORE] Permissions fetched successfully');
 		} catch (error) {
-			// No valid refresh token, user needs to login
-			// Silent fail - user will be redirected to login by route guard
+			// If fetching user data fails, the API interceptor will handle token refresh
+			// If refresh fails, the user will be logged out automatically
 			console.log('[AUTH STORE] Initialize failed:', error);
+			// Clear auth state on failure
+			this.logout();
 		} finally {
 			this._isLoading = false;
 			console.log('[AUTH STORE] initialize() complete', {

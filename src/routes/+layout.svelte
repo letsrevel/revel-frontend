@@ -18,7 +18,20 @@
 	const queryClient = new QueryClient({
 		defaultOptions: {
 			queries: {
-				staleTime: 60 * 1000 // 1 minute
+				staleTime: 60 * 1000, // 1 minute
+				retry: (failureCount, error) => {
+					// Don't retry on 401 (unauthorized) - these need user action, not retries
+					if (error && typeof error === 'object' && 'status' in error && error.status === 401) {
+						return false;
+					}
+					// Don't retry on 403 (forbidden) - permission errors won't resolve by retrying
+					if (error && typeof error === 'object' && 'status' in error && error.status === 403) {
+						return false;
+					}
+					// Retry other errors up to 2 times
+					return failureCount < 2;
+				},
+				refetchOnWindowFocus: false // Prevent automatic refetches that could trigger auth loops
 			}
 		}
 	});
@@ -44,6 +57,7 @@
 			// Initialize auth (will fetch user data)
 			console.log('[ROOT LAYOUT] Starting auth initialization');
 			authStore.initialize().catch((err) => {
+				console.error('[ROOT LAYOUT] Auth initialization failed:', err);
 				// Check if ad blocker is blocking the request
 				if (err instanceof TypeError && err.message === 'Failed to fetch') {
 					import('svelte-sonner').then(({ toast }) => {
@@ -60,6 +74,8 @@
 			console.log('[ROOT LAYOUT] Server token cleared, logging out client');
 			authStore.logout();
 		}
+		// Case 3: No tokens anywhere - user is not authenticated
+		// No action needed - user will see public pages or be redirected by route guards
 	});
 
 	// Initialize app on mount (one-time setup)

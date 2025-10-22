@@ -45,6 +45,26 @@
 
 	const typeVariant = $derived(typeVariants[questionnaire.questionnaire_type] || 'outline');
 
+	// Status labels and variants
+	const statusLabels: Record<string, string> = {
+		draft: 'Draft',
+		ready: 'Ready',
+		published: 'Published'
+	};
+
+	const statusLabel = $derived(
+		statusLabels[questionnaire.questionnaire.status] || questionnaire.questionnaire.status
+	);
+
+	// Get status badge variant
+	const statusVariants: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
+		draft: 'outline',
+		ready: 'secondary',
+		published: 'default'
+	};
+
+	const statusVariant = $derived(statusVariants[questionnaire.questionnaire.status] || 'outline');
+
 	// Event assignment count (events + series)
 	const assignmentCount = $derived(
 		(questionnaire.events?.length || 0) + (questionnaire.event_series?.length || 0)
@@ -85,9 +105,12 @@
 		<div class="flex items-start justify-between gap-2">
 			<div class="min-w-0 flex-1">
 				<CardTitle class="line-clamp-1">{questionnaire.questionnaire.name}</CardTitle>
-				<CardDescription class="mt-1">
+				<CardDescription class="mt-1 flex flex-wrap gap-1">
 					<Badge variant={typeVariant} class="text-xs">
 						{typeLabel}
+					</Badge>
+					<Badge variant={statusVariant} class="text-xs">
+						{statusLabel}
 					</Badge>
 				</CardDescription>
 			</div>

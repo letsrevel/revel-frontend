@@ -98,6 +98,27 @@
 			'General purpose questionnaire for any use case'
 	);
 
+	// Evaluation mode descriptions
+	const evaluationModes = {
+		automatic: {
+			label: 'Automatic',
+			description: 'AI evaluates all responses automatically - fastest approval process'
+		},
+		manual: {
+			label: 'Manual',
+			description: 'Staff manually reviews all submissions - complete control over decisions'
+		},
+		hybrid: {
+			label: 'Hybrid',
+			description: 'AI pre-scores responses, staff makes final approval decision'
+		}
+	};
+
+	const selectedEvaluationDescription = $derived(
+		evaluationModes[evaluationMode]?.description ??
+			'AI evaluates all responses automatically - fastest approval process'
+	);
+
 	// DEBUG: Log state changes
 	$effect(() => {
 		console.log('[QuestionnaireType] Current state:', {
@@ -405,11 +426,7 @@
 					}}
 				>
 					<SelectTrigger id="evaluation-mode">
-						{evaluationMode === 'automatic'
-							? 'Automatic'
-							: evaluationMode === 'manual'
-								? 'Manual'
-								: 'Hybrid'}
+						{evaluationModes[evaluationMode]?.label ?? 'Automatic'}
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="automatic" label="Automatic">
@@ -438,6 +455,9 @@
 						</SelectItem>
 					</SelectContent>
 				</Select>
+				<p class="text-xs text-muted-foreground">
+					{selectedEvaluationDescription}
+				</p>
 			</div>
 		</CardContent>
 	</Card>

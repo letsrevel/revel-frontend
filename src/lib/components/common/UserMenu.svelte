@@ -34,7 +34,9 @@
 
 			return response.data?.results || [];
 		},
-		enabled: !!accessToken
+		enabled: !!accessToken && !!user, // Only fetch if both token AND user exist
+		retry: false, // Don't retry this query - if it fails, user needs to re-authenticate
+		staleTime: 5 * 60 * 1000 // 5 minutes - organizations don't change frequently
 	}));
 
 	let userOrganizations = $derived(organizationsQuery.data || []);
