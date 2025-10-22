@@ -3,7 +3,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { dashboardDashboardOrganizations } from '$lib/api/generated/sdk.gen';
-	import { User, Settings, LogOut, Building2, Shield, Lock } from 'lucide-svelte';
+	import { User, Settings, LogOut, Building2, Shield, Lock, LayoutDashboard } from 'lucide-svelte';
 
 	interface Props {
 		mobile?: boolean;
@@ -15,6 +15,7 @@
 	let dropdownOpen = $state(false);
 	let user = $derived(authStore.user);
 	let accessToken = $derived(authStore.accessToken);
+	let permissions = $derived(authStore.permissions);
 
 	// Fetch user's organizations (where they are owner or staff)
 	const organizationsQuery = createQuery(() => ({
@@ -38,6 +39,33 @@
 
 	let userOrganizations = $derived(organizationsQuery.data || []);
 
+	// Helper to check if user has admin permissions for an organization
+	function hasAdminPermissions(orgId: string): boolean {
+		if (!permissions?.organization_permissions) {
+			return false;
+		}
+
+		const orgPerms = permissions.organization_permissions[orgId];
+
+		// If user is owner, they have all permissions
+		if (orgPerms === 'owner') {
+			return true;
+		}
+
+		// Check if user has any admin-level permissions
+		if (typeof orgPerms === 'object' && orgPerms.default) {
+			const perms = orgPerms.default;
+			return !!(
+				perms.edit_organization ||
+				perms.manage_members ||
+				perms.create_event ||
+				perms.manage_event
+			);
+		}
+
+		return false;
+	}
+
 	// Get user initials for avatar
 	let userInitials = $derived(() => {
 		if (!user) return '?';
@@ -53,6 +81,7 @@
 
 	// Menu items
 	const menuItems = [
+		{ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
 		{ href: '/account/profile', label: 'Profile', icon: User },
 		{ href: '/account/security', label: 'Security', icon: Shield },
 		{ href: '/account/privacy', label: 'Privacy & Data', icon: Lock },
@@ -129,14 +158,16 @@
 							<Building2 class="h-5 w-5" aria-hidden="true" />
 							<span class="flex-1 truncate">{org.name}</span>
 						</a>
-						<a
-							href="/org/{org.slug}/admin"
-							class="ml-12 flex items-center gap-2 rounded-md px-4 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-							onclick={handleItemClick}
-						>
-							<Shield class="h-4 w-4" aria-hidden="true" />
-							<span>Admin Dashboard</span>
-						</a>
+						{#if hasAdminPermissions(org.id)}
+							<a
+								href="/org/{org.slug}/admin"
+								class="ml-12 flex items-center gap-2 rounded-md px-4 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+								onclick={handleItemClick}
+							>
+								<Shield class="h-4 w-4" aria-hidden="true" />
+								<span>Admin Dashboard</span>
+							</a>
+						{/if}
 					</div>
 				{/each}
 			</div>
@@ -216,15 +247,17 @@
 										<Building2 class="h-4 w-4" aria-hidden="true" />
 										<span class="flex-1 truncate">{org.name}</span>
 									</a>
-									<a
-										href="/org/{org.slug}/admin"
-										class="ml-7 flex items-center gap-2 rounded-sm px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-										onclick={handleItemClick}
-										role="menuitem"
-									>
-										<Shield class="h-3 w-3" aria-hidden="true" />
-										<span>Admin Dashboard</span>
-									</a>
+									{#if hasAdminPermissions(org.id)}
+										<a
+											href="/org/{org.slug}/admin"
+											class="ml-7 flex items-center gap-2 rounded-sm px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+											onclick={handleItemClick}
+											role="menuitem"
+										>
+											<Shield class="h-3 w-3" aria-hidden="true" />
+											<span>Admin Dashboard</span>
+										</a>
+									{/if}
 								</div>
 							{/each}
 						</div>

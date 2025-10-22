@@ -16,6 +16,7 @@ class AuthStore {
 	private _accessToken = $state<string | null>(null);
 	private _permissions = $state<OrganizationPermissionsSchema | null>(null);
 	private _isLoading = $state<boolean>(false);
+	private _tokenExpiryTimer: ReturnType<typeof setTimeout> | null = null;
 
 	// Public computed state using $derived
 	get user() {
@@ -150,6 +151,9 @@ class AuthStore {
 	 * Logout and clear all auth state
 	 */
 	async logout(): Promise<void> {
+		// Clear the token refresh timer
+		this.clearTokenRefreshTimer();
+
 		// Clear in-memory state
 		this._user = null;
 		this._accessToken = null;
@@ -163,12 +167,36 @@ class AuthStore {
 	 * Refresh the access token using the refresh token cookie
 	 */
 	async refreshAccessToken(): Promise<void> {
-		// The refresh token is in httpOnly cookie
-		// The backend will automatically use it
-		// This would typically be handled by a server-side endpoint
-		// For now, we'll fetch user data which will fail if no valid session
-		await this.fetchUserData();
-		await this.fetchPermissions();
+		try {
+			// Call our server-side refresh endpoint
+			// The refresh token is in httpOnly cookie, so client can't access it directly
+			const response = await fetch('/api/auth/refresh', {
+				method: 'POST',
+				credentials: 'include'
+			});
+
+			if (!response.ok) {
+				throw new Error('Token refresh failed');
+			}
+
+			const data = await response.json();
+
+			if (!data || !data.access) {
+				throw new Error('No access token returned');
+			}
+
+			// Update the access token (this will also schedule the next refresh)
+			this.setAccessToken(data.access);
+
+			// Fetch user data and permissions with the new token
+			await this.fetchUserData();
+			await this.fetchPermissions();
+		} catch (error) {
+			console.error('[AUTH STORE] Token refresh failed:', error);
+			// Clear auth state on refresh failure
+			this.logout();
+			throw error;
+		}
 	}
 
 	/**
@@ -204,6 +232,7 @@ class AuthStore {
 		});
 
 		if (error || !data) {
+			console.error('[AUTH STORE] Failed to fetch permissions:', error);
 			throw new Error('Failed to fetch permissions');
 		}
 
@@ -227,6 +256,84 @@ class AuthStore {
 	 */
 	setAccessToken(token: string): void {
 		this._accessToken = token;
+		// Schedule automatic refresh before token expires
+		this.scheduleTokenRefresh(token);
+	}
+
+	/**
+	 * Decode JWT token to get expiration time
+	 * Note: This is safe for client-side as JWT is just base64 encoded, not encrypted
+	 */
+	private decodeToken(token: string): { exp?: number } | null {
+		try {
+			// JWT format: header.payload.signature
+			const parts = token.split('.');
+			if (parts.length !== 3) return null;
+
+			// Decode the payload (second part)
+			const payload = parts[1];
+			const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+			return JSON.parse(decoded);
+		} catch (error) {
+			console.error('[AUTH STORE] Failed to decode token:', error);
+			return null;
+		}
+	}
+
+	/**
+	 * Schedule automatic token refresh before expiration
+	 * Refreshes 3 minutes before the token expires
+	 */
+	private scheduleTokenRefresh(token: string): void {
+		// Clear any existing timer
+		if (this._tokenExpiryTimer) {
+			clearTimeout(this._tokenExpiryTimer);
+			this._tokenExpiryTimer = null;
+		}
+
+		// Decode token to get expiration
+		const decoded = this.decodeToken(token);
+		if (!decoded || !decoded.exp) {
+			console.warn('[AUTH STORE] Could not decode token expiration, skipping auto-refresh');
+			return;
+		}
+
+		// Calculate time until refresh (3 minutes before expiration)
+		const expiresAt = decoded.exp * 1000; // Convert to milliseconds
+		const now = Date.now();
+		const refreshBuffer = 3 * 60 * 1000; // 3 minutes in milliseconds
+		const timeUntilRefresh = expiresAt - now - refreshBuffer;
+
+		// If token expires in less than 3 minutes, refresh immediately
+		if (timeUntilRefresh <= 0) {
+			console.log('[AUTH STORE] Token expires soon, refreshing immediately');
+			this.refreshAccessToken().catch((err) => {
+				console.error('[AUTH STORE] Auto-refresh failed:', err);
+			});
+			return;
+		}
+
+		console.log(
+			`[AUTH STORE] Scheduling token refresh in ${Math.round(timeUntilRefresh / 1000)}s (${Math.round(timeUntilRefresh / 60000)} minutes)`
+		);
+
+		// Schedule the refresh
+		this._tokenExpiryTimer = setTimeout(() => {
+			console.log('[AUTH STORE] Auto-refreshing token');
+			this.refreshAccessToken().catch((err) => {
+				console.error('[AUTH STORE] Auto-refresh failed:', err);
+			});
+		}, timeUntilRefresh);
+	}
+
+	/**
+	 * Clean up timers when logging out
+	 */
+	private clearTokenRefreshTimer(): void {
+		if (this._tokenExpiryTimer) {
+			clearTimeout(this._tokenExpiryTimer);
+			this._tokenExpiryTimer = null;
+		}
 	}
 }
 
