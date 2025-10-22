@@ -15,15 +15,14 @@
 
 	// Navigation items for public users
 	const publicNavItems = [
-		{ href: '/events', label: 'Events' },
-		{ href: '/organizations', label: 'Organizations' }
+		{ href: '/events', label: 'Events' }
+		// Note: Organizations browsing deferred to Phase 3
 	];
 
 	// Navigation items for authenticated users
 	const authNavItems = [
-		{ href: '/events', label: 'Events' },
-		{ href: '/my-events', label: 'My Events' },
-		{ href: '/my-organizations', label: 'My Organizations' }
+		{ href: '/events', label: 'Browse' },
+		{ href: '/dashboard', label: 'Dashboard' }
 	];
 
 	// Determine which nav items to show

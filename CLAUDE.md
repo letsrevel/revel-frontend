@@ -67,6 +67,82 @@ This file provides guidance to Claude Code (claude.ai/code) and other AI assista
 - ❌ Event creation wizard
 - ❌ QR code check-in
 
+## Backend API Reference
+
+**IMPORTANT:** When working with API endpoints or understanding data models, always reference the backend code and schemas.
+
+### Available Backend Reference Files
+
+The `backend_context/` directory contains symlinked files from the `revel-backend` repository:
+
+1. **OpenAPI Specification:**
+   - `backend_context/openapi.json` - Complete API specification with all endpoints, parameters, and response schemas
+   - Auto-generated from backend code, always up-to-date
+   - Use to understand available endpoints and their exact parameters
+
+2. **Backend Schemas (Pydantic Models):**
+   - `backend_context/events.schema.py` - Event-related Pydantic schemas
+   - `backend_context/questionnaires.schema.py` - Questionnaire-related schemas
+   - These define the data models that generate the OpenAPI spec
+   - Useful for understanding field types, validation rules, and relationships
+
+3. **Backend Controllers (API Endpoints):**
+   - Located in `revel-backend/src/events/controllers/` (if you have access to the backend repo)
+   - `dashboard.py` - Dashboard-specific endpoints (`/api/dashboard/*`)
+   - `events.py` - Event listing and detail endpoints
+   - `organizations.py` - Organization management endpoints
+   - `event_series.py` - Event series endpoints
+   - Useful for understanding business logic and endpoint behavior
+
+4. **Full Backend OpenAPI:**
+   - `revel-backend/.artifacts/openapi.json` - The source of truth for API specification
+
+### Key Dashboard Endpoints
+
+The dashboard uses specialized endpoints that filter data by user relationships:
+
+**`/api/dashboard/events`** - Get user's events filtered by relationship
+- Parameters: `owner`, `staff`, `member`, `rsvp_yes`, `rsvp_maybe`, `got_ticket`, `got_invitation`, `subscriber`
+- Returns: Events the user is organizing, attending, invited to, or subscribed to
+- **Important:** May return empty results if user has no relationships with any events
+
+**`/api/dashboard/organizations`** - Get user's organizations filtered by relationship
+- Parameters: `owner`, `staff`, `member`, `subscriber`
+- Returns: Organizations the user owns, is staff/member of, or subscribes to
+- **Important:** May return empty results if user has no relationships with any organizations
+
+**`/api/dashboard/event_series`** - Get user's event series
+- Similar filtering logic to events endpoint
+
+**`/api/dashboard/invitations`** - Get user's event invitations
+- Dedicated endpoint for invitation management
+
+### When Dashboard Endpoints Return Empty
+
+The dashboard endpoints are relationship-based and will return empty results if:
+- New user with no activity yet
+- User hasn't RSVP'd to any events
+- User doesn't own or belong to any organizations
+- User has no pending invitations
+
+**Fallback Strategy:** If dashboard endpoints return empty, use general listing endpoints:
+- `/api/events/` - Browse all public events
+- `/api/organizations/` - Browse all public organizations
+- Display "Getting Started" / "Discover" sections for new users
+
+### Searching the OpenAPI Spec
+
+```bash
+# Find all dashboard endpoints
+python3 -c "import json; data = json.load(open('backend_context/openapi.json')); print('\n'.join([p for p in data['paths'].keys() if 'dashboard' in p]))"
+
+# Get details about a specific endpoint
+python3 -c "import json; data = json.load(open('backend_context/openapi.json')); import pprint; pprint.pprint(data['paths']['/api/dashboard/events']['get'])"
+
+# Search for schemas
+grep -A 10 "EventDetailSchema" backend_context/events.schema.py
+```
+
 ## Using the Svelte MCP
 
 This project uses Svelte 5 and SvelteKit. When working with Svelte code, you should leverage the Svelte MCP for documentation and best practices.
