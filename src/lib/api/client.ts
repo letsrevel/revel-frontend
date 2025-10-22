@@ -78,6 +78,13 @@ generatedClient.interceptors.response.use(async (response, request, options) => 
 		return response;
 	}
 
+	// IMPORTANT: Only attempt token refresh if user was previously authenticated
+	// If there's no auth state at all, don't try to refresh (prevents infinite loops)
+	if (!authStore.accessToken && !authStore.isAuthenticated) {
+		console.log('[API CLIENT] No auth state exists, not attempting refresh');
+		return response;
+	}
+
 	console.log('[API CLIENT] Received 401, attempting token refresh');
 
 	// If we're already refreshing, queue this request

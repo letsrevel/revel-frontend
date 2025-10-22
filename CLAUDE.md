@@ -26,8 +26,9 @@ This file provides guidance to Claude Code (claude.ai/code) and other AI assista
    - Look for ✅ (complete), ⏳ (in progress), ❌ (not started)
 
 4. **Verify backend API coverage:**
-   - Read `backend_context/openapi.json` for available endpoints
-   - Check `backend_context/USER_JOURNEY.md` for intended flows
+   - Read `revel-backend/.artifacts/openapi.json` for available endpoints
+   - Check `revel-backend/USER_JOURNEY.md` for intended user flows
+   - Explore backend controllers in `revel-backend/src/events/controllers/` for implementation details
    - Test endpoints with the API client to ensure they work
 
 5. **Check open issues:**
@@ -69,33 +70,68 @@ This file provides guidance to Claude Code (claude.ai/code) and other AI assista
 
 ## Backend API Reference
 
-**IMPORTANT:** When working with API endpoints or understanding data models, always reference the backend code and schemas.
+**IMPORTANT:** When working with API endpoints or understanding data models, always reference the backend code and schemas directly from the backend repository.
 
-### Available Backend Reference Files
+### Accessing the Backend Repository
 
-The `backend_context/` directory contains symlinked files from the `revel-backend` repository:
+The full backend repository is accessible via a symbolic link:
 
-1. **OpenAPI Specification:**
-   - `backend_context/openapi.json` - Complete API specification with all endpoints, parameters, and response schemas
-   - Auto-generated from backend code, always up-to-date
-   - Use to understand available endpoints and their exact parameters
+- **Symlink:** `./revel-backend` → `/Users/biagio/repos/personal/revel`
+- **You have full access** to all backend files, controllers, models, schemas, and documentation
+- **Always explore the backend** when you need to understand API behavior, data models, or business logic
 
-2. **Backend Schemas (Pydantic Models):**
-   - `backend_context/events.schema.py` - Event-related Pydantic schemas
-   - `backend_context/questionnaires.schema.py` - Questionnaire-related schemas
-   - These define the data models that generate the OpenAPI spec
-   - Useful for understanding field types, validation rules, and relationships
+### Backend Directory Structure
 
-3. **Backend Controllers (API Endpoints):**
-   - Located in `revel-backend/src/events/controllers/` (if you have access to the backend repo)
-   - `dashboard.py` - Dashboard-specific endpoints (`/api/dashboard/*`)
-   - `events.py` - Event listing and detail endpoints
-   - `organizations.py` - Organization management endpoints
-   - `event_series.py` - Event series endpoints
-   - Useful for understanding business logic and endpoint behavior
+```
+revel-backend/
+├── .artifacts/
+│   └── openapi.json           # Auto-generated OpenAPI spec (source of truth)
+├── src/
+│   ├── accounts/              # Authentication, user management, GDPR
+│   ├── events/
+│   │   ├── controllers/       # API endpoint implementations
+│   │   │   ├── dashboard.py   # Dashboard endpoints (/api/dashboard/*)
+│   │   │   ├── events.py      # Event listing and detail
+│   │   │   ├── organizations.py
+│   │   │   ├── event_series.py
+│   │   │   ├── potluck.py
+│   │   │   └── questionnaire.py
+│   │   ├── models/            # Django ORM models
+│   │   ├── schema.py          # Pydantic schemas (for API validation)
+│   │   ├── services/          # Business logic layer
+│   │   └── tests/             # Comprehensive test suite
+│   ├── questionnaires/        # Questionnaire system
+│   ├── geo/                   # Geographic data (cities)
+│   ├── telegram/              # Telegram bot integration
+│   └── revel/                 # Django settings and URLs
+├── USER_JOURNEY.md            # Backend user flow documentation
+└── CLAUDE.md                  # Backend development guidelines
+```
 
-4. **Full Backend OpenAPI:**
-   - `revel-backend/.artifacts/openapi.json` - The source of truth for API specification
+### How to Use Backend Context
+
+**When you need to:**
+
+1. **Understand an API endpoint:**
+   - Read the controller in `revel-backend/src/events/controllers/`
+   - Example: `Read` `revel-backend/src/events/controllers/dashboard.py` to understand dashboard filtering logic
+
+2. **Check data models and schemas:**
+   - Controllers: `revel-backend/src/events/controllers/` (API endpoint implementations)
+   - Pydantic schemas: `revel-backend/src/events/schema.py` (API request/response validation)
+   - Django models: `revel-backend/src/events/models/` (database structure)
+
+3. **Find available endpoints:**
+   - Primary source: `revel-backend/.artifacts/openapi.json` (auto-generated from backend code)
+   - Browse controllers for implementation details
+
+4. **Understand business logic:**
+   - Services: `revel-backend/src/events/services/` (business logic layer)
+   - Example: Event creation logic, RSVP handling, potluck coordination
+
+5. **Learn user flows:**
+   - Read `revel-backend/USER_JOURNEY.md` for intended user experiences
+   - Check tests in `revel-backend/src/events/tests/` for usage examples
 
 ### Key Dashboard Endpoints
 
@@ -130,18 +166,26 @@ The dashboard endpoints are relationship-based and will return empty results if:
 - `/api/organizations/` - Browse all public organizations
 - Display "Getting Started" / "Discover" sections for new users
 
-### Searching the OpenAPI Spec
+### Searching the OpenAPI Spec and Backend Code
 
 ```bash
-# Find all dashboard endpoints
-python3 -c "import json; data = json.load(open('backend_context/openapi.json')); print('\n'.join([p for p in data['paths'].keys() if 'dashboard' in p]))"
+# Find all dashboard endpoints in OpenAPI spec
+python3 -c "import json; data = json.load(open('revel-backend/.artifacts/openapi.json')); print('\n'.join([p for p in data['paths'].keys() if 'dashboard' in p]))"
 
 # Get details about a specific endpoint
-python3 -c "import json; data = json.load(open('backend_context/openapi.json')); import pprint; pprint.pprint(data['paths']['/api/dashboard/events']['get'])"
+python3 -c "import json; data = json.load(open('revel-backend/.artifacts/openapi.json')); import pprint; pprint.pprint(data['paths']['/api/dashboard/events']['get'])"
 
-# Search for schemas
-grep -A 10 "EventDetailSchema" backend_context/events.schema.py
+# Search for Pydantic schemas
+grep -A 10 "EventDetailSchema" revel-backend/src/events/schema.py
+
+# Find controller implementations
+ls -la revel-backend/src/events/controllers/
+
+# Search for specific business logic
+grep -r "create_event" revel-backend/src/events/services/
 ```
+
+**Note:** The `backend_context/` directory may be deprecated in favor of direct access to the full backend repository via the `revel-backend` symlink.
 
 ## Using the Svelte MCP
 
@@ -930,6 +974,7 @@ When working on issues or new features, follow this collaborative workflow:
 
 ## Notes to Claude
 
+- **Access the full backend repository** - The `revel-backend` symlink provides complete access to backend code, schemas, controllers, and documentation. Explore it directly when you need context.
 - **Check if features exist before building them** - Many features are already implemented
 - **Use subagents proactively** - Delegate specialized tasks to the appropriate subagent for better focus and results
 - **Always use the Svelte MCP** when working with Svelte 5 code - the Runes system is fundamentally different from Svelte 3/4
@@ -938,6 +983,7 @@ When working on issues or new features, follow this collaborative workflow:
 - **Design mobile-first** - most users will access on mobile devices
 - **Use TypeScript strict mode** - no `any` types, no untyped functions
 - **100% API auto-generation** - never manually write API types or client code
+- **Understand backend behavior** - Read backend controllers (`revel-backend/src/events/controllers/`) to understand exact API behavior and business logic
 - Always discuss non-trivial implementation approaches before writing code
 - Test keyboard navigation and screen reader compatibility for all UI components
 - Follow the backend's philosophy of clean, type-safe, well-tested code
