@@ -14,6 +14,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
       lucide-svelte:
         specifier: ^0.469.0
         version: 0.469.0(svelte@5.40.2)
@@ -1167,6 +1170,9 @@ packages:
   data-urls@6.0.0:
     resolution: {integrity: sha512-BnBS08aLUM+DKamupXs3w2tJJoqU+AkaE/+6vQxi/G/DPmIZFJJp9Dkb1kM03AZx8ADehDUZgsNxju3mPXZYIA==}
     engines: {node: '>=20'}
+
+  date-fns@4.1.0:
+    resolution: {integrity: sha512-Ukq0owbQXxa/U3EGtsdVBkR1w7KOQ5gIBqdH2hkvknzZPYvBxb/aa6E8L7tmjFtkwZBu3UXBbjIgPo/Ez4xaNg==}
 
   debug@4.4.3:
     resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
@@ -3464,6 +3470,8 @@ snapshots:
     dependencies:
       whatwg-mimetype: 4.0.0
       whatwg-url: 15.1.0
+
+  date-fns@4.1.0: {}
 
   debug@4.4.3:
     dependencies:

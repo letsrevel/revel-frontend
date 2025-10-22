@@ -4,6 +4,7 @@
 	import { cn } from '$lib/utils/cn';
 	import { formatEventDate, formatEventDateForScreenReader, isEventPast } from '$lib/utils/date';
 	import { getEventAccessDisplay, getEventFallbackGradient } from '$lib/utils/event';
+	import { getImageUrl } from '$lib/utils/url';
 	import { Calendar, MapPin, Ticket } from 'lucide-svelte';
 	import EventBadges from './EventBadges.svelte';
 
@@ -15,20 +16,6 @@
 	}
 
 	let { event, variant = 'standard', userStatus = null, class: className }: Props = $props();
-
-	// Backend URL for images
-	const BACKEND_URL = 'http://localhost:8000';
-
-	// Helper function to get full image URL
-	function getImageUrl(path: string | null | undefined): string | null {
-		if (!path) return null;
-		// If path is already a full URL, return it
-		if (path.startsWith('http://') || path.startsWith('https://')) {
-			return path;
-		}
-		// Otherwise, prepend backend URL
-		return `${BACKEND_URL}${path}`;
-	}
 
 	// Image state
 	let imageError = $state(false);

@@ -1,27 +1,20 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { page } from '$app/state';
-	import { MapPin, Settings } from 'lucide-svelte';
+	import { MapPin, Settings, Calendar } from 'lucide-svelte';
 	import ResourceCard from '$lib/components/resources/ResourceCard.svelte';
+	import { EventCard } from '$lib/components/events';
+	import { getImageUrl } from '$lib/utils/url';
+	import { createQuery } from '@tanstack/svelte-query';
+	import { eventListEvents } from '$lib/api/generated/sdk.gen';
 
 	let { data }: { data: PageData } = $props();
-
-	// Backend URL for images
-	const BACKEND_URL = 'http://localhost:8000';
 
 	// Create mutable copy for client-side updates
 	let organization = $state(data.organization);
 
-	// Helper function to get full image URL
-	function getImageUrl(path: string | null | undefined): string | null {
-		if (!path) return null;
-		// If path is already a full URL, return it
-		if (path.startsWith('http://') || path.startsWith('https://')) {
-			return path;
-		}
-		// Otherwise, prepend backend URL
-		return `${BACKEND_URL}${path}`;
-	}
+	// Filter state for events
+	let includePastEvents = $state(false);
 
 	// Compute full image URLs
 	const logoUrl = $derived(getImageUrl(organization.logo));
@@ -56,6 +49,25 @@
 	const displayedResources = $derived(
 		data.resources.filter((resource) => resource.display_on_organization_page)
 	);
+
+	// Fetch events for this organization
+	const eventsQuery = createQuery(() => ({
+		queryKey: ['org-events', organization.id, includePastEvents],
+		queryFn: async () => {
+			const response = await eventListEvents({
+				query: {
+					organization: organization.id,
+					include_past: includePastEvents,
+					page_size: 12,
+					order_by: includePastEvents ? '-start' : 'start' // Recent first if past, upcoming first otherwise
+				}
+			});
+
+			return response.data?.results || [];
+		}
+	}));
+
+	let events = $derived(eventsQuery.data || []);
 </script>
 
 <svelte:head>
@@ -214,13 +226,83 @@
 			</section>
 		{/if}
 
-		<!-- Placeholder for Future Features -->
-		<div class="rounded-lg border border-dashed bg-muted/20 p-8 text-center">
-			<h2 class="mb-2 text-xl font-semibold text-muted-foreground">More coming soon</h2>
-			<p class="text-sm text-muted-foreground">
-				Event listings and member information will be displayed here.
-			</p>
-		</div>
+		<!-- Events Section -->
+		<section aria-labelledby="events-heading">
+			<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+				<div>
+					<h2 id="events-heading" class="text-2xl font-bold">Events</h2>
+					<p class="mt-1 text-sm text-muted-foreground">
+						Discover events hosted by {organization.name}
+					</p>
+				</div>
+
+				<!-- Filter Toggle -->
+				<div class="flex items-center gap-2">
+					<label for="include-past" class="text-sm font-medium">Include past events</label>
+					<input
+						id="include-past"
+						type="checkbox"
+						bind:checked={includePastEvents}
+						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+					/>
+				</div>
+			</div>
+
+			{#if eventsQuery.isLoading}
+				<!-- Loading State -->
+				<div class="rounded-lg border bg-card p-8 text-center">
+					<Calendar class="mx-auto mb-4 h-12 w-12 animate-pulse text-muted-foreground" />
+					<p class="text-muted-foreground">Loading events...</p>
+				</div>
+			{:else if eventsQuery.isError}
+				<!-- Error State -->
+				<div class="rounded-lg border border-destructive/20 bg-destructive/5 p-8 text-center">
+					<p class="font-semibold text-destructive">Failed to load events</p>
+					<p class="mt-2 text-sm text-muted-foreground">
+						Please try refreshing the page or check back later.
+					</p>
+				</div>
+			{:else if events.length === 0}
+				<!-- Empty State -->
+				<div class="rounded-lg border bg-card p-8 text-center">
+					<Calendar class="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+					<h3 class="mb-2 text-lg font-semibold">
+						{includePastEvents ? 'No events found' : 'No upcoming events'}
+					</h3>
+					<p class="text-sm text-muted-foreground">
+						{includePastEvents
+							? `${organization.name} hasn't hosted any events yet.`
+							: `${organization.name} has no upcoming events scheduled.`}
+					</p>
+					{#if !includePastEvents}
+						<button
+							type="button"
+							onclick={() => (includePastEvents = true)}
+							class="mt-4 text-sm font-medium text-primary hover:underline"
+						>
+							View past events
+						</button>
+					{/if}
+				</div>
+			{:else}
+				<!-- Event Cards Grid -->
+				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+					{#each events as event (event.id)}
+						<EventCard {event} />
+					{/each}
+				</div>
+
+				<!-- Show count if there are many events -->
+				{#if events.length >= 12}
+					<div class="mt-6 text-center">
+						<p class="text-sm text-muted-foreground">
+							Showing {events.length}
+							{includePastEvents ? 'events' : 'upcoming events'}
+						</p>
+					</div>
+				{/if}
+			{/if}
+		</section>
 	</div>
 </div>
 

@@ -1,10 +1,10 @@
-import { organizationListResources, organizationRetrieveOrganization } from '$lib/api/generated/sdk.gen';
+import { organizationListResources, organizationGetOrganization } from '$lib/api/generated/sdk.gen';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, fetch }) => {
 	// Fetch organization details
-	const organizationResponse = await organizationRetrieveOrganization({
+	const organizationResponse = await organizationGetOrganization({
 		fetch,
 		path: { slug: params.slug }
 	});
