@@ -29,6 +29,7 @@
 	let {
 		nextStep,
 		eventId,
+		eventSlug,
 		organizationSlug,
 		questionnaireIds,
 		disabled = false,
@@ -105,12 +106,14 @@
 		}
 
 		if (nextStep === 'complete_questionnaire') {
-			if (questionnaireIds && questionnaireIds.length > 0) {
-				// Navigate to first questionnaire
-				window.location.href = `/questionnaires/${questionnaireIds[0]}`;
+			if (questionnaireIds && questionnaireIds.length > 0 && organizationSlug && eventSlug) {
+				// Navigate to first questionnaire submission page
+				window.location.href = `/events/${organizationSlug}/${eventSlug}/questionnaire/${questionnaireIds[0]}`;
 			} else {
-				// Fallback: navigate to questionnaires list
-				window.location.href = '/account/questionnaires';
+				// Fallback: navigate back to event if missing data
+				if (organizationSlug && eventSlug) {
+					window.location.href = `/events/${organizationSlug}/${eventSlug}`;
+				}
 			}
 			return;
 		}
