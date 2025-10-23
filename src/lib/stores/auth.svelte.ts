@@ -42,28 +42,42 @@ class AuthStore {
 	/**
 	 * Initialize auth state (called on app startup)
 	 * If access token exists in memory, fetch user data
-	 * Note: This should only be called when we have an access token
-	 * Token refresh is handled automatically by the API interceptor on 401 responses
+	 * Note: This is idempotent - safe to call multiple times
 	 */
 	async initialize(): Promise<void> {
 		console.log('[AUTH STORE] initialize() called', {
-			hasAccessToken: !!this._accessToken
+			hasAccessToken: !!this._accessToken,
+			hasUser: !!this._user,
+			isAuthenticated: this.isAuthenticated
 		});
 
 		// Only initialize if we have an access token
-		// Don't attempt to refresh here - that's handled by the API interceptor
 		if (!this._accessToken) {
 			console.log('[AUTH STORE] No access token, skipping initialization');
 			return;
 		}
 
+		// If we already have user data, skip fetching (idempotent)
+		if (this._user && this._permissions) {
+			console.log('[AUTH STORE] User data already loaded, skipping fetch');
+			return;
+		}
+
 		this._isLoading = true;
 		try {
-			console.log('[AUTH STORE] Has access token, fetching user data');
-			await this.fetchUserData();
-			console.log('[AUTH STORE] User data fetched successfully');
-			await this.fetchPermissions();
-			console.log('[AUTH STORE] Permissions fetched successfully');
+			console.log('[AUTH STORE] Fetching user data and permissions');
+
+			// Fetch user data if we don't have it
+			if (!this._user) {
+				await this.fetchUserData();
+				console.log('[AUTH STORE] User data fetched successfully');
+			}
+
+			// Fetch permissions if we don't have them
+			if (!this._permissions) {
+				await this.fetchPermissions();
+				console.log('[AUTH STORE] Permissions fetched successfully');
+			}
 		} catch (error) {
 			// If fetching user data fails, the API interceptor will handle token refresh
 			// If refresh fails, the user will be logged out automatically

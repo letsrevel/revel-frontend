@@ -7,7 +7,11 @@ declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			user?: (RevelUserSchema & { accessToken?: string }) | null;
+			// User can be full RevelUserSchema (from API) or minimal JWT data (from token decode)
+			user?:
+				| (RevelUserSchema & { accessToken?: string })
+				| { id: string; email: string; accessToken?: string }
+				| null;
 		}
 		// interface PageData {}
 		// interface PageState {}

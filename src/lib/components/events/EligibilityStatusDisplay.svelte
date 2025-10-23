@@ -17,13 +17,17 @@
 		Bell
 	} from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
+	import IneligibilityActionButton from './IneligibilityActionButton.svelte';
 
 	interface Props {
 		eligibility: EventUserEligibility;
+		eventId?: string;
+		eventSlug?: string;
+		organizationSlug?: string;
 		class?: string;
 	}
 
-	let { eligibility, class: className }: Props = $props();
+	let { eligibility, eventId, eventSlug, organizationSlug, class: className }: Props = $props();
 
 	// Get icon component based on next_step
 	let IconComponent = $derived.by(() => {
@@ -95,13 +99,13 @@
 
 			<!-- Missing Questionnaires -->
 			{#if eligibility.questionnaires_missing && eligibility.questionnaires_missing.length > 0}
-				<div class="mt-3 space-y-1">
-					<div class="text-sm font-medium">Required questionnaires:</div>
-					<ul class="list-inside list-disc space-y-1 text-sm text-muted-foreground">
-						{#each eligibility.questionnaires_missing as questionnaireId (questionnaireId)}
-							<li>Questionnaire {questionnaireId}</li>
-						{/each}
-					</ul>
+				<div class="mt-2 flex items-center gap-2 text-sm">
+					<ClipboardList class="h-4 w-4" aria-hidden="true" />
+					<p>
+						{eligibility.questionnaires_missing.length}
+						{eligibility.questionnaires_missing.length === 1 ? 'questionnaire' : 'questionnaires'}
+						required
+					</p>
 				</div>
 			{/if}
 
@@ -120,19 +124,18 @@
 
 			<!-- Failed Questionnaires -->
 			{#if eligibility.questionnaires_failed && eligibility.questionnaires_failed.length > 0}
-				<div class="mt-2 space-y-1">
-					<div class="text-sm font-medium text-destructive">Failed questionnaires:</div>
-					<ul class="list-inside list-disc space-y-1 text-sm text-destructive/80">
-						{#each eligibility.questionnaires_failed as questionnaireId (questionnaireId)}
-							<li>Questionnaire {questionnaireId}</li>
-						{/each}
-					</ul>
-					{#if retryText}
-						<div class="mt-2 text-sm text-muted-foreground">
-							You can retry {retryText}
-						</div>
-					{/if}
+				<div class="mt-2 flex items-center gap-2 text-sm text-destructive">
+					<XCircle class="h-4 w-4" aria-hidden="true" />
+					<p>
+						{eligibility.questionnaires_failed.length}
+						{eligibility.questionnaires_failed.length === 1 ? 'questionnaire' : 'questionnaires'} failed
+					</p>
 				</div>
+				{#if retryText}
+					<div class="mt-2 text-sm text-muted-foreground">
+						You can retry {retryText}
+					</div>
+				{/if}
 			{/if}
 
 			<!-- Retry Date -->
@@ -140,6 +143,20 @@
 				<div class="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
 					<Clock class="h-4 w-4 shrink-0" aria-hidden="true" />
 					<span>Available {retryText}</span>
+				</div>
+			{/if}
+
+			<!-- Action Button -->
+			{#if eligibility.next_step && !eligibility.allowed && eventId && eventSlug && organizationSlug}
+				<div class="mt-3">
+					<IneligibilityActionButton
+						nextStep={eligibility.next_step}
+						{eventId}
+						{eventSlug}
+						{organizationSlug}
+						questionnaireIds={eligibility.questionnaires_missing}
+						retryOn={eligibility.retry_on}
+					/>
 				</div>
 			{/if}
 		</div>

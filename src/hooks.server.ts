@@ -1,11 +1,30 @@
 import type { Handle } from '@sveltejs/kit';
-import { tokenRefresh, accountMe } from '$lib/api/generated';
+import { tokenRefresh } from '$lib/api/generated';
 
 /**
  * Server-side hooks for authentication
  * Handles JWT refresh token management via httpOnly cookies
  * Populates event.locals.user for server-side load functions
  */
+
+/**
+ * Decode JWT token to extract user information
+ * Note: This is safe as JWT is just base64 encoded, not encrypted
+ */
+function decodeJWT(token: string): any | null {
+	try {
+		const parts = token.split('.');
+		if (parts.length !== 3) return null;
+
+		// Decode the payload (second part)
+		const payload = parts[1];
+		const decoded = Buffer.from(payload, 'base64url').toString('utf-8');
+		return JSON.parse(decoded);
+	} catch (error) {
+		console.error('[HOOKS] Failed to decode JWT:', error);
+		return null;
+	}
+}
 export const handle: Handle = async ({ event, resolve }) => {
 	let accessToken = event.cookies.get('access_token');
 	const refreshToken = event.cookies.get('refresh_token');
@@ -51,85 +70,87 @@ export const handle: Handle = async ({ event, resolve }) => {
 		}
 	}
 
-	// If we have an access token, fetch user data and populate locals.user
+	// If we have an access token, decode it to populate locals.user
 	if (accessToken) {
-		console.log('[HOOKS] Access token exists, fetching user data');
+		console.log('[HOOKS] Access token exists, decoding JWT');
 		try {
-			const { data, error } = await accountMe({
-				headers: {
-					Authorization: `Bearer ${accessToken}`
-				}
-			});
+			const decoded = decodeJWT(accessToken);
 
-			if (error || !data) {
-				console.error('[HOOKS] Failed to fetch user data:', error);
-
-				// If we have a refresh token, try to refresh the access token
-				if (refreshToken) {
+			if (!decoded) {
+				console.error('[HOOKS] Failed to decode JWT, token may be invalid');
+				// Clear invalid token
+				event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
+			} else {
+				// Check if token is expired
+				const now = Math.floor(Date.now() / 1000);
+				if (decoded.exp && decoded.exp < now) {
 					console.log('[HOOKS] Access token expired, attempting refresh');
-					try {
-						const refreshResponse = await tokenRefresh({
-							body: {
-								refresh: refreshToken
-							}
-						});
-
-						if (refreshResponse.error || !refreshResponse.data || !refreshResponse.data.access) {
-							console.error('[HOOKS] Token refresh failed:', refreshResponse.error);
-							// Invalid refresh token, clear all cookies
-							event.cookies.delete('refresh_token', { path: '/', httpOnly: true, sameSite: 'lax' });
-							event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
-						} else {
-							console.log('[HOOKS] Token refresh successful, retrying user fetch');
-							// Set the new access token cookie
-							event.cookies.set('access_token', refreshResponse.data.access, {
-								path: '/',
-								httpOnly: true,
-								sameSite: 'lax',
-								maxAge: 60 * 15 // 15 minutes
-							});
-
-							// Retry fetching user data with new token
-							const retryResponse = await accountMe({
-								headers: {
-									Authorization: `Bearer ${refreshResponse.data.access}`
+					// Token expired, try to refresh if we have a refresh token
+					if (refreshToken) {
+						try {
+							const refreshResponse = await tokenRefresh({
+								body: {
+									refresh: refreshToken
 								}
 							});
 
-							if (retryResponse.data) {
-								console.log('[HOOKS] User data fetched successfully after refresh:', retryResponse.data.email);
-								event.locals.user = {
-									...retryResponse.data,
-									accessToken: refreshResponse.data.access
-								};
+							if (refreshResponse.error || !refreshResponse.data || !refreshResponse.data.access) {
+								console.error('[HOOKS] Token refresh failed:', refreshResponse.error);
+								// Invalid refresh token, clear all cookies
+								event.cookies.delete('refresh_token', {
+									path: '/',
+									httpOnly: true,
+									sameSite: 'lax'
+								});
+								event.cookies.delete('access_token', {
+									path: '/',
+									httpOnly: true,
+									sameSite: 'lax'
+								});
 							} else {
-								console.error('[HOOKS] Failed to fetch user data after refresh');
-								// Clear cookies if still failing
-								event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
-								event.cookies.delete('refresh_token', { path: '/', httpOnly: true, sameSite: 'lax' });
+								console.log('[HOOKS] Token refresh successful');
+								// Set the new access token cookie
+								event.cookies.set('access_token', refreshResponse.data.access, {
+									path: '/',
+									httpOnly: true,
+									sameSite: 'lax',
+									maxAge: 60 * 15 // 15 minutes
+								});
+
+								// Decode the new token
+								const newDecoded = decodeJWT(refreshResponse.data.access);
+								if (newDecoded) {
+									console.log('[HOOKS] JWT decoded successfully after refresh');
+									event.locals.user = {
+										id: newDecoded.user_id || newDecoded.sub,
+										email: newDecoded.email,
+										accessToken: refreshResponse.data.access
+									};
+								}
 							}
+						} catch (refreshError) {
+							console.error('[HOOKS] Error during token refresh:', refreshError);
+							// Clear invalid tokens
+							event.cookies.delete('refresh_token', { path: '/', httpOnly: true, sameSite: 'lax' });
+							event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
 						}
-					} catch (refreshError) {
-						console.error('[HOOKS] Error during token refresh:', refreshError);
-						// Clear invalid tokens
-						event.cookies.delete('refresh_token', { path: '/', httpOnly: true, sameSite: 'lax' });
+					} else {
+						// No refresh token available, clear access token
+						console.log('[HOOKS] No refresh token available, clearing access token');
 						event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
 					}
 				} else {
-					// No refresh token available, clear access token
-					console.log('[HOOKS] No refresh token available, clearing access token');
-					event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
+					// Token is valid, populate locals.user from decoded JWT
+					console.log('[HOOKS] JWT decoded successfully');
+					event.locals.user = {
+						id: decoded.user_id || decoded.sub,
+						email: decoded.email,
+						accessToken
+					};
 				}
-			} else {
-				console.log('[HOOKS] User data fetched successfully:', data.email);
-				// Populate locals.user for server-side load functions
-				event.locals.user = {
-					...data,
-					accessToken
-				};
 			}
 		} catch (error) {
-			console.error('[HOOKS] Error fetching user data:', error);
+			console.error('[HOOKS] Error processing JWT:', error);
 			// Token is invalid, clear cookies
 			event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
 			event.cookies.delete('refresh_token', { path: '/', httpOnly: true, sameSite: 'lax' });
