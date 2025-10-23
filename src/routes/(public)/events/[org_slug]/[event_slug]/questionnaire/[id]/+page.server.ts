@@ -1,12 +1,12 @@
 import type { PageServerLoad } from './$types';
 import { error, redirect } from '@sveltejs/kit';
-import { eventGetEvent, eventGetQuestionnaire } from '$lib/api/generated';
+import { eventGetEventBySlugs, eventGetQuestionnaire } from '$lib/api/client';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const { org_slug, event_slug, id: questionnaireId } = params;
 
 	// Fetch the event to get its ID
-	const { data: event, error: eventError } = await eventGetEvent({
+	const { data: event, error: eventError } = await eventGetEventBySlugs({
 		path: { event_slug, org_slug }
 	});
 

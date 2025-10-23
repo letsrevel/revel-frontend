@@ -2,16 +2,16 @@
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
 	import { createMutation } from '@tanstack/svelte-query';
-	import { eventSubmitQuestionnaire } from '$lib/api/generated';
+	import { eventSubmitQuestionnaire } from '$lib/api/client';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
-	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { RadioGroup, RadioGroupItem } from '$lib/components/ui/radio-group';
 	import { ArrowLeft, Check, Loader2, AlertCircle } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
 	import { toast } from 'svelte-sonner';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	interface Props {
 		data: PageData;
@@ -19,10 +19,10 @@
 
 	let { data }: Props = $props();
 
-	// Form state
-	let multipleChoiceAnswers = $state<Map<string, string[]>>(new Map());
-	let freeTextAnswers = $state<Map<string, string>>(new Map());
-	let validationErrors = $state<Map<string, string>>(new Map());
+	// Form state - using SvelteMap for fine-grained reactivity
+	let multipleChoiceAnswers = new SvelteMap<string, string[]>();
+	let freeTextAnswers = new SvelteMap<string, string>();
+	let validationErrors = new SvelteMap<string, string>();
 
 	// Flatten all questions from sections and root level
 	let allMultipleChoiceQuestions = $derived.by(() => {
@@ -45,13 +45,13 @@
 	const submitMutation = createMutation(() => ({
 		mutationFn: async () => {
 			// Validate mandatory questions
-			const errors = new Map<string, string>();
+			validationErrors.clear();
 
 			allMultipleChoiceQuestions.forEach((q) => {
 				if (q.is_mandatory) {
 					const answers = multipleChoiceAnswers.get(q.id);
 					if (!answers || answers.length === 0) {
-						errors.set(q.id, 'This question is required');
+						validationErrors.set(q.id, 'This question is required');
 					}
 				}
 			});
@@ -60,17 +60,14 @@
 				if (q.is_mandatory) {
 					const answer = freeTextAnswers.get(q.id);
 					if (!answer || answer.trim().length === 0) {
-						errors.set(q.id, 'This question is required');
+						validationErrors.set(q.id, 'This question is required');
 					}
 				}
 			});
 
-			if (errors.size > 0) {
-				validationErrors = errors;
+			if (validationErrors.size > 0) {
 				throw new Error('Please answer all required questions');
 			}
-
-			validationErrors = new Map();
 
 			// Build submission
 			const submission = {
@@ -162,22 +159,14 @@
 		}
 
 		// Clear validation error
-		if (validationErrors.has(questionId)) {
-			const newErrors = new Map(validationErrors);
-			newErrors.delete(questionId);
-			validationErrors = newErrors;
-		}
+		validationErrors.delete(questionId);
 	}
 
 	function handleFreeTextChange(questionId: string, value: string) {
 		freeTextAnswers.set(questionId, value);
 
 		// Clear validation error
-		if (validationErrors.has(questionId)) {
-			const newErrors = new Map(validationErrors);
-			newErrors.delete(questionId);
-			validationErrors = newErrors;
-		}
+		validationErrors.delete(questionId);
 	}
 
 	function handleSubmit(e: Event) {
@@ -250,7 +239,8 @@
 									<!-- Radio buttons for single answer -->
 									<RadioGroup
 										value={multipleChoiceAnswers.get(question.id)?.[0] || ''}
-										onValueChange={(value) => handleMultipleChoiceChange(question.id, value, true)}
+										onValueChange={(value: string) =>
+											handleMultipleChoiceChange(question.id, value, true)}
 									>
 										{#each question.options || [] as option (option.id)}
 											<div class="flex items-center space-x-2">
@@ -333,7 +323,8 @@
 						{:else}
 							<RadioGroup
 								value={multipleChoiceAnswers.get(question.id)?.[0] || ''}
-								onValueChange={(value) => handleMultipleChoiceChange(question.id, value, true)}
+								onValueChange={(value: string) =>
+									handleMultipleChoiceChange(question.id, value, true)}
 							>
 								{#each question.options || [] as option (option.id)}
 									<div class="flex items-center space-x-2">
