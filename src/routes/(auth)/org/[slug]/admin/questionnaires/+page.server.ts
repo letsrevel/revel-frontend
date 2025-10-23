@@ -19,6 +19,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	}
 
 	return {
-		questionnaires: response.data?.results || []
+		questionnaires: response.data?.results || [],
+		accessToken: user.accessToken
 	};
 };

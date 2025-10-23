@@ -8,20 +8,63 @@
 	} from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Edit, Eye, FileText, Trash2 } from 'lucide-svelte';
-	import type { OrganizationQuestionnaireInListSchema } from '$lib/api/generated';
-	import { questionnaireDeleteOrgQuestionnaire } from '$lib/api/generated/sdk.gen';
+	import { Edit, Eye, FileText, Trash2, CalendarCheck } from 'lucide-svelte';
+	import type {
+		OrganizationQuestionnaireInListSchema,
+		OrganizationQuestionnaireSchema
+	} from '$lib/api/generated';
+	import {
+		questionnaireDeleteOrgQuestionnaire,
+		questionnaireGetOrgQuestionnaire
+	} from '$lib/api/generated/sdk.gen';
 	import { invalidateAll } from '$app/navigation';
+	import QuestionnaireAssignmentModal from './QuestionnaireAssignmentModal.svelte';
+	import {
+		Tooltip,
+		TooltipContent,
+		TooltipProvider,
+		TooltipTrigger
+	} from '$lib/components/ui/tooltip';
 
 	interface Props {
 		questionnaire: OrganizationQuestionnaireInListSchema;
 		organizationSlug: string;
+		organizationId: string;
+		accessToken: string;
 	}
 
-	let { questionnaire, organizationSlug }: Props = $props();
+	let { questionnaire, organizationSlug, organizationId, accessToken }: Props = $props();
 
 	// Delete state
 	let isDeleting = $state(false);
+
+	// Assignment modal state
+	let isAssignmentModalOpen = $state(false);
+	let fullQuestionnaire = $state<OrganizationQuestionnaireSchema | null>(null);
+	let isLoadingFullQuestionnaire = $state(false);
+
+	// Open assignment modal (load full questionnaire data)
+	async function openAssignmentModal() {
+		isLoadingFullQuestionnaire = true;
+		isAssignmentModalOpen = true;
+
+		try {
+			const response = await questionnaireGetOrgQuestionnaire({
+				path: { org_questionnaire_id: questionnaire.id },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+
+			if (response.data) {
+				fullQuestionnaire = response.data;
+			}
+		} catch (err) {
+			console.error('Failed to load questionnaire:', err);
+			alert('Failed to load questionnaire. Please try again.');
+			isAssignmentModalOpen = false;
+		} finally {
+			isLoadingFullQuestionnaire = false;
+		}
+	}
 
 	// Format questionnaire type for display
 	const typeLabels: Record<string, string> = {
@@ -69,6 +112,23 @@
 	const assignmentCount = $derived(
 		(questionnaire.events?.length || 0) + (questionnaire.event_series?.length || 0)
 	);
+
+	// Create tooltip text for assigned events
+	const assignmentTooltip = $derived(() => {
+		const events = questionnaire.events || [];
+		const series = questionnaire.event_series || [];
+		const allAssignments = [
+			...events.map((e) => e.name),
+			...series.map((s) => `${s.name} (series)`)
+		];
+
+		if (allAssignments.length === 0) return 'Not assigned to any events';
+		if (allAssignments.length <= 3) return `Assigned to ${allAssignments.join(', ')}`;
+
+		const first = allAssignments.slice(0, 2).join(', ');
+		const remaining = allAssignments.length - 2;
+		return `Assigned to ${first} and ${remaining} more`;
+	});
 
 	// Handle delete
 	async function handleDelete() {
@@ -119,16 +179,25 @@
 	</CardHeader>
 	<CardContent>
 		<div class="space-y-4">
-			<!-- Stats -->
+			<!-- Stats with Tooltip -->
 			<div class="flex gap-4 text-sm text-muted-foreground">
-				{#if assignmentCount > 0}
-					<div>
-						<span class="font-medium text-foreground">{assignmentCount}</span>
-						{assignmentCount === 1 ? 'assignment' : 'assignments'}
-					</div>
-				{:else}
-					<div>Not assigned to any events</div>
-				{/if}
+				<TooltipProvider>
+					<Tooltip>
+						<TooltipTrigger class="cursor-help underline decoration-dotted underline-offset-4">
+							{#if assignmentCount > 0}
+								<span>
+									<span class="font-medium text-foreground">{assignmentCount}</span>
+									{assignmentCount === 1 ? 'assignment' : 'assignments'}
+								</span>
+							{:else}
+								<span>Not assigned to any events</span>
+							{/if}
+						</TooltipTrigger>
+						<TooltipContent>
+							<p class="max-w-xs text-sm">{assignmentTooltip()}</p>
+						</TooltipContent>
+					</Tooltip>
+				</TooltipProvider>
 			</div>
 
 			<!-- Actions -->
@@ -153,6 +222,18 @@
 				</Button>
 			</div>
 
+			<!-- Assign to Events Button -->
+			<Button
+				variant="outline"
+				size="sm"
+				onclick={openAssignmentModal}
+				disabled={isLoadingFullQuestionnaire}
+				class="w-full gap-2"
+			>
+				<CalendarCheck class="h-4 w-4" />
+				Assign to Events
+			</Button>
+
 			<!-- Delete Button -->
 			<Button
 				variant="outline"
@@ -167,3 +248,14 @@
 		</div>
 	</CardContent>
 </Card>
+
+<!-- Assignment Modal -->
+{#if isAssignmentModalOpen && fullQuestionnaire}
+	<QuestionnaireAssignmentModal
+		bind:open={isAssignmentModalOpen}
+		questionnaire={fullQuestionnaire}
+		{organizationId}
+		{accessToken}
+		onClose={() => (isAssignmentModalOpen = false)}
+	/>
+{/if}

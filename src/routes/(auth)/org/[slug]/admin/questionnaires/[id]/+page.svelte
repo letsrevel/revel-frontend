@@ -12,7 +12,16 @@
 		CardHeader,
 		CardTitle
 	} from '$lib/components/ui/card';
-	import { ArrowLeft, AlertTriangle, FileCheck, FileEdit, Send } from 'lucide-svelte';
+	import {
+		ArrowLeft,
+		AlertTriangle,
+		FileCheck,
+		FileEdit,
+		Send,
+		CalendarCheck,
+		Calendar
+	} from 'lucide-svelte';
+	import QuestionnaireAssignmentModal from '$lib/components/questionnaires/QuestionnaireAssignmentModal.svelte';
 	import {
 		questionnaireUpdateOrgQuestionnaire,
 		questionnaireUpdateQuestionnaireStatus
@@ -81,6 +90,9 @@
 
 	// Status change state
 	let isChangingStatus = $state(false);
+
+	// Assignment modal state
+	let isAssignmentModalOpen = $state(false);
 
 	// Current status
 	const currentStatus: Status = $derived(questionnaire.questionnaire.status as Status);
@@ -622,6 +634,90 @@
 		</CardContent>
 	</Card>
 
+	<!-- Event Assignments -->
+	<Card>
+		<CardHeader>
+			<div class="flex items-center justify-between">
+				<div>
+					<CardTitle>Event Assignments</CardTitle>
+					<CardDescription>Events that require this questionnaire</CardDescription>
+				</div>
+				<Button
+					variant="outline"
+					size="sm"
+					onclick={() => (isAssignmentModalOpen = true)}
+					class="gap-2"
+				>
+					<CalendarCheck class="h-4 w-4" />
+					Manage Assignments
+				</Button>
+			</div>
+		</CardHeader>
+		<CardContent>
+			{#if (questionnaire.events?.length || 0) === 0 && (questionnaire.event_series?.length || 0) === 0}
+				<div class="rounded-lg border border-dashed p-8 text-center">
+					<Calendar class="mx-auto mb-2 h-8 w-8 text-muted-foreground" aria-hidden="true" />
+					<p class="text-sm font-medium">Not assigned to any events</p>
+					<p class="mt-1 text-xs text-muted-foreground">
+						Click "Manage Assignments" to assign this questionnaire to events
+					</p>
+				</div>
+			{:else}
+				<div class="space-y-4">
+					<!-- Individual Events -->
+					{#if questionnaire.events && questionnaire.events.length > 0}
+						<div>
+							<h4 class="mb-2 text-sm font-medium">Individual Events</h4>
+							<div class="space-y-2">
+								{#each questionnaire.events as event}
+									<div class="flex items-center justify-between rounded-lg border p-3">
+										<div>
+											<p class="font-medium">{event.name}</p>
+											{#if event.next_occurrence}
+												<p class="text-sm text-muted-foreground">
+													{new Date(event.next_occurrence.start_datetime).toLocaleDateString(
+														'en-US',
+														{
+															month: 'short',
+															day: 'numeric',
+															year: 'numeric'
+														}
+													)}
+												</p>
+											{/if}
+										</div>
+										<Badge variant="outline">{event.event_type}</Badge>
+									</div>
+								{/each}
+							</div>
+						</div>
+					{/if}
+
+					<!-- Event Series -->
+					{#if questionnaire.event_series && questionnaire.event_series.length > 0}
+						<div>
+							<h4 class="mb-2 text-sm font-medium">Event Series</h4>
+							<div class="space-y-2">
+								{#each questionnaire.event_series as series}
+									<div class="flex items-center justify-between rounded-lg border p-3">
+										<div>
+											<p class="font-medium">{series.name}</p>
+											<p class="text-sm text-muted-foreground">
+												{series.event_count || 0}
+												{series.event_count === 1 ? 'event' : 'events'}
+											</p>
+										</div>
+										<Badge variant="secondary">Series</Badge>
+									</div>
+								{/each}
+							</div>
+						</div>
+					{/if}
+				</div>
+			{/if}
+		</CardContent>
+	</Card>
+
 	<!-- Questions (Read-Only Display) -->
 	<Card>
 		<CardHeader>
@@ -776,3 +872,14 @@
 		</Button>
 	</div>
 </div>
+
+<!-- Assignment Modal -->
+{#if isAssignmentModalOpen}
+	<QuestionnaireAssignmentModal
+		bind:open={isAssignmentModalOpen}
+		{questionnaire}
+		organizationId={data.organization.id}
+		accessToken={data.auth.accessToken}
+		onClose={() => (isAssignmentModalOpen = false)}
+	/>
+{/if}

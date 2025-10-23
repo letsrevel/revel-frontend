@@ -100,7 +100,12 @@
 	<!-- Questionnaires Grid -->
 	<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
 		{#each filteredQuestionnaires as questionnaire (questionnaire.id)}
-			<QuestionnaireCard {questionnaire} organizationSlug={data.organization.slug} />
+			<QuestionnaireCard
+				{questionnaire}
+				organizationSlug={data.organization.slug}
+				organizationId={data.organization.id}
+				accessToken={data.accessToken}
+			/>
 		{/each}
 	</div>
 {/if}

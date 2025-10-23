@@ -22,6 +22,11 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 		const questionnaire = response.data;
 
+		// We need to get the organization ID from somewhere
+		// Since we have the slug, let's fetch the organization or use parent layout data
+		// For now, we'll need to add this to the layout or pass it differently
+		// The organizationId will come from the parent layout
+
 		// Return questionnaire data
 		return {
 			questionnaire,
