@@ -223,7 +223,12 @@
 		{#if shouldShowEligibility && userStatus && isEligibility(userStatus) && event.requires_ticket}
 			<div class="border-t pt-4">
 				<h3 class="mb-2 text-sm font-semibold">Eligibility Status</h3>
-				<EligibilityStatusDisplay eligibility={userStatus} />
+				<EligibilityStatusDisplay
+					eligibility={userStatus}
+					eventId={event.id}
+					eventSlug={event.slug}
+					organizationSlug={event.organization.slug}
+				/>
 			</div>
 		{/if}
 	</div>
