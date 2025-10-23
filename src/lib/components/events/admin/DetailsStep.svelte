@@ -20,6 +20,9 @@
 	} from 'lucide-svelte';
 	import ImageUploader from '$lib/components/forms/ImageUploader.svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
+	import EventQuestionnaires from './EventQuestionnaires.svelte';
+	import EventQuestionnaireAssignmentModal from './EventQuestionnaireAssignmentModal.svelte';
+	import type { OrganizationQuestionnaireInListSchema } from '$lib/api/generated';
 
 	interface Props {
 		formData: Partial<EventCreateSchema> & {
@@ -30,7 +33,11 @@
 			organization_cover_art?: string;
 		};
 		eventSeries?: EventSeriesRetrieveSchema[];
-		questionnaires?: QuestionnaireSchema[];
+		questionnaires?: OrganizationQuestionnaireInListSchema[];
+		eventId?: string | null;
+		organizationId?: string;
+		organizationSlug?: string;
+		accessToken?: string;
 		onUpdate: (data: Partial<EventCreateSchema> & { tags?: string[] }) => void;
 		onUpdateImages: (data: {
 			logo?: File | null;
@@ -44,9 +51,16 @@
 		formData,
 		eventSeries = [],
 		questionnaires = [],
+		eventId = null,
+		organizationId = '',
+		organizationSlug = '',
+		accessToken = '',
 		onUpdate,
 		onUpdateImages
 	}: Props = $props();
+
+	// Modal state for questionnaire assignment
+	let isQuestionnaireModalOpen = $state(false);
 
 	// Backend URL for images
 	const BACKEND_URL = 'http://localhost:8000';
@@ -541,22 +555,19 @@
 					</div>
 				{/if}
 
-				<!-- Questionnaire -->
-				{#if questionnaires.length > 0}
+				<!-- Questionnaires -->
+				{#if eventId && organizationId && accessToken}
+					<EventQuestionnaires
+						{eventId}
+						assignedQuestionnaires={questionnaires}
+						{organizationId}
+						{accessToken}
+						onAssignClick={() => (isQuestionnaireModalOpen = true)}
+					/>
+				{:else if questionnaires.length > 0}
 					<div class="space-y-2">
-						<label for="questionnaire" class="block text-sm font-medium"> Questionnaire </label>
-						<select
-							id="questionnaire"
-							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-							disabled
-						>
-							<option value="">None (Coming Soon)</option>
-							{#each questionnaires as questionnaire}
-								<option value={questionnaire.id}>{questionnaire.name}</option>
-							{/each}
-						</select>
-						<p class="text-xs text-muted-foreground">
-							Questionnaire integration coming in a future update
+						<p class="text-sm text-muted-foreground">
+							Save the event first to assign questionnaires
 						</p>
 					</div>
 				{/if}
@@ -623,3 +634,16 @@
 		{/if}
 	</div>
 </div>
+
+<!-- Questionnaire Assignment Modal -->
+{#if isQuestionnaireModalOpen && eventId && organizationId && organizationSlug && accessToken}
+	<EventQuestionnaireAssignmentModal
+		bind:open={isQuestionnaireModalOpen}
+		{eventId}
+		currentlyAssigned={questionnaires}
+		{organizationId}
+		{organizationSlug}
+		{accessToken}
+		onClose={() => (isQuestionnaireModalOpen = false)}
+	/>
+{/if}

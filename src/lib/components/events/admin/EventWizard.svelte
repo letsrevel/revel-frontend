@@ -9,7 +9,8 @@
 		eventadminDeleteCoverArt,
 		eventListResources,
 		organizationadminGetResource,
-		organizationadminUpdateResource
+		organizationadminUpdateResource,
+		questionnaireListOrgQuestionnaires
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		EventCreateSchema,
@@ -18,9 +19,11 @@
 		CitySchema,
 		EventSeriesRetrieveSchema,
 		QuestionnaireSchema,
-		OrganizationRetrieveSchema
+		OrganizationRetrieveSchema,
+		OrganizationQuestionnaireInListSchema
 	} from '$lib/api/generated/types.gen';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import { cn } from '$lib/utils/cn';
 	import EssentialsStep from './EssentialsStep.svelte';
 	import DetailsStep from './DetailsStep.svelte';
@@ -56,8 +59,9 @@
 	let successMessage = $state<string | null>(null);
 	let selectedResourceIds = $state<string[]>([]);
 	let initialResourceIds = $state<string[]>([]); // Track initial state for comparison
+	let assignedQuestionnaires = $state<OrganizationQuestionnaireInListSchema[]>([]);
 
-	// Fetch and pre-select resources when editing an existing event
+	// Fetch and pre-select resources and questionnaires when editing an existing event
 	$effect(() => {
 		if (existingEvent?.id) {
 			// Fetch resources for this event
@@ -71,6 +75,17 @@
 					const resourceIds = response.data.results.map((resource) => resource.id);
 					selectedResourceIds = resourceIds;
 					initialResourceIds = [...resourceIds]; // Store initial state
+				}
+			});
+
+			// Fetch questionnaires assigned to this event
+			questionnaireListOrgQuestionnaires({
+				query: {
+					event_id: existingEvent.id
+				}
+			}).then((response) => {
+				if (response.data?.results) {
+					assignedQuestionnaires = response.data.results;
 				}
 			});
 		}
@@ -608,7 +623,11 @@
 			<DetailsStep
 				{formData}
 				{eventSeries}
-				{questionnaires}
+				questionnaires={assignedQuestionnaires}
+				{eventId}
+				organizationId={organization.id}
+				organizationSlug={organization.slug}
+				accessToken={$page.data.auth?.accessToken}
 				onUpdate={updateFormData}
 				onUpdateImages={updateImages}
 			/>
