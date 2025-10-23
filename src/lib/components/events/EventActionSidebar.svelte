@@ -177,12 +177,26 @@
 				/>
 			{:else}
 				<!-- Ticket purchase flow -->
-				<ActionButton
-					{userStatus}
-					requiresTicket={event.requires_ticket}
-					{isAuthenticated}
-					class="w-full"
-				/>
+				{#if shouldShowEligibility && userStatus && isEligibility(userStatus)}
+					<!-- Show eligibility status for ticketed events -->
+					<div>
+						<h3 class="mb-2 text-sm font-semibold">Eligibility Status</h3>
+						<EligibilityStatusDisplay
+							eligibility={userStatus}
+							eventId={event.id}
+							eventSlug={event.slug}
+							organizationSlug={event.organization.slug}
+						/>
+					</div>
+				{:else}
+					<!-- Show buy tickets button -->
+					<ActionButton
+						{userStatus}
+						requiresTicket={event.requires_ticket}
+						{isAuthenticated}
+						class="w-full"
+					/>
+				{/if}
 			{/if}
 		{/if}
 
@@ -218,18 +232,5 @@
 			<h3 class="sr-only">Event details</h3>
 			<EventQuickInfo {event} variant="compact" />
 		</div>
-
-		<!-- Eligibility Section (only for ticket events where EventRSVP doesn't handle it) -->
-		{#if shouldShowEligibility && userStatus && isEligibility(userStatus) && event.requires_ticket}
-			<div class="border-t pt-4">
-				<h3 class="mb-2 text-sm font-semibold">Eligibility Status</h3>
-				<EligibilityStatusDisplay
-					eligibility={userStatus}
-					eventId={event.id}
-					eventSlug={event.slug}
-					organizationSlug={event.organization.slug}
-				/>
-			</div>
-		{/if}
 	</div>
 </aside>
