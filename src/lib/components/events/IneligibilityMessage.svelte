@@ -232,16 +232,13 @@
 
 			<!-- Additional Details -->
 			{#if eligibility.questionnaires_missing && eligibility.questionnaires_missing.length > 0}
-				<div class="text-sm">
-					<p class="font-medium">Required questionnaires:</p>
-					<ul class="mt-1 list-inside list-disc space-y-0.5">
-						{#each eligibility.questionnaires_missing.slice(0, 3) as questionnaireId}
-							<li>Questionnaire (ID: {questionnaireId.slice(0, 8)}...)</li>
-						{/each}
-						{#if eligibility.questionnaires_missing.length > 3}
-							<li class="text-xs">and {eligibility.questionnaires_missing.length - 3} more...</li>
-						{/if}
-					</ul>
+				<div class="flex items-center gap-2 text-sm">
+					<ClipboardList class="h-4 w-4" aria-hidden="true" />
+					<p>
+						{eligibility.questionnaires_missing.length}
+						{eligibility.questionnaires_missing.length === 1 ? 'questionnaire' : 'questionnaires'}
+						required
+					</p>
 				</div>
 			{/if}
 
@@ -258,13 +255,12 @@
 			{/if}
 
 			{#if eligibility.questionnaires_failed && eligibility.questionnaires_failed.length > 0}
-				<div class="text-sm">
-					<p class="font-medium">Failed questionnaires:</p>
-					<ul class="mt-1 list-inside list-disc space-y-0.5">
-						{#each eligibility.questionnaires_failed as questionnaireId}
-							<li>Questionnaire (ID: {questionnaireId.slice(0, 8)}...)</li>
-						{/each}
-					</ul>
+				<div class="flex items-center gap-2 text-sm">
+					<XCircle class="h-4 w-4" aria-hidden="true" />
+					<p>
+						{eligibility.questionnaires_failed.length}
+						{eligibility.questionnaires_failed.length === 1 ? 'questionnaire' : 'questionnaires'} failed
+					</p>
 				</div>
 			{/if}
 
