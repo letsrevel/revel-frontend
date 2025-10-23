@@ -2,17 +2,12 @@
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { eventRsvpEvent } from '$lib/api/generated/sdk.gen';
 	import type { UserEventStatus } from '$lib/utils/eligibility';
-	import {
-		isRSVP,
-		isEligibility,
-		getActionButtonText,
-		isActionDisabled,
-		getEligibilityExplanation
-	} from '$lib/utils/eligibility';
+	import { isRSVP, isEligibility } from '$lib/utils/eligibility';
 	import { cn } from '$lib/utils/cn';
 	import RSVPButtons from './RSVPButtons.svelte';
 	import ConfirmDialog from '../common/ConfirmDialog.svelte';
-	import { Check, AlertCircle, ClipboardList, UserPlus, Mail } from 'lucide-svelte';
+	import IneligibilityMessage from './IneligibilityMessage.svelte';
+	import { Check, AlertCircle } from 'lucide-svelte';
 
 	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
 
@@ -80,7 +75,10 @@
 
 			return { previousStatus };
 		},
-		onSuccess: (data: { event_id: string; status: 'approved' | 'rejected' | 'pending review' }, answer: 'yes' | 'no' | 'maybe') => {
+		onSuccess: (
+			data: { event_id: string; status: 'approved' | 'rejected' | 'pending review' },
+			answer: 'yes' | 'no' | 'maybe'
+		) => {
 			// Determine if this is a new RSVP or a change
 			const wasAttending = userStatus && isRSVP(userStatus) && userStatus.status === 'yes';
 			const isNowAttending = answer === 'yes';
@@ -122,15 +120,18 @@
 				showSuccess = false;
 			}, 5000);
 		},
-		onError: (error: Error, _answer: 'yes' | 'no' | 'maybe', context: { previousStatus: UserEventStatus | null } | undefined) => {
+		onError: (
+			error: Error,
+			_answer: 'yes' | 'no' | 'maybe',
+			context: { previousStatus: UserEventStatus | null } | undefined
+		) => {
 			// Rollback optimistic update
 			if (context?.previousStatus !== undefined) {
 				userStatus = context.previousStatus;
 			}
 
 			// Show error message
-			errorMessage =
-				error.message || 'Failed to submit RSVP. Please try again or contact support.';
+			errorMessage = error.message || 'Failed to submit RSVP. Please try again or contact support.';
 			showSuccess = false;
 		}
 	}));
@@ -211,60 +212,6 @@
 	function handleRetry(): void {
 		errorMessage = null;
 		// User can try again by clicking a button
-	}
-
-	/**
-	 * Get CTA link based on next step
-	 */
-	function getCtaLink(nextStep?: string): string | null {
-		if (!nextStep) return null;
-
-		switch (nextStep) {
-			case 'complete_questionnaire':
-				return '/account/questionnaires';
-			case 'become_member':
-				return '#'; // TODO: Link to organization page
-			case 'request_invitation':
-				return null; // Handled by button action
-			default:
-				return null;
-		}
-	}
-
-	/**
-	 * Get icon component for next step
-	 */
-	function getNextStepIconComponent(nextStep?: string): typeof Check | null {
-		if (!nextStep) return null;
-
-		switch (nextStep) {
-			case 'complete_questionnaire':
-				return ClipboardList;
-			case 'become_member':
-				return UserPlus;
-			case 'request_invitation':
-				return Mail;
-			default:
-				return AlertCircle;
-		}
-	}
-
-	/**
-	 * Handle CTA button click for ineligible users
-	 */
-	function handleCtaClick(nextStep?: string | null): void {
-		if (!nextStep) return;
-
-		if (nextStep === 'request_invitation') {
-			// TODO: Implement invitation request
-			console.log('Request invitation for event:', eventId);
-			return;
-		}
-
-		const link = getCtaLink(nextStep);
-		if (link && link !== '#') {
-			window.location.href = link;
-		}
 	}
 
 	// Computed: Determine current state
@@ -395,54 +342,15 @@
 		{/if}
 
 		<!-- Ineligible State -->
-		{#if shouldShowIneligibleMessage && eligibilityStatus}
-			<div class="space-y-3">
-				<!-- Ineligibility explanation -->
-				<div
-					class="rounded-md border border-muted-foreground/20 bg-muted/50 p-4"
-					role="status"
-					aria-live="polite"
-				>
-					<p class="text-sm text-muted-foreground">
-						{getEligibilityExplanation(eligibilityStatus)}
-					</p>
-				</div>
-
-				<!-- CTA Button (if applicable) -->
-				{#if eligibilityStatus.next_step && !isActionDisabled(eligibilityStatus.next_step)}
-					{@const IconComponent = getNextStepIconComponent(eligibilityStatus.next_step)}
-					{@const ctaLink = getCtaLink(eligibilityStatus.next_step)}
-					{@const buttonText = getActionButtonText(eligibilityStatus.next_step)}
-
-					{#if ctaLink && ctaLink !== '#'}
-						<a
-							href={ctaLink}
-							class="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:w-auto"
-						>
-							{#if IconComponent}
-								<IconComponent class="h-5 w-5" aria-hidden="true" />
-							{/if}
-							{buttonText}
-						</a>
-					{:else}
-						<button
-							type="button"
-							onclick={() => handleCtaClick(eligibilityStatus.next_step)}
-							class="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:w-auto"
-						>
-							{#if IconComponent}
-								<IconComponent class="h-5 w-5" aria-hidden="true" />
-							{/if}
-							{buttonText}
-						</button>
-					{/if}
-				{/if}
-
-				<!-- Disabled RSVP buttons (visual indicator) -->
-				<div aria-hidden="true">
-					<RSVPButtons onSelect={() => {}} isEligible={false} disabled={true} />
-				</div>
-			</div>
+		{#if shouldShowIneligibleMessage && eligibilityStatus && event}
+			<IneligibilityMessage
+				eligibility={eligibilityStatus}
+				{eventId}
+				eventSlug={event.slug}
+				{eventName}
+				organizationSlug={event.organization.slug}
+				organizationName={event.organization.name}
+			/>
 		{/if}
 
 		<!-- RSVP Buttons (always shown when eligible, even if already RSVP'd) -->
@@ -465,7 +373,7 @@
 		isOpen={showWarningDialog}
 		title="Unclaim Potluck Items?"
 		message={claimedItemsCount === 1
-			? "You've claimed 1 potluck item for this event. Changing your RSVP to \"Maybe\" or \"No\" will automatically unclaim this item. Are you sure you want to proceed?"
+			? 'You\'ve claimed 1 potluck item for this event. Changing your RSVP to "Maybe" or "No" will automatically unclaim this item. Are you sure you want to proceed?'
 			: `You've claimed ${claimedItemsCount} potluck items for this event. Changing your RSVP to "Maybe" or "No" will automatically unclaim all these items. Are you sure you want to proceed?`}
 		confirmText="Yes, change RSVP"
 		cancelText="Cancel"
