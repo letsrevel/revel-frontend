@@ -27,7 +27,7 @@
 	let editingTier = $state<TicketTierDetailSchema | null>(null);
 	let showTierForm = $state(false);
 
-	let tiers = $derived($tiersQuery.data?.data?.results ?? []);
+	let tiers = $derived(tiersQuery.data?.data?.results ?? []);
 
 	function handleEditTier(tier: TicketTierDetailSchema) {
 		editingTier = tier;
@@ -48,18 +48,18 @@
 		</p>
 	</div>
 
-	{#if $tiersQuery.isLoading}
+	{#if tiersQuery.isLoading}
 		<div class="flex items-center justify-center py-12">
 			<div class="text-center">
 				<div class="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
 				<p class="mt-2 text-sm text-muted-foreground">Loading tiers...</p>
 			</div>
 		</div>
-	{:else if $tiersQuery.isError}
+	{:else if tiersQuery.isError}
 		<div class="rounded-lg border border-destructive bg-destructive/10 p-4" role="alert">
 			<p class="font-medium text-destructive">Error loading ticket tiers</p>
 			<p class="text-sm text-destructive/80">
-				{$tiersQuery.error?.message || 'Please try again'}
+				{tiersQuery.error?.message || 'Please try again'}
 			</p>
 		</div>
 	{:else}

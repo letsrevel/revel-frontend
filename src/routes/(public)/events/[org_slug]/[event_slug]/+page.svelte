@@ -82,7 +82,7 @@
 	}));
 
 	async function handleClaimTicket(tierId: string) {
-		$claimTicketMutation.mutate(tierId);
+		claimTicketMutation.mutate(tierId);
 	}
 </script>
 

@@ -46,7 +46,7 @@
 			return;
 		}
 
-		$updateMutation.mutate({
+		updateMutation.mutate({
 			name: name.trim(),
 			description: description.trim() || null
 		});
@@ -71,7 +71,7 @@
 					required
 					maxlength={150}
 					placeholder="e.g., General Admission, VIP Pass"
-					disabled={$updateMutation.isPending}
+					disabled={updateMutation.isPending}
 				/>
 			</div>
 
@@ -83,7 +83,7 @@
 					bind:value={description}
 					rows={3}
 					placeholder="What's included in this tier?"
-					disabled={$updateMutation.isPending}
+					disabled={updateMutation.isPending}
 				/>
 			</div>
 
@@ -106,19 +106,19 @@
 					type="button"
 					variant="outline"
 					onclick={onClose}
-					disabled={$updateMutation.isPending}
+					disabled={updateMutation.isPending}
 				>
 					Cancel
 				</Button>
-				<Button type="submit" disabled={$updateMutation.isPending || !name.trim()}>
-					{$updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+				<Button type="submit" disabled={updateMutation.isPending || !name.trim()}>
+					{updateMutation.isPending ? 'Saving...' : 'Save Changes'}
 				</Button>
 			</div>
 
-			{#if $updateMutation.isError}
+			{#if updateMutation.isError}
 				<div class="rounded-lg bg-destructive/10 p-3" role="alert">
 					<p class="text-sm text-destructive">
-						{$updateMutation.error?.message || 'Error saving tier. Please try again.'}
+						{updateMutation.error?.message || 'Error saving tier. Please try again.'}
 					</p>
 				</div>
 			{/if}
