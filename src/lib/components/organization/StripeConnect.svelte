@@ -26,13 +26,6 @@
 	let justConnected = $state(false);
 	let mounted = $state(false);
 
-	// Reactive state to hold query data
-	let verifyData = $state<StripeAccountStatusSchema | undefined>(undefined);
-	let verifyError = $state<Error | undefined>(undefined);
-	let isVerifying = $state(false);
-	let connectError = $state<Error | undefined>(undefined);
-	let isConnecting = $state(false);
-
 	onMount(() => {
 		mounted = true;
 		const urlParams = new URLSearchParams(window.location.search);
@@ -45,8 +38,9 @@
 	});
 
 	// Query to verify Stripe account status - only create on client
+	// createQuery returns a reactive object, not a store
 	const verifyQuery = browser
-		? createQuery<StripeAccountStatusSchema>(() => ({
+		? createQuery(() => ({
 				queryKey: ['stripe-status', organizationSlug],
 				queryFn: async () => {
 					const response = await organizationadminStripeAccountVerify({
@@ -66,7 +60,7 @@
 
 	// Mutation to get Stripe onboarding link - only create on client
 	const connectMutation = browser
-		? createMutation<StripeOnboardingLinkSchema, Error>(() => ({
+		? createMutation(() => ({
 				mutationFn: async () => {
 					const response = await organizationadminStripeConnect({
 						path: { slug: organizationSlug },
@@ -86,65 +80,14 @@
 			}))
 		: null;
 
-	// Use $effect to sync store data to local state
-	// We need to subscribe manually to avoid the store_invalid_shape error
-	$effect(() => {
-		if (!verifyQuery) return;
-
-		// Subscribe to the store and update local state
-		const unsubscribe = verifyQuery.subscribe((value) => {
-			verifyData = value.data;
-			verifyError = value.error ?? undefined;
-			isVerifying = value.isFetching;
-		});
-
-		return unsubscribe;
-	});
-
-	$effect(() => {
-		if (!connectMutation) return;
-
-		// Subscribe to the store and update local state
-		const unsubscribe = connectMutation.subscribe((value) => {
-			connectError = value.error ?? undefined;
-			isConnecting = value.isPending;
-		});
-
-		return unsubscribe;
-	});
-
 	// Handle connect button click
 	function handleConnect() {
-		if (!connectMutation) return;
-
-		// Get current mutation state and call mutate
-		const mutation = connectMutation;
-		let currentState: any;
-		const unsubscribe = mutation.subscribe((state) => {
-			currentState = state;
-		});
-		unsubscribe();
-
-		if (currentState?.mutate) {
-			currentState.mutate();
-		}
+		connectMutation?.mutate();
 	}
 
 	// Handle verify refetch
 	function handleRefetch() {
-		if (!verifyQuery) return;
-
-		// Get current query state and call refetch
-		const query = verifyQuery;
-		let currentState: any;
-		const unsubscribe = query.subscribe((state) => {
-			currentState = state;
-		});
-		unsubscribe();
-
-		if (currentState?.refetch) {
-			currentState.refetch();
-		}
+		verifyQuery?.refetch();
 	}
 
 	// Determine overall status
@@ -167,7 +110,7 @@
 			};
 		}
 
-		if (!verifyData) {
+		if (!verifyQuery.data) {
 			return {
 				type: 'loading',
 				title: 'Checking Connection...',
@@ -176,7 +119,9 @@
 			};
 		}
 
-		if (verifyData.charges_enabled && verifyData.details_submitted) {
+		const data = verifyQuery.data;
+
+		if (data.charges_enabled && data.details_submitted) {
 			return {
 				type: 'fully-connected',
 				title: 'Stripe Connected',
@@ -185,7 +130,7 @@
 			};
 		}
 
-		if (!verifyData.details_submitted) {
+		if (!data.details_submitted) {
 			return {
 				type: 'incomplete',
 				title: 'Setup Incomplete',
@@ -194,7 +139,7 @@
 			};
 		}
 
-		if (!verifyData.charges_enabled) {
+		if (!data.charges_enabled) {
 			return {
 				type: 'restricted',
 				title: 'Charges Disabled',
@@ -298,12 +243,12 @@
 				</p>
 
 				<!-- Status Details (if connected) -->
-				{#if verifyData}
+				{#if verifyQuery?.data}
 					<dl class="mt-3 grid grid-cols-2 gap-2 text-xs">
 						<div>
 							<dt class="font-medium text-muted-foreground">Details Submitted</dt>
 							<dd class="mt-0.5 flex items-center gap-1">
-								{#if verifyData.details_submitted}
+								{#if verifyQuery.data.details_submitted}
 									<Check class="h-3 w-3 text-green-600" aria-hidden="true" />
 									<span class="text-green-700 dark:text-green-300">Yes</span>
 								{:else}
@@ -315,7 +260,7 @@
 						<div>
 							<dt class="font-medium text-muted-foreground">Charges Enabled</dt>
 							<dd class="mt-0.5 flex items-center gap-1">
-								{#if verifyData.charges_enabled}
+								{#if verifyQuery.data.charges_enabled}
 									<Check class="h-3 w-3 text-green-600" aria-hidden="true" />
 									<span class="text-green-700 dark:text-green-300">Yes</span>
 								{:else}
@@ -331,17 +276,17 @@
 	</Card>
 
 	<!-- Error Display -->
-	{#if connectError}
+	{#if connectMutation?.error}
 		<div
 			class="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
 			role="alert"
 		>
 			<AlertCircle class="h-4 w-4 shrink-0" aria-hidden="true" />
-			<p class="text-sm">{connectError.message}</p>
+			<p class="text-sm">{connectMutation.error.message}</p>
 		</div>
 	{/if}
 
-	{#if verifyError}
+	{#if verifyQuery?.error}
 		<div
 			class="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
 			role="alert"
@@ -357,10 +302,10 @@
 			{#if !isConnected || status.type === 'incomplete' || status.type === 'restricted'}
 				<Button
 					onclick={handleConnect}
-					disabled={isConnecting}
+					disabled={connectMutation?.isPending}
 					class="inline-flex items-center gap-2"
 				>
-					{#if isConnecting}
+					{#if connectMutation?.isPending}
 						<div
 							class="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent"
 							aria-hidden="true"
@@ -377,10 +322,10 @@
 				<Button
 					variant="outline"
 					onclick={handleRefetch}
-					disabled={isVerifying}
+					disabled={verifyQuery?.isFetching}
 					class="inline-flex items-center gap-2"
 				>
-					{#if isVerifying}
+					{#if verifyQuery?.isFetching}
 						<div
 							class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
 							aria-hidden="true"
