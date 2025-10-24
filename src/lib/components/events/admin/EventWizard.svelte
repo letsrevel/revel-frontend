@@ -62,6 +62,12 @@
 	let initialResourceIds = $state<string[]>([]); // Track initial state for comparison
 	let assignedQuestionnaires = $state<OrganizationQuestionnaireInListSchema[]>([]);
 
+	// Auto-scroll to top when step changes
+	$effect(() => {
+		// Scroll to top whenever currentStep changes
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+	});
+
 	// Fetch and pre-select resources and questionnaires when editing an existing event
 	$effect(() => {
 		if (existingEvent?.id) {
@@ -489,9 +495,6 @@
 	function handleBackToStep1(): void {
 		currentStep = 1;
 		errorMessage = null;
-		setTimeout(() => {
-			window.scrollTo({ top: 0, behavior: 'smooth' });
-		}, 0);
 	}
 
 	/**
@@ -670,10 +673,6 @@
 					onclick={() => {
 						if (formData.requires_ticket && eventId) {
 							currentStep = 3;
-							// Scroll after DOM updates
-							setTimeout(() => {
-								window.scrollTo({ top: 0, behavior: 'smooth' });
-							}, 0);
 						} else {
 							handleStep2Submit();
 						}
@@ -699,9 +698,6 @@
 			organizationStripeConnected={organization.is_stripe_connected}
 			onBack={() => {
 				currentStep = 2;
-				setTimeout(() => {
-					window.scrollTo({ top: 0, behavior: 'smooth' });
-				}, 0);
 			}}
 			onNext={handleStep2Submit}
 		/>
