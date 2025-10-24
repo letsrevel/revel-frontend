@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createQuery, createMutation } from '@tanstack/svelte-query';
+	import { get } from 'svelte/store';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
 	import { AlertCircle, Check, ExternalLink, CreditCard, AlertTriangle } from 'lucide-svelte';
@@ -82,9 +83,49 @@
 	// Handle connect button click
 	function handleConnect() {
 		if (connectMutation) {
-			$connectMutation.mutate();
+			const mutation = get(connectMutation);
+			mutation.mutate();
 		}
 	}
+
+	// Handle verify refetch
+	function handleRefetch() {
+		if (verifyQuery) {
+			const query = get(verifyQuery);
+			query.refetch();
+		}
+	}
+
+	// Get query/mutation data using get() to avoid $ syntax
+	let verifyData = $derived.by(() => {
+		if (!verifyQuery) return undefined;
+		const query = get(verifyQuery);
+		return query.data;
+	});
+
+	let verifyError = $derived.by(() => {
+		if (!verifyQuery) return undefined;
+		const query = get(verifyQuery);
+		return query.error;
+	});
+
+	let isVerifying = $derived.by(() => {
+		if (!verifyQuery) return false;
+		const query = get(verifyQuery);
+		return query.isFetching;
+	});
+
+	let connectError = $derived.by(() => {
+		if (!connectMutation) return undefined;
+		const mutation = get(connectMutation);
+		return mutation.error;
+	});
+
+	let isConnecting = $derived.by(() => {
+		if (!connectMutation) return false;
+		const mutation = get(connectMutation);
+		return mutation.isPending;
+	});
 
 	// Determine overall status
 	let status = $derived.by(() => {
@@ -106,7 +147,6 @@
 			};
 		}
 
-		const verifyData = $verifyQuery?.data;
 		if (!verifyData) {
 			return {
 				type: 'loading',
@@ -238,12 +278,12 @@
 				</p>
 
 				<!-- Status Details (if connected) -->
-				{#if browser && verifyQuery && $verifyQuery.data}
+				{#if verifyData}
 					<dl class="mt-3 grid grid-cols-2 gap-2 text-xs">
 						<div>
 							<dt class="font-medium text-muted-foreground">Details Submitted</dt>
 							<dd class="mt-0.5 flex items-center gap-1">
-								{#if $verifyQuery.data.details_submitted}
+								{#if verifyData.details_submitted}
 									<Check class="h-3 w-3 text-green-600" aria-hidden="true" />
 									<span class="text-green-700 dark:text-green-300">Yes</span>
 								{:else}
@@ -255,7 +295,7 @@
 						<div>
 							<dt class="font-medium text-muted-foreground">Charges Enabled</dt>
 							<dd class="mt-0.5 flex items-center gap-1">
-								{#if $verifyQuery.data.charges_enabled}
+								{#if verifyData.charges_enabled}
 									<Check class="h-3 w-3 text-green-600" aria-hidden="true" />
 									<span class="text-green-700 dark:text-green-300">Yes</span>
 								{:else}
@@ -271,17 +311,17 @@
 	</Card>
 
 	<!-- Error Display -->
-	{#if browser && connectMutation && $connectMutation.error}
+	{#if connectError}
 		<div
 			class="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
 			role="alert"
 		>
 			<AlertCircle class="h-4 w-4 shrink-0" aria-hidden="true" />
-			<p class="text-sm">{$connectMutation.error.message}</p>
+			<p class="text-sm">{connectError.message}</p>
 		</div>
 	{/if}
 
-	{#if browser && verifyQuery && $verifyQuery.error}
+	{#if verifyError}
 		<div
 			class="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
 			role="alert"
@@ -297,10 +337,10 @@
 			{#if !isConnected || status.type === 'incomplete' || status.type === 'restricted'}
 				<Button
 					onclick={handleConnect}
-					disabled={connectMutation ? $connectMutation.isPending : false}
+					disabled={isConnecting}
 					class="inline-flex items-center gap-2"
 				>
-					{#if connectMutation && $connectMutation.isPending}
+					{#if isConnecting}
 						<div
 							class="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent"
 							aria-hidden="true"
@@ -313,14 +353,14 @@
 				</Button>
 			{/if}
 
-			{#if isConnected && verifyQuery}
+			{#if isConnected}
 				<Button
 					variant="outline"
-					onclick={() => $verifyQuery.refetch()}
-					disabled={$verifyQuery.isFetching}
+					onclick={handleRefetch}
+					disabled={isVerifying}
 					class="inline-flex items-center gap-2"
 				>
-					{#if $verifyQuery.isFetching}
+					{#if isVerifying}
 						<div
 							class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
 							aria-hidden="true"
@@ -329,7 +369,7 @@
 					{:else}
 						Refresh Status
 					{/if}
-				</Button>
+				</Button}
 			{/if}
 		</div>
 	{:else}
