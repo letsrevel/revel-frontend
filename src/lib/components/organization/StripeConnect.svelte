@@ -29,11 +29,17 @@
 	onMount(() => {
 		mounted = true;
 		const urlParams = new URLSearchParams(window.location.search);
-		if (urlParams.get('stripe') === 'success') {
+		// Check for stripe_success=true parameter (Stripe redirect)
+		if (urlParams.get('stripe_success') === 'true') {
 			justConnected = true;
 			// Remove the query parameter from URL
 			const cleanUrl = window.location.pathname;
 			window.history.replaceState({}, '', cleanUrl);
+
+			// Auto-verify account after returning from Stripe
+			setTimeout(() => {
+				verifyQuery?.refetch();
+			}, 1000);
 		}
 	});
 
@@ -330,9 +336,10 @@
 							class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
 							aria-hidden="true"
 						></div>
-						Checking...
+						Verifying...
 					{:else}
-						Refresh Status
+						<Check class="h-4 w-4" aria-hidden="true" />
+						Verify Account Status
 					{/if}
 				</Button>
 			{/if}
