@@ -87,32 +87,63 @@
 		: null;
 
 	// Use $effect to sync store data to local state
+	// We need to subscribe manually to avoid the store_invalid_shape error
 	$effect(() => {
-		if (verifyQuery) {
-			verifyData = $verifyQuery.data;
-			verifyError = $verifyQuery.error;
-			isVerifying = $verifyQuery.isFetching;
-		}
+		if (!verifyQuery) return;
+
+		// Subscribe to the store and update local state
+		const unsubscribe = verifyQuery.subscribe((value) => {
+			verifyData = value.data;
+			verifyError = value.error ?? undefined;
+			isVerifying = value.isFetching;
+		});
+
+		return unsubscribe;
 	});
 
 	$effect(() => {
-		if (connectMutation) {
-			connectError = $connectMutation.error;
-			isConnecting = $connectMutation.isPending;
-		}
+		if (!connectMutation) return;
+
+		// Subscribe to the store and update local state
+		const unsubscribe = connectMutation.subscribe((value) => {
+			connectError = value.error ?? undefined;
+			isConnecting = value.isPending;
+		});
+
+		return unsubscribe;
 	});
 
 	// Handle connect button click
 	function handleConnect() {
-		if (connectMutation) {
-			$connectMutation.mutate();
+		if (!connectMutation) return;
+
+		// Get current mutation state and call mutate
+		const mutation = connectMutation;
+		let currentState: any;
+		const unsubscribe = mutation.subscribe((state) => {
+			currentState = state;
+		});
+		unsubscribe();
+
+		if (currentState?.mutate) {
+			currentState.mutate();
 		}
 	}
 
 	// Handle verify refetch
 	function handleRefetch() {
-		if (verifyQuery) {
-			$verifyQuery.refetch();
+		if (!verifyQuery) return;
+
+		// Get current query state and call refetch
+		const query = verifyQuery;
+		let currentState: any;
+		const unsubscribe = query.subscribe((state) => {
+			currentState = state;
+		});
+		unsubscribe();
+
+		if (currentState?.refetch) {
+			currentState.refetch();
 		}
 	}
 
