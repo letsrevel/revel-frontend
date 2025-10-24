@@ -1,10 +1,8 @@
 <script lang="ts">
-	import { useMutation, useQuery } from '@tanstack/svelte-query';
+	import { createQuery, createMutation } from '@tanstack/svelte-query';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
 	import { AlertCircle, Check, ExternalLink, CreditCard, AlertTriangle } from 'lucide-svelte';
-	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import {
 		organizationadminStripeConnect,
@@ -37,7 +35,7 @@
 	});
 
 	// Query to verify Stripe account status
-	let verifyQuery = useQuery<StripeAccountStatusSchema>({
+	const verifyQuery = createQuery<StripeAccountStatusSchema>(() => ({
 		queryKey: ['stripe-status', organizationSlug],
 		queryFn: async () => {
 			const response = await organizationadminStripeAccountVerify({
@@ -52,10 +50,10 @@
 			return response.data!;
 		},
 		enabled: isConnected // Only run if organization claims to be connected
-	});
+	}));
 
 	// Mutation to get Stripe onboarding link
-	let connectMutation = useMutation<StripeOnboardingLinkSchema, Error>({
+	const connectMutation = createMutation<StripeOnboardingLinkSchema, Error>(() => ({
 		mutationFn: async () => {
 			const response = await organizationadminStripeConnect({
 				path: { slug: organizationSlug },
@@ -75,7 +73,7 @@
 			const onboardingUrl = new URL(data.onboarding_url);
 			window.location.href = onboardingUrl.toString();
 		}
-	});
+	}));
 
 	// Handle connect button click
 	function handleConnect() {
@@ -93,7 +91,7 @@
 			};
 		}
 
-		const verifyData = $verifyQuery.data;
+		const verifyData = $verifyQuery?.data;
 		if (!verifyData) {
 			return {
 				type: 'loading',
