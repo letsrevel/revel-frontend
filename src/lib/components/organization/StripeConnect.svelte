@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { createQuery, createMutation } from '@tanstack/svelte-query';
-	import { get } from 'svelte/store';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
 	import { AlertCircle, Check, ExternalLink, CreditCard, AlertTriangle } from 'lucide-svelte';
@@ -26,6 +25,13 @@
 	// Check if user just returned from Stripe onboarding
 	let justConnected = $state(false);
 	let mounted = $state(false);
+
+	// Reactive state to hold query data
+	let verifyData = $state<StripeAccountStatusSchema | undefined>(undefined);
+	let verifyError = $state<Error | undefined>(undefined);
+	let isVerifying = $state(false);
+	let connectError = $state<Error | undefined>(undefined);
+	let isConnecting = $state(false);
 
 	onMount(() => {
 		mounted = true;
@@ -80,52 +86,35 @@
 			}))
 		: null;
 
+	// Use $effect to sync store data to local state
+	$effect(() => {
+		if (verifyQuery) {
+			verifyData = $verifyQuery.data;
+			verifyError = $verifyQuery.error;
+			isVerifying = $verifyQuery.isFetching;
+		}
+	});
+
+	$effect(() => {
+		if (connectMutation) {
+			connectError = $connectMutation.error;
+			isConnecting = $connectMutation.isPending;
+		}
+	});
+
 	// Handle connect button click
 	function handleConnect() {
 		if (connectMutation) {
-			const mutation = get(connectMutation);
-			mutation.mutate();
+			$connectMutation.mutate();
 		}
 	}
 
 	// Handle verify refetch
 	function handleRefetch() {
 		if (verifyQuery) {
-			const query = get(verifyQuery);
-			query.refetch();
+			$verifyQuery.refetch();
 		}
 	}
-
-	// Get query/mutation data using get() to avoid $ syntax
-	let verifyData = $derived.by(() => {
-		if (!verifyQuery) return undefined;
-		const query = get(verifyQuery);
-		return query.data;
-	});
-
-	let verifyError = $derived.by(() => {
-		if (!verifyQuery) return undefined;
-		const query = get(verifyQuery);
-		return query.error;
-	});
-
-	let isVerifying = $derived.by(() => {
-		if (!verifyQuery) return false;
-		const query = get(verifyQuery);
-		return query.isFetching;
-	});
-
-	let connectError = $derived.by(() => {
-		if (!connectMutation) return undefined;
-		const mutation = get(connectMutation);
-		return mutation.error;
-	});
-
-	let isConnecting = $derived.by(() => {
-		if (!connectMutation) return false;
-		const mutation = get(connectMutation);
-		return mutation.isPending;
-	});
 
 	// Determine overall status
 	let status = $derived.by(() => {
