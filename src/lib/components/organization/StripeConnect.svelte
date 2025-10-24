@@ -4,6 +4,7 @@
 	import { Card } from '$lib/components/ui/card';
 	import { AlertCircle, Check, ExternalLink, CreditCard, AlertTriangle } from 'lucide-svelte';
 	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 	import {
 		organizationadminStripeConnect,
 		organizationadminStripeAccountVerify
@@ -23,8 +24,10 @@
 
 	// Check if user just returned from Stripe onboarding
 	let justConnected = $state(false);
+	let mounted = $state(false);
 
 	onMount(() => {
+		mounted = true;
 		const urlParams = new URLSearchParams(window.location.search);
 		if (urlParams.get('stripe') === 'success') {
 			justConnected = true;
@@ -34,50 +37,53 @@
 		}
 	});
 
-	// Query to verify Stripe account status
-	const verifyQuery = createQuery<StripeAccountStatusSchema>(() => ({
-		queryKey: ['stripe-status', organizationSlug],
-		queryFn: async () => {
-			const response = await organizationadminStripeAccountVerify({
-				path: { slug: organizationSlug },
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
+	// Query to verify Stripe account status - only create on client
+	const verifyQuery = browser
+		? createQuery<StripeAccountStatusSchema>(() => ({
+				queryKey: ['stripe-status', organizationSlug],
+				queryFn: async () => {
+					const response = await organizationadminStripeAccountVerify({
+						path: { slug: organizationSlug },
+						headers: { Authorization: `Bearer ${accessToken}` }
+					});
 
-			if (response.error) {
-				throw new Error('Failed to verify Stripe account');
-			}
+					if (response.error) {
+						throw new Error('Failed to verify Stripe account');
+					}
 
-			return response.data!;
-		},
-		enabled: isConnected // Only run if organization claims to be connected
-	}));
+					return response.data!;
+				},
+				enabled: isConnected && mounted
+			}))
+		: null;
 
-	// Mutation to get Stripe onboarding link
-	const connectMutation = createMutation<StripeOnboardingLinkSchema, Error>(() => ({
-		mutationFn: async () => {
-			const response = await organizationadminStripeConnect({
-				path: { slug: organizationSlug },
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
+	// Mutation to get Stripe onboarding link - only create on client
+	const connectMutation = browser
+		? createMutation<StripeOnboardingLinkSchema, Error>(() => ({
+				mutationFn: async () => {
+					const response = await organizationadminStripeConnect({
+						path: { slug: organizationSlug },
+						headers: { Authorization: `Bearer ${accessToken}` }
+					});
 
-			if (response.error) {
-				throw new Error('Failed to create Stripe Connect link');
-			}
+					if (response.error) {
+						throw new Error('Failed to create Stripe Connect link');
+					}
 
-			return response.data!;
-		},
-		onSuccess: (data) => {
-			// Add success parameter so we can detect when user returns
-			const returnUrl = `${window.location.pathname}?stripe=success`;
-			// Redirect to Stripe onboarding with return URL
-			const onboardingUrl = new URL(data.onboarding_url);
-			window.location.href = onboardingUrl.toString();
-		}
-	}));
+					return response.data!;
+				},
+				onSuccess: (data) => {
+					// Redirect to Stripe onboarding
+					window.location.href = data.onboarding_url;
+				}
+			}))
+		: null;
 
 	// Handle connect button click
 	function handleConnect() {
-		$connectMutation.mutate();
+		if (connectMutation) {
+			$connectMutation.mutate();
+		}
 	}
 
 	// Determine overall status
@@ -88,6 +94,15 @@
 				title: 'Stripe Not Connected',
 				message: 'Connect your Stripe account to accept online payments for events.',
 				color: 'gray'
+			};
+		}
+
+		if (!browser || !verifyQuery) {
+			return {
+				type: 'loading',
+				title: 'Loading...',
+				message: 'Initializing Stripe status check.',
+				color: 'blue'
 			};
 		}
 
@@ -183,6 +198,13 @@
 					<div class="rounded-full bg-red-600 p-2">
 						<AlertCircle class="h-5 w-5 text-white" aria-hidden="true" />
 					</div>
+				{:else if status.type === 'loading'}
+					<div class="rounded-full bg-blue-600 p-2">
+						<div
+							class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
+							aria-hidden="true"
+						></div>
+					</div>
 				{:else}
 					<div class="rounded-full bg-gray-400 p-2">
 						<CreditCard class="h-5 w-5 text-white" aria-hidden="true" />
@@ -216,7 +238,7 @@
 				</p>
 
 				<!-- Status Details (if connected) -->
-				{#if $verifyQuery.data}
+				{#if browser && verifyQuery && $verifyQuery.data}
 					<dl class="mt-3 grid grid-cols-2 gap-2 text-xs">
 						<div>
 							<dt class="font-medium text-muted-foreground">Details Submitted</dt>
@@ -249,7 +271,7 @@
 	</Card>
 
 	<!-- Error Display -->
-	{#if $connectMutation.error}
+	{#if browser && connectMutation && $connectMutation.error}
 		<div
 			class="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
 			role="alert"
@@ -259,7 +281,7 @@
 		</div>
 	{/if}
 
-	{#if $verifyQuery.error}
+	{#if browser && verifyQuery && $verifyQuery.error}
 		<div
 			class="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
 			role="alert"
@@ -270,45 +292,55 @@
 	{/if}
 
 	<!-- Action Buttons -->
-	<div class="flex items-center gap-3">
-		{#if !isConnected || status.type === 'incomplete' || status.type === 'restricted'}
-			<Button
-				onclick={handleConnect}
-				disabled={$connectMutation.isPending}
-				class="inline-flex items-center gap-2"
-			>
-				{#if $connectMutation.isPending}
-					<div
-						class="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent"
-						aria-hidden="true"
-					></div>
-					Connecting...
-				{:else}
-					<ExternalLink class="h-4 w-4" aria-hidden="true" />
-					{isConnected ? 'Complete Stripe Setup' : 'Connect with Stripe'}
-				{/if}
-			</Button>
-		{/if}
+	{#if browser}
+		<div class="flex items-center gap-3">
+			{#if !isConnected || status.type === 'incomplete' || status.type === 'restricted'}
+				<Button
+					onclick={handleConnect}
+					disabled={connectMutation ? $connectMutation.isPending : false}
+					class="inline-flex items-center gap-2"
+				>
+					{#if connectMutation && $connectMutation.isPending}
+						<div
+							class="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent"
+							aria-hidden="true"
+						></div>
+						Connecting...
+					{:else}
+						<ExternalLink class="h-4 w-4" aria-hidden="true" />
+						{isConnected ? 'Complete Stripe Setup' : 'Connect with Stripe'}
+					{/if}
+				</Button>
+			{/if}
 
-		{#if isConnected}
-			<Button
-				variant="outline"
-				onclick={() => $verifyQuery.refetch()}
-				disabled={$verifyQuery.isFetching}
-				class="inline-flex items-center gap-2"
-			>
-				{#if $verifyQuery.isFetching}
-					<div
-						class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-						aria-hidden="true"
-					></div>
-					Checking...
-				{:else}
-					Refresh Status
-				{/if}
+			{#if isConnected && verifyQuery}
+				<Button
+					variant="outline"
+					onclick={() => $verifyQuery.refetch()}
+					disabled={$verifyQuery.isFetching}
+					class="inline-flex items-center gap-2"
+				>
+					{#if $verifyQuery.isFetching}
+						<div
+							class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+							aria-hidden="true"
+						></div>
+						Checking...
+					{:else}
+						Refresh Status
+					{/if}
+				</Button>
+			{/if}
+		</div>
+	{:else}
+		<!-- Server-side placeholder -->
+		<div class="flex items-center gap-3">
+			<Button disabled class="inline-flex items-center gap-2">
+				<ExternalLink class="h-4 w-4" aria-hidden="true" />
+				{isConnected ? 'Complete Stripe Setup' : 'Connect with Stripe'}
 			</Button>
-		{/if}
-	</div>
+		</div>
+	{/if}
 
 	<!-- Informational Text -->
 	<div class="rounded-md bg-muted p-4 text-sm text-muted-foreground">
