@@ -3,17 +3,22 @@
 	import { eventadminListTicketTiers } from '$lib/api/generated/sdk.gen';
 	import type { TicketTierDetailSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
+	import { Ticket, CheckSquare, Users } from 'lucide-svelte';
 	import TierCard from './TierCard.svelte';
 	import TierForm from './TierForm.svelte';
+	import type { EventFormData } from './types';
 
 	interface Props {
 		eventId: string;
 		organizationStripeConnected: boolean;
+		formData: EventFormData;
+		onUpdate: (updates: Partial<EventFormData>) => void;
 		onBack: () => void;
 		onNext: () => void;
 	}
 
-	let { eventId, organizationStripeConnected, onBack, onNext }: Props = $props();
+	let { eventId, organizationStripeConnected, formData, onUpdate, onBack, onNext }: Props =
+		$props();
 
 	// Fetch ticket tiers for this event
 	let tiersQuery = createQuery(() => ({
@@ -42,9 +47,57 @@
 
 <div class="space-y-6">
 	<div>
-		<h2 class="text-2xl font-bold">Configure Ticket Tiers</h2>
-		<p class="text-muted-foreground">
-			Tiers let you offer different ticket types (e.g., VIP, Student, General)
+		<h2 class="text-2xl font-bold">Ticketing Configuration</h2>
+		<p class="text-muted-foreground">Configure ticketing options and manage ticket tiers</p>
+	</div>
+
+	<!-- Event-Level Ticketing Options -->
+	<div class="space-y-4 rounded-lg border border-border p-4">
+		<h3 class="flex items-center gap-2 font-semibold">
+			<Users class="h-5 w-5" aria-hidden="true" />
+			Ticketing Options
+		</h3>
+
+		<!-- Free for Members -->
+		<label
+			class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+		>
+			<input
+				type="checkbox"
+				checked={formData.free_for_members || false}
+				onchange={(e) => onUpdate({ free_for_members: e.currentTarget.checked })}
+				class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+			/>
+			<div class="flex-1">
+				<div class="font-medium">Free for Members</div>
+				<div class="text-sm text-muted-foreground">
+					Organization members don't need to pay for tickets
+				</div>
+			</div>
+		</label>
+
+		<!-- Free for Staff -->
+		<label
+			class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+		>
+			<input
+				type="checkbox"
+				checked={formData.free_for_staff || false}
+				onchange={(e) => onUpdate({ free_for_staff: e.currentTarget.checked })}
+				class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+			/>
+			<div class="flex-1">
+				<div class="font-medium">Free for Staff</div>
+				<div class="text-sm text-muted-foreground">Staff members don't need to pay for tickets</div>
+			</div>
+		</label>
+	</div>
+
+	<!-- Ticket Tiers Section -->
+	<div>
+		<h3 class="mb-4 font-semibold">Ticket Tiers</h3>
+		<p class="mb-4 text-sm text-muted-foreground">
+			Create different ticket types with varying prices, quantities, and access levels
 		</p>
 	</div>
 
@@ -79,18 +132,20 @@
 		{/if}
 	{/if}
 
-	<!-- Phase 1: Hide "Add Another Tier" button -->
-	<!-- Phase 2: Uncomment this -->
-	<!-- <button
+	<!-- Add Another Tier Button -->
+	<button
 		type="button"
-		onclick={() => { editingTier = null; showTierForm = true; }}
-		class="w-full border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 hover:border-muted-foreground/50 transition-colors"
+		onclick={() => {
+			editingTier = null;
+			showTierForm = true;
+		}}
+		class="w-full rounded-lg border-2 border-dashed border-muted-foreground/25 p-6 transition-colors hover:border-muted-foreground/50"
 	>
 		<span class="text-lg">+ Add Another Tier</span>
-		<p class="text-sm text-muted-foreground mt-1">
+		<p class="mt-1 text-sm text-muted-foreground">
 			Create VIP, Student, Early Bird, or other ticket types
 		</p>
-	</button> -->
+	</button>
 
 	<!-- Navigation -->
 	<div class="flex justify-between border-t border-border pt-6">

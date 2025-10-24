@@ -695,6 +695,8 @@
 		<TicketingStep
 			eventId={eventId!}
 			organizationStripeConnected={organization.is_stripe_connected}
+			{formData}
+			onUpdate={updateFormData}
 			onBack={() => {
 				currentStep = 2;
 			}}
