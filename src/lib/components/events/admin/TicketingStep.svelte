@@ -111,9 +111,22 @@
 	{:else if tiersQuery.isError}
 		<div class="rounded-lg border border-destructive bg-destructive/10 p-4" role="alert">
 			<p class="font-medium text-destructive">Error loading ticket tiers</p>
-			<p class="text-sm text-destructive/80">
-				{tiersQuery.error?.message || 'Please try again'}
+			<p class="mt-1 text-sm text-destructive/90">
+				{tiersQuery.error?.message || 'An error occurred. Please try again.'}
 			</p>
+			{#if tiersQuery.error?.body?.detail}
+				<div class="mt-2 space-y-1">
+					{#if Array.isArray(tiersQuery.error.body.detail)}
+						{#each tiersQuery.error.body.detail as detail}
+							<p class="text-xs text-destructive/80">
+								• {detail.loc ? detail.loc.join(' → ') + ': ' : ''}{detail.msg}
+							</p>
+						{/each}
+					{:else if typeof tiersQuery.error.body.detail === 'string'}
+						<p class="text-xs text-destructive/80">{tiersQuery.error.body.detail}</p>
+					{/if}
+				</div>
+			{/if}
 		</div>
 	{:else}
 		<div class="space-y-4">
