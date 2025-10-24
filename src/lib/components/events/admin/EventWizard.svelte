@@ -62,10 +62,16 @@
 	let initialResourceIds = $state<string[]>([]); // Track initial state for comparison
 	let assignedQuestionnaires = $state<OrganizationQuestionnaireInListSchema[]>([]);
 
-	// Auto-scroll to top when step changes
+	// Track previous step for scroll behavior
+	let previousStep = $state<number>(currentStep);
+
+	// Auto-scroll to top when step changes (but not on initial mount)
 	$effect(() => {
-		// Scroll to top whenever currentStep changes
-		window.scrollTo({ top: 0, behavior: 'smooth' });
+		if (currentStep !== previousStep) {
+			console.log('Step changed from', previousStep, 'to', currentStep);
+			window.scrollTo({ top: 0, behavior: 'smooth' });
+			previousStep = currentStep;
+		}
 	});
 
 	// Fetch and pre-select resources and questionnaires when editing an existing event
@@ -671,9 +677,14 @@
 				<button
 					type="button"
 					onclick={() => {
+						console.log('Button clicked!');
+						console.log('requires_ticket:', formData.requires_ticket);
+						console.log('eventId:', eventId);
 						if (formData.requires_ticket && eventId) {
+							console.log('Navigating to step 3');
 							currentStep = 3;
 						} else {
+							console.log('Calling handleStep2Submit');
 							handleStep2Submit();
 						}
 					}}
