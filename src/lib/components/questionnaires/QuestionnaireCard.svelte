@@ -8,7 +8,7 @@
 	} from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Edit, Eye, FileText, Trash2, CalendarCheck } from 'lucide-svelte';
+	import { Edit, Eye, FileText, Trash2, CalendarCheck, AlertCircle } from 'lucide-svelte';
 	import type {
 		OrganizationQuestionnaireInListSchema,
 		OrganizationQuestionnaireSchema
@@ -179,6 +179,22 @@
 	</CardHeader>
 	<CardContent>
 		<div class="space-y-4">
+			<!-- Pending Evaluations Alert -->
+			{#if questionnaire.pending_evaluations_count > 0}
+				<div
+					class="flex items-center gap-2 rounded-md border border-orange-500/50 bg-orange-50 px-3 py-2 text-sm text-orange-900 dark:border-orange-500/30 dark:bg-orange-950/20 dark:text-orange-200"
+					role="status"
+				>
+					<AlertCircle class="h-4 w-4 shrink-0" aria-hidden="true" />
+					<p class="font-medium">
+						{questionnaire.pending_evaluations_count}
+						{questionnaire.pending_evaluations_count === 1
+							? 'submission needs'
+							: 'submissions need'} review
+					</p>
+				</div>
+			{/if}
+
 			<!-- Stats with Tooltip -->
 			<div class="flex gap-4 text-sm text-muted-foreground">
 				<TooltipProvider>
@@ -215,10 +231,18 @@
 					href="/org/{organizationSlug}/admin/questionnaires/{questionnaire.id}/submissions"
 					variant="outline"
 					size="sm"
-					class="flex-1 gap-2"
+					class="relative flex-1 gap-2"
 				>
 					<Eye class="h-4 w-4" />
 					Submissions
+					{#if questionnaire.pending_evaluations_count > 0}
+						<Badge
+							variant="destructive"
+							class="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs"
+						>
+							{questionnaire.pending_evaluations_count}
+						</Badge>
+					{/if}
 				</Button>
 			</div>
 
