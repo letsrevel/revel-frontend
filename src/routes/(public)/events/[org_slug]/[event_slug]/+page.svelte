@@ -1,21 +1,29 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { page } from '$app/state';
+	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
+	import { eventTicketCheckout } from '$lib/api';
+	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import EventHeader from '$lib/components/events/EventHeader.svelte';
 	import EventDetails from '$lib/components/events/EventDetails.svelte';
 	import EventActionSidebar from '$lib/components/events/EventActionSidebar.svelte';
 	import OrganizationInfo from '$lib/components/events/OrganizationInfo.svelte';
 	import PotluckSection from '$lib/components/events/PotluckSection.svelte';
 	import EventResources from '$lib/components/events/EventResources.svelte';
+	import TicketTierList from '$lib/components/tickets/TicketTierList.svelte';
+	import MyTicket from '$lib/components/tickets/MyTicket.svelte';
 	import { generateEventStructuredData, structuredDataToJsonLd } from '$lib/utils/structured-data';
 	import { isRSVP, isTicket } from '$lib/utils/eligibility';
 	import { getPotluckPermissions } from '$lib/utils/permissions';
 
 	let { data }: { data: PageData } = $props();
 
+	const queryClient = useQueryClient();
+
 	// Create mutable copies for client-side updates
 	let event = $state(data.event);
 	let userStatus = $state(data.userStatus);
+	let ticketTiers = $state<TierSchemaWithId[]>(data.ticketTiers as TierSchemaWithId[]);
 
 	// Get structured data for SEO
 	let structuredData = $derived(
@@ -48,6 +56,34 @@
 			hasRSVPd
 		)
 	);
+
+	// Check if user has a ticket
+	let userTicket = $derived.by(() => {
+		if (!userStatus || !isTicket(userStatus)) return null;
+		return userStatus;
+	});
+
+	// Ticket claiming mutation
+	let claimTicketMutation = createMutation({
+		mutationFn: async (tierId: string) => {
+			const response = await eventTicketCheckout({
+				path: { event_id: event.id, tier_id: tierId }
+			});
+			return response.data;
+		},
+		onSuccess: (data) => {
+			// Update userStatus with new ticket
+			if (data && 'status' in data) {
+				userStatus = data as any;
+			}
+			// Invalidate event status query
+			queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
+		}
+	});
+
+	async function handleClaimTicket(tierId: string) {
+		$claimTicketMutation.mutate(tierId);
+	}
 </script>
 
 <svelte:head>
@@ -102,6 +138,28 @@
 			<!-- Left Column: Event Details -->
 			<div class="space-y-8 lg:col-span-2">
 				<EventDetails {event} />
+
+				<!-- My Ticket (if user has a ticket) -->
+				{#if userTicket}
+					<MyTicket
+						ticket={userTicket}
+						eventName={event.name}
+						eventDate={event.start_datetime
+							? new Date(event.start_datetime).toLocaleString()
+							: undefined}
+						eventLocation={event.location}
+					/>
+				{/if}
+
+				<!-- Ticket Tiers (if event requires tickets and user doesn't have one) -->
+				{#if event.requires_ticket && !userTicket && ticketTiers.length > 0}
+					<TicketTierList
+						tiers={ticketTiers}
+						isAuthenticated={data.isAuthenticated}
+						hasTicket={!!userTicket}
+						onClaimTicket={handleClaimTicket}
+					/>
+				{/if}
 
 				<!-- Potluck Section -->
 				<!-- Always show if items exist, controlled by the section itself -->

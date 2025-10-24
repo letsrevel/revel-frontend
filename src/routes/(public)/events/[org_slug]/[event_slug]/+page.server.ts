@@ -4,14 +4,16 @@ import {
 	eventGetMyEventStatus,
 	potluckListPotluckItems,
 	permissionMyPermissions,
-	eventListResources
+	eventListResources,
+	eventListTiers
 } from '$lib/api';
 import type { PageServerLoad } from './$types';
 import type { UserEventStatus } from '$lib/utils/eligibility';
 import type {
 	PotluckItemRetrieveSchema,
 	OrganizationPermissionsSchema,
-	AdditionalResourceSchema
+	AdditionalResourceSchema,
+	TierSchema
 } from '$lib/api/generated/types.gen';
 
 export const load: PageServerLoad = async ({ params, locals, fetch }) => {
@@ -113,12 +115,32 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 			console.error('Failed to fetch event resources:', err);
 		}
 
+		// Fetch ticket tiers (public endpoint, filtered by eligibility)
+		let ticketTiers: TierSchema[] = [];
+		if (event.requires_ticket) {
+			try {
+				const tiersResponse = await eventListTiers({
+					fetch,
+					path: { event_id: event.id },
+					headers
+				});
+
+				if (tiersResponse.data) {
+					ticketTiers = tiersResponse.data;
+				}
+			} catch (err) {
+				// If tiers fail to load, continue without them
+				console.error('Failed to fetch ticket tiers:', err);
+			}
+		}
+
 		return {
 			event,
 			userStatus,
 			potluckItems,
 			userPermissions,
 			resources,
+			ticketTiers,
 			// Explicitly pass authentication state to the page
 			isAuthenticated: !!locals.user
 		};
