@@ -26,7 +26,7 @@
 	let name = $state(tier?.name ?? '');
 	let description = $state(tier?.description ?? '');
 
-	const updateMutation = createMutation({
+	const updateMutation = createMutation(() => ({
 		mutationFn: (data: TicketTierUpdateSchema) =>
 			eventadminUpdateTicketTier({
 				path: { event_id: eventId, tier_id: tier!.id },
@@ -36,7 +36,7 @@
 			queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
 			onClose();
 		}
-	});
+	}));
 
 	function handleSubmit(e: Event) {
 		e.preventDefault();

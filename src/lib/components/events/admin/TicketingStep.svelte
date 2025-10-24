@@ -16,13 +16,13 @@
 	let { eventId, organizationStripeConnected, onBack, onNext }: Props = $props();
 
 	// Fetch ticket tiers for this event
-	let tiersQuery = createQuery({
+	let tiersQuery = createQuery(() => ({
 		queryKey: ['event-admin', eventId, 'ticket-tiers'],
 		queryFn: () =>
 			eventadminListTicketTiers({
 				path: { event_id: eventId }
 			})
-	});
+	}));
 
 	let editingTier = $state<TicketTierDetailSchema | null>(null);
 	let showTierForm = $state(false);

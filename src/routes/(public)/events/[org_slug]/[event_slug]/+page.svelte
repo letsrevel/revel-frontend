@@ -64,7 +64,7 @@
 	});
 
 	// Ticket claiming mutation
-	let claimTicketMutation = createMutation({
+	let claimTicketMutation = createMutation(() => ({
 		mutationFn: async (tierId: string) => {
 			const response = await eventTicketCheckout({
 				path: { event_id: event.id, tier_id: tierId }
@@ -79,7 +79,7 @@
 			// Invalidate event status query
 			queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
 		}
-	});
+	}));
 
 	async function handleClaimTicket(tierId: string) {
 		$claimTicketMutation.mutate(tierId);
