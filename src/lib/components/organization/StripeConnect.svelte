@@ -369,7 +369,7 @@
 					{:else}
 						Refresh Status
 					{/if}
-				</Button}
+				</Button>
 			{/if}
 		</div>
 	{:else}
