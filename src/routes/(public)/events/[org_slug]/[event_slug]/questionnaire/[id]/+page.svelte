@@ -266,6 +266,26 @@
 										<span class="text-destructive">*</span>
 									{/if}
 								</Label>
+
+								<!-- AI Evaluation Warning -->
+								{#if data.questionnaire.evaluation_mode === 'automatic'}
+									<div
+										class="flex items-start gap-2 rounded-md border border-orange-500/50 bg-orange-50 p-3 text-sm text-orange-900 dark:border-orange-500/30 dark:bg-orange-950/20 dark:text-orange-200"
+										role="status"
+									>
+										<AlertCircle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+										<p>This answer will be automatically evaluated by AI</p>
+									</div>
+								{:else if data.questionnaire.evaluation_mode === 'hybrid'}
+									<div
+										class="flex items-start gap-2 rounded-md border border-yellow-500/50 bg-yellow-50 p-3 text-sm text-yellow-900 dark:border-yellow-500/30 dark:bg-yellow-950/20 dark:text-yellow-200"
+										role="status"
+									>
+										<AlertCircle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+										<p>This answer will be evaluated by AI and reviewed by a human</p>
+									</div>
+								{/if}
+
 								<Textarea
 									id={question.id}
 									value={freeTextAnswers.get(question.id) || ''}
@@ -350,6 +370,26 @@
 								<span class="text-destructive">*</span>
 							{/if}
 						</Label>
+
+						<!-- AI Evaluation Warning -->
+						{#if data.questionnaire.evaluation_mode === 'automatic'}
+							<div
+								class="flex items-start gap-2 rounded-md border border-orange-500/50 bg-orange-50 p-3 text-sm text-orange-900 dark:border-orange-500/30 dark:bg-orange-950/20 dark:text-orange-200"
+								role="status"
+							>
+								<AlertCircle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+								<p>This answer will be automatically evaluated by AI</p>
+							</div>
+						{:else if data.questionnaire.evaluation_mode === 'hybrid'}
+							<div
+								class="flex items-start gap-2 rounded-md border border-yellow-500/50 bg-yellow-50 p-3 text-sm text-yellow-900 dark:border-yellow-500/30 dark:bg-yellow-950/20 dark:text-yellow-200"
+								role="status"
+							>
+								<AlertCircle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+								<p>This answer will be evaluated by AI and reviewed by a human</p>
+							</div>
+						{/if}
+
 						<Textarea
 							id={question.id}
 							value={freeTextAnswers.get(question.id) || ''}
