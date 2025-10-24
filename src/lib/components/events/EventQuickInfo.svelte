@@ -139,8 +139,8 @@
 		</div>
 	{/if}
 
-	<!-- RSVP Deadline (if rsvp_closes_at exists) -->
-	{#if rsvpDeadlineDisplay}
+	<!-- RSVP Deadline (if rsvp_closes_at exists and event is not ticketed) -->
+	{#if rsvpDeadlineDisplay && !event.requires_ticket}
 		<div
 			class={cn(itemClasses, isDeadlineSoon && 'text-warning')}
 			role="listitem"

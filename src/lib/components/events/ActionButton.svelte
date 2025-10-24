@@ -16,10 +16,11 @@
 		userStatus: UserEventStatus | null;
 		requiresTicket: boolean;
 		isAuthenticated: boolean;
+		onclick?: () => void;
 		class?: string;
 	}
 
-	let { userStatus, requiresTicket, isAuthenticated, class: className }: Props = $props();
+	let { userStatus, requiresTicket, isAuthenticated, onclick, class: className }: Props = $props();
 
 	// Determine button state
 	let buttonText = $derived.by(() => {
@@ -28,7 +29,7 @@
 		}
 
 		if (!userStatus) {
-			return requiresTicket ? 'Buy Tickets' : 'RSVP';
+			return requiresTicket ? 'Get Tickets' : 'RSVP';
 		}
 
 		// User has RSVP
@@ -46,7 +47,7 @@
 			return getActionButtonText(userStatus.next_step);
 		}
 
-		return 'View Details';
+		return requiresTicket ? 'Get Tickets' : 'View Details';
 	});
 
 	let isDisabled = $derived.by(() => {
@@ -100,9 +101,8 @@
 			return;
 		}
 
-		// TODO: Implement RSVP/ticket checkout flows
-		// For now, this is just UI
-		console.log('Action button clicked', { userStatus, requiresTicket });
+		// Call parent's onclick handler if provided
+		onclick?.();
 	}
 </script>
 

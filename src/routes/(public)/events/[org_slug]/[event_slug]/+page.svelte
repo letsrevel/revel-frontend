@@ -12,6 +12,8 @@
 	import EventResources from '$lib/components/events/EventResources.svelte';
 	import TicketTierList from '$lib/components/tickets/TicketTierList.svelte';
 	import MyTicket from '$lib/components/tickets/MyTicket.svelte';
+	import TicketTierModal from '$lib/components/tickets/TicketTierModal.svelte';
+	import MyTicketModal from '$lib/components/tickets/MyTicketModal.svelte';
 	import { generateEventStructuredData, structuredDataToJsonLd } from '$lib/utils/structured-data';
 	import { isRSVP, isTicket } from '$lib/utils/eligibility';
 	import { getPotluckPermissions } from '$lib/utils/permissions';
@@ -62,6 +64,27 @@
 		if (!userStatus || !isTicket(userStatus)) return null;
 		return userStatus;
 	});
+
+	// Modal states
+	let showTicketTierModal = $state(false);
+	let showMyTicketModal = $state(false);
+
+	// Handle modals
+	function openTicketTierModal() {
+		showTicketTierModal = true;
+	}
+
+	function closeTicketTierModal() {
+		showTicketTierModal = false;
+	}
+
+	function openMyTicketModal() {
+		showMyTicketModal = true;
+	}
+
+	function closeMyTicketModal() {
+		showMyTicketModal = false;
+	}
 
 	// Ticket claiming mutation
 	let claimTicketMutation = createMutation(() => ({
@@ -131,6 +154,8 @@
 				bind:userStatus
 				isAuthenticated={data.isAuthenticated}
 				variant="card"
+				onGetTicketsClick={openTicketTierModal}
+				onShowTicketClick={openMyTicketModal}
 			/>
 		</div>
 
@@ -188,6 +213,8 @@
 						bind:userStatus
 						isAuthenticated={data.isAuthenticated}
 						variant="sidebar"
+						onGetTicketsClick={openTicketTierModal}
+						onShowTicketClick={openMyTicketModal}
 					/>
 
 					<!-- Organization Info (desktop only) -->
@@ -197,3 +224,25 @@
 		</div>
 	</div>
 </div>
+
+<!-- Ticket Tier Selection Modal -->
+<TicketTierModal
+	bind:open={showTicketTierModal}
+	tiers={ticketTiers}
+	isAuthenticated={data.isAuthenticated}
+	hasTicket={!!userTicket}
+	onClose={closeTicketTierModal}
+	onClaimTicket={handleClaimTicket}
+/>
+
+<!-- My Ticket Modal -->
+{#if userTicket}
+	<MyTicketModal
+		bind:open={showMyTicketModal}
+		ticket={userTicket}
+		eventName={event.name}
+		eventDate={event.start_datetime ? new Date(event.start_datetime).toLocaleString() : undefined}
+		eventLocation={event.location}
+		onClose={closeMyTicketModal}
+	/>
+{/if}
