@@ -238,94 +238,47 @@
 		{/if}
 	</div>
 
-	<!-- RSVP/Ticketing Section -->
-	<div class="overflow-hidden rounded-lg border border-border">
-		<button
-			type="button"
-			onclick={() => toggleSection('rsvp')}
-			class="flex w-full items-center justify-between bg-muted/50 p-4 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-			aria-expanded={isSectionOpen('rsvp')}
-		>
-			<div class="flex items-center gap-2 font-semibold">
-				{#if formData.requires_ticket}
-					<Ticket class="h-5 w-5" aria-hidden="true" />
-					Ticketing Options
-				{:else}
+	<!-- RSVP Options Section (only for non-ticketed events, ticketing options moved to Step 3) -->
+	{#if !formData.requires_ticket}
+		<div class="overflow-hidden rounded-lg border border-border">
+			<button
+				type="button"
+				onclick={() => toggleSection('rsvp')}
+				class="flex w-full items-center justify-between bg-muted/50 p-4 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+				aria-expanded={isSectionOpen('rsvp')}
+			>
+				<div class="flex items-center gap-2 font-semibold">
 					<CheckSquare class="h-5 w-5" aria-hidden="true" />
 					RSVP Options
-				{/if}
-			</div>
-			{#if isSectionOpen('rsvp')}
-				<ChevronDown class="h-5 w-5" aria-hidden="true" />
-			{:else}
-				<ChevronRight class="h-5 w-5" aria-hidden="true" />
-			{/if}
-		</button>
-
-		{#if isSectionOpen('rsvp')}
-			<div class="space-y-4 p-4">
-				<!-- RSVP Deadline (for all events) -->
-				<div class="space-y-2">
-					<label for="rsvp-before" class="block text-sm font-medium">
-						{formData.requires_ticket ? 'Ticket Purchase' : 'RSVP'} Deadline
-					</label>
-					<input
-						id="rsvp-before"
-						type="datetime-local"
-						value={formData.rsvp_before || ''}
-						oninput={(e) => onUpdate({ rsvp_before: e.currentTarget.value })}
-						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-					/>
-					<p class="text-xs text-muted-foreground">
-						Last date and time to {formData.requires_ticket ? 'purchase tickets' : 'RSVP'} (timezone:
-						{Intl.DateTimeFormat().resolvedOptions().timeZone})
-					</p>
 				</div>
-
-				{#if formData.requires_ticket}
-					<!-- Free for Members (tickets only) -->
-					<label
-						class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
-					>
-						<input
-							type="checkbox"
-							checked={formData.free_for_members || false}
-							onchange={(e) => onUpdate({ free_for_members: e.currentTarget.checked })}
-							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
-						/>
-						<div class="flex-1">
-							<div class="font-medium">Free for Members</div>
-							<div class="text-sm text-muted-foreground">
-								Organization members don't need to pay for tickets
-							</div>
-						</div>
-					</label>
-
-					<!-- Free for Staff (tickets only) -->
-					<label
-						class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
-					>
-						<input
-							type="checkbox"
-							checked={formData.free_for_staff || false}
-							onchange={(e) => onUpdate({ free_for_staff: e.currentTarget.checked })}
-							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
-						/>
-						<div class="flex-1">
-							<div class="font-medium">Free for Staff</div>
-							<div class="text-sm text-muted-foreground">
-								Staff members don't need to pay for tickets
-							</div>
-						</div>
-					</label>
-
-					<p class="text-sm italic text-muted-foreground">
-						Note: Ticket tier management will be available in a future update
-					</p>
+				{#if isSectionOpen('rsvp')}
+					<ChevronDown class="h-5 w-5" aria-hidden="true" />
+				{:else}
+					<ChevronRight class="h-5 w-5" aria-hidden="true" />
 				{/if}
-			</div>
-		{/if}
-	</div>
+			</button>
+
+			{#if isSectionOpen('rsvp')}
+				<div class="space-y-4 p-4">
+					<!-- RSVP Deadline -->
+					<div class="space-y-2">
+						<label for="rsvp-before" class="block text-sm font-medium"> RSVP Deadline </label>
+						<input
+							id="rsvp-before"
+							type="datetime-local"
+							value={formData.rsvp_before || ''}
+							oninput={(e) => onUpdate({ rsvp_before: e.currentTarget.value })}
+							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+						/>
+						<p class="text-xs text-muted-foreground">
+							Last date and time to RSVP (timezone: {Intl.DateTimeFormat().resolvedOptions()
+								.timeZone})
+						</p>
+					</div>
+				</div>
+			{/if}
+		</div>
+	{/if}
 
 	<!-- Capacity Section -->
 	<div class="overflow-hidden rounded-lg border border-border">

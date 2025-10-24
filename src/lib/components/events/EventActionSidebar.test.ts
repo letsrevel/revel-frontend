@@ -8,6 +8,7 @@ import type {
 	EventTicketSchema,
 	EventUserEligibility
 } from '$lib/api/generated/types.gen';
+import type { TierSchemaWithId } from '$lib/types/tickets';
 
 // Mock event helper
 function createMockEvent(overrides: Partial<EventDetailSchema> = {}): EventDetailSchema {
@@ -240,8 +241,10 @@ describe('EventActionSidebar', () => {
 					id: 'tier-id',
 					name: 'VIP Ticket',
 					price: '50.00',
-					currency: 'USD'
-				}
+					currency: 'USD',
+					event_id: 'event-id',
+					total_available: 100
+				} as TierSchemaWithId
 			};
 
 			render(EventActionSidebar, {
@@ -265,8 +268,10 @@ describe('EventActionSidebar', () => {
 					id: 'tier-id',
 					name: 'VIP Ticket',
 					price: '50.00',
-					currency: 'USD'
-				}
+					currency: 'USD',
+					event_id: 'event-id',
+					total_available: 100
+				} as TierSchemaWithId
 			};
 
 			render(EventActionSidebar, {

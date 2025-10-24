@@ -28,6 +28,7 @@
 	import EssentialsStep from './EssentialsStep.svelte';
 	import DetailsStep from './DetailsStep.svelte';
 	import EventResources from './EventResources.svelte';
+	import TicketingStep from './TicketingStep.svelte';
 	import { ChevronLeft, Save } from 'lucide-svelte';
 
 	interface Props {
@@ -52,7 +53,7 @@
 	const queryClient = useQueryClient();
 
 	// State management
-	let currentStep = $state<1 | 2 | 3>(1);
+	let currentStep = $state<1 | 2 | 3 | 4>(1);
 	let eventId = $state<string | null>(existingEvent?.id || null);
 	let isSaving = $state(false);
 	let errorMessage = $state<string | null>(null);
@@ -60,6 +61,11 @@
 	let selectedResourceIds = $state<string[]>([]);
 	let initialResourceIds = $state<string[]>([]); // Track initial state for comparison
 	let assignedQuestionnaires = $state<OrganizationQuestionnaireInListSchema[]>([]);
+
+	// Auto-scroll to top when step changes
+	$effect(() => {
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+	});
 
 	// Fetch and pre-select resources and questionnaires when editing an existing event
 	$effect(() => {
@@ -564,12 +570,29 @@
 				'flex h-10 w-10 items-center justify-center rounded-full border-2 font-semibold transition-colors',
 				currentStep === 2
 					? 'border-primary bg-primary text-primary-foreground'
-					: 'border-border bg-background text-muted-foreground'
+					: currentStep > 2
+						? 'border-green-600 bg-green-600 text-white'
+						: 'border-border bg-background text-muted-foreground'
 			)}
 			aria-current={currentStep === 2 ? 'step' : undefined}
 		>
 			2
 		</div>
+
+		{#if formData.requires_ticket && eventId}
+			<div class="h-0.5 flex-1 bg-border"></div>
+			<div
+				class={cn(
+					'flex h-10 w-10 items-center justify-center rounded-full border-2 font-semibold transition-colors',
+					currentStep === 3
+						? 'border-primary bg-primary text-primary-foreground'
+						: 'border-border bg-background text-muted-foreground'
+				)}
+				aria-current={currentStep === 3 ? 'step' : undefined}
+			>
+				3
+			</div>
+		{/if}
 	</div>
 
 	<!-- Success message -->
@@ -608,7 +631,7 @@
 			onSubmit={handleStep1Submit}
 			{isSaving}
 		/>
-	{:else}
+	{:else if currentStep === 2}
 		<div class="space-y-6">
 			<!-- Back button -->
 			<button
@@ -642,21 +665,42 @@
 				/>
 			{/if}
 
-			<!-- Save & Exit button -->
+			<!-- Save & Exit or Continue button -->
 			<div class="flex justify-end">
 				<button
 					type="button"
-					onclick={handleStep2Submit}
+					onclick={() => {
+						if (formData.requires_ticket && eventId) {
+							currentStep = 3;
+						} else {
+							handleStep2Submit();
+						}
+					}}
 					disabled={isSaving}
 					class={cn(
 						'inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
 						isSaving && 'cursor-not-allowed opacity-50'
 					)}
 				>
-					<Save class="h-5 w-5" aria-hidden="true" />
-					{isSaving ? 'Saving...' : 'Save & Exit'}
+					{#if formData.requires_ticket && eventId}
+						Continue to Ticketing →
+					{:else}
+						<Save class="h-5 w-5" aria-hidden="true" />
+						{isSaving ? 'Saving...' : 'Save & Exit'}
+					{/if}
 				</button>
 			</div>
 		</div>
+	{:else if currentStep === 3}
+		<TicketingStep
+			eventId={eventId!}
+			organizationStripeConnected={organization.is_stripe_connected}
+			{formData}
+			onUpdate={updateFormData}
+			onBack={() => {
+				currentStep = 2;
+			}}
+			onNext={handleStep2Submit}
+		/>
 	{/if}
 </div>

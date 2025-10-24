@@ -15,6 +15,8 @@
 		userStatus: UserEventStatus | null;
 		isAuthenticated: boolean;
 		variant?: 'sidebar' | 'card';
+		onGetTicketsClick?: () => void;
+		onShowTicketClick?: () => void;
 		class?: string;
 	}
 
@@ -23,6 +25,8 @@
 		userStatus = $bindable(),
 		isAuthenticated,
 		variant = 'sidebar',
+		onGetTicketsClick,
+		onShowTicketClick,
 		class: className
 	}: Props = $props();
 
@@ -38,7 +42,13 @@
 		}
 
 		if (isTicket(userStatus)) {
-			return userStatus.status === 'active' || userStatus.status === 'checked_in';
+			// User has a ticket if status is pending, active, or checked_in
+			// (not cancelled - cancelled tickets shouldn't count as attending)
+			return (
+				userStatus.status === 'pending' ||
+				userStatus.status === 'active' ||
+				userStatus.status === 'checked_in'
+			);
 		}
 
 		return false;
@@ -57,6 +67,9 @@
 		if (isTicket(userStatus)) {
 			if (userStatus.status === 'checked_in') {
 				return "You're checked in";
+			}
+			if (userStatus.status === 'pending') {
+				return 'Your ticket is pending';
 			}
 			return 'You have a ticket';
 		}
@@ -102,11 +115,22 @@
 	 * Handle view ticket/manage RSVP action
 	 */
 	function handleSecondaryAction(): void {
+		console.log('handleSecondaryAction called', {
+			userStatus,
+			onShowTicketClick,
+			onGetTicketsClick
+		});
+
 		if (!userStatus) return;
 
 		if (isTicket(userStatus)) {
-			// TODO: Navigate to ticket view page
-			console.log('View ticket:', userStatus);
+			// Call parent's show ticket handler
+			console.log('Calling onShowTicketClick');
+			if (onShowTicketClick) {
+				onShowTicketClick();
+			} else {
+				console.error('onShowTicketClick is not defined!');
+			}
 			return;
 		}
 
@@ -194,6 +218,7 @@
 						{userStatus}
 						requiresTicket={event.requires_ticket}
 						{isAuthenticated}
+						onclick={onGetTicketsClick}
 						class="w-full"
 					/>
 				{/if}
@@ -205,10 +230,13 @@
 			<button
 				type="button"
 				onclick={handleSecondaryAction}
-				class="w-full rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				class="w-full cursor-pointer rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			>
 				{#if userStatus && isTicket(userStatus)}
-					View Ticket
+					<span class="flex items-center justify-center gap-2">
+						<Ticket class="h-4 w-4" aria-hidden="true" />
+						Show Ticket
+					</span>
 				{:else}
 					{showManageRSVP ? 'Hide' : 'Change'} RSVP
 				{/if}
