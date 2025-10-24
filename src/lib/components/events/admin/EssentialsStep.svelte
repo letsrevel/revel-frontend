@@ -177,7 +177,9 @@
 			</span>
 		</label>
 		<div class="space-y-2" role="radiogroup" aria-label="Event visibility">
-			<label class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent">
+			<label
+				class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+			>
 				<input
 					type="radio"
 					name="visibility"
@@ -192,7 +194,9 @@
 				</div>
 			</label>
 
-			<label class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent">
+			<label
+				class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+			>
 				<input
 					type="radio"
 					name="visibility"
@@ -207,7 +211,9 @@
 				</div>
 			</label>
 
-			<label class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent">
+			<label
+				class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+			>
 				<input
 					type="radio"
 					name="visibility"
@@ -218,11 +224,15 @@
 				/>
 				<div class="flex-1">
 					<div class="font-medium">Members Only</div>
-					<div class="text-sm text-muted-foreground">Only organization members can see the event</div>
+					<div class="text-sm text-muted-foreground">
+						Only organization members can see the event
+					</div>
 				</div>
 			</label>
 
-			<label class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent">
+			<label
+				class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+			>
 				<input
 					type="radio"
 					name="visibility"
@@ -233,7 +243,9 @@
 				/>
 				<div class="flex-1">
 					<div class="font-medium">Staff Only</div>
-					<div class="text-sm text-muted-foreground">Only org's staff members can see the event</div>
+					<div class="text-sm text-muted-foreground">
+						Only org's staff members can see the event
+					</div>
 				</div>
 			</label>
 		</div>
@@ -248,7 +260,9 @@
 			</span>
 		</label>
 		<div class="space-y-2" role="radiogroup" aria-label="Event type">
-			<label class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent">
+			<label
+				class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+			>
 				<input
 					type="radio"
 					name="event_type"
@@ -263,7 +277,9 @@
 				</div>
 			</label>
 
-			<label class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent">
+			<label
+				class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+			>
 				<input
 					type="radio"
 					name="event_type"
@@ -278,7 +294,9 @@
 				</div>
 			</label>
 
-			<label class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent">
+			<label
+				class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+			>
 				<input
 					type="radio"
 					name="event_type"
@@ -297,7 +315,9 @@
 
 	<!-- Requires Ticket -->
 	<div class="space-y-2">
-		<label class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent">
+		<label
+			class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+		>
 			<input
 				type="checkbox"
 				checked={formData.requires_ticket || false}
@@ -316,8 +336,14 @@
 		</label>
 	</div>
 
-	<!-- Submit Button -->
-	<div class="flex justify-end border-t border-border pt-6">
+	<!-- Navigation Buttons -->
+	<div class="flex justify-between border-t border-border pt-6">
+		<a
+			href=".."
+			class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-6 py-3 font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+		>
+			Cancel
+		</a>
 		<button
 			type="submit"
 			disabled={isSaving}

@@ -83,8 +83,8 @@
 		hasId &&
 			isAuthenticated &&
 			!hasTicket &&
-			salesStatus().active &&
-			availabilityStatus().available &&
+			salesStatus.active &&
+			availabilityStatus.available &&
 			tier.payment_method === 'free'
 	);
 
@@ -117,20 +117,20 @@
 
 			<!-- Status Indicators -->
 			<dl class="mt-3 flex flex-wrap gap-4 text-sm">
-				{#if !salesStatus().active}
+				{#if !salesStatus.active}
 					<div class="flex items-center gap-1.5 text-muted-foreground">
 						<Clock class="h-4 w-4" aria-hidden="true" />
-						<dd>{salesStatus().message}</dd>
+						<dd>{salesStatus.message}</dd>
 					</div>
 				{/if}
 
 				{#if tier.total_available !== null}
 					<div
 						class="flex items-center gap-1.5"
-						class:text-destructive={!availabilityStatus().available}
+						class:text-destructive={!availabilityStatus.available}
 					>
 						<Users class="h-4 w-4" aria-hidden="true" />
-						<dd>{availabilityStatus().message}</dd>
+						<dd>{availabilityStatus.message}</dd>
 					</div>
 				{/if}
 			</dl>
@@ -152,9 +152,9 @@
 				</Button>
 			{:else if tier.payment_method === 'free' && !isAuthenticated}
 				<Button href="/login" variant="outline" class="w-full sm:w-auto">Sign in to Claim</Button>
-			{:else if tier.payment_method === 'free' && !salesStatus().active}
+			{:else if tier.payment_method === 'free' && !salesStatus.active}
 				<Button disabled class="w-full sm:w-auto">Not Available</Button>
-			{:else if tier.payment_method === 'free' && !availabilityStatus().available}
+			{:else if tier.payment_method === 'free' && !availabilityStatus.available}
 				<Button disabled class="w-full sm:w-auto">Sold Out</Button>
 			{:else}
 				<div class="rounded-md bg-muted px-4 py-2 text-sm text-muted-foreground">Coming Soon</div>
