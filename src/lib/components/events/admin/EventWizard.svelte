@@ -633,16 +633,6 @@
 		/>
 	{:else if currentStep === 2}
 		<div class="space-y-6">
-			<!-- Back button -->
-			<button
-				type="button"
-				onclick={handleBackToStep1}
-				class="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-			>
-				<ChevronLeft class="h-4 w-4" aria-hidden="true" />
-				Back to essentials
-			</button>
-
 			<DetailsStep
 				{formData}
 				{eventSeries}
@@ -665,8 +655,15 @@
 				/>
 			{/if}
 
-			<!-- Save & Exit or Continue button -->
-			<div class="flex justify-end">
+			<!-- Navigation -->
+			<div class="flex justify-between border-t border-border pt-6">
+				<button
+					type="button"
+					onclick={handleBackToStep1}
+					class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-6 py-3 font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				>
+					← Back
+				</button>
 				<button
 					type="button"
 					onclick={() => {
