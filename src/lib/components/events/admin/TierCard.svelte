@@ -15,10 +15,10 @@
 	let priceDisplay = $derived(() => {
 		if (tier.payment_method === 'free') return 'Free';
 		if (tier.price_type === 'pwyc') {
-			const max = tier.pwyc_max ? `$${tier.pwyc_max.toFixed(2)}` : 'any';
-			return `Pay What You Can ($${tier.pwyc_min?.toFixed(2)} - ${max})`;
+			const max = tier.pwyc_max ? `$${Number(tier.pwyc_max).toFixed(2)}` : 'any';
+			return `Pay What You Can ($${Number(tier.pwyc_min).toFixed(2)} - ${max})`;
 		}
-		return `$${tier.price.toFixed(2)}`;
+		return `$${Number(tier.price).toFixed(2)}`;
 	});
 
 	let quantityDisplay = $derived(() => {

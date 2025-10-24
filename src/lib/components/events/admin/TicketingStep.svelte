@@ -95,7 +95,7 @@
 	<!-- Navigation -->
 	<div class="flex justify-between border-t border-border pt-6">
 		<Button variant="outline" onclick={onBack}>← Back</Button>
-		<Button onclick={onNext}>Finish & Publish →</Button>
+		<Button onclick={onNext}>Save & Exit</Button>
 	</div>
 </div>
 
