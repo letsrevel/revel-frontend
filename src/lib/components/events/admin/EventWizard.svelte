@@ -489,6 +489,9 @@
 	function handleBackToStep1(): void {
 		currentStep = 1;
 		errorMessage = null;
+		setTimeout(() => {
+			window.scrollTo({ top: 0, behavior: 'smooth' });
+		}, 0);
 	}
 
 	/**
@@ -667,7 +670,10 @@
 					onclick={() => {
 						if (formData.requires_ticket && eventId) {
 							currentStep = 3;
-							window.scrollTo({ top: 0, behavior: 'smooth' });
+							// Scroll after DOM updates
+							setTimeout(() => {
+								window.scrollTo({ top: 0, behavior: 'smooth' });
+							}, 0);
 						} else {
 							handleStep2Submit();
 						}
@@ -691,7 +697,12 @@
 		<TicketingStep
 			eventId={eventId!}
 			organizationStripeConnected={organization.is_stripe_connected}
-			onBack={() => (currentStep = 2)}
+			onBack={() => {
+				currentStep = 2;
+				setTimeout(() => {
+					window.scrollTo({ top: 0, behavior: 'smooth' });
+				}, 0);
+			}}
 			onNext={handleStep2Submit}
 		/>
 	{/if}
