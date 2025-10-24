@@ -4,6 +4,7 @@
 	import CityAutocomplete from '$lib/components/forms/CityAutocomplete.svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import ImageUploader from '$lib/components/forms/ImageUploader.svelte';
+	import StripeConnect from '$lib/components/organization/StripeConnect.svelte';
 	import type { CitySchema } from '$lib/api/generated';
 	import { Building2, AlertCircle, Check, Eye } from 'lucide-svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -314,6 +315,13 @@
 			</div>
 		</div>
 	</section>
+
+	<!-- Stripe Connect Section -->
+	<StripeConnect
+		organizationSlug={data.organization.slug}
+		isConnected={data.organization.is_stripe_connected}
+		accessToken={accessToken || ''}
+	/>
 
 	<!-- Images Section (Outside Form) -->
 	<section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
