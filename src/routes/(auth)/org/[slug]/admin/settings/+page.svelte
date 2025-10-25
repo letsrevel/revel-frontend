@@ -4,6 +4,7 @@
 	import CityAutocomplete from '$lib/components/forms/CityAutocomplete.svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import ImageUploader from '$lib/components/forms/ImageUploader.svelte';
+	import StripeConnect from '$lib/components/organization/StripeConnect.svelte';
 	import type { CitySchema } from '$lib/api/generated';
 	import { Building2, AlertCircle, Check, Eye } from 'lucide-svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -314,6 +315,47 @@
 			</div>
 		</div>
 	</section>
+
+	<!-- Platform Fees (Read-only) -->
+	<section class="rounded-lg border border-border bg-card p-6 shadow-sm">
+		<div class="mb-4 flex items-center gap-2">
+			<Building2 class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+			<h2 class="text-lg font-semibold">Platform Fees</h2>
+		</div>
+
+		<div class="grid gap-4 md:grid-cols-2">
+			<!-- Platform Fee Percent -->
+			<div>
+				<div class="block text-sm font-medium text-muted-foreground">Platform Fee (Percent)</div>
+				<div class="mt-1 rounded-md border border-border bg-muted px-3 py-2 text-sm">
+					{data.organization.platform_fee_percent}%
+				</div>
+				<p class="mt-1 text-xs text-muted-foreground">Percentage fee applied to ticket sales</p>
+			</div>
+
+			<!-- Platform Fee Fixed -->
+			<div>
+				<div class="block text-sm font-medium text-muted-foreground">Platform Fee (Fixed)</div>
+				<div class="mt-1 rounded-md border border-border bg-muted px-3 py-2 text-sm">
+					${data.organization.platform_fee_fixed}
+				</div>
+				<p class="mt-1 text-xs text-muted-foreground">Fixed fee per ticket sold</p>
+			</div>
+		</div>
+
+		<p class="mt-4 text-xs text-muted-foreground">
+			Contact support to modify platform fee settings
+		</p>
+	</section>
+
+	<!-- Stripe Connect Section -->
+	<StripeConnect
+		organizationSlug={data.organization.slug}
+		stripeChargesEnabled={data.organization.stripe_charges_enabled}
+		stripeDetailsSubmitted={data.organization.stripe_details_submitted}
+		stripeAccountId={data.organization.stripe_account_id}
+		accessToken={accessToken || ''}
+	/>
 
 	<!-- Images Section (Outside Form) -->
 	<section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">

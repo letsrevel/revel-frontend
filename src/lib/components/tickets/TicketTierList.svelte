@@ -8,9 +8,10 @@
 		isAuthenticated: boolean;
 		hasTicket?: boolean;
 		onClaimTicket: (tierId: string) => void | Promise<void>;
+		onCheckout?: (tierId: string, isPwyc: boolean) => void | Promise<void>;
 	}
 
-	let { tiers, isAuthenticated, hasTicket = false, onClaimTicket }: Props = $props();
+	let { tiers, isAuthenticated, hasTicket = false, onClaimTicket, onCheckout }: Props = $props();
 
 	// Filter out hidden tiers and sort by price
 	let visibleTiers = $derived(
@@ -35,7 +36,7 @@
 
 		<div class="space-y-4">
 			{#each visibleTiers as tier (tier.id || tier.event_id + tier.name)}
-				<TierCard {tier} {isAuthenticated} {hasTicket} {onClaimTicket} />
+				<TierCard {tier} {isAuthenticated} {hasTicket} {onClaimTicket} {onCheckout} />
 			{/each}
 		</div>
 
