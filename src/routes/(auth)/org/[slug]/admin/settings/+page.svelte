@@ -337,7 +337,7 @@
 			<div>
 				<div class="block text-sm font-medium text-muted-foreground">Platform Fee (Fixed)</div>
 				<div class="mt-1 rounded-md border border-border bg-muted px-3 py-2 text-sm">
-					${data.organization.platform_fee_fixed}
+					€{data.organization.platform_fee_fixed}
 				</div>
 				<p class="mt-1 text-xs text-muted-foreground">Fixed fee per ticket sold</p>
 			</div>

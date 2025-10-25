@@ -316,13 +316,16 @@
 	<!-- Requires Ticket -->
 	<div class="space-y-2">
 		<label
-			class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+			class="flex items-center gap-3 rounded-md border border-input p-3 transition-colors {isEditMode
+				? 'cursor-not-allowed opacity-60'
+				: 'cursor-pointer hover:bg-accent'}"
 		>
 			<input
 				type="checkbox"
 				checked={formData.requires_ticket || false}
 				onchange={(e) => onUpdate({ requires_ticket: e.currentTarget.checked })}
-				class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+				disabled={isEditMode}
+				class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
 			/>
 			<div class="flex-1">
 				<div class="flex items-center gap-2 font-medium">
@@ -334,6 +337,20 @@
 				</div>
 			</div>
 		</label>
+
+		{#if isEditMode}
+			<div
+				class="rounded-md border border-yellow-200 bg-yellow-50 px-3 py-2 text-xs text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-100"
+			>
+				⚠️ This setting cannot be changed after the event is created
+			</div>
+		{:else if formData.requires_ticket}
+			<div
+				class="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-100"
+			>
+				ℹ️ Note: This setting cannot be changed once the event is created. Choose carefully!
+			</div>
+		{/if}
 	</div>
 
 	<!-- Navigation Buttons -->
