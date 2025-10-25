@@ -12,6 +12,7 @@
 		hasTicket: boolean;
 		onClose: () => void;
 		onClaimTicket: (tierId: string) => void;
+		onCheckout?: (tierId: string, isPwyc: boolean) => void;
 	}
 
 	let {
@@ -20,7 +21,8 @@
 		isAuthenticated,
 		hasTicket,
 		onClose,
-		onClaimTicket
+		onClaimTicket,
+		onCheckout
 	}: Props = $props();
 
 	const CURRENCY_SYMBOLS: Record<string, string> = {
@@ -79,6 +81,25 @@
 		onClaimTicket(tierId);
 		onClose();
 	}
+
+	function handleCheckout(tierId: string, isPwyc: boolean): void {
+		if (onCheckout) {
+			onCheckout(tierId, isPwyc);
+			onClose();
+		}
+	}
+
+	function canCheckoutTier(tier: TierSchemaWithId): boolean {
+		return tier.payment_method === 'online' && onCheckout !== undefined;
+	}
+
+	function canClaimTier(tier: TierSchemaWithId): boolean {
+		return (
+			tier.payment_method === 'free' ||
+			tier.payment_method === 'offline' ||
+			tier.payment_method === 'at_the_door'
+		);
+	}
 </script>
 
 <Dialog bind:open>
@@ -133,10 +154,10 @@
 									{/if}
 								</div>
 
-								<!-- Claim Button -->
+								<!-- Action Button -->
 								<div>
 									{#if !isAuthenticated}
-										<Button variant="secondary" size="sm" disabled>Sign in to claim</Button>
+										<Button variant="secondary" size="sm" disabled>Sign in</Button>
 									{:else if hasTicket}
 										<Button variant="secondary" size="sm" disabled>
 											<Check class="mr-2 h-4 w-4" />
@@ -144,10 +165,19 @@
 										</Button>
 									{:else if !isTierAvailable(tier)}
 										<Button variant="secondary" size="sm" disabled>Sold out</Button>
-									{:else}
+									{:else if canCheckoutTier(tier)}
+										<Button
+											variant="default"
+											size="sm"
+											onclick={() => handleCheckout(tier.id, tier.price_type === 'pwyc')}
+										>
+											<Ticket class="mr-2 h-4 w-4" />
+											Get Ticket
+										</Button>
+									{:else if canClaimTier(tier)}
 										<Button variant="default" size="sm" onclick={() => handleClaimTicket(tier.id)}>
 											<Ticket class="mr-2 h-4 w-4" />
-											Claim
+											{tier.payment_method === 'free' ? 'Claim' : 'Reserve'}
 										</Button>
 									{/if}
 								</div>

@@ -23,7 +23,7 @@
 					label: 'Pending',
 					icon: Clock,
 					className:
-						'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-100 dark:border-yellow-800'
+						'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-950 dark:text-orange-100 dark:border-orange-800'
 				};
 			case 'checked_in':
 				return {

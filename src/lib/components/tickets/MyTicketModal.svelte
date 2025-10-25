@@ -14,6 +14,8 @@
 		eventDate?: string;
 		eventLocation?: string;
 		onClose: () => void;
+		onResumePayment?: () => void;
+		isResumingPayment?: boolean;
 	}
 
 	let {
@@ -22,7 +24,9 @@
 		eventName,
 		eventDate,
 		eventLocation,
-		onClose
+		onClose,
+		onResumePayment,
+		isResumingPayment = false
 	}: Props = $props();
 
 	let qrCodeDataUrl = $state<string | null>(null);
@@ -73,6 +77,16 @@
 		link.href = qrCodeDataUrl;
 		link.click();
 	}
+
+	// Check if ticket is pending and payment method allows resume
+	let canResumePayment = $derived(() => {
+		if (ticket.status !== 'pending') return false;
+		if (!ticket.tier) return false;
+
+		const paymentMethod = ticket.tier.payment_method;
+		// Allow resume for online (Stripe) and offline, but not at-the-door
+		return paymentMethod === 'online' || paymentMethod === 'offline';
+	});
 </script>
 
 <Dialog bind:open>
@@ -97,6 +111,62 @@
 				</div>
 				<TicketStatusBadge status={ticket.status} />
 			</div>
+
+			<!-- Pending Payment Banner -->
+			{#if ticket.status === 'pending'}
+				<div
+					class="rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-950"
+					role="alert"
+				>
+					<div class="flex items-start gap-3">
+						<svg
+							class="h-5 w-5 shrink-0 text-orange-600 dark:text-orange-400"
+							fill="currentColor"
+							viewBox="0 0 20 20"
+							aria-hidden="true"
+						>
+							<path
+								fill-rule="evenodd"
+								d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z"
+								clip-rule="evenodd"
+							/>
+						</svg>
+						<div class="flex-1">
+							<p class="font-medium text-orange-900 dark:text-orange-100">
+								Your ticket is pending payment
+							</p>
+							<p class="mt-1 text-sm text-orange-800 dark:text-orange-200">
+								{#if ticket.tier?.payment_method === 'online'}
+									Complete your payment to confirm your ticket. Your reservation will expire if
+									payment is not completed.
+								{:else if ticket.tier?.payment_method === 'offline'}
+									Please complete your offline payment as instructed by the organizer to confirm
+									your ticket.
+								{:else}
+									Complete your payment to confirm your ticket.
+								{/if}
+							</p>
+							{#if canResumePayment() && onResumePayment}
+								<button
+									onclick={onResumePayment}
+									disabled={isResumingPayment}
+									class="mt-3 inline-flex items-center gap-2 rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-orange-500 dark:hover:bg-orange-600"
+								>
+									{#if isResumingPayment}
+										<div
+											class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+											aria-hidden="true"
+										></div>
+										Processing...
+									{:else}
+										Resume Payment
+									{/if}
+								</button>
+							{/if}
+						</div>
+					</div>
+				</div>
+			{/if}
 
 			<!-- Event Details -->
 			{#if eventDate || eventLocation}

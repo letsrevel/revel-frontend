@@ -10,9 +10,10 @@
 		isAuthenticated: boolean;
 		hasTicket?: boolean;
 		onClaimTicket: (tierId: string) => void | Promise<void>;
+		onCheckout?: (tierId: string, isPwyc: boolean) => void | Promise<void>;
 	}
 
-	let { tier, isAuthenticated, hasTicket = false, onClaimTicket }: Props = $props();
+	let { tier, isAuthenticated, hasTicket = false, onClaimTicket, onCheckout }: Props = $props();
 
 	// Check if tier has ID (required for checkout)
 	let hasId = $derived(hasTierId(tier));
@@ -78,7 +79,7 @@
 		return { available: true, message: `${tier.total_available} remaining` };
 	});
 
-	// Can claim ticket
+	// Can claim free ticket
 	let canClaim = $derived(
 		hasId &&
 			isAuthenticated &&
@@ -88,8 +89,51 @@
 			tier.payment_method === 'free'
 	);
 
+	// Can checkout for online payment
+	let canCheckout = $derived(
+		hasId &&
+			isAuthenticated &&
+			!hasTicket &&
+			salesStatus.active &&
+			availabilityStatus.available &&
+			tier.payment_method === 'online' &&
+			onCheckout !== undefined
+	);
+
+	// Can reserve offline/at-the-door ticket
+	let canReserve = $derived(
+		hasId &&
+			isAuthenticated &&
+			!hasTicket &&
+			salesStatus.active &&
+			availabilityStatus.available &&
+			(tier.payment_method === 'offline' || tier.payment_method === 'at_the_door')
+	);
+
 	async function handleClaim() {
 		if (!canClaim || isClaiming || !hasId) return;
+
+		isClaiming = true;
+		try {
+			await onClaimTicket(tier.id);
+		} finally {
+			isClaiming = false;
+		}
+	}
+
+	async function handleCheckout() {
+		if (!canCheckout || isClaiming || !hasId || !onCheckout) return;
+
+		isClaiming = true;
+		try {
+			await onCheckout(tier.id, tier.price_type === 'pwyc');
+		} finally {
+			isClaiming = false;
+		}
+	}
+
+	async function handleReserve() {
+		if (!canReserve || isClaiming || !hasId) return;
 
 		isClaiming = true;
 		try {
@@ -143,19 +187,36 @@
 					Configuration Error
 				</div>
 			{:else if hasTicket}
-				<div class="rounded-md bg-green-100 px-4 py-2 text-sm font-medium text-green-800">
+				<div
+					class="rounded-md bg-green-100 px-4 py-2 text-sm font-medium text-green-800 dark:bg-green-950 dark:text-green-100"
+				>
 					✓ You have a ticket
 				</div>
-			{:else if tier.payment_method === 'free' && canClaim}
+			{:else if !salesStatus.active}
+				<Button disabled class="w-full sm:w-auto">Not Available</Button>
+			{:else if !availabilityStatus.available}
+				<Button disabled class="w-full sm:w-auto">Sold Out</Button>
+			{:else if !isAuthenticated}
+				<Button href="/login" variant="outline" class="w-full sm:w-auto"
+					>Sign in to Get Ticket</Button
+				>
+			{:else if canClaim}
 				<Button onclick={handleClaim} disabled={isClaiming} class="w-full sm:w-auto">
 					{isClaiming ? 'Claiming...' : 'Claim Free Ticket'}
 				</Button>
-			{:else if tier.payment_method === 'free' && !isAuthenticated}
-				<Button href="/login" variant="outline" class="w-full sm:w-auto">Sign in to Claim</Button>
-			{:else if tier.payment_method === 'free' && !salesStatus.active}
-				<Button disabled class="w-full sm:w-auto">Not Available</Button>
-			{:else if tier.payment_method === 'free' && !availabilityStatus.available}
-				<Button disabled class="w-full sm:w-auto">Sold Out</Button>
+			{:else if canCheckout}
+				<Button onclick={handleCheckout} disabled={isClaiming} class="w-full sm:w-auto">
+					{isClaiming ? 'Processing...' : 'Get Ticket'}
+				</Button>
+			{:else if canReserve}
+				<Button
+					onclick={handleReserve}
+					disabled={isClaiming}
+					variant="outline"
+					class="w-full sm:w-auto"
+				>
+					{isClaiming ? 'Reserving...' : 'Reserve Ticket'}
+				</Button>
 			{:else}
 				<div class="rounded-md bg-muted px-4 py-2 text-sm text-muted-foreground">Coming Soon</div>
 			{/if}
