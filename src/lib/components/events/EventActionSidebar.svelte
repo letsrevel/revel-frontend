@@ -1,5 +1,8 @@
 <script lang="ts">
-	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
+	import type {
+		EventDetailSchema,
+		OrganizationPermissionsSchema
+	} from '$lib/api/generated/types.gen';
 	import type { UserEventStatus } from '$lib/utils/eligibility';
 	import { isRSVP, isTicket, isEligibility } from '$lib/utils/eligibility';
 	import { cn } from '$lib/utils/cn';
@@ -8,12 +11,13 @@
 	import ActionButton from './ActionButton.svelte';
 	import EventRSVP from './EventRSVP.svelte';
 	import EligibilityStatusDisplay from './EligibilityStatusDisplay.svelte';
-	import { Check, Ticket } from 'lucide-svelte';
+	import { Check, Ticket, Settings, Users } from 'lucide-svelte';
 
 	interface Props {
 		event: EventDetailSchema;
 		userStatus: UserEventStatus | null;
 		isAuthenticated: boolean;
+		userPermissions?: OrganizationPermissionsSchema | null;
 		variant?: 'sidebar' | 'card';
 		onGetTicketsClick?: () => void;
 		onShowTicketClick?: () => void;
@@ -24,6 +28,7 @@
 		event,
 		userStatus = $bindable(),
 		isAuthenticated,
+		userPermissions,
 		variant = 'sidebar',
 		onGetTicketsClick,
 		onShowTicketClick,
@@ -110,6 +115,18 @@
 
 	// State for showing RSVP management
 	let showManageRSVP = $state(false);
+
+	/**
+	 * Check if user can manage this event (owner or staff)
+	 */
+	let canManageEvent = $derived.by(() => {
+		if (!userPermissions || !event.organization?.id) return false;
+
+		const orgPermissions = userPermissions.organization_permissions?.[event.organization.id];
+
+		// User can manage if they are owner or staff
+		return !!orgPermissions;
+	});
 
 	/**
 	 * Handle view ticket/manage RSVP action
@@ -253,6 +270,39 @@
 					{event}
 				/>
 			{/if}
+		{/if}
+
+		<!-- Manage Event Section (for staff/owners) -->
+		{#if canManageEvent}
+			<div class="border-t pt-4">
+				<h3 class="mb-3 text-sm font-semibold">Manage Event</h3>
+				<div class="space-y-2">
+					<a
+						href="/org/{event.organization.slug}/admin/events/{event.id}/edit"
+						class="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>
+						<Settings class="h-4 w-4" aria-hidden="true" />
+						Edit Event
+					</a>
+					{#if event.requires_ticket}
+						<a
+							href="/org/{event.organization.slug}/admin/events/{event.id}/tickets"
+							class="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						>
+							<Users class="h-4 w-4" aria-hidden="true" />
+							Manage Tickets
+						</a>
+					{:else}
+						<a
+							href="/org/{event.organization.slug}/admin/events/{event.id}/attendees"
+							class="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						>
+							<Users class="h-4 w-4" aria-hidden="true" />
+							Manage Attendees
+						</a>
+					{/if}
+				</div>
+			</div>
 		{/if}
 
 		<!-- Quick Info Section -->

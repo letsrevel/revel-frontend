@@ -16,7 +16,8 @@
 		Eye,
 		Trash2,
 		CheckCircle,
-		XCircle
+		XCircle,
+		UserCheck
 	} from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -43,7 +44,9 @@
 
 			if (response.error) {
 				const errorDetail =
-					typeof response.error === 'object' && response.error !== null && 'detail' in response.error
+					typeof response.error === 'object' &&
+					response.error !== null &&
+					'detail' in response.error
 						? (response.error.detail as string)
 						: 'Failed to update status';
 				throw new Error(errorDetail);
@@ -84,6 +87,20 @@
 	 */
 	function viewEvent(eventSlug: string): void {
 		goto(`/events/${organization.slug}/${eventSlug}`);
+	}
+
+	/**
+	 * Navigate to attendees management page
+	 */
+	function manageAttendees(eventId: string): void {
+		goto(`/org/${organization.slug}/admin/events/${eventId}/attendees`);
+	}
+
+	/**
+	 * Navigate to tickets management page
+	 */
+	function manageTickets(eventId: string): void {
+		goto(`/org/${organization.slug}/admin/events/${eventId}/tickets`);
 	}
 
 	/**
@@ -159,9 +176,15 @@
 
 	// Derived state: group events by status
 	// Note: Status type in OpenAPI is incorrect, using string comparison
-	let draftEvents = $derived(data.events.filter((e: EventInListSchema) => e.status as string === 'draft'));
-	let openEvents = $derived(data.events.filter((e: EventInListSchema) => e.status as string === 'open'));
-	let closedEvents = $derived(data.events.filter((e: EventInListSchema) => e.status as string === 'closed'));
+	let draftEvents = $derived(
+		data.events.filter((e: EventInListSchema) => (e.status as string) === 'draft')
+	);
+	let openEvents = $derived(
+		data.events.filter((e: EventInListSchema) => (e.status as string) === 'open')
+	);
+	let closedEvents = $derived(
+		data.events.filter((e: EventInListSchema) => (e.status as string) === 'closed')
+	);
 </script>
 
 <svelte:head>
@@ -220,7 +243,10 @@
 								<div class="flex items-start justify-between gap-2">
 									<h3 class="font-semibold">{event.name}</h3>
 									<span
-										class={cn('rounded-full px-2 py-1 text-xs font-medium', getStatusColor(event.status))}
+										class={cn(
+											'rounded-full px-2 py-1 text-xs font-medium',
+											getStatusColor(event.status)
+										)}
 									>
 										Draft
 									</span>
@@ -286,7 +312,10 @@
 								<div class="flex items-start justify-between gap-2">
 									<h3 class="font-semibold">{event.name}</h3>
 									<span
-										class={cn('rounded-full px-2 py-1 text-xs font-medium', getStatusColor(event.status))}
+										class={cn(
+											'rounded-full px-2 py-1 text-xs font-medium',
+											getStatusColor(event.status)
+										)}
 									>
 										Published
 									</span>
@@ -307,7 +336,8 @@
 									{#if event.attendee_count !== undefined}
 										<div class="flex items-center gap-2">
 											<Users class="h-4 w-4" aria-hidden="true" />
-											{event.attendee_count} {event.requires_ticket ? 'Attendees' : 'RSVPs'}
+											{event.attendee_count}
+											{event.requires_ticket ? 'Attendees' : 'RSVPs'}
 										</div>
 									{/if}
 								</div>
@@ -330,6 +360,25 @@
 										<Edit class="h-4 w-4" aria-hidden="true" />
 										Edit
 									</button>
+									{#if event.requires_ticket}
+										<button
+											type="button"
+											onclick={() => manageTickets(event.id)}
+											class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+										>
+											<UserCheck class="h-4 w-4" aria-hidden="true" />
+											Tickets
+										</button>
+									{:else}
+										<button
+											type="button"
+											onclick={() => manageAttendees(event.id)}
+											class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+										>
+											<UserCheck class="h-4 w-4" aria-hidden="true" />
+											Attendees
+										</button>
+									{/if}
 									<button
 										type="button"
 										onclick={() => closeEvent(event.id)}
@@ -352,13 +401,16 @@
 				<h2 class="text-lg font-semibold">Closed ({closedEvents.length})</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each closedEvents as event (event.id)}
-						<div class="rounded-lg border border-border bg-card p-4 shadow-sm opacity-75">
+						<div class="rounded-lg border border-border bg-card p-4 opacity-75 shadow-sm">
 							<div class="space-y-3">
 								<!-- Header -->
 								<div class="flex items-start justify-between gap-2">
 									<h3 class="font-semibold">{event.name}</h3>
 									<span
-										class={cn('rounded-full px-2 py-1 text-xs font-medium', getStatusColor(event.status))}
+										class={cn(
+											'rounded-full px-2 py-1 text-xs font-medium',
+											getStatusColor(event.status)
+										)}
 									>
 										Closed
 									</span>
@@ -379,7 +431,8 @@
 									{#if event.attendee_count !== undefined}
 										<div class="flex items-center gap-2">
 											<Users class="h-4 w-4" aria-hidden="true" />
-											{event.attendee_count} {event.requires_ticket ? 'Attendees' : 'RSVPs'}
+											{event.attendee_count}
+											{event.requires_ticket ? 'Attendees' : 'RSVPs'}
 										</div>
 									{/if}
 								</div>
@@ -394,6 +447,25 @@
 										<Eye class="h-4 w-4" aria-hidden="true" />
 										View
 									</button>
+									{#if event.requires_ticket}
+										<button
+											type="button"
+											onclick={() => manageTickets(event.id)}
+											class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+										>
+											<UserCheck class="h-4 w-4" aria-hidden="true" />
+											Tickets
+										</button>
+									{:else}
+										<button
+											type="button"
+											onclick={() => manageAttendees(event.id)}
+											class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+										>
+											<UserCheck class="h-4 w-4" aria-hidden="true" />
+											Attendees
+										</button>
+									{/if}
 									<button
 										type="button"
 										onclick={() => reopenEvent(event.id)}
