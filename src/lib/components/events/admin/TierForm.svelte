@@ -217,13 +217,25 @@
 	function handleSubmit(e: Event) {
 		e.preventDefault();
 
+		// Determine the price value based on payment method and price type
+		let finalPrice = '0';
+		if (paymentMethod === 'free') {
+			finalPrice = '0';
+		} else if (priceType === 'pwyc') {
+			// For PWYC (especially with Stripe), use minimum price as the price field
+			finalPrice = pwycMin || '1';
+		} else {
+			// Fixed price
+			finalPrice = price;
+		}
+
 		// Build the data object, omitting null values for pwyc fields
 		const baseData: any = {
 			name: name.trim(),
 			description: description.trim() || null,
 			payment_method: paymentMethod,
 			price_type: priceType,
-			price: paymentMethod === 'free' ? '0' : price,
+			price: finalPrice,
 			currency,
 			total_quantity: totalQuantity ? parseInt(totalQuantity) : null,
 			sales_start_at: salesStartAt ? toTimezoneAwareISO(salesStartAt) : null,
