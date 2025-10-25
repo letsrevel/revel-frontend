@@ -26,8 +26,7 @@
 			icon: Users,
 			href: `/org/${organization.slug}/admin/members`,
 			color: 'text-green-600 dark:text-green-400',
-			bgColor: 'bg-green-50 dark:bg-green-950',
-			badge: 'Coming Soon'
+			bgColor: 'bg-green-50 dark:bg-green-950'
 		},
 		{
 			title: 'Settings',
