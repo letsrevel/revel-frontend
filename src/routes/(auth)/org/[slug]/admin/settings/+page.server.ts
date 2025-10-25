@@ -40,6 +40,8 @@ export const actions: Actions = {
 		const description = formData.get('description') as string;
 		const cityIdValue = formData.get('city_id') as string;
 		const visibility = (formData.get('visibility') as string) || 'public';
+		const acceptNewMembers = formData.get('accept_new_members') === 'true';
+		const contactEmail = formData.get('contact_email') as string;
 		const oldSlug = params.slug;
 
 		// Validate required fields
@@ -72,7 +74,8 @@ export const actions: Actions = {
 		const updateData: any = {
 			name: name.trim(),
 			slug: slug.trim(),
-			visibility
+			visibility,
+			accept_new_members: acceptNewMembers
 		};
 
 		// Add optional fields only if they have values
@@ -85,6 +88,10 @@ export const actions: Actions = {
 			if (!isNaN(cityId)) {
 				updateData.city_id = cityId;
 			}
+		}
+
+		if (contactEmail && contactEmail.trim()) {
+			updateData.contact_email = contactEmail.trim();
 		}
 
 		try {

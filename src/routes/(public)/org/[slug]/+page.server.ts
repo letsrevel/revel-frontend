@@ -39,8 +39,11 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 
 		const resources = resourcesResponse.data?.results || [];
 
-		// Check if user can edit this organization (requires authentication)
+		// Check if user can edit this organization and if they're already a member (requires authentication)
 		let canEdit = false;
+		let isMember = false;
+		let isOwner = false;
+		let isStaff = false;
 		if (locals.user) {
 			try {
 				const permissionsResponse = await permissionMyPermissions({
@@ -52,6 +55,18 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 					const userPermissions: OrganizationPermissionsSchema = permissionsResponse.data;
 					// User can edit if they have 'edit_organization' permission
 					canEdit = canPerformAction(userPermissions, organization.id, 'edit_organization');
+
+					// Check if user is a member using the memberships list
+					isMember = userPermissions.memberships?.includes(organization.id) || false;
+
+					// Check if user is owner or staff
+					const orgPermissions = userPermissions.organization_permissions?.[organization.id];
+					if (orgPermissions === 'owner') {
+						isOwner = true;
+					} else if (orgPermissions && typeof orgPermissions === 'object') {
+						// If orgPermissions is an object with permission keys, user is staff
+						isStaff = true;
+					}
 				}
 			} catch (err) {
 				// If permissions fail to load, continue without them
@@ -64,6 +79,9 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 			organization,
 			resources,
 			canEdit,
+			isMember,
+			isOwner,
+			isStaff,
 			// Explicitly pass authentication state to the page
 			isAuthenticated: !!locals.user
 		};

@@ -7,6 +7,7 @@
 	import { getImageUrl } from '$lib/utils/url';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { eventListEvents } from '$lib/api/generated/sdk.gen';
+	import RequestMembershipButton from '$lib/components/organization/RequestMembershipButton.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -164,9 +165,10 @@
 				</div>
 			</div>
 
-			<!-- Edit Button (if user has permission) -->
-			{#if data.canEdit}
-				<div class="flex-shrink-0">
+			<!-- Action Buttons -->
+			<div class="flex flex-shrink-0 flex-wrap gap-2">
+				<!-- Edit Button (if user has permission) -->
+				{#if data.canEdit}
 					<a
 						href="/org/{organization.slug}/admin/settings"
 						class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -174,8 +176,20 @@
 						<Settings class="h-4 w-4" aria-hidden="true" />
 						Edit Profile
 					</a>
-				</div>
-			{/if}
+				{/if}
+
+				<!-- Request Membership Button (if org accepts members and user is not a member) -->
+				{#if organization.accept_new_members}
+					<RequestMembershipButton
+						organizationSlug={organization.slug}
+						organizationName={organization.name}
+						isAuthenticated={data.isAuthenticated}
+						isMember={data.isMember}
+						isOwner={data.isOwner}
+						isStaff={data.isStaff}
+					/>
+				{/if}
+			</div>
 		</div>
 
 		<!-- Organization Description -->

@@ -32,6 +32,8 @@
 	let address = $state(data.organization.address || '');
 	let selectedCity = $state<CitySchema | null>(data.organization.city || null);
 	let visibility = $state(data.organization.visibility || 'public');
+	let acceptNewMembers = $state(data.organization.accept_new_members || false);
+	let contactEmail = $state(data.organization.contact_email || '');
 	let isSubmitting = $state(false);
 
 	// Image upload state
@@ -68,6 +70,8 @@
 		address = data.organization.address || '';
 		selectedCity = data.organization.city || null;
 		visibility = data.organization.visibility || 'public';
+		acceptNewMembers = data.organization.accept_new_members || false;
+		contactEmail = data.organization.contact_email || '';
 	});
 
 	// Handle city selection
@@ -486,6 +490,56 @@
 					{:else if visibility === 'staff-only'}
 						Your organization profile is only visible to staff
 					{/if}
+				</p>
+			</div>
+		</section>
+
+		<!-- Membership Settings -->
+		<section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
+			<h2 class="text-lg font-semibold">Membership Settings</h2>
+
+			<!-- Accept New Members -->
+			<div class="space-y-2">
+				<div class="flex items-center gap-2">
+					<input
+						type="checkbox"
+						id="accept_new_members"
+						name="accept_new_members"
+						value="true"
+						bind:checked={acceptNewMembers}
+						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+					/>
+					<label for="accept_new_members" class="text-sm font-medium">
+						Accept membership requests
+					</label>
+				</div>
+				<p class="text-xs text-muted-foreground">
+					When enabled, users can submit requests to become members of your organization. Members
+					may have access to members-only events and content.
+				</p>
+			</div>
+
+			<!-- Contact Email -->
+			<div>
+				<label for="contact_email" class="block text-sm font-medium">
+					Contact Email
+					<span class="text-muted-foreground">(Optional)</span>
+				</label>
+				<input
+					type="email"
+					id="contact_email"
+					name="contact_email"
+					bind:value={contactEmail}
+					placeholder="contact@yourorganization.com"
+					class="mt-1 flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+				/>
+				{#if data.organization.contact_email_verified}
+					<p class="mt-1 text-xs text-green-600 dark:text-green-400">✓ Email verified</p>
+				{:else if contactEmail}
+					<p class="mt-1 text-xs text-muted-foreground">Email not yet verified</p>
+				{/if}
+				<p class="mt-1 text-xs text-muted-foreground">
+					Public contact email for inquiries about your organization
 				</p>
 			</div>
 		</section>
