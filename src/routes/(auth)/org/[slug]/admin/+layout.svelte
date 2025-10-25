@@ -20,7 +20,13 @@
 	const navItems = [
 		{ href: `/org/${data.organization.slug}/admin`, label: 'Dashboard' },
 		{ href: `/org/${data.organization.slug}/admin/events`, label: 'Events' },
-		{ href: `/org/${data.organization.slug}/admin/members`, label: 'Members' },
+		{
+			href: `/org/${data.organization.slug}/admin/members`,
+			label: 'Members',
+			subItems: data.organization.accept_new_members ? [
+				{ href: `/org/${data.organization.slug}/admin/members/requests`, label: 'Requests' }
+			] : undefined
+		},
 		{ href: `/org/${data.organization.slug}/admin/questionnaires`, label: 'Questionnaires' },
 		{ href: `/org/${data.organization.slug}/admin/resources`, label: 'Resources' },
 		{ href: `/org/${data.organization.slug}/admin/settings`, label: 'Settings' }

@@ -82,6 +82,9 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 
 		// Fetch user permissions (requires authentication)
 		let userPermissions: OrganizationPermissionsSchema | null = null;
+		let isMember = false;
+		let isOwner = false;
+		let isStaff = false;
 		if (locals.user) {
 			try {
 				const permissionsResponse = await permissionMyPermissions({
@@ -91,6 +94,18 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 
 				if (permissionsResponse.data) {
 					userPermissions = permissionsResponse.data;
+
+					// Check if user is a member using the memberships list
+					isMember = userPermissions.memberships?.includes(event.organization.id) || false;
+
+					// Check if user is owner or staff
+					const orgPermissions = userPermissions.organization_permissions?.[event.organization.id];
+					if (orgPermissions === 'owner') {
+						isOwner = true;
+					} else if (orgPermissions && typeof orgPermissions === 'object') {
+						// If orgPermissions is an object with permission keys, user is staff
+						isStaff = true;
+					}
 				}
 			} catch (err) {
 				// If permissions fail to load, continue without them
@@ -141,6 +156,9 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 			userPermissions,
 			resources,
 			ticketTiers,
+			isMember,
+			isOwner,
+			isStaff,
 			// Explicitly pass authentication state to the page
 			isAuthenticated: !!locals.user
 		};

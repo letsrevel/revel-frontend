@@ -1,13 +1,25 @@
 <script lang="ts">
 	import type { OrganizationRetrieveSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
+	import RequestMembershipButton from '$lib/components/organization/RequestMembershipButton.svelte';
 
 	interface Props {
 		organization: OrganizationRetrieveSchema;
+		isAuthenticated: boolean;
+		isMember: boolean;
+		isOwner?: boolean;
+		isStaff?: boolean;
 		class?: string;
 	}
 
-	let { organization, class: className }: Props = $props();
+	let {
+		organization,
+		isAuthenticated,
+		isMember,
+		isOwner = false,
+		isStaff = false,
+		class: className
+	}: Props = $props();
 
 	// Backend URL for images
 	const BACKEND_URL = 'http://localhost:8000';
@@ -59,14 +71,27 @@
 			</div>
 		</div>
 
-		<!-- View Profile Link -->
-		<div class="mt-6">
+		<!-- Action Links -->
+		<div class="mt-6 flex flex-wrap gap-2">
 			<a
 				href="/org/{organization.slug}"
 				class="inline-flex rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			>
 				View organization profile
 			</a>
+
+			<!-- Request Membership Button (if org accepts members and user is not a member) -->
+			{#if organization.accept_new_members}
+				<RequestMembershipButton
+					organizationSlug={organization.slug}
+					organizationName={organization.name}
+					{isAuthenticated}
+					{isMember}
+					{isOwner}
+					{isStaff}
+					class="inline-flex"
+				/>
+			{/if}
 		</div>
 	</div>
 </section>

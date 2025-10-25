@@ -424,7 +424,13 @@
 
 				<!-- Organization Info (below details on mobile, hidden on desktop) -->
 				<div class="lg:hidden">
-					<OrganizationInfo organization={event.organization} />
+					<OrganizationInfo
+						organization={event.organization}
+						isAuthenticated={data.isAuthenticated}
+						isMember={data.isMember}
+						isOwner={data.isOwner}
+						isStaff={data.isStaff}
+					/>
 				</div>
 			</div>
 
@@ -442,7 +448,13 @@
 					/>
 
 					<!-- Organization Info (desktop only) -->
-					<OrganizationInfo organization={event.organization} />
+					<OrganizationInfo
+						organization={event.organization}
+						isAuthenticated={data.isAuthenticated}
+						isMember={data.isMember}
+						isOwner={data.isOwner}
+						isStaff={data.isStaff}
+					/>
 				</div>
 			</aside>
 		</div>

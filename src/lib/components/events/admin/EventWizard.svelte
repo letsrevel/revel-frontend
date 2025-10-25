@@ -144,6 +144,7 @@
 		check_in_starts_at: toDateTimeLocal(existingEvent?.check_in_starts_at) || null,
 		check_in_ends_at: toDateTimeLocal(existingEvent?.check_in_ends_at) || null,
 		potluck_open: existingEvent?.potluck_open || false,
+		accept_invitation_requests: existingEvent?.accept_invitation_requests || false,
 		event_series_id: existingEvent?.event_series?.id || null,
 		tags: existingEvent?.tags || [],
 		logo: existingEvent?.logo || undefined,
@@ -447,6 +448,7 @@
 				check_in_starts_at: toISOString(formData.check_in_starts_at),
 				check_in_ends_at: toISOString(formData.check_in_ends_at),
 				potluck_open: formData.potluck_open || false,
+				accept_invitation_requests: formData.accept_invitation_requests || false,
 				event_series_id: formData.event_series_id || null
 			};
 
