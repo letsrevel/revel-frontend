@@ -16,11 +16,22 @@
 
 	interface Props {
 		organizationSlug: string;
-		isConnected: boolean;
+		stripeChargesEnabled: boolean;
+		stripeDetailsSubmitted: boolean;
+		stripeAccountId: string | null;
 		accessToken: string;
 	}
 
-	let { organizationSlug, isConnected, accessToken }: Props = $props();
+	let {
+		organizationSlug,
+		stripeChargesEnabled,
+		stripeDetailsSubmitted,
+		stripeAccountId,
+		accessToken
+	}: Props = $props();
+
+	// Derived: Is Stripe connected (has account ID)
+	const isConnected = $derived(!!stripeAccountId);
 
 	// Check if user just returned from Stripe onboarding
 	let justConnected = $state(false);
@@ -97,6 +108,7 @@
 	}
 
 	// Determine overall status
+	// Use query data if available (manual refresh), otherwise use props
 	let status = $derived.by(() => {
 		if (!isConnected) {
 			return {
@@ -107,27 +119,21 @@
 			};
 		}
 
-		if (!browser || !verifyQuery) {
+		// Use data from query if available (manual refresh), otherwise use props
+		const chargesEnabled = verifyQuery?.data?.charges_enabled ?? stripeChargesEnabled;
+		const detailsSubmitted = verifyQuery?.data?.details_submitted ?? stripeDetailsSubmitted;
+
+		// Show loading state while verifying
+		if (browser && verifyQuery?.isFetching) {
 			return {
 				type: 'loading',
-				title: 'Loading...',
-				message: 'Initializing Stripe status check.',
+				title: 'Verifying...',
+				message: 'Checking your Stripe account status.',
 				color: 'blue'
 			};
 		}
 
-		if (!verifyQuery.data) {
-			return {
-				type: 'loading',
-				title: 'Checking Connection...',
-				message: 'Verifying your Stripe account status.',
-				color: 'blue'
-			};
-		}
-
-		const data = verifyQuery.data;
-
-		if (data.charges_enabled && data.details_submitted) {
+		if (chargesEnabled && detailsSubmitted) {
 			return {
 				type: 'fully-connected',
 				title: 'Stripe Connected',
@@ -136,7 +142,7 @@
 			};
 		}
 
-		if (!data.details_submitted) {
+		if (!detailsSubmitted) {
 			return {
 				type: 'incomplete',
 				title: 'Setup Incomplete',
@@ -145,7 +151,7 @@
 			};
 		}
 
-		if (!data.charges_enabled) {
+		if (!chargesEnabled) {
 			return {
 				type: 'restricted',
 				title: 'Charges Disabled',
@@ -249,12 +255,14 @@
 				</p>
 
 				<!-- Status Details (if connected) -->
-				{#if verifyQuery?.data}
+				{#if isConnected}
+					{@const chargesEnabled = verifyQuery?.data?.charges_enabled ?? stripeChargesEnabled}
+					{@const detailsSubmitted = verifyQuery?.data?.details_submitted ?? stripeDetailsSubmitted}
 					<dl class="mt-3 grid grid-cols-2 gap-2 text-xs">
 						<div>
 							<dt class="font-medium text-muted-foreground">Details Submitted</dt>
 							<dd class="mt-0.5 flex items-center gap-1">
-								{#if verifyQuery.data.details_submitted}
+								{#if detailsSubmitted}
 									<Check class="h-3 w-3 text-green-600" aria-hidden="true" />
 									<span class="text-green-700 dark:text-green-300">Yes</span>
 								{:else}
@@ -266,7 +274,7 @@
 						<div>
 							<dt class="font-medium text-muted-foreground">Charges Enabled</dt>
 							<dd class="mt-0.5 flex items-center gap-1">
-								{#if verifyQuery.data.charges_enabled}
+								{#if chargesEnabled}
 									<Check class="h-3 w-3 text-green-600" aria-hidden="true" />
 									<span class="text-green-700 dark:text-green-300">Yes</span>
 								{:else}
