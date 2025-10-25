@@ -2,7 +2,14 @@
 	import { createQuery, createMutation } from '@tanstack/svelte-query';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
-	import { AlertCircle, Check, ExternalLink, CreditCard, AlertTriangle } from 'lucide-svelte';
+	import {
+		AlertCircle,
+		Check,
+		ExternalLink,
+		CreditCard,
+		AlertTriangle,
+		BarChart3
+	} from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import {
@@ -351,14 +358,49 @@
 					{/if}
 				</Button>
 			{/if}
+
+			{#if isConnected && (verifyQuery?.data?.details_submitted ?? stripeDetailsSubmitted)}
+				<a
+					href="https://dashboard.stripe.com/"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				>
+					<BarChart3 class="h-4 w-4" aria-hidden="true" />
+					Go to Stripe Dashboard
+					<ExternalLink class="h-3 w-3" aria-hidden="true" />
+				</a>
+			{/if}
 		</div>
 	{:else}
 		<!-- Server-side placeholder -->
 		<div class="flex items-center gap-3">
-			<Button disabled class="inline-flex items-center gap-2">
-				<ExternalLink class="h-4 w-4" aria-hidden="true" />
-				{isConnected ? 'Complete Stripe Setup' : 'Connect with Stripe'}
-			</Button>
+			{#if !isConnected || status.type === 'incomplete' || status.type === 'restricted'}
+				<Button disabled class="inline-flex items-center gap-2">
+					<ExternalLink class="h-4 w-4" aria-hidden="true" />
+					{isConnected ? 'Complete Stripe Setup' : 'Connect with Stripe'}
+				</Button>
+			{/if}
+
+			{#if isConnected}
+				<Button disabled variant="outline" class="inline-flex items-center gap-2">
+					<Check class="h-4 w-4" aria-hidden="true" />
+					Verify Account Status
+				</Button>
+			{/if}
+
+			{#if isConnected && stripeDetailsSubmitted}
+				<a
+					href="https://dashboard.stripe.com/"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				>
+					<BarChart3 class="h-4 w-4" aria-hidden="true" />
+					Go to Stripe Dashboard
+					<ExternalLink class="h-3 w-3" aria-hidden="true" />
+				</a>
+			{/if}
 		</div>
 	{/if}
 

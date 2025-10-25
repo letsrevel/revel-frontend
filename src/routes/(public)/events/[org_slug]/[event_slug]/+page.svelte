@@ -372,6 +372,7 @@
 				{event}
 				bind:userStatus
 				isAuthenticated={data.isAuthenticated}
+				userPermissions={data.userPermissions}
 				variant="card"
 				onGetTicketsClick={openTicketTierModal}
 				onShowTicketClick={openMyTicketModal}
@@ -434,6 +435,7 @@
 						{event}
 						bind:userStatus
 						isAuthenticated={data.isAuthenticated}
+						userPermissions={data.userPermissions}
 						variant="sidebar"
 						onGetTicketsClick={openTicketTierModal}
 						onShowTicketClick={openMyTicketModal}

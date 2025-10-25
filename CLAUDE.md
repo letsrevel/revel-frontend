@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) and other AI assistants when working with code in this repository.
 
+## Important Reference Documents
+
+- **`COMMON_FIXES.md`** - Common issues and their solutions. **READ THIS FIRST** to avoid recurring mistakes with TanStack Query, backend enums, and Svelte 5 patterns.
+
 ## Tracking Project Progress
 
 **IMPORTANT:** Before starting any feature or issue, always check if it has already been completed or is in progress.
@@ -9,6 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) and other AI assista
 ### How to Check Implementation Status
 
 1. **Check closed PRs for recent work:**
+
    ```bash
    gh pr list --state closed --limit 20
    # Or search for specific features:
@@ -138,30 +143,36 @@ revel-backend/
 The dashboard uses specialized endpoints that filter data by user relationships:
 
 **`/api/dashboard/events`** - Get user's events filtered by relationship
+
 - Parameters: `owner`, `staff`, `member`, `rsvp_yes`, `rsvp_maybe`, `got_ticket`, `got_invitation`, `subscriber`
 - Returns: Events the user is organizing, attending, invited to, or subscribed to
 - **Important:** May return empty results if user has no relationships with any events
 
 **`/api/dashboard/organizations`** - Get user's organizations filtered by relationship
+
 - Parameters: `owner`, `staff`, `member`, `subscriber`
 - Returns: Organizations the user owns, is staff/member of, or subscribes to
 - **Important:** May return empty results if user has no relationships with any organizations
 
 **`/api/dashboard/event_series`** - Get user's event series
+
 - Similar filtering logic to events endpoint
 
 **`/api/dashboard/invitations`** - Get user's event invitations
+
 - Dedicated endpoint for invitation management
 
 ### When Dashboard Endpoints Return Empty
 
 The dashboard endpoints are relationship-based and will return empty results if:
+
 - New user with no activity yet
 - User hasn't RSVP'd to any events
 - User doesn't own or belong to any organizations
 - User has no pending invitations
 
 **Fallback Strategy:** If dashboard endpoints return empty, use general listing endpoints:
+
 - `/api/events/` - Browse all public events
 - `/api/organizations/` - Browse all public organizations
 - Display "Getting Started" / "Discover" sections for new users
