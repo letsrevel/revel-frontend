@@ -14,9 +14,16 @@
 		QrCode,
 		ExternalLink
 	} from 'lucide-svelte';
-	import { eventadminConfirmTicketPayment, eventadminCancelTicket } from '$lib/api';
+	import {
+		eventadminConfirmTicketPayment,
+		eventadminCancelTicket,
+		eventadminCheckInTicket,
+		eventadminGetTicket
+	} from '$lib/api';
 	import type { PageData } from './$types';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import QRScannerModal from '$lib/components/tickets/QRScannerModal.svelte';
+	import CheckInDialog from '$lib/components/tickets/CheckInDialog.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -33,6 +40,9 @@
 	let ticketToCancel = $state<any>(null);
 	let showConfirmPaymentDialog = $state(false);
 	let ticketToConfirm = $state<any>(null);
+	let showCheckInDialog = $state(false);
+	let ticketToCheckIn = $state<any>(null);
+	let showQRScanner = $state(false);
 
 	/**
 	 * Derived: Check if there are multiple pages
@@ -94,6 +104,35 @@
 		onSuccess: () => {
 			showCancelDialog = false;
 			ticketToCancel = null;
+			invalidateAll();
+		}
+	}));
+
+	/**
+	 * Check-in ticket mutation
+	 */
+	const checkInTicketMutation = createMutation(() => ({
+		mutationFn: async (ticketId: string) => {
+			const response = await eventadminCheckInTicket({
+				path: { event_id: data.event.id, ticket_id: ticketId },
+				headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
+			});
+
+			if (response.error) {
+				const errorDetail =
+					typeof response.error === 'object' &&
+					response.error !== null &&
+					'detail' in response.error
+						? String(response.error.detail)
+						: 'Failed to check in ticket';
+				throw new Error(errorDetail);
+			}
+
+			return response.data;
+		},
+		onSuccess: () => {
+			showCheckInDialog = false;
+			ticketToCheckIn = null;
 			invalidateAll();
 		}
 	}));
@@ -189,6 +228,48 @@
 	}
 
 	/**
+	 * Handle manual check-in
+	 */
+	function handleCheckIn(ticket: any) {
+		ticketToCheckIn = ticket;
+		showCheckInDialog = true;
+	}
+
+	/**
+	 * Submit check-in
+	 */
+	function submitCheckIn() {
+		if (ticketToCheckIn) {
+			checkInTicketMutation.mutate(ticketToCheckIn.id);
+		}
+	}
+
+	/**
+	 * Handle QR code scan
+	 */
+	async function handleQRScan(ticketId: string) {
+		try {
+			// Fetch ticket details
+			const response = await eventadminGetTicket({
+				path: { event_id: data.event.id, ticket_id: ticketId },
+				headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
+			});
+
+			if (response.error || !response.data) {
+				throw new Error('Ticket not found');
+			}
+
+			// Show confirmation dialog with ticket info
+			ticketToCheckIn = response.data;
+			showCheckInDialog = true;
+			showQRScanner = false;
+		} catch (err) {
+			console.error('Failed to fetch ticket:', err);
+			// Error will be shown in the scanner component
+		}
+	}
+
+	/**
 	 * Get user display name
 	 */
 	function getUserDisplayName(user: any): string {
@@ -269,6 +350,21 @@
 	}
 
 	/**
+	 * Check if ticket can be checked in
+	 */
+	function canCheckIn(ticket: any): boolean {
+		return ticket.status === 'active' || needsPaymentConfirmation(ticket);
+	}
+
+	/**
+	 * Check if payment needs confirmation at check-in
+	 */
+	function needsPaymentConfirmation(ticket: any): boolean {
+		const method = ticket.tier?.payment_method;
+		return ticket.status === 'pending' && (method === 'offline' || method === 'at_the_door');
+	}
+
+	/**
 	 * Check if payment can be confirmed
 	 */
 	function canConfirmPayment(ticket: any): boolean {
@@ -312,18 +408,18 @@
 		<p class="mt-2 text-muted-foreground">View and manage all tickets for this event</p>
 	</div>
 
-	<!-- Check-in Button (Placeholder for QR Scanner) -->
+	<!-- Check-in Button (QR Scanner) -->
 	<div class="mb-6">
 		<Button
 			variant="default"
 			class="inline-flex items-center gap-2"
-			onclick={() => alert('QR code scanner coming soon!')}
+			onclick={() => (showQRScanner = true)}
 		>
 			<QrCode class="h-4 w-4" aria-hidden="true" />
-			Check In Attendees
+			Scan QR Code to Check In
 		</Button>
 		<p class="mt-2 text-sm text-muted-foreground">
-			Scan QR codes to check in attendees (feature coming soon)
+			Scan attendee QR codes to check them in to the event
 		</p>
 	</div>
 
@@ -569,6 +665,17 @@
 								</td>
 								<td class="px-4 py-3">
 									<div class="flex justify-end gap-2">
+										{#if canCheckIn(ticket)}
+											<Button
+												size="sm"
+												variant="default"
+												onclick={() => handleCheckIn(ticket)}
+												disabled={checkInTicketMutation.isPending}
+											>
+												<Check class="h-4 w-4" aria-hidden="true" />
+												Check In
+											</Button>
+										{/if}
 										{#if canConfirmPayment(ticket)}
 											<Button
 												size="sm"
@@ -648,6 +755,18 @@
 						</div>
 
 						<div class="mt-3 flex flex-wrap gap-2">
+							{#if canCheckIn(ticket)}
+								<Button
+									size="sm"
+									variant="default"
+									onclick={() => handleCheckIn(ticket)}
+									disabled={checkInTicketMutation.isPending}
+									class="flex-1"
+								>
+									<Check class="h-4 w-4" aria-hidden="true" />
+									Check In
+								</Button>
+							{/if}
 							{#if canConfirmPayment(ticket)}
 								<Button
 									size="sm"
@@ -749,4 +868,24 @@
 		ticketToCancel = null;
 	}}
 	variant="danger"
+/>
+
+<!-- Check-in Confirmation Dialog -->
+<CheckInDialog
+	isOpen={showCheckInDialog}
+	ticket={ticketToCheckIn}
+	needsPaymentConfirmation={ticketToCheckIn ? needsPaymentConfirmation(ticketToCheckIn) : false}
+	onConfirm={submitCheckIn}
+	onCancel={() => {
+		showCheckInDialog = false;
+		ticketToCheckIn = null;
+	}}
+	isLoading={checkInTicketMutation.isPending}
+/>
+
+<!-- QR Scanner Modal -->
+<QRScannerModal
+	isOpen={showQRScanner}
+	onClose={() => (showQRScanner = false)}
+	onScan={handleQRScan}
 />
