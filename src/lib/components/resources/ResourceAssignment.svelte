@@ -7,14 +7,14 @@
 	import { cn } from '$lib/utils/cn';
 
 	interface Props {
-		organizationSlug: string;
+		organizationId: string;
 		selectedEventIds?: string[];
 		onSelectionChange?: (eventIds: string[]) => void;
 		disabled?: boolean;
 	}
 
 	let {
-		organizationSlug,
+		organizationId,
 		selectedEventIds = [],
 		onSelectionChange,
 		disabled = false
@@ -25,12 +25,12 @@
 
 	// Fetch organization events
 	const eventsQuery = createQuery<EventInListSchema[]>(() => ({
-		queryKey: ['organization-events', organizationSlug],
+		queryKey: ['organization-events', organizationId],
 		queryFn: async () => {
 			const response = await eventListEvents({
 				query: {
-					organization: organizationSlug,
-					limit: 100 // Get a large number of events for assignment
+					organization: organizationId,
+					page_size: 100 // Get a large number of events for assignment
 				},
 				headers: {
 					Authorization: `Bearer ${accessToken}`

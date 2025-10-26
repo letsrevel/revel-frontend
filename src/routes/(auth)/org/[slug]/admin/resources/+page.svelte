@@ -222,6 +222,7 @@
 	<ResourceModal
 		resource={editingResource}
 		organizationSlug={organization.slug}
+		organizationId={organization.id}
 		onClose={handleModalClose}
 		onSuccess={handleModalSuccess}
 	/>

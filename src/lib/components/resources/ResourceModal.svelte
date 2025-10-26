@@ -12,11 +12,12 @@
 	interface Props {
 		resource?: AdditionalResourceSchema | null;
 		organizationSlug: string;
+		organizationId: string;
 		onClose: () => void;
 		onSuccess: () => void;
 	}
 
-	let { resource = null, organizationSlug, onClose, onSuccess }: Props = $props();
+	let { resource = null, organizationSlug, organizationId, onClose, onSuccess }: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
 	let errorMessage = $state<string | null>(null);
@@ -296,6 +297,7 @@
 			<ResourceForm
 				{resource}
 				{organizationSlug}
+				{organizationId}
 				onSubmit={handleSubmit}
 				{isSubmitting}
 				errors={fieldErrors}
