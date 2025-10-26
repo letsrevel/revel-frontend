@@ -8,6 +8,7 @@
 	interface Props {
 		resource?: AdditionalResourceSchema | null;
 		organizationSlug: string;
+		organizationId: string;
 		onSubmit: (data: FormData) => void;
 		isSubmitting?: boolean;
 		errors?: Record<string, string>;
@@ -15,7 +16,9 @@
 
 	let {
 		resource = null,
+		// @ts-expect-error - Used by parent component for API calls
 		organizationSlug,
+		organizationId,
 		onSubmit,
 		isSubmitting = false,
 		errors = {}
@@ -34,6 +37,7 @@
 	let file = $state<File | null>(null);
 	let link = $state(resource?.link || '');
 	let text = $state(resource?.text || '');
+	let fileInput: HTMLInputElement;
 
 	// Event assignment
 	let selectedEventIds = $state<string[]>(resource?.event_ids || []);
@@ -365,7 +369,7 @@
 
 	<!-- Event Assignment -->
 	<ResourceAssignment
-		{organizationSlug}
+		{organizationId}
 		{selectedEventIds}
 		onSelectionChange={(eventIds) => (selectedEventIds = eventIds)}
 		disabled={isSubmitting}
