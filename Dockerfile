@@ -31,9 +31,12 @@ ENV PUBLIC_API_URL=${PUBLIC_API_URL}
 ENV ORIGIN=${ORIGIN}
 ENV PUBLIC_VERSION=${PUBLIC_VERSION}
 
+# Regenerate API client with correct environment variable imports
+RUN pnpm generate:api
+
 # Build the application
 # This creates the production build in the `build` directory
-# Vite will embed PUBLIC_* env vars into the client bundle
+# SvelteKit will embed PUBLIC_* env vars into the client bundle
 RUN pnpm build
 
 # ─────────────────────────────────────────────────────────────────────────────
