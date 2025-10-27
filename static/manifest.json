@@ -1,0 +1,65 @@
+{
+	"name": "Revel - Community Events",
+	"short_name": "Revel",
+	"description": "Discover LGBTQ+, queer, and sex-positive community events near you",
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#1a0b2e",
+	"theme_color": "#8b5cf6",
+	"orientation": "portrait-primary",
+	"icons": [
+		{
+			"src": "/icon-192.png",
+			"sizes": "192x192",
+			"type": "image/png",
+			"purpose": "any maskable"
+		},
+		{
+			"src": "/icon-512.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "any maskable"
+		}
+	],
+	"categories": ["social", "lifestyle", "entertainment"],
+	"shortcuts": [
+		{
+			"name": "Browse Events",
+			"short_name": "Events",
+			"description": "Discover upcoming events",
+			"url": "/events",
+			"icons": [
+				{
+					"src": "/icon-192.png",
+					"sizes": "192x192"
+				}
+			]
+		},
+		{
+			"name": "My Dashboard",
+			"short_name": "Dashboard",
+			"description": "View your events and organizations",
+			"url": "/dashboard",
+			"icons": [
+				{
+					"src": "/icon-192.png",
+					"sizes": "192x192"
+				}
+			]
+		}
+	],
+	"screenshots": [
+		{
+			"src": "/screenshot-mobile-1.png",
+			"sizes": "750x1334",
+			"type": "image/png",
+			"form_factor": "narrow"
+		},
+		{
+			"src": "/screenshot-desktop-1.png",
+			"sizes": "1920x1080",
+			"type": "image/png",
+			"form_factor": "wide"
+		}
+	]
+}
