@@ -1,1 +1,0 @@
-1. organizers can create custom tags. The backend does a get_or_create when it receives the tags to add. We should use an autocomplete, yes.

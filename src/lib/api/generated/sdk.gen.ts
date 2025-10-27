@@ -1402,9 +1402,7 @@ export const organizationadminCreateEvent = <ThrowOnError extends boolean = fals
  *
  * List all tokens for an organization that the user has admin rights for.
  */
-export const organizationadminListOrganizationTokens = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminListOrganizationTokens = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminListOrganizationTokensAd2141C7Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -1428,9 +1426,7 @@ export const organizationadminListOrganizationTokens = <
  *
  * Create a new token for an organization.
  */
-export const organizationadminCreateOrganizationToken = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminCreateOrganizationToken = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminCreateOrganizationTokenB11748D5Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -1458,9 +1454,7 @@ export const organizationadminCreateOrganizationToken = <
  *
  * Delete an organization token.
  */
-export const organizationadminDeleteOrganizationToken = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminDeleteOrganizationToken = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminDeleteOrganizationToken920E477cData, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
@@ -1484,9 +1478,7 @@ export const organizationadminDeleteOrganizationToken = <
  *
  * Update an organization token.
  */
-export const organizationadminUpdateOrganizationToken = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminUpdateOrganizationToken = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminUpdateOrganizationToken5284Deb3Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
@@ -1516,9 +1508,7 @@ export const organizationadminUpdateOrganizationToken = <
  *
  * By default shows all requests. Use ?status=pending to filter by status.
  */
-export const organizationadminListMembershipRequests = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminListMembershipRequests = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminListMembershipRequests2Bae90A0Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -1542,9 +1532,7 @@ export const organizationadminListMembershipRequests = <
  *
  * Approve a membership request.
  */
-export const organizationadminApproveMembershipRequest = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminApproveMembershipRequest = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminApproveMembershipRequestE1Bd2D4fData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -1568,9 +1556,7 @@ export const organizationadminApproveMembershipRequest = <
  *
  * Reject a membership request.
  */
-export const organizationadminRejectMembershipRequest = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminRejectMembershipRequest = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminRejectMembershipRequest48075D3fData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -1850,9 +1836,7 @@ export const organizationadminAddStaff = <ThrowOnError extends boolean = false>(
  *
  * Update a staff member's permissions.
  */
-export const organizationadminUpdateStaffPermissions = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminUpdateStaffPermissions = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminUpdateStaffPermissionsE7D1DdfdData, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
@@ -4483,9 +4467,7 @@ export const questionnaireEvaluateSubmission = <ThrowOnError extends boolean = f
  *
  * Requires 'edit_questionnaire' permission.
  */
-export const questionnaireUpdateQuestionnaireStatus = <
-	ThrowOnError extends boolean = false
->(
+export const questionnaireUpdateQuestionnaireStatus = <ThrowOnError extends boolean = false>(
 	options: Options<QuestionnaireUpdateQuestionnaireStatusA762B758Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -4709,9 +4691,7 @@ export const userpreferencesGetGeneralPreferences = <ThrowOnError extends boolea
  * Modify notification and privacy settings. Set overwrite_children=true to cascade changes
  * to all organization/series/event-level preferences, overriding custom settings.
  */
-export const userpreferencesUpdateGlobalPreferences = <
-	ThrowOnError extends boolean = false
->(
+export const userpreferencesUpdateGlobalPreferences = <ThrowOnError extends boolean = false>(
 	options: Options<UserpreferencesUpdateGlobalPreferencesCa70F70eData, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
@@ -4742,9 +4722,7 @@ export const userpreferencesUpdateGlobalPreferences = <
  * Returns organization-level overrides for notifications and privacy. Falls back to global
  * preferences if not customized.
  */
-export const userpreferencesGetOrganizationPreferences = <
-	ThrowOnError extends boolean = false
->(
+export const userpreferencesGetOrganizationPreferences = <ThrowOnError extends boolean = false>(
 	options: Options<UserpreferencesGetOrganizationPreferences949D37A6Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -4771,9 +4749,7 @@ export const userpreferencesGetOrganizationPreferences = <
  * Overrides global defaults for this organization. Set overwrite_children=true to cascade
  * changes to all series/event-level preferences within this organization.
  */
-export const userpreferencesUpdateOrganizationPreferences = <
-	ThrowOnError extends boolean = false
->(
+export const userpreferencesUpdateOrganizationPreferences = <ThrowOnError extends boolean = false>(
 	options: Options<UserpreferencesUpdateOrganizationPreferencesC6Ac6679Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
@@ -4804,9 +4780,7 @@ export const userpreferencesUpdateOrganizationPreferences = <
  * Returns series-level overrides for notifications. Falls back to organization or global
  * preferences if not customized.
  */
-export const userpreferencesGetEventSeriesPreferences = <
-	ThrowOnError extends boolean = false
->(
+export const userpreferencesGetEventSeriesPreferences = <ThrowOnError extends boolean = false>(
 	options: Options<UserpreferencesGetEventSeriesPreferencesAa9Fac27Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -4833,9 +4807,7 @@ export const userpreferencesGetEventSeriesPreferences = <
  * Overrides organization/global defaults for this series. Set overwrite_children=true to
  * cascade changes to all individual event preferences within this series.
  */
-export const userpreferencesUpdateEventSeriesPreferences = <
-	ThrowOnError extends boolean = false
->(
+export const userpreferencesUpdateEventSeriesPreferences = <ThrowOnError extends boolean = false>(
 	options: Options<UserpreferencesUpdateEventSeriesPreferences1645B0AaData, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<

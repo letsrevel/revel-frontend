@@ -132,7 +132,9 @@
 									</span>
 								{/each}
 								{#if series.tags.length > 3}
-									<span class="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs font-medium">
+									<span
+										class="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs font-medium"
+									>
 										+{series.tags.length - 3} more
 									</span>
 								{/if}

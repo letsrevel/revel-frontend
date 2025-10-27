@@ -32,7 +32,9 @@
 
 			if (response.error) {
 				const errorDetail =
-					typeof response.error === 'object' && response.error !== null && 'detail' in response.error
+					typeof response.error === 'object' &&
+					response.error !== null &&
+					'detail' in response.error
 						? (response.error.detail as string)
 						: 'Failed to update status';
 				throw new Error(errorDetail);
@@ -82,7 +84,9 @@
 	 * Mark as draft (open/closed → draft)
 	 */
 	function markAsDraft(): void {
-		if (confirm('Are you sure you want to mark this event as draft? It will be hidden from users.')) {
+		if (
+			confirm('Are you sure you want to mark this event as draft? It will be hidden from users.')
+		) {
 			updateStatusMutation.mutate('draft');
 		}
 	}

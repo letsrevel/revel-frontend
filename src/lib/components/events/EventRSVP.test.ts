@@ -86,7 +86,7 @@ describe('EventRSVP', () => {
 		expect(screen.getByRole('button', { name: /no/i })).toBeInTheDocument();
 	});
 
-	it('shows existing RSVP status when user has already RSVP\'d', () => {
+	it("shows existing RSVP status when user has already RSVP'd", () => {
 		const rsvpStatus: EventRsvpSchema = {
 			event_id: 'event-123',
 			status: 'approved'
@@ -123,9 +123,7 @@ describe('EventRSVP', () => {
 			}
 		});
 
-		expect(
-			screen.getByText(/You must complete the questionnaire first/i)
-		).toBeInTheDocument();
+		expect(screen.getByText(/You must complete the questionnaire first/i)).toBeInTheDocument();
 		expect(screen.getByText(/Complete Questionnaire/i)).toBeInTheDocument();
 	});
 

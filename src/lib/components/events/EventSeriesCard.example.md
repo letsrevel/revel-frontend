@@ -34,7 +34,7 @@ A card component for displaying event series information with support for compac
 		organization: {
 			id: 'org-456',
 			name: 'Tech Community',
-			slug: 'tech-community',
+			slug: 'tech-community'
 			// ... other organization fields
 		}
 	};
@@ -57,11 +57,11 @@ A card component for displaying event series information with support for compac
 
 ## Props
 
-| Prop      | Type                         | Default      | Description                          |
-| --------- | ---------------------------- | ------------ | ------------------------------------ |
-| `series`  | `EventSeriesRetrieveSchema`  | required     | Event series data from API           |
-| `variant` | `'compact' \| 'standard'`    | `'standard'` | Card layout variant                  |
-| `class`   | `string`                     | `undefined`  | Additional CSS classes               |
+| Prop      | Type                        | Default      | Description                |
+| --------- | --------------------------- | ------------ | -------------------------- |
+| `series`  | `EventSeriesRetrieveSchema` | required     | Event series data from API |
+| `variant` | `'compact' \| 'standard'`   | `'standard'` | Card layout variant        |
+| `class`   | `string`                    | `undefined`  | Additional CSS classes     |
 
 ## Variants
 

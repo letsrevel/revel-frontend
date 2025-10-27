@@ -19,7 +19,15 @@
 		class?: string;
 	}
 
-	let { item = null, isOpen, hasManagePermission, errorMessage = null, onSubmit, onCancel, class: className }: Props = $props();
+	let {
+		item = null,
+		isOpen,
+		hasManagePermission,
+		errorMessage = null,
+		onSubmit,
+		onCancel,
+		class: className
+	}: Props = $props();
 
 	// Determine if we're in create or edit mode
 	let isCreateMode = $derived(!item);

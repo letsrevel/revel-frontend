@@ -6,6 +6,7 @@
 	} from '$lib/api/generated/sdk.gen';
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { getApiUrl } from '$lib/config/api';
 	import { X } from 'lucide-svelte';
 	import ResourceForm from './ResourceForm.svelte';
 
@@ -88,7 +89,7 @@
 				multipartData.append('file', file);
 			}
 
-			const url = `http://localhost:8000/api/organization-admin/${organizationSlug}/resources`;
+			const url = getApiUrl(`organization-admin/${organizationSlug}/resources`);
 
 			// Use fetch directly (SDK might not handle form-data properly)
 			const response = await fetch(url, {

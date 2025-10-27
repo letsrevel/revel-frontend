@@ -62,4 +62,54 @@
 	body {
 		@apply bg-background text-foreground;
 	}
+
+	/* Safe area insets for notched devices (iPhone X+, etc.) */
+	header.sticky,
+	.sticky-header {
+		padding-top: max(env(safe-area-inset-top), 0px);
+		padding-left: max(env(safe-area-inset-left), 0px);
+		padding-right: max(env(safe-area-inset-right), 0px);
+	}
+
+	/* Bottom floating action buttons (FAB) */
+	.fixed.bottom-6,
+	.bottom-fab {
+		bottom: max(calc(1.5rem + env(safe-area-inset-bottom)), 1.5rem);
+	}
+
+	/* Mobile sheets and drawers */
+	.mobile-sheet-footer,
+	.mobile-drawer-bottom {
+		padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+	}
+}
+
+/* Prevent iOS zoom on form inputs (minimum 16px font size) */
+@media (max-width: 768px) {
+	input:not([type='checkbox']):not([type='radio']),
+	select,
+	textarea {
+		font-size: 16px !important;
+	}
+}
+
+/* Landscape orientation optimizations for mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+	/* Reduce header height in landscape */
+	header.sticky,
+	.sticky-header {
+		height: 3rem;
+	}
+
+	/* Reduce modal heights in landscape */
+	.mobile-sheet,
+	[role='dialog'] {
+		max-height: 90vh !important;
+	}
+
+	/* Reduce vertical spacing */
+	.container {
+		padding-top: 0.5rem;
+		padding-bottom: 0.5rem;
+	}
 }

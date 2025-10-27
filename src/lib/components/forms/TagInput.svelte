@@ -75,8 +75,7 @@
 			.filter((tag) => {
 				const tagLower = tag.toLowerCase();
 				return (
-					tagLower.includes(input) &&
-					!value.includes(tag) // Exclude already selected tags
+					tagLower.includes(input) && !value.includes(tag) // Exclude already selected tags
 				);
 			})
 			.slice(0, 5); // Limit to 5 suggestions
@@ -192,7 +191,7 @@
 				<span class="text-destructive" aria-label="required">*</span>
 			{/if}
 			{#if maxTags}
-				<span class="text-xs text-muted-foreground ml-2">
+				<span class="ml-2 text-xs text-muted-foreground">
 					({value.length}/{maxTags})
 				</span>
 			{/if}
@@ -226,7 +225,7 @@
 						<button
 							type="button"
 							onclick={() => removeTag(index)}
-							class="rounded-full hover:bg-primary/30 p-0.5 transition-colors"
+							class="rounded-full p-0.5 transition-colors hover:bg-primary/30"
 							aria-label="Remove {tag}"
 						>
 							<X class="h-3 w-3" aria-hidden="true" />
@@ -260,7 +259,7 @@
 				aria-controls="{inputId}-suggestions"
 				aria-expanded={showSuggestions}
 				class={cn(
-					'flex-1 min-w-[120px] bg-transparent text-sm outline-none placeholder:text-muted-foreground',
+					'min-w-[120px] flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground',
 					'text-gray-900 dark:text-gray-100',
 					(disabled || isMaxTagsReached) && 'cursor-not-allowed'
 				)}
@@ -272,7 +271,7 @@
 			<ul
 				id="{inputId}-suggestions"
 				role="listbox"
-				class="absolute z-10 mt-1 w-full rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800 max-h-60 overflow-auto"
+				class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800"
 			>
 				{#each filteredSuggestions as suggestion, index (suggestion)}
 					<li
@@ -283,7 +282,7 @@
 							'cursor-pointer px-4 py-2 text-sm transition-colors',
 							index === selectedSuggestionIndex
 								? 'bg-primary text-white'
-								: 'text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
+								: 'text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700'
 						)}
 					>
 						{suggestion}

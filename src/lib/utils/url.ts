@@ -1,7 +1,8 @@
-import { PUBLIC_API_URL } from '$env/static/public';
+import { getBackendUrl as getBackendUrlFromConfig } from '$lib/config/api';
 
 /**
  * Converts a relative backend URL path to a full URL.
+ * Re-exported from centralized API config for backwards compatibility.
  *
  * @param path - The path from the backend (e.g., "/media/logos/org.png")
  * @returns Full URL with backend domain, or null if path is null/undefined
@@ -18,16 +19,7 @@ import { PUBLIC_API_URL } from '$env/static/public';
  */
 export function getBackendUrl(path: string | null | undefined): string | null {
 	if (!path) return null;
-
-	// If path is already a full URL, return it as-is
-	if (path.startsWith('http://') || path.startsWith('https://')) {
-		return path;
-	}
-
-	// Otherwise, prepend backend URL
-	// Ensure no double slashes if path already starts with /
-	const cleanPath = path.startsWith('/') ? path : `/${path}`;
-	return `${PUBLIC_API_URL}${cleanPath}`;
+	return getBackendUrlFromConfig(path);
 }
 
 /**

@@ -6,32 +6,32 @@ Smart component for managing event RSVP flow with eligibility checks, optimistic
 
 ```svelte
 <script lang="ts">
-  import EventRSVP from '$lib/components/events/EventRSVP.svelte';
-  import type { UserEventStatus } from '$lib/utils/eligibility';
+	import EventRSVP from '$lib/components/events/EventRSVP.svelte';
+	import type { UserEventStatus } from '$lib/utils/eligibility';
 
-  let userStatus: UserEventStatus | null = $props();
-  let isAuthenticated = $state(true);
+	let userStatus: UserEventStatus | null = $props();
+	let isAuthenticated = $state(true);
 </script>
 
 <EventRSVP
-  eventId="event-123"
-  eventName="Summer Block Party"
-  bind:userStatus
-  {isAuthenticated}
-  requiresTicket={false}
+	eventId="event-123"
+	eventName="Summer Block Party"
+	bind:userStatus
+	{isAuthenticated}
+	requiresTicket={false}
 />
 ```
 
 ## Props
 
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| `eventId` | `string` | Yes | Event ID for RSVP submission |
-| `eventName` | `string` | Yes | Event name for success message display |
-| `userStatus` | `UserEventStatus \| null` | Yes | User's current status (RSVP, ticket, or eligibility) - bindable prop |
-| `isAuthenticated` | `boolean` | Yes | Whether user is logged in |
-| `requiresTicket` | `boolean` | Yes | If true, component won't render (ticket events use different flow) |
-| `class` | `string` | No | Additional CSS classes |
+| Prop              | Type                      | Required | Description                                                          |
+| ----------------- | ------------------------- | -------- | -------------------------------------------------------------------- |
+| `eventId`         | `string`                  | Yes      | Event ID for RSVP submission                                         |
+| `eventName`       | `string`                  | Yes      | Event name for success message display                               |
+| `userStatus`      | `UserEventStatus \| null` | Yes      | User's current status (RSVP, ticket, or eligibility) - bindable prop |
+| `isAuthenticated` | `boolean`                 | Yes      | Whether user is logged in                                            |
+| `requiresTicket`  | `boolean`                 | Yes      | If true, component won't render (ticket events use different flow)   |
+| `class`           | `string`                  | No       | Additional CSS classes                                               |
 
 ## Features
 
@@ -71,36 +71,39 @@ The component is designed to work seamlessly in the EventActionSidebar:
 ```svelte
 <!-- EventActionSidebar.svelte -->
 {#if !isAttending}
-  {#if !event.requires_ticket}
-    <EventRSVP
-      eventId={event.id}
-      eventName={event.name}
-      bind:userStatus
-      {isAuthenticated}
-      requiresTicket={event.requires_ticket}
-    />
-  {:else}
-    <ActionButton ... />
-  {/if}
+	{#if !event.requires_ticket}
+		<EventRSVP
+			eventId={event.id}
+			eventName={event.name}
+			bind:userStatus
+			{isAuthenticated}
+			requiresTicket={event.requires_ticket}
+		/>
+	{:else}
+		<ActionButton ... />
+	{/if}
 {/if}
 ```
 
 ## API Integration
 
 Calls `POST /api/events/{event_id}/rsvp/{answer}` where answer is:
+
 - `yes` - User is attending
 - `maybe` - User might attend
 - `no` - User is not attending
 
 Returns `EventRsvpSchema` on success:
+
 ```typescript
 {
-  event_id: string;
-  status: 'approved' | 'rejected' | 'pending review';
+	event_id: string;
+	status: 'approved' | 'rejected' | 'pending review';
 }
 ```
 
 Returns `EventUserEligibility` on error (400):
+
 ```typescript
 {
   allowed: boolean;
@@ -113,6 +116,7 @@ Returns `EventUserEligibility` on error (400):
 ## Testing
 
 See `EventRSVP.test.ts` for comprehensive test coverage including:
+
 - Authentication checks
 - Eligibility states
 - RSVP submission

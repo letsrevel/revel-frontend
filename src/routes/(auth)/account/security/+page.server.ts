@@ -1,11 +1,6 @@
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import {
-	otpSetupOtp,
-	otpEnableOtp,
-	otpDisableOtp,
-	accountMe
-} from '$lib/api/client';
+import { otpSetupOtp, otpEnableOtp, otpDisableOtp, accountMe } from '$lib/api/client';
 import { z } from 'zod';
 
 /**

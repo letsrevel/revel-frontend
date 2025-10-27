@@ -2,6 +2,7 @@
 	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
 	import { formatEventDateRange } from '$lib/utils/date';
 	import { getEventFallbackGradient } from '$lib/utils/event';
+	import { getBackendUrl } from '$lib/config/api';
 	import { MapPin, Calendar, Share2 } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
 
@@ -12,18 +13,10 @@
 
 	let { event, class: className }: Props = $props();
 
-	// Backend URL for images
-	const BACKEND_URL = 'http://localhost:8000';
-
 	// Helper function to get full image URL
 	function getImageUrl(path: string | null | undefined): string | null {
 		if (!path) return null;
-		// If path is already a full URL, return it
-		if (path.startsWith('http://') || path.startsWith('https://')) {
-			return path;
-		}
-		// Otherwise, prepend backend URL
-		return `${BACKEND_URL}${path}`;
+		return getBackendUrl(path);
 	}
 
 	// Compute image URLs with backend URL prepended

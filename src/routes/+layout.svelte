@@ -69,10 +69,12 @@
 
 				// Check if ad blocker is blocking the request
 				if (err instanceof TypeError && err.message === 'Failed to fetch') {
-					import('svelte-sonner').then(({ toast }) => {
-						toast.error('API Blocked', {
-							description: 'Please disable your ad blocker for localhost:8000 to use all features.',
-							duration: 10000
+					import('$lib/config/api').then(({ API_BASE_URL_DISPLAY }) => {
+						import('svelte-sonner').then(({ toast }) => {
+							toast.error('API Blocked', {
+								description: `Please disable your ad blocker for ${API_BASE_URL_DISPLAY} to use all features.`,
+								duration: 10000
+							});
 						});
 					});
 				}

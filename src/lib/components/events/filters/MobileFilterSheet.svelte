@@ -35,6 +35,12 @@
 	let activeFilterCount = $derived(countActiveFilters(filters));
 	let hasFilters = $derived(hasActiveFilters(filters));
 
+	// Swipe gesture state
+	let touchStartY = $state(0);
+	let touchCurrentY = $state(0);
+	let isDragging = $state(false);
+	let translateY = $derived(isDragging ? Math.max(0, touchCurrentY - touchStartY) : 0);
+
 	function handleSearch(value: string): void {
 		onUpdateFilters({ search: value || undefined });
 	}
@@ -100,6 +106,51 @@
 		onClose();
 	}
 
+	// Swipe gesture handlers
+	function handleTouchStart(e: TouchEvent): void {
+		if ((e.target as HTMLElement).closest('.overflow-y-auto')) {
+			// Only handle swipes on the sheet itself, not on scrollable content at scroll position 0
+			const scrollableElement = (e.target as HTMLElement).closest('.overflow-y-auto');
+			if (scrollableElement && scrollableElement.scrollTop > 0) {
+				return; // Allow normal scrolling
+			}
+		}
+
+		touchStartY = e.touches[0].clientY;
+		touchCurrentY = e.touches[0].clientY;
+		isDragging = true;
+	}
+
+	function handleTouchMove(e: TouchEvent): void {
+		if (!isDragging) return;
+
+		touchCurrentY = e.touches[0].clientY;
+		const diff = touchCurrentY - touchStartY;
+
+		// Only prevent default if swiping down
+		if (diff > 0) {
+			e.preventDefault();
+		}
+	}
+
+	function handleTouchEnd(): void {
+		if (!isDragging) {
+			return;
+		}
+
+		const swipeDistance = touchCurrentY - touchStartY;
+		const SWIPE_THRESHOLD = 100; // 100px swipe to close
+
+		if (swipeDistance > SWIPE_THRESHOLD) {
+			onClose();
+		}
+
+		// Reset state
+		isDragging = false;
+		touchStartY = 0;
+		touchCurrentY = 0;
+	}
+
 	// Trap focus when sheet is open
 	$effect(() => {
 		if (isOpen) {
@@ -135,15 +186,20 @@
 	<!-- Sheet -->
 	<div
 		class={cn(
-			'fixed inset-x-0 bottom-0 z-50 flex max-h-[85vh] flex-col rounded-t-2xl border-t bg-background shadow-2xl transition-transform lg:hidden',
+			'mobile-sheet fixed inset-x-0 bottom-0 z-50 flex max-h-[85vh] flex-col rounded-t-2xl border-t bg-background shadow-2xl lg:hidden',
+			!isDragging && 'transition-transform',
 			className
 		)}
+		style="transform: translateY({translateY}px)"
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="mobile-filter-title"
+		ontouchstart={handleTouchStart}
+		ontouchmove={handleTouchMove}
+		ontouchend={handleTouchEnd}
 	>
 		<!-- Handle (swipe indicator) -->
-		<div class="flex justify-center py-3">
+		<div class="flex cursor-grab justify-center py-3 active:cursor-grabbing">
 			<div class="h-1.5 w-12 rounded-full bg-muted" aria-hidden="true"></div>
 		</div>
 
@@ -232,7 +288,7 @@
 		</div>
 
 		<!-- Sticky Footer -->
-		<div class="border-t bg-background p-4">
+		<div class="mobile-sheet-footer border-t bg-background p-4">
 			<div class="flex flex-col gap-3">
 				{#if hasFilters}
 					<button

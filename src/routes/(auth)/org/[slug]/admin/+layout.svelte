@@ -24,9 +24,9 @@
 		{
 			href: `/org/${data.organization.slug}/admin/members`,
 			label: 'Members',
-			subItems: data.organization.accept_membership_requests ? [
-				{ href: `/org/${data.organization.slug}/admin/members/requests`, label: 'Requests' }
-			] : undefined
+			subItems: data.organization.accept_membership_requests
+				? [{ href: `/org/${data.organization.slug}/admin/members/requests`, label: 'Requests' }]
+				: undefined
 		},
 		{ href: `/org/${data.organization.slug}/admin/questionnaires`, label: 'Questionnaires' },
 		{ href: `/org/${data.organization.slug}/admin/resources`, label: 'Resources' },

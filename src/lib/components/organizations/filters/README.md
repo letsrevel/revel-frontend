@@ -9,6 +9,7 @@ Production-ready Svelte 5 filter components for organization listing pages, foll
 Desktop filter sidebar with all organization filtering options.
 
 **Features:**
+
 - Sort by distance, name (A-Z), or name (Z-A)
 - Search organizations by name
 - Filter by city location
@@ -56,6 +57,7 @@ Desktop filter sidebar with all organization filtering options.
 Mobile bottom sheet for organization filtering.
 
 **Features:**
+
 - Slides up from bottom on mobile devices
 - All desktop filter options
 - Show organization count button
@@ -95,9 +97,7 @@ Mobile bottom sheet for organization filtering.
 </script>
 
 <!-- Trigger button -->
-<button onclick={() => (isFilterSheetOpen = true)}>
-	Open Filters
-</button>
+<button onclick={() => (isFilterSheetOpen = true)}> Open Filters </button>
 
 <!-- Mobile filter sheet -->
 <MobileOrganizationFilterSheet
@@ -115,6 +115,7 @@ Mobile bottom sheet for organization filtering.
 Standalone sort order filter component.
 
 **Options:**
+
 - `distance` - Nearest First (default)
 - `name` - A-Z (alphabetical)
 - `-name` - Z-A (reverse alphabetical)

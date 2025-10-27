@@ -21,13 +21,7 @@
 		onClose: () => void;
 	}
 
-	let {
-		open = $bindable(),
-		series,
-		organizationId,
-		accessToken,
-		onClose
-	}: Props = $props();
+	let { open = $bindable(), series, organizationId, accessToken, onClose }: Props = $props();
 
 	// State
 	let searchQuery = $state('');
@@ -43,7 +37,10 @@
 			return series.questionnaires.map((q: any) => q.id);
 		}
 		// Check if series has organization_questionnaires field
-		if ('organization_questionnaires' in series && Array.isArray(series.organization_questionnaires)) {
+		if (
+			'organization_questionnaires' in series &&
+			Array.isArray(series.organization_questionnaires)
+		) {
 			return series.organization_questionnaires.map((q: any) => q.id);
 		}
 		return [];
@@ -132,7 +129,11 @@
 			for (const questionnaireId of toUnassign) {
 				// Get the questionnaire's current series assignments
 				const questionnaire = allQuestionnaires.find((q) => q.id === questionnaireId);
-				if (questionnaire && 'event_series' in questionnaire && Array.isArray(questionnaire.event_series)) {
+				if (
+					questionnaire &&
+					'event_series' in questionnaire &&
+					Array.isArray(questionnaire.event_series)
+				) {
 					// Remove this series from the list
 					const remainingSeriesIds = questionnaire.event_series
 						.filter((s: any) => s.id !== series.id)

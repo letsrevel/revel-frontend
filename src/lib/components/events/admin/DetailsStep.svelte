@@ -5,6 +5,7 @@
 		QuestionnaireSchema
 	} from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
+	import { getBackendUrl } from '$lib/config/api';
 	import {
 		FileText,
 		Calendar,
@@ -62,9 +63,6 @@
 	// Modal state for questionnaire assignment
 	let isQuestionnaireModalOpen = $state(false);
 
-	// Backend URL for images
-	const BACKEND_URL = 'http://localhost:8000';
-
 	// Accordion state
 	let openSections = $state<Set<string>>(new Set(['basic']));
 
@@ -86,12 +84,7 @@
 	// Helper function to get full image URL
 	function getImageUrl(path: string | null | undefined): string | null {
 		if (!path) return null;
-		// If path is already a full URL, return it
-		if (path.startsWith('http://') || path.startsWith('https://')) {
-			return path;
-		}
-		// Otherwise, prepend backend URL
-		return `${BACKEND_URL}${path}`;
+		return getBackendUrl(path);
 	}
 
 	// Compute image URLs with fallback to organization

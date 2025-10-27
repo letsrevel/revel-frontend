@@ -61,36 +61,42 @@ Total test coverage: Basic rendering, interaction, validation, accessibility
 ### Step 2: Details
 
 ✅ **Basic Details** accordion:
-  - Description textarea (Markdown support noted)
-  - End date/time picker
-  - Address input
+
+- Description textarea (Markdown support noted)
+- End date/time picker
+- Address input
 
 ✅ **Ticketing** accordion (conditional):
-  - Shown when requires_ticket = true
-  - Placeholder for Phase 3
+
+- Shown when requires_ticket = true
+- Placeholder for Phase 3
 
 ✅ **RSVP Options** accordion (conditional):
-  - Shown when requires_ticket = false
-  - RSVP deadline picker
-  - Free for members checkbox
-  - Free for staff checkbox
+
+- Shown when requires_ticket = false
+- RSVP deadline picker
+- Free for members checkbox
+- Free for staff checkbox
 
 ✅ **Capacity** accordion:
-  - Max attendees number input
-  - Waitlist open checkbox
-  - Invitation message textarea
+
+- Max attendees number input
+- Waitlist open checkbox
+- Invitation message textarea
 
 ✅ **Advanced** accordion:
-  - Check-in opens at picker
-  - Check-in closes at picker
-  - Enable potluck checkbox
-  - Tag input with add/remove
-  - Event series dropdown
-  - Questionnaire dropdown (disabled - Phase 3)
+
+- Check-in opens at picker
+- Check-in closes at picker
+- Enable potluck checkbox
+- Tag input with add/remove
+- Event series dropdown
+- Questionnaire dropdown (disabled - Phase 3)
 
 ✅ **Media** accordion:
-  - Logo file upload
-  - Cover art file upload
+
+- Logo file upload
+- Cover art file upload
 
 ### Technical Implementation
 
@@ -109,12 +115,14 @@ Total test coverage: Basic rendering, interaction, validation, accessibility
 ## Accessibility Features
 
 ### Semantic HTML
+
 - Proper form elements (`<form>`, `<input>`, `<label>`, `<button>`)
 - Radio groups for mutually exclusive options
 - Checkboxes for boolean options
 - Native file inputs for uploads
 
 ### ARIA Implementation
+
 - `role="radiogroup"` for visibility/type options
 - `aria-invalid` on invalid inputs
 - `aria-describedby` linking errors to inputs
@@ -126,6 +134,7 @@ Total test coverage: Basic rendering, interaction, validation, accessibility
 - `aria-hidden="true"` on decorative icons
 
 ### Keyboard Navigation
+
 - Tab order follows logical flow
 - Enter submits forms
 - Space toggles checkboxes/radios
@@ -134,6 +143,7 @@ Total test coverage: Basic rendering, interaction, validation, accessibility
 - Focus indicators visible on all controls
 
 ### Visual Accessibility
+
 - 4.5:1 color contrast on all text
 - Focus rings on all interactive elements
 - Clear error states with red borders
@@ -141,6 +151,7 @@ Total test coverage: Basic rendering, interaction, validation, accessibility
 - Disabled states clearly indicated
 
 ### Screen Reader Support
+
 - All inputs have associated labels
 - Error messages announced on change
 - Success messages announced when shown
@@ -150,12 +161,14 @@ Total test coverage: Basic rendering, interaction, validation, accessibility
 ## Mobile Responsiveness
 
 ### Layout
+
 - Mobile-first design approach
 - Single column layout on mobile
 - Multi-column where space allows (tablet+)
 - Touch-friendly controls (min 44x44px)
 
 ### Form Controls
+
 - Native HTML5 inputs for mobile optimization
 - `datetime-local` for date/time pickers
 - File inputs work with mobile camera/gallery
@@ -163,6 +176,7 @@ Total test coverage: Basic rendering, interaction, validation, accessibility
 - Accordion sections stack on mobile
 
 ### Typography
+
 - Responsive text sizes (text-sm, text-base, text-lg)
 - Readable line lengths
 - Clear hierarchy
@@ -172,18 +186,21 @@ Total test coverage: Basic rendering, interaction, validation, accessibility
 ### Endpoints Used
 
 1. **Create Event**
+
    ```
    POST /api/organization-admin/{slug}/create-event
    Function: organizationadminCreateEvent83140B46
    ```
 
 2. **Update Event**
+
    ```
    PUT /api/event-admin/{event_id}
    Function: eventadminUpdateEvent64Fc71Fe
    ```
 
 3. **Upload Logo**
+
    ```
    POST /api/event-admin/{event_id}/upload-logo
    Function: eventadminUploadLogoF6692Dc9
@@ -224,21 +241,25 @@ Redirect to /org/{slug}/admin/events
 ## Form Validation
 
 ### Step 1 (Required)
+
 - **Name**: Not empty, min 3 characters
 - **Start**: Not empty, must be future date
 - **City**: Must be selected
 
 ### Step 2 (All Optional)
+
 - No validation errors block submission
 - Fields saved as-is
 
 ## Default Values
 
 ### From Props
+
 - `city_id`: orgCity → userCity → null
 - `existingEvent.*`: All fields if editing
 
 ### Hardcoded
+
 - `visibility`: "public"
 - `event_type`: "public"
 - `requires_ticket`: false
@@ -251,11 +272,13 @@ Redirect to /org/{slug}/admin/events
 ## Testing
 
 ### Test Files Created
+
 1. `EventWizard.test.ts` - 5 tests
 2. `EssentialsStep.test.ts` - 6 tests
 3. `DetailsStep.test.ts` - 6 tests
 
 ### Test Coverage
+
 - Component rendering
 - Form input changes
 - Validation error display
@@ -265,6 +288,7 @@ Redirect to /org/{slug}/admin/events
 - Edit mode vs. create mode
 
 ### Running Tests
+
 ```bash
 pnpm test src/lib/components/events/admin
 ```
@@ -272,32 +296,21 @@ pnpm test src/lib/components/events/admin
 ## Usage
 
 ### Create New Event
+
 ```svelte
 <script lang="ts">
-  import EventWizard from '$lib/components/events/admin/EventWizard.svelte';
+	import EventWizard from '$lib/components/events/admin/EventWizard.svelte';
 
-  let { organization, userCity, orgCity, eventSeries, questionnaires } = $props();
+	let { organization, userCity, orgCity, eventSeries, questionnaires } = $props();
 </script>
 
-<EventWizard
-  {organization}
-  {userCity}
-  {orgCity}
-  {eventSeries}
-  {questionnaires}
-/>
+<EventWizard {organization} {userCity} {orgCity} {eventSeries} {questionnaires} />
 ```
 
 ### Edit Existing Event
+
 ```svelte
-<EventWizard
-  {organization}
-  {existingEvent}
-  {userCity}
-  {orgCity}
-  {eventSeries}
-  {questionnaires}
-/>
+<EventWizard {organization} {existingEvent} {userCity} {orgCity} {eventSeries} {questionnaires} />
 ```
 
 ## Future Enhancements (Not in Phase 1)
@@ -353,22 +366,27 @@ src/lib/components/events/admin/
 ## Dependencies
 
 ### Required Components
+
 - `$lib/components/forms/CityAutocomplete.svelte` ✅ (exists)
 
 ### Required Utilities
+
 - `$lib/utils/cn` ✅ (exists)
 
 ### Required Packages
+
 - `@tanstack/svelte-query` ✅
 - `lucide-svelte` ✅
 - `$lib/api/generated` ✅
 
 ### SvelteKit APIs
+
 - `$app/navigation` (goto) ✅
 
 ## Success Metrics
 
 ### Functionality
+
 ✅ Users can create events via 2-step wizard
 ✅ Users can edit existing events
 ✅ Validation prevents invalid data
@@ -377,6 +395,7 @@ src/lib/components/events/admin/
 ✅ Redirects work after save
 
 ### Code Quality
+
 ✅ TypeScript strict mode passes
 ✅ No console errors or warnings
 ✅ Tests pass
@@ -384,6 +403,7 @@ src/lib/components/events/admin/
 ✅ Accessible to screen reader users
 
 ### User Experience
+
 ✅ Clear step progression
 ✅ Helpful error messages
 ✅ Success feedback
@@ -404,6 +424,7 @@ src/lib/components/events/admin/
 ## Support
 
 For questions or issues with these components:
+
 1. Check README.md for component documentation
 2. Check USAGE_EXAMPLE.md for integration guide
 3. Review test files for usage examples

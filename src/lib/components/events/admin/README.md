@@ -9,6 +9,7 @@ This directory contains components for event administration, specifically the 2-
 Main wizard component that orchestrates the 2-step event creation flow.
 
 **Props:**
+
 - `organization: OrganizationRetrieveSchema` - The organization creating the event (required)
 - `existingEvent?: EventDetailSchema` - Existing event data for edit mode (optional)
 - `userCity?: CitySchema | null` - User's preferred city (optional)
@@ -17,20 +18,19 @@ Main wizard component that orchestrates the 2-step event creation flow.
 - `questionnaires?: QuestionnaireSchema[]` - Available questionnaires (optional)
 
 **Usage:**
+
 ```svelte
 <script lang="ts">
-  import EventWizard from '$lib/components/events/admin/EventWizard.svelte';
+	import EventWizard from '$lib/components/events/admin/EventWizard.svelte';
 
-  let { organization, userCity } = $props();
+	let { organization, userCity } = $props();
 </script>
 
-<EventWizard
-  {organization}
-  {userCity}
-/>
+<EventWizard {organization} {userCity} />
 ```
 
 **Features:**
+
 - Step 1: Essentials (name, date, city, visibility, type, ticketing)
 - Step 2: Details (description, capacity, advanced options, media)
 - Auto-save to draft on Step 1 completion
@@ -44,6 +44,7 @@ Main wizard component that orchestrates the 2-step event creation flow.
 Step 1 of the wizard - captures essential event information.
 
 **Props:**
+
 - `formData: Partial<EventCreateSchema>` - Current form data
 - `validationErrors: Record<string, string>` - Validation errors
 - `orgCity?: CitySchema | null` - Organization's city for defaults
@@ -54,11 +55,13 @@ Step 1 of the wizard - captures essential event information.
 - `isSaving: boolean` - Loading state
 
 **Required Fields:**
+
 - Event Name (min 3 characters)
 - Start Date/Time (must be future date)
 - City (from city autocomplete)
 
 **Optional Fields:**
+
 - Visibility (public/private/members-only/staff-only)
 - Event Type (public/private/members-only)
 - Requires Ticket (checkbox)
@@ -68,6 +71,7 @@ Step 1 of the wizard - captures essential event information.
 Step 2 of the wizard - captures additional event details.
 
 **Props:**
+
 - `formData: Partial<EventCreateSchema> & { tags?: string[] }` - Current form data
 - `eventSeries?: EventSeriesRetrieveSchema[]` - Available event series
 - `questionnaires?: QuestionnaireSchema[]` - Available questionnaires
@@ -111,41 +115,51 @@ Step 2 of the wizard - captures additional event details.
 The EventWizard component handles all API calls:
 
 ### Create Event (Step 1)
+
 ```typescript
-POST /api/organization-admin/{slug}/create-event
-Body: EventCreateSchema
-Response: EventDetailSchema
+POST / api / organization - admin / { slug } / create - event;
+Body: EventCreateSchema;
+Response: EventDetailSchema;
 ```
 
 ### Update Event (Step 2)
+
 ```typescript
-PUT /api/event-admin/{event_id}
-Body: Partial<EventCreateSchema>
-Response: EventDetailSchema
+PUT / api / event - admin / { event_id };
+Body: Partial<EventCreateSchema>;
+Response: EventDetailSchema;
 ```
 
 ### Upload Logo
+
 ```typescript
-POST /api/event-admin/{event_id}/upload-logo
-Body: { logo: File }
-Response: EventDetailSchema
+POST / api / event - admin / { event_id } / upload - logo;
+Body: {
+	logo: File;
+}
+Response: EventDetailSchema;
 ```
 
 ### Upload Cover Art
+
 ```typescript
-POST /api/event-admin/{event_id}/upload-cover-art
-Body: { cover_art: File }
-Response: EventDetailSchema
+POST / api / event - admin / { event_id } / upload - cover - art;
+Body: {
+	cover_art: File;
+}
+Response: EventDetailSchema;
 ```
 
 ## Validation
 
 ### Step 1 Validation
+
 - **Event Name**: Required, min 3 characters
 - **Start Date/Time**: Required, must be in the future
 - **City**: Required
 
 ### Step 2 Validation
+
 - No required fields (all optional enhancements)
 - Validation happens on individual fields as needed
 
@@ -203,11 +217,13 @@ Redirect to /org/{slug}/admin/events
 ## Testing
 
 Run tests with:
+
 ```bash
 pnpm test src/lib/components/events/admin
 ```
 
 Test coverage includes:
+
 - Component rendering
 - Form input changes
 - Validation error display

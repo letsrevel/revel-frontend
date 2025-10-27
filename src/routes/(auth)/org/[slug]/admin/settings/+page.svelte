@@ -8,6 +8,7 @@
 	import type { CitySchema } from '$lib/api/generated';
 	import { Building2, AlertCircle, Check, Eye } from 'lucide-svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { getBackendUrl } from '$lib/config/api';
 	import {
 		organizationadminUploadLogo,
 		organizationadminUploadCoverArt,
@@ -23,9 +24,6 @@
 	let { data, form }: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
-
-	// Backend URL for image previews
-	const BACKEND_URL = 'http://localhost:8000';
 
 	// Form state - always sync with latest data
 	let description = $state(data.organization.description || '');
