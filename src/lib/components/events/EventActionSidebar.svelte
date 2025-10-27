@@ -11,7 +11,7 @@
 	import ActionButton from './ActionButton.svelte';
 	import EventRSVP from './EventRSVP.svelte';
 	import EligibilityStatusDisplay from './EligibilityStatusDisplay.svelte';
-	import { Check, Ticket, Settings, Users } from 'lucide-svelte';
+	import { Check, Ticket, Settings, Users, Mail } from 'lucide-svelte';
 
 	interface Props {
 		event: EventDetailSchema;
@@ -227,6 +227,7 @@
 							eventId={event.id}
 							eventSlug={event.slug}
 							organizationSlug={event.organization.slug}
+							eventName={event.name}
 						/>
 					</div>
 				{:else}
@@ -301,6 +302,13 @@
 							Manage Attendees
 						</a>
 					{/if}
+					<a
+						href="/org/{event.organization.slug}/admin/events/{event.id}/invitations"
+						class="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>
+						<Mail class="h-4 w-4" aria-hidden="true" />
+						Manage Invitations
+					</a>
 				</div>
 			</div>
 		{/if}

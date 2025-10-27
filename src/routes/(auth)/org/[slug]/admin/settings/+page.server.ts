@@ -40,7 +40,7 @@ export const actions: Actions = {
 		const description = formData.get('description') as string;
 		const cityIdValue = formData.get('city_id') as string;
 		const visibility = (formData.get('visibility') as string) || 'public';
-		const acceptNewMembers = formData.get('accept_new_members') === 'true';
+		const acceptNewMembers = formData.get('accept_membership_requests') === 'true';
 		const contactEmail = formData.get('contact_email') as string;
 		const oldSlug = params.slug;
 
@@ -75,7 +75,7 @@ export const actions: Actions = {
 			name: name.trim(),
 			slug: slug.trim(),
 			visibility,
-			accept_new_members: acceptNewMembers
+			accept_membership_requests: acceptNewMembers
 		};
 
 		// Add optional fields only if they have values

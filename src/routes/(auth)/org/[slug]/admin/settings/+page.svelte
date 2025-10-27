@@ -32,7 +32,7 @@
 	let address = $state(data.organization.address || '');
 	let selectedCity = $state<CitySchema | null>(data.organization.city || null);
 	let visibility = $state(data.organization.visibility || 'public');
-	let acceptNewMembers = $state(data.organization.accept_new_members || false);
+	let acceptNewMembers = $state(data.organization.accept_membership_requests || false);
 	let contactEmail = $state(data.organization.contact_email || '');
 	let isSubmitting = $state(false);
 
@@ -70,7 +70,7 @@
 		address = data.organization.address || '';
 		selectedCity = data.organization.city || null;
 		visibility = data.organization.visibility || 'public';
-		acceptNewMembers = data.organization.accept_new_members || false;
+		acceptNewMembers = data.organization.accept_membership_requests || false;
 		contactEmail = data.organization.contact_email || '';
 	});
 
@@ -503,13 +503,13 @@
 				<div class="flex items-center gap-2">
 					<input
 						type="checkbox"
-						id="accept_new_members"
-						name="accept_new_members"
+						id="accept_membership_requests"
+						name="accept_membership_requests"
 						value="true"
 						bind:checked={acceptNewMembers}
 						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 					/>
-					<label for="accept_new_members" class="text-sm font-medium">
+					<label for="accept_membership_requests" class="text-sm font-medium">
 						Accept membership requests
 					</label>
 				</div>

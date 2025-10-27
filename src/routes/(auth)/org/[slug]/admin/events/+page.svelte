@@ -17,7 +17,8 @@
 		Trash2,
 		CheckCircle,
 		XCircle,
-		UserCheck
+		UserCheck,
+		Mail
 	} from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -101,6 +102,13 @@
 	 */
 	function manageTickets(eventId: string): void {
 		goto(`/org/${organization.slug}/admin/events/${eventId}/tickets`);
+	}
+
+	/**
+	 * Navigate to invitations management page
+	 */
+	function manageInvitations(eventId: string): void {
+		goto(`/org/${organization.slug}/admin/events/${eventId}/invitations`);
 	}
 
 	/**
@@ -381,6 +389,14 @@
 									{/if}
 									<button
 										type="button"
+										onclick={() => manageInvitations(event.id)}
+										class="inline-flex items-center gap-1 rounded-md bg-purple-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-purple-700"
+									>
+										<Mail class="h-4 w-4" aria-hidden="true" />
+										Invitations
+									</button>
+									<button
+										type="button"
 										onclick={() => closeEvent(event.id)}
 										class="inline-flex items-center gap-1 rounded-md bg-orange-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-orange-700"
 									>
@@ -466,6 +482,14 @@
 											Attendees
 										</button>
 									{/if}
+									<button
+										type="button"
+										onclick={() => manageInvitations(event.id)}
+										class="inline-flex items-center gap-1 rounded-md bg-purple-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-purple-700"
+									>
+										<Mail class="h-4 w-4" aria-hidden="true" />
+										Invitations
+									</button>
 									<button
 										type="button"
 										onclick={() => reopenEvent(event.id)}

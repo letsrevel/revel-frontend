@@ -3,6 +3,8 @@
 	import { getActionButtonText, isActionDisabled } from '$lib/utils/eligibility';
 	import { cn } from '$lib/utils/cn';
 	import { Button } from '$lib/components/ui/button';
+	import RequestInvitationButton from './RequestInvitationButton.svelte';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import {
 		Check,
 		ClipboardList,
@@ -23,6 +25,7 @@
 		questionnaireIds?: string[] | null;
 		retryOn?: string | null;
 		disabled?: boolean;
+		eventName?: string;
 		class?: string;
 	}
 
@@ -33,8 +36,11 @@
 		organizationSlug,
 		questionnaireIds,
 		disabled = false,
+		eventName = '',
 		class: className
 	}: Props = $props();
+
+	const isAuthenticated = $derived(!!authStore.accessToken);
 
 	let isLoading = $state(false);
 	let showSuccess = $state(false);
@@ -118,16 +124,9 @@
 			return;
 		}
 
-		// API actions (stub for now - Phase 2)
+		// request_invitation is handled by RequestInvitationButton component
+		// No action needed here
 		if (nextStep === 'request_invitation') {
-			isLoading = true;
-			// TODO Phase 2: Implement actual API call
-			// Simulate API call for now
-			setTimeout(() => {
-				isLoading = false;
-				showSuccess = true;
-				console.log('Request invitation for event:', eventId);
-			}, 1000);
 			return;
 		}
 
@@ -167,41 +166,56 @@
     eventId={event.id}
     eventSlug={event.slug}
     organizationSlug={org.slug}
+    eventName={event.name}
   />
 -->
 <div class={cn('space-y-2', className)}>
-	<Button variant={buttonVariant} disabled={isButtonDisabled} onclick={handleClick} class="w-full">
-		{#if isLoading}
-			<Loader2 class="h-5 w-5 animate-spin" aria-hidden="true" />
-		{:else if showSuccess}
-			<Check class="h-5 w-5" aria-hidden="true" />
-		{:else}
-			<IconComponent class="h-5 w-5" aria-hidden="true" />
-		{/if}
-		<span>{buttonText}</span>
-	</Button>
-
-	<!-- Success Message -->
-	{#if showSuccess}
-		<div
-			class="rounded-md bg-green-50 p-3 text-sm text-green-900 dark:bg-green-950/50 dark:text-green-100"
-			role="status"
-			aria-live="polite"
+	<!-- Use RequestInvitationButton for invitation requests -->
+	{#if nextStep === 'request_invitation'}
+		<RequestInvitationButton
+			{eventId}
+			eventName={eventName || 'this event'}
+			{isAuthenticated}
+			hasAlreadyRequested={false}
+			class="w-full"
+		/>
+	{:else}
+		<Button
+			variant={buttonVariant}
+			disabled={isButtonDisabled}
+			onclick={handleClick}
+			class="w-full"
 		>
-			{#if nextStep === 'request_invitation'}
-				Invitation requested! We'll notify you when organizers respond.
+			{#if isLoading}
+				<Loader2 class="h-5 w-5 animate-spin" aria-hidden="true" />
+			{:else if showSuccess}
+				<Check class="h-5 w-5" aria-hidden="true" />
+			{:else}
+				<IconComponent class="h-5 w-5" aria-hidden="true" />
 			{/if}
-		</div>
-	{/if}
+			<span>{buttonText}</span>
+		</Button>
 
-	<!-- Error Message -->
-	{#if showError && errorMessage}
-		<div
-			class="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
-			role="alert"
-			aria-live="assertive"
-		>
-			{errorMessage}
-		</div>
+		<!-- Success Message -->
+		{#if showSuccess}
+			<div
+				class="rounded-md bg-green-50 p-3 text-sm text-green-900 dark:bg-green-950/50 dark:text-green-100"
+				role="status"
+				aria-live="polite"
+			>
+				Success!
+			</div>
+		{/if}
+
+		<!-- Error Message -->
+		{#if showError && errorMessage}
+			<div
+				class="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
+				role="alert"
+				aria-live="assertive"
+			>
+				{errorMessage}
+			</div>
+		{/if}
 	{/if}
 </div>
