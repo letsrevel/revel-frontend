@@ -17,6 +17,6 @@ export type CreateClientConfig<T extends ClientOptions = ClientOptions2> = (
 
 export const client = createClient(
 	createConfig<ClientOptions2>({
-		baseUrl: 'http://localhost:8000'
+		baseUrl: import.meta.env.PUBLIC_API_URL || 'http://localhost:8000'
 	})
 );

@@ -41,6 +41,22 @@ try {
 	writeFileSync(sdkPath, sdkContent);
 	console.log('✅ Hash suffixes removed from SDK!');
 
+	// Fix the client configuration to use environment variable
+	console.log('📝 Configuring API client to use PUBLIC_API_URL...');
+	const clientPath = './src/lib/api/generated/client.gen.ts';
+	let clientContent = readFileSync(clientPath, 'utf-8');
+
+	// Replace hardcoded baseUrl with environment variable
+	// Original: baseUrl: 'http://localhost:8000'
+	// New: baseUrl: import.meta.env.PUBLIC_API_URL || 'http://localhost:8000'
+	clientContent = clientContent.replace(
+		/baseUrl:\s*['"].*?['"]/,
+		"baseUrl: import.meta.env.PUBLIC_API_URL || 'http://localhost:8000'"
+	);
+
+	writeFileSync(clientPath, clientContent);
+	console.log('✅ API client configured to use PUBLIC_API_URL!');
+
 	// Create index.ts to export everything
 	const indexContent = `// Re-export everything from generated API
 export * from './generated';
