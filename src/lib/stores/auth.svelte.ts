@@ -32,7 +32,10 @@ class AuthStore {
 	}
 
 	get isAuthenticated() {
-		return this._user !== null && this._accessToken !== null;
+		// Check if we have an access token
+		// Don't require user to be fetched - this makes the UI update immediately after login
+		// The user will be fetched asynchronously by initialize()
+		return this._accessToken !== null;
 	}
 
 	get isLoading() {
