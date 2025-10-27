@@ -24,13 +24,16 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies }) => 
 	// Get pagination params
 	const page = parseInt(url.searchParams.get('page') || '1', 10);
 	const pageSize = parseInt(url.searchParams.get('page_size') || '20', 10);
+	// Get status filter (pending, approved, rejected)
+	const status = url.searchParams.get('status') || undefined;
 
 	try {
 		const response = await organizationadminListMembershipRequests({
 			path: { slug: params.slug },
 			query: {
 				page,
-				page_size: pageSize
+				page_size: pageSize,
+				status: status as 'pending' | 'approved' | 'rejected' | undefined
 			},
 			headers: {
 				Authorization: `Bearer ${accessToken}`
@@ -56,6 +59,9 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies }) => 
 				totalPages,
 				hasNext: page < totalPages,
 				hasPrev: page > 1
+			},
+			filters: {
+				status
 			}
 		};
 	} catch (err) {

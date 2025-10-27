@@ -23,7 +23,7 @@
 		{
 			href: `/org/${data.organization.slug}/admin/members`,
 			label: 'Members',
-			subItems: data.organization.accept_new_members ? [
+			subItems: data.organization.accept_membership_requests ? [
 				{ href: `/org/${data.organization.slug}/admin/members/requests`, label: 'Requests' }
 			] : undefined
 		},

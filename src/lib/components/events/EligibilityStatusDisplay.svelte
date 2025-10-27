@@ -24,10 +24,18 @@
 		eventId?: string;
 		eventSlug?: string;
 		organizationSlug?: string;
+		eventName?: string;
 		class?: string;
 	}
 
-	let { eligibility, eventId, eventSlug, organizationSlug, class: className }: Props = $props();
+	let {
+		eligibility,
+		eventId,
+		eventSlug,
+		organizationSlug,
+		eventName,
+		class: className
+	}: Props = $props();
 
 	// Get icon component based on next_step
 	let IconComponent = $derived.by(() => {
@@ -154,6 +162,7 @@
 						{eventId}
 						{eventSlug}
 						{organizationSlug}
+						{eventName}
 						questionnaireIds={eligibility.questionnaires_missing}
 						retryOn={eligibility.retry_on}
 					/>

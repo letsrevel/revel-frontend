@@ -9,363 +9,364 @@ import {
 } from './client';
 import { client } from './client.gen';
 import type {
-	AccountDeleteAccountConfirm106Ab6A0Data,
-	AccountDeleteAccountConfirm106Ab6A0Responses,
-	AccountDeleteAccountRequest4E1C015cData,
-	AccountDeleteAccountRequest4E1C015cResponses,
-	AccountExportData6Fadb4C2Data,
-	AccountExportData6Fadb4C2Responses,
-	AccountMeE287002fData,
-	AccountMeE287002fResponses,
-	AccountRegister98411793Data,
-	AccountRegister98411793Responses,
-	AccountResendVerificationEmailFc8F0150Data,
-	AccountResendVerificationEmailFc8F0150Errors,
-	AccountResendVerificationEmailFc8F0150Responses,
-	AccountResetPassword5D780D1eData,
-	AccountResetPassword5D780D1eResponses,
-	AccountResetPasswordRequest75Efa090Data,
-	AccountResetPasswordRequest75Efa090Responses,
-	AccountUpdateProfile0F278F51Data,
-	AccountUpdateProfile0F278F51Responses,
-	AccountVerifyEmail478Cf09aData,
-	AccountVerifyEmail478Cf09aResponses,
+	AccountDeleteAccountConfirm51Aca775Data,
+	AccountDeleteAccountConfirm51Aca775Responses,
+	AccountDeleteAccountRequest8786843dData,
+	AccountDeleteAccountRequest8786843dResponses,
+	AccountExportData68C7E4DbData,
+	AccountExportData68C7E4DbResponses,
+	AccountMe6420Cff8Data,
+	AccountMe6420Cff8Responses,
+	AccountRegister0E682147Data,
+	AccountRegister0E682147Responses,
+	AccountResendVerificationEmailDca4C406Data,
+	AccountResendVerificationEmailDca4C406Errors,
+	AccountResendVerificationEmailDca4C406Responses,
+	AccountResetPassword03A7Fc3dData,
+	AccountResetPassword03A7Fc3dResponses,
+	AccountResetPasswordRequest159B2A43Data,
+	AccountResetPasswordRequest159B2A43Responses,
+	AccountUpdateProfile5D6D1Db7Data,
+	AccountUpdateProfile5D6D1Db7Responses,
+	AccountVerifyEmailC5B88297Data,
+	AccountVerifyEmailC5B88297Responses,
 	ApiApiHealthcheckData,
 	ApiApiHealthcheckResponses,
 	ApiApiVersionData,
 	ApiApiVersionResponses,
-	AuthDemoObtainToken5Bd1D0C6Data,
-	AuthDemoObtainToken5Bd1D0C6Responses,
-	AuthGoogleLogin2C1B6Da0Data,
-	AuthGoogleLogin2C1B6Da0Responses,
-	AuthObtainToken3C660894Data,
-	AuthObtainToken3C660894Responses,
-	AuthObtainTokenWithOtpB97019EdData,
-	AuthObtainTokenWithOtpB97019EdResponses,
-	CityGetCityDa3Cef2bData,
-	CityGetCityDa3Cef2bResponses,
-	CityListCitiesF6E7D5C4Data,
-	CityListCitiesF6E7D5C4Responses,
-	CityListCountriesE81Eb06dData,
-	CityListCountriesE81Eb06dResponses,
-	DashboardDashboardEvents5D89647aData,
-	DashboardDashboardEvents5D89647aResponses,
-	DashboardDashboardEventSeries95D98De3Data,
-	DashboardDashboardEventSeries95D98De3Responses,
-	DashboardDashboardInvitations692Acf8eData,
-	DashboardDashboardInvitations692Acf8eResponses,
-	DashboardDashboardOrganizationsA4541683Data,
-	DashboardDashboardOrganizationsA4541683Responses,
-	EventadminAddTags1Bf84F24Data,
-	EventadminAddTags1Bf84F24Responses,
-	EventadminCancelTicket89903114Data,
-	EventadminCancelTicket89903114Responses,
-	EventadminCheckInTicket9Aec307eData,
-	EventadminCheckInTicket9Aec307eErrors,
-	EventadminCheckInTicket9Aec307eResponses,
-	EventadminClearTagsDa58C15bData,
-	EventadminClearTagsDa58C15bResponses,
-	EventadminConfirmTicketPayment04D9Cbb3Data,
-	EventadminConfirmTicketPayment04D9Cbb3Responses,
-	EventadminCreateEventToken712452EeData,
-	EventadminCreateEventToken712452EeResponses,
-	EventadminCreateInvitations899C92FeData,
-	EventadminCreateInvitations899C92FeErrors,
-	EventadminCreateInvitations899C92FeResponses,
-	EventadminCreateRsvp47Bf8C99Data,
-	EventadminCreateRsvp47Bf8C99Responses,
-	EventadminCreateTicketTierDfe2D1D0Data,
-	EventadminCreateTicketTierDfe2D1D0Responses,
-	EventadminDecideInvitationRequestBc24B10bData,
-	EventadminDecideInvitationRequestBc24B10bResponses,
-	EventadminDeleteCoverArt4Bfe613bData,
-	EventadminDeleteCoverArt4Bfe613bResponses,
-	EventadminDeleteEventTokenF47C06E1Data,
-	EventadminDeleteEventTokenF47C06E1Responses,
-	EventadminDeleteInvitationEndpoint03F3A299Data,
-	EventadminDeleteInvitationEndpoint03F3A299Errors,
-	EventadminDeleteInvitationEndpoint03F3A299Responses,
-	EventadminDeleteLogo70Ad419cData,
-	EventadminDeleteLogo70Ad419cResponses,
-	EventadminDeleteRsvpC4Ca3B69Data,
-	EventadminDeleteRsvpC4Ca3B69Responses,
-	EventadminDeleteTicketTier36Dacdc2Data,
-	EventadminDeleteTicketTier36Dacdc2Responses,
-	EventadminGetRsvp493Da238Data,
-	EventadminGetRsvp493Da238Responses,
-	EventadminGetTicket25A2B21aData,
-	EventadminGetTicket25A2B21aResponses,
-	EventadminListEventInvitationRequests95E1461cData,
-	EventadminListEventInvitationRequests95E1461cResponses,
-	EventadminListEventTokensEd3884A8Data,
-	EventadminListEventTokensEd3884A8Responses,
-	EventadminListInvitations2C920Bc0Data,
-	EventadminListInvitations2C920Bc0Responses,
-	EventadminListPendingInvitations601F99F4Data,
-	EventadminListPendingInvitations601F99F4Responses,
-	EventadminListRsvps4A9A51CeData,
-	EventadminListRsvps4A9A51CeResponses,
-	EventadminListTickets00C85FbbData,
-	EventadminListTickets00C85FbbResponses,
-	EventadminListTicketTiers416362B4Data,
-	EventadminListTicketTiers416362B4Responses,
-	EventadminMarkTicketRefunded08Cc548eData,
-	EventadminMarkTicketRefunded08Cc548eResponses,
-	EventadminRemoveTagsCb2Faaf3Data,
-	EventadminRemoveTagsCb2Faaf3Responses,
-	EventadminUpdateEventBacdac44Data,
-	EventadminUpdateEventBacdac44Errors,
-	EventadminUpdateEventBacdac44Responses,
-	EventadminUpdateEventStatus45A25218Data,
-	EventadminUpdateEventStatus45A25218Responses,
-	EventadminUpdateEventToken6520A3DfData,
-	EventadminUpdateEventToken6520A3DfResponses,
-	EventadminUpdateRsvp33273CdeData,
-	EventadminUpdateRsvp33273CdeResponses,
-	EventadminUpdateTicketTier749Ac5AbData,
-	EventadminUpdateTicketTier749Ac5AbResponses,
-	EventadminUploadCoverArtB834Ee6bData,
-	EventadminUploadCoverArtB834Ee6bResponses,
-	EventadminUploadLogoD1E26C1bData,
-	EventadminUploadLogoD1E26C1bResponses,
-	EventClaimInvitation05Eb2Dc1Data,
-	EventClaimInvitation05Eb2Dc1Errors,
-	EventClaimInvitation05Eb2Dc1Responses,
-	EventDeleteInvitationRequest540551A8Data,
-	EventDeleteInvitationRequest540551A8Responses,
-	EventGetEvent3A3Ee51dData,
-	EventGetEvent3A3Ee51dResponses,
-	EventGetEventAttendees0266DbcaData,
-	EventGetEventAttendees0266DbcaResponses,
-	EventGetEventBySlugs30F55943Data,
-	EventGetEventBySlugs30F55943Responses,
-	EventGetMyEventStatus4A59E257Data,
-	EventGetMyEventStatus4A59E257Responses,
-	EventGetQuestionnaireAf033Cd0Data,
-	EventGetQuestionnaireAf033Cd0Responses,
-	EventListEventsF4A8D067Data,
-	EventListEventsF4A8D067Responses,
-	EventListResourcesDc9Af5DcData,
-	EventListResourcesDc9Af5DcResponses,
-	EventListTiersD4314F9cData,
-	EventListTiersD4314F9cResponses,
-	EventListUserInvitationRequestsBed9Bd45Data,
-	EventListUserInvitationRequestsBed9Bd45Responses,
-	EventRequestInvitationC0664Ed0Data,
-	EventRequestInvitationC0664Ed0Errors,
-	EventRequestInvitationC0664Ed0Responses,
-	EventRsvpEventE780E414Data,
-	EventRsvpEventE780E414Errors,
-	EventRsvpEventE780E414Responses,
-	EventseriesadminAddTags3C8576C6Data,
-	EventseriesadminAddTags3C8576C6Responses,
-	EventseriesadminClearTagsA8A6A5B7Data,
-	EventseriesadminClearTagsA8A6A5B7Responses,
-	EventseriesadminDeleteCoverArt28Aedd4eData,
-	EventseriesadminDeleteCoverArt28Aedd4eResponses,
-	EventseriesadminDeleteEventSeriesFcfe14A5Data,
-	EventseriesadminDeleteEventSeriesFcfe14A5Responses,
-	EventseriesadminDeleteLogoAc75E26fData,
-	EventseriesadminDeleteLogoAc75E26fResponses,
-	EventseriesadminRemoveTagsA39D381bData,
-	EventseriesadminRemoveTagsA39D381bResponses,
-	EventseriesadminUpdateEventSeries00F06F68Data,
-	EventseriesadminUpdateEventSeries00F06F68Errors,
-	EventseriesadminUpdateEventSeries00F06F68Responses,
-	EventseriesadminUploadCoverArtC7819802Data,
-	EventseriesadminUploadCoverArtC7819802Responses,
-	EventseriesadminUploadLogo6E05781cData,
-	EventseriesadminUploadLogo6E05781cResponses,
-	EventseriesGetEventSeriesA073419dData,
-	EventseriesGetEventSeriesA073419dResponses,
-	EventseriesGetEventSeriesBySlugsCbed60E8Data,
-	EventseriesGetEventSeriesBySlugsCbed60E8Responses,
-	EventseriesListEventSeriesC993Ced3Data,
-	EventseriesListEventSeriesC993Ced3Responses,
-	EventseriesListResources0899602cData,
-	EventseriesListResources0899602cResponses,
-	EventSubmitQuestionnaire122B5562Data,
-	EventSubmitQuestionnaire122B5562Errors,
-	EventSubmitQuestionnaire122B5562Responses,
-	EventTicketCheckout2Cec5454Data,
-	EventTicketCheckout2Cec5454Errors,
-	EventTicketCheckout2Cec5454Responses,
-	EventTicketPwycCheckoutEaf612EeData,
-	EventTicketPwycCheckoutEaf612EeErrors,
-	EventTicketPwycCheckoutEaf612EeResponses,
-	OrganizationadminAddStaff58F8201eData,
-	OrganizationadminAddStaff58F8201eResponses,
-	OrganizationadminAddTags5Ba13865Data,
-	OrganizationadminAddTags5Ba13865Responses,
-	OrganizationadminApproveMembershipRequestEb696457Data,
-	OrganizationadminApproveMembershipRequestEb696457Responses,
-	OrganizationadminClearTags33450B2eData,
-	OrganizationadminClearTags33450B2eResponses,
-	OrganizationadminCreateEventF9777094Data,
-	OrganizationadminCreateEventF9777094Errors,
-	OrganizationadminCreateEventF9777094Responses,
-	OrganizationadminCreateEventSeries762D8BaaData,
-	OrganizationadminCreateEventSeries762D8BaaErrors,
-	OrganizationadminCreateEventSeries762D8BaaResponses,
-	OrganizationadminCreateOrganizationToken9626AaddData,
-	OrganizationadminCreateOrganizationToken9626AaddResponses,
-	OrganizationadminCreateResourceE3116F59Data,
-	OrganizationadminCreateResourceE3116F59Responses,
-	OrganizationadminDeleteCoverArt8E12F49aData,
-	OrganizationadminDeleteCoverArt8E12F49aResponses,
-	OrganizationadminDeleteLogo1030F9C5Data,
-	OrganizationadminDeleteLogo1030F9C5Responses,
-	OrganizationadminDeleteOrganizationToken7A17FacbData,
-	OrganizationadminDeleteOrganizationToken7A17FacbResponses,
-	OrganizationadminDeleteResource66233C21Data,
-	OrganizationadminDeleteResource66233C21Responses,
-	OrganizationadminGetOrganization4Aa532E3Data,
-	OrganizationadminGetOrganization4Aa532E3Responses,
-	OrganizationadminGetResourceF5295Cc1Data,
-	OrganizationadminGetResourceF5295Cc1Responses,
-	OrganizationadminListMembers570C7485Data,
-	OrganizationadminListMembers570C7485Responses,
-	OrganizationadminListMembershipRequestsC72951CfData,
-	OrganizationadminListMembershipRequestsC72951CfResponses,
-	OrganizationadminListOrganizationTokensD9053E63Data,
-	OrganizationadminListOrganizationTokensD9053E63Responses,
-	OrganizationadminListResourcesB6B0E74dData,
-	OrganizationadminListResourcesB6B0E74dResponses,
-	OrganizationadminListStaff8802E8FcData,
-	OrganizationadminListStaff8802E8FcResponses,
-	OrganizationadminRejectMembershipRequest62871CedData,
-	OrganizationadminRejectMembershipRequest62871CedResponses,
-	OrganizationadminRemoveMember026Ba094Data,
-	OrganizationadminRemoveMember026Ba094Responses,
-	OrganizationadminRemoveStaffDc6A4408Data,
-	OrganizationadminRemoveStaffDc6A4408Responses,
-	OrganizationadminRemoveTags3Ff1E345Data,
-	OrganizationadminRemoveTags3Ff1E345Responses,
-	OrganizationadminStripeAccountVerifyE877C7DeData,
-	OrganizationadminStripeAccountVerifyE877C7DeResponses,
-	OrganizationadminStripeConnectF522D8E7Data,
-	OrganizationadminStripeConnectF522D8E7Responses,
-	OrganizationadminUpdateOrganization2Aa51848Data,
-	OrganizationadminUpdateOrganization2Aa51848Responses,
-	OrganizationadminUpdateOrganizationToken219718AbData,
-	OrganizationadminUpdateOrganizationToken219718AbResponses,
-	OrganizationadminUpdateResourceCdefdc44Data,
-	OrganizationadminUpdateResourceCdefdc44Responses,
-	OrganizationadminUpdateStaffPermissions69Ef704dData,
-	OrganizationadminUpdateStaffPermissions69Ef704dResponses,
-	OrganizationadminUploadCoverArt41555190Data,
-	OrganizationadminUploadCoverArt41555190Responses,
-	OrganizationadminUploadLogo15C70Cc5Data,
-	OrganizationadminUploadLogo15C70Cc5Responses,
-	OrganizationClaimInvitation86De8Cf7Data,
-	OrganizationClaimInvitation86De8Cf7Errors,
-	OrganizationClaimInvitation86De8Cf7Responses,
-	OrganizationCreateMembershipRequestE2B0Db8dData,
-	OrganizationCreateMembershipRequestE2B0Db8dResponses,
-	OrganizationGetOrganization03E42Cd8Data,
-	OrganizationGetOrganization03E42Cd8Responses,
-	OrganizationListOrganizationsF5E53095Data,
-	OrganizationListOrganizationsF5E53095Responses,
-	OrganizationListResources05Cba1FaData,
-	OrganizationListResources05Cba1FaResponses,
-	OtpDisableOtp2F790916Data,
-	OtpDisableOtp2F790916Responses,
-	OtpEnableOtpF765135dData,
-	OtpEnableOtpF765135dResponses,
-	OtpSetupOtpB7F9A9E0Data,
-	OtpSetupOtpB7F9A9E0Responses,
-	PermissionMyPermissions7Add1766Data,
-	PermissionMyPermissions7Add1766Responses,
-	PotluckClaimPotluckItemF3F13B3fData,
-	PotluckClaimPotluckItemF3F13B3fResponses,
-	PotluckCreatePotluckItem06F918E8Data,
-	PotluckCreatePotluckItem06F918E8Responses,
-	PotluckDeletePotluckItem8571749dData,
-	PotluckDeletePotluckItem8571749dResponses,
-	PotluckListPotluckItems7B1Ac0D6Data,
-	PotluckListPotluckItems7B1Ac0D6Responses,
-	PotluckUnclaimPotluckItemA8A80F75Data,
-	PotluckUnclaimPotluckItemA8A80F75Responses,
-	PotluckUpdatePotluckItem6Ba6Abd8Data,
-	PotluckUpdatePotluckItem6Ba6Abd8Responses,
-	QuestionnaireAssignEventF9B4C6BfData,
-	QuestionnaireAssignEventF9B4C6BfResponses,
-	QuestionnaireAssignEventSeries3Ef983DbData,
-	QuestionnaireAssignEventSeries3Ef983DbResponses,
-	QuestionnaireCreateFtQuestion185917E2Data,
-	QuestionnaireCreateFtQuestion185917E2Responses,
-	QuestionnaireCreateMcOption534Cb866Data,
-	QuestionnaireCreateMcOption534Cb866Responses,
-	QuestionnaireCreateMcQuestionC90Edce5Data,
-	QuestionnaireCreateMcQuestionC90Edce5Responses,
-	QuestionnaireCreateOrgQuestionnaire73F60859Data,
-	QuestionnaireCreateOrgQuestionnaire73F60859Errors,
-	QuestionnaireCreateOrgQuestionnaire73F60859Responses,
-	QuestionnaireCreateSectionC1A5Bf4fData,
-	QuestionnaireCreateSectionC1A5Bf4fResponses,
-	QuestionnaireDeleteFtQuestionCdd0F45eData,
-	QuestionnaireDeleteFtQuestionCdd0F45eResponses,
-	QuestionnaireDeleteMcOptionEb7753AaData,
-	QuestionnaireDeleteMcOptionEb7753AaResponses,
-	QuestionnaireDeleteMcQuestionA84375BbData,
-	QuestionnaireDeleteMcQuestionA84375BbResponses,
-	QuestionnaireDeleteOrgQuestionnaire1A31D83cData,
-	QuestionnaireDeleteOrgQuestionnaire1A31D83cResponses,
-	QuestionnaireDeleteSection3F029273Data,
-	QuestionnaireDeleteSection3F029273Responses,
-	QuestionnaireEvaluateSubmission4B1Bad4bData,
-	QuestionnaireEvaluateSubmission4B1Bad4bErrors,
-	QuestionnaireEvaluateSubmission4B1Bad4bResponses,
-	QuestionnaireGetOrgQuestionnaire2186585dData,
-	QuestionnaireGetOrgQuestionnaire2186585dResponses,
-	QuestionnaireGetSubmissionDetail3Df962A0Data,
-	QuestionnaireGetSubmissionDetail3Df962A0Responses,
-	QuestionnaireListOrgQuestionnaires1107D845Data,
-	QuestionnaireListOrgQuestionnaires1107D845Responses,
-	QuestionnaireListSubmissionsDbd514B6Data,
-	QuestionnaireListSubmissionsDbd514B6Responses,
-	QuestionnaireReplaceEvents995807FcData,
-	QuestionnaireReplaceEvents995807FcResponses,
-	QuestionnaireReplaceEventSeriesA611182eData,
-	QuestionnaireReplaceEventSeriesA611182eResponses,
-	QuestionnaireUnassignEvent0Fe0Fa34Data,
-	QuestionnaireUnassignEvent0Fe0Fa34Responses,
-	QuestionnaireUnassignEventSeries175C9D89Data,
-	QuestionnaireUnassignEventSeries175C9D89Responses,
-	QuestionnaireUpdateFtQuestion60D597F8Data,
-	QuestionnaireUpdateFtQuestion60D597F8Responses,
-	QuestionnaireUpdateMcOption8E0Ff197Data,
-	QuestionnaireUpdateMcOption8E0Ff197Responses,
-	QuestionnaireUpdateMcQuestionCd858543Data,
-	QuestionnaireUpdateMcQuestionCd858543Responses,
-	QuestionnaireUpdateOrgQuestionnaire7De3F597Data,
-	QuestionnaireUpdateOrgQuestionnaire7De3F597Responses,
-	QuestionnaireUpdateQuestionnaireStatus54Cd9544Data,
-	QuestionnaireUpdateQuestionnaireStatus54Cd9544Responses,
-	QuestionnaireUpdateSectionAb1E5BeeData,
-	QuestionnaireUpdateSectionAb1E5BeeResponses,
-	StripewebhookHandleWebhook80D89D8aData,
-	StripewebhookHandleWebhook80D89D8aResponses,
-	TagListTags989E098bData,
-	TagListTags989E098bResponses,
+	AuthDemoObtainTokenF9683D25Data,
+	AuthDemoObtainTokenF9683D25Responses,
+	AuthGoogleLogin778Da160Data,
+	AuthGoogleLogin778Da160Responses,
+	AuthObtainTokenF0Ed10A6Data,
+	AuthObtainTokenF0Ed10A6Responses,
+	AuthObtainTokenWithOtpCad64Ee2Data,
+	AuthObtainTokenWithOtpCad64Ee2Responses,
+	CityGetCity7711686bData,
+	CityGetCity7711686bResponses,
+	CityListCities6B5493E8Data,
+	CityListCities6B5493E8Responses,
+	CityListCountries5Dac3B77Data,
+	CityListCountries5Dac3B77Responses,
+	DashboardDashboardEvents6Cb96588Data,
+	DashboardDashboardEvents6Cb96588Responses,
+	DashboardDashboardEventSeriesC961639bData,
+	DashboardDashboardEventSeriesC961639bResponses,
+	DashboardDashboardInvitations2F2132B0Data,
+	DashboardDashboardInvitations2F2132B0Responses,
+	DashboardDashboardOrganizations03Daa3C4Data,
+	DashboardDashboardOrganizations03Daa3C4Responses,
+	EventadminAddTagsF8D9D0CaData,
+	EventadminAddTagsF8D9D0CaResponses,
+	EventadminApproveInvitationRequestBc0774C6Data,
+	EventadminApproveInvitationRequestBc0774C6Responses,
+	EventadminCancelTicket1082Aa5bData,
+	EventadminCancelTicket1082Aa5bResponses,
+	EventadminCheckInTicket957Dc27bData,
+	EventadminCheckInTicket957Dc27bErrors,
+	EventadminCheckInTicket957Dc27bResponses,
+	EventadminClearTags9A9B25CdData,
+	EventadminClearTags9A9B25CdResponses,
+	EventadminConfirmTicketPaymentD8E41153Data,
+	EventadminConfirmTicketPaymentD8E41153Responses,
+	EventadminCreateEventTokenB430C9A3Data,
+	EventadminCreateEventTokenB430C9A3Responses,
+	EventadminCreateInvitations626265E4Data,
+	EventadminCreateInvitations626265E4Errors,
+	EventadminCreateInvitations626265E4Responses,
+	EventadminCreateRsvpA0Abb388Data,
+	EventadminCreateRsvpA0Abb388Responses,
+	EventadminCreateTicketTier03150584Data,
+	EventadminCreateTicketTier03150584Responses,
+	EventadminDeleteCoverArt3F30469fData,
+	EventadminDeleteCoverArt3F30469fResponses,
+	EventadminDeleteEventToken1104AffcData,
+	EventadminDeleteEventToken1104AffcResponses,
+	EventadminDeleteInvitationEndpoint7A5Baf74Data,
+	EventadminDeleteInvitationEndpoint7A5Baf74Errors,
+	EventadminDeleteInvitationEndpoint7A5Baf74Responses,
+	EventadminDeleteLogo3967075cData,
+	EventadminDeleteLogo3967075cResponses,
+	EventadminDeleteRsvp111B4Ef4Data,
+	EventadminDeleteRsvp111B4Ef4Responses,
+	EventadminDeleteTicketTierA7C3519aData,
+	EventadminDeleteTicketTierA7C3519aResponses,
+	EventadminGetRsvpB753B6DfData,
+	EventadminGetRsvpB753B6DfResponses,
+	EventadminGetTicket19Afa38dData,
+	EventadminGetTicket19Afa38dResponses,
+	EventadminListEventTokensC77C30C8Data,
+	EventadminListEventTokensC77C30C8Responses,
+	EventadminListInvitationRequests3453A7F0Data,
+	EventadminListInvitationRequests3453A7F0Responses,
+	EventadminListInvitations8672F3C5Data,
+	EventadminListInvitations8672F3C5Responses,
+	EventadminListPendingInvitations2074D91cData,
+	EventadminListPendingInvitations2074D91cResponses,
+	EventadminListRsvps7Ad29E6cData,
+	EventadminListRsvps7Ad29E6cResponses,
+	EventadminListTickets720A6A89Data,
+	EventadminListTickets720A6A89Responses,
+	EventadminListTicketTiersF0C8F341Data,
+	EventadminListTicketTiersF0C8F341Responses,
+	EventadminMarkTicketRefundedBd44B3D6Data,
+	EventadminMarkTicketRefundedBd44B3D6Responses,
+	EventadminRejectInvitationRequest4D2C7F01Data,
+	EventadminRejectInvitationRequest4D2C7F01Responses,
+	EventadminRemoveTags1Eb533CdData,
+	EventadminRemoveTags1Eb533CdResponses,
+	EventadminUpdateEvent669A5A17Data,
+	EventadminUpdateEvent669A5A17Errors,
+	EventadminUpdateEvent669A5A17Responses,
+	EventadminUpdateEventStatus9B733B32Data,
+	EventadminUpdateEventStatus9B733B32Responses,
+	EventadminUpdateEventToken98D07979Data,
+	EventadminUpdateEventToken98D07979Responses,
+	EventadminUpdateRsvp4F4B015cData,
+	EventadminUpdateRsvp4F4B015cResponses,
+	EventadminUpdateTicketTierAded0749Data,
+	EventadminUpdateTicketTierAded0749Responses,
+	EventadminUploadCoverArt3F027833Data,
+	EventadminUploadCoverArt3F027833Responses,
+	EventadminUploadLogo97D3C2AeData,
+	EventadminUploadLogo97D3C2AeResponses,
+	EventClaimInvitationA333Ba68Data,
+	EventClaimInvitationA333Ba68Errors,
+	EventClaimInvitationA333Ba68Responses,
+	EventCreateInvitationRequest9B1Cdcf3Data,
+	EventCreateInvitationRequest9B1Cdcf3Responses,
+	EventDeleteInvitationRequestE2Bc00BbData,
+	EventDeleteInvitationRequestE2Bc00BbResponses,
+	EventGetEventAttendeesDf088923Data,
+	EventGetEventAttendeesDf088923Responses,
+	EventGetEventBySlugs1867901aData,
+	EventGetEventBySlugs1867901aResponses,
+	EventGetEventF33D9Fe5Data,
+	EventGetEventF33D9Fe5Responses,
+	EventGetMyEventStatusA5537Ae4Data,
+	EventGetMyEventStatusA5537Ae4Responses,
+	EventGetQuestionnaire21149006Data,
+	EventGetQuestionnaire21149006Responses,
+	EventListEvents7Fc6E819Data,
+	EventListEvents7Fc6E819Responses,
+	EventListResources0640A3A6Data,
+	EventListResources0640A3A6Responses,
+	EventListTiersD39F67BdData,
+	EventListTiersD39F67BdResponses,
+	EventListUserInvitationRequests11F4Dbf2Data,
+	EventListUserInvitationRequests11F4Dbf2Responses,
+	EventRsvpEvent2Fc4F913Data,
+	EventRsvpEvent2Fc4F913Errors,
+	EventRsvpEvent2Fc4F913Responses,
+	EventseriesadminAddTags90D97164Data,
+	EventseriesadminAddTags90D97164Responses,
+	EventseriesadminClearTags39B860D9Data,
+	EventseriesadminClearTags39B860D9Responses,
+	EventseriesadminDeleteCoverArtAdacffceData,
+	EventseriesadminDeleteCoverArtAdacffceResponses,
+	EventseriesadminDeleteEventSeries4342CeaeData,
+	EventseriesadminDeleteEventSeries4342CeaeResponses,
+	EventseriesadminDeleteLogo60503B96Data,
+	EventseriesadminDeleteLogo60503B96Responses,
+	EventseriesadminRemoveTagsDace0E92Data,
+	EventseriesadminRemoveTagsDace0E92Responses,
+	EventseriesadminUpdateEventSeries787B5A6bData,
+	EventseriesadminUpdateEventSeries787B5A6bErrors,
+	EventseriesadminUpdateEventSeries787B5A6bResponses,
+	EventseriesadminUploadCoverArtCef38D76Data,
+	EventseriesadminUploadCoverArtCef38D76Responses,
+	EventseriesadminUploadLogoD5A34979Data,
+	EventseriesadminUploadLogoD5A34979Responses,
+	EventseriesGetEventSeries0879D813Data,
+	EventseriesGetEventSeries0879D813Responses,
+	EventseriesGetEventSeriesBySlugs2Bc4198fData,
+	EventseriesGetEventSeriesBySlugs2Bc4198fResponses,
+	EventseriesListEventSeries5C5D600cData,
+	EventseriesListEventSeries5C5D600cResponses,
+	EventseriesListResourcesFc094B71Data,
+	EventseriesListResourcesFc094B71Responses,
+	EventSubmitQuestionnaireB02E3452Data,
+	EventSubmitQuestionnaireB02E3452Errors,
+	EventSubmitQuestionnaireB02E3452Responses,
+	EventTicketCheckout58D472B4Data,
+	EventTicketCheckout58D472B4Errors,
+	EventTicketCheckout58D472B4Responses,
+	EventTicketPwycCheckout9D58C7F3Data,
+	EventTicketPwycCheckout9D58C7F3Errors,
+	EventTicketPwycCheckout9D58C7F3Responses,
+	OrganizationadminAddStaff3E15765eData,
+	OrganizationadminAddStaff3E15765eResponses,
+	OrganizationadminAddTags1F41252aData,
+	OrganizationadminAddTags1F41252aResponses,
+	OrganizationadminApproveMembershipRequestE1Bd2D4fData,
+	OrganizationadminApproveMembershipRequestE1Bd2D4fResponses,
+	OrganizationadminClearTags943F2C71Data,
+	OrganizationadminClearTags943F2C71Responses,
+	OrganizationadminCreateEvent051E2C16Data,
+	OrganizationadminCreateEvent051E2C16Errors,
+	OrganizationadminCreateEvent051E2C16Responses,
+	OrganizationadminCreateEventSeries909F81BdData,
+	OrganizationadminCreateEventSeries909F81BdErrors,
+	OrganizationadminCreateEventSeries909F81BdResponses,
+	OrganizationadminCreateOrganizationTokenB11748D5Data,
+	OrganizationadminCreateOrganizationTokenB11748D5Responses,
+	OrganizationadminCreateResource42869D36Data,
+	OrganizationadminCreateResource42869D36Responses,
+	OrganizationadminDeleteCoverArt0F663C07Data,
+	OrganizationadminDeleteCoverArt0F663C07Responses,
+	OrganizationadminDeleteLogo2B684AbaData,
+	OrganizationadminDeleteLogo2B684AbaResponses,
+	OrganizationadminDeleteOrganizationToken920E477cData,
+	OrganizationadminDeleteOrganizationToken920E477cResponses,
+	OrganizationadminDeleteResource6D0C6Bf8Data,
+	OrganizationadminDeleteResource6D0C6Bf8Responses,
+	OrganizationadminGetOrganization52A02A44Data,
+	OrganizationadminGetOrganization52A02A44Responses,
+	OrganizationadminGetResource3F8F93C9Data,
+	OrganizationadminGetResource3F8F93C9Responses,
+	OrganizationadminListMembers3986D3D0Data,
+	OrganizationadminListMembers3986D3D0Responses,
+	OrganizationadminListMembershipRequests2Bae90A0Data,
+	OrganizationadminListMembershipRequests2Bae90A0Responses,
+	OrganizationadminListOrganizationTokensAd2141C7Data,
+	OrganizationadminListOrganizationTokensAd2141C7Responses,
+	OrganizationadminListResources90241F4dData,
+	OrganizationadminListResources90241F4dResponses,
+	OrganizationadminListStaff636E217aData,
+	OrganizationadminListStaff636E217aResponses,
+	OrganizationadminRejectMembershipRequest48075D3fData,
+	OrganizationadminRejectMembershipRequest48075D3fResponses,
+	OrganizationadminRemoveMember6Ec7227fData,
+	OrganizationadminRemoveMember6Ec7227fResponses,
+	OrganizationadminRemoveStaffEab475EfData,
+	OrganizationadminRemoveStaffEab475EfResponses,
+	OrganizationadminRemoveTags17210274Data,
+	OrganizationadminRemoveTags17210274Responses,
+	OrganizationadminStripeAccountVerify3F404331Data,
+	OrganizationadminStripeAccountVerify3F404331Responses,
+	OrganizationadminStripeConnect5702Ef2eData,
+	OrganizationadminStripeConnect5702Ef2eResponses,
+	OrganizationadminUpdateOrganization6E5B1F9bData,
+	OrganizationadminUpdateOrganization6E5B1F9bResponses,
+	OrganizationadminUpdateOrganizationToken5284Deb3Data,
+	OrganizationadminUpdateOrganizationToken5284Deb3Responses,
+	OrganizationadminUpdateResource93D02613Data,
+	OrganizationadminUpdateResource93D02613Responses,
+	OrganizationadminUpdateStaffPermissionsE7D1DdfdData,
+	OrganizationadminUpdateStaffPermissionsE7D1DdfdResponses,
+	OrganizationadminUploadCoverArtF9C552CbData,
+	OrganizationadminUploadCoverArtF9C552CbResponses,
+	OrganizationadminUploadLogoB141E351Data,
+	OrganizationadminUploadLogoB141E351Responses,
+	OrganizationClaimInvitation5C32FadfData,
+	OrganizationClaimInvitation5C32FadfErrors,
+	OrganizationClaimInvitation5C32FadfResponses,
+	OrganizationCreateMembershipRequestC7302D18Data,
+	OrganizationCreateMembershipRequestC7302D18Responses,
+	OrganizationGetOrganization45F68219Data,
+	OrganizationGetOrganization45F68219Responses,
+	OrganizationListOrganizations3C31A7EaData,
+	OrganizationListOrganizations3C31A7EaResponses,
+	OrganizationListResources902770CcData,
+	OrganizationListResources902770CcResponses,
+	OtpDisableOtp44832EbfData,
+	OtpDisableOtp44832EbfResponses,
+	OtpEnableOtpBd1478D0Data,
+	OtpEnableOtpBd1478D0Responses,
+	OtpSetupOtpB2211117Data,
+	OtpSetupOtpB2211117Responses,
+	PermissionMyPermissions26660239Data,
+	PermissionMyPermissions26660239Responses,
+	PotluckClaimPotluckItemDecef2E5Data,
+	PotluckClaimPotluckItemDecef2E5Responses,
+	PotluckCreatePotluckItem74Eaf78eData,
+	PotluckCreatePotluckItem74Eaf78eResponses,
+	PotluckDeletePotluckItem71B5E436Data,
+	PotluckDeletePotluckItem71B5E436Responses,
+	PotluckListPotluckItemsF3A8D13fData,
+	PotluckListPotluckItemsF3A8D13fResponses,
+	PotluckUnclaimPotluckItem7D8B3F84Data,
+	PotluckUnclaimPotluckItem7D8B3F84Responses,
+	PotluckUpdatePotluckItem2Cab8494Data,
+	PotluckUpdatePotluckItem2Cab8494Responses,
+	QuestionnaireAssignEventD8Feb5F1Data,
+	QuestionnaireAssignEventD8Feb5F1Responses,
+	QuestionnaireAssignEventSeriesB66Af321Data,
+	QuestionnaireAssignEventSeriesB66Af321Responses,
+	QuestionnaireCreateFtQuestionB4E4BeecData,
+	QuestionnaireCreateFtQuestionB4E4BeecResponses,
+	QuestionnaireCreateMcOption7714C9DeData,
+	QuestionnaireCreateMcOption7714C9DeResponses,
+	QuestionnaireCreateMcQuestion06701522Data,
+	QuestionnaireCreateMcQuestion06701522Responses,
+	QuestionnaireCreateOrgQuestionnaire3C5D9045Data,
+	QuestionnaireCreateOrgQuestionnaire3C5D9045Errors,
+	QuestionnaireCreateOrgQuestionnaire3C5D9045Responses,
+	QuestionnaireCreateSectionDbdfdf9dData,
+	QuestionnaireCreateSectionDbdfdf9dResponses,
+	QuestionnaireDeleteFtQuestion49C2E429Data,
+	QuestionnaireDeleteFtQuestion49C2E429Responses,
+	QuestionnaireDeleteMcOption775Fa06dData,
+	QuestionnaireDeleteMcOption775Fa06dResponses,
+	QuestionnaireDeleteMcQuestionA6713B01Data,
+	QuestionnaireDeleteMcQuestionA6713B01Responses,
+	QuestionnaireDeleteOrgQuestionnaire80Cd631aData,
+	QuestionnaireDeleteOrgQuestionnaire80Cd631aResponses,
+	QuestionnaireDeleteSection6935C91eData,
+	QuestionnaireDeleteSection6935C91eResponses,
+	QuestionnaireEvaluateSubmission95B64A41Data,
+	QuestionnaireEvaluateSubmission95B64A41Errors,
+	QuestionnaireEvaluateSubmission95B64A41Responses,
+	QuestionnaireGetOrgQuestionnaire6A6547A7Data,
+	QuestionnaireGetOrgQuestionnaire6A6547A7Responses,
+	QuestionnaireGetSubmissionDetailD93F30A9Data,
+	QuestionnaireGetSubmissionDetailD93F30A9Responses,
+	QuestionnaireListOrgQuestionnaires42A9D3CbData,
+	QuestionnaireListOrgQuestionnaires42A9D3CbResponses,
+	QuestionnaireListSubmissions4C7B40BcData,
+	QuestionnaireListSubmissions4C7B40BcResponses,
+	QuestionnaireReplaceEvents73E6B122Data,
+	QuestionnaireReplaceEvents73E6B122Responses,
+	QuestionnaireReplaceEventSeriesA98A2508Data,
+	QuestionnaireReplaceEventSeriesA98A2508Responses,
+	QuestionnaireUnassignEvent7E85350dData,
+	QuestionnaireUnassignEvent7E85350dResponses,
+	QuestionnaireUnassignEventSeriesA3Cf8D10Data,
+	QuestionnaireUnassignEventSeriesA3Cf8D10Responses,
+	QuestionnaireUpdateFtQuestion11774009Data,
+	QuestionnaireUpdateFtQuestion11774009Responses,
+	QuestionnaireUpdateMcOption5Fc0E101Data,
+	QuestionnaireUpdateMcOption5Fc0E101Responses,
+	QuestionnaireUpdateMcQuestionAad6A276Data,
+	QuestionnaireUpdateMcQuestionAad6A276Responses,
+	QuestionnaireUpdateOrgQuestionnaire13E422A0Data,
+	QuestionnaireUpdateOrgQuestionnaire13E422A0Responses,
+	QuestionnaireUpdateQuestionnaireStatusA762B758Data,
+	QuestionnaireUpdateQuestionnaireStatusA762B758Responses,
+	QuestionnaireUpdateSection0B4561B1Data,
+	QuestionnaireUpdateSection0B4561B1Responses,
+	StripewebhookHandleWebhookAb33E84dData,
+	StripewebhookHandleWebhookAb33E84dResponses,
+	TagListTagsCa3Ddb22Data,
+	TagListTagsCa3Ddb22Responses,
 	TokenRefreshData,
 	TokenRefreshResponses,
-	UserpreferencesGetEventPreferences95Ff20B8Data,
-	UserpreferencesGetEventPreferences95Ff20B8Responses,
-	UserpreferencesGetEventSeriesPreferences750A1335Data,
-	UserpreferencesGetEventSeriesPreferences750A1335Responses,
-	UserpreferencesGetGeneralPreferences2Bcdc7D9Data,
-	UserpreferencesGetGeneralPreferences2Bcdc7D9Responses,
-	UserpreferencesGetOrganizationPreferencesBa465870Data,
-	UserpreferencesGetOrganizationPreferencesBa465870Responses,
-	UserpreferencesUpdateEventPreferencesDba91De8Data,
-	UserpreferencesUpdateEventPreferencesDba91De8Responses,
-	UserpreferencesUpdateEventSeriesPreferences653Cc7EfData,
-	UserpreferencesUpdateEventSeriesPreferences653Cc7EfResponses,
-	UserpreferencesUpdateGlobalPreferencesF13A581bData,
-	UserpreferencesUpdateGlobalPreferencesF13A581bResponses,
-	UserpreferencesUpdateOrganizationPreferencesEa1A5875Data,
-	UserpreferencesUpdateOrganizationPreferencesEa1A5875Responses
+	UserpreferencesGetEventPreferences3D6F9189Data,
+	UserpreferencesGetEventPreferences3D6F9189Responses,
+	UserpreferencesGetEventSeriesPreferencesAa9Fac27Data,
+	UserpreferencesGetEventSeriesPreferencesAa9Fac27Responses,
+	UserpreferencesGetGeneralPreferencesA2Ac890eData,
+	UserpreferencesGetGeneralPreferencesA2Ac890eResponses,
+	UserpreferencesGetOrganizationPreferences949D37A6Data,
+	UserpreferencesGetOrganizationPreferences949D37A6Responses,
+	UserpreferencesUpdateEventPreferences3Ca1F5D4Data,
+	UserpreferencesUpdateEventPreferences3Ca1F5D4Responses,
+	UserpreferencesUpdateEventSeriesPreferences1645B0AaData,
+	UserpreferencesUpdateEventSeriesPreferences1645B0AaResponses,
+	UserpreferencesUpdateGlobalPreferencesCa70F70eData,
+	UserpreferencesUpdateGlobalPreferencesCa70F70eResponses,
+	UserpreferencesUpdateOrganizationPreferencesC6Ac6679Data,
+	UserpreferencesUpdateOrganizationPreferencesC6Ac6679Responses
 } from './types.gen';
 
 export type Options<
@@ -436,9 +437,9 @@ export const apiApiHealthcheck = <ThrowOnError extends boolean = false>(
  * Users registered via Google SSO must use POST /auth/google/login instead.
  */
 export const authObtainToken = <ThrowOnError extends boolean = false>(
-	options: Options<AuthObtainToken3C660894Data, ThrowOnError>
+	options: Options<AuthObtainTokenF0Ed10A6Data, ThrowOnError>
 ) => {
-	return (options.client ?? client).post<AuthObtainToken3C660894Responses, unknown, ThrowOnError>({
+	return (options.client ?? client).post<AuthObtainTokenF0Ed10A6Responses, unknown, ThrowOnError>({
 		url: '/api/auth/token/pair',
 		...options,
 		headers: {
@@ -474,10 +475,10 @@ export const tokenRefresh = <ThrowOnError extends boolean = false>(
  * Email must end with @example.com.
  */
 export const authDemoObtainToken = <ThrowOnError extends boolean = false>(
-	options: Options<AuthDemoObtainToken5Bd1D0C6Data, ThrowOnError>
+	options: Options<AuthDemoObtainTokenF9683D25Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		AuthDemoObtainToken5Bd1D0C6Responses,
+		AuthDemoObtainTokenF9683D25Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -500,10 +501,10 @@ export const authDemoObtainToken = <ThrowOnError extends boolean = false>(
  * pair on success. Returns 401 if the TOTP code is invalid.
  */
 export const authObtainTokenWithOtp = <ThrowOnError extends boolean = false>(
-	options: Options<AuthObtainTokenWithOtpB97019EdData, ThrowOnError>
+	options: Options<AuthObtainTokenWithOtpCad64Ee2Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		AuthObtainTokenWithOtpB97019EdResponses,
+		AuthObtainTokenWithOtpCad64Ee2Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -526,9 +527,9 @@ export const authObtainTokenWithOtp = <ThrowOnError extends boolean = false>(
  * use password-based authentication.
  */
 export const authGoogleLogin = <ThrowOnError extends boolean = false>(
-	options: Options<AuthGoogleLogin2C1B6Da0Data, ThrowOnError>
+	options: Options<AuthGoogleLogin778Da160Data, ThrowOnError>
 ) => {
-	return (options.client ?? client).post<AuthGoogleLogin2C1B6Da0Responses, unknown, ThrowOnError>({
+	return (options.client ?? client).post<AuthGoogleLogin778Da160Responses, unknown, ThrowOnError>({
 		url: '/api/auth/google/login',
 		...options,
 		headers: {
@@ -548,9 +549,9 @@ export const authGoogleLogin = <ThrowOnError extends boolean = false>(
  * POST /otp/verify to activate 2FA.
  */
 export const otpSetupOtp = <ThrowOnError extends boolean = false>(
-	options?: Options<OtpSetupOtpB7F9A9E0Data, ThrowOnError>
+	options?: Options<OtpSetupOtpB2211117Data, ThrowOnError>
 ) => {
-	return (options?.client ?? client).get<OtpSetupOtpB7F9A9E0Responses, unknown, ThrowOnError>({
+	return (options?.client ?? client).get<OtpSetupOtpB2211117Responses, unknown, ThrowOnError>({
 		security: [
 			{
 				scheme: 'bearer',
@@ -572,9 +573,9 @@ export const otpSetupOtp = <ThrowOnError extends boolean = false>(
  * will require the TOTP code via POST /auth/token/pair/otp. Returns 403 if code is invalid.
  */
 export const otpEnableOtp = <ThrowOnError extends boolean = false>(
-	options: Options<OtpEnableOtpF765135dData, ThrowOnError>
+	options: Options<OtpEnableOtpBd1478D0Data, ThrowOnError>
 ) => {
-	return (options.client ?? client).post<OtpEnableOtpF765135dResponses, unknown, ThrowOnError>({
+	return (options.client ?? client).post<OtpEnableOtpBd1478D0Responses, unknown, ThrowOnError>({
 		security: [
 			{
 				scheme: 'bearer',
@@ -600,9 +601,9 @@ export const otpEnableOtp = <ThrowOnError extends boolean = false>(
  * if the TOTP code is invalid.
  */
 export const otpDisableOtp = <ThrowOnError extends boolean = false>(
-	options: Options<OtpDisableOtp2F790916Data, ThrowOnError>
+	options: Options<OtpDisableOtp44832EbfData, ThrowOnError>
 ) => {
-	return (options.client ?? client).post<OtpDisableOtp2F790916Responses, unknown, ThrowOnError>({
+	return (options.client ?? client).post<OtpDisableOtp44832EbfResponses, unknown, ThrowOnError>({
 		security: [
 			{
 				scheme: 'bearer',
@@ -628,10 +629,10 @@ export const otpDisableOtp = <ThrowOnError extends boolean = false>(
  * prevent abuse.
  */
 export const accountExportData = <ThrowOnError extends boolean = false>(
-	options?: Options<AccountExportData6Fadb4C2Data, ThrowOnError>
+	options?: Options<AccountExportData68C7E4DbData, ThrowOnError>
 ) => {
 	return (options?.client ?? client).post<
-		AccountExportData6Fadb4C2Responses,
+		AccountExportData68C7E4DbResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -655,9 +656,9 @@ export const accountExportData = <ThrowOnError extends boolean = false>(
  * Use this to display user info in the UI or verify authentication status.
  */
 export const accountMe = <ThrowOnError extends boolean = false>(
-	options?: Options<AccountMeE287002fData, ThrowOnError>
+	options?: Options<AccountMe6420Cff8Data, ThrowOnError>
 ) => {
-	return (options?.client ?? client).get<AccountMeE287002fResponses, unknown, ThrowOnError>({
+	return (options?.client ?? client).get<AccountMe6420Cff8Responses, unknown, ThrowOnError>({
 		security: [
 			{
 				scheme: 'bearer',
@@ -678,10 +679,10 @@ export const accountMe = <ThrowOnError extends boolean = false>(
  * fields are updated. Returns the updated user profile.
  */
 export const accountUpdateProfile = <ThrowOnError extends boolean = false>(
-	options: Options<AccountUpdateProfile0F278F51Data, ThrowOnError>
+	options: Options<AccountUpdateProfile5D6D1Db7Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
-		AccountUpdateProfile0F278F51Responses,
+		AccountUpdateProfile5D6D1Db7Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -711,9 +712,9 @@ export const accountUpdateProfile = <ThrowOnError extends boolean = false>(
  * account already exists.
  */
 export const accountRegister = <ThrowOnError extends boolean = false>(
-	options: Options<AccountRegister98411793Data, ThrowOnError>
+	options: Options<AccountRegister0E682147Data, ThrowOnError>
 ) => {
-	return (options.client ?? client).post<AccountRegister98411793Responses, unknown, ThrowOnError>({
+	return (options.client ?? client).post<AccountRegister0E682147Responses, unknown, ThrowOnError>({
 		url: '/api/account/register',
 		...options,
 		headers: {
@@ -733,10 +734,10 @@ export const accountRegister = <ThrowOnError extends boolean = false>(
  * The verification token is single-use and expires after a set period.
  */
 export const accountVerifyEmail = <ThrowOnError extends boolean = false>(
-	options: Options<AccountVerifyEmail478Cf09aData, ThrowOnError>
+	options: Options<AccountVerifyEmailC5B88297Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		AccountVerifyEmail478Cf09aResponses,
+		AccountVerifyEmailC5B88297Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -758,11 +759,11 @@ export const accountVerifyEmail = <ThrowOnError extends boolean = false>(
  * email is already verified. Requires authentication with the unverified account's JWT.
  */
 export const accountResendVerificationEmail = <ThrowOnError extends boolean = false>(
-	options?: Options<AccountResendVerificationEmailFc8F0150Data, ThrowOnError>
+	options?: Options<AccountResendVerificationEmailDca4C406Data, ThrowOnError>
 ) => {
 	return (options?.client ?? client).post<
-		AccountResendVerificationEmailFc8F0150Responses,
-		AccountResendVerificationEmailFc8F0150Errors,
+		AccountResendVerificationEmailDca4C406Responses,
+		AccountResendVerificationEmailDca4C406Errors,
 		ThrowOnError
 	>({
 		security: [
@@ -786,10 +787,10 @@ export const accountResendVerificationEmail = <ThrowOnError extends boolean = fa
  * This two-step process prevents accidental deletions.
  */
 export const accountDeleteAccountRequest = <ThrowOnError extends boolean = false>(
-	options?: Options<AccountDeleteAccountRequest4E1C015cData, ThrowOnError>
+	options?: Options<AccountDeleteAccountRequest8786843dData, ThrowOnError>
 ) => {
 	return (options?.client ?? client).post<
-		AccountDeleteAccountRequest4E1C015cResponses,
+		AccountDeleteAccountRequest8786843dResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -814,10 +815,10 @@ export const accountDeleteAccountRequest = <ThrowOnError extends boolean = false
  * single-use and expires after a set period.
  */
 export const accountDeleteAccountConfirm = <ThrowOnError extends boolean = false>(
-	options: Options<AccountDeleteAccountConfirm106Ab6A0Data, ThrowOnError>
+	options: Options<AccountDeleteAccountConfirm51Aca775Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		AccountDeleteAccountConfirm106Ab6A0Responses,
+		AccountDeleteAccountConfirm51Aca775Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -840,10 +841,10 @@ export const accountDeleteAccountConfirm = <ThrowOnError extends boolean = false
  * endpoint. After receiving the email, use POST /account/password/reset with the token.
  */
 export const accountResetPasswordRequest = <ThrowOnError extends boolean = false>(
-	options: Options<AccountResetPasswordRequest75Efa090Data, ThrowOnError>
+	options: Options<AccountResetPasswordRequest159B2A43Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		AccountResetPasswordRequest75Efa090Responses,
+		AccountResetPasswordRequest159B2A43Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -866,10 +867,10 @@ export const accountResetPasswordRequest = <ThrowOnError extends boolean = false
  * expires after a set period. After reset, the user must login again with the new password.
  */
 export const accountResetPassword = <ThrowOnError extends boolean = false>(
-	options: Options<AccountResetPassword5D780D1eData, ThrowOnError>
+	options: Options<AccountResetPassword03A7Fc3dData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		AccountResetPassword5D780D1eResponses,
+		AccountResetPassword03A7Fc3dResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -892,10 +893,10 @@ export const accountResetPassword = <ThrowOnError extends boolean = false>(
  * sections in the UI.
  */
 export const dashboardDashboardOrganizations = <ThrowOnError extends boolean = false>(
-	options?: Options<DashboardDashboardOrganizationsA4541683Data, ThrowOnError>
+	options?: Options<DashboardDashboardOrganizations03Daa3C4Data, ThrowOnError>
 ) => {
 	return (options?.client ?? client).get<
-		DashboardDashboardOrganizationsA4541683Responses,
+		DashboardDashboardOrganizations03Daa3C4Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -920,10 +921,10 @@ export const dashboardDashboardOrganizations = <ThrowOnError extends boolean = f
  * display "My Events" sections in the UI.
  */
 export const dashboardDashboardEvents = <ThrowOnError extends boolean = false>(
-	options?: Options<DashboardDashboardEvents5D89647aData, ThrowOnError>
+	options?: Options<DashboardDashboardEvents6Cb96588Data, ThrowOnError>
 ) => {
 	return (options?.client ?? client).get<
-		DashboardDashboardEvents5D89647aResponses,
+		DashboardDashboardEvents6Cb96588Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -947,10 +948,10 @@ export const dashboardDashboardEvents = <ThrowOnError extends boolean = false>(
  * series you have permission to view. Use this to display "My Series" sections in the UI.
  */
 export const dashboardDashboardEventSeries = <ThrowOnError extends boolean = false>(
-	options?: Options<DashboardDashboardEventSeries95D98De3Data, ThrowOnError>
+	options?: Options<DashboardDashboardEventSeriesC961639bData, ThrowOnError>
 ) => {
 	return (options?.client ?? client).get<
-		DashboardDashboardEventSeries95D98De3Responses,
+		DashboardDashboardEventSeriesC961639bResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -974,10 +975,10 @@ export const dashboardDashboardEventSeries = <ThrowOnError extends boolean = fal
  * Use this to display a "Pending Invitations" section prompting users to RSVP or purchase tickets.
  */
 export const dashboardDashboardInvitations = <ThrowOnError extends boolean = false>(
-	options?: Options<DashboardDashboardInvitations692Acf8eData, ThrowOnError>
+	options?: Options<DashboardDashboardInvitations2F2132B0Data, ThrowOnError>
 ) => {
 	return (options?.client ?? client).get<
-		DashboardDashboardInvitations692Acf8eResponses,
+		DashboardDashboardInvitations2F2132B0Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1002,10 +1003,10 @@ export const dashboardDashboardInvitations = <ThrowOnError extends boolean = fal
  * or reverse with '-name'. Supports text search and filtering.
  */
 export const organizationListOrganizations = <ThrowOnError extends boolean = false>(
-	options?: Options<OrganizationListOrganizationsF5E53095Data, ThrowOnError>
+	options?: Options<OrganizationListOrganizations3C31A7EaData, ThrowOnError>
 ) => {
 	return (options?.client ?? client).get<
-		OrganizationListOrganizationsF5E53095Responses,
+		OrganizationListOrganizations3C31A7EaResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1029,10 +1030,10 @@ export const organizationListOrganizations = <ThrowOnError extends boolean = fal
  * settings. Use this to display the organization profile page.
  */
 export const organizationGetOrganization = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationGetOrganization03E42Cd8Data, ThrowOnError>
+	options: Options<OrganizationGetOrganization45F68219Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		OrganizationGetOrganization03E42Cd8Responses,
+		OrganizationGetOrganization45F68219Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1056,10 +1057,10 @@ export const organizationGetOrganization = <ThrowOnError extends boolean = false
  * be public or restricted to members only. Supports filtering by type and text search.
  */
 export const organizationListResources = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationListResources05Cba1FaData, ThrowOnError>
+	options: Options<OrganizationListResources902770CcData, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		OrganizationListResources05Cba1FaResponses,
+		OrganizationListResources902770CcResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1084,10 +1085,10 @@ export const organizationListResources = <ThrowOnError extends boolean = false>(
  * request for tracking status.
  */
 export const organizationCreateMembershipRequest = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationCreateMembershipRequestE2B0Db8dData, ThrowOnError>
+	options: Options<OrganizationCreateMembershipRequestC7302D18Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		OrganizationCreateMembershipRequestE2B0Db8dResponses,
+		OrganizationCreateMembershipRequestC7302D18Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1116,11 +1117,11 @@ export const organizationCreateMembershipRequest = <ThrowOnError extends boolean
  * or 400 if the token is invalid/expired.
  */
 export const organizationClaimInvitation = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationClaimInvitation86De8Cf7Data, ThrowOnError>
+	options: Options<OrganizationClaimInvitation5C32FadfData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		OrganizationClaimInvitation86De8Cf7Responses,
-		OrganizationClaimInvitation86De8Cf7Errors,
+		OrganizationClaimInvitation5C32FadfResponses,
+		OrganizationClaimInvitation5C32FadfErrors,
 		ThrowOnError
 	>({
 		security: [
@@ -1140,10 +1141,10 @@ export const organizationClaimInvitation = <ThrowOnError extends boolean = false
  * Get comprehensive organization details including all platform fee and Stripe fields.
  */
 export const organizationadminGetOrganization = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationadminGetOrganization4Aa532E3Data, ThrowOnError>
+	options: Options<OrganizationadminGetOrganization52A02A44Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		OrganizationadminGetOrganization4Aa532E3Responses,
+		OrganizationadminGetOrganization52A02A44Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1164,10 +1165,10 @@ export const organizationadminGetOrganization = <ThrowOnError extends boolean = 
  * Update organization by slug.
  */
 export const organizationadminUpdateOrganization = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationadminUpdateOrganization2Aa51848Data, ThrowOnError>
+	options: Options<OrganizationadminUpdateOrganization6E5B1F9bData, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
-		OrganizationadminUpdateOrganization2Aa51848Responses,
+		OrganizationadminUpdateOrganization6E5B1F9bResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1192,10 +1193,10 @@ export const organizationadminUpdateOrganization = <ThrowOnError extends boolean
  * Get a link to onboard the organization to Stripe.
  */
 export const organizationadminStripeConnect = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationadminStripeConnectF522D8E7Data, ThrowOnError>
+	options: Options<OrganizationadminStripeConnect5702Ef2eData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		OrganizationadminStripeConnectF522D8E7Responses,
+		OrganizationadminStripeConnect5702Ef2eResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1216,10 +1217,10 @@ export const organizationadminStripeConnect = <ThrowOnError extends boolean = fa
  * Get the organization's Stripe account status.
  */
 export const organizationadminStripeAccountVerify = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationadminStripeAccountVerifyE877C7DeData, ThrowOnError>
+	options: Options<OrganizationadminStripeAccountVerify3F404331Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		OrganizationadminStripeAccountVerifyE877C7DeResponses,
+		OrganizationadminStripeAccountVerify3F404331Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1240,10 +1241,10 @@ export const organizationadminStripeAccountVerify = <ThrowOnError extends boolea
  * Upload logo to organization.
  */
 export const organizationadminUploadLogo = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationadminUploadLogo15C70Cc5Data, ThrowOnError>
+	options: Options<OrganizationadminUploadLogoB141E351Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		OrganizationadminUploadLogo15C70Cc5Responses,
+		OrganizationadminUploadLogoB141E351Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1269,10 +1270,10 @@ export const organizationadminUploadLogo = <ThrowOnError extends boolean = false
  * Upload cover art to organization.
  */
 export const organizationadminUploadCoverArt = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationadminUploadCoverArt41555190Data, ThrowOnError>
+	options: Options<OrganizationadminUploadCoverArtF9C552CbData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		OrganizationadminUploadCoverArt41555190Responses,
+		OrganizationadminUploadCoverArtF9C552CbResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1298,10 +1299,10 @@ export const organizationadminUploadCoverArt = <ThrowOnError extends boolean = f
  * Delete logo from organization.
  */
 export const organizationadminDeleteLogo = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationadminDeleteLogo1030F9C5Data, ThrowOnError>
+	options: Options<OrganizationadminDeleteLogo2B684AbaData, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		OrganizationadminDeleteLogo1030F9C5Responses,
+		OrganizationadminDeleteLogo2B684AbaResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1322,10 +1323,10 @@ export const organizationadminDeleteLogo = <ThrowOnError extends boolean = false
  * Delete cover art from organization.
  */
 export const organizationadminDeleteCoverArt = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationadminDeleteCoverArt8E12F49aData, ThrowOnError>
+	options: Options<OrganizationadminDeleteCoverArt0F663C07Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		OrganizationadminDeleteCoverArt8E12F49aResponses,
+		OrganizationadminDeleteCoverArt0F663C07Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1346,11 +1347,11 @@ export const organizationadminDeleteCoverArt = <ThrowOnError extends boolean = f
  * Create a new event series.
  */
 export const organizationadminCreateEventSeries = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationadminCreateEventSeries762D8BaaData, ThrowOnError>
+	options: Options<OrganizationadminCreateEventSeries909F81BdData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		OrganizationadminCreateEventSeries762D8BaaResponses,
-		OrganizationadminCreateEventSeries762D8BaaErrors,
+		OrganizationadminCreateEventSeries909F81BdResponses,
+		OrganizationadminCreateEventSeries909F81BdErrors,
 		ThrowOnError
 	>({
 		security: [
@@ -1374,11 +1375,11 @@ export const organizationadminCreateEventSeries = <ThrowOnError extends boolean 
  * Create a new event.
  */
 export const organizationadminCreateEvent = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationadminCreateEventF9777094Data, ThrowOnError>
+	options: Options<OrganizationadminCreateEvent051E2C16Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		OrganizationadminCreateEventF9777094Responses,
-		OrganizationadminCreateEventF9777094Errors,
+		OrganizationadminCreateEvent051E2C16Responses,
+		OrganizationadminCreateEvent051E2C16Errors,
 		ThrowOnError
 	>({
 		security: [
@@ -1404,10 +1405,10 @@ export const organizationadminCreateEvent = <ThrowOnError extends boolean = fals
 export const organizationadminListOrganizationTokens = <
 	ThrowOnError extends boolean = false
 >(
-	options: Options<OrganizationadminListOrganizationTokensD9053E63Data, ThrowOnError>
+	options: Options<OrganizationadminListOrganizationTokensAd2141C7Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		OrganizationadminListOrganizationTokensD9053E63Responses,
+		OrganizationadminListOrganizationTokensAd2141C7Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1430,10 +1431,10 @@ export const organizationadminListOrganizationTokens = <
 export const organizationadminCreateOrganizationToken = <
 	ThrowOnError extends boolean = false
 >(
-	options: Options<OrganizationadminCreateOrganizationToken9626AaddData, ThrowOnError>
+	options: Options<OrganizationadminCreateOrganizationTokenB11748D5Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		OrganizationadminCreateOrganizationToken9626AaddResponses,
+		OrganizationadminCreateOrganizationTokenB11748D5Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1460,10 +1461,10 @@ export const organizationadminCreateOrganizationToken = <
 export const organizationadminDeleteOrganizationToken = <
 	ThrowOnError extends boolean = false
 >(
-	options: Options<OrganizationadminDeleteOrganizationToken7A17FacbData, ThrowOnError>
+	options: Options<OrganizationadminDeleteOrganizationToken920E477cData, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		OrganizationadminDeleteOrganizationToken7A17FacbResponses,
+		OrganizationadminDeleteOrganizationToken920E477cResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1486,10 +1487,10 @@ export const organizationadminDeleteOrganizationToken = <
 export const organizationadminUpdateOrganizationToken = <
 	ThrowOnError extends boolean = false
 >(
-	options: Options<OrganizationadminUpdateOrganizationToken219718AbData, ThrowOnError>
+	options: Options<OrganizationadminUpdateOrganizationToken5284Deb3Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
-		OrganizationadminUpdateOrganizationToken219718AbResponses,
+		OrganizationadminUpdateOrganizationToken5284Deb3Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1512,14 +1513,16 @@ export const organizationadminUpdateOrganizationToken = <
  * List Membership Requests
  *
  * List all membership requests for an organization.
+ *
+ * By default shows all requests. Use ?status=pending to filter by status.
  */
 export const organizationadminListMembershipRequests = <
 	ThrowOnError extends boolean = false
 >(
-	options: Options<OrganizationadminListMembershipRequestsC72951CfData, ThrowOnError>
+	options: Options<OrganizationadminListMembershipRequests2Bae90A0Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		OrganizationadminListMembershipRequestsC72951CfResponses,
+		OrganizationadminListMembershipRequests2Bae90A0Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1542,10 +1545,10 @@ export const organizationadminListMembershipRequests = <
 export const organizationadminApproveMembershipRequest = <
 	ThrowOnError extends boolean = false
 >(
-	options: Options<OrganizationadminApproveMembershipRequestEb696457Data, ThrowOnError>
+	options: Options<OrganizationadminApproveMembershipRequestE1Bd2D4fData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		OrganizationadminApproveMembershipRequestEb696457Responses,
+		OrganizationadminApproveMembershipRequestE1Bd2D4fResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1568,10 +1571,10 @@ export const organizationadminApproveMembershipRequest = <
 export const organizationadminRejectMembershipRequest = <
 	ThrowOnError extends boolean = false
 >(
-	options: Options<OrganizationadminRejectMembershipRequest62871CedData, ThrowOnError>
+	options: Options<OrganizationadminRejectMembershipRequest48075D3fData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		OrganizationadminRejectMembershipRequest62871CedResponses,
+		OrganizationadminRejectMembershipRequest48075D3fResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1592,10 +1595,10 @@ export const organizationadminRejectMembershipRequest = <
  * List all resources for a specific organization.
  */
 export const organizationadminListResources = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationadminListResourcesB6B0E74dData, ThrowOnError>
+	options: Options<OrganizationadminListResources90241F4dData, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		OrganizationadminListResourcesB6B0E74dResponses,
+		OrganizationadminListResources90241F4dResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1619,10 +1622,10 @@ export const organizationadminListResources = <ThrowOnError extends boolean = fa
  * For FILE type resources, include the file parameter.
  */
 export const organizationadminCreateResource = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationadminCreateResourceE3116F59Data, ThrowOnError>
+	options: Options<OrganizationadminCreateResource42869D36Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		OrganizationadminCreateResourceE3116F59Responses,
+		OrganizationadminCreateResource42869D36Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1648,10 +1651,10 @@ export const organizationadminCreateResource = <ThrowOnError extends boolean = f
  * Delete a resource from the organization.
  */
 export const organizationadminDeleteResource = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationadminDeleteResource66233C21Data, ThrowOnError>
+	options: Options<OrganizationadminDeleteResource6D0C6Bf8Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		OrganizationadminDeleteResource66233C21Responses,
+		OrganizationadminDeleteResource6D0C6Bf8Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1672,10 +1675,10 @@ export const organizationadminDeleteResource = <ThrowOnError extends boolean = f
  * Retrieve a specific resource for the organization.
  */
 export const organizationadminGetResource = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationadminGetResourceF5295Cc1Data, ThrowOnError>
+	options: Options<OrganizationadminGetResource3F8F93C9Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		OrganizationadminGetResourceF5295Cc1Responses,
+		OrganizationadminGetResource3F8F93C9Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1696,10 +1699,10 @@ export const organizationadminGetResource = <ThrowOnError extends boolean = fals
  * Update a resource for the organization.
  */
 export const organizationadminUpdateResource = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationadminUpdateResourceCdefdc44Data, ThrowOnError>
+	options: Options<OrganizationadminUpdateResource93D02613Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
-		OrganizationadminUpdateResourceCdefdc44Responses,
+		OrganizationadminUpdateResource93D02613Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1724,10 +1727,10 @@ export const organizationadminUpdateResource = <ThrowOnError extends boolean = f
  * List all members of an organization.
  */
 export const organizationadminListMembers = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationadminListMembers570C7485Data, ThrowOnError>
+	options: Options<OrganizationadminListMembers3986D3D0Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		OrganizationadminListMembers570C7485Responses,
+		OrganizationadminListMembers3986D3D0Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1748,10 +1751,10 @@ export const organizationadminListMembers = <ThrowOnError extends boolean = fals
  * Remove a member from an organization.
  */
 export const organizationadminRemoveMember = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationadminRemoveMember026Ba094Data, ThrowOnError>
+	options: Options<OrganizationadminRemoveMember6Ec7227fData, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		OrganizationadminRemoveMember026Ba094Responses,
+		OrganizationadminRemoveMember6Ec7227fResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1772,10 +1775,10 @@ export const organizationadminRemoveMember = <ThrowOnError extends boolean = fal
  * List all staff of an organization.
  */
 export const organizationadminListStaff = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationadminListStaff8802E8FcData, ThrowOnError>
+	options: Options<OrganizationadminListStaff636E217aData, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		OrganizationadminListStaff8802E8FcResponses,
+		OrganizationadminListStaff636E217aResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1796,10 +1799,10 @@ export const organizationadminListStaff = <ThrowOnError extends boolean = false>
  * Remove a staff member from an organization.
  */
 export const organizationadminRemoveStaff = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationadminRemoveStaffDc6A4408Data, ThrowOnError>
+	options: Options<OrganizationadminRemoveStaffEab475EfData, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		OrganizationadminRemoveStaffDc6A4408Responses,
+		OrganizationadminRemoveStaffEab475EfResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1820,10 +1823,10 @@ export const organizationadminRemoveStaff = <ThrowOnError extends boolean = fals
  * Add a staff member to an organization.
  */
 export const organizationadminAddStaff = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationadminAddStaff58F8201eData, ThrowOnError>
+	options: Options<OrganizationadminAddStaff3E15765eData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		OrganizationadminAddStaff58F8201eResponses,
+		OrganizationadminAddStaff3E15765eResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1850,10 +1853,10 @@ export const organizationadminAddStaff = <ThrowOnError extends boolean = false>(
 export const organizationadminUpdateStaffPermissions = <
 	ThrowOnError extends boolean = false
 >(
-	options: Options<OrganizationadminUpdateStaffPermissions69Ef704dData, ThrowOnError>
+	options: Options<OrganizationadminUpdateStaffPermissionsE7D1DdfdData, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
-		OrganizationadminUpdateStaffPermissions69Ef704dResponses,
+		OrganizationadminUpdateStaffPermissionsE7D1DdfdResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1878,10 +1881,10 @@ export const organizationadminUpdateStaffPermissions = <
  * Clear akk tags from the organization.
  */
 export const organizationadminClearTags = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationadminClearTags33450B2eData, ThrowOnError>
+	options: Options<OrganizationadminClearTags943F2C71Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		OrganizationadminClearTags33450B2eResponses,
+		OrganizationadminClearTags943F2C71Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1902,10 +1905,10 @@ export const organizationadminClearTags = <ThrowOnError extends boolean = false>
  * Add one or more tags to the organization.
  */
 export const organizationadminAddTags = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationadminAddTags5Ba13865Data, ThrowOnError>
+	options: Options<OrganizationadminAddTags1F41252aData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		OrganizationadminAddTags5Ba13865Responses,
+		OrganizationadminAddTags1F41252aResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1930,10 +1933,10 @@ export const organizationadminAddTags = <ThrowOnError extends boolean = false>(
  * Remove one or more tags from the organization.
  */
 export const organizationadminRemoveTags = <ThrowOnError extends boolean = false>(
-	options: Options<OrganizationadminRemoveTags3Ff1E345Data, ThrowOnError>
+	options: Options<OrganizationadminRemoveTags17210274Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		OrganizationadminRemoveTags3Ff1E345Responses,
+		OrganizationadminRemoveTags17210274Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -1964,9 +1967,9 @@ export const organizationadminRemoveTags = <ThrowOnError extends boolean = false
  * tags, and text search.
  */
 export const eventListEvents = <ThrowOnError extends boolean = false>(
-	options?: Options<EventListEventsF4A8D067Data, ThrowOnError>
+	options?: Options<EventListEvents7Fc6E819Data, ThrowOnError>
 ) => {
-	return (options?.client ?? client).get<EventListEventsF4A8D067Responses, unknown, ThrowOnError>({
+	return (options?.client ?? client).get<EventListEvents7Fc6E819Responses, unknown, ThrowOnError>({
 		security: [
 			{
 				scheme: 'bearer',
@@ -1988,11 +1991,11 @@ export const eventListEvents = <ThrowOnError extends boolean = false>(
  * and RSVP deadlines. Returns the event on success, or 400 if the token is invalid/expired.
  */
 export const eventClaimInvitation = <ThrowOnError extends boolean = false>(
-	options: Options<EventClaimInvitation05Eb2Dc1Data, ThrowOnError>
+	options: Options<EventClaimInvitationA333Ba68Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		EventClaimInvitation05Eb2Dc1Responses,
-		EventClaimInvitation05Eb2Dc1Errors,
+		EventClaimInvitationA333Ba68Responses,
+		EventClaimInvitationA333Ba68Errors,
 		ThrowOnError
 	>({
 		security: [
@@ -2016,10 +2019,10 @@ export const eventClaimInvitation = <ThrowOnError extends boolean = false>(
  * and event creators always have access.
  */
 export const eventGetEventAttendees = <ThrowOnError extends boolean = false>(
-	options: Options<EventGetEventAttendees0266DbcaData, ThrowOnError>
+	options: Options<EventGetEventAttendeesDf088923Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		EventGetEventAttendees0266DbcaResponses,
+		EventGetEventAttendeesDf088923Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2046,10 +2049,10 @@ export const eventGetEventAttendees = <ThrowOnError extends boolean = false>(
  * (RSVP button, buy ticket, fill questionnaire, etc.).
  */
 export const eventGetMyEventStatus = <ThrowOnError extends boolean = false>(
-	options: Options<EventGetMyEventStatus4A59E257Data, ThrowOnError>
+	options: Options<EventGetMyEventStatusA5537Ae4Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		EventGetMyEventStatus4A59E257Responses,
+		EventGetMyEventStatusA5537Ae4Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2065,7 +2068,7 @@ export const eventGetMyEventStatus = <ThrowOnError extends boolean = false>(
 };
 
 /**
- * Request Invitation
+ * Create Invitation Request
  *
  * Submit a request to be invited to a private or invite-only event.
  *
@@ -2074,12 +2077,12 @@ export const eventGetMyEventStatus = <ThrowOnError extends boolean = false>(
  * submitted a request for this event. Check GET /{event_id}/my-status to see if you
  * need an invitation.
  */
-export const eventRequestInvitation = <ThrowOnError extends boolean = false>(
-	options: Options<EventRequestInvitationC0664Ed0Data, ThrowOnError>
+export const eventCreateInvitationRequest = <ThrowOnError extends boolean = false>(
+	options: Options<EventCreateInvitationRequest9B1Cdcf3Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		EventRequestInvitationC0664Ed0Responses,
-		EventRequestInvitationC0664Ed0Errors,
+		EventCreateInvitationRequest9B1Cdcf3Responses,
+		unknown,
 		ThrowOnError
 	>({
 		security: [
@@ -2088,7 +2091,7 @@ export const eventRequestInvitation = <ThrowOnError extends boolean = false>(
 				type: 'http'
 			}
 		],
-		url: '/api/events/{event_id}/request-invitation',
+		url: '/api/events/{event_id}/invitation-requests',
 		...options,
 		headers: {
 			'Content-Type': 'application/json',
@@ -2107,9 +2110,9 @@ export const eventRequestInvitation = <ThrowOnError extends boolean = false>(
  * (file, link, etc.) and text search.
  */
 export const eventListResources = <ThrowOnError extends boolean = false>(
-	options: Options<EventListResourcesDc9Af5DcData, ThrowOnError>
+	options: Options<EventListResources0640A3A6Data, ThrowOnError>
 ) => {
-	return (options.client ?? client).get<EventListResourcesDc9Af5DcResponses, unknown, ThrowOnError>(
+	return (options.client ?? client).get<EventListResources0640A3A6Responses, unknown, ThrowOnError>(
 		{
 			security: [
 				{
@@ -2133,10 +2136,10 @@ export const eventListResources = <ThrowOnError extends boolean = false>(
  * belong to you.
  */
 export const eventDeleteInvitationRequest = <ThrowOnError extends boolean = false>(
-	options: Options<EventDeleteInvitationRequest540551A8Data, ThrowOnError>
+	options: Options<EventDeleteInvitationRequestE2Bc00BbData, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		EventDeleteInvitationRequest540551A8Responses,
+		EventDeleteInvitationRequestE2Bc00BbResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2146,7 +2149,7 @@ export const eventDeleteInvitationRequest = <ThrowOnError extends boolean = fals
 				type: 'http'
 			}
 		],
-		url: '/api/events/invitation-request/{request_id}',
+		url: '/api/events/invitation-requests/{request_id}',
 		...options
 	});
 };
@@ -2161,10 +2164,10 @@ export const eventDeleteInvitationRequest = <ThrowOnError extends boolean = fals
  * rejected requests. Use this to track which events you've requested access to.
  */
 export const eventListUserInvitationRequests = <ThrowOnError extends boolean = false>(
-	options?: Options<EventListUserInvitationRequestsBed9Bd45Data, ThrowOnError>
+	options?: Options<EventListUserInvitationRequests11F4Dbf2Data, ThrowOnError>
 ) => {
 	return (options?.client ?? client).get<
-		EventListUserInvitationRequestsBed9Bd45Responses,
+		EventListUserInvitationRequests11F4Dbf2Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2174,7 +2177,7 @@ export const eventListUserInvitationRequests = <ThrowOnError extends boolean = f
 				type: 'http'
 			}
 		],
-		url: '/api/events/me/pending_invitation_requests',
+		url: '/api/events/me/pending-invitation-requests',
 		...options
 	});
 };
@@ -2188,10 +2191,10 @@ export const eventListUserInvitationRequests = <ThrowOnError extends boolean = f
  * the event doesn't exist or you don't have permission to view it.
  */
 export const eventGetEventBySlugs = <ThrowOnError extends boolean = false>(
-	options: Options<EventGetEventBySlugs30F55943Data, ThrowOnError>
+	options: Options<EventGetEventBySlugs1867901aData, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		EventGetEventBySlugs30F55943Responses,
+		EventGetEventBySlugs1867901aResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2215,9 +2218,9 @@ export const eventGetEventBySlugs = <ThrowOnError extends boolean = false>(
  * ticket tiers, and visibility settings. Use this to display the event detail page.
  */
 export const eventGetEvent = <ThrowOnError extends boolean = false>(
-	options: Options<EventGetEvent3A3Ee51dData, ThrowOnError>
+	options: Options<EventGetEventF33D9Fe5Data, ThrowOnError>
 ) => {
-	return (options.client ?? client).get<EventGetEvent3A3Ee51dResponses, unknown, ThrowOnError>({
+	return (options.client ?? client).get<EventGetEventF33D9Fe5Responses, unknown, ThrowOnError>({
 		security: [
 			{
 				scheme: 'bearer',
@@ -2241,11 +2244,11 @@ export const eventGetEvent = <ThrowOnError extends boolean = false>(
  * request invitation).
  */
 export const eventRsvpEvent = <ThrowOnError extends boolean = false>(
-	options: Options<EventRsvpEventE780E414Data, ThrowOnError>
+	options: Options<EventRsvpEvent2Fc4F913Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		EventRsvpEventE780E414Responses,
-		EventRsvpEventE780E414Errors,
+		EventRsvpEvent2Fc4F913Responses,
+		EventRsvpEvent2Fc4F913Errors,
 		ThrowOnError
 	>({
 		security: [
@@ -2269,9 +2272,9 @@ export const eventRsvpEvent = <ThrowOnError extends boolean = false>(
  * settings and sales_start_at/sales_end_at to determine which are currently on sale.
  */
 export const eventListTiers = <ThrowOnError extends boolean = false>(
-	options: Options<EventListTiersD4314F9cData, ThrowOnError>
+	options: Options<EventListTiersD39F67BdData, ThrowOnError>
 ) => {
-	return (options.client ?? client).get<EventListTiersD4314F9cResponses, unknown, ThrowOnError>({
+	return (options.client ?? client).get<EventListTiersD39F67BdResponses, unknown, ThrowOnError>({
 		security: [
 			{
 				scheme: 'bearer',
@@ -2296,11 +2299,11 @@ export const eventListTiers = <ThrowOnError extends boolean = false>(
  * to take (e.g., complete questionnaire, request invitation, wait for tickets to go on sale).
  */
 export const eventTicketCheckout = <ThrowOnError extends boolean = false>(
-	options: Options<EventTicketCheckout2Cec5454Data, ThrowOnError>
+	options: Options<EventTicketCheckout58D472B4Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		EventTicketCheckout2Cec5454Responses,
-		EventTicketCheckout2Cec5454Errors,
+		EventTicketCheckout58D472B4Responses,
+		EventTicketCheckout58D472B4Errors,
 		ThrowOnError
 	>({
 		security: [
@@ -2326,11 +2329,11 @@ export const eventTicketCheckout = <ThrowOnError extends boolean = false>(
  * blocking you and what next_step to take).
  */
 export const eventTicketPwycCheckout = <ThrowOnError extends boolean = false>(
-	options: Options<EventTicketPwycCheckoutEaf612EeData, ThrowOnError>
+	options: Options<EventTicketPwycCheckout9D58C7F3Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		EventTicketPwycCheckoutEaf612EeResponses,
-		EventTicketPwycCheckoutEaf612EeErrors,
+		EventTicketPwycCheckout9D58C7F3Responses,
+		EventTicketPwycCheckout9D58C7F3Errors,
 		ThrowOnError
 	>({
 		security: [
@@ -2358,10 +2361,10 @@ export const eventTicketPwycCheckout = <ThrowOnError extends boolean = false>(
  * complete before accessing the event.
  */
 export const eventGetQuestionnaire = <ThrowOnError extends boolean = false>(
-	options: Options<EventGetQuestionnaireAf033Cd0Data, ThrowOnError>
+	options: Options<EventGetQuestionnaire21149006Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		EventGetQuestionnaireAf033Cd0Responses,
+		EventGetQuestionnaire21149006Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2387,11 +2390,11 @@ export const eventGetQuestionnaire = <ThrowOnError extends boolean = false>(
  * Passing the questionnaire may be required before you can RSVP or purchase tickets.
  */
 export const eventSubmitQuestionnaire = <ThrowOnError extends boolean = false>(
-	options: Options<EventSubmitQuestionnaire122B5562Data, ThrowOnError>
+	options: Options<EventSubmitQuestionnaireB02E3452Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		EventSubmitQuestionnaire122B5562Responses,
-		EventSubmitQuestionnaire122B5562Errors,
+		EventSubmitQuestionnaireB02E3452Responses,
+		EventSubmitQuestionnaireB02E3452Errors,
 		ThrowOnError
 	>({
 		security: [
@@ -2415,10 +2418,10 @@ export const eventSubmitQuestionnaire = <ThrowOnError extends boolean = false>(
  * Delete an event token.
  */
 export const eventadminDeleteEventToken = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminDeleteEventTokenF47C06E1Data, ThrowOnError>
+	options: Options<EventadminDeleteEventToken1104AffcData, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		EventadminDeleteEventTokenF47C06E1Responses,
+		EventadminDeleteEventToken1104AffcResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2439,10 +2442,10 @@ export const eventadminDeleteEventToken = <ThrowOnError extends boolean = false>
  * Update an event token.
  */
 export const eventadminUpdateEventToken = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminUpdateEventToken6520A3DfData, ThrowOnError>
+	options: Options<EventadminUpdateEventToken98D07979Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
-		EventadminUpdateEventToken6520A3DfResponses,
+		EventadminUpdateEventToken98D07979Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2467,10 +2470,10 @@ export const eventadminUpdateEventToken = <ThrowOnError extends boolean = false>
  * List all event tokens.
  */
 export const eventadminListEventTokens = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminListEventTokensEd3884A8Data, ThrowOnError>
+	options: Options<EventadminListEventTokensC77C30C8Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		EventadminListEventTokensEd3884A8Responses,
+		EventadminListEventTokensC77C30C8Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2491,10 +2494,10 @@ export const eventadminListEventTokens = <ThrowOnError extends boolean = false>(
  * Create a new event token.
  */
 export const eventadminCreateEventToken = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminCreateEventToken712452EeData, ThrowOnError>
+	options: Options<EventadminCreateEventTokenB430C9A3Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		EventadminCreateEventToken712452EeResponses,
+		EventadminCreateEventTokenB430C9A3Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2514,15 +2517,17 @@ export const eventadminCreateEventToken = <ThrowOnError extends boolean = false>
 };
 
 /**
- * Decide Invitation Request
+ * List Invitation Requests
  *
- * Request an invitation to an event.
+ * List all invitation requests for an event.
+ *
+ * By default shows all requests. Use ?status=pending to filter by status.
  */
-export const eventadminDecideInvitationRequest = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminDecideInvitationRequestBc24B10bData, ThrowOnError>
+export const eventadminListInvitationRequests = <ThrowOnError extends boolean = false>(
+	options: Options<EventadminListInvitationRequests3453A7F0Data, ThrowOnError>
 ) => {
-	return (options.client ?? client).post<
-		EventadminDecideInvitationRequestBc24B10bResponses,
+	return (options.client ?? client).get<
+		EventadminListInvitationRequests3453A7F0Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2532,21 +2537,21 @@ export const eventadminDecideInvitationRequest = <ThrowOnError extends boolean =
 				type: 'http'
 			}
 		],
-		url: '/api/event-admin/{event_id}/invitation-request/{request_id}/{decision}',
+		url: '/api/event-admin/{event_id}/invitation-requests',
 		...options
 	});
 };
 
 /**
- * List Event Invitation Requests
+ * Approve Invitation Request
  *
- * List all pending invitation requests for the current user.
+ * Approve an invitation request.
  */
-export const eventadminListEventInvitationRequests = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminListEventInvitationRequests95E1461cData, ThrowOnError>
+export const eventadminApproveInvitationRequest = <ThrowOnError extends boolean = false>(
+	options: Options<EventadminApproveInvitationRequestBc0774C6Data, ThrowOnError>
 ) => {
-	return (options.client ?? client).get<
-		EventadminListEventInvitationRequests95E1461cResponses,
+	return (options.client ?? client).post<
+		EventadminApproveInvitationRequestBc0774C6Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2556,7 +2561,31 @@ export const eventadminListEventInvitationRequests = <ThrowOnError extends boole
 				type: 'http'
 			}
 		],
-		url: '/api/event-admin/{event_id}/invitation_requests',
+		url: '/api/event-admin/{event_id}/invitation-requests/{request_id}/approve',
+		...options
+	});
+};
+
+/**
+ * Reject Invitation Request
+ *
+ * Reject an invitation request.
+ */
+export const eventadminRejectInvitationRequest = <ThrowOnError extends boolean = false>(
+	options: Options<EventadminRejectInvitationRequest4D2C7F01Data, ThrowOnError>
+) => {
+	return (options.client ?? client).post<
+		EventadminRejectInvitationRequest4D2C7F01Responses,
+		unknown,
+		ThrowOnError
+	>({
+		security: [
+			{
+				scheme: 'bearer',
+				type: 'http'
+			}
+		],
+		url: '/api/event-admin/{event_id}/invitation-requests/{request_id}/reject',
 		...options
 	});
 };
@@ -2567,11 +2596,11 @@ export const eventadminListEventInvitationRequests = <ThrowOnError extends boole
  * Update event by ID.
  */
 export const eventadminUpdateEvent = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminUpdateEventBacdac44Data, ThrowOnError>
+	options: Options<EventadminUpdateEvent669A5A17Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
-		EventadminUpdateEventBacdac44Responses,
-		EventadminUpdateEventBacdac44Errors,
+		EventadminUpdateEvent669A5A17Responses,
+		EventadminUpdateEvent669A5A17Errors,
 		ThrowOnError
 	>({
 		security: [
@@ -2595,10 +2624,10 @@ export const eventadminUpdateEvent = <ThrowOnError extends boolean = false>(
  * Update event status to the specified value.
  */
 export const eventadminUpdateEventStatus = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminUpdateEventStatus45A25218Data, ThrowOnError>
+	options: Options<EventadminUpdateEventStatus9B733B32Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		EventadminUpdateEventStatus45A25218Responses,
+		EventadminUpdateEventStatus9B733B32Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2619,10 +2648,10 @@ export const eventadminUpdateEventStatus = <ThrowOnError extends boolean = false
  * Upload logo to event.
  */
 export const eventadminUploadLogo = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminUploadLogoD1E26C1bData, ThrowOnError>
+	options: Options<EventadminUploadLogo97D3C2AeData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		EventadminUploadLogoD1E26C1bResponses,
+		EventadminUploadLogo97D3C2AeResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2648,10 +2677,10 @@ export const eventadminUploadLogo = <ThrowOnError extends boolean = false>(
  * Upload cover art to event.
  */
 export const eventadminUploadCoverArt = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminUploadCoverArtB834Ee6bData, ThrowOnError>
+	options: Options<EventadminUploadCoverArt3F027833Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		EventadminUploadCoverArtB834Ee6bResponses,
+		EventadminUploadCoverArt3F027833Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2677,10 +2706,10 @@ export const eventadminUploadCoverArt = <ThrowOnError extends boolean = false>(
  * Delete logo from event.
  */
 export const eventadminDeleteLogo = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminDeleteLogo70Ad419cData, ThrowOnError>
+	options: Options<EventadminDeleteLogo3967075cData, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		EventadminDeleteLogo70Ad419cResponses,
+		EventadminDeleteLogo3967075cResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2701,10 +2730,10 @@ export const eventadminDeleteLogo = <ThrowOnError extends boolean = false>(
  * Delete cover art from event.
  */
 export const eventadminDeleteCoverArt = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminDeleteCoverArt4Bfe613bData, ThrowOnError>
+	options: Options<EventadminDeleteCoverArt3F30469fData, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		EventadminDeleteCoverArt4Bfe613bResponses,
+		EventadminDeleteCoverArt3F30469fResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2725,10 +2754,10 @@ export const eventadminDeleteCoverArt = <ThrowOnError extends boolean = false>(
  * Remove one or more tags from the organization.
  */
 export const eventadminClearTags = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminClearTagsDa58C15bData, ThrowOnError>
+	options: Options<EventadminClearTags9A9B25CdData, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		EventadminClearTagsDa58C15bResponses,
+		EventadminClearTags9A9B25CdResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2749,9 +2778,9 @@ export const eventadminClearTags = <ThrowOnError extends boolean = false>(
  * Add one or more tags to the organization.
  */
 export const eventadminAddTags = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminAddTags1Bf84F24Data, ThrowOnError>
+	options: Options<EventadminAddTagsF8D9D0CaData, ThrowOnError>
 ) => {
-	return (options.client ?? client).post<EventadminAddTags1Bf84F24Responses, unknown, ThrowOnError>(
+	return (options.client ?? client).post<EventadminAddTagsF8D9D0CaResponses, unknown, ThrowOnError>(
 		{
 			security: [
 				{
@@ -2775,10 +2804,10 @@ export const eventadminAddTags = <ThrowOnError extends boolean = false>(
  * Remove one or more tags from the organization.
  */
 export const eventadminRemoveTags = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminRemoveTagsCb2Faaf3Data, ThrowOnError>
+	options: Options<EventadminRemoveTags1Eb533CdData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		EventadminRemoveTagsCb2Faaf3Responses,
+		EventadminRemoveTags1Eb533CdResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2803,10 +2832,10 @@ export const eventadminRemoveTags = <ThrowOnError extends boolean = false>(
  * List all ticket tiers for an event.
  */
 export const eventadminListTicketTiers = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminListTicketTiers416362B4Data, ThrowOnError>
+	options: Options<EventadminListTicketTiersF0C8F341Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		EventadminListTicketTiers416362B4Responses,
+		EventadminListTicketTiersF0C8F341Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2827,10 +2856,10 @@ export const eventadminListTicketTiers = <ThrowOnError extends boolean = false>(
  * Create a new ticket tier for an event.
  */
 export const eventadminCreateTicketTier = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminCreateTicketTierDfe2D1D0Data, ThrowOnError>
+	options: Options<EventadminCreateTicketTier03150584Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		EventadminCreateTicketTierDfe2D1D0Responses,
+		EventadminCreateTicketTier03150584Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2857,10 +2886,10 @@ export const eventadminCreateTicketTier = <ThrowOnError extends boolean = false>
  * Note this might raise a 400 if ticket with this tier where already bought.
  */
 export const eventadminDeleteTicketTier = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminDeleteTicketTier36Dacdc2Data, ThrowOnError>
+	options: Options<EventadminDeleteTicketTierA7C3519aData, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		EventadminDeleteTicketTier36Dacdc2Responses,
+		EventadminDeleteTicketTierA7C3519aResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2881,10 +2910,10 @@ export const eventadminDeleteTicketTier = <ThrowOnError extends boolean = false>
  * Update a ticket tier.
  */
 export const eventadminUpdateTicketTier = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminUpdateTicketTier749Ac5AbData, ThrowOnError>
+	options: Options<EventadminUpdateTicketTierAded0749Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
-		EventadminUpdateTicketTier749Ac5AbResponses,
+		EventadminUpdateTicketTierAded0749Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2913,10 +2942,10 @@ export const eventadminUpdateTicketTier = <ThrowOnError extends boolean = false>
  * - tier__payment_method: Filter by payment method (ONLINE, OFFLINE, AT_THE_DOOR, FREE)
  */
 export const eventadminListTickets = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminListTickets00C85FbbData, ThrowOnError>
+	options: Options<EventadminListTickets720A6A89Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		EventadminListTickets00C85FbbResponses,
+		EventadminListTickets720A6A89Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2937,10 +2966,10 @@ export const eventadminListTickets = <ThrowOnError extends boolean = false>(
  * Get a ticket by its ID.
  */
 export const eventadminGetTicket = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminGetTicket25A2B21aData, ThrowOnError>
+	options: Options<EventadminGetTicket19Afa38dData, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		EventadminGetTicket25A2B21aResponses,
+		EventadminGetTicket19Afa38dResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2961,10 +2990,10 @@ export const eventadminGetTicket = <ThrowOnError extends boolean = false>(
  * Confirm payment for a pending offline ticket and activate it.
  */
 export const eventadminConfirmTicketPayment = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminConfirmTicketPayment04D9Cbb3Data, ThrowOnError>
+	options: Options<EventadminConfirmTicketPaymentD8E41153Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		EventadminConfirmTicketPayment04D9Cbb3Responses,
+		EventadminConfirmTicketPaymentD8E41153Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -2988,10 +3017,10 @@ export const eventadminConfirmTicketPayment = <ThrowOnError extends boolean = fa
  * Online tickets (Stripe) are automatically managed via webhooks.
  */
 export const eventadminMarkTicketRefunded = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminMarkTicketRefunded08Cc548eData, ThrowOnError>
+	options: Options<EventadminMarkTicketRefundedBd44B3D6Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		EventadminMarkTicketRefunded08Cc548eResponses,
+		EventadminMarkTicketRefundedBd44B3D6Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3015,10 +3044,10 @@ export const eventadminMarkTicketRefunded = <ThrowOnError extends boolean = fals
  * Online tickets (Stripe) should be refunded via Stripe Dashboard.
  */
 export const eventadminCancelTicket = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminCancelTicket89903114Data, ThrowOnError>
+	options: Options<EventadminCancelTicket1082Aa5bData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		EventadminCancelTicket89903114Responses,
+		EventadminCancelTicket1082Aa5bResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3039,11 +3068,11 @@ export const eventadminCancelTicket = <ThrowOnError extends boolean = false>(
  * Check in an attendee by scanning their ticket.
  */
 export const eventadminCheckInTicket = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminCheckInTicket9Aec307eData, ThrowOnError>
+	options: Options<EventadminCheckInTicket957Dc27bData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		EventadminCheckInTicket9Aec307eResponses,
-		EventadminCheckInTicket9Aec307eErrors,
+		EventadminCheckInTicket957Dc27bResponses,
+		EventadminCheckInTicket957Dc27bErrors,
 		ThrowOnError
 	>({
 		security: [
@@ -3063,10 +3092,10 @@ export const eventadminCheckInTicket = <ThrowOnError extends boolean = false>(
  * List all invitations for registered users.
  */
 export const eventadminListInvitations = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminListInvitations2C920Bc0Data, ThrowOnError>
+	options: Options<EventadminListInvitations8672F3C5Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		EventadminListInvitations2C920Bc0Responses,
+		EventadminListInvitations8672F3C5Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3087,11 +3116,11 @@ export const eventadminListInvitations = <ThrowOnError extends boolean = false>(
  * Create direct invitations for users by email addresses.
  */
 export const eventadminCreateInvitations = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminCreateInvitations899C92FeData, ThrowOnError>
+	options: Options<EventadminCreateInvitations626265E4Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		EventadminCreateInvitations899C92FeResponses,
-		EventadminCreateInvitations899C92FeErrors,
+		EventadminCreateInvitations626265E4Responses,
+		EventadminCreateInvitations626265E4Errors,
 		ThrowOnError
 	>({
 		security: [
@@ -3115,10 +3144,10 @@ export const eventadminCreateInvitations = <ThrowOnError extends boolean = false
  * List all pending invitations for unregistered users.
  */
 export const eventadminListPendingInvitations = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminListPendingInvitations601F99F4Data, ThrowOnError>
+	options: Options<EventadminListPendingInvitations2074D91cData, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		EventadminListPendingInvitations601F99F4Responses,
+		EventadminListPendingInvitations2074D91cResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3139,11 +3168,11 @@ export const eventadminListPendingInvitations = <ThrowOnError extends boolean = 
  * Delete an invitation (registered or pending).
  */
 export const eventadminDeleteInvitationEndpoint = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminDeleteInvitationEndpoint03F3A299Data, ThrowOnError>
+	options: Options<EventadminDeleteInvitationEndpoint7A5Baf74Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		EventadminDeleteInvitationEndpoint03F3A299Responses,
-		EventadminDeleteInvitationEndpoint03F3A299Errors,
+		EventadminDeleteInvitationEndpoint7A5Baf74Responses,
+		EventadminDeleteInvitationEndpoint7A5Baf74Errors,
 		ThrowOnError
 	>({
 		security: [
@@ -3167,10 +3196,10 @@ export const eventadminDeleteInvitationEndpoint = <ThrowOnError extends boolean 
  * Supports filtering by status and user_id.
  */
 export const eventadminListRsvps = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminListRsvps4A9A51CeData, ThrowOnError>
+	options: Options<EventadminListRsvps7Ad29E6cData, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		EventadminListRsvps4A9A51CeResponses,
+		EventadminListRsvps7Ad29E6cResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3194,10 +3223,10 @@ export const eventadminListRsvps = <ThrowOnError extends boolean = false>(
  * (e.g., via text, email, or in person).
  */
 export const eventadminCreateRsvp = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminCreateRsvp47Bf8C99Data, ThrowOnError>
+	options: Options<EventadminCreateRsvpA0Abb388Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		EventadminCreateRsvp47Bf8C99Responses,
+		EventadminCreateRsvpA0Abb388Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3225,10 +3254,10 @@ export const eventadminCreateRsvp = <ThrowOnError extends boolean = false>(
  * Note: This is different from setting status to "no" - it completely removes the RSVP record.
  */
 export const eventadminDeleteRsvp = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminDeleteRsvpC4Ca3B69Data, ThrowOnError>
+	options: Options<EventadminDeleteRsvp111B4Ef4Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		EventadminDeleteRsvpC4Ca3B69Responses,
+		EventadminDeleteRsvp111B4Ef4Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3249,9 +3278,9 @@ export const eventadminDeleteRsvp = <ThrowOnError extends boolean = false>(
  * Get details of a specific RSVP.
  */
 export const eventadminGetRsvp = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminGetRsvp493Da238Data, ThrowOnError>
+	options: Options<EventadminGetRsvpB753B6DfData, ThrowOnError>
 ) => {
-	return (options.client ?? client).get<EventadminGetRsvp493Da238Responses, unknown, ThrowOnError>({
+	return (options.client ?? client).get<EventadminGetRsvpB753B6DfResponses, unknown, ThrowOnError>({
 		security: [
 			{
 				scheme: 'bearer',
@@ -3271,10 +3300,10 @@ export const eventadminGetRsvp = <ThrowOnError extends boolean = false>(
  * Use this to change a user's RSVP status when they contact you to update their response.
  */
 export const eventadminUpdateRsvp = <ThrowOnError extends boolean = false>(
-	options: Options<EventadminUpdateRsvp33273CdeData, ThrowOnError>
+	options: Options<EventadminUpdateRsvp4F4B015cData, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
-		EventadminUpdateRsvp33273CdeResponses,
+		EventadminUpdateRsvp4F4B015cResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3299,10 +3328,10 @@ export const eventadminUpdateRsvp = <ThrowOnError extends boolean = false>(
  * Get a user's permission map, per organization.
  */
 export const permissionMyPermissions = <ThrowOnError extends boolean = false>(
-	options?: Options<PermissionMyPermissions7Add1766Data, ThrowOnError>
+	options?: Options<PermissionMyPermissions26660239Data, ThrowOnError>
 ) => {
 	return (options?.client ?? client).get<
-		PermissionMyPermissions7Add1766Responses,
+		PermissionMyPermissions26660239Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3326,10 +3355,10 @@ export const permissionMyPermissions = <ThrowOnError extends boolean = false>(
  * filtered by visibility and permissions. Supports filtering by organization and text search.
  */
 export const eventseriesListEventSeries = <ThrowOnError extends boolean = false>(
-	options?: Options<EventseriesListEventSeriesC993Ced3Data, ThrowOnError>
+	options?: Options<EventseriesListEventSeries5C5D600cData, ThrowOnError>
 ) => {
 	return (options?.client ?? client).get<
-		EventseriesListEventSeriesC993Ced3Responses,
+		EventseriesListEventSeries5C5D600cResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3353,10 +3382,10 @@ export const eventseriesListEventSeries = <ThrowOnError extends boolean = false>
  * if the series doesn't exist or you don't have permission to view it.
  */
 export const eventseriesGetEventSeriesBySlugs = <ThrowOnError extends boolean = false>(
-	options: Options<EventseriesGetEventSeriesBySlugsCbed60E8Data, ThrowOnError>
+	options: Options<EventseriesGetEventSeriesBySlugs2Bc4198fData, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		EventseriesGetEventSeriesBySlugsCbed60E8Responses,
+		EventseriesGetEventSeriesBySlugs2Bc4198fResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3380,10 +3409,10 @@ export const eventseriesGetEventSeriesBySlugs = <ThrowOnError extends boolean = 
  * to display the series profile page and list related events.
  */
 export const eventseriesGetEventSeries = <ThrowOnError extends boolean = false>(
-	options: Options<EventseriesGetEventSeriesA073419dData, ThrowOnError>
+	options: Options<EventseriesGetEventSeries0879D813Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		EventseriesGetEventSeriesA073419dResponses,
+		EventseriesGetEventSeries0879D813Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3408,10 +3437,10 @@ export const eventseriesGetEventSeries = <ThrowOnError extends boolean = false>(
  * by type and text search.
  */
 export const eventseriesListResources = <ThrowOnError extends boolean = false>(
-	options: Options<EventseriesListResources0899602cData, ThrowOnError>
+	options: Options<EventseriesListResourcesFc094B71Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		EventseriesListResources0899602cResponses,
+		EventseriesListResourcesFc094B71Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3435,10 +3464,10 @@ export const eventseriesListResources = <ThrowOnError extends boolean = false>(
  * Requires 'delete_event_series' permission (typically organization owners only).
  */
 export const eventseriesadminDeleteEventSeries = <ThrowOnError extends boolean = false>(
-	options: Options<EventseriesadminDeleteEventSeriesFcfe14A5Data, ThrowOnError>
+	options: Options<EventseriesadminDeleteEventSeries4342CeaeData, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		EventseriesadminDeleteEventSeriesFcfe14A5Responses,
+		EventseriesadminDeleteEventSeries4342CeaeResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3462,11 +3491,11 @@ export const eventseriesadminDeleteEventSeries = <ThrowOnError extends boolean =
  * (organization staff/owners). Changes apply to the series but not individual events.
  */
 export const eventseriesadminUpdateEventSeries = <ThrowOnError extends boolean = false>(
-	options: Options<EventseriesadminUpdateEventSeries00F06F68Data, ThrowOnError>
+	options: Options<EventseriesadminUpdateEventSeries787B5A6bData, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
-		EventseriesadminUpdateEventSeries00F06F68Responses,
-		EventseriesadminUpdateEventSeries00F06F68Errors,
+		EventseriesadminUpdateEventSeries787B5A6bResponses,
+		EventseriesadminUpdateEventSeries787B5A6bErrors,
 		ThrowOnError
 	>({
 		security: [
@@ -3493,10 +3522,10 @@ export const eventseriesadminUpdateEventSeries = <ThrowOnError extends boolean =
  * 'edit_event_series' permission.
  */
 export const eventseriesadminUploadLogo = <ThrowOnError extends boolean = false>(
-	options: Options<EventseriesadminUploadLogo6E05781cData, ThrowOnError>
+	options: Options<EventseriesadminUploadLogoD5A34979Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		EventseriesadminUploadLogo6E05781cResponses,
+		EventseriesadminUploadLogoD5A34979Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3525,10 +3554,10 @@ export const eventseriesadminUploadLogo = <ThrowOnError extends boolean = false>
  * 'edit_event_series' permission.
  */
 export const eventseriesadminUploadCoverArt = <ThrowOnError extends boolean = false>(
-	options: Options<EventseriesadminUploadCoverArtC7819802Data, ThrowOnError>
+	options: Options<EventseriesadminUploadCoverArtCef38D76Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		EventseriesadminUploadCoverArtC7819802Responses,
+		EventseriesadminUploadCoverArtCef38D76Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3556,10 +3585,10 @@ export const eventseriesadminUploadCoverArt = <ThrowOnError extends boolean = fa
  * Removes the logo image. Requires 'edit_event_series' permission.
  */
 export const eventseriesadminDeleteLogo = <ThrowOnError extends boolean = false>(
-	options: Options<EventseriesadminDeleteLogoAc75E26fData, ThrowOnError>
+	options: Options<EventseriesadminDeleteLogo60503B96Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		EventseriesadminDeleteLogoAc75E26fResponses,
+		EventseriesadminDeleteLogo60503B96Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3582,10 +3611,10 @@ export const eventseriesadminDeleteLogo = <ThrowOnError extends boolean = false>
  * Removes the cover art image. Requires 'edit_event_series' permission.
  */
 export const eventseriesadminDeleteCoverArt = <ThrowOnError extends boolean = false>(
-	options: Options<EventseriesadminDeleteCoverArt28Aedd4eData, ThrowOnError>
+	options: Options<EventseriesadminDeleteCoverArtAdacffceData, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		EventseriesadminDeleteCoverArt28Aedd4eResponses,
+		EventseriesadminDeleteCoverArtAdacffceResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3608,10 +3637,10 @@ export const eventseriesadminDeleteCoverArt = <ThrowOnError extends boolean = fa
  * Clears all categorization tags. Requires 'edit_event_series' permission.
  */
 export const eventseriesadminClearTags = <ThrowOnError extends boolean = false>(
-	options: Options<EventseriesadminClearTagsA8A6A5B7Data, ThrowOnError>
+	options: Options<EventseriesadminClearTags39B860D9Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		EventseriesadminClearTagsA8A6A5B7Responses,
+		EventseriesadminClearTags39B860D9Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3635,10 +3664,10 @@ export const eventseriesadminClearTags = <ThrowOnError extends boolean = false>(
  * Requires 'edit_event_series' permission.
  */
 export const eventseriesadminAddTags = <ThrowOnError extends boolean = false>(
-	options: Options<EventseriesadminAddTags3C8576C6Data, ThrowOnError>
+	options: Options<EventseriesadminAddTags90D97164Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		EventseriesadminAddTags3C8576C6Responses,
+		EventseriesadminAddTags90D97164Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3666,10 +3695,10 @@ export const eventseriesadminAddTags = <ThrowOnError extends boolean = false>(
  * 'edit_event_series' permission.
  */
 export const eventseriesadminRemoveTags = <ThrowOnError extends boolean = false>(
-	options: Options<EventseriesadminRemoveTagsA39D381bData, ThrowOnError>
+	options: Options<EventseriesadminRemoveTagsDace0E92Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		EventseriesadminRemoveTagsA39D381bResponses,
+		EventseriesadminRemoveTagsDace0E92Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3698,10 +3727,10 @@ export const eventseriesadminRemoveTags = <ThrowOnError extends boolean = false>
  * what you've claimed.
  */
 export const potluckListPotluckItems = <ThrowOnError extends boolean = false>(
-	options: Options<PotluckListPotluckItems7B1Ac0D6Data, ThrowOnError>
+	options: Options<PotluckListPotluckItemsF3A8D13fData, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		PotluckListPotluckItems7B1Ac0D6Responses,
+		PotluckListPotluckItemsF3A8D13fResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3725,10 +3754,10 @@ export const potluckListPotluckItems = <ThrowOnError extends boolean = false>(
  * POST /{event_id}/potluck/{item_id}/claim. Requires permission to create potluck items.
  */
 export const potluckCreatePotluckItem = <ThrowOnError extends boolean = false>(
-	options: Options<PotluckCreatePotluckItem06F918E8Data, ThrowOnError>
+	options: Options<PotluckCreatePotluckItem74Eaf78eData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		PotluckCreatePotluckItem06F918E8Responses,
+		PotluckCreatePotluckItem74Eaf78eResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3755,10 +3784,10 @@ export const potluckCreatePotluckItem = <ThrowOnError extends boolean = false>(
  * Deletes the item even if it's been claimed. Requires permission to manage potluck items.
  */
 export const potluckDeletePotluckItem = <ThrowOnError extends boolean = false>(
-	options: Options<PotluckDeletePotluckItem8571749dData, ThrowOnError>
+	options: Options<PotluckDeletePotluckItem71B5E436Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		PotluckDeletePotluckItem8571749dResponses,
+		PotluckDeletePotluckItem71B5E436Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3782,10 +3811,10 @@ export const potluckDeletePotluckItem = <ThrowOnError extends boolean = false>(
  * (typically event organizers).
  */
 export const potluckUpdatePotluckItem = <ThrowOnError extends boolean = false>(
-	options: Options<PotluckUpdatePotluckItem6Ba6Abd8Data, ThrowOnError>
+	options: Options<PotluckUpdatePotluckItem2Cab8494Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
-		PotluckUpdatePotluckItem6Ba6Abd8Responses,
+		PotluckUpdatePotluckItem2Cab8494Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3813,10 +3842,10 @@ export const potluckUpdatePotluckItem = <ThrowOnError extends boolean = false>(
  * you want to commit to bringing a specific item.
  */
 export const potluckClaimPotluckItem = <ThrowOnError extends boolean = false>(
-	options: Options<PotluckClaimPotluckItemF3F13B3fData, ThrowOnError>
+	options: Options<PotluckClaimPotluckItemDecef2E5Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		PotluckClaimPotluckItemF3F13B3fResponses,
+		PotluckClaimPotluckItemDecef2E5Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3840,10 +3869,10 @@ export const potluckClaimPotluckItem = <ThrowOnError extends boolean = false>(
  * by you.
  */
 export const potluckUnclaimPotluckItem = <ThrowOnError extends boolean = false>(
-	options: Options<PotluckUnclaimPotluckItemA8A80F75Data, ThrowOnError>
+	options: Options<PotluckUnclaimPotluckItem7D8B3F84Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		PotluckUnclaimPotluckItemA8A80F75Responses,
+		PotluckUnclaimPotluckItem7D8B3F84Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3871,10 +3900,10 @@ export const potluckUnclaimPotluckItem = <ThrowOnError extends boolean = false>(
  * or evaluations with "pending review" status).
  */
 export const questionnaireListOrgQuestionnaires = <ThrowOnError extends boolean = false>(
-	options?: Options<QuestionnaireListOrgQuestionnaires1107D845Data, ThrowOnError>
+	options?: Options<QuestionnaireListOrgQuestionnaires42A9D3CbData, ThrowOnError>
 ) => {
 	return (options?.client ?? client).get<
-		QuestionnaireListOrgQuestionnaires1107D845Responses,
+		QuestionnaireListOrgQuestionnaires42A9D3CbResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3900,11 +3929,11 @@ export const questionnaireListOrgQuestionnaires = <ThrowOnError extends boolean 
  * 'create_questionnaire' permission (organization staff/owners).
  */
 export const questionnaireCreateOrgQuestionnaire = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireCreateOrgQuestionnaire73F60859Data, ThrowOnError>
+	options: Options<QuestionnaireCreateOrgQuestionnaire3C5D9045Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		QuestionnaireCreateOrgQuestionnaire73F60859Responses,
-		QuestionnaireCreateOrgQuestionnaire73F60859Errors,
+		QuestionnaireCreateOrgQuestionnaire3C5D9045Responses,
+		QuestionnaireCreateOrgQuestionnaire3C5D9045Errors,
 		ThrowOnError
 	>({
 		security: [
@@ -3930,10 +3959,10 @@ export const questionnaireCreateOrgQuestionnaire = <ThrowOnError extends boolean
  * Permanently removes the questionnaire. Requires 'delete_questionnaire' permission.
  */
 export const questionnaireDeleteOrgQuestionnaire = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireDeleteOrgQuestionnaire1A31D83cData, ThrowOnError>
+	options: Options<QuestionnaireDeleteOrgQuestionnaire80Cd631aData, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		QuestionnaireDeleteOrgQuestionnaire1A31D83cResponses,
+		QuestionnaireDeleteOrgQuestionnaire80Cd631aResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3957,10 +3986,10 @@ export const questionnaireDeleteOrgQuestionnaire = <ThrowOnError extends boolean
  * edit an existing questionnaire. Requires permission to manage the organization's questionnaires.
  */
 export const questionnaireGetOrgQuestionnaire = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireGetOrgQuestionnaire2186585dData, ThrowOnError>
+	options: Options<QuestionnaireGetOrgQuestionnaire6A6547A7Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		QuestionnaireGetOrgQuestionnaire2186585dResponses,
+		QuestionnaireGetOrgQuestionnaire6A6547A7Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -3986,10 +4015,10 @@ export const questionnaireGetOrgQuestionnaire = <ThrowOnError extends boolean = 
  * Requires 'edit_questionnaire' permission.
  */
 export const questionnaireUpdateOrgQuestionnaire = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireUpdateOrgQuestionnaire7De3F597Data, ThrowOnError>
+	options: Options<QuestionnaireUpdateOrgQuestionnaire13E422A0Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
-		QuestionnaireUpdateOrgQuestionnaire7De3F597Responses,
+		QuestionnaireUpdateOrgQuestionnaire13E422A0Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4017,10 +4046,10 @@ export const questionnaireUpdateOrgQuestionnaire = <ThrowOnError extends boolean
  * 'edit_questionnaire' permission.
  */
 export const questionnaireCreateSection = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireCreateSectionC1A5Bf4fData, ThrowOnError>
+	options: Options<QuestionnaireCreateSectionDbdfdf9dData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		QuestionnaireCreateSectionC1A5Bf4fResponses,
+		QuestionnaireCreateSectionDbdfdf9dResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4047,10 +4076,10 @@ export const questionnaireCreateSection = <ThrowOnError extends boolean = false>
  * Removes the section and all questions within it. Requires 'edit_questionnaire' permission.
  */
 export const questionnaireDeleteSection = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireDeleteSection3F029273Data, ThrowOnError>
+	options: Options<QuestionnaireDeleteSection6935C91eData, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		QuestionnaireDeleteSection3F029273Responses,
+		QuestionnaireDeleteSection6935C91eResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4073,10 +4102,10 @@ export const questionnaireDeleteSection = <ThrowOnError extends boolean = false>
  * Modify section name or display order. Requires 'edit_questionnaire' permission.
  */
 export const questionnaireUpdateSection = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireUpdateSectionAb1E5BeeData, ThrowOnError>
+	options: Options<QuestionnaireUpdateSection0B4561B1Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
-		QuestionnaireUpdateSectionAb1E5BeeResponses,
+		QuestionnaireUpdateSection0B4561B1Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4105,10 +4134,10 @@ export const questionnaireUpdateSection = <ThrowOnError extends boolean = false>
  * 'edit_questionnaire' permission.
  */
 export const questionnaireCreateMcQuestion = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireCreateMcQuestionC90Edce5Data, ThrowOnError>
+	options: Options<QuestionnaireCreateMcQuestion06701522Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		QuestionnaireCreateMcQuestionC90Edce5Responses,
+		QuestionnaireCreateMcQuestion06701522Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4135,10 +4164,10 @@ export const questionnaireCreateMcQuestion = <ThrowOnError extends boolean = fal
  * Removes the question and all its options. Requires 'edit_questionnaire' permission.
  */
 export const questionnaireDeleteMcQuestion = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireDeleteMcQuestionA84375BbData, ThrowOnError>
+	options: Options<QuestionnaireDeleteMcQuestionA6713B01Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		QuestionnaireDeleteMcQuestionA84375BbResponses,
+		QuestionnaireDeleteMcQuestionA6713B01Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4159,10 +4188,10 @@ export const questionnaireDeleteMcQuestion = <ThrowOnError extends boolean = fal
  * Create a multiple choice question.
  */
 export const questionnaireUpdateMcQuestion = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireUpdateMcQuestionCd858543Data, ThrowOnError>
+	options: Options<QuestionnaireUpdateMcQuestionAad6A276Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
-		QuestionnaireUpdateMcQuestionCd858543Responses,
+		QuestionnaireUpdateMcQuestionAad6A276Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4187,10 +4216,10 @@ export const questionnaireUpdateMcQuestion = <ThrowOnError extends boolean = fal
  * Create a multiple choice question.
  */
 export const questionnaireCreateMcOption = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireCreateMcOption534Cb866Data, ThrowOnError>
+	options: Options<QuestionnaireCreateMcOption7714C9DeData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		QuestionnaireCreateMcOption534Cb866Responses,
+		QuestionnaireCreateMcOption7714C9DeResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4217,10 +4246,10 @@ export const questionnaireCreateMcOption = <ThrowOnError extends boolean = false
  * Removes the option from a question. Requires 'edit_questionnaire' permission.
  */
 export const questionnaireDeleteMcOption = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireDeleteMcOptionEb7753AaData, ThrowOnError>
+	options: Options<QuestionnaireDeleteMcOption775Fa06dData, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		QuestionnaireDeleteMcOptionEb7753AaResponses,
+		QuestionnaireDeleteMcOption775Fa06dResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4241,10 +4270,10 @@ export const questionnaireDeleteMcOption = <ThrowOnError extends boolean = false
  * Create a multiple choice question.
  */
 export const questionnaireUpdateMcOption = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireUpdateMcOption8E0Ff197Data, ThrowOnError>
+	options: Options<QuestionnaireUpdateMcOption5Fc0E101Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
-		QuestionnaireUpdateMcOption8E0Ff197Responses,
+		QuestionnaireUpdateMcOption5Fc0E101Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4272,10 +4301,10 @@ export const questionnaireUpdateMcOption = <ThrowOnError extends boolean = false
  * scoring criteria. Requires 'edit_questionnaire' permission.
  */
 export const questionnaireCreateFtQuestion = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireCreateFtQuestion185917E2Data, ThrowOnError>
+	options: Options<QuestionnaireCreateFtQuestionB4E4BeecData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		QuestionnaireCreateFtQuestion185917E2Responses,
+		QuestionnaireCreateFtQuestionB4E4BeecResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4302,10 +4331,10 @@ export const questionnaireCreateFtQuestion = <ThrowOnError extends boolean = fal
  * Removes the question. Requires 'edit_questionnaire' permission.
  */
 export const questionnaireDeleteFtQuestion = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireDeleteFtQuestionCdd0F45eData, ThrowOnError>
+	options: Options<QuestionnaireDeleteFtQuestion49C2E429Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		QuestionnaireDeleteFtQuestionCdd0F45eResponses,
+		QuestionnaireDeleteFtQuestion49C2E429Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4326,10 +4355,10 @@ export const questionnaireDeleteFtQuestion = <ThrowOnError extends boolean = fal
  * Create a multiple choice question.
  */
 export const questionnaireUpdateFtQuestion = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireUpdateFtQuestion60D597F8Data, ThrowOnError>
+	options: Options<QuestionnaireUpdateFtQuestion11774009Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
-		QuestionnaireUpdateFtQuestion60D597F8Responses,
+		QuestionnaireUpdateFtQuestion11774009Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4364,10 +4393,10 @@ export const questionnaireUpdateFtQuestion = <ThrowOnError extends boolean = fal
  * - -submitted_at: Newest submissions first (default)
  */
 export const questionnaireListSubmissions = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireListSubmissionsDbd514B6Data, ThrowOnError>
+	options: Options<QuestionnaireListSubmissions4C7B40BcData, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		QuestionnaireListSubmissionsDbd514B6Responses,
+		QuestionnaireListSubmissions4C7B40BcResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4392,10 +4421,10 @@ export const questionnaireListSubmissions = <ThrowOnError extends boolean = fals
  * 'evaluate_questionnaire' permission.
  */
 export const questionnaireGetSubmissionDetail = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireGetSubmissionDetail3Df962A0Data, ThrowOnError>
+	options: Options<QuestionnaireGetSubmissionDetailD93F30A9Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		QuestionnaireGetSubmissionDetail3Df962A0Responses,
+		QuestionnaireGetSubmissionDetailD93F30A9Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4420,11 +4449,11 @@ export const questionnaireGetSubmissionDetail = <ThrowOnError extends boolean = 
  * 'evaluate_questionnaire' permission.
  */
 export const questionnaireEvaluateSubmission = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireEvaluateSubmission4B1Bad4bData, ThrowOnError>
+	options: Options<QuestionnaireEvaluateSubmission95B64A41Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		QuestionnaireEvaluateSubmission4B1Bad4bResponses,
-		QuestionnaireEvaluateSubmission4B1Bad4bErrors,
+		QuestionnaireEvaluateSubmission95B64A41Responses,
+		QuestionnaireEvaluateSubmission95B64A41Errors,
 		ThrowOnError
 	>({
 		security: [
@@ -4457,10 +4486,10 @@ export const questionnaireEvaluateSubmission = <ThrowOnError extends boolean = f
 export const questionnaireUpdateQuestionnaireStatus = <
 	ThrowOnError extends boolean = false
 >(
-	options: Options<QuestionnaireUpdateQuestionnaireStatus54Cd9544Data, ThrowOnError>
+	options: Options<QuestionnaireUpdateQuestionnaireStatusA762B758Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		QuestionnaireUpdateQuestionnaireStatus54Cd9544Responses,
+		QuestionnaireUpdateQuestionnaireStatusA762B758Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4484,10 +4513,10 @@ export const questionnaireUpdateQuestionnaireStatus = <
  * events belong to the same organization. Requires 'edit_questionnaire' permission.
  */
 export const questionnaireReplaceEvents = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireReplaceEvents995807FcData, ThrowOnError>
+	options: Options<QuestionnaireReplaceEvents73E6B122Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
-		QuestionnaireReplaceEvents995807FcResponses,
+		QuestionnaireReplaceEvents73E6B122Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4515,10 +4544,10 @@ export const questionnaireReplaceEvents = <ThrowOnError extends boolean = false>
  * permission.
  */
 export const questionnaireUnassignEvent = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireUnassignEvent0Fe0Fa34Data, ThrowOnError>
+	options: Options<QuestionnaireUnassignEvent7E85350dData, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		QuestionnaireUnassignEvent0Fe0Fa34Responses,
+		QuestionnaireUnassignEvent7E85350dResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4542,10 +4571,10 @@ export const questionnaireUnassignEvent = <ThrowOnError extends boolean = false>
  * 'edit_questionnaire' permission.
  */
 export const questionnaireAssignEvent = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireAssignEventF9B4C6BfData, ThrowOnError>
+	options: Options<QuestionnaireAssignEventD8Feb5F1Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		QuestionnaireAssignEventF9B4C6BfResponses,
+		QuestionnaireAssignEventD8Feb5F1Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4569,10 +4598,10 @@ export const questionnaireAssignEvent = <ThrowOnError extends boolean = false>(
  * series belong to the same organization. Requires 'edit_questionnaire' permission.
  */
 export const questionnaireReplaceEventSeries = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireReplaceEventSeriesA611182eData, ThrowOnError>
+	options: Options<QuestionnaireReplaceEventSeriesA98A2508Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
-		QuestionnaireReplaceEventSeriesA611182eResponses,
+		QuestionnaireReplaceEventSeriesA98A2508Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4600,10 +4629,10 @@ export const questionnaireReplaceEventSeries = <ThrowOnError extends boolean = f
  * permission.
  */
 export const questionnaireUnassignEventSeries = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireUnassignEventSeries175C9D89Data, ThrowOnError>
+	options: Options<QuestionnaireUnassignEventSeriesA3Cf8D10Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
-		QuestionnaireUnassignEventSeries175C9D89Responses,
+		QuestionnaireUnassignEventSeriesA3Cf8D10Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4627,10 +4656,10 @@ export const questionnaireUnassignEventSeries = <ThrowOnError extends boolean = 
  * 'edit_questionnaire' permission.
  */
 export const questionnaireAssignEventSeries = <ThrowOnError extends boolean = false>(
-	options: Options<QuestionnaireAssignEventSeries3Ef983DbData, ThrowOnError>
+	options: Options<QuestionnaireAssignEventSeriesB66Af321Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
-		QuestionnaireAssignEventSeries3Ef983DbResponses,
+		QuestionnaireAssignEventSeriesB66Af321Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4654,10 +4683,10 @@ export const questionnaireAssignEventSeries = <ThrowOnError extends boolean = fa
  * overridden at organization, series, or event level.
  */
 export const userpreferencesGetGeneralPreferences = <ThrowOnError extends boolean = false>(
-	options?: Options<UserpreferencesGetGeneralPreferences2Bcdc7D9Data, ThrowOnError>
+	options?: Options<UserpreferencesGetGeneralPreferencesA2Ac890eData, ThrowOnError>
 ) => {
 	return (options?.client ?? client).get<
-		UserpreferencesGetGeneralPreferences2Bcdc7D9Responses,
+		UserpreferencesGetGeneralPreferencesA2Ac890eResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4683,10 +4712,10 @@ export const userpreferencesGetGeneralPreferences = <ThrowOnError extends boolea
 export const userpreferencesUpdateGlobalPreferences = <
 	ThrowOnError extends boolean = false
 >(
-	options: Options<UserpreferencesUpdateGlobalPreferencesF13A581bData, ThrowOnError>
+	options: Options<UserpreferencesUpdateGlobalPreferencesCa70F70eData, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
-		UserpreferencesUpdateGlobalPreferencesF13A581bResponses,
+		UserpreferencesUpdateGlobalPreferencesCa70F70eResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4716,10 +4745,10 @@ export const userpreferencesUpdateGlobalPreferences = <
 export const userpreferencesGetOrganizationPreferences = <
 	ThrowOnError extends boolean = false
 >(
-	options: Options<UserpreferencesGetOrganizationPreferencesBa465870Data, ThrowOnError>
+	options: Options<UserpreferencesGetOrganizationPreferences949D37A6Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		UserpreferencesGetOrganizationPreferencesBa465870Responses,
+		UserpreferencesGetOrganizationPreferences949D37A6Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4745,10 +4774,10 @@ export const userpreferencesGetOrganizationPreferences = <
 export const userpreferencesUpdateOrganizationPreferences = <
 	ThrowOnError extends boolean = false
 >(
-	options: Options<UserpreferencesUpdateOrganizationPreferencesEa1A5875Data, ThrowOnError>
+	options: Options<UserpreferencesUpdateOrganizationPreferencesC6Ac6679Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
-		UserpreferencesUpdateOrganizationPreferencesEa1A5875Responses,
+		UserpreferencesUpdateOrganizationPreferencesC6Ac6679Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4778,10 +4807,10 @@ export const userpreferencesUpdateOrganizationPreferences = <
 export const userpreferencesGetEventSeriesPreferences = <
 	ThrowOnError extends boolean = false
 >(
-	options: Options<UserpreferencesGetEventSeriesPreferences750A1335Data, ThrowOnError>
+	options: Options<UserpreferencesGetEventSeriesPreferencesAa9Fac27Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		UserpreferencesGetEventSeriesPreferences750A1335Responses,
+		UserpreferencesGetEventSeriesPreferencesAa9Fac27Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4807,10 +4836,10 @@ export const userpreferencesGetEventSeriesPreferences = <
 export const userpreferencesUpdateEventSeriesPreferences = <
 	ThrowOnError extends boolean = false
 >(
-	options: Options<UserpreferencesUpdateEventSeriesPreferences653Cc7EfData, ThrowOnError>
+	options: Options<UserpreferencesUpdateEventSeriesPreferences1645B0AaData, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
-		UserpreferencesUpdateEventSeriesPreferences653Cc7EfResponses,
+		UserpreferencesUpdateEventSeriesPreferences1645B0AaResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4838,10 +4867,10 @@ export const userpreferencesUpdateEventSeriesPreferences = <
  * global preferences if not customized.
  */
 export const userpreferencesGetEventPreferences = <ThrowOnError extends boolean = false>(
-	options: Options<UserpreferencesGetEventPreferences95Ff20B8Data, ThrowOnError>
+	options: Options<UserpreferencesGetEventPreferences3D6F9189Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
-		UserpreferencesGetEventPreferences95Ff20B8Responses,
+		UserpreferencesGetEventPreferences3D6F9189Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4865,10 +4894,10 @@ export const userpreferencesGetEventPreferences = <ThrowOnError extends boolean 
  * level always takes precedence.
  */
 export const userpreferencesUpdateEventPreferences = <ThrowOnError extends boolean = false>(
-	options: Options<UserpreferencesUpdateEventPreferencesDba91De8Data, ThrowOnError>
+	options: Options<UserpreferencesUpdateEventPreferences3Ca1F5D4Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
-		UserpreferencesUpdateEventPreferencesDba91De8Responses,
+		UserpreferencesUpdateEventPreferences3Ca1F5D4Responses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4896,10 +4925,10 @@ export const userpreferencesUpdateEventPreferences = <ThrowOnError extends boole
  * security. This endpoint is called by Stripe, not by clients directly.
  */
 export const stripewebhookHandleWebhook = <ThrowOnError extends boolean = false>(
-	options?: Options<StripewebhookHandleWebhook80D89D8aData, ThrowOnError>
+	options?: Options<StripewebhookHandleWebhookAb33E84dData, ThrowOnError>
 ) => {
 	return (options?.client ?? client).post<
-		StripewebhookHandleWebhook80D89D8aResponses,
+		StripewebhookHandleWebhookAb33E84dResponses,
 		unknown,
 		ThrowOnError
 	>({
@@ -4918,9 +4947,9 @@ export const stripewebhookHandleWebhook = <ThrowOnError extends boolean = false>
  * selection dropdowns or filters.
  */
 export const tagListTags = <ThrowOnError extends boolean = false>(
-	options?: Options<TagListTags989E098bData, ThrowOnError>
+	options?: Options<TagListTagsCa3Ddb22Data, ThrowOnError>
 ) => {
-	return (options?.client ?? client).get<TagListTags989E098bResponses, unknown, ThrowOnError>({
+	return (options?.client ?? client).get<TagListTagsCa3Ddb22Responses, unknown, ThrowOnError>({
 		url: '/api/tags/',
 		...options
 	});
@@ -4936,9 +4965,9 @@ export const tagListTags = <ThrowOnError extends boolean = false>(
  * filtering events by location.
  */
 export const cityListCities = <ThrowOnError extends boolean = false>(
-	options?: Options<CityListCitiesF6E7D5C4Data, ThrowOnError>
+	options?: Options<CityListCities6B5493E8Data, ThrowOnError>
 ) => {
-	return (options?.client ?? client).get<CityListCitiesF6E7D5C4Responses, unknown, ThrowOnError>({
+	return (options?.client ?? client).get<CityListCities6B5493E8Responses, unknown, ThrowOnError>({
 		url: '/api/cities/',
 		...options
 	});
@@ -4953,9 +4982,9 @@ export const cityListCities = <ThrowOnError extends boolean = false>(
  * selection dropdowns in location pickers.
  */
 export const cityListCountries = <ThrowOnError extends boolean = false>(
-	options?: Options<CityListCountriesE81Eb06dData, ThrowOnError>
+	options?: Options<CityListCountries5Dac3B77Data, ThrowOnError>
 ) => {
-	return (options?.client ?? client).get<CityListCountriesE81Eb06dResponses, unknown, ThrowOnError>(
+	return (options?.client ?? client).get<CityListCountries5Dac3B77Responses, unknown, ThrowOnError>(
 		{
 			url: '/api/cities/countries',
 			...options
@@ -4972,9 +5001,9 @@ export const cityListCountries = <ThrowOnError extends boolean = false>(
  * get full city information after selecting from a search result.
  */
 export const cityGetCity = <ThrowOnError extends boolean = false>(
-	options: Options<CityGetCityDa3Cef2bData, ThrowOnError>
+	options: Options<CityGetCity7711686bData, ThrowOnError>
 ) => {
-	return (options.client ?? client).get<CityGetCityDa3Cef2bResponses, unknown, ThrowOnError>({
+	return (options.client ?? client).get<CityGetCity7711686bResponses, unknown, ThrowOnError>({
 		url: '/api/cities/{city_id}',
 		...options
 	});

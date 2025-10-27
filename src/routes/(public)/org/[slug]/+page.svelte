@@ -179,7 +179,7 @@
 				{/if}
 
 				<!-- Request Membership Button (if org accepts members and user is not a member) -->
-				{#if organization.accept_new_members}
+				{#if organization.accept_membership_requests}
 					<RequestMembershipButton
 						organizationSlug={organization.slug}
 						organizationName={organization.name}

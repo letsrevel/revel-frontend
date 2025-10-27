@@ -3,6 +3,7 @@
 	import { enhance } from '$app/forms';
 	import { Users, Check, X, Mail, Calendar, AlertCircle } from 'lucide-svelte';
 	import { formatDistanceToNow } from 'date-fns';
+	import { cn } from '$lib/utils/cn';
 
 	interface Props {
 		data: PageData;
@@ -13,6 +14,9 @@
 
 	// Track which request is being processed
 	let processingRequestId = $state<string | null>(null);
+
+	// Get active status filter from URL
+	let activeStatusFilter = $state<string | null>(data.filters?.status || null);
 
 	// Format date helper
 	function formatDate(dateString: string): string {
@@ -36,6 +40,25 @@
 			default:
 				return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
 		}
+	}
+
+	/**
+	 * Apply status filter
+	 */
+	function filterByStatus(status: string | null) {
+		const params = new URLSearchParams(window.location.search);
+
+		if (status) {
+			params.set('status', status);
+		} else {
+			params.delete('status');
+		}
+
+		// Reset to page 1 when filtering
+		params.delete('page');
+
+		const newUrl = `?${params.toString()}`;
+		window.location.href = newUrl;
 	}
 </script>
 
@@ -78,6 +101,58 @@
 		</div>
 	{/if}
 
+	<!-- Filter Buttons -->
+	<div class="flex flex-wrap gap-2">
+		<button
+			type="button"
+			onclick={() => filterByStatus(null)}
+			class={cn(
+				'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+				!activeStatusFilter
+					? 'bg-primary text-primary-foreground'
+					: 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+			)}
+		>
+			All
+		</button>
+		<button
+			type="button"
+			onclick={() => filterByStatus('pending')}
+			class={cn(
+				'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+				activeStatusFilter === 'pending'
+					? 'bg-yellow-600 text-white'
+					: 'border border-yellow-600 text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-950'
+			)}
+		>
+			Pending
+		</button>
+		<button
+			type="button"
+			onclick={() => filterByStatus('approved')}
+			class={cn(
+				'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+				activeStatusFilter === 'approved'
+					? 'bg-green-600 text-white'
+					: 'border border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-950'
+			)}
+		>
+			Approved
+		</button>
+		<button
+			type="button"
+			onclick={() => filterByStatus('rejected')}
+			class={cn(
+				'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+				activeStatusFilter === 'rejected'
+					? 'bg-red-600 text-white'
+					: 'border border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-950'
+			)}
+		>
+			Rejected
+		</button>
+	</div>
+
 	<!-- Requests List -->
 	{#if data.membershipRequests.length === 0}
 		<!-- Empty State -->
@@ -85,7 +160,11 @@
 			<Users class="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
 			<h3 class="mb-2 text-lg font-semibold">No membership requests</h3>
 			<p class="text-sm text-muted-foreground">
-				There are no pending membership requests at this time.
+				{#if activeStatusFilter}
+					No {activeStatusFilter} membership requests found.
+				{:else}
+					There are no membership requests at this time.
+				{/if}
 			</p>
 		</div>
 	{:else}
