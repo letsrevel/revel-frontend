@@ -2,7 +2,7 @@
  * Event-specific utility functions
  */
 
-import type { EventInListSchema } from '$lib/api/generated/types.gen';
+import type { EventInListSchema, EventDetailSchema } from '$lib/api/generated/types.gen';
 
 /**
  * Get display string for event access/pricing
@@ -83,4 +83,32 @@ export function getEventFallbackGradient(eventId: string): string {
 	// Hash event ID to select gradient (deterministic)
 	const hash = eventId.split('').reduce((acc, char) => char.charCodeAt(0) + acc, 0);
 	return gradients[Math.abs(hash) % gradients.length];
+}
+
+/**
+ * Format event location from address and city fields
+ * @param event Event data with address and city
+ * @returns Formatted location string or undefined if no location data
+ */
+export function formatEventLocation(
+	event: EventDetailSchema | EventInListSchema
+): string | undefined {
+	if (!event.address && !event.city) return undefined;
+
+	const parts: string[] = [];
+
+	// Add street address if available
+	if (event.address) {
+		parts.push(event.address);
+	}
+
+	// Add city and country if available
+	if (event.city) {
+		const cityPart = [event.city.name, event.city.country].filter(Boolean).join(', ');
+		if (cityPart) {
+			parts.push(cityPart);
+		}
+	}
+
+	return parts.length > 0 ? parts.join(', ') : undefined;
 }

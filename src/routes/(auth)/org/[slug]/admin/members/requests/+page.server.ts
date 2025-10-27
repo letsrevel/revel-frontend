@@ -33,7 +33,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies }) => 
 			query: {
 				page,
 				page_size: pageSize,
-				status: status as 'pending' | 'approved' | 'rejected' | undefined
+				status: status ? (status as any) : undefined
 			},
 			headers: {
 				Authorization: `Bearer ${accessToken}`

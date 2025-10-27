@@ -76,11 +76,12 @@
 			offline: 'Offline',
 			at_the_door: 'At the Door'
 		};
-		return methods[tier.payment_method] || tier.payment_method.replace(/_/g, ' ');
+		const pm = tier.payment_method ?? 'online';
+		return methods[pm] || pm.replace(/_/g, ' ');
 	});
 
 	let visibilityDisplay = $derived(() => {
-		return tier.visibility.replace(/-/g, ' ');
+		return (tier.visibility ?? 'public').replace(/-/g, ' ');
 	});
 
 	let purchasableByDisplay = $derived(() => {
@@ -90,7 +91,8 @@
 			invited: 'Invited Only',
 			invited_and_members: 'Invited + Members'
 		};
-		return options[tier.purchasable_by] || tier.purchasable_by.replace(/_/g, ' ');
+		const pb = tier.purchasable_by ?? 'public';
+		return options[pb] || pb.replace(/_/g, ' ');
 	});
 
 	let salesWindowDisplay = $derived(() => {

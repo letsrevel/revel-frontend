@@ -420,8 +420,8 @@
 				{:else if form.action === 'rejected'}
 					Request rejected successfully.
 				{:else if form.action === 'created'}
-					{form.data?.registered_count || 0} invitation(s) sent to registered users,
-					{form.data?.pending_count || 0} invitation(s) sent to unregistered emails.
+					{form.data?.created_invitations || 0} invitation(s) sent to registered users,
+					{form.data?.pending_invitations || 0} invitation(s) sent to unregistered emails.
 				{:else if form.action === 'deleted'}
 					Invitation deleted successfully.
 				{:else if form.action === 'updated'}
@@ -1302,7 +1302,7 @@
 					<label for="tier_id" class="block text-sm font-medium">
 						Ticket Tier (Optional - required if waiving purchase)
 					</label>
-					{#if data.event.tiers && data.event.tiers.length > 0}
+					{#if data.ticketTiers && data.ticketTiers.length > 0}
 						<select
 							id="tier_id"
 							name="tier_id"
@@ -1310,11 +1310,11 @@
 							class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
 						>
 							<option value="">None</option>
-							{#each data.event.tiers as tier (tier.id)}
+							{#each data.ticketTiers as tier (tier.id)}
 								<option value={tier.id}>
 									{tier.name}
-									{#if tier.price_cents !== null && tier.price_cents !== undefined}
-										- €{(tier.price_cents / 100).toFixed(2)}
+									{#if tier.price !== null && tier.price !== undefined && tier.price !== 0}
+										- {tier.currency === 'EUR' ? '€' : tier.currency}{(typeof tier.price === 'number' ? tier.price / 100 : parseFloat(tier.price) / 100).toFixed(2)}
 									{:else}
 										- Free
 									{/if}
@@ -1467,7 +1467,7 @@
 						<label for="edit_tier_id" class="block text-sm font-medium">
 							Ticket Tier (Optional - required if waiving purchase)
 						</label>
-						{#if data.event.tiers && data.event.tiers.length > 0}
+						{#if data.ticketTiers && data.ticketTiers.length > 0}
 							<select
 								id="edit_tier_id"
 								name="tier_id"
@@ -1475,11 +1475,11 @@
 								class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
 							>
 								<option value="">None</option>
-								{#each data.event.tiers as tier (tier.id)}
+								{#each data.ticketTiers as tier (tier.id)}
 									<option value={tier.id}>
 										{tier.name}
-										{#if tier.price_cents !== null && tier.price_cents !== undefined}
-											- €{(tier.price_cents / 100).toFixed(2)}
+										{#if tier.price !== null && tier.price !== undefined && tier.price !== 0}
+											- {tier.currency}{typeof tier.price === 'number' ? tier.price.toFixed(2) : tier.price}
 										{:else}
 											- Free
 										{/if}
@@ -1642,7 +1642,7 @@
 					<label for="bulk_tier_id" class="block text-sm font-medium">
 						Ticket Tier (Optional - required if waiving purchase)
 					</label>
-					{#if data.event.tiers && data.event.tiers.length > 0}
+					{#if data.ticketTiers && data.ticketTiers.length > 0}
 						<select
 							id="bulk_tier_id"
 							name="tier_id"
@@ -1650,11 +1650,11 @@
 							class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
 						>
 							<option value="">None</option>
-							{#each data.event.tiers as tier (tier.id)}
+							{#each data.ticketTiers as tier (tier.id)}
 								<option value={tier.id}>
 									{tier.name}
-									{#if tier.price_cents !== null && tier.price_cents !== undefined}
-										- €{(tier.price_cents / 100).toFixed(2)}
+									{#if tier.price !== null && tier.price !== undefined && tier.price !== 0}
+										- {tier.currency === 'EUR' ? '€' : tier.currency}{(typeof tier.price === 'number' ? tier.price / 100 : parseFloat(tier.price) / 100).toFixed(2)}
 									{:else}
 										- Free
 									{/if}

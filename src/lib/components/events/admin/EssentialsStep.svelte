@@ -2,16 +2,16 @@
 	import type { EventCreateSchema, CitySchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import CityAutocomplete from '$lib/components/forms/CityAutocomplete.svelte';
-	import { Calendar, MapPin, Eye, Users, Ticket } from 'lucide-svelte';
+	import { Calendar, Eye, Users, Ticket } from 'lucide-svelte';
 
 	interface Props {
-		formData: Partial<EventCreateSchema>;
+		formData: Partial<EventCreateSchema> & { requires_ticket?: boolean };
 		validationErrors: Record<string, string>;
 		orgCity?: CitySchema | null;
 		userCity?: CitySchema | null;
 		eventCity?: CitySchema | null;
 		isEditMode: boolean;
-		onUpdate: (data: Partial<EventCreateSchema>) => void;
+		onUpdate: (data: Partial<EventCreateSchema> & { requires_ticket?: boolean }) => void;
 		onSubmit: () => void;
 		isSaving: boolean;
 	}
@@ -267,8 +267,8 @@
 					type="radio"
 					name="event_type"
 					value="public"
-					checked={formData.event_type === 'public'}
-					onchange={(e) => onUpdate({ event_type: e.currentTarget.value as 'public' })}
+					checked={(formData.event_type as any) === 'public'}
+					onchange={(e) => onUpdate({ event_type: e.currentTarget.value as any })}
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
@@ -284,8 +284,8 @@
 					type="radio"
 					name="event_type"
 					value="private"
-					checked={formData.event_type === 'private'}
-					onchange={(e) => onUpdate({ event_type: e.currentTarget.value as 'private' })}
+					checked={(formData.event_type as any) === 'private'}
+					onchange={(e) => onUpdate({ event_type: e.currentTarget.value as any })}
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
@@ -301,8 +301,8 @@
 					type="radio"
 					name="event_type"
 					value="members-only"
-					checked={formData.event_type === 'members-only'}
-					onchange={(e) => onUpdate({ event_type: e.currentTarget.value as 'members-only' })}
+					checked={(formData.event_type as any) === 'members-only'}
+					onchange={(e) => onUpdate({ event_type: e.currentTarget.value as any })}
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">

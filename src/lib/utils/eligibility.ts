@@ -2,27 +2,62 @@ import type {
 	EventUserEligibility,
 	NextStep,
 	EventRsvpSchema,
-	EventTicketSchema
+	EventTicketSchema,
+	EventsModelsEventEventRsvpStatus,
+	EventsModelsEventTicketStatus
 } from '$lib/api/generated/types.gen';
 
 /**
- * RSVP answer type (what backend actually returns)
- * Note: The generated type says 'approved' | 'rejected' | 'pending review' but that's incorrect.
- * The backend actually returns the user's answer: 'yes' | 'no' | 'maybe'
+ * RSVP Status - Correctly typed from backend enum
+ * The generated EventRsvpSchema.status uses generic Status, but backend actually uses EventRSVP.Status
  */
-export type RsvpAnswer = 'yes' | 'no' | 'maybe';
+export type RsvpStatus = EventsModelsEventEventRsvpStatus; // 'yes' | 'no' | 'maybe'
+
+/**
+ * Ticket Status - Correctly typed from backend enum
+ * The generated EventTicketSchema.status uses generic Status, but backend actually uses Ticket.Status
+ */
+export type TicketStatus = EventsModelsEventTicketStatus; // 'pending' | 'active' | 'checked_in' | 'cancelled'
+
+/**
+ * Invitation Request Status - From EventInvitationRequest.Status backend enum
+ * The generated types show this as just 'string', but backend actually uses a TextChoices enum
+ */
+export type InvitationRequestStatus = 'pending' | 'approved' | 'rejected';
+
+/**
+ * Membership Request Status - From OrganizationMembershipRequest.Status backend enum
+ * The generated types show this as just 'string', but backend actually uses a TextChoices enum
+ */
+export type MembershipRequestStatus = 'pending' | 'approved' | 'rejected';
+
+/**
+ * Legacy alias for backward compatibility
+ * @deprecated Use RsvpStatus instead
+ */
+export type RsvpAnswer = RsvpStatus;
 
 /**
  * EventRsvpSchema with corrected status type
  */
 export type EventRsvpSchemaActual = Omit<EventRsvpSchema, 'status'> & {
-	status: RsvpAnswer;
+	status: RsvpStatus;
+};
+
+/**
+ * EventTicketSchema with corrected status type
+ */
+export type EventTicketSchemaActual = Omit<EventTicketSchema, 'status'> & {
+	status: TicketStatus;
 };
 
 /**
  * User status returned from /my-status endpoint
  */
-export type UserEventStatus = EventRsvpSchemaActual | EventTicketSchema | EventUserEligibility;
+export type UserEventStatus =
+	| EventRsvpSchemaActual
+	| EventTicketSchemaActual
+	| EventUserEligibility;
 
 /**
  * Type guard to check if status is an RSVP
@@ -34,7 +69,7 @@ export function isRSVP(status: UserEventStatus): status is EventRsvpSchemaActual
 /**
  * Type guard to check if status is a Ticket
  */
-export function isTicket(status: UserEventStatus): status is EventTicketSchema {
+export function isTicket(status: UserEventStatus): status is EventTicketSchemaActual {
 	return 'tier' in status;
 }
 
@@ -163,7 +198,7 @@ export function getEligibilityExplanation(eligibility: EventUserEligibility): st
 /**
  * Get RSVP status display text
  */
-export function getRSVPStatusText(status: RsvpAnswer): string {
+export function getRSVPStatusText(status: RsvpStatus): string {
 	// Backend returns the user's actual answer: 'yes' | 'no' | 'maybe'
 	if (status === 'yes') return "You're attending";
 	if (status === 'maybe') return 'You might attend';
@@ -174,13 +209,13 @@ export function getRSVPStatusText(status: RsvpAnswer): string {
 /**
  * Get ticket status display text
  */
-export function getTicketStatusText(status?: string): string {
+export function getTicketStatusText(status?: TicketStatus): string {
 	if (!status) return 'You have a ticket';
 
 	if (status === 'active') return 'You have a ticket';
-	if (status === 'canceled') return 'Ticket canceled';
+	if (status === 'cancelled') return 'Ticket canceled'; // Note: backend uses 'cancelled' not 'canceled'
 	if (status === 'checked_in') return 'Checked in';
-	if (status === 'refunded') return 'Ticket refunded';
+	if (status === 'pending') return 'Ticket pending';
 
 	return 'You have a ticket';
 }

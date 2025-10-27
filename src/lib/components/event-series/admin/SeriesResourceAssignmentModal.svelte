@@ -76,7 +76,7 @@
 			if (!query) return true;
 
 			return (
-				r.name.toLowerCase().includes(query) ||
+				(r.name && r.name.toLowerCase().includes(query)) ||
 				(r.description && r.description.toLowerCase().includes(query))
 			);
 		})
@@ -109,8 +109,8 @@
 				const resource = allResources.find((r) => r.id === resourceId);
 				if (!resource) continue;
 
-				// Get current series assignments
-				const currentSeriesIds = (resource.event_series || []).map((s: any) => s.id);
+				// Get current series assignments - use event_series_ids from schema
+				const currentSeriesIds = resource.event_series_ids || [];
 
 				// Add this series
 				const updatedSeriesIds = [...currentSeriesIds, series.id];
@@ -131,8 +131,8 @@
 				const resource = allResources.find((r) => r.id === resourceId);
 				if (!resource) continue;
 
-				// Get current series assignments and remove this series
-				const currentSeriesIds = (resource.event_series || []).map((s: any) => s.id);
+				// Get current series assignments and remove this series - use event_series_ids from schema
+				const currentSeriesIds = resource.event_series_ids || [];
 				const updatedSeriesIds = currentSeriesIds.filter((id: string) => id !== series.id);
 
 				const response = await organizationadminUpdateResource({
@@ -241,28 +241,28 @@
 			{:else}
 				<div class="space-y-2">
 					{#each filteredResources as resource (resource.id)}
-						{@const Icon = getResourceIcon(resource.type)}
+						{@const Icon = getResourceIcon(resource.resource_type)}
 						<button
 							type="button"
-							onclick={() => toggleResource(resource.id)}
+							onclick={() => toggleResource(resource.id!)}
 							class="flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent"
-							class:border-primary={selectedIds.has(resource.id)}
-							class:bg-accent={selectedIds.has(resource.id)}
+							class:border-primary={selectedIds.has(resource.id!)}
+							class:bg-accent={selectedIds.has(resource.id!)}
 						>
 							<Checkbox
-								checked={selectedIds.has(resource.id)}
-								onCheckedChange={() => toggleResource(resource.id)}
-								aria-label={`Select ${resource.name}`}
+								checked={selectedIds.has(resource.id!)}
+								onCheckedChange={() => toggleResource(resource.id!)}
+								aria-label={`Select ${resource.name || 'resource'}`}
 								class="mt-1"
 							/>
 							<div class="min-w-0 flex-1">
 								<div class="flex items-start justify-between gap-2">
 									<div class="flex items-center gap-2">
 										<Icon class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-										<h3 class="line-clamp-1 font-medium">{resource.name}</h3>
+										<h3 class="line-clamp-1 font-medium">{resource.name || 'Unnamed'}</h3>
 									</div>
 									<Badge variant="outline" class="flex-shrink-0 text-xs">
-										{typeLabels[resource.type] || resource.type}
+										{typeLabels[resource.resource_type] || resource.resource_type}
 									</Badge>
 								</div>
 								{#if resource.description}

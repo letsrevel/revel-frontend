@@ -104,7 +104,7 @@
 				{questionnaire}
 				organizationSlug={data.organization.slug}
 				organizationId={data.organization.id}
-				accessToken={data.accessToken}
+				accessToken={data.accessToken!}
 			/>
 		{/each}
 	</div>

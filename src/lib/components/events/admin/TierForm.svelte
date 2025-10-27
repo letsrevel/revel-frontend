@@ -126,9 +126,9 @@
 	let name = $state(tier?.name ?? '');
 	let description = $state(tier?.description ?? '');
 	let paymentMethod = $state<'free' | 'offline' | 'at_the_door' | 'online'>(
-		tier?.payment_method ?? 'free'
+		(tier?.payment_method as 'free' | 'offline' | 'at_the_door' | 'online') ?? 'free'
 	);
-	let priceType = $state<'fixed' | 'pwyc'>(tier?.price_type ?? 'fixed');
+	let priceType = $state<'fixed' | 'pwyc'>((tier?.price_type as 'fixed' | 'pwyc') ?? 'fixed');
 	let price = $state(tier?.price ? String(tier.price) : '0');
 	let pwycMin = $state(tier?.pwyc_min ? String(tier.pwyc_min) : '1');
 	let pwycMax = $state(tier?.pwyc_max ? String(tier.pwyc_max) : '');
@@ -141,10 +141,10 @@
 	let salesStartAt = $state(toDatetimeLocal(tier?.sales_start_at));
 	let salesEndAt = $state(toDatetimeLocal(tier?.sales_end_at));
 	let visibility = $state<'public' | 'private' | 'members-only' | 'staff-only'>(
-		tier?.visibility ?? 'public'
+		(tier?.visibility as 'public' | 'private' | 'members-only' | 'staff-only') ?? 'public'
 	);
 	let purchasableBy = $state<'public' | 'members' | 'invited' | 'invited_and_members'>(
-		tier?.purchasable_by ?? 'public'
+		(tier?.purchasable_by as 'public' | 'members' | 'invited' | 'invited_and_members') ?? 'public'
 	);
 
 	// Get current currency symbol for display
@@ -165,7 +165,7 @@
 	const tierUpdateMutation = createMutation(() => ({
 		mutationFn: (data: TicketTierUpdateSchema) =>
 			eventadminUpdateTicketTier({
-				path: { event_id: eventId, tier_id: tier!.id },
+				path: { event_id: eventId, tier_id: tier!.id! },
 				body: data
 			}),
 		onSuccess: () => {
@@ -177,7 +177,7 @@
 	const tierDeleteMutation = createMutation(() => ({
 		mutationFn: () =>
 			eventadminDeleteTicketTier({
-				path: { event_id: eventId, tier_id: tier!.id }
+				path: { event_id: eventId, tier_id: tier!.id! }
 			}),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
@@ -525,18 +525,18 @@
 				<div class="rounded-lg bg-destructive/10 p-3" role="alert">
 					<p class="font-medium text-destructive">Error</p>
 					<p class="mt-1 text-sm text-destructive/90">
-						{error?.message || 'An error occurred. Please try again.'}
+						{(error as any)?.message || 'An error occurred. Please try again.'}
 					</p>
-					{#if error?.body?.detail}
+					{#if (error as any)?.detail}
 						<div class="mt-2 space-y-1">
-							{#if Array.isArray(error.body.detail)}
-								{#each error.body.detail as detail}
+							{#if Array.isArray((error as any).detail)}
+								{#each (error as any).detail as detail}
 									<p class="text-xs text-destructive/80">
 										• {detail.loc ? detail.loc.join(' → ') + ': ' : ''}{detail.msg}
 									</p>
 								{/each}
-							{:else if typeof error.body.detail === 'string'}
-								<p class="text-xs text-destructive/80">{error.body.detail}</p>
+							{:else if typeof (error as any).detail === 'string'}
+								<p class="text-xs text-destructive/80">{(error as any).detail}</p>
 							{/if}
 						</div>
 					{/if}

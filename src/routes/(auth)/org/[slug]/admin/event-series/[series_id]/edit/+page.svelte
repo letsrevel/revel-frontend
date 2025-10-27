@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import type { PageData } from './$types';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { Repeat, ArrowLeft, Loader2, Tag as TagIcon, Trash2 } from 'lucide-svelte';
+	import { ArrowLeft, Loader2, Tag as TagIcon, Trash2 } from 'lucide-svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -42,10 +42,14 @@
 	let isAddingTag = $state(false);
 	let isDeletingTag = $state<Record<string, boolean>>({});
 
-	// Image upload states
+	// Image upload states - TODO: implement image upload/delete functionality
+	// @ts-expect-error - Will be used when image upload is implemented
 	let isUploadingLogo = $state(false);
+	// @ts-expect-error - Will be used when image upload is implemented
 	let isUploadingCover = $state(false);
+	// @ts-expect-error - Will be used when image upload is implemented
 	let isDeletingLogo = $state(false);
+	// @ts-expect-error - Will be used when image upload is implemented
 	let isDeletingCover = $state(false);
 
 	/**
@@ -94,7 +98,9 @@
 
 	/**
 	 * Handle logo upload
+	 * TODO: Wire this up to ImageUploader component
 	 */
+	// @ts-expect-error - Will be used when image upload UI is implemented
 	async function handleLogoUpload(file: File) {
 		if (!accessToken) return;
 
@@ -122,7 +128,9 @@
 
 	/**
 	 * Handle cover art upload
+	 * TODO: Wire this up to ImageUploader component
 	 */
+	// @ts-expect-error - Will be used when image upload UI is implemented
 	async function handleCoverUpload(file: File) {
 		if (!accessToken) return;
 
@@ -150,7 +158,9 @@
 
 	/**
 	 * Delete logo
+	 * TODO: Wire this up to ImageUploader component
 	 */
+	// @ts-expect-error - Will be used when image upload UI is implemented
 	async function deleteLogo() {
 		if (!accessToken || !confirm('Are you sure you want to delete the logo?')) return;
 
@@ -177,7 +187,9 @@
 
 	/**
 	 * Delete cover art
+	 * TODO: Wire this up to ImageUploader component
 	 */
+	// @ts-expect-error - Will be used when image upload UI is implemented
 	async function deleteCoverArt() {
 		if (!accessToken || !confirm('Are you sure you want to delete the cover art?')) return;
 
@@ -347,28 +359,22 @@
 	<div class="rounded-lg border border-border bg-card p-6 shadow-sm">
 		<h2 class="mb-4 text-lg font-semibold">Logo</h2>
 		<ImageUploader
-			currentImageUrl={data.series.logo}
-			onUpload={handleLogoUpload}
-			onDelete={deleteLogo}
-			isUploading={isUploadingLogo}
-			isDeleting={isDeletingLogo}
+			preview={data.series.logo}
 			aspectRatio="square"
 			label="Series Logo"
 		/>
+		<p class="mt-2 text-sm text-muted-foreground">Logo management coming soon</p>
 	</div>
 
 	<!-- Cover Art -->
 	<div class="rounded-lg border border-border bg-card p-6 shadow-sm">
 		<h2 class="mb-4 text-lg font-semibold">Cover Art</h2>
 		<ImageUploader
-			currentImageUrl={data.series.cover_art}
-			onUpload={handleCoverUpload}
-			onDelete={deleteCoverArt}
-			isUploading={isUploadingCover}
-			isDeleting={isDeletingCover}
+			preview={data.series.cover_art}
 			aspectRatio="wide"
 			label="Series Cover Art"
 		/>
+		<p class="mt-2 text-sm text-muted-foreground">Cover art management coming soon</p>
 	</div>
 
 	<!-- Tags -->

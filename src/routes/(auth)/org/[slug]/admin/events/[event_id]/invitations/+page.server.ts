@@ -7,9 +7,11 @@ import {
 	eventadminListInvitations,
 	eventadminListPendingInvitations,
 	eventadminCreateInvitations,
-	eventadminDeleteInvitation,
-	eventGetEvent
+	eventadminDeleteInvitationEndpoint,
+	eventGetEvent,
+	eventadminListTicketTiers
 } from '$lib/api/generated/sdk.gen';
+import type { TierSchema } from '$lib/api/generated/types.gen';
 
 /**
  * Load invitation requests AND invitations for this event
@@ -75,7 +77,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 			fetch,
 			path: { event_id: params.event_id },
 			query: {
-				status: status as 'pending' | 'approved' | 'rejected' | undefined,
+				status: status ? (status as any) : undefined,
 				search,
 				page: activeTab === 'requests' ? page : 1,
 				page_size: activeTab === 'requests' ? pageSize : 20
@@ -180,9 +182,28 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 		console.error('Error loading pending invitations:', err);
 	}
 
+	// Load ticket tiers if event requires tickets
+	let ticketTiers: TierSchema[] = [];
+	if (event.requires_ticket) {
+		try {
+			const tiersResponse = await eventadminListTicketTiers({
+				fetch,
+				path: { event_id: params.event_id },
+				headers
+			});
+
+			if (tiersResponse.data?.results) {
+				ticketTiers = tiersResponse.data.results as TierSchema[];
+			}
+		} catch (err) {
+			console.error('Error loading ticket tiers:', err);
+		}
+	}
+
 	return {
 		organization,
 		event,
+		ticketTiers,
 		activeTab,
 		invitationRequests,
 		requestsPagination,
@@ -273,9 +294,9 @@ export const actions: Actions = {
 		}
 
 		const formData = await request.formData();
-		const emailsRaw = formData.get('emails') as string;
-		const tierId = formData.get('tier_id') as string;
-		const customMessage = formData.get('custom_message') as string;
+		const emailsRaw = formData.get('emails') as string | null;
+		const tierId = (formData.get('tier_id') as string | null) || null;
+		const customMessage = (formData.get('custom_message') as string | null) || null;
 		const waivesQuestionnaire = formData.get('waives_questionnaire') === 'true';
 		const waivesPurchase = formData.get('waives_purchase') === 'true';
 		const waivesMembershipRequired = formData.get('waives_membership_required') === 'true';
@@ -309,8 +330,8 @@ export const actions: Actions = {
 				path: { event_id: params.event_id },
 				body: {
 					emails,
-					tier_id: tierId || undefined,
-					custom_message: customMessage || undefined,
+					tier_id: (tierId ?? undefined) as string,
+					custom_message: customMessage ?? undefined,
 					send_notification: true,
 					waives_questionnaire: waivesQuestionnaire,
 					waives_purchase: waivesPurchase,
@@ -352,7 +373,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			const response = await eventadminDeleteInvitation({
+			const response = await eventadminDeleteInvitationEndpoint({
 				fetch,
 				path: {
 					event_id: params.event_id,
@@ -381,9 +402,9 @@ export const actions: Actions = {
 		}
 
 		const formData = await request.formData();
-		const email = formData.get('email') as string;
-		const tierId = formData.get('tier_id') as string;
-		const customMessage = formData.get('custom_message') as string;
+		const email = formData.get('email') as string | null;
+		const tierId = (formData.get('tier_id') as string | null) || null;
+		const customMessage = (formData.get('custom_message') as string | null) || null;
 		const waivesQuestionnaire = formData.get('waives_questionnaire') === 'true';
 		const waivesPurchase = formData.get('waives_purchase') === 'true';
 		const waivesMembershipRequired = formData.get('waives_membership_required') === 'true';
@@ -406,9 +427,9 @@ export const actions: Actions = {
 				fetch,
 				path: { event_id: params.event_id },
 				body: {
-					emails: [email],
-					tier_id: tierId || undefined,
-					custom_message: customMessage || undefined,
+					emails: [email!],
+					tier_id: (tierId ?? undefined) as string,
+					custom_message: customMessage ?? undefined,
 					send_notification: false,
 					waives_questionnaire: waivesQuestionnaire,
 					waives_purchase: waivesPurchase,
@@ -442,9 +463,9 @@ export const actions: Actions = {
 		}
 
 		const formData = await request.formData();
-		const emailsRaw = formData.get('emails') as string;
-		const tierId = formData.get('tier_id') as string;
-		const customMessage = formData.get('custom_message') as string;
+		const emailsRaw = formData.get('emails') as string | null;
+		const tierId = (formData.get('tier_id') as string | null) || null;
+		const customMessage = (formData.get('custom_message') as string | null) || null;
 		const waivesQuestionnaire = formData.get('waives_questionnaire') === 'true';
 		const waivesPurchase = formData.get('waives_purchase') === 'true';
 		const waivesMembershipRequired = formData.get('waives_membership_required') === 'true';
@@ -475,8 +496,8 @@ export const actions: Actions = {
 				path: { event_id: params.event_id },
 				body: {
 					emails,
-					tier_id: tierId || undefined,
-					custom_message: customMessage || undefined,
+					tier_id: (tierId ?? undefined) as string,
+					custom_message: customMessage ?? undefined,
 					send_notification: false,
 					waives_questionnaire: waivesQuestionnaire,
 					waives_purchase: waivesPurchase,

@@ -6,6 +6,10 @@
 	import AutoEvalRecommendation from '$lib/components/questionnaires/AutoEvalRecommendation.svelte';
 	import EvaluationForm from '$lib/components/questionnaires/EvaluationForm.svelte';
 	import { ArrowLeft, User, Mail, Calendar } from 'lucide-svelte';
+	import {
+		isPendingReview,
+		type QuestionnaireEvaluationStatus
+	} from '$lib/utils/questionnaire-types';
 
 	interface Props {
 		data: PageData;
@@ -16,7 +20,7 @@
 	// Form submission state
 	let isSubmitting = $state(false);
 
-	function formatDate(dateString: string | null): string {
+	function formatDate(dateString: string | null | undefined): string {
 		if (!dateString) return 'Not submitted';
 		return new Date(dateString).toLocaleString('en-US', {
 			year: 'numeric',
@@ -28,10 +32,10 @@
 	}
 
 	// Check if submission is already evaluated
+	// Note: EvaluationResponseSchema doesn't have evaluated_by field, so we check status only
 	let isEvaluated = $derived(
 		data.submission.evaluation &&
-			data.submission.evaluation.status !== 'pending review' &&
-			data.submission.evaluation.evaluated_by !== null
+			!isPendingReview(data.submission.evaluation.status as QuestionnaireEvaluationStatus)
 	);
 </script>
 
@@ -57,7 +61,8 @@
 				</p>
 			</div>
 			<SubmissionStatusBadge
-				status={data.submission.evaluation?.status || 'pending review'}
+				status={(data.submission.evaluation?.status ||
+					'pending review') as QuestionnaireEvaluationStatus}
 				class="shrink-0"
 			/>
 		</div>
@@ -84,7 +89,7 @@
 				</h2>
 				<EvaluationForm
 					submissionId={data.submission.id}
-					currentStatus={data.submission.evaluation?.status || null}
+					currentStatus={(data.submission.evaluation?.status as 'approved' | 'rejected' | 'pending review' | null) || null}
 					{isSubmitting}
 				/>
 			</div>
@@ -143,11 +148,6 @@
 				<h3 class="mb-4 text-lg font-semibold">Questionnaire</h3>
 				<div class="space-y-2">
 					<p class="font-medium">{data.submission.questionnaire.name}</p>
-					{#if data.submission.questionnaire.description}
-						<p class="text-sm text-muted-foreground">
-							{data.submission.questionnaire.description}
-						</p>
-					{/if}
 					<div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
 						<span>
 							{data.submission.answers.length}

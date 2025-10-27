@@ -81,8 +81,9 @@
 		}
 
 		if (isTicket(userStatus)) {
+			// Ticket status is 'pending' | 'active' | 'checked_in' | 'cancelled' (with double-L)
 			if (userStatus.status === 'active') return 'success';
-			if (userStatus.status === 'canceled') return 'destructive';
+			if (userStatus.status === 'cancelled') return 'destructive';
 			return 'secondary';
 		}
 

@@ -41,9 +41,11 @@
 	let name = $state(questionnaire.questionnaire.name);
 	let questionnaireType = $state(questionnaire.questionnaire_type);
 	let minScore = $state(Number(questionnaire.questionnaire.min_score));
-	let evaluationMode = $state<EvaluationMode>(questionnaire.questionnaire.evaluation_mode);
-	let shuffleQuestions = $state(questionnaire.questionnaire.shuffle_questions);
-	let shuffleSections = $state(questionnaire.questionnaire.shuffle_sections);
+	let evaluationMode = $state<EvaluationMode>(
+		questionnaire.questionnaire.evaluation_mode as EvaluationMode
+	);
+	let shuffleQuestions = $state(questionnaire.questionnaire.shuffle_questions ?? false);
+	let shuffleSections = $state(questionnaire.questionnaire.shuffle_sections ?? false);
 	let llmGuidelines = $state(questionnaire.questionnaire.llm_guidelines || '');
 
 	// Convert seconds to appropriate units for display
@@ -673,20 +675,17 @@
 									<div class="flex items-center justify-between rounded-lg border p-3">
 										<div>
 											<p class="font-medium">{event.name}</p>
-											{#if event.next_occurrence}
+											{#if event.start}
 												<p class="text-sm text-muted-foreground">
-													{new Date(event.next_occurrence.start_datetime).toLocaleDateString(
-														'en-US',
-														{
-															month: 'short',
-															day: 'numeric',
-															year: 'numeric'
-														}
-													)}
+													{new Date(event.start).toLocaleDateString('en-US', {
+														month: 'short',
+														day: 'numeric',
+														year: 'numeric'
+													})}
 												</p>
 											{/if}
 										</div>
-										<Badge variant="outline">{event.event_type}</Badge>
+										<Badge variant="outline">{(event as any).event_type}</Badge>
 									</div>
 								{/each}
 							</div>
@@ -703,8 +702,8 @@
 										<div>
 											<p class="font-medium">{series.name}</p>
 											<p class="text-sm text-muted-foreground">
-												{series.event_count || 0}
-												{series.event_count === 1 ? 'event' : 'events'}
+												{(series as any).event_count || 0}
+												{(series as any).event_count === 1 ? 'event' : 'events'}
 											</p>
 										</div>
 										<Badge variant="secondary">Series</Badge>
@@ -879,7 +878,7 @@
 		bind:open={isAssignmentModalOpen}
 		{questionnaire}
 		organizationId={data.organization.id}
-		accessToken={data.auth.accessToken}
+		accessToken={data.auth.accessToken || ''}
 		onClose={() => (isAssignmentModalOpen = false)}
 	/>
 {/if}

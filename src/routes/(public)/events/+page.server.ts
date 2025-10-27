@@ -24,13 +24,13 @@ export const load: PageServerLoad = async ({ url, fetch, locals }) => {
 			search,
 			city_id: cityId ? parseInt(cityId) : undefined,
 			organization,
-			event_type: eventType as 'public' | 'private' | 'members-only' | undefined,
-			visibility: visibility as 'public' | 'private' | 'members-only' | 'staff-only' | undefined,
+			event_type: eventType as any,
+			visibility: visibility as any,
 			tags,
 			page,
 			page_size: pageSize,
 			include_past: includePast,
-			order_by: orderBy as 'start' | '-start' | 'distance'
+			order_by: orderBy as any
 		};
 
 		// Prepare headers with authentication if user is logged in

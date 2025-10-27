@@ -2,7 +2,7 @@
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { eventCreateInvitationRequest } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { Mail, Send, Check, AlertCircle } from 'lucide-svelte';
+	import { Mail, Send, AlertCircle } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 

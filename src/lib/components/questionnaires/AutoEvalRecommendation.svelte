@@ -3,28 +3,27 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { AlertCircle, CheckCircle, XCircle, Sparkles } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
-
-	interface Evaluation {
-		status: 'approved' | 'rejected' | 'pending review';
-		score: number | null;
-		comments: string | null;
-		evaluated_by: string | null;
-		evaluated_at: string | null;
-	}
+	import type { EvaluationResponseSchema } from '$lib/api/generated';
+	import type { QuestionnaireEvaluationStatus } from '$lib/utils/questionnaire-types';
 
 	interface Props {
-		evaluation: Evaluation | null;
+		evaluation: EvaluationResponseSchema | null;
 	}
 
 	let { evaluation }: Props = $props();
 
 	// Determine if auto-evaluation is present
 	let hasAutoEval = $derived(
-		evaluation && evaluation.status !== 'pending review' && evaluation.evaluated_by === null // Auto-eval has no evaluator
+		evaluation &&
+			(evaluation.status as QuestionnaireEvaluationStatus) !== 'pending review' &&
+			evaluation.evaluator_id === null // Auto-eval has no evaluator
 	);
 
 	let statusConfig = $derived.by(() => {
-		if (!evaluation || evaluation.status === 'pending review') {
+		if (
+			!evaluation ||
+			(evaluation.status as QuestionnaireEvaluationStatus) === 'pending review'
+		) {
 			return {
 				icon: AlertCircle,
 				label: 'Awaiting Review',
@@ -35,7 +34,7 @@
 			};
 		}
 
-		if (evaluation.status === 'approved') {
+		if ((evaluation.status as QuestionnaireEvaluationStatus) === 'approved') {
 			return {
 				icon: CheckCircle,
 				label: 'Recommended: Approve',
@@ -117,7 +116,7 @@
 			</div>
 		</div>
 	</Card>
-{:else if evaluation && evaluation.evaluated_by}
+{:else if evaluation && evaluation.evaluator_id}
 	<!-- Manual evaluation already exists -->
 	<Card class="border-2 border-primary/20 bg-primary/5 p-6">
 		<div class="flex items-start gap-4">
@@ -129,9 +128,9 @@
 				<div>
 					<h3 class="text-lg font-semibold">Already Evaluated</h3>
 					<p class="mt-1 text-sm text-muted-foreground">
-						Evaluated by <strong>{evaluation.evaluated_by}</strong>
-						{#if evaluation.evaluated_at}
-							on {new Date(evaluation.evaluated_at).toLocaleDateString('en-US', {
+						Evaluated manually
+						{#if evaluation.created_at}
+							on {new Date(evaluation.created_at).toLocaleDateString('en-US', {
 								year: 'numeric',
 								month: 'long',
 								day: 'numeric'
@@ -142,10 +141,14 @@
 
 				<div>
 					<Badge
-						variant={evaluation.status === 'approved' ? 'default' : 'destructive'}
+						variant={(evaluation.status as QuestionnaireEvaluationStatus) === 'approved'
+							? 'default'
+							: 'destructive'}
 						class="mb-2"
 					>
-						{evaluation.status === 'approved' ? 'Approved' : 'Rejected'}
+						{(evaluation.status as QuestionnaireEvaluationStatus) === 'approved'
+							? 'Approved'
+							: 'Rejected'}
 					</Badge>
 
 					{#if evaluation.comments}

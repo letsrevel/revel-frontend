@@ -18,6 +18,7 @@
 	import { generateEventStructuredData, structuredDataToJsonLd } from '$lib/utils/structured-data';
 	import { isRSVP, isTicket } from '$lib/utils/eligibility';
 	import { getPotluckPermissions } from '$lib/utils/permissions';
+	import { formatEventLocation } from '$lib/utils/event';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 
@@ -87,10 +88,6 @@
 		showMyTicketModal = true;
 	}
 
-	function closeMyTicketModal() {
-		showMyTicketModal = false;
-	}
-
 	function openPWYCModal(tier: TierSchemaWithId) {
 		pendingPWYCTier = tier;
 		showPWYCModal = true;
@@ -126,7 +123,8 @@
 				path: { event_id: event.id, tier_id: tierId }
 			});
 			if (response.error) {
-				throw new Error(response.error.message || 'Failed to checkout');
+				const errorDetail = (response.error as any)?.detail || 'Failed to checkout';
+				throw new Error(typeof errorDetail === 'string' ? errorDetail : 'Failed to checkout');
 			}
 			return response.data;
 		},
@@ -153,7 +151,8 @@
 				body: { pwyc: amount }
 			});
 			if (response.error) {
-				throw new Error(response.error.message || 'Failed to checkout');
+				const errorDetail = (response.error as any)?.detail || 'Failed to checkout';
+				throw new Error(typeof errorDetail === 'string' ? errorDetail : 'Failed to checkout');
 			}
 			return response.data;
 		},
@@ -214,7 +213,8 @@
 					body: { pwyc: amount }
 				});
 				if (response.error) {
-					throw new Error(response.error.message || 'Failed to resume checkout');
+					const errorDetail = (response.error as any)?.detail || 'Failed to resume checkout';
+					throw new Error(typeof errorDetail === 'string' ? errorDetail : 'Failed to resume checkout');
 				}
 				return response.data;
 			} else {
@@ -223,7 +223,8 @@
 					path: { event_id: event.id, tier_id: tierId }
 				});
 				if (response.error) {
-					throw new Error(response.error.message || 'Failed to resume checkout');
+					const errorDetail = (response.error as any)?.detail || 'Failed to resume checkout';
+					throw new Error(typeof errorDetail === 'string' ? errorDetail : 'Failed to resume checkout');
 				}
 				return response.data;
 			}
@@ -391,10 +392,8 @@
 					<MyTicket
 						ticket={userTicket}
 						eventName={event.name}
-						eventDate={event.start_datetime
-							? new Date(event.start_datetime).toLocaleString()
-							: undefined}
-						eventLocation={event.location}
+						eventDate={event.start ? new Date(event.start).toLocaleString() : undefined}
+						eventLocation={formatEventLocation(event)}
 						onResumePayment={handleResumePayment}
 						isResumingPayment={resumePaymentMutation.isPending}
 					/>
@@ -495,9 +494,8 @@
 		bind:open={showMyTicketModal}
 		ticket={userTicket}
 		eventName={event.name}
-		eventDate={event.start_datetime ? new Date(event.start_datetime).toLocaleString() : undefined}
-		eventLocation={event.location}
-		onClose={closeMyTicketModal}
+		eventDate={event.start ? new Date(event.start).toLocaleString() : undefined}
+		eventLocation={formatEventLocation(event)}
 		onResumePayment={handleResumePayment}
 		isResumingPayment={resumePaymentMutation.isPending}
 	/>

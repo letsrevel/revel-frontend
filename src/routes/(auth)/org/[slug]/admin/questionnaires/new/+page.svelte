@@ -257,11 +257,11 @@
 					min_score: minScore,
 					evaluation_mode: evaluationMode,
 					questionnaire_type: questionnaireType,
-					max_submission_age: maxSubmissionAge,
+					max_submission_age: maxSubmissionAge !== null ? String(maxSubmissionAge) : undefined,
 					shuffle_questions: shuffleQuestions,
 					shuffle_sections: shuffleSections,
 					llm_guidelines: llmGuidelines || null,
-					can_retake_after: canRetakeAfter,
+					can_retake_after: canRetakeAfter !== null ? String(canRetakeAfter) : undefined,
 					sections
 				},
 				headers: { Authorization: `Bearer ${user.accessToken}` }

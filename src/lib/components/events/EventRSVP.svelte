@@ -57,38 +57,38 @@
 				throw new Error('No data returned from RSVP');
 			}
 
-			return response.data;
+			// Backend returns EventRsvpSchema with status = 'yes' | 'no' | 'maybe' (the user's answer)
+			// But the generated type says status: Status = 'draft' | 'ready' | 'published'
+			// We know the actual runtime type is EventRsvpSchemaActual
+			return response.data as unknown as { event_id: string; status: 'yes' | 'no' | 'maybe' };
 		},
-		onMutate: async (_answer: 'yes' | 'no' | 'maybe') => {
+		onMutate: async (answer: 'yes' | 'no' | 'maybe') => {
 			// Clear any previous errors
 			errorMessage = null;
 			showSuccess = false;
 
-			// Optimistic update: assume RSVP will be approved
+			// Optimistic update: set to the user's answer
 			const previousStatus = userStatus;
 
-			// Set optimistic status
+			// Set optimistic status with the user's answer
 			userStatus = {
 				event_id: eventId,
-				status: 'approved'
-			};
+				status: answer
+			} as { event_id: string; status: 'yes' | 'no' | 'maybe' };
 
 			return { previousStatus };
 		},
-		onSuccess: (
-			data: { event_id: string; status: 'approved' | 'rejected' | 'pending review' },
-			answer: 'yes' | 'no' | 'maybe'
-		) => {
+		onSuccess: (data: { event_id: string; status: 'yes' | 'no' | 'maybe' }, answer: 'yes' | 'no' | 'maybe') => {
 			// Determine if this is a new RSVP or a change
 			const wasAttending = userStatus && isRSVP(userStatus) && userStatus.status === 'yes';
 			const isNowAttending = answer === 'yes';
 
-			// Update local status with server response
-			userStatus = data;
+			// Update local status with server response (backend returns the user's answer in status field)
+			userStatus = data as { event_id: string; status: 'yes' | 'no' | 'maybe' };
 
 			// Store the user's answer and type for styling
-			userAnswer = answer;
-			successType = answer;
+			userAnswer = data.status; // Backend returns the actual answer in status field
+			successType = data.status;
 
 			// Update event attendee count if event object is provided
 			if (event) {

@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
-	import { Calendar, Repeat, Users, Settings, BarChart3, FileText, Plus } from 'lucide-svelte';
+	import { Calendar, Repeat, Users, Settings, FileText, Plus } from 'lucide-svelte';
 	import { OrganizationDescription } from '$lib/components/organizations';
 
 	let { data }: { data: PageData } = $props();
@@ -18,7 +18,8 @@
 			icon: Calendar,
 			href: `/org/${organization.slug}/admin/events`,
 			color: 'text-blue-600 dark:text-blue-400',
-			bgColor: 'bg-blue-50 dark:bg-blue-950'
+			bgColor: 'bg-blue-50 dark:bg-blue-950',
+			badge: undefined as string | undefined
 		},
 		{
 			title: 'Event Series',
@@ -26,7 +27,8 @@
 			icon: Repeat,
 			href: `/org/${organization.slug}/admin/event-series`,
 			color: 'text-indigo-600 dark:text-indigo-400',
-			bgColor: 'bg-indigo-50 dark:bg-indigo-950'
+			bgColor: 'bg-indigo-50 dark:bg-indigo-950',
+			badge: undefined as string | undefined
 		},
 		{
 			title: 'Members',
@@ -34,7 +36,8 @@
 			icon: Users,
 			href: `/org/${organization.slug}/admin/members`,
 			color: 'text-green-600 dark:text-green-400',
-			bgColor: 'bg-green-50 dark:bg-green-950'
+			bgColor: 'bg-green-50 dark:bg-green-950',
+			badge: undefined as string | undefined
 		},
 		{
 			title: 'Settings',
@@ -42,7 +45,8 @@
 			icon: Settings,
 			href: `/org/${organization.slug}/admin/settings`,
 			color: 'text-purple-600 dark:text-purple-400',
-			bgColor: 'bg-purple-50 dark:bg-purple-950'
+			bgColor: 'bg-purple-50 dark:bg-purple-950',
+			badge: undefined as string | undefined
 		}
 	]);
 

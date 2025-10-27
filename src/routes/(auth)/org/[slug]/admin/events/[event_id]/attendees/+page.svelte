@@ -2,7 +2,7 @@
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
+	import { createMutation } from '@tanstack/svelte-query';
 	import { eventadminUpdateRsvp, eventadminDeleteRsvp } from '$lib/api';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { cn } from '$lib/utils/cn';

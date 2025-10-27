@@ -96,8 +96,8 @@
 				<p class="mt-2 truncate text-sm text-muted-foreground">{request.user.email}</p>
 			{/if}
 
-			{#if request.user.phone_number}
-				<p class="mt-1 truncate text-sm text-muted-foreground">📞 {request.user.phone_number}</p>
+			{#if (request.user as any).phone_number}
+				<p class="mt-1 truncate text-sm text-muted-foreground">📞 {(request.user as any).phone_number}</p>
 			{/if}
 
 			<!-- Request Date -->
@@ -190,10 +190,10 @@
 							<dd class="truncate text-foreground">{request.user.email}</dd>
 						</div>
 					{/if}
-					{#if request.user.phone_number}
+					{#if (request.user as any).phone_number}
 						<div class="flex gap-2">
 							<dt class="font-medium text-muted-foreground">Phone:</dt>
-							<dd class="text-foreground">{request.user.phone_number}</dd>
+							<dd class="text-foreground">{(request.user as any).phone_number}</dd>
 						</div>
 					{/if}
 				</dl>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
-	import { Calendar, Clock, CheckCircle, XCircle, AlertCircle, type Icon } from 'lucide-svelte';
+	import { Calendar, Clock, CheckCircle, AlertCircle, type Icon } from 'lucide-svelte';
 	import type { ComponentType } from 'svelte';
 
 	interface Props {
@@ -23,28 +23,21 @@
 	/**
 	 * Determine the event status based on various conditions
 	 * Priority order:
-	 * 1. Cancelled (if status is 'rejected')
-	 * 2. Full (if at capacity)
-	 * 3. Happening Today (if start date is today)
-	 * 4. Ongoing (if current time is between start and end)
-	 * 5. Past (if end time has passed)
-	 * 6. Upcoming (default for future events)
+	 * 1. Full (if at capacity)
+	 * 2. Happening Today (if start date is today)
+	 * 3. Ongoing (if current time is between start and end)
+	 * 4. Past (if end time has passed)
+	 * 5. Upcoming (default for future events)
+	 *
+	 * Note: Event status in backend is 'draft' | 'ready' | 'published', not 'rejected'
+	 * Cancelled events are not shown in public listings
 	 */
 	let badge = $derived.by((): BadgeConfig => {
 		const now = new Date();
 		const startDate = new Date(event.start);
 		const endDate = new Date(event.end);
 
-		// 1. Check if cancelled (using status field)
-		if (event.status === 'rejected') {
-			return {
-				label: 'Cancelled',
-				variant: 'destructive',
-				icon: XCircle
-			};
-		}
-
-		// 2. Check if full (has capacity and reached it)
+		// 1. Check if full (has capacity and reached it)
 		const maxAttendees = event.max_attendees ?? 0;
 		if (maxAttendees > 0 && event.attendee_count >= maxAttendees) {
 			return {
@@ -54,7 +47,7 @@
 			};
 		}
 
-		// 3. Check if past
+		// 2. Check if past
 		if (endDate < now) {
 			return {
 				label: 'Past',
@@ -63,7 +56,7 @@
 			};
 		}
 
-		// 4. Check if ongoing (started but not ended)
+		// 3. Check if ongoing (started but not ended)
 		if (startDate <= now && now <= endDate) {
 			return {
 				label: 'Ongoing',
@@ -72,7 +65,7 @@
 			};
 		}
 
-		// 5. Check if happening today (same calendar day as start)
+		// 4. Check if happening today (same calendar day as start)
 		const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 		const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
 		const isToday = startDate >= todayStart && startDate <= todayEnd;
@@ -85,7 +78,7 @@
 			};
 		}
 
-		// 6. Default: Upcoming
+		// 5. Default: Upcoming
 		return {
 			label: 'Upcoming',
 			variant: 'default',

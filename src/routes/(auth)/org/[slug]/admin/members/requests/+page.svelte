@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData, ActionData } from './$types';
 	import { enhance } from '$app/forms';
-	import { Users, Check, X, Mail, Calendar, AlertCircle } from 'lucide-svelte';
+	import { Users, Check, X, Calendar, AlertCircle } from 'lucide-svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import { cn } from '$lib/utils/cn';
 
@@ -207,9 +207,9 @@
 								<!-- User -->
 								<td class="px-6 py-4">
 									<div class="flex items-center gap-3">
-										{#if request.user.profile_picture}
+										{#if (request.user as any).profile_picture}
 											<img
-												src={request.user.profile_picture}
+												src={(request.user as any).profile_picture}
 												alt="{request.user.first_name} {request.user.last_name}"
 												class="h-10 w-10 rounded-full object-cover"
 											/>
@@ -218,7 +218,7 @@
 												class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-sm font-bold text-primary-foreground"
 											>
 												{request.user.first_name?.charAt(0) ||
-													request.user.username.charAt(0).toUpperCase()}
+													((request.user as any).username?.charAt(0).toUpperCase() ?? '?')}
 											</div>
 										{/if}
 										<div>
@@ -226,7 +226,9 @@
 												{request.user.first_name}
 												{request.user.last_name}
 											</p>
-											<p class="text-sm text-muted-foreground">@{request.user.username}</p>
+											<p class="text-sm text-muted-foreground">
+												@{(request.user as any).username ?? 'N/A'}
+											</p>
 										</div>
 									</div>
 								</td>
@@ -244,10 +246,11 @@
 								<td class="px-6 py-4">
 									<span
 										class="inline-flex rounded-full px-2 py-1 text-xs font-semibold {getStatusBadge(
-											request.status
+											request.status ?? 'pending'
 										)}"
 									>
-										{request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+										{(request.status ?? 'pending').charAt(0).toUpperCase() +
+											(request.status ?? 'pending').slice(1)}
 									</span>
 								</td>
 
@@ -261,14 +264,14 @@
 
 								<!-- Actions -->
 								<td class="px-6 py-4 text-right">
-									{#if request.status === 'pending'}
+									{#if (request.status ?? 'pending') === 'pending'}
 										<div class="flex items-center justify-end gap-2">
 											<!-- Approve Form -->
 											<form
 												method="POST"
 												action="?/approve"
 												use:enhance={() => {
-													processingRequestId = request.id;
+													processingRequestId = request.id ?? null;
 													return async ({ update }) => {
 														await update();
 														processingRequestId = null;
@@ -293,7 +296,7 @@
 												method="POST"
 												action="?/reject"
 												use:enhance={() => {
-													processingRequestId = request.id;
+													processingRequestId = request.id ?? null;
 													return async ({ update }) => {
 														await update();
 														processingRequestId = null;
@@ -315,7 +318,7 @@
 										</div>
 									{:else}
 										<span class="text-sm text-muted-foreground">
-											{request.status === 'approved' ? 'Approved' : 'Rejected'}
+											{(request.status ?? 'pending') === 'approved' ? 'Approved' : 'Rejected'}
 										</span>
 									{/if}
 								</td>

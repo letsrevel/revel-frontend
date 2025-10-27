@@ -180,7 +180,7 @@
 	<CardContent>
 		<div class="space-y-4">
 			<!-- Pending Evaluations Alert -->
-			{#if questionnaire.pending_evaluations_count > 0}
+			{#if questionnaire.pending_evaluations_count && questionnaire.pending_evaluations_count > 0}
 				<div
 					class="flex items-center gap-2 rounded-md border border-orange-500/50 bg-orange-50 px-3 py-2 text-sm text-orange-900 dark:border-orange-500/30 dark:bg-orange-950/20 dark:text-orange-200"
 					role="status"
@@ -235,7 +235,7 @@
 				>
 					<Eye class="h-4 w-4" />
 					Submissions
-					{#if questionnaire.pending_evaluations_count > 0}
+					{#if questionnaire.pending_evaluations_count && questionnaire.pending_evaluations_count > 0}
 						<Badge
 							variant="destructive"
 							class="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs"
