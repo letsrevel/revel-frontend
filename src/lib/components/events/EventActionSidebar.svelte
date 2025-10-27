@@ -21,6 +21,8 @@
 		variant?: 'sidebar' | 'card';
 		onGetTicketsClick?: () => void;
 		onShowTicketClick?: () => void;
+		onResumePayment?: () => void;
+		isResumingPayment?: boolean;
 		class?: string;
 	}
 
@@ -32,6 +34,8 @@
 		variant = 'sidebar',
 		onGetTicketsClick,
 		onShowTicketClick,
+		onResumePayment,
+		isResumingPayment = false,
 		class: className
 	}: Props = $props();
 
@@ -99,6 +103,18 @@
 		if (!userStatus) return false;
 		if (!isEligibility(userStatus)) return false;
 		return !userStatus.allowed;
+	});
+
+	/**
+	 * Check if ticket is pending with online payment (should show Resume Payment directly)
+	 */
+	let shouldShowResumePayment = $derived.by(() => {
+		if (!userStatus || !isTicket(userStatus)) return false;
+		if (userStatus.status !== 'pending') return false;
+		if (!userStatus.tier) return false;
+
+		// Only show for online (Stripe) payment method
+		return userStatus.tier.payment_method === 'online';
 	});
 
 	/**
@@ -183,8 +199,36 @@
 
 	<!-- Card Content -->
 	<div class="space-y-4 p-4">
-		<!-- Attendance Status Display (if user is attending) -->
-		{#if isAttending && attendanceStatusText}
+		<!-- Pending Payment Warning (for online tickets pending payment) -->
+		{#if shouldShowResumePayment}
+			<div
+				class="flex flex-col gap-3 rounded-md border-2 border-orange-200 bg-orange-50 p-4 text-orange-900 dark:border-orange-800 dark:bg-orange-950/50 dark:text-orange-100"
+				role="alert"
+			>
+				<div class="flex items-start gap-2">
+					<Ticket class="h-5 w-5 shrink-0" aria-hidden="true" />
+					<div class="flex-1">
+						<div class="font-semibold">Your ticket is pending payment</div>
+						{#if ticketTierName}
+							<div class="text-sm opacity-90">{ticketTierName}</div>
+						{/if}
+					</div>
+				</div>
+				<p class="text-sm">
+					Complete your payment to confirm your ticket. Your reservation will expire if payment is
+					not completed.
+				</p>
+				<button
+					type="button"
+					onclick={onResumePayment}
+					disabled={isResumingPayment}
+					class="w-full rounded-md border-2 border-orange-600 bg-orange-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-orange-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-orange-500 dark:bg-orange-500"
+				>
+					{isResumingPayment ? 'Processing...' : 'Resume Payment'}
+				</button>
+			</div>
+		{:else if isAttending && attendanceStatusText}
+			<!-- Attendance Status Display (if user is attending) -->
 			<div
 				class="flex items-center gap-2 rounded-md bg-green-50 p-3 text-green-900 dark:bg-green-950/50 dark:text-green-100"
 				role="status"
@@ -244,7 +288,7 @@
 		{/if}
 
 		<!-- Secondary Actions (if user is attending) -->
-		{#if isAttending}
+		{#if isAttending && !shouldShowResumePayment}
 			<button
 				type="button"
 				onclick={handleSecondaryAction}

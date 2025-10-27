@@ -1,15 +1,15 @@
 <script lang="ts">
-	import type { EventFilters as FilterState } from '$lib/utils/filters';
-	import { countActiveFilters, hasActiveFilters } from '$lib/utils/filters';
+	import type { OrganizationFilters as FilterState } from '$lib/utils/organizationFilters';
+	import {
+		countActiveOrganizationFilters,
+		hasActiveOrganizationFilters
+	} from '$lib/utils/organizationFilters';
 	import { cn } from '$lib/utils/cn';
 	import { Filter, X } from 'lucide-svelte';
-	import SearchInput from './SearchInput.svelte';
-	import DateFilter from './DateFilter.svelte';
-	import TagsFilter from './TagsFilter.svelte';
-	import EventTypeFilter from './EventTypeFilter.svelte';
-	import CityFilter from './CityFilter.svelte';
-	import OrganizationFilter from './OrganizationFilter.svelte';
-	import OrderByFilter from './OrderByFilter.svelte';
+	import SearchInput from '$lib/components/events/filters/SearchInput.svelte';
+	import CityFilter from '$lib/components/events/filters/CityFilter.svelte';
+	import TagsFilter from '$lib/components/events/filters/TagsFilter.svelte';
+	import OrganizationOrderByFilter from './OrganizationOrderByFilter.svelte';
 
 	interface Props {
 		filters: FilterState;
@@ -21,15 +21,11 @@
 	let { filters, onUpdateFilters, onClearFilters, class: className }: Props = $props();
 
 	// Computed values
-	let activeFilterCount = $derived(countActiveFilters(filters));
-	let hasFilters = $derived(hasActiveFilters(filters));
+	let activeFilterCount = $derived(countActiveOrganizationFilters(filters));
+	let hasFilters = $derived(hasActiveOrganizationFilters(filters));
 
 	function handleSearch(value: string): void {
 		onUpdateFilters({ search: value || undefined });
-	}
-
-	function handleTogglePast(value: boolean): void {
-		onUpdateFilters({ includePast: value });
 	}
 
 	function handleToggleTag(tag: string): void {
@@ -40,28 +36,8 @@
 		onUpdateFilters({ tags: newTags.length > 0 ? newTags : undefined });
 	}
 
-	function handleChangeEventType(type: FilterState['eventType']): void {
-		onUpdateFilters({ eventType: type });
-	}
-
 	function handleChangeCity(city: { id: number; name: string; country: string } | null): void {
 		onUpdateFilters({ cityId: city?.id });
-	}
-
-	function handleChangeOrganization(org: { id: string; name: string; slug: string } | null): void {
-		if (org) {
-			onUpdateFilters({
-				organizationId: org.id,
-				organizationName: org.name,
-				organizationSlug: org.slug
-			});
-		} else {
-			onUpdateFilters({
-				organizationId: undefined,
-				organizationName: undefined,
-				organizationSlug: undefined
-			});
-		}
 	}
 
 	function handleChangeOrderBy(orderBy: FilterState['orderBy']): void {
@@ -76,22 +52,11 @@
 		// or fetch it. For now, we'll just track the ID and let the component handle it.
 		return null;
 	});
-
-	// Derive selected organization object from filters
-	let selectedOrganization = $derived.by(() => {
-		if (!filters.organizationId) return null;
-		// Use stored name and slug from URL params if available
-		return {
-			id: filters.organizationId,
-			name: filters.organizationName || 'Unknown Organization',
-			slug: filters.organizationSlug || 'unknown'
-		};
-	});
 </script>
 
 <aside
 	class={cn('flex w-full flex-col gap-6 rounded-lg border bg-card p-6', className)}
-	aria-label="Event filters"
+	aria-label="Organization filters"
 >
 	<!-- Header -->
 	<div class="flex items-center justify-between">
@@ -124,26 +89,23 @@
 	<div class="border-t" role="separator"></div>
 
 	<!-- Order By Filter (Top Priority) -->
-	<OrderByFilter orderBy={filters.orderBy ?? 'distance'} onChangeOrderBy={handleChangeOrderBy} />
+	<OrganizationOrderByFilter
+		orderBy={filters.orderBy ?? 'distance'}
+		onChangeOrderBy={handleChangeOrderBy}
+	/>
 
 	<!-- Divider -->
 	<div class="border-t" role="separator"></div>
 
 	<!-- Search Input -->
 	<div class="space-y-2">
-		<label for="event-search" class="text-sm font-medium">Search</label>
+		<label for="organization-search" class="text-sm font-medium">Search</label>
 		<SearchInput
 			value={filters.search ?? ''}
 			onSearch={handleSearch}
-			placeholder="Search events..."
+			placeholder="Search organizations..."
 		/>
 	</div>
-
-	<!-- Divider -->
-	<div class="border-t" role="separator"></div>
-
-	<!-- Date Filter -->
-	<DateFilter includePast={filters.includePast ?? false} onTogglePast={handleTogglePast} />
 
 	<!-- Divider -->
 	<div class="border-t" role="separator"></div>
@@ -154,22 +116,8 @@
 	<!-- Divider -->
 	<div class="border-t" role="separator"></div>
 
-	<!-- Organization Filter -->
-	<OrganizationFilter {selectedOrganization} onChangeOrganization={handleChangeOrganization} />
-
-	<!-- Divider -->
-	<div class="border-t" role="separator"></div>
-
-	<!-- Event Type Filter -->
-	<EventTypeFilter eventType={filters.eventType} onChangeEventType={handleChangeEventType} />
-
-	<!-- Divider -->
-	<div class="border-t" role="separator"></div>
-
 	<!-- Tags Filter -->
 	<TagsFilter selectedTags={filters.tags ?? []} onToggleTag={handleToggleTag} />
-
-	<!-- Future filters: Organization, Visibility -->
 
 	<!-- Footer hint -->
 	{#if activeFilterCount > 0}

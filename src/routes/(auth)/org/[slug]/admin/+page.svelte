@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
-	import { Calendar, Users, Settings, BarChart3, FileText, Plus } from 'lucide-svelte';
+	import { Calendar, Repeat, Users, Settings, BarChart3, FileText, Plus } from 'lucide-svelte';
 	import HTMLDescription from '$lib/components/common/HTMLDescription.svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -21,6 +21,14 @@
 			bgColor: 'bg-blue-50 dark:bg-blue-950'
 		},
 		{
+			title: 'Event Series',
+			description: 'Manage recurring event series',
+			icon: Repeat,
+			href: `/org/${organization.slug}/admin/event-series`,
+			color: 'text-indigo-600 dark:text-indigo-400',
+			bgColor: 'bg-indigo-50 dark:bg-indigo-950'
+		},
+		{
 			title: 'Members',
 			description: 'Manage members and staff',
 			icon: Users,
@@ -35,15 +43,6 @@
 			href: `/org/${organization.slug}/admin/settings`,
 			color: 'text-purple-600 dark:text-purple-400',
 			bgColor: 'bg-purple-50 dark:bg-purple-950'
-		},
-		{
-			title: 'Analytics',
-			description: 'View insights and statistics',
-			icon: BarChart3,
-			href: `/org/${organization.slug}/admin/analytics`,
-			color: 'text-orange-600 dark:text-orange-400',
-			bgColor: 'bg-orange-50 dark:bg-orange-950',
-			badge: 'Coming Soon'
 		}
 	]);
 

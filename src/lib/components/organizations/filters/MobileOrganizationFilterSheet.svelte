@@ -1,15 +1,15 @@
 <script lang="ts">
-	import type { EventFilters as FilterState } from '$lib/utils/filters';
-	import { countActiveFilters, hasActiveFilters } from '$lib/utils/filters';
+	import type { OrganizationFilters as FilterState } from '$lib/utils/organizationFilters';
+	import {
+		countActiveOrganizationFilters,
+		hasActiveOrganizationFilters
+	} from '$lib/utils/organizationFilters';
 	import { cn } from '$lib/utils/cn';
 	import { Filter, X } from 'lucide-svelte';
-	import SearchInput from './SearchInput.svelte';
-	import DateFilter from './DateFilter.svelte';
-	import TagsFilter from './TagsFilter.svelte';
-	import EventTypeFilter from './EventTypeFilter.svelte';
-	import CityFilter from './CityFilter.svelte';
-	import OrganizationFilter from './OrganizationFilter.svelte';
-	import OrderByFilter from './OrderByFilter.svelte';
+	import SearchInput from '$lib/components/events/filters/SearchInput.svelte';
+	import CityFilter from '$lib/components/events/filters/CityFilter.svelte';
+	import TagsFilter from '$lib/components/events/filters/TagsFilter.svelte';
+	import OrganizationOrderByFilter from './OrganizationOrderByFilter.svelte';
 
 	interface Props {
 		filters: FilterState;
@@ -32,15 +32,11 @@
 	}: Props = $props();
 
 	// Computed values
-	let activeFilterCount = $derived(countActiveFilters(filters));
-	let hasFilters = $derived(hasActiveFilters(filters));
+	let activeFilterCount = $derived(countActiveOrganizationFilters(filters));
+	let hasFilters = $derived(hasActiveOrganizationFilters(filters));
 
 	function handleSearch(value: string): void {
 		onUpdateFilters({ search: value || undefined });
-	}
-
-	function handleTogglePast(value: boolean): void {
-		onUpdateFilters({ includePast: value });
 	}
 
 	function handleToggleTag(tag: string): void {
@@ -51,28 +47,8 @@
 		onUpdateFilters({ tags: newTags.length > 0 ? newTags : undefined });
 	}
 
-	function handleChangeEventType(type: FilterState['eventType']): void {
-		onUpdateFilters({ eventType: type });
-	}
-
 	function handleChangeCity(city: { id: number; name: string; country: string } | null): void {
 		onUpdateFilters({ cityId: city?.id });
-	}
-
-	function handleChangeOrganization(org: { id: string; name: string; slug: string } | null): void {
-		if (org) {
-			onUpdateFilters({
-				organizationId: org.id,
-				organizationName: org.name,
-				organizationSlug: org.slug
-			});
-		} else {
-			onUpdateFilters({
-				organizationId: undefined,
-				organizationName: undefined,
-				organizationSlug: undefined
-			});
-		}
 	}
 
 	function handleChangeOrderBy(orderBy: FilterState['orderBy']): void {
@@ -83,17 +59,6 @@
 	let selectedCity = $derived.by(() => {
 		if (!filters.cityId) return null;
 		return null;
-	});
-
-	// Derive selected organization object from filters
-	let selectedOrganization = $derived.by(() => {
-		if (!filters.organizationId) return null;
-		// Use stored name and slug from URL params if available
-		return {
-			id: filters.organizationId,
-			name: filters.organizationName || 'Unknown Organization',
-			slug: filters.organizationSlug || 'unknown'
-		};
 	});
 
 	function handleApply(): void {
@@ -140,7 +105,7 @@
 		)}
 		role="dialog"
 		aria-modal="true"
-		aria-labelledby="mobile-filter-title"
+		aria-labelledby="mobile-organization-filter-title"
 	>
 		<!-- Handle (swipe indicator) -->
 		<div class="flex justify-center py-3">
@@ -151,7 +116,7 @@
 		<div class="flex items-center justify-between border-b px-6 pb-4">
 			<div class="flex items-center gap-2">
 				<Filter class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-				<h2 id="mobile-filter-title" class="text-lg font-semibold">Filters</h2>
+				<h2 id="mobile-organization-filter-title" class="text-lg font-semibold">Filters</h2>
 				{#if activeFilterCount > 0}
 					<span
 						class="rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground"
@@ -176,7 +141,7 @@
 		<div class="flex-1 overflow-y-auto overscroll-contain px-6 py-4">
 			<div class="space-y-6">
 				<!-- Order By Filter (Top Priority) -->
-				<OrderByFilter
+				<OrganizationOrderByFilter
 					orderBy={filters.orderBy ?? 'distance'}
 					onChangeOrderBy={handleChangeOrderBy}
 				/>
@@ -186,19 +151,13 @@
 
 				<!-- Search Input -->
 				<div class="space-y-2">
-					<label for="mobile-event-search" class="text-sm font-medium">Search</label>
+					<label for="mobile-organization-search" class="text-sm font-medium">Search</label>
 					<SearchInput
 						value={filters.search ?? ''}
 						onSearch={handleSearch}
-						placeholder="Search events..."
+						placeholder="Search organizations..."
 					/>
 				</div>
-
-				<!-- Divider -->
-				<div class="border-t" role="separator"></div>
-
-				<!-- Date Filter -->
-				<DateFilter includePast={filters.includePast ?? false} onTogglePast={handleTogglePast} />
 
 				<!-- Divider -->
 				<div class="border-t" role="separator"></div>
@@ -209,25 +168,8 @@
 				<!-- Divider -->
 				<div class="border-t" role="separator"></div>
 
-				<!-- Organization Filter -->
-				<OrganizationFilter
-					{selectedOrganization}
-					onChangeOrganization={handleChangeOrganization}
-				/>
-
-				<!-- Divider -->
-				<div class="border-t" role="separator"></div>
-
-				<!-- Event Type Filter -->
-				<EventTypeFilter eventType={filters.eventType} onChangeEventType={handleChangeEventType} />
-
-				<!-- Divider -->
-				<div class="border-t" role="separator"></div>
-
 				<!-- Tags Filter -->
 				<TagsFilter selectedTags={filters.tags ?? []} onToggleTag={handleToggleTag} />
-
-				<!-- Future filters: Organization, Visibility -->
 			</div>
 		</div>
 
@@ -251,7 +193,7 @@
 					class="rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				>
 					Show {totalCount}
-					{totalCount === 1 ? 'event' : 'events'}
+					{totalCount === 1 ? 'organization' : 'organizations'}
 				</button>
 			</div>
 		</div>

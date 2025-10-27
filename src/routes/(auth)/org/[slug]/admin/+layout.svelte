@@ -20,6 +20,7 @@
 	const navItems = [
 		{ href: `/org/${data.organization.slug}/admin`, label: 'Dashboard' },
 		{ href: `/org/${data.organization.slug}/admin/events`, label: 'Events' },
+		{ href: `/org/${data.organization.slug}/admin/event-series`, label: 'Event Series' },
 		{
 			href: `/org/${data.organization.slug}/admin/members`,
 			label: 'Members',

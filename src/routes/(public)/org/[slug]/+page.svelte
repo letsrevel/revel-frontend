@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { page } from '$app/state';
-	import { MapPin, Settings, Calendar } from 'lucide-svelte';
+	import { MapPin, Settings, Calendar, ArrowRight, Repeat, ArrowDownUp } from 'lucide-svelte';
 	import ResourceCard from '$lib/components/resources/ResourceCard.svelte';
-	import { EventCard } from '$lib/components/events';
+	import { EventCard, EventSeriesCard } from '$lib/components/events';
 	import { getImageUrl } from '$lib/utils/url';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { eventListEvents } from '$lib/api/generated/sdk.gen';
+	import { eventListEvents, eventseriesListEventSeries } from '$lib/api/generated/sdk.gen';
 	import RequestMembershipButton from '$lib/components/organization/RequestMembershipButton.svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -15,7 +15,13 @@
 	let organization = $state(data.organization);
 
 	// Filter state for events
-	let includePastEvents = $state(false);
+	let includePastEvents = $state(true);
+	let eventsOrderBy = $state<'start' | '-start'>('-start'); // Newest first by default
+
+	// Pagination state
+	let eventsPage = $state(1);
+	let seriesPage = $state(1);
+	const pageSize = 6;
 
 	// Compute full image URLs
 	const logoUrl = $derived(getImageUrl(organization.logo));
@@ -51,24 +57,67 @@
 		data.resources.filter((resource) => resource.display_on_organization_page)
 	);
 
+	// Fetch event series for this organization
+	const seriesQuery = createQuery(() => ({
+		queryKey: ['org-series', organization.id, seriesPage],
+		queryFn: async () => {
+			const response = await eventseriesListEventSeries({
+				query: {
+					organization: organization.id,
+					page: seriesPage,
+					page_size: pageSize
+				}
+			});
+
+			return {
+				results: response.data?.results || [],
+				count: response.data?.count || 0
+			};
+		}
+	}));
+
+	let eventSeries = $derived(seriesQuery.data?.results || []);
+	let seriesTotalCount = $derived(seriesQuery.data?.count || 0);
+	let seriesTotalPages = $derived(Math.ceil(seriesTotalCount / pageSize));
+
 	// Fetch events for this organization
 	const eventsQuery = createQuery(() => ({
-		queryKey: ['org-events', organization.id, includePastEvents],
+		queryKey: ['org-events', organization.id, includePastEvents, eventsOrderBy, eventsPage],
 		queryFn: async () => {
 			const response = await eventListEvents({
 				query: {
 					organization: organization.id,
 					include_past: includePastEvents,
-					page_size: 12,
-					order_by: includePastEvents ? '-start' : 'start' // Recent first if past, upcoming first otherwise
+					page: eventsPage,
+					page_size: pageSize,
+					order_by: eventsOrderBy
 				}
 			});
 
-			return response.data?.results || [];
+			return {
+				results: response.data?.results || [],
+				count: response.data?.count || 0
+			};
 		}
 	}));
 
-	let events = $derived(eventsQuery.data || []);
+	let events = $derived(eventsQuery.data?.results || []);
+	let eventsTotalCount = $derived(eventsQuery.data?.count || 0);
+	let eventsTotalPages = $derived(Math.ceil(eventsTotalCount / pageSize));
+
+	// Toggle event ordering
+	function toggleEventsOrder() {
+		eventsOrderBy = eventsOrderBy === '-start' ? 'start' : '-start';
+		eventsPage = 1; // Reset to first page
+	}
+
+	// Reset page when filter changes
+	$effect(() => {
+		// Watch includePastEvents and eventsOrderBy
+		includePastEvents;
+		eventsOrderBy;
+		eventsPage = 1;
+	});
 </script>
 
 <svelte:head>
@@ -240,8 +289,62 @@
 			</section>
 		{/if}
 
+		<!-- Event Series Section -->
+		{#if !seriesQuery.isError && (eventSeries.length > 0 || seriesQuery.isLoading)}
+			<section aria-labelledby="series-heading" class="mb-12">
+				<div class="mb-6 flex items-center justify-between">
+					<div>
+						<h2 id="series-heading" class="text-2xl font-bold">Event Series</h2>
+						<p class="mt-1 text-sm text-muted-foreground">
+							Recurring event series from {organization.name}
+						</p>
+					</div>
+				</div>
+
+				{#if seriesQuery.isLoading}
+					<!-- Loading State -->
+					<div class="rounded-lg border bg-card p-8 text-center">
+						<Repeat class="mx-auto mb-4 h-12 w-12 animate-pulse text-muted-foreground" />
+						<p class="text-muted-foreground">Loading series...</p>
+					</div>
+				{:else if eventSeries.length > 0}
+					<!-- Series Cards Grid -->
+					<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+						{#each eventSeries as series (series.id)}
+							<EventSeriesCard {series} />
+						{/each}
+					</div>
+
+					<!-- Pagination -->
+					{#if seriesTotalPages > 1}
+						<div class="mt-6 flex items-center justify-center gap-2">
+							<button
+								type="button"
+								disabled={seriesPage === 1}
+								onclick={() => (seriesPage = seriesPage - 1)}
+								class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+							>
+								Previous
+							</button>
+							<span class="text-sm text-muted-foreground">
+								Page {seriesPage} of {seriesTotalPages}
+							</span>
+							<button
+								type="button"
+								disabled={seriesPage >= seriesTotalPages}
+								onclick={() => (seriesPage = seriesPage + 1)}
+								class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+							>
+								Next
+							</button>
+						</div>
+					{/if}
+				{/if}
+			</section>
+		{/if}
+
 		<!-- Events Section -->
-		<section aria-labelledby="events-heading">
+		<section aria-labelledby="events-heading" class="mb-12">
 			<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 				<div>
 					<h2 id="events-heading" class="text-2xl font-bold">Events</h2>
@@ -250,15 +353,41 @@
 					</p>
 				</div>
 
-				<!-- Filter Toggle -->
-				<div class="flex items-center gap-2">
-					<label for="include-past" class="text-sm font-medium">Include past events</label>
-					<input
-						id="include-past"
-						type="checkbox"
-						bind:checked={includePastEvents}
-						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
-					/>
+				<div class="flex flex-wrap items-center gap-4">
+					<!-- Filter Toggle -->
+					<div class="flex items-center gap-2">
+						<label for="include-past" class="text-sm font-medium">Include past events</label>
+						<input
+							id="include-past"
+							type="checkbox"
+							bind:checked={includePastEvents}
+							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+						/>
+					</div>
+
+					<!-- Sort Order Toggle -->
+					<button
+						type="button"
+						onclick={toggleEventsOrder}
+						class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						aria-label={eventsOrderBy === '-start'
+							? 'Showing newest first'
+							: 'Showing oldest first'}
+					>
+						<ArrowDownUp class="h-4 w-4" aria-hidden="true" />
+						{eventsOrderBy === '-start' ? 'Newest First' : 'Oldest First'}
+					</button>
+
+					<!-- Browse All Button -->
+					<a
+						href="/events?organization={organization.id}&organization_name={encodeURIComponent(
+							organization.name
+						)}&organization_slug={organization.slug}"
+						class="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+					>
+						Browse All
+						<ArrowRight class="h-4 w-4" aria-hidden="true" />
+					</a>
 				</div>
 			</div>
 
@@ -306,13 +435,28 @@
 					{/each}
 				</div>
 
-				<!-- Show count if there are many events -->
-				{#if events.length >= 12}
-					<div class="mt-6 text-center">
-						<p class="text-sm text-muted-foreground">
-							Showing {events.length}
-							{includePastEvents ? 'events' : 'upcoming events'}
-						</p>
+				<!-- Pagination -->
+				{#if eventsTotalPages > 1}
+					<div class="mt-6 flex items-center justify-center gap-2">
+						<button
+							type="button"
+							disabled={eventsPage === 1}
+							onclick={() => (eventsPage = eventsPage - 1)}
+							class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+						>
+							Previous
+						</button>
+						<span class="text-sm text-muted-foreground">
+							Page {eventsPage} of {eventsTotalPages}
+						</span>
+						<button
+							type="button"
+							disabled={eventsPage >= eventsTotalPages}
+							onclick={() => (eventsPage = eventsPage + 1)}
+							class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+						>
+							Next
+						</button>
 					</div>
 				{/if}
 			{/if}

@@ -4,31 +4,27 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Search, Loader2, FileText, Plus } from 'lucide-svelte';
+	import { Search, Loader2, FileText, AlertCircle } from 'lucide-svelte';
 	import {
 		questionnaireListOrgQuestionnaires,
-		questionnaireAssignEvent,
-		questionnaireUnassignEvent,
-		type OrganizationQuestionnaireInListSchema
+		questionnaireReplaceEventSeries,
+		type OrganizationQuestionnaireInListSchema,
+		type EventSeriesRetrieveSchema
 	} from '$lib/api/generated';
 	import { invalidateAll } from '$app/navigation';
 
 	interface Props {
 		open: boolean;
-		eventId: string;
-		currentlyAssigned: OrganizationQuestionnaireInListSchema[];
+		series: EventSeriesRetrieveSchema;
 		organizationId: string;
-		organizationSlug: string;
 		accessToken: string;
 		onClose: () => void;
 	}
 
 	let {
 		open = $bindable(),
-		eventId,
-		currentlyAssigned,
+		series,
 		organizationId,
-		organizationSlug,
 		accessToken,
 		onClose
 	}: Props = $props();
@@ -40,10 +36,23 @@
 	let allQuestionnaires = $state<OrganizationQuestionnaireInListSchema[]>([]);
 	let selectedIds = $state<Set<string>>(new Set());
 
+	// Get currently assigned questionnaires from series
+	function getCurrentlyAssigned(): string[] {
+		// Check if series has questionnaires field
+		if ('questionnaires' in series && Array.isArray(series.questionnaires)) {
+			return series.questionnaires.map((q: any) => q.id);
+		}
+		// Check if series has organization_questionnaires field
+		if ('organization_questionnaires' in series && Array.isArray(series.organization_questionnaires)) {
+			return series.organization_questionnaires.map((q: any) => q.id);
+		}
+		return [];
+	}
+
 	// Initialize selected IDs from currently assigned
 	$effect(() => {
 		if (open) {
-			selectedIds = new Set(currentlyAssigned.map((q) => q.id));
+			selectedIds = new Set(getCurrentlyAssigned());
 			loadQuestionnaires();
 		}
 	});
@@ -54,7 +63,7 @@
 			const response = await questionnaireListOrgQuestionnaires({
 				query: {
 					organization_id: organizationId,
-					page_size: 100 // Fetch all org questionnaires
+					page_size: 100
 				},
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
@@ -99,21 +108,15 @@
 		isSaving = true;
 
 		try {
-			const originalIds = new Set(currentlyAssigned.map((q) => q.id));
+			// Find the org questionnaire IDs to assign
+			const questionnairesToAssign = Array.from(selectedIds);
 
-			// Find questionnaires to assign (newly selected)
-			const toAssign = Array.from(selectedIds).filter((id) => !originalIds.has(id));
-
-			// Find questionnaires to unassign (previously selected but now deselected)
-			const toUnassign = Array.from(originalIds).filter((id) => !selectedIds.has(id));
-
-			// Execute assignments
-			for (const questionnaireId of toAssign) {
-				const response = await questionnaireAssignEvent({
-					path: {
-						org_questionnaire_id: questionnaireId,
-						event_id: eventId
-					},
+			// Execute assignment using the questionnaireReplaceEventSeries API
+			// We need to do this for each selected questionnaire
+			for (const questionnaireId of questionnairesToAssign) {
+				const response = await questionnaireReplaceEventSeries({
+					path: { org_questionnaire_id: questionnaireId },
+					body: { event_series_ids: [series.id] },
 					headers: { Authorization: `Bearer ${accessToken}` }
 				});
 
@@ -122,18 +125,28 @@
 				}
 			}
 
-			// Execute unassignments
-			for (const questionnaireId of toUnassign) {
-				const response = await questionnaireUnassignEvent({
-					path: {
-						org_questionnaire_id: questionnaireId,
-						event_id: eventId
-					},
-					headers: { Authorization: `Bearer ${accessToken}` }
-				});
+			// For unselected questionnaires, we need to remove this series from their assigned series
+			const originalIds = new Set(getCurrentlyAssigned());
+			const toUnassign = Array.from(originalIds).filter((id) => !selectedIds.has(id));
 
-				if (response.error) {
-					throw new Error(`Failed to unassign questionnaire ${questionnaireId}`);
+			for (const questionnaireId of toUnassign) {
+				// Get the questionnaire's current series assignments
+				const questionnaire = allQuestionnaires.find((q) => q.id === questionnaireId);
+				if (questionnaire && 'event_series' in questionnaire && Array.isArray(questionnaire.event_series)) {
+					// Remove this series from the list
+					const remainingSeriesIds = questionnaire.event_series
+						.filter((s: any) => s.id !== series.id)
+						.map((s: any) => s.id);
+
+					const response = await questionnaireReplaceEventSeries({
+						path: { org_questionnaire_id: questionnaireId },
+						body: { event_series_ids: remainingSeriesIds },
+						headers: { Authorization: `Bearer ${accessToken}` }
+					});
+
+					if (response.error) {
+						throw new Error(`Failed to unassign questionnaire ${questionnaireId}`);
+					}
 				}
 			}
 
@@ -164,8 +177,8 @@
 	};
 
 	// Check if there are changes
-	const hasChanges = $derived(() => {
-		const originalIds = new Set(currentlyAssigned.map((q) => q.id));
+	const hasChanges = $derived.by(() => {
+		const originalIds = new Set(getCurrentlyAssigned());
 		if (originalIds.size !== selectedIds.size) return true;
 		return ![...originalIds].every((id) => selectedIds.has(id));
 	});
@@ -174,24 +187,23 @@
 <Dialog bind:open>
 	<DialogContent class="max-h-[90vh] max-w-2xl overflow-hidden p-0">
 		<DialogHeader class="border-b p-6 pb-4">
-			<div class="flex items-start justify-between">
-				<div>
-					<DialogTitle>Assign Questionnaires to Event</DialogTitle>
-					<p class="mt-1 text-sm text-muted-foreground">
-						Select which questionnaires users must complete to RSVP or purchase tickets
-					</p>
-				</div>
-				<Button
-					href="/org/{organizationSlug}/admin/questionnaires/new"
-					variant="outline"
-					size="sm"
-					class="gap-2"
-				>
-					<Plus class="h-4 w-4" />
-					New Questionnaire
-				</Button>
-			</div>
+			<DialogTitle>Assign Questionnaires to Event Series</DialogTitle>
+			<p class="mt-1 text-sm text-muted-foreground">
+				Select which questionnaires users must complete for events in "{series.name}"
+			</p>
 		</DialogHeader>
+
+		<!-- Warning Banner -->
+		<div class="mx-6 mt-4 flex gap-2 rounded-md bg-orange-50 p-3 text-sm dark:bg-orange-950">
+			<AlertCircle
+				class="h-4 w-4 shrink-0 text-orange-600 dark:text-orange-400"
+				aria-hidden="true"
+			/>
+			<p class="text-orange-900 dark:text-orange-100">
+				<strong>Applies to all events:</strong> Questionnaires assigned here will be required for
+				<strong>all events</strong> in this series, including future events.
+			</p>
+		</div>
 
 		<!-- Search Bar -->
 		<div class="border-b px-6 py-4">
@@ -275,7 +287,7 @@
 				</div>
 				<div class="flex gap-2">
 					<Button variant="outline" onclick={onClose} disabled={isSaving}>Cancel</Button>
-					<Button onclick={saveAssignments} disabled={!hasChanges() || isSaving}>
+					<Button onclick={saveAssignments} disabled={!hasChanges || isSaving}>
 						{#if isSaving}
 							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
 							Saving...

@@ -37,12 +37,12 @@
 					: tier.pwyc_max
 				: null;
 
-			const maxDisplay = max ? `${tier.currency}${max.toFixed(2)}` : 'any';
-			return `Pay What You Can (${tier.currency}${min.toFixed(2)} - ${maxDisplay})`;
+			const maxDisplay = max ? `${tier.currency} ${max.toFixed(2)}` : 'any';
+			return `Pay What You Can (${tier.currency} ${min.toFixed(2)} - ${maxDisplay})`;
 		}
 
 		const price = typeof tier.price === 'string' ? parseFloat(tier.price) : tier.price;
-		return `${tier.currency}${price.toFixed(2)}`;
+		return `${tier.currency} ${price.toFixed(2)}`;
 	});
 
 	// Check if sales are active

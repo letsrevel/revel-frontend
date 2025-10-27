@@ -96,6 +96,9 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch }) =>
 	const questionnaires = [];
 	try {
 		const questionnairesResponse = await questionnaireListOrgQuestionnaires({
+			query: {
+				organization_id: organization.id
+			},
 			fetch,
 			headers
 		});

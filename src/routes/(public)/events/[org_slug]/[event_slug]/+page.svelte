@@ -376,6 +376,8 @@
 				variant="card"
 				onGetTicketsClick={openTicketTierModal}
 				onShowTicketClick={openMyTicketModal}
+				onResumePayment={handleResumePayment}
+				isResumingPayment={resumePaymentMutation.isPending}
 			/>
 		</div>
 
@@ -410,14 +412,16 @@
 				{/if}
 
 				<!-- Potluck Section -->
-				<!-- Always show if items exist, controlled by the section itself -->
-				<PotluckSection
-					{event}
-					permissions={potluckPermissions}
-					isAuthenticated={data.isAuthenticated}
-					{hasRSVPd}
-					initialItems={data.potluckItems}
-				/>
+				<!-- Show if potluck is open OR if there are existing items -->
+				{#if event.potluck_open || data.potluckItems.length > 0}
+					<PotluckSection
+						{event}
+						permissions={potluckPermissions}
+						isAuthenticated={data.isAuthenticated}
+						{hasRSVPd}
+						initialItems={data.potluckItems}
+					/>
+				{/if}
 
 				<!-- Resources Section -->
 				<EventResources resources={data.resources} />
@@ -445,6 +449,8 @@
 						variant="sidebar"
 						onGetTicketsClick={openTicketTierModal}
 						onShowTicketClick={openMyTicketModal}
+						onResumePayment={handleResumePayment}
+						isResumingPayment={resumePaymentMutation.isPending}
 					/>
 
 					<!-- Organization Info (desktop only) -->

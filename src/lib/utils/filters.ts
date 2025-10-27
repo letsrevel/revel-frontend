@@ -10,6 +10,8 @@ export interface EventFilters {
 	search?: string;
 	cityId?: number;
 	organizationId?: string;
+	organizationName?: string;
+	organizationSlug?: string;
 	eventType?: 'public' | 'private' | 'members-only';
 	visibility?: 'public' | 'private' | 'members-only' | 'staff-only';
 	tags?: string[];
@@ -43,6 +45,13 @@ export function parseFilters(searchParams: URLSearchParams): EventFilters {
 	// Organization ID
 	const organizationId = searchParams.get('organization');
 	if (organizationId) filters.organizationId = organizationId;
+
+	// Organization Name and Slug (for display purposes)
+	const organizationName = searchParams.get('organization_name');
+	if (organizationName) filters.organizationName = organizationName;
+
+	const organizationSlug = searchParams.get('organization_slug');
+	if (organizationSlug) filters.organizationSlug = organizationSlug;
 
 	// Event type
 	const eventType = searchParams.get('event_type');
@@ -95,7 +104,12 @@ export function filtersToParams(filters: EventFilters): URLSearchParams {
 
 	if (filters.search) params.set('search', filters.search);
 	if (filters.cityId) params.set('city_id', filters.cityId.toString());
-	if (filters.organizationId) params.set('organization', filters.organizationId);
+	if (filters.organizationId) {
+		params.set('organization', filters.organizationId);
+		// Store name and slug for display after page reload
+		if (filters.organizationName) params.set('organization_name', filters.organizationName);
+		if (filters.organizationSlug) params.set('organization_slug', filters.organizationSlug);
+	}
 	if (filters.eventType) params.set('event_type', filters.eventType);
 	if (filters.visibility) params.set('visibility', filters.visibility);
 	if (filters.tags && filters.tags.length > 0) params.set('tags', filters.tags.join(','));
