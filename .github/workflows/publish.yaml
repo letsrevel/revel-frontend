@@ -35,6 +35,7 @@ jobs:
           build-args: |
             PUBLIC_API_URL=https://demo-api.letsrevel.io
             ORIGIN=https://demo.letsrevel.io
+            PUBLIC_VERSION=${{ github.event.release.tag_name }}
           tags: |
             ghcr.io/letsrevel/revel-frontend:latest
             ghcr.io/letsrevel/revel-frontend:${{ github.event.release.tag_name }}

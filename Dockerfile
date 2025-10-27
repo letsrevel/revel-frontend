@@ -24,14 +24,16 @@ COPY . .
 # These are required at BUILD time because Vite embeds them in the bundle
 ARG PUBLIC_API_URL
 ARG ORIGIN
+ARG PUBLIC_VERSION
 
 # Set as environment variables for the build process
 ENV PUBLIC_API_URL=${PUBLIC_API_URL}
 ENV ORIGIN=${ORIGIN}
+ENV PUBLIC_VERSION=${PUBLIC_VERSION}
 
 # Build the application
 # This creates the production build in the `build` directory
-# Vite will embed PUBLIC_API_URL into the client bundle
+# Vite will embed PUBLIC_* env vars into the client bundle
 RUN pnpm build
 
 # ─────────────────────────────────────────────────────────────────────────────

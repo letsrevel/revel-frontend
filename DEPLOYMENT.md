@@ -14,24 +14,27 @@ This document describes how to deploy the Revel Frontend application using Docke
 
 ```bash
 # Build the Docker image with production environment variables
-# IMPORTANT: PUBLIC_API_URL must be provided at BUILD time (not runtime)
-# because Vite embeds it in the client bundle
+# IMPORTANT: PUBLIC_* variables must be provided at BUILD time (not runtime)
+# because Vite embeds them in the client bundle
 docker build \
   --build-arg PUBLIC_API_URL=https://demo-api.letsrevel.io \
   --build-arg ORIGIN=https://demo.letsrevel.io \
+  --build-arg PUBLIC_VERSION=0.1.2 \
   -t revel-frontend:latest .
 
-# Or with a specific version
+# Or with a specific version from the version file
 VERSION=$(cat version)
 docker build \
   --build-arg PUBLIC_API_URL=https://demo-api.letsrevel.io \
   --build-arg ORIGIN=https://demo.letsrevel.io \
+  --build-arg PUBLIC_VERSION=$VERSION \
   -t revel-frontend:$VERSION .
 
 # For local development build:
 docker build \
   --build-arg PUBLIC_API_URL=http://localhost:8000 \
   --build-arg ORIGIN=http://localhost:5173 \
+  --build-arg PUBLIC_VERSION=dev \
   -t revel-frontend:dev .
 ```
 
@@ -53,7 +56,8 @@ docker run -p 3000:3000 \
 
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
-| `PUBLIC_API_URL` | Backend API base URL | - | Yes |
+| `PUBLIC_API_URL` | Backend API base URL (build-time) | - | Yes |
+| `PUBLIC_VERSION` | Frontend version displayed in footer (build-time) | `dev` | No |
 | `ORIGIN` | SvelteKit origin for CSRF protection | `http://localhost:3000` | Yes |
 | `PORT` | Server port | `3000` | No |
 | `HOST` | Server host | `0.0.0.0` | No |
