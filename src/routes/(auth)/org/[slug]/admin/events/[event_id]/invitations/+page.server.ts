@@ -7,7 +7,7 @@ import {
 	eventadminListInvitations,
 	eventadminListPendingInvitations,
 	eventadminCreateInvitations,
-	eventadminDeleteInvitation,
+	eventadminDeleteInvitationEndpoint,
 	eventGetEvent,
 	eventadminListTicketTiers
 } from '$lib/api/generated/sdk.gen';
@@ -77,7 +77,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 			fetch,
 			path: { event_id: params.event_id },
 			query: {
-				status: status as 'pending' | 'approved' | 'rejected' | undefined,
+				status: status ? (status as any) : undefined,
 				search,
 				page: activeTab === 'requests' ? page : 1,
 				page_size: activeTab === 'requests' ? pageSize : 20
@@ -192,8 +192,8 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 				headers
 			});
 
-			if (tiersResponse.data) {
-				ticketTiers = tiersResponse.data;
+			if (tiersResponse.data?.results) {
+				ticketTiers = tiersResponse.data.results as TierSchema[];
 			}
 		} catch (err) {
 			console.error('Error loading ticket tiers:', err);
@@ -330,8 +330,8 @@ export const actions: Actions = {
 				path: { event_id: params.event_id },
 				body: {
 					emails,
-					tier_id: (tierId || undefined) as string | undefined,
-					custom_message: (customMessage || undefined) as string | undefined,
+					tier_id: (tierId ?? undefined) as string,
+					custom_message: customMessage ?? undefined,
 					send_notification: true,
 					waives_questionnaire: waivesQuestionnaire,
 					waives_purchase: waivesPurchase,
@@ -373,7 +373,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			const response = await eventadminDeleteInvitation({
+			const response = await eventadminDeleteInvitationEndpoint({
 				fetch,
 				path: {
 					event_id: params.event_id,
@@ -428,8 +428,8 @@ export const actions: Actions = {
 				path: { event_id: params.event_id },
 				body: {
 					emails: [email!],
-					tier_id: (tierId || undefined) as string | undefined,
-					custom_message: (customMessage || undefined) as string | undefined,
+					tier_id: (tierId ?? undefined) as string,
+					custom_message: customMessage ?? undefined,
 					send_notification: false,
 					waives_questionnaire: waivesQuestionnaire,
 					waives_purchase: waivesPurchase,
@@ -496,8 +496,8 @@ export const actions: Actions = {
 				path: { event_id: params.event_id },
 				body: {
 					emails,
-					tier_id: (tierId || undefined) as string | undefined,
-					custom_message: (customMessage || undefined) as string | undefined,
+					tier_id: (tierId ?? undefined) as string,
+					custom_message: customMessage ?? undefined,
 					send_notification: false,
 					waives_questionnaire: waivesQuestionnaire,
 					waives_purchase: waivesPurchase,

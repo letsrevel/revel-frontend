@@ -14,8 +14,13 @@
 		onAssignClick: () => void;
 	}
 
-	let { eventId, assignedQuestionnaires, organizationId, accessToken, onAssignClick }: Props =
-		$props();
+	let {
+		eventId,
+		assignedQuestionnaires,
+		organizationId: _organizationId,
+		accessToken,
+		onAssignClick
+	}: Props = $props();
 
 	let unassigning = $state<string | null>(null);
 

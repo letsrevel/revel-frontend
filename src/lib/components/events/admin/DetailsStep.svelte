@@ -1,16 +1,9 @@
 <script lang="ts">
-	import type {
-		EventCreateSchema,
-		EventSeriesRetrieveSchema,
-		QuestionnaireSchema
-	} from '$lib/api/generated/types.gen';
-	import { cn } from '$lib/utils/cn';
+	import type { EventCreateSchema, EventSeriesRetrieveSchema } from '$lib/api/generated/types.gen';
 	import { getBackendUrl } from '$lib/config/api';
 	import {
 		FileText,
-		Calendar,
 		MapPin,
-		Ticket,
 		Users,
 		Settings,
 		Image,
@@ -32,6 +25,7 @@
 			cover_art?: string;
 			organization_logo?: string;
 			organization_cover_art?: string;
+			requires_ticket?: boolean;
 		};
 		eventSeries?: EventSeriesRetrieveSchema[];
 		questionnaires?: OrganizationQuestionnaireInListSchema[];

@@ -2,13 +2,10 @@
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
 	import {
-		MapPin,
 		Calendar,
-		Tag,
 		ArrowLeft,
 		Repeat,
 		ArrowDownUp,
-		Edit,
 		Settings
 	} from 'lucide-svelte';
 	import { EventCard } from '$lib/components/events';

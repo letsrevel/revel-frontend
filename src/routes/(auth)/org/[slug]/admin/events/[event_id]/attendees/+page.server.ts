@@ -80,7 +80,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 			fetch,
 			path: { event_id: params.event_id },
 			query: {
-				status: status as 'yes' | 'no' | 'maybe' | undefined,
+				status: status as any,
 				search,
 				page,
 				page_size: pageSize

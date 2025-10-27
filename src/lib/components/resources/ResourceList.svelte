@@ -14,7 +14,10 @@
 	let { resources, onEdit, onDelete, isDeleting = false, class: className }: Props = $props();
 
 	// Group resources by type for better organization (optional)
-	const groupedResources = $derived.by(() => {
+	// Currently unused but kept for potential future use
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	// @ts-expect-error - Intentionally unused, kept for potential future use
+	const _groupedResources = $derived.by(() => {
 		const groups: Record<string, AdditionalResourceSchema[]> = {
 			file: [],
 			link: [],

@@ -2,6 +2,7 @@
 	import { Card } from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Check } from 'lucide-svelte';
+	import type { QuestionAnswerDetailSchema } from '$lib/api/generated';
 
 	interface MultipleChoiceAnswerContent {
 		option_id: string;
@@ -13,20 +14,13 @@
 		answer: string;
 	}
 
-	interface Answer {
-		question_id: string;
-		question_text: string;
-		question_type: string;
-		answer_content: (MultipleChoiceAnswerContent | FreeTextAnswerContent)[];
-	}
-
 	interface Props {
-		answers: Answer[];
+		answers: QuestionAnswerDetailSchema[];
 	}
 
 	let { answers }: Props = $props();
 
-	function formatAnswer(answer: Answer): string {
+	function formatAnswer(answer: QuestionAnswerDetailSchema): string {
 		const content = answer.answer_content;
 
 		if (!Array.isArray(content) || content.length === 0) {
@@ -34,12 +28,12 @@
 		}
 
 		if (answer.question_type === 'free_text') {
-			const freeTextContent = content[0] as FreeTextAnswerContent;
+			const freeTextContent = content[0] as unknown as FreeTextAnswerContent;
 			return freeTextContent.answer || 'No answer provided';
 		}
 
 		if (answer.question_type === 'multiple_choice') {
-			const options = content as MultipleChoiceAnswerContent[];
+			const options = content as unknown as MultipleChoiceAnswerContent[];
 			const optionTexts = options.map((opt) => opt.option_text).filter(Boolean);
 			return optionTexts.length > 0 ? optionTexts.join(', ') : 'No option selected';
 		}
@@ -47,13 +41,13 @@
 		return 'Unknown answer format';
 	}
 
-	function getSelectedOptions(answer: Answer): MultipleChoiceAnswerContent[] {
+	function getSelectedOptions(answer: QuestionAnswerDetailSchema): MultipleChoiceAnswerContent[] {
 		if (
 			answer.question_type === 'multiple_choice' &&
 			Array.isArray(answer.answer_content) &&
 			answer.answer_content.length > 0
 		) {
-			return answer.answer_content as MultipleChoiceAnswerContent[];
+			return answer.answer_content as unknown as MultipleChoiceAnswerContent[];
 		}
 		return [];
 	}

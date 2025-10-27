@@ -7,6 +7,9 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 
+	// @ts-expect-error - bits-ui slot props type issue with Svelte 5
+	type BuilderProps = any;
+
 	let accessToken = $derived(authStore.accessToken);
 	let permissions = $derived(authStore.permissions);
 
@@ -100,12 +103,19 @@
 	{:else}
 		<!-- Multiple orgs - dropdown -->
 		<DropdownMenu.Root>
-			<DropdownMenu.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="ghost" size="sm" class="gap-2 text-sm font-medium">
-					<Shield class="h-4 w-4" />
-					Admin
-					<ChevronDown class="h-4 w-4" />
-				</Button>
+			<DropdownMenu.Trigger>
+				{#snippet child({ props })}
+					<Button
+						{...props}
+						variant="ghost"
+						size="sm"
+						class="gap-2 text-sm font-medium"
+					>
+						<Shield class="h-4 w-4" />
+						Admin
+						<ChevronDown class="h-4 w-4" />
+					</Button>
+				{/snippet}
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content align="end" class="w-56">
 				<DropdownMenu.Label>Select Organization</DropdownMenu.Label>

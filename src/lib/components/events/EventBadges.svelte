@@ -58,11 +58,11 @@
 		if (result.length >= 2) return result;
 
 		// Priority 3: Event Type (only if we have room)
-		if (event.event_type === 'members-only') {
+		if ((event.event_type as any) === 'members-only') {
 			result.push({ label: 'Members Only', variant: 'secondary' });
-		} else if (event.event_type === 'private') {
+		} else if ((event.event_type as any) === 'private') {
 			result.push({ label: 'Private', variant: 'secondary' });
-		} else if (event.event_type === 'public') {
+		} else if ((event.event_type as any) === 'public') {
 			result.push({ label: 'Public', variant: 'outline' });
 		}
 

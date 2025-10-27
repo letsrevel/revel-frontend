@@ -16,10 +16,6 @@
 		organizationadminStripeConnect,
 		organizationadminStripeAccountVerify
 	} from '$lib/api/generated/sdk.gen';
-	import type {
-		StripeOnboardingLinkSchema,
-		StripeAccountStatusSchema
-	} from '$lib/api/generated/types.gen';
 
 	interface Props {
 		organizationSlug: string;

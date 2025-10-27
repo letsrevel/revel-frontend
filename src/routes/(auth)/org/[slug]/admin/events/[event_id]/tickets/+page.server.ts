@@ -81,13 +81,8 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 			fetch,
 			path: { event_id: params.event_id },
 			query: {
-				status: status as 'pending' | 'active' | 'cancelled' | 'checked_in' | undefined,
-				tier__payment_method: paymentMethod as
-					| 'online'
-					| 'offline'
-					| 'at_the_door'
-					| 'free'
-					| undefined,
+				status: status as any,
+				tier__payment_method: paymentMethod as any,
 				search,
 				page,
 				page_size: pageSize

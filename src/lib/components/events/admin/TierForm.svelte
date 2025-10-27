@@ -126,9 +126,9 @@
 	let name = $state(tier?.name ?? '');
 	let description = $state(tier?.description ?? '');
 	let paymentMethod = $state<'free' | 'offline' | 'at_the_door' | 'online'>(
-		tier?.payment_method ?? 'free'
+		(tier?.payment_method as 'free' | 'offline' | 'at_the_door' | 'online') ?? 'free'
 	);
-	let priceType = $state<'fixed' | 'pwyc'>(tier?.price_type ?? 'fixed');
+	let priceType = $state<'fixed' | 'pwyc'>((tier?.price_type as 'fixed' | 'pwyc') ?? 'fixed');
 	let price = $state(tier?.price ? String(tier.price) : '0');
 	let pwycMin = $state(tier?.pwyc_min ? String(tier.pwyc_min) : '1');
 	let pwycMax = $state(tier?.pwyc_max ? String(tier.pwyc_max) : '');
@@ -141,10 +141,10 @@
 	let salesStartAt = $state(toDatetimeLocal(tier?.sales_start_at));
 	let salesEndAt = $state(toDatetimeLocal(tier?.sales_end_at));
 	let visibility = $state<'public' | 'private' | 'members-only' | 'staff-only'>(
-		tier?.visibility ?? 'public'
+		(tier?.visibility as 'public' | 'private' | 'members-only' | 'staff-only') ?? 'public'
 	);
 	let purchasableBy = $state<'public' | 'members' | 'invited' | 'invited_and_members'>(
-		tier?.purchasable_by ?? 'public'
+		(tier?.purchasable_by as 'public' | 'members' | 'invited' | 'invited_and_members') ?? 'public'
 	);
 
 	// Get current currency symbol for display

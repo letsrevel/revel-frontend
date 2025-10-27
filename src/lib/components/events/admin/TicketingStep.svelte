@@ -3,10 +3,14 @@
 	import { eventadminListTicketTiers } from '$lib/api/generated/sdk.gen';
 	import type { TicketTierDetailSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
-	import { Ticket, CheckSquare, Users } from 'lucide-svelte';
+	import { Users } from 'lucide-svelte';
 	import TierCard from './TierCard.svelte';
 	import TierForm from './TierForm.svelte';
-	import type { EventFormData } from './types';
+
+	// EventFormData is a flexible type for form state
+	interface EventFormData {
+		[key: string]: any;
+	}
 
 	interface Props {
 		eventId: string;

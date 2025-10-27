@@ -146,10 +146,10 @@
 									</div>
 
 									<!-- Payment Method & Instructions -->
-									{#if tier.manual_payment_instructions}
+									{#if (tier as any).manual_payment_instructions}
 										<div class="mt-2 rounded-md border border-border bg-muted/50 p-2 text-xs">
 											<p class="font-medium text-muted-foreground">Payment Instructions:</p>
-											<p class="mt-1">{tier.manual_payment_instructions}</p>
+											<p class="mt-1">{(tier as any).manual_payment_instructions}</p>
 										</div>
 									{/if}
 								</div>

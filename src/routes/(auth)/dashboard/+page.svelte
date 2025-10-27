@@ -351,7 +351,7 @@
 
 			{#if upcomingEventsQuery.isLoading}
 				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-					{#each Array(6) as _, i}
+					{#each Array(6) as _}
 						<EventCardSkeleton />
 					{/each}
 				</div>
@@ -385,7 +385,7 @@
 
 			{#if organizationsQuery.isLoading}
 				<div class="space-y-3">
-					{#each Array(3) as _, i}
+					{#each Array(3) as _}
 						<OrganizationCardSkeleton />
 					{/each}
 				</div>

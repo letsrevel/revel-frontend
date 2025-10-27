@@ -142,7 +142,7 @@ export function getAllowedActions(
 			'edit_questionnaire',
 			'delete_questionnaire',
 			'evaluate_questionnaire',
-			'manage_membership'
+			'manage_members'
 		];
 	}
 

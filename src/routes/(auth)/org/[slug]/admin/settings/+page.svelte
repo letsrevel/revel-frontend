@@ -50,12 +50,8 @@
 	// Helper function to get full image URL
 	function getImageUrl(path: string | null | undefined): string | null {
 		if (!path) return null;
-		// If path is already a full URL, return it
-		if (path.startsWith('http://') || path.startsWith('https://')) {
-			return path;
-		}
-		// Otherwise, prepend backend URL
-		return `${BACKEND_URL}${path}`;
+		// getBackendUrl already handles full URLs and path normalization
+		return getBackendUrl(path);
 	}
 
 	// Computed full URLs for images (hide if marked for deletion)
@@ -278,7 +274,7 @@
 	{/if}
 
 	<!-- Error Message -->
-	{#if form?.errors?.form}
+	{#if form?.errors && 'form' in form.errors}
 		<div
 			class="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
 			role="alert"
@@ -355,7 +351,7 @@
 		organizationSlug={data.organization.slug}
 		stripeChargesEnabled={data.organization.stripe_charges_enabled}
 		stripeDetailsSubmitted={data.organization.stripe_details_submitted}
-		stripeAccountId={data.organization.stripe_account_id}
+		stripeAccountId={data.organization.stripe_account_id ?? null}
 		accessToken={accessToken || ''}
 	/>
 

@@ -37,7 +37,8 @@
 	let file = $state<File | null>(null);
 	let link = $state(resource?.link || '');
 	let text = $state(resource?.text || '');
-	let fileInput: HTMLInputElement;
+	// @ts-expect-error - Bound for potential future use (e.g., programmatic file selection)
+	let fileInput = $state<HTMLInputElement | undefined>(undefined);
 
 	// Event assignment
 	let selectedEventIds = $state<string[]>(resource?.event_ids || []);

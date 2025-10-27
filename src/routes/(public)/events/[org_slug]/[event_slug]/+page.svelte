@@ -88,10 +88,6 @@
 		showMyTicketModal = true;
 	}
 
-	function closeMyTicketModal() {
-		showMyTicketModal = false;
-	}
-
 	function openPWYCModal(tier: TierSchemaWithId) {
 		pendingPWYCTier = tier;
 		showPWYCModal = true;
@@ -500,7 +496,6 @@
 		eventName={event.name}
 		eventDate={event.start ? new Date(event.start).toLocaleString() : undefined}
 		eventLocation={formatEventLocation(event)}
-		onClose={closeMyTicketModal}
 		onResumePayment={handleResumePayment}
 		isResumingPayment={resumePaymentMutation.isPending}
 	/>

@@ -1,9 +1,6 @@
 <script lang="ts">
 	import { createMutation } from '@tanstack/svelte-query';
-	import {
-		organizationadminCreateResource,
-		organizationadminUpdateResource
-	} from '$lib/api/generated/sdk.gen';
+	import { organizationadminUpdateResource } from '$lib/api/generated/sdk.gen';
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { getApiUrl } from '$lib/config/api';
@@ -231,7 +228,9 @@
 		createResourceMutation.isPending || updateResourceMutation.isPending
 	);
 
+	// @ts-expect-error - Bound for potential future use (e.g., focus management)
 	let backdropElement: HTMLDivElement;
+	// @ts-expect-error - Bound for potential future use (e.g., focus management)
 	let modalElement: HTMLDivElement;
 </script>
 

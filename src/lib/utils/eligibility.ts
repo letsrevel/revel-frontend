@@ -20,6 +20,18 @@ export type RsvpStatus = EventsModelsEventEventRsvpStatus; // 'yes' | 'no' | 'ma
 export type TicketStatus = EventsModelsEventTicketStatus; // 'pending' | 'active' | 'checked_in' | 'cancelled'
 
 /**
+ * Invitation Request Status - From EventInvitationRequest.Status backend enum
+ * The generated types show this as just 'string', but backend actually uses a TextChoices enum
+ */
+export type InvitationRequestStatus = 'pending' | 'approved' | 'rejected';
+
+/**
+ * Membership Request Status - From OrganizationMembershipRequest.Status backend enum
+ * The generated types show this as just 'string', but backend actually uses a TextChoices enum
+ */
+export type MembershipRequestStatus = 'pending' | 'approved' | 'rejected';
+
+/**
  * Legacy alias for backward compatibility
  * @deprecated Use RsvpStatus instead
  */

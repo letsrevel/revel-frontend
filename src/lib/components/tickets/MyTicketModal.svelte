@@ -1,11 +1,9 @@
 <script lang="ts">
 	import type { EventTicketSchemaActual } from '$lib/utils/eligibility';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
-	import { Card } from '$lib/components/ui/card';
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
 	import { Ticket, Calendar, MapPin, Download } from 'lucide-svelte';
 	import QRCode from 'qrcode';
-	import { onMount } from 'svelte';
 
 	interface Props {
 		open: boolean;
@@ -13,7 +11,6 @@
 		eventName: string;
 		eventDate?: string;
 		eventLocation?: string;
-		onClose: () => void;
 		onResumePayment?: () => void;
 		isResumingPayment?: boolean;
 	}
@@ -24,7 +21,6 @@
 		eventName,
 		eventDate,
 		eventLocation,
-		onClose,
 		onResumePayment,
 		isResumingPayment = false
 	}: Props = $props();
@@ -79,7 +75,7 @@
 	}
 
 	// Check if ticket is pending and payment method allows resume
-	let canResumePayment = $derived(() => {
+	let canResumePayment = $derived.by(() => {
 		if (ticket.status !== 'pending') return false;
 		if (!ticket.tier) return false;
 
@@ -146,7 +142,7 @@
 									Complete your payment to confirm your ticket.
 								{/if}
 							</p>
-							{#if canResumePayment() && onResumePayment}
+							{#if canResumePayment && onResumePayment}
 								<button
 									onclick={onResumePayment}
 									disabled={isResumingPayment}
@@ -223,7 +219,7 @@
 			{/if}
 
 			<!-- Manual Payment Instructions (for pending tickets) -->
-			{#if ticket.status === 'pending' && ticket.tier?.manual_payment_instructions}
+			{#if ticket.status === 'pending' && (ticket.tier as any)?.manual_payment_instructions}
 				<div
 					class="rounded-lg border-2 border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-950/30"
 				>
@@ -246,16 +242,16 @@
 						Payment Instructions
 					</h3>
 					<p class="whitespace-pre-wrap text-sm text-yellow-900 dark:text-yellow-100">
-						{ticket.tier.manual_payment_instructions}
+						{(ticket.tier as any).manual_payment_instructions}
 					</p>
 				</div>
 			{/if}
 
 			<!-- Checked In Info -->
-			{#if ticket.status === 'checked_in' && checkedInDate()}
+			{#if ticket.status === 'checked_in' && checkedInDate}
 				<div class="rounded-lg bg-blue-50 p-4 text-sm dark:bg-blue-950/50">
 					<p class="font-medium text-blue-900 dark:text-blue-100">
-						Checked in at {checkedInDate()}
+						Checked in at {checkedInDate}
 					</p>
 				</div>
 			{/if}

@@ -14,7 +14,7 @@
 		ChevronsRight,
 		ArrowUpDown
 	} from 'lucide-svelte';
-	import { cn } from '$lib/utils/cn';
+	import type { QuestionnaireEvaluationStatus } from '$lib/utils/questionnaire-types';
 
 	interface Props {
 		data: PageData;
@@ -24,7 +24,7 @@
 
 	// Current filter values
 	let currentEvaluationStatus = $derived(data.filters.evaluationStatus || '');
-	let currentOrdering = $derived(data.filters.ordering || '-submitted_at');
+	let currentOrderBy = $derived(data.filters.orderBy || '-submitted_at');
 
 	function setEvaluationStatusFilter(status: string) {
 		const params = new URLSearchParams($page.url.searchParams);
@@ -39,13 +39,13 @@
 		goto(`?${params.toString()}`, { replaceState: true });
 	}
 
-	function setOrdering(ordering: string) {
+	function setOrderBy(orderBy: string) {
 		const params = new URLSearchParams($page.url.searchParams);
 
-		if (ordering !== '-submitted_at') {
-			params.set('ordering', ordering);
+		if (orderBy !== '-submitted_at') {
+			params.set('order_by', orderBy);
 		} else {
-			params.delete('ordering');
+			params.delete('order_by');
 		}
 
 		params.delete('page'); // Reset to first page when ordering changes
@@ -58,7 +58,7 @@
 		goto(`?${params.toString()}`);
 	}
 
-	function formatDate(dateString: string | null): string {
+	function formatDate(dateString: string | null | undefined): string {
 		if (!dateString) return 'Not submitted';
 		return new Date(dateString).toLocaleDateString('en-US', {
 			year: 'numeric',
@@ -69,8 +69,10 @@
 		});
 	}
 
-	function formatScore(score: number | null): string {
-		return score !== null ? `${score}/100` : 'N/A';
+	function formatScore(score: string | number | null | undefined): string {
+		if (score === null || score === undefined) return 'N/A';
+		const numScore = typeof score === 'string' ? parseFloat(score) : score;
+		return `${numScore}/100`;
 	}
 </script>
 
@@ -143,17 +145,17 @@
 			<h3 class="mb-3 text-sm font-medium">Sort By</h3>
 			<div class="flex flex-wrap gap-2">
 				<Button
-					variant={currentOrdering === '-submitted_at' ? 'default' : 'outline'}
+					variant={currentOrderBy === '-submitted_at' ? 'default' : 'outline'}
 					size="sm"
-					onclick={() => setOrdering('-submitted_at')}
+					onclick={() => setOrderBy('-submitted_at')}
 				>
 					<ArrowUpDown class="mr-2 h-4 w-4" />
 					Newest First
 				</Button>
 				<Button
-					variant={currentOrdering === 'submitted_at' ? 'default' : 'outline'}
+					variant={currentOrderBy === 'submitted_at' ? 'default' : 'outline'}
 					size="sm"
-					onclick={() => setOrdering('submitted_at')}
+					onclick={() => setOrderBy('submitted_at')}
 				>
 					<ArrowUpDown class="mr-2 h-4 w-4" />
 					Oldest First
@@ -167,7 +169,7 @@
 		<Card class="p-12 text-center">
 			<p class="text-lg text-muted-foreground">No submissions found</p>
 			<p class="mt-2 text-sm text-muted-foreground">
-				{#if data.filters.search || data.filters.status || data.filters.evaluationStatus}
+				{#if data.filters.search || data.filters.evaluationStatus}
 					Try adjusting your filters
 				{:else}
 					No one has submitted this questionnaire yet
@@ -200,7 +202,8 @@
 								<td class="px-6 py-4 text-sm">{formatDate(submission.submitted_at)}</td>
 								<td class="px-6 py-4">
 									<SubmissionStatusBadge
-										status={submission.evaluation_status || 'pending review'}
+										status={(submission.evaluation_status ||
+											'pending review') as QuestionnaireEvaluationStatus}
 									/>
 								</td>
 								<td class="px-6 py-4 text-sm">{formatScore(submission.evaluation_score)}</td>
@@ -229,7 +232,10 @@
 							<h3 class="font-semibold">{submission.user_name}</h3>
 							<p class="text-sm text-muted-foreground">{submission.user_email}</p>
 						</div>
-						<SubmissionStatusBadge status={submission.evaluation_status || 'pending review'} />
+						<SubmissionStatusBadge
+							status={(submission.evaluation_status ||
+								'pending review') as QuestionnaireEvaluationStatus}
+						/>
 					</div>
 
 					<div class="space-y-2 text-sm">

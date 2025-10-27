@@ -138,9 +138,9 @@
 
 		// Restore cursor position
 		setTimeout(() => {
-			textarea.focus();
+			textarea?.focus();
 			const newCursorPos = start + before.length + selectedText.length;
-			textarea.setSelectionRange(newCursorPos, newCursorPos);
+			textarea?.setSelectionRange(newCursorPos, newCursorPos);
 		}, 0);
 	}
 
