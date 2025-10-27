@@ -31,7 +31,7 @@ jobs:
           file: ./Dockerfile
           push: false
           build-args: |
-            PUBLIC_API_URL=https://demo.api.letsrevel.io
+            PUBLIC_API_URL=https://demo-api.letsrevel.io
             ORIGIN=https://demo.letsrevel.io
           tags: |
             ghcr.io/letsrevel/revel-frontend:latest

@@ -17,14 +17,14 @@ This document describes how to deploy the Revel Frontend application using Docke
 # IMPORTANT: PUBLIC_API_URL must be provided at BUILD time (not runtime)
 # because Vite embeds it in the client bundle
 docker build \
-  --build-arg PUBLIC_API_URL=https://demo.api.letsrevel.io \
+  --build-arg PUBLIC_API_URL=https://demo-api.letsrevel.io \
   --build-arg ORIGIN=https://demo.letsrevel.io \
   -t revel-frontend:latest .
 
 # Or with a specific version
 VERSION=$(cat version)
 docker build \
-  --build-arg PUBLIC_API_URL=https://demo.api.letsrevel.io \
+  --build-arg PUBLIC_API_URL=https://demo-api.letsrevel.io \
   --build-arg ORIGIN=https://demo.letsrevel.io \
   -t revel-frontend:$VERSION .
 
