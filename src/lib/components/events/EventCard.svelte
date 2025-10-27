@@ -5,7 +5,7 @@
 	import { formatEventDate, formatEventDateForScreenReader, isEventPast } from '$lib/utils/date';
 	import { getEventAccessDisplay, getEventFallbackGradient } from '$lib/utils/event';
 	import { getImageUrl } from '$lib/utils/url';
-	import { Calendar, MapPin, Ticket } from 'lucide-svelte';
+	import { Calendar, MapPin, Ticket, Tag } from 'lucide-svelte';
 	import EventBadges from './EventBadges.svelte';
 
 	interface Props {
@@ -177,6 +177,27 @@
 					<Ticket class="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
 					<span class="truncate">{accessDisplay}</span>
 				</div>
+
+				<!-- Tags (if available) -->
+				{#if event.tags && event.tags.length > 0}
+					<div class="flex items-start gap-2 text-sm">
+						<Tag class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+						<div class="flex flex-wrap gap-1">
+							{#each event.tags.slice(0, 3) as tag}
+								<span
+									class="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+								>
+									{tag}
+								</span>
+							{/each}
+							{#if event.tags.length > 3}
+								<span class="inline-block px-2 py-0.5 text-xs text-muted-foreground">
+									+{event.tags.length - 3} more
+								</span>
+							{/if}
+						</div>
+					</div>
+				{/if}
 			{/if}
 		</div>
 	</div>

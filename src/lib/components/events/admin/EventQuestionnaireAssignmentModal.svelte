@@ -53,6 +53,7 @@
 		try {
 			const response = await questionnaireListOrgQuestionnaires({
 				query: {
+					organization_id: organizationId,
 					page_size: 100 // Fetch all org questionnaires
 				},
 				headers: { Authorization: `Bearer ${accessToken}` }

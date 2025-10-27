@@ -5,6 +5,7 @@
 	import MobileNav from './MobileNav.svelte';
 	import UserMenu from './UserMenu.svelte';
 	import ThemeToggle from './ThemeToggle.svelte';
+	import AdminButton from './AdminButton.svelte';
 
 	// Mobile menu state
 	let mobileMenuOpen = $state(false);
@@ -15,14 +16,14 @@
 
 	// Navigation items for public users
 	const publicNavItems = [
-		{ href: '/events', label: 'Events' }
-		// Note: Organizations browsing deferred to Phase 3
+		{ href: '/events', label: 'Browse Events' },
+		{ href: '/organizations', label: 'Organizations' }
 	];
 
 	// Navigation items for authenticated users
 	const authNavItems = [
-		{ href: '/events', label: 'Browse' },
-		{ href: '/dashboard', label: 'Dashboard' }
+		{ href: '/events', label: 'Browse Events' },
+		{ href: '/organizations', label: 'My Organizations' }
 	];
 
 	// Determine which nav items to show
@@ -78,6 +79,13 @@
 
 		<!-- Right side actions -->
 		<div class="flex items-center gap-4">
+			<!-- Admin Button (Desktop, Authenticated) -->
+			{#if isAuthenticated}
+				<div class="hidden md:block">
+					<AdminButton />
+				</div>
+			{/if}
+
 			<!-- Theme Toggle -->
 			<ThemeToggle />
 

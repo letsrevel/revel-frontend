@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { Tag, X } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
+	import { tagListTags } from '$lib/api';
+	import { onMount } from 'svelte';
 
 	interface Props {
 		selectedTags: string[];
@@ -10,19 +12,48 @@
 
 	let { selectedTags = [], onToggleTag, class: className }: Props = $props();
 
-	// Popular tags (this could be fetched from the API in the future)
-	const popularTags = [
-		'LGBTQ+',
-		'Queer',
-		'Sex-Positive',
-		'Community',
-		'Social',
-		'Party',
-		'Workshop',
-		'Educational',
-		'Networking',
-		'Support Group'
-	];
+	let availableTags = $state<string[]>([]);
+	let isLoading = $state(false);
+	let error = $state<string | null>(null);
+
+	// Load tags from API on mount
+	onMount(async () => {
+		isLoading = true;
+		error = null;
+
+		try {
+			const response = await tagListTags({
+				query: {
+					page: 1,
+					page_size: 50 // Load first 50 tags
+				}
+			});
+
+			if (response.data) {
+				availableTags = response.data.results.map((tag) => tag.name);
+			} else {
+				error = 'Failed to load tags';
+			}
+		} catch (err) {
+			console.error('Failed to load tags:', err);
+			error = 'Failed to load tags';
+			// Fallback to hardcoded tags
+			availableTags = [
+				'LGBTQ+',
+				'Queer',
+				'Sex-Positive',
+				'Community',
+				'Social',
+				'Party',
+				'Workshop',
+				'Educational',
+				'Networking',
+				'Support Group'
+			];
+		} finally {
+			isLoading = false;
+		}
+	});
 
 	function handleTagClick(tag: string): void {
 		onToggleTag(tag);
@@ -35,32 +66,46 @@
 		<h3 class="text-sm font-medium">Tags</h3>
 	</div>
 
-	<div class="flex flex-wrap gap-2">
-		{#each popularTags as tag (tag)}
-			{@const isSelected = selectedTags.includes(tag)}
-			<button
-				type="button"
-				onclick={() => handleTagClick(tag)}
-				class={cn(
-					'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-					isSelected
-						? 'border-primary bg-primary text-primary-foreground hover:bg-primary/90'
-						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'
-				)}
-				aria-pressed={isSelected}
-			>
-				{tag}
-				{#if isSelected}
-					<X class="h-3 w-3" aria-hidden="true" />
-				{/if}
-			</button>
-		{/each}
-	</div>
+	{#if isLoading}
+		<div class="flex items-center justify-center py-4">
+			<div
+				class="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent"
+				aria-label="Loading tags"
+			></div>
+		</div>
+	{:else if error}
+		<p class="text-xs text-destructive">{error}</p>
+	{:else if availableTags.length > 0}
+		<div class="flex flex-wrap gap-2">
+			{#each availableTags as tag (tag)}
+				{@const isSelected = selectedTags?.includes(tag) ?? false}
+				<button
+					type="button"
+					onclick={() => handleTagClick(tag)}
+					class={cn(
+						'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+						isSelected
+							? 'border-primary bg-primary text-primary-foreground hover:bg-primary/90'
+							: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'
+					)}
+					aria-pressed={isSelected}
+					aria-label={isSelected ? `Remove ${tag} filter` : `Add ${tag} filter`}
+				>
+					{tag}
+					{#if isSelected}
+						<X class="h-3 w-3" aria-hidden="true" />
+					{/if}
+				</button>
+			{/each}
+		</div>
 
-	{#if selectedTags.length > 0}
-		<p class="text-xs text-muted-foreground">
-			{selectedTags.length}
-			{selectedTags.length === 1 ? 'tag' : 'tags'} selected
-		</p>
+		{#if selectedTags.length > 0}
+			<p class="text-xs text-muted-foreground">
+				{selectedTags.length}
+				{selectedTags.length === 1 ? 'tag' : 'tags'} selected
+			</p>
+		{/if}
+	{:else}
+		<p class="text-xs text-muted-foreground">No tags available</p>
 	{/if}
 </div>

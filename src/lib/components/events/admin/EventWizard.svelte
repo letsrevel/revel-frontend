@@ -87,6 +87,7 @@
 			// Fetch questionnaires assigned to this event
 			questionnaireListOrgQuestionnaires({
 				query: {
+					organization_id: organization.id,
 					event_id: existingEvent.id
 				}
 			}).then((response) => {

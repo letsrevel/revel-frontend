@@ -8,6 +8,7 @@
 	import TagsFilter from './TagsFilter.svelte';
 	import EventTypeFilter from './EventTypeFilter.svelte';
 	import CityFilter from './CityFilter.svelte';
+	import OrganizationFilter from './OrganizationFilter.svelte';
 	import OrderByFilter from './OrderByFilter.svelte';
 
 	interface Props {
@@ -47,6 +48,22 @@
 		onUpdateFilters({ cityId: city?.id });
 	}
 
+	function handleChangeOrganization(org: { id: string; name: string; slug: string } | null): void {
+		if (org) {
+			onUpdateFilters({
+				organizationId: org.id,
+				organizationName: org.name,
+				organizationSlug: org.slug
+			});
+		} else {
+			onUpdateFilters({
+				organizationId: undefined,
+				organizationName: undefined,
+				organizationSlug: undefined
+			});
+		}
+	}
+
 	function handleChangeOrderBy(orderBy: FilterState['orderBy']): void {
 		onUpdateFilters({ orderBy });
 	}
@@ -58,6 +75,17 @@
 		// In a real implementation, you might want to store the full city object in the URL
 		// or fetch it. For now, we'll just track the ID and let the component handle it.
 		return null;
+	});
+
+	// Derive selected organization object from filters
+	let selectedOrganization = $derived.by(() => {
+		if (!filters.organizationId) return null;
+		// Use stored name and slug from URL params if available
+		return {
+			id: filters.organizationId,
+			name: filters.organizationName || 'Unknown Organization',
+			slug: filters.organizationSlug || 'unknown'
+		};
 	});
 </script>
 
@@ -122,6 +150,12 @@
 
 	<!-- City Filter -->
 	<CityFilter {selectedCity} onChangeCity={handleChangeCity} />
+
+	<!-- Divider -->
+	<div class="border-t" role="separator"></div>
+
+	<!-- Organization Filter -->
+	<OrganizationFilter {selectedOrganization} onChangeOrganization={handleChangeOrganization} />
 
 	<!-- Divider -->
 	<div class="border-t" role="separator"></div>

@@ -1,0 +1,413 @@
+<script lang="ts">
+	import type { PageData } from './$types';
+	import { page } from '$app/stores';
+	import {
+		MapPin,
+		Calendar,
+		Tag,
+		ArrowLeft,
+		Repeat,
+		ArrowDownUp,
+		Edit,
+		Settings
+	} from 'lucide-svelte';
+	import { EventCard } from '$lib/components/events';
+	import { getImageUrl } from '$lib/utils/url';
+
+	let { data }: { data: PageData } = $props();
+
+	let series = $derived(data.series);
+	let events = $derived(data.events);
+	let totalCount = $derived(data.totalCount);
+	let currentPage = $derived(data.page);
+	let pageSize = $derived(data.pageSize);
+	let orderBy = $derived(data.orderBy);
+
+	// Compute full image URLs
+	const coverUrl = $derived(getImageUrl(series.cover_art));
+	const logoUrl = $derived(getImageUrl(series.logo));
+	const orgLogoUrl = $derived(getImageUrl(series.organization.logo));
+
+	// Fallback gradient
+	function getSeriesFallbackGradient(seriesId: string): string {
+		const hash = seriesId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+		const gradients = [
+			'bg-gradient-to-br from-blue-500 to-indigo-600',
+			'bg-gradient-to-br from-purple-500 to-pink-600',
+			'bg-gradient-to-br from-green-500 to-teal-600',
+			'bg-gradient-to-br from-orange-500 to-red-600',
+			'bg-gradient-to-br from-cyan-500 to-blue-600'
+		];
+		return gradients[hash % gradients.length];
+	}
+
+	let fallbackGradient = $derived(getSeriesFallbackGradient(series.id));
+
+	// Calculate pagination info
+	let totalPages = $derived(Math.ceil(totalCount / pageSize));
+	let hasNextPage = $derived(currentPage < totalPages);
+	let hasPrevPage = $derived(currentPage > 1);
+</script>
+
+<svelte:head>
+	<title>{series.name} | {series.organization.name} | Revel</title>
+	<meta
+		name="description"
+		content={series.description?.slice(0, 160) ||
+			`${series.name} - Event series by ${series.organization.name}`}
+	/>
+
+	<!-- Open Graph -->
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="{series.name} | {series.organization.name}" />
+	<meta
+		property="og:description"
+		content={series.description || `${series.name} - Event series by ${series.organization.name}`}
+	/>
+	{#if coverUrl}
+		<meta property="og:image" content={coverUrl} />
+	{/if}
+	<meta property="og:url" content={$page.url.href} />
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="{series.name} | {series.organization.name}" />
+	<meta
+		name="twitter:description"
+		content={series.description?.slice(0, 200) ||
+			`${series.name} - Event series by ${series.organization.name}`}
+	/>
+	{#if coverUrl}
+		<meta name="twitter:image" content={coverUrl} />
+	{/if}
+</svelte:head>
+
+<div class="min-h-screen bg-background">
+	<!-- Hero Section with Cover Art -->
+	<section class="relative w-full overflow-hidden">
+		<!-- Cover Image or Gradient -->
+		<div class="relative h-48 w-full md:h-64 lg:h-80">
+			{#if coverUrl}
+				<img src={coverUrl} alt="{series.name} cover" class="h-full w-full object-cover" />
+				<!-- Gradient overlay -->
+				<div
+					class="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60"
+				></div>
+			{:else}
+				<!-- Fallback gradient -->
+				<div class="h-full w-full {fallbackGradient}"></div>
+				<div class="absolute inset-0 bg-gradient-to-b from-black/10 to-black/60"></div>
+			{/if}
+
+			<!-- Series Badge -->
+			<div class="absolute right-4 top-4">
+				<div class="rounded-full bg-primary px-4 py-2 shadow-lg">
+					<div class="flex items-center gap-2">
+						<Repeat class="h-4 w-4 text-primary-foreground" aria-hidden="true" />
+						<span class="text-sm font-semibold text-primary-foreground">Event Series</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- Main Content -->
+	<div class="container mx-auto px-6 py-8 md:px-8 lg:py-12">
+		<!-- Back Button -->
+		<div class="mb-6">
+			<a
+				href="/org/{series.organization.slug}"
+				class="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+			>
+				<ArrowLeft class="h-4 w-4" aria-hidden="true" />
+				Back to {series.organization.name}
+			</a>
+		</div>
+
+		<!-- Admin Actions Card (Mobile) -->
+		{#if data.canEdit}
+			<div class="mb-8 lg:hidden">
+				<aside
+					class="rounded-lg border border-border bg-card p-4 shadow-sm"
+					aria-label="Series management actions"
+				>
+					<h3 class="mb-3 text-sm font-semibold">Manage Series</h3>
+					<div class="space-y-2">
+						<a
+							href="/org/{series.organization.slug}/admin/event-series/{series.id}/edit"
+							class="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						>
+							<Settings class="h-4 w-4" aria-hidden="true" />
+							Edit Series
+						</a>
+					</div>
+				</aside>
+			</div>
+		{/if}
+
+		<div class="grid gap-8 lg:grid-cols-3">
+			<!-- Left Column: Main Content -->
+			<div class="space-y-8 lg:col-span-2">
+				<!-- Header with Logo, Name, and Organization -->
+				<div class="flex flex-col gap-6 sm:flex-row sm:items-start">
+					<div class="flex flex-1 gap-4">
+						<!-- Series/Organization Logo -->
+						<div class="flex-shrink-0">
+							{#if logoUrl || orgLogoUrl}
+								<img
+									src={logoUrl || orgLogoUrl}
+									alt="{series.name} logo"
+									class="h-16 w-16 rounded-lg object-cover shadow-sm md:h-20 md:w-20"
+								/>
+							{:else}
+								<div
+									class="flex h-16 w-16 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/70 text-xl font-bold text-primary-foreground shadow-sm md:h-20 md:w-20 md:text-2xl"
+								>
+									{series.name.charAt(0).toUpperCase()}
+								</div>
+							{/if}
+						</div>
+
+						<!-- Series Info -->
+						<div class="min-w-0 flex-1">
+							<h1 class="mb-2 text-3xl font-bold md:text-4xl">{series.name}</h1>
+
+							<!-- Organization Link -->
+							<a
+								href="/org/{series.organization.slug}"
+								class="mb-2 inline-block text-base font-medium text-primary hover:underline"
+							>
+								by {series.organization.name}
+							</a>
+
+							<!-- Tags -->
+							{#if series.tags && series.tags.length > 0}
+								<div class="mt-3 flex flex-wrap gap-2">
+									{#each series.tags as tag}
+										<span
+											class="inline-block rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary"
+										>
+											{tag}
+										</span>
+									{/each}
+								</div>
+							{/if}
+						</div>
+					</div>
+				</div>
+
+				<!-- Series Description -->
+				{#if series.description_html}
+					<section
+						aria-labelledby="description-heading"
+						class="rounded-lg border bg-card p-6 md:p-8"
+					>
+						<h2 id="description-heading" class="sr-only">About {series.name}</h2>
+						<div class="prose prose-slate dark:prose-invert max-w-none">
+							{@html series.description_html}
+						</div>
+					</section>
+				{:else if series.description}
+					<section
+						aria-labelledby="description-heading"
+						class="rounded-lg border bg-card p-6 md:p-8"
+					>
+						<h2 id="description-heading" class="sr-only">About {series.name}</h2>
+						<div class="prose prose-slate dark:prose-invert max-w-none">
+							<p>{series.description}</p>
+						</div>
+					</section>
+				{/if}
+
+				<!-- Events Section -->
+				<section aria-labelledby="events-heading">
+					<div class="mb-6 flex flex-wrap items-end justify-between gap-4">
+						<div>
+							<h2 id="events-heading" class="text-2xl font-bold">Events in this Series</h2>
+							{#if totalCount > 0}
+								<p class="mt-1 text-sm text-muted-foreground">
+									{totalCount}
+									{totalCount === 1 ? 'event' : 'events'} total
+								</p>
+							{/if}
+						</div>
+
+						<!-- Sort Order Toggle -->
+						<a
+							href="?order_by={orderBy === '-start' ? 'start' : '-start'}"
+							class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+							aria-label={orderBy === '-start' ? 'Showing newest first' : 'Showing oldest first'}
+						>
+							<ArrowDownUp class="h-4 w-4" aria-hidden="true" />
+							{orderBy === '-start' ? 'Newest First' : 'Oldest First'}
+						</a>
+					</div>
+
+					{#if events.length === 0}
+						<!-- Empty State -->
+						<div class="rounded-lg border bg-card p-8 text-center">
+							<Calendar class="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+							<h3 class="mb-2 text-lg font-semibold">No events yet</h3>
+							<p class="text-sm text-muted-foreground">
+								This series doesn't have any events scheduled yet. Check back later!
+							</p>
+						</div>
+					{:else}
+						<!-- Event Cards Grid -->
+						<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+							{#each events as event, index (`${event.id}-${index}`)}
+								<EventCard {event} />
+							{/each}
+						</div>
+
+						<!-- Pagination -->
+						{#if totalPages > 1}
+							<nav
+								class="mt-12 flex flex-col items-center justify-between gap-4 sm:flex-row"
+								aria-label="Pagination"
+							>
+								<!-- Results info -->
+								<p class="text-sm text-muted-foreground">
+									Showing page {currentPage} of {totalPages}
+								</p>
+
+								<!-- Pagination controls -->
+								<div class="flex items-center gap-2">
+									{#if hasPrevPage}
+										<a
+											href="?page={currentPage - 1}"
+											class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+											aria-label="Go to previous page"
+										>
+											Previous
+										</a>
+									{:else}
+										<button
+											type="button"
+											disabled
+											class="inline-flex h-10 cursor-not-allowed items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium opacity-50"
+											aria-label="Previous page (unavailable)"
+										>
+											Previous
+										</button>
+									{/if}
+
+									<!-- Page indicator -->
+									<span
+										class="inline-flex h-10 items-center justify-center px-4 text-sm font-medium"
+									>
+										Page {currentPage} of {totalPages}
+									</span>
+
+									{#if hasNextPage}
+										<a
+											href="?page={currentPage + 1}"
+											class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+											aria-label="Go to next page"
+										>
+											Next
+										</a>
+									{:else}
+										<button
+											type="button"
+											disabled
+											class="inline-flex h-10 cursor-not-allowed items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium opacity-50"
+											aria-label="Next page (unavailable)"
+										>
+											Next
+										</button>
+									{/if}
+								</div>
+							</nav>
+						{/if}
+					{/if}
+				</section>
+			</div>
+
+			<!-- Right Column: Admin Sidebar (Desktop only, sticky) -->
+			{#if data.canEdit}
+				<aside class="hidden lg:col-span-1 lg:block">
+					<div class="sticky top-4 space-y-6">
+						<div class="rounded-lg border border-border bg-card p-4 shadow-sm">
+							<h3 class="mb-3 text-sm font-semibold">Manage Series</h3>
+							<div class="space-y-2">
+								<a
+									href="/org/{series.organization.slug}/admin/event-series/{series.id}/edit"
+									class="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+								>
+									<Settings class="h-4 w-4" aria-hidden="true" />
+									Edit Series
+								</a>
+							</div>
+						</div>
+					</div>
+				</aside>
+			{/if}
+		</div>
+	</div>
+</div>
+
+<style>
+	/* Ensure proper prose styling for description */
+	:global(.prose) {
+		color: inherit;
+	}
+
+	:global(.prose p) {
+		margin-top: 0.75rem;
+		margin-bottom: 0.75rem;
+	}
+
+	:global(.prose p:first-child) {
+		margin-top: 0;
+	}
+
+	:global(.prose p:last-child) {
+		margin-bottom: 0;
+	}
+
+	:global(.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6) {
+		margin-top: 1.5rem;
+		margin-bottom: 0.75rem;
+		font-weight: 600;
+	}
+
+	:global(.prose h1:first-child, .prose h2:first-child, .prose h3:first-child) {
+		margin-top: 0;
+	}
+
+	:global(.prose ul, .prose ol) {
+		margin-top: 0.75rem;
+		margin-bottom: 0.75rem;
+		padding-left: 1.5rem;
+	}
+
+	:global(.prose li) {
+		margin-top: 0.25rem;
+		margin-bottom: 0.25rem;
+	}
+
+	:global(.prose a) {
+		color: hsl(var(--primary));
+		text-decoration: underline;
+	}
+
+	:global(.prose a:hover) {
+		color: hsl(var(--primary) / 0.8);
+	}
+
+	:global(.prose strong) {
+		font-weight: 600;
+	}
+
+	:global(.prose em) {
+		font-style: italic;
+	}
+
+	:global(.prose code) {
+		background-color: hsl(var(--muted));
+		padding: 0.125rem 0.25rem;
+		border-radius: 0.25rem;
+		font-size: 0.875em;
+	}
+</style>

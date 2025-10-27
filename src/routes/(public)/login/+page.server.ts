@@ -50,23 +50,23 @@ export const actions = {
 			if (response.response.ok && response.data && 'access' in response.data) {
 				const { access, refresh } = response.data;
 
-				// Store access token (15 minutes)
+				// Store access token (1 hour - matches backend ACCESS_TOKEN_LIFETIME)
 				cookies.set('access_token', access, {
 					path: '/',
 					httpOnly: true,
 					secure: false, // Set to true in production via environment
 					sameSite: 'lax',
-					maxAge: 60 * 15
+					maxAge: 60 * 60 // 1 hour (matches backend configuration)
 				});
 
-				// Store refresh token (7 days default, longer if remember me)
-				const refreshMaxAge = data.rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24 * 7;
+				// Store refresh token (30 days - matches backend REFRESH_TOKEN_LIFETIME)
+				// Note: "Remember me" keeps the cookie, but backend token still expires after 30 days
 				cookies.set('refresh_token', refresh, {
 					path: '/',
 					httpOnly: true,
 					secure: false, // Set to true in production via environment
 					sameSite: 'lax',
-					maxAge: refreshMaxAge
+					maxAge: 60 * 60 * 24 * 30 // 30 days (matches backend configuration)
 				});
 
 				// Redirect to returnUrl or dashboard
@@ -138,23 +138,22 @@ export const actions = {
 			if (response.response.ok && response.data) {
 				const { access, refresh } = response.data;
 
-				// Store access token (15 minutes)
+				// Store access token (1 hour - matches backend ACCESS_TOKEN_LIFETIME)
 				cookies.set('access_token', access, {
 					path: '/',
 					httpOnly: true,
 					secure: false, // Set to true in production via environment
 					sameSite: 'lax',
-					maxAge: 60 * 15
+					maxAge: 60 * 60 // 1 hour (matches backend configuration)
 				});
 
-				// Store refresh token
-				const refreshMaxAge = data.rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24 * 7;
+				// Store refresh token (30 days - matches backend REFRESH_TOKEN_LIFETIME)
 				cookies.set('refresh_token', refresh, {
 					path: '/',
 					httpOnly: true,
 					secure: false, // Set to true in production via environment
 					sameSite: 'lax',
-					maxAge: refreshMaxAge
+					maxAge: 60 * 60 * 24 * 30 // 30 days (matches backend configuration)
 				});
 
 				// Redirect to returnUrl or dashboard

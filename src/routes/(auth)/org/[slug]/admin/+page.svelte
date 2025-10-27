@@ -2,8 +2,8 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
-	import { Calendar, Users, Settings, BarChart3, FileText, Plus } from 'lucide-svelte';
-	import HTMLDescription from '$lib/components/common/HTMLDescription.svelte';
+	import { Calendar, Repeat, Users, Settings, BarChart3, FileText, Plus } from 'lucide-svelte';
+	import { OrganizationDescription } from '$lib/components/organizations';
 
 	let { data }: { data: PageData } = $props();
 
@@ -21,6 +21,14 @@
 			bgColor: 'bg-blue-50 dark:bg-blue-950'
 		},
 		{
+			title: 'Event Series',
+			description: 'Manage recurring event series',
+			icon: Repeat,
+			href: `/org/${organization.slug}/admin/event-series`,
+			color: 'text-indigo-600 dark:text-indigo-400',
+			bgColor: 'bg-indigo-50 dark:bg-indigo-950'
+		},
+		{
 			title: 'Members',
 			description: 'Manage members and staff',
 			icon: Users,
@@ -35,15 +43,6 @@
 			href: `/org/${organization.slug}/admin/settings`,
 			color: 'text-purple-600 dark:text-purple-400',
 			bgColor: 'bg-purple-50 dark:bg-purple-950'
-		},
-		{
-			title: 'Analytics',
-			description: 'View insights and statistics',
-			icon: BarChart3,
-			href: `/org/${organization.slug}/admin/analytics`,
-			color: 'text-orange-600 dark:text-orange-400',
-			bgColor: 'bg-orange-50 dark:bg-orange-950',
-			badge: 'Coming Soon'
 		}
 	]);
 
@@ -184,12 +183,17 @@
 			</dl>
 
 			<!-- Description -->
-			{#if organization.description_html}
+			{#if organization.description_html || organization.description}
 				<div class="mt-6 border-t pt-4">
-					<dt class="text-sm font-medium text-muted-foreground">Description</dt>
-					<dd class="mt-2">
-						<HTMLDescription html={organization.description_html} class="prose-sm" />
-					</dd>
+					<h3 class="text-sm font-medium text-muted-foreground">About {organization.name}</h3>
+					<div class="mt-2">
+						<OrganizationDescription
+							descriptionHtml={organization.description_html}
+							description={organization.description}
+							organizationName={organization.name}
+							showCard={false}
+						/>
+					</div>
 				</div>
 			{/if}
 		</div>

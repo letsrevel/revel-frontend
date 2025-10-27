@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { EventFilters } from '$lib/utils/filters';
-	import { Eye } from 'lucide-svelte';
+	import { Eye, X } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
 
 	interface Props {
@@ -11,15 +11,19 @@
 
 	let { eventType, onChangeEventType, class: className }: Props = $props();
 
-	const options: Array<{ value: EventFilters['eventType']; label: string; description: string }> = [
-		{ value: undefined, label: 'All Events', description: 'Show all event types' },
-		{ value: 'public', label: 'Public', description: 'Open to everyone' },
-		{ value: 'private', label: 'Private', description: 'Invitation only' },
-		{ value: 'members-only', label: 'Members Only', description: 'For members of the organization' }
+	const options: Array<{ value: EventFilters['eventType']; label: string }> = [
+		{ value: 'public', label: 'Public' },
+		{ value: 'private', label: 'Private' },
+		{ value: 'members-only', label: 'Members Only' }
 	];
 
-	function handleChange(value: EventFilters['eventType']): void {
-		onChangeEventType(value);
+	function handleToggle(value: EventFilters['eventType']): void {
+		// If clicking the currently selected type, clear it (show all)
+		if (eventType === value) {
+			onChangeEventType(undefined);
+		} else {
+			onChangeEventType(value);
+		}
 	}
 </script>
 
@@ -29,24 +33,31 @@
 		<h3 class="text-sm font-medium">Event Type</h3>
 	</div>
 
-	<div class="space-y-2" role="radiogroup" aria-label="Event type filter">
-		{#each options as option (option.label)}
-			<label
-				class="flex cursor-pointer items-start gap-3 rounded-md p-2 transition-colors hover:bg-accent"
+	<div class="flex flex-wrap gap-2">
+		{#each options as option (option.value)}
+			{@const isSelected = eventType === option.value}
+			<button
+				type="button"
+				onclick={() => handleToggle(option.value)}
+				class={cn(
+					'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+					isSelected
+						? 'border-primary bg-primary text-primary-foreground hover:bg-primary/90'
+						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'
+				)}
+				aria-pressed={isSelected}
 			>
-				<input
-					type="radio"
-					name="event-type"
-					value={option.value || ''}
-					checked={eventType === option.value}
-					onchange={() => handleChange(option.value)}
-					class="mt-0.5 h-4 w-4 rounded-full border-gray-300 text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
-				/>
-				<div class="flex-1">
-					<div class="text-sm font-medium">{option.label}</div>
-					<div class="text-xs text-muted-foreground">{option.description}</div>
-				</div>
-			</label>
+				{option.label}
+				{#if isSelected}
+					<X class="h-3 w-3" aria-hidden="true" />
+				{/if}
+			</button>
 		{/each}
 	</div>
+
+	{#if eventType}
+		<p class="text-xs text-muted-foreground">
+			Showing {eventType === 'members-only' ? 'members only' : eventType} events
+		</p>
+	{/if}
 </div>

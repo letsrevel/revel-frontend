@@ -60,7 +60,23 @@ generatedClient.interceptors.request.use((request, _options) => {
 	return request;
 });
 
-// Add response interceptor to handle 401 errors and refresh token automatically
+/**
+ * Response interceptor to handle 401 errors and refresh token automatically
+ *
+ * IMPORTANT: This is the PRIMARY mechanism for token refresh. It:
+ * 1. Detects 401 (Unauthorized) errors from API calls
+ * 2. Calls /api/auth/refresh which uses the httpOnly refresh token cookie
+ * 3. The backend returns NEW access and refresh tokens (rotating tokens)
+ * 4. Updates the auth store with the new access token
+ * 5. Retries the original request with the new token
+ *
+ * Race condition protection:
+ * - Uses `isRefreshing` flag to prevent multiple simultaneous refresh calls
+ * - Queues requests that arrive during refresh
+ * - Processes queue after refresh completes
+ *
+ * This prevents using a blacklisted refresh token which would cause logout.
+ */
 generatedClient.interceptors.response.use(async (response, request, options) => {
 	// If response is not 401, return as-is
 	if (response.status !== 401) {
@@ -85,7 +101,7 @@ generatedClient.interceptors.response.use(async (response, request, options) => 
 		return response;
 	}
 
-	console.log('[API CLIENT] Received 401, attempting token refresh');
+	console.log('[API CLIENT] Received 401 on:', request.url);
 
 	// If we're already refreshing, queue this request
 	if (isRefreshing) {
@@ -95,19 +111,24 @@ generatedClient.interceptors.response.use(async (response, request, options) => 
 		});
 	}
 
+	console.log('[API CLIENT] Starting token refresh');
 	isRefreshing = true;
 
 	try {
 		// Attempt to refresh the token via our server-side endpoint
 		// The refresh token is in httpOnly cookie, so client can't access it directly
-		// Our server endpoint will read it and call the backend
+		// Our server endpoint will:
+		// 1. Read the refresh token from cookie
+		// 2. Call backend /api/auth/refresh
+		// 3. Save NEW access and refresh tokens to cookies
+		// 4. Return new access token to client
 		const refreshResponse = await fetch('/api/auth/refresh', {
 			method: 'POST',
 			credentials: 'include' // Include cookies
 		});
 
 		if (!refreshResponse.ok) {
-			console.error('[API CLIENT] Token refresh failed:', refreshResponse.status);
+			console.error('[API CLIENT] Token refresh failed with status:', refreshResponse.status);
 			// Clear auth state and process queue with error
 			authStore.logout();
 			processQueue(new Error('Token refresh failed'), null);
@@ -126,12 +147,16 @@ generatedClient.interceptors.response.use(async (response, request, options) => 
 			return response; // Return original 401 response
 		}
 
-		console.log('[API CLIENT] Token refresh successful');
+		console.log('[API CLIENT] Token refresh successful, updating store and retrying requests');
 
-		// Update the access token in the store
+		// Update the access token in the store (this also schedules next auto-refresh)
 		authStore.setAccessToken(data.access);
 
 		// Process all queued requests with the new token
+		const queueLength = failedRequestsQueue.length;
+		if (queueLength > 0) {
+			console.log(`[API CLIENT] Processing ${queueLength} queued requests`);
+		}
 		processQueue(null, data.access);
 
 		// Retry the original request with the new token

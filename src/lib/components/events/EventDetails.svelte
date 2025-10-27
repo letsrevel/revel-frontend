@@ -152,7 +152,7 @@
 		<section aria-labelledby="series-heading">
 			<h2 id="series-heading" class="mb-3 text-xl font-semibold">Part of a series</h2>
 			<a
-				href="/events/series/{event.event_series.slug}"
+				href="/events/{event.organization.slug}/series/{event.event_series.slug}"
 				class="block rounded-lg border bg-card p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			>
 				<div class="font-semibold">{event.event_series.name}</div>

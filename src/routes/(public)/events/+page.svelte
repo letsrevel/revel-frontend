@@ -165,7 +165,7 @@
 					role="list"
 					aria-label="Event listings"
 				>
-					{#each events as event (event.id)}
+					{#each events as event, index (`${event.id}-${index}`)}
 						<div role="listitem">
 							<EventCard {event} variant="standard" />
 						</div>

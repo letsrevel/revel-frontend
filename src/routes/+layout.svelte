@@ -36,71 +36,67 @@
 		}
 	});
 
-	// Track initialization state to prevent multiple simultaneous initializations
-	let isInitialized = $state(false);
-	let lastKnownToken = $state<string | null>(null);
-
-	// Reactively sync auth store with server-provided token
-	// This handles login, logout, and token refresh during SPA navigation
+	/**
+	 * Sync auth state with server on navigation
+	 *
+	 * IMPORTANT: This $effect watches data.auth.accessToken and syncs with authStore.
+	 * This ensures the UI updates immediately on both login and logout:
+	 *
+	 * - On logout: Server clears cookies, accessToken becomes null, we clear authStore
+	 * - On login: Server sets cookies, accessToken appears, we initialize authStore
+	 *
+	 * After initial setup, token refresh is handled by:
+	 * 1. Client-side API interceptor (catches 401 errors and refreshes)
+	 * 2. Client-side auto-refresh timer (proactive refresh before expiry)
+	 */
 	$effect(() => {
-		const accessToken = data.auth.accessToken;
+		const serverAccessToken = data.auth.accessToken;
+		const currentAccessToken = authStore.accessToken;
 
-		console.log('[ROOT LAYOUT] Auth sync effect running', {
-			hasServerToken: !!accessToken,
-			isInitialized,
-			lastKnownToken: lastKnownToken?.slice(0, 20) + '...',
-			currentTokenPrefix: accessToken?.slice(0, 20) + '...',
-			tokensMatch: accessToken === lastKnownToken
+		console.log('[ROOT LAYOUT] Auth sync effect triggered', {
+			hasServerToken: !!serverAccessToken,
+			hasCurrentToken: !!currentAccessToken
 		});
 
-		// Case 1: Server has token and it's different from last known token
-		if (accessToken && accessToken !== lastKnownToken) {
-			console.log('[ROOT LAYOUT] New token detected, initializing auth');
-			lastKnownToken = accessToken;
-			authStore.setAccessToken(accessToken);
+		// Case 1: Server has token, but we don't (login or page refresh)
+		if (serverAccessToken && !currentAccessToken) {
+			console.log('[ROOT LAYOUT] Server provided access token, initializing auth');
+			authStore.setAccessToken(serverAccessToken);
 
-			// Only initialize if we haven't already
-			if (!isInitialized) {
-				console.log('[ROOT LAYOUT] First initialization');
-				isInitialized = true;
-				authStore.initialize().catch((err) => {
-					console.error('[ROOT LAYOUT] Auth initialization failed:', err);
-					isInitialized = false; // Reset on failure
+			// Fetch user data and permissions
+			authStore.initialize().catch((err) => {
+				console.error('[ROOT LAYOUT] Auth initialization failed:', err);
 
-					// Check if ad blocker is blocking the request
-					if (err instanceof TypeError && err.message === 'Failed to fetch') {
-						import('svelte-sonner').then(({ toast }) => {
-							toast.error('API Blocked', {
-								description:
-									'Please disable your ad blocker for localhost:8000 to use all features.',
-								duration: 10000
-							});
+				// Check if ad blocker is blocking the request
+				if (err instanceof TypeError && err.message === 'Failed to fetch') {
+					import('svelte-sonner').then(({ toast }) => {
+						toast.error('API Blocked', {
+							description: 'Please disable your ad blocker for localhost:8000 to use all features.',
+							duration: 10000
 						});
-					}
-				});
-			} else {
-				console.log('[ROOT LAYOUT] Already initialized, skipping initialize()');
-			}
+					});
+				}
+			});
 		}
-		// Case 2: Server has no token, but client still has auth state - Logout
-		else if (!accessToken && authStore.isAuthenticated) {
-			console.log('[ROOT LAYOUT] Server token cleared, logging out client');
-			lastKnownToken = null;
-			isInitialized = false;
+		// Case 2: Server has no token, but we do (logout)
+		else if (!serverAccessToken && currentAccessToken) {
+			console.log('[ROOT LAYOUT] No server token, clearing auth state (logout)');
 			authStore.logout();
 		}
-		// Case 3: Token hasn't changed - do nothing
-		else if (accessToken === lastKnownToken) {
-			console.log('[ROOT LAYOUT] Token unchanged, skipping re-initialization');
+		// Case 3: Both have tokens (normal navigation while authenticated)
+		else if (serverAccessToken && currentAccessToken) {
+			console.log('[ROOT LAYOUT] Both server and client have tokens (already authenticated)');
+			// Token refresh is handled by interceptor and auto-refresh timer
 		}
-		// Case 4: No tokens anywhere - user is not authenticated
-		// No action needed - user will see public pages or be redirected by route guards
+		// Case 4: Neither has token (browsing as guest)
+		else {
+			console.log('[ROOT LAYOUT] No tokens, user not authenticated');
+		}
 	});
 
-	// Initialize app on mount (one-time setup)
+	// Fetch backend version once on mount
 	onMount(async () => {
 		console.log('[ROOT LAYOUT] onMount - fetching backend version');
-		// Fetch backend version
 		await appStore.fetchBackendVersion();
 	});
 </script>
