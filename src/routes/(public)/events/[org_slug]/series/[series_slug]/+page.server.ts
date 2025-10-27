@@ -1,5 +1,9 @@
 import type { PageServerLoad } from './$types';
-import { eventseriesGetEventSeriesBySlugs, eventListEvents, permissionMyPermissions } from '$lib/api';
+import {
+	eventseriesGetEventSeriesBySlugs,
+	eventListEvents,
+	permissionMyPermissions
+} from '$lib/api';
 import { error as svelteKitError } from '@sveltejs/kit';
 import type { OrganizationPermissionsSchema } from '$lib/api/generated/types.gen';
 
@@ -64,8 +68,7 @@ export const load: PageServerLoad = async ({ params, url, fetch, locals }) => {
 					userPermissions = permissionsResponse.data;
 
 					// Check if user is owner or staff of the organization
-					const orgPermissions =
-						userPermissions.organization_permissions?.[series.organization.id];
+					const orgPermissions = userPermissions.organization_permissions?.[series.organization.id];
 
 					// User can edit if they are owner or staff
 					if (orgPermissions === 'owner') {

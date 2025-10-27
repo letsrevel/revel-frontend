@@ -21,13 +21,7 @@
 		onClose: () => void;
 	}
 
-	let {
-		open = $bindable(),
-		series,
-		organizationSlug,
-		accessToken,
-		onClose
-	}: Props = $props();
+	let { open = $bindable(), series, organizationSlug, accessToken, onClose }: Props = $props();
 
 	// State
 	let searchQuery = $state('');

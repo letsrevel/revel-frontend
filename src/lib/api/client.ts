@@ -4,14 +4,11 @@
  */
 import { client as generatedClient } from './generated/client.gen';
 import { authStore } from '$lib/stores/auth.svelte';
-
-// Get API URL from environment or use default
-// @ts-ignore - $env/static/public is generated at build time
-import { PUBLIC_API_URL } from '$env/static/public';
+import { API_BASE_URL } from '$lib/config/api';
 
 // Configure the client base settings
 generatedClient.setConfig({
-	baseUrl: (PUBLIC_API_URL as string | undefined) || 'http://localhost:8000',
+	baseUrl: API_BASE_URL,
 	// Include credentials (cookies) in all requests (for refresh tokens)
 	credentials: 'include'
 });

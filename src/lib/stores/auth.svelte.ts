@@ -254,7 +254,10 @@ class AuthStore {
 		} catch (err) {
 			// Check if this is a network error (likely ad blocker)
 			if (err instanceof TypeError && err.message === 'Failed to fetch') {
-				console.error('⚠️  API request blocked! Please disable your ad blocker for localhost:8000');
+				const { API_BASE_URL_DISPLAY } = await import('$lib/config/api');
+				console.error(
+					`⚠️  API request blocked! Please disable your ad blocker for ${API_BASE_URL_DISPLAY}`
+				);
 				console.error('   Common culprits: uBlock Origin, Privacy Badger, Brave Shields');
 			}
 			throw err;

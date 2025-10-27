@@ -7,6 +7,8 @@
 		eventListEvents
 	} from '$lib/api/generated/sdk.gen';
 	import { EventCard } from '$lib/components/events';
+	import EventCardSkeleton from '$lib/components/common/EventCardSkeleton.svelte';
+	import OrganizationCardSkeleton from '$lib/components/common/OrganizationCardSkeleton.svelte';
 	import { getImageUrl } from '$lib/utils/url';
 	import { Calendar, Building2, ChevronRight, Shield, Sparkles, Filter } from 'lucide-svelte';
 
@@ -348,8 +350,10 @@
 			</div>
 
 			{#if upcomingEventsQuery.isLoading}
-				<div class="rounded-lg border bg-card p-8 text-center">
-					<p class="text-muted-foreground">Loading events...</p>
+				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+					{#each Array(6) as _, i}
+						<EventCardSkeleton />
+					{/each}
 				</div>
 			{:else if upcomingEvents.length === 0}
 				<!-- Empty State -->
@@ -380,8 +384,10 @@
 			</div>
 
 			{#if organizationsQuery.isLoading}
-				<div class="rounded-lg border bg-card p-8 text-center">
-					<p class="text-muted-foreground">Loading your organizations...</p>
+				<div class="space-y-3">
+					{#each Array(3) as _, i}
+						<OrganizationCardSkeleton />
+					{/each}
 				</div>
 			{:else if organizations.length === 0}
 				<!-- Empty State -->

@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import { FileText, Search, Filter } from 'lucide-svelte';
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
+	import { getBackendUrl } from '$lib/config/api';
 
 	const data = $derived($page.data);
 	const organization = $derived(data.organization);
@@ -33,10 +34,7 @@
 
 	function openResource(resource: AdditionalResourceSchema) {
 		if (resource.resource_type === 'file' && resource.file) {
-			// Files are stored on backend, so prepend backend URL if path is relative
-			const fileUrl = resource.file.startsWith('http')
-				? resource.file
-				: `http://localhost:8000${resource.file}`;
+			const fileUrl = getBackendUrl(resource.file);
 			window.open(fileUrl, '_blank');
 		} else if (resource.resource_type === 'link' && resource.link) {
 			window.open(resource.link, '_blank');

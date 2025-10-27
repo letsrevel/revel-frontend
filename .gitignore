@@ -88,4 +88,8 @@ yarn.lock
 *.backup
 *.orig
 
+# Development documentation (keep locally only)
+.dev-docs/
+
+# Backend symlink
 revel-backend

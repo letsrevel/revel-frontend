@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { OrganizationRetrieveSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
+	import { getBackendUrl } from '$lib/config/api';
 	import RequestMembershipButton from '$lib/components/organization/RequestMembershipButton.svelte';
 
 	interface Props {
@@ -21,18 +22,10 @@
 		class: className
 	}: Props = $props();
 
-	// Backend URL for images
-	const BACKEND_URL = 'http://localhost:8000';
-
 	// Helper function to get full image URL
 	function getImageUrl(path: string | null | undefined): string | null {
 		if (!path) return null;
-		// If path is already a full URL, return it
-		if (path.startsWith('http://') || path.startsWith('https://')) {
-			return path;
-		}
-		// Otherwise, prepend backend URL
-		return `${BACKEND_URL}${path}`;
+		return getBackendUrl(path);
 	}
 
 	// Compute full logo URL

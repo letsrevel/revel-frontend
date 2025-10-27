@@ -90,7 +90,10 @@ describe('ImageUploader', () => {
 		});
 
 		const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
-		const input = screen.getByLabelText('Upload image').closest('div')?.querySelector('input[type="file"]') as HTMLInputElement;
+		const input = screen
+			.getByLabelText('Upload image')
+			.closest('div')
+			?.querySelector('input[type="file"]') as HTMLInputElement;
 
 		if (input) {
 			await user.upload(input, file);
@@ -109,7 +112,10 @@ describe('ImageUploader', () => {
 		});
 
 		const file = new File(['test'], 'test.pdf', { type: 'application/pdf' });
-		const input = screen.getByLabelText('Upload image').closest('div')?.querySelector('input[type="file"]') as HTMLInputElement;
+		const input = screen
+			.getByLabelText('Upload image')
+			.closest('div')
+			?.querySelector('input[type="file"]') as HTMLInputElement;
 
 		if (input) {
 			// This will trigger validation in the component
@@ -134,7 +140,10 @@ describe('ImageUploader', () => {
 		const largeContent = new Array(2048).fill('a').join('');
 		const file = new File([largeContent], 'large.jpg', { type: 'image/jpeg' });
 
-		const input = screen.getByLabelText('Upload image').closest('div')?.querySelector('input[type="file"]') as HTMLInputElement;
+		const input = screen
+			.getByLabelText('Upload image')
+			.closest('div')
+			?.querySelector('input[type="file"]') as HTMLInputElement;
 
 		if (input) {
 			Object.defineProperty(input, 'files', {

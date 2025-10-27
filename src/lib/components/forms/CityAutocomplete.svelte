@@ -12,7 +12,14 @@
 		description?: string;
 	}
 
-	let { value, onSelect, disabled = false, error, label = 'Preferred City', description = 'Select your preferred city for event recommendations' }: Props = $props();
+	let {
+		value,
+		onSelect,
+		disabled = false,
+		error,
+		label = 'Preferred City',
+		description = 'Select your preferred city for event recommendations'
+	}: Props = $props();
 
 	// Component state
 	let searchQuery = $state('');
