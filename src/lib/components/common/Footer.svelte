@@ -5,7 +5,8 @@
 
 	// Frontend version from build-time environment variable (set in Dockerfile)
 	// Falls back to 'dev' for local development
-	const FRONTEND_VERSION = PUBLIC_VERSION || 'dev';
+	// Remove leading 'v' if present since we add it in the template
+	const FRONTEND_VERSION = PUBLIC_VERSION ? PUBLIC_VERSION.replace(/^v/, '') : 'dev';
 	const FRONTEND_REPO = 'https://github.com/letsrevel/revel-frontend';
 	const BACKEND_REPO = 'https://github.com/letsrevel/revel-backend';
 

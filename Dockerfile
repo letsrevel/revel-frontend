@@ -31,9 +31,13 @@ ENV PUBLIC_API_URL=${PUBLIC_API_URL}
 ENV ORIGIN=${ORIGIN}
 ENV PUBLIC_VERSION=${PUBLIC_VERSION}
 
+# Replace hardcoded localhost in API client with actual URL
+# Cannot regenerate API during build (backend not available in CI/CD)
+RUN sed -i "s|'http://localhost:8000'|'${PUBLIC_API_URL}'|g" src/lib/api/generated/client.gen.ts
+
 # Build the application
 # This creates the production build in the `build` directory
-# Vite will embed PUBLIC_* env vars into the client bundle
+# SvelteKit will embed PUBLIC_* env vars into the client bundle
 RUN pnpm build
 
 # ─────────────────────────────────────────────────────────────────────────────
