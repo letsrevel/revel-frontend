@@ -24,7 +24,7 @@
 	/**
 	 * Determine if we have valid HTML content to display
 	 */
-	let hasContent = $derived(html !== null && html !== undefined && html.trim().length > 0);
+	let hasContent = $derived(!!html && html.trim().length > 0);
 </script>
 
 {#if hasContent}
