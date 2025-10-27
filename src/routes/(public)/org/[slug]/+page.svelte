@@ -4,6 +4,7 @@
 	import { MapPin, Settings, Calendar, ArrowRight, Repeat, ArrowDownUp } from 'lucide-svelte';
 	import ResourceCard from '$lib/components/resources/ResourceCard.svelte';
 	import { EventCard, EventSeriesCard } from '$lib/components/events';
+	import { OrganizationDescription } from '$lib/components/organizations';
 	import { getImageUrl } from '$lib/utils/url';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { eventListEvents, eventseriesListEventSeries } from '$lib/api/generated/sdk.gen';
@@ -242,27 +243,13 @@
 		</div>
 
 		<!-- Organization Description -->
-		{#if organization.description_html}
-			<section
-				aria-labelledby="description-heading"
-				class="mb-12 rounded-lg border bg-card p-6 md:p-8"
-			>
-				<h2 id="description-heading" class="sr-only">About {organization.name}</h2>
-				<div class="prose prose-slate dark:prose-invert max-w-none">
-					{@html organization.description_html}
-				</div>
-			</section>
-		{:else if organization.description}
-			<section
-				aria-labelledby="description-heading"
-				class="mb-12 rounded-lg border bg-card p-6 md:p-8"
-			>
-				<h2 id="description-heading" class="sr-only">About {organization.name}</h2>
-				<div class="prose prose-slate dark:prose-invert max-w-none">
-					<p>{organization.description}</p>
-				</div>
-			</section>
-		{/if}
+		<div class="mb-12">
+			<OrganizationDescription
+				descriptionHtml={organization.description_html}
+				description={organization.description}
+				organizationName={organization.name}
+			/>
+		</div>
 
 		<!-- Resources Section -->
 		{#if displayedResources.length > 0}
@@ -463,68 +450,3 @@
 		</section>
 	</div>
 </div>
-
-<style>
-	/* Ensure proper prose styling for description */
-	:global(.prose) {
-		color: inherit;
-	}
-
-	:global(.prose p) {
-		margin-top: 0.75rem;
-		margin-bottom: 0.75rem;
-	}
-
-	:global(.prose p:first-child) {
-		margin-top: 0;
-	}
-
-	:global(.prose p:last-child) {
-		margin-bottom: 0;
-	}
-
-	:global(.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6) {
-		margin-top: 1.5rem;
-		margin-bottom: 0.75rem;
-		font-weight: 600;
-	}
-
-	:global(.prose h1:first-child, .prose h2:first-child, .prose h3:first-child) {
-		margin-top: 0;
-	}
-
-	:global(.prose ul, .prose ol) {
-		margin-top: 0.75rem;
-		margin-bottom: 0.75rem;
-		padding-left: 1.5rem;
-	}
-
-	:global(.prose li) {
-		margin-top: 0.25rem;
-		margin-bottom: 0.25rem;
-	}
-
-	:global(.prose a) {
-		color: hsl(var(--primary));
-		text-decoration: underline;
-	}
-
-	:global(.prose a:hover) {
-		color: hsl(var(--primary) / 0.8);
-	}
-
-	:global(.prose strong) {
-		font-weight: 600;
-	}
-
-	:global(.prose em) {
-		font-style: italic;
-	}
-
-	:global(.prose code) {
-		background-color: hsl(var(--muted));
-		padding: 0.125rem 0.25rem;
-		border-radius: 0.25rem;
-		font-size: 0.875em;
-	}
-</style>

@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import { Calendar, Repeat, Users, Settings, BarChart3, FileText, Plus } from 'lucide-svelte';
-	import HTMLDescription from '$lib/components/common/HTMLDescription.svelte';
+	import { OrganizationDescription } from '$lib/components/organizations';
 
 	let { data }: { data: PageData } = $props();
 
@@ -183,12 +183,17 @@
 			</dl>
 
 			<!-- Description -->
-			{#if organization.description_html}
+			{#if organization.description_html || organization.description}
 				<div class="mt-6 border-t pt-4">
-					<dt class="text-sm font-medium text-muted-foreground">Description</dt>
-					<dd class="mt-2">
-						<HTMLDescription html={organization.description_html} class="prose-sm" />
-					</dd>
+					<h3 class="text-sm font-medium text-muted-foreground">About {organization.name}</h3>
+					<div class="mt-2">
+						<OrganizationDescription
+							descriptionHtml={organization.description_html}
+							description={organization.description}
+							organizationName={organization.name}
+							showCard={false}
+						/>
+					</div>
 				</div>
 			{/if}
 		</div>
