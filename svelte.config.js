@@ -12,8 +12,7 @@ const config = {
 		// Builds a standalone Node.js server
 		adapter: adapter({
 			out: 'build',
-			precompress: false,
-			envPrefix: 'PUBLIC_'
+			precompress: false
 		}),
 
 		alias: {
