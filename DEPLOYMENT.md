@@ -13,12 +13,26 @@ This document describes how to deploy the Revel Frontend application using Docke
 ### Building the Image
 
 ```bash
-# Build the Docker image
-docker build -t revel-frontend:latest .
+# Build the Docker image with production environment variables
+# IMPORTANT: PUBLIC_API_URL must be provided at BUILD time (not runtime)
+# because Vite embeds it in the client bundle
+docker build \
+  --build-arg PUBLIC_API_URL=https://demo.api.letsrevel.io \
+  --build-arg ORIGIN=https://demo.letsrevel.io \
+  -t revel-frontend:latest .
 
 # Or with a specific version
 VERSION=$(cat version)
-docker build -t revel-frontend:$VERSION .
+docker build \
+  --build-arg PUBLIC_API_URL=https://demo.api.letsrevel.io \
+  --build-arg ORIGIN=https://demo.letsrevel.io \
+  -t revel-frontend:$VERSION .
+
+# For local development build:
+docker build \
+  --build-arg PUBLIC_API_URL=http://localhost:8000 \
+  --build-arg ORIGIN=http://localhost:5173 \
+  -t revel-frontend:dev .
 ```
 
 ### Running the Container
