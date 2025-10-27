@@ -8,16 +8,7 @@
 	} from '$lib/api/generated/sdk.gen';
 	import { EventCard } from '$lib/components/events';
 	import { getImageUrl } from '$lib/utils/url';
-	import {
-		Calendar,
-		Building2,
-		ChevronRight,
-		User,
-		Shield,
-		Settings,
-		Sparkles,
-		Filter
-	} from 'lucide-svelte';
+	import { Calendar, Building2, ChevronRight, Shield, Sparkles, Filter } from 'lucide-svelte';
 
 	let user = $derived(authStore.user);
 	let accessToken = $derived(authStore.accessToken);
@@ -244,22 +235,6 @@
 			<span>Browse Events</span>
 		</a>
 
-		<a
-			href="/account/profile"
-			class="inline-flex items-center gap-2 rounded-lg border bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-		>
-			<User class="h-4 w-4" aria-hidden="true" />
-			<span>My Profile</span>
-		</a>
-
-		<a
-			href="/account/settings"
-			class="inline-flex items-center gap-2 rounded-lg border bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-		>
-			<Settings class="h-4 w-4" aria-hidden="true" />
-			<span>Settings</span>
-		</a>
-
 		{#if organizations.length > 0}
 			<button
 				type="button"
@@ -268,6 +243,27 @@
 			>
 				<Building2 class="h-4 w-4" aria-hidden="true" />
 				<span>My Organizations</span>
+			</button>
+		{/if}
+
+		{#if organizations.filter((org) => hasAdminPermissions(org.id)).length === 1}
+			<!-- Single admin org - direct link -->
+			<a
+				href="/org/{organizations.find((org) => hasAdminPermissions(org.id))?.slug}/admin"
+				class="inline-flex items-center gap-2 rounded-lg border bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+			>
+				<Shield class="h-4 w-4" aria-hidden="true" />
+				<span>Admin</span>
+			</a>
+		{:else if organizations.filter((org) => hasAdminPermissions(org.id)).length > 1}
+			<!-- Multiple admin orgs - scroll to organizations section to choose -->
+			<button
+				type="button"
+				onclick={scrollToOrganizations}
+				class="inline-flex items-center gap-2 rounded-lg border bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+			>
+				<Shield class="h-4 w-4" aria-hidden="true" />
+				<span>Admin</span>
 			</button>
 		{/if}
 	</div>
