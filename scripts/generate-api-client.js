@@ -41,17 +41,25 @@ try {
 	writeFileSync(sdkPath, sdkContent);
 	console.log('✅ Hash suffixes removed from SDK!');
 
-	// Fix the client configuration to use environment variable
+	// Fix the client configuration to use SvelteKit environment variable
 	console.log('📝 Configuring API client to use PUBLIC_API_URL...');
 	const clientPath = './src/lib/api/generated/client.gen.ts';
 	let clientContent = readFileSync(clientPath, 'utf-8');
 
-	// Replace hardcoded baseUrl with environment variable
+	// Add SvelteKit env import at the top
+	if (!clientContent.includes("from '$env/static/public'")) {
+		clientContent = clientContent.replace(
+			/(\/\/ This file is auto-generated[^\n]*\n\n)/,
+			"$1import { PUBLIC_API_URL } from '$env/static/public';\n"
+		);
+	}
+
+	// Replace hardcoded baseUrl with SvelteKit environment variable
 	// Original: baseUrl: 'http://localhost:8000'
-	// New: baseUrl: import.meta.env.PUBLIC_API_URL || 'http://localhost:8000'
+	// New: baseUrl: PUBLIC_API_URL || 'http://localhost:8000'
 	clientContent = clientContent.replace(
 		/baseUrl:\s*['"].*?['"]/,
-		"baseUrl: import.meta.env.PUBLIC_API_URL || 'http://localhost:8000'"
+		"baseUrl: PUBLIC_API_URL || 'http://localhost:8000'"
 	);
 
 	writeFileSync(clientPath, clientContent);
