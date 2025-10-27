@@ -22,7 +22,7 @@
 		"@hey-api/openapi-ts": "^0.85.2",
 		"@lucide/svelte": "^0.482.0",
 		"@playwright/test": "^1.49.0",
-		"@sveltejs/adapter-auto": "^3.0.0",
+		"@sveltejs/adapter-node": "^5.4.0",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^5.0.0",
 		"@testing-library/jest-dom": "^6",
