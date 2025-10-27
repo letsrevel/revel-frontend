@@ -1,0 +1,47 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+.svelte-kit
+build
+dist
+
+# Development files
+.env
+.env.*
+!.env.example
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Testing
+coverage
+.nyc_output
+*.log
+
+# Documentation
+*.md
+!README.md
+docs
+.dev-docs
+
+# CI/CD
+.github
+
+# Misc
+.DS_Store
+Thumbs.db
+.cache
+
+# Backend context (development only)
+revel-backend
+backend_context
