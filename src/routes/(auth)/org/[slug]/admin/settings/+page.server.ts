@@ -35,52 +35,27 @@ export const actions: Actions = {
 		}
 
 		const formData = await request.formData();
-		const name = formData.get('name') as string;
-		const slug = formData.get('slug') as string;
 		const description = formData.get('description') as string;
 		const cityIdValue = formData.get('city_id') as string;
+		const address = formData.get('address') as string;
 		const visibility = (formData.get('visibility') as string) || 'public';
 		const acceptNewMembers = formData.get('accept_membership_requests') === 'true';
 		const contactEmail = formData.get('contact_email') as string;
-		const oldSlug = params.slug;
+		const slug = params.slug;
 
-		// Validate required fields
-		if (!name || !name.trim()) {
-			return fail(400, {
-				errors: {
-					name: 'Organization name is required'
-				}
-			});
-		}
-
-		if (!slug || !slug.trim()) {
-			return fail(400, {
-				errors: {
-					slug: 'URL slug is required'
-				}
-			});
-		}
-
-		// Validate slug format (alphanumeric, hyphens, underscores)
-		if (!/^[a-zA-Z0-9-_]+$/.test(slug)) {
-			return fail(400, {
-				errors: {
-					slug: 'URL slug can only contain letters, numbers, hyphens, and underscores'
-				}
-			});
-		}
-
-		// Prepare update payload
+		// Prepare update payload with only editable fields
 		const updateData: any = {
-			name: name.trim(),
-			slug: slug.trim(),
 			visibility,
 			accept_membership_requests: acceptNewMembers
 		};
 
 		// Add optional fields only if they have values
-		if (description) {
+		if (description !== null && description !== undefined) {
 			updateData.description = description;
+		}
+
+		if (address !== null && address !== undefined) {
+			updateData.address = address.trim();
 		}
 
 		if (cityIdValue) {
@@ -97,7 +72,7 @@ export const actions: Actions = {
 		try {
 			const { data, error: apiError } = await organizationadminUpdateOrganization({
 				path: {
-					slug: oldSlug
+					slug
 				},
 				body: updateData,
 				headers: {
@@ -109,28 +84,11 @@ export const actions: Actions = {
 				// Check for specific error messages
 				const errorMessage = apiError?.toString() || 'Failed to update organization settings';
 
-				if (errorMessage.includes('slug')) {
-					return fail(400, {
-						errors: {
-							slug: 'This URL slug is already taken'
-						}
-					});
-				}
-
 				return fail(500, {
 					errors: {
 						form: errorMessage
 					}
 				});
-			}
-
-			// If slug changed, we need to redirect to the new URL
-			if (slug !== oldSlug) {
-				return {
-					success: true,
-					newSlug: slug,
-					organization: data
-				};
 			}
 
 			return {
