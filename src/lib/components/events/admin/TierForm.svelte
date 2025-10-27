@@ -165,7 +165,7 @@
 	const tierUpdateMutation = createMutation(() => ({
 		mutationFn: (data: TicketTierUpdateSchema) =>
 			eventadminUpdateTicketTier({
-				path: { event_id: eventId, tier_id: tier!.id },
+				path: { event_id: eventId, tier_id: tier!.id! },
 				body: data
 			}),
 		onSuccess: () => {
@@ -177,7 +177,7 @@
 	const tierDeleteMutation = createMutation(() => ({
 		mutationFn: () =>
 			eventadminDeleteTicketTier({
-				path: { event_id: eventId, tier_id: tier!.id }
+				path: { event_id: eventId, tier_id: tier!.id! }
 			}),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
@@ -525,18 +525,18 @@
 				<div class="rounded-lg bg-destructive/10 p-3" role="alert">
 					<p class="font-medium text-destructive">Error</p>
 					<p class="mt-1 text-sm text-destructive/90">
-						{error?.message || 'An error occurred. Please try again.'}
+						{(error as any)?.message || 'An error occurred. Please try again.'}
 					</p>
-					{#if error?.body?.detail}
+					{#if (error as any)?.detail}
 						<div class="mt-2 space-y-1">
-							{#if Array.isArray(error.body.detail)}
-								{#each error.body.detail as detail}
+							{#if Array.isArray((error as any).detail)}
+								{#each (error as any).detail as detail}
 									<p class="text-xs text-destructive/80">
 										• {detail.loc ? detail.loc.join(' → ') + ': ' : ''}{detail.msg}
 									</p>
 								{/each}
-							{:else if typeof error.body.detail === 'string'}
-								<p class="text-xs text-destructive/80">{error.body.detail}</p>
+							{:else if typeof (error as any).detail === 'string'}
+								<p class="text-xs text-destructive/80">{(error as any).detail}</p>
 							{/if}
 						</div>
 					{/if}

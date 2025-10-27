@@ -244,14 +244,14 @@
 						{@const Icon = getResourceIcon(resource.type)}
 						<button
 							type="button"
-							onclick={() => toggleResource(resource.id)}
+							onclick={() => toggleResource(resource.id!)}
 							class="flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent"
-							class:border-primary={selectedIds.has(resource.id)}
-							class:bg-accent={selectedIds.has(resource.id)}
+							class:border-primary={selectedIds.has(resource.id!)}
+							class:bg-accent={selectedIds.has(resource.id!)}
 						>
 							<Checkbox
-								checked={selectedIds.has(resource.id)}
-								onCheckedChange={() => toggleResource(resource.id)}
+								checked={selectedIds.has(resource.id!)}
+								onCheckedChange={() => toggleResource(resource.id!)}
 								aria-label={`Select ${resource.name}`}
 								class="mt-1"
 							/>

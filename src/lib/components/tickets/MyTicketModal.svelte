@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { EventTicketSchema } from '$lib/api/generated/types.gen';
+	import type { EventTicketSchemaActual } from '$lib/utils/eligibility';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Card } from '$lib/components/ui/card';
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
@@ -9,7 +9,7 @@
 
 	interface Props {
 		open: boolean;
-		ticket: EventTicketSchema;
+		ticket: EventTicketSchemaActual;
 		eventName: string;
 		eventDate?: string;
 		eventLocation?: string;

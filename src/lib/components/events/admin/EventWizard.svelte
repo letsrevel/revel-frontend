@@ -77,8 +77,10 @@
 				}
 			}).then((response) => {
 				if (response.data?.results) {
-					// Extract resource IDs and set them as selected
-					const resourceIds = response.data.results.map((resource) => resource.id);
+					// Extract resource IDs and set them as selected (filter out null/undefined)
+					const resourceIds = response.data.results
+						.map((resource) => resource.id)
+						.filter((id): id is string => id != null);
 					selectedResourceIds = resourceIds;
 					initialResourceIds = [...resourceIds]; // Store initial state
 				}

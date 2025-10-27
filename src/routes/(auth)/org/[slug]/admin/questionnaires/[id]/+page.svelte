@@ -673,16 +673,13 @@
 									<div class="flex items-center justify-between rounded-lg border p-3">
 										<div>
 											<p class="font-medium">{event.name}</p>
-											{#if event.next_occurrence}
+											{#if event.start}
 												<p class="text-sm text-muted-foreground">
-													{new Date(event.next_occurrence.start_datetime).toLocaleDateString(
-														'en-US',
-														{
-															month: 'short',
-															day: 'numeric',
-															year: 'numeric'
-														}
-													)}
+													{new Date(event.start).toLocaleDateString('en-US', {
+														month: 'short',
+														day: 'numeric',
+														year: 'numeric'
+													})}
 												</p>
 											{/if}
 										</div>

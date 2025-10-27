@@ -51,7 +51,9 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 				});
 
 				if (statusResponse.data) {
-					userStatus = statusResponse.data;
+					// Backend returns EventRsvpSchema/EventTicketSchema with correct status types at runtime
+					// but generated types are incorrect, so we need to cast
+					userStatus = statusResponse.data as unknown as UserEventStatus;
 				}
 			} catch (err) {
 				// If user status fails, continue without it

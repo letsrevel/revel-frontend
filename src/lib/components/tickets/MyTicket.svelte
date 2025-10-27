@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { EventTicketSchema } from '$lib/api/generated/types.gen';
+	import type { EventTicketSchemaActual } from '$lib/utils/eligibility';
 	import { Card } from '$lib/components/ui/card';
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
 	import { Ticket, Calendar, MapPin, Download } from 'lucide-svelte';
@@ -7,7 +7,7 @@
 	import { onMount } from 'svelte';
 
 	interface Props {
-		ticket: EventTicketSchema;
+		ticket: EventTicketSchemaActual;
 		eventName: string;
 		eventDate?: string;
 		eventLocation?: string;
