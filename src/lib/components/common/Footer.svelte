@@ -2,8 +2,9 @@
 	import { appStore } from '$lib/stores/app.svelte';
 	import { Github } from 'lucide-svelte';
 
-	// Frontend version from package.json
-	const FRONTEND_VERSION = '0.1.0';
+	// Frontend version from build-time environment variable (set in Dockerfile)
+	// Falls back to 'dev' for local development
+	const FRONTEND_VERSION = import.meta.env.PUBLIC_VERSION || 'dev';
 	const FRONTEND_REPO = 'https://github.com/letsrevel/revel-frontend';
 	const BACKEND_REPO = 'https://github.com/letsrevel/revel-backend';
 
