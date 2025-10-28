@@ -21,9 +21,21 @@
 			<!-- About Section -->
 			<div>
 				<h3 class="mb-4 text-lg font-semibold">Revel</h3>
-				<p class="text-sm text-muted-foreground">
+				<p class="mb-4 text-sm text-muted-foreground">
 					Open-source, community-focused event management and ticketing platform.
 				</p>
+				<ul class="space-y-2 text-sm">
+					<li>
+						<a
+							href="https://forms.gle/7wAqQXqrWk3X6Ddu7"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="text-muted-foreground transition-colors hover:text-foreground"
+						>
+							Send Feedback
+						</a>
+					</li>
+				</ul>
 			</div>
 
 			<!-- Legal Links -->
@@ -82,16 +94,6 @@
 							class="text-muted-foreground transition-colors hover:text-foreground"
 						>
 							GitHub
-						</a>
-					</li>
-					<li>
-						<a
-							href="https://forms.gle/7wAqQXqrWk3X6Ddu7"
-							target="_blank"
-							rel="noopener noreferrer"
-							class="text-muted-foreground transition-colors hover:text-foreground"
-						>
-							Send Feedback
 						</a>
 					</li>
 				</ul>
