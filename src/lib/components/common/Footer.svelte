@@ -10,8 +10,9 @@
 	const FRONTEND_REPO = 'https://github.com/letsrevel/revel-frontend';
 	const BACKEND_REPO = 'https://github.com/letsrevel/revel-backend';
 
-	// Get backend version from store
+	// Get backend version and demo mode from store
 	let backendVersion = $derived(appStore.backendVersion || 'Loading...');
+	let isDemoMode = $derived(appStore.isDemoMode);
 </script>
 
 <footer class="border-t bg-muted/30">
@@ -111,7 +112,7 @@
 							aria-label="Backend repository on GitHub"
 						>
 							<Github class="h-4 w-4" aria-hidden="true" />
-							<span>Backend: v{backendVersion}</span>
+							<span>Backend: v{backendVersion}{isDemoMode ? ' (demo)' : ''}</span>
 						</a>
 					</li>
 				</ul>

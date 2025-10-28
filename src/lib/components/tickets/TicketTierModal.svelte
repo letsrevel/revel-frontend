@@ -3,6 +3,7 @@
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
+	import DemoCardInfo from '$lib/components/common/DemoCardInfo.svelte';
 	import { Ticket, Check } from 'lucide-svelte';
 
 	interface Props {
@@ -24,6 +25,9 @@
 		onClaimTicket,
 		onCheckout
 	}: Props = $props();
+
+	// Check if any tier uses online payment
+	let hasOnlinePayment = $derived(tiers.some((tier) => tier.payment_method === 'online'));
 
 	const CURRENCY_SYMBOLS: Record<string, string> = {
 		EUR: '€',
@@ -187,6 +191,11 @@
 				{/each}
 			{/if}
 		</div>
+
+		<!-- Demo Mode: Show test card info if any tier uses online payment -->
+		{#if hasOnlinePayment}
+			<DemoCardInfo />
+		{/if}
 
 		<div class="mt-6 border-t pt-4 text-center text-xs text-muted-foreground">
 			<p>By claiming a ticket, you agree to the event's terms and conditions.</p>

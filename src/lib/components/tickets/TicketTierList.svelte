@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import TierCard from './TierCard.svelte';
+	import DemoCardInfo from '$lib/components/common/DemoCardInfo.svelte';
 	import { Ticket } from 'lucide-svelte';
 
 	interface Props {
@@ -25,6 +26,9 @@
 	);
 
 	let hasTiers = $derived(visibleTiers.length > 0);
+
+	// Check if any tier uses online payment
+	let hasOnlinePayment = $derived(visibleTiers.some((tier) => tier.payment_method === 'online'));
 </script>
 
 {#if hasTiers}
@@ -45,6 +49,11 @@
 				<a href="/login" class="font-medium text-primary hover:underline">Sign in</a>
 				to claim your ticket
 			</p>
+		{/if}
+
+		<!-- Demo Mode: Show test card info if any tier uses online payment -->
+		{#if hasOnlinePayment}
+			<DemoCardInfo />
 		{/if}
 	</section>
 {/if}

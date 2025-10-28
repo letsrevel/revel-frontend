@@ -6,6 +6,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { Toaster } from 'svelte-sonner';
+	import DemoBanner from '$lib/components/common/DemoBanner.svelte';
 	import type { LayoutData } from './$types';
 
 	interface Props {
@@ -106,5 +107,6 @@
 <ModeWatcher />
 <QueryClientProvider client={queryClient}>
 	<Toaster richColors position="top-right" />
+	<DemoBanner />
 	{@render children()}
 </QueryClientProvider>
