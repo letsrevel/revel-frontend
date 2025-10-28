@@ -13,6 +13,12 @@ Revel is an open-source, community-focused event management and ticketing platfo
 
 ---
 
+## ⚠ Note
+
+Unlike the Backend, this was *shamelessly* vibe coded using Claude Code. This code is an absolute spaghetti mess and it's a miracle it sort of works. If you are familiar with the tech stack and want to contribute, any help is more than welcome!
+
+---
+
 ## 🌟 Philosophy & Design Principles
 
 This frontend embodies Revel's core values:
