@@ -1,7 +1,27 @@
 import { fail, redirect, isRedirect } from '@sveltejs/kit';
-import type { Actions } from './$types';
+import type { Actions, PageServerLoad } from './$types';
 import { registerSchema } from '$lib/schemas/auth';
-import { accountRegister } from '$lib/api/generated/sdk.gen';
+import { accountRegister, apiApiVersion } from '$lib/api/generated/sdk.gen';
+
+export const load: PageServerLoad = async ({ fetch }) => {
+	// Check if backend is in demo mode
+	try {
+		const { data } = await apiApiVersion({ fetch });
+		if (data?.demo) {
+			// In demo mode, redirect to login page
+			throw redirect(303, '/login');
+		}
+	} catch (error) {
+		// Re-throw redirects
+		if (isRedirect(error)) {
+			throw error;
+		}
+		// If version check fails, allow registration to proceed
+		console.error('[REGISTER] Failed to check demo mode:', error);
+	}
+
+	return {};
+};
 
 export const actions = {
 	default: async ({ request, fetch }) => {

@@ -84,6 +84,16 @@
 							GitHub
 						</a>
 					</li>
+					<li>
+						<a
+							href="https://forms.gle/7wAqQXqrWk3X6Ddu7"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="text-muted-foreground transition-colors hover:text-foreground"
+						>
+							Send Feedback
+						</a>
+					</li>
 				</ul>
 			</div>
 
