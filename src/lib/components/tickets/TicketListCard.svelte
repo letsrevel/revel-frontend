@@ -37,6 +37,7 @@
 
 		downloadRevelEventICalFile({
 			id: ticket.event.id,
+			slug: event.slug || ticket.event.id, // Fallback to ID if slug missing
 			name: ticket.event.name,
 			description: event.description,
 			start: event.start,

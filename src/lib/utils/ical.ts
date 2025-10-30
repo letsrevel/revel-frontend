@@ -157,6 +157,7 @@ export function downloadEventICalFile(event: ICalEvent, eventId?: string, filena
  */
 export function generateICalFromRevelEvent(event: {
 	id: string;
+	slug: string;
 	name: string;
 	description?: string | null;
 	start: string;
@@ -164,6 +165,7 @@ export function generateICalFromRevelEvent(event: {
 	location?: string | null;
 	venue_name?: string | null;
 	organization?: {
+		slug: string;
 		name: string;
 		email?: string | null;
 	};
@@ -171,9 +173,11 @@ export function generateICalFromRevelEvent(event: {
 	// Format location
 	let location = event.venue_name || event.location || undefined;
 
-	// Create full URL to event
+	// Create full URL to event using correct format: /events/org-slug/event-slug
 	const eventUrl =
-		typeof window !== 'undefined' ? `${window.location.origin}/events/${event.id}` : undefined;
+		typeof window !== 'undefined' && event.organization?.slug
+			? `${window.location.origin}/events/${event.organization.slug}/${event.slug}`
+			: undefined;
 
 	return generateICalFile(
 		{
@@ -195,6 +199,7 @@ export function generateICalFromRevelEvent(event: {
  */
 export function downloadRevelEventICalFile(event: {
 	id: string;
+	slug: string;
 	name: string;
 	description?: string | null;
 	start: string;
@@ -202,6 +207,7 @@ export function downloadRevelEventICalFile(event: {
 	location?: string | null;
 	venue_name?: string | null;
 	organization?: {
+		slug: string;
 		name: string;
 		email?: string | null;
 	};
