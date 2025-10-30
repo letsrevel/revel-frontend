@@ -3,6 +3,7 @@
 	import { formatEventDateRange } from '$lib/utils/date';
 	import { getEventFallbackGradient } from '$lib/utils/event';
 	import { getBackendUrl } from '$lib/config/api';
+	import { downloadRevelEventICalFile } from '$lib/utils/ical';
 	import { MapPin, Calendar, Share2 } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
 
@@ -49,6 +50,11 @@
 			console.error('Failed to copy link:', err);
 		}
 	}
+
+	// Download iCal file for this event
+	function handleDownloadCalendar(): void {
+		downloadRevelEventICalFile(event);
+	}
 </script>
 
 <header class={cn('relative w-full overflow-hidden', className)}>
@@ -81,11 +87,17 @@
 
 				<!-- Metadata Row -->
 				<div class="flex flex-col gap-2 text-sm text-white/90 md:text-base">
-					<!-- Date -->
-					<div class="flex items-center gap-2">
+					<!-- Date (clickable to download iCal) -->
+					<button
+						type="button"
+						onclick={handleDownloadCalendar}
+						class="group flex items-center gap-2 transition-all hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/50"
+						title="Download calendar event"
+						aria-label="Download calendar event for {event.name}"
+					>
 						<Calendar class="h-5 w-5 shrink-0" aria-hidden="true" />
-						<time datetime={event.start}>{dateRange}</time>
-					</div>
+						<time datetime={event.start} class="group-hover:underline">{dateRange}</time>
+					</button>
 
 					<!-- Location -->
 					<div class="flex items-center gap-2">

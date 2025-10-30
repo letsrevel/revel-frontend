@@ -12,7 +12,8 @@
 	import ActionButton from './ActionButton.svelte';
 	import EventRSVP from './EventRSVP.svelte';
 	import EligibilityStatusDisplay from './EligibilityStatusDisplay.svelte';
-	import { Check, Ticket, Settings, Users, Mail } from 'lucide-svelte';
+	import { Check, Ticket, Settings, Users, Mail, CalendarDays } from 'lucide-svelte';
+	import { downloadRevelEventICalFile } from '$lib/utils/ical';
 
 	interface Props {
 		event: EventDetailSchema;
@@ -146,6 +147,13 @@
 		// User can manage if they are owner or staff
 		return !!orgPermissions;
 	});
+
+	/**
+	 * Download iCal file for this event
+	 */
+	function handleDownloadCalendar() {
+		downloadRevelEventICalFile(event);
+	}
 
 	/**
 	 * Handle view ticket/manage RSVP action
@@ -294,20 +302,35 @@
 
 		<!-- Secondary Actions (if user is attending) -->
 		{#if isAttending && !shouldShowResumePayment}
-			<button
-				type="button"
-				onclick={handleSecondaryAction}
-				class="w-full cursor-pointer rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-			>
-				{#if userStatus && isTicket(userStatus)}
+			<div class="space-y-2">
+				<button
+					type="button"
+					onclick={handleSecondaryAction}
+					class="w-full cursor-pointer rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				>
+					{#if userStatus && isTicket(userStatus)}
+						<span class="flex items-center justify-center gap-2">
+							<Ticket class="h-4 w-4" aria-hidden="true" />
+							Show Ticket
+						</span>
+					{:else}
+						{showManageRSVP ? 'Hide' : 'Change'} RSVP
+					{/if}
+				</button>
+
+				<!-- Add to Calendar Button -->
+				<button
+					type="button"
+					onclick={handleDownloadCalendar}
+					class="w-full cursor-pointer rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					aria-label="Download calendar event"
+				>
 					<span class="flex items-center justify-center gap-2">
-						<Ticket class="h-4 w-4" aria-hidden="true" />
-						Show Ticket
+						<CalendarDays class="h-4 w-4" aria-hidden="true" />
+						Add to Calendar
 					</span>
-				{:else}
-					{showManageRSVP ? 'Hide' : 'Change'} RSVP
-				{/if}
-			</button>
+				</button>
+			</div>
 
 			<!-- Show EventRSVP when managing -->
 			{#if showManageRSVP && userStatus && isRSVP(userStatus)}
@@ -366,6 +389,21 @@
 		<div class="border-t pt-4">
 			<h3 class="sr-only">Event details</h3>
 			<EventQuickInfo {event} variant="compact" />
+		</div>
+
+		<!-- Add to Calendar (always available) -->
+		<div class="border-t pt-4">
+			<button
+				type="button"
+				onclick={handleDownloadCalendar}
+				class="w-full cursor-pointer rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				aria-label="Download calendar event"
+			>
+				<span class="flex items-center justify-center gap-2">
+					<CalendarDays class="h-4 w-4" aria-hidden="true" />
+					Add to Calendar
+				</span>
+			</button>
 		</div>
 	</div>
 </aside>
