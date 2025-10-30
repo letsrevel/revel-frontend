@@ -34,7 +34,7 @@
 			{#if data.success}
 				<h1 class="text-3xl font-bold tracking-tight">Email verified!</h1>
 				<p class="text-muted-foreground">
-					Your account has been successfully verified. Redirecting you to the dashboard...
+					Your account has been successfully verified. Redirecting you to your profile...
 				</p>
 			{:else}
 				<h1 class="text-3xl font-bold tracking-tight">Verification failed</h1>

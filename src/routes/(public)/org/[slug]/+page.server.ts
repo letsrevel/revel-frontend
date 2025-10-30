@@ -2,13 +2,14 @@ import { error } from '@sveltejs/kit';
 import {
 	organizationGetOrganization,
 	permissionMyPermissions,
-	organizationListResources
+	organizationListResources,
+	organizationGetOrganizationTokenDetails
 } from '$lib/api';
 import type { PageServerLoad } from './$types';
-import type { OrganizationPermissionsSchema } from '$lib/api/generated/types.gen';
+import type { OrganizationPermissionsSchema, OrganizationTokenSchema } from '$lib/api/generated/types.gen';
 import { canPerformAction } from '$lib/utils/permissions';
 
-export const load: PageServerLoad = async ({ params, locals, fetch }) => {
+export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 	const { slug } = params;
 
 	try {
@@ -18,7 +19,13 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 			headers['Authorization'] = `Bearer ${locals.user.accessToken}`;
 		}
 
-		// Fetch organization details
+		// Check for organization token (?ot=) for visibility
+		const orgToken = url.searchParams.get('ot');
+		if (orgToken) {
+			headers['X-Org-Token'] = orgToken;
+		}
+
+		// Fetch organization details (pass auth and token to see private organizations)
 		const orgResponse = await organizationGetOrganization({
 			fetch,
 			path: { slug },
@@ -68,12 +75,32 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 						isStaff = true;
 					}
 				}
+
 			} catch (err) {
 				// If permissions fail to load, continue without them
 				// User will not be able to edit by default
 				console.error('Failed to fetch user permissions:', err);
 			}
 		}
+
+	// Fetch organization token details if token parameter is present
+	let organizationTokenDetails: OrganizationTokenSchema | null = null;
+	if (orgToken) {
+		try {
+			const tokenResponse = await organizationGetOrganizationTokenDetails({
+				fetch,
+				path: { token_id: orgToken },
+				headers
+			});
+
+			if (tokenResponse.data) {
+				organizationTokenDetails = tokenResponse.data;
+			}
+		} catch (err) {
+			// If token is invalid or expired, continue without it
+			console.error('Failed to fetch organization token details:', err);
+		}
+	}
 
 		return {
 			organization,
@@ -82,7 +109,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 			isMember,
 			isOwner,
 			isStaff,
-			// Explicitly pass authentication state to the page
+organizationTokenDetails,			// Explicitly pass authentication state to the page
 			isAuthenticated: !!locals.user
 		};
 	} catch (err) {

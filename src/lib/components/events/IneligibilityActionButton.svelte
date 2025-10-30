@@ -1,9 +1,10 @@
 <script lang="ts">
-	import type { NextStep } from '$lib/api/generated/types.gen';
+	import type { NextStep, EventTokenSchema } from '$lib/api/generated/types.gen';
 	import { getActionButtonText, isActionDisabled } from '$lib/utils/eligibility';
 	import { cn } from '$lib/utils/cn';
 	import { Button } from '$lib/components/ui/button';
 	import RequestInvitationButton from './RequestInvitationButton.svelte';
+	import ClaimInvitationButton from './ClaimInvitationButton.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import {
 		Check,
@@ -18,7 +19,7 @@
 	} from 'lucide-svelte';
 
 	interface Props {
-		nextStep: NextStep;
+		nextStep?: NextStep | null;
 		eventId: string;
 		eventSlug: string;
 		organizationSlug: string;
@@ -26,6 +27,7 @@
 		retryOn?: string | null;
 		disabled?: boolean;
 		eventName?: string;
+		eventTokenDetails?: EventTokenSchema | null;
 		class?: string;
 	}
 
@@ -37,6 +39,7 @@
 		questionnaireIds,
 		disabled = false,
 		eventName = '',
+		eventTokenDetails,
 		class: className
 	}: Props = $props();
 
@@ -97,7 +100,12 @@
 	 */
 	async function handleClick() {
 		// Disabled states do nothing
-		if (disabled || isActionDisabled(nextStep) || isLoading || showSuccess) {
+		if (disabled || (nextStep && isActionDisabled(nextStep)) || isLoading || showSuccess) {
+			return;
+		}
+
+		// If no next step defined, do nothing
+		if (!nextStep) {
 			return;
 		}
 
@@ -146,11 +154,13 @@
 	}
 
 	// Computed values
-	let IconComponent = $derived(getIconComponent(nextStep));
-	let buttonText = $derived(showSuccess ? 'Request Sent' : getActionButtonText(nextStep));
-	let buttonVariant = $derived(getButtonVariant(nextStep));
+	let IconComponent = $derived(nextStep ? getIconComponent(nextStep) : Check);
+	let buttonText = $derived(
+		showSuccess ? 'Request Sent' : nextStep ? getActionButtonText(nextStep) : 'Continue'
+	);
+	let buttonVariant = $derived(nextStep ? getButtonVariant(nextStep) : 'outline');
 	let isButtonDisabled = $derived(
-		disabled || isActionDisabled(nextStep) || isLoading || showSuccess
+		disabled || (nextStep && isActionDisabled(nextStep)) || isLoading || showSuccess
 	);
 </script>
 
@@ -170,8 +180,15 @@
   />
 -->
 <div class={cn('space-y-2', className)}>
-	<!-- Use RequestInvitationButton for invitation requests -->
-	{#if nextStep === 'request_invitation'}
+	<!-- Use ClaimInvitationButton if token is present and grants invitation (highest priority) -->
+	{#if eventTokenDetails && eventTokenDetails.grants_invitation}
+		<ClaimInvitationButton
+			tokenId={eventTokenDetails.id || ''}
+			tokenDetails={eventTokenDetails}
+			class="w-full"
+		/>
+		<!-- Use RequestInvitationButton for invitation requests without token -->
+	{:else if nextStep === 'request_invitation'}
 		<RequestInvitationButton
 			{eventId}
 			eventName={eventName || 'this event'}

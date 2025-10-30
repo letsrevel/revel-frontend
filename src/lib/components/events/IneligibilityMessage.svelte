@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { EventUserEligibility } from '$lib/api/generated/types.gen';
+	import type { EventUserEligibility, EventTokenSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import {
 		AlertCircle,
@@ -22,6 +22,7 @@
 		eventName: string;
 		organizationSlug: string;
 		organizationName: string;
+		eventTokenDetails?: EventTokenSchema | null;
 		class?: string;
 	}
 
@@ -31,6 +32,7 @@
 		eventSlug,
 		organizationSlug,
 		organizationName,
+		eventTokenDetails,
 		class: className
 	}: Props = $props();
 
@@ -269,13 +271,14 @@
 			{/if}
 
 			<!-- Action Button -->
-			{#if eligibility.next_step}
+			{#if eligibility.next_step || (eventTokenDetails && eventTokenDetails.grants_invitation)}
 				<div class="pt-1">
 					<IneligibilityActionButton
 						nextStep={eligibility.next_step}
 						{eventId}
 						{eventSlug}
 						{organizationSlug}
+						{eventTokenDetails}
 						questionnaireIds={eligibility.questionnaires_missing}
 					/>
 				</div>

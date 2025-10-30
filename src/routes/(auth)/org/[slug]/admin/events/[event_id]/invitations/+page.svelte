@@ -2,7 +2,10 @@
 	import type { PageData, ActionData } from './$types';
 	import type {
 		EventInvitationListSchema,
-		PendingEventInvitationListSchema
+		PendingEventInvitationListSchema,
+		EventTokenSchema,
+		EventTokenCreateSchema,
+		EventTokenUpdateSchema
 	} from '$lib/api/generated/types.gen';
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
@@ -21,12 +24,27 @@
 		Edit,
 		CheckSquare,
 		Square,
-		XCircle
+		XCircle,
+		Link,
+		Loader2
 	} from 'lucide-svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import { cn } from '$lib/utils/cn';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
+	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
+	import {
+		eventadminListEventTokens,
+		eventadminCreateEventToken,
+		eventadminUpdateEventToken,
+		eventadminDeleteEventToken
+	} from '$lib/api/generated/sdk.gen';
+	import { authStore } from '$lib/stores/auth.svelte';
+	import { toast } from 'svelte-sonner';
+	import EventTokenCard from '$lib/components/tokens/EventTokenCard.svelte';
+	import EventTokenModal from '$lib/components/tokens/EventTokenModal.svelte';
+	import TokenShareDialog from '$lib/components/tokens/TokenShareDialog.svelte';
+	import { getEventTokenUrl } from '$lib/utils/tokens';
 
 	interface Props {
 		data: PageData;
@@ -39,7 +57,16 @@
 	let processingId = $state<string | null>(null);
 
 	// Active tab state
-	let activeTab = $state<'requests' | 'invitations'>(data.activeTab as any);
+	let activeTab = $state<'requests' | 'invitations' | 'links'>(data.activeTab as any);
+
+	// Token-related state
+	const accessToken = $derived(authStore.accessToken);
+	const queryClient = useQueryClient();
+	let tokenSearchQuery = $state('');
+	let isCreateTokenModalOpen = $state(false);
+	let tokenToEdit = $state<EventTokenSchema | null>(null);
+	let tokenToDelete = $state<EventTokenSchema | null>(null);
+	let tokenToShare = $state<EventTokenSchema | null>(null);
 
 	// Filter states
 	let activeStatusFilter = $state<string | null>(data.filters?.status || null);
@@ -111,7 +138,7 @@
 	/**
 	 * Switch tabs
 	 */
-	function switchTab(tab: 'requests' | 'invitations') {
+	function switchTab(tab: 'requests' | 'invitations' | 'links') {
 		activeTab = tab;
 		const params = new URLSearchParams(window.location.search);
 		params.set('tab', tab);
@@ -383,6 +410,139 @@
 	 * Get total selected count
 	 */
 	let totalSelected = $derived(selectedRegisteredIds.size + selectedPendingIds.size);
+
+	// ========================================
+	// TOKEN MANAGEMENT (for "Invitation Links" tab)
+	// ========================================
+
+	// Fetch tokens
+	const tokensQuery = createQuery(() => ({
+		queryKey: ['event', data.event.id, 'tokens', tokenSearchQuery],
+		queryFn: async () => {
+			const response = await eventadminListEventTokens({
+				path: { event_id: data.event.id },
+				query: { search: tokenSearchQuery || undefined, page_size: 100 },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+
+			if (response.error) {
+				throw new Error('Failed to fetch tokens');
+			}
+
+			return response.data;
+		},
+		enabled: !!accessToken && activeTab === 'links'
+	}));
+
+	// Create token mutation
+	const createTokenMutation = createMutation(() => ({
+		mutationFn: async (tokenData: EventTokenCreateSchema) => {
+			const response = await eventadminCreateEventToken({
+				path: { event_id: data.event.id },
+				body: tokenData,
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+
+			if (response.error) {
+				throw new Error('Failed to create token');
+			}
+
+			return response.data;
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ['event', data.event.id, 'tokens']
+			});
+			isCreateTokenModalOpen = false;
+			toast.success('Invitation link created successfully!');
+		},
+		onError: () => {
+			toast.error('Failed to create invitation link');
+		}
+	}));
+
+	// Update token mutation
+	const updateTokenMutation = createMutation(() => ({
+		mutationFn: async ({
+			tokenId,
+			data: tokenData
+		}: {
+			tokenId: string;
+			data: EventTokenUpdateSchema;
+		}) => {
+			const response = await eventadminUpdateEventToken({
+				path: { event_id: data.event.id, token_id: tokenId },
+				body: tokenData,
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+
+			if (response.error) {
+				throw new Error('Failed to update token');
+			}
+
+			return response.data;
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ['event', data.event.id, 'tokens']
+			});
+			tokenToEdit = null;
+			toast.success('Invitation link updated successfully!');
+		},
+		onError: () => {
+			toast.error('Failed to update invitation link');
+		}
+	}));
+
+	// Delete token mutation
+	const deleteTokenMutation = createMutation(() => ({
+		mutationFn: async (tokenId: string) => {
+			const response = await eventadminDeleteEventToken({
+				path: { event_id: data.event.id, token_id: tokenId },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+
+			if (response.error) {
+				throw new Error('Failed to delete token');
+			}
+
+			return response.data;
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ['event', data.event.id, 'tokens']
+			});
+			tokenToDelete = null;
+			toast.success('Invitation link deleted successfully!');
+		},
+		onError: () => {
+			toast.error('Failed to delete invitation link');
+		}
+	}));
+
+	function handleCreateTokenSave(tokenData: EventTokenCreateSchema) {
+		createTokenMutation.mutate(tokenData);
+	}
+
+	function handleEditTokenSave(tokenData: EventTokenUpdateSchema) {
+		if (tokenToEdit?.id) {
+			updateTokenMutation.mutate({ tokenId: tokenToEdit.id, data: tokenData });
+		}
+	}
+
+	function handleDeleteToken() {
+		if (tokenToDelete?.id) {
+			deleteTokenMutation.mutate(tokenToDelete.id);
+		}
+	}
+
+	const tokens = $derived(tokensQuery.data?.results || []);
+	const isLoadingTokens = $derived(tokensQuery.isLoading);
+	const shareUrl = $derived(
+		tokenToShare
+			? getEventTokenUrl(tokenToShare.id || '') // Claiming URL for sharing
+			: ''
+	);
 </script>
 
 <svelte:head>
@@ -484,6 +644,27 @@
 						class="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground"
 					>
 						{data.registeredPagination.totalCount + data.pendingPagination.totalCount}
+					</span>
+				</div>
+			</button>
+
+			<button
+				type="button"
+				onclick={() => switchTab('links')}
+				class={cn(
+					'whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium transition-colors',
+					activeTab === 'links'
+						? 'border-primary text-primary'
+						: 'border-transparent text-muted-foreground hover:border-border hover:text-foreground'
+				)}
+			>
+				<div class="flex items-center gap-2">
+					<Link class="h-4 w-4" aria-hidden="true" />
+					Invitation Links
+					<span
+						class="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground"
+					>
+						{tokens.length}
 					</span>
 				</div>
 			</button>
@@ -772,7 +953,7 @@
 				{/if}
 			{/if}
 		</div>
-	{:else}
+	{:else if activeTab === 'invitations'}
 		<!-- DIRECT INVITATIONS TAB -->
 		<div class="space-y-6">
 			<!-- Action Buttons -->
@@ -1231,6 +1412,67 @@
 				{/if}
 			</div>
 		</div>
+	{:else if activeTab === 'links'}
+		<!-- INVITATION LINKS TAB -->
+		<div class="space-y-6">
+			<!-- Header & Action -->
+			<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+				<p class="text-sm text-muted-foreground">
+					Create shareable invitation links that anyone can use to register for this event. Perfect
+					for social media, emails, or QR codes.
+				</p>
+				<Button onclick={() => (isCreateTokenModalOpen = true)}>
+					<Plus class="mr-2 h-4 w-4" aria-hidden="true" />
+					Create Link
+				</Button>
+			</div>
+
+			<!-- Search -->
+			<div class="relative">
+				<Search
+					class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+					aria-hidden="true"
+				/>
+				<input
+					type="search"
+					placeholder="Search links by name..."
+					bind:value={tokenSearchQuery}
+					class="h-10 w-full rounded-md border border-input bg-background pl-10 pr-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				/>
+			</div>
+
+			<!-- Tokens List -->
+			<div class="space-y-4">
+				{#if isLoadingTokens}
+					<div class="flex items-center justify-center py-12">
+						<Loader2 class="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
+					</div>
+				{:else if tokens.length === 0}
+					<div class="rounded-lg border border-dashed p-12 text-center">
+						<Link class="mx-auto h-12 w-12 text-muted-foreground" aria-hidden="true" />
+						<h3 class="mt-4 text-lg font-semibold">No invitation links found</h3>
+						<p class="mt-2 text-sm text-muted-foreground">
+							{#if tokenSearchQuery}
+								No links match your search. Try a different search term.
+							{:else}
+								Create your first invitation link to start sharing your event.
+							{/if}
+						</p>
+					</div>
+				{:else}
+					{#each tokens as token (token.id)}
+						<EventTokenCard
+							{token}
+							orgSlug={data.event.organization.slug}
+							eventSlug={data.event.slug}
+							onEdit={(t) => (tokenToEdit = t)}
+							onDelete={(t) => (tokenToDelete = t)}
+							onShare={(t) => (tokenToShare = t)}
+						/>
+					{/each}
+				{/if}
+			</div>
+		</div>
 	{/if}
 </div>
 
@@ -1314,7 +1556,11 @@
 								<option value={tier.id}>
 									{tier.name}
 									{#if tier.price !== null && tier.price !== undefined && tier.price !== 0}
-										- {tier.currency === 'EUR' ? '€' : tier.currency}{(typeof tier.price === 'number' ? tier.price / 100 : parseFloat(tier.price) / 100).toFixed(2)}
+										- {tier.currency === 'EUR' ? '€' : tier.currency}{(typeof tier.price ===
+										'number'
+											? tier.price / 100
+											: parseFloat(tier.price) / 100
+										).toFixed(2)}
 									{:else}
 										- Free
 									{/if}
@@ -1479,7 +1725,9 @@
 									<option value={tier.id}>
 										{tier.name}
 										{#if tier.price !== null && tier.price !== undefined && tier.price !== 0}
-											- {tier.currency}{typeof tier.price === 'number' ? tier.price.toFixed(2) : tier.price}
+											- {tier.currency}{typeof tier.price === 'number'
+												? tier.price.toFixed(2)
+												: tier.price}
 										{:else}
 											- Free
 										{/if}
@@ -1654,7 +1902,11 @@
 								<option value={tier.id}>
 									{tier.name}
 									{#if tier.price !== null && tier.price !== undefined && tier.price !== 0}
-										- {tier.currency === 'EUR' ? '€' : tier.currency}{(typeof tier.price === 'number' ? tier.price / 100 : parseFloat(tier.price) / 100).toFixed(2)}
+										- {tier.currency === 'EUR' ? '€' : tier.currency}{(typeof tier.price ===
+										'number'
+											? tier.price / 100
+											: parseFloat(tier.price) / 100
+										).toFixed(2)}
 									{:else}
 										- Free
 									{/if}
@@ -1765,3 +2017,78 @@
 		</form>
 	</Dialog.Content>
 </Dialog.Root>
+
+<!-- Token Modals -->
+<!-- Create Token Modal -->
+<EventTokenModal
+	open={isCreateTokenModalOpen}
+	ticketTiers={data.ticketTiers}
+	isTicketedEvent={data.event.requires_ticket}
+	isLoading={createTokenMutation.isPending}
+	onClose={() => (isCreateTokenModalOpen = false)}
+	onSave={handleCreateTokenSave}
+/>
+
+<!-- Edit Token Modal -->
+<EventTokenModal
+	open={!!tokenToEdit}
+	token={tokenToEdit}
+	ticketTiers={data.ticketTiers}
+	isTicketedEvent={data.event.requires_ticket}
+	isLoading={updateTokenMutation.isPending}
+	onClose={() => (tokenToEdit = null)}
+	onSave={handleEditTokenSave}
+/>
+
+<!-- Delete Token Confirmation -->
+<Dialog.Root open={!!tokenToDelete}>
+	<Dialog.Content>
+		<Dialog.Header>
+			<Dialog.Title>Delete Invitation Link?</Dialog.Title>
+			<Dialog.Description>
+				This will permanently disable the invitation link. No one will be able to use it to
+				register.
+			</Dialog.Description>
+		</Dialog.Header>
+
+		{#if tokenToDelete}
+			<div class="space-y-2 text-sm">
+				<p><strong>Link:</strong> {tokenToDelete.name || 'Unnamed Link'}</p>
+				<p><strong>Uses:</strong> {tokenToDelete.uses} people already registered using this link</p>
+				<p class="text-muted-foreground">
+					Those registrations will remain valid. Only new attempts will fail.
+				</p>
+			</div>
+		{/if}
+
+		<Dialog.Footer>
+			<Button
+				variant="outline"
+				onclick={() => (tokenToDelete = null)}
+				disabled={deleteTokenMutation.isPending}
+			>
+				Cancel
+			</Button>
+			<Button
+				variant="destructive"
+				onclick={handleDeleteToken}
+				disabled={deleteTokenMutation.isPending}
+			>
+				{#if deleteTokenMutation.isPending}
+					<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+				{/if}
+				Delete Link
+			</Button>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>
+
+<!-- Share Token Dialog -->
+{#if tokenToShare}
+	<TokenShareDialog
+		open={!!tokenToShare}
+		{shareUrl}
+		tokenName={tokenToShare.name || undefined}
+		onClose={() => (tokenToShare = null)}
+	/>
+{/if}

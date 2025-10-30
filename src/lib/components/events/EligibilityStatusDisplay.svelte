@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { EventUserEligibility } from '$lib/api/generated/types.gen';
+	import type { EventUserEligibility, EventTokenSchema } from '$lib/api/generated/types.gen';
 	import {
 		getEligibilityExplanation,
 		formatRetryDate,
@@ -25,6 +25,7 @@
 		eventSlug?: string;
 		organizationSlug?: string;
 		eventName?: string;
+		eventTokenDetails?: EventTokenSchema | null;
 		class?: string;
 	}
 
@@ -34,6 +35,7 @@
 		eventSlug,
 		organizationSlug,
 		eventName,
+		eventTokenDetails,
 		class: className
 	}: Props = $props();
 
@@ -155,7 +157,7 @@
 			{/if}
 
 			<!-- Action Button -->
-			{#if eligibility.next_step && !eligibility.allowed && eventId && eventSlug && organizationSlug}
+			{#if (eligibility.next_step || (eventTokenDetails && eventTokenDetails.grants_invitation)) && !eligibility.allowed && eventId && eventSlug && organizationSlug}
 				<div class="mt-3">
 					<IneligibilityActionButton
 						nextStep={eligibility.next_step}
@@ -163,6 +165,7 @@
 						{eventSlug}
 						{organizationSlug}
 						{eventName}
+						{eventTokenDetails}
 						questionnaireIds={eligibility.questionnaires_missing}
 						retryOn={eligibility.retry_on}
 					/>

@@ -30,6 +30,7 @@
 		},
 		{ href: `/org/${data.organization.slug}/admin/questionnaires`, label: 'Questionnaires' },
 		{ href: `/org/${data.organization.slug}/admin/resources`, label: 'Resources' },
+		{ href: `/org/${data.organization.slug}/admin/tokens`, label: 'Invitation Links' },
 		{ href: `/org/${data.organization.slug}/admin/settings`, label: 'Settings' }
 	];
 

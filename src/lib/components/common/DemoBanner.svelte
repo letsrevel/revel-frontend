@@ -42,7 +42,7 @@
 			<div class="flex-1 text-sm">
 				<p class="font-semibold">Demo Mode</p>
 				<p class="mt-1">
-					This is a demonstration environment. All data will be reset at midnight CET (approximately {midnightUserTime}
+					This is a demo environment. All data will be reset at midnight CET (approximately {midnightUserTime}
 					{userTimezone}). Feel free to explore and test all features!
 				</p>
 			</div>
