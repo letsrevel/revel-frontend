@@ -4,13 +4,24 @@
 	import {
 		dashboardDashboardEvents,
 		dashboardDashboardOrganizations,
-		eventListEvents
+		eventListEvents,
+		eventListUserTickets,
+		eventListMyInvitations
 	} from '$lib/api/generated/sdk.gen';
 	import { EventCard } from '$lib/components/events';
 	import EventCardSkeleton from '$lib/components/common/EventCardSkeleton.svelte';
 	import OrganizationCardSkeleton from '$lib/components/common/OrganizationCardSkeleton.svelte';
 	import { getImageUrl } from '$lib/utils/url';
-	import { Calendar, Building2, ChevronRight, Shield, Sparkles, Filter } from 'lucide-svelte';
+	import {
+		Calendar,
+		Building2,
+		ChevronRight,
+		Shield,
+		Sparkles,
+		Filter,
+		Ticket,
+		Mail
+	} from 'lucide-svelte';
 
 	let user = $derived(authStore.user);
 	let accessToken = $derived(authStore.accessToken);
@@ -152,10 +163,50 @@
 		enabled: true
 	}));
 
+	// Fetch active tickets count
+	const activeTicketsQuery = createQuery(() => ({
+		queryKey: ['dashboard-active-tickets-count'],
+		queryFn: async () => {
+			if (!accessToken) return 0;
+
+			const response = await eventListUserTickets({
+				headers: { Authorization: `Bearer ${accessToken}` },
+				query: {
+					status: 'active' as const,
+					page_size: 1
+				}
+			});
+
+			return response.data?.count || 0;
+		},
+		enabled: !!accessToken
+	}));
+
+	// Fetch pending invitations count
+	const pendingInvitationsQuery = createQuery(() => ({
+		queryKey: ['dashboard-pending-invitations-count'],
+		queryFn: async () => {
+			if (!accessToken) return 0;
+
+			const response = await eventListMyInvitations({
+				headers: { Authorization: `Bearer ${accessToken}` },
+				query: {
+					include_past: false,
+					page_size: 1
+				}
+			});
+
+			return response.data?.count || 0;
+		},
+		enabled: !!accessToken
+	}));
+
 	let yourEvents = $derived(yourEventsQuery.data || []);
 	let organizations = $derived(organizationsQuery.data || []);
 	let upcomingEvents = $derived(upcomingEventsQuery.data || []);
 	let hasAnyEvents = $derived(hasAnyEventsQuery.data || false);
+	let activeTicketsCount = $derived(activeTicketsQuery.data || 0);
+	let pendingInvitationsCount = $derived(pendingInvitationsQuery.data || 0);
 
 	// Check if user can organize events (is owner/staff of at least one org)
 	let canOrganizeEvents = $derived(() => {
@@ -269,6 +320,67 @@
 			</button>
 		{/if}
 	</div>
+
+	<!-- Activity Summary Cards -->
+	{#if activeTicketsCount > 0 || pendingInvitationsCount > 0}
+		<div class="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+			<!-- Active Tickets -->
+			{#if activeTicketsCount > 0}
+				<a
+					href="/dashboard/tickets"
+					class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+				>
+					<div class="flex items-start justify-between">
+						<div class="flex items-center gap-3">
+							<div class="rounded-full bg-blue-100 p-3 dark:bg-blue-950">
+								<Ticket class="h-6 w-6 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+							</div>
+							<div>
+								<p class="text-sm font-medium text-muted-foreground">Active Tickets</p>
+								<p class="text-3xl font-bold">{activeTicketsCount}</p>
+							</div>
+						</div>
+						<ChevronRight
+							class="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1"
+							aria-hidden="true"
+						/>
+					</div>
+					<p class="mt-4 text-sm text-muted-foreground">
+						You have {activeTicketsCount}
+						{activeTicketsCount === 1 ? 'ticket' : 'tickets'} ready for upcoming events
+					</p>
+				</a>
+			{/if}
+
+			<!-- Pending Invitations -->
+			{#if pendingInvitationsCount > 0}
+				<a
+					href="/dashboard/invitations"
+					class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+				>
+					<div class="flex items-start justify-between">
+						<div class="flex items-center gap-3">
+							<div class="rounded-full bg-purple-100 p-3 dark:bg-purple-950">
+								<Mail class="h-6 w-6 text-purple-600 dark:text-purple-400" aria-hidden="true" />
+							</div>
+							<div>
+								<p class="text-sm font-medium text-muted-foreground">Invitations</p>
+								<p class="text-3xl font-bold">{pendingInvitationsCount}</p>
+							</div>
+						</div>
+						<ChevronRight
+							class="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1"
+							aria-hidden="true"
+						/>
+					</div>
+					<p class="mt-4 text-sm text-muted-foreground">
+						You have {pendingInvitationsCount} pending
+						{pendingInvitationsCount === 1 ? 'invitation' : 'invitations'} to respond to
+					</p>
+				</a>
+			{/if}
+		</div>
+	{/if}
 
 	<!-- Main Content Grid -->
 	<div class="space-y-8">

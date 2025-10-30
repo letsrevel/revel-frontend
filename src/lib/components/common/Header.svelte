@@ -23,7 +23,9 @@
 	// Navigation items for authenticated users
 	const authNavItems = [
 		{ href: '/events', label: 'Browse Events' },
-		{ href: '/organizations', label: 'Organizations' }
+		{ href: '/organizations', label: 'Organizations' },
+		{ href: '/dashboard/tickets', label: 'My Tickets' },
+		{ href: '/dashboard/invitations', label: 'Invitations' }
 	];
 
 	// Determine which nav items to show

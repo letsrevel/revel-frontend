@@ -50,41 +50,61 @@
 	 * 1. Client-side API interceptor (catches 401 errors and refreshes)
 	 * 2. Client-side auto-refresh timer (proactive refresh before expiry)
 	 */
+	let previousServerToken = $state<string | null>(null);
+	let initializationPromise = $state<Promise<void> | null>(null);
+
 	$effect(() => {
 		const serverAccessToken = data.auth.accessToken;
 		const currentAccessToken = authStore.accessToken;
 
+		// Only trigger effect if the server token has actually changed
+		if (serverAccessToken === previousServerToken) {
+			return;
+		}
+
 		console.log('[ROOT LAYOUT] Auth sync effect triggered', {
 			hasServerToken: !!serverAccessToken,
-			hasCurrentToken: !!currentAccessToken
+			hasCurrentToken: !!currentAccessToken,
+			previousServerToken: !!previousServerToken
 		});
+
+		previousServerToken = serverAccessToken;
 
 		// Case 1: Server has token, but we don't (login or page refresh)
 		if (serverAccessToken && !currentAccessToken) {
 			console.log('[ROOT LAYOUT] Server provided access token, initializing auth');
 			authStore.setAccessToken(serverAccessToken);
 
-			// Fetch user data and permissions
-			authStore.initialize().catch((err) => {
-				console.error('[ROOT LAYOUT] Auth initialization failed:', err);
+			// Prevent multiple simultaneous initializations
+			if (!initializationPromise) {
+				// Fetch user data and permissions
+				initializationPromise = authStore
+					.initialize()
+					.catch((err) => {
+						console.error('[ROOT LAYOUT] Auth initialization failed:', err);
 
-				// Check if ad blocker is blocking the request
-				if (err instanceof TypeError && err.message === 'Failed to fetch') {
-					import('$lib/config/api').then(({ API_BASE_URL_DISPLAY }) => {
-						import('svelte-sonner').then(({ toast }) => {
-							toast.error('API Blocked', {
-								description: `Please disable your ad blocker for ${API_BASE_URL_DISPLAY} to use all features.`,
-								duration: 10000
+						// Check if ad blocker is blocking the request
+						if (err instanceof TypeError && err.message === 'Failed to fetch') {
+							import('$lib/config/api').then(({ API_BASE_URL_DISPLAY }) => {
+								import('svelte-sonner').then(({ toast }) => {
+									toast.error('API Blocked', {
+										description: `Please disable your ad blocker for ${API_BASE_URL_DISPLAY} to use all features.`,
+										duration: 10000
+									});
+								});
 							});
-						});
+						}
+					})
+					.finally(() => {
+						initializationPromise = null;
 					});
-				}
-			});
+			}
 		}
 		// Case 2: Server has no token, but we do (logout)
 		else if (!serverAccessToken && currentAccessToken) {
 			console.log('[ROOT LAYOUT] No server token, clearing auth state (logout)');
 			authStore.logout();
+			initializationPromise = null;
 		}
 		// Case 3: Both have tokens (normal navigation while authenticated)
 		else if (serverAccessToken && currentAccessToken) {
