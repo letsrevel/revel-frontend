@@ -9,6 +9,7 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import { eventListEvents, eventseriesListEventSeries } from '$lib/api/generated/sdk.gen';
 	import RequestMembershipButton from '$lib/components/organization/RequestMembershipButton.svelte';
+	import ClaimMembershipButton from '$lib/components/organizations/ClaimMembershipButton.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -228,8 +229,16 @@
 					</a>
 				{/if}
 
-				<!-- Request Membership Button (if org accepts members and user is not a member) -->
-				{#if organization.accept_membership_requests}
+				<!-- Claim Membership Button (if token present and grants membership) -->
+				{#if data.organizationTokenDetails && data.organizationTokenDetails.grants_membership && !data.isMember && !data.isOwner && !data.isStaff}
+					<ClaimMembershipButton
+						tokenId={data.organizationTokenDetails.id || ''}
+						tokenDetails={data.organizationTokenDetails}
+						organizationName={organization.name}
+						class="inline-flex items-center gap-2"
+					/>
+					<!-- Request Membership Button (if org accepts members and user is not a member) -->
+				{:else if organization.accept_membership_requests}
 					<RequestMembershipButton
 						organizationSlug={organization.slug}
 						organizationName={organization.name}

@@ -10,6 +10,7 @@
 	import OrganizationInfo from '$lib/components/events/OrganizationInfo.svelte';
 	import PotluckSection from '$lib/components/events/PotluckSection.svelte';
 	import EventResources from '$lib/components/events/EventResources.svelte';
+	import AttendeeList from '$lib/components/events/AttendeeList.svelte';
 	import TicketTierList from '$lib/components/tickets/TicketTierList.svelte';
 	import MyTicket from '$lib/components/tickets/MyTicket.svelte';
 	import TicketTierModal from '$lib/components/tickets/TicketTierModal.svelte';
@@ -214,7 +215,9 @@
 				});
 				if (response.error) {
 					const errorDetail = (response.error as any)?.detail || 'Failed to resume checkout';
-					throw new Error(typeof errorDetail === 'string' ? errorDetail : 'Failed to resume checkout');
+					throw new Error(
+						typeof errorDetail === 'string' ? errorDetail : 'Failed to resume checkout'
+					);
 				}
 				return response.data;
 			} else {
@@ -224,7 +227,9 @@
 				});
 				if (response.error) {
 					const errorDetail = (response.error as any)?.detail || 'Failed to resume checkout';
-					throw new Error(typeof errorDetail === 'string' ? errorDetail : 'Failed to resume checkout');
+					throw new Error(
+						typeof errorDetail === 'string' ? errorDetail : 'Failed to resume checkout'
+					);
 				}
 				return response.data;
 			}
@@ -374,6 +379,7 @@
 				bind:userStatus
 				isAuthenticated={data.isAuthenticated}
 				userPermissions={data.userPermissions}
+				eventTokenDetails={data.eventTokenDetails}
 				variant="card"
 				onGetTicketsClick={openTicketTierModal}
 				onShowTicketClick={openMyTicketModal}
@@ -435,17 +441,27 @@
 						isStaff={data.isStaff}
 					/>
 				</div>
+
+				<!-- Attendee List (mobile only) -->
+				<div class="lg:hidden">
+					<AttendeeList
+						eventId={event.id}
+						totalAttendees={event.attendee_count}
+						isAuthenticated={data.isAuthenticated}
+					/>
+				</div>
 			</div>
 
-			<!-- Right Column: Action Sidebar (desktop only, sticky) -->
+			<!-- Right Column: Action Sidebar (desktop only) -->
 			<aside class="hidden lg:col-span-1 lg:block">
-				<div class="space-y-6">
+				<div class="sticky top-4 space-y-6">
 					<EventActionSidebar
 						{event}
 						bind:userStatus
 						isAuthenticated={data.isAuthenticated}
 						userPermissions={data.userPermissions}
-						variant="sidebar"
+						eventTokenDetails={data.eventTokenDetails}
+						variant="card"
 						onGetTicketsClick={openTicketTierModal}
 						onShowTicketClick={openMyTicketModal}
 						onResumePayment={handleResumePayment}
@@ -459,6 +475,13 @@
 						isMember={data.isMember}
 						isOwner={data.isOwner}
 						isStaff={data.isStaff}
+					/>
+
+					<!-- Attendee List (desktop only) -->
+					<AttendeeList
+						eventId={event.id}
+						totalAttendees={event.attendee_count}
+						isAuthenticated={data.isAuthenticated}
 					/>
 				</div>
 			</aside>

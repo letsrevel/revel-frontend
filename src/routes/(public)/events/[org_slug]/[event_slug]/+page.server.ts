@@ -5,7 +5,8 @@ import {
 	potluckListPotluckItems,
 	permissionMyPermissions,
 	eventListResources,
-	eventListTiers
+	eventListTiers,
+	eventGetEventTokenDetails
 } from '$lib/api';
 import type { PageServerLoad } from './$types';
 import type { UserEventStatus } from '$lib/utils/eligibility';
@@ -13,10 +14,11 @@ import type {
 	PotluckItemRetrieveSchema,
 	OrganizationPermissionsSchema,
 	AdditionalResourceSchema,
-	TierSchema
+	TierSchema,
+	EventTokenSchema
 } from '$lib/api/generated/types.gen';
 
-export const load: PageServerLoad = async ({ params, locals, fetch }) => {
+export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 	const { org_slug, event_slug } = params;
 
 	try {
@@ -24,6 +26,12 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 		const headers: HeadersInit = {};
 		if (locals.user?.accessToken) {
 			headers['Authorization'] = `Bearer ${locals.user.accessToken}`;
+		}
+
+		// Check for event token (?et=) for visibility
+		const eventToken = url.searchParams.get('et');
+		if (eventToken) {
+			headers['X-Event-Token'] = eventToken;
 		}
 
 		// Fetch event details (pass auth to see private events)
@@ -151,6 +159,32 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 			}
 		}
 
+		// Fetch event token details if token parameter is present
+		let eventTokenDetails: EventTokenSchema | null = null;
+		if (eventToken) {
+			try {
+				const tokenResponse = await eventGetEventTokenDetails({
+					fetch,
+					path: { token_id: eventToken },
+					headers
+				});
+
+				if (tokenResponse.data) {
+					eventTokenDetails = tokenResponse.data;
+					console.log('[EVENT PAGE SERVER] Token details fetched:', {
+						tokenId: eventTokenDetails.id,
+						grantsInvitation: eventTokenDetails.grants_invitation,
+						hasAllFields: {
+							id: !!eventTokenDetails.id,
+							grants_invitation: eventTokenDetails.grants_invitation !== undefined
+						}
+					});
+				}
+			} catch (err) {
+				// If token is invalid or expired, continue without it
+				console.error('Failed to fetch event token details:', err);
+			}
+		}
 		return {
 			event,
 			userStatus,
@@ -161,6 +195,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 			isMember,
 			isOwner,
 			isStaff,
+			eventTokenDetails,
 			// Explicitly pass authentication state to the page
 			isAuthenticated: !!locals.user
 		};

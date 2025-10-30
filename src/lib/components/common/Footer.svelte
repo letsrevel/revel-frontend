@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { PUBLIC_VERSION } from '$env/static/public';
 	import { appStore } from '$lib/stores/app.svelte';
-	import { Github } from 'lucide-svelte';
+	import { Github, Bug } from 'lucide-svelte';
 
 	// Frontend version from build-time environment variable (set in Dockerfile)
 	// Falls back to 'dev' for local development
@@ -125,6 +125,18 @@
 						>
 							<Github class="h-4 w-4" aria-hidden="true" />
 							<span>Backend: v{backendVersion}{isDemoMode ? ' (demo)' : ''}</span>
+						</a>
+					</li>
+					<li class="flex items-center gap-2">
+						<a
+							href="https://forms.gle/c6ovKV92nMQEbR877"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="flex items-center gap-2 transition-colors hover:text-foreground"
+							aria-label="Report a bug"
+						>
+							<Bug class="h-4 w-4" aria-hidden="true" />
+							<span>Report a bug</span>
 						</a>
 					</li>
 				</ul>

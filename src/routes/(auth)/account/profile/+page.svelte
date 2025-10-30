@@ -151,12 +151,14 @@
 		</div>
 
 		<div class="space-y-2">
-			<label for="preferred_name" class="block text-sm font-medium">Preferred Name</label>
+			<label for="preferred_name" class="block text-sm font-medium">
+				Preferred Name
+				<span class="text-xs font-normal text-muted-foreground">(optional)</span>
+			</label>
 			<input
 				id="preferred_name"
 				name="preferred_name"
 				type="text"
-				required
 				bind:value={preferredName}
 				aria-invalid={!!errors.preferred_name}
 				aria-describedby={errors.preferred_name ? 'preferred-name-error' : undefined}
@@ -166,7 +168,9 @@
 					: ''}"
 				placeholder="What should we call you?"
 			/>
-			<p class="text-xs text-muted-foreground">This is how you'll appear throughout Revel</p>
+			<p class="text-xs text-muted-foreground">
+				This is how you'll appear throughout Revel. Defaults to your first name if not set.
+			</p>
 			{#if errors.preferred_name}
 				<p id="preferred-name-error" class="text-sm text-destructive" role="alert">
 					{errors.preferred_name}
@@ -246,4 +250,15 @@
 			</button>
 		</div>
 	</form>
+
+	<!-- Settings Link -->
+	<div class="mt-8 border-t pt-6">
+		<a
+			href="/account/settings"
+			class="inline-flex items-center gap-2 text-sm text-primary underline-offset-4 hover:underline"
+		>
+			<span>Configure privacy, notifications and location</span>
+			<span aria-hidden="true">→</span>
+		</a>
+	</div>
 </div>

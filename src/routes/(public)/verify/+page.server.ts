@@ -60,9 +60,9 @@ export const load: PageServerLoad = async ({ url, fetch, cookies }) => {
 				console.log('[VERIFY] Refresh token cookie set');
 			}
 
-			// Redirect to dashboard after successful verification
-			console.log('[VERIFY] Redirecting to /dashboard');
-			throw redirect(303, '/dashboard');
+			// Redirect to profile page after successful verification so user can complete their profile
+			console.log('[VERIFY] Redirecting to /account/profile');
+			throw redirect(303, '/account/profile');
 		}
 
 		// If response was not ok, handle the error

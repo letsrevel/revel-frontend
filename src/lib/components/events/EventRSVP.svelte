@@ -9,7 +9,7 @@
 	import IneligibilityMessage from './IneligibilityMessage.svelte';
 	import { Check, AlertCircle } from 'lucide-svelte';
 
-	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
+	import type { EventDetailSchema, EventTokenSchema } from '$lib/api/generated/types.gen';
 
 	interface Props {
 		eventId: string;
@@ -18,6 +18,7 @@
 		isAuthenticated: boolean;
 		requiresTicket: boolean;
 		event?: EventDetailSchema;
+		eventTokenDetails?: EventTokenSchema | null;
 		class?: string;
 	}
 
@@ -28,6 +29,7 @@
 		isAuthenticated,
 		requiresTicket,
 		event,
+		eventTokenDetails,
 		class: className
 	}: Props = $props();
 
@@ -78,7 +80,10 @@
 
 			return { previousStatus };
 		},
-		onSuccess: (data: { event_id: string; status: 'yes' | 'no' | 'maybe' }, answer: 'yes' | 'no' | 'maybe') => {
+		onSuccess: (
+			data: { event_id: string; status: 'yes' | 'no' | 'maybe' },
+			answer: 'yes' | 'no' | 'maybe'
+		) => {
 			// Determine if this is a new RSVP or a change
 			const wasAttending = userStatus && isRSVP(userStatus) && userStatus.status === 'yes';
 			const isNowAttending = answer === 'yes';
@@ -350,6 +355,7 @@
 				{eventName}
 				organizationSlug={event.organization.slug}
 				organizationName={event.organization.name}
+				{eventTokenDetails}
 			/>
 		{/if}
 

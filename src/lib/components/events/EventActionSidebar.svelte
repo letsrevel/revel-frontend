@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type {
 		EventDetailSchema,
-		OrganizationPermissionsSchema
+		OrganizationPermissionsSchema,
+		EventTokenSchema
 	} from '$lib/api/generated/types.gen';
 	import type { UserEventStatus } from '$lib/utils/eligibility';
 	import { isRSVP, isTicket, isEligibility } from '$lib/utils/eligibility';
@@ -18,6 +19,7 @@
 		userStatus: UserEventStatus | null;
 		isAuthenticated: boolean;
 		userPermissions?: OrganizationPermissionsSchema | null;
+		eventTokenDetails?: EventTokenSchema | null;
 		variant?: 'sidebar' | 'card';
 		onGetTicketsClick?: () => void;
 		onShowTicketClick?: () => void;
@@ -31,6 +33,7 @@
 		userStatus = $bindable(),
 		isAuthenticated,
 		userPermissions,
+		eventTokenDetails,
 		variant = 'sidebar',
 		onGetTicketsClick,
 		onShowTicketClick,
@@ -259,6 +262,7 @@
 					{isAuthenticated}
 					requiresTicket={event.requires_ticket}
 					{event}
+					{eventTokenDetails}
 				/>
 			{:else}
 				<!-- Ticket purchase flow -->
@@ -272,6 +276,7 @@
 							eventSlug={event.slug}
 							organizationSlug={event.organization.slug}
 							eventName={event.name}
+							{eventTokenDetails}
 						/>
 					</div>
 				{:else}
