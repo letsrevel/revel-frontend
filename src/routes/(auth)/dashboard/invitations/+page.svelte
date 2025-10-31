@@ -2,8 +2,8 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import {
-		eventListMyInvitations,
-		eventListMyInvitationRequests
+		dashboardDashboardInvitations,
+		dashboardDashboardInvitationRequests
 	} from '$lib/api/generated/sdk.gen';
 	import InvitationCard from '$lib/components/invitations/InvitationCard.svelte';
 	import InvitationRequestCard from '$lib/components/invitations/InvitationRequestCard.svelte';
@@ -51,7 +51,7 @@
 	// Fetch invitations
 	const invitationsQuery = createQuery(() => ({
 		queryKey: [
-			'my-invitations',
+			'dashboard-invitations',
 			invitationsDebounced,
 			includePastInvitations,
 			currentPage
@@ -59,7 +59,7 @@
 		queryFn: async () => {
 			if (!accessToken) return { results: [], count: 0 };
 
-			const response = await eventListMyInvitations({
+			const response = await dashboardDashboardInvitations({
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
 					search: invitationsDebounced || undefined,
@@ -76,11 +76,16 @@
 
 	// Fetch invitation requests
 	const requestsQuery = createQuery(() => ({
-		queryKey: ['my-invitation-requests', requestsDebounced, requestsStatus, currentPage] as const,
+		queryKey: [
+			'dashboard-invitation-requests',
+			requestsDebounced,
+			requestsStatus,
+			currentPage
+		] as const,
 		queryFn: async () => {
 			if (!accessToken) return { results: [], count: 0 };
 
-			const response = await eventListMyInvitationRequests({
+			const response = await dashboardDashboardInvitationRequests({
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
 					search: requestsDebounced || undefined,
