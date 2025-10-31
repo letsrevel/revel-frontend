@@ -1,6 +1,38 @@
 <script lang="ts">
-	// Landing page
+	import { page } from '$app/state';
+	import { generateHomeMeta } from '$lib/utils/seo';
+
+	// Generate comprehensive meta tags for home page
+	let metaTags = $derived(generateHomeMeta(page.url.origin));
 </script>
+
+<svelte:head>
+	<title>{metaTags.title}</title>
+	<meta name="description" content={metaTags.description} />
+	{#if metaTags.canonical}
+		<link rel="canonical" href={metaTags.canonical} />
+	{/if}
+
+	<!-- Open Graph -->
+	<meta property="og:type" content={metaTags.ogType || 'website'} />
+	<meta property="og:title" content={metaTags.ogTitle || metaTags.title} />
+	<meta property="og:description" content={metaTags.ogDescription || metaTags.description} />
+	<meta property="og:url" content={metaTags.ogUrl || page.url.href} />
+	<meta property="og:site_name" content="Revel" />
+	<meta property="og:locale" content="en_US" />
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content={metaTags.twitterCard || 'summary_large_image'} />
+	<meta name="twitter:title" content={metaTags.twitterTitle || metaTags.title} />
+	<meta name="twitter:description" content={metaTags.twitterDescription || metaTags.description} />
+
+	<!-- Additional SEO meta tags -->
+	<meta name="robots" content="index, follow" />
+	<meta
+		name="keywords"
+		content="events, community, ticketing, RSVP, event management, event platform"
+	/>
+</svelte:head>
 
 <div class="container mx-auto px-4 py-16">
 	<div class="flex flex-col items-center justify-center text-center">

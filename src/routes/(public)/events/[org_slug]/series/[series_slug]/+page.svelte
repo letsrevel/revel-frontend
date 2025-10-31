@@ -1,15 +1,15 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
-	import {
-		Calendar,
-		ArrowLeft,
-		Repeat,
-		ArrowDownUp,
-		Settings
-	} from 'lucide-svelte';
+	import { Calendar, ArrowLeft, Repeat, ArrowDownUp, Settings } from 'lucide-svelte';
 	import { EventCard } from '$lib/components/events';
 	import { getImageUrl } from '$lib/utils/url';
+	import {
+		generateEventSeriesMeta,
+		generateEventSeriesStructuredData,
+		toJsonLd,
+		ensureAbsoluteUrl
+	} from '$lib/utils/seo';
 
 	let { data }: { data: PageData } = $props();
 
@@ -40,6 +40,17 @@
 
 	let fallbackGradient = $derived(getSeriesFallbackGradient(series.id));
 
+	// Generate comprehensive meta tags
+	let metaTags = $derived(
+		generateEventSeriesMeta(series, `${$page.url.origin}${$page.url.pathname}`)
+	);
+
+	// Generate structured data
+	let structuredData = $derived(
+		generateEventSeriesStructuredData(series, `${$page.url.origin}${$page.url.pathname}`)
+	);
+	let jsonLd = $derived(toJsonLd(structuredData));
+
 	// Calculate pagination info
 	let totalPages = $derived(Math.ceil(totalCount / pageSize));
 	let hasNextPage = $derived(currentPage < totalPages);
@@ -47,36 +58,47 @@
 </script>
 
 <svelte:head>
-	<title>{series.name} | {series.organization.name} | Revel</title>
-	<meta
-		name="description"
-		content={series.description?.slice(0, 160) ||
-			`${series.name} - Event series by ${series.organization.name}`}
-	/>
+	<title>{metaTags.title}</title>
+	<meta name="description" content={metaTags.description} />
+	{#if metaTags.canonical}
+		<link rel="canonical" href={metaTags.canonical} />
+	{/if}
 
 	<!-- Open Graph -->
-	<meta property="og:type" content="website" />
-	<meta property="og:title" content="{series.name} | {series.organization.name}" />
-	<meta
-		property="og:description"
-		content={series.description || `${series.name} - Event series by ${series.organization.name}`}
-	/>
-	{#if coverUrl}
-		<meta property="og:image" content={coverUrl} />
+	<meta property="og:type" content={metaTags.ogType || 'website'} />
+	<meta property="og:title" content={metaTags.ogTitle || metaTags.title} />
+	<meta property="og:description" content={metaTags.ogDescription || metaTags.description} />
+	{#if metaTags.ogImage}
+		<meta
+			property="og:image"
+			content={ensureAbsoluteUrl(metaTags.ogImage, $page.url.origin) || metaTags.ogImage}
+		/>
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta property="og:image:alt" content={`${series.name} cover image`} />
 	{/if}
-	<meta property="og:url" content={$page.url.href} />
+	<meta property="og:url" content={metaTags.ogUrl || $page.url.href} />
+	<meta property="og:site_name" content="Revel" />
+	<meta property="og:locale" content="en_US" />
 
 	<!-- Twitter Card -->
-	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:title" content="{series.name} | {series.organization.name}" />
-	<meta
-		name="twitter:description"
-		content={series.description?.slice(0, 200) ||
-			`${series.name} - Event series by ${series.organization.name}`}
-	/>
-	{#if coverUrl}
-		<meta name="twitter:image" content={coverUrl} />
+	<meta name="twitter:card" content={metaTags.twitterCard || 'summary_large_image'} />
+	<meta name="twitter:title" content={metaTags.twitterTitle || metaTags.title} />
+	<meta name="twitter:description" content={metaTags.twitterDescription || metaTags.description} />
+	{#if metaTags.twitterImage}
+		<meta
+			name="twitter:image"
+			content={ensureAbsoluteUrl(metaTags.twitterImage, $page.url.origin) || metaTags.twitterImage}
+		/>
+		<meta name="twitter:image:alt" content={`${series.name} cover image`} />
 	{/if}
+
+	<!-- Additional SEO meta tags -->
+	<meta name="robots" content="index, follow" />
+	<meta name="author" content={series.organization.name} />
+
+	<!-- Structured Data (JSON-LD) -->
+	{@html `<script type="application/ld+json">${jsonLd}<\/script>`}
 </svelte:head>
 
 <div class="min-h-screen bg-background">

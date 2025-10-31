@@ -12,12 +12,16 @@
 		countActiveFilters
 	} from '$lib/utils/filters';
 	import type { EventFilters as FilterState } from '$lib/utils/filters';
+	import { generateEventsListingMeta } from '$lib/utils/seo';
 
 	interface Props {
 		data: PageData;
 	}
 
 	let { data }: Props = $props();
+
+	// Generate comprehensive meta tags for events listing page
+	let metaTags = $derived(generateEventsListingMeta($page.url.origin));
 
 	// Derived state from server load data
 	let events = $derived(data.events);
@@ -70,22 +74,30 @@
 </script>
 
 <svelte:head>
-	<title>Discover Events - Revel</title>
+	<title>{metaTags.title}</title>
+	<meta name="description" content={metaTags.description} />
+	{#if metaTags.canonical}
+		<link rel="canonical" href={metaTags.canonical} />
+	{/if}
+
+	<!-- Open Graph -->
+	<meta property="og:type" content={metaTags.ogType || 'website'} />
+	<meta property="og:title" content={metaTags.ogTitle || metaTags.title} />
+	<meta property="og:description" content={metaTags.ogDescription || metaTags.description} />
+	<meta property="og:url" content={metaTags.ogUrl || $page.url.href} />
+	<meta property="og:site_name" content="Revel" />
+	<meta property="og:locale" content="en_US" />
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content={metaTags.twitterCard || 'summary_large_image'} />
+	<meta name="twitter:title" content={metaTags.twitterTitle || metaTags.title} />
+	<meta name="twitter:description" content={metaTags.twitterDescription || metaTags.description} />
+
+	<!-- Additional SEO meta tags -->
+	<meta name="robots" content="index, follow" />
 	<meta
-		name="description"
-		content="Browse and discover community events on Revel. Find LGBTQ+, queer, and sex-positive events near you."
-	/>
-	<meta property="og:title" content="Discover Events - Revel" />
-	<meta
-		property="og:description"
-		content="Browse and discover community events on Revel. Find LGBTQ+, queer, and sex-positive events near you."
-	/>
-	<meta property="og:type" content="website" />
-	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:title" content="Discover Events - Revel" />
-	<meta
-		name="twitter:description"
-		content="Browse and discover community events on Revel. Find LGBTQ+, queer, and sex-positive events near you."
+		name="keywords"
+		content="events, community, discover, browse, concerts, workshops, meetups"
 	/>
 </svelte:head>
 
