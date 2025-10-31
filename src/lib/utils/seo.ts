@@ -1,4 +1,8 @@
-import type { EventDetailSchema, OrganizationRetrieveSchema } from '$lib/api/generated/types.gen';
+import type {
+	EventDetailSchema,
+	OrganizationRetrieveSchema,
+	EventSeriesRetrieveSchema
+} from '$lib/api/generated/types.gen';
 
 /**
  * SEO utility functions for generating meta tags, descriptions, and structured data
@@ -205,4 +209,76 @@ export function generateOrganizationStructuredData(
  */
 export function toJsonLd<T extends Record<string, unknown>>(data: T): string {
 	return JSON.stringify(data, null, 0);
+}
+
+/**
+ * Generate meta tags for an event series
+ */
+export function generateEventSeriesMeta(
+	series: EventSeriesRetrieveSchema,
+	seriesUrl: string
+): MetaTags {
+	const description = series.description ? stripHtml(series.description) : '';
+	const truncatedDescription = truncate(description, 155);
+
+	// Use cover art as primary image, fallback to logo
+	const imageUrl = series.cover_art || series.logo || undefined;
+
+	return {
+		title: `${series.name} | ${series.organization.name} | Revel`,
+		description:
+			truncatedDescription || `${series.name} - Event series by ${series.organization.name}`,
+		canonical: seriesUrl,
+		ogType: 'website',
+		ogTitle: `${series.name} | ${series.organization.name}`,
+		ogDescription: description || `${series.name} - Event series by ${series.organization.name}`,
+		ogImage: imageUrl,
+		ogUrl: seriesUrl,
+		twitterCard: 'summary_large_image',
+		twitterTitle: `${series.name} | ${series.organization.name}`,
+		twitterDescription:
+			truncate(description, 200) || `${series.name} - Event series by ${series.organization.name}`
+	};
+}
+
+/**
+ * Generate event series structured data
+ */
+export interface EventSeriesStructuredData {
+	'@context': 'https://schema.org';
+	'@type': 'EventSeries';
+	name: string;
+	description?: string;
+	url: string;
+	organizer: {
+		'@type': 'Organization';
+		name: string;
+	};
+	image?: string[];
+}
+
+export function generateEventSeriesStructuredData(
+	series: EventSeriesRetrieveSchema,
+	seriesUrl: string
+): EventSeriesStructuredData {
+	const structuredData: EventSeriesStructuredData = {
+		'@context': 'https://schema.org',
+		'@type': 'EventSeries',
+		name: series.name,
+		description: stripHtml(series.description || '') || undefined,
+		url: seriesUrl,
+		organizer: {
+			'@type': 'Organization',
+			name: series.organization.name
+		}
+	};
+
+	// Add image if available
+	if (series.cover_art || series.logo) {
+		structuredData.image = [series.cover_art, series.logo].filter(
+			(img): img is string => img !== null && img !== undefined
+		);
+	}
+
+	return structuredData;
 }
