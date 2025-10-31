@@ -25,6 +25,7 @@
 		{ href: '/events', label: 'Browse Events' },
 		{ href: '/organizations', label: 'Organizations' },
 		{ href: '/dashboard/tickets', label: 'My Tickets' },
+		{ href: '/dashboard/rsvps', label: 'RSVPs' },
 		{ href: '/dashboard/invitations', label: 'Invitations' }
 	];
 

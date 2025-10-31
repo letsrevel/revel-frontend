@@ -5,8 +5,9 @@
 		dashboardDashboardEvents,
 		dashboardDashboardOrganizations,
 		eventListEvents,
-		eventListUserTickets,
-		eventListMyInvitations
+		dashboardDashboardTickets,
+		dashboardDashboardInvitations,
+		dashboardDashboardRsvps
 	} from '$lib/api/generated/sdk.gen';
 	import { EventCard } from '$lib/components/events';
 	import EventCardSkeleton from '$lib/components/common/EventCardSkeleton.svelte';
@@ -20,7 +21,8 @@
 		Sparkles,
 		Filter,
 		Ticket,
-		Mail
+		Mail,
+		CheckCircle2
 	} from 'lucide-svelte';
 
 	let user = $derived(authStore.user);
@@ -169,7 +171,7 @@
 		queryFn: async () => {
 			if (!accessToken) return 0;
 
-			const response = await eventListUserTickets({
+			const response = await dashboardDashboardTickets({
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
 					status: 'active' as const,
@@ -188,9 +190,29 @@
 		queryFn: async () => {
 			if (!accessToken) return 0;
 
-			const response = await eventListMyInvitations({
+			const response = await dashboardDashboardInvitations({
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
+					include_past: false,
+					page_size: 1
+				}
+			});
+
+			return response.data?.count || 0;
+		},
+		enabled: !!accessToken
+	}));
+
+	// Fetch upcoming RSVPs count (status = "yes")
+	const upcomingRsvpsQuery = createQuery(() => ({
+		queryKey: ['dashboard-upcoming-rsvps-count'],
+		queryFn: async () => {
+			if (!accessToken) return 0;
+
+			const response = await dashboardDashboardRsvps({
+				headers: { Authorization: `Bearer ${accessToken}` },
+				query: {
+					status: 'yes' as const,
 					include_past: false,
 					page_size: 1
 				}
@@ -207,6 +229,7 @@
 	let hasAnyEvents = $derived(hasAnyEventsQuery.data || false);
 	let activeTicketsCount = $derived(activeTicketsQuery.data || 0);
 	let pendingInvitationsCount = $derived(pendingInvitationsQuery.data || 0);
+	let upcomingRsvpsCount = $derived(upcomingRsvpsQuery.data || 0);
 
 	// Check if user can organize events (is owner/staff of at least one org)
 	let canOrganizeEvents = $derived(() => {
@@ -322,7 +345,7 @@
 	</div>
 
 	<!-- Activity Summary Cards -->
-	{#if activeTicketsCount > 0 || pendingInvitationsCount > 0}
+	{#if activeTicketsCount > 0 || pendingInvitationsCount > 0 || upcomingRsvpsCount > 0}
 		<div class="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 			<!-- Active Tickets -->
 			{#if activeTicketsCount > 0}
@@ -348,6 +371,37 @@
 					<p class="mt-4 text-sm text-muted-foreground">
 						You have {activeTicketsCount}
 						{activeTicketsCount === 1 ? 'ticket' : 'tickets'} ready for upcoming events
+					</p>
+				</a>
+			{/if}
+
+			<!-- Upcoming RSVPs -->
+			{#if upcomingRsvpsCount > 0}
+				<a
+					href="/dashboard/rsvps"
+					class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+				>
+					<div class="flex items-start justify-between">
+						<div class="flex items-center gap-3">
+							<div class="rounded-full bg-green-100 p-3 dark:bg-green-950">
+								<CheckCircle2
+									class="h-6 w-6 text-green-600 dark:text-green-400"
+									aria-hidden="true"
+								/>
+							</div>
+							<div>
+								<p class="text-sm font-medium text-muted-foreground">Upcoming RSVPs</p>
+								<p class="text-3xl font-bold">{upcomingRsvpsCount}</p>
+							</div>
+						</div>
+						<ChevronRight
+							class="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1"
+							aria-hidden="true"
+						/>
+					</div>
+					<p class="mt-4 text-sm text-muted-foreground">
+						You're attending {upcomingRsvpsCount} upcoming
+						{upcomingRsvpsCount === 1 ? 'event' : 'events'}
 					</p>
 				</a>
 			{/if}

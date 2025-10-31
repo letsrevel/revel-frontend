@@ -1,10 +1,18 @@
 <script lang="ts">
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { dashboardDashboardTickets } from '$lib/api/generated/sdk.gen';
-	import type { PaymentMethod, EventsModelsEventTicketStatus } from '$lib/api/generated/types.gen';
-	import TicketListCard from '$lib/components/tickets/TicketListCard.svelte';
-	import { Ticket, Filter, ChevronLeft, ChevronRight, Loader2 } from 'lucide-svelte';
+	import { dashboardDashboardRsvps } from '$lib/api/generated/sdk.gen';
+	import type { Status } from '$lib/api/generated/types.gen';
+	import RSVPCard from '$lib/components/rsvps/RSVPCard.svelte';
+	import {
+		CheckCircle2,
+		XCircle,
+		HelpCircle,
+		Filter,
+		ChevronLeft,
+		ChevronRight,
+		Loader2
+	} from 'lucide-svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 
@@ -13,28 +21,15 @@
 	// Get current page from URL params
 	let currentPage = $derived(Number(page.url.searchParams.get('page') || '1'));
 
-	// Use the generated type alias for ticket status
-	type TicketStatus = EventsModelsEventTicketStatus;
-
-	const statusFilters: Array<{ label: string; value: TicketStatus | null }> = [
+	const statusFilters: Array<{ label: string; value: Status | null }> = [
 		{ label: 'All', value: null },
-		{ label: 'Active', value: 'active' },
-		{ label: 'Pending', value: 'pending' },
-		{ label: 'Checked In', value: 'checked_in' },
-		{ label: 'Cancelled', value: 'cancelled' }
-	];
-
-	const paymentMethodFilters: Array<{ label: string; value: PaymentMethod | null }> = [
-		{ label: 'All Payment Methods', value: null },
-		{ label: 'Free', value: 'free' },
-		{ label: 'Paid', value: 'online' },
-		{ label: 'Offline', value: 'offline' },
-		{ label: 'At the Door', value: 'at_the_door' }
+		{ label: 'Going', value: 'yes' },
+		{ label: 'Maybe', value: 'maybe' },
+		{ label: 'Not Going', value: 'no' }
 	];
 
 	// Active filters
-	let statusFilter = $state<TicketStatus | null>(null);
-	let paymentMethodFilter = $state<PaymentMethod | null>(null);
+	let statusFilter = $state<Status | null>(null);
 	let searchQuery = $state('');
 	let includePast = $state(false);
 
@@ -50,24 +45,16 @@
 		}, 300);
 	});
 
-	// Fetch tickets with filters
-	const ticketsQuery = createQuery(() => ({
-		queryKey: [
-			'dashboard-tickets',
-			statusFilter,
-			paymentMethodFilter,
-			debouncedSearch,
-			includePast,
-			currentPage
-		] as const,
+	// Fetch RSVPs with filters
+	const rsvpsQuery = createQuery(() => ({
+		queryKey: ['dashboard-rsvps', statusFilter, debouncedSearch, includePast, currentPage] as const,
 		queryFn: async () => {
 			if (!accessToken) return { results: [], count: 0 };
 
-			const response = await dashboardDashboardTickets({
+			const response = await dashboardDashboardRsvps({
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
 					status: statusFilter as any,
-					tier__payment_method: paymentMethodFilter || undefined,
 					search: debouncedSearch || undefined,
 					include_past: includePast,
 					page: currentPage,
@@ -80,21 +67,16 @@
 		enabled: !!accessToken
 	}));
 
-	let tickets = $derived(ticketsQuery.data?.results || []);
-	let totalCount = $derived(ticketsQuery.data?.count || 0);
+	let rsvps = $derived(rsvpsQuery.data?.results || []);
+	let totalCount = $derived(rsvpsQuery.data?.count || 0);
 	let totalPages = $derived(Math.ceil(totalCount / 12));
 	let hasNextPage = $derived(currentPage < totalPages);
 	let hasPrevPage = $derived(currentPage > 1);
 
 	// Apply filter
-	function applyStatusFilter(status: TicketStatus | null) {
+	function applyStatusFilter(status: Status | null) {
 		statusFilter = status;
 		navigateToPage(1); // Reset to first page when filter changes
-	}
-
-	function applyPaymentMethodFilter(method: PaymentMethod | null) {
-		paymentMethodFilter = method;
-		navigateToPage(1);
 	}
 
 	// Navigate to page
@@ -109,18 +91,14 @@
 	}
 
 	// Check if filter is active
-	function isStatusFilterActive(status: TicketStatus | null): boolean {
+	function isStatusFilterActive(status: Status | null): boolean {
 		return statusFilter === status;
-	}
-
-	function isPaymentMethodFilterActive(method: PaymentMethod | null): boolean {
-		return paymentMethodFilter === method;
 	}
 </script>
 
 <svelte:head>
-	<title>My Tickets - Revel</title>
-	<meta name="description" content="View and manage all your event tickets" />
+	<title>My RSVPs - Revel</title>
+	<meta name="description" content="View and manage all your event RSVPs" />
 </svelte:head>
 
 <div class="container mx-auto px-4 py-6 md:py-8">
@@ -128,31 +106,31 @@
 	<div class="mb-8">
 		<div class="mb-2 flex items-center gap-3">
 			<div class="rounded-lg bg-primary/10 p-2">
-				<Ticket class="h-6 w-6 text-primary" aria-hidden="true" />
+				<CheckCircle2 class="h-6 w-6 text-primary" aria-hidden="true" />
 			</div>
 			<div>
-				<h1 class="text-2xl font-bold md:text-3xl">My Tickets</h1>
-				<p class="text-muted-foreground">View and manage all your event tickets</p>
+				<h1 class="text-2xl font-bold md:text-3xl">My RSVPs</h1>
+				<p class="text-muted-foreground">View and manage all your event RSVPs</p>
 			</div>
 		</div>
 
-		<!-- Ticket Count -->
-		{#if !ticketsQuery.isLoading && totalCount > 0}
+		<!-- RSVP Count -->
+		{#if !rsvpsQuery.isLoading && totalCount > 0}
 			<p class="mt-4 text-sm text-muted-foreground">
-				Showing {tickets.length} of {totalCount}
-				{totalCount === 1 ? 'ticket' : 'tickets'}
+				Showing {rsvps.length} of {totalCount}
+				{totalCount === 1 ? 'RSVP' : 'RSVPs'}
 			</p>
 		{/if}
 	</div>
 
 	<!-- Search Bar -->
 	<div class="mb-6">
-		<label for="search" class="sr-only">Search tickets</label>
+		<label for="search" class="sr-only">Search RSVPs</label>
 		<input
 			id="search"
 			type="search"
 			bind:value={searchQuery}
-			placeholder="Search by event name or ticket tier..."
+			placeholder="Search by event name..."
 			class="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 		/>
 	</div>
@@ -182,28 +160,6 @@
 			</div>
 		</div>
 
-		<!-- Payment Method Filter -->
-		<div>
-			<div class="mb-2">
-				<span class="text-sm font-medium">Payment Method</span>
-			</div>
-			<div class="flex flex-wrap gap-2">
-				{#each paymentMethodFilters as filter}
-					<button
-						type="button"
-						onclick={() => applyPaymentMethodFilter(filter.value)}
-						class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {isPaymentMethodFilterActive(
-							filter.value
-						)
-							? 'bg-primary text-primary-foreground hover:bg-primary/90'
-							: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
-					>
-						{filter.label}
-					</button>
-				{/each}
-			</div>
-		</div>
-
 		<!-- Include Past Events Checkbox -->
 		<div>
 			<div class="mb-2">
@@ -221,31 +177,30 @@
 		</div>
 	</div>
 
-	<!-- Tickets List -->
-	{#if ticketsQuery.isLoading}
+	<!-- RSVPs List -->
+	{#if rsvpsQuery.isLoading}
 		<!-- Loading State -->
 		<div class="flex items-center justify-center py-12">
 			<Loader2 class="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
-			<span class="sr-only">Loading tickets...</span>
+			<span class="sr-only">Loading RSVPs...</span>
 		</div>
-	{:else if tickets.length === 0}
+	{:else if rsvps.length === 0}
 		<!-- Empty State -->
 		<div class="rounded-lg border bg-card p-12 text-center">
 			<div
 				class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
 			>
-				<Ticket class="h-8 w-8 text-primary" aria-hidden="true" />
+				<CheckCircle2 class="h-8 w-8 text-primary" aria-hidden="true" />
 			</div>
-			<h2 class="mb-2 text-xl font-semibold">No tickets found</h2>
-			{#if statusFilter || paymentMethodFilter || debouncedSearch}
+			<h2 class="mb-2 text-xl font-semibold">No RSVPs found</h2>
+			{#if statusFilter || debouncedSearch}
 				<p class="mb-4 text-muted-foreground">
-					Try adjusting your filters or search query to see more tickets
+					Try adjusting your filters or search query to see more RSVPs
 				</p>
 				<button
 					type="button"
 					onclick={() => {
 						statusFilter = null;
-						paymentMethodFilter = null;
 						searchQuery = '';
 						navigateToPage(1);
 					}}
@@ -255,7 +210,7 @@
 				</button>
 			{:else}
 				<p class="mb-4 text-muted-foreground">
-					You don't have any tickets yet. Browse events to find something interesting!
+					You haven't RSVP'd to any events yet. Browse events to find something interesting!
 				</p>
 				<a
 					href="/events"
@@ -266,10 +221,10 @@
 			{/if}
 		</div>
 	{:else}
-		<!-- Tickets Grid -->
+		<!-- RSVPs Grid -->
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-			{#each tickets as ticket (ticket.id)}
-				<TicketListCard {ticket} />
+			{#each rsvps as rsvp (rsvp.id)}
+				<RSVPCard {rsvp} />
 			{/each}
 		</div>
 
