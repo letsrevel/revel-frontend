@@ -15,9 +15,8 @@
 	import MyTicket from '$lib/components/tickets/MyTicket.svelte';
 	import TicketTierModal from '$lib/components/tickets/TicketTierModal.svelte';
 	import MyTicketModal from '$lib/components/tickets/MyTicketModal.svelte';
-	import PWYCModal from '$lib/components/tickets/PWYCModal.svelte';
 	import { generateEventStructuredData, structuredDataToJsonLd } from '$lib/utils/structured-data';
-	import { generateEventMeta, ensureAbsoluteUrl } from '$lib/utils/seo';
+	import { generateEventMeta } from '$lib/utils/seo';
 	import { isRSVP, isTicket } from '$lib/utils/eligibility';
 	import { getPotluckPermissions } from '$lib/utils/permissions';
 	import { formatEventLocation } from '$lib/utils/event';
@@ -77,8 +76,6 @@
 	// Modal states
 	let showTicketTierModal = $state(false);
 	let showMyTicketModal = $state(false);
-	let showPWYCModal = $state(false);
-	let pendingPWYCTier = $state<TierSchemaWithId | null>(null);
 
 	// Handle modals
 	function openTicketTierModal() {
@@ -91,16 +88,6 @@
 
 	function openMyTicketModal() {
 		showMyTicketModal = true;
-	}
-
-	function openPWYCModal(tier: TierSchemaWithId) {
-		pendingPWYCTier = tier;
-		showPWYCModal = true;
-	}
-
-	function closePWYCModal() {
-		showPWYCModal = false;
-		pendingPWYCTier = null;
 	}
 
 	// Ticket claiming mutation (for free/offline tickets)
@@ -164,9 +151,6 @@
 		onSuccess: (data) => {
 			if (!data) return;
 
-			// Close PWYC modal
-			closePWYCModal();
-
 			// Check if we got a ticket directly (special permissions)
 			if ('status' in data) {
 				userStatus = data as any;
@@ -183,22 +167,14 @@
 		claimTicketMutation.mutate(tierId);
 	}
 
-	async function handleCheckout(tierId: string, isPwyc: boolean) {
-		if (isPwyc) {
-			// Find the tier and open PWYC modal
-			const tier = ticketTiers.find((t) => t.id === tierId);
-			if (tier) {
-				openPWYCModal(tier);
-			}
+	async function handleCheckout(tierId: string, isPwyc: boolean, amount?: number) {
+		if (isPwyc && amount !== undefined) {
+			// PWYC checkout with amount from confirmation dialog
+			pwycCheckoutMutation.mutate({ tierId, amount });
 		} else {
 			// Direct checkout for fixed-price tiers
 			checkoutMutation.mutate(tierId);
 		}
-	}
-
-	async function handlePWYCConfirm(amount: number) {
-		if (!pendingPWYCTier) return;
-		pwycCheckoutMutation.mutate({ tierId: pendingPWYCTier.id, amount });
 	}
 
 	// Resume payment mutation (for pending tickets)
@@ -306,10 +282,7 @@
 	<meta property="og:title" content={metaTags.ogTitle || metaTags.title} />
 	<meta property="og:description" content={metaTags.ogDescription || metaTags.description} />
 	{#if metaTags.ogImage}
-		<meta
-			property="og:image"
-			content={ensureAbsoluteUrl(metaTags.ogImage, page.url.origin) || metaTags.ogImage}
-		/>
+		<meta property="og:image" content={metaTags.ogImage} />
 		<meta property="og:image:width" content="1200" />
 		<meta property="og:image:height" content="630" />
 		<meta property="og:image:alt" content={`${event.name} cover image`} />
@@ -323,10 +296,7 @@
 	<meta name="twitter:title" content={metaTags.twitterTitle || metaTags.title} />
 	<meta name="twitter:description" content={metaTags.twitterDescription || metaTags.description} />
 	{#if metaTags.twitterImage}
-		<meta
-			name="twitter:image"
-			content={ensureAbsoluteUrl(metaTags.twitterImage, page.url.origin) || metaTags.twitterImage}
-		/>
+		<meta name="twitter:image" content={metaTags.twitterImage} />
 		<meta name="twitter:image:alt" content={`${event.name} cover image`} />
 	{/if}
 
@@ -435,6 +405,12 @@
 						tiers={ticketTiers}
 						isAuthenticated={data.isAuthenticated}
 						hasTicket={!!userTicket}
+						{userStatus}
+						eventId={event.id}
+						eventSlug={event.slug}
+						organizationSlug={event.organization.slug}
+						eventName={event.name}
+						eventTokenDetails={data.eventTokenDetails}
 						onClaimTicket={handleClaimTicket}
 						onCheckout={handleCheckout}
 					/>
@@ -523,17 +499,6 @@
 	onClaimTicket={handleClaimTicket}
 	onCheckout={handleCheckout}
 />
-
-<!-- PWYC Modal -->
-{#if pendingPWYCTier}
-	<PWYCModal
-		bind:open={showPWYCModal}
-		tier={pendingPWYCTier}
-		onClose={closePWYCModal}
-		onConfirm={handlePWYCConfirm}
-		isProcessing={pwycCheckoutMutation.isPending}
-	/>
-{/if}
 
 <!-- My Ticket Modal -->
 {#if userTicket}

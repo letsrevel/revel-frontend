@@ -80,8 +80,9 @@
 		if (!ticket.tier) return false;
 
 		const paymentMethod = ticket.tier.payment_method;
-		// Allow resume for online (Stripe) and offline, but not at-the-door
-		return paymentMethod === 'online' || paymentMethod === 'offline';
+		// Only allow resume for online (Stripe) payments
+		// Offline and at-the-door payments require manual completion
+		return paymentMethod === 'online';
 	});
 </script>
 
@@ -142,6 +143,21 @@
 									Complete your payment to confirm your ticket.
 								{/if}
 							</p>
+
+							<!-- Manual Payment Instructions -->
+							{#if ticket.tier?.payment_method !== 'online' && ticket.tier?.manual_payment_instructions}
+								<div
+									class="mt-3 rounded-md border border-orange-300 bg-orange-100 p-3 dark:border-orange-700 dark:bg-orange-900"
+								>
+									<p class="text-sm font-medium text-orange-900 dark:text-orange-100">
+										Payment Instructions:
+									</p>
+									<p class="mt-1 whitespace-pre-wrap text-sm text-orange-800 dark:text-orange-200">
+										{ticket.tier.manual_payment_instructions}
+									</p>
+								</div>
+							{/if}
+
 							{#if canResumePayment && onResumePayment}
 								<button
 									onclick={onResumePayment}
@@ -215,35 +231,6 @@
 							Unable to generate QR code. Please refresh the page.
 						</div>
 					{/if}
-				</div>
-			{/if}
-
-			<!-- Manual Payment Instructions (for pending tickets) -->
-			{#if ticket.status === 'pending' && (ticket.tier as any)?.manual_payment_instructions}
-				<div
-					class="rounded-lg border-2 border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-950/30"
-				>
-					<h3
-						class="mb-2 flex items-center gap-2 font-semibold text-yellow-900 dark:text-yellow-100"
-					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="h-5 w-5"
-							viewBox="0 0 20 20"
-							fill="currentColor"
-							aria-hidden="true"
-						>
-							<path
-								fill-rule="evenodd"
-								d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-								clip-rule="evenodd"
-							/>
-						</svg>
-						Payment Instructions
-					</h3>
-					<p class="whitespace-pre-wrap text-sm text-yellow-900 dark:text-yellow-100">
-						{(ticket.tier as any).manual_payment_instructions}
-					</p>
 				</div>
 			{/if}
 

@@ -3,6 +3,7 @@ import type {
 	OrganizationRetrieveSchema,
 	EventSeriesRetrieveSchema
 } from '$lib/api/generated/types.gen';
+import { getBackendUrl } from '$lib/config/api';
 
 /**
  * SEO utility functions for generating meta tags, descriptions, and structured data
@@ -30,6 +31,68 @@ export function stripHtml(html: string | null | undefined): string {
 }
 
 /**
+ * Get preview image for an event following the priority hierarchy:
+ * 1. event.logo
+ * 2. event.cover_art
+ * 3. event.event_series.logo
+ * 4. event.event_series.cover_art
+ * 5. event.organization.logo
+ * 6. event.organization.cover_art
+ *
+ * Returns absolute URL relative to backend
+ */
+export function getEventPreviewImage(event: EventDetailSchema): string | undefined {
+	const candidates = [
+		event.logo,
+		event.cover_art,
+		event.event_series?.logo,
+		event.event_series?.cover_art,
+		event.organization.logo,
+		event.organization.cover_art
+	];
+
+	const firstAvailable = candidates.find((url) => url != null);
+	return firstAvailable ? getBackendUrl(firstAvailable) : undefined;
+}
+
+/**
+ * Get preview image for an organization following the priority hierarchy:
+ * 1. organization.logo
+ * 2. organization.cover_art
+ *
+ * Returns absolute URL relative to backend
+ */
+export function getOrganizationPreviewImage(
+	organization: OrganizationRetrieveSchema
+): string | undefined {
+	const candidates = [organization.logo, organization.cover_art];
+
+	const firstAvailable = candidates.find((url) => url != null);
+	return firstAvailable ? getBackendUrl(firstAvailable) : undefined;
+}
+
+/**
+ * Get preview image for an event series following the priority hierarchy:
+ * 1. series.logo
+ * 2. series.cover_art
+ * 3. series.organization.logo
+ * 4. series.organization.cover_art
+ *
+ * Returns absolute URL relative to backend
+ */
+export function getEventSeriesPreviewImage(series: EventSeriesRetrieveSchema): string | undefined {
+	const candidates = [
+		series.logo,
+		series.cover_art,
+		series.organization.logo,
+		series.organization.cover_art
+	];
+
+	const firstAvailable = candidates.find((url) => url != null);
+	return firstAvailable ? getBackendUrl(firstAvailable) : undefined;
+}
+
+/**
  * Meta tag configuration interface
  */
 export interface MetaTags {
@@ -54,8 +117,8 @@ export function generateEventMeta(event: EventDetailSchema, eventUrl: string): M
 	const description = event.description ? stripHtml(event.description) : '';
 	const truncatedDescription = truncate(description, 155);
 
-	// Use cover art as primary image, fallback to logo
-	const imageUrl = event.cover_art || event.logo || undefined;
+	// Get preview image following priority hierarchy
+	const imageUrl = getEventPreviewImage(event);
 
 	return {
 		title: `${event.name} | Revel`,
@@ -84,8 +147,8 @@ export function generateOrganizationMeta(
 	const description = organization.description ? stripHtml(organization.description) : '';
 	const truncatedDescription = truncate(description, 155);
 
-	// Use cover art as primary image, fallback to logo
-	const imageUrl = organization.cover_art || organization.logo || undefined;
+	// Get preview image following priority hierarchy
+	const imageUrl = getOrganizationPreviewImage(organization);
 
 	return {
 		title: `${organization.name} | Revel`,
@@ -181,14 +244,16 @@ export function generateOrganizationStructuredData(
 	organization: OrganizationRetrieveSchema,
 	orgUrl: string
 ): OrganizationStructuredData {
+	const imageUrl = getOrganizationPreviewImage(organization);
+
 	const structuredData: OrganizationStructuredData = {
 		'@context': 'https://schema.org',
 		'@type': 'Organization',
 		name: organization.name,
 		description: stripHtml(organization.description || '') || undefined,
 		url: orgUrl,
-		logo: organization.logo || undefined,
-		image: organization.cover_art || organization.logo || undefined
+		logo: organization.logo ? getBackendUrl(organization.logo) : undefined,
+		image: imageUrl
 	};
 
 	// Add address if available
@@ -221,8 +286,8 @@ export function generateEventSeriesMeta(
 	const description = series.description ? stripHtml(series.description) : '';
 	const truncatedDescription = truncate(description, 155);
 
-	// Use cover art as primary image, fallback to logo
-	const imageUrl = series.cover_art || series.logo || undefined;
+	// Get preview image following priority hierarchy
+	const imageUrl = getEventSeriesPreviewImage(series);
 
 	return {
 		title: `${series.name} | ${series.organization.name} | Revel`,
@@ -237,7 +302,8 @@ export function generateEventSeriesMeta(
 		twitterCard: 'summary_large_image',
 		twitterTitle: `${series.name} | ${series.organization.name}`,
 		twitterDescription:
-			truncate(description, 200) || `${series.name} - Event series by ${series.organization.name}`
+			truncate(description, 200) || `${series.name} - Event series by ${series.organization.name}`,
+		twitterImage: imageUrl
 	};
 }
 
@@ -273,11 +339,18 @@ export function generateEventSeriesStructuredData(
 		}
 	};
 
-	// Add image if available
-	if (series.cover_art || series.logo) {
-		structuredData.image = [series.cover_art, series.logo].filter(
-			(img): img is string => img !== null && img !== undefined
-		);
+	// Add images with backend URLs
+	const images = [
+		series.logo,
+		series.cover_art,
+		series.organization.logo,
+		series.organization.cover_art
+	]
+		.filter((img): img is string => img !== null && img !== undefined)
+		.map((img) => getBackendUrl(img));
+
+	if (images.length > 0) {
+		structuredData.image = images;
 	}
 
 	return structuredData;

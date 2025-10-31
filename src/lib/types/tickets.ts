@@ -7,15 +7,13 @@ import type { TierSchema } from '$lib/api/generated/types.gen';
 /**
  * TierSchema with id field
  *
- * BACKEND ISSUE: The public TierSchema doesn't include 'id', but it's required
- * for the checkout endpoint. This extension assumes the backend will be fixed
- * to include the id field.
+ * BACKEND NOTE: TierSchema now properly includes all fields including:
+ * - 'id' (required for checkout endpoint)
+ * - 'manual_payment_instructions' (for offline/at-the-door payments)
  *
- * See: BACKEND_ISSUES.md for details
+ * This type is just an alias for clarity that we're using tiers with IDs.
  */
-export type TierSchemaWithId = TierSchema & {
-	id: string; // UUID
-};
+export type TierSchemaWithId = TierSchema;
 
 /**
  * Type guard to check if a TierSchema has an id

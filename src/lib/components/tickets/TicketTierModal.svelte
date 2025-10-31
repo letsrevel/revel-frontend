@@ -4,6 +4,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
 	import DemoCardInfo from '$lib/components/common/DemoCardInfo.svelte';
+	import TicketConfirmationDialog from './TicketConfirmationDialog.svelte';
 	import { Ticket, Check } from 'lucide-svelte';
 
 	interface Props {
@@ -13,7 +14,7 @@
 		hasTicket: boolean;
 		onClose: () => void;
 		onClaimTicket: (tierId: string) => void;
-		onCheckout?: (tierId: string, isPwyc: boolean) => void;
+		onCheckout?: (tierId: string, isPwyc: boolean, amount?: number) => void;
 	}
 
 	let {
@@ -25,6 +26,11 @@
 		onClaimTicket,
 		onCheckout
 	}: Props = $props();
+
+	// Confirmation dialog state
+	let showConfirmation = $state(false);
+	let selectedTier = $state<TierSchemaWithId | null>(null);
+	let isProcessing = $state(false);
 
 	// Check if any tier uses online payment
 	let hasOnlinePayment = $derived(tiers.some((tier) => tier.payment_method === 'online'));
@@ -81,15 +87,43 @@
 		return tier.total_available > 0;
 	}
 
-	function handleClaimTicket(tierId: string): void {
-		onClaimTicket(tierId);
-		onClose();
+	// Open confirmation dialog for selected tier
+	function handleTierClick(tier: TierSchemaWithId): void {
+		selectedTier = tier;
+		showConfirmation = true;
 	}
 
-	function handleCheckout(tierId: string, isPwyc: boolean): void {
-		if (onCheckout) {
-			onCheckout(tierId, isPwyc);
+	// Close confirmation dialog
+	function closeConfirmation(): void {
+		showConfirmation = false;
+		selectedTier = null;
+	}
+
+	// Handle confirmed action from dialog
+	async function handleConfirm(amount?: number): Promise<void> {
+		if (!selectedTier || isProcessing) return;
+
+		isProcessing = true;
+		try {
+			// Free tickets or offline/at-the-door (reservation)
+			if (
+				selectedTier.payment_method === 'free' ||
+				selectedTier.payment_method === 'offline' ||
+				selectedTier.payment_method === 'at_the_door'
+			) {
+				await onClaimTicket(selectedTier.id);
+			}
+			// Online payment (with or without PWYC)
+			else if (selectedTier.payment_method === 'online' && onCheckout) {
+				await onCheckout(selectedTier.id, selectedTier.price_type === 'pwyc', amount);
+			}
+
+			// Close both dialogs on success
+			showConfirmation = false;
+			selectedTier = null;
 			onClose();
+		} finally {
+			isProcessing = false;
 		}
 	}
 
@@ -170,16 +204,12 @@
 									{:else if !isTierAvailable(tier)}
 										<Button variant="secondary" size="sm" disabled>Sold out</Button>
 									{:else if canCheckoutTier(tier)}
-										<Button
-											variant="default"
-											size="sm"
-											onclick={() => handleCheckout(tier.id, tier.price_type === 'pwyc')}
-										>
+										<Button variant="default" size="sm" onclick={() => handleTierClick(tier)}>
 											<Ticket class="mr-2 h-4 w-4" />
 											Get Ticket
 										</Button>
 									{:else if canClaimTier(tier)}
-										<Button variant="default" size="sm" onclick={() => handleClaimTicket(tier.id)}>
+										<Button variant="default" size="sm" onclick={() => handleTierClick(tier)}>
 											<Ticket class="mr-2 h-4 w-4" />
 											{tier.payment_method === 'free' ? 'Claim' : 'Reserve'}
 										</Button>
@@ -202,3 +232,14 @@
 		</div>
 	</DialogContent>
 </Dialog>
+
+<!-- Confirmation Dialog for Selected Tier -->
+{#if selectedTier}
+	<TicketConfirmationDialog
+		bind:open={showConfirmation}
+		tier={selectedTier}
+		onClose={closeConfirmation}
+		onConfirm={handleConfirm}
+		{isProcessing}
+	/>
+{/if}

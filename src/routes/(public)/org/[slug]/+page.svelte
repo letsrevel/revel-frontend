@@ -13,8 +13,7 @@
 	import {
 		generateOrganizationMeta,
 		generateOrganizationStructuredData,
-		toJsonLd,
-		ensureAbsoluteUrl
+		toJsonLd
 	} from '$lib/utils/seo';
 
 	let { data }: { data: PageData } = $props();
@@ -151,10 +150,7 @@
 	<meta property="og:title" content={metaTags.ogTitle || metaTags.title} />
 	<meta property="og:description" content={metaTags.ogDescription || metaTags.description} />
 	{#if metaTags.ogImage}
-		<meta
-			property="og:image"
-			content={ensureAbsoluteUrl(metaTags.ogImage, page.url.origin) || metaTags.ogImage}
-		/>
+		<meta property="og:image" content={metaTags.ogImage} />
 		<meta property="og:image:width" content="1200" />
 		<meta property="og:image:height" content="630" />
 		<meta property="og:image:alt" content={`${organization.name} cover image`} />
@@ -168,10 +164,7 @@
 	<meta name="twitter:title" content={metaTags.twitterTitle || metaTags.title} />
 	<meta name="twitter:description" content={metaTags.twitterDescription || metaTags.description} />
 	{#if metaTags.twitterImage}
-		<meta
-			name="twitter:image"
-			content={ensureAbsoluteUrl(metaTags.twitterImage, page.url.origin) || metaTags.twitterImage}
-		/>
+		<meta name="twitter:image" content={metaTags.twitterImage} />
 		<meta name="twitter:image:alt" content={`${organization.name} cover image`} />
 	{/if}
 
