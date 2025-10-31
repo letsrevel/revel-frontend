@@ -1,5 +1,21 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
 	"welcome": "Welcome to Revel",
-	"hello": "Hello, {name}!"
+	"hello": "Hello, {name}!",
+
+	"nav": {
+		"skipToContent": "Skip to main content",
+		"browseEvents": "Browse Events",
+		"organizations": "Organizations",
+		"myTickets": "My Tickets",
+		"rsvps": "RSVPs",
+		"invitations": "Invitations",
+		"toggleMenu": "Toggle navigation menu"
+	},
+
+	"auth": {
+		"login": "Login",
+		"signUp": "Sign Up",
+		"logout": "Log Out"
+	}
 }

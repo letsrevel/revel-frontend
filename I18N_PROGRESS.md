@@ -66,11 +66,15 @@ Successfully set up Paraglide i18n infrastructure using the manual approach sinc
 
 ---
 
-## Phase 2: Extract & Translate UI Strings (Day 3-5)
+## Phase 2: Extract & Translate UI Strings (Day 3-5) 🚧 IN PROGRESS
 
 ### Component Coverage
 
-- [ ] **Common components** (Header, Footer, Navigation)
+- [x] **Header Navigation** - Fully translated (en, de, it)
+- [x] **LanguageSwitcher** - New component created!
+- [ ] **Footer** (copyright, links)
+- [ ] **MobileNav** (needs translation)
+- [ ] **UserMenu** (dropdown menu items)
 - [ ] **Authentication** (Login, Register, Password Reset, 2FA)
 - [ ] **Event components** (EventCard, EventDetails, RSVP buttons)
 - [ ] **Forms** (Labels, placeholders, validation messages)
@@ -83,14 +87,45 @@ Successfully set up Paraglide i18n infrastructure using the manual approach sinc
 
 ```
 messages/
-├── en.json     # English (baseline)
-├── de.json     # German
-└── it.json     # Italian
+├── en.json     # English (baseline) - 12 strings
+├── de.json     # German - 12 strings
+└── it.json     # Italian - 12 strings
 ```
 
 ### Progress Notes
 
-_Notes will be added as work progresses..._
+**2025-10-31 - Phase 2 Started!**
+
+**Completed:**
+- ✅ Extracted navigation strings from Header component
+- ✅ Created translations for en, de, it:
+  - Navigation: Browse Events, Organizations, My Tickets, RSVPs, Invitations
+  - Auth: Login, Sign Up, Log Out
+  - Accessibility: Skip to main content, Toggle menu
+- ✅ Updated Header.svelte to use `m['nav.browseEvents']()` syntax
+- ✅ Fixed `{#each}` to use key for reactivity
+- ✅ Built LanguageSwitcher component with:
+  - Globe icon + flag + language name
+  - Dropdown with all 3 languages
+  - Cookie persistence
+  - Data invalidation on switch
+- ✅ Added LanguageSwitcher to Header
+- ✅ All components type-check successfully
+
+**How translations work:**
+```svelte
+<script>
+  import * as m from '$lib/paraglide/messages.js';
+</script>
+
+<button>{m['auth.login']()}</button>
+<!-- Renders: "Login" (en) | "Anmelden" (de) | "Accedi" (it) -->
+```
+
+**Next steps:**
+- Extract strings from MobileNav, UserMenu, Footer
+- Start on authentication pages (login, register)
+- Add error message translations
 
 ---
 
