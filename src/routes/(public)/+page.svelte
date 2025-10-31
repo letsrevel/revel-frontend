@@ -1,9 +1,34 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { generateHomeMeta } from '$lib/utils/seo';
+	import * as m from '$lib/paraglide/messages.js';
+	import { getLocale } from '$lib/paraglide/runtime.js';
+	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 
 	// Generate comprehensive meta tags for home page
 	let metaTags = $derived(generateHomeMeta(page.url.origin));
+
+	// Animated letter for Italian welcome (client-side only)
+	let currentLetter = $state<'a' | 'o'>('a');
+	let isFlipped = $state(false);
+	let isItalian = $derived(browser && getLocale() === 'it');
+
+	onMount(() => {
+		if (getLocale() === 'it') {
+			const interval = setInterval(() => {
+				// Toggle between 0° and 180° (not continuous rotation)
+				isFlipped = !isFlipped;
+
+				// At 90° (halfway point = 300ms), swap the letter
+				setTimeout(() => {
+					currentLetter = currentLetter === 'a' ? 'o' : 'a';
+				}, 300);
+			}, 2000);
+
+			return () => clearInterval(interval);
+		}
+	});
 </script>
 
 <svelte:head>
@@ -37,24 +62,31 @@
 <div class="container mx-auto px-4 py-16">
 	<div class="flex flex-col items-center justify-center text-center">
 		<h1 class="text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
-			Welcome to <span class="text-primary">Revel</span>
+			{#if isItalian}
+				Benvenut<span class="flip-container">
+					<span class="flip-letter" style="transform: rotateY({isFlipped ? 180 : 0}deg)">
+						{currentLetter}
+					</span>
+				</span> su <span class="text-primary">Revel</span>
+			{:else}
+				{m['home.welcomeTo']()} <span class="text-primary">Revel</span>
+			{/if}
 		</h1>
 		<p class="mt-6 max-w-2xl text-lg text-muted-foreground">
-			Open-source, community-focused event management and ticketing platform. Discover events,
-			connect with communities, and create unforgettable experiences.
+			{m['home.tagline']()}
 		</p>
 		<div class="mt-10 flex items-center gap-4">
 			<a
 				href="/events"
 				class="rounded-md bg-primary px-6 py-3 text-base font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
 			>
-				Browse Events
+				{m['nav.browseEvents']()}
 			</a>
 			<a
 				href="/register"
 				class="rounded-md border border-primary px-6 py-3 text-base font-semibold text-primary hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
 			>
-				Get Started
+				{m['home.getStarted']()}
 			</a>
 		</div>
 	</div>
@@ -80,10 +112,9 @@
 					</svg>
 				</div>
 			</div>
-			<h3 class="mb-2 text-lg font-semibold">Discover Events</h3>
+			<h3 class="mb-2 text-lg font-semibold">{m['home.discoverEventsTitle']()}</h3>
 			<p class="text-sm text-muted-foreground">
-				Find events happening in your community. From concerts to workshops, there's something for
-				everyone.
+				{m['home.discoverEventsDescription']()}
 			</p>
 		</div>
 
@@ -106,9 +137,9 @@
 					</svg>
 				</div>
 			</div>
-			<h3 class="mb-2 text-lg font-semibold">Build Community</h3>
+			<h3 class="mb-2 text-lg font-semibold">{m['home.buildCommunityTitle']()}</h3>
 			<p class="text-sm text-muted-foreground">
-				Create organizations, host events, and grow your community with powerful management tools.
+				{m['home.buildCommunityDescription']()}
 			</p>
 		</div>
 
@@ -131,10 +162,23 @@
 					</svg>
 				</div>
 			</div>
-			<h3 class="mb-2 text-lg font-semibold">Safe & Secure</h3>
+			<h3 class="mb-2 text-lg font-semibold">{m['home.safeSecureTitle']()}</h3>
 			<p class="text-sm text-muted-foreground">
-				RSVP with confidence. Secure ticketing, privacy-focused, and built with trust in mind.
+				{m['home.safeSecureDescription']()}
 			</p>
 		</div>
 	</div>
 </div>
+
+<style>
+	.flip-container {
+		perspective: 1000px;
+		display: inline-block;
+	}
+
+	.flip-letter {
+		display: inline-block;
+		transition: transform 0.6s ease-in-out;
+		transform-style: preserve-3d;
+	}
+</style>
