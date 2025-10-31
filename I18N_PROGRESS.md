@@ -14,22 +14,55 @@
 
 ---
 
-## Phase 1: Setup & Infrastructure (Day 1-2)
+## Phase 1: Setup & Infrastructure (Day 1-2) ✅ COMPLETE
 
 ### Tasks
 
-- [ ] Run `npx sv add paraglide="languageTags:en,de,it;demo:yes"`
-- [ ] Configure hooks (`hooks.server.ts`, `hooks.client.ts`, `hooks.js`)
-- [ ] Set up locale detection (URL → Cookie → Header → Default)
-- [ ] Implement `handleFetch` to inject `Accept-Language` header
-- [ ] Update `app.html` with `%lang%` placeholder
-- [ ] Create `src/lib/i18n/` utilities (format.ts, backend.ts)
-- [ ] Build `LanguageSwitcher.svelte` component
-- [ ] Write E2E test for language switching
+- [x] Install Paraglide packages (`@inlang/paraglide-js@^2.4.0`)
+- [x] Create `project.inlang/settings.json` configuration
+- [x] Create initial message files (`messages/en.json`, `messages/de.json`, `messages/it.json`)
+- [x] Configure hooks (`hooks.server.ts`) with language detection
+- [x] Set up locale detection (URL → Cookie → Header → Default)
+- [x] Update `app.html` with `%paraglide.lang%` and `%paraglide.textDirection%` placeholders
+- [x] Create `src/lib/i18n.ts` with i18nHandle() hook and language utilities
+- [x] Generate Paraglide runtime files with `paraglide-js compile`
+- [x] Add `pnpm paraglide:compile` script to package.json
+- [x] Update `.gitignore` to exclude generated files
+- [ ] Implement `handleFetch` to inject `Accept-Language` header (next phase)
+- [ ] Create date/number formatting utilities (next phase)
+- [ ] Build `LanguageSwitcher.svelte` component (next phase)
+- [ ] Write E2E test for language switching (testing phase)
 
 ### Progress Notes
 
-_Notes will be added as work progresses..._
+**2025-10-31 - Phase 1 Complete!**
+
+Successfully set up Paraglide i18n infrastructure using the manual approach since `sv add paraglide` had interactive CLI issues.
+
+**Key accomplishments:**
+- ✅ Installed `@inlang/paraglide-js@^2.4.0` (v2 - no SvelteKit adapter needed)
+- ✅ Created Inlang project configuration with lint rules
+- ✅ Set up message files for 3 languages (en, de, it)
+- ✅ Created custom i18n hook with priority-based language detection:
+  1. URL `?lang=de` parameter (highest priority)
+  2. `user_language` cookie (persisted preference)
+  3. `Accept-Language` HTTP header (browser default)
+  4. Default to `en` (fallback)
+- ✅ Updated app.html with dynamic lang attributes
+- ✅ Generated Paraglide runtime (48KB runtime.js + messages)
+- ✅ All i18n imports type-check correctly
+
+**Technical decisions:**
+- Used `@inlang/paraglide-js` v2 directly (deprecated SvelteKit adapter removed)
+- Manual runtime compilation via `paraglide-js compile` CLI
+- Custom `i18nHandle()` hook instead of built-in adapter
+- Cookie is **not** httpOnly to allow client-side language switching
+- Runtime files excluded from git (auto-generated)
+
+**Next steps:**
+- Add `Accept-Language` header injection for API calls (`handleFetch`)
+- Extract hardcoded UI strings to message files
+- Build LanguageSwitcher component
 
 ---
 

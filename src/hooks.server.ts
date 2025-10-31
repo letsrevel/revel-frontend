@@ -1,7 +1,9 @@
 import type { Handle } from '@sveltejs/kit';
+import { sequence } from '@sveltejs/kit/hooks';
+import { i18nHandle } from '$lib/i18n';
 
 /**
- * Server-side hooks for authentication
+ * Server-side hooks for authentication and internationalization
  *
  * IMPORTANT: This hook does NOT perform token refresh to avoid race conditions
  * with client-side refresh mechanisms. Token refresh is handled exclusively by:
@@ -12,6 +14,7 @@ import type { Handle } from '@sveltejs/kit';
  * - Decodes the access token to populate event.locals.user
  * - Validates token structure (not expiry)
  * - Clears invalid tokens
+ * - Detects and sets user language preference
  */
 
 /**
@@ -33,7 +36,10 @@ function decodeJWT(token: string): any | null {
 	}
 }
 
-export const handle: Handle = async ({ event, resolve }) => {
+/**
+ * Authentication hook
+ */
+const handleAuth: Handle = async ({ event, resolve }) => {
 	const accessToken = event.cookies.get('access_token');
 	const refreshToken = event.cookies.get('refresh_token');
 
@@ -72,8 +78,10 @@ export const handle: Handle = async ({ event, resolve }) => {
 		}
 	}
 
-	// Resolve the request
-	const response = await resolve(event);
-
-	return response;
+	return resolve(event);
 };
+
+/**
+ * Combine authentication and i18n hooks
+ */
+export const handle = sequence(i18nHandle(), handleAuth);

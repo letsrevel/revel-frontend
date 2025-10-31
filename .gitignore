@@ -44,6 +44,9 @@ vite.config.ts.timestamp-*
 # Uncomment if you want to version control generated API client:
 # !src/lib/api/generated/
 
+# Paraglide (auto-generated i18n runtime)
+src/lib/paraglide/
+
 # IDE & Editor
 .vscode/*
 !.vscode/settings.json
