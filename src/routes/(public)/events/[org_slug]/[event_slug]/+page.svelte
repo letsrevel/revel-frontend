@@ -17,6 +17,7 @@
 	import MyTicketModal from '$lib/components/tickets/MyTicketModal.svelte';
 	import PWYCModal from '$lib/components/tickets/PWYCModal.svelte';
 	import { generateEventStructuredData, structuredDataToJsonLd } from '$lib/utils/structured-data';
+	import { generateEventMeta, ensureAbsoluteUrl } from '$lib/utils/seo';
 	import { isRSVP, isTicket } from '$lib/utils/eligibility';
 	import { getPotluckPermissions } from '$lib/utils/permissions';
 	import { formatEventLocation } from '$lib/utils/event';
@@ -37,6 +38,9 @@
 		generateEventStructuredData(event, `${page.url.origin}${page.url.pathname}`)
 	);
 	let jsonLd = $derived(structuredDataToJsonLd(structuredData));
+
+	// Generate comprehensive meta tags
+	let metaTags = $derived(generateEventMeta(event, `${page.url.origin}${page.url.pathname}`));
 
 	// Check if user has RSVP'd (reactive to userStatus changes)
 	let hasRSVPd = $derived.by(() => {
@@ -291,31 +295,51 @@
 </script>
 
 <svelte:head>
-	<title>{event.name} | Revel</title>
-	<meta
-		name="description"
-		content={event.description?.slice(0, 160) ||
-			`Join ${event.name} organized by ${event.organization.name}`}
-	/>
+	<title>{metaTags.title}</title>
+	<meta name="description" content={metaTags.description} />
+	{#if metaTags.canonical}
+		<link rel="canonical" href={metaTags.canonical} />
+	{/if}
 
 	<!-- Open Graph -->
-	<meta property="og:type" content="event" />
-	<meta property="og:title" content={event.name} />
-	<meta property="og:description" content={event.description || `Join ${event.name}`} />
-	{#if event.cover_art}
-		<meta property="og:image" content={event.cover_art} />
+	<meta property="og:type" content={metaTags.ogType || 'website'} />
+	<meta property="og:title" content={metaTags.ogTitle || metaTags.title} />
+	<meta property="og:description" content={metaTags.ogDescription || metaTags.description} />
+	{#if metaTags.ogImage}
+		<meta
+			property="og:image"
+			content={ensureAbsoluteUrl(metaTags.ogImage, page.url.origin) || metaTags.ogImage}
+		/>
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta property="og:image:alt" content={`${event.name} cover image`} />
 	{/if}
-	<meta property="og:url" content={page.url.href} />
+	<meta property="og:url" content={metaTags.ogUrl || page.url.href} />
+	<meta property="og:site_name" content="Revel" />
+	<meta property="og:locale" content="en_US" />
 
 	<!-- Twitter Card -->
-	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:title" content={event.name} />
-	<meta
-		name="twitter:description"
-		content={event.description?.slice(0, 200) || `Join ${event.name}`}
-	/>
-	{#if event.cover_art}
-		<meta name="twitter:image" content={event.cover_art} />
+	<meta name="twitter:card" content={metaTags.twitterCard || 'summary_large_image'} />
+	<meta name="twitter:title" content={metaTags.twitterTitle || metaTags.title} />
+	<meta name="twitter:description" content={metaTags.twitterDescription || metaTags.description} />
+	{#if metaTags.twitterImage}
+		<meta
+			name="twitter:image"
+			content={ensureAbsoluteUrl(metaTags.twitterImage, page.url.origin) || metaTags.twitterImage}
+		/>
+		<meta name="twitter:image:alt" content={`${event.name} cover image`} />
+	{/if}
+
+	<!-- Additional SEO meta tags -->
+	<meta name="robots" content="index, follow" />
+	<meta name="author" content={event.organization.name} />
+
+	<!-- Event-specific meta tags -->
+	{#if event.start}
+		<meta property="event:start_time" content={event.start} />
+	{/if}
+	{#if event.end}
+		<meta property="event:end_time" content={event.end} />
 	{/if}
 
 	<!-- Structured Data (JSON-LD) -->
