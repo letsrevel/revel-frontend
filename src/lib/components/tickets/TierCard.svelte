@@ -4,21 +4,31 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
 	import { Ticket, Clock, Users } from 'lucide-svelte';
+	import TicketConfirmationDialog from './TicketConfirmationDialog.svelte';
 
 	interface Props {
 		tier: TierSchemaWithId;
 		isAuthenticated: boolean;
 		hasTicket?: boolean;
+		isEligible?: boolean;
 		onClaimTicket: (tierId: string) => void | Promise<void>;
-		onCheckout?: (tierId: string, isPwyc: boolean) => void | Promise<void>;
+		onCheckout?: (tierId: string, isPwyc: boolean, amount?: number) => void | Promise<void>;
 	}
 
-	let { tier, isAuthenticated, hasTicket = false, onClaimTicket, onCheckout }: Props = $props();
+	let {
+		tier,
+		isAuthenticated,
+		hasTicket = false,
+		isEligible = true,
+		onClaimTicket,
+		onCheckout
+	}: Props = $props();
 
 	// Check if tier has ID (required for checkout)
 	let hasId = $derived(hasTierId(tier));
 
 	let isClaiming = $state(false);
+	let showConfirmation = $state(false);
 
 	// Format price display
 	let priceDisplay = $derived(() => {
@@ -84,6 +94,7 @@
 		hasId &&
 			isAuthenticated &&
 			!hasTicket &&
+			isEligible &&
 			salesStatus.active &&
 			availabilityStatus.available &&
 			tier.payment_method === 'free'
@@ -94,6 +105,7 @@
 		hasId &&
 			isAuthenticated &&
 			!hasTicket &&
+			isEligible &&
 			salesStatus.active &&
 			availabilityStatus.available &&
 			tier.payment_method === 'online' &&
@@ -105,42 +117,46 @@
 		hasId &&
 			isAuthenticated &&
 			!hasTicket &&
+			isEligible &&
 			salesStatus.active &&
 			availabilityStatus.available &&
 			(tier.payment_method === 'offline' || tier.payment_method === 'at_the_door')
 	);
 
-	async function handleClaim() {
-		if (!canClaim || isClaiming || !hasId) return;
+	// Open confirmation dialog instead of immediate action
+	function handleButtonClick() {
+		if (!hasId || hasTicket || !salesStatus.active || !availabilityStatus.available) return;
+		showConfirmation = true;
+	}
+
+	// Confirmation dialog callback - now triggers the actual backend action
+	async function handleConfirm(amount?: number) {
+		if (!hasId || isClaiming) return;
 
 		isClaiming = true;
 		try {
-			await onClaimTicket(tier.id);
+			// Free tickets or offline/at-the-door (reservation)
+			if (
+				tier.payment_method === 'free' ||
+				tier.payment_method === 'offline' ||
+				tier.payment_method === 'at_the_door'
+			) {
+				await onClaimTicket(tier.id);
+			}
+			// Online payment (with or without PWYC)
+			else if (tier.payment_method === 'online' && onCheckout) {
+				await onCheckout(tier.id, tier.price_type === 'pwyc', amount);
+			}
+
+			// Close dialog on success
+			showConfirmation = false;
 		} finally {
 			isClaiming = false;
 		}
 	}
 
-	async function handleCheckout() {
-		if (!canCheckout || isClaiming || !hasId || !onCheckout) return;
-
-		isClaiming = true;
-		try {
-			await onCheckout(tier.id, tier.price_type === 'pwyc');
-		} finally {
-			isClaiming = false;
-		}
-	}
-
-	async function handleReserve() {
-		if (!canReserve || isClaiming || !hasId) return;
-
-		isClaiming = true;
-		try {
-			await onClaimTicket(tier.id);
-		} finally {
-			isClaiming = false;
-		}
+	function closeConfirmation() {
+		showConfirmation = false;
 	}
 </script>
 
@@ -200,17 +216,20 @@
 				<Button href="/login" variant="outline" class="w-full sm:w-auto"
 					>Sign in to Get Ticket</Button
 				>
+			{:else if !isEligible}
+				<!-- User is authenticated but not eligible - show disabled button -->
+				<Button disabled class="w-full sm:w-auto">Not Eligible</Button>
 			{:else if canClaim}
-				<Button onclick={handleClaim} disabled={isClaiming} class="w-full sm:w-auto">
+				<Button onclick={handleButtonClick} disabled={isClaiming} class="w-full sm:w-auto">
 					{isClaiming ? 'Claiming...' : 'Claim Free Ticket'}
 				</Button>
 			{:else if canCheckout}
-				<Button onclick={handleCheckout} disabled={isClaiming} class="w-full sm:w-auto">
+				<Button onclick={handleButtonClick} disabled={isClaiming} class="w-full sm:w-auto">
 					{isClaiming ? 'Processing...' : 'Get Ticket'}
 				</Button>
 			{:else if canReserve}
 				<Button
-					onclick={handleReserve}
+					onclick={handleButtonClick}
 					disabled={isClaiming}
 					variant="outline"
 					class="w-full sm:w-auto"
@@ -223,3 +242,12 @@
 		</div>
 	</div>
 </Card>
+
+<!-- Confirmation Dialog -->
+<TicketConfirmationDialog
+	bind:open={showConfirmation}
+	{tier}
+	onClose={closeConfirmation}
+	onConfirm={handleConfirm}
+	isProcessing={isClaiming}
+/>

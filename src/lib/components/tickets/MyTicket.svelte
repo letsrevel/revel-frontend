@@ -73,8 +73,9 @@
 		if (!ticket.tier) return false;
 
 		const paymentMethod = ticket.tier.payment_method;
-		// Allow resume for online (Stripe) and offline, but not at-the-door
-		return paymentMethod === 'online' || paymentMethod === 'offline';
+		// Only allow resume for online (Stripe) payments
+		// Offline and at-the-door payments require manual completion
+		return paymentMethod === 'online';
 	});
 </script>
 
@@ -130,6 +131,21 @@
 								Complete your payment to confirm your ticket.
 							{/if}
 						</p>
+
+						<!-- Manual Payment Instructions -->
+						{#if ticket.tier?.payment_method !== 'online' && ticket.tier?.manual_payment_instructions}
+							<div
+								class="mt-3 rounded-md border border-orange-300 bg-orange-100 p-3 dark:border-orange-700 dark:bg-orange-900"
+							>
+								<p class="text-sm font-medium text-orange-900 dark:text-orange-100">
+									Payment Instructions:
+								</p>
+								<p class="mt-1 text-sm text-orange-800 dark:text-orange-200">
+									{ticket.tier.manual_payment_instructions}
+								</p>
+							</div>
+						{/if}
+
 						{#if canResumePayment() && onResumePayment}
 							<button
 								onclick={onResumePayment}

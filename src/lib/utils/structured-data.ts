@@ -1,4 +1,5 @@
 import type { EventDetailSchema } from '$lib/api/generated/types.gen';
+import { getBackendUrl } from '$lib/config/api';
 
 /**
  * Schema.org Event structured data for SEO
@@ -73,11 +74,20 @@ export function generateEventStructuredData(
 		}
 	};
 
-	// Add image if available
-	if (event.cover_art || event.logo) {
-		structuredData.image = [event.cover_art, event.logo].filter(
-			(img): img is string => img !== null && img !== undefined
-		);
+	// Add images with backend URLs, following hierarchy
+	const images = [
+		event.logo,
+		event.cover_art,
+		event.event_series?.logo,
+		event.event_series?.cover_art,
+		event.organization.logo,
+		event.organization.cover_art
+	]
+		.filter((img): img is string => img !== null && img !== undefined)
+		.map((img) => getBackendUrl(img));
+
+	if (images.length > 0) {
+		structuredData.image = images;
 	}
 
 	// Add offer information
