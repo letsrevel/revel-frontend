@@ -105,12 +105,7 @@
 		<DropdownMenu.Root>
 			<DropdownMenu.Trigger>
 				{#snippet child({ props })}
-					<Button
-						{...props}
-						variant="ghost"
-						size="sm"
-						class="gap-2 text-sm font-medium"
-					>
+					<Button {...props} variant="ghost" size="sm" class="gap-2 text-sm font-medium">
 						<Shield class="h-4 w-4" />
 						Admin
 						<ChevronDown class="h-4 w-4" />

@@ -91,9 +91,6 @@
 				</div>
 			{/if}
 
-			<!-- Language Switcher -->
-			<LanguageSwitcher />
-
 			<!-- Theme Toggle -->
 			<ThemeToggle />
 
@@ -130,6 +127,9 @@
 			>
 				<Menu class="h-6 w-6" aria-hidden="true" />
 			</button>
+
+			<!-- Language Switcher (Rightmost) -->
+			<LanguageSwitcher />
 		</div>
 	</div>
 </header>

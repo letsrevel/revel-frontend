@@ -10,19 +10,21 @@
 	let metaTags = $derived(generateHomeMeta(page.url.origin));
 
 	// Animated letter for Italian welcome (client-side only)
-	let currentLetter = $state<'a' | 'o'>('a');
-	let isFlipped = $state(false);
+	const letters = ['a', 'o', 'ə'] as const;
+	let currentLetterIndex = $state(0);
+	let currentLetter = $derived(letters[currentLetterIndex]);
+	let rotation = $state(0);
 	let isItalian = $derived(browser && getLocale() === 'it');
 
 	onMount(() => {
 		if (getLocale() === 'it') {
 			const interval = setInterval(() => {
-				// Toggle between 0° and 180° (not continuous rotation)
-				isFlipped = !isFlipped;
+				// Always rotate forward by 180° (never backwards)
+				rotation += 180;
 
-				// At 90° (halfway point = 300ms), swap the letter
+				// At 90° (halfway point = 300ms), swap to the next letter
 				setTimeout(() => {
-					currentLetter = currentLetter === 'a' ? 'o' : 'a';
+					currentLetterIndex = (currentLetterIndex + 1) % letters.length;
 				}, 300);
 			}, 2000);
 
@@ -64,7 +66,7 @@
 		<h1 class="text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
 			{#if isItalian}
 				Benvenut<span class="flip-container">
-					<span class="flip-letter" style="transform: rotateY({isFlipped ? 180 : 0}deg)">
+					<span class="flip-letter" style="transform: rotateY({rotation}deg)">
 						{currentLetter}
 					</span>
 				</span> su <span class="text-primary">Revel</span>

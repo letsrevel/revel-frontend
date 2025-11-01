@@ -31,6 +31,10 @@ ENV PUBLIC_API_URL=${PUBLIC_API_URL}
 ENV ORIGIN=${ORIGIN}
 ENV PUBLIC_VERSION=${PUBLIC_VERSION}
 
+# Compile Paraglide i18n translations
+# Generates runtime files from messages/*.json (en, de, it)
+RUN pnpm paraglide:compile
+
 # Replace ALL hardcoded localhost references with actual URL
 # Cannot regenerate API during build (backend not available in CI/CD)
 RUN sed -i "s|'http://localhost:8000'|'${PUBLIC_API_URL}'|g" src/lib/api/generated/client.gen.ts && \

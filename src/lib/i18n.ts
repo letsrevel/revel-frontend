@@ -68,9 +68,7 @@ export function i18nHandle(): Handle {
 		// Resolve with lang attribute replacement
 		return resolve(event, {
 			transformPageChunk: ({ html }) => {
-				return html
-					.replace('%paraglide.lang%', lang)
-					.replace('%paraglide.textDirection%', 'ltr'); // All our languages are LTR
+				return html.replace('%paraglide.lang%', lang).replace('%paraglide.textDirection%', 'ltr'); // All our languages are LTR
 			}
 		});
 	};

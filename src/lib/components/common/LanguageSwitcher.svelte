@@ -39,18 +39,17 @@
 
 <!-- Language Switcher Dropdown -->
 <div class="relative">
-	<!-- Trigger Button -->
+	<!-- Trigger Button - Just the flag -->
 	<button
 		type="button"
 		onclick={() => (isOpen = !isOpen)}
-		class="flex items-center gap-2 rounded-md p-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-		aria-label="Select language"
+		class="flex items-center justify-center rounded-md p-2 text-2xl transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
+		aria-label="Select language: {currentLanguage.name}"
 		aria-expanded={isOpen}
 		aria-haspopup="true"
+		title={currentLanguage.name}
 	>
-		<Globe class="h-5 w-5" aria-hidden="true" />
-		<span class="hidden sm:inline">{currentLanguage.flag} {currentLanguage.name}</span>
-		<span class="sm:hidden">{currentLanguage.flag}</span>
+		{currentLanguage.flag}
 	</button>
 
 	<!-- Dropdown Menu -->

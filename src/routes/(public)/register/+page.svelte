@@ -3,6 +3,7 @@
 	import type { ActionData } from './$types';
 	import PasswordStrengthIndicator from '$lib/components/forms/PasswordStrengthIndicator.svelte';
 	import { Eye, EyeOff, Loader2 } from 'lucide-svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
 		form: ActionData;
@@ -25,19 +26,16 @@
 </script>
 
 <svelte:head>
-	<title>Create Account - Revel</title>
-	<meta
-		name="description"
-		content="Create your Revel account to start organizing and attending community events"
-	/>
+	<title>{m['register.title']()}</title>
+	<meta name="description" content={m['register.metaDescription']()} />
 </svelte:head>
 
 <div class="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
 	<div class="w-full max-w-md space-y-8">
 		<!-- Header -->
 		<div class="text-center">
-			<h1 class="text-3xl font-bold tracking-tight">Create your account</h1>
-			<p class="mt-2 text-muted-foreground">Join Revel to discover and organize community events</p>
+			<h1 class="text-3xl font-bold tracking-tight">{m['register.createAccount']()}</h1>
+			<p class="mt-2 text-muted-foreground">{m['register.joinRevel']()}</p>
 		</div>
 
 		<!-- Error Summary -->
@@ -64,7 +62,7 @@
 		>
 			<!-- Email Field -->
 			<div class="space-y-2">
-				<label for="email" class="block text-sm font-medium"> Email address </label>
+				<label for="email" class="block text-sm font-medium"> {m['register.emailAddress']()} </label>
 				<input
 					id="email"
 					name="email"
@@ -78,7 +76,7 @@
 					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.email
 						? 'border-destructive'
 						: ''}"
-					placeholder="you@example.com"
+					placeholder={m['register.emailPlaceholder']()}
 				/>
 				{#if errors.email}
 					<p id="email-error" class="text-sm text-destructive" role="alert">
@@ -89,7 +87,7 @@
 
 			<!-- Password Field -->
 			<div class="space-y-2">
-				<label for="password" class="block text-sm font-medium"> Password </label>
+				<label for="password" class="block text-sm font-medium"> {m['register.password']()} </label>
 				<div class="relative">
 					<input
 						id="password"
@@ -106,13 +104,13 @@
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.password
 							? 'border-destructive'
 							: ''}"
-						placeholder="Create a strong password"
+						placeholder={m['register.passwordPlaceholder']()}
 					/>
 					<button
 						type="button"
 						onclick={() => (showPassword = !showPassword)}
 						class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-						aria-label={showPassword ? 'Hide password' : 'Show password'}
+						aria-label={showPassword ? m['register.hidePassword']() : m['register.showPassword']()}
 					>
 						{#if showPassword}
 							<EyeOff class="h-4 w-4" aria-hidden="true" />
@@ -136,7 +134,9 @@
 
 			<!-- Confirm Password Field -->
 			<div class="space-y-2">
-				<label for="confirmPassword" class="block text-sm font-medium"> Confirm password </label>
+				<label for="confirmPassword" class="block text-sm font-medium">
+					{m['register.confirmPassword']()}
+				</label>
 				<div class="relative">
 					<input
 						id="confirmPassword"
@@ -151,13 +151,13 @@
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.confirmPassword
 							? 'border-destructive'
 							: ''}"
-						placeholder="Confirm your password"
+						placeholder={m['register.confirmPasswordPlaceholder']()}
 					/>
 					<button
 						type="button"
 						onclick={() => (showConfirmPassword = !showConfirmPassword)}
 						class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-						aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+						aria-label={showConfirmPassword ? m['register.hidePassword']() : m['register.showPassword']()}
 					>
 						{#if showConfirmPassword}
 							<EyeOff class="h-4 w-4" aria-hidden="true" />
@@ -187,13 +187,13 @@
 					class="mt-1 h-4 w-4 rounded border-input text-primary transition-colors focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 				/>
 				<label for="acceptTerms" class="text-sm">
-					I accept the <a
-						href="/legal/terms"
-						class="text-primary underline-offset-4 hover:underline">Terms of Service</a
+					{m['register.acceptTerms']()}
+					<a href="/legal/terms" class="text-primary underline-offset-4 hover:underline"
+						>{m['footer.termsOfService']()}</a
 					>
-					and
+					{m['register.and']()}
 					<a href="/legal/privacy" class="text-primary underline-offset-4 hover:underline"
-						>Privacy Policy</a
+						>{m['footer.privacyPolicy']()}</a
 					>
 				</label>
 			</div>
@@ -211,17 +211,19 @@
 			>
 				{#if isSubmitting}
 					<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-					<span>Creating account...</span>
+					<span>{m['register.creatingAccount']()}</span>
 				{:else}
-					<span>Create account</span>
+					<span>{m['register.createAccount()}</span>
 				{/if}
 			</button>
 		</form>
 
 		<!-- Login Link -->
 		<div class="text-center text-sm">
-			<span class="text-muted-foreground">Already have an account?</span>
-			<a href="/login" class="ml-1 text-primary underline-offset-4 hover:underline"> Sign in </a>
+			<span class="text-muted-foreground">{m['register.alreadyHaveAccount']()}</span>
+			<a href="/login" class="ml-1 text-primary underline-offset-4 hover:underline">
+				{m['auth.login']()}
+			</a>
 		</div>
 	</div>
 </div>

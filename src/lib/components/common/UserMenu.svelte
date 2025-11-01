@@ -4,6 +4,7 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import { dashboardDashboardOrganizations } from '$lib/api/generated/sdk.gen';
 	import { User, Settings, LogOut, Building2, Shield, Lock, LayoutDashboard } from 'lucide-svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
 		mobile?: boolean;
@@ -81,14 +82,14 @@
 		user?.preferred_name || user?.first_name || user?.email.split('@')[0] || 'User'
 	);
 
-	// Menu items
-	const menuItems = [
-		{ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-		{ href: '/account/profile', label: 'Profile', icon: User },
-		{ href: '/account/security', label: 'Security', icon: Shield },
-		{ href: '/account/privacy', label: 'Privacy & Data', icon: Lock },
-		{ href: '/account/settings', label: 'Settings', icon: Settings }
-	];
+	// Menu items - using derived for reactivity
+	let menuItems = $derived([
+		{ href: '/dashboard', label: m['userMenu.dashboard'](), icon: LayoutDashboard },
+		{ href: '/account/profile', label: m['userMenu.profile'](), icon: User },
+		{ href: '/account/security', label: m['userMenu.security'](), icon: Shield },
+		{ href: '/account/privacy', label: m['userMenu.privacy'](), icon: Lock },
+		{ href: '/account/settings', label: m['userMenu.settings'](), icon: Settings }
+	]);
 
 	function handleLogout() {
 		if (onItemClick) onItemClick();
@@ -149,7 +150,9 @@
 		<!-- Organizations Section (Mobile) -->
 		{#if userOrganizations.length > 0}
 			<div class="space-y-2 border-t pt-4">
-				<div class="px-4 text-sm font-semibold text-muted-foreground">My Organizations</div>
+				<div class="px-4 text-sm font-semibold text-muted-foreground">
+					{m['userMenu.myOrganizations']()}
+				</div>
 				{#each userOrganizations as org}
 					<div class="space-y-1">
 						<a
@@ -167,7 +170,7 @@
 								onclick={handleItemClick}
 							>
 								<Shield class="h-4 w-4" aria-hidden="true" />
-								<span>Admin Dashboard</span>
+								<span>{m['userMenu.adminDashboard']()}</span>
 							</a>
 						{/if}
 					</div>
@@ -181,7 +184,7 @@
 			onclick={handleLogout}
 		>
 			<LogOut class="h-5 w-5" aria-hidden="true" />
-			<span>Logout</span>
+			<span>{m['auth.logout']()}</span>
 		</button>
 	</div>
 {:else}
@@ -193,7 +196,7 @@
 			onclick={() => (dropdownOpen = !dropdownOpen)}
 			aria-expanded={dropdownOpen}
 			aria-haspopup="true"
-			aria-label="User menu"
+			aria-label={m['userMenu.userMenu']()}
 		>
 			<div
 				class="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground"
@@ -236,7 +239,7 @@
 					<div class="border-t">
 						<div class="p-1">
 							<div class="px-3 py-2 text-xs font-semibold text-muted-foreground">
-								My Organizations
+								{m['userMenu.myOrganizations']()}
 							</div>
 							{#each userOrganizations as org}
 								<div class="space-y-1">
@@ -257,7 +260,7 @@
 											role="menuitem"
 										>
 											<Shield class="h-3 w-3" aria-hidden="true" />
-											<span>Admin Dashboard</span>
+											<span>{m['userMenu.adminDashboard']()}</span>
 										</a>
 									{/if}
 								</div>
@@ -275,7 +278,7 @@
 						role="menuitem"
 					>
 						<LogOut class="h-4 w-4" aria-hidden="true" />
-						<span>Logout</span>
+						<span>{m['auth.logout']()}</span>
 					</button>
 				</div>
 			</div>

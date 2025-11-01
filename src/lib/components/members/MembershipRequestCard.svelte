@@ -97,7 +97,9 @@
 			{/if}
 
 			{#if (request.user as any).phone_number}
-				<p class="mt-1 truncate text-sm text-muted-foreground">📞 {(request.user as any).phone_number}</p>
+				<p class="mt-1 truncate text-sm text-muted-foreground">
+					📞 {(request.user as any).phone_number}
+				</p>
 			{/if}
 
 			<!-- Request Date -->

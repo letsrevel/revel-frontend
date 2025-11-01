@@ -92,7 +92,12 @@
 	const showBothUncheckedWarning = $derived(!grantsMembership && !grantsStaffStatus);
 </script>
 
-<Dialog {open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }}>
+<Dialog
+	{open}
+	onOpenChange={(isOpen) => {
+		if (!isOpen) onClose();
+	}}
+>
 	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
 		<DialogHeader>
 			<DialogTitle>{isEdit ? 'Edit' : 'Create'} Invitation Token</DialogTitle>
@@ -121,9 +126,7 @@
 					placeholder="e.g., Spring 2025 Recruitment"
 					maxlength={150}
 				/>
-				<p class="text-xs text-muted-foreground">
-					A display name to help you organize your tokens
-				</p>
+				<p class="text-xs text-muted-foreground">A display name to help you organize your tokens</p>
 			</div>
 
 			{#if !isEdit}
@@ -145,14 +148,8 @@
 				<!-- Expires At (edit only) -->
 				<div class="space-y-2">
 					<Label for="expires-at">Expiration Date</Label>
-					<Input
-						id="expires-at"
-						type="datetime-local"
-						bind:value={expiresAt}
-					/>
-					<p class="text-xs text-muted-foreground">
-						Leave empty for no expiration
-					</p>
+					<Input id="expires-at" type="datetime-local" bind:value={expiresAt} />
+					<p class="text-xs text-muted-foreground">Leave empty for no expiration</p>
 				</div>
 			{/if}
 
@@ -181,7 +178,9 @@
 			<div class="space-y-3">
 				<Label>Access Type</Label>
 
-				<label class="flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors hover:bg-accent">
+				<label
+					class="flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors hover:bg-accent"
+				>
 					<Checkbox
 						checked={grantsMembership}
 						onCheckedChange={(checked) => (grantsMembership = !!checked)}
@@ -195,7 +194,9 @@
 					</div>
 				</label>
 
-				<label class="flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors hover:bg-accent">
+				<label
+					class="flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors hover:bg-accent"
+				>
 					<Checkbox
 						checked={grantsStaffStatus}
 						onCheckedChange={(checked) => (grantsStaffStatus = !!checked)}
@@ -214,15 +215,15 @@
 
 				{#if showStaffWarning}
 					<div class="rounded-md bg-yellow-50 p-3 text-sm text-yellow-800">
-						<strong>Security Warning:</strong> Staff tokens grant sensitive permissions. Only share
-						privately (email, Slack DM, etc.).
+						<strong>Security Warning:</strong> Staff tokens grant sensitive permissions. Only share privately
+						(email, Slack DM, etc.).
 					</div>
 				{/if}
 
 				{#if showBothUncheckedWarning}
 					<div class="rounded-md bg-red-50 p-3 text-sm text-red-800">
-						<strong>Error:</strong> At least one access type must be selected. The token must grant
-						membership or staff access.
+						<strong>Error:</strong> At least one access type must be selected. The token must grant membership
+						or staff access.
 					</div>
 				{/if}
 			</div>
