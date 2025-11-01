@@ -2,6 +2,7 @@
 	import { PUBLIC_VERSION } from '$env/static/public';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { Github, Bug } from 'lucide-svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	// Frontend version from build-time environment variable (set in Dockerfile)
 	// Falls back to 'dev' for local development
@@ -20,9 +21,9 @@
 		<div class="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
 			<!-- About Section -->
 			<div>
-				<h3 class="mb-4 text-lg font-semibold">Revel</h3>
+				<h3 class="mb-4 text-lg font-semibold">{m['footer.aboutTitle']()}</h3>
 				<p class="mb-4 text-sm text-muted-foreground">
-					Open-source, community-focused event management and ticketing platform.
+					{m['footer.aboutDescription']()}
 				</p>
 				<ul class="space-y-2 text-sm">
 					<li>
@@ -32,7 +33,7 @@
 							rel="noopener noreferrer"
 							class="text-muted-foreground transition-colors hover:text-foreground"
 						>
-							Send Feedback
+							{m['footer.sendFeedback']()}
 						</a>
 					</li>
 				</ul>
@@ -40,14 +41,14 @@
 
 			<!-- Legal Links -->
 			<div>
-				<h3 class="mb-4 text-lg font-semibold">Legal</h3>
+				<h3 class="mb-4 text-lg font-semibold">{m['footer.legalTitle']()}</h3>
 				<ul class="space-y-2 text-sm">
 					<li>
 						<a
 							href="/legal/privacy"
 							class="text-muted-foreground transition-colors hover:text-foreground"
 						>
-							Privacy Policy
+							{m['footer.privacyPolicy']()}
 						</a>
 					</li>
 					<li>
@@ -55,7 +56,7 @@
 							href="/legal/terms"
 							class="text-muted-foreground transition-colors hover:text-foreground"
 						>
-							Terms of Service
+							{m['footer.termsOfService']()}
 						</a>
 					</li>
 					<li>
@@ -63,7 +64,7 @@
 							href="/contact"
 							class="text-muted-foreground transition-colors hover:text-foreground"
 						>
-							Contact
+							{m['footer.contact']()}
 						</a>
 					</li>
 				</ul>
@@ -71,11 +72,11 @@
 
 			<!-- Resources -->
 			<div>
-				<h3 class="mb-4 text-lg font-semibold">Resources</h3>
+				<h3 class="mb-4 text-lg font-semibold">{m['footer.resourcesTitle']()}</h3>
 				<ul class="space-y-2 text-sm">
 					<li>
 						<a href="/events" class="text-muted-foreground transition-colors hover:text-foreground">
-							Browse Events
+							{m['nav.browseEvents']()}
 						</a>
 					</li>
 					<li>
@@ -83,7 +84,7 @@
 							href="/organizations"
 							class="text-muted-foreground transition-colors hover:text-foreground"
 						>
-							Organizations
+							{m['nav.organizations']()}
 						</a>
 					</li>
 					<li>
@@ -93,7 +94,7 @@
 							rel="noopener noreferrer"
 							class="text-muted-foreground transition-colors hover:text-foreground"
 						>
-							GitHub
+							{m['footer.github']()}
 						</a>
 					</li>
 				</ul>
@@ -101,7 +102,7 @@
 
 			<!-- Version Info -->
 			<div>
-				<h3 class="mb-4 text-lg font-semibold">Version Info</h3>
+				<h3 class="mb-4 text-lg font-semibold">{m['footer.versionInfoTitle']()}</h3>
 				<ul class="space-y-2 text-sm text-muted-foreground">
 					<li class="flex items-center gap-2">
 						<a
@@ -109,10 +110,10 @@
 							target="_blank"
 							rel="noopener noreferrer"
 							class="flex items-center gap-2 transition-colors hover:text-foreground"
-							aria-label="Frontend repository on GitHub"
+							aria-label="{m['footer.frontend']()} repository on GitHub"
 						>
 							<Github class="h-4 w-4" aria-hidden="true" />
-							<span>Frontend: v{FRONTEND_VERSION}</span>
+							<span>{m['footer.frontend']()}: v{FRONTEND_VERSION}</span>
 						</a>
 					</li>
 					<li class="flex items-center gap-2">
@@ -121,10 +122,10 @@
 							target="_blank"
 							rel="noopener noreferrer"
 							class="flex items-center gap-2 transition-colors hover:text-foreground"
-							aria-label="Backend repository on GitHub"
+							aria-label="{m['footer.backend']()} repository on GitHub"
 						>
 							<Github class="h-4 w-4" aria-hidden="true" />
-							<span>Backend: v{backendVersion}{isDemoMode ? ' (demo)' : ''}</span>
+							<span>{m['footer.backend']()}: v{backendVersion}{isDemoMode ? ' (demo)' : ''}</span>
 						</a>
 					</li>
 					<li class="flex items-center gap-2">
@@ -133,10 +134,10 @@
 							target="_blank"
 							rel="noopener noreferrer"
 							class="flex items-center gap-2 transition-colors hover:text-foreground"
-							aria-label="Report a bug"
+							aria-label={m['footer.reportBug']()}
 						>
 							<Bug class="h-4 w-4" aria-hidden="true" />
-							<span>Report a bug</span>
+							<span>{m['footer.reportBug']()}</span>
 						</a>
 					</li>
 				</ul>
@@ -145,7 +146,7 @@
 
 		<!-- Copyright -->
 		<div class="mt-8 border-t pt-8 text-center text-sm text-muted-foreground">
-			<p>&copy; {new Date().getFullYear()} Revel. Open source and community-driven.</p>
+			<p>&copy; {new Date().getFullYear()} Revel. {m['footer.copyright']()}</p>
 		</div>
 	</div>
 </footer>

@@ -89,7 +89,11 @@
 				</h2>
 				<EvaluationForm
 					submissionId={data.submission.id}
-					currentStatus={(data.submission.evaluation?.status as 'approved' | 'rejected' | 'pending review' | null) || null}
+					currentStatus={(data.submission.evaluation?.status as
+						| 'approved'
+						| 'rejected'
+						| 'pending review'
+						| null) || null}
 					{isSubmitting}
 				/>
 			</div>

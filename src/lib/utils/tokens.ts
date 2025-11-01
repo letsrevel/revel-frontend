@@ -1,7 +1,4 @@
-import type {
-	OrganizationTokenSchema,
-	EventTokenSchema
-} from '$lib/api/generated/types.gen';
+import type { OrganizationTokenSchema, EventTokenSchema } from '$lib/api/generated/types.gen';
 
 /**
  * Determine the status of an organization token

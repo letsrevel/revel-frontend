@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import { X } from 'lucide-svelte';
 	import UserMenu from './UserMenu.svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
 		open: boolean;
@@ -71,24 +72,24 @@
 		: 'translate-x-full'}"
 	role="dialog"
 	aria-modal="true"
-	aria-label="Mobile navigation"
+	aria-label={m['nav.mobileNavigation']()}
 >
 	<div class="flex h-full flex-col">
 		<!-- Header -->
 		<div class="flex items-center justify-between border-b p-4">
-			<span class="text-lg font-semibold">Menu</span>
+			<span class="text-lg font-semibold">{m['nav.menu']()}</span>
 			<button
 				type="button"
 				class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring"
 				onclick={onClose}
-				aria-label="Close menu"
+				aria-label={m['nav.closeMenu']()}
 			>
 				<X class="h-6 w-6" aria-hidden="true" />
 			</button>
 		</div>
 
 		<!-- Navigation Links -->
-		<nav class="flex-1 overflow-y-auto p-4" aria-label="Mobile navigation">
+		<nav class="flex-1 overflow-y-auto p-4" aria-label={m['nav.mobileNavigation']()}>
 			<ul class="space-y-2">
 				{#each navItems as item}
 					<li>
@@ -116,14 +117,14 @@
 						class="block rounded-md px-4 py-3 text-center text-base font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
 						onclick={handleLinkClick}
 					>
-						Login
+						{m['auth.login']()}
 					</a>
 					<a
 						href="/register"
 						class="block rounded-md bg-primary px-4 py-3 text-center text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
 						onclick={handleLinkClick}
 					>
-						Sign Up
+						{m['auth.signUp']()}
 					</a>
 				</div>
 			{:else}

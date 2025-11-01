@@ -1,14 +1,16 @@
 <script lang="ts">
 	import { mode, setMode } from 'mode-watcher';
 	import { Sun, Moon, Monitor } from 'lucide-svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	let dropdownOpen = $state(false);
 
-	const themes = [
-		{ value: 'light', label: 'Light', icon: Sun },
-		{ value: 'dark', label: 'Dark', icon: Moon },
-		{ value: 'system', label: 'System', icon: Monitor }
-	] as const;
+	// Using derived for reactivity
+	let themes = $derived([
+		{ value: 'light' as const, label: m['theme.light'](), icon: Sun },
+		{ value: 'dark' as const, label: m['theme.dark'](), icon: Moon },
+		{ value: 'system' as const, label: m['theme.system'](), icon: Monitor }
+	]);
 
 	function selectTheme(theme: 'light' | 'dark' | 'system') {
 		setMode(theme);
@@ -37,7 +39,7 @@
 		type="button"
 		class="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring"
 		onclick={() => (dropdownOpen = !dropdownOpen)}
-		aria-label="Toggle theme"
+		aria-label={m['theme.toggleTheme']()}
 		aria-expanded={dropdownOpen}
 		aria-haspopup="true"
 	>

@@ -6,7 +6,10 @@ import {
 	organizationGetOrganizationTokenDetails
 } from '$lib/api';
 import type { PageServerLoad } from './$types';
-import type { OrganizationPermissionsSchema, OrganizationTokenSchema } from '$lib/api/generated/types.gen';
+import type {
+	OrganizationPermissionsSchema,
+	OrganizationTokenSchema
+} from '$lib/api/generated/types.gen';
 import { canPerformAction } from '$lib/utils/permissions';
 
 export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
@@ -75,7 +78,6 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 						isStaff = true;
 					}
 				}
-
 			} catch (err) {
 				// If permissions fail to load, continue without them
 				// User will not be able to edit by default
@@ -83,24 +85,24 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 			}
 		}
 
-	// Fetch organization token details if token parameter is present
-	let organizationTokenDetails: OrganizationTokenSchema | null = null;
-	if (orgToken) {
-		try {
-			const tokenResponse = await organizationGetOrganizationTokenDetails({
-				fetch,
-				path: { token_id: orgToken },
-				headers
-			});
+		// Fetch organization token details if token parameter is present
+		let organizationTokenDetails: OrganizationTokenSchema | null = null;
+		if (orgToken) {
+			try {
+				const tokenResponse = await organizationGetOrganizationTokenDetails({
+					fetch,
+					path: { token_id: orgToken },
+					headers
+				});
 
-			if (tokenResponse.data) {
-				organizationTokenDetails = tokenResponse.data;
+				if (tokenResponse.data) {
+					organizationTokenDetails = tokenResponse.data;
+				}
+			} catch (err) {
+				// If token is invalid or expired, continue without it
+				console.error('Failed to fetch organization token details:', err);
 			}
-		} catch (err) {
-			// If token is invalid or expired, continue without it
-			console.error('Failed to fetch organization token details:', err);
 		}
-	}
 
 		return {
 			organization,
@@ -109,7 +111,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 			isMember,
 			isOwner,
 			isStaff,
-organizationTokenDetails,			// Explicitly pass authentication state to the page
+			organizationTokenDetails, // Explicitly pass authentication state to the page
 			isAuthenticated: !!locals.user
 		};
 	} catch (err) {

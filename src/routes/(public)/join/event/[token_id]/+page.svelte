@@ -2,7 +2,13 @@
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
-	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
+	import {
+		Card,
+		CardContent,
+		CardDescription,
+		CardHeader,
+		CardTitle
+	} from '$lib/components/ui/card';
 	import { Calendar, MapPin, CheckCircle, Clock, Loader2, Ticket } from 'lucide-svelte';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { eventClaimInvitation } from '$lib/api/generated/sdk.gen';
@@ -152,12 +158,7 @@
 			</div>
 
 			<!-- Action Button -->
-			<Button
-				size="lg"
-				class="w-full"
-				onclick={handleClaim}
-				disabled={claimMutation.isPending}
-			>
+			<Button size="lg" class="w-full" onclick={handleClaim} disabled={claimMutation.isPending}>
 				{#if claimMutation.isPending}
 					<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 					Claiming Invitation...

@@ -20,10 +20,7 @@
 	);
 
 	let statusConfig = $derived.by(() => {
-		if (
-			!evaluation ||
-			(evaluation.status as QuestionnaireEvaluationStatus) === 'pending review'
-		) {
+		if (!evaluation || (evaluation.status as QuestionnaireEvaluationStatus) === 'pending review') {
 			return {
 				icon: AlertCircle,
 				label: 'Awaiting Review',

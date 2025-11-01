@@ -358,22 +358,14 @@
 	<!-- Logo -->
 	<div class="rounded-lg border border-border bg-card p-6 shadow-sm">
 		<h2 class="mb-4 text-lg font-semibold">Logo</h2>
-		<ImageUploader
-			preview={data.series.logo}
-			aspectRatio="square"
-			label="Series Logo"
-		/>
+		<ImageUploader preview={data.series.logo} aspectRatio="square" label="Series Logo" />
 		<p class="mt-2 text-sm text-muted-foreground">Logo management coming soon</p>
 	</div>
 
 	<!-- Cover Art -->
 	<div class="rounded-lg border border-border bg-card p-6 shadow-sm">
 		<h2 class="mb-4 text-lg font-semibold">Cover Art</h2>
-		<ImageUploader
-			preview={data.series.cover_art}
-			aspectRatio="wide"
-			label="Series Cover Art"
-		/>
+		<ImageUploader preview={data.series.cover_art} aspectRatio="wide" label="Series Cover Art" />
 		<p class="mt-2 text-sm text-muted-foreground">Cover art management coming soon</p>
 	</div>
 

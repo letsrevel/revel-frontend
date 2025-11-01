@@ -191,7 +191,10 @@
 
 	<!-- Search -->
 	<div class="relative">
-		<Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+		<Search
+			class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+			aria-hidden="true"
+		/>
 		<Input
 			type="search"
 			placeholder="Search links by name..."
@@ -269,14 +272,14 @@
 		{/if}
 
 		<DialogFooter>
-			<Button variant="outline" onclick={() => (tokenToDelete = null)} disabled={deleteTokenMutation.isPending}>
-				Cancel
-			</Button>
 			<Button
-				variant="destructive"
-				onclick={handleDelete}
+				variant="outline"
+				onclick={() => (tokenToDelete = null)}
 				disabled={deleteTokenMutation.isPending}
 			>
+				Cancel
+			</Button>
+			<Button variant="destructive" onclick={handleDelete} disabled={deleteTokenMutation.isPending}>
 				{#if deleteTokenMutation.isPending}
 					<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 				{/if}
@@ -290,7 +293,7 @@
 {#if tokenToShare}
 	<TokenShareDialog
 		open={!!tokenToShare}
-		shareUrl={shareUrl}
+		{shareUrl}
 		tokenName={tokenToShare.name || undefined}
 		onClose={() => (tokenToShare = null)}
 	/>

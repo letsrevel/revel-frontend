@@ -9,6 +9,7 @@
 		DEMO_PASSWORD,
 		DEMO_ACCOUNTS_README_URL
 	} from '$lib/constants/demo-accounts';
+	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
 		form: ActionData;
@@ -51,8 +52,8 @@
 </script>
 
 <svelte:head>
-	<title>Sign In - Revel</title>
-	<meta name="description" content="Sign in to your Revel account" />
+	<title>{m['login.title']()}</title>
+	<meta name="description" content={m['login.metaDescription']()} />
 </svelte:head>
 
 <div class="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
@@ -60,12 +61,10 @@
 		<!-- Header -->
 		<div class="text-center">
 			<h1 class="text-3xl font-bold tracking-tight">
-				{requires2FA ? 'Two-factor authentication' : 'Welcome back'}
+				{requires2FA ? m['login.twoFactorAuth']() : m['login.welcomeBack']()}
 			</h1>
 			<p class="mt-2 text-muted-foreground">
-				{requires2FA
-					? 'Enter the code from your authenticator app'
-					: 'Sign in to your account to continue'}
+				{requires2FA ? m['login.enterCodeFromApp']() : m['login.signInToContinue']()}
 			</p>
 		</div>
 
@@ -84,8 +83,7 @@
 						class="rounded-md border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-950"
 					>
 						<p class="text-sm text-orange-900 dark:text-orange-100">
-							This is a demo environment. Select a test account below to quickly sign in and explore
-							the platform.
+							{m['login.demoNotice']()}
 						</p>
 						<a
 							href={DEMO_ACCOUNTS_README_URL}
@@ -93,7 +91,7 @@
 							rel="noopener noreferrer"
 							class="mt-2 inline-flex items-center gap-1 text-sm font-medium text-orange-700 underline-offset-4 hover:underline dark:text-orange-300"
 						>
-							View all test accounts
+							{m['login.viewAllTestAccounts']()}
 							<ExternalLink class="h-3 w-3" aria-hidden="true" />
 						</a>
 					</div>
@@ -116,7 +114,7 @@
 						<!-- Demo Account Selector -->
 						<div class="space-y-2">
 							<label for="demo-account" class="block text-sm font-medium">
-								Select Test Account
+								{m['login.selectTestAccount']()}
 							</label>
 							<select
 								id="demo-account"
@@ -125,7 +123,7 @@
 								disabled={isSubmitting}
 								class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 							>
-								<option value="">-- Choose an account --</option>
+								<option value="">{m['login.chooseAccount']()}</option>
 								{#each DEMO_ACCOUNTS as account}
 									<option value={account.email}>
 										{account.name} ({account.role}{account.organization
@@ -163,10 +161,11 @@
 						>
 							{#if isSubmitting}
 								<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-								<span>Signing in...</span>
+								<span>{m['login.signingIn']()}</span>
 							{:else}
 								<span
-									>Sign in as {selectedAccountEmail
+									>{m['login.signInAs']()}
+									{selectedAccountEmail
 										? DEMO_ACCOUNTS.find((a) => a.email === selectedAccountEmail)?.name
 										: 'test user'}</span
 								>
@@ -193,7 +192,9 @@
 				>
 					<!-- Email Field -->
 					<div class="space-y-2">
-						<label for="email" class="block text-sm font-medium"> Email address </label>
+						<label for="email" class="block text-sm font-medium">
+							{m['login.emailAddress']()}
+						</label>
 						<input
 							id="email"
 							name="email"
@@ -207,7 +208,7 @@
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.email
 								? 'border-destructive'
 								: ''}"
-							placeholder="you@example.com"
+							placeholder={m['login.emailPlaceholder']()}
 						/>
 						{#if errors.email}
 							<p id="email-error" class="text-sm text-destructive" role="alert">
@@ -219,12 +220,14 @@
 					<!-- Password Field -->
 					<div class="space-y-2">
 						<div class="flex items-center justify-between">
-							<label for="password" class="block text-sm font-medium"> Password </label>
+							<label for="password" class="block text-sm font-medium">
+								{m['login.password']()}
+							</label>
 							<a
 								href="/password-reset"
 								class="text-sm text-primary underline-offset-4 hover:underline"
 							>
-								Forgot password?
+								{m['login.forgotPassword']()}
 							</a>
 						</div>
 						<div class="relative">
@@ -241,13 +244,13 @@
 								class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.password
 									? 'border-destructive'
 									: ''}"
-								placeholder="Enter your password"
+								placeholder={m['login.passwordPlaceholder']()}
 							/>
 							<button
 								type="button"
 								onclick={() => (showPassword = !showPassword)}
 								class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-								aria-label={showPassword ? 'Hide password' : 'Show password'}
+								aria-label={showPassword ? m['login.hidePassword']() : m['login.showPassword']()}
 							>
 								{#if showPassword}
 									<EyeOff class="h-4 w-4" aria-hidden="true" />
@@ -273,7 +276,7 @@
 							disabled={isSubmitting}
 							class="h-4 w-4 rounded border-input text-primary transition-colors focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 						/>
-						<label for="rememberMe" class="text-sm"> Remember me for 30 days </label>
+						<label for="rememberMe" class="text-sm"> {m['login.rememberMe']()} </label>
 					</div>
 
 					<!-- Submit Button -->
@@ -284,9 +287,9 @@
 					>
 						{#if isSubmitting}
 							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-							<span>Signing in...</span>
+							<span>{m['login.signingIn']()}</span>
 						{:else}
-							<span>Sign in</span>
+							<span>{m['login.signIn']()}</span>
 						{/if}
 					</button>
 				</form>
@@ -326,9 +329,9 @@
 					>
 						{#if isSubmitting}
 							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-							<span>Verifying...</span>
+							<span>{m['login.verifying']()}</span>
 						{:else}
-							<span>Verify and sign in</span>
+							<span>{m['login.verifyAndSignIn']()}</span>
 						{/if}
 					</button>
 
@@ -339,7 +342,7 @@
 						class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						<ArrowLeft class="h-4 w-4" aria-hidden="true" />
-						<span>Back to login</span>
+						<span>{m['login.backToLogin']()}</span>
 					</button>
 				</div>
 			</form>
@@ -348,9 +351,9 @@
 		<!-- Register Link -->
 		{#if !requires2FA}
 			<div class="text-center text-sm">
-				<span class="text-muted-foreground">Don't have an account?</span>
+				<span class="text-muted-foreground">{m['login.dontHaveAccount']()}</span>
 				<a href="/register" class="ml-1 text-primary underline-offset-4 hover:underline">
-					Create account
+					{m['login.createAccount']()}
 				</a>
 			</div>
 		{/if}

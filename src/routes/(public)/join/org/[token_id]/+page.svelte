@@ -2,7 +2,13 @@
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
-	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
+	import {
+		Card,
+		CardContent,
+		CardDescription,
+		CardHeader,
+		CardTitle
+	} from '$lib/components/ui/card';
 	import { Users, Shield, CheckCircle, Clock, Loader2 } from 'lucide-svelte';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { organizationClaimInvitation } from '$lib/api/generated/sdk.gen';
@@ -31,7 +37,9 @@
 			return response.data;
 		},
 		onSuccess: (org) => {
-			toast.success(`You're now a ${token.grants_staff_status ? 'staff member' : 'member'} of ${org.name}!`);
+			toast.success(
+				`You're now a ${token.grants_staff_status ? 'staff member' : 'member'} of ${org.name}!`
+			);
 			goto(`/org/${org.slug}`);
 		},
 		onError: () => {
@@ -52,7 +60,11 @@
 	const expirationDisplay = $derived(getExpirationDisplay(token.expires_at));
 	const usageDisplay = $derived(formatTokenUsage(token.uses, token.max_uses));
 	const accessType = $derived(
-		token.grants_staff_status ? 'Staff Access' : token.grants_membership ? 'Member Access' : 'View Access'
+		token.grants_staff_status
+			? 'Staff Access'
+			: token.grants_membership
+				? 'Member Access'
+				: 'View Access'
 	);
 	const Icon = $derived(token.grants_staff_status ? Shield : Users);
 </script>
@@ -132,12 +144,7 @@
 			</div>
 
 			<!-- Action Button -->
-			<Button
-				size="lg"
-				class="w-full"
-				onclick={handleClaim}
-				disabled={claimMutation.isPending}
-			>
+			<Button size="lg" class="w-full" onclick={handleClaim} disabled={claimMutation.isPending}>
 				{#if claimMutation.isPending}
 					<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 					Claiming...
