@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Search, X } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
+	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
 		value: string;
@@ -13,7 +14,7 @@
 	let {
 		value = '',
 		onSearch,
-		placeholder = 'Search events...',
+		placeholder = m['filters.search.eventsPlaceholder'](),
 		debounceMs = 300,
 		class: className
 	}: Props = $props();
@@ -63,14 +64,14 @@
 			oninput={handleInput}
 			{placeholder}
 			class="h-10 w-full rounded-md border border-input bg-background pl-9 pr-9 text-sm ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-			aria-label="Search events"
+			aria-label={m['filters.search.eventsLabel']()}
 		/>
 		{#if inputValue}
 			<button
 				type="button"
 				onclick={handleClear}
 				class="absolute right-2 top-1/2 -translate-y-1/2 rounded-sm p-1 opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				aria-label="Clear search"
+				aria-label={m['common.search_clear']()}
 			>
 				<X class="h-4 w-4" aria-hidden="true" />
 			</button>

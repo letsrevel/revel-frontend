@@ -2,6 +2,7 @@
 	import type { EventFilters } from '$lib/utils/filters';
 	import { Eye, X } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
+	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
 		eventType?: EventFilters['eventType'];
@@ -11,11 +12,11 @@
 
 	let { eventType, onChangeEventType, class: className }: Props = $props();
 
-	const options: Array<{ value: EventFilters['eventType']; label: string }> = [
-		{ value: 'public', label: 'Public' },
-		{ value: 'private', label: 'Private' },
-		{ value: 'members-only', label: 'Members Only' }
-	];
+	let options = $derived.by(() => [
+		{ value: 'public' as const, label: m['filters.eventType.public']() },
+		{ value: 'private' as const, label: m['filters.eventType.private']() },
+		{ value: 'members-only' as const, label: m['filters.eventType.membersOnly']() }
+	]);
 
 	function handleToggle(value: EventFilters['eventType']): void {
 		// If clicking the currently selected type, clear it (show all)
@@ -30,7 +31,7 @@
 <div class={cn('space-y-3', className)}>
 	<div class="flex items-center gap-2">
 		<Eye class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-		<h3 class="text-sm font-medium">Event Type</h3>
+		<h3 class="text-sm font-medium">{m['filters.eventType.heading']()}</h3>
 	</div>
 
 	<div class="flex flex-wrap gap-2">
@@ -57,7 +58,7 @@
 
 	{#if eventType}
 		<p class="text-xs text-muted-foreground">
-			Showing {eventType === 'members-only' ? 'members only' : eventType} events
+			{m['filters.eventType.showing']({ eventType: eventType === 'members-only' ? 'members only' : eventType })}
 		</p>
 	{/if}
 </div>

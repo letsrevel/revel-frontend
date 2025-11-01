@@ -10,6 +10,7 @@
 	import CityFilter from '$lib/components/events/filters/CityFilter.svelte';
 	import TagsFilter from '$lib/components/events/filters/TagsFilter.svelte';
 	import OrganizationOrderByFilter from './OrganizationOrderByFilter.svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
 		filters: FilterState;
@@ -62,7 +63,7 @@
 	<div class="flex items-center justify-between">
 		<div class="flex items-center gap-2">
 			<Filter class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-			<h2 class="text-lg font-semibold">Filters</h2>
+			<h2 class="text-lg font-semibold">{m['common.filters_filters']()}</h2>
 			{#if activeFilterCount > 0}
 				<span
 					class="rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground"
@@ -80,7 +81,7 @@
 				class="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			>
 				<X class="h-4 w-4" aria-hidden="true" />
-				Clear all
+				{m['common.filters_clearAll']()}
 			</button>
 		{/if}
 	</div>
@@ -99,11 +100,11 @@
 
 	<!-- Search Input -->
 	<div class="space-y-2">
-		<label for="organization-search" class="text-sm font-medium">Search</label>
+		<label for="organization-search" class="text-sm font-medium">{m['common.search_label']()}</label>
 		<SearchInput
 			value={filters.search ?? ''}
 			onSearch={handleSearch}
-			placeholder="Search organizations..."
+			placeholder={m['filters.search.organizationsPlaceholder']()}
 		/>
 	</div>
 
@@ -123,7 +124,7 @@
 	{#if activeFilterCount > 0}
 		<div class="border-t pt-4" role="separator">
 			<p class="text-xs text-muted-foreground">
-				{activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''} applied
+				{activeFilterCount} {activeFilterCount !== 1 ? m['common.filters_filtersPlural']() : m['common.filters_filter']()} {m['common.filters_applied']()}
 			</p>
 		</div>
 	{/if}

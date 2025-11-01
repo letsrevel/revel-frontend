@@ -15,6 +15,7 @@
 		countActiveOrganizationFilters
 	} from '$lib/utils/organizationFilters';
 	import type { OrganizationFilters as FilterState } from '$lib/utils/organizationFilters';
+	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
 		data: PageData;
@@ -98,16 +99,18 @@
 		href="#organizations-content"
 		class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
 	>
-		Skip to organizations
+		{m['browse.organizations_skipTo']()}
 	</a>
 
 	<!-- Page Header -->
 	<header class="mb-8">
-		<h1 class="text-4xl font-bold">Discover Organizations</h1>
+		<h1 class="text-4xl font-bold">{m['browse.organizations_title']()}</h1>
 		{#if !error && totalCount > 0}
 			<p class="mt-2 text-muted-foreground">
-				{totalCount}
-				{totalCount === 1 ? 'organization' : 'organizations'} found
+				{m['browse.organizations_count']({
+					count: totalCount,
+					organizationPlural: totalCount === 1 ? m['common.plurals_organization']() : m['common.plurals_organizations']()
+				})}
 			</p>
 		{/if}
 	</header>
@@ -136,19 +139,19 @@
 				>
 					<p class="font-semibold text-destructive">{error}</p>
 					<p class="mt-2 text-sm text-muted-foreground">
-						Please try refreshing the page or check back later.
+						{m['common.errors_refreshPage']()}
 					</p>
 				</div>
 			{:else if organizations.length === 0}
 				<!-- Empty State -->
 				<div class="rounded-lg border bg-muted/50 p-12 text-center">
 					<Users class="mx-auto mb-4 h-16 w-16 text-muted-foreground" aria-hidden="true" />
-					<h2 class="text-2xl font-semibold">No organizations found</h2>
+					<h2 class="text-2xl font-semibold">{m['browse.organizations_noOrganizationsFound']()}</h2>
 					<p class="mt-2 text-muted-foreground">
 						{#if currentFilters.search || currentFilters.cityId || currentFilters.tags}
-							Try adjusting your filters to find more organizations.
+							{m['browse.organizations_tryAdjustingFilters']()}
 						{:else}
-							There are no organizations at the moment. Check back soon!
+							{m['browse.organizations_noOrganizations']()}
 						{/if}
 					</p>
 					{#if currentFilters.search || currentFilters.cityId || currentFilters.tags}
@@ -157,7 +160,7 @@
 							onclick={handleClearFilters}
 							class="mt-4 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 						>
-							Clear filters
+							{m['browse.organizations_clearFilters']()}
 						</button>
 					{/if}
 				</div>
@@ -166,7 +169,7 @@
 				<div
 					class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3"
 					role="list"
-					aria-label="Organization listings"
+					aria-label={m['browse.organizations_listingsLabel']()}
 				>
 					{#each organizations as org, index (`${org.id}-${index}`)}
 						<div role="listitem">
@@ -183,7 +186,7 @@
 					>
 						<!-- Results info -->
 						<p class="text-sm text-muted-foreground" aria-live="polite">
-							Showing {showingFrom}–{showingTo} of {totalCount} organizations
+							{m['common.pagination_showing']()} {showingFrom}–{showingTo} {m['common.pagination_of']()} {totalCount} {m['common.plurals_organizations']()}
 						</p>
 
 						<!-- Pagination controls -->
@@ -197,7 +200,7 @@
 									class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
 									aria-label="Go to previous page"
 								>
-									Previous
+									{m['common.pagination_previous']()}
 								</a>
 							{:else}
 								<button
@@ -206,7 +209,7 @@
 									class="inline-flex h-10 cursor-not-allowed items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium opacity-50"
 									aria-label="Previous page (unavailable)"
 								>
-									Previous
+									{m['common.pagination_previous']()}
 								</button>
 							{/if}
 
@@ -215,7 +218,7 @@
 								class="inline-flex h-10 items-center justify-center px-4 text-sm font-medium"
 								aria-current="page"
 							>
-								Page {currentPage} of {totalPages}
+								{m['common.pagination_page']()} {currentPage} {m['common.pagination_of']()} {totalPages}
 							</span>
 
 							{#if hasNextPage}
@@ -227,7 +230,7 @@
 									class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
 									aria-label="Go to next page"
 								>
-									Next
+									{m['common.pagination_next']()}
 								</a>
 							{:else}
 								<button
@@ -236,7 +239,7 @@
 									class="inline-flex h-10 cursor-not-allowed items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium opacity-50"
 									aria-label="Next page (unavailable)"
 								>
-									Next
+									{m['common.pagination_next']()}
 								</button>
 							{/if}
 						</div>
@@ -251,14 +254,14 @@
 		type="button"
 		onclick={handleOpenMobileFilters}
 		class="fixed bottom-6 right-6 z-30 flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:hidden"
-		aria-label="Open filters"
+		aria-label={m['common.filters_openFilters']()}
 	>
 		<Filter class="h-4 w-4" aria-hidden="true" />
-		Filters
+		{m['common.filters_filters']()}
 		{#if countActiveOrganizationFilters(currentFilters) > 0}
 			<span
 				class="rounded-full bg-primary-foreground px-2 py-0.5 text-xs font-medium text-primary"
-				aria-label="{countActiveOrganizationFilters(currentFilters)} active filters"
+				aria-label="{countActiveOrganizationFilters(currentFilters)} {m['common.filters_activeFilters']()}"
 			>
 				{countActiveOrganizationFilters(currentFilters)}
 			</span>

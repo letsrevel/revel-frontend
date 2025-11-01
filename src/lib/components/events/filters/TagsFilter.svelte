@@ -3,6 +3,7 @@
 	import { cn } from '$lib/utils/cn';
 	import { tagListTags } from '$lib/api';
 	import { onMount } from 'svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
 		selectedTags: string[];
@@ -63,18 +64,18 @@
 <div class={cn('space-y-3', className)}>
 	<div class="flex items-center gap-2">
 		<Tag class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-		<h3 class="text-sm font-medium">Tags</h3>
+		<h3 class="text-sm font-medium">{m['filters.tags.heading']()}</h3>
 	</div>
 
 	{#if isLoading}
 		<div class="flex items-center justify-center py-4">
 			<div
 				class="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent"
-				aria-label="Loading tags"
+				aria-label={m['filters.tags.loading']()}
 			></div>
 		</div>
 	{:else if error}
-		<p class="text-xs text-destructive">{error}</p>
+		<p class="text-xs text-destructive">{m['filters.tags.failed']()}</p>
 	{:else if availableTags.length > 0}
 		<div class="flex flex-wrap gap-2">
 			{#each availableTags as tag (tag)}
@@ -89,7 +90,7 @@
 							: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'
 					)}
 					aria-pressed={isSelected}
-					aria-label={isSelected ? `Remove ${tag} filter` : `Add ${tag} filter`}
+					aria-label={isSelected ? m['filters.tags.remove']({ tag }) : m['filters.tags.add']({ tag })}
 				>
 					{tag}
 					{#if isSelected}
@@ -101,11 +102,10 @@
 
 		{#if selectedTags.length > 0}
 			<p class="text-xs text-muted-foreground">
-				{selectedTags.length}
-				{selectedTags.length === 1 ? 'tag' : 'tags'} selected
+				{m['filters.tags.count']({ count: selectedTags.length, tagPlural: selectedTags.length === 1 ? 'tag' : 'tags' })}
 			</p>
 		{/if}
 	{:else}
-		<p class="text-xs text-muted-foreground">No tags available</p>
+		<p class="text-xs text-muted-foreground">{m['filters.tags.noTags']()}</p>
 	{/if}
 </div>

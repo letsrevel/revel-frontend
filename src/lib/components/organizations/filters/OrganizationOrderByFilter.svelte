@@ -2,6 +2,7 @@
 	import type { OrganizationFilters } from '$lib/utils/organizationFilters';
 	import { ArrowUpDown, Info } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
+	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
 		orderBy?: OrganizationFilters['orderBy'];
@@ -11,15 +12,11 @@
 
 	let { orderBy = 'distance', onChangeOrderBy, class: className }: Props = $props();
 
-	const options: Array<{
-		value: OrganizationFilters['orderBy'];
-		label: string;
-		description: string;
-	}> = [
-		{ value: 'distance', label: 'Nearest First', description: 'Closest to your location' },
-		{ value: 'name', label: 'A-Z', description: 'Alphabetical order' },
-		{ value: '-name', label: 'Z-A', description: 'Reverse alphabetical order' }
-	];
+	const options = $derived.by(() => [
+		{ value: 'distance' as const, label: m['filters.orderBy.nearestFirst'](), description: m['filters.orderBy.nearestFirstDescription']() },
+		{ value: 'name' as const, label: 'A-Z', description: m['filters.orderBy.alphabeticalOrderDescription']() },
+		{ value: '-name' as const, label: 'Z-A', description: m['filters.orderBy.reverseAlphabeticalOrderDescription']() }
+	]);
 
 	let showTooltip = $state(false);
 
@@ -32,7 +29,7 @@
 <div class={cn('space-y-3', className)}>
 	<div class="flex items-center gap-2">
 		<ArrowUpDown class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-		<h3 class="text-sm font-medium">Sort Order</h3>
+		<h3 class="text-sm font-medium">{m['filters.orderBy.heading']()}</h3>
 		<!-- Info Tooltip -->
 		<div class="relative">
 			<button

@@ -7,6 +7,7 @@
 	import { getImageUrl } from '$lib/utils/url';
 	import { Calendar, MapPin, Ticket, Tag } from 'lucide-svelte';
 	import EventBadges from './EventBadges.svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
 		event: EventInListSchema;
@@ -24,7 +25,7 @@
 	let formattedDate = $derived(formatEventDate(event.start));
 	let screenReaderDate = $derived(formatEventDateForScreenReader(event.start));
 	let locationDisplay = $derived.by(() => {
-		if (!event.city) return 'TBD';
+		if (!event.city) return m['eventCard.location_tbd']();
 		return event.city.country ? `${event.city.name}, ${event.city.country}` : event.city.name;
 	});
 	let accessDisplay = $derived(
@@ -85,7 +86,7 @@
 		class="absolute inset-0 z-10"
 		aria-label={accessibleLabel}
 	>
-		<span class="sr-only">View event details</span>
+		<span class="sr-only">{m['eventCard.viewDetails']()}</span>
 	</a>
 
 	<!-- Cover Image -->
@@ -192,7 +193,7 @@
 							{/each}
 							{#if event.tags.length > 3}
 								<span class="inline-block px-2 py-0.5 text-xs text-muted-foreground">
-									+{event.tags.length - 3} more
+									+{event.tags.length - 3} {m['common.text_more']()}
 								</span>
 							{/if}
 						</div>

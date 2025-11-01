@@ -10,6 +10,7 @@
 	import CityFilter from './CityFilter.svelte';
 	import OrganizationFilter from './OrganizationFilter.svelte';
 	import OrderByFilter from './OrderByFilter.svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
 		filters: FilterState;
@@ -207,11 +208,11 @@
 		<div class="flex items-center justify-between border-b px-6 pb-4">
 			<div class="flex items-center gap-2">
 				<Filter class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-				<h2 id="mobile-filter-title" class="text-lg font-semibold">Filters</h2>
+				<h2 id="mobile-filter-title" class="text-lg font-semibold">{m['common.filters_filters']()}</h2>
 				{#if activeFilterCount > 0}
 					<span
 						class="rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground"
-						aria-label="{activeFilterCount} active filters"
+						aria-label="{activeFilterCount} {m['common.filters_activeFilters']()}"
 					>
 						{activeFilterCount}
 					</span>
@@ -222,7 +223,7 @@
 				type="button"
 				onclick={onClose}
 				class="rounded-sm p-2 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				aria-label="Close filters"
+				aria-label={m['filters.mobile.closeFilters']()}
 			>
 				<X class="h-5 w-5" aria-hidden="true" />
 			</button>
@@ -242,11 +243,11 @@
 
 				<!-- Search Input -->
 				<div class="space-y-2">
-					<label for="mobile-event-search" class="text-sm font-medium">Search</label>
+					<label for="mobile-event-search" class="text-sm font-medium">{m['common.search_label']()}</label>
 					<SearchInput
 						value={filters.search ?? ''}
 						onSearch={handleSearch}
-						placeholder="Search events..."
+						placeholder={m['filters.search.eventsPlaceholder']()}
 					/>
 				</div>
 
@@ -297,7 +298,7 @@
 						class="flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						<X class="h-4 w-4" aria-hidden="true" />
-						Clear all filters
+						{m['filters.mobile.clearAll']()}
 					</button>
 				{/if}
 
@@ -306,8 +307,7 @@
 					onclick={handleApply}
 					class="rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				>
-					Show {totalCount}
-					{totalCount === 1 ? 'event' : 'events'}
+					{m['filters.mobile.showResults']({ count: totalCount, eventPlural: totalCount === 1 ? 'event' : 'events' })}
 				</button>
 			</div>
 		</div>

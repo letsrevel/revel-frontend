@@ -213,7 +213,7 @@
 					<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
 					<span>{m['register.creatingAccount']()}</span>
 				{:else}
-					<span>{m['register.createAccount()}</span>
+					<span>{m['register.createAccount']()}</span>
 				{/if}
 			</button>
 		</form>

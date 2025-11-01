@@ -703,6 +703,210 @@
 		"actions_delete": "Delete",
 		"messages_success": "Success",
 		"messages_error": "Error",
-		"messages_warning": "Warning"
+		"messages_warning": "Warning",
+		"pagination_showing": "Showing",
+		"pagination_of": "of",
+		"pagination_previous": "Previous",
+		"pagination_next": "Next",
+		"pagination_page": "Page",
+		"pagination_previousUnavailable": "Previous page (unavailable)",
+		"pagination_nextUnavailable": "Next page (unavailable)",
+		"filters_filters": "Filters",
+		"filters_clearAll": "Clear all",
+		"filters_openFilters": "Open filters",
+		"filters_closeFilters": "Close filters",
+		"filters_activeFilters": "active filters",
+		"filters_filter": "filter",
+		"filters_filtersPlural": "filters",
+		"filters_applied": "applied",
+		"search_label": "Search",
+		"search_clear": "Clear search",
+		"plurals_event": "event",
+		"plurals_events": "events",
+		"plurals_organization": "organization",
+		"plurals_organizations": "organizations",
+		"plurals_item": "item",
+		"plurals_items": "items",
+		"plurals_tag": "tag",
+		"plurals_tags": "tags",
+		"text_found": "found",
+		"text_selected": "selected",
+		"text_claimed": "claimed",
+		"text_stillNeeded": "still needed",
+		"text_attending": "attending",
+		"text_more": "more",
+		"text_tbd": "TBD",
+		"errors_refreshPage": "Please try refreshing the page or check back later.",
+		"errors_tryAgain": "Please try again.",
+		"accessibility_skipTo": "Skip to {section}"
+	},
+
+	"browse": {
+		"events_title": "Discover Events",
+		"events_skipTo": "Skip to events",
+		"events_noEventsFound": "No events found",
+		"events_tryAdjustingFilters": "Try adjusting your filters to find more events.",
+		"events_noUpcomingEvents": "There are no upcoming events at the moment. Check back soon!",
+		"events_clearFilters": "Clear filters",
+		"events_listingsLabel": "Event listings",
+		"events_count": "{count} {eventPlural} found",
+		"organizations_title": "Discover Organizations",
+		"organizations_skipTo": "Skip to organizations",
+		"organizations_noOrganizationsFound": "No organizations found",
+		"organizations_tryAdjustingFilters": "Try adjusting your filters to find more organizations.",
+		"organizations_noOrganizations": "There are no organizations at the moment. Check back soon!",
+		"organizations_clearFilters": "Clear filters",
+		"organizations_listingsLabel": "Organization listings",
+		"organizations_count": "{count} {organizationPlural} found"
+	},
+
+	"filters": {
+		"search": {
+			"eventsPlaceholder": "Search events...",
+			"eventsLabel": "Search events",
+			"organizationsPlaceholder": "Search organizations...",
+			"organizationsLabel": "Search organizations"
+		},
+		"date": {
+			"heading": "Date",
+			"includePast": "Include past events",
+			"showingAll": "Showing all events",
+			"showingUpcoming": "Showing upcoming events only"
+		},
+		"city": {
+			"heading": "Location",
+			"clear": "Clear city filter",
+			"placeholder": "Search for a city...",
+			"label": "Search for a city",
+			"description": "Filter events by city location"
+		},
+		"organization": {
+			"heading": "Organization",
+			"clear": "Clear organization filter",
+			"placeholder": "Search for an organization...",
+			"label": "Search for an organization",
+			"description": "Filter events by organization"
+		},
+		"eventType": {
+			"heading": "Event Type",
+			"public": "Public",
+			"private": "Private",
+			"membersOnly": "Members Only",
+			"showing": "Showing {eventType} events"
+		},
+		"orderBy": {
+			"heading": "Sort Order",
+			"soonestFirst": "Soonest First",
+			"soonestFirstDescription": "Events starting soonest",
+			"latestFirst": "Latest First",
+			"latestFirstDescription": "Events starting latest",
+			"nearestFirst": "Nearest First",
+			"nearestFirstDescription": "Closest to your location",
+			"alphabeticalOrderDescription": "Alphabetical order",
+			"reverseAlphabeticalOrderDescription": "Reverse alphabetical order",
+			"label": "Sort order",
+			"infoLabel": "Sort order information",
+			"distanceTooltipTitle": "Distance Sorting",
+			"distanceTooltipDescription": "\"Nearest First\" uses your approximate location from IP address or your selected city in account settings."
+		},
+		"tags": {
+			"heading": "Tags",
+			"loading": "Loading tags",
+			"failed": "Failed to load tags",
+			"remove": "Remove {tag} filter",
+			"add": "Add {tag} filter",
+			"count": "{count} {tagPlural} selected",
+			"noTags": "No tags available"
+		},
+		"mobile": {
+			"closeFilters": "Close filters",
+			"clearAll": "Clear all filters",
+			"showResults": "Show {count} {eventPlural}"
+		}
+	},
+
+	"organizationProfile": {
+		"editProfile": "Edit Profile",
+		"resources_heading": "Resources",
+		"resources_description": "Helpful documents, links, and information from {organizationName}",
+		"resources_viewAll": "View all",
+		"eventSeries_heading": "Event Series",
+		"eventSeries_description": "Recurring event series from {organizationName}",
+		"eventSeries_loading": "Loading series...",
+		"events_heading": "Events",
+		"events_description": "Discover events hosted by {organizationName}",
+		"events_includePast": "Include past events",
+		"events_newestFirst": "Newest First",
+		"events_oldestFirst": "Oldest First",
+		"events_sortNewestLabel": "Showing newest first",
+		"events_sortOldestLabel": "Showing oldest first",
+		"events_browseAll": "Browse All",
+		"events_loading": "Loading events...",
+		"events_failed": "Failed to load events",
+		"events_noEvents": "No events found",
+		"events_noUpcoming": "No upcoming events",
+		"events_noEventsYet": "{organizationName} hasn't hosted any events yet.",
+		"events_noUpcomingScheduled": "{organizationName} has no upcoming events scheduled.",
+		"events_viewPast": "View past events",
+		"location_tbd": "Location TBD",
+		"viewDetails": "View organization details"
+	},
+
+	"eventCard": {
+		"viewDetails": "View event details",
+		"location_tbd": "TBD"
+	},
+
+	"eventDetails": {
+		"about_heading": "About this event",
+		"details_heading": "Event details",
+		"dateTime_label": "Date & Time",
+		"dateTime_ends": "Ends:",
+		"attendance_label": "Attendance",
+		"attendance_full": "Event is full",
+		"attendance_spotsLeft": "Only {count} spots left",
+		"attendance_attending": "{count} attending",
+		"rsvpDeadline_label": "RSVP Deadline",
+		"eventType_label": "Event Type",
+		"eventType_ticketed": "Ticketed event",
+		"eventType_freeRsvp": "Free RSVP",
+		"tags_heading": "Tags",
+		"series_heading": "Part of a series",
+		"invitation_heading": "Invitation Details",
+		"payment_successTitle": "Payment successful!",
+		"payment_successMessage": "Your ticket has been confirmed. Check your email for details.",
+		"payment_cancelledTitle": "Payment cancelled",
+		"payment_cancelledMessage": "You can try again anytime."
+	},
+
+	"rsvp": {
+		"options_label": "RSVP options",
+		"yes_label": "RSVP Yes - I'm attending",
+		"yes_button": "Yes",
+		"maybe_label": "RSVP Maybe - I might attend",
+		"maybe_button": "Maybe",
+		"no_label": "RSVP No - I'm not attending",
+		"no_button": "No"
+	},
+
+	"potluck": {
+		"heading": "🥗 Potluck Coordination",
+		"youBringing": "You're bringing",
+		"confirmDelete": "Are you sure you want to delete this item?",
+		"dismissError": "Dismiss error",
+		"creationClosed": "Item creation is currently closed by organizers.",
+		"creationClosedHint": "You can still claim items below!",
+		"addItem": "Add potluck item",
+		"addItemYourBringing": "Add item you'll bring",
+		"searchPlaceholder": "Search items...",
+		"loading": "Loading potluck items...",
+		"failed": "Failed to load potluck items. Please try again.",
+		"noMatchingItems": "No items match your search.",
+		"noItems": "No items yet!",
+		"beFirst": "Be the first to add something you'll bring.",
+		"category_foodDrink": "Food & Drink",
+		"category_supplies": "Supplies & Services",
+		"category_entertainment": "Entertainment & Fun",
+		"category_other": "Other"
 	}
 }

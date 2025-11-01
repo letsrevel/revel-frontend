@@ -703,6 +703,210 @@
 		"actions_delete": "Elimina",
 		"messages_success": "Successo",
 		"messages_error": "Errore",
-		"messages_warning": "Avviso"
+		"messages_warning": "Avviso",
+		"pagination_showing": "Mostra",
+		"pagination_of": "di",
+		"pagination_previous": "Precedente",
+		"pagination_next": "Successivo",
+		"pagination_page": "Pagina",
+		"pagination_previousUnavailable": "Pagina precedente (non disponibile)",
+		"pagination_nextUnavailable": "Pagina successiva (non disponibile)",
+		"filters_filters": "Filtri",
+		"filters_clearAll": "Cancella tutto",
+		"filters_openFilters": "Apri filtri",
+		"filters_closeFilters": "Chiudi filtri",
+		"filters_activeFilters": "filtri attivi",
+		"filters_filter": "filtro",
+		"filters_filtersPlural": "filtri",
+		"filters_applied": "applicati",
+		"search_label": "Cerca",
+		"search_clear": "Cancella ricerca",
+		"plurals_event": "evento",
+		"plurals_events": "eventi",
+		"plurals_organization": "organizzazione",
+		"plurals_organizations": "organizzazioni",
+		"plurals_item": "elemento",
+		"plurals_items": "elementi",
+		"plurals_tag": "tag",
+		"plurals_tags": "tag",
+		"text_found": "trovati",
+		"text_selected": "selezionati",
+		"text_claimed": "prenotati",
+		"text_stillNeeded": "ancora necessari",
+		"text_attending": "partecipano",
+		"text_more": "altro",
+		"text_tbd": "Da definire",
+		"errors_refreshPage": "Prova a ricaricare la pagina o riprova più tardi.",
+		"errors_tryAgain": "Riprova.",
+		"accessibility_skipTo": "Passa a {section}"
+	},
+
+	"browse": {
+		"events_title": "Scopri Eventi",
+		"events_skipTo": "Passa agli eventi",
+		"events_noEventsFound": "Nessun evento trovato",
+		"events_tryAdjustingFilters": "Prova a modificare i tuoi filtri per trovare più eventi.",
+		"events_noUpcomingEvents": "Non ci sono eventi in programma al momento. Torna presto!",
+		"events_clearFilters": "Cancella filtri",
+		"events_listingsLabel": "Elenco eventi",
+		"events_count": "{count} {eventPlural} trovati",
+		"organizations_title": "Scopri Organizzazioni",
+		"organizations_skipTo": "Passa alle organizzazioni",
+		"organizations_noOrganizationsFound": "Nessuna organizzazione trovata",
+		"organizations_tryAdjustingFilters": "Prova a modificare i tuoi filtri per trovare più organizzazioni.",
+		"organizations_noOrganizations": "Non ci sono organizzazioni al momento. Torna presto!",
+		"organizations_clearFilters": "Cancella filtri",
+		"organizations_listingsLabel": "Elenco organizzazioni",
+		"organizations_count": "{count} {organizationPlural} trovate"
+	},
+
+	"filters": {
+		"search": {
+			"eventsPlaceholder": "Cerca eventi...",
+			"eventsLabel": "Cerca eventi",
+			"organizationsPlaceholder": "Cerca organizzazioni...",
+			"organizationsLabel": "Cerca organizzazioni"
+		},
+		"date": {
+			"heading": "Data",
+			"includePast": "Includi eventi passati",
+			"showingAll": "Mostra tutti gli eventi",
+			"showingUpcoming": "Mostra solo eventi futuri"
+		},
+		"city": {
+			"heading": "Località",
+			"clear": "Cancella filtro città",
+			"placeholder": "Cerca una città...",
+			"label": "Cerca una città",
+			"description": "Filtra eventi per città"
+		},
+		"organization": {
+			"heading": "Organizzazione",
+			"clear": "Cancella filtro organizzazione",
+			"placeholder": "Cerca un'organizzazione...",
+			"label": "Cerca un'organizzazione",
+			"description": "Filtra eventi per organizzazione"
+		},
+		"eventType": {
+			"heading": "Tipo di Evento",
+			"public": "Pubblico",
+			"private": "Privato",
+			"membersOnly": "Solo Membri",
+			"showing": "Mostra eventi {eventType}"
+		},
+		"orderBy": {
+			"heading": "Ordinamento",
+			"soonestFirst": "Prima gli Imminenti",
+			"soonestFirstDescription": "Eventi che iniziano prima",
+			"latestFirst": "Prima i Più Lontani",
+			"latestFirstDescription": "Eventi che iniziano più tardi",
+			"nearestFirst": "Prima i Più Vicini",
+			"nearestFirstDescription": "Più vicini alla tua posizione",
+			"alphabeticalOrderDescription": "Ordine alfabetico",
+			"reverseAlphabeticalOrderDescription": "Ordine alfabetico inverso",
+			"label": "Ordinamento",
+			"infoLabel": "Informazioni ordinamento",
+			"distanceTooltipTitle": "Ordinamento per Distanza",
+			"distanceTooltipDescription": "\"Prima i Più Vicini\" usa la tua posizione approssimativa dall'indirizzo IP o la città selezionata nelle impostazioni del tuo account."
+		},
+		"tags": {
+			"heading": "Tag",
+			"loading": "Caricamento tag",
+			"failed": "Errore nel caricamento dei tag",
+			"remove": "Rimuovi filtro {tag}",
+			"add": "Aggiungi filtro {tag}",
+			"count": "{count} {tagPlural} selezionati",
+			"noTags": "Nessun tag disponibile"
+		},
+		"mobile": {
+			"closeFilters": "Chiudi filtri",
+			"clearAll": "Cancella tutti i filtri",
+			"showResults": "Mostra {count} {eventPlural}"
+		}
+	},
+
+	"organizationProfile": {
+		"editProfile": "Modifica Profilo",
+		"resources_heading": "Risorse",
+		"resources_description": "Documenti utili, link e informazioni da {organizationName}",
+		"resources_viewAll": "Vedi tutto",
+		"eventSeries_heading": "Serie di Eventi",
+		"eventSeries_description": "Serie di eventi ricorrenti da {organizationName}",
+		"eventSeries_loading": "Caricamento serie...",
+		"events_heading": "Eventi",
+		"events_description": "Scopri eventi ospitati da {organizationName}",
+		"events_includePast": "Includi eventi passati",
+		"events_newestFirst": "Prima i Più Recenti",
+		"events_oldestFirst": "Prima i Meno Recenti",
+		"events_sortNewestLabel": "Mostra prima i più recenti",
+		"events_sortOldestLabel": "Mostra prima i meno recenti",
+		"events_browseAll": "Sfoglia Tutti",
+		"events_loading": "Caricamento eventi...",
+		"events_failed": "Errore nel caricamento degli eventi",
+		"events_noEvents": "Nessun evento trovato",
+		"events_noUpcoming": "Nessun evento in programma",
+		"events_noEventsYet": "{organizationName} non ha ancora ospitato eventi.",
+		"events_noUpcomingScheduled": "{organizationName} non ha eventi in programma.",
+		"events_viewPast": "Vedi eventi passati",
+		"location_tbd": "Località da definire",
+		"viewDetails": "Vedi dettagli organizzazione"
+	},
+
+	"eventCard": {
+		"viewDetails": "Vedi dettagli evento",
+		"location_tbd": "Da definire"
+	},
+
+	"eventDetails": {
+		"about_heading": "Informazioni sull'evento",
+		"details_heading": "Dettagli evento",
+		"dateTime_label": "Data e Ora",
+		"dateTime_ends": "Fine:",
+		"attendance_label": "Partecipazione",
+		"attendance_full": "L'evento è al completo",
+		"attendance_spotsLeft": "Solo {count} posti disponibili",
+		"attendance_attending": "{count} partecipano",
+		"rsvpDeadline_label": "Scadenza Conferma",
+		"eventType_label": "Tipo di Evento",
+		"eventType_ticketed": "Evento con biglietti",
+		"eventType_freeRsvp": "Conferma gratuita",
+		"tags_heading": "Tag",
+		"series_heading": "Parte di una serie",
+		"invitation_heading": "Dettagli Invito",
+		"payment_successTitle": "Pagamento riuscito!",
+		"payment_successMessage": "Il tuo biglietto è stato confermato. Controlla la tua email per i dettagli.",
+		"payment_cancelledTitle": "Pagamento annullato",
+		"payment_cancelledMessage": "Puoi riprovare quando vuoi."
+	},
+
+	"rsvp": {
+		"options_label": "Opzioni conferma",
+		"yes_label": "Conferma Sì - Parteciperò",
+		"yes_button": "Sì",
+		"maybe_label": "Conferma Forse - Potrei partecipare",
+		"maybe_button": "Forse",
+		"no_label": "Conferma No - Non parteciperò",
+		"no_button": "No"
+	},
+
+	"potluck": {
+		"heading": "🥗 Coordinamento Potluck",
+		"youBringing": "Stai portando",
+		"confirmDelete": "Sei sicuro di voler eliminare questo elemento?",
+		"dismissError": "Chiudi errore",
+		"creationClosed": "La creazione di elementi è attualmente chiusa dagli organizzatori.",
+		"creationClosedHint": "Puoi comunque prenotare elementi qui sotto!",
+		"addItem": "Aggiungi elemento potluck",
+		"addItemYourBringing": "Aggiungi elemento che porterai",
+		"searchPlaceholder": "Cerca elementi...",
+		"loading": "Caricamento elementi potluck...",
+		"failed": "Errore nel caricamento degli elementi potluck. Riprova.",
+		"noMatchingItems": "Nessun elemento corrisponde alla tua ricerca.",
+		"noItems": "Nessun elemento ancora!",
+		"beFirst": "Sii il primo ad aggiungere qualcosa che porterai.",
+		"category_foodDrink": "Cibo e Bevande",
+		"category_supplies": "Forniture e Servizi",
+		"category_entertainment": "Intrattenimento e Divertimento",
+		"category_other": "Altro"
 	}
 }

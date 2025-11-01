@@ -703,6 +703,210 @@
 		"actions_delete": "Löschen",
 		"messages_success": "Erfolg",
 		"messages_error": "Fehler",
-		"messages_warning": "Warnung"
+		"messages_warning": "Warnung",
+		"pagination_showing": "Zeige",
+		"pagination_of": "von",
+		"pagination_previous": "Zurück",
+		"pagination_next": "Weiter",
+		"pagination_page": "Seite",
+		"pagination_previousUnavailable": "Vorherige Seite (nicht verfügbar)",
+		"pagination_nextUnavailable": "Nächste Seite (nicht verfügbar)",
+		"filters_filters": "Filter",
+		"filters_clearAll": "Alle löschen",
+		"filters_openFilters": "Filter öffnen",
+		"filters_closeFilters": "Filter schließen",
+		"filters_activeFilters": "aktive Filter",
+		"filters_filter": "Filter",
+		"filters_filtersPlural": "Filter",
+		"filters_applied": "angewendet",
+		"search_label": "Suche",
+		"search_clear": "Suche löschen",
+		"plurals_event": "Veranstaltung",
+		"plurals_events": "Veranstaltungen",
+		"plurals_organization": "Organisation",
+		"plurals_organizations": "Organisationen",
+		"plurals_item": "Artikel",
+		"plurals_items": "Artikel",
+		"plurals_tag": "Tag",
+		"plurals_tags": "Tags",
+		"text_found": "gefunden",
+		"text_selected": "ausgewählt",
+		"text_claimed": "beansprucht",
+		"text_stillNeeded": "noch benötigt",
+		"text_attending": "nehmen teil",
+		"text_more": "mehr",
+		"text_tbd": "Noch offen",
+		"errors_refreshPage": "Bitte aktualisiere die Seite oder schau später wieder vorbei.",
+		"errors_tryAgain": "Bitte versuche es erneut.",
+		"accessibility_skipTo": "Zu {section} springen"
+	},
+
+	"browse": {
+		"events_title": "Veranstaltungen entdecken",
+		"events_skipTo": "Zu Veranstaltungen springen",
+		"events_noEventsFound": "Keine Veranstaltungen gefunden",
+		"events_tryAdjustingFilters": "Versuche, deine Filter anzupassen, um mehr Veranstaltungen zu finden.",
+		"events_noUpcomingEvents": "Im Moment gibt es keine kommenden Veranstaltungen. Schau bald wieder vorbei!",
+		"events_clearFilters": "Filter löschen",
+		"events_listingsLabel": "Veranstaltungsliste",
+		"events_count": "{count} {eventPlural} gefunden",
+		"organizations_title": "Organisationen entdecken",
+		"organizations_skipTo": "Zu Organisationen springen",
+		"organizations_noOrganizationsFound": "Keine Organisationen gefunden",
+		"organizations_tryAdjustingFilters": "Versuche, deine Filter anzupassen, um mehr Organisationen zu finden.",
+		"organizations_noOrganizations": "Im Moment gibt es keine Organisationen. Schau bald wieder vorbei!",
+		"organizations_clearFilters": "Filter löschen",
+		"organizations_listingsLabel": "Organisationsliste",
+		"organizations_count": "{count} {organizationPlural} gefunden"
+	},
+
+	"filters": {
+		"search": {
+			"eventsPlaceholder": "Veranstaltungen suchen...",
+			"eventsLabel": "Veranstaltungen suchen",
+			"organizationsPlaceholder": "Organisationen suchen...",
+			"organizationsLabel": "Organisationen suchen"
+		},
+		"date": {
+			"heading": "Datum",
+			"includePast": "Vergangene Veranstaltungen einbeziehen",
+			"showingAll": "Alle Veranstaltungen anzeigen",
+			"showingUpcoming": "Nur kommende Veranstaltungen anzeigen"
+		},
+		"city": {
+			"heading": "Ort",
+			"clear": "Stadtfilter löschen",
+			"placeholder": "Nach einer Stadt suchen...",
+			"label": "Nach einer Stadt suchen",
+			"description": "Veranstaltungen nach Stadtort filtern"
+		},
+		"organization": {
+			"heading": "Organisation",
+			"clear": "Organisationsfilter löschen",
+			"placeholder": "Nach einer Organisation suchen...",
+			"label": "Nach einer Organisation suchen",
+			"description": "Veranstaltungen nach Organisation filtern"
+		},
+		"eventType": {
+			"heading": "Veranstaltungstyp",
+			"public": "Öffentlich",
+			"private": "Privat",
+			"membersOnly": "Nur für Mitglieder",
+			"showing": "Zeige {eventType} Veranstaltungen"
+		},
+		"orderBy": {
+			"heading": "Sortierung",
+			"soonestFirst": "Soonest zuerst",
+			"soonestFirstDescription": "Veranstaltungen, die am frühesten beginnen",
+			"latestFirst": "Späteste zuerst",
+			"latestFirstDescription": "Veranstaltungen, die am spätesten beginnen",
+			"nearestFirst": "Nächstgelegene zuerst",
+			"nearestFirstDescription": "Am nächsten zu deinem Standort",
+			"alphabeticalOrderDescription": "Alphabetische Reihenfolge",
+			"reverseAlphabeticalOrderDescription": "Umgekehrte alphabetische Reihenfolge",
+			"label": "Sortierung",
+			"infoLabel": "Sortierungsinformation",
+			"distanceTooltipTitle": "Entfernungssortierung",
+			"distanceTooltipDescription": "\"Nächstgelegene zuerst\" verwendet deinen ungefähren Standort aus der IP-Adresse oder deine gewählte Stadt in den Kontoeinstellungen."
+		},
+		"tags": {
+			"heading": "Tags",
+			"loading": "Tags werden geladen",
+			"failed": "Fehler beim Laden der Tags",
+			"remove": "{tag} Filter entfernen",
+			"add": "{tag} Filter hinzufügen",
+			"count": "{count} {tagPlural} ausgewählt",
+			"noTags": "Keine Tags verfügbar"
+		},
+		"mobile": {
+			"closeFilters": "Filter schließen",
+			"clearAll": "Alle Filter löschen",
+			"showResults": "Zeige {count} {eventPlural}"
+		}
+	},
+
+	"organizationProfile": {
+		"editProfile": "Profil bearbeiten",
+		"resources_heading": "Ressourcen",
+		"resources_description": "Hilfreiche Dokumente, Links und Informationen von {organizationName}",
+		"resources_viewAll": "Alle anzeigen",
+		"eventSeries_heading": "Veranstaltungsserien",
+		"eventSeries_description": "Wiederkehrende Veranstaltungsserien von {organizationName}",
+		"eventSeries_loading": "Serien werden geladen...",
+		"events_heading": "Veranstaltungen",
+		"events_description": "Entdecke Veranstaltungen von {organizationName}",
+		"events_includePast": "Vergangene Veranstaltungen einbeziehen",
+		"events_newestFirst": "Neueste zuerst",
+		"events_oldestFirst": "Älteste zuerst",
+		"events_sortNewestLabel": "Zeige neueste zuerst",
+		"events_sortOldestLabel": "Zeige älteste zuerst",
+		"events_browseAll": "Alle durchsuchen",
+		"events_loading": "Veranstaltungen werden geladen...",
+		"events_failed": "Fehler beim Laden der Veranstaltungen",
+		"events_noEvents": "Keine Veranstaltungen gefunden",
+		"events_noUpcoming": "Keine kommenden Veranstaltungen",
+		"events_noEventsYet": "{organizationName} hat noch keine Veranstaltungen organisiert.",
+		"events_noUpcomingScheduled": "{organizationName} hat keine kommenden Veranstaltungen geplant.",
+		"events_viewPast": "Vergangene Veranstaltungen anzeigen",
+		"location_tbd": "Ort noch offen",
+		"viewDetails": "Organisationsdetails anzeigen"
+	},
+
+	"eventCard": {
+		"viewDetails": "Veranstaltungsdetails anzeigen",
+		"location_tbd": "Noch offen"
+	},
+
+	"eventDetails": {
+		"about_heading": "Über diese Veranstaltung",
+		"details_heading": "Veranstaltungsdetails",
+		"dateTime_label": "Datum & Uhrzeit",
+		"dateTime_ends": "Endet:",
+		"attendance_label": "Teilnahme",
+		"attendance_full": "Veranstaltung ist voll",
+		"attendance_spotsLeft": "Nur noch {count} Plätze frei",
+		"attendance_attending": "{count} nehmen teil",
+		"rsvpDeadline_label": "Zusagefrist",
+		"eventType_label": "Veranstaltungstyp",
+		"eventType_ticketed": "Ticketpflichtige Veranstaltung",
+		"eventType_freeRsvp": "Kostenlose Zusage",
+		"tags_heading": "Tags",
+		"series_heading": "Teil einer Serie",
+		"invitation_heading": "Einladungsdetails",
+		"payment_successTitle": "Zahlung erfolgreich!",
+		"payment_successMessage": "Dein Ticket wurde bestätigt. Überprüfe deine E-Mails für Details.",
+		"payment_cancelledTitle": "Zahlung abgebrochen",
+		"payment_cancelledMessage": "Du kannst es jederzeit erneut versuchen."
+	},
+
+	"rsvp": {
+		"options_label": "Zusageoptionen",
+		"yes_label": "Zusage - Ich nehme teil",
+		"yes_button": "Ja",
+		"maybe_label": "Vielleicht - Ich nehme vielleicht teil",
+		"maybe_button": "Vielleicht",
+		"no_label": "Absage - Ich nehme nicht teil",
+		"no_button": "Nein"
+	},
+
+	"potluck": {
+		"heading": "🥗 Potluck-Koordination",
+		"youBringing": "Du bringst mit",
+		"confirmDelete": "Bist du sicher, dass du diesen Artikel löschen möchtest?",
+		"dismissError": "Fehler schließen",
+		"creationClosed": "Artikelerstellung ist derzeit von den Organisatoren geschlossen.",
+		"creationClosedHint": "Du kannst trotzdem Artikel unten beanspruchen!",
+		"addItem": "Potluck-Artikel hinzufügen",
+		"addItemYourBringing": "Artikel hinzufügen, den du mitbringst",
+		"searchPlaceholder": "Artikel suchen...",
+		"loading": "Potluck-Artikel werden geladen...",
+		"failed": "Fehler beim Laden der Potluck-Artikel. Bitte versuche es erneut.",
+		"noMatchingItems": "Keine Artikel entsprechen deiner Suche.",
+		"noItems": "Noch keine Artikel!",
+		"beFirst": "Sei der Erste, der etwas mitbringt.",
+		"category_foodDrink": "Essen & Trinken",
+		"category_supplies": "Zubehör & Dienstleistungen",
+		"category_entertainment": "Unterhaltung & Spaß",
+		"category_other": "Sonstiges"
 	}
 }

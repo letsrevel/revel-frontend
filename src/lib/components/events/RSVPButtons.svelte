@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { cn } from '$lib/utils/cn';
 	import { Check, HelpCircle, X, Lock, Loader2 } from 'lucide-svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
 		onSelect: (answer: 'yes' | 'no' | 'maybe') => void;
@@ -104,7 +105,7 @@
 -->
 <div
 	role="group"
-	aria-label="RSVP options"
+	aria-label={m['rsvp.options_label']()}
 	class={cn(
 		// Mobile: Vertical stack
 		'flex flex-col gap-3',
@@ -118,7 +119,7 @@
 		type="button"
 		onclick={() => handleClick('yes')}
 		disabled={disabled || !isEligible || isLoading}
-		aria-label="RSVP Yes - I'm attending"
+		aria-label={m['rsvp.yes_label']()}
 		aria-pressed={isButtonSelected('yes')}
 		class={getButtonClasses('yes')}
 	>
@@ -129,7 +130,7 @@
 		{:else}
 			<Check class="h-5 w-5" aria-hidden="true" />
 		{/if}
-		<span>Yes</span>
+		<span>{m['rsvp.yes_button']()}</span>
 	</button>
 
 	<!-- Maybe Button -->
@@ -137,7 +138,7 @@
 		type="button"
 		onclick={() => handleClick('maybe')}
 		disabled={disabled || !isEligible || isLoading}
-		aria-label="RSVP Maybe - I might attend"
+		aria-label={m['rsvp.maybe_label']()}
 		aria-pressed={isButtonSelected('maybe')}
 		class={getButtonClasses('maybe')}
 	>
@@ -148,7 +149,7 @@
 		{:else}
 			<HelpCircle class="h-5 w-5" aria-hidden="true" />
 		{/if}
-		<span>Maybe</span>
+		<span>{m['rsvp.maybe_button']()}</span>
 	</button>
 
 	<!-- No Button -->
@@ -156,7 +157,7 @@
 		type="button"
 		onclick={() => handleClick('no')}
 		disabled={disabled || !isEligible || isLoading}
-		aria-label="RSVP No - I'm not attending"
+		aria-label={m['rsvp.no_label']()}
 		aria-pressed={isButtonSelected('no')}
 		class={getButtonClasses('no')}
 	>
@@ -167,7 +168,7 @@
 		{:else}
 			<X class="h-5 w-5" aria-hidden="true" />
 		{/if}
-		<span>No</span>
+		<span>{m['rsvp.no_button']()}</span>
 	</button>
 </div>
 
