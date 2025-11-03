@@ -883,7 +883,9 @@
     "failedToSubmitTryAgain": "Failed to submit request. Please try again.",
     "cancel": "Cancel",
     "submitting": "Submitting...",
-    "submitRequest": "Submit Request"
+    "submitRequest": "Submit Request",
+    "requestInvitation": "Request Invitation",
+    "requestSubmitted": "Request Submitted"
   },
   "detailsStep": {
     "basicDetails": "Basic Details",
@@ -917,7 +919,12 @@
     "eventLogo": "Event Logo",
     "logoHint": "Recommended: Square image, at least 400x400px. Falls back to organization logo if not set.",
     "coverArt": "Cover Art",
-    "coverArtHint": "Recommended: 16:9 aspect ratio, at least 1200x675px. Falls back to organization cover if not set."
+    "coverArtHint": "Recommended: 16:9 aspect ratio, at least 1200x675px. Falls back to organization cover if not set.",
+    "unlimitedCapacity": "Unlimited capacity",
+    "waitlistOpen": "Waitlist enabled",
+    "enablePotluck": "Enable potluck coordination",
+    "acceptInvitationRequests": "Accept invitation requests",
+    "none": "None"
   },
   "SFwESEssentialsStep": {
     "clearDescriptiveName": "Choose a clear, descriptive name for your event",
@@ -958,7 +965,17 @@
     "defaultTierHint": "The default \"General Admission\" tier should have been created automatically",
     "addAnotherTier": "+ Add Another Tier",
     "tierExamples": "Create VIP, Student, Early Bird, or other ticket types",
-    "back": "← Back"
+    "back": "← Back",
+    "ticketingConfiguration": "Ticketing Configuration",
+    "configureOptions": "Configure Options",
+    "freeForMembers": "Free for members",
+    "freeForStaff": "Free for staff",
+    "staffNoPay": "Staff don't pay",
+    "ticketTiers": "Ticket Tiers",
+    "loadingTiers": "Loading tiers...",
+    "errorLoadingTiers": "Error loading tiers",
+    "noTiersFound": "No tiers found",
+    "saveAndExit": "Save and Exit"
   },
   "tierCard": {
     "default": "Default",

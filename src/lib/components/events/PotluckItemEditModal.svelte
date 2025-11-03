@@ -43,16 +43,16 @@
 	// Item type options
 	const ITEM_TYPE_OPTIONS = [
 		{ value: 'food', label: m['potluckItemEditModal.itemTypes.food']() },
-		{ value: 'main_course', label: m['potluckItemEditModal.itemTypes.main.course']() },
-		{ value: 'side_dish', label: m['potluckItemEditModal.itemTypes.side.dish']() },
+		{ value: 'main_course', label: m['potluckItemEditModal.itemTypes.main_course']() },
+		{ value: 'side_dish', label: m['potluckItemEditModal.itemTypes.side_dish']() },
 		{ value: 'dessert', label: m['potluckItemEditModal.itemTypes.dessert']() },
 		{ value: 'drink', label: m['potluckItemEditModal.itemTypes.drink']() },
 		{ value: 'alcohol', label: m['potluckItemEditModal.itemTypes.alcohol']() },
-		{ value: 'non_alcoholic', label: m['potluckItemEditModal.itemTypes.non.alcoholic']() },
+		{ value: 'non_alcoholic', label: m['potluckItemEditModal.itemTypes.non_alcoholic']() },
 		{ value: 'supplies', label: m['potluckItemEditModal.itemTypes.supplies']() },
 		{ value: 'labor', label: m['potluckItemEditModal.itemTypes.labor']() },
 		{ value: 'entertainment', label: m['potluckItemEditModal.itemTypes.entertainment']() },
-		{ value: 'sexual_health', label: m['potluckItemEditModal.itemTypes.sexual.health']() },
+		{ value: 'sexual_health', label: m['potluckItemEditModal.itemTypes.sexual_health']() },
 		{ value: 'toys', label: m['potluckItemEditModal.itemTypes.toys']() },
 		{ value: 'care', label: m['potluckItemEditModal.itemTypes.care']() },
 		{ value: 'transport', label: m['potluckItemEditModal.itemTypes.transport']() },
@@ -288,7 +288,7 @@
 					rows="3"
 					class="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 				></textarea>
-				<p class="mt-1 text-xs text-muted-foreground">{m['potluckItemEditModal.markdownSupported']()}</p>
+				<p class="mt-1 text-xs text-muted-foreground">{m['potluckItemForm.markdownSupported']()}</p>
 			</div>
 
 			<!-- Claim checkbox (create mode for staff/owners only) -->

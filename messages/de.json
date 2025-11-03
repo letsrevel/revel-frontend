@@ -883,7 +883,9 @@
     "failedToSubmitTryAgain": "Fehler beim Senden der Anfrage. Bitte versuche es erneut.",
     "cancel": "Abbrechen",
     "submitting": "Wird gesendet...",
-    "submitRequest": "Anfrage senden"
+    "submitRequest": "Anfrage senden",
+    "requestInvitation": "Einladung anfordern",
+    "requestSubmitted": "Anfrage gesendet"
   },
   "detailsStep": {
     "basicDetails": "Grundlegende Details",
@@ -917,7 +919,12 @@
     "eventLogo": "Veranstaltungslogo",
     "logoHint": "Empfohlen: Quadratisches Bild, mindestens 400x400px. Wird auf das Organisationslogo zurückgreifen, falls nicht gesetzt.",
     "coverArt": "Titelbild",
-    "coverArtHint": "Empfohlen: 16:9-Seitenverhältnis, mindestens 1200x675px. Wird auf das Organisationstitelbild zurückgreifen, falls nicht gesetzt."
+    "coverArtHint": "Empfohlen: 16:9-Seitenverhältnis, mindestens 1200x675px. Wird auf das Organisationstitelbild zurückgreifen, falls nicht gesetzt.",
+    "unlimitedCapacity": "Unbegrenzte Kapazität",
+    "waitlistOpen": "Warteliste aktiviert",
+    "enablePotluck": "Potluck-Koordination aktivieren",
+    "acceptInvitationRequests": "Einladungsanfragen akzeptieren",
+    "none": "Keine"
   },
   "SFwESEssentialsStep": {
     "clearDescriptiveName": "Wähle einen klaren, beschreibenden Namen für deine Veranstaltung",
@@ -958,7 +965,17 @@
     "defaultTierHint": "Die Standard-Stufe \"Allgemeiner Eintritt\" sollte automatisch erstellt worden sein",
     "addAnotherTier": "+ Weitere Stufe hinzufügen",
     "tierExamples": "Erstelle VIP-, Studenten-, Early-Bird- oder andere Tickettypen",
-    "back": "← Zurück"
+    "back": "← Zurück",
+    "ticketingConfiguration": "Ticketing-Konfiguration",
+    "configureOptions": "Optionen konfigurieren",
+    "freeForMembers": "Kostenlos für Mitglieder",
+    "freeForStaff": "Kostenlos für Mitarbeiter",
+    "staffNoPay": "Mitarbeiter zahlen nicht",
+    "ticketTiers": "Ticket-Stufen",
+    "loadingTiers": "Stufen werden geladen...",
+    "errorLoadingTiers": "Fehler beim Laden der Stufen",
+    "noTiersFound": "Keine Stufen gefunden",
+    "saveAndExit": "Speichern und Beenden"
   },
   "tierCard": {
     "default": "Standard",

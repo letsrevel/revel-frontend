@@ -830,9 +830,6 @@
     "aboutOrganizer": "Informazioni sull'organizzatore"
   },
   "potluckItemEditModal": {
-    "markdownSupported": "Markdown di base supportato"
-  },
-  "potluckItemEditModal": {
     "addPotluckItem": "Aggiungi elemento potluck",
     "addItemYoullBring": "Aggiungi l'articolo che porterai",
     "editPotluckItem": "Modifica elemento potluck",
@@ -875,10 +872,6 @@
     "markdownSupported": "Markdown di base supportato"
   },
   "requestInvitationButton": {
-    "requestSubmitted": "Richiesta Inviata!",
-    "requestInvitation": "Richiedi Invito"
-  },
-  "requestInvitationButton": {
     "mustBeLoggedIn": "Devi essere loggato per richiedere un invito",
     "failedToSubmit": "Impossibile inviare la richiesta di invito",
     "invitationRequested": "Richiesta di invito inviata",
@@ -890,14 +883,9 @@
     "failedToSubmitTryAgain": "Impossibile inviare la richiesta. Riprova.",
     "cancel": "Annulla",
     "submitting": "Invio in corso...",
-    "submitRequest": "Invia richiesta"
-  },
-  "detailsStep": {
-    "unlimitedCapacity": "Lascia vuoto per capacità illimitata",
-    "waitlistOpen": "Lista d'Attesa Aperta",
-    "enablePotluck": "Abilita Potluck",
-    "acceptInvitationRequests": "Accetta Richieste di Invito",
-    "none": "Nessuno"
+    "submitRequest": "Invia richiesta",
+    "requestInvitation": "Richiedi Invito",
+    "requestSubmitted": "Richiesta Inviata"
   },
   "detailsStep": {
     "basicDetails": "Dettagli di base",
@@ -931,7 +919,12 @@
     "eventLogo": "Logo dell'evento",
     "logoHint": "Consigliato: immagine quadrata, almeno 400x400px. Se non impostato, verrà utilizzato il logo dell'organizzazione.",
     "coverArt": "Immagine di copertina",
-    "coverArtHint": "Consigliato: rapporto 16:9, almeno 1200x675px. Se non impostato, verrà utilizzata la copertina dell'organizzazione."
+    "coverArtHint": "Consigliato: rapporto 16:9, almeno 1200x675px. Se non impostato, verrà utilizzata la copertina dell'organizzazione.",
+    "unlimitedCapacity": "Capacità illimitata",
+    "waitlistOpen": "Lista d'attesa attiva",
+    "enablePotluck": "Abilita coordinamento potluck",
+    "acceptInvitationRequests": "Accetta richieste di invito",
+    "none": "Nessuno"
   },
   "SFwESEssentialsStep": {
     "clearDescriptiveName": "Scegli un nome chiaro e descrittivo per il tuo evento",
@@ -965,18 +958,6 @@
     "error": "Errore"
   },
   "ticketingStep": {
-    "ticketingConfiguration": "Configurazione Biglietteria",
-    "configureOptions": "Configura le opzioni di biglietteria e gestisci i livelli di biglietti",
-    "freeForMembers": "Gratuito per i Membri",
-    "freeForStaff": "Gratuito per lo Staff",
-    "staffNoPay": "I membri dello staff non devono pagare i biglietti",
-    "ticketTiers": "Livelli Biglietto",
-    "loadingTiers": "Caricamento livelli...",
-    "errorLoadingTiers": "Errore nel caricamento dei livelli biglietto",
-    "noTiersFound": "Nessun livello biglietto trovato per questo evento",
-    "saveAndExit": "Salva ed Esci"
-  },
-  "ticketingStep": {
     "ticketingOptions": "Opzioni di biglietteria",
     "membersNoPay": "I membri dell'organizzazione non devono pagare per i biglietti",
     "createDifferentTiers": "Crea diversi tipi di biglietti con prezzi, quantità e livelli di accesso variabili",
@@ -984,7 +965,17 @@
     "defaultTierHint": "Il livello predefinito \"Ingresso generale\" dovrebbe essere stato creato automaticamente",
     "addAnotherTier": "+ Aggiungi un altro livello",
     "tierExamples": "Crea tipi di biglietti VIP, Studente, Early Bird o di altro tipo",
-    "back": "← Indietro"
+    "back": "← Indietro",
+    "ticketingConfiguration": "Configurazione Biglietteria",
+    "configureOptions": "Configura Opzioni",
+    "freeForMembers": "Gratuito per i membri",
+    "freeForStaff": "Gratuito per lo staff",
+    "staffNoPay": "Lo staff non paga",
+    "ticketTiers": "Livelli Biglietti",
+    "loadingTiers": "Caricamento livelli...",
+    "errorLoadingTiers": "Errore nel caricamento dei livelli",
+    "noTiersFound": "Nessun livello trovato",
+    "saveAndExit": "Salva ed Esci"
   },
   "tierCard": {
     "default": "Predefinito",
