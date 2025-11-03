@@ -3,7 +3,6 @@
 	import type { OrganizationFilters } from '$lib/utils/organizationFilters';
 	import { ArrowUpDown, Info } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
-	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
 		orderBy?: OrganizationFilters['orderBy'];
