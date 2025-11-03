@@ -23,21 +23,21 @@
 
 	// Item type options
 	const ITEM_TYPE_OPTIONS = [
-		{ value: 'food', label: m.potluckItemEditModal_itemTypes_food() },
-		{ value: 'main_course', label: m.potluckItemEditModal_itemTypes_main_course() },
-		{ value: 'side_dish', label: m.potluckItemEditModal_itemTypes_side_dish() },
-		{ value: 'dessert', label: m.potluckItemEditModal_itemTypes_dessert() },
-		{ value: 'drink', label: m.potluckItemEditModal_itemTypes_drink() },
-		{ value: 'alcohol', label: m.potluckItemEditModal_itemTypes_alcohol() },
-		{ value: 'non_alcoholic', label: m.potluckItemEditModal_itemTypes_non_alcoholic() },
-		{ value: 'supplies', label: m.potluckItemEditModal_itemTypes_supplies() },
-		{ value: 'labor', label: m.potluckItemEditModal_itemTypes_labor() },
-		{ value: 'entertainment', label: m.potluckItemEditModal_itemTypes_entertainment() },
-		{ value: 'sexual_health', label: m.potluckItemEditModal_itemTypes_sexual_health() },
-		{ value: 'toys', label: m.potluckItemEditModal_itemTypes_toys() },
-		{ value: 'care', label: m.potluckItemEditModal_itemTypes_care() },
-		{ value: 'transport', label: m.potluckItemEditModal_itemTypes_transport() },
-		{ value: 'misc', label: m.potluckItemEditModal_itemTypes_misc() }
+		{ value: 'food', label: m['potluckItemEditModal.itemTypes.food']() },
+		{ value: 'main_course', label: m['potluckItemEditModal.itemTypes.main.course']() },
+		{ value: 'side_dish', label: m['potluckItemEditModal.itemTypes.side.dish']() },
+		{ value: 'dessert', label: m['potluckItemEditModal.itemTypes.dessert']() },
+		{ value: 'drink', label: m['potluckItemEditModal.itemTypes.drink']() },
+		{ value: 'alcohol', label: m['potluckItemEditModal.itemTypes.alcohol']() },
+		{ value: 'non_alcoholic', label: m['potluckItemEditModal.itemTypes.non.alcoholic']() },
+		{ value: 'supplies', label: m['potluckItemEditModal.itemTypes.supplies']() },
+		{ value: 'labor', label: m['potluckItemEditModal.itemTypes.labor']() },
+		{ value: 'entertainment', label: m['potluckItemEditModal.itemTypes.entertainment']() },
+		{ value: 'sexual_health', label: m['potluckItemEditModal.itemTypes.sexual.health']() },
+		{ value: 'toys', label: m['potluckItemEditModal.itemTypes.toys']() },
+		{ value: 'care', label: m['potluckItemEditModal.itemTypes.care']() },
+		{ value: 'transport', label: m['potluckItemEditModal.itemTypes.transport']() },
+		{ value: 'misc', label: m['potluckItemEditModal.itemTypes.misc']() }
 	];
 
 	// Validation

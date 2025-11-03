@@ -90,7 +90,7 @@
 				{validationErrors.name}
 			</p>
 		{/if}
-		<p class="text-xs text-muted-foreground">{m.SFwESEssentialsStep_clearDescriptiveName()}</p>
+		<p class="text-xs text-muted-foreground">{m['SFwESEssentialsStep.clearDescriptiveName']()}</p>
 	</div>
 
 	<!-- Start Date/Time -->
@@ -149,7 +149,7 @@
 				{validationErrors.end}
 			</p>
 		{/if}
-		<p class="text-xs text-muted-foreground">{m.SFwESEssentialsStep_optionalOpenEnded()}</p>
+		<p class="text-xs text-muted-foreground">{m['SFwESEssentialsStep.optionalOpenEnded']()}</p>
 	</div>
 
 	<!-- City -->
@@ -166,7 +166,7 @@
 				{validationErrors.city_id}
 			</p>
 		{/if}
-		<p class="text-xs text-muted-foreground">{m.SFwESEssentialsStep_whereWillThisEventTakePlace()}</p>
+		<p class="text-xs text-muted-foreground">{m['SFwESEssentialsStep.whereWillThisEventTakePlace']()}</p>
 	</div>
 
 	<!-- Visibility -->
@@ -190,8 +190,8 @@
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
-					<div class="font-medium">{m.SFwESEssentialsStep_public()}</div>
-					<div class="text-sm text-muted-foreground">{m.SFwESEssentialsStep_anyoneCanSee()}</div>
+					<div class="font-medium">{m['SFwESEssentialsStep.public']()}</div>
+					<div class="text-sm text-muted-foreground">{m['SFwESEssentialsStep.anyoneCanSee']()}</div>
 				</div>
 			</label>
 
@@ -207,8 +207,8 @@
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
-					<div class="font-medium">{m.SFwESEssentialsStep_private()}</div>
-					<div class="text-sm text-muted-foreground">{m.SFwESEssentialsStep_onlyInvitedUsers()}</div>
+					<div class="font-medium">{m['SFwESEssentialsStep.private']()}</div>
+					<div class="text-sm text-muted-foreground">{m['SFwESEssentialsStep.onlyInvitedUsers']()}</div>
 				</div>
 			</label>
 
@@ -224,7 +224,7 @@
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
-					<div class="font-medium">{m.SFwESEssentialsStep_membersOnly()}</div>
+					<div class="font-medium">{m['SFwESEssentialsStep.membersOnly']()}</div>
 					<div class="text-sm text-muted-foreground">
 						Only organization members can see the event
 					</div>
@@ -243,7 +243,7 @@
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
-					<div class="font-medium">{m.SFwESEssentialsStep_staffOnly()}</div>
+					<div class="font-medium">{m['SFwESEssentialsStep.staffOnly']()}</div>
 					<div class="text-sm text-muted-foreground">
 						Only org's staff members can see the event
 					</div>
@@ -273,8 +273,8 @@
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
-					<div class="font-medium">{m.SFwESEssentialsStep_public()}</div>
-					<div class="text-sm text-muted-foreground">{m.SFwESEssentialsStep_everyoneCanAttend()}</div>
+					<div class="font-medium">{m['SFwESEssentialsStep.public']()}</div>
+					<div class="text-sm text-muted-foreground">{m['SFwESEssentialsStep.everyoneCanAttend']()}</div>
 				</div>
 			</label>
 
@@ -290,8 +290,8 @@
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
-					<div class="font-medium">{m.SFwESEssentialsStep_private()}</div>
-					<div class="text-sm text-muted-foreground">{m.SFwESEssentialsStep_onlyInvitedPeople()}</div>
+					<div class="font-medium">{m['SFwESEssentialsStep.private']()}</div>
+					<div class="text-sm text-muted-foreground">{m['SFwESEssentialsStep.onlyInvitedPeople']()}</div>
 				</div>
 			</label>
 
@@ -307,8 +307,8 @@
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
-					<div class="font-medium">{m.SFwESEssentialsStep_membersOnly()}</div>
-					<div class="text-sm text-muted-foreground">{m.SFwESEssentialsStep_onlyOrganizationMembers()}</div>
+					<div class="font-medium">{m['SFwESEssentialsStep.membersOnly']()}</div>
+					<div class="text-sm text-muted-foreground">{m['SFwESEssentialsStep.onlyOrganizationMembers']()}</div>
 				</div>
 			</label>
 		</div>

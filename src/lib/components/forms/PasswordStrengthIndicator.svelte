@@ -79,7 +79,7 @@
 				{:else}
 					<X class="h-3.5 w-3.5" aria-hidden="true" />
 				{/if}
-				<span>{m.passwordStrength_atLeast8()}</span>
+				<span>{m['passwordStrength.atLeast8']()}</span>
 			</div>
 
 			<div
