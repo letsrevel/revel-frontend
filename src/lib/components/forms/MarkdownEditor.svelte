@@ -157,7 +157,7 @@
 				{label}
 				{#if required}
 					<span class="text-destructive" aria-label="required">*</span>
-				{#/if}
+				{/if}
 			</label>
 
 			<button
@@ -169,13 +169,13 @@
 				{#if showPreview}
 					<EyeOff class="h-4 w-4" aria-hidden="true" />
 					<span>{m['markdownEditor.hidePreview']()}</span>
-				{#else}
+				{:else}
 					<Eye class="h-4 w-4" aria-hidden="true" />
 					<span>{m['markdownEditor.preview']()}</span>
-				{#/if}
+				{/if}
 			</button>
 		</div>
-	{#/if}
+	{/if}
 
 	<!-- Formatting Toolbar -->
 	{#if !showPreview && !disabled}
