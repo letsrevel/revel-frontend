@@ -64,12 +64,19 @@
 <div class="container mx-auto px-4 py-16">
 	<div class="flex flex-col items-center justify-center text-center">
 		<h1 class="text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
-			{@html m['home.welcomeToRevel']({
-				flipContainer: isItalian
-					? `<span class="flip-container"><span class="flip-letter" style="transform: rotateY(${rotation}deg)">${currentLetter}</span></span>`
-					: '',
-				revel: `<span class="text-primary">Revel</span>`
-			})}
+			{#if isItalian}
+				<!-- Italian with animated letter flip -->
+				Benvenut<span class="flip-container">
+					<span class="flip-letter" style="transform: rotateY({rotation}deg)">
+						{currentLetter}
+					</span>
+				</span> su <span class="text-primary">Revel</span>
+			{:else}
+				<!-- Other languages using i18n -->
+				{@html m['home.welcomeToRevel']({
+					revel: `<span class="text-primary">Revel</span>`
+				})}
+			{/if}
 		</h1>
 		<p class="mt-6 max-w-2xl text-lg text-muted-foreground">
 			{m['home.tagline']()}
