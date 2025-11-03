@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { eventRsvpEvent } from '$lib/api/generated/sdk.gen';
 	import type { UserEventStatus } from '$lib/utils/eligibility';
@@ -333,7 +334,7 @@
 			>
 				<AlertCircle class="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
 				<div class="flex-1">
-					<p class="font-semibold">RSVP Failed</p>
+					<p class="font-semibold">{m['eventRSVP.rsvpFailed']()}</p>
 					<p class="mt-1 text-sm">{errorMessage}</p>
 					<button
 						type="button"
@@ -362,7 +363,7 @@
 		<!-- RSVP Buttons (always shown when eligible, even if already RSVP'd) -->
 		{#if shouldShowButtons}
 			<div class="space-y-3">
-				<h3 class="text-sm font-semibold">Will you attend?</h3>
+				<h3 class="text-sm font-semibold">{m['eventRSVP.willYouAttend']()}</h3>
 				<RSVPButtons
 					onSelect={handleRSVPSelect}
 					currentAnswer={currentRsvpAnswer}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { onMount } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Loader2 } from 'lucide-svelte';
@@ -18,6 +19,6 @@
 <div class="flex min-h-screen items-center justify-center">
 	<div class="text-center">
 		<Loader2 class="mx-auto h-8 w-8 animate-spin text-primary" aria-hidden="true" />
-		<p class="mt-4 text-muted-foreground">Logging out...</p>
+		<p class="mt-4 text-muted-foreground">{m['logoutPage.loggingOut']()}</p>
 	</div>
 </div>

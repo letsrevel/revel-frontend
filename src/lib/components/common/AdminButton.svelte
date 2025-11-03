@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { goto } from '$app/navigation';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
@@ -113,7 +114,7 @@
 				{/snippet}
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content align="end" class="w-56">
-				<DropdownMenu.Label>Select Organization</DropdownMenu.Label>
+				<DropdownMenu.Label>{m['adminButton.selectOrganization']()}</DropdownMenu.Label>
 				<DropdownMenu.Separator />
 				{#each userAdminOrgs as org}
 					<DropdownMenu.Item onclick={() => navigateToOrgAdmin(org.slug)}>

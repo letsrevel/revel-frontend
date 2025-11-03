@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import Skeleton from './Skeleton.svelte';
 	import { cn } from '$lib/utils/cn';
 
@@ -29,5 +30,5 @@
 		<Skeleton width="6rem" height="2.5rem" />
 	</div>
 
-	<span class="sr-only">Loading organization card...</span>
+	<span class="sr-only">{m['organizationCardSkeleton.loading']()}</span>
 </div>

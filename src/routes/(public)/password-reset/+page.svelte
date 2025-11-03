@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
 	import type { ActionData } from './$types';
 	import { Loader2, ArrowLeft, Mail } from 'lucide-svelte';
@@ -21,7 +22,7 @@
 </script>
 
 <svelte:head>
-	<title>Reset Password - Revel</title>
+	<title>{m['passwordResetPage.title']()}</title>
 	<meta name="description" content="Reset your Revel account password" />
 </svelte:head>
 
@@ -131,9 +132,9 @@
 				>
 					{#if isSubmitting}
 						<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-						<span>Sending reset link...</span>
+						<span>{m['passwordResetPage.sendingLink']()}</span>
 					{:else}
-						<span>Send reset link</span>
+						<span>{m['passwordResetPage.sendLink']()}</span>
 					{/if}
 				</button>
 			</form>

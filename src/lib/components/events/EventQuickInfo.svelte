@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
 	import { formatEventDate, getRSVPDeadlineRelative, isRSVPClosingSoon } from '$lib/utils/date';
 	import { cn } from '$lib/utils/cn';
@@ -133,7 +134,7 @@
 			<div class={textClasses}>
 				<span class="block font-medium">{capacityDisplay}</span>
 				{#if isNearCapacity}
-					<span class="text-xs text-muted-foreground">Limited spots remaining</span>
+					<span class="text-xs text-muted-foreground">{m['eventQuickInfo.limitedSpots']()}</span>
 				{/if}
 			</div>
 		</div>
@@ -152,7 +153,7 @@
 					{rsvpDeadlineDisplay}
 				</time>
 				{#if isDeadlineSoon}
-					<span class="text-xs text-muted-foreground">Closes soon!</span>
+					<span class="text-xs text-muted-foreground">{m['eventQuickInfo.closesSoon']()}</span>
 				{/if}
 			</div>
 		</div>

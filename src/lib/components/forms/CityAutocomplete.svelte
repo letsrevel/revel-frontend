@@ -17,8 +17,8 @@
 		onSelect,
 		disabled = false,
 		error,
-		label = 'Preferred City',
-		description = 'Select your preferred city for event recommendations'
+		label = m['cityAutocomplete.preferredCity'](),
+		description = m['cityAutocomplete.preferredCityDescription']()
 	}: Props = $props();
 
 	// Component state

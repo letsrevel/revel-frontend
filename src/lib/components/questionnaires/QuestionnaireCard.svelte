@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import {
 		Card,
 		CardContent,
@@ -206,7 +207,7 @@
 									{assignmentCount === 1 ? 'assignment' : 'assignments'}
 								</span>
 							{:else}
-								<span>Not assigned to any events</span>
+								<span>{m['questionnaireCard.notAssigned']()}</span>
 							{/if}
 						</TooltipTrigger>
 						<TooltipContent>

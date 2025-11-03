@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { EventUserEligibility, EventTokenSchema } from '$lib/api/generated/types.gen';
 	import {
 		getEligibilityExplanation,
@@ -152,7 +153,7 @@
 			{#if retryText && !eligibility.questionnaires_failed}
 				<div class="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
 					<Clock class="h-4 w-4 shrink-0" aria-hidden="true" />
-					<span>Available {retryText}</span>
+					<span>{m['eligibilityStatusDisplay.available']()} {retryText}</span>
 				</div>
 			{/if}
 

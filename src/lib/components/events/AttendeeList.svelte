@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { eventGetEventAttendees } from '$lib/api';
 	import type { MinimalRevelUserSchema } from '$lib/api/generated/types.gen';
@@ -66,18 +67,18 @@
 	<section class="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
 		<div class="mb-4 flex items-center gap-2">
 			<Users class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-			<h2 class="text-lg font-semibold">Who's Coming</h2>
+			<h2 class="text-lg font-semibold">{m['attendeeList.whosComing']()}</h2>
 			<span class="text-sm text-muted-foreground">({totalAttendees})</span>
 		</div>
 
 		{#if attendeesQuery.isLoading}
 			<div class="flex items-center justify-center py-8">
 				<Loader2 class="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
-				<span class="sr-only">Loading attendees...</span>
+				<span class="sr-only">{m['attendeeList.loadingAttendees']()}</span>
 			</div>
 		{:else if attendeesQuery.isError}
 			<div class="rounded-md bg-destructive/10 p-4 text-sm text-destructive">
-				<p>Failed to load attendee list. Please try again later.</p>
+				<p>{m['attendeeList.failedToLoad']()}</p>
 			</div>
 		{:else if attendees.length === 0}
 			<p class="text-sm text-muted-foreground">
@@ -157,9 +158,9 @@
 					>
 						{#if attendeesQuery.isFetching}
 							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-							<span>Loading...</span>
+							<span>{m['attendeeList.loading']()}</span>
 						{:else}
-							<span>Load more</span>
+							<span>{m['attendeeList.loadMore']()}</span>
 						{/if}
 					</button>
 				{/if}

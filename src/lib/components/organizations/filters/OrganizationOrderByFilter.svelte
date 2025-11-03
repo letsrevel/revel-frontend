@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { OrganizationFilters } from '$lib/utils/organizationFilters';
 	import { ArrowUpDown, Info } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
@@ -48,7 +49,7 @@
 				<div
 					class="absolute bottom-full left-0 z-50 mb-2 w-64 rounded-md border bg-popover p-3 text-xs text-popover-foreground shadow-md"
 				>
-					<p class="font-medium">Distance Sorting</p>
+					<p class="font-medium">{m['organizationOrderByFilter.distanceSorting']()}</p>
 					<p class="mt-1 text-muted-foreground">
 						"Nearest First" uses your approximate location from IP address or your selected city in
 						account settings.

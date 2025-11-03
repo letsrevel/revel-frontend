@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { EventCreateSchema, CitySchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import CityAutocomplete from '$lib/components/forms/CityAutocomplete.svelte';
@@ -89,7 +90,7 @@
 				{validationErrors.name}
 			</p>
 		{/if}
-		<p class="text-xs text-muted-foreground">Choose a clear, descriptive name for your event</p>
+		<p class="text-xs text-muted-foreground">{m.SFwESEssentialsStep_clearDescriptiveName()}</p>
 	</div>
 
 	<!-- Start Date/Time -->
@@ -148,7 +149,7 @@
 				{validationErrors.end}
 			</p>
 		{/if}
-		<p class="text-xs text-muted-foreground">Optional - leave blank for open-ended events</p>
+		<p class="text-xs text-muted-foreground">{m.SFwESEssentialsStep_optionalOpenEnded()}</p>
 	</div>
 
 	<!-- City -->
@@ -165,7 +166,7 @@
 				{validationErrors.city_id}
 			</p>
 		{/if}
-		<p class="text-xs text-muted-foreground">Where will this event take place?</p>
+		<p class="text-xs text-muted-foreground">{m.SFwESEssentialsStep_whereWillThisEventTakePlace()}</p>
 	</div>
 
 	<!-- Visibility -->
@@ -189,8 +190,8 @@
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
-					<div class="font-medium">Public</div>
-					<div class="text-sm text-muted-foreground">Anyone can see the event</div>
+					<div class="font-medium">{m.SFwESEssentialsStep_public()}</div>
+					<div class="text-sm text-muted-foreground">{m.SFwESEssentialsStep_anyoneCanSee()}</div>
 				</div>
 			</label>
 
@@ -206,8 +207,8 @@
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
-					<div class="font-medium">Private</div>
-					<div class="text-sm text-muted-foreground">Only invited users can see the event</div>
+					<div class="font-medium">{m.SFwESEssentialsStep_private()}</div>
+					<div class="text-sm text-muted-foreground">{m.SFwESEssentialsStep_onlyInvitedUsers()}</div>
 				</div>
 			</label>
 
@@ -223,7 +224,7 @@
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
-					<div class="font-medium">Members Only</div>
+					<div class="font-medium">{m.SFwESEssentialsStep_membersOnly()}</div>
 					<div class="text-sm text-muted-foreground">
 						Only organization members can see the event
 					</div>
@@ -242,7 +243,7 @@
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
-					<div class="font-medium">Staff Only</div>
+					<div class="font-medium">{m.SFwESEssentialsStep_staffOnly()}</div>
 					<div class="text-sm text-muted-foreground">
 						Only org's staff members can see the event
 					</div>
@@ -272,8 +273,8 @@
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
-					<div class="font-medium">Public</div>
-					<div class="text-sm text-muted-foreground">Everyone can attend (RSVP/get tickets)</div>
+					<div class="font-medium">{m.SFwESEssentialsStep_public()}</div>
+					<div class="text-sm text-muted-foreground">{m.SFwESEssentialsStep_everyoneCanAttend()}</div>
 				</div>
 			</label>
 
@@ -289,8 +290,8 @@
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
-					<div class="font-medium">Private</div>
-					<div class="text-sm text-muted-foreground">Only invited people can attend</div>
+					<div class="font-medium">{m.SFwESEssentialsStep_private()}</div>
+					<div class="text-sm text-muted-foreground">{m.SFwESEssentialsStep_onlyInvitedPeople()}</div>
 				</div>
 			</label>
 
@@ -306,8 +307,8 @@
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
-					<div class="font-medium">Members Only</div>
-					<div class="text-sm text-muted-foreground">Only organization members can attend</div>
+					<div class="font-medium">{m.SFwESEssentialsStep_membersOnly()}</div>
+					<div class="text-sm text-muted-foreground">{m.SFwESEssentialsStep_onlyOrganizationMembers()}</div>
 				</div>
 			</label>
 		</div>

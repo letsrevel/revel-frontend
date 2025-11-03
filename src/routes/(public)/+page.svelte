@@ -57,7 +57,7 @@
 	<meta name="robots" content="index, follow" />
 	<meta
 		name="keywords"
-		content="events, community, ticketing, RSVP, event management, event platform"
+		content={m['home.keywords']()}
 	/>
 </svelte:head>
 
@@ -65,13 +65,15 @@
 	<div class="flex flex-col items-center justify-center text-center">
 		<h1 class="text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
 			{#if isItalian}
-				Benvenut<span class="flip-container">
-					<span class="flip-letter" style="transform: rotateY({rotation}deg)">
-						{currentLetter}
-					</span>
-				</span> su <span class="text-primary">Revel</span>
+				{@html m['home.welcomeToRevel']({
+					flipContainer: `<span class="flip-container"><span class="flip-letter" style="transform: rotateY(${rotation}deg)">${currentLetter}</span></span>`,
+					revel: `<span class="text-primary">Revel</span>`
+				})}
 			{:else}
-				{m['home.welcomeTo']()} <span class="text-primary">Revel</span>
+				{@html m['home.welcomeToRevel']({
+					flipContainer: '',
+					revel: `<span class="text-primary">Revel</span>`
+				})}
 			{/if}
 		</h1>
 		<p class="mt-6 max-w-2xl text-lg text-muted-foreground">

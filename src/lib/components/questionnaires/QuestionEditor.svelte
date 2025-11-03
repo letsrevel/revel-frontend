@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -130,8 +131,8 @@
 					{#if question.type === 'multiple_choice'}
 						<div class="space-y-2">
 							<div class="flex items-center justify-between">
-								<Label>Answer Options</Label>
-								<p class="text-xs text-muted-foreground">Check boxes to mark correct answers</p>
+								<Label>{m['questionEditor.answerOptions']()}</Label>
+								<p class="text-xs text-muted-foreground">{m['questionEditor.checkBoxes']()}</p>
 							</div>
 							<div class="space-y-2">
 								{#each question.options || [] as option, index (index)}
@@ -155,7 +156,7 @@
 												class="flex-shrink-0"
 											>
 												<X class="h-4 w-4" />
-												<span class="sr-only">Remove option {index + 1}</span>
+												<span class="sr-only">{m['questionEditor.removeOption']()} {index + 1}</span>
 											</Button>
 										{/if}
 									</div>
@@ -169,7 +170,7 @@
 
 						<!-- Multiple Choice Settings -->
 						<div class="space-y-2">
-							<Label>Question Settings</Label>
+							<Label>{m['questionEditor.questionSettings']()}</Label>
 							<div class="space-y-2">
 								<div class="flex items-center space-x-2">
 									<Checkbox
@@ -205,7 +206,7 @@
 					<!-- Free Text Settings -->
 					{#if question.type === 'free_text'}
 						<div class="space-y-2">
-							<Label for="llm-guidelines-{question.id}">LLM Guidelines (Optional)</Label>
+							<Label for="llm-guidelines-{question.id}">{m['questionEditor.llmGuidelines']()}</Label>
 							<Textarea
 								id="llm-guidelines-{question.id}"
 								value={question.llmGuidelines || ''}

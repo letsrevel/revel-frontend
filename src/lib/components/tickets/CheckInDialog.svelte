@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { X, AlertCircle, CheckCircle, Clock, XCircle } from 'lucide-svelte';
 	import { fade, scale } from 'svelte/transition';
@@ -204,9 +205,9 @@
 					<div class="flex-1">
 						<p class="font-semibold {statusInfo.color}">{statusInfo.label}</p>
 						{#if ticket.status === 'checked_in'}
-							<p class="text-sm {statusInfo.color}">This attendee has already been checked in.</p>
+							<p class="text-sm {statusInfo.color}">{m['checkInDialog.alreadyCheckedIn']()}</p>
 						{:else if ticket.status === 'cancelled'}
-							<p class="text-sm {statusInfo.color}">This ticket has been cancelled.</p>
+							<p class="text-sm {statusInfo.color}">{m['checkInDialog.ticketCancelled']()}</p>
 						{:else if needsPaymentConfirmation}
 							<p class="text-sm {statusInfo.color}">
 								Please confirm payment has been received before checking in.
@@ -222,29 +223,29 @@
 				<!-- Attendee Information -->
 				<div class="rounded-lg border bg-muted/50">
 					<div class="border-b px-4 py-3">
-						<h3 class="font-semibold">Attendee Information</h3>
+						<h3 class="font-semibold">{m['checkInDialog.attendeeInfo']()}</h3>
 					</div>
 					<div class="divide-y">
 						<div class="flex items-center justify-between px-4 py-3">
-							<span class="text-sm text-muted-foreground">Name</span>
+							<span class="text-sm text-muted-foreground">{m['checkInDialog.name']()}</span>
 							<span class="font-medium">{getUserDisplayName(ticket.user)}</span>
 						</div>
 						<div class="flex items-center justify-between px-4 py-3">
-							<span class="text-sm text-muted-foreground">Email</span>
+							<span class="text-sm text-muted-foreground">{m['checkInDialog.email']()}</span>
 							<span class="font-medium">{ticket.user.email || 'N/A'}</span>
 						</div>
 						<div class="flex items-center justify-between px-4 py-3">
-							<span class="text-sm text-muted-foreground">Tier</span>
+							<span class="text-sm text-muted-foreground">{m['checkInDialog.tier']()}</span>
 							<span class="font-medium">{ticket.tier?.name || 'N/A'}</span>
 						</div>
 						<div class="flex items-center justify-between px-4 py-3">
-							<span class="text-sm text-muted-foreground">Price</span>
+							<span class="text-sm text-muted-foreground">{m['checkInDialog.price']()}</span>
 							<span class="font-medium">
 								{formatPrice(ticket.tier?.price, ticket.tier?.currency)}
 							</span>
 						</div>
 						<div class="flex items-center justify-between px-4 py-3">
-							<span class="text-sm text-muted-foreground">Payment Method</span>
+							<span class="text-sm text-muted-foreground">{m['checkInDialog.paymentMethod']()}</span>
 							<span class="font-medium">
 								{getPaymentMethodLabel(ticket.tier?.payment_method || '')}
 							</span>
@@ -258,7 +259,7 @@
 					>
 						<AlertCircle class="h-5 w-5 shrink-0" aria-hidden="true" />
 						<p>
-							<strong>Payment Required:</strong> Please ensure payment has been received before proceeding.
+							<strong>{m['checkInDialog.paymentRequired']()}</strong> Please ensure payment has been received before proceeding.
 						</p>
 					</div>
 				{/if}
@@ -266,7 +267,7 @@
 
 			<!-- Actions -->
 			<div class="flex justify-end gap-2 border-t px-6 py-4">
-				<Button variant="outline" onclick={onCancel} disabled={isLoading}>Cancel</Button>
+				<Button variant="outline" onclick={onCancel} disabled={isLoading}>{m['checkInDialog.cancel']()}</Button>
 				<Button
 					variant="default"
 					onclick={onConfirm}

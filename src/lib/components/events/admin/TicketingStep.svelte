@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { eventadminListTicketTiers } from '$lib/api/generated/sdk.gen';
 	import type { TicketTierDetailSchema } from '$lib/api/generated/types.gen';
@@ -51,15 +52,15 @@
 
 <div class="space-y-6">
 	<div>
-		<h2 class="text-2xl font-bold">Ticketing Configuration</h2>
-		<p class="text-muted-foreground">Configure ticketing options and manage ticket tiers</p>
+		<h2 class="text-2xl font-bold">{m['ticketingStep.ticketingConfiguration']()}</h2>
+		<p class="text-muted-foreground">{m['ticketingStep.configureOptions']()}</p>
 	</div>
 
 	<!-- Event-Level Ticketing Options -->
 	<div class="space-y-4 rounded-lg border border-border p-4">
 		<h3 class="flex items-center gap-2 font-semibold">
 			<Users class="h-5 w-5" aria-hidden="true" />
-			Ticketing Options
+			{m['ticketingStep.ticketingOptions']()}
 		</h3>
 
 		<!-- Free for Members -->
@@ -73,9 +74,9 @@
 				class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 			/>
 			<div class="flex-1">
-				<div class="font-medium">Free for Members</div>
+				<div class="font-medium">{m['ticketingStep.freeForMembers']()}</div>
 				<div class="text-sm text-muted-foreground">
-					Organization members don't need to pay for tickets
+					{m['ticketingStep.membersNoPay']()}
 				</div>
 			</div>
 		</label>
@@ -91,17 +92,17 @@
 				class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 			/>
 			<div class="flex-1">
-				<div class="font-medium">Free for Staff</div>
-				<div class="text-sm text-muted-foreground">Staff members don't need to pay for tickets</div>
+				<div class="font-medium">{m['ticketingStep.freeForStaff']()}</div>
+				<div class="text-sm text-muted-foreground">{m['ticketingStep.staffNoPay']()}</div>
 			</div>
 		</label>
 	</div>
 
 	<!-- Ticket Tiers Section -->
 	<div>
-		<h3 class="mb-4 font-semibold">Ticket Tiers</h3>
+		<h3 class="mb-4 font-semibold">{m['ticketingStep.ticketTiers']()}</h3>
 		<p class="mb-4 text-sm text-muted-foreground">
-			Create different ticket types with varying prices, quantities, and access levels
+			{m['ticketingStep.createDifferentTiers']()}
 		</p>
 	</div>
 
@@ -109,14 +110,14 @@
 		<div class="flex items-center justify-center py-12">
 			<div class="text-center">
 				<div class="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
-				<p class="mt-2 text-sm text-muted-foreground">Loading tiers...</p>
+				<p class="mt-2 text-sm text-muted-foreground">{m['ticketingStep.loadingTiers']()}</p>
 			</div>
 		</div>
 	{:else if tiersQuery.isError}
 		<div class="rounded-lg border border-destructive bg-destructive/10 p-4" role="alert">
-			<p class="font-medium text-destructive">Error loading ticket tiers</p>
+			<p class="font-medium text-destructive">{m['ticketingStep.errorLoadingTiers']()}</p>
 			<p class="mt-1 text-sm text-destructive/90">
-				{(tiersQuery.error as any)?.message || 'An error occurred. Please try again.'}
+				{(tiersQuery.error as any)?.message || m['ticketingStep.genericError']()}
 			</p>
 			{#if (tiersQuery.error as any)?.detail}
 				<div class="mt-2 space-y-1">
@@ -141,9 +142,9 @@
 
 		{#if tiers.length === 0}
 			<div class="rounded-lg border border-dashed border-muted-foreground/25 p-8 text-center">
-				<p class="text-muted-foreground">No ticket tiers found for this event</p>
+				<p class="text-muted-foreground">{m['ticketingStep.noTiersFound']()}</p>
 				<p class="mt-1 text-sm text-muted-foreground">
-					The default "General Admission" tier should have been created automatically
+					{m['ticketingStep.defaultTierHint']()}
 				</p>
 			</div>
 		{/if}
@@ -158,16 +159,16 @@
 		}}
 		class="w-full rounded-lg border-2 border-dashed border-muted-foreground/25 p-6 transition-colors hover:border-muted-foreground/50"
 	>
-		<span class="text-lg">+ Add Another Tier</span>
+		<span class="text-lg">{m['ticketingStep.addAnotherTier']()}</span>
 		<p class="mt-1 text-sm text-muted-foreground">
-			Create VIP, Student, Early Bird, or other ticket types
+			{m['ticketingStep.tierExamples']()}
 		</p>
 	</button>
 
 	<!-- Navigation -->
 	<div class="flex justify-between border-t border-border pt-6">
-		<Button variant="outline" onclick={onBack}>← Back</Button>
-		<Button onclick={onNext}>Save & Exit</Button>
+		<Button variant="outline" onclick={onBack}>{m['ticketingStep.back']()}</Button>
+		<Button onclick={onNext}>{m['ticketingStep.saveAndExit']()}</Button>
 	</div>
 </div>
 

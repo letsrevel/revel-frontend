@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData } from './$types';
 	import { CheckCircle, XCircle } from 'lucide-svelte';
 
@@ -32,12 +33,12 @@
 		<!-- Message -->
 		<div class="space-y-2">
 			{#if data.success}
-				<h1 class="text-3xl font-bold tracking-tight">Email verified!</h1>
+				<h1 class="text-3xl font-bold tracking-tight">{m['verifyPage.emailVerified']()}</h1>
 				<p class="text-muted-foreground">
 					Your account has been successfully verified. Redirecting you to your profile...
 				</p>
 			{:else}
-				<h1 class="text-3xl font-bold tracking-tight">Verification failed</h1>
+				<h1 class="text-3xl font-bold tracking-tight">{m['verifyPage.verificationFailed']()}</h1>
 				<p class="text-muted-foreground">
 					{data.error || 'We could not verify your email address.'}
 				</p>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { MyEventInvitationSchema } from '$lib/api/generated/types.gen';
 	import { Card } from '$lib/components/ui/card';
 	import { Calendar, MapPin, Ticket, CheckCircle2 } from 'lucide-svelte';
@@ -110,7 +111,7 @@
 		<!-- Privileges/Benefits -->
 		{#if privileges.length > 0}
 			<div>
-				<h4 class="mb-2 text-sm font-semibold">Special Privileges:</h4>
+				<h4 class="mb-2 text-sm font-semibold">{m['invitationCard.specialPrivileges']()}</h4>
 				<ul class="space-y-1">
 					{#each privileges as privilege}
 						<li class="flex items-center gap-2 text-sm">
@@ -127,7 +128,7 @@
 			class="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4 text-sm"
 		>
 			<div class="text-muted-foreground">
-				<span class="font-medium">Invited:</span>
+				<span class="font-medium">{m['invitationCard.invited']()}</span>
 				{createdDate}
 			</div>
 

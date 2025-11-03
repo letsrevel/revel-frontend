@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { OrganizationMemberSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
 	import { UserX, UserCog } from 'lucide-svelte';
@@ -100,7 +101,7 @@
 					aria-label="Make {displayName} a staff member"
 				>
 					<UserCog class="h-4 w-4" />
-					<span class="sr-only md:not-sr-only md:ml-2">Make Staff</span>
+					<span class="sr-only md:not-sr-only md:ml-2">{m['memberCard.makeStaff']()}</span>
 				</Button>
 			{/if}
 
@@ -113,7 +114,7 @@
 					aria-label="Remove {displayName}"
 				>
 					<UserX class="h-4 w-4" />
-					<span class="sr-only md:not-sr-only md:ml-2">Remove</span>
+					<span class="sr-only md:not-sr-only md:ml-2">{m['memberCard.remove']()}</span>
 				</Button>
 			{/if}
 		</div>

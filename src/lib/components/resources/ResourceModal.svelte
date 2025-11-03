@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { organizationadminUpdateResource } from '$lib/api/generated/sdk.gen';
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
@@ -288,7 +289,7 @@
 					role="alert"
 					aria-live="assertive"
 				>
-					<p class="font-semibold">Error</p>
+					<p class="font-semibold">{m['resourceModal.error']()}</p>
 					<p class="mt-1 text-sm">{errorMessage}</p>
 				</div>
 			{/if}

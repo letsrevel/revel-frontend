@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		organizationadminCreateEvent,
@@ -612,7 +613,7 @@
 			role="alert"
 			aria-live="assertive"
 		>
-			<p class="font-semibold">Error</p>
+			<p class="font-semibold">{m['eventWizard.error']()}</p>
 			<p class="mt-1 text-sm">{errorMessage}</p>
 		</div>
 	{/if}

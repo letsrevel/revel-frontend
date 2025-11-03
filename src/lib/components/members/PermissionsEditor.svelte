@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { OrganizationStaffSchema, PermissionMap } from '$lib/api/generated/types.gen';
 	import {
 		Dialog,
@@ -183,7 +184,7 @@
 <Dialog {open} onOpenChange={onClose}>
 	<DialogContent class="max-h-[80vh] max-w-2xl overflow-y-auto">
 		<DialogHeader>
-			<DialogTitle>Edit Permissions for {displayName}</DialogTitle>
+			<DialogTitle>{m['permissionsEditor.editPermissionsFor']()} {displayName}</DialogTitle>
 			<DialogDescription>
 				Configure what this staff member can do within the organization. Changes take effect
 				immediately.
@@ -220,7 +221,7 @@
 		</div>
 
 		<DialogFooter>
-			<Button variant="outline" onclick={handleCancel} disabled={isSaving}>Cancel</Button>
+			<Button variant="outline" onclick={handleCancel} disabled={isSaving}>{m['permissionsEditor.cancel']()}</Button>
 			<Button onclick={handleSave} disabled={isSaving}>
 				{isSaving ? 'Saving...' : 'Save Changes'}
 			</Button>

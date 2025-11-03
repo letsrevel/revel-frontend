@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { Card } from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import { AlertCircle, CheckCircle, XCircle, Sparkles } from 'lucide-svelte';
@@ -86,7 +87,7 @@
 			<div class="flex-1 space-y-3">
 				<div class="flex items-center gap-2">
 					<Sparkles class="h-4 w-4 text-purple-500" aria-hidden="true" />
-					<Badge variant="outline" class="text-xs">AI Recommendation</Badge>
+					<Badge variant="outline" class="text-xs">{m['autoEvalRecommendation.aiRecommendation']()}</Badge>
 				</div>
 
 				<div>
@@ -96,7 +97,7 @@
 
 				{#if evaluation && evaluation.score !== null}
 					<div class="flex items-center gap-2">
-						<span class="text-sm font-medium">Score:</span>
+						<span class="text-sm font-medium">{m['autoEvalRecommendation.score']()}</span>
 						<Badge variant="secondary">{evaluation.score}/100</Badge>
 					</div>
 				{/if}
@@ -105,7 +106,7 @@
 					class="rounded-md border border-dashed bg-background/50 p-3 text-xs text-muted-foreground"
 				>
 					<p>
-						<strong>Note:</strong> This is an automated recommendation. Please review the submission
+						<strong>{m['autoEvalRecommendation.note']()}</strong> This is an automated recommendation. Please review the submission
 						manually and use your best judgment. You can approve, reject, or change this evaluation at
 						any time.
 					</p>
@@ -123,7 +124,7 @@
 
 			<div class="flex-1 space-y-3">
 				<div>
-					<h3 class="text-lg font-semibold">Already Evaluated</h3>
+					<h3 class="text-lg font-semibold">{m['autoEvalRecommendation.alreadyEvaluated']()}</h3>
 					<p class="mt-1 text-sm text-muted-foreground">
 						Evaluated manually
 						{#if evaluation.created_at}
@@ -156,7 +157,7 @@
 
 					{#if evaluation.score !== null}
 						<div class="mt-3 flex items-center gap-2">
-							<span class="text-sm font-medium">Score:</span>
+							<span class="text-sm font-medium">{m['autoEvalRecommendation.score']()}</span>
 							<Badge variant="secondary">{evaluation.score}/100</Badge>
 						</div>
 					{/if}
@@ -166,7 +167,7 @@
 					class="mt-4 rounded-md border border-dashed bg-background/50 p-3 text-xs text-muted-foreground"
 				>
 					<p>
-						<strong>Note:</strong> You can change this evaluation at any time using the form below.
+						<strong>{m['autoEvalRecommendation.note']()}</strong> You can change this evaluation at any time using the form below.
 					</p>
 				</div>
 			</div>

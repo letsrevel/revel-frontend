@@ -4,6 +4,8 @@
 	import { Calendar, Clock, CheckCircle, AlertCircle, type Icon } from 'lucide-svelte';
 	import type { ComponentType } from 'svelte';
 
+	import * as m from '$lib/paraglide/messages.js';
+
 	interface Props {
 		event: EventDetailSchema;
 		class?: string;
@@ -41,7 +43,7 @@
 		const maxAttendees = event.max_attendees ?? 0;
 		if (maxAttendees > 0 && event.attendee_count >= maxAttendees) {
 			return {
-				label: 'Full',
+				label: m['eventStatus.full'](),
 				variant: 'destructive',
 				icon: AlertCircle
 			};
@@ -50,7 +52,7 @@
 		// 2. Check if past
 		if (endDate < now) {
 			return {
-				label: 'Past',
+				label: m['eventStatus.past'](),
 				variant: 'secondary',
 				icon: CheckCircle
 			};
@@ -59,7 +61,7 @@
 		// 3. Check if ongoing (started but not ended)
 		if (startDate <= now && now <= endDate) {
 			return {
-				label: 'Ongoing',
+				label: m['eventStatus.ongoing'](),
 				variant: 'success',
 				icon: Clock
 			};
@@ -72,7 +74,7 @@
 
 		if (isToday) {
 			return {
-				label: 'Happening Today',
+				label: m['eventStatus.happeningToday'](),
 				variant: 'success',
 				icon: Calendar
 			};
@@ -80,7 +82,7 @@
 
 		// 5. Default: Upcoming
 		return {
-			label: 'Upcoming',
+			label: m['eventStatus.upcoming'](),
 			variant: 'default',
 			icon: Calendar
 		};

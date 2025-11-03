@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		eventadminCreateTicketTier,
@@ -301,7 +302,7 @@
 
 			<!-- Description -->
 			<div>
-				<Label for="tier-description">Description (optional)</Label>
+				<Label for="tier-description">{m['tierForm.descriptionOptional']()}</Label>
 				<Textarea
 					id="tier-description"
 					bind:value={description}
@@ -313,16 +314,16 @@
 
 			<!-- Payment Method -->
 			<div>
-				<Label for="payment-method">Payment Method <span class="text-destructive">*</span></Label>
+				<Label for="payment-method">{m['tierForm.paymentMethod']()}</Label>
 				<select
 					id="payment-method"
 					bind:value={paymentMethod}
 					disabled={isPending}
 					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
-					<option value="free">Free</option>
-					<option value="offline">Offline (Manual Payment)</option>
-					<option value="at_the_door">At the Door</option>
+					<option value="free">{m['tierForm.free']()}</option>
+					<option value="offline">{m['tierForm.offline']()}</option>
+					<option value="at_the_door">{m['tierForm.atTheDoor']()}</option>
 					<option value="online" disabled={!organizationStripeConnected}>
 						Online (Stripe) {!organizationStripeConnected ? '- Not Connected' : ''}
 					</option>
@@ -343,21 +344,21 @@
 			<!-- Price Settings (if not free) -->
 			{#if paymentMethod !== 'free'}
 				<div>
-					<Label for="price-type">Price Type <span class="text-destructive">*</span></Label>
+					<Label for="price-type">{m['tierForm.priceType']()}</Label>
 					<select
 						id="price-type"
 						bind:value={priceType}
 						disabled={isPending}
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					>
-						<option value="fixed">Fixed Price</option>
-						<option value="pwyc">Pay What You Can</option>
+						<option value="fixed">{m['tierForm.fixedPrice']()}</option>
+						<option value="pwyc">{m['tierForm.payWhatYouCan']()}</option>
 					</select>
 				</div>
 
 				<!-- Currency Selection -->
 				<div>
-					<Label for="currency">Currency <span class="text-destructive">*</span></Label>
+					<Label for="currency">{m['tierForm.currency']()}</Label>
 					<select
 						id="currency"
 						bind:value={currency}
@@ -375,7 +376,7 @@
 
 				{#if priceType === 'fixed'}
 					<div>
-						<Label for="price">Price <span class="text-destructive">*</span></Label>
+						<Label for="price">{m['tierForm.price']()}</Label>
 						<div class="relative">
 							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
 								>{currencySymbol}</span
@@ -395,7 +396,7 @@
 				{:else}
 					<div class="grid grid-cols-2 gap-4">
 						<div>
-							<Label for="pwyc-min">Minimum Price <span class="text-destructive">*</span></Label>
+							<Label for="pwyc-min">{m['tierForm.minPrice']()}</Label>
 							<div class="relative">
 								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
 									>{currencySymbol}</span
@@ -413,7 +414,7 @@
 							</div>
 						</div>
 						<div>
-							<Label for="pwyc-max">Maximum Price (optional)</Label>
+							<Label for="pwyc-max">{m['tierForm.maxPrice']()}</Label>
 							<div class="relative">
 								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
 									>{currencySymbol}</span
@@ -436,7 +437,7 @@
 
 			<!-- Total Quantity -->
 			<div>
-				<Label for="total-quantity">Total Tickets Available</Label>
+				<Label for="total-quantity">{m['tierForm.totalTickets']()}</Label>
 				<Input
 					id="total-quantity"
 					type="number"
@@ -445,13 +446,13 @@
 					placeholder="Unlimited"
 					disabled={isPending}
 				/>
-				<p class="mt-1 text-xs text-muted-foreground">Leave empty for unlimited tickets</p>
+				<p class="mt-1 text-xs text-muted-foreground">{m['tierForm.unlimitedTickets']()}</p>
 			</div>
 
 			<!-- Sales Period -->
 			<div class="grid grid-cols-2 gap-4">
 				<div>
-					<Label for="sales-start">Sales Start</Label>
+					<Label for="sales-start">{m['tierForm.salesStart']()}</Label>
 					<Input
 						id="sales-start"
 						type="datetime-local"
@@ -460,7 +461,7 @@
 					/>
 				</div>
 				<div>
-					<Label for="sales-end">Sales End</Label>
+					<Label for="sales-end">{m['tierForm.salesEnd']()}</Label>
 					<Input
 						id="sales-end"
 						type="datetime-local"
@@ -472,33 +473,33 @@
 
 			<!-- Visibility -->
 			<div>
-				<Label for="visibility">Visibility <span class="text-destructive">*</span></Label>
+				<Label for="visibility">{m['tierForm.visibility']()}</Label>
 				<select
 					id="visibility"
 					bind:value={visibility}
 					disabled={isPending}
 					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
-					<option value="public">Public</option>
-					<option value="private">Private</option>
-					<option value="members-only">Members Only</option>
-					<option value="staff-only">Staff Only</option>
+					<option value="public">{m['tierForm.public']()}</option>
+					<option value="private">{m['tierForm.private']()}</option>
+					<option value="members-only">{m['tierForm.membersOnly']()}</option>
+					<option value="staff-only">{m['tierForm.staffOnly']()}</option>
 				</select>
 			</div>
 
 			<!-- Purchasable By -->
 			<div>
-				<Label for="purchasable-by">Who Can Purchase <span class="text-destructive">*</span></Label>
+				<Label for="purchasable-by">{m['tierForm.whoCanPurchase']()}</Label>
 				<select
 					id="purchasable-by"
 					bind:value={purchasableBy}
 					disabled={isPending}
 					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
-					<option value="public">Anyone</option>
-					<option value="members">Members Only</option>
-					<option value="invited">Invited Only</option>
-					<option value="invited_and_members">Invited + Members</option>
+					<option value="public">{m['tierForm.anyone']()}</option>
+					<option value="members">{m['tierForm.membersOnly']()}</option>
+					<option value="invited">{m['tierForm.invitedOnly']()}</option>
+					<option value="invited_and_members">{m['tierForm.invitedAndMembers']()}</option>
 				</select>
 			</div>
 
@@ -523,7 +524,7 @@
 
 			{#if error}
 				<div class="rounded-lg bg-destructive/10 p-3" role="alert">
-					<p class="font-medium text-destructive">Error</p>
+					<p class="font-medium text-destructive">{m['tierForm.error']()}</p>
 					<p class="mt-1 text-sm text-destructive/90">
 						{(error as any)?.message || 'An error occurred. Please try again.'}
 					</p>

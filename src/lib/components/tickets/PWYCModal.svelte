@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import {
 		Dialog,
 		DialogContent,
@@ -102,8 +103,8 @@
 <Dialog bind:open>
 	<DialogContent class="sm:max-w-md">
 		<DialogHeader>
-			<DialogTitle>Pay What You Can</DialogTitle>
-			<DialogDescription>Choose how much you'd like to pay for your ticket.</DialogDescription>
+			<DialogTitle>{m['pwycModal.pwyc']()}</DialogTitle>
+			<DialogDescription>{m['pwycModal.chooseAmount']()}</DialogDescription>
 		</DialogHeader>
 
 		<div class="space-y-4 py-4">
@@ -125,7 +126,7 @@
 
 			<!-- Amount Input -->
 			<div class="space-y-2">
-				<Label for="pwyc-amount">Amount ({tier.currency})</Label>
+				<Label for="pwyc-amount">{m['pwycModal.amount']()} ({tier.currency})</Label>
 				<div class="relative">
 					<span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
 						{tier.currency}
@@ -154,7 +155,7 @@
 
 			<!-- Quick Amount Suggestions -->
 			<div class="space-y-2">
-				<p class="text-sm font-medium">Quick select:</p>
+				<p class="text-sm font-medium">{m['pwycModal.quickSelect']()}</p>
 				<div class="grid grid-cols-3 gap-2">
 					{#each getSuggestions(minAmount(), maxAmount()) as suggested}
 						<Button

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
@@ -152,7 +153,7 @@
 		<div class="mt-4 space-y-4">
 			{#if tiers.length === 0}
 				<div class="py-8 text-center text-muted-foreground">
-					<p>No tickets available at this time.</p>
+					<p>{m['ticketTierModal.noTickets']()}</p>
 				</div>
 			{:else}
 				{#each tiers as tier (tier.id)}
@@ -186,7 +187,7 @@
 									<!-- Payment Method & Instructions -->
 									{#if (tier as any).manual_payment_instructions}
 										<div class="mt-2 rounded-md border border-border bg-muted/50 p-2 text-xs">
-											<p class="font-medium text-muted-foreground">Payment Instructions:</p>
+											<p class="font-medium text-muted-foreground">{m['ticketTierModal.paymentInstructions']()}</p>
 											<p class="mt-1">{(tier as any).manual_payment_instructions}</p>
 										</div>
 									{/if}
@@ -195,14 +196,14 @@
 								<!-- Action Button -->
 								<div>
 									{#if !isAuthenticated}
-										<Button variant="secondary" size="sm" disabled>Sign in</Button>
+										<Button variant="secondary" size="sm" disabled>{m['ticketTierModal.signIn']()}</Button>
 									{:else if hasTicket}
 										<Button variant="secondary" size="sm" disabled>
 											<Check class="mr-2 h-4 w-4" />
 											Claimed
 										</Button>
 									{:else if !isTierAvailable(tier)}
-										<Button variant="secondary" size="sm" disabled>Sold out</Button>
+										<Button variant="secondary" size="sm" disabled>{m['ticketTierModal.soldOut']()}</Button>
 									{:else if canCheckoutTier(tier)}
 										<Button variant="default" size="sm" onclick={() => handleTierClick(tier)}>
 											<Ticket class="mr-2 h-4 w-4" />
@@ -228,7 +229,7 @@
 		{/if}
 
 		<div class="mt-6 border-t pt-4 text-center text-xs text-muted-foreground">
-			<p>By claiming a ticket, you agree to the event's terms and conditions.</p>
+			<p>{m['ticketTierModal.agreeToTerms']()}</p>
 		</div>
 	</DialogContent>
 </Dialog>

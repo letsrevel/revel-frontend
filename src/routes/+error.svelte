@@ -175,7 +175,7 @@
 			<!-- Debug Info (only in development) -->
 			{#if import.meta.env.DEV && message}
 				<div class="mt-8 rounded-lg border border-muted bg-muted/50 p-4 text-left">
-					<h3 class="mb-2 text-sm font-semibold text-muted-foreground">Debug Info:</h3>
+					<h3 class="mb-2 text-sm font-semibold text-muted-foreground">Debug Info</h3>
 					<pre class="overflow-x-auto text-xs text-muted-foreground">{message}</pre>
 				</div>
 			{/if}

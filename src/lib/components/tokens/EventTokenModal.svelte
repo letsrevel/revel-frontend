@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type {
 		EventTokenSchema,
 		EventTokenCreateSchema,
@@ -158,7 +159,7 @@
 		>
 			<!-- Name -->
 			<div class="space-y-2">
-				<Label for="link-name">Name (optional)</Label>
+				<Label for="link-name">{m['eventTokenModal.nameOptional']()}</Label>
 				<Input
 					id="link-name"
 					bind:value={name}
@@ -170,7 +171,7 @@
 			{#if !isEdit}
 				<!-- Duration -->
 				<div class="space-y-2">
-					<Label>Duration</Label>
+					<Label>{m['eventTokenModal.duration']()}</Label>
 					<RadioGroup bind:value={duration}>
 						{#each durationOptions as option}
 							<div class="flex items-center space-x-2">
@@ -185,7 +186,7 @@
 			{:else}
 				<!-- Expires At -->
 				<div class="space-y-2">
-					<Label for="expires-at">Expiration Date</Label>
+					<Label for="expires-at">{m['eventTokenModal.expirationDate']()}</Label>
 					<Input id="expires-at" type="datetime-local" bind:value={expiresAt} />
 				</div>
 			{/if}
@@ -211,7 +212,7 @@
 			{#if grantsInvitation}
 				<!-- Max Uses -->
 				<div class="space-y-2">
-					<Label for="max-uses">Maximum Uses</Label>
+					<Label for="max-uses">{m['eventTokenModal.maxUses']()}</Label>
 					<Input
 						id="max-uses"
 						type="number"
@@ -238,7 +239,7 @@
 							bind:value={ticketTierId}
 							class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						>
-							<option value={null}>No ticket tier</option>
+							<option value={null}>{m['eventTokenModal.noTicketTier']()}</option>
 							{#each ticketTiers as tier}
 								<option value={tier.id}>{tier.name}</option>
 							{/each}
@@ -259,7 +260,7 @@
 						onclick={() => (showAdvanced = !showAdvanced)}
 						class="flex w-full items-center justify-between text-sm font-medium transition-colors hover:text-foreground"
 					>
-						<span>Advanced Invitation Options</span>
+						<span>{m['eventTokenModal.advancedOptions']()}</span>
 						{#if showAdvanced}
 							<ChevronDown class="h-4 w-4" aria-hidden="true" />
 						{:else}
@@ -354,7 +355,7 @@
 									class="mt-0.5 h-4 w-4 rounded border-gray-300"
 								/>
 								<div class="flex-1">
-									<Label for="waives-deadline" class="font-normal">Waive RSVP deadline</Label>
+									<Label for="waives-deadline" class="font-normal">{m['eventTokenModal.waiveDeadline']()}</Label>
 									<p class="text-xs text-muted-foreground">
 										Users can RSVP even after the RSVP deadline has passed
 									</p>

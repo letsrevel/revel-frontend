@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { Clock, Check, TrendingUp } from 'lucide-svelte';
 	import { Card } from '$lib/components/ui/card';
 
@@ -32,9 +33,9 @@
 	<Card class="p-6">
 		<div class="flex items-center justify-between">
 			<div>
-				<p class="text-sm font-medium text-muted-foreground">Pending Review</p>
+				<p class="text-sm font-medium text-muted-foreground">{m['submissionStats.pendingReview']()}</p>
 				<p class="text-3xl font-bold">{pendingCount}</p>
-				<p class="mt-1 text-xs text-muted-foreground">Need attention</p>
+				<p class="mt-1 text-xs text-muted-foreground">{m['submissionStats.needAttention']()}</p>
 			</div>
 			<div class="rounded-full bg-yellow-100 p-3 dark:bg-yellow-950">
 				<Clock class="h-6 w-6 text-yellow-900 dark:text-yellow-100" aria-hidden="true" />
@@ -46,9 +47,9 @@
 	<Card class="p-6">
 		<div class="flex items-center justify-between">
 			<div>
-				<p class="text-sm font-medium text-muted-foreground">Approved</p>
+				<p class="text-sm font-medium text-muted-foreground">{m['submissionStats.approved']()}</p>
 				<p class="text-3xl font-bold">{approvedCount}</p>
-				<p class="mt-1 text-xs text-muted-foreground">Total approved</p>
+				<p class="mt-1 text-xs text-muted-foreground">{m['submissionStats.totalApproved']()}</p>
 			</div>
 			<div class="rounded-full bg-green-100 p-3 dark:bg-green-950">
 				<Check class="h-6 w-6 text-green-900 dark:text-green-100" aria-hidden="true" />
@@ -60,7 +61,7 @@
 	<Card class="p-6">
 		<div class="flex items-center justify-between">
 			<div>
-				<p class="text-sm font-medium text-muted-foreground">Approval Rate</p>
+				<p class="text-sm font-medium text-muted-foreground">{m['submissionStats.approvalRate']()}</p>
 				<p class="text-3xl font-bold">{approvalRate}%</p>
 				<p class="mt-1 text-xs text-muted-foreground">
 					{approvedCount}/{totalEvaluated} approved

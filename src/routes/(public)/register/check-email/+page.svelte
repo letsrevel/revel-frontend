@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { Mail, Loader2 } from 'lucide-svelte';
 	import { accountResendVerificationEmail } from '$lib/api/generated/sdk.gen';
@@ -33,7 +34,7 @@
 </script>
 
 <svelte:head>
-	<title>Check Your Email - Revel</title>
+	<title>{m['checkEmailPage.title']()}</title>
 	<meta name="description" content="Verify your email to complete registration" />
 </svelte:head>
 
@@ -48,8 +49,8 @@
 
 		<!-- Header -->
 		<div class="space-y-2">
-			<h1 class="text-3xl font-bold tracking-tight">Check your email</h1>
-			<p class="text-muted-foreground">We've sent a verification link to:</p>
+			<h1 class="text-3xl font-bold tracking-tight">{m['checkEmailPage.checkYourEmail']()}</h1>
+			<p class="text-muted-foreground">{m['checkEmailPage.verificationLink']()}</p>
 			{#if email}
 				<p class="font-medium">{email}</p>
 			{/if}
@@ -57,13 +58,13 @@
 
 		<!-- Instructions -->
 		<div class="space-y-4 text-sm text-muted-foreground">
-			<p>Click the link in the email to verify your account and complete registration.</p>
-			<p>If you don't see the email, check your spam folder.</p>
+			<p>{m['checkEmailPage.clickLink']()}</p>
+			<p>{m['checkEmailPage.checkSpam']()}</p>
 		</div>
 
 		<!-- Resend Section -->
 		<div class="space-y-3 border-t pt-6">
-			<p class="text-sm text-muted-foreground">Didn't receive the email?</p>
+			<p class="text-sm text-muted-foreground">{m['checkEmailPage.didNotReceive']()}</p>
 
 			{#if resendSuccess}
 				<div
@@ -91,9 +92,9 @@
 			>
 				{#if isResending}
 					<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-					<span>Sending...</span>
+					<span>{m['checkEmailPage.sending']()}</span>
 				{:else}
-					<span>Resend verification email</span>
+					<span>{m['checkEmailPage.resend']()}</span>
 				{/if}
 			</button>
 		</div>

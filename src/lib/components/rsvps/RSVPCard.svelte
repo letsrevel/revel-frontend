@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { UserRsvpSchema } from '$lib/api/generated/types.gen';
 	import { Card } from '$lib/components/ui/card';
 	import { Calendar, MapPin, CheckCircle2, XCircle, HelpCircle } from 'lucide-svelte';
@@ -129,7 +130,7 @@
 			class="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4 text-sm"
 		>
 			<div class="text-muted-foreground">
-				<span class="font-medium">RSVP'd:</span>
+				<span class="font-medium">{m['rsvpCard.rsvpd']()}</span>
 				{createdDate}
 			</div>
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -188,7 +189,7 @@
 <Dialog bind:open>
 	<DialogContent class="max-h-[90vh] max-w-2xl overflow-hidden p-0">
 		<DialogHeader class="border-b p-6 pb-4">
-			<DialogTitle>Assign Questionnaires to Event Series</DialogTitle>
+			<DialogTitle>{m['seriesQuestionnaireAssignmentModal.assignQuestionnaires']()}</DialogTitle>
 			<p class="mt-1 text-sm text-muted-foreground">
 				Select which questionnaires users must complete for events in "{series.name}"
 			</p>
@@ -201,8 +202,7 @@
 				aria-hidden="true"
 			/>
 			<p class="text-orange-900 dark:text-orange-100">
-				<strong>Applies to all events:</strong> Questionnaires assigned here will be required for
-				<strong>all events</strong> in this series, including future events.
+				<strong>{m['seriesQuestionnaireAssignmentModal.appliesToAllEvents']()}</strong> {m['seriesQuestionnaireAssignmentModal.allEvents']()} in this series, including future events.
 			</p>
 		</div>
 
@@ -228,7 +228,7 @@
 			{#if isLoading}
 				<div class="flex items-center justify-center py-12">
 					<Loader2 class="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
-					<span class="ml-2 text-sm text-muted-foreground">Loading questionnaires...</span>
+					<span class="ml-2 text-sm text-muted-foreground">{m['seriesQuestionnaireAssignmentModal.loadingQuestionnaires']()}</span>
 				</div>
 			{:else if filteredQuestionnaires.length === 0}
 				<div class="py-12 text-center">
@@ -287,7 +287,7 @@
 					{selectedIds.size === 1 ? 'questionnaire' : 'questionnaires'} selected
 				</div>
 				<div class="flex gap-2">
-					<Button variant="outline" onclick={onClose} disabled={isSaving}>Cancel</Button>
+					<Button variant="outline" onclick={onClose} disabled={isSaving}>{m['seriesQuestionnaireAssignmentModal.cancel']()}</Button>
 					<Button onclick={saveAssignments} disabled={!hasChanges || isSaving}>
 						{#if isSaving}
 							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import {
 		Dialog,
 		DialogContent,
@@ -193,7 +194,7 @@
 			{#if isPwyc}
 				<div class="space-y-3">
 					<div class="space-y-2">
-						<Label for="pwyc-amount">Payment Amount</Label>
+						<Label for="pwyc-amount">{m['ticketConfirmationDialog.paymentAmount']()}</Label>
 						<div class="text-xs text-muted-foreground">
 							Range: {tier.currency}
 							{minAmount().toFixed(2)} - {maxAmount() !== null
@@ -228,7 +229,7 @@
 
 					<!-- Quick Amount Suggestions -->
 					<div class="space-y-2">
-						<p class="text-sm font-medium">Quick select:</p>
+						<p class="text-sm font-medium">{m['ticketConfirmationDialog.quickSelect']()}</p>
 						<div class="grid grid-cols-3 gap-2">
 							{#each getSuggestions(minAmount(), maxAmount()) as suggested}
 								<Button
@@ -240,8 +241,7 @@
 									}}
 									disabled={isProcessing}
 								>
-									{tier.currency}
-									{suggested.toFixed(2)}
+									{tier.currency}{suggested.toFixed(2)}
 								</Button>
 							{/each}
 						</div>
@@ -254,7 +254,7 @@
 				<Alert>
 					<Info class="h-4 w-4" />
 					<AlertDescription>
-						<p class="font-medium">Payment Instructions:</p>
+						<p class="font-medium">{m['ticketConfirmationDialog.paymentInstructions']()}</p>
 						<p class="mt-1 text-sm">{tier.manual_payment_instructions}</p>
 					</AlertDescription>
 				</Alert>
@@ -314,7 +314,7 @@
 		</DialogFooter>
 
 		<div class="border-t pt-3 text-center text-xs text-muted-foreground">
-			<p>By proceeding, you agree to the event's terms and conditions.</p>
+			<p>{m['ticketConfirmationDialog.agreeToTerms']()}</p>
 		</div>
 	</DialogContent>
 </Dialog>

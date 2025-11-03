@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { EventInvitationRequestSchema } from '$lib/api/generated/types.gen';
 	import { Card } from '$lib/components/ui/card';
 	import { Calendar, MapPin, Ticket, Clock, CheckCircle2, XCircle, Loader2 } from 'lucide-svelte';
@@ -161,7 +162,7 @@
 		{#if request.message}
 			<div class="rounded-md border bg-muted/50 p-3">
 				<p class="text-sm text-muted-foreground">
-					<span class="font-medium">Your message:</span>
+					<span class="font-medium">{m['invitationRequestCard.yourMessage']()}</span>
 					"{request.message}"
 				</p>
 			</div>
@@ -172,7 +173,7 @@
 			class="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4 text-sm"
 		>
 			<div class="text-muted-foreground">
-				<span class="font-medium">Requested:</span>
+				<span class="font-medium">{m['invitationRequestCard.requested']()}</span>
 				{createdDate}
 			</div>
 

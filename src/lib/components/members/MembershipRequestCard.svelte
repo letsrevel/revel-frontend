@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { OrganizationMembershipRequestRetrieve } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
 	import {
@@ -72,21 +73,21 @@
 				{#if request.user.first_name || request.user.last_name}
 					<p class="truncate">
 						{#if request.user.first_name}
-							<span class="font-medium">First:</span>
+							<span class="font-medium">{m['membershipRequestCard.first']()}</span>
 							{request.user.first_name}
 						{/if}
 						{#if request.user.first_name && request.user.last_name}
 							<span class="mx-2">•</span>
 						{/if}
 						{#if request.user.last_name}
-							<span class="font-medium">Last:</span>
+							<span class="font-medium">{m['membershipRequestCard.last']()}</span>
 							{request.user.last_name}
 						{/if}
 					</p>
 				{/if}
 				{#if request.user.preferred_name}
 					<p class="truncate">
-						<span class="font-medium">Preferred:</span>
+						<span class="font-medium">{m['membershipRequestCard.preferred']()}</span>
 						{request.user.preferred_name}
 					</p>
 				{/if}
@@ -118,7 +119,7 @@
 				aria-label="View request details from {displayName}"
 			>
 				<MessageSquare class="h-4 w-4" />
-				<span class="ml-2">View Request</span>
+				<span class="ml-2">{m['membershipRequestCard.viewRequest']()}</span>
 			</Button>
 
 			<Button
@@ -130,7 +131,7 @@
 				class="bg-green-600 hover:bg-green-700"
 			>
 				<CheckCircle class="h-4 w-4" />
-				<span class="ml-2">Approve</span>
+				<span class="ml-2">{m['membershipRequestCard.approve']()}</span>
 			</Button>
 
 			<Button
@@ -141,7 +142,7 @@
 				aria-label="Reject request from {displayName}"
 			>
 				<XCircle class="h-4 w-4" />
-				<span class="ml-2">Reject</span>
+				<span class="ml-2">{m['membershipRequestCard.reject']()}</span>
 			</Button>
 		</div>
 	</div>
@@ -151,7 +152,7 @@
 <Dialog open={dialogOpen} onOpenChange={(open) => (dialogOpen = open)}>
 	<DialogContent class="max-w-lg">
 		<DialogHeader>
-			<DialogTitle>Membership Request from {displayName}</DialogTitle>
+			<DialogTitle>{m['membershipRequestCard.membershipRequestFrom']()} {displayName}</DialogTitle>
 			<DialogDescription>
 				Review the request details and approve or reject this membership application.
 			</DialogDescription>
@@ -160,41 +161,41 @@
 		<div class="space-y-4 py-4">
 			<!-- User Information -->
 			<div class="space-y-2">
-				<h4 class="text-sm font-semibold">Applicant Information</h4>
+				<h4 class="text-sm font-semibold">{m['membershipRequestCard.applicantInformation']()}</h4>
 				<dl class="space-y-1 text-sm">
 					{#if request.user.first_name}
 						<div class="flex gap-2">
-							<dt class="font-medium text-muted-foreground">First Name:</dt>
+							<dt class="font-medium text-muted-foreground">{m['membershipRequestCard.firstName']()}</dt>
 							<dd class="text-foreground">{request.user.first_name}</dd>
 						</div>
 					{/if}
 					{#if request.user.last_name}
 						<div class="flex gap-2">
-							<dt class="font-medium text-muted-foreground">Last Name:</dt>
+							<dt class="font-medium text-muted-foreground">{m['membershipRequestCard.lastName']()}</dt>
 							<dd class="text-foreground">{request.user.last_name}</dd>
 						</div>
 					{/if}
 					{#if request.user.preferred_name}
 						<div class="flex gap-2">
-							<dt class="font-medium text-muted-foreground">Preferred Name:</dt>
+							<dt class="font-medium text-muted-foreground">{m['membershipRequestCard.preferredName']()}</dt>
 							<dd class="text-foreground">{request.user.preferred_name}</dd>
 						</div>
 					{/if}
 					{#if request.user.pronouns}
 						<div class="flex gap-2">
-							<dt class="font-medium text-muted-foreground">Pronouns:</dt>
+							<dt class="font-medium text-muted-foreground">{m['membershipRequestCard.pronouns']()}</dt>
 							<dd class="text-foreground">{request.user.pronouns}</dd>
 						</div>
 					{/if}
 					{#if request.user.email}
 						<div class="flex gap-2">
-							<dt class="font-medium text-muted-foreground">Email:</dt>
+							<dt class="font-medium text-muted-foreground">{m['membershipRequestCard.email']()}</dt>
 							<dd class="truncate text-foreground">{request.user.email}</dd>
 						</div>
 					{/if}
 					{#if (request.user as any).phone_number}
 						<div class="flex gap-2">
-							<dt class="font-medium text-muted-foreground">Phone:</dt>
+							<dt class="font-medium text-muted-foreground">{m['membershipRequestCard.phone']()}</dt>
 							<dd class="text-foreground">{(request.user as any).phone_number}</dd>
 						</div>
 					{/if}
@@ -204,7 +205,7 @@
 			<!-- Message -->
 			{#if request.message}
 				<div class="space-y-2">
-					<h4 class="text-sm font-semibold">Message</h4>
+					<h4 class="text-sm font-semibold">{m['membershipRequestCard.message']()}</h4>
 					<div
 						class="rounded-lg border border-border bg-muted/50 p-3 text-sm text-foreground"
 						style="white-space: pre-wrap; word-wrap: break-word;"
@@ -214,8 +215,8 @@
 				</div>
 			{:else}
 				<div class="space-y-2">
-					<h4 class="text-sm font-semibold">Message</h4>
-					<p class="text-sm italic text-muted-foreground">No message provided</p>
+					<h4 class="text-sm font-semibold">{m['membershipRequestCard.message']()}</h4>
+					<p class="text-sm italic text-muted-foreground">{m['membershipRequestCard.noMessage']()}</p>
 				</div>
 			{/if}
 

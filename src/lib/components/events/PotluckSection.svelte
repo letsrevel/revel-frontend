@@ -361,7 +361,7 @@
 			const query = searchQuery.toLowerCase();
 			filtered = items.filter(
 				(item) =>
-					item.name.toLowerCase().includes(query) || item.item_type.toLowerCase().includes(query)
+					item['name.toLowerCase']().includes(query) || item.item_type.toLowerCase().includes(query)
 			);
 		}
 

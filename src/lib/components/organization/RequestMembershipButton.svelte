@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { organizationCreateMembershipRequest } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -132,7 +133,7 @@
 			class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {className}"
 		>
 			<UserPlus class="h-4 w-4" aria-hidden="true" />
-			Request Membership
+			{m['requestMembershipButton.requestMembership']()}
 		</Dialog.Trigger>
 
 		<Dialog.Content class="sm:max-w-[500px]">
@@ -157,7 +158,7 @@
 							/>
 						</svg>
 					</div>
-					<Dialog.Title class="text-xl font-semibold">Request Submitted!</Dialog.Title>
+					<Dialog.Title class="text-xl font-semibold">{m['requestMembershipButton.requestSubmitted']()}</Dialog.Title>
 					<Dialog.Description class="mt-2">
 						Your membership request has been sent to {organizationName}. You'll be notified when
 						it's reviewed.
@@ -166,7 +167,7 @@
 			{:else}
 				<!-- Request Form -->
 				<Dialog.Header>
-					<Dialog.Title>Request Membership</Dialog.Title>
+					<Dialog.Title>{m['requestMembershipButton.requestMembership']()}</Dialog.Title>
 					<Dialog.Description>
 						Submit a request to become a member of {organizationName}. Members may have access to
 						exclusive events and content.

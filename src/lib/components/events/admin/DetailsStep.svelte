@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { EventCreateSchema, EventSeriesRetrieveSchema } from '$lib/api/generated/types.gen';
 	import { getBackendUrl } from '$lib/config/api';
 	import {
@@ -183,7 +184,7 @@
 		>
 			<div class="flex items-center gap-2 font-semibold">
 				<FileText class="h-5 w-5" aria-hidden="true" />
-				Basic Details
+				{m['detailsStep.basicDetails']()}
 			</div>
 			{#if isSectionOpen('basic')}
 				<ChevronDown class="h-5 w-5" aria-hidden="true" />
@@ -198,8 +199,8 @@
 				<MarkdownEditor
 					bind:value={description}
 					id="description"
-					label="Description"
-					placeholder="Describe your event in detail..."
+					label={m['detailsStep.description']()}
+					placeholder={m['detailsStep.descriptionPlaceholder']()}
 					rows={8}
 					onValueChange={handleDescriptionChange}
 				/>
@@ -209,7 +210,7 @@
 					<label for="address" class="block text-sm font-medium">
 						<span class="flex items-center gap-2">
 							<MapPin class="h-4 w-4" aria-hidden="true" />
-							Address
+							{m['detailsStep.address']()}
 						</span>
 					</label>
 					<input
@@ -217,7 +218,7 @@
 						type="text"
 						value={formData.address || ''}
 						oninput={(e) => onUpdate({ address: e.currentTarget.value })}
-						placeholder="123 Main St, Suite 100"
+						placeholder={m['detailsStep.addressPlaceholder']()}
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					/>
 				</div>
@@ -236,7 +237,7 @@
 			>
 				<div class="flex items-center gap-2 font-semibold">
 					<CheckSquare class="h-5 w-5" aria-hidden="true" />
-					RSVP Options
+					{m['detailsStep.rsvpOptions']()}
 				</div>
 				{#if isSectionOpen('rsvp')}
 					<ChevronDown class="h-5 w-5" aria-hidden="true" />
@@ -249,7 +250,7 @@
 				<div class="space-y-4 p-4">
 					<!-- RSVP Deadline -->
 					<div class="space-y-2">
-						<label for="rsvp-before" class="block text-sm font-medium"> RSVP Deadline </label>
+						<label for="rsvp-before" class="block text-sm font-medium"> {m['detailsStep.rsvpDeadline']()} </label>
 						<input
 							id="rsvp-before"
 							type="datetime-local"
@@ -258,8 +259,7 @@
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						/>
 						<p class="text-xs text-muted-foreground">
-							Last date and time to RSVP (timezone: {Intl.DateTimeFormat().resolvedOptions()
-								.timeZone})
+							{m['detailsStep.rsvpDeadlineHint']({ timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })}
 						</p>
 					</div>
 				</div>
@@ -277,7 +277,7 @@
 		>
 			<div class="flex items-center gap-2 font-semibold">
 				<Users class="h-5 w-5" aria-hidden="true" />
-				Capacity
+				{m['detailsStep.capacity']()}
 			</div>
 			{#if isSectionOpen('capacity')}
 				<ChevronDown class="h-5 w-5" aria-hidden="true" />
@@ -290,7 +290,7 @@
 			<div class="space-y-4 p-4">
 				<!-- Max Attendees -->
 				<div class="space-y-2">
-					<label for="max-attendees" class="block text-sm font-medium"> Maximum Attendees </label>
+					<label for="max-attendees" class="block text-sm font-medium"> {m['detailsStep.maxAttendees']()} </label>
 					<input
 						id="max-attendees"
 						type="number"
@@ -298,10 +298,10 @@
 						value={formData.max_attendees || ''}
 						oninput={(e) =>
 							onUpdate({ max_attendees: parseInt(e.currentTarget.value) || undefined })}
-						placeholder="Unlimited"
+						placeholder={m['detailsStep.unlimited']()}
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					/>
-					<p class="text-xs text-muted-foreground">Leave empty for unlimited capacity</p>
+					<p class="text-xs text-muted-foreground">{m['detailsStep.unlimitedCapacity']()}</p>
 				</div>
 
 				<!-- Waitlist Open -->
@@ -315,9 +315,9 @@
 						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 					/>
 					<div class="flex-1">
-						<div class="font-medium">Waitlist Open</div>
+						<div class="font-medium">{m['detailsStep.waitlistOpen']()}</div>
 						<div class="text-sm text-muted-foreground">
-							Allow users to join a waitlist when event is full
+							{m['detailsStep.waitlistHint']()}
 						</div>
 					</div>
 				</label>
@@ -325,13 +325,13 @@
 				<!-- Invitation Message -->
 				<div class="space-y-2">
 					<label for="invitation-message" class="block text-sm font-medium">
-						Invitation Message
+						{m['detailsStep.invitationMessage']()}
 					</label>
 					<textarea
 						id="invitation-message"
 						value={formData.invitation_message || ''}
 						oninput={(e) => onUpdate({ invitation_message: e.currentTarget.value })}
-						placeholder="Welcome message for attendees..."
+						placeholder={m['detailsStep.invitationMessagePlaceholder']()}
 						rows={4}
 						class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					></textarea>
@@ -350,7 +350,7 @@
 		>
 			<div class="flex items-center gap-2 font-semibold">
 				<Settings class="h-5 w-5" aria-hidden="true" />
-				Advanced
+				{m['detailsStep.advanced']()}
 			</div>
 			{#if isSectionOpen('advanced')}
 				<ChevronDown class="h-5 w-5" aria-hidden="true" />
@@ -365,7 +365,7 @@
 					<!-- Check-in Starts At (tickets only) -->
 					<div class="space-y-2">
 						<label for="check-in-starts" class="block text-sm font-medium">
-							Check-in Opens At
+							{m['detailsStep.checkinOpensAt']()}
 						</label>
 						<input
 							id="check-in-starts"
@@ -375,15 +375,14 @@
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						/>
 						<p class="text-xs text-muted-foreground">
-							When ticket check-in becomes available (timezone: {Intl.DateTimeFormat().resolvedOptions()
-								.timeZone})
+							{m['detailsStep.checkinOpensAtHint']({ timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })}
 						</p>
 					</div>
 
 					<!-- Check-in Ends At (tickets only) -->
 					<div class="space-y-2">
 						<label for="check-in-ends" class="block text-sm font-medium">
-							Check-in Closes At
+							{m['detailsStep.checkinClosesAt']()}
 						</label>
 						<input
 							id="check-in-ends"
@@ -393,8 +392,7 @@
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						/>
 						<p class="text-xs text-muted-foreground">
-							When ticket check-in is no longer available (timezone: {Intl.DateTimeFormat().resolvedOptions()
-								.timeZone})
+							{m['detailsStep.checkinClosesAtHint']({ timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })}
 						</p>
 					</div>
 				{/if}
@@ -410,9 +408,9 @@
 						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 					/>
 					<div class="flex-1">
-						<div class="font-medium">Enable Potluck</div>
+						<div class="font-medium">{m['detailsStep.enablePotluck']()}</div>
 						<div class="text-sm text-muted-foreground">
-							Allow attendees to create and claim items to bring
+							{m['detailsStep.potluckHint']()}
 						</div>
 					</div>
 				</label>
@@ -428,9 +426,9 @@
 						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 					/>
 					<div class="flex-1">
-						<div class="font-medium">Accept Invitation Requests</div>
+						<div class="font-medium">{m['detailsStep.acceptInvitationRequests']()}</div>
 						<div class="text-sm text-muted-foreground">
-							Allow users to request invitations to this event
+							{m['detailsStep.invitationRequestHint']()}
 						</div>
 					</div>
 				</label>
@@ -440,7 +438,7 @@
 					<label for="tags-input" class="block text-sm font-medium">
 						<span class="flex items-center gap-2">
 							<Hash class="h-4 w-4" aria-hidden="true" />
-							Tags
+							{m['detailsStep.tags']()}
 						</span>
 					</label>
 					<div class="flex gap-2">
@@ -450,7 +448,7 @@
 							value={tagInput}
 							oninput={(e) => (tagInput = e.currentTarget.value)}
 							onkeydown={handleTagKeydown}
-							placeholder="Add tags..."
+							placeholder={m['detailsStep.addTagsPlaceholder']()}
 							class="flex h-10 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						/>
 						<button
@@ -458,7 +456,7 @@
 							onclick={addTag}
 							class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 						>
-							Add
+							{m['detailsStep.add']()}
 						</button>
 					</div>
 					{#if formData.tags && formData.tags.length > 0}
@@ -472,7 +470,7 @@
 										type="button"
 										onclick={() => removeTag(tag)}
 										class="ml-1 rounded-full p-0.5 transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-										aria-label="Remove {tag} tag"
+										aria-label={m['detailsStep.removeTag']({ tag })}
 									>
 										<svg
 											class="h-3 w-3"
@@ -498,14 +496,14 @@
 				<!-- Event Series -->
 				{#if eventSeries.length > 0}
 					<div class="space-y-2">
-						<label for="event-series" class="block text-sm font-medium"> Event Series </label>
+						<label for="event-series" class="block text-sm font-medium"> {m['detailsStep.eventSeries']()} </label>
 						<select
 							id="event-series"
 							value={formData.event_series_id || ''}
 							onchange={(e) => onUpdate({ event_series_id: e.currentTarget.value || null })}
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						>
-							<option value="">None</option>
+							<option value="">{m['detailsStep.none']()}</option>
 							{#each eventSeries as series}
 								<option value={series.id}>{series.name}</option>
 							{/each}
@@ -525,7 +523,7 @@
 				{:else if questionnaires.length > 0}
 					<div class="space-y-2">
 						<p class="text-sm text-muted-foreground">
-							Save the event first to assign questionnaires
+							{m['detailsStep.saveToAssignQuestionnaires']()}
 						</p>
 					</div>
 				{/if}
@@ -543,7 +541,7 @@
 		>
 			<div class="flex items-center gap-2 font-semibold">
 				<Image class="h-5 w-5" aria-hidden="true" />
-				Media
+				{m['detailsStep.media']()}
 			</div>
 			{#if isSectionOpen('media')}
 				<ChevronDown class="h-5 w-5" aria-hidden="true" />
@@ -558,7 +556,7 @@
 				<ImageUploader
 					bind:value={logoFile}
 					preview={logoUrl}
-					label="Event Logo"
+					label={m['detailsStep.eventLogo']()}
 					aspectRatio="square"
 					accept="image/jpeg,image/png,image/webp"
 					maxSize={5 * 1024 * 1024}
@@ -568,14 +566,14 @@
 					}}
 				/>
 				<p class="-mt-4 text-xs text-muted-foreground">
-					Recommended: Square image, at least 400x400px. Falls back to organization logo if not set.
+					{m['detailsStep.logoHint']()}
 				</p>
 
 				<!-- Cover Art Upload -->
 				<ImageUploader
 					bind:value={coverArtFile}
 					preview={coverArtUrl}
-					label="Cover Art"
+					label={m['detailsStep.coverArt']()}
 					aspectRatio="wide"
 					accept="image/jpeg,image/png,image/webp"
 					maxSize={5 * 1024 * 1024}
@@ -585,8 +583,7 @@
 					}}
 				/>
 				<p class="-mt-4 text-xs text-muted-foreground">
-					Recommended: 16:9 aspect ratio, at least 1200x675px. Falls back to organization cover if
-					not set.
+					{m['detailsStep.coverArtHint']()}
 				</p>
 			</div>
 		{/if}

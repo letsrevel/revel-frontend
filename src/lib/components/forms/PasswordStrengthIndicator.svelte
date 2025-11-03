@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { Check, X } from 'lucide-svelte';
 
 	interface Props {
@@ -60,7 +61,7 @@
 	<!-- Strength label -->
 	{#if password.length > 0}
 		<div class="flex items-center justify-between text-sm">
-			<span class="text-muted-foreground">Password strength:</span>
+			<span class="text-muted-foreground">{m['passwordStrength.strength']()}</span>
 			<span class="font-medium" data-testid="strength-label">{strengthLabel}</span>
 		</div>
 	{/if}
@@ -78,7 +79,7 @@
 				{:else}
 					<X class="h-3.5 w-3.5" aria-hidden="true" />
 				{/if}
-				<span>At least 8 characters</span>
+				<span>{m.passwordStrength_atLeast8()}</span>
 			</div>
 
 			<div
@@ -91,7 +92,7 @@
 				{:else}
 					<X class="h-3.5 w-3.5" aria-hidden="true" />
 				{/if}
-				<span>One uppercase letter</span>
+				<span>{m['passwordStrength.oneUppercase']()}</span>
 			</div>
 
 			<div
@@ -104,7 +105,7 @@
 				{:else}
 					<X class="h-3.5 w-3.5" aria-hidden="true" />
 				{/if}
-				<span>One lowercase letter</span>
+				<span>{m['passwordStrength.oneLowercase']()}</span>
 			</div>
 
 			<div
@@ -117,7 +118,7 @@
 				{:else}
 					<X class="h-3.5 w-3.5" aria-hidden="true" />
 				{/if}
-				<span>One number</span>
+				<span>{m['passwordStrength.oneNumber']()}</span>
 			</div>
 
 			<div
@@ -130,7 +131,7 @@
 				{:else}
 					<X class="h-3.5 w-3.5" aria-hidden="true" />
 				{/if}
-				<span>One special character (!@#$%...)</span>
+				<span>{m['passwordStrength.oneSpecial']()}</span>
 			</div>
 		</div>
 	{/if}

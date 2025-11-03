@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
@@ -40,7 +41,7 @@
 	<input type="hidden" name="submission_id" value={submissionId} />
 
 	<Card class="p-6">
-		<h3 class="mb-4 text-lg font-semibold">Your Evaluation</h3>
+		<h3 class="mb-4 text-lg font-semibold">{m['evaluationForm.yourEvaluation']()}</h3>
 
 		<!-- Quick Actions -->
 		<div class="mb-6 grid gap-4 md:grid-cols-3">
@@ -60,9 +61,9 @@
 				{:else}
 					<Check class="h-6 w-6" />
 				{/if}
-				<span class="text-lg font-semibold">Approve</span>
+				<span class="text-lg font-semibold">{m['evaluationForm.approve']()}</span>
 				{#if currentStatus === 'approved'}
-					<span class="text-xs">Current</span>
+					<span class="text-xs">{m['evaluationForm.current']()}</span>
 				{/if}
 			</Button>
 
@@ -82,9 +83,9 @@
 				{:else}
 					<X class="h-6 w-6" />
 				{/if}
-				<span class="text-lg font-semibold">Reject</span>
+				<span class="text-lg font-semibold">{m['evaluationForm.reject']()}</span>
 				{#if currentStatus === 'rejected'}
-					<span class="text-xs">Current</span>
+					<span class="text-xs">{m['evaluationForm.current']()}</span>
 				{/if}
 			</Button>
 
@@ -104,9 +105,9 @@
 				{:else}
 					<Clock class="h-6 w-6" />
 				{/if}
-				<span class="text-lg font-semibold">Pending Review</span>
+				<span class="text-lg font-semibold">{m['evaluationForm.pendingReview']()}</span>
 				{#if currentStatus === 'pending review'}
-					<span class="text-xs">Current</span>
+					<span class="text-xs">{m['evaluationForm.current']()}</span>
 				{/if}
 			</Button>
 		</div>
@@ -119,7 +120,7 @@
 			aria-expanded={showAdvancedOptions}
 			aria-controls="advanced-options"
 		>
-			<span>Advanced Options (Score & Comments)</span>
+			<span>{m['evaluationForm.advancedOptions']()}</span>
 			{#if showAdvancedOptions}
 				<ChevronUp class="h-4 w-4" aria-hidden="true" />
 			{:else}
@@ -132,7 +133,7 @@
 			<div id="advanced-options" class="space-y-4 border-t pt-4">
 				<!-- Score Input -->
 				<div>
-					<Label for="score">Score (Optional)</Label>
+					<Label for="score">{m['evaluationForm.scoreOptional']()}</Label>
 					<div class="flex items-center gap-2">
 						<Input
 							id="score"
@@ -155,7 +156,7 @@
 
 				<!-- Comments Input -->
 				<div>
-					<Label for="comments">Comments (Optional)</Label>
+					<Label for="comments">{m['evaluationForm.commentsOptional']()}</Label>
 					<Textarea
 						id="comments"
 						name="comments"

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type {
 		OrganizationTokenSchema,
 		OrganizationTokenCreateSchema,
@@ -119,20 +120,20 @@
 		>
 			<!-- Name -->
 			<div class="space-y-2">
-				<Label for="token-name">Name (optional)</Label>
+				<Label for="token-name">{m['organizationTokenModal.nameOptional']()}</Label>
 				<Input
 					id="token-name"
 					bind:value={name}
 					placeholder="e.g., Spring 2025 Recruitment"
 					maxlength={150}
 				/>
-				<p class="text-xs text-muted-foreground">A display name to help you organize your tokens</p>
+				<p class="text-xs text-muted-foreground">{m['organizationTokenModal.displayName']()}</p>
 			</div>
 
 			{#if !isEdit}
 				<!-- Duration (create only) -->
 				<div class="space-y-2">
-					<Label>Duration</Label>
+					<Label>{m['organizationTokenModal.duration']()}</Label>
 					<RadioGroup bind:value={duration}>
 						{#each durationOptions as option}
 							<div class="flex items-center space-x-2">
@@ -147,15 +148,15 @@
 			{:else}
 				<!-- Expires At (edit only) -->
 				<div class="space-y-2">
-					<Label for="expires-at">Expiration Date</Label>
+					<Label for="expires-at">{m['organizationTokenModal.expirationDate']()}</Label>
 					<Input id="expires-at" type="datetime-local" bind:value={expiresAt} />
-					<p class="text-xs text-muted-foreground">Leave empty for no expiration</p>
+					<p class="text-xs text-muted-foreground">{m['organizationTokenModal.noExpiration']()}</p>
 				</div>
 			{/if}
 
 			<!-- Max Uses -->
 			<div class="space-y-2">
-				<Label for="max-uses">Maximum Uses</Label>
+				<Label for="max-uses">{m['organizationTokenModal.maxUses']()}</Label>
 				<Input
 					id="max-uses"
 					type="number"
@@ -176,7 +177,7 @@
 
 			<!-- Access Type -->
 			<div class="space-y-3">
-				<Label>Access Type</Label>
+				<Label>{m['organizationTokenModal.accessType']()}</Label>
 
 				<label
 					class="flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors hover:bg-accent"
@@ -187,7 +188,7 @@
 						id="grants-membership"
 					/>
 					<div class="flex-1">
-						<div class="font-medium">Grant membership access</div>
+						<div class="font-medium">{m['organizationTokenModal.grantMembership']()}</div>
 						<div class="text-sm text-muted-foreground">
 							Users become organization members when claiming
 						</div>
@@ -204,7 +205,7 @@
 					/>
 					<div class="flex-1">
 						<div class="flex items-center gap-2 font-medium">
-							<span>Grant staff access</span>
+							<span>{m['organizationTokenModal.grantStaff']()}</span>
 							<span class="text-xs text-muted-foreground">⚠️ Sensitive</span>
 						</div>
 						<div class="text-sm text-muted-foreground">
@@ -215,14 +216,14 @@
 
 				{#if showStaffWarning}
 					<div class="rounded-md bg-yellow-50 p-3 text-sm text-yellow-800">
-						<strong>Security Warning:</strong> Staff tokens grant sensitive permissions. Only share privately
+						<strong>{m['organizationTokenModal.securityWarning']()}</strong> Staff tokens grant sensitive permissions. Only share privately
 						(email, Slack DM, etc.).
 					</div>
 				{/if}
 
 				{#if showBothUncheckedWarning}
 					<div class="rounded-md bg-red-50 p-3 text-sm text-red-800">
-						<strong>Error:</strong> At least one access type must be selected. The token must grant membership
+						<strong>{m['organizationTokenModal.error']()}</strong> At least one access type must be selected. The token must grant membership
 						or staff access.
 					</div>
 				{/if}
