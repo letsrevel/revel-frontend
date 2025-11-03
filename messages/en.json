@@ -53,7 +53,7 @@
   },
   "home": {
     "welcomeTo": "Welcome to",
-    "welcomeToRevel": "Welcome to {flipContainer} {revel}",
+    "welcomeToRevel": "Welcome to {revel}",
     "tagline": "Open-source, community-focused event management and ticketing platform. Discover events, connect with communities, and create unforgettable experiences.",
     "getStarted": "Get Started",
     "featuresTitle": "Features",
@@ -830,9 +830,6 @@
     "aboutOrganizer": "About the organizer"
   },
   "potluckItemEditModal": {
-    "markdownSupported": "Basic markdown supported"
-  },
-  "potluckItemEditModal": {
     "addPotluckItem": "Add potluck item",
     "addItemYoullBring": "Add item you'll bring",
     "editPotluckItem": "Edit potluck item",
@@ -875,10 +872,6 @@
     "markdownSupported": "Basic markdown supported"
   },
   "requestInvitationButton": {
-    "requestSubmitted": "Request Submitted!",
-    "requestInvitation": "Request Invitation"
-  },
-  "requestInvitationButton": {
     "mustBeLoggedIn": "You must be logged in to request an invitation",
     "failedToSubmit": "Failed to submit invitation request",
     "invitationRequested": "Invitation Requested",
@@ -891,13 +884,6 @@
     "cancel": "Cancel",
     "submitting": "Submitting...",
     "submitRequest": "Submit Request"
-  },
-  "detailsStep": {
-    "unlimitedCapacity": "Leave empty for unlimited capacity",
-    "waitlistOpen": "Waitlist Open",
-    "enablePotluck": "Enable Potluck",
-    "acceptInvitationRequests": "Accept Invitation Requests",
-    "none": "None"
   },
   "detailsStep": {
     "basicDetails": "Basic Details",
@@ -963,18 +949,6 @@
   },
   "eventWizard": {
     "error": "Error"
-  },
-  "ticketingStep": {
-    "ticketingConfiguration": "Ticketing Configuration",
-    "configureOptions": "Configure ticketing options and manage ticket tiers",
-    "freeForMembers": "Free for Members",
-    "freeForStaff": "Free for Staff",
-    "staffNoPay": "Staff members don't need to pay for tickets",
-    "ticketTiers": "Ticket Tiers",
-    "loadingTiers": "Loading tiers...",
-    "errorLoadingTiers": "Error loading ticket tiers",
-    "noTiersFound": "No ticket tiers found for this event",
-    "saveAndExit": "Save & Exit"
   },
   "ticketingStep": {
     "ticketingOptions": "Ticketing Options",
