@@ -320,6 +320,7 @@
     "browseEventsButton": "Veranstaltungen durchsuchen",
     "myOrganizationsButton": "Meine Organisationen",
     "adminButton": "Admin",
+    "viewProfile": "Profil ansehen",
     "sections": {
       "yourEvents": "Deine Veranstaltungen",
       "discoverEvents": "Veranstaltungen entdecken",
@@ -349,75 +350,48 @@
       "noOrganizationsHint": "Organisationen helfen dir, Veranstaltungen zu verwalten und deine Community aufzubauen."
     },
     "invitations": {
-      "pageTitle": "Meine Einladungen",
-      "pageSubtitle": "Verwalte deine Veranstaltungseinladungen und Zugangsanfragen",
-      "metaTitle": "Meine Einladungen - Revel",
-      "metaDescription": "Sieh dir deine Veranstaltungseinladungen und Einladungsanfragen an",
-      "tabs": {
-        "myInvitations": "Meine Einladungen",
-        "myRequests": "Meine Anfragen"
-      },
-      "search": {
-        "label": "Einladungen suchen",
-        "placeholder": "Nach Veranstaltungsname suchen...",
-        "requestsLabel": "Anfragen suchen"
-      },
-      "filters": {
-        "options": "Optionen",
-        "status": "Status",
-        "includePastEvents": "Vergangene Veranstaltungen einbeziehen",
-        "all": "Alle",
-        "pending": "Ausstehend",
-        "approved": "Genehmigt",
-        "rejected": "Abgelehnt",
-        "clearSearch": "Suche löschen",
-        "clearFilters": "Filter löschen"
-      },
-      "emptyStates": {
-        "noInvitations": "Keine Einladungen gefunden",
-        "noInvitationsFiltered": "Versuche, deine Suche anzupassen, um mehr Einladungen zu sehen",
-        "noInvitationsYet": "Du hast noch keine speziellen Veranstaltungseinladungen erhalten",
-        "noRequests": "Keine Anfragen gefunden",
-        "noRequestsFiltered": "Versuche, deine Filter anzupassen, um mehr Anfragen zu sehen",
-        "noRequestsYet": "Du hast noch keinen Zugang zu privaten Veranstaltungen angefragt"
-      },
-      "loading": "Einladungen werden geladen...",
-      "loadingRequests": "Anfragen werden geladen..."
+      "title": "Meine Einladungen",
+      "description": "Deine Event-Einladungen anzeigen und verwalten",
+      "tabs": "Einladungs-Tabs",
+      "received": "Erhalten",
+      "sent": "Gesendet",
+      "searchPlaceholder": "Nach Eventname suchen...",
+      "showing": "{count} von {total} anzeigen",
+      "invitation": "Einladung",
+      "invitations": "Einladungen",
+      "noInvitations": "Keine Einladungen gefunden",
+      "noReceivedInvitations": "Du hast keine Einladungen erhalten",
+      "noSentInvitations": "Du hast keine Einladungen gesendet",
+      "previousPage": "Vorherige Seite",
+      "nextPage": "Nächste Seite",
+      "loadingInvitations": "Lade Einladungen...",
+      "loadingRequests": "Lade Anfragen...",
+      "tryAdjustingSearch": "Passe deine Suche an, um mehr Einladungen zu sehen",
+      "tryAdjustingFilters": "Passe deine Filter an, um mehr Anfragen zu sehen",
+      "clearSearch": "Suche löschen",
+      "clearFilters": "Filter löschen",
+      "noRequests": "Keine Anfragen gefunden",
+      "status_pending": "Ausstehend",
+      "status_approved": "Genehmigt",
+      "status_rejected": "Abgelehnt"
     },
     "rsvps": {
-      "pageTitle": "Meine Zusagen",
-      "pageSubtitle": "Sieh dir alle deine Veranstaltungszusagen an und verwalte sie",
-      "metaTitle": "Meine Zusagen - Revel",
-      "metaDescription": "Sieh dir alle deine Veranstaltungszusagen an und verwalte sie",
-      "search": {
-        "label": "Zusagen suchen",
-        "placeholder": "Nach Veranstaltungsname suchen..."
-      },
-      "filters": {
-        "status": "Status",
-        "options": "Optionen",
-        "all": "Alle",
-        "going": "Nehme teil",
-        "maybe": "Vielleicht",
-        "notGoing": "Nehme nicht teil",
-        "includePastEvents": "Vergangene Veranstaltungen einbeziehen",
-        "clearFilters": "Filter löschen"
-      },
-      "pagination": {
-        "showing": "Zeige {count} von {total} {rsvpPlural}",
-        "page": "Seite {current} von {total}"
-      },
-      "emptyStates": {
-        "noRsvps": "Keine Zusagen gefunden",
-        "noRsvpsFiltered": "Versuche, deine Filter oder Suchanfrage anzupassen, um mehr Zusagen zu sehen",
-        "noRsvpsYet": "Du hast noch zu keinen Veranstaltungen zugesagt. Durchsuche Veranstaltungen, um etwas Interessantes zu finden!"
-      },
-      "buttons": {
-        "browseEvents": "Veranstaltungen durchsuchen",
-        "previous": "Zurück",
-        "next": "Weiter"
-      },
-      "loading": "Zusagen werden geladen..."
+      "title": "Meine Zusagen",
+      "description": "Alle deine Event-Zusagen anzeigen und verwalten",
+      "searchPlaceholder": "Nach Eventname suchen...",
+      "showing": "{count} von {total} anzeigen",
+      "rsvp": "Zusage",
+      "rsvps": "Zusagen",
+      "status": "Status",
+      "includePast": "Vergangene Events einschließen",
+      "noRsvps": "Keine Zusagen gefunden",
+      "noRsvpsDescription": "Du hast noch keine Event-Zusagen gemacht",
+      "status_all": "Alle",
+      "status_going": "Teilnehmend",
+      "status_maybe": "Vielleicht",
+      "status_notGoing": "Nicht teilnehmend",
+      "previousPage": "Vorherige Seite",
+      "nextPage": "Nächste Seite"
     },
     "tickets": {
       "title": "Meine Tickets",

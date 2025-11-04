@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { dashboardDashboardRsvps } from '$lib/api/generated/sdk.gen';
@@ -22,10 +23,10 @@
 	let currentPage = $derived(Number(page.url.searchParams.get('page') || '1'));
 
 	const statusFilters: Array<{ label: string; value: Status | null }> = [
-		{ label: 'All', value: null },
-		{ label: 'Going', value: 'yes' },
-		{ label: 'Maybe', value: 'maybe' },
-		{ label: 'Not Going', value: 'no' }
+		{ label: m['dashboard.rsvps.status_all'](), value: null },
+		{ label: m['dashboard.rsvps.status_going'](), value: 'yes' },
+		{ label: m['dashboard.rsvps.status_maybe'](), value: 'maybe' },
+		{ label: m['dashboard.rsvps.status_notGoing'](), value: 'no' }
 	];
 
 	// Active filters
@@ -97,8 +98,8 @@
 </script>
 
 <svelte:head>
-	<title>My RSVPs - Revel</title>
-	<meta name="description" content="View and manage all your event RSVPs" />
+	{m['dashboard.rsvps.title']()} - Revel
+	<meta name="description" content={m['dashboard.rsvps.description']()} />
 </svelte:head>
 
 <div class="container mx-auto px-4 py-6 md:py-8">
@@ -109,28 +110,28 @@
 				<CheckCircle2 class="h-6 w-6 text-primary" aria-hidden="true" />
 			</div>
 			<div>
-				<h1 class="text-2xl font-bold md:text-3xl">My RSVPs</h1>
-				<p class="text-muted-foreground">View and manage all your event RSVPs</p>
+				<h1 class="text-2xl font-bold md:text-3xl">{m['dashboard.rsvps.title']()}</h1>
+				<p class="text-muted-foreground">{m['dashboard.rsvps.description']()}</p>
 			</div>
 		</div>
 
 		<!-- RSVP Count -->
 		{#if !rsvpsQuery.isLoading && totalCount > 0}
 			<p class="mt-4 text-sm text-muted-foreground">
-				Showing {rsvps.length} of {totalCount}
-				{totalCount === 1 ? 'RSVP' : 'RSVPs'}
+				{m['dashboard.rsvps.showing']({ count: rsvps.length.toString(), total: totalCount.toString() })}
+				{totalCount === 1 ? m['dashboard.rsvps.rsvp']() : m['dashboard.rsvps.rsvps']()}
 			</p>
 		{/if}
 	</div>
 
 	<!-- Search Bar -->
 	<div class="mb-6">
-		<label for="search" class="sr-only">Search RSVPs</label>
+		<label for="search" class="sr-only">{m['dashboard.rsvps.searchPlaceholder']()}</label>
 		<input
 			id="search"
 			type="search"
 			bind:value={searchQuery}
-			placeholder="Search by event name..."
+			placeholder={m['dashboard.rsvps.searchPlaceholder']()}
 			class="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 		/>
 	</div>
@@ -141,7 +142,7 @@
 		<div>
 			<div class="mb-2 flex items-center gap-2">
 				<Filter class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-				<span class="text-sm font-medium">Status</span>
+				<span class="text-sm font-medium">{m['dashboard.rsvps.status']()}</span>
 			</div>
 			<div class="flex flex-wrap gap-2">
 				{#each statusFilters as filter}
@@ -172,7 +173,7 @@
 					onchange={() => navigateToPage(1)}
 					class="h-4 w-4 cursor-pointer rounded border-input text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				/>
-				<span class="text-sm">Include past events</span>
+				<span class="text-sm">{m['dashboard.rsvps.includePast']()}</span>
 			</label>
 		</div>
 	</div>
@@ -241,10 +242,10 @@
 						onclick={() => navigateToPage(currentPage - 1)}
 						disabled={!hasPrevPage}
 						class="inline-flex items-center gap-1 rounded-md border bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-						aria-label="Previous page"
+						aria-label={m['dashboard.rsvps.previousPage']()}
 					>
 						<ChevronLeft class="h-4 w-4" aria-hidden="true" />
-						Previous
+						{m['dashboard.rsvps.previousPage']()}
 					</button>
 
 					<button
@@ -252,9 +253,9 @@
 						onclick={() => navigateToPage(currentPage + 1)}
 						disabled={!hasNextPage}
 						class="inline-flex items-center gap-1 rounded-md border bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-						aria-label="Next page"
+						aria-label={m['dashboard.rsvps.nextPage']()}
 					>
-						Next
+						{m['dashboard.rsvps.nextPage']()}
 						<ChevronRight class="h-4 w-4" aria-hidden="true" />
 					</button>
 				</div>

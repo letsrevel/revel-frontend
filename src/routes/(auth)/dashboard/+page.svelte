@@ -468,7 +468,7 @@
 						<Filter class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
 						{#each filterPresets as preset}
 							<!-- Only show "Organizing" filter if user can organize events -->
-							{#if preset.label !== 'Organizing' || canOrganizeEvents()}
+							{#if preset.labelKey !== 'dashboard.filters.organizing' || canOrganizeEvents()}
 								<button
 									type="button"
 									onclick={() => applyFilterPreset(preset)}
@@ -478,7 +478,7 @@
 										? 'bg-primary text-primary-foreground hover:bg-primary/90'
 										: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
 								>
-									{preset.label}
+									{m[preset.labelKey]()}
 								</button>
 							{/if}
 						{/each}
@@ -497,7 +497,7 @@
 						<Calendar class="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
 						<h3 class="mb-2 text-lg font-semibold">{m['dashboard.emptyStates.noEvents']()}</h3>
 						<p class="mb-4 text-sm text-muted-foreground">
-							Try adjusting your filter to see more events
+							{m['dashboard.emptyStates.noEventsFiltered']()}
 						</p>
 					</div>
 				{/if}
@@ -534,7 +534,7 @@
 					<Calendar class="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
 					<h3 class="mb-2 text-lg font-semibold">{m['dashboard.emptyStates.noEventsAvailable']()}</h3>
 					<p class="mb-4 text-sm text-muted-foreground">
-						m['dashboard.emptyStates.noEventsHint']()
+						{m['dashboard.emptyStates.noEventsHint']()}
 					</p>
 				</div>
 			{:else}
@@ -568,7 +568,7 @@
 					<Building2 class="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
 					<h3 class="mb-2 text-lg font-semibold">{m['dashboard.emptyStates.noOrganizations']()}</h3>
 					<p class="mb-4 text-sm text-muted-foreground">
-						m['dashboard.emptyStates.noOrganizationsHint']()
+						{m['dashboard.emptyStates.noOrganizationsHint']()}
 					</p>
 					<div class="flex flex-wrap justify-center gap-3">
 						<a
@@ -613,7 +613,7 @@
 									href="/org/{org.slug}"
 									class="rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
 								>
-									View Profile
+									{m['dashboard.viewProfile']()}
 								</a>
 								{#if hasAdminPermissions(org.id)}
 									<a

@@ -320,6 +320,7 @@
     "browseEventsButton": "Sfoglia Eventi",
     "myOrganizationsButton": "Le Mie Organizzazioni",
     "adminButton": "Admin",
+    "viewProfile": "Vedi Profilo",
     "sections": {
       "yourEvents": "I Tuoi Eventi",
       "discoverEvents": "Scopri Eventi",
@@ -349,75 +350,48 @@
       "noOrganizationsHint": "Le organizzazioni ti aiutano a gestire eventi e costruire la tua community."
     },
     "invitations": {
-      "pageTitle": "I Miei Inviti",
-      "pageSubtitle": "Gestisci i tuoi inviti agli eventi e le richieste di accesso",
-      "metaTitle": "I Miei Inviti - Revel",
-      "metaDescription": "Visualizza i tuoi inviti agli eventi e le richieste di invito",
-      "tabs": {
-        "myInvitations": "I Miei Inviti",
-        "myRequests": "Le Mie Richieste"
-      },
-      "search": {
-        "label": "Cerca inviti",
-        "placeholder": "Cerca per nome evento...",
-        "requestsLabel": "Cerca richieste"
-      },
-      "filters": {
-        "options": "Opzioni",
-        "status": "Stato",
-        "includePastEvents": "Includi eventi passati",
-        "all": "Tutti",
-        "pending": "In attesa",
-        "approved": "Approvato",
-        "rejected": "Rifiutato",
-        "clearSearch": "Cancella Ricerca",
-        "clearFilters": "Cancella Filtri"
-      },
-      "emptyStates": {
-        "noInvitations": "Nessun invito trovato",
-        "noInvitationsFiltered": "Prova a modificare la tua ricerca per vedere più inviti",
-        "noInvitationsYet": "Non hai ancora ricevuto inviti speciali a eventi",
-        "noRequests": "Nessuna richiesta trovata",
-        "noRequestsFiltered": "Prova a modificare i tuoi filtri per vedere più richieste",
-        "noRequestsYet": "Non hai ancora richiesto accesso a eventi privati"
-      },
-      "loading": "Caricamento inviti...",
-      "loadingRequests": "Caricamento richieste..."
+      "title": "I Miei Inviti",
+      "description": "Visualizza e gestisci i tuoi inviti agli eventi",
+      "tabs": "Schede inviti",
+      "received": "Ricevuti",
+      "sent": "Inviati",
+      "searchPlaceholder": "Cerca per nome evento...",
+      "showing": "Mostrando {count} di {total}",
+      "invitation": "invito",
+      "invitations": "inviti",
+      "noInvitations": "Nessun invito trovato",
+      "noReceivedInvitations": "Non hai ricevuto inviti",
+      "noSentInvitations": "Non hai inviato inviti",
+      "previousPage": "Pagina precedente",
+      "nextPage": "Pagina successiva",
+      "loadingInvitations": "Caricamento inviti...",
+      "loadingRequests": "Caricamento richieste...",
+      "tryAdjustingSearch": "Prova a modificare la ricerca per vedere più inviti",
+      "tryAdjustingFilters": "Prova a modificare i filtri per vedere più richieste",
+      "clearSearch": "Cancella Ricerca",
+      "clearFilters": "Cancella Filtri",
+      "noRequests": "Nessuna richiesta trovata",
+      "status_pending": "In Attesa",
+      "status_approved": "Approvato",
+      "status_rejected": "Rifiutato"
     },
     "rsvps": {
-      "pageTitle": "Le Mie Conferme",
-      "pageSubtitle": "Visualizza e gestisci tutte le tue conferme agli eventi",
-      "metaTitle": "Le Mie Conferme - Revel",
-      "metaDescription": "Visualizza e gestisci tutte le tue conferme agli eventi",
-      "search": {
-        "label": "Cerca conferme",
-        "placeholder": "Cerca per nome evento..."
-      },
-      "filters": {
-        "status": "Stato",
-        "options": "Opzioni",
-        "all": "Tutte",
-        "going": "Parteciperò",
-        "maybe": "Forse",
-        "notGoing": "Non parteciperò",
-        "includePastEvents": "Includi eventi passati",
-        "clearFilters": "Cancella Filtri"
-      },
-      "pagination": {
-        "showing": "Mostra {count} di {total} {rsvpPlural}",
-        "page": "Pagina {current} di {total}"
-      },
-      "emptyStates": {
-        "noRsvps": "Nessuna conferma trovata",
-        "noRsvpsFiltered": "Prova a modificare i tuoi filtri o la ricerca per vedere più conferme",
-        "noRsvpsYet": "Non hai ancora confermato la partecipazione a nessun evento. Sfoglia gli eventi per trovare qualcosa di interessante!"
-      },
-      "buttons": {
-        "browseEvents": "Sfoglia Eventi",
-        "previous": "Precedente",
-        "next": "Successivo"
-      },
-      "loading": "Caricamento conferme..."
+      "title": "Le Mie Conferme",
+      "description": "Visualizza e gestisci tutte le tue conferme agli eventi",
+      "searchPlaceholder": "Cerca per nome evento...",
+      "showing": "Mostrando {count} di {total}",
+      "rsvp": "conferma",
+      "rsvps": "conferme",
+      "status": "Stato",
+      "includePast": "Includi eventi passati",
+      "noRsvps": "Nessuna conferma trovata",
+      "noRsvpsDescription": "Non hai ancora confermato la presenza a nessun evento",
+      "status_all": "Tutti",
+      "status_going": "Parteciperò",
+      "status_maybe": "Forse",
+      "status_notGoing": "Non Parteciperò",
+      "previousPage": "Pagina precedente",
+      "nextPage": "Pagina successiva"
     },
     "tickets": {
       "title": "I Miei Biglietti",

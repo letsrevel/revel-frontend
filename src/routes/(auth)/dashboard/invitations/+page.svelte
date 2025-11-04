@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import {
@@ -125,8 +126,8 @@
 </script>
 
 <svelte:head>
-	<title>My Invitations - Revel</title>
-	<meta name="description" content="View your event invitations and invitation requests" />
+	<title>{m['dashboard.invitations.title']()} - Revel</title>
+	<meta name="description" content={m['dashboard.invitations.description']()} />
 </svelte:head>
 
 <div class="container mx-auto px-4 py-6 md:py-8">
@@ -137,8 +138,8 @@
 				<Mail class="h-6 w-6 text-primary" aria-hidden="true" />
 			</div>
 			<div>
-				<h1 class="text-2xl font-bold md:text-3xl">My Invitations</h1>
-				<p class="text-muted-foreground">Manage your event invitations and access requests</p>
+				<h1 class="text-2xl font-bold md:text-3xl">{m['dashboard.invitations.title']()}</h1>
+				<p class="text-muted-foreground">{m['dashboard.invitations.description']()}</p>
 			</div>
 		</div>
 	</div>
@@ -146,7 +147,7 @@
 	<!-- Tabs -->
 	<div class="mb-6">
 		<div class="border-b border-border">
-			<nav class="-mb-px flex gap-6" aria-label="Invitation tabs">
+			<nav class="-mb-px flex gap-6" aria-label={m['dashboard.invitations.tabs']()}>
 				<button
 					type="button"
 					onclick={() => switchTab('invitations')}
@@ -157,7 +158,7 @@
 					aria-current={activeTab === 'invitations' ? 'page' : undefined}
 				>
 					<Mail class="h-4 w-4" aria-hidden="true" />
-					My Invitations
+					{m['dashboard.invitations.received']()}
 					{#if invitationsCount > 0}
 						<span
 							class="ml-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary"
@@ -177,7 +178,7 @@
 					aria-current={activeTab === 'requests' ? 'page' : undefined}
 				>
 					<Send class="h-4 w-4" aria-hidden="true" />
-					My Requests
+					{m['dashboard.invitations.sent']()}
 					{#if requestsCount > 0}
 						<span
 							class="ml-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary"
@@ -196,12 +197,12 @@
 		<div class="space-y-6">
 			<!-- Search Bar -->
 			<div>
-				<label for="invitations-search" class="sr-only">Search invitations</label>
+				<label for="invitations-search" class="sr-only">{m['dashboard.invitations.searchPlaceholder']()}</label>
 				<input
 					id="invitations-search"
 					type="search"
 					bind:value={invitationsSearch}
-					placeholder="Search by event name..."
+					placeholder={m['dashboard.invitations.searchPlaceholder']()}
 					class="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 				/>
 			</div>
@@ -210,7 +211,7 @@
 			<div class="flex items-center gap-4">
 				<div class="flex items-center gap-2">
 					<Filter class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-					<span class="text-sm font-medium">Options</span>
+					<span class="text-sm font-medium">{m['dashboard.tickets.status']()}</span>
 				</div>
 				<label class="flex cursor-pointer items-center gap-2">
 					<input
@@ -219,7 +220,7 @@
 						onchange={() => navigateToPage(1)}
 						class="h-4 w-4 cursor-pointer rounded border-input text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					/>
-					<span class="text-sm">Include past events</span>
+					<span class="text-sm">{m['dashboard.tickets.includePast']()}</span>
 				</label>
 			</div>
 
@@ -227,7 +228,7 @@
 			{#if invitationsQuery.isLoading}
 				<div class="flex items-center justify-center py-12">
 					<Loader2 class="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
-					<span class="sr-only">Loading invitations...</span>
+					<span class="sr-only">{m['dashboard.invitations.loadingInvitations']()}</span>
 				</div>
 			{:else if invitations.length === 0}
 				<div class="rounded-lg border bg-card p-12 text-center">
@@ -236,10 +237,10 @@
 					>
 						<Mail class="h-8 w-8 text-primary" aria-hidden="true" />
 					</div>
-					<h2 class="mb-2 text-xl font-semibold">No invitations found</h2>
+					<h2 class="mb-2 text-xl font-semibold">{m['dashboard.invitations.noInvitations']()}</h2>
 					{#if invitationsDebounced}
 						<p class="mb-4 text-muted-foreground">
-							Try adjusting your search to see more invitations
+							{m['dashboard.invitations.tryAdjustingSearch']()}
 						</p>
 						<button
 							type="button"
@@ -249,11 +250,11 @@
 							}}
 							class="rounded-lg border bg-background px-6 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						>
-							Clear Search
+							{m['dashboard.invitations.clearSearch']()}
 						</button>
 					{:else}
 						<p class="text-muted-foreground">
-							You haven't received any special event invitations yet
+							{m['dashboard.invitations.noReceivedInvitations']()}
 						</p>
 					{/if}
 				</div>
@@ -270,12 +271,12 @@
 		<div class="space-y-6">
 			<!-- Search Bar -->
 			<div>
-				<label for="requests-search" class="sr-only">Search requests</label>
+				<label for="requests-search" class="sr-only">{m['dashboard.invitations.searchPlaceholder']()}</label>
 				<input
 					id="requests-search"
 					type="search"
 					bind:value={requestsSearch}
-					placeholder="Search by event name..."
+					placeholder={m['dashboard.invitations.searchPlaceholder']()}
 					class="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 				/>
 			</div>
@@ -284,7 +285,7 @@
 			<div>
 				<div class="mb-2 flex items-center gap-2">
 					<Filter class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-					<span class="text-sm font-medium">Status</span>
+					<span class="text-sm font-medium">{m['dashboard.tickets.status']()}</span>
 				</div>
 				<div class="flex flex-wrap gap-2">
 					<button
@@ -298,7 +299,7 @@
 							? 'bg-primary text-primary-foreground hover:bg-primary/90'
 							: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
 					>
-						Pending
+						{m['dashboard.invitations.status_pending']()}
 					</button>
 					<button
 						type="button"
@@ -311,7 +312,7 @@
 							? 'bg-primary text-primary-foreground hover:bg-primary/90'
 							: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
 					>
-						Approved
+						{m['dashboard.invitations.status_approved']()}
 					</button>
 					<button
 						type="button"
@@ -324,7 +325,7 @@
 							? 'bg-primary text-primary-foreground hover:bg-primary/90'
 							: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
 					>
-						Rejected
+						{m['dashboard.invitations.status_rejected']()}
 					</button>
 					<button
 						type="button"
@@ -337,7 +338,7 @@
 							? 'bg-primary text-primary-foreground hover:bg-primary/90'
 							: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
 					>
-						All
+						{m['dashboard.tickets.status_all']()}
 					</button>
 				</div>
 			</div>
@@ -346,7 +347,7 @@
 			{#if requestsQuery.isLoading}
 				<div class="flex items-center justify-center py-12">
 					<Loader2 class="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
-					<span class="sr-only">Loading requests...</span>
+					<span class="sr-only">{m['dashboard.invitations.loadingRequests']()}</span>
 				</div>
 			{:else if requests.length === 0}
 				<div class="rounded-lg border bg-card p-12 text-center">
@@ -355,10 +356,10 @@
 					>
 						<Send class="h-8 w-8 text-primary" aria-hidden="true" />
 					</div>
-					<h2 class="mb-2 text-xl font-semibold">No requests found</h2>
+					<h2 class="mb-2 text-xl font-semibold">{m['dashboard.invitations.noRequests']()}</h2>
 					{#if requestsDebounced || requestsStatus}
 						<p class="mb-4 text-muted-foreground">
-							Try adjusting your filters to see more requests
+							{m['dashboard.invitations.tryAdjustingFilters']()}
 						</p>
 						<button
 							type="button"
@@ -369,11 +370,11 @@
 							}}
 							class="rounded-lg border bg-background px-6 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						>
-							Clear Filters
+							{m['dashboard.invitations.clearFilters']()}
 						</button>
 					{:else}
 						<p class="text-muted-foreground">
-							You haven't requested access to any private events yet
+							{m['dashboard.invitations.noSentInvitations']()}
 						</p>
 					{/if}
 				</div>

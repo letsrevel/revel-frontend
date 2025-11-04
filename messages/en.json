@@ -320,6 +320,7 @@
     "browseEventsButton": "Browse Events",
     "myOrganizationsButton": "My Organizations",
     "adminButton": "Admin",
+    "viewProfile": "View Profile",
     "sections": {
       "yourEvents": "Your Events",
       "discoverEvents": "Discover Events",
@@ -349,75 +350,48 @@
       "noOrganizationsHint": "Organizations help you manage events and build your community."
     },
     "invitations": {
-      "pageTitle": "My Invitations",
-      "pageSubtitle": "Manage your event invitations and access requests",
-      "metaTitle": "My Invitations - Revel",
-      "metaDescription": "View your event invitations and invitation requests",
-      "tabs": {
-        "myInvitations": "My Invitations",
-        "myRequests": "My Requests"
-      },
-      "search": {
-        "label": "Search invitations",
-        "placeholder": "Search by event name...",
-        "requestsLabel": "Search requests"
-      },
-      "filters": {
-        "options": "Options",
-        "status": "Status",
-        "includePastEvents": "Include past events",
-        "all": "All",
-        "pending": "Pending",
-        "approved": "Approved",
-        "rejected": "Rejected",
-        "clearSearch": "Clear Search",
-        "clearFilters": "Clear Filters"
-      },
-      "emptyStates": {
-        "noInvitations": "No invitations found",
-        "noInvitationsFiltered": "Try adjusting your search to see more invitations",
-        "noInvitationsYet": "You haven't received any special event invitations yet",
-        "noRequests": "No requests found",
-        "noRequestsFiltered": "Try adjusting your filters to see more requests",
-        "noRequestsYet": "You haven't requested access to any private events yet"
-      },
-      "loading": "Loading invitations...",
-      "loadingRequests": "Loading requests..."
+      "title": "My Invitations",
+      "description": "View and manage your event invitations",
+      "tabs": "Invitation tabs",
+      "received": "Received",
+      "sent": "Sent",
+      "searchPlaceholder": "Search by event name...",
+      "showing": "Showing {count} of {total}",
+      "invitation": "invitation",
+      "invitations": "invitations",
+      "noInvitations": "No invitations found",
+      "noReceivedInvitations": "You haven't received any invitations",
+      "noSentInvitations": "You haven't sent any invitations",
+      "previousPage": "Previous page",
+      "nextPage": "Next page",
+      "loadingInvitations": "Loading invitations...",
+      "loadingRequests": "Loading requests...",
+      "tryAdjustingSearch": "Try adjusting your search to see more invitations",
+      "tryAdjustingFilters": "Try adjusting your filters to see more requests",
+      "clearSearch": "Clear Search",
+      "clearFilters": "Clear Filters",
+      "noRequests": "No requests found",
+      "status_pending": "Pending",
+      "status_approved": "Approved",
+      "status_rejected": "Rejected"
     },
     "rsvps": {
-      "pageTitle": "My RSVPs",
-      "pageSubtitle": "View and manage all your event RSVPs",
-      "metaTitle": "My RSVPs - Revel",
-      "metaDescription": "View and manage all your event RSVPs",
-      "search": {
-        "label": "Search RSVPs",
-        "placeholder": "Search by event name..."
-      },
-      "filters": {
-        "status": "Status",
-        "options": "Options",
-        "all": "All",
-        "going": "Going",
-        "maybe": "Maybe",
-        "notGoing": "Not Going",
-        "includePastEvents": "Include past events",
-        "clearFilters": "Clear Filters"
-      },
-      "pagination": {
-        "showing": "Showing {count} of {total} {rsvpPlural}",
-        "page": "Page {current} of {total}"
-      },
-      "emptyStates": {
-        "noRsvps": "No RSVPs found",
-        "noRsvpsFiltered": "Try adjusting your filters or search query to see more RSVPs",
-        "noRsvpsYet": "You haven't RSVP'd to any events yet. Browse events to find something interesting!"
-      },
-      "buttons": {
-        "browseEvents": "Browse Events",
-        "previous": "Previous",
-        "next": "Next"
-      },
-      "loading": "Loading RSVPs..."
+      "title": "My RSVPs",
+      "description": "View and manage all your event RSVPs",
+      "searchPlaceholder": "Search by event name...",
+      "showing": "Showing {count} of {total}",
+      "rsvp": "RSVP",
+      "rsvps": "RSVPs",
+      "status": "Status",
+      "includePast": "Include past events",
+      "noRsvps": "No RSVPs found",
+      "noRsvpsDescription": "You haven't RSVP'd to any events yet",
+      "status_all": "All",
+      "status_going": "Going",
+      "status_maybe": "Maybe",
+      "status_notGoing": "Not Going",
+      "previousPage": "Previous page",
+      "nextPage": "Next page"
     },
     "tickets": {
       "title": "My Tickets",
