@@ -421,6 +421,34 @@
     },
     "seeAllOrganizations": "See all {count} organizations"
   },
+  "orgAdmin": {
+    "layout": {
+      "toggleMenu": "Toggle navigation menu",
+      "adminBadge": "Admin",
+      "ownerBadge": "Owner",
+      "staffBadge": "Staff",
+      "breadcrumbNavigation": "Breadcrumb",
+      "adminNavigation": "Admin navigation",
+      "mobileAdminNavigation": "Mobile admin navigation",
+      "navigationHeading": "Navigation"
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "events": "Events",
+      "eventSeries": "Event Series",
+      "members": "Members",
+      "memberRequests": "Requests",
+      "questionnaires": "Questionnaires",
+      "resources": "Resources",
+      "invitationLinks": "Invitation Links",
+      "settings": "Settings"
+    },
+    "breadcrumbs": {
+      "home": "Home",
+      "organizations": "Organizations",
+      "admin": "Admin"
+    }
+  },
   "invitation": {
     "badge": "Special Invitation",
     "privileges": "Special Privileges:",
