@@ -169,20 +169,20 @@
 			});
 
 			if (!response.data) {
-				throw new Error('Failed to create event');
+				throw new Error(m['eventWizard.error_failedToCreate']());
 			}
 
 			return response.data;
 		},
 		onSuccess: (data) => {
 			eventId = data.id;
-			successMessage = 'Event created successfully!';
+			successMessage = m['eventWizard.eventCreatedSuccess']();
 			setTimeout(() => {
 				successMessage = null;
 			}, 3000);
 		},
 		onError: (error: Error) => {
-			errorMessage = error.message || 'Failed to create event';
+			errorMessage = error.message || m['eventWizard.error_failedToCreate']();
 		}
 	}));
 
@@ -195,19 +195,19 @@
 			});
 
 			if (!response.data) {
-				throw new Error('Failed to update event');
+				throw new Error(m['eventWizard.error_failedToUpdate']());
 			}
 
 			return response.data;
 		},
 		onSuccess: () => {
-			successMessage = 'Event updated successfully!';
+			successMessage = m['eventWizard.eventUpdatedSuccess']();
 			setTimeout(() => {
 				successMessage = null;
 			}, 3000);
 		},
 		onError: (error: Error) => {
-			errorMessage = error.message || 'Failed to update event';
+			errorMessage = error.message || m['eventWizard.error_failedToUpdate']();
 		}
 	}));
 
@@ -220,7 +220,7 @@
 			});
 
 			if (!response.data) {
-				throw new Error('Failed to upload logo');
+				throw new Error(m['eventWizard.error_failedToUploadLogo']());
 			}
 
 			return response.data;
@@ -236,7 +236,7 @@
 			});
 
 			if (!response.data) {
-				throw new Error('Failed to upload cover art');
+				throw new Error(m['eventWizard.error_failedToUploadCoverArt']());
 			}
 
 			return response.data;
@@ -251,7 +251,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to delete logo');
+				throw new Error(m['eventWizard.error_failedToDeleteLogo']());
 			}
 
 			return response.data;
@@ -266,7 +266,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to delete cover art');
+				throw new Error(m['eventWizard.error_failedToDeleteCoverArt']());
 			}
 
 			return response.data;
@@ -482,7 +482,7 @@
 			goto(`/org/${organization.slug}/admin/events`);
 		} catch (error) {
 			console.error('Step 2 submission error:', error);
-			errorMessage = 'Failed to save event details. Please try again.';
+			errorMessage = m['eventWizard.error_failedToSaveDetails']();
 		} finally {
 			isSaving = false;
 		}

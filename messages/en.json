@@ -1153,7 +1153,15 @@
     "noResourcesAvailable": "No resources available"
   },
   "eventWizard": {
-    "error": "Error"
+    "eventCreatedSuccess": "Event created successfully!",
+    "eventUpdatedSuccess": "Event updated successfully!",
+    "error_failedToCreate": "Failed to create event",
+    "error_failedToUpdate": "Failed to update event",
+    "error_failedToUploadLogo": "Failed to upload logo",
+    "error_failedToUploadCoverArt": "Failed to upload cover art",
+    "error_failedToDeleteLogo": "Failed to delete logo",
+    "error_failedToDeleteCoverArt": "Failed to delete cover art",
+    "error_failedToSaveDetails": "Failed to save event details. Please try again."
   },
   "ticketingStep": {
     "ticketingOptions": "Ticketing Options",
