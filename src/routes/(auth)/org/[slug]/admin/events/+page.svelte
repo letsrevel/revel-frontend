@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
@@ -115,7 +116,7 @@
 	 * Publish event (draft → open)
 	 */
 	function publishEvent(eventId: string): void {
-		if (confirm('Are you sure you want to publish this event? It will become visible to users.')) {
+		if (confirm(m['orgAdmin.events.confirmations.publish']())) {
 			updateStatusMutation.mutate({ eventId, status: 'open' });
 		}
 	}
@@ -124,7 +125,7 @@
 	 * Close event (open → closed)
 	 */
 	function closeEvent(eventId: string): void {
-		if (confirm('Are you sure you want to close this event? RSVPs and ticket sales will stop.')) {
+		if (confirm(m['orgAdmin.events.confirmations.close']())) {
 			updateStatusMutation.mutate({ eventId, status: 'closed' });
 		}
 	}
@@ -133,11 +134,7 @@
 	 * Delete event (any → deleted)
 	 */
 	function deleteEvent(eventId: string): void {
-		if (
-			confirm(
-				'Are you sure you want to delete this event? This action cannot be undone and will remove the event from public view.'
-			)
-		) {
+		if (confirm(m['orgAdmin.events.confirmations.delete']())) {
 			updateStatusMutation.mutate({ eventId, status: 'deleted' });
 		}
 	}
@@ -146,7 +143,7 @@
 	 * Reopen event (closed → open)
 	 */
 	function reopenEvent(eventId: string): void {
-		if (confirm('Are you sure you want to reopen this event?')) {
+		if (confirm(m['orgAdmin.events.confirmations.reopen']())) {
 			updateStatusMutation.mutate({ eventId, status: 'open' });
 		}
 	}
@@ -196,8 +193,8 @@
 </script>
 
 <svelte:head>
-	<title>Events - {organization.name} Admin | Revel</title>
-	<meta name="description" content="Manage events for {organization.name}" />
+	<title>{m['orgAdmin.events.pageTitle']()} - {organization.name} Admin | Revel</title>
+	<meta name="description" content={m['orgAdmin.events.metaDescription']({ orgName: organization.name })} />
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
@@ -205,8 +202,8 @@
 	<!-- Header -->
 	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 		<div>
-			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">Events</h1>
-			<p class="mt-1 text-sm text-muted-foreground">Manage your organization's events</p>
+			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">{m['orgAdmin.events.pageTitle']()}</h1>
+			<p class="mt-1 text-sm text-muted-foreground">{m['orgAdmin.events.pageDescription']()}</p>
 		</div>
 
 		{#if data.canCreateEvent}
@@ -216,7 +213,7 @@
 				class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			>
 				<Plus class="h-5 w-5" aria-hidden="true" />
-				Create Event
+				{m['orgAdmin.events.createEventButton']()}
 			</button>
 		{/if}
 	</div>
@@ -225,8 +222,8 @@
 	{#if data.events.length === 0}
 		<div class="rounded-lg border border-border bg-card p-12 text-center">
 			<Calendar class="mx-auto h-12 w-12 text-muted-foreground" aria-hidden="true" />
-			<h3 class="mt-4 text-lg font-semibold">No events yet</h3>
-			<p class="mt-2 text-sm text-muted-foreground">Get started by creating your first event</p>
+			<h3 class="mt-4 text-lg font-semibold">{m['orgAdmin.events.empty.title']()}</h3>
+			<p class="mt-2 text-sm text-muted-foreground">{m['orgAdmin.events.empty.description']()}</p>
 			{#if data.canCreateEvent}
 				<button
 					type="button"
@@ -234,7 +231,7 @@
 					class="mt-6 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
 				>
 					<Plus class="h-5 w-5" aria-hidden="true" />
-					Create Event
+					{m['orgAdmin.events.createEventButton']()}
 				</button>
 			{/if}
 		</div>
@@ -242,7 +239,7 @@
 		<!-- Draft Events -->
 		{#if draftEvents.length > 0}
 			<div class="space-y-4">
-				<h2 class="text-lg font-semibold">Drafts ({draftEvents.length})</h2>
+				<h2 class="text-lg font-semibold">{m['orgAdmin.events.sections.drafts']({ count: draftEvents.length })}</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each draftEvents as event (event.id)}
 						<div class="rounded-lg border border-border bg-card p-4 shadow-sm">
@@ -256,7 +253,7 @@
 											getStatusColor(event.status)
 										)}
 									>
-										Draft
+										{m['orgAdmin.events.status.draft']()}
 									</span>
 								</div>
 
@@ -282,7 +279,7 @@
 										class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
 									>
 										<Edit class="h-4 w-4" aria-hidden="true" />
-										Edit
+										{m['orgAdmin.events.actions.edit']()}
 									</button>
 									<button
 										type="button"
@@ -290,7 +287,7 @@
 										class="inline-flex items-center gap-1 rounded-md bg-green-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-green-700"
 									>
 										<CheckCircle class="h-4 w-4" aria-hidden="true" />
-										Publish
+										{m['orgAdmin.events.actions.publish']()}
 									</button>
 									<button
 										type="button"
@@ -298,7 +295,7 @@
 										class="inline-flex items-center gap-1 rounded-md bg-destructive px-3 py-1 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
 									>
 										<Trash2 class="h-4 w-4" aria-hidden="true" />
-										Delete
+										{m['orgAdmin.events.actions.delete']()}
 									</button>
 								</div>
 							</div>
@@ -311,7 +308,7 @@
 		<!-- Open Events -->
 		{#if openEvents.length > 0}
 			<div class="space-y-4">
-				<h2 class="text-lg font-semibold">Published ({openEvents.length})</h2>
+				<h2 class="text-lg font-semibold">{m['orgAdmin.events.sections.published']({ count: openEvents.length })}</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each openEvents as event (event.id)}
 						<div class="rounded-lg border border-border bg-card p-4 shadow-sm">
@@ -325,7 +322,7 @@
 											getStatusColor(event.status)
 										)}
 									>
-										Published
+										{m['orgAdmin.events.status.published']()}
 									</span>
 								</div>
 
@@ -345,7 +342,7 @@
 										<div class="flex items-center gap-2">
 											<Users class="h-4 w-4" aria-hidden="true" />
 											{event.attendee_count}
-											{event.requires_ticket ? 'Attendees' : 'RSVPs'}
+											{event.requires_ticket ? m['orgAdmin.events.attendeeCount.attendees']() : m['orgAdmin.events.attendeeCount.rsvps']()}
 										</div>
 									{/if}
 								</div>
@@ -358,7 +355,7 @@
 										class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
 									>
 										<Eye class="h-4 w-4" aria-hidden="true" />
-										View
+										{m['orgAdmin.events.actions.view']()}
 									</button>
 									<button
 										type="button"
@@ -366,7 +363,7 @@
 										class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
 									>
 										<Edit class="h-4 w-4" aria-hidden="true" />
-										Edit
+										{m['orgAdmin.events.actions.edit']()}
 									</button>
 									{#if event.requires_ticket}
 										<button
@@ -375,7 +372,7 @@
 											class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-blue-700"
 										>
 											<UserCheck class="h-4 w-4" aria-hidden="true" />
-											Tickets
+											{m['orgAdmin.events.actions.tickets']()}
 										</button>
 									{:else}
 										<button
@@ -384,7 +381,7 @@
 											class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-blue-700"
 										>
 											<UserCheck class="h-4 w-4" aria-hidden="true" />
-											Attendees
+											{m['orgAdmin.events.actions.attendees']()}
 										</button>
 									{/if}
 									<button
@@ -393,7 +390,7 @@
 										class="inline-flex items-center gap-1 rounded-md bg-purple-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-purple-700"
 									>
 										<Mail class="h-4 w-4" aria-hidden="true" />
-										Invitations
+										{m['orgAdmin.events.actions.invitations']()}
 									</button>
 									<button
 										type="button"
@@ -401,7 +398,7 @@
 										class="inline-flex items-center gap-1 rounded-md bg-orange-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-orange-700"
 									>
 										<XCircle class="h-4 w-4" aria-hidden="true" />
-										Close
+										{m['orgAdmin.events.actions.close']()}
 									</button>
 								</div>
 							</div>
@@ -414,7 +411,7 @@
 		<!-- Closed Events -->
 		{#if closedEvents.length > 0}
 			<div class="space-y-4">
-				<h2 class="text-lg font-semibold">Closed ({closedEvents.length})</h2>
+				<h2 class="text-lg font-semibold">{m['orgAdmin.events.sections.closed']({ count: closedEvents.length })}</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each closedEvents as event (event.id)}
 						<div class="rounded-lg border border-border bg-card p-4 opacity-75 shadow-sm">
@@ -428,7 +425,7 @@
 											getStatusColor(event.status)
 										)}
 									>
-										Closed
+										{m['orgAdmin.events.status.closed']()}
 									</span>
 								</div>
 
@@ -448,7 +445,7 @@
 										<div class="flex items-center gap-2">
 											<Users class="h-4 w-4" aria-hidden="true" />
 											{event.attendee_count}
-											{event.requires_ticket ? 'Attendees' : 'RSVPs'}
+											{event.requires_ticket ? m['orgAdmin.events.attendeeCount.attendees']() : m['orgAdmin.events.attendeeCount.rsvps']()}
 										</div>
 									{/if}
 								</div>
@@ -461,7 +458,7 @@
 										class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
 									>
 										<Eye class="h-4 w-4" aria-hidden="true" />
-										View
+										{m['orgAdmin.events.actions.view']()}
 									</button>
 									{#if event.requires_ticket}
 										<button
@@ -470,7 +467,7 @@
 											class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-blue-700"
 										>
 											<UserCheck class="h-4 w-4" aria-hidden="true" />
-											Tickets
+											{m['orgAdmin.events.actions.tickets']()}
 										</button>
 									{:else}
 										<button
@@ -479,7 +476,7 @@
 											class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-blue-700"
 										>
 											<UserCheck class="h-4 w-4" aria-hidden="true" />
-											Attendees
+											{m['orgAdmin.events.actions.attendees']()}
 										</button>
 									{/if}
 									<button
@@ -488,7 +485,7 @@
 										class="inline-flex items-center gap-1 rounded-md bg-purple-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-purple-700"
 									>
 										<Mail class="h-4 w-4" aria-hidden="true" />
-										Invitations
+										{m['orgAdmin.events.actions.invitations']()}
 									</button>
 									<button
 										type="button"
@@ -496,7 +493,7 @@
 										class="inline-flex items-center gap-1 rounded-md bg-green-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-green-700"
 									>
 										<CheckCircle class="h-4 w-4" aria-hidden="true" />
-										Reopen
+										{m['orgAdmin.events.actions.reopen']()}
 									</button>
 									<button
 										type="button"
@@ -504,7 +501,7 @@
 										class="inline-flex items-center gap-1 rounded-md bg-destructive px-3 py-1 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
 									>
 										<Trash2 class="h-4 w-4" aria-hidden="true" />
-										Delete
+										{m['orgAdmin.events.actions.delete']()}
 									</button>
 								</div>
 							</div>

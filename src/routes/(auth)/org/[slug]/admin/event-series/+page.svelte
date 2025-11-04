@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
@@ -44,8 +45,8 @@
 </script>
 
 <svelte:head>
-	<title>Event Series - {organization.name} Admin | Revel</title>
-	<meta name="description" content="Manage event series for {organization.name}" />
+	<title>{m['orgAdmin.eventSeries.pageTitle']()} - {organization.name} Admin | Revel</title>
+	<meta name="description" content={m['orgAdmin.eventSeries.metaDescription']({ orgName: organization.name })} />
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
@@ -53,9 +54,9 @@
 	<!-- Header -->
 	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 		<div>
-			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">Event Series</h1>
+			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">{m['orgAdmin.eventSeries.pageTitle']()}</h1>
 			<p class="mt-1 text-sm text-muted-foreground">
-				Manage recurring event series for your organization
+				{m['orgAdmin.eventSeries.pageDescription']()}
 			</p>
 		</div>
 
@@ -65,7 +66,7 @@
 			class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 		>
 			<Plus class="h-5 w-5" aria-hidden="true" />
-			Create Series
+			{m['orgAdmin.eventSeries.createSeriesButton']()}
 		</button>
 	</div>
 
@@ -73,9 +74,9 @@
 	{#if data.series.length === 0}
 		<div class="rounded-lg border border-border bg-card p-12 text-center">
 			<Repeat class="mx-auto h-12 w-12 text-muted-foreground" aria-hidden="true" />
-			<h3 class="mt-4 text-lg font-semibold">No event series yet</h3>
+			<h3 class="mt-4 text-lg font-semibold">{m['orgAdmin.eventSeries.empty.title']()}</h3>
 			<p class="mt-2 text-sm text-muted-foreground">
-				Get started by creating your first event series
+				{m['orgAdmin.eventSeries.empty.description']()}
 			</p>
 			<button
 				type="button"
@@ -83,7 +84,7 @@
 				class="mt-6 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			>
 				<Plus class="h-4 w-4" aria-hidden="true" />
-				Create Event Series
+				{m['orgAdmin.eventSeries.createSeriesButton']()}
 			</button>
 		</div>
 	{:else}
@@ -135,7 +136,7 @@
 									<span
 										class="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs font-medium"
 									>
-										+{series.tags.length - 3} more
+										{m['orgAdmin.eventSeries.tagsMore']({ count: series.tags.length - 3 })}
 									</span>
 								{/if}
 							</div>
@@ -146,7 +147,7 @@
 							<div class="flex items-center gap-2 text-sm text-muted-foreground">
 								<Calendar class="h-4 w-4" aria-hidden="true" />
 								{getEventCount(series)}
-								{getEventCount(series) === 1 ? 'event' : 'events'}
+								{getEventCount(series) === 1 ? m['orgAdmin.eventSeries.eventCountSingular']() : m['orgAdmin.eventSeries.eventCountPlural']()}
 							</div>
 						{/if}
 
@@ -158,7 +159,7 @@
 								class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 							>
 								<Eye class="h-4 w-4" aria-hidden="true" />
-								View
+								{m['orgAdmin.eventSeries.actions.view']()}
 							</button>
 							<button
 								type="button"
@@ -166,7 +167,7 @@
 								class="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 							>
 								<Edit class="h-4 w-4" aria-hidden="true" />
-								Edit
+								{m['orgAdmin.eventSeries.actions.edit']()}
 							</button>
 						</div>
 					</div>

@@ -19,6 +19,7 @@
 		"generate:api": "node scripts/generate-api-client.js",
 		"paraglide:compile": "paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide",
 		"i18n:validate": "node scripts/validate-translations.js",
+		"i18n:check-imports": "bash scripts/check-i18n-imports.sh",
 		"i18n:compile": "pnpm paraglide:compile && pnpm i18n:validate"
 	},
 	"devDependencies": {

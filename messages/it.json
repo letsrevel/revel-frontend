@@ -447,6 +447,202 @@
       "home": "Home",
       "organizations": "Organizzazioni",
       "admin": "Admin"
+    },
+    "dashboard": {
+      "pageTitle": "Benvenuto nell'Admin di {orgName}",
+      "pageDescription": "Gestisci la tua organizzazione, eventi e membri del team da qui.",
+      "metaDescription": "Dashboard admin per {orgName}",
+      "quickActionsHeading": "Azioni Rapide",
+      "createEventButton": "Crea Evento",
+      "organizationDetailsHeading": "Dettagli Organizzazione",
+      "aboutHeading": "Informazioni su {orgName}",
+      "quickActions": {
+        "events": {
+          "title": "Eventi",
+          "description": "Gestisci gli eventi della tua organizzazione"
+        },
+        "eventSeries": {
+          "title": "Serie di Eventi",
+          "description": "Gestisci le serie di eventi ricorrenti"
+        },
+        "members": {
+          "title": "Membri",
+          "description": "Gestisci membri e staff"
+        },
+        "settings": {
+          "title": "Impostazioni",
+          "description": "Configura le impostazioni dell'organizzazione"
+        }
+      },
+      "orgDetails": {
+        "orgName": "Nome Organizzazione",
+        "urlSlug": "Slug URL",
+        "location": "Posizione",
+        "yourRole": "Il Tuo Ruolo"
+      },
+      "permissions": {
+        "staffNoticeTitle": "Permessi Membro dello Staff",
+        "staffNoticeDescription": "Il tuo accesso alle funzionalità admin è determinato dai permessi concessi dal proprietario dell'organizzazione. Alcune funzionalità potrebbero essere limitate."
+      }
+    },
+    "settings": {
+      "pageTitle": "Impostazioni Organizzazione",
+      "pageDescription": "Gestisci il profilo e le preferenze della tua organizzazione",
+      "metaDescription": "Gestisci le impostazioni della tua organizzazione",
+      "viewPublicProfile": "Visualizza Profilo Pubblico",
+      "successMessage": "Le impostazioni della tua organizzazione sono state aggiornate con successo.",
+      "identity": {
+        "heading": "Identità Organizzazione",
+        "orgNameLabel": "Nome Organizzazione",
+        "orgNameHelp": "Contatta il supporto per modificare il nome della tua organizzazione",
+        "urlSlugLabel": "Slug URL",
+        "urlSlugHelp": "Contatta il supporto per modificare il tuo slug URL"
+      },
+      "platformFees": {
+        "heading": "Commissioni Piattaforma",
+        "percentLabel": "Commissione Piattaforma (Percentuale)",
+        "percentHelp": "Commissione percentuale applicata alle vendite di biglietti",
+        "fixedLabel": "Commissione Piattaforma (Fissa)",
+        "fixedHelp": "Commissione fissa per biglietto venduto",
+        "contactSupport": "Contatta il supporto per modificare le impostazioni delle commissioni"
+      },
+      "branding": {
+        "heading": "Branding",
+        "logoLabel": "Logo Organizzazione",
+        "logoHelp": "Quadrato (400×400px consigliato)",
+        "coverLabel": "Immagine di Copertina",
+        "coverHelp": "Ampio (1200×400px consigliato)"
+      },
+      "profile": {
+        "heading": "Informazioni Profilo",
+        "descriptionLabel": "Descrizione",
+        "descriptionPlaceholder": "Racconta alle persone della tua organizzazione...",
+        "cityLabel": "Città",
+        "addressLabel": "Indirizzo",
+        "addressOptional": "(Opzionale)",
+        "addressPlaceholder": "Via Roma 123, Città, Stato 12345",
+        "visibilityLabel": "Visibilità",
+        "visibilityPublic": "Pubblico - Chiunque può visualizzare",
+        "visibilityMembersOnly": "Solo Membri - Solo i membri dell'organizzazione possono visualizzare",
+        "visibilityStaffOnly": "Solo Staff - Solo i membri dello staff possono visualizzare",
+        "visibilityPublicHelp": "Il profilo della tua organizzazione è visibile a tutti",
+        "visibilityMembersOnlyHelp": "Il profilo della tua organizzazione è visibile solo ai membri",
+        "visibilityStaffOnlyHelp": "Il profilo della tua organizzazione è visibile solo allo staff"
+      },
+      "membership": {
+        "heading": "Impostazioni Iscrizione",
+        "acceptRequestsLabel": "Accetta richieste di iscrizione",
+        "acceptRequestsHelp": "Quando abilitato, gli utenti possono inviare richieste per diventare membri della tua organizzazione. I membri possono avere accesso a eventi e contenuti riservati ai membri.",
+        "contactEmailLabel": "Email di Contatto",
+        "contactEmailOptional": "(Opzionale)",
+        "contactEmailPlaceholder": "contatto@tuaorganizzazione.it",
+        "emailVerified": "✓ Email verificata",
+        "emailNotVerified": "Email non ancora verificata",
+        "contactEmailHelp": "Email di contatto pubblica per richieste sulla tua organizzazione"
+      },
+      "actions": {
+        "cancel": "Annulla",
+        "saveChanges": "Salva Modifiche",
+        "saving": "Salvataggio..."
+      }
+    },
+    "events": {
+      "pageTitle": "Eventi",
+      "pageDescription": "Gestisci gli eventi della tua organizzazione",
+      "metaDescription": "Gestisci eventi per {orgName}",
+      "createEventButton": "Crea Evento",
+      "empty": {
+        "title": "Nessun evento ancora",
+        "description": "Inizia creando il tuo primo evento"
+      },
+      "sections": {
+        "drafts": "Bozze ({count})",
+        "published": "Pubblicati ({count})",
+        "closed": "Chiusi ({count})"
+      },
+      "status": {
+        "draft": "Bozza",
+        "published": "Pubblicato",
+        "closed": "Chiuso"
+      },
+      "actions": {
+        "edit": "Modifica",
+        "publish": "Pubblica",
+        "delete": "Elimina",
+        "view": "Visualizza",
+        "tickets": "Biglietti",
+        "attendees": "Partecipanti",
+        "invitations": "Inviti",
+        "close": "Chiudi",
+        "reopen": "Riapri"
+      },
+      "attendeeCount": {
+        "attendees": "Partecipanti",
+        "rsvps": "Conferme"
+      },
+      "confirmations": {
+        "publish": "Sei sicuro di voler pubblicare questo evento? Diventerà visibile agli utenti.",
+        "close": "Sei sicuro di voler chiudere questo evento? Le conferme e le vendite di biglietti verranno fermate.",
+        "delete": "Sei sicuro di voler eliminare questo evento? Questa azione non può essere annullata e rimuoverà l'evento dalla visualizzazione pubblica.",
+        "reopen": "Sei sicuro di voler riaprire questo evento?"
+      }
+    },
+    "members": {
+      "pageTitle": "Membri & Staff",
+      "pageDescription": "Gestisci membri dell'organizzazione, staff e richieste di iscrizione",
+      "metaDescription": "Gestisci membri e staff per {orgName}",
+      "tabs": {
+        "members": "Membri",
+        "staff": "Staff",
+        "requests": "Richieste"
+      },
+      "search": {
+        "members": "Cerca membri per nome o email...",
+        "staff": "Cerca staff per nome o email..."
+      },
+      "loading": "Caricamento...",
+      "errors": {
+        "loadMembers": "Impossibile caricare i membri",
+        "loadStaff": "Impossibile caricare lo staff",
+        "loadRequests": "Impossibile caricare le richieste di iscrizione"
+      },
+      "empty": {
+        "members": {
+          "title": "Nessun membro trovato",
+          "noSearch": "Questa organizzazione non ha ancora membri",
+          "withSearch": "Nessun membro corrisponde ai criteri di ricerca"
+        },
+        "staff": {
+          "title": "Nessun membro dello staff trovato",
+          "noSearch": "Questa organizzazione non ha ancora membri dello staff",
+          "withSearch": "Nessun membro dello staff corrisponde ai criteri di ricerca"
+        },
+        "requests": {
+          "title": "Nessuna richiesta in sospeso",
+          "description": "Non ci sono richieste di iscrizione in sospeso al momento"
+        }
+      },
+      "ownerNotice": "In qualità di proprietario dell'organizzazione, puoi aggiungere membri dello staff, modificare i loro permessi e rimuoverli. I permessi dello staff vengono gestiti individualmente."
+    },
+    "eventSeries": {
+      "pageTitle": "Serie di Eventi",
+      "pageDescription": "Gestisci serie di eventi ricorrenti per la tua organizzazione",
+      "metaDescription": "Gestisci serie di eventi per {orgName}",
+      "createSeriesButton": "Crea Serie",
+      "createEventSeriesButton": "Crea Serie di Eventi",
+      "empty": {
+        "title": "Nessuna serie di eventi ancora",
+        "description": "Inizia creando la tua prima serie di eventi"
+      },
+      "eventCount": {
+        "singular": "evento",
+        "plural": "eventi"
+      },
+      "tagsMore": "+{count} altri",
+      "actions": {
+        "view": "Visualizza",
+        "edit": "Modifica"
+      }
     }
   },
   "invitation": {
@@ -542,6 +738,11 @@
     "pronouns_customPlaceholder": "es., ze/zir",
     "pronouns_customOption": "Personalizzato...",
     "pronouns_chooseCommonOption": "Scegli tra le opzioni comuni",
+    "language_label": "Lingua Preferita",
+    "language_hint": "Scegli la tua lingua preferita per l'interfaccia",
+    "language_en": "Inglese (English)",
+    "language_de": "Tedesco (Deutsch)",
+    "language_it": "Italiano",
     "buttons_submitText": "Salva Modifiche",
     "buttons_submittingText": "Salvataggio...",
     "settingsLink_text": "Configura privacy, notifiche e posizione",
@@ -1761,5 +1962,55 @@
   },
   "errorPage": {
     "debugInfo": "Info Debug:"
+  },
+  "orgAdmin.questionnaires": {
+    "pageTitle": "Questionari",
+    "metaDescription": "Gestisci moduli di ammissione e sondaggi per {orgName}",
+    "pageDescription": "Gestisci moduli di ammissione, candidature e sondaggi per i tuoi eventi",
+    "createQuestionnaireButton": "Crea Questionario",
+    "searchPlaceholder": "Cerca questionari...",
+    "noResults": {
+      "title": "Nessun questionario trovato",
+      "description": "Nessun questionario corrisponde a \"{query}\"",
+      "clearButton": "Cancella ricerca"
+    },
+    "empty": {
+      "title": "Nessun questionario ancora",
+      "description": "Crea il tuo primo modulo di ammissione o candidatura per iniziare"
+    }
+  },
+  "orgAdmin.resources": {
+    "pageTitle": "Risorse",
+    "pageDescription": "Gestisci file, link e contenuti per la tua organizzazione",
+    "addResourceButton": "Aggiungi Risorsa",
+    "searchPlaceholder": "Cerca risorse...",
+    "filters": {
+      "type": {
+        "label": "Filtra per tipo",
+        "allTypes": "Tutti i Tipi",
+        "files": "File",
+        "links": "Link",
+        "text": "Testo"
+      },
+      "visibility": {
+        "label": "Filtra per visibilità",
+        "allVisibility": "Tutte le Visibilità",
+        "public": "Pubblico",
+        "membersOnly": "Solo Membri",
+        "staffOnly": "Solo Staff",
+        "private": "Privato"
+      }
+    },
+    "error": {
+      "title": "Errore",
+      "description": "Impossibile caricare le risorse. Riprova."
+    },
+    "loading": "Caricamento",
+    "empty": {
+      "title": "Nessuna risorsa trovata",
+      "withFilters": "Prova a modificare i filtri",
+      "noFilters": "Inizia creando la tua prima risorsa"
+    },
+    "confirmDelete": "Sei sicuro di voler eliminare questa risorsa?"
   }
 }

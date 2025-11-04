@@ -447,6 +447,202 @@
       "home": "Home",
       "organizations": "Organizations",
       "admin": "Admin"
+    },
+    "dashboard": {
+      "pageTitle": "Welcome to {orgName} Admin",
+      "pageDescription": "Manage your organization, events, and team members from here.",
+      "metaDescription": "Admin dashboard for {orgName}",
+      "quickActionsHeading": "Quick Actions",
+      "createEventButton": "Create Event",
+      "organizationDetailsHeading": "Organization Details",
+      "aboutHeading": "About {orgName}",
+      "quickActions": {
+        "events": {
+          "title": "Events",
+          "description": "Manage your organization's events"
+        },
+        "eventSeries": {
+          "title": "Event Series",
+          "description": "Manage recurring event series"
+        },
+        "members": {
+          "title": "Members",
+          "description": "Manage members and staff"
+        },
+        "settings": {
+          "title": "Settings",
+          "description": "Configure organization settings"
+        }
+      },
+      "orgDetails": {
+        "orgName": "Organization Name",
+        "urlSlug": "URL Slug",
+        "location": "Location",
+        "yourRole": "Your Role"
+      },
+      "permissions": {
+        "staffNoticeTitle": "Staff Member Permissions",
+        "staffNoticeDescription": "Your access to admin features is determined by the permissions granted to you by the organization owner. Some features may be restricted."
+      }
+    },
+    "settings": {
+      "pageTitle": "Organization Settings",
+      "pageDescription": "Manage your organization's profile and preferences",
+      "metaDescription": "Manage your organization settings",
+      "viewPublicProfile": "View Public Profile",
+      "successMessage": "Your organization settings have been updated successfully.",
+      "identity": {
+        "heading": "Organization Identity",
+        "orgNameLabel": "Organization Name",
+        "orgNameHelp": "Contact support to change your organization name",
+        "urlSlugLabel": "URL Slug",
+        "urlSlugHelp": "Contact support to change your URL slug"
+      },
+      "platformFees": {
+        "heading": "Platform Fees",
+        "percentLabel": "Platform Fee (Percent)",
+        "percentHelp": "Percentage fee applied to ticket sales",
+        "fixedLabel": "Platform Fee (Fixed)",
+        "fixedHelp": "Fixed fee per ticket sold",
+        "contactSupport": "Contact support to modify platform fee settings"
+      },
+      "branding": {
+        "heading": "Branding",
+        "logoLabel": "Organization Logo",
+        "logoHelp": "Square (400×400px recommended)",
+        "coverLabel": "Cover Image",
+        "coverHelp": "Wide (1200×400px recommended)"
+      },
+      "profile": {
+        "heading": "Profile Information",
+        "descriptionLabel": "Description",
+        "descriptionPlaceholder": "Tell people about your organization...",
+        "cityLabel": "City",
+        "addressLabel": "Address",
+        "addressOptional": "(Optional)",
+        "addressPlaceholder": "123 Main St, City, State 12345",
+        "visibilityLabel": "Visibility",
+        "visibilityPublic": "Public - Anyone can view",
+        "visibilityMembersOnly": "Members Only - Only organization members can view",
+        "visibilityStaffOnly": "Staff Only - Only staff members can view",
+        "visibilityPublicHelp": "Your organization profile is visible to everyone",
+        "visibilityMembersOnlyHelp": "Your organization profile is only visible to members",
+        "visibilityStaffOnlyHelp": "Your organization profile is only visible to staff"
+      },
+      "membership": {
+        "heading": "Membership Settings",
+        "acceptRequestsLabel": "Accept membership requests",
+        "acceptRequestsHelp": "When enabled, users can submit requests to become members of your organization. Members may have access to members-only events and content.",
+        "contactEmailLabel": "Contact Email",
+        "contactEmailOptional": "(Optional)",
+        "contactEmailPlaceholder": "contact@yourorganization.com",
+        "emailVerified": "✓ Email verified",
+        "emailNotVerified": "Email not yet verified",
+        "contactEmailHelp": "Public contact email for inquiries about your organization"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "saveChanges": "Save Changes",
+        "saving": "Saving..."
+      }
+    },
+    "events": {
+      "pageTitle": "Events",
+      "pageDescription": "Manage your organization's events",
+      "metaDescription": "Manage events for {orgName}",
+      "createEventButton": "Create Event",
+      "empty": {
+        "title": "No events yet",
+        "description": "Get started by creating your first event"
+      },
+      "sections": {
+        "drafts": "Drafts ({count})",
+        "published": "Published ({count})",
+        "closed": "Closed ({count})"
+      },
+      "status": {
+        "draft": "Draft",
+        "published": "Published",
+        "closed": "Closed"
+      },
+      "actions": {
+        "edit": "Edit",
+        "publish": "Publish",
+        "delete": "Delete",
+        "view": "View",
+        "tickets": "Tickets",
+        "attendees": "Attendees",
+        "invitations": "Invitations",
+        "close": "Close",
+        "reopen": "Reopen"
+      },
+      "attendeeCount": {
+        "attendees": "Attendees",
+        "rsvps": "RSVPs"
+      },
+      "confirmations": {
+        "publish": "Are you sure you want to publish this event? It will become visible to users.",
+        "close": "Are you sure you want to close this event? RSVPs and ticket sales will stop.",
+        "delete": "Are you sure you want to delete this event? This action cannot be undone and will remove the event from public view.",
+        "reopen": "Are you sure you want to reopen this event?"
+      }
+    },
+    "members": {
+      "pageTitle": "Members & Staff",
+      "pageDescription": "Manage organization members, staff, and membership requests",
+      "metaDescription": "Manage members and staff for {orgName}",
+      "tabs": {
+        "members": "Members",
+        "staff": "Staff",
+        "requests": "Requests"
+      },
+      "search": {
+        "members": "Search members by name or email...",
+        "staff": "Search staff by name or email..."
+      },
+      "loading": "Loading...",
+      "errors": {
+        "loadMembers": "Failed to load members",
+        "loadStaff": "Failed to load staff",
+        "loadRequests": "Failed to load membership requests"
+      },
+      "empty": {
+        "members": {
+          "title": "No members found",
+          "noSearch": "This organization has no members yet",
+          "withSearch": "No members match your search criteria"
+        },
+        "staff": {
+          "title": "No staff members found",
+          "noSearch": "This organization has no staff members yet",
+          "withSearch": "No staff members match your search criteria"
+        },
+        "requests": {
+          "title": "No pending requests",
+          "description": "There are no pending membership requests at this time"
+        }
+      },
+      "ownerNotice": "As the organization owner, you can add staff members, edit their permissions, and remove them. Staff permissions are managed individually."
+    },
+    "eventSeries": {
+      "pageTitle": "Event Series",
+      "pageDescription": "Manage recurring event series for your organization",
+      "metaDescription": "Manage event series for {orgName}",
+      "createSeriesButton": "Create Series",
+      "createEventSeriesButton": "Create Event Series",
+      "empty": {
+        "title": "No event series yet",
+        "description": "Get started by creating your first event series"
+      },
+      "eventCount": {
+        "singular": "event",
+        "plural": "events"
+      },
+      "tagsMore": "+{count} more",
+      "actions": {
+        "view": "View",
+        "edit": "Edit"
+      }
     }
   },
   "invitation": {
@@ -542,6 +738,11 @@
     "pronouns_customPlaceholder": "e.g., ze/zir",
     "pronouns_customOption": "Custom...",
     "pronouns_chooseCommonOption": "Choose from common options",
+    "language_label": "Preferred Language",
+    "language_hint": "Choose your preferred language for the interface",
+    "language_en": "English",
+    "language_de": "German (Deutsch)",
+    "language_it": "Italian (Italiano)",
     "buttons_submitText": "Save Changes",
     "buttons_submittingText": "Saving...",
     "settingsLink_text": "Configure privacy, notifications and location",
@@ -1761,5 +1962,55 @@
   },
   "errorPage": {
     "debugInfo": "Debug Info:"
+  },
+  "orgAdmin.questionnaires": {
+    "pageTitle": "Questionnaires",
+    "metaDescription": "Manage admission forms and surveys for {orgName}",
+    "pageDescription": "Manage admission forms, applications, and surveys for your events",
+    "createQuestionnaireButton": "Create Questionnaire",
+    "searchPlaceholder": "Search questionnaires...",
+    "noResults": {
+      "title": "No questionnaires found",
+      "description": "No questionnaires match \"{query}\"",
+      "clearButton": "Clear search"
+    },
+    "empty": {
+      "title": "No questionnaires yet",
+      "description": "Create your first admission form or membership application to get started"
+    }
+  },
+  "orgAdmin.resources": {
+    "pageTitle": "Resources",
+    "pageDescription": "Manage files, links, and content for your organization",
+    "addResourceButton": "Add Resource",
+    "searchPlaceholder": "Search resources...",
+    "filters": {
+      "type": {
+        "label": "Filter by type",
+        "allTypes": "All Types",
+        "files": "Files",
+        "links": "Links",
+        "text": "Text"
+      },
+      "visibility": {
+        "label": "Filter by visibility",
+        "allVisibility": "All Visibility",
+        "public": "Public",
+        "membersOnly": "Members Only",
+        "staffOnly": "Staff Only",
+        "private": "Private"
+      }
+    },
+    "error": {
+      "title": "Error",
+      "description": "Failed to load resources. Please try again."
+    },
+    "loading": "Loading",
+    "empty": {
+      "title": "No resources found",
+      "withFilters": "Try adjusting your filters",
+      "noFilters": "Get started by creating your first resource"
+    },
+    "confirmDelete": "Are you sure you want to delete this resource?"
   }
 }

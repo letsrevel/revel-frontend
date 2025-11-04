@@ -5,6 +5,7 @@ import {
 	accountMe,
 	permissionMyPermissions
 } from '$lib/api/client';
+import { setLocale } from '$lib/paraglide/runtime.js';
 
 /**
  * Auth store using Svelte 5 Runes
@@ -251,6 +252,12 @@ class AuthStore {
 			}
 
 			this._user = data;
+
+			// Set user's preferred language if available
+			if (data.language && ['en', 'de', 'it'].includes(data.language)) {
+				console.log('[AUTH STORE] Setting user preferred language:', data.language);
+				setLocale(data.language as 'en' | 'de' | 'it');
+			}
 		} catch (err) {
 			// Check if this is a network error (likely ad blocker)
 			if (err instanceof TypeError && err.message === 'Failed to fetch') {

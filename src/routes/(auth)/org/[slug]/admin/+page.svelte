@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
@@ -13,8 +14,8 @@
 	// Quick action cards (derived to properly track organization reactivity)
 	const quickActions = $derived([
 		{
-			title: 'Events',
-			description: "Manage your organization's events",
+			title: m['orgAdmin.dashboard.quickActions.events.title'](),
+			description: m['orgAdmin.dashboard.quickActions.events.description'](),
 			icon: Calendar,
 			href: `/org/${organization.slug}/admin/events`,
 			color: 'text-blue-600 dark:text-blue-400',
@@ -22,8 +23,8 @@
 			badge: undefined as string | undefined
 		},
 		{
-			title: 'Event Series',
-			description: 'Manage recurring event series',
+			title: m['orgAdmin.dashboard.quickActions.eventSeries.title'](),
+			description: m['orgAdmin.dashboard.quickActions.eventSeries.description'](),
 			icon: Repeat,
 			href: `/org/${organization.slug}/admin/event-series`,
 			color: 'text-indigo-600 dark:text-indigo-400',
@@ -31,8 +32,8 @@
 			badge: undefined as string | undefined
 		},
 		{
-			title: 'Members',
-			description: 'Manage members and staff',
+			title: m['orgAdmin.dashboard.quickActions.members.title'](),
+			description: m['orgAdmin.dashboard.quickActions.members.description'](),
 			icon: Users,
 			href: `/org/${organization.slug}/admin/members`,
 			color: 'text-green-600 dark:text-green-400',
@@ -40,8 +41,8 @@
 			badge: undefined as string | undefined
 		},
 		{
-			title: 'Settings',
-			description: 'Configure organization settings',
+			title: m['orgAdmin.dashboard.quickActions.settings.title'](),
+			description: m['orgAdmin.dashboard.quickActions.settings.description'](),
 			icon: Settings,
 			href: `/org/${organization.slug}/admin/settings`,
 			color: 'text-purple-600 dark:text-purple-400',
@@ -63,7 +64,7 @@
 
 <svelte:head>
 	<title>{organization.name} Admin Dashboard | Revel</title>
-	<meta name="description" content="Admin dashboard for {organization.name}" />
+	<meta name="description" content={m['orgAdmin.dashboard.metaDescription']({ orgName: organization.name })} />
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
@@ -71,17 +72,17 @@
 	<!-- Welcome Header -->
 	<div>
 		<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
-			Welcome to {organization.name} Admin
+			{m['orgAdmin.dashboard.pageTitle']({ orgName: organization.name })}
 		</h1>
 		<p class="mt-1 text-sm text-muted-foreground">
-			Manage your organization, events, and team members from here.
+			{m['orgAdmin.dashboard.pageDescription']()}
 		</p>
 	</div>
 
 	<!-- Quick Actions Section -->
 	<div class="space-y-4">
 		<div class="flex items-center justify-between">
-			<h2 class="text-lg font-semibold">Quick Actions</h2>
+			<h2 class="text-lg font-semibold">{m['orgAdmin.dashboard.quickActionsHeading']()}</h2>
 			{#if canCreateEvent}
 				<button
 					type="button"
@@ -89,7 +90,7 @@
 					class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				>
 					<Plus class="h-4 w-4" aria-hidden="true" />
-					Create Event
+					{m['orgAdmin.dashboard.createEventButton']()}
 				</button>
 			{/if}
 		</div>
@@ -139,26 +140,26 @@
 
 	<!-- Organization Info Section -->
 	<div class="space-y-4">
-		<h2 class="text-lg font-semibold">Organization Details</h2>
+		<h2 class="text-lg font-semibold">{m['orgAdmin.dashboard.organizationDetailsHeading']()}</h2>
 
 		<div class="rounded-lg border border-border bg-card p-6 shadow-sm">
 			<dl class="grid gap-4 md:grid-cols-2">
 				<!-- Organization Name -->
 				<div>
-					<dt class="text-sm font-medium text-muted-foreground">Organization Name</dt>
+					<dt class="text-sm font-medium text-muted-foreground">{m['orgAdmin.dashboard.orgDetails.orgName']()}</dt>
 					<dd class="mt-1 text-base font-semibold">{organization.name}</dd>
 				</div>
 
 				<!-- Slug -->
 				<div>
-					<dt class="text-sm font-medium text-muted-foreground">URL Slug</dt>
+					<dt class="text-sm font-medium text-muted-foreground">{m['orgAdmin.dashboard.orgDetails.urlSlug']()}</dt>
 					<dd class="mt-1 font-mono text-sm">{organization.slug}</dd>
 				</div>
 
 				<!-- Location -->
 				{#if organization.city}
 					<div>
-						<dt class="text-sm font-medium text-muted-foreground">Location</dt>
+						<dt class="text-sm font-medium text-muted-foreground">{m['orgAdmin.dashboard.orgDetails.location']()}</dt>
 						<dd class="mt-1 text-base">
 							{organization.city.name}, {organization.city.country}
 						</dd>
@@ -167,19 +168,19 @@
 
 				<!-- Your Role -->
 				<div>
-					<dt class="text-sm font-medium text-muted-foreground">Your Role</dt>
+					<dt class="text-sm font-medium text-muted-foreground">{m['orgAdmin.dashboard.orgDetails.yourRole']()}</dt>
 					<dd class="mt-1">
 						{#if data.isOwner}
 							<span
 								class="inline-flex items-center rounded-md bg-primary/10 px-2 py-1 text-sm font-medium text-primary"
 							>
-								Owner
+								{m['orgAdmin.layout.ownerBadge']()}
 							</span>
 						{:else if data.isStaff}
 							<span
 								class="inline-flex items-center rounded-md bg-accent px-2 py-1 text-sm font-medium"
 							>
-								Staff
+								{m['orgAdmin.layout.staffBadge']()}
 							</span>
 						{/if}
 					</dd>
@@ -189,7 +190,7 @@
 			<!-- Description -->
 			{#if organization.description_html || organization.description}
 				<div class="mt-6 border-t pt-4">
-					<h3 class="text-sm font-medium text-muted-foreground">About {organization.name}</h3>
+					<h3 class="text-sm font-medium text-muted-foreground">{m['orgAdmin.dashboard.aboutHeading']({ orgName: organization.name })}</h3>
 					<div class="mt-2">
 						<OrganizationDescription
 							descriptionHtml={organization.description_html}
@@ -211,10 +212,9 @@
 			<div class="flex gap-3">
 				<FileText class="h-5 w-5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
 				<div class="flex-1">
-					<h3 class="font-medium text-blue-900 dark:text-blue-100">Staff Member Permissions</h3>
+					<h3 class="font-medium text-blue-900 dark:text-blue-100">{m['orgAdmin.dashboard.permissions.staffNoticeTitle']()}</h3>
 					<p class="mt-1 text-sm text-blue-700 dark:text-blue-300">
-						Your access to admin features is determined by the permissions granted to you by the
-						organization owner. Some features may be restricted.
+						{m['orgAdmin.dashboard.permissions.staffNoticeDescription']()}
 					</p>
 				</div>
 			</div>

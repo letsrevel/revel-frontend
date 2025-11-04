@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { Plus, Search } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -23,20 +24,20 @@
 </script>
 
 <svelte:head>
-	<title>Questionnaires - {data.organization.name} Admin</title>
+	<title>{m['orgAdmin.questionnaires.pageTitle']()} - {data.organization.name} Admin</title>
 </svelte:head>
 
 <!-- Page Header -->
 <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 	<div>
-		<h1 class="text-3xl font-bold tracking-tight">Questionnaires</h1>
+		<h1 class="text-3xl font-bold tracking-tight">{m['orgAdmin.questionnaires.pageTitle']()}</h1>
 		<p class="mt-2 text-sm text-muted-foreground">
-			Manage admission forms, applications, and surveys for your events
+			{m['orgAdmin.questionnaires.pageDescription']()}
 		</p>
 	</div>
 	<Button href="questionnaires/new" class="gap-2">
 		<Plus class="h-4 w-4" />
-		Create Questionnaire
+		{m['orgAdmin.questionnaires.createQuestionnaireButton']()}
 	</Button>
 </div>
 
@@ -46,7 +47,7 @@
 		<Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 		<Input
 			type="search"
-			placeholder="Search questionnaires..."
+			placeholder={m['orgAdmin.questionnaires.searchPlaceholder']()}
 			bind:value={searchQuery}
 			class="pl-9"
 		/>
@@ -61,11 +62,11 @@
 			<div class="mb-4 rounded-full bg-muted p-3">
 				<Search class="h-6 w-6 text-muted-foreground" />
 			</div>
-			<h3 class="mb-2 text-lg font-semibold">No questionnaires found</h3>
+			<h3 class="mb-2 text-lg font-semibold">{m['orgAdmin.questionnaires.noResults.title']()}</h3>
 			<p class="mb-4 text-center text-sm text-muted-foreground">
-				No questionnaires match "{searchQuery}"
+				{m['orgAdmin.questionnaires.noResults.description']({ query: searchQuery })}
 			</p>
-			<Button variant="outline" onclick={() => (searchQuery = '')}>Clear search</Button>
+			<Button variant="outline" onclick={() => (searchQuery = '')}>{m['orgAdmin.questionnaires.noResults.clearButton']()}</Button>
 		</div>
 	{:else}
 		<!-- Empty state -->
@@ -86,13 +87,13 @@
 					/>
 				</svg>
 			</div>
-			<h3 class="mb-2 text-lg font-semibold">No questionnaires yet</h3>
+			<h3 class="mb-2 text-lg font-semibold">{m['orgAdmin.questionnaires.empty.title']()}</h3>
 			<p class="mb-4 text-center text-sm text-muted-foreground">
-				Create your first admission form or membership application to get started
+				{m['orgAdmin.questionnaires.empty.description']()}
 			</p>
 			<Button href="questionnaires/new" class="gap-2">
 				<Plus class="h-4 w-4" />
-				Create Questionnaire
+				{m['orgAdmin.questionnaires.createQuestionnaireButton']()}
 			</Button>
 		</div>
 	{/if}

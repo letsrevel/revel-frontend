@@ -447,6 +447,202 @@
       "home": "Startseite",
       "organizations": "Organisationen",
       "admin": "Admin"
+    },
+    "dashboard": {
+      "pageTitle": "Willkommen im {orgName} Admin",
+      "pageDescription": "Verwalte deine Organisation, Veranstaltungen und Teammitglieder von hier aus.",
+      "metaDescription": "Admin-Dashboard für {orgName}",
+      "quickActionsHeading": "Schnellaktionen",
+      "createEventButton": "Veranstaltung erstellen",
+      "organizationDetailsHeading": "Organisationsdetails",
+      "aboutHeading": "Über {orgName}",
+      "quickActions": {
+        "events": {
+          "title": "Veranstaltungen",
+          "description": "Verwalte die Veranstaltungen deiner Organisation"
+        },
+        "eventSeries": {
+          "title": "Veranstaltungsreihen",
+          "description": "Verwalte wiederkehrende Veranstaltungsreihen"
+        },
+        "members": {
+          "title": "Mitglieder",
+          "description": "Verwalte Mitglieder und Mitarbeiter"
+        },
+        "settings": {
+          "title": "Einstellungen",
+          "description": "Organisationseinstellungen konfigurieren"
+        }
+      },
+      "orgDetails": {
+        "orgName": "Organisationsname",
+        "urlSlug": "URL-Slug",
+        "location": "Standort",
+        "yourRole": "Deine Rolle"
+      },
+      "permissions": {
+        "staffNoticeTitle": "Mitarbeiterberechtigungen",
+        "staffNoticeDescription": "Dein Zugriff auf Admin-Funktionen wird durch die Berechtigungen bestimmt, die dir vom Organisationseigentümer erteilt wurden. Einige Funktionen können eingeschränkt sein."
+      }
+    },
+    "settings": {
+      "pageTitle": "Organisationseinstellungen",
+      "pageDescription": "Verwalten Sie das Profil und die Einstellungen Ihrer Organisation",
+      "metaDescription": "Verwalten Sie Ihre Organisationseinstellungen",
+      "viewPublicProfile": "Öffentliches Profil anzeigen",
+      "successMessage": "Ihre Organisationseinstellungen wurden erfolgreich aktualisiert.",
+      "identity": {
+        "heading": "Organisationsidentität",
+        "orgNameLabel": "Organisationsname",
+        "orgNameHelp": "Wenden Sie sich an den Support, um Ihren Organisationsnamen zu ändern",
+        "urlSlugLabel": "URL-Slug",
+        "urlSlugHelp": "Wenden Sie sich an den Support, um Ihren URL-Slug zu ändern"
+      },
+      "platformFees": {
+        "heading": "Plattformgebühren",
+        "percentLabel": "Plattformgebühr (Prozent)",
+        "percentHelp": "Prozentuale Gebühr auf Ticketverkäufe",
+        "fixedLabel": "Plattformgebühr (Fix)",
+        "fixedHelp": "Feste Gebühr pro verkauftem Ticket",
+        "contactSupport": "Wenden Sie sich an den Support, um die Plattformgebühren zu ändern"
+      },
+      "branding": {
+        "heading": "Branding",
+        "logoLabel": "Organisationslogo",
+        "logoHelp": "Quadratisch (400×400px empfohlen)",
+        "coverLabel": "Titelbild",
+        "coverHelp": "Breit (1200×400px empfohlen)"
+      },
+      "profile": {
+        "heading": "Profilinformationen",
+        "descriptionLabel": "Beschreibung",
+        "descriptionPlaceholder": "Erzählen Sie den Leuten von Ihrer Organisation...",
+        "cityLabel": "Stadt",
+        "addressLabel": "Adresse",
+        "addressOptional": "(Optional)",
+        "addressPlaceholder": "Musterstraße 123, Stadt, Bundesland 12345",
+        "visibilityLabel": "Sichtbarkeit",
+        "visibilityPublic": "Öffentlich - Jeder kann es sehen",
+        "visibilityMembersOnly": "Nur Mitglieder - Nur Organisationsmitglieder können es sehen",
+        "visibilityStaffOnly": "Nur Mitarbeiter - Nur Mitarbeiter können es sehen",
+        "visibilityPublicHelp": "Ihr Organisationsprofil ist für alle sichtbar",
+        "visibilityMembersOnlyHelp": "Ihr Organisationsprofil ist nur für Mitglieder sichtbar",
+        "visibilityStaffOnlyHelp": "Ihr Organisationsprofil ist nur für Mitarbeiter sichtbar"
+      },
+      "membership": {
+        "heading": "Mitgliedschaftseinstellungen",
+        "acceptRequestsLabel": "Mitgliedschaftsanfragen annehmen",
+        "acceptRequestsHelp": "Wenn aktiviert, können Benutzer Anfragen stellen, um Mitglieder Ihrer Organisation zu werden. Mitglieder haben möglicherweise Zugang zu nur für Mitglieder zugänglichen Veranstaltungen und Inhalten.",
+        "contactEmailLabel": "Kontakt-E-Mail",
+        "contactEmailOptional": "(Optional)",
+        "contactEmailPlaceholder": "kontakt@ihreorganisation.de",
+        "emailVerified": "✓ E-Mail verifiziert",
+        "emailNotVerified": "E-Mail noch nicht verifiziert",
+        "contactEmailHelp": "Öffentliche Kontakt-E-Mail für Anfragen zu Ihrer Organisation"
+      },
+      "actions": {
+        "cancel": "Abbrechen",
+        "saveChanges": "Änderungen speichern",
+        "saving": "Speichern..."
+      }
+    },
+    "events": {
+      "pageTitle": "Veranstaltungen",
+      "pageDescription": "Verwalten Sie die Veranstaltungen Ihrer Organisation",
+      "metaDescription": "Veranstaltungen verwalten für {orgName}",
+      "createEventButton": "Veranstaltung erstellen",
+      "empty": {
+        "title": "Noch keine Veranstaltungen",
+        "description": "Beginnen Sie mit der Erstellung Ihrer ersten Veranstaltung"
+      },
+      "sections": {
+        "drafts": "Entwürfe ({count})",
+        "published": "Veröffentlicht ({count})",
+        "closed": "Geschlossen ({count})"
+      },
+      "status": {
+        "draft": "Entwurf",
+        "published": "Veröffentlicht",
+        "closed": "Geschlossen"
+      },
+      "actions": {
+        "edit": "Bearbeiten",
+        "publish": "Veröffentlichen",
+        "delete": "Löschen",
+        "view": "Ansehen",
+        "tickets": "Tickets",
+        "attendees": "Teilnehmer",
+        "invitations": "Einladungen",
+        "close": "Schließen",
+        "reopen": "Wieder öffnen"
+      },
+      "attendeeCount": {
+        "attendees": "Teilnehmer",
+        "rsvps": "Zusagen"
+      },
+      "confirmations": {
+        "publish": "Sind Sie sicher, dass Sie diese Veranstaltung veröffentlichen möchten? Sie wird für Benutzer sichtbar.",
+        "close": "Sind Sie sicher, dass Sie diese Veranstaltung schließen möchten? Zusagen und Ticketverkäufe werden gestoppt.",
+        "delete": "Sind Sie sicher, dass Sie diese Veranstaltung löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden und entfernt die Veranstaltung aus der öffentlichen Ansicht.",
+        "reopen": "Sind Sie sicher, dass Sie diese Veranstaltung wieder öffnen möchten?"
+      }
+    },
+    "members": {
+      "pageTitle": "Mitglieder & Mitarbeiter",
+      "pageDescription": "Verwalten Sie Organisationsmitglieder, Mitarbeiter und Mitgliedschaftsanfragen",
+      "metaDescription": "Mitglieder und Mitarbeiter verwalten für {orgName}",
+      "tabs": {
+        "members": "Mitglieder",
+        "staff": "Mitarbeiter",
+        "requests": "Anfragen"
+      },
+      "search": {
+        "members": "Mitglieder nach Name oder E-Mail suchen...",
+        "staff": "Mitarbeiter nach Name oder E-Mail suchen..."
+      },
+      "loading": "Laden...",
+      "errors": {
+        "loadMembers": "Mitglieder konnten nicht geladen werden",
+        "loadStaff": "Mitarbeiter konnten nicht geladen werden",
+        "loadRequests": "Mitgliedschaftsanfragen konnten nicht geladen werden"
+      },
+      "empty": {
+        "members": {
+          "title": "Keine Mitglieder gefunden",
+          "noSearch": "Diese Organisation hat noch keine Mitglieder",
+          "withSearch": "Keine Mitglieder entsprechen Ihren Suchkriterien"
+        },
+        "staff": {
+          "title": "Keine Mitarbeiter gefunden",
+          "noSearch": "Diese Organisation hat noch keine Mitarbeiter",
+          "withSearch": "Keine Mitarbeiter entsprechen Ihren Suchkriterien"
+        },
+        "requests": {
+          "title": "Keine ausstehenden Anfragen",
+          "description": "Es gibt derzeit keine ausstehenden Mitgliedschaftsanfragen"
+        }
+      },
+      "ownerNotice": "Als Organisationseigentümer können Sie Mitarbeiter hinzufügen, ihre Berechtigungen bearbeiten und sie entfernen. Mitarbeiterberechtigungen werden individuell verwaltet."
+    },
+    "eventSeries": {
+      "pageTitle": "Veranstaltungsreihen",
+      "pageDescription": "Verwalten Sie wiederkehrende Veranstaltungsreihen für Ihre Organisation",
+      "metaDescription": "Veranstaltungsreihen verwalten für {orgName}",
+      "createSeriesButton": "Reihe erstellen",
+      "createEventSeriesButton": "Veranstaltungsreihe erstellen",
+      "empty": {
+        "title": "Noch keine Veranstaltungsreihen",
+        "description": "Beginnen Sie mit der Erstellung Ihrer ersten Veranstaltungsreihe"
+      },
+      "eventCount": {
+        "singular": "Veranstaltung",
+        "plural": "Veranstaltungen"
+      },
+      "tagsMore": "+{count} weitere",
+      "actions": {
+        "view": "Ansehen",
+        "edit": "Bearbeiten"
+      }
     }
   },
   "invitation": {
@@ -542,6 +738,11 @@
     "pronouns_customPlaceholder": "z.B. dey/deren",
     "pronouns_customOption": "Benutzerdefiniert...",
     "pronouns_chooseCommonOption": "Aus gängigen Optionen wählen",
+    "language_label": "Bevorzugte Sprache",
+    "language_hint": "Wähle deine bevorzugte Sprache für die Benutzeroberfläche",
+    "language_en": "Englisch (English)",
+    "language_de": "Deutsch",
+    "language_it": "Italienisch (Italiano)",
     "buttons_submitText": "Änderungen speichern",
     "buttons_submittingText": "Speichern...",
     "settingsLink_text": "Datenschutz, Benachrichtigungen und Standort konfigurieren",
@@ -1761,5 +1962,55 @@
   },
   "errorPage": {
     "debugInfo": "Debug-Informationen:"
+  },
+  "orgAdmin.questionnaires": {
+    "pageTitle": "Fragebögen",
+    "metaDescription": "Verwalte Aufnahmeformulare und Umfragen für {orgName}",
+    "pageDescription": "Verwalte Aufnahmeformulare, Bewerbungen und Umfragen für deine Veranstaltungen",
+    "createQuestionnaireButton": "Fragebogen erstellen",
+    "searchPlaceholder": "Fragebögen durchsuchen...",
+    "noResults": {
+      "title": "Keine Fragebögen gefunden",
+      "description": "Keine Fragebögen entsprechen \"{query}\"",
+      "clearButton": "Suche löschen"
+    },
+    "empty": {
+      "title": "Noch keine Fragebögen",
+      "description": "Erstelle dein erstes Aufnahmeformular oder deine erste Mitgliedschaftsbewerbung, um zu beginnen"
+    }
+  },
+  "orgAdmin.resources": {
+    "pageTitle": "Ressourcen",
+    "pageDescription": "Verwalte Dateien, Links und Inhalte für deine Organisation",
+    "addResourceButton": "Ressource hinzufügen",
+    "searchPlaceholder": "Ressourcen durchsuchen...",
+    "filters": {
+      "type": {
+        "label": "Nach Typ filtern",
+        "allTypes": "Alle Typen",
+        "files": "Dateien",
+        "links": "Links",
+        "text": "Text"
+      },
+      "visibility": {
+        "label": "Nach Sichtbarkeit filtern",
+        "allVisibility": "Alle Sichtbarkeiten",
+        "public": "Öffentlich",
+        "membersOnly": "Nur Mitglieder",
+        "staffOnly": "Nur Personal",
+        "private": "Privat"
+      }
+    },
+    "error": {
+      "title": "Fehler",
+      "description": "Ressourcen konnten nicht geladen werden. Bitte versuche es erneut."
+    },
+    "loading": "Lädt",
+    "empty": {
+      "title": "Keine Ressourcen gefunden",
+      "withFilters": "Versuche deine Filter anzupassen",
+      "noFilters": "Erstelle deine erste Ressource, um zu beginnen"
+    },
+    "confirmDelete": "Bist du sicher, dass du diese Ressource löschen möchtest?"
   }
 }

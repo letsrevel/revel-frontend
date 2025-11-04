@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
 	import type { PageData, ActionData } from './$types';
 	import CityAutocomplete from '$lib/components/forms/CityAutocomplete.svelte';
@@ -236,8 +237,8 @@
 </script>
 
 <svelte:head>
-	<title>Settings - {data.organization.name} Admin | Revel</title>
-	<meta name="description" content="Manage your organization settings" />
+	<title>{m['orgAdmin.settings.pageTitle']()} - {data.organization.name} Admin | Revel</title>
+	<meta name="description" content={m['orgAdmin.settings.metaDescription']()} />
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
@@ -245,9 +246,9 @@
 	<!-- Header with Public Profile Button -->
 	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 		<div>
-			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">Organization Settings</h1>
+			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">{m['orgAdmin.settings.pageTitle']()}</h1>
 			<p class="mt-1 text-sm text-muted-foreground">
-				Manage your organization's profile and preferences
+				{m['orgAdmin.settings.pageDescription']()}
 			</p>
 		</div>
 
@@ -258,7 +259,7 @@
 			class="inline-flex items-center gap-2 rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 		>
 			<Eye class="h-4 w-4" aria-hidden="true" />
-			View Public Profile
+			{m['orgAdmin.settings.viewPublicProfile']()}
 		</a>
 	</div>
 
@@ -269,7 +270,7 @@
 			role="alert"
 		>
 			<Check class="h-5 w-5 shrink-0" aria-hidden="true" />
-			<p class="text-sm font-medium">Your organization settings have been updated successfully.</p>
+			<p class="text-sm font-medium">{m['orgAdmin.settings.successMessage']()}</p>
 		</div>
 	{/if}
 
@@ -288,28 +289,28 @@
 	<section class="rounded-lg border border-border bg-card p-6 shadow-sm">
 		<div class="mb-4 flex items-center gap-2">
 			<Building2 class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-			<h2 class="text-lg font-semibold">Organization Identity</h2>
+			<h2 class="text-lg font-semibold">{m['orgAdmin.settings.identity.heading']()}</h2>
 		</div>
 
 		<div class="grid gap-4 md:grid-cols-2">
 			<!-- Name (Read-only) -->
 			<div>
-				<div class="block text-sm font-medium text-muted-foreground">Organization Name</div>
+				<div class="block text-sm font-medium text-muted-foreground">{m['orgAdmin.settings.identity.orgNameLabel']()}</div>
 				<div class="mt-1 rounded-md border border-border bg-muted px-3 py-2 text-sm">
 					{data.organization.name}
 				</div>
 				<p class="mt-1 text-xs text-muted-foreground">
-					Contact support to change your organization name
+					{m['orgAdmin.settings.identity.orgNameHelp']()}
 				</p>
 			</div>
 
 			<!-- Slug (Read-only) -->
 			<div>
-				<div class="block text-sm font-medium text-muted-foreground">URL Slug</div>
+				<div class="block text-sm font-medium text-muted-foreground">{m['orgAdmin.settings.identity.urlSlugLabel']()}</div>
 				<div class="mt-1 rounded-md border border-border bg-muted px-3 py-2 font-mono text-sm">
 					{data.organization.slug}
 				</div>
-				<p class="mt-1 text-xs text-muted-foreground">Contact support to change your URL slug</p>
+				<p class="mt-1 text-xs text-muted-foreground">{m['orgAdmin.settings.identity.urlSlugHelp']()}</p>
 			</div>
 		</div>
 	</section>
@@ -318,31 +319,31 @@
 	<section class="rounded-lg border border-border bg-card p-6 shadow-sm">
 		<div class="mb-4 flex items-center gap-2">
 			<Building2 class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-			<h2 class="text-lg font-semibold">Platform Fees</h2>
+			<h2 class="text-lg font-semibold">{m['orgAdmin.settings.platformFees.heading']()}</h2>
 		</div>
 
 		<div class="grid gap-4 md:grid-cols-2">
 			<!-- Platform Fee Percent -->
 			<div>
-				<div class="block text-sm font-medium text-muted-foreground">Platform Fee (Percent)</div>
+				<div class="block text-sm font-medium text-muted-foreground">{m['orgAdmin.settings.platformFees.percentLabel']()}</div>
 				<div class="mt-1 rounded-md border border-border bg-muted px-3 py-2 text-sm">
 					{data.organization.platform_fee_percent}%
 				</div>
-				<p class="mt-1 text-xs text-muted-foreground">Percentage fee applied to ticket sales</p>
+				<p class="mt-1 text-xs text-muted-foreground">{m['orgAdmin.settings.platformFees.percentHelp']()}</p>
 			</div>
 
 			<!-- Platform Fee Fixed -->
 			<div>
-				<div class="block text-sm font-medium text-muted-foreground">Platform Fee (Fixed)</div>
+				<div class="block text-sm font-medium text-muted-foreground">{m['orgAdmin.settings.platformFees.fixedLabel']()}</div>
 				<div class="mt-1 rounded-md border border-border bg-muted px-3 py-2 text-sm">
 					€{data.organization.platform_fee_fixed}
 				</div>
-				<p class="mt-1 text-xs text-muted-foreground">Fixed fee per ticket sold</p>
+				<p class="mt-1 text-xs text-muted-foreground">{m['orgAdmin.settings.platformFees.fixedHelp']()}</p>
 			</div>
 		</div>
 
 		<p class="mt-4 text-xs text-muted-foreground">
-			Contact support to modify platform fee settings
+			{m['orgAdmin.settings.platformFees.contactSupport']()}
 		</p>
 	</section>
 
@@ -357,7 +358,7 @@
 
 	<!-- Images Section (Outside Form) -->
 	<section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
-		<h2 class="text-lg font-semibold">Branding</h2>
+		<h2 class="text-lg font-semibold">{m['orgAdmin.settings.branding.heading']()}</h2>
 
 		{#if uploadError}
 			<div
@@ -374,7 +375,7 @@
 			<ImageUploader
 				value={logoFile}
 				preview={logoUrl}
-				label="Organization Logo"
+				label={m['orgAdmin.settings.branding.logoLabel']()}
 				accept="image/*"
 				maxSize={5 * 1024 * 1024}
 				aspectRatio="square"
@@ -387,7 +388,7 @@
 					}
 				}}
 			/>
-			<p class="mt-1 text-xs text-muted-foreground">Square (400×400px recommended)</p>
+			<p class="mt-1 text-xs text-muted-foreground">{m['orgAdmin.settings.branding.logoHelp']()}</p>
 		</div>
 
 		<!-- Cover Art -->
@@ -395,7 +396,7 @@
 			<ImageUploader
 				value={coverFile}
 				preview={coverUrl}
-				label="Cover Image"
+				label={m['orgAdmin.settings.branding.coverLabel']()}
 				accept="image/*"
 				maxSize={10 * 1024 * 1024}
 				disabled={uploadingCover}
@@ -407,7 +408,7 @@
 					}
 				}}
 			/>
-			<p class="mt-1 text-xs text-muted-foreground">Wide (1200×400px recommended)</p>
+			<p class="mt-1 text-xs text-muted-foreground">{m['orgAdmin.settings.branding.coverHelp']()}</p>
 		</div>
 	</section>
 
@@ -428,14 +429,14 @@
 	>
 		<!-- Profile Information -->
 		<section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
-			<h2 class="text-lg font-semibold">Profile Information</h2>
+			<h2 class="text-lg font-semibold">{m['orgAdmin.settings.profile.heading']()}</h2>
 
 			<!-- Description -->
 			<div>
 				<MarkdownEditor
 					bind:value={description}
-					label="Description"
-					placeholder="Tell people about your organization..."
+					label={m['orgAdmin.settings.profile.descriptionLabel']()}
+					placeholder={m['orgAdmin.settings.profile.descriptionPlaceholder']()}
 					rows={8}
 				/>
 				<input type="hidden" name="description" value={description} />
@@ -443,46 +444,46 @@
 
 			<!-- City -->
 			<div>
-				<CityAutocomplete value={selectedCity} onSelect={handleCitySelect} label="City" />
+				<CityAutocomplete value={selectedCity} onSelect={handleCitySelect} label={m['orgAdmin.settings.profile.cityLabel']()} />
 				<input type="hidden" name="city_id" value={selectedCity?.id || ''} />
 			</div>
 
 			<!-- Address -->
 			<div>
 				<label for="address" class="block text-sm font-medium">
-					Address
-					<span class="text-muted-foreground">(Optional)</span>
+					{m['orgAdmin.settings.profile.addressLabel']()}
+					<span class="text-muted-foreground">{m['orgAdmin.settings.profile.addressOptional']()}</span>
 				</label>
 				<input
 					type="text"
 					id="address"
 					name="address"
 					bind:value={address}
-					placeholder="123 Main St, City, State 12345"
+					placeholder={m['orgAdmin.settings.profile.addressPlaceholder']()}
 					class="mt-1 flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
 				/>
 			</div>
 
 			<!-- Visibility -->
 			<div>
-				<label for="visibility" class="block text-sm font-medium">Visibility</label>
+				<label for="visibility" class="block text-sm font-medium">{m['orgAdmin.settings.profile.visibilityLabel']()}</label>
 				<select
 					id="visibility"
 					name="visibility"
 					bind:value={visibility}
 					class="mt-1 flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
 				>
-					<option value="public">Public - Anyone can view</option>
-					<option value="members-only">Members Only - Only organization members can view</option>
-					<option value="staff-only">Staff Only - Only staff members can view</option>
+					<option value="public">{m['orgAdmin.settings.profile.visibilityPublic']()}</option>
+					<option value="members-only">{m['orgAdmin.settings.profile.visibilityMembersOnly']()}</option>
+					<option value="staff-only">{m['orgAdmin.settings.profile.visibilityStaffOnly']()}</option>
 				</select>
 				<p class="mt-1 text-xs text-muted-foreground">
 					{#if visibility === 'public'}
-						Your organization profile is visible to everyone
+						{m['orgAdmin.settings.profile.visibilityPublicHelp']()}
 					{:else if visibility === 'members-only'}
-						Your organization profile is only visible to members
+						{m['orgAdmin.settings.profile.visibilityMembersOnlyHelp']()}
 					{:else if visibility === 'staff-only'}
-						Your organization profile is only visible to staff
+						{m['orgAdmin.settings.profile.visibilityStaffOnlyHelp']()}
 					{/if}
 				</p>
 			</div>
@@ -490,7 +491,7 @@
 
 		<!-- Membership Settings -->
 		<section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
-			<h2 class="text-lg font-semibold">Membership Settings</h2>
+			<h2 class="text-lg font-semibold">{m['orgAdmin.settings.membership.heading']()}</h2>
 
 			<!-- Accept New Members -->
 			<div class="space-y-2">
@@ -504,36 +505,35 @@
 						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 					/>
 					<label for="accept_membership_requests" class="text-sm font-medium">
-						Accept membership requests
+						{m['orgAdmin.settings.membership.acceptRequestsLabel']()}
 					</label>
 				</div>
 				<p class="text-xs text-muted-foreground">
-					When enabled, users can submit requests to become members of your organization. Members
-					may have access to members-only events and content.
+					{m['orgAdmin.settings.membership.acceptRequestsHelp']()}
 				</p>
 			</div>
 
 			<!-- Contact Email -->
 			<div>
 				<label for="contact_email" class="block text-sm font-medium">
-					Contact Email
-					<span class="text-muted-foreground">(Optional)</span>
+					{m['orgAdmin.settings.membership.contactEmailLabel']()}
+					<span class="text-muted-foreground">{m['orgAdmin.settings.membership.contactEmailOptional']()}</span>
 				</label>
 				<input
 					type="email"
 					id="contact_email"
 					name="contact_email"
 					bind:value={contactEmail}
-					placeholder="contact@yourorganization.com"
+					placeholder={m['orgAdmin.settings.membership.contactEmailPlaceholder']()}
 					class="mt-1 flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
 				/>
 				{#if data.organization.contact_email_verified}
-					<p class="mt-1 text-xs text-green-600 dark:text-green-400">✓ Email verified</p>
+					<p class="mt-1 text-xs text-green-600 dark:text-green-400">{m['orgAdmin.settings.membership.emailVerified']()}</p>
 				{:else if contactEmail}
-					<p class="mt-1 text-xs text-muted-foreground">Email not yet verified</p>
+					<p class="mt-1 text-xs text-muted-foreground">{m['orgAdmin.settings.membership.emailNotVerified']()}</p>
 				{/if}
 				<p class="mt-1 text-xs text-muted-foreground">
-					Public contact email for inquiries about your organization
+					{m['orgAdmin.settings.membership.contactEmailHelp']()}
 				</p>
 			</div>
 		</section>
@@ -544,7 +544,7 @@
 				href="/org/{data.organization.slug}/admin"
 				class="rounded-md border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			>
-				Cancel
+				{m['orgAdmin.settings.actions.cancel']()}
 			</a>
 			<button
 				type="submit"
@@ -556,9 +556,9 @@
 						class="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent"
 						aria-hidden="true"
 					></div>
-					Saving...
+					{m['orgAdmin.settings.actions.saving']()}
 				{:else}
-					Save Changes
+					{m['orgAdmin.settings.actions.saveChanges']()}
 				{/if}
 			</button>
 		</div>

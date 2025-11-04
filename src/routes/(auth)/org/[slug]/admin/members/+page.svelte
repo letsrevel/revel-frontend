@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import type { PageData } from './$types';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
@@ -341,17 +342,17 @@
 </script>
 
 <svelte:head>
-	<title>Members & Staff - {organization.name} | Revel</title>
-	<meta name="description" content="Manage members and staff for {organization.name}" />
+	<title>{m['orgAdmin.members.pageTitle']()} - {organization.name} | Revel</title>
+	<meta name="description" content={m['orgAdmin.members.metaDescription']({ orgName: organization.name })} />
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
 <div class="space-y-6 px-4 md:px-0">
 	<!-- Header -->
 	<div>
-		<h1 class="text-2xl font-bold tracking-tight md:text-3xl">Members & Staff</h1>
+		<h1 class="text-2xl font-bold tracking-tight md:text-3xl">{m['orgAdmin.members.pageTitle']()}</h1>
 		<p class="mt-1 text-sm text-muted-foreground">
-			Manage organization members, staff, and membership requests
+			{m['orgAdmin.members.pageDescription']()}
 		</p>
 	</div>
 
@@ -360,7 +361,7 @@
 		<TabsList class="grid w-full grid-cols-3 lg:w-auto">
 			<TabsTrigger value="members" class="gap-2">
 				<Users class="h-4 w-4" />
-				<span>Members</span>
+				<span>{m['orgAdmin.members.tabs.members']()}</span>
 				{#if members.length > 0}
 					<span class="text-xs text-muted-foreground">({members.length})</span>
 				{/if}
@@ -368,7 +369,7 @@
 
 			<TabsTrigger value="staff" class="gap-2">
 				<UserCog class="h-4 w-4" />
-				<span>Staff</span>
+				<span>{m['orgAdmin.members.tabs.staff']()}</span>
 				{#if staff.length > 0}
 					<span class="text-xs text-muted-foreground">({staff.length})</span>
 				{/if}
@@ -376,7 +377,7 @@
 
 			<TabsTrigger value="requests" class="gap-2">
 				<UserPlus class="h-4 w-4" />
-				<span>Requests</span>
+				<span>{m['orgAdmin.members.tabs.requests']()}</span>
 				{#if pendingRequestsCount > 0}
 					<span class="rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
 						{pendingRequestsCount}
@@ -392,10 +393,10 @@
 				<Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 				<Input
 					type="search"
-					placeholder="Search members by name or email..."
+					placeholder={m['orgAdmin.members.search.members']()}
 					bind:value={memberSearch}
 					class="pl-10"
-					aria-label="Search members"
+					aria-label={m['orgAdmin.members.search.members']()}
 				/>
 			</div>
 
@@ -406,16 +407,16 @@
 				</div>
 			{:else if membersQuery.isError}
 				<div class="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-center">
-					<p class="text-sm text-destructive">Failed to load members</p>
+					<p class="text-sm text-destructive">{m['orgAdmin.members.errors.loadMembers']()}</p>
 				</div>
 			{:else if members.length === 0}
 				<div class="rounded-lg border border-dashed p-12 text-center">
 					<Users class="mx-auto h-12 w-12 text-muted-foreground" />
-					<h3 class="mt-4 font-semibold">No members found</h3>
+					<h3 class="mt-4 font-semibold">{m['orgAdmin.members.empty.members.title']()}</h3>
 					<p class="mt-2 text-sm text-muted-foreground">
 						{memberSearch
-							? 'No members match your search criteria'
-							: 'This organization has no members yet'}
+							? m['orgAdmin.members.empty.members.withSearch']()
+							: m['orgAdmin.members.empty.members.noSearch']()}
 					</p>
 				</div>
 			{:else}
@@ -444,10 +445,10 @@
 				<Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 				<Input
 					type="search"
-					placeholder="Search staff by name or email..."
+					placeholder={m['orgAdmin.members.search.staff']()}
 					bind:value={staffSearch}
 					class="pl-10"
-					aria-label="Search staff"
+					aria-label={m['orgAdmin.members.search.staff']()}
 				/>
 			</div>
 
@@ -457,8 +458,7 @@
 					class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950"
 				>
 					<p class="text-sm text-blue-900 dark:text-blue-100">
-						As the organization owner, you can add staff members, edit their permissions, and remove
-						them. Staff permissions are managed individually.
+						{m['orgAdmin.members.ownerNotice']()}
 					</p>
 				</div>
 			{/if}
@@ -470,16 +470,16 @@
 				</div>
 			{:else if staffQuery.isError}
 				<div class="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-center">
-					<p class="text-sm text-destructive">Failed to load staff</p>
+					<p class="text-sm text-destructive">{m['orgAdmin.members.errors.loadStaff']()}</p>
 				</div>
 			{:else if staff.length === 0}
 				<div class="rounded-lg border border-dashed p-12 text-center">
 					<UserCog class="mx-auto h-12 w-12 text-muted-foreground" />
-					<h3 class="mt-4 font-semibold">No staff members found</h3>
+					<h3 class="mt-4 font-semibold">{m['orgAdmin.members.empty.staff.title']()}</h3>
 					<p class="mt-2 text-sm text-muted-foreground">
 						{staffSearch
-							? 'No staff members match your search criteria'
-							: 'This organization has no staff members yet'}
+							? m['orgAdmin.members.empty.staff.withSearch']()
+							: m['orgAdmin.members.empty.staff.noSearch']()}
 					</p>
 				</div>
 			{:else}
@@ -506,14 +506,14 @@
 				</div>
 			{:else if requestsQuery.isError}
 				<div class="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-center">
-					<p class="text-sm text-destructive">Failed to load membership requests</p>
+					<p class="text-sm text-destructive">{m['orgAdmin.members.errors.loadRequests']()}</p>
 				</div>
 			{:else if requests.length === 0}
 				<div class="rounded-lg border border-dashed p-12 text-center">
 					<UserPlus class="mx-auto h-12 w-12 text-muted-foreground" />
-					<h3 class="mt-4 font-semibold">No pending requests</h3>
+					<h3 class="mt-4 font-semibold">{m['orgAdmin.members.empty.requests.title']()}</h3>
 					<p class="mt-2 text-sm text-muted-foreground">
-						There are no pending membership requests at this time
+						{m['orgAdmin.members.empty.requests.description']()}
 					</p>
 				</div>
 			{:else}

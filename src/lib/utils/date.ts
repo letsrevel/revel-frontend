@@ -2,6 +2,21 @@
  * Date and time formatting utilities for event display
  */
 
+import { getLocale } from '$lib/paraglide/runtime.js';
+
+/**
+ * Get the current locale in BCP 47 format (e.g., "en-US", "de-DE", "it-IT")
+ */
+function getCurrentLocale(): string {
+	const locale = getLocale();
+	const localeMap: Record<string, string> = {
+		en: 'en-US',
+		de: 'de-DE',
+		it: 'it-IT'
+	};
+	return localeMap[locale] || 'en-US';
+}
+
 /**
  * Format a date-time string for event display
  * @param dateString ISO 8601 date-time string
@@ -9,14 +24,15 @@
  */
 export function formatEventDate(dateString: string): string {
 	const date = new Date(dateString);
+	const locale = getCurrentLocale();
 
-	const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
-	const month = date.toLocaleDateString('en-US', { month: 'short' });
+	const dayOfWeek = date.toLocaleDateString(locale, { weekday: 'short' });
+	const month = date.toLocaleDateString(locale, { month: 'short' });
 	const day = date.getDate();
-	const time = date.toLocaleTimeString('en-US', {
+	const time = date.toLocaleTimeString(locale, {
 		hour: 'numeric',
 		minute: '2-digit',
-		hour12: true
+		hour12: locale === 'en-US' // Only use 12-hour format for English
 	});
 
 	return `${dayOfWeek}, ${month} ${day} • ${time}`;
@@ -31,20 +47,21 @@ export function formatEventDate(dateString: string): string {
 export function formatEventDateRange(startString: string, endString: string): string {
 	const start = new Date(startString);
 	const end = new Date(endString);
+	const locale = getCurrentLocale();
 
-	const dayOfWeek = start.toLocaleDateString('en-US', { weekday: 'short' });
-	const month = start.toLocaleDateString('en-US', { month: 'short' });
+	const dayOfWeek = start.toLocaleDateString(locale, { weekday: 'short' });
+	const month = start.toLocaleDateString(locale, { month: 'short' });
 	const day = start.getDate();
 
-	const startTime = start.toLocaleTimeString('en-US', {
+	const startTime = start.toLocaleTimeString(locale, {
 		hour: 'numeric',
 		minute: '2-digit',
-		hour12: true
+		hour12: locale === 'en-US'
 	});
-	const endTime = end.toLocaleTimeString('en-US', {
+	const endTime = end.toLocaleTimeString(locale, {
 		hour: 'numeric',
 		minute: '2-digit',
-		hour12: true
+		hour12: locale === 'en-US'
 	});
 
 	// If same day, show date once
@@ -53,8 +70,8 @@ export function formatEventDateRange(startString: string, endString: string): st
 	}
 
 	// Different days
-	const endDayOfWeek = end.toLocaleDateString('en-US', { weekday: 'short' });
-	const endMonth = end.toLocaleDateString('en-US', { month: 'short' });
+	const endDayOfWeek = end.toLocaleDateString(locale, { weekday: 'short' });
+	const endMonth = end.toLocaleDateString(locale, { month: 'short' });
 	const endDay = end.getDate();
 
 	return `${dayOfWeek}, ${month} ${day} • ${startTime} - ${endDayOfWeek}, ${endMonth} ${endDay} • ${endTime}`;
@@ -137,21 +154,26 @@ export function isRSVPClosingSoon(deadlineString: string | null): boolean {
  */
 export function formatEventDateForScreenReader(dateString: string): string {
 	const date = new Date(dateString);
+	const locale = getCurrentLocale();
 
-	const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'long' });
-	const month = date.toLocaleDateString('en-US', { month: 'long' });
+	const dayOfWeek = date.toLocaleDateString(locale, { weekday: 'long' });
+	const month = date.toLocaleDateString(locale, { month: 'long' });
 	const day = date.getDate();
 	const year = date.getFullYear();
-	const time = date.toLocaleTimeString('en-US', {
+	const time = date.toLocaleTimeString(locale, {
 		hour: 'numeric',
 		minute: '2-digit',
-		hour12: true
+		hour12: locale === 'en-US'
 	});
 
-	// Add ordinal suffix (st, nd, rd, th)
-	const ordinal = getOrdinalSuffix(day);
+	// Add ordinal suffix (st, nd, rd, th) - only for English
+	if (locale === 'en-US') {
+		const ordinal = getOrdinalSuffix(day);
+		return `${dayOfWeek}, ${month} ${day}${ordinal}, ${year} at ${time}`;
+	}
 
-	return `${dayOfWeek}, ${month} ${day}${ordinal}, ${year} at ${time}`;
+	// For other locales, use standard format
+	return `${dayOfWeek}, ${day} ${month} ${year} ${time}`;
 }
 
 /**
@@ -171,4 +193,40 @@ function getOrdinalSuffix(day: number): string {
 		default:
 			return 'th';
 	}
+}
+
+/**
+ * Format a date for display in admin pages and lists
+ * Uses locale-aware formatting with medium date and short time
+ * @param dateString ISO 8601 date-time string
+ * @returns Formatted date string (e.g., "Oct 20, 2025, 8:00 PM" for en-US or "20. Okt. 2025, 20:00" for de-DE)
+ */
+export function formatDateTime(dateString: string): string {
+	const date = new Date(dateString);
+	const locale = getCurrentLocale();
+
+	return date.toLocaleString(locale, {
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric',
+		hour: 'numeric',
+		minute: '2-digit',
+		hour12: locale === 'en-US'
+	});
+}
+
+/**
+ * Format a date without time for display
+ * @param dateString ISO 8601 date-time string
+ * @returns Formatted date string (e.g., "Oct 20, 2025" for en-US or "20. Okt. 2025" for de-DE)
+ */
+export function formatDate(dateString: string): string {
+	const date = new Date(dateString);
+	const locale = getCurrentLocale();
+
+	return date.toLocaleDateString(locale, {
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric'
+	});
 }
