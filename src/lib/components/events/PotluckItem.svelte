@@ -3,6 +3,7 @@
 	import { Edit2, Trash2 } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
 	import { canEditPotluckItem, canDeletePotluckItem } from '$lib/utils/permissions';
+	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
 		item: PotluckItemRetrieveSchema;
@@ -46,31 +47,33 @@
 	});
 
 	// Item type display names mapping
-	const ITEM_TYPE_LABELS: Record<string, string> = {
-		food: 'Food',
-		main_course: 'Main Course',
-		side_dish: 'Side Dish',
-		dessert: 'Dessert',
-		drink: 'Drink',
-		alcohol: 'Alcohol',
-		non_alcoholic: 'Non-Alcoholic',
-		supplies: 'Supplies',
-		labor: 'Labor/Help',
-		entertainment: 'Entertainment',
-		sexual_health: 'Sexual Health',
-		toys: 'Toys',
-		care: 'Care',
-		transport: 'Transport',
-		misc: 'Other'
+	const ITEM_TYPE_LABELS: Record<string, () => string> = {
+		food: () => m['potluck.itemType_food'](),
+		main_course: () => m['potluck.itemType_mainCourse'](),
+		side_dish: () => m['potluck.itemType_sideDish'](),
+		dessert: () => m['potluck.itemType_dessert'](),
+		drink: () => m['potluck.itemType_drink'](),
+		alcohol: () => m['potluck.itemType_alcohol'](),
+		non_alcoholic: () => m['potluck.itemType_nonAlcoholic'](),
+		supplies: () => m['potluck.itemType_supplies'](),
+		labor: () => m['potluck.itemType_labor'](),
+		entertainment: () => m['potluck.itemType_entertainment'](),
+		sexual_health: () => m['potluck.itemType_sexualHealth'](),
+		toys: () => m['potluck.itemType_toys'](),
+		care: () => m['potluck.itemType_care'](),
+		transport: () => m['potluck.itemType_transport'](),
+		misc: () => m['potluck.itemType_misc']()
 	};
 
 	// Computed values
-	let itemTypeLabel = $derived(ITEM_TYPE_LABELS[item.item_type] || 'Other');
+	let itemTypeLabel = $derived(
+		ITEM_TYPE_LABELS[item.item_type]?.() || m['potluck.itemType_misc']()
+	);
 
 	let statusBadgeText = $derived.by(() => {
-		if (item.is_owned) return "You're bringing";
-		if (item.is_assigned) return 'Claimed';
-		return 'Unclaimed';
+		if (item.is_owned) return m['potluck.status_youreBringing']();
+		if (item.is_assigned) return m['potluck.status_claimed']();
+		return m['potluck.status_unclaimed']();
 	});
 
 	let statusBadgeVariant = $derived.by(() => {
@@ -80,10 +83,10 @@
 	});
 
 	let buttonText = $derived.by(() => {
-		if (item.is_owned) return 'Unclaim';
-		if (item.is_assigned) return '(Already claimed)';
-		if (!canClaim) return 'RSVP "Yes" to claim';
-		return "I'll bring this";
+		if (item.is_owned) return m['potluck.button_unclaim']();
+		if (item.is_assigned) return m['potluck.button_alreadyClaimed']();
+		if (!canClaim) return m['potluck.button_rsvpToClaim']();
+		return m['potluck.button_illBringThis']();
 	});
 
 	let isButtonDisabled = $derived((item.is_assigned && !item.is_owned) || !canClaim);
