@@ -420,46 +420,30 @@
       "loading": "Zusagen werden geladen..."
     },
     "tickets": {
-      "pageTitle": "Meine Tickets",
-      "pageSubtitle": "Sieh dir alle deine Veranstaltungstickets an und verwalte sie",
-      "metaTitle": "Meine Tickets - Revel",
-      "metaDescription": "Sieh dir alle deine Veranstaltungstickets an und verwalte sie",
-      "search": {
-        "label": "Tickets suchen",
-        "placeholder": "Nach Veranstaltungsname oder Ticketstufe suchen..."
-      },
-      "filters": {
-        "status": "Status",
-        "paymentMethod": "Zahlungsmethode",
-        "options": "Optionen",
-        "all": "Alle",
-        "active": "Aktiv",
-        "pending": "Ausstehend",
-        "checkedIn": "Eingecheckt",
-        "cancelled": "Storniert",
-        "allPaymentMethods": "Alle Zahlungsmethoden",
-        "free": "Kostenlos",
-        "paid": "Bezahlt",
-        "offline": "Offline",
-        "atTheDoor": "An der Tür",
-        "includePastEvents": "Vergangene Veranstaltungen einbeziehen",
-        "clearFilters": "Filter löschen"
-      },
-      "pagination": {
-        "showing": "Zeige {count} von {total} {ticketPlural}",
-        "page": "Seite {current} von {total}"
-      },
-      "emptyStates": {
-        "noTickets": "Keine Tickets gefunden",
-        "noTicketsFiltered": "Versuche, deine Filter oder Suchanfrage anzupassen, um mehr Tickets zu sehen",
-        "noTicketsYet": "Du hast noch keine Tickets. Durchsuche Veranstaltungen, um etwas Interessantes zu finden!"
-      },
-      "buttons": {
-        "browseEvents": "Veranstaltungen durchsuchen",
-        "previous": "Zurück",
-        "next": "Weiter"
-      },
-      "loading": "Tickets werden geladen..."
+      "title": "Meine Tickets",
+      "description": "Alle deine Event-Tickets anzeigen und verwalten",
+      "searchPlaceholder": "Nach Eventname oder Ticket-Kategorie suchen...",
+      "showing": "{count} von {total} anzeigen",
+      "ticket": "Ticket",
+      "tickets": "Tickets",
+      "status": "Status",
+      "paymentMethod": "Zahlungsmethode",
+      "includePast": "Vergangene Events einschließen",
+      "viewTicket": "Ticket anzeigen",
+      "noTickets": "Keine Tickets gefunden",
+      "noTicketsDescription": "Du hast noch keine Tickets gekauft",
+      "status_all": "Alle",
+      "status_active": "Aktiv",
+      "status_pending": "Ausstehend",
+      "status_checkedIn": "Eingecheckt",
+      "status_cancelled": "Storniert",
+      "payment_all": "Alle Zahlungsmethoden",
+      "payment_free": "Kostenlos",
+      "payment_paid": "Bezahlt",
+      "payment_offline": "Offline",
+      "payment_atDoor": "An der Tür",
+      "previousPage": "Vorherige Seite",
+      "nextPage": "Nächste Seite"
     },
     "seeAllOrganizations": "Alle {count} Organisationen ansehen"
   },

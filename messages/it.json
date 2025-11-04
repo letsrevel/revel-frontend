@@ -420,46 +420,30 @@
       "loading": "Caricamento conferme..."
     },
     "tickets": {
-      "pageTitle": "I Miei Biglietti",
-      "pageSubtitle": "Visualizza e gestisci tutti i tuoi biglietti per gli eventi",
-      "metaTitle": "I Miei Biglietti - Revel",
-      "metaDescription": "Visualizza e gestisci tutti i tuoi biglietti per gli eventi",
-      "search": {
-        "label": "Cerca biglietti",
-        "placeholder": "Cerca per nome evento o livello biglietto..."
-      },
-      "filters": {
-        "status": "Stato",
-        "paymentMethod": "Metodo di Pagamento",
-        "options": "Opzioni",
-        "all": "Tutti",
-        "active": "Attivo",
-        "pending": "In attesa",
-        "checkedIn": "Check-in effettuato",
-        "cancelled": "Annullato",
-        "allPaymentMethods": "Tutti i Metodi di Pagamento",
-        "free": "Gratuito",
-        "paid": "Pagato",
-        "offline": "Offline",
-        "atTheDoor": "Alla Porta",
-        "includePastEvents": "Includi eventi passati",
-        "clearFilters": "Cancella Filtri"
-      },
-      "pagination": {
-        "showing": "Mostra {count} di {total} {ticketPlural}",
-        "page": "Pagina {current} di {total}"
-      },
-      "emptyStates": {
-        "noTickets": "Nessun biglietto trovato",
-        "noTicketsFiltered": "Prova a modificare i tuoi filtri o la ricerca per vedere più biglietti",
-        "noTicketsYet": "Non hai ancora biglietti. Sfoglia gli eventi per trovare qualcosa di interessante!"
-      },
-      "buttons": {
-        "browseEvents": "Sfoglia Eventi",
-        "previous": "Precedente",
-        "next": "Successivo"
-      },
-      "loading": "Caricamento biglietti..."
+      "title": "I Miei Biglietti",
+      "description": "Visualizza e gestisci tutti i tuoi biglietti per eventi",
+      "searchPlaceholder": "Cerca per nome evento o categoria biglietto...",
+      "showing": "Mostrando {count} di {total}",
+      "ticket": "biglietto",
+      "tickets": "biglietti",
+      "status": "Stato",
+      "paymentMethod": "Metodo di Pagamento",
+      "includePast": "Includi eventi passati",
+      "viewTicket": "Visualizza Biglietto",
+      "noTickets": "Nessun biglietto trovato",
+      "noTicketsDescription": "Non hai ancora acquistato biglietti",
+      "status_all": "Tutti",
+      "status_active": "Attivo",
+      "status_pending": "In Attesa",
+      "status_checkedIn": "Check-in Effettuato",
+      "status_cancelled": "Annullato",
+      "payment_all": "Tutti i Metodi di Pagamento",
+      "payment_free": "Gratuito",
+      "payment_paid": "Pagato",
+      "payment_offline": "Offline",
+      "payment_atDoor": "Alla Porta",
+      "previousPage": "Pagina precedente",
+      "nextPage": "Pagina successiva"
     },
     "seeAllOrganizations": "Vedi tutte le {count} organizzazioni"
   },

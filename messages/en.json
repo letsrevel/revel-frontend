@@ -441,7 +441,9 @@
       "payment_free": "Free",
       "payment_paid": "Paid",
       "payment_offline": "Offline",
-      "payment_atDoor": "At the Door"
+      "payment_atDoor": "At the Door",
+      "previousPage": "Previous page",
+      "nextPage": "Next page"
     },
     "seeAllOrganizations": "See all {count} organizations"
   },
