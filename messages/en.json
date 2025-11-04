@@ -420,46 +420,28 @@
       "loading": "Loading RSVPs..."
     },
     "tickets": {
-      "pageTitle": "My Tickets",
-      "pageSubtitle": "View and manage all your event tickets",
-      "metaTitle": "My Tickets - Revel",
-      "metaDescription": "View and manage all your event tickets",
-      "search": {
-        "label": "Search tickets",
-        "placeholder": "Search by event name or ticket tier..."
-      },
-      "filters": {
-        "status": "Status",
-        "paymentMethod": "Payment Method",
-        "options": "Options",
-        "all": "All",
-        "active": "Active",
-        "pending": "Pending",
-        "checkedIn": "Checked In",
-        "cancelled": "Cancelled",
-        "allPaymentMethods": "All Payment Methods",
-        "free": "Free",
-        "paid": "Paid",
-        "offline": "Offline",
-        "atTheDoor": "At the Door",
-        "includePastEvents": "Include past events",
-        "clearFilters": "Clear Filters"
-      },
-      "pagination": {
-        "showing": "Showing {count} of {total} {ticketPlural}",
-        "page": "Page {current} of {total}"
-      },
-      "emptyStates": {
-        "noTickets": "No tickets found",
-        "noTicketsFiltered": "Try adjusting your filters or search query to see more tickets",
-        "noTicketsYet": "You don't have any tickets yet. Browse events to find something interesting!"
-      },
-      "buttons": {
-        "browseEvents": "Browse Events",
-        "previous": "Previous",
-        "next": "Next"
-      },
-      "loading": "Loading tickets..."
+      "title": "My Tickets",
+      "description": "View and manage all your event tickets",
+      "searchPlaceholder": "Search by event name or ticket tier...",
+      "showing": "Showing {count} of {total}",
+      "ticket": "ticket",
+      "tickets": "tickets",
+      "status": "Status",
+      "paymentMethod": "Payment Method",
+      "includePast": "Include past events",
+      "viewTicket": "View Ticket",
+      "noTickets": "No tickets found",
+      "noTicketsDescription": "You haven't purchased any tickets yet",
+      "status_all": "All",
+      "status_active": "Active",
+      "status_pending": "Pending",
+      "status_checkedIn": "Checked In",
+      "status_cancelled": "Cancelled",
+      "payment_all": "All Payment Methods",
+      "payment_free": "Free",
+      "payment_paid": "Paid",
+      "payment_offline": "Offline",
+      "payment_atDoor": "At the Door"
     },
     "seeAllOrganizations": "See all {count} organizations"
   },
