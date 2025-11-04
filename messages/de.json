@@ -235,7 +235,18 @@
     "category_foodDrink": "Essen & Trinken",
     "category_supplies": "Zubehör & Dienstleistungen",
     "category_entertainment": "Unterhaltung & Spaß",
-    "category_other": "Sonstiges"
+    "category_other": "Sonstiges",
+    "error_failedToFetch": "Failed to fetch potluck items",
+    "error_noPermissionCreate": "You do not have permission to create potluck items",
+    "error_failedToCreate": "Failed to create item",
+    "error_noPermissionClaim": "You do not have permission to claim this item",
+    "error_failedToClaim": "Failed to claim item",
+    "error_noPermissionUnclaim": "You do not have permission to unclaim this item",
+    "error_failedToUnclaim": "Failed to unclaim item",
+    "error_noPermissionEdit": "You do not have permission to edit this item",
+    "error_failedToUpdate": "Failed to update item",
+    "error_noPermissionDelete": "You do not have permission to delete this item",
+    "error_failedToDelete": "Failed to delete item"
   },
   "attendees": {
     "title": "Wer kommt",
@@ -2012,5 +2023,35 @@
       "noFilters": "Erstelle deine erste Ressource, um zu beginnen"
     },
     "confirmDelete": "Bist du sicher, dass du diese Ressource löschen möchtest?"
+  },
+  "ineligibilityMessage": {
+    "membersOnly": "Members only",
+    "invitationRequired": "Invitation required",
+    "questionnaireRequired": "Questionnaire required",
+    "questionnaireUnderReview": "Questionnaire under review",
+    "questionnaireNotPassed": "Questionnaire not passed",
+    "eventFull": "Event is full",
+    "soldOut": "Sold out",
+    "registrationNotOpen": "Registration not yet open",
+    "eventEnded": "Event has ended",
+    "rsvpDeadlinePassed": "RSVP deadline passed",
+    "ticketsNotAvailable": "Tickets not available",
+    "notEligible": "Not eligible",
+    "membersOnlyExplanation": "This event is restricted to members of {organizationName}. Join to RSVP!",
+    "invitationRequiredExplanation": "This is a private event. Request an invitation from the organizers.",
+    "questionnaireRequiredExplanation": "This event requires you to complete a questionnaire before RSVPing.",
+    "questionnaireUnderReviewExplanation": "Your questionnaire is being reviewed by the organizers. Check back soon!",
+    "questionnaireNotPassedExplanation": "Your questionnaire didn't meet the requirements. You can try again.",
+    "eventFullExplanation": "All spots have been taken. Join the waitlist to be notified if space opens up.",
+    "registrationNotOpenExplanation": "RSVPs aren't open yet. Check back when registration begins.",
+    "eventEndedExplanation": "This event took place in the past. RSVPs are no longer available.",
+    "soldOutExplanation": "All tickets have been sold. Check back later for additional releases.",
+    "rsvpDeadlinePassedExplanation": "The deadline to RSVP has passed. Late RSVPs are not accepted.",
+    "questionnaireRequired_singular": "questionnaire required",
+    "questionnaireRequired_plural": "questionnaires required",
+    "questionnairePendingReview_singular": "questionnaire pending review",
+    "questionnairePendingReview_plural": "questionnaires pending review",
+    "questionnaireFailed_singular": "questionnaire failed",
+    "questionnaireFailed_plural": "questionnaires failed"
   }
 }

@@ -51,7 +51,7 @@
 			const response = await fetch(`/api/events/${event.id}/potluck`, {
 				credentials: 'include'
 			});
-			if (!response.ok) throw new Error('Failed to fetch potluck items');
+			if (!response.ok) throw new Error(m['potluck.error_failedToFetch']());
 			return response.json();
 		},
 		initialData: initialItems,
@@ -87,9 +87,9 @@
 
 			if (!createResponse.ok) {
 				if (createResponse.status === 403) {
-					throw new Error('You do not have permission to create potluck items');
+					throw new Error(m['potluck.error_noPermissionCreate']());
 				}
-				throw new Error('Failed to create item');
+				throw new Error(m['potluck.error_failedToCreate']());
 			}
 			const createdItem = await createResponse.json();
 
@@ -106,9 +106,9 @@
 
 			if (!claimResponse.ok) {
 				if (claimResponse.status === 403) {
-					throw new Error('You do not have permission to claim this item');
+					throw new Error(m['potluck.error_noPermissionClaim']());
 				}
-				throw new Error('Failed to claim item');
+				throw new Error(m['potluck.error_failedToClaim']());
 			}
 			return claimResponse.json();
 		},
@@ -138,9 +138,9 @@
 
 			if (!response.ok) {
 				if (response.status === 403) {
-					throw new Error('You do not have permission to claim this item');
+					throw new Error(m['potluck.error_noPermissionClaim']());
 				}
-				throw new Error('Failed to claim item');
+				throw new Error(m['potluck.error_failedToClaim']());
 			}
 			return response.json();
 		},
@@ -193,9 +193,9 @@
 
 			if (!response.ok) {
 				if (response.status === 403) {
-					throw new Error('You do not have permission to unclaim this item');
+					throw new Error(m['potluck.error_noPermissionUnclaim']());
 				}
-				throw new Error('Failed to unclaim item');
+				throw new Error(m['potluck.error_failedToUnclaim']());
 			}
 			return response.json();
 		},
@@ -281,9 +281,9 @@
 				});
 
 				if (response.status === 403) {
-					throw new Error('You do not have permission to edit this item');
+					throw new Error(m['potluck.error_noPermissionEdit']());
 				}
-				throw new Error('Failed to update item');
+				throw new Error(m['potluck.error_failedToUpdate']());
 			}
 
 			const updatedItem = await response.json();
@@ -334,9 +334,9 @@
 				});
 
 				if (response.status === 403) {
-					throw new Error('You do not have permission to delete this item');
+					throw new Error(m['potluck.error_noPermissionDelete']());
 				}
-				throw new Error('Failed to delete item');
+				throw new Error(m['potluck.error_failedToDelete']());
 			}
 
 			console.log('[PotluckSection] Delete successful');

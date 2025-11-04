@@ -14,6 +14,7 @@
 	} from 'lucide-svelte';
 	import IneligibilityActionButton from './IneligibilityActionButton.svelte';
 	import RetryCountdown from './RetryCountdown.svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
 		eligibility: EventUserEligibility;
@@ -96,30 +97,30 @@
 			const reason = eligibility.reason;
 
 			// Map common reasons to friendly headers
-			if (reason.includes('Only members')) return 'Members only';
-			if (reason.includes('invitation')) return 'Invitation required';
-			if (reason.includes('Questionnaire has not been filled')) return 'Questionnaire required';
-			if (reason.includes('Waiting for questionnaire')) return 'Questionnaire under review';
+			if (reason.includes('Only members')) return m['ineligibilityMessage.membersOnly']();
+			if (reason.includes('invitation')) return m['ineligibilityMessage.invitationRequired']();
+			if (reason.includes('Questionnaire has not been filled')) return m['ineligibilityMessage.questionnaireRequired']();
+			if (reason.includes('Waiting for questionnaire')) return m['ineligibilityMessage.questionnaireUnderReview']();
 			if (reason.includes('Questionnaire evaluation was insufficient'))
-				return 'Questionnaire not passed';
-			if (reason.includes('full')) return 'Event is full';
-			if (reason.includes('Sold out')) return 'Sold out';
-			if (reason.includes('not open')) return 'Registration not yet open';
-			if (reason.includes('finished')) return 'Event has ended';
-			if (reason.includes('deadline has passed')) return 'RSVP deadline passed';
-			if (reason.includes('Tickets are not currently on sale')) return 'Tickets not available';
+				return m['ineligibilityMessage.questionnaireNotPassed']();
+			if (reason.includes('full')) return m['ineligibilityMessage.eventFull']();
+			if (reason.includes('Sold out')) return m['ineligibilityMessage.soldOut']();
+			if (reason.includes('not open')) return m['ineligibilityMessage.registrationNotOpen']();
+			if (reason.includes('finished')) return m['ineligibilityMessage.eventEnded']();
+			if (reason.includes('deadline has passed')) return m['ineligibilityMessage.rsvpDeadlinePassed']();
+			if (reason.includes('Tickets are not currently on sale')) return m['ineligibilityMessage.ticketsNotAvailable']();
 
 			// Fallback: use the reason as-is
 			return reason;
 		}
 
 		// No reason provided, use next_step as hint
-		if (eligibility.next_step === 'become_member') return 'Members only';
-		if (eligibility.next_step === 'request_invitation') return 'Invitation required';
-		if (eligibility.next_step === 'complete_questionnaire') return 'Questionnaire required';
-		if (eligibility.next_step === 'join_waitlist') return 'Event is full';
+		if (eligibility.next_step === 'become_member') return m['ineligibilityMessage.membersOnly']();
+		if (eligibility.next_step === 'request_invitation') return m['ineligibilityMessage.invitationRequired']();
+		if (eligibility.next_step === 'complete_questionnaire') return m['ineligibilityMessage.questionnaireRequired']();
+		if (eligibility.next_step === 'join_waitlist') return m['ineligibilityMessage.eventFull']();
 
-		return 'Not eligible';
+		return m['ineligibilityMessage.notEligible']();
 	}
 
 	/**
@@ -129,45 +130,45 @@
 		const nextStep = eligibility.next_step;
 
 		if (nextStep === 'become_member') {
-			return `This event is restricted to members of ${organizationName}. Join to RSVP!`;
+			return m['ineligibilityMessage.membersOnlyExplanation']({ organizationName });
 		}
 
 		if (nextStep === 'request_invitation') {
-			return 'This is a private event. Request an invitation from the organizers.';
+			return m['ineligibilityMessage.invitationRequiredExplanation']();
 		}
 
 		if (nextStep === 'complete_questionnaire') {
-			return 'This event requires you to complete a questionnaire before RSVPing.';
+			return m['ineligibilityMessage.questionnaireRequiredExplanation']();
 		}
 
 		if (nextStep === 'wait_for_questionnaire_evaluation') {
-			return 'Your questionnaire is being reviewed by the organizers. Check back soon!';
+			return m['ineligibilityMessage.questionnaireUnderReviewExplanation']();
 		}
 
 		if (nextStep === 'wait_to_retake_questionnaire') {
-			return "Your questionnaire didn't meet the requirements. You can try again.";
+			return m['ineligibilityMessage.questionnaireNotPassedExplanation']();
 		}
 
 		if (nextStep === 'join_waitlist') {
-			return 'All spots have been taken. Join the waitlist to be notified if space opens up.';
+			return m['ineligibilityMessage.eventFullExplanation']();
 		}
 
 		if (nextStep === 'wait_for_event_to_open') {
-			return "RSVPs aren't open yet. Check back when registration begins.";
+			return m['ineligibilityMessage.registrationNotOpenExplanation']();
 		}
 
 		// For dead ends (no next_step or no action possible)
 		if (!nextStep) {
 			if (eligibility.reason?.includes('finished')) {
-				return 'This event took place in the past. RSVPs are no longer available.';
+				return m['ineligibilityMessage.eventEndedExplanation']();
 			}
 
 			if (eligibility.reason?.includes('Sold out')) {
-				return 'All tickets have been sold. Check back later for additional releases.';
+				return m['ineligibilityMessage.soldOutExplanation']();
 			}
 
 			if (eligibility.reason?.includes('deadline has passed')) {
-				return 'The deadline to RSVP has passed. Late RSVPs are not accepted.';
+				return m['ineligibilityMessage.rsvpDeadlinePassedExplanation']();
 			}
 		}
 
@@ -238,8 +239,7 @@
 					<ClipboardList class="h-4 w-4" aria-hidden="true" />
 					<p>
 						{eligibility.questionnaires_missing.length}
-						{eligibility.questionnaires_missing.length === 1 ? 'questionnaire' : 'questionnaires'}
-						required
+						{eligibility.questionnaires_missing.length === 1 ? m['ineligibilityMessage.questionnaireRequired_singular']() : m['ineligibilityMessage.questionnaireRequired_plural']()}
 					</p>
 				</div>
 			{/if}
@@ -250,8 +250,8 @@
 					<p>
 						{eligibility.questionnaires_pending_review.length}
 						{eligibility.questionnaires_pending_review.length === 1
-							? 'questionnaire'
-							: 'questionnaires'} pending review
+							? m['ineligibilityMessage.questionnairePendingReview_singular']()
+							: m['ineligibilityMessage.questionnairePendingReview_plural']()}
 					</p>
 				</div>
 			{/if}
@@ -261,7 +261,7 @@
 					<XCircle class="h-4 w-4" aria-hidden="true" />
 					<p>
 						{eligibility.questionnaires_failed.length}
-						{eligibility.questionnaires_failed.length === 1 ? 'questionnaire' : 'questionnaires'} failed
+						{eligibility.questionnaires_failed.length === 1 ? m['ineligibilityMessage.questionnaireFailed_singular']() : m['ineligibilityMessage.questionnaireFailed_plural']()}
 					</p>
 				</div>
 			{/if}
