@@ -1036,7 +1036,13 @@
     "loadingAttendees": "Loading attendees...",
     "failedToLoad": "Failed to load attendee list. Please try again later.",
     "loading": "Loading...",
-    "loadMore": "Load more"
+    "loadMore": "Load more",
+    "anonymous": "Anonymous",
+    "listHidden": "Attendee list is hidden or no one has confirmed yet.",
+    "showAll": "Show all",
+    "showAllWithCount": "Show all ({count} more)",
+    "notShownSingular": "and {count} attendee not shown",
+    "notShownPlural": "and {count} attendees not shown"
   },
   "eligibilityStatusDisplay": {
     "available": "Available"

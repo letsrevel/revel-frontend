@@ -52,7 +52,7 @@
 		if (attendee.first_name) parts.push(attendee.first_name);
 		if (attendee.last_name) parts.push(attendee.last_name);
 
-		return parts.length > 0 ? parts.join(' ') : 'Anonymous';
+		return parts.length > 0 ? parts.join(' ') : m['attendeeList.anonymous']();
 	}
 
 	// Load next page
@@ -82,7 +82,7 @@
 			</div>
 		{:else if attendees.length === 0}
 			<p class="text-sm text-muted-foreground">
-				Attendee list is hidden or no one has confirmed yet.
+				{m['attendeeList.listHidden']()}
 			</p>
 		{:else}
 			<!-- Attendee list -->
@@ -139,9 +139,10 @@
 						onclick={() => (showAll = true)}
 					>
 						<span>
-							Show all
 							{#if hiddenCount > 0}
-								({hiddenCount} more)
+								{m['attendeeList.showAllWithCount']({ count: hiddenCount })}
+							{:else}
+								{m['attendeeList.showAll']()}
 							{/if}
 						</span>
 						<ChevronDown class="h-4 w-4" aria-hidden="true" />
@@ -168,8 +169,9 @@
 				<!-- Hidden attendees note -->
 				{#if !hasMore && hiddenCount > 0}
 					<p class="pt-2 text-center text-sm text-muted-foreground">
-						and {hiddenCount}
-						{hiddenCount === 1 ? 'attendee' : 'attendees'} not shown
+						{hiddenCount === 1
+							? m['attendeeList.notShownSingular']({ count: hiddenCount })
+							: m['attendeeList.notShownPlural']({ count: hiddenCount })}
 					</p>
 				{/if}
 			</div>
