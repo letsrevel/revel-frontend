@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { createMutation } from '@tanstack/svelte-query';
@@ -277,7 +278,7 @@
 		if (user.first_name && user.last_name) return `${user.first_name} ${user.last_name}`;
 		if (user.first_name) return user.first_name;
 		if (user.email) return user.email;
-		return 'Unknown User';
+		return m['eventTicketsAdmin.unknownUser']();
 	}
 
 	/**
@@ -311,13 +312,13 @@
 	function getStatusLabel(status: string): string {
 		switch (status) {
 			case 'pending':
-				return 'Pending Payment';
+				return m['eventTicketsAdmin.statusPending']();
 			case 'active':
-				return 'Active';
+				return m['eventTicketsAdmin.statusActive']();
 			case 'checked_in':
-				return 'Checked In';
+				return m['eventTicketsAdmin.statusCheckedIn']();
 			case 'cancelled':
-				return 'Cancelled';
+				return m['eventTicketsAdmin.statusCancelled']();
 			default:
 				return status;
 		}
@@ -329,13 +330,13 @@
 	function getPaymentMethodLabel(method: string): string {
 		switch (method) {
 			case 'online':
-				return 'Online (Stripe)';
+				return m['eventTicketsAdmin.paymentOnline']();
 			case 'offline':
-				return 'Offline';
+				return m['eventTicketsAdmin.paymentOnArrival']();
 			case 'at_the_door':
-				return 'At the Door';
+				return m['eventTicketsAdmin.paymentOnArrival']();
 			case 'free':
-				return 'Free';
+				return m['eventTicketsAdmin.paymentFree']();
 			default:
 				return method;
 		}
@@ -379,9 +380,9 @@
 	 * Format price with currency
 	 */
 	function formatPrice(price: number | string | undefined, currency: string | undefined): string {
-		if (price === undefined || price === null) return 'Free';
+		if (price === undefined || price === null) return m['eventTicketsAdmin.free']();
 		const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-		if (numPrice === 0) return 'Free';
+		if (numPrice === 0) return m['eventTicketsAdmin.free']();
 		const currencySymbol = currency?.toUpperCase() || 'USD';
 		return new Intl.NumberFormat('en-US', {
 			style: 'currency',
@@ -391,21 +392,21 @@
 </script>
 
 <svelte:head>
-	<title>Manage Tickets - {data.event.name} | Revel</title>
+	<title>{m["eventTicketsAdmin.pageTitle"]()} - {data.event.name} | Revel</title>
 </svelte:head>
 
 <div class="container mx-auto max-w-7xl px-4 py-8">
 	<!-- Header -->
 	<div class="mb-6">
 		<div class="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
-			<a href="/org/{data.event.organization.slug}/admin" class="hover:underline">Dashboard</a>
+			<a href="/org/{data.event.organization.slug}/admin" class="hover:underline">{m["eventTicketsAdmin.breadcrumbDashboard"]()}</a>
 			<span>/</span>
-			<a href="/org/{data.event.organization.slug}/admin/events" class="hover:underline">Events</a>
+			<a href="/org/{data.event.organization.slug}/admin/events" class="hover:underline">{m["eventTicketsAdmin.breadcrumbEvents"]()}</a>
 			<span>/</span>
 			<span>{data.event.name}</span>
 		</div>
-		<h1 class="text-3xl font-bold">Manage Tickets</h1>
-		<p class="mt-2 text-muted-foreground">View and manage all tickets for this event</p>
+		<h1 class="text-3xl font-bold">{m["eventTicketsAdmin.pageTitle"]()}</h1>
+		<p class="mt-2 text-muted-foreground">{m["eventTicketsAdmin.pageDescription"]()}</p>
 	</div>
 
 	<!-- Check-in Button (QR Scanner) -->
@@ -416,7 +417,7 @@
 			onclick={() => (showQRScanner = true)}
 		>
 			<QrCode class="h-4 w-4" aria-hidden="true" />
-			Scan QR Code to Check In
+			{m["eventTicketsAdmin.scanQRButton"]()}
 		</Button>
 		<p class="mt-2 text-sm text-muted-foreground">
 			Scan attendee QR codes to check them in to the event
@@ -476,7 +477,7 @@
 			/>
 			<Input
 				type="search"
-				placeholder="Search by name, email, or tier..."
+				placeholder={m["eventTicketsAdmin.searchPlaceholder"]()}
 				value={searchQuery}
 				oninput={handleSearch}
 				class="pl-10"
@@ -606,12 +607,12 @@
 				class="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center"
 			>
 				<Ticket class="mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-				<h3 class="mb-2 text-lg font-semibold">No tickets found</h3>
+				<h3 class="mb-2 text-lg font-semibold">{m["eventTicketsAdmin.noTicketsFiltered"]()}</h3>
 				<p class="text-sm text-muted-foreground">
 					{#if searchQuery || selectedStatus || selectedPaymentMethod}
-						Try adjusting your filters or search query
+						{m["eventTicketsAdmin.noTicketsFiltered"]()}
 					{:else}
-						No tickets have been purchased for this event yet
+						{m["eventTicketsAdmin.noTicketsEmpty"]()}
 					{/if}
 				</p>
 			</div>
@@ -621,13 +622,13 @@
 				<table class="w-full">
 					<thead class="border-b bg-muted/50">
 						<tr>
-							<th class="px-4 py-3 text-left text-sm font-semibold">Attendee</th>
-							<th class="px-4 py-3 text-left text-sm font-semibold">Tier</th>
-							<th class="px-4 py-3 text-left text-sm font-semibold">Price</th>
-							<th class="px-4 py-3 text-left text-sm font-semibold">Payment Method</th>
-							<th class="px-4 py-3 text-left text-sm font-semibold">Status</th>
-							<th class="px-4 py-3 text-left text-sm font-semibold">Purchased</th>
-							<th class="px-4 py-3 text-right text-sm font-semibold">Actions</th>
+							<th class="px-4 py-3 text-left text-sm font-semibold">{m["eventTicketsAdmin.tableHeaderTicketHolder"]()}</th>
+							<th class="px-4 py-3 text-left text-sm font-semibold">{m["eventTicketsAdmin.tableHeaderTier"]()}</th>
+							<th class="px-4 py-3 text-left text-sm font-semibold">{m["eventTicketsAdmin.tableHeaderPrice"]()}</th>
+							<th class="px-4 py-3 text-left text-sm font-semibold">{m["eventTicketsAdmin.tableHeaderPayment"]()}</th>
+							<th class="px-4 py-3 text-left text-sm font-semibold">{m["eventTicketsAdmin.tableHeaderStatus"]()}</th>
+							<th class="px-4 py-3 text-left text-sm font-semibold">{m["eventTicketsAdmin.tableHeaderPurchased"]()}</th>
+							<th class="px-4 py-3 text-right text-sm font-semibold">{m["eventTicketsAdmin.tableHeaderActions"]()}</th>
 						</tr>
 					</thead>
 					<tbody class="divide-y">
@@ -732,24 +733,24 @@
 
 						<div class="space-y-2 text-sm">
 							<div class="flex items-center justify-between">
-								<span class="text-muted-foreground">Tier:</span>
+								<span class="text-muted-foreground">{m["eventTicketsAdmin.tableHeaderTier"]()}:</span>
 								<span class="font-medium">{ticket.tier?.name || 'N/A'}</span>
 							</div>
 							<div class="flex items-center justify-between">
-								<span class="text-muted-foreground">Price:</span>
+								<span class="text-muted-foreground">{m["eventTicketsAdmin.tableHeaderPrice"]()}:</span>
 								<span class="font-medium"
 									>{formatPrice(ticket.tier?.price, ticket.tier?.currency)}</span
 								>
 							</div>
 							<div class="flex items-center justify-between">
-								<span class="text-muted-foreground">Payment:</span>
+								<span class="text-muted-foreground">{m["eventTicketsAdmin.tableHeaderPayment"]()}:</span>
 								<span class="flex items-center gap-1">
 									<CreditCard class="h-3 w-3" aria-hidden="true" />
 									{getPaymentMethodLabel(ticket.tier?.payment_method || '')}
 								</span>
 							</div>
 							<div class="flex items-center justify-between">
-								<span class="text-muted-foreground">Purchased:</span>
+								<span class="text-muted-foreground">{m["eventTicketsAdmin.tableHeaderPurchased"]()}:</span>
 								<span>{new Date(ticket.created_at).toLocaleDateString()}</span>
 							</div>
 						</div>
@@ -764,7 +765,7 @@
 									class="flex-1"
 								>
 									<Check class="h-4 w-4" aria-hidden="true" />
-									Check In
+									{m["eventTicketsAdmin.actionCheckIn"]()}
 								</Button>
 							{/if}
 							{#if canConfirmPayment(ticket)}
@@ -776,7 +777,7 @@
 									class="flex-1"
 								>
 									<Check class="h-4 w-4" aria-hidden="true" />
-									Confirm Payment
+									{m["eventTicketsAdmin.actionConfirmPayment"]()}
 								</Button>
 							{/if}
 							{#if canManageTicket(ticket) && ticket.status !== 'cancelled'}
