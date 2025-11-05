@@ -12,6 +12,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import type { RsvpDetailSchema } from '$lib/api/generated/types.gen';
+	import * as m from '$lib/paraglide/messages.js';
 
 	let { data }: { data: PageData } = $props();
 
@@ -54,7 +55,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to update RSVP');
+				throw new Error(m['attendeesAdmin.error_failedToUpdate']());
 			}
 
 			return response.data;
@@ -68,7 +69,7 @@
 			window.location.reload();
 		},
 		onError: (error: Error) => {
-			alert(`Failed to update RSVP: ${error.message}`);
+			alert(`${m['attendeesAdmin.error_failedToUpdate']()}: ${error.message}`);
 		}
 	}));
 
@@ -81,7 +82,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to delete RSVP');
+				throw new Error(m['attendeesAdmin.error_failedToDelete']());
 			}
 
 			return response.data;
@@ -95,7 +96,7 @@
 			window.location.reload();
 		},
 		onError: (error: Error) => {
-			alert(`Failed to delete RSVP: ${error.message}`);
+			alert(`${m['attendeesAdmin.error_failedToDelete']()}: ${error.message}`);
 		}
 	}));
 
@@ -232,11 +233,11 @@
 	function getStatusLabel(status: string): string {
 		switch (status) {
 			case 'yes':
-				return 'Yes';
+				return m['attendeesAdmin.statusLabelYes']();
 			case 'maybe':
-				return 'Maybe';
+				return m['attendeesAdmin.statusLabelMaybe']();
 			case 'no':
-				return 'No';
+				return m['attendeesAdmin.statusLabelNo']();
 			default:
 				return status;
 		}
@@ -277,10 +278,10 @@
 				class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
 			>
 				<ChevronLeft class="h-4 w-4" aria-hidden="true" />
-				Back to Events
+				{m['attendeesAdmin.backToEvents']()}
 			</a>
 		</div>
-		<h1 class="text-2xl font-bold tracking-tight md:text-3xl">Manage Attendees</h1>
+		<h1 class="text-2xl font-bold tracking-tight md:text-3xl">{m['attendeesAdmin.pageTitle']()}</h1>
 		<p class="mt-1 text-sm text-muted-foreground">{data.event.name}</p>
 	</div>
 
@@ -300,8 +301,8 @@
 					/>
 				</svg>
 				<div class="text-sm">
-					<p class="font-medium">Numbers shown are for the current page only</p>
-					<p>Total RSVPs: {data.totalCount}. Navigate through pages to see all attendees.</p>
+					<p class="font-medium">{m['attendeesAdmin.warningIncompleteData']()}</p>
+					<p>{m['attendeesAdmin.warningTotalRsvps']({ total: data.totalCount })}</p>
 				</div>
 			</div>
 		{/if}
@@ -309,19 +310,19 @@
 		<!-- Stats grid -->
 		<div class="grid gap-4 sm:grid-cols-4">
 			<div class="rounded-lg border border-border bg-card p-4">
-				<p class="text-sm font-medium text-muted-foreground">Total</p>
+				<p class="text-sm font-medium text-muted-foreground">{m['attendeesAdmin.statsTotal']()}</p>
 				<p class="mt-1 text-2xl font-bold">{stats.total}</p>
 			</div>
 			<div
 				class="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950"
 			>
-				<p class="text-sm font-medium text-green-700 dark:text-green-300">Yes</p>
+				<p class="text-sm font-medium text-green-700 dark:text-green-300">{m['attendeesAdmin.statsYes']()}</p>
 				<p class="mt-1 text-2xl font-bold text-green-900 dark:text-green-100">{stats.yesCount}</p>
 			</div>
 			<div
 				class="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-950"
 			>
-				<p class="text-sm font-medium text-yellow-700 dark:text-yellow-300">Maybe</p>
+				<p class="text-sm font-medium text-yellow-700 dark:text-yellow-300">{m['attendeesAdmin.statsMaybe']()}</p>
 				<p class="mt-1 text-2xl font-bold text-yellow-900 dark:text-yellow-100">
 					{stats.maybeCount}
 				</p>
@@ -329,7 +330,7 @@
 			<div
 				class="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950"
 			>
-				<p class="text-sm font-medium text-red-700 dark:text-red-300">No</p>
+				<p class="text-sm font-medium text-red-700 dark:text-red-300">{m['attendeesAdmin.statsNo']()}</p>
 				<p class="mt-1 text-2xl font-bold text-red-900 dark:text-red-100">{stats.noCount}</p>
 			</div>
 		</div>
