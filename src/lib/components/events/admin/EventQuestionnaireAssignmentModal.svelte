@@ -272,16 +272,16 @@
 			<div class="flex items-center justify-between">
 				<div class="text-sm text-muted-foreground">
 					<span class="font-medium text-foreground">{selectedIds.size}</span>
-					{selectedIds.size === 1 ? 'questionnaire' : 'questionnaires'} selected
+					{selectedIds.size === 1 ? m['eventQuestionnaireAssignmentModal.selectedCount_singular']() : m['eventQuestionnaireAssignmentModal.selectedCount_plural']()} {m['eventQuestionnaireAssignmentModal.selected']()}
 				</div>
 				<div class="flex gap-2">
 					<Button variant="outline" onclick={onClose} disabled={isSaving}>{m['eventQuestionnaireAssignmentModal.cancel']()}</Button>
 					<Button onclick={saveAssignments} disabled={!hasChanges() || isSaving}>
 						{#if isSaving}
 							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-							Saving...
+							{m['eventQuestionnaireAssignmentModal.saving']()}
 						{:else}
-							Save Assignments
+							{m['eventQuestionnaireAssignmentModal.saveAssignments']()}
 						{/if}
 					</Button>
 				</div>

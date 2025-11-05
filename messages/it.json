@@ -1206,7 +1206,12 @@
     "type_generic": "Generic",
     "status_draft": "Draft",
     "status_ready": "Ready",
-    "status_published": "Published"
+    "status_published": "Published",
+    "selectedCount_singular": "questionnaire",
+    "selectedCount_plural": "questionnaires",
+    "selected": "selected",
+    "saving": "Saving...",
+    "saveAssignments": "Save Assignments"
   },
   "eventQuestionnaires": {
     "requiredQuestionnaires": "Questionari Richiesti",
