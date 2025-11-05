@@ -181,6 +181,18 @@
     "viewDetails": "View event details",
     "location_tbd": "TBD"
   },
+  "eventBadges": {
+    "youreOrganizing": "You're Organizing",
+    "youreAttending": "You're Attending",
+    "invitationPending": "Invitation Pending",
+    "pastEvent": "Past Event",
+    "soldOut": "Sold Out",
+    "waitlistOpen": "Waitlist Open",
+    "rsvpClosed": "RSVP Closed",
+    "membersOnly": "Members Only",
+    "private": "Private",
+    "public": "Public"
+  },
   "eventDetails": {
     "about_heading": "About this event",
     "details_heading": "Event details",
@@ -2169,5 +2181,31 @@
     "questionnairePendingReview_plural": "questionnaires pending review",
     "questionnaireFailed_singular": "questionnaire failed",
     "questionnaireFailed_plural": "questionnaires failed"
+  },
+  "accountDeletion": {
+    "title": "Confirm Account Deletion - Revel",
+    "metaDescription": "Confirm permanent deletion of your Revel account",
+    "successHeading": "Account Deleted",
+    "successSubheading": "Your account has been permanently deleted",
+    "successMessage": "Your Revel account and all associated data have been permanently deleted.",
+    "successThankYou": "Thank you for using Revel. If you change your mind, you can create a new account anytime.",
+    "goToHomepage": "Go to Homepage",
+    "invalidLinkHeading": "Invalid Link",
+    "invalidLinkSubheading": "This account deletion link is invalid or has expired",
+    "invalidTokenError": "Invalid or missing deletion token",
+    "invalidTokenMessage": "The account deletion link is invalid or has expired. If you still want to delete your account, please request a new deletion link from your account settings.",
+    "goToPrivacySettings": "Go to Privacy Settings",
+    "confirmHeading": "Confirm Account Deletion",
+    "confirmSubheading": "You're about to permanently delete your Revel account",
+    "warningCannotUndo": "This action cannot be undone",
+    "warningYouWillLose": "Once deleted, you will lose:",
+    "loss_events": "Access to all events and tickets",
+    "loss_history": "Your event history and RSVPs",
+    "loss_memberships": "Organization memberships",
+    "loss_profile": "All profile data and settings",
+    "cancel": "Cancel",
+    "deleting": "Deleting...",
+    "deleteButton": "Permanently Delete Account",
+    "warningImmediate": "This action is immediate and cannot be reversed"
   }
 }

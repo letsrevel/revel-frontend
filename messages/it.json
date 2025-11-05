@@ -181,6 +181,18 @@
     "viewDetails": "Vedi dettagli evento",
     "location_tbd": "Da definire"
   },
+  "eventBadges": {
+    "youreOrganizing": "You're Organizing",
+    "youreAttending": "You're Attending",
+    "invitationPending": "Invitation Pending",
+    "pastEvent": "Past Event",
+    "soldOut": "Sold Out",
+    "waitlistOpen": "Waitlist Open",
+    "rsvpClosed": "RSVP Closed",
+    "membersOnly": "Members Only",
+    "private": "Private",
+    "public": "Public"
+  },
   "eventDetails": {
     "about_heading": "Informazioni sull'evento",
     "details_heading": "Dettagli evento",

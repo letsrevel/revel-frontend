@@ -3,6 +3,7 @@
 	import { page } from '$app/stores';
 	import type { ActionData } from './$types';
 	import { AlertTriangle, Loader2, CheckCircle } from 'lucide-svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
 		form: ActionData;
@@ -24,8 +25,8 @@
 </script>
 
 <svelte:head>
-	<title>Confirm Account Deletion - Revel</title>
-	<meta name="description" content="Confirm permanent deletion of your Revel account" />
+	<title>{m['accountDeletion.title']()}</title>
+	<meta name="description" content={m['accountDeletion.metaDescription']()} />
 </svelte:head>
 
 <div class="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
@@ -38,8 +39,8 @@
 				>
 					<CheckCircle class="h-8 w-8 text-green-600 dark:text-green-400" aria-hidden="true" />
 				</div>
-				<h1 class="text-3xl font-bold tracking-tight">Account Deleted</h1>
-				<p class="mt-2 text-muted-foreground">Your account has been permanently deleted</p>
+				<h1 class="text-3xl font-bold tracking-tight">{m['accountDeletion.successHeading']()}</h1>
+				<p class="mt-2 text-muted-foreground">{m['accountDeletion.successSubheading']()}</p>
 			</div>
 
 			<div
@@ -48,11 +49,10 @@
 			>
 				<div class="space-y-2 text-sm">
 					<p class="font-medium text-green-800 dark:text-green-200">
-						Your Revel account and all associated data have been permanently deleted.
+						{m['accountDeletion.successMessage']()}
 					</p>
 					<p class="text-green-700 dark:text-green-300">
-						Thank you for using Revel. If you change your mind, you can create a new account
-						anytime.
+						{m['accountDeletion.successThankYou']()}
 					</p>
 				</div>
 			</div>
@@ -63,7 +63,7 @@
 					href="/"
 					class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
-					Go to Homepage
+					{m['accountDeletion.goToHomepage']()}
 				</a>
 			</div>
 		{:else if !token}
@@ -74,17 +74,16 @@
 				>
 					<AlertTriangle class="h-8 w-8 text-destructive" aria-hidden="true" />
 				</div>
-				<h1 class="text-3xl font-bold tracking-tight">Invalid Link</h1>
+				<h1 class="text-3xl font-bold tracking-tight">{m['accountDeletion.invalidLinkHeading']()}</h1>
 				<p class="mt-2 text-muted-foreground">
-					This account deletion link is invalid or has expired
+					{m['accountDeletion.invalidLinkSubheading']()}
 				</p>
 			</div>
 
 			<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">
-				<p class="text-sm font-medium text-destructive">Invalid or missing deletion token</p>
+				<p class="text-sm font-medium text-destructive">{m['accountDeletion.invalidLinkError']()}</p>
 				<p class="mt-2 text-sm text-muted-foreground">
-					The account deletion link is invalid or has expired. If you still want to delete your
-					account, please request a new deletion link from your account settings.
+					{m['accountDeletion.invalidLinkMessage']()}
 				</p>
 			</div>
 
@@ -93,7 +92,7 @@
 					href="/account/privacy"
 					class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
-					Go to Privacy Settings
+					{m['accountDeletion.goToPrivacySettings']()}
 				</a>
 			</div>
 		{:else}
@@ -104,9 +103,9 @@
 				>
 					<AlertTriangle class="h-8 w-8 text-destructive" aria-hidden="true" />
 				</div>
-				<h1 class="text-3xl font-bold tracking-tight">Confirm Account Deletion</h1>
+				<h1 class="text-3xl font-bold tracking-tight">{m['accountDeletion.confirmHeading']()}</h1>
 				<p class="mt-2 text-muted-foreground">
-					You're about to permanently delete your Revel account
+					{m['accountDeletion.confirmSubheading']()}
 				</p>
 			</div>
 
@@ -119,25 +118,25 @@
 
 			<!-- Warning Box -->
 			<div class="rounded-md border border-destructive/30 bg-destructive/5 p-6">
-				<h2 class="font-semibold text-destructive">This action cannot be undone</h2>
+				<h2 class="font-semibold text-destructive">{m['accountDeletion.warningHeading']()}</h2>
 				<div class="mt-4 space-y-2">
-					<p class="text-sm font-medium">Once deleted, you will lose:</p>
+					<p class="text-sm font-medium">{m['accountDeletion.lossHeading']()}</p>
 					<ul class="space-y-1 text-sm text-muted-foreground">
 						<li class="flex items-center gap-2">
 							<span class="text-destructive">•</span>
-							Access to all events and tickets
+							{m['accountDeletion.lossEvents']()}
 						</li>
 						<li class="flex items-center gap-2">
 							<span class="text-destructive">•</span>
-							Your event history and RSVPs
+							{m['accountDeletion.lossHistory']()}
 						</li>
 						<li class="flex items-center gap-2">
 							<span class="text-destructive">•</span>
-							Organization memberships
+							{m['accountDeletion.lossMemberships']()}
 						</li>
 						<li class="flex items-center gap-2">
 							<span class="text-destructive">•</span>
-							All profile data and settings
+							{m['accountDeletion.lossProfileData']()}
 						</li>
 					</ul>
 				</div>
@@ -165,7 +164,7 @@
 						href="/"
 						class="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					>
-						Cancel
+						{m['accountDeletion.cancel']()}
 					</a>
 					<button
 						type="submit"
@@ -174,16 +173,16 @@
 					>
 						{#if isSubmitting}
 							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-							<span>Deleting...</span>
+							<span>{m['accountDeletion.deleting']()}</span>
 						{:else}
-							<span>Permanently Delete Account</span>
+							<span>{m['accountDeletion.deleteButton']()}</span>
 						{/if}
 					</button>
 				</div>
 			</form>
 
 			<p class="text-center text-xs text-muted-foreground">
-				This action is immediate and cannot be reversed
+				{m['accountDeletion.immediateWarning']()}
 			</p>
 		{/if}
 	</div>
