@@ -218,7 +218,8 @@
     "downloadCalendarEvent": "Kalenderereignis herunterladen für {eventName}",
     "downloadCalendarTitle": "Kalenderereignis herunterladen",
     "shareLocation": "Veranstaltungsort teilen",
-    "organizedBy": "Organisiert von"
+    "organizedBy": "Organisiert von",
+    "locationTbd": "Location TBD"
   },
   "rsvp": {
     "options_label": "Zusageoptionen",

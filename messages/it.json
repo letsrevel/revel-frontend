@@ -218,7 +218,8 @@
     "downloadCalendarEvent": "Scarica evento calendario per {eventName}",
     "downloadCalendarTitle": "Scarica evento calendario",
     "shareLocation": "Condividi posizione evento",
-    "organizedBy": "Organizzato da"
+    "organizedBy": "Organizzato da",
+    "locationTbd": "Location TBD"
   },
   "rsvp": {
     "options_label": "Opzioni conferma",

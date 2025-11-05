@@ -29,7 +29,7 @@
 
 	// Compute location display
 	let locationDisplay = $derived.by(() => {
-		if (!event.city) return event.address || 'Location TBD';
+		if (!event.city) return event.address || m['eventHeader.locationTbd']();
 		const cityCountry = event.city.country
 			? `${event.city.name}, ${event.city.country}`
 			: event.city.name;
