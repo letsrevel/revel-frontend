@@ -17,22 +17,22 @@
 	let formattedStartDate = $derived(formatEventDate(event.start));
 
 	let locationDisplay = $derived.by(() => {
-		if (!event.city) return 'Location TBD';
+		if (!event.city) return m['eventQuickInfo.locationTbd']();
 		return event.city.country ? `${event.city.name}, ${event.city.country}` : event.city.name;
 	});
 
 	let eventTypeDisplay = $derived.by(() => {
 		switch (event.visibility) {
 			case 'public':
-				return 'Public Event';
+				return m['eventQuickInfo.publicEvent']();
 			case 'private':
-				return 'Private Event';
+				return m['eventQuickInfo.privateEvent']();
 			case 'members-only':
-				return 'Members Only';
+				return m['eventQuickInfo.membersOnly']();
 			case 'staff-only':
-				return 'Staff Only';
+				return m['eventQuickInfo.staffOnly']();
 			default:
-				return 'Event';
+				return m['eventQuickInfo.event']();
 		}
 	});
 
@@ -51,7 +51,10 @@
 
 	let capacityDisplay = $derived.by(() => {
 		if (!event.max_attendees || event.max_attendees === 0) return null;
-		return `${event.attendee_count} / ${event.max_attendees} spots taken`;
+		return m['eventQuickInfo.spotsTaken']({
+			current: event.attendee_count,
+			max: event.max_attendees
+		});
 	});
 
 	let isNearCapacity = $derived.by(() => {
@@ -63,7 +66,9 @@
 	let rsvpDeadlineDisplay = $derived.by(() => {
 		if (!event.rsvp_before) return null;
 		const relative = getRSVPDeadlineRelative(event.rsvp_before);
-		return relative === 'closed' ? 'RSVP closed' : `RSVP by ${relative}`;
+		return relative === 'closed'
+			? m['eventQuickInfo.rsvpClosed']()
+			: m['eventQuickInfo.rsvpBy']({ deadline: relative });
 	});
 
 	let isDeadlineSoon = $derived.by(() => {

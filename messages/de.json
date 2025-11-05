@@ -1055,7 +1055,16 @@
   },
   "eventQuickInfo": {
     "limitedSpots": "Begrenzte Plätze verfügbar",
-    "closesSoon": "Schließt bald!"
+    "closesSoon": "Schließt bald!",
+    "locationTbd": "Location TBD",
+    "publicEvent": "Public Event",
+    "privateEvent": "Private Event",
+    "membersOnly": "Members Only",
+    "staffOnly": "Staff Only",
+    "event": "Event",
+    "spotsTaken": "{current} / {max} spots taken",
+    "rsvpClosed": "RSVP closed",
+    "rsvpBy": "RSVP by {deadline}"
   },
   "eventRSVP": {
     "rsvpFailed": "Zusage fehlgeschlagen",
