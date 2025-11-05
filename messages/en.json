@@ -1051,7 +1051,11 @@
     "youreAttending": "You're attending",
     "youreCheckedIn": "You're checked in",
     "ticketPending": "Your ticket is pending",
-    "youHaveTicket": "You have a ticket"
+    "youHaveTicket": "You have a ticket",
+    "ticketPendingPayment": "Ticket Pending Payment",
+    "eligibilityStatus": "Eligibility Status",
+    "manageEvent": "Manage Event",
+    "eventDetails": "Event Details"
   },
   "eventQuickInfo": {
     "limitedSpots": "Limited spots remaining",
@@ -1069,7 +1073,9 @@
   "eventRSVP": {
     "goingTo": "You're going to {eventName}!",
     "mightAttend": "You might attend {eventName}",
-    "notAttending": "You're not attending {eventName}"
+    "notAttending": "You're not attending {eventName}",
+    "rsvpFailed": "RSVP Failed",
+    "willYouAttend": "Will you attend?"
   },
   "eventSeriesCard": {
     "viewDetails": "View event series details",
