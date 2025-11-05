@@ -2268,5 +2268,17 @@
     "deleting": "Deleting...",
     "deleteButton": "Permanently Delete Account",
     "warningImmediate": "This action is immediate and cannot be reversed"
+  },
+  "actionButton": {
+    "signInToAttend": "Sign in to attend"
+  },
+  "ineligibilityActionButton": {
+    "requestSent": "Request Sent",
+    "success": "Success!"
+  },
+  "claimInvitationButton": {
+    "claimed": "Claimed!",
+    "loginToClaim": "Log in to claim invitation",
+    "claimInvitation": "Claim Invitation"
   }
 }

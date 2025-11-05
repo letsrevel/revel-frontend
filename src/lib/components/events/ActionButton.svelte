@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { UserEventStatus } from '$lib/utils/eligibility';
 	import {
 		isRSVP,
@@ -25,7 +26,7 @@
 	// Determine button state
 	let buttonText = $derived.by(() => {
 		if (!isAuthenticated) {
-			return 'Sign in to attend';
+			return m['actionButton.signInToAttend']();
 		}
 
 		if (!userStatus) {

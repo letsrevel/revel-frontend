@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { eventClaimInvitation } from '$lib/api/generated/sdk.gen';
@@ -65,9 +66,9 @@
 
 	// Determine button text based on login state and token details
 	let buttonText = $derived.by(() => {
-		if (showSuccess) return 'Claimed!';
-		if (!isAuthenticated) return 'Log in to claim invitation';
-		return 'Claim Invitation';
+		if (showSuccess) return m['claimInvitationButton.claimed']();
+		if (!isAuthenticated) return m['claimInvitationButton.loginToClaim']();
+		return m['claimInvitationButton.claimInvitation']();
 	});
 
 	// Check if token grants invitation

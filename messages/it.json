@@ -2170,5 +2170,17 @@
     "questionnairePendingReview_plural": "questionnaires pending review",
     "questionnaireFailed_singular": "questionnaire failed",
     "questionnaireFailed_plural": "questionnaires failed"
+  },
+  "actionButton": {
+    "signInToAttend": "Sign in to attend"
+  },
+  "ineligibilityActionButton": {
+    "requestSent": "Request Sent",
+    "success": "Success!"
+  },
+  "claimInvitationButton": {
+    "claimed": "Claimed!",
+    "loginToClaim": "Log in to claim invitation",
+    "claimInvitation": "Claim Invitation"
   }
 }

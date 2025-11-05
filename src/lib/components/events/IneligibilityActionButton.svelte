@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { NextStep, EventTokenSchema } from '$lib/api/generated/types.gen';
 	import { getActionButtonText, isActionDisabled } from '$lib/utils/eligibility';
 	import { cn } from '$lib/utils/cn';
@@ -156,7 +157,7 @@
 	// Computed values
 	let IconComponent = $derived(nextStep ? getIconComponent(nextStep) : Check);
 	let buttonText = $derived(
-		showSuccess ? 'Request Sent' : nextStep ? getActionButtonText(nextStep) : 'Continue'
+		showSuccess ? m['ineligibilityActionButton.requestSent']() : nextStep ? getActionButtonText(nextStep) : 'Continue'
 	);
 	let buttonVariant = $derived(nextStep ? getButtonVariant(nextStep) : 'outline');
 	let isButtonDisabled = $derived(
@@ -220,7 +221,7 @@
 				role="status"
 				aria-live="polite"
 			>
-				Success!
+				{m['ineligibilityActionButton.success']()}
 			</div>
 		{/if}
 

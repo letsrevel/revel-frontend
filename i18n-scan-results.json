@@ -1,0 +1,2876 @@
+{
+  "lib/components/common/ConfirmDialog.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 3,
+    "strings": [
+      [
+        22,
+        "Confirm"
+      ],
+      [
+        43,
+        "Escape"
+      ],
+      [
+        74,
+        "Are you sure"
+      ]
+    ]
+  },
+  "lib/components/common/DemoCardInfo.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 2,
+    "strings": [
+      [
+        23,
+        "Failed to copy card number"
+      ],
+      [
+        23,
+        "Failed to copy"
+      ]
+    ]
+  },
+  "lib/components/common/LanguageSwitcher.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 3,
+    "strings": [
+      [
+        11,
+        "English"
+      ],
+      [
+        12,
+        "Deutsch"
+      ],
+      [
+        13,
+        "Italiano"
+      ]
+    ]
+  },
+  "lib/components/common/MobileNav.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 1,
+    "strings": [
+      [
+        30,
+        "Escape"
+      ]
+    ]
+  },
+  "lib/components/event-series/admin/SeriesQuestionnaireAssignmentModal.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 14,
+    "strings": [
+      [
+        73,
+        "Failed to load"
+      ],
+      [
+        74,
+        "Please try"
+      ],
+      [
+        122,
+        "Failed to assign"
+      ],
+      [
+        150,
+        "Failed to unassign"
+      ],
+      [
+        159,
+        "Failed to save"
+      ],
+      [
+        168,
+        "Admission"
+      ],
+      [
+        169,
+        "Membership"
+      ],
+      [
+        170,
+        "Feedback"
+      ],
+      [
+        171,
+        "Generic"
+      ],
+      [
+        176,
+        "Draft"
+      ]
+    ]
+  },
+  "lib/components/event-series/admin/SeriesResourceAssignmentModal.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 7,
+    "strings": [
+      [
+        66,
+        "Failed to load"
+      ],
+      [
+        67,
+        "Please try"
+      ],
+      [
+        126,
+        "Failed to assign"
+      ],
+      [
+        146,
+        "Failed to unassign"
+      ],
+      [
+        154,
+        "Failed to save"
+      ],
+      [
+        238,
+        "No resources match your search"
+      ],
+      [
+        238,
+        "No resources available"
+      ]
+    ]
+  },
+  "lib/components/events/ActionButton.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 1,
+    "strings": [
+      [
+        28,
+        "Sign in to attend"
+      ]
+    ]
+  },
+  "lib/components/events/AttendeeList.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 3,
+    "strings": [
+      [
+        31,
+        "Failed to load attendees"
+      ],
+      [
+        31,
+        "Failed to load"
+      ],
+      [
+        55,
+        "Anonymous"
+      ]
+    ]
+  },
+  "lib/components/events/ClaimInvitationButton.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 3,
+    "strings": [
+      [
+        45,
+        "Failed to claim invitation"
+      ],
+      [
+        45,
+        "Failed to claim"
+      ],
+      [
+        69,
+        "Log in to claim invitation"
+      ]
+    ]
+  },
+  "lib/components/events/EventActionSidebar.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 5,
+    "strings": [
+      [
+        78,
+        "You're attending"
+      ],
+      [
+        83,
+        "You're checked in"
+      ],
+      [
+        86,
+        "Your ticket is pending"
+      ],
+      [
+        88,
+        "You have a ticket"
+      ],
+      [
+        318,
+        "Change"
+      ]
+    ]
+  },
+  "lib/components/events/EventBadges.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 2,
+    "strings": [
+      [
+        64,
+        "Private"
+      ],
+      [
+        66,
+        "Public"
+      ]
+    ]
+  },
+  "lib/components/events/EventHeader.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 2,
+    "strings": [
+      [
+        51,
+        "Failed to copy"
+      ],
+      [
+        96,
+        "Download calendar event"
+      ]
+    ]
+  },
+  "lib/components/events/EventQuickInfo.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 1,
+    "strings": [
+      [
+        35,
+        "Event"
+      ]
+    ]
+  },
+  "lib/components/events/EventRSVP.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 5,
+    "strings": [
+      [
+        140,
+        "Failed to submit"
+      ],
+      [
+        140,
+        "Please try"
+      ],
+      [
+        328,
+        "Error State "
+      ],
+      [
+        383,
+        "Maybe"
+      ],
+      [
+        383,
+        "Are you sure"
+      ]
+    ]
+  },
+  "lib/components/events/IneligibilityActionButton.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 2,
+    "strings": [
+      [
+        159,
+        "Continue"
+      ],
+      [
+        227,
+        "Error Message "
+      ]
+    ]
+  },
+  "lib/components/events/IneligibilityMessage.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 16,
+    "strings": [
+      [
+        78,
+        "Sold out"
+      ],
+      [
+        99,
+        "Only members"
+      ],
+      [
+        99,
+        "Members only"
+      ],
+      [
+        100,
+        "Invitation required"
+      ],
+      [
+        101,
+        "Questionnaire has not been filled"
+      ],
+      [
+        101,
+        "Questionnaire required"
+      ],
+      [
+        102,
+        "Waiting for questionnaire"
+      ],
+      [
+        102,
+        "Questionnaire under review"
+      ],
+      [
+        103,
+        "Questionnaire evaluation was insufficient"
+      ],
+      [
+        104,
+        "Questionnaire not passed"
+      ]
+    ]
+  },
+  "lib/components/events/PotluckItem.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 12,
+    "strings": [
+      [
+        53,
+        "Dessert"
+      ],
+      [
+        54,
+        "Drink"
+      ],
+      [
+        55,
+        "Alcohol"
+      ],
+      [
+        57,
+        "Supplies"
+      ],
+      [
+        59,
+        "Entertainment"
+      ],
+      [
+        63,
+        "Transport"
+      ],
+      [
+        64,
+        "Other"
+      ],
+      [
+        71,
+        "You're bringing"
+      ],
+      [
+        72,
+        "Claimed"
+      ],
+      [
+        73,
+        "Unclaimed"
+      ]
+    ]
+  },
+  "lib/components/events/PotluckSection.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 17,
+    "strings": [
+      [
+        54,
+        "Failed to fetch potluck items"
+      ],
+      [
+        54,
+        "Failed to fetch"
+      ],
+      [
+        90,
+        "You do not have permission to create potluck items"
+      ],
+      [
+        92,
+        "Failed to create item"
+      ],
+      [
+        92,
+        "Failed to create"
+      ],
+      [
+        109,
+        "You do not have permission to claim this item"
+      ],
+      [
+        111,
+        "Failed to claim item"
+      ],
+      [
+        111,
+        "Failed to claim"
+      ],
+      [
+        196,
+        "You do not have permission to unclaim this item"
+      ],
+      [
+        198,
+        "Failed to unclaim item"
+      ]
+    ]
+  },
+  "lib/components/events/RetryCountdown.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 3,
+    "strings": [
+      [
+        27,
+        "Available now"
+      ],
+      [
+        56,
+        "Failed to format"
+      ],
+      [
+        57,
+        "Available soon"
+      ]
+    ]
+  },
+  "lib/components/events/admin/DetailsStep.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 1,
+    "strings": [
+      [
+        166,
+        "Enter"
+      ]
+    ]
+  },
+  "lib/components/events/admin/EventQuestionnaireAssignmentModal.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 14,
+    "strings": [
+      [
+        67,
+        "Failed to load"
+      ],
+      [
+        68,
+        "Please try"
+      ],
+      [
+        122,
+        "Failed to assign"
+      ],
+      [
+        137,
+        "Failed to unassign"
+      ],
+      [
+        145,
+        "Failed to save"
+      ],
+      [
+        154,
+        "Admission"
+      ],
+      [
+        155,
+        "Membership"
+      ],
+      [
+        156,
+        "Feedback"
+      ],
+      [
+        157,
+        "Generic"
+      ],
+      [
+        162,
+        "Draft"
+      ]
+    ]
+  },
+  "lib/components/events/admin/EventQuestionnaires.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 8,
+    "strings": [
+      [
+        50,
+        "Failed to unassign questionnaire"
+      ],
+      [
+        50,
+        "Failed to unassign"
+      ],
+      [
+        56,
+        "Failed to remove"
+      ],
+      [
+        56,
+        "Please try"
+      ],
+      [
+        64,
+        "Admission"
+      ],
+      [
+        65,
+        "Membership"
+      ],
+      [
+        66,
+        "Feedback"
+      ],
+      [
+        67,
+        "Generic"
+      ]
+    ]
+  },
+  "lib/components/events/admin/EventResources.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 2,
+    "strings": [
+      [
+        40,
+        "Failed to load resources"
+      ],
+      [
+        40,
+        "Failed to load"
+      ]
+    ]
+  },
+  "lib/components/events/admin/EventWizard.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 19,
+    "strings": [
+      [
+        172,
+        "Failed to create event"
+      ],
+      [
+        172,
+        "Failed to create"
+      ],
+      [
+        198,
+        "Failed to update event"
+      ],
+      [
+        198,
+        "Failed to update"
+      ],
+      [
+        223,
+        "Failed to upload logo"
+      ],
+      [
+        223,
+        "Failed to upload"
+      ],
+      [
+        239,
+        "Failed to upload cover art"
+      ],
+      [
+        254,
+        "Failed to delete logo"
+      ],
+      [
+        254,
+        "Failed to delete"
+      ],
+      [
+        269,
+        "Failed to delete cover art"
+      ]
+    ]
+  },
+  "lib/components/events/admin/TierCard.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 5,
+    "strings": [
+      [
+        40,
+        "Not set"
+      ],
+      [
+        68,
+        "Unlimited"
+      ],
+      [
+        77,
+        "Offline"
+      ],
+      [
+        90,
+        "Anyone"
+      ],
+      [
+        102,
+        "Always available"
+      ]
+    ]
+  },
+  "lib/components/events/admin/TierForm.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 2,
+    "strings": [
+      [
+        269,
+        "Are you sure"
+      ],
+      [
+        529,
+        "Please try"
+      ]
+    ]
+  },
+  "lib/components/events/filters/CityFilter.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 1,
+    "strings": [
+      [
+        46,
+        "Failed to search"
+      ]
+    ]
+  },
+  "lib/components/events/filters/MobileFilterSheet.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 1,
+    "strings": [
+      [
+        170,
+        "Escape"
+      ]
+    ]
+  },
+  "lib/components/events/filters/OrganizationFilter.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 1,
+    "strings": [
+      [
+        46,
+        "Failed to search"
+      ]
+    ]
+  },
+  "lib/components/events/filters/TagsFilter.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 9,
+    "strings": [
+      [
+        36,
+        "Failed to load tags"
+      ],
+      [
+        36,
+        "Failed to load"
+      ],
+      [
+        44,
+        "Queer"
+      ],
+      [
+        46,
+        "Community"
+      ],
+      [
+        47,
+        "Social"
+      ],
+      [
+        48,
+        "Party"
+      ],
+      [
+        49,
+        "Workshop"
+      ],
+      [
+        50,
+        "Educational"
+      ],
+      [
+        51,
+        "Networking"
+      ]
+    ]
+  },
+  "lib/components/forms/CityAutocomplete.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 2,
+    "strings": [
+      [
+        129,
+        "Enter"
+      ],
+      [
+        135,
+        "Escape"
+      ]
+    ]
+  },
+  "lib/components/forms/ImageUploader.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 4,
+    "strings": [
+      [
+        85,
+        "Bytes', "
+      ],
+      [
+        105,
+        "Please select"
+      ],
+      [
+        199,
+        "Enter"
+      ],
+      [
+        226,
+        "Preview"
+      ]
+    ]
+  },
+  "lib/components/forms/MarkdownEditor.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 3,
+    "strings": [
+      [
+        202,
+        "Italic"
+      ],
+      [
+        212,
+        "Insert link"
+      ],
+      [
+        222,
+        "Insert list"
+      ]
+    ]
+  },
+  "lib/components/forms/PasswordStrengthIndicator.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 2,
+    "strings": [
+      [
+        37,
+        "No password"
+      ],
+      [
+        41,
+        "Strong"
+      ]
+    ]
+  },
+  "lib/components/forms/TagInput.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 5,
+    "strings": [
+      [
+        15,
+        "Music', "
+      ],
+      [
+        15,
+        "Sports"
+      ],
+      [
+        126,
+        "Enter"
+      ],
+      [
+        138,
+        "Backspace"
+      ],
+      [
+        155,
+        "Escape"
+      ]
+    ]
+  },
+  "lib/components/forms/TwoFactorInput.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 1,
+    "strings": [
+      [
+        49,
+        "Backspace"
+      ]
+    ]
+  },
+  "lib/components/invitations/InvitationCard.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 3,
+    "strings": [
+      [
+        36,
+        "Free admission"
+      ],
+      [
+        37,
+        "No questionnaire required"
+      ],
+      [
+        38,
+        "No membership required"
+      ]
+    ]
+  },
+  "lib/components/invitations/InvitationRequestCard.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 9,
+    "strings": [
+      [
+        45,
+        "Pending"
+      ],
+      [
+        51,
+        "Approved"
+      ],
+      [
+        57,
+        "Rejected"
+      ],
+      [
+        82,
+        "Invitation request cancelled"
+      ],
+      [
+        87,
+        "Failed to cancel"
+      ],
+      [
+        88,
+        "Failed to cancel request"
+      ],
+      [
+        89,
+        "Please try again"
+      ],
+      [
+        89,
+        "Please try"
+      ],
+      [
+        95,
+        "Are you sure"
+      ]
+    ]
+  },
+  "lib/components/members/MemberCard.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 1,
+    "strings": [
+      [
+        44,
+        "Are you sure"
+      ]
+    ]
+  },
+  "lib/components/members/PermissionsEditor.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 21,
+    "strings": [
+      [
+        55,
+        "Update organization details and settings"
+      ],
+      [
+        60,
+        "Add, remove, and manage organization members"
+      ],
+      [
+        65,
+        "Access detailed organization information"
+      ],
+      [
+        75,
+        "Create new events for the organization"
+      ],
+      [
+        80,
+        "Modify event details and settings"
+      ],
+      [
+        85,
+        "Delete events from the organization"
+      ],
+      [
+        90,
+        "Full event management access"
+      ],
+      [
+        95,
+        "Manage potluck coordination for events"
+      ],
+      [
+        97,
+        "Open events for registration"
+      ],
+      [
+        98,
+        "Close events to registration"
+      ]
+    ]
+  },
+  "lib/components/members/StaffCard.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 1,
+    "strings": [
+      [
+        44,
+        "Are you sure"
+      ]
+    ]
+  },
+  "lib/components/organization/RequestMembershipButton.svelte": {
+    "priority": "\ud83d\udfe2 LOW",
+    "count": 4,
+    "strings": [
+      [
+        42,
+        "You must be logged in to request membership"
+      ],
+      [
+        59,
+        "Failed to submit membership request"
+      ],
+      [
+        59,
+        "Failed to submit"
+      ],
+      [
+        204,
+        "Please try"
+      ]
+    ]
+  },
+  "lib/components/organization/StripeConnect.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 4,
+    "strings": [
+      [
+        73,
+        "Failed to verify"
+      ],
+      [
+        92,
+        "Failed to create"
+      ],
+      [
+        171,
+        "Unable to determine"
+      ],
+      [
+        296,
+        "Error Display "
+      ]
+    ]
+  },
+  "lib/components/organizations/ClaimMembershipButton.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 3,
+    "strings": [
+      [
+        50,
+        "Failed to claim membership"
+      ],
+      [
+        50,
+        "Failed to claim"
+      ],
+      [
+        72,
+        "Log in to claim membership"
+      ]
+    ]
+  },
+  "lib/components/organizations/filters/MobileOrganizationFilterSheet.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 1,
+    "strings": [
+      [
+        84,
+        "Escape"
+      ]
+    ]
+  },
+  "lib/components/questionnaires/AutoEvalRecommendation.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 2,
+    "strings": [
+      [
+        148,
+        "Approved"
+      ],
+      [
+        149,
+        "Rejected"
+      ]
+    ]
+  },
+  "lib/components/questionnaires/QuestionAnswerDisplay.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 3,
+    "strings": [
+      [
+        28,
+        "No answer provided"
+      ],
+      [
+        99,
+        "Correct"
+      ],
+      [
+        99,
+        "Incorrect"
+      ]
+    ]
+  },
+  "lib/components/questionnaires/QuestionEditor.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 1,
+    "strings": [
+      [
+        143,
+        "Mark as correct answer"
+      ]
+    ]
+  },
+  "lib/components/questionnaires/QuestionnaireAssignmentModal.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 10,
+    "strings": [
+      [
+        81,
+        "Failed to load"
+      ],
+      [
+        82,
+        "Please try"
+      ],
+      [
+        176,
+        "Failed to update event assignments"
+      ],
+      [
+        176,
+        "Failed to update"
+      ],
+      [
+        187,
+        "Failed to update series assignments"
+      ],
+      [
+        194,
+        "Failed to save"
+      ],
+      [
+        290,
+        "No events match your search"
+      ],
+      [
+        290,
+        "No events available"
+      ],
+      [
+        373,
+        "No series match your search"
+      ],
+      [
+        373,
+        "No event series available"
+      ]
+    ]
+  },
+  "lib/components/questionnaires/QuestionnaireCard.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 13,
+    "strings": [
+      [
+        62,
+        "Failed to load"
+      ],
+      [
+        63,
+        "Please try"
+      ],
+      [
+        72,
+        "Admission"
+      ],
+      [
+        73,
+        "Membership"
+      ],
+      [
+        74,
+        "Feedback"
+      ],
+      [
+        75,
+        "Generic"
+      ],
+      [
+        94,
+        "Draft"
+      ],
+      [
+        95,
+        "Ready"
+      ],
+      [
+        96,
+        "Published"
+      ],
+      [
+        126,
+        "Not assigned to any events"
+      ]
+    ]
+  },
+  "lib/components/questionnaires/SubmissionStatusBadge.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 4,
+    "strings": [
+      [
+        19,
+        "Approved"
+      ],
+      [
+        26,
+        "Rejected"
+      ],
+      [
+        33,
+        "Pending"
+      ],
+      [
+        40,
+        "Draft"
+      ]
+    ]
+  },
+  "lib/components/resources/ResourceAssignment.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 4,
+    "strings": [
+      [
+        42,
+        "Failed to load events"
+      ],
+      [
+        42,
+        "Failed to load"
+      ],
+      [
+        134,
+        "No events found"
+      ],
+      [
+        134,
+        "No events available"
+      ]
+    ]
+  },
+  "lib/components/resources/ResourceCard.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 6,
+    "strings": [
+      [
+        47,
+        "Public"
+      ],
+      [
+        53,
+        "Private"
+      ],
+      [
+        76,
+        "No file attached"
+      ],
+      [
+        80,
+        "Unknown file"
+      ],
+      [
+        86,
+        "No link provided"
+      ],
+      [
+        89,
+        "No content"
+      ]
+    ]
+  },
+  "lib/components/resources/ResourceForm.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 5,
+    "strings": [
+      [
+        69,
+        "Name is required"
+      ],
+      [
+        73,
+        "Please select a file"
+      ],
+      [
+        73,
+        "Please select"
+      ],
+      [
+        80,
+        "Please enter"
+      ],
+      [
+        85,
+        "Content is required"
+      ]
+    ]
+  },
+  "lib/components/resources/ResourceModal.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 11,
+    "strings": [
+      [
+        61,
+        "Text content is required for text resources"
+      ],
+      [
+        66,
+        "File is required for file resources"
+      ],
+      [
+        104,
+        "Failed to create resource"
+      ],
+      [
+        104,
+        "Failed to create"
+      ],
+      [
+        187,
+        "Failed to update resource"
+      ],
+      [
+        187,
+        "Failed to update"
+      ],
+      [
+        223,
+        "Escape"
+      ],
+      [
+        245,
+        "Enter"
+      ],
+      [
+        269,
+        "Update the resource details below"
+      ],
+      [
+        270,
+        "Create a new resource for your organization"
+      ]
+    ]
+  },
+  "lib/components/rsvps/RSVPCard.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 3,
+    "strings": [
+      [
+        38,
+        "Going"
+      ],
+      [
+        50,
+        "Maybe"
+      ],
+      [
+        56,
+        "Unknown"
+      ]
+    ]
+  },
+  "lib/components/tickets/CheckInDialog.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 6,
+    "strings": [
+      [
+        79,
+        "Offline"
+      ],
+      [
+        106,
+        "Active"
+      ],
+      [
+        118,
+        "Cancelled"
+      ],
+      [
+        144,
+        "Escape"
+      ],
+      [
+        213,
+        "Please confirm"
+      ],
+      [
+        217,
+        "Please verify"
+      ]
+    ]
+  },
+  "lib/components/tickets/MyTicket.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 4,
+    "strings": [
+      [
+        48,
+        "Failed to generate"
+      ],
+      [
+        129,
+        "Please complete"
+      ],
+      [
+        217,
+        "Unable to generate"
+      ],
+      [
+        217,
+        "Please refresh"
+      ]
+    ]
+  },
+  "lib/components/tickets/MyTicketModal.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 4,
+    "strings": [
+      [
+        55,
+        "Failed to generate"
+      ],
+      [
+        141,
+        "Please complete"
+      ],
+      [
+        232,
+        "Unable to generate"
+      ],
+      [
+        232,
+        "Please refresh"
+      ]
+    ]
+  },
+  "lib/components/tickets/PWYCModal.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 5,
+    "strings": [
+      [
+        56,
+        "Please enter an amount"
+      ],
+      [
+        56,
+        "Please enter"
+      ],
+      [
+        63,
+        "Please enter a valid number"
+      ],
+      [
+        89,
+        "Enter"
+      ],
+      [
+        183,
+        "Continue"
+      ]
+    ]
+  },
+  "lib/components/tickets/QRScannerModal.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 7,
+    "strings": [
+      [
+        47,
+        "Failed to start"
+      ],
+      [
+        48,
+        "Failed to access"
+      ],
+      [
+        48,
+        "Please ensure"
+      ],
+      [
+        61,
+        "Failed to stop"
+      ],
+      [
+        78,
+        "Failed to process"
+      ],
+      [
+        78,
+        "Please try"
+      ],
+      [
+        179,
+        "Error Message "
+      ]
+    ]
+  },
+  "lib/components/tickets/TicketConfirmationDialog.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 4,
+    "strings": [
+      [
+        100,
+        "Please enter an amount"
+      ],
+      [
+        100,
+        "Please enter"
+      ],
+      [
+        107,
+        "Please enter a valid number"
+      ],
+      [
+        138,
+        "Enter"
+      ]
+    ]
+  },
+  "lib/components/tickets/TicketStatusBadge.svelte": {
+    "priority": "\ud83d\udfe2 LOW",
+    "count": 3,
+    "strings": [
+      [
+        16,
+        "Active"
+      ],
+      [
+        23,
+        "Pending"
+      ],
+      [
+        37,
+        "Cancelled"
+      ]
+    ]
+  },
+  "lib/components/tickets/TicketTierModal.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 4,
+    "strings": [
+      [
+        75,
+        "Unlimited"
+      ],
+      [
+        78,
+        "Sold out"
+      ],
+      [
+        215,
+        "Claim"
+      ],
+      [
+        215,
+        "Reserve"
+      ]
+    ]
+  },
+  "lib/components/tickets/TierCard.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 3,
+    "strings": [
+      [
+        73,
+        "Sales ended"
+      ],
+      [
+        83,
+        "Unlimited"
+      ],
+      [
+        87,
+        "Sold out"
+      ]
+    ]
+  },
+  "lib/components/tokens/EventTokenCard.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 3,
+    "strings": [
+      [
+        36,
+        "Failed to copy link"
+      ],
+      [
+        36,
+        "Failed to copy"
+      ],
+      [
+        42,
+        "Invitation"
+      ]
+    ]
+  },
+  "lib/components/tokens/EventTokenModal.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 1,
+    "strings": [
+      [
+        143,
+        "Create"
+      ]
+    ]
+  },
+  "lib/components/tokens/OrganizationTokenCard.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 2,
+    "strings": [
+      [
+        35,
+        "Failed to copy link"
+      ],
+      [
+        35,
+        "Failed to copy"
+      ]
+    ]
+  },
+  "lib/components/tokens/OrganizationTokenModal.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 1,
+    "strings": [
+      [
+        104,
+        "Create"
+      ]
+    ]
+  },
+  "lib/components/tokens/TokenShareDialog.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 2,
+    "strings": [
+      [
+        34,
+        "Failed to copy link"
+      ],
+      [
+        34,
+        "Failed to copy"
+      ]
+    ]
+  },
+  "lib/components/tokens/TokenStatusBadge.svelte": {
+    "priority": "\ud83d\udfe2 LOW",
+    "count": 3,
+    "strings": [
+      [
+        13,
+        "Active"
+      ],
+      [
+        17,
+        "Expired"
+      ],
+      [
+        25,
+        "Staff"
+      ]
+    ]
+  },
+  "routes/(auth)/account/privacy/+page.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 9,
+    "strings": [
+      [
+        75,
+        "Error Message "
+      ],
+      [
+        255,
+        "Escape"
+      ],
+      [
+        91,
+        "Export Your Data"
+      ],
+      [
+        171,
+        "Requesting Export..."
+      ],
+      [
+        174,
+        "Export Requested"
+      ],
+      [
+        177,
+        "Request Data Export"
+      ],
+      [
+        197,
+        "Danger Zone"
+      ],
+      [
+        345,
+        "Sending..."
+      ],
+      [
+        347,
+        "Send Confirmation Email"
+      ]
+    ]
+  },
+  "routes/(auth)/account/profile/+page.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 7,
+    "strings": [
+      [
+        46,
+        "Profile"
+      ],
+      [
+        47,
+        "Manage your personal information"
+      ],
+      [
+        112,
+        "Email cannot be changed"
+      ],
+      [
+        117,
+        "First Name"
+      ],
+      [
+        139,
+        "Last Name"
+      ],
+      [
+        190,
+        "Pronouns"
+      ],
+      [
+        287,
+        "Configure privacy, notifications and location"
+      ]
+    ]
+  },
+  "routes/(auth)/account/security/+page.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 16,
+    "strings": [
+      [
+        69,
+        "Failed to generate"
+      ],
+      [
+        105,
+        "Code copied to clipboard"
+      ],
+      [
+        110,
+        "Failed to copy code"
+      ],
+      [
+        110,
+        "Failed to copy"
+      ],
+      [
+        214,
+        "Failed to start"
+      ],
+      [
+        303,
+        "Verification failed"
+      ],
+      [
+        368,
+        "Failed to disable"
+      ],
+      [
+        136,
+        "Security Settings"
+      ],
+      [
+        168,
+        "Enabled"
+      ],
+      [
+        171,
+        "Disabled"
+      ]
+    ]
+  },
+  "routes/(auth)/account/settings/+page.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 10,
+    "strings": [
+      [
+        49,
+        "Settings"
+      ],
+      [
+        50,
+        "Manage your preferences and notification settings"
+      ],
+      [
+        102,
+        "Privacy"
+      ],
+      [
+        103,
+        "Control who can see you on attendee lists"
+      ],
+      [
+        136,
+        "Notifications"
+      ],
+      [
+        137,
+        "Manage how you receive updates"
+      ],
+      [
+        176,
+        "Disable all email and push notifications"
+      ],
+      [
+        202,
+        "Location"
+      ],
+      [
+        270,
+        "Saving..."
+      ],
+      [
+        272,
+        "Save Changes"
+      ]
+    ]
+  },
+  "routes/(auth)/dashboard/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 1,
+    "strings": [
+      [
+        470,
+        "Organizing"
+      ]
+    ]
+  },
+  "routes/(auth)/dashboard/rsvps/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 3,
+    "strings": [
+      [
+        167,
+        "Options"
+      ],
+      [
+        186,
+        "Loading RSVPs..."
+      ],
+      [
+        196,
+        "No RSVPs found"
+      ]
+    ]
+  },
+  "routes/(auth)/dashboard/tickets/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 3,
+    "strings": [
+      [
+        211,
+        "Options"
+      ],
+      [
+        230,
+        "Loading tickets..."
+      ],
+      [
+        240,
+        "No tickets found"
+      ]
+    ]
+  },
+  "routes/(auth)/org/[slug]/admin/event-series/[series_id]/edit/+page.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 28,
+    "strings": [
+      [
+        69,
+        "Series name is required"
+      ],
+      [
+        87,
+        "Failed to update series"
+      ],
+      [
+        87,
+        "Failed to update"
+      ],
+      [
+        117,
+        "Failed to upload logo"
+      ],
+      [
+        117,
+        "Failed to upload"
+      ],
+      [
+        123,
+        "Please try"
+      ],
+      [
+        147,
+        "Failed to upload cover art"
+      ],
+      [
+        165,
+        "Are you sure"
+      ],
+      [
+        176,
+        "Failed to delete logo"
+      ],
+      [
+        176,
+        "Failed to delete"
+      ]
+    ]
+  },
+  "routes/(auth)/org/[slug]/admin/event-series/new/+page.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 6,
+    "strings": [
+      [
+        39,
+        "You must be logged in to create a series"
+      ],
+      [
+        44,
+        "Series name is required"
+      ],
+      [
+        67,
+        "Failed to create event series"
+      ],
+      [
+        67,
+        "Failed to create"
+      ],
+      [
+        151,
+        "Error Message "
+      ],
+      [
+        104,
+        "Create Event Series"
+      ]
+    ]
+  },
+  "routes/(auth)/org/[slug]/admin/events/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 2,
+    "strings": [
+      [
+        53,
+        "Failed to update status"
+      ],
+      [
+        53,
+        "Failed to update"
+      ]
+    ]
+  },
+  "routes/(auth)/org/[slug]/admin/events/[event_id]/attendees/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 10,
+    "strings": [
+      [
+        57,
+        "Failed to update"
+      ],
+      [
+        84,
+        "Failed to delete"
+      ],
+      [
+        237,
+        "Maybe"
+      ],
+      [
+        674,
+        "Are you sure"
+      ],
+      [
+        283,
+        "Manage Attendees"
+      ],
+      [
+        303,
+        "Numbers shown are for the current page only"
+      ],
+      [
+        412,
+        "No RSVPs found"
+      ],
+      [
+        587,
+        "Edit RSVP"
+      ],
+      [
+        599,
+        "Current Status"
+      ],
+      [
+        614,
+        "New Status"
+      ]
+    ]
+  },
+  "routes/(auth)/org/[slug]/admin/events/[event_id]/edit/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 8,
+    "strings": [
+      [
+        24,
+        "Not authenticated"
+      ],
+      [
+        39,
+        "Failed to update status"
+      ],
+      [
+        39,
+        "Failed to update"
+      ],
+      [
+        69,
+        "Are you sure"
+      ],
+      [
+        132,
+        "Draft"
+      ],
+      [
+        134,
+        "Published"
+      ],
+      [
+        136,
+        "Closed"
+      ],
+      [
+        120,
+        "Edit Event"
+      ]
+    ]
+  },
+  "routes/(auth)/org/[slug]/admin/events/[event_id]/invitations/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 33,
+    "strings": [
+      [
+        238,
+        "Enter"
+      ],
+      [
+        244,
+        "Backspace"
+      ],
+      [
+        429,
+        "Failed to fetch tokens"
+      ],
+      [
+        429,
+        "Failed to fetch"
+      ],
+      [
+        447,
+        "Failed to create token"
+      ],
+      [
+        447,
+        "Failed to create"
+      ],
+      [
+        460,
+        "Failed to create invitation link"
+      ],
+      [
+        480,
+        "Failed to update token"
+      ],
+      [
+        480,
+        "Failed to update"
+      ],
+      [
+        493,
+        "Failed to update invitation link"
+      ]
+    ]
+  },
+  "routes/(auth)/org/[slug]/admin/events/[event_id]/tickets/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 27,
+    "strings": [
+      [
+        76,
+        "Failed to confirm payment"
+      ],
+      [
+        76,
+        "Failed to confirm"
+      ],
+      [
+        99,
+        "Failed to cancel ticket"
+      ],
+      [
+        99,
+        "Failed to cancel"
+      ],
+      [
+        127,
+        "Failed to check in ticket"
+      ],
+      [
+        127,
+        "Failed to check"
+      ],
+      [
+        259,
+        "Ticket not found"
+      ],
+      [
+        267,
+        "Failed to fetch"
+      ],
+      [
+        316,
+        "Active"
+      ],
+      [
+        320,
+        "Cancelled"
+      ]
+    ]
+  },
+  "routes/(auth)/org/[slug]/admin/events/new/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 1,
+    "strings": [
+      [
+        20,
+        "Create Event"
+      ]
+    ]
+  },
+  "routes/(auth)/org/[slug]/admin/members/+page.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 15,
+    "strings": [
+      [
+        65,
+        "Failed to fetch members"
+      ],
+      [
+        65,
+        "Failed to fetch"
+      ],
+      [
+        84,
+        "Failed to fetch staff"
+      ],
+      [
+        103,
+        "Failed to fetch membership requests"
+      ],
+      [
+        125,
+        "Failed to remove member"
+      ],
+      [
+        125,
+        "Failed to remove"
+      ],
+      [
+        154,
+        "Failed to remove staff"
+      ],
+      [
+        180,
+        "Failed to approve request"
+      ],
+      [
+        180,
+        "Failed to approve"
+      ],
+      [
+        211,
+        "Failed to reject request"
+      ]
+    ]
+  },
+  "routes/(auth)/org/[slug]/admin/members/requests/+page.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 6,
+    "strings": [
+      [
+        93,
+        "Error Message "
+      ],
+      [
+        321,
+        "Approved"
+      ],
+      [
+        321,
+        "Rejected"
+      ],
+      [
+        74,
+        "Membership Requests"
+      ],
+      [
+        161,
+        "No membership requests"
+      ],
+      [
+        241,
+        "No message"
+      ]
+    ]
+  },
+  "routes/(auth)/org/[slug]/admin/questionnaires/[id]/+page.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 42,
+    "strings": [
+      [
+        108,
+        "Draft"
+      ],
+      [
+        110,
+        "Questionnaire is being created and not yet ready for use"
+      ],
+      [
+        113,
+        "Ready"
+      ],
+      [
+        115,
+        "Questionnaire is complete and ready to be published"
+      ],
+      [
+        118,
+        "Published"
+      ],
+      [
+        120,
+        "Questionnaire is live and can be assigned to events"
+      ],
+      [
+        129,
+        "Admission"
+      ],
+      [
+        133,
+        "Membership"
+      ],
+      [
+        137,
+        "Feedback"
+      ],
+      [
+        141,
+        "Generic"
+      ]
+    ]
+  },
+  "routes/(auth)/org/[slug]/admin/questionnaires/[id]/submissions/+page.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 10,
+    "strings": [
+      [
+        62,
+        "Not submitted"
+      ],
+      [
+        93,
+        "Questionnaire Submissions"
+      ],
+      [
+        94,
+        "Review and evaluate submitted questionnaire responses"
+      ],
+      [
+        110,
+        "Filter by Status"
+      ],
+      [
+        145,
+        "Sort By"
+      ],
+      [
+        170,
+        "No submissions found"
+      ],
+      [
+        186,
+        "Respondent"
+      ],
+      [
+        187,
+        "Submitted"
+      ],
+      [
+        188,
+        "Evaluation Status"
+      ],
+      [
+        190,
+        "Actions"
+      ]
+    ]
+  },
+  "routes/(auth)/org/[slug]/admin/questionnaires/[id]/submissions/[submission_id]/+page.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 6,
+    "strings": [
+      [
+        24,
+        "Not submitted"
+      ],
+      [
+        58,
+        "Review Submission"
+      ],
+      [
+        81,
+        "Responses"
+      ],
+      [
+        106,
+        "Submitter Information"
+      ],
+      [
+        143,
+        "Submitted"
+      ],
+      [
+        152,
+        "Questionnaire"
+      ]
+    ]
+  },
+  "routes/(auth)/org/[slug]/admin/questionnaires/new/+page.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 25,
+    "strings": [
+      [
+        75,
+        "Admission"
+      ],
+      [
+        79,
+        "Membership"
+      ],
+      [
+        83,
+        "Feedback"
+      ],
+      [
+        87,
+        "Generic"
+      ],
+      [
+        88,
+        "General purpose questionnaire for any use case"
+      ],
+      [
+        104,
+        "Automatic"
+      ],
+      [
+        108,
+        "Manual"
+      ],
+      [
+        112,
+        "Hybrid"
+      ],
+      [
+        173,
+        "Questionnaire name is required"
+      ],
+      [
+        177,
+        "Add at least one question"
+      ]
+    ]
+  },
+  "routes/(auth)/org/[slug]/admin/resources/+page.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 4,
+    "strings": [
+      [
+        46,
+        "Failed to load resources"
+      ],
+      [
+        46,
+        "Failed to load"
+      ],
+      [
+        73,
+        "Failed to delete resource"
+      ],
+      [
+        73,
+        "Failed to delete"
+      ]
+    ]
+  },
+  "routes/(auth)/org/[slug]/admin/settings/+page.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 4,
+    "strings": [
+      [
+        107,
+        "Failed to upload"
+      ],
+      [
+        115,
+        "Failed to upload logo"
+      ],
+      [
+        158,
+        "Failed to upload cover art"
+      ],
+      [
+        277,
+        "Error Message "
+      ]
+    ]
+  },
+  "routes/(auth)/org/[slug]/admin/tokens/+page.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 14,
+    "strings": [
+      [
+        56,
+        "Failed to fetch tokens"
+      ],
+      [
+        56,
+        "Failed to fetch"
+      ],
+      [
+        74,
+        "Failed to create token"
+      ],
+      [
+        74,
+        "Failed to create"
+      ],
+      [
+        87,
+        "Failed to create invitation link"
+      ],
+      [
+        107,
+        "Failed to update token"
+      ],
+      [
+        107,
+        "Failed to update"
+      ],
+      [
+        120,
+        "Failed to update invitation link"
+      ],
+      [
+        133,
+        "Failed to delete link"
+      ],
+      [
+        133,
+        "Failed to delete"
+      ]
+    ]
+  },
+  "routes/(public)/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 1,
+    "strings": [
+      [
+        48,
+        "Revel"
+      ]
+    ]
+  },
+  "routes/(public)/account/confirm-deletion/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 9,
+    "strings": [
+      [
+        113,
+        "Error Message "
+      ],
+      [
+        41,
+        "Account Deleted"
+      ],
+      [
+        42,
+        "Your account has been permanently deleted"
+      ],
+      [
+        77,
+        "Invalid Link"
+      ],
+      [
+        84,
+        "Invalid or missing deletion token"
+      ],
+      [
+        107,
+        "Confirm Account Deletion"
+      ],
+      [
+        122,
+        "This action cannot be undone"
+      ],
+      [
+        177,
+        "Deleting..."
+      ],
+      [
+        179,
+        "Permanently Delete Account"
+      ]
+    ]
+  },
+  "routes/(public)/events/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 2,
+    "strings": [
+      [
+        89,
+        "Revel"
+      ],
+      [
+        143,
+        "Error State "
+      ]
+    ]
+  },
+  "routes/(public)/events/[org_slug]/[event_slug]/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 5,
+    "strings": [
+      [
+        119,
+        "Failed to checkout"
+      ],
+      [
+        185,
+        "No pending ticket found"
+      ],
+      [
+        198,
+        "Failed to resume checkout"
+      ],
+      [
+        198,
+        "Failed to resume"
+      ],
+      [
+        292,
+        "Revel"
+      ]
+    ]
+  },
+  "routes/(public)/events/[org_slug]/[event_slug]/questionnaire/[id]/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 8,
+    "strings": [
+      [
+        54,
+        "This question is required"
+      ],
+      [
+        69,
+        "Please answer all required questions"
+      ],
+      [
+        69,
+        "Please answer"
+      ],
+      [
+        99,
+        "Failed to submit"
+      ],
+      [
+        99,
+        "Please try"
+      ],
+      [
+        277,
+        "This answer will be automatically evaluated by AI"
+      ],
+      [
+        285,
+        "This answer will be evaluated by AI and reviewed by a human"
+      ],
+      [
+        443,
+        "Submission Failed"
+      ]
+    ]
+  },
+  "routes/(public)/events/[org_slug]/series/[series_slug]/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 5,
+    "strings": [
+      [
+        77,
+        "Revel"
+      ],
+      [
+        119,
+        "Event Series"
+      ],
+      [
+        146,
+        "Manage Series"
+      ],
+      [
+        238,
+        "Events in this Series"
+      ],
+      [
+        262,
+        "No events yet"
+      ]
+    ]
+  },
+  "routes/(public)/join/event/[token_id]/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 6,
+    "strings": [
+      [
+        36,
+        "Failed to claim invitation"
+      ],
+      [
+        36,
+        "Failed to claim"
+      ],
+      [
+        113,
+        "Ticket Tier"
+      ],
+      [
+        145,
+        "Event invitation"
+      ],
+      [
+        150,
+        "Automatic ticket assignment"
+      ],
+      [
+        155,
+        "RSVP confirmation"
+      ]
+    ]
+  },
+  "routes/(public)/join/org/[token_id]/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 6,
+    "strings": [
+      [
+        34,
+        "Failed to claim invitation"
+      ],
+      [
+        34,
+        "Failed to claim"
+      ],
+      [
+        122,
+        "Staff access with permissions"
+      ],
+      [
+        126,
+        "Manage events and members"
+      ],
+      [
+        131,
+        "Member access to organization"
+      ],
+      [
+        140,
+        "View organization details"
+      ]
+    ]
+  },
+  "routes/(public)/login/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 1,
+    "strings": [
+      [
+        71,
+        "Error Summary "
+      ]
+    ]
+  },
+  "routes/(public)/login/reset-password/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 9,
+    "strings": [
+      [
+        41,
+        "Password reset successful"
+      ],
+      [
+        41,
+        "Set new password"
+      ],
+      [
+        45,
+        "Your password has been successfully reset"
+      ],
+      [
+        46,
+        "Enter a strong password for your account"
+      ],
+      [
+        84,
+        "Please request"
+      ],
+      [
+        95,
+        "Error Summary "
+      ],
+      [
+        82,
+        "Invalid or missing reset token"
+      ],
+      [
+        213,
+        "Resetting password..."
+      ],
+      [
+        215,
+        "Reset password"
+      ]
+    ]
+  },
+  "routes/(public)/org/[slug]/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 4,
+    "strings": [
+      [
+        160,
+        "Revel"
+      ],
+      [
+        393,
+        "Showing newest first"
+      ],
+      [
+        394,
+        "Showing oldest first"
+      ],
+      [
+        420,
+        "Error State "
+      ]
+    ]
+  },
+  "routes/(public)/org/[slug]/resources/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 5,
+    "strings": [
+      [
+        98,
+        "Try adjusting your filters"
+      ],
+      [
+        99,
+        "This organization has not added any resources yet"
+      ],
+      [
+        53,
+        "Resources"
+      ],
+      [
+        82,
+        "All Types"
+      ],
+      [
+        95,
+        "No resources found"
+      ]
+    ]
+  },
+  "routes/(public)/organizations/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 1,
+    "strings": [
+      [
+        134,
+        "Error State "
+      ]
+    ]
+  },
+  "routes/(public)/password-reset/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 5,
+    "strings": [
+      [
+        34,
+        "Check your email"
+      ],
+      [
+        34,
+        "Reset your password"
+      ],
+      [
+        38,
+        "If an account exists with that email, you will receive password reset instructions"
+      ],
+      [
+        39,
+        "Enter your email address and we will send you a link to reset your password"
+      ],
+      [
+        79,
+        "Error Summary "
+      ]
+    ]
+  },
+  "routes/(public)/register/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 1,
+    "strings": [
+      [
+        41,
+        "Error Summary "
+      ]
+    ]
+  },
+  "routes/(public)/register/check-email/+page.svelte": {
+    "priority": "\ud83d\udd34 HIGH",
+    "count": 3,
+    "strings": [
+      [
+        24,
+        "Failed to resend verification email"
+      ],
+      [
+        24,
+        "Failed to resend"
+      ],
+      [
+        29,
+        "Please try"
+      ]
+    ]
+  },
+  "routes/+error.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 17,
+    "strings": [
+      [
+        7,
+        "An error occurred"
+      ],
+      [
+        19,
+        "The page may have been moved or deleted"
+      ],
+      [
+        20,
+        "Try searching from the home page"
+      ],
+      [
+        32,
+        "Sign in to your account"
+      ],
+      [
+        33,
+        "Create an account if you don't have one"
+      ],
+      [
+        34,
+        "Check if you have permission to access this resource"
+      ],
+      [
+        47,
+        "Contact the organization owner for access"
+      ],
+      [
+        48,
+        "Verify you have the correct role or permissions"
+      ],
+      [
+        49,
+        "You may need to be invited to this organization"
+      ],
+      [
+        56,
+        "Please try"
+      ]
+    ]
+  },
+  "routes/+layout.svelte": {
+    "priority": "\ud83d\udfe1 MED",
+    "count": 2,
+    "strings": [
+      [
+        87,
+        "Failed to fetch"
+      ],
+      [
+        91,
+        "Please disable"
+      ]
+    ]
+  }
+}
