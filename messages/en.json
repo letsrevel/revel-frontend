@@ -1048,10 +1048,10 @@
     "available": "Available"
   },
   "eventActionSidebar": {
-    "ticketPendingPayment": "Your ticket is pending payment",
-    "eligibilityStatus": "Eligibility Status",
-    "manageEvent": "Manage Event",
-    "eventDetails": "Event details"
+    "youreAttending": "You're attending",
+    "youreCheckedIn": "You're checked in",
+    "ticketPending": "Your ticket is pending",
+    "youHaveTicket": "You have a ticket"
   },
   "eventQuickInfo": {
     "limitedSpots": "Limited spots remaining",
@@ -1067,8 +1067,9 @@
     "rsvpBy": "RSVP by {deadline}"
   },
   "eventRSVP": {
-    "rsvpFailed": "RSVP Failed",
-    "willYouAttend": "Will you attend?"
+    "goingTo": "You're going to {eventName}!",
+    "mightAttend": "You might attend {eventName}",
+    "notAttending": "You're not attending {eventName}"
   },
   "eventSeriesCard": {
     "viewDetails": "View event series details",
@@ -2280,5 +2281,16 @@
     "claimed": "Claimed!",
     "loginToClaim": "Log in to claim invitation",
     "claimInvitation": "Claim Invitation"
+  },
+  "retryCountdown": {
+    "availableNow": "Available now",
+    "availableSoon": "Available soon",
+    "availableInMinutes": "Available in {minutes} minute",
+    "availableInMinutesPlural": "Available in {minutes} minutes",
+    "availableInHours": "Available in {hours} hour",
+    "availableInHoursPlural": "Available in {hours} hours",
+    "availableInDays": "Available in {days} day",
+    "availableInDaysPlural": "Available in {days} days",
+    "availableOn": "Available on {date}"
   }
 }

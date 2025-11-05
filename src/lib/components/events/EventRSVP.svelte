@@ -109,11 +109,11 @@
 
 			// Show success message
 			if (answer === 'yes') {
-				successMessage = `You're going to ${eventName}!`;
+				successMessage = m['eventRSVP.goingTo']({ eventName });
 			} else if (answer === 'maybe') {
-				successMessage = `You might attend ${eventName}`;
+				successMessage = m['eventRSVP.mightAttend']({ eventName });
 			} else {
-				successMessage = `You're not attending ${eventName}`;
+				successMessage = m['eventRSVP.notAttending']({ eventName });
 			}
 
 			showSuccess = true;

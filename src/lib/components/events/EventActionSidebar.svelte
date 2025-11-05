@@ -75,17 +75,17 @@
 		if (!userStatus) return null;
 
 		if (isRSVP(userStatus) && userStatus.status === 'yes') {
-			return "You're attending";
+			return m['eventActionSidebar.youreAttending']();
 		}
 
 		if (isTicket(userStatus)) {
 			if (userStatus.status === 'checked_in') {
-				return "You're checked in";
+				return m['eventActionSidebar.youreCheckedIn']();
 			}
 			if (userStatus.status === 'pending') {
-				return 'Your ticket is pending';
+				return m['eventActionSidebar.ticketPending']();
 			}
-			return 'You have a ticket';
+			return m['eventActionSidebar.youHaveTicket']();
 		}
 
 		return null;
