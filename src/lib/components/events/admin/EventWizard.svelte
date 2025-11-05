@@ -354,20 +354,20 @@
 		const errors: Record<string, string> = {};
 
 		if (!formData.name || formData.name.trim().length < 3) {
-			errors.name = 'Event name must be at least 3 characters';
+			errors.name = m['eventWizard.error_nameRequired']();
 		}
 
 		if (!formData.start) {
-			errors.start = 'Start date and time is required';
+			errors.start = m['eventWizard.error_startRequired']();
 		} else {
 			const startDate = new Date(formData.start);
 			if (startDate <= new Date()) {
-				errors.start = 'Start date must be in the future';
+				errors.start = m['eventWizard.error_startFuture']();
 			}
 		}
 
 		if (!formData.city_id) {
-			errors.city_id = 'City is required';
+			errors.city_id = m['eventWizard.error_cityRequired']();
 		}
 
 		validationErrors = errors;
@@ -379,7 +379,7 @@
 	 */
 	async function handleStep1Submit(): Promise<void> {
 		if (!validateStep1()) {
-			errorMessage = 'Please fix the validation errors';
+			errorMessage = m['eventWizard.error_fixValidation']();
 			return;
 		}
 
@@ -424,7 +424,7 @@
 	 */
 	async function handleStep2Submit(): Promise<void> {
 		if (!eventId) {
-			errorMessage = 'Event ID not found. Please go back to Step 1.';
+			errorMessage = m['eventWizard.error_eventIdNotFound']();
 			return;
 		}
 
@@ -542,12 +542,12 @@
 	<!-- Header -->
 	<div class="space-y-2">
 		<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
-			{isEditMode ? 'Edit Event' : 'Create New Event'}
+			{isEditMode ? m['eventWizard.titleEdit']() : m['eventWizard.titleCreate']()}
 		</h1>
 		<p class="text-muted-foreground">
 			{currentStep === 1
-				? 'Start with the essentials - you can add more details in the next step'
-				: 'Add additional details to make your event stand out'}
+				? m['eventWizard.step1Description']()
+				: m['eventWizard.step2Description']()}
 		</p>
 	</div>
 
@@ -662,7 +662,7 @@
 					onclick={handleBackToStep1}
 					class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-6 py-3 font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				>
-					← Back
+					← {m['eventWizard.buttonBack']()}
 				</button>
 				<button
 					type="button"
@@ -680,10 +680,10 @@
 					)}
 				>
 					{#if formData.requires_ticket && eventId}
-						Continue to Ticketing →
+						{m['eventWizard.buttonContinueTicketing']()} →
 					{:else}
 						<Save class="h-5 w-5" aria-hidden="true" />
-						{isSaving ? 'Saving...' : 'Save & Exit'}
+						{isSaving ? m['eventWizard.buttonSaving']() : m['eventWizard.buttonSaveExit']()}
 					{/if}
 				</button>
 			</div>

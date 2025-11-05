@@ -1226,7 +1226,22 @@
     "error_failedToUploadCoverArt": "Failed to upload cover art",
     "error_failedToDeleteLogo": "Failed to delete logo",
     "error_failedToDeleteCoverArt": "Failed to delete cover art",
-    "error_failedToSaveDetails": "Failed to save event details. Please try again."
+    "error_failedToSaveDetails": "Failed to save event details. Please try again.",
+    "titleEdit": "Edit Event",
+    "titleCreate": "Create New Event",
+    "step1Description": "Start with the essentials - you can add more details in the next step",
+    "step2Description": "Add additional details to make your event stand out",
+    "error": "Error",
+    "error_nameRequired": "Event name must be at least 3 characters",
+    "error_startRequired": "Start date and time is required",
+    "error_startFuture": "Start date must be in the future",
+    "error_cityRequired": "City is required",
+    "error_fixValidation": "Please fix the validation errors",
+    "error_eventIdNotFound": "Event ID not found. Please go back to Step 1.",
+    "buttonBack": "Back",
+    "buttonSaveExit": "Save & Exit",
+    "buttonSaving": "Saving...",
+    "buttonContinueTicketing": "Continue to Ticketing"
   },
   "attendeesAdmin": {
     "pageTitle": "Manage Attendees",
