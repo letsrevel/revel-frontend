@@ -65,7 +65,7 @@
 			}
 		} catch (err) {
 			console.error('Failed to load questionnaires:', err);
-			alert('Failed to load questionnaires. Please try again.');
+			alert(m['eventQuestionnaireAssignmentModal.error_failedToLoad']());
 		} finally {
 			isLoading = false;
 		}
@@ -143,25 +143,25 @@
 			onClose();
 		} catch (err) {
 			console.error('Failed to save assignments:', err);
-			alert('Failed to save assignments. Please try again.');
+			alert(m['eventQuestionnaireAssignmentModal.error_failedToSave']());
 		} finally {
 			isSaving = false;
 		}
 	}
 
 	// Type labels
-	const typeLabels: Record<string, string> = {
-		admission: 'Admission',
-		membership: 'Membership',
-		feedback: 'Feedback',
-		generic: 'Generic'
+	const typeLabels: Record<string, () => string> = {
+		admission: () => m['eventQuestionnaireAssignmentModal.type_admission'](),
+		membership: () => m['eventQuestionnaireAssignmentModal.type_membership'](),
+		feedback: () => m['eventQuestionnaireAssignmentModal.type_feedback'](),
+		generic: () => m['eventQuestionnaireAssignmentModal.type_generic']()
 	};
 
 	// Status labels
-	const statusLabels: Record<string, string> = {
-		draft: 'Draft',
-		ready: 'Ready',
-		published: 'Published'
+	const statusLabels: Record<string, () => string> = {
+		draft: () => m['eventQuestionnaireAssignmentModal.status_draft'](),
+		ready: () => m['eventQuestionnaireAssignmentModal.status_ready'](),
+		published: () => m['eventQuestionnaireAssignmentModal.status_published']()
 	};
 
 	// Check if there are changes
@@ -179,7 +179,7 @@
 				<div>
 					<DialogTitle>{m['eventQuestionnaireAssignmentModal.assignQuestionnaires']()}</DialogTitle>
 					<p class="mt-1 text-sm text-muted-foreground">
-						Select which questionnaires users must complete to RSVP or purchase tickets
+						{m['eventQuestionnaireAssignmentModal.description']()}
 					</p>
 				</div>
 				<Button
@@ -189,7 +189,7 @@
 					class="gap-2"
 				>
 					<Plus class="h-4 w-4" />
-					New Questionnaire
+					{m['eventQuestionnaireAssignmentModal.newQuestionnaire']()}
 				</Button>
 			</div>
 		</DialogHeader>
@@ -203,10 +203,10 @@
 				/>
 				<Input
 					type="text"
-					placeholder="Search questionnaires..."
+					placeholder={m['eventQuestionnaireAssignmentModal.searchPlaceholder']()}
 					bind:value={searchQuery}
 					class="pl-10"
-					aria-label="Search questionnaires"
+					aria-label={m['eventQuestionnaireAssignmentModal.searchPlaceholder']()}
 				/>
 			</div>
 		</div>
@@ -222,7 +222,7 @@
 				<div class="py-12 text-center">
 					<FileText class="mx-auto mb-2 h-8 w-8 text-muted-foreground" aria-hidden="true" />
 					<p class="text-sm text-muted-foreground">
-						{searchQuery ? 'No questionnaires match your search' : 'No questionnaires available'}
+						{m['eventQuestionnaireAssignmentModal.noQuestionnaires']()}
 					</p>
 				</div>
 			{:else}
@@ -246,7 +246,7 @@
 									<h3 class="line-clamp-1 font-medium">{questionnaire.questionnaire.name}</h3>
 									<div class="flex flex-shrink-0 gap-1">
 										<Badge variant="outline" class="text-xs">
-											{typeLabels[questionnaire.questionnaire_type] ||
+											{typeLabels[questionnaire.questionnaire_type]?.() ||
 												questionnaire.questionnaire_type}
 										</Badge>
 										<Badge
@@ -255,7 +255,7 @@
 												: 'secondary'}
 											class="text-xs"
 										>
-											{statusLabels[questionnaire.questionnaire.status] ||
+											{statusLabels[questionnaire.questionnaire.status]?.() ||
 												questionnaire.questionnaire.status}
 										</Badge>
 									</div>

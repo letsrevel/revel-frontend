@@ -1163,7 +1163,21 @@
   "eventQuestionnaireAssignmentModal": {
     "assignQuestionnaires": "Assign Questionnaires to Event",
     "loadingQuestionnaires": "Loading questionnaires...",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "error_failedToLoad": "Failed to load questionnaires. Please try again.",
+    "error_failedToSave": "Failed to save assignments. Please try again.",
+    "description": "Select which questionnaires users must complete to RSVP or purchase tickets",
+    "newQuestionnaire": "New Questionnaire",
+    "searchPlaceholder": "Search questionnaires...",
+    "noQuestionnaires": "No questionnaires found",
+    "saveChanges": "Save Changes",
+    "type_admission": "Admission",
+    "type_membership": "Membership",
+    "type_feedback": "Feedback",
+    "type_generic": "Generic",
+    "status_draft": "Draft",
+    "status_ready": "Ready",
+    "status_published": "Published"
   },
   "eventQuestionnaires": {
     "requiredQuestionnaires": "Required Questionnaires",

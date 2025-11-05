@@ -33,11 +33,11 @@
 			if (response.data) {
 				availableTags = response.data.results.map((tag) => tag.name);
 			} else {
-				error = 'Failed to load tags';
+				error = m['filters.tags.failed']();
 			}
 		} catch (err) {
 			console.error('Failed to load tags:', err);
-			error = 'Failed to load tags';
+			error = m['filters.tags.failed']();
 			// Fallback to hardcoded tags
 			availableTags = [
 				'LGBTQ+',
