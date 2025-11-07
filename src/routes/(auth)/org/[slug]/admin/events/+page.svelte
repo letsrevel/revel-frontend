@@ -194,7 +194,10 @@
 
 <svelte:head>
 	<title>{m['orgAdmin.events.pageTitle']()} - {organization.name} Admin | Revel</title>
-	<meta name="description" content={m['orgAdmin.events.metaDescription']({ orgName: organization.name })} />
+	<meta
+		name="description"
+		content={m['orgAdmin.events.metaDescription']({ orgName: organization.name })}
+	/>
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
@@ -202,7 +205,9 @@
 	<!-- Header -->
 	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 		<div>
-			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">{m['orgAdmin.events.pageTitle']()}</h1>
+			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
+				{m['orgAdmin.events.pageTitle']()}
+			</h1>
 			<p class="mt-1 text-sm text-muted-foreground">{m['orgAdmin.events.pageDescription']()}</p>
 		</div>
 
@@ -239,7 +244,9 @@
 		<!-- Draft Events -->
 		{#if draftEvents.length > 0}
 			<div class="space-y-4">
-				<h2 class="text-lg font-semibold">{m['orgAdmin.events.sections.drafts']({ count: draftEvents.length })}</h2>
+				<h2 class="text-lg font-semibold">
+					{m['orgAdmin.events.sections.drafts']({ count: draftEvents.length })}
+				</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each draftEvents as event (event.id)}
 						<div class="rounded-lg border border-border bg-card p-4 shadow-sm">
@@ -308,7 +315,9 @@
 		<!-- Open Events -->
 		{#if openEvents.length > 0}
 			<div class="space-y-4">
-				<h2 class="text-lg font-semibold">{m['orgAdmin.events.sections.published']({ count: openEvents.length })}</h2>
+				<h2 class="text-lg font-semibold">
+					{m['orgAdmin.events.sections.published']({ count: openEvents.length })}
+				</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each openEvents as event (event.id)}
 						<div class="rounded-lg border border-border bg-card p-4 shadow-sm">
@@ -342,7 +351,9 @@
 										<div class="flex items-center gap-2">
 											<Users class="h-4 w-4" aria-hidden="true" />
 											{event.attendee_count}
-											{event.requires_ticket ? m['orgAdmin.events.attendeeCount.attendees']() : m['orgAdmin.events.attendeeCount.rsvps']()}
+											{event.requires_ticket
+												? m['orgAdmin.events.attendeeCount.attendees']()
+												: m['orgAdmin.events.attendeeCount.rsvps']()}
 										</div>
 									{/if}
 								</div>
@@ -411,7 +422,9 @@
 		<!-- Closed Events -->
 		{#if closedEvents.length > 0}
 			<div class="space-y-4">
-				<h2 class="text-lg font-semibold">{m['orgAdmin.events.sections.closed']({ count: closedEvents.length })}</h2>
+				<h2 class="text-lg font-semibold">
+					{m['orgAdmin.events.sections.closed']({ count: closedEvents.length })}
+				</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each closedEvents as event (event.id)}
 						<div class="rounded-lg border border-border bg-card p-4 opacity-75 shadow-sm">
@@ -445,7 +458,9 @@
 										<div class="flex items-center gap-2">
 											<Users class="h-4 w-4" aria-hidden="true" />
 											{event.attendee_count}
-											{event.requires_ticket ? m['orgAdmin.events.attendeeCount.attendees']() : m['orgAdmin.events.attendeeCount.rsvps']()}
+											{event.requires_ticket
+												? m['orgAdmin.events.attendeeCount.attendees']()
+												: m['orgAdmin.events.attendeeCount.rsvps']()}
 										</div>
 									{/if}
 								</div>

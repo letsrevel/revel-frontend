@@ -392,21 +392,25 @@
 </script>
 
 <svelte:head>
-	<title>{m["eventTicketsAdmin.pageTitle"]()} - {data.event.name} | Revel</title>
+	<title>{m['eventTicketsAdmin.pageTitle']()} - {data.event.name} | Revel</title>
 </svelte:head>
 
 <div class="container mx-auto max-w-7xl px-4 py-8">
 	<!-- Header -->
 	<div class="mb-6">
 		<div class="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
-			<a href="/org/{data.event.organization.slug}/admin" class="hover:underline">{m["eventTicketsAdmin.breadcrumbDashboard"]()}</a>
+			<a href="/org/{data.event.organization.slug}/admin" class="hover:underline"
+				>{m['eventTicketsAdmin.breadcrumbDashboard']()}</a
+			>
 			<span>/</span>
-			<a href="/org/{data.event.organization.slug}/admin/events" class="hover:underline">{m["eventTicketsAdmin.breadcrumbEvents"]()}</a>
+			<a href="/org/{data.event.organization.slug}/admin/events" class="hover:underline"
+				>{m['eventTicketsAdmin.breadcrumbEvents']()}</a
+			>
 			<span>/</span>
 			<span>{data.event.name}</span>
 		</div>
-		<h1 class="text-3xl font-bold">{m["eventTicketsAdmin.pageTitle"]()}</h1>
-		<p class="mt-2 text-muted-foreground">{m["eventTicketsAdmin.pageDescription"]()}</p>
+		<h1 class="text-3xl font-bold">{m['eventTicketsAdmin.pageTitle']()}</h1>
+		<p class="mt-2 text-muted-foreground">{m['eventTicketsAdmin.pageDescription']()}</p>
 	</div>
 
 	<!-- Check-in Button (QR Scanner) -->
@@ -417,7 +421,7 @@
 			onclick={() => (showQRScanner = true)}
 		>
 			<QrCode class="h-4 w-4" aria-hidden="true" />
-			{m["eventTicketsAdmin.scanQRButton"]()}
+			{m['eventTicketsAdmin.scanQRButton']()}
 		</Button>
 		<p class="mt-2 text-sm text-muted-foreground">
 			Scan attendee QR codes to check them in to the event
@@ -477,7 +481,7 @@
 			/>
 			<Input
 				type="search"
-				placeholder={m["eventTicketsAdmin.searchPlaceholder"]()}
+				placeholder={m['eventTicketsAdmin.searchPlaceholder']()}
 				value={searchQuery}
 				oninput={handleSearch}
 				class="pl-10"
@@ -607,12 +611,12 @@
 				class="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center"
 			>
 				<Ticket class="mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-				<h3 class="mb-2 text-lg font-semibold">{m["eventTicketsAdmin.noTicketsFiltered"]()}</h3>
+				<h3 class="mb-2 text-lg font-semibold">{m['eventTicketsAdmin.noTicketsFiltered']()}</h3>
 				<p class="text-sm text-muted-foreground">
 					{#if searchQuery || selectedStatus || selectedPaymentMethod}
-						{m["eventTicketsAdmin.noTicketsFiltered"]()}
+						{m['eventTicketsAdmin.noTicketsFiltered']()}
 					{:else}
-						{m["eventTicketsAdmin.noTicketsEmpty"]()}
+						{m['eventTicketsAdmin.noTicketsEmpty']()}
 					{/if}
 				</p>
 			</div>
@@ -622,13 +626,27 @@
 				<table class="w-full">
 					<thead class="border-b bg-muted/50">
 						<tr>
-							<th class="px-4 py-3 text-left text-sm font-semibold">{m["eventTicketsAdmin.tableHeaderTicketHolder"]()}</th>
-							<th class="px-4 py-3 text-left text-sm font-semibold">{m["eventTicketsAdmin.tableHeaderTier"]()}</th>
-							<th class="px-4 py-3 text-left text-sm font-semibold">{m["eventTicketsAdmin.tableHeaderPrice"]()}</th>
-							<th class="px-4 py-3 text-left text-sm font-semibold">{m["eventTicketsAdmin.tableHeaderPayment"]()}</th>
-							<th class="px-4 py-3 text-left text-sm font-semibold">{m["eventTicketsAdmin.tableHeaderStatus"]()}</th>
-							<th class="px-4 py-3 text-left text-sm font-semibold">{m["eventTicketsAdmin.tableHeaderPurchased"]()}</th>
-							<th class="px-4 py-3 text-right text-sm font-semibold">{m["eventTicketsAdmin.tableHeaderActions"]()}</th>
+							<th class="px-4 py-3 text-left text-sm font-semibold"
+								>{m['eventTicketsAdmin.tableHeaderTicketHolder']()}</th
+							>
+							<th class="px-4 py-3 text-left text-sm font-semibold"
+								>{m['eventTicketsAdmin.tableHeaderTier']()}</th
+							>
+							<th class="px-4 py-3 text-left text-sm font-semibold"
+								>{m['eventTicketsAdmin.tableHeaderPrice']()}</th
+							>
+							<th class="px-4 py-3 text-left text-sm font-semibold"
+								>{m['eventTicketsAdmin.tableHeaderPayment']()}</th
+							>
+							<th class="px-4 py-3 text-left text-sm font-semibold"
+								>{m['eventTicketsAdmin.tableHeaderStatus']()}</th
+							>
+							<th class="px-4 py-3 text-left text-sm font-semibold"
+								>{m['eventTicketsAdmin.tableHeaderPurchased']()}</th
+							>
+							<th class="px-4 py-3 text-right text-sm font-semibold"
+								>{m['eventTicketsAdmin.tableHeaderActions']()}</th
+							>
 						</tr>
 					</thead>
 					<tbody class="divide-y">
@@ -733,24 +751,32 @@
 
 						<div class="space-y-2 text-sm">
 							<div class="flex items-center justify-between">
-								<span class="text-muted-foreground">{m["eventTicketsAdmin.tableHeaderTier"]()}:</span>
+								<span class="text-muted-foreground"
+									>{m['eventTicketsAdmin.tableHeaderTier']()}:</span
+								>
 								<span class="font-medium">{ticket.tier?.name || 'N/A'}</span>
 							</div>
 							<div class="flex items-center justify-between">
-								<span class="text-muted-foreground">{m["eventTicketsAdmin.tableHeaderPrice"]()}:</span>
+								<span class="text-muted-foreground"
+									>{m['eventTicketsAdmin.tableHeaderPrice']()}:</span
+								>
 								<span class="font-medium"
 									>{formatPrice(ticket.tier?.price, ticket.tier?.currency)}</span
 								>
 							</div>
 							<div class="flex items-center justify-between">
-								<span class="text-muted-foreground">{m["eventTicketsAdmin.tableHeaderPayment"]()}:</span>
+								<span class="text-muted-foreground"
+									>{m['eventTicketsAdmin.tableHeaderPayment']()}:</span
+								>
 								<span class="flex items-center gap-1">
 									<CreditCard class="h-3 w-3" aria-hidden="true" />
 									{getPaymentMethodLabel(ticket.tier?.payment_method || '')}
 								</span>
 							</div>
 							<div class="flex items-center justify-between">
-								<span class="text-muted-foreground">{m["eventTicketsAdmin.tableHeaderPurchased"]()}:</span>
+								<span class="text-muted-foreground"
+									>{m['eventTicketsAdmin.tableHeaderPurchased']()}:</span
+								>
 								<span>{new Date(ticket.created_at).toLocaleDateString()}</span>
 							</div>
 						</div>
@@ -765,7 +791,7 @@
 									class="flex-1"
 								>
 									<Check class="h-4 w-4" aria-hidden="true" />
-									{m["eventTicketsAdmin.actionCheckIn"]()}
+									{m['eventTicketsAdmin.actionCheckIn']()}
 								</Button>
 							{/if}
 							{#if canConfirmPayment(ticket)}
@@ -777,7 +803,7 @@
 									class="flex-1"
 								>
 									<Check class="h-4 w-4" aria-hidden="true" />
-									{m["eventTicketsAdmin.actionConfirmPayment"]()}
+									{m['eventTicketsAdmin.actionConfirmPayment']()}
 								</Button>
 							{/if}
 							{#if canManageTicket(ticket) && ticket.status !== 'cancelled'}

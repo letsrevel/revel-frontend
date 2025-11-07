@@ -343,14 +343,19 @@
 
 <svelte:head>
 	<title>{m['orgAdmin.members.pageTitle']()} - {organization.name} | Revel</title>
-	<meta name="description" content={m['orgAdmin.members.metaDescription']({ orgName: organization.name })} />
+	<meta
+		name="description"
+		content={m['orgAdmin.members.metaDescription']({ orgName: organization.name })}
+	/>
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
 <div class="space-y-6 px-4 md:px-0">
 	<!-- Header -->
 	<div>
-		<h1 class="text-2xl font-bold tracking-tight md:text-3xl">{m['orgAdmin.members.pageTitle']()}</h1>
+		<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
+			{m['orgAdmin.members.pageTitle']()}
+		</h1>
 		<p class="mt-1 text-sm text-muted-foreground">
 			{m['orgAdmin.members.pageDescription']()}
 		</p>

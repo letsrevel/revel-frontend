@@ -140,7 +140,10 @@
 		<!-- Ticket Count -->
 		{#if !ticketsQuery.isLoading && totalCount > 0}
 			<p class="mt-4 text-sm text-muted-foreground">
-				{m['dashboard.tickets.showing']({ count: tickets.length.toString(), total: totalCount.toString() })}
+				{m['dashboard.tickets.showing']({
+					count: tickets.length.toString(),
+					total: totalCount.toString()
+				})}
 				{totalCount === 1 ? m['dashboard.tickets.ticket']() : m['dashboard.tickets.tickets']()}
 			</p>
 		{/if}

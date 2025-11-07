@@ -66,7 +66,9 @@
 			<p class="mb-4 text-center text-sm text-muted-foreground">
 				{m['orgAdmin.questionnaires.noResults.description']({ query: searchQuery })}
 			</p>
-			<Button variant="outline" onclick={() => (searchQuery = '')}>{m['orgAdmin.questionnaires.noResults.clearButton']()}</Button>
+			<Button variant="outline" onclick={() => (searchQuery = '')}
+				>{m['orgAdmin.questionnaires.noResults.clearButton']()}</Button
+			>
 		</div>
 	{:else}
 		<!-- Empty state -->

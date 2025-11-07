@@ -97,7 +97,9 @@
 
 		{#if !isAuthenticated}
 			<p class="mt-4 text-sm text-muted-foreground">
-				<a href="/login" class="font-medium text-primary hover:underline">{m['ticketTierList.signIn']()}</a>
+				<a href="/login" class="font-medium text-primary hover:underline"
+					>{m['ticketTierList.signIn']()}</a
+				>
 				to claim your ticket
 			</p>
 		{/if}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
@@ -31,7 +32,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to claim invitation');
+				throw new Error(m['joinOrgPage.error_claimFailed']());
 			}
 
 			return response.data;
@@ -61,17 +62,20 @@
 	const usageDisplay = $derived(formatTokenUsage(token.uses, token.max_uses));
 	const accessType = $derived(
 		token.grants_staff_status
-			? 'Staff Access'
+			? m['joinOrgPage.accessType_staff']()
 			: token.grants_membership
-				? 'Member Access'
-				: 'View Access'
+				? m['joinOrgPage.accessType_member']()
+				: m['joinOrgPage.accessType_view']()
 	);
 	const Icon = $derived(token.grants_staff_status ? Shield : Users);
 </script>
 
 <svelte:head>
-	<title>Join {token.organization.name} - Revel</title>
-	<meta name="description" content="You've been invited to join {token.organization.name}" />
+	<title>{m['joinOrgPage.pageTitle']({ organizationName: token.organization.name })} - Revel</title>
+	<meta
+		name="description"
+		content={m['joinOrgPage.pageDescription']({ organizationName: token.organization.name })}
+	/>
 </svelte:head>
 
 <div class="container mx-auto flex min-h-[80vh] items-center justify-center px-4 py-12">
@@ -84,9 +88,9 @@
 					class="mx-auto mb-4 h-20 w-20 rounded-full object-cover"
 				/>
 			{/if}
-			<CardTitle class="text-2xl">You've been invited!</CardTitle>
+			<CardTitle class="text-2xl">{m['joinOrgPage.invitedTitle']()}</CardTitle>
 			<CardDescription class="text-lg">
-				Join <strong>{token.organization.name}</strong>
+				{@html m['joinOrgPage.joinSubtitle']({ organizationName: token.organization.name })}
 			</CardDescription>
 		</CardHeader>
 
@@ -95,49 +99,49 @@
 			<div class="space-y-3 rounded-lg bg-muted p-4">
 				<div class="flex items-center gap-2 text-sm">
 					<svelte:component this={Icon} class="h-4 w-4" aria-hidden="true" />
-					<span class="font-medium">Access Type:</span>
+					<span class="font-medium">{m['joinOrgPage.accessTypeLabel']()}</span>
 					<span>{accessType}</span>
 				</div>
 
 				<div class="flex items-center gap-2 text-sm">
 					<Clock class="h-4 w-4" aria-hidden="true" />
-					<span class="font-medium">Expires:</span>
+					<span class="font-medium">{m['joinOrgPage.expiresLabel']()}</span>
 					<span>{expirationDisplay}</span>
 				</div>
 
 				<div class="flex items-center gap-2 text-sm">
 					<Users class="h-4 w-4" aria-hidden="true" />
-					<span class="font-medium">Used:</span>
+					<span class="font-medium">{m['joinOrgPage.usedLabel']()}</span>
 					<span>{usageDisplay}</span>
 				</div>
 			</div>
 
 			<!-- What you'll get -->
 			<div class="space-y-2">
-				<h3 class="font-semibold">What you'll get:</h3>
+				<h3 class="font-semibold">{m['joinOrgPage.benefitsTitle']()}</h3>
 				<ul class="space-y-1 text-sm text-muted-foreground">
 					{#if token.grants_staff_status}
 						<li class="flex items-center gap-2">
 							<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
-							<span>Staff access with permissions</span>
+							<span>{m['joinOrgPage.benefit_staffAccess']()}</span>
 						</li>
 						<li class="flex items-center gap-2">
 							<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
-							<span>Manage events and members</span>
+							<span>{m['joinOrgPage.benefit_manageEventsMembers']()}</span>
 						</li>
 					{:else if token.grants_membership}
 						<li class="flex items-center gap-2">
 							<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
-							<span>Member access to organization</span>
+							<span>{m['joinOrgPage.benefit_memberAccess']()}</span>
 						</li>
 						<li class="flex items-center gap-2">
 							<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
-							<span>Access to members-only events</span>
+							<span>{m['joinOrgPage.benefit_membersOnlyEvents']()}</span>
 						</li>
 					{:else}
 						<li class="flex items-center gap-2">
 							<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
-							<span>View organization details</span>
+							<span>{m['joinOrgPage.benefit_viewDetails']()}</span>
 						</li>
 					{/if}
 				</ul>
@@ -147,16 +151,16 @@
 			<Button size="lg" class="w-full" onclick={handleClaim} disabled={claimMutation.isPending}>
 				{#if claimMutation.isPending}
 					<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-					Claiming...
+					{m['joinOrgPage.claimingButton']()}
 				{:else if !isAuthenticated}
-					Sign In to Claim
+					{m['joinOrgPage.signInButton']()}
 				{:else}
-					Claim {accessType}
+					{m['joinOrgPage.claimButton']({ accessType })}
 				{/if}
 			</Button>
 
 			<p class="text-center text-xs text-muted-foreground">
-				By claiming, you agree to join {token.organization.name}
+				{m['joinOrgPage.agreementText']({ organizationName: token.organization.name })}
 			</p>
 		</CardContent>
 	</Card>

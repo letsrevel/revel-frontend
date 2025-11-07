@@ -75,7 +75,9 @@
 						aria-hidden="true"
 					/>
 					<div class="text-sm">
-						<p class="font-medium text-blue-900 dark:text-blue-100">{m['promoteToStaffDialog.defaultPermissions']()}</p>
+						<p class="font-medium text-blue-900 dark:text-blue-100">
+							{m['promoteToStaffDialog.defaultPermissions']()}
+						</p>
 						<p class="mt-1 text-blue-700 dark:text-blue-300">
 							They will be given default staff permissions. You can customize their permissions
 							after promotion.
@@ -101,7 +103,9 @@
 		</div>
 
 		<DialogFooter>
-			<Button variant="outline" onclick={handleCancel} disabled={isPromoting}>{m['promoteToStaffDialog.cancel']()}</Button>
+			<Button variant="outline" onclick={handleCancel} disabled={isPromoting}
+				>{m['promoteToStaffDialog.cancel']()}</Button
+			>
 			<Button onclick={handleConfirm} disabled={isPromoting}>
 				{isPromoting ? 'Promoting...' : m['promoteToStaffDialog.makeStaffMember']()}
 			</Button>

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
+	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
@@ -105,19 +106,19 @@
 		{ label: string; variant: 'outline' | 'secondary' | 'default'; description: string }
 	> = {
 		draft: {
-			label: 'Draft',
+			label: m['questionnaireEditPage.status.draft_label'](),
 			variant: 'outline',
-			description: 'Questionnaire is being created and not yet ready for use'
+			description: m['questionnaireEditPage.status.draft_description']()
 		},
 		ready: {
-			label: 'Ready',
+			label: m['questionnaireEditPage.status.ready_label'](),
 			variant: 'secondary',
-			description: 'Questionnaire is complete and ready to be published'
+			description: m['questionnaireEditPage.status.ready_description']()
 		},
 		published: {
-			label: 'Published',
+			label: m['questionnaireEditPage.status.published_label'](),
 			variant: 'default',
-			description: 'Questionnaire is live and can be assigned to events'
+			description: m['questionnaireEditPage.status.published_description']()
 		}
 	};
 
@@ -126,20 +127,20 @@
 	// Questionnaire type labels and descriptions
 	const questionnaireTypes = {
 		admission: {
-			label: 'Admission',
-			description: 'Gate event attendance - attendees must complete this to RSVP'
+			label: m['questionnaireEditPage.types.admission_label'](),
+			description: m['questionnaireEditPage.types.admission_description']()
 		},
 		membership: {
-			label: 'Membership',
-			description: 'Gate organization membership - required for joining the organization'
+			label: m['questionnaireEditPage.types.membership_label'](),
+			description: m['questionnaireEditPage.types.membership_description']()
 		},
 		feedback: {
-			label: 'Feedback',
-			description: 'Collect post-event feedback from attendees'
+			label: m['questionnaireEditPage.types.feedback_label'](),
+			description: m['questionnaireEditPage.types.feedback_description']()
 		},
 		generic: {
-			label: 'Generic',
-			description: 'General purpose questionnaire for any use case'
+			label: m['questionnaireEditPage.types.generic_label'](),
+			description: m['questionnaireEditPage.types.generic_description']()
 		}
 	};
 
@@ -149,28 +150,28 @@
 	// Get current description safely
 	const selectedTypeDescription = $derived(
 		questionnaireTypes[questionnaireType]?.description ??
-			'General purpose questionnaire for any use case'
+			m['questionnaireEditPage.types.generic_description']()
 	);
 
 	// Evaluation mode descriptions
 	const evaluationModes = {
 		automatic: {
-			label: 'Automatic',
-			description: 'AI evaluates all responses automatically - fastest approval process'
+			label: m['questionnaireEditPage.evaluation.automatic_label'](),
+			description: m['questionnaireEditPage.evaluation.automatic_description']()
 		},
 		manual: {
-			label: 'Manual',
-			description: 'Staff manually reviews all submissions - complete control over decisions'
+			label: m['questionnaireEditPage.evaluation.manual_label'](),
+			description: m['questionnaireEditPage.evaluation.manual_description']()
 		},
 		hybrid: {
-			label: 'Hybrid',
-			description: 'AI pre-scores responses, staff makes final approval decision'
+			label: m['questionnaireEditPage.evaluation.hybrid_label'](),
+			description: m['questionnaireEditPage.evaluation.hybrid_description']()
 		}
 	};
 
 	const selectedEvaluationDescription = $derived(
 		evaluationModes[evaluationMode]?.description ??
-			'AI evaluates all responses automatically - fastest approval process'
+			m['questionnaireEditPage.evaluation.automatic_description']()
 	);
 
 	// Validate form
@@ -178,7 +179,7 @@
 		errors = {};
 
 		if (!name.trim()) {
-			errors.name = 'Questionnaire name is required';
+			errors.name = m['questionnaireEditPage.basicInfo.nameRequired']();
 		}
 
 		return Object.keys(errors).length === 0;
@@ -195,7 +196,7 @@
 		try {
 			const user = data.auth;
 			if (!user.accessToken) {
-				throw new Error('Not authenticated');
+				throw new Error(m['questionnaireEditPage.error_notAuthenticated']());
 			}
 
 			// Build update payload (metadata only)
@@ -217,7 +218,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to update questionnaire');
+				throw new Error(m['questionnaireEditPage.error_updateFailed']());
 			}
 
 			// Refresh data and redirect to questionnaire list
@@ -225,7 +226,7 @@
 			await goto(`/org/${data.organizationSlug}/admin/questionnaires`);
 		} catch (err) {
 			console.error('Failed to save questionnaire:', err);
-			alert('Failed to save questionnaire. Please try again.');
+			alert(m['questionnaireEditPage.error_updateFailedMessage']());
 		} finally {
 			isSaving = false;
 		}
@@ -245,7 +246,7 @@
 		try {
 			const user = data.auth;
 			if (!user.accessToken) {
-				throw new Error('Not authenticated');
+				throw new Error(m['questionnaireEditPage.error_notAuthenticated']());
 			}
 
 			const response = await questionnaireUpdateQuestionnaireStatus({
@@ -257,14 +258,14 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to change status');
+				throw new Error(m['questionnaireEditPage.error_statusChangeFailed']());
 			}
 
 			// Refresh data
 			await invalidateAll();
 		} catch (err) {
 			console.error('Failed to change status:', err);
-			alert('Failed to change status. Please try again.');
+			alert(m['questionnaireEditPage.error_statusChangeFailedMessage']());
 		} finally {
 			isChangingStatus = false;
 		}
@@ -272,7 +273,7 @@
 </script>
 
 <svelte:head>
-	<title>Edit Questionnaire - {questionnaire.questionnaire.name}</title>
+	<title>{m['questionnaireEditPage.pageTitle']()} - {questionnaire.questionnaire.name}</title>
 </svelte:head>
 
 <!-- Header -->
@@ -284,11 +285,11 @@
 		class="mb-4 gap-2"
 	>
 		<ArrowLeft class="h-4 w-4" />
-		Back to Questionnaires
+		{m['questionnaireEditPage.backButton']()}
 	</Button>
 
-	<h1 class="text-3xl font-bold tracking-tight">Edit Questionnaire</h1>
-	<p class="mt-2 text-sm text-muted-foreground">Update questionnaire settings and metadata</p>
+	<h1 class="text-3xl font-bold tracking-tight">{m['questionnaireEditPage.title']()}</h1>
+	<p class="mt-2 text-sm text-muted-foreground">{m['questionnaireEditPage.subtitle']()}</p>
 </div>
 
 <!-- Status Management -->
@@ -296,8 +297,8 @@
 	<CardHeader>
 		<div class="flex items-center justify-between">
 			<div>
-				<CardTitle>Status</CardTitle>
-				<CardDescription>Manage questionnaire publication status</CardDescription>
+				<CardTitle>{m['questionnaireEditPage.status.title']()}</CardTitle>
+				<CardDescription>{m['questionnaireEditPage.status.description']()}</CardDescription>
 			</div>
 			<Badge variant={currentStatusInfo.variant} class="text-sm">
 				{currentStatusInfo.label}
@@ -321,7 +322,7 @@
 						class="gap-2"
 					>
 						<FileEdit class="h-4 w-4" />
-						Mark as Draft
+						{m['questionnaireEditPage.status.markAsDraftButton']()}
 					</Button>
 				{/if}
 
@@ -334,7 +335,7 @@
 						class="gap-2"
 					>
 						<FileCheck class="h-4 w-4" />
-						Mark as Ready
+						{m['questionnaireEditPage.status.markAsReadyButton']()}
 					</Button>
 				{/if}
 
@@ -347,7 +348,7 @@
 						class="gap-2"
 					>
 						<FileCheck class="h-4 w-4" />
-						Unpublish
+						{m['questionnaireEditPage.status.unpublishButton']()}
 					</Button>
 				{/if}
 
@@ -360,7 +361,7 @@
 						class="gap-2"
 					>
 						<Send class="h-4 w-4" />
-						Publish
+						{m['questionnaireEditPage.status.publishButton']()}
 					</Button>
 				{/if}
 			</div>
@@ -392,8 +393,8 @@
 	<!-- Basic Information -->
 	<Card>
 		<CardHeader>
-			<CardTitle>Basic Information</CardTitle>
-			<CardDescription>Edit questionnaire name and type</CardDescription>
+			<CardTitle>{m['questionnaireEditPage.basicInfo.title']()}</CardTitle>
+			<CardDescription>{m['questionnaireEditPage.basicInfo.description']()}</CardDescription>
 		</CardHeader>
 		<CardContent class="space-y-4">
 			<!-- Name -->
@@ -487,7 +488,7 @@
 					placeholder="0"
 				/>
 				<p class="text-xs text-muted-foreground">
-					Minimum score required to pass the questionnaire (0-100)
+					{m['questionnaireEditPage.evaluation.minScoreDescription']()}
 				</p>
 			</div>
 
@@ -546,7 +547,7 @@
 	<!-- Advanced Settings -->
 	<Card>
 		<CardHeader>
-			<CardTitle>Advanced Settings</CardTitle>
+			<CardTitle>{m['questionnaireEditPage.advanced.title']()}</CardTitle>
 			<CardDescription>Optional settings for questionnaire behavior</CardDescription>
 		</CardHeader>
 		<CardContent class="space-y-4">
@@ -574,16 +575,17 @@
 
 			<!-- LLM Guidelines -->
 			<div class="space-y-2">
-				<Label for="llm-guidelines">LLM Guidelines</Label>
+				<Label for="llm-guidelines"
+					>{m['questionnaireEditPage.advanced.llmGuidelinesLabel']()}</Label
+				>
 				<Textarea
 					id="llm-guidelines"
 					bind:value={llmGuidelines}
-					placeholder="Instructions for the AI when evaluating free-text answers..."
+					placeholder={m['questionnaireEditPage.advanced.llmGuidelinesPlaceholder']()}
 					rows={4}
 				/>
 				<p class="text-xs text-muted-foreground">
-					Guidelines for AI evaluation (only needed for free-text questions with automatic/hybrid
-					mode)
+					{m['questionnaireEditPage.advanced.llmGuidelinesDescription']()}
 				</p>
 			</div>
 
@@ -591,33 +593,37 @@
 			<div class="grid gap-4 sm:grid-cols-2">
 				<!-- Max Submission Age -->
 				<div class="space-y-2">
-					<Label for="max-submission-age">Submission Validity (days)</Label>
+					<Label for="max-submission-age"
+						>{m['questionnaireEditPage.advanced.submissionValidityLabel']()}</Label
+					>
 					<Input
 						id="max-submission-age"
 						type="number"
 						bind:value={maxSubmissionAge}
 						min="0"
 						step="1"
-						placeholder="Leave empty for no expiry"
+						placeholder={m['questionnaireEditPage.advanced.submissionValidityPlaceholder']()}
 					/>
 					<p class="text-xs text-muted-foreground">
-						How long a completed submission remains valid before user must retake (in days)
+						{m['questionnaireEditPage.advanced.submissionValidityDescription']()}
 					</p>
 				</div>
 
 				<!-- Can Retake After -->
 				<div class="space-y-2">
-					<Label for="can-retake-after">Retake Cooldown (hours)</Label>
+					<Label for="can-retake-after"
+						>{m['questionnaireEditPage.advanced.retakeCooldownLabel']()}</Label
+					>
 					<Input
 						id="can-retake-after"
 						type="number"
 						bind:value={canRetakeAfter}
 						min="0"
 						step="1"
-						placeholder="Leave empty to prevent retakes"
+						placeholder={m['questionnaireEditPage.advanced.retakeCooldownPlaceholder']()}
 					/>
 					<p class="text-xs text-muted-foreground">
-						How long users must wait before retaking (in hours)
+						{m['questionnaireEditPage.advanced.retakeCooldownDescription']()}
 					</p>
 				</div>
 			</div>
@@ -625,12 +631,12 @@
 			<!-- Max Attempts -->
 			<div class="space-y-2">
 				<Label for="max-attempts">
-					Maximum Attempts
+					{m['questionnaireEditPage.advanced.maxAttemptsLabel']()}
 					<span class="text-destructive">*</span>
 				</Label>
 				<Input id="max-attempts" type="number" bind:value={maxAttempts} min="0" step="1" required />
 				<p class="text-xs text-muted-foreground">
-					Maximum number of attempts allowed (0 = unlimited)
+					{m['questionnaireEditPage.advanced.maxAttemptsDescription']()}
 				</p>
 			</div>
 		</CardContent>
@@ -641,8 +647,8 @@
 		<CardHeader>
 			<div class="flex items-center justify-between">
 				<div>
-					<CardTitle>Event Assignments</CardTitle>
-					<CardDescription>Events that require this questionnaire</CardDescription>
+					<CardTitle>{m['questionnaireEditPage.assignments.title']()}</CardTitle>
+					<CardDescription>{m['questionnaireEditPage.assignments.description']()}</CardDescription>
 				</div>
 				<Button
 					variant="outline"
@@ -659,9 +665,11 @@
 			{#if (questionnaire.events?.length || 0) === 0 && (questionnaire.event_series?.length || 0) === 0}
 				<div class="rounded-lg border border-dashed p-8 text-center">
 					<Calendar class="mx-auto mb-2 h-8 w-8 text-muted-foreground" aria-hidden="true" />
-					<p class="text-sm font-medium">Not assigned to any events</p>
+					<p class="text-sm font-medium">
+						{m['questionnaireEditPage.assignments.noAssignments']()}
+					</p>
 					<p class="mt-1 text-xs text-muted-foreground">
-						Click "Manage Assignments" to assign this questionnaire to events
+						{m['questionnaireEditPage.assignments.noAssignmentsDescription']()}
 					</p>
 				</div>
 			{:else}
@@ -669,7 +677,9 @@
 					<!-- Individual Events -->
 					{#if questionnaire.events && questionnaire.events.length > 0}
 						<div>
-							<h4 class="mb-2 text-sm font-medium">Individual Events</h4>
+							<h4 class="mb-2 text-sm font-medium">
+								{m['questionnaireEditPage.assignments.individualEventsTitle']()}
+							</h4>
 							<div class="space-y-2">
 								{#each questionnaire.events as event}
 									<div class="flex items-center justify-between rounded-lg border p-3">
@@ -695,7 +705,9 @@
 					<!-- Event Series -->
 					{#if questionnaire.event_series && questionnaire.event_series.length > 0}
 						<div>
-							<h4 class="mb-2 text-sm font-medium">Event Series</h4>
+							<h4 class="mb-2 text-sm font-medium">
+								{m['questionnaireEditPage.assignments.eventSeriesTitle']()}
+							</h4>
 							<div class="space-y-2">
 								{#each questionnaire.event_series as series}
 									<div class="flex items-center justify-between rounded-lg border p-3">
@@ -720,13 +732,15 @@
 	<!-- Questions (Read-Only Display) -->
 	<Card>
 		<CardHeader>
-			<CardTitle>Questions ({totalQuestions()})</CardTitle>
-			<CardDescription>Questions are read-only after creation</CardDescription>
+			<CardTitle>{m['questionnaireEditPage.questions.title']()} ({totalQuestions()})</CardTitle>
+			<CardDescription>{m['questionnaireEditPage.questions.description']()}</CardDescription>
 		</CardHeader>
 		<CardContent>
 			{#if totalQuestions() === 0}
 				<div class="rounded-lg border border-dashed p-8 text-center">
-					<p class="text-sm text-muted-foreground">No questions in this questionnaire</p>
+					<p class="text-sm text-muted-foreground">
+						{m['questionnaireEditPage.questions.empty']()}
+					</p>
 				</div>
 			{:else}
 				<div class="space-y-6">
@@ -741,10 +755,12 @@
 												<span
 													class="rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700"
 												>
-													Multiple Choice
+													{m['questionnaireEditPage.questions.multipleChoiceLabel']()}
 												</span>
 												{#if question.is_mandatory}
-													<span class="text-xs text-destructive">Required</span>
+													<span class="text-xs text-destructive"
+														>{m['questionnaireEditPage.questions.requiredLabel']()}</span
+													>
 												{/if}
 											</div>
 											<p class="font-medium">{question.question}</p>
@@ -776,10 +792,12 @@
 												<span
 													class="rounded bg-purple-100 px-2 py-1 text-xs font-medium text-purple-700"
 												>
-													Free Text
+													{m['questionnaireEditPage.questions.freeTextLabel']()}
 												</span>
 												{#if question.is_mandatory}
-													<span class="text-xs text-destructive">Required</span>
+													<span class="text-xs text-destructive"
+														>{m['questionnaireEditPage.questions.requiredLabel']()}</span
+													>
 												{/if}
 											</div>
 											<p class="font-medium">{question.question}</p>
@@ -808,10 +826,12 @@
 												<span
 													class="rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700"
 												>
-													Multiple Choice
+													{m['questionnaireEditPage.questions.multipleChoiceLabel']()}
 												</span>
 												{#if question.is_mandatory}
-													<span class="text-xs text-destructive">Required</span>
+													<span class="text-xs text-destructive"
+														>{m['questionnaireEditPage.questions.requiredLabel']()}</span
+													>
 												{/if}
 											</div>
 											<p class="font-medium">{question.question}</p>
@@ -843,10 +863,12 @@
 												<span
 													class="rounded bg-purple-100 px-2 py-1 text-xs font-medium text-purple-700"
 												>
-													Free Text
+													{m['questionnaireEditPage.questions.freeTextLabel']()}
 												</span>
 												{#if question.is_mandatory}
-													<span class="text-xs text-destructive">Required</span>
+													<span class="text-xs text-destructive"
+														>{m['questionnaireEditPage.questions.requiredLabel']()}</span
+													>
 												{/if}
 											</div>
 											<p class="font-medium">{question.question}</p>
@@ -864,10 +886,12 @@
 	<!-- Actions -->
 	<div class="flex justify-end gap-3">
 		<Button href="/org/{data.organizationSlug}/admin/questionnaires" variant="outline">
-			Cancel
+			{m['questionnaireEditPage.cancelButton']()}
 		</Button>
 		<Button onclick={saveQuestionnaire} disabled={isSaving}>
-			{isSaving ? 'Saving...' : 'Save Changes'}
+			{isSaving
+				? m['questionnaireEditPage.savingButton']()
+				: m['questionnaireEditPage.saveButton']()}
 		</Button>
 	</div>
 </div>

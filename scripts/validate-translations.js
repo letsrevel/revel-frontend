@@ -43,7 +43,7 @@ function getAllKeys(obj, prefix = '') {
 	for (const [key, value] of Object.entries(obj)) {
 		const fullKey = prefix ? `${prefix}.${key}` : key;
 		if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-			getAllKeys(value, fullKey).forEach(k => keys.add(k));
+			getAllKeys(value, fullKey).forEach((k) => keys.add(k));
 		} else {
 			keys.add(fullKey);
 		}
@@ -156,33 +156,37 @@ function main() {
 
 	// Check key structure alignment
 	log('=== Key Structure Alignment ===', 'bold');
-	const missingInDe = Array.from(enKeys).filter(k => !deKeys.has(k));
-	const missingInIt = Array.from(enKeys).filter(k => !itKeys.has(k));
-	const extraInDe = Array.from(deKeys).filter(k => !enKeys.has(k));
-	const extraInIt = Array.from(itKeys).filter(k => !enKeys.has(k));
+	const missingInDe = Array.from(enKeys).filter((k) => !deKeys.has(k));
+	const missingInIt = Array.from(enKeys).filter((k) => !itKeys.has(k));
+	const extraInDe = Array.from(deKeys).filter((k) => !enKeys.has(k));
+	const extraInIt = Array.from(itKeys).filter((k) => !enKeys.has(k));
 
-	if (missingInDe.length === 0 && missingInIt.length === 0 &&
-	    extraInDe.length === 0 && extraInIt.length === 0) {
+	if (
+		missingInDe.length === 0 &&
+		missingInIt.length === 0 &&
+		extraInDe.length === 0 &&
+		extraInIt.length === 0
+	) {
 		log('✓ All keys are aligned across languages\n', 'green');
 	} else {
 		hasErrors = true;
 		if (missingInDe.length > 0) {
 			log(`✗ German missing ${missingInDe.length} keys:`, 'red');
-			missingInDe.slice(0, 5).forEach(k => log(`  - ${k}`, 'red'));
+			missingInDe.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
 			if (missingInDe.length > 5) log(`  ... and ${missingInDe.length - 5} more`, 'red');
 		}
 		if (missingInIt.length > 0) {
 			log(`✗ Italian missing ${missingInIt.length} keys:`, 'red');
-			missingInIt.slice(0, 5).forEach(k => log(`  - ${k}`, 'red'));
+			missingInIt.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
 			if (missingInIt.length > 5) log(`  ... and ${missingInIt.length - 5} more`, 'red');
 		}
 		if (extraInDe.length > 0) {
 			log(`✗ German has ${extraInDe.length} extra keys:`, 'red');
-			extraInDe.slice(0, 5).forEach(k => log(`  - ${k}`, 'red'));
+			extraInDe.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
 		}
 		if (extraInIt.length > 0) {
 			log(`✗ Italian has ${extraInIt.length} extra keys:`, 'red');
-			extraInIt.slice(0, 5).forEach(k => log(`  - ${k}`, 'red'));
+			extraInIt.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
 		}
 		log('');
 	}
@@ -195,13 +199,13 @@ function main() {
 
 	if (enEmpty.length > 0) {
 		log(`✗ English has ${enEmpty.length} empty strings!`, 'red');
-		enEmpty.slice(0, 5).forEach(k => log(`  - ${k}`, 'red'));
+		enEmpty.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
 		hasErrors = true;
 	}
 
 	if (deEmpty.length > 0) {
 		log(`✗ German has ${deEmpty.length} empty strings!`, 'red');
-		deEmpty.slice(0, 5).forEach(k => log(`  - ${k}`, 'red'));
+		deEmpty.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
 		if (deEmpty.length > 5) log(`  ... and ${deEmpty.length - 5} more`, 'red');
 		hasErrors = true;
 	} else {
@@ -210,7 +214,7 @@ function main() {
 
 	if (itEmpty.length > 0) {
 		log(`✗ Italian has ${itEmpty.length} empty strings!`, 'red');
-		itEmpty.slice(0, 5).forEach(k => log(`  - ${k}`, 'red'));
+		itEmpty.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
 		if (itEmpty.length > 5) log(`  ... and ${itEmpty.length - 5} more`, 'red');
 		hasErrors = true;
 	} else {
@@ -229,7 +233,7 @@ function main() {
 		hasWarnings = true;
 		if (dePlaceholderIssues.length > 0) {
 			log(`⚠ German has ${dePlaceholderIssues.length} placeholder issues:`, 'yellow');
-			dePlaceholderIssues.slice(0, 3).forEach(issue => {
+			dePlaceholderIssues.slice(0, 3).forEach((issue) => {
 				log(`  ${issue.key}: ${issue.issue}`, 'yellow');
 			});
 			if (dePlaceholderIssues.length > 3) {
@@ -238,7 +242,7 @@ function main() {
 		}
 		if (itPlaceholderIssues.length > 0) {
 			log(`⚠ Italian has ${itPlaceholderIssues.length} placeholder issues:`, 'yellow');
-			itPlaceholderIssues.slice(0, 3).forEach(issue => {
+			itPlaceholderIssues.slice(0, 3).forEach((issue) => {
 				log(`  ${issue.key}: ${issue.issue}`, 'yellow');
 			});
 			if (itPlaceholderIssues.length > 3) {
@@ -253,8 +257,8 @@ function main() {
 	log(`Total keys: ${enKeys.size}`);
 	log(`Languages: 3 (English, German, Italian)`);
 
-	const deCompleteness = ((deKeys.size - deEmpty.length) / enKeys.size * 100).toFixed(1);
-	const itCompleteness = ((itKeys.size - itEmpty.length) / enKeys.size * 100).toFixed(1);
+	const deCompleteness = (((deKeys.size - deEmpty.length) / enKeys.size) * 100).toFixed(1);
+	const itCompleteness = (((itKeys.size - itEmpty.length) / enKeys.size) * 100).toFixed(1);
 
 	log(`German completion: ${deCompleteness}%`);
 	log(`Italian completion: ${itCompleteness}%`);

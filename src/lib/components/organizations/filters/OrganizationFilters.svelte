@@ -100,7 +100,8 @@
 
 	<!-- Search Input -->
 	<div class="space-y-2">
-		<label for="organization-search" class="text-sm font-medium">{m['common.search_label']()}</label>
+		<label for="organization-search" class="text-sm font-medium">{m['common.search_label']()}</label
+		>
 		<SearchInput
 			value={filters.search ?? ''}
 			onSearch={handleSearch}
@@ -124,7 +125,11 @@
 	{#if activeFilterCount > 0}
 		<div class="border-t pt-4" role="separator">
 			<p class="text-xs text-muted-foreground">
-				{activeFilterCount} {activeFilterCount !== 1 ? m['common.filters_filtersPlural']() : m['common.filters_filter']()} {m['common.filters_applied']()}
+				{activeFilterCount}
+				{activeFilterCount !== 1
+					? m['common.filters_filtersPlural']()
+					: m['common.filters_filter']()}
+				{m['common.filters_applied']()}
 			</p>
 		</div>
 	{/if}

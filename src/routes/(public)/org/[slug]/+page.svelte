@@ -288,9 +288,13 @@
 			<section aria-labelledby="resources-heading" class="mb-12">
 				<div class="mb-6 flex items-center justify-between">
 					<div>
-						<h2 id="resources-heading" class="text-2xl font-bold">{m['organizationProfile.resources_heading']()}</h2>
+						<h2 id="resources-heading" class="text-2xl font-bold">
+							{m['organizationProfile.resources_heading']()}
+						</h2>
 						<p class="mt-1 text-sm text-muted-foreground">
-							{m['organizationProfile.resources_description']({ organizationName: organization.name })}
+							{m['organizationProfile.resources_description']({
+								organizationName: organization.name
+							})}
 						</p>
 					</div>
 					<a
@@ -313,9 +317,13 @@
 			<section aria-labelledby="series-heading" class="mb-12">
 				<div class="mb-6 flex items-center justify-between">
 					<div>
-						<h2 id="series-heading" class="text-2xl font-bold">{m['organizationProfile.eventSeries_heading']()}</h2>
+						<h2 id="series-heading" class="text-2xl font-bold">
+							{m['organizationProfile.eventSeries_heading']()}
+						</h2>
 						<p class="mt-1 text-sm text-muted-foreground">
-							{m['organizationProfile.eventSeries_description']({ organizationName: organization.name })}
+							{m['organizationProfile.eventSeries_description']({
+								organizationName: organization.name
+							})}
 						</p>
 					</div>
 				</div>
@@ -346,7 +354,10 @@
 								{m['common.pagination_previous']()}
 							</button>
 							<span class="text-sm text-muted-foreground">
-								{m['common.pagination_page']()} {seriesPage} {m['common.pagination_of']()} {seriesTotalPages}
+								{m['common.pagination_page']()}
+								{seriesPage}
+								{m['common.pagination_of']()}
+								{seriesTotalPages}
 							</span>
 							<button
 								type="button"
@@ -366,7 +377,9 @@
 		<section aria-labelledby="events-heading" class="mb-12">
 			<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 				<div>
-					<h2 id="events-heading" class="text-2xl font-bold">{m['organizationProfile.events_heading']()}</h2>
+					<h2 id="events-heading" class="text-2xl font-bold">
+						{m['organizationProfile.events_heading']()}
+					</h2>
 					<p class="mt-1 text-sm text-muted-foreground">
 						{m['organizationProfile.events_description']({ organizationName: organization.name })}
 					</p>
@@ -375,7 +388,9 @@
 				<div class="flex flex-wrap items-center gap-4">
 					<!-- Filter Toggle -->
 					<div class="flex items-center gap-2">
-						<label for="include-past" class="text-sm font-medium">{m['organizationProfile.events_includePast']()}</label>
+						<label for="include-past" class="text-sm font-medium"
+							>{m['organizationProfile.events_includePast']()}</label
+						>
 						<input
 							id="include-past"
 							type="checkbox"
@@ -394,7 +409,9 @@
 							: 'Showing oldest first'}
 					>
 						<ArrowDownUp class="h-4 w-4" aria-hidden="true" />
-						{eventsOrderBy === '-start' ? m['organizationProfile.events_newestFirst']() : m['organizationProfile.events_oldestFirst']()}
+						{eventsOrderBy === '-start'
+							? m['organizationProfile.events_newestFirst']()
+							: m['organizationProfile.events_oldestFirst']()}
 					</button>
 
 					<!-- Browse All Button -->
@@ -429,12 +446,16 @@
 				<div class="rounded-lg border bg-card p-8 text-center">
 					<Calendar class="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
 					<h3 class="mb-2 text-lg font-semibold">
-						{includePastEvents ? m['organizationProfile.events_noEvents']() : m['organizationProfile.events_noUpcoming']()}
+						{includePastEvents
+							? m['organizationProfile.events_noEvents']()
+							: m['organizationProfile.events_noUpcoming']()}
 					</h3>
 					<p class="text-sm text-muted-foreground">
 						{includePastEvents
 							? m['organizationProfile.events_noEventsYet']({ organizationName: organization.name })
-							: m['organizationProfile.events_noUpcomingScheduled']({ organizationName: organization.name })}
+							: m['organizationProfile.events_noUpcomingScheduled']({
+									organizationName: organization.name
+								})}
 					</p>
 					{#if !includePastEvents}
 						<button
@@ -466,7 +487,10 @@
 							{m['common.pagination_previous']()}
 						</button>
 						<span class="text-sm text-muted-foreground">
-							{m['common.pagination_page']()} {eventsPage} {m['common.pagination_of']()} {eventsTotalPages}
+							{m['common.pagination_page']()}
+							{eventsPage}
+							{m['common.pagination_of']()}
+							{eventsTotalPages}
 						</span>
 						<button
 							type="button"

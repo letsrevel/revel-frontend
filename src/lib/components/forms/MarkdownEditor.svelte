@@ -75,7 +75,8 @@
 	 * Handles basic markdown syntax safely
 	 */
 	function convertMarkdownToHtml(markdown: string): string {
-		if (!markdown) return `<p class="text-muted-foreground">{m['markdownEditor.nothingToPreview']()}</p>`;
+		if (!markdown)
+			return `<p class="text-muted-foreground">{m['markdownEditor.nothingToPreview']()}</p>`;
 
 		let html = markdown;
 
@@ -224,7 +225,9 @@
 				<List class="h-4 w-4" aria-hidden="true" />
 			</button>
 
-			<div class="ml-auto self-center text-xs text-muted-foreground">{m['markdownEditor.markdownSupported']()}</div>
+			<div class="ml-auto self-center text-xs text-muted-foreground">
+				{m['markdownEditor.markdownSupported']()}
+			</div>
 		</div>
 	{/if}
 

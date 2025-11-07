@@ -166,7 +166,9 @@
 				{validationErrors.city_id}
 			</p>
 		{/if}
-		<p class="text-xs text-muted-foreground">{m['SFwESEssentialsStep.whereWillThisEventTakePlace']()}</p>
+		<p class="text-xs text-muted-foreground">
+			{m['SFwESEssentialsStep.whereWillThisEventTakePlace']()}
+		</p>
 	</div>
 
 	<!-- Visibility -->
@@ -208,7 +210,9 @@
 				/>
 				<div class="flex-1">
 					<div class="font-medium">{m['SFwESEssentialsStep.private']()}</div>
-					<div class="text-sm text-muted-foreground">{m['SFwESEssentialsStep.onlyInvitedUsers']()}</div>
+					<div class="text-sm text-muted-foreground">
+						{m['SFwESEssentialsStep.onlyInvitedUsers']()}
+					</div>
 				</div>
 			</label>
 
@@ -274,7 +278,9 @@
 				/>
 				<div class="flex-1">
 					<div class="font-medium">{m['SFwESEssentialsStep.public']()}</div>
-					<div class="text-sm text-muted-foreground">{m['SFwESEssentialsStep.everyoneCanAttend']()}</div>
+					<div class="text-sm text-muted-foreground">
+						{m['SFwESEssentialsStep.everyoneCanAttend']()}
+					</div>
 				</div>
 			</label>
 
@@ -291,7 +297,9 @@
 				/>
 				<div class="flex-1">
 					<div class="font-medium">{m['SFwESEssentialsStep.private']()}</div>
-					<div class="text-sm text-muted-foreground">{m['SFwESEssentialsStep.onlyInvitedPeople']()}</div>
+					<div class="text-sm text-muted-foreground">
+						{m['SFwESEssentialsStep.onlyInvitedPeople']()}
+					</div>
 				</div>
 			</label>
 
@@ -308,7 +316,9 @@
 				/>
 				<div class="flex-1">
 					<div class="font-medium">{m['SFwESEssentialsStep.membersOnly']()}</div>
-					<div class="text-sm text-muted-foreground">{m['SFwESEssentialsStep.onlyOrganizationMembers']()}</div>
+					<div class="text-sm text-muted-foreground">
+						{m['SFwESEssentialsStep.onlyOrganizationMembers']()}
+					</div>
 				</div>
 			</label>
 		</div>

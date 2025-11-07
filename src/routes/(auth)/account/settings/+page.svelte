@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { enhance, applyAction } from '$app/forms';
 	import type { PageData, ActionData } from './$types';
 	import { VISIBILITY_OPTIONS } from '$lib/schemas/preferences';
@@ -40,14 +41,14 @@
 </script>
 
 <svelte:head>
-	<title>Settings - Revel</title>
-	<meta name="description" content="Manage your Revel preferences and settings" />
+	<title>{m['accountSettingsPage.pageTitle']()} - Revel</title>
+	<meta name="description" content={m['accountSettingsPage.pageDescription']()} />
 </svelte:head>
 
 <div class="container mx-auto max-w-2xl px-4 py-8">
 	<div class="mb-8">
-		<h1 class="text-3xl font-bold tracking-tight">Settings</h1>
-		<p class="mt-2 text-muted-foreground">Manage your preferences and notification settings</p>
+		<h1 class="text-3xl font-bold tracking-tight">{m['accountSettingsPage.title']()}</h1>
+		<p class="mt-2 text-muted-foreground">{m['accountSettingsPage.subtitle']()}</p>
 	</div>
 
 	{#if success}
@@ -58,7 +59,7 @@
 			<div class="flex items-center gap-2">
 				<Check class="h-5 w-5 text-green-600 dark:text-green-400" aria-hidden="true" />
 				<p class="text-sm font-medium text-green-800 dark:text-green-200">
-					Settings updated successfully
+					{m['accountSettingsPage.successMessage']()}
 				</p>
 			</div>
 		</div>
@@ -99,13 +100,13 @@
 		<!-- Attendee List Visibility -->
 		<section class="space-y-4">
 			<div>
-				<h2 class="text-lg font-semibold">Privacy</h2>
-				<p class="text-sm text-muted-foreground">Control who can see you on attendee lists</p>
+				<h2 class="text-lg font-semibold">{m['accountSettingsPage.privacyTitle']()}</h2>
+				<p class="text-sm text-muted-foreground">{m['accountSettingsPage.privacyDescription']()}</p>
 			</div>
 
 			<div class="space-y-2">
 				<label for="visibility-select" class="block text-sm font-medium">
-					Show me on attendee lists
+					{m['accountSettingsPage.showOnAttendeeListsLabel']()}
 				</label>
 				<select
 					id="visibility-select"
@@ -133,8 +134,10 @@
 		<!-- Notifications -->
 		<section class="space-y-4">
 			<div>
-				<h2 class="text-lg font-semibold">Notifications</h2>
-				<p class="text-sm text-muted-foreground">Manage how you receive updates</p>
+				<h2 class="text-lg font-semibold">{m['accountSettingsPage.notificationsTitle']()}</h2>
+				<p class="text-sm text-muted-foreground">
+					{m['accountSettingsPage.notificationsDescription']()}
+				</p>
 			</div>
 
 			<div class="space-y-4">
@@ -142,10 +145,10 @@
 				<div class="flex items-center justify-between">
 					<div class="flex-1">
 						<label for="event-reminders" class="cursor-pointer text-sm font-medium">
-							Event reminders
+							{m['accountSettingsPage.eventRemindersLabel']()}
 						</label>
 						<p class="text-xs text-muted-foreground">
-							Get reminded about upcoming events you're attending
+							{m['accountSettingsPage.eventRemindersDescription']()}
 						</p>
 					</div>
 					<label class="relative inline-flex cursor-pointer items-center">
@@ -171,9 +174,11 @@
 				<div class="flex items-center justify-between">
 					<div class="flex-1">
 						<label for="silence-all" class="cursor-pointer text-sm font-medium">
-							Silence all notifications
+							{m['accountSettingsPage.silenceAllLabel']()}
 						</label>
-						<p class="text-xs text-muted-foreground">Disable all email and push notifications</p>
+						<p class="text-xs text-muted-foreground">
+							{m['accountSettingsPage.silenceAllDescription']()}
+						</p>
 					</div>
 					<label class="relative inline-flex cursor-pointer items-center">
 						<input
@@ -199,9 +204,9 @@
 		<!-- Location Preferences -->
 		<section class="space-y-4">
 			<div>
-				<h2 class="text-lg font-semibold">Location</h2>
+				<h2 class="text-lg font-semibold">{m['accountSettingsPage.locationTitle']()}</h2>
 				<p class="text-sm text-muted-foreground">
-					Set your preferred city for event recommendations
+					{m['accountSettingsPage.locationDescription']()}
 				</p>
 			</div>
 
@@ -231,11 +236,10 @@
 					<div class="flex-1 space-y-3">
 						<div>
 							<h3 class="text-sm font-semibold text-orange-800 dark:text-orange-200">
-								Apply to all my preferences
+								{m['accountSettingsPage.cascadeTitle']()}
 							</h3>
 							<p class="mt-1 text-xs text-orange-700 dark:text-orange-300">
-								Check this to apply these settings to all your organization, series, and
-								event-specific preferences. This will override any custom preferences you've set.
+								{m['accountSettingsPage.cascadeDescription']()}
 							</p>
 						</div>
 
@@ -250,7 +254,7 @@
 								class="h-4 w-4 rounded border-input text-orange-600 transition-colors focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 							/>
 							<span class="text-sm font-medium text-orange-800 dark:text-orange-200">
-								Apply these settings everywhere
+								{m['accountSettingsPage.cascadeCheckboxLabel']()}
 							</span>
 						</label>
 					</div>
@@ -267,9 +271,9 @@
 			>
 				{#if isSubmitting}
 					<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-					<span>Saving...</span>
+					<span>{m['accountSettingsPage.saving']()}</span>
 				{:else}
-					<span>Save Changes</span>
+					<span>{m['accountSettingsPage.saveChanges']()}</span>
 				{/if}
 			</button>
 		</div>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
 	import ResourceCard from './ResourceCard.svelte';
 	import { cn } from '$lib/utils/cn';
@@ -46,7 +47,6 @@
 
 	<!-- Count -->
 	<p class="text-sm text-muted-foreground">
-		Showing {resources.length}
-		{resources.length === 1 ? 'resource' : 'resources'}
+		{m['resourceList.showingCount']({ count: resources.length })}
 	</p>
 </div>

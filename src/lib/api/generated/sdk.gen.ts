@@ -1245,9 +1245,7 @@ export const organizationCreateMembershipRequest = <ThrowOnError extends boolean
  * **Error Cases:**
  * - 404: Token doesn't exist or has been deleted
  */
-export const organizationGetOrganizationTokenDetails = <
-	ThrowOnError extends boolean = false
->(
+export const organizationGetOrganizationTokenDetails = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationGetOrganizationTokenDetails728088B6Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -1619,9 +1617,7 @@ export const organizationadminCreateEvent = <ThrowOnError extends boolean = fals
  * - Clean up expired or unused tokens
  * - Verify staff invitation tokens are properly restricted
  */
-export const organizationadminListOrganizationTokens = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminListOrganizationTokens = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminListOrganizationTokens02F9B442Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -1741,9 +1737,7 @@ export const organizationadminListOrganizationTokens = <
  * - 403: User lacks "manage_members" permission
  * - 404: Organization slug not found or user lacks access
  */
-export const organizationadminCreateOrganizationToken = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminCreateOrganizationToken = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminCreateOrganizationToken5953F78bData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -1847,9 +1841,7 @@ export const organizationadminCreateOrganizationToken = <
  * - 403: User lacks "manage_members" permission
  * - 404: Token ID not found or doesn't belong to this organization
  */
-export const organizationadminDeleteOrganizationToken = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminDeleteOrganizationToken = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminDeleteOrganizationTokenF27D4049Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
@@ -1956,9 +1948,7 @@ export const organizationadminDeleteOrganizationToken = <
  * - 403: User lacks "manage_members" permission
  * - 404: Token ID not found or doesn't belong to this organization
  */
-export const organizationadminUpdateOrganizationToken = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminUpdateOrganizationToken = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminUpdateOrganizationToken095Bbe92Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
@@ -1988,9 +1978,7 @@ export const organizationadminUpdateOrganizationToken = <
  *
  * By default shows all requests. Use ?status=pending to filter by status.
  */
-export const organizationadminListMembershipRequests = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminListMembershipRequests = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminListMembershipRequestsF4Fc07C0Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -2014,9 +2002,7 @@ export const organizationadminListMembershipRequests = <
  *
  * Approve a membership request.
  */
-export const organizationadminApproveMembershipRequest = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminApproveMembershipRequest = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminApproveMembershipRequest1510Bb81Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -2040,9 +2026,7 @@ export const organizationadminApproveMembershipRequest = <
  *
  * Reject a membership request.
  */
-export const organizationadminRejectMembershipRequest = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminRejectMembershipRequest = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminRejectMembershipRequestB8Fab4CcData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -2322,9 +2306,7 @@ export const organizationadminAddStaff = <ThrowOnError extends boolean = false>(
  *
  * Update a staff member's permissions.
  */
-export const organizationadminUpdateStaffPermissions = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminUpdateStaffPermissions = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminUpdateStaffPermissionsFdf7C453Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
@@ -5176,9 +5158,7 @@ export const questionnaireEvaluateSubmission = <ThrowOnError extends boolean = f
  *
  * Requires 'edit_questionnaire' permission.
  */
-export const questionnaireUpdateQuestionnaireStatus = <
-	ThrowOnError extends boolean = false
->(
+export const questionnaireUpdateQuestionnaireStatus = <ThrowOnError extends boolean = false>(
 	options: Options<QuestionnaireUpdateQuestionnaireStatusF446A9E5Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -5402,9 +5382,7 @@ export const userpreferencesGetGeneralPreferences = <ThrowOnError extends boolea
  * Modify notification and privacy settings. Set overwrite_children=true to cascade changes
  * to all organization/series/event-level preferences, overriding custom settings.
  */
-export const userpreferencesUpdateGlobalPreferences = <
-	ThrowOnError extends boolean = false
->(
+export const userpreferencesUpdateGlobalPreferences = <ThrowOnError extends boolean = false>(
 	options: Options<UserpreferencesUpdateGlobalPreferencesE85758A8Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
@@ -5435,9 +5413,7 @@ export const userpreferencesUpdateGlobalPreferences = <
  * Returns organization-level overrides for notifications and privacy. Falls back to global
  * preferences if not customized.
  */
-export const userpreferencesGetOrganizationPreferences = <
-	ThrowOnError extends boolean = false
->(
+export const userpreferencesGetOrganizationPreferences = <ThrowOnError extends boolean = false>(
 	options: Options<UserpreferencesGetOrganizationPreferences139Ce8E4Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -5464,9 +5440,7 @@ export const userpreferencesGetOrganizationPreferences = <
  * Overrides global defaults for this organization. Set overwrite_children=true to cascade
  * changes to all series/event-level preferences within this organization.
  */
-export const userpreferencesUpdateOrganizationPreferences = <
-	ThrowOnError extends boolean = false
->(
+export const userpreferencesUpdateOrganizationPreferences = <ThrowOnError extends boolean = false>(
 	options: Options<UserpreferencesUpdateOrganizationPreferences80798806Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
@@ -5497,9 +5471,7 @@ export const userpreferencesUpdateOrganizationPreferences = <
  * Returns series-level overrides for notifications. Falls back to organization or global
  * preferences if not customized.
  */
-export const userpreferencesGetEventSeriesPreferences = <
-	ThrowOnError extends boolean = false
->(
+export const userpreferencesGetEventSeriesPreferences = <ThrowOnError extends boolean = false>(
 	options: Options<UserpreferencesGetEventSeriesPreferences52433695Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -5526,9 +5498,7 @@ export const userpreferencesGetEventSeriesPreferences = <
  * Overrides organization/global defaults for this series. Set overwrite_children=true to
  * cascade changes to all individual event preferences within this series.
  */
-export const userpreferencesUpdateEventSeriesPreferences = <
-	ThrowOnError extends boolean = false
->(
+export const userpreferencesUpdateEventSeriesPreferences = <ThrowOnError extends boolean = false>(
 	options: Options<UserpreferencesUpdateEventSeriesPreferences4390B122Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<

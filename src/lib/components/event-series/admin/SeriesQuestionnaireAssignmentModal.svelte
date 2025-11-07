@@ -202,7 +202,8 @@
 				aria-hidden="true"
 			/>
 			<p class="text-orange-900 dark:text-orange-100">
-				<strong>{m['seriesQuestionnaireAssignmentModal.appliesToAllEvents']()}</strong> {m['seriesQuestionnaireAssignmentModal.allEvents']()} in this series, including future events.
+				<strong>{m['seriesQuestionnaireAssignmentModal.appliesToAllEvents']()}</strong>
+				{m['seriesQuestionnaireAssignmentModal.allEvents']()} in this series, including future events.
 			</p>
 		</div>
 
@@ -228,7 +229,9 @@
 			{#if isLoading}
 				<div class="flex items-center justify-center py-12">
 					<Loader2 class="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
-					<span class="ml-2 text-sm text-muted-foreground">{m['seriesQuestionnaireAssignmentModal.loadingQuestionnaires']()}</span>
+					<span class="ml-2 text-sm text-muted-foreground"
+						>{m['seriesQuestionnaireAssignmentModal.loadingQuestionnaires']()}</span
+					>
 				</div>
 			{:else if filteredQuestionnaires.length === 0}
 				<div class="py-12 text-center">
@@ -287,7 +290,9 @@
 					{selectedIds.size === 1 ? 'questionnaire' : 'questionnaires'} selected
 				</div>
 				<div class="flex gap-2">
-					<Button variant="outline" onclick={onClose} disabled={isSaving}>{m['seriesQuestionnaireAssignmentModal.cancel']()}</Button>
+					<Button variant="outline" onclick={onClose} disabled={isSaving}
+						>{m['seriesQuestionnaireAssignmentModal.cancel']()}</Button
+					>
 					<Button onclick={saveAssignments} disabled={!hasChanges || isSaving}>
 						{#if isSaving}
 							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />

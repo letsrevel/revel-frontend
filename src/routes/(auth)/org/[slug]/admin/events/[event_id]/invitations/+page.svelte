@@ -564,7 +564,9 @@
 				{m['eventInvitationsAdmin.backToEvents']()}
 			</a>
 		</div>
-		<h1 class="text-2xl font-bold tracking-tight md:text-3xl">{m['eventInvitationsAdmin.pageTitle']()}</h1>
+		<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
+			{m['eventInvitationsAdmin.pageTitle']()}
+		</h1>
 		<p class="mt-1 text-sm text-muted-foreground">{data.event.name}</p>
 	</div>
 
@@ -581,7 +583,10 @@
 				{:else if form.action === 'rejected'}
 					{m['eventInvitationsAdmin.requestRejected']()}
 				{:else if form.action === 'created'}
-					{m['eventInvitationsAdmin.invitationsCreated']({ created: form.data?.created_invitations || 0, pending: form.data?.pending_invitations || 0 })}
+					{m['eventInvitationsAdmin.invitationsCreated']({
+						created: form.data?.created_invitations || 0,
+						pending: form.data?.pending_invitations || 0
+					})}
 				{:else if form.action === 'deleted'}
 					{m['eventInvitationsAdmin.invitationDeleted']()}
 				{:else if form.action === 'updated'}
@@ -829,7 +834,9 @@
 											{#if request.message}
 												<p class="truncate text-sm">{request.message}</p>
 											{:else}
-												<p class="text-sm italic text-muted-foreground">{m['eventInvitationsAdmin.noMessage']()}</p>
+												<p class="text-sm italic text-muted-foreground">
+													{m['eventInvitationsAdmin.noMessage']()}
+												</p>
 											{/if}
 										</td>
 
@@ -902,7 +909,9 @@
 												</div>
 											{:else}
 												<span class="text-sm text-muted-foreground">
-													{request.status === 'approved' ? m['eventInvitationsAdmin.approved']() : m['eventInvitationsAdmin.rejected']()}
+													{request.status === 'approved'
+														? m['eventInvitationsAdmin.approved']()
+														: m['eventInvitationsAdmin.rejected']()}
 												</span>
 											{/if}
 										</td>
@@ -994,14 +1003,18 @@
 			<div class="space-y-3">
 				<div class="flex items-center justify-between">
 					<h3 class="text-lg font-semibold">
-						{m['eventInvitationsAdmin.registeredUsersTitle']({ count: data.registeredPagination.totalCount })}
+						{m['eventInvitationsAdmin.registeredUsersTitle']({
+							count: data.registeredPagination.totalCount
+						})}
 					</h3>
 					{#if selectedRegisteredIds.size > 0}
 						<div class="flex items-center gap-2">
 							<span class="text-sm text-muted-foreground">
 								{m['eventInvitationsAdmin.selected']({ count: selectedRegisteredIds.size })}
 							</span>
-							<Button size="sm" variant="outline" onclick={clearSelections}>{m['eventInvitationsAdmin.clear']()}</Button>
+							<Button size="sm" variant="outline" onclick={clearSelections}
+								>{m['eventInvitationsAdmin.clear']()}</Button
+							>
 						</div>
 					{/if}
 				</div>
@@ -1009,7 +1022,9 @@
 				{#if data.registeredInvitations.length === 0}
 					<div class="rounded-lg border bg-card p-8 text-center">
 						<UserPlus class="mx-auto mb-2 h-8 w-8 text-muted-foreground" aria-hidden="true" />
-						<p class="text-sm text-muted-foreground">{m['eventInvitationsAdmin.noRegisteredInvitations']()}</p>
+						<p class="text-sm text-muted-foreground">
+							{m['eventInvitationsAdmin.noRegisteredInvitations']()}
+						</p>
 					</div>
 				{:else}
 					<div class="overflow-hidden rounded-lg border bg-card">
@@ -1108,7 +1123,9 @@
 											</td>
 
 											<!-- Tier -->
-											<td class="px-4 py-4 text-sm">{invitation.tier?.name || m['eventInvitationsAdmin.noTier']()}</td>
+											<td class="px-4 py-4 text-sm"
+												>{invitation.tier?.name || m['eventInvitationsAdmin.noTier']()}</td
+											>
 
 											<!-- Properties -->
 											<td class="px-4 py-4">
@@ -1218,14 +1235,18 @@
 			<div class="space-y-3">
 				<div class="flex items-center justify-between">
 					<h3 class="text-lg font-semibold">
-						{m['eventInvitationsAdmin.pendingUsersTitle']({ count: data.pendingPagination.totalCount })}
+						{m['eventInvitationsAdmin.pendingUsersTitle']({
+							count: data.pendingPagination.totalCount
+						})}
 					</h3>
 					{#if selectedPendingIds.size > 0}
 						<div class="flex items-center gap-2">
 							<span class="text-sm text-muted-foreground">
 								{m['eventInvitationsAdmin.selected']({ count: selectedPendingIds.size })}
 							</span>
-							<Button size="sm" variant="outline" onclick={clearSelections}>{m['eventInvitationsAdmin.clear']()}</Button>
+							<Button size="sm" variant="outline" onclick={clearSelections}
+								>{m['eventInvitationsAdmin.clear']()}</Button
+							>
 						</div>
 					{/if}
 				</div>
@@ -1305,7 +1326,9 @@
 											<td class="px-4 py-4 text-sm font-medium">{invitation.email}</td>
 
 											<!-- Tier -->
-											<td class="px-4 py-4 text-sm">{invitation.tier?.name || m['eventInvitationsAdmin.noTier']()}</td>
+											<td class="px-4 py-4 text-sm"
+												>{invitation.tier?.name || m['eventInvitationsAdmin.noTier']()}</td
+											>
 
 											<!-- Properties -->
 											<td class="px-4 py-4">
@@ -1501,7 +1524,9 @@
 
 			<!-- Email addresses with tag input -->
 			<div>
-				<label class="block text-sm font-medium">{m['eventInvitationsAdmin.emailAddressesLabel']()}</label>
+				<label class="block text-sm font-medium"
+					>{m['eventInvitationsAdmin.emailAddressesLabel']()}</label
+				>
 				<div
 					class="mt-1 flex min-h-[80px] flex-wrap gap-2 rounded-md border-2 border-gray-300 bg-white p-2 transition-colors focus-within:border-primary focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 dark:border-gray-600 dark:bg-gray-800"
 				>
@@ -1526,7 +1551,9 @@
 						onkeydown={handleEmailKeydown}
 						onblur={handleEmailBlur}
 						onpaste={handleEmailPaste}
-						placeholder={emailTags.length === 0 ? m['eventInvitationsAdmin.emailPlaceholder']() : ''}
+						placeholder={emailTags.length === 0
+							? m['eventInvitationsAdmin.emailPlaceholder']()
+							: ''}
 						class="min-w-[200px] flex-1 border-0 bg-transparent p-1 text-sm outline-none placeholder:text-muted-foreground dark:text-gray-100"
 					/>
 				</div>
@@ -1591,7 +1618,9 @@
 					maxlength="500"
 					class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
 				></textarea>
-				<p class="mt-1 text-xs text-muted-foreground">{m['eventInvitationsAdmin.charactersCount']({ count: invitationMessage.length })}</p>
+				<p class="mt-1 text-xs text-muted-foreground">
+					{m['eventInvitationsAdmin.charactersCount']({ count: invitationMessage.length })}
+				</p>
 			</div>
 
 			<!-- Invitation properties -->
@@ -1676,9 +1705,13 @@
 			<Dialog.Description>
 				{#if editingInvitation}
 					{#if editingType === 'registered' && 'user' in editingInvitation}
-						{m['eventInvitationsAdmin.editDialogDescriptionUser']({ userName: getUserDisplayName(editingInvitation.user) })}
+						{m['eventInvitationsAdmin.editDialogDescriptionUser']({
+							userName: getUserDisplayName(editingInvitation.user)
+						})}
 					{:else if editingType === 'pending' && 'email' in editingInvitation}
-						{m['eventInvitationsAdmin.editDialogDescriptionEmail']({ email: editingInvitation.email })}
+						{m['eventInvitationsAdmin.editDialogDescriptionEmail']({
+							email: editingInvitation.email
+						})}
 					{/if}
 				{/if}
 			</Dialog.Description>
@@ -1759,7 +1792,9 @@
 						class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
 					></textarea>
 					<p class="mt-1 text-xs text-muted-foreground">
-						{m['eventInvitationsAdmin.charactersCount']({ count: editFormData.custom_message.length })}
+						{m['eventInvitationsAdmin.charactersCount']({
+							count: editFormData.custom_message.length
+						})}
 					</p>
 				</div>
 
@@ -1849,7 +1884,10 @@
 		<Dialog.Header>
 			<Dialog.Title>{m['eventInvitationsAdmin.bulkEditDialogTitle']()}</Dialog.Title>
 			<Dialog.Description>
-				{m['eventInvitationsAdmin.bulkEditDialogDescription']({ count: totalSelected, plural: totalSelected === 1 ? '' : 's' })}
+				{m['eventInvitationsAdmin.bulkEditDialogDescription']({
+					count: totalSelected,
+					plural: totalSelected === 1 ? '' : 's'
+				})}
 			</Dialog.Description>
 		</Dialog.Header>
 
@@ -1937,7 +1975,9 @@
 					class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
 				></textarea>
 				<p class="mt-1 text-xs text-muted-foreground">
-					{m['eventInvitationsAdmin.charactersCount']({ count: bulkEditFormData.custom_message.length })}
+					{m['eventInvitationsAdmin.charactersCount']({
+						count: bulkEditFormData.custom_message.length
+					})}
 				</p>
 			</div>
 
@@ -2007,7 +2047,10 @@
 				</Button>
 				<Button type="submit">
 					<Edit class="mr-2 h-4 w-4" aria-hidden="true" />
-					{m['eventInvitationsAdmin.updateInvitations']({ count: totalSelected, plural: totalSelected === 1 ? '' : 's' })}
+					{m['eventInvitationsAdmin.updateInvitations']({
+						count: totalSelected,
+						plural: totalSelected === 1 ? '' : 's'
+					})}
 				</Button>
 			</Dialog.Footer>
 		</form>
@@ -2048,8 +2091,14 @@
 
 		{#if tokenToDelete}
 			<div class="space-y-2 text-sm">
-				<p><strong>{m['eventInvitationsAdmin.deleteTokenLink']()}</strong> {tokenToDelete.name || m['eventInvitationsAdmin.deleteTokenUnnamed']()}</p>
-				<p><strong>{m['eventInvitationsAdmin.deleteTokenUses']()}</strong> {m['eventInvitationsAdmin.deleteTokenUsesText']({ count: tokenToDelete.uses })}</p>
+				<p>
+					<strong>{m['eventInvitationsAdmin.deleteTokenLink']()}</strong>
+					{tokenToDelete.name || m['eventInvitationsAdmin.deleteTokenUnnamed']()}
+				</p>
+				<p>
+					<strong>{m['eventInvitationsAdmin.deleteTokenUses']()}</strong>
+					{m['eventInvitationsAdmin.deleteTokenUsesText']({ count: tokenToDelete.uses })}
+				</p>
 				<p class="text-muted-foreground">
 					{m['eventInvitationsAdmin.deleteTokenWarning']()}
 				</p>

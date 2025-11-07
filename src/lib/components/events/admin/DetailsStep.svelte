@@ -250,7 +250,9 @@
 				<div class="space-y-4 p-4">
 					<!-- RSVP Deadline -->
 					<div class="space-y-2">
-						<label for="rsvp-before" class="block text-sm font-medium"> {m['detailsStep.rsvpDeadline']()} </label>
+						<label for="rsvp-before" class="block text-sm font-medium">
+							{m['detailsStep.rsvpDeadline']()}
+						</label>
 						<input
 							id="rsvp-before"
 							type="datetime-local"
@@ -259,7 +261,9 @@
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						/>
 						<p class="text-xs text-muted-foreground">
-							{m['detailsStep.rsvpDeadlineHint']({ timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })}
+							{m['detailsStep.rsvpDeadlineHint']({
+								timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+							})}
 						</p>
 					</div>
 				</div>
@@ -290,7 +294,9 @@
 			<div class="space-y-4 p-4">
 				<!-- Max Attendees -->
 				<div class="space-y-2">
-					<label for="max-attendees" class="block text-sm font-medium"> {m['detailsStep.maxAttendees']()} </label>
+					<label for="max-attendees" class="block text-sm font-medium">
+						{m['detailsStep.maxAttendees']()}
+					</label>
 					<input
 						id="max-attendees"
 						type="number"
@@ -375,7 +381,9 @@
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						/>
 						<p class="text-xs text-muted-foreground">
-							{m['detailsStep.checkinOpensAtHint']({ timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })}
+							{m['detailsStep.checkinOpensAtHint']({
+								timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+							})}
 						</p>
 					</div>
 
@@ -392,7 +400,9 @@
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						/>
 						<p class="text-xs text-muted-foreground">
-							{m['detailsStep.checkinClosesAtHint']({ timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })}
+							{m['detailsStep.checkinClosesAtHint']({
+								timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+							})}
 						</p>
 					</div>
 				{/if}
@@ -496,7 +506,9 @@
 				<!-- Event Series -->
 				{#if eventSeries.length > 0}
 					<div class="space-y-2">
-						<label for="event-series" class="block text-sm font-medium"> {m['detailsStep.eventSeries']()} </label>
+						<label for="event-series" class="block text-sm font-medium">
+							{m['detailsStep.eventSeries']()}
+						</label>
 						<select
 							id="event-series"
 							value={formData.event_series_id || ''}

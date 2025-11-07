@@ -117,7 +117,9 @@
 		<div class="flex items-center justify-between border-b px-6 pb-4">
 			<div class="flex items-center gap-2">
 				<Filter class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-				<h2 id="mobile-organization-filter-title" class="text-lg font-semibold">{m['mobileOrganizationFilterSheet.filters']()}</h2>
+				<h2 id="mobile-organization-filter-title" class="text-lg font-semibold">
+					{m['mobileOrganizationFilterSheet.filters']()}
+				</h2>
 				{#if activeFilterCount > 0}
 					<span
 						class="rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground"
@@ -152,7 +154,9 @@
 
 				<!-- Search Input -->
 				<div class="space-y-2">
-					<label for="mobile-organization-search" class="text-sm font-medium">{m['mobileOrganizationFilterSheet.search']()}</label>
+					<label for="mobile-organization-search" class="text-sm font-medium"
+						>{m['mobileOrganizationFilterSheet.search']()}</label
+					>
 					<SearchInput
 						value={filters.search ?? ''}
 						onSearch={handleSearch}

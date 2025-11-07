@@ -505,7 +505,10 @@
 			<div class="flex-1">
 				<h2 id="potluck-heading" class="text-xl font-semibold">{m['potluck.heading']()}</h2>
 				<p class="mt-1 text-sm text-muted-foreground">
-					{stats.total} {m['common.plurals_items']()} • {stats.claimed} {m['common.text_claimed']()} • {stats.unclaimed} {m['common.text_stillNeeded']()}
+					{stats.total}
+					{m['common.plurals_items']()} • {stats.claimed}
+					{m['common.text_claimed']()} • {stats.unclaimed}
+					{m['common.text_stillNeeded']()}
 					{#if stats.yours > 0}
 						• {m['potluck.youBringing']()} {stats.yours}
 					{/if}
@@ -569,7 +572,9 @@
 						class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						<Plus class="h-4 w-4" aria-hidden="true" />
-						{permissions.hasManagePermission ? m['potluck.addItem']() : m['potluck.addItemYourBringing']()}
+						{permissions.hasManagePermission
+							? m['potluck.addItem']()
+							: m['potluck.addItemYourBringing']()}
 					</button>
 				{/if}
 

@@ -216,15 +216,15 @@
 
 				{#if showStaffWarning}
 					<div class="rounded-md bg-yellow-50 p-3 text-sm text-yellow-800">
-						<strong>{m['organizationTokenModal.securityWarning']()}</strong> Staff tokens grant sensitive permissions. Only share privately
-						(email, Slack DM, etc.).
+						<strong>{m['organizationTokenModal.securityWarning']()}</strong> Staff tokens grant sensitive
+						permissions. Only share privately (email, Slack DM, etc.).
 					</div>
 				{/if}
 
 				{#if showBothUncheckedWarning}
 					<div class="rounded-md bg-red-50 p-3 text-sm text-red-800">
-						<strong>{m['organizationTokenModal.error']()}</strong> At least one access type must be selected. The token must grant membership
-						or staff access.
+						<strong>{m['organizationTokenModal.error']()}</strong> At least one access type must be selected.
+						The token must grant membership or staff access.
 					</div>
 				{/if}
 			</div>

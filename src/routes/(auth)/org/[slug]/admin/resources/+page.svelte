@@ -116,7 +116,9 @@
 	<!-- Header -->
 	<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 		<div>
-			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">{m['orgAdmin.resources.pageTitle']()}</h1>
+			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
+				{m['orgAdmin.resources.pageTitle']()}
+			</h1>
 			<p class="text-muted-foreground">{m['orgAdmin.resources.pageDescription']()}</p>
 		</div>
 
@@ -167,7 +169,9 @@
 		>
 			<option value="all">{m['orgAdmin.resources.filters.visibility.allVisibility']()}</option>
 			<option value="public">{m['orgAdmin.resources.filters.visibility.public']()}</option>
-			<option value="members-only">{m['orgAdmin.resources.filters.visibility.membersOnly']()}</option>
+			<option value="members-only"
+				>{m['orgAdmin.resources.filters.visibility.membersOnly']()}</option
+			>
 			<option value="staff-only">{m['orgAdmin.resources.filters.visibility.staffOnly']()}</option>
 			<option value="private">{m['orgAdmin.resources.filters.visibility.private']()}</option>
 		</select>

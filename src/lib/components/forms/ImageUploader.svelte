@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { cn } from '$lib/utils/cn';
 	import { Upload, X } from 'lucide-svelte';
 
@@ -102,12 +103,12 @@
 		});
 
 		if (!isValid) {
-			return `Please select a valid image file (${accept})`;
+			return m['imageUploader.error_invalidFileType']({ accept });
 		}
 
 		// Check file size
 		if (maxSize && file.size > maxSize) {
-			return `File size must be less than ${formatFileSize(maxSize)}`;
+			return m['imageUploader.error_fileTooLarge']({ maxSize: formatFileSize(maxSize) });
 		}
 
 		return null;
@@ -208,7 +209,7 @@
 		<label for={inputId} class="block text-sm font-medium text-gray-900 dark:text-gray-100">
 			{label}
 			{#if required}
-				<span class="text-destructive" aria-label="required">*</span>
+				<span class="text-destructive" aria-label={m['imageUploader.required']()}>*</span>
 			{/if}
 		</label>
 	{/if}
@@ -223,7 +224,7 @@
 		>
 			<img
 				src={previewUrl}
-				alt="Preview"
+				alt={m['imageUploader.preview']()}
 				class="h-full w-full object-cover"
 				class:h-48={aspectRatio === 'wide'}
 			/>
@@ -233,7 +234,7 @@
 					type="button"
 					onclick={removeImage}
 					class="absolute right-2 top-2 rounded-full bg-destructive p-2 text-white shadow-lg transition-colors hover:bg-destructive/90 focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-2"
-					aria-label="Remove image"
+					aria-label={m['imageUploader.removeImage']()}
 				>
 					<X class="h-4 w-4" aria-hidden="true" />
 				</button>
@@ -257,7 +258,7 @@
 			ondragleave={handleDragLeave}
 			ondragover={handleDragOver}
 			ondrop={handleDrop}
-			aria-label="Upload image"
+			aria-label={m['imageUploader.uploadImage']()}
 			aria-describedby={error ? `${inputId}-error` : `${inputId}-hint`}
 			class={cn(
 				'flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition-all',
@@ -275,9 +276,9 @@
 
 			<p class="mb-1 text-sm font-medium text-gray-900 dark:text-gray-100">
 				{#if isDragging}
-					Drop image here
+					{m['imageUploader.dropImageHere']()}
 				{:else}
-					Click to upload or drag and drop
+					{m['imageUploader.clickToUpload']()}
 				{/if}
 			</p>
 
@@ -285,7 +286,8 @@
 				{accept
 					.split(',')
 					.map((type) => type.split('/')[1].toUpperCase())
-					.join(', ')} up to {formatFileSize(maxSize)}
+					.join(', ')}
+				{m['imageUploader.upTo']({ maxSize: formatFileSize(maxSize) })}
 			</p>
 		</div>
 	{/if}

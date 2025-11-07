@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { cn } from '$lib/utils/cn';
 
 	interface Props {
@@ -10,19 +11,19 @@
 
 	const statusConfig = {
 		active: {
-			label: 'Active',
+			label: m['tokenStatusBadge.active'](),
 			classes: 'bg-green-100 text-green-800 border-green-200'
 		},
 		expired: {
-			label: 'Expired',
+			label: m['tokenStatusBadge.expired'](),
 			classes: 'bg-red-100 text-red-800 border-red-200'
 		},
 		'limit-reached': {
-			label: 'Limit Reached',
+			label: m['tokenStatusBadge.limitReached'](),
 			classes: 'bg-yellow-100 text-yellow-800 border-yellow-200'
 		},
 		staff: {
-			label: 'Staff',
+			label: m['tokenStatusBadge.staff'](),
 			classes: 'bg-purple-100 text-purple-800 border-purple-200'
 		}
 	};

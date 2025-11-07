@@ -9,6 +9,7 @@
 		generateEventSeriesStructuredData,
 		toJsonLd
 	} from '$lib/utils/seo';
+	import * as m from '$lib/paraglide/messages.js';
 
 	let { data }: { data: PageData } = $props();
 
@@ -71,7 +72,10 @@
 		<meta property="og:image" content={metaTags.ogImage} />
 		<meta property="og:image:width" content="1200" />
 		<meta property="og:image:height" content="630" />
-		<meta property="og:image:alt" content={`${series.name} cover image`} />
+		<meta
+			property="og:image:alt"
+			content={m['eventSeriesDetailPage.coverImageAlt']({ seriesName: series.name })}
+		/>
 	{/if}
 	<meta property="og:url" content={metaTags.ogUrl || $page.url.href} />
 	<meta property="og:site_name" content="Revel" />
@@ -83,7 +87,10 @@
 	<meta name="twitter:description" content={metaTags.twitterDescription || metaTags.description} />
 	{#if metaTags.twitterImage}
 		<meta name="twitter:image" content={metaTags.twitterImage} />
-		<meta name="twitter:image:alt" content={`${series.name} cover image`} />
+		<meta
+			name="twitter:image:alt"
+			content={m['eventSeriesDetailPage.coverImageAlt']({ seriesName: series.name })}
+		/>
 	{/if}
 
 	<!-- Additional SEO meta tags -->
@@ -100,7 +107,11 @@
 		<!-- Cover Image or Gradient -->
 		<div class="relative h-48 w-full md:h-64 lg:h-80">
 			{#if coverUrl}
-				<img src={coverUrl} alt="{series.name} cover" class="h-full w-full object-cover" />
+				<img
+					src={coverUrl}
+					alt={m['eventSeriesDetailPage.coverImageAlt']({ seriesName: series.name })}
+					class="h-full w-full object-cover"
+				/>
 				<!-- Gradient overlay -->
 				<div
 					class="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60"
@@ -116,7 +127,9 @@
 				<div class="rounded-full bg-primary px-4 py-2 shadow-lg">
 					<div class="flex items-center gap-2">
 						<Repeat class="h-4 w-4 text-primary-foreground" aria-hidden="true" />
-						<span class="text-sm font-semibold text-primary-foreground">Event Series</span>
+						<span class="text-sm font-semibold text-primary-foreground"
+							>{m['eventSeriesDetailPage.badge_eventSeries']()}</span
+						>
 					</div>
 				</div>
 			</div>
@@ -132,7 +145,9 @@
 				class="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
 			>
 				<ArrowLeft class="h-4 w-4" aria-hidden="true" />
-				Back to {series.organization.name}
+				{m['eventSeriesDetailPage.backToOrganization']({
+					organizationName: series.organization.name
+				})}
 			</a>
 		</div>
 
@@ -143,14 +158,14 @@
 					class="rounded-lg border border-border bg-card p-4 shadow-sm"
 					aria-label="Series management actions"
 				>
-					<h3 class="mb-3 text-sm font-semibold">Manage Series</h3>
+					<h3 class="mb-3 text-sm font-semibold">{m['eventSeriesDetailPage.admin_title']()}</h3>
 					<div class="space-y-2">
 						<a
 							href="/org/{series.organization.slug}/admin/event-series/{series.id}/edit"
 							class="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 						>
 							<Settings class="h-4 w-4" aria-hidden="true" />
-							Edit Series
+							{m['eventSeriesDetailPage.admin_editButton']()}
 						</a>
 					</div>
 				</aside>
@@ -168,7 +183,7 @@
 							{#if logoUrl || orgLogoUrl}
 								<img
 									src={logoUrl || orgLogoUrl}
-									alt="{series.name} logo"
+									alt={m['eventSeriesDetailPage.coverImageAlt']({ seriesName: series.name })}
 									class="h-16 w-16 rounded-lg object-cover shadow-sm md:h-20 md:w-20"
 								/>
 							{:else}
@@ -189,7 +204,9 @@
 								href="/org/{series.organization.slug}"
 								class="mb-2 inline-block text-base font-medium text-primary hover:underline"
 							>
-								by {series.organization.name}
+								{m['eventSeriesDetailPage.byOrganization']({
+									organizationName: series.organization.name
+								})}
 							</a>
 
 							<!-- Tags -->
@@ -214,7 +231,9 @@
 						aria-labelledby="description-heading"
 						class="rounded-lg border bg-card p-6 md:p-8"
 					>
-						<h2 id="description-heading" class="sr-only">About {series.name}</h2>
+						<h2 id="description-heading" class="sr-only">
+							{m['eventSeriesDetailPage.description_heading']({ seriesName: series.name })}
+						</h2>
 						<div class="prose prose-slate dark:prose-invert max-w-none">
 							{@html series.description_html}
 						</div>
@@ -224,7 +243,9 @@
 						aria-labelledby="description-heading"
 						class="rounded-lg border bg-card p-6 md:p-8"
 					>
-						<h2 id="description-heading" class="sr-only">About {series.name}</h2>
+						<h2 id="description-heading" class="sr-only">
+							{m['eventSeriesDetailPage.description_heading']({ seriesName: series.name })}
+						</h2>
 						<div class="prose prose-slate dark:prose-invert max-w-none">
 							<p>{series.description}</p>
 						</div>
@@ -235,11 +256,12 @@
 				<section aria-labelledby="events-heading">
 					<div class="mb-6 flex flex-wrap items-end justify-between gap-4">
 						<div>
-							<h2 id="events-heading" class="text-2xl font-bold">Events in this Series</h2>
+							<h2 id="events-heading" class="text-2xl font-bold">
+								{m['eventSeriesDetailPage.events_heading']()}
+							</h2>
 							{#if totalCount > 0}
 								<p class="mt-1 text-sm text-muted-foreground">
-									{totalCount}
-									{totalCount === 1 ? 'event' : 'events'} total
+									{m['eventSeriesDetailPage.events_count']({ count: totalCount })}
 								</p>
 							{/if}
 						</div>
@@ -248,10 +270,14 @@
 						<a
 							href="?order_by={orderBy === '-start' ? 'start' : '-start'}"
 							class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-							aria-label={orderBy === '-start' ? 'Showing newest first' : 'Showing oldest first'}
+							aria-label={orderBy === '-start'
+								? m['eventSeriesDetailPage.sort_ariaLabel_newest']()
+								: m['eventSeriesDetailPage.sort_ariaLabel_oldest']()}
 						>
 							<ArrowDownUp class="h-4 w-4" aria-hidden="true" />
-							{orderBy === '-start' ? 'Newest First' : 'Oldest First'}
+							{orderBy === '-start'
+								? m['eventSeriesDetailPage.sort_newestFirst']()
+								: m['eventSeriesDetailPage.sort_oldestFirst']()}
 						</a>
 					</div>
 
@@ -259,9 +285,9 @@
 						<!-- Empty State -->
 						<div class="rounded-lg border bg-card p-8 text-center">
 							<Calendar class="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-							<h3 class="mb-2 text-lg font-semibold">No events yet</h3>
+							<h3 class="mb-2 text-lg font-semibold">{m['eventSeriesDetailPage.empty_title']()}</h3>
 							<p class="text-sm text-muted-foreground">
-								This series doesn't have any events scheduled yet. Check back later!
+								{m['eventSeriesDetailPage.empty_description']()}
 							</p>
 						</div>
 					{:else}
@@ -280,7 +306,7 @@
 							>
 								<!-- Results info -->
 								<p class="text-sm text-muted-foreground">
-									Showing page {currentPage} of {totalPages}
+									{m['eventSeriesDetailPage.pagination_showingPage']({ currentPage, totalPages })}
 								</p>
 
 								<!-- Pagination controls -->
@@ -291,16 +317,16 @@
 											class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 											aria-label="Go to previous page"
 										>
-											Previous
+											{m['eventSeriesDetailPage.pagination_previous']()}
 										</a>
 									{:else}
 										<button
 											type="button"
 											disabled
 											class="inline-flex h-10 cursor-not-allowed items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium opacity-50"
-											aria-label="Previous page (unavailable)"
+											aria-label={m['eventSeriesDetailPage.pagination_previousUnavailable']()}
 										>
-											Previous
+											{m['eventSeriesDetailPage.pagination_previous']()}
 										</button>
 									{/if}
 
@@ -308,7 +334,10 @@
 									<span
 										class="inline-flex h-10 items-center justify-center px-4 text-sm font-medium"
 									>
-										Page {currentPage} of {totalPages}
+										{m['eventSeriesDetailPage.pagination_pageIndicator']({
+											currentPage,
+											totalPages
+										})}
 									</span>
 
 									{#if hasNextPage}
@@ -317,16 +346,16 @@
 											class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 											aria-label="Go to next page"
 										>
-											Next
+											{m['eventSeriesDetailPage.pagination_next']()}
 										</a>
 									{:else}
 										<button
 											type="button"
 											disabled
 											class="inline-flex h-10 cursor-not-allowed items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium opacity-50"
-											aria-label="Next page (unavailable)"
+											aria-label={m['eventSeriesDetailPage.pagination_nextUnavailable']()}
 										>
-											Next
+											{m['eventSeriesDetailPage.pagination_next']()}
 										</button>
 									{/if}
 								</div>
@@ -341,14 +370,14 @@
 				<aside class="hidden lg:col-span-1 lg:block">
 					<div class="sticky top-4 space-y-6">
 						<div class="rounded-lg border border-border bg-card p-4 shadow-sm">
-							<h3 class="mb-3 text-sm font-semibold">Manage Series</h3>
+							<h3 class="mb-3 text-sm font-semibold">{m['eventSeriesDetailPage.admin_title']()}</h3>
 							<div class="space-y-2">
 								<a
 									href="/org/{series.organization.slug}/admin/event-series/{series.id}/edit"
 									class="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 								>
 									<Settings class="h-4 w-4" aria-hidden="true" />
-									Edit Series
+									{m['eventSeriesDetailPage.admin_editButton']()}
 								</a>
 							</div>
 						</div>

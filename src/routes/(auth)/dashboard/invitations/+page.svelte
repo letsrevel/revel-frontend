@@ -197,7 +197,9 @@
 		<div class="space-y-6">
 			<!-- Search Bar -->
 			<div>
-				<label for="invitations-search" class="sr-only">{m['dashboard.invitations.searchPlaceholder']()}</label>
+				<label for="invitations-search" class="sr-only"
+					>{m['dashboard.invitations.searchPlaceholder']()}</label
+				>
 				<input
 					id="invitations-search"
 					type="search"
@@ -271,7 +273,9 @@
 		<div class="space-y-6">
 			<!-- Search Bar -->
 			<div>
-				<label for="requests-search" class="sr-only">{m['dashboard.invitations.searchPlaceholder']()}</label>
+				<label for="requests-search" class="sr-only"
+					>{m['dashboard.invitations.searchPlaceholder']()}</label
+				>
 				<input
 					id="requests-search"
 					type="search"

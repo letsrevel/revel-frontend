@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
 	import type { ActionData } from './$types';
 	import { Trash2, AlertTriangle, Mail, Loader2, Download, Check } from 'lucide-svelte';
@@ -34,16 +35,16 @@
 </script>
 
 <svelte:head>
-	<title>Privacy & Data - Revel</title>
-	<meta name="description" content="Manage your privacy settings and data on Revel" />
+	<title>{m['accountPrivacyPage.pageTitle']()}</title>
+	<meta name="description" content={m['accountPrivacyPage.pageDescription']()} />
 </svelte:head>
 
 <div class="container mx-auto max-w-4xl px-4 py-8">
 	<!-- Page Header -->
 	<div class="mb-8">
-		<h1 class="text-3xl font-bold tracking-tight">Privacy & Data</h1>
+		<h1 class="text-3xl font-bold tracking-tight">{m['accountPrivacyPage.title']()}</h1>
 		<p class="mt-2 text-muted-foreground">
-			Manage your privacy settings and exercise your data rights
+			{m['accountPrivacyPage.subtitle']()}
 		</p>
 	</div>
 
@@ -57,15 +58,13 @@
 				<Mail class="h-6 w-6 flex-shrink-0 text-green-600 dark:text-green-400" aria-hidden="true" />
 				<div class="flex-1 space-y-2">
 					<p class="text-sm font-medium text-green-800 dark:text-green-200">
-						Deletion confirmation email sent
+						{m['accountPrivacyPage.deletionEmailSent']()}
 					</p>
 					<p class="text-sm text-green-700 dark:text-green-300">
-						We've sent a confirmation email to your registered email address. Click the link in the
-						email to permanently delete your account. The link will expire in 24 hours.
+						{m['accountPrivacyPage.deletionEmailBody']()}
 					</p>
 					<p class="text-xs text-green-600 dark:text-green-400">
-						If you didn't request this, you can safely ignore the email and your account will not be
-						deleted.
+						{m['accountPrivacyPage.deletionEmailIgnore']()}
 					</p>
 				</div>
 			</div>
@@ -88,10 +87,9 @@
 				<Download class="h-6 w-6 text-primary" aria-hidden="true" />
 			</div>
 			<div class="flex-1">
-				<h2 class="text-xl font-semibold">Export Your Data</h2>
+				<h2 class="text-xl font-semibold">{m['accountPrivacyPage.exportDataTitle']()}</h2>
 				<p class="mt-2 text-sm text-muted-foreground">
-					Request a complete copy of your Revel data in JSON format. This includes your profile,
-					event history, RSVPs, and organization memberships.
+					{m['accountPrivacyPage.exportDataDescription']()}
 				</p>
 
 				<!-- Export Success Message -->
@@ -107,7 +105,7 @@
 							/>
 							<div class="flex-1">
 								<p class="text-sm font-medium text-green-800 dark:text-green-200">
-									Data export request received
+									{m['accountPrivacyPage.exportRequestReceived']()}
 								</p>
 								<p class="mt-1 text-sm text-green-700 dark:text-green-300">
 									We'll email you a download link when your data export is ready. This usually takes
@@ -126,23 +124,23 @@
 				{/if}
 
 				<div class="mt-4">
-					<h3 class="text-sm font-medium">What's included:</h3>
+					<h3 class="text-sm font-medium">{m['accountPrivacyPage.whatsIncluded']()}</h3>
 					<ul class="mt-2 space-y-1 text-sm text-muted-foreground">
 						<li class="flex items-center gap-2">
 							<span class="text-primary">•</span>
-							Profile information and account settings
+							{m['accountPrivacyPage.export_profileInfo']()}
 						</li>
 						<li class="flex items-center gap-2">
 							<span class="text-primary">•</span>
-							Event RSVPs and ticket information
+							{m['accountPrivacyPage.export_eventRsvps']()}
 						</li>
 						<li class="flex items-center gap-2">
 							<span class="text-primary">•</span>
-							Questionnaire submissions and responses
+							{m['accountPrivacyPage.export_questionnaires']()}
 						</li>
 						<li class="flex items-center gap-2">
 							<span class="text-primary">•</span>
-							Organization memberships and roles
+							{m['accountPrivacyPage.export_organizations']()}
 						</li>
 					</ul>
 				</div>
@@ -168,17 +166,17 @@
 					>
 						{#if isExporting}
 							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-							<span>Requesting Export...</span>
+							<span>{m['accountPrivacyPage.requestingExport']()}</span>
 						{:else if exportSuccess}
 							<Check class="h-4 w-4" aria-hidden="true" />
-							<span>Export Requested</span>
+							<span>{m['accountPrivacyPage.exportRequested']()}</span>
 						{:else}
 							<Download class="h-4 w-4" aria-hidden="true" />
-							<span>Request Data Export</span>
+							<span>{m['accountPrivacyPage.requestDataExport']()}</span>
 						{/if}
 					</button>
 					<p class="mt-2 text-xs text-muted-foreground">
-						You can request a data export once every 24 hours
+						{m['accountPrivacyPage.exportLimitNote']()}
 					</p>
 				</form>
 			</div>
@@ -194,34 +192,36 @@
 				<AlertTriangle class="h-6 w-6 text-destructive" aria-hidden="true" />
 			</div>
 			<div class="flex-1">
-				<h2 class="text-xl font-semibold text-destructive">Danger Zone</h2>
+				<h2 class="text-xl font-semibold text-destructive">
+					{m['accountPrivacyPage.dangerZone']()}
+				</h2>
 				<p class="mt-2 text-sm text-muted-foreground">
 					Once you delete your account, there is no going back. All your data will be permanently
 					removed and cannot be recovered.
 				</p>
 
 				<div class="mt-6">
-					<h3 class="text-sm font-medium">What will be deleted:</h3>
+					<h3 class="text-sm font-medium">{m['accountPrivacyPage.whatWillBeDeleted']()}</h3>
 					<ul class="mt-2 space-y-1 text-sm text-muted-foreground">
 						<li class="flex items-center gap-2">
 							<span class="text-destructive">✗</span>
-							Your profile and account credentials
+							{m['accountPrivacyPage.delete_profileCredentials']()}
 						</li>
 						<li class="flex items-center gap-2">
 							<span class="text-destructive">✗</span>
-							All event RSVPs and tickets
+							{m['accountPrivacyPage.delete_rsvpsTickets']()}
 						</li>
 						<li class="flex items-center gap-2">
 							<span class="text-destructive">✗</span>
-							Questionnaire submissions and responses
+							{m['accountPrivacyPage.export_questionnaires']()}
 						</li>
 						<li class="flex items-center gap-2">
 							<span class="text-destructive">✗</span>
-							Organization memberships (if you're not an owner)
+							{m['accountPrivacyPage.delete_memberships']()}
 						</li>
 						<li class="flex items-center gap-2">
 							<span class="text-destructive">✗</span>
-							Uploaded files and avatar
+							{m['accountPrivacyPage.delete_files']()}
 						</li>
 					</ul>
 				</div>
@@ -233,7 +233,7 @@
 					class="mt-6 inline-flex h-10 items-center justify-center gap-2 rounded-md bg-destructive px-4 py-2 text-sm font-semibold text-destructive-foreground transition-colors hover:bg-destructive/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 				>
 					<Trash2 class="h-4 w-4" aria-hidden="true" />
-					Delete My Account
+					{m['accountPrivacyPage.deleteMyAccount']()}
 				</button>
 			</div>
 		</div>
@@ -264,7 +264,7 @@
 				</div>
 				<div class="flex-1">
 					<h2 id="deletion-modal-title" class="text-lg font-semibold">
-						Permanently Delete Account?
+						{m['accountPrivacyPage.modal_title']()}
 					</h2>
 					<p class="mt-1 text-sm text-muted-foreground">
 						This action cannot be undone. We'll send you a confirmation email to verify this
@@ -274,23 +274,23 @@
 			</div>
 
 			<div class="mb-6 space-y-2 rounded-md bg-destructive/5 p-4">
-				<p class="text-sm font-medium">The following will be permanently deleted:</p>
+				<p class="text-sm font-medium">{m['accountPrivacyPage.modal_listTitle']()}</p>
 				<ul class="space-y-1 text-sm text-muted-foreground">
 					<li class="flex items-center gap-2">
 						<span class="text-destructive">✗</span>
-						Your profile and account data
+						{m['accountPrivacyPage.modal_profileData']()}
 					</li>
 					<li class="flex items-center gap-2">
 						<span class="text-destructive">✗</span>
-						All event RSVPs and tickets
+						{m['accountPrivacyPage.delete_rsvpsTickets']()}
 					</li>
 					<li class="flex items-center gap-2">
 						<span class="text-destructive">✗</span>
-						Questionnaire submissions
+						{m['accountPrivacyPage.modal_questionnaires']()}
 					</li>
 					<li class="flex items-center gap-2">
 						<span class="text-destructive">✗</span>
-						Organization memberships
+						{m['accountPrivacyPage.modal_memberships']()}
 					</li>
 				</ul>
 			</div>
@@ -321,7 +321,7 @@
 						required
 					/>
 					<label for="confirm-deletion" class="text-sm">
-						I understand this action is permanent and cannot be reversed
+						{m['accountPrivacyPage.modal_confirmLabel']()}
 					</label>
 				</div>
 
@@ -342,9 +342,9 @@
 					>
 						{#if isSubmitting}
 							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-							<span>Sending...</span>
+							<span>{m['accountPrivacyPage.modal_sending']()}</span>
 						{:else}
-							<span>Send Confirmation Email</span>
+							<span>{m['accountPrivacyPage.modal_sendEmail']()}</span>
 						{/if}
 					</button>
 				</div>

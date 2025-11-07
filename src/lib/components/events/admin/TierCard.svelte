@@ -115,7 +115,8 @@
 				{#if tier.name === 'General Admission'}
 					<span
 						class="rounded bg-blue-100 px-2 py-1 text-xs text-blue-700 dark:bg-blue-950 dark:text-blue-300"
-						>{m['tierCard.default']()}</span>
+						>{m['tierCard.default']()}</span
+					>
 				{/if}
 			</div>
 
@@ -170,7 +171,9 @@
 			<!-- Manual Payment Instructions -->
 			{#if tier.manual_payment_instructions}
 				<div class="mt-3 rounded-md border border-border bg-muted/50 p-2">
-					<p class="text-xs font-medium text-muted-foreground">{m['tierCard.paymentInstructions']()}</p>
+					<p class="text-xs font-medium text-muted-foreground">
+						{m['tierCard.paymentInstructions']()}
+					</p>
 					<p class="mt-1 text-sm">{tier.manual_payment_instructions}</p>
 				</div>
 			{/if}

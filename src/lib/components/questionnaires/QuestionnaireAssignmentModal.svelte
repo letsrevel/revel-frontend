@@ -282,7 +282,9 @@
 					{#if isLoadingEvents}
 						<div class="flex items-center justify-center py-12">
 							<Loader2 class="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
-							<span class="ml-2 text-sm text-muted-foreground">{m['questionnaireAssignmentModal.loadingEvents']()}</span>
+							<span class="ml-2 text-sm text-muted-foreground"
+								>{m['questionnaireAssignmentModal.loadingEvents']()}</span
+							>
 						</div>
 					{:else if filteredEvents.length === 0}
 						<div class="py-12 text-center">
@@ -339,7 +341,8 @@
 				<div class="mx-6 mt-4 flex gap-2 rounded-md bg-blue-50 p-3 text-sm dark:bg-blue-950">
 					<Info class="h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" aria-hidden="true" />
 					<p class="text-blue-900 dark:text-blue-100">
-						{m['questionnaireAssignmentModal.assigningToSeries']()} <strong>{m['questionnaireAssignmentModal.allEvents']()}</strong> in that series.
+						{m['questionnaireAssignmentModal.assigningToSeries']()}
+						<strong>{m['questionnaireAssignmentModal.allEvents']()}</strong> in that series.
 					</p>
 				</div>
 
@@ -365,7 +368,9 @@
 					{#if isLoadingSeries}
 						<div class="flex items-center justify-center py-12">
 							<Loader2 class="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
-							<span class="ml-2 text-sm text-muted-foreground">{m['questionnaireAssignmentModal.loadingEventSeries']()}</span>
+							<span class="ml-2 text-sm text-muted-foreground"
+								>{m['questionnaireAssignmentModal.loadingEventSeries']()}</span
+							>
 						</div>
 					{:else if filteredSeries.length === 0}
 						<div class="py-12 text-center">
@@ -421,7 +426,9 @@
 					{selectedSeriesCount === 1 ? 'series' : 'series'} selected
 				</div>
 				<div class="flex gap-2">
-					<Button variant="outline" onclick={onClose} disabled={isSaving}>{m['questionnaireAssignmentModal.cancel']()}</Button>
+					<Button variant="outline" onclick={onClose} disabled={isSaving}
+						>{m['questionnaireAssignmentModal.cancel']()}</Button
+					>
 					<Button onclick={saveAssignments} disabled={!hasChanges || isSaving}>
 						{#if isSaving}
 							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />

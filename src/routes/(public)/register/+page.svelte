@@ -62,7 +62,9 @@
 		>
 			<!-- Email Field -->
 			<div class="space-y-2">
-				<label for="email" class="block text-sm font-medium"> {m['register.emailAddress']()} </label>
+				<label for="email" class="block text-sm font-medium">
+					{m['register.emailAddress']()}
+				</label>
 				<input
 					id="email"
 					name="email"
@@ -157,7 +159,9 @@
 						type="button"
 						onclick={() => (showConfirmPassword = !showConfirmPassword)}
 						class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-						aria-label={showConfirmPassword ? m['register.hidePassword']() : m['register.showPassword']()}
+						aria-label={showConfirmPassword
+							? m['register.hidePassword']()
+							: m['register.showPassword']()}
 					>
 						{#if showConfirmPassword}
 							<EyeOff class="h-4 w-4" aria-hidden="true" />

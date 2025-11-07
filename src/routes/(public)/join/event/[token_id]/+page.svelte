@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
@@ -33,7 +34,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to claim invitation');
+				throw new Error(m['joinEventPage.error_claimFailed']());
 			}
 
 			return response.data;
@@ -63,8 +64,11 @@
 </script>
 
 <svelte:head>
-	<title>Join {event.name} - Revel</title>
-	<meta name="description" content="You've been invited to {event.name}" />
+	<title>{m['joinEventPage.pageTitle']({ eventName: event.name })} - Revel</title>
+	<meta
+		name="description"
+		content={m['joinEventPage.pageDescription']({ eventName: event.name })}
+	/>
 </svelte:head>
 
 <div class="container mx-auto flex min-h-[80vh] items-center justify-center px-4 py-12">
@@ -77,7 +81,7 @@
 					class="mx-auto mb-4 h-32 w-full rounded-lg object-cover"
 				/>
 			{/if}
-			<CardTitle class="text-2xl">You've been invited!</CardTitle>
+			<CardTitle class="text-2xl">{m['joinEventPage.invitedTitle']()}</CardTitle>
 			<CardDescription class="text-lg">
 				<strong>{event.name}</strong>
 			</CardDescription>
@@ -89,7 +93,7 @@
 				<div class="flex items-start gap-2 text-sm">
 					<Calendar class="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
 					<div>
-						<div class="font-medium">When</div>
+						<div class="font-medium">{m['joinEventPage.whenLabel']()}</div>
 						<div class="text-muted-foreground">{formattedDate}</div>
 					</div>
 				</div>
@@ -98,7 +102,7 @@
 					<div class="flex items-start gap-2 text-sm">
 						<MapPin class="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
 						<div>
-							<div class="font-medium">Where</div>
+							<div class="font-medium">{m['joinEventPage.whereLabel']()}</div>
 							<div class="text-muted-foreground">
 								{event.city.name}{#if event.city.country}, {event.city.country}{/if}
 							</div>
@@ -110,7 +114,7 @@
 					<div class="flex items-start gap-2 text-sm">
 						<Ticket class="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
 						<div>
-							<div class="font-medium">Ticket Tier</div>
+							<div class="font-medium">{m['joinEventPage.ticketTierLabel']()}</div>
 							<div class="text-muted-foreground">{token.ticket_tier}</div>
 						</div>
 					</div>
@@ -120,11 +124,11 @@
 			<!-- Token Info -->
 			<div class="space-y-2 rounded-lg border p-3 text-sm">
 				<div class="flex items-center justify-between">
-					<span class="text-muted-foreground">Expires:</span>
+					<span class="text-muted-foreground">{m['joinEventPage.expiresLabel']()}</span>
 					<span class="font-medium">{expirationDisplay}</span>
 				</div>
 				<div class="flex items-center justify-between">
-					<span class="text-muted-foreground">Used:</span>
+					<span class="text-muted-foreground">{m['joinEventPage.usedLabel']()}</span>
 					<span class="font-medium">{usageDisplay}</span>
 				</div>
 			</div>
@@ -138,21 +142,21 @@
 
 			<!-- What you'll get -->
 			<div class="space-y-2">
-				<h3 class="font-semibold">What you'll get:</h3>
+				<h3 class="font-semibold">{m['joinEventPage.benefitsTitle']()}</h3>
 				<ul class="space-y-1 text-sm text-muted-foreground">
 					<li class="flex items-center gap-2">
 						<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
-						<span>Event invitation</span>
+						<span>{m['joinEventPage.benefit_invitation']()}</span>
 					</li>
 					{#if token.ticket_tier}
 						<li class="flex items-center gap-2">
 							<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
-							<span>Automatic ticket assignment</span>
+							<span>{m['joinEventPage.benefit_autoTicket']()}</span>
 						</li>
 					{/if}
 					<li class="flex items-center gap-2">
 						<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
-						<span>RSVP confirmation</span>
+						<span>{m['joinEventPage.benefit_rsvpConfirmation']()}</span>
 					</li>
 				</ul>
 			</div>
@@ -161,16 +165,16 @@
 			<Button size="lg" class="w-full" onclick={handleClaim} disabled={claimMutation.isPending}>
 				{#if claimMutation.isPending}
 					<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-					Claiming Invitation...
+					{m['joinEventPage.claimingButton']()}
 				{:else if !isAuthenticated}
-					Sign In to Claim
+					{m['joinEventPage.signInButton']()}
 				{:else}
-					Claim Invitation
+					{m['joinEventPage.claimButton']()}
 				{/if}
 			</Button>
 
 			<p class="text-center text-xs text-muted-foreground">
-				By claiming, you'll be invited to this event
+				{m['joinEventPage.agreementText']()}
 			</p>
 		</CardContent>
 	</Card>

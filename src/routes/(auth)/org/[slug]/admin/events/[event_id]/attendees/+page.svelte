@@ -316,13 +316,17 @@
 			<div
 				class="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950"
 			>
-				<p class="text-sm font-medium text-green-700 dark:text-green-300">{m['attendeesAdmin.statsYes']()}</p>
+				<p class="text-sm font-medium text-green-700 dark:text-green-300">
+					{m['attendeesAdmin.statsYes']()}
+				</p>
 				<p class="mt-1 text-2xl font-bold text-green-900 dark:text-green-100">{stats.yesCount}</p>
 			</div>
 			<div
 				class="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-950"
 			>
-				<p class="text-sm font-medium text-yellow-700 dark:text-yellow-300">{m['attendeesAdmin.statsMaybe']()}</p>
+				<p class="text-sm font-medium text-yellow-700 dark:text-yellow-300">
+					{m['attendeesAdmin.statsMaybe']()}
+				</p>
 				<p class="mt-1 text-2xl font-bold text-yellow-900 dark:text-yellow-100">
 					{stats.maybeCount}
 				</p>
@@ -330,7 +334,9 @@
 			<div
 				class="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950"
 			>
-				<p class="text-sm font-medium text-red-700 dark:text-red-300">{m['attendeesAdmin.statsNo']()}</p>
+				<p class="text-sm font-medium text-red-700 dark:text-red-300">
+					{m['attendeesAdmin.statsNo']()}
+				</p>
 				<p class="mt-1 text-2xl font-bold text-red-900 dark:text-red-100">{stats.noCount}</p>
 			</div>
 		</div>
@@ -522,7 +528,9 @@
 							</span>
 						</div>
 
-						<p class="text-xs text-muted-foreground">{m['attendeesAdmin.mobileRsvpdOn']({ date: formatDate(rsvp.created_at) })}</p>
+						<p class="text-xs text-muted-foreground">
+							{m['attendeesAdmin.mobileRsvpdOn']({ date: formatDate(rsvp.created_at) })}
+						</p>
 
 						<div class="flex gap-2 border-t border-border pt-3">
 							<button
@@ -656,12 +664,16 @@
 			</div>
 
 			<Dialog.Footer>
-				<Button variant="outline" onclick={closeEditModal}>{m['attendeesAdmin.editModalCancel']()}</Button>
+				<Button variant="outline" onclick={closeEditModal}
+					>{m['attendeesAdmin.editModalCancel']()}</Button
+				>
 				<Button
 					onclick={submitRsvpUpdate}
 					disabled={updateRsvpMutation.isPending || selectedStatus === (editingRsvp.status as any)}
 				>
-					{updateRsvpMutation.isPending ? m['attendeesAdmin.editModalUpdating']() : m['attendeesAdmin.editModalUpdate']()}
+					{updateRsvpMutation.isPending
+						? m['attendeesAdmin.editModalUpdating']()
+						: m['attendeesAdmin.editModalUpdate']()}
 				</Button>
 			</Dialog.Footer>
 		{/if}

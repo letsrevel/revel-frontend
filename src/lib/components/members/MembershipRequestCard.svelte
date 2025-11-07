@@ -165,37 +165,49 @@
 				<dl class="space-y-1 text-sm">
 					{#if request.user.first_name}
 						<div class="flex gap-2">
-							<dt class="font-medium text-muted-foreground">{m['membershipRequestCard.firstName']()}</dt>
+							<dt class="font-medium text-muted-foreground">
+								{m['membershipRequestCard.firstName']()}
+							</dt>
 							<dd class="text-foreground">{request.user.first_name}</dd>
 						</div>
 					{/if}
 					{#if request.user.last_name}
 						<div class="flex gap-2">
-							<dt class="font-medium text-muted-foreground">{m['membershipRequestCard.lastName']()}</dt>
+							<dt class="font-medium text-muted-foreground">
+								{m['membershipRequestCard.lastName']()}
+							</dt>
 							<dd class="text-foreground">{request.user.last_name}</dd>
 						</div>
 					{/if}
 					{#if request.user.preferred_name}
 						<div class="flex gap-2">
-							<dt class="font-medium text-muted-foreground">{m['membershipRequestCard.preferredName']()}</dt>
+							<dt class="font-medium text-muted-foreground">
+								{m['membershipRequestCard.preferredName']()}
+							</dt>
 							<dd class="text-foreground">{request.user.preferred_name}</dd>
 						</div>
 					{/if}
 					{#if request.user.pronouns}
 						<div class="flex gap-2">
-							<dt class="font-medium text-muted-foreground">{m['membershipRequestCard.pronouns']()}</dt>
+							<dt class="font-medium text-muted-foreground">
+								{m['membershipRequestCard.pronouns']()}
+							</dt>
 							<dd class="text-foreground">{request.user.pronouns}</dd>
 						</div>
 					{/if}
 					{#if request.user.email}
 						<div class="flex gap-2">
-							<dt class="font-medium text-muted-foreground">{m['membershipRequestCard.email']()}</dt>
+							<dt class="font-medium text-muted-foreground">
+								{m['membershipRequestCard.email']()}
+							</dt>
 							<dd class="truncate text-foreground">{request.user.email}</dd>
 						</div>
 					{/if}
 					{#if (request.user as any).phone_number}
 						<div class="flex gap-2">
-							<dt class="font-medium text-muted-foreground">{m['membershipRequestCard.phone']()}</dt>
+							<dt class="font-medium text-muted-foreground">
+								{m['membershipRequestCard.phone']()}
+							</dt>
 							<dd class="text-foreground">{(request.user as any).phone_number}</dd>
 						</div>
 					{/if}
@@ -216,7 +228,9 @@
 			{:else}
 				<div class="space-y-2">
 					<h4 class="text-sm font-semibold">{m['membershipRequestCard.message']()}</h4>
-					<p class="text-sm italic text-muted-foreground">{m['membershipRequestCard.noMessage']()}</p>
+					<p class="text-sm italic text-muted-foreground">
+						{m['membershipRequestCard.noMessage']()}
+					</p>
 				</div>
 			{/if}
 

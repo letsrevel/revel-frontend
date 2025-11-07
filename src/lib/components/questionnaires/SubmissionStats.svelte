@@ -33,7 +33,9 @@
 	<Card class="p-6">
 		<div class="flex items-center justify-between">
 			<div>
-				<p class="text-sm font-medium text-muted-foreground">{m['submissionStats.pendingReview']()}</p>
+				<p class="text-sm font-medium text-muted-foreground">
+					{m['submissionStats.pendingReview']()}
+				</p>
 				<p class="text-3xl font-bold">{pendingCount}</p>
 				<p class="mt-1 text-xs text-muted-foreground">{m['submissionStats.needAttention']()}</p>
 			</div>
@@ -61,7 +63,9 @@
 	<Card class="p-6">
 		<div class="flex items-center justify-between">
 			<div>
-				<p class="text-sm font-medium text-muted-foreground">{m['submissionStats.approvalRate']()}</p>
+				<p class="text-sm font-medium text-muted-foreground">
+					{m['submissionStats.approvalRate']()}
+				</p>
 				<p class="text-3xl font-bold">{approvalRate}%</p>
 				<p class="mt-1 text-xs text-muted-foreground">
 					{approvedCount}/{totalEvaluated} approved

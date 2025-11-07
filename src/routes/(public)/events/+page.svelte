@@ -195,7 +195,11 @@
 					>
 						<!-- Results info -->
 						<p class="text-sm text-muted-foreground" aria-live="polite">
-							{m['common.pagination_showing']()} {showingFrom}–{showingTo} {m['common.pagination_of']()} {totalCount} {m['common.plurals_events']()}
+							{m['common.pagination_showing']()}
+							{showingFrom}–{showingTo}
+							{m['common.pagination_of']()}
+							{totalCount}
+							{m['common.plurals_events']()}
 						</p>
 
 						<!-- Pagination controls -->
@@ -224,7 +228,10 @@
 								class="inline-flex h-10 items-center justify-center px-4 text-sm font-medium"
 								aria-current="page"
 							>
-								{m['common.pagination_page']()} {currentPage} {m['common.pagination_of']()} {totalPages}
+								{m['common.pagination_page']()}
+								{currentPage}
+								{m['common.pagination_of']()}
+								{totalPages}
 							</span>
 
 							{#if hasNextPage}

@@ -21,17 +21,34 @@
 	const navItems = [
 		{ href: `/org/${data.organization.slug}/admin`, label: m['orgAdmin.nav.dashboard']() },
 		{ href: `/org/${data.organization.slug}/admin/events`, label: m['orgAdmin.nav.events']() },
-		{ href: `/org/${data.organization.slug}/admin/event-series`, label: m['orgAdmin.nav.eventSeries']() },
+		{
+			href: `/org/${data.organization.slug}/admin/event-series`,
+			label: m['orgAdmin.nav.eventSeries']()
+		},
 		{
 			href: `/org/${data.organization.slug}/admin/members`,
 			label: m['orgAdmin.nav.members'](),
 			subItems: data.organization.accept_membership_requests
-				? [{ href: `/org/${data.organization.slug}/admin/members/requests`, label: m['orgAdmin.nav.memberRequests']() }]
+				? [
+						{
+							href: `/org/${data.organization.slug}/admin/members/requests`,
+							label: m['orgAdmin.nav.memberRequests']()
+						}
+					]
 				: undefined
 		},
-		{ href: `/org/${data.organization.slug}/admin/questionnaires`, label: m['orgAdmin.nav.questionnaires']() },
-		{ href: `/org/${data.organization.slug}/admin/resources`, label: m['orgAdmin.nav.resources']() },
-		{ href: `/org/${data.organization.slug}/admin/tokens`, label: m['orgAdmin.nav.invitationLinks']() },
+		{
+			href: `/org/${data.organization.slug}/admin/questionnaires`,
+			label: m['orgAdmin.nav.questionnaires']()
+		},
+		{
+			href: `/org/${data.organization.slug}/admin/resources`,
+			label: m['orgAdmin.nav.resources']()
+		},
+		{
+			href: `/org/${data.organization.slug}/admin/tokens`,
+			label: m['orgAdmin.nav.invitationLinks']()
+		},
 		{ href: `/org/${data.organization.slug}/admin/settings`, label: m['orgAdmin.nav.settings']() }
 	];
 
@@ -87,7 +104,9 @@
 
 					<h1 class="text-xl font-semibold">
 						{data.organization.name}
-						<span class="ml-2 text-sm font-normal text-muted-foreground">{m['orgAdmin.layout.adminBadge']()}</span>
+						<span class="ml-2 text-sm font-normal text-muted-foreground"
+							>{m['orgAdmin.layout.adminBadge']()}</span
+						>
 					</h1>
 				</div>
 
@@ -98,13 +117,18 @@
 							Owner
 						</span>
 					{:else if data.isStaff}
-						<span class="rounded-md bg-accent px-2 py-1 text-xs font-medium">{m['orgAdmin.layout.staffBadge']()}</span>
+						<span class="rounded-md bg-accent px-2 py-1 text-xs font-medium"
+							>{m['orgAdmin.layout.staffBadge']()}</span
+						>
 					{/if}
 				</div>
 			</div>
 
 			<!-- Breadcrumbs (Desktop only) -->
-			<nav class="hidden border-t py-3 md:block" aria-label={m['orgAdmin.layout.breadcrumbNavigation']()}>
+			<nav
+				class="hidden border-t py-3 md:block"
+				aria-label={m['orgAdmin.layout.breadcrumbNavigation']()}
+			>
 				<ol class="flex items-center gap-2 text-sm">
 					{#each breadcrumbs as crumb, i}
 						{#if i > 0}
@@ -149,10 +173,15 @@
 	<!-- Mobile Navigation -->
 	{#if mobileMenuOpen}
 		<div class="md:hidden">
-			<nav class="border-b bg-background px-4 py-3" aria-label={m['orgAdmin.layout.mobileAdminNavigation']()}>
+			<nav
+				class="border-b bg-background px-4 py-3"
+				aria-label={m['orgAdmin.layout.mobileAdminNavigation']()}
+			>
 				<!-- Breadcrumbs -->
 				<div class="mb-4 border-b pb-3">
-					<h2 class="mb-2 text-xs font-semibold uppercase text-muted-foreground">{m['orgAdmin.layout.navigationHeading']()}</h2>
+					<h2 class="mb-2 text-xs font-semibold uppercase text-muted-foreground">
+						{m['orgAdmin.layout.navigationHeading']()}
+					</h2>
 					<ol class="flex flex-wrap items-center gap-2 text-sm">
 						{#each breadcrumbs as crumb, i}
 							{#if i > 0}

@@ -156,7 +156,8 @@
 												class="flex-shrink-0"
 											>
 												<X class="h-4 w-4" />
-												<span class="sr-only">{m['questionEditor.removeOption']()} {index + 1}</span>
+												<span class="sr-only">{m['questionEditor.removeOption']()} {index + 1}</span
+												>
 											</Button>
 										{/if}
 									</div>
@@ -206,7 +207,8 @@
 					<!-- Free Text Settings -->
 					{#if question.type === 'free_text'}
 						<div class="space-y-2">
-							<Label for="llm-guidelines-{question.id}">{m['questionEditor.llmGuidelines']()}</Label>
+							<Label for="llm-guidelines-{question.id}">{m['questionEditor.llmGuidelines']()}</Label
+							>
 							<Textarea
 								id="llm-guidelines-{question.id}"
 								value={question.llmGuidelines || ''}

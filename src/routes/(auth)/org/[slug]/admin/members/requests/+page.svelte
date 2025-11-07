@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData, ActionData } from './$types';
 	import { enhance } from '$app/forms';
 	import { Users, Check, X, Calendar, AlertCircle } from 'lucide-svelte';
@@ -63,17 +64,19 @@
 </script>
 
 <svelte:head>
-	<title>Membership Requests - {data.organization.name} Admin | Revel</title>
-	<meta name="description" content="Manage membership requests" />
+	<title>{m['membershipRequestsPage.pageTitle']()} - {data.organization.name} Admin | Revel</title>
+	<meta name="description" content={m['membershipRequestsPage.pageDescription']()} />
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
 <div class="space-y-6">
 	<!-- Header -->
 	<div>
-		<h1 class="text-2xl font-bold tracking-tight md:text-3xl">Membership Requests</h1>
+		<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
+			{m['membershipRequestsPage.title']()}
+		</h1>
 		<p class="mt-1 text-sm text-muted-foreground">
-			Review and manage requests to join {data.organization.name}
+			{m['membershipRequestsPage.subtitle']({ organizationName: data.organization.name })}
 		</p>
 	</div>
 
@@ -85,7 +88,9 @@
 		>
 			<Check class="h-5 w-5 shrink-0" aria-hidden="true" />
 			<p class="text-sm font-medium">
-				Request {form.action === 'approved' ? 'approved' : 'rejected'} successfully.
+				{form.action === 'approved'
+					? m['membershipRequestsPage.success_approved']()
+					: m['membershipRequestsPage.success_rejected']()}
 			</p>
 		</div>
 	{/if}
@@ -113,7 +118,7 @@
 					: 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
 			)}
 		>
-			All
+			{m['membershipRequestsPage.filter_all']()}
 		</button>
 		<button
 			type="button"
@@ -125,7 +130,7 @@
 					: 'border border-yellow-600 text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-950'
 			)}
 		>
-			Pending
+			{m['membershipRequestsPage.filter_pending']()}
 		</button>
 		<button
 			type="button"
@@ -137,7 +142,7 @@
 					: 'border border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-950'
 			)}
 		>
-			Approved
+			{m['membershipRequestsPage.filter_approved']()}
 		</button>
 		<button
 			type="button"
@@ -149,7 +154,7 @@
 					: 'border border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-950'
 			)}
 		>
-			Rejected
+			{m['membershipRequestsPage.filter_rejected']()}
 		</button>
 	</div>
 
@@ -158,12 +163,12 @@
 		<!-- Empty State -->
 		<div class="rounded-lg border bg-card p-12 text-center">
 			<Users class="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-			<h3 class="mb-2 text-lg font-semibold">No membership requests</h3>
+			<h3 class="mb-2 text-lg font-semibold">{m['membershipRequestsPage.empty_title']()}</h3>
 			<p class="text-sm text-muted-foreground">
 				{#if activeStatusFilter}
-					No {activeStatusFilter} membership requests found.
+					{m['membershipRequestsPage.empty_description_filtered']({ status: activeStatusFilter })}
 				{:else}
-					There are no membership requests at this time.
+					{m['membershipRequestsPage.empty_description']()}
 				{/if}
 			</p>
 		</div>
@@ -177,27 +182,27 @@
 							<th
 								class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
 							>
-								User
+								{m['membershipRequestsPage.table_user']()}
 							</th>
 							<th
 								class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
 							>
-								Message
+								{m['membershipRequestsPage.table_message']()}
 							</th>
 							<th
 								class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
 							>
-								Status
+								{m['membershipRequestsPage.table_status']()}
 							</th>
 							<th
 								class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
 							>
-								Submitted
+								{m['membershipRequestsPage.table_submitted']()}
 							</th>
 							<th
 								class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground"
 							>
-								Actions
+								{m['membershipRequestsPage.table_actions']()}
 							</th>
 						</tr>
 					</thead>
@@ -238,7 +243,9 @@
 									{#if request.message}
 										<p class="truncate text-sm">{request.message}</p>
 									{:else}
-										<p class="text-sm italic text-muted-foreground">No message</p>
+										<p class="text-sm italic text-muted-foreground">
+											{m['membershipRequestsPage.noMessage']()}
+										</p>
 									{/if}
 								</td>
 
@@ -287,7 +294,7 @@
 														.last_name}"
 												>
 													<Check class="h-3.5 w-3.5" aria-hidden="true" />
-													Approve
+													{m['membershipRequestsPage.approveButton']()}
 												</button>
 											</form>
 
@@ -312,7 +319,7 @@
 														.last_name}"
 												>
 													<X class="h-3.5 w-3.5" aria-hidden="true" />
-													Reject
+													{m['membershipRequestsPage.rejectButton']()}
 												</button>
 											</form>
 										</div>
@@ -333,10 +340,14 @@
 		{#if data.pagination.totalPages > 1}
 			<div class="flex items-center justify-between">
 				<p class="text-sm text-muted-foreground">
-					Showing {(data.pagination.page - 1) * data.pagination.pageSize + 1} to {Math.min(
-						data.pagination.page * data.pagination.pageSize,
-						data.pagination.totalCount
-					)} of {data.pagination.totalCount} requests
+					{m['membershipRequestsPage.pagination_showing']({
+						from: (data.pagination.page - 1) * data.pagination.pageSize + 1,
+						to: Math.min(
+							data.pagination.page * data.pagination.pageSize,
+							data.pagination.totalCount
+						),
+						total: data.pagination.totalCount
+					})}
 				</p>
 
 				<div class="flex gap-2">
@@ -345,7 +356,7 @@
 							href="?page={data.pagination.page - 1}&page_size={data.pagination.pageSize}"
 							class="inline-flex items-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 						>
-							Previous
+							{m['membershipRequestsPage.pagination_previous']()}
 						</a>
 					{/if}
 
@@ -354,7 +365,7 @@
 							href="?page={data.pagination.page + 1}&page_size={data.pagination.pageSize}"
 							class="inline-flex items-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 						>
-							Next
+							{m['membershipRequestsPage.pagination_next']()}
 						</a>
 					{/if}
 				</div>

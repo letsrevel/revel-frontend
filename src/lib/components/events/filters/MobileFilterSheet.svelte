@@ -208,7 +208,9 @@
 		<div class="flex items-center justify-between border-b px-6 pb-4">
 			<div class="flex items-center gap-2">
 				<Filter class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-				<h2 id="mobile-filter-title" class="text-lg font-semibold">{m['common.filters_filters']()}</h2>
+				<h2 id="mobile-filter-title" class="text-lg font-semibold">
+					{m['common.filters_filters']()}
+				</h2>
 				{#if activeFilterCount > 0}
 					<span
 						class="rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground"
@@ -243,7 +245,9 @@
 
 				<!-- Search Input -->
 				<div class="space-y-2">
-					<label for="mobile-event-search" class="text-sm font-medium">{m['common.search_label']()}</label>
+					<label for="mobile-event-search" class="text-sm font-medium"
+						>{m['common.search_label']()}</label
+					>
 					<SearchInput
 						value={filters.search ?? ''}
 						onSearch={handleSearch}
@@ -307,7 +311,10 @@
 					onclick={handleApply}
 					class="rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				>
-					{m['filters.mobile.showResults']({ count: totalCount, eventPlural: totalCount === 1 ? 'event' : 'events' })}
+					{m['filters.mobile.showResults']({
+						count: totalCount,
+						eventPlural: totalCount === 1 ? 'event' : 'events'
+					})}
 				</button>
 			</div>
 		</div>

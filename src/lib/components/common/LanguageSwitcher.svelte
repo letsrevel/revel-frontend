@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { getLocale, setLocale, locales } from '$lib/paraglide/runtime.js';
 	import { invalidateAll } from '$app/navigation';
 	import { Globe } from 'lucide-svelte';
@@ -44,7 +45,7 @@
 		type="button"
 		onclick={() => (isOpen = !isOpen)}
 		class="flex items-center justify-center rounded-md p-2 text-2xl transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
-		aria-label="Select language: {currentLanguage.name}"
+		aria-label={m['languageSwitcher.selectLanguage']({ name: currentLanguage.name })}
 		aria-expanded={isOpen}
 		aria-haspopup="true"
 		title={currentLanguage.name}
@@ -85,7 +86,7 @@
 		type="button"
 		class="fixed inset-0 z-40"
 		onclick={() => (isOpen = false)}
-		aria-label="Close language menu"
+		aria-label={m['languageSwitcher.closeMenu']()}
 		tabindex="-1"
 	></button>
 {/if}

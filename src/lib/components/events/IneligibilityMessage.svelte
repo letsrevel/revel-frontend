@@ -99,16 +99,20 @@
 			// Map common reasons to friendly headers
 			if (reason.includes('Only members')) return m['ineligibilityMessage.membersOnly']();
 			if (reason.includes('invitation')) return m['ineligibilityMessage.invitationRequired']();
-			if (reason.includes('Questionnaire has not been filled')) return m['ineligibilityMessage.questionnaireRequired']();
-			if (reason.includes('Waiting for questionnaire')) return m['ineligibilityMessage.questionnaireUnderReview']();
+			if (reason.includes('Questionnaire has not been filled'))
+				return m['ineligibilityMessage.questionnaireRequired']();
+			if (reason.includes('Waiting for questionnaire'))
+				return m['ineligibilityMessage.questionnaireUnderReview']();
 			if (reason.includes('Questionnaire evaluation was insufficient'))
 				return m['ineligibilityMessage.questionnaireNotPassed']();
 			if (reason.includes('full')) return m['ineligibilityMessage.eventFull']();
 			if (reason.includes('Sold out')) return m['ineligibilityMessage.soldOut']();
 			if (reason.includes('not open')) return m['ineligibilityMessage.registrationNotOpen']();
 			if (reason.includes('finished')) return m['ineligibilityMessage.eventEnded']();
-			if (reason.includes('deadline has passed')) return m['ineligibilityMessage.rsvpDeadlinePassed']();
-			if (reason.includes('Tickets are not currently on sale')) return m['ineligibilityMessage.ticketsNotAvailable']();
+			if (reason.includes('deadline has passed'))
+				return m['ineligibilityMessage.rsvpDeadlinePassed']();
+			if (reason.includes('Tickets are not currently on sale'))
+				return m['ineligibilityMessage.ticketsNotAvailable']();
 
 			// Fallback: use the reason as-is
 			return reason;
@@ -116,8 +120,10 @@
 
 		// No reason provided, use next_step as hint
 		if (eligibility.next_step === 'become_member') return m['ineligibilityMessage.membersOnly']();
-		if (eligibility.next_step === 'request_invitation') return m['ineligibilityMessage.invitationRequired']();
-		if (eligibility.next_step === 'complete_questionnaire') return m['ineligibilityMessage.questionnaireRequired']();
+		if (eligibility.next_step === 'request_invitation')
+			return m['ineligibilityMessage.invitationRequired']();
+		if (eligibility.next_step === 'complete_questionnaire')
+			return m['ineligibilityMessage.questionnaireRequired']();
 		if (eligibility.next_step === 'join_waitlist') return m['ineligibilityMessage.eventFull']();
 
 		return m['ineligibilityMessage.notEligible']();
@@ -239,7 +245,9 @@
 					<ClipboardList class="h-4 w-4" aria-hidden="true" />
 					<p>
 						{eligibility.questionnaires_missing.length}
-						{eligibility.questionnaires_missing.length === 1 ? m['ineligibilityMessage.questionnaireRequired_singular']() : m['ineligibilityMessage.questionnaireRequired_plural']()}
+						{eligibility.questionnaires_missing.length === 1
+							? m['ineligibilityMessage.questionnaireRequired_singular']()
+							: m['ineligibilityMessage.questionnaireRequired_plural']()}
 					</p>
 				</div>
 			{/if}
@@ -261,7 +269,9 @@
 					<XCircle class="h-4 w-4" aria-hidden="true" />
 					<p>
 						{eligibility.questionnaires_failed.length}
-						{eligibility.questionnaires_failed.length === 1 ? m['ineligibilityMessage.questionnaireFailed_singular']() : m['ineligibilityMessage.questionnaireFailed_plural']()}
+						{eligibility.questionnaires_failed.length === 1
+							? m['ineligibilityMessage.questionnaireFailed_singular']()
+							: m['ineligibilityMessage.questionnaireFailed_plural']()}
 					</p>
 				</div>
 			{/if}

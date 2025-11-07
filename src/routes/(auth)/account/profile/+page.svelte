@@ -244,7 +244,8 @@
 		</div>
 
 		<div class="space-y-2">
-			<label for="language" class="block text-sm font-medium">{m['profile.language_label']()}</label>
+			<label for="language" class="block text-sm font-medium">{m['profile.language_label']()}</label
+			>
 			<select
 				id="language"
 				name="language"

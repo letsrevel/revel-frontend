@@ -90,7 +90,9 @@
 							: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'
 					)}
 					aria-pressed={isSelected}
-					aria-label={isSelected ? m['filters.tags.remove']({ tag }) : m['filters.tags.add']({ tag })}
+					aria-label={isSelected
+						? m['filters.tags.remove']({ tag })
+						: m['filters.tags.add']({ tag })}
 				>
 					{tag}
 					{#if isSelected}
@@ -102,7 +104,10 @@
 
 		{#if selectedTags.length > 0}
 			<p class="text-xs text-muted-foreground">
-				{m['filters.tags.count']({ count: selectedTags.length, tagPlural: selectedTags.length === 1 ? 'tag' : 'tags' })}
+				{m['filters.tags.count']({
+					count: selectedTags.length,
+					tagPlural: selectedTags.length === 1 ? 'tag' : 'tags'
+				})}
 			</p>
 		{/if}
 	{:else}

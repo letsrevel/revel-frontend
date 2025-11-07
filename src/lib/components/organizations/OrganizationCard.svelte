@@ -167,7 +167,8 @@
 						{/each}
 						{#if organization.tags.length > 3}
 							<span class="inline-block px-2 py-0.5 text-xs text-muted-foreground">
-								+{organization.tags.length - 3} {m['common.text_more']()}
+								+{organization.tags.length - 3}
+								{m['common.text_more']()}
 							</span>
 						{/if}
 					</div>

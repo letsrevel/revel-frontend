@@ -360,7 +360,9 @@
 								<Ticket class="h-6 w-6 text-blue-600 dark:text-blue-400" aria-hidden="true" />
 							</div>
 							<div>
-								<p class="text-sm font-medium text-muted-foreground">{m['dashboard.activityCards.activeTickets']()}</p>
+								<p class="text-sm font-medium text-muted-foreground">
+									{m['dashboard.activityCards.activeTickets']()}
+								</p>
 								<p class="text-3xl font-bold">{activeTicketsCount}</p>
 							</div>
 						</div>
@@ -372,7 +374,10 @@
 					<p class="mt-4 text-sm text-muted-foreground">
 						{m['dashboard.activityCards.activeTicketsDescription']({
 							count: activeTicketsCount,
-							ticketPlural: activeTicketsCount === 1 ? m['common.plurals_event']() : m['common.plurals_events']()
+							ticketPlural:
+								activeTicketsCount === 1
+									? m['common.plurals_event']()
+									: m['common.plurals_events']()
 						})}
 					</p>
 				</a>
@@ -393,7 +398,9 @@
 								/>
 							</div>
 							<div>
-								<p class="text-sm font-medium text-muted-foreground">{m['dashboard.activityCards.upcomingRsvps']()}</p>
+								<p class="text-sm font-medium text-muted-foreground">
+									{m['dashboard.activityCards.upcomingRsvps']()}
+								</p>
 								<p class="text-3xl font-bold">{upcomingRsvpsCount}</p>
 							</div>
 						</div>
@@ -405,7 +412,10 @@
 					<p class="mt-4 text-sm text-muted-foreground">
 						{m['dashboard.activityCards.upcomingRsvpsDescription']({
 							count: upcomingRsvpsCount,
-							eventPlural: upcomingRsvpsCount === 1 ? m['common.plurals_event']() : m['common.plurals_events']()
+							eventPlural:
+								upcomingRsvpsCount === 1
+									? m['common.plurals_event']()
+									: m['common.plurals_events']()
 						})}
 					</p>
 				</a>
@@ -423,7 +433,9 @@
 								<Mail class="h-6 w-6 text-purple-600 dark:text-purple-400" aria-hidden="true" />
 							</div>
 							<div>
-								<p class="text-sm font-medium text-muted-foreground">{m['dashboard.activityCards.pendingInvitations']()}</p>
+								<p class="text-sm font-medium text-muted-foreground">
+									{m['dashboard.activityCards.pendingInvitations']()}
+								</p>
 								<p class="text-3xl font-bold">{pendingInvitationsCount}</p>
 							</div>
 						</div>
@@ -532,7 +544,9 @@
 				<!-- Empty State -->
 				<div class="rounded-lg border bg-card p-8 text-center">
 					<Calendar class="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-					<h3 class="mb-2 text-lg font-semibold">{m['dashboard.emptyStates.noEventsAvailable']()}</h3>
+					<h3 class="mb-2 text-lg font-semibold">
+						{m['dashboard.emptyStates.noEventsAvailable']()}
+					</h3>
 					<p class="mb-4 text-sm text-muted-foreground">
 						{m['dashboard.emptyStates.noEventsHint']()}
 					</p>

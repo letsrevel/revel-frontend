@@ -250,7 +250,8 @@
 				<!-- Quantity -->
 				<div>
 					<label for="edit-quantity" class="mb-1.5 block text-sm font-medium">
-						{m['potluckItemEditModal.quantity']()} <span class="text-muted-foreground">{m['potluckItemEditModal.optional']()}</span>
+						{m['potluckItemEditModal.quantity']()}
+						<span class="text-muted-foreground">{m['potluckItemEditModal.optional']()}</span>
 					</label>
 					<input
 						id="edit-quantity"
@@ -279,7 +280,8 @@
 			<!-- Note -->
 			<div>
 				<label for="edit-note" class="mb-1.5 block text-sm font-medium">
-					{m['potluckItemEditModal.note']()} <span class="text-muted-foreground">{m['potluckItemEditModal.optional']()}</span>
+					{m['potluckItemEditModal.note']()}
+					<span class="text-muted-foreground">{m['potluckItemEditModal.optional']()}</span>
 				</label>
 				<textarea
 					id="edit-note"

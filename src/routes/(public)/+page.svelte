@@ -55,10 +55,7 @@
 
 	<!-- Additional SEO meta tags -->
 	<meta name="robots" content="index, follow" />
-	<meta
-		name="keywords"
-		content={m['home.keywords']()}
-	/>
+	<meta name="keywords" content={m['home.keywords']()} />
 </svelte:head>
 
 <div class="container mx-auto px-4 py-16">
@@ -70,7 +67,8 @@
 					<span class="flip-letter" style="transform: rotateY({rotation}deg)">
 						{currentLetter}
 					</span>
-				</span> su <span class="text-primary">Revel</span>
+				</span>
+				su <span class="text-primary">Revel</span>
 			{:else}
 				<!-- Other languages using i18n -->
 				{@html m['home.welcomeToRevel']({

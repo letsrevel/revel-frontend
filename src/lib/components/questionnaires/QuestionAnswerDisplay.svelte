@@ -36,7 +36,9 @@
 		if (answer.question_type === 'multiple_choice') {
 			const options = content as unknown as MultipleChoiceAnswerContent[];
 			const optionTexts = options.map((opt) => opt.option_text).filter(Boolean);
-			return optionTexts.length > 0 ? optionTexts.join(', ') : m['questionAnswerDisplay.noOptionSelected']();
+			return optionTexts.length > 0
+				? optionTexts.join(', ')
+				: m['questionAnswerDisplay.noOptionSelected']();
 		}
 
 		return m['questionAnswerDisplay.unknownAnswerFormat']();
@@ -103,10 +105,14 @@
 								{/each}
 							</div>
 						{:else}
-							<p class="text-sm italic text-muted-foreground">{m['questionAnswerDisplay.noOptionSelected']()}</p>
+							<p class="text-sm italic text-muted-foreground">
+								{m['questionAnswerDisplay.noOptionSelected']()}
+							</p>
 						{/if}
 					{:else}
-						<p class="text-sm italic text-muted-foreground">{m['questionAnswerDisplay.unknownAnswerFormat']()}</p>
+						<p class="text-sm italic text-muted-foreground">
+							{m['questionAnswerDisplay.unknownAnswerFormat']()}
+						</p>
 					{/if}
 				</div>
 			</div>

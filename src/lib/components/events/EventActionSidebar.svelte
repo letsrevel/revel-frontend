@@ -278,7 +278,9 @@
 				{#if shouldShowEligibility && userStatus && isEligibility(userStatus)}
 					<!-- Show eligibility status for ticketed events -->
 					<div>
-						<h3 class="mb-2 text-sm font-semibold">{m['eventActionSidebar.eligibilityStatus']()}</h3>
+						<h3 class="mb-2 text-sm font-semibold">
+							{m['eventActionSidebar.eligibilityStatus']()}
+						</h3>
 						<EligibilityStatusDisplay
 							eligibility={userStatus}
 							eventId={event.id}

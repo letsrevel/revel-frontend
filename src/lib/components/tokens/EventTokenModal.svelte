@@ -355,7 +355,9 @@
 									class="mt-0.5 h-4 w-4 rounded border-gray-300"
 								/>
 								<div class="flex-1">
-									<Label for="waives-deadline" class="font-normal">{m['eventTokenModal.waiveDeadline']()}</Label>
+									<Label for="waives-deadline" class="font-normal"
+										>{m['eventTokenModal.waiveDeadline']()}</Label
+									>
 									<p class="text-xs text-muted-foreground">
 										Users can RSVP even after the RSVP deadline has passed
 									</p>

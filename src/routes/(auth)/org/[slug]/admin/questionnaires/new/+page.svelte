@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -170,17 +171,17 @@
 		errors = {};
 
 		if (!name.trim()) {
-			errors.name = 'Questionnaire name is required';
+			errors.name = m['questionnaireNewPage.error_nameRequired']();
 		}
 
 		if (questions.length === 0) {
-			errors.questions = 'Add at least one question';
+			errors.questions = m['questionnaireNewPage.error_noQuestions']();
 		}
 
 		// Validate each question has text
 		const invalidQuestions = questions.filter((q) => !q.text.trim());
 		if (invalidQuestions.length > 0) {
-			errors.questions = 'All questions must have text';
+			errors.questions = m['questionnaireNewPage.error_questionsNeedText']();
 		}
 
 		// Validate multiple choice questions have at least 2 options
@@ -190,7 +191,7 @@
 				(!q.options || q.options.filter((o) => o.text.trim()).length < 2)
 		);
 		if (invalidMC.length > 0) {
-			errors.questions = 'Multiple choice questions must have at least 2 options';
+			errors.questions = m['questionnaireNewPage.error_mcNeedsTwoOptions']();
 		}
 
 		return Object.keys(errors).length === 0;
@@ -283,7 +284,7 @@
 </script>
 
 <svelte:head>
-	<title>Create Questionnaire - {data.organization.name} Admin</title>
+	<title>{m['questionnaireNewPage.pageTitle']()} - {data.organization.name} Admin</title>
 </svelte:head>
 
 <!-- Header -->
@@ -298,7 +299,7 @@
 		Back to Questionnaires
 	</Button>
 
-	<h1 class="text-3xl font-bold tracking-tight">Create Questionnaire</h1>
+	<h1 class="text-3xl font-bold tracking-tight">{m['questionnaireNewPage.title']()}</h1>
 	<p class="mt-2 text-sm text-muted-foreground">
 		Create an admission form, membership application, or survey for your events
 	</p>
@@ -309,20 +310,20 @@
 	<!-- Basic Information -->
 	<Card>
 		<CardHeader>
-			<CardTitle>Basic Information</CardTitle>
-			<CardDescription>Set up the questionnaire name and type</CardDescription>
+			<CardTitle>{m['questionnaireNewPage.basicInfoTitle']()}</CardTitle>
+			<CardDescription>{m['questionnaireNewPage.basicInfoDescription']()}</CardDescription>
 		</CardHeader>
 		<CardContent class="space-y-4">
 			<!-- Name -->
 			<div class="space-y-2">
 				<Label for="name">
-					Questionnaire Name
+					{m['questionnaireNewPage.nameLabel']()}
 					<span class="text-destructive">*</span>
 				</Label>
 				<Input
 					id="name"
 					bind:value={name}
-					placeholder="e.g., Membership Application 2025"
+					placeholder={m['questionnaireNewPage.namePlaceholder']()}
 					class={errors.name ? 'border-destructive' : ''}
 				/>
 				{#if errors.name}
@@ -413,7 +414,7 @@
 			<!-- Evaluation Mode -->
 			<div class="space-y-2">
 				<Label for="evaluation-mode">
-					Evaluation Mode
+					{m['questionnaireNewPage.evaluationModeLabel']()}
 					<span class="text-destructive">*</span>
 				</Label>
 				<Select
@@ -465,8 +466,8 @@
 	<!-- Advanced Settings -->
 	<Card>
 		<CardHeader>
-			<CardTitle>Advanced Settings</CardTitle>
-			<CardDescription>Optional settings for questionnaire behavior</CardDescription>
+			<CardTitle>{m['questionnaireNewPage.advancedSettingsTitle']()}</CardTitle>
+			<CardDescription>{m['questionnaireNewPage.advancedSettingsDescription']()}</CardDescription>
 		</CardHeader>
 		<CardContent class="space-y-4">
 			<!-- Shuffle Options -->
@@ -478,7 +479,9 @@
 						bind:checked={shuffleQuestions}
 						class="h-4 w-4 rounded border-gray-300"
 					/>
-					<Label for="shuffle-questions" class="font-normal">Shuffle questions for each user</Label>
+					<Label for="shuffle-questions" class="font-normal"
+						>{m['questionnaireNewPage.shuffleQuestionsLabel']()}</Label
+					>
 				</div>
 				<div class="flex items-center space-x-2">
 					<input
@@ -487,7 +490,9 @@
 						bind:checked={shuffleSections}
 						class="h-4 w-4 rounded border-gray-300"
 					/>
-					<Label for="shuffle-sections" class="font-normal">Shuffle sections for each user</Label>
+					<Label for="shuffle-sections" class="font-normal"
+						>{m['questionnaireNewPage.shuffleSectionsLabel']()}</Label
+					>
 				</div>
 			</div>
 
@@ -566,7 +571,7 @@
 			<div class="flex items-center justify-between">
 				<div>
 					<CardTitle>Questions ({questions.length})</CardTitle>
-					<CardDescription>Add questions for users to answer</CardDescription>
+					<CardDescription>{m['questionnaireNewPage.questionsDescription']()}</CardDescription>
 				</div>
 				<div class="flex gap-2">
 					<Button
@@ -618,7 +623,7 @@
 	<!-- Actions -->
 	<div class="flex justify-end gap-3">
 		<Button href="/org/{data.organization.slug}/admin/questionnaires" variant="outline">
-			Cancel
+			{m['questionnaireNewPage.cancelButton']()}
 		</Button>
 		<Button onclick={saveQuestionnaire} disabled={isSaving}>
 			{isSaving ? 'Saving...' : 'Save Questionnaire'}

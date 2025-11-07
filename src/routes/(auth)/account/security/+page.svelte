@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { enhance, applyAction } from '$app/forms';
 	import { invalidate } from '$app/navigation';
 	import { Shield, CheckCircle, XCircle, AlertCircle, Copy, Check } from 'lucide-svelte';
@@ -67,7 +68,7 @@
 				})
 				.catch((err) => {
 					console.error('Failed to generate QR code:', err);
-					toast.error('Failed to generate QR code');
+					toast.error(m['accountSecurityPage.toast_qrCodeError']());
 				});
 		}
 	});
@@ -75,7 +76,7 @@
 	// Handle successful setup/disable
 	$effect(() => {
 		if (setupSuccess) {
-			toast.success(form?.message || '2FA enabled successfully!');
+			toast.success(form?.message || m['accountSecurityPage.toast_2faEnabled']());
 			showSetupFlow = false;
 			qrCodeDataUrl = '';
 			otpCode = '';
@@ -86,7 +87,7 @@
 
 	$effect(() => {
 		if (disableSuccess) {
-			toast.success(form?.message || '2FA disabled successfully!');
+			toast.success(form?.message || m['accountSecurityPage.toast_2faDisabled']());
 			showDisableFlow = false;
 			otpCode = '';
 			// Invalidate to refresh user data
@@ -102,12 +103,12 @@
 		try {
 			await navigator.clipboard.writeText(code);
 			manualEntryCopied = true;
-			toast.success('Code copied to clipboard');
+			toast.success(m['accountSecurityPage.toast_codeCopied']());
 			setTimeout(() => {
 				manualEntryCopied = false;
 			}, 2000);
 		} catch (err) {
-			toast.error('Failed to copy code');
+			toast.error(m['accountSecurityPage.toast_copyFailed']());
 		}
 	}
 
@@ -127,15 +128,15 @@
 </script>
 
 <svelte:head>
-	<title>Security Settings - Revel</title>
+	<title>{m['accountSecurityPage.pageTitle']()} - Revel</title>
 </svelte:head>
 
 <div class="container mx-auto max-w-4xl px-4 py-8">
 	<!-- Page Header -->
 	<div class="mb-8">
-		<h1 class="text-3xl font-bold">Security Settings</h1>
+		<h1 class="text-3xl font-bold">{m['accountSecurityPage.title']()}</h1>
 		<p class="mt-2 text-muted-foreground">
-			Manage your account security and two-factor authentication
+			{m['accountSecurityPage.subtitle']()}
 		</p>
 	</div>
 
@@ -151,9 +152,9 @@
 			<div class="flex-1">
 				<div class="flex items-center justify-between">
 					<div>
-						<h2 class="text-xl font-semibold">Two-Factor Authentication (2FA)</h2>
+						<h2 class="text-xl font-semibold">{m['accountSecurityPage.twoFactorAuth']()}</h2>
 						<p class="mt-1 text-sm text-muted-foreground">
-							Add an extra layer of security to your account using a TOTP authenticator app
+							{m['accountSecurityPage.twoFactorDescription']()}
 						</p>
 					</div>
 
@@ -165,10 +166,10 @@
 					>
 						{#if totpActive}
 							<CheckCircle class="h-4 w-4" aria-hidden="true" />
-							<span>Enabled</span>
+							<span>{m['accountSecurityPage.statusEnabled']()}</span>
 						{:else}
 							<XCircle class="h-4 w-4" aria-hidden="true" />
-							<span>Disabled</span>
+							<span>{m['accountSecurityPage.statusDisabled']()}</span>
 						{/if}
 					</div>
 				</div>
@@ -184,7 +185,7 @@
 									showDisableFlow = true;
 								}}
 							>
-								Disable 2FA
+								{m['accountSecurityPage.disable2FA']()}
 							</button>
 						{:else}
 							<form
@@ -211,7 +212,7 @@
 											console.log('[2FA Setup] Failure:', result.data);
 											await applyAction(result);
 											const errors = (result.data as any)?.errors;
-											toast.error(errors?.form || 'Failed to start 2FA setup');
+											toast.error(errors?.form || m['accountSecurityPage.toast_setupFailed']());
 										}
 									};
 								}}
@@ -221,7 +222,9 @@
 									disabled={isEnabling}
 									class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50"
 								>
-									{isEnabling ? 'Loading...' : 'Enable 2FA'}
+									{isEnabling
+										? m['accountSecurityPage.loading']()
+										: m['accountSecurityPage.enable2FA']()}
 								</button>
 							</form>
 						{/if}
@@ -231,24 +234,30 @@
 				<!-- Setup Flow -->
 				{#if showSetupFlow}
 					<div class="mt-6 rounded-lg border bg-muted/50 p-6">
-						<h3 class="font-semibold">Set up Two-Factor Authentication</h3>
+						<h3 class="font-semibold">{m['accountSecurityPage.setupTitle']()}</h3>
 
 						{#if provisioningUri}
 							<!-- Step 1: Scan QR Code -->
 							<div class="mt-4">
 								<p class="text-sm text-muted-foreground">
-									<span class="font-medium">Step 1:</span> Scan this QR code with your authenticator
-									app (Google Authenticator, Authy, 1Password, etc.)
+									<span class="font-medium">{m['accountSecurityPage.step1']()}</span>
+									{m['accountSecurityPage.step1Description']()}
 								</p>
 
 								{#if qrCodeDataUrl}
 									<div class="mt-4 flex justify-center">
-										<img src={qrCodeDataUrl} alt="QR code for 2FA setup" class="rounded-lg" />
+										<img
+											src={qrCodeDataUrl}
+											alt={m['accountSecurityPage.qrCodeAlt']()}
+											class="rounded-lg"
+										/>
 									</div>
 								{:else}
 									<div class="mt-4 flex justify-center">
 										<div class="flex h-64 w-64 items-center justify-center rounded-lg bg-muted">
-											<p class="text-sm text-muted-foreground">Generating QR code...</p>
+											<p class="text-sm text-muted-foreground">
+												{m['accountSecurityPage.generatingQR']()}
+											</p>
 										</div>
 									</div>
 								{/if}
@@ -257,10 +266,12 @@
 								{#if manualEntryCode}
 									<details class="mt-4">
 										<summary class="cursor-pointer text-sm font-medium text-primary">
-											Can't scan? Enter manually
+											{m['accountSecurityPage.cantScan']()}
 										</summary>
 										<div class="mt-2 rounded-md bg-background p-3">
-											<p class="text-xs text-muted-foreground">Enter this code in your app:</p>
+											<p class="text-xs text-muted-foreground">
+												{m['accountSecurityPage.enterCodeManually']()}
+											</p>
 											<div class="mt-2 flex items-center gap-2">
 												<code class="flex-1 rounded bg-muted px-3 py-2 font-mono text-sm">
 													{manualEntryCode}
@@ -269,7 +280,7 @@
 													type="button"
 													onclick={copyManualCode}
 													class="rounded-md p-2 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
-													aria-label="Copy code to clipboard"
+													aria-label={m['accountSecurityPage.copyCodeLabel']()}
 												>
 													{#if manualEntryCopied}
 														<Check class="h-4 w-4 text-green-600" aria-hidden="true" />
@@ -286,8 +297,8 @@
 							<!-- Step 2: Verify Code -->
 							<div class="mt-6">
 								<p class="text-sm text-muted-foreground">
-									<span class="font-medium">Step 2:</span> Enter the 6-digit code from your authenticator
-									app to verify
+									<span class="font-medium">{m['accountSecurityPage.step2']()}</span>
+									{m['accountSecurityPage.step2Description']()}
 								</p>
 
 								<form
@@ -300,7 +311,11 @@
 											await applyAction(result);
 											if (result.type === 'failure' && result.data) {
 												const errors = (result.data as any)?.errors;
-												toast.error(errors?.code || errors?.form || 'Verification failed');
+												toast.error(
+													errors?.code ||
+														errors?.form ||
+														m['accountSecurityPage.toast_verifyFailed']()
+												);
 											}
 										};
 									}}
@@ -320,14 +335,16 @@
 											disabled={otpCode.length !== 6 || isSubmitting}
 											class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50"
 										>
-											{isSubmitting ? 'Verifying...' : 'Verify and Enable 2FA'}
+											{isSubmitting
+												? m['accountSecurityPage.verifying']()
+												: m['accountSecurityPage.verifyButton']()}
 										</button>
 										<button
 											type="button"
 											onclick={cancelSetup}
 											class="rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 										>
-											Cancel
+											{m['accountSecurityPage.cancel']()}
 										</button>
 									</div>
 								</form>
@@ -336,7 +353,9 @@
 							<!-- Loading provisioning URI -->
 							<div class="mt-4 flex justify-center">
 								<div class="flex h-64 w-64 items-center justify-center rounded-lg bg-muted">
-									<p class="text-sm text-muted-foreground">Loading setup data...</p>
+									<p class="text-sm text-muted-foreground">
+										{m['accountSecurityPage.loadingSetupData']()}
+									</p>
 								</div>
 							</div>
 						{/if}
@@ -349,10 +368,11 @@
 						<div class="flex gap-3">
 							<AlertCircle class="h-5 w-5 text-destructive" aria-hidden="true" />
 							<div class="flex-1">
-								<h3 class="font-semibold text-destructive">Disable Two-Factor Authentication</h3>
+								<h3 class="font-semibold text-destructive">
+									{m['accountSecurityPage.disableTitle']()}
+								</h3>
 								<p class="mt-2 text-sm text-muted-foreground">
-									Enter your current 6-digit code from your authenticator app to disable 2FA. This
-									will make your account less secure.
+									{m['accountSecurityPage.disableDescription']()}
 								</p>
 
 								<form
@@ -365,7 +385,11 @@
 											await applyAction(result);
 											if (result.type === 'failure' && result.data) {
 												const errors = (result.data as any)?.errors;
-												toast.error(errors?.code || errors?.form || 'Failed to disable 2FA');
+												toast.error(
+													errors?.code ||
+														errors?.form ||
+														m['accountSecurityPage.toast_disableFailed']()
+												);
 											}
 										};
 									}}
@@ -385,14 +409,16 @@
 											disabled={otpCode.length !== 6 || isSubmitting}
 											class="rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-2 disabled:opacity-50"
 										>
-											{isSubmitting ? 'Disabling...' : 'Disable 2FA'}
+											{isSubmitting
+												? m['accountSecurityPage.disabling']()
+												: m['accountSecurityPage.disableButton']()}
 										</button>
 										<button
 											type="button"
 											onclick={cancelDisable}
 											class="rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 										>
-											Cancel
+											{m['accountSecurityPage.cancel']()}
 										</button>
 									</div>
 								</form>
@@ -406,23 +432,23 @@
 
 	<!-- Additional Security Tips -->
 	<div class="mt-6 rounded-lg border bg-muted/50 p-6">
-		<h3 class="font-semibold">Security Tips</h3>
+		<h3 class="font-semibold">{m['accountSecurityPage.securityTips']()}</h3>
 		<ul class="mt-3 space-y-2 text-sm text-muted-foreground">
 			<li class="flex gap-2">
 				<CheckCircle class="h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
-				<span>Use a strong, unique password for your Revel account</span>
+				<span>{m['accountSecurityPage.tip1']()}</span>
 			</li>
 			<li class="flex gap-2">
 				<CheckCircle class="h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
-				<span>Enable 2FA for an extra layer of security</span>
+				<span>{m['accountSecurityPage.tip2']()}</span>
 			</li>
 			<li class="flex gap-2">
 				<CheckCircle class="h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
-				<span>Never share your authentication codes with anyone</span>
+				<span>{m['accountSecurityPage.tip3']()}</span>
 			</li>
 			<li class="flex gap-2">
 				<CheckCircle class="h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
-				<span>Keep your authenticator app backed up securely</span>
+				<span>{m['accountSecurityPage.tip4']()}</span>
 			</li>
 		</ul>
 	</div>

@@ -93,8 +93,12 @@
 	<!-- Header -->
 	<div class="flex items-center justify-between">
 		<div>
-			<h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">{m['eventResourcesAdmin.attachResources']()}</h3>
-			<p class="mt-1 text-xs text-muted-foreground">{m['eventResourcesAdmin.makeResourcesAvailable']()}</p>
+			<h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">
+				{m['eventResourcesAdmin.attachResources']()}
+			</h3>
+			<p class="mt-1 text-xs text-muted-foreground">
+				{m['eventResourcesAdmin.makeResourcesAvailable']()}
+			</p>
 		</div>
 
 		<a
@@ -126,7 +130,9 @@
 			class="rounded-lg border-2 border-dashed border-gray-300 p-6 text-center dark:border-gray-600"
 		>
 			<FileText class="mx-auto h-8 w-8 text-muted-foreground" aria-hidden="true" />
-			<p class="mt-2 text-sm text-muted-foreground">{m['eventResourcesAdmin.noResourcesAvailable']()}</p>
+			<p class="mt-2 text-sm text-muted-foreground">
+				{m['eventResourcesAdmin.noResourcesAvailable']()}
+			</p>
 			<a
 				href="/org/{organizationSlug}/admin/resources"
 				class="mt-2 inline-flex items-center gap-1 text-sm text-primary hover:underline"

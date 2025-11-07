@@ -246,7 +246,9 @@
 	<!-- Header with Public Profile Button -->
 	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 		<div>
-			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">{m['orgAdmin.settings.pageTitle']()}</h1>
+			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
+				{m['orgAdmin.settings.pageTitle']()}
+			</h1>
 			<p class="mt-1 text-sm text-muted-foreground">
 				{m['orgAdmin.settings.pageDescription']()}
 			</p>
@@ -295,7 +297,9 @@
 		<div class="grid gap-4 md:grid-cols-2">
 			<!-- Name (Read-only) -->
 			<div>
-				<div class="block text-sm font-medium text-muted-foreground">{m['orgAdmin.settings.identity.orgNameLabel']()}</div>
+				<div class="block text-sm font-medium text-muted-foreground">
+					{m['orgAdmin.settings.identity.orgNameLabel']()}
+				</div>
 				<div class="mt-1 rounded-md border border-border bg-muted px-3 py-2 text-sm">
 					{data.organization.name}
 				</div>
@@ -306,11 +310,15 @@
 
 			<!-- Slug (Read-only) -->
 			<div>
-				<div class="block text-sm font-medium text-muted-foreground">{m['orgAdmin.settings.identity.urlSlugLabel']()}</div>
+				<div class="block text-sm font-medium text-muted-foreground">
+					{m['orgAdmin.settings.identity.urlSlugLabel']()}
+				</div>
 				<div class="mt-1 rounded-md border border-border bg-muted px-3 py-2 font-mono text-sm">
 					{data.organization.slug}
 				</div>
-				<p class="mt-1 text-xs text-muted-foreground">{m['orgAdmin.settings.identity.urlSlugHelp']()}</p>
+				<p class="mt-1 text-xs text-muted-foreground">
+					{m['orgAdmin.settings.identity.urlSlugHelp']()}
+				</p>
 			</div>
 		</div>
 	</section>
@@ -325,20 +333,28 @@
 		<div class="grid gap-4 md:grid-cols-2">
 			<!-- Platform Fee Percent -->
 			<div>
-				<div class="block text-sm font-medium text-muted-foreground">{m['orgAdmin.settings.platformFees.percentLabel']()}</div>
+				<div class="block text-sm font-medium text-muted-foreground">
+					{m['orgAdmin.settings.platformFees.percentLabel']()}
+				</div>
 				<div class="mt-1 rounded-md border border-border bg-muted px-3 py-2 text-sm">
 					{data.organization.platform_fee_percent}%
 				</div>
-				<p class="mt-1 text-xs text-muted-foreground">{m['orgAdmin.settings.platformFees.percentHelp']()}</p>
+				<p class="mt-1 text-xs text-muted-foreground">
+					{m['orgAdmin.settings.platformFees.percentHelp']()}
+				</p>
 			</div>
 
 			<!-- Platform Fee Fixed -->
 			<div>
-				<div class="block text-sm font-medium text-muted-foreground">{m['orgAdmin.settings.platformFees.fixedLabel']()}</div>
+				<div class="block text-sm font-medium text-muted-foreground">
+					{m['orgAdmin.settings.platformFees.fixedLabel']()}
+				</div>
 				<div class="mt-1 rounded-md border border-border bg-muted px-3 py-2 text-sm">
 					€{data.organization.platform_fee_fixed}
 				</div>
-				<p class="mt-1 text-xs text-muted-foreground">{m['orgAdmin.settings.platformFees.fixedHelp']()}</p>
+				<p class="mt-1 text-xs text-muted-foreground">
+					{m['orgAdmin.settings.platformFees.fixedHelp']()}
+				</p>
 			</div>
 		</div>
 
@@ -408,7 +424,9 @@
 					}
 				}}
 			/>
-			<p class="mt-1 text-xs text-muted-foreground">{m['orgAdmin.settings.branding.coverHelp']()}</p>
+			<p class="mt-1 text-xs text-muted-foreground">
+				{m['orgAdmin.settings.branding.coverHelp']()}
+			</p>
 		</div>
 	</section>
 
@@ -444,7 +462,11 @@
 
 			<!-- City -->
 			<div>
-				<CityAutocomplete value={selectedCity} onSelect={handleCitySelect} label={m['orgAdmin.settings.profile.cityLabel']()} />
+				<CityAutocomplete
+					value={selectedCity}
+					onSelect={handleCitySelect}
+					label={m['orgAdmin.settings.profile.cityLabel']()}
+				/>
 				<input type="hidden" name="city_id" value={selectedCity?.id || ''} />
 			</div>
 
@@ -452,7 +474,9 @@
 			<div>
 				<label for="address" class="block text-sm font-medium">
 					{m['orgAdmin.settings.profile.addressLabel']()}
-					<span class="text-muted-foreground">{m['orgAdmin.settings.profile.addressOptional']()}</span>
+					<span class="text-muted-foreground"
+						>{m['orgAdmin.settings.profile.addressOptional']()}</span
+					>
 				</label>
 				<input
 					type="text"
@@ -466,7 +490,9 @@
 
 			<!-- Visibility -->
 			<div>
-				<label for="visibility" class="block text-sm font-medium">{m['orgAdmin.settings.profile.visibilityLabel']()}</label>
+				<label for="visibility" class="block text-sm font-medium"
+					>{m['orgAdmin.settings.profile.visibilityLabel']()}</label
+				>
 				<select
 					id="visibility"
 					name="visibility"
@@ -474,7 +500,9 @@
 					class="mt-1 flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
 				>
 					<option value="public">{m['orgAdmin.settings.profile.visibilityPublic']()}</option>
-					<option value="members-only">{m['orgAdmin.settings.profile.visibilityMembersOnly']()}</option>
+					<option value="members-only"
+						>{m['orgAdmin.settings.profile.visibilityMembersOnly']()}</option
+					>
 					<option value="staff-only">{m['orgAdmin.settings.profile.visibilityStaffOnly']()}</option>
 				</select>
 				<p class="mt-1 text-xs text-muted-foreground">
@@ -517,7 +545,9 @@
 			<div>
 				<label for="contact_email" class="block text-sm font-medium">
 					{m['orgAdmin.settings.membership.contactEmailLabel']()}
-					<span class="text-muted-foreground">{m['orgAdmin.settings.membership.contactEmailOptional']()}</span>
+					<span class="text-muted-foreground"
+						>{m['orgAdmin.settings.membership.contactEmailOptional']()}</span
+					>
 				</label>
 				<input
 					type="email"
@@ -528,9 +558,13 @@
 					class="mt-1 flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
 				/>
 				{#if data.organization.contact_email_verified}
-					<p class="mt-1 text-xs text-green-600 dark:text-green-400">{m['orgAdmin.settings.membership.emailVerified']()}</p>
+					<p class="mt-1 text-xs text-green-600 dark:text-green-400">
+						{m['orgAdmin.settings.membership.emailVerified']()}
+					</p>
 				{:else if contactEmail}
-					<p class="mt-1 text-xs text-muted-foreground">{m['orgAdmin.settings.membership.emailNotVerified']()}</p>
+					<p class="mt-1 text-xs text-muted-foreground">
+						{m['orgAdmin.settings.membership.emailNotVerified']()}
+					</p>
 				{/if}
 				<p class="mt-1 text-xs text-muted-foreground">
 					{m['orgAdmin.settings.membership.contactEmailHelp']()}

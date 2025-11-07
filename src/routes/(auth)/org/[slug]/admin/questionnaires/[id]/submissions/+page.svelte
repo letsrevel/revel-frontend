@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -59,7 +60,7 @@
 	}
 
 	function formatDate(dateString: string | null | undefined): string {
-		if (!dateString) return 'Not submitted';
+		if (!dateString) return m['questionnaireSubmissionsPage.notSubmitted']();
 		return new Date(dateString).toLocaleDateString('en-US', {
 			year: 'numeric',
 			month: 'short',
@@ -70,14 +71,14 @@
 	}
 
 	function formatScore(score: string | number | null | undefined): string {
-		if (score === null || score === undefined) return 'N/A';
+		if (score === null || score === undefined) return m['questionnaireSubmissionsPage.scoreNA']();
 		const numScore = typeof score === 'string' ? parseFloat(score) : score;
 		return `${numScore}/100`;
 	}
 </script>
 
 <svelte:head>
-	<title>Submissions - Questionnaire - {data.organizationSlug}</title>
+	<title>{m['questionnaireSubmissionsPage.pageTitle']()} - {data.organizationSlug}</title>
 </svelte:head>
 
 <div class="container mx-auto max-w-7xl px-4 py-8">
@@ -88,10 +89,10 @@
 			class="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
 		>
 			<ArrowLeft class="h-4 w-4" />
-			Back to Questionnaires
+			{m['questionnaireSubmissionsPage.backToQuestionnaires']()}
 		</a>
-		<h1 class="text-3xl font-bold">Questionnaire Submissions</h1>
-		<p class="mt-2 text-muted-foreground">Review and evaluate submitted questionnaire responses</p>
+		<h1 class="text-3xl font-bold">{m['questionnaireSubmissionsPage.title']()}</h1>
+		<p class="mt-2 text-muted-foreground">{m['questionnaireSubmissionsPage.subtitle']()}</p>
 	</div>
 
 	<!-- Stats -->
@@ -107,42 +108,42 @@
 	<Card class="mb-6 p-6">
 		<!-- Evaluation Status Filter -->
 		<div class="mb-6">
-			<h3 class="mb-3 text-sm font-medium">Filter by Status</h3>
+			<h3 class="mb-3 text-sm font-medium">{m['questionnaireSubmissionsPage.filterByStatus']()}</h3>
 			<div class="flex flex-wrap gap-2">
 				<Button
 					variant={currentEvaluationStatus === '' ? 'default' : 'outline'}
 					size="sm"
 					onclick={() => setEvaluationStatusFilter('')}
 				>
-					All
+					{m['questionnaireSubmissionsPage.filter_all']()}
 				</Button>
 				<Button
 					variant={currentEvaluationStatus === 'pending review' ? 'secondary' : 'outline'}
 					size="sm"
 					onclick={() => setEvaluationStatusFilter('pending review')}
 				>
-					Pending Review
+					{m['questionnaireSubmissionsPage.filter_pendingReview']()}
 				</Button>
 				<Button
 					variant={currentEvaluationStatus === 'approved' ? 'default' : 'outline'}
 					size="sm"
 					onclick={() => setEvaluationStatusFilter('approved')}
 				>
-					Approved
+					{m['questionnaireSubmissionsPage.filter_approved']()}
 				</Button>
 				<Button
 					variant={currentEvaluationStatus === 'rejected' ? 'destructive' : 'outline'}
 					size="sm"
 					onclick={() => setEvaluationStatusFilter('rejected')}
 				>
-					Rejected
+					{m['questionnaireSubmissionsPage.filter_rejected']()}
 				</Button>
 			</div>
 		</div>
 
 		<!-- Sort Order -->
 		<div>
-			<h3 class="mb-3 text-sm font-medium">Sort By</h3>
+			<h3 class="mb-3 text-sm font-medium">{m['questionnaireSubmissionsPage.sortBy']()}</h3>
 			<div class="flex flex-wrap gap-2">
 				<Button
 					variant={currentOrderBy === '-submitted_at' ? 'default' : 'outline'}
@@ -150,7 +151,7 @@
 					onclick={() => setOrderBy('-submitted_at')}
 				>
 					<ArrowUpDown class="mr-2 h-4 w-4" />
-					Newest First
+					{m['questionnaireSubmissionsPage.sort_newestFirst']()}
 				</Button>
 				<Button
 					variant={currentOrderBy === 'submitted_at' ? 'default' : 'outline'}
@@ -158,7 +159,7 @@
 					onclick={() => setOrderBy('submitted_at')}
 				>
 					<ArrowUpDown class="mr-2 h-4 w-4" />
-					Oldest First
+					{m['questionnaireSubmissionsPage.sort_oldestFirst']()}
 				</Button>
 			</div>
 		</div>
@@ -167,12 +168,14 @@
 	<!-- Submissions List -->
 	{#if data.submissions.length === 0}
 		<Card class="p-12 text-center">
-			<p class="text-lg text-muted-foreground">No submissions found</p>
+			<p class="text-lg text-muted-foreground">
+				{m['questionnaireSubmissionsPage.noSubmissionsFound']()}
+			</p>
 			<p class="mt-2 text-sm text-muted-foreground">
 				{#if data.filters.search || data.filters.evaluationStatus}
-					Try adjusting your filters
+					{m['questionnaireSubmissionsPage.adjustFilters']()}
 				{:else}
-					No one has submitted this questionnaire yet
+					{m['questionnaireSubmissionsPage.noSubmissionsYet']()}
 				{/if}
 			</p>
 		</Card>
@@ -183,11 +186,21 @@
 				<table class="w-full">
 					<thead class="border-b bg-muted/50">
 						<tr>
-							<th class="px-6 py-4 text-left text-sm font-medium">Respondent</th>
-							<th class="px-6 py-4 text-left text-sm font-medium">Submitted</th>
-							<th class="px-6 py-4 text-left text-sm font-medium">Evaluation Status</th>
-							<th class="px-6 py-4 text-left text-sm font-medium">Score</th>
-							<th class="px-6 py-4 text-right text-sm font-medium">Actions</th>
+							<th class="px-6 py-4 text-left text-sm font-medium"
+								>{m['questionnaireSubmissionsPage.header_respondent']()}</th
+							>
+							<th class="px-6 py-4 text-left text-sm font-medium"
+								>{m['questionnaireSubmissionsPage.header_submitted']()}</th
+							>
+							<th class="px-6 py-4 text-left text-sm font-medium"
+								>{m['questionnaireSubmissionsPage.header_evaluationStatus']()}</th
+							>
+							<th class="px-6 py-4 text-left text-sm font-medium"
+								>{m['questionnaireSubmissionsPage.header_score']()}</th
+							>
+							<th class="px-6 py-4 text-right text-sm font-medium"
+								>{m['questionnaireSubmissionsPage.header_actions']()}</th
+							>
 						</tr>
 					</thead>
 					<tbody>
@@ -213,7 +226,7 @@
 										variant="outline"
 										size="sm"
 									>
-										Review
+										{m['questionnaireSubmissionsPage.reviewButton']()}
 									</Button>
 								</td>
 							</tr>
@@ -255,7 +268,7 @@
 						size="sm"
 						class="mt-4 w-full"
 					>
-						Review
+						{m['questionnaireSubmissionsPage.reviewButton']()}
 					</Button>
 				</Card>
 			{/each}

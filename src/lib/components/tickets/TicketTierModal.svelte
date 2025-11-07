@@ -187,7 +187,9 @@
 									<!-- Payment Method & Instructions -->
 									{#if (tier as any).manual_payment_instructions}
 										<div class="mt-2 rounded-md border border-border bg-muted/50 p-2 text-xs">
-											<p class="font-medium text-muted-foreground">{m['ticketTierModal.paymentInstructions']()}</p>
+											<p class="font-medium text-muted-foreground">
+												{m['ticketTierModal.paymentInstructions']()}
+											</p>
 											<p class="mt-1">{(tier as any).manual_payment_instructions}</p>
 										</div>
 									{/if}
@@ -196,14 +198,18 @@
 								<!-- Action Button -->
 								<div>
 									{#if !isAuthenticated}
-										<Button variant="secondary" size="sm" disabled>{m['ticketTierModal.signIn']()}</Button>
+										<Button variant="secondary" size="sm" disabled
+											>{m['ticketTierModal.signIn']()}</Button
+										>
 									{:else if hasTicket}
 										<Button variant="secondary" size="sm" disabled>
 											<Check class="mr-2 h-4 w-4" />
 											Claimed
 										</Button>
 									{:else if !isTierAvailable(tier)}
-										<Button variant="secondary" size="sm" disabled>{m['ticketTierModal.soldOut']()}</Button>
+										<Button variant="secondary" size="sm" disabled
+											>{m['ticketTierModal.soldOut']()}</Button
+										>
 									{:else if canCheckoutTier(tier)}
 										<Button variant="default" size="sm" onclick={() => handleTierClick(tier)}>
 											<Ticket class="mr-2 h-4 w-4" />

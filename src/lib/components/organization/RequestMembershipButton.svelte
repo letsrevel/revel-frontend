@@ -158,7 +158,9 @@
 							/>
 						</svg>
 					</div>
-					<Dialog.Title class="text-xl font-semibold">{m['requestMembershipButton.requestSubmitted']()}</Dialog.Title>
+					<Dialog.Title class="text-xl font-semibold"
+						>{m['requestMembershipButton.requestSubmitted']()}</Dialog.Title
+					>
 					<Dialog.Description class="mt-2">
 						Your membership request has been sent to {organizationName}. You'll be notified when
 						it's reviewed.

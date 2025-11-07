@@ -216,7 +216,9 @@
 			{#if isLoading}
 				<div class="flex items-center justify-center py-12">
 					<Loader2 class="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
-					<span class="ml-2 text-sm text-muted-foreground">{m['eventQuestionnaireAssignmentModal.loadingQuestionnaires']()}</span>
+					<span class="ml-2 text-sm text-muted-foreground"
+						>{m['eventQuestionnaireAssignmentModal.loadingQuestionnaires']()}</span
+					>
 				</div>
 			{:else if filteredQuestionnaires.length === 0}
 				<div class="py-12 text-center">
@@ -272,10 +274,15 @@
 			<div class="flex items-center justify-between">
 				<div class="text-sm text-muted-foreground">
 					<span class="font-medium text-foreground">{selectedIds.size}</span>
-					{selectedIds.size === 1 ? m['eventQuestionnaireAssignmentModal.selectedCount_singular']() : m['eventQuestionnaireAssignmentModal.selectedCount_plural']()} {m['eventQuestionnaireAssignmentModal.selected']()}
+					{selectedIds.size === 1
+						? m['eventQuestionnaireAssignmentModal.selectedCount_singular']()
+						: m['eventQuestionnaireAssignmentModal.selectedCount_plural']()}
+					{m['eventQuestionnaireAssignmentModal.selected']()}
 				</div>
 				<div class="flex gap-2">
-					<Button variant="outline" onclick={onClose} disabled={isSaving}>{m['eventQuestionnaireAssignmentModal.cancel']()}</Button>
+					<Button variant="outline" onclick={onClose} disabled={isSaving}
+						>{m['eventQuestionnaireAssignmentModal.cancel']()}</Button
+					>
 					<Button onclick={saveAssignments} disabled={!hasChanges() || isSaving}>
 						{#if isSaving}
 							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />

@@ -264,19 +264,24 @@
 					{@const detailsSubmitted = verifyQuery?.data?.details_submitted ?? stripeDetailsSubmitted}
 					<dl class="mt-3 grid grid-cols-2 gap-2 text-xs">
 						<div>
-							<dt class="font-medium text-muted-foreground">{m['stripeConnect.detailsSubmitted']()}</dt>
+							<dt class="font-medium text-muted-foreground">
+								{m['stripeConnect.detailsSubmitted']()}
+							</dt>
 							<dd class="mt-0.5 flex items-center gap-1">
 								{#if detailsSubmitted}
 									<Check class="h-3 w-3 text-green-600" aria-hidden="true" />
 									<span class="text-green-700 dark:text-green-300">{m['stripeConnect.yes']()}</span>
 								{:else}
 									<AlertCircle class="h-3 w-3 text-yellow-600" aria-hidden="true" />
-									<span class="text-yellow-700 dark:text-yellow-300">{m['stripeConnect.no']()}</span>
+									<span class="text-yellow-700 dark:text-yellow-300">{m['stripeConnect.no']()}</span
+									>
 								{/if}
 							</dd>
 						</div>
 						<div>
-							<dt class="font-medium text-muted-foreground">{m['stripeConnect.chargesEnabled']()}</dt>
+							<dt class="font-medium text-muted-foreground">
+								{m['stripeConnect.chargesEnabled']()}
+							</dt>
 							<dd class="mt-0.5 flex items-center gap-1">
 								{#if chargesEnabled}
 									<Check class="h-3 w-3 text-green-600" aria-hidden="true" />

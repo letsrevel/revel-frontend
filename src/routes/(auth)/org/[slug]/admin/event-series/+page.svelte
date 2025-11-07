@@ -46,7 +46,10 @@
 
 <svelte:head>
 	<title>{m['orgAdmin.eventSeries.pageTitle']()} - {organization.name} Admin | Revel</title>
-	<meta name="description" content={m['orgAdmin.eventSeries.metaDescription']({ orgName: organization.name })} />
+	<meta
+		name="description"
+		content={m['orgAdmin.eventSeries.metaDescription']({ orgName: organization.name })}
+	/>
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
@@ -54,7 +57,9 @@
 	<!-- Header -->
 	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 		<div>
-			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">{m['orgAdmin.eventSeries.pageTitle']()}</h1>
+			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
+				{m['orgAdmin.eventSeries.pageTitle']()}
+			</h1>
 			<p class="mt-1 text-sm text-muted-foreground">
 				{m['orgAdmin.eventSeries.pageDescription']()}
 			</p>
@@ -147,7 +152,9 @@
 							<div class="flex items-center gap-2 text-sm text-muted-foreground">
 								<Calendar class="h-4 w-4" aria-hidden="true" />
 								{getEventCount(series)}
-								{getEventCount(series) === 1 ? m['orgAdmin.eventSeries.eventCountSingular']() : m['orgAdmin.eventSeries.eventCountPlural']()}
+								{getEventCount(series) === 1
+									? m['orgAdmin.eventSeries.eventCountSingular']()
+									: m['orgAdmin.eventSeries.eventCountPlural']()}
 							</div>
 						{/if}
 

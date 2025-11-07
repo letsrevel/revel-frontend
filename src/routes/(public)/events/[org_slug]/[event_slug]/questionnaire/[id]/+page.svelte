@@ -10,6 +10,7 @@
 	import { RadioGroup, RadioGroupItem } from '$lib/components/ui/radio-group';
 	import { ArrowLeft, Check, Loader2, AlertCircle } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
+	import * as m from '$lib/paraglide/messages.js';
 	import { toast } from 'svelte-sonner';
 	import { SvelteMap } from 'svelte/reactivity';
 
@@ -51,7 +52,7 @@
 				if (q.is_mandatory) {
 					const answers = multipleChoiceAnswers.get(q.id);
 					if (!answers || answers.length === 0) {
-						validationErrors.set(q.id, 'This question is required');
+						validationErrors.set(q.id, m['questionnaireSubmissionPage.validation_required']());
 					}
 				}
 			});
@@ -60,13 +61,13 @@
 				if (q.is_mandatory) {
 					const answer = freeTextAnswers.get(q.id);
 					if (!answer || answer.trim().length === 0) {
-						validationErrors.set(q.id, 'This question is required');
+						validationErrors.set(q.id, m['questionnaireSubmissionPage.validation_required']());
 					}
 				}
 			});
 
 			if (validationErrors.size > 0) {
-				throw new Error('Please answer all required questions');
+				throw new Error(m['questionnaireSubmissionPage.validation_allRequired']());
 			}
 
 			// Build submission
@@ -96,7 +97,7 @@
 			});
 
 			if (error || !result) {
-				throw new Error('Failed to submit questionnaire. Please try again.');
+				throw new Error(m['questionnaireSubmissionPage.error_submitFailed']());
 			}
 
 			return result;
@@ -105,23 +106,22 @@
 			// Check if it's an evaluation response (has status field)
 			if ('status' in result) {
 				if (result.status === 'approved') {
-					toast.success('Questionnaire Approved!', {
-						description: 'Your submission has been approved. You can now RSVP to the event.'
+					toast.success(m['questionnaireSubmissionPage.toast_approved_title'](), {
+						description: m['questionnaireSubmissionPage.toast_approved_description']()
 					});
 				} else if (result.status === 'pending review') {
-					toast.info('Submission Under Review', {
-						description: 'Your responses are being reviewed by the organizers.'
+					toast.info(m['questionnaireSubmissionPage.toast_pending_title'](), {
+						description: m['questionnaireSubmissionPage.toast_pending_description']()
 					});
 				} else if (result.status === 'rejected') {
-					toast.error('Submission Not Approved', {
-						description:
-							'Your submission did not meet the requirements. You may be able to try again later.'
+					toast.error(m['questionnaireSubmissionPage.toast_rejected_title'](), {
+						description: m['questionnaireSubmissionPage.toast_rejected_description']()
 					});
 				}
 			} else {
 				// Simple submission response
-				toast.success('Questionnaire Submitted!', {
-					description: 'Your responses have been submitted successfully.'
+				toast.success(m['questionnaireSubmissionPage.toast_success_title'](), {
+					description: m['questionnaireSubmissionPage.toast_success_description']()
 				});
 			}
 
@@ -131,8 +131,8 @@
 			}, 2000);
 		},
 		onError: (error: Error) => {
-			toast.error('Submission Failed', {
-				description: error.message || 'An error occurred while submitting the questionnaire.'
+			toast.error(m['questionnaireSubmissionPage.toast_error_title'](), {
+				description: error.message || m['questionnaireSubmissionPage.toast_error_description']()
 			});
 		}
 	}));
@@ -176,7 +176,12 @@
 </script>
 
 <svelte:head>
-	<title>{data.questionnaire.name} - {data.event.name}</title>
+	<title
+		>{m['questionnaireSubmissionPage.pageTitle']({
+			questionnaireName: data.questionnaire.name,
+			eventName: data.event.name
+		})}</title
+	>
 </svelte:head>
 
 <div class="container mx-auto max-w-3xl px-4 py-8">
@@ -187,11 +192,11 @@
 			class="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
 		>
 			<ArrowLeft class="h-4 w-4" />
-			Back to Event
+			{m['questionnaireSubmissionPage.backToEvent']()}
 		</a>
 		<h1 class="text-3xl font-bold">{data.questionnaire.name}</h1>
 		<p class="mt-2 text-muted-foreground">
-			Complete this questionnaire to RSVP to <span class="font-semibold">{data.event.name}</span>
+			{m['questionnaireSubmissionPage.subtitle']({ eventName: data.event.name })}
 		</p>
 	</div>
 
@@ -274,7 +279,7 @@
 										role="status"
 									>
 										<AlertCircle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-										<p>This answer will be automatically evaluated by AI</p>
+										<p>{m['questionnaireSubmissionPage.aiWarning_automatic']()}</p>
 									</div>
 								{:else if data.questionnaire.evaluation_mode === 'hybrid'}
 									<div
@@ -282,7 +287,7 @@
 										role="status"
 									>
 										<AlertCircle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-										<p>This answer will be evaluated by AI and reviewed by a human</p>
+										<p>{m['questionnaireSubmissionPage.aiWarning_hybrid']()}</p>
 									</div>
 								{/if}
 
@@ -290,13 +295,15 @@
 									id={question.id}
 									value={freeTextAnswers.get(question.id) || ''}
 									oninput={(e) => handleFreeTextChange(question.id, e.currentTarget.value)}
-									placeholder="Type your answer here..."
+									placeholder={m['questionnaireSubmissionPage.textarea_placeholder']()}
 									class={cn(validationErrors.has(question.id) && 'border-destructive')}
 									rows={4}
 									maxlength={500}
 								/>
 								<p class="text-xs text-muted-foreground">
-									{(freeTextAnswers.get(question.id) || '').length}/500 characters
+									{m['questionnaireSubmissionPage.characterCount']({
+										count: (freeTextAnswers.get(question.id) || '').length
+									})}
 								</p>
 								{#if validationErrors.has(question.id)}
 									<p class="text-sm text-destructive">{validationErrors.get(question.id)}</p>
@@ -378,7 +385,7 @@
 								role="status"
 							>
 								<AlertCircle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-								<p>This answer will be automatically evaluated by AI</p>
+								<p>{m['questionnaireSubmissionPage.aiWarning_automatic']()}</p>
 							</div>
 						{:else if data.questionnaire.evaluation_mode === 'hybrid'}
 							<div
@@ -386,7 +393,7 @@
 								role="status"
 							>
 								<AlertCircle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-								<p>This answer will be evaluated by AI and reviewed by a human</p>
+								<p>{m['questionnaireSubmissionPage.aiWarning_hybrid']()}</p>
 							</div>
 						{/if}
 
@@ -394,13 +401,15 @@
 							id={question.id}
 							value={freeTextAnswers.get(question.id) || ''}
 							oninput={(e) => handleFreeTextChange(question.id, e.currentTarget.value)}
-							placeholder="Type your answer here..."
+							placeholder={m['questionnaireSubmissionPage.textarea_placeholder']()}
 							class={cn(validationErrors.has(question.id) && 'border-destructive')}
 							rows={4}
 							maxlength={500}
 						/>
 						<p class="text-xs text-muted-foreground">
-							{(freeTextAnswers.get(question.id) || '').length}/500 characters
+							{m['questionnaireSubmissionPage.characterCount']({
+								count: (freeTextAnswers.get(question.id) || '').length
+							})}
 						</p>
 						{#if validationErrors.has(question.id)}
 							<p class="text-sm text-destructive">{validationErrors.get(question.id)}</p>
@@ -417,17 +426,17 @@
 				variant="outline"
 				onclick={() => goto(`/events/${data.event.organization.slug}/${data.event.slug}`)}
 			>
-				Cancel
+				{m['questionnaireSubmissionPage.button_cancel']()}
 			</Button>
 			<Button type="submit" disabled={submitMutation.isPending}>
 				{#if submitMutation.isPending}
 					<Loader2 class="h-5 w-5 animate-spin" />
-					Submitting...
+					{m['questionnaireSubmissionPage.button_submitting']()}
 				{:else if submitMutation.isSuccess}
 					<Check class="h-5 w-5" />
-					Submitted
+					{m['questionnaireSubmissionPage.button_submitted']()}
 				{:else}
-					Submit Questionnaire
+					{m['questionnaireSubmissionPage.button_submit']()}
 				{/if}
 			</Button>
 		</div>
@@ -440,9 +449,10 @@
 			>
 				<AlertCircle class="mt-0.5 h-5 w-5 shrink-0" />
 				<div class="flex-1">
-					<p class="font-semibold">Submission Failed</p>
+					<p class="font-semibold">{m['questionnaireSubmissionPage.error_alert_title']()}</p>
 					<p class="mt-1 text-sm">
-						{submitMutation.error?.message || 'An error occurred. Please try again.'}
+						{submitMutation.error?.message ||
+							m['questionnaireSubmissionPage.error_alert_description']()}
 					</p>
 				</div>
 			</div>

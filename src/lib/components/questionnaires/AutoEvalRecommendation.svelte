@@ -87,7 +87,9 @@
 			<div class="flex-1 space-y-3">
 				<div class="flex items-center gap-2">
 					<Sparkles class="h-4 w-4 text-purple-500" aria-hidden="true" />
-					<Badge variant="outline" class="text-xs">{m['autoEvalRecommendation.aiRecommendation']()}</Badge>
+					<Badge variant="outline" class="text-xs"
+						>{m['autoEvalRecommendation.aiRecommendation']()}</Badge
+					>
 				</div>
 
 				<div>
@@ -106,9 +108,9 @@
 					class="rounded-md border border-dashed bg-background/50 p-3 text-xs text-muted-foreground"
 				>
 					<p>
-						<strong>{m['autoEvalRecommendation.note']()}</strong> This is an automated recommendation. Please review the submission
-						manually and use your best judgment. You can approve, reject, or change this evaluation at
-						any time.
+						<strong>{m['autoEvalRecommendation.note']()}</strong> This is an automated recommendation.
+						Please review the submission manually and use your best judgment. You can approve, reject,
+						or change this evaluation at any time.
 					</p>
 				</div>
 			</div>
@@ -167,7 +169,8 @@
 					class="mt-4 rounded-md border border-dashed bg-background/50 p-3 text-xs text-muted-foreground"
 				>
 					<p>
-						<strong>{m['autoEvalRecommendation.note']()}</strong> You can change this evaluation at any time using the form below.
+						<strong>{m['autoEvalRecommendation.note']()}</strong> You can change this evaluation at any
+						time using the form below.
 					</p>
 				</div>
 			</div>

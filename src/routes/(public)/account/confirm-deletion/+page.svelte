@@ -74,14 +74,18 @@
 				>
 					<AlertTriangle class="h-8 w-8 text-destructive" aria-hidden="true" />
 				</div>
-				<h1 class="text-3xl font-bold tracking-tight">{m['accountDeletion.invalidLinkHeading']()}</h1>
+				<h1 class="text-3xl font-bold tracking-tight">
+					{m['accountDeletion.invalidLinkHeading']()}
+				</h1>
 				<p class="mt-2 text-muted-foreground">
 					{m['accountDeletion.invalidLinkSubheading']()}
 				</p>
 			</div>
 
 			<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">
-				<p class="text-sm font-medium text-destructive">{m['accountDeletion.invalidLinkError']()}</p>
+				<p class="text-sm font-medium text-destructive">
+					{m['accountDeletion.invalidLinkError']()}
+				</p>
 				<p class="mt-2 text-sm text-muted-foreground">
 					{m['accountDeletion.invalidLinkMessage']()}
 				</p>

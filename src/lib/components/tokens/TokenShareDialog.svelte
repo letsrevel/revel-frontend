@@ -101,7 +101,9 @@
 						Share
 					</Button>
 				{/if}
-				<Button type="button" variant="outline" onclick={onClose}>{m['tokenShareDialog.close']()}</Button>
+				<Button type="button" variant="outline" onclick={onClose}
+					>{m['tokenShareDialog.close']()}</Button
+				>
 			</div>
 		</div>
 	</DialogContent>

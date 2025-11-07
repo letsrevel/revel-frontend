@@ -64,7 +64,10 @@
 
 <svelte:head>
 	<title>{organization.name} Admin Dashboard | Revel</title>
-	<meta name="description" content={m['orgAdmin.dashboard.metaDescription']({ orgName: organization.name })} />
+	<meta
+		name="description"
+		content={m['orgAdmin.dashboard.metaDescription']({ orgName: organization.name })}
+	/>
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
@@ -146,20 +149,26 @@
 			<dl class="grid gap-4 md:grid-cols-2">
 				<!-- Organization Name -->
 				<div>
-					<dt class="text-sm font-medium text-muted-foreground">{m['orgAdmin.dashboard.orgDetails.orgName']()}</dt>
+					<dt class="text-sm font-medium text-muted-foreground">
+						{m['orgAdmin.dashboard.orgDetails.orgName']()}
+					</dt>
 					<dd class="mt-1 text-base font-semibold">{organization.name}</dd>
 				</div>
 
 				<!-- Slug -->
 				<div>
-					<dt class="text-sm font-medium text-muted-foreground">{m['orgAdmin.dashboard.orgDetails.urlSlug']()}</dt>
+					<dt class="text-sm font-medium text-muted-foreground">
+						{m['orgAdmin.dashboard.orgDetails.urlSlug']()}
+					</dt>
 					<dd class="mt-1 font-mono text-sm">{organization.slug}</dd>
 				</div>
 
 				<!-- Location -->
 				{#if organization.city}
 					<div>
-						<dt class="text-sm font-medium text-muted-foreground">{m['orgAdmin.dashboard.orgDetails.location']()}</dt>
+						<dt class="text-sm font-medium text-muted-foreground">
+							{m['orgAdmin.dashboard.orgDetails.location']()}
+						</dt>
 						<dd class="mt-1 text-base">
 							{organization.city.name}, {organization.city.country}
 						</dd>
@@ -168,7 +177,9 @@
 
 				<!-- Your Role -->
 				<div>
-					<dt class="text-sm font-medium text-muted-foreground">{m['orgAdmin.dashboard.orgDetails.yourRole']()}</dt>
+					<dt class="text-sm font-medium text-muted-foreground">
+						{m['orgAdmin.dashboard.orgDetails.yourRole']()}
+					</dt>
 					<dd class="mt-1">
 						{#if data.isOwner}
 							<span
@@ -190,7 +201,9 @@
 			<!-- Description -->
 			{#if organization.description_html || organization.description}
 				<div class="mt-6 border-t pt-4">
-					<h3 class="text-sm font-medium text-muted-foreground">{m['orgAdmin.dashboard.aboutHeading']({ orgName: organization.name })}</h3>
+					<h3 class="text-sm font-medium text-muted-foreground">
+						{m['orgAdmin.dashboard.aboutHeading']({ orgName: organization.name })}
+					</h3>
 					<div class="mt-2">
 						<OrganizationDescription
 							descriptionHtml={organization.description_html}
@@ -212,7 +225,9 @@
 			<div class="flex gap-3">
 				<FileText class="h-5 w-5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
 				<div class="flex-1">
-					<h3 class="font-medium text-blue-900 dark:text-blue-100">{m['orgAdmin.dashboard.permissions.staffNoticeTitle']()}</h3>
+					<h3 class="font-medium text-blue-900 dark:text-blue-100">
+						{m['orgAdmin.dashboard.permissions.staffNoticeTitle']()}
+					</h3>
 					<p class="mt-1 text-sm text-blue-700 dark:text-blue-300">
 						{m['orgAdmin.dashboard.permissions.staffNoticeDescription']()}
 					</p>

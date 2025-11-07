@@ -120,7 +120,9 @@
 	<div class={cn('rounded-lg border bg-card p-4', className)}>
 		<div class="mb-4 flex items-center justify-between">
 			<h3 class="text-lg font-semibold">
-				{isOrganizer ? m['potluckItemEditModal.addPotluckItem']() : m['potluckItemEditModal.addItemYoullBring']()}
+				{isOrganizer
+					? m['potluckItemEditModal.addPotluckItem']()
+					: m['potluckItemEditModal.addItemYoullBring']()}
 			</h3>
 			<button
 				type="button"
@@ -192,7 +194,8 @@
 				<!-- Quantity -->
 				<div>
 					<label for="quantity" class="mb-1.5 block text-sm font-medium">
-						{m['potluckItemEditModal.quantity']()} <span class="text-muted-foreground">{m['potluckItemEditModal.optional']()}</span>
+						{m['potluckItemEditModal.quantity']()}
+						<span class="text-muted-foreground">{m['potluckItemEditModal.optional']()}</span>
 					</label>
 					<input
 						id="quantity"
@@ -221,7 +224,8 @@
 			<!-- Note -->
 			<div>
 				<label for="note" class="mb-1.5 block text-sm font-medium">
-					{m['potluckItemEditModal.note']()} <span class="text-muted-foreground">{m['potluckItemEditModal.optional']()}</span>
+					{m['potluckItemEditModal.note']()}
+					<span class="text-muted-foreground">{m['potluckItemEditModal.optional']()}</span>
 				</label>
 				<textarea
 					id="note"
@@ -270,7 +274,9 @@
 							: 'cursor-not-allowed bg-muted text-muted-foreground opacity-60'
 					)}
 				>
-					{isOrganizer && !claimItem ? m['potluckItemEditModal.addAsSuggestion']() : m['potluckItemEditModal.addAndClaim']()}
+					{isOrganizer && !claimItem
+						? m['potluckItemEditModal.addAsSuggestion']()
+						: m['potluckItemEditModal.addAndClaim']()}
 				</button>
 			</div>
 		</form>

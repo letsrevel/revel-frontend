@@ -30,6 +30,7 @@
 	} from '$lib/components/ui/dialog';
 	import { getOrganizationTokenUrl } from '$lib/utils/tokens';
 	import { toast } from 'svelte-sonner';
+	import * as m from '$lib/paraglide/messages.js';
 
 	const organization = $derived($page.data.organization);
 	const accessToken = $derived(authStore.accessToken);
@@ -53,7 +54,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to fetch tokens');
+				throw new Error(m['orgAdminTokensPage.error_fetchFailed']());
 			}
 
 			return response.data;
@@ -71,7 +72,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to create token');
+				throw new Error(m['orgAdminTokensPage.error_createFailed']());
 			}
 
 			return response.data;
@@ -81,10 +82,10 @@
 				queryKey: ['organization', organization.slug, 'tokens']
 			});
 			isCreateModalOpen = false;
-			toast.success('Invitation link created successfully!');
+			toast.success(m['orgAdminTokensPage.toast_created']());
 		},
 		onError: () => {
-			toast.error('Failed to create invitation link');
+			toast.error(m['orgAdminTokensPage.toast_error_create']());
 		}
 	}));
 
@@ -104,7 +105,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to update token');
+				throw new Error(m['orgAdminTokensPage.error_updateFailed']());
 			}
 
 			return response.data;
@@ -114,10 +115,10 @@
 				queryKey: ['organization', organization.slug, 'tokens']
 			});
 			tokenToEdit = null;
-			toast.success('Invitation link updated successfully!');
+			toast.success(m['orgAdminTokensPage.toast_updated']());
 		},
 		onError: () => {
-			toast.error('Failed to update invitation link');
+			toast.error(m['orgAdminTokensPage.toast_error_update']());
 		}
 	}));
 
@@ -130,7 +131,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to delete link');
+				throw new Error(m['orgAdminTokensPage.error_deleteFailed']());
 			}
 
 			return response.data;
@@ -140,10 +141,10 @@
 				queryKey: ['organization', organization.slug, 'tokens']
 			});
 			tokenToDelete = null;
-			toast.success('Invitation link deleted successfully!');
+			toast.success(m['orgAdminTokensPage.toast_deleted']());
 		},
 		onError: () => {
-			toast.error('Failed to delete invitation link');
+			toast.error(m['orgAdminTokensPage.toast_error_delete']());
 		}
 	}));
 
@@ -171,21 +172,21 @@
 </script>
 
 <svelte:head>
-	<title>Invitation Links - {organization.name}</title>
+	<title>{m['orgAdminTokensPage.pageTitle']({ organizationName: organization.name })}</title>
 </svelte:head>
 
 <div class="space-y-6">
 	<!-- Header -->
 	<div class="flex items-center justify-between">
 		<div>
-			<h1 class="text-3xl font-bold">Invitation Links</h1>
+			<h1 class="text-3xl font-bold">{m['orgAdminTokensPage.title']()}</h1>
 			<p class="text-muted-foreground">
-				Create and manage shareable invitation links for your organization
+				{m['orgAdminTokensPage.subtitle']()}
 			</p>
 		</div>
 		<Button onclick={() => (isCreateModalOpen = true)}>
 			<Plus class="mr-2 h-4 w-4" aria-hidden="true" />
-			Create Link
+			{m['orgAdminTokensPage.createButton']()}
 		</Button>
 	</div>
 
@@ -197,7 +198,7 @@
 		/>
 		<Input
 			type="search"
-			placeholder="Search links by name..."
+			placeholder={m['orgAdminTokensPage.searchPlaceholder']()}
 			bind:value={searchQuery}
 			class="pl-10"
 		/>
@@ -211,12 +212,12 @@
 			</div>
 		{:else if tokens.length === 0}
 			<div class="rounded-lg border border-dashed p-12 text-center">
-				<h3 class="text-lg font-semibold">No links found</h3>
+				<h3 class="text-lg font-semibold">{m['orgAdminTokensPage.empty_noLinks_title']()}</h3>
 				<p class="mt-2 text-sm text-muted-foreground">
 					{#if searchQuery}
-						No links match your search. Try a different search term.
+						{m['orgAdminTokensPage.empty_noLinks_search']()}
 					{:else}
-						Create your first invitation link to start sharing your organization.
+						{m['orgAdminTokensPage.empty_noLinks_initial']()}
 					{/if}
 				</p>
 			</div>
@@ -255,18 +256,24 @@
 <Dialog open={!!tokenToDelete}>
 	<DialogContent>
 		<DialogHeader>
-			<DialogTitle>Delete Invitation Link?</DialogTitle>
+			<DialogTitle>{m['orgAdminTokensPage.delete_title']()}</DialogTitle>
 			<DialogDescription>
-				This will permanently disable the invitation link. No one will be able to use it to join.
+				{m['orgAdminTokensPage.delete_description']()}
 			</DialogDescription>
 		</DialogHeader>
 
 		{#if tokenToDelete}
 			<div class="space-y-2 text-sm">
-				<p><strong>Link:</strong> {tokenToDelete.name || 'Unnamed Link'}</p>
-				<p><strong>Uses:</strong> {tokenToDelete.uses} people already joined using this link</p>
+				<p>
+					<strong>{m['orgAdminTokensPage.delete_linkLabel']()}</strong>
+					{tokenToDelete.name || m['orgAdminTokensPage.delete_unnamedLink']()}
+				</p>
+				<p>
+					<strong>{m['orgAdminTokensPage.delete_usesLabel']()}</strong>
+					{m['orgAdminTokensPage.delete_usesDescription']({ count: tokenToDelete.uses })}
+				</p>
 				<p class="text-muted-foreground">
-					Those members/staff will keep their access. Only new attempts will fail.
+					{m['orgAdminTokensPage.delete_keepAccessNote']()}
 				</p>
 			</div>
 		{/if}
@@ -277,13 +284,13 @@
 				onclick={() => (tokenToDelete = null)}
 				disabled={deleteTokenMutation.isPending}
 			>
-				Cancel
+				{m['orgAdminTokensPage.delete_cancelButton']()}
 			</Button>
 			<Button variant="destructive" onclick={handleDelete} disabled={deleteTokenMutation.isPending}>
 				{#if deleteTokenMutation.isPending}
 					<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 				{/if}
-				Delete Link
+				{m['orgAdminTokensPage.delete_confirmButton']()}
 			</Button>
 		</DialogFooter>
 	</DialogContent>

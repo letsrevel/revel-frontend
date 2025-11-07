@@ -238,7 +238,9 @@
 					{isClaiming ? 'Reserving...' : 'Reserve Ticket'}
 				</Button>
 			{:else}
-				<div class="rounded-md bg-muted px-4 py-2 text-sm text-muted-foreground">{m['tierCardAdmin.comingSoon']()}</div>
+				<div class="rounded-md bg-muted px-4 py-2 text-sm text-muted-foreground">
+					{m['tierCardAdmin.comingSoon']()}
+				</div>
 			{/if}
 		</div>
 	</div>

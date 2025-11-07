@@ -137,7 +137,9 @@
 							/>
 						</svg>
 					</div>
-					<Dialog.Title class="text-xl font-semibold">{m['requestInvitationButton.requestSubmitted']()}</Dialog.Title>
+					<Dialog.Title class="text-xl font-semibold"
+						>{m['requestInvitationButton.requestSubmitted']()}</Dialog.Title
+					>
 					<Dialog.Description class="mt-2">
 						{m['requestInvitationButton.requestSubmittedBody']()}
 					</Dialog.Description>
@@ -147,7 +149,9 @@
 				<Dialog.Header>
 					<Dialog.Title>{m['requestInvitationButton.requestInvitation']()}</Dialog.Title>
 					<Dialog.Description>
-						{@html m['requestInvitationButton.submitRequestToEvent']({ eventName: `<strong>${eventName}</strong>` })}
+						{@html m['requestInvitationButton.submitRequestToEvent']({
+							eventName: `<strong>${eventName}</strong>`
+						})}
 					</Dialog.Description>
 				</Dialog.Header>
 
@@ -159,7 +163,9 @@
 					class="space-y-4"
 				>
 					<div>
-						<label for="message" class="block text-sm font-medium"> {m['requestInvitationButton.messageOptional']()} </label>
+						<label for="message" class="block text-sm font-medium">
+							{m['requestInvitationButton.messageOptional']()}
+						</label>
 						<textarea
 							id="message"
 							bind:value={message}
@@ -178,7 +184,8 @@
 							class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
 							role="alert"
 						>
-							{requestMutation.error?.message || m['requestInvitationButton.failedToSubmitTryAgain']()}
+							{requestMutation.error?.message ||
+								m['requestInvitationButton.failedToSubmitTryAgain']()}
 						</div>
 					{/if}
 

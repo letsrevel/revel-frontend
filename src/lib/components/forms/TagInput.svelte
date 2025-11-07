@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { cn } from '$lib/utils/cn';
 	import { X } from 'lucide-svelte';
 
@@ -48,7 +49,7 @@
 		suggestions = [],
 		id,
 		label,
-		placeholder = 'Add tag and press Enter...',
+		placeholder = m['tagInput.placeholderDefault'](),
 		maxTags,
 		required = false,
 		disabled = false,
@@ -188,7 +189,7 @@
 		<label for={inputId} class="block text-sm font-medium text-gray-900 dark:text-gray-100">
 			{label}
 			{#if required}
-				<span class="text-destructive" aria-label="required">*</span>
+				<span class="text-destructive" aria-label={m['tagInput.required']()}>*</span>
 			{/if}
 			{#if maxTags}
 				<span class="ml-2 text-xs text-muted-foreground">
@@ -218,7 +219,7 @@
 					tabindex={disabled ? -1 : 0}
 					onkeydown={(e) => handleTagKeydown(e, index)}
 					class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary transition-colors hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-					aria-label="Tag: {tag}, press Delete to remove"
+					aria-label={m['tagInput.tagAriaLabel']({ tag })}
 				>
 					<span>{tag}</span>
 					{#if !disabled}
@@ -226,7 +227,7 @@
 							type="button"
 							onclick={() => removeTag(index)}
 							class="rounded-full p-0.5 transition-colors hover:bg-primary/30"
-							aria-label="Remove {tag}"
+							aria-label={m['tagInput.removeTag']({ tag })}
 						>
 							<X class="h-3 w-3" aria-hidden="true" />
 						</button>

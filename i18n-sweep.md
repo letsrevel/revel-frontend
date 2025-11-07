@@ -17,6 +17,7 @@
 - [SKIP] = No user-facing strings (e.g., test files, demos)
 
 Mark findings with:
+
 - 🔴 HIGH: User-facing UI strings
 - 🟡 MED: Admin/staff strings
 - 🟢 LOW: Debug/internal strings
@@ -74,8 +75,9 @@ Mark findings with:
    - Examples: `Failed to load tags`, `Failed to load`
 
 10. **+page.svelte** (9 strings)
-   - Path: `routes/(public)/account/confirm-deletion/+page.svelte`
-   - Examples: `Error Message `, `Account Deleted`
+
+- Path: `routes/(public)/account/confirm-deletion/+page.svelte`
+- Examples: `Error Message `, `Account Deleted`
 
 ---
 
@@ -375,10 +377,12 @@ Mark findings with:
 ### 🔴 HIGH Priority - User-Facing Strings
 
 #### +page.svelte
+
 **Path**: `routes/(auth)/org/[slug]/admin/events/[event_id]/invitations/+page.svelte`
 **Count**: 33 hardcoded strings
 
 **Sample Strings**:
+
 - Line 238: `Enter`
 - Line 244: `Backspace`
 - Line 429: `Failed to fetch tokens`
@@ -387,10 +391,12 @@ Mark findings with:
 - ... and 28 more
 
 #### +page.svelte
+
 **Path**: `routes/(auth)/org/[slug]/admin/events/[event_id]/tickets/+page.svelte`
 **Count**: 27 hardcoded strings
 
 **Sample Strings**:
+
 - Line 76: `Failed to confirm payment`
 - Line 76: `Failed to confirm`
 - Line 99: `Failed to cancel ticket`
@@ -399,10 +405,12 @@ Mark findings with:
 - ... and 22 more
 
 #### EventWizard.svelte
+
 **Path**: `lib/components/events/admin/EventWizard.svelte`
 **Count**: 19 hardcoded strings
 
 **Sample Strings**:
+
 - Line 172: `Failed to create event`
 - Line 172: `Failed to create`
 - Line 198: `Failed to update event`
@@ -411,10 +419,12 @@ Mark findings with:
 - ... and 14 more
 
 #### PotluckSection.svelte
+
 **Path**: `lib/components/events/PotluckSection.svelte`
 **Count**: 17 hardcoded strings
 
 **Sample Strings**:
+
 - Line 54: `Failed to fetch potluck items`
 - Line 54: `Failed to fetch`
 - Line 90: `You do not have permission to create potluck items`
@@ -423,10 +433,12 @@ Mark findings with:
 - ... and 12 more
 
 #### IneligibilityMessage.svelte
+
 **Path**: `lib/components/events/IneligibilityMessage.svelte`
 **Count**: 16 hardcoded strings
 
 **Sample Strings**:
+
 - Line 78: `Sold out`
 - Line 99: `Only members`
 - Line 99: `Members only`
@@ -435,10 +447,12 @@ Mark findings with:
 - ... and 11 more
 
 #### EventQuestionnaireAssignmentModal.svelte
+
 **Path**: `lib/components/events/admin/EventQuestionnaireAssignmentModal.svelte`
 **Count**: 14 hardcoded strings
 
 **Sample Strings**:
+
 - Line 67: `Failed to load`
 - Line 68: `Please try`
 - Line 122: `Failed to assign`
@@ -447,10 +461,12 @@ Mark findings with:
 - ... and 9 more
 
 #### PotluckItem.svelte
+
 **Path**: `lib/components/events/PotluckItem.svelte`
 **Count**: 12 hardcoded strings
 
 **Sample Strings**:
+
 - Line 53: `Dessert`
 - Line 54: `Drink`
 - Line 55: `Alcohol`
@@ -459,10 +475,12 @@ Mark findings with:
 - ... and 7 more
 
 #### +page.svelte
+
 **Path**: `routes/(auth)/org/[slug]/admin/events/[event_id]/attendees/+page.svelte`
 **Count**: 10 hardcoded strings
 
 **Sample Strings**:
+
 - Line 57: `Failed to update`
 - Line 84: `Failed to delete`
 - Line 237: `Maybe`
@@ -471,10 +489,12 @@ Mark findings with:
 - ... and 5 more
 
 #### TagsFilter.svelte
+
 **Path**: `lib/components/events/filters/TagsFilter.svelte`
 **Count**: 9 hardcoded strings
 
 **Sample Strings**:
+
 - Line 36: `Failed to load tags`
 - Line 36: `Failed to load`
 - Line 44: `Queer`
@@ -483,10 +503,12 @@ Mark findings with:
 - ... and 4 more
 
 #### +page.svelte
+
 **Path**: `routes/(public)/account/confirm-deletion/+page.svelte`
 **Count**: 9 hardcoded strings
 
 **Sample Strings**:
+
 - Line 113: `Error Message `
 - Line 41: `Account Deleted`
 - Line 42: `Your account has been permanently deleted`
@@ -495,10 +517,12 @@ Mark findings with:
 - ... and 4 more
 
 #### +page.svelte
+
 **Path**: `routes/(public)/login/reset-password/+page.svelte`
 **Count**: 9 hardcoded strings
 
 **Sample Strings**:
+
 - Line 41: `Password reset successful`
 - Line 41: `Set new password`
 - Line 45: `Your password has been successfully reset`
@@ -507,10 +531,12 @@ Mark findings with:
 - ... and 4 more
 
 #### EventQuestionnaires.svelte
+
 **Path**: `lib/components/events/admin/EventQuestionnaires.svelte`
 **Count**: 8 hardcoded strings
 
 **Sample Strings**:
+
 - Line 50: `Failed to unassign questionnaire`
 - Line 50: `Failed to unassign`
 - Line 56: `Failed to remove`
@@ -519,10 +545,12 @@ Mark findings with:
 - ... and 3 more
 
 #### +page.svelte
+
 **Path**: `routes/(auth)/org/[slug]/admin/events/[event_id]/edit/+page.svelte`
 **Count**: 8 hardcoded strings
 
 **Sample Strings**:
+
 - Line 24: `Not authenticated`
 - Line 39: `Failed to update status`
 - Line 39: `Failed to update`
@@ -531,10 +559,12 @@ Mark findings with:
 - ... and 3 more
 
 #### +page.svelte
+
 **Path**: `routes/(public)/events/[org_slug]/[event_slug]/questionnaire/[id]/+page.svelte`
 **Count**: 8 hardcoded strings
 
 **Sample Strings**:
+
 - Line 54: `This question is required`
 - Line 69: `Please answer all required questions`
 - Line 69: `Please answer`
@@ -543,10 +573,12 @@ Mark findings with:
 - ... and 3 more
 
 #### +page.svelte
+
 **Path**: `routes/(public)/join/event/[token_id]/+page.svelte`
 **Count**: 6 hardcoded strings
 
 **Sample Strings**:
+
 - Line 36: `Failed to claim invitation`
 - Line 36: `Failed to claim`
 - Line 113: `Ticket Tier`
@@ -555,10 +587,12 @@ Mark findings with:
 - ... and 1 more
 
 #### +page.svelte
+
 **Path**: `routes/(public)/join/org/[token_id]/+page.svelte`
 **Count**: 6 hardcoded strings
 
 **Sample Strings**:
+
 - Line 34: `Failed to claim invitation`
 - Line 34: `Failed to claim`
 - Line 122: `Staff access with permissions`
@@ -567,10 +601,12 @@ Mark findings with:
 - ... and 1 more
 
 #### EventActionSidebar.svelte
+
 **Path**: `lib/components/events/EventActionSidebar.svelte`
 **Count**: 5 hardcoded strings
 
 **Sample Strings**:
+
 - Line 78: `You're attending`
 - Line 83: `You're checked in`
 - Line 86: `Your ticket is pending`
@@ -578,10 +614,12 @@ Mark findings with:
 - Line 318: `Change`
 
 #### EventRSVP.svelte
+
 **Path**: `lib/components/events/EventRSVP.svelte`
 **Count**: 5 hardcoded strings
 
 **Sample Strings**:
+
 - Line 140: `Failed to submit`
 - Line 140: `Please try`
 - Line 328: `Error State `
@@ -589,10 +627,12 @@ Mark findings with:
 - Line 383: `Are you sure`
 
 #### TierCard.svelte
+
 **Path**: `lib/components/events/admin/TierCard.svelte`
 **Count**: 5 hardcoded strings
 
 **Sample Strings**:
+
 - Line 40: `Not set`
 - Line 68: `Unlimited`
 - Line 77: `Offline`
@@ -600,10 +640,12 @@ Mark findings with:
 - Line 102: `Always available`
 
 #### +page.svelte
+
 **Path**: `routes/(public)/events/[org_slug]/[event_slug]/+page.svelte`
 **Count**: 5 hardcoded strings
 
 **Sample Strings**:
+
 - Line 119: `Failed to checkout`
 - Line 185: `No pending ticket found`
 - Line 198: `Failed to resume checkout`
@@ -611,10 +653,12 @@ Mark findings with:
 - Line 292: `Revel`
 
 #### +page.svelte
+
 **Path**: `routes/(public)/events/[org_slug]/series/[series_slug]/+page.svelte`
 **Count**: 5 hardcoded strings
 
 **Sample Strings**:
+
 - Line 77: `Revel`
 - Line 119: `Event Series`
 - Line 146: `Manage Series`
@@ -622,10 +666,12 @@ Mark findings with:
 - Line 262: `No events yet`
 
 #### +page.svelte
+
 **Path**: `routes/(public)/org/[slug]/resources/+page.svelte`
 **Count**: 5 hardcoded strings
 
 **Sample Strings**:
+
 - Line 98: `Try adjusting your filters`
 - Line 99: `This organization has not added any resources yet`
 - Line 53: `Resources`
@@ -633,10 +679,12 @@ Mark findings with:
 - Line 95: `No resources found`
 
 #### +page.svelte
+
 **Path**: `routes/(public)/password-reset/+page.svelte`
 **Count**: 5 hardcoded strings
 
 **Sample Strings**:
+
 - Line 34: `Check your email`
 - Line 34: `Reset your password`
 - Line 38: `If an account exists with that email, you will receive password reset instructions`
@@ -644,285 +692,361 @@ Mark findings with:
 - Line 79: `Error Summary `
 
 #### +page.svelte
+
 **Path**: `routes/(public)/org/[slug]/+page.svelte`
 **Count**: 4 hardcoded strings
 
 **Sample Strings**:
+
 - Line 160: `Revel`
 - Line 393: `Showing newest first`
 - Line 394: `Showing oldest first`
 - Line 420: `Error State `
 
 #### AttendeeList.svelte
+
 **Path**: `lib/components/events/AttendeeList.svelte`
 **Count**: 3 hardcoded strings
 
 **Sample Strings**:
+
 - Line 31: `Failed to load attendees`
 - Line 31: `Failed to load`
 - Line 55: `Anonymous`
 
 #### ClaimInvitationButton.svelte
+
 **Path**: `lib/components/events/ClaimInvitationButton.svelte`
 **Count**: 3 hardcoded strings
 
 **Sample Strings**:
+
 - Line 45: `Failed to claim invitation`
 - Line 45: `Failed to claim`
 - Line 69: `Log in to claim invitation`
 
 #### RetryCountdown.svelte
+
 **Path**: `lib/components/events/RetryCountdown.svelte`
 **Count**: 3 hardcoded strings
 
 **Sample Strings**:
+
 - Line 27: `Available now`
 - Line 56: `Failed to format`
 - Line 57: `Available soon`
 
 #### ClaimMembershipButton.svelte
+
 **Path**: `lib/components/organizations/ClaimMembershipButton.svelte`
 **Count**: 3 hardcoded strings
 
 **Sample Strings**:
+
 - Line 50: `Failed to claim membership`
 - Line 50: `Failed to claim`
 - Line 72: `Log in to claim membership`
 
 #### +page.svelte
+
 **Path**: `routes/(auth)/dashboard/rsvps/+page.svelte`
 **Count**: 3 hardcoded strings
 
 **Sample Strings**:
+
 - Line 167: `Options`
 - Line 186: `Loading RSVPs...`
 - Line 196: `No RSVPs found`
 
 #### +page.svelte
+
 **Path**: `routes/(auth)/dashboard/tickets/+page.svelte`
 **Count**: 3 hardcoded strings
 
 **Sample Strings**:
+
 - Line 211: `Options`
 - Line 230: `Loading tickets...`
 - Line 240: `No tickets found`
 
 #### +page.svelte
+
 **Path**: `routes/(public)/register/check-email/+page.svelte`
 **Count**: 3 hardcoded strings
 
 **Sample Strings**:
+
 - Line 24: `Failed to resend verification email`
 - Line 24: `Failed to resend`
 - Line 29: `Please try`
 
 #### EventBadges.svelte
+
 **Path**: `lib/components/events/EventBadges.svelte`
 **Count**: 2 hardcoded strings
 
 **Sample Strings**:
+
 - Line 64: `Private`
 - Line 66: `Public`
 
 #### EventHeader.svelte
+
 **Path**: `lib/components/events/EventHeader.svelte`
 **Count**: 2 hardcoded strings
 
 **Sample Strings**:
+
 - Line 51: `Failed to copy`
 - Line 96: `Download calendar event`
 
 #### IneligibilityActionButton.svelte
+
 **Path**: `lib/components/events/IneligibilityActionButton.svelte`
 **Count**: 2 hardcoded strings
 
 **Sample Strings**:
+
 - Line 159: `Continue`
 - Line 227: `Error Message `
 
 #### EventResources.svelte
+
 **Path**: `lib/components/events/admin/EventResources.svelte`
 **Count**: 2 hardcoded strings
 
 **Sample Strings**:
+
 - Line 40: `Failed to load resources`
 - Line 40: `Failed to load`
 
 #### TierForm.svelte
+
 **Path**: `lib/components/events/admin/TierForm.svelte`
 **Count**: 2 hardcoded strings
 
 **Sample Strings**:
+
 - Line 269: `Are you sure`
 - Line 529: `Please try`
 
 #### +page.svelte
+
 **Path**: `routes/(auth)/org/[slug]/admin/events/+page.svelte`
 **Count**: 2 hardcoded strings
 
 **Sample Strings**:
+
 - Line 53: `Failed to update status`
 - Line 53: `Failed to update`
 
 #### +page.svelte
+
 **Path**: `routes/(public)/events/+page.svelte`
 **Count**: 2 hardcoded strings
 
 **Sample Strings**:
+
 - Line 89: `Revel`
 - Line 143: `Error State `
 
 #### ActionButton.svelte
+
 **Path**: `lib/components/events/ActionButton.svelte`
 **Count**: 1 hardcoded strings
 
 **Sample Strings**:
+
 - Line 28: `Sign in to attend`
 
 #### EventQuickInfo.svelte
+
 **Path**: `lib/components/events/EventQuickInfo.svelte`
 **Count**: 1 hardcoded strings
 
 **Sample Strings**:
+
 - Line 35: `Event`
 
 #### DetailsStep.svelte
+
 **Path**: `lib/components/events/admin/DetailsStep.svelte`
 **Count**: 1 hardcoded strings
 
 **Sample Strings**:
+
 - Line 166: `Enter`
 
 #### CityFilter.svelte
+
 **Path**: `lib/components/events/filters/CityFilter.svelte`
 **Count**: 1 hardcoded strings
 
 **Sample Strings**:
+
 - Line 46: `Failed to search`
 
 #### MobileFilterSheet.svelte
+
 **Path**: `lib/components/events/filters/MobileFilterSheet.svelte`
 **Count**: 1 hardcoded strings
 
 **Sample Strings**:
+
 - Line 170: `Escape`
 
 #### OrganizationFilter.svelte
+
 **Path**: `lib/components/events/filters/OrganizationFilter.svelte`
 **Count**: 1 hardcoded strings
 
 **Sample Strings**:
+
 - Line 46: `Failed to search`
 
 #### MobileOrganizationFilterSheet.svelte
+
 **Path**: `lib/components/organizations/filters/MobileOrganizationFilterSheet.svelte`
 **Count**: 1 hardcoded strings
 
 **Sample Strings**:
+
 - Line 84: `Escape`
 
 #### +page.svelte
+
 **Path**: `routes/(auth)/dashboard/+page.svelte`
 **Count**: 1 hardcoded strings
 
 **Sample Strings**:
+
 - Line 470: `Organizing`
 
 #### +page.svelte
+
 **Path**: `routes/(auth)/org/[slug]/admin/events/new/+page.svelte`
 **Count**: 1 hardcoded strings
 
 **Sample Strings**:
+
 - Line 20: `Create Event`
 
 #### +page.svelte
+
 **Path**: `routes/(public)/+page.svelte`
 **Count**: 1 hardcoded strings
 
 **Sample Strings**:
+
 - Line 48: `Revel`
 
 #### +page.svelte
+
 **Path**: `routes/(public)/login/+page.svelte`
 **Count**: 1 hardcoded strings
 
 **Sample Strings**:
+
 - Line 71: `Error Summary `
 
 #### +page.svelte
+
 **Path**: `routes/(public)/organizations/+page.svelte`
 **Count**: 1 hardcoded strings
 
 **Sample Strings**:
+
 - Line 134: `Error State `
 
 #### +page.svelte
+
 **Path**: `routes/(public)/register/+page.svelte`
 **Count**: 1 hardcoded strings
 
 **Sample Strings**:
+
 - Line 41: `Error Summary `
 
 ### 🟡 MEDIUM Priority - Admin/Staff Strings
 
 #### +page.svelte
+
 **Path**: `routes/(auth)/org/[slug]/admin/questionnaires/[id]/+page.svelte` | **Count**: 42 strings
 
 #### +page.svelte
+
 **Path**: `routes/(auth)/org/[slug]/admin/event-series/[series_id]/edit/+page.svelte` | **Count**: 28 strings
 
 #### +page.svelte
+
 **Path**: `routes/(auth)/org/[slug]/admin/questionnaires/new/+page.svelte` | **Count**: 25 strings
 
 #### PermissionsEditor.svelte
+
 **Path**: `lib/components/members/PermissionsEditor.svelte` | **Count**: 21 strings
 
 #### +error.svelte
+
 **Path**: `routes/+error.svelte` | **Count**: 17 strings
 
 #### +page.svelte
+
 **Path**: `routes/(auth)/account/security/+page.svelte` | **Count**: 16 strings
 
 #### +page.svelte
+
 **Path**: `routes/(auth)/org/[slug]/admin/members/+page.svelte` | **Count**: 15 strings
 
 #### SeriesQuestionnaireAssignmentModal.svelte
+
 **Path**: `lib/components/event-series/admin/SeriesQuestionnaireAssignmentModal.svelte` | **Count**: 14 strings
 
 #### +page.svelte
+
 **Path**: `routes/(auth)/org/[slug]/admin/tokens/+page.svelte` | **Count**: 14 strings
 
 #### QuestionnaireCard.svelte
+
 **Path**: `lib/components/questionnaires/QuestionnaireCard.svelte` | **Count**: 13 strings
 
 #### ResourceModal.svelte
+
 **Path**: `lib/components/resources/ResourceModal.svelte` | **Count**: 11 strings
 
 #### QuestionnaireAssignmentModal.svelte
+
 **Path**: `lib/components/questionnaires/QuestionnaireAssignmentModal.svelte` | **Count**: 10 strings
 
 #### +page.svelte
+
 **Path**: `routes/(auth)/account/settings/+page.svelte` | **Count**: 10 strings
 
 #### +page.svelte
+
 **Path**: `routes/(auth)/org/[slug]/admin/questionnaires/[id]/submissions/+page.svelte` | **Count**: 10 strings
 
 #### InvitationRequestCard.svelte
+
 **Path**: `lib/components/invitations/InvitationRequestCard.svelte` | **Count**: 9 strings
 
 #### +page.svelte
+
 **Path**: `routes/(auth)/account/privacy/+page.svelte` | **Count**: 9 strings
 
 #### SeriesResourceAssignmentModal.svelte
+
 **Path**: `lib/components/event-series/admin/SeriesResourceAssignmentModal.svelte` | **Count**: 7 strings
 
 #### QRScannerModal.svelte
+
 **Path**: `lib/components/tickets/QRScannerModal.svelte` | **Count**: 7 strings
 
 #### +page.svelte
+
 **Path**: `routes/(auth)/account/profile/+page.svelte` | **Count**: 7 strings
 
 #### ResourceCard.svelte
+
 **Path**: `lib/components/resources/ResourceCard.svelte` | **Count**: 6 strings
 
 ### 🟢 LOW Priority - Internal Strings

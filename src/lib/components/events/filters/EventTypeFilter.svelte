@@ -58,7 +58,9 @@
 
 	{#if eventType}
 		<p class="text-xs text-muted-foreground">
-			{m['filters.eventType.showing']({ eventType: eventType === 'members-only' ? 'members only' : eventType })}
+			{m['filters.eventType.showing']({
+				eventType: eventType === 'members-only' ? 'members only' : eventType
+			})}
 		</p>
 	{/if}
 </div>

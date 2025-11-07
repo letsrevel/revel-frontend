@@ -245,7 +245,8 @@
 							</span>
 						</div>
 						<div class="flex items-center justify-between px-4 py-3">
-							<span class="text-sm text-muted-foreground">{m['checkInDialog.paymentMethod']()}</span>
+							<span class="text-sm text-muted-foreground">{m['checkInDialog.paymentMethod']()}</span
+							>
 							<span class="font-medium">
 								{getPaymentMethodLabel(ticket.tier?.payment_method || '')}
 							</span>
@@ -259,7 +260,8 @@
 					>
 						<AlertCircle class="h-5 w-5 shrink-0" aria-hidden="true" />
 						<p>
-							<strong>{m['checkInDialog.paymentRequired']()}</strong> Please ensure payment has been received before proceeding.
+							<strong>{m['checkInDialog.paymentRequired']()}</strong> Please ensure payment has been
+							received before proceeding.
 						</p>
 					</div>
 				{/if}
@@ -267,7 +269,9 @@
 
 			<!-- Actions -->
 			<div class="flex justify-end gap-2 border-t px-6 py-4">
-				<Button variant="outline" onclick={onCancel} disabled={isLoading}>{m['checkInDialog.cancel']()}</Button>
+				<Button variant="outline" onclick={onCancel} disabled={isLoading}
+					>{m['checkInDialog.cancel']()}</Button
+				>
 				<Button
 					variant="default"
 					onclick={onConfirm}

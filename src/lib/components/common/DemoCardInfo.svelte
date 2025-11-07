@@ -32,7 +32,9 @@
 		<div class="flex items-start gap-3">
 			<CreditCard class="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
 			<div class="flex-1 space-y-2">
-				<p class="text-sm font-semibold text-blue-900 dark:text-blue-100">{m['demoCardInfo.demoPaymentTestCard']()}</p>
+				<p class="text-sm font-semibold text-blue-900 dark:text-blue-100">
+					{m['demoCardInfo.demoPaymentTestCard']()}
+				</p>
 				<p class="text-xs text-blue-800 dark:text-blue-200">
 					Use these test credentials for payment:
 				</p>

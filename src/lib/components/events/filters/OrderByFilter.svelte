@@ -13,9 +13,21 @@
 	let { orderBy = 'start', onChangeOrderBy, class: className }: Props = $props();
 
 	let options = $derived.by(() => [
-		{ value: 'start' as const, label: m['filters.orderBy.soonestFirst'](), description: m['filters.orderBy.soonestFirstDescription']() },
-		{ value: '-start' as const, label: m['filters.orderBy.latestFirst'](), description: m['filters.orderBy.latestFirstDescription']() },
-		{ value: 'distance' as const, label: m['filters.orderBy.nearestFirst'](), description: m['filters.orderBy.nearestFirstDescription']() }
+		{
+			value: 'start' as const,
+			label: m['filters.orderBy.soonestFirst'](),
+			description: m['filters.orderBy.soonestFirstDescription']()
+		},
+		{
+			value: '-start' as const,
+			label: m['filters.orderBy.latestFirst'](),
+			description: m['filters.orderBy.latestFirstDescription']()
+		},
+		{
+			value: 'distance' as const,
+			label: m['filters.orderBy.nearestFirst'](),
+			description: m['filters.orderBy.nearestFirstDescription']()
+		}
 	]);
 
 	let showTooltip = $state(false);

@@ -48,7 +48,10 @@
 	<section aria-labelledby="description-heading">
 		{#if showCard}
 			<div class="rounded-lg border bg-card p-6 md:p-8">
-				<h2 id="description-heading" class="sr-only">{m['organizationDescription.about']()} {organizationName}</h2>
+				<h2 id="description-heading" class="sr-only">
+					{m['organizationDescription.about']()}
+					{organizationName}
+				</h2>
 				<div class="prose prose-slate dark:prose-invert max-w-none">
 					{#if descriptionHtml}
 						{@html descriptionHtml}
@@ -58,7 +61,10 @@
 				</div>
 			</div>
 		{:else}
-			<h2 id="description-heading" class="sr-only">{m['organizationDescription.about']()} {organizationName}</h2>
+			<h2 id="description-heading" class="sr-only">
+				{m['organizationDescription.about']()}
+				{organizationName}
+			</h2>
 			<div class="prose prose-slate dark:prose-invert max-w-none">
 				{#if descriptionHtml}
 					{@html descriptionHtml}

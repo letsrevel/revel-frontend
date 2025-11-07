@@ -221,7 +221,9 @@
 		</div>
 
 		<DialogFooter>
-			<Button variant="outline" onclick={handleCancel} disabled={isSaving}>{m['permissionsEditor.cancel']()}</Button>
+			<Button variant="outline" onclick={handleCancel} disabled={isSaving}
+				>{m['permissionsEditor.cancel']()}</Button
+			>
 			<Button onclick={handleSave} disabled={isSaving}>
 				{isSaving ? 'Saving...' : 'Save Changes'}
 			</Button>

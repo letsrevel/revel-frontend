@@ -118,7 +118,10 @@
 		<!-- RSVP Count -->
 		{#if !rsvpsQuery.isLoading && totalCount > 0}
 			<p class="mt-4 text-sm text-muted-foreground">
-				{m['dashboard.rsvps.showing']({ count: rsvps.length.toString(), total: totalCount.toString() })}
+				{m['dashboard.rsvps.showing']({
+					count: rsvps.length.toString(),
+					total: totalCount.toString()
+				})}
 				{totalCount === 1 ? m['dashboard.rsvps.rsvp']() : m['dashboard.rsvps.rsvps']()}
 			</p>
 		{/if}
