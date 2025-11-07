@@ -44,13 +44,9 @@
 	let isDeletingTag = $state<Record<string, boolean>>({});
 
 	// Image upload states - TODO: implement image upload/delete functionality
-	// @ts-expect-error - Will be used when image upload is implemented
 	let isUploadingLogo = $state(false);
-	// @ts-expect-error - Will be used when image upload is implemented
 	let isUploadingCover = $state(false);
-	// @ts-expect-error - Will be used when image upload is implemented
 	let isDeletingLogo = $state(false);
-	// @ts-expect-error - Will be used when image upload is implemented
 	let isDeletingCover = $state(false);
 
 	/**
@@ -102,7 +98,6 @@
 	 * Handle logo upload
 	 * TODO: Wire this up to ImageUploader component
 	 */
-	// @ts-expect-error - Will be used when image upload UI is implemented
 	async function handleLogoUpload(file: File) {
 		if (!accessToken) return;
 
@@ -132,7 +127,6 @@
 	 * Handle cover art upload
 	 * TODO: Wire this up to ImageUploader component
 	 */
-	// @ts-expect-error - Will be used when image upload UI is implemented
 	async function handleCoverUpload(file: File) {
 		if (!accessToken) return;
 
@@ -162,7 +156,6 @@
 	 * Delete logo
 	 * TODO: Wire this up to ImageUploader component
 	 */
-	// @ts-expect-error - Will be used when image upload UI is implemented
 	async function deleteLogo() {
 		if (!accessToken || !confirm('Are you sure you want to delete the logo?')) return;
 
@@ -191,7 +184,6 @@
 	 * Delete cover art
 	 * TODO: Wire this up to ImageUploader component
 	 */
-	// @ts-expect-error - Will be used when image upload UI is implemented
 	async function deleteCoverArt() {
 		if (!accessToken || !confirm('Are you sure you want to delete the cover art?')) return;
 

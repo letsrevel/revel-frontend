@@ -11,7 +11,6 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { organizationadminCreateEventSeries } from '$lib/api/generated';
 
-	// @ts-expect-error - data may be used for future enhancements
 	let { data }: { data: PageData } = $props();
 
 	const organization = $derived($page.data.organization);

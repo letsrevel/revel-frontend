@@ -1,4 +1,5 @@
 <script lang="ts">
+	// @ts-expect-error - SvelteKit generated module
 	import { PUBLIC_VERSION } from '$env/static/public';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { Github, Bug } from 'lucide-svelte';

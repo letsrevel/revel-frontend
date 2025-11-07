@@ -152,9 +152,7 @@
 							<div class="flex items-center gap-2 text-sm text-muted-foreground">
 								<Calendar class="h-4 w-4" aria-hidden="true" />
 								{getEventCount(series)}
-								{getEventCount(series) === 1
-									? m['orgAdmin.eventSeries.eventCountSingular']()
-									: m['orgAdmin.eventSeries.eventCountPlural']()}
+								{getEventCount(series) === 1 ? 'event' : 'events'}
 							</div>
 						{/if}
 

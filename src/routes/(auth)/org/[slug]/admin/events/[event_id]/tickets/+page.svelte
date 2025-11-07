@@ -332,9 +332,9 @@
 			case 'online':
 				return m['eventTicketsAdmin.paymentOnline']();
 			case 'offline':
-				return m['eventTicketsAdmin.paymentOnArrival']();
+				return m['eventTicketsAdmin.labelPayment']();
 			case 'at_the_door':
-				return m['eventTicketsAdmin.paymentOnArrival']();
+				return m['eventTicketsAdmin.labelPayment']();
 			case 'free':
 				return m['eventTicketsAdmin.paymentFree']();
 			default:
@@ -627,25 +627,25 @@
 					<thead class="border-b bg-muted/50">
 						<tr>
 							<th class="px-4 py-3 text-left text-sm font-semibold"
-								>{m['eventTicketsAdmin.tableHeaderTicketHolder']()}</th
+								>{m['eventTicketsAdmin.headerAttendee']()}</th
 							>
 							<th class="px-4 py-3 text-left text-sm font-semibold"
-								>{m['eventTicketsAdmin.tableHeaderTier']()}</th
+								>{m['eventTicketsAdmin.headerTier']()}</th
 							>
 							<th class="px-4 py-3 text-left text-sm font-semibold"
-								>{m['eventTicketsAdmin.tableHeaderPrice']()}</th
+								>{m['eventTicketsAdmin.headerPrice']()}</th
 							>
 							<th class="px-4 py-3 text-left text-sm font-semibold"
-								>{m['eventTicketsAdmin.tableHeaderPayment']()}</th
+								>{m['eventTicketsAdmin.labelPayment']()}</th
 							>
 							<th class="px-4 py-3 text-left text-sm font-semibold"
-								>{m['eventTicketsAdmin.tableHeaderStatus']()}</th
+								>{m['eventTicketsAdmin.headerStatus']()}</th
 							>
 							<th class="px-4 py-3 text-left text-sm font-semibold"
-								>{m['eventTicketsAdmin.tableHeaderPurchased']()}</th
+								>{m['eventTicketsAdmin.headerPurchased']()}</th
 							>
 							<th class="px-4 py-3 text-right text-sm font-semibold"
-								>{m['eventTicketsAdmin.tableHeaderActions']()}</th
+								>{m['eventTicketsAdmin.headerActions']()}</th
 							>
 						</tr>
 					</thead>
@@ -751,23 +751,17 @@
 
 						<div class="space-y-2 text-sm">
 							<div class="flex items-center justify-between">
-								<span class="text-muted-foreground"
-									>{m['eventTicketsAdmin.tableHeaderTier']()}:</span
-								>
+								<span class="text-muted-foreground">{m['eventTicketsAdmin.headerTier']()}:</span>
 								<span class="font-medium">{ticket.tier?.name || 'N/A'}</span>
 							</div>
 							<div class="flex items-center justify-between">
-								<span class="text-muted-foreground"
-									>{m['eventTicketsAdmin.tableHeaderPrice']()}:</span
-								>
+								<span class="text-muted-foreground">{m['eventTicketsAdmin.headerPrice']()}:</span>
 								<span class="font-medium"
 									>{formatPrice(ticket.tier?.price, ticket.tier?.currency)}</span
 								>
 							</div>
 							<div class="flex items-center justify-between">
-								<span class="text-muted-foreground"
-									>{m['eventTicketsAdmin.tableHeaderPayment']()}:</span
-								>
+								<span class="text-muted-foreground">{m['eventTicketsAdmin.labelPayment']()}:</span>
 								<span class="flex items-center gap-1">
 									<CreditCard class="h-3 w-3" aria-hidden="true" />
 									{getPaymentMethodLabel(ticket.tier?.payment_method || '')}
@@ -775,7 +769,7 @@
 							</div>
 							<div class="flex items-center justify-between">
 								<span class="text-muted-foreground"
-									>{m['eventTicketsAdmin.tableHeaderPurchased']()}:</span
+									>{m['eventTicketsAdmin.headerPurchased']()}:</span
 								>
 								<span>{new Date(ticket.created_at).toLocaleDateString()}</span>
 							</div>

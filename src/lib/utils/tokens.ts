@@ -12,7 +12,12 @@ export function getOrganizationTokenStatus(
 	}
 
 	// Check if limit reached
-	if (token.max_uses > 0 && token.uses >= token.max_uses) {
+	if (
+		token.max_uses !== undefined &&
+		token.max_uses > 0 &&
+		token.uses !== undefined &&
+		token.uses >= token.max_uses
+	) {
 		return 'limit-reached';
 	}
 
@@ -31,7 +36,12 @@ export function getEventTokenStatus(
 	}
 
 	// Check if limit reached
-	if (token.max_uses > 0 && token.uses >= token.max_uses) {
+	if (
+		token.max_uses !== undefined &&
+		token.max_uses > 0 &&
+		token.uses !== undefined &&
+		token.uses >= token.max_uses
+	) {
 		return 'limit-reached';
 	}
 
@@ -53,11 +63,14 @@ export function isTokenActive(token: OrganizationTokenSchema | EventTokenSchema)
 /**
  * Format token usage display (e.g., "45/100" or "45/∞")
  */
-export function formatTokenUsage(uses: number, maxUses: number): string {
-	if (maxUses === 0) {
-		return `${uses}/∞`;
+export function formatTokenUsage(uses: number | undefined, maxUses: number | undefined): string {
+	const usesValue = uses ?? 0;
+	const maxUsesValue = maxUses ?? 0;
+
+	if (maxUsesValue === 0) {
+		return `${usesValue}/∞`;
 	}
-	return `${uses}/${maxUses}`;
+	return `${usesValue}/${maxUsesValue}`;
 }
 
 /**

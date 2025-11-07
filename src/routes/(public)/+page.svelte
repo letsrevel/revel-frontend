@@ -30,6 +30,7 @@
 
 			return () => clearInterval(interval);
 		}
+		// No cleanup needed for non-Italian locale
 	});
 </script>
 

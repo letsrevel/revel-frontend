@@ -17,7 +17,6 @@
 
 	let {
 		resource = null,
-		// @ts-expect-error - Used by parent component for API calls
 		organizationSlug,
 		organizationId,
 		onSubmit,
@@ -38,7 +37,6 @@
 	let file = $state<File | null>(null);
 	let link = $state(resource?.link || '');
 	let text = $state(resource?.text || '');
-	// @ts-expect-error - Bound for potential future use (e.g., programmatic file selection)
 	let fileInput = $state<HTMLInputElement | undefined>(undefined);
 
 	// Event assignment

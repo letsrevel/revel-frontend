@@ -17,7 +17,6 @@
 	// Group resources by type for better organization (optional)
 	// Currently unused but kept for potential future use
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	// @ts-expect-error - Intentionally unused, kept for potential future use
 	const _groupedResources = $derived.by(() => {
 		const groups: Record<string, AdditionalResourceSchema[]> = {
 			file: [],
@@ -47,6 +46,9 @@
 
 	<!-- Count -->
 	<p class="text-sm text-muted-foreground">
-		{m['resourceList.showingCount']({ count: resources.length })}
+		{m['resourceList.showingCount']({
+			count: resources.length,
+			plural: resources.length === 1 ? '' : m['resourceList.showingCount_plural']()
+		})}
 	</p>
 </div>

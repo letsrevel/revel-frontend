@@ -28,7 +28,7 @@
 	const expirationDisplay = $derived(getExpirationDisplay(token.expires_at));
 
 	async function copyLink() {
-		const url = getEventTokenUrl(token.id || '', orgSlug, eventSlug);
+		const url = getEventTokenUrl(token.id ?? '', orgSlug, eventSlug);
 		try {
 			await navigator.clipboard.writeText(url);
 			toast.success('Link copied to clipboard!');

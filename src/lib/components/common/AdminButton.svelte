@@ -8,7 +8,6 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 
-	// @ts-expect-error - bits-ui slot props type issue with Svelte 5
 	type BuilderProps = any;
 
 	let accessToken = $derived(authStore.accessToken);

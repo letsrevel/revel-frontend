@@ -37,7 +37,7 @@
 
 	// Form state
 	let name = $state('');
-	let duration = $state<number>(1440); // Default 1 day
+	let duration = $state<string>('1440'); // Default 1 day
 	let maxUses = $state<number>(1);
 	let grantsMembership = $state(true);
 	let grantsStaffStatus = $state(false);
@@ -48,15 +48,15 @@
 		if (open) {
 			if (token) {
 				name = token.name || '';
-				maxUses = token.max_uses;
-				grantsMembership = token.grants_membership;
-				grantsStaffStatus = token.grants_staff_status;
+				maxUses = token.max_uses ?? 0;
+				grantsMembership = token.grants_membership ?? false;
+				grantsStaffStatus = token.grants_staff_status ?? false;
 				expiresAt = token.expires_at || '';
-				duration = 1440; // Not used in edit mode
+				duration = '1440'; // Not used in edit mode
 			} else {
 				// Reset to defaults for create
 				name = '';
-				duration = 1440;
+				duration = '1440';
 				maxUses = 1;
 				grantsMembership = true;
 				grantsStaffStatus = false;
@@ -80,7 +80,7 @@
 			// Create
 			const createData: OrganizationTokenCreateSchema = {
 				name: name || null,
-				duration: duration,
+				duration: parseInt(duration, 10),
 				max_uses: maxUses,
 				grants_membership: grantsMembership,
 				grants_staff_status: grantsStaffStatus
@@ -137,7 +137,7 @@
 					<RadioGroup bind:value={duration}>
 						{#each durationOptions as option}
 							<div class="flex items-center space-x-2">
-								<RadioGroupItem value={option.value} id={`duration-${option.value}`} />
+								<RadioGroupItem value={option.value.toString()} id={`duration-${option.value}`} />
 								<Label for={`duration-${option.value}`} class="font-normal">
 									{option.label}
 								</Label>
@@ -167,7 +167,7 @@
 				<p class="text-xs text-muted-foreground">
 					0 = unlimited uses. Set a number to limit how many people can join.
 				</p>
-				{#if isEdit && token && maxUses < token.uses}
+				{#if isEdit && token && token.uses !== undefined && maxUses < token.uses}
 					<p class="flex items-center gap-1 text-xs text-destructive">
 						<AlertCircle class="h-3 w-3" aria-hidden="true" />
 						Warning: This will disable the token immediately (already {token.uses} uses)

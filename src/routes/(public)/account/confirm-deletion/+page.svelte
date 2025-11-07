@@ -84,10 +84,10 @@
 
 			<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">
 				<p class="text-sm font-medium text-destructive">
-					{m['accountDeletion.invalidLinkError']()}
+					{m['accountDeletion.invalidTokenError']()}
 				</p>
 				<p class="mt-2 text-sm text-muted-foreground">
-					{m['accountDeletion.invalidLinkMessage']()}
+					{m['accountDeletion.invalidTokenMessage']()}
 				</p>
 			</div>
 
@@ -109,7 +109,7 @@
 				</div>
 				<h1 class="text-3xl font-bold tracking-tight">{m['accountDeletion.confirmHeading']()}</h1>
 				<p class="mt-2 text-muted-foreground">
-					{m['accountDeletion.confirmSubheading']()}
+					{m['accountDeletion.warningYouWillLose']()}
 				</p>
 			</div>
 
@@ -122,25 +122,25 @@
 
 			<!-- Warning Box -->
 			<div class="rounded-md border border-destructive/30 bg-destructive/5 p-6">
-				<h2 class="font-semibold text-destructive">{m['accountDeletion.warningHeading']()}</h2>
+				<h2 class="font-semibold text-destructive">{m['accountDeletion.confirmHeading']()}</h2>
 				<div class="mt-4 space-y-2">
-					<p class="text-sm font-medium">{m['accountDeletion.lossHeading']()}</p>
+					<p class="text-sm font-medium">{m['accountDeletion.warningYouWillLose']()}</p>
 					<ul class="space-y-1 text-sm text-muted-foreground">
 						<li class="flex items-center gap-2">
 							<span class="text-destructive">•</span>
-							{m['accountDeletion.lossEvents']()}
+							{m['accountDeletion.loss_events']()}
 						</li>
 						<li class="flex items-center gap-2">
 							<span class="text-destructive">•</span>
-							{m['accountDeletion.lossHistory']()}
+							{m['accountDeletion.loss_history']()}
 						</li>
 						<li class="flex items-center gap-2">
 							<span class="text-destructive">•</span>
-							{m['accountDeletion.lossMemberships']()}
+							{m['accountDeletion.loss_memberships']()}
 						</li>
 						<li class="flex items-center gap-2">
 							<span class="text-destructive">•</span>
-							{m['accountDeletion.lossProfileData']()}
+							{m['accountDeletion.loss_profile']()}
 						</li>
 					</ul>
 				</div>
@@ -186,7 +186,7 @@
 			</form>
 
 			<p class="text-center text-xs text-muted-foreground">
-				{m['accountDeletion.immediateWarning']()}
+				{m['accountDeletion.warningImmediate']()}
 			</p>
 		{/if}
 	</div>

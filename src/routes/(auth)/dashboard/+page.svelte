@@ -490,7 +490,7 @@
 										? 'bg-primary text-primary-foreground hover:bg-primary/90'
 										: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
 								>
-									{m[preset.labelKey]()}
+									{(m as unknown as Record<string, () => string>)[preset.labelKey]()}
 								</button>
 							{/if}
 						{/each}

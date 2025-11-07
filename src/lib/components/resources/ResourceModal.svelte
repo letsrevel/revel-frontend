@@ -229,9 +229,7 @@
 		createResourceMutation.isPending || updateResourceMutation.isPending
 	);
 
-	// @ts-expect-error - Bound for potential future use (e.g., focus management)
 	let backdropElement: HTMLDivElement;
-	// @ts-expect-error - Bound for potential future use (e.g., focus management)
 	let modalElement: HTMLDivElement;
 </script>
 
