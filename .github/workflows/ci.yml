@@ -114,6 +114,7 @@ jobs:
         run: pnpm build
         env:
           PUBLIC_API_URL: http://localhost:8000
+          PUBLIC_VERSION: dev
 
       - name: Check build artifacts
         run: |
