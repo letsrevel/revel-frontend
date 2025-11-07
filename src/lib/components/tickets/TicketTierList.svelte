@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import type { UserEventStatus } from '$lib/utils/eligibility';
 	import type { EventTokenSchema } from '$lib/api/generated/types.gen';
@@ -71,7 +72,7 @@
 	<section class="rounded-lg border border-border bg-card p-6" aria-labelledby="ticket-tiers">
 		<div class="mb-4 flex items-center gap-2">
 			<Ticket class="h-5 w-5 text-primary" aria-hidden="true" />
-			<h2 id="ticket-tiers" class="text-xl font-bold">Ticket Options</h2>
+			<h2 id="ticket-tiers" class="text-xl font-bold">{m['ticketTierList.ticketOptions']()}</h2>
 		</div>
 
 		<!-- Eligibility Status Display (if user is not eligible) -->
@@ -96,7 +97,9 @@
 
 		{#if !isAuthenticated}
 			<p class="mt-4 text-sm text-muted-foreground">
-				<a href="/login" class="font-medium text-primary hover:underline">Sign in</a>
+				<a href="/login" class="font-medium text-primary hover:underline"
+					>{m['ticketTierList.signIn']()}</a
+				>
 				to claim your ticket
 			</p>
 		{/if}

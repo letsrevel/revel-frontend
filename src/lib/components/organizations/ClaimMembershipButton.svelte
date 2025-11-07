@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { organizationClaimInvitation } from '$lib/api/generated/sdk.gen';
@@ -18,7 +19,7 @@
 	let {
 		tokenId,
 		tokenDetails,
-		organizationName = 'this organization',
+		organizationName = m['claimMembershipButton.thisOrganization'](),
 		class: className,
 		onSuccess
 	}: Props = $props();
@@ -47,12 +48,14 @@
 			if (response.error) {
 				const errorDetail = (response.error as any)?.detail;
 				throw new Error(
-					typeof errorDetail === 'string' ? errorDetail : 'Failed to claim membership'
+					typeof errorDetail === 'string'
+						? errorDetail
+						: m['claimMembershipButton.error_failedToClaim']()
 				);
 			}
 
 			showSuccess = true;
-			toast.success('Membership claimed successfully!');
+			toast.success(m['claimMembershipButton.successClaimed']());
 
 			onSuccess?.();
 
@@ -61,16 +64,16 @@
 			}, 1000);
 		} catch (err: any) {
 			console.error('Failed to claim membership:', err);
-			toast.error(err.message || 'Failed to claim membership');
+			toast.error(err.message || m['claimMembershipButton.error_failedToClaim']());
 		} finally {
 			isLoading = false;
 		}
 	}
 
 	let buttonText = $derived.by(() => {
-		if (showSuccess) return 'Claimed!';
-		if (!isAuthenticated) return 'Log in to claim membership';
-		return 'Claim Membership';
+		if (showSuccess) return m['claimMembershipButton.claimed']();
+		if (!isAuthenticated) return m['claimMembershipButton.loginToClaim']();
+		return m['claimMembershipButton.claimMembership']();
 	});
 
 	let grantsMembership = $derived(tokenDetails?.grants_membership ?? true);

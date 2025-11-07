@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { AlertCircle } from 'lucide-svelte';
 
@@ -40,7 +41,7 @@
 		<div class="container mx-auto flex items-start gap-3 md:items-center">
 			<AlertCircle class="mt-0.5 h-5 w-5 flex-shrink-0 md:mt-0" aria-hidden="true" />
 			<div class="flex-1 text-sm">
-				<p class="font-semibold">Demo Mode</p>
+				<p class="font-semibold">{m['demoBanner.demoMode']()}</p>
 				<p class="mt-1">
 					This is a demo environment. All data will be reset at midnight CET (approximately {midnightUserTime}
 					{userTimezone}). Feel free to explore and test all features!

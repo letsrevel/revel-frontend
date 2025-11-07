@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { UserEventStatus } from '$lib/utils/eligibility';
 	import {
 		isRSVP,
@@ -25,11 +26,11 @@
 	// Determine button state
 	let buttonText = $derived.by(() => {
 		if (!isAuthenticated) {
-			return 'Sign in to attend';
+			return m['actionButton.signInToAttend']();
 		}
 
 		if (!userStatus) {
-			return requiresTicket ? 'Get Tickets' : 'RSVP';
+			return requiresTicket ? m['actionButton.getTickets']() : m['actionButton.rsvp']();
 		}
 
 		// User has RSVP
@@ -47,7 +48,7 @@
 			return getActionButtonText(userStatus.next_step);
 		}
 
-		return requiresTicket ? 'Get Tickets' : 'View Details';
+		return requiresTicket ? m['actionButton.getTickets']() : m['actionButton.viewDetails']();
 	});
 
 	let isDisabled = $derived.by(() => {

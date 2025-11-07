@@ -16,10 +16,15 @@
 		"test:watch": "vitest",
 		"test:coverage": "vitest run --coverage",
 		"test:e2e": "playwright test",
-		"generate:api": "node scripts/generate-api-client.js"
+		"generate:api": "node scripts/generate-api-client.js",
+		"paraglide:compile": "paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide",
+		"i18n:validate": "node scripts/validate-translations.js",
+		"i18n:check-imports": "bash scripts/check-i18n-imports.sh",
+		"i18n:compile": "pnpm paraglide:compile && pnpm i18n:validate"
 	},
 	"devDependencies": {
 		"@hey-api/openapi-ts": "^0.85.2",
+		"@inlang/paraglide-js": "^2.4.0",
 		"@lucide/svelte": "^0.482.0",
 		"@playwright/test": "^1.49.0",
 		"@sveltejs/adapter-node": "^5.4.0",
@@ -50,6 +55,7 @@
 		"tailwindcss": "^3.4.17",
 		"tslib": "^2.8.1",
 		"typescript": "^5.7.2",
+		"typescript-eslint": "^8.46.3",
 		"vite": "^6.0.3",
 		"vitest": "^2.1.8"
 	},

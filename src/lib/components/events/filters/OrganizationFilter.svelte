@@ -3,6 +3,7 @@
 	import { Building2, X } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
 	import { organizationListOrganizations } from '$lib/api';
+	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
 		selectedOrganization?: { id: string; name: string; slug: string } | null;
@@ -89,7 +90,7 @@
 <div class={cn('space-y-3', className)}>
 	<div class="flex items-center gap-2">
 		<Building2 class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-		<h3 class="text-sm font-medium">Organization</h3>
+		<h3 class="text-sm font-medium">{m['filters.organization.heading']()}</h3>
 	</div>
 
 	{#if selectedOrganization}
@@ -105,7 +106,7 @@
 				type="button"
 				onclick={handleClearOrganization}
 				class="rounded-sm p-1 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				aria-label="Clear organization filter"
+				aria-label={m['filters.organization.clear']()}
 			>
 				<X class="h-4 w-4" aria-hidden="true" />
 			</button>
@@ -124,9 +125,9 @@
 					oninput={handleInput}
 					onblur={handleBlur}
 					onfocus={() => searchQuery.length >= 2 && searchOrganizations(searchQuery)}
-					placeholder="Search for an organization..."
+					placeholder={m['filters.organization.placeholder']()}
 					class="h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 text-sm ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-					aria-label="Search for an organization"
+					aria-label={m['filters.organization.label']()}
 					autocomplete="off"
 				/>
 			</div>
@@ -162,6 +163,6 @@
 			{/if}
 		</div>
 
-		<p class="text-xs text-muted-foreground">Filter events by organization</p>
+		<p class="text-xs text-muted-foreground">{m['filters.organization.description']()}</p>
 	{/if}
 </div>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import {
 		Dialog,
 		DialogContent,
@@ -54,7 +55,7 @@
 <Dialog bind:open>
 	<DialogContent class="sm:max-w-md">
 		<DialogHeader>
-			<DialogTitle>Share Invitation Link</DialogTitle>
+			<DialogTitle>{m['tokenShareDialog.shareLink']()}</DialogTitle>
 			<DialogDescription>
 				{#if tokenName}
 					Share this link for "{tokenName}"
@@ -68,7 +69,7 @@
 			<!-- Shareable URL -->
 			<div class="flex items-center space-x-2">
 				<div class="grid flex-1 gap-2">
-					<label for="share-url" class="sr-only">Shareable URL</label>
+					<label for="share-url" class="sr-only">{m['tokenShareDialog.shareableUrl']()}</label>
 					<input
 						id="share-url"
 						type="text"
@@ -100,7 +101,9 @@
 						Share
 					</Button>
 				{/if}
-				<Button type="button" variant="outline" onclick={onClose}>Close</Button>
+				<Button type="button" variant="outline" onclick={onClose}
+					>{m['tokenShareDialog.close']()}</Button
+				>
 			</div>
 		</div>
 	</DialogContent>

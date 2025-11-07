@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { UserRsvpSchema } from '$lib/api/generated/types.gen';
 	import { Card } from '$lib/components/ui/card';
 	import { Calendar, MapPin, CheckCircle2, XCircle, HelpCircle } from 'lucide-svelte';
@@ -34,25 +35,25 @@
 		switch (rsvp.status) {
 			case 'yes':
 				return {
-					label: 'Going',
+					label: m['rsvpCard.going'](),
 					icon: CheckCircle2,
 					colorClass: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
 				};
 			case 'no':
 				return {
-					label: 'Not Going',
+					label: m['rsvpCard.notGoing'](),
 					icon: XCircle,
 					colorClass: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
 				};
 			case 'maybe':
 				return {
-					label: 'Maybe',
+					label: m['rsvpCard.maybe'](),
 					icon: HelpCircle,
 					colorClass: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
 				};
 			default:
 				return {
-					label: 'Unknown',
+					label: m['rsvpCard.unknown'](),
 					icon: HelpCircle,
 					colorClass: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300'
 				};
@@ -129,7 +130,7 @@
 			class="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4 text-sm"
 		>
 			<div class="text-muted-foreground">
-				<span class="font-medium">RSVP'd:</span>
+				<span class="font-medium">{m['rsvpCard.rsvpd']()}</span>
 				{createdDate}
 			</div>
 
@@ -137,7 +138,7 @@
 				href="/events/{rsvp.event.id}"
 				class="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 			>
-				View Event
+				{m['rsvpCard.viewEvent']()}
 			</a>
 		</div>
 	</div>

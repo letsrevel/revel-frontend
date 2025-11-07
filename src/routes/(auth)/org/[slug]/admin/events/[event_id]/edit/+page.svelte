@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
@@ -21,7 +22,7 @@
 	// Update event status mutation
 	const updateStatusMutation = createMutation(() => ({
 		mutationFn: async (status: 'draft' | 'open' | 'closed' | 'deleted') => {
-			if (!accessToken) throw new Error('Not authenticated');
+			if (!accessToken) throw new Error(m['eventEditPage.error_notAuthenticated']());
 
 			const response = await eventadminUpdateEventStatus({
 				path: { event_id: event.id, status },
@@ -36,12 +37,12 @@
 					response.error !== null &&
 					'detail' in response.error
 						? (response.error.detail as string)
-						: 'Failed to update status';
+						: m['eventEditPage.error_updateStatusFailed']();
 				throw new Error(errorDetail);
 			}
 
 			if (!response.data) {
-				throw new Error('Failed to update status');
+				throw new Error(m['eventEditPage.error_updateStatusFailed']());
 			}
 
 			return response.data;
@@ -66,7 +67,7 @@
 	 * Publish event (draft → open)
 	 */
 	function publishEvent(): void {
-		if (confirm('Are you sure you want to publish this event? It will become visible to users.')) {
+		if (confirm(m['eventEditPage.publishConfirm']())) {
 			updateStatusMutation.mutate('open');
 		}
 	}
@@ -75,7 +76,7 @@
 	 * Close event (open → closed)
 	 */
 	function closeEvent(): void {
-		if (confirm('Are you sure you want to close this event? RSVPs and ticket sales will stop.')) {
+		if (confirm(m['eventEditPage.closeConfirm']())) {
 			updateStatusMutation.mutate('closed');
 		}
 	}
@@ -84,9 +85,7 @@
 	 * Mark as draft (open/closed → draft)
 	 */
 	function markAsDraft(): void {
-		if (
-			confirm('Are you sure you want to mark this event as draft? It will be hidden from users.')
-		) {
+		if (confirm(m['eventEditPage.draftConfirm']())) {
 			updateStatusMutation.mutate('draft');
 		}
 	}
@@ -95,11 +94,7 @@
 	 * Delete event (any → deleted)
 	 */
 	function deleteEvent(): void {
-		if (
-			confirm(
-				'Are you sure you want to delete this event? This action cannot be undone and will remove the event from public view.'
-			)
-		) {
+		if (confirm(m['eventEditPage.deleteConfirm']())) {
 			updateStatusMutation.mutate('deleted');
 		}
 	}
@@ -174,7 +169,7 @@
 						class="inline-flex items-center gap-2 rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						<FileEdit class="h-4 w-4" aria-hidden="true" />
-						Mark as Draft
+						{m['eventEditPage.draftButton']()}
 					</button>
 				{:else if currentStatus === 'closed'}
 					<!-- Reopen action -->
@@ -195,7 +190,7 @@
 						class="inline-flex items-center gap-2 rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						<FileEdit class="h-4 w-4" aria-hidden="true" />
-						Mark as Draft
+						{m['eventEditPage.draftButton']()}
 					</button>
 				{/if}
 

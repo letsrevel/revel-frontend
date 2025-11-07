@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { EventSeriesRetrieveSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import { getImageUrl } from '$lib/utils/url';
@@ -75,7 +76,7 @@
 		class="absolute inset-0 z-10"
 		aria-label={accessibleLabel}
 	>
-		<span class="sr-only">View event series details</span>
+		<span class="sr-only">{m['eventSeriesCard.viewDetails']()}</span>
 	</a>
 
 	<!-- Cover Image -->
@@ -117,7 +118,7 @@
 			>
 				<div class="flex items-center gap-1">
 					<Calendar class="h-3 w-3" aria-hidden="true" />
-					<span>Series</span>
+					<span>{m['eventSeriesCard.series']()}</span>
 				</div>
 			</div>
 		</div>

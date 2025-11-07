@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery, createMutation } from '@tanstack/svelte-query';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
@@ -176,7 +177,7 @@
 <section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
 	<div class="mb-4 flex items-center gap-2">
 		<CreditCard class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-		<h2 class="text-lg font-semibold">Payment Processing</h2>
+		<h2 class="text-lg font-semibold">{m['stripeConnect.paymentProcessing']()}</h2>
 	</div>
 
 	<!-- Success Message (when returning from Stripe) -->
@@ -187,8 +188,8 @@
 		>
 			<Check class="h-5 w-5 shrink-0" aria-hidden="true" />
 			<div>
-				<p class="font-medium">Welcome back!</p>
-				<p class="text-sm">We're verifying your Stripe account connection...</p>
+				<p class="font-medium">{m['stripeConnect.welcomeBack']()}</p>
+				<p class="text-sm">{m['stripeConnect.verifyingAccount']()}</p>
 			</div>
 		</div>
 	{/if}
@@ -263,26 +264,31 @@
 					{@const detailsSubmitted = verifyQuery?.data?.details_submitted ?? stripeDetailsSubmitted}
 					<dl class="mt-3 grid grid-cols-2 gap-2 text-xs">
 						<div>
-							<dt class="font-medium text-muted-foreground">Details Submitted</dt>
+							<dt class="font-medium text-muted-foreground">
+								{m['stripeConnect.detailsSubmitted']()}
+							</dt>
 							<dd class="mt-0.5 flex items-center gap-1">
 								{#if detailsSubmitted}
 									<Check class="h-3 w-3 text-green-600" aria-hidden="true" />
-									<span class="text-green-700 dark:text-green-300">Yes</span>
+									<span class="text-green-700 dark:text-green-300">{m['stripeConnect.yes']()}</span>
 								{:else}
 									<AlertCircle class="h-3 w-3 text-yellow-600" aria-hidden="true" />
-									<span class="text-yellow-700 dark:text-yellow-300">No</span>
+									<span class="text-yellow-700 dark:text-yellow-300">{m['stripeConnect.no']()}</span
+									>
 								{/if}
 							</dd>
 						</div>
 						<div>
-							<dt class="font-medium text-muted-foreground">Charges Enabled</dt>
+							<dt class="font-medium text-muted-foreground">
+								{m['stripeConnect.chargesEnabled']()}
+							</dt>
 							<dd class="mt-0.5 flex items-center gap-1">
 								{#if chargesEnabled}
 									<Check class="h-3 w-3 text-green-600" aria-hidden="true" />
-									<span class="text-green-700 dark:text-green-300">Yes</span>
+									<span class="text-green-700 dark:text-green-300">{m['stripeConnect.yes']()}</span>
 								{:else}
 									<AlertCircle class="h-3 w-3 text-red-600" aria-hidden="true" />
-									<span class="text-red-700 dark:text-red-300">No</span>
+									<span class="text-red-700 dark:text-red-300">{m['stripeConnect.no']()}</span>
 								{/if}
 							</dd>
 						</div>
@@ -309,7 +315,7 @@
 			role="alert"
 		>
 			<AlertCircle class="h-4 w-4 shrink-0" aria-hidden="true" />
-			<p class="text-sm">Failed to verify Stripe account status</p>
+			<p class="text-sm">{m['stripeConnect.failedToVerify']()}</p>
 		</div>
 	{/if}
 
@@ -402,16 +408,16 @@
 
 	<!-- Informational Text -->
 	<div class="rounded-md bg-muted p-4 text-sm text-muted-foreground">
-		<p class="font-medium">About Stripe Connect</p>
+		<p class="font-medium">{m['stripeConnect.aboutStripeConnect']()}</p>
 		<p class="mt-1">
 			Stripe Connect allows you to accept online payments for event tickets. When you connect your
 			Stripe account, you'll be able to:
 		</p>
 		<ul class="mt-2 list-inside list-disc space-y-1">
-			<li>Accept credit and debit card payments</li>
-			<li>Offer Pay What You Can pricing</li>
-			<li>Manage refunds and disputes</li>
-			<li>Access detailed payment analytics</li>
+			<li>{m['stripeConnect.acceptPayments']()}</li>
+			<li>{m['stripeConnect.offerPWYC']()}</li>
+			<li>{m['stripeConnect.manageRefunds']()}</li>
+			<li>{m['stripeConnect.accessAnalytics']()}</li>
 		</ul>
 		<p class="mt-2 text-xs">
 			Revel uses Stripe Connect to securely process payments. Your Stripe account is separate from

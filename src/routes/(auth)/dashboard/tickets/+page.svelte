@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { dashboardDashboardTickets } from '$lib/api/generated/sdk.gen';
@@ -17,19 +18,19 @@
 	type TicketStatus = EventsModelsEventTicketStatus;
 
 	const statusFilters: Array<{ label: string; value: TicketStatus | null }> = [
-		{ label: 'All', value: null },
-		{ label: 'Active', value: 'active' },
-		{ label: 'Pending', value: 'pending' },
-		{ label: 'Checked In', value: 'checked_in' },
-		{ label: 'Cancelled', value: 'cancelled' }
+		{ label: m['dashboard.tickets.status_all'](), value: null },
+		{ label: m['dashboard.tickets.status_active'](), value: 'active' },
+		{ label: m['dashboard.tickets.status_pending'](), value: 'pending' },
+		{ label: m['dashboard.tickets.status_checkedIn'](), value: 'checked_in' },
+		{ label: m['dashboard.tickets.status_cancelled'](), value: 'cancelled' }
 	];
 
 	const paymentMethodFilters: Array<{ label: string; value: PaymentMethod | null }> = [
-		{ label: 'All Payment Methods', value: null },
-		{ label: 'Free', value: 'free' },
-		{ label: 'Paid', value: 'online' },
-		{ label: 'Offline', value: 'offline' },
-		{ label: 'At the Door', value: 'at_the_door' }
+		{ label: m['dashboard.tickets.payment_all'](), value: null },
+		{ label: m['dashboard.tickets.payment_free'](), value: 'free' },
+		{ label: m['dashboard.tickets.payment_paid'](), value: 'online' },
+		{ label: m['dashboard.tickets.payment_offline'](), value: 'offline' },
+		{ label: m['dashboard.tickets.payment_atDoor'](), value: 'at_the_door' }
 	];
 
 	// Active filters
@@ -119,8 +120,8 @@
 </script>
 
 <svelte:head>
-	<title>My Tickets - Revel</title>
-	<meta name="description" content="View and manage all your event tickets" />
+	<title>{m['dashboard.tickets.title']()} - Revel</title>
+	<meta name="description" content={m['dashboard.tickets.description']()} />
 </svelte:head>
 
 <div class="container mx-auto px-4 py-6 md:py-8">
@@ -131,28 +132,31 @@
 				<Ticket class="h-6 w-6 text-primary" aria-hidden="true" />
 			</div>
 			<div>
-				<h1 class="text-2xl font-bold md:text-3xl">My Tickets</h1>
-				<p class="text-muted-foreground">View and manage all your event tickets</p>
+				<h1 class="text-2xl font-bold md:text-3xl">{m['dashboard.tickets.title']()}</h1>
+				<p class="text-muted-foreground">{m['dashboard.tickets.description']()}</p>
 			</div>
 		</div>
 
 		<!-- Ticket Count -->
 		{#if !ticketsQuery.isLoading && totalCount > 0}
 			<p class="mt-4 text-sm text-muted-foreground">
-				Showing {tickets.length} of {totalCount}
-				{totalCount === 1 ? 'ticket' : 'tickets'}
+				{m['dashboard.tickets.showing']({
+					count: tickets.length.toString(),
+					total: totalCount.toString()
+				})}
+				{totalCount === 1 ? m['dashboard.tickets.ticket']() : m['dashboard.tickets.tickets']()}
 			</p>
 		{/if}
 	</div>
 
 	<!-- Search Bar -->
 	<div class="mb-6">
-		<label for="search" class="sr-only">Search tickets</label>
+		<label for="search" class="sr-only">{m['dashboard.tickets.searchPlaceholder']()}</label>
 		<input
 			id="search"
 			type="search"
 			bind:value={searchQuery}
-			placeholder="Search by event name or ticket tier..."
+			placeholder={m['dashboard.tickets.searchPlaceholder']()}
 			class="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 		/>
 	</div>
@@ -163,7 +167,7 @@
 		<div>
 			<div class="mb-2 flex items-center gap-2">
 				<Filter class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-				<span class="text-sm font-medium">Status</span>
+				<span class="text-sm font-medium">{m['dashboard.tickets.status']()}</span>
 			</div>
 			<div class="flex flex-wrap gap-2">
 				{#each statusFilters as filter}
@@ -185,7 +189,7 @@
 		<!-- Payment Method Filter -->
 		<div>
 			<div class="mb-2">
-				<span class="text-sm font-medium">Payment Method</span>
+				<span class="text-sm font-medium">{m['dashboard.tickets.paymentMethod']()}</span>
 			</div>
 			<div class="flex flex-wrap gap-2">
 				{#each paymentMethodFilters as filter}
@@ -216,7 +220,7 @@
 					onchange={() => navigateToPage(1)}
 					class="h-4 w-4 cursor-pointer rounded border-input text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				/>
-				<span class="text-sm">Include past events</span>
+				<span class="text-sm">{m['dashboard.tickets.includePast']()}</span>
 			</label>
 		</div>
 	</div>
@@ -286,10 +290,10 @@
 						onclick={() => navigateToPage(currentPage - 1)}
 						disabled={!hasPrevPage}
 						class="inline-flex items-center gap-1 rounded-md border bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-						aria-label="Previous page"
+						aria-label={m['dashboard.tickets.previousPage']()}
 					>
 						<ChevronLeft class="h-4 w-4" aria-hidden="true" />
-						Previous
+						{m['dashboard.tickets.previousPage']()}
 					</button>
 
 					<button
@@ -297,9 +301,9 @@
 						onclick={() => navigateToPage(currentPage + 1)}
 						disabled={!hasNextPage}
 						class="inline-flex items-center gap-1 rounded-md border bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-						aria-label="Next page"
+						aria-label={m['dashboard.tickets.nextPage']()}
 					>
-						Next
+						{m['dashboard.tickets.nextPage']()}
 						<ChevronRight class="h-4 w-4" aria-hidden="true" />
 					</button>
 				</div>

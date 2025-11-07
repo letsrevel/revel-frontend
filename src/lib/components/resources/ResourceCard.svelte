@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
 	import {
 		FileText,
@@ -218,12 +219,12 @@
 		{#if resource.display_on_organization_page}
 			<div class="flex items-center gap-1.5 text-muted-foreground">
 				<Eye class="h-3.5 w-3.5" aria-hidden="true" />
-				<span>Shown on org page</span>
+				<span>{m['resourceCard.shownOnOrgPage']()}</span>
 			</div>
 		{:else}
 			<div class="flex items-center gap-1.5 text-muted-foreground">
 				<EyeOff class="h-3.5 w-3.5" aria-hidden="true" />
-				<span>Hidden from org page</span>
+				<span>{m['resourceCard.hiddenFromOrgPage']()}</span>
 			</div>
 		{/if}
 	</div>

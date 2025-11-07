@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { Card } from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Check } from 'lucide-svelte';
@@ -35,10 +36,12 @@
 		if (answer.question_type === 'multiple_choice') {
 			const options = content as unknown as MultipleChoiceAnswerContent[];
 			const optionTexts = options.map((opt) => opt.option_text).filter(Boolean);
-			return optionTexts.length > 0 ? optionTexts.join(', ') : 'No option selected';
+			return optionTexts.length > 0
+				? optionTexts.join(', ')
+				: m['questionAnswerDisplay.noOptionSelected']();
 		}
 
-		return 'Unknown answer format';
+		return m['questionAnswerDisplay.unknownAnswerFormat']();
 	}
 
 	function getSelectedOptions(answer: QuestionAnswerDetailSchema): MultipleChoiceAnswerContent[] {
@@ -102,10 +105,14 @@
 								{/each}
 							</div>
 						{:else}
-							<p class="text-sm italic text-muted-foreground">No option selected</p>
+							<p class="text-sm italic text-muted-foreground">
+								{m['questionAnswerDisplay.noOptionSelected']()}
+							</p>
 						{/if}
 					{:else}
-						<p class="text-sm italic text-muted-foreground">Unknown answer format</p>
+						<p class="text-sm italic text-muted-foreground">
+							{m['questionAnswerDisplay.unknownAnswerFormat']()}
+						</p>
 					{/if}
 				</div>
 			</div>

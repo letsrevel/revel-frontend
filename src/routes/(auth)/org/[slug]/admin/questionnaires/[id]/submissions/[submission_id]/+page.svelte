@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData } from './$types';
 	import { Card } from '$lib/components/ui/card';
 	import SubmissionStatusBadge from '$lib/components/questionnaires/SubmissionStatusBadge.svelte';
@@ -21,7 +22,7 @@
 	let isSubmitting = $state(false);
 
 	function formatDate(dateString: string | null | undefined): string {
-		if (!dateString) return 'Not submitted';
+		if (!dateString) return m['questionnaireSubmissionDetailPage.notSubmitted']();
 		return new Date(dateString).toLocaleString('en-US', {
 			year: 'numeric',
 			month: 'long',
@@ -40,7 +41,9 @@
 </script>
 
 <svelte:head>
-	<title>Review Submission - {data.submission.user_name} - {data.organizationSlug}</title>
+	<title
+		>{m['questionnaireSubmissionDetailPage.pageTitle']()} - {data.submission.user_name} - {data.organizationSlug}</title
+	>
 </svelte:head>
 
 <div class="container mx-auto max-w-5xl px-4 py-8">
@@ -51,13 +54,13 @@
 			class="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
 		>
 			<ArrowLeft class="h-4 w-4" />
-			Back to Submissions
+			{m['questionnaireSubmissionDetailPage.backToSubmissions']()}
 		</a>
 		<div class="flex items-start justify-between gap-4">
 			<div class="flex-1">
-				<h1 class="text-3xl font-bold">Review Submission</h1>
+				<h1 class="text-3xl font-bold">{m['questionnaireSubmissionDetailPage.title']()}</h1>
 				<p class="mt-2 text-muted-foreground">
-					Evaluate this questionnaire response and decide whether to approve or reject
+					{m['questionnaireSubmissionDetailPage.subtitle']()}
 				</p>
 			</div>
 			<SubmissionStatusBadge
@@ -78,18 +81,26 @@
 
 			<!-- Questionnaire Answers -->
 			<div>
-				<h2 class="mb-4 text-2xl font-semibold">Responses</h2>
+				<h2 class="mb-4 text-2xl font-semibold">
+					{m['questionnaireSubmissionDetailPage.responsesTitle']()}
+				</h2>
 				<QuestionAnswerDisplay answers={data.submission.answers} />
 			</div>
 
 			<!-- Evaluation Form -->
 			<div>
 				<h2 class="mb-4 text-2xl font-semibold">
-					{isEvaluated ? 'Change Evaluation' : 'Evaluate This Submission'}
+					{isEvaluated
+						? m['questionnaireSubmissionDetailPage.changeEvaluationTitle']()
+						: m['questionnaireSubmissionDetailPage.evaluateTitle']()}
 				</h2>
 				<EvaluationForm
 					submissionId={data.submission.id}
-					currentStatus={(data.submission.evaluation?.status as 'approved' | 'rejected' | 'pending review' | null) || null}
+					currentStatus={(data.submission.evaluation?.status as
+						| 'approved'
+						| 'rejected'
+						| 'pending review'
+						| null) || null}
 					{isSubmitting}
 				/>
 			</div>
@@ -99,7 +110,9 @@
 		<div class="space-y-6 lg:col-span-1">
 			<!-- Submitter Information -->
 			<Card class="p-6">
-				<h3 class="mb-4 text-lg font-semibold">Submitter Information</h3>
+				<h3 class="mb-4 text-lg font-semibold">
+					{m['questionnaireSubmissionDetailPage.submitterInfoTitle']()}
+				</h3>
 
 				<div class="space-y-4">
 					<!-- Name -->
@@ -110,7 +123,9 @@
 							<User class="h-5 w-5 text-primary" aria-hidden="true" />
 						</div>
 						<div class="flex-1">
-							<p class="text-sm font-medium text-muted-foreground">Name</p>
+							<p class="text-sm font-medium text-muted-foreground">
+								{m['questionnaireSubmissionDetailPage.nameLabel']()}
+							</p>
 							<p class="text-base font-medium">{data.submission.user_name}</p>
 						</div>
 					</div>
@@ -123,7 +138,9 @@
 							<Mail class="h-5 w-5 text-primary" aria-hidden="true" />
 						</div>
 						<div class="flex-1">
-							<p class="text-sm font-medium text-muted-foreground">Email</p>
+							<p class="text-sm font-medium text-muted-foreground">
+								{m['questionnaireSubmissionDetailPage.emailLabel']()}
+							</p>
 							<p class="break-words text-base">{data.submission.user_email}</p>
 						</div>
 					</div>
@@ -136,7 +153,9 @@
 							<Calendar class="h-5 w-5 text-primary" aria-hidden="true" />
 						</div>
 						<div class="flex-1">
-							<p class="text-sm font-medium text-muted-foreground">Submitted</p>
+							<p class="text-sm font-medium text-muted-foreground">
+								{m['questionnaireSubmissionDetailPage.submittedLabel']()}
+							</p>
 							<p class="text-base">{formatDate(data.submission.submitted_at)}</p>
 						</div>
 					</div>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { OrganizationRetrieveSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import { getBackendUrl } from '$lib/config/api';
@@ -33,7 +34,9 @@
 </script>
 
 <section aria-labelledby="organizer-heading" class={cn('space-y-4', className)}>
-	<h2 id="organizer-heading" class="text-xl font-semibold">About the organizer</h2>
+	<h2 id="organizer-heading" class="text-xl font-semibold">
+		{m['organizationInfo.aboutOrganizer']()}
+	</h2>
 
 	<div class="rounded-lg border bg-card p-6">
 		<!-- Organization Header -->

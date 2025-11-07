@@ -3,6 +3,7 @@
 	import { cn } from '$lib/utils/cn';
 	import { getImageUrl } from '$lib/utils/url';
 	import { MapPin, Users, Tag } from 'lucide-svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
 		organization: OrganizationRetrieveSchema;
@@ -17,7 +18,7 @@
 
 	// Computed values
 	let locationDisplay = $derived.by(() => {
-		if (!organization.city) return 'Location TBD';
+		if (!organization.city) return m['organizationProfile.location_tbd']();
 		return organization.city.country
 			? `${organization.city.name}, ${organization.city.country}`
 			: organization.city.name;
@@ -80,7 +81,7 @@
 		class="absolute inset-0 z-10"
 		aria-label={accessibleLabel}
 	>
-		<span class="sr-only">View organization details</span>
+		<span class="sr-only">{m['organizationProfile.viewDetails']()}</span>
 	</a>
 
 	<!-- Cover Image -->
@@ -166,7 +167,8 @@
 						{/each}
 						{#if organization.tags.length > 3}
 							<span class="inline-block px-2 py-0.5 text-xs text-muted-foreground">
-								+{organization.tags.length - 3} more
+								+{organization.tags.length - 3}
+								{m['common.text_more']()}
 							</span>
 						{/if}
 					</div>

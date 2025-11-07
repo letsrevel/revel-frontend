@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { onMount } from 'svelte';
 	import { Clock } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
@@ -24,7 +25,7 @@
 
 			// If date has passed, available now
 			if (diff <= 0) {
-				return 'Available now';
+				return m['retryCountdown.availableNow']();
 			}
 
 			const minutes = Math.floor(diff / 60000);
@@ -33,28 +34,35 @@
 
 			// Less than 1 hour
 			if (minutes < 60) {
-				return `Available in ${minutes} minute${minutes === 1 ? '' : 's'}`;
+				return minutes === 1
+					? m['retryCountdown.availableInMinutes']({ minutes })
+					: m['retryCountdown.availableInMinutesPlural']({ minutes });
 			}
 
 			// Less than 24 hours
 			if (hours < 24) {
-				return `Available in ${hours} hour${hours === 1 ? '' : 's'}`;
+				return hours === 1
+					? m['retryCountdown.availableInHours']({ hours })
+					: m['retryCountdown.availableInHoursPlural']({ hours });
 			}
 
 			// Less than 7 days
 			if (days < 7) {
-				return `Available in ${days} day${days === 1 ? '' : 's'}`;
+				return days === 1
+					? m['retryCountdown.availableInDays']({ days })
+					: m['retryCountdown.availableInDaysPlural']({ days });
 			}
 
 			// 7+ days: show the date
-			return `Available on ${retry.toLocaleDateString('en-US', {
+			const formattedDate = retry.toLocaleDateString('en-US', {
 				month: 'long',
 				day: 'numeric',
 				year: 'numeric'
-			})}`;
+			});
+			return m['retryCountdown.availableOn']({ date: formattedDate });
 		} catch (error) {
 			console.error('Failed to format retry countdown:', error);
-			return 'Available soon';
+			return m['retryCountdown.availableSoon']();
 		}
 	}
 

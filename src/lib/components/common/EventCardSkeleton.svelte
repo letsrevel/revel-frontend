@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import Skeleton from './Skeleton.svelte';
 	import { cn } from '$lib/utils/cn';
 
@@ -58,5 +59,5 @@
 		{/if}
 	</div>
 
-	<span class="sr-only">Loading event card...</span>
+	<span class="sr-only">{m['eventCardSkeleton.loading']()}</span>
 </div>

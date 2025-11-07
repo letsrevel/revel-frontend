@@ -54,14 +54,14 @@ docker run -p 3000:3000 \
 
 ### Environment Variables
 
-| Variable | Description | Default | Required |
-|----------|-------------|---------|----------|
-| `PUBLIC_API_URL` | Backend API base URL (build-time) | - | Yes |
-| `PUBLIC_VERSION` | Frontend version displayed in footer (build-time) | `dev` | No |
-| `ORIGIN` | SvelteKit origin for CSRF protection | `http://localhost:3000` | Yes |
-| `PORT` | Server port | `3000` | No |
-| `HOST` | Server host | `0.0.0.0` | No |
-| `NODE_ENV` | Node environment | `production` | No |
+| Variable         | Description                                       | Default                 | Required |
+| ---------------- | ------------------------------------------------- | ----------------------- | -------- |
+| `PUBLIC_API_URL` | Backend API base URL (build-time)                 | -                       | Yes      |
+| `PUBLIC_VERSION` | Frontend version displayed in footer (build-time) | `dev`                   | No       |
+| `ORIGIN`         | SvelteKit origin for CSRF protection              | `http://localhost:3000` | Yes      |
+| `PORT`           | Server port                                       | `3000`                  | No       |
+| `HOST`           | Server host                                       | `0.0.0.0`               | No       |
+| `NODE_ENV`       | Node environment                                  | `production`            | No       |
 
 ## CI/CD Pipeline
 
@@ -70,6 +70,7 @@ docker run -p 3000:3000 \
 The project uses three GitHub Actions workflows:
 
 #### 1. **test.yaml** - Pull Request Testing
+
 - Triggers on: PR creation/update
 - Runs:
   - pnpm lockfile validation
@@ -79,6 +80,7 @@ The project uses three GitHub Actions workflows:
   - Production build
 
 #### 2. **build.yaml** - Docker Image Build
+
 - Triggers on: Push/PR to `main`
 - Runs:
   - Builds Docker image (doesn't push)
@@ -86,6 +88,7 @@ The project uses three GitHub Actions workflows:
   - Validates Docker build succeeds
 
 #### 3. **publish.yaml** - Release Publishing
+
 - Triggers on: GitHub Release published
 - Runs:
   - Builds Docker image
@@ -95,6 +98,7 @@ The project uses three GitHub Actions workflows:
 ### Release Process
 
 1. **Update version file:**
+
    ```bash
    echo "0.2.0" > version
    git add version
@@ -102,12 +106,14 @@ The project uses three GitHub Actions workflows:
    ```
 
 2. **Create and push tag:**
+
    ```bash
    git tag v0.2.0
    git push && git push --tags
    ```
 
 3. **Create GitHub Release:**
+
    ```bash
    gh release create v0.2.0 --title "Release v0.2.0" --notes "Release notes here"
    ```
@@ -138,13 +144,19 @@ services:
   frontend:
     image: ghcr.io/letsrevel/revel-frontend:latest
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - PUBLIC_API_URL=https://api.revel.example.com
       - ORIGIN=https://revel.example.com
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "require('http').get('http://localhost:3000/', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+        ]
       interval: 30s
       timeout: 3s
       retries: 3
@@ -168,27 +180,27 @@ spec:
         app: revel-frontend
     spec:
       containers:
-      - name: frontend
-        image: ghcr.io/letsrevel/revel-frontend:latest
-        ports:
-        - containerPort: 3000
-        env:
-        - name: PUBLIC_API_URL
-          value: "https://api.revel.example.com"
-        - name: ORIGIN
-          value: "https://revel.example.com"
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 3000
-          initialDelaySeconds: 5
-          periodSeconds: 30
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 3000
-          initialDelaySeconds: 3
-          periodSeconds: 10
+        - name: frontend
+          image: ghcr.io/letsrevel/revel-frontend:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: PUBLIC_API_URL
+              value: 'https://api.revel.example.com'
+            - name: ORIGIN
+              value: 'https://revel.example.com'
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 3
+            periodSeconds: 10
 ---
 apiVersion: v1
 kind: Service
@@ -198,8 +210,8 @@ spec:
   selector:
     app: revel-frontend
   ports:
-  - port: 80
-    targetPort: 3000
+    - port: 80
+      targetPort: 3000
   type: LoadBalancer
 ```
 
@@ -257,6 +269,7 @@ docker logs -f <container_id>
 ## Monitoring
 
 Consider adding:
+
 - Application Performance Monitoring (APM)
 - Error tracking (Sentry, etc.)
 - Log aggregation (ELK, Loki, etc.)

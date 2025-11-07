@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import { hasTierId } from '$lib/types/tickets';
 	import { Button } from '$lib/components/ui/button';
@@ -209,16 +210,16 @@
 					✓ You have a ticket
 				</div>
 			{:else if !salesStatus.active}
-				<Button disabled class="w-full sm:w-auto">Not Available</Button>
+				<Button disabled class="w-full sm:w-auto">{m['tierCardAdmin.notAvailable']()}</Button>
 			{:else if !availabilityStatus.available}
-				<Button disabled class="w-full sm:w-auto">Sold Out</Button>
+				<Button disabled class="w-full sm:w-auto">{m['tierCardAdmin.soldOut']()}</Button>
 			{:else if !isAuthenticated}
 				<Button href="/login" variant="outline" class="w-full sm:w-auto"
-					>Sign in to Get Ticket</Button
+					>{m['tierCardAdmin.signInToGetTicket']()}</Button
 				>
 			{:else if !isEligible}
 				<!-- User is authenticated but not eligible - show disabled button -->
-				<Button disabled class="w-full sm:w-auto">Not Eligible</Button>
+				<Button disabled class="w-full sm:w-auto">{m['tierCardAdmin.notEligible']()}</Button>
 			{:else if canClaim}
 				<Button onclick={handleButtonClick} disabled={isClaiming} class="w-full sm:w-auto">
 					{isClaiming ? 'Claiming...' : 'Claim Free Ticket'}
@@ -237,7 +238,9 @@
 					{isClaiming ? 'Reserving...' : 'Reserve Ticket'}
 				</Button>
 			{:else}
-				<div class="rounded-md bg-muted px-4 py-2 text-sm text-muted-foreground">Coming Soon</div>
+				<div class="rounded-md bg-muted px-4 py-2 text-sm text-muted-foreground">
+					{m['tierCardAdmin.comingSoon']()}
+				</div>
 			{/if}
 		</div>
 	</div>

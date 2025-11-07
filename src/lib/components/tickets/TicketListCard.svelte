@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { UserTicketSchema } from '$lib/api/generated/types.gen';
 	import { Card } from '$lib/components/ui/card';
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
@@ -125,7 +126,7 @@
 			class="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4 text-sm"
 		>
 			<div class="text-muted-foreground">
-				<span class="font-medium">Purchased:</span>
+				<span class="font-medium">{m['ticketListCard.purchased']()}</span>
 				{createdDate}
 			</div>
 
@@ -140,7 +141,7 @@
 						aria-label="Download calendar event"
 					>
 						<CalendarDays class="h-4 w-4" aria-hidden="true" />
-						<span class="hidden sm:inline">Add to Calendar</span>
+						<span class="hidden sm:inline">{m['ticketListCard.addToCalendar']()}</span>
 					</button>
 				{/if}
 

@@ -6,6 +6,8 @@
 	import UserMenu from './UserMenu.svelte';
 	import ThemeToggle from './ThemeToggle.svelte';
 	import AdminButton from './AdminButton.svelte';
+	import LanguageSwitcher from './LanguageSwitcher.svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	// Mobile menu state
 	let mobileMenuOpen = $state(false);
@@ -14,20 +16,20 @@
 	let isAuthenticated = $derived(authStore.isAuthenticated);
 	let currentPath = $derived($page.url.pathname);
 
-	// Navigation items for public users
-	const publicNavItems = [
-		{ href: '/events', label: 'Browse Events' },
-		{ href: '/organizations', label: 'Organizations' }
-	];
+	// Navigation items for public users - using translated strings
+	let publicNavItems = $derived([
+		{ href: '/events', label: m['nav.browseEvents']() },
+		{ href: '/organizations', label: m['nav.organizations']() }
+	]);
 
-	// Navigation items for authenticated users
-	const authNavItems = [
-		{ href: '/events', label: 'Browse Events' },
-		{ href: '/organizations', label: 'Organizations' },
-		{ href: '/dashboard/tickets', label: 'My Tickets' },
-		{ href: '/dashboard/rsvps', label: 'RSVPs' },
-		{ href: '/dashboard/invitations', label: 'Invitations' }
-	];
+	// Navigation items for authenticated users - using translated strings
+	let authNavItems = $derived([
+		{ href: '/events', label: m['nav.browseEvents']() },
+		{ href: '/organizations', label: m['nav.organizations']() },
+		{ href: '/dashboard/tickets', label: m['nav.myTickets']() },
+		{ href: '/dashboard/rsvps', label: m['nav.rsvps']() },
+		{ href: '/dashboard/invitations', label: m['nav.invitations']() }
+	]);
 
 	// Determine which nav items to show
 	let navItems = $derived(isAuthenticated ? authNavItems : publicNavItems);
@@ -48,7 +50,7 @@
 	href="#main-content"
 	class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:outline-none focus:ring-2 focus:ring-ring"
 >
-	Skip to main content
+	{m['nav.skipToContent']()}
 </a>
 
 <header
@@ -66,7 +68,7 @@
 
 			<!-- Desktop Navigation -->
 			<nav class="hidden md:flex md:items-center md:gap-6" aria-label="Main navigation">
-				{#each navItems as item}
+				{#each navItems as item (item.href)}
 					<a
 						href={item.href}
 						class="text-sm font-medium transition-colors hover:text-primary {isActive(item.href)
@@ -104,13 +106,13 @@
 						href="/login"
 						class="rounded-md px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
 					>
-						Login
+						{m['auth.login']()}
 					</a>
 					<a
 						href="/register"
 						class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
 					>
-						Sign Up
+						{m['auth.signUp']()}
 					</a>
 				</div>
 			{/if}
@@ -121,10 +123,13 @@
 				class="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring md:hidden"
 				onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
 				aria-expanded={mobileMenuOpen}
-				aria-label="Toggle navigation menu"
+				aria-label={m['nav.toggleMenu']()}
 			>
 				<Menu class="h-6 w-6" aria-hidden="true" />
 			</button>
+
+			<!-- Language Switcher (Rightmost) -->
+			<LanguageSwitcher />
 		</div>
 	</div>
 </header>

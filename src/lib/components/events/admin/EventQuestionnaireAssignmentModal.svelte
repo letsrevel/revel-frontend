@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -64,7 +65,7 @@
 			}
 		} catch (err) {
 			console.error('Failed to load questionnaires:', err);
-			alert('Failed to load questionnaires. Please try again.');
+			alert(m['eventQuestionnaireAssignmentModal.error_failedToLoad']());
 		} finally {
 			isLoading = false;
 		}
@@ -142,25 +143,25 @@
 			onClose();
 		} catch (err) {
 			console.error('Failed to save assignments:', err);
-			alert('Failed to save assignments. Please try again.');
+			alert(m['eventQuestionnaireAssignmentModal.error_failedToSave']());
 		} finally {
 			isSaving = false;
 		}
 	}
 
 	// Type labels
-	const typeLabels: Record<string, string> = {
-		admission: 'Admission',
-		membership: 'Membership',
-		feedback: 'Feedback',
-		generic: 'Generic'
+	const typeLabels: Record<string, () => string> = {
+		admission: () => m['eventQuestionnaireAssignmentModal.type_admission'](),
+		membership: () => m['eventQuestionnaireAssignmentModal.type_membership'](),
+		feedback: () => m['eventQuestionnaireAssignmentModal.type_feedback'](),
+		generic: () => m['eventQuestionnaireAssignmentModal.type_generic']()
 	};
 
 	// Status labels
-	const statusLabels: Record<string, string> = {
-		draft: 'Draft',
-		ready: 'Ready',
-		published: 'Published'
+	const statusLabels: Record<string, () => string> = {
+		draft: () => m['eventQuestionnaireAssignmentModal.status_draft'](),
+		ready: () => m['eventQuestionnaireAssignmentModal.status_ready'](),
+		published: () => m['eventQuestionnaireAssignmentModal.status_published']()
 	};
 
 	// Check if there are changes
@@ -176,9 +177,9 @@
 		<DialogHeader class="border-b p-6 pb-4">
 			<div class="flex items-start justify-between">
 				<div>
-					<DialogTitle>Assign Questionnaires to Event</DialogTitle>
+					<DialogTitle>{m['eventQuestionnaireAssignmentModal.assignQuestionnaires']()}</DialogTitle>
 					<p class="mt-1 text-sm text-muted-foreground">
-						Select which questionnaires users must complete to RSVP or purchase tickets
+						{m['eventQuestionnaireAssignmentModal.description']()}
 					</p>
 				</div>
 				<Button
@@ -188,7 +189,7 @@
 					class="gap-2"
 				>
 					<Plus class="h-4 w-4" />
-					New Questionnaire
+					{m['eventQuestionnaireAssignmentModal.newQuestionnaire']()}
 				</Button>
 			</div>
 		</DialogHeader>
@@ -202,10 +203,10 @@
 				/>
 				<Input
 					type="text"
-					placeholder="Search questionnaires..."
+					placeholder={m['eventQuestionnaireAssignmentModal.searchPlaceholder']()}
 					bind:value={searchQuery}
 					class="pl-10"
-					aria-label="Search questionnaires"
+					aria-label={m['eventQuestionnaireAssignmentModal.searchPlaceholder']()}
 				/>
 			</div>
 		</div>
@@ -215,13 +216,15 @@
 			{#if isLoading}
 				<div class="flex items-center justify-center py-12">
 					<Loader2 class="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
-					<span class="ml-2 text-sm text-muted-foreground">Loading questionnaires...</span>
+					<span class="ml-2 text-sm text-muted-foreground"
+						>{m['eventQuestionnaireAssignmentModal.loadingQuestionnaires']()}</span
+					>
 				</div>
 			{:else if filteredQuestionnaires.length === 0}
 				<div class="py-12 text-center">
 					<FileText class="mx-auto mb-2 h-8 w-8 text-muted-foreground" aria-hidden="true" />
 					<p class="text-sm text-muted-foreground">
-						{searchQuery ? 'No questionnaires match your search' : 'No questionnaires available'}
+						{m['eventQuestionnaireAssignmentModal.noQuestionnaires']()}
 					</p>
 				</div>
 			{:else}
@@ -245,7 +248,7 @@
 									<h3 class="line-clamp-1 font-medium">{questionnaire.questionnaire.name}</h3>
 									<div class="flex flex-shrink-0 gap-1">
 										<Badge variant="outline" class="text-xs">
-											{typeLabels[questionnaire.questionnaire_type] ||
+											{typeLabels[questionnaire.questionnaire_type]?.() ||
 												questionnaire.questionnaire_type}
 										</Badge>
 										<Badge
@@ -254,7 +257,7 @@
 												: 'secondary'}
 											class="text-xs"
 										>
-											{statusLabels[questionnaire.questionnaire.status] ||
+											{statusLabels[questionnaire.questionnaire.status]?.() ||
 												questionnaire.questionnaire.status}
 										</Badge>
 									</div>
@@ -271,16 +274,21 @@
 			<div class="flex items-center justify-between">
 				<div class="text-sm text-muted-foreground">
 					<span class="font-medium text-foreground">{selectedIds.size}</span>
-					{selectedIds.size === 1 ? 'questionnaire' : 'questionnaires'} selected
+					{selectedIds.size === 1
+						? m['eventQuestionnaireAssignmentModal.selectedCount_singular']()
+						: m['eventQuestionnaireAssignmentModal.selectedCount_plural']()}
+					{m['eventQuestionnaireAssignmentModal.selected']()}
 				</div>
 				<div class="flex gap-2">
-					<Button variant="outline" onclick={onClose} disabled={isSaving}>Cancel</Button>
+					<Button variant="outline" onclick={onClose} disabled={isSaving}
+						>{m['eventQuestionnaireAssignmentModal.cancel']()}</Button
+					>
 					<Button onclick={saveAssignments} disabled={!hasChanges() || isSaving}>
 						{#if isSaving}
 							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-							Saving...
+							{m['eventQuestionnaireAssignmentModal.saving']()}
 						{:else}
-							Save Assignments
+							{m['eventQuestionnaireAssignmentModal.saveAssignments']()}
 						{/if}
 					</Button>
 				</div>

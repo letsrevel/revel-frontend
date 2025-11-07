@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
 	import { FileText, Link as LinkIcon, AlignLeft, ExternalLink, Download } from 'lucide-svelte';
 	import { getBackendUrl } from '$lib/config/api';
@@ -37,8 +38,8 @@
 
 {#if hasResources}
 	<section class="rounded-lg border bg-card p-6">
-		<h2 class="mb-4 text-xl font-bold">Event Resources</h2>
-		<p class="mb-6 text-sm text-muted-foreground">Files, links, and documents for this event</p>
+		<h2 class="mb-4 text-xl font-bold">{m['eventResources.title']()}</h2>
+		<p class="mb-6 text-sm text-muted-foreground">{m['eventResources.description']()}</p>
 
 		<div class="space-y-3">
 			{#each resources as resource (resource.id)}
@@ -84,10 +85,10 @@
 							<span class="flex items-center gap-2">
 								{#if resource.resource_type === 'file'}
 									<Download class="h-4 w-4" aria-hidden="true" />
-									<span class="hidden sm:inline">Download</span>
+									<span class="hidden sm:inline">{m['eventResources.download']()}</span>
 								{:else}
 									<ExternalLink class="h-4 w-4" aria-hidden="true" />
-									<span class="hidden sm:inline">Open</span>
+									<span class="hidden sm:inline">{m['eventResources.open']()}</span>
 								{/if}
 							</span>
 						</button>

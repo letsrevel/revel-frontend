@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { TicketTierDetailSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
@@ -114,7 +115,7 @@
 				{#if tier.name === 'General Admission'}
 					<span
 						class="rounded bg-blue-100 px-2 py-1 text-xs text-blue-700 dark:bg-blue-950 dark:text-blue-300"
-						>Default</span
+						>{m['tierCard.default']()}</span
 					>
 				{/if}
 			</div>
@@ -128,41 +129,41 @@
 			<dl class="mt-3 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
 				<!-- Price & Type -->
 				<div>
-					<dt class="text-muted-foreground">Price</dt>
+					<dt class="text-muted-foreground">{m['tierCard.price']()}</dt>
 					<dd class="font-medium">{priceDisplay()}</dd>
 				</div>
 				<div>
-					<dt class="text-muted-foreground">Type</dt>
+					<dt class="text-muted-foreground">{m['tierCard.type']()}</dt>
 					<dd class="font-medium">{priceTypeDisplay()}</dd>
 				</div>
 
 				<!-- Payment Method -->
 				<div>
-					<dt class="text-muted-foreground">Payment Method</dt>
+					<dt class="text-muted-foreground">{m['tierCard.paymentMethod']()}</dt>
 					<dd class="font-medium">{paymentMethodDisplay()}</dd>
 				</div>
 
 				<!-- Quantity -->
 				<div>
-					<dt class="text-muted-foreground">Quantity</dt>
+					<dt class="text-muted-foreground">{m['tierCard.quantity']()}</dt>
 					<dd class="font-medium">{quantityDisplay()}</dd>
 				</div>
 
 				<!-- Visibility -->
 				<div>
-					<dt class="text-muted-foreground">Visibility</dt>
+					<dt class="text-muted-foreground">{m['tierCard.visibility']()}</dt>
 					<dd class="font-medium capitalize">{visibilityDisplay()}</dd>
 				</div>
 
 				<!-- Available To -->
 				<div>
-					<dt class="text-muted-foreground">Available to</dt>
+					<dt class="text-muted-foreground">{m['tierCard.availableTo']()}</dt>
 					<dd class="font-medium">{purchasableByDisplay()}</dd>
 				</div>
 
 				<!-- Sales Window (full width) -->
 				<div class="col-span-2">
-					<dt class="text-muted-foreground">Sales Window</dt>
+					<dt class="text-muted-foreground">{m['tierCard.salesWindow']()}</dt>
 					<dd class="font-medium">{salesWindowDisplay()}</dd>
 				</div>
 			</dl>
@@ -170,7 +171,9 @@
 			<!-- Manual Payment Instructions -->
 			{#if tier.manual_payment_instructions}
 				<div class="mt-3 rounded-md border border-border bg-muted/50 p-2">
-					<p class="text-xs font-medium text-muted-foreground">Payment Instructions:</p>
+					<p class="text-xs font-medium text-muted-foreground">
+						{m['tierCard.paymentInstructions']()}
+					</p>
 					<p class="mt-1 text-sm">{tier.manual_payment_instructions}</p>
 				</div>
 			{/if}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { organizationadminUpdateResource } from '$lib/api/generated/sdk.gen';
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
@@ -51,18 +52,18 @@
 			if (resourceType === 'link') {
 				const linkValue = formData.get('link') as string;
 				if (!linkValue || linkValue.trim() === '') {
-					throw new Error('Link URL is required for link resources');
+					throw new Error(m['resourceModal.error_linkRequired']());
 				}
 				multipartData.append('link', linkValue.trim());
 			} else if (resourceType === 'text') {
 				const textValue = formData.get('text') as string;
 				if (!textValue || textValue.trim() === '') {
-					throw new Error('Text content is required for text resources');
+					throw new Error(m['resourceModal.error_textRequired']());
 				}
 				multipartData.append('text', textValue.trim());
 			} else if (resourceType === 'file') {
 				if (!file) {
-					throw new Error('File is required for file resources');
+					throw new Error(m['resourceModal.error_fileRequired']());
 				}
 				// File will be added as query parameter in URL
 			}
@@ -100,7 +101,7 @@
 
 			if (!response.ok) {
 				const error = await response.json();
-				throw new Error(error.detail || 'Failed to create resource');
+				throw new Error(error.detail || m['resourceModal.error_failedToCreate']());
 			}
 
 			return await response.json();
@@ -117,7 +118,7 @@
 	const updateResourceMutation = createMutation(() => ({
 		mutationFn: async (formData: FormData) => {
 			if (!resource?.id) {
-				throw new Error('Resource ID is required for update');
+				throw new Error(m['resourceModal.error_resourceIdRequired']());
 			}
 
 			// Build JSON body (update schema has all optional fields)
@@ -183,12 +184,12 @@
 					response.error !== null &&
 					'detail' in response.error
 						? (response.error.detail as string)
-						: 'Failed to update resource';
+						: m['resourceModal.error_failedToUpdate']();
 				throw new Error(errorDetail);
 			}
 
 			if (!response.data) {
-				throw new Error('Failed to update resource');
+				throw new Error(m['resourceModal.error_failedToUpdate']());
 			}
 
 			return response.data;
@@ -228,9 +229,7 @@
 		createResourceMutation.isPending || updateResourceMutation.isPending
 	);
 
-	// @ts-expect-error - Bound for potential future use (e.g., focus management)
 	let backdropElement: HTMLDivElement;
-	// @ts-expect-error - Bound for potential future use (e.g., focus management)
 	let modalElement: HTMLDivElement;
 </script>
 
@@ -261,12 +260,10 @@
 			<div class="mb-6 flex items-start justify-between">
 				<div>
 					<h2 id="modal-title" class="text-2xl font-bold">
-						{resource ? 'Edit Resource' : 'Add Resource'}
+						{resource ? m['resourceModal.editResource']() : m['resourceModal.addResource']()}
 					</h2>
 					<p class="mt-1 text-sm text-muted-foreground">
-						{resource
-							? 'Update the resource details below'
-							: 'Create a new resource for your organization'}
+						{resource ? m['resourceModal.updateDetails']() : m['resourceModal.createNew']()}
 					</p>
 				</div>
 
@@ -275,7 +272,7 @@
 					onclick={onClose}
 					disabled={isSubmitting}
 					class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-					aria-label="Close dialog"
+					aria-label={m['resourceModal.closeDialog']()}
 				>
 					<X class="h-5 w-5" aria-hidden="true" />
 				</button>
@@ -288,7 +285,7 @@
 					role="alert"
 					aria-live="assertive"
 				>
-					<p class="font-semibold">Error</p>
+					<p class="font-semibold">{m['resourceModal.error']()}</p>
 					<p class="mt-1 text-sm">{errorMessage}</p>
 				</div>
 			{/if}

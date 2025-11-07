@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { eventListEvents } from '$lib/api/generated/sdk.gen';
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
@@ -90,7 +91,9 @@
 <div class="space-y-4">
 	<!-- Header -->
 	<div>
-		<h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Assign to Events</h3>
+		<h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">
+			{m['resourceAssignment.assignToEvents']()}
+		</h3>
 		<p class="mt-1 text-xs text-muted-foreground">
 			Select events where this resource should be available
 		</p>
@@ -120,7 +123,9 @@
 		aria-multiselectable="true"
 	>
 		{#if error}
-			<div class="p-4 text-center text-sm text-destructive">Failed to load events</div>
+			<div class="p-4 text-center text-sm text-destructive">
+				{m['resourceAssignment.failedToLoadEvents']()}
+			</div>
 		{:else if isLoading}
 			<div class="flex items-center justify-center p-8">
 				<div

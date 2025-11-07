@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { onDestroy } from 'svelte';
 	import { Html5Qrcode } from 'html5-qrcode';
 	import { Button } from '$lib/components/ui/button';
@@ -141,7 +142,7 @@
 		<div class="relative w-full max-w-lg rounded-lg bg-background p-6 shadow-lg">
 			<!-- Header -->
 			<div class="mb-4 flex items-center justify-between">
-				<h2 id="qr-scanner-title" class="text-xl font-bold">Scan QR Code</h2>
+				<h2 id="qr-scanner-title" class="text-xl font-bold">{m['qrScannerModal.scanQr']()}</h2>
 				<button
 					type="button"
 					onclick={handleClose}
@@ -169,7 +170,7 @@
 					<div class="absolute inset-0 flex items-center justify-center">
 						<div class="text-center">
 							<Camera class="mx-auto mb-2 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-							<p class="text-sm text-muted-foreground">Initializing camera...</p>
+							<p class="text-sm text-muted-foreground">{m['qrScannerModal.initializing']()}</p>
 						</div>
 					</div>
 				{/if}
@@ -183,7 +184,7 @@
 				>
 					<AlertCircle class="h-5 w-5 shrink-0" aria-hidden="true" />
 					<div>
-						<p class="font-medium">Error</p>
+						<p class="font-medium">{m['qrScannerModal.error']()}</p>
 						<p>{error}</p>
 					</div>
 				</div>
@@ -201,7 +202,7 @@
 
 			<!-- Actions -->
 			<div class="flex justify-end gap-2">
-				<Button variant="outline" onclick={handleClose}>Cancel</Button>
+				<Button variant="outline" onclick={handleClose}>{m['qrScannerModal.cancel']()}</Button>
 			</div>
 		</div>
 	</div>

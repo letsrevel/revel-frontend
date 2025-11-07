@@ -29,6 +29,39 @@ export default [
 		}
 	},
 	{
-		ignores: ['build/', '.svelte-kit/', 'dist/']
+		rules: {
+			'@typescript-eslint/no-explicit-any': 'warn',
+			'@typescript-eslint/no-unused-vars': [
+				'warn',
+				{
+					argsIgnorePattern: '^_',
+					varsIgnorePattern: '^_'
+				}
+			],
+			'@typescript-eslint/array-type': 'off',
+			'@typescript-eslint/no-non-null-assertion': 'warn',
+			'@typescript-eslint/no-invalid-void-type': 'off',
+			'@typescript-eslint/consistent-indexed-object-style': 'off',
+			'@typescript-eslint/consistent-type-definitions': 'off',
+			'@typescript-eslint/no-inferrable-types': 'warn',
+			'@typescript-eslint/no-dynamic-delete': 'warn',
+			'@typescript-eslint/no-unused-expressions': 'warn',
+			'prefer-const': 'warn',
+			'no-useless-escape': 'warn',
+			'svelte/no-at-html-tags': 'warn',
+			'svelte/no-unused-svelte-ignore': 'warn',
+			'svelte/valid-compile': 'off' // Disable custom element warnings
+		}
+	},
+	{
+		ignores: [
+			'build/',
+			'.svelte-kit/',
+			'dist/',
+			'src/lib/api/generated/**',
+			'src/lib/paraglide/**',
+			'*.config.js',
+			'*.config.ts'
+		]
 	}
 ];

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import type { PageData } from './$types';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -43,13 +44,9 @@
 	let isDeletingTag = $state<Record<string, boolean>>({});
 
 	// Image upload states - TODO: implement image upload/delete functionality
-	// @ts-expect-error - Will be used when image upload is implemented
 	let isUploadingLogo = $state(false);
-	// @ts-expect-error - Will be used when image upload is implemented
 	let isUploadingCover = $state(false);
-	// @ts-expect-error - Will be used when image upload is implemented
 	let isDeletingLogo = $state(false);
-	// @ts-expect-error - Will be used when image upload is implemented
 	let isDeletingCover = $state(false);
 
 	/**
@@ -66,7 +63,7 @@
 		if (!accessToken) return;
 
 		if (!name.trim()) {
-			updateError = 'Series name is required';
+			updateError = m['eventSeriesEditPage.error_nameRequired']();
 			return;
 		}
 
@@ -84,13 +81,14 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to update series');
+				throw new Error(m['eventSeriesEditPage.error_updateFailed']());
 			}
 
 			await invalidateAll();
 		} catch (err) {
 			console.error('Failed to update series:', err);
-			updateError = err instanceof Error ? err.message : 'Failed to update series';
+			updateError =
+				err instanceof Error ? err.message : m['eventSeriesEditPage.error_updateFailed']();
 		} finally {
 			isUpdating = false;
 		}
@@ -100,7 +98,6 @@
 	 * Handle logo upload
 	 * TODO: Wire this up to ImageUploader component
 	 */
-	// @ts-expect-error - Will be used when image upload UI is implemented
 	async function handleLogoUpload(file: File) {
 		if (!accessToken) return;
 
@@ -130,7 +127,6 @@
 	 * Handle cover art upload
 	 * TODO: Wire this up to ImageUploader component
 	 */
-	// @ts-expect-error - Will be used when image upload UI is implemented
 	async function handleCoverUpload(file: File) {
 		if (!accessToken) return;
 
@@ -160,7 +156,6 @@
 	 * Delete logo
 	 * TODO: Wire this up to ImageUploader component
 	 */
-	// @ts-expect-error - Will be used when image upload UI is implemented
 	async function deleteLogo() {
 		if (!accessToken || !confirm('Are you sure you want to delete the logo?')) return;
 
@@ -189,7 +184,6 @@
 	 * Delete cover art
 	 * TODO: Wire this up to ImageUploader component
 	 */
-	// @ts-expect-error - Will be used when image upload UI is implemented
 	async function deleteCoverArt() {
 		if (!accessToken || !confirm('Are you sure you want to delete the cover art?')) return;
 
@@ -230,7 +224,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to add tag');
+				throw new Error(m['eventSeriesEditPage.error_addTagFailed']());
 			}
 
 			newTag = '';
@@ -259,7 +253,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to remove tag');
+				throw new Error(m['eventSeriesEditPage.error_removeTagFailed']());
 			}
 
 			await invalidateAll();
@@ -279,8 +273,14 @@
 </script>
 
 <svelte:head>
-	<title>Edit {data.series.name} - {organization.name} Admin | Revel</title>
-	<meta name="description" content="Edit event series {data.series.name}" />
+	<title
+		>{m['eventSeriesEditPage.pageTitle']({ seriesName: data.series.name })} - {organization.name} Admin
+		| Revel</title
+	>
+	<meta
+		name="description"
+		content={m['eventSeriesEditPage.pageDescription']({ seriesName: data.series.name })}
+	/>
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
@@ -291,31 +291,34 @@
 			type="button"
 			onclick={goBack}
 			class="rounded-md p-2 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-			aria-label="Go back to series list"
+			aria-label={m['eventSeriesEditPage.backAriaLabel']()}
 		>
 			<ArrowLeft class="h-5 w-5" aria-hidden="true" />
 		</button>
 		<div class="flex-1">
-			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">Edit Event Series</h1>
+			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
+				{m['eventSeriesEditPage.title']()}
+			</h1>
 			<p class="mt-1 text-sm text-muted-foreground">{data.series.name}</p>
 		</div>
 	</div>
 
 	<!-- Basic Details -->
 	<div class="rounded-lg border border-border bg-card p-6 shadow-sm">
-		<h2 class="mb-4 text-lg font-semibold">Basic Details</h2>
+		<h2 class="mb-4 text-lg font-semibold">{m['eventSeriesEditPage.basicDetails.title']()}</h2>
 
 		<div class="space-y-4">
 			<!-- Name Field -->
 			<div class="space-y-2">
 				<Label for="name">
-					Series Name <span class="text-destructive">*</span>
+					{m['eventSeriesEditPage.basicDetails.nameLabel']()}
+					<span class="text-destructive">*</span>
 				</Label>
 				<Input
 					id="name"
 					type="text"
 					bind:value={name}
-					placeholder="e.g., Monthly Community Gatherings"
+					placeholder={m['eventSeriesEditPage.basicDetails.namePlaceholder']()}
 					required
 					maxlength={150}
 					disabled={isUpdating}
@@ -324,11 +327,11 @@
 
 			<!-- Description Field -->
 			<div class="space-y-2">
-				<Label for="description">Description</Label>
+				<Label for="description">{m['eventSeriesEditPage.basicDetails.descriptionLabel']()}</Label>
 				<Textarea
 					id="description"
 					bind:value={description}
-					placeholder="Describe what this event series is about..."
+					placeholder={m['eventSeriesEditPage.basicDetails.descriptionPlaceholder']()}
 					rows={4}
 					disabled={isUpdating}
 				/>
@@ -346,9 +349,9 @@
 				<Button onclick={updateSeriesDetails} disabled={!hasChanges || isUpdating}>
 					{#if isUpdating}
 						<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-						Saving...
+						{m['eventSeriesEditPage.basicDetails.savingButton']()}
 					{:else}
-						Save Changes
+						{m['eventSeriesEditPage.basicDetails.saveButton']()}
 					{/if}
 				</Button>
 			</div>
@@ -357,29 +360,21 @@
 
 	<!-- Logo -->
 	<div class="rounded-lg border border-border bg-card p-6 shadow-sm">
-		<h2 class="mb-4 text-lg font-semibold">Logo</h2>
-		<ImageUploader
-			preview={data.series.logo}
-			aspectRatio="square"
-			label="Series Logo"
-		/>
+		<h2 class="mb-4 text-lg font-semibold">{m['eventSeriesEditPage.logo.title']()}</h2>
+		<ImageUploader preview={data.series.logo} aspectRatio="square" label="Series Logo" />
 		<p class="mt-2 text-sm text-muted-foreground">Logo management coming soon</p>
 	</div>
 
 	<!-- Cover Art -->
 	<div class="rounded-lg border border-border bg-card p-6 shadow-sm">
-		<h2 class="mb-4 text-lg font-semibold">Cover Art</h2>
-		<ImageUploader
-			preview={data.series.cover_art}
-			aspectRatio="wide"
-			label="Series Cover Art"
-		/>
+		<h2 class="mb-4 text-lg font-semibold">{m['eventSeriesEditPage.coverArt.title']()}</h2>
+		<ImageUploader preview={data.series.cover_art} aspectRatio="wide" label="Series Cover Art" />
 		<p class="mt-2 text-sm text-muted-foreground">Cover art management coming soon</p>
 	</div>
 
 	<!-- Tags -->
 	<div class="rounded-lg border border-border bg-card p-6 shadow-sm">
-		<h2 class="mb-4 text-lg font-semibold">Tags</h2>
+		<h2 class="mb-4 text-lg font-semibold">{m['eventSeriesEditPage.tags.title']()}</h2>
 
 		<!-- Current Tags -->
 		{#if data.series.tags && data.series.tags.length > 0}

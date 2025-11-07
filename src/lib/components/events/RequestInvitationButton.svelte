@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { eventCreateInvitationRequest } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -34,7 +35,7 @@
 	const requestMutation = createMutation(() => ({
 		mutationFn: async (messageText: string) => {
 			if (!accessToken) {
-				throw new Error('You must be logged in to request an invitation');
+				throw new Error(m['requestInvitationButton.mustBeLoggedIn']());
 			}
 
 			const response = await eventCreateInvitationRequest({
@@ -51,7 +52,7 @@
 				throw new Error(
 					typeof response.error === 'object' && response.error && 'detail' in response.error
 						? String(response.error.detail)
-						: 'Failed to submit invitation request'
+						: m['requestInvitationButton.failedToSubmit']()
 				);
 			}
 
@@ -103,7 +104,7 @@
 		aria-label="You have already requested an invitation"
 	>
 		<AlertCircle class="h-4 w-4" aria-hidden="true" />
-		Invitation Requested
+		{m['requestInvitationButton.invitationRequested']()}
 	</div>
 {:else}
 	<Dialog.Root open={showDialog} onOpenChange={handleDialogChange}>
@@ -111,7 +112,7 @@
 			class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {className}"
 		>
 			<Mail class="h-4 w-4" aria-hidden="true" />
-			Request Invitation
+			{m['requestInvitationButton.requestInvitation']()}
 		</Dialog.Trigger>
 
 		<Dialog.Content class="sm:max-w-[500px]">
@@ -136,19 +137,21 @@
 							/>
 						</svg>
 					</div>
-					<Dialog.Title class="text-xl font-semibold">Request Submitted!</Dialog.Title>
+					<Dialog.Title class="text-xl font-semibold"
+						>{m['requestInvitationButton.requestSubmitted']()}</Dialog.Title
+					>
 					<Dialog.Description class="mt-2">
-						Your invitation request has been sent to the event organizers. You'll be notified when
-						it's reviewed.
+						{m['requestInvitationButton.requestSubmittedBody']()}
 					</Dialog.Description>
 				</div>
 			{:else}
 				<!-- Request Form -->
 				<Dialog.Header>
-					<Dialog.Title>Request Invitation</Dialog.Title>
+					<Dialog.Title>{m['requestInvitationButton.requestInvitation']()}</Dialog.Title>
 					<Dialog.Description>
-						Submit a request to be invited to {eventName}. The event organizers will review your
-						request and notify you when it's approved.
+						{@html m['requestInvitationButton.submitRequestToEvent']({
+							eventName: `<strong>${eventName}</strong>`
+						})}
 					</Dialog.Description>
 				</Dialog.Header>
 
@@ -160,17 +163,19 @@
 					class="space-y-4"
 				>
 					<div>
-						<label for="message" class="block text-sm font-medium"> Message (Optional) </label>
+						<label for="message" class="block text-sm font-medium">
+							{m['requestInvitationButton.messageOptional']()}
+						</label>
 						<textarea
 							id="message"
 							bind:value={message}
-							placeholder="Tell the organizers why you'd like to attend..."
+							placeholder={m['requestInvitationButton.messagePlaceholder']()}
 							rows="4"
 							maxlength="500"
 							class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
 						></textarea>
 						<p class="mt-1 text-xs text-muted-foreground">
-							{message.length}/500 characters
+							{m['requestInvitationButton.characterCount']({ count: message.length })}
 						</p>
 					</div>
 
@@ -179,7 +184,8 @@
 							class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
 							role="alert"
 						>
-							{requestMutation.error?.message || 'Failed to submit request. Please try again.'}
+							{requestMutation.error?.message ||
+								m['requestInvitationButton.failedToSubmitTryAgain']()}
 						</div>
 					{/if}
 
@@ -190,7 +196,7 @@
 							onclick={() => (showDialog = false)}
 							disabled={requestMutation.isPending}
 						>
-							Cancel
+							{m['requestInvitationButton.cancel']()}
 						</Button>
 						<Button type="submit" disabled={requestMutation.isPending}>
 							{#if requestMutation.isPending}
@@ -198,10 +204,10 @@
 									class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent"
 									aria-hidden="true"
 								></div>
-								Submitting...
+								{m['requestInvitationButton.submitting']()}
 							{:else}
 								<Send class="mr-2 h-4 w-4" aria-hidden="true" />
-								Submit Request
+								{m['requestInvitationButton.submitRequest']()}
 							{/if}
 						</Button>
 					</Dialog.Footer>

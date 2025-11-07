@@ -1,9 +1,10 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	// Privacy Policy page (placeholder until backend endpoint is ready)
 </script>
 
 <div class="container mx-auto px-4 py-8">
-	<h1 class="mb-8 text-3xl font-bold">Privacy Policy</h1>
+	<h1 class="mb-8 text-3xl font-bold">{m['privacyPolicyPage.privacyPolicy']()}</h1>
 
 	<div class="prose prose-slate dark:prose-invert max-w-none">
 		<p class="text-muted-foreground">

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import {
 		Card,
 		CardContent,
@@ -59,7 +60,7 @@
 			}
 		} catch (err) {
 			console.error('Failed to load questionnaire:', err);
-			alert('Failed to load questionnaire. Please try again.');
+			alert(m['questionnaireCard.error_failedToLoad']());
 			isAssignmentModalOpen = false;
 		} finally {
 			isLoadingFullQuestionnaire = false;
@@ -67,15 +68,15 @@
 	}
 
 	// Format questionnaire type for display
-	const typeLabels: Record<string, string> = {
-		admission: 'Admission',
-		membership: 'Membership',
-		feedback: 'Feedback',
-		generic: 'Generic'
+	const typeLabels: Record<string, () => string> = {
+		admission: () => m['questionnaireCard.type_admission'](),
+		membership: () => m['questionnaireCard.type_membership'](),
+		feedback: () => m['questionnaireCard.type_feedback'](),
+		generic: () => m['questionnaireCard.type_generic']()
 	};
 
 	const typeLabel = $derived(
-		typeLabels[questionnaire.questionnaire_type] || questionnaire.questionnaire_type
+		typeLabels[questionnaire.questionnaire_type]?.() || questionnaire.questionnaire_type
 	);
 
 	// Get type badge variant
@@ -89,14 +90,14 @@
 	const typeVariant = $derived(typeVariants[questionnaire.questionnaire_type] || 'outline');
 
 	// Status labels and variants
-	const statusLabels: Record<string, string> = {
-		draft: 'Draft',
-		ready: 'Ready',
-		published: 'Published'
+	const statusLabels: Record<string, () => string> = {
+		draft: () => m['questionnaireCard.status_draft'](),
+		ready: () => m['questionnaireCard.status_ready'](),
+		published: () => m['questionnaireCard.status_published']()
 	};
 
 	const statusLabel = $derived(
-		statusLabels[questionnaire.questionnaire.status] || questionnaire.questionnaire.status
+		statusLabels[questionnaire.questionnaire.status]?.() || questionnaire.questionnaire.status
 	);
 
 	// Get status badge variant
@@ -122,18 +123,19 @@
 			...series.map((s) => `${s.name} (series)`)
 		];
 
-		if (allAssignments.length === 0) return 'Not assigned to any events';
-		if (allAssignments.length <= 3) return `Assigned to ${allAssignments.join(', ')}`;
+		if (allAssignments.length === 0) return m['questionnaireCard.notAssignedToAnyEvents']();
+		if (allAssignments.length <= 3)
+			return m['questionnaireCard.assignedTo']({ assignments: allAssignments.join(', ') });
 
 		const first = allAssignments.slice(0, 2).join(', ');
 		const remaining = allAssignments.length - 2;
-		return `Assigned to ${first} and ${remaining} more`;
+		return m['questionnaireCard.assignedToAndMore']({ first, remaining: remaining.toString() });
 	});
 
 	// Handle delete
 	async function handleDelete() {
 		const confirmed = confirm(
-			`Are you sure you want to delete "${questionnaire.questionnaire.name}"?\n\nThis action cannot be undone.`
+			m['questionnaireCard.confirmDelete']({ name: questionnaire.questionnaire.name })
 		);
 
 		if (!confirmed) return;
@@ -146,14 +148,14 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to delete questionnaire');
+				throw new Error(m['questionnaireCard.error_failedToDelete']());
 			}
 
 			// Refresh the page data
 			await invalidateAll();
 		} catch (err) {
 			console.error('Failed to delete questionnaire:', err);
-			alert('Failed to delete questionnaire. Please try again.');
+			alert(m['questionnaireCard.error_failedToDeleteTryAgain']());
 		} finally {
 			isDeleting = false;
 		}
@@ -189,8 +191,9 @@
 					<p class="font-medium">
 						{questionnaire.pending_evaluations_count}
 						{questionnaire.pending_evaluations_count === 1
-							? 'submission needs'
-							: 'submissions need'} review
+							? m['questionnaireCard.submissionNeeds']()
+							: m['questionnaireCard.submissionsNeed']()}
+						{m['questionnaireCard.review']()}
 					</p>
 				</div>
 			{/if}
@@ -203,10 +206,12 @@
 							{#if assignmentCount > 0}
 								<span>
 									<span class="font-medium text-foreground">{assignmentCount}</span>
-									{assignmentCount === 1 ? 'assignment' : 'assignments'}
+									{assignmentCount === 1
+										? m['questionnaireCard.assignment']()
+										: m['questionnaireCard.assignments']()}
 								</span>
 							{:else}
-								<span>Not assigned to any events</span>
+								<span>{m['questionnaireCard.notAssigned']()}</span>
 							{/if}
 						</TooltipTrigger>
 						<TooltipContent>
@@ -225,7 +230,7 @@
 					class="flex-1 gap-2"
 				>
 					<Edit class="h-4 w-4" />
-					Edit
+					{m['questionnaireCard.edit']()}
 				</Button>
 				<Button
 					href="/org/{organizationSlug}/admin/questionnaires/{questionnaire.id}/submissions"
@@ -234,7 +239,7 @@
 					class="relative flex-1 gap-2"
 				>
 					<Eye class="h-4 w-4" />
-					Submissions
+					{m['questionnaireCard.submissions']()}
 					{#if questionnaire.pending_evaluations_count && questionnaire.pending_evaluations_count > 0}
 						<Badge
 							variant="destructive"
@@ -255,7 +260,7 @@
 				class="w-full gap-2"
 			>
 				<CalendarCheck class="h-4 w-4" />
-				Assign to Events
+				{m['questionnaireCard.assignToEvents']()}
 			</Button>
 
 			<!-- Delete Button -->
@@ -267,7 +272,7 @@
 				class="w-full gap-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
 			>
 				<Trash2 class="h-4 w-4" />
-				{isDeleting ? 'Deleting...' : 'Delete'}
+				{isDeleting ? m['questionnaireCard.deleting']() : m['questionnaireCard.delete']()}
 			</Button>
 		</div>
 	</CardContent>

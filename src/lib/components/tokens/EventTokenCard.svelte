@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { EventTokenSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
 	import { Copy, Edit, Trash2, Ticket } from 'lucide-svelte';
@@ -27,7 +28,7 @@
 	const expirationDisplay = $derived(getExpirationDisplay(token.expires_at));
 
 	async function copyLink() {
-		const url = getEventTokenUrl(token.id || '', orgSlug, eventSlug);
+		const url = getEventTokenUrl(token.id ?? '', orgSlug, eventSlug);
 		try {
 			await navigator.clipboard.writeText(url);
 			toast.success('Link copied to clipboard!');
@@ -58,22 +59,22 @@
 			<!-- Details -->
 			<div class="grid grid-cols-2 gap-2 text-sm text-muted-foreground md:grid-cols-3">
 				<div>
-					<span class="font-medium">Type:</span>
+					<span class="font-medium">{m['eventTokenCard.type']()}</span>
 					{accessType}
 				</div>
 				<div>
-					<span class="font-medium">Uses:</span>
+					<span class="font-medium">{m['eventTokenCard.uses']()}</span>
 					{usageDisplay}
 				</div>
 				<div>
-					<span class="font-medium">Expires:</span>
+					<span class="font-medium">{m['eventTokenCard.expires']()}</span>
 					{expirationDisplay}
 				</div>
 			</div>
 
 			{#if hasTicketTier}
 				<div class="text-sm text-muted-foreground">
-					<span class="font-medium">Ticket Tier:</span>
+					<span class="font-medium">{m['eventTokenCard.ticketTier']()}</span>
 					{token.ticket_tier}
 				</div>
 			{/if}

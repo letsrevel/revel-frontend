@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { EventTicketSchemaActual } from '$lib/utils/eligibility';
 	import { Card } from '$lib/components/ui/card';
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
@@ -203,7 +204,7 @@
 						alt="Ticket QR Code"
 						class="h-64 w-64 rounded-lg border border-border bg-white"
 					/>
-					<p class="text-center text-sm text-muted-foreground">Show this QR code at check-in</p>
+					<p class="text-center text-sm text-muted-foreground">{m['myTicket.showQr']()}</p>
 					<button
 						onclick={downloadQRCode}
 						class="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
@@ -222,13 +223,13 @@
 		<!-- Checked In Info -->
 		{#if ticket.status === 'checked_in' && checkedInDate()}
 			<div class="rounded-lg bg-blue-50 p-4 text-sm">
-				<p class="font-medium text-blue-900">Checked in at {checkedInDate()}</p>
+				<p class="font-medium text-blue-900">{m['myTicket.checkedInAt']()} {checkedInDate()}</p>
 			</div>
 		{/if}
 
 		<!-- Ticket ID -->
 		<div class="border-t border-border pt-4">
-			<p class="text-xs text-muted-foreground">Ticket ID: {ticket.id}</p>
+			<p class="text-xs text-muted-foreground">{m['myTicket.ticketId']()} {ticket.id}</p>
 		</div>
 	</div>
 </Card>

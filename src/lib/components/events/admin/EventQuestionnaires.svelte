@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Plus, X, FileText } from 'lucide-svelte';
@@ -29,7 +30,7 @@
 		if (!eventId) return;
 
 		const confirmed = confirm(
-			`Remove "${questionnaireName}" requirement from this event?\n\nUsers will no longer need to complete this questionnaire to RSVP.`
+			m['eventQuestionnaires.confirmUnassign']({ name: questionnaireName })
 		);
 
 		if (!confirmed) return;
@@ -52,18 +53,18 @@
 			await invalidateAll();
 		} catch (err) {
 			console.error('Failed to unassign questionnaire:', err);
-			alert('Failed to remove questionnaire. Please try again.');
+			alert(m['eventQuestionnaires.error_failedToUnassign']());
 		} finally {
 			unassigning = null;
 		}
 	}
 
 	// Type and status labels
-	const typeLabels: Record<string, string> = {
-		admission: 'Admission',
-		membership: 'Membership',
-		feedback: 'Feedback',
-		generic: 'Generic'
+	const typeLabels: Record<string, () => string> = {
+		admission: () => m['eventQuestionnaires.type_admission'](),
+		membership: () => m['eventQuestionnaires.type_membership'](),
+		feedback: () => m['eventQuestionnaires.type_feedback'](),
+		generic: () => m['eventQuestionnaires.type_generic']()
 	};
 </script>
 
@@ -71,14 +72,14 @@
 	<!-- Header with Add Button -->
 	<div class="flex items-center justify-between">
 		<div>
-			<h3 class="text-sm font-medium">Required Questionnaires</h3>
+			<h3 class="text-sm font-medium">{m['eventQuestionnaires.requiredQuestionnaires']()}</h3>
 			<p class="mt-1 text-xs text-muted-foreground">
-				Questionnaires users must complete to RSVP or purchase tickets
+				{m['eventQuestionnaires.description']()}
 			</p>
 		</div>
 		<Button onclick={onAssignClick} variant="outline" size="sm" class="gap-2">
 			<Plus class="h-4 w-4" />
-			Assign Questionnaires
+			{m['eventQuestionnaires.assignQuestionnaires']()}
 		</Button>
 	</div>
 
@@ -86,9 +87,9 @@
 	{#if assignedQuestionnaires.length === 0}
 		<div class="rounded-lg border border-dashed p-8 text-center">
 			<FileText class="mx-auto mb-2 h-8 w-8 text-muted-foreground" aria-hidden="true" />
-			<p class="text-sm font-medium">No questionnaires assigned</p>
+			<p class="text-sm font-medium">{m['eventQuestionnaires.noQuestionnairesAssigned']()}</p>
 			<p class="mt-1 text-xs text-muted-foreground">
-				Click "Assign Questionnaires" to require users to complete forms before RSVPing
+				{m['eventQuestionnaires.noQuestionnairesHint']()}
 			</p>
 		</div>
 	{:else}
@@ -99,7 +100,8 @@
 						<div class="flex items-center gap-2">
 							<p class="font-medium">{questionnaire.questionnaire.name}</p>
 							<Badge variant="outline" class="text-xs">
-								{typeLabels[questionnaire.questionnaire_type] || questionnaire.questionnaire_type}
+								{typeLabels[questionnaire.questionnaire_type]?.() ||
+									questionnaire.questionnaire_type}
 							</Badge>
 						</div>
 					</div>

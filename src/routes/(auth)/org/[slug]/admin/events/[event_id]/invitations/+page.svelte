@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData, ActionData } from './$types';
 	import type {
 		EventInvitationListSchema,
@@ -189,7 +190,7 @@
 		if (user.first_name && user.last_name) return `${user.first_name} ${user.last_name}`;
 		if (user.first_name) return user.first_name;
 		if (user.email) return user.email;
-		return 'Unknown User';
+		return m['eventInvitationsAdmin.unknownUser']();
 	}
 
 	/**
@@ -560,10 +561,12 @@
 				class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
 			>
 				<ChevronLeft class="h-4 w-4" aria-hidden="true" />
-				Back to Events
+				{m['eventInvitationsAdmin.backToEvents']()}
 			</a>
 		</div>
-		<h1 class="text-2xl font-bold tracking-tight md:text-3xl">Manage Invitations</h1>
+		<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
+			{m['eventInvitationsAdmin.pageTitle']()}
+		</h1>
 		<p class="mt-1 text-sm text-muted-foreground">{data.event.name}</p>
 	</div>
 
@@ -576,18 +579,20 @@
 			<Check class="h-5 w-5 shrink-0" aria-hidden="true" />
 			<p class="text-sm font-medium">
 				{#if form.action === 'approved'}
-					Request approved successfully.
+					{m['eventInvitationsAdmin.requestApproved']()}
 				{:else if form.action === 'rejected'}
-					Request rejected successfully.
+					{m['eventInvitationsAdmin.requestRejected']()}
 				{:else if form.action === 'created'}
-					{form.data?.created_invitations || 0} invitation(s) sent to registered users,
-					{form.data?.pending_invitations || 0} invitation(s) sent to unregistered emails.
+					{m['eventInvitationsAdmin.invitationsCreated']({
+						created: form.data?.created_invitations || 0,
+						pending: form.data?.pending_invitations || 0
+					})}
 				{:else if form.action === 'deleted'}
-					Invitation deleted successfully.
+					{m['eventInvitationsAdmin.invitationDeleted']()}
 				{:else if form.action === 'updated'}
-					Invitation updated successfully.
+					{m['eventInvitationsAdmin.invitationUpdated']()}
 				{:else if form.action === 'bulk_updated'}
-					{form.count || 0} invitation(s) updated successfully.
+					{m['eventInvitationsAdmin.bulkUpdated']({ count: form.count || 0 })}
 				{/if}
 			</p>
 		</div>
@@ -618,7 +623,7 @@
 			>
 				<div class="flex items-center gap-2">
 					<Mail class="h-4 w-4" aria-hidden="true" />
-					Invitation Requests
+					{m['eventInvitationsAdmin.tabRequests']()}
 					<span
 						class="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground"
 					>
@@ -639,7 +644,7 @@
 			>
 				<div class="flex items-center gap-2">
 					<UserPlus class="h-4 w-4" aria-hidden="true" />
-					Direct Invitations
+					{m['eventInvitationsAdmin.tabInvitations']()}
 					<span
 						class="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground"
 					>
@@ -660,7 +665,7 @@
 			>
 				<div class="flex items-center gap-2">
 					<Link class="h-4 w-4" aria-hidden="true" />
-					Invitation Links
+					{m['eventInvitationsAdmin.tabLinks']()}
 					<span
 						class="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground"
 					>
@@ -704,7 +709,7 @@
 								: 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
 						)}
 					>
-						All ({data.requestsPagination.totalCount})
+						{m['eventInvitationsAdmin.filterAll']({ count: data.requestsPagination.totalCount })}
 					</button>
 					<button
 						type="button"
@@ -716,7 +721,7 @@
 								: 'border border-yellow-600 text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-950'
 						)}
 					>
-						Pending
+						{m['eventInvitationsAdmin.filterPending']()}
 					</button>
 					<button
 						type="button"
@@ -728,7 +733,7 @@
 								: 'border border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-950'
 						)}
 					>
-						Approved
+						{m['eventInvitationsAdmin.filterApproved']()}
 					</button>
 					<button
 						type="button"
@@ -740,7 +745,7 @@
 								: 'border border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-950'
 						)}
 					>
-						Rejected
+						{m['eventInvitationsAdmin.filterRejected']()}
 					</button>
 				</div>
 			</div>
@@ -749,12 +754,12 @@
 			{#if data.invitationRequests.length === 0}
 				<div class="rounded-lg border bg-card p-12 text-center">
 					<Users class="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-					<h3 class="mb-2 text-lg font-semibold">No invitation requests</h3>
+					<h3 class="mb-2 text-lg font-semibold">{m['eventInvitationsAdmin.noRequests']()}</h3>
 					<p class="text-sm text-muted-foreground">
 						{#if activeStatusFilter || searchQuery}
-							No invitation requests match your current filters.
+							{m['eventInvitationsAdmin.noRequestsFiltered']()}
 						{:else}
-							There are no invitation requests for this event at this time.
+							{m['eventInvitationsAdmin.noRequestsEmpty']()}
 						{/if}
 					</p>
 				</div>
@@ -768,27 +773,27 @@
 									<th
 										class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
 									>
-										User
+										{m['eventInvitationsAdmin.headerUser']()}
 									</th>
 									<th
 										class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
 									>
-										Message
+										{m['eventInvitationsAdmin.headerMessage']()}
 									</th>
 									<th
 										class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
 									>
-										Status
+										{m['eventInvitationsAdmin.headerStatus']()}
 									</th>
 									<th
 										class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
 									>
-										Requested
+										{m['eventInvitationsAdmin.headerRequested']()}
 									</th>
 									<th
 										class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground"
 									>
-										Actions
+										{m['eventInvitationsAdmin.headerActions']()}
 									</th>
 								</tr>
 							</thead>
@@ -829,7 +834,9 @@
 											{#if request.message}
 												<p class="truncate text-sm">{request.message}</p>
 											{:else}
-												<p class="text-sm italic text-muted-foreground">No message</p>
+												<p class="text-sm italic text-muted-foreground">
+													{m['eventInvitationsAdmin.noMessage']()}
+												</p>
 											{/if}
 										</td>
 
@@ -874,7 +881,7 @@
 															class="inline-flex items-center gap-1 rounded-md bg-green-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-green-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 														>
 															<Check class="h-3.5 w-3.5" aria-hidden="true" />
-															Approve
+															{m['eventInvitationsAdmin.approve']()}
 														</button>
 													</form>
 
@@ -896,13 +903,15 @@
 															class="inline-flex items-center gap-1 rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 														>
 															<X class="h-3.5 w-3.5" aria-hidden="true" />
-															Reject
+															{m['eventInvitationsAdmin.reject']()}
 														</button>
 													</form>
 												</div>
 											{:else}
 												<span class="text-sm text-muted-foreground">
-													{request.status === 'approved' ? 'Approved' : 'Rejected'}
+													{request.status === 'approved'
+														? m['eventInvitationsAdmin.approved']()
+														: m['eventInvitationsAdmin.rejected']()}
 												</span>
 											{/if}
 										</td>
@@ -933,7 +942,7 @@
 										: ''}{searchQuery ? `&search=${searchQuery}` : ''}"
 									class="inline-flex items-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
 								>
-									Previous
+									{m['eventInvitationsAdmin.previous']()}
 								</a>
 							{/if}
 
@@ -945,7 +954,7 @@
 										: ''}{searchQuery ? `&search=${searchQuery}` : ''}"
 									class="inline-flex items-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
 								>
-									Next
+									{m['eventInvitationsAdmin.next']()}
 								</a>
 							{/if}
 						</div>
@@ -959,19 +968,18 @@
 			<!-- Action Buttons -->
 			<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 				<p class="text-sm text-muted-foreground">
-					Directly invite users by email. Registered users will receive immediate access, while
-					unregistered emails will get a signup link.
+					{m['eventInvitationsAdmin.directInvitationsDescription']()}
 				</p>
 				<div class="flex gap-2">
 					{#if totalSelected > 0}
 						<Button variant="outline" onclick={openBulkEditDialog}>
 							<Edit class="h-4 w-4" aria-hidden="true" />
-							Edit {totalSelected} Selected
+							{m['eventInvitationsAdmin.editSelected']({ count: totalSelected })}
 						</Button>
 					{/if}
 					<Button onclick={openCreateDialog}>
 						<Plus class="h-4 w-4" aria-hidden="true" />
-						Create Invitations
+						{m['eventInvitationsAdmin.createInvitations']()}
 					</Button>
 				</div>
 			</div>
@@ -995,14 +1003,18 @@
 			<div class="space-y-3">
 				<div class="flex items-center justify-between">
 					<h3 class="text-lg font-semibold">
-						Registered Users ({data.registeredPagination.totalCount})
+						{m['eventInvitationsAdmin.registeredUsersTitle']({
+							count: data.registeredPagination.totalCount
+						})}
 					</h3>
 					{#if selectedRegisteredIds.size > 0}
 						<div class="flex items-center gap-2">
 							<span class="text-sm text-muted-foreground">
-								{selectedRegisteredIds.size} selected
+								{m['eventInvitationsAdmin.selected']({ count: selectedRegisteredIds.size })}
 							</span>
-							<Button size="sm" variant="outline" onclick={clearSelections}>Clear</Button>
+							<Button size="sm" variant="outline" onclick={clearSelections}
+								>{m['eventInvitationsAdmin.clear']()}</Button
+							>
 						</div>
 					{/if}
 				</div>
@@ -1010,7 +1022,9 @@
 				{#if data.registeredInvitations.length === 0}
 					<div class="rounded-lg border bg-card p-8 text-center">
 						<UserPlus class="mx-auto mb-2 h-8 w-8 text-muted-foreground" aria-hidden="true" />
-						<p class="text-sm text-muted-foreground">No invitations to registered users yet.</p>
+						<p class="text-sm text-muted-foreground">
+							{m['eventInvitationsAdmin.noRegisteredInvitations']()}
+						</p>
 					</div>
 				{:else}
 					<div class="overflow-hidden rounded-lg border bg-card">
@@ -1034,32 +1048,32 @@
 										<th
 											class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
 										>
-											User
+											{m['eventInvitationsAdmin.headerUser']()}
 										</th>
 										<th
 											class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
 										>
-											Email
+											{m['eventInvitationsAdmin.headerEmail']()}
 										</th>
 										<th
 											class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
 										>
-											Tier
+											{m['eventInvitationsAdmin.headerTier']()}
 										</th>
 										<th
 											class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
 										>
-											Properties
+											{m['eventInvitationsAdmin.headerProperties']()}
 										</th>
 										<th
 											class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
 										>
-											Created
+											{m['eventInvitationsAdmin.headerCreated']()}
 										</th>
 										<th
 											class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground"
 										>
-											Actions
+											{m['eventInvitationsAdmin.headerActions']()}
 										</th>
 									</tr>
 								</thead>
@@ -1109,7 +1123,9 @@
 											</td>
 
 											<!-- Tier -->
-											<td class="px-4 py-4 text-sm">{invitation.tier?.name || 'No tier'}</td>
+											<td class="px-4 py-4 text-sm"
+												>{invitation.tier?.name || m['eventInvitationsAdmin.noTier']()}</td
+											>
 
 											<!-- Properties -->
 											<td class="px-4 py-4">
@@ -1119,7 +1135,7 @@
 															class="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
 															title="Waives questionnaire requirement"
 														>
-															No Quest.
+															{m['eventInvitationsAdmin.noQuestionnaire']()}
 														</span>
 													{/if}
 													{#if invitation.waives_purchase}
@@ -1127,7 +1143,7 @@
 															class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-200"
 															title="Waives purchase requirement (free ticket)"
 														>
-															Free
+															{m['eventInvitationsAdmin.free']()}
 														</span>
 													{/if}
 													{#if invitation.waives_membership_required}
@@ -1135,7 +1151,7 @@
 															class="inline-flex items-center rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-900 dark:text-purple-200"
 															title="Waives membership requirement"
 														>
-															No Member.
+															{m['eventInvitationsAdmin.noMembership']()}
 														</span>
 													{/if}
 													{#if invitation.waives_rsvp_deadline}
@@ -1143,7 +1159,7 @@
 															class="inline-flex items-center rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-800 dark:bg-orange-900 dark:text-orange-200"
 															title="Waives RSVP deadline"
 														>
-															No Deadline
+															{m['eventInvitationsAdmin.noDeadline']()}
 														</span>
 													{/if}
 													{#if invitation.overrides_max_attendees}
@@ -1151,7 +1167,7 @@
 															class="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900 dark:text-red-200"
 															title="Overrides max attendees limit"
 														>
-															Override Cap
+															{m['eventInvitationsAdmin.overrideCap']()}
 														</span>
 													{/if}
 													{#if invitation.custom_message}
@@ -1159,7 +1175,7 @@
 															class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-900 dark:text-gray-200"
 															title={invitation.custom_message}
 														>
-															Has Message
+															Has {m['eventInvitationsAdmin.headerMessage']()}
 														</span>
 													{/if}
 												</div>
@@ -1179,7 +1195,7 @@
 														class="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
 													>
 														<Edit class="h-3 w-3" aria-hidden="true" />
-														Edit
+														{m['eventInvitationsAdmin.edit']()}
 													</button>
 													<form
 														method="POST"
@@ -1201,7 +1217,7 @@
 															class="inline-flex items-center gap-1 rounded-md bg-destructive px-2 py-1 text-xs font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:cursor-not-allowed disabled:opacity-50"
 														>
 															<Trash2 class="h-3 w-3" aria-hidden="true" />
-															Delete
+															{m['eventInvitationsAdmin.delete']()}
 														</button>
 													</form>
 												</div>
@@ -1219,14 +1235,18 @@
 			<div class="space-y-3">
 				<div class="flex items-center justify-between">
 					<h3 class="text-lg font-semibold">
-						Pending (Unregistered) ({data.pendingPagination.totalCount})
+						{m['eventInvitationsAdmin.pendingUsersTitle']({
+							count: data.pendingPagination.totalCount
+						})}
 					</h3>
 					{#if selectedPendingIds.size > 0}
 						<div class="flex items-center gap-2">
 							<span class="text-sm text-muted-foreground">
-								{selectedPendingIds.size} selected
+								{m['eventInvitationsAdmin.selected']({ count: selectedPendingIds.size })}
 							</span>
-							<Button size="sm" variant="outline" onclick={clearSelections}>Clear</Button>
+							<Button size="sm" variant="outline" onclick={clearSelections}
+								>{m['eventInvitationsAdmin.clear']()}</Button
+							>
 						</div>
 					{/if}
 				</div>
@@ -1235,7 +1255,7 @@
 					<div class="rounded-lg border bg-card p-8 text-center">
 						<Mail class="mx-auto mb-2 h-8 w-8 text-muted-foreground" aria-hidden="true" />
 						<p class="text-sm text-muted-foreground">
-							No pending invitations to unregistered emails yet.
+							{m['eventInvitationsAdmin.noPendingInvitations']()}
 						</p>
 					</div>
 				{:else}
@@ -1260,27 +1280,27 @@
 										<th
 											class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
 										>
-											Email
+											{m['eventInvitationsAdmin.headerEmail']()}
 										</th>
 										<th
 											class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
 										>
-											Tier
+											{m['eventInvitationsAdmin.headerTier']()}
 										</th>
 										<th
 											class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
 										>
-											Properties
+											{m['eventInvitationsAdmin.headerProperties']()}
 										</th>
 										<th
 											class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
 										>
-											Created
+											{m['eventInvitationsAdmin.headerCreated']()}
 										</th>
 										<th
 											class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground"
 										>
-											Actions
+											{m['eventInvitationsAdmin.headerActions']()}
 										</th>
 									</tr>
 								</thead>
@@ -1306,7 +1326,9 @@
 											<td class="px-4 py-4 text-sm font-medium">{invitation.email}</td>
 
 											<!-- Tier -->
-											<td class="px-4 py-4 text-sm">{invitation.tier?.name || 'No tier'}</td>
+											<td class="px-4 py-4 text-sm"
+												>{invitation.tier?.name || m['eventInvitationsAdmin.noTier']()}</td
+											>
 
 											<!-- Properties -->
 											<td class="px-4 py-4">
@@ -1316,7 +1338,7 @@
 															class="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
 															title="Waives questionnaire requirement"
 														>
-															No Quest.
+															{m['eventInvitationsAdmin.noQuestionnaire']()}
 														</span>
 													{/if}
 													{#if invitation.waives_purchase}
@@ -1324,7 +1346,7 @@
 															class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-200"
 															title="Waives purchase requirement (free ticket)"
 														>
-															Free
+															{m['eventInvitationsAdmin.free']()}
 														</span>
 													{/if}
 													{#if invitation.waives_membership_required}
@@ -1332,7 +1354,7 @@
 															class="inline-flex items-center rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-900 dark:text-purple-200"
 															title="Waives membership requirement"
 														>
-															No Member.
+															{m['eventInvitationsAdmin.noMembership']()}
 														</span>
 													{/if}
 													{#if invitation.waives_rsvp_deadline}
@@ -1340,7 +1362,7 @@
 															class="inline-flex items-center rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-800 dark:bg-orange-900 dark:text-orange-200"
 															title="Waives RSVP deadline"
 														>
-															No Deadline
+															{m['eventInvitationsAdmin.noDeadline']()}
 														</span>
 													{/if}
 													{#if invitation.overrides_max_attendees}
@@ -1348,7 +1370,7 @@
 															class="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900 dark:text-red-200"
 															title="Overrides max attendees limit"
 														>
-															Override Cap
+															{m['eventInvitationsAdmin.overrideCap']()}
 														</span>
 													{/if}
 													{#if invitation.custom_message}
@@ -1356,7 +1378,7 @@
 															class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-900 dark:text-gray-200"
 															title={invitation.custom_message}
 														>
-															Has Message
+															Has {m['eventInvitationsAdmin.headerMessage']()}
 														</span>
 													{/if}
 												</div>
@@ -1376,7 +1398,7 @@
 														class="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
 													>
 														<Edit class="h-3 w-3" aria-hidden="true" />
-														Edit
+														{m['eventInvitationsAdmin.edit']()}
 													</button>
 													<form
 														method="POST"
@@ -1398,7 +1420,7 @@
 															class="inline-flex items-center gap-1 rounded-md bg-destructive px-2 py-1 text-xs font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:cursor-not-allowed disabled:opacity-50"
 														>
 															<Trash2 class="h-3 w-3" aria-hidden="true" />
-															Delete
+															{m['eventInvitationsAdmin.delete']()}
 														</button>
 													</form>
 												</div>
@@ -1418,12 +1440,11 @@
 			<!-- Header & Action -->
 			<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 				<p class="text-sm text-muted-foreground">
-					Create shareable invitation links that anyone can use to register for this event. Perfect
-					for social media, emails, or QR codes.
+					{m['eventInvitationsAdmin.linksDescription']()}
 				</p>
 				<Button onclick={() => (isCreateTokenModalOpen = true)}>
 					<Plus class="mr-2 h-4 w-4" aria-hidden="true" />
-					Create Link
+					{m['eventInvitationsAdmin.createLink']()}
 				</Button>
 			</div>
 
@@ -1435,7 +1456,7 @@
 				/>
 				<input
 					type="search"
-					placeholder="Search links by name..."
+					placeholder={m['eventInvitationsAdmin.searchLinksPlaceholder']()}
 					bind:value={tokenSearchQuery}
 					class="h-10 w-full rounded-md border border-input bg-background pl-10 pr-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				/>
@@ -1450,12 +1471,12 @@
 				{:else if tokens.length === 0}
 					<div class="rounded-lg border border-dashed p-12 text-center">
 						<Link class="mx-auto h-12 w-12 text-muted-foreground" aria-hidden="true" />
-						<h3 class="mt-4 text-lg font-semibold">No invitation links found</h3>
+						<h3 class="mt-4 text-lg font-semibold">{m['eventInvitationsAdmin.noLinksFound']()}</h3>
 						<p class="mt-2 text-sm text-muted-foreground">
 							{#if tokenSearchQuery}
-								No links match your search. Try a different search term.
+								{m['eventInvitationsAdmin.noLinksSearch']()}
 							{:else}
-								Create your first invitation link to start sharing your event.
+								{m['eventInvitationsAdmin.noLinksEmpty']()}
 							{/if}
 						</p>
 					</div>
@@ -1480,9 +1501,9 @@
 <Dialog.Root open={showCreateDialog} onOpenChange={(open) => (showCreateDialog = open)}>
 	<Dialog.Content class="sm:max-w-[600px]">
 		<Dialog.Header>
-			<Dialog.Title>Create Invitations</Dialog.Title>
+			<Dialog.Title>{m['eventInvitationsAdmin.createInvitations']()}</Dialog.Title>
 			<Dialog.Description>
-				Invite users by email address. Enter one email per line or separated by commas.
+				{m['eventInvitationsAdmin.createDialogDescription']()}
 			</Dialog.Description>
 		</Dialog.Header>
 
@@ -1503,7 +1524,9 @@
 
 			<!-- Email addresses with tag input -->
 			<div>
-				<label class="block text-sm font-medium">Email Addresses *</label>
+				<label class="block text-sm font-medium"
+					>{m['eventInvitationsAdmin.emailAddressesLabel']()}</label
+				>
 				<div
 					class="mt-1 flex min-h-[80px] flex-wrap gap-2 rounded-md border-2 border-gray-300 bg-white p-2 transition-colors focus-within:border-primary focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 dark:border-gray-600 dark:bg-gray-800"
 				>
@@ -1528,13 +1551,14 @@
 						onkeydown={handleEmailKeydown}
 						onblur={handleEmailBlur}
 						onpaste={handleEmailPaste}
-						placeholder={emailTags.length === 0 ? 'user1@example.com, user2@example.com...' : ''}
+						placeholder={emailTags.length === 0
+							? m['eventInvitationsAdmin.emailPlaceholder']()
+							: ''}
 						class="min-w-[200px] flex-1 border-0 bg-transparent p-1 text-sm outline-none placeholder:text-muted-foreground dark:text-gray-100"
 					/>
 				</div>
 				<p class="mt-1 text-xs text-muted-foreground">
-					Type emails and press Enter, comma, or space to add. Paste multiple emails to add them all
-					at once.
+					{m['eventInvitationsAdmin.emailHint']()}
 				</p>
 			</div>
 
@@ -1542,7 +1566,7 @@
 			{#if data.event.requires_ticket}
 				<div>
 					<label for="tier_id" class="block text-sm font-medium">
-						Ticket Tier (Optional - required if waiving purchase)
+						{m['eventInvitationsAdmin.tierLabel']()}
 					</label>
 					{#if data.ticketTiers && data.ticketTiers.length > 0}
 						<select
@@ -1551,7 +1575,7 @@
 							bind:value={selectedTierId}
 							class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
 						>
-							<option value="">None</option>
+							<option value="">{m['eventInvitationsAdmin.tierNone']()}</option>
 							{#each data.ticketTiers as tier (tier.id)}
 								<option value={tier.id}>
 									{tier.name}
@@ -1562,7 +1586,7 @@
 											: parseFloat(tier.price) / 100
 										).toFixed(2)}
 									{:else}
-										- Free
+										- {m['eventInvitationsAdmin.free']()}
 									{/if}
 								</option>
 							{/each}
@@ -1571,11 +1595,11 @@
 						<div
 							class="mt-1 rounded-md border-2 border-gray-300 bg-gray-50 px-3 py-2 text-sm text-muted-foreground dark:border-gray-600 dark:bg-gray-900"
 						>
-							No tiers configured for this event
+							{m['eventInvitationsAdmin.noTiersConfigured']()}
 						</div>
 					{/if}
 					<p class="mt-1 text-xs text-muted-foreground">
-						Select a tier to grant access when waiving purchase requirement
+						{m['eventInvitationsAdmin.tierHint']()}
 					</p>
 				</div>
 			{/if}
@@ -1583,23 +1607,25 @@
 			<!-- Custom message -->
 			<div>
 				<label for="custom_message" class="block text-sm font-medium">
-					Custom Message (Optional)
+					{m['eventInvitationsAdmin.customMessageLabel']()}
 				</label>
 				<textarea
 					id="custom_message"
 					name="custom_message"
 					bind:value={invitationMessage}
-					placeholder="Add a personal message to the invitation email..."
+					placeholder={m['eventInvitationsAdmin.customMessagePlaceholder']()}
 					rows="3"
 					maxlength="500"
 					class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
 				></textarea>
-				<p class="mt-1 text-xs text-muted-foreground">{invitationMessage.length}/500 characters</p>
+				<p class="mt-1 text-xs text-muted-foreground">
+					{m['eventInvitationsAdmin.charactersCount']({ count: invitationMessage.length })}
+				</p>
 			</div>
 
 			<!-- Invitation properties -->
 			<div class="space-y-3 rounded-lg border border-border p-4">
-				<h4 class="text-sm font-semibold">Invitation Properties</h4>
+				<h4 class="text-sm font-semibold">{m['eventInvitationsAdmin.propertiesTitle']()}</h4>
 
 				<label class="flex items-center gap-2">
 					<input
@@ -1608,7 +1634,7 @@
 						value="true"
 						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 					/>
-					<span class="text-sm">Waive questionnaire requirement</span>
+					<span class="text-sm">{m['eventInvitationsAdmin.waiveQuestionnaire']()}</span>
 				</label>
 
 				<label class="flex items-center gap-2">
@@ -1618,7 +1644,7 @@
 						value="true"
 						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 					/>
-					<span class="text-sm">Waive purchase requirement (free ticket)</span>
+					<span class="text-sm">{m['eventInvitationsAdmin.waivePurchase']()}</span>
 				</label>
 
 				<label class="flex items-center gap-2">
@@ -1628,7 +1654,7 @@
 						value="true"
 						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 					/>
-					<span class="text-sm">Waive membership requirement</span>
+					<span class="text-sm">{m['eventInvitationsAdmin.waiveMembership']()}</span>
 				</label>
 
 				<label class="flex items-center gap-2">
@@ -1638,7 +1664,7 @@
 						value="true"
 						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 					/>
-					<span class="text-sm">Waive RSVP deadline</span>
+					<span class="text-sm">{m['eventInvitationsAdmin.waiveDeadline']()}</span>
 				</label>
 
 				<label class="flex items-center gap-2">
@@ -1648,17 +1674,17 @@
 						value="true"
 						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 					/>
-					<span class="text-sm">Override max attendees limit</span>
+					<span class="text-sm">{m['eventInvitationsAdmin.overrideMaxAttendees']()}</span>
 				</label>
 			</div>
 
 			<Dialog.Footer>
 				<Button type="button" variant="outline" onclick={() => (showCreateDialog = false)}>
-					Cancel
+					{m['eventInvitationsAdmin.cancel']()}
 				</Button>
 				<Button type="submit">
 					<Mail class="mr-2 h-4 w-4" aria-hidden="true" />
-					Send Invitations
+					{m['eventInvitationsAdmin.sendInvitations']()}
 				</Button>
 			</Dialog.Footer>
 		</form>
@@ -1675,13 +1701,17 @@
 >
 	<Dialog.Content class="sm:max-w-[600px]">
 		<Dialog.Header>
-			<Dialog.Title>Edit Invitation</Dialog.Title>
+			<Dialog.Title>{m['eventInvitationsAdmin.editDialogTitle']()}</Dialog.Title>
 			<Dialog.Description>
 				{#if editingInvitation}
 					{#if editingType === 'registered' && 'user' in editingInvitation}
-						Editing invitation for {getUserDisplayName(editingInvitation.user)}
+						{m['eventInvitationsAdmin.editDialogDescriptionUser']({
+							userName: getUserDisplayName(editingInvitation.user)
+						})}
 					{:else if editingType === 'pending' && 'email' in editingInvitation}
-						Editing invitation for {editingInvitation.email}
+						{m['eventInvitationsAdmin.editDialogDescriptionEmail']({
+							email: editingInvitation.email
+						})}
 					{/if}
 				{/if}
 			</Dialog.Description>
@@ -1711,7 +1741,7 @@
 				{#if data.event.requires_ticket}
 					<div>
 						<label for="edit_tier_id" class="block text-sm font-medium">
-							Ticket Tier (Optional - required if waiving purchase)
+							{m['eventInvitationsAdmin.tierLabel']()}
 						</label>
 						{#if data.ticketTiers && data.ticketTiers.length > 0}
 							<select
@@ -1720,7 +1750,7 @@
 								bind:value={editFormData.tier_id}
 								class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
 							>
-								<option value="">None</option>
+								<option value="">{m['eventInvitationsAdmin.tierNone']()}</option>
 								{#each data.ticketTiers as tier (tier.id)}
 									<option value={tier.id}>
 										{tier.name}
@@ -1729,7 +1759,7 @@
 												? tier.price.toFixed(2)
 												: tier.price}
 										{:else}
-											- Free
+											- {m['eventInvitationsAdmin.free']()}
 										{/if}
 									</option>
 								{/each}
@@ -1738,11 +1768,11 @@
 							<div
 								class="mt-1 rounded-md border-2 border-gray-300 bg-gray-50 px-3 py-2 text-sm text-muted-foreground dark:border-gray-600 dark:bg-gray-900"
 							>
-								No tiers configured for this event
+								{m['eventInvitationsAdmin.noTiersConfigured']()}
 							</div>
 						{/if}
 						<p class="mt-1 text-xs text-muted-foreground">
-							Select a tier to grant access when waiving purchase requirement
+							{m['eventInvitationsAdmin.tierHint']()}
 						</p>
 					</div>
 				{/if}
@@ -1750,25 +1780,27 @@
 				<!-- Custom message -->
 				<div>
 					<label for="edit_custom_message" class="block text-sm font-medium">
-						Custom Message (Optional)
+						{m['eventInvitationsAdmin.customMessageLabel']()}
 					</label>
 					<textarea
 						id="edit_custom_message"
 						name="custom_message"
 						bind:value={editFormData.custom_message}
-						placeholder="Add a personal message to the invitation email..."
+						placeholder={m['eventInvitationsAdmin.customMessagePlaceholder']()}
 						rows="3"
 						maxlength="500"
 						class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
 					></textarea>
 					<p class="mt-1 text-xs text-muted-foreground">
-						{editFormData.custom_message.length}/500 characters
+						{m['eventInvitationsAdmin.charactersCount']({
+							count: editFormData.custom_message.length
+						})}
 					</p>
 				</div>
 
 				<!-- Invitation properties -->
 				<div class="space-y-3 rounded-lg border border-border p-4">
-					<h4 class="text-sm font-semibold">Invitation Properties</h4>
+					<h4 class="text-sm font-semibold">{m['eventInvitationsAdmin.propertiesTitle']()}</h4>
 
 					<label class="flex items-center gap-2">
 						<input
@@ -1778,7 +1810,7 @@
 							bind:checked={editFormData.waives_questionnaire}
 							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 						/>
-						<span class="text-sm">Waive questionnaire requirement</span>
+						<span class="text-sm">{m['eventInvitationsAdmin.waiveQuestionnaire']()}</span>
 					</label>
 
 					<label class="flex items-center gap-2">
@@ -1789,7 +1821,7 @@
 							bind:checked={editFormData.waives_purchase}
 							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 						/>
-						<span class="text-sm">Waive purchase requirement (free ticket)</span>
+						<span class="text-sm">{m['eventInvitationsAdmin.waivePurchase']()}</span>
 					</label>
 
 					<label class="flex items-center gap-2">
@@ -1800,7 +1832,7 @@
 							bind:checked={editFormData.waives_membership_required}
 							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 						/>
-						<span class="text-sm">Waive membership requirement</span>
+						<span class="text-sm">{m['eventInvitationsAdmin.waiveMembership']()}</span>
 					</label>
 
 					<label class="flex items-center gap-2">
@@ -1811,7 +1843,7 @@
 							bind:checked={editFormData.waives_rsvp_deadline}
 							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 						/>
-						<span class="text-sm">Waive RSVP deadline</span>
+						<span class="text-sm">{m['eventInvitationsAdmin.waiveDeadline']()}</span>
 					</label>
 
 					<label class="flex items-center gap-2">
@@ -1822,18 +1854,18 @@
 							bind:checked={editFormData.overrides_max_attendees}
 							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 						/>
-						<span class="text-sm">Override max attendees limit</span>
+						<span class="text-sm">{m['eventInvitationsAdmin.overrideMaxAttendees']()}</span>
 					</label>
 				</div>
 			{/if}
 
 			<Dialog.Footer>
 				<Button type="button" variant="outline" onclick={() => (showEditDialog = false)}>
-					Cancel
+					{m['eventInvitationsAdmin.cancel']()}
 				</Button>
 				<Button type="submit">
 					<Edit class="mr-2 h-4 w-4" aria-hidden="true" />
-					Update Invitation
+					{m['eventInvitationsAdmin.updateInvitation']()}
 				</Button>
 			</Dialog.Footer>
 		</form>
@@ -1850,10 +1882,12 @@
 >
 	<Dialog.Content class="sm:max-w-[600px]">
 		<Dialog.Header>
-			<Dialog.Title>Bulk Edit Invitations</Dialog.Title>
+			<Dialog.Title>{m['eventInvitationsAdmin.bulkEditDialogTitle']()}</Dialog.Title>
 			<Dialog.Description>
-				Update {totalSelected} selected invitation{totalSelected === 1 ? '' : 's'}. All selected
-				invitations will be updated with the same properties.
+				{m['eventInvitationsAdmin.bulkEditDialogDescription']({
+					count: totalSelected,
+					plural: totalSelected === 1 ? '' : 's'
+				})}
 			</Dialog.Description>
 		</Dialog.Header>
 
@@ -1888,7 +1922,7 @@
 			{#if data.event.requires_ticket}
 				<div>
 					<label for="bulk_tier_id" class="block text-sm font-medium">
-						Ticket Tier (Optional - required if waiving purchase)
+						{m['eventInvitationsAdmin.tierLabel']()}
 					</label>
 					{#if data.ticketTiers && data.ticketTiers.length > 0}
 						<select
@@ -1897,7 +1931,7 @@
 							bind:value={bulkEditFormData.tier_id}
 							class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
 						>
-							<option value="">None</option>
+							<option value="">{m['eventInvitationsAdmin.tierNone']()}</option>
 							{#each data.ticketTiers as tier (tier.id)}
 								<option value={tier.id}>
 									{tier.name}
@@ -1908,7 +1942,7 @@
 											: parseFloat(tier.price) / 100
 										).toFixed(2)}
 									{:else}
-										- Free
+										- {m['eventInvitationsAdmin.free']()}
 									{/if}
 								</option>
 							{/each}
@@ -1917,11 +1951,11 @@
 						<div
 							class="mt-1 rounded-md border-2 border-gray-300 bg-gray-50 px-3 py-2 text-sm text-muted-foreground dark:border-gray-600 dark:bg-gray-900"
 						>
-							No tiers configured for this event
+							{m['eventInvitationsAdmin.noTiersConfigured']()}
 						</div>
 					{/if}
 					<p class="mt-1 text-xs text-muted-foreground">
-						Select a tier to grant access when waiving purchase requirement
+						{m['eventInvitationsAdmin.tierHint']()}
 					</p>
 				</div>
 			{/if}
@@ -1929,25 +1963,27 @@
 			<!-- Custom message -->
 			<div>
 				<label for="bulk_custom_message" class="block text-sm font-medium">
-					Custom Message (Optional)
+					{m['eventInvitationsAdmin.customMessageLabel']()}
 				</label>
 				<textarea
 					id="bulk_custom_message"
 					name="custom_message"
 					bind:value={bulkEditFormData.custom_message}
-					placeholder="Add a personal message to the invitation email..."
+					placeholder={m['eventInvitationsAdmin.customMessagePlaceholder']()}
 					rows="3"
 					maxlength="500"
 					class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
 				></textarea>
 				<p class="mt-1 text-xs text-muted-foreground">
-					{bulkEditFormData.custom_message.length}/500 characters
+					{m['eventInvitationsAdmin.charactersCount']({
+						count: bulkEditFormData.custom_message.length
+					})}
 				</p>
 			</div>
 
 			<!-- Invitation properties -->
 			<div class="space-y-3 rounded-lg border border-border p-4">
-				<h4 class="text-sm font-semibold">Invitation Properties</h4>
+				<h4 class="text-sm font-semibold">{m['eventInvitationsAdmin.propertiesTitle']()}</h4>
 
 				<label class="flex items-center gap-2">
 					<input
@@ -1957,7 +1993,7 @@
 						bind:checked={bulkEditFormData.waives_questionnaire}
 						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 					/>
-					<span class="text-sm">Waive questionnaire requirement</span>
+					<span class="text-sm">{m['eventInvitationsAdmin.waiveQuestionnaire']()}</span>
 				</label>
 
 				<label class="flex items-center gap-2">
@@ -1968,7 +2004,7 @@
 						bind:checked={bulkEditFormData.waives_purchase}
 						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 					/>
-					<span class="text-sm">Waive purchase requirement (free ticket)</span>
+					<span class="text-sm">{m['eventInvitationsAdmin.waivePurchase']()}</span>
 				</label>
 
 				<label class="flex items-center gap-2">
@@ -1979,7 +2015,7 @@
 						bind:checked={bulkEditFormData.waives_membership_required}
 						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 					/>
-					<span class="text-sm">Waive membership requirement</span>
+					<span class="text-sm">{m['eventInvitationsAdmin.waiveMembership']()}</span>
 				</label>
 
 				<label class="flex items-center gap-2">
@@ -1990,7 +2026,7 @@
 						bind:checked={bulkEditFormData.waives_rsvp_deadline}
 						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 					/>
-					<span class="text-sm">Waive RSVP deadline</span>
+					<span class="text-sm">{m['eventInvitationsAdmin.waiveDeadline']()}</span>
 				</label>
 
 				<label class="flex items-center gap-2">
@@ -2001,17 +2037,20 @@
 						bind:checked={bulkEditFormData.overrides_max_attendees}
 						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 					/>
-					<span class="text-sm">Override max attendees limit</span>
+					<span class="text-sm">{m['eventInvitationsAdmin.overrideMaxAttendees']()}</span>
 				</label>
 			</div>
 
 			<Dialog.Footer>
 				<Button type="button" variant="outline" onclick={() => (showBulkEditDialog = false)}>
-					Cancel
+					{m['eventInvitationsAdmin.cancel']()}
 				</Button>
 				<Button type="submit">
 					<Edit class="mr-2 h-4 w-4" aria-hidden="true" />
-					Update {totalSelected} Invitation{totalSelected === 1 ? '' : 's'}
+					{m['eventInvitationsAdmin.updateInvitations']({
+						count: totalSelected,
+						plural: totalSelected === 1 ? '' : 's'
+					})}
 				</Button>
 			</Dialog.Footer>
 		</form>
@@ -2044,19 +2083,24 @@
 <Dialog.Root open={!!tokenToDelete}>
 	<Dialog.Content>
 		<Dialog.Header>
-			<Dialog.Title>Delete Invitation Link?</Dialog.Title>
+			<Dialog.Title>{m['eventInvitationsAdmin.deleteTokenTitle']()}</Dialog.Title>
 			<Dialog.Description>
-				This will permanently disable the invitation link. No one will be able to use it to
-				register.
+				{m['eventInvitationsAdmin.deleteTokenDescription']()}
 			</Dialog.Description>
 		</Dialog.Header>
 
 		{#if tokenToDelete}
 			<div class="space-y-2 text-sm">
-				<p><strong>Link:</strong> {tokenToDelete.name || 'Unnamed Link'}</p>
-				<p><strong>Uses:</strong> {tokenToDelete.uses} people already registered using this link</p>
+				<p>
+					<strong>{m['eventInvitationsAdmin.deleteTokenLink']()}</strong>
+					{tokenToDelete.name || m['eventInvitationsAdmin.deleteTokenUnnamed']()}
+				</p>
+				<p>
+					<strong>{m['eventInvitationsAdmin.deleteTokenUses']()}</strong>
+					{m['eventInvitationsAdmin.deleteTokenUsesText']({ count: tokenToDelete.uses })}
+				</p>
 				<p class="text-muted-foreground">
-					Those registrations will remain valid. Only new attempts will fail.
+					{m['eventInvitationsAdmin.deleteTokenWarning']()}
 				</p>
 			</div>
 		{/if}
@@ -2067,7 +2111,7 @@
 				onclick={() => (tokenToDelete = null)}
 				disabled={deleteTokenMutation.isPending}
 			>
-				Cancel
+				{m['eventInvitationsAdmin.cancel']()}
 			</Button>
 			<Button
 				variant="destructive"
@@ -2077,7 +2121,7 @@
 				{#if deleteTokenMutation.isPending}
 					<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 				{/if}
-				Delete Link
+				{m['eventInvitationsAdmin.deleteTokenButton']()}
 			</Button>
 		</Dialog.Footer>
 	</Dialog.Content>

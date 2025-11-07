@@ -47,7 +47,8 @@ export const actions: Actions = {
 			first_name: formData.get('first_name') as string,
 			last_name: formData.get('last_name') as string,
 			preferred_name: formData.get('preferred_name') as string,
-			pronouns: formData.get('pronouns') as string
+			pronouns: formData.get('pronouns') as string,
+			language: formData.get('language') as string
 		};
 
 		// Validate
@@ -93,6 +94,7 @@ export const actions: Actions = {
 			if (apiErrors.last_name) errors.last_name = apiErrors.last_name[0];
 			if (apiErrors.preferred_name) errors.preferred_name = apiErrors.preferred_name[0];
 			if (apiErrors.pronouns) errors.pronouns = apiErrors.pronouns[0];
+			if (apiErrors.language) errors.language = apiErrors.language[0];
 
 			if (Object.keys(errors).length === 0) {
 				errors.form = 'An unexpected error occurred';

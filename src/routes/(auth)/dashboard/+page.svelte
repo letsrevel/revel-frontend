@@ -24,6 +24,7 @@
 		Mail,
 		CheckCircle2
 	} from 'lucide-svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	let user = $derived(authStore.user);
 	let accessToken = $derived(authStore.accessToken);
@@ -35,7 +36,7 @@
 	// Filter presets
 	const filterPresets = [
 		{
-			label: 'All',
+			labelKey: 'dashboard.filters.all',
 			filters: {
 				owner: true,
 				staff: true,
@@ -48,7 +49,7 @@
 			}
 		},
 		{
-			label: 'Organizing',
+			labelKey: 'dashboard.filters.organizing',
 			filters: {
 				owner: true,
 				staff: true,
@@ -61,7 +62,7 @@
 			}
 		},
 		{
-			label: 'Attending',
+			labelKey: 'dashboard.filters.attending',
 			filters: {
 				owner: false,
 				staff: false,
@@ -74,7 +75,7 @@
 			}
 		},
 		{
-			label: 'Invited',
+			labelKey: 'dashboard.filters.invited',
 			filters: {
 				owner: false,
 				staff: false,
@@ -297,8 +298,8 @@
 <div class="container mx-auto px-4 py-6 md:py-8">
 	<!-- Welcome Header -->
 	<div class="mb-8">
-		<h1 class="mb-2 text-2xl font-bold md:text-3xl">Welcome back, {firstName}!</h1>
-		<p class="text-muted-foreground">Here's what's happening with your events and organizations</p>
+		<h1 class="mb-2 text-2xl font-bold md:text-3xl">{m['dashboard.pageTitle']({ firstName })}</h1>
+		<p class="text-muted-foreground">{m['dashboard.pageSubtitle']()}</p>
 	</div>
 
 	<!-- Quick Action Bar -->
@@ -308,7 +309,7 @@
 			class="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 		>
 			<Sparkles class="h-4 w-4" aria-hidden="true" />
-			<span>Browse Events</span>
+			<span>{m['dashboard.browseEventsButton']()}</span>
 		</a>
 
 		{#if organizations.length > 0}
@@ -318,7 +319,7 @@
 				class="inline-flex items-center gap-2 rounded-lg border bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 			>
 				<Building2 class="h-4 w-4" aria-hidden="true" />
-				<span>My Organizations</span>
+				<span>{m['dashboard.myOrganizationsButton']()}</span>
 			</button>
 		{/if}
 
@@ -329,7 +330,7 @@
 				class="inline-flex items-center gap-2 rounded-lg border bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 			>
 				<Shield class="h-4 w-4" aria-hidden="true" />
-				<span>Admin</span>
+				<span>{m['dashboard.adminButton']()}</span>
 			</a>
 		{:else if organizations.filter((org) => hasAdminPermissions(org.id)).length > 1}
 			<!-- Multiple admin orgs - scroll to organizations section to choose -->
@@ -339,7 +340,7 @@
 				class="inline-flex items-center gap-2 rounded-lg border bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 			>
 				<Shield class="h-4 w-4" aria-hidden="true" />
-				<span>Admin</span>
+				<span>{m['dashboard.adminButton']()}</span>
 			</button>
 		{/if}
 	</div>
@@ -359,7 +360,9 @@
 								<Ticket class="h-6 w-6 text-blue-600 dark:text-blue-400" aria-hidden="true" />
 							</div>
 							<div>
-								<p class="text-sm font-medium text-muted-foreground">Active Tickets</p>
+								<p class="text-sm font-medium text-muted-foreground">
+									{m['dashboard.activityCards.activeTickets']()}
+								</p>
 								<p class="text-3xl font-bold">{activeTicketsCount}</p>
 							</div>
 						</div>
@@ -369,8 +372,13 @@
 						/>
 					</div>
 					<p class="mt-4 text-sm text-muted-foreground">
-						You have {activeTicketsCount}
-						{activeTicketsCount === 1 ? 'ticket' : 'tickets'} ready for upcoming events
+						{m['dashboard.activityCards.activeTicketsDescription']({
+							count: activeTicketsCount,
+							ticketPlural:
+								activeTicketsCount === 1
+									? m['common.plurals_event']()
+									: m['common.plurals_events']()
+						})}
 					</p>
 				</a>
 			{/if}
@@ -390,7 +398,9 @@
 								/>
 							</div>
 							<div>
-								<p class="text-sm font-medium text-muted-foreground">Upcoming RSVPs</p>
+								<p class="text-sm font-medium text-muted-foreground">
+									{m['dashboard.activityCards.upcomingRsvps']()}
+								</p>
 								<p class="text-3xl font-bold">{upcomingRsvpsCount}</p>
 							</div>
 						</div>
@@ -400,8 +410,13 @@
 						/>
 					</div>
 					<p class="mt-4 text-sm text-muted-foreground">
-						You're attending {upcomingRsvpsCount} upcoming
-						{upcomingRsvpsCount === 1 ? 'event' : 'events'}
+						{m['dashboard.activityCards.upcomingRsvpsDescription']({
+							count: upcomingRsvpsCount,
+							eventPlural:
+								upcomingRsvpsCount === 1
+									? m['common.plurals_event']()
+									: m['common.plurals_events']()
+						})}
 					</p>
 				</a>
 			{/if}
@@ -418,7 +433,9 @@
 								<Mail class="h-6 w-6 text-purple-600 dark:text-purple-400" aria-hidden="true" />
 							</div>
 							<div>
-								<p class="text-sm font-medium text-muted-foreground">Invitations</p>
+								<p class="text-sm font-medium text-muted-foreground">
+									{m['dashboard.activityCards.pendingInvitations']()}
+								</p>
 								<p class="text-3xl font-bold">{pendingInvitationsCount}</p>
 							</div>
 						</div>
@@ -428,8 +445,10 @@
 						/>
 					</div>
 					<p class="mt-4 text-sm text-muted-foreground">
-						You have {pendingInvitationsCount} pending
-						{pendingInvitationsCount === 1 ? 'invitation' : 'invitations'} to respond to
+						{m['dashboard.activityCards.pendingInvitationsDescription']({
+							count: pendingInvitationsCount,
+							invitationPlural: pendingInvitationsCount === 1 ? 'invitation' : 'invitations'
+						})}
 					</p>
 				</a>
 			{/if}
@@ -445,7 +464,7 @@
 					<div class="mb-3 flex items-center justify-between">
 						<h2 id="your-events-heading" class="flex items-center gap-2 text-xl font-semibold">
 							<Calendar class="h-5 w-5 text-primary" aria-hidden="true" />
-							<span>Your Events</span>
+							<span>{m['dashboard.sections.yourEvents']()}</span>
 							{#if yourEvents.length > 0}
 								<span
 									class="inline-flex items-center justify-center rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground"
@@ -461,7 +480,7 @@
 						<Filter class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
 						{#each filterPresets as preset}
 							<!-- Only show "Organizing" filter if user can organize events -->
-							{#if preset.label !== 'Organizing' || canOrganizeEvents()}
+							{#if preset.labelKey !== 'dashboard.filters.organizing' || canOrganizeEvents()}
 								<button
 									type="button"
 									onclick={() => applyFilterPreset(preset)}
@@ -471,7 +490,7 @@
 										? 'bg-primary text-primary-foreground hover:bg-primary/90'
 										: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
 								>
-									{preset.label}
+									{(m as unknown as Record<string, () => string>)[preset.labelKey]()}
 								</button>
 							{/if}
 						{/each}
@@ -488,9 +507,9 @@
 					<!-- Empty state when filter returns no results -->
 					<div class="rounded-lg border bg-card p-8 text-center">
 						<Calendar class="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-						<h3 class="mb-2 text-lg font-semibold">No events found</h3>
+						<h3 class="mb-2 text-lg font-semibold">{m['dashboard.emptyStates.noEvents']()}</h3>
 						<p class="mb-4 text-sm text-muted-foreground">
-							Try adjusting your filter to see more events
+							{m['dashboard.emptyStates.noEventsFiltered']()}
 						</p>
 					</div>
 				{/if}
@@ -502,14 +521,14 @@
 			<div class="mb-4 flex items-center justify-between">
 				<h2 id="upcoming-events-heading" class="flex items-center gap-2 text-xl font-semibold">
 					<Sparkles class="h-5 w-5 text-primary" aria-hidden="true" />
-					<span>Discover Events</span>
+					<span>{m['dashboard.sections.discoverEvents']()}</span>
 				</h2>
 				{#if upcomingEvents.length > 0}
 					<a
 						href="/events"
 						class="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
 					>
-						<span>See all</span>
+						<span>{m['dashboard.activityCards.seeAll']()}</span>
 						<ChevronRight class="h-4 w-4" aria-hidden="true" />
 					</a>
 				{/if}
@@ -525,9 +544,11 @@
 				<!-- Empty State -->
 				<div class="rounded-lg border bg-card p-8 text-center">
 					<Calendar class="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-					<h3 class="mb-2 text-lg font-semibold">No events available</h3>
+					<h3 class="mb-2 text-lg font-semibold">
+						{m['dashboard.emptyStates.noEventsAvailable']()}
+					</h3>
 					<p class="mb-4 text-sm text-muted-foreground">
-						Check back soon for upcoming events in your area!
+						{m['dashboard.emptyStates.noEventsHint']()}
 					</p>
 				</div>
 			{:else}
@@ -545,7 +566,7 @@
 			<div class="mb-4 flex items-center justify-between">
 				<h2 id="organizations-heading" class="flex items-center gap-2 text-xl font-semibold">
 					<Building2 class="h-5 w-5 text-primary" aria-hidden="true" />
-					<span>My Organizations</span>
+					<span>{m['dashboard.sections.myOrganizations']()}</span>
 				</h2>
 			</div>
 
@@ -559,9 +580,9 @@
 				<!-- Empty State -->
 				<div class="rounded-lg border bg-card p-8 text-center">
 					<Building2 class="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-					<h3 class="mb-2 text-lg font-semibold">No organizations yet</h3>
+					<h3 class="mb-2 text-lg font-semibold">{m['dashboard.emptyStates.noOrganizations']()}</h3>
 					<p class="mb-4 text-sm text-muted-foreground">
-						Organizations help you manage events and build your community.
+						{m['dashboard.emptyStates.noOrganizationsHint']()}
 					</p>
 					<div class="flex flex-wrap justify-center gap-3">
 						<a
@@ -569,7 +590,7 @@
 							class="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
 						>
 							<Sparkles class="h-4 w-4" aria-hidden="true" />
-							<span>Discover Events</span>
+							<span>{m['dashboard.sections.discoverEvents']()}</span>
 						</a>
 					</div>
 				</div>
@@ -606,7 +627,7 @@
 									href="/org/{org.slug}"
 									class="rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
 								>
-									View Profile
+									{m['dashboard.viewProfile']()}
 								</a>
 								{#if hasAdminPermissions(org.id)}
 									<a
@@ -614,7 +635,7 @@
 										class="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
 									>
 										<Shield class="h-4 w-4" aria-hidden="true" />
-										<span>Admin</span>
+										<span>{m['dashboard.adminButton']()}</span>
 									</a>
 								{/if}
 							</div>
@@ -626,7 +647,7 @@
 							href="/dashboard/organizations"
 							class="flex items-center justify-center gap-1 rounded-lg border bg-background px-4 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
 						>
-							<span>See all {organizations.length} organizations</span>
+							<span>{m['dashboard.seeAllOrganizations']({ count: organizations.length })}</span>
 							<ChevronRight class="h-4 w-4" aria-hidden="true" />
 						</a>
 					{/if}

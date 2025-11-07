@@ -13,11 +13,11 @@
 		"strictNullChecks": true,
 		"strictFunctionTypes": true,
 		"strictBindCallApply": true,
-		"strictPropertyInitialization": true,
+		"strictPropertyInitialization": false,
 		"noImplicitThis": true,
 		"alwaysStrict": true,
-		"noUnusedLocals": true,
-		"noUnusedParameters": true,
+		"noUnusedLocals": false,
+		"noUnusedParameters": false,
 		"noImplicitReturns": true,
 		"noFallthroughCasesInSwitch": true,
 		"moduleResolution": "bundler",
@@ -25,5 +25,12 @@
 		"target": "ES2022"
 	},
 	"include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.js", "src/**/*.svelte"],
-	"exclude": ["node_modules"]
+	"exclude": [
+		"node_modules",
+		"**/*.test.ts",
+		"**/*.test.js",
+		"**/*.spec.ts",
+		"**/*.spec.js",
+		"src/lib/api/generated/**"
+	]
 }

@@ -4,6 +4,7 @@
 	import { isEventPast, isRSVPClosed } from '$lib/utils/date';
 	import { isEventFull } from '$lib/utils/event';
 	import { cn } from '$lib/utils/cn';
+	import * as m from '$lib/paraglide/messages.js';
 
 	interface Badge {
 		label: string;
@@ -28,11 +29,11 @@
 		// Priority 1: User Relationship (highest priority)
 		if (userStatus) {
 			if (userStatus.organizing) {
-				result.push({ label: "You're Organizing", variant: 'default' });
+				result.push({ label: m['eventBadges.youreOrganizing'](), variant: 'default' });
 			} else if (userStatus.attending) {
-				result.push({ label: "You're Attending", variant: 'success' });
+				result.push({ label: m['eventBadges.youreAttending'](), variant: 'success' });
 			} else if (userStatus.invitationPending) {
-				result.push({ label: 'Invitation Pending', variant: 'secondary' });
+				result.push({ label: m['eventBadges.invitationPending'](), variant: 'secondary' });
 			}
 		}
 
@@ -45,13 +46,13 @@
 		const rsvpClosed = isRSVPClosed(event.rsvp_before);
 
 		if (isPast) {
-			result.push({ label: 'Past Event', variant: 'outline' });
+			result.push({ label: m['eventBadges.pastEvent'](), variant: 'outline' });
 		} else if (isFull && !event.waitlist_open) {
-			result.push({ label: 'Sold Out', variant: 'destructive' });
+			result.push({ label: m['eventBadges.soldOut'](), variant: 'destructive' });
 		} else if (isFull && event.waitlist_open) {
-			result.push({ label: 'Waitlist Open', variant: 'secondary' });
+			result.push({ label: m['eventBadges.waitlistOpen'](), variant: 'secondary' });
 		} else if (rsvpClosed) {
-			result.push({ label: 'RSVP Closed', variant: 'outline' });
+			result.push({ label: m['eventBadges.rsvpClosed'](), variant: 'outline' });
 		}
 
 		// If we already have 2 badges, stop here
@@ -59,11 +60,11 @@
 
 		// Priority 3: Event Type (only if we have room)
 		if ((event.event_type as any) === 'members-only') {
-			result.push({ label: 'Members Only', variant: 'secondary' });
+			result.push({ label: m['eventBadges.membersOnly'](), variant: 'secondary' });
 		} else if ((event.event_type as any) === 'private') {
-			result.push({ label: 'Private', variant: 'secondary' });
+			result.push({ label: m['eventBadges.private'](), variant: 'secondary' });
 		} else if ((event.event_type as any) === 'public') {
-			result.push({ label: 'Public', variant: 'outline' });
+			result.push({ label: m['eventBadges.public'](), variant: 'outline' });
 		}
 
 		// Return max 2 badges

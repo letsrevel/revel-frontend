@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type {
 		EventDetailSchema,
 		OrganizationPermissionsSchema,
@@ -74,17 +75,17 @@
 		if (!userStatus) return null;
 
 		if (isRSVP(userStatus) && userStatus.status === 'yes') {
-			return "You're attending";
+			return m['eventActionSidebar.youreAttending']();
 		}
 
 		if (isTicket(userStatus)) {
 			if (userStatus.status === 'checked_in') {
-				return "You're checked in";
+				return m['eventActionSidebar.youreCheckedIn']();
 			}
 			if (userStatus.status === 'pending') {
-				return 'Your ticket is pending';
+				return m['eventActionSidebar.ticketPending']();
 			}
-			return 'You have a ticket';
+			return m['eventActionSidebar.youHaveTicket']();
 		}
 
 		return null;
@@ -219,7 +220,7 @@
 				<div class="flex items-start gap-2">
 					<Ticket class="h-5 w-5 shrink-0" aria-hidden="true" />
 					<div class="flex-1">
-						<div class="font-semibold">Your ticket is pending payment</div>
+						<div class="font-semibold">{m['eventActionSidebar.ticketPendingPayment']()}</div>
 						{#if ticketTierName}
 							<div class="text-sm opacity-90">{ticketTierName}</div>
 						{/if}
@@ -277,7 +278,9 @@
 				{#if shouldShowEligibility && userStatus && isEligibility(userStatus)}
 					<!-- Show eligibility status for ticketed events -->
 					<div>
-						<h3 class="mb-2 text-sm font-semibold">Eligibility Status</h3>
+						<h3 class="mb-2 text-sm font-semibold">
+							{m['eventActionSidebar.eligibilityStatus']()}
+						</h3>
 						<EligibilityStatusDisplay
 							eligibility={userStatus}
 							eventId={event.id}
@@ -348,7 +351,7 @@
 		<!-- Manage Event Section (for staff/owners) -->
 		{#if canManageEvent}
 			<div class="border-t pt-4">
-				<h3 class="mb-3 text-sm font-semibold">Manage Event</h3>
+				<h3 class="mb-3 text-sm font-semibold">{m['eventActionSidebar.manageEvent']()}</h3>
 				<div class="space-y-2">
 					<a
 						href="/org/{event.organization.slug}/admin/events/{event.id}/edit"
@@ -387,7 +390,7 @@
 
 		<!-- Quick Info Section -->
 		<div class="border-t pt-4">
-			<h3 class="sr-only">Event details</h3>
+			<h3 class="sr-only">{m['eventActionSidebar.eventDetails']()}</h3>
 			<EventQuickInfo {event} variant="compact" />
 		</div>
 

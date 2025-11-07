@@ -272,7 +272,7 @@ export function generateOrganizationStructuredData(
 /**
  * Convert structured data to JSON-LD string
  */
-export function toJsonLd<T extends Record<string, unknown>>(data: T): string {
+export function toJsonLd(data: Record<string, unknown> | object): string {
 	return JSON.stringify(data, null, 0);
 }
 

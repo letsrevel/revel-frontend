@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { cn } from '$lib/utils/cn';
 
 	interface Props {
@@ -31,5 +32,5 @@
 </script>
 
 <div class={variantClasses} style={styles} role="status" aria-live="polite" aria-label="Loading">
-	<span class="sr-only">Loading...</span>
+	<span class="sr-only">{m['skeleton.loading']()}</span>
 </div>

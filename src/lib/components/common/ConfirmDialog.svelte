@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { cn } from '$lib/utils/cn';
 	import { AlertTriangle, X } from 'lucide-svelte';
 	import { fade, scale } from 'svelte/transition';
@@ -19,8 +20,8 @@
 		isOpen,
 		title,
 		message,
-		confirmText = 'Confirm',
-		cancelText = 'Cancel',
+		confirmText = m['confirmDialog.confirm'](),
+		cancelText = m['confirmDialog.cancel'](),
 		variant = 'warning',
 		onConfirm,
 		onCancel,
@@ -96,7 +97,7 @@
 			<button
 				type="button"
 				onclick={onCancel}
-				aria-label="Close dialog"
+				aria-label={m['confirmDialog.closeDialog']()}
 				class="absolute right-4 top-4 rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			>
 				<X class="h-4 w-4" aria-hidden="true" />

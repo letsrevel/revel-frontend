@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { OrganizationTokenSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
 	import { Copy, Edit, Trash2, Users, Shield } from 'lucide-svelte';
@@ -26,7 +27,7 @@
 	const expirationDisplay = $derived(getExpirationDisplay(token.expires_at));
 
 	async function copyLink() {
-		const url = getOrganizationTokenUrl(token.id || '', organizationSlug);
+		const url = getOrganizationTokenUrl(token.id ?? '', organizationSlug);
 		try {
 			await navigator.clipboard.writeText(url);
 			toast.success('Link copied to clipboard!');
@@ -67,15 +68,15 @@
 			<!-- Details -->
 			<div class="grid grid-cols-2 gap-2 text-sm text-muted-foreground md:grid-cols-3">
 				<div>
-					<span class="font-medium">Type:</span>
+					<span class="font-medium">{m['organizationTokenCard.type']()}</span>
 					{accessType}
 				</div>
 				<div>
-					<span class="font-medium">Uses:</span>
+					<span class="font-medium">{m['organizationTokenCard.uses']()}</span>
 					{usageDisplay}
 				</div>
 				<div>
-					<span class="font-medium">Expires:</span>
+					<span class="font-medium">{m['organizationTokenCard.expires']()}</span>
 					{expirationDisplay}
 				</div>
 			</div>

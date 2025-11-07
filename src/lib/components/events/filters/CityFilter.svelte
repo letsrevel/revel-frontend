@@ -3,6 +3,7 @@
 	import { MapPin, X } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
 	import { cityListCities } from '$lib/api';
+	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
 		selectedCity?: { id: number; name: string; country: string } | null;
@@ -91,7 +92,7 @@
 <div class={cn('space-y-3', className)}>
 	<div class="flex items-center gap-2">
 		<MapPin class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-		<h3 class="text-sm font-medium">Location</h3>
+		<h3 class="text-sm font-medium">{m['filters.city.heading']()}</h3>
 	</div>
 
 	{#if selectedCity}
@@ -107,7 +108,7 @@
 				type="button"
 				onclick={handleClearCity}
 				class="rounded-sm p-1 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				aria-label="Clear city filter"
+				aria-label={m['filters.city.clear']()}
 			>
 				<X class="h-4 w-4" aria-hidden="true" />
 			</button>
@@ -126,9 +127,9 @@
 					oninput={handleInput}
 					onblur={handleBlur}
 					onfocus={() => searchQuery.length >= 2 && searchCities(searchQuery)}
-					placeholder="Search for a city..."
+					placeholder={m['filters.city.placeholder']()}
 					class="h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 text-sm ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-					aria-label="Search for a city"
+					aria-label={m['filters.city.label']()}
 					autocomplete="off"
 				/>
 			</div>
@@ -164,6 +165,6 @@
 			{/if}
 		</div>
 
-		<p class="text-xs text-muted-foreground">Filter events by city location</p>
+		<p class="text-xs text-muted-foreground">{m['filters.city.description']()}</p>
 	{/if}
 </div>

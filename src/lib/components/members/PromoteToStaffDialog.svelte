@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { OrganizationMemberSchema } from '$lib/api/generated/types.gen';
 	import {
 		Dialog,
@@ -50,7 +51,7 @@
 					<UserCog class="h-6 w-6 text-primary" aria-hidden="true" />
 				</div>
 				<div class="flex-1">
-					<DialogTitle>Make Staff Member</DialogTitle>
+					<DialogTitle>{m['promoteToStaffDialog.makeStaffMember']()}</DialogTitle>
 					<DialogDescription class="mt-1">
 						Promote {displayName} to staff
 					</DialogDescription>
@@ -74,7 +75,9 @@
 						aria-hidden="true"
 					/>
 					<div class="text-sm">
-						<p class="font-medium text-blue-900 dark:text-blue-100">Default Permissions</p>
+						<p class="font-medium text-blue-900 dark:text-blue-100">
+							{m['promoteToStaffDialog.defaultPermissions']()}
+						</p>
 						<p class="mt-1 text-blue-700 dark:text-blue-300">
 							They will be given default staff permissions. You can customize their permissions
 							after promotion.
@@ -84,13 +87,13 @@
 			</div>
 
 			<div class="space-y-2 text-sm text-muted-foreground">
-				<p class="font-medium text-foreground">Staff members can:</p>
+				<p class="font-medium text-foreground">{m['promoteToStaffDialog.staffMembersCan']()}</p>
 				<ul class="ml-4 list-disc space-y-1">
-					<li>Edit events</li>
-					<li>Check in attendees</li>
-					<li>Manage tickets</li>
-					<li>Invite people to events</li>
-					<li>View organization details</li>
+					<li>{m['promoteToStaffDialog.editEvents']()}</li>
+					<li>{m['promoteToStaffDialog.checkInAttendees']()}</li>
+					<li>{m['promoteToStaffDialog.manageTickets']()}</li>
+					<li>{m['promoteToStaffDialog.invitePeople']()}</li>
+					<li>{m['promoteToStaffDialog.viewOrgDetails']()}</li>
 				</ul>
 				<p class="mt-2 text-xs">
 					Additional permissions like creating events or managing members can be granted after
@@ -100,9 +103,11 @@
 		</div>
 
 		<DialogFooter>
-			<Button variant="outline" onclick={handleCancel} disabled={isPromoting}>Cancel</Button>
+			<Button variant="outline" onclick={handleCancel} disabled={isPromoting}
+				>{m['promoteToStaffDialog.cancel']()}</Button
+			>
 			<Button onclick={handleConfirm} disabled={isPromoting}>
-				{isPromoting ? 'Promoting...' : 'Make Staff Member'}
+				{isPromoting ? 'Promoting...' : m['promoteToStaffDialog.makeStaffMember']()}
 			</Button>
 		</DialogFooter>
 	</DialogContent>

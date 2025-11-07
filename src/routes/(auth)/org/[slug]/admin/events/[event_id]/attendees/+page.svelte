@@ -12,6 +12,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import type { RsvpDetailSchema } from '$lib/api/generated/types.gen';
+	import * as m from '$lib/paraglide/messages.js';
 
 	let { data }: { data: PageData } = $props();
 
@@ -54,7 +55,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to update RSVP');
+				throw new Error(m['attendeesAdmin.error_failedToUpdate']());
 			}
 
 			return response.data;
@@ -68,7 +69,7 @@
 			window.location.reload();
 		},
 		onError: (error: Error) => {
-			alert(`Failed to update RSVP: ${error.message}`);
+			alert(`${m['attendeesAdmin.error_failedToUpdate']()}: ${error.message}`);
 		}
 	}));
 
@@ -81,7 +82,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to delete RSVP');
+				throw new Error(m['attendeesAdmin.error_failedToDelete']());
 			}
 
 			return response.data;
@@ -95,7 +96,7 @@
 			window.location.reload();
 		},
 		onError: (error: Error) => {
-			alert(`Failed to delete RSVP: ${error.message}`);
+			alert(`${m['attendeesAdmin.error_failedToDelete']()}: ${error.message}`);
 		}
 	}));
 
@@ -232,11 +233,11 @@
 	function getStatusLabel(status: string): string {
 		switch (status) {
 			case 'yes':
-				return 'Yes';
+				return m['attendeesAdmin.statusLabelYes']();
 			case 'maybe':
-				return 'Maybe';
+				return m['attendeesAdmin.statusLabelMaybe']();
 			case 'no':
-				return 'No';
+				return m['attendeesAdmin.statusLabelNo']();
 			default:
 				return status;
 		}
@@ -277,10 +278,10 @@
 				class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
 			>
 				<ChevronLeft class="h-4 w-4" aria-hidden="true" />
-				Back to Events
+				{m['attendeesAdmin.backToEvents']()}
 			</a>
 		</div>
-		<h1 class="text-2xl font-bold tracking-tight md:text-3xl">Manage Attendees</h1>
+		<h1 class="text-2xl font-bold tracking-tight md:text-3xl">{m['attendeesAdmin.pageTitle']()}</h1>
 		<p class="mt-1 text-sm text-muted-foreground">{data.event.name}</p>
 	</div>
 
@@ -300,8 +301,8 @@
 					/>
 				</svg>
 				<div class="text-sm">
-					<p class="font-medium">Numbers shown are for the current page only</p>
-					<p>Total RSVPs: {data.totalCount}. Navigate through pages to see all attendees.</p>
+					<p class="font-medium">{m['attendeesAdmin.warningIncompleteData']()}</p>
+					<p>{m['attendeesAdmin.warningTotalRsvps']({ total: data.totalCount })}</p>
 				</div>
 			</div>
 		{/if}
@@ -309,19 +310,23 @@
 		<!-- Stats grid -->
 		<div class="grid gap-4 sm:grid-cols-4">
 			<div class="rounded-lg border border-border bg-card p-4">
-				<p class="text-sm font-medium text-muted-foreground">Total</p>
+				<p class="text-sm font-medium text-muted-foreground">{m['attendeesAdmin.statsTotal']()}</p>
 				<p class="mt-1 text-2xl font-bold">{stats.total}</p>
 			</div>
 			<div
 				class="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950"
 			>
-				<p class="text-sm font-medium text-green-700 dark:text-green-300">Yes</p>
+				<p class="text-sm font-medium text-green-700 dark:text-green-300">
+					{m['attendeesAdmin.statsYes']()}
+				</p>
 				<p class="mt-1 text-2xl font-bold text-green-900 dark:text-green-100">{stats.yesCount}</p>
 			</div>
 			<div
 				class="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-950"
 			>
-				<p class="text-sm font-medium text-yellow-700 dark:text-yellow-300">Maybe</p>
+				<p class="text-sm font-medium text-yellow-700 dark:text-yellow-300">
+					{m['attendeesAdmin.statsMaybe']()}
+				</p>
 				<p class="mt-1 text-2xl font-bold text-yellow-900 dark:text-yellow-100">
 					{stats.maybeCount}
 				</p>
@@ -329,7 +334,9 @@
 			<div
 				class="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950"
 			>
-				<p class="text-sm font-medium text-red-700 dark:text-red-300">No</p>
+				<p class="text-sm font-medium text-red-700 dark:text-red-300">
+					{m['attendeesAdmin.statsNo']()}
+				</p>
 				<p class="mt-1 text-2xl font-bold text-red-900 dark:text-red-100">{stats.noCount}</p>
 			</div>
 		</div>
@@ -345,7 +352,7 @@
 			/>
 			<Input
 				type="search"
-				placeholder="Search by name or email..."
+				placeholder={m['attendeesAdmin.searchPlaceholder']()}
 				value={searchInput}
 				oninput={handleSearchInput}
 				class="pl-10"
@@ -364,7 +371,7 @@
 						: 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
 				)}
 			>
-				All ({data.totalCount})
+				{m['attendeesAdmin.filterAll']({ count: data.totalCount })}
 			</button>
 			<button
 				type="button"
@@ -376,7 +383,7 @@
 						: 'border border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-950'
 				)}
 			>
-				Yes
+				{m['attendeesAdmin.statsYes']()}
 			</button>
 			<button
 				type="button"
@@ -388,7 +395,7 @@
 						: 'border border-yellow-600 text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-950'
 				)}
 			>
-				Maybe
+				{m['attendeesAdmin.statsMaybe']()}
 			</button>
 			<button
 				type="button"
@@ -400,7 +407,7 @@
 						: 'border border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-950'
 				)}
 			>
-				No
+				{m['attendeesAdmin.statsNo']()}
 			</button>
 		</div>
 	</div>
@@ -409,12 +416,12 @@
 	{#if data.rsvps.length === 0}
 		<div class="rounded-lg border border-border bg-card p-12 text-center">
 			<Users class="mx-auto h-12 w-12 text-muted-foreground" aria-hidden="true" />
-			<h3 class="mt-4 text-lg font-semibold">No RSVPs found</h3>
+			<h3 class="mt-4 text-lg font-semibold">{m['attendeesAdmin.noRsvpsHeading']()}</h3>
 			<p class="mt-2 text-sm text-muted-foreground">
 				{#if activeStatusFilter || searchQuery}
-					Try adjusting your filters or search query.
+					{m['attendeesAdmin.noRsvpsFiltered']()}
 				{:else}
-					No one has RSVP'd to this event yet.
+					{m['attendeesAdmin.noRsvpsEmpty']()}
 				{/if}
 			</p>
 		</div>
@@ -427,27 +434,27 @@
 						<th
 							class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
 						>
-							Name
+							{m['attendeesAdmin.tableHeaderName']()}
 						</th>
 						<th
 							class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
 						>
-							Email
+							{m['attendeesAdmin.tableHeaderEmail']()}
 						</th>
 						<th
 							class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
 						>
-							Status
+							{m['attendeesAdmin.tableHeaderStatus']()}
 						</th>
 						<th
 							class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
 						>
-							RSVP Date
+							{m['attendeesAdmin.tableHeaderRsvpDate']()}
 						</th>
 						<th
 							class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground"
 						>
-							Actions
+							{m['attendeesAdmin.tableHeaderActions']()}
 						</th>
 					</tr>
 				</thead>
@@ -482,7 +489,7 @@
 										aria-label="Edit RSVP for {getUserDisplayName(rsvp.user)}"
 									>
 										<Edit class="h-3 w-3" aria-hidden="true" />
-										Edit
+										{m['attendeesAdmin.actionEdit']()}
 									</button>
 									<button
 										type="button"
@@ -491,7 +498,7 @@
 										aria-label="Delete RSVP for {getUserDisplayName(rsvp.user)}"
 									>
 										<Trash2 class="h-3 w-3" aria-hidden="true" />
-										Delete
+										{m['attendeesAdmin.actionDelete']()}
 									</button>
 								</div>
 							</td>
@@ -521,7 +528,9 @@
 							</span>
 						</div>
 
-						<p class="text-xs text-muted-foreground">RSVP'd {formatDate(rsvp.created_at)}</p>
+						<p class="text-xs text-muted-foreground">
+							{m['attendeesAdmin.mobileRsvpdOn']({ date: formatDate(rsvp.created_at) })}
+						</p>
 
 						<div class="flex gap-2 border-t border-border pt-3">
 							<button
@@ -530,7 +539,7 @@
 								class="inline-flex flex-1 items-center justify-center gap-1 rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
 							>
 								<Edit class="h-4 w-4" aria-hidden="true" />
-								Edit
+								{m['attendeesAdmin.actionEdit']()}
 							</button>
 							<button
 								type="button"
@@ -538,7 +547,7 @@
 								class="inline-flex flex-1 items-center justify-center gap-1 rounded-md bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
 							>
 								<Trash2 class="h-4 w-4" aria-hidden="true" />
-								Delete
+								{m['attendeesAdmin.actionDelete']()}
 							</button>
 						</div>
 					</div>
@@ -550,10 +559,11 @@
 		{#if data.previousPage || data.nextPage}
 			<div class="flex items-center justify-between border-t border-border pt-4">
 				<div class="text-sm text-muted-foreground">
-					Showing {(data.currentPage - 1) * data.pageSize + 1} to {Math.min(
-						data.currentPage * data.pageSize,
-						data.totalCount
-					)} of {data.totalCount} results
+					{m['attendeesAdmin.paginationShowing']({
+						from: (data.currentPage - 1) * data.pageSize + 1,
+						to: Math.min(data.currentPage * data.pageSize, data.totalCount),
+						total: data.totalCount
+					})}
 				</div>
 				<div class="flex gap-2">
 					<Button
@@ -563,7 +573,7 @@
 						onclick={() => goToPage(data.currentPage - 1)}
 					>
 						<ChevronLeft class="h-4 w-4" aria-hidden="true" />
-						Previous
+						{m['attendeesAdmin.paginationPrevious']()}
 					</Button>
 					<Button
 						variant="outline"
@@ -571,7 +581,7 @@
 						disabled={!data.nextPage}
 						onclick={() => goToPage(data.currentPage + 1)}
 					>
-						Next
+						{m['attendeesAdmin.paginationNext']()}
 						<ChevronRight class="h-4 w-4" aria-hidden="true" />
 					</Button>
 				</div>
@@ -584,10 +594,10 @@
 <Dialog.Root bind:open={showEditModal}>
 	<Dialog.Content class="sm:max-w-md">
 		<Dialog.Header>
-			<Dialog.Title>Edit RSVP</Dialog.Title>
+			<Dialog.Title>{m['attendeesAdmin.editModalTitle']()}</Dialog.Title>
 			<Dialog.Description>
 				{#if editingRsvp}
-					Update the RSVP status for {getUserDisplayName(editingRsvp.user)}
+					{m['attendeesAdmin.editModalDescription']({ name: getUserDisplayName(editingRsvp.user) })}
 				{/if}
 			</Dialog.Description>
 		</Dialog.Header>
@@ -596,7 +606,7 @@
 			<div class="space-y-4 py-4">
 				<!-- Current info -->
 				<div class="rounded-lg bg-muted p-3">
-					<p class="text-sm font-medium">Current Status</p>
+					<p class="text-sm font-medium">{m['attendeesAdmin.editModalCurrentStatus']()}</p>
 					<p class="mt-1">
 						<span
 							class={cn(
@@ -611,7 +621,7 @@
 
 				<!-- New status selection -->
 				<div class="space-y-2">
-					<label class="text-sm font-medium">New Status</label>
+					<label class="text-sm font-medium">{m['attendeesAdmin.editModalNewStatus']()}</label>
 					<div class="space-y-2">
 						<label
 							class="flex cursor-pointer items-center gap-3 rounded-lg border border-border p-3 hover:bg-muted/50"
@@ -623,7 +633,7 @@
 								bind:group={selectedStatus}
 								class="h-4 w-4 text-green-600 focus:ring-green-600"
 							/>
-							<span class="text-sm font-medium">Yes - Attending</span>
+							<span class="text-sm font-medium">{m['attendeesAdmin.editModalYesLabel']()}</span>
 						</label>
 						<label
 							class="flex cursor-pointer items-center gap-3 rounded-lg border border-border p-3 hover:bg-muted/50"
@@ -635,7 +645,7 @@
 								bind:group={selectedStatus}
 								class="h-4 w-4 text-yellow-600 focus:ring-yellow-600"
 							/>
-							<span class="text-sm font-medium">Maybe - Might attend</span>
+							<span class="text-sm font-medium">{m['attendeesAdmin.editModalMaybeLabel']()}</span>
 						</label>
 						<label
 							class="flex cursor-pointer items-center gap-3 rounded-lg border border-border p-3 hover:bg-muted/50"
@@ -647,19 +657,23 @@
 								bind:group={selectedStatus}
 								class="h-4 w-4 text-red-600 focus:ring-red-600"
 							/>
-							<span class="text-sm font-medium">No - Not attending</span>
+							<span class="text-sm font-medium">{m['attendeesAdmin.editModalNoLabel']()}</span>
 						</label>
 					</div>
 				</div>
 			</div>
 
 			<Dialog.Footer>
-				<Button variant="outline" onclick={closeEditModal}>Cancel</Button>
+				<Button variant="outline" onclick={closeEditModal}
+					>{m['attendeesAdmin.editModalCancel']()}</Button
+				>
 				<Button
 					onclick={submitRsvpUpdate}
 					disabled={updateRsvpMutation.isPending || selectedStatus === (editingRsvp.status as any)}
 				>
-					{updateRsvpMutation.isPending ? 'Updating...' : 'Update RSVP'}
+					{updateRsvpMutation.isPending
+						? m['attendeesAdmin.editModalUpdating']()
+						: m['attendeesAdmin.editModalUpdate']()}
 				</Button>
 			</Dialog.Footer>
 		{/if}
@@ -669,12 +683,12 @@
 <!-- Delete Confirmation Dialog -->
 <ConfirmDialog
 	isOpen={showDeleteDialog}
-	title="Delete RSVP?"
+	title={m['attendeesAdmin.deleteDialogTitle']()}
 	message={deletingRsvp
-		? `Are you sure you want to delete the RSVP from ${getUserDisplayName(deletingRsvp.user)}? This action cannot be undone.`
+		? m['attendeesAdmin.deleteDialogMessage']({ name: getUserDisplayName(deletingRsvp.user) })
 		: ''}
-	confirmText="Delete"
-	cancelText="Cancel"
+	confirmText={m['attendeesAdmin.deleteDialogConfirm']()}
+	cancelText={m['attendeesAdmin.deleteDialogCancel']()}
 	variant="danger"
 	onConfirm={confirmDelete}
 	onCancel={cancelDelete}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
 	import { formatEventDateRange } from '$lib/utils/date';
 	import { getEventFallbackGradient } from '$lib/utils/event';
@@ -28,7 +29,7 @@
 
 	// Compute location display
 	let locationDisplay = $derived.by(() => {
-		if (!event.city) return event.address || 'Location TBD';
+		if (!event.city) return event.address || m['eventHeader.locationTbd']();
 		const cityCountry = event.city.country
 			? `${event.city.name}, ${event.city.country}`
 			: event.city.name;
@@ -140,7 +141,7 @@
 			{/if}
 
 			<div class="flex flex-col">
-				<span class="text-xs text-muted-foreground">Organized by</span>
+				<span class="text-xs text-muted-foreground">{m['eventHeader.organizedBy']()}</span>
 				<span class="font-semibold text-foreground group-hover:text-primary">
 					{event.organization.name}
 				</span>

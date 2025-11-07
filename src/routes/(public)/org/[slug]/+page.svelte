@@ -15,6 +15,7 @@
 		generateOrganizationStructuredData,
 		toJsonLd
 	} from '$lib/utils/seo';
+	import * as m from '$lib/paraglide/messages.js';
 
 	let { data }: { data: PageData } = $props();
 
@@ -247,7 +248,7 @@
 						class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						<Settings class="h-4 w-4" aria-hidden="true" />
-						Edit Profile
+						{m['organizationProfile.editProfile']()}
 					</a>
 				{/if}
 
@@ -287,16 +288,20 @@
 			<section aria-labelledby="resources-heading" class="mb-12">
 				<div class="mb-6 flex items-center justify-between">
 					<div>
-						<h2 id="resources-heading" class="text-2xl font-bold">Resources</h2>
+						<h2 id="resources-heading" class="text-2xl font-bold">
+							{m['organizationProfile.resources_heading']()}
+						</h2>
 						<p class="mt-1 text-sm text-muted-foreground">
-							Helpful documents, links, and information from {organization.name}
+							{m['organizationProfile.resources_description']({
+								organizationName: organization.name
+							})}
 						</p>
 					</div>
 					<a
 						href="/org/{organization.slug}/resources"
 						class="text-sm font-medium text-primary hover:underline"
 					>
-						View all
+						{m['organizationProfile.resources_viewAll']()}
 					</a>
 				</div>
 				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -312,9 +317,13 @@
 			<section aria-labelledby="series-heading" class="mb-12">
 				<div class="mb-6 flex items-center justify-between">
 					<div>
-						<h2 id="series-heading" class="text-2xl font-bold">Event Series</h2>
+						<h2 id="series-heading" class="text-2xl font-bold">
+							{m['organizationProfile.eventSeries_heading']()}
+						</h2>
 						<p class="mt-1 text-sm text-muted-foreground">
-							Recurring event series from {organization.name}
+							{m['organizationProfile.eventSeries_description']({
+								organizationName: organization.name
+							})}
 						</p>
 					</div>
 				</div>
@@ -323,7 +332,7 @@
 					<!-- Loading State -->
 					<div class="rounded-lg border bg-card p-8 text-center">
 						<Repeat class="mx-auto mb-4 h-12 w-12 animate-pulse text-muted-foreground" />
-						<p class="text-muted-foreground">Loading series...</p>
+						<p class="text-muted-foreground">{m['organizationProfile.eventSeries_loading']()}</p>
 					</div>
 				{:else if eventSeries.length > 0}
 					<!-- Series Cards Grid -->
@@ -342,10 +351,13 @@
 								onclick={() => (seriesPage = seriesPage - 1)}
 								class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
 							>
-								Previous
+								{m['common.pagination_previous']()}
 							</button>
 							<span class="text-sm text-muted-foreground">
-								Page {seriesPage} of {seriesTotalPages}
+								{m['common.pagination_page']()}
+								{seriesPage}
+								{m['common.pagination_of']()}
+								{seriesTotalPages}
 							</span>
 							<button
 								type="button"
@@ -353,7 +365,7 @@
 								onclick={() => (seriesPage = seriesPage + 1)}
 								class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
 							>
-								Next
+								{m['common.pagination_next']()}
 							</button>
 						</div>
 					{/if}
@@ -365,16 +377,20 @@
 		<section aria-labelledby="events-heading" class="mb-12">
 			<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 				<div>
-					<h2 id="events-heading" class="text-2xl font-bold">Events</h2>
+					<h2 id="events-heading" class="text-2xl font-bold">
+						{m['organizationProfile.events_heading']()}
+					</h2>
 					<p class="mt-1 text-sm text-muted-foreground">
-						Discover events hosted by {organization.name}
+						{m['organizationProfile.events_description']({ organizationName: organization.name })}
 					</p>
 				</div>
 
 				<div class="flex flex-wrap items-center gap-4">
 					<!-- Filter Toggle -->
 					<div class="flex items-center gap-2">
-						<label for="include-past" class="text-sm font-medium">Include past events</label>
+						<label for="include-past" class="text-sm font-medium"
+							>{m['organizationProfile.events_includePast']()}</label
+						>
 						<input
 							id="include-past"
 							type="checkbox"
@@ -393,7 +409,9 @@
 							: 'Showing oldest first'}
 					>
 						<ArrowDownUp class="h-4 w-4" aria-hidden="true" />
-						{eventsOrderBy === '-start' ? 'Newest First' : 'Oldest First'}
+						{eventsOrderBy === '-start'
+							? m['organizationProfile.events_newestFirst']()
+							: m['organizationProfile.events_oldestFirst']()}
 					</button>
 
 					<!-- Browse All Button -->
@@ -403,7 +421,7 @@
 						)}&organization_slug={organization.slug}"
 						class="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
 					>
-						Browse All
+						{m['organizationProfile.events_browseAll']()}
 						<ArrowRight class="h-4 w-4" aria-hidden="true" />
 					</a>
 				</div>
@@ -413,14 +431,14 @@
 				<!-- Loading State -->
 				<div class="rounded-lg border bg-card p-8 text-center">
 					<Calendar class="mx-auto mb-4 h-12 w-12 animate-pulse text-muted-foreground" />
-					<p class="text-muted-foreground">Loading events...</p>
+					<p class="text-muted-foreground">{m['organizationProfile.events_loading']()}</p>
 				</div>
 			{:else if eventsQuery.isError}
 				<!-- Error State -->
 				<div class="rounded-lg border border-destructive/20 bg-destructive/5 p-8 text-center">
-					<p class="font-semibold text-destructive">Failed to load events</p>
+					<p class="font-semibold text-destructive">{m['organizationProfile.events_failed']()}</p>
 					<p class="mt-2 text-sm text-muted-foreground">
-						Please try refreshing the page or check back later.
+						{m['common.errors_refreshPage']()}
 					</p>
 				</div>
 			{:else if events.length === 0}
@@ -428,12 +446,16 @@
 				<div class="rounded-lg border bg-card p-8 text-center">
 					<Calendar class="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
 					<h3 class="mb-2 text-lg font-semibold">
-						{includePastEvents ? 'No events found' : 'No upcoming events'}
+						{includePastEvents
+							? m['organizationProfile.events_noEvents']()
+							: m['organizationProfile.events_noUpcoming']()}
 					</h3>
 					<p class="text-sm text-muted-foreground">
 						{includePastEvents
-							? `${organization.name} hasn't hosted any events yet.`
-							: `${organization.name} has no upcoming events scheduled.`}
+							? m['organizationProfile.events_noEventsYet']({ organizationName: organization.name })
+							: m['organizationProfile.events_noUpcomingScheduled']({
+									organizationName: organization.name
+								})}
 					</p>
 					{#if !includePastEvents}
 						<button
@@ -441,7 +463,7 @@
 							onclick={() => (includePastEvents = true)}
 							class="mt-4 text-sm font-medium text-primary hover:underline"
 						>
-							View past events
+							{m['organizationProfile.events_viewPast']()}
 						</button>
 					{/if}
 				</div>
@@ -462,10 +484,13 @@
 							onclick={() => (eventsPage = eventsPage - 1)}
 							class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
 						>
-							Previous
+							{m['common.pagination_previous']()}
 						</button>
 						<span class="text-sm text-muted-foreground">
-							Page {eventsPage} of {eventsTotalPages}
+							{m['common.pagination_page']()}
+							{eventsPage}
+							{m['common.pagination_of']()}
+							{eventsTotalPages}
 						</span>
 						<button
 							type="button"
@@ -473,7 +498,7 @@
 							onclick={() => (eventsPage = eventsPage + 1)}
 							class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
 						>
-							Next
+							{m['common.pagination_next']()}
 						</button>
 					</div>
 				{/if}

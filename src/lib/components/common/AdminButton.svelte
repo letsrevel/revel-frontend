@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { goto } from '$app/navigation';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
@@ -7,7 +8,6 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 
-	// @ts-expect-error - bits-ui slot props type issue with Svelte 5
 	type BuilderProps = any;
 
 	let accessToken = $derived(authStore.accessToken);
@@ -105,12 +105,7 @@
 		<DropdownMenu.Root>
 			<DropdownMenu.Trigger>
 				{#snippet child({ props })}
-					<Button
-						{...props}
-						variant="ghost"
-						size="sm"
-						class="gap-2 text-sm font-medium"
-					>
+					<Button {...props} variant="ghost" size="sm" class="gap-2 text-sm font-medium">
 						<Shield class="h-4 w-4" />
 						Admin
 						<ChevronDown class="h-4 w-4" />
@@ -118,7 +113,7 @@
 				{/snippet}
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content align="end" class="w-56">
-				<DropdownMenu.Label>Select Organization</DropdownMenu.Label>
+				<DropdownMenu.Label>{m['adminButton.selectOrganization']()}</DropdownMenu.Label>
 				<DropdownMenu.Separator />
 				{#each userAdminOrgs as org}
 					<DropdownMenu.Item onclick={() => navigateToOrgAdmin(org.slug)}>

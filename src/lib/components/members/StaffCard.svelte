@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { OrganizationStaffSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
@@ -60,7 +61,7 @@
 				<h3 class="truncate font-semibold text-foreground">
 					{displayName}
 				</h3>
-				<Badge variant="secondary" class="text-xs">Staff</Badge>
+				<Badge variant="secondary" class="text-xs">{m['staffCard.staff']()}</Badge>
 			</div>
 
 			{#if staff.user.email}
@@ -79,7 +80,7 @@
 
 			<!-- Staff Since & Permissions -->
 			<div class="mt-2 flex flex-wrap gap-x-4 text-xs text-muted-foreground">
-				<span>Staff since: {staffSince}</span>
+				<span>{m['staffCard.staffSince']()} {staffSince}</span>
 				<span>{activePermissionsCount} permissions granted</span>
 			</div>
 
@@ -87,13 +88,13 @@
 			{#if staff.permissions?.default}
 				<div class="mt-3 flex flex-wrap gap-1">
 					{#if staff.permissions.default.create_event}
-						<Badge variant="outline" class="text-xs">Create Events</Badge>
+						<Badge variant="outline" class="text-xs">{m['staffCard.createEvents']()}</Badge>
 					{/if}
 					{#if staff.permissions.default.edit_organization}
-						<Badge variant="outline" class="text-xs">Edit Org</Badge>
+						<Badge variant="outline" class="text-xs">{m['staffCard.editOrg']()}</Badge>
 					{/if}
 					{#if staff.permissions.default.manage_members}
-						<Badge variant="outline" class="text-xs">Manage Members</Badge>
+						<Badge variant="outline" class="text-xs">{m['staffCard.manageMembers']()}</Badge>
 					{/if}
 					{#if activePermissionsCount > 3}
 						<Badge variant="outline" class="text-xs">+{activePermissionsCount - 3} more</Badge>
@@ -112,7 +113,7 @@
 					aria-label="Edit permissions for {displayName}"
 				>
 					<Settings class="h-4 w-4" />
-					<span class="sr-only md:not-sr-only md:ml-2">Permissions</span>
+					<span class="sr-only md:not-sr-only md:ml-2">{m['staffCard.permissions']()}</span>
 				</Button>
 			{/if}
 
@@ -125,7 +126,7 @@
 					aria-label="Remove {displayName} from staff"
 				>
 					<UserX class="h-4 w-4" />
-					<span class="sr-only md:not-sr-only md:ml-2">Remove</span>
+					<span class="sr-only md:not-sr-only md:ml-2">{m['staffCard.remove']()}</span>
 				</Button>
 			{/if}
 		</div>

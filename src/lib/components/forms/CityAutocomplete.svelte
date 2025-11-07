@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { cityListCities } from '$lib/api/generated';
 	import type { CitySchema } from '$lib/api/generated';
 	import { Search, X, Loader2, MapPin } from 'lucide-svelte';
@@ -17,8 +18,8 @@
 		onSelect,
 		disabled = false,
 		error,
-		label = 'Preferred City',
-		description = 'Select your preferred city for event recommendations'
+		label = m['cityAutocomplete.preferredCity'](),
+		description = m['cityAutocomplete.preferredCityDescription']()
 	}: Props = $props();
 
 	// Component state

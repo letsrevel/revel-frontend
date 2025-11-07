@@ -28,13 +28,17 @@ Try Revel yourself at **[demo.letsrevel.io](https://demo.letsrevel.io)**
 Revel addresses the shortcomings of existing event platforms, especially for communities that prioritize safety, autonomy, and trust.
 
 ### For Communities, Not Corporations
+
 Mainstream platforms often have restrictive content policies or lack privacy features, creating challenges for adult, queer, or activist-oriented events. Revel is **explicitly designed to support these communities**.
 
 ### Open, Transparent & Self-Hostable
+
 Avoid vendor lock-in. Host Revel on your own infrastructure for free, giving you **complete control over your data** and eliminating platform commissions. Its open-source nature means you can trust the code you run.
 
 ### Fair & Simple Pricing
+
 For those who choose our future hosted version:
+
 - **No charge** for free events or events where you handle payments yourself
 - **3% + $0.50 commission** on paid tickets sold through Revel
 
@@ -47,23 +51,27 @@ This significantly undercuts the high fees of major platforms while keeping the 
 Revel combines the ticketing power of platforms like Eventbrite with the community-building tools of Meetup, all under a privacy-minded, open-source framework.
 
 ### 🏘️ Community & Membership
+
 - **Organizations:** Create and manage your community's central hub with customizable visibility (Public, Private, Members-Only)
 - **Roles & Permissions:** Granular permission system with Owner, Staff, and Member roles
 - **Membership System:** Manage member rosters, enable members-only events, foster belonging
 
 ### 🔒 Trust, Safety & Privacy
+
 - **Advanced Attendee Screening:** Gate event eligibility with custom questionnaires for automatic or manual review
 - **Full Data Ownership:** When self-hosting, you control your data—no third-party trackers, no data selling
 - **Tailored Invitations:** Send direct invitations that can waive requirements for trusted guests
 - **GDPR Compliant:** Built-in data export, account deletion, and privacy controls
 
 ### 🎫 Core Event & Ticketing
+
 - **Event & Series Management:** Create single events or recurring series under your organization
 - **Flexible Ticketing:** Support for paid/free tickets (powered by Stripe) and simple RSVPs
 - **QR Code Check-In:** Streamlined event entry with QR code scanning
 - **Potluck Coordination:** Built-in system for attendees to coordinate bringing items
 
 ### 📱 Modern User Experience
+
 - **Mobile-First Design:** Optimized for mobile devices with progressive enhancement
 - **Accessibility First:** WCAG 2.1 AA compliance as standard, not an afterthought
 - **Fast & Responsive:** Hybrid SSR/CSR rendering for optimal performance
@@ -74,6 +82,7 @@ Revel combines the ticketing power of platforms like Eventbrite with the communi
 ## 💻 Tech Stack
 
 ### Backend
+
 ![Python](https://img.shields.io/badge/python-3.13%2B-3776AB.svg?logo=python&logoColor=white&style=flat-square)
 ![Django](https://img.shields.io/badge/django-5.2+-092E20.svg?logo=django&logoColor=white&style=flat-square)
 ![PostgreSQL](https://img.shields.io/badge/postgresql-16+-336791.svg?logo=postgresql&logoColor=white&style=flat-square)
@@ -86,6 +95,7 @@ Revel combines the ticketing power of platforms like Eventbrite with the communi
 - **Docker** for containerized deployment
 
 ### Frontend
+
 ![SvelteKit](https://img.shields.io/badge/sveltekit-5.0+-FF3E00.svg?logo=svelte&logoColor=white&style=flat-square)
 ![TypeScript](https://img.shields.io/badge/typescript-5.0+-3178C6.svg?logo=typescript&logoColor=white&style=flat-square)
 ![Tailwind](https://img.shields.io/badge/tailwind-4.0+-38B2AC.svg?logo=tailwind-css&logoColor=white&style=flat-square)
@@ -154,12 +164,14 @@ pnpm dev
 ### Key Design Patterns
 
 **Backend:**
+
 - Clean separation: Controllers → Services → Models
 - Type-safe with mypy strict mode
 - Comprehensive test coverage with pytest
 - OpenAPI auto-generation for API documentation
 
 **Frontend:**
+
 - Hybrid SSR/CSR rendering strategy
 - Auto-generated TypeScript client from OpenAPI spec
 - Component-driven architecture with Svelte 5 Runes
@@ -182,12 +194,14 @@ We welcome contributions from developers of all skill levels!
 ### Development Notes
 
 **Backend:**
+
 - Follow Django best practices
 - Write comprehensive tests (aim for >90% coverage)
 - Use type hints and pass mypy strict checks
 - Document API endpoints with proper schemas
 
 **Frontend:**
+
 - Use Svelte 5 Runes (not legacy reactive syntax)
 - Maintain WCAG 2.1 AA accessibility standards
 - Design mobile-first, enhance for desktop
@@ -195,7 +209,7 @@ We welcome contributions from developers of all skill levels!
 
 ### ⚠️ Frontend Caveat
 
-The backend is carefully architected and tested. The frontend, however, was *shamelessly* vibe-coded using Claude Code. It's a bit of a spaghetti mess, but it works! **Any help cleaning it up is greatly appreciated!**
+The backend is carefully architected and tested. The frontend, however, was _shamelessly_ vibe-coded using Claude Code. It's a bit of a spaghetti mess, but it works! **Any help cleaning it up is greatly appreciated!**
 
 ---
 
@@ -244,6 +258,7 @@ This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for d
 ## 💖 Support the Project
 
 If you find Revel useful, consider:
+
 - ⭐ Starring the repositories
 - 🐛 Reporting bugs and suggesting features
 - 💻 Contributing code or documentation

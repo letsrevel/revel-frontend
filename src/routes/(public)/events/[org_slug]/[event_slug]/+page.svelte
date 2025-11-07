@@ -22,6 +22,7 @@
 	import { formatEventLocation } from '$lib/utils/event';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
+	import * as m from '$lib/paraglide/messages.js';
 
 	let { data }: { data: PageData } = $props();
 
@@ -332,8 +333,8 @@
 					/>
 				</svg>
 				<div>
-					<p class="font-medium">Payment successful!</p>
-					<p class="text-sm">Your ticket has been confirmed. Check your email for details.</p>
+					<p class="font-medium">{m['eventDetails.payment_successTitle']()}</p>
+					<p class="text-sm">{m['eventDetails.payment_successMessage']()}</p>
 				</div>
 			</div>
 		</div>
@@ -354,8 +355,8 @@
 					/>
 				</svg>
 				<div>
-					<p class="font-medium">Payment cancelled</p>
-					<p class="text-sm">You can try again anytime.</p>
+					<p class="font-medium">{m['eventDetails.payment_cancelledTitle']()}</p>
+					<p class="text-sm">{m['eventDetails.payment_cancelledMessage']()}</p>
 				</div>
 			</div>
 		</div>

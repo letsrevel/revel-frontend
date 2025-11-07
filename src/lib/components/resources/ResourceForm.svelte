@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
 	import { FileText, Link as LinkIcon, AlignLeft } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
@@ -16,7 +17,6 @@
 
 	let {
 		resource = null,
-		// @ts-expect-error - Used by parent component for API calls
 		organizationSlug,
 		organizationId,
 		onSubmit,
@@ -37,7 +37,6 @@
 	let file = $state<File | null>(null);
 	let link = $state(resource?.link || '');
 	let text = $state(resource?.text || '');
-	// @ts-expect-error - Bound for potential future use (e.g., programmatic file selection)
 	let fileInput = $state<HTMLInputElement | undefined>(undefined);
 
 	// Event assignment
@@ -167,7 +166,7 @@
 					aria-pressed={resourceType === 'file'}
 				>
 					<FileText class="h-6 w-6" aria-hidden="true" />
-					<span class="text-sm font-medium">File</span>
+					<span class="text-sm font-medium">{m['resourceForm.file']()}</span>
 				</button>
 
 				<button
@@ -182,7 +181,7 @@
 					aria-pressed={resourceType === 'link'}
 				>
 					<LinkIcon class="h-6 w-6" aria-hidden="true" />
-					<span class="text-sm font-medium">Link</span>
+					<span class="text-sm font-medium">{m['resourceForm.link']()}</span>
 				</button>
 
 				<button
@@ -197,7 +196,7 @@
 					aria-pressed={resourceType === 'text'}
 				>
 					<AlignLeft class="h-6 w-6" aria-hidden="true" />
-					<span class="text-sm font-medium">Text</span>
+					<span class="text-sm font-medium">{m['resourceForm.text']()}</span>
 				</button>
 			</div>
 		</div>
@@ -248,13 +247,13 @@
 	{#if resourceType === 'file'}
 		<div class="space-y-2">
 			<label for="file" class="block text-sm font-medium text-gray-900 dark:text-gray-100">
-				File
+				{m['resourceForm.file']()}
 				{#if !resource}<span class="text-destructive" aria-label="required">*</span>{/if}
 			</label>
 
 			{#if resource?.file}
 				<div class="rounded-md bg-muted p-3 text-sm">
-					<p class="font-medium">Current file:</p>
+					<p class="font-medium">{m['resourceForm.currentFile']()}</p>
 					<p class="truncate text-muted-foreground">{resource.file}</p>
 					<p class="mt-2 text-xs text-muted-foreground">
 						Upload a new file to replace the current one
@@ -341,12 +340,12 @@
 			disabled={isSubmitting}
 			class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 		>
-			<option value="public">Public - Anyone can view</option>
-			<option value="members-only">Members Only - Requires membership</option>
-			<option value="staff-only">Staff Only - Staff and admins only</option>
-			<option value="private">Private - Admins only</option>
+			<option value="public">{m['resourceForm.public']()}</option>
+			<option value="members-only">{m['resourceForm.membersOnly']()}</option>
+			<option value="staff-only">{m['resourceForm.staffOnly']()}</option>
+			<option value="private">{m['resourceForm.private']()}</option>
 		</select>
-		<p class="text-xs text-muted-foreground">Controls who can view this resource</p>
+		<p class="text-xs text-muted-foreground">{m['resourceForm.controlsVisibility']()}</p>
 	</div>
 
 	<!-- Display on Organization Page -->

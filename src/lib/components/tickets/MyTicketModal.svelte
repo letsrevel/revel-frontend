@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { EventTicketSchemaActual } from '$lib/utils/eligibility';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
@@ -89,7 +90,7 @@
 <Dialog bind:open>
 	<DialogContent class="max-h-[90vh] max-w-lg overflow-y-auto">
 		<DialogHeader>
-			<DialogTitle class="sr-only">Your Ticket</DialogTitle>
+			<DialogTitle class="sr-only">{m['myTicketModal.yourTicket']()}</DialogTitle>
 		</DialogHeader>
 
 		<div class="space-y-6">
@@ -217,7 +218,7 @@
 							alt="Ticket QR Code"
 							class="h-64 w-64 rounded-lg border border-border bg-white"
 						/>
-						<p class="text-center text-sm text-muted-foreground">Show this QR code at check-in</p>
+						<p class="text-center text-sm text-muted-foreground">{m['myTicketModal.showQr']()}</p>
 						<button
 							type="button"
 							onclick={downloadQRCode}
@@ -245,7 +246,7 @@
 
 			<!-- Ticket ID -->
 			<div class="border-t border-border pt-4">
-				<p class="text-xs text-muted-foreground">Ticket ID: {ticket.id}</p>
+				<p class="text-xs text-muted-foreground">{m['myTicketModal.ticketId']()} {ticket.id}</p>
 			</div>
 		</div>
 	</DialogContent>

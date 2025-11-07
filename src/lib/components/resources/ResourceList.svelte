@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
 	import ResourceCard from './ResourceCard.svelte';
 	import { cn } from '$lib/utils/cn';
@@ -16,7 +17,6 @@
 	// Group resources by type for better organization (optional)
 	// Currently unused but kept for potential future use
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	// @ts-expect-error - Intentionally unused, kept for potential future use
 	const _groupedResources = $derived.by(() => {
 		const groups: Record<string, AdditionalResourceSchema[]> = {
 			file: [],
@@ -46,7 +46,9 @@
 
 	<!-- Count -->
 	<p class="text-sm text-muted-foreground">
-		Showing {resources.length}
-		{resources.length === 1 ? 'resource' : 'resources'}
+		{m['resourceList.showingCount']({
+			count: resources.length,
+			plural: resources.length === 1 ? '' : m['resourceList.showingCount_plural']()
+		})}
 	</p>
 </div>

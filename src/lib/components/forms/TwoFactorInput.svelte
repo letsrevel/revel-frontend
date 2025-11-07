@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	interface Props {
 		value: string;
 		error?: string;
@@ -110,7 +111,7 @@
 		<p class="text-sm text-destructive" role="alert">{error}</p>
 	{/if}
 
-	<p class="text-sm text-muted-foreground">Enter the 6-digit code from your authenticator app.</p>
+	<p class="text-sm text-muted-foreground">{m['twoFactorInput.enterCode']()}</p>
 
 	<!-- Hidden input for form submission -->
 	<input type="hidden" name="code" {value} />

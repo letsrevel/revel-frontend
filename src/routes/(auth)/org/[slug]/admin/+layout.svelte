@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { Menu } from 'lucide-svelte';
 	import type { LayoutData } from './$types';
@@ -18,20 +19,37 @@
 
 	// Admin navigation items
 	const navItems = [
-		{ href: `/org/${data.organization.slug}/admin`, label: 'Dashboard' },
-		{ href: `/org/${data.organization.slug}/admin/events`, label: 'Events' },
-		{ href: `/org/${data.organization.slug}/admin/event-series`, label: 'Event Series' },
+		{ href: `/org/${data.organization.slug}/admin`, label: m['orgAdmin.nav.dashboard']() },
+		{ href: `/org/${data.organization.slug}/admin/events`, label: m['orgAdmin.nav.events']() },
+		{
+			href: `/org/${data.organization.slug}/admin/event-series`,
+			label: m['orgAdmin.nav.eventSeries']()
+		},
 		{
 			href: `/org/${data.organization.slug}/admin/members`,
-			label: 'Members',
+			label: m['orgAdmin.nav.members'](),
 			subItems: data.organization.accept_membership_requests
-				? [{ href: `/org/${data.organization.slug}/admin/members/requests`, label: 'Requests' }]
+				? [
+						{
+							href: `/org/${data.organization.slug}/admin/members/requests`,
+							label: m['orgAdmin.nav.memberRequests']()
+						}
+					]
 				: undefined
 		},
-		{ href: `/org/${data.organization.slug}/admin/questionnaires`, label: 'Questionnaires' },
-		{ href: `/org/${data.organization.slug}/admin/resources`, label: 'Resources' },
-		{ href: `/org/${data.organization.slug}/admin/tokens`, label: 'Invitation Links' },
-		{ href: `/org/${data.organization.slug}/admin/settings`, label: 'Settings' }
+		{
+			href: `/org/${data.organization.slug}/admin/questionnaires`,
+			label: m['orgAdmin.nav.questionnaires']()
+		},
+		{
+			href: `/org/${data.organization.slug}/admin/resources`,
+			label: m['orgAdmin.nav.resources']()
+		},
+		{
+			href: `/org/${data.organization.slug}/admin/tokens`,
+			label: m['orgAdmin.nav.invitationLinks']()
+		},
+		{ href: `/org/${data.organization.slug}/admin/settings`, label: m['orgAdmin.nav.settings']() }
 	];
 
 	// Check if link is active
@@ -56,10 +74,10 @@
 
 	// Breadcrumb structure
 	let breadcrumbs = $derived([
-		{ href: '/', label: 'Home' },
-		{ href: '/organizations', label: 'Organizations' },
+		{ href: '/', label: m['orgAdmin.breadcrumbs.home']() },
+		{ href: '/organizations', label: m['orgAdmin.breadcrumbs.organizations']() },
 		{ href: `/org/${data.organization.slug}`, label: data.organization.name },
-		{ href: `/org/${data.organization.slug}/admin`, label: 'Admin' }
+		{ href: `/org/${data.organization.slug}/admin`, label: m['orgAdmin.breadcrumbs.admin']() }
 	]);
 </script>
 
@@ -78,7 +96,7 @@
 						type="button"
 						onclick={toggleMobileMenu}
 						class="rounded-md p-2 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
-						aria-label="Toggle navigation menu"
+						aria-label={m['orgAdmin.layout.toggleMenu']()}
 						aria-expanded={mobileMenuOpen}
 					>
 						<Menu class="h-5 w-5" />
@@ -86,7 +104,9 @@
 
 					<h1 class="text-xl font-semibold">
 						{data.organization.name}
-						<span class="ml-2 text-sm font-normal text-muted-foreground">Admin</span>
+						<span class="ml-2 text-sm font-normal text-muted-foreground"
+							>{m['orgAdmin.layout.adminBadge']()}</span
+						>
 					</h1>
 				</div>
 
@@ -97,13 +117,18 @@
 							Owner
 						</span>
 					{:else if data.isStaff}
-						<span class="rounded-md bg-accent px-2 py-1 text-xs font-medium">Staff</span>
+						<span class="rounded-md bg-accent px-2 py-1 text-xs font-medium"
+							>{m['orgAdmin.layout.staffBadge']()}</span
+						>
 					{/if}
 				</div>
 			</div>
 
 			<!-- Breadcrumbs (Desktop only) -->
-			<nav class="hidden border-t py-3 md:block" aria-label="Breadcrumb">
+			<nav
+				class="hidden border-t py-3 md:block"
+				aria-label={m['orgAdmin.layout.breadcrumbNavigation']()}
+			>
 				<ol class="flex items-center gap-2 text-sm">
 					{#each breadcrumbs as crumb, i}
 						{#if i > 0}
@@ -123,7 +148,7 @@
 			</nav>
 
 			<!-- Desktop Navigation -->
-			<nav class="hidden border-t md:block" aria-label="Admin navigation">
+			<nav class="hidden border-t md:block" aria-label={m['orgAdmin.layout.adminNavigation']()}>
 				<ul class="flex gap-6">
 					{#each navItems as item}
 						<li>
@@ -148,10 +173,15 @@
 	<!-- Mobile Navigation -->
 	{#if mobileMenuOpen}
 		<div class="md:hidden">
-			<nav class="border-b bg-background px-4 py-3" aria-label="Mobile admin navigation">
+			<nav
+				class="border-b bg-background px-4 py-3"
+				aria-label={m['orgAdmin.layout.mobileAdminNavigation']()}
+			>
 				<!-- Breadcrumbs -->
 				<div class="mb-4 border-b pb-3">
-					<h2 class="mb-2 text-xs font-semibold uppercase text-muted-foreground">Navigation</h2>
+					<h2 class="mb-2 text-xs font-semibold uppercase text-muted-foreground">
+						{m['orgAdmin.layout.navigationHeading']()}
+					</h2>
 					<ol class="flex flex-wrap items-center gap-2 text-sm">
 						{#each breadcrumbs as crumb, i}
 							{#if i > 0}

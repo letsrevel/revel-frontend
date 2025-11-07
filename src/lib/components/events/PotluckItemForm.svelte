@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { PotluckItemCreateSchema, ItemTypes } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import { X } from 'lucide-svelte';
@@ -22,21 +23,21 @@
 
 	// Item type options
 	const ITEM_TYPE_OPTIONS = [
-		{ value: 'food', label: 'Food' },
-		{ value: 'main_course', label: 'Main Course' },
-		{ value: 'side_dish', label: 'Side Dish' },
-		{ value: 'dessert', label: 'Dessert' },
-		{ value: 'drink', label: 'Drink' },
-		{ value: 'alcohol', label: 'Alcohol' },
-		{ value: 'non_alcoholic', label: 'Non-Alcoholic' },
-		{ value: 'supplies', label: 'Supplies' },
-		{ value: 'labor', label: 'Labor/Help' },
-		{ value: 'entertainment', label: 'Entertainment' },
-		{ value: 'sexual_health', label: 'Sexual Health' },
-		{ value: 'toys', label: 'Toys' },
-		{ value: 'care', label: 'Care' },
-		{ value: 'transport', label: 'Transport' },
-		{ value: 'misc', label: 'Other' }
+		{ value: 'food', label: m['potluckItemEditModal.itemTypes.food']() },
+		{ value: 'main_course', label: m['potluckItemEditModal.itemTypes.main_course']() },
+		{ value: 'side_dish', label: m['potluckItemEditModal.itemTypes.side_dish']() },
+		{ value: 'dessert', label: m['potluckItemEditModal.itemTypes.dessert']() },
+		{ value: 'drink', label: m['potluckItemEditModal.itemTypes.drink']() },
+		{ value: 'alcohol', label: m['potluckItemEditModal.itemTypes.alcohol']() },
+		{ value: 'non_alcoholic', label: m['potluckItemEditModal.itemTypes.non_alcoholic']() },
+		{ value: 'supplies', label: m['potluckItemEditModal.itemTypes.supplies']() },
+		{ value: 'labor', label: m['potluckItemEditModal.itemTypes.labor']() },
+		{ value: 'entertainment', label: m['potluckItemEditModal.itemTypes.entertainment']() },
+		{ value: 'sexual_health', label: m['potluckItemEditModal.itemTypes.sexual_health']() },
+		{ value: 'toys', label: m['potluckItemEditModal.itemTypes.toys']() },
+		{ value: 'care', label: m['potluckItemEditModal.itemTypes.care']() },
+		{ value: 'transport', label: m['potluckItemEditModal.itemTypes.transport']() },
+		{ value: 'misc', label: m['potluckItemEditModal.itemTypes.misc']() }
 	];
 
 	// Validation
@@ -55,22 +56,22 @@
 
 		// Validate
 		if (!name.trim()) {
-			errors.name = 'Item name is required';
+			errors.name = m['potluckItemEditModal.itemNameRequired']();
 			return;
 		}
 
 		if (name.trim().length > 100) {
-			errors.name = 'Item name must be 100 characters or less';
+			errors.name = m['potluckItemEditModal.itemNameTooLong']();
 			return;
 		}
 
 		if (!itemType) {
-			errors.itemType = 'Please select an item type';
+			errors.itemType = m['potluckItemEditModal.itemTypeRequired']();
 			return;
 		}
 
 		if (quantity.length > 20) {
-			errors.quantity = 'Quantity must be 20 characters or less';
+			errors.quantity = m['potluckItemEditModal.quantityTooLong']();
 			return;
 		}
 
@@ -119,7 +120,9 @@
 	<div class={cn('rounded-lg border bg-card p-4', className)}>
 		<div class="mb-4 flex items-center justify-between">
 			<h3 class="text-lg font-semibold">
-				{isOrganizer ? 'Add potluck item' : "Add item you'll bring"}
+				{isOrganizer
+					? m['potluckItemEditModal.addPotluckItem']()
+					: m['potluckItemEditModal.addItemYoullBring']()}
 			</h3>
 			<button
 				type="button"
@@ -135,14 +138,14 @@
 			<!-- Item Name -->
 			<div>
 				<label for="item-name" class="mb-1.5 block text-sm font-medium">
-					Item name <span class="text-destructive">*</span>
+					{m['potluckItemEditModal.itemName']()} <span class="text-destructive">*</span>
 				</label>
 				<input
 					id="item-name"
 					type="text"
 					bind:this={nameInput}
 					bind:value={name}
-					placeholder="e.g., Pasta Salad"
+					placeholder={m['potluckItemEditModal.itemNamePlaceholder']()}
 					maxlength="100"
 					aria-required="true"
 					aria-invalid={!!errors.name}
@@ -164,7 +167,7 @@
 				<!-- Item Type -->
 				<div>
 					<label for="item-type" class="mb-1.5 block text-sm font-medium">
-						Category <span class="text-destructive">*</span>
+						{m['potluckItemEditModal.category']()} <span class="text-destructive">*</span>
 					</label>
 					<select
 						id="item-type"
@@ -191,13 +194,14 @@
 				<!-- Quantity -->
 				<div>
 					<label for="quantity" class="mb-1.5 block text-sm font-medium">
-						Quantity <span class="text-muted-foreground">(optional)</span>
+						{m['potluckItemEditModal.quantity']()}
+						<span class="text-muted-foreground">{m['potluckItemEditModal.optional']()}</span>
 					</label>
 					<input
 						id="quantity"
 						type="text"
 						bind:value={quantity}
-						placeholder="e.g., serves 10, 2 bottles"
+						placeholder={m['potluckItemEditModal.quantityPlaceholder']()}
 						maxlength="20"
 						aria-describedby={errors.quantity ? 'quantity-error' : 'quantity-help'}
 						class={cn(
@@ -220,16 +224,17 @@
 			<!-- Note -->
 			<div>
 				<label for="note" class="mb-1.5 block text-sm font-medium">
-					Note <span class="text-muted-foreground">(optional)</span>
+					{m['potluckItemEditModal.note']()}
+					<span class="text-muted-foreground">{m['potluckItemEditModal.optional']()}</span>
 				</label>
 				<textarea
 					id="note"
 					bind:value={note}
-					placeholder="Any additional details (e.g., dietary info, preparation notes)"
+					placeholder={m['potluckItemEditModal.notePlaceholder']()}
 					rows="3"
 					class="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 				></textarea>
-				<p class="mt-1 text-xs text-muted-foreground">Basic markdown supported</p>
+				<p class="mt-1 text-xs text-muted-foreground">{m['potluckItemForm.markdownSupported']()}</p>
 			</div>
 
 			<!-- Organizer option: Claim checkbox -->
@@ -245,7 +250,7 @@
 						for="claim-item"
 						class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 					>
-						I'll bring this item
+						{m['potluckItemEditModal.illBringThisItem']()}
 					</label>
 				</div>
 			{/if}
@@ -257,7 +262,7 @@
 					onclick={handleCancel}
 					class="rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				>
-					Cancel
+					{m['potluckItemEditModal.cancel']()}
 				</button>
 				<button
 					type="submit"
@@ -269,7 +274,9 @@
 							: 'cursor-not-allowed bg-muted text-muted-foreground opacity-60'
 					)}
 				>
-					{isOrganizer && !claimItem ? 'Add as suggestion' : 'Add & claim'}
+					{isOrganizer && !claimItem
+						? m['potluckItemEditModal.addAsSuggestion']()
+						: m['potluckItemEditModal.addAndClaim']()}
 				</button>
 			</div>
 		</form>

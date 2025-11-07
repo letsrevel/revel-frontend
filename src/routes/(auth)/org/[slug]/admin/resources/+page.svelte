@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -90,7 +91,7 @@
 	}
 
 	function handleDelete(resourceId: string) {
-		if (confirm('Are you sure you want to delete this resource?')) {
+		if (confirm(m['orgAdmin.resources.confirmDelete']())) {
 			deleteMutation.mutate(resourceId);
 		}
 	}
@@ -115,8 +116,10 @@
 	<!-- Header -->
 	<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 		<div>
-			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">Resources</h1>
-			<p class="text-muted-foreground">Manage files, links, and content for your organization</p>
+			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
+				{m['orgAdmin.resources.pageTitle']()}
+			</h1>
+			<p class="text-muted-foreground">{m['orgAdmin.resources.pageDescription']()}</p>
 		</div>
 
 		<button
@@ -125,7 +128,7 @@
 			class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 		>
 			<Plus class="h-5 w-5" aria-hidden="true" />
-			Add Resource
+			{m['orgAdmin.resources.addResourceButton']()}
 		</button>
 	</div>
 
@@ -140,9 +143,9 @@
 			<input
 				type="search"
 				bind:value={searchQuery}
-				placeholder="Search resources..."
+				placeholder={m['orgAdmin.resources.searchPlaceholder']()}
 				class="w-full rounded-md border border-input bg-background py-2 pl-10 pr-4 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				aria-label="Search resources"
+				aria-label={m['orgAdmin.resources.searchPlaceholder']()}
 			/>
 		</div>
 
@@ -150,39 +153,41 @@
 		<select
 			bind:value={typeFilter}
 			class="rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-			aria-label="Filter by type"
+			aria-label={m['orgAdmin.resources.filters.type.label']()}
 		>
-			<option value="all">All Types</option>
-			<option value="file">Files</option>
-			<option value="link">Links</option>
-			<option value="text">Text</option>
+			<option value="all">{m['orgAdmin.resources.filters.type.allTypes']()}</option>
+			<option value="file">{m['orgAdmin.resources.filters.type.files']()}</option>
+			<option value="link">{m['orgAdmin.resources.filters.type.links']()}</option>
+			<option value="text">{m['orgAdmin.resources.filters.type.text']()}</option>
 		</select>
 
 		<!-- Visibility Filter -->
 		<select
 			bind:value={visibilityFilter}
 			class="rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-			aria-label="Filter by visibility"
+			aria-label={m['orgAdmin.resources.filters.visibility.label']()}
 		>
-			<option value="all">All Visibility</option>
-			<option value="public">Public</option>
-			<option value="members-only">Members Only</option>
-			<option value="staff-only">Staff Only</option>
-			<option value="private">Private</option>
+			<option value="all">{m['orgAdmin.resources.filters.visibility.allVisibility']()}</option>
+			<option value="public">{m['orgAdmin.resources.filters.visibility.public']()}</option>
+			<option value="members-only"
+				>{m['orgAdmin.resources.filters.visibility.membersOnly']()}</option
+			>
+			<option value="staff-only">{m['orgAdmin.resources.filters.visibility.staffOnly']()}</option>
+			<option value="private">{m['orgAdmin.resources.filters.visibility.private']()}</option>
 		</select>
 	</div>
 
 	<!-- Content -->
 	{#if error}
 		<div class="rounded-md bg-destructive/10 p-4 text-destructive" role="alert">
-			<p class="font-semibold">Error</p>
-			<p class="mt-1 text-sm">Failed to load resources. Please try again.</p>
+			<p class="font-semibold">{m['orgAdmin.resources.error.title']()}</p>
+			<p class="mt-1 text-sm">{m['orgAdmin.resources.error.description']()}</p>
 		</div>
 	{:else if isLoading}
 		<div class="flex items-center justify-center py-12">
 			<div
 				class="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"
-				aria-label="Loading"
+				aria-label={m['orgAdmin.resources.loading']()}
 			></div>
 		</div>
 	{:else if resources.length === 0}
@@ -190,11 +195,11 @@
 			class="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center dark:border-gray-600"
 		>
 			<Filter class="mx-auto h-12 w-12 text-muted-foreground" aria-hidden="true" />
-			<h3 class="mt-4 text-lg font-semibold">No resources found</h3>
+			<h3 class="mt-4 text-lg font-semibold">{m['orgAdmin.resources.empty.title']()}</h3>
 			<p class="mt-2 text-sm text-muted-foreground">
 				{searchQuery || typeFilter !== 'all' || visibilityFilter !== 'all'
-					? 'Try adjusting your filters'
-					: 'Get started by creating your first resource'}
+					? m['orgAdmin.resources.empty.withFilters']()
+					: m['orgAdmin.resources.empty.noFilters']()}
 			</p>
 			{#if !searchQuery && typeFilter === 'all' && visibilityFilter === 'all'}
 				<button
@@ -203,7 +208,7 @@
 					class="mt-4 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				>
 					<Plus class="h-5 w-5" aria-hidden="true" />
-					Add Resource
+					{m['orgAdmin.resources.addResourceButton']()}
 				</button>
 			{/if}
 		</div>

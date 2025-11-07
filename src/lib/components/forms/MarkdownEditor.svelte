@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { cn } from '$lib/utils/cn';
 	import { Eye, EyeOff, Bold, Italic, Link as LinkIcon, List } from 'lucide-svelte';
 
@@ -74,7 +75,8 @@
 	 * Handles basic markdown syntax safely
 	 */
 	function convertMarkdownToHtml(markdown: string): string {
-		if (!markdown) return '<p class="text-muted-foreground">Nothing to preview</p>';
+		if (!markdown)
+			return `<p class="text-muted-foreground">{m['markdownEditor.nothingToPreview']()}</p>`;
 
 		let html = markdown;
 
@@ -167,10 +169,10 @@
 			>
 				{#if showPreview}
 					<EyeOff class="h-4 w-4" aria-hidden="true" />
-					<span>Hide Preview</span>
+					<span>{m['markdownEditor.hidePreview']()}</span>
 				{:else}
 					<Eye class="h-4 w-4" aria-hidden="true" />
-					<span>Preview</span>
+					<span>{m['markdownEditor.preview']()}</span>
 				{/if}
 			</button>
 		</div>
@@ -223,7 +225,9 @@
 				<List class="h-4 w-4" aria-hidden="true" />
 			</button>
 
-			<div class="ml-auto self-center text-xs text-muted-foreground">Markdown supported</div>
+			<div class="ml-auto self-center text-xs text-muted-foreground">
+				{m['markdownEditor.markdownSupported']()}
+			</div>
 		</div>
 	{/if}
 

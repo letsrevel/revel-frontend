@@ -9,6 +9,7 @@
 	import PotluckItemEditModal from './PotluckItemEditModal.svelte';
 	import { cn } from '$lib/utils/cn';
 	import { ChevronDown, ChevronUp, Plus } from 'lucide-svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
 		event: EventDetailSchema;
@@ -50,7 +51,7 @@
 			const response = await fetch(`/api/events/${event.id}/potluck`, {
 				credentials: 'include'
 			});
-			if (!response.ok) throw new Error('Failed to fetch potluck items');
+			if (!response.ok) throw new Error(m['potluck.error_failedToFetch']());
 			return response.json();
 		},
 		initialData: initialItems,
@@ -86,9 +87,9 @@
 
 			if (!createResponse.ok) {
 				if (createResponse.status === 403) {
-					throw new Error('You do not have permission to create potluck items');
+					throw new Error(m['potluck.error_noPermissionCreate']());
 				}
-				throw new Error('Failed to create item');
+				throw new Error(m['potluck.error_failedToCreate']());
 			}
 			const createdItem = await createResponse.json();
 
@@ -105,9 +106,9 @@
 
 			if (!claimResponse.ok) {
 				if (claimResponse.status === 403) {
-					throw new Error('You do not have permission to claim this item');
+					throw new Error(m['potluck.error_noPermissionClaim']());
 				}
-				throw new Error('Failed to claim item');
+				throw new Error(m['potluck.error_failedToClaim']());
 			}
 			return claimResponse.json();
 		},
@@ -137,9 +138,9 @@
 
 			if (!response.ok) {
 				if (response.status === 403) {
-					throw new Error('You do not have permission to claim this item');
+					throw new Error(m['potluck.error_noPermissionClaim']());
 				}
-				throw new Error('Failed to claim item');
+				throw new Error(m['potluck.error_failedToClaim']());
 			}
 			return response.json();
 		},
@@ -192,9 +193,9 @@
 
 			if (!response.ok) {
 				if (response.status === 403) {
-					throw new Error('You do not have permission to unclaim this item');
+					throw new Error(m['potluck.error_noPermissionUnclaim']());
 				}
-				throw new Error('Failed to unclaim item');
+				throw new Error(m['potluck.error_failedToUnclaim']());
 			}
 			return response.json();
 		},
@@ -280,9 +281,9 @@
 				});
 
 				if (response.status === 403) {
-					throw new Error('You do not have permission to edit this item');
+					throw new Error(m['potluck.error_noPermissionEdit']());
 				}
-				throw new Error('Failed to update item');
+				throw new Error(m['potluck.error_failedToUpdate']());
 			}
 
 			const updatedItem = await response.json();
@@ -333,9 +334,9 @@
 				});
 
 				if (response.status === 403) {
-					throw new Error('You do not have permission to delete this item');
+					throw new Error(m['potluck.error_noPermissionDelete']());
 				}
-				throw new Error('Failed to delete item');
+				throw new Error(m['potluck.error_failedToDelete']());
 			}
 
 			console.log('[PotluckSection] Delete successful');
@@ -378,10 +379,10 @@
 	// Group items by category
 	let groupedItems = $derived.by(() => {
 		const groups: Record<string, PotluckItemRetrieveSchema[]> = {
-			'Food & Drink': [],
-			'Supplies & Services': [],
-			'Entertainment & Fun': [],
-			Other: []
+			[m['potluck.category_foodDrink']()]: [],
+			[m['potluck.category_supplies']()]: [],
+			[m['potluck.category_entertainment']()]: [],
+			[m['potluck.category_other']()]: []
 		};
 
 		filteredItems.forEach((item) => {
@@ -428,10 +429,10 @@
 		const suppliesServices = ['supplies', 'labor', 'transport', 'care'];
 		const entertainment = ['entertainment', 'toys', 'sexual_health'];
 
-		if (foodDrink.includes(itemType)) return 'Food & Drink';
-		if (suppliesServices.includes(itemType)) return 'Supplies & Services';
-		if (entertainment.includes(itemType)) return 'Entertainment & Fun';
-		return 'Other';
+		if (foodDrink.includes(itemType)) return m['potluck.category_foodDrink']();
+		if (suppliesServices.includes(itemType)) return m['potluck.category_supplies']();
+		if (entertainment.includes(itemType)) return m['potluck.category_entertainment']();
+		return m['potluck.category_other']();
 	}
 
 	// Event handlers
@@ -485,7 +486,7 @@
 	}
 
 	function handleDelete(itemId: string) {
-		if (confirm('Are you sure you want to delete this item?')) {
+		if (confirm(m['potluck.confirmDelete']())) {
 			deleteItemMutation.mutate(itemId);
 		}
 	}
@@ -502,11 +503,14 @@
 			class="flex w-full items-center justify-between text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 		>
 			<div class="flex-1">
-				<h2 id="potluck-heading" class="text-xl font-semibold">🥗 Potluck Coordination</h2>
+				<h2 id="potluck-heading" class="text-xl font-semibold">{m['potluck.heading']()}</h2>
 				<p class="mt-1 text-sm text-muted-foreground">
-					{stats.total} items • {stats.claimed} claimed • {stats.unclaimed} still needed
+					{stats.total}
+					{m['common.plurals_items']()} • {stats.claimed}
+					{m['common.text_claimed']()} • {stats.unclaimed}
+					{m['common.text_stillNeeded']()}
 					{#if stats.yours > 0}
-						• You're bringing {stats.yours}
+						• {m['potluck.youBringing']()} {stats.yours}
 					{/if}
 				</p>
 			</div>
@@ -537,7 +541,7 @@
 					<button
 						type="button"
 						onclick={() => (errorMessage = null)}
-						aria-label="Dismiss error"
+						aria-label={m['potluck.dismissError']()}
 						class="rounded-md p-1 text-destructive transition-colors hover:bg-destructive/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						<span class="text-sm font-semibold" aria-hidden="true">✕</span>
@@ -553,8 +557,8 @@
 				>
 					<span class="text-lg" aria-hidden="true">🔒</span>
 					<div class="flex-1 text-sm">
-						<p class="font-medium">Item creation is currently closed by organizers.</p>
-						<p class="mt-1 text-muted-foreground">You can still claim items below!</p>
+						<p class="font-medium">{m['potluck.creationClosed']()}</p>
+						<p class="mt-1 text-muted-foreground">{m['potluck.creationClosedHint']()}</p>
 					</div>
 				</div>
 			{/if}
@@ -568,7 +572,9 @@
 						class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						<Plus class="h-4 w-4" aria-hidden="true" />
-						{permissions.hasManagePermission ? 'Add potluck item' : "Add item you'll bring"}
+						{permissions.hasManagePermission
+							? m['potluck.addItem']()
+							: m['potluck.addItemYourBringing']()}
 					</button>
 				{/if}
 
@@ -576,7 +582,7 @@
 				<input
 					type="search"
 					bind:value={searchQuery}
-					placeholder="Search items..."
+					placeholder={m['potluck.searchPlaceholder']()}
 					class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:w-64"
 				/>
 			</div>
@@ -588,24 +594,24 @@
 						class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
 						role="status"
 					>
-						<span class="sr-only">Loading potluck items...</span>
+						<span class="sr-only">{m['potluck.loading']()}</span>
 					</div>
 				</div>
 			{:else if itemsQuery.isError}
 				<!-- Error state -->
 				<div class="rounded-md border border-destructive/50 bg-destructive/10 p-4 text-center">
-					<p class="text-sm text-destructive">Failed to load potluck items. Please try again.</p>
+					<p class="text-sm text-destructive">{m['potluck.failed']()}</p>
 				</div>
 			{:else if filteredItems.length === 0}
 				<!-- Empty state -->
 				<div class="py-12 text-center">
 					{#if searchQuery.trim()}
-						<p class="text-sm text-muted-foreground">No items match your search.</p>
+						<p class="text-sm text-muted-foreground">{m['potluck.noMatchingItems']()}</p>
 					{:else}
-						<p class="text-muted-foreground">No items yet!</p>
+						<p class="text-muted-foreground">{m['potluck.noItems']()}</p>
 						{#if permissions.canCreate}
 							<p class="mt-2 text-sm text-muted-foreground">
-								Be the first to add something you'll bring.
+								{m['potluck.beFirst']()}
 							</p>
 						{/if}
 					{/if}
