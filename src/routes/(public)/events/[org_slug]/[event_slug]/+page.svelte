@@ -9,6 +9,7 @@
 	import EventActionSidebar from '$lib/components/events/EventActionSidebar.svelte';
 	import OrganizationInfo from '$lib/components/events/OrganizationInfo.svelte';
 	import PotluckSection from '$lib/components/events/PotluckSection.svelte';
+	import DietarySummary from '$lib/components/events/DietarySummary.svelte';
 	import EventResources from '$lib/components/events/EventResources.svelte';
 	import AttendeeList from '$lib/components/events/AttendeeList.svelte';
 	import TicketTierList from '$lib/components/tickets/TicketTierList.svelte';
@@ -500,6 +501,28 @@
 			<div class="space-y-8 lg:col-span-2">
 				<EventDetails {event} />
 
+				<!-- Potluck Coordination Section -->
+				<!-- Show if potluck is open OR if there are existing items -->
+				{#if event.potluck_open || data.potluckItems.length > 0}
+					<div class="space-y-6">
+						<!-- Dietary Summary -->
+						<DietarySummary
+							eventId={event.id}
+							authToken={data.accessToken}
+							isAuthenticated={data.isAuthenticated}
+						/>
+
+						<!-- Potluck Items -->
+						<PotluckSection
+							{event}
+							permissions={potluckPermissions}
+							isAuthenticated={data.isAuthenticated}
+							{hasRSVPd}
+							initialItems={data.potluckItems}
+						/>
+					</div>
+				{/if}
+
 				<!-- My Ticket (if user has a ticket) -->
 				{#if userTicket}
 					<MyTicket
@@ -528,18 +551,6 @@
 						onClaimTicket={handleClaimTicket}
 						onCheckout={handleCheckout}
 						onGuestTierClick={openGuestTicketDialog}
-					/>
-				{/if}
-
-				<!-- Potluck Section -->
-				<!-- Show if potluck is open OR if there are existing items -->
-				{#if event.potluck_open || data.potluckItems.length > 0}
-					<PotluckSection
-						{event}
-						permissions={potluckPermissions}
-						isAuthenticated={data.isAuthenticated}
-						{hasRSVPd}
-						initialItems={data.potluckItems}
 					/>
 				{/if}
 

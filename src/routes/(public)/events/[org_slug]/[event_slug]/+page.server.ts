@@ -197,7 +197,8 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 			isStaff,
 			eventTokenDetails,
 			// Explicitly pass authentication state to the page
-			isAuthenticated: !!locals.user
+			isAuthenticated: !!locals.user,
+			accessToken: locals.user?.accessToken ?? null
 		};
 	} catch (err) {
 		// Handle different error types
