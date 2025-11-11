@@ -17,16 +17,28 @@
 		userStatus: UserEventStatus | null;
 		requiresTicket: boolean;
 		isAuthenticated: boolean;
+		canAttendWithoutLogin?: boolean;
 		onclick?: () => void;
 		class?: string;
 	}
 
-	let { userStatus, requiresTicket, isAuthenticated, onclick, class: className }: Props = $props();
+	let {
+		userStatus,
+		requiresTicket,
+		isAuthenticated,
+		canAttendWithoutLogin = false,
+		onclick,
+		class: className
+	}: Props = $props();
 
 	// Determine button state
 	let buttonText = $derived.by(() => {
-		if (!isAuthenticated) {
+		if (!isAuthenticated && !canAttendWithoutLogin) {
 			return m['actionButton.signInToAttend']();
+		}
+
+		if (!isAuthenticated && canAttendWithoutLogin) {
+			return requiresTicket ? m['actionButton.getTickets']() : m['actionButton.rsvp']();
 		}
 
 		if (!userStatus) {
@@ -52,7 +64,8 @@
 	});
 
 	let isDisabled = $derived.by(() => {
-		if (!isAuthenticated) return false; // Can always sign in
+		if (!isAuthenticated && !canAttendWithoutLogin) return false; // Can redirect to sign in
+		if (!isAuthenticated && canAttendWithoutLogin) return false; // Can show guest dialog
 
 		if (!userStatus) return false; // Can always attempt RSVP/ticket
 
@@ -97,13 +110,13 @@
 	});
 
 	function handleClick(): void {
-		if (!isAuthenticated) {
+		if (!isAuthenticated && !canAttendWithoutLogin) {
 			// Redirect to login with return URL
 			window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
 			return;
 		}
 
-		// Call parent's onclick handler if provided
+		// Call parent's onclick handler (works for both authenticated and guest flows)
 		onclick?.();
 	}
 </script>

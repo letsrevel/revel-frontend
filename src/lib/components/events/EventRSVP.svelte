@@ -20,6 +20,7 @@
 		requiresTicket: boolean;
 		event?: EventDetailSchema;
 		eventTokenDetails?: EventTokenSchema | null;
+		onGuestRsvpClick?: () => void;
 		class?: string;
 	}
 
@@ -31,6 +32,7 @@
 		requiresTicket,
 		event,
 		eventTokenDetails,
+		onGuestRsvpClick,
 		class: className
 	}: Props = $props();
 
@@ -267,8 +269,17 @@
 		return eligibilityStatus && !eligibilityStatus.allowed && !showSuccess;
 	});
 
-	// Don't show RSVP for ticket-required events
-	let shouldRender = $derived(!requiresTicket && isAuthenticated);
+	// Show RSVP if:
+	// 1. Event doesn't require tickets
+	// 2. User is authenticated OR event allows guest attendance
+	let shouldRender = $derived(
+		!requiresTicket && (isAuthenticated || (event?.can_attend_without_login && onGuestRsvpClick))
+	);
+
+	// Check if we should show guest button instead of regular RSVP
+	let shouldShowGuestButton = $derived(
+		!isAuthenticated && event?.can_attend_without_login && onGuestRsvpClick
+	);
 </script>
 
 <!--
@@ -360,8 +371,25 @@
 			/>
 		{/if}
 
+		<!-- Guest RSVP Button (for unauthenticated users when event allows it) -->
+		{#if shouldShowGuestButton}
+			<div class="space-y-3">
+				<h3 class="text-sm font-semibold">{m['eventRSVP.willYouAttend']()}</h3>
+				<button
+					type="button"
+					onclick={onGuestRsvpClick}
+					class="w-full rounded-md bg-primary px-4 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+				>
+					{m["guest_attendance.submit_rsvp"]()}
+				</button>
+				<p class="text-center text-xs text-muted-foreground">
+					{m["guest_attendance.rsvp_description"]()}
+				</p>
+			</div>
+		{/if}
+
 		<!-- RSVP Buttons (always shown when eligible, even if already RSVP'd) -->
-		{#if shouldShowButtons}
+		{#if shouldShowButtons && !shouldShowGuestButton}
 			<div class="space-y-3">
 				<h3 class="text-sm font-semibold">{m['eventRSVP.willYouAttend']()}</h3>
 				<RSVPButtons

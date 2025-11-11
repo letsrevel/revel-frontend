@@ -12,8 +12,10 @@
 		isAuthenticated: boolean;
 		hasTicket?: boolean;
 		isEligible?: boolean;
+		canAttendWithoutLogin?: boolean;
 		onClaimTicket: (tierId: string) => void | Promise<void>;
 		onCheckout?: (tierId: string, isPwyc: boolean, amount?: number) => void | Promise<void>;
+		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
 
 	let {
@@ -21,8 +23,10 @@
 		isAuthenticated,
 		hasTicket = false,
 		isEligible = true,
+		canAttendWithoutLogin = false,
 		onClaimTicket,
-		onCheckout
+		onCheckout,
+		onGuestTierClick
 	}: Props = $props();
 
 	// Check if tier has ID (required for checkout)
@@ -213,10 +217,17 @@
 				<Button disabled class="w-full sm:w-auto">{m['tierCardAdmin.notAvailable']()}</Button>
 			{:else if !availabilityStatus.available}
 				<Button disabled class="w-full sm:w-auto">{m['tierCardAdmin.soldOut']()}</Button>
-			{:else if !isAuthenticated}
+			{:else if !isAuthenticated && !canAttendWithoutLogin}
 				<Button href="/login" variant="outline" class="w-full sm:w-auto"
 					>{m['tierCardAdmin.signInToGetTicket']()}</Button
 				>
+			{:else if !isAuthenticated && canAttendWithoutLogin}
+				<Button
+					onclick={() => onGuestTierClick?.(tier)}
+					class="w-full sm:w-auto"
+				>
+					Get Ticket
+				</Button>
 			{:else if !isEligible}
 				<!-- User is authenticated but not eligible - show disabled button -->
 				<Button disabled class="w-full sm:w-auto">{m['tierCardAdmin.notEligible']()}</Button>

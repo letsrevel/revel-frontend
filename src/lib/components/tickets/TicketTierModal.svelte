@@ -13,9 +13,11 @@
 		tiers: TierSchemaWithId[];
 		isAuthenticated: boolean;
 		hasTicket: boolean;
+		canAttendWithoutLogin?: boolean;
 		onClose: () => void;
 		onClaimTicket: (tierId: string) => void;
 		onCheckout?: (tierId: string, isPwyc: boolean, amount?: number) => void;
+		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
 
 	let {
@@ -23,9 +25,11 @@
 		tiers,
 		isAuthenticated,
 		hasTicket,
+		canAttendWithoutLogin = false,
 		onClose,
 		onClaimTicket,
-		onCheckout
+		onCheckout,
+		onGuestTierClick
 	}: Props = $props();
 
 	// Confirmation dialog state
@@ -197,9 +201,22 @@
 
 								<!-- Action Button -->
 								<div>
-									{#if !isAuthenticated}
+									{#if !isAuthenticated && !canAttendWithoutLogin}
 										<Button variant="secondary" size="sm" disabled
 											>{m['ticketTierModal.signIn']()}</Button
+										>
+									{:else if !isAuthenticated && canAttendWithoutLogin && isTierAvailable(tier)}
+										<Button
+											variant="default"
+											size="sm"
+											onclick={() => onGuestTierClick?.(tier)}
+										>
+											<Ticket class="mr-2 h-4 w-4" />
+											Get Ticket
+										</Button>
+									{:else if !isAuthenticated && canAttendWithoutLogin && !isTierAvailable(tier)}
+										<Button variant="secondary" size="sm" disabled
+											>{m['ticketTierModal.soldOut']()}</Button
 										>
 									{:else if hasTicket}
 										<Button variant="secondary" size="sm" disabled>

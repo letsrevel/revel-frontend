@@ -341,6 +341,212 @@ export type PasswordResetSchema = {
 };
 
 /**
+ * FoodItemSchema
+ *
+ * Schema for FoodItem model.
+ */
+export type FoodItemSchema = {
+	/**
+	 * Id
+	 */
+	id?: string | null;
+	/**
+	 * Name
+	 *
+	 * Food or ingredient name
+	 */
+	name: string;
+};
+
+/**
+ * FoodItemCreateSchema
+ *
+ * Schema for creating a FoodItem.
+ */
+export type FoodItemCreateSchema = {
+	/**
+	 * Name
+	 *
+	 * Food or ingredient name
+	 */
+	name: string;
+};
+
+/**
+ * DietaryRestrictionSchema
+ *
+ * Schema for DietaryRestriction model.
+ */
+export type DietaryRestrictionSchema = {
+	food_item: FoodItemSchema;
+	restriction_type: RestrictionType;
+	/**
+	 * Id
+	 */
+	id?: string | null;
+	/**
+	 * Notes
+	 *
+	 * Optional additional context (e.g., 'carry EpiPen')
+	 */
+	notes?: string | null;
+	/**
+	 * Is Public
+	 *
+	 * If True, visible to all event attendees (aggregated); if False, only to organizers
+	 */
+	is_public?: boolean;
+};
+
+/**
+ * RestrictionType
+ */
+export type RestrictionType = 'dislike' | 'intolerant' | 'allergy' | 'severe_allergy';
+
+/**
+ * DietaryRestrictionCreateSchema
+ *
+ * Schema for creating a DietaryRestriction.
+ */
+export type DietaryRestrictionCreateSchema = {
+	/**
+	 * Food Item Name
+	 *
+	 * Food item name (creates if doesn't exist)
+	 */
+	food_item_name: string;
+	/**
+	 * Type of restriction (dislike, intolerant, allergy, severe_allergy)
+	 */
+	restriction_type: RestrictionType;
+	/**
+	 * Notes
+	 *
+	 * Optional additional context
+	 */
+	notes?: string;
+	/**
+	 * Is Public
+	 *
+	 * Visible to all event attendees if True
+	 */
+	is_public?: boolean;
+};
+
+/**
+ * DietaryRestrictionUpdateSchema
+ *
+ * Schema for updating a DietaryRestriction.
+ */
+export type DietaryRestrictionUpdateSchema = {
+	/**
+	 * Type of restriction (dislike, intolerant, allergy, severe_allergy)
+	 */
+	restriction_type?: RestrictionType | null;
+	/**
+	 * Notes
+	 *
+	 * Optional additional context
+	 */
+	notes?: string | null;
+	/**
+	 * Is Public
+	 *
+	 * Visible to all event attendees if True
+	 */
+	is_public?: boolean | null;
+};
+
+/**
+ * DietaryPreferenceSchema
+ *
+ * Schema for DietaryPreference model (system-managed).
+ */
+export type DietaryPreferenceSchema = {
+	/**
+	 * Id
+	 */
+	id?: string | null;
+	/**
+	 * Name
+	 *
+	 * Dietary preference name (e.g., 'Vegetarian', 'Vegan', 'Gluten-Free')
+	 */
+	name: string;
+};
+
+/**
+ * UserDietaryPreferenceSchema
+ *
+ * Schema for UserDietaryPreference model.
+ */
+export type UserDietaryPreferenceSchema = {
+	preference: DietaryPreferenceSchema;
+	/**
+	 * Id
+	 */
+	id?: string | null;
+	/**
+	 * Comment
+	 *
+	 * Optional context (e.g., 'strictly vegan, no honey')
+	 */
+	comment?: string | null;
+	/**
+	 * Is Public
+	 *
+	 * If True, visible to all event attendees (aggregated); if False, only to organizers
+	 */
+	is_public?: boolean;
+};
+
+/**
+ * UserDietaryPreferenceCreateSchema
+ *
+ * Schema for creating a UserDietaryPreference.
+ */
+export type UserDietaryPreferenceCreateSchema = {
+	/**
+	 * Preference Id
+	 *
+	 * ID of the dietary preference to add
+	 */
+	preference_id: string;
+	/**
+	 * Comment
+	 *
+	 * Optional context about this preference
+	 */
+	comment?: string;
+	/**
+	 * Is Public
+	 *
+	 * Visible to all event attendees if True
+	 */
+	is_public?: boolean;
+};
+
+/**
+ * UserDietaryPreferenceUpdateSchema
+ *
+ * Schema for updating a UserDietaryPreference.
+ */
+export type UserDietaryPreferenceUpdateSchema = {
+	/**
+	 * Comment
+	 *
+	 * Optional context about this preference
+	 */
+	comment?: string | null;
+	/**
+	 * Is Public
+	 *
+	 * Visible to all event attendees if True
+	 */
+	is_public?: boolean | null;
+};
+
+/**
  * DashboardOrganizationsFiltersSchema
  */
 export type DashboardOrganizationsFiltersSchema = {
@@ -558,10 +764,10 @@ export type EventInListSchema = {
 	 * Id
 	 */
 	id: string;
-	event_type: Types;
+	event_type: EventType;
 	visibility: Visibility;
 	organization: MinimalOrganizationSchema;
-	status: Status;
+	status: EventStatus;
 	event_series?: MinimalEventSeriesSchema | null;
 	/**
 	 * Name
@@ -631,7 +837,29 @@ export type EventInListSchema = {
 	 * Accept Invitation Requests
 	 */
 	accept_invitation_requests: boolean;
+	/**
+	 * Can Attend Without Login
+	 */
+	can_attend_without_login: boolean;
+	/**
+	 * Updated At
+	 */
+	updated_at?: string | null;
+	/**
+	 * Created At
+	 */
+	created_at?: string | null;
 };
+
+/**
+ * EventStatus
+ */
+export type EventStatus = 'open' | 'closed' | 'draft' | 'deleted';
+
+/**
+ * EventType
+ */
+export type EventType = 'public' | 'private' | 'members-only';
 
 /**
  * MinimalEventSeriesSchema
@@ -748,16 +976,6 @@ export type PaginatedResponseSchemaEventInListSchema = {
 	 */
 	results: Array<EventInListSchema>;
 };
-
-/**
- * Status
- */
-export type Status = 'draft' | 'ready' | 'published';
-
-/**
- * Types
- */
-export type Types = 'admission' | 'membership' | 'feedback' | 'generic';
 
 /**
  * DashboardEventSeriesFiltersSchema
@@ -999,13 +1217,18 @@ export type PaymentMethod = 'online' | 'offline' | 'at_the_door' | 'free';
  * Filter schema for tickets.
  */
 export type TicketFilterSchema = {
-	status?: Status | null;
+	status?: TicketStatus | null;
 	tier__payment_method?: PaymentMethod | null;
 	/**
 	 * Include Past
 	 */
 	include_past?: boolean;
 };
+
+/**
+ * TicketStatus
+ */
+export type TicketStatus = 'pending' | 'active' | 'checked_in' | 'cancelled';
 
 /**
  * MinimalEventSchema
@@ -1035,6 +1258,10 @@ export type MinimalEventSchema = {
 	 * Logo
 	 */
 	logo?: string | null;
+	/**
+	 * Cover Art
+	 */
+	cover_art?: string | null;
 };
 
 /**
@@ -1067,7 +1294,7 @@ export type PaginatedResponseSchemaUserTicketSchema = {
 export type UserTicketSchema = {
 	event: MinimalEventSchema;
 	tier: TierSchema;
-	status: Status;
+	status: TicketStatus;
 	/**
 	 * Id
 	 */
@@ -1088,8 +1315,13 @@ export type UserTicketSchema = {
  * Filter schema for event invitation requests.
  */
 export type InvitationRequestFilterSchema = {
-	status?: Status | null;
+	status?: InvitationRequestStatus | null;
 };
+
+/**
+ * InvitationRequestStatus
+ */
+export type InvitationRequestStatus = 'pending' | 'approved' | 'rejected';
 
 /**
  * EventInvitationRequestSchema
@@ -1173,7 +1405,7 @@ export type PaginatedResponseSchemaEventInvitationRequestSchema = {
  * Filter schema for event RSVPs.
  */
 export type RsvpFilterSchema = {
-	status?: Status | null;
+	status?: RsvpStatus | null;
 	/**
 	 * User Id
 	 */
@@ -1183,6 +1415,11 @@ export type RsvpFilterSchema = {
 	 */
 	include_past?: boolean;
 };
+
+/**
+ * RsvpStatus
+ */
+export type RsvpStatus = 'yes' | 'no' | 'maybe';
 
 /**
  * PaginatedResponseSchema[UserRSVPSchema]
@@ -1213,7 +1450,7 @@ export type PaginatedResponseSchemaUserRsvpSchema = {
  */
 export type UserRsvpSchema = {
 	event: MinimalEventSchema;
-	status: Status;
+	status: RsvpStatus;
 	/**
 	 * Id
 	 */
@@ -1310,6 +1547,14 @@ export type OrganizationInListSchema = {
 	 * Contact Email Verified
 	 */
 	contact_email_verified: boolean;
+	/**
+	 * Updated At
+	 */
+	updated_at?: string | null;
+	/**
+	 * Created At
+	 */
+	created_at?: string | null;
 };
 
 /**
@@ -1693,10 +1938,10 @@ export type EventDetailSchema = {
 	 * Id
 	 */
 	id: string;
-	event_type: Types;
+	event_type: EventType;
 	visibility: Visibility;
 	organization: MinimalOrganizationSchema;
-	status: Status;
+	status: EventStatus;
 	event_series?: MinimalEventSeriesSchema | null;
 	/**
 	 * Name
@@ -1767,6 +2012,18 @@ export type EventDetailSchema = {
 	 */
 	accept_invitation_requests: boolean;
 	/**
+	 * Can Attend Without Login
+	 */
+	can_attend_without_login: boolean;
+	/**
+	 * Updated At
+	 */
+	updated_at?: string | null;
+	/**
+	 * Created At
+	 */
+	created_at?: string | null;
+	/**
 	 * Description Html
 	 */
 	description_html?: string;
@@ -1796,8 +2053,8 @@ export type EventCreateSchema = {
 	 * Description
 	 */
 	description?: string | null;
-	event_type?: Types | null;
-	status?: Status;
+	event_type?: EventType | null;
+	status?: EventStatus;
 	visibility?: Visibility | null;
 	/**
 	 * Invitation Message
@@ -1859,6 +2116,10 @@ export type EventCreateSchema = {
 	 * Accept Invitation Requests
 	 */
 	accept_invitation_requests?: boolean;
+	/**
+	 * Can Attend Without Login
+	 */
+	can_attend_without_login?: boolean;
 };
 
 /**
@@ -1961,6 +2222,11 @@ export type OrganizationTokenUpdateSchema = {
 export type MembershipRequestFilterSchema = {
 	status?: Status | null;
 };
+
+/**
+ * Status
+ */
+export type Status = 'pending' | 'approved' | 'rejected';
 
 /**
  * PaginatedResponseSchema[OrganizationMembershipRequestRetrieve]
@@ -2318,7 +2584,7 @@ export type EventFilterSchema = {
 	 * Organization
 	 */
 	organization?: string | null;
-	event_type?: Types | null;
+	event_type?: EventType | null;
 	visibility?: Visibility | null;
 	/**
 	 * Event Series
@@ -2332,7 +2598,7 @@ export type EventFilterSchema = {
 	 * Past Events
 	 */
 	past_events?: boolean | null;
-	status?: Status | null;
+	status?: EventStatus | null;
 	/**
 	 * Tags
 	 */
@@ -2455,7 +2721,7 @@ export type EventRsvpSchema = {
 	 * Event Id
 	 */
 	event_id: string;
-	status: Status;
+	status: RsvpStatus;
 };
 
 /**
@@ -2467,7 +2733,7 @@ export type EventTicketSchema = {
 	 */
 	event_id: string | null;
 	tier?: TierSchema | null;
-	status: Status;
+	status: TicketStatus;
 	/**
 	 * Id
 	 */
@@ -2528,16 +2794,6 @@ export type NextStep =
 	| 'rsvp';
 
 /**
- * Status
- */
-export type EventsModelsEventEventRsvpStatus = 'yes' | 'no' | 'maybe';
-
-/**
- * Status
- */
-export type EventsModelsEventTicketStatus = 'pending' | 'active' | 'checked_in' | 'cancelled';
-
-/**
  * EventInvitationRequestCreateSchema
  */
 export type EventInvitationRequestCreateSchema = {
@@ -2545,6 +2801,96 @@ export type EventInvitationRequestCreateSchema = {
 	 * Message
 	 */
 	message?: string | null;
+};
+
+/**
+ * AggregatedDietaryPreferenceSchema
+ *
+ * Aggregated dietary preference data for event attendees.
+ */
+export type AggregatedDietaryPreferenceSchema = {
+	/**
+	 * Name
+	 *
+	 * Dietary preference name
+	 */
+	name: string;
+	/**
+	 * Attendee Count
+	 *
+	 * Number of attendees with this preference
+	 */
+	attendee_count: number;
+	/**
+	 * Comments
+	 *
+	 * Non-empty comments from attendees
+	 */
+	comments?: Array<string>;
+};
+
+/**
+ * AggregatedDietaryRestrictionSchema
+ *
+ * Aggregated dietary restriction data for event attendees.
+ */
+export type AggregatedDietaryRestrictionSchema = {
+	/**
+	 * Food Item
+	 *
+	 * Food or ingredient name
+	 */
+	food_item: string;
+	/**
+	 * Restriction severity (dislike, intolerant, allergy, severe_allergy)
+	 */
+	severity: RestrictionType;
+	/**
+	 * Attendee Count
+	 *
+	 * Number of attendees with this restriction
+	 */
+	attendee_count: number;
+	/**
+	 * Notes
+	 *
+	 * Non-empty notes from attendees
+	 */
+	notes?: Array<string>;
+};
+
+/**
+ * EventDietarySummarySchema
+ *
+ * Aggregated dietary information for event attendees.
+ */
+export type EventDietarySummarySchema = {
+	/**
+	 * Restrictions
+	 *
+	 * Aggregated dietary restrictions
+	 */
+	restrictions?: Array<AggregatedDietaryRestrictionSchema>;
+	/**
+	 * Preferences
+	 *
+	 * Aggregated dietary preferences
+	 */
+	preferences?: Array<AggregatedDietaryPreferenceSchema>;
+};
+
+/**
+ * GuestActionConfirmSchema
+ *
+ * Request to confirm a guest action via JWT token.
+ */
+export type GuestActionConfirmSchema = {
+	/**
+	 * Token
+	 *
+	 * JWT token from confirmation email
+	 */
+	token: string;
 };
 
 /**
@@ -2570,11 +2916,6 @@ export type PwycCheckoutPayloadSchema = {
 	 */
 	pwyc: number | string;
 };
-
-/**
- * EvaluationMode
- */
-export type EvaluationMode = 'automatic' | 'manual' | 'hybrid';
 
 /**
  * FreeTextQuestionSchema
@@ -2647,6 +2988,11 @@ export type MultipleChoiceQuestionSchema = {
 };
 
 /**
+ * QuestionnaireEvaluationMode
+ */
+export type QuestionnaireEvaluationMode = 'automatic' | 'manual' | 'hybrid';
+
+/**
  * QuestionnaireSchema
  */
 export type QuestionnaireSchema = {
@@ -2670,7 +3016,7 @@ export type QuestionnaireSchema = {
 	 * Sections
 	 */
 	sections?: Array<SectionSchema>;
-	evaluation_mode: EvaluationMode;
+	evaluation_mode: QuestionnaireEvaluationMode;
 };
 
 /**
@@ -2708,8 +3054,13 @@ export type QuestionnaireEvaluationForUserSchema = {
 	 * Score
 	 */
 	score: number | string;
-	status: QuestionnairesModelsQuestionnaireEvaluationStatus;
+	status: QuestionnaireEvaluationStatus;
 };
+
+/**
+ * QuestionnaireEvaluationStatus
+ */
+export type QuestionnaireEvaluationStatus = 'approved' | 'rejected' | 'pending review';
 
 /**
  * QuestionnaireSubmissionResponseSchema
@@ -2719,7 +3070,7 @@ export type QuestionnaireSubmissionResponseSchema = {
 	 * Questionnaire Id
 	 */
 	questionnaire_id: string;
-	status: QuestionnairesModelsQuestionnaireSubmissionStatus;
+	status: QuestionnaireSubmissionStatus;
 	/**
 	 * Submitted At
 	 */
@@ -2727,17 +3078,9 @@ export type QuestionnaireSubmissionResponseSchema = {
 };
 
 /**
- * Status
+ * QuestionnaireSubmissionStatus
  */
-export type QuestionnairesModelsQuestionnaireEvaluationStatus =
-	| 'approved'
-	| 'rejected'
-	| 'pending review';
-
-/**
- * Status
- */
-export type QuestionnairesModelsQuestionnaireSubmissionStatus = 'draft' | 'ready';
+export type QuestionnaireSubmissionStatus = 'draft' | 'ready';
 
 /**
  * FreeTextSubmissionSchema
@@ -2783,7 +3126,73 @@ export type QuestionnaireSubmissionSchema = {
 	 * Free Text Answers
 	 */
 	free_text_answers?: Array<FreeTextSubmissionSchema>;
-	status: Status;
+	status: QuestionnaireSubmissionStatus;
+};
+
+/**
+ * GuestActionResponseSchema
+ *
+ * Response after guest action initiated (RSVP or non-online-payment ticket).
+ */
+export type GuestActionResponseSchema = {
+	/**
+	 * Message
+	 */
+	message?: string;
+};
+
+/**
+ * GuestUserDataSchema
+ *
+ * Base schema for guest user data (no authentication required).
+ */
+export type GuestUserDataSchema = {
+	/**
+	 * Email
+	 */
+	email: string;
+	/**
+	 * First Name
+	 *
+	 * Guest user's first name
+	 */
+	first_name: string;
+	/**
+	 * Last Name
+	 *
+	 * Guest user's last name
+	 */
+	last_name: string;
+};
+
+/**
+ * GuestPWYCCheckoutSchema
+ *
+ * Schema for guest PWYC ticket checkout.
+ */
+export type GuestPwycCheckoutSchema = {
+	/**
+	 * Email
+	 */
+	email: string;
+	/**
+	 * First Name
+	 *
+	 * Guest user's first name
+	 */
+	first_name: string;
+	/**
+	 * Last Name
+	 *
+	 * Guest user's last name
+	 */
+	last_name: string;
+	/**
+	 * Pwyc
+	 *
+	 * Pay what you can amount, minimum 1
+	 */
+	pwyc: number | string;
 };
 
 /**
@@ -2969,8 +3378,8 @@ export type EventEditSchema = {
 	 * Description
 	 */
 	description?: string | null;
-	event_type?: Types | null;
-	status?: Status;
+	event_type?: EventType | null;
+	status?: EventStatus;
 	visibility?: Visibility | null;
 	/**
 	 * Invitation Message
@@ -3032,6 +3441,10 @@ export type EventEditSchema = {
 	 * Accept Invitation Requests
 	 */
 	accept_invitation_requests?: boolean;
+	/**
+	 * Can Attend Without Login
+	 */
+	can_attend_without_login?: boolean;
 };
 
 /**
@@ -3358,7 +3771,7 @@ export type PaginatedResponseSchemaAdminTicketSchema = {
  * Public representation of a Payment record.
  */
 export type PaymentSchema = {
-	status: Status;
+	status: PaymentStatus;
 	/**
 	 * Currency
 	 */
@@ -3449,6 +3862,11 @@ export type PaymentSchema = {
 	 */
 	expires_at?: string;
 };
+
+/**
+ * PaymentStatus
+ */
+export type PaymentStatus = 'pending' | 'succeeded' | 'failed' | 'refunded';
 
 /**
  * CheckInResponseSchema
@@ -3716,7 +4134,7 @@ export type RsvpDetailSchema = {
 	 */
 	event_id: string;
 	user: MinimalRevelUserSchema;
-	status: Status;
+	status: RsvpStatus;
 	/**
 	 * Created At
 	 */
@@ -3737,7 +4155,7 @@ export type RsvpCreateSchema = {
 	 * User Id
 	 */
 	user_id: string;
-	status: Status;
+	status: RsvpStatus;
 };
 
 /**
@@ -3746,7 +4164,7 @@ export type RsvpCreateSchema = {
  * Schema for updating an RSVP.
  */
 export type RsvpUpdateSchema = {
-	status: Status;
+	status: RsvpStatus;
 };
 
 /**
@@ -3818,6 +4236,14 @@ export type EventSeriesInListSchema = {
 	 * Cover Art
 	 */
 	cover_art?: string | null;
+	/**
+	 * Updated At
+	 */
+	updated_at?: string | null;
+	/**
+	 * Created At
+	 */
+	created_at?: string | null;
 };
 
 /**
@@ -3957,7 +4383,7 @@ export type OrganizationQuestionnaireInListSchema = {
 	 * Max Submission Age
 	 */
 	max_submission_age?: string | number | null;
-	questionnaire_type: Types;
+	questionnaire_type: QuestionnaireType;
 	questionnaire: QuestionnaireInListSchema;
 	/**
 	 * Pending Evaluations Count
@@ -3995,7 +4421,7 @@ export type QuestionnaireInListSchema = {
 	 * Name
 	 */
 	name: string;
-	status: QuestionnairesModelsQuestionnaireStatus;
+	status: QuestionnaireStatus;
 	/**
 	 * Min Score
 	 */
@@ -4008,12 +4434,22 @@ export type QuestionnaireInListSchema = {
 	 * Shuffle Sections
 	 */
 	shuffle_sections?: boolean;
-	evaluation_mode: EvaluationMode;
+	evaluation_mode: QuestionnaireEvaluationMode;
 	/**
 	 * Id
 	 */
 	id: string;
 };
+
+/**
+ * QuestionnaireStatus
+ */
+export type QuestionnaireStatus = 'draft' | 'ready' | 'published';
+
+/**
+ * QuestionnaireType
+ */
+export type QuestionnaireType = 'admission' | 'membership' | 'feedback' | 'generic';
 
 /**
  * FreeTextQuestionCreateSchema
@@ -4143,7 +4579,7 @@ export type OrganizationQuestionnaireSchema = {
 	 * Max Submission Age
 	 */
 	max_submission_age?: string | number | null;
-	questionnaire_type: Types;
+	questionnaire_type: QuestionnaireType;
 	questionnaire: QuestionnaireCreateSchema;
 };
 
@@ -4157,7 +4593,7 @@ export type QuestionnaireCreateSchema = {
 	 * Name
 	 */
 	name: string;
-	status?: Status;
+	status?: QuestionnaireStatus;
 	/**
 	 * Min Score
 	 */
@@ -4170,7 +4606,7 @@ export type QuestionnaireCreateSchema = {
 	 * Shuffle Sections
 	 */
 	shuffle_sections?: boolean;
-	evaluation_mode: EvaluationMode;
+	evaluation_mode: QuestionnaireEvaluationMode;
 	/**
 	 * Sections
 	 */
@@ -4230,12 +4666,12 @@ export type OrganizationQuestionnaireCreateSchema = {
 	 * Max Submission Age
 	 */
 	max_submission_age?: string | null;
-	questionnaire_type?: Types;
+	questionnaire_type?: QuestionnaireType;
 	/**
 	 * Name
 	 */
 	name: string;
-	status?: Status;
+	status?: QuestionnaireStatus;
 	/**
 	 * Min Score
 	 */
@@ -4248,7 +4684,7 @@ export type OrganizationQuestionnaireCreateSchema = {
 	 * Shuffle Sections
 	 */
 	shuffle_sections?: boolean;
-	evaluation_mode: EvaluationMode;
+	evaluation_mode: QuestionnaireEvaluationMode;
 	/**
 	 * Sections
 	 */
@@ -4296,7 +4732,7 @@ export type OrganizationQuestionnaireUpdateSchema = {
 	 * Shuffle Sections
 	 */
 	shuffle_sections?: boolean | null;
-	evaluation_mode?: EvaluationMode | null;
+	evaluation_mode?: QuestionnaireEvaluationMode | null;
 	/**
 	 * Llm Guidelines
 	 */
@@ -4313,7 +4749,7 @@ export type OrganizationQuestionnaireUpdateSchema = {
 	 * Max Submission Age
 	 */
 	max_submission_age?: string | null;
-	questionnaire_type?: Types | null;
+	questionnaire_type?: QuestionnaireType | null;
 };
 
 /**
@@ -4504,7 +4940,7 @@ export type SubmissionListItemSchema = {
 	 * Questionnaire Name
 	 */
 	questionnaire_name: string;
-	evaluation_status?: Status | null;
+	evaluation_status?: QuestionnaireEvaluationStatus | null;
 	/**
 	 * Evaluation Score
 	 */
@@ -4539,7 +4975,7 @@ export type EvaluationResponseSchema = {
 	 * Submission Id
 	 */
 	submission_id: string;
-	status: Status;
+	status: QuestionnaireEvaluationStatus;
 	/**
 	 * Score
 	 */
@@ -4615,7 +5051,7 @@ export type SubmissionDetailSchema = {
 	 */
 	user_name: string;
 	questionnaire: QuestionnaireInListSchema;
-	status: QuestionnairesModelsQuestionnaireSubmissionStatus;
+	status: QuestionnaireSubmissionStatus;
 	/**
 	 * Submitted At
 	 */
@@ -4632,17 +5068,12 @@ export type SubmissionDetailSchema = {
 };
 
 /**
- * Status
- */
-export type QuestionnairesModelsQuestionnaireStatus = 'draft' | 'ready' | 'published';
-
-/**
  * EvaluationCreateSchema
  *
  * Schema for creating/updating an evaluation.
  */
 export type EvaluationCreateSchema = {
-	status: Status;
+	status: QuestionnaireEvaluationStatus;
 	/**
 	 * Score
 	 */
@@ -4905,6 +5336,156 @@ export type PaginatedResponseSchemaCitySchema = {
 	results: Array<CitySchema>;
 };
 
+/**
+ * NotificationSchema
+ *
+ * Schema for notification response.
+ */
+export type NotificationSchema = {
+	/**
+	 * Id
+	 */
+	id: string;
+	/**
+	 * Notification Type
+	 */
+	notification_type: string;
+	/**
+	 * Title
+	 */
+	title: string;
+	/**
+	 * Body
+	 */
+	body: string;
+	/**
+	 * Context
+	 */
+	context: {
+		[key: string]: unknown;
+	};
+	/**
+	 * Read At
+	 */
+	read_at: string | null;
+	/**
+	 * Created At
+	 */
+	created_at: string;
+};
+
+/**
+ * PaginatedResponseSchema[NotificationSchema]
+ */
+export type PaginatedResponseSchemaNotificationSchema = {
+	/**
+	 * Count
+	 */
+	count: number;
+	/**
+	 * Next
+	 */
+	next: string | null;
+	/**
+	 * Previous
+	 */
+	previous: string | null;
+	/**
+	 * Results
+	 */
+	results: Array<NotificationSchema>;
+};
+
+/**
+ * UnreadCountSchema
+ *
+ * Schema for unread count response.
+ */
+export type UnreadCountSchema = {
+	/**
+	 * Count
+	 */
+	count: number;
+};
+
+/**
+ * MarkReadResponseSchema
+ *
+ * Schema for mark read/unread responses.
+ */
+export type MarkReadResponseSchema = {
+	/**
+	 * Success
+	 */
+	success: boolean;
+};
+
+/**
+ * NotificationPreferenceSchema
+ *
+ * Schema for notification preferences.
+ */
+export type NotificationPreferenceSchema = {
+	/**
+	 * Silence All Notifications
+	 */
+	silence_all_notifications: boolean;
+	/**
+	 * Enabled Channels
+	 */
+	enabled_channels: Array<string>;
+	/**
+	 * Digest Frequency
+	 */
+	digest_frequency: string;
+	/**
+	 * Digest Send Time
+	 */
+	digest_send_time: string;
+	/**
+	 * Event Reminders Enabled
+	 */
+	event_reminders_enabled: boolean;
+	/**
+	 * Notification Type Settings
+	 */
+	notification_type_settings: {
+		[key: string]: unknown;
+	};
+	/**
+	 * Show Me On Attendee List
+	 */
+	show_me_on_attendee_list: string;
+};
+
+/**
+ * UpdateNotificationPreferenceSchema
+ *
+ * Schema for updating notification preferences.
+ */
+export type UpdateNotificationPreferenceSchema = {
+	/**
+	 * Silence All Notifications
+	 */
+	silence_all_notifications?: boolean | null;
+	/**
+	 * Enabled Channels
+	 */
+	enabled_channels?: Array<string> | null;
+	/**
+	 * Digest Frequency
+	 */
+	digest_frequency?: string | null;
+	/**
+	 * Digest Send Time
+	 */
+	digest_send_time?: string | null;
+	/**
+	 * Event Reminders Enabled
+	 */
+	event_reminders_enabled?: boolean | null;
+};
+
 export type ApiApiVersionData = {
 	body?: never;
 	path?: never;
@@ -4938,14 +5519,14 @@ export type ApiApiHealthcheckResponses = {
 export type ApiApiHealthcheckResponse =
 	ApiApiHealthcheckResponses[keyof ApiApiHealthcheckResponses];
 
-export type AuthObtainTokenCe86F8E1Data = {
+export type AuthObtainToken7596065aData = {
 	body: TokenObtainPairInputSchema;
 	path?: never;
 	query?: never;
 	url: '/api/auth/token/pair';
 };
 
-export type AuthObtainTokenCe86F8E1Responses = {
+export type AuthObtainToken7596065aResponses = {
 	/**
 	 * Response
 	 *
@@ -4954,8 +5535,8 @@ export type AuthObtainTokenCe86F8E1Responses = {
 	200: TokenObtainPairOutputSchema | TempToken;
 };
 
-export type AuthObtainTokenCe86F8E1Response =
-	AuthObtainTokenCe86F8E1Responses[keyof AuthObtainTokenCe86F8E1Responses];
+export type AuthObtainToken7596065aResponse =
+	AuthObtainToken7596065aResponses[keyof AuthObtainToken7596065aResponses];
 
 export type TokenRefreshData = {
 	body: TokenRefreshInputSchema;
@@ -4973,272 +5554,496 @@ export type TokenRefreshResponses = {
 
 export type TokenRefreshResponse = TokenRefreshResponses[keyof TokenRefreshResponses];
 
-export type AuthObtainTokenWithOtp4E03D814Data = {
+export type AuthObtainTokenWithOtp2332Ae25Data = {
 	body: TempTokenWithTotp;
 	path?: never;
 	query?: never;
 	url: '/api/auth/token/pair/otp';
 };
 
-export type AuthObtainTokenWithOtp4E03D814Responses = {
+export type AuthObtainTokenWithOtp2332Ae25Responses = {
 	/**
 	 * OK
 	 */
 	200: TokenObtainPairOutputSchema;
 };
 
-export type AuthObtainTokenWithOtp4E03D814Response =
-	AuthObtainTokenWithOtp4E03D814Responses[keyof AuthObtainTokenWithOtp4E03D814Responses];
+export type AuthObtainTokenWithOtp2332Ae25Response =
+	AuthObtainTokenWithOtp2332Ae25Responses[keyof AuthObtainTokenWithOtp2332Ae25Responses];
 
-export type AuthGoogleLogin9544788eData = {
+export type AuthGoogleLogin0914B754Data = {
 	body: GoogleIdTokenSchema;
 	path?: never;
 	query?: never;
 	url: '/api/auth/google/login';
 };
 
-export type AuthGoogleLogin9544788eResponses = {
+export type AuthGoogleLogin0914B754Responses = {
 	/**
 	 * OK
 	 */
 	200: TokenObtainPairOutputSchema;
 };
 
-export type AuthGoogleLogin9544788eResponse =
-	AuthGoogleLogin9544788eResponses[keyof AuthGoogleLogin9544788eResponses];
+export type AuthGoogleLogin0914B754Response =
+	AuthGoogleLogin0914B754Responses[keyof AuthGoogleLogin0914B754Responses];
 
-export type OtpSetupOtpD554E682Data = {
+export type OtpSetupOtp358A56B3Data = {
 	body?: never;
 	path?: never;
 	query?: never;
 	url: '/api/otp/setup';
 };
 
-export type OtpSetupOtpD554E682Responses = {
+export type OtpSetupOtp358A56B3Responses = {
 	/**
 	 * OK
 	 */
 	200: TotpProvisioningUriSchema;
 };
 
-export type OtpSetupOtpD554E682Response =
-	OtpSetupOtpD554E682Responses[keyof OtpSetupOtpD554E682Responses];
+export type OtpSetupOtp358A56B3Response =
+	OtpSetupOtp358A56B3Responses[keyof OtpSetupOtp358A56B3Responses];
 
-export type OtpEnableOtpF413632aData = {
+export type OtpEnableOtp0Daa9C94Data = {
 	body: OtpVerifySchema;
 	path?: never;
 	query?: never;
 	url: '/api/otp/verify';
 };
 
-export type OtpEnableOtpF413632aResponses = {
+export type OtpEnableOtp0Daa9C94Responses = {
 	/**
 	 * OK
 	 */
 	200: RevelUserSchema;
 };
 
-export type OtpEnableOtpF413632aResponse =
-	OtpEnableOtpF413632aResponses[keyof OtpEnableOtpF413632aResponses];
+export type OtpEnableOtp0Daa9C94Response =
+	OtpEnableOtp0Daa9C94Responses[keyof OtpEnableOtp0Daa9C94Responses];
 
-export type OtpDisableOtp260Feb6fData = {
+export type OtpDisableOtpBa95839aData = {
 	body: OtpVerifySchema;
 	path?: never;
 	query?: never;
 	url: '/api/otp/disable';
 };
 
-export type OtpDisableOtp260Feb6fResponses = {
+export type OtpDisableOtpBa95839aResponses = {
 	/**
 	 * OK
 	 */
 	200: RevelUserSchema;
 };
 
-export type OtpDisableOtp260Feb6fResponse =
-	OtpDisableOtp260Feb6fResponses[keyof OtpDisableOtp260Feb6fResponses];
+export type OtpDisableOtpBa95839aResponse =
+	OtpDisableOtpBa95839aResponses[keyof OtpDisableOtpBa95839aResponses];
 
-export type AccountExportDataF2492664Data = {
+export type AccountExportData21183499Data = {
 	body?: never;
 	path?: never;
 	query?: never;
 	url: '/api/account/export-data';
 };
 
-export type AccountExportDataF2492664Responses = {
+export type AccountExportData21183499Responses = {
 	/**
 	 * OK
 	 */
 	200: ResponseMessage;
 };
 
-export type AccountExportDataF2492664Response =
-	AccountExportDataF2492664Responses[keyof AccountExportDataF2492664Responses];
+export type AccountExportData21183499Response =
+	AccountExportData21183499Responses[keyof AccountExportData21183499Responses];
 
-export type AccountMe8Ab27507Data = {
+export type AccountMe91768BbbData = {
 	body?: never;
 	path?: never;
 	query?: never;
 	url: '/api/account/me';
 };
 
-export type AccountMe8Ab27507Responses = {
+export type AccountMe91768BbbResponses = {
 	/**
 	 * OK
 	 */
 	200: RevelUserSchema;
 };
 
-export type AccountMe8Ab27507Response =
-	AccountMe8Ab27507Responses[keyof AccountMe8Ab27507Responses];
+export type AccountMe91768BbbResponse =
+	AccountMe91768BbbResponses[keyof AccountMe91768BbbResponses];
 
-export type AccountUpdateProfile8156762fData = {
+export type AccountUpdateProfile75225042Data = {
 	body: ProfileUpdateSchema;
 	path?: never;
 	query?: never;
 	url: '/api/account/me';
 };
 
-export type AccountUpdateProfile8156762fResponses = {
+export type AccountUpdateProfile75225042Responses = {
 	/**
 	 * OK
 	 */
 	200: RevelUserSchema;
 };
 
-export type AccountUpdateProfile8156762fResponse =
-	AccountUpdateProfile8156762fResponses[keyof AccountUpdateProfile8156762fResponses];
+export type AccountUpdateProfile75225042Response =
+	AccountUpdateProfile75225042Responses[keyof AccountUpdateProfile75225042Responses];
 
-export type AccountRegisterB0A9E37aData = {
+export type AccountRegister4Afe3E61Data = {
 	body: RegisterUserSchema;
 	path?: never;
 	query?: never;
 	url: '/api/account/register';
 };
 
-export type AccountRegisterB0A9E37aResponses = {
+export type AccountRegister4Afe3E61Responses = {
 	/**
 	 * Created
 	 */
 	201: RevelUserSchema;
 };
 
-export type AccountRegisterB0A9E37aResponse =
-	AccountRegisterB0A9E37aResponses[keyof AccountRegisterB0A9E37aResponses];
+export type AccountRegister4Afe3E61Response =
+	AccountRegister4Afe3E61Responses[keyof AccountRegister4Afe3E61Responses];
 
-export type AccountVerifyEmail5Efdc4DcData = {
+export type AccountVerifyEmail7407C010Data = {
 	body: VerifyEmailSchema;
 	path?: never;
 	query?: never;
 	url: '/api/account/verify';
 };
 
-export type AccountVerifyEmail5Efdc4DcResponses = {
+export type AccountVerifyEmail7407C010Responses = {
 	/**
 	 * OK
 	 */
 	200: VerifyEmailResponseSchema;
 };
 
-export type AccountVerifyEmail5Efdc4DcResponse =
-	AccountVerifyEmail5Efdc4DcResponses[keyof AccountVerifyEmail5Efdc4DcResponses];
+export type AccountVerifyEmail7407C010Response =
+	AccountVerifyEmail7407C010Responses[keyof AccountVerifyEmail7407C010Responses];
 
-export type AccountResendVerificationEmailE7C46BefData = {
+export type AccountResendVerificationEmail5F56E87eData = {
 	body?: never;
 	path?: never;
 	query?: never;
 	url: '/api/account/verify-resend';
 };
 
-export type AccountResendVerificationEmailE7C46BefErrors = {
+export type AccountResendVerificationEmail5F56E87eErrors = {
 	/**
 	 * Bad Request
 	 */
 	400: ResponseMessage;
 };
 
-export type AccountResendVerificationEmailE7C46BefError =
-	AccountResendVerificationEmailE7C46BefErrors[keyof AccountResendVerificationEmailE7C46BefErrors];
+export type AccountResendVerificationEmail5F56E87eError =
+	AccountResendVerificationEmail5F56E87eErrors[keyof AccountResendVerificationEmail5F56E87eErrors];
 
-export type AccountResendVerificationEmailE7C46BefResponses = {
+export type AccountResendVerificationEmail5F56E87eResponses = {
 	/**
 	 * OK
 	 */
 	200: ResponseMessage;
 };
 
-export type AccountResendVerificationEmailE7C46BefResponse =
-	AccountResendVerificationEmailE7C46BefResponses[keyof AccountResendVerificationEmailE7C46BefResponses];
+export type AccountResendVerificationEmail5F56E87eResponse =
+	AccountResendVerificationEmail5F56E87eResponses[keyof AccountResendVerificationEmail5F56E87eResponses];
 
-export type AccountDeleteAccountRequest1014C681Data = {
+export type AccountDeleteAccountRequestA7927572Data = {
 	body?: never;
 	path?: never;
 	query?: never;
 	url: '/api/account/delete-request';
 };
 
-export type AccountDeleteAccountRequest1014C681Responses = {
+export type AccountDeleteAccountRequestA7927572Responses = {
 	/**
 	 * OK
 	 */
 	200: ResponseMessage;
 };
 
-export type AccountDeleteAccountRequest1014C681Response =
-	AccountDeleteAccountRequest1014C681Responses[keyof AccountDeleteAccountRequest1014C681Responses];
+export type AccountDeleteAccountRequestA7927572Response =
+	AccountDeleteAccountRequestA7927572Responses[keyof AccountDeleteAccountRequestA7927572Responses];
 
-export type AccountDeleteAccountConfirmA65Ea84eData = {
+export type AccountDeleteAccountConfirm6956D723Data = {
 	body: DeleteAccountConfirmSchema;
 	path?: never;
 	query?: never;
 	url: '/api/account/delete-confirm';
 };
 
-export type AccountDeleteAccountConfirmA65Ea84eResponses = {
+export type AccountDeleteAccountConfirm6956D723Responses = {
 	/**
 	 * OK
 	 */
 	200: ResponseMessage;
 };
 
-export type AccountDeleteAccountConfirmA65Ea84eResponse =
-	AccountDeleteAccountConfirmA65Ea84eResponses[keyof AccountDeleteAccountConfirmA65Ea84eResponses];
+export type AccountDeleteAccountConfirm6956D723Response =
+	AccountDeleteAccountConfirm6956D723Responses[keyof AccountDeleteAccountConfirm6956D723Responses];
 
-export type AccountResetPasswordRequestF1615630Data = {
+export type AccountResetPasswordRequestEee8B08eData = {
 	body: PasswordResetRequestSchema;
 	path?: never;
 	query?: never;
 	url: '/api/account/password/reset-request';
 };
 
-export type AccountResetPasswordRequestF1615630Responses = {
+export type AccountResetPasswordRequestEee8B08eResponses = {
 	/**
 	 * OK
 	 */
 	200: ResponseMessage;
 };
 
-export type AccountResetPasswordRequestF1615630Response =
-	AccountResetPasswordRequestF1615630Responses[keyof AccountResetPasswordRequestF1615630Responses];
+export type AccountResetPasswordRequestEee8B08eResponse =
+	AccountResetPasswordRequestEee8B08eResponses[keyof AccountResetPasswordRequestEee8B08eResponses];
 
-export type AccountResetPassword292C4Cd4Data = {
+export type AccountResetPassword8B435443Data = {
 	body: PasswordResetSchema;
 	path?: never;
 	query?: never;
 	url: '/api/account/password/reset';
 };
 
-export type AccountResetPassword292C4Cd4Responses = {
+export type AccountResetPassword8B435443Responses = {
 	/**
 	 * OK
 	 */
 	200: ResponseMessage;
 };
 
-export type AccountResetPassword292C4Cd4Response =
-	AccountResetPassword292C4Cd4Responses[keyof AccountResetPassword292C4Cd4Responses];
+export type AccountResetPassword8B435443Response =
+	AccountResetPassword8B435443Responses[keyof AccountResetPassword8B435443Responses];
 
-export type DashboardDashboardOrganizations21A30752Data = {
+export type DietaryListFoodItems12C0895dData = {
+	body?: never;
+	path?: never;
+	query?: {
+		/**
+		 * Search
+		 */
+		search?: string | null;
+	};
+	url: '/api/dietary/food-items';
+};
+
+export type DietaryListFoodItems12C0895dResponses = {
+	/**
+	 * Response
+	 *
+	 * OK
+	 */
+	200: Array<FoodItemSchema>;
+};
+
+export type DietaryListFoodItems12C0895dResponse =
+	DietaryListFoodItems12C0895dResponses[keyof DietaryListFoodItems12C0895dResponses];
+
+export type DietaryCreateFoodItemCb9098DcData = {
+	body: FoodItemCreateSchema;
+	path?: never;
+	query?: never;
+	url: '/api/dietary/food-items';
+};
+
+export type DietaryCreateFoodItemCb9098DcResponses = {
+	/**
+	 * OK
+	 */
+	200: FoodItemSchema;
+	/**
+	 * Created
+	 */
+	201: FoodItemSchema;
+};
+
+export type DietaryCreateFoodItemCb9098DcResponse =
+	DietaryCreateFoodItemCb9098DcResponses[keyof DietaryCreateFoodItemCb9098DcResponses];
+
+export type DietaryListDietaryRestrictionsC1231E05Data = {
+	body?: never;
+	path?: never;
+	query?: never;
+	url: '/api/dietary/restrictions';
+};
+
+export type DietaryListDietaryRestrictionsC1231E05Responses = {
+	/**
+	 * Response
+	 *
+	 * OK
+	 */
+	200: Array<DietaryRestrictionSchema>;
+};
+
+export type DietaryListDietaryRestrictionsC1231E05Response =
+	DietaryListDietaryRestrictionsC1231E05Responses[keyof DietaryListDietaryRestrictionsC1231E05Responses];
+
+export type DietaryCreateDietaryRestriction3E6Fc5B3Data = {
+	body: DietaryRestrictionCreateSchema;
+	path?: never;
+	query?: never;
+	url: '/api/dietary/restrictions';
+};
+
+export type DietaryCreateDietaryRestriction3E6Fc5B3Responses = {
+	/**
+	 * Created
+	 */
+	201: DietaryRestrictionSchema;
+};
+
+export type DietaryCreateDietaryRestriction3E6Fc5B3Response =
+	DietaryCreateDietaryRestriction3E6Fc5B3Responses[keyof DietaryCreateDietaryRestriction3E6Fc5B3Responses];
+
+export type DietaryDeleteDietaryRestriction6D5B49EcData = {
+	body?: never;
+	path: {
+		/**
+		 * Restriction Id
+		 */
+		restriction_id: string;
+	};
+	query?: never;
+	url: '/api/dietary/restrictions/{restriction_id}';
+};
+
+export type DietaryDeleteDietaryRestriction6D5B49EcResponses = {
+	/**
+	 * No Content
+	 */
+	204: void;
+};
+
+export type DietaryDeleteDietaryRestriction6D5B49EcResponse =
+	DietaryDeleteDietaryRestriction6D5B49EcResponses[keyof DietaryDeleteDietaryRestriction6D5B49EcResponses];
+
+export type DietaryUpdateDietaryRestriction0A08F888Data = {
+	body: DietaryRestrictionUpdateSchema;
+	path: {
+		/**
+		 * Restriction Id
+		 */
+		restriction_id: string;
+	};
+	query?: never;
+	url: '/api/dietary/restrictions/{restriction_id}';
+};
+
+export type DietaryUpdateDietaryRestriction0A08F888Responses = {
+	/**
+	 * OK
+	 */
+	200: DietaryRestrictionSchema;
+};
+
+export type DietaryUpdateDietaryRestriction0A08F888Response =
+	DietaryUpdateDietaryRestriction0A08F888Responses[keyof DietaryUpdateDietaryRestriction0A08F888Responses];
+
+export type DietaryListDietaryPreferencesAd62A43fData = {
+	body?: never;
+	path?: never;
+	query?: never;
+	url: '/api/dietary/preferences';
+};
+
+export type DietaryListDietaryPreferencesAd62A43fResponses = {
+	/**
+	 * Response
+	 *
+	 * OK
+	 */
+	200: Array<DietaryPreferenceSchema>;
+};
+
+export type DietaryListDietaryPreferencesAd62A43fResponse =
+	DietaryListDietaryPreferencesAd62A43fResponses[keyof DietaryListDietaryPreferencesAd62A43fResponses];
+
+export type DietaryListMyDietaryPreferences552Cbae0Data = {
+	body?: never;
+	path?: never;
+	query?: never;
+	url: '/api/dietary/my-preferences';
+};
+
+export type DietaryListMyDietaryPreferences552Cbae0Responses = {
+	/**
+	 * Response
+	 *
+	 * OK
+	 */
+	200: Array<UserDietaryPreferenceSchema>;
+};
+
+export type DietaryListMyDietaryPreferences552Cbae0Response =
+	DietaryListMyDietaryPreferences552Cbae0Responses[keyof DietaryListMyDietaryPreferences552Cbae0Responses];
+
+export type DietaryAddDietaryPreferenceEd8E0Cf0Data = {
+	body: UserDietaryPreferenceCreateSchema;
+	path?: never;
+	query?: never;
+	url: '/api/dietary/my-preferences';
+};
+
+export type DietaryAddDietaryPreferenceEd8E0Cf0Responses = {
+	/**
+	 * Created
+	 */
+	201: UserDietaryPreferenceSchema;
+};
+
+export type DietaryAddDietaryPreferenceEd8E0Cf0Response =
+	DietaryAddDietaryPreferenceEd8E0Cf0Responses[keyof DietaryAddDietaryPreferenceEd8E0Cf0Responses];
+
+export type DietaryDeleteDietaryPreference27De11BcData = {
+	body?: never;
+	path: {
+		/**
+		 * Preference Id
+		 */
+		preference_id: string;
+	};
+	query?: never;
+	url: '/api/dietary/my-preferences/{preference_id}';
+};
+
+export type DietaryDeleteDietaryPreference27De11BcResponses = {
+	/**
+	 * No Content
+	 */
+	204: void;
+};
+
+export type DietaryDeleteDietaryPreference27De11BcResponse =
+	DietaryDeleteDietaryPreference27De11BcResponses[keyof DietaryDeleteDietaryPreference27De11BcResponses];
+
+export type DietaryUpdateDietaryPreferenceA6B146CeData = {
+	body: UserDietaryPreferenceUpdateSchema;
+	path: {
+		/**
+		 * Preference Id
+		 */
+		preference_id: string;
+	};
+	query?: never;
+	url: '/api/dietary/my-preferences/{preference_id}';
+};
+
+export type DietaryUpdateDietaryPreferenceA6B146CeResponses = {
+	/**
+	 * OK
+	 */
+	200: UserDietaryPreferenceSchema;
+};
+
+export type DietaryUpdateDietaryPreferenceA6B146CeResponse =
+	DietaryUpdateDietaryPreferenceA6B146CeResponses[keyof DietaryUpdateDietaryPreferenceA6B146CeResponses];
+
+export type DashboardDashboardOrganizations4D5Ed67aData = {
 	body?: never;
 	path?: never;
 	query?: {
@@ -5274,17 +6079,17 @@ export type DashboardDashboardOrganizations21A30752Data = {
 	url: '/api/dashboard/organizations';
 };
 
-export type DashboardDashboardOrganizations21A30752Responses = {
+export type DashboardDashboardOrganizations4D5Ed67aResponses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaOrganizationRetrieveSchema;
 };
 
-export type DashboardDashboardOrganizations21A30752Response =
-	DashboardDashboardOrganizations21A30752Responses[keyof DashboardDashboardOrganizations21A30752Responses];
+export type DashboardDashboardOrganizations4D5Ed67aResponse =
+	DashboardDashboardOrganizations4D5Ed67aResponses[keyof DashboardDashboardOrganizations4D5Ed67aResponses];
 
-export type DashboardDashboardEventsCf415Cb2Data = {
+export type DashboardDashboardEventsE5Ea1989Data = {
 	body?: never;
 	path?: never;
 	query?: {
@@ -5344,17 +6149,17 @@ export type DashboardDashboardEventsCf415Cb2Data = {
 	url: '/api/dashboard/events';
 };
 
-export type DashboardDashboardEventsCf415Cb2Responses = {
+export type DashboardDashboardEventsE5Ea1989Responses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaEventInListSchema;
 };
 
-export type DashboardDashboardEventsCf415Cb2Response =
-	DashboardDashboardEventsCf415Cb2Responses[keyof DashboardDashboardEventsCf415Cb2Responses];
+export type DashboardDashboardEventsE5Ea1989Response =
+	DashboardDashboardEventsE5Ea1989Responses[keyof DashboardDashboardEventsE5Ea1989Responses];
 
-export type DashboardDashboardEventSeries68578FbaData = {
+export type DashboardDashboardEventSeriesF4Fae6F1Data = {
 	body?: never;
 	path?: never;
 	query?: {
@@ -5390,17 +6195,17 @@ export type DashboardDashboardEventSeries68578FbaData = {
 	url: '/api/dashboard/event_series';
 };
 
-export type DashboardDashboardEventSeries68578FbaResponses = {
+export type DashboardDashboardEventSeriesF4Fae6F1Responses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaEventSeriesRetrieveSchema;
 };
 
-export type DashboardDashboardEventSeries68578FbaResponse =
-	DashboardDashboardEventSeries68578FbaResponses[keyof DashboardDashboardEventSeries68578FbaResponses];
+export type DashboardDashboardEventSeriesF4Fae6F1Response =
+	DashboardDashboardEventSeriesF4Fae6F1Responses[keyof DashboardDashboardEventSeriesF4Fae6F1Responses];
 
-export type DashboardDashboardInvitationsF713A466Data = {
+export type DashboardDashboardInvitationsEf2Ffd61Data = {
 	body?: never;
 	path?: never;
 	query?: {
@@ -5428,21 +6233,21 @@ export type DashboardDashboardInvitationsF713A466Data = {
 	url: '/api/dashboard/invitations';
 };
 
-export type DashboardDashboardInvitationsF713A466Responses = {
+export type DashboardDashboardInvitationsEf2Ffd61Responses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaMyEventInvitationSchema;
 };
 
-export type DashboardDashboardInvitationsF713A466Response =
-	DashboardDashboardInvitationsF713A466Responses[keyof DashboardDashboardInvitationsF713A466Responses];
+export type DashboardDashboardInvitationsEf2Ffd61Response =
+	DashboardDashboardInvitationsEf2Ffd61Responses[keyof DashboardDashboardInvitationsEf2Ffd61Responses];
 
-export type DashboardDashboardTicketsF196Fd4aData = {
+export type DashboardDashboardTickets65Cd9F6bData = {
 	body?: never;
 	path?: never;
 	query?: {
-		status?: Status | null;
+		status?: TicketStatus | null;
 		tier__payment_method?: PaymentMethod | null;
 		/**
 		 * Include Past
@@ -5464,17 +6269,17 @@ export type DashboardDashboardTicketsF196Fd4aData = {
 	url: '/api/dashboard/tickets';
 };
 
-export type DashboardDashboardTicketsF196Fd4aResponses = {
+export type DashboardDashboardTickets65Cd9F6bResponses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaUserTicketSchema;
 };
 
-export type DashboardDashboardTicketsF196Fd4aResponse =
-	DashboardDashboardTicketsF196Fd4aResponses[keyof DashboardDashboardTicketsF196Fd4aResponses];
+export type DashboardDashboardTickets65Cd9F6bResponse =
+	DashboardDashboardTickets65Cd9F6bResponses[keyof DashboardDashboardTickets65Cd9F6bResponses];
 
-export type DashboardDashboardInvitationRequests57Abda5fData = {
+export type DashboardDashboardInvitationRequests33145138Data = {
 	body?: never;
 	path?: never;
 	query?: {
@@ -5482,7 +6287,7 @@ export type DashboardDashboardInvitationRequests57Abda5fData = {
 		 * Event Id
 		 */
 		event_id?: string | null;
-		status?: Status | null;
+		status?: InvitationRequestStatus | null;
 		/**
 		 * Search
 		 */
@@ -5499,21 +6304,21 @@ export type DashboardDashboardInvitationRequests57Abda5fData = {
 	url: '/api/dashboard/invitation-requests';
 };
 
-export type DashboardDashboardInvitationRequests57Abda5fResponses = {
+export type DashboardDashboardInvitationRequests33145138Responses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaEventInvitationRequestSchema;
 };
 
-export type DashboardDashboardInvitationRequests57Abda5fResponse =
-	DashboardDashboardInvitationRequests57Abda5fResponses[keyof DashboardDashboardInvitationRequests57Abda5fResponses];
+export type DashboardDashboardInvitationRequests33145138Response =
+	DashboardDashboardInvitationRequests33145138Responses[keyof DashboardDashboardInvitationRequests33145138Responses];
 
-export type DashboardDashboardRsvpsA6C74B6aData = {
+export type DashboardDashboardRsvpsE4Fe83AeData = {
 	body?: never;
 	path?: never;
 	query?: {
-		status?: Status | null;
+		status?: RsvpStatus | null;
 		/**
 		 * User Id
 		 */
@@ -5538,17 +6343,17 @@ export type DashboardDashboardRsvpsA6C74B6aData = {
 	url: '/api/dashboard/rsvps';
 };
 
-export type DashboardDashboardRsvpsA6C74B6aResponses = {
+export type DashboardDashboardRsvpsE4Fe83AeResponses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaUserRsvpSchema;
 };
 
-export type DashboardDashboardRsvpsA6C74B6aResponse =
-	DashboardDashboardRsvpsA6C74B6aResponses[keyof DashboardDashboardRsvpsA6C74B6aResponses];
+export type DashboardDashboardRsvpsE4Fe83AeResponse =
+	DashboardDashboardRsvpsE4Fe83AeResponses[keyof DashboardDashboardRsvpsE4Fe83AeResponses];
 
-export type OrganizationListOrganizations455661A8Data = {
+export type OrganizationListOrganizationsB2A6F29fData = {
 	body?: never;
 	path?: never;
 	query?: {
@@ -5584,17 +6389,17 @@ export type OrganizationListOrganizations455661A8Data = {
 	url: '/api/organizations/';
 };
 
-export type OrganizationListOrganizations455661A8Responses = {
+export type OrganizationListOrganizationsB2A6F29fResponses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaOrganizationInListSchema;
 };
 
-export type OrganizationListOrganizations455661A8Response =
-	OrganizationListOrganizations455661A8Responses[keyof OrganizationListOrganizations455661A8Responses];
+export type OrganizationListOrganizationsB2A6F29fResponse =
+	OrganizationListOrganizationsB2A6F29fResponses[keyof OrganizationListOrganizationsB2A6F29fResponses];
 
-export type OrganizationGetOrganizationAc7Fdd06Data = {
+export type OrganizationGetOrganizationE9A010D7Data = {
 	body?: never;
 	path: {
 		/**
@@ -5606,17 +6411,17 @@ export type OrganizationGetOrganizationAc7Fdd06Data = {
 	url: '/api/organizations/{slug}';
 };
 
-export type OrganizationGetOrganizationAc7Fdd06Responses = {
+export type OrganizationGetOrganizationE9A010D7Responses = {
 	/**
 	 * OK
 	 */
 	200: OrganizationRetrieveSchema;
 };
 
-export type OrganizationGetOrganizationAc7Fdd06Response =
-	OrganizationGetOrganizationAc7Fdd06Responses[keyof OrganizationGetOrganizationAc7Fdd06Responses];
+export type OrganizationGetOrganizationE9A010D7Response =
+	OrganizationGetOrganizationE9A010D7Responses[keyof OrganizationGetOrganizationE9A010D7Responses];
 
-export type OrganizationListResources59D4F764Data = {
+export type OrganizationListResourcesF2650DfdData = {
 	body?: never;
 	path: {
 		/**
@@ -5642,17 +6447,17 @@ export type OrganizationListResources59D4F764Data = {
 	url: '/api/organizations/{slug}/resources';
 };
 
-export type OrganizationListResources59D4F764Responses = {
+export type OrganizationListResourcesF2650DfdResponses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaAdditionalResourceSchema;
 };
 
-export type OrganizationListResources59D4F764Response =
-	OrganizationListResources59D4F764Responses[keyof OrganizationListResources59D4F764Responses];
+export type OrganizationListResourcesF2650DfdResponse =
+	OrganizationListResourcesF2650DfdResponses[keyof OrganizationListResourcesF2650DfdResponses];
 
-export type OrganizationCreateMembershipRequestBadfc05dData = {
+export type OrganizationCreateMembershipRequest62F3E0C0Data = {
 	body: OrganizationMembershipRequestCreateSchema;
 	path: {
 		/**
@@ -5664,17 +6469,17 @@ export type OrganizationCreateMembershipRequestBadfc05dData = {
 	url: '/api/organizations/{slug}/membership-requests';
 };
 
-export type OrganizationCreateMembershipRequestBadfc05dResponses = {
+export type OrganizationCreateMembershipRequest62F3E0C0Responses = {
 	/**
 	 * OK
 	 */
 	200: OrganizationMembershipRequestRetrieve;
 };
 
-export type OrganizationCreateMembershipRequestBadfc05dResponse =
-	OrganizationCreateMembershipRequestBadfc05dResponses[keyof OrganizationCreateMembershipRequestBadfc05dResponses];
+export type OrganizationCreateMembershipRequest62F3E0C0Response =
+	OrganizationCreateMembershipRequest62F3E0C0Responses[keyof OrganizationCreateMembershipRequest62F3E0C0Responses];
 
-export type OrganizationGetOrganizationTokenDetails728088B6Data = {
+export type OrganizationGetOrganizationTokenDetails781Aaa0bData = {
 	body?: never;
 	path: {
 		/**
@@ -5686,27 +6491,27 @@ export type OrganizationGetOrganizationTokenDetails728088B6Data = {
 	url: '/api/organizations/tokens/{token_id}';
 };
 
-export type OrganizationGetOrganizationTokenDetails728088B6Errors = {
+export type OrganizationGetOrganizationTokenDetails781Aaa0bErrors = {
 	/**
 	 * Not Found
 	 */
 	404: ResponseMessage;
 };
 
-export type OrganizationGetOrganizationTokenDetails728088B6Error =
-	OrganizationGetOrganizationTokenDetails728088B6Errors[keyof OrganizationGetOrganizationTokenDetails728088B6Errors];
+export type OrganizationGetOrganizationTokenDetails781Aaa0bError =
+	OrganizationGetOrganizationTokenDetails781Aaa0bErrors[keyof OrganizationGetOrganizationTokenDetails781Aaa0bErrors];
 
-export type OrganizationGetOrganizationTokenDetails728088B6Responses = {
+export type OrganizationGetOrganizationTokenDetails781Aaa0bResponses = {
 	/**
 	 * OK
 	 */
 	200: OrganizationTokenSchema;
 };
 
-export type OrganizationGetOrganizationTokenDetails728088B6Response =
-	OrganizationGetOrganizationTokenDetails728088B6Responses[keyof OrganizationGetOrganizationTokenDetails728088B6Responses];
+export type OrganizationGetOrganizationTokenDetails781Aaa0bResponse =
+	OrganizationGetOrganizationTokenDetails781Aaa0bResponses[keyof OrganizationGetOrganizationTokenDetails781Aaa0bResponses];
 
-export type OrganizationClaimInvitation3234664aData = {
+export type OrganizationClaimInvitation94Eb9241Data = {
 	body?: never;
 	path: {
 		/**
@@ -5718,27 +6523,27 @@ export type OrganizationClaimInvitation3234664aData = {
 	url: '/api/organizations/claim-invitation/{token}';
 };
 
-export type OrganizationClaimInvitation3234664aErrors = {
+export type OrganizationClaimInvitation94Eb9241Errors = {
 	/**
 	 * Bad Request
 	 */
 	400: ResponseMessage;
 };
 
-export type OrganizationClaimInvitation3234664aError =
-	OrganizationClaimInvitation3234664aErrors[keyof OrganizationClaimInvitation3234664aErrors];
+export type OrganizationClaimInvitation94Eb9241Error =
+	OrganizationClaimInvitation94Eb9241Errors[keyof OrganizationClaimInvitation94Eb9241Errors];
 
-export type OrganizationClaimInvitation3234664aResponses = {
+export type OrganizationClaimInvitation94Eb9241Responses = {
 	/**
 	 * OK
 	 */
 	200: OrganizationRetrieveSchema;
 };
 
-export type OrganizationClaimInvitation3234664aResponse =
-	OrganizationClaimInvitation3234664aResponses[keyof OrganizationClaimInvitation3234664aResponses];
+export type OrganizationClaimInvitation94Eb9241Response =
+	OrganizationClaimInvitation94Eb9241Responses[keyof OrganizationClaimInvitation94Eb9241Responses];
 
-export type OrganizationadminGetOrganizationA5A5A20cData = {
+export type OrganizationadminGetOrganization281Aa202Data = {
 	body?: never;
 	path: {
 		/**
@@ -5750,17 +6555,17 @@ export type OrganizationadminGetOrganizationA5A5A20cData = {
 	url: '/api/organization-admin/{slug}';
 };
 
-export type OrganizationadminGetOrganizationA5A5A20cResponses = {
+export type OrganizationadminGetOrganization281Aa202Responses = {
 	/**
 	 * OK
 	 */
 	200: OrganizationAdminDetailSchema;
 };
 
-export type OrganizationadminGetOrganizationA5A5A20cResponse =
-	OrganizationadminGetOrganizationA5A5A20cResponses[keyof OrganizationadminGetOrganizationA5A5A20cResponses];
+export type OrganizationadminGetOrganization281Aa202Response =
+	OrganizationadminGetOrganization281Aa202Responses[keyof OrganizationadminGetOrganization281Aa202Responses];
 
-export type OrganizationadminUpdateOrganization7F2B1FddData = {
+export type OrganizationadminUpdateOrganizationCdc4Cbc9Data = {
 	body: OrganizationEditSchema;
 	path: {
 		/**
@@ -5772,17 +6577,17 @@ export type OrganizationadminUpdateOrganization7F2B1FddData = {
 	url: '/api/organization-admin/{slug}';
 };
 
-export type OrganizationadminUpdateOrganization7F2B1FddResponses = {
+export type OrganizationadminUpdateOrganizationCdc4Cbc9Responses = {
 	/**
 	 * OK
 	 */
 	200: OrganizationRetrieveSchema;
 };
 
-export type OrganizationadminUpdateOrganization7F2B1FddResponse =
-	OrganizationadminUpdateOrganization7F2B1FddResponses[keyof OrganizationadminUpdateOrganization7F2B1FddResponses];
+export type OrganizationadminUpdateOrganizationCdc4Cbc9Response =
+	OrganizationadminUpdateOrganizationCdc4Cbc9Responses[keyof OrganizationadminUpdateOrganizationCdc4Cbc9Responses];
 
-export type OrganizationadminStripeConnect1A31Cd6bData = {
+export type OrganizationadminStripeConnect78210C25Data = {
 	body?: never;
 	path: {
 		/**
@@ -5794,17 +6599,17 @@ export type OrganizationadminStripeConnect1A31Cd6bData = {
 	url: '/api/organization-admin/{slug}/stripe/connect';
 };
 
-export type OrganizationadminStripeConnect1A31Cd6bResponses = {
+export type OrganizationadminStripeConnect78210C25Responses = {
 	/**
 	 * OK
 	 */
 	200: StripeOnboardingLinkSchema;
 };
 
-export type OrganizationadminStripeConnect1A31Cd6bResponse =
-	OrganizationadminStripeConnect1A31Cd6bResponses[keyof OrganizationadminStripeConnect1A31Cd6bResponses];
+export type OrganizationadminStripeConnect78210C25Response =
+	OrganizationadminStripeConnect78210C25Responses[keyof OrganizationadminStripeConnect78210C25Responses];
 
-export type OrganizationadminStripeAccountVerify0083D87fData = {
+export type OrganizationadminStripeAccountVerify168528D1Data = {
 	body?: never;
 	path: {
 		/**
@@ -5816,17 +6621,17 @@ export type OrganizationadminStripeAccountVerify0083D87fData = {
 	url: '/api/organization-admin/{slug}/stripe/account/verify';
 };
 
-export type OrganizationadminStripeAccountVerify0083D87fResponses = {
+export type OrganizationadminStripeAccountVerify168528D1Responses = {
 	/**
 	 * OK
 	 */
 	200: StripeAccountStatusSchema;
 };
 
-export type OrganizationadminStripeAccountVerify0083D87fResponse =
-	OrganizationadminStripeAccountVerify0083D87fResponses[keyof OrganizationadminStripeAccountVerify0083D87fResponses];
+export type OrganizationadminStripeAccountVerify168528D1Response =
+	OrganizationadminStripeAccountVerify168528D1Responses[keyof OrganizationadminStripeAccountVerify168528D1Responses];
 
-export type OrganizationadminUploadLogo7C6Dddb7Data = {
+export type OrganizationadminUploadLogoDcdbc997Data = {
 	/**
 	 * FileParams
 	 */
@@ -5846,17 +6651,17 @@ export type OrganizationadminUploadLogo7C6Dddb7Data = {
 	url: '/api/organization-admin/{slug}/upload-logo';
 };
 
-export type OrganizationadminUploadLogo7C6Dddb7Responses = {
+export type OrganizationadminUploadLogoDcdbc997Responses = {
 	/**
 	 * OK
 	 */
 	200: OrganizationRetrieveSchema;
 };
 
-export type OrganizationadminUploadLogo7C6Dddb7Response =
-	OrganizationadminUploadLogo7C6Dddb7Responses[keyof OrganizationadminUploadLogo7C6Dddb7Responses];
+export type OrganizationadminUploadLogoDcdbc997Response =
+	OrganizationadminUploadLogoDcdbc997Responses[keyof OrganizationadminUploadLogoDcdbc997Responses];
 
-export type OrganizationadminUploadCoverArt50A1B22bData = {
+export type OrganizationadminUploadCoverArt6C3510CbData = {
 	/**
 	 * FileParams
 	 */
@@ -5876,17 +6681,17 @@ export type OrganizationadminUploadCoverArt50A1B22bData = {
 	url: '/api/organization-admin/{slug}/upload-cover-art';
 };
 
-export type OrganizationadminUploadCoverArt50A1B22bResponses = {
+export type OrganizationadminUploadCoverArt6C3510CbResponses = {
 	/**
 	 * OK
 	 */
 	200: OrganizationRetrieveSchema;
 };
 
-export type OrganizationadminUploadCoverArt50A1B22bResponse =
-	OrganizationadminUploadCoverArt50A1B22bResponses[keyof OrganizationadminUploadCoverArt50A1B22bResponses];
+export type OrganizationadminUploadCoverArt6C3510CbResponse =
+	OrganizationadminUploadCoverArt6C3510CbResponses[keyof OrganizationadminUploadCoverArt6C3510CbResponses];
 
-export type OrganizationadminDeleteLogoE0165515Data = {
+export type OrganizationadminDeleteLogo1Ae943B7Data = {
 	body?: never;
 	path: {
 		/**
@@ -5898,17 +6703,17 @@ export type OrganizationadminDeleteLogoE0165515Data = {
 	url: '/api/organization-admin/{slug}/delete-logo';
 };
 
-export type OrganizationadminDeleteLogoE0165515Responses = {
+export type OrganizationadminDeleteLogo1Ae943B7Responses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type OrganizationadminDeleteLogoE0165515Response =
-	OrganizationadminDeleteLogoE0165515Responses[keyof OrganizationadminDeleteLogoE0165515Responses];
+export type OrganizationadminDeleteLogo1Ae943B7Response =
+	OrganizationadminDeleteLogo1Ae943B7Responses[keyof OrganizationadminDeleteLogo1Ae943B7Responses];
 
-export type OrganizationadminDeleteCoverArtCf082DefData = {
+export type OrganizationadminDeleteCoverArt10825627Data = {
 	body?: never;
 	path: {
 		/**
@@ -5920,17 +6725,17 @@ export type OrganizationadminDeleteCoverArtCf082DefData = {
 	url: '/api/organization-admin/{slug}/delete-cover-art';
 };
 
-export type OrganizationadminDeleteCoverArtCf082DefResponses = {
+export type OrganizationadminDeleteCoverArt10825627Responses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type OrganizationadminDeleteCoverArtCf082DefResponse =
-	OrganizationadminDeleteCoverArtCf082DefResponses[keyof OrganizationadminDeleteCoverArtCf082DefResponses];
+export type OrganizationadminDeleteCoverArt10825627Response =
+	OrganizationadminDeleteCoverArt10825627Responses[keyof OrganizationadminDeleteCoverArt10825627Responses];
 
-export type OrganizationadminCreateEventSeriesF279B07cData = {
+export type OrganizationadminCreateEventSeries51C5Dfd9Data = {
 	body: EventSeriesEditSchema;
 	path: {
 		/**
@@ -5942,27 +6747,27 @@ export type OrganizationadminCreateEventSeriesF279B07cData = {
 	url: '/api/organization-admin/{slug}/create-event-series';
 };
 
-export type OrganizationadminCreateEventSeriesF279B07cErrors = {
+export type OrganizationadminCreateEventSeries51C5Dfd9Errors = {
 	/**
 	 * Bad Request
 	 */
 	400: ValidationErrorResponse;
 };
 
-export type OrganizationadminCreateEventSeriesF279B07cError =
-	OrganizationadminCreateEventSeriesF279B07cErrors[keyof OrganizationadminCreateEventSeriesF279B07cErrors];
+export type OrganizationadminCreateEventSeries51C5Dfd9Error =
+	OrganizationadminCreateEventSeries51C5Dfd9Errors[keyof OrganizationadminCreateEventSeries51C5Dfd9Errors];
 
-export type OrganizationadminCreateEventSeriesF279B07cResponses = {
+export type OrganizationadminCreateEventSeries51C5Dfd9Responses = {
 	/**
 	 * OK
 	 */
 	200: EventSeriesRetrieveSchema;
 };
 
-export type OrganizationadminCreateEventSeriesF279B07cResponse =
-	OrganizationadminCreateEventSeriesF279B07cResponses[keyof OrganizationadminCreateEventSeriesF279B07cResponses];
+export type OrganizationadminCreateEventSeries51C5Dfd9Response =
+	OrganizationadminCreateEventSeries51C5Dfd9Responses[keyof OrganizationadminCreateEventSeries51C5Dfd9Responses];
 
-export type OrganizationadminCreateEventC713371bData = {
+export type OrganizationadminCreateEvent3EbedcefData = {
 	body: EventCreateSchema;
 	path: {
 		/**
@@ -5974,27 +6779,27 @@ export type OrganizationadminCreateEventC713371bData = {
 	url: '/api/organization-admin/{slug}/create-event';
 };
 
-export type OrganizationadminCreateEventC713371bErrors = {
+export type OrganizationadminCreateEvent3EbedcefErrors = {
 	/**
 	 * Bad Request
 	 */
 	400: ValidationErrorResponse;
 };
 
-export type OrganizationadminCreateEventC713371bError =
-	OrganizationadminCreateEventC713371bErrors[keyof OrganizationadminCreateEventC713371bErrors];
+export type OrganizationadminCreateEvent3EbedcefError =
+	OrganizationadminCreateEvent3EbedcefErrors[keyof OrganizationadminCreateEvent3EbedcefErrors];
 
-export type OrganizationadminCreateEventC713371bResponses = {
+export type OrganizationadminCreateEvent3EbedcefResponses = {
 	/**
 	 * OK
 	 */
 	200: EventDetailSchema;
 };
 
-export type OrganizationadminCreateEventC713371bResponse =
-	OrganizationadminCreateEventC713371bResponses[keyof OrganizationadminCreateEventC713371bResponses];
+export type OrganizationadminCreateEvent3EbedcefResponse =
+	OrganizationadminCreateEvent3EbedcefResponses[keyof OrganizationadminCreateEvent3EbedcefResponses];
 
-export type OrganizationadminListOrganizationTokens02F9B442Data = {
+export type OrganizationadminListOrganizationTokensD6E875CaData = {
 	body?: never;
 	path: {
 		/**
@@ -6031,17 +6836,17 @@ export type OrganizationadminListOrganizationTokens02F9B442Data = {
 	url: '/api/organization-admin/{slug}/tokens';
 };
 
-export type OrganizationadminListOrganizationTokens02F9B442Responses = {
+export type OrganizationadminListOrganizationTokensD6E875CaResponses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaOrganizationTokenSchema;
 };
 
-export type OrganizationadminListOrganizationTokens02F9B442Response =
-	OrganizationadminListOrganizationTokens02F9B442Responses[keyof OrganizationadminListOrganizationTokens02F9B442Responses];
+export type OrganizationadminListOrganizationTokensD6E875CaResponse =
+	OrganizationadminListOrganizationTokensD6E875CaResponses[keyof OrganizationadminListOrganizationTokensD6E875CaResponses];
 
-export type OrganizationadminCreateOrganizationToken5953F78bData = {
+export type OrganizationadminCreateOrganizationToken7D755566Data = {
 	body: OrganizationTokenCreateSchema;
 	path: {
 		/**
@@ -6053,17 +6858,17 @@ export type OrganizationadminCreateOrganizationToken5953F78bData = {
 	url: '/api/organization-admin/{slug}/tokens';
 };
 
-export type OrganizationadminCreateOrganizationToken5953F78bResponses = {
+export type OrganizationadminCreateOrganizationToken7D755566Responses = {
 	/**
 	 * OK
 	 */
 	200: OrganizationTokenSchema;
 };
 
-export type OrganizationadminCreateOrganizationToken5953F78bResponse =
-	OrganizationadminCreateOrganizationToken5953F78bResponses[keyof OrganizationadminCreateOrganizationToken5953F78bResponses];
+export type OrganizationadminCreateOrganizationToken7D755566Response =
+	OrganizationadminCreateOrganizationToken7D755566Responses[keyof OrganizationadminCreateOrganizationToken7D755566Responses];
 
-export type OrganizationadminDeleteOrganizationTokenF27D4049Data = {
+export type OrganizationadminDeleteOrganizationToken6D75EbadData = {
 	body?: never;
 	path: {
 		/**
@@ -6079,17 +6884,17 @@ export type OrganizationadminDeleteOrganizationTokenF27D4049Data = {
 	url: '/api/organization-admin/{slug}/tokens/{token_id}';
 };
 
-export type OrganizationadminDeleteOrganizationTokenF27D4049Responses = {
+export type OrganizationadminDeleteOrganizationToken6D75EbadResponses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type OrganizationadminDeleteOrganizationTokenF27D4049Response =
-	OrganizationadminDeleteOrganizationTokenF27D4049Responses[keyof OrganizationadminDeleteOrganizationTokenF27D4049Responses];
+export type OrganizationadminDeleteOrganizationToken6D75EbadResponse =
+	OrganizationadminDeleteOrganizationToken6D75EbadResponses[keyof OrganizationadminDeleteOrganizationToken6D75EbadResponses];
 
-export type OrganizationadminUpdateOrganizationToken095Bbe92Data = {
+export type OrganizationadminUpdateOrganizationTokenA6B198C8Data = {
 	body: OrganizationTokenUpdateSchema;
 	path: {
 		/**
@@ -6105,17 +6910,17 @@ export type OrganizationadminUpdateOrganizationToken095Bbe92Data = {
 	url: '/api/organization-admin/{slug}/tokens/{token_id}';
 };
 
-export type OrganizationadminUpdateOrganizationToken095Bbe92Responses = {
+export type OrganizationadminUpdateOrganizationTokenA6B198C8Responses = {
 	/**
 	 * OK
 	 */
 	200: OrganizationTokenSchema;
 };
 
-export type OrganizationadminUpdateOrganizationToken095Bbe92Response =
-	OrganizationadminUpdateOrganizationToken095Bbe92Responses[keyof OrganizationadminUpdateOrganizationToken095Bbe92Responses];
+export type OrganizationadminUpdateOrganizationTokenA6B198C8Response =
+	OrganizationadminUpdateOrganizationTokenA6B198C8Responses[keyof OrganizationadminUpdateOrganizationTokenA6B198C8Responses];
 
-export type OrganizationadminListMembershipRequestsF4Fc07C0Data = {
+export type OrganizationadminListMembershipRequestsB9529Cc1Data = {
 	body?: never;
 	path: {
 		/**
@@ -6137,17 +6942,17 @@ export type OrganizationadminListMembershipRequestsF4Fc07C0Data = {
 	url: '/api/organization-admin/{slug}/membership-requests';
 };
 
-export type OrganizationadminListMembershipRequestsF4Fc07C0Responses = {
+export type OrganizationadminListMembershipRequestsB9529Cc1Responses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaOrganizationMembershipRequestRetrieve;
 };
 
-export type OrganizationadminListMembershipRequestsF4Fc07C0Response =
-	OrganizationadminListMembershipRequestsF4Fc07C0Responses[keyof OrganizationadminListMembershipRequestsF4Fc07C0Responses];
+export type OrganizationadminListMembershipRequestsB9529Cc1Response =
+	OrganizationadminListMembershipRequestsB9529Cc1Responses[keyof OrganizationadminListMembershipRequestsB9529Cc1Responses];
 
-export type OrganizationadminApproveMembershipRequest1510Bb81Data = {
+export type OrganizationadminApproveMembershipRequest3E831D61Data = {
 	body?: never;
 	path: {
 		/**
@@ -6163,17 +6968,17 @@ export type OrganizationadminApproveMembershipRequest1510Bb81Data = {
 	url: '/api/organization-admin/{slug}/membership-requests/{request_id}/approve';
 };
 
-export type OrganizationadminApproveMembershipRequest1510Bb81Responses = {
+export type OrganizationadminApproveMembershipRequest3E831D61Responses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type OrganizationadminApproveMembershipRequest1510Bb81Response =
-	OrganizationadminApproveMembershipRequest1510Bb81Responses[keyof OrganizationadminApproveMembershipRequest1510Bb81Responses];
+export type OrganizationadminApproveMembershipRequest3E831D61Response =
+	OrganizationadminApproveMembershipRequest3E831D61Responses[keyof OrganizationadminApproveMembershipRequest3E831D61Responses];
 
-export type OrganizationadminRejectMembershipRequestB8Fab4CcData = {
+export type OrganizationadminRejectMembershipRequest1B8F4D2bData = {
 	body?: never;
 	path: {
 		/**
@@ -6189,17 +6994,17 @@ export type OrganizationadminRejectMembershipRequestB8Fab4CcData = {
 	url: '/api/organization-admin/{slug}/membership-requests/{request_id}/reject';
 };
 
-export type OrganizationadminRejectMembershipRequestB8Fab4CcResponses = {
+export type OrganizationadminRejectMembershipRequest1B8F4D2bResponses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type OrganizationadminRejectMembershipRequestB8Fab4CcResponse =
-	OrganizationadminRejectMembershipRequestB8Fab4CcResponses[keyof OrganizationadminRejectMembershipRequestB8Fab4CcResponses];
+export type OrganizationadminRejectMembershipRequest1B8F4D2bResponse =
+	OrganizationadminRejectMembershipRequest1B8F4D2bResponses[keyof OrganizationadminRejectMembershipRequest1B8F4D2bResponses];
 
-export type OrganizationadminListResourcesDb34B588Data = {
+export type OrganizationadminListResourcesD6034E5fData = {
 	body?: never;
 	path: {
 		/**
@@ -6225,17 +7030,17 @@ export type OrganizationadminListResourcesDb34B588Data = {
 	url: '/api/organization-admin/{slug}/resources';
 };
 
-export type OrganizationadminListResourcesDb34B588Responses = {
+export type OrganizationadminListResourcesD6034E5fResponses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaAdditionalResourceSchema;
 };
 
-export type OrganizationadminListResourcesDb34B588Response =
-	OrganizationadminListResourcesDb34B588Responses[keyof OrganizationadminListResourcesDb34B588Responses];
+export type OrganizationadminListResourcesD6034E5fResponse =
+	OrganizationadminListResourcesD6034E5fResponses[keyof OrganizationadminListResourcesD6034E5fResponses];
 
-export type OrganizationadminCreateResource23Ecbad8Data = {
+export type OrganizationadminCreateResource7Feb0FafData = {
 	/**
 	 * FormParams
 	 */
@@ -6287,17 +7092,17 @@ export type OrganizationadminCreateResource23Ecbad8Data = {
 	url: '/api/organization-admin/{slug}/resources';
 };
 
-export type OrganizationadminCreateResource23Ecbad8Responses = {
+export type OrganizationadminCreateResource7Feb0FafResponses = {
 	/**
 	 * OK
 	 */
 	200: AdditionalResourceSchema;
 };
 
-export type OrganizationadminCreateResource23Ecbad8Response =
-	OrganizationadminCreateResource23Ecbad8Responses[keyof OrganizationadminCreateResource23Ecbad8Responses];
+export type OrganizationadminCreateResource7Feb0FafResponse =
+	OrganizationadminCreateResource7Feb0FafResponses[keyof OrganizationadminCreateResource7Feb0FafResponses];
 
-export type OrganizationadminDeleteResource4Cf32878Data = {
+export type OrganizationadminDeleteResourceBebde3D8Data = {
 	body?: never;
 	path: {
 		/**
@@ -6313,17 +7118,17 @@ export type OrganizationadminDeleteResource4Cf32878Data = {
 	url: '/api/organization-admin/{slug}/resources/{resource_id}';
 };
 
-export type OrganizationadminDeleteResource4Cf32878Responses = {
+export type OrganizationadminDeleteResourceBebde3D8Responses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type OrganizationadminDeleteResource4Cf32878Response =
-	OrganizationadminDeleteResource4Cf32878Responses[keyof OrganizationadminDeleteResource4Cf32878Responses];
+export type OrganizationadminDeleteResourceBebde3D8Response =
+	OrganizationadminDeleteResourceBebde3D8Responses[keyof OrganizationadminDeleteResourceBebde3D8Responses];
 
-export type OrganizationadminGetResource641F8999Data = {
+export type OrganizationadminGetResourceC494A16cData = {
 	body?: never;
 	path: {
 		/**
@@ -6339,17 +7144,17 @@ export type OrganizationadminGetResource641F8999Data = {
 	url: '/api/organization-admin/{slug}/resources/{resource_id}';
 };
 
-export type OrganizationadminGetResource641F8999Responses = {
+export type OrganizationadminGetResourceC494A16cResponses = {
 	/**
 	 * OK
 	 */
 	200: AdditionalResourceSchema;
 };
 
-export type OrganizationadminGetResource641F8999Response =
-	OrganizationadminGetResource641F8999Responses[keyof OrganizationadminGetResource641F8999Responses];
+export type OrganizationadminGetResourceC494A16cResponse =
+	OrganizationadminGetResourceC494A16cResponses[keyof OrganizationadminGetResourceC494A16cResponses];
 
-export type OrganizationadminUpdateResourceA33C44C8Data = {
+export type OrganizationadminUpdateResourceBdd76589Data = {
 	body: AdditionalResourceUpdateSchema;
 	path: {
 		/**
@@ -6365,17 +7170,17 @@ export type OrganizationadminUpdateResourceA33C44C8Data = {
 	url: '/api/organization-admin/{slug}/resources/{resource_id}';
 };
 
-export type OrganizationadminUpdateResourceA33C44C8Responses = {
+export type OrganizationadminUpdateResourceBdd76589Responses = {
 	/**
 	 * OK
 	 */
 	200: AdditionalResourceSchema;
 };
 
-export type OrganizationadminUpdateResourceA33C44C8Response =
-	OrganizationadminUpdateResourceA33C44C8Responses[keyof OrganizationadminUpdateResourceA33C44C8Responses];
+export type OrganizationadminUpdateResourceBdd76589Response =
+	OrganizationadminUpdateResourceBdd76589Responses[keyof OrganizationadminUpdateResourceBdd76589Responses];
 
-export type OrganizationadminListMembersE7B9Bd63Data = {
+export type OrganizationadminListMembersCadec81dData = {
 	body?: never;
 	path: {
 		/**
@@ -6400,17 +7205,17 @@ export type OrganizationadminListMembersE7B9Bd63Data = {
 	url: '/api/organization-admin/{slug}/members';
 };
 
-export type OrganizationadminListMembersE7B9Bd63Responses = {
+export type OrganizationadminListMembersCadec81dResponses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaOrganizationMemberSchema;
 };
 
-export type OrganizationadminListMembersE7B9Bd63Response =
-	OrganizationadminListMembersE7B9Bd63Responses[keyof OrganizationadminListMembersE7B9Bd63Responses];
+export type OrganizationadminListMembersCadec81dResponse =
+	OrganizationadminListMembersCadec81dResponses[keyof OrganizationadminListMembersCadec81dResponses];
 
-export type OrganizationadminRemoveMemberD5C47BafData = {
+export type OrganizationadminRemoveMemberB1Bcd57eData = {
 	body?: never;
 	path: {
 		/**
@@ -6426,17 +7231,17 @@ export type OrganizationadminRemoveMemberD5C47BafData = {
 	url: '/api/organization-admin/{slug}/members/{user_id}';
 };
 
-export type OrganizationadminRemoveMemberD5C47BafResponses = {
+export type OrganizationadminRemoveMemberB1Bcd57eResponses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type OrganizationadminRemoveMemberD5C47BafResponse =
-	OrganizationadminRemoveMemberD5C47BafResponses[keyof OrganizationadminRemoveMemberD5C47BafResponses];
+export type OrganizationadminRemoveMemberB1Bcd57eResponse =
+	OrganizationadminRemoveMemberB1Bcd57eResponses[keyof OrganizationadminRemoveMemberB1Bcd57eResponses];
 
-export type OrganizationadminListStaffDc6D73CfData = {
+export type OrganizationadminListStaff2587Fe07Data = {
 	body?: never;
 	path: {
 		/**
@@ -6461,17 +7266,17 @@ export type OrganizationadminListStaffDc6D73CfData = {
 	url: '/api/organization-admin/{slug}/staff';
 };
 
-export type OrganizationadminListStaffDc6D73CfResponses = {
+export type OrganizationadminListStaff2587Fe07Responses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaOrganizationStaffSchema;
 };
 
-export type OrganizationadminListStaffDc6D73CfResponse =
-	OrganizationadminListStaffDc6D73CfResponses[keyof OrganizationadminListStaffDc6D73CfResponses];
+export type OrganizationadminListStaff2587Fe07Response =
+	OrganizationadminListStaff2587Fe07Responses[keyof OrganizationadminListStaff2587Fe07Responses];
 
-export type OrganizationadminRemoveStaffCe3C6FcfData = {
+export type OrganizationadminRemoveStaff437E5EcdData = {
 	body?: never;
 	path: {
 		/**
@@ -6487,17 +7292,17 @@ export type OrganizationadminRemoveStaffCe3C6FcfData = {
 	url: '/api/organization-admin/{slug}/staff/{user_id}';
 };
 
-export type OrganizationadminRemoveStaffCe3C6FcfResponses = {
+export type OrganizationadminRemoveStaff437E5EcdResponses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type OrganizationadminRemoveStaffCe3C6FcfResponse =
-	OrganizationadminRemoveStaffCe3C6FcfResponses[keyof OrganizationadminRemoveStaffCe3C6FcfResponses];
+export type OrganizationadminRemoveStaff437E5EcdResponse =
+	OrganizationadminRemoveStaff437E5EcdResponses[keyof OrganizationadminRemoveStaff437E5EcdResponses];
 
-export type OrganizationadminAddStaff70095A58Data = {
+export type OrganizationadminAddStaff72F4A37fData = {
 	body?: PermissionsSchema | null;
 	path: {
 		/**
@@ -6513,17 +7318,17 @@ export type OrganizationadminAddStaff70095A58Data = {
 	url: '/api/organization-admin/{slug}/staff/{user_id}';
 };
 
-export type OrganizationadminAddStaff70095A58Responses = {
+export type OrganizationadminAddStaff72F4A37fResponses = {
 	/**
 	 * Created
 	 */
 	201: OrganizationStaffSchema;
 };
 
-export type OrganizationadminAddStaff70095A58Response =
-	OrganizationadminAddStaff70095A58Responses[keyof OrganizationadminAddStaff70095A58Responses];
+export type OrganizationadminAddStaff72F4A37fResponse =
+	OrganizationadminAddStaff72F4A37fResponses[keyof OrganizationadminAddStaff72F4A37fResponses];
 
-export type OrganizationadminUpdateStaffPermissionsFdf7C453Data = {
+export type OrganizationadminUpdateStaffPermissions0D18A91dData = {
 	body: PermissionsSchema;
 	path: {
 		/**
@@ -6539,17 +7344,17 @@ export type OrganizationadminUpdateStaffPermissionsFdf7C453Data = {
 	url: '/api/organization-admin/{slug}/staff/{user_id}/permissions';
 };
 
-export type OrganizationadminUpdateStaffPermissionsFdf7C453Responses = {
+export type OrganizationadminUpdateStaffPermissions0D18A91dResponses = {
 	/**
 	 * OK
 	 */
 	200: OrganizationStaffSchema;
 };
 
-export type OrganizationadminUpdateStaffPermissionsFdf7C453Response =
-	OrganizationadminUpdateStaffPermissionsFdf7C453Responses[keyof OrganizationadminUpdateStaffPermissionsFdf7C453Responses];
+export type OrganizationadminUpdateStaffPermissions0D18A91dResponse =
+	OrganizationadminUpdateStaffPermissions0D18A91dResponses[keyof OrganizationadminUpdateStaffPermissions0D18A91dResponses];
 
-export type OrganizationadminClearTagsE1B4DcbeData = {
+export type OrganizationadminClearTags81672896Data = {
 	body?: never;
 	path: {
 		/**
@@ -6561,17 +7366,17 @@ export type OrganizationadminClearTagsE1B4DcbeData = {
 	url: '/api/organization-admin/{slug}/tags';
 };
 
-export type OrganizationadminClearTagsE1B4DcbeResponses = {
+export type OrganizationadminClearTags81672896Responses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type OrganizationadminClearTagsE1B4DcbeResponse =
-	OrganizationadminClearTagsE1B4DcbeResponses[keyof OrganizationadminClearTagsE1B4DcbeResponses];
+export type OrganizationadminClearTags81672896Response =
+	OrganizationadminClearTags81672896Responses[keyof OrganizationadminClearTags81672896Responses];
 
-export type OrganizationadminAddTags8D4Dd12bData = {
+export type OrganizationadminAddTags8C683897Data = {
 	body: TagUpdateSchema;
 	path: {
 		/**
@@ -6583,7 +7388,7 @@ export type OrganizationadminAddTags8D4Dd12bData = {
 	url: '/api/organization-admin/{slug}/tags';
 };
 
-export type OrganizationadminAddTags8D4Dd12bResponses = {
+export type OrganizationadminAddTags8C683897Responses = {
 	/**
 	 * Response
 	 *
@@ -6592,10 +7397,10 @@ export type OrganizationadminAddTags8D4Dd12bResponses = {
 	200: Array<TagSchema>;
 };
 
-export type OrganizationadminAddTags8D4Dd12bResponse =
-	OrganizationadminAddTags8D4Dd12bResponses[keyof OrganizationadminAddTags8D4Dd12bResponses];
+export type OrganizationadminAddTags8C683897Response =
+	OrganizationadminAddTags8C683897Responses[keyof OrganizationadminAddTags8C683897Responses];
 
-export type OrganizationadminRemoveTags78E618A8Data = {
+export type OrganizationadminRemoveTagsB38C50BdData = {
 	body: TagUpdateSchema;
 	path: {
 		/**
@@ -6607,7 +7412,7 @@ export type OrganizationadminRemoveTags78E618A8Data = {
 	url: '/api/organization-admin/{slug}/tags/remove';
 };
 
-export type OrganizationadminRemoveTags78E618A8Responses = {
+export type OrganizationadminRemoveTagsB38C50BdResponses = {
 	/**
 	 * Response
 	 *
@@ -6616,10 +7421,10 @@ export type OrganizationadminRemoveTags78E618A8Responses = {
 	200: Array<TagSchema>;
 };
 
-export type OrganizationadminRemoveTags78E618A8Response =
-	OrganizationadminRemoveTags78E618A8Responses[keyof OrganizationadminRemoveTags78E618A8Responses];
+export type OrganizationadminRemoveTagsB38C50BdResponse =
+	OrganizationadminRemoveTagsB38C50BdResponses[keyof OrganizationadminRemoveTagsB38C50BdResponses];
 
-export type EventListEventsB0Dde846Data = {
+export type EventListEvents9872Fea5Data = {
 	body?: never;
 	path?: never;
 	query?: {
@@ -6635,7 +7440,7 @@ export type EventListEventsB0Dde846Data = {
 		 * Organization
 		 */
 		organization?: string | null;
-		event_type?: Types | null;
+		event_type?: EventType | null;
 		visibility?: Visibility | null;
 		/**
 		 * Event Series
@@ -6649,7 +7454,7 @@ export type EventListEventsB0Dde846Data = {
 		 * Past Events
 		 */
 		past_events?: boolean | null;
-		status?: Status | null;
+		status?: EventStatus | null;
 		/**
 		 * Tags
 		 */
@@ -6678,17 +7483,17 @@ export type EventListEventsB0Dde846Data = {
 	url: '/api/events/';
 };
 
-export type EventListEventsB0Dde846Responses = {
+export type EventListEvents9872Fea5Responses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaEventInListSchema;
 };
 
-export type EventListEventsB0Dde846Response =
-	EventListEventsB0Dde846Responses[keyof EventListEventsB0Dde846Responses];
+export type EventListEvents9872Fea5Response =
+	EventListEvents9872Fea5Responses[keyof EventListEvents9872Fea5Responses];
 
-export type EventGetEventTokenDetails6A5F8C99Data = {
+export type EventGetEventTokenDetails76A7E099Data = {
 	body?: never;
 	path: {
 		/**
@@ -6700,27 +7505,27 @@ export type EventGetEventTokenDetails6A5F8C99Data = {
 	url: '/api/events/tokens/{token_id}';
 };
 
-export type EventGetEventTokenDetails6A5F8C99Errors = {
+export type EventGetEventTokenDetails76A7E099Errors = {
 	/**
 	 * Not Found
 	 */
 	404: ResponseMessage;
 };
 
-export type EventGetEventTokenDetails6A5F8C99Error =
-	EventGetEventTokenDetails6A5F8C99Errors[keyof EventGetEventTokenDetails6A5F8C99Errors];
+export type EventGetEventTokenDetails76A7E099Error =
+	EventGetEventTokenDetails76A7E099Errors[keyof EventGetEventTokenDetails76A7E099Errors];
 
-export type EventGetEventTokenDetails6A5F8C99Responses = {
+export type EventGetEventTokenDetails76A7E099Responses = {
 	/**
 	 * OK
 	 */
 	200: EventTokenSchema;
 };
 
-export type EventGetEventTokenDetails6A5F8C99Response =
-	EventGetEventTokenDetails6A5F8C99Responses[keyof EventGetEventTokenDetails6A5F8C99Responses];
+export type EventGetEventTokenDetails76A7E099Response =
+	EventGetEventTokenDetails76A7E099Responses[keyof EventGetEventTokenDetails76A7E099Responses];
 
-export type EventClaimInvitation99A5B86cData = {
+export type EventClaimInvitation87200C98Data = {
 	body?: never;
 	path: {
 		/**
@@ -6732,27 +7537,27 @@ export type EventClaimInvitation99A5B86cData = {
 	url: '/api/events/claim-invitation/{token}';
 };
 
-export type EventClaimInvitation99A5B86cErrors = {
+export type EventClaimInvitation87200C98Errors = {
 	/**
 	 * Bad Request
 	 */
 	400: ResponseMessage;
 };
 
-export type EventClaimInvitation99A5B86cError =
-	EventClaimInvitation99A5B86cErrors[keyof EventClaimInvitation99A5B86cErrors];
+export type EventClaimInvitation87200C98Error =
+	EventClaimInvitation87200C98Errors[keyof EventClaimInvitation87200C98Errors];
 
-export type EventClaimInvitation99A5B86cResponses = {
+export type EventClaimInvitation87200C98Responses = {
 	/**
 	 * OK
 	 */
 	200: MinimalEventSchema;
 };
 
-export type EventClaimInvitation99A5B86cResponse =
-	EventClaimInvitation99A5B86cResponses[keyof EventClaimInvitation99A5B86cResponses];
+export type EventClaimInvitation87200C98Response =
+	EventClaimInvitation87200C98Responses[keyof EventClaimInvitation87200C98Responses];
 
-export type EventGetEventAttendeesF98Cb595Data = {
+export type EventGetEventAttendeesBf7239E7Data = {
 	body?: never;
 	path: {
 		/**
@@ -6773,17 +7578,17 @@ export type EventGetEventAttendeesF98Cb595Data = {
 	url: '/api/events/{event_id}/attendee-list';
 };
 
-export type EventGetEventAttendeesF98Cb595Responses = {
+export type EventGetEventAttendeesBf7239E7Responses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaAttendeeSchema;
 };
 
-export type EventGetEventAttendeesF98Cb595Response =
-	EventGetEventAttendeesF98Cb595Responses[keyof EventGetEventAttendeesF98Cb595Responses];
+export type EventGetEventAttendeesBf7239E7Response =
+	EventGetEventAttendeesBf7239E7Responses[keyof EventGetEventAttendeesBf7239E7Responses];
 
-export type EventGetMyEventStatus1Da8Ba6bData = {
+export type EventGetMyEventStatusA71F52AaData = {
 	body?: never;
 	path: {
 		/**
@@ -6795,7 +7600,7 @@ export type EventGetMyEventStatus1Da8Ba6bData = {
 	url: '/api/events/{event_id}/my-status';
 };
 
-export type EventGetMyEventStatus1Da8Ba6bResponses = {
+export type EventGetMyEventStatusA71F52AaResponses = {
 	/**
 	 * Response
 	 *
@@ -6804,10 +7609,10 @@ export type EventGetMyEventStatus1Da8Ba6bResponses = {
 	200: EventRsvpSchema | EventTicketSchema | EventUserEligibility;
 };
 
-export type EventGetMyEventStatus1Da8Ba6bResponse =
-	EventGetMyEventStatus1Da8Ba6bResponses[keyof EventGetMyEventStatus1Da8Ba6bResponses];
+export type EventGetMyEventStatusA71F52AaResponse =
+	EventGetMyEventStatusA71F52AaResponses[keyof EventGetMyEventStatusA71F52AaResponses];
 
-export type EventCreateInvitationRequestBf68618dData = {
+export type EventCreateInvitationRequest0734B8D9Data = {
 	body: EventInvitationRequestCreateSchema;
 	path: {
 		/**
@@ -6819,17 +7624,17 @@ export type EventCreateInvitationRequestBf68618dData = {
 	url: '/api/events/{event_id}/invitation-requests';
 };
 
-export type EventCreateInvitationRequestBf68618dResponses = {
+export type EventCreateInvitationRequest0734B8D9Responses = {
 	/**
 	 * Created
 	 */
 	201: EventInvitationRequestSchema;
 };
 
-export type EventCreateInvitationRequestBf68618dResponse =
-	EventCreateInvitationRequestBf68618dResponses[keyof EventCreateInvitationRequestBf68618dResponses];
+export type EventCreateInvitationRequest0734B8D9Response =
+	EventCreateInvitationRequest0734B8D9Responses[keyof EventCreateInvitationRequest0734B8D9Responses];
 
-export type EventListResourcesC7Af7024Data = {
+export type EventListResources216B1AdfData = {
 	body?: never;
 	path: {
 		/**
@@ -6855,17 +7660,39 @@ export type EventListResourcesC7Af7024Data = {
 	url: '/api/events/{event_id}/resources';
 };
 
-export type EventListResourcesC7Af7024Responses = {
+export type EventListResources216B1AdfResponses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaAdditionalResourceSchema;
 };
 
-export type EventListResourcesC7Af7024Response =
-	EventListResourcesC7Af7024Responses[keyof EventListResourcesC7Af7024Responses];
+export type EventListResources216B1AdfResponse =
+	EventListResources216B1AdfResponses[keyof EventListResources216B1AdfResponses];
 
-export type EventDeleteInvitationRequest6000C736Data = {
+export type EventGetDietarySummary6D2B43CfData = {
+	body?: never;
+	path: {
+		/**
+		 * Event Id
+		 */
+		event_id: string;
+	};
+	query?: never;
+	url: '/api/events/{event_id}/dietary-summary';
+};
+
+export type EventGetDietarySummary6D2B43CfResponses = {
+	/**
+	 * OK
+	 */
+	200: EventDietarySummarySchema;
+};
+
+export type EventGetDietarySummary6D2B43CfResponse =
+	EventGetDietarySummary6D2B43CfResponses[keyof EventGetDietarySummary6D2B43CfResponses];
+
+export type EventDeleteInvitationRequestCce0AdfaData = {
 	body?: never;
 	path: {
 		/**
@@ -6877,17 +7704,46 @@ export type EventDeleteInvitationRequest6000C736Data = {
 	url: '/api/events/invitation-requests/{request_id}';
 };
 
-export type EventDeleteInvitationRequest6000C736Responses = {
+export type EventDeleteInvitationRequestCce0AdfaResponses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type EventDeleteInvitationRequest6000C736Response =
-	EventDeleteInvitationRequest6000C736Responses[keyof EventDeleteInvitationRequest6000C736Responses];
+export type EventDeleteInvitationRequestCce0AdfaResponse =
+	EventDeleteInvitationRequestCce0AdfaResponses[keyof EventDeleteInvitationRequestCce0AdfaResponses];
 
-export type EventGetEventBySlugsEcdc5CeaData = {
+export type EventConfirmGuestAction811D3F0bData = {
+	body: GuestActionConfirmSchema;
+	path?: never;
+	query?: never;
+	url: '/api/events/guest-actions/confirm';
+};
+
+export type EventConfirmGuestAction811D3F0bErrors = {
+	/**
+	 * Bad Request
+	 */
+	400: ResponseMessage;
+};
+
+export type EventConfirmGuestAction811D3F0bError =
+	EventConfirmGuestAction811D3F0bErrors[keyof EventConfirmGuestAction811D3F0bErrors];
+
+export type EventConfirmGuestAction811D3F0bResponses = {
+	/**
+	 * Response
+	 *
+	 * OK
+	 */
+	200: EventRsvpSchema | EventTicketSchema;
+};
+
+export type EventConfirmGuestAction811D3F0bResponse =
+	EventConfirmGuestAction811D3F0bResponses[keyof EventConfirmGuestAction811D3F0bResponses];
+
+export type EventGetEventBySlugs25F53C92Data = {
 	body?: never;
 	path: {
 		/**
@@ -6903,17 +7759,17 @@ export type EventGetEventBySlugsEcdc5CeaData = {
 	url: '/api/events/{org_slug}/{event_slug}';
 };
 
-export type EventGetEventBySlugsEcdc5CeaResponses = {
+export type EventGetEventBySlugs25F53C92Responses = {
 	/**
 	 * OK
 	 */
 	200: EventDetailSchema;
 };
 
-export type EventGetEventBySlugsEcdc5CeaResponse =
-	EventGetEventBySlugsEcdc5CeaResponses[keyof EventGetEventBySlugsEcdc5CeaResponses];
+export type EventGetEventBySlugs25F53C92Response =
+	EventGetEventBySlugs25F53C92Responses[keyof EventGetEventBySlugs25F53C92Responses];
 
-export type EventGetEvent747Dee58Data = {
+export type EventGetEvent76D5878aData = {
 	body?: never;
 	path: {
 		/**
@@ -6925,17 +7781,17 @@ export type EventGetEvent747Dee58Data = {
 	url: '/api/events/{event_id}';
 };
 
-export type EventGetEvent747Dee58Responses = {
+export type EventGetEvent76D5878aResponses = {
 	/**
 	 * OK
 	 */
 	200: EventDetailSchema;
 };
 
-export type EventGetEvent747Dee58Response =
-	EventGetEvent747Dee58Responses[keyof EventGetEvent747Dee58Responses];
+export type EventGetEvent76D5878aResponse =
+	EventGetEvent76D5878aResponses[keyof EventGetEvent76D5878aResponses];
 
-export type EventRsvpEvent4Afa4445Data = {
+export type EventRsvpEventC19E9502Data = {
 	body?: never;
 	path: {
 		/**
@@ -6943,7 +7799,7 @@ export type EventRsvpEvent4Afa4445Data = {
 		 */
 		event_id: string;
 		/**
-		 * Status
+		 * RsvpStatus
 		 */
 		answer: 'yes' | 'no' | 'maybe';
 	};
@@ -6951,27 +7807,27 @@ export type EventRsvpEvent4Afa4445Data = {
 	url: '/api/events/{event_id}/rsvp/{answer}';
 };
 
-export type EventRsvpEvent4Afa4445Errors = {
+export type EventRsvpEventC19E9502Errors = {
 	/**
 	 * Bad Request
 	 */
 	400: EventUserEligibility;
 };
 
-export type EventRsvpEvent4Afa4445Error =
-	EventRsvpEvent4Afa4445Errors[keyof EventRsvpEvent4Afa4445Errors];
+export type EventRsvpEventC19E9502Error =
+	EventRsvpEventC19E9502Errors[keyof EventRsvpEventC19E9502Errors];
 
-export type EventRsvpEvent4Afa4445Responses = {
+export type EventRsvpEventC19E9502Responses = {
 	/**
 	 * OK
 	 */
 	200: EventRsvpSchema;
 };
 
-export type EventRsvpEvent4Afa4445Response =
-	EventRsvpEvent4Afa4445Responses[keyof EventRsvpEvent4Afa4445Responses];
+export type EventRsvpEventC19E9502Response =
+	EventRsvpEventC19E9502Responses[keyof EventRsvpEventC19E9502Responses];
 
-export type EventListTiers42C14B68Data = {
+export type EventListTiers376Eda18Data = {
 	body?: never;
 	path: {
 		/**
@@ -6983,7 +7839,7 @@ export type EventListTiers42C14B68Data = {
 	url: '/api/events/{event_id}/tickets/tiers';
 };
 
-export type EventListTiers42C14B68Responses = {
+export type EventListTiers376Eda18Responses = {
 	/**
 	 * Response
 	 *
@@ -6992,10 +7848,10 @@ export type EventListTiers42C14B68Responses = {
 	200: Array<TierSchema>;
 };
 
-export type EventListTiers42C14B68Response =
-	EventListTiers42C14B68Responses[keyof EventListTiers42C14B68Responses];
+export type EventListTiers376Eda18Response =
+	EventListTiers376Eda18Responses[keyof EventListTiers376Eda18Responses];
 
-export type EventTicketCheckoutC0504C26Data = {
+export type EventTicketCheckout4Cbbfbe0Data = {
 	body?: never;
 	path: {
 		/**
@@ -7011,17 +7867,17 @@ export type EventTicketCheckoutC0504C26Data = {
 	url: '/api/events/{event_id}/tickets/{tier_id}/checkout';
 };
 
-export type EventTicketCheckoutC0504C26Errors = {
+export type EventTicketCheckout4Cbbfbe0Errors = {
 	/**
 	 * Bad Request
 	 */
 	400: EventUserEligibility;
 };
 
-export type EventTicketCheckoutC0504C26Error =
-	EventTicketCheckoutC0504C26Errors[keyof EventTicketCheckoutC0504C26Errors];
+export type EventTicketCheckout4Cbbfbe0Error =
+	EventTicketCheckout4Cbbfbe0Errors[keyof EventTicketCheckout4Cbbfbe0Errors];
 
-export type EventTicketCheckoutC0504C26Responses = {
+export type EventTicketCheckout4Cbbfbe0Responses = {
 	/**
 	 * Response
 	 *
@@ -7030,10 +7886,10 @@ export type EventTicketCheckoutC0504C26Responses = {
 	200: StripeCheckoutSessionSchema | EventTicketSchema;
 };
 
-export type EventTicketCheckoutC0504C26Response =
-	EventTicketCheckoutC0504C26Responses[keyof EventTicketCheckoutC0504C26Responses];
+export type EventTicketCheckout4Cbbfbe0Response =
+	EventTicketCheckout4Cbbfbe0Responses[keyof EventTicketCheckout4Cbbfbe0Responses];
 
-export type EventTicketPwycCheckout5D733713Data = {
+export type EventTicketPwycCheckout92Cdd558Data = {
 	body: PwycCheckoutPayloadSchema;
 	path: {
 		/**
@@ -7049,17 +7905,17 @@ export type EventTicketPwycCheckout5D733713Data = {
 	url: '/api/events/{event_id}/tickets/{tier_id}/checkout/pwyc';
 };
 
-export type EventTicketPwycCheckout5D733713Errors = {
+export type EventTicketPwycCheckout92Cdd558Errors = {
 	/**
 	 * Bad Request
 	 */
 	400: EventUserEligibility;
 };
 
-export type EventTicketPwycCheckout5D733713Error =
-	EventTicketPwycCheckout5D733713Errors[keyof EventTicketPwycCheckout5D733713Errors];
+export type EventTicketPwycCheckout92Cdd558Error =
+	EventTicketPwycCheckout92Cdd558Errors[keyof EventTicketPwycCheckout92Cdd558Errors];
 
-export type EventTicketPwycCheckout5D733713Responses = {
+export type EventTicketPwycCheckout92Cdd558Responses = {
 	/**
 	 * Response
 	 *
@@ -7068,10 +7924,10 @@ export type EventTicketPwycCheckout5D733713Responses = {
 	200: StripeCheckoutSessionSchema | EventTicketSchema;
 };
 
-export type EventTicketPwycCheckout5D733713Response =
-	EventTicketPwycCheckout5D733713Responses[keyof EventTicketPwycCheckout5D733713Responses];
+export type EventTicketPwycCheckout92Cdd558Response =
+	EventTicketPwycCheckout92Cdd558Responses[keyof EventTicketPwycCheckout92Cdd558Responses];
 
-export type EventGetQuestionnaire25Ea8E88Data = {
+export type EventGetQuestionnaireEf00D5DaData = {
 	body?: never;
 	path: {
 		/**
@@ -7087,17 +7943,17 @@ export type EventGetQuestionnaire25Ea8E88Data = {
 	url: '/api/events/{event_id}/questionnaire/{questionnaire_id}';
 };
 
-export type EventGetQuestionnaire25Ea8E88Responses = {
+export type EventGetQuestionnaireEf00D5DaResponses = {
 	/**
 	 * OK
 	 */
 	200: QuestionnaireSchema;
 };
 
-export type EventGetQuestionnaire25Ea8E88Response =
-	EventGetQuestionnaire25Ea8E88Responses[keyof EventGetQuestionnaire25Ea8E88Responses];
+export type EventGetQuestionnaireEf00D5DaResponse =
+	EventGetQuestionnaireEf00D5DaResponses[keyof EventGetQuestionnaireEf00D5DaResponses];
 
-export type EventSubmitQuestionnaire3Ac1714dData = {
+export type EventSubmitQuestionnaireE41Abe0eData = {
 	body: QuestionnaireSubmissionSchema;
 	path: {
 		/**
@@ -7113,17 +7969,17 @@ export type EventSubmitQuestionnaire3Ac1714dData = {
 	url: '/api/events/{event_id}/questionnaire/{questionnaire_id}/submit';
 };
 
-export type EventSubmitQuestionnaire3Ac1714dErrors = {
+export type EventSubmitQuestionnaireE41Abe0eErrors = {
 	/**
 	 * Bad Request
 	 */
 	400: ResponseMessage;
 };
 
-export type EventSubmitQuestionnaire3Ac1714dError =
-	EventSubmitQuestionnaire3Ac1714dErrors[keyof EventSubmitQuestionnaire3Ac1714dErrors];
+export type EventSubmitQuestionnaireE41Abe0eError =
+	EventSubmitQuestionnaireE41Abe0eErrors[keyof EventSubmitQuestionnaireE41Abe0eErrors];
 
-export type EventSubmitQuestionnaire3Ac1714dResponses = {
+export type EventSubmitQuestionnaireE41Abe0eResponses = {
 	/**
 	 * Response
 	 *
@@ -7132,10 +7988,122 @@ export type EventSubmitQuestionnaire3Ac1714dResponses = {
 	200: QuestionnaireSubmissionResponseSchema | QuestionnaireEvaluationForUserSchema;
 };
 
-export type EventSubmitQuestionnaire3Ac1714dResponse =
-	EventSubmitQuestionnaire3Ac1714dResponses[keyof EventSubmitQuestionnaire3Ac1714dResponses];
+export type EventSubmitQuestionnaireE41Abe0eResponse =
+	EventSubmitQuestionnaireE41Abe0eResponses[keyof EventSubmitQuestionnaireE41Abe0eResponses];
 
-export type EventadminDeleteEventToken0F96Ec98Data = {
+export type EventGuestRsvp367A4F6fData = {
+	body: GuestUserDataSchema;
+	path: {
+		/**
+		 * Event Id
+		 */
+		event_id: string;
+		/**
+		 * RsvpStatus
+		 */
+		answer: 'yes' | 'no' | 'maybe';
+	};
+	query?: never;
+	url: '/api/events/{event_id}/rsvp/{answer}/public';
+};
+
+export type EventGuestRsvp367A4F6fErrors = {
+	/**
+	 * Bad Request
+	 */
+	400: ResponseMessage;
+};
+
+export type EventGuestRsvp367A4F6fError =
+	EventGuestRsvp367A4F6fErrors[keyof EventGuestRsvp367A4F6fErrors];
+
+export type EventGuestRsvp367A4F6fResponses = {
+	/**
+	 * OK
+	 */
+	200: GuestActionResponseSchema;
+};
+
+export type EventGuestRsvp367A4F6fResponse =
+	EventGuestRsvp367A4F6fResponses[keyof EventGuestRsvp367A4F6fResponses];
+
+export type EventGuestTicketCheckoutDce8Fa56Data = {
+	body: GuestUserDataSchema;
+	path: {
+		/**
+		 * Event Id
+		 */
+		event_id: string;
+		/**
+		 * Tier Id
+		 */
+		tier_id: string;
+	};
+	query?: never;
+	url: '/api/events/{event_id}/tickets/{tier_id}/checkout/public';
+};
+
+export type EventGuestTicketCheckoutDce8Fa56Errors = {
+	/**
+	 * Bad Request
+	 */
+	400: ResponseMessage;
+};
+
+export type EventGuestTicketCheckoutDce8Fa56Error =
+	EventGuestTicketCheckoutDce8Fa56Errors[keyof EventGuestTicketCheckoutDce8Fa56Errors];
+
+export type EventGuestTicketCheckoutDce8Fa56Responses = {
+	/**
+	 * Response
+	 *
+	 * OK
+	 */
+	200: StripeCheckoutSessionSchema | GuestActionResponseSchema;
+};
+
+export type EventGuestTicketCheckoutDce8Fa56Response =
+	EventGuestTicketCheckoutDce8Fa56Responses[keyof EventGuestTicketCheckoutDce8Fa56Responses];
+
+export type EventGuestTicketPwycCheckout57Dbba30Data = {
+	body: GuestPwycCheckoutSchema;
+	path: {
+		/**
+		 * Event Id
+		 */
+		event_id: string;
+		/**
+		 * Tier Id
+		 */
+		tier_id: string;
+	};
+	query?: never;
+	url: '/api/events/{event_id}/tickets/{tier_id}/checkout/pwyc/public';
+};
+
+export type EventGuestTicketPwycCheckout57Dbba30Errors = {
+	/**
+	 * Bad Request
+	 */
+	400: ResponseMessage;
+};
+
+export type EventGuestTicketPwycCheckout57Dbba30Error =
+	EventGuestTicketPwycCheckout57Dbba30Errors[keyof EventGuestTicketPwycCheckout57Dbba30Errors];
+
+export type EventGuestTicketPwycCheckout57Dbba30Responses = {
+	/**
+	 * Response
+	 *
+	 * OK
+	 */
+	200: StripeCheckoutSessionSchema | GuestActionResponseSchema;
+};
+
+export type EventGuestTicketPwycCheckout57Dbba30Response =
+	EventGuestTicketPwycCheckout57Dbba30Responses[keyof EventGuestTicketPwycCheckout57Dbba30Responses];
+
+export type EventadminDeleteEventToken75Cf6B60Data = {
 	body?: never;
 	path: {
 		/**
@@ -7151,17 +8119,17 @@ export type EventadminDeleteEventToken0F96Ec98Data = {
 	url: '/api/event-admin/{event_id}/tokens/{token_id}';
 };
 
-export type EventadminDeleteEventToken0F96Ec98Responses = {
+export type EventadminDeleteEventToken75Cf6B60Responses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type EventadminDeleteEventToken0F96Ec98Response =
-	EventadminDeleteEventToken0F96Ec98Responses[keyof EventadminDeleteEventToken0F96Ec98Responses];
+export type EventadminDeleteEventToken75Cf6B60Response =
+	EventadminDeleteEventToken75Cf6B60Responses[keyof EventadminDeleteEventToken75Cf6B60Responses];
 
-export type EventadminUpdateEventToken9601C9F4Data = {
+export type EventadminUpdateEventToken206C51BfData = {
 	body: EventTokenUpdateSchema;
 	path: {
 		/**
@@ -7177,17 +8145,17 @@ export type EventadminUpdateEventToken9601C9F4Data = {
 	url: '/api/event-admin/{event_id}/tokens/{token_id}';
 };
 
-export type EventadminUpdateEventToken9601C9F4Responses = {
+export type EventadminUpdateEventToken206C51BfResponses = {
 	/**
 	 * OK
 	 */
 	200: EventTokenSchema;
 };
 
-export type EventadminUpdateEventToken9601C9F4Response =
-	EventadminUpdateEventToken9601C9F4Responses[keyof EventadminUpdateEventToken9601C9F4Responses];
+export type EventadminUpdateEventToken206C51BfResponse =
+	EventadminUpdateEventToken206C51BfResponses[keyof EventadminUpdateEventToken206C51BfResponses];
 
-export type EventadminListEventTokens8194Ddb1Data = {
+export type EventadminListEventTokensA432B004Data = {
 	body?: never;
 	path: {
 		/**
@@ -7224,17 +8192,17 @@ export type EventadminListEventTokens8194Ddb1Data = {
 	url: '/api/event-admin/{event_id}/tokens';
 };
 
-export type EventadminListEventTokens8194Ddb1Responses = {
+export type EventadminListEventTokensA432B004Responses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaEventTokenSchema;
 };
 
-export type EventadminListEventTokens8194Ddb1Response =
-	EventadminListEventTokens8194Ddb1Responses[keyof EventadminListEventTokens8194Ddb1Responses];
+export type EventadminListEventTokensA432B004Response =
+	EventadminListEventTokensA432B004Responses[keyof EventadminListEventTokensA432B004Responses];
 
-export type EventadminCreateEventTokenB70E076bData = {
+export type EventadminCreateEventToken6198E3CeData = {
 	body: EventTokenCreateSchema;
 	path: {
 		/**
@@ -7246,17 +8214,17 @@ export type EventadminCreateEventTokenB70E076bData = {
 	url: '/api/event-admin/{event_id}/tokens';
 };
 
-export type EventadminCreateEventTokenB70E076bResponses = {
+export type EventadminCreateEventToken6198E3CeResponses = {
 	/**
 	 * OK
 	 */
 	200: EventTokenSchema;
 };
 
-export type EventadminCreateEventTokenB70E076bResponse =
-	EventadminCreateEventTokenB70E076bResponses[keyof EventadminCreateEventTokenB70E076bResponses];
+export type EventadminCreateEventToken6198E3CeResponse =
+	EventadminCreateEventToken6198E3CeResponses[keyof EventadminCreateEventToken6198E3CeResponses];
 
-export type EventadminListInvitationRequestsDb461962Data = {
+export type EventadminListInvitationRequests42Df9E1bData = {
 	body?: never;
 	path: {
 		/**
@@ -7265,7 +8233,7 @@ export type EventadminListInvitationRequestsDb461962Data = {
 		event_id: string;
 	};
 	query?: {
-		status?: Status | null;
+		status?: InvitationRequestStatus | null;
 		/**
 		 * Search
 		 */
@@ -7282,17 +8250,17 @@ export type EventadminListInvitationRequestsDb461962Data = {
 	url: '/api/event-admin/{event_id}/invitation-requests';
 };
 
-export type EventadminListInvitationRequestsDb461962Responses = {
+export type EventadminListInvitationRequests42Df9E1bResponses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaEventInvitationRequestInternalSchema;
 };
 
-export type EventadminListInvitationRequestsDb461962Response =
-	EventadminListInvitationRequestsDb461962Responses[keyof EventadminListInvitationRequestsDb461962Responses];
+export type EventadminListInvitationRequests42Df9E1bResponse =
+	EventadminListInvitationRequests42Df9E1bResponses[keyof EventadminListInvitationRequests42Df9E1bResponses];
 
-export type EventadminApproveInvitationRequest07C0825aData = {
+export type EventadminApproveInvitationRequestBdcf8F57Data = {
 	body?: never;
 	path: {
 		/**
@@ -7308,17 +8276,17 @@ export type EventadminApproveInvitationRequest07C0825aData = {
 	url: '/api/event-admin/{event_id}/invitation-requests/{request_id}/approve';
 };
 
-export type EventadminApproveInvitationRequest07C0825aResponses = {
+export type EventadminApproveInvitationRequestBdcf8F57Responses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type EventadminApproveInvitationRequest07C0825aResponse =
-	EventadminApproveInvitationRequest07C0825aResponses[keyof EventadminApproveInvitationRequest07C0825aResponses];
+export type EventadminApproveInvitationRequestBdcf8F57Response =
+	EventadminApproveInvitationRequestBdcf8F57Responses[keyof EventadminApproveInvitationRequestBdcf8F57Responses];
 
-export type EventadminRejectInvitationRequest68889027Data = {
+export type EventadminRejectInvitationRequestFbbfc3B0Data = {
 	body?: never;
 	path: {
 		/**
@@ -7334,17 +8302,17 @@ export type EventadminRejectInvitationRequest68889027Data = {
 	url: '/api/event-admin/{event_id}/invitation-requests/{request_id}/reject';
 };
 
-export type EventadminRejectInvitationRequest68889027Responses = {
+export type EventadminRejectInvitationRequestFbbfc3B0Responses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type EventadminRejectInvitationRequest68889027Response =
-	EventadminRejectInvitationRequest68889027Responses[keyof EventadminRejectInvitationRequest68889027Responses];
+export type EventadminRejectInvitationRequestFbbfc3B0Response =
+	EventadminRejectInvitationRequestFbbfc3B0Responses[keyof EventadminRejectInvitationRequestFbbfc3B0Responses];
 
-export type EventadminUpdateEvent82F4F7A3Data = {
+export type EventadminUpdateEvent279A5B15Data = {
 	body: EventEditSchema;
 	path: {
 		/**
@@ -7356,27 +8324,27 @@ export type EventadminUpdateEvent82F4F7A3Data = {
 	url: '/api/event-admin/{event_id}';
 };
 
-export type EventadminUpdateEvent82F4F7A3Errors = {
+export type EventadminUpdateEvent279A5B15Errors = {
 	/**
 	 * Bad Request
 	 */
 	400: ValidationErrorResponse;
 };
 
-export type EventadminUpdateEvent82F4F7A3Error =
-	EventadminUpdateEvent82F4F7A3Errors[keyof EventadminUpdateEvent82F4F7A3Errors];
+export type EventadminUpdateEvent279A5B15Error =
+	EventadminUpdateEvent279A5B15Errors[keyof EventadminUpdateEvent279A5B15Errors];
 
-export type EventadminUpdateEvent82F4F7A3Responses = {
+export type EventadminUpdateEvent279A5B15Responses = {
 	/**
 	 * OK
 	 */
 	200: EventDetailSchema;
 };
 
-export type EventadminUpdateEvent82F4F7A3Response =
-	EventadminUpdateEvent82F4F7A3Responses[keyof EventadminUpdateEvent82F4F7A3Responses];
+export type EventadminUpdateEvent279A5B15Response =
+	EventadminUpdateEvent279A5B15Responses[keyof EventadminUpdateEvent279A5B15Responses];
 
-export type EventadminUpdateEventStatusF699Fbb0Data = {
+export type EventadminUpdateEventStatusD8F3D517Data = {
 	body?: never;
 	path: {
 		/**
@@ -7384,7 +8352,7 @@ export type EventadminUpdateEventStatusF699Fbb0Data = {
 		 */
 		event_id: string;
 		/**
-		 * Status
+		 * EventStatus
 		 */
 		status: 'open' | 'closed' | 'draft' | 'deleted';
 	};
@@ -7392,17 +8360,17 @@ export type EventadminUpdateEventStatusF699Fbb0Data = {
 	url: '/api/event-admin/{event_id}/actions/update-status/{status}';
 };
 
-export type EventadminUpdateEventStatusF699Fbb0Responses = {
+export type EventadminUpdateEventStatusD8F3D517Responses = {
 	/**
 	 * OK
 	 */
 	200: EventDetailSchema;
 };
 
-export type EventadminUpdateEventStatusF699Fbb0Response =
-	EventadminUpdateEventStatusF699Fbb0Responses[keyof EventadminUpdateEventStatusF699Fbb0Responses];
+export type EventadminUpdateEventStatusD8F3D517Response =
+	EventadminUpdateEventStatusD8F3D517Responses[keyof EventadminUpdateEventStatusD8F3D517Responses];
 
-export type EventadminUploadLogoCe58234aData = {
+export type EventadminUploadLogo11777B0dData = {
 	/**
 	 * FileParams
 	 */
@@ -7422,17 +8390,17 @@ export type EventadminUploadLogoCe58234aData = {
 	url: '/api/event-admin/{event_id}/upload-logo';
 };
 
-export type EventadminUploadLogoCe58234aResponses = {
+export type EventadminUploadLogo11777B0dResponses = {
 	/**
 	 * OK
 	 */
 	200: EventDetailSchema;
 };
 
-export type EventadminUploadLogoCe58234aResponse =
-	EventadminUploadLogoCe58234aResponses[keyof EventadminUploadLogoCe58234aResponses];
+export type EventadminUploadLogo11777B0dResponse =
+	EventadminUploadLogo11777B0dResponses[keyof EventadminUploadLogo11777B0dResponses];
 
-export type EventadminUploadCoverArtA54D5A9bData = {
+export type EventadminUploadCoverArt55Be1F9aData = {
 	/**
 	 * FileParams
 	 */
@@ -7452,17 +8420,17 @@ export type EventadminUploadCoverArtA54D5A9bData = {
 	url: '/api/event-admin/{event_id}/upload-cover-art';
 };
 
-export type EventadminUploadCoverArtA54D5A9bResponses = {
+export type EventadminUploadCoverArt55Be1F9aResponses = {
 	/**
 	 * OK
 	 */
 	200: EventDetailSchema;
 };
 
-export type EventadminUploadCoverArtA54D5A9bResponse =
-	EventadminUploadCoverArtA54D5A9bResponses[keyof EventadminUploadCoverArtA54D5A9bResponses];
+export type EventadminUploadCoverArt55Be1F9aResponse =
+	EventadminUploadCoverArt55Be1F9aResponses[keyof EventadminUploadCoverArt55Be1F9aResponses];
 
-export type EventadminDeleteLogo1E1B6878Data = {
+export type EventadminDeleteLogo46E5D414Data = {
 	body?: never;
 	path: {
 		/**
@@ -7474,17 +8442,17 @@ export type EventadminDeleteLogo1E1B6878Data = {
 	url: '/api/event-admin/{event_id}/delete-logo';
 };
 
-export type EventadminDeleteLogo1E1B6878Responses = {
+export type EventadminDeleteLogo46E5D414Responses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type EventadminDeleteLogo1E1B6878Response =
-	EventadminDeleteLogo1E1B6878Responses[keyof EventadminDeleteLogo1E1B6878Responses];
+export type EventadminDeleteLogo46E5D414Response =
+	EventadminDeleteLogo46E5D414Responses[keyof EventadminDeleteLogo46E5D414Responses];
 
-export type EventadminDeleteCoverArt74340B16Data = {
+export type EventadminDeleteCoverArtBf2046EfData = {
 	body?: never;
 	path: {
 		/**
@@ -7496,17 +8464,17 @@ export type EventadminDeleteCoverArt74340B16Data = {
 	url: '/api/event-admin/{event_id}/delete-cover-art';
 };
 
-export type EventadminDeleteCoverArt74340B16Responses = {
+export type EventadminDeleteCoverArtBf2046EfResponses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type EventadminDeleteCoverArt74340B16Response =
-	EventadminDeleteCoverArt74340B16Responses[keyof EventadminDeleteCoverArt74340B16Responses];
+export type EventadminDeleteCoverArtBf2046EfResponse =
+	EventadminDeleteCoverArtBf2046EfResponses[keyof EventadminDeleteCoverArtBf2046EfResponses];
 
-export type EventadminClearTags73857A26Data = {
+export type EventadminClearTags98Ecd308Data = {
 	body?: never;
 	path: {
 		/**
@@ -7518,17 +8486,17 @@ export type EventadminClearTags73857A26Data = {
 	url: '/api/event-admin/{event_id}/tags';
 };
 
-export type EventadminClearTags73857A26Responses = {
+export type EventadminClearTags98Ecd308Responses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type EventadminClearTags73857A26Response =
-	EventadminClearTags73857A26Responses[keyof EventadminClearTags73857A26Responses];
+export type EventadminClearTags98Ecd308Response =
+	EventadminClearTags98Ecd308Responses[keyof EventadminClearTags98Ecd308Responses];
 
-export type EventadminAddTags20F6E1D3Data = {
+export type EventadminAddTags15Cf141cData = {
 	body: TagUpdateSchema;
 	path: {
 		/**
@@ -7540,7 +8508,7 @@ export type EventadminAddTags20F6E1D3Data = {
 	url: '/api/event-admin/{event_id}/tags';
 };
 
-export type EventadminAddTags20F6E1D3Responses = {
+export type EventadminAddTags15Cf141cResponses = {
 	/**
 	 * Response
 	 *
@@ -7549,10 +8517,10 @@ export type EventadminAddTags20F6E1D3Responses = {
 	200: Array<TagSchema>;
 };
 
-export type EventadminAddTags20F6E1D3Response =
-	EventadminAddTags20F6E1D3Responses[keyof EventadminAddTags20F6E1D3Responses];
+export type EventadminAddTags15Cf141cResponse =
+	EventadminAddTags15Cf141cResponses[keyof EventadminAddTags15Cf141cResponses];
 
-export type EventadminRemoveTags6Dc03994Data = {
+export type EventadminRemoveTagsFbf5Db58Data = {
 	body: TagUpdateSchema;
 	path: {
 		/**
@@ -7564,7 +8532,7 @@ export type EventadminRemoveTags6Dc03994Data = {
 	url: '/api/event-admin/{event_id}/tags/remove';
 };
 
-export type EventadminRemoveTags6Dc03994Responses = {
+export type EventadminRemoveTagsFbf5Db58Responses = {
 	/**
 	 * Response
 	 *
@@ -7573,10 +8541,10 @@ export type EventadminRemoveTags6Dc03994Responses = {
 	200: Array<TagSchema>;
 };
 
-export type EventadminRemoveTags6Dc03994Response =
-	EventadminRemoveTags6Dc03994Responses[keyof EventadminRemoveTags6Dc03994Responses];
+export type EventadminRemoveTagsFbf5Db58Response =
+	EventadminRemoveTagsFbf5Db58Responses[keyof EventadminRemoveTagsFbf5Db58Responses];
 
-export type EventadminListTicketTiersD1Fb9F2fData = {
+export type EventadminListTicketTiersE2244900Data = {
 	body?: never;
 	path: {
 		/**
@@ -7597,17 +8565,17 @@ export type EventadminListTicketTiersD1Fb9F2fData = {
 	url: '/api/event-admin/{event_id}/ticket-tiers';
 };
 
-export type EventadminListTicketTiersD1Fb9F2fResponses = {
+export type EventadminListTicketTiersE2244900Responses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaTicketTierDetailSchema;
 };
 
-export type EventadminListTicketTiersD1Fb9F2fResponse =
-	EventadminListTicketTiersD1Fb9F2fResponses[keyof EventadminListTicketTiersD1Fb9F2fResponses];
+export type EventadminListTicketTiersE2244900Response =
+	EventadminListTicketTiersE2244900Responses[keyof EventadminListTicketTiersE2244900Responses];
 
-export type EventadminCreateTicketTier830C6A6bData = {
+export type EventadminCreateTicketTierA8F6B2C3Data = {
 	body: TicketTierCreateSchema;
 	path: {
 		/**
@@ -7619,17 +8587,17 @@ export type EventadminCreateTicketTier830C6A6bData = {
 	url: '/api/event-admin/{event_id}/ticket-tier';
 };
 
-export type EventadminCreateTicketTier830C6A6bResponses = {
+export type EventadminCreateTicketTierA8F6B2C3Responses = {
 	/**
 	 * OK
 	 */
 	200: TicketTierDetailSchema;
 };
 
-export type EventadminCreateTicketTier830C6A6bResponse =
-	EventadminCreateTicketTier830C6A6bResponses[keyof EventadminCreateTicketTier830C6A6bResponses];
+export type EventadminCreateTicketTierA8F6B2C3Response =
+	EventadminCreateTicketTierA8F6B2C3Responses[keyof EventadminCreateTicketTierA8F6B2C3Responses];
 
-export type EventadminDeleteTicketTier67Af3646Data = {
+export type EventadminDeleteTicketTier50F594D8Data = {
 	body?: never;
 	path: {
 		/**
@@ -7645,17 +8613,17 @@ export type EventadminDeleteTicketTier67Af3646Data = {
 	url: '/api/event-admin/{event_id}/ticket-tier/{tier_id}';
 };
 
-export type EventadminDeleteTicketTier67Af3646Responses = {
+export type EventadminDeleteTicketTier50F594D8Responses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type EventadminDeleteTicketTier67Af3646Response =
-	EventadminDeleteTicketTier67Af3646Responses[keyof EventadminDeleteTicketTier67Af3646Responses];
+export type EventadminDeleteTicketTier50F594D8Response =
+	EventadminDeleteTicketTier50F594D8Responses[keyof EventadminDeleteTicketTier50F594D8Responses];
 
-export type EventadminUpdateTicketTierEe3Ac8FaData = {
+export type EventadminUpdateTicketTierEcae010cData = {
 	body: TicketTierUpdateSchema;
 	path: {
 		/**
@@ -7671,17 +8639,17 @@ export type EventadminUpdateTicketTierEe3Ac8FaData = {
 	url: '/api/event-admin/{event_id}/ticket-tier/{tier_id}';
 };
 
-export type EventadminUpdateTicketTierEe3Ac8FaResponses = {
+export type EventadminUpdateTicketTierEcae010cResponses = {
 	/**
 	 * OK
 	 */
 	200: TicketTierDetailSchema;
 };
 
-export type EventadminUpdateTicketTierEe3Ac8FaResponse =
-	EventadminUpdateTicketTierEe3Ac8FaResponses[keyof EventadminUpdateTicketTierEe3Ac8FaResponses];
+export type EventadminUpdateTicketTierEcae010cResponse =
+	EventadminUpdateTicketTierEcae010cResponses[keyof EventadminUpdateTicketTierEcae010cResponses];
 
-export type EventadminListTickets95E01998Data = {
+export type EventadminListTickets38241Fc9Data = {
 	body?: never;
 	path: {
 		/**
@@ -7690,7 +8658,7 @@ export type EventadminListTickets95E01998Data = {
 		event_id: string;
 	};
 	query?: {
-		status?: Status | null;
+		status?: TicketStatus | null;
 		tier__payment_method?: PaymentMethod | null;
 		/**
 		 * Include Past
@@ -7712,17 +8680,17 @@ export type EventadminListTickets95E01998Data = {
 	url: '/api/event-admin/{event_id}/tickets';
 };
 
-export type EventadminListTickets95E01998Responses = {
+export type EventadminListTickets38241Fc9Responses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaAdminTicketSchema;
 };
 
-export type EventadminListTickets95E01998Response =
-	EventadminListTickets95E01998Responses[keyof EventadminListTickets95E01998Responses];
+export type EventadminListTickets38241Fc9Response =
+	EventadminListTickets38241Fc9Responses[keyof EventadminListTickets38241Fc9Responses];
 
-export type EventadminGetTicketB11A1828Data = {
+export type EventadminGetTicketD0Ac96F9Data = {
 	body?: never;
 	path: {
 		/**
@@ -7738,17 +8706,17 @@ export type EventadminGetTicketB11A1828Data = {
 	url: '/api/event-admin/{event_id}/tickets/{ticket_id}';
 };
 
-export type EventadminGetTicketB11A1828Responses = {
+export type EventadminGetTicketD0Ac96F9Responses = {
 	/**
 	 * OK
 	 */
 	200: AdminTicketSchema;
 };
 
-export type EventadminGetTicketB11A1828Response =
-	EventadminGetTicketB11A1828Responses[keyof EventadminGetTicketB11A1828Responses];
+export type EventadminGetTicketD0Ac96F9Response =
+	EventadminGetTicketD0Ac96F9Responses[keyof EventadminGetTicketD0Ac96F9Responses];
 
-export type EventadminConfirmTicketPaymentD58F5B5eData = {
+export type EventadminConfirmTicketPayment5Be5613fData = {
 	body?: never;
 	path: {
 		/**
@@ -7764,17 +8732,17 @@ export type EventadminConfirmTicketPaymentD58F5B5eData = {
 	url: '/api/event-admin/{event_id}/tickets/{ticket_id}/confirm-payment';
 };
 
-export type EventadminConfirmTicketPaymentD58F5B5eResponses = {
+export type EventadminConfirmTicketPayment5Be5613fResponses = {
 	/**
 	 * OK
 	 */
 	200: EventTicketSchema;
 };
 
-export type EventadminConfirmTicketPaymentD58F5B5eResponse =
-	EventadminConfirmTicketPaymentD58F5B5eResponses[keyof EventadminConfirmTicketPaymentD58F5B5eResponses];
+export type EventadminConfirmTicketPayment5Be5613fResponse =
+	EventadminConfirmTicketPayment5Be5613fResponses[keyof EventadminConfirmTicketPayment5Be5613fResponses];
 
-export type EventadminMarkTicketRefunded31311D23Data = {
+export type EventadminMarkTicketRefundedC7E5E8F7Data = {
 	body?: never;
 	path: {
 		/**
@@ -7790,17 +8758,17 @@ export type EventadminMarkTicketRefunded31311D23Data = {
 	url: '/api/event-admin/{event_id}/tickets/{ticket_id}/mark-refunded';
 };
 
-export type EventadminMarkTicketRefunded31311D23Responses = {
+export type EventadminMarkTicketRefundedC7E5E8F7Responses = {
 	/**
 	 * OK
 	 */
 	200: EventTicketSchema;
 };
 
-export type EventadminMarkTicketRefunded31311D23Response =
-	EventadminMarkTicketRefunded31311D23Responses[keyof EventadminMarkTicketRefunded31311D23Responses];
+export type EventadminMarkTicketRefundedC7E5E8F7Response =
+	EventadminMarkTicketRefundedC7E5E8F7Responses[keyof EventadminMarkTicketRefundedC7E5E8F7Responses];
 
-export type EventadminCancelTicketC888B7CfData = {
+export type EventadminCancelTicket118D0EbbData = {
 	body?: never;
 	path: {
 		/**
@@ -7816,17 +8784,17 @@ export type EventadminCancelTicketC888B7CfData = {
 	url: '/api/event-admin/{event_id}/tickets/{ticket_id}/cancel';
 };
 
-export type EventadminCancelTicketC888B7CfResponses = {
+export type EventadminCancelTicket118D0EbbResponses = {
 	/**
 	 * OK
 	 */
 	200: EventTicketSchema;
 };
 
-export type EventadminCancelTicketC888B7CfResponse =
-	EventadminCancelTicketC888B7CfResponses[keyof EventadminCancelTicketC888B7CfResponses];
+export type EventadminCancelTicket118D0EbbResponse =
+	EventadminCancelTicket118D0EbbResponses[keyof EventadminCancelTicket118D0EbbResponses];
 
-export type EventadminCheckInTicketC851B694Data = {
+export type EventadminCheckInTicketF8D751CdData = {
 	body?: never;
 	path: {
 		/**
@@ -7842,27 +8810,27 @@ export type EventadminCheckInTicketC851B694Data = {
 	url: '/api/event-admin/{event_id}/tickets/{ticket_id}/check-in';
 };
 
-export type EventadminCheckInTicketC851B694Errors = {
+export type EventadminCheckInTicketF8D751CdErrors = {
 	/**
 	 * Bad Request
 	 */
 	400: ValidationErrorResponse;
 };
 
-export type EventadminCheckInTicketC851B694Error =
-	EventadminCheckInTicketC851B694Errors[keyof EventadminCheckInTicketC851B694Errors];
+export type EventadminCheckInTicketF8D751CdError =
+	EventadminCheckInTicketF8D751CdErrors[keyof EventadminCheckInTicketF8D751CdErrors];
 
-export type EventadminCheckInTicketC851B694Responses = {
+export type EventadminCheckInTicketF8D751CdResponses = {
 	/**
 	 * OK
 	 */
 	200: CheckInResponseSchema;
 };
 
-export type EventadminCheckInTicketC851B694Response =
-	EventadminCheckInTicketC851B694Responses[keyof EventadminCheckInTicketC851B694Responses];
+export type EventadminCheckInTicketF8D751CdResponse =
+	EventadminCheckInTicketF8D751CdResponses[keyof EventadminCheckInTicketF8D751CdResponses];
 
-export type EventadminListInvitations389AbcbcData = {
+export type EventadminListInvitations9097Db54Data = {
 	body?: never;
 	path: {
 		/**
@@ -7887,17 +8855,17 @@ export type EventadminListInvitations389AbcbcData = {
 	url: '/api/event-admin/{event_id}/invitations';
 };
 
-export type EventadminListInvitations389AbcbcResponses = {
+export type EventadminListInvitations9097Db54Responses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaEventInvitationListSchema;
 };
 
-export type EventadminListInvitations389AbcbcResponse =
-	EventadminListInvitations389AbcbcResponses[keyof EventadminListInvitations389AbcbcResponses];
+export type EventadminListInvitations9097Db54Response =
+	EventadminListInvitations9097Db54Responses[keyof EventadminListInvitations9097Db54Responses];
 
-export type EventadminCreateInvitations21Ad3D21Data = {
+export type EventadminCreateInvitations85397503Data = {
 	body: DirectInvitationCreateSchema;
 	path: {
 		/**
@@ -7909,27 +8877,27 @@ export type EventadminCreateInvitations21Ad3D21Data = {
 	url: '/api/event-admin/{event_id}/invitations';
 };
 
-export type EventadminCreateInvitations21Ad3D21Errors = {
+export type EventadminCreateInvitations85397503Errors = {
 	/**
 	 * Bad Request
 	 */
 	400: ValidationErrorResponse;
 };
 
-export type EventadminCreateInvitations21Ad3D21Error =
-	EventadminCreateInvitations21Ad3D21Errors[keyof EventadminCreateInvitations21Ad3D21Errors];
+export type EventadminCreateInvitations85397503Error =
+	EventadminCreateInvitations85397503Errors[keyof EventadminCreateInvitations85397503Errors];
 
-export type EventadminCreateInvitations21Ad3D21Responses = {
+export type EventadminCreateInvitations85397503Responses = {
 	/**
 	 * OK
 	 */
 	200: DirectInvitationResponseSchema;
 };
 
-export type EventadminCreateInvitations21Ad3D21Response =
-	EventadminCreateInvitations21Ad3D21Responses[keyof EventadminCreateInvitations21Ad3D21Responses];
+export type EventadminCreateInvitations85397503Response =
+	EventadminCreateInvitations85397503Responses[keyof EventadminCreateInvitations85397503Responses];
 
-export type EventadminListPendingInvitationsE01Fc23fData = {
+export type EventadminListPendingInvitationsFb9C5FffData = {
 	body?: never;
 	path: {
 		/**
@@ -7954,17 +8922,17 @@ export type EventadminListPendingInvitationsE01Fc23fData = {
 	url: '/api/event-admin/{event_id}/pending-invitations';
 };
 
-export type EventadminListPendingInvitationsE01Fc23fResponses = {
+export type EventadminListPendingInvitationsFb9C5FffResponses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaPendingEventInvitationListSchema;
 };
 
-export type EventadminListPendingInvitationsE01Fc23fResponse =
-	EventadminListPendingInvitationsE01Fc23fResponses[keyof EventadminListPendingInvitationsE01Fc23fResponses];
+export type EventadminListPendingInvitationsFb9C5FffResponse =
+	EventadminListPendingInvitationsFb9C5FffResponses[keyof EventadminListPendingInvitationsFb9C5FffResponses];
 
-export type EventadminDeleteInvitationEndpoint66A423DaData = {
+export type EventadminDeleteInvitationEndpoint049C3D4bData = {
 	body?: never;
 	path: {
 		/**
@@ -7984,27 +8952,27 @@ export type EventadminDeleteInvitationEndpoint66A423DaData = {
 	url: '/api/event-admin/{event_id}/invitations/{invitation_type}/{invitation_id}';
 };
 
-export type EventadminDeleteInvitationEndpoint66A423DaErrors = {
+export type EventadminDeleteInvitationEndpoint049C3D4bErrors = {
 	/**
 	 * Not Found
 	 */
 	404: ValidationErrorResponse;
 };
 
-export type EventadminDeleteInvitationEndpoint66A423DaError =
-	EventadminDeleteInvitationEndpoint66A423DaErrors[keyof EventadminDeleteInvitationEndpoint66A423DaErrors];
+export type EventadminDeleteInvitationEndpoint049C3D4bError =
+	EventadminDeleteInvitationEndpoint049C3D4bErrors[keyof EventadminDeleteInvitationEndpoint049C3D4bErrors];
 
-export type EventadminDeleteInvitationEndpoint66A423DaResponses = {
+export type EventadminDeleteInvitationEndpoint049C3D4bResponses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type EventadminDeleteInvitationEndpoint66A423DaResponse =
-	EventadminDeleteInvitationEndpoint66A423DaResponses[keyof EventadminDeleteInvitationEndpoint66A423DaResponses];
+export type EventadminDeleteInvitationEndpoint049C3D4bResponse =
+	EventadminDeleteInvitationEndpoint049C3D4bResponses[keyof EventadminDeleteInvitationEndpoint049C3D4bResponses];
 
-export type EventadminListRsvps8F21524aData = {
+export type EventadminListRsvps3A610A50Data = {
 	body?: never;
 	path: {
 		/**
@@ -8013,7 +8981,7 @@ export type EventadminListRsvps8F21524aData = {
 		event_id: string;
 	};
 	query?: {
-		status?: Status | null;
+		status?: RsvpStatus | null;
 		/**
 		 * User Id
 		 */
@@ -8038,17 +9006,17 @@ export type EventadminListRsvps8F21524aData = {
 	url: '/api/event-admin/{event_id}/rsvps';
 };
 
-export type EventadminListRsvps8F21524aResponses = {
+export type EventadminListRsvps3A610A50Responses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaRsvpDetailSchema;
 };
 
-export type EventadminListRsvps8F21524aResponse =
-	EventadminListRsvps8F21524aResponses[keyof EventadminListRsvps8F21524aResponses];
+export type EventadminListRsvps3A610A50Response =
+	EventadminListRsvps3A610A50Responses[keyof EventadminListRsvps3A610A50Responses];
 
-export type EventadminCreateRsvp00202735Data = {
+export type EventadminCreateRsvp53D322BaData = {
 	body: RsvpCreateSchema;
 	path: {
 		/**
@@ -8060,17 +9028,17 @@ export type EventadminCreateRsvp00202735Data = {
 	url: '/api/event-admin/{event_id}/rsvps';
 };
 
-export type EventadminCreateRsvp00202735Responses = {
+export type EventadminCreateRsvp53D322BaResponses = {
 	/**
 	 * OK
 	 */
 	200: RsvpDetailSchema;
 };
 
-export type EventadminCreateRsvp00202735Response =
-	EventadminCreateRsvp00202735Responses[keyof EventadminCreateRsvp00202735Responses];
+export type EventadminCreateRsvp53D322BaResponse =
+	EventadminCreateRsvp53D322BaResponses[keyof EventadminCreateRsvp53D322BaResponses];
 
-export type EventadminDeleteRsvp07F802EcData = {
+export type EventadminDeleteRsvp82C90400Data = {
 	body?: never;
 	path: {
 		/**
@@ -8086,17 +9054,17 @@ export type EventadminDeleteRsvp07F802EcData = {
 	url: '/api/event-admin/{event_id}/rsvps/{rsvp_id}';
 };
 
-export type EventadminDeleteRsvp07F802EcResponses = {
+export type EventadminDeleteRsvp82C90400Responses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type EventadminDeleteRsvp07F802EcResponse =
-	EventadminDeleteRsvp07F802EcResponses[keyof EventadminDeleteRsvp07F802EcResponses];
+export type EventadminDeleteRsvp82C90400Response =
+	EventadminDeleteRsvp82C90400Responses[keyof EventadminDeleteRsvp82C90400Responses];
 
-export type EventadminGetRsvp3D9185A8Data = {
+export type EventadminGetRsvp42472A2aData = {
 	body?: never;
 	path: {
 		/**
@@ -8112,17 +9080,17 @@ export type EventadminGetRsvp3D9185A8Data = {
 	url: '/api/event-admin/{event_id}/rsvps/{rsvp_id}';
 };
 
-export type EventadminGetRsvp3D9185A8Responses = {
+export type EventadminGetRsvp42472A2aResponses = {
 	/**
 	 * OK
 	 */
 	200: RsvpDetailSchema;
 };
 
-export type EventadminGetRsvp3D9185A8Response =
-	EventadminGetRsvp3D9185A8Responses[keyof EventadminGetRsvp3D9185A8Responses];
+export type EventadminGetRsvp42472A2aResponse =
+	EventadminGetRsvp42472A2aResponses[keyof EventadminGetRsvp42472A2aResponses];
 
-export type EventadminUpdateRsvp7748328eData = {
+export type EventadminUpdateRsvp29B1C2F3Data = {
 	body: RsvpUpdateSchema;
 	path: {
 		/**
@@ -8138,34 +9106,34 @@ export type EventadminUpdateRsvp7748328eData = {
 	url: '/api/event-admin/{event_id}/rsvps/{rsvp_id}';
 };
 
-export type EventadminUpdateRsvp7748328eResponses = {
+export type EventadminUpdateRsvp29B1C2F3Responses = {
 	/**
 	 * OK
 	 */
 	200: RsvpDetailSchema;
 };
 
-export type EventadminUpdateRsvp7748328eResponse =
-	EventadminUpdateRsvp7748328eResponses[keyof EventadminUpdateRsvp7748328eResponses];
+export type EventadminUpdateRsvp29B1C2F3Response =
+	EventadminUpdateRsvp29B1C2F3Responses[keyof EventadminUpdateRsvp29B1C2F3Responses];
 
-export type PermissionMyPermissions30Dba31dData = {
+export type PermissionMyPermissionsA08C9Bf0Data = {
 	body?: never;
 	path?: never;
 	query?: never;
 	url: '/api/permissions/my-permissions';
 };
 
-export type PermissionMyPermissions30Dba31dResponses = {
+export type PermissionMyPermissionsA08C9Bf0Responses = {
 	/**
 	 * OK
 	 */
 	200: OrganizationPermissionsSchema;
 };
 
-export type PermissionMyPermissions30Dba31dResponse =
-	PermissionMyPermissions30Dba31dResponses[keyof PermissionMyPermissions30Dba31dResponses];
+export type PermissionMyPermissionsA08C9Bf0Response =
+	PermissionMyPermissionsA08C9Bf0Responses[keyof PermissionMyPermissionsA08C9Bf0Responses];
 
-export type EventseriesListEventSeriesDb536191Data = {
+export type EventseriesListEventSeriesF3B6C9E7Data = {
 	body?: never;
 	path?: never;
 	query?: {
@@ -8193,17 +9161,17 @@ export type EventseriesListEventSeriesDb536191Data = {
 	url: '/api/event-series/';
 };
 
-export type EventseriesListEventSeriesDb536191Responses = {
+export type EventseriesListEventSeriesF3B6C9E7Responses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaEventSeriesInListSchema;
 };
 
-export type EventseriesListEventSeriesDb536191Response =
-	EventseriesListEventSeriesDb536191Responses[keyof EventseriesListEventSeriesDb536191Responses];
+export type EventseriesListEventSeriesF3B6C9E7Response =
+	EventseriesListEventSeriesF3B6C9E7Responses[keyof EventseriesListEventSeriesF3B6C9E7Responses];
 
-export type EventseriesGetEventSeriesBySlugsB903E448Data = {
+export type EventseriesGetEventSeriesBySlugsF7164765Data = {
 	body?: never;
 	path: {
 		/**
@@ -8219,17 +9187,17 @@ export type EventseriesGetEventSeriesBySlugsB903E448Data = {
 	url: '/api/event-series/{org_slug}/{series_slug}';
 };
 
-export type EventseriesGetEventSeriesBySlugsB903E448Responses = {
+export type EventseriesGetEventSeriesBySlugsF7164765Responses = {
 	/**
 	 * OK
 	 */
 	200: EventSeriesRetrieveSchema;
 };
 
-export type EventseriesGetEventSeriesBySlugsB903E448Response =
-	EventseriesGetEventSeriesBySlugsB903E448Responses[keyof EventseriesGetEventSeriesBySlugsB903E448Responses];
+export type EventseriesGetEventSeriesBySlugsF7164765Response =
+	EventseriesGetEventSeriesBySlugsF7164765Responses[keyof EventseriesGetEventSeriesBySlugsF7164765Responses];
 
-export type EventseriesGetEventSeriesA38Fa762Data = {
+export type EventseriesGetEventSeries2E4Dee9cData = {
 	body?: never;
 	path: {
 		/**
@@ -8241,17 +9209,17 @@ export type EventseriesGetEventSeriesA38Fa762Data = {
 	url: '/api/event-series/{series_id}';
 };
 
-export type EventseriesGetEventSeriesA38Fa762Responses = {
+export type EventseriesGetEventSeries2E4Dee9cResponses = {
 	/**
 	 * OK
 	 */
 	200: EventSeriesRetrieveSchema;
 };
 
-export type EventseriesGetEventSeriesA38Fa762Response =
-	EventseriesGetEventSeriesA38Fa762Responses[keyof EventseriesGetEventSeriesA38Fa762Responses];
+export type EventseriesGetEventSeries2E4Dee9cResponse =
+	EventseriesGetEventSeries2E4Dee9cResponses[keyof EventseriesGetEventSeries2E4Dee9cResponses];
 
-export type EventseriesListResources29Dea2C7Data = {
+export type EventseriesListResources495F079aData = {
 	body?: never;
 	path: {
 		/**
@@ -8277,17 +9245,17 @@ export type EventseriesListResources29Dea2C7Data = {
 	url: '/api/event-series/{series_id}/resources';
 };
 
-export type EventseriesListResources29Dea2C7Responses = {
+export type EventseriesListResources495F079aResponses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaAdditionalResourceSchema;
 };
 
-export type EventseriesListResources29Dea2C7Response =
-	EventseriesListResources29Dea2C7Responses[keyof EventseriesListResources29Dea2C7Responses];
+export type EventseriesListResources495F079aResponse =
+	EventseriesListResources495F079aResponses[keyof EventseriesListResources495F079aResponses];
 
-export type EventseriesadminDeleteEventSeriesF60A1929Data = {
+export type EventseriesadminDeleteEventSeries969Eb6D4Data = {
 	body?: never;
 	path: {
 		/**
@@ -8299,17 +9267,17 @@ export type EventseriesadminDeleteEventSeriesF60A1929Data = {
 	url: '/api/event-series-admin/{series_id}/';
 };
 
-export type EventseriesadminDeleteEventSeriesF60A1929Responses = {
+export type EventseriesadminDeleteEventSeries969Eb6D4Responses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type EventseriesadminDeleteEventSeriesF60A1929Response =
-	EventseriesadminDeleteEventSeriesF60A1929Responses[keyof EventseriesadminDeleteEventSeriesF60A1929Responses];
+export type EventseriesadminDeleteEventSeries969Eb6D4Response =
+	EventseriesadminDeleteEventSeries969Eb6D4Responses[keyof EventseriesadminDeleteEventSeries969Eb6D4Responses];
 
-export type EventseriesadminUpdateEventSeriesFaf6C70cData = {
+export type EventseriesadminUpdateEventSeries5Dd8C42fData = {
 	body: EventSeriesEditSchema;
 	path: {
 		/**
@@ -8321,27 +9289,27 @@ export type EventseriesadminUpdateEventSeriesFaf6C70cData = {
 	url: '/api/event-series-admin/{series_id}/';
 };
 
-export type EventseriesadminUpdateEventSeriesFaf6C70cErrors = {
+export type EventseriesadminUpdateEventSeries5Dd8C42fErrors = {
 	/**
 	 * Bad Request
 	 */
 	400: ValidationErrorResponse;
 };
 
-export type EventseriesadminUpdateEventSeriesFaf6C70cError =
-	EventseriesadminUpdateEventSeriesFaf6C70cErrors[keyof EventseriesadminUpdateEventSeriesFaf6C70cErrors];
+export type EventseriesadminUpdateEventSeries5Dd8C42fError =
+	EventseriesadminUpdateEventSeries5Dd8C42fErrors[keyof EventseriesadminUpdateEventSeries5Dd8C42fErrors];
 
-export type EventseriesadminUpdateEventSeriesFaf6C70cResponses = {
+export type EventseriesadminUpdateEventSeries5Dd8C42fResponses = {
 	/**
 	 * OK
 	 */
 	200: EventSeriesRetrieveSchema;
 };
 
-export type EventseriesadminUpdateEventSeriesFaf6C70cResponse =
-	EventseriesadminUpdateEventSeriesFaf6C70cResponses[keyof EventseriesadminUpdateEventSeriesFaf6C70cResponses];
+export type EventseriesadminUpdateEventSeries5Dd8C42fResponse =
+	EventseriesadminUpdateEventSeries5Dd8C42fResponses[keyof EventseriesadminUpdateEventSeries5Dd8C42fResponses];
 
-export type EventseriesadminUploadLogo5F4Fd34aData = {
+export type EventseriesadminUploadLogoB834Ea51Data = {
 	/**
 	 * FileParams
 	 */
@@ -8361,17 +9329,17 @@ export type EventseriesadminUploadLogo5F4Fd34aData = {
 	url: '/api/event-series-admin/{series_id}/upload-logo';
 };
 
-export type EventseriesadminUploadLogo5F4Fd34aResponses = {
+export type EventseriesadminUploadLogoB834Ea51Responses = {
 	/**
 	 * OK
 	 */
 	200: EventSeriesRetrieveSchema;
 };
 
-export type EventseriesadminUploadLogo5F4Fd34aResponse =
-	EventseriesadminUploadLogo5F4Fd34aResponses[keyof EventseriesadminUploadLogo5F4Fd34aResponses];
+export type EventseriesadminUploadLogoB834Ea51Response =
+	EventseriesadminUploadLogoB834Ea51Responses[keyof EventseriesadminUploadLogoB834Ea51Responses];
 
-export type EventseriesadminUploadCoverArt01165E70Data = {
+export type EventseriesadminUploadCoverArt61C4F1BfData = {
 	/**
 	 * FileParams
 	 */
@@ -8391,17 +9359,17 @@ export type EventseriesadminUploadCoverArt01165E70Data = {
 	url: '/api/event-series-admin/{series_id}/upload-cover-art';
 };
 
-export type EventseriesadminUploadCoverArt01165E70Responses = {
+export type EventseriesadminUploadCoverArt61C4F1BfResponses = {
 	/**
 	 * OK
 	 */
 	200: EventSeriesRetrieveSchema;
 };
 
-export type EventseriesadminUploadCoverArt01165E70Response =
-	EventseriesadminUploadCoverArt01165E70Responses[keyof EventseriesadminUploadCoverArt01165E70Responses];
+export type EventseriesadminUploadCoverArt61C4F1BfResponse =
+	EventseriesadminUploadCoverArt61C4F1BfResponses[keyof EventseriesadminUploadCoverArt61C4F1BfResponses];
 
-export type EventseriesadminDeleteLogo1562B9BcData = {
+export type EventseriesadminDeleteLogoE383Ca69Data = {
 	body?: never;
 	path: {
 		/**
@@ -8413,17 +9381,17 @@ export type EventseriesadminDeleteLogo1562B9BcData = {
 	url: '/api/event-series-admin/{series_id}/delete-logo';
 };
 
-export type EventseriesadminDeleteLogo1562B9BcResponses = {
+export type EventseriesadminDeleteLogoE383Ca69Responses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type EventseriesadminDeleteLogo1562B9BcResponse =
-	EventseriesadminDeleteLogo1562B9BcResponses[keyof EventseriesadminDeleteLogo1562B9BcResponses];
+export type EventseriesadminDeleteLogoE383Ca69Response =
+	EventseriesadminDeleteLogoE383Ca69Responses[keyof EventseriesadminDeleteLogoE383Ca69Responses];
 
-export type EventseriesadminDeleteCoverArt3E1821A8Data = {
+export type EventseriesadminDeleteCoverArt86Ac9A79Data = {
 	body?: never;
 	path: {
 		/**
@@ -8435,17 +9403,17 @@ export type EventseriesadminDeleteCoverArt3E1821A8Data = {
 	url: '/api/event-series-admin/{series_id}/delete-cover-art';
 };
 
-export type EventseriesadminDeleteCoverArt3E1821A8Responses = {
+export type EventseriesadminDeleteCoverArt86Ac9A79Responses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type EventseriesadminDeleteCoverArt3E1821A8Response =
-	EventseriesadminDeleteCoverArt3E1821A8Responses[keyof EventseriesadminDeleteCoverArt3E1821A8Responses];
+export type EventseriesadminDeleteCoverArt86Ac9A79Response =
+	EventseriesadminDeleteCoverArt86Ac9A79Responses[keyof EventseriesadminDeleteCoverArt86Ac9A79Responses];
 
-export type EventseriesadminClearTags1419F546Data = {
+export type EventseriesadminClearTags1C5D3D13Data = {
 	body?: never;
 	path: {
 		/**
@@ -8457,17 +9425,17 @@ export type EventseriesadminClearTags1419F546Data = {
 	url: '/api/event-series-admin/{series_id}/tags';
 };
 
-export type EventseriesadminClearTags1419F546Responses = {
+export type EventseriesadminClearTags1C5D3D13Responses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type EventseriesadminClearTags1419F546Response =
-	EventseriesadminClearTags1419F546Responses[keyof EventseriesadminClearTags1419F546Responses];
+export type EventseriesadminClearTags1C5D3D13Response =
+	EventseriesadminClearTags1C5D3D13Responses[keyof EventseriesadminClearTags1C5D3D13Responses];
 
-export type EventseriesadminAddTagsDa4B48B8Data = {
+export type EventseriesadminAddTags1C511E06Data = {
 	body: TagUpdateSchema;
 	path: {
 		/**
@@ -8479,7 +9447,7 @@ export type EventseriesadminAddTagsDa4B48B8Data = {
 	url: '/api/event-series-admin/{series_id}/tags';
 };
 
-export type EventseriesadminAddTagsDa4B48B8Responses = {
+export type EventseriesadminAddTags1C511E06Responses = {
 	/**
 	 * Response
 	 *
@@ -8488,10 +9456,10 @@ export type EventseriesadminAddTagsDa4B48B8Responses = {
 	200: Array<TagSchema>;
 };
 
-export type EventseriesadminAddTagsDa4B48B8Response =
-	EventseriesadminAddTagsDa4B48B8Responses[keyof EventseriesadminAddTagsDa4B48B8Responses];
+export type EventseriesadminAddTags1C511E06Response =
+	EventseriesadminAddTags1C511E06Responses[keyof EventseriesadminAddTags1C511E06Responses];
 
-export type EventseriesadminRemoveTags82752DaeData = {
+export type EventseriesadminRemoveTags6Da8B889Data = {
 	body: TagUpdateSchema;
 	path: {
 		/**
@@ -8503,7 +9471,7 @@ export type EventseriesadminRemoveTags82752DaeData = {
 	url: '/api/event-series-admin/{series_id}/tags/remove';
 };
 
-export type EventseriesadminRemoveTags82752DaeResponses = {
+export type EventseriesadminRemoveTags6Da8B889Responses = {
 	/**
 	 * Response
 	 *
@@ -8512,10 +9480,10 @@ export type EventseriesadminRemoveTags82752DaeResponses = {
 	200: Array<TagSchema>;
 };
 
-export type EventseriesadminRemoveTags82752DaeResponse =
-	EventseriesadminRemoveTags82752DaeResponses[keyof EventseriesadminRemoveTags82752DaeResponses];
+export type EventseriesadminRemoveTags6Da8B889Response =
+	EventseriesadminRemoveTags6Da8B889Responses[keyof EventseriesadminRemoveTags6Da8B889Responses];
 
-export type PotluckListPotluckItems8E25Be28Data = {
+export type PotluckListPotluckItemsFad10653Data = {
 	body?: never;
 	path: {
 		/**
@@ -8527,7 +9495,7 @@ export type PotluckListPotluckItems8E25Be28Data = {
 	url: '/api/events/{event_id}/potluck/';
 };
 
-export type PotluckListPotluckItems8E25Be28Responses = {
+export type PotluckListPotluckItemsFad10653Responses = {
 	/**
 	 * Response
 	 *
@@ -8536,10 +9504,10 @@ export type PotluckListPotluckItems8E25Be28Responses = {
 	200: Array<PotluckItemRetrieveSchema>;
 };
 
-export type PotluckListPotluckItems8E25Be28Response =
-	PotluckListPotluckItems8E25Be28Responses[keyof PotluckListPotluckItems8E25Be28Responses];
+export type PotluckListPotluckItemsFad10653Response =
+	PotluckListPotluckItemsFad10653Responses[keyof PotluckListPotluckItemsFad10653Responses];
 
-export type PotluckCreatePotluckItem6D629A23Data = {
+export type PotluckCreatePotluckItem531Bfed5Data = {
 	body: PotluckItemCreateSchema;
 	path: {
 		/**
@@ -8551,17 +9519,17 @@ export type PotluckCreatePotluckItem6D629A23Data = {
 	url: '/api/events/{event_id}/potluck/';
 };
 
-export type PotluckCreatePotluckItem6D629A23Responses = {
+export type PotluckCreatePotluckItem531Bfed5Responses = {
 	/**
 	 * OK
 	 */
 	200: PotluckItemRetrieveSchema;
 };
 
-export type PotluckCreatePotluckItem6D629A23Response =
-	PotluckCreatePotluckItem6D629A23Responses[keyof PotluckCreatePotluckItem6D629A23Responses];
+export type PotluckCreatePotluckItem531Bfed5Response =
+	PotluckCreatePotluckItem531Bfed5Responses[keyof PotluckCreatePotluckItem531Bfed5Responses];
 
-export type PotluckDeletePotluckItem0F6F2313Data = {
+export type PotluckDeletePotluckItem48863D5bData = {
 	body?: never;
 	path: {
 		/**
@@ -8577,17 +9545,17 @@ export type PotluckDeletePotluckItem0F6F2313Data = {
 	url: '/api/events/{event_id}/potluck/{item_id}';
 };
 
-export type PotluckDeletePotluckItem0F6F2313Responses = {
+export type PotluckDeletePotluckItem48863D5bResponses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type PotluckDeletePotluckItem0F6F2313Response =
-	PotluckDeletePotluckItem0F6F2313Responses[keyof PotluckDeletePotluckItem0F6F2313Responses];
+export type PotluckDeletePotluckItem48863D5bResponse =
+	PotluckDeletePotluckItem48863D5bResponses[keyof PotluckDeletePotluckItem48863D5bResponses];
 
-export type PotluckUpdatePotluckItem6574C44dData = {
+export type PotluckUpdatePotluckItemB2815306Data = {
 	body: PotluckItemCreateSchema;
 	path: {
 		/**
@@ -8603,17 +9571,17 @@ export type PotluckUpdatePotluckItem6574C44dData = {
 	url: '/api/events/{event_id}/potluck/{item_id}';
 };
 
-export type PotluckUpdatePotluckItem6574C44dResponses = {
+export type PotluckUpdatePotluckItemB2815306Responses = {
 	/**
 	 * OK
 	 */
 	200: PotluckItemRetrieveSchema;
 };
 
-export type PotluckUpdatePotluckItem6574C44dResponse =
-	PotluckUpdatePotluckItem6574C44dResponses[keyof PotluckUpdatePotluckItem6574C44dResponses];
+export type PotluckUpdatePotluckItemB2815306Response =
+	PotluckUpdatePotluckItemB2815306Responses[keyof PotluckUpdatePotluckItemB2815306Responses];
 
-export type PotluckClaimPotluckItemC2376A1dData = {
+export type PotluckClaimPotluckItemCe1542A4Data = {
 	body?: never;
 	path: {
 		/**
@@ -8629,17 +9597,17 @@ export type PotluckClaimPotluckItemC2376A1dData = {
 	url: '/api/events/{event_id}/potluck/{item_id}/claim';
 };
 
-export type PotluckClaimPotluckItemC2376A1dResponses = {
+export type PotluckClaimPotluckItemCe1542A4Responses = {
 	/**
 	 * OK
 	 */
 	200: PotluckItemRetrieveSchema;
 };
 
-export type PotluckClaimPotluckItemC2376A1dResponse =
-	PotluckClaimPotluckItemC2376A1dResponses[keyof PotluckClaimPotluckItemC2376A1dResponses];
+export type PotluckClaimPotluckItemCe1542A4Response =
+	PotluckClaimPotluckItemCe1542A4Responses[keyof PotluckClaimPotluckItemCe1542A4Responses];
 
-export type PotluckUnclaimPotluckItem4209B446Data = {
+export type PotluckUnclaimPotluckItem3B55Efd1Data = {
 	body?: never;
 	path: {
 		/**
@@ -8655,17 +9623,17 @@ export type PotluckUnclaimPotluckItem4209B446Data = {
 	url: '/api/events/{event_id}/potluck/{item_id}/unclaim';
 };
 
-export type PotluckUnclaimPotluckItem4209B446Responses = {
+export type PotluckUnclaimPotluckItem3B55Efd1Responses = {
 	/**
 	 * OK
 	 */
 	200: PotluckItemRetrieveSchema;
 };
 
-export type PotluckUnclaimPotluckItem4209B446Response =
-	PotluckUnclaimPotluckItem4209B446Responses[keyof PotluckUnclaimPotluckItem4209B446Responses];
+export type PotluckUnclaimPotluckItem3B55Efd1Response =
+	PotluckUnclaimPotluckItem3B55Efd1Responses[keyof PotluckUnclaimPotluckItem3B55Efd1Responses];
 
-export type QuestionnaireListOrgQuestionnairesC52Dbfe7Data = {
+export type QuestionnaireListOrgQuestionnaires72254Bf4Data = {
 	body?: never;
 	path?: never;
 	query?: {
@@ -8697,17 +9665,17 @@ export type QuestionnaireListOrgQuestionnairesC52Dbfe7Data = {
 	url: '/api/questionnaires/';
 };
 
-export type QuestionnaireListOrgQuestionnairesC52Dbfe7Responses = {
+export type QuestionnaireListOrgQuestionnaires72254Bf4Responses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaOrganizationQuestionnaireInListSchema;
 };
 
-export type QuestionnaireListOrgQuestionnairesC52Dbfe7Response =
-	QuestionnaireListOrgQuestionnairesC52Dbfe7Responses[keyof QuestionnaireListOrgQuestionnairesC52Dbfe7Responses];
+export type QuestionnaireListOrgQuestionnaires72254Bf4Response =
+	QuestionnaireListOrgQuestionnaires72254Bf4Responses[keyof QuestionnaireListOrgQuestionnaires72254Bf4Responses];
 
-export type QuestionnaireCreateOrgQuestionnaireEb04F139Data = {
+export type QuestionnaireCreateOrgQuestionnaire34942A1aData = {
 	body: OrganizationQuestionnaireCreateSchema;
 	path: {
 		/**
@@ -8719,27 +9687,27 @@ export type QuestionnaireCreateOrgQuestionnaireEb04F139Data = {
 	url: '/api/questionnaires/{organization_id}/create-questionnaire';
 };
 
-export type QuestionnaireCreateOrgQuestionnaireEb04F139Errors = {
+export type QuestionnaireCreateOrgQuestionnaire34942A1aErrors = {
 	/**
 	 * Bad Request
 	 */
 	400: ValidationErrorResponse;
 };
 
-export type QuestionnaireCreateOrgQuestionnaireEb04F139Error =
-	QuestionnaireCreateOrgQuestionnaireEb04F139Errors[keyof QuestionnaireCreateOrgQuestionnaireEb04F139Errors];
+export type QuestionnaireCreateOrgQuestionnaire34942A1aError =
+	QuestionnaireCreateOrgQuestionnaire34942A1aErrors[keyof QuestionnaireCreateOrgQuestionnaire34942A1aErrors];
 
-export type QuestionnaireCreateOrgQuestionnaireEb04F139Responses = {
+export type QuestionnaireCreateOrgQuestionnaire34942A1aResponses = {
 	/**
 	 * OK
 	 */
 	200: OrganizationQuestionnaireSchema;
 };
 
-export type QuestionnaireCreateOrgQuestionnaireEb04F139Response =
-	QuestionnaireCreateOrgQuestionnaireEb04F139Responses[keyof QuestionnaireCreateOrgQuestionnaireEb04F139Responses];
+export type QuestionnaireCreateOrgQuestionnaire34942A1aResponse =
+	QuestionnaireCreateOrgQuestionnaire34942A1aResponses[keyof QuestionnaireCreateOrgQuestionnaire34942A1aResponses];
 
-export type QuestionnaireDeleteOrgQuestionnaire451Dee80Data = {
+export type QuestionnaireDeleteOrgQuestionnaire0Ba3C7DdData = {
 	body?: never;
 	path: {
 		/**
@@ -8751,17 +9719,17 @@ export type QuestionnaireDeleteOrgQuestionnaire451Dee80Data = {
 	url: '/api/questionnaires/{org_questionnaire_id}';
 };
 
-export type QuestionnaireDeleteOrgQuestionnaire451Dee80Responses = {
+export type QuestionnaireDeleteOrgQuestionnaire0Ba3C7DdResponses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type QuestionnaireDeleteOrgQuestionnaire451Dee80Response =
-	QuestionnaireDeleteOrgQuestionnaire451Dee80Responses[keyof QuestionnaireDeleteOrgQuestionnaire451Dee80Responses];
+export type QuestionnaireDeleteOrgQuestionnaire0Ba3C7DdResponse =
+	QuestionnaireDeleteOrgQuestionnaire0Ba3C7DdResponses[keyof QuestionnaireDeleteOrgQuestionnaire0Ba3C7DdResponses];
 
-export type QuestionnaireGetOrgQuestionnaire3Bca8C96Data = {
+export type QuestionnaireGetOrgQuestionnaire3Ca670FaData = {
 	body?: never;
 	path: {
 		/**
@@ -8773,17 +9741,17 @@ export type QuestionnaireGetOrgQuestionnaire3Bca8C96Data = {
 	url: '/api/questionnaires/{org_questionnaire_id}';
 };
 
-export type QuestionnaireGetOrgQuestionnaire3Bca8C96Responses = {
+export type QuestionnaireGetOrgQuestionnaire3Ca670FaResponses = {
 	/**
 	 * OK
 	 */
 	200: OrganizationQuestionnaireSchema;
 };
 
-export type QuestionnaireGetOrgQuestionnaire3Bca8C96Response =
-	QuestionnaireGetOrgQuestionnaire3Bca8C96Responses[keyof QuestionnaireGetOrgQuestionnaire3Bca8C96Responses];
+export type QuestionnaireGetOrgQuestionnaire3Ca670FaResponse =
+	QuestionnaireGetOrgQuestionnaire3Ca670FaResponses[keyof QuestionnaireGetOrgQuestionnaire3Ca670FaResponses];
 
-export type QuestionnaireUpdateOrgQuestionnaire44D68750Data = {
+export type QuestionnaireUpdateOrgQuestionnaire6E463370Data = {
 	body: OrganizationQuestionnaireUpdateSchema;
 	path: {
 		/**
@@ -8795,17 +9763,17 @@ export type QuestionnaireUpdateOrgQuestionnaire44D68750Data = {
 	url: '/api/questionnaires/{org_questionnaire_id}';
 };
 
-export type QuestionnaireUpdateOrgQuestionnaire44D68750Responses = {
+export type QuestionnaireUpdateOrgQuestionnaire6E463370Responses = {
 	/**
 	 * OK
 	 */
 	200: OrganizationQuestionnaireSchema;
 };
 
-export type QuestionnaireUpdateOrgQuestionnaire44D68750Response =
-	QuestionnaireUpdateOrgQuestionnaire44D68750Responses[keyof QuestionnaireUpdateOrgQuestionnaire44D68750Responses];
+export type QuestionnaireUpdateOrgQuestionnaire6E463370Response =
+	QuestionnaireUpdateOrgQuestionnaire6E463370Responses[keyof QuestionnaireUpdateOrgQuestionnaire6E463370Responses];
 
-export type QuestionnaireCreateSection60Eb7B92Data = {
+export type QuestionnaireCreateSectionD09Dc6CdData = {
 	body: SectionCreateSchema;
 	path: {
 		/**
@@ -8817,17 +9785,17 @@ export type QuestionnaireCreateSection60Eb7B92Data = {
 	url: '/api/questionnaires/{org_questionnaire_id}/sections';
 };
 
-export type QuestionnaireCreateSection60Eb7B92Responses = {
+export type QuestionnaireCreateSectionD09Dc6CdResponses = {
 	/**
 	 * OK
 	 */
 	200: SectionUpdateSchema;
 };
 
-export type QuestionnaireCreateSection60Eb7B92Response =
-	QuestionnaireCreateSection60Eb7B92Responses[keyof QuestionnaireCreateSection60Eb7B92Responses];
+export type QuestionnaireCreateSectionD09Dc6CdResponse =
+	QuestionnaireCreateSectionD09Dc6CdResponses[keyof QuestionnaireCreateSectionD09Dc6CdResponses];
 
-export type QuestionnaireDeleteSection81054236Data = {
+export type QuestionnaireDeleteSection55Ed3152Data = {
 	body?: never;
 	path: {
 		/**
@@ -8843,17 +9811,17 @@ export type QuestionnaireDeleteSection81054236Data = {
 	url: '/api/questionnaires/{org_questionnaire_id}/sections/{section_id}';
 };
 
-export type QuestionnaireDeleteSection81054236Responses = {
+export type QuestionnaireDeleteSection55Ed3152Responses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type QuestionnaireDeleteSection81054236Response =
-	QuestionnaireDeleteSection81054236Responses[keyof QuestionnaireDeleteSection81054236Responses];
+export type QuestionnaireDeleteSection55Ed3152Response =
+	QuestionnaireDeleteSection55Ed3152Responses[keyof QuestionnaireDeleteSection55Ed3152Responses];
 
-export type QuestionnaireUpdateSection8659E41fData = {
+export type QuestionnaireUpdateSection9Ecfc37dData = {
 	body: SectionUpdateSchema;
 	path: {
 		/**
@@ -8869,17 +9837,17 @@ export type QuestionnaireUpdateSection8659E41fData = {
 	url: '/api/questionnaires/{org_questionnaire_id}/sections/{section_id}';
 };
 
-export type QuestionnaireUpdateSection8659E41fResponses = {
+export type QuestionnaireUpdateSection9Ecfc37dResponses = {
 	/**
 	 * OK
 	 */
 	200: SectionUpdateSchema;
 };
 
-export type QuestionnaireUpdateSection8659E41fResponse =
-	QuestionnaireUpdateSection8659E41fResponses[keyof QuestionnaireUpdateSection8659E41fResponses];
+export type QuestionnaireUpdateSection9Ecfc37dResponse =
+	QuestionnaireUpdateSection9Ecfc37dResponses[keyof QuestionnaireUpdateSection9Ecfc37dResponses];
 
-export type QuestionnaireCreateMcQuestion38D44198Data = {
+export type QuestionnaireCreateMcQuestion9C7Ad263Data = {
 	body: MultipleChoiceQuestionCreateSchema;
 	path: {
 		/**
@@ -8891,17 +9859,17 @@ export type QuestionnaireCreateMcQuestion38D44198Data = {
 	url: '/api/questionnaires/{org_questionnaire_id}/multiple-choice-questions';
 };
 
-export type QuestionnaireCreateMcQuestion38D44198Responses = {
+export type QuestionnaireCreateMcQuestion9C7Ad263Responses = {
 	/**
 	 * OK
 	 */
 	200: MultipleChoiceQuestionUpdateSchema;
 };
 
-export type QuestionnaireCreateMcQuestion38D44198Response =
-	QuestionnaireCreateMcQuestion38D44198Responses[keyof QuestionnaireCreateMcQuestion38D44198Responses];
+export type QuestionnaireCreateMcQuestion9C7Ad263Response =
+	QuestionnaireCreateMcQuestion9C7Ad263Responses[keyof QuestionnaireCreateMcQuestion9C7Ad263Responses];
 
-export type QuestionnaireDeleteMcQuestion465Aac8bData = {
+export type QuestionnaireDeleteMcQuestion109D9981Data = {
 	body?: never;
 	path: {
 		/**
@@ -8917,17 +9885,17 @@ export type QuestionnaireDeleteMcQuestion465Aac8bData = {
 	url: '/api/questionnaires/{org_questionnaire_id}/multiple-choice-questions/{question_id}';
 };
 
-export type QuestionnaireDeleteMcQuestion465Aac8bResponses = {
+export type QuestionnaireDeleteMcQuestion109D9981Responses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type QuestionnaireDeleteMcQuestion465Aac8bResponse =
-	QuestionnaireDeleteMcQuestion465Aac8bResponses[keyof QuestionnaireDeleteMcQuestion465Aac8bResponses];
+export type QuestionnaireDeleteMcQuestion109D9981Response =
+	QuestionnaireDeleteMcQuestion109D9981Responses[keyof QuestionnaireDeleteMcQuestion109D9981Responses];
 
-export type QuestionnaireUpdateMcQuestionBc2200A8Data = {
+export type QuestionnaireUpdateMcQuestionF5Efab92Data = {
 	body: MultipleChoiceQuestionUpdateSchema;
 	path: {
 		/**
@@ -8943,17 +9911,17 @@ export type QuestionnaireUpdateMcQuestionBc2200A8Data = {
 	url: '/api/questionnaires/{org_questionnaire_id}/multiple-choice-questions/{question_id}';
 };
 
-export type QuestionnaireUpdateMcQuestionBc2200A8Responses = {
+export type QuestionnaireUpdateMcQuestionF5Efab92Responses = {
 	/**
 	 * OK
 	 */
 	200: MultipleChoiceQuestionUpdateSchema;
 };
 
-export type QuestionnaireUpdateMcQuestionBc2200A8Response =
-	QuestionnaireUpdateMcQuestionBc2200A8Responses[keyof QuestionnaireUpdateMcQuestionBc2200A8Responses];
+export type QuestionnaireUpdateMcQuestionF5Efab92Response =
+	QuestionnaireUpdateMcQuestionF5Efab92Responses[keyof QuestionnaireUpdateMcQuestionF5Efab92Responses];
 
-export type QuestionnaireCreateMcOptionB3309Fd0Data = {
+export type QuestionnaireCreateMcOption1810C2BdData = {
 	body: MultipleChoiceOptionCreateSchema;
 	path: {
 		/**
@@ -8969,17 +9937,17 @@ export type QuestionnaireCreateMcOptionB3309Fd0Data = {
 	url: '/api/questionnaires/{org_questionnaire_id}/multiple-choice-questions/{question_id}/options';
 };
 
-export type QuestionnaireCreateMcOptionB3309Fd0Responses = {
+export type QuestionnaireCreateMcOption1810C2BdResponses = {
 	/**
 	 * OK
 	 */
 	200: MultipleChoiceOptionUpdateSchema;
 };
 
-export type QuestionnaireCreateMcOptionB3309Fd0Response =
-	QuestionnaireCreateMcOptionB3309Fd0Responses[keyof QuestionnaireCreateMcOptionB3309Fd0Responses];
+export type QuestionnaireCreateMcOption1810C2BdResponse =
+	QuestionnaireCreateMcOption1810C2BdResponses[keyof QuestionnaireCreateMcOption1810C2BdResponses];
 
-export type QuestionnaireDeleteMcOption2D8D63E8Data = {
+export type QuestionnaireDeleteMcOption4F8A7Ce9Data = {
 	body?: never;
 	path: {
 		/**
@@ -8995,17 +9963,17 @@ export type QuestionnaireDeleteMcOption2D8D63E8Data = {
 	url: '/api/questionnaires/{org_questionnaire_id}/multiple-choice-options/{option_id}';
 };
 
-export type QuestionnaireDeleteMcOption2D8D63E8Responses = {
+export type QuestionnaireDeleteMcOption4F8A7Ce9Responses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type QuestionnaireDeleteMcOption2D8D63E8Response =
-	QuestionnaireDeleteMcOption2D8D63E8Responses[keyof QuestionnaireDeleteMcOption2D8D63E8Responses];
+export type QuestionnaireDeleteMcOption4F8A7Ce9Response =
+	QuestionnaireDeleteMcOption4F8A7Ce9Responses[keyof QuestionnaireDeleteMcOption4F8A7Ce9Responses];
 
-export type QuestionnaireUpdateMcOptionC4106CbcData = {
+export type QuestionnaireUpdateMcOption56234464Data = {
 	body: MultipleChoiceOptionUpdateSchema;
 	path: {
 		/**
@@ -9021,17 +9989,17 @@ export type QuestionnaireUpdateMcOptionC4106CbcData = {
 	url: '/api/questionnaires/{org_questionnaire_id}/multiple-choice-options/{option_id}';
 };
 
-export type QuestionnaireUpdateMcOptionC4106CbcResponses = {
+export type QuestionnaireUpdateMcOption56234464Responses = {
 	/**
 	 * OK
 	 */
 	200: MultipleChoiceOptionUpdateSchema;
 };
 
-export type QuestionnaireUpdateMcOptionC4106CbcResponse =
-	QuestionnaireUpdateMcOptionC4106CbcResponses[keyof QuestionnaireUpdateMcOptionC4106CbcResponses];
+export type QuestionnaireUpdateMcOption56234464Response =
+	QuestionnaireUpdateMcOption56234464Responses[keyof QuestionnaireUpdateMcOption56234464Responses];
 
-export type QuestionnaireCreateFtQuestionF14C5Bb8Data = {
+export type QuestionnaireCreateFtQuestion3739Efc8Data = {
 	body: FreeTextQuestionCreateSchema;
 	path: {
 		/**
@@ -9043,17 +10011,17 @@ export type QuestionnaireCreateFtQuestionF14C5Bb8Data = {
 	url: '/api/questionnaires/{org_questionnaire_id}/free-text-questions';
 };
 
-export type QuestionnaireCreateFtQuestionF14C5Bb8Responses = {
+export type QuestionnaireCreateFtQuestion3739Efc8Responses = {
 	/**
 	 * OK
 	 */
 	200: FreeTextQuestionUpdateSchema;
 };
 
-export type QuestionnaireCreateFtQuestionF14C5Bb8Response =
-	QuestionnaireCreateFtQuestionF14C5Bb8Responses[keyof QuestionnaireCreateFtQuestionF14C5Bb8Responses];
+export type QuestionnaireCreateFtQuestion3739Efc8Response =
+	QuestionnaireCreateFtQuestion3739Efc8Responses[keyof QuestionnaireCreateFtQuestion3739Efc8Responses];
 
-export type QuestionnaireDeleteFtQuestionFedb4FbeData = {
+export type QuestionnaireDeleteFtQuestionEbc9252cData = {
 	body?: never;
 	path: {
 		/**
@@ -9069,17 +10037,17 @@ export type QuestionnaireDeleteFtQuestionFedb4FbeData = {
 	url: '/api/questionnaires/{org_questionnaire_id}/free-text-questions/{question_id}';
 };
 
-export type QuestionnaireDeleteFtQuestionFedb4FbeResponses = {
+export type QuestionnaireDeleteFtQuestionEbc9252cResponses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type QuestionnaireDeleteFtQuestionFedb4FbeResponse =
-	QuestionnaireDeleteFtQuestionFedb4FbeResponses[keyof QuestionnaireDeleteFtQuestionFedb4FbeResponses];
+export type QuestionnaireDeleteFtQuestionEbc9252cResponse =
+	QuestionnaireDeleteFtQuestionEbc9252cResponses[keyof QuestionnaireDeleteFtQuestionEbc9252cResponses];
 
-export type QuestionnaireUpdateFtQuestionBc06676dData = {
+export type QuestionnaireUpdateFtQuestion818Cdc08Data = {
 	body: FreeTextQuestionUpdateSchema;
 	path: {
 		/**
@@ -9095,17 +10063,17 @@ export type QuestionnaireUpdateFtQuestionBc06676dData = {
 	url: '/api/questionnaires/{org_questionnaire_id}/free-text-questions/{question_id}';
 };
 
-export type QuestionnaireUpdateFtQuestionBc06676dResponses = {
+export type QuestionnaireUpdateFtQuestion818Cdc08Responses = {
 	/**
 	 * OK
 	 */
 	200: FreeTextQuestionUpdateSchema;
 };
 
-export type QuestionnaireUpdateFtQuestionBc06676dResponse =
-	QuestionnaireUpdateFtQuestionBc06676dResponses[keyof QuestionnaireUpdateFtQuestionBc06676dResponses];
+export type QuestionnaireUpdateFtQuestion818Cdc08Response =
+	QuestionnaireUpdateFtQuestion818Cdc08Responses[keyof QuestionnaireUpdateFtQuestion818Cdc08Responses];
 
-export type QuestionnaireListSubmissionsE7896D9bData = {
+export type QuestionnaireListSubmissions4Fd4338bData = {
 	body?: never;
 	path: {
 		/**
@@ -9138,17 +10106,17 @@ export type QuestionnaireListSubmissionsE7896D9bData = {
 	url: '/api/questionnaires/{org_questionnaire_id}/submissions';
 };
 
-export type QuestionnaireListSubmissionsE7896D9bResponses = {
+export type QuestionnaireListSubmissions4Fd4338bResponses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaSubmissionListItemSchema;
 };
 
-export type QuestionnaireListSubmissionsE7896D9bResponse =
-	QuestionnaireListSubmissionsE7896D9bResponses[keyof QuestionnaireListSubmissionsE7896D9bResponses];
+export type QuestionnaireListSubmissions4Fd4338bResponse =
+	QuestionnaireListSubmissions4Fd4338bResponses[keyof QuestionnaireListSubmissions4Fd4338bResponses];
 
-export type QuestionnaireGetSubmissionDetail192D0B1cData = {
+export type QuestionnaireGetSubmissionDetail4337Bf54Data = {
 	body?: never;
 	path: {
 		/**
@@ -9164,17 +10132,17 @@ export type QuestionnaireGetSubmissionDetail192D0B1cData = {
 	url: '/api/questionnaires/{org_questionnaire_id}/submissions/{submission_id}';
 };
 
-export type QuestionnaireGetSubmissionDetail192D0B1cResponses = {
+export type QuestionnaireGetSubmissionDetail4337Bf54Responses = {
 	/**
 	 * OK
 	 */
 	200: SubmissionDetailSchema;
 };
 
-export type QuestionnaireGetSubmissionDetail192D0B1cResponse =
-	QuestionnaireGetSubmissionDetail192D0B1cResponses[keyof QuestionnaireGetSubmissionDetail192D0B1cResponses];
+export type QuestionnaireGetSubmissionDetail4337Bf54Response =
+	QuestionnaireGetSubmissionDetail4337Bf54Responses[keyof QuestionnaireGetSubmissionDetail4337Bf54Responses];
 
-export type QuestionnaireEvaluateSubmission21283815Data = {
+export type QuestionnaireEvaluateSubmission3Cdf3C2aData = {
 	body: EvaluationCreateSchema;
 	path: {
 		/**
@@ -9190,27 +10158,27 @@ export type QuestionnaireEvaluateSubmission21283815Data = {
 	url: '/api/questionnaires/{org_questionnaire_id}/submissions/{submission_id}/evaluate';
 };
 
-export type QuestionnaireEvaluateSubmission21283815Errors = {
+export type QuestionnaireEvaluateSubmission3Cdf3C2aErrors = {
 	/**
 	 * Bad Request
 	 */
 	400: ValidationErrorResponse;
 };
 
-export type QuestionnaireEvaluateSubmission21283815Error =
-	QuestionnaireEvaluateSubmission21283815Errors[keyof QuestionnaireEvaluateSubmission21283815Errors];
+export type QuestionnaireEvaluateSubmission3Cdf3C2aError =
+	QuestionnaireEvaluateSubmission3Cdf3C2aErrors[keyof QuestionnaireEvaluateSubmission3Cdf3C2aErrors];
 
-export type QuestionnaireEvaluateSubmission21283815Responses = {
+export type QuestionnaireEvaluateSubmission3Cdf3C2aResponses = {
 	/**
 	 * OK
 	 */
 	200: EvaluationResponseSchema;
 };
 
-export type QuestionnaireEvaluateSubmission21283815Response =
-	QuestionnaireEvaluateSubmission21283815Responses[keyof QuestionnaireEvaluateSubmission21283815Responses];
+export type QuestionnaireEvaluateSubmission3Cdf3C2aResponse =
+	QuestionnaireEvaluateSubmission3Cdf3C2aResponses[keyof QuestionnaireEvaluateSubmission3Cdf3C2aResponses];
 
-export type QuestionnaireUpdateQuestionnaireStatusF446A9E5Data = {
+export type QuestionnaireUpdateQuestionnaireStatus27Eab669Data = {
 	body?: never;
 	path: {
 		/**
@@ -9218,7 +10186,7 @@ export type QuestionnaireUpdateQuestionnaireStatusF446A9E5Data = {
 		 */
 		org_questionnaire_id: string;
 		/**
-		 * Status
+		 * QuestionnaireStatus
 		 */
 		status: 'draft' | 'ready' | 'published';
 	};
@@ -9226,17 +10194,17 @@ export type QuestionnaireUpdateQuestionnaireStatusF446A9E5Data = {
 	url: '/api/questionnaires/{org_questionnaire_id}/status/{status}';
 };
 
-export type QuestionnaireUpdateQuestionnaireStatusF446A9E5Responses = {
+export type QuestionnaireUpdateQuestionnaireStatus27Eab669Responses = {
 	/**
 	 * OK
 	 */
 	200: OrganizationQuestionnaireSchema;
 };
 
-export type QuestionnaireUpdateQuestionnaireStatusF446A9E5Response =
-	QuestionnaireUpdateQuestionnaireStatusF446A9E5Responses[keyof QuestionnaireUpdateQuestionnaireStatusF446A9E5Responses];
+export type QuestionnaireUpdateQuestionnaireStatus27Eab669Response =
+	QuestionnaireUpdateQuestionnaireStatus27Eab669Responses[keyof QuestionnaireUpdateQuestionnaireStatus27Eab669Responses];
 
-export type QuestionnaireReplaceEvents9382B62dData = {
+export type QuestionnaireReplaceEvents869Fc94bData = {
 	body: EventAssignmentSchema;
 	path: {
 		/**
@@ -9248,17 +10216,17 @@ export type QuestionnaireReplaceEvents9382B62dData = {
 	url: '/api/questionnaires/{org_questionnaire_id}/events';
 };
 
-export type QuestionnaireReplaceEvents9382B62dResponses = {
+export type QuestionnaireReplaceEvents869Fc94bResponses = {
 	/**
 	 * OK
 	 */
 	200: OrganizationQuestionnaireSchema;
 };
 
-export type QuestionnaireReplaceEvents9382B62dResponse =
-	QuestionnaireReplaceEvents9382B62dResponses[keyof QuestionnaireReplaceEvents9382B62dResponses];
+export type QuestionnaireReplaceEvents869Fc94bResponse =
+	QuestionnaireReplaceEvents869Fc94bResponses[keyof QuestionnaireReplaceEvents869Fc94bResponses];
 
-export type QuestionnaireUnassignEvent7Af96699Data = {
+export type QuestionnaireUnassignEvent7Db446EfData = {
 	body?: never;
 	path: {
 		/**
@@ -9274,17 +10242,17 @@ export type QuestionnaireUnassignEvent7Af96699Data = {
 	url: '/api/questionnaires/{org_questionnaire_id}/events/{event_id}';
 };
 
-export type QuestionnaireUnassignEvent7Af96699Responses = {
+export type QuestionnaireUnassignEvent7Db446EfResponses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type QuestionnaireUnassignEvent7Af96699Response =
-	QuestionnaireUnassignEvent7Af96699Responses[keyof QuestionnaireUnassignEvent7Af96699Responses];
+export type QuestionnaireUnassignEvent7Db446EfResponse =
+	QuestionnaireUnassignEvent7Db446EfResponses[keyof QuestionnaireUnassignEvent7Db446EfResponses];
 
-export type QuestionnaireAssignEvent70Cc1D54Data = {
+export type QuestionnaireAssignEvent55F2255eData = {
 	body?: never;
 	path: {
 		/**
@@ -9300,17 +10268,17 @@ export type QuestionnaireAssignEvent70Cc1D54Data = {
 	url: '/api/questionnaires/{org_questionnaire_id}/events/{event_id}';
 };
 
-export type QuestionnaireAssignEvent70Cc1D54Responses = {
+export type QuestionnaireAssignEvent55F2255eResponses = {
 	/**
 	 * OK
 	 */
 	200: OrganizationQuestionnaireSchema;
 };
 
-export type QuestionnaireAssignEvent70Cc1D54Response =
-	QuestionnaireAssignEvent70Cc1D54Responses[keyof QuestionnaireAssignEvent70Cc1D54Responses];
+export type QuestionnaireAssignEvent55F2255eResponse =
+	QuestionnaireAssignEvent55F2255eResponses[keyof QuestionnaireAssignEvent55F2255eResponses];
 
-export type QuestionnaireReplaceEventSeriesEb81E5C1Data = {
+export type QuestionnaireReplaceEventSeriesFca1Ce26Data = {
 	body: EventSeriesAssignmentSchema;
 	path: {
 		/**
@@ -9322,17 +10290,17 @@ export type QuestionnaireReplaceEventSeriesEb81E5C1Data = {
 	url: '/api/questionnaires/{org_questionnaire_id}/event-series';
 };
 
-export type QuestionnaireReplaceEventSeriesEb81E5C1Responses = {
+export type QuestionnaireReplaceEventSeriesFca1Ce26Responses = {
 	/**
 	 * OK
 	 */
 	200: OrganizationQuestionnaireSchema;
 };
 
-export type QuestionnaireReplaceEventSeriesEb81E5C1Response =
-	QuestionnaireReplaceEventSeriesEb81E5C1Responses[keyof QuestionnaireReplaceEventSeriesEb81E5C1Responses];
+export type QuestionnaireReplaceEventSeriesFca1Ce26Response =
+	QuestionnaireReplaceEventSeriesFca1Ce26Responses[keyof QuestionnaireReplaceEventSeriesFca1Ce26Responses];
 
-export type QuestionnaireUnassignEventSeriesE5916Df1Data = {
+export type QuestionnaireUnassignEventSeries91439C6aData = {
 	body?: never;
 	path: {
 		/**
@@ -9348,17 +10316,17 @@ export type QuestionnaireUnassignEventSeriesE5916Df1Data = {
 	url: '/api/questionnaires/{org_questionnaire_id}/event-series/{series_id}';
 };
 
-export type QuestionnaireUnassignEventSeriesE5916Df1Responses = {
+export type QuestionnaireUnassignEventSeries91439C6aResponses = {
 	/**
 	 * No Content
 	 */
 	204: void;
 };
 
-export type QuestionnaireUnassignEventSeriesE5916Df1Response =
-	QuestionnaireUnassignEventSeriesE5916Df1Responses[keyof QuestionnaireUnassignEventSeriesE5916Df1Responses];
+export type QuestionnaireUnassignEventSeries91439C6aResponse =
+	QuestionnaireUnassignEventSeries91439C6aResponses[keyof QuestionnaireUnassignEventSeries91439C6aResponses];
 
-export type QuestionnaireAssignEventSeries82D69638Data = {
+export type QuestionnaireAssignEventSeriesFb6127A4Data = {
 	body?: never;
 	path: {
 		/**
@@ -9374,34 +10342,34 @@ export type QuestionnaireAssignEventSeries82D69638Data = {
 	url: '/api/questionnaires/{org_questionnaire_id}/event-series/{series_id}';
 };
 
-export type QuestionnaireAssignEventSeries82D69638Responses = {
+export type QuestionnaireAssignEventSeriesFb6127A4Responses = {
 	/**
 	 * OK
 	 */
 	200: OrganizationQuestionnaireSchema;
 };
 
-export type QuestionnaireAssignEventSeries82D69638Response =
-	QuestionnaireAssignEventSeries82D69638Responses[keyof QuestionnaireAssignEventSeries82D69638Responses];
+export type QuestionnaireAssignEventSeriesFb6127A4Response =
+	QuestionnaireAssignEventSeriesFb6127A4Responses[keyof QuestionnaireAssignEventSeriesFb6127A4Responses];
 
-export type UserpreferencesGetGeneralPreferences72920BafData = {
+export type UserpreferencesGetGeneralPreferences0A1695FcData = {
 	body?: never;
 	path?: never;
 	query?: never;
 	url: '/api/preferences/general';
 };
 
-export type UserpreferencesGetGeneralPreferences72920BafResponses = {
+export type UserpreferencesGetGeneralPreferences0A1695FcResponses = {
 	/**
 	 * OK
 	 */
 	200: GeneralUserPreferencesSchema;
 };
 
-export type UserpreferencesGetGeneralPreferences72920BafResponse =
-	UserpreferencesGetGeneralPreferences72920BafResponses[keyof UserpreferencesGetGeneralPreferences72920BafResponses];
+export type UserpreferencesGetGeneralPreferences0A1695FcResponse =
+	UserpreferencesGetGeneralPreferences0A1695FcResponses[keyof UserpreferencesGetGeneralPreferences0A1695FcResponses];
 
-export type UserpreferencesUpdateGlobalPreferencesE85758A8Data = {
+export type UserpreferencesUpdateGlobalPreferencesA0703E15Data = {
 	body: GeneralUserPreferencesUpdateSchema;
 	path?: never;
 	query?: {
@@ -9413,17 +10381,17 @@ export type UserpreferencesUpdateGlobalPreferencesE85758A8Data = {
 	url: '/api/preferences/general';
 };
 
-export type UserpreferencesUpdateGlobalPreferencesE85758A8Responses = {
+export type UserpreferencesUpdateGlobalPreferencesA0703E15Responses = {
 	/**
 	 * OK
 	 */
 	200: GeneralUserPreferencesSchema;
 };
 
-export type UserpreferencesUpdateGlobalPreferencesE85758A8Response =
-	UserpreferencesUpdateGlobalPreferencesE85758A8Responses[keyof UserpreferencesUpdateGlobalPreferencesE85758A8Responses];
+export type UserpreferencesUpdateGlobalPreferencesA0703E15Response =
+	UserpreferencesUpdateGlobalPreferencesA0703E15Responses[keyof UserpreferencesUpdateGlobalPreferencesA0703E15Responses];
 
-export type UserpreferencesGetOrganizationPreferences139Ce8E4Data = {
+export type UserpreferencesGetOrganizationPreferencesB3Fdfb8cData = {
 	body?: never;
 	path: {
 		/**
@@ -9435,17 +10403,17 @@ export type UserpreferencesGetOrganizationPreferences139Ce8E4Data = {
 	url: '/api/preferences/organization/{organization_id}';
 };
 
-export type UserpreferencesGetOrganizationPreferences139Ce8E4Responses = {
+export type UserpreferencesGetOrganizationPreferencesB3Fdfb8cResponses = {
 	/**
 	 * OK
 	 */
 	200: UserOrganizationPreferencesSchema;
 };
 
-export type UserpreferencesGetOrganizationPreferences139Ce8E4Response =
-	UserpreferencesGetOrganizationPreferences139Ce8E4Responses[keyof UserpreferencesGetOrganizationPreferences139Ce8E4Responses];
+export type UserpreferencesGetOrganizationPreferencesB3Fdfb8cResponse =
+	UserpreferencesGetOrganizationPreferencesB3Fdfb8cResponses[keyof UserpreferencesGetOrganizationPreferencesB3Fdfb8cResponses];
 
-export type UserpreferencesUpdateOrganizationPreferences80798806Data = {
+export type UserpreferencesUpdateOrganizationPreferencesEebd2A74Data = {
 	body: UserOrganizationPreferencesUpdateSchema;
 	path: {
 		/**
@@ -9462,17 +10430,17 @@ export type UserpreferencesUpdateOrganizationPreferences80798806Data = {
 	url: '/api/preferences/organization/{organization_id}';
 };
 
-export type UserpreferencesUpdateOrganizationPreferences80798806Responses = {
+export type UserpreferencesUpdateOrganizationPreferencesEebd2A74Responses = {
 	/**
 	 * OK
 	 */
 	200: UserOrganizationPreferencesSchema;
 };
 
-export type UserpreferencesUpdateOrganizationPreferences80798806Response =
-	UserpreferencesUpdateOrganizationPreferences80798806Responses[keyof UserpreferencesUpdateOrganizationPreferences80798806Responses];
+export type UserpreferencesUpdateOrganizationPreferencesEebd2A74Response =
+	UserpreferencesUpdateOrganizationPreferencesEebd2A74Responses[keyof UserpreferencesUpdateOrganizationPreferencesEebd2A74Responses];
 
-export type UserpreferencesGetEventSeriesPreferences52433695Data = {
+export type UserpreferencesGetEventSeriesPreferences49Db05C4Data = {
 	body?: never;
 	path: {
 		/**
@@ -9484,17 +10452,17 @@ export type UserpreferencesGetEventSeriesPreferences52433695Data = {
 	url: '/api/preferences/event-series/{series_id}';
 };
 
-export type UserpreferencesGetEventSeriesPreferences52433695Responses = {
+export type UserpreferencesGetEventSeriesPreferences49Db05C4Responses = {
 	/**
 	 * OK
 	 */
 	200: UserEventSeriesPreferencesSchema;
 };
 
-export type UserpreferencesGetEventSeriesPreferences52433695Response =
-	UserpreferencesGetEventSeriesPreferences52433695Responses[keyof UserpreferencesGetEventSeriesPreferences52433695Responses];
+export type UserpreferencesGetEventSeriesPreferences49Db05C4Response =
+	UserpreferencesGetEventSeriesPreferences49Db05C4Responses[keyof UserpreferencesGetEventSeriesPreferences49Db05C4Responses];
 
-export type UserpreferencesUpdateEventSeriesPreferences4390B122Data = {
+export type UserpreferencesUpdateEventSeriesPreferencesD53571A8Data = {
 	body: UserEventSeriesPreferencesUpdateSchema;
 	path: {
 		/**
@@ -9511,17 +10479,17 @@ export type UserpreferencesUpdateEventSeriesPreferences4390B122Data = {
 	url: '/api/preferences/event-series/{series_id}';
 };
 
-export type UserpreferencesUpdateEventSeriesPreferences4390B122Responses = {
+export type UserpreferencesUpdateEventSeriesPreferencesD53571A8Responses = {
 	/**
 	 * OK
 	 */
 	200: UserEventSeriesPreferencesSchema;
 };
 
-export type UserpreferencesUpdateEventSeriesPreferences4390B122Response =
-	UserpreferencesUpdateEventSeriesPreferences4390B122Responses[keyof UserpreferencesUpdateEventSeriesPreferences4390B122Responses];
+export type UserpreferencesUpdateEventSeriesPreferencesD53571A8Response =
+	UserpreferencesUpdateEventSeriesPreferencesD53571A8Responses[keyof UserpreferencesUpdateEventSeriesPreferencesD53571A8Responses];
 
-export type UserpreferencesGetEventPreferences44377EddData = {
+export type UserpreferencesGetEventPreferences3F08Ae72Data = {
 	body?: never;
 	path: {
 		/**
@@ -9533,17 +10501,17 @@ export type UserpreferencesGetEventPreferences44377EddData = {
 	url: '/api/preferences/event/{event_id}';
 };
 
-export type UserpreferencesGetEventPreferences44377EddResponses = {
+export type UserpreferencesGetEventPreferences3F08Ae72Responses = {
 	/**
 	 * OK
 	 */
 	200: UserEventPreferencesSchema;
 };
 
-export type UserpreferencesGetEventPreferences44377EddResponse =
-	UserpreferencesGetEventPreferences44377EddResponses[keyof UserpreferencesGetEventPreferences44377EddResponses];
+export type UserpreferencesGetEventPreferences3F08Ae72Response =
+	UserpreferencesGetEventPreferences3F08Ae72Responses[keyof UserpreferencesGetEventPreferences3F08Ae72Responses];
 
-export type UserpreferencesUpdateEventPreferencesD0C5C2DaData = {
+export type UserpreferencesUpdateEventPreferences5E25E9B0Data = {
 	body: UserEventPreferencesUpdateSchema;
 	path: {
 		/**
@@ -9560,31 +10528,31 @@ export type UserpreferencesUpdateEventPreferencesD0C5C2DaData = {
 	url: '/api/preferences/event/{event_id}';
 };
 
-export type UserpreferencesUpdateEventPreferencesD0C5C2DaResponses = {
+export type UserpreferencesUpdateEventPreferences5E25E9B0Responses = {
 	/**
 	 * OK
 	 */
 	200: UserEventPreferencesSchema;
 };
 
-export type UserpreferencesUpdateEventPreferencesD0C5C2DaResponse =
-	UserpreferencesUpdateEventPreferencesD0C5C2DaResponses[keyof UserpreferencesUpdateEventPreferencesD0C5C2DaResponses];
+export type UserpreferencesUpdateEventPreferences5E25E9B0Response =
+	UserpreferencesUpdateEventPreferences5E25E9B0Responses[keyof UserpreferencesUpdateEventPreferences5E25E9B0Responses];
 
-export type StripewebhookHandleWebhookD3A3422cData = {
+export type StripewebhookHandleWebhook431E54F6Data = {
 	body?: never;
 	path?: never;
 	query?: never;
 	url: '/api/stripe/webhook';
 };
 
-export type StripewebhookHandleWebhookD3A3422cResponses = {
+export type StripewebhookHandleWebhook431E54F6Responses = {
 	/**
 	 * OK
 	 */
 	200: unknown;
 };
 
-export type TagListTags7F360858Data = {
+export type TagListTags2906Ad6cData = {
 	body?: never;
 	path?: never;
 	query?: {
@@ -9604,17 +10572,17 @@ export type TagListTags7F360858Data = {
 	url: '/api/tags/';
 };
 
-export type TagListTags7F360858Responses = {
+export type TagListTags2906Ad6cResponses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaTagSchema;
 };
 
-export type TagListTags7F360858Response =
-	TagListTags7F360858Responses[keyof TagListTags7F360858Responses];
+export type TagListTags2906Ad6cResponse =
+	TagListTags2906Ad6cResponses[keyof TagListTags2906Ad6cResponses];
 
-export type CityListCitiesF5666B5aData = {
+export type CityListCities7E47D9D1Data = {
 	body?: never;
 	path?: never;
 	query?: {
@@ -9638,24 +10606,24 @@ export type CityListCitiesF5666B5aData = {
 	url: '/api/cities/';
 };
 
-export type CityListCitiesF5666B5aResponses = {
+export type CityListCities7E47D9D1Responses = {
 	/**
 	 * OK
 	 */
 	200: PaginatedResponseSchemaCitySchema;
 };
 
-export type CityListCitiesF5666B5aResponse =
-	CityListCitiesF5666B5aResponses[keyof CityListCitiesF5666B5aResponses];
+export type CityListCities7E47D9D1Response =
+	CityListCities7E47D9D1Responses[keyof CityListCities7E47D9D1Responses];
 
-export type CityListCountries7B47Fd50Data = {
+export type CityListCountriesF8C509D1Data = {
 	body?: never;
 	path?: never;
 	query?: never;
 	url: '/api/cities/countries';
 };
 
-export type CityListCountries7B47Fd50Responses = {
+export type CityListCountriesF8C509D1Responses = {
 	/**
 	 * Response
 	 *
@@ -9664,10 +10632,10 @@ export type CityListCountries7B47Fd50Responses = {
 	200: Array<string>;
 };
 
-export type CityListCountries7B47Fd50Response =
-	CityListCountries7B47Fd50Responses[keyof CityListCountries7B47Fd50Responses];
+export type CityListCountriesF8C509D1Response =
+	CityListCountriesF8C509D1Responses[keyof CityListCountriesF8C509D1Responses];
 
-export type CityGetCityF66311BaData = {
+export type CityGetCity4079D9E5Data = {
 	body?: never;
 	path: {
 		/**
@@ -9679,12 +10647,206 @@ export type CityGetCityF66311BaData = {
 	url: '/api/cities/{city_id}';
 };
 
-export type CityGetCityF66311BaResponses = {
+export type CityGetCity4079D9E5Responses = {
 	/**
 	 * OK
 	 */
 	200: CitySchema;
 };
 
-export type CityGetCityF66311BaResponse =
-	CityGetCityF66311BaResponses[keyof CityGetCityF66311BaResponses];
+export type CityGetCity4079D9E5Response =
+	CityGetCity4079D9E5Responses[keyof CityGetCity4079D9E5Responses];
+
+export type NotificationListNotificationsAf46Df7cData = {
+	body?: never;
+	path?: never;
+	query?: {
+		/**
+		 * Unread Only
+		 *
+		 * Filter to unread notifications only
+		 */
+		unread_only?: boolean;
+		/**
+		 * Notification Type
+		 *
+		 * Filter by notification type
+		 */
+		notification_type?: string | null;
+		/**
+		 * Page
+		 */
+		page?: number;
+		/**
+		 * Page Size
+		 */
+		page_size?: number;
+	};
+	url: '/api/api/notifications';
+};
+
+export type NotificationListNotificationsAf46Df7cResponses = {
+	/**
+	 * OK
+	 */
+	200: PaginatedResponseSchemaNotificationSchema;
+};
+
+export type NotificationListNotificationsAf46Df7cResponse =
+	NotificationListNotificationsAf46Df7cResponses[keyof NotificationListNotificationsAf46Df7cResponses];
+
+export type NotificationUnreadCount5B667074Data = {
+	body?: never;
+	path?: never;
+	query?: never;
+	url: '/api/api/notifications/unread-count';
+};
+
+export type NotificationUnreadCount5B667074Responses = {
+	/**
+	 * OK
+	 */
+	200: UnreadCountSchema;
+};
+
+export type NotificationUnreadCount5B667074Response =
+	NotificationUnreadCount5B667074Responses[keyof NotificationUnreadCount5B667074Responses];
+
+export type NotificationMarkReadCf27B23aData = {
+	body?: never;
+	path: {
+		/**
+		 * Notification Id
+		 */
+		notification_id: string;
+	};
+	query?: never;
+	url: '/api/api/notifications/{notification_id}/mark-read';
+};
+
+export type NotificationMarkReadCf27B23aResponses = {
+	/**
+	 * OK
+	 */
+	200: MarkReadResponseSchema;
+};
+
+export type NotificationMarkReadCf27B23aResponse =
+	NotificationMarkReadCf27B23aResponses[keyof NotificationMarkReadCf27B23aResponses];
+
+export type NotificationMarkUnread7Abc3Dc7Data = {
+	body?: never;
+	path: {
+		/**
+		 * Notification Id
+		 */
+		notification_id: string;
+	};
+	query?: never;
+	url: '/api/api/notifications/{notification_id}/mark-unread';
+};
+
+export type NotificationMarkUnread7Abc3Dc7Responses = {
+	/**
+	 * OK
+	 */
+	200: MarkReadResponseSchema;
+};
+
+export type NotificationMarkUnread7Abc3Dc7Response =
+	NotificationMarkUnread7Abc3Dc7Responses[keyof NotificationMarkUnread7Abc3Dc7Responses];
+
+export type NotificationMarkAllRead7329C883Data = {
+	body?: never;
+	path?: never;
+	query?: never;
+	url: '/api/api/notifications/mark-all-read';
+};
+
+export type NotificationMarkAllRead7329C883Responses = {
+	/**
+	 * OK
+	 */
+	200: MarkReadResponseSchema;
+};
+
+export type NotificationMarkAllRead7329C883Response =
+	NotificationMarkAllRead7329C883Responses[keyof NotificationMarkAllRead7329C883Responses];
+
+export type NotificationpreferenceGetPreferencesE6700965Data = {
+	body?: never;
+	path?: never;
+	query?: never;
+	url: '/api/api/notification-preferences';
+};
+
+export type NotificationpreferenceGetPreferencesE6700965Responses = {
+	/**
+	 * OK
+	 */
+	200: NotificationPreferenceSchema;
+};
+
+export type NotificationpreferenceGetPreferencesE6700965Response =
+	NotificationpreferenceGetPreferencesE6700965Responses[keyof NotificationpreferenceGetPreferencesE6700965Responses];
+
+export type NotificationpreferenceUpdatePreferencesF8C3Ced9Data = {
+	body: UpdateNotificationPreferenceSchema;
+	path?: never;
+	query?: never;
+	url: '/api/api/notification-preferences';
+};
+
+export type NotificationpreferenceUpdatePreferencesF8C3Ced9Responses = {
+	/**
+	 * OK
+	 */
+	200: NotificationPreferenceSchema;
+};
+
+export type NotificationpreferenceUpdatePreferencesF8C3Ced9Response =
+	NotificationpreferenceUpdatePreferencesF8C3Ced9Responses[keyof NotificationpreferenceUpdatePreferencesF8C3Ced9Responses];
+
+export type NotificationpreferenceEnableChannelB06Fe986Data = {
+	body?: never;
+	path: {
+		/**
+		 * Channel
+		 */
+		channel: string;
+	};
+	query?: never;
+	url: '/api/api/notification-preferences/enable-channel/{channel}';
+};
+
+export type NotificationpreferenceEnableChannelB06Fe986Responses = {
+	/**
+	 * OK
+	 */
+	200: NotificationPreferenceSchema;
+};
+
+export type NotificationpreferenceEnableChannelB06Fe986Response =
+	NotificationpreferenceEnableChannelB06Fe986Responses[keyof NotificationpreferenceEnableChannelB06Fe986Responses];
+
+export type NotificationpreferenceDisableChannelE9502Fa8Data = {
+	body?: never;
+	path: {
+		/**
+		 * Channel
+		 */
+		channel: string;
+	};
+	query?: never;
+	url: '/api/api/notification-preferences/disable-channel/{channel}';
+};
+
+export type NotificationpreferenceDisableChannelE9502Fa8Responses = {
+	/**
+	 * OK
+	 */
+	200: NotificationPreferenceSchema;
+};
+
+export type NotificationpreferenceDisableChannelE9502Fa8Response =
+	NotificationpreferenceDisableChannelE9502Fa8Responses[keyof NotificationpreferenceDisableChannelE9502Fa8Responses];
