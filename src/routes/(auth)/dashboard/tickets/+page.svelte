@@ -3,7 +3,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { dashboardDashboardTickets } from '$lib/api/generated/sdk.gen';
-	import type { PaymentMethod, EventsModelsEventTicketStatus } from '$lib/api/generated/types.gen';
+	import type { PaymentMethod, TicketStatus } from '$lib/api/generated/types.gen';
 	import TicketListCard from '$lib/components/tickets/TicketListCard.svelte';
 	import { Ticket, Filter, ChevronLeft, ChevronRight, Loader2 } from 'lucide-svelte';
 	import { page } from '$app/state';
@@ -13,9 +13,6 @@
 
 	// Get current page from URL params
 	let currentPage = $derived(Number(page.url.searchParams.get('page') || '1'));
-
-	// Use the generated type alias for ticket status
-	type TicketStatus = EventsModelsEventTicketStatus;
 
 	const statusFilters: Array<{ label: string; value: TicketStatus | null }> = [
 		{ label: m['dashboard.tickets.status_all'](), value: null },

@@ -443,8 +443,8 @@
 					/>
 				</svg>
 				<div>
-					<p class="font-medium">{m["guest_attendance.rsvp_confirmed_title"]()}</p>
-					<p class="text-sm">{m["guest_attendance.rsvp_confirmed_body"]()}</p>
+					<p class="font-medium">{m['guest_attendance.rsvp_confirmed_title']()}</p>
+					<p class="text-sm">{m['guest_attendance.rsvp_confirmed_body']()}</p>
 				</div>
 			</div>
 		</div>
@@ -465,8 +465,8 @@
 					/>
 				</svg>
 				<div>
-					<p class="font-medium">{m["guest_attendance.ticket_confirmed_title"]()}</p>
-					<p class="text-sm">{m["guest_attendance.ticket_confirmed_body"]()}</p>
+					<p class="font-medium">{m['guest_attendance.ticket_confirmed_title']()}</p>
+					<p class="text-sm">{m['guest_attendance.ticket_confirmed_body']()}</p>
 				</div>
 			</div>
 		</div>

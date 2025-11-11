@@ -36,10 +36,7 @@ export const guestRsvpSchema = guestUserSchema.extend({
  * @param tier - The tier object containing pwyc_min and pwyc_max
  * @returns Zod schema with dynamic validation based on tier limits
  */
-export function createGuestPwycSchema(tier: {
-	pwyc_min: number;
-	pwyc_max?: number | null;
-}) {
+export function createGuestPwycSchema(tier: { pwyc_min: number; pwyc_max?: number | null }) {
 	let pwycSchema = z
 		.number({ required_error: m['guest_attendance.validation_pwyc_min']({ min: tier.pwyc_min }) })
 		.min(tier.pwyc_min, m['guest_attendance.validation_pwyc_min']({ min: tier.pwyc_min }));
@@ -69,7 +66,6 @@ export const guestConfirmationSchema = z.object({
  */
 export type GuestUserData = z.infer<typeof guestUserSchema>;
 export type GuestRsvpData = z.infer<typeof guestRsvpSchema>;
-export type GuestPwycData = ReturnType<typeof createGuestPwycSchema> extends z.ZodType<infer T>
-	? T
-	: never;
+export type GuestPwycData =
+	ReturnType<typeof createGuestPwycSchema> extends z.ZodType<infer T> ? T : never;
 export type GuestConfirmationData = z.infer<typeof guestConfirmationSchema>;

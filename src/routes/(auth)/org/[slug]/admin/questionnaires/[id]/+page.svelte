@@ -28,7 +28,10 @@
 		questionnaireUpdateQuestionnaireStatus
 	} from '$lib/api/generated/sdk.gen';
 	import type { PageData } from './$types';
-	import type { EvaluationMode, Status } from '$lib/api/generated';
+	import type {
+		QuestionnaireEvaluationMode,
+		QuestionnaireStatus
+	} from '$lib/api/generated/types.gen';
 	import { Badge } from '$lib/components/ui/badge';
 
 	interface Props {
@@ -42,8 +45,8 @@
 	let name = $state(questionnaire.questionnaire.name);
 	let questionnaireType = $state(questionnaire.questionnaire_type);
 	let minScore = $state(Number(questionnaire.questionnaire.min_score));
-	let evaluationMode = $state<EvaluationMode>(
-		questionnaire.questionnaire.evaluation_mode as EvaluationMode
+	let evaluationMode = $state<QuestionnaireEvaluationMode>(
+		questionnaire.questionnaire.evaluation_mode as QuestionnaireEvaluationMode
 	);
 	let shuffleQuestions = $state(questionnaire.questionnaire.shuffle_questions ?? false);
 	let shuffleSections = $state(questionnaire.questionnaire.shuffle_sections ?? false);
@@ -98,11 +101,13 @@
 	let isAssignmentModalOpen = $state(false);
 
 	// Current status
-	const currentStatus: Status = $derived(questionnaire.questionnaire.status as Status);
+	const currentStatus = $derived<QuestionnaireStatus>(
+		questionnaire.questionnaire.status as QuestionnaireStatus
+	);
 
 	// Status labels, variants, and descriptions
 	const statusInfo: Record<
-		Status,
+		QuestionnaireStatus,
 		{ label: string; variant: 'outline' | 'secondary' | 'default'; description: string }
 	> = {
 		draft: {
@@ -154,7 +159,10 @@
 	);
 
 	// Evaluation mode descriptions
-	const evaluationModes = {
+	const evaluationModes: Record<
+		QuestionnaireEvaluationMode,
+		{ label: string; description: string }
+	> = {
 		automatic: {
 			label: m['questionnaireEditPage.evaluation.automatic_label'](),
 			description: m['questionnaireEditPage.evaluation.automatic_description']()
@@ -233,7 +241,7 @@
 	}
 
 	// Change questionnaire status
-	async function changeStatus(newStatus: Status) {
+	async function changeStatus(newStatus: QuestionnaireStatus) {
 		const statusAction = newStatus === 'published' ? 'publish' : `mark as ${newStatus}`;
 		const confirmed = confirm(
 			`Are you sure you want to ${statusAction} this questionnaire?\n\n${statusInfo[newStatus].description}`

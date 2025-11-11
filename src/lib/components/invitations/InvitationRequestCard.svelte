@@ -182,10 +182,10 @@
 					<button
 						type="button"
 						onclick={handleCancel}
-						disabled={$cancelMutation.isPending}
+						disabled={cancelMutation.isPending}
 						class="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 					>
-						{#if $cancelMutation.isPending}
+						{#if cancelMutation.isPending}
 							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
 							Cancelling...
 						{:else}

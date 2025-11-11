@@ -128,7 +128,11 @@
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Enter' && !isSubmitting && !showSuccess) {
 			e.preventDefault();
-			handleSubmit();
+			// Create a synthetic submit event
+			const form = (e.target as HTMLElement).closest('form');
+			if (form) {
+				form.requestSubmit();
+			}
 		}
 	}
 
@@ -136,11 +140,11 @@
 	function getRsvpAnswerText(answer: 'yes' | 'no' | 'maybe'): string {
 		switch (answer) {
 			case 'yes':
-				return m["guest_attendance.rsvp_yes"]();
+				return m['guest_attendance.rsvp_yes']();
 			case 'no':
-				return m["guest_attendance.rsvp_no"]();
+				return m['guest_attendance.rsvp_no']();
 			case 'maybe':
-				return m["guest_attendance.rsvp_maybe"]();
+				return m['guest_attendance.rsvp_maybe']();
 		}
 	}
 </script>
@@ -150,10 +154,10 @@
 		<DialogHeader>
 			<DialogTitle class="flex items-center gap-2 text-xl">
 				<UserPlus class="h-5 w-5 text-primary" aria-hidden="true" />
-				{m["guest_attendance.rsvp_title"]()}
+				{m['guest_attendance.rsvp_title']()}
 			</DialogTitle>
 			<DialogDescription>
-				{m["guest_attendance.rsvp_description"]()}
+				{m['guest_attendance.rsvp_description']()}
 			</DialogDescription>
 		</DialogHeader>
 
@@ -165,9 +169,9 @@
 						<CheckCircle2 class="h-8 w-8 text-primary" aria-hidden="true" />
 					</div>
 					<div class="space-y-1">
-						<h3 class="text-lg font-semibold">{m["guest_attendance.rsvp_email_sent_title"]()}</h3>
+						<h3 class="text-lg font-semibold">{m['guest_attendance.rsvp_email_sent_title']()}</h3>
 						<p class="text-sm text-muted-foreground">
-							{m["guest_attendance.rsvp_email_sent_body"]({ email: formData.email })}
+							{m['guest_attendance.rsvp_email_sent_body']({ email: formData.email })}
 						</p>
 					</div>
 				</div>
@@ -175,7 +179,7 @@
 
 			<DialogFooter>
 				<Button onclick={onClose} class="w-full">
-					{m["guest_attendance.common_close"]()}
+					{m['guest_attendance.common_close']()}
 				</Button>
 			</DialogFooter>
 		{:else}
@@ -184,14 +188,14 @@
 				<div class="space-y-4 py-2">
 					<!-- Email Field -->
 					<div class="space-y-2">
-						<Label for="guest-email">{m["guest_attendance.email_label"]()}</Label>
+						<Label for="guest-email">{m['guest_attendance.email_label']()}</Label>
 						<Input
 							id="guest-email"
 							type="email"
 							bind:value={formData.email}
 							onkeydown={handleKeydown}
 							onblur={() => handleBlur('email')}
-							placeholder={m["guest_attendance.email_placeholder"]()}
+							placeholder={m['guest_attendance.email_placeholder']()}
 							disabled={isSubmitting}
 							aria-invalid={fieldErrors.email ? 'true' : 'false'}
 							aria-describedby={fieldErrors.email ? 'email-error email-hint' : 'email-hint'}
@@ -199,7 +203,7 @@
 							required
 						/>
 						<p id="email-hint" class="text-xs text-muted-foreground">
-							{m["guest_attendance.email_hint"]()}
+							{m['guest_attendance.email_hint']()}
 						</p>
 						{#if fieldErrors.email}
 							<p id="email-error" class="text-sm text-destructive" role="alert">
@@ -211,14 +215,14 @@
 					<!-- First Name and Last Name (side by side on larger screens) -->
 					<div class="grid gap-4 sm:grid-cols-2">
 						<div class="space-y-2">
-							<Label for="guest-first-name">{m["guest_attendance.first_name_label"]()}</Label>
+							<Label for="guest-first-name">{m['guest_attendance.first_name_label']()}</Label>
 							<Input
 								id="guest-first-name"
 								type="text"
 								bind:value={formData.first_name}
 								onkeydown={handleKeydown}
 								onblur={() => handleBlur('first_name')}
-								placeholder={m["guest_attendance.first_name_placeholder"]()}
+								placeholder={m['guest_attendance.first_name_placeholder']()}
 								disabled={isSubmitting}
 								aria-invalid={fieldErrors.first_name ? 'true' : 'false'}
 								aria-describedby={fieldErrors.first_name ? 'first-name-error' : undefined}
@@ -233,14 +237,14 @@
 						</div>
 
 						<div class="space-y-2">
-							<Label for="guest-last-name">{m["guest_attendance.last_name_label"]()}</Label>
+							<Label for="guest-last-name">{m['guest_attendance.last_name_label']()}</Label>
 							<Input
 								id="guest-last-name"
 								type="text"
 								bind:value={formData.last_name}
 								onkeydown={handleKeydown}
 								onblur={() => handleBlur('last_name')}
-								placeholder={m["guest_attendance.last_name_placeholder"]()}
+								placeholder={m['guest_attendance.last_name_placeholder']()}
 								disabled={isSubmitting}
 								aria-invalid={fieldErrors.last_name ? 'true' : 'false'}
 								aria-describedby={fieldErrors.last_name ? 'last-name-error' : undefined}
@@ -257,14 +261,14 @@
 
 					<!-- RSVP Answer -->
 					<div class="space-y-3">
-						<Label>{m["guest_attendance.rsvp_answer_label"]()}</Label>
+						<Label>{m['guest_attendance.rsvp_answer_label']()}</Label>
 						<RadioGroup bind:value={formData.answer} disabled={isSubmitting} class="space-y-2">
 							{#each ['yes', 'no', 'maybe'] as option}
 								<div class="flex items-center space-x-2">
 									<RadioGroupItem value={option} id="rsvp-{option}" />
 									<Label
 										for="rsvp-{option}"
-										class="font-normal cursor-pointer text-base leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+										class="cursor-pointer text-base font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 									>
 										{getRsvpAnswerText(option as 'yes' | 'no' | 'maybe')}
 									</Label>
@@ -289,7 +293,7 @@
 					{/if}
 				</div>
 
-				<DialogFooter class="gap-2 sm:gap-0 pt-4">
+				<DialogFooter class="gap-2 pt-4 sm:gap-0">
 					<Button
 						type="button"
 						variant="outline"
@@ -297,13 +301,13 @@
 						disabled={isSubmitting}
 						class="flex-1 sm:flex-initial"
 					>
-						{m["guest_attendance.common_cancel"]()}
+						{m['guest_attendance.common_cancel']()}
 					</Button>
 					<Button type="submit" disabled={isSubmitting} class="flex-1 sm:flex-initial">
 						{#if isSubmitting}
-							{m["guest_attendance.submitting"]()}
+							{m['guest_attendance.submitting']()}
 						{:else}
-							{m["guest_attendance.submit_rsvp"]()}
+							{m['guest_attendance.submit_rsvp']()}
 						{/if}
 					</Button>
 				</DialogFooter>
@@ -311,7 +315,7 @@
 				<!-- Subtle login link -->
 				<div class="border-t pt-3 text-center text-xs text-muted-foreground">
 					<p>
-						{@html m["guest_attendance.or_login"]()
+						{@html m['guest_attendance.or_login']()
 							.replace('<a>', '<a href="/login" class="text-primary hover:underline">')
 							.replace('</a>', '</a>')}
 					</p>

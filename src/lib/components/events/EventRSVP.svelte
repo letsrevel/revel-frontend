@@ -380,10 +380,10 @@
 					onclick={onGuestRsvpClick}
 					class="w-full rounded-md bg-primary px-4 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
 				>
-					{m["guest_attendance.submit_rsvp"]()}
+					{m['guest_attendance.submit_rsvp']()}
 				</button>
 				<p class="text-center text-xs text-muted-foreground">
-					{m["guest_attendance.rsvp_description"]()}
+					{m['guest_attendance.rsvp_description']()}
 				</p>
 			</div>
 		{/if}

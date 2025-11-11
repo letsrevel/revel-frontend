@@ -177,10 +177,11 @@
 			id: ticket.id || undefined,
 			status: ticket.status,
 			tier: ticket.tier,
-			checked_in_at: ticket.checked_in_at
+			checked_in_at: ticket.checked_in_at ?? undefined,
+			event_id: ticket.event.id
 		}}
 		eventName={ticket.event.name}
 		{eventDate}
-		{eventLocation}
+		eventLocation={eventLocation ?? undefined}
 	/>
 {/if}

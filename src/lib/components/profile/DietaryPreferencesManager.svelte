@@ -133,7 +133,9 @@
 	let unselectedPreferences = $derived(
 		availablePreferences.filter(
 			(pref: DietaryPreferenceSchema) =>
-				!userPreferences.some((userPref: UserDietaryPreferenceSchema) => userPref.preference.id === pref.id)
+				!userPreferences.some(
+					(userPref: UserDietaryPreferenceSchema) => userPref.preference.id === pref.id
+				)
 		)
 	);
 

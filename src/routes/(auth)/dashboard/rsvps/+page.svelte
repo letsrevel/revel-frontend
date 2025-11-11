@@ -3,7 +3,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { dashboardDashboardRsvps } from '$lib/api/generated/sdk.gen';
-	import type { Status } from '$lib/api/generated/types.gen';
+	import type { RsvpStatus } from '$lib/api/generated/types.gen';
 	import RSVPCard from '$lib/components/rsvps/RSVPCard.svelte';
 	import {
 		CheckCircle2,
@@ -22,7 +22,7 @@
 	// Get current page from URL params
 	let currentPage = $derived(Number(page.url.searchParams.get('page') || '1'));
 
-	const statusFilters: Array<{ label: string; value: Status | null }> = [
+	const statusFilters: Array<{ label: string; value: RsvpStatus | null }> = [
 		{ label: m['dashboard.rsvps.status_all'](), value: null },
 		{ label: m['dashboard.rsvps.status_going'](), value: 'yes' },
 		{ label: m['dashboard.rsvps.status_maybe'](), value: 'maybe' },
@@ -30,7 +30,7 @@
 	];
 
 	// Active filters
-	let statusFilter = $state<Status | null>(null);
+	let statusFilter = $state<RsvpStatus | null>(null);
 	let searchQuery = $state('');
 	let includePast = $state(false);
 
@@ -75,7 +75,7 @@
 	let hasPrevPage = $derived(currentPage > 1);
 
 	// Apply filter
-	function applyStatusFilter(status: Status | null) {
+	function applyStatusFilter(status: RsvpStatus | null) {
 		statusFilter = status;
 		navigateToPage(1); // Reset to first page when filter changes
 	}
@@ -92,7 +92,7 @@
 	}
 
 	// Check if filter is active
-	function isStatusFilterActive(status: Status | null): boolean {
+	function isStatusFilterActive(status: RsvpStatus | null): boolean {
 		return statusFilter === status;
 	}
 </script>
