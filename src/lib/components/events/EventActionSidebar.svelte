@@ -23,10 +23,13 @@
 		userPermissions?: OrganizationPermissionsSchema | null;
 		eventTokenDetails?: EventTokenSchema | null;
 		variant?: 'sidebar' | 'card';
+		canAttendWithoutLogin?: boolean;
 		onGetTicketsClick?: () => void;
 		onShowTicketClick?: () => void;
 		onResumePayment?: () => void;
 		isResumingPayment?: boolean;
+		onGuestRsvpClick?: () => void;
+		onGuestTicketClick?: () => void;
 		class?: string;
 	}
 
@@ -37,10 +40,13 @@
 		userPermissions,
 		eventTokenDetails,
 		variant = 'sidebar',
+		canAttendWithoutLogin = false,
 		onGetTicketsClick,
 		onShowTicketClick,
 		onResumePayment,
 		isResumingPayment = false,
+		onGuestRsvpClick,
+		onGuestTicketClick,
 		class: className
 	}: Props = $props();
 
@@ -272,6 +278,7 @@
 					requiresTicket={event.requires_ticket}
 					{event}
 					{eventTokenDetails}
+					{onGuestRsvpClick}
 				/>
 			{:else}
 				<!-- Ticket purchase flow -->
@@ -296,6 +303,7 @@
 						{userStatus}
 						requiresTicket={event.requires_ticket}
 						{isAuthenticated}
+						{canAttendWithoutLogin}
 						onclick={onGetTicketsClick}
 						class="w-full"
 					/>

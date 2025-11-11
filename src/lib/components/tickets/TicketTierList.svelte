@@ -19,8 +19,10 @@
 		organizationSlug?: string;
 		eventName?: string;
 		eventTokenDetails?: EventTokenSchema | null;
+		canAttendWithoutLogin?: boolean;
 		onClaimTicket: (tierId: string) => void | Promise<void>;
 		onCheckout?: (tierId: string, isPwyc: boolean) => void | Promise<void>;
+		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
 
 	let {
@@ -33,8 +35,10 @@
 		organizationSlug,
 		eventName,
 		eventTokenDetails,
+		canAttendWithoutLogin = false,
 		onClaimTicket,
-		onCheckout
+		onCheckout,
+		onGuestTierClick
 	}: Props = $props();
 
 	// Filter out hidden tiers and sort by price
@@ -91,11 +95,20 @@
 
 		<div class="space-y-4">
 			{#each visibleTiers as tier (tier.id || tier.event_id + tier.name)}
-				<TierCard {tier} {isAuthenticated} {hasTicket} {isEligible} {onClaimTicket} {onCheckout} />
+				<TierCard
+					{tier}
+					{isAuthenticated}
+					{hasTicket}
+					{isEligible}
+					{canAttendWithoutLogin}
+					{onClaimTicket}
+					{onCheckout}
+					{onGuestTierClick}
+				/>
 			{/each}
 		</div>
 
-		{#if !isAuthenticated}
+		{#if !isAuthenticated && !canAttendWithoutLogin}
 			<p class="mt-4 text-sm text-muted-foreground">
 				<a href="/login" class="font-medium text-primary hover:underline"
 					>{m['ticketTierList.signIn']()}</a

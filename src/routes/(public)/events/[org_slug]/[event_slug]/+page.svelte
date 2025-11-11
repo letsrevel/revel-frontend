@@ -15,6 +15,8 @@
 	import MyTicket from '$lib/components/tickets/MyTicket.svelte';
 	import TicketTierModal from '$lib/components/tickets/TicketTierModal.svelte';
 	import MyTicketModal from '$lib/components/tickets/MyTicketModal.svelte';
+	import GuestRsvpDialog from '$lib/components/events/GuestRsvpDialog.svelte';
+	import GuestTicketDialog from '$lib/components/events/GuestTicketDialog.svelte';
 	import { generateEventStructuredData, structuredDataToJsonLd } from '$lib/utils/structured-data';
 	import { generateEventMeta } from '$lib/utils/seo';
 	import { isRSVP, isTicket } from '$lib/utils/eligibility';
@@ -77,6 +79,9 @@
 	// Modal states
 	let showTicketTierModal = $state(false);
 	let showMyTicketModal = $state(false);
+	let showGuestRsvpDialog = $state(false);
+	let showGuestTicketDialog = $state(false);
+	let selectedTierForGuest = $state<TierSchemaWithId | null>(null);
 
 	// Handle modals
 	function openTicketTierModal() {
@@ -89,6 +94,32 @@
 
 	function openMyTicketModal() {
 		showMyTicketModal = true;
+	}
+
+	// Guest dialog handlers
+	function openGuestRsvpDialog() {
+		showGuestRsvpDialog = true;
+	}
+
+	function closeGuestRsvpDialog() {
+		showGuestRsvpDialog = false;
+	}
+
+	function openGuestTicketDialog(tier?: TierSchemaWithId) {
+		if (tier) {
+			selectedTierForGuest = tier;
+		}
+		showGuestTicketDialog = true;
+	}
+
+	function closeGuestTicketDialog() {
+		showGuestTicketDialog = false;
+		selectedTierForGuest = null;
+	}
+
+	function handleGuestAttendanceSuccess() {
+		// Optionally refresh data or show a message
+		queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
 	}
 
 	// Ticket claiming mutation (for free/offline tickets)
@@ -238,6 +269,10 @@
 	let paymentSuccess = $state(false);
 	let paymentCancelled = $state(false);
 
+	// Handle guest confirmation redirects
+	let rsvpConfirmed = $state<string | null>(null); // 'yes' | 'no' | 'maybe'
+	let ticketConfirmed = $state(false);
+
 	onMount(() => {
 		if (browser) {
 			const urlParams = new URLSearchParams(window.location.search);
@@ -266,6 +301,36 @@
 				// Remove parameter from URL
 				const cleanUrl = window.location.pathname;
 				window.history.replaceState({}, '', cleanUrl);
+			}
+
+			// Check for RSVP confirmation
+			const rsvpParam = urlParams.get('rsvp');
+			if (rsvpParam && ['yes', 'no', 'maybe'].includes(rsvpParam)) {
+				rsvpConfirmed = rsvpParam;
+				// Remove parameter from URL
+				const cleanUrl = window.location.pathname;
+				window.history.replaceState({}, '', cleanUrl);
+
+				// Refresh event status
+				queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
+			}
+
+			// Check for ticket confirmation
+			if (urlParams.get('ticket_id')) {
+				ticketConfirmed = true;
+				// Remove parameter from URL
+				const cleanUrl = window.location.pathname;
+				window.history.replaceState({}, '', cleanUrl);
+
+				// Refresh event status to get the ticket
+				queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
+
+				// Auto-open ticket modal after a delay
+				setTimeout(() => {
+					if (userTicket) {
+						openMyTicketModal();
+					}
+				}, 1000);
 			}
 		}
 	});
@@ -362,6 +427,50 @@
 		</div>
 	{/if}
 
+	<!-- RSVP Confirmation Message -->
+	{#if rsvpConfirmed}
+		<div class="container mx-auto px-6 pt-4 md:px-8">
+			<div
+				class="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-100"
+				role="alert"
+			>
+				<svg class="h-5 w-5 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+					<path
+						fill-rule="evenodd"
+						d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+						clip-rule="evenodd"
+					/>
+				</svg>
+				<div>
+					<p class="font-medium">{m["guest_attendance.rsvp_confirmed_title"]()}</p>
+					<p class="text-sm">{m["guest_attendance.rsvp_confirmed_body"]()}</p>
+				</div>
+			</div>
+		</div>
+	{/if}
+
+	<!-- Ticket Confirmation Message -->
+	{#if ticketConfirmed}
+		<div class="container mx-auto px-6 pt-4 md:px-8">
+			<div
+				class="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-100"
+				role="alert"
+			>
+				<svg class="h-5 w-5 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+					<path
+						fill-rule="evenodd"
+						d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+						clip-rule="evenodd"
+					/>
+				</svg>
+				<div>
+					<p class="font-medium">{m["guest_attendance.ticket_confirmed_title"]()}</p>
+					<p class="text-sm">{m["guest_attendance.ticket_confirmed_body"]()}</p>
+				</div>
+			</div>
+		</div>
+	{/if}
+
 	<!-- Event Header -->
 	<EventHeader {event} class="mb-8" />
 
@@ -376,10 +485,13 @@
 				userPermissions={data.userPermissions}
 				eventTokenDetails={data.eventTokenDetails}
 				variant="card"
+				canAttendWithoutLogin={event.can_attend_without_login}
 				onGetTicketsClick={openTicketTierModal}
 				onShowTicketClick={openMyTicketModal}
 				onResumePayment={handleResumePayment}
 				isResumingPayment={resumePaymentMutation.isPending}
+				onGuestRsvpClick={openGuestRsvpDialog}
+				onGuestTicketClick={openGuestTicketDialog}
 			/>
 		</div>
 
@@ -412,8 +524,10 @@
 						organizationSlug={event.organization.slug}
 						eventName={event.name}
 						eventTokenDetails={data.eventTokenDetails}
+						canAttendWithoutLogin={event.can_attend_without_login}
 						onClaimTicket={handleClaimTicket}
 						onCheckout={handleCheckout}
+						onGuestTierClick={openGuestTicketDialog}
 					/>
 				{/if}
 
@@ -463,10 +577,13 @@
 						userPermissions={data.userPermissions}
 						eventTokenDetails={data.eventTokenDetails}
 						variant="card"
+						canAttendWithoutLogin={event.can_attend_without_login}
 						onGetTicketsClick={openTicketTierModal}
 						onShowTicketClick={openMyTicketModal}
 						onResumePayment={handleResumePayment}
 						isResumingPayment={resumePaymentMutation.isPending}
+						onGuestRsvpClick={openGuestRsvpDialog}
+						onGuestTicketClick={openGuestTicketDialog}
 					/>
 
 					<!-- Organization Info (desktop only) -->
@@ -496,9 +613,11 @@
 	tiers={ticketTiers}
 	isAuthenticated={data.isAuthenticated}
 	hasTicket={!!userTicket}
+	canAttendWithoutLogin={event.can_attend_without_login}
 	onClose={closeTicketTierModal}
 	onClaimTicket={handleClaimTicket}
 	onCheckout={handleCheckout}
+	onGuestTierClick={openGuestTicketDialog}
 />
 
 <!-- My Ticket Modal -->
@@ -511,5 +630,28 @@
 		eventLocation={formatEventLocation(event)}
 		onResumePayment={handleResumePayment}
 		isResumingPayment={resumePaymentMutation.isPending}
+	/>
+{/if}
+
+<!-- Guest RSVP Dialog -->
+{#if !data.isAuthenticated && event.can_attend_without_login && !event.requires_ticket}
+	<GuestRsvpDialog
+		bind:open={showGuestRsvpDialog}
+		eventId={event.id}
+		eventName={event.name}
+		onClose={closeGuestRsvpDialog}
+		onSuccess={handleGuestAttendanceSuccess}
+	/>
+{/if}
+
+<!-- Guest Ticket Dialog -->
+{#if !data.isAuthenticated && event.can_attend_without_login && event.requires_ticket && selectedTierForGuest}
+	<GuestTicketDialog
+		bind:open={showGuestTicketDialog}
+		eventId={event.id}
+		eventName={event.name}
+		tier={selectedTierForGuest}
+		onClose={closeGuestTicketDialog}
+		onSuccess={handleGuestAttendanceSuccess}
 	/>
 {/if}
