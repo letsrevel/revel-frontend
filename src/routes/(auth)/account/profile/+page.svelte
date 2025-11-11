@@ -4,7 +4,9 @@
 	import { enhance, applyAction } from '$app/forms';
 	import type { PageData, ActionData } from './$types';
 	import { COMMON_PRONOUNS } from '$lib/schemas/profile';
-	import { Loader2, Check } from 'lucide-svelte';
+	import { Loader2, Check, Info } from 'lucide-svelte';
+	import DietaryPreferencesManager from '$lib/components/profile/DietaryPreferencesManager.svelte';
+	import DietaryRestrictionsManager from '$lib/components/profile/DietaryRestrictionsManager.svelte';
 
 	interface Props {
 		data: PageData;
@@ -278,6 +280,33 @@
 			</button>
 		</div>
 	</form>
+
+	<!-- Dietary Preferences & Restrictions Section -->
+	{#if data.accessToken}
+		<div class="mt-12 space-y-6" id="dietary-section">
+			<div class="border-t pt-8">
+				<div class="mb-6">
+					<h2 class="text-2xl font-bold tracking-tight">{m['dietary.profile_heading']()}</h2>
+					<p class="mt-2 text-sm text-muted-foreground">
+						{m['dietary.profile_description']()}
+					</p>
+
+					<!-- Visibility Info -->
+					<div class="mt-4 flex gap-2 rounded-md border border-blue-200 bg-blue-50 p-3 dark:border-blue-900 dark:bg-blue-950">
+						<Info class="h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+						<p class="text-sm text-blue-800 dark:text-blue-200">
+							{m['dietary.profile_visibilityInfo']()}
+						</p>
+					</div>
+				</div>
+
+				<div class="space-y-8">
+					<DietaryPreferencesManager authToken={data.accessToken} />
+					<DietaryRestrictionsManager authToken={data.accessToken} />
+				</div>
+			</div>
+		</div>
+	{/if}
 
 	<!-- Settings Link -->
 	<div class="mt-8 border-t pt-6">
