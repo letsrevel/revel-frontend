@@ -40,6 +40,10 @@
 
 			const data = response.data;
 
+			if (!data) {
+				throw new Error('No data returned from confirmation');
+			}
+
 			// Determine if this is an RSVP or ticket based on response shape
 			// RSVP has 'status' field with values "yes" | "no" | "maybe"
 			// Ticket has 'tier' field and 'status' with values "pending" | "active" | etc.
@@ -50,10 +54,10 @@
 
 			result = {
 				success: true,
-				eventId: data.event_id || undefined,
+				eventId: data.event_id ?? undefined,
 				type: isRsvp ? 'rsvp' : 'ticket',
 				rsvpStatus: isRsvp ? (data.status as 'yes' | 'no' | 'maybe') : undefined,
-				ticketId: !isRsvp && 'id' in data ? data.id : undefined
+				ticketId: !isRsvp && 'id' in data ? (data.id ?? undefined) : undefined
 			};
 		} catch (error: any) {
 			result = {
@@ -99,9 +103,9 @@
 				<Loader2 class="h-16 w-16 animate-spin text-primary" aria-hidden="true" />
 			</div>
 			<div class="space-y-2">
-				<h1 class="text-2xl font-bold">{m["guest_attendance.confirmation_processing"]()}</h1>
+				<h1 class="text-2xl font-bold">{m['guest_attendance.confirmation_processing']()}</h1>
 				<p class="text-muted-foreground">
-					{m["guest_attendance.confirmation_wait"]()}
+					{m['guest_attendance.confirmation_wait']()}
 				</p>
 			</div>
 		</div>
@@ -115,31 +119,31 @@
 			<div class="space-y-3">
 				<h1 class="text-3xl font-bold">
 					{result.type === 'rsvp'
-						? m["guest_attendance.rsvp_confirmed_title"]()
-						: m["guest_attendance.ticket_confirmed_title"]()}
+						? m['guest_attendance.rsvp_confirmed_title']()
+						: m['guest_attendance.ticket_confirmed_title']()}
 				</h1>
 				<p class="text-lg text-muted-foreground">
 					{result.type === 'rsvp'
-						? m["guest_attendance.rsvp_confirmed_body"]()
-						: m["guest_attendance.ticket_confirmed_body"]()}
+						? m['guest_attendance.rsvp_confirmed_body']()
+						: m['guest_attendance.ticket_confirmed_body']()}
 				</p>
 			</div>
 
 			{#if result.eventId}
 				<Button size="lg" onclick={handleNavigateToEvent} class="mt-4">
-					{m["guest_attendance.view_event"]()}
+					{m['guest_attendance.view_event']()}
 				</Button>
 			{:else}
 				<Button size="lg" onclick={() => (window.location.href = '/')} class="mt-4">
-					{m["guest_attendance.common_goToHomepage"]()}
+					{m['guest_attendance.common_goToHomepage']()}
 				</Button>
 			{/if}
 
 			<!-- Success message for screen readers -->
 			<div class="sr-only" role="status" aria-live="polite">
 				{result.type === 'rsvp'
-					? m["guest_attendance.rsvp_confirmed_title"]()
-					: m["guest_attendance.ticket_confirmed_title"]()}
+					? m['guest_attendance.rsvp_confirmed_title']()
+					: m['guest_attendance.ticket_confirmed_title']()}
 			</div>
 		</div>
 	{:else}
@@ -153,17 +157,17 @@
 				<h1 class="text-3xl font-bold">Confirmation Failed</h1>
 				<Alert variant="destructive" class="text-left">
 					<AlertDescription>
-						{result.error || m["guest_attendance.network_error"]()}
+						{result.error || m['guest_attendance.network_error']()}
 					</AlertDescription>
 				</Alert>
 			</div>
 
 			<div class="flex flex-col gap-3 sm:flex-row">
 				<Button variant="outline" onclick={handleRetry}>
-					{m["guest_attendance.retry"]()}
+					{m['guest_attendance.retry']()}
 				</Button>
 				<Button onclick={() => (window.location.href = '/')}>
-					{m["guest_attendance.common_goToHomepage"]()}
+					{m['guest_attendance.common_goToHomepage']()}
 				</Button>
 			</div>
 

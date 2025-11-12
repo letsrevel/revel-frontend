@@ -53,7 +53,7 @@
 	},
 	"home": {
 		"welcomeTo": "Benvenuti su",
-		"welcomeToRevel": "Benvenut{flipContainer} su {revel}",
+		"welcomeToRevel": "Benvenuti su {revel}",
 		"tagline": "Piattaforma open-source per la gestione di eventi e biglietti per le community. Scopri eventi, connettiti e crea esperienze indimenticabili.",
 		"getStarted": "Inizia",
 		"featuresTitle": "Funzionalità",

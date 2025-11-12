@@ -76,7 +76,7 @@ export function formatTokenUsage(uses: number | undefined, maxUses: number | und
 /**
  * Calculate time until expiration
  */
-export function getExpirationDisplay(expiresAt: string | null): string {
+export function getExpirationDisplay(expiresAt: string | null | undefined): string {
 	if (!expiresAt) {
 		return 'Never';
 	}

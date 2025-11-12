@@ -292,8 +292,13 @@
 					</p>
 
 					<!-- Visibility Info -->
-					<div class="mt-4 flex gap-2 rounded-md border border-blue-200 bg-blue-50 p-3 dark:border-blue-900 dark:bg-blue-950">
-						<Info class="h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+					<div
+						class="mt-4 flex gap-2 rounded-md border border-blue-200 bg-blue-50 p-3 dark:border-blue-900 dark:bg-blue-950"
+					>
+						<Info
+							class="h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-400"
+							aria-hidden="true"
+						/>
 						<p class="text-sm text-blue-800 dark:text-blue-200">
 							{m['dietary.profile_visibilityInfo']()}
 						</p>

@@ -222,10 +222,7 @@
 					>{m['tierCardAdmin.signInToGetTicket']()}</Button
 				>
 			{:else if !isAuthenticated && canAttendWithoutLogin}
-				<Button
-					onclick={() => onGuestTierClick?.(tier)}
-					class="w-full sm:w-auto"
-				>
+				<Button onclick={() => onGuestTierClick?.(tier)} class="w-full sm:w-auto">
 					Get Ticket
 				</Button>
 			{:else if !isEligible}

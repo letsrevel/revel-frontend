@@ -2097,7 +2097,7 @@
 				</p>
 				<p>
 					<strong>{m['eventInvitationsAdmin.deleteTokenUses']()}</strong>
-					{m['eventInvitationsAdmin.deleteTokenUsesText']({ count: tokenToDelete.uses })}
+					{m['eventInvitationsAdmin.deleteTokenUsesText']({ count: tokenToDelete.uses ?? 0 })}
 				</p>
 				<p class="text-muted-foreground">
 					{m['eventInvitationsAdmin.deleteTokenWarning']()}

@@ -3,21 +3,19 @@ import type {
 	NextStep,
 	EventRsvpSchema,
 	EventTicketSchema,
-	EventsModelsEventEventRsvpStatus,
-	EventsModelsEventTicketStatus
+	RsvpStatus as ApiRsvpStatus,
+	TicketStatus as ApiTicketStatus
 } from '$lib/api/generated/types.gen';
 
 /**
- * RSVP Status - Correctly typed from backend enum
- * The generated EventRsvpSchema.status uses generic Status, but backend actually uses EventRSVP.Status
+ * RSVP Status - Correctly typed from backend
  */
-export type RsvpStatus = EventsModelsEventEventRsvpStatus; // 'yes' | 'no' | 'maybe'
+export type RsvpStatus = ApiRsvpStatus; // 'yes' | 'no' | 'maybe'
 
 /**
- * Ticket Status - Correctly typed from backend enum
- * The generated EventTicketSchema.status uses generic Status, but backend actually uses Ticket.Status
+ * Ticket Status - Correctly typed from backend
  */
-export type TicketStatus = EventsModelsEventTicketStatus; // 'pending' | 'active' | 'checked_in' | 'cancelled'
+export type TicketStatus = ApiTicketStatus; // 'pending' | 'active' | 'checked_in' | 'cancelled'
 
 /**
  * Invitation Request Status - From EventInvitationRequest.Status backend enum

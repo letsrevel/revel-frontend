@@ -206,11 +206,7 @@
 											>{m['ticketTierModal.signIn']()}</Button
 										>
 									{:else if !isAuthenticated && canAttendWithoutLogin && isTierAvailable(tier)}
-										<Button
-											variant="default"
-											size="sm"
-											onclick={() => onGuestTierClick?.(tier)}
-										>
+										<Button variant="default" size="sm" onclick={() => onGuestTierClick?.(tier)}>
 											<Ticket class="mr-2 h-4 w-4" />
 											Get Ticket
 										</Button>

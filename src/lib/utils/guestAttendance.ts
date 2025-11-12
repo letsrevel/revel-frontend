@@ -7,7 +7,7 @@ import * as m from '$lib/paraglide/messages.js';
  */
 export function getLocalizedError(errorMessage: string | undefined): string {
 	if (!errorMessage) {
-		return m["guest_attendance.network_error"]();
+		return m['guest_attendance.network_error']();
 	}
 
 	const lowerMessage = errorMessage.toLowerCase();
@@ -18,42 +18,51 @@ export function getLocalizedError(errorMessage: string | undefined): string {
 		lowerMessage.includes('log in') ||
 		lowerMessage.includes('login')
 	) {
-		return m["guest_attendance.account_exists"]();
+		return m['guest_attendance.account_exists']();
 	}
 
 	// Pattern: Event requires authentication
 	if (lowerMessage.includes('requires login') || lowerMessage.includes('create an account')) {
-		return m["guest_attendance.auth_required"]();
+		return m['guest_attendance.auth_required']();
 	}
 
 	// Pattern: Event is full
 	if (lowerMessage.includes('full') || lowerMessage.includes('sold out')) {
-		return m["guest_attendance.event_full"]();
+		return m['guest_attendance.event_full']();
 	}
 
 	// Pattern: Deadline passed
-	if (lowerMessage.includes('deadline') || lowerMessage.includes('expired') && lowerMessage.includes('rsvp')) {
-		return m["guest_attendance.deadline_passed"]();
+	if (
+		lowerMessage.includes('deadline') ||
+		(lowerMessage.includes('expired') && lowerMessage.includes('rsvp'))
+	) {
+		return m['guest_attendance.deadline_passed']();
 	}
 
 	// Pattern: Token expired
 	if (lowerMessage.includes('expired') && lowerMessage.includes('token')) {
-		return m["guest_attendance.token_expired"]();
+		return m['guest_attendance.token_expired']();
 	}
 
 	// Pattern: Token already used
-	if (lowerMessage.includes('already') && (lowerMessage.includes('confirmed') || lowerMessage.includes('used'))) {
-		return m["guest_attendance.token_used"]();
+	if (
+		lowerMessage.includes('already') &&
+		(lowerMessage.includes('confirmed') || lowerMessage.includes('used'))
+	) {
+		return m['guest_attendance.token_used']();
 	}
 
 	// Pattern: Invalid token
 	if (lowerMessage.includes('invalid') && lowerMessage.includes('token')) {
-		return m["guest_attendance.token_invalid"]();
+		return m['guest_attendance.token_invalid']();
 	}
 
 	// Pattern: Tickets unavailable
-	if (lowerMessage.includes('ticket') && (lowerMessage.includes('unavailable') || lowerMessage.includes('not available'))) {
-		return m["guest_attendance.ticket_unavailable"]();
+	if (
+		lowerMessage.includes('ticket') &&
+		(lowerMessage.includes('unavailable') || lowerMessage.includes('not available'))
+	) {
+		return m['guest_attendance.ticket_unavailable']();
 	}
 
 	// Fallback: Return backend message (backend uses Django i18n)
@@ -89,7 +98,7 @@ export function extractErrorMessage(error: unknown): string {
 		}
 	}
 
-	return m["guest_attendance.network_error"]();
+	return m['guest_attendance.network_error']();
 }
 
 /**

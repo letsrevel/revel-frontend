@@ -105,8 +105,12 @@
 			notes: string;
 			is_public: boolean;
 		}) => {
+			// Ensure at least one of food_item_name or food_item_id is provided
+			if (!data.food_item_name && !data.food_item_id) {
+				throw new Error('Either food_item_name or food_item_id must be provided');
+			}
 			const response = await dietaryCreateDietaryRestriction({
-				body: data,
+				body: data as any, // Type assertion since API expects one field to be present
 				headers: { Authorization: `Bearer ${authToken}` }
 			});
 			return response.data;

@@ -11,28 +11,25 @@
  */
 
 import type {
-	QuestionnairesModelsQuestionnaireEvaluationStatus,
-	QuestionnairesModelsQuestionnaireSubmissionStatus,
-	QuestionnairesModelsQuestionnaireStatus
+	QuestionnaireEvaluationStatus as ApiQuestionnaireEvaluationStatus,
+	QuestionnaireSubmissionStatus as ApiQuestionnaireSubmissionStatus,
+	QuestionnaireStatus as ApiQuestionnaireStatus
 } from '$lib/api/generated/types.gen';
 
 /**
  * QuestionnaireEvaluation Status enum
- * Note: The generated type is missing 'pending review' due to OpenAPI generator limitations
  */
-export type QuestionnaireEvaluationStatus =
-	| QuestionnairesModelsQuestionnaireEvaluationStatus
-	| 'pending review';
+export type QuestionnaireEvaluationStatus = ApiQuestionnaireEvaluationStatus;
 
 /**
  * QuestionnaireSubmission Status enum
  */
-export type QuestionnaireSubmissionStatus = QuestionnairesModelsQuestionnaireSubmissionStatus;
+export type QuestionnaireSubmissionStatus = ApiQuestionnaireSubmissionStatus;
 
 /**
  * Questionnaire Status enum
  */
-export type QuestionnaireStatus = QuestionnairesModelsQuestionnaireStatus;
+export type QuestionnaireStatus = ApiQuestionnaireStatus;
 
 /**
  * Type guards for questionnaire evaluation status
