@@ -181,7 +181,7 @@
 			event_id: ticket.event.id
 		}}
 		eventName={ticket.event.name}
-		{eventDate}
+		eventDate={eventDate ?? undefined}
 		eventLocation={eventLocation ?? undefined}
 	/>
 {/if}
