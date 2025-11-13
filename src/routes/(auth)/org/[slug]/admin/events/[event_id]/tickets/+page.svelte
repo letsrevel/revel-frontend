@@ -717,11 +717,11 @@
 												Cancel
 											</Button>
 										{/if}
-										{#if ticket.tier?.payment_method === 'online'}
+										{#if ticket.tier?.payment_method === 'online' && ticket.payment?.stripe_dashboard_url}
 											<Button
 												size="sm"
 												variant="outline"
-												onclick={() => window.open('https://dashboard.stripe.com/', '_blank')}
+												onclick={() => window.open(ticket.payment.stripe_dashboard_url, '_blank')}
 											>
 												<ExternalLink class="h-4 w-4" aria-hidden="true" />
 												Manage on Stripe
@@ -812,11 +812,11 @@
 									Cancel
 								</Button>
 							{/if}
-							{#if ticket.tier?.payment_method === 'online'}
+							{#if ticket.tier?.payment_method === 'online' && ticket.payment?.stripe_dashboard_url}
 								<Button
 									size="sm"
 									variant="outline"
-									onclick={() => window.open('https://dashboard.stripe.com/', '_blank')}
+									onclick={() => window.open(ticket.payment.stripe_dashboard_url, '_blank')}
 									class="w-full"
 								>
 									<ExternalLink class="h-4 w-4" aria-hidden="true" />

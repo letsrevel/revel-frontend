@@ -151,42 +151,6 @@
 		</div>
 	</section>
 
-	<!-- Tags -->
-	{#if event.tags && event.tags.length > 0}
-		<section aria-labelledby="tags-heading">
-			<h2 id="tags-heading" class="mb-3 text-xl font-semibold">
-				{m['eventDetails.tags_heading']()}
-			</h2>
-			<div class="flex flex-wrap gap-2">
-				{#each event.tags as tag (tag)}
-					<span class="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
-						{tag}
-					</span>
-				{/each}
-			</div>
-		</section>
-	{/if}
-
-	<!-- Event Series -->
-	{#if event.event_series}
-		<section aria-labelledby="series-heading">
-			<h2 id="series-heading" class="mb-3 text-xl font-semibold">
-				{m['eventDetails.series_heading']()}
-			</h2>
-			<a
-				href="/events/{event.organization.slug}/series/{event.event_series.slug}"
-				class="block rounded-lg border bg-card p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-			>
-				<div class="font-semibold">{event.event_series.name}</div>
-				{#if event.event_series.description}
-					<p class="mt-1 text-sm text-muted-foreground">
-						{event.event_series.description}
-					</p>
-				{/if}
-			</a>
-		</section>
-	{/if}
-
 	<!-- Invitation Message (if private event) -->
 	{#if event.visibility === 'private' && event.invitation_message_html}
 		<section

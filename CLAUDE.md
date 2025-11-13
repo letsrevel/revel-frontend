@@ -81,7 +81,7 @@ This file provides guidance to Claude Code (claude.ai/code) and other AI assista
 
 The full backend repository is accessible via a symbolic link:
 
-- **Symlink:** `./revel-backend` → `/Users/biagio/repos/personal/revel`
+- **Backend code:** `../revel-backend`
 - **You have full access** to all backend files, controllers, models, schemas, and documentation
 - **Always explore the backend** when you need to understand API behavior, data models, or business logic
 

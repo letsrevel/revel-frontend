@@ -7,6 +7,7 @@
 	import ThemeToggle from './ThemeToggle.svelte';
 	import AdminButton from './AdminButton.svelte';
 	import LanguageSwitcher from './LanguageSwitcher.svelte';
+	import { NotificationDropdown } from '$lib/components/notifications';
 	import * as m from '$lib/paraglide/messages.js';
 
 	// Mobile menu state
@@ -14,6 +15,7 @@
 
 	// Get auth state
 	let isAuthenticated = $derived(authStore.isAuthenticated);
+	let accessToken = $derived(authStore.accessToken);
 	let currentPath = $derived($page.url.pathname);
 
 	// Navigation items for public users - using translated strings
@@ -95,6 +97,13 @@
 			<ThemeToggle />
 
 			{#if isAuthenticated}
+				<!-- Notification Dropdown (Desktop) -->
+				{#if accessToken}
+					<div class="hidden md:block">
+						<NotificationDropdown authToken={accessToken} />
+					</div>
+				{/if}
+
 				<!-- User Menu (Desktop) -->
 				<div class="hidden md:block">
 					<UserMenu />

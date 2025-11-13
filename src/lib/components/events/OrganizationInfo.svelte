@@ -57,11 +57,15 @@
 
 			<div class="flex-1">
 				<h3 class="text-lg font-semibold">{organization.name}</h3>
-				{#if organization.description}
-					<p class="mt-1 text-sm text-muted-foreground">
-						{organization.description.slice(0, 100)}{organization.description.length > 100
-							? '...'
-							: ''}
+				{#if organization.description_html}
+					<div
+						class="prose prose-sm dark:prose-invert mt-1 line-clamp-3 text-sm text-muted-foreground"
+					>
+						{@html organization.description_html}
+					</div>
+				{:else if organization.description}
+					<p class="mt-1 line-clamp-3 text-sm text-muted-foreground">
+						{organization.description}
 					</p>
 				{/if}
 			</div>

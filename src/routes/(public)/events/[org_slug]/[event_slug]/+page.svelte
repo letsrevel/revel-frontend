@@ -568,6 +568,35 @@
 					/>
 				</div>
 
+				<!-- Event Series (mobile only) -->
+				{#if event.event_series}
+					<section
+						aria-labelledby="series-heading-mobile"
+						class="rounded-lg border bg-card lg:hidden"
+					>
+						<div class="border-b p-4">
+							<h2 id="series-heading-mobile" class="font-semibold">
+								{m['eventDetails.series_heading']()}
+							</h2>
+						</div>
+						<a
+							href="/events/{event.organization.slug}/series/{event.event_series.slug}"
+							class="block p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						>
+							<div class="font-medium">{event.event_series.name}</div>
+							{#if event.event_series.description_html}
+								<div class="prose prose-sm dark:prose-invert mt-1 text-sm text-muted-foreground">
+									{@html event.event_series.description_html}
+								</div>
+							{:else if event.event_series.description}
+								<p class="mt-1 text-sm text-muted-foreground">
+									{event.event_series.description}
+								</p>
+							{/if}
+						</a>
+					</section>
+				{/if}
+
 				<!-- Attendee List (mobile only) -->
 				<div class="lg:hidden">
 					<AttendeeList
@@ -606,6 +635,32 @@
 						isStaff={data.isStaff}
 					/>
 
+					<!-- Event Series (desktop only) -->
+					{#if event.event_series}
+						<section aria-labelledby="series-heading-desktop" class="rounded-lg border bg-card">
+							<div class="border-b p-4">
+								<h2 id="series-heading-desktop" class="font-semibold">
+									{m['eventDetails.series_heading']()}
+								</h2>
+							</div>
+							<a
+								href="/events/{event.organization.slug}/series/{event.event_series.slug}"
+								class="block p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+							>
+								<div class="font-medium">{event.event_series.name}</div>
+								{#if event.event_series.description_html}
+									<div class="prose prose-sm dark:prose-invert mt-1 text-sm text-muted-foreground">
+										{@html event.event_series.description_html}
+									</div>
+								{:else if event.event_series.description}
+									<p class="mt-1 text-sm text-muted-foreground">
+										{event.event_series.description}
+									</p>
+								{/if}
+							</a>
+						</section>
+					{/if}
+
 					<!-- Attendee List (desktop only) -->
 					<AttendeeList
 						eventId={event.id}
@@ -615,6 +670,22 @@
 				</div>
 			</aside>
 		</div>
+
+		<!-- Tags Section (bottom of page) -->
+		{#if event.tags && event.tags.length > 0}
+			<section aria-labelledby="tags-heading" class="container mx-auto border-t px-6 py-8 md:px-8">
+				<h2 id="tags-heading" class="mb-4 text-xl font-semibold">
+					{m['eventDetails.tags_heading']()}
+				</h2>
+				<div class="flex flex-wrap gap-2">
+					{#each event.tags as tag (tag)}
+						<span class="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+							{tag}
+						</span>
+					{/each}
+				</div>
+			</section>
+		{/if}
 	</div>
 </div>
 
