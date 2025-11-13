@@ -124,7 +124,13 @@
 	<!-- Divider -->
 	<div class="border-t" role="separator"></div>
 
-	<!-- Order By Filter (Top Priority) -->
+	<!-- City Filter (Location - Top Priority) -->
+	<CityFilter {selectedCity} onChangeCity={handleChangeCity} />
+
+	<!-- Divider -->
+	<div class="border-t" role="separator"></div>
+
+	<!-- Order By Filter -->
 	<OrderByFilter orderBy={filters.orderBy ?? 'distance'} onChangeOrderBy={handleChangeOrderBy} />
 
 	<!-- Divider -->
@@ -145,12 +151,6 @@
 
 	<!-- Date Filter -->
 	<DateFilter includePast={filters.includePast ?? false} onTogglePast={handleTogglePast} />
-
-	<!-- Divider -->
-	<div class="border-t" role="separator"></div>
-
-	<!-- City Filter -->
-	<CityFilter {selectedCity} onChangeCity={handleChangeCity} />
 
 	<!-- Divider -->
 	<div class="border-t" role="separator"></div>

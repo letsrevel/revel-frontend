@@ -74,7 +74,6 @@
 			{:else}
 				<!-- Other languages using i18n -->
 				{@html m['home.welcomeToRevel']({
-					flipContainer: '',
 					revel: `<span class="text-primary">Revel</span>`
 				})}
 			{/if}

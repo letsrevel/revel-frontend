@@ -7,6 +7,7 @@
 	import { Loader2, Check, Info } from 'lucide-svelte';
 	import DietaryPreferencesManager from '$lib/components/profile/DietaryPreferencesManager.svelte';
 	import DietaryRestrictionsManager from '$lib/components/profile/DietaryRestrictionsManager.svelte';
+	import TelegramConnectionManager from '$lib/components/profile/TelegramConnectionManager.svelte';
 
 	interface Props {
 		data: PageData;
@@ -309,6 +310,13 @@
 					<DietaryPreferencesManager authToken={data.accessToken} />
 					<DietaryRestrictionsManager authToken={data.accessToken} />
 				</div>
+			</div>
+		</div>
+
+		<!-- Telegram Connection Section -->
+		<div class="mt-12" id="telegram-section">
+			<div class="border-t pt-8">
+				<TelegramConnectionManager authToken={data.accessToken} />
 			</div>
 		</div>
 	{/if}

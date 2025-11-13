@@ -183,7 +183,7 @@
 	<div class="border-t border-border"></div>
 
 	<!-- Action row: Claim button + Edit/Delete actions -->
-	<div class="flex items-center gap-2">
+	<div class="flex flex-wrap items-center gap-2">
 		<!-- Claim/Unclaim button -->
 		<button
 			type="button"
@@ -191,7 +191,7 @@
 			disabled={isButtonDisabled}
 			aria-label={item.is_owned ? `Unclaim ${item.name}` : `Claim ${item.name}`}
 			class={cn(
-				'flex-1 rounded-md px-4 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:min-w-[140px] md:flex-initial',
+				'min-w-[160px] flex-1 rounded-md px-3 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:min-w-[140px] md:flex-initial md:px-4',
 				buttonVariant === 'primary' && 'bg-primary text-primary-foreground hover:bg-primary/90',
 				buttonVariant === 'secondary' &&
 					'border border-input bg-background hover:bg-accent hover:text-accent-foreground',

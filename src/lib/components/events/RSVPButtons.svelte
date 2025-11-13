@@ -56,8 +56,8 @@
 		return cn(
 			// Base styles
 			'flex h-12 w-full min-w-0 items-center justify-center gap-2 rounded-md px-4 py-3 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-			// Mobile: Full width, 48px height for touch
-			'md:h-auto md:min-w-[120px]',
+			// Mobile, Tablet, Desktop: Full width, 48px height for touch
+			'xl:h-auto xl:min-w-[120px]',
 			// Yes button - Green theme
 			answer === 'yes' &&
 				!selected &&
@@ -107,10 +107,10 @@
 	role="group"
 	aria-label={m['rsvp.options_label']()}
 	class={cn(
-		// Mobile: Vertical stack
+		// Mobile, Tablet, and most Desktop: Vertical stack (better for touch and narrow screens)
 		'flex flex-col gap-3',
-		// Desktop: Horizontal row
-		'md:flex-row md:gap-4',
+		// Only on very large screens: Horizontal row (1280px+ where there's definitely enough space)
+		'xl:flex-row xl:gap-4',
 		className
 	)}
 >
