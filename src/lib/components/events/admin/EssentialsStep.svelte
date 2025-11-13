@@ -63,6 +63,41 @@
 		e.preventDefault();
 		onSubmit();
 	}
+
+	/**
+	 * Get explanation for current visibility + event_type combination
+	 */
+	let combinationExplanation = $derived.by(() => {
+		const visibility = formData.visibility || 'public';
+		const eventType = (formData.event_type as string) || 'public';
+
+		// Define who can see
+		const whoCanSee =
+			visibility === 'public'
+				? 'Everyone'
+				: visibility === 'members-only'
+					? 'Only organization members'
+					: visibility === 'staff-only'
+						? 'Only organization staff'
+						: 'Only invited users'; // private
+
+		// Define who can attend
+		const whoCanAttend =
+			eventType === 'public'
+				? 'anyone'
+				: eventType === 'members-only'
+					? 'only organization members'
+					: 'only invited people'; // private
+
+		// Special case: public visibility + members-only type → join org CTA
+		const showJoinOrgHint = visibility === 'public' && eventType === 'members-only';
+
+		return {
+			whoCanSee,
+			whoCanAttend,
+			showJoinOrgHint
+		};
+	});
 </script>
 
 <form onsubmit={handleSubmit} class="space-y-6">
@@ -181,7 +216,7 @@
 		</label>
 		<div class="space-y-2" role="radiogroup" aria-label="Event visibility">
 			<label
-				class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+				class="group flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
 			>
 				<input
 					type="radio"
@@ -192,13 +227,17 @@
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
-					<div class="font-medium">{m['SFwESEssentialsStep.public']()}</div>
-					<div class="text-sm text-muted-foreground">{m['SFwESEssentialsStep.anyoneCanSee']()}</div>
+					<div class="font-medium group-hover:text-accent-foreground">
+						{m['SFwESEssentialsStep.public']()}
+					</div>
+					<div class="text-sm text-muted-foreground group-hover:text-accent-foreground/80">
+						{m['SFwESEssentialsStep.anyoneCanSee']()}
+					</div>
 				</div>
 			</label>
 
 			<label
-				class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+				class="group flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
 			>
 				<input
 					type="radio"
@@ -209,15 +248,17 @@
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
-					<div class="font-medium">{m['SFwESEssentialsStep.private']()}</div>
-					<div class="text-sm text-muted-foreground">
+					<div class="font-medium group-hover:text-accent-foreground">
+						{m['SFwESEssentialsStep.private']()}
+					</div>
+					<div class="text-sm text-muted-foreground group-hover:text-accent-foreground/80">
 						{m['SFwESEssentialsStep.onlyInvitedUsers']()}
 					</div>
 				</div>
 			</label>
 
 			<label
-				class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+				class="group flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
 			>
 				<input
 					type="radio"
@@ -228,15 +269,17 @@
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
-					<div class="font-medium">{m['SFwESEssentialsStep.membersOnly']()}</div>
-					<div class="text-sm text-muted-foreground">
+					<div class="font-medium group-hover:text-accent-foreground">
+						{m['SFwESEssentialsStep.membersOnly']()}
+					</div>
+					<div class="text-sm text-muted-foreground group-hover:text-accent-foreground/80">
 						Only organization members can see the event
 					</div>
 				</div>
 			</label>
 
 			<label
-				class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+				class="group flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
 			>
 				<input
 					type="radio"
@@ -247,8 +290,10 @@
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
-					<div class="font-medium">{m['SFwESEssentialsStep.staffOnly']()}</div>
-					<div class="text-sm text-muted-foreground">
+					<div class="font-medium group-hover:text-accent-foreground">
+						{m['SFwESEssentialsStep.staffOnly']()}
+					</div>
+					<div class="text-sm text-muted-foreground group-hover:text-accent-foreground/80">
 						Only org's staff members can see the event
 					</div>
 				</div>
@@ -266,7 +311,7 @@
 		</label>
 		<div class="space-y-2" role="radiogroup" aria-label="Event type">
 			<label
-				class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+				class="group flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
 			>
 				<input
 					type="radio"
@@ -277,15 +322,17 @@
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
-					<div class="font-medium">{m['SFwESEssentialsStep.public']()}</div>
-					<div class="text-sm text-muted-foreground">
+					<div class="font-medium group-hover:text-accent-foreground">
+						{m['SFwESEssentialsStep.public']()}
+					</div>
+					<div class="text-sm text-muted-foreground group-hover:text-accent-foreground/80">
 						{m['SFwESEssentialsStep.everyoneCanAttend']()}
 					</div>
 				</div>
 			</label>
 
 			<label
-				class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+				class="group flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
 			>
 				<input
 					type="radio"
@@ -296,15 +343,17 @@
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
-					<div class="font-medium">{m['SFwESEssentialsStep.private']()}</div>
-					<div class="text-sm text-muted-foreground">
+					<div class="font-medium group-hover:text-accent-foreground">
+						{m['SFwESEssentialsStep.private']()}
+					</div>
+					<div class="text-sm text-muted-foreground group-hover:text-accent-foreground/80">
 						{m['SFwESEssentialsStep.onlyInvitedPeople']()}
 					</div>
 				</div>
 			</label>
 
 			<label
-				class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+				class="group flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
 			>
 				<input
 					type="radio"
@@ -315,12 +364,60 @@
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
-					<div class="font-medium">{m['SFwESEssentialsStep.membersOnly']()}</div>
-					<div class="text-sm text-muted-foreground">
+					<div class="font-medium group-hover:text-accent-foreground">
+						{m['SFwESEssentialsStep.membersOnly']()}
+					</div>
+					<div class="text-sm text-muted-foreground group-hover:text-accent-foreground/80">
 						{m['SFwESEssentialsStep.onlyOrganizationMembers']()}
 					</div>
 				</div>
 			</label>
+		</div>
+
+		<!-- Dynamic explanation based on selected combination -->
+		<div
+			class="rounded-md border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950"
+			role="status"
+			aria-live="polite"
+		>
+			<div class="flex items-start gap-3">
+				<div class="flex-shrink-0">
+					<svg
+						class="h-5 w-5 text-blue-600 dark:text-blue-400"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+						aria-hidden="true"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+						/>
+					</svg>
+				</div>
+				<div class="flex-1">
+					<h4 class="text-sm font-medium text-blue-900 dark:text-blue-100">With these settings:</h4>
+					<div class="mt-2 space-y-1 text-sm text-blue-800 dark:text-blue-200">
+						<p>
+							<strong>Who can view:</strong>
+							{combinationExplanation.whoCanSee} can see this event in search results and listings
+						</p>
+						<p>
+							<strong>Who can attend:</strong>
+							{combinationExplanation.whoCanAttend.charAt(0).toUpperCase() +
+								combinationExplanation.whoCanAttend.slice(1)} can RSVP or get tickets
+						</p>
+						{#if combinationExplanation.showJoinOrgHint}
+							<p class="mt-2 rounded-md bg-blue-100 px-2 py-1.5 text-xs dark:bg-blue-900">
+								💡 <strong>Tip:</strong> Non-members will see a "Join Organization" button to become
+								eligible
+							</p>
+						{/if}
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
 
