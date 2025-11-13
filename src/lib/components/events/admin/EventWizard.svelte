@@ -690,7 +690,7 @@
 				</button>
 			</div>
 		</div>
-	{:else if currentStep === 3}
+	{:else if currentStep === 3 && formData.requires_ticket && eventId}
 		<TicketingStep
 			eventId={eventId!}
 			organizationStripeConnected={organization.is_stripe_connected}

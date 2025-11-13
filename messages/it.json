@@ -179,7 +179,8 @@
 	},
 	"eventCard": {
 		"viewDetails": "Vedi dettagli evento",
-		"location_tbd": "Da definire"
+		"location_tbd": "Da definire",
+		"loading": "Caricamento..."
 	},
 	"eventBadges": {
 		"youreOrganizing": "You're Organizing",
@@ -364,6 +365,7 @@
 		"pageTitle": "Bentornati, {firstName}!",
 		"pageSubtitle": "Ecco cosa sta succedendo con i tuoi eventi e organizzazioni",
 		"browseEventsButton": "Sfoglia Eventi",
+		"createEventButton": "Crea Evento",
 		"myOrganizationsButton": "Le Mie Organizzazioni",
 		"adminButton": "Admin",
 		"viewProfile": "Vedi Profilo",

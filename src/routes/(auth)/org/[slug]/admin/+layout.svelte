@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
-	import { Menu } from 'lucide-svelte';
+	import { Menu, ChevronRight, Home } from 'lucide-svelte';
 	import type { LayoutData } from './$types';
 
 	interface Props {
@@ -126,18 +126,23 @@
 
 			<!-- Breadcrumbs (Desktop only) -->
 			<nav
-				class="hidden border-t py-3 md:block"
+				class="hidden border-t py-2.5 md:block"
 				aria-label={m['orgAdmin.layout.breadcrumbNavigation']()}
 			>
-				<ol class="flex items-center gap-2 text-sm">
+				<ol class="flex items-center gap-1.5 text-xs">
 					{#each breadcrumbs as crumb, i}
 						{#if i > 0}
-							<li class="text-muted-foreground" aria-hidden="true">/</li>
+							<li aria-hidden="true">
+								<ChevronRight class="h-3.5 w-3.5 text-muted-foreground/50" />
+							</li>
 						{/if}
-						<li>
+						<li class="flex items-center gap-1.5">
+							{#if i === 0}
+								<Home class="h-3.5 w-3.5 text-muted-foreground/70" aria-hidden="true" />
+							{/if}
 							<a
 								href={crumb.href}
-								class="text-muted-foreground transition-colors hover:text-foreground"
+								class="text-muted-foreground/80 transition-colors hover:text-foreground"
 								aria-current={i === breadcrumbs.length - 1 ? 'page' : undefined}
 							>
 								{crumb.label}
@@ -182,16 +187,21 @@
 					<h2 class="mb-2 text-xs font-semibold uppercase text-muted-foreground">
 						{m['orgAdmin.layout.navigationHeading']()}
 					</h2>
-					<ol class="flex flex-wrap items-center gap-2 text-sm">
+					<ol class="flex flex-wrap items-center gap-1.5 text-xs">
 						{#each breadcrumbs as crumb, i}
 							{#if i > 0}
-								<li class="text-muted-foreground" aria-hidden="true">/</li>
+								<li aria-hidden="true">
+									<ChevronRight class="h-3.5 w-3.5 text-muted-foreground/50" />
+								</li>
 							{/if}
-							<li>
+							<li class="flex items-center gap-1.5">
+								{#if i === 0}
+									<Home class="h-3.5 w-3.5 text-muted-foreground/70" aria-hidden="true" />
+								{/if}
 								<a
 									href={crumb.href}
 									onclick={closeMobileMenu}
-									class="text-muted-foreground transition-colors hover:text-foreground"
+									class="text-muted-foreground/80 transition-colors hover:text-foreground"
 									aria-current={i === breadcrumbs.length - 1 ? 'page' : undefined}
 								>
 									{crumb.label}

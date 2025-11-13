@@ -312,6 +312,30 @@
 			<span>{m['dashboard.browseEventsButton']()}</span>
 		</a>
 
+		{#if canOrganizeEvents()}
+			{#if organizations.filter((org) => hasAdminPermissions(org.id)).length === 1}
+				<!-- Single admin org - direct link to create event -->
+				<a
+					href="/org/{organizations.find((org) => hasAdminPermissions(org.id))
+						?.slug}/admin/events/new"
+					class="inline-flex items-center gap-2 rounded-lg border bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+				>
+					<Calendar class="h-4 w-4" aria-hidden="true" />
+					<span>{m['dashboard.createEventButton']()}</span>
+				</a>
+			{:else}
+				<!-- Multiple admin orgs - scroll to organizations section to choose -->
+				<button
+					type="button"
+					onclick={scrollToOrganizations}
+					class="inline-flex items-center gap-2 rounded-lg border bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+				>
+					<Calendar class="h-4 w-4" aria-hidden="true" />
+					<span>{m['dashboard.createEventButton']()}</span>
+				</button>
+			{/if}
+		{/if}
+
 		{#if organizations.length > 0}
 			<button
 				type="button"
