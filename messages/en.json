@@ -1603,6 +1603,8 @@
 		"membersOnly": "Members Only - Requires membership",
 		"staffOnly": "Staff Only - Staff and admins only",
 		"private": "Private - Admins only",
+		"privateInvitedAttendees": "Invited users or attendees only",
+		"privateVisibilityHelp": "Only visible to users who are invited to or attending the assigned event(s)",
 		"controlsVisibility": "Controls who can view this resource"
 	},
 	"resourceModal": {
