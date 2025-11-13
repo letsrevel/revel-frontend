@@ -8,6 +8,7 @@
 	import { Calendar, MapPin, Ticket, Tag } from 'lucide-svelte';
 	import EventBadges from './EventBadges.svelte';
 	import * as m from '$lib/paraglide/messages.js';
+	import { navigating } from '$app/stores';
 
 	interface Props {
 		event: EventInListSchema;
@@ -52,6 +53,10 @@
 		return parts.join(', ');
 	});
 
+	// Check if we're currently navigating to this card's event
+	let eventUrl = $derived(`/events/${event.organization.slug}/${event.slug}`);
+	let isNavigating = $derived($navigating !== null && $navigating.to?.url.pathname === eventUrl);
+
 	function handleImageError(): void {
 		imageError = true;
 	}
@@ -88,6 +93,23 @@
 	>
 		<span class="sr-only">{m['eventCard.viewDetails']()}</span>
 	</a>
+
+	<!-- Skeleton loader overlay when navigating -->
+	{#if isNavigating}
+		<div
+			class="absolute inset-0 z-20 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+			role="status"
+			aria-live="polite"
+		>
+			<div class="flex flex-col items-center gap-2">
+				<div
+					class="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"
+					aria-hidden="true"
+				></div>
+				<span class="text-sm text-muted-foreground">{m['eventCard.loading']()}</span>
+			</div>
+		</div>
+	{/if}
 
 	<!-- Cover Image -->
 	<div class={imageContainerClasses}>

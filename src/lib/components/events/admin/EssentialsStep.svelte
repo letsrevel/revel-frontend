@@ -325,43 +325,85 @@
 	</div>
 
 	<!-- Requires Ticket -->
-	<div class="space-y-2">
-		<label
-			class="flex items-center gap-3 rounded-md border border-input p-3 transition-colors {isEditMode
-				? 'cursor-not-allowed opacity-60'
-				: 'cursor-pointer hover:bg-accent'}"
-		>
-			<input
-				type="checkbox"
-				checked={formData.requires_ticket || false}
-				onchange={(e) => onUpdate({ requires_ticket: e.currentTarget.checked })}
-				disabled={isEditMode}
-				class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-			/>
-			<div class="flex-1">
-				<div class="flex items-center gap-2 font-medium">
+	<div class="space-y-3">
+		<div class="space-y-2">
+			<label class="block text-sm font-medium">
+				<span class="flex items-center gap-2">
 					<Ticket class="h-4 w-4" aria-hidden="true" />
-					Requires Ticket
-				</div>
-				<div class="text-sm text-muted-foreground">
-					Use paid/free tickets instead of simple RSVPs
-				</div>
-			</div>
-		</label>
+					Ticketing
+				</span>
+			</label>
 
-		{#if isEditMode}
-			<div
-				class="rounded-md border border-yellow-200 bg-yellow-50 px-3 py-2 text-xs text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-100"
+			<!-- Immutability warning - Always visible in create mode -->
+			{#if !isEditMode}
+				<div
+					class="rounded-md border border-orange-200 bg-orange-50 px-3 py-2.5 text-sm dark:border-orange-800 dark:bg-orange-950"
+					role="alert"
+				>
+					<div class="flex items-start gap-2">
+						<span class="text-orange-600 dark:text-orange-400" aria-hidden="true">⚠️</span>
+						<div class="flex-1 text-orange-800 dark:text-orange-100">
+							<p class="font-medium">Important: This setting cannot be changed after creation</p>
+							<p class="mt-1 text-xs text-orange-700 dark:text-orange-200">
+								Choose carefully whether your event will use tickets or simple RSVPs
+							</p>
+						</div>
+					</div>
+				</div>
+			{/if}
+
+			<!-- Checkbox -->
+			<label
+				class="flex items-center gap-3 rounded-md border border-input p-3 transition-colors {isEditMode
+					? 'cursor-not-allowed opacity-60'
+					: 'cursor-pointer hover:bg-accent'}"
 			>
-				⚠️ This setting cannot be changed after the event is created
-			</div>
-		{:else if formData.requires_ticket}
-			<div
-				class="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-100"
-			>
-				ℹ️ Note: This setting cannot be changed once the event is created. Choose carefully!
-			</div>
-		{/if}
+				<input
+					type="checkbox"
+					checked={formData.requires_ticket || false}
+					onchange={(e) => onUpdate({ requires_ticket: e.currentTarget.checked })}
+					disabled={isEditMode}
+					class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+				/>
+				<div class="flex-1">
+					<div class="font-medium">Requires Ticket</div>
+					<div class="text-sm text-muted-foreground">
+						Use paid/free tickets instead of simple RSVPs
+					</div>
+				</div>
+			</label>
+
+			<!-- Edit mode warning -->
+			{#if isEditMode}
+				<div
+					class="rounded-md border border-yellow-200 bg-yellow-50 px-3 py-2 text-xs text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-100"
+					role="alert"
+				>
+					⚠️ This setting cannot be changed after the event is created
+				</div>
+			{/if}
+		</div>
+
+		<!-- Help text explaining the difference -->
+		<div class="rounded-md bg-muted p-3 text-sm">
+			<p class="font-medium text-foreground">What's the difference?</p>
+			<ul class="mt-2 space-y-1.5 text-xs text-muted-foreground">
+				<li class="flex gap-2">
+					<span class="text-primary">•</span>
+					<span
+						><strong>With Tickets:</strong> Attendees purchase or claim tickets. You can set prices,
+						tier limits, and check-in attendees.</span
+					>
+				</li>
+				<li class="flex gap-2">
+					<span class="text-primary">•</span>
+					<span
+						><strong>Without Tickets (RSVP):</strong> Attendees simply RSVP "Yes" or "Maybe". Simpler
+						but with fewer management features.</span
+					>
+				</li>
+			</ul>
+		</div>
 	</div>
 
 	<!-- Navigation Buttons -->

@@ -179,7 +179,8 @@
 	},
 	"eventCard": {
 		"viewDetails": "View event details",
-		"location_tbd": "TBD"
+		"location_tbd": "TBD",
+		"loading": "Loading..."
 	},
 	"eventBadges": {
 		"youreOrganizing": "You're Organizing",
@@ -364,6 +365,7 @@
 		"pageTitle": "Welcome back, {firstName}!",
 		"pageSubtitle": "Here's what's happening with your events and organizations",
 		"browseEventsButton": "Browse Events",
+		"createEventButton": "Create Event",
 		"myOrganizationsButton": "My Organizations",
 		"adminButton": "Admin",
 		"viewProfile": "View Profile",
