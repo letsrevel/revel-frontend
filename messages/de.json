@@ -1603,6 +1603,8 @@
 		"membersOnly": "Nur Mitglieder - Erfordert Mitgliedschaft",
 		"staffOnly": "Nur Personal - Nur Personal und Admins",
 		"private": "Privat - Nur Admins",
+		"privateInvitedAttendees": "Nur eingeladene Benutzer oder Teilnehmer",
+		"privateVisibilityHelp": "Nur sichtbar für Benutzer, die zur zugewiesenen Veranstaltung eingeladen sind oder daran teilnehmen",
 		"controlsVisibility": "Kontrolliert, wer diese Ressource sehen kann"
 	},
 	"resourceModal": {

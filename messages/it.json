@@ -1603,6 +1603,8 @@
 		"membersOnly": "Solo Membri - Richiede iscrizione",
 		"staffOnly": "Solo Staff - Solo staff e admin",
 		"private": "Privato - Solo admin",
+		"privateInvitedAttendees": "Solo utenti invitati o partecipanti",
+		"privateVisibilityHelp": "Visibile solo agli utenti invitati o che partecipano all'evento assegnato",
 		"controlsVisibility": "Controlla chi può visualizzare questa risorsa"
 	},
 	"resourceModal": {
