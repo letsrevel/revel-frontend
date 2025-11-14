@@ -38,7 +38,8 @@
 		eventadminListEventTokens,
 		eventadminCreateEventToken,
 		eventadminUpdateEventToken,
-		eventadminDeleteEventToken
+		eventadminDeleteEventToken,
+		organizationadminListMembers
 	} from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
@@ -81,6 +82,11 @@
 	let selectedTierId = $state('');
 	let emailTags = $state<string[]>([]);
 	let emailInputValue = $state('');
+	let emailSuggestions = $state<Array<{ email: string; name: string }>>([]);
+	let showEmailSuggestions = $state(false);
+	let selectedEmailIndex = $state(-1);
+	let isLoadingEmailSuggestions = $state(false);
+	let emailSearchTimeout: ReturnType<typeof setTimeout> | null = null;
 
 	// Edit invitation state
 	let showEditDialog = $state(false);
@@ -211,6 +217,80 @@
 		selectedTierId = '';
 		emailTags = [];
 		emailInputValue = '';
+		emailSuggestions = [];
+		showEmailSuggestions = false;
+		selectedEmailIndex = -1;
+	}
+
+	/**
+	 * Fetch email suggestions from organization members
+	 */
+	async function fetchEmailSuggestions(search: string): Promise<void> {
+		if (!search.trim() || search.length < 2) {
+			emailSuggestions = [];
+			showEmailSuggestions = false;
+			return;
+		}
+
+		isLoadingEmailSuggestions = true;
+
+		try {
+			const response = await organizationadminListMembers({
+				path: { slug: data.organization.slug },
+				query: { search, page_size: 10 },
+				headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined
+			});
+
+			if (response.data?.results) {
+				// Extract email and name, filter out already-added emails and those without email
+				emailSuggestions = response.data.results
+					.filter((member) => member.user.email && !emailTags.includes(member.user.email))
+					.map((member) => ({
+						email: member.user.email!,
+						name:
+							member.user.preferred_name ||
+							[member.user.first_name, member.user.last_name].filter(Boolean).join(' ') ||
+							member.user.email!
+					}));
+				showEmailSuggestions = emailSuggestions.length > 0;
+				selectedEmailIndex = -1;
+			}
+		} catch (error) {
+			console.error('Failed to fetch email suggestions:', error);
+			emailSuggestions = [];
+			showEmailSuggestions = false;
+		} finally {
+			isLoadingEmailSuggestions = false;
+		}
+	}
+
+	/**
+	 * Handle email input changes (with debouncing)
+	 */
+	function handleEmailInput(e: Event): void {
+		const value = (e.target as HTMLInputElement).value;
+		emailInputValue = value;
+
+		// Clear previous timeout
+		if (emailSearchTimeout) {
+			clearTimeout(emailSearchTimeout);
+		}
+
+		// Debounce search by 300ms
+		emailSearchTimeout = setTimeout(() => {
+			fetchEmailSuggestions(value);
+		}, 300);
+	}
+
+	/**
+	 * Select an email suggestion
+	 */
+	function selectEmailSuggestion(email: string): void {
+		addEmailTag(email);
+		emailInputValue = '';
+		emailSuggestions = [];
+		showEmailSuggestions = false;
+		selectedEmailIndex = -1;
 	}
 
 	/**
@@ -238,14 +318,32 @@
 	function handleEmailKeydown(e: KeyboardEvent) {
 		if (e.key === 'Enter' || e.key === ',' || e.key === ' ') {
 			e.preventDefault();
-			if (emailInputValue.trim()) {
+			// If a suggestion is selected, use it; otherwise add the input value
+			if (selectedEmailIndex >= 0 && emailSuggestions[selectedEmailIndex]) {
+				selectEmailSuggestion(emailSuggestions[selectedEmailIndex].email);
+			} else if (emailInputValue.trim()) {
 				addEmailTag(emailInputValue);
 				emailInputValue = '';
+				emailSuggestions = [];
+				showEmailSuggestions = false;
 			}
 		} else if (e.key === 'Backspace' && !emailInputValue && emailTags.length > 0) {
 			// Remove last tag if input is empty and backspace is pressed
 			emailTags = emailTags.slice(0, -1);
 			updateEmailsString();
+		} else if (e.key === 'ArrowDown') {
+			e.preventDefault();
+			if (showEmailSuggestions && emailSuggestions.length > 0) {
+				selectedEmailIndex = Math.min(selectedEmailIndex + 1, emailSuggestions.length - 1);
+			}
+		} else if (e.key === 'ArrowUp') {
+			e.preventDefault();
+			if (showEmailSuggestions && emailSuggestions.length > 0) {
+				selectedEmailIndex = Math.max(selectedEmailIndex - 1, -1);
+			}
+		} else if (e.key === 'Escape') {
+			showEmailSuggestions = false;
+			selectedEmailIndex = -1;
 		}
 	}
 
@@ -1523,7 +1621,7 @@
 			<input type="hidden" name="emails" value={invitationEmails} />
 
 			<!-- Email addresses with tag input -->
-			<div>
+			<div class="relative">
 				<label class="block text-sm font-medium"
 					>{m['eventInvitationsAdmin.emailAddressesLabel']()}</label
 				>
@@ -1545,17 +1643,68 @@
 							</button>
 						</span>
 					{/each}
-					<input
-						type="text"
-						bind:value={emailInputValue}
-						onkeydown={handleEmailKeydown}
-						onblur={handleEmailBlur}
-						onpaste={handleEmailPaste}
-						placeholder={emailTags.length === 0
-							? m['eventInvitationsAdmin.emailPlaceholder']()
-							: ''}
-						class="min-w-[200px] flex-1 border-0 bg-transparent p-1 text-sm outline-none placeholder:text-muted-foreground dark:text-gray-100"
-					/>
+					<div class="relative min-w-[200px] flex-1">
+						<input
+							type="text"
+							value={emailInputValue}
+							oninput={handleEmailInput}
+							onkeydown={handleEmailKeydown}
+							onblur={() => {
+								// Delay hiding to allow clicking on suggestions
+								setTimeout(() => {
+									showEmailSuggestions = false;
+									handleEmailBlur();
+								}, 200);
+							}}
+							onfocus={() => {
+								if (emailInputValue.trim().length >= 2 && emailSuggestions.length > 0) {
+									showEmailSuggestions = true;
+								}
+							}}
+							placeholder={emailTags.length === 0
+								? m['eventInvitationsAdmin.emailPlaceholder']()
+								: ''}
+							class="w-full border-0 bg-transparent p-1 text-sm outline-none placeholder:text-muted-foreground dark:text-gray-100"
+							autocomplete="off"
+							role="combobox"
+							aria-expanded={showEmailSuggestions}
+							aria-controls="email-suggestions"
+							aria-activedescendant={selectedEmailIndex >= 0
+								? `email-suggestion-${selectedEmailIndex}`
+								: undefined}
+						/>
+
+						{#if showEmailSuggestions && emailSuggestions.length > 0}
+							<div
+								id="email-suggestions"
+								role="listbox"
+								class="absolute left-0 top-full z-10 mt-1 max-h-60 w-full min-w-[300px] overflow-auto rounded-md border border-input bg-popover text-popover-foreground shadow-md"
+							>
+								{#each emailSuggestions as suggestion, index}
+									<button
+										type="button"
+										id="email-suggestion-{index}"
+										role="option"
+										aria-selected={selectedEmailIndex === index}
+										onclick={() => selectEmailSuggestion(suggestion.email)}
+										class="flex w-full cursor-pointer flex-col items-start px-3 py-2 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground {selectedEmailIndex ===
+										index
+											? 'bg-accent text-accent-foreground'
+											: ''}"
+									>
+										<span class="font-medium">{suggestion.name}</span>
+										<span class="text-xs text-muted-foreground">{suggestion.email}</span>
+									</button>
+								{/each}
+							</div>
+						{/if}
+
+						{#if isLoadingEmailSuggestions}
+							<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+								<Loader2 class="h-4 w-4 animate-spin text-muted-foreground" aria-hidden="true" />
+							</div>
+						{/if}
+					</div>
 				</div>
 				<p class="mt-1 text-xs text-muted-foreground">
 					{m['eventInvitationsAdmin.emailHint']()}
