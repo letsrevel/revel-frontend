@@ -396,8 +396,9 @@
 				city_id: formData.city_id!,
 				visibility: formData.visibility || 'public',
 				event_type: (formData.event_type || 'public') as any, // Backend has wrong enum
-				status: 'draft' as any // Create as draft by default
-			};
+				status: 'draft' as any, // Create as draft by default
+				requires_ticket: formData.requires_ticket || false // Send explicit false when unchecked
+			} as any; // Cast to any because requires_ticket is not yet in backend schema
 
 			if (eventId) {
 				// Update existing event
