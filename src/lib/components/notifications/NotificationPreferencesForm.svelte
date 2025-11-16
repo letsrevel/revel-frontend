@@ -338,6 +338,59 @@
 </script>
 
 <div class="space-y-6">
+	<!-- Privacy Settings Section -->
+	<Card.Root>
+		<Card.Header>
+			<Card.Title class="flex items-center gap-2">
+				<Eye class="h-5 w-5" aria-hidden="true" />
+				{m['notificationPreferences.privacySettings']()}
+			</Card.Title>
+			<Card.Description>{m['accountSettingsPage.privacyDescription']()}</Card.Description>
+		</Card.Header>
+		<Card.Content>
+			<div class="space-y-3">
+				<Label>{m['notificationPreferences.showMeOnAttendeeList']()}</Label>
+				<RadioGroup.Root
+					value={attendeeListVisibility}
+					onValueChange={(value) => {
+						if (value) {
+							attendeeListVisibility = value;
+						}
+					}}
+					disabled={isFormDisabled}
+				>
+					<div class="flex items-center space-x-2">
+						<RadioGroup.Item value="always" id="vis-always" />
+						<Label for="vis-always" class="font-normal"
+							>{m['notificationPreferences.visibilityAlways']()}</Label
+						>
+					</div>
+					<div class="flex items-center space-x-2">
+						<RadioGroup.Item value="never" id="vis-never" />
+						<Label for="vis-never" class="font-normal"
+							>{m['notificationPreferences.visibilityNever']()}</Label
+						>
+					</div>
+					<div class="flex items-center space-x-2">
+						<RadioGroup.Item value="to_members" id="vis-members" />
+						<Label for="vis-members" class="font-normal"
+							>{m['notificationPreferences.visibilityToMembers']()}</Label
+						>
+					</div>
+					<div class="flex items-center space-x-2">
+						<RadioGroup.Item value="to_invitees" id="vis-invitees" />
+						<Label for="vis-invitees" class="font-normal"
+							>{m['notificationPreferences.visibilityToInvitees']()}</Label
+						>
+					</div>
+				</RadioGroup.Root>
+				<p class="text-xs text-muted-foreground">
+					{m['notificationPreferences.visibilityDescription']()}
+				</p>
+			</div>
+		</Card.Content>
+	</Card.Root>
+
 	<!-- Master Controls Section -->
 	<Card.Root>
 		<Card.Header>
@@ -582,59 +635,6 @@
 					{/if}
 				</div>
 			{/if}
-		</Card.Content>
-	</Card.Root>
-
-	<!-- Privacy Settings Section -->
-	<Card.Root>
-		<Card.Header>
-			<Card.Title class="flex items-center gap-2">
-				<Eye class="h-5 w-5" aria-hidden="true" />
-				{m['notificationPreferences.privacySettings']()}
-			</Card.Title>
-			<Card.Description>{m['accountSettingsPage.privacyDescription']()}</Card.Description>
-		</Card.Header>
-		<Card.Content>
-			<div class="space-y-3">
-				<Label>{m['notificationPreferences.showMeOnAttendeeList']()}</Label>
-				<RadioGroup.Root
-					value={attendeeListVisibility}
-					onValueChange={(value) => {
-						if (value) {
-							attendeeListVisibility = value;
-						}
-					}}
-					disabled={isFormDisabled}
-				>
-					<div class="flex items-center space-x-2">
-						<RadioGroup.Item value="always" id="vis-always" />
-						<Label for="vis-always" class="font-normal"
-							>{m['notificationPreferences.visibilityAlways']()}</Label
-						>
-					</div>
-					<div class="flex items-center space-x-2">
-						<RadioGroup.Item value="never" id="vis-never" />
-						<Label for="vis-never" class="font-normal"
-							>{m['notificationPreferences.visibilityNever']()}</Label
-						>
-					</div>
-					<div class="flex items-center space-x-2">
-						<RadioGroup.Item value="to_members" id="vis-members" />
-						<Label for="vis-members" class="font-normal"
-							>{m['notificationPreferences.visibilityToMembers']()}</Label
-						>
-					</div>
-					<div class="flex items-center space-x-2">
-						<RadioGroup.Item value="to_invitees" id="vis-invitees" />
-						<Label for="vis-invitees" class="font-normal"
-							>{m['notificationPreferences.visibilityToInvitees']()}</Label
-						>
-					</div>
-				</RadioGroup.Root>
-				<p class="text-xs text-muted-foreground">
-					{m['notificationPreferences.visibilityDescription']()}
-				</p>
-			</div>
 		</Card.Content>
 	</Card.Root>
 
