@@ -2862,6 +2862,18 @@
 		"next": "Next",
 		"viewAll": "View all"
 	},
+	"unsubscribePage": {
+		"pageTitle": "Unsubscribe from Notifications",
+		"pageDescription": "Manage your notification preferences to reduce email notifications",
+		"invalidTokenTitle": "Invalid or Expired Link",
+		"invalidTokenDescription": "This unsubscribe link is invalid or has expired. Please check your email for a valid link or log in to manage your preferences.",
+		"goHome": "Go to Homepage",
+		"successTitle": "Preferences Updated",
+		"successDescription": "Your notification preferences have been updated successfully. You will only receive in-app notifications from now on.",
+		"redirecting": "Redirecting to homepage...",
+		"title": "Unsubscribe from Notifications",
+		"subtitle": "We understand email notifications can be overwhelming. Adjust your preferences below to stay informed through in-app notifications only, or customize exactly what you want to receive."
+	},
 	"notificationDropdown": {
 		"openNotifications": "Open notifications",
 		"notifications": "Notifications",
