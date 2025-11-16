@@ -2,7 +2,8 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import {
 		notificationpreferenceUpdatePreferences,
-		notificationpreferenceGetAvailableNotificationTypes
+		notificationpreferenceGetAvailableNotificationTypes,
+		notificationpreferenceUnsubscribe
 	} from '$lib/api';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
@@ -32,16 +33,20 @@
 
 	interface Props {
 		preferences: NotificationPreferenceSchema | null;
-		onSave?: (preferences: NotificationPreferenceSchema) => void;
+		onSave?: (preferences?: NotificationPreferenceSchema) => void;
 		disabled?: boolean;
-		authToken: string;
+		authToken?: string;
+		unsubscribeToken?: string; // Token for unsubscribe mode (unauthenticated)
 	}
 
-	let { preferences, onSave, disabled = false, authToken }: Props = $props();
+	let { preferences, onSave, disabled = false, authToken, unsubscribeToken }: Props = $props();
+
+	// Determine if we're in unsubscribe mode
+	const isUnsubscribeMode = $derived(!!unsubscribeToken);
 
 	const queryClient = useQueryClient();
 
-	// Fetch available notification types
+	// Fetch available notification types (only in authenticated mode)
 	let availableTypesQuery = createQuery(() => ({
 		queryKey: ['notification-types'],
 		queryFn: async () => {
@@ -56,7 +61,7 @@
 			});
 			return response;
 		},
-		enabled: !!authToken,
+		enabled: !!authToken && !isUnsubscribeMode, // Don't fetch in unsubscribe mode
 		staleTime: 5 * 60 * 1000, // Cache for 5 minutes
 		retry: 1
 	}));
@@ -187,39 +192,81 @@
 			show_me_on_attendee_list?: string;
 			notification_type_settings?: Record<string, NotificationTypeSettings>;
 		}) => {
-			// Only send fields that are explicitly set (PATCH requirement)
+			// In unsubscribe mode, send all fields explicitly (even false values)
+			// In authenticated mode, only send fields that are explicitly set (PATCH requirement)
 			const payload: Record<string, any> = {};
 
-			if (data.silence_all_notifications !== undefined) {
-				payload.silence_all_notifications = data.silence_all_notifications;
-			}
-			if (data.event_reminders_enabled !== undefined) {
-				payload.event_reminders_enabled = data.event_reminders_enabled;
-			}
-			if (data.enabled_channels !== undefined) {
-				payload.enabled_channels = data.enabled_channels;
-			}
-			if (data.digest_frequency !== undefined) {
-				payload.digest_frequency = data.digest_frequency;
-			}
-			if (data.digest_send_time !== undefined) {
-				payload.digest_send_time = data.digest_send_time;
-			}
-			if (data.show_me_on_attendee_list !== undefined) {
-				payload.show_me_on_attendee_list = data.show_me_on_attendee_list;
-			}
-			if (data.notification_type_settings !== undefined) {
-				payload.notification_type_settings = data.notification_type_settings;
+			if (isUnsubscribeMode) {
+				// Send all fields explicitly in unsubscribe mode
+				payload.silence_all_notifications = data.silence_all_notifications ?? false;
+				payload.event_reminders_enabled = data.event_reminders_enabled ?? false;
+				payload.enabled_channels = data.enabled_channels ?? [];
+				payload.digest_frequency = data.digest_frequency ?? 'immediate';
+				payload.digest_send_time = data.digest_send_time ?? '09:00';
+				payload.show_me_on_attendee_list = data.show_me_on_attendee_list ?? 'never';
+				payload.notification_type_settings = data.notification_type_settings ?? {};
+			} else {
+				// Only send changed fields in authenticated mode
+				if (data.silence_all_notifications !== undefined) {
+					payload.silence_all_notifications = data.silence_all_notifications;
+				}
+				if (data.event_reminders_enabled !== undefined) {
+					payload.event_reminders_enabled = data.event_reminders_enabled;
+				}
+				if (data.enabled_channels !== undefined) {
+					payload.enabled_channels = data.enabled_channels;
+				}
+				if (data.digest_frequency !== undefined) {
+					payload.digest_frequency = data.digest_frequency;
+				}
+				if (data.digest_send_time !== undefined) {
+					payload.digest_send_time = data.digest_send_time;
+				}
+				if (data.show_me_on_attendee_list !== undefined) {
+					payload.show_me_on_attendee_list = data.show_me_on_attendee_list;
+				}
+				if (data.notification_type_settings !== undefined) {
+					payload.notification_type_settings = data.notification_type_settings;
+				}
 			}
 
-			const response = await notificationpreferenceUpdatePreferences({
-				body: payload,
-				headers: { Authorization: `Bearer ${authToken}` }
-			});
-			return response.data;
+			// Use different endpoint based on mode
+			if (isUnsubscribeMode && unsubscribeToken) {
+				// Unsubscribe mode: use unsubscribe endpoint with token
+				const response = await notificationpreferenceUnsubscribe({
+					body: {
+						token: unsubscribeToken,
+						preferences: payload
+					}
+				});
+
+				// Check for errors in response
+				if (response.error) {
+					const error = response.error as any;
+					throw new Error(error?.detail || error?.message || 'Failed to update preferences');
+				}
+
+				return response.data;
+			} else {
+				// Authenticated mode: use regular update endpoint
+				const response = await notificationpreferenceUpdatePreferences({
+					body: payload,
+					headers: { Authorization: `Bearer ${authToken}` }
+				});
+
+				// Check for errors in response
+				if (response.error) {
+					const error = response.error as any;
+					throw new Error(error?.detail || error?.message || 'Failed to update preferences');
+				}
+
+				return response.data;
+			}
 		},
 		onSuccess: (data) => {
-			queryClient.invalidateQueries({ queryKey: ['notification-preferences'] });
+			if (!isUnsubscribeMode) {
+				queryClient.invalidateQueries({ queryKey: ['notification-preferences'] });
+			}
 			toast.success(m['notificationPreferences.saveSuccess']());
 			onSave?.(data as NotificationPreferenceSchema);
 		},
@@ -338,58 +385,60 @@
 </script>
 
 <div class="space-y-6">
-	<!-- Privacy Settings Section -->
-	<Card.Root>
-		<Card.Header>
-			<Card.Title class="flex items-center gap-2">
-				<Eye class="h-5 w-5" aria-hidden="true" />
-				{m['notificationPreferences.privacySettings']()}
-			</Card.Title>
-			<Card.Description>{m['accountSettingsPage.privacyDescription']()}</Card.Description>
-		</Card.Header>
-		<Card.Content>
-			<div class="space-y-3">
-				<Label>{m['notificationPreferences.showMeOnAttendeeList']()}</Label>
-				<RadioGroup.Root
-					value={attendeeListVisibility}
-					onValueChange={(value) => {
-						if (value) {
-							attendeeListVisibility = value;
-						}
-					}}
-					disabled={isFormDisabled}
-				>
-					<div class="flex items-center space-x-2">
-						<RadioGroup.Item value="always" id="vis-always" />
-						<Label for="vis-always" class="font-normal"
-							>{m['notificationPreferences.visibilityAlways']()}</Label
-						>
-					</div>
-					<div class="flex items-center space-x-2">
-						<RadioGroup.Item value="never" id="vis-never" />
-						<Label for="vis-never" class="font-normal"
-							>{m['notificationPreferences.visibilityNever']()}</Label
-						>
-					</div>
-					<div class="flex items-center space-x-2">
-						<RadioGroup.Item value="to_members" id="vis-members" />
-						<Label for="vis-members" class="font-normal"
-							>{m['notificationPreferences.visibilityToMembers']()}</Label
-						>
-					</div>
-					<div class="flex items-center space-x-2">
-						<RadioGroup.Item value="to_invitees" id="vis-invitees" />
-						<Label for="vis-invitees" class="font-normal"
-							>{m['notificationPreferences.visibilityToInvitees']()}</Label
-						>
-					</div>
-				</RadioGroup.Root>
-				<p class="text-xs text-muted-foreground">
-					{m['notificationPreferences.visibilityDescription']()}
-				</p>
-			</div>
-		</Card.Content>
-	</Card.Root>
+	{#if !isUnsubscribeMode}
+		<!-- Privacy Settings Section -->
+		<Card.Root>
+			<Card.Header>
+				<Card.Title class="flex items-center gap-2">
+					<Eye class="h-5 w-5" aria-hidden="true" />
+					{m['notificationPreferences.privacySettings']()}
+				</Card.Title>
+				<Card.Description>{m['accountSettingsPage.privacyDescription']()}</Card.Description>
+			</Card.Header>
+			<Card.Content>
+				<div class="space-y-3">
+					<Label>{m['notificationPreferences.showMeOnAttendeeList']()}</Label>
+					<RadioGroup.Root
+						value={attendeeListVisibility}
+						onValueChange={(value) => {
+							if (value) {
+								attendeeListVisibility = value;
+							}
+						}}
+						disabled={isFormDisabled}
+					>
+						<div class="flex items-center space-x-2">
+							<RadioGroup.Item value="always" id="vis-always" />
+							<Label for="vis-always" class="font-normal"
+								>{m['notificationPreferences.visibilityAlways']()}</Label
+							>
+						</div>
+						<div class="flex items-center space-x-2">
+							<RadioGroup.Item value="never" id="vis-never" />
+							<Label for="vis-never" class="font-normal"
+								>{m['notificationPreferences.visibilityNever']()}</Label
+							>
+						</div>
+						<div class="flex items-center space-x-2">
+							<RadioGroup.Item value="to_members" id="vis-members" />
+							<Label for="vis-members" class="font-normal"
+								>{m['notificationPreferences.visibilityToMembers']()}</Label
+							>
+						</div>
+						<div class="flex items-center space-x-2">
+							<RadioGroup.Item value="to_invitees" id="vis-invitees" />
+							<Label for="vis-invitees" class="font-normal"
+								>{m['notificationPreferences.visibilityToInvitees']()}</Label
+							>
+						</div>
+					</RadioGroup.Root>
+					<p class="text-xs text-muted-foreground">
+						{m['notificationPreferences.visibilityDescription']()}
+					</p>
+				</div>
+			</Card.Content>
+		</Card.Root>
+	{/if}
 
 	<!-- Master Controls Section -->
 	<Card.Root>
@@ -558,310 +607,312 @@
 		</Card.Content>
 	</Card.Root>
 
-	<!-- Digest Settings Section -->
-	<Card.Root>
-		<Card.Header>
-			<Card.Title class="flex items-center gap-2">
-				<Clock class="h-5 w-5" aria-hidden="true" />
-				{m['notificationPreferences.digestSettings']()}
-			</Card.Title>
-			<Card.Description
-				>{m['notificationPreferences.digestFrequencyDescription']()}</Card.Description
-			>
-		</Card.Header>
-		<Card.Content class="space-y-4">
-			<!-- Digest Frequency -->
-			<div class="space-y-3">
-				<Label>{m['notificationPreferences.digestFrequency']()}</Label>
-				<RadioGroup.Root
-					value={digestFrequency}
-					onValueChange={(value) => {
-						if (value) {
-							digestFrequency = value;
-						}
-					}}
-					disabled={isFormDisabled}
+	{#if !isUnsubscribeMode}
+		<!-- Digest Settings Section -->
+		<Card.Root>
+			<Card.Header>
+				<Card.Title class="flex items-center gap-2">
+					<Clock class="h-5 w-5" aria-hidden="true" />
+					{m['notificationPreferences.digestSettings']()}
+				</Card.Title>
+				<Card.Description
+					>{m['notificationPreferences.digestFrequencyDescription']()}</Card.Description
 				>
-					<div class="flex items-center space-x-2">
-						<RadioGroup.Item value="immediate" id="freq-immediate" />
-						<Label for="freq-immediate" class="font-normal"
-							>{m['notificationPreferences.digestFrequencyImmediate']()}</Label
-						>
-					</div>
-					<div class="flex items-center space-x-2">
-						<RadioGroup.Item value="hourly" id="freq-hourly" />
-						<Label for="freq-hourly" class="font-normal"
-							>{m['notificationPreferences.digestFrequencyHourly']()}</Label
-						>
-					</div>
-					<div class="flex items-center space-x-2">
-						<RadioGroup.Item value="daily" id="freq-daily" />
-						<Label for="freq-daily" class="font-normal"
-							>{m['notificationPreferences.digestFrequencyDaily']()}</Label
-						>
-					</div>
-					<div class="flex items-center space-x-2">
-						<RadioGroup.Item value="weekly" id="freq-weekly" />
-						<Label for="freq-weekly" class="font-normal"
-							>{m['notificationPreferences.digestFrequencyWeekly']()}</Label
-						>
-					</div>
-				</RadioGroup.Root>
-				<p class="text-xs text-muted-foreground">
-					{m['notificationPreferences.digestFrequencyDescription']()}
-				</p>
-			</div>
-
-			<!-- Digest Send Time (only for daily/weekly) -->
-			{#if showTimePicker}
-				<div class="space-y-2">
-					<Label for="digest-time">{m['notificationPreferences.sendTime']()}</Label>
-					<Input
-						id="digest-time"
-						type="time"
-						bind:value={digestSendTime}
+			</Card.Header>
+			<Card.Content class="space-y-4">
+				<!-- Digest Frequency -->
+				<div class="space-y-3">
+					<Label>{m['notificationPreferences.digestFrequency']()}</Label>
+					<RadioGroup.Root
+						value={digestFrequency}
+						onValueChange={(value) => {
+							if (value) {
+								digestFrequency = value;
+							}
+						}}
 						disabled={isFormDisabled}
-						placeholder="09:00"
-						class="w-full"
-						aria-describedby="digest-time-help"
-					/>
-					<p id="digest-time-help" class="text-xs text-muted-foreground">
-						{m['notificationPreferences.sendTimeDescription']()}
+					>
+						<div class="flex items-center space-x-2">
+							<RadioGroup.Item value="immediate" id="freq-immediate" />
+							<Label for="freq-immediate" class="font-normal"
+								>{m['notificationPreferences.digestFrequencyImmediate']()}</Label
+							>
+						</div>
+						<div class="flex items-center space-x-2">
+							<RadioGroup.Item value="hourly" id="freq-hourly" />
+							<Label for="freq-hourly" class="font-normal"
+								>{m['notificationPreferences.digestFrequencyHourly']()}</Label
+							>
+						</div>
+						<div class="flex items-center space-x-2">
+							<RadioGroup.Item value="daily" id="freq-daily" />
+							<Label for="freq-daily" class="font-normal"
+								>{m['notificationPreferences.digestFrequencyDaily']()}</Label
+							>
+						</div>
+						<div class="flex items-center space-x-2">
+							<RadioGroup.Item value="weekly" id="freq-weekly" />
+							<Label for="freq-weekly" class="font-normal"
+								>{m['notificationPreferences.digestFrequencyWeekly']()}</Label
+							>
+						</div>
+					</RadioGroup.Root>
+					<p class="text-xs text-muted-foreground">
+						{m['notificationPreferences.digestFrequencyDescription']()}
 					</p>
-					{#if validationError && validationError.includes('time')}
-						<p class="text-sm text-destructive" role="alert">
-							{validationError}
-						</p>
-					{/if}
 				</div>
-			{/if}
-		</Card.Content>
-	</Card.Root>
 
-	<!-- Advanced Settings Section (Collapsible) -->
-	<Card.Root>
-		<button
-			type="button"
-			onclick={() => (advancedOpen = !advancedOpen)}
-			class="w-full p-6 text-left transition-colors hover:bg-accent"
-			aria-expanded={advancedOpen}
-		>
-			<div class="flex items-center justify-between">
-				<div class="flex items-center gap-2">
-					<Settings class="h-5 w-5" aria-hidden="true" />
-					<h3 class="text-lg font-semibold">{m['notificationPreferences.advancedSettings']()}</h3>
+				<!-- Digest Send Time (only for daily/weekly) -->
+				{#if showTimePicker}
+					<div class="space-y-2">
+						<Label for="digest-time">{m['notificationPreferences.sendTime']()}</Label>
+						<Input
+							id="digest-time"
+							type="time"
+							bind:value={digestSendTime}
+							disabled={isFormDisabled}
+							placeholder="09:00"
+							class="w-full"
+							aria-describedby="digest-time-help"
+						/>
+						<p id="digest-time-help" class="text-xs text-muted-foreground">
+							{m['notificationPreferences.sendTimeDescription']()}
+						</p>
+						{#if validationError && validationError.includes('time')}
+							<p class="text-sm text-destructive" role="alert">
+								{validationError}
+							</p>
+						{/if}
+					</div>
+				{/if}
+			</Card.Content>
+		</Card.Root>
+
+		<!-- Advanced Settings Section (Collapsible) -->
+		<Card.Root>
+			<button
+				type="button"
+				onclick={() => (advancedOpen = !advancedOpen)}
+				class="w-full p-6 text-left transition-colors hover:bg-accent"
+				aria-expanded={advancedOpen}
+			>
+				<div class="flex items-center justify-between">
+					<div class="flex items-center gap-2">
+						<Settings class="h-5 w-5" aria-hidden="true" />
+						<h3 class="text-lg font-semibold">{m['notificationPreferences.advancedSettings']()}</h3>
+					</div>
+					<ChevronDown
+						class="h-5 w-5 transition-transform duration-200 {advancedOpen ? 'rotate-180' : ''}"
+						aria-hidden="true"
+					/>
 				</div>
-				<ChevronDown
-					class="h-5 w-5 transition-transform duration-200 {advancedOpen ? 'rotate-180' : ''}"
-					aria-hidden="true"
-				/>
-			</div>
-			<p class="mt-1 text-sm text-muted-foreground">
-				{m['notificationPreferences.advancedSettingsDescription']()}
-			</p>
-		</button>
+				<p class="mt-1 text-sm text-muted-foreground">
+					{m['notificationPreferences.advancedSettingsDescription']()}
+				</p>
+			</button>
 
-		{#if advancedOpen}
-			<Card.Content class="space-y-6 border-t pt-6">
-				{#if availableTypesQuery.isLoading}
-					<div class="flex items-center justify-center py-8">
-						<Loader2 class="h-6 w-6 animate-spin text-muted-foreground" />
-					</div>
-				{:else if availableTypesQuery.isError}
-					<div class="py-4 text-center text-sm">
-						<p class="font-medium text-destructive">
-							{m['notificationPreferences.failedToLoadTypes']()}
-						</p>
-						<p class="mt-1 text-muted-foreground">
-							{availableTypesQuery.error?.message || 'Unknown error'}
-						</p>
-						<Button
-							variant="outline"
-							size="sm"
-							onclick={() => availableTypesQuery.refetch()}
-							class="mt-3"
-						>
-							{m['notificationPreferences.retryLoad']()}
-						</Button>
-					</div>
-				{:else if availableTypes.length === 0}
-					<div class="py-4 text-center text-sm">
-						<p class="text-muted-foreground">{m['notificationPreferences.noTypesAvailable']()}</p>
-						<!-- Debug info -->
-						<details class="mt-3 text-left">
-							<summary class="cursor-pointer text-xs">Debug info</summary>
-							<pre class="mt-2 overflow-auto rounded bg-muted p-2 text-xs">
+			{#if advancedOpen}
+				<Card.Content class="space-y-6 border-t pt-6">
+					{#if availableTypesQuery.isLoading}
+						<div class="flex items-center justify-center py-8">
+							<Loader2 class="h-6 w-6 animate-spin text-muted-foreground" />
+						</div>
+					{:else if availableTypesQuery.isError}
+						<div class="py-4 text-center text-sm">
+							<p class="font-medium text-destructive">
+								{m['notificationPreferences.failedToLoadTypes']()}
+							</p>
+							<p class="mt-1 text-muted-foreground">
+								{availableTypesQuery.error?.message || 'Unknown error'}
+							</p>
+							<Button
+								variant="outline"
+								size="sm"
+								onclick={() => availableTypesQuery.refetch()}
+								class="mt-3"
+							>
+								{m['notificationPreferences.retryLoad']()}
+							</Button>
+						</div>
+					{:else if availableTypes.length === 0}
+						<div class="py-4 text-center text-sm">
+							<p class="text-muted-foreground">{m['notificationPreferences.noTypesAvailable']()}</p>
+							<!-- Debug info -->
+							<details class="mt-3 text-left">
+								<summary class="cursor-pointer text-xs">Debug info</summary>
+								<pre class="mt-2 overflow-auto rounded bg-muted p-2 text-xs">
 Query status: {availableTypesQuery.status}
 Data: {JSON.stringify(availableTypesQuery.data, null, 2)}
 								</pre>
-						</details>
-					</div>
-				{:else}
-					<div class="mb-4 space-y-1 text-sm text-muted-foreground">
-						<p class="font-medium">{m['notificationPreferences.perTypeSettingsTitle']()}</p>
-						<ul class="ml-2 list-inside list-disc space-y-1">
-							<li>{m['notificationPreferences.perTypeSettingsDefault']()}</li>
-							<li>{m['notificationPreferences.perTypeSettingsCustom']()}</li>
-							<li>{m['notificationPreferences.perTypeSettingsReset']()}</li>
-						</ul>
-					</div>
+							</details>
+						</div>
+					{:else}
+						<div class="mb-4 space-y-1 text-sm text-muted-foreground">
+							<p class="font-medium">{m['notificationPreferences.perTypeSettingsTitle']()}</p>
+							<ul class="ml-2 list-inside list-disc space-y-1">
+								<li>{m['notificationPreferences.perTypeSettingsDefault']()}</li>
+								<li>{m['notificationPreferences.perTypeSettingsCustom']()}</li>
+								<li>{m['notificationPreferences.perTypeSettingsReset']()}</li>
+							</ul>
+						</div>
 
-					{#each availableTypes as notificationType, index (notificationType)}
-						{@const settings = getNotificationTypeSettings(notificationType)}
-						{@const isCustom = hasCustomSettings(notificationType)}
-						<div class="space-y-3">
-							{#if index > 0}
-								<Separator />
-							{/if}
+						{#each availableTypes as notificationType, index (notificationType)}
+							{@const settings = getNotificationTypeSettings(notificationType)}
+							{@const isCustom = hasCustomSettings(notificationType)}
+							<div class="space-y-3">
+								{#if index > 0}
+									<Separator />
+								{/if}
 
-							<!-- Notification type header with status and actions -->
-							<div class="flex items-start justify-between gap-3">
-								<div class="flex-1 space-y-1">
-									<div class="flex flex-wrap items-center gap-2">
-										<Label
-											for="type-{notificationType}-enabled"
-											class="text-base font-medium capitalize"
-										>
-											{notificationType.replace(/_/g, ' ')}
-										</Label>
-										{#if !isCustom}
-											<span
-												class="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground"
+								<!-- Notification type header with status and actions -->
+								<div class="flex items-start justify-between gap-3">
+									<div class="flex-1 space-y-1">
+										<div class="flex flex-wrap items-center gap-2">
+											<Label
+												for="type-{notificationType}-enabled"
+												class="text-base font-medium capitalize"
 											>
-												{m['notificationPreferences.usingDefaults']()}
-											</span>
-										{:else}
-											<span
-												class="inline-flex items-center rounded-md bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
-											>
-												{m['notificationPreferences.customSettings']()}
-											</span>
-										{/if}
-									</div>
-									<p class="text-xs text-muted-foreground">
-										{#if settings.enabled}
-											{#if settings.channels.length === 0}
-												<strong>{m['notificationPreferences.enabled']()}</strong> •
-												<span class="text-destructive"
-													>{m['notificationPreferences.noChannels']()}</span
+												{notificationType.replace(/_/g, ' ')}
+											</Label>
+											{#if !isCustom}
+												<span
+													class="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground"
 												>
+													{m['notificationPreferences.usingDefaults']()}
+												</span>
 											{:else}
-												<strong>{m['notificationPreferences.enabled']()}</strong> • {settings.channels
-													.map((c) => c.replace('_', '-'))
-													.join(', ')}
+												<span
+													class="inline-flex items-center rounded-md bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+												>
+													{m['notificationPreferences.customSettings']()}
+												</span>
 											{/if}
-										{:else}
-											<strong class="text-destructive"
-												>{m['notificationPreferences.disabled']()}</strong
+										</div>
+										<p class="text-xs text-muted-foreground">
+											{#if settings.enabled}
+												{#if settings.channels.length === 0}
+													<strong>{m['notificationPreferences.enabled']()}</strong> •
+													<span class="text-destructive"
+														>{m['notificationPreferences.noChannels']()}</span
+													>
+												{:else}
+													<strong>{m['notificationPreferences.enabled']()}</strong> • {settings.channels
+														.map((c) => c.replace('_', '-'))
+														.join(', ')}
+												{/if}
+											{:else}
+												<strong class="text-destructive"
+													>{m['notificationPreferences.disabled']()}</strong
+												>
+												• {m['notificationPreferences.disabled']()}
+											{/if}
+										</p>
+									</div>
+									<div class="flex items-center gap-2">
+										{#if isCustom}
+											<Button
+												type="button"
+												variant="ghost"
+												size="sm"
+												onclick={() => resetNotificationTypeToDefault(notificationType)}
+												disabled={isFormDisabled}
+												class="h-8 px-2 text-xs"
+												aria-label={m['notificationPreferences.resetAriaLabel']({
+													type: notificationType
+												})}
 											>
-											• {m['notificationPreferences.disabled']()}
+												{m['notificationPreferences.resetButton']()}
+											</Button>
 										{/if}
-									</p>
-								</div>
-								<div class="flex items-center gap-2">
-									{#if isCustom}
-										<Button
-											type="button"
-											variant="ghost"
-											size="sm"
-											onclick={() => resetNotificationTypeToDefault(notificationType)}
+										<Checkbox
+											id="type-{notificationType}-enabled"
+											checked={settings.enabled}
+											onCheckedChange={(checked) => {
+												updateNotificationTypeEnabled(notificationType, checked === true);
+											}}
 											disabled={isFormDisabled}
-											class="h-8 px-2 text-xs"
-											aria-label={m['notificationPreferences.resetAriaLabel']({
+											aria-label={m['notificationPreferences.enableAriaLabel']({
 												type: notificationType
 											})}
-										>
-											{m['notificationPreferences.resetButton']()}
-										</Button>
-									{/if}
-									<Checkbox
-										id="type-{notificationType}-enabled"
-										checked={settings.enabled}
-										onCheckedChange={(checked) => {
-											updateNotificationTypeEnabled(notificationType, checked === true);
-										}}
-										disabled={isFormDisabled}
-										aria-label={m['notificationPreferences.enableAriaLabel']({
-											type: notificationType
-										})}
-									/>
-								</div>
-							</div>
-
-							<!-- Channel selection for this notification type -->
-							{#if settings.enabled}
-								<div class="ml-6 space-y-2">
-									<Label class="text-sm font-medium">
-										{m['notificationPreferences.channels']()}
-										<span class="font-normal text-muted-foreground">
-											{#if !isCustom}
-												{m['notificationPreferences.usingGlobalDefaults']()}
-											{/if}
-										</span>:
-									</Label>
-									<div class="flex flex-wrap gap-3">
-										<!-- In-App -->
-										<div class="flex items-center space-x-2">
-											<Checkbox
-												id="type-{notificationType}-in-app"
-												checked={settings.channels.includes('in_app')}
-												onCheckedChange={() =>
-													toggleNotificationTypeChannel(notificationType, 'in_app')}
-												disabled={isFormDisabled}
-											/>
-											<Label
-												for="type-{notificationType}-in-app"
-												class="flex items-center gap-1.5 text-sm font-normal"
-											>
-												<Bell class="h-4 w-4" aria-hidden="true" />
-												{m['notificationPreferences.channelInApp']()}
-											</Label>
-										</div>
-
-										<!-- Email -->
-										<div class="flex items-center space-x-2">
-											<Checkbox
-												id="type-{notificationType}-email"
-												checked={settings.channels.includes('email')}
-												onCheckedChange={() =>
-													toggleNotificationTypeChannel(notificationType, 'email')}
-												disabled={isFormDisabled}
-											/>
-											<Label
-												for="type-{notificationType}-email"
-												class="flex items-center gap-1.5 text-sm font-normal"
-											>
-												<Mail class="h-4 w-4" aria-hidden="true" />
-												{m['notificationPreferences.channelEmail']()}
-											</Label>
-										</div>
-
-										<!-- Telegram -->
-										<div class="flex items-center space-x-2">
-											<Checkbox
-												id="type-{notificationType}-telegram"
-												checked={settings.channels.includes('telegram')}
-												onCheckedChange={() =>
-													toggleNotificationTypeChannel(notificationType, 'telegram')}
-												disabled={isFormDisabled}
-											/>
-											<Label
-												for="type-{notificationType}-telegram"
-												class="flex items-center gap-1.5 text-sm font-normal"
-											>
-												<MessageSquare class="h-4 w-4" aria-hidden="true" />
-												{m['notificationPreferences.channelTelegram']()}
-											</Label>
-										</div>
+										/>
 									</div>
 								</div>
-							{/if}
-						</div>
-					{/each}
-				{/if}
-			</Card.Content>
-		{/if}
-	</Card.Root>
+
+								<!-- Channel selection for this notification type -->
+								{#if settings.enabled}
+									<div class="ml-6 space-y-2">
+										<Label class="text-sm font-medium">
+											{m['notificationPreferences.channels']()}
+											<span class="font-normal text-muted-foreground">
+												{#if !isCustom}
+													{m['notificationPreferences.usingGlobalDefaults']()}
+												{/if}
+											</span>:
+										</Label>
+										<div class="flex flex-wrap gap-3">
+											<!-- In-App -->
+											<div class="flex items-center space-x-2">
+												<Checkbox
+													id="type-{notificationType}-in-app"
+													checked={settings.channels.includes('in_app')}
+													onCheckedChange={() =>
+														toggleNotificationTypeChannel(notificationType, 'in_app')}
+													disabled={isFormDisabled}
+												/>
+												<Label
+													for="type-{notificationType}-in-app"
+													class="flex items-center gap-1.5 text-sm font-normal"
+												>
+													<Bell class="h-4 w-4" aria-hidden="true" />
+													{m['notificationPreferences.channelInApp']()}
+												</Label>
+											</div>
+
+											<!-- Email -->
+											<div class="flex items-center space-x-2">
+												<Checkbox
+													id="type-{notificationType}-email"
+													checked={settings.channels.includes('email')}
+													onCheckedChange={() =>
+														toggleNotificationTypeChannel(notificationType, 'email')}
+													disabled={isFormDisabled}
+												/>
+												<Label
+													for="type-{notificationType}-email"
+													class="flex items-center gap-1.5 text-sm font-normal"
+												>
+													<Mail class="h-4 w-4" aria-hidden="true" />
+													{m['notificationPreferences.channelEmail']()}
+												</Label>
+											</div>
+
+											<!-- Telegram -->
+											<div class="flex items-center space-x-2">
+												<Checkbox
+													id="type-{notificationType}-telegram"
+													checked={settings.channels.includes('telegram')}
+													onCheckedChange={() =>
+														toggleNotificationTypeChannel(notificationType, 'telegram')}
+													disabled={isFormDisabled}
+												/>
+												<Label
+													for="type-{notificationType}-telegram"
+													class="flex items-center gap-1.5 text-sm font-normal"
+												>
+													<MessageSquare class="h-4 w-4" aria-hidden="true" />
+													{m['notificationPreferences.channelTelegram']()}
+												</Label>
+											</div>
+										</div>
+									</div>
+								{/if}
+							</div>
+						{/each}
+					{/if}
+				</Card.Content>
+			{/if}
+		</Card.Root>
+	{/if}
 
 	<!-- Action Buttons -->
 	<div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
@@ -869,7 +920,7 @@ Data: {JSON.stringify(availableTypesQuery.data, null, 2)}
 			type="button"
 			variant="outline"
 			onclick={handleReset}
-			disabled={!hasChanges || disabled || updateMutation.isPending}
+			disabled={(!hasChanges && !isUnsubscribeMode) || disabled || updateMutation.isPending}
 			class="w-full sm:w-auto"
 		>
 			{m['notificationPreferences.cancel']()}
@@ -877,7 +928,10 @@ Data: {JSON.stringify(availableTypesQuery.data, null, 2)}
 		<Button
 			type="button"
 			onclick={handleSave}
-			disabled={!hasChanges || disabled || updateMutation.isPending || !!validationError}
+			disabled={(!hasChanges && !isUnsubscribeMode) ||
+				disabled ||
+				updateMutation.isPending ||
+				!!validationError}
 			class="w-full sm:w-auto"
 		>
 			{#if updateMutation.isPending}

@@ -2862,6 +2862,18 @@
 		"next": "Weiter",
 		"viewAll": "Alle anzeigen"
 	},
+	"unsubscribePage": {
+		"pageTitle": "Von Benachrichtigungen abmelden",
+		"pageDescription": "Verwalten Sie Ihre Benachrichtigungseinstellungen, um E-Mail-Benachrichtigungen zu reduzieren",
+		"invalidTokenTitle": "Ungültiger oder abgelaufener Link",
+		"invalidTokenDescription": "Dieser Abmeldelink ist ungültig oder abgelaufen. Bitte überprüfen Sie Ihre E-Mail auf einen gültigen Link oder melden Sie sich an, um Ihre Einstellungen zu verwalten.",
+		"goHome": "Zur Startseite",
+		"successTitle": "Einstellungen aktualisiert",
+		"successDescription": "Ihre Benachrichtigungseinstellungen wurden erfolgreich aktualisiert. Sie erhalten ab jetzt nur noch In-App-Benachrichtigungen.",
+		"redirecting": "Weiterleitung zur Startseite...",
+		"title": "Von Benachrichtigungen abmelden",
+		"subtitle": "Wir verstehen, dass E-Mail-Benachrichtigungen überwältigend sein können. Passen Sie Ihre Einstellungen unten an, um nur über In-App-Benachrichtigungen informiert zu bleiben, oder passen Sie genau an, was Sie erhalten möchten."
+	},
 	"notificationDropdown": {
 		"openNotifications": "Benachrichtigungen öffnen",
 		"notifications": "Benachrichtigungen",

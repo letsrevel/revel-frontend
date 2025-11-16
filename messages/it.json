@@ -2862,6 +2862,18 @@
 		"next": "Successivo",
 		"viewAll": "Vedi tutte"
 	},
+	"unsubscribePage": {
+		"pageTitle": "Disiscriviti dalle notifiche",
+		"pageDescription": "Gestisci le tue preferenze di notifica per ridurre le notifiche email",
+		"invalidTokenTitle": "Link non valido o scaduto",
+		"invalidTokenDescription": "Questo link di disiscrizione non è valido o è scaduto. Controlla la tua email per un link valido o accedi per gestire le tue preferenze.",
+		"goHome": "Vai alla home",
+		"successTitle": "Preferenze aggiornate",
+		"successDescription": "Le tue preferenze di notifica sono state aggiornate con successo. D'ora in poi riceverai solo notifiche in-app.",
+		"redirecting": "Reindirizzamento alla home...",
+		"title": "Disiscriviti dalle notifiche",
+		"subtitle": "Capiamo che le notifiche email possano essere eccessive. Regola le tue preferenze qui sotto per rimanere informato solo tramite notifiche in-app, oppure personalizza esattamente cosa vuoi ricevere."
+	},
 	"notificationDropdown": {
 		"openNotifications": "Apri notifiche",
 		"notifications": "Notifiche",
