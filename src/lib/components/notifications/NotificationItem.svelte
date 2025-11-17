@@ -116,7 +116,12 @@
 
 	// Extract URL from notification context
 	function extractUrlFromContext(context: Record<string, unknown>): string | null {
-		// Check for common context patterns
+		// Backend provides frontend_url with correct routing
+		if (context.frontend_url && typeof context.frontend_url === 'string') {
+			return context.frontend_url;
+		}
+
+		// Fallback to context patterns for older notifications
 		if (context.event_id) {
 			return `/events/${context.event_id}`;
 		}

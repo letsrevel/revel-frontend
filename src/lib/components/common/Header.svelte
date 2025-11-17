@@ -97,11 +97,9 @@
 			<ThemeToggle />
 
 			{#if isAuthenticated}
-				<!-- Notification Dropdown (Desktop) -->
+				<!-- Notification Dropdown -->
 				{#if accessToken}
-					<div class="hidden md:block">
-						<NotificationDropdown authToken={accessToken} />
-					</div>
+					<NotificationDropdown authToken={accessToken} />
 				{/if}
 
 				<!-- User Menu (Desktop) -->
