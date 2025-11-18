@@ -51,6 +51,7 @@
 			wait_to_retake_questionnaire: XCircle,
 			wait_for_event_to_open: Bell,
 			join_waitlist: Users,
+			wait_for_open_spot: Clock,
 			purchase_ticket: Ticket,
 			rsvp: AlertCircle
 		};
@@ -67,7 +68,11 @@
 		if (!nextStep) return 'muted';
 
 		// Info (waiting states)
-		if (nextStep === 'wait_for_questionnaire_evaluation' || nextStep === 'wait_for_event_to_open') {
+		if (
+			nextStep === 'wait_for_questionnaire_evaluation' ||
+			nextStep === 'wait_for_event_to_open' ||
+			nextStep === 'wait_for_open_spot'
+		) {
 			return 'info';
 		}
 
@@ -125,6 +130,8 @@
 		if (eligibility.next_step === 'complete_questionnaire')
 			return m['ineligibilityMessage.questionnaireRequired']();
 		if (eligibility.next_step === 'join_waitlist') return m['ineligibilityMessage.eventFull']();
+		if (eligibility.next_step === 'wait_for_open_spot')
+			return m['ineligibilityMessage.onWaitlist']();
 
 		return m['ineligibilityMessage.notEligible']();
 	}
@@ -157,6 +164,10 @@
 
 		if (nextStep === 'join_waitlist') {
 			return m['ineligibilityMessage.eventFullExplanation']();
+		}
+
+		if (nextStep === 'wait_for_open_spot') {
+			return m['ineligibilityMessage.onWaitlistExplanation']();
 		}
 
 		if (nextStep === 'wait_for_event_to_open') {

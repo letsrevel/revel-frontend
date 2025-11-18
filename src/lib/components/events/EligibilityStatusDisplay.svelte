@@ -54,6 +54,7 @@
 			request_invitation: Mail,
 			become_member: UserPlus,
 			join_waitlist: ListPlus,
+			wait_for_open_spot: Clock,
 			wait_for_event_to_open: Bell
 		};
 

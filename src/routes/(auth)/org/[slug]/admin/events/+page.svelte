@@ -19,7 +19,8 @@
 		CheckCircle,
 		XCircle,
 		UserCheck,
-		Mail
+		Mail,
+		ListPlus
 	} from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -110,6 +111,13 @@
 	 */
 	function manageInvitations(eventId: string): void {
 		goto(`/org/${organization.slug}/admin/events/${eventId}/invitations`);
+	}
+
+	/**
+	 * Navigate to waitlist management page
+	 */
+	function manageWaitlist(eventId: string): void {
+		goto(`/org/${organization.slug}/admin/events/${eventId}/waitlist`);
 	}
 
 	/**
@@ -403,6 +411,16 @@
 										<Mail class="h-4 w-4" aria-hidden="true" />
 										{m['orgAdmin.events.actions.invitations']()}
 									</button>
+									{#if event.waitlist_open}
+										<button
+											type="button"
+											onclick={() => manageWaitlist(event.id)}
+											class="inline-flex items-center gap-1 rounded-md bg-amber-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-amber-700"
+										>
+											<ListPlus class="h-4 w-4" aria-hidden="true" />
+											{m['orgAdmin.events.actions.waitlist']()}
+										</button>
+									{/if}
 									<button
 										type="button"
 										onclick={() => closeEvent(event.id)}
@@ -502,6 +520,16 @@
 										<Mail class="h-4 w-4" aria-hidden="true" />
 										{m['orgAdmin.events.actions.invitations']()}
 									</button>
+									{#if event.waitlist_open}
+										<button
+											type="button"
+											onclick={() => manageWaitlist(event.id)}
+											class="inline-flex items-center gap-1 rounded-md bg-amber-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-amber-700"
+										>
+											<ListPlus class="h-4 w-4" aria-hidden="true" />
+											{m['orgAdmin.events.actions.waitlist']()}
+										</button>
+									{/if}
 									<button
 										type="button"
 										onclick={() => reopenEvent(event.id)}
