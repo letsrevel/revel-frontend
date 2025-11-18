@@ -2408,6 +2408,8 @@
 		"questionnaireUnderReviewExplanation": "Your questionnaire is being reviewed by the organizers. Check back soon!",
 		"questionnaireNotPassedExplanation": "Your questionnaire didn't meet the requirements. You can try again.",
 		"eventFullExplanation": "All spots have been taken. Join the waitlist to be notified if space opens up.",
+		"onWaitlist": "Sei in lista d'attesa",
+		"onWaitlistExplanation": "Sarai avvisato se si libera un posto. Controlla la tua email!",
 		"registrationNotOpenExplanation": "RSVPs aren't open yet. Check back when registration begins.",
 		"eventEndedExplanation": "This event took place in the past. RSVPs are no longer available.",
 		"soldOutExplanation": "All tickets have been sold. Check back later for additional releases.",
@@ -2427,7 +2429,11 @@
 	},
 	"ineligibilityActionButton": {
 		"requestSent": "Request Sent",
-		"success": "Success!"
+		"success": "Success!",
+		"waitlist_error": "Impossibile unirsi alla lista d'attesa. Riprova.",
+		"leave": "Abbandona",
+		"confirmLeaveWaitlist": "Sei sicuro di voler abbandonare la lista d'attesa?",
+		"leaveWaitlist_error": "Impossibile abbandonare la lista d'attesa. Riprova."
 	},
 	"claimInvitationButton": {
 		"claimed": "Claimed!",
@@ -3465,5 +3471,26 @@
 		"toast_restrictionAdded": "Restrizione alimentare aggiunta con successo",
 		"toast_restrictionRemoved": "Restrizione alimentare rimossa",
 		"toast_restrictionError": "Errore nell'aggiornamento della restrizione alimentare"
-	}
+	},
+	"ineligibilityActionButton.waitlist_error": "Impossibile unirsi alla lista d'attesa. Riprova.",
+	"orgAdmin.events.actions.waitlist": "Lista d'attesa",
+	"orgAdmin.waitlist.pageTitle": "Lista d'attesa evento",
+	"orgAdmin.waitlist.pageDescription": "Gestisci gli utenti in attesa di partecipare a questo evento",
+	"orgAdmin.waitlist.metaDescription": "Gestisci la lista d'attesa per {orgName} - visualizza e gestisci gli utenti in attesa di partecipare",
+	"orgAdmin.waitlist.loading": "Caricamento lista d'attesa...",
+	"orgAdmin.waitlist.error.title": "Impossibile caricare la lista d'attesa",
+	"orgAdmin.waitlist.error.description": "Si è verificato un errore durante il caricamento della lista d'attesa. Riprova.",
+	"orgAdmin.waitlist.empty.title": "Nessuna iscrizione alla lista d'attesa",
+	"orgAdmin.waitlist.empty.description": "Al momento nessuno è nella lista d'attesa per questo evento.",
+	"orgAdmin.waitlist.totalCount": "{count} persona{plural} in attesa",
+	"orgAdmin.waitlist.totalCount_plural": "e",
+	"orgAdmin.waitlist.table.user": "Utente",
+	"orgAdmin.waitlist.table.email": "Email",
+	"orgAdmin.waitlist.table.joinedAt": "Iscritto il",
+	"orgAdmin.waitlist.table.actions": "Azioni",
+	"orgAdmin.waitlist.actions.remove": "Rimuovi",
+	"orgAdmin.waitlist.confirmDelete": "Sei sicuro di voler rimuovere {userName} dalla lista d'attesa?",
+	"orgAdmin.waitlist.pagination.info": "Pagina {current} di {total}",
+	"orgAdmin.waitlist.pagination.previous": "Precedente",
+	"orgAdmin.waitlist.pagination.next": "Successiva"
 }

@@ -2408,6 +2408,8 @@
 		"questionnaireUnderReviewExplanation": "Your questionnaire is being reviewed by the organizers. Check back soon!",
 		"questionnaireNotPassedExplanation": "Your questionnaire didn't meet the requirements. You can try again.",
 		"eventFullExplanation": "All spots have been taken. Join the waitlist to be notified if space opens up.",
+		"onWaitlist": "Sie stehen auf der Warteliste",
+		"onWaitlistExplanation": "Sie werden benachrichtigt, wenn ein Platz frei wird. Behalten Sie Ihre E-Mails im Auge!",
 		"registrationNotOpenExplanation": "RSVPs aren't open yet. Check back when registration begins.",
 		"eventEndedExplanation": "This event took place in the past. RSVPs are no longer available.",
 		"soldOutExplanation": "All tickets have been sold. Check back later for additional releases.",
@@ -2427,7 +2429,11 @@
 	},
 	"ineligibilityActionButton": {
 		"requestSent": "Request Sent",
-		"success": "Success!"
+		"success": "Success!",
+		"waitlist_error": "Fehler beim Beitritt zur Warteliste. Bitte versuchen Sie es erneut.",
+		"leave": "Verlassen",
+		"confirmLeaveWaitlist": "Möchten Sie die Warteliste wirklich verlassen?",
+		"leaveWaitlist_error": "Fehler beim Verlassen der Warteliste. Bitte versuchen Sie es erneut."
 	},
 	"claimInvitationButton": {
 		"claimed": "Claimed!",
@@ -3465,5 +3471,26 @@
 		"toast_restrictionAdded": "Ernährungseinschränkung erfolgreich hinzugefügt",
 		"toast_restrictionRemoved": "Ernährungseinschränkung entfernt",
 		"toast_restrictionError": "Fehler beim Aktualisieren der Ernährungseinschränkung"
-	}
+	},
+	"ineligibilityActionButton.waitlist_error": "Fehler beim Beitritt zur Warteliste. Bitte versuchen Sie es erneut.",
+	"orgAdmin.events.actions.waitlist": "Warteliste",
+	"orgAdmin.waitlist.pageTitle": "Event-Warteliste",
+	"orgAdmin.waitlist.pageDescription": "Verwalten Sie Nutzer, die auf die Teilnahme warten",
+	"orgAdmin.waitlist.metaDescription": "Event-Warteliste für {orgName} verwalten - Nutzer ansehen und verwalten, die auf Teilnahme warten",
+	"orgAdmin.waitlist.loading": "Lade Warteliste...",
+	"orgAdmin.waitlist.error.title": "Warteliste konnte nicht geladen werden",
+	"orgAdmin.waitlist.error.description": "Beim Laden der Warteliste ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+	"orgAdmin.waitlist.empty.title": "Keine Wartelisten-Einträge",
+	"orgAdmin.waitlist.empty.description": "Derzeit befindet sich niemand auf der Warteliste für dieses Event.",
+	"orgAdmin.waitlist.totalCount": "{count} Person{plural} warten",
+	"orgAdmin.waitlist.totalCount_plural": "en",
+	"orgAdmin.waitlist.table.user": "Nutzer",
+	"orgAdmin.waitlist.table.email": "E-Mail",
+	"orgAdmin.waitlist.table.joinedAt": "Beigetreten am",
+	"orgAdmin.waitlist.table.actions": "Aktionen",
+	"orgAdmin.waitlist.actions.remove": "Entfernen",
+	"orgAdmin.waitlist.confirmDelete": "Möchten Sie {userName} wirklich von der Warteliste entfernen?",
+	"orgAdmin.waitlist.pagination.info": "Seite {current} von {total}",
+	"orgAdmin.waitlist.pagination.previous": "Zurück",
+	"orgAdmin.waitlist.pagination.next": "Weiter"
 }

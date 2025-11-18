@@ -2408,6 +2408,8 @@
 		"questionnaireUnderReviewExplanation": "Your questionnaire is being reviewed by the organizers. Check back soon!",
 		"questionnaireNotPassedExplanation": "Your questionnaire didn't meet the requirements. You can try again.",
 		"eventFullExplanation": "All spots have been taken. Join the waitlist to be notified if space opens up.",
+		"onWaitlist": "You're on the waitlist",
+		"onWaitlistExplanation": "You'll be notified if a spot opens up. Keep an eye on your email!",
 		"registrationNotOpenExplanation": "RSVPs aren't open yet. Check back when registration begins.",
 		"eventEndedExplanation": "This event took place in the past. RSVPs are no longer available.",
 		"soldOutExplanation": "All tickets have been sold. Check back later for additional releases.",
@@ -2453,7 +2455,11 @@
 	},
 	"ineligibilityActionButton": {
 		"requestSent": "Request Sent",
-		"success": "Success!"
+		"success": "Success!",
+		"waitlist_error": "Failed to join waitlist. Please try again.",
+		"leave": "Leave",
+		"confirmLeaveWaitlist": "Are you sure you want to leave the waitlist?",
+		"leaveWaitlist_error": "Failed to leave waitlist. Please try again."
 	},
 	"claimInvitationButton": {
 		"claimed": "Claimed!",
@@ -3465,5 +3471,26 @@
 		"toast_restrictionAdded": "Dietary restriction added successfully",
 		"toast_restrictionRemoved": "Dietary restriction removed",
 		"toast_restrictionError": "Failed to update dietary restriction"
-	}
+	},
+	"ineligibilityActionButton.waitlist_error": "Failed to join waitlist. Please try again.",
+	"orgAdmin.events.actions.waitlist": "Waitlist",
+	"orgAdmin.waitlist.pageTitle": "Event Waitlist",
+	"orgAdmin.waitlist.pageDescription": "Manage users waiting to join this event",
+	"orgAdmin.waitlist.metaDescription": "Manage the event waitlist for {orgName} - view and manage users waiting to join",
+	"orgAdmin.waitlist.loading": "Loading waitlist...",
+	"orgAdmin.waitlist.error.title": "Failed to Load Waitlist",
+	"orgAdmin.waitlist.error.description": "There was an error loading the waitlist. Please try again.",
+	"orgAdmin.waitlist.empty.title": "No Waitlist Entries",
+	"orgAdmin.waitlist.empty.description": "No one is currently on the waitlist for this event.",
+	"orgAdmin.waitlist.totalCount": "{count} person{plural} waiting",
+	"orgAdmin.waitlist.totalCount_plural": "s",
+	"orgAdmin.waitlist.table.user": "User",
+	"orgAdmin.waitlist.table.email": "Email",
+	"orgAdmin.waitlist.table.joinedAt": "Joined At",
+	"orgAdmin.waitlist.table.actions": "Actions",
+	"orgAdmin.waitlist.actions.remove": "Remove",
+	"orgAdmin.waitlist.confirmDelete": "Are you sure you want to remove {userName} from the waitlist?",
+	"orgAdmin.waitlist.pagination.info": "Page {current} of {total}",
+	"orgAdmin.waitlist.pagination.previous": "Previous",
+	"orgAdmin.waitlist.pagination.next": "Next"
 }

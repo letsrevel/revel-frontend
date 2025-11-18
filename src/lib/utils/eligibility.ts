@@ -91,6 +91,7 @@ export function getNextStepMessage(nextStep: NextStep): string {
 		request_invitation: 'Request an invitation to attend this private event',
 		become_member: 'Join the organization to attend this members-only event',
 		join_waitlist: 'This event is full, but you can join the waitlist',
+		wait_for_open_spot: "You're on the waitlist for this event",
 		wait_for_event_to_open: 'Check back when registration opens'
 	};
 
@@ -110,6 +111,7 @@ export function getActionButtonText(nextStep: NextStep): string {
 		request_invitation: 'Request Invitation',
 		become_member: 'Join Organization',
 		join_waitlist: 'Join Waitlist',
+		wait_for_open_spot: "You're on the Waitlist",
 		wait_for_event_to_open: 'Notify Me'
 	};
 
@@ -123,7 +125,8 @@ export function isActionDisabled(nextStep: NextStep): boolean {
 	const disabledStates: NextStep[] = [
 		'wait_for_questionnaire_evaluation',
 		'wait_to_retake_questionnaire',
-		'wait_for_event_to_open'
+		'wait_for_event_to_open',
+		'wait_for_open_spot'
 	];
 
 	return disabledStates.includes(nextStep);
@@ -142,6 +145,7 @@ export function getNextStepIcon(nextStep: NextStep): string {
 		request_invitation: 'Mail',
 		become_member: 'UserPlus',
 		join_waitlist: 'ListPlus',
+		wait_for_open_spot: 'Clock',
 		wait_for_event_to_open: 'Bell'
 	};
 

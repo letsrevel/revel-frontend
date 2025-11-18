@@ -7,6 +7,7 @@
 	import RequestInvitationButton from './RequestInvitationButton.svelte';
 	import ClaimInvitationButton from './ClaimInvitationButton.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { eventJoinWaitlist, eventLeaveWaitlist } from '$lib/api';
 	import {
 		Check,
 		ClipboardList,
@@ -16,7 +17,8 @@
 		ListPlus,
 		Bell,
 		Ticket,
-		Loader2
+		Loader2,
+		X
 	} from 'lucide-svelte';
 
 	interface Props {
@@ -47,6 +49,7 @@
 	const isAuthenticated = $derived(!!authStore.accessToken);
 
 	let isLoading = $state(false);
+	let isLeavingWaitlist = $state(false);
 	let showSuccess = $state(false);
 	let showError = $state(false);
 	let errorMessage = $state('');
@@ -64,6 +67,7 @@
 			request_invitation: Mail,
 			become_member: UserPlus,
 			join_waitlist: ListPlus,
+			wait_for_open_spot: Clock,
 			wait_for_event_to_open: Bell
 		};
 
@@ -141,17 +145,84 @@
 
 		if (nextStep === 'join_waitlist') {
 			isLoading = true;
-			// TODO Phase 2: Backend not ready - show "coming soon" message
-			setTimeout(() => {
-				isLoading = false;
+			try {
+				const response = await eventJoinWaitlist({
+					path: { event_id: eventId },
+					headers: {
+						Authorization: `Bearer ${authStore.accessToken}`
+					}
+				});
+
+				if (response.error) {
+					showError = true;
+					const errorDetail =
+						typeof response.error === 'object' &&
+						response.error !== null &&
+						'detail' in response.error
+							? (response.error.detail as string)
+							: m['ineligibilityActionButton.waitlist_error']();
+					errorMessage = errorDetail;
+				} else {
+					showSuccess = true;
+					// Optionally refresh the page or update UI to reflect waitlist status
+					setTimeout(() => {
+						window.location.reload();
+					}, 1500);
+				}
+			} catch (err) {
 				showError = true;
-				errorMessage = 'Waitlist feature coming soon! Backend implementation in progress.';
-			}, 500);
+				errorMessage =
+					err instanceof Error ? err.message : m['ineligibilityActionButton.waitlist_error']();
+			} finally {
+				isLoading = false;
+			}
 			return;
 		}
 
 		// Other actions (log for now)
 		console.log('Action clicked:', nextStep, { eventId, organizationSlug });
+	}
+
+	/**
+	 * Handle leaving the waitlist
+	 */
+	async function handleLeaveWaitlist() {
+		if (!confirm(m['ineligibilityActionButton.confirmLeaveWaitlist']())) {
+			return;
+		}
+
+		isLeavingWaitlist = true;
+		showError = false;
+		errorMessage = '';
+
+		try {
+			const response = await eventLeaveWaitlist({
+				path: { event_id: eventId },
+				headers: {
+					Authorization: `Bearer ${authStore.accessToken}`
+				}
+			});
+
+			if (response.error) {
+				showError = true;
+				const errorDetail =
+					typeof response.error === 'object' &&
+					response.error !== null &&
+					'detail' in response.error
+						? (response.error.detail as string)
+						: m['ineligibilityActionButton.leaveWaitlist_error']();
+				errorMessage = errorDetail;
+			} else {
+				// Success - reload the page to update the status
+				window.location.reload();
+			}
+		} catch (err) {
+			showError = true;
+			errorMessage =
+				err instanceof Error ? err.message : m['ineligibilityActionButton.leaveWaitlist_error']();
+		} finally {
+			isLeavingWaitlist = false;
+		}
 	}
 
 	// Computed values
@@ -201,6 +272,27 @@
 			hasAlreadyRequested={false}
 			class="w-full"
 		/>
+	{:else if nextStep === 'wait_for_open_spot'}
+		<!-- Special layout for waitlist status with Leave button below -->
+		<div class="space-y-2">
+			<Button variant="secondary" disabled={true} class="w-full">
+				<Clock class="h-5 w-5" aria-hidden="true" />
+				<span>{buttonText}</span>
+			</Button>
+			<Button
+				variant="destructive"
+				disabled={isLeavingWaitlist}
+				onclick={handleLeaveWaitlist}
+				class="w-full"
+			>
+				{#if isLeavingWaitlist}
+					<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
+				{:else}
+					<X class="h-4 w-4" aria-hidden="true" />
+				{/if}
+				<span>{m['ineligibilityActionButton.leave']()}</span>
+			</Button>
+		</div>
 	{:else}
 		<Button
 			variant={buttonVariant}
