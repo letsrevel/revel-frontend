@@ -37,6 +37,39 @@ function decodeJWT(token: string): any | null {
 }
 
 /**
+ * Token capture hook - stores invitation tokens from URL params in cookies
+ */
+const handleTokenCapture: Handle = async ({ event, resolve }) => {
+	// Check for organization token (?ot=)
+	const orgToken = event.url.searchParams.get('ot');
+	if (orgToken) {
+		console.log('[HOOKS] Organization token detected, storing in cookie');
+		event.cookies.set('pending_org_token', orgToken, {
+			path: '/',
+			httpOnly: true,
+			secure: false, // Set to true in production
+			sameSite: 'lax',
+			maxAge: 60 * 60 * 24 * 7 // 7 days
+		});
+	}
+
+	// Check for event token (?et=)
+	const eventToken = event.url.searchParams.get('et');
+	if (eventToken) {
+		console.log('[HOOKS] Event token detected, storing in cookie');
+		event.cookies.set('pending_event_token', eventToken, {
+			path: '/',
+			httpOnly: true,
+			secure: false, // Set to true in production
+			sameSite: 'lax',
+			maxAge: 60 * 60 * 24 * 7 // 7 days
+		});
+	}
+
+	return resolve(event);
+};
+
+/**
  * Authentication hook
  */
 const handleAuth: Handle = async ({ event, resolve }) => {
@@ -82,6 +115,6 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 };
 
 /**
- * Combine authentication and i18n hooks
+ * Combine token capture, authentication, and i18n hooks
  */
-export const handle = sequence(i18nHandle(), handleAuth);
+export const handle = sequence(handleTokenCapture, i18nHandle(), handleAuth);

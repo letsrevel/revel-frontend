@@ -51,7 +51,8 @@ export const actions = {
 				body: {
 					email: validation.data.email,
 					password1: validation.data.password,
-					password2: validation.data.confirmPassword
+					password2: validation.data.confirmPassword,
+					accept_toc_and_privacy: validation.data.acceptTerms
 				},
 				fetch
 			});
