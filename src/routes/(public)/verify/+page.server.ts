@@ -1,6 +1,75 @@
 import { redirect, isRedirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { accountVerifyEmail } from '$lib/api/generated/sdk.gen';
+import type { Cookies } from '@sveltejs/kit';
+import {
+	accountVerifyEmail,
+	organizationClaimInvitation,
+	eventClaimInvitation
+} from '$lib/api/generated/sdk.gen';
+
+/**
+ * Attempt to claim pending invitation tokens after email verification
+ * Handles errors silently and gracefully
+ */
+async function claimPendingTokens(
+	cookies: Cookies,
+	accessToken: string,
+	fetchFn: typeof fetch
+): Promise<void> {
+	// Check for pending organization token
+	const orgToken = cookies.get('pending_org_token');
+	if (orgToken) {
+		console.log('[VERIFY] Attempting to claim organization token:', orgToken);
+		try {
+			const response = await organizationClaimInvitation({
+				path: { token: orgToken },
+				headers: { Authorization: `Bearer ${accessToken}` },
+				fetch: fetchFn
+			});
+
+			if (response.response.ok && response.data) {
+				console.log('[VERIFY] Successfully claimed organization invitation');
+				// Clear the cookie after successful claim
+				cookies.delete('pending_org_token', { path: '/' });
+			} else {
+				console.warn('[VERIFY] Failed to claim organization token (may be expired/invalid)');
+				// Clear the cookie even on failure to prevent retry loops
+				cookies.delete('pending_org_token', { path: '/' });
+			}
+		} catch (error) {
+			console.warn('[VERIFY] Error claiming organization token:', error);
+			// Clear the cookie on error to prevent retry loops
+			cookies.delete('pending_org_token', { path: '/' });
+		}
+	}
+
+	// Check for pending event token
+	const eventToken = cookies.get('pending_event_token');
+	if (eventToken) {
+		console.log('[VERIFY] Attempting to claim event token:', eventToken);
+		try {
+			const response = await eventClaimInvitation({
+				path: { token: eventToken },
+				headers: { Authorization: `Bearer ${accessToken}` },
+				fetch: fetchFn
+			});
+
+			if (response.response.ok && response.data) {
+				console.log('[VERIFY] Successfully claimed event invitation');
+				// Clear the cookie after successful claim
+				cookies.delete('pending_event_token', { path: '/' });
+			} else {
+				console.warn('[VERIFY] Failed to claim event token (may be expired/invalid)');
+				// Clear the cookie even on failure to prevent retry loops
+				cookies.delete('pending_event_token', { path: '/' });
+			}
+		} catch (error) {
+			console.warn('[VERIFY] Error claiming event token:', error);
+			// Clear the cookie on error to prevent retry loops
+			cookies.delete('pending_event_token', { path: '/' });
+		}
+	}
+}
 
 export const load: PageServerLoad = async ({ url, fetch, cookies }) => {
 	const token = url.searchParams.get('token');
@@ -58,6 +127,12 @@ export const load: PageServerLoad = async ({ url, fetch, cookies }) => {
 					maxAge: 60 * 60 * 24 * 7 // 7 days
 				});
 				console.log('[VERIFY] Refresh token cookie set');
+			}
+
+			// Attempt to claim any pending invitation tokens
+			// This is done silently - failures won't interrupt the verification flow
+			if (access) {
+				await claimPendingTokens(cookies, access, fetch);
 			}
 
 			// Redirect to profile page after successful verification so user can complete their profile

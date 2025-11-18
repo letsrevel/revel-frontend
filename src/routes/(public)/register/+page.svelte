@@ -192,12 +192,19 @@
 				/>
 				<label for="acceptTerms" class="text-sm">
 					{m['register.acceptTerms']()}
-					<a href="/legal/terms" class="text-primary underline-offset-4 hover:underline"
+					<a
+						href="/legal/terms"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="text-primary underline-offset-4 hover:underline"
 						>{m['footer.termsOfService']()}</a
 					>
 					{m['register.and']()}
-					<a href="/legal/privacy" class="text-primary underline-offset-4 hover:underline"
-						>{m['footer.privacyPolicy']()}</a
+					<a
+						href="/legal/privacy"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="text-primary underline-offset-4 hover:underline">{m['footer.privacyPolicy']()}</a
 					>
 				</label>
 			</div>

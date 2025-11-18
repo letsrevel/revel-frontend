@@ -49,7 +49,8 @@
 		"frontend": "Frontend",
 		"backend": "Backend",
 		"reportBug": "Segnala un bug",
-		"copyright": "Open source e guidato dalla community."
+		"copyright": "Open source e guidato dalla community.",
+		"cookieNotice": "Questo sito utilizza solo cookie tecnici essenziali necessari per autenticazione, gestione delle sessioni e gestione degli inviti. Non utilizziamo cookie di tracciamento o analitici."
 	},
 	"home": {
 		"welcomeTo": "Benvenuti su",
