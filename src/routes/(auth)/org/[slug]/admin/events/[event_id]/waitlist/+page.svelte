@@ -154,7 +154,11 @@
 				<div class="flex items-center gap-2">
 					<Users class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
 					<p class="text-sm font-medium">
-						{m['orgAdmin.waitlist.totalCount']({ count: waitlistQuery.data.count, plural: waitlistQuery.data.count === 1 ? '' : m['orgAdmin.waitlist.totalCount_plural']() })}
+						{m['orgAdmin.waitlist.totalCount']({
+							count: waitlistQuery.data.count,
+							plural:
+								waitlistQuery.data.count === 1 ? '' : m['orgAdmin.waitlist.totalCount_plural']()
+						})}
 					</p>
 				</div>
 			</div>
@@ -180,7 +184,7 @@
 					</thead>
 					<tbody class="divide-y">
 						{#each waitlistQuery.data.results as entry (entry.id)}
-							<tr class="hover:bg-muted/50 transition-colors">
+							<tr class="transition-colors hover:bg-muted/50">
 								<td class="px-4 py-3 text-sm">
 									<div class="font-medium">
 										{entry.user.first_name}
@@ -203,7 +207,7 @@
 										onclick={() =>
 											handleDelete(entry.id, `${entry.user.first_name} ${entry.user.last_name}`)}
 										disabled={deleteMutation.isPending}
-										class="text-destructive hover:text-destructive hover:bg-destructive/10"
+										class="text-destructive hover:bg-destructive/10 hover:text-destructive"
 									>
 										{#if deleteMutation.isPending}
 											<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
