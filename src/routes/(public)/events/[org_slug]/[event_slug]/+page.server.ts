@@ -15,7 +15,9 @@ import type {
 	OrganizationPermissionsSchema,
 	AdditionalResourceSchema,
 	TierSchema,
-	EventTokenSchema
+	EventTokenSchema,
+	MembershipTierSchema,
+	MembershipStatus
 } from '$lib/api/generated/types.gen';
 
 export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
@@ -93,6 +95,8 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 		// Fetch user permissions (requires authentication)
 		let userPermissions: OrganizationPermissionsSchema | null = null;
 		let isMember = false;
+		let membershipTier: MembershipTierSchema | null = null;
+		let membershipStatus: MembershipStatus | null = null;
 		let isOwner = false;
 		let isStaff = false;
 		if (locals.user) {
@@ -105,8 +109,15 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 				if (permissionsResponse.data) {
 					userPermissions = permissionsResponse.data;
 
-					// Check if user is a member using the memberships list
-					isMember = userPermissions.memberships?.includes(event.organization.id) || false;
+					// Check if user is a member using the memberships dict
+					// memberships is now a dict of { [org_id]: MinimalOrganizationMemberSchema }
+					const membership = userPermissions.memberships?.[event.organization.id];
+					if (membership) {
+						isMember = true;
+						// Extract tier and status from MinimalOrganizationMemberSchema
+						membershipTier = membership.tier || null;
+						membershipStatus = (membership.status as MembershipStatus) || null;
+					}
 
 					// Check if user is owner or staff
 					const orgPermissions = userPermissions.organization_permissions?.[event.organization.id];
@@ -193,6 +204,8 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 			resources,
 			ticketTiers,
 			isMember,
+			membershipTier,
+			membershipStatus,
 			isOwner,
 			isStaff,
 			eventTokenDetails,

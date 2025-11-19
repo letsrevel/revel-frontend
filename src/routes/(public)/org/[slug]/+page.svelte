@@ -267,6 +267,8 @@
 						organizationName={organization.name}
 						isAuthenticated={data.isAuthenticated}
 						isMember={data.isMember}
+						membershipTier={data.membershipTier}
+						membershipStatus={data.membershipStatus}
 						isOwner={data.isOwner}
 						isStaff={data.isStaff}
 					/>

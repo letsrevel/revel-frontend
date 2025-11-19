@@ -92,7 +92,8 @@ export function getNextStepMessage(nextStep: NextStep): string {
 		become_member: 'Join the organization to attend this members-only event',
 		join_waitlist: 'This event is full, but you can join the waitlist',
 		wait_for_open_spot: "You're on the waitlist for this event",
-		wait_for_event_to_open: 'Check back when registration opens'
+		wait_for_event_to_open: 'Check back when registration opens',
+		upgrade_membership: 'Upgrade your membership tier to attend this event'
 	};
 
 	return messages[nextStep] || 'Check your eligibility status';
@@ -112,7 +113,8 @@ export function getActionButtonText(nextStep: NextStep): string {
 		become_member: 'Join Organization',
 		join_waitlist: 'Join Waitlist',
 		wait_for_open_spot: "You're on the Waitlist",
-		wait_for_event_to_open: 'Notify Me'
+		wait_for_event_to_open: 'Notify Me',
+		upgrade_membership: 'Upgrade Membership'
 	};
 
 	return buttonTexts[nextStep] || 'View Details';
@@ -146,7 +148,8 @@ export function getNextStepIcon(nextStep: NextStep): string {
 		become_member: 'UserPlus',
 		join_waitlist: 'ListPlus',
 		wait_for_open_spot: 'Clock',
-		wait_for_event_to_open: 'Bell'
+		wait_for_event_to_open: 'Bell',
+		upgrade_membership: 'ArrowUpCircle'
 	};
 
 	return icons[nextStep] || 'Info';

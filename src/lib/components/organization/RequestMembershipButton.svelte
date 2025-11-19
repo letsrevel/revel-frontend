@@ -3,15 +3,18 @@
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { organizationCreateMembershipRequest } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { UserPlus, Send, Check, Crown, Shield } from 'lucide-svelte';
+	import { UserPlus, Send, Check, Crown, Shield, Award } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
+	import type { MembershipTierSchema, MembershipStatus } from '$lib/api/generated/types.gen';
 
 	interface Props {
 		organizationSlug: string;
 		organizationName: string;
 		isAuthenticated: boolean;
 		isMember?: boolean;
+		membershipTier?: MembershipTierSchema | null;
+		membershipStatus?: MembershipStatus | null;
 		isOwner?: boolean;
 		isStaff?: boolean;
 		class?: string;
@@ -22,10 +25,20 @@
 		organizationName,
 		isAuthenticated,
 		isMember = false,
+		membershipTier = null,
+		membershipStatus = null,
 		isOwner = false,
 		isStaff = false,
 		class: className
 	}: Props = $props();
+
+	// Status badge styling (matching MemberCard.svelte)
+	const statusStyles: Record<MembershipStatus, string> = {
+		active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
+		paused: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100',
+		cancelled: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100',
+		banned: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
+	};
 
 	const queryClient = useQueryClient();
 	const accessToken = $derived(authStore.accessToken);
@@ -118,14 +131,40 @@
 		Staff
 	</div>
 {:else if isMember}
-	<!-- Member Badge -->
-	<div
-		class="inline-flex items-center gap-2 rounded-md border border-green-200 bg-green-50 px-4 py-2 text-sm font-medium text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-300 {className}"
-		role="status"
-		aria-label="You are a member of this organization"
-	>
-		<Check class="h-4 w-4" aria-hidden="true" />
-		Member
+	<!-- Member Badge (with status and tier) -->
+	<div class="inline-flex flex-wrap items-center gap-2 {className}" role="status">
+		<!-- Status Badge -->
+		{#if membershipStatus}
+			<span
+				class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium {statusStyles[
+					membershipStatus
+				]}"
+				aria-label="Membership status: {membershipStatus}"
+			>
+				<Check class="h-3 w-3" aria-hidden="true" />
+				{m[`memberStatus.${membershipStatus}`]()}
+			</span>
+		{/if}
+
+		<!-- Tier Badge -->
+		{#if membershipTier}
+			<span
+				class="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-100"
+				aria-label="Membership tier: {membershipTier.name}"
+			>
+				<Award class="h-3 w-3" aria-hidden="true" />
+				{membershipTier.name}
+			</span>
+		{:else if !membershipStatus}
+			<!-- Fallback if no status or tier -->
+			<span
+				class="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-100"
+				aria-label="You are a member of this organization"
+			>
+				<Check class="h-3 w-3" aria-hidden="true" />
+				Member
+			</span>
+		{/if}
 	</div>
 {:else}
 	<Dialog.Root open={showDialog} onOpenChange={handleDialogChange}>

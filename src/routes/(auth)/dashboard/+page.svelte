@@ -22,9 +22,13 @@
 		Filter,
 		Ticket,
 		Mail,
-		CheckCircle2
+		CheckCircle2,
+		Check,
+		Award,
+		Crown
 	} from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
+	import type { MembershipStatus } from '$lib/api/generated/types.gen';
 
 	let user = $derived(authStore.user);
 	let accessToken = $derived(authStore.accessToken);
@@ -277,6 +281,41 @@
 
 		return false;
 	}
+
+	// Helper to get membership status for an organization
+	function getMembershipStatus(orgId: string): MembershipStatus | null {
+		if (!permissions?.memberships) return null;
+		const membership = permissions.memberships[orgId];
+		return membership?.status ? (membership.status as MembershipStatus) : null;
+	}
+
+	// Helper to get membership tier for an organization
+	function getMembershipTier(orgId: string) {
+		if (!permissions?.memberships) return null;
+		const membership = permissions.memberships[orgId];
+		return membership?.tier || null;
+	}
+
+	// Helper to check if user is owner
+	function isOwner(orgId: string): boolean {
+		if (!permissions?.organization_permissions) return false;
+		return permissions.organization_permissions[orgId] === 'owner';
+	}
+
+	// Helper to check if user is staff (not owner)
+	function isStaff(orgId: string): boolean {
+		if (!permissions?.organization_permissions) return false;
+		const orgPerms = permissions.organization_permissions[orgId];
+		return typeof orgPerms === 'object' && orgPerms !== null;
+	}
+
+	// Status badge styling (matching MemberCard.svelte)
+	const statusStyles: Record<MembershipStatus, string> = {
+		active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
+		paused: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100',
+		cancelled: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100',
+		banned: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
+	};
 
 	// Helper to check if a filter preset is currently active
 	function isFilterActive(preset: (typeof filterPresets)[0]): boolean {
@@ -638,11 +677,64 @@
 							{/if}
 
 							<div class="flex-1">
-								<h3 class="font-semibold">{org.name}</h3>
+								<div class="flex items-center gap-2">
+									<h3 class="font-semibold">{org.name}</h3>
+									<!-- Owner Badge -->
+									{#if isOwner(org.id)}
+										<span
+											class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+											aria-label="You are the owner"
+										>
+											<Crown class="h-3 w-3" aria-hidden="true" />
+											Owner
+										</span>
+									{:else if isStaff(org.id)}
+										<!-- Staff Badge -->
+										<span
+											class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-100"
+											aria-label="You are a staff member"
+										>
+											<Shield class="h-3 w-3" aria-hidden="true" />
+											Staff
+										</span>
+									{/if}
+								</div>
+
 								{#if org.description}
 									<p class="line-clamp-1 text-sm text-muted-foreground">
 										{org.description}
 									</p>
+								{/if}
+
+								<!-- Membership Badges -->
+								{#if getMembershipStatus(org.id) || getMembershipTier(org.id)}
+									{@const membershipStatus = getMembershipStatus(org.id)}
+									{@const membershipTier = getMembershipTier(org.id)}
+									<div class="mt-2 flex flex-wrap items-center gap-2">
+										<!-- Status Badge -->
+										{#if membershipStatus}
+											<span
+												class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium {statusStyles[
+													membershipStatus
+												]}"
+												aria-label="Membership status: {membershipStatus}"
+											>
+												<Check class="h-3 w-3" aria-hidden="true" />
+												{m[`memberStatus.${membershipStatus}`]()}
+											</span>
+										{/if}
+
+										<!-- Tier Badge -->
+										{#if membershipTier}
+											<span
+												class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-100"
+												aria-label="Membership tier: {membershipTier.name}"
+											>
+												<Award class="h-3 w-3" aria-hidden="true" />
+												{membershipTier.name}
+											</span>
+										{/if}
+									</div>
 								{/if}
 							</div>
 

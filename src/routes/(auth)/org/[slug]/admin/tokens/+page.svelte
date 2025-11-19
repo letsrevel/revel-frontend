@@ -6,12 +6,14 @@
 		organizationadminListOrganizationTokens,
 		organizationadminCreateOrganizationToken,
 		organizationadminUpdateOrganizationToken,
-		organizationadminDeleteOrganizationToken
+		organizationadminDeleteOrganizationToken,
+		organizationadminListMembershipTiers
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		OrganizationTokenSchema,
 		OrganizationTokenCreateSchema,
-		OrganizationTokenUpdateSchema
+		OrganizationTokenUpdateSchema,
+		MembershipTierSchema
 	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -58,6 +60,24 @@
 			}
 
 			return response.data;
+		},
+		enabled: !!accessToken
+	}));
+
+	// Fetch membership tiers
+	const tiersQuery = createQuery(() => ({
+		queryKey: ['organization', organization.slug, 'membership-tiers'],
+		queryFn: async () => {
+			const response = await organizationadminListMembershipTiers({
+				path: { slug: organization.slug },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+
+			if (response.error) {
+				throw new Error('Failed to fetch membership tiers');
+			}
+
+			return response.data || [];
 		},
 		enabled: !!accessToken
 	}));
@@ -165,6 +185,7 @@
 	}
 
 	const tokens = $derived(tokensQuery.data?.results || []);
+	const membershipTiers = $derived(tiersQuery.data || []);
 	const isLoading = $derived(tokensQuery.isLoading);
 	const shareUrl = $derived(
 		tokenToShare ? getOrganizationTokenUrl(tokenToShare.id || '', organization.slug) : ''
@@ -238,6 +259,7 @@
 <!-- Create Modal -->
 <OrganizationTokenModal
 	open={isCreateModalOpen}
+	{membershipTiers}
 	isLoading={createTokenMutation.isPending}
 	onClose={() => (isCreateModalOpen = false)}
 	onSave={handleCreateSave}
@@ -247,6 +269,7 @@
 <OrganizationTokenModal
 	open={!!tokenToEdit}
 	token={tokenToEdit}
+	{membershipTiers}
 	isLoading={updateTokenMutation.isPending}
 	onClose={() => (tokenToEdit = null)}
 	onSave={handleEditSave}

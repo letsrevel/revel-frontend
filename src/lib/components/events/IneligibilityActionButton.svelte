@@ -18,6 +18,7 @@
 		Bell,
 		Ticket,
 		Loader2,
+		ArrowUpCircle,
 		X
 	} from 'lucide-svelte';
 
@@ -68,7 +69,8 @@
 			become_member: UserPlus,
 			join_waitlist: ListPlus,
 			wait_for_open_spot: Clock,
-			wait_for_event_to_open: Bell
+			wait_for_event_to_open: Bell,
+			upgrade_membership: ArrowUpCircle
 		};
 
 		return iconMap[step] || Check;
