@@ -2,30 +2,17 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { OrganizationMemberSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
-	import { UserX, UserCog } from 'lucide-svelte';
+	import { Settings } from 'lucide-svelte';
 	import { formatDistanceToNow } from 'date-fns';
 
 	interface Props {
 		member: OrganizationMemberSchema;
 		isStaff?: boolean;
-		canRemove: boolean;
-		canMakeStaff: boolean;
-		onRemove: (member: OrganizationMemberSchema) => void;
-		onMakeStaff: (member: OrganizationMemberSchema) => void;
-		isRemoving?: boolean;
-		isPromoting?: boolean;
+		canManage: boolean;
+		onManage: (member: OrganizationMemberSchema) => void;
 	}
 
-	let {
-		member,
-		isStaff = false,
-		canRemove,
-		canMakeStaff,
-		onRemove,
-		onMakeStaff,
-		isRemoving = false,
-		isPromoting = false
-	}: Props = $props();
+	let { member, isStaff = false, canManage, onManage }: Props = $props();
 
 	// Format member since date
 	let memberSince = $derived(
@@ -40,14 +27,16 @@
 				: member.user.first_name || member.user.email || 'Unknown User')
 	);
 
-	function handleRemove() {
-		if (confirm(`Are you sure you want to remove ${displayName} from the organization?`)) {
-			onRemove(member);
-		}
-	}
+	// Status badge styling
+	const statusStyles = {
+		active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
+		paused: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100',
+		cancelled: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100',
+		banned: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
+	};
 
-	function handleMakeStaff() {
-		onMakeStaff(member);
+	function handleManage() {
+		onManage(member);
 	}
 </script>
 
@@ -65,7 +54,7 @@
 					<span
 						class="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
 					>
-						Staff
+						{m['memberCard.staffBadge']()}
 					</span>
 				{/if}
 			</div>
@@ -73,6 +62,27 @@
 			{#if member.user.email}
 				<p class="mt-1 truncate text-sm text-muted-foreground">{member.user.email}</p>
 			{/if}
+
+			<!-- Badges Row -->
+			<div class="mt-2 flex flex-wrap gap-2">
+				<!-- Status Badge -->
+				<span
+					class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {statusStyles[
+						member.status
+					]}"
+				>
+					{m[`memberStatus.${member.status}`]()}
+				</span>
+
+				<!-- Tier Badge -->
+				{#if member.tier}
+					<span
+						class="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-100"
+					>
+						{member.tier.name}
+					</span>
+				{/if}
+			</div>
 
 			<!-- Additional Info Row -->
 			<div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
@@ -86,35 +96,21 @@
 
 			<!-- Member Since -->
 			<p class="mt-2 text-xs text-muted-foreground">
-				Member since: {memberSince}
+				{m['memberCard.memberSince']()}: {memberSince}
 			</p>
 		</div>
 
 		<!-- Actions -->
-		<div class="flex shrink-0 flex-col gap-2">
-			{#if canMakeStaff}
+		<div class="flex shrink-0">
+			{#if canManage}
 				<Button
 					variant="outline"
 					size="sm"
-					onclick={handleMakeStaff}
-					disabled={isPromoting || isRemoving}
-					aria-label="Make {displayName} a staff member"
+					onclick={handleManage}
+					aria-label={m['memberCard.manageAriaLabel']({ name: displayName })}
 				>
-					<UserCog class="h-4 w-4" />
-					<span class="sr-only md:not-sr-only md:ml-2">{m['memberCard.makeStaff']()}</span>
-				</Button>
-			{/if}
-
-			{#if canRemove}
-				<Button
-					variant="ghost"
-					size="sm"
-					onclick={handleRemove}
-					disabled={isRemoving || isPromoting}
-					aria-label="Remove {displayName}"
-				>
-					<UserX class="h-4 w-4" />
-					<span class="sr-only md:not-sr-only md:ml-2">{m['memberCard.remove']()}</span>
+					<Settings class="h-4 w-4" />
+					<span class="sr-only md:not-sr-only md:ml-2">{m['memberCard.manage']()}</span>
 				</Button>
 			{/if}
 		</div>

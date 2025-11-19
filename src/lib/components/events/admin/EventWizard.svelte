@@ -694,6 +694,7 @@
 	{:else if currentStep === 3 && formData.requires_ticket && eventId}
 		<TicketingStep
 			eventId={eventId!}
+			organizationSlug={organization.slug}
 			organizationStripeConnected={organization.is_stripe_connected}
 			{formData}
 			onUpdate={updateFormData}

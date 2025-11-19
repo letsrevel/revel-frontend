@@ -87,6 +87,7 @@ export const actions: Actions = {
 
 		const formData = await request.formData();
 		const requestId = formData.get('request_id') as string;
+		const tierId = formData.get('tier_id') as string;
 
 		if (!requestId) {
 			return fail(400, {
@@ -96,11 +97,22 @@ export const actions: Actions = {
 			});
 		}
 
+		if (!tierId) {
+			return fail(400, {
+				errors: {
+					form: 'Tier ID is required'
+				}
+			});
+		}
+
 		try {
 			const response = await organizationadminApproveMembershipRequest({
 				path: {
 					slug: params.slug,
 					request_id: requestId
+				},
+				body: {
+					tier_id: tierId
 				},
 				headers: {
 					Authorization: `Bearer ${accessToken}`

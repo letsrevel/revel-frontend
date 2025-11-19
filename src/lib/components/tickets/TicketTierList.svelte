@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import type { UserEventStatus } from '$lib/utils/eligibility';
-	import type { EventTokenSchema } from '$lib/api/generated/types.gen';
+	import type { EventTokenSchema, MembershipTierSchema } from '$lib/api/generated/types.gen';
 	import { isEligibility } from '$lib/utils/eligibility';
 	import TierCard from './TierCard.svelte';
 	import DemoCardInfo from '$lib/components/common/DemoCardInfo.svelte';
@@ -14,6 +14,7 @@
 		isAuthenticated: boolean;
 		hasTicket?: boolean;
 		userStatus?: UserEventStatus | null;
+		membershipTier?: MembershipTierSchema | null;
 		eventId?: string;
 		eventSlug?: string;
 		organizationSlug?: string;
@@ -30,6 +31,7 @@
 		isAuthenticated,
 		hasTicket = false,
 		userStatus,
+		membershipTier = null,
 		eventId,
 		eventSlug,
 		organizationSlug,
@@ -100,6 +102,7 @@
 					{isAuthenticated}
 					{hasTicket}
 					{isEligible}
+					{membershipTier}
 					{canAttendWithoutLogin}
 					{onClaimTicket}
 					{onCheckout}

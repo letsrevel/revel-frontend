@@ -15,7 +15,8 @@
 		Mail,
 		UserPlus,
 		ListPlus,
-		Bell
+		Bell,
+		ArrowUpCircle
 	} from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
 	import IneligibilityActionButton from './IneligibilityActionButton.svelte';
@@ -55,7 +56,8 @@
 			become_member: UserPlus,
 			join_waitlist: ListPlus,
 			wait_for_open_spot: Clock,
-			wait_for_event_to_open: Bell
+			wait_for_event_to_open: Bell,
+			upgrade_membership: ArrowUpCircle
 		};
 
 		return iconMap[eligibility.next_step] || AlertCircle;

@@ -563,6 +563,8 @@
 						organization={event.organization}
 						isAuthenticated={data.isAuthenticated}
 						isMember={data.isMember}
+						membershipTier={data.membershipTier}
+						membershipStatus={data.membershipStatus}
 						isOwner={data.isOwner}
 						isStaff={data.isStaff}
 					/>
@@ -631,6 +633,8 @@
 						organization={event.organization}
 						isAuthenticated={data.isAuthenticated}
 						isMember={data.isMember}
+						membershipTier={data.membershipTier}
+						membershipStatus={data.membershipStatus}
 						isOwner={data.isOwner}
 						isStaff={data.isStaff}
 					/>
@@ -695,6 +699,7 @@
 	tiers={ticketTiers}
 	isAuthenticated={data.isAuthenticated}
 	hasTicket={!!userTicket}
+	membershipTier={data.membershipTier}
 	canAttendWithoutLogin={event.can_attend_without_login}
 	onClose={closeTicketTierModal}
 	onClaimTicket={handleClaimTicket}
