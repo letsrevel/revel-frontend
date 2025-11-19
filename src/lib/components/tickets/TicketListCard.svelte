@@ -8,6 +8,7 @@
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
 	import { getImageUrl } from '$lib/utils/url';
 	import { formatEventDateRange } from '$lib/utils/date';
+	import { getEventLogo } from '$lib/utils/event';
 
 	interface Props {
 		ticket: UserTicketSchema;
@@ -16,6 +17,10 @@
 	let { ticket }: Props = $props();
 
 	let showTicketModal = $state(false);
+
+	// Logo with fallback hierarchy: event -> series -> organization
+	let logoPath = $derived(getEventLogo(ticket.event));
+	let logoUrl = $derived(getImageUrl(logoPath));
 
 	// Format event date
 	let eventDate = $derived.by(() => {
@@ -67,14 +72,10 @@
 	<div class="flex flex-col gap-4 p-4 md:p-6">
 		<!-- Header with Event Info -->
 		<div class="flex items-start gap-4">
-			<!-- Event Logo/Icon -->
+			<!-- Event Logo/Icon (with fallback: event -> series -> org) -->
 			<div class="shrink-0">
-				{#if ticket.event.logo}
-					<img
-						src={getImageUrl(ticket.event.logo)}
-						alt=""
-						class="h-16 w-16 rounded-lg border object-cover"
-					/>
+				{#if logoUrl}
+					<img src={logoUrl} alt="" class="h-16 w-16 rounded-lg border object-cover" />
 				{:else}
 					<div
 						class="flex h-16 w-16 items-center justify-center rounded-lg bg-primary/10 text-primary"

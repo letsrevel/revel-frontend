@@ -2,8 +2,9 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
 	import { formatEventDateRange } from '$lib/utils/date';
-	import { getEventFallbackGradient } from '$lib/utils/event';
+	import { getEventFallbackGradient, getEventCoverArt, getEventLogo } from '$lib/utils/event';
 	import { getBackendUrl } from '$lib/config/api';
+	import { getImageUrl } from '$lib/utils/url';
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
 	import { MapPin, Calendar, Share2 } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
@@ -15,17 +16,13 @@
 
 	let { event, class: className }: Props = $props();
 
-	// Helper function to get full image URL
-	function getImageUrl(path: string | null | undefined): string | null {
-		if (!path) return null;
-		return getBackendUrl(path);
-	}
+	// Cover art with fallback hierarchy: event -> series -> organization
+	let coverArtPath = $derived(getEventCoverArt(event));
+	let coverImageUrl = $derived(getImageUrl(coverArtPath));
 
-	// Compute image URLs with backend URL prepended
-	const eventCoverArtUrl = $derived(getImageUrl(event.cover_art));
-	const orgCoverArtUrl = $derived(getImageUrl(event.organization.cover_art));
-	const coverImageUrl = $derived(eventCoverArtUrl || orgCoverArtUrl);
-	const orgLogoUrl = $derived(getImageUrl(event.organization.logo));
+	// Logo with fallback hierarchy: event -> series -> organization
+	let logoPath = $derived(getEventLogo(event));
+	let logoUrl = $derived(getImageUrl(logoPath));
 
 	// Compute location display
 	let locationDisplay = $derived.by(() => {
@@ -121,14 +118,15 @@
 	</div>
 
 	<!-- Organization Badge (Overlaps cover image) -->
+	<!-- Note: Always shows organization logo/initial for clarity, not the event logo fallback -->
 	<div class="relative px-6 md:px-8">
 		<a
 			href="/org/{event.organization.slug}"
 			class="group -mt-8 inline-flex items-center gap-3 rounded-lg bg-background p-3 shadow-lg ring-1 ring-border transition-all hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 		>
-			{#if orgLogoUrl}
+			{#if event.organization.logo}
 				<img
-					src={orgLogoUrl}
+					src={getImageUrl(event.organization.logo) || ''}
 					alt="{event.organization.name} logo"
 					class="h-12 w-12 rounded-md object-cover"
 				/>

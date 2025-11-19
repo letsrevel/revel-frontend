@@ -3,7 +3,12 @@
 	import type { UserEventStatus } from './types';
 	import { cn } from '$lib/utils/cn';
 	import { formatEventDate, formatEventDateForScreenReader, isEventPast } from '$lib/utils/date';
-	import { getEventAccessDisplay, getEventFallbackGradient } from '$lib/utils/event';
+	import {
+		getEventAccessDisplay,
+		getEventFallbackGradient,
+		getEventCoverArt,
+		getEventLogo
+	} from '$lib/utils/event';
 	import { getImageUrl } from '$lib/utils/url';
 	import { Calendar, MapPin, Ticket, Tag } from 'lucide-svelte';
 	import EventBadges from './EventBadges.svelte';
@@ -35,11 +40,13 @@
 	let fallbackGradient = $derived(getEventFallbackGradient(event.id));
 	let isPast = $derived(isEventPast(event.end));
 
-	// Image URLs with backend URL prepended and fallback to organization
-	let eventCoverArtUrl = $derived(getImageUrl(event.cover_art));
-	let orgCoverArtUrl = $derived(getImageUrl(event.organization.cover_art));
-	let imageUrl = $derived(!imageError ? eventCoverArtUrl || orgCoverArtUrl : null);
-	let orgLogoUrl = $derived(getImageUrl(event.organization.logo));
+	// Cover art with fallback hierarchy: event -> series -> organization
+	let coverArtPath = $derived(getEventCoverArt(event));
+	let coverArtUrl = $derived(!imageError ? getImageUrl(coverArtPath) : null);
+
+	// Logo with fallback hierarchy: event -> series -> organization
+	let logoPath = $derived(getEventLogo(event));
+	let logoUrl = $derived(getImageUrl(logoPath));
 
 	// Accessible card label for screen readers
 	let accessibleLabel = $derived.by(() => {
@@ -113,21 +120,21 @@
 
 	<!-- Cover Image -->
 	<div class={imageContainerClasses}>
-		{#if imageUrl}
+		{#if coverArtUrl}
 			<img
-				src={imageUrl}
+				src={coverArtUrl}
 				alt=""
 				class="h-full w-full object-cover transition-transform group-hover:scale-105"
 				loading="lazy"
 				onerror={handleImageError}
 			/>
 		{:else}
-			<!-- Fallback gradient with organization logo -->
+			<!-- Fallback gradient with logo (event -> series -> org hierarchy) -->
 			<div class={cn('h-full w-full bg-gradient-to-br', fallbackGradient)}>
-				{#if orgLogoUrl}
+				{#if logoUrl}
 					<div class="flex h-full w-full items-center justify-center p-8">
 						<img
-							src={orgLogoUrl}
+							src={logoUrl}
 							alt=""
 							class="max-h-full max-w-full object-contain opacity-80"
 							loading="lazy"
