@@ -14,7 +14,7 @@ import type {
 	PotluckItemRetrieveSchema,
 	OrganizationPermissionsSchema,
 	AdditionalResourceSchema,
-	TierSchema,
+	TicketTierSchema,
 	EventTokenSchema,
 	MembershipTierSchema,
 	MembershipStatus
@@ -151,7 +151,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 		}
 
 		// Fetch ticket tiers (public endpoint, filtered by eligibility)
-		let ticketTiers: TierSchema[] = [];
+		let ticketTiers: TicketTierSchema[] = [];
 		if (event.requires_ticket) {
 			try {
 				const tiersResponse = await eventListTiers({

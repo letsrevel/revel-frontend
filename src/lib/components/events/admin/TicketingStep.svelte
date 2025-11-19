@@ -1,7 +1,10 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { eventadminListTicketTiers, organizationadminListMembershipTiers } from '$lib/api/generated/sdk.gen';
+	import {
+		eventadminListTicketTiers,
+		organizationadminListMembershipTiers
+	} from '$lib/api/generated/sdk.gen';
 	import type { TicketTierDetailSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
 	import { Users } from 'lucide-svelte';
@@ -24,8 +27,15 @@
 		onNext: () => void;
 	}
 
-	let { eventId, organizationSlug, organizationStripeConnected, formData, onUpdate, onBack, onNext }: Props =
-		$props();
+	let {
+		eventId,
+		organizationSlug,
+		organizationStripeConnected,
+		formData,
+		onUpdate,
+		onBack,
+		onNext
+	}: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
 

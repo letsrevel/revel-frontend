@@ -148,7 +148,10 @@
 	}
 
 	// Check if user has required membership tier for restricted tickets
-	function checkMembershipTierRestriction(tier: TierSchemaWithId): { allowed: boolean; reason?: string } {
+	function checkMembershipTierRestriction(tier: TierSchemaWithId): {
+		allowed: boolean;
+		reason?: string;
+	} {
 		// Cast to access restricted_to_membership_tiers (from TicketTierDetailSchema)
 		const restrictedTiers = (tier as any).restricted_to_membership_tiers;
 
@@ -265,7 +268,7 @@
 											Not Eligible
 										</Button>
 										{#if membershipRestriction.reason}
-											<p class="text-xs text-muted-foreground text-right max-w-[200px]">
+											<p class="max-w-[200px] text-right text-xs text-muted-foreground">
 												{membershipRestriction.reason}
 											</p>
 										{/if}
