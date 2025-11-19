@@ -637,23 +637,25 @@
 			}
 		},
 		"members": {
-			"pageTitle": "Mitglieder & Mitarbeiter",
-			"pageDescription": "Verwalten Sie Organisationsmitglieder, Mitarbeiter und Mitgliedschaftsanfragen",
-			"metaDescription": "Mitglieder und Mitarbeiter verwalten für {orgName}",
+			"pageTitle": "Mitglieder & Personal",
+			"pageDescription": "Mitglieder, Personal und Mitgliedsanträge der Organisation verwalten",
+			"metaDescription": "Mitglieder und Personal für {orgName} verwalten",
 			"tabs": {
 				"members": "Mitglieder",
-				"staff": "Mitarbeiter",
-				"requests": "Anfragen"
+				"staff": "Personal",
+				"requests": "Anfragen",
+				"tiers": "Stufen"
 			},
 			"search": {
 				"members": "Mitglieder nach Name oder E-Mail suchen...",
-				"staff": "Mitarbeiter nach Name oder E-Mail suchen..."
+				"staff": "Personal nach Name oder E-Mail suchen..."
 			},
-			"loading": "Laden...",
+			"loading": "Lädt...",
 			"errors": {
-				"loadMembers": "Mitglieder konnten nicht geladen werden",
-				"loadStaff": "Mitarbeiter konnten nicht geladen werden",
-				"loadRequests": "Mitgliedschaftsanfragen konnten nicht geladen werden"
+				"loadMembers": "Fehler beim Laden der Mitglieder",
+				"loadStaff": "Fehler beim Laden des Personals",
+				"loadRequests": "Fehler beim Laden der Mitgliedsanträge",
+				"loadTiers": "Fehler beim Laden der Mitgliedschaftsstufen"
 			},
 			"empty": {
 				"members": {
@@ -662,16 +664,35 @@
 					"withSearch": "Keine Mitglieder entsprechen Ihren Suchkriterien"
 				},
 				"staff": {
-					"title": "Keine Mitarbeiter gefunden",
-					"noSearch": "Diese Organisation hat noch keine Mitarbeiter",
-					"withSearch": "Keine Mitarbeiter entsprechen Ihren Suchkriterien"
+					"title": "Keine Personalmitglieder gefunden",
+					"noSearch": "Diese Organisation hat noch keine Personalmitglieder",
+					"withSearch": "Keine Personalmitglieder entsprechen Ihren Suchkriterien"
 				},
 				"requests": {
 					"title": "Keine ausstehenden Anfragen",
-					"description": "Es gibt derzeit keine ausstehenden Mitgliedschaftsanfragen"
+					"description": "Es gibt derzeit keine ausstehenden Mitgliedsanträge"
+				},
+				"tiers": {
+					"title": "Keine Mitgliedschaftsstufen",
+					"description": "Erstellen Sie Stufen, um Ihre Mitglieder in verschiedene Mitgliedschaftsstufen zu organisieren"
 				}
 			},
-			"ownerNotice": "Als Organisationseigentümer können Sie Mitarbeiter hinzufügen, ihre Berechtigungen bearbeiten und sie entfernen. Mitarbeiterberechtigungen werden individuell verwaltet."
+			"ownerNotice": "Als Organisationsinhaber können Sie Personalmitglieder hinzufügen, deren Berechtigungen bearbeiten und sie entfernen. Personalberechtigungen werden individuell verwaltet.",
+			"filters": {
+				"status": "Status",
+				"tier": "Stufe",
+				"allStatuses": "Alle Status",
+				"allTiers": "Alle Stufen",
+				"noTier": "Keine Stufe"
+			},
+			"tiers": {
+				"description": "Erstellen und verwalten Sie Mitgliedschaftsstufen zur Organisation Ihrer Mitglieder",
+				"create": "Stufe erstellen",
+				"memberCount": "{count} Mitglied{plural}",
+				"_plural": "er",
+				"editAriaLabel": "{name} bearbeiten",
+				"deleteAriaLabel": "{name} löschen"
+			}
 		},
 		"eventSeries": {
 			"pageTitle": "Veranstaltungsreihen",
@@ -1403,7 +1424,23 @@
 		"anyone": "Jeder",
 		"invitedOnly": "Nur Eingeladene",
 		"invitedAndMembers": "Eingeladene + Mitglieder",
-		"error": "Fehler"
+		"error": "Fehler",
+		"createTitle": "Mitgliedschaftsstufe erstellen",
+		"editTitle": "Mitgliedschaftsstufe bearbeiten",
+		"nameLabel": "Stufenname",
+		"namePlaceholder": "z.B. Gold, Silber, Basis...",
+		"nameHint": "Wählen Sie einen aussagekräftigen Namen für diese Mitgliedschaftsstufe",
+		"descriptionLabel": "Beschreibung",
+		"descriptionPlaceholder": "Beschreiben Sie die Vorteile und Funktionen dieser Mitgliedschaftsstufe...",
+		"descriptionHint": "Markdown-Formatierung wird unterstützt",
+		"cancel": "Abbrechen",
+		"create": "Stufe erstellen",
+		"update": "Stufe aktualisieren",
+		"errors": {
+			"nameRequired": "Stufenname ist erforderlich",
+			"nameTooShort": "Stufenname muss mindestens 1 Zeichen lang sein",
+			"nameTooLong": "Stufenname darf höchstens 150 Zeichen lang sein"
+		}
 	},
 	"cityAutocomplete": {
 		"preferredCity": "Bevorzugte Stadt",
@@ -1444,8 +1481,12 @@
 		"markUnreadError": "Fehler beim Markieren der Benachrichtigung als ungelesen"
 	},
 	"memberCard": {
-		"makeStaff": "Zu Personal machen",
-		"remove": "Entfernen"
+		"makeStaff": "Zum Personal machen",
+		"remove": "Entfernen",
+		"manage": "Verwalten",
+		"manageAriaLabel": "{name} verwalten",
+		"staffBadge": "Personal",
+		"memberSince": "Mitglied seit"
 	},
 	"membershipRequestCard": {
 		"first": "Vorname:",
@@ -3493,5 +3534,51 @@
 	"orgAdmin.waitlist.confirmDelete": "Möchten Sie {userName} wirklich von der Warteliste entfernen?",
 	"orgAdmin.waitlist.pagination.info": "Seite {current} von {total}",
 	"orgAdmin.waitlist.pagination.previous": "Zurück",
-	"orgAdmin.waitlist.pagination.next": "Weiter"
+	"orgAdmin.waitlist.pagination.next": "Weiter",
+	"memberStatus": {
+		"active": "Aktiv",
+		"paused": "Pausiert",
+		"cancelled": "Gekündigt",
+		"banned": "Gesperrt"
+	},
+	"manageMemberModal": {
+		"title": "{name} verwalten",
+		"statusLabel": "Mitgliedschaftsstatus",
+		"selectStatus": "Status auswählen",
+		"tierLabel": "Mitgliedschaftsstufe",
+		"selectTier": "Stufe auswählen",
+		"noTier": "Keine Stufe",
+		"bannedWarning": "Gesperrte Mitglieder können keine Organisationsveranstaltungen sehen oder daran teilnehmen, auch nicht an öffentlichen.",
+		"saveChanges": "Änderungen speichern",
+		"actionsLabel": "Aktionen",
+		"makeStaff": "Zum Personal machen",
+		"removeMember": "Aus Organisation entfernen",
+		"removeConfirmTitle": "Sind Sie sicher?",
+		"removeConfirmMessage": "Dies wird {name} dauerhaft aus der Organisation entfernen. Diese Aktion kann nicht rückgängig gemacht werden.",
+		"confirmRemove": "Ja, entfernen",
+		"cancelRemove": "Abbrechen",
+		"close": "Schließen",
+		"statusExplanation": {
+			"active": "Mitglieder können alle Organisationsveranstaltungen ansehen und daran teilnehmen.",
+			"paused": "Mitglieder können Veranstaltungen ansehen, aber nicht teilnehmen oder zusagen.",
+			"cancelled": "Die Mitgliedschaft wurde gekündigt. Dies entspricht keiner aktiven Mitgliedschaft.",
+			"banned": "Mitglieder können keine Organisationsaktivitäten ansehen oder daran teilnehmen."
+		}
+	},
+	"tierDelete": {
+		"title": "Mitgliedschaftsstufe löschen",
+		"confirmMessage": "Möchten Sie wirklich \"{name}\" löschen?",
+		"consequence": "Allen Mitgliedern, die dieser Stufe zugewiesen sind, wird die Stufe entfernt. Diese Aktion kann nicht rückgängig gemacht werden.",
+		"cancel": "Abbrechen",
+		"confirm": "Stufe löschen"
+	},
+	"approveMembershipModal": {
+		"title": "Mitgliedschaftsantrag genehmigen",
+		"description": "Wählen Sie eine Mitgliedschaftsstufe für {name} aus.",
+		"tierLabel": "Mitgliedschaftsstufe",
+		"selectTier": "Stufe auswählen",
+		"tierHelp": "Das Mitglied wird nach der Genehmigung dieser Stufe zugewiesen.",
+		"cancel": "Abbrechen",
+		"approve": "Antrag genehmigen"
+	}
 }

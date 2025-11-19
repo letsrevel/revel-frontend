@@ -9,7 +9,8 @@
 	import type {
 		TicketTierDetailSchema,
 		TicketTierCreateSchema,
-		TicketTierUpdateSchema
+		TicketTierUpdateSchema,
+		MembershipTierSchema
 	} from '$lib/api/generated/types.gen';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
@@ -21,10 +22,11 @@
 		tier: TicketTierDetailSchema | null; // null = create new
 		eventId: string;
 		organizationStripeConnected: boolean;
+		membershipTiers?: MembershipTierSchema[];
 		onClose: () => void;
 	}
 
-	let { tier, eventId, organizationStripeConnected, onClose }: Props = $props();
+	let { tier, eventId, organizationStripeConnected, membershipTiers = [], onClose }: Props = $props();
 
 	const queryClient = useQueryClient();
 
@@ -147,6 +149,9 @@
 	let purchasableBy = $state<'public' | 'members' | 'invited' | 'invited_and_members'>(
 		(tier?.purchasable_by as 'public' | 'members' | 'invited' | 'invited_and_members') ?? 'public'
 	);
+	let restrictedToMembershipTiersIds = $state<string[]>(
+		tier?.restricted_to_membership_tiers?.map((t) => t.id).filter((id): id is string => !!id) ?? []
+	);
 
 	// Get current currency symbol for display
 	let currencySymbol = $derived(CURRENCY_SYMBOLS[currency] || currency);
@@ -242,7 +247,8 @@
 			sales_start_at: salesStartAt ? toTimezoneAwareISO(salesStartAt) : null,
 			sales_end_at: salesEndAt ? toTimezoneAwareISO(salesEndAt) : null,
 			visibility,
-			purchasable_by: purchasableBy
+			purchasable_by: purchasableBy,
+			restricted_to_membership_tiers_ids: restrictedToMembershipTiersIds.length > 0 ? restrictedToMembershipTiersIds : null
 		};
 
 		// Only include pwyc fields if price_type is 'pwyc' and they have values
@@ -502,6 +508,44 @@
 					<option value="invited_and_members">{m['tierForm.invitedAndMembers']()}</option>
 				</select>
 			</div>
+
+			<!-- Restricted to Membership Tiers -->
+			{#if (purchasableBy === 'members' || purchasableBy === 'invited_and_members') && membershipTiers.length > 0}
+				<div>
+					<Label for="restricted-tiers">Restrict to Membership Tiers (Optional)</Label>
+					<p class="mb-2 text-xs text-muted-foreground">
+						If selected, only members with these tiers can purchase this ticket. Leave empty to allow all members.
+					</p>
+					<div class="space-y-2 rounded-md border border-input bg-background p-3">
+						{#each membershipTiers as tier}
+							{#if tier.id}
+								<label class="flex items-start gap-2 cursor-pointer">
+									<input
+										type="checkbox"
+										checked={restrictedToMembershipTiersIds.includes(tier.id)}
+										onchange={(e) => {
+											const checked = e.currentTarget.checked;
+											if (checked && tier.id && !restrictedToMembershipTiersIds.includes(tier.id)) {
+												restrictedToMembershipTiersIds = [...restrictedToMembershipTiersIds, tier.id];
+											} else if (!checked && tier.id) {
+												restrictedToMembershipTiersIds = restrictedToMembershipTiersIds.filter(id => id !== tier.id);
+											}
+										}}
+										disabled={isPending}
+										class="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary"
+									/>
+									<div class="flex-1">
+										<span class="text-sm font-medium">{tier.name}</span>
+										{#if tier.description}
+											<p class="text-xs text-muted-foreground">{tier.description}</p>
+										{/if}
+									</div>
+								</label>
+							{/if}
+						{/each}
+					</div>
+				</div>
+			{/if}
 
 			<!-- Form Actions -->
 			<div class="flex justify-between gap-2 border-t border-border pt-4">

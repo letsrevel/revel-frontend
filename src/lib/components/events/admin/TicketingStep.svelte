@@ -1,12 +1,13 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { eventadminListTicketTiers } from '$lib/api/generated/sdk.gen';
+	import { eventadminListTicketTiers, organizationadminListMembershipTiers } from '$lib/api/generated/sdk.gen';
 	import type { TicketTierDetailSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
 	import { Users } from 'lucide-svelte';
 	import TierCard from './TierCard.svelte';
 	import TierForm from './TierForm.svelte';
+	import { authStore } from '$lib/stores/auth.svelte';
 
 	// EventFormData is a flexible type for form state
 	interface EventFormData {
@@ -15,6 +16,7 @@
 
 	interface Props {
 		eventId: string;
+		organizationSlug: string;
 		organizationStripeConnected: boolean;
 		formData: EventFormData;
 		onUpdate: (updates: Partial<EventFormData>) => void;
@@ -22,8 +24,10 @@
 		onNext: () => void;
 	}
 
-	let { eventId, organizationStripeConnected, formData, onUpdate, onBack, onNext }: Props =
+	let { eventId, organizationSlug, organizationStripeConnected, formData, onUpdate, onBack, onNext }: Props =
 		$props();
+
+	const accessToken = $derived(authStore.accessToken);
 
 	// Fetch ticket tiers for this event
 	let tiersQuery = createQuery(() => ({
@@ -34,10 +38,25 @@
 			})
 	}));
 
+	// Fetch membership tiers for the organization
+	let membershipTiersQuery = createQuery(() => ({
+		queryKey: ['organization', organizationSlug, 'membership-tiers'],
+		queryFn: async () => {
+			if (!accessToken) return null;
+			const response = await organizationadminListMembershipTiers({
+				path: { slug: organizationSlug },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+			return response.data;
+		},
+		enabled: !!accessToken
+	}));
+
 	let editingTier = $state<TicketTierDetailSchema | null>(null);
 	let showTierForm = $state(false);
 
 	let tiers = $derived(tiersQuery.data?.data?.results ?? []);
+	let membershipTiers = $derived(membershipTiersQuery.data ?? []);
 
 	function handleEditTier(tier: TicketTierDetailSchema) {
 		editingTier = tier;
@@ -177,6 +196,7 @@
 		tier={editingTier}
 		{eventId}
 		{organizationStripeConnected}
+		{membershipTiers}
 		onClose={handleCloseTierForm}
 	/>
 {/if}

@@ -3,7 +3,8 @@
 	import type {
 		OrganizationTokenSchema,
 		OrganizationTokenCreateSchema,
-		OrganizationTokenUpdateSchema
+		OrganizationTokenUpdateSchema,
+		MembershipTierSchema
 	} from '$lib/api/generated/types.gen';
 	import {
 		Dialog,
@@ -24,6 +25,7 @@
 	interface Props {
 		open: boolean;
 		token?: OrganizationTokenSchema | null;
+		membershipTiers: MembershipTierSchema[];
 		isLoading?: boolean;
 		onClose: () => void;
 		onSave: (
@@ -31,7 +33,7 @@
 		) => void | Promise<void>;
 	}
 
-	let { open, token = null, isLoading = false, onClose, onSave }: Props = $props();
+	let { open, token = null, membershipTiers, isLoading = false, onClose, onSave }: Props = $props();
 
 	const isEdit = $derived(!!token);
 
@@ -41,6 +43,7 @@
 	let maxUses = $state<number>(1);
 	let grantsMembership = $state(true);
 	let grantsStaffStatus = $state(false);
+	let membershipTierId = $state<string>('');
 	let expiresAt = $state<string>('');
 
 	// Reset form when token changes or modal opens
@@ -51,6 +54,7 @@
 				maxUses = token.max_uses ?? 0;
 				grantsMembership = token.grants_membership ?? false;
 				grantsStaffStatus = token.grants_staff_status ?? false;
+				membershipTierId = token.membership_tier || '';
 				expiresAt = token.expires_at || '';
 				duration = '1440'; // Not used in edit mode
 			} else {
@@ -60,6 +64,8 @@
 				maxUses = 1;
 				grantsMembership = true;
 				grantsStaffStatus = false;
+				// Pre-select first tier if available and grants_membership is true
+				membershipTierId = membershipTiers.length > 0 ? membershipTiers[0].id || '' : '';
 				expiresAt = '';
 			}
 		}
@@ -73,7 +79,8 @@
 				max_uses: maxUses,
 				expires_at: expiresAt || null,
 				grants_membership: grantsMembership,
-				grants_staff_status: grantsStaffStatus
+				grants_staff_status: grantsStaffStatus,
+				membership_tier_id: grantsMembership && membershipTierId ? membershipTierId : null
 			};
 			onSave(updateData);
 		} else {
@@ -83,7 +90,8 @@
 				duration: parseInt(duration, 10),
 				max_uses: maxUses,
 				grants_membership: grantsMembership,
-				grants_staff_status: grantsStaffStatus
+				grants_staff_status: grantsStaffStatus,
+				membership_tier_id: grantsMembership && membershipTierId ? membershipTierId : null
 			};
 			onSave(createData);
 		}
@@ -91,6 +99,10 @@
 
 	const showStaffWarning = $derived(grantsStaffStatus);
 	const showBothUncheckedWarning = $derived(!grantsMembership && !grantsStaffStatus);
+	const showTierRequiredWarning = $derived(
+		grantsMembership && membershipTiers.length > 0 && !membershipTierId
+	);
+	const isFormValid = $derived(!showBothUncheckedWarning && !showTierRequiredWarning);
 </script>
 
 <Dialog
@@ -195,6 +207,26 @@
 					</div>
 				</label>
 
+				<!-- Membership Tier Selection (conditional) -->
+				{#if grantsMembership && membershipTiers.length > 0}
+					<div class="ml-10 space-y-2">
+						<Label for="membership-tier">Membership Tier</Label>
+						<select
+							id="membership-tier"
+							bind:value={membershipTierId}
+							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+						>
+							<option value="">Select a tier...</option>
+							{#each membershipTiers as tier (tier.id)}
+								<option value={tier.id}>{tier.name}</option>
+							{/each}
+						</select>
+						<p class="text-xs text-muted-foreground">
+							Select which membership tier to assign when users claim this token
+						</p>
+					</div>
+				{/if}
+
 				<label
 					class="flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors hover:bg-accent"
 				>
@@ -227,13 +259,20 @@
 						The token must grant membership or staff access.
 					</div>
 				{/if}
+
+				{#if showTierRequiredWarning}
+					<div class="rounded-md bg-red-50 p-3 text-sm text-red-800">
+						<strong>{m['organizationTokenModal.error']()}</strong> Membership tier is required when granting
+						membership.
+					</div>
+				{/if}
 			</div>
 
 			<DialogFooter>
 				<Button type="button" variant="outline" onclick={onClose} disabled={isLoading}>
 					Cancel
 				</Button>
-				<Button type="submit" disabled={isLoading || showBothUncheckedWarning}>
+				<Button type="submit" disabled={isLoading || !isFormValid}>
 					{#if isLoading}
 						<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 					{/if}

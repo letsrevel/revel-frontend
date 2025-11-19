@@ -1,6 +1,10 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import type { OrganizationRetrieveSchema } from '$lib/api/generated/types.gen';
+	import type {
+		OrganizationRetrieveSchema,
+		MembershipTierSchema,
+		MembershipStatus
+	} from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import { getBackendUrl } from '$lib/config/api';
 	import RequestMembershipButton from '$lib/components/organization/RequestMembershipButton.svelte';
@@ -9,6 +13,8 @@
 		organization: OrganizationRetrieveSchema;
 		isAuthenticated: boolean;
 		isMember: boolean;
+		membershipTier?: MembershipTierSchema | null;
+		membershipStatus?: MembershipStatus | null;
 		isOwner?: boolean;
 		isStaff?: boolean;
 		class?: string;
@@ -18,6 +24,8 @@
 		organization,
 		isAuthenticated,
 		isMember,
+		membershipTier = null,
+		membershipStatus = null,
 		isOwner = false,
 		isStaff = false,
 		class: className
@@ -87,6 +95,8 @@
 					organizationName={organization.name}
 					{isAuthenticated}
 					{isMember}
+					{membershipTier}
+					{membershipStatus}
 					{isOwner}
 					{isStaff}
 					class="inline-flex"

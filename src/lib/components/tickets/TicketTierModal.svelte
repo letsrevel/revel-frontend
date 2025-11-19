@@ -1,18 +1,20 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
+	import type { MembershipTierSchema } from '$lib/api/generated/types.gen';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
 	import DemoCardInfo from '$lib/components/common/DemoCardInfo.svelte';
 	import TicketConfirmationDialog from './TicketConfirmationDialog.svelte';
-	import { Ticket, Check } from 'lucide-svelte';
+	import { Ticket, Check, AlertCircle } from 'lucide-svelte';
 
 	interface Props {
 		open: boolean;
 		tiers: TierSchemaWithId[];
 		isAuthenticated: boolean;
 		hasTicket: boolean;
+		membershipTier?: MembershipTierSchema | null;
 		canAttendWithoutLogin?: boolean;
 		onClose: () => void;
 		onClaimTicket: (tierId: string) => void;
@@ -25,6 +27,7 @@
 		tiers,
 		isAuthenticated,
 		hasTicket,
+		membershipTier = null,
 		canAttendWithoutLogin = false,
 		onClose,
 		onClaimTicket,
@@ -143,6 +146,38 @@
 			tier.payment_method === 'at_the_door'
 		);
 	}
+
+	// Check if user has required membership tier for restricted tickets
+	function checkMembershipTierRestriction(tier: TierSchemaWithId): { allowed: boolean; reason?: string } {
+		// Cast to access restricted_to_membership_tiers (from TicketTierDetailSchema)
+		const restrictedTiers = (tier as any).restricted_to_membership_tiers;
+
+		// If no restrictions, everyone can access
+		if (!restrictedTiers || restrictedTiers.length === 0) {
+			return { allowed: true };
+		}
+
+		// If tier is restricted but user is not authenticated
+		if (!isAuthenticated) {
+			return { allowed: false, reason: 'Sign in to check eligibility' };
+		}
+
+		// If user doesn't have a membership tier
+		if (!membershipTier || !membershipTier.id) {
+			const tierNames = restrictedTiers.map((t: MembershipTierSchema) => t.name).join(', ');
+			return { allowed: false, reason: `Requires membership: ${tierNames}` };
+		}
+
+		// Check if user's membership tier is in the allowed list
+		const isAllowed = restrictedTiers.some((t: MembershipTierSchema) => t.id === membershipTier.id);
+
+		if (!isAllowed) {
+			const tierNames = restrictedTiers.map((t: MembershipTierSchema) => t.name).join(', ');
+			return { allowed: false, reason: `Requires membership: ${tierNames}` };
+		}
+
+		return { allowed: true };
+	}
 </script>
 
 <Dialog bind:open>
@@ -161,6 +196,7 @@
 				</div>
 			{:else}
 				{#each tiers as tier (tier.id)}
+					{@const membershipRestriction = checkMembershipTierRestriction(tier)}
 					<Card class="overflow-hidden p-0">
 						<div class="p-4">
 							<div class="flex items-start justify-between gap-4">
@@ -200,7 +236,7 @@
 								</div>
 
 								<!-- Action Button -->
-								<div>
+								<div class="flex flex-col items-end gap-1">
 									{#if !isAuthenticated && !canAttendWithoutLogin}
 										<Button variant="secondary" size="sm" disabled
 											>{m['ticketTierModal.signIn']()}</Button
@@ -223,6 +259,16 @@
 										<Button variant="secondary" size="sm" disabled
 											>{m['ticketTierModal.soldOut']()}</Button
 										>
+									{:else if !membershipRestriction.allowed}
+										<Button variant="secondary" size="sm" disabled>
+											<AlertCircle class="mr-2 h-4 w-4" />
+											Not Eligible
+										</Button>
+										{#if membershipRestriction.reason}
+											<p class="text-xs text-muted-foreground text-right max-w-[200px]">
+												{membershipRestriction.reason}
+											</p>
+										{/if}
 									{:else if canCheckoutTier(tier)}
 										<Button variant="default" size="sm" onclick={() => handleTierClick(tier)}>
 											<Ticket class="mr-2 h-4 w-4" />

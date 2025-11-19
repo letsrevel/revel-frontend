@@ -638,12 +638,13 @@
 		},
 		"members": {
 			"pageTitle": "Membri & Staff",
-			"pageDescription": "Gestisci membri dell'organizzazione, staff e richieste di iscrizione",
+			"pageDescription": "Gestisci membri, staff e richieste di iscrizione dell'organizzazione",
 			"metaDescription": "Gestisci membri e staff per {orgName}",
 			"tabs": {
 				"members": "Membri",
 				"staff": "Staff",
-				"requests": "Richieste"
+				"requests": "Richieste",
+				"tiers": "Livelli"
 			},
 			"search": {
 				"members": "Cerca membri per nome o email...",
@@ -651,9 +652,10 @@
 			},
 			"loading": "Caricamento...",
 			"errors": {
-				"loadMembers": "Impossibile caricare i membri",
-				"loadStaff": "Impossibile caricare lo staff",
-				"loadRequests": "Impossibile caricare le richieste di iscrizione"
+				"loadMembers": "Errore nel caricamento dei membri",
+				"loadStaff": "Errore nel caricamento dello staff",
+				"loadRequests": "Errore nel caricamento delle richieste di iscrizione",
+				"loadTiers": "Errore nel caricamento dei livelli di iscrizione"
 			},
 			"empty": {
 				"members": {
@@ -669,9 +671,28 @@
 				"requests": {
 					"title": "Nessuna richiesta in sospeso",
 					"description": "Non ci sono richieste di iscrizione in sospeso al momento"
+				},
+				"tiers": {
+					"title": "Nessun livello di iscrizione",
+					"description": "Crea livelli per organizzare i tuoi membri in diversi livelli di iscrizione"
 				}
 			},
-			"ownerNotice": "In qualità di proprietario dell'organizzazione, puoi aggiungere membri dello staff, modificare i loro permessi e rimuoverli. I permessi dello staff vengono gestiti individualmente."
+			"ownerNotice": "Come proprietario dell'organizzazione, puoi aggiungere membri dello staff, modificare i loro permessi e rimuoverli. I permessi dello staff sono gestiti individualmente.",
+			"filters": {
+				"status": "Stato",
+				"tier": "Livello",
+				"allStatuses": "Tutti gli stati",
+				"allTiers": "Tutti i livelli",
+				"noTier": "Nessun livello"
+			},
+			"tiers": {
+				"description": "Crea e gestisci livelli di iscrizione per organizzare i tuoi membri",
+				"create": "Crea livello",
+				"memberCount": "{count} membr{plural}",
+				"_plural": "i",
+				"editAriaLabel": "Modifica {name}",
+				"deleteAriaLabel": "Elimina {name}"
+			}
 		},
 		"eventSeries": {
 			"pageTitle": "Serie di Eventi",
@@ -1403,7 +1424,23 @@
 		"anyone": "Chiunque",
 		"invitedOnly": "Solo Invitati",
 		"invitedAndMembers": "Invitati + Membri",
-		"error": "Errore"
+		"error": "Errore",
+		"createTitle": "Crea livello di iscrizione",
+		"editTitle": "Modifica livello di iscrizione",
+		"nameLabel": "Nome livello",
+		"namePlaceholder": "es. Gold, Silver, Base...",
+		"nameHint": "Scegli un nome descrittivo per questo livello di iscrizione",
+		"descriptionLabel": "Descrizione",
+		"descriptionPlaceholder": "Descrivi i vantaggi e le caratteristiche di questo livello di iscrizione...",
+		"descriptionHint": "È supportata la formattazione Markdown",
+		"cancel": "Annulla",
+		"create": "Crea livello",
+		"update": "Aggiorna livello",
+		"errors": {
+			"nameRequired": "Il nome del livello è obbligatorio",
+			"nameTooShort": "Il nome del livello deve essere di almeno 1 carattere",
+			"nameTooLong": "Il nome del livello deve essere di massimo 150 caratteri"
+		}
 	},
 	"cityAutocomplete": {
 		"preferredCity": "Città preferita",
@@ -1445,7 +1482,11 @@
 	},
 	"memberCard": {
 		"makeStaff": "Rendi Staff",
-		"remove": "Rimuovi"
+		"remove": "Rimuovi",
+		"manage": "Gestisci",
+		"manageAriaLabel": "Gestisci {name}",
+		"staffBadge": "Staff",
+		"memberSince": "Membro dal"
 	},
 	"membershipRequestCard": {
 		"first": "Nome:",
@@ -3493,5 +3534,51 @@
 	"orgAdmin.waitlist.confirmDelete": "Sei sicuro di voler rimuovere {userName} dalla lista d'attesa?",
 	"orgAdmin.waitlist.pagination.info": "Pagina {current} di {total}",
 	"orgAdmin.waitlist.pagination.previous": "Precedente",
-	"orgAdmin.waitlist.pagination.next": "Successiva"
+	"orgAdmin.waitlist.pagination.next": "Successiva",
+	"memberStatus": {
+		"active": "Attivo",
+		"paused": "In pausa",
+		"cancelled": "Cancellato",
+		"banned": "Bannato"
+	},
+	"manageMemberModal": {
+		"title": "Gestisci {name}",
+		"statusLabel": "Stato iscrizione",
+		"selectStatus": "Seleziona stato",
+		"tierLabel": "Livello iscrizione",
+		"selectTier": "Seleziona livello",
+		"noTier": "Nessun livello",
+		"bannedWarning": "I membri bannati non possono vedere o partecipare ad alcun evento dell'organizzazione, nemmeno quelli pubblici.",
+		"saveChanges": "Salva modifiche",
+		"actionsLabel": "Azioni",
+		"makeStaff": "Rendi membro dello staff",
+		"removeMember": "Rimuovi dall'organizzazione",
+		"removeConfirmTitle": "Sei sicuro?",
+		"removeConfirmMessage": "Questo rimuoverà permanentemente {name} dall'organizzazione. Questa azione non può essere annullata.",
+		"confirmRemove": "Sì, rimuovi",
+		"cancelRemove": "Annulla",
+		"close": "Chiudi",
+		"statusExplanation": {
+			"active": "I membri possono visualizzare e partecipare a tutti gli eventi dell'organizzazione.",
+			"paused": "I membri possono visualizzare gli eventi ma non partecipare o confermare.",
+			"cancelled": "L'iscrizione è stata cancellata. Questo equivale a non avere un'iscrizione attiva.",
+			"banned": "I membri non possono visualizzare o partecipare ad alcuna attività dell'organizzazione."
+		}
+	},
+	"tierDelete": {
+		"title": "Elimina livello di iscrizione",
+		"confirmMessage": "Sei sicuro di voler eliminare \"{name}\"?",
+		"consequence": "Tutti i membri assegnati a questo livello avranno il livello rimosso. Questa azione non può essere annullata.",
+		"cancel": "Annulla",
+		"confirm": "Elimina livello"
+	},
+	"approveMembershipModal": {
+		"title": "Approva richiesta di iscrizione",
+		"description": "Seleziona un livello di iscrizione da assegnare a {name}.",
+		"tierLabel": "Livello di iscrizione",
+		"selectTier": "Seleziona un livello",
+		"tierHelp": "Il membro verrà assegnato a questo livello all'approvazione.",
+		"cancel": "Annulla",
+		"approve": "Approva richiesta"
+	}
 }

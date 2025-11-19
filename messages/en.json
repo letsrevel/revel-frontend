@@ -643,7 +643,8 @@
 			"tabs": {
 				"members": "Members",
 				"staff": "Staff",
-				"requests": "Requests"
+				"requests": "Requests",
+				"tiers": "Tiers"
 			},
 			"search": {
 				"members": "Search members by name or email...",
@@ -653,7 +654,8 @@
 			"errors": {
 				"loadMembers": "Failed to load members",
 				"loadStaff": "Failed to load staff",
-				"loadRequests": "Failed to load membership requests"
+				"loadRequests": "Failed to load membership requests",
+				"loadTiers": "Failed to load membership tiers"
 			},
 			"empty": {
 				"members": {
@@ -669,9 +671,28 @@
 				"requests": {
 					"title": "No pending requests",
 					"description": "There are no pending membership requests at this time"
+				},
+				"tiers": {
+					"title": "No membership tiers",
+					"description": "Create tiers to organize your members into different membership levels"
 				}
 			},
-			"ownerNotice": "As the organization owner, you can add staff members, edit their permissions, and remove them. Staff permissions are managed individually."
+			"ownerNotice": "As the organization owner, you can add staff members, edit their permissions, and remove them. Staff permissions are managed individually.",
+			"filters": {
+				"status": "Status",
+				"tier": "Tier",
+				"allStatuses": "All Statuses",
+				"allTiers": "All Tiers",
+				"noTier": "No Tier"
+			},
+			"tiers": {
+				"description": "Create and manage membership tiers to organize your members",
+				"create": "Create Tier",
+				"memberCount": "{count} member{plural}",
+				"_plural": "s",
+				"editAriaLabel": "Edit {name}",
+				"deleteAriaLabel": "Delete {name}"
+			}
 		},
 		"eventSeries": {
 			"pageTitle": "Event Series",
@@ -1403,7 +1424,23 @@
 		"anyone": "Anyone",
 		"invitedOnly": "Invited Only",
 		"invitedAndMembers": "Invited + Members",
-		"error": "Error"
+		"error": "Error",
+		"createTitle": "Create Membership Tier",
+		"editTitle": "Edit Membership Tier",
+		"nameLabel": "Tier Name",
+		"namePlaceholder": "e.g., Gold, Silver, Basic...",
+		"nameHint": "Choose a descriptive name for this membership level",
+		"descriptionLabel": "Description",
+		"descriptionPlaceholder": "Describe the benefits and features of this membership tier...",
+		"descriptionHint": "Markdown formatting is supported",
+		"cancel": "Cancel",
+		"create": "Create Tier",
+		"update": "Update Tier",
+		"errors": {
+			"nameRequired": "Tier name is required",
+			"nameTooShort": "Tier name must be at least 1 character",
+			"nameTooLong": "Tier name must be 150 characters or less"
+		}
 	},
 	"cityAutocomplete": {
 		"preferredCity": "Preferred City",
@@ -1445,7 +1482,11 @@
 	},
 	"memberCard": {
 		"makeStaff": "Make Staff",
-		"remove": "Remove"
+		"remove": "Remove",
+		"manage": "Manage",
+		"manageAriaLabel": "Manage {name}",
+		"staffBadge": "Staff",
+		"memberSince": "Member since"
 	},
 	"membershipRequestCard": {
 		"first": "First:",
@@ -3493,5 +3534,51 @@
 	"orgAdmin.waitlist.confirmDelete": "Are you sure you want to remove {userName} from the waitlist?",
 	"orgAdmin.waitlist.pagination.info": "Page {current} of {total}",
 	"orgAdmin.waitlist.pagination.previous": "Previous",
-	"orgAdmin.waitlist.pagination.next": "Next"
+	"orgAdmin.waitlist.pagination.next": "Next",
+	"memberStatus": {
+		"active": "Active",
+		"paused": "Paused",
+		"cancelled": "Cancelled",
+		"banned": "Banned"
+	},
+	"manageMemberModal": {
+		"title": "Manage {name}",
+		"statusLabel": "Membership Status",
+		"selectStatus": "Select status",
+		"tierLabel": "Membership Tier",
+		"selectTier": "Select tier",
+		"noTier": "No Tier",
+		"bannedWarning": "Banned members cannot see or participate in any organization events, even public ones.",
+		"saveChanges": "Save Changes",
+		"actionsLabel": "Actions",
+		"makeStaff": "Make Staff Member",
+		"removeMember": "Remove from Organization",
+		"removeConfirmTitle": "Are you sure?",
+		"removeConfirmMessage": "This will permanently remove {name} from the organization. This action cannot be undone.",
+		"confirmRemove": "Yes, Remove",
+		"cancelRemove": "Cancel",
+		"close": "Close",
+		"statusExplanation": {
+			"active": "Members can view and participate in all organization events.",
+			"paused": "Members can view events but cannot participate or RSVP.",
+			"cancelled": "Membership has been cancelled. This is equivalent to not having an active membership.",
+			"banned": "Members cannot view or participate in any organization activities."
+		}
+	},
+	"tierDelete": {
+		"title": "Delete Membership Tier",
+		"confirmMessage": "Are you sure you want to delete \"{name}\"?",
+		"consequence": "All members assigned to this tier will have their tier removed. This action cannot be undone.",
+		"cancel": "Cancel",
+		"confirm": "Delete Tier"
+	},
+	"approveMembershipModal": {
+		"title": "Approve Membership Request",
+		"description": "Select a membership tier to assign to {name}.",
+		"tierLabel": "Membership Tier",
+		"selectTier": "Select a tier",
+		"tierHelp": "The member will be assigned to this tier upon approval.",
+		"cancel": "Cancel",
+		"approve": "Approve Request"
+	}
 }

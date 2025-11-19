@@ -15,12 +15,19 @@
 
 	interface Props {
 		request: OrganizationMembershipRequestRetrieve;
-		onApprove: (request: OrganizationMembershipRequestRetrieve) => void;
-		onReject: (request: OrganizationMembershipRequestRetrieve) => void;
+		onApprove?: (request: OrganizationMembershipRequestRetrieve) => void;
+		onReject?: (request: OrganizationMembershipRequestRetrieve) => void;
 		isProcessing?: boolean;
+		showActions?: boolean;
 	}
 
-	let { request, onApprove, onReject, isProcessing = false }: Props = $props();
+	let {
+		request,
+		onApprove,
+		onReject,
+		isProcessing = false,
+		showActions = true
+	}: Props = $props();
 
 	// Dialog state
 	let dialogOpen = $state(false);
@@ -37,13 +44,17 @@
 	);
 
 	function handleApprove() {
-		onApprove(request);
-		dialogOpen = false;
+		if (onApprove) {
+			onApprove(request);
+			dialogOpen = false;
+		}
 	}
 
 	function handleReject() {
-		onReject(request);
-		dialogOpen = false;
+		if (onReject) {
+			onReject(request);
+			dialogOpen = false;
+		}
 	}
 
 	function openDialog() {
@@ -103,48 +114,75 @@
 				</p>
 			{/if}
 
-			<!-- Request Date -->
-			<p class="mt-2 text-xs text-muted-foreground">
-				Requested {createdAt}
-			</p>
+			<!-- Request Date and Status -->
+			<div class="mt-2 flex items-center gap-2">
+				<p class="text-xs text-muted-foreground">
+					Requested {createdAt}
+				</p>
+				{#if !showActions && request.status}
+					<span
+						class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {request.status ===
+						'approved'
+							? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
+							: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'}"
+					>
+						{request.status === 'approved' ? 'Approved' : 'Rejected'}
+					</span>
+				{/if}
+			</div>
 		</div>
 
 		<!-- Actions -->
-		<div class="flex flex-wrap gap-2">
-			<Button
-				variant="outline"
-				size="sm"
-				onclick={openDialog}
-				disabled={isProcessing}
-				aria-label="View request details from {displayName}"
-			>
-				<MessageSquare class="h-4 w-4" />
-				<span class="ml-2">{m['membershipRequestCard.viewRequest']()}</span>
-			</Button>
+		{#if showActions}
+			<div class="flex flex-wrap gap-2">
+				<Button
+					variant="outline"
+					size="sm"
+					onclick={openDialog}
+					disabled={isProcessing}
+					aria-label="View request details from {displayName}"
+				>
+					<MessageSquare class="h-4 w-4" />
+					<span class="ml-2">{m['membershipRequestCard.viewRequest']()}</span>
+				</Button>
 
-			<Button
-				variant="default"
-				size="sm"
-				onclick={handleApprove}
-				disabled={isProcessing}
-				aria-label="Approve request from {displayName}"
-				class="bg-green-600 hover:bg-green-700"
-			>
-				<CheckCircle class="h-4 w-4" />
-				<span class="ml-2">{m['membershipRequestCard.approve']()}</span>
-			</Button>
+				<Button
+					variant="default"
+					size="sm"
+					onclick={handleApprove}
+					disabled={isProcessing}
+					aria-label="Approve request from {displayName}"
+					class="bg-green-600 hover:bg-green-700"
+				>
+					<CheckCircle class="h-4 w-4" />
+					<span class="ml-2">{m['membershipRequestCard.approve']()}</span>
+				</Button>
 
-			<Button
-				variant="destructive"
-				size="sm"
-				onclick={handleReject}
-				disabled={isProcessing}
-				aria-label="Reject request from {displayName}"
-			>
-				<XCircle class="h-4 w-4" />
-				<span class="ml-2">{m['membershipRequestCard.reject']()}</span>
-			</Button>
-		</div>
+				<Button
+					variant="destructive"
+					size="sm"
+					onclick={handleReject}
+					disabled={isProcessing}
+					aria-label="Reject request from {displayName}"
+				>
+					<XCircle class="h-4 w-4" />
+					<span class="ml-2">{m['membershipRequestCard.reject']()}</span>
+				</Button>
+			</div>
+		{:else}
+			<div class="flex flex-wrap gap-2">
+				<Button
+					variant="outline"
+					size="sm"
+					onclick={openDialog}
+					disabled={isProcessing}
+					aria-label="View request details from {displayName}"
+				>
+					<MessageSquare class="h-4 w-4" />
+					<span class="ml-2">{m['membershipRequestCard.viewRequest']()}</span>
+				</Button>
+			</div>
+		{/if}
 	</div>
 </div>
 

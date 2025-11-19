@@ -2,22 +2,22 @@
  * Extended ticket tier schemas with fixes for backend issues
  */
 
-import type { TierSchema } from '$lib/api/generated/types.gen';
+import type { TicketTierSchema } from '$lib/api/generated/types.gen';
 
 /**
- * TierSchema with id field
+ * TicketTierSchema with id field
  *
- * BACKEND NOTE: TierSchema now properly includes all fields including:
+ * BACKEND NOTE: TicketTierSchema now properly includes all fields including:
  * - 'id' (required for checkout endpoint)
  * - 'manual_payment_instructions' (for offline/at-the-door payments)
  *
  * This type is just an alias for clarity that we're using tiers with IDs.
  */
-export type TierSchemaWithId = TierSchema;
+export type TierSchemaWithId = TicketTierSchema;
 
 /**
- * Type guard to check if a TierSchema has an id
+ * Type guard to check if a TicketTierSchema has an id
  */
-export function hasTierId(tier: TierSchema): tier is TierSchemaWithId {
+export function hasTierId(tier: TicketTierSchema): tier is TierSchemaWithId {
 	return 'id' in tier && typeof (tier as any).id === 'string';
 }

@@ -11,7 +11,7 @@ import {
 	eventGetEvent,
 	eventadminListTicketTiers
 } from '$lib/api/generated/sdk.gen';
-import type { TierSchema } from '$lib/api/generated/types.gen';
+import type { TicketTierSchema } from '$lib/api/generated/types.gen';
 
 /**
  * Load invitation requests AND invitations for this event
@@ -183,7 +183,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 	}
 
 	// Load ticket tiers if event requires tickets
-	let ticketTiers: TierSchema[] = [];
+	let ticketTiers: TicketTierSchema[] = [];
 	if (event.requires_ticket) {
 		try {
 			const tiersResponse = await eventadminListTicketTiers({
@@ -193,7 +193,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 			});
 
 			if (tiersResponse.data?.results) {
-				ticketTiers = tiersResponse.data.results as TierSchema[];
+				ticketTiers = tiersResponse.data.results as TicketTierSchema[];
 			}
 		} catch (err) {
 			console.error('Error loading ticket tiers:', err);

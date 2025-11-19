@@ -8,7 +8,9 @@ import {
 import type { PageServerLoad } from './$types';
 import type {
 	OrganizationPermissionsSchema,
-	OrganizationTokenSchema
+	OrganizationTokenSchema,
+	MembershipTierSchema,
+	MembershipStatus
 } from '$lib/api/generated/types.gen';
 import { canPerformAction } from '$lib/utils/permissions';
 
@@ -52,6 +54,8 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 		// Check if user can edit this organization and if they're already a member (requires authentication)
 		let canEdit = false;
 		let isMember = false;
+		let membershipTier: MembershipTierSchema | null = null;
+		let membershipStatus: MembershipStatus | null = null;
 		let isOwner = false;
 		let isStaff = false;
 		if (locals.user) {
@@ -66,8 +70,15 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 					// User can edit if they have 'edit_organization' permission
 					canEdit = canPerformAction(userPermissions, organization.id, 'edit_organization');
 
-					// Check if user is a member using the memberships list
-					isMember = userPermissions.memberships?.includes(organization.id) || false;
+					// Check if user is a member using the memberships dict
+					// memberships is now a dict of { [org_id]: MinimalOrganizationMemberSchema }
+					const membership = userPermissions.memberships?.[organization.id];
+					if (membership) {
+						isMember = true;
+						// Extract tier and status from MinimalOrganizationMemberSchema
+						membershipTier = membership.tier || null;
+						membershipStatus = (membership.status as MembershipStatus) || null;
+					}
 
 					// Check if user is owner or staff
 					const orgPermissions = userPermissions.organization_permissions?.[organization.id];
@@ -109,6 +120,8 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 			resources,
 			canEdit,
 			isMember,
+			membershipTier,
+			membershipStatus,
 			isOwner,
 			isStaff,
 			organizationTokenDetails, // Explicitly pass authentication state to the page

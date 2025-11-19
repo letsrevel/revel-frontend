@@ -45,10 +45,6 @@
 			href: `/org/${data.organization.slug}/admin/resources`,
 			label: m['orgAdmin.nav.resources']()
 		},
-		{
-			href: `/org/${data.organization.slug}/admin/tokens`,
-			label: m['orgAdmin.nav.invitationLinks']()
-		},
 		{ href: `/org/${data.organization.slug}/admin/settings`, label: m['orgAdmin.nav.settings']() }
 	];
 
