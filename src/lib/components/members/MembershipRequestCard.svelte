@@ -21,13 +21,7 @@
 		showActions?: boolean;
 	}
 
-	let {
-		request,
-		onApprove,
-		onReject,
-		isProcessing = false,
-		showActions = true
-	}: Props = $props();
+	let { request, onApprove, onReject, isProcessing = false, showActions = true }: Props = $props();
 
 	// Dialog state
 	let dialogOpen = $state(false);

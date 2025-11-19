@@ -26,7 +26,13 @@
 		onClose: () => void;
 	}
 
-	let { tier, eventId, organizationStripeConnected, membershipTiers = [], onClose }: Props = $props();
+	let {
+		tier,
+		eventId,
+		organizationStripeConnected,
+		membershipTiers = [],
+		onClose
+	}: Props = $props();
 
 	const queryClient = useQueryClient();
 
@@ -248,7 +254,8 @@
 			sales_end_at: salesEndAt ? toTimezoneAwareISO(salesEndAt) : null,
 			visibility,
 			purchasable_by: purchasableBy,
-			restricted_to_membership_tiers_ids: restrictedToMembershipTiersIds.length > 0 ? restrictedToMembershipTiersIds : null
+			restricted_to_membership_tiers_ids:
+				restrictedToMembershipTiersIds.length > 0 ? restrictedToMembershipTiersIds : null
 		};
 
 		// Only include pwyc fields if price_type is 'pwyc' and they have values
@@ -514,21 +521,27 @@
 				<div>
 					<Label for="restricted-tiers">Restrict to Membership Tiers (Optional)</Label>
 					<p class="mb-2 text-xs text-muted-foreground">
-						If selected, only members with these tiers can purchase this ticket. Leave empty to allow all members.
+						If selected, only members with these tiers can purchase this ticket. Leave empty to
+						allow all members.
 					</p>
 					<div class="space-y-2 rounded-md border border-input bg-background p-3">
 						{#each membershipTiers as tier}
 							{#if tier.id}
-								<label class="flex items-start gap-2 cursor-pointer">
+								<label class="flex cursor-pointer items-start gap-2">
 									<input
 										type="checkbox"
 										checked={restrictedToMembershipTiersIds.includes(tier.id)}
 										onchange={(e) => {
 											const checked = e.currentTarget.checked;
 											if (checked && tier.id && !restrictedToMembershipTiersIds.includes(tier.id)) {
-												restrictedToMembershipTiersIds = [...restrictedToMembershipTiersIds, tier.id];
+												restrictedToMembershipTiersIds = [
+													...restrictedToMembershipTiersIds,
+													tier.id
+												];
 											} else if (!checked && tier.id) {
-												restrictedToMembershipTiersIds = restrictedToMembershipTiersIds.filter(id => id !== tier.id);
+												restrictedToMembershipTiersIds = restrictedToMembershipTiersIds.filter(
+													(id) => id !== tier.id
+												);
 											}
 										}}
 										disabled={isPending}

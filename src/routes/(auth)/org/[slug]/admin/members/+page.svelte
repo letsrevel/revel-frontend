@@ -300,7 +300,13 @@
 
 	// Approve request mutation
 	const approveRequestMutation = createMutation(() => ({
-		mutationFn: async ({ request, tierId }: { request: OrganizationMembershipRequestRetrieve; tierId: string }) => {
+		mutationFn: async ({
+			request,
+			tierId
+		}: {
+			request: OrganizationMembershipRequestRetrieve;
+			tierId: string;
+		}) => {
 			if (!request.id) {
 				throw new Error('Request ID not found');
 			}
@@ -861,7 +867,9 @@
 	let staffUserIds = $derived(new Set(staff.map((s) => s.user.id).filter(Boolean)));
 
 	// Count pending requests for badge (need to fetch all pending to get accurate count)
-	let pendingRequestsCount = $derived(requestStatusFilter === 'pending' ? requestsQuery.data?.count || 0 : 0);
+	let pendingRequestsCount = $derived(
+		requestStatusFilter === 'pending' ? requestsQuery.data?.count || 0 : 0
+	);
 
 	// Token share URL
 	let shareUrl = $derived(

@@ -261,7 +261,7 @@
 					Not Eligible
 				</Button>
 				{#if membershipRestriction.reason}
-					<p class="text-xs text-muted-foreground text-right max-w-[250px]">
+					<p class="max-w-[250px] text-right text-xs text-muted-foreground">
 						{membershipRestriction.reason}
 					</p>
 				{/if}
