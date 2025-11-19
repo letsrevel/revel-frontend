@@ -112,3 +112,59 @@ export function formatEventLocation(
 
 	return parts.length > 0 ? parts.join(', ') : undefined;
 }
+
+/**
+ * Get event logo with fallback hierarchy:
+ * 1. Event's logo
+ * 2. Event series' logo (if event is part of a series)
+ * 3. Organization's logo
+ *
+ * @param event Event data
+ * @returns Logo URL path (relative) or null if no logo available
+ */
+export function getEventLogo(event: EventDetailSchema | EventInListSchema): string | null {
+	// First priority: Event's own logo
+	if (event.logo) {
+		return event.logo;
+	}
+
+	// Second priority: Event series logo
+	if (event.event_series?.logo) {
+		return event.event_series.logo;
+	}
+
+	// Third priority: Organization logo
+	if (event.organization.logo) {
+		return event.organization.logo;
+	}
+
+	return null;
+}
+
+/**
+ * Get event cover art with fallback hierarchy:
+ * 1. Event's cover_art
+ * 2. Event series' cover_art (if event is part of a series)
+ * 3. Organization's cover_art
+ *
+ * @param event Event data
+ * @returns Cover art URL path (relative) or null if no cover art available
+ */
+export function getEventCoverArt(event: EventDetailSchema | EventInListSchema): string | null {
+	// First priority: Event's own cover art
+	if (event.cover_art) {
+		return event.cover_art;
+	}
+
+	// Second priority: Event series cover art
+	if (event.event_series?.cover_art) {
+		return event.event_series.cover_art;
+	}
+
+	// Third priority: Organization cover art
+	if (event.organization.cover_art) {
+		return event.organization.cover_art;
+	}
+
+	return null;
+}

@@ -5,12 +5,21 @@
 	import { Calendar, MapPin, CheckCircle2, XCircle, HelpCircle } from 'lucide-svelte';
 	import { getImageUrl } from '$lib/utils/url';
 	import { formatEventDateRange } from '$lib/utils/date';
+	import { getEventLogo, getEventCoverArt } from '$lib/utils/event';
 
 	interface Props {
 		rsvp: UserRsvpSchema;
 	}
 
 	let { rsvp }: Props = $props();
+
+	// Logo with fallback hierarchy: event -> series -> organization
+	let logoPath = $derived(getEventLogo(rsvp.event));
+	let logoUrl = $derived(getImageUrl(logoPath));
+
+	// Cover art with fallback hierarchy (for secondary fallback)
+	let coverArtPath = $derived(getEventCoverArt(rsvp.event));
+	let coverArtUrl = $derived(getImageUrl(coverArtPath));
 
 	// Format event date
 	let eventDate = $derived.by(() => {
@@ -65,20 +74,12 @@
 	<div class="flex flex-col gap-4 p-4 md:p-6">
 		<!-- Header with Event Info -->
 		<div class="flex items-start gap-4">
-			<!-- Event Logo/Icon -->
+			<!-- Event Logo/Icon (with fallback: logo > cover art > icon) -->
 			<div class="shrink-0">
-				{#if rsvp.event.logo}
-					<img
-						src={getImageUrl(rsvp.event.logo)}
-						alt=""
-						class="h-16 w-16 rounded-lg border object-cover"
-					/>
-				{:else if rsvp.event.cover_art}
-					<img
-						src={getImageUrl(rsvp.event.cover_art)}
-						alt=""
-						class="h-16 w-16 rounded-lg border object-cover"
-					/>
+				{#if logoUrl}
+					<img src={logoUrl} alt="" class="h-16 w-16 rounded-lg border object-cover" />
+				{:else if coverArtUrl}
+					<img src={coverArtUrl} alt="" class="h-16 w-16 rounded-lg border object-cover" />
 				{:else}
 					<div
 						class="flex h-16 w-16 items-center justify-center rounded-lg bg-primary/10 text-primary"
