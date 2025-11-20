@@ -3,7 +3,8 @@
 	import {
 		notificationpreferenceUpdatePreferences,
 		notificationpreferenceGetAvailableNotificationTypes,
-		notificationpreferenceUnsubscribe
+		notificationpreferenceUnsubscribe,
+		telegramGetLinkStatus
 	} from '$lib/api';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
@@ -45,6 +46,20 @@
 	const isUnsubscribeMode = $derived(!!unsubscribeToken);
 
 	const queryClient = useQueryClient();
+
+	// Query for Telegram connection status (only in authenticated mode)
+	const telegramStatusQuery = createQuery(() => ({
+		queryKey: ['telegram', 'status'],
+		queryFn: async () => {
+			const result = await telegramGetLinkStatus({
+				headers: { Authorization: `Bearer ${authToken}` }
+			});
+			return result.data;
+		},
+		enabled: !!authToken && !isUnsubscribeMode,
+		staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+		retry: 1
+	}));
 
 	// Fetch available notification types (only in authenticated mode)
 	let availableTypesQuery = createQuery(() => ({
@@ -169,6 +184,7 @@
 
 	let isFormDisabled = $derived(disabled || silenceAll);
 	let showTimePicker = $derived(digestFrequency === 'daily' || digestFrequency === 'weekly');
+	let isTelegramConnected = $derived(telegramStatusQuery.data?.connected ?? false);
 
 	// Validation
 	let validationError = $derived.by(() => {
@@ -573,28 +589,44 @@
 
 				<!-- Telegram Channel -->
 				<div class="flex items-start justify-between space-x-4">
-					<div class="flex items-start gap-3">
+					<div class="flex flex-1 items-start gap-3">
 						<MessageSquare
 							class="mt-1 h-5 w-5 {isChannelEnabled('telegram')
 								? 'text-primary'
 								: 'text-muted-foreground'}"
 							aria-hidden="true"
 						/>
-						<div class="space-y-1">
+						<div class="flex-1 space-y-1">
 							<Label for="channel-telegram" class="text-base font-medium"
 								>{m['notificationPreferences.channelTelegram']()}</Label
 							>
 							<p class="text-sm text-muted-foreground">
 								{m['notificationPreferences.channelTelegramDescription']()}
 							</p>
+							{#if !isUnsubscribeMode && !isTelegramConnected}
+								<div class="mt-2 rounded-md bg-muted p-2">
+									<p class="text-xs text-muted-foreground">
+										{m['notificationPreferences.telegramNotConnected']()}
+										<a
+											href="/account/profile"
+											class="font-medium text-primary underline-offset-4 hover:underline"
+										>
+											{m['notificationPreferences.connectTelegram']()}
+										</a>
+									</p>
+								</div>
+							{/if}
 						</div>
 					</div>
 					<Checkbox
 						id="channel-telegram"
 						checked={isChannelEnabled('telegram')}
 						onCheckedChange={() => toggleChannel('telegram')}
-						disabled={isFormDisabled}
+						disabled={isFormDisabled || (!isUnsubscribeMode && !isTelegramConnected)}
 						aria-label={m['notificationPreferences.channelTelegram']()}
+						aria-describedby={!isUnsubscribeMode && !isTelegramConnected
+							? 'telegram-not-connected'
+							: undefined}
 					/>
 				</div>
 
@@ -893,7 +925,7 @@ Data: {JSON.stringify(availableTypesQuery.data, null, 2)}
 													checked={settings.channels.includes('telegram')}
 													onCheckedChange={() =>
 														toggleNotificationTypeChannel(notificationType, 'telegram')}
-													disabled={isFormDisabled}
+													disabled={isFormDisabled || !isTelegramConnected}
 												/>
 												<Label
 													for="type-{notificationType}-telegram"
