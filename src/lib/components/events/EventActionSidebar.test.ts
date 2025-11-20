@@ -26,8 +26,6 @@ function createMockEvent(overrides: Partial<EventDetailSchema> = {}): EventDetai
 		attendee_count: 10,
 		max_attendees: 50,
 		requires_ticket: false,
-		free_for_members: false,
-		free_for_staff: false,
 		potluck_open: false,
 		organization: {
 			id: 'org-id',

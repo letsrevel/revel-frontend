@@ -42,8 +42,6 @@ const mockEvent: EventDetailSchema = {
 	tags: ['networking', 'tech'],
 	logo: null,
 	cover_art: null,
-	free_for_members: false,
-	free_for_staff: false,
 	requires_ticket: false,
 	potluck_open: false,
 	waitlist_open: false,
