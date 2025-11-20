@@ -57,12 +57,12 @@
 
 <header class={cn('relative w-full overflow-hidden', className)}>
 	<!-- Cover Image or Gradient -->
-	<div class="relative h-64 w-full md:h-96">
+	<div class="relative mx-auto h-64 w-full max-w-[1920px] md:h-96">
 		{#if coverImageUrl}
 			<img
 				src={coverImageUrl}
 				alt="{event.name} cover image"
-				class="h-full w-full object-cover"
+				class="h-full w-full object-cover object-center"
 				loading="eager"
 			/>
 			<!-- Gradient overlay for text contrast -->
@@ -76,7 +76,7 @@
 		{/if}
 
 		<!-- Header Content Overlay -->
-		<div class="absolute inset-0 flex flex-col justify-end p-6 md:p-8">
+		<div class="absolute inset-0 flex flex-col justify-end p-6 pb-12 md:p-8">
 			<div class="max-w-4xl">
 				<!-- Event Name -->
 				<h1 class="mb-3 text-3xl font-bold text-white md:text-4xl lg:text-5xl">
@@ -119,7 +119,7 @@
 
 	<!-- Organization Badge (Overlaps cover image) -->
 	<!-- Note: Always shows organization logo/initial for clarity, not the event logo fallback -->
-	<div class="relative px-6 md:px-8">
+	<div class="relative mx-auto max-w-[1920px] px-6 md:px-8">
 		<a
 			href="/org/{event.organization.slug}"
 			class="group -mt-8 inline-flex items-center gap-3 rounded-lg bg-background p-3 shadow-lg ring-1 ring-border transition-all hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
