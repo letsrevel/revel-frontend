@@ -95,11 +95,22 @@
 
 	/**
 	 * Convert ISO datetime to datetime-local format (YYYY-MM-DDTHH:mm)
+	 * Properly converts from backend timezone (UTC or Europe/Vienna) to user's local time
 	 */
 	function toDateTimeLocal(isoString: string | null | undefined): string {
 		if (!isoString) return '';
-		// Remove seconds and timezone info for datetime-local input
-		return isoString.slice(0, 16);
+
+		// Parse the ISO string to a Date object (handles any timezone format)
+		const date = new Date(isoString);
+
+		// Format as datetime-local (YYYY-MM-DDTHH:mm) in user's local timezone
+		const year = date.getFullYear();
+		const month = String(date.getMonth() + 1).padStart(2, '0');
+		const day = String(date.getDate()).padStart(2, '0');
+		const hours = String(date.getHours()).padStart(2, '0');
+		const minutes = String(date.getMinutes()).padStart(2, '0');
+
+		return `${year}-${month}-${day}T${hours}:${minutes}`;
 	}
 
 	/**
