@@ -104,12 +104,25 @@
 
 	/**
 	 * Convert datetime-local format to ISO string with timezone
+	 * Preserves the local time by including the user's timezone offset
 	 */
 	function toISOString(datetimeLocal: string | null | undefined): string | null {
 		if (!datetimeLocal) return null;
-		// Parse as local time and convert to ISO string with timezone
+
+		// Create a date object to get the timezone offset
 		const date = new Date(datetimeLocal);
-		return date.toISOString();
+
+		// Get timezone offset in minutes (e.g., -60 for UTC+1)
+		// Note: getTimezoneOffset returns negative values for positive offsets
+		const offsetMinutes = -date.getTimezoneOffset();
+
+		// Convert offset to hours and minutes
+		const offsetHours = Math.floor(Math.abs(offsetMinutes) / 60).toString().padStart(2, '0');
+		const offsetMins = (Math.abs(offsetMinutes) % 60).toString().padStart(2, '0');
+		const offsetSign = offsetMinutes >= 0 ? '+' : '-';
+
+		// Build ISO string with local timezone offset (e.g., "2025-11-21T14:00:00+01:00")
+		return `${datetimeLocal}:00${offsetSign}${offsetHours}:${offsetMins}`;
 	}
 
 	// Form data state (matches EventCreateSchema + additional image URLs)
