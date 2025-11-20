@@ -6,10 +6,7 @@ import {
 	organizationClaimInvitation,
 	eventClaimInvitation
 } from '$lib/api/generated/sdk.gen';
-import {
-	getAccessTokenCookieOptions,
-	getRefreshTokenCookieOptions
-} from '$lib/utils/cookies';
+import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '$lib/utils/cookies';
 
 /**
  * Attempt to claim pending invitation tokens after email verification

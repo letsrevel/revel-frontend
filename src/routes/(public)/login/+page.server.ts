@@ -2,10 +2,7 @@ import { fail, redirect, isRedirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import { loginSchema, otpSchema } from '$lib/schemas/auth';
 import { authObtainToken, authObtainTokenWithOtp } from '$lib/api/client';
-import {
-	getAccessTokenCookieOptions,
-	getRefreshTokenCookieOptions
-} from '$lib/utils/cookies';
+import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '$lib/utils/cookies';
 
 export const actions = {
 	// Standard email/password login

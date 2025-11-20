@@ -1,10 +1,7 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { tokenRefresh } from '$lib/api/generated';
-import {
-	getAccessTokenCookieOptions,
-	getRefreshTokenCookieOptions
-} from '$lib/utils/cookies';
+import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '$lib/utils/cookies';
 
 /**
  * Server-side API endpoint to refresh JWT access token
