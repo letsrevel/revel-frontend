@@ -290,6 +290,14 @@
 								<div class="flex flex-wrap gap-2 border-t border-border pt-3">
 									<button
 										type="button"
+										onclick={() => viewEvent(event.slug)}
+										class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
+									>
+										<Eye class="h-4 w-4" aria-hidden="true" />
+										{m['orgAdmin.events.actions.preview']()}
+									</button>
+									<button
+										type="button"
 										onclick={() => editEvent(event.id)}
 										class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
 									>
