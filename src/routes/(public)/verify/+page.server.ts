@@ -6,6 +6,7 @@ import {
 	organizationClaimInvitation,
 	eventClaimInvitation
 } from '$lib/api/generated/sdk.gen';
+import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '$lib/utils/cookies';
 
 /**
  * Attempt to claim pending invitation tokens after email verification
@@ -108,24 +109,12 @@ export const load: PageServerLoad = async ({ url, fetch, cookies }) => {
 
 			// Store tokens in httpOnly cookies
 			if (access) {
-				cookies.set('access_token', access, {
-					path: '/',
-					httpOnly: true,
-					secure: false, // Set to true in production via environment
-					sameSite: 'lax',
-					maxAge: 60 * 15 // 15 minutes
-				});
+				cookies.set('access_token', access, getAccessTokenCookieOptions());
 				console.log('[VERIFY] Access token cookie set');
 			}
 
 			if (refresh) {
-				cookies.set('refresh_token', refresh, {
-					path: '/',
-					httpOnly: true,
-					secure: false, // Set to true in production via environment
-					sameSite: 'lax',
-					maxAge: 60 * 60 * 24 * 7 // 7 days
-				});
+				cookies.set('refresh_token', refresh, getRefreshTokenCookieOptions());
 				console.log('[VERIFY] Refresh token cookie set');
 			}
 

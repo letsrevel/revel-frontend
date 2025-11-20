@@ -1,6 +1,7 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { tokenRefresh } from '$lib/api/generated';
+import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '$lib/utils/cookies';
 
 /**
  * Server-side API endpoint to refresh JWT access token
@@ -55,13 +56,7 @@ export const POST: RequestHandler = async ({ cookies }) => {
 		// The old refresh token is now blacklisted - we MUST save the new one
 
 		// Set the new access token cookie (1 hour lifetime)
-		cookies.set('access_token', data.access, {
-			path: '/',
-			httpOnly: true,
-			sameSite: 'lax',
-			secure: false, // Set to true in production with HTTPS
-			maxAge: 60 * 60 // 1 hour (matches backend ACCESS_TOKEN_LIFETIME)
-		});
+		cookies.set('access_token', data.access, getAccessTokenCookieOptions());
 
 		// CRITICAL: Always update refresh token - backend rotates it on every refresh
 		if (!data.refresh) {
@@ -69,13 +64,7 @@ export const POST: RequestHandler = async ({ cookies }) => {
 			throw error(500, 'Backend did not return new refresh token');
 		}
 
-		cookies.set('refresh_token', data.refresh, {
-			path: '/',
-			httpOnly: true,
-			sameSite: 'lax',
-			secure: false, // Set to true in production with HTTPS
-			maxAge: 60 * 60 * 24 * 30 // 30 days (matches backend REFRESH_TOKEN_LIFETIME)
-		});
+		cookies.set('refresh_token', data.refresh, getRefreshTokenCookieOptions());
 
 		// Return the new tokens to the client
 		// Client needs access token to update its in-memory store
