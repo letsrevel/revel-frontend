@@ -16,7 +16,7 @@
 	let hasUppercase = $derived(/[A-Z]/.test(password));
 	let hasLowercase = $derived(/[a-z]/.test(password));
 	let hasDigit = $derived(/\d/.test(password));
-	let hasSpecial = $derived(/[!@#$%^&*(),.?":{}|<>-]/.test(password));
+	let hasSpecial = $derived(/[!@#$%^&*(),.?":{}|<>\-\[\]=]/.test(password));
 
 	// Calculate strength score (0-5)
 	let score = $derived(
