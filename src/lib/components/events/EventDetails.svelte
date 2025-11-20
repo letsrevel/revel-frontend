@@ -42,14 +42,16 @@
 <div class={cn('space-y-6', className)}>
 	<!-- Description -->
 	{#if event.description_html}
-		<section aria-labelledby="description-heading">
-			<h2 id="description-heading" class="mb-3 text-xl font-semibold">
-				{m['eventDetails.about_heading']()}
-			</h2>
-			<div class="prose prose-sm dark:prose-invert max-w-prose">
-				{@html event.description_html}
-			</div>
-		</section>
+		{#key event.description_html}
+			<section aria-labelledby="description-heading">
+				<h2 id="description-heading" class="mb-3 text-xl font-semibold">
+					{m['eventDetails.about_heading']()}
+				</h2>
+				<div class="prose prose-sm dark:prose-invert max-w-prose">
+					{@html event.description_html}
+				</div>
+			</section>
+		{/key}
 	{/if}
 
 	<!-- Event Metadata Grid -->
@@ -153,16 +155,18 @@
 
 	<!-- Invitation Message (if private event) -->
 	{#if event.visibility === 'private' && event.invitation_message_html}
-		<section
-			aria-labelledby="invitation-heading"
-			class="rounded-lg border-2 border-primary/20 bg-primary/5 p-4"
-		>
-			<h2 id="invitation-heading" class="mb-2 text-lg font-semibold">
-				{m['eventDetails.invitation_heading']()}
-			</h2>
-			<div class="prose prose-sm dark:prose-invert max-w-prose">
-				{@html event.invitation_message_html}
-			</div>
-		</section>
+		{#key event.invitation_message_html}
+			<section
+				aria-labelledby="invitation-heading"
+				class="rounded-lg border-2 border-primary/20 bg-primary/5 p-4"
+			>
+				<h2 id="invitation-heading" class="mb-2 text-lg font-semibold">
+					{m['eventDetails.invitation_heading']()}
+				</h2>
+				<div class="prose prose-sm dark:prose-invert max-w-prose">
+					{@html event.invitation_message_html}
+				</div>
+			</section>
+		{/key}
 	{/if}
 </div>
