@@ -11,7 +11,9 @@
 		eventListResources,
 		organizationadminGetResource,
 		organizationadminUpdateResource,
-		questionnaireListOrgQuestionnaires
+		questionnaireListOrgQuestionnaires,
+		eventadminAddTags,
+		eventadminRemoveTags
 	} from '$lib/api/generated/sdk.gen';
 	import { toDateTimeLocal, toISOString } from '$lib/utils/datetime';
 	import type {
@@ -55,6 +57,7 @@
 	let selectedResourceIds = $state<string[]>([]);
 	let initialResourceIds = $state<string[]>([]); // Track initial state for comparison
 	let assignedQuestionnaires = $state<OrganizationQuestionnaireInListSchema[]>([]);
+	let initialTags = $state<string[]>(existingEvent?.tags || []); // Track initial tags for comparison
 
 	// Auto-scroll to top when step changes
 	$effect(() => {
@@ -332,6 +335,36 @@
 	}
 
 	/**
+	 * Save tag associations (add/remove tags)
+	 */
+	async function saveTagAssociations(currentEventId: string): Promise<void> {
+		const currentTags = formData.tags || [];
+
+		// Determine which tags were added and removed
+		const addedTags = currentTags.filter((tag) => !initialTags.includes(tag));
+		const removedTags = initialTags.filter((tag) => !currentTags.includes(tag));
+
+		// Add new tags
+		if (addedTags.length > 0) {
+			await eventadminAddTags({
+				path: { event_id: currentEventId },
+				body: { tags: addedTags }
+			});
+		}
+
+		// Remove deleted tags
+		if (removedTags.length > 0) {
+			await eventadminRemoveTags({
+				path: { event_id: currentEventId },
+				body: { tags: removedTags }
+			});
+		}
+
+		// Update initialTags to current state for future comparisons
+		initialTags = [...currentTags];
+	}
+
+	/**
 	 * Validate Step 1 (Essentials)
 	 */
 	function validateStep1(): boolean {
@@ -459,6 +492,9 @@
 
 			// Save resource associations
 			await saveResourceAssociations(eventId);
+
+			// Save tag associations (add/remove tags)
+			await saveTagAssociations(eventId);
 
 			// Invalidate queries
 			queryClient.invalidateQueries({ queryKey: ['events'] });
