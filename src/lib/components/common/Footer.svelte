@@ -61,7 +61,7 @@
 					</li>
 					<li>
 						<a
-							href="/contact"
+							href="mailto:contact@letsrevel.io"
 							class="text-muted-foreground transition-colors hover:text-foreground"
 						>
 							{m['footer.contact']()}
