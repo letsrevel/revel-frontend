@@ -85,48 +85,6 @@
 		<p class="text-muted-foreground">{m['ticketingStep.configureOptions']()}</p>
 	</div>
 
-	<!-- Event-Level Ticketing Options -->
-	<div class="space-y-4 rounded-lg border border-border p-4">
-		<h3 class="flex items-center gap-2 font-semibold">
-			<Users class="h-5 w-5" aria-hidden="true" />
-			{m['ticketingStep.ticketingOptions']()}
-		</h3>
-
-		<!-- Free for Members -->
-		<label
-			class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
-		>
-			<input
-				type="checkbox"
-				checked={formData.free_for_members || false}
-				onchange={(e) => onUpdate({ free_for_members: e.currentTarget.checked })}
-				class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
-			/>
-			<div class="flex-1">
-				<div class="font-medium">{m['ticketingStep.freeForMembers']()}</div>
-				<div class="text-sm text-muted-foreground">
-					{m['ticketingStep.membersNoPay']()}
-				</div>
-			</div>
-		</label>
-
-		<!-- Free for Staff -->
-		<label
-			class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
-		>
-			<input
-				type="checkbox"
-				checked={formData.free_for_staff || false}
-				onchange={(e) => onUpdate({ free_for_staff: e.currentTarget.checked })}
-				class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
-			/>
-			<div class="flex-1">
-				<div class="font-medium">{m['ticketingStep.freeForStaff']()}</div>
-				<div class="text-sm text-muted-foreground">{m['ticketingStep.staffNoPay']()}</div>
-			</div>
-		</label>
-	</div>
-
 	<!-- Ticket Tiers Section -->
 	<div>
 		<h3 class="mb-4 font-semibold">{m['ticketingStep.ticketTiers']()}</h3>

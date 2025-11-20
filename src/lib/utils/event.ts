@@ -19,22 +19,11 @@ export function getEventAccessDisplay(
 	userIsMember: boolean = false,
 	userIsStaff: boolean = false
 ): string {
-	// Staff/owner always see "Free" if free_for_staff
-	if (userIsStaff && event.free_for_staff) {
-		return 'Free (Staff)';
-	}
+	// Note: free_for_members and free_for_staff fields have been removed from the backend.
+	// Pricing/access is now managed through ticket tier membership/staff restrictions.
 
-	// Members see "Free" if free_for_members
-	if (userIsMember && event.free_for_members) {
-		return 'Free (Member)';
-	}
-
-	// For everyone else, indicate ticket requirement
+	// For everyone, indicate ticket requirement
 	if (event.requires_ticket) {
-		// If free for members but user is not a member, indicate that
-		if (event.free_for_members) {
-			return 'Ticketed (Free for members)';
-		}
 		// Could be free or paid, we don't know without fetching ticket tiers
 		return 'Ticketed';
 	}

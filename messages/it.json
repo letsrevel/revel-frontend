@@ -558,9 +558,9 @@
 			"branding": {
 				"heading": "Branding",
 				"logoLabel": "Logo Organizzazione",
-				"logoHelp": "Quadrato (400×400px consigliato)",
+				"logoHelp": "Quadrato (400×400px consigliato). Usato nei metadati, badge piccoli e come fallback quando non è impostata alcuna immagine di copertina.",
 				"coverLabel": "Immagine di Copertina",
-				"coverHelp": "Ampio (1200×400px consigliato)"
+				"coverHelp": "Largo (1200×400px consigliato). Visual principale per le card delle organizzazioni. Il logo viene usato come fallback se non impostata."
 			},
 			"profile": {
 				"heading": "Informazioni Profilo",
@@ -1229,9 +1229,9 @@
 		"saveToAssignQuestionnaires": "Salva l'evento prima di assegnare i questionari",
 		"media": "Media",
 		"eventLogo": "Logo dell'evento",
-		"logoHint": "Consigliato: immagine quadrata, almeno 400x400px. Se non impostato, verrà utilizzato il logo dell'organizzazione.",
+		"logoHint": "Consigliato: Immagine quadrata, almeno 400x400px. Usato nei metadati, badge piccoli e come fallback quando non è impostata la cover art. Usa il logo dell'organizzazione se non impostato.",
 		"coverArt": "Immagine di copertina",
-		"coverArtHint": "Consigliato: rapporto 16:9, almeno 1200x675px. Se non impostato, verrà utilizzata la copertina dell'organizzazione.",
+		"coverArtHint": "Consigliato: Rapporto 16:9, almeno 1200x675px. Visual principale per le card degli eventi e le pagine di dettaglio. Il logo viene usato come fallback se non impostata. Usa la cover dell'organizzazione se non impostata.",
 		"unlimitedCapacity": "Capacità illimitata",
 		"waitlistOpen": "Lista d'attesa attiva",
 		"enablePotluck": "Abilita coordinamento potluck",

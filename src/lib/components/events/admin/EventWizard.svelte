@@ -134,8 +134,6 @@
 		description: existingEvent?.description || '',
 		address: existingEvent?.address || '',
 		rsvp_before: toDateTimeLocal(existingEvent?.rsvp_before) || null,
-		free_for_members: existingEvent?.free_for_members || false,
-		free_for_staff: existingEvent?.free_for_staff || false,
 		max_attendees: existingEvent?.max_attendees || undefined,
 		waitlist_open: existingEvent?.waitlist_open || false,
 		invitation_message: existingEvent?.invitation_message || '',

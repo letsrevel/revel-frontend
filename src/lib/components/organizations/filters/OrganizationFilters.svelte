@@ -89,7 +89,13 @@
 	<!-- Divider -->
 	<div class="border-t" role="separator"></div>
 
-	<!-- Order By Filter (Top Priority) -->
+	<!-- City Filter (Top Priority) -->
+	<CityFilter {selectedCity} onChangeCity={handleChangeCity} />
+
+	<!-- Divider -->
+	<div class="border-t" role="separator"></div>
+
+	<!-- Order By Filter -->
 	<OrganizationOrderByFilter
 		orderBy={filters.orderBy ?? 'distance'}
 		onChangeOrderBy={handleChangeOrderBy}
@@ -108,12 +114,6 @@
 			placeholder={m['filters.search.organizationsPlaceholder']()}
 		/>
 	</div>
-
-	<!-- Divider -->
-	<div class="border-t" role="separator"></div>
-
-	<!-- City Filter -->
-	<CityFilter {selectedCity} onChangeCity={handleChangeCity} />
 
 	<!-- Divider -->
 	<div class="border-t" role="separator"></div>

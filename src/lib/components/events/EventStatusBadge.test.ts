@@ -24,8 +24,6 @@ function createMockEvent(overrides: Partial<EventDetailSchema> = {}): EventDetai
 		event_type: 'public',
 		visibility: 'public',
 		status: 'approved',
-		free_for_members: false,
-		free_for_staff: false,
 		requires_ticket: false,
 		potluck_open: false,
 		logo: null,

@@ -558,9 +558,9 @@
 			"branding": {
 				"heading": "Branding",
 				"logoLabel": "Organisationslogo",
-				"logoHelp": "Quadratisch (400×400px empfohlen)",
+				"logoHelp": "Quadratisch (400×400px empfohlen). Wird in Metadaten, kleinen Abzeichen und als Fallback verwendet, wenn kein Titelbild vorhanden ist.",
 				"coverLabel": "Titelbild",
-				"coverHelp": "Breit (1200×400px empfohlen)"
+				"coverHelp": "Breit (1200×400px empfohlen). Hauptvisualisierung für Organisationskarten. Logo wird als Fallback verwendet, falls nicht gesetzt."
 			},
 			"profile": {
 				"heading": "Profilinformationen",
@@ -1229,9 +1229,9 @@
 		"saveToAssignQuestionnaires": "Speichere die Veranstaltung zuerst, um Fragebögen zuzuweisen",
 		"media": "Medien",
 		"eventLogo": "Veranstaltungslogo",
-		"logoHint": "Empfohlen: Quadratisches Bild, mindestens 400x400px. Wird auf das Organisationslogo zurückgreifen, falls nicht gesetzt.",
+		"logoHint": "Empfohlen: Quadratisches Bild, mindestens 400x400px. Wird in Metadaten, kleinen Abzeichen und als Fallback verwendet, wenn kein Cover-Art vorhanden ist. Fällt auf Organisations-Logo zurück, falls nicht gesetzt.",
 		"coverArt": "Titelbild",
-		"coverArtHint": "Empfohlen: 16:9-Seitenverhältnis, mindestens 1200x675px. Wird auf das Organisationstitelbild zurückgreifen, falls nicht gesetzt.",
+		"coverArtHint": "Empfohlen: 16:9 Seitenverhältnis, mindestens 1200x675px. Hauptvisualisierung für Veranstaltungskarten und Detailseiten. Logo wird als Fallback verwendet, falls nicht gesetzt. Fällt auf Organisations-Cover zurück, falls nicht gesetzt.",
 		"unlimitedCapacity": "Unbegrenzte Kapazität",
 		"waitlistOpen": "Warteliste aktiviert",
 		"enablePotluck": "Potluck-Koordination aktivieren",

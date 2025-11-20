@@ -92,8 +92,6 @@ describe('EventWizard', () => {
 					event_type: 'public',
 					status: 'approved',
 					requires_ticket: false,
-					free_for_members: false,
-					free_for_staff: false,
 					potluck_open: false,
 					max_attendees: undefined,
 					waitlist_open: false,
