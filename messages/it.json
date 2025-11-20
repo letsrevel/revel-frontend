@@ -2846,6 +2846,8 @@
 		"channelEmailDescription": "Ricevi notifiche tramite email",
 		"channelTelegram": "Telegram",
 		"channelTelegramDescription": "Ricevi notifiche su Telegram",
+		"telegramNotConnected": "Telegram non connesso.",
+		"connectTelegram": "Collega il tuo account",
 		"selectAtLeastOneChannel": "Seleziona almeno un canale di notifica",
 		"digestSettings": "Impostazioni Digest",
 		"digestFrequency": "Frequenza digest",
