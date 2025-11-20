@@ -1133,7 +1133,9 @@
 		"mightAttend": "You might attend {eventName}",
 		"notAttending": "You're not attending {eventName}",
 		"rsvpFailed": "RSVP Failed",
-		"willYouAttend": "Will you attend?"
+		"willYouAttend": "Will you attend?",
+		"loginToRSVP": "Accedi per RSVP",
+		"loginToRSVPDescription": "Accedi al tuo account per confermare la tua partecipazione a questo evento"
 	},
 	"eventSeriesCard": {
 		"viewDetails": "Vedi dettagli serie eventi",
@@ -2468,7 +2470,8 @@
 		"signInToAttend": "Sign in to attend",
 		"getTickets": "Get Tickets",
 		"rsvp": "RSVP",
-		"viewDetails": "View Details"
+		"viewDetails": "View Details",
+		"loginToGetTickets": "Accedi per Ottenere Biglietti"
 	},
 	"ineligibilityActionButton": {
 		"requestSent": "Request Sent",
