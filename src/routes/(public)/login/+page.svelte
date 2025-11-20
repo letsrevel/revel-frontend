@@ -238,6 +238,11 @@
 								autocomplete="current-password"
 								required
 								bind:value={password}
+								onpaste={() => {
+									// Ensure paste always works on mobile
+									// This explicit handler prevents any interference from browser autofill
+									// that might block paste operations on iOS Safari
+								}}
 								aria-invalid={!!errors.password}
 								aria-describedby={errors.password ? 'password-error' : undefined}
 								disabled={isSubmitting}
