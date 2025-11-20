@@ -117,7 +117,9 @@
 		const offsetMinutes = -date.getTimezoneOffset();
 
 		// Convert offset to hours and minutes
-		const offsetHours = Math.floor(Math.abs(offsetMinutes) / 60).toString().padStart(2, '0');
+		const offsetHours = Math.floor(Math.abs(offsetMinutes) / 60)
+			.toString()
+			.padStart(2, '0');
 		const offsetMins = (Math.abs(offsetMinutes) % 60).toString().padStart(2, '0');
 		const offsetSign = offsetMinutes >= 0 ? '+' : '-';
 
