@@ -19,6 +19,7 @@
 	import { RadioGroup, RadioGroupItem } from '$lib/components/ui/radio-group';
 	import { AlertCircle, Loader2, ChevronDown, ChevronRight } from 'lucide-svelte';
 	import { durationOptions } from '$lib/utils/tokens';
+	import { toDateTimeLocal, toISOString } from '$lib/utils/datetime';
 
 	interface Props {
 		open: boolean;
@@ -66,7 +67,7 @@
 				maxUses = token.max_uses ?? 1;
 				grantsInvitation = token.grants_invitation ?? true;
 				ticketTierId = token.ticket_tier || null;
-				expiresAt = token.expires_at || '';
+				expiresAt = toDateTimeLocal(token.expires_at);
 				duration = '1440';
 
 				// Load advanced invitation options
@@ -112,7 +113,7 @@
 			const updateData: EventTokenUpdateSchema = {
 				name: name || null,
 				max_uses: grantsInvitation ? maxUses : 0,
-				expires_at: expiresAt || null,
+				expires_at: toISOString(expiresAt),
 				ticket_tier_id: ticketTierId || null,
 				invitation
 			};

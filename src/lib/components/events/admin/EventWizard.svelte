@@ -13,6 +13,7 @@
 		organizationadminUpdateResource,
 		questionnaireListOrgQuestionnaires
 	} from '$lib/api/generated/sdk.gen';
+	import { toDateTimeLocal, toISOString } from '$lib/utils/datetime';
 	import type {
 		EventCreateSchema,
 		EventEditSchema,
@@ -93,24 +94,8 @@
 		}
 	});
 
-	/**
-	 * Convert ISO datetime to datetime-local format (YYYY-MM-DDTHH:mm)
-	 */
-	function toDateTimeLocal(isoString: string | null | undefined): string {
-		if (!isoString) return '';
-		// Remove seconds and timezone info for datetime-local input
-		return isoString.slice(0, 16);
-	}
-
-	/**
-	 * Convert datetime-local format to ISO string with timezone
-	 */
-	function toISOString(datetimeLocal: string | null | undefined): string | null {
-		if (!datetimeLocal) return null;
-		// Parse as local time and convert to ISO string with timezone
-		const date = new Date(datetimeLocal);
-		return date.toISOString();
-	}
+	// Note: Using shared utility functions toDateTimeLocal and toISOString from $lib/utils/datetime
+	// These functions handle timezone conversions properly
 
 	// Form data state (matches EventCreateSchema + additional image URLs)
 	// Note: requires_ticket is not in EventCreateSchema but exists on EventDetailSchema

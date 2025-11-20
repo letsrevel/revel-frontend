@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { cn } from '$lib/utils/cn';
+	import { toDateTimeLocal, toISOString } from '$lib/utils/datetime';
 
 	/**
 	 * DateTimePicker Component
@@ -60,23 +61,15 @@
 	// Generate unique ID if not provided
 	const inputId = $derived(id || `datetime-${Math.random().toString(36).substr(2, 9)}`);
 
-	// Convert ISO 8601 to datetime-local format (YYYY-MM-DDTHH:mm)
-	function toDatetimeLocalFormat(isoString: string | undefined): string {
-		if (!isoString) return '';
-		try {
-			// Remove seconds and milliseconds if present
-			return isoString.slice(0, 16);
-		} catch {
-			return '';
-		}
-	}
+	// Note: Using shared utility function toDateTimeLocal from $lib/utils/datetime
+	// No local conversion function needed
 
 	// Local value for the input (datetime-local format)
-	let localValue = $state(toDatetimeLocalFormat(value));
+	let localValue = $state(toDateTimeLocal(value));
 
 	// Sync local value with prop value
 	$effect(() => {
-		const formatted = toDatetimeLocalFormat(value);
+		const formatted = toDateTimeLocal(value);
 		if (formatted !== localValue) {
 			localValue = formatted;
 		}
@@ -87,8 +80,8 @@
 		const newValue = target.value;
 		localValue = newValue;
 
-		// Convert to ISO 8601 format for the parent component
-		const isoValue = newValue ? `${newValue}:00` : '';
+		// Convert to ISO 8601 format with timezone for the parent component
+		const isoValue = toISOString(newValue) || '';
 		value = isoValue;
 		onValueChange?.(isoValue);
 	}
@@ -113,8 +106,8 @@
 		{placeholder}
 		{required}
 		{disabled}
-		min={toDatetimeLocalFormat(min)}
-		max={toDatetimeLocalFormat(max)}
+		min={toDateTimeLocal(min)}
+		max={toDateTimeLocal(max)}
 		aria-invalid={!!error}
 		aria-describedby={error ? `${inputId}-error` : undefined}
 		class={cn(
