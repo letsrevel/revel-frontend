@@ -41,27 +41,29 @@
 	<DropdownMenu.Content
 		align="end"
 		sideOffset={8}
-		class="max-h-[600px] w-[400px] max-w-[90vw] overflow-hidden p-0"
+		class="flex max-h-[80vh] w-[400px] max-w-[90vw] flex-col overflow-hidden p-0 md:max-h-[600px]"
 	>
 		<!-- Header -->
-		<div class="border-b px-4 py-3">
+		<div class="shrink-0 border-b px-4 py-3">
 			<DropdownMenu.Label class="p-0 text-base font-semibold">
 				{m['notificationDropdown.notifications']?.() || 'Notifications'}
 			</DropdownMenu.Label>
 		</div>
 
 		<!-- Notification List (compact mode) -->
-		<div class="max-h-[500px] overflow-y-auto">
+		<div class="min-h-0 flex-1 overflow-y-auto">
 			<NotificationList {authToken} compact={true} {maxItems} class="p-2" />
 		</div>
 
 		<!-- Footer with View All link -->
 		<DropdownMenu.Separator />
-		<DropdownMenu.Item
-			onclick={handleViewAll}
-			class="cursor-pointer justify-center rounded-none font-medium text-primary hover:text-primary"
-		>
-			{m['notificationDropdown.viewAll']?.() || 'View all notifications'}
-		</DropdownMenu.Item>
+		<div class="shrink-0">
+			<DropdownMenu.Item
+				onclick={handleViewAll}
+				class="cursor-pointer justify-center rounded-none font-medium text-primary hover:text-primary"
+			>
+				{m['notificationDropdown.viewAll']?.() || 'View all notifications'}
+			</DropdownMenu.Item>
+		</div>
 	</DropdownMenu.Content>
 </DropdownMenu.Root>
