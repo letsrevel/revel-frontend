@@ -132,13 +132,18 @@
 			<!-- Fallback gradient with logo (event -> series -> org hierarchy) -->
 			<div class={cn('h-full w-full bg-gradient-to-br', fallbackGradient)}>
 				{#if logoUrl}
-					<div class="flex h-full w-full items-center justify-center p-8">
-						<img
-							src={logoUrl}
-							alt=""
-							class="max-h-full max-w-full object-contain opacity-80"
-							loading="lazy"
-						/>
+					<div class="flex h-full w-full items-center justify-center p-4">
+						<!-- Square container for logo -->
+						<div
+							class="aspect-square w-full max-w-[60%] overflow-hidden rounded-lg bg-white/10 p-4 backdrop-blur-sm"
+						>
+							<img
+								src={logoUrl}
+								alt=""
+								class="h-full w-full object-contain opacity-80"
+								loading="lazy"
+							/>
+						</div>
 					</div>
 				{:else}
 					<!-- Ultimate fallback: Calendar icon -->
