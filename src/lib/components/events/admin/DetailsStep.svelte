@@ -59,8 +59,10 @@
 	// Modal state for questionnaire assignment
 	let isQuestionnaireModalOpen = $state(false);
 
-	// Accordion state
-	let openSections = $state<Set<string>>(new Set(['basic']));
+	// Accordion state - automatically open advanced section if event has tags
+	let openSections = $state<Set<string>>(
+		new Set(formData.tags && formData.tags.length > 0 ? ['basic', 'advanced'] : ['basic'])
+	);
 
 	// Tag input state
 	let tagInput = $state('');
