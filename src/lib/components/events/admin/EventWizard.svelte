@@ -13,6 +13,7 @@
 		organizationadminUpdateResource,
 		questionnaireListOrgQuestionnaires
 	} from '$lib/api/generated/sdk.gen';
+	import { toDateTimeLocal, toISOString } from '$lib/utils/datetime';
 	import type {
 		EventCreateSchema,
 		EventEditSchema,
@@ -93,50 +94,8 @@
 		}
 	});
 
-	/**
-	 * Convert ISO datetime to datetime-local format (YYYY-MM-DDTHH:mm)
-	 * Properly converts from backend timezone (UTC or Europe/Vienna) to user's local time
-	 */
-	function toDateTimeLocal(isoString: string | null | undefined): string {
-		if (!isoString) return '';
-
-		// Parse the ISO string to a Date object (handles any timezone format)
-		const date = new Date(isoString);
-
-		// Format as datetime-local (YYYY-MM-DDTHH:mm) in user's local timezone
-		const year = date.getFullYear();
-		const month = String(date.getMonth() + 1).padStart(2, '0');
-		const day = String(date.getDate()).padStart(2, '0');
-		const hours = String(date.getHours()).padStart(2, '0');
-		const minutes = String(date.getMinutes()).padStart(2, '0');
-
-		return `${year}-${month}-${day}T${hours}:${minutes}`;
-	}
-
-	/**
-	 * Convert datetime-local format to ISO string with timezone
-	 * Preserves the local time by including the user's timezone offset
-	 */
-	function toISOString(datetimeLocal: string | null | undefined): string | null {
-		if (!datetimeLocal) return null;
-
-		// Create a date object to get the timezone offset
-		const date = new Date(datetimeLocal);
-
-		// Get timezone offset in minutes (e.g., -60 for UTC+1)
-		// Note: getTimezoneOffset returns negative values for positive offsets
-		const offsetMinutes = -date.getTimezoneOffset();
-
-		// Convert offset to hours and minutes
-		const offsetHours = Math.floor(Math.abs(offsetMinutes) / 60)
-			.toString()
-			.padStart(2, '0');
-		const offsetMins = (Math.abs(offsetMinutes) % 60).toString().padStart(2, '0');
-		const offsetSign = offsetMinutes >= 0 ? '+' : '-';
-
-		// Build ISO string with local timezone offset (e.g., "2025-11-21T14:00:00+01:00")
-		return `${datetimeLocal}:00${offsetSign}${offsetHours}:${offsetMins}`;
-	}
+	// Note: Using shared utility functions toDateTimeLocal and toISOString from $lib/utils/datetime
+	// These functions handle timezone conversions properly
 
 	// Form data state (matches EventCreateSchema + additional image URLs)
 	// Note: requires_ticket is not in EventCreateSchema but exists on EventDetailSchema
