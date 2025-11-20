@@ -2,6 +2,10 @@ import { fail, redirect, isRedirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import { loginSchema, otpSchema } from '$lib/schemas/auth';
 import { authObtainToken, authObtainTokenWithOtp } from '$lib/api/client';
+import {
+	getAccessTokenCookieOptions,
+	getRefreshTokenCookieOptions
+} from '$lib/utils/cookies';
 
 export const actions = {
 	// Standard email/password login
@@ -51,23 +55,11 @@ export const actions = {
 				const { access, refresh } = response.data;
 
 				// Store access token (1 hour - matches backend ACCESS_TOKEN_LIFETIME)
-				cookies.set('access_token', access, {
-					path: '/',
-					httpOnly: true,
-					secure: false, // Set to true in production via environment
-					sameSite: 'lax',
-					maxAge: 60 * 60 // 1 hour (matches backend configuration)
-				});
+				cookies.set('access_token', access, getAccessTokenCookieOptions());
 
 				// Store refresh token (30 days - matches backend REFRESH_TOKEN_LIFETIME)
 				// Note: "Remember me" keeps the cookie, but backend token still expires after 30 days
-				cookies.set('refresh_token', refresh, {
-					path: '/',
-					httpOnly: true,
-					secure: false, // Set to true in production via environment
-					sameSite: 'lax',
-					maxAge: 60 * 60 * 24 * 30 // 30 days (matches backend configuration)
-				});
+				cookies.set('refresh_token', refresh, getRefreshTokenCookieOptions());
 
 				// Redirect to returnUrl or dashboard
 				const returnUrl = url.searchParams.get('returnUrl') || '/dashboard';
@@ -139,22 +131,10 @@ export const actions = {
 				const { access, refresh } = response.data;
 
 				// Store access token (1 hour - matches backend ACCESS_TOKEN_LIFETIME)
-				cookies.set('access_token', access, {
-					path: '/',
-					httpOnly: true,
-					secure: false, // Set to true in production via environment
-					sameSite: 'lax',
-					maxAge: 60 * 60 // 1 hour (matches backend configuration)
-				});
+				cookies.set('access_token', access, getAccessTokenCookieOptions());
 
 				// Store refresh token (30 days - matches backend REFRESH_TOKEN_LIFETIME)
-				cookies.set('refresh_token', refresh, {
-					path: '/',
-					httpOnly: true,
-					secure: false, // Set to true in production via environment
-					sameSite: 'lax',
-					maxAge: 60 * 60 * 24 * 30 // 30 days (matches backend configuration)
-				});
+				cookies.set('refresh_token', refresh, getRefreshTokenCookieOptions());
 
 				// Redirect to returnUrl or dashboard
 				const returnUrl = url.searchParams.get('returnUrl') || '/dashboard';
