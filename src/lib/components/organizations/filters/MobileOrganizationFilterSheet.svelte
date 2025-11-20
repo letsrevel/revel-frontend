@@ -143,7 +143,13 @@
 		<!-- Scrollable filter content -->
 		<div class="flex-1 overflow-y-auto overscroll-contain px-6 py-4">
 			<div class="space-y-6">
-				<!-- Order By Filter (Top Priority) -->
+				<!-- City Filter (Top Priority) -->
+				<CityFilter {selectedCity} onChangeCity={handleChangeCity} />
+
+				<!-- Divider -->
+				<div class="border-t" role="separator"></div>
+
+				<!-- Order By Filter -->
 				<OrganizationOrderByFilter
 					orderBy={filters.orderBy ?? 'distance'}
 					onChangeOrderBy={handleChangeOrderBy}
@@ -163,12 +169,6 @@
 						placeholder="Search organizations..."
 					/>
 				</div>
-
-				<!-- Divider -->
-				<div class="border-t" role="separator"></div>
-
-				<!-- City Filter -->
-				<CityFilter {selectedCity} onChangeCity={handleChangeCity} />
 
 				<!-- Divider -->
 				<div class="border-t" role="separator"></div>
