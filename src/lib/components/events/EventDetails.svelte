@@ -46,7 +46,7 @@
 			<h2 id="description-heading" class="mb-3 text-xl font-semibold">
 				{m['eventDetails.about_heading']()}
 			</h2>
-			<div class="prose prose-sm dark:prose-invert max-w-none">
+			<div class="prose prose-sm dark:prose-invert max-w-prose">
 				{@html event.description_html}
 			</div>
 		</section>
@@ -160,7 +160,7 @@
 			<h2 id="invitation-heading" class="mb-2 text-lg font-semibold">
 				{m['eventDetails.invitation_heading']()}
 			</h2>
-			<div class="prose prose-sm dark:prose-invert max-w-none">
+			<div class="prose prose-sm dark:prose-invert max-w-prose">
 				{@html event.invitation_message_html}
 			</div>
 		</section>
