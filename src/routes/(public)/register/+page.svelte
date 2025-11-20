@@ -19,10 +19,21 @@
 	let showPassword = $state(false);
 	let showConfirmPassword = $state(false);
 	let isSubmitting = $state(false);
+	let isPasswordValid = $state(false);
 
 	// Error handling - type assertion needed due to ActionData union
 	let errors = $derived((form?.errors || {}) as Record<string, string>);
 	let hasErrors = $derived(errors && Object.keys(errors).length > 0);
+
+	// Check if form is valid for submission
+	let canSubmit = $derived(
+		email.length > 0 &&
+			password.length > 0 &&
+			isPasswordValid &&
+			confirmPassword === password &&
+			acceptTerms &&
+			!isSubmitting
+	);
 </script>
 
 <svelte:head>
@@ -135,7 +146,11 @@
 
 				<!-- Password Strength Indicator with Requirements -->
 				{#if password}
-					<PasswordStrengthIndicator {password} showRequirements={true} />
+					<PasswordStrengthIndicator
+						{password}
+						showRequirements={true}
+						bind:isValid={isPasswordValid}
+					/>
 				{/if}
 			</div>
 
@@ -227,7 +242,8 @@
 			<!-- Submit Button -->
 			<button
 				type="submit"
-				disabled={isSubmitting}
+				disabled={!canSubmit}
+				aria-disabled={!canSubmit}
 				class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 			>
 				{#if isSubmitting}

@@ -5,9 +5,11 @@
 	interface Props {
 		password: string;
 		showRequirements?: boolean;
+		/** Bindable prop to expose whether password meets all requirements */
+		isValid?: boolean;
 	}
 
-	let { password, showRequirements = true }: Props = $props();
+	let { password, showRequirements = true, isValid = $bindable(false) }: Props = $props();
 
 	// Check individual requirements
 	let hasMinLength = $derived(password.length >= 8);
@@ -39,6 +41,11 @@
 		if (score === 3) return 'Fair';
 		if (score === 4) return 'Good';
 		return 'Strong';
+	});
+
+	// Update isValid whenever password requirements change
+	$effect(() => {
+		isValid = hasMinLength && hasUppercase && hasLowercase && hasDigit && hasSpecial;
 	});
 </script>
 
