@@ -17,7 +17,11 @@
 		resendSuccess = false;
 
 		try {
-			const response = await accountResendVerificationEmail();
+			const response = await accountResendVerificationEmail({
+				body: {
+					email
+				}
+			});
 
 			if (response.error) {
 				const error = response.error as any;
