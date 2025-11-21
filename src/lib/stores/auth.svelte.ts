@@ -18,6 +18,8 @@ class AuthStore {
 	private _permissions = $state<OrganizationPermissionsSchema | null>(null);
 	private _isLoading = $state<boolean>(false);
 	private _tokenExpiryTimer: ReturnType<typeof setTimeout> | null = null;
+	// Shared promise to prevent concurrent refresh attempts
+	private _refreshPromise: Promise<void> | null = null;
 
 	// Public computed state using $derived
 	get user() {
@@ -190,10 +192,38 @@ class AuthStore {
 	 * IMPORTANT: This calls our server-side endpoint which handles rotating
 	 * refresh tokens. Each refresh returns a NEW access and refresh token,
 	 * and the old refresh token is blacklisted.
+	 *
+	 * RACE CONDITION PROTECTION:
+	 * This method uses a shared promise to ensure only ONE refresh happens at a time,
+	 * even if called from multiple sources (proactive timer + reactive interceptor).
+	 * Concurrent calls will wait for the in-flight refresh to complete.
 	 */
 	async refreshAccessToken(): Promise<void> {
-		console.log('[AUTH STORE] Refreshing access token');
+		// If refresh is already in progress, wait for it to complete
+		if (this._refreshPromise) {
+			console.log('[AUTH STORE] Refresh already in progress, waiting...');
+			return this._refreshPromise;
+		}
 
+		console.log('[AUTH STORE] Starting token refresh');
+
+		// Create a new refresh promise and store it
+		this._refreshPromise = this._performRefresh();
+
+		try {
+			// Wait for refresh to complete
+			await this._refreshPromise;
+		} finally {
+			// Clear the promise so next refresh can proceed
+			this._refreshPromise = null;
+		}
+	}
+
+	/**
+	 * Internal method that performs the actual refresh
+	 * Should only be called by refreshAccessToken()
+	 */
+	private async _performRefresh(): Promise<void> {
 		try {
 			// Call our server-side refresh endpoint
 			// The refresh token is in httpOnly cookie, so client can't access it directly
