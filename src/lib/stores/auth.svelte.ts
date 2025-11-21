@@ -177,6 +177,9 @@ class AuthStore {
 		// Clear the token refresh timer
 		this.clearTokenRefreshTimer();
 
+		// Clear any in-progress refresh
+		this._refreshPromise = null;
+
 		// Clear in-memory state
 		this._user = null;
 		this._accessToken = null;
@@ -246,6 +249,13 @@ class AuthStore {
 			}
 
 			console.log('[AUTH STORE] Token refresh successful, received new access token');
+
+			// Check if user has logged out while refresh was in progress
+			// If so, discard the refresh result
+			if (!this._accessToken) {
+				console.log('[AUTH STORE] User logged out during refresh, discarding new token');
+				return;
+			}
 
 			// Update the access token (this will also schedule the next refresh)
 			this.setAccessToken(data.access);
