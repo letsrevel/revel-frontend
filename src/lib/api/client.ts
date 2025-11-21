@@ -112,53 +112,33 @@ generatedClient.interceptors.response.use(async (response, request, options) => 
 	isRefreshing = true;
 
 	try {
-		// Attempt to refresh the token via our server-side endpoint
-		// The refresh token is in httpOnly cookie, so client can't access it directly
-		// Our server endpoint will:
-		// 1. Read the refresh token from cookie
-		// 2. Call backend /api/auth/refresh
-		// 3. Save NEW access and refresh tokens to cookies
-		// 4. Return new access token to client
-		const refreshResponse = await fetch('/api/auth/refresh', {
-			method: 'POST',
-			credentials: 'include' // Include cookies
-		});
+		// Use the centralized refresh method from authStore
+		// This ensures only ONE refresh happens at a time, even if the proactive
+		// timer in auth.svelte.ts also fires
+		await authStore.refreshAccessToken();
 
-		if (!refreshResponse.ok) {
-			console.error('[API CLIENT] Token refresh failed with status:', refreshResponse.status);
-			// Clear auth state and process queue with error
-			authStore.logout();
-			processQueue(new Error('Token refresh failed'), null);
+		console.log('[API CLIENT] Token refresh successful, retrying requests');
+
+		// Get the new access token
+		const newAccessToken = authStore.accessToken;
+
+		if (!newAccessToken) {
+			console.error('[API CLIENT] No access token after refresh');
+			processQueue(new Error('No access token after refresh'), null);
 			isRefreshing = false;
 			return response; // Return original 401 response
 		}
-
-		const data = await refreshResponse.json();
-
-		if (!data || !data.access) {
-			console.error('[API CLIENT] Token refresh failed: no access token returned');
-			// Clear auth state and process queue with error
-			authStore.logout();
-			processQueue(new Error('Token refresh failed'), null);
-			isRefreshing = false;
-			return response; // Return original 401 response
-		}
-
-		console.log('[API CLIENT] Token refresh successful, updating store and retrying requests');
-
-		// Update the access token in the store (this also schedules next auto-refresh)
-		authStore.setAccessToken(data.access);
 
 		// Process all queued requests with the new token
 		const queueLength = failedRequestsQueue.length;
 		if (queueLength > 0) {
 			console.log(`[API CLIENT] Processing ${queueLength} queued requests`);
 		}
-		processQueue(null, data.access);
+		processQueue(null, newAccessToken);
 
 		// Retry the original request with the new token
 		const newRequest = request.clone();
-		newRequest.headers.set('Authorization', `Bearer ${data.access}`);
+		newRequest.headers.set('Authorization', `Bearer ${newAccessToken}`);
 
 		isRefreshing = false;
 
@@ -167,7 +147,7 @@ generatedClient.interceptors.response.use(async (response, request, options) => 
 	} catch (error) {
 		console.error('[API CLIENT] Token refresh error:', error);
 		// Clear auth state and process queue with error
-		authStore.logout();
+		// Note: authStore.refreshAccessToken() already called logout() on failure
 		processQueue(error, null);
 		isRefreshing = false;
 		return response; // Return original 401 response
