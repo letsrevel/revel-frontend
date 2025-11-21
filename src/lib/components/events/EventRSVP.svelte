@@ -9,6 +9,7 @@
 	import ConfirmDialog from '../common/ConfirmDialog.svelte';
 	import IneligibilityMessage from './IneligibilityMessage.svelte';
 	import { Check, AlertCircle } from 'lucide-svelte';
+	import { browser } from '$app/environment';
 
 	import type { EventDetailSchema, EventTokenSchema } from '$lib/api/generated/types.gen';
 
@@ -271,15 +272,21 @@
 
 	// Show RSVP if:
 	// 1. Event doesn't require tickets
-	// 2. User is authenticated OR event allows guest attendance
-	let shouldRender = $derived(
-		!requiresTicket && (isAuthenticated || (event?.can_attend_without_login && onGuestRsvpClick))
-	);
+	// 2. Always show for non-ticketed events (to display login prompt if needed)
+	let shouldRender = $derived(!requiresTicket);
 
 	// Check if we should show guest button instead of regular RSVP
 	let shouldShowGuestButton = $derived(
 		!isAuthenticated && event?.can_attend_without_login && onGuestRsvpClick
 	);
+
+	// Check if we should show login prompt (user not authenticated and event requires login)
+	let shouldShowLoginPrompt = $derived(
+		!isAuthenticated && event && !event.can_attend_without_login
+	);
+
+	// Get current pathname for redirect (SSR-safe)
+	let currentPathname = $derived(browser ? window.location.pathname : '');
 </script>
 
 <!--
@@ -371,6 +378,22 @@
 			/>
 		{/if}
 
+		<!-- Login Prompt (for unauthenticated users when event requires login) -->
+		{#if shouldShowLoginPrompt}
+			<div class="space-y-3">
+				<h3 class="text-sm font-semibold">{m['eventRSVP.willYouAttend']()}</h3>
+				<a
+					href="/login?redirect={encodeURIComponent(currentPathname)}"
+					class="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+				>
+					{m['eventRSVP.loginToRSVP']()}
+				</a>
+				<p class="text-center text-xs text-muted-foreground">
+					{m['eventRSVP.loginToRSVPDescription']()}
+				</p>
+			</div>
+		{/if}
+
 		<!-- Guest RSVP Button (for unauthenticated users when event allows it) -->
 		{#if shouldShowGuestButton}
 			<div class="space-y-3">
@@ -389,7 +412,7 @@
 		{/if}
 
 		<!-- RSVP Buttons (always shown when eligible, even if already RSVP'd) -->
-		{#if shouldShowButtons && !shouldShowGuestButton}
+		{#if shouldShowButtons && !shouldShowGuestButton && !shouldShowLoginPrompt}
 			<div class="space-y-3">
 				<h3 class="text-sm font-semibold">{m['eventRSVP.willYouAttend']()}</h3>
 				<RSVPButtons

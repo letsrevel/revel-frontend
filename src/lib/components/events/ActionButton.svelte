@@ -34,7 +34,9 @@
 	// Determine button state
 	let buttonText = $derived.by(() => {
 		if (!isAuthenticated && !canAttendWithoutLogin) {
-			return m['actionButton.signInToAttend']();
+			return requiresTicket
+				? m['actionButton.loginToGetTickets']()
+				: m['actionButton.signInToAttend']();
 		}
 
 		if (!isAuthenticated && canAttendWithoutLogin) {

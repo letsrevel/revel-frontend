@@ -406,21 +406,46 @@
 		try {
 			// Prepare data for API - convert datetime-local to ISO with timezone
 			// Note: Backend API has incorrect enum types, using type assertions as workaround
-			const createData: EventCreateSchema = {
-				name: formData.name!,
-				start: toISOString(formData.start)!,
-				city_id: formData.city_id!,
-				visibility: formData.visibility || 'public',
-				event_type: (formData.event_type || 'public') as any, // Backend has wrong enum
-				status: 'draft' as any, // Create as draft by default
-				requires_ticket: formData.requires_ticket || false // Send explicit false when unchecked
-			} as any; // Cast to any because requires_ticket is not yet in backend schema
 
 			if (eventId) {
-				// Update existing event
-				await updateEventMutation.mutateAsync({ id: eventId, data: createData });
+				// Update existing event - MUST include ALL fields because backend uses PUT (full replacement)
+				const updateData: Partial<EventEditSchema> = {
+					name: formData.name!,
+					start: toISOString(formData.start)!,
+					city_id: formData.city_id!,
+					visibility: formData.visibility || 'public',
+					event_type: (formData.event_type || 'public') as any,
+					requires_ticket: formData.requires_ticket || false,
+					// Include all other fields to prevent them from being reset
+					description: formData.description || null,
+					end: toISOString(formData.end),
+					address: formData.address || null,
+					rsvp_before: toISOString(formData.rsvp_before),
+					free_for_members: formData.free_for_members || false,
+					free_for_staff: formData.free_for_staff || false,
+					max_attendees: formData.max_attendees || undefined,
+					waitlist_open: formData.waitlist_open || false,
+					invitation_message: formData.invitation_message || null,
+					check_in_starts_at: toISOString(formData.check_in_starts_at),
+					check_in_ends_at: toISOString(formData.check_in_ends_at),
+					potluck_open: formData.potluck_open || false,
+					accept_invitation_requests: formData.accept_invitation_requests || false,
+					can_attend_without_login: formData.can_attend_without_login || false,
+					event_series_id: formData.event_series_id || null
+				};
+				await updateEventMutation.mutateAsync({ id: eventId, data: updateData });
 			} else {
-				// Create new event
+				// Create new event - only essential fields needed
+				const createData: EventCreateSchema = {
+					name: formData.name!,
+					start: toISOString(formData.start)!,
+					city_id: formData.city_id!,
+					visibility: formData.visibility || 'public',
+					event_type: (formData.event_type || 'public') as any, // Backend has wrong enum
+					status: 'draft' as any, // Create as draft by default
+					requires_ticket: formData.requires_ticket || false // Send explicit false when unchecked
+				} as any; // Cast to any because requires_ticket is not yet in backend schema
+
 				const result = await createEventMutation.mutateAsync(createData);
 				eventId = result.id;
 			}
