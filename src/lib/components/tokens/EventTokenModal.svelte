@@ -97,9 +97,9 @@
 	});
 
 	function handleSave() {
-		// Build invitation object with all options if granting invitation
-		// If grantsInvitation is false, invitation will be null (no invitation granted)
-		const invitation = grantsInvitation
+		// Build invitation_payload object with all options if granting invitation
+		// If grantsInvitation is false, invitation_payload will be null (no invitation granted)
+		const invitation_payload = grantsInvitation
 			? {
 					waives_questionnaire: waivesQuestionnaire,
 					waives_purchase: waivesPurchase,
@@ -114,8 +114,9 @@
 				name: name || null,
 				max_uses: grantsInvitation ? maxUses : 0,
 				expires_at: toISOString(expiresAt),
+				grants_invitation: grantsInvitation,
 				ticket_tier_id: ticketTierId || null,
-				invitation
+				invitation_payload
 			};
 			onSave(updateData);
 		} else {
@@ -123,8 +124,9 @@
 				name: name || null,
 				duration: parseInt(duration, 10),
 				max_uses: grantsInvitation ? maxUses : 0,
+				grants_invitation: grantsInvitation,
 				ticket_tier_id: ticketTierId || null,
-				invitation
+				invitation_payload
 			};
 			onSave(createData);
 		}
@@ -221,6 +223,10 @@
 						min={0}
 						placeholder="0 = unlimited"
 					/>
+					<p class="text-xs text-muted-foreground">
+						Set to 0 for unlimited uses, or specify a number to limit how many people can use this
+						link.
+					</p>
 					{#if isEdit && token && token.uses !== undefined && maxUses < token.uses}
 						<p class="flex items-center gap-1 text-xs text-destructive">
 							<AlertCircle class="h-3 w-3" aria-hidden="true" />

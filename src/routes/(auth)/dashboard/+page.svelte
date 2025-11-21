@@ -13,6 +13,7 @@
 	import EventCardSkeleton from '$lib/components/common/EventCardSkeleton.svelte';
 	import OrganizationCardSkeleton from '$lib/components/common/OrganizationCardSkeleton.svelte';
 	import { getImageUrl } from '$lib/utils/url';
+	import { stripHtml } from '$lib/utils/seo';
 	import {
 		Calendar,
 		Building2,
@@ -661,6 +662,9 @@
 				<!-- Organization Cards -->
 				<div class="space-y-3">
 					{#each organizations.slice(0, 3) as org}
+						{@const descriptionText = org.description_html
+							? stripHtml(org.description_html)
+							: org.description || ''}
 						<div
 							class="flex items-center gap-4 rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"
 						>
@@ -700,9 +704,9 @@
 									{/if}
 								</div>
 
-								{#if org.description}
+								{#if descriptionText}
 									<p class="line-clamp-1 text-sm text-muted-foreground">
-										{org.description}
+										{descriptionText}
 									</p>
 								{/if}
 
