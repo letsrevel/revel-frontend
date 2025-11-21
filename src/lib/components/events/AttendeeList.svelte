@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { eventGetEventAttendees } from '$lib/api';
-	import type { MinimalRevelUserSchema } from '$lib/api/generated/types.gen';
+	import type { AttendeeSchema } from '$lib/api/generated/types.gen';
 	import { Users, ChevronDown, Loader2 } from 'lucide-svelte';
 
 	interface Props {
@@ -41,19 +41,6 @@
 	let visibleCount = $derived(attendees.length);
 	let hasMore = $derived(!!attendeesQuery.data?.next);
 	let hiddenCount = $derived(totalAttendees - visibleCount);
-
-	// Format attendee name
-	function formatAttendeeName(attendee: MinimalRevelUserSchema): string {
-		if (attendee.preferred_name) {
-			return attendee.preferred_name;
-		}
-
-		const parts: string[] = [];
-		if (attendee.first_name) parts.push(attendee.first_name);
-		if (attendee.last_name) parts.push(attendee.last_name);
-
-		return parts.length > 0 ? parts.join(' ') : m['attendeeList.anonymous']();
-	}
 
 	// Load next page
 	function loadMore() {
@@ -96,12 +83,12 @@
 								class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary"
 								aria-hidden="true"
 							>
-								{formatAttendeeName(attendee).charAt(0).toUpperCase()}
+								{attendee.display_name.charAt(0).toUpperCase()}
 							</div>
 
 							<!-- Attendee info -->
 							<div class="min-w-0 flex-1">
-								<p class="truncate font-medium">{formatAttendeeName(attendee)}</p>
+								<p class="truncate font-medium">{attendee.display_name}</p>
 								{#if attendee.pronouns}
 									<p class="truncate text-sm text-muted-foreground">{attendee.pronouns}</p>
 								{/if}
@@ -117,12 +104,12 @@
 								class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary"
 								aria-hidden="true"
 							>
-								{formatAttendeeName(attendee).charAt(0).toUpperCase()}
+								{attendee.display_name.charAt(0).toUpperCase()}
 							</div>
 
 							<!-- Attendee info -->
 							<div class="min-w-0 flex-1">
-								<p class="truncate font-medium">{formatAttendeeName(attendee)}</p>
+								<p class="truncate font-medium">{attendee.display_name}</p>
 								{#if attendee.pronouns}
 									<p class="truncate text-sm text-muted-foreground">{attendee.pronouns}</p>
 								{/if}
