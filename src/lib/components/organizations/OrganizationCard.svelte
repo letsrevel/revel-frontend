@@ -2,6 +2,7 @@
 	import type { OrganizationRetrieveSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import { getImageUrl } from '$lib/utils/url';
+	import { stripHtml } from '$lib/utils/seo';
 	import { MapPin, Users, Tag } from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
@@ -39,11 +40,18 @@
 	];
 	let fallbackGradient = $derived(gradients[organization.id.charCodeAt(0) % gradients.length]);
 
+	// Get clean description text (strip HTML if description_html exists, otherwise use description)
+	let descriptionText = $derived(
+		organization.description_html
+			? stripHtml(organization.description_html)
+			: organization.description || ''
+	);
+
 	// Accessible card label for screen readers
 	let accessibleLabel = $derived.by(() => {
 		const parts = [organization.name, locationDisplay];
-		if (organization.description) {
-			parts.push(organization.description);
+		if (descriptionText) {
+			parts.push(descriptionText);
 		}
 		return parts.join(', ');
 	});
@@ -138,9 +146,9 @@
 			>
 				{organization.name}
 			</h3>
-			{#if organization.description && variant === 'standard'}
+			{#if descriptionText && variant === 'standard'}
 				<p class="line-clamp-2 text-sm text-muted-foreground">
-					{organization.description}
+					{descriptionText}
 				</p>
 			{/if}
 		</div>

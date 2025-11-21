@@ -2,7 +2,11 @@
  * Event-specific utility functions
  */
 
-import type { EventInListSchema, EventDetailSchema } from '$lib/api/generated/types.gen';
+import type {
+	EventInListSchema,
+	EventDetailSchema,
+	MinimalEventSchema
+} from '$lib/api/generated/types.gen';
 
 /**
  * Get display string for event access/pricing
@@ -108,22 +112,24 @@ export function formatEventLocation(
  * 2. Event series' logo (if event is part of a series)
  * 3. Organization's logo
  *
- * @param event Event data
+ * @param event Event data (can be MinimalEventSchema, EventInListSchema, or EventDetailSchema)
  * @returns Logo URL path (relative) or null if no logo available
  */
-export function getEventLogo(event: EventDetailSchema | EventInListSchema): string | null {
+export function getEventLogo(
+	event: MinimalEventSchema | EventDetailSchema | EventInListSchema
+): string | null {
 	// First priority: Event's own logo
 	if (event.logo) {
 		return event.logo;
 	}
 
-	// Second priority: Event series logo
-	if (event.event_series?.logo) {
+	// Second priority: Event series logo (may not exist in MinimalEventSchema)
+	if ('event_series' in event && event.event_series?.logo) {
 		return event.event_series.logo;
 	}
 
-	// Third priority: Organization logo
-	if (event.organization.logo) {
+	// Third priority: Organization logo (may not exist in MinimalEventSchema)
+	if ('organization' in event && event.organization?.logo) {
 		return event.organization.logo;
 	}
 
@@ -136,22 +142,24 @@ export function getEventLogo(event: EventDetailSchema | EventInListSchema): stri
  * 2. Event series' cover_art (if event is part of a series)
  * 3. Organization's cover_art
  *
- * @param event Event data
+ * @param event Event data (can be MinimalEventSchema, EventInListSchema, or EventDetailSchema)
  * @returns Cover art URL path (relative) or null if no cover art available
  */
-export function getEventCoverArt(event: EventDetailSchema | EventInListSchema): string | null {
+export function getEventCoverArt(
+	event: MinimalEventSchema | EventDetailSchema | EventInListSchema
+): string | null {
 	// First priority: Event's own cover art
 	if (event.cover_art) {
 		return event.cover_art;
 	}
 
-	// Second priority: Event series cover art
-	if (event.event_series?.cover_art) {
+	// Second priority: Event series cover art (may not exist in MinimalEventSchema)
+	if ('event_series' in event && event.event_series?.cover_art) {
 		return event.event_series.cover_art;
 	}
 
-	// Third priority: Organization cover art
-	if (event.organization.cover_art) {
+	// Third priority: Organization cover art (may not exist in MinimalEventSchema)
+	if ('organization' in event && event.organization?.cover_art) {
 		return event.organization.cover_art;
 	}
 
