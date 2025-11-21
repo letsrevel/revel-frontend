@@ -135,20 +135,28 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 			}
 		}
 
-		// Fetch event resources (public endpoint)
+		// Fetch event resources (authenticated endpoint for visibility filtering)
 		let resources: AdditionalResourceSchema[] = [];
 		try {
+			console.log('[EVENT PAGE SERVER] Fetching resources for event:', event.id);
 			const resourcesResponse = await eventListResources({
 				fetch,
-				path: { event_id: event.id }
+				path: { event_id: event.id },
+				headers
+			});
+
+			console.log('[EVENT PAGE SERVER] Resources response:', {
+				hasData: !!resourcesResponse.data,
+				results: resourcesResponse.data?.results?.length || 0
 			});
 
 			if (resourcesResponse.data) {
 				resources = resourcesResponse.data.results || [];
 			}
+			console.log('[EVENT PAGE SERVER] Final resources count:', resources.length);
 		} catch (err) {
 			// If resources fail to load, continue without them
-			console.error('Failed to fetch event resources:', err);
+			console.error('[EVENT PAGE SERVER] Failed to fetch event resources:', err);
 		}
 
 		// Fetch ticket tiers (public endpoint, filtered by eligibility)
