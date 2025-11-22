@@ -2,11 +2,12 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { enhance, applyAction } from '$app/forms';
 	import { invalidate } from '$app/navigation';
-	import { Shield, CheckCircle, XCircle, AlertCircle, Copy, Check } from 'lucide-svelte';
+	import { Shield, CheckCircle, XCircle, AlertCircle, Copy, Check, Key, Mail } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import TwoFactorInput from '$lib/components/forms/TwoFactorInput.svelte';
 	import type { PageData, ActionData } from './$types';
 	import QRCode from 'qrcode';
+	import { accountResetPasswordRequest } from '$lib/api/generated';
 
 	interface Props {
 		data: PageData;
@@ -23,6 +24,11 @@
 	let otpCode = $state('');
 	let isSubmitting = $state(false);
 	let manualEntryCopied = $state(false);
+
+	// Password change state
+	let showPasswordChangeFlow = $state(false);
+	let isRequestingPasswordReset = $state(false);
+	let passwordResetRequested = $state(false);
 
 	// Derived state
 	let totpActive = $derived(data.totpActive);
@@ -124,6 +130,33 @@
 	function cancelDisable() {
 		showDisableFlow = false;
 		otpCode = '';
+	}
+
+	// Request password reset
+	async function handlePasswordResetRequest() {
+		if (!data.user?.email || isRequestingPasswordReset) return;
+
+		isRequestingPasswordReset = true;
+		passwordResetRequested = false;
+
+		try {
+			await accountResetPasswordRequest({
+				body: { email: data.user.email }
+			});
+			passwordResetRequested = true;
+			toast.success(m['accountSecurityPage.toast_passwordResetSent']());
+		} catch (error: any) {
+			console.error('Failed to request password reset:', error);
+			toast.error(m['accountSecurityPage.toast_passwordResetFailed']());
+		} finally {
+			isRequestingPasswordReset = false;
+		}
+	}
+
+	// Cancel password change flow
+	function cancelPasswordChange() {
+		showPasswordChangeFlow = false;
+		passwordResetRequested = false;
 	}
 </script>
 
@@ -424,6 +457,114 @@
 								</form>
 							</div>
 						</div>
+					</div>
+				{/if}
+			</div>
+		</div>
+	</div>
+
+	<!-- Password Change Section -->
+	<div class="mt-6 rounded-lg border bg-card p-6">
+		<div class="flex items-start gap-4">
+			<div
+				class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary"
+			>
+				<Key class="h-6 w-6" aria-hidden="true" />
+			</div>
+
+			<div class="flex-1">
+				<div class="flex items-center justify-between">
+					<div>
+						<h2 class="text-xl font-semibold">{m['accountSecurityPage.passwordChange']()}</h2>
+						<p class="mt-1 text-sm text-muted-foreground">
+							{m['accountSecurityPage.passwordChangeDescription']()}
+						</p>
+					</div>
+				</div>
+
+				<!-- Change Password Button (when not in flow) -->
+				{#if !showPasswordChangeFlow}
+					<div class="mt-6">
+						<button
+							type="button"
+							class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+							onclick={() => {
+								showPasswordChangeFlow = true;
+							}}
+						>
+							{m['accountSecurityPage.changePasswordButton']()}
+						</button>
+					</div>
+				{/if}
+
+				<!-- Password Change Flow -->
+				{#if showPasswordChangeFlow}
+					<div class="mt-6 rounded-lg border bg-muted/50 p-6">
+						<h3 class="font-semibold">{m['accountSecurityPage.requestPasswordResetTitle']()}</h3>
+						<p class="mt-2 text-sm text-muted-foreground">
+							{m['accountSecurityPage.requestPasswordResetDescription']()}
+						</p>
+
+						{#if !passwordResetRequested}
+							<div class="mt-4 flex items-center gap-2 rounded-md bg-blue-50 p-3 dark:bg-blue-950">
+								<Mail
+									class="h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-400"
+									aria-hidden="true"
+								/>
+								<p class="text-sm text-blue-800 dark:text-blue-200">
+									{m['accountSecurityPage.emailWillBeSent']({ email: data.user?.email || '' })}
+								</p>
+							</div>
+
+							<div class="mt-6 flex gap-3">
+								<button
+									type="button"
+									onclick={handlePasswordResetRequest}
+									disabled={isRequestingPasswordReset}
+									class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50"
+								>
+									{isRequestingPasswordReset
+										? m['accountSecurityPage.sendingResetLink']()
+										: m['accountSecurityPage.sendResetLink']()}
+								</button>
+								<button
+									type="button"
+									onclick={cancelPasswordChange}
+									class="rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+								>
+									{m['accountSecurityPage.cancel']()}
+								</button>
+							</div>
+						{:else}
+							<div
+								class="mt-4 rounded-md border border-green-500 bg-green-50 p-4 dark:bg-green-950"
+							>
+								<div class="flex items-center gap-2">
+									<CheckCircle
+										class="h-5 w-5 text-green-600 dark:text-green-400"
+										aria-hidden="true"
+									/>
+									<div class="flex-1">
+										<p class="text-sm font-medium text-green-800 dark:text-green-200">
+											{m['accountSecurityPage.resetLinkSent']()}
+										</p>
+										<p class="mt-1 text-xs text-green-700 dark:text-green-300">
+											{m['accountSecurityPage.checkEmailInbox']()}
+										</p>
+									</div>
+								</div>
+							</div>
+
+							<div class="mt-6">
+								<button
+									type="button"
+									onclick={cancelPasswordChange}
+									class="rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+								>
+									{m['accountSecurityPage.close']()}
+								</button>
+							</div>
+						{/if}
 					</div>
 				{/if}
 			</div>

@@ -14,7 +14,8 @@ export const load: PageServerLoad = async ({ cookies, depends }) => {
 
 	if (!accessToken) {
 		return {
-			totpActive: false
+			totpActive: false,
+			user: null
 		};
 	}
 
@@ -26,12 +27,14 @@ export const load: PageServerLoad = async ({ cookies, depends }) => {
 		});
 
 		return {
-			totpActive: data?.totp_active || false
+			totpActive: data?.totp_active || false,
+			user: data
 		};
 	} catch (error) {
 		console.error('Failed to fetch user data:', error);
 		return {
-			totpActive: false
+			totpActive: false,
+			user: null
 		};
 	}
 };
