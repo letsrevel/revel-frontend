@@ -4,10 +4,11 @@
 	import { enhance, applyAction } from '$app/forms';
 	import type { PageData, ActionData } from './$types';
 	import { COMMON_PRONOUNS } from '$lib/schemas/profile';
-	import { Loader2, Check, Info } from 'lucide-svelte';
+	import { Loader2, Check, Info, ShieldCheck, ShieldAlert, Mail } from 'lucide-svelte';
 	import DietaryPreferencesManager from '$lib/components/profile/DietaryPreferencesManager.svelte';
 	import DietaryRestrictionsManager from '$lib/components/profile/DietaryRestrictionsManager.svelte';
 	import TelegramConnectionManager from '$lib/components/profile/TelegramConnectionManager.svelte';
+	import { accountResendVerificationEmail } from '$lib/api/generated';
 
 	interface Props {
 		data: PageData;
@@ -18,6 +19,11 @@
 
 	let isSubmitting = $state(false);
 	let manuallyShowingCustom = $state(false);
+	let isResendingVerification = $state(false);
+	let verificationEmailSent = $state(false);
+	let verificationError = $state<string | null>(null);
+	let resendCooldown = $state(0);
+	let cooldownInterval: ReturnType<typeof setInterval> | null = null;
 
 	// Form state - initialize from data.user on page load
 	let firstName = $state(data.user?.first_name || '');
@@ -37,6 +43,59 @@
 	let errors = $derived((form?.errors || {}) as Record<string, string>);
 	// Email comes from data.user (populated by load function)
 	let email = $derived(data.user?.email || '');
+	let emailVerified = $derived(data.user?.email_verified || false);
+	let canResendEmail = $derived(!isResendingVerification && resendCooldown === 0);
+
+	function startCooldown() {
+		resendCooldown = 60; // 60 second cooldown
+		cooldownInterval = setInterval(() => {
+			resendCooldown--;
+			if (resendCooldown <= 0) {
+				if (cooldownInterval) {
+					clearInterval(cooldownInterval);
+					cooldownInterval = null;
+				}
+			}
+		}, 1000);
+	}
+
+	async function handleResendVerification() {
+		if (!email || !canResendEmail) return;
+
+		isResendingVerification = true;
+		verificationEmailSent = false;
+		verificationError = null;
+
+		try {
+			await accountResendVerificationEmail({
+				body: { email }
+			});
+			verificationEmailSent = true;
+			startCooldown();
+		} catch (error: any) {
+			console.error('Failed to resend verification email:', error);
+
+			// Handle 429 Too Many Requests
+			if (error?.status === 429 || error?.response?.status === 429) {
+				verificationError = m['profile.email_rateLimitError']();
+				// Start cooldown even on rate limit to prevent immediate retry
+				startCooldown();
+			} else {
+				verificationError = m['profile.email_resendError']();
+			}
+		} finally {
+			isResendingVerification = false;
+		}
+	}
+
+	// Cleanup interval on component destroy
+	$effect(() => {
+		return () => {
+			if (cooldownInterval) {
+				clearInterval(cooldownInterval);
+			}
+		};
+	});
 </script>
 
 <svelte:head>
@@ -104,15 +163,98 @@
 		class="space-y-6"
 	>
 		<div class="space-y-2">
-			<label for="email" class="block text-sm font-medium">Email</label>
-			<input
-				id="email"
-				type="email"
-				value={email}
-				disabled
-				class="flex h-10 w-full cursor-not-allowed rounded-md border border-input bg-muted px-3 py-2 text-sm text-muted-foreground"
-			/>
-			<p class="text-xs text-muted-foreground">Email cannot be changed</p>
+			<label for="email" class="block text-sm font-medium">{m['profile.email_label']()}</label>
+			<div class="space-y-3">
+				<div class="flex items-center gap-2">
+					<input
+						id="email"
+						type="email"
+						value={email}
+						disabled
+						class="flex h-10 w-full cursor-not-allowed rounded-md border border-input bg-muted px-3 py-2 text-sm text-muted-foreground"
+					/>
+					{#if emailVerified}
+						<div
+							class="flex items-center gap-1.5 rounded-md bg-green-100 px-3 py-1.5 dark:bg-green-950"
+							role="status"
+							aria-label={m['profile.email_verified_label']()}
+						>
+							<ShieldCheck
+								class="h-4 w-4 flex-shrink-0 text-green-700 dark:text-green-400"
+								aria-hidden="true"
+							/>
+							<span class="text-xs font-medium text-green-800 dark:text-green-300">
+								{m['profile.email_verified']()}
+							</span>
+						</div>
+					{:else}
+						<div
+							class="flex items-center gap-1.5 rounded-md bg-amber-100 px-3 py-1.5 dark:bg-amber-950"
+							role="status"
+							aria-label={m['profile.email_unverified_label']()}
+						>
+							<ShieldAlert
+								class="h-4 w-4 flex-shrink-0 text-amber-700 dark:text-amber-400"
+								aria-hidden="true"
+							/>
+							<span class="text-xs font-medium text-amber-800 dark:text-amber-300">
+								{m['profile.email_unverified']()}
+							</span>
+						</div>
+					{/if}
+				</div>
+
+				{#if !emailVerified}
+					<div
+						class="rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950"
+					>
+						<p class="mb-2 text-sm text-amber-900 dark:text-amber-200">
+							{m['profile.email_verificationNeeded']()}
+						</p>
+						<button
+							type="button"
+							onclick={handleResendVerification}
+							disabled={!canResendEmail}
+							class="inline-flex h-9 items-center justify-center gap-2 rounded-md bg-amber-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-amber-700 dark:hover:bg-amber-600"
+						>
+							{#if isResendingVerification}
+								<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
+								<span>{m['profile.email_resending']()}</span>
+							{:else if resendCooldown > 0}
+								<Mail class="h-4 w-4" aria-hidden="true" />
+								<span>{m['profile.email_resendWait']({ seconds: resendCooldown })}</span>
+							{:else}
+								<Mail class="h-4 w-4" aria-hidden="true" />
+								<span>{m['profile.email_resendButton']()}</span>
+							{/if}
+						</button>
+					</div>
+				{/if}
+
+				{#if verificationEmailSent}
+					<div
+						role="status"
+						class="rounded-md border border-green-500 bg-green-50 p-3 dark:bg-green-950"
+					>
+						<div class="flex items-center gap-2">
+							<Check class="h-5 w-5 text-green-600 dark:text-green-400" aria-hidden="true" />
+							<p class="text-sm font-medium text-green-800 dark:text-green-200">
+								{m['profile.email_resendSuccess']()}
+							</p>
+						</div>
+					</div>
+				{/if}
+
+				{#if verificationError}
+					<div role="alert" class="rounded-md border border-red-500 bg-red-50 p-3 dark:bg-red-950">
+						<p class="text-sm font-medium text-red-800 dark:text-red-200">
+							{verificationError}
+						</p>
+					</div>
+				{/if}
+
+				<p class="text-xs text-muted-foreground">{m['profile.email_hint']()}</p>
+			</div>
 		</div>
 
 		<div class="grid gap-6 sm:grid-cols-2">
