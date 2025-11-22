@@ -2822,7 +2822,20 @@
 		"toast_copyFailed": "Failed to copy code",
 		"toast_setupFailed": "Failed to start 2FA setup",
 		"toast_verifyFailed": "Verification failed",
-		"toast_disableFailed": "Failed to disable 2FA"
+		"toast_disableFailed": "Failed to disable 2FA",
+		"passwordChange": "Change Password",
+		"passwordChangeDescription": "Request a password reset link to change your password",
+		"changePasswordButton": "Change Password",
+		"requestPasswordResetTitle": "Request Password Reset",
+		"requestPasswordResetDescription": "We'll send a password reset link to your email address. Click the link to set a new password.",
+		"emailWillBeSent": "A password reset link will be sent to {email}",
+		"sendResetLink": "Send Reset Link",
+		"sendingResetLink": "Sending...",
+		"resetLinkSent": "Password reset link sent!",
+		"checkEmailInbox": "Check your email inbox for the password reset link.",
+		"close": "Close",
+		"toast_passwordResetSent": "Password reset link sent successfully!",
+		"toast_passwordResetFailed": "Failed to send password reset link. Please try again."
 	},
 	"accountSettingsPage": {
 		"pageTitle": "Settings",
