@@ -64,6 +64,9 @@
 	<meta property="og:type" content={metaTags.ogType || 'website'} />
 	<meta property="og:title" content={metaTags.ogTitle || metaTags.title} />
 	<meta property="og:description" content={metaTags.ogDescription || metaTags.description} />
+	{#if metaTags.ogImage}
+		<meta property="og:image" content={metaTags.ogImage} />
+	{/if}
 	<meta property="og:url" content={metaTags.ogUrl || page.url.href} />
 	<meta property="og:site_name" content="Revel" />
 	<meta property="og:locale" content="en_US" />
@@ -72,6 +75,9 @@
 	<meta name="twitter:card" content={metaTags.twitterCard || 'summary_large_image'} />
 	<meta name="twitter:title" content={metaTags.twitterTitle || metaTags.title} />
 	<meta name="twitter:description" content={metaTags.twitterDescription || metaTags.description} />
+	{#if metaTags.twitterImage}
+		<meta name="twitter:image" content={metaTags.twitterImage} />
+	{/if}
 
 	<!-- Additional SEO meta tags -->
 	<meta name="robots" content="index, follow" />
