@@ -34,7 +34,7 @@
     </text>
 
     <!-- Features -->
-    <g transform="translate(96, 350)">
+    <g transform="translate(128, 350)">
       <!-- Feature 1 -->
       <circle cx="0" cy="-8" r="10" fill="none" stroke="#8b5cf6" stroke-width="2"/>
       <path d="M -4 -8 L -1 -4 L 5 -12" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
