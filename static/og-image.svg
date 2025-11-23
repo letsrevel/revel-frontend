@@ -33,14 +33,25 @@
 
   <!-- Features -->
   <g transform="translate(120, 410)">
-    <text y="0" font-family="system-ui, -apple-system, sans-serif" font-size="26" fill="#d0d0d0">
-      ✓ Open-Source & Privacy-Focused
+    <!-- Feature 1 -->
+    <circle cx="0" cy="-8" r="10" fill="none" stroke="#8b5cf6" stroke-width="2"/>
+    <path d="M -4 -8 L -1 -4 L 5 -12" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="24" y="0" font-family="system-ui, -apple-system, sans-serif" font-size="26" fill="#d0d0d0">
+      Open-Source &amp; Privacy-Focused
     </text>
-    <text y="48" font-family="system-ui, -apple-system, sans-serif" font-size="26" fill="#d0d0d0">
-      ✓ Flexible Ticketing & RSVP
+
+    <!-- Feature 2 -->
+    <circle cx="0" cy="40" r="10" fill="none" stroke="#8b5cf6" stroke-width="2"/>
+    <path d="M -4 40 L -1 44 L 5 36" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="24" y="48" font-family="system-ui, -apple-system, sans-serif" font-size="26" fill="#d0d0d0">
+      Flexible Ticketing &amp; RSVP
     </text>
-    <text y="96" font-family="system-ui, -apple-system, sans-serif" font-size="26" fill="#d0d0d0">
-      ✓ Community Building Tools
+
+    <!-- Feature 3 -->
+    <circle cx="0" cy="88" r="10" fill="none" stroke="#8b5cf6" stroke-width="2"/>
+    <path d="M -4 88 L -1 92 L 5 84" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="24" y="96" font-family="system-ui, -apple-system, sans-serif" font-size="26" fill="#d0d0d0">
+      Community Building Tools
     </text>
   </g>
 
