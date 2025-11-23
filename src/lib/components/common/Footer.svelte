@@ -97,6 +97,14 @@
 							{m['footer.github']()}
 						</a>
 					</li>
+					<li>
+						<a
+							href="/learn-more"
+							class="text-muted-foreground transition-colors hover:text-foreground"
+						>
+							{m['footer.learnMore']()}
+						</a>
+					</li>
 				</ul>
 			</div>
 

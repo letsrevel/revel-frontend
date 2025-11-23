@@ -81,7 +81,7 @@
 		<p class="mt-6 max-w-2xl text-lg text-muted-foreground">
 			{m['home.tagline']()}
 		</p>
-		<div class="mt-10 flex items-center gap-4">
+		<div class="mt-10 flex flex-wrap items-center justify-center gap-4">
 			<a
 				href="/events"
 				class="rounded-md bg-primary px-6 py-3 text-base font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
@@ -93,6 +93,12 @@
 				class="rounded-md border border-primary px-6 py-3 text-base font-semibold text-primary hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
 			>
 				{m['home.getStarted']()}
+			</a>
+			<a
+				href="/learn-more"
+				class="rounded-md border border-muted-foreground px-6 py-3 text-base font-semibold text-muted-foreground hover:bg-muted/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-muted-foreground"
+			>
+				{m['footer.learnMore']()}
 			</a>
 		</div>
 	</div>
