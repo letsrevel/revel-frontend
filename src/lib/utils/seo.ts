@@ -180,10 +180,12 @@ export function generateHomeMeta(baseUrl: string): MetaTags {
 		ogTitle: 'Revel - Community-Focused Event Management',
 		ogDescription:
 			'Discover community events, connect with organizers, and create unforgettable experiences.',
+		ogImage: `${baseUrl}/og-image.svg`,
 		ogUrl: baseUrl,
 		twitterCard: 'summary_large_image',
 		twitterTitle: 'Revel - Community Events',
-		twitterDescription: 'Discover community events and create unforgettable experiences'
+		twitterDescription: 'Discover community events and create unforgettable experiences',
+		twitterImage: `${baseUrl}/og-image.svg`
 	};
 }
 
@@ -199,10 +201,12 @@ export function generateEventsListingMeta(baseUrl: string): MetaTags {
 		ogType: 'website',
 		ogTitle: 'Browse Events | Revel',
 		ogDescription: 'Discover community events happening near you.',
+		ogImage: `${baseUrl}/og-image.svg`,
 		ogUrl: `${baseUrl}/events`,
 		twitterCard: 'summary_large_image',
 		twitterTitle: 'Browse Events | Revel',
-		twitterDescription: 'Discover community events near you'
+		twitterDescription: 'Discover community events near you',
+		twitterImage: `${baseUrl}/og-image.svg`
 	};
 }
 

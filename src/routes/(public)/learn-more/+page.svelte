@@ -1,6 +1,17 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { Mail, Calendar, Users, Shield, Ticket, ClipboardList, UtensilsCrossed, Bell, Globe, Github } from 'lucide-svelte';
+	import {
+		Mail,
+		Calendar,
+		Users,
+		Shield,
+		Ticket,
+		ClipboardList,
+		UtensilsCrossed,
+		Bell,
+		Globe,
+		Github
+	} from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 
@@ -42,7 +53,6 @@
 	<div class="mb-16">
 		<h2 class="mb-8 text-center text-3xl font-bold">{m['learnMore.coreFeaturesTitle']()}</h2>
 		<div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-
 			<!-- Event Management -->
 			<div class="rounded-lg border bg-card p-6 shadow-sm transition-shadow hover:shadow-md">
 				<div class="mb-4 flex items-center gap-3">
@@ -204,7 +214,6 @@
 					</li>
 				</ul>
 			</div>
-
 		</div>
 	</div>
 
@@ -212,7 +221,6 @@
 	<div class="mb-16">
 		<h2 class="mb-8 text-center text-3xl font-bold">{m['learnMore.additionalFeaturesTitle']()}</h2>
 		<div class="grid gap-6 md:grid-cols-2">
-
 			<!-- Notifications -->
 			<div class="flex gap-4 rounded-lg border bg-card p-6">
 				<div class="flex-shrink-0">
@@ -242,7 +250,6 @@
 					</p>
 				</div>
 			</div>
-
 		</div>
 	</div>
 
@@ -253,7 +260,6 @@
 			{m['learnMore.pricingDescription']()}
 		</p>
 		<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-
 			<!-- Free Events -->
 			<div class="rounded-lg border bg-card p-6 text-center">
 				<h3 class="mb-2 text-lg font-semibold">{m['learnMore.pricingFreeEvents']()}</h3>
@@ -312,7 +318,6 @@
 					</a>
 				</div>
 			</div>
-
 		</div>
 	</div>
 
@@ -360,10 +365,7 @@
 
 	<!-- Back to Home -->
 	<div class="mt-12 text-center">
-		<a
-			href="/"
-			class="text-sm text-muted-foreground hover:text-foreground"
-		>
+		<a href="/" class="text-sm text-muted-foreground hover:text-foreground">
 			← {m['learnMore.backToHome']()}
 		</a>
 	</div>
