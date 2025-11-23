@@ -65,6 +65,10 @@
 		"buildCommunityDescription": "Create organizations, host events, and grow your community with powerful management tools.",
 		"safeSecureTitle": "Safe & Secure",
 		"safeSecureDescription": "Screen attendees with questionnaires. Secure ticketing, privacy-focused, and built with trust in mind.",
+		"tryDemoTitle": "Try the Demo",
+		"tryDemoDescription": "Explore Revel with test accounts and data. Experience the platform as both an organizer and an attendee.",
+		"tryDemo": "Open Demo",
+		"tryDemoNote": "Note: The demo runs on slow hardware and may take a moment to load.",
 		"keywords": "events, community, ticketing, RSVP, event management, event platform"
 	},
 	"login": {
@@ -1070,7 +1074,9 @@
 		"selectOrganization": "Select Organization"
 	},
 	"demoBanner": {
-		"demoMode": "Demo Mode"
+		"demoMode": "Demo Mode",
+		"description": "This is a demo environment. All data will be reset at midnight CET (approximately {time} {timezone}). Feel free to explore and test all features!",
+		"slowHardwareWarning": "Note: The demo runs on slow hardware and may take a moment to load."
 	},
 	"demoCardInfo": {
 		"demoPaymentTestCard": "Demo Payment Test Card",

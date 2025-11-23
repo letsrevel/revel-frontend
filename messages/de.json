@@ -65,6 +65,10 @@
 		"buildCommunityDescription": "Erstelle Organisationen, veranstalte Events und lass deine Community mit leistungsstarken Verwaltungstools wachsen.",
 		"safeSecureTitle": "Sicher & Geschützt",
 		"safeSecureDescription": "Teilnehmer mit Fragebögen überprüfen. Sichere Ticketvergabe, datenschutzorientiert und auf Vertrauen aufgebaut.",
+		"tryDemoTitle": "Demo ausprobieren",
+		"tryDemoDescription": "Erkunde Revel mit Testkonten und Daten. Erlebe die Plattform sowohl als Organisator als auch als Teilnehmer.",
+		"tryDemo": "Demo öffnen",
+		"tryDemoNote": "Hinweis: Die Demo läuft auf langsamer Hardware und kann einen Moment zum Laden benötigen.",
 		"keywords": "Veranstaltungen, Community, Ticketing, Zusage, Eventmanagement, Eventplattform"
 	},
 	"login": {
@@ -1070,7 +1074,9 @@
 		"selectOrganization": "Organisation auswählen"
 	},
 	"demoBanner": {
-		"demoMode": "Demo-Modus"
+		"demoMode": "Demo-Modus",
+		"description": "Dies ist eine Demo-Umgebung. Alle Daten werden um Mitternacht MEZ (ungefähr {time} {timezone}) zurückgesetzt. Erkunde und teste gerne alle Funktionen!",
+		"slowHardwareWarning": "Hinweis: Die Demo läuft auf langsamer Hardware und kann einen Moment zum Laden benötigen."
 	},
 	"demoCardInfo": {
 		"demoPaymentTestCard": "Demo-Zahlungstestkarte",
