@@ -104,6 +104,10 @@
 						<span class="text-secondary">•</span>
 						<span>{m['learnMore.ticketingFeature3']()}</span>
 					</li>
+					<li class="flex items-start gap-2">
+						<span class="text-secondary">•</span>
+						<span>{m['learnMore.ticketingFeature4']()}</span>
+					</li>
 				</ul>
 			</div>
 

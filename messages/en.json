@@ -3623,11 +3623,11 @@
 		"eventManagementFeature1": "Single events and recurring series",
 		"eventManagementFeature2": "Public, members-only, or invite-only visibility",
 		"eventManagementFeature3": "Waitlist management and guest access",
-		"ticketingTitle": "Flexible Ticketing",
-		"ticketingDescription": "Multiple ticket tiers with flexible pricing strategies and integrated payment processing.",
+		"ticketingTitle": "Flexible Ticketing and simple RSVP",
+		"ticketingDescription": "Multiple ticket tiers with flexible pricing strategies and integrated payment processing. Or simple RSVP.",
 		"ticketingFeature1": "Free, fixed-price, or Pay-What-You-Can tickets",
 		"ticketingFeature2": "Manage offline payments yourself or easily enable card payments with Stripe",
-		"ticketingFeature3": "QR code check-in and ticket validation",
+		"ticketingFeature3": "Link ticket tiers to membership tiers for exclusive access",
 		"questionnaireTitle": "Attendee Screening",
 		"questionnaireDescription": "Build custom questionnaires to screen attendees and ensure your events remain safe and aligned with your community values.",
 		"questionnaireFeature1": "Custom questionnaires with manual or automatic scoring",
@@ -3674,6 +3674,7 @@
 		"pricingSelfHostingPrice": "Free",
 		"pricingOnlinePayments": "Hosted online payments",
 		"pricingOnlinePaymentsPrice": "3% + €0.50",
-		"pricingOnlinePaymentsDescription": "3% + €0.50 per ticket. Plus Stripe fees: 1.5% + €0.25 (EEA cards) or 2.5% + €0.25 (UK cards)."
+		"pricingOnlinePaymentsDescription": "3% + €0.50 per ticket. Plus Stripe fees: 1.5% + €0.25 (EEA cards) or 2.5% + €0.25 (UK cards).",
+		"ticketingFeature4": "QR code check-in and ticket validation"
 	}
 }

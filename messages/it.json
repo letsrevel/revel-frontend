@@ -3623,11 +3623,11 @@
 		"eventManagementFeature1": "Eventi singoli e serie ricorrenti",
 		"eventManagementFeature2": "Visibilità pubblica, solo per membri o solo su invito",
 		"eventManagementFeature3": "Gestione lista d'attesa e accesso ospiti",
-		"ticketingTitle": "Biglietteria flessibile",
-		"ticketingDescription": "Più livelli di biglietti con strategie di prezzo flessibili ed elaborazione dei pagamenti integrata.",
+		"ticketingTitle": "Biglietteria flessibile e semplice conferma",
+		"ticketingDescription": "Più livelli di biglietti con strategie di prezzo flessibili ed elaborazione dei pagamenti integrata. O semplice conferma di partecipazione.",
 		"ticketingFeature1": "Biglietti gratuiti, a prezzo fisso o a offerta libera",
 		"ticketingFeature2": "Gestisci pagamenti offline tu stesso o abilita facilmente i pagamenti con carta tramite Stripe",
-		"ticketingFeature3": "Check-in con codice QR e validazione biglietti",
+		"ticketingFeature3": "Collega i livelli di biglietti ai livelli di abbonamento per accesso esclusivo",
 		"questionnaireTitle": "Screening partecipanti",
 		"questionnaireDescription": "Crea questionari personalizzati per selezionare i partecipanti e garantire che i tuoi eventi rimangano sicuri e in linea con i valori della tua comunità.",
 		"questionnaireFeature1": "Questionari personalizzati con punteggio manuale o automatico",
@@ -3674,6 +3674,7 @@
 		"pricingSelfHostingPrice": "Gratis",
 		"pricingOnlinePayments": "Pagamenti online ospitati",
 		"pricingOnlinePaymentsPrice": "3% + €0,50",
-		"pricingOnlinePaymentsDescription": "3% + €0,50 per biglietto. Più commissioni Stripe: 1,5% + €0,25 (carte SEE) o 2,5% + €0,25 (carte UK)."
+		"pricingOnlinePaymentsDescription": "3% + €0,50 per biglietto. Più commissioni Stripe: 1,5% + €0,25 (carte SEE) o 2,5% + €0,25 (carte UK).",
+		"ticketingFeature4": "Check-in con codice QR e convalida biglietti"
 	}
 }

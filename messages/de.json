@@ -3623,11 +3623,11 @@
 		"eventManagementFeature1": "Einzelevents und wiederkehrende Serien",
 		"eventManagementFeature2": "Öffentlich, nur für Mitglieder oder nur auf Einladung",
 		"eventManagementFeature3": "Wartelisten-Management und Gastzugang",
-		"ticketingTitle": "Flexibles Ticketing",
-		"ticketingDescription": "Mehrere Ticket-Stufen mit flexiblen Preisstrategien und integrierter Zahlungsabwicklung.",
+		"ticketingTitle": "Flexibles Ticketing und einfache Anmeldung",
+		"ticketingDescription": "Mehrere Ticket-Stufen mit flexiblen Preisstrategien und integrierter Zahlungsabwicklung. Oder einfache Anmeldung.",
 		"ticketingFeature1": "Kostenlose, Festpreis- oder Pay-What-You-Can-Tickets",
 		"ticketingFeature2": "Verwalte Offline-Zahlungen selbst oder aktiviere einfach Kartenzahlungen mit Stripe",
-		"ticketingFeature3": "QR-Code-Check-in und Ticket-Validierung",
+		"ticketingFeature3": "Verknüpfe Ticket-Stufen mit Mitgliedschaftsstufen für exklusiven Zugang",
 		"questionnaireTitle": "Teilnehmer-Screening",
 		"questionnaireDescription": "Erstelle individuelle Fragebögen, um Teilnehmer zu überprüfen und sicherzustellen, dass deine Events sicher bleiben und mit deinen Community-Werten übereinstimmen.",
 		"questionnaireFeature1": "Individuelle Fragebögen mit manueller oder automatischer Bewertung",
@@ -3674,6 +3674,7 @@
 		"pricingSelfHostingPrice": "Kostenlos",
 		"pricingOnlinePayments": "Gehostete Online-Zahlungen",
 		"pricingOnlinePaymentsPrice": "3% + 0,50€",
-		"pricingOnlinePaymentsDescription": "3% + 0,50€ pro Ticket. Plus Stripe-Gebühren: 1,5% + 0,25€ (EWR-Karten) oder 2,5% + 0,25€ (UK-Karten)."
+		"pricingOnlinePaymentsDescription": "3% + 0,50€ pro Ticket. Plus Stripe-Gebühren: 1,5% + 0,25€ (EWR-Karten) oder 2,5% + 0,25€ (UK-Karten).",
+		"ticketingFeature4": "QR-Code-Check-in und Ticket-Validierung"
 	}
 }
