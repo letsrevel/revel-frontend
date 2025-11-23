@@ -43,8 +43,10 @@
 			<div class="flex-1 text-sm">
 				<p class="font-semibold">{m['demoBanner.demoMode']()}</p>
 				<p class="mt-1">
-					This is a demo environment. All data will be reset at midnight CET (approximately {midnightUserTime}
-					{userTimezone}). Feel free to explore and test all features!
+					{m['demoBanner.description']({ time: midnightUserTime, timezone: userTimezone })}
+				</p>
+				<p class="mt-1 text-xs opacity-90">
+					{m['demoBanner.slowHardwareWarning']()}
 				</p>
 			</div>
 		</div>
