@@ -21,42 +21,40 @@
   <circle cx="1000" cy="100" r="400" fill="url(#purpleGlow)"/>
   <circle cx="200" cy="500" r="300" fill="url(#purpleGlow)"/>
 
-  <!-- Large "Revel" text -->
-  <text x="120" y="280" font-family="system-ui, -apple-system, sans-serif" font-size="140" font-weight="bold" fill="white" letter-spacing="-2">
-    Revel
-  </text>
-
-  <!-- Subtitle -->
-  <text x="120" y="350" font-family="system-ui, -apple-system, sans-serif" font-size="36" fill="#a0a0a0">
-    Community-Focused Event Management
-  </text>
-
-  <!-- Features -->
-  <g transform="translate(120, 410)">
-    <!-- Feature 1 -->
-    <circle cx="0" cy="-8" r="10" fill="none" stroke="#8b5cf6" stroke-width="2"/>
-    <path d="M -4 -8 L -1 -4 L 5 -12" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <text x="24" y="0" font-family="system-ui, -apple-system, sans-serif" font-size="26" fill="#d0d0d0">
-      Open-Source &amp; Privacy-Focused
+  <!-- Content centered vertically -->
+  <g transform="translate(0, 50)">
+    <!-- Large "Revel" text -->
+    <text x="120" y="200" font-family="system-ui, -apple-system, sans-serif" font-size="140" font-weight="bold" fill="white" letter-spacing="-2">
+      Revel
     </text>
 
-    <!-- Feature 2 -->
-    <circle cx="0" cy="40" r="10" fill="none" stroke="#8b5cf6" stroke-width="2"/>
-    <path d="M -4 40 L -1 44 L 5 36" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <text x="24" y="48" font-family="system-ui, -apple-system, sans-serif" font-size="26" fill="#d0d0d0">
-      Flexible Ticketing &amp; RSVP
+    <!-- Subtitle -->
+    <text x="120" y="270" font-family="system-ui, -apple-system, sans-serif" font-size="36" fill="#a0a0a0">
+      Community-Focused Event Management
     </text>
 
-    <!-- Feature 3 -->
-    <circle cx="0" cy="88" r="10" fill="none" stroke="#8b5cf6" stroke-width="2"/>
-    <path d="M -4 88 L -1 92 L 5 84" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <text x="24" y="96" font-family="system-ui, -apple-system, sans-serif" font-size="26" fill="#d0d0d0">
-      Community Building Tools
-    </text>
+    <!-- Features -->
+    <g transform="translate(120, 350)">
+      <!-- Feature 1 -->
+      <circle cx="0" cy="-8" r="10" fill="none" stroke="#8b5cf6" stroke-width="2"/>
+      <path d="M -4 -8 L -1 -4 L 5 -12" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="24" y="0" font-family="system-ui, -apple-system, sans-serif" font-size="26" fill="#d0d0d0">
+        Open-Source &amp; Privacy-Focused
+      </text>
+
+      <!-- Feature 2 -->
+      <circle cx="0" cy="44" r="10" fill="none" stroke="#8b5cf6" stroke-width="2"/>
+      <path d="M -4 44 L -1 48 L 5 40" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="24" y="52" font-family="system-ui, -apple-system, sans-serif" font-size="26" fill="#d0d0d0">
+        Flexible Ticketing &amp; RSVP
+      </text>
+
+      <!-- Feature 3 -->
+      <circle cx="0" cy="96" r="10" fill="none" stroke="#8b5cf6" stroke-width="2"/>
+      <path d="M -4 96 L -1 100 L 5 92" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="24" y="104" font-family="system-ui, -apple-system, sans-serif" font-size="26" fill="#d0d0d0">
+        Community Building Tools
+      </text>
+    </g>
   </g>
-
-  <!-- URL -->
-  <text x="120" y="580" font-family="system-ui, -apple-system, sans-serif" font-size="30" fill="#8b5cf6" font-weight="600">
-    beta.letsrevel.io
-  </text>
 </svg>
