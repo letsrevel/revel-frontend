@@ -11,7 +11,7 @@
   </defs>
   <rect width="1200" height="630" fill="url(#grid)"/>
 
-  <!-- Purple gradient circle (top right) -->
+  <!-- Purple gradient circles -->
   <defs>
     <radialGradient id="purpleGlow">
       <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:0.3" />
@@ -19,41 +19,33 @@
     </radialGradient>
   </defs>
   <circle cx="1000" cy="100" r="400" fill="url(#purpleGlow)"/>
+  <circle cx="200" cy="500" r="300" fill="url(#purpleGlow)"/>
 
-  <!-- Large R logo -->
-  <g transform="translate(100, 120)">
-    <path d="M0 0 H120 Q200 0 200 60 Q200 100 170 120 L220 220 H160 L120 130 H60 V220 H0 Z M60 40 V90 H120 Q150 90 150 65 Q150 40 120 40 Z"
-          fill="#8b5cf6"
-          stroke="#8b5cf6"
-          stroke-width="2"
-          opacity="0.9"/>
-  </g>
-
-  <!-- Title -->
-  <text x="350" y="200" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="bold" fill="white">
+  <!-- Large "Revel" text -->
+  <text x="120" y="280" font-family="system-ui, -apple-system, sans-serif" font-size="140" font-weight="bold" fill="white" letter-spacing="-2">
     Revel
   </text>
 
   <!-- Subtitle -->
-  <text x="350" y="260" font-family="system-ui, -apple-system, sans-serif" font-size="32" fill="#a0a0a0">
+  <text x="120" y="350" font-family="system-ui, -apple-system, sans-serif" font-size="36" fill="#a0a0a0">
     Community-Focused Event Management
   </text>
 
   <!-- Features -->
-  <g transform="translate(350, 320)">
-    <text y="0" font-family="system-ui, -apple-system, sans-serif" font-size="24" fill="#d0d0d0">
+  <g transform="translate(120, 410)">
+    <text y="0" font-family="system-ui, -apple-system, sans-serif" font-size="26" fill="#d0d0d0">
       ✓ Open-Source & Privacy-Focused
     </text>
-    <text y="45" font-family="system-ui, -apple-system, sans-serif" font-size="24" fill="#d0d0d0">
+    <text y="48" font-family="system-ui, -apple-system, sans-serif" font-size="26" fill="#d0d0d0">
       ✓ Flexible Ticketing & RSVP
     </text>
-    <text y="90" font-family="system-ui, -apple-system, sans-serif" font-size="24" fill="#d0d0d0">
+    <text y="96" font-family="system-ui, -apple-system, sans-serif" font-size="26" fill="#d0d0d0">
       ✓ Community Building Tools
     </text>
   </g>
 
   <!-- URL -->
-  <text x="350" y="560" font-family="system-ui, -apple-system, sans-serif" font-size="28" fill="#8b5cf6" font-weight="600">
+  <text x="120" y="580" font-family="system-ui, -apple-system, sans-serif" font-size="30" fill="#8b5cf6" font-weight="600">
     beta.letsrevel.io
   </text>
 </svg>
