@@ -905,9 +905,9 @@
 
 	<!-- Tabs -->
 	<Tabs bind:value={activeTab} class="w-full">
-		<div class="sticky top-32 z-20 bg-background pb-2 pt-1">
-			<TabsList class="grid w-full grid-cols-3 gap-1 md:grid-cols-5 lg:w-auto">
-				<TabsTrigger value="members" class="gap-1 text-xs sm:gap-2 sm:text-sm">
+		<div class="sticky top-32 z-20 -mb-px bg-background pb-3 pt-1">
+			<TabsList class="h-auto w-full grid-cols-3 gap-0.5 sm:grid-cols-5 sm:gap-1">
+				<TabsTrigger value="members" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
 					<Users class="h-4 w-4 shrink-0" />
 					<span class="hidden sm:inline">{m['orgAdmin.members.tabs.members']()}</span>
 					<span class="sm:hidden">Members</span>
@@ -916,7 +916,7 @@
 					{/if}
 				</TabsTrigger>
 
-				<TabsTrigger value="staff" class="gap-1 text-xs sm:gap-2 sm:text-sm">
+				<TabsTrigger value="staff" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
 					<UserCog class="h-4 w-4 shrink-0" />
 					<span class="hidden sm:inline">{m['orgAdmin.members.tabs.staff']()}</span>
 					<span class="sm:hidden">Staff</span>
@@ -925,7 +925,7 @@
 					{/if}
 				</TabsTrigger>
 
-				<TabsTrigger value="requests" class="gap-1 text-xs sm:gap-2 sm:text-sm">
+				<TabsTrigger value="requests" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
 					<UserPlus class="h-4 w-4 shrink-0" />
 					<span class="hidden sm:inline">{m['orgAdmin.members.tabs.requests']()}</span>
 					<span class="sm:hidden">Requests</span>
@@ -938,7 +938,7 @@
 					{/if}
 				</TabsTrigger>
 
-				<TabsTrigger value="tiers" class="gap-1 text-xs sm:gap-2 sm:text-sm md:col-start-auto">
+				<TabsTrigger value="tiers" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
 					<Shield class="h-4 w-4 shrink-0" />
 					<span class="hidden sm:inline">{m['orgAdmin.members.tabs.tiers']()}</span>
 					<span class="sm:hidden">Tiers</span>
@@ -947,7 +947,7 @@
 					{/if}
 				</TabsTrigger>
 
-				<TabsTrigger value="tokens" class="gap-1 text-xs sm:gap-2 sm:text-sm md:col-start-auto">
+				<TabsTrigger value="tokens" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
 					<Link class="h-4 w-4 shrink-0" />
 					<span class="hidden sm:inline">Invite Links</span>
 					<span class="sm:hidden">Links</span>
