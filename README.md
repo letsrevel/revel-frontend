@@ -9,7 +9,15 @@
 
 Revel is an open-source, community-focused event management and ticketing platform. This repository contains the frontend web application, built with modern web technologies to provide a fast, accessible, and delightful user experience.
 
-**Backend Repository:** [letsrevel/revel-backend](https://github.com/letsrevel/revel-backend)
+---
+
+## 🔗 Related Repositories
+
+This repository contains the **frontend web application** for Revel. The complete platform consists of:
+
+- **[revel-backend](https://github.com/letsrevel/revel-backend)** - Django REST API, business logic, database models
+- **[revel-frontend](https://github.com/letsrevel/revel-frontend)** (this repository) - SvelteKit web application, user interface
+- **[infra](https://github.com/letsrevel/infra)** - Docker Compose setup, reverse proxy, observability stack, deployment configurations
 
 ---
 

@@ -85,20 +85,20 @@
 	>
 		<div class="container mx-auto px-4">
 			<!-- Top Bar -->
-			<div class="flex h-16 items-center justify-between">
+			<div class="flex h-16 items-center justify-between gap-2">
 				<!-- Left: Org Name & Admin Badge -->
-				<div class="flex items-center gap-3">
+				<div class="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
 					<button
 						type="button"
 						onclick={toggleMobileMenu}
-						class="rounded-md p-2 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
+						class="shrink-0 rounded-md p-2 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
 						aria-label={m['orgAdmin.layout.toggleMenu']()}
 						aria-expanded={mobileMenuOpen}
 					>
 						<Menu class="h-5 w-5" />
 					</button>
 
-					<h1 class="text-xl font-semibold">
+					<h1 class="min-w-0 truncate text-base font-semibold sm:text-xl">
 						{data.organization.name}
 						<span class="ml-2 text-sm font-normal text-muted-foreground"
 							>{m['orgAdmin.layout.adminBadge']()}</span
@@ -107,7 +107,7 @@
 				</div>
 
 				<!-- Right: Role Badge -->
-				<div class="flex items-center gap-2">
+				<div class="flex shrink-0 items-center gap-2">
 					{#if data.isOwner}
 						<span class="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
 							Owner
