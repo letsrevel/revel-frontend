@@ -198,14 +198,14 @@
 
 <div class="space-y-6">
 	<!-- Header -->
-	<div class="flex items-center justify-between">
-		<div>
+	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+		<div class="min-w-0">
 			<h1 class="text-3xl font-bold">{m['orgAdminTokensPage.title']()}</h1>
 			<p class="text-muted-foreground">
 				{m['orgAdminTokensPage.subtitle']()}
 			</p>
 		</div>
-		<Button onclick={() => (isCreateModalOpen = true)}>
+		<Button onclick={() => (isCreateModalOpen = true)} class="w-full sm:w-auto">
 			<Plus class="mr-2 h-4 w-4" aria-hidden="true" />
 			{m['orgAdminTokensPage.createButton']()}
 		</Button>
