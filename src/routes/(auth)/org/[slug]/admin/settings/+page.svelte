@@ -112,7 +112,7 @@
 					slug: data.organization.slug
 				},
 				body: {
-					contact_email: newEmail.trim()
+					email: newEmail.trim()
 				}
 			});
 
@@ -545,6 +545,7 @@
 		stripeChargesEnabled={data.organization.stripe_charges_enabled}
 		stripeDetailsSubmitted={data.organization.stripe_details_submitted}
 		stripeAccountId={data.organization.stripe_account_id ?? null}
+		stripeAccountEmail={data.organization.stripe_account_email ?? null}
 		accessToken={accessToken || ''}
 	/>
 

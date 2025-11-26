@@ -3744,5 +3744,17 @@
 	"orgVerifyContactEmail.linkExpired": "The verification link may have expired or is invalid.",
 	"orgVerifyContactEmail.goToSettings": "Go to Organization Settings",
 	"orgVerifyContactEmail.goToDashboard": "Go to Dashboard",
-	"orgVerifyContactEmail.backToLogin": "Back to Login"
+	"orgVerifyContactEmail.backToLogin": "Back to Login",
+	"stripeConnectModal": {
+		"title": "Connect with Stripe",
+		"description": "To accept payments through Stripe, we need the official email address your organization uses for business communications. This will be used to create or link your Stripe account.",
+		"emailLabel": "Official Business Email",
+		"emailPlaceholder": "organization@example.com",
+		"emailHelp": "This email will be used to create your Stripe account and receive important payment notifications.",
+		"closeButton": "Close",
+		"cancelButton": "Cancel",
+		"confirmButton": "Connect to Stripe",
+		"connectingButton": "Connecting...",
+		"additionalInfo": "If your organization already has a Stripe account setup in progress, we'll use this email to continue where you left off."
+	}
 }

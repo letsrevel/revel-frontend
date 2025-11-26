@@ -3744,5 +3744,17 @@
 	"orgVerifyContactEmail.linkExpired": "Il link di verifica potrebbe essere scaduto o non valido.",
 	"orgVerifyContactEmail.goToSettings": "Vai alle Impostazioni dell'Organizzazione",
 	"orgVerifyContactEmail.goToDashboard": "Vai alla Dashboard",
-	"orgVerifyContactEmail.backToLogin": "Torna al Login"
+	"orgVerifyContactEmail.backToLogin": "Torna al Login",
+	"stripeConnectModal": {
+		"title": "Connetti con Stripe",
+		"description": "Per accettare pagamenti tramite Stripe, abbiamo bisogno dell'indirizzo email ufficiale che la tua organizzazione utilizza per le comunicazioni aziendali. Questo verrà utilizzato per creare o collegare il tuo account Stripe.",
+		"emailLabel": "Email Aziendale Ufficiale",
+		"emailPlaceholder": "organizzazione@esempio.it",
+		"emailHelp": "Questa email verrà utilizzata per creare il tuo account Stripe e ricevere importanti notifiche di pagamento.",
+		"closeButton": "Chiudi",
+		"cancelButton": "Annulla",
+		"confirmButton": "Connetti a Stripe",
+		"connectingButton": "Connessione...",
+		"additionalInfo": "Se la tua organizzazione ha già un account Stripe in corso di configurazione, useremo questa email per continuare da dove hai lasciato."
+	}
 }

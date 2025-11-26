@@ -17,12 +17,14 @@
 		organizationadminStripeConnect,
 		organizationadminStripeAccountVerify
 	} from '$lib/api/generated/sdk.gen';
+	import StripeConnectModal from './StripeConnectModal.svelte';
 
 	interface Props {
 		organizationSlug: string;
 		stripeChargesEnabled: boolean;
 		stripeDetailsSubmitted: boolean;
 		stripeAccountId: string | null;
+		stripeAccountEmail: string | null;
 		accessToken: string;
 	}
 
@@ -31,6 +33,7 @@
 		stripeChargesEnabled,
 		stripeDetailsSubmitted,
 		stripeAccountId,
+		stripeAccountEmail,
 		accessToken
 	}: Props = $props();
 
@@ -40,6 +43,10 @@
 	// Check if user just returned from Stripe onboarding
 	let justConnected = $state(false);
 	let mounted = $state(false);
+
+	// Modal state
+	let showModal = $state(false);
+	let modalError = $state<string | null>(null);
 
 	onMount(() => {
 		mounted = true;
@@ -82,14 +89,19 @@
 	// Mutation to get Stripe onboarding link - only create on client
 	const connectMutation = browser
 		? createMutation(() => ({
-				mutationFn: async () => {
+				mutationFn: async (email: string) => {
 					const response = await organizationadminStripeConnect({
 						path: { slug: organizationSlug },
-						headers: { Authorization: `Bearer ${accessToken}` }
+						headers: { Authorization: `Bearer ${accessToken}` },
+						body: { email }
 					});
 
 					if (response.error) {
-						throw new Error('Failed to create Stripe Connect link');
+						const errorMsg =
+							typeof response.error === 'object' && response.error && 'detail' in response.error
+								? String(response.error.detail)
+								: 'Failed to create Stripe Connect link';
+						throw new Error(errorMsg);
 					}
 
 					return response.data!;
@@ -97,13 +109,29 @@
 				onSuccess: (data) => {
 					// Redirect to Stripe onboarding
 					window.location.href = data.onboarding_url;
+				},
+				onError: (error) => {
+					modalError = error.message;
 				}
 			}))
 		: null;
 
-	// Handle connect button click
+	// Handle connect button click - open modal
 	function handleConnect() {
-		connectMutation?.mutate();
+		showModal = true;
+		modalError = null;
+	}
+
+	// Handle modal confirm - call mutation with email
+	function handleModalConfirm(email: string) {
+		modalError = null;
+		connectMutation?.mutate(email);
+	}
+
+	// Handle modal cancel
+	function handleModalCancel() {
+		showModal = false;
+		modalError = null;
 	}
 
 	// Handle verify refetch
@@ -138,10 +166,11 @@
 		}
 
 		if (chargesEnabled && detailsSubmitted) {
+			const emailMsg = stripeAccountEmail ? ` Connected with: ${stripeAccountEmail}` : '';
 			return {
 				type: 'fully-connected',
 				title: 'Stripe Connected',
-				message: 'Your Stripe account is fully set up and ready to accept payments.',
+				message: `Your Stripe account is fully set up and ready to accept payments.${emailMsg}`,
 				color: 'green'
 			};
 		}
@@ -425,3 +454,13 @@
 		</p>
 	</div>
 </section>
+
+<!-- Stripe Connect Modal -->
+<StripeConnectModal
+	bind:show={showModal}
+	initialEmail={stripeAccountEmail || ''}
+	isLoading={connectMutation?.isPending || false}
+	error={modalError}
+	onConfirm={handleModalConfirm}
+	onCancel={handleModalCancel}
+/>
