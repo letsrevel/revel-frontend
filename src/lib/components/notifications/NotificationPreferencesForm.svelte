@@ -117,7 +117,6 @@
 	);
 	let digestFrequency = $state<string>(preferences?.digest_frequency ?? 'immediate');
 	let digestSendTime = $state<string>(preferences?.digest_send_time ?? '09:00');
-	let attendeeListVisibility = $state<string>(preferences?.show_me_on_attendee_list ?? 'never');
 	let notificationTypeSettings = $state<Record<string, NotificationTypeSettings>>(
 		preferences?.notification_type_settings ?? {}
 	);
@@ -131,7 +130,6 @@
 			enabledChannels = preferences.enabled_channels ?? ['in_app', 'email'];
 			digestFrequency = preferences.digest_frequency ?? 'immediate';
 			digestSendTime = preferences.digest_send_time ?? '09:00';
-			attendeeListVisibility = preferences.show_me_on_attendee_list ?? 'never';
 			notificationTypeSettings = preferences.notification_type_settings ?? {};
 		}
 	});
@@ -156,7 +154,6 @@
 		const defaultEnabledChannels = ['in_app', 'email'];
 		const defaultDigestFrequency = 'immediate';
 		const defaultDigestSendTime = '09:00';
-		const defaultAttendeeListVisibility = 'never';
 		const defaultNotificationTypeSettings = {};
 
 		// Compare against preferences if available, otherwise against defaults
@@ -165,8 +162,6 @@
 		const refEnabledChannels = preferences?.enabled_channels ?? defaultEnabledChannels;
 		const refDigestFrequency = preferences?.digest_frequency ?? defaultDigestFrequency;
 		const refDigestSendTime = preferences?.digest_send_time ?? defaultDigestSendTime;
-		const refAttendeeListVisibility =
-			preferences?.show_me_on_attendee_list ?? defaultAttendeeListVisibility;
 		const refNotificationTypeSettings =
 			preferences?.notification_type_settings ?? defaultNotificationTypeSettings;
 
@@ -177,7 +172,6 @@
 				JSON.stringify([...refEnabledChannels].sort()) ||
 			digestFrequency !== refDigestFrequency ||
 			digestSendTime !== refDigestSendTime ||
-			attendeeListVisibility !== refAttendeeListVisibility ||
 			JSON.stringify(notificationTypeSettings) !== JSON.stringify(refNotificationTypeSettings)
 		);
 	});
@@ -205,7 +199,6 @@
 			enabled_channels?: Array<'in_app' | 'email' | 'telegram'>;
 			digest_frequency?: string;
 			digest_send_time?: string;
-			show_me_on_attendee_list?: string;
 			notification_type_settings?: Record<string, NotificationTypeSettings>;
 		}) => {
 			// In unsubscribe mode, send all fields explicitly (even false values)
@@ -219,7 +212,6 @@
 				payload.enabled_channels = data.enabled_channels ?? [];
 				payload.digest_frequency = data.digest_frequency ?? 'immediate';
 				payload.digest_send_time = data.digest_send_time ?? '09:00';
-				payload.show_me_on_attendee_list = data.show_me_on_attendee_list ?? 'never';
 				payload.notification_type_settings = data.notification_type_settings ?? {};
 			} else {
 				// Only send changed fields in authenticated mode
@@ -237,9 +229,6 @@
 				}
 				if (data.digest_send_time !== undefined) {
 					payload.digest_send_time = data.digest_send_time;
-				}
-				if (data.show_me_on_attendee_list !== undefined) {
-					payload.show_me_on_attendee_list = data.show_me_on_attendee_list;
 				}
 				if (data.notification_type_settings !== undefined) {
 					payload.notification_type_settings = data.notification_type_settings;
@@ -318,7 +307,6 @@
 			enabled_channels: enabledChannels,
 			digest_frequency: digestFrequency,
 			digest_send_time: showTimePicker ? digestSendTime : undefined,
-			show_me_on_attendee_list: attendeeListVisibility,
 			notification_type_settings:
 				Object.keys(notificationTypeSettings).length > 0 ? notificationTypeSettings : undefined
 		});
@@ -332,7 +320,6 @@
 		enabledChannels = preferences?.enabled_channels ?? ['in_app', 'email'];
 		digestFrequency = preferences?.digest_frequency ?? 'immediate';
 		digestSendTime = preferences?.digest_send_time ?? '09:00';
-		attendeeListVisibility = preferences?.show_me_on_attendee_list ?? 'never';
 		notificationTypeSettings = preferences?.notification_type_settings ?? {};
 	}
 
@@ -401,61 +388,6 @@
 </script>
 
 <div class="space-y-6">
-	{#if !isUnsubscribeMode}
-		<!-- Privacy Settings Section -->
-		<Card.Root>
-			<Card.Header>
-				<Card.Title class="flex items-center gap-2">
-					<Eye class="h-5 w-5" aria-hidden="true" />
-					{m['notificationPreferences.privacySettings']()}
-				</Card.Title>
-				<Card.Description>{m['accountSettingsPage.privacyDescription']()}</Card.Description>
-			</Card.Header>
-			<Card.Content>
-				<div class="space-y-3">
-					<Label>{m['notificationPreferences.showMeOnAttendeeList']()}</Label>
-					<RadioGroup.Root
-						value={attendeeListVisibility}
-						onValueChange={(value) => {
-							if (value) {
-								attendeeListVisibility = value;
-							}
-						}}
-						disabled={isFormDisabled}
-					>
-						<div class="flex items-center space-x-2">
-							<RadioGroup.Item value="always" id="vis-always" />
-							<Label for="vis-always" class="font-normal"
-								>{m['notificationPreferences.visibilityAlways']()}</Label
-							>
-						</div>
-						<div class="flex items-center space-x-2">
-							<RadioGroup.Item value="never" id="vis-never" />
-							<Label for="vis-never" class="font-normal"
-								>{m['notificationPreferences.visibilityNever']()}</Label
-							>
-						</div>
-						<div class="flex items-center space-x-2">
-							<RadioGroup.Item value="to_members" id="vis-members" />
-							<Label for="vis-members" class="font-normal"
-								>{m['notificationPreferences.visibilityToMembers']()}</Label
-							>
-						</div>
-						<div class="flex items-center space-x-2">
-							<RadioGroup.Item value="to_invitees" id="vis-invitees" />
-							<Label for="vis-invitees" class="font-normal"
-								>{m['notificationPreferences.visibilityToInvitees']()}</Label
-							>
-						</div>
-					</RadioGroup.Root>
-					<p class="text-xs text-muted-foreground">
-						{m['notificationPreferences.visibilityDescription']()}
-					</p>
-				</div>
-			</Card.Content>
-		</Card.Root>
-	{/if}
-
 	<!-- Master Controls Section -->
 	<Card.Root>
 		<Card.Header>

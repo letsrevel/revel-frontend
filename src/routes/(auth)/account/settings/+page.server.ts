@@ -2,7 +2,7 @@ import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import {
 	notificationpreferenceGetPreferences,
-	notificationpreferenceUpdatePreferences
+	userpreferencesGetGeneralPreferences
 } from '$lib/api/generated';
 
 export const load: PageServerLoad = async ({ cookies }) => {
@@ -10,26 +10,36 @@ export const load: PageServerLoad = async ({ cookies }) => {
 
 	if (!accessToken) {
 		return {
-			preferences: null,
+			notificationPreferences: null,
+			generalPreferences: null,
 			accessToken: null
 		};
 	}
 
 	try {
-		const { data } = await notificationpreferenceGetPreferences({
-			headers: {
-				Authorization: `Bearer ${accessToken}`
-			}
-		});
+		const [notificationData, generalData] = await Promise.all([
+			notificationpreferenceGetPreferences({
+				headers: {
+					Authorization: `Bearer ${accessToken}`
+				}
+			}),
+			userpreferencesGetGeneralPreferences({
+				headers: {
+					Authorization: `Bearer ${accessToken}`
+				}
+			})
+		]);
 
 		return {
-			preferences: data,
+			notificationPreferences: notificationData.data,
+			generalPreferences: generalData.data,
 			accessToken
 		};
 	} catch (error) {
 		console.error('Failed to fetch preferences:', error);
 		return {
-			preferences: null,
+			notificationPreferences: null,
+			generalPreferences: null,
 			accessToken
 		};
 	}
