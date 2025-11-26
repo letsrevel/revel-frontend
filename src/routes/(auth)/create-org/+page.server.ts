@@ -55,7 +55,11 @@ export const actions: Actions = {
 
 		try {
 			// Create organization via API
-			const { data: orgData, error, response } = await organizationCreateOrganization({
+			const {
+				data: orgData,
+				error,
+				response
+			} = await organizationCreateOrganization({
 				headers: {
 					Authorization: `Bearer ${accessToken}`
 				},
@@ -88,7 +92,9 @@ export const actions: Actions = {
 
 				if (errorObj.status === 403) {
 					return fail(403, {
-						errors: { form: errorObj.detail || 'Please verify your email before creating an organization' },
+						errors: {
+							form: errorObj.detail || 'Please verify your email before creating an organization'
+						},
 						...data
 					});
 				}

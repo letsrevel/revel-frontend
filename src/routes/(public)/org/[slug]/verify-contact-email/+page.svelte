@@ -25,7 +25,10 @@
 		<div class="flex justify-center">
 			{#if data.isVerifying}
 				<div class="rounded-full bg-blue-500/10 p-6">
-					<Loader2 class="h-12 w-12 animate-spin text-blue-600 dark:text-blue-400" aria-hidden="true" />
+					<Loader2
+						class="h-12 w-12 animate-spin text-blue-600 dark:text-blue-400"
+						aria-hidden="true"
+					/>
 				</div>
 			{:else if data.success}
 				<div class="rounded-full bg-green-500/10 p-6">
@@ -52,7 +55,9 @@
 					{m['orgVerifyContactEmail.success']()}
 				</h1>
 				<p class="text-muted-foreground">
-					{m['orgVerifyContactEmail.successDescription']({ organizationName: data.organizationName || 'Your organization' })}
+					{m['orgVerifyContactEmail.successDescription']({
+						organizationName: data.organizationName || 'Your organization'
+					})}
 				</p>
 			{:else}
 				<h1 class="text-3xl font-bold tracking-tight">

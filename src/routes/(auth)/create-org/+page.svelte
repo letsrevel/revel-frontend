@@ -25,9 +25,7 @@
 	// Check if user already owns an organization
 	let ownsOrganization = $derived.by(() => {
 		if (!permissions?.organization_permissions) return false;
-		return Object.values(permissions.organization_permissions).some(
-			(perms) => perms === 'owner'
-		);
+		return Object.values(permissions.organization_permissions).some((perms) => perms === 'owner');
 	});
 
 	// Form state - initialize with server data as fallback
@@ -97,15 +95,21 @@
 			{m['orgCreate.subtitle']()}
 		</p>
 		<p class="mt-2 text-sm text-muted-foreground">
-			You'll be able to add more details, upload images, and customize your organization in the settings page after creation.
+			You'll be able to add more details, upload images, and customize your organization in the
+			settings page after creation.
 		</p>
 	</div>
 
 	<!-- Check if user already owns an organization -->
 	{#if ownsOrganization}
-		<div class="rounded-lg border border-yellow-200 bg-yellow-50 p-6 dark:border-yellow-900 dark:bg-yellow-950">
+		<div
+			class="rounded-lg border border-yellow-200 bg-yellow-50 p-6 dark:border-yellow-900 dark:bg-yellow-950"
+		>
 			<div class="flex gap-3">
-				<AlertCircle class="h-5 w-5 flex-shrink-0 text-yellow-600 dark:text-yellow-400" aria-hidden="true" />
+				<AlertCircle
+					class="h-5 w-5 flex-shrink-0 text-yellow-600 dark:text-yellow-400"
+					aria-hidden="true"
+				/>
 				<div>
 					<h3 class="font-semibold text-yellow-900 dark:text-yellow-100">
 						{m['orgCreate.alreadyOwner']()}
@@ -128,7 +132,10 @@
 		<!-- Email not verified warning -->
 		<div class="rounded-lg border border-red-200 bg-red-50 p-6 dark:border-red-900 dark:bg-red-950">
 			<div class="flex gap-3">
-				<AlertCircle class="h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400" aria-hidden="true" />
+				<AlertCircle
+					class="h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400"
+					aria-hidden="true"
+				/>
 				<div>
 					<h3 class="font-semibold text-red-900 dark:text-red-100">
 						{m['orgCreate.emailNotVerified']()}
@@ -199,7 +206,9 @@
 						type="email"
 						bind:value={contactEmail}
 						aria-invalid={errors.contact_email ? 'true' : undefined}
-						aria-describedby={errors.contact_email ? 'contact-email-error contact-email-hint' : 'contact-email-hint'}
+						aria-describedby={errors.contact_email
+							? 'contact-email-error contact-email-hint'
+							: 'contact-email-hint'}
 						placeholder={m['orgCreate.form.contactEmailPlaceholder']()}
 						required
 					/>
@@ -212,14 +221,20 @@
 					<!-- Info about email verification -->
 					{#if contactEmailChanged}
 						<div class="flex gap-2 rounded-md bg-blue-50 p-3 dark:bg-blue-950">
-							<Mail class="h-4 w-4 flex-shrink-0 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+							<Mail
+								class="h-4 w-4 flex-shrink-0 text-blue-600 dark:text-blue-400"
+								aria-hidden="true"
+							/>
 							<p id="contact-email-hint" class="text-xs text-blue-800 dark:text-blue-200">
 								{m['orgCreate.form.contactEmailVerificationNeeded']()}
 							</p>
 						</div>
 					{:else}
 						<div class="flex gap-2 rounded-md bg-green-50 p-3 dark:bg-green-950">
-							<CheckCircle class="h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" aria-hidden="true" />
+							<CheckCircle
+								class="h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400"
+								aria-hidden="true"
+							/>
 							<p id="contact-email-hint" class="text-xs text-green-800 dark:text-green-200">
 								{m['orgCreate.form.contactEmailAutoVerified']()}
 							</p>
@@ -311,12 +326,7 @@
 					>
 						{m['common.actions_cancel']()}
 					</Button>
-					<Button
-						type="button"
-						onclick={showConfirmation}
-						disabled={isSubmitting}
-						class="flex-1"
-					>
+					<Button type="button" onclick={showConfirmation} disabled={isSubmitting} class="flex-1">
 						{#if isSubmitting}
 							<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 							{m['orgCreate.form.creating']()}
@@ -353,19 +363,10 @@
 				{m['orgCreate.confirm.warning']()}
 			</p>
 			<div class="flex gap-3">
-				<Button
-					type="button"
-					variant="outline"
-					onclick={cancelConfirm}
-					class="flex-1"
-				>
+				<Button type="button" variant="outline" onclick={cancelConfirm} class="flex-1">
 					{m['common.actions_cancel']()}
 				</Button>
-				<Button
-					type="button"
-					onclick={confirmCreate}
-					class="flex-1"
-				>
+				<Button type="button" onclick={confirmCreate} class="flex-1">
 					{m['orgCreate.confirm.create']()}
 				</Button>
 			</div>

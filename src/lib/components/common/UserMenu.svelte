@@ -3,7 +3,16 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { dashboardDashboardOrganizations } from '$lib/api/generated/sdk.gen';
-	import { User, Settings, LogOut, Building2, Shield, Lock, LayoutDashboard, PlusCircle } from 'lucide-svelte';
+	import {
+		User,
+		Settings,
+		LogOut,
+		Building2,
+		Shield,
+		Lock,
+		LayoutDashboard,
+		PlusCircle
+	} from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
@@ -72,9 +81,7 @@
 	// Helper to check if user owns any organization
 	function ownsOrganization(): boolean {
 		if (!permissions?.organization_permissions) return false;
-		return Object.values(permissions.organization_permissions).some(
-			(perms) => perms === 'owner'
-		);
+		return Object.values(permissions.organization_permissions).some((perms) => perms === 'owner');
 	}
 
 	// Get user initials for avatar

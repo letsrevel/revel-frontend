@@ -1,0 +1,25 @@
+* After logging in it as Alice Owner it is not immediately apparent to me how to add a new event
+* The breadcrumbs on https://demo.letsrevel.io/org/<ORG_NAME>/admin looks a bit like a menu to me
+* [https://demo.letsrevel.io/org/>ORG_NAME>/admin/events/new] Hovering the visibility and event type options in dark mode makes the subtitle of items barely readable
+ * [https://demo.letsrevel.io/org/>ORG_NAME>/admin/events/new] The implications of different combination of visibility type and event type options are not clear to me; e.g. visibility == 'Staff Only' && event_type=='Public'
+ * [https://demo.letsrevel.io/org/>ORG_NAME>/admin/events/new] As a german speaker I expect the date inputs to use dd/mm/yyyy
+ * [https://demo.letsrevel.io/org/<ORG_NAME>/admin/resources] When adding a resource I am missing the option to make it only visible to attendees of a certain event
+ * [https://demo.letsrevel.io/org/revel-events-collective/admin/events/<EVENT_ID>/edit] I am presented with the infromation that thw option 'Requires Ticket' '⚠️ This setting cannot be changed after the event is created'. I would have liked to know that when originally creating the event.
+ * [https://demo.letsrevel.io/org/revel-events-collective/admin/events/<EVENT_ID>/edit] I set up an event with 'Requires Ticket' /not/ selected. When I edit the event and click through the wizard setps to step 3 I am suddenly presented with 'Ticketing Configuration'
+ * [https://demo.letsrevel.io/org/<ORG_NAME>/admin/events] On the event admin page I expect the same filtering and sorting options as in the events section on the public organization page
+ [https://demo.letsrevel.io/dashboard] When I click on an event on the dashboard (or anywhere else) I see a border added to the event card and thereby understand it has been selected, but since i have to wait for about 1.5s until the event page opens I am unsure whether clicking will actually open the event (or just select in some way as the border suggests)
+
+
+Responses:
+
+1. Issue #4:
+Better UI explanations. The field are distinct because they serve two distinct purposes:
+- An event might be of type "members only" but visible to "public".
+- This means that everyone can SEE the event, but only members can attend -> a CTA "join organization".
+- "type" determines who can attend; Visibility who can view (in search, listing or details.)
+
+2. Issue #1:
+- let's add the CTA create event button next to "browse events" button for owners or staff with event creation permissions.
+
+3. Issue #10:
+- let's go with a skeleton loader.

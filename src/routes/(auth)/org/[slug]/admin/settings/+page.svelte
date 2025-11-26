@@ -117,9 +117,10 @@
 			});
 
 			if (error || !orgData) {
-				emailUpdateError = typeof error === 'object' && error && 'detail' in error
-					? (error as { detail?: string }).detail || 'Failed to update email'
-					: 'Failed to update email';
+				emailUpdateError =
+					typeof error === 'object' && error && 'detail' in error
+						? (error as { detail?: string }).detail || 'Failed to update email'
+						: 'Failed to update email';
 				return;
 			}
 
@@ -842,7 +843,9 @@
 					{m['orgAdmin.settings.membership.contactEmailLabel']()}
 				</label>
 				<div class="mt-1 flex items-center gap-2">
-					<div class="flex-1 rounded-md border-2 border-gray-300 bg-gray-50 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900">
+					<div
+						class="flex-1 rounded-md border-2 border-gray-300 bg-gray-50 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900"
+					>
 						{data.organization.contact_email || 'No contact email set'}
 					</div>
 					<button
@@ -903,15 +906,6 @@
 	</form>
 </div>
 
-<style>
-	/* Ensure consistent focus states for accessibility */
-	:global(button:focus-visible),
-	:global(a:focus-visible) {
-		outline: 2px solid hsl(var(--ring));
-		outline-offset: 2px;
-	}
-</style>
-
 <!-- Email Change Modal -->
 {#if showEmailModal}
 	<div
@@ -927,9 +921,7 @@
 	>
 		<div class="w-full max-w-md rounded-lg bg-background p-6 shadow-xl">
 			<div class="mb-4 flex items-start justify-between">
-				<h3 id="email-modal-title" class="text-lg font-semibold">
-					Change Contact Email
-				</h3>
+				<h3 id="email-modal-title" class="text-lg font-semibold">Change Contact Email</h3>
 				<button
 					type="button"
 					onclick={() => (showEmailModal = false)}
@@ -946,13 +938,17 @@
 				<div class="space-y-4">
 					<div class="rounded-md bg-green-50 p-4 dark:bg-green-950">
 						<div class="flex gap-3">
-							<Check class="h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400" aria-hidden="true" />
+							<Check
+								class="h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400"
+								aria-hidden="true"
+							/>
 							<div>
 								<h4 class="font-medium text-green-900 dark:text-green-100">
 									Verification Email Sent
 								</h4>
 								<p class="mt-1 text-sm text-green-800 dark:text-green-200">
-									We've sent a verification link to <strong>{newEmail}</strong>. Please check your inbox and click the link to verify your new contact email.
+									We've sent a verification link to <strong>{newEmail}</strong>. Please check your
+									inbox and click the link to verify your new contact email.
 								</p>
 							</div>
 						</div>
@@ -983,9 +979,7 @@
 				<!-- Input form -->
 				<div class="space-y-4">
 					<div>
-						<label for="new-email" class="block text-sm font-medium">
-							New Contact Email
-						</label>
+						<label for="new-email" class="block text-sm font-medium"> New Contact Email </label>
 						<input
 							id="new-email"
 							type="email"
@@ -1002,7 +996,10 @@
 					{#if emailUpdateError}
 						<div class="rounded-md bg-red-50 p-3 dark:bg-red-950">
 							<div class="flex gap-2">
-								<AlertCircle class="h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400" aria-hidden="true" />
+								<AlertCircle
+									class="h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400"
+									aria-hidden="true"
+								/>
 								<p class="text-sm text-red-800 dark:text-red-200">
 									{emailUpdateError}
 								</p>
@@ -1029,7 +1026,10 @@
 							class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
 						>
 							{#if isUpdatingEmail}
-								<div class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true"></div>
+								<div
+									class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+									aria-hidden="true"
+								></div>
 								Updating...
 							{:else}
 								Update Email
@@ -1041,3 +1041,12 @@
 		</div>
 	</div>
 {/if}
+
+<style>
+	/* Ensure consistent focus states for accessibility */
+	:global(button:focus-visible),
+	:global(a:focus-visible) {
+		outline: 2px solid hsl(var(--ring));
+		outline-offset: 2px;
+	}
+</style>

@@ -314,9 +314,7 @@
 	// Helper to check if user owns any organization
 	function ownsOrganization(): boolean {
 		if (!permissions?.organization_permissions) return false;
-		return Object.values(permissions.organization_permissions).some(
-			(perms) => perms === 'owner'
-		);
+		return Object.values(permissions.organization_permissions).some((perms) => perms === 'owner');
 	}
 
 	// Status badge styling (matching MemberCard.svelte)

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const fs = require('fs');
 const path = require('path');
 
@@ -21,8 +22,7 @@ const translations = {
 		'orgCreate.pageTitle': 'Create Organization',
 		'orgCreate.pageDescription': 'Create your organization to start hosting events',
 		'orgCreate.title': 'Create Your Organization',
-		'orgCreate.subtitle':
-			'Start your journey as an event organizer by creating your organization.',
+		'orgCreate.subtitle': 'Start your journey as an event organizer by creating your organization.',
 
 		// Form Fields
 		'orgCreate.form.name': 'Organization Name',
@@ -91,8 +91,7 @@ const translations = {
 		'learnMore.startOrganizingDescription':
 			'Erstelle deine Organisation und beginne, großartige Veranstaltungen für deine Community zu veranstalten.',
 		'learnMore.startOrganizing': 'Jetzt organisieren',
-		'learnMore.startOrganizingNote':
-			'Kostenlos starten. Keine Kreditkarte erforderlich.',
+		'learnMore.startOrganizingNote': 'Kostenlos starten. Keine Kreditkarte erforderlich.',
 
 		// Organization Create Page
 		'orgCreate.pageTitle': 'Organisation erstellen',
@@ -176,8 +175,7 @@ const translations = {
 
 		// Organization Create Page
 		'orgCreate.pageTitle': 'Crea Organizzazione',
-		'orgCreate.pageDescription':
-			'Crea la tua organizzazione per iniziare a ospitare eventi',
+		'orgCreate.pageDescription': 'Crea la tua organizzazione per iniziare a ospitare eventi',
 		'orgCreate.title': 'Crea la Tua Organizzazione',
 		'orgCreate.subtitle':
 			'Inizia il tuo percorso come organizzatore di eventi creando la tua organizzazione.',
@@ -185,8 +183,7 @@ const translations = {
 		// Form Fields
 		'orgCreate.form.name': 'Nome Organizzazione',
 		'orgCreate.form.namePlaceholder': 'Inserisci il nome della tua organizzazione',
-		'orgCreate.form.nameHint':
-			'Questo nome sarà visibile a tutti gli utenti che cercano eventi.',
+		'orgCreate.form.nameHint': 'Questo nome sarà visibile a tutti gli utenti che cercano eventi.',
 
 		'orgCreate.form.contactEmail': 'Email di Contatto',
 		'orgCreate.form.contactEmailPlaceholder': 'contatto@esempio.it',
@@ -203,24 +200,23 @@ const translations = {
 		// Actions
 		'orgCreate.form.create': 'Crea Organizzazione',
 		'orgCreate.form.creating': 'Creazione in corso...',
-		'orgCreate.form.error': 'Errore nella creazione dell\'organizzazione',
+		'orgCreate.form.error': "Errore nella creazione dell'organizzazione",
 
 		// Warnings
-		'orgCreate.alreadyOwner': 'Possiedi già un\'organizzazione',
+		'orgCreate.alreadyOwner': "Possiedi già un'organizzazione",
 		'orgCreate.alreadyOwnerDescription':
-			'Ogni utente può possedere solo un\'organizzazione. Puoi gestire la tua organizzazione esistente dalla dashboard.',
+			"Ogni utente può possedere solo un'organizzazione. Puoi gestire la tua organizzazione esistente dalla dashboard.",
 		'orgCreate.backToDashboard': 'Torna alla Dashboard',
 
 		'orgCreate.emailNotVerified': 'Verifica email richiesta',
 		'orgCreate.emailNotVerifiedDescription':
-			'Devi verificare il tuo indirizzo email prima di creare un\'organizzazione. Controlla la tua casella di posta per l\'email di verifica.',
+			"Devi verificare il tuo indirizzo email prima di creare un'organizzazione. Controlla la tua casella di posta per l'email di verifica.",
 		'orgCreate.verifyEmail': 'Vai alle Impostazioni',
 
 		// Contact Email Verification Page
 		'orgVerifyContactEmail.successTitle': 'Email Verificata',
 		'orgVerifyContactEmail.failureTitle': 'Verifica Fallita',
-		'orgVerifyContactEmail.pageDescription':
-			'Verifica dell\'email di contatto dell\'organizzazione',
+		'orgVerifyContactEmail.pageDescription': "Verifica dell'email di contatto dell'organizzazione",
 
 		'orgVerifyContactEmail.verifying': 'Verifica email in corso...',
 		'orgVerifyContactEmail.verifyingDescription':
@@ -228,7 +224,7 @@ const translations = {
 
 		'orgVerifyContactEmail.success': 'Email di Contatto Verificata!',
 		'orgVerifyContactEmail.successDescription':
-			'L\'email di contatto per {organizationName} è stata verificata con successo.',
+			"L'email di contatto per {organizationName} è stata verificata con successo.",
 
 		'orgVerifyContactEmail.failure': 'Verifica Fallita',
 		'orgVerifyContactEmail.failureDescription':
@@ -236,7 +232,7 @@ const translations = {
 
 		'orgVerifyContactEmail.linkExpired':
 			'Il link di verifica potrebbe essere scaduto o non valido.',
-		'orgVerifyContactEmail.goToSettings': 'Vai alle Impostazioni dell\'Organizzazione',
+		'orgVerifyContactEmail.goToSettings': "Vai alle Impostazioni dell'Organizzazione",
 		'orgVerifyContactEmail.goToDashboard': 'Vai alla Dashboard',
 		'orgVerifyContactEmail.backToLogin': 'Torna al Login'
 	}
