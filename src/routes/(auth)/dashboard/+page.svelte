@@ -26,7 +26,8 @@
 		CheckCircle2,
 		Check,
 		Award,
-		Crown
+		Crown,
+		PlusCircle
 	} from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { MembershipStatus } from '$lib/api/generated/types.gen';
@@ -310,6 +311,14 @@
 		return typeof orgPerms === 'object' && orgPerms !== null;
 	}
 
+	// Helper to check if user owns any organization
+	function ownsOrganization(): boolean {
+		if (!permissions?.organization_permissions) return false;
+		return Object.values(permissions.organization_permissions).some(
+			(perms) => perms === 'owner'
+		);
+	}
+
 	// Status badge styling (matching MemberCard.svelte)
 	const statusStyles: Record<MembershipStatus, string> = {
 		active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
@@ -406,6 +415,15 @@
 				<Shield class="h-4 w-4" aria-hidden="true" />
 				<span>{m['dashboard.adminButton']()}</span>
 			</button>
+		{:else if !ownsOrganization()}
+			<!-- User doesn't own an organization - show "Create Organization" CTA -->
+			<a
+				href="/create-org"
+				class="inline-flex items-center gap-2 rounded-lg border bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+			>
+				<PlusCircle class="h-4 w-4" aria-hidden="true" />
+				<span>{m['dashboard.createOrganizationButton']()}</span>
+			</a>
 		{/if}
 	</div>
 

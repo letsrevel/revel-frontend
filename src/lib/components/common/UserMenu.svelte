@@ -3,7 +3,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { dashboardDashboardOrganizations } from '$lib/api/generated/sdk.gen';
-	import { User, Settings, LogOut, Building2, Shield, Lock, LayoutDashboard } from 'lucide-svelte';
+	import { User, Settings, LogOut, Building2, Shield, Lock, LayoutDashboard, PlusCircle } from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
@@ -67,6 +67,14 @@
 		}
 
 		return false;
+	}
+
+	// Helper to check if user owns any organization
+	function ownsOrganization(): boolean {
+		if (!permissions?.organization_permissions) return false;
+		return Object.values(permissions.organization_permissions).some(
+			(perms) => perms === 'owner'
+		);
 	}
 
 	// Get user initials for avatar
@@ -148,33 +156,47 @@
 		{/each}
 
 		<!-- Organizations Section (Mobile) -->
-		{#if userOrganizations.length > 0}
+		{#if userOrganizations.length > 0 || !ownsOrganization()}
 			<div class="space-y-2 border-t pt-4">
-				<div class="px-4 text-sm font-semibold text-muted-foreground">
-					{m['userMenu.myOrganizations']()}
-				</div>
-				{#each userOrganizations as org}
-					<div class="space-y-1">
-						<a
-							href="/org/{org.slug}"
-							class="flex items-center gap-3 rounded-md px-4 py-2 text-base transition-colors hover:bg-accent hover:text-accent-foreground"
-							onclick={handleItemClick}
-						>
-							<Building2 class="h-5 w-5" aria-hidden="true" />
-							<span class="flex-1 truncate">{org.name}</span>
-						</a>
-						{#if hasAdminPermissions(org.id)}
+				{#if userOrganizations.length > 0}
+					<div class="px-4 text-sm font-semibold text-muted-foreground">
+						{m['userMenu.myOrganizations']()}
+					</div>
+					{#each userOrganizations as org}
+						<div class="space-y-1">
 							<a
-								href="/org/{org.slug}/admin"
-								class="ml-12 flex items-center gap-2 rounded-md px-4 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+								href="/org/{org.slug}"
+								class="flex items-center gap-3 rounded-md px-4 py-2 text-base transition-colors hover:bg-accent hover:text-accent-foreground"
 								onclick={handleItemClick}
 							>
-								<Shield class="h-4 w-4" aria-hidden="true" />
-								<span>{m['userMenu.adminDashboard']()}</span>
+								<Building2 class="h-5 w-5" aria-hidden="true" />
+								<span class="flex-1 truncate">{org.name}</span>
 							</a>
-						{/if}
-					</div>
-				{/each}
+							{#if hasAdminPermissions(org.id)}
+								<a
+									href="/org/{org.slug}/admin"
+									class="ml-12 flex items-center gap-2 rounded-md px-4 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+									onclick={handleItemClick}
+								>
+									<Shield class="h-4 w-4" aria-hidden="true" />
+									<span>{m['userMenu.adminDashboard']()}</span>
+								</a>
+							{/if}
+						</div>
+					{/each}
+				{/if}
+
+				<!-- Create Organization Link (if user doesn't own one) -->
+				{#if !ownsOrganization()}
+					<a
+						href="/create-org"
+						class="flex items-center gap-3 rounded-md px-4 py-3 text-base transition-colors hover:bg-accent hover:text-accent-foreground"
+						onclick={handleItemClick}
+					>
+						<PlusCircle class="h-5 w-5" aria-hidden="true" />
+						<span>{m['userMenu.createOrganization']()}</span>
+					</a>
+				{/if}
 			</div>
 		{/if}
 
@@ -235,36 +257,51 @@
 				</div>
 
 				<!-- Organizations Section -->
-				{#if userOrganizations.length > 0}
+				{#if userOrganizations.length > 0 || !ownsOrganization()}
 					<div class="border-t">
 						<div class="p-1">
-							<div class="px-3 py-2 text-xs font-semibold text-muted-foreground">
-								{m['userMenu.myOrganizations']()}
-							</div>
-							{#each userOrganizations as org}
-								<div class="space-y-1">
-									<a
-										href="/org/{org.slug}"
-										class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-										onclick={handleItemClick}
-										role="menuitem"
-									>
-										<Building2 class="h-4 w-4" aria-hidden="true" />
-										<span class="flex-1 truncate">{org.name}</span>
-									</a>
-									{#if hasAdminPermissions(org.id)}
+							{#if userOrganizations.length > 0}
+								<div class="px-3 py-2 text-xs font-semibold text-muted-foreground">
+									{m['userMenu.myOrganizations']()}
+								</div>
+								{#each userOrganizations as org}
+									<div class="space-y-1">
 										<a
-											href="/org/{org.slug}/admin"
-											class="ml-7 flex items-center gap-2 rounded-sm px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+											href="/org/{org.slug}"
+											class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
 											onclick={handleItemClick}
 											role="menuitem"
 										>
-											<Shield class="h-3 w-3" aria-hidden="true" />
-											<span>{m['userMenu.adminDashboard']()}</span>
+											<Building2 class="h-4 w-4" aria-hidden="true" />
+											<span class="flex-1 truncate">{org.name}</span>
 										</a>
-									{/if}
-								</div>
-							{/each}
+										{#if hasAdminPermissions(org.id)}
+											<a
+												href="/org/{org.slug}/admin"
+												class="ml-7 flex items-center gap-2 rounded-sm px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+												onclick={handleItemClick}
+												role="menuitem"
+											>
+												<Shield class="h-3 w-3" aria-hidden="true" />
+												<span>{m['userMenu.adminDashboard']()}</span>
+											</a>
+										{/if}
+									</div>
+								{/each}
+							{/if}
+
+							<!-- Create Organization Link (if user doesn't own one) -->
+							{#if !ownsOrganization()}
+								<a
+									href="/create-org"
+									class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+									onclick={handleItemClick}
+									role="menuitem"
+								>
+									<PlusCircle class="h-4 w-4" aria-hidden="true" />
+									<span>{m['userMenu.createOrganization']()}</span>
+								</a>
+							{/if}
 						</div>
 					</div>
 				{/if}

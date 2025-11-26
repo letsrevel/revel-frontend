@@ -7,9 +7,10 @@
 	import ImageUploader from '$lib/components/forms/ImageUploader.svelte';
 	import StripeConnect from '$lib/components/organization/StripeConnect.svelte';
 	import type { CitySchema } from '$lib/api/generated';
-	import { Building2, AlertCircle, Check, Eye, Hash } from 'lucide-svelte';
+	import { Building2, AlertCircle, Check, Eye, Hash, Mail, X } from 'lucide-svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { getBackendUrl } from '$lib/config/api';
+	import { toast } from 'svelte-sonner';
 	import {
 		organizationadminUploadLogo,
 		organizationadminUploadCoverArt,
@@ -17,6 +18,7 @@
 		organizationadminDeleteCoverArt,
 		organizationadminAddTags,
 		organizationadminRemoveTags,
+		organizationadminUpdateContactEmail,
 		tagListTags
 	} from '$lib/api/generated/sdk.gen';
 
@@ -35,8 +37,14 @@
 	let selectedCity = $state<CitySchema | null>(data.organization.city || null);
 	let visibility = $state(data.organization.visibility || 'public');
 	let acceptNewMembers = $state(data.organization.accept_membership_requests || false);
-	let contactEmail = $state(data.organization.contact_email || '');
 	let isSubmitting = $state(false);
+
+	// Email change modal state
+	let showEmailModal = $state(false);
+	let newEmail = $state('');
+	let isUpdatingEmail = $state(false);
+	let emailUpdateError = $state<string | null>(null);
+	let emailSent = $state(false);
 
 	// Image upload state
 	let logoFile = $state<File | null>(null);
@@ -78,7 +86,6 @@
 		selectedCity = data.organization.city || null;
 		visibility = data.organization.visibility || 'public';
 		acceptNewMembers = data.organization.accept_membership_requests || false;
-		contactEmail = data.organization.contact_email || '';
 		tags = data.organization.tags || [];
 		initialTags = data.organization.tags || [];
 	});
@@ -86,6 +93,54 @@
 	// Handle city selection
 	function handleCitySelect(city: CitySchema | null) {
 		selectedCity = city;
+	}
+
+	// Update contact email
+	async function handleEmailUpdate() {
+		if (!accessToken || !newEmail.trim()) return;
+
+		isUpdatingEmail = true;
+		emailUpdateError = null;
+		emailSent = false;
+
+		try {
+			const { data: orgData, error } = await organizationadminUpdateContactEmail({
+				headers: {
+					Authorization: `Bearer ${accessToken}`
+				},
+				path: {
+					slug: data.organization.slug
+				},
+				body: {
+					contact_email: newEmail.trim()
+				}
+			});
+
+			if (error || !orgData) {
+				emailUpdateError = typeof error === 'object' && error && 'detail' in error
+					? (error as { detail?: string }).detail || 'Failed to update email'
+					: 'Failed to update email';
+				return;
+			}
+
+			// Check if email was already verified (same as user's email)
+			if (orgData.contact_email_verified) {
+				toast.success('Email updated successfully - no verification needed');
+				showEmailModal = false;
+				newEmail = '';
+				// Refresh page to show new email
+				window.location.reload();
+			} else {
+				// Verification email sent
+				emailSent = true;
+				toast.success('Verification email sent! Please check your inbox.');
+			}
+		} catch (err) {
+			console.error('[EMAIL UPDATE] Error:', err);
+			emailUpdateError = 'An unexpected error occurred';
+		} finally {
+			isUpdatingEmail = false;
+		}
 	}
 
 	// Upload logo
@@ -586,6 +641,7 @@
 					value={selectedCity}
 					onSelect={handleCitySelect}
 					label={m['orgAdmin.settings.profile.cityLabel']()}
+					description=""
 				/>
 				<input type="hidden" name="city_id" value={selectedCity?.id || ''} />
 			</div>
@@ -780,28 +836,37 @@
 				</p>
 			</div>
 
-			<!-- Contact Email -->
+			<!-- Contact Email (Read-only with Change Button) -->
 			<div>
-				<label for="contact_email" class="block text-sm font-medium">
+				<label class="block text-sm font-medium">
 					{m['orgAdmin.settings.membership.contactEmailLabel']()}
-					<span class="text-muted-foreground"
-						>{m['orgAdmin.settings.membership.contactEmailOptional']()}</span
-					>
 				</label>
-				<input
-					type="email"
-					id="contact_email"
-					name="contact_email"
-					bind:value={contactEmail}
-					placeholder={m['orgAdmin.settings.membership.contactEmailPlaceholder']()}
-					class="mt-1 flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-				/>
+				<div class="mt-1 flex items-center gap-2">
+					<div class="flex-1 rounded-md border-2 border-gray-300 bg-gray-50 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900">
+						{data.organization.contact_email || 'No contact email set'}
+					</div>
+					<button
+						type="button"
+						onclick={() => {
+							showEmailModal = true;
+							newEmail = data.organization.contact_email || '';
+							emailUpdateError = null;
+							emailSent = false;
+						}}
+						class="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+					>
+						<Mail class="h-4 w-4" aria-hidden="true" />
+						Change
+					</button>
+				</div>
 				{#if data.organization.contact_email_verified}
-					<p class="mt-1 text-xs text-green-600 dark:text-green-400">
+					<p class="mt-1 flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+						<Check class="h-3 w-3" aria-hidden="true" />
 						{m['orgAdmin.settings.membership.emailVerified']()}
 					</p>
-				{:else if contactEmail}
-					<p class="mt-1 text-xs text-muted-foreground">
+				{:else if data.organization.contact_email}
+					<p class="mt-1 flex items-center gap-1 text-xs text-orange-600 dark:text-orange-400">
+						<AlertCircle class="h-3 w-3" aria-hidden="true" />
 						{m['orgAdmin.settings.membership.emailNotVerified']()}
 					</p>
 				{/if}
@@ -846,3 +911,133 @@
 		outline-offset: 2px;
 	}
 </style>
+
+<!-- Email Change Modal -->
+{#if showEmailModal}
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+		onclick={(e) => {
+			if (e.target === e.currentTarget && !isUpdatingEmail) {
+				showEmailModal = false;
+			}
+		}}
+		role="dialog"
+		aria-modal="true"
+		aria-labelledby="email-modal-title"
+	>
+		<div class="w-full max-w-md rounded-lg bg-background p-6 shadow-xl">
+			<div class="mb-4 flex items-start justify-between">
+				<h3 id="email-modal-title" class="text-lg font-semibold">
+					Change Contact Email
+				</h3>
+				<button
+					type="button"
+					onclick={() => (showEmailModal = false)}
+					disabled={isUpdatingEmail}
+					class="rounded-md p-1 hover:bg-accent"
+					aria-label="Close"
+				>
+					<X class="h-5 w-5" aria-hidden="true" />
+				</button>
+			</div>
+
+			{#if emailSent}
+				<!-- Success state -->
+				<div class="space-y-4">
+					<div class="rounded-md bg-green-50 p-4 dark:bg-green-950">
+						<div class="flex gap-3">
+							<Check class="h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400" aria-hidden="true" />
+							<div>
+								<h4 class="font-medium text-green-900 dark:text-green-100">
+									Verification Email Sent
+								</h4>
+								<p class="mt-1 text-sm text-green-800 dark:text-green-200">
+									We've sent a verification link to <strong>{newEmail}</strong>. Please check your inbox and click the link to verify your new contact email.
+								</p>
+							</div>
+						</div>
+					</div>
+					<div class="flex justify-end gap-2">
+						<button
+							type="button"
+							onclick={handleEmailUpdate}
+							disabled={isUpdatingEmail}
+							class="rounded-md px-4 py-2 text-sm font-medium text-primary hover:bg-accent"
+						>
+							Resend Email
+						</button>
+						<button
+							type="button"
+							onclick={() => {
+								showEmailModal = false;
+								newEmail = '';
+								emailSent = false;
+							}}
+							class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+						>
+							Done
+						</button>
+					</div>
+				</div>
+			{:else}
+				<!-- Input form -->
+				<div class="space-y-4">
+					<div>
+						<label for="new-email" class="block text-sm font-medium">
+							New Contact Email
+						</label>
+						<input
+							id="new-email"
+							type="email"
+							bind:value={newEmail}
+							disabled={isUpdatingEmail}
+							placeholder="organization@example.com"
+							class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800"
+						/>
+						<p class="mt-1 text-xs text-muted-foreground">
+							If this email is different from your account email, a verification email will be sent.
+						</p>
+					</div>
+
+					{#if emailUpdateError}
+						<div class="rounded-md bg-red-50 p-3 dark:bg-red-950">
+							<div class="flex gap-2">
+								<AlertCircle class="h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400" aria-hidden="true" />
+								<p class="text-sm text-red-800 dark:text-red-200">
+									{emailUpdateError}
+								</p>
+							</div>
+						</div>
+					{/if}
+
+					<div class="flex justify-end gap-2">
+						<button
+							type="button"
+							onclick={() => {
+								showEmailModal = false;
+								newEmail = '';
+							}}
+							disabled={isUpdatingEmail}
+							class="rounded-md border px-4 py-2 text-sm font-medium hover:bg-accent"
+						>
+							Cancel
+						</button>
+						<button
+							type="button"
+							onclick={handleEmailUpdate}
+							disabled={isUpdatingEmail || !newEmail.trim()}
+							class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+						>
+							{#if isUpdatingEmail}
+								<div class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true"></div>
+								Updating...
+							{:else}
+								Update Email
+							{/if}
+						</button>
+					</div>
+				</div>
+			{/if}
+		</div>
+	</div>
+{/if}

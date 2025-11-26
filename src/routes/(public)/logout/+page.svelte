@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { onMount } from 'svelte';
+	import { invalidateAll } from '$app/navigation';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Loader2 } from 'lucide-svelte';
 
@@ -9,10 +10,12 @@
 	 * Clears the auth store immediately before server clears cookies
 	 * This ensures the UI updates instantly without waiting for server redirect
 	 */
-	onMount(() => {
+	onMount(async () => {
 		console.log('[LOGOUT PAGE] Clearing client-side auth state');
 		// Clear client-side auth state immediately
 		authStore.logout();
+		// Invalidate all data to ensure layout reloads
+		await invalidateAll();
 	});
 </script>
 
