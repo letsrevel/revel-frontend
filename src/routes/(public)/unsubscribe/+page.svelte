@@ -18,7 +18,6 @@
 		enabled_channels: ['in_app'],
 		digest_frequency: 'immediate',
 		digest_send_time: '09:00',
-		show_me_on_attendee_list: 'never',
 		notification_type_settings: {}
 	};
 
