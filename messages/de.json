@@ -3744,5 +3744,17 @@
 	"orgVerifyContactEmail.linkExpired": "Der Bestätigungslink ist möglicherweise abgelaufen oder ungültig.",
 	"orgVerifyContactEmail.goToSettings": "Zu den Organisationseinstellungen",
 	"orgVerifyContactEmail.goToDashboard": "Zum Dashboard",
-	"orgVerifyContactEmail.backToLogin": "Zurück zur Anmeldung"
+	"orgVerifyContactEmail.backToLogin": "Zurück zur Anmeldung",
+	"stripeConnectModal": {
+		"title": "Mit Stripe verbinden",
+		"description": "Um Zahlungen über Stripe zu akzeptieren, benötigen wir die offizielle E-Mail-Adresse, die Ihre Organisation für geschäftliche Kommunikation verwendet. Diese wird zur Erstellung oder Verknüpfung Ihres Stripe-Kontos verwendet.",
+		"emailLabel": "Offizielle Geschäfts-E-Mail",
+		"emailPlaceholder": "organisation@beispiel.de",
+		"emailHelp": "Diese E-Mail wird zur Erstellung Ihres Stripe-Kontos und zum Empfang wichtiger Zahlungsbenachrichtigungen verwendet.",
+		"closeButton": "Schließen",
+		"cancelButton": "Abbrechen",
+		"confirmButton": "Mit Stripe verbinden",
+		"connectingButton": "Verbinde...",
+		"additionalInfo": "Wenn Ihre Organisation bereits ein Stripe-Konto in Einrichtung hat, verwenden wir diese E-Mail, um dort fortzufahren, wo Sie aufgehört haben."
+	}
 }
