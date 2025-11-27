@@ -3692,8 +3692,8 @@
 		"pricingSelfManagedPrice": "Kostenlos",
 		"pricingSelfHostingPrice": "Kostenlos",
 		"pricingOnlinePayments": "Gehostete Online-Zahlungen",
-		"pricingOnlinePaymentsPrice": "3% + 0,50€",
-		"pricingOnlinePaymentsDescription": "3% + 0,50€ pro Ticket. Plus Stripe-Gebühren: 1,5% + 0,25€ (EWR-Karten) oder 2,5% + 0,25€ (UK-Karten).",
+		"pricingOnlinePaymentsPrice": "1,5% + 0,25€",
+		"pricingOnlinePaymentsDescription": "1,5% + 0,25€ pro Ticket. Plus Stripe-Gebühren: 1,5% + 0,25€ (EWR-Karten) oder 2,5% + 0,25€ (UK-Karten).",
 		"ticketingFeature4": "QR-Code-Check-in und Ticket-Validierung"
 	},
 	"userMenu.createOrganization": "Organisation erstellen",
