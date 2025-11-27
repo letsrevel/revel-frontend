@@ -3692,8 +3692,8 @@
 		"pricingSelfManagedPrice": "Free",
 		"pricingSelfHostingPrice": "Free",
 		"pricingOnlinePayments": "Hosted online payments",
-		"pricingOnlinePaymentsPrice": "3% + €0.50",
-		"pricingOnlinePaymentsDescription": "3% + €0.50 per ticket. Plus Stripe fees: 1.5% + €0.25 (EEA cards) or 2.5% + €0.25 (UK cards).",
+		"pricingOnlinePaymentsPrice": "1.5% + €0.25",
+		"pricingOnlinePaymentsDescription": "1.5% + €0.25 per ticket. Plus Stripe fees: 1.5% + €0.25 (EEA cards) or 2.5% + €0.25 (UK cards).",
 		"ticketingFeature4": "QR code check-in and ticket validation"
 	},
 	"userMenu.createOrganization": "Create Organization",
