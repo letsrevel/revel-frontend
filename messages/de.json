@@ -3756,5 +3756,32 @@
 		"confirmButton": "Mit Stripe verbinden",
 		"connectingButton": "Verbinde...",
 		"additionalInfo": "Wenn Ihre Organisation bereits ein Stripe-Konto in Einrichtung hat, verwenden wir diese E-Mail, um dort fortzufahren, wo Sie aufgehört haben."
+	},
+	"calendar": {
+		"label": "Kalender",
+		"month": "Monat",
+		"week": "Woche",
+		"week_view": "Woche",
+		"year": "Jahr",
+		"today": "Heute",
+		"previous": "Zurück",
+		"next": "Weiter",
+		"view": "Kalenderansicht",
+		"monday_short": "Mo",
+		"tuesday_short": "Di",
+		"wednesday_short": "Mi",
+		"thursday_short": "Do",
+		"friday_short": "Fr",
+		"saturday_short": "Sa",
+		"sunday_short": "So",
+		"events": "Termine",
+		"event": "Termin",
+		"more": "weitere",
+		"more_events": "weitere Termine",
+		"no_events": "Keine Termine",
+		"loading": "Kalender wird geladen...",
+		"list_view": "Liste",
+		"calendar_view": "Kalender",
+		"week_of": "Woche vom"
 	}
 }

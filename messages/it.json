@@ -3756,5 +3756,32 @@
 		"confirmButton": "Connetti a Stripe",
 		"connectingButton": "Connessione...",
 		"additionalInfo": "Se la tua organizzazione ha già un account Stripe in corso di configurazione, useremo questa email per continuare da dove hai lasciato."
+	},
+	"calendar": {
+		"label": "Calendario",
+		"month": "Mese",
+		"week": "Settimana",
+		"week_view": "Settimana",
+		"year": "Anno",
+		"today": "Oggi",
+		"previous": "Precedente",
+		"next": "Successivo",
+		"view": "Vista calendario",
+		"monday_short": "Lun",
+		"tuesday_short": "Mar",
+		"wednesday_short": "Mer",
+		"thursday_short": "Gio",
+		"friday_short": "Ven",
+		"saturday_short": "Sab",
+		"sunday_short": "Dom",
+		"events": "eventi",
+		"event": "evento",
+		"more": "altri",
+		"more_events": "altri eventi",
+		"no_events": "Nessun evento",
+		"loading": "Caricamento calendario...",
+		"list_view": "Lista",
+		"calendar_view": "Calendario",
+		"week_of": "Settimana del"
 	}
 }

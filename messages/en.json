@@ -3756,5 +3756,32 @@
 		"confirmButton": "Connect to Stripe",
 		"connectingButton": "Connecting...",
 		"additionalInfo": "If your organization already has a Stripe account setup in progress, we'll use this email to continue where you left off."
+	},
+	"calendar": {
+		"label": "Calendar",
+		"month": "Month",
+		"week": "Week",
+		"week_view": "Week",
+		"year": "Year",
+		"today": "Today",
+		"previous": "Previous",
+		"next": "Next",
+		"view": "Calendar view",
+		"monday_short": "Mon",
+		"tuesday_short": "Tue",
+		"wednesday_short": "Wed",
+		"thursday_short": "Thu",
+		"friday_short": "Fri",
+		"saturday_short": "Sat",
+		"sunday_short": "Sun",
+		"events": "events",
+		"event": "event",
+		"more": "more",
+		"more_events": "more events",
+		"no_events": "No events",
+		"loading": "Loading calendar...",
+		"list_view": "List",
+		"calendar_view": "Calendar",
+		"week_of": "Week of"
 	}
 }
