@@ -8,7 +8,7 @@
 
 	interface Badge {
 		label: string;
-		variant: 'default' | 'success' | 'secondary' | 'destructive' | 'outline';
+		variant: 'default' | 'success' | 'secondary' | 'destructive' | 'outline' | 'cancelled';
 	}
 
 	interface Props {
@@ -26,7 +26,20 @@
 	let badges = $derived.by(() => {
 		const result: Badge[] = [];
 
-		// Priority 1: User Relationship (highest priority)
+		// Priority 0: Administrative Status (highest priority - show event status)
+		// These badges indicate the event's administrative state
+		if (event.status === 'draft') {
+			result.push({ label: m['orgAdmin.events.status.draft'](), variant: 'outline' });
+		} else if (event.status === 'cancelled') {
+			result.push({ label: m['orgAdmin.events.status.cancelled'](), variant: 'cancelled' });
+		} else if (event.status === 'closed') {
+			result.push({ label: m['orgAdmin.events.status.closed'](), variant: 'destructive' });
+		}
+
+		// If we already have 2 badges, stop here
+		if (result.length >= 2) return result;
+
+		// Priority 1: User Relationship
 		if (userStatus) {
 			if (userStatus.organizing) {
 				result.push({ label: m['eventBadges.youreOrganizing'](), variant: 'default' });
@@ -84,7 +97,9 @@
 				'bg-green-600 text-white hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800',
 			secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
 			destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-			outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground'
+			outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+			cancelled:
+				'bg-orange-600 text-white hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-800'
 		};
 
 		return cn(baseClasses, variantClasses[variant]);

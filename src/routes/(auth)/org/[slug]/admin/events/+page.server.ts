@@ -20,7 +20,8 @@ export const load: PageServerLoad = async ({ parent, locals, fetch }) => {
 		headers,
 		query: {
 			organization: organization.id, // Use UUID, not slug
-			include_past: true, // Include past events
+			include_past: true, // Include past events in queryset
+			next_events: false, // Don't filter to only upcoming events (default is true)
 			page_size: 100 // TODO: Add pagination
 		}
 	});

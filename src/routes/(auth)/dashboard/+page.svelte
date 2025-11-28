@@ -7,13 +7,19 @@
 		eventListEvents,
 		dashboardDashboardTickets,
 		dashboardDashboardInvitations,
-		dashboardDashboardRsvps
+		dashboardDashboardRsvps,
+		dashboardDashboardCalendar
 	} from '$lib/api/generated/sdk.gen';
 	import { EventCard } from '$lib/components/events';
 	import EventCardSkeleton from '$lib/components/common/EventCardSkeleton.svelte';
 	import OrganizationCardSkeleton from '$lib/components/common/OrganizationCardSkeleton.svelte';
+	import { CalendarView, CalendarControls, EventModal } from '$lib/components/calendar';
 	import { getImageUrl } from '$lib/utils/url';
 	import { stripHtml } from '$lib/utils/seo';
+	import { parseCalendarParams, getCurrentPeriod } from '$lib/utils/calendar';
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
+	import type { EventInListSchema } from '$lib/api/generated/types.gen';
 	import {
 		Calendar,
 		Building2,
@@ -27,7 +33,8 @@
 		Check,
 		Award,
 		Crown,
-		PlusCircle
+		PlusCircle,
+		List
 	} from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { MembershipStatus } from '$lib/api/generated/types.gen';
@@ -98,6 +105,15 @@
 	// Your Events filter state (default to "All")
 	let yourEventsFilters = $state({ ...filterPresets[0].filters });
 
+	// View mode (list or calendar) for Your Events section
+	let viewMode = $derived<'list' | 'calendar'>(
+		($page.url.searchParams.get('viewMode') as 'list' | 'calendar') || 'list'
+	);
+
+	// Calendar state
+	let calendarParams = $derived(parseCalendarParams($page.url.searchParams));
+	let selectedEvent = $state<EventInListSchema | null>(null);
+
 	// Check if there are ANY events (with default "All" filter) to determine section visibility
 	const hasAnyEventsQuery = createQuery(() => ({
 		queryKey: ['dashboard-has-events'],
@@ -134,6 +150,39 @@
 			return response.data?.results || [];
 		},
 		enabled: !!accessToken
+	}));
+
+	// Calendar data query for Your Events
+	const calendarQuery = createQuery(() => ({
+		queryKey: [
+			'dashboard-calendar',
+			calendarParams.view,
+			calendarParams.year,
+			calendarParams.month,
+			calendarParams.week,
+			yourEventsFilters
+		],
+		queryFn: async () => {
+			if (!accessToken) return [];
+
+			const result = await dashboardDashboardCalendar({
+				headers: { Authorization: `Bearer ${accessToken}` },
+				query: {
+					week: calendarParams.view === 'week' ? calendarParams.week : undefined,
+					month: calendarParams.view === 'month' ? calendarParams.month : undefined,
+					year: calendarParams.year,
+					// Apply same filters as list view
+					...yourEventsFilters
+				}
+			});
+
+			if (result.error) {
+				throw new Error('Failed to load calendar events');
+			}
+
+			return result.data || [];
+		},
+		enabled: !!accessToken && viewMode === 'calendar'
 	}));
 
 	// Fetch user's organizations (owner/staff/member)
@@ -237,6 +286,8 @@
 	let activeTicketsCount = $derived(activeTicketsQuery.data || 0);
 	let pendingInvitationsCount = $derived(pendingInvitationsQuery.data || 0);
 	let upcomingRsvpsCount = $derived(upcomingRsvpsQuery.data || 0);
+	let calendarEvents = $derived(calendarQuery.data || []);
+	let isCalendarLoading = $derived(calendarQuery.isLoading);
 
 	// Check if user can organize events (is owner/staff of at least one org)
 	let canOrganizeEvents = $derived(() => {
@@ -339,6 +390,33 @@
 	// Apply filter preset
 	function applyFilterPreset(preset: (typeof filterPresets)[0]) {
 		yourEventsFilters = { ...preset.filters };
+	}
+
+	// Toggle view mode
+	function toggleViewMode() {
+		const newMode = viewMode === 'list' ? 'calendar' : 'list';
+		const url = new URL(window.location.href);
+		url.searchParams.set('viewMode', newMode);
+
+		// If switching to calendar, add default calendar params
+		if (newMode === 'calendar' && !url.searchParams.has('view')) {
+			const current = getCurrentPeriod();
+			url.searchParams.set('view', 'month');
+			url.searchParams.set('year', String(current.year));
+			url.searchParams.set('month', String(current.month));
+			url.searchParams.set('week', String(current.week));
+		}
+
+		goto(url.toString(), { keepFocus: true, replaceState: false });
+	}
+
+	// Event modal handlers
+	function handleEventClick(event: EventInListSchema) {
+		selectedEvent = event;
+	}
+
+	function handleCloseEventModal() {
+		selectedEvent = null;
 	}
 </script>
 
@@ -545,53 +623,99 @@
 						<h2 id="your-events-heading" class="flex items-center gap-2 text-xl font-semibold">
 							<Calendar class="h-5 w-5 text-primary" aria-hidden="true" />
 							<span>{m['dashboard.sections.yourEvents']()}</span>
-							{#if yourEvents.length > 0}
+							{#if viewMode === 'list' && yourEvents.length > 0}
 								<span
 									class="inline-flex items-center justify-center rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground"
 								>
 									{yourEvents.length}
 								</span>
+							{:else if viewMode === 'calendar' && calendarEvents.length > 0}
+								<span
+									class="inline-flex items-center justify-center rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground"
+								>
+									{calendarEvents.length}
+								</span>
 							{/if}
 						</h2>
+
+						<!-- View Toggle -->
+						<button
+							type="button"
+							onclick={toggleViewMode}
+							class="inline-flex items-center gap-2 rounded-md border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+						>
+							{#if viewMode === 'list'}
+								<Calendar class="h-4 w-4" aria-hidden="true" />
+								{m['calendar.calendar_view']()}
+							{:else}
+								<List class="h-4 w-4" aria-hidden="true" />
+								{m['calendar.list_view']()}
+							{/if}
+						</button>
 					</div>
 
-					<!-- Filter Bar -->
-					<div class="flex flex-wrap items-center gap-2">
-						<Filter class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-						{#each filterPresets as preset}
-							<!-- Only show "Organizing" filter if user can organize events -->
-							{#if preset.labelKey !== 'dashboard.filters.organizing' || canOrganizeEvents()}
-								<button
-									type="button"
-									onclick={() => applyFilterPreset(preset)}
-									class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {isFilterActive(
-										preset
-									)
-										? 'bg-primary text-primary-foreground hover:bg-primary/90'
-										: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
-								>
-									{(m as unknown as Record<string, () => string>)[preset.labelKey]()}
-								</button>
-							{/if}
-						{/each}
-					</div>
+					<!-- Filter Bar (only show in list view) -->
+					{#if viewMode === 'list'}
+						<div class="flex flex-wrap items-center gap-2">
+							<Filter class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+							{#each filterPresets as preset}
+								<!-- Only show "Organizing" filter if user can organize events -->
+								{#if preset.labelKey !== 'dashboard.filters.organizing' || canOrganizeEvents()}
+									<button
+										type="button"
+										onclick={() => applyFilterPreset(preset)}
+										class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {isFilterActive(
+											preset
+										)
+											? 'bg-primary text-primary-foreground hover:bg-primary/90'
+											: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
+									>
+										{(m as unknown as Record<string, () => string>)[preset.labelKey]()}
+									</button>
+								{/if}
+							{/each}
+						</div>
+					{/if}
 				</div>
 
-				{#if yourEvents.length > 0}
-					<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-						{#each yourEvents.slice(0, 6) as event}
-							<EventCard {event} />
-						{/each}
-					</div>
+				{#if viewMode === 'list'}
+					<!-- List View -->
+					{#if yourEvents.length > 0}
+						<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+							{#each yourEvents.slice(0, 6) as event}
+								<EventCard {event} />
+							{/each}
+						</div>
+					{:else}
+						<!-- Empty state when filter returns no results -->
+						<div class="rounded-lg border bg-card p-8 text-center">
+							<Calendar class="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
+							<h3 class="mb-2 text-lg font-semibold">{m['dashboard.emptyStates.noEvents']()}</h3>
+							<p class="mb-4 text-sm text-muted-foreground">
+								{m['dashboard.emptyStates.noEventsFiltered']()}
+							</p>
+						</div>
+					{/if}
 				{:else}
-					<!-- Empty state when filter returns no results -->
-					<div class="rounded-lg border bg-card p-8 text-center">
-						<Calendar class="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-						<h3 class="mb-2 text-lg font-semibold">{m['dashboard.emptyStates.noEvents']()}</h3>
-						<p class="mb-4 text-sm text-muted-foreground">
-							{m['dashboard.emptyStates.noEventsFiltered']()}
-						</p>
-					</div>
+					<!-- Calendar View -->
+					<CalendarControls
+						view={calendarParams.view}
+						year={calendarParams.year}
+						month={calendarParams.month}
+						week={calendarParams.week}
+						baseUrl="/dashboard"
+						preserveParams={['viewMode']}
+					/>
+
+					<CalendarView
+						view={calendarParams.view}
+						year={calendarParams.year}
+						month={calendarParams.month}
+						week={calendarParams.week}
+						events={calendarEvents}
+						isLoading={isCalendarLoading}
+						onEventClick={handleEventClick}
+					/>
 				{/if}
 			</section>
 		{/if}
@@ -791,4 +915,7 @@
 			{/if}
 		</section>
 	</div>
+
+	<!-- Event Modal (for calendar clicks) -->
+	<EventModal event={selectedEvent} open={selectedEvent !== null} onClose={handleCloseEventModal} />
 </div>

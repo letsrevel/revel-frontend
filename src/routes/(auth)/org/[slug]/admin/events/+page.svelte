@@ -4,10 +4,12 @@
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
-	import { eventadminUpdateEventStatus } from '$lib/api/generated/sdk.gen';
+	import { eventadminUpdateEventStatus, eventadminDeleteEvent } from '$lib/api/generated/sdk.gen';
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { cn } from '$lib/utils/cn';
+	import { formatEventDateRange } from '$lib/utils/date';
+	import EventBadges from '$lib/components/events/EventBadges.svelte';
 	import {
 		Plus,
 		Calendar,
@@ -20,7 +22,8 @@
 		XCircle,
 		UserCheck,
 		Mail,
-		ListPlus
+		ListPlus,
+		Ban
 	} from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -36,7 +39,7 @@
 			status
 		}: {
 			eventId: string;
-			status: 'draft' | 'open' | 'closed' | 'deleted';
+			status: 'draft' | 'open' | 'closed' | 'cancelled';
 		}) => {
 			const response = await eventadminUpdateEventStatus({
 				path: { event_id: eventId, status },
@@ -68,6 +71,36 @@
 		},
 		onError: (error: Error) => {
 			alert(`Failed to update status: ${error.message}`);
+		}
+	}));
+
+	// Delete event mutation
+	const deleteEventMutation = createMutation(() => ({
+		mutationFn: async (eventId: string) => {
+			const response = await eventadminDeleteEvent({
+				path: { event_id: eventId },
+				headers: {
+					Authorization: `Bearer ${accessToken}`
+				}
+			});
+
+			if (response.error) {
+				const errorDetail =
+					typeof response.error === 'object' &&
+					response.error !== null &&
+					'detail' in response.error
+						? (response.error.detail as string)
+						: 'Failed to delete event';
+				throw new Error(errorDetail);
+			}
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['events'] });
+			// Reload page data
+			window.location.reload();
+		},
+		onError: (error: Error) => {
+			alert(`Failed to delete event: ${error.message}`);
 		}
 	}));
 
@@ -139,11 +172,20 @@
 	}
 
 	/**
-	 * Delete event (any → deleted)
+	 * Cancel event (any → cancelled)
+	 */
+	function cancelEvent(eventId: string): void {
+		if (confirm(m['orgAdmin.events.confirmations.cancel']())) {
+			updateStatusMutation.mutate({ eventId, status: 'cancelled' });
+		}
+	}
+
+	/**
+	 * Delete event (permanently delete)
 	 */
 	function deleteEvent(eventId: string): void {
 		if (confirm(m['orgAdmin.events.confirmations.delete']())) {
-			updateStatusMutation.mutate({ eventId, status: 'deleted' });
+			deleteEventMutation.mutate(eventId);
 		}
 	}
 
@@ -167,8 +209,8 @@
 				return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100';
 			case 'closed':
 				return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100';
-			case 'deleted':
-				return 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400';
+			case 'cancelled':
+				return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100';
 			default:
 				return 'bg-gray-100 text-gray-800';
 		}
@@ -187,17 +229,34 @@
 		});
 	}
 
-	// Derived state: group events by status
+	// Helper to check if event is past (ended)
+	function isPastEvent(event: EventInListSchema): boolean {
+		if (!event.end) return false;
+		return new Date(event.end) < new Date();
+	}
+
+	// Derived state: group events by status and time
 	// Note: Status type in OpenAPI is incorrect, using string comparison
+	// Past events are separated regardless of status
 	let draftEvents = $derived(
-		data.events.filter((e: EventInListSchema) => (e.status as string) === 'draft')
+		data.events.filter(
+			(e: EventInListSchema) => (e.status as string) === 'draft' && !isPastEvent(e)
+		)
 	);
 	let openEvents = $derived(
-		data.events.filter((e: EventInListSchema) => (e.status as string) === 'open')
+		data.events.filter((e: EventInListSchema) => (e.status as string) === 'open' && !isPastEvent(e))
 	);
 	let closedEvents = $derived(
-		data.events.filter((e: EventInListSchema) => (e.status as string) === 'closed')
+		data.events.filter(
+			(e: EventInListSchema) => (e.status as string) === 'closed' && !isPastEvent(e)
+		)
 	);
+	let cancelledEvents = $derived(
+		data.events.filter(
+			(e: EventInListSchema) => (e.status as string) === 'cancelled' && !isPastEvent(e)
+		)
+	);
+	let pastEvents = $derived(data.events.filter((e: EventInListSchema) => isPastEvent(e)));
 </script>
 
 <svelte:head>
@@ -253,7 +312,10 @@
 		{#if draftEvents.length > 0}
 			<div class="space-y-4">
 				<h2 class="text-lg font-semibold">
-					{m['orgAdmin.events.sections.drafts']({ count: draftEvents.length })}
+					{m['orgAdmin.events.sections.drafts']({
+						count: draftEvents.length,
+						plural: draftEvents.length === 1 ? '' : m['orgAdmin.events.sections.drafts_plural']()
+					})}
 				</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each draftEvents as event (event.id)}
@@ -314,6 +376,14 @@
 									</button>
 									<button
 										type="button"
+										onclick={() => cancelEvent(event.id)}
+										class="inline-flex items-center gap-1 rounded-md bg-orange-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-orange-700"
+									>
+										<Ban class="h-4 w-4" aria-hidden="true" />
+										{m['orgAdmin.events.actions.cancel']()}
+									</button>
+									<button
+										type="button"
 										onclick={() => deleteEvent(event.id)}
 										class="inline-flex items-center gap-1 rounded-md bg-destructive px-3 py-1 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
 									>
@@ -332,7 +402,10 @@
 		{#if openEvents.length > 0}
 			<div class="space-y-4">
 				<h2 class="text-lg font-semibold">
-					{m['orgAdmin.events.sections.published']({ count: openEvents.length })}
+					{m['orgAdmin.events.sections.open']({
+						count: openEvents.length,
+						plural: openEvents.length === 1 ? '' : m['orgAdmin.events.sections.open_plural']()
+					})}
 				</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each openEvents as event (event.id)}
@@ -431,8 +504,16 @@
 									{/if}
 									<button
 										type="button"
-										onclick={() => closeEvent(event.id)}
+										onclick={() => cancelEvent(event.id)}
 										class="inline-flex items-center gap-1 rounded-md bg-orange-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-orange-700"
+									>
+										<Ban class="h-4 w-4" aria-hidden="true" />
+										{m['orgAdmin.events.actions.cancel']()}
+									</button>
+									<button
+										type="button"
+										onclick={() => closeEvent(event.id)}
+										class="inline-flex items-center gap-1 rounded-md bg-red-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-red-700"
 									>
 										<XCircle class="h-4 w-4" aria-hidden="true" />
 										{m['orgAdmin.events.actions.close']()}
@@ -449,7 +530,10 @@
 		{#if closedEvents.length > 0}
 			<div class="space-y-4">
 				<h2 class="text-lg font-semibold">
-					{m['orgAdmin.events.sections.closed']({ count: closedEvents.length })}
+					{m['orgAdmin.events.sections.closed']({
+						count: closedEvents.length,
+						plural: closedEvents.length === 1 ? '' : m['orgAdmin.events.sections.closed_plural']()
+					})}
 				</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each closedEvents as event (event.id)}
@@ -546,6 +630,232 @@
 										<CheckCircle class="h-4 w-4" aria-hidden="true" />
 										{m['orgAdmin.events.actions.reopen']()}
 									</button>
+									<button
+										type="button"
+										onclick={() => cancelEvent(event.id)}
+										class="inline-flex items-center gap-1 rounded-md bg-orange-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-orange-700"
+									>
+										<Ban class="h-4 w-4" aria-hidden="true" />
+										{m['orgAdmin.events.actions.cancel']()}
+									</button>
+									<button
+										type="button"
+										onclick={() => deleteEvent(event.id)}
+										class="inline-flex items-center gap-1 rounded-md bg-destructive px-3 py-1 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
+									>
+										<Trash2 class="h-4 w-4" aria-hidden="true" />
+										{m['orgAdmin.events.actions.delete']()}
+									</button>
+								</div>
+							</div>
+						</div>
+					{/each}
+				</div>
+			</div>
+		{/if}
+
+		<!-- Cancelled Events -->
+		{#if cancelledEvents.length > 0}
+			<div class="space-y-4">
+				<h2 class="text-lg font-semibold">
+					{m['orgAdmin.events.sections.cancelled']({
+						count: cancelledEvents.length,
+						plural:
+							cancelledEvents.length === 1 ? '' : m['orgAdmin.events.sections.cancelled_plural']()
+					})}
+				</h2>
+				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+					{#each cancelledEvents as event (event.id)}
+						<div class="rounded-lg border border-border bg-card p-4 opacity-75 shadow-sm">
+							<div class="space-y-3">
+								<!-- Header -->
+								<div class="flex items-start justify-between gap-2">
+									<h3 class="font-semibold">{event.name}</h3>
+									<span
+										class={cn(
+											'rounded-full px-2 py-1 text-xs font-medium',
+											getStatusColor(event.status)
+										)}
+									>
+										{m['orgAdmin.events.status.cancelled']()}
+									</span>
+								</div>
+
+								<!-- Event details -->
+								<div class="space-y-2 text-sm text-muted-foreground">
+									<div class="flex items-center gap-2">
+										<Calendar class="h-4 w-4" aria-hidden="true" />
+										{formatDate(event.start)}
+									</div>
+									{#if event.city}
+										<div class="flex items-center gap-2">
+											<MapPin class="h-4 w-4" aria-hidden="true" />
+											{event.city.name}, {event.city.country}
+										</div>
+									{/if}
+									{#if event.attendee_count !== undefined}
+										<div class="flex items-center gap-2">
+											<Users class="h-4 w-4" aria-hidden="true" />
+											{event.attendee_count}
+											{event.requires_ticket
+												? m['orgAdmin.events.attendeeCount.attendees']()
+												: m['orgAdmin.events.attendeeCount.rsvps']()}
+										</div>
+									{/if}
+								</div>
+
+								<!-- Actions -->
+								<div class="flex flex-wrap gap-2 border-t border-border pt-3">
+									<button
+										type="button"
+										onclick={() => viewEvent(event.slug)}
+										class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
+									>
+										<Eye class="h-4 w-4" aria-hidden="true" />
+										{m['orgAdmin.events.actions.view']()}
+									</button>
+									{#if event.requires_ticket}
+										<button
+											type="button"
+											onclick={() => manageTickets(event.id)}
+											class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+										>
+											<UserCheck class="h-4 w-4" aria-hidden="true" />
+											{m['orgAdmin.events.actions.tickets']()}
+										</button>
+									{:else}
+										<button
+											type="button"
+											onclick={() => manageAttendees(event.id)}
+											class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+										>
+											<UserCheck class="h-4 w-4" aria-hidden="true" />
+											{m['orgAdmin.events.actions.attendees']()}
+										</button>
+									{/if}
+									<button
+										type="button"
+										onclick={() => manageInvitations(event.id)}
+										class="inline-flex items-center gap-1 rounded-md bg-purple-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-purple-700"
+									>
+										<Mail class="h-4 w-4" aria-hidden="true" />
+										{m['orgAdmin.events.actions.invitations']()}
+									</button>
+									{#if event.waitlist_open}
+										<button
+											type="button"
+											onclick={() => manageWaitlist(event.id)}
+											class="inline-flex items-center gap-1 rounded-md bg-amber-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-amber-700"
+										>
+											<ListPlus class="h-4 w-4" aria-hidden="true" />
+											{m['orgAdmin.events.actions.waitlist']()}
+										</button>
+									{/if}
+									<button
+										type="button"
+										onclick={() => reopenEvent(event.id)}
+										class="inline-flex items-center gap-1 rounded-md bg-green-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-green-700"
+									>
+										<CheckCircle class="h-4 w-4" aria-hidden="true" />
+										{m['orgAdmin.events.actions.reopen']()}
+									</button>
+									<button
+										type="button"
+										onclick={() => deleteEvent(event.id)}
+										class="inline-flex items-center gap-1 rounded-md bg-destructive px-3 py-1 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
+									>
+										<Trash2 class="h-4 w-4" aria-hidden="true" />
+										{m['orgAdmin.events.actions.delete']()}
+									</button>
+								</div>
+							</div>
+						</div>
+					{/each}
+				</div>
+			</div>
+		{/if}
+
+		<!-- Past Events -->
+		{#if pastEvents.length > 0}
+			<div class="space-y-4 opacity-75">
+				<h2 class="text-lg font-semibold">
+					{m['orgAdmin.events.sections.past']({
+						count: pastEvents.length,
+						plural: pastEvents.length === 1 ? '' : m['orgAdmin.events.sections.past_plural']()
+					})}
+				</h2>
+				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+					{#each pastEvents as event (event.id)}
+						<div
+							class="flex flex-col overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-md"
+						>
+							{#if event.cover_image}
+								<img
+									src={event.cover_image}
+									alt={event.name}
+									class="h-48 w-full object-cover"
+									loading="lazy"
+								/>
+							{:else}
+								<div
+									class="flex h-48 w-full items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5"
+								>
+									<Calendar class="h-16 w-16 text-primary/40" aria-hidden="true" />
+								</div>
+							{/if}
+							<div class="flex flex-1 flex-col gap-4 p-4">
+								<div class="space-y-2">
+									<div class="flex items-start justify-between gap-2">
+										<h3 class="line-clamp-2 text-lg font-semibold leading-tight">
+											{event.name}
+										</h3>
+										<EventBadges {event} />
+									</div>
+									<div class="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+										<div class="flex items-center gap-1.5">
+											<Calendar class="h-4 w-4" aria-hidden="true" />
+											<time datetime={event.start}>
+												{formatEventDateRange(event.start, event.end)}
+											</time>
+										</div>
+										{#if event.location_name}
+											<div class="flex items-center gap-1.5">
+												<MapPin class="h-4 w-4" aria-hidden="true" />
+												<span class="truncate">{event.location_name}</span>
+											</div>
+										{/if}
+									</div>
+								</div>
+
+								<div class="mt-auto flex flex-wrap gap-2">
+									<!-- View Event -->
+									<a
+										href="/{data.organization.slug}/events/{event.slug}"
+										class="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+									>
+										<Eye class="h-4 w-4" aria-hidden="true" />
+										{m['orgAdmin.events.actions.view']()}
+									</a>
+
+									<!-- Manage Tickets/Attendees -->
+									<a
+										href="/{data.organization.slug}/admin/events/{event.id}/attendees"
+										class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
+									>
+										<Users class="h-4 w-4" aria-hidden="true" />
+										{m['orgAdmin.events.actions.tickets']()}
+									</a>
+
+									<!-- Invitations -->
+									<a
+										href="/{data.organization.slug}/admin/events/{event.id}/invitations"
+										class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
+									>
+										<Mail class="h-4 w-4" aria-hidden="true" />
+										{m['orgAdmin.events.actions.invitations']()}
+									</a>
+
+									<!-- Delete -->
 									<button
 										type="button"
 										onclick={() => deleteEvent(event.id)}
