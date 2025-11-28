@@ -5,9 +5,9 @@
 	import type { PageData } from './$types';
 	import EventWizard from '$lib/components/events/admin/EventWizard.svelte';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
-	import { eventadminUpdateEventStatus } from '$lib/api/generated/sdk.gen';
+	import { eventadminUpdateEventStatus, eventadminDeleteEvent } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { CheckCircle, XCircle, FileEdit, Trash2 } from 'lucide-svelte';
+	import { CheckCircle, XCircle, FileEdit, Trash2, Ban } from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -21,7 +21,7 @@
 
 	// Update event status mutation
 	const updateStatusMutation = createMutation(() => ({
-		mutationFn: async (status: 'draft' | 'open' | 'closed' | 'deleted') => {
+		mutationFn: async (status: 'draft' | 'open' | 'closed' | 'cancelled') => {
 			if (!accessToken) throw new Error(m['eventEditPage.error_notAuthenticated']());
 
 			const response = await eventadminUpdateEventStatus({
@@ -47,19 +47,45 @@
 
 			return response.data;
 		},
-		onSuccess: (_data, status) => {
+		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['events'] });
-
-			// If deleted, redirect to events list
-			if (status === 'deleted') {
-				goto(`/org/${organization.slug}/admin/events`);
-			} else {
-				// Reload the page to get updated event data
-				window.location.reload();
-			}
+			// Reload the page to get updated event data
+			window.location.reload();
 		},
 		onError: (error: Error) => {
 			alert(`Failed to update status: ${error.message}`);
+		}
+	}));
+
+	// Delete event mutation (permanent deletion)
+	const deleteEventMutation = createMutation(() => ({
+		mutationFn: async () => {
+			if (!accessToken) throw new Error(m['eventEditPage.error_notAuthenticated']());
+
+			const response = await eventadminDeleteEvent({
+				path: { event_id: event.id },
+				headers: {
+					Authorization: `Bearer ${accessToken}`
+				}
+			});
+
+			if (response.error) {
+				const errorDetail =
+					typeof response.error === 'object' &&
+					response.error !== null &&
+					'detail' in response.error
+						? (response.error.detail as string)
+						: 'Failed to delete event';
+				throw new Error(errorDetail);
+			}
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['events'] });
+			// Redirect to events list after deletion
+			goto(`/org/${organization.slug}/admin/events`);
+		},
+		onError: (error: Error) => {
+			alert(`Failed to delete event: ${error.message}`);
 		}
 	}));
 
@@ -91,11 +117,20 @@
 	}
 
 	/**
-	 * Delete event (any → deleted)
+	 * Cancel event (any → cancelled)
+	 */
+	function cancelEvent(): void {
+		if (confirm(m['orgAdmin.events.confirmations.cancel']())) {
+			updateStatusMutation.mutate('cancelled');
+		}
+	}
+
+	/**
+	 * Delete event (permanent deletion)
 	 */
 	function deleteEvent(): void {
-		if (confirm(m['eventEditPage.deleteConfirm']())) {
-			updateStatusMutation.mutate('deleted');
+		if (confirm(m['orgAdmin.events.confirmations.delete']())) {
+			deleteEventMutation.mutate();
 		}
 	}
 </script>
