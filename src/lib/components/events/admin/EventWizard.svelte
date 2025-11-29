@@ -672,6 +672,9 @@
 			onUpdate={updateFormData}
 			onSubmit={handleStep1Submit}
 			{isSaving}
+			eventId={existingEvent?.id}
+			eventSlug={existingEvent?.slug}
+			organizationSlug={organization.slug}
 		/>
 	{:else if currentStep === 2}
 		<div class="space-y-6">

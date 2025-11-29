@@ -611,13 +611,22 @@
 			},
 			"sections": {
 				"drafts": "Drafts ({count})",
+				"drafts_plural": "s",
+				"open": "Open ({count})",
+				"open_plural": "",
 				"published": "Published ({count})",
-				"closed": "Closed ({count})"
+				"closed": "Closed ({count})",
+				"closed_plural": "",
+				"cancelled": "Cancelled ({count})",
+				"cancelled_plural": "",
+				"past": "Past ({count})",
+				"past_plural": ""
 			},
 			"status": {
 				"draft": "Draft",
 				"published": "Published",
-				"closed": "Closed"
+				"closed": "Closed",
+				"cancelled": "Cancelled"
 			},
 			"actions": {
 				"edit": "Edit",
@@ -629,7 +638,10 @@
 				"attendees": "Attendees",
 				"invitations": "Invitations",
 				"close": "Close",
-				"reopen": "Reopen"
+				"reopen": "Reopen",
+				"cancel": "Cancel",
+				"moreActions": "More actions",
+				"duplicate": "Duplicate"
 			},
 			"attendeeCount": {
 				"attendees": "Attendees",
@@ -639,7 +651,8 @@
 				"publish": "Are you sure you want to publish this event? It will become visible to users.",
 				"close": "Are you sure you want to close this event? RSVPs and ticket sales will stop.",
 				"delete": "Are you sure you want to delete this event? This action cannot be undone and will remove the event from public view.",
-				"reopen": "Are you sure you want to reopen this event?"
+				"reopen": "Are you sure you want to reopen this event?",
+				"cancel": "Are you sure you want to cancel this event? Attendees will be notified."
 			}
 		},
 		"members": {
@@ -3351,6 +3364,37 @@
 		"error_notAuthenticated": "Not authenticated",
 		"error_updateStatusFailed": "Failed to update status",
 		"error_updateStatusMessage": "Failed to update status: {message}"
+	},
+	"duplicateEventModal": {
+		"title": "Duplicate Event",
+		"description": "Create a copy of this event with a new name and start date. All event details, ticket tiers, and settings will be copied.",
+		"newName": "New Event Name",
+		"namePlaceholder": "Enter new event name",
+		"newStart": "New Start Date & Time",
+		"startHint": "All other dates will be shifted proportionally based on this new start date.",
+		"cancel": "Cancel",
+		"duplicate": "Duplicate Event",
+		"duplicating": "Duplicating...",
+		"copyOf": "Copy of {name}",
+		"error_notAuthenticated": "Not authenticated",
+		"error_failedToDuplicate": "Failed to duplicate event",
+		"error_nameRequired": "Event name is required",
+		"error_startRequired": "Start date is required",
+		"error_startFuture": "Start date must be in the future"
+	},
+	"essentialsStep": {
+		"slugLabel": "Event URL Slug",
+		"noSlug": "No slug set",
+		"edit": "Edit",
+		"editSlug": "Edit event slug",
+		"saveSlug": "Save slug",
+		"cancelSlugEdit": "Cancel slug edit",
+		"urlPreview": "Event URL:",
+		"error_notAuthenticated": "Not authenticated",
+		"error_slugUpdateFailed": "Failed to update slug",
+		"error_slugExists": "An event with this slug already exists in your organization",
+		"error_slugRequired": "Slug is required",
+		"error_slugFormat": "Slug must only contain lowercase letters, numbers, and hyphens (e.g., my-event-2025)"
 	},
 	"questionnaireSubmissionPage": {
 		"pageTitle": "{questionnaireName} - {eventName}",
