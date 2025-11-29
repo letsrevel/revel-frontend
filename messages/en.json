@@ -613,14 +613,14 @@
 				"drafts": "Drafts ({count})",
 				"drafts_plural": "s",
 				"open": "Open ({count})",
-				"open_plural": "",
+				"open_plural": "s",
 				"published": "Published ({count})",
 				"closed": "Closed ({count})",
-				"closed_plural": "",
+				"closed_plural": "s",
 				"cancelled": "Cancelled ({count})",
-				"cancelled_plural": "",
+				"cancelled_plural": "s",
 				"past": "Past ({count})",
-				"past_plural": ""
+				"past_plural": "s"
 			},
 			"status": {
 				"draft": "Draft",

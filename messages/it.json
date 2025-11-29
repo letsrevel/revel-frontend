@@ -611,16 +611,16 @@
 			},
 			"sections": {
 				"drafts": "Bozze ({count})",
-				"drafts_plural": "",
+				"drafts_plural": "e",
 				"open": "Aperti ({count})",
-				"open_plural": "",
+				"open_plural": "i",
 				"published": "Pubblicati ({count})",
 				"closed": "Chiusi ({count})",
-				"closed_plural": "",
+				"closed_plural": "i",
 				"cancelled": "Annullati ({count})",
-				"cancelled_plural": "",
+				"cancelled_plural": "i",
 				"past": "Passati ({count})",
-				"past_plural": ""
+				"past_plural": "i"
 			},
 			"status": {
 				"draft": "Bozza",

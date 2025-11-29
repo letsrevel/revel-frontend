@@ -611,16 +611,16 @@
 			},
 			"sections": {
 				"drafts": "Entwürfe ({count})",
-				"drafts_plural": "",
+				"drafts_plural": "e",
 				"open": "Offen ({count})",
-				"open_plural": "",
+				"open_plural": "e",
 				"published": "Veröffentlicht ({count})",
 				"closed": "Geschlossen ({count})",
-				"closed_plural": "",
+				"closed_plural": "e",
 				"cancelled": "Abgesagt ({count})",
-				"cancelled_plural": "",
+				"cancelled_plural": "e",
 				"past": "Vergangen ({count})",
-				"past_plural": ""
+				"past_plural": "e"
 			},
 			"status": {
 				"draft": "Entwurf",
