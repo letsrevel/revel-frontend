@@ -9,6 +9,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { cn } from '$lib/utils/cn';
 	import { formatEventDateRange } from '$lib/utils/date';
+	import EventCoverImage from '$lib/components/events/EventCoverImage.svelte';
 	import EventBadges from '$lib/components/events/EventBadges.svelte';
 	import DuplicateEventModal from '$lib/components/events/admin/DuplicateEventModal.svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
@@ -351,8 +352,14 @@
 				</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each draftEvents as event (event.id)}
-						<div class="rounded-lg border border-border bg-card p-4 shadow-sm">
-							<div class="space-y-3">
+						<div
+							class="flex flex-col overflow-hidden rounded-lg border border-border bg-card shadow-sm transition-shadow hover:shadow-md"
+						>
+							<!-- Cover Image -->
+							<EventCoverImage {event} />
+
+							<!-- Card Content -->
+							<div class="flex flex-1 flex-col gap-3 p-4">
 								<!-- Header -->
 								<div class="flex items-start justify-between gap-2">
 									<h3 class="flex-1 font-semibold">{event.name}</h3>
@@ -463,8 +470,14 @@
 				</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each openEvents as event (event.id)}
-						<div class="rounded-lg border border-border bg-card p-4 shadow-sm">
-							<div class="space-y-3">
+						<div
+							class="flex flex-col overflow-hidden rounded-lg border border-border bg-card shadow-sm transition-shadow hover:shadow-md"
+						>
+							<!-- Cover Image -->
+							<EventCoverImage {event} />
+
+							<!-- Card Content -->
+							<div class="flex flex-1 flex-col gap-3 p-4">
 								<!-- Header -->
 								<div class="flex items-start justify-between gap-2">
 									<h3 class="flex-1 font-semibold">{event.name}</h3>
@@ -620,8 +633,14 @@
 				</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each closedEvents as event (event.id)}
-						<div class="rounded-lg border border-border bg-card p-4 opacity-75 shadow-sm">
-							<div class="space-y-3">
+						<div
+							class="flex flex-col overflow-hidden rounded-lg border border-border bg-card opacity-75 shadow-sm transition-shadow hover:shadow-md"
+						>
+							<!-- Cover Image -->
+							<EventCoverImage {event} />
+
+							<!-- Card Content -->
+							<div class="flex flex-1 flex-col gap-3 p-4">
 								<!-- Header -->
 								<div class="flex items-start justify-between gap-2">
 									<h3 class="flex-1 font-semibold">{event.name}</h3>
@@ -771,8 +790,14 @@
 				</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each cancelledEvents as event (event.id)}
-						<div class="rounded-lg border border-border bg-card p-4 opacity-75 shadow-sm">
-							<div class="space-y-3">
+						<div
+							class="flex flex-col overflow-hidden rounded-lg border border-border bg-card opacity-75 shadow-sm transition-shadow hover:shadow-md"
+						>
+							<!-- Cover Image -->
+							<EventCoverImage {event} />
+
+							<!-- Card Content -->
+							<div class="flex flex-1 flex-col gap-3 p-4">
 								<!-- Header -->
 								<div class="flex items-start justify-between gap-2">
 									<h3 class="flex-1 font-semibold">{event.name}</h3>
