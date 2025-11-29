@@ -18,8 +18,14 @@
 		onClose: () => void;
 	}
 
-	let { open = $bindable(), eventId, eventName, eventStart, organizationSlug, onClose }: Props =
-		$props();
+	let {
+		open = $bindable(),
+		eventId,
+		eventName,
+		eventStart,
+		organizationSlug,
+		onClose
+	}: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
 

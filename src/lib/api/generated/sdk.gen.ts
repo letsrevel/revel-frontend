@@ -1760,9 +1760,7 @@ export const organizationCreateMembershipRequest = <ThrowOnError extends boolean
  * **Error Cases:**
  * - 404: Token doesn't exist or has been deleted
  */
-export const organizationGetOrganizationTokenDetails = <
-	ThrowOnError extends boolean = false
->(
+export const organizationGetOrganizationTokenDetails = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationGetOrganizationTokenDetails1917F3E6Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -2245,9 +2243,7 @@ export const organizationadminCreateEvent = <ThrowOnError extends boolean = fals
  * - Clean up expired or unused tokens
  * - Verify staff invitation tokens are properly restricted
  */
-export const organizationadminListOrganizationTokens = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminListOrganizationTokens = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminListOrganizationTokens391F27F4Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -2367,9 +2363,7 @@ export const organizationadminListOrganizationTokens = <
  * - 403: User lacks "manage_members" permission
  * - 404: Organization slug not found or user lacks access
  */
-export const organizationadminCreateOrganizationToken = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminCreateOrganizationToken = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminCreateOrganizationToken07730261Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -2473,9 +2467,7 @@ export const organizationadminCreateOrganizationToken = <
  * - 403: User lacks "manage_members" permission
  * - 404: Token ID not found or doesn't belong to this organization
  */
-export const organizationadminDeleteOrganizationToken = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminDeleteOrganizationToken = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminDeleteOrganizationToken6C696765Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
@@ -2582,9 +2574,7 @@ export const organizationadminDeleteOrganizationToken = <
  * - 403: User lacks "manage_members" permission
  * - 404: Token ID not found or doesn't belong to this organization
  */
-export const organizationadminUpdateOrganizationToken = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminUpdateOrganizationToken = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminUpdateOrganizationTokenB3A18660Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
@@ -2614,9 +2604,7 @@ export const organizationadminUpdateOrganizationToken = <
  *
  * By default shows all requests. Use ?status=pending to filter by status.
  */
-export const organizationadminListMembershipRequests = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminListMembershipRequests = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminListMembershipRequests3C0E76B5Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -2642,9 +2630,7 @@ export const organizationadminListMembershipRequests = <
  *
  * Requires a tier_id to be specified. The tier must belong to the organization.
  */
-export const organizationadminApproveMembershipRequest = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminApproveMembershipRequest = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminApproveMembershipRequestEdc2A028Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -2672,9 +2658,7 @@ export const organizationadminApproveMembershipRequest = <
  *
  * Reject a membership request.
  */
-export const organizationadminRejectMembershipRequest = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminRejectMembershipRequest = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminRejectMembershipRequest150Fc083Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -3095,9 +3079,7 @@ export const organizationadminAddStaff = <ThrowOnError extends boolean = false>(
  *
  * Update a staff member's permissions.
  */
-export const organizationadminUpdateStaffPermissions = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminUpdateStaffPermissions = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminUpdateStaffPermissions9921579eData, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
@@ -6357,9 +6339,7 @@ export const questionnaireEvaluateSubmission = <ThrowOnError extends boolean = f
  *
  * Requires 'edit_questionnaire' permission.
  */
-export const questionnaireUpdateQuestionnaireStatus = <
-	ThrowOnError extends boolean = false
->(
+export const questionnaireUpdateQuestionnaireStatus = <ThrowOnError extends boolean = false>(
 	options: Options<QuestionnaireUpdateQuestionnaireStatus3Fe93Ca1Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -6583,9 +6563,7 @@ export const userpreferencesGetGeneralPreferences = <ThrowOnError extends boolea
  * Modify visibility and location settings.
  * For notification preferences, use the /notification-preferences endpoint.
  */
-export const userpreferencesUpdateGeneralPreferences = <
-	ThrowOnError extends boolean = false
->(
+export const userpreferencesUpdateGeneralPreferences = <ThrowOnError extends boolean = false>(
 	options: Options<UserpreferencesUpdateGeneralPreferences3A497A22Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
@@ -6852,9 +6830,7 @@ export const notificationpreferenceGetPreferences = <ThrowOnError extends boolea
  *
  * Update notification preferences.
  */
-export const notificationpreferenceUpdatePreferences = <
-	ThrowOnError extends boolean = false
->(
+export const notificationpreferenceUpdatePreferences = <ThrowOnError extends boolean = false>(
 	options: Options<NotificationpreferenceUpdatePreferences744E0Cb2Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).patch<
