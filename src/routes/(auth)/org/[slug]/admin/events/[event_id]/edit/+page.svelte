@@ -4,10 +4,12 @@
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import EventWizard from '$lib/components/events/admin/EventWizard.svelte';
+	import DuplicateEventModal from '$lib/components/events/admin/DuplicateEventModal.svelte';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { eventadminUpdateEventStatus, eventadminDeleteEvent } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { CheckCircle, XCircle, FileEdit, Trash2, Ban } from 'lucide-svelte';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import { CheckCircle, XCircle, FileEdit, Trash2, Ban, MoreVertical, Copy } from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -133,6 +135,23 @@
 			deleteEventMutation.mutate();
 		}
 	}
+
+	// Duplicate modal state
+	let showDuplicateModal = $state(false);
+
+	/**
+	 * Open duplicate modal
+	 */
+	function openDuplicateModal(): void {
+		showDuplicateModal = true;
+	}
+
+	/**
+	 * Close duplicate modal
+	 */
+	function closeDuplicateModal(): void {
+		showDuplicateModal = false;
+	}
 </script>
 
 <svelte:head>
@@ -173,7 +192,7 @@
 			</div>
 
 			<!-- Action Buttons -->
-			<div class="flex flex-wrap gap-2">
+			<div class="flex flex-wrap items-center gap-2">
 				{#if currentStatus === 'draft'}
 					<!-- Publish action -->
 					<button
@@ -239,6 +258,28 @@
 					<Trash2 class="h-4 w-4" aria-hidden="true" />
 					Delete
 				</button>
+
+				<!-- More Actions Dropdown -->
+				<DropdownMenu.Root>
+					<DropdownMenu.Trigger>
+						{#snippet child({ props })}
+							<button
+								{...props}
+								type="button"
+								class="inline-flex items-center justify-center rounded-md border border-input bg-background p-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+								aria-label={m['orgAdmin.events.actions.moreActions']()}
+							>
+								<MoreVertical class="h-4 w-4" aria-hidden="true" />
+							</button>
+						{/snippet}
+					</DropdownMenu.Trigger>
+					<DropdownMenu.Content align="end" class="w-48">
+						<DropdownMenu.Item onclick={openDuplicateModal}>
+							<Copy class="mr-2 h-4 w-4" />
+							{m['orgAdmin.events.actions.duplicate']()}
+						</DropdownMenu.Item>
+					</DropdownMenu.Content>
+				</DropdownMenu.Root>
 			</div>
 		</div>
 	</div>
@@ -255,6 +296,16 @@
 		/>
 	</div>
 </div>
+
+<!-- Duplicate Event Modal -->
+<DuplicateEventModal
+	bind:open={showDuplicateModal}
+	eventId={event.id}
+	eventName={event.name}
+	eventStart={event.start}
+	organizationSlug={organization.slug}
+	onClose={closeDuplicateModal}
+/>
 
 <style>
 	/* Ensure consistent focus states for accessibility */

@@ -9,7 +9,10 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { cn } from '$lib/utils/cn';
 	import { formatEventDateRange } from '$lib/utils/date';
+	import EventCoverImage from '$lib/components/events/EventCoverImage.svelte';
 	import EventBadges from '$lib/components/events/EventBadges.svelte';
+	import DuplicateEventModal from '$lib/components/events/admin/DuplicateEventModal.svelte';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import {
 		Plus,
 		Calendar,
@@ -23,7 +26,9 @@
 		UserCheck,
 		Mail,
 		ListPlus,
-		Ban
+		Ban,
+		MoreVertical,
+		Copy
 	} from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -257,6 +262,34 @@
 		)
 	);
 	let pastEvents = $derived(data.events.filter((e: EventInListSchema) => isPastEvent(e)));
+
+	// Duplicate modal state
+	let showDuplicateModal = $state(false);
+	let duplicateEventData = $state<{
+		id: string;
+		name: string;
+		start: string;
+	} | null>(null);
+
+	/**
+	 * Open duplicate modal for an event
+	 */
+	function openDuplicateModal(event: EventInListSchema): void {
+		duplicateEventData = {
+			id: event.id,
+			name: event.name,
+			start: event.start
+		};
+		showDuplicateModal = true;
+	}
+
+	/**
+	 * Close duplicate modal
+	 */
+	function closeDuplicateModal(): void {
+		showDuplicateModal = false;
+		duplicateEventData = null;
+	}
 </script>
 
 <svelte:head>
@@ -319,19 +352,63 @@
 				</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each draftEvents as event (event.id)}
-						<div class="rounded-lg border border-border bg-card p-4 shadow-sm">
-							<div class="space-y-3">
+						<div
+							class="flex flex-col overflow-hidden rounded-lg border border-border bg-card shadow-sm transition-shadow hover:shadow-md"
+						>
+							<!-- Cover Image -->
+							<EventCoverImage {event} />
+
+							<!-- Card Content -->
+							<div class="flex flex-1 flex-col gap-3 p-4">
 								<!-- Header -->
 								<div class="flex items-start justify-between gap-2">
-									<h3 class="font-semibold">{event.name}</h3>
-									<span
-										class={cn(
-											'rounded-full px-2 py-1 text-xs font-medium',
-											getStatusColor(event.status)
-										)}
-									>
-										{m['orgAdmin.events.status.draft']()}
-									</span>
+									<h3 class="flex-1 font-semibold">{event.name}</h3>
+									<div class="flex items-center gap-2">
+										<span
+											class={cn(
+												'rounded-full px-2 py-1 text-xs font-medium',
+												getStatusColor(event.status)
+											)}
+										>
+											{m['orgAdmin.events.status.draft']()}
+										</span>
+										<!-- More Actions Dropdown -->
+										<DropdownMenu.Root>
+											<DropdownMenu.Trigger>
+												{#snippet child({ props })}
+													<button
+														{...props}
+														type="button"
+														class="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+														aria-label={m['orgAdmin.events.actions.moreActions']()}
+													>
+														<MoreVertical class="h-4 w-4" aria-hidden="true" />
+													</button>
+												{/snippet}
+											</DropdownMenu.Trigger>
+											<DropdownMenu.Content align="end" class="w-48">
+												<DropdownMenu.Item onclick={() => openDuplicateModal(event)}>
+													<Copy class="mr-2 h-4 w-4" />
+													{m['orgAdmin.events.actions.duplicate']()}
+												</DropdownMenu.Item>
+												<DropdownMenu.Separator />
+												<DropdownMenu.Item
+													onclick={() => cancelEvent(event.id)}
+													class="text-orange-600 focus:text-orange-600"
+												>
+													<Ban class="mr-2 h-4 w-4" />
+													{m['orgAdmin.events.actions.cancel']()}
+												</DropdownMenu.Item>
+												<DropdownMenu.Item
+													onclick={() => deleteEvent(event.id)}
+													class="text-destructive focus:text-destructive"
+												>
+													<Trash2 class="mr-2 h-4 w-4" />
+													{m['orgAdmin.events.actions.delete']()}
+												</DropdownMenu.Item>
+											</DropdownMenu.Content>
+										</DropdownMenu.Root>
+									</div>
 								</div>
 
 								<!-- Event details -->
@@ -374,22 +451,6 @@
 										<CheckCircle class="h-4 w-4" aria-hidden="true" />
 										{m['orgAdmin.events.actions.publish']()}
 									</button>
-									<button
-										type="button"
-										onclick={() => cancelEvent(event.id)}
-										class="inline-flex items-center gap-1 rounded-md bg-orange-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-orange-700"
-									>
-										<Ban class="h-4 w-4" aria-hidden="true" />
-										{m['orgAdmin.events.actions.cancel']()}
-									</button>
-									<button
-										type="button"
-										onclick={() => deleteEvent(event.id)}
-										class="inline-flex items-center gap-1 rounded-md bg-destructive px-3 py-1 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
-									>
-										<Trash2 class="h-4 w-4" aria-hidden="true" />
-										{m['orgAdmin.events.actions.delete']()}
-									</button>
 								</div>
 							</div>
 						</div>
@@ -409,19 +470,70 @@
 				</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each openEvents as event (event.id)}
-						<div class="rounded-lg border border-border bg-card p-4 shadow-sm">
-							<div class="space-y-3">
+						<div
+							class="flex flex-col overflow-hidden rounded-lg border border-border bg-card shadow-sm transition-shadow hover:shadow-md"
+						>
+							<!-- Cover Image -->
+							<EventCoverImage {event} />
+
+							<!-- Card Content -->
+							<div class="flex flex-1 flex-col gap-3 p-4">
 								<!-- Header -->
 								<div class="flex items-start justify-between gap-2">
-									<h3 class="font-semibold">{event.name}</h3>
-									<span
-										class={cn(
-											'rounded-full px-2 py-1 text-xs font-medium',
-											getStatusColor(event.status)
-										)}
-									>
-										{m['orgAdmin.events.status.published']()}
-									</span>
+									<h3 class="flex-1 font-semibold">{event.name}</h3>
+									<div class="flex items-center gap-2">
+										<span
+											class={cn(
+												'rounded-full px-2 py-1 text-xs font-medium',
+												getStatusColor(event.status)
+											)}
+										>
+											{m['orgAdmin.events.status.published']()}
+										</span>
+										<!-- More Actions Dropdown -->
+										<DropdownMenu.Root>
+											<DropdownMenu.Trigger>
+												{#snippet child({ props })}
+													<button
+														{...props}
+														type="button"
+														class="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+														aria-label={m['orgAdmin.events.actions.moreActions']()}
+													>
+														<MoreVertical class="h-4 w-4" aria-hidden="true" />
+													</button>
+												{/snippet}
+											</DropdownMenu.Trigger>
+											<DropdownMenu.Content align="end" class="w-48">
+												<DropdownMenu.Item onclick={() => openDuplicateModal(event)}>
+													<Copy class="mr-2 h-4 w-4" />
+													{m['orgAdmin.events.actions.duplicate']()}
+												</DropdownMenu.Item>
+												<DropdownMenu.Separator />
+												<DropdownMenu.Item
+													onclick={() => closeEvent(event.id)}
+													class="text-red-600 focus:text-red-600"
+												>
+													<XCircle class="mr-2 h-4 w-4" />
+													{m['orgAdmin.events.actions.close']()}
+												</DropdownMenu.Item>
+												<DropdownMenu.Item
+													onclick={() => cancelEvent(event.id)}
+													class="text-orange-600 focus:text-orange-600"
+												>
+													<Ban class="mr-2 h-4 w-4" />
+													{m['orgAdmin.events.actions.cancel']()}
+												</DropdownMenu.Item>
+												<DropdownMenu.Item
+													onclick={() => deleteEvent(event.id)}
+													class="text-destructive focus:text-destructive"
+												>
+													<Trash2 class="mr-2 h-4 w-4" />
+													{m['orgAdmin.events.actions.delete']()}
+												</DropdownMenu.Item>
+											</DropdownMenu.Content>
+										</DropdownMenu.Root>
+									</div>
 								</div>
 
 								<!-- Event details -->
@@ -502,22 +614,6 @@
 											{m['orgAdmin.events.actions.waitlist']()}
 										</button>
 									{/if}
-									<button
-										type="button"
-										onclick={() => cancelEvent(event.id)}
-										class="inline-flex items-center gap-1 rounded-md bg-orange-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-orange-700"
-									>
-										<Ban class="h-4 w-4" aria-hidden="true" />
-										{m['orgAdmin.events.actions.cancel']()}
-									</button>
-									<button
-										type="button"
-										onclick={() => closeEvent(event.id)}
-										class="inline-flex items-center gap-1 rounded-md bg-red-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-red-700"
-									>
-										<XCircle class="h-4 w-4" aria-hidden="true" />
-										{m['orgAdmin.events.actions.close']()}
-									</button>
 								</div>
 							</div>
 						</div>
@@ -537,19 +633,63 @@
 				</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each closedEvents as event (event.id)}
-						<div class="rounded-lg border border-border bg-card p-4 opacity-75 shadow-sm">
-							<div class="space-y-3">
+						<div
+							class="flex flex-col overflow-hidden rounded-lg border border-border bg-card opacity-75 shadow-sm transition-shadow hover:shadow-md"
+						>
+							<!-- Cover Image -->
+							<EventCoverImage {event} />
+
+							<!-- Card Content -->
+							<div class="flex flex-1 flex-col gap-3 p-4">
 								<!-- Header -->
 								<div class="flex items-start justify-between gap-2">
-									<h3 class="font-semibold">{event.name}</h3>
-									<span
-										class={cn(
-											'rounded-full px-2 py-1 text-xs font-medium',
-											getStatusColor(event.status)
-										)}
-									>
-										{m['orgAdmin.events.status.closed']()}
-									</span>
+									<h3 class="flex-1 font-semibold">{event.name}</h3>
+									<div class="flex items-center gap-2">
+										<span
+											class={cn(
+												'rounded-full px-2 py-1 text-xs font-medium',
+												getStatusColor(event.status)
+											)}
+										>
+											{m['orgAdmin.events.status.closed']()}
+										</span>
+										<!-- More Actions Dropdown -->
+										<DropdownMenu.Root>
+											<DropdownMenu.Trigger>
+												{#snippet child({ props })}
+													<button
+														{...props}
+														type="button"
+														class="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+														aria-label={m['orgAdmin.events.actions.moreActions']()}
+													>
+														<MoreVertical class="h-4 w-4" aria-hidden="true" />
+													</button>
+												{/snippet}
+											</DropdownMenu.Trigger>
+											<DropdownMenu.Content align="end" class="w-48">
+												<DropdownMenu.Item onclick={() => openDuplicateModal(event)}>
+													<Copy class="mr-2 h-4 w-4" />
+													{m['orgAdmin.events.actions.duplicate']()}
+												</DropdownMenu.Item>
+												<DropdownMenu.Separator />
+												<DropdownMenu.Item
+													onclick={() => cancelEvent(event.id)}
+													class="text-orange-600 focus:text-orange-600"
+												>
+													<Ban class="mr-2 h-4 w-4" />
+													{m['orgAdmin.events.actions.cancel']()}
+												</DropdownMenu.Item>
+												<DropdownMenu.Item
+													onclick={() => deleteEvent(event.id)}
+													class="text-destructive focus:text-destructive"
+												>
+													<Trash2 class="mr-2 h-4 w-4" />
+													{m['orgAdmin.events.actions.delete']()}
+												</DropdownMenu.Item>
+											</DropdownMenu.Content>
+										</DropdownMenu.Root>
+									</div>
 								</div>
 
 								<!-- Event details -->
@@ -629,22 +769,6 @@
 									>
 										<CheckCircle class="h-4 w-4" aria-hidden="true" />
 										{m['orgAdmin.events.actions.reopen']()}
-									</button>
-									<button
-										type="button"
-										onclick={() => cancelEvent(event.id)}
-										class="inline-flex items-center gap-1 rounded-md bg-orange-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-orange-700"
-									>
-										<Ban class="h-4 w-4" aria-hidden="true" />
-										{m['orgAdmin.events.actions.cancel']()}
-									</button>
-									<button
-										type="button"
-										onclick={() => deleteEvent(event.id)}
-										class="inline-flex items-center gap-1 rounded-md bg-destructive px-3 py-1 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
-									>
-										<Trash2 class="h-4 w-4" aria-hidden="true" />
-										{m['orgAdmin.events.actions.delete']()}
 									</button>
 								</div>
 							</div>
@@ -666,19 +790,56 @@
 				</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each cancelledEvents as event (event.id)}
-						<div class="rounded-lg border border-border bg-card p-4 opacity-75 shadow-sm">
-							<div class="space-y-3">
+						<div
+							class="flex flex-col overflow-hidden rounded-lg border border-border bg-card opacity-75 shadow-sm transition-shadow hover:shadow-md"
+						>
+							<!-- Cover Image -->
+							<EventCoverImage {event} />
+
+							<!-- Card Content -->
+							<div class="flex flex-1 flex-col gap-3 p-4">
 								<!-- Header -->
 								<div class="flex items-start justify-between gap-2">
-									<h3 class="font-semibold">{event.name}</h3>
-									<span
-										class={cn(
-											'rounded-full px-2 py-1 text-xs font-medium',
-											getStatusColor(event.status)
-										)}
-									>
-										{m['orgAdmin.events.status.cancelled']()}
-									</span>
+									<h3 class="flex-1 font-semibold">{event.name}</h3>
+									<div class="flex items-center gap-2">
+										<span
+											class={cn(
+												'rounded-full px-2 py-1 text-xs font-medium',
+												getStatusColor(event.status)
+											)}
+										>
+											{m['orgAdmin.events.status.cancelled']()}
+										</span>
+										<!-- More Actions Dropdown -->
+										<DropdownMenu.Root>
+											<DropdownMenu.Trigger>
+												{#snippet child({ props })}
+													<button
+														{...props}
+														type="button"
+														class="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+														aria-label={m['orgAdmin.events.actions.moreActions']()}
+													>
+														<MoreVertical class="h-4 w-4" aria-hidden="true" />
+													</button>
+												{/snippet}
+											</DropdownMenu.Trigger>
+											<DropdownMenu.Content align="end" class="w-48">
+												<DropdownMenu.Item onclick={() => openDuplicateModal(event)}>
+													<Copy class="mr-2 h-4 w-4" />
+													{m['orgAdmin.events.actions.duplicate']()}
+												</DropdownMenu.Item>
+												<DropdownMenu.Separator />
+												<DropdownMenu.Item
+													onclick={() => deleteEvent(event.id)}
+													class="text-destructive focus:text-destructive"
+												>
+													<Trash2 class="mr-2 h-4 w-4" />
+													{m['orgAdmin.events.actions.delete']()}
+												</DropdownMenu.Item>
+											</DropdownMenu.Content>
+										</DropdownMenu.Root>
+									</div>
 								</div>
 
 								<!-- Event details -->
@@ -758,14 +919,6 @@
 									>
 										<CheckCircle class="h-4 w-4" aria-hidden="true" />
 										{m['orgAdmin.events.actions.reopen']()}
-									</button>
-									<button
-										type="button"
-										onclick={() => deleteEvent(event.id)}
-										class="inline-flex items-center gap-1 rounded-md bg-destructive px-3 py-1 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
-									>
-										<Trash2 class="h-4 w-4" aria-hidden="true" />
-										{m['orgAdmin.events.actions.delete']()}
 									</button>
 								</div>
 							</div>
@@ -806,10 +959,41 @@
 							<div class="flex flex-1 flex-col gap-4 p-4">
 								<div class="space-y-2">
 									<div class="flex items-start justify-between gap-2">
-										<h3 class="line-clamp-2 text-lg font-semibold leading-tight">
+										<h3 class="line-clamp-2 flex-1 text-lg font-semibold leading-tight">
 											{event.name}
 										</h3>
-										<EventBadges {event} />
+										<div class="flex items-center gap-2">
+											<EventBadges {event} />
+											<!-- More Actions Dropdown -->
+											<DropdownMenu.Root>
+												<DropdownMenu.Trigger>
+													{#snippet child({ props })}
+														<button
+															{...props}
+															type="button"
+															class="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+															aria-label={m['orgAdmin.events.actions.moreActions']()}
+														>
+															<MoreVertical class="h-4 w-4" aria-hidden="true" />
+														</button>
+													{/snippet}
+												</DropdownMenu.Trigger>
+												<DropdownMenu.Content align="end" class="w-48">
+													<DropdownMenu.Item onclick={() => openDuplicateModal(event)}>
+														<Copy class="mr-2 h-4 w-4" />
+														{m['orgAdmin.events.actions.duplicate']()}
+													</DropdownMenu.Item>
+													<DropdownMenu.Separator />
+													<DropdownMenu.Item
+														onclick={() => deleteEvent(event.id)}
+														class="text-destructive focus:text-destructive"
+													>
+														<Trash2 class="mr-2 h-4 w-4" />
+														{m['orgAdmin.events.actions.delete']()}
+													</DropdownMenu.Item>
+												</DropdownMenu.Content>
+											</DropdownMenu.Root>
+										</div>
 									</div>
 									<div class="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
 										<div class="flex items-center gap-1.5">
@@ -854,16 +1038,6 @@
 										<Mail class="h-4 w-4" aria-hidden="true" />
 										{m['orgAdmin.events.actions.invitations']()}
 									</a>
-
-									<!-- Delete -->
-									<button
-										type="button"
-										onclick={() => deleteEvent(event.id)}
-										class="inline-flex items-center gap-1 rounded-md bg-destructive px-3 py-1 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
-									>
-										<Trash2 class="h-4 w-4" aria-hidden="true" />
-										{m['orgAdmin.events.actions.delete']()}
-									</button>
 								</div>
 							</div>
 						</div>
@@ -873,6 +1047,18 @@
 		{/if}
 	{/if}
 </div>
+
+<!-- Duplicate Event Modal -->
+{#if duplicateEventData}
+	<DuplicateEventModal
+		bind:open={showDuplicateModal}
+		eventId={duplicateEventData.id}
+		eventName={duplicateEventData.name}
+		eventStart={duplicateEventData.start}
+		organizationSlug={organization.slug}
+		onClose={closeDuplicateModal}
+	/>
+{/if}
 
 <style>
 	/* Ensure consistent focus states for accessibility */

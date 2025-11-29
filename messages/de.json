@@ -611,13 +611,22 @@
 			},
 			"sections": {
 				"drafts": "Entwürfe ({count})",
+				"drafts_plural": "e",
+				"open": "Offen ({count})",
+				"open_plural": "e",
 				"published": "Veröffentlicht ({count})",
-				"closed": "Geschlossen ({count})"
+				"closed": "Geschlossen ({count})",
+				"closed_plural": "e",
+				"cancelled": "Abgesagt ({count})",
+				"cancelled_plural": "e",
+				"past": "Vergangen ({count})",
+				"past_plural": "e"
 			},
 			"status": {
 				"draft": "Entwurf",
 				"published": "Veröffentlicht",
-				"closed": "Geschlossen"
+				"closed": "Geschlossen",
+				"cancelled": "Abgesagt"
 			},
 			"actions": {
 				"edit": "Bearbeiten",
@@ -629,7 +638,10 @@
 				"attendees": "Teilnehmer",
 				"invitations": "Einladungen",
 				"close": "Schließen",
-				"reopen": "Wieder öffnen"
+				"reopen": "Wieder öffnen",
+				"cancel": "Absagen",
+				"moreActions": "Weitere Aktionen",
+				"duplicate": "Duplizieren"
 			},
 			"attendeeCount": {
 				"attendees": "Teilnehmer",
@@ -639,7 +651,8 @@
 				"publish": "Sind Sie sicher, dass Sie diese Veranstaltung veröffentlichen möchten? Sie wird für Benutzer sichtbar.",
 				"close": "Sind Sie sicher, dass Sie diese Veranstaltung schließen möchten? Zusagen und Ticketverkäufe werden gestoppt.",
 				"delete": "Sind Sie sicher, dass Sie diese Veranstaltung löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden und entfernt die Veranstaltung aus der öffentlichen Ansicht.",
-				"reopen": "Sind Sie sicher, dass Sie diese Veranstaltung wieder öffnen möchten?"
+				"reopen": "Sind Sie sicher, dass Sie diese Veranstaltung wieder öffnen möchten?",
+				"cancel": "Sind Sie sicher, dass Sie diese Veranstaltung absagen möchten? Teilnehmer werden benachrichtigt."
 			}
 		},
 		"members": {
@@ -3351,6 +3364,37 @@
 		"error_notAuthenticated": "Nicht authentifiziert",
 		"error_updateStatusFailed": "Statusaktualisierung fehlgeschlagen",
 		"error_updateStatusMessage": "Statusaktualisierung fehlgeschlagen: {message}"
+	},
+	"duplicateEventModal": {
+		"title": "Veranstaltung duplizieren",
+		"description": "Erstellen Sie eine Kopie dieser Veranstaltung mit neuem Namen und Startdatum. Alle Veranstaltungsdetails, Ticket-Stufen und Einstellungen werden kopiert.",
+		"newName": "Neuer Veranstaltungsname",
+		"namePlaceholder": "Neuen Veranstaltungsnamen eingeben",
+		"newStart": "Neues Startdatum & Uhrzeit",
+		"startHint": "Alle anderen Daten werden proportional basierend auf diesem neuen Startdatum verschoben.",
+		"cancel": "Abbrechen",
+		"duplicate": "Veranstaltung duplizieren",
+		"duplicating": "Wird dupliziert...",
+		"copyOf": "Kopie von {name}",
+		"error_notAuthenticated": "Nicht authentifiziert",
+		"error_failedToDuplicate": "Duplizierung fehlgeschlagen",
+		"error_nameRequired": "Veranstaltungsname ist erforderlich",
+		"error_startRequired": "Startdatum ist erforderlich",
+		"error_startFuture": "Startdatum muss in der Zukunft liegen"
+	},
+	"essentialsStep": {
+		"slugLabel": "Veranstaltungs-URL-Slug",
+		"noSlug": "Kein Slug festgelegt",
+		"edit": "Bearbeiten",
+		"editSlug": "Veranstaltungs-Slug bearbeiten",
+		"saveSlug": "Slug speichern",
+		"cancelSlugEdit": "Slug-Bearbeitung abbrechen",
+		"urlPreview": "Veranstaltungs-URL:",
+		"error_notAuthenticated": "Nicht authentifiziert",
+		"error_slugUpdateFailed": "Slug-Aktualisierung fehlgeschlagen",
+		"error_slugExists": "Eine Veranstaltung mit diesem Slug existiert bereits in Ihrer Organisation",
+		"error_slugRequired": "Slug ist erforderlich",
+		"error_slugFormat": "Slug darf nur Kleinbuchstaben, Zahlen und Bindestriche enthalten (z.B. meine-veranstaltung-2025)"
 	},
 	"questionnaireSubmissionPage": {
 		"pageTitle": "{questionnaireName} - {eventName}",

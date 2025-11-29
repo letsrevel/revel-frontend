@@ -611,13 +611,22 @@
 			},
 			"sections": {
 				"drafts": "Bozze ({count})",
+				"drafts_plural": "e",
+				"open": "Aperti ({count})",
+				"open_plural": "i",
 				"published": "Pubblicati ({count})",
-				"closed": "Chiusi ({count})"
+				"closed": "Chiusi ({count})",
+				"closed_plural": "i",
+				"cancelled": "Annullati ({count})",
+				"cancelled_plural": "i",
+				"past": "Passati ({count})",
+				"past_plural": "i"
 			},
 			"status": {
 				"draft": "Bozza",
 				"published": "Pubblicato",
-				"closed": "Chiuso"
+				"closed": "Chiuso",
+				"cancelled": "Annullato"
 			},
 			"actions": {
 				"edit": "Modifica",
@@ -629,7 +638,10 @@
 				"attendees": "Partecipanti",
 				"invitations": "Inviti",
 				"close": "Chiudi",
-				"reopen": "Riapri"
+				"reopen": "Riapri",
+				"cancel": "Annulla",
+				"moreActions": "Altre azioni",
+				"duplicate": "Duplica"
 			},
 			"attendeeCount": {
 				"attendees": "Partecipanti",
@@ -639,7 +651,8 @@
 				"publish": "Sei sicuro di voler pubblicare questo evento? Diventerà visibile agli utenti.",
 				"close": "Sei sicuro di voler chiudere questo evento? Le conferme e le vendite di biglietti verranno fermate.",
 				"delete": "Sei sicuro di voler eliminare questo evento? Questa azione non può essere annullata e rimuoverà l'evento dalla visualizzazione pubblica.",
-				"reopen": "Sei sicuro di voler riaprire questo evento?"
+				"reopen": "Sei sicuro di voler riaprire questo evento?",
+				"cancel": "Sei sicuro di voler annullare questo evento? I partecipanti saranno notificati."
 			}
 		},
 		"members": {
@@ -3351,6 +3364,37 @@
 		"error_notAuthenticated": "Non autenticato",
 		"error_updateStatusFailed": "Aggiornamento stato fallito",
 		"error_updateStatusMessage": "Aggiornamento stato fallito: {message}"
+	},
+	"duplicateEventModal": {
+		"title": "Duplica Evento",
+		"description": "Crea una copia di questo evento con un nuovo nome e data di inizio. Tutti i dettagli dell'evento, i livelli di biglietti e le impostazioni verranno copiati.",
+		"newName": "Nuovo Nome Evento",
+		"namePlaceholder": "Inserisci il nuovo nome dell'evento",
+		"newStart": "Nuova Data e Ora di Inizio",
+		"startHint": "Tutte le altre date saranno spostate proporzionalmente in base a questa nuova data di inizio.",
+		"cancel": "Annulla",
+		"duplicate": "Duplica Evento",
+		"duplicating": "Duplicazione in corso...",
+		"copyOf": "Copia di {name}",
+		"error_notAuthenticated": "Non autenticato",
+		"error_failedToDuplicate": "Duplicazione fallita",
+		"error_nameRequired": "Il nome dell'evento è obbligatorio",
+		"error_startRequired": "La data di inizio è obbligatoria",
+		"error_startFuture": "La data di inizio deve essere nel futuro"
+	},
+	"essentialsStep": {
+		"slugLabel": "Slug URL Evento",
+		"noSlug": "Nessuno slug impostato",
+		"edit": "Modifica",
+		"editSlug": "Modifica slug evento",
+		"saveSlug": "Salva slug",
+		"cancelSlugEdit": "Annulla modifica slug",
+		"urlPreview": "URL Evento:",
+		"error_notAuthenticated": "Non autenticato",
+		"error_slugUpdateFailed": "Aggiornamento slug fallito",
+		"error_slugExists": "Un evento con questo slug esiste già nella tua organizzazione",
+		"error_slugRequired": "Lo slug è obbligatorio",
+		"error_slugFormat": "Lo slug può contenere solo lettere minuscole, numeri e trattini (es. mio-evento-2025)"
 	},
 	"questionnaireSubmissionPage": {
 		"pageTitle": "{questionnaireName} - {eventName}",
