@@ -1,6 +1,10 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import type { EventCreateSchema, EventSeriesRetrieveSchema } from '$lib/api/generated/types.gen';
+	import type {
+		EventCreateSchema,
+		EventSeriesRetrieveSchema,
+		ResourceVisibility
+	} from '$lib/api/generated/types.gen';
 	import { getBackendUrl } from '$lib/config/api';
 	import {
 		FileText,
@@ -11,7 +15,8 @@
 		ChevronDown,
 		ChevronRight,
 		CheckSquare,
-		Hash
+		Hash,
+		Eye
 	} from 'lucide-svelte';
 	import ImageUploader from '$lib/components/forms/ImageUploader.svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
@@ -28,6 +33,7 @@
 			organization_logo?: string;
 			organization_cover_art?: string;
 			requires_ticket?: boolean;
+			address_visibility?: ResourceVisibility;
 		};
 		eventSeries?: EventSeriesRetrieveSchema[];
 		questionnaires?: OrganizationQuestionnaireInListSchema[];
@@ -35,7 +41,12 @@
 		organizationId?: string;
 		organizationSlug?: string;
 		accessToken?: string;
-		onUpdate: (data: Partial<EventCreateSchema> & { tags?: string[] }) => void;
+		onUpdate: (
+			data: Partial<EventCreateSchema> & {
+				tags?: string[];
+				address_visibility?: ResourceVisibility;
+			}
+		) => void;
 		onUpdateImages: (data: {
 			logo?: File | null;
 			coverArt?: File | null;
@@ -308,6 +319,33 @@
 						placeholder={m['detailsStep.addressPlaceholder']()}
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					/>
+				</div>
+
+				<!-- Address Visibility -->
+				<div class="space-y-2">
+					<label for="address-visibility" class="block text-sm font-medium">
+						<span class="flex items-center gap-2">
+							<Eye class="h-4 w-4" aria-hidden="true" />
+							{m['detailsStep.addressVisibility']()}
+						</span>
+					</label>
+					<select
+						id="address-visibility"
+						value={formData.address_visibility || 'public'}
+						onchange={(e) =>
+							onUpdate({ address_visibility: e.currentTarget.value as ResourceVisibility })}
+						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+					>
+						<option value="public">{m['detailsStep.addressVisibilityPublic']()}</option>
+						<option value="members-only">{m['detailsStep.addressVisibilityMembersOnly']()}</option>
+						<option value="attendees-only"
+							>{m['detailsStep.addressVisibilityAttendeesOnly']()}</option
+						>
+						<option value="private">{m['detailsStep.addressVisibilityPrivate']()}</option>
+					</select>
+					<p class="text-xs text-muted-foreground">
+						{m['detailsStep.addressVisibilityHint']()}
+					</p>
 				</div>
 			</div>
 		{/if}
