@@ -1678,8 +1678,10 @@
 		"public": "Pubblico - Chiunque può visualizzare",
 		"membersOnly": "Solo Membri - Richiede iscrizione",
 		"staffOnly": "Solo Staff - Solo staff e admin",
+		"attendeesOnly": "Solo Partecipanti - Partecipanti all'evento e possessori di biglietti",
 		"private": "Privato - Solo admin",
 		"privateInvitedAttendees": "Solo utenti invitati o partecipanti",
+		"attendeesOnlyHelp": "Visibile solo agli utenti che hanno confermato la partecipazione o acquistato un biglietto per gli eventi assegnati",
 		"privateVisibilityHelp": "Visibile solo agli utenti invitati o che partecipano all'evento assegnato",
 		"controlsVisibility": "Controlla chi può visualizzare questa risorsa"
 	},
@@ -2450,6 +2452,7 @@
 				"public": "Pubblico",
 				"membersOnly": "Solo Membri",
 				"staffOnly": "Solo Staff",
+				"attendeesOnly": "Solo Partecipanti",
 				"private": "Privato"
 			}
 		},

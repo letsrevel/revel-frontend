@@ -23,9 +23,9 @@
 	// Filter state
 	let searchQuery = $state('');
 	let typeFilter = $state<'all' | 'file' | 'link' | 'text'>('all');
-	let visibilityFilter = $state<'all' | 'public' | 'members-only' | 'staff-only' | 'private'>(
-		'all'
-	);
+	let visibilityFilter = $state<
+		'all' | 'public' | 'members-only' | 'staff-only' | 'attendees-only' | 'private'
+	>('all');
 
 	// Resources query
 	const resourcesQuery = createQuery<AdditionalResourceSchema[]>(() => ({
@@ -173,6 +173,9 @@
 				>{m['orgAdmin.resources.filters.visibility.membersOnly']()}</option
 			>
 			<option value="staff-only">{m['orgAdmin.resources.filters.visibility.staffOnly']()}</option>
+			<option value="attendees-only"
+				>{m['orgAdmin.resources.filters.visibility.attendeesOnly']()}</option
+			>
 			<option value="private">{m['orgAdmin.resources.filters.visibility.private']()}</option>
 		</select>
 	</div>
