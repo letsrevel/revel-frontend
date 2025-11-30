@@ -4,11 +4,13 @@
 	import { Card } from '$lib/components/ui/card';
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
 	import MyTicketModal from './MyTicketModal.svelte';
+	import AddToWalletButton from './AddToWalletButton.svelte';
 	import { Calendar, MapPin, Ticket, Download, CalendarDays } from 'lucide-svelte';
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
 	import { getImageUrl } from '$lib/utils/url';
 	import { formatEventDateRange } from '$lib/utils/date';
 	import { getEventLogo } from '$lib/utils/event';
+	import { getLocale } from '$lib/paraglide/runtime.js';
 
 	interface Props {
 		ticket: UserTicketSchema;
@@ -61,10 +63,16 @@
 			(ticket.status as string) === 'pending'
 	);
 
-	// Format created date
+	// Format created date to match event date format (e.g., "Tue, Jan 13, 2025")
 	let createdDate = $derived.by(() => {
 		const date = new Date(ticket.created_at);
-		return date.toLocaleDateString();
+		const locale = getLocale();
+		return date.toLocaleDateString(locale, {
+			weekday: 'short',
+			month: 'short',
+			day: 'numeric',
+			year: 'numeric'
+		});
 	});
 </script>
 
@@ -88,8 +96,8 @@
 			<!-- Event Details -->
 			<div class="min-w-0 flex-1">
 				<div class="mb-2 flex items-start justify-between gap-2">
-					<div class="min-w-0">
-						<h3 class="truncate text-lg font-semibold">
+					<div class="min-w-0 flex-1">
+						<h3 class="text-lg font-semibold">
 							<a
 								href="/events/{ticket.event.id}"
 								class="hover:underline focus:underline focus:outline-none"
@@ -118,31 +126,28 @@
 							<dd class="truncate">{eventLocation}</dd>
 						</div>
 					{/if}
+					<!-- Purchased Date -->
+					<div class="text-muted-foreground">
+						<span class="font-medium">{m['ticketListCard.purchased']()}</span>
+						{createdDate}
+					</div>
 				</dl>
 			</div>
 		</div>
 
-		<!-- Ticket Info Footer -->
-		<div
-			class="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4 text-sm"
-		>
-			<div class="text-muted-foreground">
-				<span class="font-medium">{m['ticketListCard.purchased']()}</span>
-				{createdDate}
-			</div>
-
-			<!-- Actions -->
-			<div class="flex flex-wrap items-center gap-2">
+		<!-- Actions Footer -->
+		<div class="border-t border-border pt-4">
+			<div class="flex flex-col gap-2">
 				<!-- Download iCal -->
 				{#if ticket.event.start}
 					<button
 						type="button"
 						onclick={downloadICalFile}
-						class="inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+						class="inline-flex items-center justify-center gap-1.5 rounded-md border bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						aria-label="Download calendar event"
 					>
 						<CalendarDays class="h-4 w-4" aria-hidden="true" />
-						<span class="hidden sm:inline">{m['ticketListCard.addToCalendar']()}</span>
+						{m['ticketListCard.addToCalendar']()}
 					</button>
 				{/if}
 
@@ -151,7 +156,7 @@
 					<button
 						type="button"
 						onclick={() => (showTicketModal = true)}
-						class="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+						class="inline-flex items-center justify-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						aria-label="View ticket and QR code"
 					>
 						<Ticket class="h-4 w-4" aria-hidden="true" />
@@ -160,10 +165,15 @@
 				{:else}
 					<a
 						href="/events/{ticket.event.id}"
-						class="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+						class="inline-flex items-center justify-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					>
 						View Event
 					</a>
+				{/if}
+
+				<!-- Add to Wallet -->
+				{#if ticket.apple_pass_available && ticket.id}
+					<AddToWalletButton ticketId={ticket.id} eventName={ticket.event.name} variant="default" />
 				{/if}
 			</div>
 		</div>
@@ -179,7 +189,8 @@
 			status: ticket.status,
 			tier: ticket.tier,
 			checked_in_at: ticket.checked_in_at ?? undefined,
-			event_id: ticket.event.id
+			event_id: ticket.event.id,
+			apple_pass_available: ticket.apple_pass_available
 		}}
 		eventName={ticket.event.name}
 		eventDate={eventDate ?? undefined}
