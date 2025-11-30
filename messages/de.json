@@ -3860,5 +3860,7 @@
 		"list_view": "Liste",
 		"calendar_view": "Kalender",
 		"week_of": "Woche vom"
-	}
+	},
+	"addToWallet.addToAppleWallet": "Zu Apple Wallet hinzufügen",
+	"addToWallet.downloading": "Wird heruntergeladen..."
 }

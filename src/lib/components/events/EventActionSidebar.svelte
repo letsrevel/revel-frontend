@@ -13,6 +13,7 @@
 	import ActionButton from './ActionButton.svelte';
 	import EventRSVP from './EventRSVP.svelte';
 	import EligibilityStatusDisplay from './EligibilityStatusDisplay.svelte';
+	import AddToWalletButton from '$lib/components/tickets/AddToWalletButton.svelte';
 	import { Check, Ticket, Settings, Users, Mail, CalendarDays } from 'lucide-svelte';
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
 
@@ -328,6 +329,16 @@
 						{showManageRSVP ? 'Hide' : 'Change'} RSVP
 					{/if}
 				</button>
+
+				<!-- Add to Wallet Button (for tickets with Apple Wallet available) -->
+				{#if userStatus && isTicket(userStatus) && userStatus.apple_pass_available && userStatus.id}
+					<AddToWalletButton
+						ticketId={userStatus.id}
+						eventName={event.name}
+						variant="secondary"
+						class="w-full"
+					/>
+				{/if}
 
 				<!-- Add to Calendar Button -->
 				<button

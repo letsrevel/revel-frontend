@@ -3860,5 +3860,7 @@
 		"list_view": "Lista",
 		"calendar_view": "Calendario",
 		"week_of": "Settimana del"
-	}
+	},
+	"addToWallet.addToAppleWallet": "Aggiungi a Apple Wallet",
+	"addToWallet.downloading": "Download in corso..."
 }

@@ -3,6 +3,7 @@
 	import type { EventTicketSchemaActual } from '$lib/utils/eligibility';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
+	import AddToWalletButton from './AddToWalletButton.svelte';
 	import { Ticket, Calendar, MapPin, Download } from 'lucide-svelte';
 	import QRCode from 'qrcode';
 
@@ -219,14 +220,19 @@
 							class="h-64 w-64 rounded-lg border border-border bg-white"
 						/>
 						<p class="text-center text-sm text-muted-foreground">{m['myTicketModal.showQr']()}</p>
-						<button
-							type="button"
-							onclick={downloadQRCode}
-							class="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-						>
-							<Download class="h-4 w-4" aria-hidden="true" />
-							Download QR Code
-						</button>
+						<div class="flex w-full flex-col gap-2">
+							<button
+								type="button"
+								onclick={downloadQRCode}
+								class="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+							>
+								<Download class="h-4 w-4" aria-hidden="true" />
+								Download QR Code
+							</button>
+							{#if ticket.apple_pass_available && ticket.id}
+								<AddToWalletButton ticketId={ticket.id} {eventName} variant="secondary" />
+							{/if}
+						</div>
 					{:else}
 						<div class="text-center text-sm text-destructive">
 							Unable to generate QR code. Please refresh the page.
