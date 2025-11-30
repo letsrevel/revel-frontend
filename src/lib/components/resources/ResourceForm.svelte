@@ -343,12 +343,15 @@
 			<option value="public">{m['resourceForm.public']()}</option>
 			<option value="members-only">{m['resourceForm.membersOnly']()}</option>
 			<option value="staff-only">{m['resourceForm.staffOnly']()}</option>
+			<option value="attendees-only">{m['resourceForm.attendeesOnly']()}</option>
 			<option value="private">{m['resourceForm.privateInvitedAttendees']()}</option>
 		</select>
 		<p class="text-xs text-muted-foreground">
 			{visibility === 'private'
 				? m['resourceForm.privateVisibilityHelp']()
-				: m['resourceForm.controlsVisibility']()}
+				: visibility === 'attendees-only'
+					? m['resourceForm.attendeesOnlyHelp']()
+					: m['resourceForm.controlsVisibility']()}
 		</p>
 	</div>
 

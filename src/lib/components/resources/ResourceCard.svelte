@@ -12,7 +12,8 @@
 		Globe,
 		Users,
 		Shield,
-		Lock
+		Lock,
+		Ticket
 	} from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
 	import { getBackendUrl } from '$lib/config/api';
@@ -49,6 +50,12 @@
 				return { icon: Users, label: 'Members Only', color: 'text-blue-600 dark:text-blue-400' };
 			case 'staff-only':
 				return { icon: Shield, label: 'Staff Only', color: 'text-orange-600 dark:text-orange-400' };
+			case 'attendees-only':
+				return {
+					icon: Ticket,
+					label: 'Attendees Only',
+					color: 'text-purple-600 dark:text-purple-400'
+				};
 			case 'private':
 				return { icon: Lock, label: 'Private', color: 'text-gray-600 dark:text-gray-400' };
 			default:

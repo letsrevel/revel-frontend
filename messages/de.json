@@ -1678,8 +1678,10 @@
 		"public": "Öffentlich - Jeder kann sehen",
 		"membersOnly": "Nur Mitglieder - Erfordert Mitgliedschaft",
 		"staffOnly": "Nur Personal - Nur Personal und Admins",
+		"attendeesOnly": "Nur Teilnehmer - Veranstaltungsteilnehmer und Ticketinhaber",
 		"private": "Privat - Nur Admins",
 		"privateInvitedAttendees": "Nur eingeladene Benutzer oder Teilnehmer",
+		"attendeesOnlyHelp": "Nur sichtbar für Benutzer, die mit \"Ja\" zugesagt oder ein Ticket für die zugewiesenen Veranstaltungen gekauft haben",
 		"privateVisibilityHelp": "Nur sichtbar für Benutzer, die zur zugewiesenen Veranstaltung eingeladen sind oder daran teilnehmen",
 		"controlsVisibility": "Kontrolliert, wer diese Ressource sehen kann"
 	},
@@ -2450,6 +2452,7 @@
 				"public": "Öffentlich",
 				"membersOnly": "Nur Mitglieder",
 				"staffOnly": "Nur Personal",
+				"attendeesOnly": "Nur Teilnehmer",
 				"private": "Privat"
 			}
 		},

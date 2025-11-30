@@ -1678,8 +1678,10 @@
 		"public": "Public - Anyone can view",
 		"membersOnly": "Members Only - Requires membership",
 		"staffOnly": "Staff Only - Staff and admins only",
+		"attendeesOnly": "Attendees Only - Event attendees and ticket holders",
 		"private": "Private - Admins only",
 		"privateInvitedAttendees": "Invited users or attendees only",
+		"attendeesOnlyHelp": "Only visible to users who have RSVP'd yes or purchased a ticket for the assigned event(s)",
 		"privateVisibilityHelp": "Only visible to users who are invited to or attending the assigned event(s)",
 		"controlsVisibility": "Controls who can view this resource"
 	},
@@ -2450,6 +2452,7 @@
 				"public": "Public",
 				"membersOnly": "Members Only",
 				"staffOnly": "Staff Only",
+				"attendeesOnly": "Attendees Only",
 				"private": "Private"
 			}
 		},
