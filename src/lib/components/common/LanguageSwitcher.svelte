@@ -3,6 +3,8 @@
 	import { getLocale, setLocale, locales } from '$lib/paraglide/runtime.js';
 	import { invalidateAll } from '$app/navigation';
 	import { Globe } from 'lucide-svelte';
+	import { authStore } from '$lib/stores/auth.svelte';
+	import { accountUpdateLanguage } from '$lib/api/client';
 
 	// Current locale
 	let currentLocale = $derived(getLocale());
@@ -14,19 +16,36 @@
 		{ code: 'it', name: 'Italiano', flag: '🇮🇹' }
 	] as const;
 
+	type SupportedLanguage = 'en' | 'de' | 'it';
+
 	// Dropdown open state
 	let isOpen = $state(false);
 
 	// Switch language
 	async function switchLanguage(lang: string) {
-		// Set locale
-		setLocale(lang as any);
+		const typedLang = lang as SupportedLanguage;
 
-		// Update cookie
+		// Set locale
+		setLocale(typedLang);
+
+		// Update cookie (for non-logged-in users and SSR)
 		document.cookie = `user_language=${lang}; path=/; max-age=31536000; SameSite=Lax`;
 
 		// Close dropdown
 		isOpen = false;
+
+		// If user is logged in, persist to backend
+		if (authStore.isAuthenticated) {
+			try {
+				await accountUpdateLanguage({
+					body: { language: typedLang },
+					headers: authStore.getAuthHeaders()
+				});
+			} catch (error) {
+				console.error('[LanguageSwitcher] Failed to update language in backend:', error);
+				// Continue anyway - the local change is already applied
+			}
+		}
 
 		// Reload all data with new language
 		await invalidateAll();
