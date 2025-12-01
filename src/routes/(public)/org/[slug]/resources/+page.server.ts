@@ -2,21 +2,29 @@ import { organizationListResources, organizationGetOrganization } from '$lib/api
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params, fetch }) => {
+export const load: PageServerLoad = async ({ params, fetch, locals }) => {
+	// Prepare headers with authentication if user is logged in
+	const headers: HeadersInit = {};
+	if (locals.user?.accessToken) {
+		headers['Authorization'] = `Bearer ${locals.user.accessToken}`;
+	}
+
 	// Fetch organization details
 	const organizationResponse = await organizationGetOrganization({
 		fetch,
-		path: { slug: params.slug }
+		path: { slug: params.slug },
+		headers
 	});
 
 	if (organizationResponse.error) {
 		throw error(404, 'Organization not found');
 	}
 
-	// Fetch public resources for this organization
+	// Fetch resources for this organization (pass auth to see restricted resources)
 	const resourcesResponse = await organizationListResources({
 		fetch,
-		path: { slug: params.slug }
+		path: { slug: params.slug },
+		headers
 	});
 
 	if (resourcesResponse.error) {

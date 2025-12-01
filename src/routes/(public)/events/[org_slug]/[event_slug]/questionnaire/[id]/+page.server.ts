@@ -5,9 +5,16 @@ import { eventGetEventBySlugs, eventGetQuestionnaire } from '$lib/api/client';
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const { org_slug, event_slug, id: questionnaireId } = params;
 
-	// Fetch the event to get its ID
+	// Prepare headers with authentication if user is logged in
+	const headers: HeadersInit = {};
+	if (locals.user?.accessToken) {
+		headers['Authorization'] = `Bearer ${locals.user.accessToken}`;
+	}
+
+	// Fetch the event to get its ID (pass auth to see private events)
 	const { data: event, error: eventError } = await eventGetEventBySlugs({
-		path: { event_slug, org_slug }
+		path: { event_slug, org_slug },
+		headers
 	});
 
 	if (eventError || !event) {
