@@ -22,7 +22,8 @@
 		EventDetailSchema,
 		CitySchema,
 		OrganizationRetrieveSchema,
-		OrganizationQuestionnaireInListSchema
+		OrganizationQuestionnaireInListSchema,
+		ResourceVisibility
 	} from '$lib/api/generated/types.gen';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -110,6 +111,7 @@
 			organization_logo?: string;
 			organization_cover_art?: string;
 			requires_ticket?: boolean; // Not in API schema yet, but used in UI
+			address_visibility?: ResourceVisibility;
 		}
 	>({
 		name: existingEvent?.name || '',
@@ -121,6 +123,7 @@
 		requires_ticket: (existingEvent as any)?.requires_ticket || false,
 		description: existingEvent?.description || '',
 		address: existingEvent?.address || '',
+		address_visibility: (existingEvent as any)?.address_visibility || 'public',
 		rsvp_before: toDateTimeLocal(existingEvent?.rsvp_before) || null,
 		max_attendees: existingEvent?.max_attendees || undefined,
 		waitlist_open: existingEvent?.waitlist_open || false,
@@ -419,6 +422,7 @@
 					description: formData.description || null,
 					end: toISOString(formData.end),
 					address: formData.address || null,
+					address_visibility: formData.address_visibility || 'public',
 					rsvp_before: toISOString(formData.rsvp_before),
 					max_attendees: formData.max_attendees || undefined,
 					waitlist_open: formData.waitlist_open || false,
@@ -477,6 +481,7 @@
 				description: formData.description || null,
 				end: toISOString(formData.end),
 				address: formData.address || null,
+				address_visibility: formData.address_visibility || 'public',
 				rsvp_before: toISOString(formData.rsvp_before),
 				max_attendees: formData.max_attendees || undefined,
 				waitlist_open: formData.waitlist_open || false,
@@ -548,6 +553,7 @@
 			cover_art?: string;
 			organization_logo?: string;
 			organization_cover_art?: string;
+			address_visibility?: ResourceVisibility;
 		}
 	): void {
 		formData = { ...formData, ...updates };
