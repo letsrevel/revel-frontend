@@ -134,12 +134,13 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 			}
 		}
 
-		// Fetch event resources (public endpoint)
+		// Fetch event resources (pass auth to see restricted resources)
 		let resources: AdditionalResourceSchema[] = [];
 		try {
 			const resourcesResponse = await eventListResources({
 				fetch,
-				path: { event_id: event.id }
+				path: { event_id: event.id },
+				headers
 			});
 
 			if (resourcesResponse.data) {

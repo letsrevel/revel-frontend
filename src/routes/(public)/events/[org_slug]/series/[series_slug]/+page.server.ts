@@ -22,10 +22,11 @@ export const load: PageServerLoad = async ({ params, url, fetch, locals }) => {
 			headers['Authorization'] = `Bearer ${locals.user.accessToken}`;
 		}
 
-		// Fetch the event series
+		// Fetch the event series (pass auth to see private series)
 		const seriesResponse = await eventseriesGetEventSeriesBySlugs({
 			path: { org_slug, series_slug },
-			fetch
+			fetch,
+			headers
 		});
 
 		if (seriesResponse.error || !seriesResponse.data) {

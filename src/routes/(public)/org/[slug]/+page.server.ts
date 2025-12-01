@@ -43,10 +43,11 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 
 		const organization = orgResponse.data;
 
-		// Fetch public resources for this organization
+		// Fetch resources for this organization (pass auth to see restricted resources)
 		const resourcesResponse = await organizationListResources({
 			fetch,
-			path: { slug }
+			path: { slug },
+			headers
 		});
 
 		const resources = resourcesResponse.data?.results || [];
