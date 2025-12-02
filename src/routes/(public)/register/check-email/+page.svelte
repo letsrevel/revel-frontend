@@ -63,7 +63,15 @@
 		<!-- Instructions -->
 		<div class="space-y-4 text-sm text-muted-foreground">
 			<p>{m['checkEmailPage.clickLink']()}</p>
-			<p>{m['checkEmailPage.checkSpam']()}</p>
+		</div>
+
+		<!-- Spam Warning -->
+		<div
+			class="rounded-md border border-amber-500/50 bg-amber-50 p-4 text-left dark:bg-amber-950/30"
+		>
+			<p class="text-sm font-medium text-amber-800 dark:text-amber-200">
+				{m['checkEmailPage.checkSpam']()}
+			</p>
 		</div>
 
 		<!-- Resend Section -->
@@ -73,9 +81,10 @@
 			{#if resendSuccess}
 				<div
 					role="status"
-					class="rounded-md border border-green-500 bg-green-500/10 p-3 text-sm text-green-700 dark:text-green-400"
+					class="space-y-2 rounded-md border border-green-500 bg-green-500/10 p-3 text-sm text-green-700 dark:text-green-400"
 				>
-					Verification email sent! Check your inbox.
+					<p>{m['checkEmailPage.resendSuccess']()}</p>
+					<p class="text-green-600 dark:text-green-500">{m['checkEmailPage.checkSpam']()}</p>
 				</div>
 			{/if}
 
@@ -105,7 +114,9 @@
 
 		<!-- Back to Login -->
 		<div class="text-sm">
-			<a href="/login" class="text-primary underline-offset-4 hover:underline"> Back to login </a>
+			<a href="/login" class="text-primary underline-offset-4 hover:underline">
+				{m['checkEmailPage.backToLogin']()}
+			</a>
 		</div>
 	</div>
 </div>

@@ -31,12 +31,14 @@
 		<!-- Header -->
 		<div class="text-center">
 			<h1 class="text-3xl font-bold tracking-tight">
-				{success ? 'Check your email' : 'Reset your password'}
+				{success
+					? m['passwordResetPage.checkYourEmail']()
+					: m['passwordResetPage.resetYourPassword']()}
 			</h1>
 			<p class="mt-2 text-muted-foreground">
 				{success
-					? 'If an account exists with that email, you will receive password reset instructions'
-					: 'Enter your email address and we will send you a link to reset your password'}
+					? m['passwordResetPage.emailSentDescription']()
+					: m['passwordResetPage.enterEmailDescription']()}
 			</p>
 		</div>
 
@@ -53,16 +55,20 @@
 					/>
 					<div class="flex-1 space-y-3">
 						<p class="text-sm font-medium text-green-800 dark:text-green-200">
-							Password reset email sent
+							{m['passwordResetPage.emailSentTitle']()}
 						</p>
 						<p class="text-sm text-green-700 dark:text-green-300">
-							Check your inbox for password reset instructions. The link will expire in 1 hour.
-						</p>
-						<p class="text-xs text-green-600 dark:text-green-400">
-							Didn't receive the email? Check your spam folder or try again in a few minutes.
+							{m['passwordResetPage.emailSentMessage']()}
 						</p>
 					</div>
 				</div>
+			</div>
+
+			<!-- Spam Warning -->
+			<div class="rounded-md border border-amber-500/50 bg-amber-50 p-4 dark:bg-amber-950/30">
+				<p class="text-sm font-medium text-amber-800 dark:text-amber-200">
+					{m['passwordResetPage.checkSpam']()}
+				</p>
 			</div>
 
 			<!-- Back to Login -->
@@ -72,7 +78,7 @@
 					class="inline-flex items-center gap-2 text-sm text-primary underline-offset-4 hover:underline"
 				>
 					<ArrowLeft class="h-4 w-4" aria-hidden="true" />
-					Back to login
+					{m['passwordResetPage.backToLogin']()}
 				</a>
 			</div>
 		{:else}
@@ -101,7 +107,9 @@
 			>
 				<!-- Email Field -->
 				<div class="space-y-2">
-					<label for="email" class="block text-sm font-medium"> Email address </label>
+					<label for="email" class="block text-sm font-medium">
+						{m['passwordResetPage.emailLabel']()}
+					</label>
 					<input
 						id="email"
 						name="email"
@@ -146,7 +154,7 @@
 					class="inline-flex items-center gap-2 text-sm text-primary underline-offset-4 hover:underline"
 				>
 					<ArrowLeft class="h-4 w-4" aria-hidden="true" />
-					Back to login
+					{m['passwordResetPage.backToLogin']()}
 				</a>
 			</div>
 		{/if}

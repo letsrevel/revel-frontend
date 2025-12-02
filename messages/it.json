@@ -834,6 +834,7 @@
 		"email_resending": "Invio...",
 		"email_resendWait": "Aspetta {seconds}s",
 		"email_resendSuccess": "Email di verifica inviata! Controlla la tua casella di posta.",
+		"email_checkSpam": "Se non vedi l'email, controlla la cartella spam.",
 		"email_resendError": "Impossibile inviare l'email di verifica. Riprova più tardi.",
 		"email_rateLimitError": "Troppe richieste. Attendi prima di riprovare.",
 		"firstName_label": "Nome",
@@ -2375,7 +2376,16 @@
 	"passwordResetPage": {
 		"title": "Reimposta Password - Revel",
 		"sendingLink": "Invio link di reset...",
-		"sendLink": "Invia link di reset"
+		"sendLink": "Invia link di reset",
+		"resetYourPassword": "Reimposta la tua password",
+		"enterEmailDescription": "Inserisci il tuo indirizzo email e ti invieremo un link per reimpostare la password",
+		"checkYourEmail": "Controlla la tua email",
+		"emailSentDescription": "Se esiste un account con questa email, riceverai le istruzioni per reimpostare la password",
+		"emailSentTitle": "Email di reset password inviata",
+		"emailSentMessage": "Controlla la tua casella di posta per le istruzioni di reset. Il link scadrà tra 1 ora.",
+		"checkSpam": "Non hai ricevuto l'email? Controlla la cartella spam o riprova tra qualche minuto.",
+		"backToLogin": "Torna al login",
+		"emailLabel": "Indirizzo email"
 	},
 	"checkEmailPage": {
 		"title": "Controlla la Tua Email - Revel",
@@ -2385,7 +2395,9 @@
 		"checkSpam": "Se non vedi l'email, controlla la cartella spam.",
 		"didNotReceive": "Non hai ricevuto l'email?",
 		"sending": "Invio in corso...",
-		"resend": "Invia nuovamente email di verifica"
+		"resend": "Invia nuovamente email di verifica",
+		"resendSuccess": "Email di verifica inviata! Controlla la tua casella di posta.",
+		"backToLogin": "Torna al login"
 	},
 	"verifyPage": {
 		"emailVerified": "Email verificata!",
