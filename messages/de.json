@@ -834,6 +834,7 @@
 		"email_resending": "Wird gesendet...",
 		"email_resendWait": "Warte {seconds}s",
 		"email_resendSuccess": "Verifizierungs-E-Mail gesendet! Bitte überprüfe deinen Posteingang.",
+		"email_checkSpam": "Falls du die E-Mail nicht siehst, überprüfe deinen Spam-Ordner.",
 		"email_resendError": "Fehler beim Senden der Verifizierungs-E-Mail. Bitte versuche es später erneut.",
 		"email_rateLimitError": "Zu viele Anfragen. Bitte warte, bevor du es erneut versuchst.",
 		"firstName_label": "Vorname",
@@ -2375,7 +2376,16 @@
 	"passwordResetPage": {
 		"title": "Passwort zurücksetzen - Revel",
 		"sendingLink": "Reset-Link wird gesendet...",
-		"sendLink": "Reset-Link senden"
+		"sendLink": "Reset-Link senden",
+		"resetYourPassword": "Passwort zurücksetzen",
+		"enterEmailDescription": "Gib deine E-Mail-Adresse ein und wir senden dir einen Link zum Zurücksetzen deines Passworts",
+		"checkYourEmail": "Überprüfe deine E-Mails",
+		"emailSentDescription": "Falls ein Konto mit dieser E-Mail existiert, erhältst du Anweisungen zum Zurücksetzen des Passworts",
+		"emailSentTitle": "E-Mail zum Zurücksetzen des Passworts gesendet",
+		"emailSentMessage": "Überprüfe deinen Posteingang für Anweisungen zum Zurücksetzen des Passworts. Der Link läuft in 1 Stunde ab.",
+		"checkSpam": "E-Mail nicht erhalten? Überprüfe deinen Spam-Ordner oder versuche es in ein paar Minuten erneut.",
+		"backToLogin": "Zurück zur Anmeldung",
+		"emailLabel": "E-Mail-Adresse"
 	},
 	"checkEmailPage": {
 		"title": "Überprüfe deine E-Mails - Revel",
@@ -2385,7 +2395,9 @@
 		"checkSpam": "Falls du die E-Mail nicht siehst, überprüfe deinen Spam-Ordner.",
 		"didNotReceive": "E-Mail nicht erhalten?",
 		"sending": "Sende...",
-		"resend": "Verifizierungs-E-Mail erneut senden"
+		"resend": "Verifizierungs-E-Mail erneut senden",
+		"resendSuccess": "Verifizierungs-E-Mail gesendet! Bitte überprüfe deinen Posteingang.",
+		"backToLogin": "Zurück zur Anmeldung"
 	},
 	"verifyPage": {
 		"emailVerified": "E-Mail verifiziert!",

@@ -834,6 +834,7 @@
 		"email_resending": "Sending...",
 		"email_resendWait": "Wait {seconds}s",
 		"email_resendSuccess": "Verification email sent! Please check your inbox.",
+		"email_checkSpam": "If you don't see the email, check your spam folder.",
 		"email_resendError": "Failed to send verification email. Please try again later.",
 		"email_rateLimitError": "Too many requests. Please wait before trying again.",
 		"firstName_label": "First Name",
@@ -2375,7 +2376,16 @@
 	"passwordResetPage": {
 		"title": "Reset Password - Revel",
 		"sendingLink": "Sending reset link...",
-		"sendLink": "Send reset link"
+		"sendLink": "Send reset link",
+		"resetYourPassword": "Reset your password",
+		"enterEmailDescription": "Enter your email address and we will send you a link to reset your password",
+		"checkYourEmail": "Check your email",
+		"emailSentDescription": "If an account exists with that email, you will receive password reset instructions",
+		"emailSentTitle": "Password reset email sent",
+		"emailSentMessage": "Check your inbox for password reset instructions. The link will expire in 1 hour.",
+		"checkSpam": "Didn't receive the email? Check your spam folder or try again in a few minutes.",
+		"backToLogin": "Back to login",
+		"emailLabel": "Email address"
 	},
 	"checkEmailPage": {
 		"title": "Check Your Email - Revel",
@@ -2385,7 +2395,9 @@
 		"checkSpam": "If you don't see the email, check your spam folder.",
 		"didNotReceive": "Didn't receive the email?",
 		"sending": "Sending...",
-		"resend": "Resend verification email"
+		"resend": "Resend verification email",
+		"resendSuccess": "Verification email sent! Please check your inbox.",
+		"backToLogin": "Back to login"
 	},
 	"verifyPage": {
 		"emailVerified": "Email verified!",

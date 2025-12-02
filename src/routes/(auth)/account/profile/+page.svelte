@@ -234,7 +234,7 @@
 				{#if verificationEmailSent}
 					<div
 						role="status"
-						class="rounded-md border border-green-500 bg-green-50 p-3 dark:bg-green-950"
+						class="space-y-2 rounded-md border border-green-500 bg-green-50 p-3 dark:bg-green-950"
 					>
 						<div class="flex items-center gap-2">
 							<Check class="h-5 w-5 text-green-600 dark:text-green-400" aria-hidden="true" />
@@ -242,6 +242,9 @@
 								{m['profile.email_resendSuccess']()}
 							</p>
 						</div>
+						<p class="text-sm text-green-700 dark:text-green-300">
+							{m['profile.email_checkSpam']()}
+						</p>
 					</div>
 				{/if}
 
