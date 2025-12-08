@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { EventInListSchema } from '$lib/api/generated/types.gen';
+	import type { EventInListSchema, EventDetailSchema } from '$lib/api/generated/types.gen';
 	import { goto } from '$app/navigation';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
@@ -8,10 +8,18 @@
 	import { getImageUrl } from '$lib/utils/url';
 	import * as m from '$lib/paraglide/messages.js';
 
+	// Accept both list and detail schemas - location info only shown if available (detail schema)
+	type EventSchema = EventInListSchema | EventDetailSchema;
+
 	interface Props {
-		event: EventInListSchema | null;
+		event: EventSchema | null;
 		open: boolean;
 		onClose: () => void;
+	}
+
+	// Type guard to check if event has location data (EventDetailSchema)
+	function hasLocationData(e: EventSchema): e is EventDetailSchema {
+		return 'address' in e || 'city' in e;
 	}
 
 	let { event, open, onClose }: Props = $props();
@@ -68,8 +76,8 @@
 					</div>
 				</div>
 
-				<!-- Location -->
-				{#if event.city || event.address}
+				<!-- Location (only available on EventDetailSchema) -->
+				{#if hasLocationData(event) && (event.city || event.address)}
 					<div class="flex items-start gap-3">
 						<MapPin class="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" aria-hidden="true" />
 						<div>

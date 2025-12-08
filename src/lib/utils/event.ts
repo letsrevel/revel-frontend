@@ -80,12 +80,12 @@ export function getEventFallbackGradient(eventId: string): string {
 
 /**
  * Format event location from address and city fields
- * @param event Event data with address and city
+ * Note: Only EventDetailSchema has address and city fields.
+ * EventInListSchema does not include location data.
+ * @param event Event detail data with address and city
  * @returns Formatted location string or undefined if no location data
  */
-export function formatEventLocation(
-	event: EventDetailSchema | EventInListSchema
-): string | undefined {
+export function formatEventLocation(event: EventDetailSchema): string | undefined {
 	if (!event.address && !event.city) return undefined;
 
 	const parts: string[] = [];

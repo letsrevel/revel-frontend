@@ -108,18 +108,14 @@
 	}
 
 	// Filtered events based on search query
+	// Note: EventInListSchema doesn't include city/address, so we filter by name and description only
 	const filteredEvents = $derived(
 		allEvents.filter((event) => {
 			const query = searchQueryEvents.toLowerCase().trim();
 			if (!query) return true;
 
-			const cityName =
-				typeof event.city === 'object' && event.city !== null ? event.city.name : event.city;
-
 			return (
-				event.name.toLowerCase().includes(query) ||
-				cityName?.toLowerCase().includes(query) ||
-				event.address?.toLowerCase().includes(query)
+				event.name.toLowerCase().includes(query) || event.description?.toLowerCase().includes(query)
 			);
 		})
 	);

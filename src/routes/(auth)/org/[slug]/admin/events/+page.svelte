@@ -942,9 +942,9 @@
 						<div
 							class="flex flex-col overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-md"
 						>
-							{#if event.cover_image}
+							{#if event.cover_art}
 								<img
-									src={event.cover_image}
+									src={event.cover_art}
 									alt={event.name}
 									class="h-48 w-full object-cover"
 									loading="lazy"
@@ -1002,12 +1002,7 @@
 												{formatEventDateRange(event.start, event.end)}
 											</time>
 										</div>
-										{#if event.location_name}
-											<div class="flex items-center gap-1.5">
-												<MapPin class="h-4 w-4" aria-hidden="true" />
-												<span class="truncate">{event.location_name}</span>
-											</div>
-										{/if}
+										<!-- Location not available in EventInListSchema -->
 									</div>
 								</div>
 

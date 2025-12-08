@@ -45,6 +45,10 @@
 			href: `/org/${data.organization.slug}/admin/resources`,
 			label: m['orgAdmin.nav.resources']()
 		},
+		{
+			href: `/org/${data.organization.slug}/admin/venues`,
+			label: m['orgAdmin.nav.venues']()
+		},
 		{ href: `/org/${data.organization.slug}/admin/settings`, label: m['orgAdmin.nav.settings']() }
 	];
 
