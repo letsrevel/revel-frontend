@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
-	import type { MembershipTierSchema } from '$lib/api/generated/types.gen';
+	import type { MembershipTierSchema, TicketPurchaseItem } from '$lib/api/generated/types.gen';
 	import { hasTierId } from '$lib/types/tickets';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
@@ -15,8 +15,8 @@
 		isEligible?: boolean;
 		membershipTier?: MembershipTierSchema | null;
 		canAttendWithoutLogin?: boolean;
-		onClaimTicket: (tierId: string) => void | Promise<void>;
-		onCheckout?: (tierId: string, isPwyc: boolean, amount?: number) => void | Promise<void>;
+		onClaimTicket: (tierId: string, tickets?: TicketPurchaseItem[]) => void | Promise<void>;
+		onCheckout?: (tierId: string, isPwyc: boolean, amount?: number, tickets?: TicketPurchaseItem[]) => void | Promise<void>;
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
 
@@ -138,22 +138,24 @@
 	}
 
 	// Confirmation dialog callback - now triggers the actual backend action
-	async function handleConfirm(amount?: number) {
+	async function handleConfirm(payload: { amount?: number; tickets: TicketPurchaseItem[] }) {
 		if (!hasId || isClaiming) return;
 
 		isClaiming = true;
 		try {
+			const { amount, tickets } = payload;
+
 			// Free tickets or offline/at-the-door (reservation)
 			if (
 				tier.payment_method === 'free' ||
 				tier.payment_method === 'offline' ||
 				tier.payment_method === 'at_the_door'
 			) {
-				await onClaimTicket(tier.id);
+				await onClaimTicket(tier.id, tickets);
 			}
 			// Online payment (with or without PWYC)
 			else if (tier.payment_method === 'online' && onCheckout) {
-				await onCheckout(tier.id, tier.price_type === 'pwyc', amount);
+				await onCheckout(tier.id, tier.price_type === 'pwyc', amount, tickets);
 			}
 
 			// Close dialog on success

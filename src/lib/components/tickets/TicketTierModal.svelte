@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
-	import type { MembershipTierSchema } from '$lib/api/generated/types.gen';
+	import type { MembershipTierSchema, TicketPurchaseItem } from '$lib/api/generated/types.gen';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
@@ -16,9 +16,13 @@
 		hasTicket: boolean;
 		membershipTier?: MembershipTierSchema | null;
 		canAttendWithoutLogin?: boolean;
+		/** Maximum tickets user can purchase (from remaining_tickets) */
+		maxQuantity?: number | null;
+		/** User's display name for auto-fill */
+		userName?: string;
 		onClose: () => void;
-		onClaimTicket: (tierId: string) => void;
-		onCheckout?: (tierId: string, isPwyc: boolean, amount?: number) => void;
+		onClaimTicket: (tierId: string, tickets?: TicketPurchaseItem[]) => void;
+		onCheckout?: (tierId: string, isPwyc: boolean, amount?: number, tickets?: TicketPurchaseItem[]) => void;
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
 
@@ -29,6 +33,8 @@
 		hasTicket,
 		membershipTier = null,
 		canAttendWithoutLogin = false,
+		maxQuantity = null,
+		userName = '',
 		onClose,
 		onClaimTicket,
 		onCheckout,
@@ -108,22 +114,24 @@
 	}
 
 	// Handle confirmed action from dialog
-	async function handleConfirm(amount?: number): Promise<void> {
+	async function handleConfirm(payload: { amount?: number; tickets: TicketPurchaseItem[] }): Promise<void> {
 		if (!selectedTier || isProcessing) return;
 
 		isProcessing = true;
 		try {
+			const { amount, tickets } = payload;
+
 			// Free tickets or offline/at-the-door (reservation)
 			if (
 				selectedTier.payment_method === 'free' ||
 				selectedTier.payment_method === 'offline' ||
 				selectedTier.payment_method === 'at_the_door'
 			) {
-				await onClaimTicket(selectedTier.id);
+				await onClaimTicket(selectedTier.id, tickets);
 			}
 			// Online payment (with or without PWYC)
 			else if (selectedTier.payment_method === 'online' && onCheckout) {
-				await onCheckout(selectedTier.id, selectedTier.price_type === 'pwyc', amount);
+				await onCheckout(selectedTier.id, selectedTier.price_type === 'pwyc', amount, tickets);
 			}
 
 			// Close both dialogs on success
@@ -310,5 +318,7 @@
 		onClose={closeConfirmation}
 		onConfirm={handleConfirm}
 		{isProcessing}
+		{maxQuantity}
+		{userName}
 	/>
 {/if}

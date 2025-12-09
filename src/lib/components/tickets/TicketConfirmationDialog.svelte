@@ -12,18 +12,42 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
-	import { Ticket, DollarSign, AlertCircle, CreditCard, Wallet, Info } from 'lucide-svelte';
+	import { Ticket, DollarSign, AlertCircle, CreditCard, Wallet, Info, Plus, Minus, User } from 'lucide-svelte';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
+	import type { TicketPurchaseItem } from '$lib/api/generated/types.gen';
+
+	interface ConfirmPayload {
+		amount?: number;
+		tickets: TicketPurchaseItem[];
+	}
 
 	interface Props {
 		open: boolean;
 		tier: TierSchemaWithId;
 		onClose: () => void;
-		onConfirm: (amount?: number) => void | Promise<void>;
+		onConfirm: (payload: ConfirmPayload) => void | Promise<void>;
 		isProcessing?: boolean;
+		/** Maximum tickets the user can purchase (null = unlimited up to tier availability) */
+		maxQuantity?: number | null;
+		/** User's display name for auto-fill when purchasing single ticket */
+		userName?: string;
 	}
 
-	let { open = $bindable(), tier, onClose, onConfirm, isProcessing = false }: Props = $props();
+	let {
+		open = $bindable(),
+		tier,
+		onClose,
+		onConfirm,
+		isProcessing = false,
+		maxQuantity = null,
+		userName = ''
+	}: Props = $props();
+
+	// Quantity state
+	let quantity = $state(1);
+
+	// Guest names array - one for each ticket
+	let guestNames = $state<string[]>(['']);
 
 	// PWYC state (only for pay-what-you-can tiers)
 	let pwycAmount = $state('');
@@ -82,13 +106,73 @@
 		return DollarSign;
 	});
 
+	// Calculated max quantity based on tier availability and user limit
+	let effectiveMaxQuantity = $derived.by(() => {
+		// Start with a large default
+		let max = 100;
+
+		// Limit by tier availability
+		if (tier.total_available !== null && tier.total_available > 0) {
+			max = Math.min(max, tier.total_available);
+		}
+
+		// Limit by user's remaining quota
+		if (maxQuantity !== null && maxQuantity > 0) {
+			max = Math.min(max, maxQuantity);
+		}
+
+		return Math.max(1, max);
+	});
+
+	// Whether to show quantity selector (more than 1 ticket allowed)
+	let showQuantitySelector = $derived(effectiveMaxQuantity > 1);
+
+	// Whether to show guest name inputs (when purchasing multiple tickets)
+	let showGuestNames = $derived(quantity > 1);
+
 	// Reset state when dialog opens/closes
 	$effect(() => {
 		if (!open) {
 			pwycAmount = '';
 			pwycError = '';
+			quantity = 1;
+			guestNames = [userName || ''];
+		} else {
+			// Initialize with user's name when dialog opens
+			guestNames = [userName || ''];
 		}
 	});
+
+	// Update guest names array when quantity changes
+	$effect(() => {
+		const newLength = quantity;
+		const currentLength = guestNames.length;
+
+		if (newLength > currentLength) {
+			// Add new entries
+			guestNames = [...guestNames, ...Array(newLength - currentLength).fill('')];
+		} else if (newLength < currentLength) {
+			// Remove extra entries
+			guestNames = guestNames.slice(0, newLength);
+		}
+	});
+
+	// Quantity control functions
+	function incrementQuantity() {
+		if (quantity < effectiveMaxQuantity) {
+			quantity++;
+		}
+	}
+
+	function decrementQuantity() {
+		if (quantity > 1) {
+			quantity--;
+		}
+	}
+
+	function updateGuestName(index: number, value: string) {
+		guestNames[index] = value;
+	}
 
 	// PWYC validation
 	function validatePwycAmount(): boolean {
@@ -127,11 +211,24 @@
 		// For PWYC, validate amount
 		if (isPwyc) {
 			if (!validatePwycAmount()) return;
-			const amount = parseFloat(pwycAmount);
-			await onConfirm(amount);
-		} else {
-			await onConfirm();
 		}
+
+		// Build tickets array
+		const tickets: TicketPurchaseItem[] = guestNames.map((name, index) => ({
+			// For single ticket purchase without guest names shown, use userName
+			guest_name: quantity === 1 && !showGuestNames ? (userName || name || '') : (name || '')
+		}));
+
+		const payload: ConfirmPayload = {
+			tickets
+		};
+
+		// Add PWYC amount if applicable
+		if (isPwyc && pwycAmount.trim()) {
+			payload.amount = parseFloat(pwycAmount);
+		}
+
+		await onConfirm(payload);
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
@@ -183,12 +280,75 @@
 							<p class="text-sm text-muted-foreground">{tier.description}</p>
 						{/if}
 						{#if !isPwyc}
-							<p class="text-lg font-bold text-primary">{priceDisplay()}</p>
+							<p class="text-lg font-bold text-primary">
+								{priceDisplay()}
+								{#if quantity > 1}
+									<span class="text-sm font-normal text-muted-foreground"> × {quantity}</span>
+								{/if}
+							</p>
 						{/if}
 					</div>
 					<Ticket class="h-8 w-8 shrink-0 text-muted-foreground" aria-hidden="true" />
 				</div>
 			</div>
+
+			<!-- Quantity Selector -->
+			{#if showQuantitySelector}
+				<div class="space-y-2">
+					<Label>Number of Tickets</Label>
+					<div class="flex items-center gap-3">
+						<Button
+							variant="outline"
+							size="icon"
+							onclick={decrementQuantity}
+							disabled={quantity <= 1 || isProcessing}
+							aria-label="Decrease quantity"
+						>
+							<Minus class="h-4 w-4" />
+						</Button>
+						<span class="w-12 text-center text-xl font-bold">{quantity}</span>
+						<Button
+							variant="outline"
+							size="icon"
+							onclick={incrementQuantity}
+							disabled={quantity >= effectiveMaxQuantity || isProcessing}
+							aria-label="Increase quantity"
+						>
+							<Plus class="h-4 w-4" />
+						</Button>
+						{#if effectiveMaxQuantity < 100}
+							<span class="text-sm text-muted-foreground">
+								(max {effectiveMaxQuantity})
+							</span>
+						{/if}
+					</div>
+				</div>
+			{/if}
+
+			<!-- Guest Names (when purchasing multiple tickets) -->
+			{#if showGuestNames}
+				<div class="space-y-3">
+					<Label>Ticket Holders</Label>
+					<p class="text-sm text-muted-foreground">
+						Enter the name for each ticket holder
+					</p>
+					<div class="space-y-2">
+						{#each guestNames as name, index (index)}
+							<div class="flex items-center gap-2">
+								<User class="h-4 w-4 shrink-0 text-muted-foreground" />
+								<Input
+									type="text"
+									value={name}
+									oninput={(e) => updateGuestName(index, e.currentTarget.value)}
+									placeholder={index === 0 ? 'Your name' : `Guest ${index + 1} name`}
+									disabled={isProcessing}
+									class="flex-1"
+								/>
+							</div>
+						{/each}
+					</div>
+				</div>
+			{/if}
 
 			<!-- PWYC Amount Selection -->
 			{#if isPwyc}

@@ -3,7 +3,7 @@
 	import type { EventTicketSchemaActual } from '$lib/utils/eligibility';
 	import { Card } from '$lib/components/ui/card';
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
-	import { Ticket, Calendar, MapPin, Download } from 'lucide-svelte';
+	import { Ticket, Calendar, MapPin, Download, User, Armchair } from 'lucide-svelte';
 	import QRCode from 'qrcode';
 	import { onMount } from 'svelte';
 
@@ -78,6 +78,45 @@
 		// Offline and at-the-door payments require manual completion
 		return paymentMethod === 'online';
 	});
+
+	// Format seat information
+	let seatInfo = $derived.by(() => {
+		const parts: string[] = [];
+
+		// Add venue if available
+		if (ticket.venue_name) {
+			parts.push(ticket.venue_name);
+		}
+
+		// Add sector if available
+		if (ticket.sector_name) {
+			parts.push(ticket.sector_name);
+		}
+
+		// Build seat details
+		const seatDetails: string[] = [];
+		if (ticket.seat_row) {
+			seatDetails.push(`Row ${ticket.seat_row}`);
+		}
+		if (ticket.seat_number !== null && ticket.seat_number !== undefined) {
+			seatDetails.push(`Seat ${ticket.seat_number}`);
+		}
+		if (ticket.seat_label && seatDetails.length === 0) {
+			// Use seat_label only if no row/number info
+			seatDetails.push(ticket.seat_label);
+		}
+
+		if (seatDetails.length > 0) {
+			parts.push(seatDetails.join(', '));
+		}
+
+		return parts.length > 0 ? parts.join(' • ') : null;
+	});
+
+	// Check if ticket has any seat info to display
+	let hasSeatInfo = $derived(
+		ticket.venue_name || ticket.sector_name || ticket.seat_label || ticket.seat_row || ticket.seat_number !== null
+	);
 </script>
 
 <Card class="p-6">
@@ -97,6 +136,26 @@
 			</div>
 			<TicketStatusBadge status={ticket.status} />
 		</div>
+
+		<!-- Ticket Holder & Seat Info -->
+		{#if ticket.guest_name || hasSeatInfo}
+			<dl class="space-y-2 rounded-lg border border-border bg-muted/30 p-4 text-sm">
+				{#if ticket.guest_name}
+					<div class="flex items-center gap-2">
+						<dt class="sr-only">Ticket Holder</dt>
+						<User class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+						<dd class="font-medium">{ticket.guest_name}</dd>
+					</div>
+				{/if}
+				{#if seatInfo}
+					<div class="flex items-center gap-2">
+						<dt class="sr-only">Seat</dt>
+						<Armchair class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+						<dd>{seatInfo}</dd>
+					</div>
+				{/if}
+			</dl>
+		{/if}
 
 		<!-- Pending Payment Banner -->
 		{#if ticket.status === 'pending'}

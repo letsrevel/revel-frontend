@@ -3,10 +3,22 @@
 	import type {
 		EventDetailSchema,
 		OrganizationPermissionsSchema,
-		EventTokenSchema
+		EventTokenSchema,
+		EventUserEligibility
 	} from '$lib/api/generated/types.gen';
-	import type { UserEventStatus } from '$lib/utils/eligibility';
-	import { isRSVP, isTicket, isEligibility } from '$lib/utils/eligibility';
+	import type { UserEventStatus, UserEventStatusResponse, EventTicketSchemaActual } from '$lib/utils/eligibility';
+	import {
+		isRSVP,
+		isTicket,
+		isEligibility,
+		isUserStatusResponse,
+		hasActiveTickets,
+		getActiveTickets,
+		hasPositiveRsvp,
+		isAttending as checkIsAttending,
+		hasPendingOnlinePayment,
+		getMultipleTicketsStatusText
+	} from '$lib/utils/eligibility';
 	import { cn } from '$lib/utils/cn';
 	import EventStatusBadge from './EventStatusBadge.svelte';
 	import EventQuickInfo from './EventQuickInfo.svelte';
@@ -52,19 +64,64 @@
 	}: Props = $props();
 
 	/**
+	 * Get user's active tickets from the new response format
+	 */
+	let userTickets = $derived.by((): EventTicketSchemaActual[] => {
+		if (!userStatus) return [];
+
+		// New format: EventUserStatusResponse with tickets array
+		if (isUserStatusResponse(userStatus)) {
+			return getActiveTickets(userStatus);
+		}
+
+		// Legacy format: single ticket
+		if (isTicket(userStatus)) {
+			return userStatus.status !== 'cancelled' ? [userStatus] : [];
+		}
+
+		return [];
+	});
+
+	/**
+	 * Check if user can purchase more tickets
+	 */
+	let canPurchaseMore = $derived.by(() => {
+		if (!userStatus) return true;
+		if (isUserStatusResponse(userStatus)) {
+			return userStatus.can_purchase_more ?? true;
+		}
+		return false; // Legacy: single ticket = can't buy more
+	});
+
+	/**
+	 * Get remaining tickets user can purchase
+	 */
+	let remainingTickets = $derived.by((): number | null => {
+		if (!userStatus) return null;
+		if (isUserStatusResponse(userStatus)) {
+			return userStatus.remaining_tickets ?? null;
+		}
+		return null;
+	});
+
+	/**
 	 * Check if user is attending (has approved RSVP or active ticket)
 	 */
 	let isAttending = $derived.by(() => {
 		if (!userStatus) return false;
 
+		// New format: EventUserStatusResponse
+		if (isUserStatusResponse(userStatus)) {
+			return checkIsAttending(userStatus);
+		}
+
+		// Legacy format: single RSVP
 		if (isRSVP(userStatus)) {
-			// User is attending if they RSVP'd 'yes'
 			return userStatus.status === 'yes';
 		}
 
+		// Legacy format: single ticket
 		if (isTicket(userStatus)) {
-			// User has a ticket if status is pending, active, or checked_in
-			// (not cancelled - cancelled tickets shouldn't count as attending)
 			return (
 				userStatus.status === 'pending' ||
 				userStatus.status === 'active' ||
@@ -81,6 +138,19 @@
 	let attendanceStatusText = $derived.by(() => {
 		if (!userStatus) return null;
 
+		// New format: EventUserStatusResponse
+		if (isUserStatusResponse(userStatus)) {
+			const tickets = getActiveTickets(userStatus);
+			if (tickets.length > 0) {
+				return getMultipleTicketsStatusText(tickets);
+			}
+			if (hasPositiveRsvp(userStatus)) {
+				return m['eventActionSidebar.youreAttending']();
+			}
+			return null;
+		}
+
+		// Legacy format
 		if (isRSVP(userStatus) && userStatus.status === 'yes') {
 			return m['eventActionSidebar.youreAttending']();
 		}
@@ -99,9 +169,15 @@
 	});
 
 	/**
-	 * Get ticket tier name if applicable
+	 * Get ticket tier name if applicable (for single ticket display)
 	 */
 	let ticketTierName = $derived.by(() => {
+		// New format: show tier name of first ticket
+		if (userTickets.length === 1 && userTickets[0].tier) {
+			return userTickets[0].tier.name;
+		}
+
+		// Legacy format
 		if (userStatus && isTicket(userStatus) && userStatus.tier) {
 			return userStatus.tier.name;
 		}
@@ -113,6 +189,7 @@
 	 */
 	let shouldShowEligibility = $derived.by(() => {
 		if (!userStatus) return false;
+		if (isUserStatusResponse(userStatus)) return false; // New format doesn't use eligibility this way
 		if (!isEligibility(userStatus)) return false;
 		return !userStatus.allowed;
 	});
@@ -121,11 +198,18 @@
 	 * Check if ticket is pending with online payment (should show Resume Payment directly)
 	 */
 	let shouldShowResumePayment = $derived.by(() => {
-		if (!userStatus || !isTicket(userStatus)) return false;
+		if (!userStatus) return false;
+
+		// New format: check if any tickets have pending online payment
+		if (isUserStatusResponse(userStatus)) {
+			const tickets = getActiveTickets(userStatus);
+			return hasPendingOnlinePayment(tickets);
+		}
+
+		// Legacy format
+		if (!isTicket(userStatus)) return false;
 		if (userStatus.status !== 'pending') return false;
 		if (!userStatus.tier) return false;
-
-		// Only show for online (Stripe) payment method
 		return userStatus.tier.payment_method === 'online';
 	});
 
@@ -167,27 +251,33 @@
 	 * Handle view ticket/manage RSVP action
 	 */
 	function handleSecondaryAction(): void {
-		console.log('handleSecondaryAction called', {
-			userStatus,
-			onShowTicketClick,
-			onGetTicketsClick
-		});
-
 		if (!userStatus) return;
 
-		if (isTicket(userStatus)) {
-			// Call parent's show ticket handler
-			console.log('Calling onShowTicketClick');
-			if (onShowTicketClick) {
-				onShowTicketClick();
-			} else {
-				console.error('onShowTicketClick is not defined!');
+		// New format: check for tickets
+		if (isUserStatusResponse(userStatus)) {
+			if (hasActiveTickets(userStatus)) {
+				if (onShowTicketClick) {
+					onShowTicketClick();
+				}
+				return;
+			}
+			if (hasPositiveRsvp(userStatus)) {
+				showManageRSVP = !showManageRSVP;
+				return;
 			}
 			return;
 		}
 
+		// Legacy format: single ticket
+		if (isTicket(userStatus)) {
+			if (onShowTicketClick) {
+				onShowTicketClick();
+			}
+			return;
+		}
+
+		// Legacy format: RSVP
 		if (isRSVP(userStatus)) {
-			// Toggle RSVP management view
 			showManageRSVP = !showManageRSVP;
 			return;
 		}
@@ -320,20 +410,37 @@
 					onclick={handleSecondaryAction}
 					class="w-full cursor-pointer rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				>
-					{#if userStatus && isTicket(userStatus)}
+					{#if userTickets.length > 0}
 						<span class="flex items-center justify-center gap-2">
 							<Ticket class="h-4 w-4" aria-hidden="true" />
-							Show Ticket
+							{userTickets.length === 1 ? 'Show Ticket' : `Show Tickets (${userTickets.length})`}
 						</span>
 					{:else}
 						{showManageRSVP ? 'Hide' : 'Change'} RSVP
 					{/if}
 				</button>
 
-				<!-- Add to Wallet Button (for tickets with Apple Wallet available) -->
-				{#if userStatus && isTicket(userStatus) && userStatus.apple_pass_available && userStatus.id}
+				<!-- Buy More Tickets Button (if allowed) -->
+				{#if canPurchaseMore && event.requires_ticket}
+					<button
+						type="button"
+						onclick={onGetTicketsClick}
+						class="w-full cursor-pointer rounded-md border border-primary bg-primary/10 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>
+						<span class="flex items-center justify-center gap-2">
+							<Ticket class="h-4 w-4" aria-hidden="true" />
+							Buy More Tickets
+							{#if remainingTickets !== null}
+								<span class="text-xs opacity-75">({remainingTickets} left)</span>
+							{/if}
+						</span>
+					</button>
+				{/if}
+
+				<!-- Add to Wallet Button (for first ticket with Apple Wallet available) -->
+				{#if userTickets.length > 0 && userTickets[0].apple_pass_available && userTickets[0].id}
 					<AddToWalletButton
-						ticketId={userStatus.id}
+						ticketId={userTickets[0].id}
 						eventName={event.name}
 						variant="secondary"
 						class="w-full"
@@ -355,15 +462,18 @@
 			</div>
 
 			<!-- Show EventRSVP when managing -->
-			{#if showManageRSVP && userStatus && isRSVP(userStatus)}
-				<EventRSVP
-					eventId={event.id}
-					eventName={event.name}
-					bind:userStatus
-					{isAuthenticated}
-					requiresTicket={event.requires_ticket}
-					{event}
-				/>
+			{#if showManageRSVP}
+				{@const hasRsvp = userStatus && isUserStatusResponse(userStatus) ? userStatus.rsvp : userStatus && isRSVP(userStatus) ? userStatus : null}
+				{#if hasRsvp || (userStatus && !isUserStatusResponse(userStatus))}
+					<EventRSVP
+						eventId={event.id}
+						eventName={event.name}
+						bind:userStatus
+						{isAuthenticated}
+						requiresTicket={event.requires_ticket}
+						{event}
+					/>
+				{/if}
 			{/if}
 		{/if}
 

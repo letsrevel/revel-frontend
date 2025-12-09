@@ -190,7 +190,13 @@
 			tier: ticket.tier,
 			checked_in_at: ticket.checked_in_at ?? undefined,
 			event_id: ticket.event.id,
-			apple_pass_available: ticket.apple_pass_available
+			apple_pass_available: ticket.apple_pass_available,
+			guest_name: ticket.guest_name,
+			venue_name: ticket.venue_name,
+			sector_name: ticket.sector_name,
+			seat_label: ticket.seat_label,
+			seat_row: ticket.seat_row,
+			seat_number: ticket.seat_number
 		}}
 		eventName={ticket.event.name}
 		eventDate={eventDate ?? undefined}
