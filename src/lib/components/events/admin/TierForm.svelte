@@ -1,38 +1,50 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
+	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		eventadminCreateTicketTier,
 		eventadminUpdateTicketTier,
-		eventadminDeleteTicketTier
+		eventadminDeleteTicketTier,
+		organizationadminListVenues
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		TicketTierDetailSchema,
 		TicketTierCreateSchema,
 		TicketTierUpdateSchema,
-		MembershipTierSchema
+		MembershipTierSchema,
+		VenueDetailSchema,
+		VenueSectorSchema,
+		SeatAssignmentMode
 	} from '$lib/api/generated/types.gen';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
+	import { authStore } from '$lib/stores/auth.svelte';
+	import { Building2, LayoutGrid, Armchair } from 'lucide-svelte';
 
 	interface Props {
 		tier: TicketTierDetailSchema | null; // null = create new
 		eventId: string;
+		organizationSlug: string;
 		organizationStripeConnected: boolean;
 		membershipTiers?: MembershipTierSchema[];
+		eventVenueId?: string | null; // Pre-fill venue from event
 		onClose: () => void;
 	}
 
 	let {
 		tier,
 		eventId,
+		organizationSlug,
 		organizationStripeConnected,
 		membershipTiers = [],
+		eventVenueId = null,
 		onClose
 	}: Props = $props();
+
+	const accessToken = $derived(authStore.accessToken);
 
 	const queryClient = useQueryClient();
 
@@ -159,6 +171,69 @@
 		tier?.restricted_to_membership_tiers?.map((t) => t.id).filter((id): id is string => !!id) ?? []
 	);
 
+	// Venue and seating state
+	let seatAssignmentMode = $state<SeatAssignmentMode>(tier?.seat_assignment_mode ?? 'none');
+	let maxTicketsPerUser = $state<string>(
+		tier?.max_tickets_per_user !== null && tier?.max_tickets_per_user !== undefined
+			? String(tier.max_tickets_per_user)
+			: ''
+	);
+	// Pre-fill venue: use tier's venue if editing, else fall back to event's venue
+	// Venue is read-only - it always comes from the event
+	let venueId = $state<string | null>(tier?.venue?.id ?? eventVenueId ?? null);
+
+	// Check if event has a venue configured
+	let hasEventVenue = $derived(!!eventVenueId);
+
+	// Seat assignment modes other than 'none' require an event venue
+	let canUseSeatAssignment = $derived(hasEventVenue);
+	let sectorId = $state<string | null>(tier?.sector?.id ?? null);
+
+	// Fetch venues for the organization (fetch when seat assignment is not 'none' OR when we have a venue pre-selected)
+	const venuesQuery = createQuery<VenueDetailSchema[]>(() => ({
+		queryKey: ['organization-venues', organizationSlug],
+		queryFn: async () => {
+			const response = await organizationadminListVenues({
+				path: { slug: organizationSlug },
+				headers: {
+					Authorization: `Bearer ${accessToken}`
+				}
+			});
+
+			if (response.error) {
+				throw new Error('Failed to load venues');
+			}
+
+			return response.data?.results || [];
+		},
+		enabled: !!accessToken && (seatAssignmentMode !== 'none' || !!venueId)
+	}));
+
+	// Sector is required when seat assignment is random or user_choice
+	let sectorRequired = $derived(seatAssignmentMode === 'random' || seatAssignmentMode === 'user_choice');
+	// When sector is required, both venue and sector must be selected
+	let sectorValid = $derived(!sectorRequired || (!!venueId && !!sectorId));
+
+	// Get sectors from the selected venue
+	let selectedVenueSectors = $derived.by(() => {
+		if (!venueId || !venuesQuery.data) return [];
+		const venue = venuesQuery.data.find((v) => v.id === venueId);
+		return venue?.sectors || [];
+	});
+
+	// Clear sector when venue changes
+	$effect(() => {
+		if (venueId) {
+			// If sector doesn't belong to current venue, clear it
+			const venueHasSector = selectedVenueSectors.some((s) => s.id === sectorId);
+			if (!venueHasSector && sectorId !== null) {
+				sectorId = null;
+			}
+		} else {
+			sectorId = null;
+		}
+	});
+
 	// Get current currency symbol for display
 	let currencySymbol = $derived(CURRENCY_SYMBOLS[currency] || currency);
 
@@ -255,7 +330,12 @@
 			visibility,
 			purchasable_by: purchasableBy,
 			restricted_to_membership_tiers_ids:
-				restrictedToMembershipTiersIds.length > 0 ? restrictedToMembershipTiersIds : null
+				restrictedToMembershipTiersIds.length > 0 ? restrictedToMembershipTiersIds : null,
+			// Venue and seating configuration
+			seat_assignment_mode: seatAssignmentMode,
+			max_tickets_per_user: maxTicketsPerUser ? parseInt(maxTicketsPerUser) : null,
+			venue_id: seatAssignmentMode !== 'none' ? venueId : null,
+			sector_id: seatAssignmentMode !== 'none' ? sectorId : null
 		};
 
 		// Only include pwyc fields if price_type is 'pwyc' and they have values
@@ -560,6 +640,171 @@
 				</div>
 			{/if}
 
+			<!-- Seating Configuration Section -->
+			<div class="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
+				<div class="flex items-center gap-2 text-sm font-medium">
+					<Armchair class="h-4 w-4 text-primary" aria-hidden="true" />
+					{m['tierForm.seatingConfig.title']?.() ?? 'Seating Configuration'}
+				</div>
+
+				<!-- Seat Assignment Mode -->
+				<div>
+					<Label for="seat-assignment-mode">
+						{m['tierForm.seatingConfig.mode']?.() ?? 'Seat Assignment Mode'}
+					</Label>
+					<select
+						id="seat-assignment-mode"
+						bind:value={seatAssignmentMode}
+						disabled={isPending}
+						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+					>
+						<option value="none">
+							{m['tierForm.seatingConfig.none']?.() ?? 'General Admission (No Assigned Seats)'}
+						</option>
+						<option value="random" disabled={!canUseSeatAssignment}>
+							{m['tierForm.seatingConfig.random']?.() ?? 'Random Assignment'}
+							{!canUseSeatAssignment ? '(requires venue)' : ''}
+						</option>
+						<option value="user_choice" disabled={!canUseSeatAssignment}>
+							{m['tierForm.seatingConfig.userChoice']?.() ?? 'User Selects Seat'}
+							{!canUseSeatAssignment ? '(requires venue)' : ''}
+						</option>
+					</select>
+					<p class="mt-1 text-xs text-muted-foreground">
+						{#if !canUseSeatAssignment && seatAssignmentMode === 'none'}
+							{m['tierForm.seatingConfig.noVenueConfigured']?.() ??
+								'To enable seat assignment, configure a venue for this event in Basic Info.'}
+						{:else if seatAssignmentMode === 'none'}
+							{m['tierForm.seatingConfig.noneHelp']?.() ??
+								'No seat assignment - attendees can sit anywhere'}
+						{:else if seatAssignmentMode === 'random'}
+							{m['tierForm.seatingConfig.randomHelp']?.() ??
+								'Seats are randomly assigned to attendees'}
+						{:else}
+							{m['tierForm.seatingConfig.userChoiceHelp']?.() ??
+								'Attendees can select their preferred seat'}
+						{/if}
+					</p>
+				</div>
+
+				<!-- Max Tickets Per User -->
+				<div>
+					<Label for="max-tickets-per-user">
+						{m['tierForm.seatingConfig.maxTickets']?.() ?? 'Max Tickets Per User'}
+					</Label>
+					<Input
+						id="max-tickets-per-user"
+						type="number"
+						min="1"
+						bind:value={maxTicketsPerUser}
+						placeholder={m['tierForm.seatingConfig.inheritFromEvent']?.() ?? 'Inherit from event'}
+						disabled={isPending}
+					/>
+					<p class="mt-1 text-xs text-muted-foreground">
+						{m['tierForm.seatingConfig.maxTicketsHelp']?.() ??
+							'Leave empty to use the event default limit'}
+					</p>
+				</div>
+
+				<!-- Venue & Sector Selection (only when seat assignment is not 'none') -->
+				{#if seatAssignmentMode !== 'none'}
+					<div class="space-y-4 border-t border-border pt-4">
+						<div class="flex items-center gap-2 text-sm font-medium">
+							<Building2 class="h-4 w-4 text-primary" aria-hidden="true" />
+							{m['tierForm.seatingConfig.venueSection']?.() ?? 'Venue & Sector'}
+						</div>
+
+						<!-- Venue (read-only - comes from event) -->
+						<div>
+							<Label>
+								{m['tierForm.seatingConfig.venue']?.() ?? 'Venue'}
+							</Label>
+							{#if venuesQuery.isLoading}
+								<div class="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
+									{m['tierForm.seatingConfig.loadingVenues']?.() ?? 'Loading venue...'}
+								</div>
+							{:else}
+								{@const selectedVenue = venuesQuery.data?.find(v => v.id === venueId)}
+								<div class="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm">
+									{#if selectedVenue}
+										<span class="font-medium">{selectedVenue.name}</span>
+										{#if selectedVenue.capacity}
+											<span class="ml-2 text-muted-foreground">({selectedVenue.capacity} capacity)</span>
+										{/if}
+									{:else}
+										<span class="text-muted-foreground">
+											{m['tierForm.seatingConfig.noVenueSelected']?.() ?? 'No venue configured for event'}
+										</span>
+									{/if}
+								</div>
+							{/if}
+							<p class="mt-1 text-xs text-muted-foreground">
+								{m['tierForm.seatingConfig.venueFromEvent']?.() ?? 'Venue is set at the event level in Basic Info.'}
+							</p>
+						</div>
+
+						<!-- Sector (only when venue is selected) -->
+						{#if venueId && selectedVenueSectors.length > 0}
+							<div>
+								<Label for="tier-sector">
+									<span class="flex items-center gap-1">
+										<LayoutGrid class="h-3.5 w-3.5" aria-hidden="true" />
+										{m['tierForm.seatingConfig.sector']?.() ?? 'Sector'}
+										{#if sectorRequired}
+											<span class="text-destructive">*</span>
+										{/if}
+									</span>
+								</Label>
+								<select
+									id="tier-sector"
+									bind:value={sectorId}
+									disabled={isPending}
+									required={sectorRequired}
+									class="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 {sectorRequired && !sectorId ? 'border-destructive' : 'border-input'}"
+								>
+									<option value={null}>
+										{sectorRequired
+											? (m['tierForm.seatingConfig.selectSectorRequired']?.() ?? 'Select a sector (required)')
+											: (m['tierForm.seatingConfig.selectSector']?.() ?? 'Select a sector (optional)')}
+									</option>
+									{#each selectedVenueSectors as sector (sector.id)}
+										<option value={sector.id}>
+											{sector.name}
+											{#if sector.code}({sector.code}){/if}
+											{#if sector.capacity}- {sector.capacity} seats{/if}
+										</option>
+									{/each}
+								</select>
+								<p class="mt-1 text-xs {sectorRequired && !sectorId ? 'text-destructive' : 'text-muted-foreground'}">
+									{#if sectorRequired}
+										{m['tierForm.seatingConfig.sectorRequiredHelp']?.() ??
+											'A sector is required for seat assignment modes other than General Admission'}
+									{:else}
+										{m['tierForm.seatingConfig.sectorHelp']?.() ??
+											'Optionally restrict this tier to a specific sector'}
+									{/if}
+								</p>
+							</div>
+						{:else if venueId}
+							<p class="text-xs {sectorRequired ? 'text-destructive' : 'text-muted-foreground'}">
+								{#if sectorRequired}
+									{m['tierForm.seatingConfig.noSectorsRequired']?.() ??
+										'This venue has no sectors configured. Sectors are required for this seat assignment mode.'}
+								{:else}
+									{m['tierForm.seatingConfig.noSectors']?.() ??
+										'This venue has no sectors configured.'}
+								{/if}
+							</p>
+						{:else if sectorRequired}
+							<p class="text-xs text-destructive">
+								{m['tierForm.seatingConfig.venueRequiredForSeats']?.() ??
+									'Please select a venue and sector for this seat assignment mode'}
+							</p>
+						{/if}
+					</div>
+				{/if}
+			</div>
+
 			<!-- Form Actions -->
 			<div class="flex justify-between gap-2 border-t border-border pt-4">
 				<div>
@@ -573,7 +818,7 @@
 					<Button type="button" variant="outline" onclick={onClose} disabled={isPending}>
 						Cancel
 					</Button>
-					<Button type="submit" disabled={isPending || !name.trim()}>
+					<Button type="submit" disabled={isPending || !name.trim() || !sectorValid}>
 						{isPending ? 'Saving...' : tier ? 'Save Changes' : 'Create Tier'}
 					</Button>
 				</div>

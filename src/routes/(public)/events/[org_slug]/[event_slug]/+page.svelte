@@ -2,7 +2,7 @@
 	import type { PageData } from './$types';
 	import { page } from '$app/state';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
-	import { eventTicketCheckout, eventTicketPwycCheckout } from '$lib/api';
+	import { eventTicketCheckout, eventTicketPwycCheckout, eventGetMyEventStatus, eventResumeCheckout, eventCancelCheckout } from '$lib/api';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import EventHeader from '$lib/components/events/EventHeader.svelte';
 	import EventDetails from '$lib/components/events/EventDetails.svelte';
@@ -39,6 +39,8 @@ import type {
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import * as m from '$lib/paraglide/messages.js';
+	import { authStore } from '$lib/stores/auth.svelte';
+	import { toast } from 'svelte-sonner';
 
 	let { data }: { data: PageData } = $props();
 
@@ -122,6 +124,9 @@ import type {
 		return null;
 	});
 
+	// Get user's display name for ticket purchase forms
+	let userDisplayName = $derived(authStore.user?.display_name ?? '');
+
 	// Modal states
 	let showTicketTierModal = $state(false);
 	let showMyTicketModal = $state(false);
@@ -163,8 +168,10 @@ import type {
 		selectedTierForGuest = null;
 	}
 
-	function handleGuestAttendanceSuccess() {
-		// Optionally refresh data or show a message
+	async function handleGuestAttendanceSuccess() {
+		// Refresh user status to update local state
+		await refreshUserStatus();
+		// Also invalidate TanStack Query cache
 		queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
 	}
 
@@ -179,15 +186,69 @@ import type {
 	}
 
 	/**
+	 * Refresh user status from the API
+	 */
+	async function refreshUserStatus() {
+		try {
+			const response = await eventGetMyEventStatus({
+				path: { event_id: event.id }
+			});
+			if (response.data) {
+				userStatus = response.data;
+			}
+		} catch (err) {
+			console.error('Failed to refresh user status:', err);
+		}
+	}
+
+	/**
 	 * Handle successful batch checkout response
 	 */
-	function handleCheckoutSuccess(response: BatchCheckoutResponse) {
+	async function handleCheckoutSuccess(response: BatchCheckoutResponse) {
 		if (!response) return;
 
 		// Check if we got tickets directly (free/offline payment)
 		if (response.tickets && response.tickets.length > 0) {
-			// Refresh user status to get updated tickets
+			// Close the tier modal
+			closeTicketTierModal();
+
+			// Refresh user status to get updated tickets - this updates local state
+			await refreshUserStatus();
+
+			// Also invalidate TanStack Query cache for other components
 			queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
+
+			// Show success toast
+			const ticketCount = response.tickets.length;
+			const firstTicket = response.tickets[0];
+			const isPending = firstTicket?.status === 'pending';
+
+			if (isPending) {
+				// Offline payment - ticket reserved but not yet paid
+				toast.success(
+					m['eventPage.ticketReserved']?.({ count: ticketCount }) ??
+						`${ticketCount} ticket${ticketCount > 1 ? 's' : ''} reserved! Complete payment as instructed.`,
+					{
+						description: m['eventPage.ticketReservedDesc']?.() ?? 'View your ticket for payment details.',
+						duration: 5000
+					}
+				);
+			} else {
+				// Free ticket claimed
+				toast.success(
+					m['eventPage.ticketClaimed']?.({ count: ticketCount }) ??
+						`${ticketCount} ticket${ticketCount > 1 ? 's' : ''} claimed!`,
+					{
+						description: m['eventPage.ticketClaimedDesc']?.() ?? 'Your ticket is ready.',
+						duration: 4000
+					}
+				);
+			}
+
+			// Open ticket modal after a short delay to show the new ticket
+			setTimeout(() => {
+				showMyTicketModal = true;
+			}, 500);
 		}
 		// Check if we got a checkout URL (redirect to Stripe)
 		else if (response.checkout_url) {
@@ -254,8 +315,7 @@ import type {
 	 * Uses logged-in user's display name when available
 	 */
 	function getDefaultGuestName(): string {
-		// TODO: Get from user profile when available
-		return '';
+		return userDisplayName;
 	}
 
 	/**
@@ -292,57 +352,102 @@ import type {
 		}
 	}
 
-	// Resume payment mutation (for pending tickets)
+	// Resume payment mutation (for pending tickets with online payment)
 	let resumePaymentMutation = createMutation(() => ({
-		mutationFn: async () => {
-			if (!userTicket || !userTicket.tier?.id) {
-				throw new Error('No pending ticket found');
+		mutationFn: async (paymentId: string) => {
+			const response = await eventResumeCheckout({
+				path: { payment_id: paymentId }
+			});
+
+			if (response.error) {
+				const errorDetail = (response.error as any)?.detail || 'Failed to resume checkout';
+				throw new Error(
+					typeof errorDetail === 'string' ? errorDetail : 'Failed to resume checkout'
+				);
 			}
-
-			const tierId = userTicket.tier.id;
-			// Use existing guest name from the pending ticket, or empty string
-			const guestName = userTicket.guest_name || '';
-			const tickets: TicketPurchaseItem[] = [{ guest_name: guestName }];
-
-			// For PWYC tiers, we need the original amount (use minimum as default)
-			if (userTicket.tier.price_type === 'pwyc') {
-				const amount = userTicket.tier.pwyc_min || userTicket.tier.price || 1;
-				const body: BatchCheckoutPwycPayload = {
-					tickets,
-					price_per_ticket: amount
-				};
-				const response = await eventTicketPwycCheckout({
-					path: { event_id: event.id, tier_id: tierId },
-					body
-				});
-				if (response.error) {
-					const errorDetail = (response.error as any)?.detail || 'Failed to resume checkout';
-					throw new Error(
-						typeof errorDetail === 'string' ? errorDetail : 'Failed to resume checkout'
-					);
-				}
-				return response.data;
-			} else {
-				// Fixed price or free
-				const body: BatchCheckoutPayload = { tickets };
-				const response = await eventTicketCheckout({
-					path: { event_id: event.id, tier_id: tierId },
-					body
-				});
-				if (response.error) {
-					const errorDetail = (response.error as any)?.detail || 'Failed to resume checkout';
-					throw new Error(
-						typeof errorDetail === 'string' ? errorDetail : 'Failed to resume checkout'
-					);
-				}
-				return response.data;
+			return response.data;
+		},
+		onSuccess: (data) => {
+			// The resume endpoint returns a checkout_url - redirect to Stripe
+			if (data?.checkout_url) {
+				window.location.href = data.checkout_url;
 			}
 		},
-		onSuccess: handleCheckoutSuccess
+		onError: async (error) => {
+			// If session expired (404), refresh user status - tickets may have been cleaned up
+			await refreshUserStatus();
+			toast.error(
+				m['eventPage.resumePaymentFailed']?.() ?? 'Could not resume payment',
+				{
+					description: error.message || (m['eventPage.resumePaymentFailedDesc']?.() ?? 'The checkout session may have expired. Please try purchasing again.'),
+					duration: 5000
+				}
+			);
+		}
 	}));
 
-	function handleResumePayment() {
-		resumePaymentMutation.mutate();
+	// Cancel reservation mutation (for pending tickets with online payment)
+	let cancelReservationMutation = createMutation(() => ({
+		mutationFn: async (paymentId: string) => {
+			const response = await eventCancelCheckout({
+				path: { payment_id: paymentId }
+			});
+
+			if (response.error) {
+				const errorDetail = (response.error as any)?.detail || 'Failed to cancel reservation';
+				throw new Error(
+					typeof errorDetail === 'string' ? errorDetail : 'Failed to cancel reservation'
+				);
+			}
+			return response.data;
+		},
+		onSuccess: async () => {
+			// Close the modal
+			showMyTicketModal = false;
+
+			// Refresh user status to update tickets list
+			await refreshUserStatus();
+
+			// Invalidate cache
+			queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
+
+			toast.success(
+				m['eventPage.reservationCancelled']?.() ?? 'Reservation cancelled',
+				{
+					description: m['eventPage.reservationCancelledDesc']?.() ?? 'Your ticket reservation has been cancelled.',
+					duration: 4000
+				}
+			);
+		},
+		onError: async (error) => {
+			await refreshUserStatus();
+			toast.error(
+				m['eventPage.cancelReservationFailed']?.() ?? 'Could not cancel reservation',
+				{
+					description: error.message || (m['eventPage.cancelReservationFailedDesc']?.() ?? 'Please try again or contact support.'),
+					duration: 5000
+				}
+			);
+		}
+	}));
+
+	function handleResumePayment(paymentId: string) {
+		resumePaymentMutation.mutate(paymentId);
+	}
+
+	/**
+	 * Wrapper for EventActionSidebar that finds the first pending ticket's payment ID
+	 * The sidebar doesn't know which ticket to resume, so we find it for them
+	 */
+	function handleResumePaymentFromSidebar() {
+		const pendingTicket = userTickets.find(t => t.status === 'pending' && t.payment?.id);
+		if (pendingTicket?.payment?.id) {
+			handleResumePayment(pendingTicket.payment.id);
+		}
+	}
+
+	function handleCancelReservation(paymentId: string) {
+		cancelReservationMutation.mutate(paymentId);
 	}
 
 	// Handle payment success/cancelled redirects
@@ -568,7 +673,7 @@ import type {
 				canAttendWithoutLogin={event.can_attend_without_login}
 				onGetTicketsClick={openTicketTierModal}
 				onShowTicketClick={openMyTicketModal}
-				onResumePayment={handleResumePayment}
+				onResumePayment={handleResumePaymentFromSidebar}
 				isResumingPayment={resumePaymentMutation.isPending}
 				onGuestRsvpClick={openGuestRsvpDialog}
 				onGuestTicketClick={openGuestTicketDialog}
@@ -609,8 +714,10 @@ import type {
 						eventName={event.name}
 						eventDate={event.start ? new Date(event.start).toLocaleString() : undefined}
 						eventLocation={formatEventLocation(event)}
-						onResumePayment={handleResumePayment}
+						onResumePayment={handleResumePaymentFromSidebar}
 						isResumingPayment={resumePaymentMutation.isPending}
+						totalTickets={userTickets.length}
+						onViewAllTickets={openMyTicketModal}
 					/>
 				{/if}
 
@@ -701,7 +808,7 @@ import type {
 						canAttendWithoutLogin={event.can_attend_without_login}
 						onGetTicketsClick={openTicketTierModal}
 						onShowTicketClick={openMyTicketModal}
-						onResumePayment={handleResumePayment}
+						onResumePayment={handleResumePaymentFromSidebar}
 						isResumingPayment={resumePaymentMutation.isPending}
 						onGuestRsvpClick={openGuestRsvpDialog}
 						onGuestTicketClick={openGuestTicketDialog}
@@ -776,11 +883,13 @@ import type {
 <TicketTierModal
 	bind:open={showTicketTierModal}
 	tiers={ticketTiers}
+	eventId={event.id}
 	isAuthenticated={data.isAuthenticated}
 	hasTicket={!!userTicket}
 	membershipTier={data.membershipTier}
 	canAttendWithoutLogin={event.can_attend_without_login}
 	maxQuantity={remainingTickets}
+	userName={userDisplayName}
 	onClose={closeTicketTierModal}
 	onClaimTicket={handleClaimTicket}
 	onCheckout={handleCheckout}
@@ -788,15 +897,17 @@ import type {
 />
 
 <!-- My Ticket Modal -->
-{#if userTicket}
+{#if userTickets.length > 0}
 	<MyTicketModal
 		bind:open={showMyTicketModal}
-		ticket={userTicket}
+		tickets={userTickets}
 		eventName={event.name}
 		eventDate={event.start ? new Date(event.start).toLocaleString() : undefined}
 		eventLocation={formatEventLocation(event)}
 		onResumePayment={handleResumePayment}
 		isResumingPayment={resumePaymentMutation.isPending}
+		onCancelReservation={handleCancelReservation}
+		isCancellingReservation={cancelReservationMutation.isPending}
 	/>
 {/if}
 

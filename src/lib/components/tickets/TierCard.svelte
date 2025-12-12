@@ -10,6 +10,8 @@
 
 	interface Props {
 		tier: TierSchemaWithId;
+		/** Event ID for seat availability API */
+		eventId: string;
 		isAuthenticated: boolean;
 		hasTicket?: boolean;
 		isEligible?: boolean;
@@ -22,6 +24,7 @@
 
 	let {
 		tier,
+		eventId,
 		isAuthenticated,
 		hasTicket = false,
 		isEligible = true,
@@ -308,6 +311,7 @@
 <TicketConfirmationDialog
 	bind:open={showConfirmation}
 	{tier}
+	{eventId}
 	onClose={closeConfirmation}
 	onConfirm={handleConfirm}
 	isProcessing={isClaiming}

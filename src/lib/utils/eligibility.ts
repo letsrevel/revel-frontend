@@ -3,7 +3,7 @@ import type {
 	EventUserStatusResponse,
 	NextStep,
 	EventRsvpSchema,
-	EventTicketSchema,
+	UserTicketSchema,
 	RsvpStatus as ApiRsvpStatus,
 	TicketStatus as ApiTicketStatus
 } from '$lib/api/generated/types.gen';
@@ -44,9 +44,10 @@ export type EventRsvpSchemaActual = Omit<EventRsvpSchema, 'status'> & {
 };
 
 /**
- * EventTicketSchema with corrected status type
+ * UserTicketSchema with corrected status type
+ * (Previously EventTicketSchema, now unified as UserTicketSchema)
  */
-export type EventTicketSchemaActual = Omit<EventTicketSchema, 'status'> & {
+export type EventTicketSchemaActual = Omit<UserTicketSchema, 'status'> & {
 	status: TicketStatus;
 };
 

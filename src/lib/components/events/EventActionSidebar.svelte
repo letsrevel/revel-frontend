@@ -25,7 +25,6 @@
 	import ActionButton from './ActionButton.svelte';
 	import EventRSVP from './EventRSVP.svelte';
 	import EligibilityStatusDisplay from './EligibilityStatusDisplay.svelte';
-	import AddToWalletButton from '$lib/components/tickets/AddToWalletButton.svelte';
 	import { Check, Ticket, Settings, Users, Mail, CalendarDays } from 'lucide-svelte';
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
 
@@ -335,6 +334,19 @@
 				>
 					{isResumingPayment ? 'Processing...' : 'Resume Payment'}
 				</button>
+				{#if onShowTicketClick}
+					<button
+						type="button"
+						onclick={onShowTicketClick}
+						class="w-full rounded-md border border-orange-300 bg-transparent px-4 py-2 text-sm font-medium text-orange-700 transition-colors hover:bg-orange-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-900/30"
+					>
+						{#if userTickets.length > 1}
+							View All {userTickets.length} Tickets
+						{:else}
+							View Ticket
+						{/if}
+					</button>
+				{/if}
 			</div>
 		{:else if isAttending && attendanceStatusText}
 			<!-- Attendance Status Display (if user is attending) -->
@@ -435,16 +447,6 @@
 							{/if}
 						</span>
 					</button>
-				{/if}
-
-				<!-- Add to Wallet Button (for first ticket with Apple Wallet available) -->
-				{#if userTickets.length > 0 && userTickets[0].apple_pass_available && userTickets[0].id}
-					<AddToWalletButton
-						ticketId={userTickets[0].id}
-						eventName={event.name}
-						variant="secondary"
-						class="w-full"
-					/>
 				{/if}
 
 				<!-- Add to Calendar Button -->

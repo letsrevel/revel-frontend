@@ -33,7 +33,20 @@
 	let description = $state(venue?.description ?? '');
 	let capacity = $state<number | undefined>(venue?.capacity ?? undefined);
 	let cityId = $state<number | undefined>(venue?.city?.id ?? undefined);
+	let selectedCity = $state<CitySchema | null>(venue?.city ?? null);
 	let address = $state(venue?.address ?? '');
+
+	// Helper to extract error message from API response
+	function getErrorMessage(error: any): string {
+		if (error?.detail) {
+			if (typeof error.detail === 'string') return error.detail;
+			if (Array.isArray(error.detail)) {
+				return error.detail.map((d: any) => d.msg || d.message || String(d)).join(', ');
+			}
+		}
+		if (error?.message) return error.message;
+		return m['orgAdmin.venues.toast.genericError']?.() ?? 'An unexpected error occurred';
+	}
 
 	// Create mutation
 	const createMutationFn = createMutation(() => ({
@@ -47,7 +60,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to create venue');
+				throw response.error;
 			}
 
 			return response.data;
@@ -57,8 +70,9 @@
 			queryClient.invalidateQueries({ queryKey: ['organization-venues'] });
 			onSuccess();
 		},
-		onError: () => {
-			toast.error(m['orgAdmin.venues.toast.createError']());
+		onError: (error: any) => {
+			const message = getErrorMessage(error);
+			toast.error(m['orgAdmin.venues.toast.createError']() + ': ' + message);
 		}
 	}));
 
@@ -76,7 +90,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to update venue');
+				throw response.error;
 			}
 
 			return response.data;
@@ -86,8 +100,9 @@
 			queryClient.invalidateQueries({ queryKey: ['organization-venues'] });
 			onSuccess();
 		},
-		onError: () => {
-			toast.error(m['orgAdmin.venues.toast.updateError']());
+		onError: (error: any) => {
+			const message = getErrorMessage(error);
+			toast.error(m['orgAdmin.venues.toast.updateError']() + ': ' + message);
 		}
 	}));
 
@@ -113,6 +128,7 @@
 
 	function handleCitySelect(city: CitySchema | null) {
 		cityId = city?.id ?? undefined;
+		selectedCity = city;
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
@@ -203,7 +219,7 @@
 				<!-- City -->
 				<div>
 					<CityAutocomplete
-						value={venue?.city ?? null}
+						value={selectedCity}
 						onSelect={handleCitySelect}
 						label={m['orgAdmin.venues.form.cityLabel']()}
 						description=""

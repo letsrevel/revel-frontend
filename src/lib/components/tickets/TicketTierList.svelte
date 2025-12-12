@@ -99,6 +99,7 @@
 			{#each visibleTiers as tier (tier.id || tier.event_id + tier.name)}
 				<TierCard
 					{tier}
+					eventId={eventId ?? ''}
 					{isAuthenticated}
 					{hasTicket}
 					{isEligible}

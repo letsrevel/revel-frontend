@@ -24,8 +24,21 @@
 	let logoPath = $derived(getEventLogo(event));
 	let logoUrl = $derived(getImageUrl(logoPath));
 
-	// Compute location display
+	// Compute location display - prioritize venue info when available
 	let locationDisplay = $derived.by(() => {
+		// If event has a venue, use venue's information
+		if (event.venue) {
+			const venueName = event.venue.name;
+			// Use venue's city if available, otherwise fall back to event's city
+			const city = event.venue.city || event.city;
+			if (city) {
+				const cityCountry = city.country ? `${city.name}, ${city.country}` : city.name;
+				return `${venueName}, ${cityCountry}`;
+			}
+			return venueName;
+		}
+
+		// Fall back to event's address/city
 		if (!event.city) return event.address || m['eventHeader.locationTbd']();
 		const cityCountry = event.city.country
 			? `${event.city.name}, ${event.city.country}`

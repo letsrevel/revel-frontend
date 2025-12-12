@@ -3,7 +3,7 @@
 	import type { TicketTierDetailSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
-	import { Edit } from 'lucide-svelte';
+	import { Edit, Building2, LayoutGrid, Armchair } from 'lucide-svelte';
 
 	interface Props {
 		tier: TicketTierDetailSchema;
@@ -104,6 +104,25 @@
 		if (end === 'Not set') return `From ${start}`;
 		return `${start} - ${end}`;
 	});
+
+	let seatAssignmentDisplay = $derived(() => {
+		const modes: Record<string, string> = {
+			none: m['tierCard.seatAssignment.none']?.() ?? 'General Admission',
+			random: m['tierCard.seatAssignment.random']?.() ?? 'Random Assignment',
+			user_choice: m['tierCard.seatAssignment.userChoice']?.() ?? 'User Selects Seat'
+		};
+		return modes[tier.seat_assignment_mode] || modes.none;
+	});
+
+	let maxTicketsDisplay = $derived(() => {
+		if (tier.max_tickets_per_user === null || tier.max_tickets_per_user === undefined) {
+			return m['tierCard.maxTickets.inherit']?.() ?? 'Inherited from event';
+		}
+		return String(tier.max_tickets_per_user);
+	});
+
+	// Check if this tier has venue/seating configuration
+	let hasSeatingConfig = $derived(tier.seat_assignment_mode !== 'none' || tier.venue || tier.sector);
 </script>
 
 <Card class="p-4">
@@ -166,6 +185,55 @@
 					<dt class="text-muted-foreground">{m['tierCard.salesWindow']()}</dt>
 					<dd class="font-medium">{salesWindowDisplay()}</dd>
 				</div>
+
+				<!-- Seat Assignment -->
+				<div>
+					<dt class="text-muted-foreground">
+						<span class="flex items-center gap-1">
+							<Armchair class="h-3 w-3" aria-hidden="true" />
+							{m['tierCard.seatAssignment.label']?.() ?? 'Seating'}
+						</span>
+					</dt>
+					<dd class="font-medium">{seatAssignmentDisplay()}</dd>
+				</div>
+
+				<!-- Max Tickets Per User -->
+				<div>
+					<dt class="text-muted-foreground">{m['tierCard.maxTicketsPerUser']?.() ?? 'Max per user'}</dt>
+					<dd class="font-medium">{maxTicketsDisplay()}</dd>
+				</div>
+
+				<!-- Venue/Sector (if configured) -->
+				{#if tier.venue || tier.sector}
+					<div class="col-span-2">
+						<dt class="text-muted-foreground">
+							<span class="flex items-center gap-1">
+								<Building2 class="h-3 w-3" aria-hidden="true" />
+								{m['tierCard.venueAndSector']?.() ?? 'Venue & Sector'}
+							</span>
+						</dt>
+						<dd class="flex items-center gap-2 font-medium">
+							{#if tier.venue}
+								<span class="flex items-center gap-1">
+									<Building2 class="h-4 w-4 text-primary" aria-hidden="true" />
+									{tier.venue.name}
+								</span>
+							{/if}
+							{#if tier.venue && tier.sector}
+								<span class="text-muted-foreground">/</span>
+							{/if}
+							{#if tier.sector}
+								<span class="flex items-center gap-1">
+									<LayoutGrid class="h-4 w-4 text-primary" aria-hidden="true" />
+									{tier.sector.name}
+									{#if tier.sector.code}
+										<span class="text-xs text-muted-foreground">({tier.sector.code})</span>
+									{/if}
+								</span>
+							{/if}
+						</dd>
+					</div>
+				{/if}
 			</dl>
 
 			<!-- Manual Payment Instructions -->

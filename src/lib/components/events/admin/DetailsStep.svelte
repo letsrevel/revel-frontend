@@ -34,6 +34,7 @@
 			organization_cover_art?: string;
 			requires_ticket?: boolean;
 			address_visibility?: ResourceVisibility;
+			venue_id?: string | null;
 		};
 		eventSeries?: EventSeriesRetrieveSchema[];
 		questionnaires?: OrganizationQuestionnaireInListSchema[];
@@ -269,6 +270,9 @@
 
 	// Derived state
 	let isSectionOpen = (section: string) => openSections.has(section);
+
+	// Check if event has a venue (address from venue is read-only)
+	let hasVenue = $derived(!!formData.venue_id);
 </script>
 
 <div class="space-y-4">
@@ -317,36 +321,44 @@
 						value={formData.address || ''}
 						oninput={(e) => onUpdate({ address: e.currentTarget.value })}
 						placeholder={m['detailsStep.addressPlaceholder']()}
-						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+						disabled={hasVenue}
+						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
 					/>
+					{#if hasVenue}
+						<p class="text-xs text-muted-foreground">
+							{m['detailsStep.addressFromVenue']?.() ?? 'Address is set from the selected venue'}
+						</p>
+					{/if}
 				</div>
 
-				<!-- Address Visibility -->
-				<div class="space-y-2">
-					<label for="address-visibility" class="block text-sm font-medium">
-						<span class="flex items-center gap-2">
-							<Eye class="h-4 w-4" aria-hidden="true" />
-							{m['detailsStep.addressVisibility']()}
-						</span>
-					</label>
-					<select
-						id="address-visibility"
-						value={formData.address_visibility || 'public'}
-						onchange={(e) =>
-							onUpdate({ address_visibility: e.currentTarget.value as ResourceVisibility })}
-						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-					>
-						<option value="public">{m['detailsStep.addressVisibilityPublic']()}</option>
-						<option value="members-only">{m['detailsStep.addressVisibilityMembersOnly']()}</option>
-						<option value="attendees-only"
-							>{m['detailsStep.addressVisibilityAttendeesOnly']()}</option
+				<!-- Address Visibility (hidden when venue is selected) -->
+				{#if !hasVenue}
+					<div class="space-y-2">
+						<label for="address-visibility" class="block text-sm font-medium">
+							<span class="flex items-center gap-2">
+								<Eye class="h-4 w-4" aria-hidden="true" />
+								{m['detailsStep.addressVisibility']()}
+							</span>
+						</label>
+						<select
+							id="address-visibility"
+							value={formData.address_visibility || 'public'}
+							onchange={(e) =>
+								onUpdate({ address_visibility: e.currentTarget.value as ResourceVisibility })}
+							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						>
-						<option value="private">{m['detailsStep.addressVisibilityPrivate']()}</option>
-					</select>
-					<p class="text-xs text-muted-foreground">
-						{m['detailsStep.addressVisibilityHint']()}
-					</p>
-				</div>
+							<option value="public">{m['detailsStep.addressVisibilityPublic']()}</option>
+							<option value="members-only">{m['detailsStep.addressVisibilityMembersOnly']()}</option>
+							<option value="attendees-only"
+								>{m['detailsStep.addressVisibilityAttendeesOnly']()}</option
+							>
+							<option value="private">{m['detailsStep.addressVisibilityPrivate']()}</option>
+						</select>
+						<p class="text-xs text-muted-foreground">
+							{m['detailsStep.addressVisibilityHint']()}
+						</p>
+					</div>
+				{/if}
 			</div>
 		{/if}
 	</div>
