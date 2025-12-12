@@ -2,6 +2,7 @@ import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { accountMe, accountUpdateProfile } from '$lib/api/generated';
 import { profileUpdateSchema } from '$lib/schemas/profile';
+import { extractErrorMessage } from '$lib/utils/errors';
 
 export const load: PageServerLoad = async ({ cookies }) => {
 	const accessToken = cookies.get('access_token');
@@ -82,27 +83,17 @@ export const actions: Actions = {
 				};
 			}
 
+			const errorMessage = extractErrorMessage(response.error, 'Failed to update profile');
 			return fail(500, {
-				errors: { form: 'Failed to update profile' },
+				errors: { form: errorMessage },
 				...data
 			});
 		} catch (error: any) {
 			console.error('Profile update error:', error);
 
-			const apiErrors = error?.response?.data?.errors || {};
-			const errors: Record<string, string> = {};
+			const errorMessage = extractErrorMessage(error, 'An unexpected error occurred');
 
-			if (apiErrors.first_name) errors.first_name = apiErrors.first_name[0];
-			if (apiErrors.last_name) errors.last_name = apiErrors.last_name[0];
-			if (apiErrors.preferred_name) errors.preferred_name = apiErrors.preferred_name[0];
-			if (apiErrors.pronouns) errors.pronouns = apiErrors.pronouns[0];
-			if (apiErrors.language) errors.language = apiErrors.language[0];
-
-			if (Object.keys(errors).length === 0) {
-				errors.form = 'An unexpected error occurred';
-			}
-
-			return fail(500, { errors, ...data });
+			return fail(500, { errors: { form: errorMessage }, ...data });
 		}
 	}
 };

@@ -1,6 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import { organizationadminVerifyContactEmail } from '$lib/api/generated/sdk.gen';
 import type { PageServerLoad } from './$types';
+import { extractErrorMessage } from '$lib/utils/errors';
 
 export const load: PageServerLoad = async ({ params, url, locals, cookies }) => {
 	const { slug } = params;
@@ -46,15 +47,12 @@ export const load: PageServerLoad = async ({ params, url, locals, cookies }) => 
 		});
 
 		if (apiError || !data) {
-			// Handle specific error cases
-			const errorDetail =
-				typeof apiError === 'object' && apiError && 'detail' in apiError
-					? (apiError as { detail?: string }).detail
-					: undefined;
+			// Extract user-friendly error message from API error
+			const errorMessage = extractErrorMessage(apiError, 'Invalid or expired verification token');
 
 			return {
 				success: false,
-				error: errorDetail || 'Invalid or expired verification token',
+				error: errorMessage,
 				isVerifying: false,
 				organizationSlug: slug,
 				organizationName: null
@@ -70,9 +68,14 @@ export const load: PageServerLoad = async ({ params, url, locals, cookies }) => 
 			organizationName: data.name
 		};
 	} catch (err) {
+		const errorMessage = extractErrorMessage(
+			err,
+			'An unexpected error occurred. Please try again.'
+		);
+
 		return {
 			success: false,
-			error: 'An unexpected error occurred. Please try again.',
+			error: errorMessage,
 			isVerifying: false,
 			organizationSlug: slug,
 			organizationName: null

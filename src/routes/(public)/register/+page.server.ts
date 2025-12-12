@@ -2,6 +2,7 @@ import { fail, redirect, isRedirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { registerSchema } from '$lib/schemas/auth';
 import { accountRegister, apiApiVersion } from '$lib/api/generated/sdk.gen';
+import { extractErrorMessage } from '$lib/utils/errors';
 
 export const load: PageServerLoad = async ({ fetch }) => {
 	// Check if backend is in demo mode
@@ -83,18 +84,12 @@ export const actions = {
 			if (!response.response.ok && response.error) {
 				console.error('[REGISTER] Error response:', response.error);
 
-				// The error structure from the API client varies
-				// Try to extract error message from different possible structures
-				let errorMessage = 'Registration failed';
-				const error = response.error as any;
+				// Extract user-friendly error message from API error
+				const errorMessage = extractErrorMessage(response.error, 'Registration failed');
 
-				if (typeof error === 'string') {
-					errorMessage = error;
-				} else if (error.detail) {
-					errorMessage = error.detail;
-				} else if (error.message) {
-					errorMessage = error.message;
-				} else if (error.email) {
+				// Check if it's an email-specific error
+				const error = response.error as any;
+				if (error.email) {
 					// Field-specific error
 					return fail(400, {
 						errors: { email: Array.isArray(error.email) ? error.email[0] : error.email },
@@ -134,8 +129,12 @@ export const actions = {
 
 			// Only log actual unexpected errors
 			console.error('[REGISTER] Unexpected registration error:', error);
+			const errorMessage = extractErrorMessage(
+				error,
+				'An unexpected error occurred. Please try again.'
+			);
 			return fail(500, {
-				errors: { form: 'An unexpected error occurred. Please try again.' },
+				errors: { form: errorMessage },
 				email: data.email
 			});
 		}

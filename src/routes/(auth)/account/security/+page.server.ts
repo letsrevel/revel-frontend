@@ -2,6 +2,7 @@ import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { otpSetupOtp, otpEnableOtp, otpDisableOtp, accountMe } from '$lib/api/client';
 import { z } from 'zod';
+import { extractErrorMessage } from '$lib/utils/errors';
 
 /**
  * Load current user's 2FA status
@@ -76,10 +77,10 @@ export const actions: Actions = {
 			}
 
 			if (response.error) {
-				const error = response.error as any;
-				console.error('[Server] Error response:', error);
+				console.error('[Server] Error response:', response.error);
+				const errorMessage = extractErrorMessage(response.error, '2FA is already enabled');
 				return fail(400, {
-					errors: { form: error?.detail || '2FA is already enabled' }
+					errors: { form: errorMessage }
 				});
 			}
 
@@ -89,8 +90,9 @@ export const actions: Actions = {
 			});
 		} catch (error) {
 			console.error('[Server] 2FA setup error:', error);
+			const errorMessage = extractErrorMessage(error, 'An unexpected error occurred');
 			return fail(500, {
-				errors: { form: 'An unexpected error occurred' }
+				errors: { form: errorMessage }
 			});
 		}
 	},
@@ -137,9 +139,9 @@ export const actions: Actions = {
 			}
 
 			if (response.error) {
-				const error = response.error as any;
+				const errorMessage = extractErrorMessage(response.error, 'Invalid code. Please try again.');
 				return fail(403, {
-					errors: { code: error?.detail || 'Invalid code. Please try again.' }
+					errors: { code: errorMessage }
 				});
 			}
 
@@ -148,8 +150,9 @@ export const actions: Actions = {
 			});
 		} catch (error) {
 			console.error('2FA verify error:', error);
+			const errorMessage = extractErrorMessage(error, 'An unexpected error occurred');
 			return fail(500, {
-				errors: { code: 'An unexpected error occurred' }
+				errors: { code: errorMessage }
 			});
 		}
 	},
@@ -196,9 +199,9 @@ export const actions: Actions = {
 			}
 
 			if (response.error) {
-				const error = response.error as any;
+				const errorMessage = extractErrorMessage(response.error, 'Invalid code. Please try again.');
 				return fail(403, {
-					errors: { code: error?.detail || 'Invalid code. Please try again.' }
+					errors: { code: errorMessage }
 				});
 			}
 
@@ -207,8 +210,9 @@ export const actions: Actions = {
 			});
 		} catch (error) {
 			console.error('2FA disable error:', error);
+			const errorMessage = extractErrorMessage(error, 'An unexpected error occurred');
 			return fail(500, {
-				errors: { code: 'An unexpected error occurred' }
+				errors: { code: errorMessage }
 			});
 		}
 	}

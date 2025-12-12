@@ -7,6 +7,7 @@ import {
 	eventClaimInvitation
 } from '$lib/api/generated/sdk.gen';
 import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '$lib/utils/cookies';
+import { extractErrorMessage } from '$lib/utils/errors';
 
 /**
  * Attempt to claim pending invitation tokens after email verification
@@ -131,10 +132,10 @@ export const load: PageServerLoad = async ({ url, fetch, cookies }) => {
 
 		// If response was not ok, handle the error
 		if (!response.response.ok && response.error) {
-			const error = response.error as any;
+			const errorMessage = extractErrorMessage(response.error, 'Verification failed');
 			return {
 				success: false,
-				error: error?.detail || error?.message || 'Verification failed'
+				error: errorMessage
 			};
 		}
 
@@ -151,9 +152,13 @@ export const load: PageServerLoad = async ({ url, fetch, cookies }) => {
 
 		// Log unexpected errors
 		console.error('[VERIFY] Unexpected verification error:', error);
+		const errorMessage = extractErrorMessage(
+			error,
+			'An unexpected error occurred during verification'
+		);
 		return {
 			success: false,
-			error: 'An unexpected error occurred during verification'
+			error: errorMessage
 		};
 	}
 };

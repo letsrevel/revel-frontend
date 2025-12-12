@@ -3,6 +3,7 @@ import type { Actions } from './$types';
 import { loginSchema, otpSchema } from '$lib/schemas/auth';
 import { authObtainToken, authObtainTokenWithOtp } from '$lib/api/client';
 import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '$lib/utils/cookies';
+import { extractErrorMessage } from '$lib/utils/errors';
 
 export const actions = {
 	// Standard email/password login
@@ -65,8 +66,7 @@ export const actions = {
 
 			// If we reach here, there was an error
 			if (!response.response.ok && response.error) {
-				const error = response.error as any;
-				const errorMessage = error?.detail || error?.message || 'Login failed';
+				const errorMessage = extractErrorMessage(response.error, 'Login failed');
 				return fail(400, {
 					errors: { form: errorMessage },
 					email: data.email
@@ -85,8 +85,12 @@ export const actions = {
 
 			// Only log actual unexpected errors
 			console.error('Unexpected login error:', error);
+			const errorMessage = extractErrorMessage(
+				error,
+				'An unexpected error occurred. Please try again.'
+			);
 			return fail(500, {
-				errors: { form: 'An unexpected error occurred. Please try again.' },
+				errors: { form: errorMessage },
 				email: data.email
 			});
 		}
@@ -140,8 +144,7 @@ export const actions = {
 
 			// If we reach here, there was an error
 			if (!response.response.ok && response.error) {
-				const error = response.error as any;
-				const errorMessage = error?.detail || 'Invalid code. Please try again.';
+				const errorMessage = extractErrorMessage(response.error, 'Invalid code. Please try again.');
 				return fail(400, {
 					errors: { code: errorMessage },
 					requires2FA: true,
@@ -162,8 +165,12 @@ export const actions = {
 
 			// Only log actual unexpected errors
 			console.error('Unexpected 2FA verification error:', error);
+			const errorMessage = extractErrorMessage(
+				error,
+				'An unexpected error occurred. Please try again.'
+			);
 			return fail(500, {
-				errors: { code: 'An unexpected error occurred. Please try again.' },
+				errors: { code: errorMessage },
 				requires2FA: true,
 				tempToken: data.tempToken
 			});
