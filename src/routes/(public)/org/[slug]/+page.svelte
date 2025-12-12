@@ -13,6 +13,7 @@
 	import {
 		generateOrganizationMeta,
 		generateOrganizationStructuredData,
+		generateBreadcrumbStructuredData,
 		toJsonLd
 	} from '$lib/utils/seo';
 	import * as m from '$lib/paraglide/messages.js';
@@ -70,6 +71,16 @@
 		generateOrganizationStructuredData(organization, `${page.url.origin}${page.url.pathname}`)
 	);
 	let jsonLd = $derived(toJsonLd(structuredData));
+
+	// Generate BreadcrumbList structured data
+	let breadcrumbData = $derived(
+		generateBreadcrumbStructuredData([
+			{ name: 'Home', url: page.url.origin },
+			{ name: 'Organizations', url: `${page.url.origin}/organizations` },
+			{ name: organization.name, url: `${page.url.origin}${page.url.pathname}` }
+		])
+	);
+	let breadcrumbJsonLd = $derived(toJsonLd(breadcrumbData));
 
 	// Filter resources to show only those marked for display on org page
 	const displayedResources = $derived(
@@ -174,6 +185,7 @@
 
 	<!-- Structured Data (JSON-LD) -->
 	{@html `<script type="application/ld+json">${jsonLd}<\/script>`}
+	{@html `<script type="application/ld+json">${breadcrumbJsonLd}<\/script>`}
 </svelte:head>
 
 <div class="min-h-screen bg-background">

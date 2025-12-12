@@ -51,7 +51,13 @@
 		"reportBug": "Fehler melden",
 		"copyright": "Open Source und Community-gesteuert.",
 		"cookieNotice": "Diese Website verwendet nur technisch notwendige Cookies für Authentifizierung, Sitzungsverwaltung und Einladungsverarbeitung. Wir verwenden keine Tracking- oder Analyse-Cookies.",
-		"learnMore": "Mehr erfahren"
+		"learnMore": "Mehr erfahren",
+		"solutionsTitle": "Lösungen",
+		"solutionEventbrite": "Eventbrite Alternative",
+		"solutionQueer": "Queere Event-Verwaltung",
+		"solutionKink": "Kink Event-Ticketing",
+		"solutionSelfHosted": "Self-Hosted Plattform",
+		"solutionPrivacy": "Datenschutz-fokussierte Events"
 	},
 	"home": {
 		"welcomeTo": "Willkommen bei",
@@ -69,7 +75,9 @@
 		"tryDemoDescription": "Erkunde Revel mit Testkonten und Daten. Erlebe die Plattform sowohl als Organisator als auch als Teilnehmer.",
 		"tryDemo": "Demo öffnen",
 		"tryDemoNote": "Hinweis: Die Demo läuft auf langsamer Hardware und kann einen Moment zum Laden benötigen.",
-		"keywords": "Veranstaltungen, Community, Ticketing, Zusage, Eventmanagement, Eventplattform"
+		"keywords": "Veranstaltungen, Community, Ticketing, Zusage, Eventmanagement, Eventplattform",
+		"useCasesTitle": "Für deine Community entwickelt",
+		"useCasesDescription": "Revel wurde mit diversen Communities im Sinn entwickelt. Ob du queere Events, Kink-Partys organisierst oder einfach mehr Kontrolle über deine Daten haben möchtest."
 	},
 	"login": {
 		"title": "Anmelden - Revel",

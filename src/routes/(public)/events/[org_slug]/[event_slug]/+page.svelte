@@ -25,7 +25,7 @@
 	import GuestRsvpDialog from '$lib/components/events/GuestRsvpDialog.svelte';
 	import GuestTicketDialog from '$lib/components/events/GuestTicketDialog.svelte';
 	import { generateEventStructuredData, structuredDataToJsonLd } from '$lib/utils/structured-data';
-	import { generateEventMeta } from '$lib/utils/seo';
+	import { generateEventMeta, generateBreadcrumbStructuredData, toJsonLd } from '$lib/utils/seo';
 	import {
 		isRSVP,
 		isTicket,
@@ -65,6 +65,17 @@
 
 	// Generate comprehensive meta tags
 	let metaTags = $derived(generateEventMeta(event, `${page.url.origin}${page.url.pathname}`));
+
+	// Generate BreadcrumbList structured data
+	let breadcrumbData = $derived(
+		generateBreadcrumbStructuredData([
+			{ name: 'Home', url: page.url.origin },
+			{ name: 'Events', url: `${page.url.origin}/events` },
+			{ name: event.organization.name, url: `${page.url.origin}/org/${event.organization.slug}` },
+			{ name: event.name, url: `${page.url.origin}${page.url.pathname}` }
+		])
+	);
+	let breadcrumbJsonLd = $derived(toJsonLd(breadcrumbData));
 
 	// Check if user has RSVP'd (reactive to userStatus changes)
 	let hasRSVPd = $derived.by(() => {
@@ -571,6 +582,7 @@
 
 	<!-- Structured Data (JSON-LD) -->
 	{@html `<script type="application/ld+json">${jsonLd}<\/script>`}
+	{@html `<script type="application/ld+json">${breadcrumbJsonLd}<\/script>`}
 </svelte:head>
 
 <div class="min-h-screen bg-background">

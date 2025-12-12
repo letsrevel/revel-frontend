@@ -15,6 +15,14 @@
 		countActiveOrganizationFilters
 	} from '$lib/utils/organizationFilters';
 	import type { OrganizationFilters as FilterState } from '$lib/utils/organizationFilters';
+	import {
+		generateOrganizationsListingMeta,
+		generateBreadcrumbStructuredData,
+		generateItemListStructuredData,
+		toJsonLd,
+		type ListItem
+	} from '$lib/utils/seo';
+	import { getBackendUrl } from '$lib/config/api';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
@@ -23,8 +31,41 @@
 
 	let { data }: Props = $props();
 
+	// Generate comprehensive meta tags for organizations listing page
+	let metaTags = $derived(generateOrganizationsListingMeta($page.url.origin));
+
+	// Generate BreadcrumbList structured data
+	let breadcrumbData = $derived(
+		generateBreadcrumbStructuredData([
+			{ name: 'Home', url: $page.url.origin },
+			{ name: 'Organizations', url: `${$page.url.origin}/organizations` }
+		])
+	);
+	let breadcrumbJsonLd = $derived(toJsonLd(breadcrumbData));
+
 	// Derived state from server load data
 	let organizations = $derived(data.organizations);
+
+	// Generate ItemList structured data from organizations
+	let orgListItems = $derived<ListItem[]>(
+		organizations.map((org) => ({
+			name: org.name,
+			url: `${$page.url.origin}/org/${org.slug}`,
+			image: org.logo
+				? getBackendUrl(org.logo)
+				: org.cover_art
+					? getBackendUrl(org.cover_art)
+					: undefined
+		}))
+	);
+	let itemListData = $derived(
+		generateItemListStructuredData(
+			orgListItems,
+			'Organizations on Revel',
+			'Community organizations on Revel'
+		)
+	);
+	let itemListJsonLd = $derived(toJsonLd(itemListData));
 	let totalCount = $derived(data.totalCount);
 	let currentPage = $derived(data.page);
 	let pageSize = $derived(data.pageSize);
@@ -74,23 +115,43 @@
 </script>
 
 <svelte:head>
-	<title>Discover Organizations - Revel</title>
+	<title>{metaTags.title}</title>
+	<meta name="description" content={metaTags.description} />
+	{#if metaTags.canonical}
+		<link rel="canonical" href={metaTags.canonical} />
+	{/if}
+
+	<!-- Open Graph -->
+	<meta property="og:type" content={metaTags.ogType || 'website'} />
+	<meta property="og:title" content={metaTags.ogTitle || metaTags.title} />
+	<meta property="og:description" content={metaTags.ogDescription || metaTags.description} />
+	{#if metaTags.ogImage}
+		<meta property="og:image" content={metaTags.ogImage} />
+	{/if}
+	<meta property="og:url" content={metaTags.ogUrl || $page.url.href} />
+	<meta property="og:site_name" content="Revel" />
+	<meta property="og:locale" content="en_US" />
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content={metaTags.twitterCard || 'summary_large_image'} />
+	<meta name="twitter:title" content={metaTags.twitterTitle || metaTags.title} />
+	<meta name="twitter:description" content={metaTags.twitterDescription || metaTags.description} />
+	{#if metaTags.twitterImage}
+		<meta name="twitter:image" content={metaTags.twitterImage} />
+	{/if}
+
+	<!-- Additional SEO meta tags -->
+	<meta name="robots" content="index, follow" />
 	<meta
-		name="description"
-		content="Browse and discover community organizations on Revel. Find LGBTQ+, queer, and sex-positive organizations near you."
+		name="keywords"
+		content="organizations, communities, groups, event organizers, discover, browse"
 	/>
-	<meta property="og:title" content="Discover Organizations - Revel" />
-	<meta
-		property="og:description"
-		content="Browse and discover community organizations on Revel. Find LGBTQ+, queer, and sex-positive organizations near you."
-	/>
-	<meta property="og:type" content="website" />
-	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:title" content="Discover Organizations - Revel" />
-	<meta
-		name="twitter:description"
-		content="Browse and discover community organizations on Revel. Find LGBTQ+, queer, and sex-positive organizations near you."
-	/>
+
+	<!-- Structured Data (JSON-LD) -->
+	{@html `<script type="application/ld+json">${breadcrumbJsonLd}<\/script>`}
+	{#if organizations.length > 0}
+		{@html `<script type="application/ld+json">${itemListJsonLd}<\/script>`}
+	{/if}
 </svelte:head>
 
 <div class="container mx-auto px-4 py-8">

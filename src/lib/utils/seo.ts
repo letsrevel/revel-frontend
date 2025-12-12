@@ -359,3 +359,160 @@ export function generateEventSeriesStructuredData(
 
 	return structuredData;
 }
+
+/**
+ * WebSite structured data for the home page
+ * https://schema.org/WebSite
+ */
+export interface WebSiteStructuredData {
+	'@context': 'https://schema.org';
+	'@type': 'WebSite';
+	name: string;
+	url: string;
+	description?: string;
+	potentialAction?: {
+		'@type': 'SearchAction';
+		target: {
+			'@type': 'EntryPoint';
+			urlTemplate: string;
+		};
+		'query-input': string;
+	};
+}
+
+/**
+ * Generate WebSite structured data for the home page
+ */
+export function generateWebSiteStructuredData(baseUrl: string): WebSiteStructuredData {
+	return {
+		'@context': 'https://schema.org',
+		'@type': 'WebSite',
+		name: 'Revel',
+		url: baseUrl,
+		description:
+			'Community-focused event management platform. Discover events, connect with organizers, and create unforgettable experiences.',
+		potentialAction: {
+			'@type': 'SearchAction',
+			target: {
+				'@type': 'EntryPoint',
+				urlTemplate: `${baseUrl}/events?search={search_term_string}`
+			},
+			'query-input': 'required name=search_term_string'
+		}
+	};
+}
+
+/**
+ * BreadcrumbList structured data for navigation
+ * https://schema.org/BreadcrumbList
+ */
+export interface BreadcrumbItem {
+	name: string;
+	url: string;
+}
+
+export interface BreadcrumbListStructuredData {
+	'@context': 'https://schema.org';
+	'@type': 'BreadcrumbList';
+	itemListElement: Array<{
+		'@type': 'ListItem';
+		position: number;
+		name: string;
+		item: string;
+	}>;
+}
+
+/**
+ * Generate BreadcrumbList structured data
+ * @param items - Array of breadcrumb items (name and url pairs)
+ */
+export function generateBreadcrumbStructuredData(
+	items: BreadcrumbItem[]
+): BreadcrumbListStructuredData {
+	return {
+		'@context': 'https://schema.org',
+		'@type': 'BreadcrumbList',
+		itemListElement: items.map((item, index) => ({
+			'@type': 'ListItem',
+			position: index + 1,
+			name: item.name,
+			item: item.url
+		}))
+	};
+}
+
+/**
+ * ItemList structured data for collection pages (events listing, organizations listing)
+ * https://schema.org/ItemList
+ */
+export interface ItemListStructuredData {
+	'@context': 'https://schema.org';
+	'@type': 'ItemList';
+	name?: string;
+	description?: string;
+	numberOfItems: number;
+	itemListElement: Array<{
+		'@type': 'ListItem';
+		position: number;
+		url: string;
+		name: string;
+		image?: string;
+	}>;
+}
+
+/**
+ * Item for ItemList generation
+ */
+export interface ListItem {
+	name: string;
+	url: string;
+	image?: string;
+}
+
+/**
+ * Generate ItemList structured data for collection pages
+ * @param items - Array of items to include in the list
+ * @param name - Optional name for the list
+ * @param description - Optional description for the list
+ */
+export function generateItemListStructuredData(
+	items: ListItem[],
+	name?: string,
+	description?: string
+): ItemListStructuredData {
+	return {
+		'@context': 'https://schema.org',
+		'@type': 'ItemList',
+		name,
+		description,
+		numberOfItems: items.length,
+		itemListElement: items.map((item, index) => ({
+			'@type': 'ListItem',
+			position: index + 1,
+			url: item.url,
+			name: item.name,
+			image: item.image
+		}))
+	};
+}
+
+/**
+ * Generate meta tags for organizations listing page
+ */
+export function generateOrganizationsListingMeta(baseUrl: string): MetaTags {
+	return {
+		title: 'Discover Organizations | Revel',
+		description:
+			'Browse and discover community organizations on Revel. Find event organizers, communities, and groups creating amazing experiences.',
+		canonical: `${baseUrl}/organizations`,
+		ogType: 'website',
+		ogTitle: 'Discover Organizations | Revel',
+		ogDescription: 'Browse and discover community organizations on Revel.',
+		ogImage: `${baseUrl}/og-image.png`,
+		ogUrl: `${baseUrl}/organizations`,
+		twitterCard: 'summary_large_image',
+		twitterTitle: 'Discover Organizations | Revel',
+		twitterDescription: 'Browse community organizations near you',
+		twitterImage: `${baseUrl}/og-image.png`
+	};
+}

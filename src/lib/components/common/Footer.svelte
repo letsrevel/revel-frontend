@@ -3,6 +3,7 @@
 	import { appStore } from '$lib/stores/app.svelte';
 	import { Github, Bug } from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
+	import { getLocale } from '$lib/paraglide/runtime.js';
 
 	// Frontend version from build-time environment variable (set in Dockerfile)
 	// Falls back to 'dev' for local development
@@ -14,11 +15,15 @@
 	// Get backend version and demo mode from store
 	let backendVersion = $derived(appStore.backendVersion || 'Loading...');
 	let isDemoMode = $derived(appStore.isDemoMode);
+
+	// Landing page URLs based on current locale
+	// Landing pages are NOT paraglide-translated, they use /de/ and /it/ prefixes
+	let landingPagePrefix = $derived(getLocale() === 'en' ? '' : `/${getLocale()}`);
 </script>
 
 <footer class="border-t bg-muted/30">
 	<div class="container mx-auto px-4 py-8 md:py-12">
-		<div class="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+		<div class="grid gap-8 md:grid-cols-2 lg:grid-cols-5">
 			<!-- About Section -->
 			<div>
 				<h3 class="mb-4 text-lg font-semibold">{m['footer.aboutTitle']()}</h3>
@@ -95,6 +100,53 @@
 							class="text-muted-foreground transition-colors hover:text-foreground"
 						>
 							{m['footer.github']()}
+						</a>
+					</li>
+				</ul>
+			</div>
+
+			<!-- Solutions / Use Cases -->
+			<div>
+				<h3 class="mb-4 text-lg font-semibold">{m['footer.solutionsTitle']()}</h3>
+				<ul class="space-y-2 text-sm">
+					<li>
+						<a
+							href="{landingPagePrefix}/eventbrite-alternative"
+							class="text-muted-foreground transition-colors hover:text-foreground"
+						>
+							{m['footer.solutionEventbrite']()}
+						</a>
+					</li>
+					<li>
+						<a
+							href="{landingPagePrefix}/queer-event-management"
+							class="text-muted-foreground transition-colors hover:text-foreground"
+						>
+							{m['footer.solutionQueer']()}
+						</a>
+					</li>
+					<li>
+						<a
+							href="{landingPagePrefix}/kink-event-ticketing"
+							class="text-muted-foreground transition-colors hover:text-foreground"
+						>
+							{m['footer.solutionKink']()}
+						</a>
+					</li>
+					<li>
+						<a
+							href="{landingPagePrefix}/self-hosted-event-platform"
+							class="text-muted-foreground transition-colors hover:text-foreground"
+						>
+							{m['footer.solutionSelfHosted']()}
+						</a>
+					</li>
+					<li>
+						<a
+							href="{landingPagePrefix}/privacy-focused-events"
+							class="text-muted-foreground transition-colors hover:text-foreground"
+						>
+							{m['footer.solutionPrivacy']()}
 						</a>
 					</li>
 				</ul>

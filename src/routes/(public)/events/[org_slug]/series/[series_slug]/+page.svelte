@@ -7,6 +7,7 @@
 	import {
 		generateEventSeriesMeta,
 		generateEventSeriesStructuredData,
+		generateBreadcrumbStructuredData,
 		toJsonLd
 	} from '$lib/utils/seo';
 	import * as m from '$lib/paraglide/messages.js';
@@ -50,6 +51,20 @@
 		generateEventSeriesStructuredData(series, `${$page.url.origin}${$page.url.pathname}`)
 	);
 	let jsonLd = $derived(toJsonLd(structuredData));
+
+	// Generate BreadcrumbList structured data
+	let breadcrumbData = $derived(
+		generateBreadcrumbStructuredData([
+			{ name: 'Home', url: $page.url.origin },
+			{ name: 'Events', url: `${$page.url.origin}/events` },
+			{
+				name: series.organization.name,
+				url: `${$page.url.origin}/org/${series.organization.slug}`
+			},
+			{ name: series.name, url: `${$page.url.origin}${$page.url.pathname}` }
+		])
+	);
+	let breadcrumbJsonLd = $derived(toJsonLd(breadcrumbData));
 
 	// Calculate pagination info
 	let totalPages = $derived(Math.ceil(totalCount / pageSize));
@@ -99,6 +114,7 @@
 
 	<!-- Structured Data (JSON-LD) -->
 	{@html `<script type="application/ld+json">${jsonLd}<\/script>`}
+	{@html `<script type="application/ld+json">${breadcrumbJsonLd}<\/script>`}
 </svelte:head>
 
 <div class="min-h-screen bg-background">

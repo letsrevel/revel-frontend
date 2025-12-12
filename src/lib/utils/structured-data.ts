@@ -2,6 +2,37 @@ import type { EventDetailSchema } from '$lib/api/generated/types.gen';
 import { getBackendUrl } from '$lib/config/api';
 
 /**
+ * Schema.org Place structured data
+ * https://schema.org/Place
+ */
+export interface PlaceStructuredData {
+	'@type': 'Place';
+	name?: string;
+	address?: {
+		'@type': 'PostalAddress';
+		streetAddress?: string;
+		addressLocality?: string;
+		addressRegion?: string;
+		postalCode?: string;
+		addressCountry?: string;
+	};
+	geo?: {
+		'@type': 'GeoCoordinates';
+		latitude?: number;
+		longitude?: number;
+	};
+}
+
+/**
+ * Schema.org VirtualLocation structured data
+ * https://schema.org/VirtualLocation
+ */
+export interface VirtualLocationStructuredData {
+	'@type': 'VirtualLocation';
+	url?: string;
+}
+
+/**
  * Schema.org Event structured data for SEO
  * https://schema.org/Event
  */
@@ -14,16 +45,7 @@ export interface EventStructuredData {
 	endDate: string;
 	eventStatus: string;
 	eventAttendanceMode: string;
-	location: {
-		'@type': 'Place';
-		name?: string;
-		address?: {
-			'@type': 'PostalAddress';
-			addressLocality?: string;
-			addressCountry?: string;
-			streetAddress?: string;
-		};
-	};
+	location: PlaceStructuredData | VirtualLocationStructuredData;
 	organizer: {
 		'@type': 'Organization';
 		name: string;
@@ -38,6 +60,32 @@ export interface EventStructuredData {
 		availability: string;
 		validFrom?: string;
 	};
+}
+
+/**
+ * Build location structured data for an event
+ */
+function buildLocationData(event: EventDetailSchema): PlaceStructuredData {
+	// Use venue name if available, otherwise use city name
+	const venueName = (event as unknown as { venue?: { name?: string } }).venue?.name;
+	const locationName = venueName || event.city?.name;
+
+	const location: PlaceStructuredData = {
+		'@type': 'Place',
+		name: locationName
+	};
+
+	// Build address if available
+	if (event.address || event.city) {
+		location.address = {
+			'@type': 'PostalAddress',
+			streetAddress: event.address || undefined,
+			addressLocality: event.city?.name,
+			addressCountry: event.city?.country
+		};
+	}
+
+	return location;
 }
 
 /**
@@ -56,18 +104,7 @@ export function generateEventStructuredData(
 		endDate: event.end,
 		eventStatus: getEventStatus(event.status),
 		eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode', // Physical events
-		location: {
-			'@type': 'Place',
-			name: event.city?.name,
-			address: event.address
-				? {
-						'@type': 'PostalAddress',
-						streetAddress: event.address,
-						addressLocality: event.city?.name,
-						addressCountry: event.city?.country
-					}
-				: undefined
-		},
+		location: buildLocationData(event),
 		organizer: {
 			'@type': 'Organization',
 			name: event.organization.name

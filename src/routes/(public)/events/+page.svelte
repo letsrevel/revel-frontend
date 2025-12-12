@@ -18,7 +18,14 @@
 	} from '$lib/utils/filters';
 	import type { EventFilters as FilterState } from '$lib/utils/filters';
 	import { parseCalendarParams, getCurrentPeriod } from '$lib/utils/calendar';
-	import { generateEventsListingMeta } from '$lib/utils/seo';
+	import {
+		generateEventsListingMeta,
+		generateBreadcrumbStructuredData,
+		generateItemListStructuredData,
+		toJsonLd,
+		type ListItem
+	} from '$lib/utils/seo';
+	import { getBackendUrl } from '$lib/config/api';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
@@ -30,8 +37,34 @@
 	// Generate comprehensive meta tags for events listing page
 	let metaTags = $derived(generateEventsListingMeta($page.url.origin));
 
+	// Generate BreadcrumbList structured data
+	let breadcrumbData = $derived(
+		generateBreadcrumbStructuredData([
+			{ name: 'Home', url: $page.url.origin },
+			{ name: 'Events', url: `${$page.url.origin}/events` }
+		])
+	);
+	let breadcrumbJsonLd = $derived(toJsonLd(breadcrumbData));
+
 	// Derived state from server load data
 	let events = $derived(data.events);
+
+	// Generate ItemList structured data from events
+	let eventListItems = $derived<ListItem[]>(
+		events.map((event) => ({
+			name: event.name,
+			url: `${$page.url.origin}/events/${event.organization.slug}/${event.slug}`,
+			image: event.logo
+				? getBackendUrl(event.logo)
+				: event.cover_art
+					? getBackendUrl(event.cover_art)
+					: undefined
+		}))
+	);
+	let itemListData = $derived(
+		generateItemListStructuredData(eventListItems, 'Events on Revel', 'Community events on Revel')
+	);
+	let itemListJsonLd = $derived(toJsonLd(itemListData));
 	let totalCount = $derived(data.totalCount);
 	let currentPage = $derived(data.page);
 	let pageSize = $derived(data.pageSize);
@@ -177,6 +210,12 @@
 		name="keywords"
 		content="events, community, discover, browse, concerts, workshops, meetups"
 	/>
+
+	<!-- Structured Data (JSON-LD) -->
+	{@html `<script type="application/ld+json">${breadcrumbJsonLd}<\/script>`}
+	{#if events.length > 0}
+		{@html `<script type="application/ld+json">${itemListJsonLd}<\/script>`}
+	{/if}
 </svelte:head>
 
 <div class="container mx-auto px-4 py-8">

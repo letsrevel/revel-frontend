@@ -51,7 +51,13 @@
 		"reportBug": "Report a bug",
 		"copyright": "Open source and community-driven.",
 		"cookieNotice": "This website uses only essential technical cookies necessary for authentication, session management, and invitation handling. We do not use tracking or analytics cookies.",
-		"learnMore": "Learn More"
+		"learnMore": "Learn More",
+		"solutionsTitle": "Solutions",
+		"solutionEventbrite": "Eventbrite Alternative",
+		"solutionQueer": "Queer Event Management",
+		"solutionKink": "Kink Event Ticketing",
+		"solutionSelfHosted": "Self-Hosted Platform",
+		"solutionPrivacy": "Privacy-Focused Events"
 	},
 	"home": {
 		"welcomeTo": "Welcome to",
@@ -69,7 +75,9 @@
 		"tryDemoDescription": "Explore Revel with test accounts and data. Experience the platform as both an organizer and an attendee.",
 		"tryDemo": "Open Demo",
 		"tryDemoNote": "Note: The demo runs on slow hardware and may take a moment to load.",
-		"keywords": "events, community, ticketing, RSVP, event management, event platform"
+		"keywords": "events, community, ticketing, RSVP, event management, event platform",
+		"useCasesTitle": "Built For Your Community",
+		"useCasesDescription": "Revel is designed with diverse communities in mind. Whether you're organizing queer events, kink parties, or simply want more control over your data."
 	},
 	"login": {
 		"title": "Sign In - Revel",
