@@ -73,9 +73,12 @@
 	<link rel="alternate" hreflang="x-default" href="{page.url.origin}/privacy-focused-events" />
 
 	<!-- Structured Data -->
-	{@html `<script type="application/ld+json">${breadcrumbJsonLd}</script>`}
-	{@html `<script type="application/ld+json">${faqJsonLd}</script>`}
-	{@html `<script type="application/ld+json">${webPageJsonLd}</script>`}
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+	{@html '<script type="application/ld+json">' + breadcrumbJsonLd + '</script>'}
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+	{@html '<script type="application/ld+json">' + faqJsonLd + '</script>'}
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+	{@html '<script type="application/ld+json">' + webPageJsonLd + '</script>'}
 </svelte:head>
 
 <LandingPageTemplate {content} />
