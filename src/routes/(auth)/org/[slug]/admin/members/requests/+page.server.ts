@@ -5,6 +5,7 @@ import {
 	organizationadminApproveMembershipRequest,
 	organizationadminRejectMembershipRequest
 } from '$lib/api/generated/sdk.gen';
+import { extractErrorMessage } from '$lib/utils/errors';
 
 /**
  * Load membership requests for this organization
@@ -120,11 +121,7 @@ export const actions: Actions = {
 			});
 
 			if (response.error) {
-				const errorMessage =
-					typeof response.error === 'object' && response.error && 'detail' in response.error
-						? String(response.error.detail)
-						: 'Failed to approve request';
-
+				const errorMessage = extractErrorMessage(response.error, 'Failed to approve request');
 				return fail(500, {
 					errors: {
 						form: errorMessage
@@ -138,9 +135,13 @@ export const actions: Actions = {
 			};
 		} catch (err) {
 			console.error('Error approving membership request:', err);
+			const errorMessage = extractErrorMessage(
+				err,
+				'An unexpected error occurred while approving the request'
+			);
 			return fail(500, {
 				errors: {
-					form: 'An unexpected error occurred while approving the request'
+					form: errorMessage
 				}
 			});
 		}
@@ -180,11 +181,7 @@ export const actions: Actions = {
 			});
 
 			if (response.error) {
-				const errorMessage =
-					typeof response.error === 'object' && response.error && 'detail' in response.error
-						? String(response.error.detail)
-						: 'Failed to reject request';
-
+				const errorMessage = extractErrorMessage(response.error, 'Failed to reject request');
 				return fail(500, {
 					errors: {
 						form: errorMessage
@@ -198,9 +195,13 @@ export const actions: Actions = {
 			};
 		} catch (err) {
 			console.error('Error rejecting membership request:', err);
+			const errorMessage = extractErrorMessage(
+				err,
+				'An unexpected error occurred while rejecting the request'
+			);
 			return fail(500, {
 				errors: {
-					form: 'An unexpected error occurred while rejecting the request'
+					form: errorMessage
 				}
 			});
 		}

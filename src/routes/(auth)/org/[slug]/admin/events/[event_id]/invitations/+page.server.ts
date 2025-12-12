@@ -12,6 +12,7 @@ import {
 	eventadminListTicketTiers
 } from '$lib/api/generated/sdk.gen';
 import type { TicketTierSchema } from '$lib/api/generated/types.gen';
+import { extractErrorMessage } from '$lib/utils/errors';
 
 /**
  * Load invitation requests AND invitations for this event
@@ -244,13 +245,15 @@ export const actions: Actions = {
 			});
 
 			if (response.error) {
-				return fail(500, { errors: { form: 'Failed to approve request' } });
+				const errorMessage = extractErrorMessage(response.error, 'Failed to approve request');
+				return fail(500, { errors: { form: errorMessage } });
 			}
 
 			return { success: true, action: 'approved' };
 		} catch (err) {
 			console.error('Error approving invitation request:', err);
-			return fail(500, { errors: { form: 'An unexpected error occurred' } });
+			const errorMessage = extractErrorMessage(err, 'An unexpected error occurred');
+			return fail(500, { errors: { form: errorMessage } });
 		}
 	},
 
@@ -276,13 +279,15 @@ export const actions: Actions = {
 			});
 
 			if (response.error) {
-				return fail(500, { errors: { form: 'Failed to reject request' } });
+				const errorMessage = extractErrorMessage(response.error, 'Failed to reject request');
+				return fail(500, { errors: { form: errorMessage } });
 			}
 
 			return { success: true, action: 'rejected' };
 		} catch (err) {
 			console.error('Error rejecting invitation request:', err);
-			return fail(500, { errors: { form: 'An unexpected error occurred' } });
+			const errorMessage = extractErrorMessage(err, 'An unexpected error occurred');
+			return fail(500, { errors: { form: errorMessage } });
 		}
 	},
 
@@ -343,17 +348,15 @@ export const actions: Actions = {
 			});
 
 			if (response.error) {
-				const errorMessage =
-					typeof response.error === 'object' && response.error && 'detail' in response.error
-						? String(response.error.detail)
-						: 'Failed to create invitations';
+				const errorMessage = extractErrorMessage(response.error, 'Failed to create invitations');
 				return fail(500, { errors: { form: errorMessage } });
 			}
 
 			return { success: true, action: 'created', data: response.data };
 		} catch (err) {
 			console.error('Error creating invitations:', err);
-			return fail(500, { errors: { form: 'An unexpected error occurred' } });
+			const errorMessage = extractErrorMessage(err, 'An unexpected error occurred');
+			return fail(500, { errors: { form: errorMessage } });
 		}
 	},
 
@@ -384,13 +387,15 @@ export const actions: Actions = {
 			});
 
 			if (response.error) {
-				return fail(500, { errors: { form: 'Failed to delete invitation' } });
+				const errorMessage = extractErrorMessage(response.error, 'Failed to delete invitation');
+				return fail(500, { errors: { form: errorMessage } });
 			}
 
 			return { success: true, action: 'deleted' };
 		} catch (err) {
 			console.error('Error deleting invitation:', err);
-			return fail(500, { errors: { form: 'An unexpected error occurred' } });
+			const errorMessage = extractErrorMessage(err, 'An unexpected error occurred');
+			return fail(500, { errors: { form: errorMessage } });
 		}
 	},
 
@@ -441,17 +446,15 @@ export const actions: Actions = {
 			});
 
 			if (response.error) {
-				const errorMessage =
-					typeof response.error === 'object' && response.error && 'detail' in response.error
-						? String(response.error.detail)
-						: 'Failed to update invitation';
+				const errorMessage = extractErrorMessage(response.error, 'Failed to update invitation');
 				return fail(500, { errors: { form: errorMessage } });
 			}
 
 			return { success: true, action: 'updated' };
 		} catch (err) {
 			console.error('Error updating invitation:', err);
-			return fail(500, { errors: { form: 'An unexpected error occurred' } });
+			const errorMessage = extractErrorMessage(err, 'An unexpected error occurred');
+			return fail(500, { errors: { form: errorMessage } });
 		}
 	},
 
@@ -509,17 +512,15 @@ export const actions: Actions = {
 			});
 
 			if (response.error) {
-				const errorMessage =
-					typeof response.error === 'object' && response.error && 'detail' in response.error
-						? String(response.error.detail)
-						: 'Failed to update invitations';
+				const errorMessage = extractErrorMessage(response.error, 'Failed to update invitations');
 				return fail(500, { errors: { form: errorMessage } });
 			}
 
 			return { success: true, action: 'bulk_updated', count: emails.length };
 		} catch (err) {
 			console.error('Error bulk updating invitations:', err);
-			return fail(500, { errors: { form: 'An unexpected error occurred' } });
+			const errorMessage = extractErrorMessage(err, 'An unexpected error occurred');
+			return fail(500, { errors: { form: errorMessage } });
 		}
 	}
 };

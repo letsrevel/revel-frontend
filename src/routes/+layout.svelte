@@ -5,7 +5,8 @@
 	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { appStore } from '$lib/stores/app.svelte';
-	import { Toaster } from 'svelte-sonner';
+	import { Toaster, toast } from 'svelte-sonner';
+	import { extractErrorMessage, isAuthError } from '$lib/utils/errors';
 	import DemoBanner from '$lib/components/common/DemoBanner.svelte';
 	import type { LayoutData } from './$types';
 
@@ -33,6 +34,24 @@
 					return failureCount < 2;
 				},
 				refetchOnWindowFocus: false // Prevent automatic refetches that could trigger auth loops
+			},
+			mutations: {
+				// Global error handler for all mutations
+				// Individual mutations can override this with their own onError
+				onError: (error: unknown) => {
+					// Skip auth errors (401/403) - these are handled by the auth interceptor
+					if (isAuthError(error)) {
+						return;
+					}
+
+					// Extract user-friendly error message
+					const message = extractErrorMessage(error);
+
+					// Show toast notification to user
+					toast.error('Action failed', {
+						description: message
+					});
+				}
 			}
 		}
 	});

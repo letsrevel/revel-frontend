@@ -1,6 +1,7 @@
 import { fail, type Actions, error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { organizationadminUpdateOrganization } from '$lib/api/generated';
+import { extractErrorMessage } from '$lib/utils/errors';
 
 /**
  * Load organization data for the settings page
@@ -93,8 +94,11 @@ export const actions: Actions = {
 			});
 
 			if (apiError || !data) {
-				// Check for specific error messages
-				const errorMessage = apiError?.toString() || 'Failed to update organization settings';
+				// Extract user-friendly error message from API error
+				const errorMessage = extractErrorMessage(
+					apiError,
+					'Failed to update organization settings'
+				);
 
 				return fail(500, {
 					errors: {
@@ -109,9 +113,14 @@ export const actions: Actions = {
 			};
 		} catch (err) {
 			console.error('Organization update error:', err);
+			const errorMessage = extractErrorMessage(
+				err,
+				'An unexpected error occurred while updating your organization'
+			);
+
 			return fail(500, {
 				errors: {
-					form: 'An unexpected error occurred while updating your organization'
+					form: errorMessage
 				}
 			});
 		}

@@ -113,6 +113,15 @@
 		telegramUrl = data.organization.telegram_url || '';
 	});
 
+	// Show toast notification on form errors
+	$effect(() => {
+		if (form?.errors && 'form' in form.errors) {
+			toast.error('Failed to save settings', {
+				description: form.errors.form
+			});
+		}
+	});
+
 	// Handle city selection
 	function handleCitySelect(city: CitySchema | null) {
 		selectedCity = city;

@@ -1,6 +1,7 @@
 import { organizationListResources, organizationGetOrganization } from '$lib/api/generated/sdk.gen';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import { extractErrorMessage } from '$lib/utils/errors';
 
 export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 	// Prepare headers with authentication if user is logged in
@@ -17,7 +18,8 @@ export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 	});
 
 	if (organizationResponse.error) {
-		throw error(404, 'Organization not found');
+		const errorMessage = extractErrorMessage(organizationResponse.error, 'Organization not found');
+		throw error(404, errorMessage);
 	}
 
 	// Fetch resources for this organization (pass auth to see restricted resources)
@@ -28,7 +30,8 @@ export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 	});
 
 	if (resourcesResponse.error) {
-		throw error(500, 'Failed to load resources');
+		const errorMessage = extractErrorMessage(resourcesResponse.error, 'Failed to load resources');
+		throw error(500, errorMessage);
 	}
 
 	return {

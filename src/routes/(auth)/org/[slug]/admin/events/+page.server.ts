@@ -1,6 +1,7 @@
 import { eventListEvents } from '$lib/api/generated/sdk.gen';
 import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
+import { extractErrorMessage } from '$lib/utils/errors';
 
 export const load: PageServerLoad = async ({ parent, locals, fetch }) => {
 	const { organization, canCreateEvent } = await parent();
@@ -29,7 +30,11 @@ export const load: PageServerLoad = async ({ parent, locals, fetch }) => {
 	// Handle API errors
 	if (eventsResponse.error) {
 		console.error('[Admin Events Load] Failed to fetch events:', eventsResponse.error);
-		throw error(500, 'Failed to load events. Please try again later.');
+		const errorMessage = extractErrorMessage(
+			eventsResponse.error,
+			'Failed to load events. Please try again later.'
+		);
+		throw error(500, errorMessage);
 	}
 
 	if (!eventsResponse.data) {

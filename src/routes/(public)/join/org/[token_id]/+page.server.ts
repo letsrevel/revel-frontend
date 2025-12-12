@@ -1,6 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import { organizationGetOrganizationTokenDetails } from '$lib/api/generated/sdk.gen';
+import { extractErrorMessage } from '$lib/utils/errors';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const tokenId = params.token_id;
@@ -11,7 +12,8 @@ export const load: PageServerLoad = async ({ params }) => {
 	});
 
 	if (response.error || !response.data) {
-		throw error(404, 'Token not found or expired');
+		const errorMessage = extractErrorMessage(response.error, 'Token not found or expired');
+		throw error(404, errorMessage);
 	}
 
 	return {

@@ -2,6 +2,7 @@ import { redirect, fail, isRedirect, type Actions } from '@sveltejs/kit';
 import { organizationCreateSchema } from '$lib/schemas/organization';
 import { organizationCreateOrganization } from '$lib/api/generated/sdk.gen';
 import type { PageServerLoad } from './$types';
+import { extractErrorMessage } from '$lib/utils/errors';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	// Require authentication
@@ -84,24 +85,31 @@ export const actions: Actions = {
 				const errorObj = error as { detail?: string; status?: number };
 
 				if (errorObj.status === 400) {
+					const errorMessage = extractErrorMessage(error, 'You already own an organization');
 					return fail(400, {
-						errors: { form: errorObj.detail || 'You already own an organization' },
+						errors: { form: errorMessage },
 						...data
 					});
 				}
 
 				if (errorObj.status === 403) {
+					const errorMessage = extractErrorMessage(
+						error,
+						'Please verify your email before creating an organization'
+					);
 					return fail(403, {
-						errors: {
-							form: errorObj.detail || 'Please verify your email before creating an organization'
-						},
+						errors: { form: errorMessage },
 						...data
 					});
 				}
 			}
 
+			const errorMessage = extractErrorMessage(
+				error,
+				'Failed to create organization. Please try again.'
+			);
 			return fail(500, {
-				errors: { form: 'Failed to create organization. Please try again.' },
+				errors: { form: errorMessage },
 				...data
 			});
 		} catch (err) {
@@ -110,8 +118,9 @@ export const actions: Actions = {
 				throw err;
 			}
 
+			const errorMessage = extractErrorMessage(err, 'An unexpected error occurred. Please try again.');
 			return fail(500, {
-				errors: { form: 'An unexpected error occurred. Please try again.' },
+				errors: { form: errorMessage },
 				...data
 			});
 		}

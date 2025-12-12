@@ -1,5 +1,6 @@
 import { fail, type Actions } from '@sveltejs/kit';
 import { accountDeleteAccountRequest, accountExportData } from '$lib/api/generated';
+import { extractErrorMessage } from '$lib/utils/errors';
 
 export const actions: Actions = {
 	exportData: async ({ cookies }) => {
@@ -28,17 +29,21 @@ export const actions: Actions = {
 
 			// Check for rate limiting (429 Too Many Requests)
 			if (error?.response?.status === 429) {
+				const errorMessage = extractErrorMessage(
+					error,
+					'You can only request a data export once every 24 hours. Please try again later.'
+				);
 				return fail(429, {
 					errors: {
-						exportForm:
-							'You can only request a data export once every 24 hours. Please try again later.'
+						exportForm: errorMessage
 					}
 				});
 			}
 
+			const errorMessage = extractErrorMessage(error, 'Failed to request data export. Please try again.');
 			return fail(500, {
 				errors: {
-					exportForm: 'Failed to request data export. Please try again.'
+					exportForm: errorMessage
 				}
 			});
 		}
@@ -71,35 +76,30 @@ export const actions: Actions = {
 
 			// Check for specific error types
 			if (error?.response?.status === 400) {
-				const apiErrors = error?.response?.data?.errors || {};
-
-				// Map backend errors
-				const errors: Record<string, string> = {};
-
-				if (apiErrors.non_field_errors) {
-					errors.form = apiErrors.non_field_errors[0];
-				} else if (error?.response?.data?.message) {
-					errors.form = error.response.data.message;
-				} else {
-					errors.form =
-						'Cannot delete account. You may own organizations that need to be transferred first.';
-				}
-
-				return fail(400, { errors });
+				const errorMessage = extractErrorMessage(
+					error,
+					'Cannot delete account. You may own organizations that need to be transferred first.'
+				);
+				return fail(400, { errors: { form: errorMessage } });
 			}
 
 			if (error?.response?.status === 403) {
+				const errorMessage = extractErrorMessage(
+					error,
+					'You cannot delete your account while you own active organizations. Please transfer ownership or delete them first.'
+				);
 				return fail(403, {
 					errors: {
-						form: 'You cannot delete your account while you own active organizations. Please transfer ownership or delete them first.'
+						form: errorMessage
 					}
 				});
 			}
 
 			// Generic error
+			const errorMessage = extractErrorMessage(error, 'An unexpected error occurred. Please try again later.');
 			return fail(500, {
 				errors: {
-					form: 'An unexpected error occurred. Please try again later.'
+					form: errorMessage
 				}
 			});
 		}

@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { questionnaireGetOrgQuestionnaire } from '$lib/api/generated/sdk.gen';
 import type { PageServerLoad } from './$types';
+import { extractErrorMessage } from '$lib/utils/errors';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
 	const user = locals.user;
@@ -17,7 +18,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		});
 
 		if (response.error) {
-			throw error(404, 'Questionnaire not found');
+			const errorMessage = extractErrorMessage(response.error, 'Questionnaire not found');
+			throw error(404, errorMessage);
 		}
 
 		const questionnaire = response.data;
@@ -34,6 +36,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		};
 	} catch (err) {
 		console.error('Failed to load questionnaire:', err);
-		throw error(404, 'Questionnaire not found');
+		const errorMessage = extractErrorMessage(err, 'Questionnaire not found');
+		throw error(404, errorMessage);
 	}
 };

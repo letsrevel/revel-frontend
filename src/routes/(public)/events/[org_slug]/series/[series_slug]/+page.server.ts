@@ -6,6 +6,7 @@ import {
 } from '$lib/api';
 import { error as svelteKitError } from '@sveltejs/kit';
 import type { OrganizationPermissionsSchema } from '$lib/api/generated/types.gen';
+import { extractErrorMessage } from '$lib/utils/errors';
 
 export const load: PageServerLoad = async ({ params, url, fetch, locals }) => {
 	const { org_slug, series_slug } = params;
@@ -101,6 +102,7 @@ export const load: PageServerLoad = async ({ params, url, fetch, locals }) => {
 			throw err; // Re-throw SvelteKit errors
 		}
 
-		throw svelteKitError(500, 'Failed to load event series');
+		const errorMessage = extractErrorMessage(err, 'Failed to load event series');
+		throw svelteKitError(500, errorMessage);
 	}
 };
