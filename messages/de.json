@@ -57,7 +57,8 @@
 		"solutionQueer": "Queere Event-Verwaltung",
 		"solutionKink": "Kink Event-Ticketing",
 		"solutionSelfHosted": "Self-Hosted Plattform",
-		"solutionPrivacy": "Datenschutz-fokussierte Events"
+		"solutionPrivacy": "Datenschutz-fokussierte Events",
+		"solutionCommunity": "Community-First Plattform"
 	},
 	"home": {
 		"welcomeTo": "Willkommen bei",

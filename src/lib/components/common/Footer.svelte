@@ -23,7 +23,7 @@
 
 <footer class="border-t bg-muted/30">
 	<div class="container mx-auto px-4 py-8 md:py-12">
-		<div class="grid gap-8 md:grid-cols-2 lg:grid-cols-5">
+		<div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
 			<!-- About Section -->
 			<div>
 				<h3 class="mb-4 text-lg font-semibold">{m['footer.aboutTitle']()}</h3>
@@ -147,6 +147,14 @@
 							class="text-muted-foreground transition-colors hover:text-foreground"
 						>
 							{m['footer.solutionPrivacy']()}
+						</a>
+					</li>
+					<li>
+						<a
+							href="{landingPagePrefix}/community-first-event-platform"
+							class="text-muted-foreground transition-colors hover:text-foreground"
+						>
+							{m['footer.solutionCommunity']()}
 						</a>
 					</li>
 				</ul>
