@@ -52,9 +52,18 @@
 				typeof data.status === 'string' &&
 				['yes', 'no', 'maybe'].includes(data.status);
 
+			// Get event ID - RSVP has event_id, Ticket has event.id
+			const eventId = isRsvp
+				? 'event_id' in data
+					? data.event_id
+					: undefined
+				: 'event' in data && data.event
+					? data.event.id
+					: undefined;
+
 			result = {
 				success: true,
-				eventId: data.event_id ?? undefined,
+				eventId,
 				type: isRsvp ? 'rsvp' : 'ticket',
 				rsvpStatus: isRsvp ? (data.status as 'yes' | 'no' | 'maybe') : undefined,
 				ticketId: !isRsvp && 'id' in data ? (data.id ?? undefined) : undefined

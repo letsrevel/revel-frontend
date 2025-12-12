@@ -17,7 +17,10 @@
 		Globe,
 		Github,
 		Eye,
-		Building2
+		Building2,
+		MapPin,
+		Calculator,
+		X
 	} from 'lucide-svelte';
 
 	// Generate comprehensive meta tags for home page
@@ -52,6 +55,33 @@
 		// No cleanup needed for non-Italian locale
 		return undefined;
 	});
+
+	// Fee calculator modal state
+	let showFeeCalculator = $state(false);
+	let ticketPrice = $state(20);
+
+	// Fee calculations
+	// Stripe fees: 1.5% + €0.25 for EU cards (higher for UK cards, see Stripe pricing)
+	const STRIPE_PERCENTAGE = 0.015; // 1.5%
+	const STRIPE_FIXED = 0.25; // €0.25
+
+	// Revel platform fee: 1.5% + €0.25
+	const REVEL_PERCENTAGE = 0.015; // 1.5%
+	const REVEL_FIXED = 0.25; // €0.25
+
+	let stripeFee = $derived(ticketPrice * STRIPE_PERCENTAGE + STRIPE_FIXED);
+	let revelFee = $derived(ticketPrice * REVEL_PERCENTAGE + REVEL_FIXED);
+	let totalFees = $derived(stripeFee + revelFee);
+	let organizerReceives = $derived(ticketPrice - totalFees);
+
+	function formatCurrency(amount: number): string {
+		return new Intl.NumberFormat('en-EU', {
+			style: 'currency',
+			currency: 'EUR',
+			minimumFractionDigits: 2,
+			maximumFractionDigits: 2
+		}).format(amount);
+	}
 </script>
 
 <svelte:head>
@@ -385,7 +415,7 @@
 	<!-- Additional Features -->
 	<div class="mb-16">
 		<h2 class="mb-8 text-center text-3xl font-bold">{m['learnMore.additionalFeaturesTitle']()}</h2>
-		<div class="grid gap-6 md:grid-cols-2">
+		<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 			<!-- Notifications -->
 			<div class="flex gap-4 rounded-lg border bg-card p-6">
 				<div class="flex-shrink-0">
@@ -412,6 +442,21 @@
 					<h3 class="mb-2 text-lg font-semibold">{m['learnMore.multiLanguageTitle']()}</h3>
 					<p class="text-sm text-muted-foreground">
 						{m['learnMore.multiLanguageDescription']()}
+					</p>
+				</div>
+			</div>
+
+			<!-- Venue Management -->
+			<div class="flex gap-4 rounded-lg border bg-card p-6">
+				<div class="flex-shrink-0">
+					<div class="rounded-full bg-accent/10 p-3">
+						<MapPin class="h-6 w-6 text-accent" aria-hidden="true" />
+					</div>
+				</div>
+				<div>
+					<h3 class="mb-2 text-lg font-semibold">{m['learnMore.venueManagementTitle']()}</h3>
+					<p class="text-sm text-muted-foreground">
+						{m['learnMore.venueManagementDescription']()}
 					</p>
 				</div>
 			</div>
@@ -463,24 +508,26 @@
 			<!-- Hosted Online Payments (last) -->
 			<div class="rounded-lg border bg-card p-6 text-center">
 				<h3 class="mb-2 text-lg font-semibold">{m['learnMore.pricingOnlinePayments']()}</h3>
-				<p class="text-2xl font-bold text-primary">{m['learnMore.pricingOnlinePaymentsPrice']()}</p>
-				<div class="mt-2 text-sm text-muted-foreground">
-					<p class="mb-1">{m['learnMore.pricingOnlinePaymentsDescription']()}</p>
-					<a
-						href="https://stripe.com/en-at/pricing"
-						target="_blank"
-						rel="noopener noreferrer"
-						class="text-primary hover:underline"
+				<p class="text-2xl font-bold text-primary">3% + €0.50</p>
+				<p class="mt-1 text-xs text-muted-foreground">({m['learnMore.eeaCards']()})</p>
+				<div class="mt-3 text-sm text-muted-foreground">
+					<p class="mb-2">{m['learnMore.pricingOnlinePaymentsDescription']()}</p>
+					<button
+						type="button"
+						onclick={() => (showFeeCalculator = true)}
+						class="inline-flex items-center gap-1.5 rounded-md bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/20"
 					>
-						View Stripe pricing
-					</a>
-					<span class="mx-1">·</span>
-					<a
-						href="mailto:contact@letsrevel.io?subject=Revel%20Fee%20Negotiation"
-						class="text-primary hover:underline"
-					>
-						We're happy to negotiate
-					</a>
+						<Calculator class="h-4 w-4" />
+						{m['learnMore.feeCalculator.calculateYourFees']()}
+					</button>
+					<div class="mt-2">
+						<a
+							href="mailto:contact@letsrevel.io?subject=Revel%20Fee%20Negotiation"
+							class="text-primary hover:underline"
+						>
+							We're happy to negotiate
+						</a>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -553,6 +600,133 @@
 		</p>
 	</div>
 </div>
+
+<!-- Fee Calculator Modal -->
+{#if showFeeCalculator}
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+		onclick={(e) => e.target === e.currentTarget && (showFeeCalculator = false)}
+		onkeydown={(e) => e.key === 'Escape' && (showFeeCalculator = false)}
+		role="dialog"
+		aria-modal="true"
+		aria-labelledby="fee-calculator-title"
+	>
+		<div class="w-full max-w-md rounded-lg border bg-background shadow-xl">
+			<!-- Header -->
+			<div class="flex items-center justify-between border-b px-6 py-4">
+				<h2 id="fee-calculator-title" class="text-xl font-bold">
+					{m['learnMore.feeCalculator.title']()}
+				</h2>
+				<button
+					type="button"
+					onclick={() => (showFeeCalculator = false)}
+					class="rounded-full p-1 hover:bg-accent"
+					aria-label={m['learnMore.feeCalculator.close']()}
+				>
+					<X class="h-5 w-5" />
+				</button>
+			</div>
+
+			<!-- Content -->
+			<div class="space-y-6 px-6 py-4">
+				<!-- Ticket Price Input -->
+				<div>
+					<label for="ticket-price" class="mb-2 block text-sm font-medium"
+						>{m['learnMore.feeCalculator.ticketPrice']()}</label
+					>
+					<div class="relative">
+						<span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+						<input
+							id="ticket-price"
+							type="number"
+							min="0"
+							step="0.01"
+							bind:value={ticketPrice}
+							class="w-full rounded-md border border-input bg-background py-2 pl-8 pr-4 text-lg focus:outline-none focus:ring-2 focus:ring-primary"
+						/>
+					</div>
+				</div>
+
+				<!-- Fee Breakdown -->
+				<div class="space-y-4">
+					<!-- Stripe Fees -->
+					<div class="rounded-lg border bg-muted/30 p-4">
+						<div class="flex items-center justify-between">
+							<span class="font-medium">{m['learnMore.feeCalculator.creditCardFees']()}</span>
+							<span class="text-lg font-bold text-orange-600 dark:text-orange-400">
+								{formatCurrency(stripeFee)}
+							</span>
+						</div>
+						<p class="mt-1 text-xs text-muted-foreground">
+							{m['learnMore.feeCalculator.creditCardFeesDescription']()}
+							<a
+								href="https://stripe.com/en-at/pricing"
+								target="_blank"
+								rel="noopener noreferrer"
+								class="text-primary hover:underline"
+							>
+								{m['learnMore.feeCalculator.viewStripePricing']()}
+							</a>
+						</p>
+					</div>
+
+					<!-- Revel Platform Fee -->
+					<div class="rounded-lg border bg-muted/30 p-4">
+						<div class="flex items-center justify-between">
+							<span class="font-medium">{m['learnMore.feeCalculator.platformFee']()}</span>
+							<span class="text-lg font-bold text-primary">
+								{formatCurrency(revelFee)}
+							</span>
+						</div>
+						<p class="mt-1 text-xs text-muted-foreground">
+							{m['learnMore.feeCalculator.platformFeeDescription']()}
+						</p>
+					</div>
+
+					<!-- Divider -->
+					<div class="border-t"></div>
+
+					<!-- Organization Receives -->
+					<div class="rounded-lg border-2 border-green-500 bg-green-50 p-4 dark:bg-green-950/30">
+						<div class="flex items-center justify-between">
+							<span class="font-semibold"
+								>{m['learnMore.feeCalculator.organizationReceives']()}</span
+							>
+							<span class="text-2xl font-bold text-green-600 dark:text-green-400">
+								{formatCurrency(organizerReceives)}
+							</span>
+						</div>
+						<p class="mt-1 text-xs text-muted-foreground">
+							{m['learnMore.feeCalculator.perTicketSoldAt']({ price: formatCurrency(ticketPrice) })}
+						</p>
+					</div>
+				</div>
+
+				<!-- Summary -->
+				<p class="text-center text-xs text-muted-foreground">
+					{m['learnMore.feeCalculator.totalFees']({
+						fees: formatCurrency(totalFees),
+						percentage: ((totalFees / ticketPrice) * 100).toFixed(1)
+					})}
+				</p>
+			</div>
+
+			<!-- Footer -->
+			<div class="border-t px-6 py-4">
+				<p class="text-center text-sm text-muted-foreground">
+					{m['learnMore.feeCalculator.questionsAboutFees']()}
+					<a
+						href="mailto:contact@letsrevel.io?subject=Revel%20Fee%20Question"
+						class="text-primary hover:underline"
+					>
+						{m['learnMore.feeCalculator.contactUs']()}
+					</a>
+				</p>
+			</div>
+		</div>
+	</div>
+{/if}
 
 <style>
 	.flip-container {

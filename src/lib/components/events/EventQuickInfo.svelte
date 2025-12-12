@@ -17,6 +17,17 @@
 	let formattedStartDate = $derived(formatEventDate(event.start));
 
 	let locationDisplay = $derived.by(() => {
+		// If event has a venue, use venue's name and city
+		if (event.venue) {
+			const city = event.venue.city || event.city;
+			if (city) {
+				const cityDisplay = city.country ? `${city.name}, ${city.country}` : city.name;
+				return `${event.venue.name}, ${cityDisplay}`;
+			}
+			return event.venue.name;
+		}
+
+		// Fall back to event's city
 		if (!event.city) return m['eventQuickInfo.locationTbd']();
 		return event.city.country ? `${event.city.name}, ${event.city.country}` : event.city.name;
 	});

@@ -743,6 +743,11 @@
 				"title": "No questionnaires yet",
 				"description": "Get started by creating your first questionnaire to screen applicants for events or memberships."
 			}
+		},
+		"venues": {
+			"toast": {
+				"genericError": "An unexpected error occurred"
+			}
 		}
 	},
 	"invitation": {
@@ -1279,7 +1284,8 @@
 		"acceptInvitationRequests": "Accept invitation requests",
 		"canAttendWithoutLogin": "Allow guest attendance",
 		"canAttendWithoutLoginHint": "Allow users without an account to RSVP or purchase tickets",
-		"none": "None"
+		"none": "None",
+		"addressFromVenue": "Address from venue"
 	},
 	"SFwESEssentialsStep": {
 		"clearDescriptiveName": "Choose a clear, descriptive name for your event",
@@ -1437,7 +1443,14 @@
 		"visibility": "Visibility",
 		"availableTo": "Available to",
 		"salesWindow": "Sales Window",
-		"paymentInstructions": "Payment Instructions:"
+		"paymentInstructions": "Payment Instructions:",
+		"seatAssignment.none": "No assigned seats",
+		"seatAssignment.random": "Random assignment",
+		"seatAssignment.userChoice": "User selects",
+		"maxTickets.inherit": "From event settings",
+		"seatAssignment.label": "Seat Assignment",
+		"maxTicketsPerUser": "Max Tickets Per User",
+		"venueAndSector": "Venue & Sector"
 	},
 	"tierForm": {
 		"descriptionOptional": "Description (optional)",
@@ -1481,7 +1494,33 @@
 			"nameRequired": "Tier name is required",
 			"nameTooShort": "Tier name must be at least 1 character",
 			"nameTooLong": "Tier name must be 150 characters or less"
-		}
+		},
+		"seatingConfig.title": "Seating Configuration",
+		"seatingConfig.mode": "Seat Assignment Mode",
+		"seatingConfig.none": "No assigned seats",
+		"seatingConfig.random": "Random assignment",
+		"seatingConfig.userChoice": "User selects seat",
+		"seatingConfig.noneHelp": "General admission without specific seat assignments",
+		"seatingConfig.randomHelp": "Seats will be randomly assigned from the selected sector",
+		"seatingConfig.userChoiceHelp": "Attendees can choose their preferred seats",
+		"seatingConfig.maxTickets": "Max Tickets Per User",
+		"seatingConfig.inheritFromEvent": "Use event setting",
+		"seatingConfig.maxTicketsHelp": "Leave empty to inherit from event settings",
+		"seatingConfig.venue": "Venue",
+		"seatingConfig.sector": "Sector",
+		"seatingConfig.selectVenue": "Select a venue",
+		"seatingConfig.selectSector": "Select a sector",
+		"seatingConfig.sectorRequired": "Sector is required for this seat assignment mode",
+		"seatingConfig.noSectors": "No sectors available for this venue",
+		"seatingConfig.loadingVenues": "Loading venues...",
+		"seatingConfig.loadingSectors": "Loading sectors...",
+		"seatingConfig.venueSection": "Venue & Sector",
+		"seatingConfig.noVenues": "No venues available",
+		"seatingConfig.selectSectorRequired": "Select a sector (required)",
+		"seatingConfig.sectorRequiredHelp": "A sector must be selected for this seat assignment mode",
+		"seatingConfig.sectorHelp": "Select the sector where seats will be assigned from",
+		"seatingConfig.noSectorsRequired": "No sectors available - please add sectors to the venue first",
+		"seatingConfig.venueRequiredForSeats": "Select a venue to enable sector selection"
 	},
 	"cityAutocomplete": {
 		"preferredCity": "Preferred City",
@@ -1744,7 +1783,17 @@
 		"paymentAmount": "Payment Amount",
 		"quickSelect": "Quick select:",
 		"paymentInstructions": "Payment Instructions:",
-		"agreeToTerms": "By proceeding, you agree to the event's terms and conditions."
+		"agreeToTerms": "By proceeding, you agree to the event's terms and conditions.",
+		"seatSelection": "Seat Selection",
+		"seatSelectionUserChoice": "You will be able to select your preferred seats after completing the purchase.",
+		"randomSeatAssignment": "Random Seat Assignment",
+		"randomSeatAssignmentDesc": "Seats will be randomly assigned to you from the available seats in the designated sector.",
+		"generalEntrance": "General Entrance",
+		"generalEntranceDesc": "This ticket grants general admission without assigned seating.",
+		"selectSeats": "Select Your Seats",
+		"seatsSelected": "selected",
+		"loadingSeats": "Loading available seats...",
+		"noSeatsAvailable": "No seats available for selection."
 	},
 	"ticketListCard": {
 		"purchased": "Purchased:",
@@ -3415,7 +3464,8 @@
 		"error_slugUpdateFailed": "Failed to update slug",
 		"error_slugExists": "An event with this slug already exists in your organization",
 		"error_slugRequired": "Slug is required",
-		"error_slugFormat": "Slug must only contain lowercase letters, numbers, and hyphens (e.g., my-event-2025)"
+		"error_slugFormat": "Slug must only contain lowercase letters, numbers, and hyphens (e.g., my-event-2025)",
+		"cityFromVenue": "City from venue"
 	},
 	"questionnaireSubmissionPage": {
 		"pageTitle": "{questionnaireName} - {eventName}",
@@ -3770,8 +3820,10 @@
 		"notificationsDescription": "Stay informed with in-app, email, and Telegram notifications. Granular controls let you customize what you receive.",
 		"multiLanguageTitle": "Multi-Language Support",
 		"multiLanguageDescription": "Available in English, German, and Italian with more languages coming soon.",
+		"venueManagementTitle": "Venue Management",
+		"venueManagementDescription": "Define venues with sectors, rows, and individual seats. Assign seating to ticket tiers for reserved seating events.",
 		"openSourceTitle": "Open Source & Community-Driven",
-		"openSourceDescription": "Revel is free and open-source under the MIT license. Self-host for complete control, or wait for our hosted version. No vendor lock-in, no hidden fees.",
+		"openSourceDescription": "Revel is free and open-source under the MIT license. Self-host for complete control, or use our hosted version. No vendor lock-in, no hidden fees.",
 		"viewOnGithub": "View on GitHub",
 		"betaAccessTitle": "Join the Beta as an Organizer",
 		"betaAccessDescription": "Help us shape the future of community event management. Request beta access to test Revel as an organizer and provide valuable feedback.",
@@ -3792,7 +3844,24 @@
 		"pricingOnlinePayments": "Hosted online payments",
 		"pricingOnlinePaymentsPrice": "1.5% + €0.25",
 		"pricingOnlinePaymentsDescription": "1.5% + €0.25 per ticket. Plus Stripe fees: 1.5% + €0.25 (EEA cards) or 2.5% + €0.25 (UK cards).",
-		"ticketingFeature4": "QR code check-in and ticket validation"
+		"ticketingFeature4": "QR code check-in and ticket validation",
+		"feeCalculator": {
+			"title": "Fee Calculator",
+			"close": "Close",
+			"ticketPrice": "Ticket Price",
+			"creditCardFees": "Credit Card Fees",
+			"creditCardFeesDescription": "1.5% + €0.25 per transaction. These go to Stripe - we have no control over them.",
+			"viewStripePricing": "View Stripe pricing",
+			"platformFee": "Platform Fee",
+			"platformFeeDescription": "1.5% + €0.25 per transaction. This goes to Revel to keep the lights on.",
+			"organizationReceives": "Your organization receives",
+			"perTicketSoldAt": "Per ticket sold at {price}",
+			"totalFees": "Total fees: {fees} ({percentage}% of ticket price)",
+			"questionsAboutFees": "Questions about fees?",
+			"contactUs": "Contact us",
+			"calculateYourFees": "Calculate your fees"
+		},
+		"eeaCards": "EEA cards"
 	},
 	"userMenu.createOrganization": "Create Organization",
 	"dashboard.createOrganizationButton": "Create Organization",
@@ -4015,5 +4084,48 @@
 	"orgAdmin.seats.toast.deleteError": "Failed to delete seats",
 	"orgAdmin.seats.toast.updated": "Seats updated successfully",
 	"orgAdmin.seats.toast.updateError": "Failed to update seats",
-	"orgAdmin.seats.toast.metadataError": "Failed to save aisle configuration"
+	"orgAdmin.seats.toast.metadataError": "Failed to save aisle configuration",
+	"venueSelector": {
+		"label": "Venue",
+		"clear": "Clear",
+		"placeholder": "Select a venue...",
+		"selectVenue": "Select a venue",
+		"searchPlaceholder": "Search venues...",
+		"error": "Failed to load venues",
+		"noResults": "No venues found",
+		"empty": "No venues available",
+		"clearSelection": "Clear selection",
+		"help": "Select the venue where this event will be held"
+	},
+	"seatSelector": {
+		"stage": "STAGE",
+		"seat": "Seat",
+		"accessible": "accessible",
+		"obstructedView": "obstructed view",
+		"unavailable": "unavailable",
+		"legendSelected": "Selected",
+		"legendAvailable": "Available",
+		"legendUnavailable": "Unavailable",
+		"legendAccessible": "Accessible",
+		"legendObstructed": "Obstructed"
+	},
+	"ticketingStep.eventTicketSettings": "Event Ticket Settings",
+	"ticketingStep.maxTicketsPerUser": "Max Tickets Per User",
+	"ticketingStep.maxTicketsPlaceholder": "Unlimited",
+	"ticketingStep.maxTicketsPerUserHint": "Set the default maximum number of tickets a single user can purchase for this event. Leave empty for unlimited. This can be overridden on individual ticket tiers.",
+	"myTicketModal.ticketOf": "Ticket {current} of {total}",
+	"ticketConfirmationDialog.selectMoreSeats": "Please select {count} more seat(s)",
+	"eventPage.ticketReserved": "Ticket(s) reserved! Complete payment as instructed.",
+	"eventPage.ticketReservedDesc": "View your ticket for payment details.",
+	"eventPage.ticketClaimed": "Ticket(s) claimed!",
+	"eventPage.ticketClaimedDesc": "Your ticket is ready.",
+	"eventPage.resumePaymentFailed": "Could not resume payment",
+	"eventPage.resumePaymentFailedDesc": "The checkout session may have expired. Please try purchasing again.",
+	"eventPage.reservationCancelled": "Reservation cancelled",
+	"eventPage.reservationCancelledDesc": "Your ticket reservation has been cancelled.",
+	"eventPage.cancelReservationFailed": "Could not cancel reservation",
+	"eventPage.cancelReservationFailedDesc": "Please try again or contact support.",
+	"tierForm.seatingConfig.noVenueConfigured": "To enable seat assignment, configure a venue for this event in Basic Info.",
+	"tierForm.seatingConfig.noVenueSelected": "No venue configured for event",
+	"tierForm.seatingConfig.venueFromEvent": "Venue is set at the event level in Basic Info."
 }

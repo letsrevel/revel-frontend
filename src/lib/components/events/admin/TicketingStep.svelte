@@ -7,7 +7,9 @@
 	} from '$lib/api/generated/sdk.gen';
 	import type { TicketTierDetailSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
-	import { Users } from 'lucide-svelte';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import { Users, Info, Ticket } from 'lucide-svelte';
 	import TierCard from './TierCard.svelte';
 	import TierForm from './TierForm.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -68,6 +70,22 @@
 	let tiers = $derived(tiersQuery.data?.data?.results ?? []);
 	let membershipTiers = $derived(membershipTiersQuery.data ?? []);
 
+	// Max tickets per user - stored as string for input, converted to number/null
+	let maxTicketsInput = $state(formData.max_tickets_per_user?.toString() ?? '');
+
+	function handleMaxTicketsChange(value: string) {
+		maxTicketsInput = value;
+		const trimmed = value.trim();
+		if (trimmed === '' || trimmed === '0') {
+			onUpdate({ max_tickets_per_user: null });
+		} else {
+			const num = parseInt(trimmed, 10);
+			if (!isNaN(num) && num > 0) {
+				onUpdate({ max_tickets_per_user: num });
+			}
+		}
+	}
+
 	function handleEditTier(tier: TicketTierDetailSchema) {
 		editingTier = tier;
 		showTierForm = true;
@@ -83,6 +101,40 @@
 	<div>
 		<h2 class="text-2xl font-bold">{m['ticketingStep.ticketingConfiguration']()}</h2>
 		<p class="text-muted-foreground">{m['ticketingStep.configureOptions']()}</p>
+	</div>
+
+	<!-- Event-level Ticket Settings -->
+	<div class="rounded-lg border border-border bg-card p-4">
+		<div class="mb-4 flex items-center gap-2">
+			<Ticket class="h-5 w-5 text-primary" aria-hidden="true" />
+			<h3 class="font-semibold">
+				{m['ticketingStep.eventTicketSettings']?.() ?? 'Event Ticket Settings'}
+			</h3>
+		</div>
+
+		<div class="space-y-4">
+			<div class="space-y-2">
+				<Label for="max-tickets-per-user">
+					{m['ticketingStep.maxTicketsPerUser']?.() ?? 'Max Tickets Per User'}
+				</Label>
+				<Input
+					id="max-tickets-per-user"
+					type="number"
+					min="1"
+					placeholder={m['ticketingStep.maxTicketsPlaceholder']?.() ?? 'Unlimited'}
+					value={maxTicketsInput}
+					oninput={(e) => handleMaxTicketsChange(e.currentTarget.value)}
+					class="max-w-xs"
+				/>
+				<div class="mt-2 flex items-start gap-2 text-sm text-muted-foreground">
+					<Info class="mt-0.5 h-4 w-4 shrink-0" />
+					<p>
+						{m['ticketingStep.maxTicketsPerUserHint']?.() ??
+							'Set the default maximum number of tickets a single user can purchase for this event. Leave empty for unlimited. This can be overridden on individual ticket tiers.'}
+					</p>
+				</div>
+			</div>
+		</div>
 	</div>
 
 	<!-- Ticket Tiers Section -->
@@ -163,8 +215,10 @@
 	<TierForm
 		tier={editingTier}
 		{eventId}
+		{organizationSlug}
 		{organizationStripeConnected}
 		{membershipTiers}
+		eventVenueId={formData.venue_id || null}
 		onClose={handleCloseTierForm}
 	/>
 {/if}

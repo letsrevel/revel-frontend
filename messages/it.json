@@ -743,6 +743,11 @@
 				"title": "Nessun questionario ancora",
 				"description": "Inizia creando il tuo primo questionario per valutare i candidati per eventi o iscrizioni."
 			}
+		},
+		"venues": {
+			"toast": {
+				"genericError": "Si è verificato un errore imprevisto"
+			}
 		}
 	},
 	"invitation": {
@@ -1279,7 +1284,8 @@
 		"acceptInvitationRequests": "Accetta richieste di invito",
 		"canAttendWithoutLogin": "Consenti partecipazione ospite",
 		"canAttendWithoutLoginHint": "Permetti agli utenti senza account di confermare presenza o acquistare biglietti",
-		"none": "Nessuno"
+		"none": "Nessuno",
+		"addressFromVenue": "Indirizzo dalla sede"
 	},
 	"SFwESEssentialsStep": {
 		"clearDescriptiveName": "Scegli un nome chiaro e descrittivo per il tuo evento",
@@ -1437,7 +1443,14 @@
 		"visibility": "Visibilità",
 		"availableTo": "Disponibile per",
 		"salesWindow": "Finestra Vendite",
-		"paymentInstructions": "Istruzioni di Pagamento:"
+		"paymentInstructions": "Istruzioni di Pagamento:",
+		"seatAssignment.none": "Nessun posto assegnato",
+		"seatAssignment.random": "Assegnazione casuale",
+		"seatAssignment.userChoice": "L utente sceglie",
+		"maxTickets.inherit": "Dalle impostazioni evento",
+		"seatAssignment.label": "Assegnazione Posti",
+		"maxTicketsPerUser": "Max Biglietti per Utente",
+		"venueAndSector": "Sede e Settore"
 	},
 	"tierForm": {
 		"descriptionOptional": "Descrizione (facoltativo)",
@@ -1481,7 +1494,33 @@
 			"nameRequired": "Il nome del livello è obbligatorio",
 			"nameTooShort": "Il nome del livello deve essere di almeno 1 carattere",
 			"nameTooLong": "Il nome del livello deve essere di massimo 150 caratteri"
-		}
+		},
+		"seatingConfig.title": "Configurazione Posti",
+		"seatingConfig.mode": "Modalità Assegnazione Posti",
+		"seatingConfig.none": "Nessun posto assegnato",
+		"seatingConfig.random": "Assegnazione casuale",
+		"seatingConfig.userChoice": "L utente sceglie il posto",
+		"seatingConfig.noneHelp": "Ingresso generale senza assegnazione di posti specifici",
+		"seatingConfig.randomHelp": "I posti verranno assegnati casualmente dal settore selezionato",
+		"seatingConfig.userChoiceHelp": "I partecipanti possono scegliere i loro posti preferiti",
+		"seatingConfig.maxTickets": "Max Biglietti per Utente",
+		"seatingConfig.inheritFromEvent": "Usa impostazione evento",
+		"seatingConfig.maxTicketsHelp": "Lascia vuoto per ereditare le impostazioni evento",
+		"seatingConfig.venue": "Sede",
+		"seatingConfig.sector": "Settore",
+		"seatingConfig.selectVenue": "Seleziona una sede",
+		"seatingConfig.selectSector": "Seleziona un settore",
+		"seatingConfig.sectorRequired": "Il settore è richiesto per questa modalità di assegnazione",
+		"seatingConfig.noSectors": "Nessun settore disponibile per questa sede",
+		"seatingConfig.loadingVenues": "Caricamento sedi...",
+		"seatingConfig.loadingSectors": "Caricamento settori...",
+		"seatingConfig.venueSection": "Sede e Settore",
+		"seatingConfig.noVenues": "Nessuna sede disponibile",
+		"seatingConfig.selectSectorRequired": "Seleziona un settore (obbligatorio)",
+		"seatingConfig.sectorRequiredHelp": "Un settore deve essere selezionato per questa modalità di assegnazione",
+		"seatingConfig.sectorHelp": "Seleziona il settore da cui verranno assegnati i posti",
+		"seatingConfig.noSectorsRequired": "Nessun settore disponibile - aggiungi prima i settori alla sede",
+		"seatingConfig.venueRequiredForSeats": "Seleziona una sede per abilitare la selezione del settore"
 	},
 	"cityAutocomplete": {
 		"preferredCity": "Città preferita",
@@ -1744,7 +1783,17 @@
 		"paymentAmount": "Importo Pagamento",
 		"quickSelect": "Selezione rapida:",
 		"paymentInstructions": "Istruzioni di Pagamento:",
-		"agreeToTerms": "Procedendo, accetti i termini e le condizioni dell'evento."
+		"agreeToTerms": "Procedendo, accetti i termini e le condizioni dell'evento.",
+		"seatSelection": "Selezione Posto",
+		"seatSelectionUserChoice": "Potrai selezionare i tuoi posti preferiti dopo aver completato l'acquisto.",
+		"randomSeatAssignment": "Assegnazione Posti Casuale",
+		"randomSeatAssignmentDesc": "I posti ti verranno assegnati casualmente tra quelli disponibili nel settore designato.",
+		"generalEntrance": "Ingresso Generale",
+		"generalEntranceDesc": "Questo biglietto garantisce l'ingresso generale senza posti assegnati.",
+		"selectSeats": "Seleziona i tuoi posti",
+		"seatsSelected": "selezionati",
+		"loadingSeats": "Caricamento posti disponibili...",
+		"noSeatsAvailable": "Nessun posto disponibile per la selezione."
 	},
 	"ticketListCard": {
 		"purchased": "Acquistato:",
@@ -3415,7 +3464,8 @@
 		"error_slugUpdateFailed": "Aggiornamento slug fallito",
 		"error_slugExists": "Un evento con questo slug esiste già nella tua organizzazione",
 		"error_slugRequired": "Lo slug è obbligatorio",
-		"error_slugFormat": "Lo slug può contenere solo lettere minuscole, numeri e trattini (es. mio-evento-2025)"
+		"error_slugFormat": "Lo slug può contenere solo lettere minuscole, numeri e trattini (es. mio-evento-2025)",
+		"cityFromVenue": "Città dalla sede"
 	},
 	"questionnaireSubmissionPage": {
 		"pageTitle": "{questionnaireName} - {eventName}",
@@ -3770,8 +3820,10 @@
 		"notificationsDescription": "Rimani informato con notifiche in-app, email e Telegram. Controlli granulari ti permettono di personalizzare ciò che ricevi.",
 		"multiLanguageTitle": "Supporto multilingue",
 		"multiLanguageDescription": "Disponibile in inglese, tedesco e italiano con altre lingue in arrivo presto.",
+		"venueManagementTitle": "Gestione Location",
+		"venueManagementDescription": "Definisci location con settori, file e posti singoli. Assegna i posti ai livelli di biglietti per eventi con posti riservati.",
 		"openSourceTitle": "Open Source e guidato dalla comunità",
-		"openSourceDescription": "Revel è gratuito e open-source sotto licenza MIT. Self-hosting per il controllo completo, o attendi la nostra versione ospitata. Nessun vincolo con il fornitore, nessun costo nascosto.",
+		"openSourceDescription": "Revel è gratuito e open-source sotto licenza MIT. Self-hosting per il controllo completo, o usa la nostra versione online. Nessun vincolo con il fornitore, nessun costo nascosto.",
 		"viewOnGithub": "Visualizza su GitHub",
 		"betaAccessTitle": "Unisciti alla Beta come organizzatore",
 		"betaAccessDescription": "Aiutaci a plasmare il futuro della gestione eventi per la comunità. Richiedi l'accesso beta per testare Revel come organizzatore e fornire feedback prezioso.",
@@ -3779,7 +3831,7 @@
 		"betaAccessNote": "Risponderemo entro 24-48 ore con i prossimi passi.",
 		"backToHome": "Torna alla home",
 		"pricingTitle": "Uso gratuito e prezzi equi",
-		"pricingDescription": "Revel è completamente gratuito da usare. Self-hosting a costo zero, oppure usa la nostra versione ospitata.",
+		"pricingDescription": "Revel è completamente gratuito da usare. Self-hosting a costo zero, oppure usa la nostra versione online.",
 		"pricingFreeEvents": "Eventi gratuiti",
 		"pricingFreeEventsDescription": "Nessun costo, mai",
 		"pricingSelfManaged": "Pagamenti auto-gestiti",
@@ -3792,7 +3844,24 @@
 		"pricingOnlinePayments": "Pagamenti online via Revel",
 		"pricingOnlinePaymentsPrice": "1,5% + €0,25",
 		"pricingOnlinePaymentsDescription": "1,5% + €0,25 per biglietto. Più commissioni Stripe: 1,5% + €0,25 (carte SEE) o 2,5% + €0,25 (carte UK).",
-		"ticketingFeature4": "Check-in con codice QR e convalida biglietti"
+		"ticketingFeature4": "Check-in con codice QR e convalida biglietti",
+		"feeCalculator": {
+			"title": "Calcolatore Commissioni",
+			"close": "Chiudi",
+			"ticketPrice": "Prezzo Biglietto",
+			"creditCardFees": "Commissioni Carta di Credito",
+			"creditCardFeesDescription": "1,5% + €0,25 per transazione. Queste vanno a Stripe - non abbiamo controllo su di esse.",
+			"viewStripePricing": "Vedi prezzi Stripe",
+			"platformFee": "Commissione Piattaforma",
+			"platformFeeDescription": "1,5% + €0,25 per transazione. Questa va a Revel per mantenere attivo il servizio.",
+			"organizationReceives": "La tua organizzazione riceve",
+			"perTicketSoldAt": "Per biglietto venduto a {price}",
+			"totalFees": "Commissioni totali: {fees} ({percentage}% del prezzo del biglietto)",
+			"questionsAboutFees": "Domande sulle commissioni?",
+			"contactUs": "Contattaci",
+			"calculateYourFees": "Calcola le tue commissioni"
+		},
+		"eeaCards": "carte SEE"
 	},
 	"userMenu.createOrganization": "Crea Organizzazione",
 	"dashboard.createOrganizationButton": "Crea Organizzazione",
@@ -4015,5 +4084,48 @@
 	"orgAdmin.seats.toast.deleteError": "Impossibile eliminare i posti",
 	"orgAdmin.seats.toast.updated": "Posti aggiornati con successo",
 	"orgAdmin.seats.toast.updateError": "Impossibile aggiornare i posti",
-	"orgAdmin.seats.toast.metadataError": "Impossibile salvare la configurazione dei corridoi"
+	"orgAdmin.seats.toast.metadataError": "Impossibile salvare la configurazione dei corridoi",
+	"venueSelector": {
+		"label": "Sede",
+		"clear": "Cancella",
+		"placeholder": "Seleziona una sede...",
+		"selectVenue": "Seleziona una sede",
+		"searchPlaceholder": "Cerca sedi...",
+		"error": "Impossibile caricare le sedi",
+		"noResults": "Nessuna sede trovata",
+		"empty": "Nessuna sede disponibile",
+		"clearSelection": "Cancella selezione",
+		"help": "Seleziona la sede in cui si terrà questo evento"
+	},
+	"seatSelector": {
+		"stage": "PALCO",
+		"seat": "Posto",
+		"accessible": "accessibile",
+		"obstructedView": "vista ostruita",
+		"unavailable": "non disponibile",
+		"legendSelected": "Selezionato",
+		"legendAvailable": "Disponibile",
+		"legendUnavailable": "Non disponibile",
+		"legendAccessible": "Accessibile",
+		"legendObstructed": "Ostruito"
+	},
+	"ticketingStep.eventTicketSettings": "Impostazioni Biglietti Evento",
+	"ticketingStep.maxTicketsPerUser": "Max Biglietti per Utente",
+	"ticketingStep.maxTicketsPlaceholder": "Illimitato",
+	"ticketingStep.maxTicketsPerUserHint": "Imposta il numero massimo di biglietti che un singolo utente può acquistare per questo evento. Lascia vuoto per illimitato. Questo può essere sovrascritto per singole categorie di biglietti.",
+	"myTicketModal.ticketOf": "Biglietto {current} di {total}",
+	"ticketConfirmationDialog.selectMoreSeats": "Seleziona ancora {count} posto/i",
+	"eventPage.ticketReserved": "Biglietto/i prenotato/i! Completa il pagamento come indicato.",
+	"eventPage.ticketReservedDesc": "Visualizza il tuo biglietto per i dettagli di pagamento.",
+	"eventPage.ticketClaimed": "Biglietto/i ottenuto/i!",
+	"eventPage.ticketClaimedDesc": "Il tuo biglietto è pronto.",
+	"eventPage.resumePaymentFailed": "Impossibile riprendere il pagamento",
+	"eventPage.resumePaymentFailedDesc": "La sessione di checkout potrebbe essere scaduta. Riprova ad acquistare.",
+	"eventPage.reservationCancelled": "Prenotazione annullata",
+	"eventPage.reservationCancelledDesc": "La tua prenotazione del biglietto è stata annullata.",
+	"eventPage.cancelReservationFailed": "Impossibile annullare la prenotazione",
+	"eventPage.cancelReservationFailedDesc": "Riprova o contatta il supporto.",
+	"tierForm.seatingConfig.noVenueConfigured": "Per abilitare l'assegnazione dei posti, configura un luogo per questo evento nelle Informazioni di base.",
+	"tierForm.seatingConfig.noVenueSelected": "Nessun luogo configurato per l'evento",
+	"tierForm.seatingConfig.venueFromEvent": "Il luogo è impostato a livello di evento nelle Informazioni di base."
 }

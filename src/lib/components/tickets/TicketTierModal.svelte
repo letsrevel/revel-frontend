@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
-	import type { MembershipTierSchema } from '$lib/api/generated/types.gen';
+	import type { MembershipTierSchema, TicketPurchaseItem } from '$lib/api/generated/types.gen';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
@@ -12,23 +12,37 @@
 	interface Props {
 		open: boolean;
 		tiers: TierSchemaWithId[];
+		/** Event ID for fetching seat availability */
+		eventId: string;
 		isAuthenticated: boolean;
 		hasTicket: boolean;
 		membershipTier?: MembershipTierSchema | null;
 		canAttendWithoutLogin?: boolean;
+		/** Maximum tickets user can purchase (from remaining_tickets) */
+		maxQuantity?: number | null;
+		/** User's display name for auto-fill */
+		userName?: string;
 		onClose: () => void;
-		onClaimTicket: (tierId: string) => void;
-		onCheckout?: (tierId: string, isPwyc: boolean, amount?: number) => void;
+		onClaimTicket: (tierId: string, tickets?: TicketPurchaseItem[]) => void;
+		onCheckout?: (
+			tierId: string,
+			isPwyc: boolean,
+			amount?: number,
+			tickets?: TicketPurchaseItem[]
+		) => void;
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
 
 	let {
 		open = $bindable(),
 		tiers,
+		eventId,
 		isAuthenticated,
 		hasTicket,
 		membershipTier = null,
 		canAttendWithoutLogin = false,
+		maxQuantity = null,
+		userName = '',
 		onClose,
 		onClaimTicket,
 		onCheckout,
@@ -108,10 +122,16 @@
 	}
 
 	// Handle confirmed action from dialog
-	async function handleConfirm(amount?: number): Promise<void> {
+	async function handleConfirm(payload: {
+		amount?: number;
+		tickets: TicketPurchaseItem[];
+	}): Promise<void> {
 		if (!selectedTier || isProcessing) return;
 
 		isProcessing = true;
+		const { amount, tickets } = payload;
+		const isOnline = selectedTier.payment_method === 'online';
+
 		try {
 			// Free tickets or offline/at-the-door (reservation)
 			if (
@@ -119,19 +139,36 @@
 				selectedTier.payment_method === 'offline' ||
 				selectedTier.payment_method === 'at_the_door'
 			) {
-				await onClaimTicket(selectedTier.id);
+				await onClaimTicket(selectedTier.id, tickets);
+
+				// Close dialogs for non-online payments (they complete immediately)
+				showConfirmation = false;
+				selectedTier = null;
+				onClose();
+				isProcessing = false;
 			}
 			// Online payment (with or without PWYC)
-			else if (selectedTier.payment_method === 'online' && onCheckout) {
-				await onCheckout(selectedTier.id, selectedTier.price_type === 'pwyc', amount);
-			}
+			else if (isOnline && onCheckout) {
+				// For online payments, start the checkout process
+				// Don't close the modal - keep showing loading state until redirect
+				await onCheckout(selectedTier.id, selectedTier.price_type === 'pwyc', amount, tickets);
 
-			// Close both dialogs on success
-			showConfirmation = false;
-			selectedTier = null;
-			onClose();
-		} finally {
+				// Note: For online payments, the page will redirect to Stripe,
+				// so we keep the loading state visible. If there's an error,
+				// the error will be shown by the TicketConfirmationDialog.
+				// We only reset if there's no redirect (edge case)
+				setTimeout(() => {
+					// If we're still here after 10 seconds, something might have gone wrong
+					// Reset the state so user can try again
+					if (isProcessing) {
+						isProcessing = false;
+					}
+				}, 10000);
+			}
+		} catch (error) {
+			// On error, reset state so user can try again
 			isProcessing = false;
+			throw error; // Re-throw so TicketConfirmationDialog can handle it
 		}
 	}
 
@@ -253,7 +290,9 @@
 										<Button variant="secondary" size="sm" disabled
 											>{m['ticketTierModal.soldOut']()}</Button
 										>
-									{:else if hasTicket}
+									{:else if hasTicket && maxQuantity === 0}
+										<!-- Only show "Claimed" if user has ticket AND can't buy more (maxQuantity=0) -->
+										<!-- Note: maxQuantity=null means unlimited, so we allow purchase in that case -->
 										<Button variant="secondary" size="sm" disabled>
 											<Check class="mr-2 h-4 w-4" />
 											Claimed
@@ -307,8 +346,11 @@
 	<TicketConfirmationDialog
 		bind:open={showConfirmation}
 		tier={selectedTier}
+		{eventId}
 		onClose={closeConfirmation}
 		onConfirm={handleConfirm}
 		{isProcessing}
+		{maxQuantity}
+		{userName}
 	/>
 {/if}

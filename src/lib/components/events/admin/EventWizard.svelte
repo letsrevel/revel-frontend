@@ -112,6 +112,7 @@
 			organization_cover_art?: string;
 			requires_ticket?: boolean; // Not in API schema yet, but used in UI
 			address_visibility?: ResourceVisibility;
+			venue_id?: string | null;
 		}
 	>({
 		name: existingEvent?.name || '',
@@ -134,6 +135,7 @@
 		accept_invitation_requests: existingEvent?.accept_invitation_requests || false,
 		can_attend_without_login: existingEvent?.can_attend_without_login || false,
 		event_series_id: existingEvent?.event_series?.id || null,
+		venue_id: existingEvent?.venue?.id || null,
 		tags: existingEvent?.tags || [],
 		logo: existingEvent?.logo || undefined,
 		cover_art: existingEvent?.cover_art || undefined,
@@ -432,7 +434,8 @@
 					potluck_open: formData.potluck_open || false,
 					accept_invitation_requests: formData.accept_invitation_requests || false,
 					can_attend_without_login: formData.can_attend_without_login || false,
-					event_series_id: formData.event_series_id || null
+					event_series_id: formData.event_series_id || null,
+					venue_id: formData.venue_id || null
 				};
 				await updateEventMutation.mutateAsync({ id: eventId, data: updateData });
 			} else {
@@ -444,7 +447,8 @@
 					visibility: formData.visibility || 'public',
 					event_type: (formData.event_type || 'public') as any, // Backend has wrong enum
 					status: 'draft' as any, // Create as draft by default
-					requires_ticket: formData.requires_ticket || false // Send explicit false when unchecked
+					requires_ticket: formData.requires_ticket || false, // Send explicit false when unchecked
+					venue_id: formData.venue_id || null
 				} as any; // Cast to any because requires_ticket is not yet in backend schema
 
 				const result = await createEventMutation.mutateAsync(createData);
@@ -491,7 +495,8 @@
 				potluck_open: formData.potluck_open || false,
 				accept_invitation_requests: formData.accept_invitation_requests || false,
 				can_attend_without_login: formData.can_attend_without_login || false,
-				event_series_id: formData.event_series_id || null
+				event_series_id: formData.event_series_id || null,
+				venue_id: formData.venue_id || null
 			};
 
 			await updateEventMutation.mutateAsync({ id: eventId, data: updateData });
@@ -554,6 +559,7 @@
 			organization_logo?: string;
 			organization_cover_art?: string;
 			address_visibility?: ResourceVisibility;
+			venue_id?: string | null;
 		}
 	): void {
 		formData = { ...formData, ...updates };
@@ -674,6 +680,7 @@
 			{orgCity}
 			{userCity}
 			eventCity={existingEvent?.city}
+			eventVenue={existingEvent?.venue}
 			{isEditMode}
 			onUpdate={updateFormData}
 			onSubmit={handleStep1Submit}

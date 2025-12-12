@@ -743,6 +743,11 @@
 				"title": "Noch keine Fragebögen",
 				"description": "Beginnen Sie, indem Sie Ihren ersten Fragebogen erstellen, um Bewerber für Veranstaltungen oder Mitgliedschaften zu prüfen."
 			}
+		},
+		"venues": {
+			"toast": {
+				"genericError": "Ein unerwarteter Fehler ist aufgetreten"
+			}
 		}
 	},
 	"invitation": {
@@ -1279,7 +1284,8 @@
 		"acceptInvitationRequests": "Einladungsanfragen akzeptieren",
 		"canAttendWithoutLogin": "Gastteilnahme erlauben",
 		"canAttendWithoutLoginHint": "Ermöglichen Sie Benutzern ohne Konto, sich anzumelden oder Tickets zu kaufen",
-		"none": "Keine"
+		"none": "Keine",
+		"addressFromVenue": "Adresse vom Veranstaltungsort"
 	},
 	"SFwESEssentialsStep": {
 		"clearDescriptiveName": "Wähle einen klaren, beschreibenden Namen für deine Veranstaltung",
@@ -1437,7 +1443,14 @@
 		"visibility": "Sichtbarkeit",
 		"availableTo": "Verfügbar für",
 		"salesWindow": "Verkaufszeitraum",
-		"paymentInstructions": "Zahlungsanweisungen:"
+		"paymentInstructions": "Zahlungsanweisungen:",
+		"seatAssignment.none": "Keine zugewiesenen Plätze",
+		"seatAssignment.random": "Zufällige Zuweisung",
+		"seatAssignment.userChoice": "Benutzer wählt",
+		"maxTickets.inherit": "Von Eventeinstellungen",
+		"seatAssignment.label": "Sitzplatzzuweisung",
+		"maxTicketsPerUser": "Max. Tickets pro Benutzer",
+		"venueAndSector": "Veranstaltungsort & Sektor"
 	},
 	"tierForm": {
 		"descriptionOptional": "Beschreibung (optional)",
@@ -1481,7 +1494,33 @@
 			"nameRequired": "Stufenname ist erforderlich",
 			"nameTooShort": "Stufenname muss mindestens 1 Zeichen lang sein",
 			"nameTooLong": "Stufenname darf höchstens 150 Zeichen lang sein"
-		}
+		},
+		"seatingConfig.title": "Sitzplatzkonfiguration",
+		"seatingConfig.mode": "Sitzplatzzuweisungsmodus",
+		"seatingConfig.none": "Keine zugewiesenen Plätze",
+		"seatingConfig.random": "Zufällige Zuweisung",
+		"seatingConfig.userChoice": "Benutzer wählt Platz",
+		"seatingConfig.noneHelp": "Allgemeiner Einlass ohne spezifische Sitzplatzzuweisung",
+		"seatingConfig.randomHelp": "Plätze werden zufällig aus dem gewählten Sektor zugewiesen",
+		"seatingConfig.userChoiceHelp": "Teilnehmer können ihre bevorzugten Plätze wählen",
+		"seatingConfig.maxTickets": "Max. Tickets pro Benutzer",
+		"seatingConfig.inheritFromEvent": "Eventeinstellung verwenden",
+		"seatingConfig.maxTicketsHelp": "Leer lassen, um Eventeinstellungen zu übernehmen",
+		"seatingConfig.venue": "Veranstaltungsort",
+		"seatingConfig.sector": "Sektor",
+		"seatingConfig.selectVenue": "Veranstaltungsort auswählen",
+		"seatingConfig.selectSector": "Sektor auswählen",
+		"seatingConfig.sectorRequired": "Sektor ist für diesen Sitzplatzmodus erforderlich",
+		"seatingConfig.noSectors": "Keine Sektoren für diesen Veranstaltungsort verfügbar",
+		"seatingConfig.loadingVenues": "Veranstaltungsorte werden geladen...",
+		"seatingConfig.loadingSectors": "Sektoren werden geladen...",
+		"seatingConfig.venueSection": "Veranstaltungsort & Sektor",
+		"seatingConfig.noVenues": "Keine Veranstaltungsorte verfügbar",
+		"seatingConfig.selectSectorRequired": "Sektor auswählen (erforderlich)",
+		"seatingConfig.sectorRequiredHelp": "Ein Sektor muss für diesen Sitzplatzmodus ausgewählt werden",
+		"seatingConfig.sectorHelp": "Wähle den Sektor, aus dem Plätze zugewiesen werden",
+		"seatingConfig.noSectorsRequired": "Keine Sektoren verfügbar - bitte zuerst Sektoren zum Veranstaltungsort hinzufügen",
+		"seatingConfig.venueRequiredForSeats": "Wähle einen Veranstaltungsort, um die Sektorauswahl zu aktivieren"
 	},
 	"cityAutocomplete": {
 		"preferredCity": "Bevorzugte Stadt",
@@ -1744,7 +1783,17 @@
 		"paymentAmount": "Zahlungsbetrag",
 		"quickSelect": "Schnellauswahl:",
 		"paymentInstructions": "Zahlungsanweisungen:",
-		"agreeToTerms": "Mit dem Fortfahren stimmst du den Bedingungen der Veranstaltung zu."
+		"agreeToTerms": "Mit dem Fortfahren stimmst du den Bedingungen der Veranstaltung zu.",
+		"seatSelection": "Sitzplatzauswahl",
+		"seatSelectionUserChoice": "Du kannst nach Abschluss des Kaufs deine bevorzugten Sitzplätze auswählen.",
+		"randomSeatAssignment": "Zufällige Sitzplatzzuweisung",
+		"randomSeatAssignmentDesc": "Die Sitzplätze werden dir zufällig aus den verfügbaren Plätzen im ausgewiesenen Bereich zugewiesen.",
+		"generalEntrance": "Allgemeiner Einlass",
+		"generalEntranceDesc": "Dieses Ticket gewährt allgemeinen Einlass ohne zugewiesene Sitzplätze.",
+		"selectSeats": "Wähle deine Plätze",
+		"seatsSelected": "ausgewählt",
+		"loadingSeats": "Verfügbare Plätze werden geladen...",
+		"noSeatsAvailable": "Keine Plätze zur Auswahl verfügbar."
 	},
 	"ticketListCard": {
 		"purchased": "Gekauft:",
@@ -3415,7 +3464,8 @@
 		"error_slugUpdateFailed": "Slug-Aktualisierung fehlgeschlagen",
 		"error_slugExists": "Eine Veranstaltung mit diesem Slug existiert bereits in Ihrer Organisation",
 		"error_slugRequired": "Slug ist erforderlich",
-		"error_slugFormat": "Slug darf nur Kleinbuchstaben, Zahlen und Bindestriche enthalten (z.B. meine-veranstaltung-2025)"
+		"error_slugFormat": "Slug darf nur Kleinbuchstaben, Zahlen und Bindestriche enthalten (z.B. meine-veranstaltung-2025)",
+		"cityFromVenue": "Stadt vom Veranstaltungsort"
 	},
 	"questionnaireSubmissionPage": {
 		"pageTitle": "{questionnaireName} - {eventName}",
@@ -3770,6 +3820,8 @@
 		"notificationsDescription": "Bleib informiert mit In-App-, E-Mail- und Telegram-Benachrichtigungen. Mit detaillierten Einstellungen kannst du anpassen, was du erhältst.",
 		"multiLanguageTitle": "Mehrsprachige Unterstützung",
 		"multiLanguageDescription": "Verfügbar auf Englisch, Deutsch und Italienisch, weitere Sprachen folgen bald.",
+		"venueManagementTitle": "Veranstaltungsort-Verwaltung",
+		"venueManagementDescription": "Definiere Veranstaltungsorte mit Sektoren, Reihen und einzelnen Sitzplätzen. Weise Sitzplätze Ticketstufen für reservierte Plätze zu.",
 		"openSourceTitle": "Open Source & Community-getrieben",
 		"openSourceDescription": "Revel ist kostenlos und Open-Source unter der MIT-Lizenz. Self-Hosting für vollständige Kontrolle oder nutze unsere gehostete Version. Keine Herstellerbindung, keine versteckten Gebühren.",
 		"viewOnGithub": "Auf GitHub ansehen",
@@ -3792,7 +3844,24 @@
 		"pricingOnlinePayments": "Gehostete Online-Zahlungen",
 		"pricingOnlinePaymentsPrice": "1,5% + 0,25€",
 		"pricingOnlinePaymentsDescription": "1,5% + 0,25€ pro Ticket. Plus Stripe-Gebühren: 1,5% + 0,25€ (EWR-Karten) oder 2,5% + 0,25€ (UK-Karten).",
-		"ticketingFeature4": "QR-Code-Check-in und Ticket-Validierung"
+		"ticketingFeature4": "QR-Code-Check-in und Ticket-Validierung",
+		"feeCalculator": {
+			"title": "Gebührenrechner",
+			"close": "Schließen",
+			"ticketPrice": "Ticketpreis",
+			"creditCardFees": "Kreditkartengebühren",
+			"creditCardFeesDescription": "1,5% + 0,25€ pro Transaktion. Diese gehen an Stripe - wir haben keinen Einfluss darauf.",
+			"viewStripePricing": "Stripe-Preise ansehen",
+			"platformFee": "Plattformgebühr",
+			"platformFeeDescription": "1,5% + 0,25€ pro Transaktion. Dies geht an Revel, um den Betrieb aufrechtzuerhalten.",
+			"organizationReceives": "Deine Organisation erhält",
+			"perTicketSoldAt": "Pro verkauftem Ticket zu {price}",
+			"totalFees": "Gesamtgebühren: {fees} ({percentage}% des Ticketpreises)",
+			"questionsAboutFees": "Fragen zu Gebühren?",
+			"contactUs": "Kontaktiere uns",
+			"calculateYourFees": "Berechne deine Gebühren"
+		},
+		"eeaCards": "EWR-Karten"
 	},
 	"userMenu.createOrganization": "Organisation erstellen",
 	"dashboard.createOrganizationButton": "Organisation erstellen",
@@ -4015,5 +4084,48 @@
 	"orgAdmin.seats.toast.deleteError": "Fehler beim Löschen der Plätze",
 	"orgAdmin.seats.toast.updated": "Plätze erfolgreich aktualisiert",
 	"orgAdmin.seats.toast.updateError": "Fehler beim Aktualisieren der Plätze",
-	"orgAdmin.seats.toast.metadataError": "Fehler beim Speichern der Gang-Konfiguration"
+	"orgAdmin.seats.toast.metadataError": "Fehler beim Speichern der Gang-Konfiguration",
+	"venueSelector": {
+		"label": "Veranstaltungsort",
+		"clear": "Löschen",
+		"placeholder": "Veranstaltungsort auswählen...",
+		"selectVenue": "Veranstaltungsort auswählen",
+		"searchPlaceholder": "Veranstaltungsorte suchen...",
+		"error": "Veranstaltungsorte konnten nicht geladen werden",
+		"noResults": "Keine Veranstaltungsorte gefunden",
+		"empty": "Keine Veranstaltungsorte verfügbar",
+		"clearSelection": "Auswahl löschen",
+		"help": "Wähle den Veranstaltungsort für dieses Event"
+	},
+	"seatSelector": {
+		"stage": "BÜHNE",
+		"seat": "Platz",
+		"accessible": "barrierefrei",
+		"obstructedView": "eingeschränkte Sicht",
+		"unavailable": "nicht verfügbar",
+		"legendSelected": "Ausgewählt",
+		"legendAvailable": "Verfügbar",
+		"legendUnavailable": "Nicht verfügbar",
+		"legendAccessible": "Barrierefrei",
+		"legendObstructed": "Eingeschränkt"
+	},
+	"ticketingStep.eventTicketSettings": "Ticket-Einstellungen für Veranstaltung",
+	"ticketingStep.maxTicketsPerUser": "Max. Tickets pro Benutzer",
+	"ticketingStep.maxTicketsPlaceholder": "Unbegrenzt",
+	"ticketingStep.maxTicketsPerUserHint": "Lege die maximale Anzahl an Tickets fest, die ein einzelner Benutzer für diese Veranstaltung kaufen kann. Leer lassen für unbegrenzt. Dies kann für einzelne Ticket-Kategorien überschrieben werden.",
+	"myTicketModal.ticketOf": "Ticket {current} von {total}",
+	"ticketConfirmationDialog.selectMoreSeats": "Bitte wähle noch {count} Sitzplatz/Sitzplätze",
+	"eventPage.ticketReserved": "Ticket(s) reserviert! Bezahlung wie angegeben abschließen.",
+	"eventPage.ticketReservedDesc": "Sieh dir dein Ticket für Zahlungsdetails an.",
+	"eventPage.ticketClaimed": "Ticket(s) erhalten!",
+	"eventPage.ticketClaimedDesc": "Dein Ticket ist bereit.",
+	"eventPage.resumePaymentFailed": "Zahlung konnte nicht fortgesetzt werden",
+	"eventPage.resumePaymentFailedDesc": "Die Checkout-Sitzung ist möglicherweise abgelaufen. Bitte versuche es erneut.",
+	"eventPage.reservationCancelled": "Reservierung storniert",
+	"eventPage.reservationCancelledDesc": "Deine Ticketreservierung wurde storniert.",
+	"eventPage.cancelReservationFailed": "Reservierung konnte nicht storniert werden",
+	"eventPage.cancelReservationFailedDesc": "Bitte versuche es erneut oder kontaktiere den Support.",
+	"tierForm.seatingConfig.noVenueConfigured": "Um Sitzplatzzuweisung zu aktivieren, konfiguriere einen Veranstaltungsort in den Basisinformationen.",
+	"tierForm.seatingConfig.noVenueSelected": "Kein Veranstaltungsort für Event konfiguriert",
+	"tierForm.seatingConfig.venueFromEvent": "Veranstaltungsort wird auf Event-Ebene in den Basisinformationen festgelegt."
 }

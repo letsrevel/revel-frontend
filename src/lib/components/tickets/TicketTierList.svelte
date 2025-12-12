@@ -2,7 +2,11 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import type { UserEventStatus } from '$lib/utils/eligibility';
-	import type { EventTokenSchema, MembershipTierSchema } from '$lib/api/generated/types.gen';
+	import type {
+		EventTokenSchema,
+		MembershipTierSchema,
+		TicketPurchaseItem
+	} from '$lib/api/generated/types.gen';
 	import { isEligibility } from '$lib/utils/eligibility';
 	import TierCard from './TierCard.svelte';
 	import DemoCardInfo from '$lib/components/common/DemoCardInfo.svelte';
@@ -21,8 +25,13 @@
 		eventName?: string;
 		eventTokenDetails?: EventTokenSchema | null;
 		canAttendWithoutLogin?: boolean;
-		onClaimTicket: (tierId: string) => void | Promise<void>;
-		onCheckout?: (tierId: string, isPwyc: boolean) => void | Promise<void>;
+		onClaimTicket: (tierId: string, tickets?: TicketPurchaseItem[]) => void | Promise<void>;
+		onCheckout?: (
+			tierId: string,
+			isPwyc: boolean,
+			amount?: number,
+			tickets?: TicketPurchaseItem[]
+		) => void | Promise<void>;
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
 
@@ -99,6 +108,7 @@
 			{#each visibleTiers as tier (tier.id || tier.event_id + tier.name)}
 				<TierCard
 					{tier}
+					eventId={eventId ?? ''}
 					{isAuthenticated}
 					{hasTicket}
 					{isEligible}

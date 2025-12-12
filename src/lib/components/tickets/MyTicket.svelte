@@ -3,7 +3,7 @@
 	import type { EventTicketSchemaActual } from '$lib/utils/eligibility';
 	import { Card } from '$lib/components/ui/card';
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
-	import { Ticket, Calendar, MapPin, Download } from 'lucide-svelte';
+	import { Ticket, Calendar, MapPin, Download, User, Armchair } from 'lucide-svelte';
 	import QRCode from 'qrcode';
 	import { onMount } from 'svelte';
 
@@ -14,6 +14,10 @@
 		eventLocation?: string;
 		onResumePayment?: () => void;
 		isResumingPayment?: boolean;
+		/** Total number of tickets the user has */
+		totalTickets?: number;
+		/** Callback to open the full ticket modal */
+		onViewAllTickets?: () => void;
 	}
 
 	let {
@@ -22,7 +26,9 @@
 		eventDate,
 		eventLocation,
 		onResumePayment,
-		isResumingPayment = false
+		isResumingPayment = false,
+		totalTickets = 1,
+		onViewAllTickets
 	}: Props = $props();
 
 	let qrCodeDataUrl = $state<string | null>(null);
@@ -78,6 +84,52 @@
 		// Offline and at-the-door payments require manual completion
 		return paymentMethod === 'online';
 	});
+
+	// Format seat information
+	// Venue/sector come from ticket.tier, seat info comes from ticket.seat
+	let seatInfo = $derived.by(() => {
+		const parts: string[] = [];
+
+		// Add venue if available (from tier)
+		if (ticket.tier?.venue?.name) {
+			parts.push(ticket.tier.venue.name);
+		}
+
+		// Add sector if available (from tier)
+		if (ticket.tier?.sector?.name) {
+			parts.push(ticket.tier.sector.name);
+		}
+
+		// Build seat details (from ticket.seat)
+		const seatDetails: string[] = [];
+		if (ticket.seat?.row) {
+			seatDetails.push(`Row ${ticket.seat.row}`);
+		}
+		if (ticket.seat?.number !== null && ticket.seat?.number !== undefined) {
+			seatDetails.push(`Seat ${ticket.seat.number}`);
+		}
+		if (ticket.seat?.label && seatDetails.length === 0) {
+			// Use seat_label only if no row/number info
+			seatDetails.push(ticket.seat.label);
+		}
+
+		if (seatDetails.length > 0) {
+			parts.push(seatDetails.join(', '));
+		}
+
+		return parts.length > 0 ? parts.join(' • ') : null;
+	});
+
+	// Check if ticket has any seat info to display
+	let hasSeatInfo = $derived(
+		!!(
+			ticket.tier?.venue?.name ||
+			ticket.tier?.sector?.name ||
+			ticket.seat?.label ||
+			ticket.seat?.row ||
+			(ticket.seat?.number !== null && ticket.seat?.number !== undefined)
+		)
+	);
 </script>
 
 <Card class="p-6">
@@ -97,6 +149,26 @@
 			</div>
 			<TicketStatusBadge status={ticket.status} />
 		</div>
+
+		<!-- Ticket Holder & Seat Info -->
+		{#if ticket.guest_name || hasSeatInfo}
+			<dl class="space-y-2 rounded-lg border border-border bg-muted/30 p-4 text-sm">
+				{#if ticket.guest_name}
+					<div class="flex items-center gap-2">
+						<dt class="sr-only">Ticket Holder</dt>
+						<User class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+						<dd class="font-medium">{ticket.guest_name}</dd>
+					</div>
+				{/if}
+				{#if seatInfo}
+					<div class="flex items-center gap-2">
+						<dt class="sr-only">Seat</dt>
+						<Armchair class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+						<dd>{seatInfo}</dd>
+					</div>
+				{/if}
+			</dl>
+		{/if}
 
 		<!-- Pending Payment Banner -->
 		{#if ticket.status === 'pending'}
@@ -224,6 +296,23 @@
 		{#if ticket.status === 'checked_in' && checkedInDate()}
 			<div class="rounded-lg bg-blue-50 p-4 text-sm">
 				<p class="font-medium text-blue-900">{m['myTicket.checkedInAt']()} {checkedInDate()}</p>
+			</div>
+		{/if}
+
+		<!-- View All Tickets Button -->
+		{#if onViewAllTickets}
+			<div class="border-t border-border pt-4">
+				<button
+					onclick={onViewAllTickets}
+					class="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm font-medium transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+				>
+					<Ticket class="h-4 w-4" aria-hidden="true" />
+					{#if totalTickets > 1}
+						View All {totalTickets} Tickets
+					{:else}
+						View Ticket Details
+					{/if}
+				</button>
 			</div>
 		{/if}
 

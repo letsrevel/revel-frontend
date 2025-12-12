@@ -31,28 +31,32 @@
 		return formatEventDateRange(ticket.event.start, ticket.event.start);
 	});
 
-	// Get event location (will use venue_name if available, then fallback to location)
+	// Get event location (will use venue name if available, then fallback to address)
 	let eventLocation = $derived.by(() => {
-		const event = ticket.event as any;
-		return event.venue_name || event.location || null;
+		const venue = ticket.event.venue;
+		if (!venue) return null;
+		// Show venue name, and optionally address
+		if (venue.name && venue.address) {
+			return `${venue.name}, ${venue.address}`;
+		}
+		return venue.name || venue.address || null;
 	});
 
 	// Download iCal
 	function downloadICalFile() {
-		// Need to ensure we have the end date
-		const event = ticket.event as any;
+		const event = ticket.event;
 		if (!event.start) return;
 
 		downloadRevelEventICalFile({
-			id: ticket.event.id,
-			slug: event.slug || ticket.event.id, // Fallback to ID if slug missing
-			name: ticket.event.name,
-			description: event.description,
+			id: event.id,
+			slug: event.slug || event.id, // Fallback to ID if slug missing
+			name: event.name,
+			description: undefined,
 			start: event.start,
 			end: event.end || event.start, // Fallback to start if end not available
-			location: event.location,
-			venue_name: event.venue_name,
-			organization: event.organization
+			location: event.venue?.address,
+			venue_name: event.venue?.name,
+			organization: undefined
 		});
 	}
 
@@ -184,14 +188,7 @@
 {#if canShowQRCode}
 	<MyTicketModal
 		bind:open={showTicketModal}
-		ticket={{
-			id: ticket.id || undefined,
-			status: ticket.status,
-			tier: ticket.tier,
-			checked_in_at: ticket.checked_in_at ?? undefined,
-			event_id: ticket.event.id,
-			apple_pass_available: ticket.apple_pass_available
-		}}
+		tickets={ticket}
 		eventName={ticket.event.name}
 		eventDate={eventDate ?? undefined}
 		eventLocation={eventLocation ?? undefined}
