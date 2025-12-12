@@ -118,7 +118,10 @@ export const actions: Actions = {
 				throw err;
 			}
 
-			const errorMessage = extractErrorMessage(err, 'An unexpected error occurred. Please try again.');
+			const errorMessage = extractErrorMessage(
+				err,
+				'An unexpected error occurred. Please try again.'
+			);
 			return fail(500, {
 				errors: { form: errorMessage },
 				...data

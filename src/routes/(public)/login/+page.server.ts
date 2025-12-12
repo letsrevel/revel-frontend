@@ -85,7 +85,10 @@ export const actions = {
 
 			// Only log actual unexpected errors
 			console.error('Unexpected login error:', error);
-			const errorMessage = extractErrorMessage(error, 'An unexpected error occurred. Please try again.');
+			const errorMessage = extractErrorMessage(
+				error,
+				'An unexpected error occurred. Please try again.'
+			);
 			return fail(500, {
 				errors: { form: errorMessage },
 				email: data.email
@@ -162,7 +165,10 @@ export const actions = {
 
 			// Only log actual unexpected errors
 			console.error('Unexpected 2FA verification error:', error);
-			const errorMessage = extractErrorMessage(error, 'An unexpected error occurred. Please try again.');
+			const errorMessage = extractErrorMessage(
+				error,
+				'An unexpected error occurred. Please try again.'
+			);
 			return fail(500, {
 				errors: { code: errorMessage },
 				requires2FA: true,

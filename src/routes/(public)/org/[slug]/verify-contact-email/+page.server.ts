@@ -48,10 +48,7 @@ export const load: PageServerLoad = async ({ params, url, locals, cookies }) => 
 
 		if (apiError || !data) {
 			// Extract user-friendly error message from API error
-			const errorMessage = extractErrorMessage(
-				apiError,
-				'Invalid or expired verification token'
-			);
+			const errorMessage = extractErrorMessage(apiError, 'Invalid or expired verification token');
 
 			return {
 				success: false,
@@ -71,7 +68,10 @@ export const load: PageServerLoad = async ({ params, url, locals, cookies }) => 
 			organizationName: data.name
 		};
 	} catch (err) {
-		const errorMessage = extractErrorMessage(err, 'An unexpected error occurred. Please try again.');
+		const errorMessage = extractErrorMessage(
+			err,
+			'An unexpected error occurred. Please try again.'
+		);
 
 		return {
 			success: false,

@@ -129,7 +129,10 @@ export const actions = {
 
 			// Only log actual unexpected errors
 			console.error('[REGISTER] Unexpected registration error:', error);
-			const errorMessage = extractErrorMessage(error, 'An unexpected error occurred. Please try again.');
+			const errorMessage = extractErrorMessage(
+				error,
+				'An unexpected error occurred. Please try again.'
+			);
 			return fail(500, {
 				errors: { form: errorMessage },
 				email: data.email

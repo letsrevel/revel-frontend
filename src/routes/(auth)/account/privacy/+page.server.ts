@@ -40,7 +40,10 @@ export const actions: Actions = {
 				});
 			}
 
-			const errorMessage = extractErrorMessage(error, 'Failed to request data export. Please try again.');
+			const errorMessage = extractErrorMessage(
+				error,
+				'Failed to request data export. Please try again.'
+			);
 			return fail(500, {
 				errors: {
 					exportForm: errorMessage
@@ -96,7 +99,10 @@ export const actions: Actions = {
 			}
 
 			// Generic error
-			const errorMessage = extractErrorMessage(error, 'An unexpected error occurred. Please try again later.');
+			const errorMessage = extractErrorMessage(
+				error,
+				'An unexpected error occurred. Please try again later.'
+			);
 			return fail(500, {
 				errors: {
 					form: errorMessage
