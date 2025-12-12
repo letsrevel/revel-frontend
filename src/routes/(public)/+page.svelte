@@ -680,6 +680,26 @@
 					Learn more <ArrowRight class="h-4 w-4" aria-hidden="true" />
 				</span>
 			</a>
+
+			<a
+				href="{landingPagePrefix}/community-first-event-platform"
+				class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-md"
+			>
+				<div class="mb-3 flex items-center gap-3">
+					<div class="rounded-full bg-teal-100 p-2 dark:bg-teal-900/30">
+						<Users class="h-5 w-5 text-teal-600 dark:text-teal-400" aria-hidden="true" />
+					</div>
+					<h3 class="font-semibold">{m['footer.solutionCommunity']()}</h3>
+				</div>
+				<p class="mb-3 text-sm text-muted-foreground">
+					Build communities with membership tiers, potluck coordination, and more.
+				</p>
+				<span
+					class="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline"
+				>
+					Learn more <ArrowRight class="h-4 w-4" aria-hidden="true" />
+				</span>
+			</a>
 		</div>
 	</div>
 

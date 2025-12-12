@@ -57,7 +57,8 @@
 		"solutionQueer": "Gestione Eventi Queer",
 		"solutionKink": "Ticketing Eventi Kink",
 		"solutionSelfHosted": "Piattaforma Self-Hosted",
-		"solutionPrivacy": "Eventi Privacy-First"
+		"solutionPrivacy": "Eventi Privacy-First",
+		"solutionCommunity": "Piattaforma Community-First"
 	},
 	"home": {
 		"welcomeTo": "Benvenuti su",
