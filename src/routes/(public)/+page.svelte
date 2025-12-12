@@ -594,7 +594,9 @@
 				<p class="mb-3 text-sm text-muted-foreground">
 					Safe spaces for LGBTQ+ communities with privacy-first ticketing and screening.
 				</p>
-				<span class="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline">
+				<span
+					class="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline"
+				>
 					Learn more <ArrowRight class="h-4 w-4" aria-hidden="true" />
 				</span>
 			</a>
@@ -612,7 +614,9 @@
 				<p class="mb-3 text-sm text-muted-foreground">
 					Discreet ticketing for adult events with questionnaire-based vetting.
 				</p>
-				<span class="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline">
+				<span
+					class="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline"
+				>
 					Learn more <ArrowRight class="h-4 w-4" aria-hidden="true" />
 				</span>
 			</a>
@@ -630,7 +634,9 @@
 				<p class="mb-3 text-sm text-muted-foreground">
 					GDPR-compliant, European-hosted, with full data ownership.
 				</p>
-				<span class="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline">
+				<span
+					class="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline"
+				>
 					Learn more <ArrowRight class="h-4 w-4" aria-hidden="true" />
 				</span>
 			</a>
@@ -648,7 +654,9 @@
 				<p class="mb-3 text-sm text-muted-foreground">
 					MIT licensed. Run on your own infrastructure with zero platform fees.
 				</p>
-				<span class="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline">
+				<span
+					class="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline"
+				>
 					Learn more <ArrowRight class="h-4 w-4" aria-hidden="true" />
 				</span>
 			</a>
@@ -666,7 +674,9 @@
 				<p class="mb-3 text-sm text-muted-foreground">
 					Lower fees, more features, and you keep your data.
 				</p>
-				<span class="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline">
+				<span
+					class="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline"
+				>
 					Learn more <ArrowRight class="h-4 w-4" aria-hidden="true" />
 				</span>
 			</a>

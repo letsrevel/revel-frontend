@@ -90,8 +90,10 @@ export const GET: RequestHandler = async ({ fetch, url }) => {
 ${events
 	.map((event) => {
 		const eventUrl = `${baseUrl}/events/${event.organization.slug}/${event.slug}`;
-		const description = stripHtml(event.description) || `Join ${event.name} organized by ${event.organization.name}`;
-		const truncatedDescription = description.length > 500 ? description.slice(0, 497) + '...' : description;
+		const description =
+			stripHtml(event.description) || `Join ${event.name} organized by ${event.organization.name}`;
+		const truncatedDescription =
+			description.length > 500 ? description.slice(0, 497) + '...' : description;
 		const imageUrl = event.cover_art || event.logo;
 		const eventDate = new Date(event.start);
 		const locationParts = [event.city?.name, event.city?.country].filter(Boolean);
@@ -105,17 +107,17 @@ ${events
       <pubDate>${formatRfc822Date(event.created_at || event.start)}</pubDate>
       <dc:creator>${escapeXml(event.organization.name)}</dc:creator>
       <category>${escapeXml(event.organization.name)}</category>${
-			event.event_type
-				? `
+				event.event_type
+					? `
       <category>${escapeXml(event.event_type)}</category>`
-				: ''
-		}${
-			imageUrl
-				? `
+					: ''
+			}${
+				imageUrl
+					? `
       <media:content url="${escapeXml(getBackendUrl(imageUrl))}" medium="image"/>
       <media:thumbnail url="${escapeXml(getBackendUrl(imageUrl))}"/>`
-				: ''
-		}
+					: ''
+			}
     </item>`;
 	})
 	.join('\n')}
