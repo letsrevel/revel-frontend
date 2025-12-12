@@ -70,14 +70,16 @@
 	let tiers = $derived(tiersQuery.data?.data?.results ?? []);
 	let membershipTiers = $derived(membershipTiersQuery.data ?? []);
 
-	// Max tickets per user - stored as string for input, converted to number/null
-	let maxTicketsInput = $state(formData.max_tickets_per_user?.toString() ?? '');
+	// Max tickets per user - stored as string for input, converted to number (default: 1)
+	let maxTicketsInput = $state(formData.max_tickets_per_user?.toString() ?? '1');
 
 	function handleMaxTicketsChange(value: string) {
 		maxTicketsInput = value;
 		const trimmed = value.trim();
 		if (trimmed === '' || trimmed === '0') {
-			onUpdate({ max_tickets_per_user: null });
+			// Default to 1 if empty or 0
+			onUpdate({ max_tickets_per_user: 1 });
+			maxTicketsInput = '1';
 		} else {
 			const num = parseInt(trimmed, 10);
 			if (!isNaN(num) && num > 0) {
@@ -121,7 +123,7 @@
 					id="max-tickets-per-user"
 					type="number"
 					min="1"
-					placeholder={m['ticketingStep.maxTicketsPlaceholder']?.() ?? 'Unlimited'}
+					placeholder={m['ticketingStep.maxTicketsPlaceholder']?.() ?? '1'}
 					value={maxTicketsInput}
 					oninput={(e) => handleMaxTicketsChange(e.currentTarget.value)}
 					class="max-w-xs"
@@ -130,7 +132,7 @@
 					<Info class="mt-0.5 h-4 w-4 shrink-0" />
 					<p>
 						{m['ticketingStep.maxTicketsPerUserHint']?.() ??
-							'Set the default maximum number of tickets a single user can purchase for this event. Leave empty for unlimited. This can be overridden on individual ticket tiers.'}
+							'Set the maximum number of tickets a single user can purchase for this event. Minimum 1. This can be overridden on individual ticket tiers.'}
 					</p>
 				</div>
 			</div>

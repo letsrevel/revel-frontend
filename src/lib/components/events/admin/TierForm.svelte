@@ -704,7 +704,7 @@
 					/>
 					<p class="mt-1 text-xs text-muted-foreground">
 						{m['tierForm.seatingConfig.maxTicketsHelp']?.() ??
-							'Leave empty to use the event default limit'}
+							'Leave empty to inherit from event (event default is 1)'}
 					</p>
 				</div>
 
