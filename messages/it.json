@@ -602,6 +602,10 @@
 				"emailNotVerified": "Email non ancora verificata",
 				"contactEmailHelp": "Email di contatto pubblica per richieste sulla tua organizzazione"
 			},
+			"social": {
+				"heading": "Link Social Media",
+				"description": "Aggiungi i tuoi link social per aiutare le persone a connettersi con la tua organizzazione."
+			},
 			"actions": {
 				"cancel": "Annulla",
 				"saveChanges": "Salva Modifiche",
@@ -1095,7 +1099,11 @@
 		"events_noUpcomingScheduled": "{organizationName} non ha eventi in programma.",
 		"events_viewPast": "Vedi eventi passati",
 		"location_tbd": "Località da definire",
-		"viewDetails": "Vedi dettagli organizzazione"
+		"viewDetails": "Vedi dettagli organizzazione",
+		"social_instagram": "Segui su Instagram",
+		"social_facebook": "Segui su Facebook",
+		"social_bluesky": "Segui su Bluesky",
+		"social_telegram": "Unisciti su Telegram"
 	},
 	"adminButton": {
 		"selectOrganization": "Seleziona Organizzazione"

@@ -43,6 +43,12 @@ export const actions: Actions = {
 		const contactEmail = formData.get('contact_email') as string;
 		const slug = params.slug;
 
+		// Social media fields
+		const instagramUrl = formData.get('instagram_url') as string;
+		const facebookUrl = formData.get('facebook_url') as string;
+		const blueskyUrl = formData.get('bluesky_url') as string;
+		const telegramUrl = formData.get('telegram_url') as string;
+
 		// Prepare update payload with only editable fields
 		const updateData: any = {
 			visibility,
@@ -68,6 +74,12 @@ export const actions: Actions = {
 		if (contactEmail && contactEmail.trim()) {
 			updateData.contact_email = contactEmail.trim();
 		}
+
+		// Social media fields (allow empty strings to clear)
+		updateData.instagram_url = instagramUrl?.trim() || null;
+		updateData.facebook_url = facebookUrl?.trim() || null;
+		updateData.bluesky_url = blueskyUrl?.trim() || null;
+		updateData.telegram_url = telegramUrl?.trim() || null;
 
 		try {
 			const { data, error: apiError } = await organizationadminUpdateOrganization({

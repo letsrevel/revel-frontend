@@ -7,7 +7,19 @@
 	import ImageUploader from '$lib/components/forms/ImageUploader.svelte';
 	import StripeConnect from '$lib/components/organization/StripeConnect.svelte';
 	import type { CitySchema } from '$lib/api/generated';
-	import { Building2, AlertCircle, Check, Eye, Hash, Mail, X } from 'lucide-svelte';
+	import {
+		Building2,
+		AlertCircle,
+		Check,
+		Eye,
+		Hash,
+		Mail,
+		X,
+		Instagram,
+		Facebook,
+		Send,
+		AtSign
+	} from 'lucide-svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { getBackendUrl } from '$lib/config/api';
 	import { toast } from 'svelte-sonner';
@@ -38,6 +50,12 @@
 	let visibility = $state(data.organization.visibility || 'public');
 	let acceptNewMembers = $state(data.organization.accept_membership_requests || false);
 	let isSubmitting = $state(false);
+
+	// Social media state
+	let instagramUrl = $state(data.organization.instagram_url || '');
+	let facebookUrl = $state(data.organization.facebook_url || '');
+	let blueskyUrl = $state(data.organization.bluesky_url || '');
+	let telegramUrl = $state(data.organization.telegram_url || '');
 
 	// Email change modal state
 	let showEmailModal = $state(false);
@@ -88,6 +106,11 @@
 		acceptNewMembers = data.organization.accept_membership_requests || false;
 		tags = data.organization.tags || [];
 		initialTags = data.organization.tags || [];
+		// Social media fields
+		instagramUrl = data.organization.instagram_url || '';
+		facebookUrl = data.organization.facebook_url || '';
+		blueskyUrl = data.organization.bluesky_url || '';
+		telegramUrl = data.organization.telegram_url || '';
 	});
 
 	// Handle city selection
@@ -811,6 +834,78 @@
 						{/each}
 					</div>
 				{/if}
+			</div>
+		</section>
+
+		<!-- Social Media Links -->
+		<section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
+			<h2 class="text-lg font-semibold">{m['orgAdmin.settings.social.heading']()}</h2>
+			<p class="text-sm text-muted-foreground">{m['orgAdmin.settings.social.description']()}</p>
+
+			<div class="grid gap-4 md:grid-cols-2">
+				<!-- Instagram -->
+				<div>
+					<label for="instagram_url" class="flex items-center gap-2 text-sm font-medium">
+						<Instagram class="h-4 w-4 text-pink-500" aria-hidden="true" />
+						Instagram
+					</label>
+					<input
+						type="url"
+						id="instagram_url"
+						name="instagram_url"
+						bind:value={instagramUrl}
+						placeholder="https://instagram.com/yourorg"
+						class="mt-1 flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+					/>
+				</div>
+
+				<!-- Facebook -->
+				<div>
+					<label for="facebook_url" class="flex items-center gap-2 text-sm font-medium">
+						<Facebook class="h-4 w-4 text-blue-600" aria-hidden="true" />
+						Facebook
+					</label>
+					<input
+						type="url"
+						id="facebook_url"
+						name="facebook_url"
+						bind:value={facebookUrl}
+						placeholder="https://facebook.com/yourorg"
+						class="mt-1 flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+					/>
+				</div>
+
+				<!-- Bluesky -->
+				<div>
+					<label for="bluesky_url" class="flex items-center gap-2 text-sm font-medium">
+						<AtSign class="h-4 w-4 text-sky-500" aria-hidden="true" />
+						Bluesky
+					</label>
+					<input
+						type="url"
+						id="bluesky_url"
+						name="bluesky_url"
+						bind:value={blueskyUrl}
+						placeholder="https://bsky.app/profile/yourorg.bsky.social"
+						class="mt-1 flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+					/>
+				</div>
+
+				<!-- Telegram -->
+				<div>
+					<label for="telegram_url" class="flex items-center gap-2 text-sm font-medium">
+						<Send class="h-4 w-4 text-blue-400" aria-hidden="true" />
+						Telegram
+					</label>
+					<input
+						type="url"
+						id="telegram_url"
+						name="telegram_url"
+						bind:value={telegramUrl}
+						placeholder="https://t.me/yourorg"
+						class="mt-1 flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+					/>
+				</div>
 			</div>
 		</section>
 

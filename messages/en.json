@@ -602,6 +602,10 @@
 				"emailNotVerified": "Email not yet verified",
 				"contactEmailHelp": "Public contact email for inquiries about your organization"
 			},
+			"social": {
+				"heading": "Social Media Links",
+				"description": "Add your social media links to help people connect with your organization."
+			},
 			"actions": {
 				"cancel": "Cancel",
 				"saveChanges": "Save Changes",
@@ -1095,7 +1099,11 @@
 		"events_noUpcomingScheduled": "{organizationName} has no upcoming events scheduled.",
 		"events_viewPast": "View past events",
 		"location_tbd": "Location TBD",
-		"viewDetails": "View organization details"
+		"viewDetails": "View organization details",
+		"social_instagram": "Follow on Instagram",
+		"social_facebook": "Follow on Facebook",
+		"social_bluesky": "Follow on Bluesky",
+		"social_telegram": "Join Telegram"
 	},
 	"adminButton": {
 		"selectOrganization": "Select Organization"
