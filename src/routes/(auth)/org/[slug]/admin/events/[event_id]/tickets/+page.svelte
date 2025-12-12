@@ -282,6 +282,31 @@
 	}
 
 	/**
+	 * Get guest name if different from user display name
+	 */
+	function getGuestNameIfDifferent(ticket: any): string | null {
+		const guestName = ticket.guest_name;
+		if (!guestName) return null;
+		const userDisplayName = getUserDisplayName(ticket.user);
+		// Check if guest name is meaningfully different from user display name
+		if (guestName.toLowerCase().trim() === userDisplayName.toLowerCase().trim()) return null;
+		return guestName;
+	}
+
+	/**
+	 * Get seat display info
+	 */
+	function getSeatDisplay(ticket: any): string | null {
+		const seat = ticket.seat;
+		if (!seat) return null;
+		const parts: string[] = [];
+		if (seat.sector?.name) parts.push(seat.sector.name);
+		if (seat.row_label) parts.push(`Row ${seat.row_label}`);
+		if (seat.seat_label) parts.push(`Seat ${seat.seat_label}`);
+		return parts.length > 0 ? parts.join(' • ') : null;
+	}
+
+	/**
 	 * Get user email
 	 */
 	function getUserEmail(user: any): string {
@@ -651,13 +676,27 @@
 					</thead>
 					<tbody class="divide-y">
 						{#each data.tickets as ticket}
+							{@const guestName = getGuestNameIfDifferent(ticket)}
+							{@const seatInfo = getSeatDisplay(ticket)}
 							<tr class="hover:bg-muted/30">
 								<td class="px-4 py-3">
 									<div>
-										<div class="font-medium">{getUserDisplayName(ticket.user)}</div>
+										{#if guestName}
+											<div class="font-medium">{guestName}</div>
+											<div class="text-sm text-muted-foreground">
+												(Purchased by {getUserDisplayName(ticket.user)})
+											</div>
+										{:else}
+											<div class="font-medium">{getUserDisplayName(ticket.user)}</div>
+										{/if}
 										<div class="text-sm text-muted-foreground">
 											{getUserEmail(ticket.user)}
 										</div>
+										{#if seatInfo}
+											<div class="mt-1 text-xs text-primary">
+												{seatInfo}
+											</div>
+										{/if}
 									</div>
 								</td>
 								<td class="px-4 py-3">
@@ -738,11 +777,23 @@
 			<!-- Mobile Cards -->
 			<div class="space-y-4 md:hidden">
 				{#each data.tickets as ticket}
+					{@const guestName = getGuestNameIfDifferent(ticket)}
+					{@const seatInfo = getSeatDisplay(ticket)}
 					<div class="rounded-lg border bg-card p-4">
 						<div class="mb-3 flex items-start justify-between">
 							<div class="flex-1">
-								<div class="font-semibold">{getUserDisplayName(ticket.user)}</div>
+								{#if guestName}
+									<div class="font-semibold">{guestName}</div>
+									<div class="text-sm text-muted-foreground">
+										(Purchased by {getUserDisplayName(ticket.user)})
+									</div>
+								{:else}
+									<div class="font-semibold">{getUserDisplayName(ticket.user)}</div>
+								{/if}
 								<div class="text-sm text-muted-foreground">{getUserEmail(ticket.user)}</div>
+								{#if seatInfo}
+									<div class="mt-1 text-xs text-primary">{seatInfo}</div>
+								{/if}
 							</div>
 							<span class={getStatusColor(ticket.status)}>
 								{getStatusLabel(ticket.status)}

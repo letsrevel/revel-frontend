@@ -18,11 +18,21 @@
 		payment_method?: string;
 	}
 
+	interface TicketSeat {
+		row_label?: string;
+		seat_label?: string;
+		sector?: {
+			name?: string;
+		};
+	}
+
 	interface Ticket {
 		id: string;
 		status: string;
 		user: TicketUser;
 		tier?: TicketTier;
+		guest_name?: string;
+		seat?: TicketSeat;
 	}
 
 	interface Props {
@@ -52,6 +62,30 @@
 		if (user.first_name) return user.first_name;
 		if (user.email) return user.email;
 		return 'Unknown User';
+	}
+
+	/**
+	 * Get guest name if different from user display name
+	 */
+	function getGuestNameIfDifferent(ticket: Ticket): string | null {
+		const guestName = ticket.guest_name;
+		if (!guestName) return null;
+		const userDisplayName = getUserDisplayName(ticket.user);
+		if (guestName.toLowerCase().trim() === userDisplayName.toLowerCase().trim()) return null;
+		return guestName;
+	}
+
+	/**
+	 * Get seat display info
+	 */
+	function getSeatDisplay(ticket: Ticket): string | null {
+		const seat = ticket.seat;
+		if (!seat) return null;
+		const parts: string[] = [];
+		if (seat.sector?.name) parts.push(seat.sector.name);
+		if (seat.row_label) parts.push(`Row ${seat.row_label}`);
+		if (seat.seat_label) parts.push(`Seat ${seat.seat_label}`);
+		return parts.length > 0 ? parts.join(' • ') : null;
 	}
 
 	/**
@@ -156,6 +190,8 @@
 
 {#if isOpen && ticket}
 	{@const statusInfo = getStatusInfo(ticket.status)}
+	{@const guestName = getGuestNameIfDifferent(ticket)}
+	{@const seatInfo = getSeatDisplay(ticket)}
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
@@ -226,14 +262,31 @@
 						<h3 class="font-semibold">{m['checkInDialog.attendeeInfo']()}</h3>
 					</div>
 					<div class="divide-y">
-						<div class="flex items-center justify-between px-4 py-3">
-							<span class="text-sm text-muted-foreground">{m['checkInDialog.name']()}</span>
-							<span class="font-medium">{getUserDisplayName(ticket.user)}</span>
-						</div>
+						{#if guestName}
+							<div class="flex items-center justify-between px-4 py-3">
+								<span class="text-sm text-muted-foreground">Guest Name</span>
+								<span class="font-medium text-primary">{guestName}</span>
+							</div>
+							<div class="flex items-center justify-between px-4 py-3">
+								<span class="text-sm text-muted-foreground">Purchased By</span>
+								<span class="font-medium">{getUserDisplayName(ticket.user)}</span>
+							</div>
+						{:else}
+							<div class="flex items-center justify-between px-4 py-3">
+								<span class="text-sm text-muted-foreground">{m['checkInDialog.name']()}</span>
+								<span class="font-medium">{getUserDisplayName(ticket.user)}</span>
+							</div>
+						{/if}
 						<div class="flex items-center justify-between px-4 py-3">
 							<span class="text-sm text-muted-foreground">{m['checkInDialog.email']()}</span>
 							<span class="font-medium">{ticket.user.email || 'N/A'}</span>
 						</div>
+						{#if seatInfo}
+							<div class="flex items-center justify-between px-4 py-3">
+								<span class="text-sm text-muted-foreground">Seat</span>
+								<span class="font-medium text-primary">{seatInfo}</span>
+							</div>
+						{/if}
 						<div class="flex items-center justify-between px-4 py-3">
 							<span class="text-sm text-muted-foreground">{m['checkInDialog.tier']()}</span>
 							<span class="font-medium">{ticket.tier?.name || 'N/A'}</span>
