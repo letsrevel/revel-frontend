@@ -302,7 +302,5 @@ export function getMultipleTicketsStatusText(tickets: EventTicketSchemaActual[])
  * Check if any tickets have pending online payment
  */
 export function hasPendingOnlinePayment(tickets: EventTicketSchemaActual[]): boolean {
-	return tickets.some(
-		(t) => t.status === 'pending' && t.tier?.payment_method === 'online'
-	);
+	return tickets.some((t) => t.status === 'pending' && t.tier?.payment_method === 'online');
 }

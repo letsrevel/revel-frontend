@@ -54,8 +54,12 @@
 
 			// Get event ID - RSVP has event_id, Ticket has event.id
 			const eventId = isRsvp
-				? ('event_id' in data ? data.event_id : undefined)
-				: ('event' in data && data.event ? data.event.id : undefined);
+				? 'event_id' in data
+					? data.event_id
+					: undefined
+				: 'event' in data && data.event
+					? data.event.id
+					: undefined;
 
 			result = {
 				success: true,

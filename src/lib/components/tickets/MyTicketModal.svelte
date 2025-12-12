@@ -5,7 +5,18 @@
 	import { Button } from '$lib/components/ui/button';
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
 	import AddToWalletButton from './AddToWalletButton.svelte';
-	import { Ticket, Calendar, MapPin, Download, User, Armchair, ChevronLeft, ChevronRight, X, AlertTriangle } from 'lucide-svelte';
+	import {
+		Ticket,
+		Calendar,
+		MapPin,
+		Download,
+		User,
+		Armchair,
+		ChevronLeft,
+		ChevronRight,
+		X,
+		AlertTriangle
+	} from 'lucide-svelte';
 	import QRCode from 'qrcode';
 
 	interface Props {
@@ -179,7 +190,13 @@
 
 	// Check if ticket has any seat info to display
 	let hasSeatInfo = $derived(
-		!!(ticket?.tier?.venue?.name || ticket?.tier?.sector?.name || ticket?.seat?.label || ticket?.seat?.row || (ticket?.seat?.number !== null && ticket?.seat?.number !== undefined))
+		!!(
+			ticket?.tier?.venue?.name ||
+			ticket?.tier?.sector?.name ||
+			ticket?.seat?.label ||
+			ticket?.seat?.row ||
+			(ticket?.seat?.number !== null && ticket?.seat?.number !== undefined)
+		)
 	);
 
 	// Group pending tickets by payment ID for online payments
@@ -212,18 +229,16 @@
 	// Check if current ticket is part of a pending payment group
 	let currentTicketPaymentGroup = $derived.by((): PaymentGroup | null => {
 		if (!ticket?.payment?.id) return null;
-		return pendingPaymentGroups.find(g => g.paymentId === ticket.payment?.id) ?? null;
+		return pendingPaymentGroups.find((g) => g.paymentId === ticket.payment?.id) ?? null;
 	});
 
 	// Count of active (non-cancelled, non-pending) tickets
 	let activeTicketCount = $derived(
-		ticketArray.filter(t => t.status === 'active' || t.status === 'checked_in').length
+		ticketArray.filter((t) => t.status === 'active' || t.status === 'checked_in').length
 	);
 
 	// Count of pending tickets
-	let pendingTicketCount = $derived(
-		ticketArray.filter(t => t.status === 'pending').length
-	);
+	let pendingTicketCount = $derived(ticketArray.filter((t) => t.status === 'pending').length);
 </script>
 
 <Dialog bind:open>
@@ -233,268 +248,274 @@
 		</DialogHeader>
 
 		{#if !ticket}
-			<div class="py-8 text-center text-muted-foreground">
-				No ticket data available.
-			</div>
+			<div class="py-8 text-center text-muted-foreground">No ticket data available.</div>
 		{:else}
-		<div class="space-y-6">
-			<!-- Ticket Summary (when there are multiple tickets or pending payments) -->
-			{#if hasMultipleTickets || pendingPaymentGroups.length > 0}
-				<div class="rounded-lg border border-border bg-muted/30 p-3">
-					<div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-						{#if activeTicketCount > 0}
-							<span class="flex items-center gap-1.5">
-								<span class="h-2 w-2 rounded-full bg-green-500"></span>
-								<span>{activeTicketCount} active</span>
-							</span>
+			<div class="space-y-6">
+				<!-- Ticket Summary (when there are multiple tickets or pending payments) -->
+				{#if hasMultipleTickets || pendingPaymentGroups.length > 0}
+					<div class="rounded-lg border border-border bg-muted/30 p-3">
+						<div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+							{#if activeTicketCount > 0}
+								<span class="flex items-center gap-1.5">
+									<span class="h-2 w-2 rounded-full bg-green-500"></span>
+									<span>{activeTicketCount} active</span>
+								</span>
+							{/if}
+							{#if pendingTicketCount > 0}
+								<span class="flex items-center gap-1.5">
+									<span class="h-2 w-2 rounded-full bg-orange-500"></span>
+									<span>{pendingTicketCount} pending payment</span>
+								</span>
+							{/if}
+						</div>
+					</div>
+				{/if}
+
+				<!-- Multi-ticket navigation -->
+				{#if hasMultipleTickets}
+					<div
+						class="flex items-center justify-between rounded-lg border border-border bg-muted/30 p-2"
+					>
+						<Button
+							variant="ghost"
+							size="sm"
+							onclick={goToPrevious}
+							disabled={currentIndex === 0}
+							aria-label="Previous ticket"
+						>
+							<ChevronLeft class="h-4 w-4" />
+						</Button>
+						<span class="text-sm font-medium">
+							{m['myTicketModal.ticketOf']?.({ current: currentIndex + 1, total: totalTickets }) ??
+								`Ticket ${currentIndex + 1} of ${totalTickets}`}
+						</span>
+						<Button
+							variant="ghost"
+							size="sm"
+							onclick={goToNext}
+							disabled={currentIndex === totalTickets - 1}
+							aria-label="Next ticket"
+						>
+							<ChevronRight class="h-4 w-4" />
+						</Button>
+					</div>
+				{/if}
+
+				<!-- Header -->
+				<div class="flex items-start justify-between">
+					<div class="flex items-center gap-3">
+						<div class="rounded-full bg-primary/10 p-3">
+							<Ticket class="h-6 w-6 text-primary" aria-hidden="true" />
+						</div>
+						<div>
+							<h2 class="text-xl font-bold">{eventName}</h2>
+							<p class="text-sm text-muted-foreground">
+								{ticket.tier?.name || 'General Admission'}
+							</p>
+						</div>
+					</div>
+					<TicketStatusBadge status={ticket.status} />
+				</div>
+
+				<!-- Ticket Holder & Seat Info -->
+				{#if ticket.guest_name || hasSeatInfo}
+					<dl class="space-y-2 rounded-lg border border-border bg-muted/30 p-4 text-sm">
+						{#if ticket.guest_name}
+							<div class="flex items-center gap-2">
+								<dt class="sr-only">Ticket Holder</dt>
+								<User class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+								<dd class="font-medium">{ticket.guest_name}</dd>
+							</div>
 						{/if}
-						{#if pendingTicketCount > 0}
-							<span class="flex items-center gap-1.5">
-								<span class="h-2 w-2 rounded-full bg-orange-500"></span>
-								<span>{pendingTicketCount} pending payment</span>
-							</span>
+						{#if seatInfo}
+							<div class="flex items-center gap-2">
+								<dt class="sr-only">Seat</dt>
+								<Armchair class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+								<dd>{seatInfo}</dd>
+							</div>
+						{/if}
+					</dl>
+				{/if}
+
+				<!-- Pending Payment Banner -->
+				{#if ticket.status === 'pending'}
+					{@const paymentGroup = currentTicketPaymentGroup}
+					{@const ticketsInGroup = paymentGroup?.tickets.length ?? 1}
+					<div
+						class="rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-950"
+						role="alert"
+					>
+						<div class="flex items-start gap-3">
+							<svg
+								class="h-5 w-5 shrink-0 text-orange-600 dark:text-orange-400"
+								fill="currentColor"
+								viewBox="0 0 20 20"
+								aria-hidden="true"
+							>
+								<path
+									fill-rule="evenodd"
+									d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z"
+									clip-rule="evenodd"
+								/>
+							</svg>
+							<div class="flex-1">
+								<p class="font-medium text-orange-900 dark:text-orange-100">
+									{#if ticketsInGroup > 1}
+										{ticketsInGroup} tickets pending payment
+									{:else}
+										Your ticket is pending payment
+									{/if}
+								</p>
+								<p class="mt-1 text-sm text-orange-800 dark:text-orange-200">
+									{#if ticket.tier?.payment_method === 'online'}
+										Complete your payment to confirm {ticketsInGroup > 1
+											? 'your tickets'
+											: 'your ticket'}. Your reservation will expire if payment is not completed.
+									{:else if ticket.tier?.payment_method === 'offline'}
+										Please complete your offline payment as instructed by the organizer to confirm
+										{ticketsInGroup > 1 ? 'your tickets' : 'your ticket'}.
+									{:else}
+										Complete your payment to confirm {ticketsInGroup > 1
+											? 'your tickets'
+											: 'your ticket'}.
+									{/if}
+								</p>
+
+								<!-- Manual Payment Instructions -->
+								{#if ticket.tier?.payment_method !== 'online' && ticket.tier?.manual_payment_instructions}
+									<div
+										class="mt-3 rounded-md border border-orange-300 bg-orange-100 p-3 dark:border-orange-700 dark:bg-orange-900"
+									>
+										<p class="text-sm font-medium text-orange-900 dark:text-orange-100">
+											Payment Instructions:
+										</p>
+										<p
+											class="mt-1 whitespace-pre-wrap text-sm text-orange-800 dark:text-orange-200"
+										>
+											{ticket.tier.manual_payment_instructions}
+										</p>
+									</div>
+								{/if}
+
+								<!-- Action Buttons for Online Payments -->
+								{#if canResumePayment && ticket.payment?.id}
+									{@const paymentId = ticket.payment.id}
+									<div class="mt-3 flex flex-wrap gap-2">
+										{#if onResumePayment}
+											<button
+												onclick={() => onResumePayment(paymentId)}
+												disabled={isResumingPayment || isCancellingReservation}
+												class="inline-flex items-center gap-2 rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-orange-500 dark:hover:bg-orange-600"
+											>
+												{#if isResumingPayment}
+													<div
+														class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+														aria-hidden="true"
+													></div>
+													Processing...
+												{:else}
+													Resume Payment
+												{/if}
+											</button>
+										{/if}
+										{#if onCancelReservation}
+											<button
+												onclick={() => onCancelReservation(paymentId)}
+												disabled={isResumingPayment || isCancellingReservation}
+												class="inline-flex items-center gap-2 rounded-md border border-orange-300 bg-transparent px-4 py-2 text-sm font-medium text-orange-700 shadow-sm hover:bg-orange-100 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-900/50"
+											>
+												{#if isCancellingReservation}
+													<div
+														class="h-4 w-4 animate-spin rounded-full border-2 border-orange-600 border-t-transparent dark:border-orange-400"
+														aria-hidden="true"
+													></div>
+													Cancelling...
+												{:else}
+													<X class="h-4 w-4" aria-hidden="true" />
+													Cancel Reservation
+												{/if}
+											</button>
+										{/if}
+									</div>
+								{/if}
+							</div>
+						</div>
+					</div>
+				{/if}
+
+				<!-- Event Details -->
+				{#if eventDate || eventLocation}
+					<dl class="space-y-2 text-sm">
+						{#if eventDate}
+							<div class="flex items-center gap-2">
+								<Calendar class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+								<dd>{eventDate}</dd>
+							</div>
+						{/if}
+						{#if eventLocation}
+							<div class="flex items-center gap-2">
+								<MapPin class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+								<dd>{eventLocation}</dd>
+							</div>
+						{/if}
+					</dl>
+				{/if}
+
+				<!-- QR Code -->
+				{#if ticket.status === 'pending' || ticket.status === 'active' || ticket.status === 'checked_in'}
+					<div
+						class="flex flex-col items-center gap-4 rounded-lg border border-border bg-muted/30 p-6"
+					>
+						{#if isGenerating}
+							<div class="flex h-64 w-64 items-center justify-center">
+								<div
+									class="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"
+									role="status"
+									aria-label="Generating QR code"
+								></div>
+							</div>
+						{:else if qrCodeDataUrl}
+							<img
+								src={qrCodeDataUrl}
+								alt="Ticket QR Code"
+								class="h-64 w-64 rounded-lg border border-border bg-white"
+							/>
+							<p class="text-center text-sm text-muted-foreground">{m['myTicketModal.showQr']()}</p>
+							<div class="flex w-full flex-col gap-2">
+								<button
+									type="button"
+									onclick={downloadQRCode}
+									class="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+								>
+									<Download class="h-4 w-4" aria-hidden="true" />
+									Download QR Code
+								</button>
+								{#if ticket.apple_pass_available && ticket.id}
+									<AddToWalletButton ticketId={ticket.id} {eventName} variant="secondary" />
+								{/if}
+							</div>
+						{:else}
+							<div class="text-center text-sm text-destructive">
+								Unable to generate QR code. Please refresh the page.
+							</div>
 						{/if}
 					</div>
-				</div>
-			{/if}
+				{/if}
 
-			<!-- Multi-ticket navigation -->
-			{#if hasMultipleTickets}
-				<div class="flex items-center justify-between rounded-lg border border-border bg-muted/30 p-2">
-					<Button
-						variant="ghost"
-						size="sm"
-						onclick={goToPrevious}
-						disabled={currentIndex === 0}
-						aria-label="Previous ticket"
-					>
-						<ChevronLeft class="h-4 w-4" />
-					</Button>
-					<span class="text-sm font-medium">
-						{m['myTicketModal.ticketOf']?.({ current: currentIndex + 1, total: totalTickets }) ?? `Ticket ${currentIndex + 1} of ${totalTickets}`}
-					</span>
-					<Button
-						variant="ghost"
-						size="sm"
-						onclick={goToNext}
-						disabled={currentIndex === totalTickets - 1}
-						aria-label="Next ticket"
-					>
-						<ChevronRight class="h-4 w-4" />
-					</Button>
-				</div>
-			{/if}
-
-			<!-- Header -->
-			<div class="flex items-start justify-between">
-				<div class="flex items-center gap-3">
-					<div class="rounded-full bg-primary/10 p-3">
-						<Ticket class="h-6 w-6 text-primary" aria-hidden="true" />
-					</div>
-					<div>
-						<h2 class="text-xl font-bold">{eventName}</h2>
-						<p class="text-sm text-muted-foreground">
-							{ticket.tier?.name || 'General Admission'}
+				<!-- Checked In Info -->
+				{#if ticket.status === 'checked_in' && checkedInDate}
+					<div class="rounded-lg bg-blue-50 p-4 text-sm dark:bg-blue-950/50">
+						<p class="font-medium text-blue-900 dark:text-blue-100">
+							Checked in at {checkedInDate}
 						</p>
 					</div>
+				{/if}
+
+				<!-- Ticket ID -->
+				<div class="border-t border-border pt-4">
+					<p class="text-xs text-muted-foreground">{m['myTicketModal.ticketId']()} {ticket.id}</p>
 				</div>
-				<TicketStatusBadge status={ticket.status} />
 			</div>
-
-			<!-- Ticket Holder & Seat Info -->
-			{#if ticket.guest_name || hasSeatInfo}
-				<dl class="space-y-2 rounded-lg border border-border bg-muted/30 p-4 text-sm">
-					{#if ticket.guest_name}
-						<div class="flex items-center gap-2">
-							<dt class="sr-only">Ticket Holder</dt>
-							<User class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-							<dd class="font-medium">{ticket.guest_name}</dd>
-						</div>
-					{/if}
-					{#if seatInfo}
-						<div class="flex items-center gap-2">
-							<dt class="sr-only">Seat</dt>
-							<Armchair class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-							<dd>{seatInfo}</dd>
-						</div>
-					{/if}
-				</dl>
-			{/if}
-
-			<!-- Pending Payment Banner -->
-			{#if ticket.status === 'pending'}
-				{@const paymentGroup = currentTicketPaymentGroup}
-				{@const ticketsInGroup = paymentGroup?.tickets.length ?? 1}
-				<div
-					class="rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-950"
-					role="alert"
-				>
-					<div class="flex items-start gap-3">
-						<svg
-							class="h-5 w-5 shrink-0 text-orange-600 dark:text-orange-400"
-							fill="currentColor"
-							viewBox="0 0 20 20"
-							aria-hidden="true"
-						>
-							<path
-								fill-rule="evenodd"
-								d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z"
-								clip-rule="evenodd"
-							/>
-						</svg>
-						<div class="flex-1">
-							<p class="font-medium text-orange-900 dark:text-orange-100">
-								{#if ticketsInGroup > 1}
-									{ticketsInGroup} tickets pending payment
-								{:else}
-									Your ticket is pending payment
-								{/if}
-							</p>
-							<p class="mt-1 text-sm text-orange-800 dark:text-orange-200">
-								{#if ticket.tier?.payment_method === 'online'}
-									Complete your payment to confirm {ticketsInGroup > 1 ? 'your tickets' : 'your ticket'}. Your reservation will expire if
-									payment is not completed.
-								{:else if ticket.tier?.payment_method === 'offline'}
-									Please complete your offline payment as instructed by the organizer to confirm
-									{ticketsInGroup > 1 ? 'your tickets' : 'your ticket'}.
-								{:else}
-									Complete your payment to confirm {ticketsInGroup > 1 ? 'your tickets' : 'your ticket'}.
-								{/if}
-							</p>
-
-							<!-- Manual Payment Instructions -->
-							{#if ticket.tier?.payment_method !== 'online' && ticket.tier?.manual_payment_instructions}
-								<div
-									class="mt-3 rounded-md border border-orange-300 bg-orange-100 p-3 dark:border-orange-700 dark:bg-orange-900"
-								>
-									<p class="text-sm font-medium text-orange-900 dark:text-orange-100">
-										Payment Instructions:
-									</p>
-									<p class="mt-1 whitespace-pre-wrap text-sm text-orange-800 dark:text-orange-200">
-										{ticket.tier.manual_payment_instructions}
-									</p>
-								</div>
-							{/if}
-
-							<!-- Action Buttons for Online Payments -->
-							{#if canResumePayment && ticket.payment?.id}
-								{@const paymentId = ticket.payment.id}
-								<div class="mt-3 flex flex-wrap gap-2">
-									{#if onResumePayment}
-										<button
-											onclick={() => onResumePayment(paymentId)}
-											disabled={isResumingPayment || isCancellingReservation}
-											class="inline-flex items-center gap-2 rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-orange-500 dark:hover:bg-orange-600"
-										>
-											{#if isResumingPayment}
-												<div
-													class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
-													aria-hidden="true"
-												></div>
-												Processing...
-											{:else}
-												Resume Payment
-											{/if}
-										</button>
-									{/if}
-									{#if onCancelReservation}
-										<button
-											onclick={() => onCancelReservation(paymentId)}
-											disabled={isResumingPayment || isCancellingReservation}
-											class="inline-flex items-center gap-2 rounded-md border border-orange-300 bg-transparent px-4 py-2 text-sm font-medium text-orange-700 shadow-sm hover:bg-orange-100 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-900/50"
-										>
-											{#if isCancellingReservation}
-												<div
-													class="h-4 w-4 animate-spin rounded-full border-2 border-orange-600 border-t-transparent dark:border-orange-400"
-													aria-hidden="true"
-												></div>
-												Cancelling...
-											{:else}
-												<X class="h-4 w-4" aria-hidden="true" />
-												Cancel Reservation
-											{/if}
-										</button>
-									{/if}
-								</div>
-							{/if}
-						</div>
-					</div>
-				</div>
-			{/if}
-
-			<!-- Event Details -->
-			{#if eventDate || eventLocation}
-				<dl class="space-y-2 text-sm">
-					{#if eventDate}
-						<div class="flex items-center gap-2">
-							<Calendar class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-							<dd>{eventDate}</dd>
-						</div>
-					{/if}
-					{#if eventLocation}
-						<div class="flex items-center gap-2">
-							<MapPin class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-							<dd>{eventLocation}</dd>
-						</div>
-					{/if}
-				</dl>
-			{/if}
-
-			<!-- QR Code -->
-			{#if ticket.status === 'pending' || ticket.status === 'active' || ticket.status === 'checked_in'}
-				<div
-					class="flex flex-col items-center gap-4 rounded-lg border border-border bg-muted/30 p-6"
-				>
-					{#if isGenerating}
-						<div class="flex h-64 w-64 items-center justify-center">
-							<div
-								class="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"
-								role="status"
-								aria-label="Generating QR code"
-							></div>
-						</div>
-					{:else if qrCodeDataUrl}
-						<img
-							src={qrCodeDataUrl}
-							alt="Ticket QR Code"
-							class="h-64 w-64 rounded-lg border border-border bg-white"
-						/>
-						<p class="text-center text-sm text-muted-foreground">{m['myTicketModal.showQr']()}</p>
-						<div class="flex w-full flex-col gap-2">
-							<button
-								type="button"
-								onclick={downloadQRCode}
-								class="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-							>
-								<Download class="h-4 w-4" aria-hidden="true" />
-								Download QR Code
-							</button>
-							{#if ticket.apple_pass_available && ticket.id}
-								<AddToWalletButton ticketId={ticket.id} {eventName} variant="secondary" />
-							{/if}
-						</div>
-					{:else}
-						<div class="text-center text-sm text-destructive">
-							Unable to generate QR code. Please refresh the page.
-						</div>
-					{/if}
-				</div>
-			{/if}
-
-			<!-- Checked In Info -->
-			{#if ticket.status === 'checked_in' && checkedInDate}
-				<div class="rounded-lg bg-blue-50 p-4 text-sm dark:bg-blue-950/50">
-					<p class="font-medium text-blue-900 dark:text-blue-100">
-						Checked in at {checkedInDate}
-					</p>
-				</div>
-			{/if}
-
-			<!-- Ticket ID -->
-			<div class="border-t border-border pt-4">
-				<p class="text-xs text-muted-foreground">{m['myTicketModal.ticketId']()} {ticket.id}</p>
-			</div>
-		</div>
 		{/if}
 	</DialogContent>
 </Dialog>

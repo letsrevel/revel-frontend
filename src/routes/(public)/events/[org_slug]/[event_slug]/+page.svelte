@@ -2,7 +2,13 @@
 	import type { PageData } from './$types';
 	import { page } from '$app/state';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
-	import { eventTicketCheckout, eventTicketPwycCheckout, eventGetMyEventStatus, eventResumeCheckout, eventCancelCheckout } from '$lib/api';
+	import {
+		eventTicketCheckout,
+		eventTicketPwycCheckout,
+		eventGetMyEventStatus,
+		eventResumeCheckout,
+		eventCancelCheckout
+	} from '$lib/api';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import EventHeader from '$lib/components/events/EventHeader.svelte';
 	import EventDetails from '$lib/components/events/EventDetails.svelte';
@@ -21,19 +27,19 @@
 	import { generateEventStructuredData, structuredDataToJsonLd } from '$lib/utils/structured-data';
 	import { generateEventMeta } from '$lib/utils/seo';
 	import {
-	isRSVP,
-	isTicket,
-	isUserStatusResponse,
-	hasActiveTickets,
-	getActiveTickets,
-	type EventTicketSchemaActual
-} from '$lib/utils/eligibility';
-import type {
-	BatchCheckoutPayload,
-	BatchCheckoutPwycPayload,
-	BatchCheckoutResponse,
-	TicketPurchaseItem
-} from '$lib/api/generated/types.gen';
+		isRSVP,
+		isTicket,
+		isUserStatusResponse,
+		hasActiveTickets,
+		getActiveTickets,
+		type EventTicketSchemaActual
+	} from '$lib/utils/eligibility';
+	import type {
+		BatchCheckoutPayload,
+		BatchCheckoutPwycPayload,
+		BatchCheckoutResponse,
+		TicketPurchaseItem
+	} from '$lib/api/generated/types.gen';
 	import { getPotluckPermissions } from '$lib/utils/permissions';
 	import { formatEventLocation } from '$lib/utils/event';
 	import { onMount } from 'svelte';
@@ -229,7 +235,8 @@ import type {
 					m['eventPage.ticketReserved']?.({ count: ticketCount }) ??
 						`${ticketCount} ticket${ticketCount > 1 ? 's' : ''} reserved! Complete payment as instructed.`,
 					{
-						description: m['eventPage.ticketReservedDesc']?.() ?? 'View your ticket for payment details.',
+						description:
+							m['eventPage.ticketReservedDesc']?.() ?? 'View your ticket for payment details.',
 						duration: 5000
 					}
 				);
@@ -376,13 +383,13 @@ import type {
 		onError: async (error) => {
 			// If session expired (404), refresh user status - tickets may have been cleaned up
 			await refreshUserStatus();
-			toast.error(
-				m['eventPage.resumePaymentFailed']?.() ?? 'Could not resume payment',
-				{
-					description: error.message || (m['eventPage.resumePaymentFailedDesc']?.() ?? 'The checkout session may have expired. Please try purchasing again.'),
-					duration: 5000
-				}
-			);
+			toast.error(m['eventPage.resumePaymentFailed']?.() ?? 'Could not resume payment', {
+				description:
+					error.message ||
+					(m['eventPage.resumePaymentFailedDesc']?.() ??
+						'The checkout session may have expired. Please try purchasing again.'),
+				duration: 5000
+			});
 		}
 	}));
 
@@ -411,23 +418,22 @@ import type {
 			// Invalidate cache
 			queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
 
-			toast.success(
-				m['eventPage.reservationCancelled']?.() ?? 'Reservation cancelled',
-				{
-					description: m['eventPage.reservationCancelledDesc']?.() ?? 'Your ticket reservation has been cancelled.',
-					duration: 4000
-				}
-			);
+			toast.success(m['eventPage.reservationCancelled']?.() ?? 'Reservation cancelled', {
+				description:
+					m['eventPage.reservationCancelledDesc']?.() ??
+					'Your ticket reservation has been cancelled.',
+				duration: 4000
+			});
 		},
 		onError: async (error) => {
 			await refreshUserStatus();
-			toast.error(
-				m['eventPage.cancelReservationFailed']?.() ?? 'Could not cancel reservation',
-				{
-					description: error.message || (m['eventPage.cancelReservationFailedDesc']?.() ?? 'Please try again or contact support.'),
-					duration: 5000
-				}
-			);
+			toast.error(m['eventPage.cancelReservationFailed']?.() ?? 'Could not cancel reservation', {
+				description:
+					error.message ||
+					(m['eventPage.cancelReservationFailedDesc']?.() ??
+						'Please try again or contact support.'),
+				duration: 5000
+			});
 		}
 	}));
 
@@ -440,7 +446,7 @@ import type {
 	 * The sidebar doesn't know which ticket to resume, so we find it for them
 	 */
 	function handleResumePaymentFromSidebar() {
-		const pendingTicket = userTickets.find(t => t.status === 'pending' && t.payment?.id);
+		const pendingTicket = userTickets.find((t) => t.status === 'pending' && t.payment?.id);
 		if (pendingTicket?.payment?.id) {
 			handleResumePayment(pendingTicket.payment.id);
 		}

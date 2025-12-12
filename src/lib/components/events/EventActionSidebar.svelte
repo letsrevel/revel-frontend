@@ -6,7 +6,11 @@
 		EventTokenSchema,
 		EventUserEligibility
 	} from '$lib/api/generated/types.gen';
-	import type { UserEventStatus, UserEventStatusResponse, EventTicketSchemaActual } from '$lib/utils/eligibility';
+	import type {
+		UserEventStatus,
+		UserEventStatusResponse,
+		EventTicketSchemaActual
+	} from '$lib/utils/eligibility';
 	import {
 		isRSVP,
 		isTicket,
@@ -465,7 +469,12 @@
 
 			<!-- Show EventRSVP when managing -->
 			{#if showManageRSVP}
-				{@const hasRsvp = userStatus && isUserStatusResponse(userStatus) ? userStatus.rsvp : userStatus && isRSVP(userStatus) ? userStatus : null}
+				{@const hasRsvp =
+					userStatus && isUserStatusResponse(userStatus)
+						? userStatus.rsvp
+						: userStatus && isRSVP(userStatus)
+							? userStatus
+							: null}
 				{#if hasRsvp || (userStatus && !isUserStatusResponse(userStatus))}
 					<EventRSVP
 						eventId={event.id}

@@ -210,7 +210,9 @@
 	}));
 
 	// Sector is required when seat assignment is random or user_choice
-	let sectorRequired = $derived(seatAssignmentMode === 'random' || seatAssignmentMode === 'user_choice');
+	let sectorRequired = $derived(
+		seatAssignmentMode === 'random' || seatAssignmentMode === 'user_choice'
+	);
 	// When sector is required, both venue and sector must be selected
 	let sectorValid = $derived(!sectorRequired || (!!venueId && !!sectorId));
 
@@ -720,26 +722,34 @@
 								{m['tierForm.seatingConfig.venue']?.() ?? 'Venue'}
 							</Label>
 							{#if venuesQuery.isLoading}
-								<div class="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
+								<div
+									class="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm text-muted-foreground"
+								>
 									{m['tierForm.seatingConfig.loadingVenues']?.() ?? 'Loading venue...'}
 								</div>
 							{:else}
-								{@const selectedVenue = venuesQuery.data?.find(v => v.id === venueId)}
-								<div class="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm">
+								{@const selectedVenue = venuesQuery.data?.find((v) => v.id === venueId)}
+								<div
+									class="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm"
+								>
 									{#if selectedVenue}
 										<span class="font-medium">{selectedVenue.name}</span>
 										{#if selectedVenue.capacity}
-											<span class="ml-2 text-muted-foreground">({selectedVenue.capacity} capacity)</span>
+											<span class="ml-2 text-muted-foreground"
+												>({selectedVenue.capacity} capacity)</span
+											>
 										{/if}
 									{:else}
 										<span class="text-muted-foreground">
-											{m['tierForm.seatingConfig.noVenueSelected']?.() ?? 'No venue configured for event'}
+											{m['tierForm.seatingConfig.noVenueSelected']?.() ??
+												'No venue configured for event'}
 										</span>
 									{/if}
 								</div>
 							{/if}
 							<p class="mt-1 text-xs text-muted-foreground">
-								{m['tierForm.seatingConfig.venueFromEvent']?.() ?? 'Venue is set at the event level in Basic Info.'}
+								{m['tierForm.seatingConfig.venueFromEvent']?.() ??
+									'Venue is set at the event level in Basic Info.'}
 							</p>
 						</div>
 
@@ -760,12 +770,17 @@
 									bind:value={sectorId}
 									disabled={isPending}
 									required={sectorRequired}
-									class="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 {sectorRequired && !sectorId ? 'border-destructive' : 'border-input'}"
+									class="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 {sectorRequired &&
+									!sectorId
+										? 'border-destructive'
+										: 'border-input'}"
 								>
 									<option value={null}>
 										{sectorRequired
-											? (m['tierForm.seatingConfig.selectSectorRequired']?.() ?? 'Select a sector (required)')
-											: (m['tierForm.seatingConfig.selectSector']?.() ?? 'Select a sector (optional)')}
+											? (m['tierForm.seatingConfig.selectSectorRequired']?.() ??
+												'Select a sector (required)')
+											: (m['tierForm.seatingConfig.selectSector']?.() ??
+												'Select a sector (optional)')}
 									</option>
 									{#each selectedVenueSectors as sector (sector.id)}
 										<option value={sector.id}>
@@ -775,7 +790,11 @@
 										</option>
 									{/each}
 								</select>
-								<p class="mt-1 text-xs {sectorRequired && !sectorId ? 'text-destructive' : 'text-muted-foreground'}">
+								<p
+									class="mt-1 text-xs {sectorRequired && !sectorId
+										? 'text-destructive'
+										: 'text-muted-foreground'}"
+								>
 									{#if sectorRequired}
 										{m['tierForm.seatingConfig.sectorRequiredHelp']?.() ??
 											'A sector is required for seat assignment modes other than General Admission'}

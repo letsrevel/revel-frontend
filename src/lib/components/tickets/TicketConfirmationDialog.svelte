@@ -13,9 +13,31 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { Checkbox } from '$lib/components/ui/checkbox';
-	import { Ticket, DollarSign, AlertCircle, CreditCard, Wallet, Info, Plus, Minus, User, MapPin, Shuffle, DoorOpen, Armchair, Loader2, Accessibility, EyeOff } from 'lucide-svelte';
+	import {
+		Ticket,
+		DollarSign,
+		AlertCircle,
+		CreditCard,
+		Wallet,
+		Info,
+		Plus,
+		Minus,
+		User,
+		MapPin,
+		Shuffle,
+		DoorOpen,
+		Armchair,
+		Loader2,
+		Accessibility,
+		EyeOff
+	} from 'lucide-svelte';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
-	import type { TicketPurchaseItem, SeatAssignmentMode, VenueSeatSchema, SectorAvailabilitySchema } from '$lib/api/generated/types.gen';
+	import type {
+		TicketPurchaseItem,
+		SeatAssignmentMode,
+		VenueSeatSchema,
+		SectorAvailabilitySchema
+	} from '$lib/api/generated/types.gen';
 	import { eventGetTierSeatAvailability } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import SeatSelector from './SeatSelector.svelte';
@@ -78,7 +100,9 @@
 	);
 
 	// Seat assignment mode
-	let seatAssignmentMode = $derived<SeatAssignmentMode>((tier as any).seat_assignment_mode ?? 'none');
+	let seatAssignmentMode = $derived<SeatAssignmentMode>(
+		(tier as any).seat_assignment_mode ?? 'none'
+	);
 	let hasSeatedTier = $derived(seatAssignmentMode !== 'none');
 	let isUserChoiceSeat = $derived(seatAssignmentMode === 'user_choice');
 	let isRandomSeat = $derived(seatAssignmentMode === 'random');
@@ -95,13 +119,11 @@
 
 	// Computed: available seats from the sector
 	let availableSeats = $derived<VenueSeatSchema[]>(
-		seatAvailability?.seats?.filter(s => s.available && s.id) ?? []
+		seatAvailability?.seats?.filter((s) => s.available && s.id) ?? []
 	);
 
 	// Computed: whether seat selection is valid (enough seats selected for quantity)
-	let seatSelectionValid = $derived(
-		!isUserChoiceSeat || selectedSeatIds.length === quantity
-	);
+	let seatSelectionValid = $derived(!isUserChoiceSeat || selectedSeatIds.length === quantity);
 
 	// Fetch seat availability when dialog opens with user_choice mode
 	async function fetchSeatAvailability() {
@@ -138,7 +160,7 @@
 		const index = selectedSeatIds.indexOf(seatId);
 		if (index >= 0) {
 			// Deselect
-			selectedSeatIds = selectedSeatIds.filter(id => id !== seatId);
+			selectedSeatIds = selectedSeatIds.filter((id) => id !== seatId);
 		} else if (selectedSeatIds.length < quantity) {
 			// Select (if not at max)
 			selectedSeatIds = [...selectedSeatIds, seatId];
@@ -229,9 +251,7 @@
 	let showGuestNames = $derived(effectiveMaxQuantity > 1);
 
 	// Check if all guest names are filled (at least the first character)
-	let allGuestNamesFilled = $derived(
-		guestNames.every(name => name.trim().length > 0)
-	);
+	let allGuestNamesFilled = $derived(guestNames.every((name) => name.trim().length > 0));
 
 	// Check if form is valid for submission
 	let canSubmit = $derived.by(() => {
@@ -346,11 +366,12 @@
 		if (!showGuestNames) return true;
 
 		// Check if any guest name is empty
-		const emptyIndex = guestNames.findIndex(name => !name.trim());
+		const emptyIndex = guestNames.findIndex((name) => !name.trim());
 		if (emptyIndex >= 0) {
-			guestNameError = emptyIndex === 0
-				? 'Please enter your name'
-				: `Please enter a name for ticket holder ${emptyIndex + 1}`;
+			guestNameError =
+				emptyIndex === 0
+					? 'Please enter your name'
+					: `Please enter a name for ticket holder ${emptyIndex + 1}`;
 			return false;
 		}
 
@@ -372,8 +393,9 @@
 		// For user_choice seats, validate seat selection
 		if (isUserChoiceSeat && selectedSeatIds.length !== quantity) {
 			const remaining = quantity - selectedSeatIds.length;
-			seatSelectionError = m['ticketConfirmationDialog.selectMoreSeats']?.({ count: remaining })
-				?? `Please select ${remaining} more seat${remaining > 1 ? 's' : ''}`;
+			seatSelectionError =
+				m['ticketConfirmationDialog.selectMoreSeats']?.({ count: remaining }) ??
+				`Please select ${remaining} more seat${remaining > 1 ? 's' : ''}`;
 			return;
 		}
 		seatSelectionError = '';
@@ -382,7 +404,7 @@
 		const tickets: TicketPurchaseItem[] = guestNames.map((name, index) => {
 			const ticket: TicketPurchaseItem = {
 				// Use userName when not showing guest names (single ticket purchase with max=1)
-				guest_name: showGuestNames ? (name.trim() || '') : (userName || '')
+				guest_name: showGuestNames ? name.trim() || '' : userName || ''
 			};
 
 			// Add seat_id for user_choice mode
@@ -423,7 +445,9 @@
 							errorMessage = data.detail;
 						} else if (Array.isArray(data.detail)) {
 							// Pydantic validation errors
-							errorMessage = data.detail.map((d: { msg?: string }) => d.msg || String(d)).join(', ');
+							errorMessage = data.detail
+								.map((d: { msg?: string }) => d.msg || String(d))
+								.join(', ');
 						}
 					}
 				}
@@ -434,7 +458,10 @@
 				}
 
 				// Check for error.message
-				if (typeof errorObj.message === 'string' && !errorMessage.includes('Something went wrong')) {
+				if (
+					typeof errorObj.message === 'string' &&
+					!errorMessage.includes('Something went wrong')
+				) {
 					errorMessage = errorObj.message;
 				}
 			}
@@ -514,7 +541,8 @@
 							{m['ticketConfirmationDialog.selectSeats']?.() ?? 'Select Your Seats'}
 						</Label>
 						<span class="text-sm text-muted-foreground">
-							{selectedSeatIds.length} / {quantity} {m['ticketConfirmationDialog.seatsSelected']?.() ?? 'selected'}
+							{selectedSeatIds.length} / {quantity}
+							{m['ticketConfirmationDialog.seatsSelected']?.() ?? 'selected'}
 						</span>
 					</div>
 
@@ -545,7 +573,8 @@
 						<Alert>
 							<AlertCircle class="h-4 w-4" />
 							<AlertDescription>
-								{m['ticketConfirmationDialog.noSeatsAvailable']?.() ?? 'No seats available for selection.'}
+								{m['ticketConfirmationDialog.noSeatsAvailable']?.() ??
+									'No seats available for selection.'}
 							</AlertDescription>
 						</Alert>
 					{:else}
@@ -571,13 +600,18 @@
 				<div class="rounded-lg border border-border bg-muted/30 p-4">
 					<div class="flex items-start gap-3">
 						{#if isRandomSeat}
-							<Shuffle class="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-500" aria-hidden="true" />
+							<Shuffle
+								class="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-500"
+								aria-hidden="true"
+							/>
 							<div class="space-y-1">
 								<p class="font-medium text-foreground">
-									{m['ticketConfirmationDialog.randomSeatAssignment']?.() ?? 'Random Seat Assignment'}
+									{m['ticketConfirmationDialog.randomSeatAssignment']?.() ??
+										'Random Seat Assignment'}
 								</p>
 								<p class="text-sm text-muted-foreground">
-									{m['ticketConfirmationDialog.randomSeatAssignmentDesc']?.() ?? 'Seats will be randomly assigned to you from the available seats in the designated sector.'}
+									{m['ticketConfirmationDialog.randomSeatAssignmentDesc']?.() ??
+										'Seats will be randomly assigned to you from the available seats in the designated sector.'}
 								</p>
 								{#if tierVenue || tierSector}
 									<p class="mt-2 text-sm">
@@ -605,7 +639,8 @@
 								{m['ticketConfirmationDialog.generalEntrance']?.() ?? 'General Entrance'}
 							</p>
 							<p class="text-sm text-muted-foreground">
-								{m['ticketConfirmationDialog.generalEntranceDesc']?.() ?? 'This ticket grants general admission without assigned seating.'}
+								{m['ticketConfirmationDialog.generalEntranceDesc']?.() ??
+									'This ticket grants general admission without assigned seating.'}
 							</p>
 							<p class="mt-2 text-sm font-medium">{tierVenue.name}</p>
 						</div>
@@ -657,12 +692,16 @@
 						<span class="text-sm text-destructive">*</span>
 					</div>
 					<p class="text-sm text-muted-foreground">
-						{quantity === 1 ? 'Please enter your name for the ticket' : 'Please enter a name for each ticket holder'}
+						{quantity === 1
+							? 'Please enter your name for the ticket'
+							: 'Please enter a name for each ticket holder'}
 					</p>
 					<div class="space-y-2">
 						{#each guestNames as name, index (index)}
 							<div class="flex items-center gap-2">
-								<span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary">
+								<span
+									class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary"
+								>
 									{index + 1}
 								</span>
 								<Input
@@ -802,13 +841,19 @@
 				<p class="text-center text-sm text-amber-600 dark:text-amber-500">
 					{#if showGuestNames && !allGuestNamesFilled}
 						<AlertCircle class="mr-1 inline-block h-4 w-4" />
-						{quantity === 1 ? 'Please enter your name above' : 'Please enter names for all ticket holders above'}
+						{quantity === 1
+							? 'Please enter your name above'
+							: 'Please enter names for all ticket holders above'}
 					{:else if isPwyc && !pwycAmount.trim()}
 						<AlertCircle class="mr-1 inline-block h-4 w-4" />
 						Please enter a payment amount
 					{:else if isUserChoiceSeat && selectedSeatIds.length !== quantity}
 						<AlertCircle class="mr-1 inline-block h-4 w-4" />
-						Please select {quantity - selectedSeatIds.length} more seat{quantity - selectedSeatIds.length > 1 ? 's' : ''}
+						Please select {quantity - selectedSeatIds.length} more seat{quantity -
+							selectedSeatIds.length >
+						1
+							? 's'
+							: ''}
 					{/if}
 				</p>
 			{/if}

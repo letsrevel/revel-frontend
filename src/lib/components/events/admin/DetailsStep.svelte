@@ -348,7 +348,8 @@
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						>
 							<option value="public">{m['detailsStep.addressVisibilityPublic']()}</option>
-							<option value="members-only">{m['detailsStep.addressVisibilityMembersOnly']()}</option>
+							<option value="members-only">{m['detailsStep.addressVisibilityMembersOnly']()}</option
+							>
 							<option value="attendees-only"
 								>{m['detailsStep.addressVisibilityAttendeesOnly']()}</option
 							>

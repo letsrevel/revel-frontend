@@ -122,7 +122,13 @@
 
 	// Check if ticket has any seat info to display
 	let hasSeatInfo = $derived(
-		!!(ticket.tier?.venue?.name || ticket.tier?.sector?.name || ticket.seat?.label || ticket.seat?.row || (ticket.seat?.number !== null && ticket.seat?.number !== undefined))
+		!!(
+			ticket.tier?.venue?.name ||
+			ticket.tier?.sector?.name ||
+			ticket.seat?.label ||
+			ticket.seat?.row ||
+			(ticket.seat?.number !== null && ticket.seat?.number !== undefined)
+		)
 	);
 </script>
 

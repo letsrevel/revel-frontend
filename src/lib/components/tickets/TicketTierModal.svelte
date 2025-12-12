@@ -24,7 +24,12 @@
 		userName?: string;
 		onClose: () => void;
 		onClaimTicket: (tierId: string, tickets?: TicketPurchaseItem[]) => void;
-		onCheckout?: (tierId: string, isPwyc: boolean, amount?: number, tickets?: TicketPurchaseItem[]) => void;
+		onCheckout?: (
+			tierId: string,
+			isPwyc: boolean,
+			amount?: number,
+			tickets?: TicketPurchaseItem[]
+		) => void;
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
 
@@ -117,7 +122,10 @@
 	}
 
 	// Handle confirmed action from dialog
-	async function handleConfirm(payload: { amount?: number; tickets: TicketPurchaseItem[] }): Promise<void> {
+	async function handleConfirm(payload: {
+		amount?: number;
+		tickets: TicketPurchaseItem[];
+	}): Promise<void> {
 		if (!selectedTier || isProcessing) return;
 
 		isProcessing = true;

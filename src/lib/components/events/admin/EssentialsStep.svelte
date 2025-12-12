@@ -438,11 +438,7 @@
 
 	<!-- Venue Selection (optional) -->
 	{#if organizationSlug}
-		<VenueSelector
-			{organizationSlug}
-			selectedVenue={selectedVenue}
-			onSelect={handleVenueSelect}
-		/>
+		<VenueSelector {organizationSlug} {selectedVenue} onSelect={handleVenueSelect} />
 	{/if}
 
 	<!-- City -->

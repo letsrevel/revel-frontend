@@ -5,7 +5,7 @@
 		VenueSeatInputSchema,
 		VenueSeatBulkUpdateItemSchema
 	} from '$lib/api/generated/types.gen';
-	import { Plus } from 'lucide-svelte';
+	import { Plus, Accessibility, EyeOff } from 'lucide-svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 
 	// Aisle metadata structure stored in sector
@@ -49,8 +49,13 @@
 	let hoveredRowAisle = $state<number | null>(null);
 	let hoveredColAisle = $state<number | null>(null);
 
-	// Seat state: Map of "row-col" -> true if seat exists
-	let seats = $state(new SvelteMap<string, boolean>());
+	// Seat state: Map of "row-col" -> seat metadata
+	interface SeatData {
+		exists: boolean;
+		is_accessible: boolean;
+		is_obstructed_view: boolean;
+	}
+	let seats = $state(new SvelteMap<string, SeatData>());
 
 	// Selection state
 	let selectedCells = $state(new SvelteSet<string>());
@@ -157,7 +162,12 @@
 				maxRow = Math.max(maxRow, rowIndex);
 				maxCol = Math.max(maxCol, colNum);
 
-				seats.set(getCellKey(rowIndex, colNum), true);
+				// Store seat with its accessibility flags from backend
+				seats.set(getCellKey(rowIndex, colNum), {
+					exists: true,
+					is_accessible: seat.is_accessible ?? false,
+					is_obstructed_view: seat.is_obstructed_view ?? false
+				});
 			}
 		}
 
@@ -184,7 +194,11 @@
 		seats.clear();
 		for (let r = 0; r < rows; r++) {
 			for (let c = 0; c < columns; c++) {
-				seats.set(getCellKey(r, c), true);
+				seats.set(getCellKey(r, c), {
+					exists: true,
+					is_accessible: false,
+					is_obstructed_view: false
+				});
 			}
 		}
 		selectedCells.clear();
@@ -193,48 +207,83 @@
 		initialized = true;
 	}
 
-	// Toggle single seat
+	// Toggle single seat (adds if not exists, removes if exists)
 	function toggleSeat(row: number, col: number) {
 		const key = getCellKey(row, col);
-		if (seats.has(key)) {
+		const seat = seats.get(key);
+		if (seat?.exists) {
 			seats.delete(key);
 		} else {
-			seats.set(key, true);
+			seats.set(key, { exists: true, is_accessible: false, is_obstructed_view: false });
+		}
+	}
+
+	// Toggle single seat selection (for clicking on existing seats)
+	function selectSeat(row: number, col: number) {
+		const key = getCellKey(row, col);
+		if (selectedCells.has(key)) {
+			selectedCells.delete(key);
+		} else {
+			selectedCells.add(key);
 		}
 	}
 
 	// Handle cell click
 	function handleCellClick(row: number, col: number, event: MouseEvent) {
-		// If we were selecting, don't toggle
+		// If we were dragging, the drag handler already processed this
 		if (isSelecting) return;
 
-		// Clear selection on click
-		selectedCells.clear();
+		const key = getCellKey(row, col);
+		const seat = seats.get(key);
 
-		// Toggle the seat
-		toggleSeat(row, col);
+		if (seat?.exists) {
+			// Clicking on existing seat: add to selection
+			selectSeat(row, col);
+		} else {
+			// Clicking on empty cell: add a seat (don't clear selection)
+			seats.set(key, { exists: true, is_accessible: false, is_obstructed_view: false });
+		}
 	}
 
-	// Handle mouse down - start selection
+	// Handle mouse down - start potential drag selection
 	function handleMouseDown(row: number, col: number, event: MouseEvent) {
 		if (event.button !== 0) return;
 
-		isSelecting = true;
+		// Store start position for potential drag
 		selectionStart = { row, col };
 		selectionEnd = { row, col };
-		selectedCells.clear();
+		// Don't set isSelecting yet - only set it if mouse moves to different cell
+		// Don't clear selection - let clicks accumulate
 	}
 
-	// Handle mouse move - update selection
+	// Handle mouse move - update selection (only start drag if moved to different cell)
 	function handleMouseMove(row: number, col: number) {
-		if (!isSelecting || !selectionStart) return;
-		selectionEnd = { row, col };
+		if (!selectionStart) return;
+
+		// Only start drag selection if mouse moved to a different cell
+		if (!isSelecting && (row !== selectionStart.row || col !== selectionStart.col)) {
+			isSelecting = true;
+		}
+
+		if (isSelecting) {
+			selectionEnd = { row, col };
+		}
 	}
 
-	// Handle mouse up - finalize selection
+	// Handle mouse up - finalize drag selection (if any)
 	function handleMouseUp() {
-		if (!isSelecting || !selectionStart || !selectionEnd) {
+		// If we weren't dragging, just reset and let click handler work
+		if (!isSelecting) {
+			selectionStart = null;
+			selectionEnd = null;
+			return;
+		}
+
+		// We were dragging - finalize the selection
+		if (!selectionStart || !selectionEnd) {
 			isSelecting = false;
+			selectionStart = null;
+			selectionEnd = null;
 			return;
 		}
 
@@ -244,35 +293,29 @@
 		const minCol = Math.min(selectionStart.col, selectionEnd.col);
 		const maxCol = Math.max(selectionStart.col, selectionEnd.col);
 
-		// If it's just a single cell click, don't select
-		if (minRow === maxRow && minCol === maxCol) {
-			isSelecting = false;
-			selectionStart = null;
-			selectionEnd = null;
-			return;
-		}
-
 		// Check if both start and end cells are empty
 		const startKey = getCellKey(selectionStart.row, selectionStart.col);
 		const endKey = getCellKey(selectionEnd.row, selectionEnd.col);
-		const startEmpty = !seats.has(startKey);
-		const endEmpty = !seats.has(endKey);
+		const startEmpty = !seats.get(startKey)?.exists;
+		const endEmpty = !seats.get(endKey)?.exists;
 
 		if (startEmpty && endEmpty) {
 			// Fill the selection rectangle with seats
 			for (let r = minRow; r <= maxRow; r++) {
 				for (let c = minCol; c <= maxCol; c++) {
-					seats.set(getCellKey(r, c), true);
+					seats.set(getCellKey(r, c), {
+						exists: true,
+						is_accessible: false,
+						is_obstructed_view: false
+					});
 				}
 			}
-			selectedCells.clear();
 		} else {
-			// Select all cells in rectangle that have seats
-			selectedCells.clear();
+			// Select all cells in rectangle that have seats (add to existing selection)
 			for (let r = minRow; r <= maxRow; r++) {
 				for (let c = minCol; c <= maxCol; c++) {
 					const key = getCellKey(r, c);
-					if (seats.has(key)) {
+					if (seats.get(key)?.exists) {
 						selectedCells.add(key);
 					}
 				}
@@ -315,7 +358,31 @@
 
 		for (let r = minRow; r <= maxRow; r++) {
 			for (let c = minCol; c <= maxCol; c++) {
-				seats.set(getCellKey(r, c), true);
+				seats.set(getCellKey(r, c), {
+					exists: true,
+					is_accessible: false,
+					is_obstructed_view: false
+				});
+			}
+		}
+	}
+
+	// Mark selected seats as accessible
+	function markSelectedAccessible() {
+		for (const key of selectedCells) {
+			const seat = seats.get(key);
+			if (seat) {
+				seats.set(key, { ...seat, is_accessible: !seat.is_accessible });
+			}
+		}
+	}
+
+	// Mark selected seats as obstructed view
+	function markSelectedObstructed() {
+		for (const key of selectedCells) {
+			const seat = seats.get(key);
+			if (seat) {
+				seats.set(key, { ...seat, is_obstructed_view: !seat.is_obstructed_view });
 			}
 		}
 	}
@@ -367,7 +434,9 @@
 	function getAllSeatsForApi(): VenueSeatInputSchema[] {
 		const result: VenueSeatInputSchema[] = [];
 
-		for (const [key] of seats) {
+		for (const [key, seatData] of seats) {
+			if (!seatData.exists) continue;
+
 			const [row, col] = key.split('-').map(Number);
 			const label = getSeatLabel(row, col);
 
@@ -379,8 +448,8 @@
 					x: getXPosition(col),
 					y: getYPosition(row)
 				},
-				is_accessible: false,
-				is_obstructed_view: false,
+				is_accessible: seatData.is_accessible,
+				is_obstructed_view: seatData.is_obstructed_view,
 				is_active: true
 			});
 		}
@@ -445,13 +514,14 @@
 	}
 
 	// Count stats
-	const totalSeats = $derived(seats.size);
+	const totalSeats = $derived([...seats.values()].filter((s) => s.exists).length);
 	const selectedCount = $derived(selectedCells.size);
 
 	// Get cell class
 	function getCellClass(row: number, col: number): string {
 		const key = getCellKey(row, col);
-		const hasSeat = seats.has(key);
+		const seatData = seats.get(key);
+		const hasSeat = seatData?.exists ?? false;
 		const isSelected = selectedCells.has(key);
 		const inRect = isInSelectionRect(row, col);
 
@@ -570,24 +640,42 @@
 
 	<!-- Selection Actions -->
 	{#if selectedCount > 0}
-		<div class="flex items-center gap-4 rounded-lg border bg-card p-3">
+		<div class="flex flex-wrap items-center gap-3 rounded-lg border bg-card p-3">
 			<span class="text-sm font-medium">
 				{selectedCount} seat{selectedCount !== 1 ? 's' : ''} selected
 			</span>
-			<button
-				type="button"
-				onclick={deleteSelected}
-				class="rounded-md bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground hover:bg-destructive/90"
-			>
-				Delete Selected
-			</button>
-			<button
-				type="button"
-				onclick={clearSelection}
-				class="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-accent"
-			>
-				Clear Selection
-			</button>
+			<div class="flex flex-wrap gap-2">
+				<button
+					type="button"
+					onclick={markSelectedAccessible}
+					class="inline-flex items-center gap-1.5 rounded-md border border-blue-300 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-300 dark:hover:bg-blue-900"
+				>
+					<Accessibility class="h-4 w-4" />
+					Toggle Accessible
+				</button>
+				<button
+					type="button"
+					onclick={markSelectedObstructed}
+					class="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-700 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-300 dark:hover:bg-amber-900"
+				>
+					<EyeOff class="h-4 w-4" />
+					Toggle Obstructed
+				</button>
+				<button
+					type="button"
+					onclick={deleteSelected}
+					class="rounded-md bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground hover:bg-destructive/90"
+				>
+					Delete Selected
+				</button>
+				<button
+					type="button"
+					onclick={clearSelection}
+					class="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-accent"
+				>
+					Clear Selection
+				</button>
+			</div>
 		</div>
 	{/if}
 
@@ -733,16 +821,33 @@
 						{:else if c > 0}
 							<div class="w-2"></div>
 						{/if}
+						{@const cellKey = getCellKey(logicalRow, c)}
+						{@const seatData = seats.get(cellKey)}
 						<button
 							type="button"
-							class={getCellClass(logicalRow, c)}
+							class="{getCellClass(logicalRow, c)} relative"
 							onmousedown={(e) => handleMouseDown(logicalRow, c, e)}
 							onmouseenter={() => handleMouseMove(logicalRow, c)}
 							onclick={(e) => handleCellClick(logicalRow, c, e)}
-							aria-label="Seat {getSeatLabel(logicalRow, c)}"
+							aria-label="Seat {getSeatLabel(logicalRow, c)}{seatData?.is_accessible
+								? ', accessible'
+								: ''}{seatData?.is_obstructed_view ? ', obstructed view' : ''}"
 						>
-							{#if seats.has(getCellKey(logicalRow, c))}
+							{#if seatData?.exists}
 								<span class="text-[10px]">{getSeatLabel(logicalRow, c)}</span>
+								<!-- Indicator icons -->
+								{#if seatData.is_accessible || seatData.is_obstructed_view}
+									<div
+										class="absolute -bottom-1 -right-1 flex gap-0.5 rounded bg-white/90 p-0.5 shadow-sm dark:bg-gray-900/90"
+									>
+										{#if seatData.is_accessible}
+											<Accessibility class="h-3 w-3 text-blue-600" />
+										{/if}
+										{#if seatData.is_obstructed_view}
+											<EyeOff class="h-3 w-3 text-amber-600" />
+										{/if}
+									</div>
+								{/if}
 							{/if}
 						</button>
 					{/each}
@@ -769,6 +874,14 @@
 			<div class="flex items-center gap-2">
 				<div class="h-6 w-6 rounded bg-amber-500/30 dark:bg-amber-400/20"></div>
 				<span>Aisle</span>
+			</div>
+			<div class="flex items-center gap-2">
+				<Accessibility class="h-4 w-4 text-blue-500" />
+				<span>Accessible</span>
+			</div>
+			<div class="flex items-center gap-2">
+				<EyeOff class="h-4 w-4 text-amber-500" />
+				<span>Obstructed</span>
 			</div>
 		</div>
 

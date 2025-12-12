@@ -105,9 +105,11 @@
 
 	<!-- Event-level Ticket Settings -->
 	<div class="rounded-lg border border-border bg-card p-4">
-		<div class="flex items-center gap-2 mb-4">
+		<div class="mb-4 flex items-center gap-2">
 			<Ticket class="h-5 w-5 text-primary" aria-hidden="true" />
-			<h3 class="font-semibold">{m['ticketingStep.eventTicketSettings']?.() ?? 'Event Ticket Settings'}</h3>
+			<h3 class="font-semibold">
+				{m['ticketingStep.eventTicketSettings']?.() ?? 'Event Ticket Settings'}
+			</h3>
 		</div>
 
 		<div class="space-y-4">
@@ -124,10 +126,11 @@
 					oninput={(e) => handleMaxTicketsChange(e.currentTarget.value)}
 					class="max-w-xs"
 				/>
-				<div class="flex items-start gap-2 mt-2 text-sm text-muted-foreground">
-					<Info class="h-4 w-4 shrink-0 mt-0.5" />
+				<div class="mt-2 flex items-start gap-2 text-sm text-muted-foreground">
+					<Info class="mt-0.5 h-4 w-4 shrink-0" />
 					<p>
-						{m['ticketingStep.maxTicketsPerUserHint']?.() ?? 'Set the default maximum number of tickets a single user can purchase for this event. Leave empty for unlimited. This can be overridden on individual ticket tiers.'}
+						{m['ticketingStep.maxTicketsPerUserHint']?.() ??
+							'Set the default maximum number of tickets a single user can purchase for this event. Leave empty for unlimited. This can be overridden on individual ticket tiers.'}
 					</p>
 				</div>
 			</div>

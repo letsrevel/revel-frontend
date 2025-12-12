@@ -75,12 +75,18 @@
 								disabled={!seat.available || (!selected && !canClick)}
 								class="relative flex h-9 w-9 flex-col items-center justify-center rounded-md border text-[10px] transition-all
 									{selected
-										? 'border-primary bg-primary text-primary-foreground shadow-sm'
-										: seat.available && canClick
-											? 'border-border bg-background hover:border-primary/50 hover:bg-primary/5'
-											: 'cursor-not-allowed border-border/30 bg-muted/30 text-muted-foreground/50'}"
+									? 'border-primary bg-primary text-primary-foreground shadow-sm'
+									: seat.available && canClick
+										? 'border-border bg-background hover:border-primary/50 hover:bg-primary/5'
+										: 'cursor-not-allowed border-border/30 bg-muted/30 text-muted-foreground/50'}"
 								aria-pressed={selected}
-								aria-label="{m['seatSelector.seat']?.() ?? 'Seat'} {seat.label}{seat.is_accessible ? ', ' + (m['seatSelector.accessible']?.() ?? 'accessible') : ''}{seat.is_obstructed_view ? ', ' + (m['seatSelector.obstructedView']?.() ?? 'obstructed view') : ''}{!seat.available ? ', ' + (m['seatSelector.unavailable']?.() ?? 'unavailable') : ''}"
+								aria-label="{m['seatSelector.seat']?.() ?? 'Seat'} {seat.label}{seat.is_accessible
+									? ', ' + (m['seatSelector.accessible']?.() ?? 'accessible')
+									: ''}{seat.is_obstructed_view
+									? ', ' + (m['seatSelector.obstructedView']?.() ?? 'obstructed view')
+									: ''}{!seat.available
+									? ', ' + (m['seatSelector.unavailable']?.() ?? 'unavailable')
+									: ''}"
 							>
 								{#if selected}
 									<Check class="h-4 w-4" />

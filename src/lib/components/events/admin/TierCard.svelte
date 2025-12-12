@@ -122,7 +122,9 @@
 	});
 
 	// Check if this tier has venue/seating configuration
-	let hasSeatingConfig = $derived(tier.seat_assignment_mode !== 'none' || tier.venue || tier.sector);
+	let hasSeatingConfig = $derived(
+		tier.seat_assignment_mode !== 'none' || tier.venue || tier.sector
+	);
 </script>
 
 <Card class="p-4">
@@ -199,7 +201,9 @@
 
 				<!-- Max Tickets Per User -->
 				<div>
-					<dt class="text-muted-foreground">{m['tierCard.maxTicketsPerUser']?.() ?? 'Max per user'}</dt>
+					<dt class="text-muted-foreground">
+						{m['tierCard.maxTicketsPerUser']?.() ?? 'Max per user'}
+					</dt>
 					<dd class="font-medium">{maxTicketsDisplay()}</dd>
 				</div>
 

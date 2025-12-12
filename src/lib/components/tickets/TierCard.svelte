@@ -18,7 +18,12 @@
 		membershipTier?: MembershipTierSchema | null;
 		canAttendWithoutLogin?: boolean;
 		onClaimTicket: (tierId: string, tickets?: TicketPurchaseItem[]) => void | Promise<void>;
-		onCheckout?: (tierId: string, isPwyc: boolean, amount?: number, tickets?: TicketPurchaseItem[]) => void | Promise<void>;
+		onCheckout?: (
+			tierId: string,
+			isPwyc: boolean,
+			amount?: number,
+			tickets?: TicketPurchaseItem[]
+		) => void | Promise<void>;
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
 
