@@ -127,6 +127,7 @@
 		address_visibility: (existingEvent as any)?.address_visibility || 'public',
 		rsvp_before: toDateTimeLocal(existingEvent?.rsvp_before) || null,
 		max_attendees: existingEvent?.max_attendees || undefined,
+		max_tickets_per_user: (existingEvent as any)?.max_tickets_per_user ?? 1,
 		waitlist_open: existingEvent?.waitlist_open || false,
 		invitation_message: existingEvent?.invitation_message || '',
 		check_in_starts_at: toDateTimeLocal((existingEvent as any)?.check_in_starts_at) || null,

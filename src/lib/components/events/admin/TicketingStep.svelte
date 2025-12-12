@@ -70,14 +70,16 @@
 	let tiers = $derived(tiersQuery.data?.data?.results ?? []);
 	let membershipTiers = $derived(membershipTiersQuery.data ?? []);
 
-	// Max tickets per user - stored as string for input, converted to number/null
-	let maxTicketsInput = $state(formData.max_tickets_per_user?.toString() ?? '');
+	// Max tickets per user - stored as string for input, converted to number (default: 1)
+	let maxTicketsInput = $state(formData.max_tickets_per_user?.toString() ?? '1');
 
 	function handleMaxTicketsChange(value: string) {
 		maxTicketsInput = value;
 		const trimmed = value.trim();
 		if (trimmed === '' || trimmed === '0') {
-			onUpdate({ max_tickets_per_user: null });
+			// Default to 1 if empty or 0
+			onUpdate({ max_tickets_per_user: 1 });
+			maxTicketsInput = '1';
 		} else {
 			const num = parseInt(trimmed, 10);
 			if (!isNaN(num) && num > 0) {

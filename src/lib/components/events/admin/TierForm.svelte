@@ -176,7 +176,7 @@
 	let maxTicketsPerUser = $state<string>(
 		tier?.max_tickets_per_user !== null && tier?.max_tickets_per_user !== undefined
 			? String(tier.max_tickets_per_user)
-			: ''
+			: '1'
 	);
 	// Pre-fill venue: use tier's venue if editing, else fall back to event's venue
 	// Venue is read-only - it always comes from the event
