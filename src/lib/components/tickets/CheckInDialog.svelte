@@ -16,14 +16,20 @@
 		price?: number | string;
 		currency?: string;
 		payment_method?: string;
+		venue?: {
+			name?: string;
+		} | null;
+		sector?: {
+			name?: string;
+		} | null;
 	}
 
 	interface TicketSeat {
-		row_label?: string;
-		seat_label?: string;
-		sector?: {
-			name?: string;
-		};
+		label?: string;
+		row?: string | null;
+		number?: number | null;
+		is_accessible?: boolean;
+		is_obstructed_view?: boolean;
 	}
 
 	interface Ticket {
@@ -76,15 +82,32 @@
 	}
 
 	/**
-	 * Get seat display info
+	 * Get venue/sector/seat display info from tier and seat
 	 */
 	function getSeatDisplay(ticket: Ticket): string | null {
+		const tier = ticket.tier;
 		const seat = ticket.seat;
-		if (!seat) return null;
+
+		// If no venue/sector on tier and no seat, nothing to show
+		if (!tier?.venue && !tier?.sector && !seat) return null;
+
 		const parts: string[] = [];
-		if (seat.sector?.name) parts.push(seat.sector.name);
-		if (seat.row_label) parts.push(`Row ${seat.row_label}`);
-		if (seat.seat_label) parts.push(`Seat ${seat.seat_label}`);
+
+		// Add venue name from tier
+		if (tier?.venue?.name) parts.push(tier.venue.name);
+
+		// Add sector name from tier
+		if (tier?.sector?.name) parts.push(tier.sector.name);
+
+		// Add seat info if available
+		if (seat) {
+			if (seat.row) parts.push(`Row ${seat.row}`);
+			if (seat.number) parts.push(`Seat ${seat.number}`);
+			if (seat.label && !seat.row && !seat.number) parts.push(seat.label);
+			if (seat.is_accessible) parts.push('♿');
+			if (seat.is_obstructed_view) parts.push('⚠️ Obstructed');
+		}
+
 		return parts.length > 0 ? parts.join(' • ') : null;
 	}
 
