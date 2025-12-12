@@ -123,7 +123,7 @@
 					id="max-tickets-per-user"
 					type="number"
 					min="1"
-					placeholder={m['ticketingStep.maxTicketsPlaceholder']?.() ?? 'Unlimited'}
+					placeholder={m['ticketingStep.maxTicketsPlaceholder']?.() ?? '1'}
 					value={maxTicketsInput}
 					oninput={(e) => handleMaxTicketsChange(e.currentTarget.value)}
 					class="max-w-xs"
@@ -132,7 +132,7 @@
 					<Info class="mt-0.5 h-4 w-4 shrink-0" />
 					<p>
 						{m['ticketingStep.maxTicketsPerUserHint']?.() ??
-							'Set the default maximum number of tickets a single user can purchase for this event. Leave empty for unlimited. This can be overridden on individual ticket tiers.'}
+							'Set the maximum number of tickets a single user can purchase for this event. Minimum 1. This can be overridden on individual ticket tiers.'}
 					</p>
 				</div>
 			</div>
