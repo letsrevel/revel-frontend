@@ -162,7 +162,9 @@ revel-frontend/
 │   │   │   ├── ui/          # shadcn-svelte components
 │   │   │   ├── events/      # Event-specific components
 │   │   │   ├── organizations/
+│   │   │   ├── landing/     # SEO landing page components
 │   │   │   └── common/      # Shared components
+│   │   ├── data/            # Static data (landing pages content)
 │   │   ├── stores/          # Svelte stores for global state
 │   │   ├── utils/           # Utility functions and helpers
 │   │   ├── schemas/         # Zod validation schemas
@@ -195,6 +197,7 @@ revel-frontend/
 - **Organization Profiles:** Public organization pages
 - **User Registration & Login:** Email verification, password reset, Google SSO
 - **SEO Optimized:** Meta tags, Open Graph, structured data
+- **SEO Landing Pages:** Targeted pages for specific audiences (see below)
 
 ### Authenticated Features (Hybrid SSR/CSR)
 
@@ -217,6 +220,27 @@ revel-frontend/
 - **Real-Time Check-In:** Live QR code scanning with instant feedback
 - **Potluck Coordinator:** Real-time item claiming and updates
 - **Live Chat:** (Future) Event-specific messaging
+
+### SEO Landing Pages
+
+Multi-language landing pages targeting specific audiences and use cases:
+
+| Page | EN | DE | IT | Target Audience |
+|------|----|----|----| --------------- |
+| Eventbrite Alternative | `/eventbrite-alternative` | `/de/eventbrite-alternative` | `/it/eventbrite-alternative` | Cost-conscious organizers |
+| Queer Event Management | `/queer-event-management` | `/de/queer-event-management` | `/it/queer-event-management` | LGBTQ+ communities |
+| Kink Event Ticketing | `/kink-event-ticketing` | `/de/kink-event-ticketing` | `/it/kink-event-ticketing` | Kink/BDSM communities |
+| Self-Hosted Platform | `/self-hosted-event-platform` | `/de/self-hosted-event-platform` | `/it/self-hosted-event-platform` | Tech-savvy, privacy-first |
+| Privacy-Focused Events | `/privacy-focused-events` | `/de/privacy-focused-events` | `/it/privacy-focused-events` | GDPR/European market |
+
+**Features:**
+- Keyword-optimized meta titles and descriptions
+- JSON-LD structured data (WebPage, FAQPage, BreadcrumbList)
+- `hreflang` tags for multi-language SEO
+- Internal linking between related pages
+- CTAs linking to demo, GitHub, and contact
+
+**Content location:** `src/lib/data/landing-pages.ts`
 
 ---
 

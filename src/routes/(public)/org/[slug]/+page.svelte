@@ -1,7 +1,18 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { page } from '$app/state';
-	import { MapPin, Settings, Calendar, ArrowRight, Repeat, ArrowDownUp } from 'lucide-svelte';
+	import {
+		MapPin,
+		Settings,
+		Calendar,
+		ArrowRight,
+		Repeat,
+		ArrowDownUp,
+		Instagram,
+		Facebook,
+		Send,
+		AtSign
+	} from 'lucide-svelte';
 	import ResourceCard from '$lib/components/resources/ResourceCard.svelte';
 	import { EventCard, EventSeriesCard } from '$lib/components/events';
 	import { OrganizationDescription } from '$lib/components/organizations';
@@ -13,6 +24,7 @@
 	import {
 		generateOrganizationMeta,
 		generateOrganizationStructuredData,
+		generateBreadcrumbStructuredData,
 		toJsonLd
 	} from '$lib/utils/seo';
 	import * as m from '$lib/paraglide/messages.js';
@@ -44,6 +56,14 @@
 		return organization.address ? `${organization.address}, ${cityCountry}` : cityCountry;
 	});
 
+	// Check if organization has any social links
+	let hasSocialLinks = $derived(
+		organization.instagram_url ||
+			organization.facebook_url ||
+			organization.bluesky_url ||
+			organization.telegram_url
+	);
+
 	// Fallback gradient for cover art
 	function getOrgFallbackGradient(orgId: string): string {
 		// Use org ID to generate consistent gradient
@@ -70,6 +90,16 @@
 		generateOrganizationStructuredData(organization, `${page.url.origin}${page.url.pathname}`)
 	);
 	let jsonLd = $derived(toJsonLd(structuredData));
+
+	// Generate BreadcrumbList structured data
+	let breadcrumbData = $derived(
+		generateBreadcrumbStructuredData([
+			{ name: 'Home', url: page.url.origin },
+			{ name: 'Organizations', url: `${page.url.origin}/organizations` },
+			{ name: organization.name, url: `${page.url.origin}${page.url.pathname}` }
+		])
+	);
+	let breadcrumbJsonLd = $derived(toJsonLd(breadcrumbData));
 
 	// Filter resources to show only those marked for display on org page
 	const displayedResources = $derived(
@@ -174,6 +204,7 @@
 
 	<!-- Structured Data (JSON-LD) -->
 	{@html `<script type="application/ld+json">${jsonLd}<\/script>`}
+	{@html `<script type="application/ld+json">${breadcrumbJsonLd}<\/script>`}
 </svelte:head>
 
 <div class="min-h-screen bg-background">
@@ -233,6 +264,56 @@
 							<div class="flex items-center gap-1.5">
 								<MapPin class="h-4 w-4" aria-hidden="true" />
 								<span>{locationDisplay}</span>
+							</div>
+						{/if}
+
+						<!-- Social Links -->
+						{#if hasSocialLinks}
+							<div class="flex items-center gap-3">
+								{#if organization.instagram_url}
+									<a
+										href={organization.instagram_url}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="text-muted-foreground transition-colors hover:text-pink-500"
+										aria-label={m['organizationProfile.social_instagram']()}
+									>
+										<Instagram class="h-5 w-5" aria-hidden="true" />
+									</a>
+								{/if}
+								{#if organization.facebook_url}
+									<a
+										href={organization.facebook_url}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="text-muted-foreground transition-colors hover:text-blue-600"
+										aria-label={m['organizationProfile.social_facebook']()}
+									>
+										<Facebook class="h-5 w-5" aria-hidden="true" />
+									</a>
+								{/if}
+								{#if organization.bluesky_url}
+									<a
+										href={organization.bluesky_url}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="text-muted-foreground transition-colors hover:text-sky-500"
+										aria-label={m['organizationProfile.social_bluesky']()}
+									>
+										<AtSign class="h-5 w-5" aria-hidden="true" />
+									</a>
+								{/if}
+								{#if organization.telegram_url}
+									<a
+										href={organization.telegram_url}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="text-muted-foreground transition-colors hover:text-blue-400"
+										aria-label={m['organizationProfile.social_telegram']()}
+									>
+										<Send class="h-5 w-5" aria-hidden="true" />
+									</a>
+								{/if}
 							</div>
 						{/if}
 					</div>

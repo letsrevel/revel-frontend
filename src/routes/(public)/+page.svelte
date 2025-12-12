@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { generateHomeMeta } from '$lib/utils/seo';
+	import { generateHomeMeta, generateWebSiteStructuredData, toJsonLd } from '$lib/utils/seo';
 	import * as m from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import { onMount } from 'svelte';
@@ -20,11 +20,19 @@
 		Building2,
 		MapPin,
 		Calculator,
-		X
+		X,
+		ArrowRight,
+		Heart,
+		Server,
+		Lock
 	} from 'lucide-svelte';
 
 	// Generate comprehensive meta tags for home page
 	let metaTags = $derived(generateHomeMeta(page.url.origin));
+
+	// Generate WebSite structured data for SEO
+	let websiteStructuredData = $derived(generateWebSiteStructuredData(page.url.origin));
+	let websiteJsonLd = $derived(toJsonLd(websiteStructuredData));
 
 	// Animated letter for Italian welcome (client-side only)
 	const letters = ['a', 'o', 'ə'] as const;
@@ -82,6 +90,10 @@
 			maximumFractionDigits: 2
 		}).format(amount);
 	}
+
+	// Landing page URLs based on current locale
+	// Landing pages are NOT paraglide-translated, they use /de/ and /it/ prefixes
+	let landingPagePrefix = $derived(getLocale() === 'en' ? '' : `/${getLocale()}`);
 </script>
 
 <svelte:head>
@@ -113,6 +125,9 @@
 	<!-- Additional SEO meta tags -->
 	<meta name="robots" content="index, follow" />
 	<meta name="keywords" content={m['home.keywords']()} />
+
+	<!-- Structured Data (JSON-LD) -->
+	{@html `<script type="application/ld+json">${websiteJsonLd}<\/script>`}
 </svelte:head>
 
 <div class="container mx-auto px-4 py-16">
@@ -553,6 +568,117 @@
 			>
 				<Github class="h-5 w-5" aria-hidden="true" />
 				{m['learnMore.viewOnGithub']()}
+			</a>
+		</div>
+	</div>
+
+	<!-- Use Cases Section -->
+	<div class="mb-16 mt-8">
+		<div class="text-center">
+			<h2 class="mb-4 text-3xl font-bold">{m['home.useCasesTitle']()}</h2>
+			<p class="mx-auto mb-8 max-w-2xl text-muted-foreground">
+				{m['home.useCasesDescription']()}
+			</p>
+		</div>
+		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+			<a
+				href="{landingPagePrefix}/queer-event-management"
+				class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-md"
+			>
+				<div class="mb-3 flex items-center gap-3">
+					<div class="rounded-full bg-pink-100 p-2 dark:bg-pink-900/30">
+						<Heart class="h-5 w-5 text-pink-600 dark:text-pink-400" aria-hidden="true" />
+					</div>
+					<h3 class="font-semibold">{m['footer.solutionQueer']()}</h3>
+				</div>
+				<p class="mb-3 text-sm text-muted-foreground">
+					Safe spaces for LGBTQ+ communities with privacy-first ticketing and screening.
+				</p>
+				<span
+					class="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline"
+				>
+					Learn more <ArrowRight class="h-4 w-4" aria-hidden="true" />
+				</span>
+			</a>
+
+			<a
+				href="{landingPagePrefix}/kink-event-ticketing"
+				class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-md"
+			>
+				<div class="mb-3 flex items-center gap-3">
+					<div class="rounded-full bg-purple-100 p-2 dark:bg-purple-900/30">
+						<Shield class="h-5 w-5 text-purple-600 dark:text-purple-400" aria-hidden="true" />
+					</div>
+					<h3 class="font-semibold">{m['footer.solutionKink']()}</h3>
+				</div>
+				<p class="mb-3 text-sm text-muted-foreground">
+					Discreet ticketing for adult events with questionnaire-based vetting.
+				</p>
+				<span
+					class="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline"
+				>
+					Learn more <ArrowRight class="h-4 w-4" aria-hidden="true" />
+				</span>
+			</a>
+
+			<a
+				href="{landingPagePrefix}/privacy-focused-events"
+				class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-md"
+			>
+				<div class="mb-3 flex items-center gap-3">
+					<div class="rounded-full bg-green-100 p-2 dark:bg-green-900/30">
+						<Lock class="h-5 w-5 text-green-600 dark:text-green-400" aria-hidden="true" />
+					</div>
+					<h3 class="font-semibold">{m['footer.solutionPrivacy']()}</h3>
+				</div>
+				<p class="mb-3 text-sm text-muted-foreground">
+					GDPR-compliant, European-hosted, with full data ownership.
+				</p>
+				<span
+					class="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline"
+				>
+					Learn more <ArrowRight class="h-4 w-4" aria-hidden="true" />
+				</span>
+			</a>
+
+			<a
+				href="{landingPagePrefix}/self-hosted-event-platform"
+				class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-md"
+			>
+				<div class="mb-3 flex items-center gap-3">
+					<div class="rounded-full bg-blue-100 p-2 dark:bg-blue-900/30">
+						<Server class="h-5 w-5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+					</div>
+					<h3 class="font-semibold">{m['footer.solutionSelfHosted']()}</h3>
+				</div>
+				<p class="mb-3 text-sm text-muted-foreground">
+					MIT licensed. Run on your own infrastructure with zero platform fees.
+				</p>
+				<span
+					class="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline"
+				>
+					Learn more <ArrowRight class="h-4 w-4" aria-hidden="true" />
+				</span>
+			</a>
+
+			<a
+				href="{landingPagePrefix}/eventbrite-alternative"
+				class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-md"
+			>
+				<div class="mb-3 flex items-center gap-3">
+					<div class="rounded-full bg-orange-100 p-2 dark:bg-orange-900/30">
+						<Ticket class="h-5 w-5 text-orange-600 dark:text-orange-400" aria-hidden="true" />
+					</div>
+					<h3 class="font-semibold">{m['footer.solutionEventbrite']()}</h3>
+				</div>
+				<p class="mb-3 text-sm text-muted-foreground">
+					Lower fees, more features, and you keep your data.
+				</p>
+				<span
+					class="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline"
+				>
+					Learn more <ArrowRight class="h-4 w-4" aria-hidden="true" />
+				</span>
 			</a>
 		</div>
 	</div>

@@ -51,7 +51,13 @@
 		"reportBug": "Segnala un bug",
 		"copyright": "Open source e guidato dalla community.",
 		"cookieNotice": "Questo sito utilizza solo cookie tecnici essenziali necessari per autenticazione, gestione delle sessioni e gestione degli inviti. Non utilizziamo cookie di tracciamento o analitici.",
-		"learnMore": "Scopri di più"
+		"learnMore": "Scopri di più",
+		"solutionsTitle": "Soluzioni",
+		"solutionEventbrite": "Alternativa a Eventbrite",
+		"solutionQueer": "Gestione Eventi Queer",
+		"solutionKink": "Ticketing Eventi Kink",
+		"solutionSelfHosted": "Piattaforma Self-Hosted",
+		"solutionPrivacy": "Eventi Privacy-First"
 	},
 	"home": {
 		"welcomeTo": "Benvenuti su",
@@ -69,7 +75,9 @@
 		"tryDemoDescription": "Esplora Revel con la nostra demo. Sperimenta la piattaforma sia come organizzatore che come partecipante.",
 		"tryDemo": "Vai alla Demo",
 		"tryDemoNote": "Nota: La demo gira su hardware lento e potrebbe essere lenta.",
-		"keywords": "eventi, comunità, biglietteria, RSVP, gestione eventi, piattaforma per eventi"
+		"keywords": "eventi, comunità, biglietteria, RSVP, gestione eventi, piattaforma per eventi",
+		"useCasesTitle": "Progettato per la tua community",
+		"useCasesDescription": "Revel è progettato pensando a community diverse. Che tu stia organizzando eventi queer, feste kink o semplicemente desideri più controllo sui tuoi dati."
 	},
 	"login": {
 		"title": "Accedi - Revel",
@@ -594,6 +602,10 @@
 				"emailNotVerified": "Email non ancora verificata",
 				"contactEmailHelp": "Email di contatto pubblica per richieste sulla tua organizzazione"
 			},
+			"social": {
+				"heading": "Link Social Media",
+				"description": "Aggiungi i tuoi link social per aiutare le persone a connettersi con la tua organizzazione."
+			},
 			"actions": {
 				"cancel": "Annulla",
 				"saveChanges": "Salva Modifiche",
@@ -1087,7 +1099,11 @@
 		"events_noUpcomingScheduled": "{organizationName} non ha eventi in programma.",
 		"events_viewPast": "Vedi eventi passati",
 		"location_tbd": "Località da definire",
-		"viewDetails": "Vedi dettagli organizzazione"
+		"viewDetails": "Vedi dettagli organizzazione",
+		"social_instagram": "Segui su Instagram",
+		"social_facebook": "Segui su Facebook",
+		"social_bluesky": "Segui su Bluesky",
+		"social_telegram": "Unisciti su Telegram"
 	},
 	"adminButton": {
 		"selectOrganization": "Seleziona Organizzazione"
