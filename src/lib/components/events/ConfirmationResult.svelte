@@ -46,28 +46,37 @@
 
 			// Determine if this is an RSVP or ticket based on response shape
 			// RSVP has 'status' field with values "yes" | "no" | "maybe"
-			// Ticket has 'tier' field and 'status' with values "pending" | "active" | etc.
+			// Ticket confirmation now always returns BatchCheckoutResponse with 'tickets' array
 			const isRsvp =
 				'status' in data &&
 				typeof data.status === 'string' &&
 				['yes', 'no', 'maybe'].includes(data.status);
 
-			// Get event ID - RSVP has event_id, Ticket has event.id
-			const eventId = isRsvp
-				? 'event_id' in data
-					? data.event_id
-					: undefined
-				: 'event' in data && data.event
-					? data.event.id
-					: undefined;
+			if (isRsvp) {
+				// RSVP confirmation
+				const eventId = 'event_id' in data ? data.event_id : undefined;
 
-			result = {
-				success: true,
-				eventId,
-				type: isRsvp ? 'rsvp' : 'ticket',
-				rsvpStatus: isRsvp ? (data.status as 'yes' | 'no' | 'maybe') : undefined,
-				ticketId: !isRsvp && 'id' in data ? (data.id ?? undefined) : undefined
-			};
+				result = {
+					success: true,
+					eventId,
+					type: 'rsvp',
+					rsvpStatus: data.status as 'yes' | 'no' | 'maybe'
+				};
+			} else if ('tickets' in data && Array.isArray(data.tickets) && data.tickets.length > 0) {
+				// Ticket confirmation (BatchCheckoutResponse)
+				const firstTicket = data.tickets[0];
+				const eventId =
+					'event' in firstTicket && firstTicket.event ? firstTicket.event.id : undefined;
+
+				result = {
+					success: true,
+					eventId,
+					type: 'ticket',
+					ticketId: firstTicket.id ?? undefined
+				};
+			} else {
+				throw new Error('Unexpected response format from confirmation');
+			}
 		} catch (error: any) {
 			result = {
 				success: false,
