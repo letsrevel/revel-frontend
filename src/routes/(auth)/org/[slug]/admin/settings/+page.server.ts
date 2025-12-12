@@ -76,11 +76,10 @@ export const actions: Actions = {
 		}
 
 		// Social media fields - always include in payload to allow clearing
-		// Send empty string if cleared, trimmed value if set
-		updateData.instagram_url = instagramUrl?.trim() || '';
-		updateData.facebook_url = facebookUrl?.trim() || '';
-		updateData.bluesky_url = blueskyUrl?.trim() || '';
-		updateData.telegram_url = telegramUrl?.trim() || '';
+		updateData.instagram_url = instagramUrl?.trim() || null;
+		updateData.facebook_url = facebookUrl?.trim() || null;
+		updateData.bluesky_url = blueskyUrl?.trim() || null;
+		updateData.telegram_url = telegramUrl?.trim() || null;
 
 		try {
 			const { data, error: apiError } = await organizationadminUpdateOrganization({
