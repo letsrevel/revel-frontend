@@ -204,7 +204,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 				console.error('Failed to fetch event token details:', err);
 			}
 		}
-		return {
+		const returnData = {
 			event,
 			userStatus,
 			potluckItems,
@@ -221,6 +221,27 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 			isAuthenticated: !!locals.user,
 			accessToken: locals.user?.accessToken ?? null
 		};
+
+		// Log data sizes to detect potential serialization issues
+		console.log('[EVENT PAGE SERVER] Returning data:', {
+			hasEvent: !!returnData.event,
+			hasUserStatus: !!returnData.userStatus,
+			potluckItemsCount: returnData.potluckItems.length,
+			resourcesCount: returnData.resources.length,
+			ticketTiersCount: returnData.ticketTiers.length,
+			hasEventTokenDetails: !!returnData.eventTokenDetails,
+			eventTokenId: returnData.eventTokenDetails?.id
+		});
+
+		// Try to serialize and check size
+		try {
+			const serialized = JSON.stringify(returnData);
+			console.log('[EVENT PAGE SERVER] Data serialization successful, size:', serialized.length);
+		} catch (err) {
+			console.error('[EVENT PAGE SERVER] Data serialization failed:', err);
+		}
+
+		return returnData;
 	} catch (err) {
 		// Handle different error types
 		if (typeof err === 'object' && err !== null && 'status' in err) {

@@ -50,6 +50,21 @@
 
 	let { data }: { data: PageData } = $props();
 
+	// Server-side logging for staging diagnostics
+	if (typeof window === 'undefined') {
+		console.log('[EVENT PAGE SSR] Component initializing', {
+			hasEvent: !!data.event,
+			eventId: data.event?.id,
+			eventName: data.event?.name,
+			hasStart: !!data.event?.start,
+			hasEnd: !!data.event?.end,
+			hasTokenDetails: !!data.eventTokenDetails,
+			isAuthenticated: data.isAuthenticated,
+			resourcesCount: data.resources?.length || 0,
+			ticketTiersCount: data.ticketTiers?.length || 0
+		});
+	}
+
 	const queryClient = useQueryClient();
 
 	// Create mutable copies for client-side updates
@@ -57,14 +72,13 @@
 	let userStatus = $state(data.userStatus);
 	let ticketTiers = $state<TierSchemaWithId[]>(data.ticketTiers as TierSchemaWithId[]);
 
-	// Get structured data for SEO
-	let structuredData = $derived(
-		generateEventStructuredData(event, `${page.url.origin}${page.url.pathname}`)
-	);
+	// Get structured data for SEO (with SSR-safe URL access)
+	let eventUrl = $derived(`${page.url.origin}${page.url.pathname}`);
+	let structuredData = $derived(generateEventStructuredData(event, eventUrl));
 	let jsonLd = $derived(structuredDataToJsonLd(structuredData));
 
 	// Generate comprehensive meta tags
-	let metaTags = $derived(generateEventMeta(event, `${page.url.origin}${page.url.pathname}`));
+	let metaTags = $derived(generateEventMeta(event, eventUrl));
 
 	// Generate BreadcrumbList structured data
 	let breadcrumbData = $derived(
@@ -72,10 +86,20 @@
 			{ name: 'Home', url: page.url.origin },
 			{ name: 'Events', url: `${page.url.origin}/events` },
 			{ name: event.organization.name, url: `${page.url.origin}/org/${event.organization.slug}` },
-			{ name: event.name, url: `${page.url.origin}${page.url.pathname}` }
+			{ name: event.name, url: eventUrl }
 		])
 	);
 	let breadcrumbJsonLd = $derived(toJsonLd(breadcrumbData));
+
+	// SSR diagnostic checkpoint
+	if (typeof window === 'undefined') {
+		console.log('[EVENT PAGE SSR] Derived state computed', {
+			eventUrlLength: eventUrl?.length || 0,
+			jsonLdLength: jsonLd?.length || 0,
+			breadcrumbJsonLdLength: breadcrumbJsonLd?.length || 0,
+			hasMetaTags: !!metaTags
+		});
+	}
 
 	// Check if user has RSVP'd (reactive to userStatus changes)
 	let hasRSVPd = $derived.by(() => {
@@ -581,8 +605,12 @@
 	{/if}
 
 	<!-- Structured Data (JSON-LD) -->
-	{@html `<script type="application/ld+json">${jsonLd}<\/script>`}
-	{@html `<script type="application/ld+json">${breadcrumbJsonLd}<\/script>`}
+	{#if jsonLd}
+		{@html `<script type="application/ld+json">${jsonLd}<\/script>`}
+	{/if}
+	{#if breadcrumbJsonLd}
+		{@html `<script type="application/ld+json">${breadcrumbJsonLd}<\/script>`}
+	{/if}
 </svelte:head>
 
 <div class="min-h-screen bg-background">

@@ -277,7 +277,17 @@ export function generateOrganizationStructuredData(
  * Convert structured data to JSON-LD string
  */
 export function toJsonLd(data: Record<string, unknown> | object): string {
-	return JSON.stringify(data, null, 0);
+	try {
+		return JSON.stringify(data, null, 0);
+	} catch (error) {
+		console.error('[SEO] Failed to serialize breadcrumb data:', error);
+		// Return minimal valid JSON-LD as fallback
+		return JSON.stringify({
+			'@context': 'https://schema.org',
+			'@type': 'BreadcrumbList',
+			itemListElement: []
+		});
+	}
 }
 
 /**
