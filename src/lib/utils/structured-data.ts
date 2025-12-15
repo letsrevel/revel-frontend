@@ -95,13 +95,18 @@ export function generateEventStructuredData(
 	event: EventDetailSchema,
 	eventUrl: string
 ): EventStructuredData {
+	// Ensure required date fields are present - use current date as fallback
+	// This prevents SSR crashes for events with incomplete data
+	const startDate = event.start || new Date().toISOString();
+	const endDate = event.end || startDate;
+
 	const structuredData: EventStructuredData = {
 		'@context': 'https://schema.org',
 		'@type': 'Event',
 		name: event.name,
 		description: event.description || undefined,
-		startDate: event.start,
-		endDate: event.end,
+		startDate,
+		endDate,
 		eventStatus: getEventStatus(event.status),
 		eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode', // Physical events
 		location: buildLocationData(event),
@@ -163,5 +168,15 @@ function getEventStatus(_status: EventDetailSchema['status']): string {
  * Convert structured data to JSON-LD script tag content
  */
 export function structuredDataToJsonLd(data: EventStructuredData): string {
-	return JSON.stringify(data, null, 0); // No whitespace for production
+	try {
+		return JSON.stringify(data, null, 0); // No whitespace for production
+	} catch (error) {
+		console.error('[SEO] Failed to serialize structured data:', error);
+		// Return minimal valid JSON-LD as fallback
+		return JSON.stringify({
+			'@context': 'https://schema.org',
+			'@type': 'Event',
+			name: data.name || 'Event'
+		});
+	}
 }
