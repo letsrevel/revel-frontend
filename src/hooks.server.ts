@@ -115,6 +115,26 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 };
 
 /**
- * Combine token capture, authentication, and i18n hooks
+ * Response logging hook - diagnose DEMO streaming issue
  */
-export const handle = sequence(handleTokenCapture, i18nHandle(), handleAuth);
+const handleResponseLog: Handle = async ({ event, resolve }) => {
+	const startTime = Date.now();
+	console.log('[RESPONSE] Starting request:', event.url.pathname);
+
+	const response = await resolve(event);
+
+	const duration = Date.now() - startTime;
+	console.log('[RESPONSE] Response ready:', {
+		path: event.url.pathname,
+		status: response.status,
+		duration: `${duration}ms`,
+		hasBody: !!response.body
+	});
+
+	return response;
+};
+
+/**
+ * Combine token capture, authentication, i18n, and response logging hooks
+ */
+export const handle = sequence(handleTokenCapture, i18nHandle(), handleAuth, handleResponseLog);
