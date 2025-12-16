@@ -31,6 +31,7 @@
 		isTicket,
 		isUserStatusResponse,
 		hasActiveTickets,
+		hasPositiveRsvp,
 		getActiveTickets,
 		type EventTicketSchemaActual
 	} from '$lib/utils/eligibility';
@@ -101,14 +102,26 @@
 		});
 	}
 
-	// Check if user has RSVP'd (reactive to userStatus changes)
+	// Check if user has RSVP'd or has tickets (reactive to userStatus changes)
+	// Users with tickets should be able to claim potluck items
 	let hasRSVPd = $derived.by(() => {
 		if (!userStatus) return false;
 
+		// New unified format: EventUserStatusResponse with tickets array and/or RSVP
+		if (isUserStatusResponse(userStatus)) {
+			// User has active tickets = can claim potluck items
+			if (hasActiveTickets(userStatus)) return true;
+			// User has positive RSVP = can claim potluck items
+			if (hasPositiveRsvp(userStatus)) return true;
+			return false;
+		}
+
+		// Legacy format: Single RSVP
 		if (isRSVP(userStatus)) {
 			return userStatus.status === 'yes';
 		}
 
+		// Legacy format: Single Ticket
 		if (isTicket(userStatus)) {
 			return userStatus.status === 'active' || userStatus.status === 'checked_in';
 		}
