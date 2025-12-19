@@ -1149,12 +1149,19 @@
 		"failedToLoad": "Errore nel caricamento della lista partecipanti. Riprova più tardi.",
 		"loading": "Caricamento...",
 		"loadMore": "Carica altri",
-		"anonymous": "Anonymous",
-		"listHidden": "Attendee list is hidden or no one has confirmed yet.",
-		"showAll": "Show all",
-		"showAllWithCount": "Show all ({count} more)",
-		"notShownSingular": "and {count} attendee not shown",
-		"notShownPlural": "and {count} attendees not shown"
+		"anonymous": "Anonimo",
+		"listHidden": "La lista dei partecipanti è nascosta o nessuno ha ancora confermato.",
+		"showAll": "Mostra tutti",
+		"showAllWithCount": "Mostra tutti ({count} in più)",
+		"notShownSingular": "e {count} partecipante non mostrato",
+		"notShownPlural": "e {count} partecipanti non mostrati",
+		"yourVisibility": "La tua visibilità",
+		"manageVisibility": "Gestisci visibilità",
+		"visibilityAlways": "Sempre visibile",
+		"visibilityNever": "Mai visibile",
+		"visibilityToMembers": "Visibile ai membri",
+		"visibilityToInvitees": "Visibile agli invitati",
+		"visibilityToBoth": "Visibile a membri e invitati"
 	},
 	"eligibilityStatusDisplay": {
 		"available": "Disponibile"

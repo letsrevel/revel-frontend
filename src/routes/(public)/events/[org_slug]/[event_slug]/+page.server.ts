@@ -6,7 +6,8 @@ import {
 	permissionMyPermissions,
 	eventListResources,
 	eventListTiers,
-	eventGetEventTokenDetails
+	eventGetEventTokenDetails,
+	userpreferencesGetGeneralPreferences
 } from '$lib/api';
 import type { PageServerLoad } from './$types';
 import type { UserEventStatus } from '$lib/utils/eligibility';
@@ -17,7 +18,8 @@ import type {
 	TicketTierSchema,
 	EventTokenSchema,
 	MembershipTierSchema,
-	MembershipStatus
+	MembershipStatus,
+	VisibilityPreference
 } from '$lib/api/generated/types.gen';
 
 export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
@@ -204,6 +206,25 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 				console.error('Failed to fetch event token details:', err);
 			}
 		}
+
+		// Fetch user's visibility preferences (for attendee list display)
+		let userVisibility: VisibilityPreference | null = null;
+		if (locals.user?.accessToken) {
+			try {
+				const prefsResponse = await userpreferencesGetGeneralPreferences({
+					fetch,
+					headers
+				});
+
+				if (prefsResponse.data?.show_me_on_attendee_list) {
+					userVisibility = prefsResponse.data.show_me_on_attendee_list;
+				}
+			} catch (err) {
+				// If preferences fail to load, continue without them
+				console.error('Failed to fetch user preferences:', err);
+			}
+		}
+
 		const returnData = {
 			event,
 			userStatus,
@@ -217,6 +238,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 			isOwner,
 			isStaff,
 			eventTokenDetails,
+			userVisibility,
 			// Explicitly pass authentication state to the page
 			isAuthenticated: !!locals.user,
 			accessToken: locals.user?.accessToken ?? null

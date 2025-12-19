@@ -850,6 +850,7 @@
 						eventId={event.id}
 						totalAttendees={event.attendee_count}
 						isAuthenticated={data.isAuthenticated}
+						userVisibility={data.userVisibility}
 					/>
 				</div>
 			</div>
@@ -915,6 +916,7 @@
 						eventId={event.id}
 						totalAttendees={event.attendee_count}
 						isAuthenticated={data.isAuthenticated}
+						userVisibility={data.userVisibility}
 					/>
 				</div>
 			</aside>
