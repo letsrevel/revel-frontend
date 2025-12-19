@@ -1154,7 +1154,14 @@
 		"showAll": "Show all",
 		"showAllWithCount": "Show all ({count} more)",
 		"notShownSingular": "and {count} attendee not shown",
-		"notShownPlural": "and {count} attendees not shown"
+		"notShownPlural": "and {count} attendees not shown",
+		"yourVisibility": "Your visibility",
+		"manageVisibility": "Manage visibility",
+		"visibilityAlways": "Always visible",
+		"visibilityNever": "Never visible",
+		"visibilityToMembers": "Visible to members",
+		"visibilityToInvitees": "Visible to invitees",
+		"visibilityToBoth": "Visible to members and invitees"
 	},
 	"eligibilityStatusDisplay": {
 		"available": "Available"

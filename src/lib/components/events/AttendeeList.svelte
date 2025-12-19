@@ -2,16 +2,35 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { eventGetEventAttendees } from '$lib/api';
-	import type { AttendeeSchema } from '$lib/api/generated/types.gen';
-	import { Users, ChevronDown, Loader2 } from 'lucide-svelte';
+	import type { AttendeeSchema, VisibilityPreference } from '$lib/api/generated/types.gen';
+	import { Users, ChevronDown, Loader2, Settings } from 'lucide-svelte';
 
 	interface Props {
 		eventId: string;
 		totalAttendees: number;
 		isAuthenticated: boolean;
+		userVisibility?: VisibilityPreference | null;
 	}
 
-	let { eventId, totalAttendees, isAuthenticated }: Props = $props();
+	let { eventId, totalAttendees, isAuthenticated, userVisibility = null }: Props = $props();
+
+	// Map visibility preference to translation key
+	function getVisibilityLabel(visibility: VisibilityPreference): string {
+		switch (visibility) {
+			case 'always':
+				return m['attendeeList.visibilityAlways']();
+			case 'never':
+				return m['attendeeList.visibilityNever']();
+			case 'to_members':
+				return m['attendeeList.visibilityToMembers']();
+			case 'to_invitees':
+				return m['attendeeList.visibilityToInvitees']();
+			case 'to_both':
+				return m['attendeeList.visibilityToBoth']();
+			default:
+				return m['attendeeList.visibilityNever']();
+		}
+	}
 
 	// Fetch attendees with a large page size to cover most cases
 	const PAGE_SIZE = 100;
@@ -161,6 +180,27 @@
 							: m['attendeeList.notShownPlural']({ count: hiddenCount })}
 					</p>
 				{/if}
+			</div>
+		{/if}
+
+		<!-- User visibility settings info -->
+		{#if userVisibility}
+			<div class="mt-4 border-t pt-4">
+				<div class="flex items-center justify-between gap-2 text-sm">
+					<div class="flex items-center gap-2 text-muted-foreground">
+						<Settings class="h-4 w-4" aria-hidden="true" />
+						<span>
+							{m['attendeeList.yourVisibility']()}:
+							<span class="font-medium text-foreground">{getVisibilityLabel(userVisibility)}</span>
+						</span>
+					</div>
+					<a
+						href="/account/settings"
+						class="text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>
+						{m['attendeeList.manageVisibility']()}
+					</a>
+				</div>
 			</div>
 		{/if}
 	</section>
