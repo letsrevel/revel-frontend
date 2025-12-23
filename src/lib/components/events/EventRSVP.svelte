@@ -3,7 +3,7 @@
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { eventRsvpEvent } from '$lib/api/generated/sdk.gen';
 	import type { UserEventStatus } from '$lib/utils/eligibility';
-	import { isRSVP, isEligibility } from '$lib/utils/eligibility';
+	import { isRSVP, isEligibility, isUserStatusResponse } from '$lib/utils/eligibility';
 	import { cn } from '$lib/utils/cn';
 	import RSVPButtons from './RSVPButtons.svelte';
 	import ConfirmDialog from '../common/ConfirmDialog.svelte';
@@ -225,12 +225,24 @@
 
 	// Computed: Determine current state
 	let currentRsvpAnswer = $derived.by(() => {
-		if (!userStatus || !isRSVP(userStatus)) return null;
-
 		// First check if we have a locally stored answer (from this session)
 		if (userAnswer) return userAnswer;
 
-		// Otherwise, the backend returns the answer in the status field
+		if (!userStatus) return null;
+
+		// New format: UserEventStatusResponse with rsvp field
+		if (isUserStatusResponse(userStatus)) {
+			const status = userStatus.rsvp?.status;
+			if (status === 'yes' || status === 'no' || status === 'maybe') {
+				return status;
+			}
+			return null;
+		}
+
+		// Legacy format: direct RSVP object
+		if (!isRSVP(userStatus)) return null;
+
+		// The backend returns the answer in the status field
 		// Status is 'yes' | 'no' | 'maybe' for RSVP responses
 		const status = userStatus.status as string;
 		if (status === 'yes' || status === 'no' || status === 'maybe') {
@@ -242,6 +254,11 @@
 
 	let hasExistingRsvp = $derived.by(() => {
 		if (!userStatus) return false;
+		// New format: UserEventStatusResponse with rsvp field
+		if (isUserStatusResponse(userStatus)) {
+			return !!userStatus.rsvp;
+		}
+		// Legacy format: direct RSVP object
 		return isRSVP(userStatus);
 	});
 
