@@ -8,6 +8,7 @@
 	import { cn } from '$lib/utils/cn';
 	import { getBackendUrl } from '$lib/config/api';
 	import RequestMembershipButton from '$lib/components/organization/RequestMembershipButton.svelte';
+	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 
 	interface Props {
 		organization: OrganizationRetrieveSchema;
@@ -65,16 +66,11 @@
 
 			<div class="flex-1">
 				<h3 class="text-lg font-semibold">{organization.name}</h3>
-				{#if organization.description_html}
-					<div
-						class="prose prose-sm dark:prose-invert mt-1 line-clamp-3 text-sm text-muted-foreground"
-					>
-						{@html organization.description_html}
-					</div>
-				{:else if organization.description}
-					<p class="mt-1 line-clamp-3 text-sm text-muted-foreground">
-						{organization.description}
-					</p>
+				{#if organization.description}
+					<MarkdownContent
+						content={organization.description}
+						class="mt-1 line-clamp-3 text-sm text-muted-foreground"
+					/>
 				{/if}
 			</div>
 		</div>

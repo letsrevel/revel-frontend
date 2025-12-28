@@ -4,6 +4,7 @@
 	import { cn } from '$lib/utils/cn';
 	import { canEditPotluckItem, canDeletePotluckItem } from '$lib/utils/permissions';
 	import * as m from '$lib/paraglide/messages.js';
+	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 
 	interface Props {
 		item: PotluckItemRetrieveSchema;
@@ -171,12 +172,8 @@
 	</p>
 
 	<!-- Optional Note -->
-	{#if item.note_html}
-		<div class="prose prose-sm dark:prose-invert max-w-none text-sm text-foreground">
-			<!-- svelte-ignore a11y_no_unsafe_html -->
-			<!-- note_html is sanitized by the backend -->
-			{@html item.note_html}
-		</div>
+	{#if item.note}
+		<MarkdownContent content={item.note} class="text-sm text-foreground" />
 	{/if}
 
 	<!-- Divider -->

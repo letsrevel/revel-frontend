@@ -15,7 +15,7 @@
 	import OrganizationCardSkeleton from '$lib/components/common/OrganizationCardSkeleton.svelte';
 	import { CalendarView, CalendarControls, EventModal } from '$lib/components/calendar';
 	import { getImageUrl } from '$lib/utils/url';
-	import { stripHtml } from '$lib/utils/seo';
+	import { stripMarkdown } from '$lib/utils/seo';
 	import { parseCalendarParams, getCurrentPeriod } from '$lib/utils/calendar';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -802,9 +802,7 @@
 				<!-- Organization Cards -->
 				<div class="space-y-3">
 					{#each organizations.slice(0, 3) as org}
-						{@const descriptionText = org.description_html
-							? stripHtml(org.description_html)
-							: org.description || ''}
+						{@const descriptionText = org.description ? stripMarkdown(org.description) : ''}
 						<div
 							class="flex items-center gap-4 rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"
 						>

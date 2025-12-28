@@ -360,7 +360,6 @@
 		<!-- Organization Description -->
 		<div class="mb-12">
 			<OrganizationDescription
-				descriptionHtml={organization.description_html}
 				description={organization.description}
 				organizationName={organization.name}
 			/>

@@ -6,7 +6,7 @@ export const load: PageLoad = async () => {
 	try {
 		const legal = await apiApiLegal();
 		return {
-			privacyPolicy: legal.data?.privacy_policy_html ?? ''
+			privacyPolicy: legal.data?.privacy_policy ?? ''
 		};
 	} catch (err) {
 		console.error('Failed to load privacy policy:', err);

@@ -37,7 +37,7 @@
 	let name = $state(item?.name || '');
 	let itemType = $state<ItemTypes>((item?.item_type as ItemTypes) || 'food');
 	let quantity = $state(item?.quantity || '');
-	let note = $state(''); // Note is not in retrieve schema, only note_html
+	let note = $state(item?.note || '');
 	let claimItem = $state(true); // For create mode with manage permission
 
 	// Item type options
@@ -74,7 +74,7 @@
 				name = item.name;
 				itemType = item.item_type as ItemTypes;
 				quantity = item.quantity || '';
-				note = '';
+				note = item.note || '';
 			} else {
 				// Create mode - reset to defaults
 				name = '';

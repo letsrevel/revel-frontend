@@ -1296,13 +1296,7 @@
 									<h3 class="truncate font-semibold text-foreground">
 										{tier.name}
 									</h3>
-									{#if tier.description_html}
-										<div
-											class="prose prose-sm dark:prose-invert mt-2 max-w-none text-muted-foreground"
-										>
-											{@html tier.description_html}
-										</div>
-									{:else if tier.description}
+									{#if tier.description}
 										<p class="mt-2 text-sm text-muted-foreground">
 											{tier.description}
 										</p>

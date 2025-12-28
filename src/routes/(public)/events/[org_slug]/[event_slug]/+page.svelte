@@ -831,11 +831,7 @@
 							class="block p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 						>
 							<div class="font-medium">{event.event_series.name}</div>
-							{#if event.event_series.description_html}
-								<div class="prose prose-sm dark:prose-invert mt-1 text-sm text-muted-foreground">
-									{@html event.event_series.description_html}
-								</div>
-							{:else if event.event_series.description}
+							{#if event.event_series.description}
 								<p class="mt-1 text-sm text-muted-foreground">
 									{event.event_series.description}
 								</p>
@@ -898,11 +894,7 @@
 								class="block p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 							>
 								<div class="font-medium">{event.event_series.name}</div>
-								{#if event.event_series.description_html}
-									<div class="prose prose-sm dark:prose-invert mt-1 text-sm text-muted-foreground">
-										{@html event.event_series.description_html}
-									</div>
-								{:else if event.event_series.description}
+								{#if event.event_series.description}
 									<p class="mt-1 text-sm text-muted-foreground">
 										{event.event_series.description}
 									</p>

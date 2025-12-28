@@ -6,7 +6,7 @@ export const load: PageLoad = async () => {
 	try {
 		const legal = await apiApiLegal();
 		return {
-			termsAndConditions: legal.data?.terms_and_conditions_html ?? ''
+			termsAndConditions: legal.data?.terms_and_conditions ?? ''
 		};
 	} catch (err) {
 		console.error('Failed to load terms of service:', err);

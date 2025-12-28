@@ -11,6 +11,7 @@
 		toJsonLd
 	} from '$lib/utils/seo';
 	import * as m from '$lib/paraglide/messages.js';
+	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -242,7 +243,7 @@
 				</div>
 
 				<!-- Series Description -->
-				{#if series.description_html}
+				{#if series.description}
 					<section
 						aria-labelledby="description-heading"
 						class="rounded-lg border bg-card p-6 md:p-8"
@@ -250,21 +251,7 @@
 						<h2 id="description-heading" class="sr-only">
 							{m['eventSeriesDetailPage.description_heading']({ seriesName: series.name })}
 						</h2>
-						<div class="prose prose-slate dark:prose-invert max-w-none">
-							{@html series.description_html}
-						</div>
-					</section>
-				{:else if series.description}
-					<section
-						aria-labelledby="description-heading"
-						class="rounded-lg border bg-card p-6 md:p-8"
-					>
-						<h2 id="description-heading" class="sr-only">
-							{m['eventSeriesDetailPage.description_heading']({ seriesName: series.name })}
-						</h2>
-						<div class="prose prose-slate dark:prose-invert max-w-none">
-							<p>{series.description}</p>
-						</div>
+						<MarkdownContent content={series.description} class="prose-slate" />
 					</section>
 				{/if}
 
