@@ -3150,7 +3150,9 @@
 		"error_mcNeedsCorrectAnswer": "Multiple choice questions must have at least one correct answer",
 		"createButton": "Create Questionnaire",
 		"creating": "Creating...",
-		"cancelButton": "Cancel"
+		"cancelButton": "Cancel",
+		"membersExemptLabel": "Esenta i membri dell'organizzazione da questo questionario",
+		"membersExemptDescription": "Quando attivato, i membri dell'organizzazione salteranno automaticamente questo questionario e saranno considerati come se lo avessero superato"
 	},
 	"questionnaireSubmissionsPage": {
 		"pageTitle": "Submissions - Questionnaire",
@@ -3304,7 +3306,9 @@
 		"error_updateFailed": "Aggiornamento del questionario fallito",
 		"error_updateFailedMessage": "Aggiornamento del questionario fallito. Riprova.",
 		"error_statusChangeFailed": "Cambio di stato fallito",
-		"error_statusChangeFailedMessage": "Cambio di stato fallito. Riprova."
+		"error_statusChangeFailedMessage": "Cambio di stato fallito. Riprova.",
+		"membersExemptLabel": "Esenta i membri dell'organizzazione da questo questionario",
+		"membersExemptDescription": "Quando attivato, i membri dell'organizzazione salteranno automaticamente questo questionario e saranno considerati come se lo avessero superato"
 	},
 	"membershipRequestsPage": {
 		"pageTitle": "Richieste di Iscrizione",
