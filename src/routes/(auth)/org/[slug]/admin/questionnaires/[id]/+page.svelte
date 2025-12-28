@@ -51,6 +51,7 @@
 	let shuffleQuestions = $state(questionnaire.questionnaire.shuffle_questions ?? false);
 	let shuffleSections = $state(questionnaire.questionnaire.shuffle_sections ?? false);
 	let llmGuidelines = $state(questionnaire.questionnaire.llm_guidelines || '');
+	let membersExempt = $state(questionnaire.members_exempt ?? false);
 
 	// Convert seconds to appropriate units for display
 	let maxSubmissionAge = $state<number | null>(
@@ -220,7 +221,8 @@
 					shuffle_sections: shuffleSections,
 					llm_guidelines: llmGuidelines || null,
 					can_retake_after: canRetakeAfter ? (canRetakeAfter * 3600).toString() : null, // Convert hours to seconds
-					max_attempts: maxAttempts
+					max_attempts: maxAttempts,
+					members_exempt: membersExempt
 				},
 				headers: { Authorization: `Bearer ${user.accessToken}` }
 			});
@@ -579,6 +581,24 @@
 					/>
 					<Label for="shuffle-sections" class="font-normal">Shuffle sections for each user</Label>
 				</div>
+			</div>
+
+			<!-- Members Exempt -->
+			<div class="space-y-2">
+				<div class="flex items-center space-x-2">
+					<input
+						id="members-exempt"
+						type="checkbox"
+						bind:checked={membersExempt}
+						class="h-4 w-4 rounded border-gray-300"
+					/>
+					<Label for="members-exempt" class="font-normal"
+						>{m['questionnaireEditPage.membersExemptLabel']()}</Label
+					>
+				</div>
+				<p class="text-xs text-muted-foreground">
+					{m['questionnaireEditPage.membersExemptDescription']()}
+				</p>
 			</div>
 
 			<!-- LLM Guidelines -->

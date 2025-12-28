@@ -3150,7 +3150,9 @@
 		"error_mcNeedsCorrectAnswer": "Multiple choice questions must have at least one correct answer",
 		"createButton": "Create Questionnaire",
 		"creating": "Creating...",
-		"cancelButton": "Cancel"
+		"cancelButton": "Cancel",
+		"membersExemptLabel": "Organisationsmitglieder von diesem Fragebogen ausnehmen",
+		"membersExemptDescription": "Wenn aktiviert, werden Organisationsmitglieder diesen Fragebogen automatisch überspringen und als bestanden betrachtet"
 	},
 	"questionnaireSubmissionsPage": {
 		"pageTitle": "Submissions - Questionnaire",
@@ -3304,7 +3306,9 @@
 		"error_updateFailed": "Aktualisierung des Fragebogens fehlgeschlagen",
 		"error_updateFailedMessage": "Aktualisierung des Fragebogens fehlgeschlagen. Bitte versuchen Sie es erneut.",
 		"error_statusChangeFailed": "Statusänderung fehlgeschlagen",
-		"error_statusChangeFailedMessage": "Statusänderung fehlgeschlagen. Bitte versuchen Sie es erneut."
+		"error_statusChangeFailedMessage": "Statusänderung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+		"membersExemptLabel": "Organisationsmitglieder von diesem Fragebogen ausnehmen",
+		"membersExemptDescription": "Wenn aktiviert, werden Organisationsmitglieder diesen Fragebogen automatisch überspringen und als bestanden betrachtet"
 	},
 	"membershipRequestsPage": {
 		"pageTitle": "Mitgliedschaftsanträge",

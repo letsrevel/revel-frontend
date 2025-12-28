@@ -34,6 +34,7 @@
 	let llmGuidelines = $state('');
 	let maxSubmissionAge = $state<number | null>(null); // Duration in seconds
 	let canRetakeAfter = $state<number | null>(null); // Duration in seconds
+	let membersExempt = $state(false); // Exempt members from questionnaire
 
 	let questions = $state<
 		Array<{
@@ -263,6 +264,7 @@
 					shuffle_sections: shuffleSections,
 					llm_guidelines: llmGuidelines || null,
 					can_retake_after: canRetakeAfter !== null ? String(canRetakeAfter) : undefined,
+					members_exempt: membersExempt,
 					sections
 				},
 				headers: { Authorization: `Bearer ${user.accessToken}` }
@@ -494,6 +496,24 @@
 						>{m['questionnaireNewPage.shuffleSectionsLabel']()}</Label
 					>
 				</div>
+			</div>
+
+			<!-- Members Exempt -->
+			<div class="space-y-2">
+				<div class="flex items-center space-x-2">
+					<input
+						id="members-exempt"
+						type="checkbox"
+						bind:checked={membersExempt}
+						class="h-4 w-4 rounded border-gray-300"
+					/>
+					<Label for="members-exempt" class="font-normal"
+						>{m['questionnaireNewPage.membersExemptLabel']()}</Label
+					>
+				</div>
+				<p class="text-xs text-muted-foreground">
+					{m['questionnaireNewPage.membersExemptDescription']()}
+				</p>
 			</div>
 
 			<!-- LLM Guidelines -->

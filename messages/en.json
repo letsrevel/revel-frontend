@@ -3150,7 +3150,9 @@
 		"error_mcNeedsCorrectAnswer": "Multiple choice questions must have at least one correct answer",
 		"createButton": "Create Questionnaire",
 		"creating": "Creating...",
-		"cancelButton": "Cancel"
+		"cancelButton": "Cancel",
+		"membersExemptLabel": "Exempt organization members from this questionnaire",
+		"membersExemptDescription": "When enabled, organization members will automatically bypass this questionnaire and be considered as having passed it"
 	},
 	"questionnaireSubmissionsPage": {
 		"pageTitle": "Submissions - Questionnaire",
@@ -3304,7 +3306,9 @@
 		"error_updateFailed": "Failed to update questionnaire",
 		"error_updateFailedMessage": "Failed to update questionnaire. Please try again.",
 		"error_statusChangeFailed": "Failed to change status",
-		"error_statusChangeFailedMessage": "Failed to change status. Please try again."
+		"error_statusChangeFailedMessage": "Failed to change status. Please try again.",
+		"membersExemptLabel": "Exempt organization members from this questionnaire",
+		"membersExemptDescription": "When enabled, organization members will automatically bypass this questionnaire and be considered as having passed it"
 	},
 	"membershipRequestsPage": {
 		"pageTitle": "Membership Requests",
