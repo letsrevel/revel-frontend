@@ -8,7 +8,6 @@ const mockEventSeries: EventSeriesRetrieveSchema = {
 	name: 'Tech Talk Series',
 	slug: 'tech-talk-series',
 	description: 'Monthly technical talks on web development and software engineering',
-	description_html: '<p>Monthly technical talks on web development and software engineering</p>',
 	cover_art: '/media/series/tech-talks-cover.jpg',
 	logo: '/media/series/tech-talks-logo.png',
 	tags: ['technology', 'web-development', 'software-engineering', 'learning'],
@@ -17,7 +16,6 @@ const mockEventSeries: EventSeriesRetrieveSchema = {
 		name: 'Tech Community',
 		slug: 'tech-community',
 		description: 'A community for tech enthusiasts',
-		description_html: '<p>A community for tech enthusiasts</p>',
 		logo: '/media/orgs/tech-community-logo.png',
 		cover_art: '/media/orgs/tech-community-cover.jpg',
 		city: {
@@ -155,8 +153,7 @@ describe('EventSeriesCard', () => {
 	it('handles missing description gracefully', () => {
 		const seriesWithoutDescription: EventSeriesRetrieveSchema = {
 			...mockEventSeries,
-			description: null,
-			description_html: ''
+			description: null
 		};
 
 		render(EventSeriesCard, {

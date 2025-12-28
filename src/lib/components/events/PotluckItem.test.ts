@@ -10,7 +10,7 @@ describe('PotluckItem', () => {
 		name: 'Pasta Salad',
 		item_type: 'side_dish',
 		quantity: 'Serves 8',
-		note_html: '<p>Optional note: Gluten-free pasta</p>',
+		note: 'Optional note: Gluten-free pasta',
 		is_assigned: false,
 		is_owned: false
 	};
@@ -23,7 +23,7 @@ describe('PotluckItem', () => {
 		quantity: '2 bottles',
 		is_assigned: true,
 		is_owned: false,
-		note_html: ''
+		note: ''
 	};
 
 	const mockOwnedItem: PotluckItemRetrieveSchema = {
@@ -34,7 +34,7 @@ describe('PotluckItem', () => {
 		quantity: '24 pieces',
 		is_assigned: true,
 		is_owned: true,
-		note_html: '<p>Chocolate with walnuts</p>'
+		note: 'Chocolate with walnuts'
 	};
 
 	it('renders unclaimed item correctly', () => {
@@ -242,7 +242,7 @@ describe('PotluckItem', () => {
 		expect(screen.getByText(/gluten-free pasta/i)).toBeInTheDocument();
 	});
 
-	it('does not render note section when note_html is empty', () => {
+	it('does not render note section when note is empty', () => {
 		render(PotluckItem, {
 			props: {
 				item: mockClaimedByOther,

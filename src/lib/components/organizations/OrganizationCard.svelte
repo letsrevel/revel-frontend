@@ -2,7 +2,7 @@
 	import type { OrganizationRetrieveSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import { getImageUrl } from '$lib/utils/url';
-	import { stripHtml } from '$lib/utils/seo';
+	import { stripMarkdown } from '$lib/utils/seo';
 	import { MapPin, Users, Tag } from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
@@ -40,11 +40,9 @@
 	];
 	let fallbackGradient = $derived(gradients[organization.id.charCodeAt(0) % gradients.length]);
 
-	// Get clean description text (strip HTML if description_html exists, otherwise use description)
+	// Get clean description text (strip markdown formatting for plain text display)
 	let descriptionText = $derived(
-		organization.description_html
-			? stripHtml(organization.description_html)
-			: organization.description || ''
+		organization.description ? stripMarkdown(organization.description) : ''
 	);
 
 	// Accessible card label for screen readers

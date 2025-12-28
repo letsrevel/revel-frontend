@@ -199,14 +199,13 @@
 			</dl>
 
 			<!-- Description -->
-			{#if organization.description_html || organization.description}
+			{#if organization.description}
 				<div class="mt-6 border-t pt-4">
 					<h3 class="text-sm font-medium text-muted-foreground">
 						{m['orgAdmin.dashboard.aboutHeading']({ orgName: organization.name })}
 					</h3>
 					<div class="mt-2">
 						<OrganizationDescription
-							descriptionHtml={organization.description_html}
 							description={organization.description}
 							organizationName={organization.name}
 							showCard={false}

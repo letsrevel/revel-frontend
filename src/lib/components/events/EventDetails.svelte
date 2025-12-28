@@ -4,6 +4,7 @@
 	import { Users, Clock, Info, Calendar } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
 	import * as m from '$lib/paraglide/messages.js';
+	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 
 	interface Props {
 		event: EventDetailSchema;
@@ -41,15 +42,13 @@
 
 <div class={cn('space-y-6', className)}>
 	<!-- Description -->
-	{#if event.description_html}
-		{#key event.description_html}
+	{#if event.description}
+		{#key event.description}
 			<section aria-labelledby="description-heading">
 				<h2 id="description-heading" class="mb-3 text-xl font-semibold">
 					{m['eventDetails.about_heading']()}
 				</h2>
-				<div class="prose prose-sm dark:prose-invert max-w-prose">
-					{@html event.description_html}
-				</div>
+				<MarkdownContent content={event.description} class="max-w-prose" />
 			</section>
 		{/key}
 	{/if}
@@ -154,8 +153,8 @@
 	</section>
 
 	<!-- Invitation Message (if private event) -->
-	{#if event.visibility === 'private' && event.invitation_message_html}
-		{#key event.invitation_message_html}
+	{#if event.visibility === 'private' && event.invitation_message}
+		{#key event.invitation_message}
 			<section
 				aria-labelledby="invitation-heading"
 				class="rounded-lg border-2 border-primary/20 bg-primary/5 p-4"
@@ -163,9 +162,7 @@
 				<h2 id="invitation-heading" class="mb-2 text-lg font-semibold">
 					{m['eventDetails.invitation_heading']()}
 				</h2>
-				<div class="prose prose-sm dark:prose-invert max-w-prose">
-					{@html event.invitation_message_html}
-				</div>
+				<MarkdownContent content={event.invitation_message} class="max-w-prose" />
 			</section>
 		{/key}
 	{/if}

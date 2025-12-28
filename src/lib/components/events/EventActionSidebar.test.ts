@@ -17,7 +17,6 @@ function createMockEvent(overrides: Partial<EventDetailSchema> = {}): EventDetai
 		name: 'Test Event',
 		slug: 'test-event',
 		description: 'Test event description',
-		description_html: '<p>Test event description</p>',
 		event_type: 'public',
 		visibility: 'public',
 		status: 'approved',
@@ -32,7 +31,6 @@ function createMockEvent(overrides: Partial<EventDetailSchema> = {}): EventDetai
 			name: 'Test Organization',
 			slug: 'test-org',
 			description: 'Test org',
-			description_html: '<p>Test org</p>',
 			visibility: 'public',
 			member_count: 100
 		},

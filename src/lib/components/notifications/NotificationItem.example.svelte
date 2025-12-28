@@ -15,8 +15,7 @@
 		id: '123',
 		notification_type: 'invitation_received',
 		title: 'New Event Invitation',
-		body: 'You have been invited to Summer BBQ on July 20th.',
-		body_html: '<p>You have been invited to <strong>Summer BBQ</strong> on July 20th.</p>',
+		body: 'You have been invited to **Summer BBQ** on July 20th.',
 		context: { event_id: 'event-123' },
 		read_at: null,
 		created_at: new Date(Date.now() - 1000 * 60 * 30).toISOString() // 30 minutes ago
@@ -27,8 +26,7 @@
 		id: '456',
 		notification_type: 'rsvp_confirmation',
 		title: 'RSVP Confirmed',
-		body: 'Your RSVP to Tech Meetup has been confirmed.',
-		body_html: '<p>Your RSVP to <strong>Tech Meetup</strong> has been confirmed.</p>',
+		body: 'Your RSVP to **Tech Meetup** has been confirmed.',
 		context: { event_id: 'event-456' },
 		read_at: new Date(Date.now() - 1000 * 60 * 60).toISOString(), // Read 1 hour ago
 		created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString() // Created 2 hours ago
@@ -40,7 +38,6 @@
 		notification_type: 'org_announcement',
 		title: 'System Maintenance',
 		body: 'The platform will undergo scheduled maintenance on Sunday at 2 AM.',
-		body_html: '<p>The platform will undergo scheduled maintenance on Sunday at 2 AM.</p>',
 		context: {}, // No URL
 		read_at: null,
 		created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString() // 1 day ago
@@ -51,8 +48,7 @@
 		id: '101',
 		notification_type: 'membership_request_approved',
 		title: 'Membership Approved',
-		body: 'Your membership to Tech Community has been approved!',
-		body_html: '<p>Your membership to <strong>Tech Community</strong> has been approved!</p>',
+		body: 'Your membership to **Tech Community** has been approved!',
 		context: { org_slug: 'tech-community' },
 		read_at: null,
 		created_at: new Date(Date.now() - 1000 * 60 * 5).toISOString() // 5 minutes ago

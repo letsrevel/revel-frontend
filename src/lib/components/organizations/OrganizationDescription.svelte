@@ -1,15 +1,15 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+
 	/**
 	 * OrganizationDescription Component
 	 *
-	 * Displays an organization's description with proper HTML formatting and styling.
-	 * Supports both HTML content and plain text, rendering them with Tailwind Typography
-	 * for consistent, beautiful formatting.
+	 * Displays an organization's description with proper markdown formatting and styling.
+	 * Renders markdown content with Tailwind Typography for consistent, beautiful formatting.
 	 *
 	 * Features:
-	 * - Renders description_html with proper HTML parsing
-	 * - Falls back to description text if HTML not available
+	 * - Renders markdown description with proper parsing
 	 * - Applies consistent prose styling with proper spacing
 	 * - Supports dark mode
 	 * - Accessible with proper ARIA labels
@@ -18,11 +18,7 @@
 
 	interface Props {
 		/**
-		 * HTML-formatted description (preferred)
-		 */
-		descriptionHtml?: string | null;
-		/**
-		 * Plain text description (fallback)
+		 * Markdown description content
 		 */
 		description?: string | null;
 		/**
@@ -35,13 +31,10 @@
 		showCard?: boolean;
 	}
 
-	let { descriptionHtml, description, organizationName, showCard = true }: Props = $props();
+	let { description, organizationName, showCard = true }: Props = $props();
 
 	// Determine if we have content to display
-	let hasContent = $derived(
-		(descriptionHtml && descriptionHtml.trim().length > 0) ||
-			(description && description.trim().length > 0)
-	);
+	let hasContent = $derived(description && description.trim().length > 0);
 </script>
 
 {#if hasContent}
@@ -52,26 +45,14 @@
 					{m['organizationDescription.about']()}
 					{organizationName}
 				</h2>
-				<div class="prose prose-slate dark:prose-invert max-w-none">
-					{#if descriptionHtml}
-						{@html descriptionHtml}
-					{:else if description}
-						<p>{description}</p>
-					{/if}
-				</div>
+				<MarkdownContent content={description} class="prose-slate" />
 			</div>
 		{:else}
 			<h2 id="description-heading" class="sr-only">
 				{m['organizationDescription.about']()}
 				{organizationName}
 			</h2>
-			<div class="prose prose-slate dark:prose-invert max-w-none">
-				{#if descriptionHtml}
-					{@html descriptionHtml}
-				{:else if description}
-					<p>{description}</p>
-				{/if}
-			</div>
+			<MarkdownContent content={description} class="prose-slate" />
 		{/if}
 	</section>
 {/if}

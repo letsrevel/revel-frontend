@@ -11,6 +11,7 @@
 	import { createMutation } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
 	import { cn } from '$lib/utils/cn';
+	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 
 	interface Props {
 		notification: NotificationSchema;
@@ -204,14 +205,10 @@
 			</div>
 
 			<!-- Body content -->
-			<div
-				class={cn(
-					'prose prose-sm dark:prose-invert max-w-none text-sm text-muted-foreground',
-					compact && 'line-clamp-2'
-				)}
-			>
-				{@html notification.body_html}
-			</div>
+			<MarkdownContent
+				content={notification.body}
+				class={cn('text-sm text-muted-foreground', compact && 'line-clamp-2')}
+			/>
 		</div>
 
 		<!-- Action button -->
