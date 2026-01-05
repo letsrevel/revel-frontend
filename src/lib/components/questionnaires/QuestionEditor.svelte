@@ -6,13 +6,16 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Checkbox } from '$lib/components/ui/checkbox';
-	import { GripVertical, Trash2, Plus, X } from 'lucide-svelte';
+	import { GripVertical, Trash2, Plus, X, ChevronDown, ChevronUp } from 'lucide-svelte';
 	import { Badge } from '$lib/components/ui/badge';
+	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 
 	interface Question {
 		id: string;
 		type: 'multiple_choice' | 'free_text';
 		text: string;
+		hint?: string;
+		reviewerNotes?: string;
 		required: boolean;
 		order: number;
 		positiveWeight: number;
@@ -33,6 +36,9 @@
 	}
 
 	let { question, onUpdate, onRemove }: Props = $props();
+
+	// Collapsible sections state
+	let showAdvanced = $state(false);
 
 	// Add option to multiple choice
 	function addOption() {
@@ -95,22 +101,26 @@
 						</Button>
 					</div>
 
-					<!-- Question text -->
-					<div class="space-y-2">
-						<Label for="question-{question.id}">
-							Question Text
-							{#if question.required}
-								<span class="text-destructive">*</span>
-							{/if}
-						</Label>
-						<Textarea
-							id="question-{question.id}"
-							value={question.text}
-							oninput={(e) => onUpdate({ text: e.currentTarget.value })}
-							placeholder="Enter your question here..."
-							rows={2}
-						/>
-					</div>
+					<!-- Question text (markdown) -->
+					<MarkdownEditor
+						id="question-{question.id}"
+						label="Question Text (Markdown)"
+						value={question.text}
+						onValueChange={(v) => onUpdate({ text: v })}
+						placeholder="Enter your question here... Supports **bold**, *italic*, [links](url), and lists."
+						rows={3}
+						required={true}
+					/>
+
+					<!-- Hint (markdown) - optional help text shown to users -->
+					<MarkdownEditor
+						id="hint-{question.id}"
+						label="Hint (optional)"
+						value={question.hint || ''}
+						onValueChange={(v) => onUpdate({ hint: v || undefined })}
+						placeholder="Additional context or help shown to users below the question..."
+						rows={2}
+					/>
 
 					<!-- Required toggle -->
 					<div class="flex items-center space-x-2">
@@ -221,6 +231,83 @@
 							</p>
 						</div>
 					{/if}
+
+					<!-- Advanced Settings (collapsible) -->
+					<div class="border-t pt-4">
+						<button
+							type="button"
+							class="flex w-full items-center justify-between text-sm font-medium text-muted-foreground hover:text-foreground"
+							onclick={() => (showAdvanced = !showAdvanced)}
+						>
+							<span>Advanced Settings</span>
+							{#if showAdvanced}
+								<ChevronUp class="h-4 w-4" />
+							{:else}
+								<ChevronDown class="h-4 w-4" />
+							{/if}
+						</button>
+
+						{#if showAdvanced}
+							<div class="mt-4 space-y-4">
+								<!-- Reviewer Notes (markdown) - not shown to users -->
+								<MarkdownEditor
+									id="reviewer-notes-{question.id}"
+									label="Reviewer Notes (internal)"
+									value={question.reviewerNotes || ''}
+									onValueChange={(v) => onUpdate({ reviewerNotes: v || undefined })}
+									placeholder="Internal notes for staff reviewing submissions. Not shown to users."
+									rows={2}
+								/>
+
+								<!-- Scoring weights -->
+								<div class="grid gap-4 sm:grid-cols-2">
+									<div class="space-y-2">
+										<Label for="positive-weight-{question.id}">Positive Weight</Label>
+										<Input
+											id="positive-weight-{question.id}"
+											type="number"
+											value={question.positiveWeight}
+											oninput={(e) =>
+												onUpdate({ positiveWeight: parseFloat(e.currentTarget.value) || 0 })}
+											min="0"
+											max="100"
+											step="0.1"
+										/>
+										<p class="text-xs text-muted-foreground">Points added for correct answer</p>
+									</div>
+									<div class="space-y-2">
+										<Label for="negative-weight-{question.id}">Negative Weight</Label>
+										<Input
+											id="negative-weight-{question.id}"
+											type="number"
+											value={question.negativeWeight}
+											oninput={(e) =>
+												onUpdate({ negativeWeight: parseFloat(e.currentTarget.value) || 0 })}
+											min="0"
+											max="100"
+											step="0.1"
+										/>
+										<p class="text-xs text-muted-foreground">Points deducted for wrong answer</p>
+									</div>
+								</div>
+
+								<!-- Fatal question toggle -->
+								<div class="flex items-center space-x-2">
+									<Checkbox
+										id="fatal-{question.id}"
+										checked={question.isFatal}
+										onCheckedChange={(checked) => onUpdate({ isFatal: checked === true })}
+									/>
+									<Label
+										for="fatal-{question.id}"
+										class="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+									>
+										Fatal question (wrong answer = automatic rejection)
+									</Label>
+								</div>
+							</div>
+						{/if}
+					</div>
 				</div>
 			</div>
 		</div>

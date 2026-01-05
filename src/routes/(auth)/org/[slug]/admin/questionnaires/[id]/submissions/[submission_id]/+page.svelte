@@ -42,7 +42,7 @@
 
 <svelte:head>
 	<title
-		>{m['questionnaireSubmissionDetailPage.pageTitle']()} - {data.submission.user_name} - {data.organizationSlug}</title
+		>{m['questionnaireSubmissionDetailPage.pageTitle']()} - {data.submission.user.display_name} - {data.organizationSlug}</title
 	>
 </svelte:head>
 
@@ -115,7 +115,7 @@
 				</h3>
 
 				<div class="space-y-4">
-					<!-- Name -->
+					<!-- Display Name -->
 					<div class="flex items-start gap-3">
 						<div
 							class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10"
@@ -126,9 +126,37 @@
 							<p class="text-sm font-medium text-muted-foreground">
 								{m['questionnaireSubmissionDetailPage.nameLabel']()}
 							</p>
-							<p class="text-base font-medium">{data.submission.user_name}</p>
+							<p class="text-base font-medium">
+								{data.submission.user.display_name}
+								{#if data.submission.user.pronouns}
+									<span class="font-normal text-muted-foreground"
+										>({data.submission.user.pronouns})</span
+									>
+								{/if}
+							</p>
 						</div>
 					</div>
+
+					<!-- Full Name (if different from display name) -->
+					{#if data.submission.user.first_name || data.submission.user.last_name}
+						{@const fullName = [data.submission.user.first_name, data.submission.user.last_name]
+							.filter(Boolean)
+							.join(' ')}
+						{#if fullName && fullName !== data.submission.user.display_name}
+							<div class="ml-[52px]">
+								<p class="text-sm text-muted-foreground">Full name</p>
+								<p class="text-base">{fullName}</p>
+							</div>
+						{/if}
+					{/if}
+
+					<!-- Preferred Name (if different from display name) -->
+					{#if data.submission.user.preferred_name && data.submission.user.preferred_name !== data.submission.user.display_name}
+						<div class="ml-[52px]">
+							<p class="text-sm text-muted-foreground">Preferred name</p>
+							<p class="text-base">{data.submission.user.preferred_name}</p>
+						</div>
+					{/if}
 
 					<!-- Email -->
 					<div class="flex items-start gap-3">
@@ -141,7 +169,7 @@
 							<p class="text-sm font-medium text-muted-foreground">
 								{m['questionnaireSubmissionDetailPage.emailLabel']()}
 							</p>
-							<p class="break-words text-base">{data.submission.user_email}</p>
+							<p class="break-words text-base">{data.submission.user.email}</p>
 						</div>
 					</div>
 

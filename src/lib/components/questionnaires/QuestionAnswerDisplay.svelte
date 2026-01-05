@@ -4,6 +4,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Check } from 'lucide-svelte';
 	import type { QuestionAnswerDetailSchema } from '$lib/api/generated';
+	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 
 	interface MultipleChoiceAnswerContent {
 		option_id: string;
@@ -75,7 +76,12 @@
 					<Badge variant="outline" class="shrink-0">
 						{answer.question_type === 'multiple_choice' ? 'Multiple Choice' : 'Free Text'}
 					</Badge>
-					<h3 class="text-base font-medium leading-tight">{answer.question_text}</h3>
+					<div class="flex-1">
+						<MarkdownContent
+							content={answer.question_text}
+							class="text-base font-medium leading-tight"
+						/>
+					</div>
 				</div>
 
 				<!-- Answer Content -->
