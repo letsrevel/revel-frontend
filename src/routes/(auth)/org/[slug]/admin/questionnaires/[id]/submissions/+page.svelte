@@ -208,8 +208,8 @@
 							<tr class="border-b transition-colors hover:bg-muted/50">
 								<td class="px-6 py-4">
 									<div class="flex flex-col">
-										<span class="font-medium">{submission.user_name}</span>
-										<span class="text-sm text-muted-foreground">{submission.user_email}</span>
+										<span class="font-medium">{submission.user.display_name}</span>
+										<span class="text-sm text-muted-foreground">{submission.user.email}</span>
 									</div>
 								</td>
 								<td class="px-6 py-4 text-sm">{formatDate(submission.submitted_at)}</td>
@@ -242,8 +242,8 @@
 				<Card class="p-4">
 					<div class="mb-3 flex items-start justify-between">
 						<div class="flex-1">
-							<h3 class="font-semibold">{submission.user_name}</h3>
-							<p class="text-sm text-muted-foreground">{submission.user_email}</p>
+							<h3 class="font-semibold">{submission.user.display_name}</h3>
+							<p class="text-sm text-muted-foreground">{submission.user.email}</p>
 						</div>
 						<SubmissionStatusBadge
 							status={(submission.evaluation_status ||

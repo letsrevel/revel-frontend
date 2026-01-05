@@ -13,6 +13,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { toast } from 'svelte-sonner';
 	import { SvelteMap } from 'svelte/reactivity';
+	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 
 	interface Props {
 		data: PageData;
@@ -198,6 +199,11 @@
 		<p class="mt-2 text-muted-foreground">
 			{m['questionnaireSubmissionPage.subtitle']({ eventName: data.event.name })}
 		</p>
+		{#if data.questionnaire.description}
+			<div class="mt-4 rounded-lg border bg-muted/50 p-4">
+				<MarkdownContent content={data.questionnaire.description} />
+			</div>
+		{/if}
 	</div>
 
 	<!-- Form -->
@@ -206,18 +212,33 @@
 		{#if data.questionnaire.sections && data.questionnaire.sections.length > 0}
 			{#each data.questionnaire.sections.sort((a, b) => a.order - b.order) as section (section.id)}
 				<div class="rounded-lg border bg-card p-6">
-					<h2 class="mb-6 text-xl font-semibold">{section.name}</h2>
+					<h2 class="mb-2 text-xl font-semibold">{section.name}</h2>
+					{#if section.description}
+						<div class="mb-6">
+							<MarkdownContent content={section.description} class="text-muted-foreground" />
+						</div>
+					{:else}
+						<div class="mb-6"></div>
+					{/if}
 
 					<div class="space-y-6">
 						<!-- Multiple choice questions in section -->
 						{#each (section.multiple_choice_questions || []).sort((a, b) => a.order - b.order) as question (question.id)}
 							<div class="space-y-3">
-								<Label class="text-base">
-									{question.question}
-									{#if question.is_mandatory}
-										<span class="text-destructive">*</span>
+								<div>
+									<Label class="text-base">
+										<MarkdownContent content={question.question} inline={true} />
+										{#if question.is_mandatory}
+											<span class="text-destructive">*</span>
+										{/if}
+									</Label>
+									{#if question.hint}
+										<MarkdownContent
+											content={question.hint}
+											class="mt-1 text-sm text-muted-foreground"
+										/>
 									{/if}
-								</Label>
+								</div>
 
 								{#if question.allow_multiple_answers}
 									<!-- Checkboxes for multiple answers -->
@@ -265,12 +286,20 @@
 						<!-- Free text questions in section -->
 						{#each (section.free_text_questions || []).sort((a, b) => a.order - b.order) as question (question.id)}
 							<div class="space-y-2">
-								<Label for={question.id} class="text-base">
-									{question.question}
-									{#if question.is_mandatory}
-										<span class="text-destructive">*</span>
+								<div>
+									<Label for={question.id} class="text-base">
+										<MarkdownContent content={question.question} inline={true} />
+										{#if question.is_mandatory}
+											<span class="text-destructive">*</span>
+										{/if}
+									</Label>
+									{#if question.hint}
+										<MarkdownContent
+											content={question.hint}
+											class="mt-1 text-sm text-muted-foreground"
+										/>
 									{/if}
-								</Label>
+								</div>
 
 								<!-- AI Evaluation Warning -->
 								{#if data.questionnaire.evaluation_mode === 'automatic'}
@@ -321,12 +350,20 @@
 				<!-- Root multiple choice questions -->
 				{#each (data.questionnaire.multiple_choice_questions || []).sort((a, b) => a.order - b.order) as question (question.id)}
 					<div class="space-y-3 rounded-lg border bg-card p-6">
-						<Label class="text-base">
-							{question.question}
-							{#if question.is_mandatory}
-								<span class="text-destructive">*</span>
+						<div>
+							<Label class="text-base">
+								<MarkdownContent content={question.question} inline={true} />
+								{#if question.is_mandatory}
+									<span class="text-destructive">*</span>
+								{/if}
+							</Label>
+							{#if question.hint}
+								<MarkdownContent
+									content={question.hint}
+									class="mt-1 text-sm text-muted-foreground"
+								/>
 							{/if}
-						</Label>
+						</div>
 
 						{#if question.allow_multiple_answers}
 							<div class="space-y-2">
@@ -371,12 +408,20 @@
 				<!-- Root free text questions -->
 				{#each (data.questionnaire.free_text_questions || []).sort((a, b) => a.order - b.order) as question (question.id)}
 					<div class="space-y-2 rounded-lg border bg-card p-6">
-						<Label for={question.id} class="text-base">
-							{question.question}
-							{#if question.is_mandatory}
-								<span class="text-destructive">*</span>
+						<div>
+							<Label for={question.id} class="text-base">
+								<MarkdownContent content={question.question} inline={true} />
+								{#if question.is_mandatory}
+									<span class="text-destructive">*</span>
+								{/if}
+							</Label>
+							{#if question.hint}
+								<MarkdownContent
+									content={question.hint}
+									class="mt-1 text-sm text-muted-foreground"
+								/>
 							{/if}
-						</Label>
+						</div>
 
 						<!-- AI Evaluation Warning -->
 						{#if data.questionnaire.evaluation_mode === 'automatic'}
