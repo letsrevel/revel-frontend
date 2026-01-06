@@ -60,7 +60,7 @@
 	// Form state
 	let name = $state('');
 	let description = $state(''); // Questionnaire description (markdown)
-	let questionnaireType = $state<'admission' | 'membership' | 'feedback' | 'generic'>('generic');
+	let questionnaireType = $state<'admission' | 'membership' | 'feedback' | 'generic'>('admission');
 	let minScore = $state(0);
 	let evaluationMode = $state<'automatic' | 'manual' | 'hybrid'>('manual');
 	let shuffleQuestions = $state(false);
@@ -496,10 +496,9 @@
 					type="single"
 					value={questionnaireType}
 					onValueChange={(v) => {
-						console.log('[Select] onValueChange called with:', v);
-						if (v) {
-							console.log('[Select] Setting questionnaireType to:', v);
-							questionnaireType = v as typeof questionnaireType;
+						// Only allow admission for now
+						if (v === 'admission') {
+							questionnaireType = v;
 						}
 					}}
 				>
@@ -515,25 +514,43 @@
 								</div>
 							</div>
 						</SelectItem>
-						<SelectItem value="membership" label="Membership">
+						<SelectItem value="membership" label="Membership" disabled>
 							<div class="flex flex-col gap-0.5">
-								<div class="font-medium">Membership</div>
+								<div class="flex items-center gap-2 font-medium">
+									Membership
+									<span
+										class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
+										>Coming soon</span
+									>
+								</div>
 								<div class="text-xs text-muted-foreground">
 									Gate organization membership - required for joining
 								</div>
 							</div>
 						</SelectItem>
-						<SelectItem value="feedback" label="Feedback">
+						<SelectItem value="feedback" label="Feedback" disabled>
 							<div class="flex flex-col gap-0.5">
-								<div class="font-medium">Feedback</div>
+								<div class="flex items-center gap-2 font-medium">
+									Feedback
+									<span
+										class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
+										>Coming soon</span
+									>
+								</div>
 								<div class="text-xs text-muted-foreground">
 									Collect post-event feedback from attendees
 								</div>
 							</div>
 						</SelectItem>
-						<SelectItem value="generic" label="Generic">
+						<SelectItem value="generic" label="Generic" disabled>
 							<div class="flex flex-col gap-0.5">
-								<div class="font-medium">Generic</div>
+								<div class="flex items-center gap-2 font-medium">
+									Generic
+									<span
+										class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
+										>Coming soon</span
+									>
+								</div>
 								<div class="text-xs text-muted-foreground">
 									General purpose questionnaire for any use case
 								</div>
