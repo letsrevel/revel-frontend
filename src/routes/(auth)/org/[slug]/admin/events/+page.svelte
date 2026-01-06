@@ -942,20 +942,8 @@
 						<div
 							class="flex flex-col overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-md"
 						>
-							{#if event.cover_art}
-								<img
-									src={event.cover_art}
-									alt={event.name}
-									class="h-48 w-full object-cover"
-									loading="lazy"
-								/>
-							{:else}
-								<div
-									class="flex h-48 w-full items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5"
-								>
-									<Calendar class="h-16 w-16 text-primary/40" aria-hidden="true" />
-								</div>
-							{/if}
+							<!-- Cover Image -->
+							<EventCoverImage {event} />
 							<div class="flex flex-1 flex-col gap-4 p-4">
 								<div class="space-y-2">
 									<div class="flex items-start justify-between gap-2">
@@ -1009,7 +997,7 @@
 								<div class="mt-auto flex flex-wrap gap-2">
 									<!-- View Event -->
 									<a
-										href="/{data.organization.slug}/events/{event.slug}"
+										href="/events/{data.organization.slug}/{event.slug}"
 										class="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
 									>
 										<Eye class="h-4 w-4" aria-hidden="true" />
@@ -1018,7 +1006,7 @@
 
 									<!-- Manage Tickets/Attendees -->
 									<a
-										href="/{data.organization.slug}/admin/events/{event.id}/attendees"
+										href="/org/{data.organization.slug}/admin/events/{event.id}/attendees"
 										class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
 									>
 										<Users class="h-4 w-4" aria-hidden="true" />
@@ -1027,7 +1015,7 @@
 
 									<!-- Invitations -->
 									<a
-										href="/{data.organization.slug}/admin/events/{event.id}/invitations"
+										href="/org/{data.organization.slug}/admin/events/{event.id}/invitations"
 										class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
 									>
 										<Mail class="h-4 w-4" aria-hidden="true" />

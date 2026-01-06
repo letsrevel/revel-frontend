@@ -57,7 +57,7 @@
 
 {#if hasContent}
 	<div
-		class={cn('markdown-content prose prose-sm dark:prose-invert max-w-none', className)}
+		class={cn('markdown-content prose prose-sm max-w-none dark:prose-invert', className)}
 		role="region"
 		aria-label={ariaLabel}
 	>
