@@ -33,20 +33,6 @@
 	let canEdit = $derived(canEditPotluckItem(item.is_owned === true, hasManagePermission));
 	let canDelete = $derived(canDeletePotluckItem(item.is_owned === true, hasManagePermission));
 
-	// Debug logging for permissions
-	$effect(() => {
-		console.log('[PotluckItem] Permission check:', {
-			item_id: item.id,
-			item_name: item.name,
-			is_owned: item.is_owned,
-			is_assigned: item.is_assigned,
-			hasManagePermission,
-			canEdit,
-			canDelete,
-			canClaim
-		});
-	});
-
 	// Item type display names mapping
 	const ITEM_TYPE_LABELS: Record<string, () => string> = {
 		food: () => m['potluck.itemType_food'](),

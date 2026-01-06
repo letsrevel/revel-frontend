@@ -231,16 +231,6 @@ export function getPotluckPermissions(
 	// 2. They RSVP'd AND potluck is open
 	const canCreate = hasManagePermission || (hasRSVPd && potluckOpen);
 
-	console.log('[Permissions] getPotluckPermissions:', {
-		orgId,
-		eventId,
-		potluckOpen,
-		hasRSVPd,
-		hasManagePermission,
-		canCreate,
-		isOwner: permissions?.organization_permissions?.[orgId] === 'owner'
-	});
-
 	return {
 		canCreate,
 		hasManagePermission
@@ -255,13 +245,7 @@ export function getPotluckPermissions(
  * @returns true if user can edit this item
  */
 export function canEditPotluckItem(isOwned: boolean, hasManagePermission: boolean): boolean {
-	const canEdit = isOwned || hasManagePermission;
-	console.log('[Permissions] canEditPotluckItem:', {
-		isOwned,
-		hasManagePermission,
-		canEdit
-	});
-	return canEdit;
+	return isOwned || hasManagePermission;
 }
 
 /**
@@ -272,11 +256,5 @@ export function canEditPotluckItem(isOwned: boolean, hasManagePermission: boolea
  * @returns true if user can delete this item
  */
 export function canDeletePotluckItem(isOwned: boolean, hasManagePermission: boolean): boolean {
-	const canDelete = isOwned || hasManagePermission;
-	console.log('[Permissions] canDeletePotluckItem:', {
-		isOwned,
-		hasManagePermission,
-		canDelete
-	});
-	return canDelete;
+	return isOwned || hasManagePermission;
 }
