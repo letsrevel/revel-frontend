@@ -68,8 +68,8 @@ jobs:
           file: ./Dockerfile
           push: true
           build-args: |
-            PUBLIC_API_URL=https://beta-api.letsrevel.io
-            ORIGIN=https://beta.letsrevel.io
+            PUBLIC_API_URL=https://api.letsrevel.io
+            ORIGIN=https://letsrevel.io
             PUBLIC_VERSION=${{ github.event.release.tag_name }}
           tags: |
             ghcr.io/letsrevel/revel-frontend:latest
