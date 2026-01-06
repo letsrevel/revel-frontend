@@ -234,7 +234,7 @@
 	<!-- Editor / Preview -->
 	{#if showPreview}
 		<div
-			class="prose prose-sm dark:prose-invert max-w-none rounded-md border-2 border-gray-300 bg-white p-3 dark:border-gray-600 dark:bg-gray-800"
+			class="prose prose-sm max-w-none rounded-md border-2 border-gray-300 bg-white p-3 dark:prose-invert dark:border-gray-600 dark:bg-gray-800"
 			style="min-height: {rows * 1.5}rem"
 		>
 			{@html htmlPreview}

@@ -109,7 +109,7 @@
 <!-- Intro Section -->
 <section class="bg-background py-12 md:py-16">
 	<div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-		<div class="prose prose-lg dark:prose-invert mx-auto">
+		<div class="prose prose-lg mx-auto dark:prose-invert">
 			{#each content.intro.paragraphs as paragraph, i (i)}
 				<p class="text-base leading-relaxed text-muted-foreground md:text-lg">
 					{paragraph}
