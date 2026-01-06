@@ -165,6 +165,11 @@
 				{m['home.getStarted']()}
 			</a>
 		</div>
+		<div class="mt-4">
+			<a href="/login" class="text-sm text-muted-foreground hover:text-foreground hover:underline">
+				{m['home.alreadyHaveAccount']()}
+			</a>
+		</div>
 	</div>
 
 	<!-- Features Section -->

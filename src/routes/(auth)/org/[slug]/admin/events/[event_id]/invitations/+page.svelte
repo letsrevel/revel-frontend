@@ -708,22 +708,23 @@
 
 	<!-- Tabs -->
 	<div class="border-b border-border">
-		<nav class="-mb-px flex space-x-8" aria-label="Tabs">
+		<nav class="-mb-px flex flex-wrap gap-x-4 sm:gap-x-6" aria-label="Tabs">
 			<button
 				type="button"
 				onclick={() => switchTab('requests')}
 				class={cn(
-					'whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium transition-colors',
+					'border-b-2 px-1 py-3 text-sm font-medium transition-colors',
 					activeTab === 'requests'
 						? 'border-primary text-primary'
 						: 'border-transparent text-muted-foreground hover:border-border hover:text-foreground'
 				)}
 			>
-				<div class="flex items-center gap-2">
+				<div class="flex items-center gap-1.5 sm:gap-2">
 					<Mail class="h-4 w-4" aria-hidden="true" />
-					{m['eventInvitationsAdmin.tabRequests']()}
+					<span class="hidden sm:inline">{m['eventInvitationsAdmin.tabRequests']()}</span>
+					<span class="sm:hidden">{m['eventInvitationsAdmin.tabRequestsShort']()}</span>
 					<span
-						class="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground"
+						class="rounded-full bg-muted px-1.5 py-0.5 text-xs font-semibold text-muted-foreground sm:px-2"
 					>
 						{data.requestsPagination.totalCount}
 					</span>
@@ -734,17 +735,18 @@
 				type="button"
 				onclick={() => switchTab('invitations')}
 				class={cn(
-					'whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium transition-colors',
+					'border-b-2 px-1 py-3 text-sm font-medium transition-colors',
 					activeTab === 'invitations'
 						? 'border-primary text-primary'
 						: 'border-transparent text-muted-foreground hover:border-border hover:text-foreground'
 				)}
 			>
-				<div class="flex items-center gap-2">
+				<div class="flex items-center gap-1.5 sm:gap-2">
 					<UserPlus class="h-4 w-4" aria-hidden="true" />
-					{m['eventInvitationsAdmin.tabInvitations']()}
+					<span class="hidden sm:inline">{m['eventInvitationsAdmin.tabInvitations']()}</span>
+					<span class="sm:hidden">{m['eventInvitationsAdmin.tabInvitationsShort']()}</span>
 					<span
-						class="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground"
+						class="rounded-full bg-muted px-1.5 py-0.5 text-xs font-semibold text-muted-foreground sm:px-2"
 					>
 						{data.registeredPagination.totalCount + data.pendingPagination.totalCount}
 					</span>
@@ -755,17 +757,18 @@
 				type="button"
 				onclick={() => switchTab('links')}
 				class={cn(
-					'whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium transition-colors',
+					'border-b-2 px-1 py-3 text-sm font-medium transition-colors',
 					activeTab === 'links'
 						? 'border-primary text-primary'
 						: 'border-transparent text-muted-foreground hover:border-border hover:text-foreground'
 				)}
 			>
-				<div class="flex items-center gap-2">
+				<div class="flex items-center gap-1.5 sm:gap-2">
 					<Link class="h-4 w-4" aria-hidden="true" />
-					{m['eventInvitationsAdmin.tabLinks']()}
+					<span class="hidden sm:inline">{m['eventInvitationsAdmin.tabLinks']()}</span>
+					<span class="sm:hidden">{m['eventInvitationsAdmin.tabLinksShort']()}</span>
 					<span
-						class="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground"
+						class="rounded-full bg-muted px-1.5 py-0.5 text-xs font-semibold text-muted-foreground sm:px-2"
 					>
 						{tokens.length}
 					</span>

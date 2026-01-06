@@ -1,7 +1,11 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { tokenRefresh } from '$lib/api/generated';
-import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '$lib/utils/cookies';
+import {
+	getAccessTokenCookieOptions,
+	getRefreshTokenCookieOptions,
+	getRememberMeCookieOptions
+} from '$lib/utils/cookies';
 
 /**
  * Server-side API endpoint to refresh JWT access token
@@ -20,6 +24,8 @@ import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '$lib/
  */
 export const POST: RequestHandler = async ({ cookies }) => {
 	const refreshToken = cookies.get('refresh_token');
+	// Read the "remember me" preference to preserve cookie behavior
+	const rememberMe = cookies.get('remember_me') === 'true';
 
 	// No refresh token available
 	if (!refreshToken) {
@@ -29,7 +35,7 @@ export const POST: RequestHandler = async ({ cookies }) => {
 		throw error(401, 'No refresh token available');
 	}
 
-	console.log('[API /auth/refresh] Attempting token refresh');
+	console.log('[API /auth/refresh] Attempting token refresh, rememberMe:', rememberMe);
 
 	try {
 		// Call backend to refresh the token
@@ -56,7 +62,7 @@ export const POST: RequestHandler = async ({ cookies }) => {
 		// The old refresh token is now blacklisted - we MUST save the new one
 
 		// Set the new access token cookie (1 hour lifetime)
-		cookies.set('access_token', data.access, getAccessTokenCookieOptions());
+		cookies.set('access_token', data.access, getAccessTokenCookieOptions(rememberMe));
 
 		// CRITICAL: Always update refresh token - backend rotates it on every refresh
 		if (!data.refresh) {
@@ -64,7 +70,15 @@ export const POST: RequestHandler = async ({ cookies }) => {
 			throw error(500, 'Backend did not return new refresh token');
 		}
 
-		cookies.set('refresh_token', data.refresh, getRefreshTokenCookieOptions());
+		// Preserve the "remember me" behavior: persistent or session cookie
+		cookies.set('refresh_token', data.refresh, getRefreshTokenCookieOptions(rememberMe));
+
+		// Also refresh the remember_me cookie to maintain consistency
+		cookies.set(
+			'remember_me',
+			rememberMe ? 'true' : 'false',
+			getRememberMeCookieOptions(rememberMe)
+		);
 
 		// Return the new tokens to the client
 		// Client needs access token to update its in-memory store
