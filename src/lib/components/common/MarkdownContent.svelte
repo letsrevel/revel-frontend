@@ -57,7 +57,7 @@
 
 {#if hasContent}
 	<div
-		class={cn('prose prose-sm dark:prose-invert max-w-none', className)}
+		class={cn('markdown-content prose prose-sm dark:prose-invert max-w-none', className)}
 		role="region"
 		aria-label={ariaLabel}
 	>
@@ -65,3 +65,17 @@
 		{@html renderedHtml}
 	</div>
 {/if}
+
+<style>
+	/* Make links clearly visible and distinct from regular text */
+	.markdown-content :global(a) {
+		color: hsl(var(--primary));
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		font-weight: 500;
+	}
+
+	.markdown-content :global(a:hover) {
+		opacity: 0.8;
+	}
+</style>
