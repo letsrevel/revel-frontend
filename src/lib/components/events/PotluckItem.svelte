@@ -33,7 +33,6 @@
 	let canEdit = $derived(canEditPotluckItem(item.is_owned === true, hasManagePermission));
 	let canDelete = $derived(canDeletePotluckItem(item.is_owned === true, hasManagePermission));
 
-
 	// Item type display names mapping
 	const ITEM_TYPE_LABELS: Record<string, () => string> = {
 		food: () => m['potluck.itemType_food'](),
