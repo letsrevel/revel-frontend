@@ -70,6 +70,63 @@ const handleTokenCapture: Handle = async ({ event, resolve }) => {
 };
 
 /**
+ * Preload optimization hook
+ * Limits modulepreload Link headers to prevent Chromium/Safari from hanging
+ * on pages with many JS chunks (200+ modulepreloads causes browser issues)
+ */
+const handlePreloadOptimization: Handle = async ({ event, resolve }) => {
+	const response = await resolve(event);
+
+	// Only process HTML responses
+	const contentType = response.headers.get('content-type');
+	if (!contentType?.includes('text/html')) {
+		return response;
+	}
+
+	// Get the Link header
+	const linkHeader = response.headers.get('link');
+	if (!linkHeader) {
+		return response;
+	}
+
+	// Count modulepreload hints
+	const preloadCount = (linkHeader.match(/modulepreload/g) || []).length;
+
+	// If too many preloads, limit them to prevent browser hanging
+	// Chromium and Safari hang with 200+ modulepreloads
+	const MAX_PRELOADS = 50;
+	if (preloadCount > MAX_PRELOADS) {
+		// Parse Link header and keep only first MAX_PRELOADS modulepreloads
+		const links = linkHeader.split(',').map((l) => l.trim());
+		const modulePreloads: string[] = [];
+		const otherLinks: string[] = [];
+
+		for (const link of links) {
+			if (link.includes('modulepreload')) {
+				if (modulePreloads.length < MAX_PRELOADS) {
+					modulePreloads.push(link);
+				}
+			} else {
+				otherLinks.push(link);
+			}
+		}
+
+		// Create new response with limited Link header
+		const newHeaders = new Headers(response.headers);
+		const newLinkHeader = [...otherLinks, ...modulePreloads].join(', ');
+		newHeaders.set('link', newLinkHeader);
+
+		return new Response(response.body, {
+			status: response.status,
+			statusText: response.statusText,
+			headers: newHeaders
+		});
+	}
+
+	return response;
+};
+
+/**
  * Authentication hook
  */
 const handleAuth: Handle = async ({ event, resolve }) => {
@@ -115,6 +172,12 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 };
 
 /**
- * Combine token capture, authentication, and i18n hooks
+ * Combine token capture, authentication, i18n, and preload optimization hooks
+ * Note: handlePreloadOptimization must be FIRST to properly intercept responses
  */
-export const handle = sequence(handleTokenCapture, i18nHandle(), handleAuth);
+export const handle = sequence(
+	handleTokenCapture,
+	i18nHandle(),
+	handleAuth,
+	handlePreloadOptimization
+);
