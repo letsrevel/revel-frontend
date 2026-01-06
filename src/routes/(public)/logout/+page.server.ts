@@ -20,6 +20,9 @@ export const load: PageServerLoad = async ({ cookies, depends }) => {
 	// Clear refresh token cookie
 	cookies.delete('refresh_token', { path: '/' });
 
+	// Clear "remember me" preference cookie
+	cookies.delete('remember_me', { path: '/' });
+
 	// Small delay to ensure client-side auth state is cleared first
 	// This prevents race conditions where the redirect happens before onMount
 	await new Promise((resolve) => setTimeout(resolve, 100));

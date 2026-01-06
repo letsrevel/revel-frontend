@@ -34,6 +34,7 @@ export const actions: Actions = {
 			// Clear all authentication cookies
 			cookies.delete('access_token', { path: '/' });
 			cookies.delete('refresh_token', { path: '/' });
+			cookies.delete('remember_me', { path: '/' });
 
 			return {
 				success: true

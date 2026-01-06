@@ -2,7 +2,11 @@ import { fail, redirect, isRedirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import { loginSchema, otpSchema } from '$lib/schemas/auth';
 import { authObtainToken, authObtainTokenWithOtp } from '$lib/api/client';
-import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '$lib/utils/cookies';
+import {
+	getAccessTokenCookieOptions,
+	getRefreshTokenCookieOptions,
+	getRememberMeCookieOptions
+} from '$lib/utils/cookies';
 import { extractErrorMessage } from '$lib/utils/errors';
 
 export const actions = {
@@ -53,11 +57,19 @@ export const actions = {
 				const { access, refresh } = response.data;
 
 				// Store access token (1 hour - matches backend ACCESS_TOKEN_LIFETIME)
-				cookies.set('access_token', access, getAccessTokenCookieOptions());
+				cookies.set('access_token', access, getAccessTokenCookieOptions(data.rememberMe));
 
-				// Store refresh token (30 days - matches backend REFRESH_TOKEN_LIFETIME)
-				// Note: "Remember me" keeps the cookie, but backend token still expires after 30 days
-				cookies.set('refresh_token', refresh, getRefreshTokenCookieOptions());
+				// Store refresh token
+				// When rememberMe is true: cookie persists for 30 days
+				// When rememberMe is false: session cookie (expires when browser closes)
+				cookies.set('refresh_token', refresh, getRefreshTokenCookieOptions(data.rememberMe));
+
+				// Store "remember me" preference for use during token refresh
+				cookies.set(
+					'remember_me',
+					data.rememberMe ? 'true' : 'false',
+					getRememberMeCookieOptions(data.rememberMe)
+				);
 
 				// Redirect to returnUrl or dashboard
 				const returnUrl = url.searchParams.get('returnUrl') || '/dashboard';
@@ -132,10 +144,19 @@ export const actions = {
 				const { access, refresh } = response.data;
 
 				// Store access token (1 hour - matches backend ACCESS_TOKEN_LIFETIME)
-				cookies.set('access_token', access, getAccessTokenCookieOptions());
+				cookies.set('access_token', access, getAccessTokenCookieOptions(data.rememberMe));
 
-				// Store refresh token (30 days - matches backend REFRESH_TOKEN_LIFETIME)
-				cookies.set('refresh_token', refresh, getRefreshTokenCookieOptions());
+				// Store refresh token
+				// When rememberMe is true: cookie persists for 30 days
+				// When rememberMe is false: session cookie (expires when browser closes)
+				cookies.set('refresh_token', refresh, getRefreshTokenCookieOptions(data.rememberMe));
+
+				// Store "remember me" preference for use during token refresh
+				cookies.set(
+					'remember_me',
+					data.rememberMe ? 'true' : 'false',
+					getRememberMeCookieOptions(data.rememberMe)
+				);
 
 				// Redirect to returnUrl or dashboard
 				const returnUrl = url.searchParams.get('returnUrl') || '/dashboard';
