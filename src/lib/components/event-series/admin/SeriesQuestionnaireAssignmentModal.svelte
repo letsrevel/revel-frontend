@@ -250,12 +250,18 @@
 							class:border-primary={selectedIds.has(questionnaire.id)}
 							class:bg-accent={selectedIds.has(questionnaire.id)}
 						>
-							<Checkbox
-								checked={selectedIds.has(questionnaire.id)}
-								onCheckedChange={() => toggleQuestionnaire(questionnaire.id)}
-								aria-label={`Select ${questionnaire.questionnaire.name}`}
-								class="mt-1"
-							/>
+							<div
+								onclick={(e) => e.stopPropagation()}
+								onkeydown={(e) => e.stopPropagation()}
+								role="presentation"
+							>
+								<Checkbox
+									checked={selectedIds.has(questionnaire.id)}
+									onCheckedChange={() => toggleQuestionnaire(questionnaire.id)}
+									aria-label={`Select ${questionnaire.questionnaire.name}`}
+									class="mt-1"
+								/>
+							</div>
 							<div class="min-w-0 flex-1">
 								<div class="flex items-start justify-between gap-2">
 									<h3 class="line-clamp-1 font-medium">{questionnaire.questionnaire.name}</h3>

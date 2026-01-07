@@ -86,11 +86,14 @@ jobs:
       - name: Compile translations
         run: pnpm paraglide:compile
 
+      - name: Read version from package.json
+        run: echo "VERSION=$(jq -r '.version' package.json)" >> "$GITHUB_ENV"
+
       - name: Build application
         run: pnpm build
         env:
           PUBLIC_API_URL: http://localhost:8000
-          PUBLIC_VERSION: dev
+          PUBLIC_VERSION: ${{ env.VERSION }}
 
       - name: Check build artifacts
         run: |

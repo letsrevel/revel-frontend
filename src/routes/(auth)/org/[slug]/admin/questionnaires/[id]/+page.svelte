@@ -303,21 +303,38 @@
 </div>
 
 <!-- Status Management -->
-<Card class="mb-6">
+<Card
+	class="mb-6 {currentStatus === 'draft'
+		? 'border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-950/30'
+		: ''}"
+>
 	<CardHeader>
 		<div class="flex items-center justify-between">
 			<div>
 				<CardTitle>{m['questionnaireEditPage.status.title']()}</CardTitle>
-				<CardDescription>{m['questionnaireEditPage.status.description']()}</CardDescription>
+				<CardDescription
+					class={currentStatus === 'draft' ? 'text-amber-700 dark:text-amber-300' : ''}
+					>{m['questionnaireEditPage.status.description']()}</CardDescription
+				>
 			</div>
-			<Badge variant={currentStatusInfo.variant} class="text-sm">
-				{currentStatusInfo.label}
-			</Badge>
+			{#if currentStatus === 'draft'}
+				<Badge class="bg-amber-500 text-sm text-white hover:bg-amber-600">
+					{currentStatusInfo.label}
+				</Badge>
+			{:else}
+				<Badge variant={currentStatusInfo.variant} class="text-sm">
+					{currentStatusInfo.label}
+				</Badge>
+			{/if}
 		</div>
 	</CardHeader>
 	<CardContent>
 		<div class="space-y-4">
-			<p class="text-sm text-muted-foreground">
+			<p
+				class="text-sm {currentStatus === 'draft'
+					? 'text-amber-700 dark:text-amber-300'
+					: 'text-muted-foreground'}"
+			>
 				{currentStatusInfo.description}
 			</p>
 
