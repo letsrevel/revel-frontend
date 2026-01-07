@@ -983,6 +983,7 @@
 		eventId={event.id}
 		eventName={event.name}
 		tier={selectedTierForGuest}
+		eventMaxTicketsPerUser={event.max_tickets_per_user}
 		onClose={closeGuestTicketDialog}
 		onSuccess={handleGuestAttendanceSuccess}
 	/>

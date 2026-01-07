@@ -47,6 +47,8 @@
 		tier: TierSchemaWithId;
 		/** Maximum tickets the guest can purchase (null = unlimited up to tier availability) */
 		maxQuantity?: number | null;
+		/** Event-level max tickets per user (fallback when tier's max is null) */
+		eventMaxTicketsPerUser?: number | null;
 		onClose: () => void;
 		onSuccess?: () => void;
 	}
@@ -57,6 +59,7 @@
 		eventName,
 		tier,
 		maxQuantity = null,
+		eventMaxTicketsPerUser = null,
 		onClose,
 		onSuccess
 	}: Props = $props();
@@ -120,6 +123,11 @@
 	// Tier-level max tickets per user (can override event-level setting)
 	let tierMaxTicketsPerUser = $derived<number | null>((tier as any).max_tickets_per_user ?? null);
 
+	// Effective max per user: use tier's value if set, otherwise fall back to event-level
+	let effectiveMaxPerUser = $derived<number | null>(
+		tierMaxTicketsPerUser !== null ? tierMaxTicketsPerUser : eventMaxTicketsPerUser
+	);
+
 	// Calculated max quantity based on tier availability, tier limit, and user limit
 	let effectiveMaxQuantity = $derived.by(() => {
 		// Start with a large default
@@ -130,12 +138,12 @@
 			max = Math.min(max, tier.total_available);
 		}
 
-		// Limit by tier's max_tickets_per_user if set
-		if (tierMaxTicketsPerUser !== null && tierMaxTicketsPerUser > 0) {
-			max = Math.min(max, tierMaxTicketsPerUser);
+		// Limit by effective max per user (tier's or event's max_tickets_per_user)
+		if (effectiveMaxPerUser !== null && effectiveMaxPerUser > 0) {
+			max = Math.min(max, effectiveMaxPerUser);
 		}
 
-		// Limit by provided max quantity (from parent)
+		// Limit by provided max quantity (from parent - considers global event capacity)
 		if (maxQuantity !== null && maxQuantity > 0) {
 			max = Math.min(max, maxQuantity);
 		}
