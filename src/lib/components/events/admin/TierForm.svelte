@@ -154,6 +154,7 @@
 	let pwycMin = $state(tier?.pwyc_min ? String(tier.pwyc_min) : '1');
 	let pwycMax = $state(tier?.pwyc_max ? String(tier.pwyc_max) : '');
 	let currency = $state(tier?.currency ?? 'EUR');
+	let manualPaymentInstructions = $state(tier?.manual_payment_instructions ?? '');
 	let totalQuantity = $state<string>(
 		tier?.total_quantity !== null && tier?.total_quantity !== undefined
 			? String(tier.total_quantity)
@@ -326,6 +327,7 @@
 			price_type: priceType,
 			price: finalPrice,
 			currency,
+			manual_payment_instructions: manualPaymentInstructions.trim() || null,
 			total_quantity: totalQuantity ? parseInt(totalQuantity) : null,
 			sales_start_at: salesStartAt ? toTimezoneAwareISO(salesStartAt) : null,
 			sales_end_at: salesEndAt ? toTimezoneAwareISO(salesEndAt) : null,
@@ -528,6 +530,27 @@
 						</div>
 					</div>
 				{/if}
+			{/if}
+
+			<!-- Manual Payment Instructions (for offline/at_the_door payments) -->
+			{#if paymentMethod === 'offline' || paymentMethod === 'at_the_door'}
+				<div>
+					<Label for="payment-instructions"
+						>{m['tierForm.paymentInstructions']?.() ?? 'Payment Instructions'}</Label
+					>
+					<Textarea
+						id="payment-instructions"
+						bind:value={manualPaymentInstructions}
+						rows={3}
+						placeholder={m['tierForm.paymentInstructionsPlaceholder']?.() ??
+							'e.g., Bank transfer to IBAN XX..., or pay in cash at the door'}
+						disabled={isPending}
+					/>
+					<p class="mt-1 text-xs text-muted-foreground">
+						{m['tierForm.paymentInstructionsHelp']?.() ??
+							'Instructions shown to attendees after reserving their ticket'}
+					</p>
+				</div>
 			{/if}
 
 			<!-- Total Quantity -->

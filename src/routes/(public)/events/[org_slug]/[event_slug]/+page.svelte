@@ -942,6 +942,7 @@
 	membershipTier={data.membershipTier}
 	canAttendWithoutLogin={event.can_attend_without_login}
 	maxQuantity={remainingTickets}
+	eventMaxTicketsPerUser={event.max_tickets_per_user}
 	userName={userDisplayName}
 	onClose={closeTicketTierModal}
 	onClaimTicket={handleClaimTicket}
