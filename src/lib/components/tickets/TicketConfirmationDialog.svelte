@@ -223,6 +223,11 @@
 	// Tier-level max tickets per user (can override event-level setting)
 	let tierMaxTicketsPerUser = $derived<number | null>((tier as any).max_tickets_per_user ?? null);
 
+	// Effective max per user: use tier's value if set, otherwise fall back to event-level
+	let effectiveMaxPerUser = $derived<number | null>(
+		tierMaxTicketsPerUser !== null ? tierMaxTicketsPerUser : eventMaxTicketsPerUser
+	);
+
 	// Calculated max quantity based on tier availability, tier limit, and user limit
 	let effectiveMaxQuantity = $derived.by(() => {
 		// Start with a large default
@@ -233,18 +238,14 @@
 			max = Math.min(max, tier.total_available);
 		}
 
-		// Limit by tier's max_tickets_per_user if set (overrides event-level)
-		if (tierMaxTicketsPerUser !== null && tierMaxTicketsPerUser > 0) {
-			max = Math.min(max, tierMaxTicketsPerUser);
+		// Limit by effective max per user (tier's or event's max_tickets_per_user)
+		if (effectiveMaxPerUser !== null && effectiveMaxPerUser > 0) {
+			max = Math.min(max, effectiveMaxPerUser);
 		}
 
-		// Limit by user's remaining quota (from backend, considers event-level max and existing purchases)
+		// Limit by user's remaining quota (from backend, considers existing purchases)
 		if (maxQuantity !== null && maxQuantity > 0) {
 			max = Math.min(max, maxQuantity);
-		}
-		// Fallback to event-level max_tickets_per_user when user's remaining quota is not available
-		else if (eventMaxTicketsPerUser !== null && eventMaxTicketsPerUser > 0) {
-			max = Math.min(max, eventMaxTicketsPerUser);
 		}
 
 		return Math.max(1, max);
