@@ -62,9 +62,6 @@ COPY --from=builder --chown=appuser:appuser /app/build ./build
 COPY --from=builder --chown=appuser:appuser /app/node_modules ./node_modules
 COPY --from=builder --chown=appuser:appuser /app/package.json ./package.json
 
-# Copy version file
-COPY --chown=appuser:appuser version ./version
-
 # Set environment variables
 ENV NODE_ENV=production
 ENV PORT=3000
