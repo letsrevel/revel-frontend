@@ -87,7 +87,7 @@ jobs:
         run: pnpm paraglide:compile
 
       - name: Read version from package.json
-        run: echo "VERSION=$(node -p \"require('./package.json').version\")" >> "$GITHUB_ENV"
+        run: echo "VERSION=$(jq -r '.version' package.json)" >> "$GITHUB_ENV"
 
       - name: Build application
         run: pnpm build
