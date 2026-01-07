@@ -20,6 +20,8 @@
 		canAttendWithoutLogin?: boolean;
 		/** Maximum tickets user can purchase (from remaining_tickets) */
 		maxQuantity?: number | null;
+		/** Event-level max tickets per user (fallback when maxQuantity is null) */
+		eventMaxTicketsPerUser?: number | null;
 		/** User's display name for auto-fill */
 		userName?: string;
 		onClose: () => void;
@@ -42,6 +44,7 @@
 		membershipTier = null,
 		canAttendWithoutLogin = false,
 		maxQuantity = null,
+		eventMaxTicketsPerUser = null,
 		userName = '',
 		onClose,
 		onClaimTicket,
@@ -131,10 +134,30 @@
 		isProcessing = true;
 		const { amount, tickets } = payload;
 		const isOnline = selectedTier.payment_method === 'online';
+		const isPwyc = selectedTier.price_type === 'pwyc';
 
 		try {
-			// Free tickets or offline/at-the-door (reservation)
-			if (
+			// PWYC tiers require the PWYC endpoint regardless of payment method
+			if (isPwyc && onCheckout) {
+				await onCheckout(selectedTier.id, true, amount, tickets);
+
+				// For non-online PWYC, close dialogs immediately
+				if (!isOnline) {
+					showConfirmation = false;
+					selectedTier = null;
+					onClose();
+					isProcessing = false;
+				} else {
+					// For online payments, keep loading state until redirect
+					setTimeout(() => {
+						if (isProcessing) {
+							isProcessing = false;
+						}
+					}, 10000);
+				}
+			}
+			// Free tickets or offline/at-the-door (reservation) - non-PWYC
+			else if (
 				selectedTier.payment_method === 'free' ||
 				selectedTier.payment_method === 'offline' ||
 				selectedTier.payment_method === 'at_the_door'
@@ -147,11 +170,11 @@
 				onClose();
 				isProcessing = false;
 			}
-			// Online payment (with or without PWYC)
+			// Online payment (fixed price)
 			else if (isOnline && onCheckout) {
 				// For online payments, start the checkout process
 				// Don't close the modal - keep showing loading state until redirect
-				await onCheckout(selectedTier.id, selectedTier.price_type === 'pwyc', amount, tickets);
+				await onCheckout(selectedTier.id, false, undefined, tickets);
 
 				// Note: For online payments, the page will redirect to Stripe,
 				// so we keep the loading state visible. If there's an error,
@@ -351,6 +374,7 @@
 		onConfirm={handleConfirm}
 		{isProcessing}
 		{maxQuantity}
+		{eventMaxTicketsPerUser}
 		{userName}
 	/>
 {/if}

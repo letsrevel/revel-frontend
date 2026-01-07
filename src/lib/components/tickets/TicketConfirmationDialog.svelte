@@ -57,6 +57,8 @@
 		isProcessing?: boolean;
 		/** Maximum tickets the user can purchase (null = unlimited up to tier availability) */
 		maxQuantity?: number | null;
+		/** Event-level max tickets per user (fallback when maxQuantity is null) */
+		eventMaxTicketsPerUser?: number | null;
 		/** User's display name for auto-fill when purchasing single ticket */
 		userName?: string;
 	}
@@ -69,6 +71,7 @@
 		onConfirm,
 		isProcessing = false,
 		maxQuantity = null,
+		eventMaxTicketsPerUser = null,
 		userName = ''
 	}: Props = $props();
 
@@ -238,6 +241,10 @@
 		// Limit by user's remaining quota (from backend, considers event-level max and existing purchases)
 		if (maxQuantity !== null && maxQuantity > 0) {
 			max = Math.min(max, maxQuantity);
+		}
+		// Fallback to event-level max_tickets_per_user when user's remaining quota is not available
+		else if (eventMaxTicketsPerUser !== null && eventMaxTicketsPerUser > 0) {
+			max = Math.min(max, eventMaxTicketsPerUser);
 		}
 
 		return Math.max(1, max);
