@@ -298,12 +298,18 @@
 									class:border-primary={selectedEventIds.has(event.id)}
 									class:bg-accent={selectedEventIds.has(event.id)}
 								>
-									<Checkbox
-										checked={selectedEventIds.has(event.id)}
-										onCheckedChange={() => toggleEvent(event.id)}
-										aria-label={`Select ${event.name}`}
-										class="mt-1"
-									/>
+									<div
+										onclick={(e) => e.stopPropagation()}
+										onkeydown={(e) => e.stopPropagation()}
+										role="presentation"
+									>
+										<Checkbox
+											checked={selectedEventIds.has(event.id)}
+											onCheckedChange={() => toggleEvent(event.id)}
+											aria-label={`Select ${event.name}`}
+											class="mt-1"
+										/>
+									</div>
 									<div class="min-w-0 flex-1">
 										<div class="flex items-start justify-between gap-2">
 											<h3 class="line-clamp-1 font-medium">{event.name}</h3>
@@ -384,12 +390,18 @@
 									class:border-primary={selectedSeriesIds.has(series.id)}
 									class:bg-accent={selectedSeriesIds.has(series.id)}
 								>
-									<Checkbox
-										checked={selectedSeriesIds.has(series.id)}
-										onCheckedChange={() => toggleSeries(series.id)}
-										aria-label={`Select ${series.name}`}
-										class="mt-1"
-									/>
+									<div
+										onclick={(e) => e.stopPropagation()}
+										onkeydown={(e) => e.stopPropagation()}
+										role="presentation"
+									>
+										<Checkbox
+											checked={selectedSeriesIds.has(series.id)}
+											onCheckedChange={() => toggleSeries(series.id)}
+											aria-label={`Select ${series.name}`}
+											class="mt-1"
+										/>
+									</div>
 									<div class="min-w-0 flex-1">
 										<div class="flex items-start justify-between gap-2">
 											<h3 class="line-clamp-1 font-medium">{series.name}</h3>

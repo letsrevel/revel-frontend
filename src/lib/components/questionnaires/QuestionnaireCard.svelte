@@ -171,9 +171,15 @@
 					<Badge variant={typeVariant} class="text-xs">
 						{typeLabel}
 					</Badge>
-					<Badge variant={statusVariant} class="text-xs">
-						{statusLabel}
-					</Badge>
+					{#if questionnaire.questionnaire.status === 'draft'}
+						<Badge class="bg-amber-500 text-xs text-white hover:bg-amber-600">
+							{statusLabel}
+						</Badge>
+					{:else}
+						<Badge variant={statusVariant} class="text-xs">
+							{statusLabel}
+						</Badge>
+					{/if}
 				</CardDescription>
 			</div>
 			<FileText class="h-5 w-5 flex-shrink-0 text-muted-foreground" aria-hidden="true" />

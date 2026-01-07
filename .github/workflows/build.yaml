@@ -15,9 +15,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Read version from file
+      - name: Read version from package.json
         id: get_version
-        run: echo "VERSION=$(cat ./version)" >> "$GITHUB_ENV"
+        run: echo "VERSION=$(node -p \"require('./package.json').version\")" >> "$GITHUB_ENV"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
