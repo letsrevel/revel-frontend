@@ -28,7 +28,15 @@
 
 	let { data }: Props = $props();
 
-	// Question type definition
+	// Forward declaration for recursive types
+	interface Option {
+		text: string;
+		isCorrect: boolean;
+		conditionalQuestions?: Question[];
+		conditionalSections?: ConditionalSection[];
+	}
+
+	// Question type definition (used for both top-level and conditional questions)
 	interface Question {
 		id: string;
 		type: 'multiple_choice' | 'free_text';
@@ -41,11 +49,20 @@
 		negativeWeight: number;
 		isFatal: boolean;
 		// For multiple choice
-		options?: Array<{ text: string; isCorrect: boolean }>;
+		options?: Option[];
 		allowMultipleAnswers?: boolean;
 		shuffleOptions?: boolean;
 		// For free text
 		llmGuidelines?: string;
+	}
+
+	// Conditional section type (shown when option is selected)
+	interface ConditionalSection {
+		id: string;
+		name: string;
+		description?: string;
+		order: number;
+		questions: Question[];
 	}
 
 	// Section type definition
@@ -69,6 +86,9 @@
 	let maxSubmissionAge = $state<number | null>(null); // Duration in days
 	let canRetakeAfter = $state<number | null>(null); // Duration in hours
 	let membersExempt = $state(false); // Exempt members from questionnaire
+
+	// Error state for displaying validation errors
+	let saveError = $state<string | null>(null);
 
 	// Top-level questions (not in any section)
 	let topLevelQuestions = $state<Question[]>([]);
@@ -317,6 +337,126 @@
 		return Object.keys(errors).length === 0;
 	}
 
+	// Helper to parse validation error messages from API response
+	function parseValidationErrors(errorData: unknown): string {
+		if (!errorData || typeof errorData !== 'object') {
+			return 'An unknown validation error occurred.';
+		}
+
+		const messages: string[] = [];
+
+		// Handle different error formats
+		if (Array.isArray(errorData)) {
+			// Array of errors
+			for (const err of errorData) {
+				if (typeof err === 'string') {
+					messages.push(err);
+				} else if (err && typeof err === 'object') {
+					// Object with field errors
+					for (const [field, fieldErrors] of Object.entries(err)) {
+						if (Array.isArray(fieldErrors)) {
+							for (const fieldErr of fieldErrors) {
+								if (typeof fieldErr === 'string') {
+									messages.push(`${field}: ${fieldErr}`);
+								} else if (fieldErr && typeof fieldErr === 'object' && 'message' in fieldErr) {
+									messages.push(`${field}: ${(fieldErr as { message: string }).message}`);
+								}
+							}
+						} else if (typeof fieldErrors === 'string') {
+							messages.push(`${field}: ${fieldErrors}`);
+						}
+					}
+				}
+			}
+		} else {
+			// Object with field errors
+			for (const [field, fieldErrors] of Object.entries(errorData)) {
+				if (Array.isArray(fieldErrors)) {
+					for (const err of fieldErrors) {
+						if (typeof err === 'string') {
+							messages.push(`${field}: ${err}`);
+						} else if (err && typeof err === 'object' && 'message' in err) {
+							messages.push(`${field}: ${(err as { message: string }).message}`);
+						}
+					}
+				} else if (typeof fieldErrors === 'string') {
+					messages.push(`${field}: ${fieldErrors}`);
+				}
+			}
+		}
+
+		if (messages.length === 0) {
+			return 'Validation failed. Please check your input.';
+		}
+
+		// Format common error messages to be more user-friendly
+		return messages
+			.map((msg) => {
+				// Make common errors more readable
+				if (msg.includes('multiple correct answers')) {
+					return 'A question with "Allow multiple answers" disabled cannot have multiple correct options marked. Please enable "Allow multiple answers" or select only one correct option.';
+				}
+				return msg;
+			})
+			.join('\n');
+	}
+
+	// Helper to convert a conditional MC question to API format (no double nesting allowed)
+	function conditionalMcQuestionToApiFormat(q: Question, order: number): Record<string, unknown> {
+		return {
+			question: q.text,
+			hint: q.hint || null,
+			is_mandatory: q.required,
+			order: order,
+			positive_weight: q.positiveWeight,
+			negative_weight: q.negativeWeight,
+			is_fatal: q.isFatal,
+			allow_multiple_answers: q.allowMultipleAnswers || false,
+			shuffle_options: q.shuffleOptions ?? true,
+			options:
+				q.options
+					?.filter((o) => o.text.trim())
+					.map((o, i) => ({
+						option: o.text,
+						is_correct: o.isCorrect,
+						order: i
+						// Note: nested conditionals inside conditional questions are not supported
+					})) || []
+		};
+	}
+
+	// Helper to convert a conditional FT question to API format
+	function conditionalFtQuestionToApiFormat(q: Question, order: number): Record<string, unknown> {
+		return {
+			question: q.text,
+			hint: q.hint || null,
+			is_mandatory: q.required,
+			order: order,
+			positive_weight: q.positiveWeight,
+			negative_weight: q.negativeWeight,
+			is_fatal: q.isFatal,
+			llm_guidelines: q.llmGuidelines || null
+		};
+	}
+
+	// Helper to convert a conditional section to API format
+	function conditionalSectionToApiFormat(s: ConditionalSection, order: number) {
+		const mcQuestions = s.questions
+			.filter((q) => q.type === 'multiple_choice' && q.text.trim())
+			.map((q, idx) => conditionalMcQuestionToApiFormat(q, idx));
+		const ftQuestions = s.questions
+			.filter((q) => q.type === 'free_text' && q.text.trim())
+			.map((q, idx) => conditionalFtQuestionToApiFormat(q, idx));
+
+		return {
+			name: s.name,
+			description: s.description || null,
+			order: order,
+			...(mcQuestions.length > 0 ? { multiplechoicequestion_questions: mcQuestions } : {}),
+			...(ftQuestions.length > 0 ? { freetextquestion_questions: ftQuestions } : {})
+		};
+	}
+
 	// Helper to convert a MC question to API format
 	function mcQuestionToApiFormat(q: Question) {
 		return {
@@ -333,11 +473,31 @@
 			options:
 				q.options
 					?.filter((o) => o.text.trim())
-					.map((o, i) => ({
-						option: o.text,
-						is_correct: o.isCorrect,
-						order: i
-					})) || []
+					.map((o, i) => {
+						// Get conditional questions for this option
+						const conditionalMc = (o.conditionalQuestions || [])
+							.filter((cq) => cq.type === 'multiple_choice' && cq.text.trim())
+							.map((cq, idx) => conditionalMcQuestionToApiFormat(cq, idx));
+						const conditionalFt = (o.conditionalQuestions || [])
+							.filter((cq) => cq.type === 'free_text' && cq.text.trim())
+							.map((cq, idx) => conditionalFtQuestionToApiFormat(cq, idx));
+						// Get conditional sections for this option
+						const conditionalSections = (o.conditionalSections || [])
+							.filter((cs) => cs.name.trim())
+							.map((cs, idx) => conditionalSectionToApiFormat(cs, idx));
+
+						return {
+							option: o.text,
+							is_correct: o.isCorrect,
+							order: i,
+							// Include conditional content if any exists
+							...(conditionalMc.length > 0 ? { conditional_mc_questions: conditionalMc } : {}),
+							...(conditionalFt.length > 0 ? { conditional_ft_questions: conditionalFt } : {}),
+							...(conditionalSections.length > 0
+								? { conditional_sections: conditionalSections }
+								: {})
+						};
+					}) || []
 		};
 	}
 
@@ -358,6 +518,9 @@
 
 	// Save questionnaire
 	async function saveQuestionnaire() {
+		// Clear previous error
+		saveError = null;
+
 		if (!validate()) {
 			return;
 		}
@@ -415,6 +578,13 @@
 			});
 
 			if (response.error) {
+				// Handle 422 validation errors
+				if (response.response.status === 422) {
+					const errorMessage = parseValidationErrors(response.error);
+					saveError = errorMessage;
+					console.error('Validation error:', response.error);
+					return;
+				}
 				throw new Error('Failed to create questionnaire');
 			}
 
@@ -422,7 +592,7 @@
 			await goto(`/org/${data.organization.slug}/admin/questionnaires`);
 		} catch (err) {
 			console.error('Failed to save questionnaire:', err);
-			alert('Failed to save questionnaire. Please try again.');
+			saveError = 'Failed to save questionnaire. Please try again.';
 		} finally {
 			isSaving = false;
 		}
@@ -941,6 +1111,28 @@
 			{/if}
 		</CardContent>
 	</Card>
+
+	<!-- Error Display -->
+	{#if saveError}
+		<Card class="border-destructive bg-destructive/10">
+			<CardContent class="py-4">
+				<div class="flex items-start gap-3">
+					<div class="flex-1">
+						<p class="font-medium text-destructive">Validation Error</p>
+						<p class="mt-1 whitespace-pre-wrap text-sm text-destructive/90">{saveError}</p>
+					</div>
+					<Button
+						variant="ghost"
+						size="sm"
+						onclick={() => (saveError = null)}
+						class="text-destructive hover:text-destructive"
+					>
+						Dismiss
+					</Button>
+				</div>
+			</CardContent>
+		</Card>
+	{/if}
 
 	<!-- Actions -->
 	<div class="flex justify-end gap-3">
