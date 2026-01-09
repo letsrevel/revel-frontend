@@ -46,6 +46,7 @@
 		isResumingPayment?: boolean;
 		onGuestRsvpClick?: () => void;
 		onGuestTicketClick?: () => void;
+		onInvitationRequestSuccess?: () => void;
 		class?: string;
 	}
 
@@ -63,6 +64,7 @@
 		isResumingPayment = false,
 		onGuestRsvpClick,
 		onGuestTicketClick,
+		onInvitationRequestSuccess,
 		class: className
 	}: Props = $props();
 
@@ -402,6 +404,7 @@
 							organizationSlug={event.organization.slug}
 							eventName={event.name}
 							{eventTokenDetails}
+							{onInvitationRequestSuccess}
 						/>
 					</div>
 				{:else}

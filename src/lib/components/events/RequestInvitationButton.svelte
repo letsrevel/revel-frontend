@@ -12,6 +12,7 @@
 		eventName: string;
 		isAuthenticated: boolean;
 		hasAlreadyRequested?: boolean;
+		onSuccess?: () => void;
 		class?: string;
 	}
 
@@ -20,6 +21,7 @@
 		eventName,
 		isAuthenticated,
 		hasAlreadyRequested = false,
+		onSuccess,
 		class: className
 	}: Props = $props();
 
@@ -68,8 +70,8 @@
 				showDialog = false;
 				requestSubmitted = false;
 				message = '';
-				// Reload the page to show updated status
-				window.location.reload();
+				// Call the onSuccess callback to refresh parent state
+				onSuccess?.();
 			}, 2000);
 		}
 	}));
