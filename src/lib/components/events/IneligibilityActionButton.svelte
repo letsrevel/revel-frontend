@@ -32,6 +32,7 @@
 		disabled?: boolean;
 		eventName?: string;
 		eventTokenDetails?: EventTokenSchema | null;
+		onInvitationRequestSuccess?: () => void;
 		class?: string;
 	}
 
@@ -44,6 +45,7 @@
 		disabled = false,
 		eventName = '',
 		eventTokenDetails,
+		onInvitationRequestSuccess,
 		class: className
 	}: Props = $props();
 
@@ -66,6 +68,7 @@
 			wait_for_questionnaire_evaluation: Clock,
 			wait_to_retake_questionnaire: Clock,
 			request_invitation: Mail,
+			wait_for_invitation_approval: Clock,
 			become_member: UserPlus,
 			join_waitlist: ListPlus,
 			wait_for_open_spot: Clock,
@@ -272,8 +275,15 @@
 			eventName={eventName || 'this event'}
 			{isAuthenticated}
 			hasAlreadyRequested={false}
+			onSuccess={onInvitationRequestSuccess}
 			class="w-full"
 		/>
+	{:else if nextStep === 'wait_for_invitation_approval'}
+		<!-- Pending invitation approval status -->
+		<Button variant="secondary" disabled={true} class="w-full">
+			<Clock class="h-5 w-5" aria-hidden="true" />
+			<span>{buttonText}</span>
+		</Button>
 	{:else if nextStep === 'wait_for_open_spot'}
 		<!-- Special layout for waitlist status with Leave button below -->
 		<div class="space-y-2">

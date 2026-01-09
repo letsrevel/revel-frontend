@@ -736,6 +736,7 @@
 				isResumingPayment={resumePaymentMutation.isPending}
 				onGuestRsvpClick={openGuestRsvpDialog}
 				onGuestTicketClick={openGuestTicketDialog}
+				onInvitationRequestSuccess={refreshUserStatus}
 			/>
 		</div>
 
@@ -868,6 +869,7 @@
 						isResumingPayment={resumePaymentMutation.isPending}
 						onGuestRsvpClick={openGuestRsvpDialog}
 						onGuestTicketClick={openGuestTicketDialog}
+						onInvitationRequestSuccess={refreshUserStatus}
 					/>
 
 					<!-- Organization Info (desktop only) -->

@@ -28,6 +28,7 @@
 		organizationSlug?: string;
 		eventName?: string;
 		eventTokenDetails?: EventTokenSchema | null;
+		onInvitationRequestSuccess?: () => void;
 		class?: string;
 	}
 
@@ -38,6 +39,7 @@
 		organizationSlug,
 		eventName,
 		eventTokenDetails,
+		onInvitationRequestSuccess,
 		class: className
 	}: Props = $props();
 
@@ -53,6 +55,7 @@
 			wait_for_questionnaire_evaluation: Clock,
 			wait_to_retake_questionnaire: Clock,
 			request_invitation: Mail,
+			wait_for_invitation_approval: Clock,
 			become_member: UserPlus,
 			join_waitlist: ListPlus,
 			wait_for_open_spot: Clock,
@@ -172,6 +175,7 @@
 						{eventTokenDetails}
 						questionnaireIds={eligibility.questionnaires_missing}
 						retryOn={eligibility.retry_on}
+						{onInvitationRequestSuccess}
 					/>
 				</div>
 			{/if}
