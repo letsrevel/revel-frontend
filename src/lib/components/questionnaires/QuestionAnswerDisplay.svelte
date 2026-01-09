@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Card } from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Check } from 'lucide-svelte';
+	import { Check, CornerDownRight } from 'lucide-svelte';
 	import type { QuestionAnswerDetailSchema } from '$lib/api/generated';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 
@@ -21,6 +21,12 @@
 	}
 
 	let { answers }: Props = $props();
+
+	// Check if a question is conditional (has depends_on_option_id)
+	function isConditionalQuestion(answer: QuestionAnswerDetailSchema): boolean {
+		// The answer schema should include depends_on_option_id if the question is conditional
+		return !!(answer as { depends_on_option_id?: string | null }).depends_on_option_id;
+	}
 
 	function formatAnswer(answer: QuestionAnswerDetailSchema): string {
 		const content = answer.answer_content;
@@ -69,13 +75,20 @@
 -->
 <div class="space-y-4">
 	{#each answers as answer (answer.question_id)}
-		<Card class="p-4">
+		{@const isConditional = isConditionalQuestion(answer)}
+		<Card class="p-4 {isConditional ? 'border-l-2 border-l-primary/50 bg-primary/5' : ''}">
 			<div class="space-y-3">
 				<!-- Question Text -->
 				<div class="flex items-start gap-2">
-					<Badge variant="outline" class="shrink-0">
+					{#if isConditional}
+						<CornerDownRight class="mt-0.5 h-4 w-4 shrink-0 text-primary/60" aria-hidden="true" />
+					{/if}
+					<Badge variant={isConditional ? 'secondary' : 'outline'} class="shrink-0">
 						{answer.question_type === 'multiple_choice' ? 'Multiple Choice' : 'Free Text'}
 					</Badge>
+					{#if isConditional}
+						<Badge variant="outline" class="shrink-0 text-xs">Conditional</Badge>
+					{/if}
 					<div class="flex-1">
 						<MarkdownContent
 							content={answer.question_text}

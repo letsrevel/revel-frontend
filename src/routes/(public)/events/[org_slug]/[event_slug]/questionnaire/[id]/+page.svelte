@@ -8,12 +8,23 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { RadioGroup, RadioGroupItem } from '$lib/components/ui/radio-group';
-	import { ArrowLeft, Check, Loader2, AlertCircle } from 'lucide-svelte';
+	import { ArrowLeft, Check, Loader2, AlertCircle, CornerDownRight } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
 	import * as m from '$lib/paraglide/messages.js';
 	import { toast } from 'svelte-sonner';
-	import { SvelteMap } from 'svelte/reactivity';
+	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+	import { slide } from 'svelte/transition';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+	import {
+		flattenQuestionnaire,
+		getVisibleQuestionIds,
+		getVisibleSectionIds,
+		getQuestionsForOption,
+		getSectionsForOption,
+		optionHasDependents,
+		type ConditionalQuestion,
+		type ConditionalSection
+	} from '$lib/utils/conditional-questions';
 
 	interface Props {
 		data: PageData;
@@ -21,71 +32,131 @@
 
 	let { data }: Props = $props();
 
+	// Flatten the questionnaire for easier conditional handling
+	let flattened = $derived(flattenQuestionnaire(data.questionnaire));
+
 	// Form state - using SvelteMap for fine-grained reactivity
 	let multipleChoiceAnswers = new SvelteMap<string, string[]>();
 	let freeTextAnswers = new SvelteMap<string, string>();
 	let validationErrors = new SvelteMap<string, string>();
 
-	// Flatten all questions from sections and root level
-	let allMultipleChoiceQuestions = $derived.by(() => {
-		const questions = [...(data.questionnaire.multiple_choice_questions || [])];
-		data.questionnaire.sections?.forEach((section) => {
-			questions.push(...(section.multiple_choice_questions || []));
-		});
-		return questions.sort((a, b) => a.order - b.order);
+	// Track all selected option IDs across all questions
+	let selectedOptionIds = $derived.by(() => {
+		const ids = new SvelteSet<string>();
+		for (const [, optionIds] of multipleChoiceAnswers) {
+			for (const id of optionIds) {
+				ids.add(id);
+			}
+		}
+		return ids;
 	});
 
-	let allFreeTextQuestions = $derived.by(() => {
-		const questions = [...(data.questionnaire.free_text_questions || [])];
-		data.questionnaire.sections?.forEach((section) => {
-			questions.push(...(section.free_text_questions || []));
-		});
-		return questions.sort((a, b) => a.order - b.order);
+	// Compute visible questions and sections based on selections
+	let visibleQuestionIds = $derived(getVisibleQuestionIds(flattened, selectedOptionIds));
+	let visibleSectionIds = $derived(getVisibleSectionIds(flattened, selectedOptionIds));
+
+	// Helper to check if a question is visible
+	function isQuestionVisible(questionId: string): boolean {
+		return visibleQuestionIds.has(questionId);
+	}
+
+	// Helper to check if a section is visible
+	function isSectionVisible(sectionId: string): boolean {
+		return visibleSectionIds.has(sectionId);
+	}
+
+	// Get all visible questions (for validation and submission)
+	let allVisibleQuestions = $derived.by(() => {
+		const questions: ConditionalQuestion[] = [];
+
+		// Top-level questions (non-conditional are always included)
+		for (const q of flattened.topLevelQuestions) {
+			if (isQuestionVisible(q.id)) {
+				questions.push(q);
+			}
+		}
+
+		// Questions from visible sections
+		for (const section of flattened.sections) {
+			if (isSectionVisible(section.id)) {
+				for (const q of section.questions) {
+					if (isQuestionVisible(q.id)) {
+						questions.push(q);
+					}
+				}
+			}
+		}
+
+		// Questions from conditional sections that are now visible
+		for (const optionId of selectedOptionIds) {
+			const conditionalSections = getSectionsForOption(flattened, optionId);
+			for (const section of conditionalSections) {
+				for (const q of section.questions) {
+					if (isQuestionVisible(q.id)) {
+						questions.push(q);
+					}
+				}
+			}
+		}
+
+		// Conditional questions that are directly dependent on options
+		for (const optionId of selectedOptionIds) {
+			const conditionalQuestions = getQuestionsForOption(flattened, optionId);
+			for (const q of conditionalQuestions) {
+				questions.push(q);
+			}
+		}
+
+		return questions;
 	});
 
 	// Submission mutation
 	const submitMutation = createMutation(() => ({
 		mutationFn: async () => {
-			// Validate mandatory questions
+			// Validate only visible mandatory questions
 			validationErrors.clear();
 
-			allMultipleChoiceQuestions.forEach((q) => {
+			for (const q of allVisibleQuestions) {
 				if (q.is_mandatory) {
-					const answers = multipleChoiceAnswers.get(q.id);
-					if (!answers || answers.length === 0) {
-						validationErrors.set(q.id, m['questionnaireSubmissionPage.validation_required']());
+					if (q.type === 'multiple_choice') {
+						const answers = multipleChoiceAnswers.get(q.id);
+						if (!answers || answers.length === 0) {
+							validationErrors.set(q.id, m['questionnaireSubmissionPage.validation_required']());
+						}
+					} else {
+						const answer = freeTextAnswers.get(q.id);
+						if (!answer || answer.trim().length === 0) {
+							validationErrors.set(q.id, m['questionnaireSubmissionPage.validation_required']());
+						}
 					}
 				}
-			});
-
-			allFreeTextQuestions.forEach((q) => {
-				if (q.is_mandatory) {
-					const answer = freeTextAnswers.get(q.id);
-					if (!answer || answer.trim().length === 0) {
-						validationErrors.set(q.id, m['questionnaireSubmissionPage.validation_required']());
-					}
-				}
-			});
+			}
 
 			if (validationErrors.size > 0) {
 				throw new Error(m['questionnaireSubmissionPage.validation_allRequired']());
 			}
 
-			// Build submission
+			// Build submission - only include answers for visible questions
+			const visibleMcAnswers = Array.from(multipleChoiceAnswers.entries())
+				.filter(([questionId]) => visibleQuestionIds.has(questionId))
+				.map(([question_id, options_id]) => ({
+					question_id,
+					options_id
+				}));
+
+			const visibleFtAnswers = Array.from(freeTextAnswers.entries())
+				.filter(
+					([questionId, answer]) => visibleQuestionIds.has(questionId) && answer.trim().length > 0
+				)
+				.map(([question_id, answer]) => ({
+					question_id,
+					answer: answer.trim()
+				}));
+
 			const submission = {
 				questionnaire_id: data.questionnaire.id,
-				multiple_choice_answers: Array.from(multipleChoiceAnswers.entries()).map(
-					([question_id, options_id]) => ({
-						question_id,
-						options_id
-					})
-				),
-				free_text_answers: Array.from(freeTextAnswers.entries())
-					.filter(([, answer]) => answer.trim().length > 0)
-					.map(([question_id, answer]) => ({
-						question_id,
-						answer: answer.trim()
-					})),
+				multiple_choice_answers: visibleMcAnswers,
+				free_text_answers: visibleFtAnswers,
 				status: 'ready' as const
 			};
 
@@ -138,13 +209,15 @@
 		}
 	}));
 
-	function handleMultipleChoiceChange(questionId: string, optionId: string, checked: boolean) {
-		const question = allMultipleChoiceQuestions.find((q) => q.id === questionId);
-		if (!question) return;
-
+	function handleMultipleChoiceChange(
+		questionId: string,
+		optionId: string,
+		checked: boolean,
+		allowMultiple: boolean
+	) {
 		const currentAnswers = multipleChoiceAnswers.get(questionId) || [];
 
-		if (question.allow_multiple_answers) {
+		if (allowMultiple) {
 			// Checkbox: add or remove option
 			if (checked) {
 				multipleChoiceAnswers.set(questionId, [...currentAnswers, optionId]);
@@ -173,6 +246,11 @@
 	function handleSubmit(e: Event) {
 		e.preventDefault();
 		submitMutation.mutate();
+	}
+
+	// Helper to check if option is selected
+	function isOptionSelected(questionId: string, optionId: string): boolean {
+		return multipleChoiceAnswers.get(questionId)?.includes(optionId) || false;
 	}
 </script>
 
@@ -208,258 +286,53 @@
 
 	<!-- Form -->
 	<form onsubmit={handleSubmit} class="space-y-8">
-		<!-- Sections with questions -->
-		{#if data.questionnaire.sections && data.questionnaire.sections.length > 0}
-			{#each data.questionnaire.sections.sort((a, b) => a.order - b.order) as section (section.id)}
-				<div class="rounded-lg border bg-card p-6">
-					<h2 class="mb-2 text-xl font-semibold">{section.name}</h2>
-					{#if section.description}
-						<div class="mb-6">
-							<MarkdownContent content={section.description} class="text-muted-foreground" />
-						</div>
-					{:else}
-						<div class="mb-6"></div>
-					{/if}
-
-					<div class="space-y-6">
-						<!-- Multiple choice questions in section -->
-						{#each (section.multiple_choice_questions || []).sort((a, b) => a.order - b.order) as question (question.id)}
-							<div class="space-y-3">
-								<div>
-									<Label class="text-base">
-										<MarkdownContent content={question.question} inline={true} />
-										{#if question.is_mandatory}
-											<span class="text-destructive">*</span>
-										{/if}
-									</Label>
-									{#if question.hint}
-										<MarkdownContent
-											content={question.hint}
-											class="mt-1 text-sm text-muted-foreground"
-										/>
-									{/if}
-								</div>
-
-								{#if question.allow_multiple_answers}
-									<!-- Checkboxes for multiple answers -->
-									<div class="space-y-2">
-										{#each question.options || [] as option (option.id)}
-											<div class="flex items-center space-x-2">
-												<Checkbox
-													id="{question.id}-{option.id}"
-													checked={multipleChoiceAnswers.get(question.id)?.includes(option.id) ||
-														false}
-													onCheckedChange={(checked) =>
-														handleMultipleChoiceChange(question.id, option.id, !!checked)}
-												/>
-												<label
-													for="{question.id}-{option.id}"
-													class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-												>
-													{option.option}
-												</label>
-											</div>
-										{/each}
-									</div>
-								{:else}
-									<!-- Radio buttons for single answer -->
-									<RadioGroup
-										value={multipleChoiceAnswers.get(question.id)?.[0] || ''}
-										onValueChange={(value: string) =>
-											handleMultipleChoiceChange(question.id, value, true)}
-									>
-										{#each question.options || [] as option (option.id)}
-											<div class="flex items-center space-x-2">
-												<RadioGroupItem value={option.id} id="{question.id}-{option.id}" />
-												<Label for="{question.id}-{option.id}">{option.option}</Label>
-											</div>
-										{/each}
-									</RadioGroup>
-								{/if}
-
-								{#if validationErrors.has(question.id)}
-									<p class="text-sm text-destructive">{validationErrors.get(question.id)}</p>
-								{/if}
-							</div>
-						{/each}
-
-						<!-- Free text questions in section -->
-						{#each (section.free_text_questions || []).sort((a, b) => a.order - b.order) as question (question.id)}
-							<div class="space-y-2">
-								<div>
-									<Label for={question.id} class="text-base">
-										<MarkdownContent content={question.question} inline={true} />
-										{#if question.is_mandatory}
-											<span class="text-destructive">*</span>
-										{/if}
-									</Label>
-									{#if question.hint}
-										<MarkdownContent
-											content={question.hint}
-											class="mt-1 text-sm text-muted-foreground"
-										/>
-									{/if}
-								</div>
-
-								<!-- AI Evaluation Warning -->
-								{#if data.questionnaire.evaluation_mode === 'automatic'}
-									<div
-										class="flex items-start gap-2 rounded-md border border-orange-500/50 bg-orange-50 p-3 text-sm text-orange-900 dark:border-orange-500/30 dark:bg-orange-950/20 dark:text-orange-200"
-										role="status"
-									>
-										<AlertCircle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-										<p>{m['questionnaireSubmissionPage.aiWarning_automatic']()}</p>
-									</div>
-								{:else if data.questionnaire.evaluation_mode === 'hybrid'}
-									<div
-										class="flex items-start gap-2 rounded-md border border-yellow-500/50 bg-yellow-50 p-3 text-sm text-yellow-900 dark:border-yellow-500/30 dark:bg-yellow-950/20 dark:text-yellow-200"
-										role="status"
-									>
-										<AlertCircle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-										<p>{m['questionnaireSubmissionPage.aiWarning_hybrid']()}</p>
-									</div>
-								{/if}
-
-								<Textarea
-									id={question.id}
-									value={freeTextAnswers.get(question.id) || ''}
-									oninput={(e) => handleFreeTextChange(question.id, e.currentTarget.value)}
-									placeholder={m['questionnaireSubmissionPage.textarea_placeholder']()}
-									class={cn(validationErrors.has(question.id) && 'border-destructive')}
-									rows={4}
-									maxlength={500}
-								/>
-								<p class="text-xs text-muted-foreground">
-									{m['questionnaireSubmissionPage.characterCount']({
-										count: (freeTextAnswers.get(question.id) || '').length
-									})}
-								</p>
-								{#if validationErrors.has(question.id)}
-									<p class="text-sm text-destructive">{validationErrors.get(question.id)}</p>
-								{/if}
-							</div>
-						{/each}
+		<!-- Non-conditional Sections -->
+		{#each flattened.sections
+			.filter((s) => !s.depends_on_option_id)
+			.sort((a, b) => a.order - b.order) as section (section.id)}
+			<div class="rounded-lg border bg-card p-6">
+				<h2 class="mb-2 text-xl font-semibold">{section.name}</h2>
+				{#if section.description}
+					<div class="mb-6">
+						<MarkdownContent content={section.description} class="text-muted-foreground" />
 					</div>
+				{:else}
+					<div class="mb-6"></div>
+				{/if}
+
+				<div class="space-y-6">
+					{#each section.questions
+						.filter((q) => !q.depends_on_option_id)
+						.sort((a, b) => a.order - b.order) as question (question.id)}
+						{@const isVisible = isQuestionVisible(question.id)}
+						{#if isVisible}
+							{#if question.type === 'multiple_choice'}
+								{@render multipleChoiceQuestion(question, false)}
+							{:else}
+								{@render freeTextQuestion(question, false)}
+							{/if}
+						{/if}
+					{/each}
 				</div>
-			{/each}
-		{/if}
+			</div>
+		{/each}
 
-		<!-- Root-level questions (no section) -->
-		{#if (data.questionnaire.multiple_choice_questions && data.questionnaire.multiple_choice_questions.length > 0) || (data.questionnaire.free_text_questions && data.questionnaire.free_text_questions.length > 0)}
+		<!-- Top-level questions (not in any section, non-conditional) -->
+		{#if flattened.topLevelQuestions.filter((q) => !q.depends_on_option_id).length > 0}
 			<div class="space-y-6">
-				<!-- Root multiple choice questions -->
-				{#each (data.questionnaire.multiple_choice_questions || []).sort((a, b) => a.order - b.order) as question (question.id)}
-					<div class="space-y-3 rounded-lg border bg-card p-6">
-						<div>
-							<Label class="text-base">
-								<MarkdownContent content={question.question} inline={true} />
-								{#if question.is_mandatory}
-									<span class="text-destructive">*</span>
-								{/if}
-							</Label>
-							{#if question.hint}
-								<MarkdownContent
-									content={question.hint}
-									class="mt-1 text-sm text-muted-foreground"
-								/>
+				{#each flattened.topLevelQuestions
+					.filter((q) => !q.depends_on_option_id)
+					.sort((a, b) => a.order - b.order) as question (question.id)}
+					{@const isVisible = isQuestionVisible(question.id)}
+					{#if isVisible}
+						<div class="rounded-lg border bg-card p-6">
+							{#if question.type === 'multiple_choice'}
+								{@render multipleChoiceQuestion(question, false)}
+							{:else}
+								{@render freeTextQuestion(question, false)}
 							{/if}
 						</div>
-
-						{#if question.allow_multiple_answers}
-							<div class="space-y-2">
-								{#each question.options || [] as option (option.id)}
-									<div class="flex items-center space-x-2">
-										<Checkbox
-											id="{question.id}-{option.id}"
-											checked={multipleChoiceAnswers.get(question.id)?.includes(option.id) || false}
-											onCheckedChange={(checked) =>
-												handleMultipleChoiceChange(question.id, option.id, !!checked)}
-										/>
-										<label
-											for="{question.id}-{option.id}"
-											class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-										>
-											{option.option}
-										</label>
-									</div>
-								{/each}
-							</div>
-						{:else}
-							<RadioGroup
-								value={multipleChoiceAnswers.get(question.id)?.[0] || ''}
-								onValueChange={(value: string) =>
-									handleMultipleChoiceChange(question.id, value, true)}
-							>
-								{#each question.options || [] as option (option.id)}
-									<div class="flex items-center space-x-2">
-										<RadioGroupItem value={option.id} id="{question.id}-{option.id}" />
-										<Label for="{question.id}-{option.id}">{option.option}</Label>
-									</div>
-								{/each}
-							</RadioGroup>
-						{/if}
-
-						{#if validationErrors.has(question.id)}
-							<p class="text-sm text-destructive">{validationErrors.get(question.id)}</p>
-						{/if}
-					</div>
-				{/each}
-
-				<!-- Root free text questions -->
-				{#each (data.questionnaire.free_text_questions || []).sort((a, b) => a.order - b.order) as question (question.id)}
-					<div class="space-y-2 rounded-lg border bg-card p-6">
-						<div>
-							<Label for={question.id} class="text-base">
-								<MarkdownContent content={question.question} inline={true} />
-								{#if question.is_mandatory}
-									<span class="text-destructive">*</span>
-								{/if}
-							</Label>
-							{#if question.hint}
-								<MarkdownContent
-									content={question.hint}
-									class="mt-1 text-sm text-muted-foreground"
-								/>
-							{/if}
-						</div>
-
-						<!-- AI Evaluation Warning -->
-						{#if data.questionnaire.evaluation_mode === 'automatic'}
-							<div
-								class="flex items-start gap-2 rounded-md border border-orange-500/50 bg-orange-50 p-3 text-sm text-orange-900 dark:border-orange-500/30 dark:bg-orange-950/20 dark:text-orange-200"
-								role="status"
-							>
-								<AlertCircle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-								<p>{m['questionnaireSubmissionPage.aiWarning_automatic']()}</p>
-							</div>
-						{:else if data.questionnaire.evaluation_mode === 'hybrid'}
-							<div
-								class="flex items-start gap-2 rounded-md border border-yellow-500/50 bg-yellow-50 p-3 text-sm text-yellow-900 dark:border-yellow-500/30 dark:bg-yellow-950/20 dark:text-yellow-200"
-								role="status"
-							>
-								<AlertCircle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-								<p>{m['questionnaireSubmissionPage.aiWarning_hybrid']()}</p>
-							</div>
-						{/if}
-
-						<Textarea
-							id={question.id}
-							value={freeTextAnswers.get(question.id) || ''}
-							oninput={(e) => handleFreeTextChange(question.id, e.currentTarget.value)}
-							placeholder={m['questionnaireSubmissionPage.textarea_placeholder']()}
-							class={cn(validationErrors.has(question.id) && 'border-destructive')}
-							rows={4}
-							maxlength={500}
-						/>
-						<p class="text-xs text-muted-foreground">
-							{m['questionnaireSubmissionPage.characterCount']({
-								count: (freeTextAnswers.get(question.id) || '').length
-							})}
-						</p>
-						{#if validationErrors.has(question.id)}
-							<p class="text-sm text-destructive">{validationErrors.get(question.id)}</p>
-						{/if}
-					</div>
+					{/if}
 				{/each}
 			</div>
 		{/if}
@@ -504,3 +377,172 @@
 		{/if}
 	</form>
 </div>
+
+<!-- Multiple Choice Question Snippet -->
+{#snippet multipleChoiceQuestion(question: ConditionalQuestion, isConditional: boolean)}
+	<div class={cn('space-y-3', isConditional && 'border-l-2 border-primary/30 pl-4')}>
+		<div class="flex items-start gap-2">
+			{#if isConditional}
+				<CornerDownRight class="mt-1 h-4 w-4 shrink-0 text-primary/60" aria-hidden="true" />
+			{/if}
+			<div class="flex-1">
+				<Label class="text-base">
+					<MarkdownContent content={question.question} inline={true} />
+					{#if question.is_mandatory}
+						<span class="text-destructive">*</span>
+					{/if}
+				</Label>
+				{#if question.hint}
+					<MarkdownContent content={question.hint} class="mt-1 text-sm text-muted-foreground" />
+				{/if}
+			</div>
+		</div>
+
+		{#if question.allow_multiple_answers}
+			<!-- Checkboxes for multiple answers -->
+			<div class="space-y-2">
+				{#each question.options || [] as option (option.id)}
+					<div class="space-y-2">
+						<div class="flex items-center space-x-2">
+							<Checkbox
+								id="{question.id}-{option.id}"
+								checked={isOptionSelected(question.id, option.id)}
+								onCheckedChange={(checked) =>
+									handleMultipleChoiceChange(question.id, option.id, !!checked, true)}
+							/>
+							<label
+								for="{question.id}-{option.id}"
+								class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+							>
+								{option.option}
+							</label>
+						</div>
+						<!-- Conditional questions/sections for this option -->
+						{@render conditionalContent(option.id, question.id)}
+					</div>
+				{/each}
+			</div>
+		{:else}
+			<!-- Radio buttons for single answer -->
+			<RadioGroup
+				value={multipleChoiceAnswers.get(question.id)?.[0] || ''}
+				onValueChange={(value: string) =>
+					handleMultipleChoiceChange(question.id, value, true, false)}
+			>
+				{#each question.options || [] as option (option.id)}
+					<div class="space-y-2">
+						<div class="flex items-center space-x-2">
+							<RadioGroupItem value={option.id} id="{question.id}-{option.id}" />
+							<Label for="{question.id}-{option.id}">{option.option}</Label>
+						</div>
+						<!-- Conditional questions/sections for this option -->
+						{@render conditionalContent(option.id, question.id)}
+					</div>
+				{/each}
+			</RadioGroup>
+		{/if}
+
+		{#if validationErrors.has(question.id)}
+			<p class="text-sm text-destructive">{validationErrors.get(question.id)}</p>
+		{/if}
+	</div>
+{/snippet}
+
+<!-- Free Text Question Snippet -->
+{#snippet freeTextQuestion(question: ConditionalQuestion, isConditional: boolean)}
+	<div class={cn('space-y-2', isConditional && 'border-l-2 border-primary/30 pl-4')}>
+		<div class="flex items-start gap-2">
+			{#if isConditional}
+				<CornerDownRight class="mt-1 h-4 w-4 shrink-0 text-primary/60" aria-hidden="true" />
+			{/if}
+			<div class="flex-1">
+				<Label for={question.id} class="text-base">
+					<MarkdownContent content={question.question} inline={true} />
+					{#if question.is_mandatory}
+						<span class="text-destructive">*</span>
+					{/if}
+				</Label>
+				{#if question.hint}
+					<MarkdownContent content={question.hint} class="mt-1 text-sm text-muted-foreground" />
+				{/if}
+			</div>
+		</div>
+
+		<!-- AI Evaluation Warning -->
+		{#if data.questionnaire.evaluation_mode === 'automatic'}
+			<div
+				class="flex items-start gap-2 rounded-md border border-orange-500/50 bg-orange-50 p-3 text-sm text-orange-900 dark:border-orange-500/30 dark:bg-orange-950/20 dark:text-orange-200"
+				role="status"
+			>
+				<AlertCircle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+				<p>{m['questionnaireSubmissionPage.aiWarning_automatic']()}</p>
+			</div>
+		{:else if data.questionnaire.evaluation_mode === 'hybrid'}
+			<div
+				class="flex items-start gap-2 rounded-md border border-yellow-500/50 bg-yellow-50 p-3 text-sm text-yellow-900 dark:border-yellow-500/30 dark:bg-yellow-950/20 dark:text-yellow-200"
+				role="status"
+			>
+				<AlertCircle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+				<p>{m['questionnaireSubmissionPage.aiWarning_hybrid']()}</p>
+			</div>
+		{/if}
+
+		<Textarea
+			id={question.id}
+			value={freeTextAnswers.get(question.id) || ''}
+			oninput={(e) => handleFreeTextChange(question.id, e.currentTarget.value)}
+			placeholder={m['questionnaireSubmissionPage.textarea_placeholder']()}
+			class={cn(validationErrors.has(question.id) && 'border-destructive')}
+			rows={4}
+			maxlength={500}
+		/>
+		<p class="text-xs text-muted-foreground">
+			{m['questionnaireSubmissionPage.characterCount']({
+				count: (freeTextAnswers.get(question.id) || '').length
+			})}
+		</p>
+		{#if validationErrors.has(question.id)}
+			<p class="text-sm text-destructive">{validationErrors.get(question.id)}</p>
+		{/if}
+	</div>
+{/snippet}
+
+<!-- Conditional Content (questions/sections that appear when an option is selected) -->
+{#snippet conditionalContent(optionId: string, parentQuestionId: string)}
+	{#if optionHasDependents(flattened, optionId) && isOptionSelected(parentQuestionId, optionId)}
+		<div transition:slide={{ duration: 200 }} class="mt-3 space-y-4">
+			<!-- Conditional questions for this option -->
+			{#each getQuestionsForOption(flattened, optionId).sort((a, b) => a.order - b.order) as conditionalQ (conditionalQ.id)}
+				{#if conditionalQ.type === 'multiple_choice'}
+					{@render multipleChoiceQuestion(conditionalQ, true)}
+				{:else}
+					{@render freeTextQuestion(conditionalQ, true)}
+				{/if}
+			{/each}
+
+			<!-- Conditional sections for this option -->
+			{#each getSectionsForOption(flattened, optionId).sort((a, b) => a.order - b.order) as conditionalSection (conditionalSection.id)}
+				<div class="ml-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
+					<h3 class="mb-2 text-lg font-semibold">{conditionalSection.name}</h3>
+					{#if conditionalSection.description}
+						<div class="mb-4">
+							<MarkdownContent
+								content={conditionalSection.description}
+								class="text-sm text-muted-foreground"
+							/>
+						</div>
+					{/if}
+					<div class="space-y-4">
+						{#each conditionalSection.questions.sort((a, b) => a.order - b.order) as sectionQ (sectionQ.id)}
+							{#if sectionQ.type === 'multiple_choice'}
+								{@render multipleChoiceQuestion(sectionQ, true)}
+							{:else}
+								{@render freeTextQuestion(sectionQ, true)}
+							{/if}
+						{/each}
+					</div>
+				</div>
+			{/each}
+		</div>
+	{/if}
+{/snippet}
