@@ -142,6 +142,7 @@ export function getNextStepMessage(nextStep: NextStep): string {
 		wait_for_questionnaire_evaluation: 'Your questionnaire submission is under review',
 		wait_to_retake_questionnaire: 'You can retake the questionnaire soon',
 		request_invitation: 'Request an invitation to attend this private event',
+		wait_for_invitation_approval: 'Your invitation request is pending approval',
 		become_member: 'Join the organization to attend this members-only event',
 		join_waitlist: 'This event is full, but you can join the waitlist',
 		wait_for_open_spot: "You're on the waitlist for this event",
@@ -163,6 +164,7 @@ export function getActionButtonText(nextStep: NextStep): string {
 		wait_for_questionnaire_evaluation: 'Pending Review',
 		wait_to_retake_questionnaire: 'Retry Available Soon',
 		request_invitation: 'Request Invitation',
+		wait_for_invitation_approval: 'Pending Approval',
 		become_member: 'Join Organization',
 		join_waitlist: 'Join Waitlist',
 		wait_for_open_spot: "You're on the Waitlist",
@@ -180,6 +182,7 @@ export function isActionDisabled(nextStep: NextStep): boolean {
 	const disabledStates: NextStep[] = [
 		'wait_for_questionnaire_evaluation',
 		'wait_to_retake_questionnaire',
+		'wait_for_invitation_approval',
 		'wait_for_event_to_open',
 		'wait_for_open_spot'
 	];
@@ -198,6 +201,7 @@ export function getNextStepIcon(nextStep: NextStep): string {
 		wait_for_questionnaire_evaluation: 'Clock',
 		wait_to_retake_questionnaire: 'Clock',
 		request_invitation: 'Mail',
+		wait_for_invitation_approval: 'Clock',
 		become_member: 'UserPlus',
 		join_waitlist: 'ListPlus',
 		wait_for_open_spot: 'Clock',
