@@ -1175,7 +1175,23 @@
 		"ticketPendingPayment": "Ticket Pending Payment",
 		"eligibilityStatus": "Eligibility Status",
 		"manageEvent": "Manage Event",
-		"eventDetails": "Event Details"
+		"eventDetails": "Event Details",
+		"processing": "Processing...",
+		"resumePayment": "Resume Payment",
+		"viewAllTickets": "View All {count} Tickets",
+		"viewTicket": "View Ticket",
+		"showTicket": "Show Ticket",
+		"showTickets": "Show Tickets ({count})",
+		"hideRsvp": "Hide RSVP",
+		"changeRsvp": "Change RSVP",
+		"buyMoreTickets": "Buy More Tickets",
+		"ticketsLeft": "({count} left)",
+		"addToCalendar": "Add to Calendar",
+		"editEvent": "Edit Event",
+		"manageTickets": "Manage Tickets",
+		"manageAttendees": "Manage Attendees",
+		"manageInvitations": "Manage Invitations",
+		"pendingPaymentDescription": "Complete your payment to confirm your ticket. Your reservation will expire if payment is not completed."
 	},
 	"eventQuickInfo": {
 		"limitedSpots": "Limited spots remaining",
@@ -1204,7 +1220,8 @@
 		"series": "Series"
 	},
 	"organizationInfo": {
-		"aboutOrganizer": "About the organizer"
+		"aboutOrganizer": "About the organizer",
+		"viewProfile": "View organization profile"
 	},
 	"potluckItemEditModal": {
 		"addPotluckItem": "Add potluck item",
@@ -1640,7 +1657,24 @@
 	},
 	"requestMembershipButton": {
 		"requestSubmitted": "Request Submitted!",
-		"requestMembership": "Request Membership"
+		"requestMembership": "Request Membership",
+		"owner": "Owner",
+		"staff": "Staff",
+		"member": "Member",
+		"messageOptional": "Message (Optional)",
+		"messagePlaceholder": "Tell the organizers why you'd like to join...",
+		"characters": "characters",
+		"requestSubmittedDesc": "Your membership request has been sent to {organizationName}. You'll be notified when it's reviewed.",
+		"requestDesc": "Submit a request to become a member of {organizationName}. Members may have access to exclusive events and content.",
+		"cancel": "Cancel",
+		"submitting": "Submitting...",
+		"submitRequest": "Submit Request",
+		"ownerAriaLabel": "You are the owner of this organization",
+		"staffAriaLabel": "You are a staff member of this organization",
+		"memberAriaLabel": "You are a member of this organization",
+		"membershipStatusAriaLabel": "Membership status: {status}",
+		"membershipTierAriaLabel": "Membership tier: {tier}",
+		"submitError": "Failed to submit request. Please try again."
 	},
 	"stripeConnect": {
 		"paymentProcessing": "Payment Processing",
