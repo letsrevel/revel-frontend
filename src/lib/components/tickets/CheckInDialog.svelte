@@ -205,9 +205,13 @@
 
 	/**
 	 * Check if ticket can be checked in
+	 * Allows check-in for active tickets, or pending tickets if payment confirmation is needed
+	 * (organizer confirms offline payment was received)
 	 */
-	function canCheckIn(status: string): boolean {
-		return status === 'active';
+	function canCheckIn(status: string, needsPayment: boolean): boolean {
+		if (status === 'active') return true;
+		if (status === 'pending' && needsPayment) return true;
+		return false;
 	}
 </script>
 
@@ -351,7 +355,7 @@
 				<Button
 					variant="default"
 					onclick={onConfirm}
-					disabled={isLoading || !canCheckIn(ticket.status)}
+					disabled={isLoading || !canCheckIn(ticket.status, needsPaymentConfirmation)}
 				>
 					{#if isLoading}
 						Checking In...
