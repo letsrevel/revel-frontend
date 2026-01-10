@@ -596,7 +596,8 @@
 					<p class="text-xs text-muted-foreground">
 						{m['detailsStep.applicationDeadlineHint']?.({
 							timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-						}) ?? `Deadline for submitting invitation requests or questionnaires. Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`}
+						}) ??
+							`Deadline for submitting invitation requests or questionnaires. Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`}
 					</p>
 				</div>
 

@@ -178,7 +178,9 @@
 			if (reason.includes('not open')) return m['ineligibilityMessage.registrationNotOpen']();
 			if (reason.includes('finished')) return m['ineligibilityMessage.eventEnded']();
 			if (reason.includes('application deadline has passed'))
-				return m['ineligibilityMessage.applicationDeadlinePassed']?.() ?? 'Application deadline passed';
+				return (
+					m['ineligibilityMessage.applicationDeadlinePassed']?.() ?? 'Application deadline passed'
+				);
 			if (reason.includes('RSVP deadline has passed') || reason.includes('deadline has passed'))
 				return m['ineligibilityMessage.rsvpDeadlinePassed']();
 			if (reason.includes('Tickets are not currently on sale'))
@@ -365,10 +367,15 @@
 
 			<!-- Application Deadline Display -->
 			{#if shouldShowDeadline && applyBefore}
-				<div class="flex items-center gap-2 rounded-md bg-orange-50 px-3 py-2 text-sm text-orange-800 dark:bg-orange-950/30 dark:text-orange-200">
+				<div
+					class="flex items-center gap-2 rounded-md bg-orange-50 px-3 py-2 text-sm text-orange-800 dark:bg-orange-950/30 dark:text-orange-200"
+				>
 					<Calendar class="h-4 w-4 shrink-0" aria-hidden="true" />
 					<span>
-						<strong>{m['ineligibilityMessage.applicationDeadline']?.() ?? 'Application deadline'}:</strong>
+						<strong
+							>{m['ineligibilityMessage.applicationDeadline']?.() ??
+								'Application deadline'}:</strong
+						>
 						{formatDeadline(applyBefore)}
 					</span>
 				</div>
