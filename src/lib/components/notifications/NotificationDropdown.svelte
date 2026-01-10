@@ -1,11 +1,14 @@
 <script lang="ts">
-	import { Bell } from 'lucide-svelte';
+	import { Bell, CheckCheck } from 'lucide-svelte';
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import NotificationBadge from './NotificationBadge.svelte';
 	import NotificationList from './NotificationList.svelte';
 	import * as m from '$lib/paraglide/messages.js';
+	import { notificationMarkAllRead } from '$lib/api/generated';
+	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
+	import { toast } from 'svelte-sonner';
 
 	interface Props {
 		authToken: string;
@@ -16,9 +19,35 @@
 
 	let { authToken, pollingInterval = 60000, maxItems = 5, class: className }: Props = $props();
 
+	const queryClient = useQueryClient();
+
+	// Mark all as read mutation
+	let markAllReadMutation = createMutation(() => ({
+		mutationFn: async () => {
+			return await notificationMarkAllRead({
+				headers: { Authorization: `Bearer ${authToken}` }
+			});
+		},
+		onSuccess: () => {
+			// Invalidate notification queries to refresh the list
+			queryClient.invalidateQueries({ queryKey: ['notifications'] });
+			queryClient.invalidateQueries({ queryKey: ['unreadNotificationCount'] });
+			toast.success(
+				m['notificationList.markAllReadSuccess']?.() || 'All notifications marked as read'
+			);
+		},
+		onError: () => {
+			toast.error(m['notificationList.markAllReadError']?.() || 'Failed to mark all as read');
+		}
+	}));
+
 	// Navigate to full notifications page
 	function handleViewAll(): void {
 		goto('/account/notifications');
+	}
+
+	function handleMarkAllRead(): void {
+		markAllReadMutation.mutate();
 	}
 </script>
 
@@ -44,10 +73,23 @@
 		class="flex max-h-[80vh] w-[400px] max-w-[90vw] flex-col overflow-hidden p-0 md:max-h-[600px]"
 	>
 		<!-- Header -->
-		<div class="shrink-0 border-b px-4 py-3">
+		<div class="flex shrink-0 items-center justify-between border-b px-4 py-3">
 			<DropdownMenu.Label class="p-0 text-base font-semibold">
 				{m['notificationDropdown.notifications']?.() || 'Notifications'}
 			</DropdownMenu.Label>
+			<Button
+				variant="ghost"
+				size="sm"
+				onclick={handleMarkAllRead}
+				disabled={markAllReadMutation.isPending}
+				class="h-8 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground"
+				aria-label={m['notificationList.markAllAsRead']?.() || 'Mark all as read'}
+			>
+				<CheckCheck class="h-3.5 w-3.5" aria-hidden="true" />
+				<span class="hidden sm:inline"
+					>{m['notificationList.markAllAsRead']?.() || 'Mark all as read'}</span
+				>
+			</Button>
 		</div>
 
 		<!-- Notification List (compact mode) -->

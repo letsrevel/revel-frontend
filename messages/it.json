@@ -3195,18 +3195,21 @@
 		"lastPage": "Last page"
 	},
 	"questionnaireSubmissionDetailPage": {
-		"pageTitle": "Review Submission",
-		"title": "Review Submission",
-		"subtitle": "Evaluate this questionnaire response and decide whether to approve or reject",
-		"backToSubmissions": "Back to Submissions",
-		"responsesTitle": "Responses",
-		"evaluateTitle": "Evaluate This Submission",
-		"changeEvaluationTitle": "Change Evaluation",
-		"submitterInfoTitle": "Submitter Information",
-		"nameLabel": "Name",
+		"pageTitle": "Valuta Risposta",
+		"title": "Valuta Risposta",
+		"subtitle": "Valuta questa risposta al questionario e decidi se approvare o rifiutare",
+		"backToSubmissions": "Torna alle Risposte",
+		"responsesTitle": "Risposte",
+		"evaluateTitle": "Valuta Questa Risposta",
+		"changeEvaluationTitle": "Modifica Valutazione",
+		"submitterInfoTitle": "Informazioni sul Richiedente",
+		"nameLabel": "Nome",
 		"emailLabel": "Email",
-		"submittedLabel": "Submitted",
-		"notSubmitted": "Not submitted"
+		"submittedLabel": "Inviato",
+		"notSubmitted": "Non inviato",
+		"eventContextTitle": "Contesto Evento",
+		"eventNameLabel": "Evento",
+		"viewEventLink": "Visualizza evento"
 	},
 	"questionnaireEditPage": {
 		"pageTitle": "Modifica Questionario",
