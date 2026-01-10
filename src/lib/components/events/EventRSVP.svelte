@@ -392,6 +392,7 @@
 				organizationSlug={event.organization.slug}
 				organizationName={event.organization.name}
 				{eventTokenDetails}
+				applyBefore={event.apply_before}
 			/>
 		{/if}
 

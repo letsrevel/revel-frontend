@@ -134,6 +134,7 @@
 		check_in_ends_at: toDateTimeLocal((existingEvent as any)?.check_in_ends_at) || null,
 		potluck_open: existingEvent?.potluck_open || false,
 		accept_invitation_requests: existingEvent?.accept_invitation_requests || false,
+		apply_before: toDateTimeLocal((existingEvent as any)?.apply_before) || null,
 		can_attend_without_login: existingEvent?.can_attend_without_login || false,
 		event_series_id: existingEvent?.event_series?.id || null,
 		venue_id: existingEvent?.venue?.id || null,
@@ -435,6 +436,7 @@
 					check_in_ends_at: toISOString(formData.check_in_ends_at),
 					potluck_open: formData.potluck_open || false,
 					accept_invitation_requests: formData.accept_invitation_requests || false,
+					apply_before: toISOString(formData.apply_before),
 					can_attend_without_login: formData.can_attend_without_login || false,
 					event_series_id: formData.event_series_id || null,
 					venue_id: formData.venue_id || null
@@ -497,6 +499,7 @@
 				check_in_ends_at: toISOString(formData.check_in_ends_at),
 				potluck_open: formData.potluck_open || false,
 				accept_invitation_requests: formData.accept_invitation_requests || false,
+				apply_before: toISOString(formData.apply_before),
 				can_attend_without_login: formData.can_attend_without_login || false,
 				event_series_id: formData.event_series_id || null,
 				venue_id: formData.venue_id || null

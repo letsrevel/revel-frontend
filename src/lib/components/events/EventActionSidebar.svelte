@@ -405,6 +405,7 @@
 							organizationSlug={event.organization.slug}
 							eventName={event.name}
 							{eventTokenDetails}
+							applyBefore={event.apply_before}
 							{onInvitationRequestSuccess}
 						/>
 					</div>

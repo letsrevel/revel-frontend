@@ -1324,6 +1324,8 @@
 		"waitlistOpen": "Lista d'attesa attiva",
 		"enablePotluck": "Abilita coordinamento potluck",
 		"acceptInvitationRequests": "Accetta richieste di invito",
+		"applicationDeadline": "Scadenza Candidatura",
+		"applicationDeadlineHint": "Termine per l'invio di richieste di invito o questionari. Fuso orario: {timezone}",
 		"canAttendWithoutLogin": "Consenti partecipazione ospite",
 		"canAttendWithoutLoginHint": "Permetti agli utenti senza account di confermare presenza o acquistare biglietti",
 		"none": "Nessuno",
@@ -2627,7 +2629,15 @@
 		"questionnairePendingReview_singular": "questionnaire pending review",
 		"questionnairePendingReview_plural": "questionnaires pending review",
 		"questionnaireFailed_singular": "questionnaire failed",
-		"questionnaireFailed_plural": "questionnaires failed"
+		"questionnaireFailed_plural": "questionnaires failed",
+		"applicationDeadlinePassed": "Scadenza candidatura passata",
+		"applicationDeadlinePassedExplanation": "La scadenza per candidarsi a questo evento è passata. Le candidature non sono più accettate.",
+		"applicationDeadline": "Scadenza candidatura",
+		"deadlinePassed": "Scadenza passata",
+		"deadlineLessThanOneHour": "Meno di 1 ora rimanente",
+		"deadlineHoursLeft": "{hours} ore rimanenti per candidarsi",
+		"deadlineTomorrow": "Domani",
+		"deadlineDaysLeft": "{days} giorni rimanenti per candidarsi"
 	},
 	"actionButton": {
 		"signInToAttend": "Sign in to attend",

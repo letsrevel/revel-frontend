@@ -16,7 +16,8 @@
 		UserPlus,
 		ListPlus,
 		Bell,
-		ArrowUpCircle
+		ArrowUpCircle,
+		Calendar
 	} from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
 	import IneligibilityActionButton from './IneligibilityActionButton.svelte';
@@ -28,6 +29,7 @@
 		organizationSlug?: string;
 		eventName?: string;
 		eventTokenDetails?: EventTokenSchema | null;
+		applyBefore?: string | null;
 		onInvitationRequestSuccess?: () => void;
 		class?: string;
 	}
@@ -39,9 +41,63 @@
 		organizationSlug,
 		eventName,
 		eventTokenDetails,
+		applyBefore,
 		onInvitationRequestSuccess,
 		class: className
 	}: Props = $props();
+
+	/**
+	 * Format the apply_before deadline for display
+	 */
+	function formatDeadline(deadline: string): string {
+		const date = new Date(deadline);
+		const now = new Date();
+		const diff = date.getTime() - now.getTime();
+		const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+		const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+		if (diff < 0) {
+			return m['ineligibilityMessage.deadlinePassed']?.() ?? 'Deadline has passed';
+		}
+
+		if (days === 0 && hours < 24) {
+			if (hours <= 1) {
+				return m['ineligibilityMessage.deadlineLessThanOneHour']?.() ?? 'Less than 1 hour left';
+			}
+			return (
+				m['ineligibilityMessage.deadlineHoursLeft']?.({ hours }) ?? `${hours} hours left to apply`
+			);
+		}
+
+		if (days === 1) {
+			return m['ineligibilityMessage.deadlineTomorrow']?.() ?? 'Tomorrow';
+		}
+
+		if (days < 7) {
+			return m['ineligibilityMessage.deadlineDaysLeft']?.({ days }) ?? `${days} days left to apply`;
+		}
+
+		return date.toLocaleDateString(undefined, {
+			month: 'long',
+			day: 'numeric',
+			year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+		});
+	}
+
+	/**
+	 * Check if we should show the deadline for this next step
+	 */
+	let shouldShowDeadline = $derived.by(() => {
+		if (!applyBefore) return false;
+		const deadline = new Date(applyBefore);
+		if (deadline < new Date()) return false; // Deadline passed, don't show countdown
+
+		// Show deadline for application-related steps
+		return (
+			eligibility.next_step === 'request_invitation' ||
+			eligibility.next_step === 'complete_questionnaire'
+		);
+	});
 
 	// Get icon component based on next_step
 	let IconComponent = $derived.by(() => {
@@ -160,6 +216,17 @@
 				<div class="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
 					<Clock class="h-4 w-4 shrink-0" aria-hidden="true" />
 					<span>{m['eligibilityStatusDisplay.available']()} {retryText}</span>
+				</div>
+			{/if}
+
+			<!-- Application Deadline Display -->
+			{#if shouldShowDeadline && applyBefore}
+				<div class="mt-2 flex items-center gap-2 rounded-md bg-orange-50 px-3 py-2 text-sm text-orange-800 dark:bg-orange-950/30 dark:text-orange-200">
+					<Calendar class="h-4 w-4 shrink-0" aria-hidden="true" />
+					<span>
+						<strong>{m['ineligibilityMessage.applicationDeadline']?.() ?? 'Application deadline'}:</strong>
+						{formatDeadline(applyBefore)}
+					</span>
 				</div>
 			{/if}
 

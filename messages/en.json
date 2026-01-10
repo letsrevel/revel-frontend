@@ -1324,6 +1324,8 @@
 		"waitlistOpen": "Waitlist enabled",
 		"enablePotluck": "Enable potluck coordination",
 		"acceptInvitationRequests": "Accept invitation requests",
+		"applicationDeadline": "Application Deadline",
+		"applicationDeadlineHint": "Deadline for submitting invitation requests or questionnaires. Timezone: {timezone}",
 		"canAttendWithoutLogin": "Allow guest attendance",
 		"canAttendWithoutLoginHint": "Allow users without an account to RSVP or purchase tickets",
 		"none": "None",
@@ -2627,7 +2629,15 @@
 		"questionnairePendingReview_singular": "questionnaire pending review",
 		"questionnairePendingReview_plural": "questionnaires pending review",
 		"questionnaireFailed_singular": "questionnaire failed",
-		"questionnaireFailed_plural": "questionnaires failed"
+		"questionnaireFailed_plural": "questionnaires failed",
+		"applicationDeadlinePassed": "Application deadline passed",
+		"applicationDeadlinePassedExplanation": "The deadline to apply for this event has passed. Applications are no longer accepted.",
+		"applicationDeadline": "Application deadline",
+		"deadlinePassed": "Deadline has passed",
+		"deadlineLessThanOneHour": "Less than 1 hour left",
+		"deadlineHoursLeft": "{hours} hours left to apply",
+		"deadlineTomorrow": "Tomorrow",
+		"deadlineDaysLeft": "{days} days left to apply"
 	},
 	"accountDeletion": {
 		"title": "Confirm Account Deletion - Revel",

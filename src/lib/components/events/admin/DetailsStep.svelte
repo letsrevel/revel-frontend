@@ -581,6 +581,25 @@
 					</div>
 				</label>
 
+				<!-- Application Deadline (Apply Before) -->
+				<div class="space-y-2">
+					<label for="apply-before" class="block text-sm font-medium">
+						{m['detailsStep.applicationDeadline']?.() ?? 'Application Deadline'}
+					</label>
+					<input
+						id="apply-before"
+						type="datetime-local"
+						value={formData.apply_before || ''}
+						oninput={(e) => onUpdate({ apply_before: e.currentTarget.value || null })}
+						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+					/>
+					<p class="text-xs text-muted-foreground">
+						{m['detailsStep.applicationDeadlineHint']?.({
+							timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+						}) ?? `Deadline for submitting invitation requests or questionnaires. Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`}
+					</p>
+				</div>
+
 				<!-- Allow Guest Attendance -->
 				<label
 					class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
