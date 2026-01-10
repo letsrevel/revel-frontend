@@ -10,7 +10,8 @@
 		Users,
 		Ticket,
 		Bell,
-		XCircle
+		XCircle,
+		Calendar
 	} from 'lucide-svelte';
 	import IneligibilityActionButton from './IneligibilityActionButton.svelte';
 	import RetryCountdown from './RetryCountdown.svelte';
@@ -24,6 +25,7 @@
 		organizationSlug: string;
 		organizationName: string;
 		eventTokenDetails?: EventTokenSchema | null;
+		applyBefore?: string | null;
 		class?: string;
 	}
 
@@ -34,8 +36,69 @@
 		organizationSlug,
 		organizationName,
 		eventTokenDetails,
+		applyBefore,
 		class: className
 	}: Props = $props();
+
+	/**
+	 * Format the apply_before deadline for display
+	 */
+	function formatDeadline(deadline: string): string {
+		const date = new Date(deadline);
+		const now = new Date();
+		const diff = date.getTime() - now.getTime();
+		const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+		const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+		if (diff < 0) {
+			return m['ineligibilityMessage.deadlinePassed']?.() ?? 'Deadline has passed';
+		}
+
+		if (days === 0 && hours < 24) {
+			if (hours <= 1) {
+				return m['ineligibilityMessage.deadlineLessThanOneHour']?.() ?? 'Less than 1 hour left';
+			}
+			return (
+				m['ineligibilityMessage.deadlineHoursLeft']?.({ hours }) ?? `${hours} hours left to apply`
+			);
+		}
+
+		if (days === 1) {
+			return m['ineligibilityMessage.deadlineTomorrow']?.() ?? 'Tomorrow';
+		}
+
+		if (days < 7) {
+			return m['ineligibilityMessage.deadlineDaysLeft']?.({ days }) ?? `${days} days left to apply`;
+		}
+
+		return date.toLocaleDateString(undefined, {
+			month: 'long',
+			day: 'numeric',
+			year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+		});
+	}
+
+	/**
+	 * Check if we should show the deadline for this next step
+	 */
+	let shouldShowDeadline = $derived.by(() => {
+		if (!applyBefore) return false;
+		const deadline = new Date(applyBefore);
+		if (deadline < new Date()) return false; // Deadline passed, don't show countdown
+
+		// Show deadline for application-related steps
+		return (
+			eligibility.next_step === 'request_invitation' ||
+			eligibility.next_step === 'complete_questionnaire'
+		);
+	});
+
+	/**
+	 * Check if the reason is specifically about application deadline
+	 */
+	let isApplicationDeadlinePassed = $derived.by(() => {
+		return eligibility.reason?.includes('application deadline has passed');
+	});
 
 	/**
 	 * Get the Lucide icon component for the current next_step
@@ -114,7 +177,11 @@
 			if (reason.includes('Sold out')) return m['ineligibilityMessage.soldOut']();
 			if (reason.includes('not open')) return m['ineligibilityMessage.registrationNotOpen']();
 			if (reason.includes('finished')) return m['ineligibilityMessage.eventEnded']();
-			if (reason.includes('deadline has passed'))
+			if (reason.includes('application deadline has passed'))
+				return (
+					m['ineligibilityMessage.applicationDeadlinePassed']?.() ?? 'Application deadline passed'
+				);
+			if (reason.includes('RSVP deadline has passed') || reason.includes('deadline has passed'))
 				return m['ineligibilityMessage.rsvpDeadlinePassed']();
 			if (reason.includes('Tickets are not currently on sale'))
 				return m['ineligibilityMessage.ticketsNotAvailable']();
@@ -182,6 +249,13 @@
 
 			if (eligibility.reason?.includes('Sold out')) {
 				return m['ineligibilityMessage.soldOutExplanation']();
+			}
+
+			if (eligibility.reason?.includes('application deadline has passed')) {
+				return (
+					m['ineligibilityMessage.applicationDeadlinePassedExplanation']?.() ??
+					'The deadline to apply for this event has passed. Applications are no longer accepted.'
+				);
 			}
 
 			if (eligibility.reason?.includes('deadline has passed')) {
@@ -289,6 +363,22 @@
 
 			{#if eligibility.retry_on}
 				<RetryCountdown retryOn={eligibility.retry_on} />
+			{/if}
+
+			<!-- Application Deadline Display -->
+			{#if shouldShowDeadline && applyBefore}
+				<div
+					class="flex items-center gap-2 rounded-md bg-orange-50 px-3 py-2 text-sm text-orange-800 dark:bg-orange-950/30 dark:text-orange-200"
+				>
+					<Calendar class="h-4 w-4 shrink-0" aria-hidden="true" />
+					<span>
+						<strong
+							>{m['ineligibilityMessage.applicationDeadline']?.() ??
+								'Application deadline'}:</strong
+						>
+						{formatDeadline(applyBefore)}
+					</span>
+				</div>
 			{/if}
 
 			<!-- Action Button -->
