@@ -329,8 +329,7 @@
 					</div>
 				</div>
 				<p class="text-sm">
-					Complete your payment to confirm your ticket. Your reservation will expire if payment is
-					not completed.
+					{m['eventActionSidebar.pendingPaymentDescription']()}
 				</p>
 				<button
 					type="button"
@@ -338,7 +337,9 @@
 					disabled={isResumingPayment}
 					class="w-full rounded-md border-2 border-orange-600 bg-orange-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-orange-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-orange-500 dark:bg-orange-500"
 				>
-					{isResumingPayment ? 'Processing...' : 'Resume Payment'}
+					{isResumingPayment
+						? m['eventActionSidebar.processing']()
+						: m['eventActionSidebar.resumePayment']()}
 				</button>
 				{#if onShowTicketClick}
 					<button
@@ -347,9 +348,9 @@
 						class="w-full rounded-md border border-orange-300 bg-transparent px-4 py-2 text-sm font-medium text-orange-700 transition-colors hover:bg-orange-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-900/30"
 					>
 						{#if userTickets.length > 1}
-							View All {userTickets.length} Tickets
+							{m['eventActionSidebar.viewAllTickets']({ count: userTickets.length })}
 						{:else}
-							View Ticket
+							{m['eventActionSidebar.viewTicket']()}
 						{/if}
 					</button>
 				{/if}
@@ -432,10 +433,14 @@
 					{#if userTickets.length > 0}
 						<span class="flex items-center justify-center gap-2">
 							<Ticket class="h-4 w-4" aria-hidden="true" />
-							{userTickets.length === 1 ? 'Show Ticket' : `Show Tickets (${userTickets.length})`}
+							{userTickets.length === 1
+								? m['eventActionSidebar.showTicket']()
+								: m['eventActionSidebar.showTickets']({ count: userTickets.length })}
 						</span>
 					{:else}
-						{showManageRSVP ? 'Hide' : 'Change'} RSVP
+						{showManageRSVP
+							? m['eventActionSidebar.hideRsvp']()
+							: m['eventActionSidebar.changeRsvp']()}
 					{/if}
 				</button>
 
@@ -448,9 +453,11 @@
 					>
 						<span class="flex items-center justify-center gap-2">
 							<Ticket class="h-4 w-4" aria-hidden="true" />
-							Buy More Tickets
+							{m['eventActionSidebar.buyMoreTickets']()}
 							{#if remainingTickets !== null}
-								<span class="text-xs opacity-75">({remainingTickets} left)</span>
+								<span class="text-xs opacity-75"
+									>{m['eventActionSidebar.ticketsLeft']({ count: remainingTickets })}</span
+								>
 							{/if}
 						</span>
 					</button>
@@ -465,7 +472,7 @@
 				>
 					<span class="flex items-center justify-center gap-2">
 						<CalendarDays class="h-4 w-4" aria-hidden="true" />
-						Add to Calendar
+						{m['eventActionSidebar.addToCalendar']()}
 					</span>
 				</button>
 			</div>
@@ -501,7 +508,7 @@
 						class="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						<Settings class="h-4 w-4" aria-hidden="true" />
-						Edit Event
+						{m['eventActionSidebar.editEvent']()}
 					</a>
 					{#if event.requires_ticket}
 						<a
@@ -509,7 +516,7 @@
 							class="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 						>
 							<Users class="h-4 w-4" aria-hidden="true" />
-							Manage Tickets
+							{m['eventActionSidebar.manageTickets']()}
 						</a>
 					{:else}
 						<a
@@ -517,7 +524,7 @@
 							class="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 						>
 							<Users class="h-4 w-4" aria-hidden="true" />
-							Manage Attendees
+							{m['eventActionSidebar.manageAttendees']()}
 						</a>
 					{/if}
 					<a
@@ -525,7 +532,7 @@
 						class="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						<Mail class="h-4 w-4" aria-hidden="true" />
-						Manage Invitations
+						{m['eventActionSidebar.manageInvitations']()}
 					</a>
 				</div>
 			</div>
@@ -547,7 +554,7 @@
 			>
 				<span class="flex items-center justify-center gap-2">
 					<CalendarDays class="h-4 w-4" aria-hidden="true" />
-					Add to Calendar
+					{m['eventActionSidebar.addToCalendar']()}
 				</span>
 			</button>
 		</div>

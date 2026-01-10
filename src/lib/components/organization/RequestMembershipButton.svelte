@@ -115,20 +115,20 @@
 	<div
 		class="inline-flex items-center gap-2 rounded-md border border-primary bg-primary/10 px-4 py-2 text-sm font-medium text-primary dark:border-primary dark:bg-primary/20 {className}"
 		role="status"
-		aria-label="You are the owner of this organization"
+		aria-label={m['requestMembershipButton.ownerAriaLabel']()}
 	>
 		<Crown class="h-4 w-4" aria-hidden="true" />
-		Owner
+		{m['requestMembershipButton.owner']()}
 	</div>
 {:else if isStaff}
 	<!-- Staff Badge -->
 	<div
 		class="inline-flex items-center gap-2 rounded-md border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300 {className}"
 		role="status"
-		aria-label="You are a staff member of this organization"
+		aria-label={m['requestMembershipButton.staffAriaLabel']()}
 	>
 		<Shield class="h-4 w-4" aria-hidden="true" />
-		Staff
+		{m['requestMembershipButton.staff']()}
 	</div>
 {:else if isMember}
 	<!-- Member Badge (with status and tier) -->
@@ -139,7 +139,9 @@
 				class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium {statusStyles[
 					membershipStatus
 				]}"
-				aria-label="Membership status: {membershipStatus}"
+				aria-label={m['requestMembershipButton.membershipStatusAriaLabel']({
+					status: membershipStatus
+				})}
 			>
 				<Check class="h-3 w-3" aria-hidden="true" />
 				{m[`memberStatus.${membershipStatus}`]()}
@@ -150,7 +152,9 @@
 		{#if membershipTier}
 			<span
 				class="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-100"
-				aria-label="Membership tier: {membershipTier.name}"
+				aria-label={m['requestMembershipButton.membershipTierAriaLabel']({
+					tier: membershipTier.name
+				})}
 			>
 				<Award class="h-3 w-3" aria-hidden="true" />
 				{membershipTier.name}
@@ -159,10 +163,10 @@
 			<!-- Fallback if no status or tier -->
 			<span
 				class="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-100"
-				aria-label="You are a member of this organization"
+				aria-label={m['requestMembershipButton.memberAriaLabel']()}
 			>
 				<Check class="h-3 w-3" aria-hidden="true" />
-				Member
+				{m['requestMembershipButton.member']()}
 			</span>
 		{/if}
 	</div>
@@ -201,8 +205,7 @@
 						>{m['requestMembershipButton.requestSubmitted']()}</Dialog.Title
 					>
 					<Dialog.Description class="mt-2">
-						Your membership request has been sent to {organizationName}. You'll be notified when
-						it's reviewed.
+						{m['requestMembershipButton.requestSubmittedDesc']({ organizationName })}
 					</Dialog.Description>
 				</div>
 			{:else}
@@ -210,8 +213,7 @@
 				<Dialog.Header>
 					<Dialog.Title>{m['requestMembershipButton.requestMembership']()}</Dialog.Title>
 					<Dialog.Description>
-						Submit a request to become a member of {organizationName}. Members may have access to
-						exclusive events and content.
+						{m['requestMembershipButton.requestDesc']({ organizationName })}
 					</Dialog.Description>
 				</Dialog.Header>
 
@@ -223,17 +225,19 @@
 					class="space-y-4"
 				>
 					<div>
-						<label for="message" class="block text-sm font-medium"> Message (Optional) </label>
+						<label for="message" class="block text-sm font-medium">
+							{m['requestMembershipButton.messageOptional']()}
+						</label>
 						<textarea
 							id="message"
 							bind:value={message}
-							placeholder="Tell the organizers why you'd like to join..."
+							placeholder={m['requestMembershipButton.messagePlaceholder']()}
 							rows="4"
 							maxlength="500"
 							class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
 						></textarea>
 						<p class="mt-1 text-xs text-muted-foreground">
-							{message.length}/500 characters
+							{message.length}/500 {m['requestMembershipButton.characters']()}
 						</p>
 					</div>
 
@@ -242,7 +246,7 @@
 							class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
 							role="alert"
 						>
-							{requestMutation.error?.message || 'Failed to submit request. Please try again.'}
+							{requestMutation.error?.message || m['requestMembershipButton.submitError']()}
 						</div>
 					{/if}
 
@@ -253,7 +257,7 @@
 							onclick={() => (showDialog = false)}
 							disabled={requestMutation.isPending}
 						>
-							Cancel
+							{m['requestMembershipButton.cancel']()}
 						</Button>
 						<Button type="submit" disabled={requestMutation.isPending}>
 							{#if requestMutation.isPending}
@@ -261,10 +265,10 @@
 									class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent"
 									aria-hidden="true"
 								></div>
-								Submitting...
+								{m['requestMembershipButton.submitting']()}
 							{:else}
 								<Send class="mr-2 h-4 w-4" aria-hidden="true" />
-								Submit Request
+								{m['requestMembershipButton.submitRequest']()}
 							{/if}
 						</Button>
 					</Dialog.Footer>

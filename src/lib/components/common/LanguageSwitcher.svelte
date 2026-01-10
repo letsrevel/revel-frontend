@@ -2,9 +2,11 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { getLocale, setLocale, locales } from '$lib/paraglide/runtime.js';
 	import { invalidateAll } from '$app/navigation';
+	import { page } from '$app/state';
 	import { Globe } from 'lucide-svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { accountUpdateLanguage } from '$lib/api/client';
+	import { getLanguageSwitchUrl } from '$lib/utils/seo-routes';
 
 	// Current locale
 	let currentLocale = $derived(getLocale());
@@ -25,29 +27,38 @@
 	async function switchLanguage(lang: string) {
 		const typedLang = lang as SupportedLanguage;
 
-		// Set locale
-		setLocale(typedLang);
+		// Check if we need to navigate to a different URL (SEO pages)
+		// Use window.location.pathname for reliability
+		const currentPath =
+			typeof window !== 'undefined' ? window.location.pathname : page.url.pathname;
+		const redirectUrl = getLanguageSwitchUrl(currentPath, lang);
+
+		// Close dropdown immediately
+		isOpen = false;
 
 		// Update cookie (for non-logged-in users and SSR)
 		document.cookie = `user_language=${lang}; path=/; max-age=31536000; SameSite=Lax`;
 
-		// Close dropdown
-		isOpen = false;
-
-		// If user is logged in, persist to backend
+		// If user is logged in, persist to backend (don't await - fire and forget)
 		if (authStore.isAuthenticated) {
-			try {
-				await accountUpdateLanguage({
-					body: { language: typedLang },
-					headers: authStore.getAuthHeaders()
-				});
-			} catch (error) {
+			accountUpdateLanguage({
+				body: { language: typedLang },
+				headers: authStore.getAuthHeaders()
+			}).catch((error) => {
 				console.error('[LanguageSwitcher] Failed to update language in backend:', error);
-				// Continue anyway - the local change is already applied
-			}
+			});
 		}
 
-		// Reload all data with new language
+		// For SEO pages, navigate directly WITHOUT calling setLocale
+		// The new page will have the correct language based on the URL and cookie
+		if (redirectUrl) {
+			// Use window.location for a full page navigation to avoid race conditions
+			window.location.href = redirectUrl;
+			return;
+		}
+
+		// For regular pages, use Paraglide's locale switching
+		setLocale(typedLang);
 		await invalidateAll();
 	}
 

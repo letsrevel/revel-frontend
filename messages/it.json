@@ -1168,27 +1168,43 @@
 		"available": "Disponibile"
 	},
 	"eventActionSidebar": {
-		"youreAttending": "You're attending",
-		"youreCheckedIn": "You're checked in",
-		"ticketPending": "Your ticket is pending",
-		"youHaveTicket": "You have a ticket",
-		"ticketPendingPayment": "Ticket Pending Payment",
-		"eligibilityStatus": "Eligibility Status",
-		"manageEvent": "Manage Event",
-		"eventDetails": "Event Details"
+		"youreAttending": "Stai partecipando",
+		"youreCheckedIn": "Sei registrato",
+		"ticketPending": "Il tuo biglietto è in sospeso",
+		"youHaveTicket": "Hai un biglietto",
+		"ticketPendingPayment": "Biglietto in attesa di pagamento",
+		"eligibilityStatus": "Stato idoneità",
+		"manageEvent": "Gestisci evento",
+		"eventDetails": "Dettagli dell'evento",
+		"processing": "Elaborazione...",
+		"resumePayment": "Riprendi pagamento",
+		"viewAllTickets": "Visualizza tutti i {count} biglietti",
+		"viewTicket": "Visualizza biglietto",
+		"showTicket": "Mostra biglietto",
+		"showTickets": "Mostra biglietti ({count})",
+		"hideRsvp": "Nascondi RSVP",
+		"changeRsvp": "Modifica RSVP",
+		"buyMoreTickets": "Acquista altri biglietti",
+		"ticketsLeft": "({count} rimasti)",
+		"addToCalendar": "Aggiungi al calendario",
+		"editEvent": "Modifica evento",
+		"manageTickets": "Gestisci biglietti",
+		"manageAttendees": "Gestisci partecipanti",
+		"manageInvitations": "Gestisci inviti",
+		"pendingPaymentDescription": "Completa il pagamento per confermare il tuo biglietto. La tua prenotazione scadrà se il pagamento non viene completato."
 	},
 	"eventQuickInfo": {
 		"limitedSpots": "Posti limitati disponibili",
 		"closesSoon": "Chiude presto!",
-		"locationTbd": "Location TBD",
-		"publicEvent": "Public Event",
-		"privateEvent": "Private Event",
-		"membersOnly": "Members Only",
-		"staffOnly": "Staff Only",
-		"event": "Event",
-		"spotsTaken": "{current} / {max} spots taken",
-		"rsvpClosed": "RSVP closed",
-		"rsvpBy": "RSVP by {deadline}"
+		"locationTbd": "Luogo da definire",
+		"publicEvent": "Evento pubblico",
+		"privateEvent": "Evento privato",
+		"membersOnly": "Solo per membri",
+		"staffOnly": "Solo per staff",
+		"event": "Evento",
+		"spotsTaken": "{current} / {max} posti occupati",
+		"rsvpClosed": "RSVP chiuso",
+		"rsvpBy": "RSVP entro {deadline}"
 	},
 	"eventRSVP": {
 		"goingTo": "You're going to {eventName}!",
@@ -1204,7 +1220,8 @@
 		"series": "Serie"
 	},
 	"organizationInfo": {
-		"aboutOrganizer": "Informazioni sull'organizzatore"
+		"aboutOrganizer": "Informazioni sull'organizzatore",
+		"viewProfile": "Visualizza profilo organizzazione"
 	},
 	"potluckItemEditModal": {
 		"addPotluckItem": "Aggiungi elemento potluck",
@@ -1640,7 +1657,24 @@
 	},
 	"requestMembershipButton": {
 		"requestSubmitted": "Richiesta Inviata!",
-		"requestMembership": "Richiedi Iscrizione"
+		"requestMembership": "Richiedi Iscrizione",
+		"owner": "Proprietario",
+		"staff": "Staff",
+		"member": "Membro",
+		"messageOptional": "Messaggio (Opzionale)",
+		"messagePlaceholder": "Racconta agli organizzatori perché vorresti unirti...",
+		"characters": "caratteri",
+		"requestSubmittedDesc": "La tua richiesta di iscrizione è stata inviata a {organizationName}. Sarai avvisato quando verrà esaminata.",
+		"requestDesc": "Invia una richiesta per diventare membro di {organizationName}. I membri potrebbero avere accesso a eventi e contenuti esclusivi.",
+		"cancel": "Annulla",
+		"submitting": "Invio in corso...",
+		"submitRequest": "Invia richiesta",
+		"ownerAriaLabel": "Sei il proprietario di questa organizzazione",
+		"staffAriaLabel": "Sei un membro dello staff di questa organizzazione",
+		"memberAriaLabel": "Sei un membro di questa organizzazione",
+		"membershipStatusAriaLabel": "Stato dell'iscrizione: {status}",
+		"membershipTierAriaLabel": "Livello di iscrizione: {tier}",
+		"submitError": "Impossibile inviare la richiesta. Per favore riprova."
 	},
 	"stripeConnect": {
 		"paymentProcessing": "Elaborazione Pagamenti",
