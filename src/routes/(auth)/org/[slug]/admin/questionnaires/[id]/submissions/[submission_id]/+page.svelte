@@ -6,7 +6,7 @@
 	import QuestionAnswerDisplay from '$lib/components/questionnaires/QuestionAnswerDisplay.svelte';
 	import AutoEvalRecommendation from '$lib/components/questionnaires/AutoEvalRecommendation.svelte';
 	import EvaluationForm from '$lib/components/questionnaires/EvaluationForm.svelte';
-	import { ArrowLeft, User, Mail, Calendar } from 'lucide-svelte';
+	import { ArrowLeft, User, Mail, Calendar, CalendarDays, ExternalLink } from 'lucide-svelte';
 	import {
 		isPendingReview,
 		type QuestionnaireEvaluationStatus
@@ -38,6 +38,40 @@
 		data.submission.evaluation &&
 			!isPendingReview(data.submission.evaluation.status as QuestionnaireEvaluationStatus)
 	);
+
+	// Extract event metadata if available
+	// Metadata structure: { source_event: { event_id, event_name, event_start } }
+	interface SourceEventMetadata {
+		event_id: string;
+		event_name: string;
+		event_start: string;
+	}
+
+	let eventMetadata = $derived.by(() => {
+		const metadata = data.submission.metadata;
+		if (metadata && metadata.source_event) {
+			const sourceEvent = metadata.source_event as SourceEventMetadata;
+			if (sourceEvent.event_id && sourceEvent.event_name) {
+				return sourceEvent;
+			}
+		}
+		return null;
+	});
+
+	function formatEventDate(dateString: string | undefined): string {
+		if (!dateString) return '';
+		try {
+			return new Date(dateString).toLocaleString('en-US', {
+				year: 'numeric',
+				month: 'long',
+				day: 'numeric',
+				hour: '2-digit',
+				minute: '2-digit'
+			});
+		} catch {
+			return dateString;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -189,6 +223,45 @@
 					</div>
 				</div>
 			</Card>
+
+			<!-- Event Context (if submission was for a specific event) -->
+			{#if eventMetadata}
+				<Card class="p-6">
+					<h3 class="mb-4 text-lg font-semibold">
+						{m['questionnaireSubmissionDetailPage.eventContextTitle']?.() || 'Event Context'}
+					</h3>
+					<div class="space-y-4">
+						<!-- Event Name -->
+						<div class="flex items-start gap-3">
+							<div
+								class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10"
+							>
+								<CalendarDays class="h-5 w-5 text-primary" aria-hidden="true" />
+							</div>
+							<div class="flex-1">
+								<p class="text-sm font-medium text-muted-foreground">
+									{m['questionnaireSubmissionDetailPage.eventNameLabel']?.() || 'Event'}
+								</p>
+								<p class="text-base font-medium">{eventMetadata.event_name}</p>
+								{#if eventMetadata.event_start}
+									<p class="text-sm text-muted-foreground">
+										{formatEventDate(eventMetadata.event_start)}
+									</p>
+								{/if}
+							</div>
+						</div>
+
+						<!-- View Event Link -->
+						<a
+							href="/events/{eventMetadata.event_id}"
+							class="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+						>
+							<ExternalLink class="h-4 w-4" aria-hidden="true" />
+							{m['questionnaireSubmissionDetailPage.viewEventLink']?.() || 'View event'}
+						</a>
+					</div>
+				</Card>
+			{/if}
 
 			<!-- Questionnaire Information -->
 			<Card class="p-6">

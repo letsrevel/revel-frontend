@@ -104,14 +104,18 @@
 
 	// Handle navigation to related content
 	function handleClick(): void {
+		// Mark as read on click (if not already)
+		if (!isRead) {
+			markReadMutation.mutate();
+		}
+
 		// Extract URL from context if available
 		const url = extractUrlFromContext(notification.context);
 		if (url) {
-			// Mark as read on click (if not already)
-			if (!isRead) {
-				markReadMutation.mutate();
-			}
 			goto(url);
+		} else {
+			// Fallback: navigate to notifications page
+			goto('/account/notifications');
 		}
 	}
 
@@ -120,6 +124,16 @@
 		// Backend provides frontend_url with correct routing
 		if (context.frontend_url && typeof context.frontend_url === 'string') {
 			return context.frontend_url;
+		}
+
+		// Check for event_url (provided in many notification contexts)
+		if (context.event_url && typeof context.event_url === 'string') {
+			return context.event_url;
+		}
+
+		// Check for submission_url (questionnaire notifications)
+		if (context.submission_url && typeof context.submission_url === 'string') {
+			return context.submission_url;
 		}
 
 		// Fallback to context patterns for older notifications
@@ -138,8 +152,8 @@
 		return null;
 	}
 
-	// Check if the notification is clickable
-	let isClickable = $derived(extractUrlFromContext(notification.context) !== null);
+	// Check if the notification has a specific URL (vs fallback to notifications page)
+	let hasSpecificUrl = $derived(extractUrlFromContext(notification.context) !== null);
 
 	// Compute notification type badge variant
 	let notificationTypeVariant = $derived.by(() => {
@@ -153,26 +167,21 @@
 
 <Card
 	class={cn(
-		'group overflow-hidden transition-all',
-		isClickable && 'cursor-pointer hover:shadow-md',
+		'group cursor-pointer overflow-hidden transition-all hover:shadow-md',
 		!isRead && 'border-l-4 border-l-primary bg-primary/5',
 		compact ? 'p-3' : 'p-4 md:p-6',
 		className
 	)}
-	role={isClickable ? 'button' : 'article'}
-	tabindex={isClickable ? 0 : undefined}
-	onclick={isClickable ? handleClick : undefined}
-	onkeydown={isClickable
-		? (e) => {
-				if (e.key === 'Enter' || e.key === ' ') {
-					e.preventDefault();
-					handleClick();
-				}
-			}
-		: undefined}
-	aria-label={isClickable
-		? `${notification.title}. ${isRead ? 'Read' : 'Unread'}. Click to view details.`
-		: `${notification.title}. ${isRead ? 'Read' : 'Unread'}.`}
+	role="button"
+	tabindex={0}
+	onclick={handleClick}
+	onkeydown={(e) => {
+		if (e.key === 'Enter' || e.key === ' ') {
+			e.preventDefault();
+			handleClick();
+		}
+	}}
+	aria-label={`${notification.title}. ${isRead ? 'Read' : 'Unread'}. Click to view details.`}
 >
 	<div class="flex items-start gap-3">
 		<!-- Unread indicator -->

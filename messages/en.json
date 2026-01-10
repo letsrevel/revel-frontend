@@ -3206,7 +3206,10 @@
 		"nameLabel": "Name",
 		"emailLabel": "Email",
 		"submittedLabel": "Submitted",
-		"notSubmitted": "Not submitted"
+		"notSubmitted": "Not submitted",
+		"eventContextTitle": "Event Context",
+		"eventNameLabel": "Event",
+		"viewEventLink": "View event"
 	},
 	"questionnaireEditPage": {
 		"pageTitle": "Edit Questionnaire",
