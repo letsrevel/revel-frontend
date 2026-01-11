@@ -597,12 +597,13 @@
 					<h3 class="font-semibold">{m['footer.solutionQueer']()}</h3>
 				</div>
 				<p class="mb-3 text-sm text-muted-foreground">
-					Safe spaces for LGBTQ+ communities with privacy-first ticketing and screening.
+					{m['home.useCaseQueerDescription']()}
 				</p>
 				<span
 					class="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline"
 				>
-					Learn more <ArrowRight class="h-4 w-4" aria-hidden="true" />
+					{m['footer.learnMore']()}
+					<ArrowRight class="h-4 w-4" aria-hidden="true" />
 				</span>
 			</a>
 
@@ -617,12 +618,13 @@
 					<h3 class="font-semibold">{m['footer.solutionKink']()}</h3>
 				</div>
 				<p class="mb-3 text-sm text-muted-foreground">
-					Discreet ticketing for adult events with questionnaire-based vetting.
+					{m['home.useCaseKinkDescription']()}
 				</p>
 				<span
 					class="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline"
 				>
-					Learn more <ArrowRight class="h-4 w-4" aria-hidden="true" />
+					{m['footer.learnMore']()}
+					<ArrowRight class="h-4 w-4" aria-hidden="true" />
 				</span>
 			</a>
 
@@ -637,12 +639,13 @@
 					<h3 class="font-semibold">{m['footer.solutionPrivacy']()}</h3>
 				</div>
 				<p class="mb-3 text-sm text-muted-foreground">
-					GDPR-compliant, European-hosted, with full data ownership.
+					{m['home.useCasePrivacyDescription']()}
 				</p>
 				<span
 					class="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline"
 				>
-					Learn more <ArrowRight class="h-4 w-4" aria-hidden="true" />
+					{m['footer.learnMore']()}
+					<ArrowRight class="h-4 w-4" aria-hidden="true" />
 				</span>
 			</a>
 
@@ -657,12 +660,13 @@
 					<h3 class="font-semibold">{m['footer.solutionSelfHosted']()}</h3>
 				</div>
 				<p class="mb-3 text-sm text-muted-foreground">
-					MIT licensed. Run on your own infrastructure with zero platform fees.
+					{m['home.useCaseSelfHostedDescription']()}
 				</p>
 				<span
 					class="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline"
 				>
-					Learn more <ArrowRight class="h-4 w-4" aria-hidden="true" />
+					{m['footer.learnMore']()}
+					<ArrowRight class="h-4 w-4" aria-hidden="true" />
 				</span>
 			</a>
 
@@ -677,12 +681,13 @@
 					<h3 class="font-semibold">{m['footer.solutionEventbrite']()}</h3>
 				</div>
 				<p class="mb-3 text-sm text-muted-foreground">
-					Lower fees, more features, and you keep your data.
+					{m['home.useCaseEventbriteDescription']()}
 				</p>
 				<span
 					class="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline"
 				>
-					Learn more <ArrowRight class="h-4 w-4" aria-hidden="true" />
+					{m['footer.learnMore']()}
+					<ArrowRight class="h-4 w-4" aria-hidden="true" />
 				</span>
 			</a>
 
@@ -697,12 +702,13 @@
 					<h3 class="font-semibold">{m['footer.solutionCommunity']()}</h3>
 				</div>
 				<p class="mb-3 text-sm text-muted-foreground">
-					Build communities with membership tiers, potluck coordination, and more.
+					{m['home.useCaseCommunityDescription']()}
 				</p>
 				<span
 					class="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline"
 				>
-					Learn more <ArrowRight class="h-4 w-4" aria-hidden="true" />
+					{m['footer.learnMore']()}
+					<ArrowRight class="h-4 w-4" aria-hidden="true" />
 				</span>
 			</a>
 		</div>

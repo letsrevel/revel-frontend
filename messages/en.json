@@ -79,7 +79,13 @@
 		"tryDemoNote": "Note: The demo runs on slow hardware and may take a moment to load.",
 		"keywords": "events, community, ticketing, RSVP, event management, event platform",
 		"useCasesTitle": "Built For Your Community",
-		"useCasesDescription": "Revel is designed with diverse communities in mind. Whether you're organizing queer events, kink parties, or simply want more control over your data."
+		"useCasesDescription": "Revel is designed with diverse communities in mind. Whether you're organizing queer events, kink parties, or simply want more control over your data.",
+		"useCaseQueerDescription": "Safe spaces for LGBTQ+ communities with privacy-first ticketing and screening.",
+		"useCaseKinkDescription": "Discreet ticketing for adult events with questionnaire-based vetting.",
+		"useCasePrivacyDescription": "GDPR-compliant, European-hosted, with full data ownership.",
+		"useCaseSelfHostedDescription": "MIT licensed. Run on your own infrastructure with zero platform fees.",
+		"useCaseEventbriteDescription": "Lower fees, more features, and you keep your data.",
+		"useCaseCommunityDescription": "Build communities with membership tiers, potluck coordination, and more."
 	},
 	"login": {
 		"title": "Sign In - Revel",
