@@ -3867,6 +3867,26 @@
 		"cancel": "Cancel",
 		"approve": "Approve Request"
 	},
+	"makeMemberModal": {
+		"title": "Add as Member",
+		"description": "Add {name} as a member of your organization.",
+		"tierLabel": "Membership Tier",
+		"selectTier": "Select a tier",
+		"tierHelp": "Select the membership tier for this new member.",
+		"noTiersWarning": "No membership tiers available. Please create a membership tier first.",
+		"cancel": "Cancel",
+		"confirm": "Add Member"
+	},
+	"memberBadge": {
+		"member": "Member",
+		"tierName": "{tier} Member"
+	},
+	"makeMemberAction": {
+		"button": "Make Member",
+		"success": "{name} has been added as a member.",
+		"error": "Failed to add member. Please try again.",
+		"alreadyMember": "This user is already a member."
+	},
 	"learnMore": {
 		"metaTitle": "Learn More About Revel - Community Event Management Platform",
 		"metaDescription": "Discover Revel's powerful features: event management, ticketing, questionnaire screening, potluck coordination, and community building tools. Open-source and privacy-focused.",

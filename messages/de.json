@@ -3867,6 +3867,26 @@
 		"cancel": "Abbrechen",
 		"approve": "Antrag genehmigen"
 	},
+	"makeMemberModal": {
+		"title": "Als Mitglied hinzufügen",
+		"description": "Füge {name} als Mitglied deiner Organisation hinzu.",
+		"tierLabel": "Mitgliedschaftsstufe",
+		"selectTier": "Stufe auswählen",
+		"tierHelp": "Wähle die Mitgliedschaftsstufe für dieses neue Mitglied.",
+		"noTiersWarning": "Keine Mitgliedschaftsstufen verfügbar. Bitte erstelle zuerst eine Mitgliedschaftsstufe.",
+		"cancel": "Abbrechen",
+		"confirm": "Mitglied hinzufügen"
+	},
+	"memberBadge": {
+		"member": "Mitglied",
+		"tierName": "{tier}-Mitglied"
+	},
+	"makeMemberAction": {
+		"button": "Zum Mitglied machen",
+		"success": "{name} wurde als Mitglied hinzugefügt.",
+		"error": "Mitglied konnte nicht hinzugefügt werden. Bitte erneut versuchen.",
+		"alreadyMember": "Diese Person ist bereits Mitglied."
+	},
 	"learnMore": {
 		"metaTitle": "Mehr über Revel erfahren - Community-Event-Management-Plattform",
 		"metaDescription": "Entdecke Revels leistungsstarke Funktionen: Eventmanagement, Ticketing, Fragebogen-Screening, Potluck-Koordination und Community-Building-Tools. Open-Source und datenschutzorientiert.",
