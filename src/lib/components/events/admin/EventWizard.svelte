@@ -113,6 +113,8 @@
 			requires_ticket?: boolean; // Not in API schema yet, but used in UI
 			address_visibility?: ResourceVisibility;
 			venue_id?: string | null;
+			location_maps_url?: string | null;
+			location_maps_embed?: string | null;
 		}
 	>({
 		name: existingEvent?.name || '',
@@ -142,7 +144,9 @@
 		logo: existingEvent?.logo || undefined,
 		cover_art: existingEvent?.cover_art || undefined,
 		organization_logo: organization.logo || undefined,
-		organization_cover_art: organization.cover_art || undefined
+		organization_cover_art: organization.cover_art || undefined,
+		location_maps_url: (existingEvent as any)?.location_maps_url || null,
+		location_maps_embed: (existingEvent as any)?.location_maps_embed || null
 	});
 
 	// Image uploads (separate from form data)
@@ -439,7 +443,9 @@
 					apply_before: toISOString(formData.apply_before),
 					can_attend_without_login: formData.can_attend_without_login || false,
 					event_series_id: formData.event_series_id || null,
-					venue_id: formData.venue_id || null
+					venue_id: formData.venue_id || null,
+					location_maps_url: formData.location_maps_url || null,
+					location_maps_embed: formData.location_maps_embed || null
 				};
 				await updateEventMutation.mutateAsync({ id: eventId, data: updateData });
 			} else {
@@ -502,7 +508,9 @@
 				apply_before: toISOString(formData.apply_before),
 				can_attend_without_login: formData.can_attend_without_login || false,
 				event_series_id: formData.event_series_id || null,
-				venue_id: formData.venue_id || null
+				venue_id: formData.venue_id || null,
+				location_maps_url: formData.location_maps_url || null,
+				location_maps_embed: formData.location_maps_embed || null
 			};
 
 			await updateEventMutation.mutateAsync({ id: eventId, data: updateData });
@@ -566,6 +574,8 @@
 			organization_cover_art?: string;
 			address_visibility?: ResourceVisibility;
 			venue_id?: string | null;
+			location_maps_url?: string | null;
+			location_maps_embed?: string | null;
 		}
 	): void {
 		formData = { ...formData, ...updates };

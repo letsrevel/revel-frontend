@@ -1210,7 +1210,9 @@
 		"event": "Event",
 		"spotsTaken": "{current} / {max} Plätze belegt",
 		"rsvpClosed": "Anmeldung geschlossen",
-		"rsvpBy": "Anmeldung bis {deadline}"
+		"rsvpBy": "Anmeldung bis {deadline}",
+		"openInMaps": "In Karten öffnen",
+		"mapOf": "Karte von"
 	},
 	"eventRSVP": {
 		"goingTo": "You're going to {eventName}!",
@@ -1335,7 +1337,21 @@
 		"canAttendWithoutLogin": "Gastteilnahme erlauben",
 		"canAttendWithoutLoginHint": "Ermöglichen Sie Benutzern ohne Konto, sich anzumelden oder Tickets zu kaufen",
 		"none": "Keine",
-		"addressFromVenue": "Adresse vom Veranstaltungsort"
+		"addressFromVenue": "Adresse vom Veranstaltungsort",
+		"mapsSection": "Kartenintegration",
+		"mapsHelpTitle": "So fügst du eine Karte hinzu",
+		"mapsHelpStep1": "Öffne deinen Standort in Google Maps (oder einem anderen Kartendienst)",
+		"mapsHelpStep2": "Klicke auf \"Teilen\"",
+		"mapsHelpStep3": "Kopiere den Link und füge ihn unten in das Feld \"Kartenlink\" ein",
+		"mapsHelpStep4": "Für die eingebettete Karte: Klicke auf \"Karte einbetten\", kopiere den gesamten HTML-Code und füge ihn unten ein",
+		"mapsUrl": "Kartenlink",
+		"mapsUrlPlaceholder": "https://maps.google.com/...",
+		"mapsUrlHint": "Der teilbare Link zum Standort. Teilnehmer können darauf klicken, um die Karte zu öffnen.",
+		"mapsEmbed": "Karten-Einbettungscode",
+		"mapsEmbedPlaceholder": "<iframe src=\"https://www.google.com/maps/embed?...\" ...></iframe>",
+		"mapsEmbedHint": "Füge den vollständigen <iframe>-Einbettungscode von \"Karte einbetten\" ein. Dies zeigt eine interaktive Karte auf deiner Veranstaltungsseite.",
+		"mapsPreview": "Vorschau",
+		"mapsPreviewTitle": "Kartenvorschau"
 	},
 	"SFwESEssentialsStep": {
 		"clearDescriptiveName": "Wähle einen klaren, beschreibenden Namen für deine Veranstaltung",

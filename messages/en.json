@@ -1210,7 +1210,9 @@
 		"event": "Event",
 		"spotsTaken": "{current} / {max} spots taken",
 		"rsvpClosed": "RSVP closed",
-		"rsvpBy": "RSVP by {deadline}"
+		"rsvpBy": "RSVP by {deadline}",
+		"openInMaps": "Open in Maps",
+		"mapOf": "Map of"
 	},
 	"eventRSVP": {
 		"goingTo": "You're going to {eventName}!",
@@ -1335,7 +1337,21 @@
 		"canAttendWithoutLogin": "Allow guest attendance",
 		"canAttendWithoutLoginHint": "Allow users without an account to RSVP or purchase tickets",
 		"none": "None",
-		"addressFromVenue": "Address from venue"
+		"addressFromVenue": "Address from venue",
+		"mapsSection": "Maps Integration",
+		"mapsHelpTitle": "How to add a map",
+		"mapsHelpStep1": "Open your location in Google Maps (or another maps service)",
+		"mapsHelpStep2": "Click the \"Share\" button",
+		"mapsHelpStep3": "Copy the link and paste it in the \"Maps Link\" field below",
+		"mapsHelpStep4": "For the embedded map: click \"Embed a map\", copy the entire HTML code, and paste it below",
+		"mapsUrl": "Maps Link",
+		"mapsUrlPlaceholder": "https://maps.google.com/...",
+		"mapsUrlHint": "The shareable link to the location. Attendees can click this to open the map.",
+		"mapsEmbed": "Map Embed Code",
+		"mapsEmbedPlaceholder": "<iframe src=\"https://www.google.com/maps/embed?...\" ...></iframe>",
+		"mapsEmbedHint": "Paste the full <iframe> embed code from \"Embed a map\". This shows an interactive map on your event page.",
+		"mapsPreview": "Preview",
+		"mapsPreviewTitle": "Map preview"
 	},
 	"SFwESEssentialsStep": {
 		"clearDescriptiveName": "Choose a clear, descriptive name for your event",

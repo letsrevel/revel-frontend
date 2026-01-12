@@ -1210,7 +1210,9 @@
 		"event": "Evento",
 		"spotsTaken": "{current} / {max} posti occupati",
 		"rsvpClosed": "RSVP chiuso",
-		"rsvpBy": "RSVP entro {deadline}"
+		"rsvpBy": "RSVP entro {deadline}",
+		"openInMaps": "Apri in Mappe",
+		"mapOf": "Mappa di"
 	},
 	"eventRSVP": {
 		"goingTo": "You're going to {eventName}!",
@@ -1335,7 +1337,21 @@
 		"canAttendWithoutLogin": "Consenti partecipazione ospite",
 		"canAttendWithoutLoginHint": "Permetti agli utenti senza account di confermare presenza o acquistare biglietti",
 		"none": "Nessuno",
-		"addressFromVenue": "Indirizzo dalla sede"
+		"addressFromVenue": "Indirizzo dalla sede",
+		"mapsSection": "Integrazione Mappe",
+		"mapsHelpTitle": "Come aggiungere una mappa",
+		"mapsHelpStep1": "Apri la tua posizione in Google Maps (o un altro servizio di mappe)",
+		"mapsHelpStep2": "Clicca sul pulsante \"Condividi\"",
+		"mapsHelpStep3": "Copia il link e incollalo nel campo \"Link Mappa\" qui sotto",
+		"mapsHelpStep4": "Per la mappa incorporata: clicca su \"Incorpora mappa\", copia l'intero codice HTML e incollalo qui sotto",
+		"mapsUrl": "Link Mappa",
+		"mapsUrlPlaceholder": "https://maps.google.com/...",
+		"mapsUrlHint": "Il link condivisibile alla posizione. I partecipanti possono cliccarlo per aprire la mappa.",
+		"mapsEmbed": "Codice di Incorporamento Mappa",
+		"mapsEmbedPlaceholder": "<iframe src=\"https://www.google.com/maps/embed?...\" ...></iframe>",
+		"mapsEmbedHint": "Incolla il codice <iframe> completo da \"Incorpora mappa\". Questo mostra una mappa interattiva sulla pagina del tuo evento.",
+		"mapsPreview": "Anteprima",
+		"mapsPreviewTitle": "Anteprima mappa"
 	},
 	"SFwESEssentialsStep": {
 		"clearDescriptiveName": "Scegli un nome chiaro e descrittivo per il tuo evento",

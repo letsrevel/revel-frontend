@@ -6,7 +6,7 @@
 	import { getBackendUrl } from '$lib/config/api';
 	import { getImageUrl } from '$lib/utils/url';
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
-	import { MapPin, Calendar, Share2 } from 'lucide-svelte';
+	import { MapPin, Calendar, Share2, ExternalLink } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
 
 	interface Props {
@@ -111,10 +111,24 @@
 					</button>
 
 					<!-- Location -->
-					<div class="flex items-center gap-2">
-						<MapPin class="h-5 w-5 shrink-0" aria-hidden="true" />
-						<span>{locationDisplay}</span>
-					</div>
+					{#if event.location_maps_url}
+						<a
+							href={event.location_maps_url}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="group flex items-center gap-2 transition-all hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/50"
+							aria-label="{locationDisplay} - {m['eventQuickInfo.openInMaps']()}"
+						>
+							<MapPin class="h-5 w-5 shrink-0" aria-hidden="true" />
+							<span class="group-hover:underline">{locationDisplay}</span>
+							<ExternalLink class="h-4 w-4 opacity-70 group-hover:opacity-100" aria-hidden="true" />
+						</a>
+					{:else}
+						<div class="flex items-center gap-2">
+							<MapPin class="h-5 w-5 shrink-0" aria-hidden="true" />
+							<span>{locationDisplay}</span>
+						</div>
+					{/if}
 				</div>
 			</div>
 

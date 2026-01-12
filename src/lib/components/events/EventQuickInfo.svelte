@@ -3,7 +3,7 @@
 	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
 	import { formatEventDate, getRSVPDeadlineRelative, isRSVPClosingSoon } from '$lib/utils/date';
 	import { cn } from '$lib/utils/cn';
-	import { Calendar, MapPin, Users, Clock, Globe, Building2 } from 'lucide-svelte';
+	import { Calendar, MapPin, Users, Clock, Globe, Building2, ExternalLink } from 'lucide-svelte';
 
 	interface Props {
 		event: EventDetailSchema;
@@ -16,20 +16,44 @@
 	// Computed values
 	let formattedStartDate = $derived(formatEventDate(event.start));
 
-	let locationDisplay = $derived.by(() => {
-		// If event has a venue, use venue's name and city
+	// Location split into two lines for better readability
+	let locationDisplay = $derived.by((): { primary: string; secondary?: string } => {
+		// If event has a venue, use venue's name and address as primary, city as secondary
 		if (event.venue) {
-			const city = event.venue.city || event.city;
-			if (city) {
-				const cityDisplay = city.country ? `${city.name}, ${city.country}` : city.name;
-				return `${event.venue.name}, ${cityDisplay}`;
+			const primaryParts: string[] = [event.venue.name];
+
+			// Add venue's street address if available
+			if (event.venue.address) {
+				primaryParts.push(event.venue.address);
 			}
-			return event.venue.name;
+
+			// City/country goes on secondary line
+			const city = event.venue.city || event.city;
+			const secondary = city
+				? city.country
+					? `${city.name}, ${city.country}`
+					: city.name
+				: undefined;
+
+			return { primary: primaryParts.join(', '), secondary };
 		}
 
-		// Fall back to event's city
-		if (!event.city) return m['eventQuickInfo.locationTbd']();
-		return event.city.country ? `${event.city.name}, ${event.city.country}` : event.city.name;
+		// Fall back to event's address and city
+		if (!event.city) {
+			return { primary: event.address || m['eventQuickInfo.locationTbd']() };
+		}
+
+		const cityCountry = event.city.country
+			? `${event.city.name}, ${event.city.country}`
+			: event.city.name;
+
+		// If we have an address, it's primary and city is secondary
+		if (event.address) {
+			return { primary: event.address, secondary: cityCountry };
+		}
+
+		// Just city/country on primary line
+		return { primary: cityCountry };
 	});
 
 	let eventTypeDisplay = $derived.by(() => {
@@ -124,9 +148,53 @@
 	<div class={itemClasses} role="listitem">
 		<MapPin class={iconClasses} aria-hidden="true" />
 		<div class={textClasses}>
-			<span class="block">{locationDisplay}</span>
+			{#if event.location_maps_url}
+				<a
+					href={event.location_maps_url}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="group block text-primary hover:underline"
+					aria-label="{locationDisplay.primary} - {m['eventQuickInfo.openInMaps']()}"
+				>
+					<span class="inline-flex items-center gap-1">
+						{locationDisplay.primary}
+						<ExternalLink class="h-3 w-3 opacity-70 group-hover:opacity-100" aria-hidden="true" />
+					</span>
+				</a>
+				{#if locationDisplay.secondary}
+					<a
+						href={event.location_maps_url}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="block text-xs text-muted-foreground hover:text-primary hover:underline"
+					>
+						{locationDisplay.secondary}
+					</a>
+				{/if}
+			{:else}
+				<span class="block">{locationDisplay.primary}</span>
+				{#if locationDisplay.secondary}
+					<span class="block text-xs text-muted-foreground">{locationDisplay.secondary}</span>
+				{/if}
+			{/if}
 		</div>
 	</div>
+
+	<!-- Map Embed -->
+	{#if event.location_maps_embed}
+		<div class="mt-3 overflow-hidden rounded-lg border" role="listitem">
+			<iframe
+				src={event.location_maps_embed}
+				width="100%"
+				height="200"
+				style="border:0;"
+				allowfullscreen
+				loading="lazy"
+				referrerpolicy="no-referrer-when-downgrade"
+				title="{m['eventQuickInfo.mapOf']()} {locationDisplay.primary}"
+			></iframe>
+		</div>
+	{/if}
 
 	<!-- Event Type -->
 	{#if eventTypeIcon}
