@@ -1,17 +1,25 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { createMutation } from '@tanstack/svelte-query';
-	import { eventadminUpdateRsvp, eventadminDeleteRsvp } from '$lib/api';
+	import { toast } from 'svelte-sonner';
+	import {
+		eventadminUpdateRsvp,
+		eventadminDeleteRsvp,
+		organizationadminListMembershipTiers,
+		organizationadminAddMember
+	} from '$lib/api';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { cn } from '$lib/utils/cn';
-	import { Search, Users, Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-svelte';
+	import { Search, Users, Edit, Trash2, ChevronLeft, ChevronRight, UserPlus } from 'lucide-svelte';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
+	import { Badge } from '$lib/components/ui/badge';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
-	import type { RsvpDetailSchema } from '$lib/api/generated/types.gen';
+	import MakeMemberModal from '$lib/components/members/MakeMemberModal.svelte';
+	import type { RsvpDetailSchema, MembershipTierSchema } from '$lib/api/generated/types.gen';
 	import * as m from '$lib/paraglide/messages.js';
 
 	let { data }: { data: PageData } = $props();
@@ -32,6 +40,12 @@
 	// Delete confirmation state
 	let deletingRsvp = $state<RsvpDetailSchema | null>(null);
 	let showDeleteDialog = $state(false);
+
+	// Make member modal state
+	let showMakeMemberModal = $state(false);
+	let userToMakeMember = $state<{ id: string; displayName: string; email?: string } | null>(null);
+	let membershipTiers = $state<MembershipTierSchema[]>([]);
+	let tiersLoading = $state(false);
 
 	// Computed: Has multiple pages
 	let hasMultiplePages = $derived(!!data.nextPage || !!data.previousPage);
@@ -99,6 +113,90 @@
 			alert(`${m['attendeesAdmin.error_failedToDelete']()}: ${error.message}`);
 		}
 	}));
+
+	// Add member mutation
+	const addMemberMutation = createMutation(() => ({
+		mutationFn: async ({ userId, tierId }: { userId: string; tierId: string }) => {
+			const response = await organizationadminAddMember({
+				path: { slug: organization.slug, user_id: userId },
+				body: { tier_id: tierId },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+
+			if (response.error) {
+				const errorDetail =
+					typeof response.error === 'object' &&
+					response.error !== null &&
+					'detail' in response.error
+						? String(response.error.detail)
+						: m['makeMemberAction.error']();
+				throw new Error(errorDetail);
+			}
+
+			return response.data;
+		},
+		onSuccess: () => {
+			const userName = userToMakeMember?.displayName || '';
+			showMakeMemberModal = false;
+			userToMakeMember = null;
+			toast.success(m['makeMemberAction.success']({ name: userName }));
+			invalidateAll();
+		},
+		onError: (error: Error) => {
+			toast.error(error.message);
+		}
+	}));
+
+	/**
+	 * Open make member modal
+	 */
+	async function openMakeMemberModal(rsvp: RsvpDetailSchema) {
+		const user = rsvp.user;
+		if (!user?.id) {
+			toast.error('User ID not available');
+			return;
+		}
+
+		// Check if already a member
+		if (rsvp.membership) {
+			toast.info(m['makeMemberAction.alreadyMember']());
+			return;
+		}
+
+		// Set user info
+		userToMakeMember = {
+			id: user.id,
+			displayName: getUserDisplayName(user),
+			email: user.email
+		};
+
+		// Load membership tiers if not already loaded
+		if (membershipTiers.length === 0) {
+			tiersLoading = true;
+			try {
+				const response = await organizationadminListMembershipTiers({
+					path: { slug: organization.slug },
+					headers: { Authorization: `Bearer ${accessToken}` }
+				});
+				if (response.data) {
+					membershipTiers = response.data;
+				}
+			} catch (err) {
+				console.error('Failed to load membership tiers:', err);
+			} finally {
+				tiersLoading = false;
+			}
+		}
+
+		showMakeMemberModal = true;
+	}
+
+	/**
+	 * Handle make member confirm
+	 */
+	function handleMakeMemberConfirm(userId: string, tierId: string) {
+		addMemberMutation.mutate({ userId, tierId });
+	}
 
 	/**
 	 * Apply filters and navigate to update URL
@@ -462,7 +560,16 @@
 					{#each data.rsvps as rsvp (rsvp.id)}
 						<tr class="hover:bg-muted/50">
 							<td class="whitespace-nowrap px-6 py-4 text-sm font-medium">
-								{getUserDisplayName(rsvp.user)}
+								<div class="flex items-center gap-2">
+									<span>{getUserDisplayName(rsvp.user)}</span>
+									{#if rsvp.membership}
+										<Badge variant="secondary" class="text-xs">
+											{rsvp.membership.tier?.name
+												? m['memberBadge.tierName']({ tier: rsvp.membership.tier.name })
+												: m['memberBadge.member']()}
+										</Badge>
+									{/if}
+								</div>
 							</td>
 							<td class="whitespace-nowrap px-6 py-4 text-sm text-muted-foreground">
 								{getUserEmail(rsvp.user)}
@@ -482,6 +589,18 @@
 							</td>
 							<td class="whitespace-nowrap px-6 py-4 text-right text-sm">
 								<div class="flex items-center justify-end gap-2">
+									{#if !rsvp.membership && rsvp.user?.id}
+										<button
+											type="button"
+											onclick={() => openMakeMemberModal(rsvp)}
+											disabled={addMemberMutation.isPending || tiersLoading}
+											class="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:opacity-50"
+											aria-label="Make {getUserDisplayName(rsvp.user)} a member"
+										>
+											<UserPlus class="h-3 w-3" aria-hidden="true" />
+											{m['makeMemberAction.button']()}
+										</button>
+									{/if}
 									<button
 										type="button"
 										onclick={() => openEditModal(rsvp)}
@@ -515,7 +634,16 @@
 					<div class="space-y-3">
 						<div class="flex items-start justify-between gap-2">
 							<div>
-								<p class="font-medium">{getUserDisplayName(rsvp.user)}</p>
+								<div class="flex items-center gap-2">
+									<p class="font-medium">{getUserDisplayName(rsvp.user)}</p>
+									{#if rsvp.membership}
+										<Badge variant="secondary" class="text-xs">
+											{rsvp.membership.tier?.name
+												? m['memberBadge.tierName']({ tier: rsvp.membership.tier.name })
+												: m['memberBadge.member']()}
+										</Badge>
+									{/if}
+								</div>
 								<p class="text-sm text-muted-foreground">{getUserEmail(rsvp.user)}</p>
 							</div>
 							<span
@@ -532,7 +660,18 @@
 							{m['attendeesAdmin.mobileRsvpdOn']({ date: formatDate(rsvp.created_at) })}
 						</p>
 
-						<div class="flex gap-2 border-t border-border pt-3">
+						<div class="flex flex-wrap gap-2 border-t border-border pt-3">
+							{#if !rsvp.membership && rsvp.user?.id}
+								<button
+									type="button"
+									onclick={() => openMakeMemberModal(rsvp)}
+									disabled={addMemberMutation.isPending || tiersLoading}
+									class="inline-flex flex-1 items-center justify-center gap-1 rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:opacity-50"
+								>
+									<UserPlus class="h-4 w-4" aria-hidden="true" />
+									{m['makeMemberAction.button']()}
+								</button>
+							{/if}
 							<button
 								type="button"
 								onclick={() => openEditModal(rsvp)}
@@ -692,4 +831,17 @@
 	variant="danger"
 	onConfirm={confirmDelete}
 	onCancel={cancelDelete}
+/>
+
+<!-- Make Member Modal -->
+<MakeMemberModal
+	user={userToMakeMember}
+	tiers={membershipTiers}
+	open={showMakeMemberModal}
+	onClose={() => {
+		showMakeMemberModal = false;
+		userToMakeMember = null;
+	}}
+	onConfirm={handleMakeMemberConfirm}
+	isProcessing={addMemberMutation.isPending}
 />

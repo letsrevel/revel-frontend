@@ -3,8 +3,10 @@
 	import { page } from '$app/stores';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { createMutation } from '@tanstack/svelte-query';
+	import { toast } from 'svelte-sonner';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
+	import { Badge } from '$lib/components/ui/badge';
 	import {
 		Search,
 		Check,
@@ -13,18 +15,23 @@
 		CreditCard,
 		AlertTriangle,
 		QrCode,
-		ExternalLink
+		ExternalLink,
+		UserPlus
 	} from 'lucide-svelte';
 	import {
 		eventadminConfirmTicketPayment,
 		eventadminCancelTicket,
 		eventadminCheckInTicket,
-		eventadminGetTicket
+		eventadminGetTicket,
+		organizationadminListMembershipTiers,
+		organizationadminAddMember
 	} from '$lib/api';
 	import type { PageData } from './$types';
+	import type { MembershipTierSchema } from '$lib/api/generated/types.gen';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import QRScannerModal from '$lib/components/tickets/QRScannerModal.svelte';
 	import CheckInDialog from '$lib/components/tickets/CheckInDialog.svelte';
+	import MakeMemberModal from '$lib/components/members/MakeMemberModal.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -44,6 +51,12 @@
 	let showCheckInDialog = $state(false);
 	let ticketToCheckIn = $state<any>(null);
 	let showQRScanner = $state(false);
+
+	// Make member modal state
+	let showMakeMemberModal = $state(false);
+	let userToMakeMember = $state<{ id: string; displayName: string; email?: string } | null>(null);
+	let membershipTiers = $state<MembershipTierSchema[]>([]);
+	let tiersLoading = $state(false);
 
 	/**
 	 * Derived: Check if there are multiple pages
@@ -137,6 +150,92 @@
 			invalidateAll();
 		}
 	}));
+
+	/**
+	 * Add member mutation
+	 */
+	const addMemberMutation = createMutation(() => ({
+		mutationFn: async ({ userId, tierId }: { userId: string; tierId: string }) => {
+			const response = await organizationadminAddMember({
+				path: { slug: data.event.organization.slug, user_id: userId },
+				body: { tier_id: tierId },
+				headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
+			});
+
+			if (response.error) {
+				const errorDetail =
+					typeof response.error === 'object' &&
+					response.error !== null &&
+					'detail' in response.error
+						? String(response.error.detail)
+						: m['makeMemberAction.error']();
+				throw new Error(errorDetail);
+			}
+
+			return response.data;
+		},
+		onSuccess: () => {
+			const userName = userToMakeMember?.displayName || '';
+			showMakeMemberModal = false;
+			userToMakeMember = null;
+			toast.success(m['makeMemberAction.success']({ name: userName }));
+			invalidateAll();
+		},
+		onError: (error: Error) => {
+			toast.error(error.message);
+		}
+	}));
+
+	/**
+	 * Open make member modal
+	 */
+	async function openMakeMemberModal(ticket: any) {
+		const user = ticket.user;
+		if (!user?.id) {
+			toast.error('User ID not available');
+			return;
+		}
+
+		// Check if already a member
+		if (ticket.membership) {
+			toast.info(m['makeMemberAction.alreadyMember']());
+			return;
+		}
+
+		// Set user info
+		userToMakeMember = {
+			id: user.id,
+			displayName: getUserDisplayName(user),
+			email: user.email
+		};
+
+		// Load membership tiers if not already loaded
+		if (membershipTiers.length === 0) {
+			tiersLoading = true;
+			try {
+				const response = await organizationadminListMembershipTiers({
+					path: { slug: data.event.organization.slug },
+					headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
+				});
+				if (response.data) {
+					membershipTiers = response.data;
+				}
+			} catch (err) {
+				console.error('Failed to load membership tiers:', err);
+			} finally {
+				tiersLoading = false;
+			}
+		}
+
+		showMakeMemberModal = true;
+	}
+
+	/**
+	 * Handle make member confirm
+	 */
+	function handleMakeMemberConfirm(userId: string, tierId: string) {
+		addMemberMutation.mutate({ userId, tierId });
+	}
 
 	/**
 	 * Handle search input
@@ -700,12 +799,30 @@
 								<td class="px-4 py-3">
 									<div>
 										{#if guestName}
-											<div class="font-medium">{guestName}</div>
+											<div class="flex items-center gap-2">
+												<span class="font-medium">{guestName}</span>
+												{#if ticket.membership}
+													<Badge variant="secondary" class="text-xs">
+														{ticket.membership.tier?.name
+															? m['memberBadge.tierName']({ tier: ticket.membership.tier.name })
+															: m['memberBadge.member']()}
+													</Badge>
+												{/if}
+											</div>
 											<div class="text-sm text-muted-foreground">
 												(Purchased by {getUserDisplayName(ticket.user)})
 											</div>
 										{:else}
-											<div class="font-medium">{getUserDisplayName(ticket.user)}</div>
+											<div class="flex items-center gap-2">
+												<span class="font-medium">{getUserDisplayName(ticket.user)}</span>
+												{#if ticket.membership}
+													<Badge variant="secondary" class="text-xs">
+														{ticket.membership.tier?.name
+															? m['memberBadge.tierName']({ tier: ticket.membership.tier.name })
+															: m['memberBadge.member']()}
+													</Badge>
+												{/if}
+											</div>
 										{/if}
 										<div class="text-sm text-muted-foreground">
 											{getUserEmail(ticket.user)}
@@ -763,6 +880,17 @@
 												Confirm Payment
 											</Button>
 										{/if}
+										{#if !ticket.membership && ticket.user?.id}
+											<Button
+												size="sm"
+												variant="outline"
+												onclick={() => openMakeMemberModal(ticket)}
+												disabled={addMemberMutation.isPending || tiersLoading}
+											>
+												<UserPlus class="h-4 w-4" aria-hidden="true" />
+												{m['makeMemberAction.button']()}
+											</Button>
+										{/if}
 										{#if canManageTicket(ticket) && ticket.status !== 'cancelled'}
 											<Button
 												size="sm"
@@ -801,12 +929,30 @@
 						<div class="mb-3 flex items-start justify-between">
 							<div class="flex-1">
 								{#if guestName}
-									<div class="font-semibold">{guestName}</div>
+									<div class="flex items-center gap-2">
+										<span class="font-semibold">{guestName}</span>
+										{#if ticket.membership}
+											<Badge variant="secondary" class="text-xs">
+												{ticket.membership.tier?.name
+													? m['memberBadge.tierName']({ tier: ticket.membership.tier.name })
+													: m['memberBadge.member']()}
+											</Badge>
+										{/if}
+									</div>
 									<div class="text-sm text-muted-foreground">
 										(Purchased by {getUserDisplayName(ticket.user)})
 									</div>
 								{:else}
-									<div class="font-semibold">{getUserDisplayName(ticket.user)}</div>
+									<div class="flex items-center gap-2">
+										<span class="font-semibold">{getUserDisplayName(ticket.user)}</span>
+										{#if ticket.membership}
+											<Badge variant="secondary" class="text-xs">
+												{ticket.membership.tier?.name
+													? m['memberBadge.tierName']({ tier: ticket.membership.tier.name })
+													: m['memberBadge.member']()}
+											</Badge>
+										{/if}
+									</div>
 								{/if}
 								<div class="text-sm text-muted-foreground">{getUserEmail(ticket.user)}</div>
 								{#if seatInfo}
@@ -867,6 +1013,18 @@
 								>
 									<Check class="h-4 w-4" aria-hidden="true" />
 									{m['eventTicketsAdmin.actionConfirmPayment']()}
+								</Button>
+							{/if}
+							{#if !ticket.membership && ticket.user?.id}
+								<Button
+									size="sm"
+									variant="outline"
+									onclick={() => openMakeMemberModal(ticket)}
+									disabled={addMemberMutation.isPending || tiersLoading}
+									class="flex-1"
+								>
+									<UserPlus class="h-4 w-4" aria-hidden="true" />
+									{m['makeMemberAction.button']()}
 								</Button>
 							{/if}
 							{#if canManageTicket(ticket) && ticket.status !== 'cancelled'}
@@ -978,4 +1136,17 @@
 	isOpen={showQRScanner}
 	onClose={() => (showQRScanner = false)}
 	onScan={handleQRScan}
+/>
+
+<!-- Make Member Modal -->
+<MakeMemberModal
+	user={userToMakeMember}
+	tiers={membershipTiers}
+	open={showMakeMemberModal}
+	onClose={() => {
+		showMakeMemberModal = false;
+		userToMakeMember = null;
+	}}
+	onConfirm={handleMakeMemberConfirm}
+	isProcessing={addMemberMutation.isPending}
 />

@@ -3867,6 +3867,26 @@
 		"cancel": "Annulla",
 		"approve": "Approva richiesta"
 	},
+	"makeMemberModal": {
+		"title": "Aggiungi come membro",
+		"description": "Aggiungi {name} come membro della tua organizzazione.",
+		"tierLabel": "Livello di iscrizione",
+		"selectTier": "Seleziona un livello",
+		"tierHelp": "Seleziona il livello di iscrizione per questo nuovo membro.",
+		"noTiersWarning": "Nessun livello di iscrizione disponibile. Per favore crea prima un livello di iscrizione.",
+		"cancel": "Annulla",
+		"confirm": "Aggiungi membro"
+	},
+	"memberBadge": {
+		"member": "Membro",
+		"tierName": "Membro {tier}"
+	},
+	"makeMemberAction": {
+		"button": "Rendi membro",
+		"success": "{name} è stato aggiunto come membro.",
+		"error": "Impossibile aggiungere il membro. Per favore riprova.",
+		"alreadyMember": "Questo utente è già un membro."
+	},
 	"learnMore": {
 		"metaTitle": "Scopri di più su Revel - Piattaforma di gestione eventi per la comunità",
 		"metaDescription": "Scopri le potenti funzionalità di Revel: gestione eventi, biglietteria, screening con questionari, coordinamento potluck e strumenti per la costruzione della comunità. Open-source e orientato alla privacy.",
