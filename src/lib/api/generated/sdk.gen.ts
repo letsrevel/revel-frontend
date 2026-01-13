@@ -1861,9 +1861,7 @@ export const organizationCreateMembershipRequest = <ThrowOnError extends boolean
  * **Error Cases:**
  * - 404: Token doesn't exist or has been deleted
  */
-export const organizationGetOrganizationTokenDetails = <
-	ThrowOnError extends boolean = false
->(
+export const organizationGetOrganizationTokenDetails = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationGetOrganizationTokenDetails29Dbe0A0Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -2392,9 +2390,7 @@ export const organizationadminCreateEvent = <ThrowOnError extends boolean = fals
  * - Clean up expired or unused tokens
  * - Verify staff invitation tokens are properly restricted
  */
-export const organizationadminListOrganizationTokens = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminListOrganizationTokens = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminListOrganizationTokens86C972B3Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -2514,9 +2510,7 @@ export const organizationadminListOrganizationTokens = <
  * - 403: User lacks "manage_members" permission
  * - 404: Organization slug not found or user lacks access
  */
-export const organizationadminCreateOrganizationToken = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminCreateOrganizationToken = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminCreateOrganizationTokenCcc1B1B5Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -2620,9 +2614,7 @@ export const organizationadminCreateOrganizationToken = <
  * - 403: User lacks "manage_members" permission
  * - 404: Token ID not found or doesn't belong to this organization
  */
-export const organizationadminDeleteOrganizationToken = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminDeleteOrganizationToken = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminDeleteOrganizationToken738E3C34Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
@@ -2729,9 +2721,7 @@ export const organizationadminDeleteOrganizationToken = <
  * - 403: User lacks "manage_members" permission
  * - 404: Token ID not found or doesn't belong to this organization
  */
-export const organizationadminUpdateOrganizationToken = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminUpdateOrganizationToken = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminUpdateOrganizationTokenE43EccebData, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
@@ -2761,9 +2751,7 @@ export const organizationadminUpdateOrganizationToken = <
  *
  * By default shows all requests. Use ?status=pending to filter by status.
  */
-export const organizationadminListMembershipRequests = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminListMembershipRequests = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminListMembershipRequestsE3Dadf87Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -2789,9 +2777,7 @@ export const organizationadminListMembershipRequests = <
  *
  * Requires a tier_id to be specified. The tier must belong to the organization.
  */
-export const organizationadminApproveMembershipRequest = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminApproveMembershipRequest = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminApproveMembershipRequest8E8E5E78Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -2819,9 +2805,7 @@ export const organizationadminApproveMembershipRequest = <
  *
  * Reject a membership request.
  */
-export const organizationadminRejectMembershipRequest = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminRejectMembershipRequest = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminRejectMembershipRequest52271D02Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -3270,9 +3254,7 @@ export const organizationadminAddStaff = <ThrowOnError extends boolean = false>(
  *
  * Update a staff member's permissions.
  */
-export const organizationadminUpdateStaffPermissions = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminUpdateStaffPermissions = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminUpdateStaffPermissions7B7B0442Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
@@ -3983,9 +3965,7 @@ export const organizationadminUpdateBlacklistEntry = <ThrowOnError extends boole
  * entry. Approving a request adds the user to the whitelist, allowing them
  * full access despite the name match.
  */
-export const organizationadminListWhitelistRequests = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminListWhitelistRequests = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminListWhitelistRequests882912AcData, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -4036,9 +4016,7 @@ export const organizationadminGetWhitelistRequest = <ThrowOnError extends boolea
  * Creates a whitelist entry for the user, granting them full access
  * to the organization despite any fuzzy name matches.
  */
-export const organizationadminApproveWhitelistRequest = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminApproveWhitelistRequest = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminApproveWhitelistRequest33C54999Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -4065,9 +4043,7 @@ export const organizationadminApproveWhitelistRequest = <
  * The user will remain blocked from the organization due to the
  * fuzzy name match with blacklist entries.
  */
-export const organizationadminRejectWhitelistRequest = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminRejectWhitelistRequest = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminRejectWhitelistRequest68Bd43C0Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -7458,9 +7434,7 @@ export const questionnaireEvaluateSubmission = <ThrowOnError extends boolean = f
  *
  * Requires 'edit_questionnaire' permission.
  */
-export const questionnaireUpdateQuestionnaireStatus = <
-	ThrowOnError extends boolean = false
->(
+export const questionnaireUpdateQuestionnaireStatus = <ThrowOnError extends boolean = false>(
 	options: Options<QuestionnaireUpdateQuestionnaireStatus93721BacData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -7684,9 +7658,7 @@ export const userpreferencesGetGeneralPreferences = <ThrowOnError extends boolea
  * Modify visibility and location settings.
  * For notification preferences, use the /notification-preferences endpoint.
  */
-export const userpreferencesUpdateGeneralPreferences = <
-	ThrowOnError extends boolean = false
->(
+export const userpreferencesUpdateGeneralPreferences = <ThrowOnError extends boolean = false>(
 	options: Options<UserpreferencesUpdateGeneralPreferencesBf5E6E6dData, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
@@ -7953,9 +7925,7 @@ export const notificationpreferenceGetPreferences = <ThrowOnError extends boolea
  *
  * Update notification preferences.
  */
-export const notificationpreferenceUpdatePreferences = <
-	ThrowOnError extends boolean = false
->(
+export const notificationpreferenceUpdatePreferences = <ThrowOnError extends boolean = false>(
 	options: Options<NotificationpreferenceUpdatePreferences9A25F889Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).patch<

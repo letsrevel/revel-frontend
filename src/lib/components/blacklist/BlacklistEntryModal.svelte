@@ -18,7 +18,12 @@
 		entry: BlacklistEntrySchema | null;
 		open: boolean;
 		onClose: () => void;
-		onUpdate: (updates: { reason?: string; first_name?: string; last_name?: string; preferred_name?: string }) => void;
+		onUpdate: (updates: {
+			reason?: string;
+			first_name?: string;
+			last_name?: string;
+			preferred_name?: string;
+		}) => void;
 		onDelete: () => void;
 		isUpdating?: boolean;
 		isDeleting?: boolean;
@@ -83,7 +88,12 @@
 	);
 
 	function handleSave() {
-		const updates: { reason?: string; first_name?: string; last_name?: string; preferred_name?: string } = {};
+		const updates: {
+			reason?: string;
+			first_name?: string;
+			last_name?: string;
+			preferred_name?: string;
+		} = {};
 
 		if (reason !== (entry?.reason || '')) {
 			updates.reason = reason || undefined;
@@ -144,8 +154,10 @@
 				</div>
 
 				<!-- Contact Details (Read-only) -->
-				<div class="rounded-md border border-border bg-muted/30 p-3 space-y-2">
-					<p class="text-xs font-medium text-muted-foreground uppercase">Contact Information (Read-only)</p>
+				<div class="space-y-2 rounded-md border border-border bg-muted/30 p-3">
+					<p class="text-xs font-medium uppercase text-muted-foreground">
+						Contact Information (Read-only)
+					</p>
 
 					{#if entry.email}
 						<div class="flex items-center gap-2 text-sm">
@@ -169,7 +181,7 @@
 					{/if}
 
 					{#if !entry.email && !entry.telegram_username && !entry.phone_number}
-						<p class="text-sm text-muted-foreground italic">No contact information</p>
+						<p class="text-sm italic text-muted-foreground">No contact information</p>
 					{/if}
 				</div>
 
@@ -247,11 +259,7 @@
 			</div>
 
 			<DialogFooter class="flex-col gap-2 sm:flex-row sm:justify-between">
-				<Button
-					variant="destructive"
-					onclick={handleDelete}
-					disabled={isUpdating || isDeleting}
-				>
+				<Button variant="destructive" onclick={handleDelete} disabled={isUpdating || isDeleting}>
 					{#if isDeleting}
 						<Loader2 class="mr-2 h-4 w-4 animate-spin" />
 						Removing...
@@ -272,10 +280,7 @@
 					>
 						Cancel
 					</Button>
-					<Button
-						onclick={handleSave}
-						disabled={!hasChanges || isUpdating || isDeleting}
-					>
+					<Button onclick={handleSave} disabled={!hasChanges || isUpdating || isDeleting}>
 						{#if isUpdating}
 							<Loader2 class="mr-2 h-4 w-4 animate-spin" />
 						{/if}

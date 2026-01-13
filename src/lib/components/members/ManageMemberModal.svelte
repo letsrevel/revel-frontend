@@ -314,7 +314,9 @@
 								Add to Blacklist
 							</Button>
 						{:else}
-							<div class="space-y-3 rounded-lg border-2 border-red-500 bg-red-50 p-4 dark:bg-red-950/50">
+							<div
+								class="space-y-3 rounded-lg border-2 border-red-500 bg-red-50 p-4 dark:bg-red-950/50"
+							>
 								<div class="flex gap-2">
 									<Ban class="h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
 									<div class="flex-1 space-y-3">
@@ -323,8 +325,8 @@
 												Blacklist {displayName}?
 											</p>
 											<p class="text-sm text-red-800 dark:text-red-200">
-												This person will be blocked from all events in this organization.
-												They will also be removed as a member.
+												This person will be blocked from all events in this organization. They will
+												also be removed as a member.
 											</p>
 										</div>
 										<div class="space-y-2">

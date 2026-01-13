@@ -34,7 +34,9 @@
 				<h3 class="truncate font-semibold text-foreground">
 					{entry.user_display_name}
 				</h3>
-				<span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-100">
+				<span
+					class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-100"
+				>
 					<ShieldCheck class="h-3 w-3" />
 					Verified
 				</span>
@@ -48,9 +50,14 @@
 
 			<!-- Matched blacklist entries info -->
 			<div class="mt-2">
-				<span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-950 dark:text-amber-200">
+				<span
+					class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-950 dark:text-amber-200"
+				>
 					<AlertCircle class="h-3 w-3" />
-					Cleared despite matching {entry.matched_entries_count} blacklist {entry.matched_entries_count === 1 ? 'entry' : 'entries'}
+					Cleared despite matching {entry.matched_entries_count} blacklist {entry.matched_entries_count ===
+					1
+						? 'entry'
+						: 'entries'}
 				</span>
 			</div>
 

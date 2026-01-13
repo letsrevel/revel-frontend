@@ -84,13 +84,22 @@
 		<DialogHeader>
 			<DialogTitle>Add to Blacklist</DialogTitle>
 			<DialogDescription>
-				Add a person to the organization's blacklist. They will be blocked from accessing any events.
+				Add a person to the organization's blacklist. They will be blocked from accessing any
+				events.
 			</DialogDescription>
 		</DialogHeader>
 
-		<form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="space-y-4 py-4">
+		<form
+			onsubmit={(e) => {
+				e.preventDefault();
+				handleSubmit();
+			}}
+			class="space-y-4 py-4"
+		>
 			<!-- Warning -->
-			<div class="flex gap-3 rounded-md border border-amber-500/50 bg-amber-50 p-3 dark:bg-amber-950/30">
+			<div
+				class="flex gap-3 rounded-md border border-amber-500/50 bg-amber-50 p-3 dark:bg-amber-950/30"
+			>
 				<AlertTriangle class="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
 				<div class="text-sm">
 					<p class="font-medium text-amber-900 dark:text-amber-100">Important</p>
@@ -173,7 +182,8 @@
 						disabled={isCreating}
 					/>
 					<p class="text-xs text-muted-foreground">
-						If this person goes by a different name or alias, enter it here. This helps with fuzzy matching.
+						If this person goes by a different name or alias, enter it here. This helps with fuzzy
+						matching.
 					</p>
 				</div>
 			</div>

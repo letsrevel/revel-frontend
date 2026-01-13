@@ -103,7 +103,12 @@
 
 		<!-- Actions -->
 		<div class="flex shrink-0">
-			<Button variant="outline" size="sm" onclick={handleManage} aria-label="Manage blacklist entry for {displayName}">
+			<Button
+				variant="outline"
+				size="sm"
+				onclick={handleManage}
+				aria-label="Manage blacklist entry for {displayName}"
+			>
 				<Settings class="h-4 w-4" />
 				<span class="sr-only md:not-sr-only md:ml-2">Manage</span>
 			</Button>

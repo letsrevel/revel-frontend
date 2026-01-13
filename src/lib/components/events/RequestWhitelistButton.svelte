@@ -108,7 +108,8 @@
 	<div
 		class="inline-flex items-center gap-2 rounded-md border border-yellow-200 bg-yellow-50 px-4 py-2 text-sm font-medium text-yellow-700 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-300 {className}"
 		role="status"
-		aria-label={m['requestWhitelistButton.alreadyRequested']?.() ?? 'You have already requested verification'}
+		aria-label={m['requestWhitelistButton.alreadyRequested']?.() ??
+			'You have already requested verification'}
 	>
 		<AlertCircle class="h-4 w-4" aria-hidden="true" />
 		{m['requestWhitelistButton.verificationRequested']?.() ?? 'Verification requested'}
@@ -148,7 +149,8 @@
 						{m['requestWhitelistButton.requestSubmitted']?.() ?? 'Verification Request Submitted'}
 					</Dialog.Title>
 					<Dialog.Description class="mt-2">
-						{m['requestWhitelistButton.requestSubmittedBody']?.() ?? 'Your request has been submitted. The organization admins will review it and get back to you.'}
+						{m['requestWhitelistButton.requestSubmittedBody']?.() ??
+							'Your request has been submitted. The organization admins will review it and get back to you.'}
 					</Dialog.Description>
 				</div>
 			{:else}
@@ -163,7 +165,8 @@
 								organizationName: `<strong>${organizationName}</strong>`
 							}) ?? `Submit a verification request to <strong>${organizationName}</strong>`}
 						{:else}
-							{m['requestWhitelistButton.submitRequestDescription']?.() ?? 'Submit a verification request to access this organization\'s events.'}
+							{m['requestWhitelistButton.submitRequestDescription']?.() ??
+								"Submit a verification request to access this organization's events."}
 						{/if}
 					</Dialog.Description>
 				</Dialog.Header>
@@ -182,13 +185,15 @@
 						<textarea
 							id="whitelist-message"
 							bind:value={message}
-							placeholder={m['requestWhitelistButton.messagePlaceholder']?.() ?? 'Explain why you should be verified (e.g., how the organizers know you)...'}
+							placeholder={m['requestWhitelistButton.messagePlaceholder']?.() ??
+								'Explain why you should be verified (e.g., how the organizers know you)...'}
 							rows="4"
 							maxlength="500"
 							class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
 						></textarea>
 						<p class="mt-1 text-xs text-muted-foreground">
-							{m['requestWhitelistButton.characterCount']?.({ count: message.length }) ?? `${message.length}/500 characters`}
+							{m['requestWhitelistButton.characterCount']?.({ count: message.length }) ??
+								`${message.length}/500 characters`}
 						</p>
 					</div>
 
@@ -197,7 +202,9 @@
 							class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
 							role="alert"
 						>
-							{requestMutation.error?.message || (m['requestWhitelistButton.failedToSubmitTryAgain']?.() ?? 'Failed to submit request. Please try again.')}
+							{requestMutation.error?.message ||
+								(m['requestWhitelistButton.failedToSubmitTryAgain']?.() ??
+									'Failed to submit request. Please try again.')}
 						</div>
 					{/if}
 

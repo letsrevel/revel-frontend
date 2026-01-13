@@ -981,15 +981,16 @@
 										<!-- More actions dropdown -->
 										{#if ticket.user?.id}
 											<DropdownMenu.Root>
-												<DropdownMenu.Trigger asChild let:builder>
-													<button
-														{...builder}
-														use:builder.action
-														class="inline-flex items-center justify-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-														aria-label="More actions for {getUserDisplayName(ticket.user)}"
-													>
-														<MoreVertical class="h-4 w-4" aria-hidden="true" />
-													</button>
+												<DropdownMenu.Trigger>
+													{#snippet child({ props })}
+														<button
+															{...props}
+															class="inline-flex items-center justify-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+															aria-label="More actions for {getUserDisplayName(ticket.user)}"
+														>
+															<MoreVertical class="h-4 w-4" aria-hidden="true" />
+														</button>
+													{/snippet}
 												</DropdownMenu.Trigger>
 												<DropdownMenu.Content align="end">
 													<DropdownMenu.Item
@@ -1143,15 +1144,16 @@
 							<!-- More actions dropdown for mobile -->
 							{#if ticket.user?.id}
 								<DropdownMenu.Root>
-									<DropdownMenu.Trigger asChild let:builder>
-										<button
-											{...builder}
-											use:builder.action
-											class="inline-flex items-center justify-center rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-											aria-label="More actions for {getUserDisplayName(ticket.user)}"
-										>
-											<MoreVertical class="h-4 w-4" aria-hidden="true" />
-										</button>
+									<DropdownMenu.Trigger>
+										{#snippet child({ props })}
+											<button
+												{...props}
+												class="inline-flex items-center justify-center rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+												aria-label="More actions for {getUserDisplayName(ticket.user)}"
+											>
+												<MoreVertical class="h-4 w-4" aria-hidden="true" />
+											</button>
+										{/snippet}
 									</DropdownMenu.Trigger>
 									<DropdownMenu.Content align="end">
 										<DropdownMenu.Item

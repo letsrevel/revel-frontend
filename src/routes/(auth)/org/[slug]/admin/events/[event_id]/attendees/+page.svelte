@@ -13,7 +13,17 @@
 	} from '$lib/api';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { cn } from '$lib/utils/cn';
-	import { Search, Users, Edit, Trash2, ChevronLeft, ChevronRight, UserPlus, MoreVertical, Ban } from 'lucide-svelte';
+	import {
+		Search,
+		Users,
+		Edit,
+		Trash2,
+		ChevronLeft,
+		ChevronRight,
+		UserPlus,
+		MoreVertical,
+		Ban
+	} from 'lucide-svelte';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Button } from '$lib/components/ui/button';
@@ -684,15 +694,16 @@
 									<!-- More actions dropdown -->
 									{#if rsvp.user?.id}
 										<DropdownMenu.Root>
-											<DropdownMenu.Trigger asChild let:builder>
-												<button
-													{...builder}
-													use:builder.action
-													class="inline-flex items-center justify-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-													aria-label="More actions for {getUserDisplayName(rsvp.user)}"
-												>
-													<MoreVertical class="h-4 w-4" aria-hidden="true" />
-												</button>
+											<DropdownMenu.Trigger>
+												{#snippet child({ props })}
+													<button
+														{...props}
+														class="inline-flex items-center justify-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+														aria-label="More actions for {getUserDisplayName(rsvp.user)}"
+													>
+														<MoreVertical class="h-4 w-4" aria-hidden="true" />
+													</button>
+												{/snippet}
 											</DropdownMenu.Trigger>
 											<DropdownMenu.Content align="end">
 												<DropdownMenu.Item
@@ -777,15 +788,16 @@
 							<!-- More actions dropdown for mobile -->
 							{#if rsvp.user?.id}
 								<DropdownMenu.Root>
-									<DropdownMenu.Trigger asChild let:builder>
-										<button
-											{...builder}
-											use:builder.action
-											class="inline-flex items-center justify-center rounded-md bg-secondary p-2 text-muted-foreground transition-colors hover:bg-secondary/80 hover:text-foreground"
-											aria-label="More actions"
-										>
-											<MoreVertical class="h-4 w-4" aria-hidden="true" />
-										</button>
+									<DropdownMenu.Trigger>
+										{#snippet child({ props })}
+											<button
+												{...props}
+												class="inline-flex items-center justify-center rounded-md bg-secondary p-2 text-muted-foreground transition-colors hover:bg-secondary/80 hover:text-foreground"
+												aria-label="More actions"
+											>
+												<MoreVertical class="h-4 w-4" aria-hidden="true" />
+											</button>
+										{/snippet}
 									</DropdownMenu.Trigger>
 									<DropdownMenu.Content align="end">
 										<DropdownMenu.Item

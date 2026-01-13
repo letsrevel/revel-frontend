@@ -13,13 +13,7 @@
 		showActions?: boolean;
 	}
 
-	let {
-		request,
-		onApprove,
-		onReject,
-		isProcessing = false,
-		showActions = true
-	}: Props = $props();
+	let { request, onApprove, onReject, isProcessing = false, showActions = true }: Props = $props();
 
 	// Format created date
 	let createdAgo = $derived(
@@ -51,7 +45,9 @@
 		}
 	};
 
-	let statusStyle = $derived(statusStyles[request.status as keyof typeof statusStyles] || statusStyles.pending);
+	let statusStyle = $derived(
+		statusStyles[request.status as keyof typeof statusStyles] || statusStyles.pending
+	);
 	let StatusIcon = $derived(statusStyle.icon);
 
 	function handleApprove() {
@@ -73,7 +69,9 @@
 				<h3 class="truncate font-semibold text-foreground">
 					{request.user_display_name}
 				</h3>
-				<span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium {statusStyle.class}">
+				<span
+					class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium {statusStyle.class}"
+				>
 					<StatusIcon class="h-3 w-3" />
 					{request.status}
 				</span>
@@ -87,9 +85,13 @@
 
 			<!-- Matched blacklist entries count -->
 			<div class="mt-2">
-				<span class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-950 dark:text-red-200">
+				<span
+					class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-950 dark:text-red-200"
+				>
 					<AlertCircle class="h-3 w-3" />
-					Matches {request.matched_entries_count} blacklist {request.matched_entries_count === 1 ? 'entry' : 'entries'}
+					Matches {request.matched_entries_count} blacklist {request.matched_entries_count === 1
+						? 'entry'
+						: 'entries'}
 				</span>
 			</div>
 
@@ -109,7 +111,8 @@
 				</span>
 				{#if request.status !== 'pending' && decidedAgo}
 					<span>
-						{request.status === 'approved' ? 'Approved' : 'Rejected'} {decidedAgo}
+						{request.status === 'approved' ? 'Approved' : 'Rejected'}
+						{decidedAgo}
 						{#if request.decided_by_name}
 							by {request.decided_by_name}
 						{/if}
@@ -131,12 +134,7 @@
 					<X class="h-4 w-4" />
 					<span class="sr-only md:not-sr-only md:ml-1">Reject</span>
 				</Button>
-				<Button
-					variant="default"
-					size="sm"
-					onclick={handleApprove}
-					disabled={isProcessing}
-				>
+				<Button variant="default" size="sm" onclick={handleApprove} disabled={isProcessing}>
 					<Check class="h-4 w-4" />
 					<span class="sr-only md:not-sr-only md:ml-1">Approve</span>
 				</Button>
