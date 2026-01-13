@@ -16,7 +16,9 @@
 		AlertTriangle,
 		QrCode,
 		ExternalLink,
-		UserPlus
+		UserPlus,
+		MoreVertical,
+		Ban
 	} from 'lucide-svelte';
 	import {
 		eventadminConfirmTicketPayment,
@@ -24,8 +26,10 @@
 		eventadminCheckInTicket,
 		eventadminGetTicket,
 		organizationadminListMembershipTiers,
-		organizationadminAddMember
+		organizationadminAddMember,
+		organizationadminCreateBlacklistEntry
 	} from '$lib/api';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import type { PageData } from './$types';
 	import type { MembershipTierSchema } from '$lib/api/generated/types.gen';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
@@ -57,6 +61,10 @@
 	let userToMakeMember = $state<{ id: string; displayName: string; email?: string } | null>(null);
 	let membershipTiers = $state<MembershipTierSchema[]>([]);
 	let tiersLoading = $state(false);
+
+	// Blacklist confirmation state
+	let showBlacklistDialog = $state(false);
+	let ticketToBlacklist = $state<any>(null);
 
 	/**
 	 * Derived: Check if there are multiple pages
@@ -187,6 +195,35 @@
 	}));
 
 	/**
+	 * Blacklist user mutation
+	 */
+	const blacklistMutation = createMutation(() => ({
+		mutationFn: async (userId: string) => {
+			const response = await organizationadminCreateBlacklistEntry({
+				path: { slug: data.event.organization.slug },
+				body: { user_id: userId, reason: '' },
+				headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
+			});
+
+			if (response.error) {
+				throw new Error('Failed to blacklist user');
+			}
+
+			return response.data;
+		},
+		onSuccess: () => {
+			const userName = ticketToBlacklist ? getUserDisplayName(ticketToBlacklist.user) : '';
+			showBlacklistDialog = false;
+			ticketToBlacklist = null;
+			toast.success(`${userName} has been blacklisted`);
+			invalidateAll();
+		},
+		onError: () => {
+			toast.error('Failed to blacklist user');
+		}
+	}));
+
+	/**
 	 * Open make member modal
 	 */
 	async function openMakeMemberModal(ticket: any) {
@@ -235,6 +272,35 @@
 	 */
 	function handleMakeMemberConfirm(userId: string, tierId: string) {
 		addMemberMutation.mutate({ userId, tierId });
+	}
+
+	/**
+	 * Open blacklist dialog
+	 */
+	function openBlacklistDialog(ticket: any) {
+		if (!ticket.user?.id) {
+			toast.error('User ID not available');
+			return;
+		}
+		ticketToBlacklist = ticket;
+		showBlacklistDialog = true;
+	}
+
+	/**
+	 * Confirm blacklist
+	 */
+	function confirmBlacklist() {
+		if (ticketToBlacklist?.user?.id) {
+			blacklistMutation.mutate(ticketToBlacklist.user.id);
+		}
+	}
+
+	/**
+	 * Cancel blacklist
+	 */
+	function cancelBlacklist() {
+		showBlacklistDialog = false;
+		ticketToBlacklist = null;
 	}
 
 	/**
@@ -912,6 +978,30 @@
 												Manage on Stripe
 											</Button>
 										{/if}
+										<!-- More actions dropdown -->
+										{#if ticket.user?.id}
+											<DropdownMenu.Root>
+												<DropdownMenu.Trigger asChild let:builder>
+													<button
+														{...builder}
+														use:builder.action
+														class="inline-flex items-center justify-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+														aria-label="More actions for {getUserDisplayName(ticket.user)}"
+													>
+														<MoreVertical class="h-4 w-4" aria-hidden="true" />
+													</button>
+												</DropdownMenu.Trigger>
+												<DropdownMenu.Content align="end">
+													<DropdownMenu.Item
+														onclick={() => openBlacklistDialog(ticket)}
+														class="text-destructive focus:text-destructive"
+													>
+														<Ban class="mr-2 h-4 w-4" aria-hidden="true" />
+														Blacklist User
+													</DropdownMenu.Item>
+												</DropdownMenu.Content>
+											</DropdownMenu.Root>
+										{/if}
 									</div>
 								</td>
 							</tr>
@@ -1050,6 +1140,30 @@
 									Manage on Stripe
 								</Button>
 							{/if}
+							<!-- More actions dropdown for mobile -->
+							{#if ticket.user?.id}
+								<DropdownMenu.Root>
+									<DropdownMenu.Trigger asChild let:builder>
+										<button
+											{...builder}
+											use:builder.action
+											class="inline-flex items-center justify-center rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+											aria-label="More actions for {getUserDisplayName(ticket.user)}"
+										>
+											<MoreVertical class="h-4 w-4" aria-hidden="true" />
+										</button>
+									</DropdownMenu.Trigger>
+									<DropdownMenu.Content align="end">
+										<DropdownMenu.Item
+											onclick={() => openBlacklistDialog(ticket)}
+											class="text-destructive focus:text-destructive"
+										>
+											<Ban class="mr-2 h-4 w-4" aria-hidden="true" />
+											Blacklist User
+										</DropdownMenu.Item>
+									</DropdownMenu.Content>
+								</DropdownMenu.Root>
+							{/if}
 						</div>
 					</div>
 				{/each}
@@ -1149,4 +1263,18 @@
 	}}
 	onConfirm={handleMakeMemberConfirm}
 	isProcessing={addMemberMutation.isPending}
+/>
+
+<!-- Blacklist Confirmation Dialog -->
+<ConfirmDialog
+	isOpen={showBlacklistDialog}
+	title="Blacklist User"
+	message={ticketToBlacklist
+		? `Are you sure you want to blacklist ${getUserDisplayName(ticketToBlacklist.user)}? They will be blocked from all events in this organization.`
+		: ''}
+	confirmText="Blacklist"
+	cancelText="Cancel"
+	onConfirm={confirmBlacklist}
+	onCancel={cancelBlacklist}
+	variant="danger"
 />

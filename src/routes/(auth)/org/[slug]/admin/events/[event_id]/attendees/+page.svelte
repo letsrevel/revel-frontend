@@ -8,12 +8,14 @@
 		eventadminUpdateRsvp,
 		eventadminDeleteRsvp,
 		organizationadminListMembershipTiers,
-		organizationadminAddMember
+		organizationadminAddMember,
+		organizationadminCreateBlacklistEntry
 	} from '$lib/api';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { cn } from '$lib/utils/cn';
-	import { Search, Users, Edit, Trash2, ChevronLeft, ChevronRight, UserPlus } from 'lucide-svelte';
+	import { Search, Users, Edit, Trash2, ChevronLeft, ChevronRight, UserPlus, MoreVertical, Ban } from 'lucide-svelte';
 	import * as Dialog from '$lib/components/ui/dialog';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Badge } from '$lib/components/ui/badge';
@@ -46,6 +48,10 @@
 	let userToMakeMember = $state<{ id: string; displayName: string; email?: string } | null>(null);
 	let membershipTiers = $state<MembershipTierSchema[]>([]);
 	let tiersLoading = $state(false);
+
+	// Blacklist confirmation state
+	let rsvpToBlacklist = $state<RsvpDetailSchema | null>(null);
+	let showBlacklistDialog = $state(false);
 
 	// Computed: Has multiple pages
 	let hasMultiplePages = $derived(!!data.nextPage || !!data.previousPage);
@@ -147,6 +153,33 @@
 		}
 	}));
 
+	// Blacklist user mutation
+	const blacklistMutation = createMutation(() => ({
+		mutationFn: async (userId: string) => {
+			const response = await organizationadminCreateBlacklistEntry({
+				path: { slug: organization.slug },
+				body: { user_id: userId, reason: '' },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+
+			if (response.error) {
+				throw new Error('Failed to blacklist user');
+			}
+
+			return response.data;
+		},
+		onSuccess: () => {
+			const userName = rsvpToBlacklist ? getUserDisplayName(rsvpToBlacklist.user) : '';
+			showBlacklistDialog = false;
+			rsvpToBlacklist = null;
+			toast.success(`${userName} has been blacklisted`);
+			invalidateAll();
+		},
+		onError: () => {
+			toast.error('Failed to blacklist user');
+		}
+	}));
+
 	/**
 	 * Open make member modal
 	 */
@@ -196,6 +229,35 @@
 	 */
 	function handleMakeMemberConfirm(userId: string, tierId: string) {
 		addMemberMutation.mutate({ userId, tierId });
+	}
+
+	/**
+	 * Open blacklist confirmation dialog
+	 */
+	function openBlacklistDialog(rsvp: RsvpDetailSchema) {
+		if (!rsvp.user?.id) {
+			toast.error('User ID not available');
+			return;
+		}
+		rsvpToBlacklist = rsvp;
+		showBlacklistDialog = true;
+	}
+
+	/**
+	 * Confirm blacklist
+	 */
+	function confirmBlacklist() {
+		if (rsvpToBlacklist?.user?.id) {
+			blacklistMutation.mutate(rsvpToBlacklist.user.id);
+		}
+	}
+
+	/**
+	 * Cancel blacklist
+	 */
+	function cancelBlacklist() {
+		showBlacklistDialog = false;
+		rsvpToBlacklist = null;
 	}
 
 	/**
@@ -619,6 +681,30 @@
 										<Trash2 class="h-3 w-3" aria-hidden="true" />
 										{m['attendeesAdmin.actionDelete']()}
 									</button>
+									<!-- More actions dropdown -->
+									{#if rsvp.user?.id}
+										<DropdownMenu.Root>
+											<DropdownMenu.Trigger asChild let:builder>
+												<button
+													{...builder}
+													use:builder.action
+													class="inline-flex items-center justify-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+													aria-label="More actions for {getUserDisplayName(rsvp.user)}"
+												>
+													<MoreVertical class="h-4 w-4" aria-hidden="true" />
+												</button>
+											</DropdownMenu.Trigger>
+											<DropdownMenu.Content align="end">
+												<DropdownMenu.Item
+													onclick={() => openBlacklistDialog(rsvp)}
+													class="text-destructive focus:text-destructive"
+												>
+													<Ban class="mr-2 h-4 w-4" aria-hidden="true" />
+													Blacklist User
+												</DropdownMenu.Item>
+											</DropdownMenu.Content>
+										</DropdownMenu.Root>
+									{/if}
 								</div>
 							</td>
 						</tr>
@@ -688,6 +774,30 @@
 								<Trash2 class="h-4 w-4" aria-hidden="true" />
 								{m['attendeesAdmin.actionDelete']()}
 							</button>
+							<!-- More actions dropdown for mobile -->
+							{#if rsvp.user?.id}
+								<DropdownMenu.Root>
+									<DropdownMenu.Trigger asChild let:builder>
+										<button
+											{...builder}
+											use:builder.action
+											class="inline-flex items-center justify-center rounded-md bg-secondary p-2 text-muted-foreground transition-colors hover:bg-secondary/80 hover:text-foreground"
+											aria-label="More actions"
+										>
+											<MoreVertical class="h-4 w-4" aria-hidden="true" />
+										</button>
+									</DropdownMenu.Trigger>
+									<DropdownMenu.Content align="end">
+										<DropdownMenu.Item
+											onclick={() => openBlacklistDialog(rsvp)}
+											class="text-destructive focus:text-destructive"
+										>
+											<Ban class="mr-2 h-4 w-4" aria-hidden="true" />
+											Blacklist User
+										</DropdownMenu.Item>
+									</DropdownMenu.Content>
+								</DropdownMenu.Root>
+							{/if}
 						</div>
 					</div>
 				</div>
@@ -844,4 +954,18 @@
 	}}
 	onConfirm={handleMakeMemberConfirm}
 	isProcessing={addMemberMutation.isPending}
+/>
+
+<!-- Blacklist Confirmation Dialog -->
+<ConfirmDialog
+	isOpen={showBlacklistDialog}
+	title="Blacklist User"
+	message={rsvpToBlacklist
+		? `Are you sure you want to blacklist ${getUserDisplayName(rsvpToBlacklist.user)}? They will be blocked from all events in this organization.`
+		: ''}
+	confirmText="Blacklist"
+	cancelText="Cancel"
+	variant="danger"
+	onConfirm={confirmBlacklist}
+	onCancel={cancelBlacklist}
 />

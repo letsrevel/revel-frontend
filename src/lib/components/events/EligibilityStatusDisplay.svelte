@@ -17,7 +17,8 @@
 		ListPlus,
 		Bell,
 		ArrowUpCircle,
-		Calendar
+		Calendar,
+		ShieldCheck
 	} from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
 	import IneligibilityActionButton from './IneligibilityActionButton.svelte';
@@ -27,10 +28,12 @@
 		eventId?: string;
 		eventSlug?: string;
 		organizationSlug?: string;
+		organizationName?: string;
 		eventName?: string;
 		eventTokenDetails?: EventTokenSchema | null;
 		applyBefore?: string | null;
 		onInvitationRequestSuccess?: () => void;
+		onWhitelistRequestSuccess?: () => void;
 		class?: string;
 	}
 
@@ -39,10 +42,12 @@
 		eventId,
 		eventSlug,
 		organizationSlug,
+		organizationName,
 		eventName,
 		eventTokenDetails,
 		applyBefore,
 		onInvitationRequestSuccess,
+		onWhitelistRequestSuccess,
 		class: className
 	}: Props = $props();
 
@@ -116,7 +121,9 @@
 			join_waitlist: ListPlus,
 			wait_for_open_spot: Clock,
 			wait_for_event_to_open: Bell,
-			upgrade_membership: ArrowUpCircle
+			upgrade_membership: ArrowUpCircle,
+			request_whitelist: ShieldCheck,
+			wait_for_whitelist_approval: Clock
 		};
 
 		return iconMap[eligibility.next_step] || AlertCircle;
@@ -243,11 +250,13 @@
 						{eventId}
 						{eventSlug}
 						{organizationSlug}
+						{organizationName}
 						{eventName}
 						{eventTokenDetails}
 						questionnaireIds={eligibility.questionnaires_missing}
 						retryOn={eligibility.retry_on}
 						{onInvitationRequestSuccess}
+						{onWhitelistRequestSuccess}
 					/>
 				</div>
 			{/if}

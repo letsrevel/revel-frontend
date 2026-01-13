@@ -325,7 +325,10 @@
 	"eligibility": {
 		"eligible": "You're eligible to RSVP",
 		"ineligible": "You're not eligible yet",
-		"nextStep": "Here's what you need to do",
+		"nextStep": {
+			"request_whitelist": "Verification is required to access this organization",
+			"wait_for_whitelist_approval": "Your verification request is pending review"
+		},
 		"rsvpNextStep": "RSVP to the event",
 		"purchaseTicketNextStep": "Purchase a ticket",
 		"completeQuestionnaireNextStep": "Complete the questionnaire",
@@ -4251,5 +4254,99 @@
 	"eventPage.cancelReservationFailedDesc": "Please try again or contact support.",
 	"tierForm.seatingConfig.noVenueConfigured": "To enable seat assignment, configure a venue for this event in Basic Info.",
 	"tierForm.seatingConfig.noVenueSelected": "No venue configured for event",
-	"tierForm.seatingConfig.venueFromEvent": "Venue is set at the event level in Basic Info."
+	"tierForm.seatingConfig.venueFromEvent": "Venue is set at the event level in Basic Info.",
+	"requestWhitelistButton": {
+		"mustBeLoggedIn": "You must be logged in to request verification",
+		"failedToSubmit": "Failed to submit verification request",
+		"alreadyRequested": "You have already requested verification",
+		"verificationRequested": "Verification Requested",
+		"requestSubmitted": "Verification Request Submitted",
+		"requestSubmittedBody": "Your verification request has been submitted. The organization admins will review it and notify you when it's approved.",
+		"submitRequestToOrg": "Submit a verification request to {organizationName}. This is required because your contact information matches a blocked entry.",
+		"submitRequest": "Submit Request",
+		"submitRequestDescription": "Submit a verification request to access this organization's events.",
+		"messageOptional": "Message (Optional)",
+		"messagePlaceholder": "Explain why you should be verified (e.g., how the organizers know you)...",
+		"characterCount": "{count}/500 characters",
+		"failedToSubmitTryAgain": "Failed to submit request. Please try again.",
+		"cancel": "Cancel",
+		"submitting": "Submitting...",
+		"requestVerification": "Request Verification"
+	},
+	"nextStep": {
+		"request_whitelist": "Request Verification",
+		"wait_for_whitelist_approval": "Verification Pending"
+	},
+	"blacklistPage": {
+		"title": "Blacklist & Verification",
+		"description": "Manage blocked contacts and verification requests",
+		"tabBlacklist": "Blacklist",
+		"tabWhitelistRequests": "Verification Requests",
+		"tabWhitelist": "Verified Users",
+		"addEntry": "Add Entry",
+		"noEntries": "No blacklist entries",
+		"noEntriesDescription": "Add contacts to block them from your organization",
+		"noPendingRequests": "No pending requests",
+		"noPendingRequestsDescription": "Verification requests will appear here when users request access",
+		"noVerifiedUsers": "No verified users",
+		"noVerifiedUsersDescription": "Approved verification requests will appear here",
+		"searchPlaceholder": "Search by email, phone, or name...",
+		"filterAll": "All",
+		"filterPending": "Pending",
+		"filterApproved": "Approved",
+		"filterRejected": "Rejected",
+		"entryCreated": "Blacklist entry created",
+		"entryUpdated": "Blacklist entry updated",
+		"entryDeleted": "Blacklist entry removed",
+		"requestApproved": "Request approved",
+		"requestRejected": "Request rejected",
+		"userRemoved": "User removed from verified list",
+		"error": "An error occurred",
+		"confirmDelete": "Are you sure you want to delete this entry?",
+		"confirmRemove": "Are you sure you want to remove this user from the verified list?"
+	},
+	"blacklistEntry": {
+		"linkedUser": "Linked User",
+		"noLinkedUser": "No linked user",
+		"reason": "Reason",
+		"noReason": "No reason provided",
+		"createdAt": "Created",
+		"edit": "Edit",
+		"delete": "Delete"
+	},
+	"blacklistModal": {
+		"createTitle": "Add to Blacklist",
+		"editTitle": "Edit Blacklist Entry",
+		"email": "Email",
+		"emailPlaceholder": "email@example.com",
+		"telegram": "Telegram",
+		"telegramPlaceholder": "@username",
+		"phone": "Phone",
+		"phonePlaceholder": "+1234567890",
+		"name": "Name (for reference)",
+		"namePlaceholder": "John Doe",
+		"reason": "Reason",
+		"reasonPlaceholder": "Why is this person being blocked?",
+		"atLeastOneRequired": "At least one contact method is required",
+		"create": "Add to Blacklist",
+		"save": "Save Changes",
+		"cancel": "Cancel"
+	},
+	"whitelistRequest": {
+		"user": "User",
+		"message": "Message",
+		"noMessage": "No message provided",
+		"matchedEntries": "Matched Blacklist Entries",
+		"status": "Status",
+		"statusPending": "Pending",
+		"statusApproved": "Approved",
+		"statusRejected": "Rejected",
+		"approve": "Approve",
+		"reject": "Reject",
+		"requestedAt": "Requested"
+	},
+	"whitelistEntry": {
+		"verifiedAt": "Verified",
+		"remove": "Remove"
+	}
 }
