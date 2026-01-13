@@ -12,11 +12,10 @@
 
 	let { entry, onRemove, isRemoving = false }: Props = $props();
 
-	// Format created date
-	let createdAgo = $derived(
-		entry.created_at
-			? formatDistanceToNow(new Date(entry.created_at), { addSuffix: true })
-			: 'Unknown'
+	// Format verified date (use decided_at if available, fallback to created_at)
+	let verifiedDate = $derived(entry.decided_at || entry.created_at);
+	let verifiedAgo = $derived(
+		verifiedDate ? formatDistanceToNow(new Date(verifiedDate), { addSuffix: true }) : 'Unknown'
 	);
 
 	function handleRemove() {
@@ -65,7 +64,7 @@
 			<div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
 				<span class="flex items-center gap-1">
 					<Calendar class="h-3 w-3" />
-					Whitelisted {createdAgo}
+					Verified {verifiedAgo}
 				</span>
 				{#if entry.approved_by_name}
 					<span>by {entry.approved_by_name}</span>
