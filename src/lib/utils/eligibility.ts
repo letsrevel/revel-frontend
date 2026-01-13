@@ -147,7 +147,9 @@ export function getNextStepMessage(nextStep: NextStep): string {
 		join_waitlist: 'This event is full, but you can join the waitlist',
 		wait_for_open_spot: "You're on the waitlist for this event",
 		wait_for_event_to_open: 'Check back when registration opens',
-		upgrade_membership: 'Upgrade your membership tier to attend this event'
+		upgrade_membership: 'Upgrade your membership tier to attend this event',
+		request_whitelist: 'Additional verification is required to access this organization',
+		wait_for_whitelist_approval: 'Your verification request is pending approval'
 	};
 
 	return messages[nextStep] || 'Check your eligibility status';
@@ -169,7 +171,9 @@ export function getActionButtonText(nextStep: NextStep): string {
 		join_waitlist: 'Join Waitlist',
 		wait_for_open_spot: "You're on the Waitlist",
 		wait_for_event_to_open: 'Notify Me',
-		upgrade_membership: 'Upgrade Membership'
+		upgrade_membership: 'Upgrade Membership',
+		request_whitelist: 'Request Verification',
+		wait_for_whitelist_approval: 'Verification Pending'
 	};
 
 	return buttonTexts[nextStep] || 'View Details';
@@ -184,7 +188,8 @@ export function isActionDisabled(nextStep: NextStep): boolean {
 		'wait_to_retake_questionnaire',
 		'wait_for_invitation_approval',
 		'wait_for_event_to_open',
-		'wait_for_open_spot'
+		'wait_for_open_spot',
+		'wait_for_whitelist_approval'
 	];
 
 	return disabledStates.includes(nextStep);
@@ -206,7 +211,9 @@ export function getNextStepIcon(nextStep: NextStep): string {
 		join_waitlist: 'ListPlus',
 		wait_for_open_spot: 'Clock',
 		wait_for_event_to_open: 'Bell',
-		upgrade_membership: 'ArrowUpCircle'
+		upgrade_membership: 'ArrowUpCircle',
+		request_whitelist: 'ShieldCheck',
+		wait_for_whitelist_approval: 'Clock'
 	};
 
 	return icons[nextStep] || 'Info';

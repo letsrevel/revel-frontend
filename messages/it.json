@@ -325,7 +325,10 @@
 	"eligibility": {
 		"eligible": "Puoi confermare la partecipazione",
 		"ineligible": "Non sei ancora idoneo",
-		"nextStep": "Ecco cosa devi fare",
+		"nextStep": {
+			"request_whitelist": "È necessaria la verifica per accedere a questa organizzazione",
+			"wait_for_whitelist_approval": "La tua richiesta di verifica è in attesa di revisione"
+		},
 		"rsvpNextStep": "Conferma la partecipazione all'evento",
 		"purchaseTicketNextStep": "Acquista un biglietto",
 		"completeQuestionnaireNextStep": "Completa il questionario",
@@ -4251,5 +4254,99 @@
 	"eventPage.cancelReservationFailedDesc": "Riprova o contatta il supporto.",
 	"tierForm.seatingConfig.noVenueConfigured": "Per abilitare l'assegnazione dei posti, configura un luogo per questo evento nelle Informazioni di base.",
 	"tierForm.seatingConfig.noVenueSelected": "Nessun luogo configurato per l'evento",
-	"tierForm.seatingConfig.venueFromEvent": "Il luogo è impostato a livello di evento nelle Informazioni di base."
+	"tierForm.seatingConfig.venueFromEvent": "Il luogo è impostato a livello di evento nelle Informazioni di base.",
+	"requestWhitelistButton": {
+		"mustBeLoggedIn": "Devi essere loggato per richiedere la verifica",
+		"failedToSubmit": "Impossibile inviare la richiesta di verifica",
+		"alreadyRequested": "Hai già richiesto la verifica",
+		"verificationRequested": "Verifica richiesta",
+		"requestSubmitted": "Richiesta di verifica inviata",
+		"requestSubmittedBody": "La tua richiesta di verifica è stata inviata. Gli amministratori dell'organizzazione la esamineranno e ti notificheranno.",
+		"submitRequestToOrg": "Invia una richiesta di verifica a {organizationName}. Questo è necessario perché le tue informazioni di contatto corrispondono a una voce bloccata.",
+		"submitRequest": "Invia richiesta",
+		"submitRequestDescription": "Invia una richiesta di verifica per accedere agli eventi di questa organizzazione.",
+		"messageOptional": "Messaggio (Opzionale)",
+		"messagePlaceholder": "Spiega perché dovresti essere verificato (es. come gli organizzatori ti conoscono)...",
+		"characterCount": "{count}/500 caratteri",
+		"failedToSubmitTryAgain": "Impossibile inviare la richiesta. Riprova.",
+		"cancel": "Annulla",
+		"submitting": "Invio in corso...",
+		"requestVerification": "Richiedi verifica"
+	},
+	"nextStep": {
+		"request_whitelist": "Richiedi verifica",
+		"wait_for_whitelist_approval": "Verifica in attesa"
+	},
+	"blacklistPage": {
+		"title": "Lista nera e verifica",
+		"description": "Gestisci i contatti bloccati e le richieste di verifica",
+		"tabBlacklist": "Lista nera",
+		"tabWhitelistRequests": "Richieste di verifica",
+		"tabWhitelist": "Utenti verificati",
+		"addEntry": "Aggiungi voce",
+		"noEntries": "Nessuna voce nella lista nera",
+		"noEntriesDescription": "Aggiungi contatti per bloccarli dalla tua organizzazione",
+		"noPendingRequests": "Nessuna richiesta in sospeso",
+		"noPendingRequestsDescription": "Le richieste di verifica appariranno qui quando gli utenti richiederanno l'accesso",
+		"noVerifiedUsers": "Nessun utente verificato",
+		"noVerifiedUsersDescription": "Le richieste di verifica approvate appariranno qui",
+		"searchPlaceholder": "Cerca per email, telefono o nome...",
+		"filterAll": "Tutti",
+		"filterPending": "In sospeso",
+		"filterApproved": "Approvato",
+		"filterRejected": "Rifiutato",
+		"entryCreated": "Voce della lista nera creata",
+		"entryUpdated": "Voce della lista nera aggiornata",
+		"entryDeleted": "Voce della lista nera rimossa",
+		"requestApproved": "Richiesta approvata",
+		"requestRejected": "Richiesta rifiutata",
+		"userRemoved": "Utente rimosso dalla lista dei verificati",
+		"error": "Si è verificato un errore",
+		"confirmDelete": "Sei sicuro di voler eliminare questa voce?",
+		"confirmRemove": "Sei sicuro di voler rimuovere questo utente dalla lista dei verificati?"
+	},
+	"blacklistEntry": {
+		"linkedUser": "Utente collegato",
+		"noLinkedUser": "Nessun utente collegato",
+		"reason": "Motivo",
+		"noReason": "Nessun motivo fornito",
+		"createdAt": "Creato",
+		"edit": "Modifica",
+		"delete": "Elimina"
+	},
+	"blacklistModal": {
+		"createTitle": "Aggiungi alla lista nera",
+		"editTitle": "Modifica voce lista nera",
+		"email": "Email",
+		"emailPlaceholder": "email@example.com",
+		"telegram": "Telegram",
+		"telegramPlaceholder": "@nomeutente",
+		"phone": "Telefono",
+		"phonePlaceholder": "+1234567890",
+		"name": "Nome (per riferimento)",
+		"namePlaceholder": "Mario Rossi",
+		"reason": "Motivo",
+		"reasonPlaceholder": "Perché questa persona viene bloccata?",
+		"atLeastOneRequired": "Almeno un metodo di contatto è richiesto",
+		"create": "Aggiungi alla lista nera",
+		"save": "Salva modifiche",
+		"cancel": "Annulla"
+	},
+	"whitelistRequest": {
+		"user": "Utente",
+		"message": "Messaggio",
+		"noMessage": "Nessun messaggio fornito",
+		"matchedEntries": "Voci della lista nera corrispondenti",
+		"status": "Stato",
+		"statusPending": "In sospeso",
+		"statusApproved": "Approvato",
+		"statusRejected": "Rifiutato",
+		"approve": "Approva",
+		"reject": "Rifiuta",
+		"requestedAt": "Richiesto"
+	},
+	"whitelistEntry": {
+		"verifiedAt": "Verificato",
+		"remove": "Rimuovi"
+	}
 }

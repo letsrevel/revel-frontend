@@ -38,6 +38,10 @@
 				: undefined
 		},
 		{
+			href: `/org/${data.organization.slug}/admin/blacklist`,
+			label: 'Blacklist'
+		},
+		{
 			href: `/org/${data.organization.slug}/admin/questionnaires`,
 			label: m['orgAdmin.nav.questionnaires']()
 		},

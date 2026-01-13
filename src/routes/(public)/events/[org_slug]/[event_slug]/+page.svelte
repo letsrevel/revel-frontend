@@ -737,6 +737,7 @@
 				onGuestRsvpClick={openGuestRsvpDialog}
 				onGuestTicketClick={openGuestTicketDialog}
 				onInvitationRequestSuccess={refreshUserStatus}
+				onWhitelistRequestSuccess={refreshUserStatus}
 			/>
 		</div>
 
@@ -870,6 +871,7 @@
 						onGuestRsvpClick={openGuestRsvpDialog}
 						onGuestTicketClick={openGuestTicketDialog}
 						onInvitationRequestSuccess={refreshUserStatus}
+						onWhitelistRequestSuccess={refreshUserStatus}
 					/>
 
 					<!-- Organization Info (desktop only) -->

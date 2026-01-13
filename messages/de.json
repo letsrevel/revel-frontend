@@ -325,7 +325,10 @@
 	"eligibility": {
 		"eligible": "Du kannst zusagen",
 		"ineligible": "Du bist noch nicht berechtigt",
-		"nextStep": "Das musst du tun",
+		"nextStep": {
+			"request_whitelist": "Eine Verifizierung ist erforderlich, um auf diese Organisation zuzugreifen",
+			"wait_for_whitelist_approval": "Deine Verifizierungsanfrage wird geprüft"
+		},
 		"rsvpNextStep": "Zur Veranstaltung zusagen",
 		"purchaseTicketNextStep": "Ticket kaufen",
 		"completeQuestionnaireNextStep": "Fragebogen ausfüllen",
@@ -4251,5 +4254,99 @@
 	"eventPage.cancelReservationFailedDesc": "Bitte versuche es erneut oder kontaktiere den Support.",
 	"tierForm.seatingConfig.noVenueConfigured": "Um Sitzplatzzuweisung zu aktivieren, konfiguriere einen Veranstaltungsort in den Basisinformationen.",
 	"tierForm.seatingConfig.noVenueSelected": "Kein Veranstaltungsort für Event konfiguriert",
-	"tierForm.seatingConfig.venueFromEvent": "Veranstaltungsort wird auf Event-Ebene in den Basisinformationen festgelegt."
+	"tierForm.seatingConfig.venueFromEvent": "Veranstaltungsort wird auf Event-Ebene in den Basisinformationen festgelegt.",
+	"requestWhitelistButton": {
+		"mustBeLoggedIn": "Du musst eingeloggt sein, um eine Verifizierung anzufordern",
+		"failedToSubmit": "Verifizierungsanfrage konnte nicht gesendet werden",
+		"alreadyRequested": "Du hast bereits eine Verifizierung angefordert",
+		"verificationRequested": "Verifizierung angefordert",
+		"requestSubmitted": "Verifizierungsanfrage gesendet",
+		"requestSubmittedBody": "Deine Verifizierungsanfrage wurde gesendet. Die Organisationsadministratoren werden sie prüfen und dich benachrichtigen.",
+		"submitRequestToOrg": "Sende eine Verifizierungsanfrage an {organizationName}. Dies ist erforderlich, da deine Kontaktdaten mit einem gesperrten Eintrag übereinstimmen.",
+		"submitRequest": "Anfrage senden",
+		"submitRequestDescription": "Sende eine Verifizierungsanfrage, um Zugang zu den Events dieser Organisation zu erhalten.",
+		"messageOptional": "Nachricht (Optional)",
+		"messagePlaceholder": "Erkläre, warum du verifiziert werden solltest (z.B. wie die Organisatoren dich kennen)...",
+		"characterCount": "{count}/500 Zeichen",
+		"failedToSubmitTryAgain": "Anfrage konnte nicht gesendet werden. Bitte versuche es erneut.",
+		"cancel": "Abbrechen",
+		"submitting": "Wird gesendet...",
+		"requestVerification": "Verifizierung anfordern"
+	},
+	"nextStep": {
+		"request_whitelist": "Verifizierung anfordern",
+		"wait_for_whitelist_approval": "Verifizierung ausstehend"
+	},
+	"blacklistPage": {
+		"title": "Sperrliste & Verifizierung",
+		"description": "Verwalte gesperrte Kontakte und Verifizierungsanfragen",
+		"tabBlacklist": "Sperrliste",
+		"tabWhitelistRequests": "Verifizierungsanfragen",
+		"tabWhitelist": "Verifizierte Benutzer",
+		"addEntry": "Eintrag hinzufügen",
+		"noEntries": "Keine Sperrlisteneinträge",
+		"noEntriesDescription": "Füge Kontakte hinzu, um sie von deiner Organisation zu sperren",
+		"noPendingRequests": "Keine ausstehenden Anfragen",
+		"noPendingRequestsDescription": "Verifizierungsanfragen werden hier angezeigt, wenn Benutzer Zugang anfordern",
+		"noVerifiedUsers": "Keine verifizierten Benutzer",
+		"noVerifiedUsersDescription": "Genehmigte Verifizierungsanfragen werden hier angezeigt",
+		"searchPlaceholder": "Suche nach E-Mail, Telefon oder Name...",
+		"filterAll": "Alle",
+		"filterPending": "Ausstehend",
+		"filterApproved": "Genehmigt",
+		"filterRejected": "Abgelehnt",
+		"entryCreated": "Sperrlisteneintrag erstellt",
+		"entryUpdated": "Sperrlisteneintrag aktualisiert",
+		"entryDeleted": "Sperrlisteneintrag entfernt",
+		"requestApproved": "Anfrage genehmigt",
+		"requestRejected": "Anfrage abgelehnt",
+		"userRemoved": "Benutzer aus der Verifizierungsliste entfernt",
+		"error": "Ein Fehler ist aufgetreten",
+		"confirmDelete": "Bist du sicher, dass du diesen Eintrag löschen möchtest?",
+		"confirmRemove": "Bist du sicher, dass du diesen Benutzer aus der Verifizierungsliste entfernen möchtest?"
+	},
+	"blacklistEntry": {
+		"linkedUser": "Verknüpfter Benutzer",
+		"noLinkedUser": "Kein verknüpfter Benutzer",
+		"reason": "Grund",
+		"noReason": "Kein Grund angegeben",
+		"createdAt": "Erstellt",
+		"edit": "Bearbeiten",
+		"delete": "Löschen"
+	},
+	"blacklistModal": {
+		"createTitle": "Zur Sperrliste hinzufügen",
+		"editTitle": "Sperrlisteneintrag bearbeiten",
+		"email": "E-Mail",
+		"emailPlaceholder": "email@example.com",
+		"telegram": "Telegram",
+		"telegramPlaceholder": "@benutzername",
+		"phone": "Telefon",
+		"phonePlaceholder": "+1234567890",
+		"name": "Name (zur Referenz)",
+		"namePlaceholder": "Max Mustermann",
+		"reason": "Grund",
+		"reasonPlaceholder": "Warum wird diese Person gesperrt?",
+		"atLeastOneRequired": "Mindestens eine Kontaktmethode ist erforderlich",
+		"create": "Zur Sperrliste hinzufügen",
+		"save": "Änderungen speichern",
+		"cancel": "Abbrechen"
+	},
+	"whitelistRequest": {
+		"user": "Benutzer",
+		"message": "Nachricht",
+		"noMessage": "Keine Nachricht angegeben",
+		"matchedEntries": "Übereinstimmende Sperrlisteneinträge",
+		"status": "Status",
+		"statusPending": "Ausstehend",
+		"statusApproved": "Genehmigt",
+		"statusRejected": "Abgelehnt",
+		"approve": "Genehmigen",
+		"reject": "Ablehnen",
+		"requestedAt": "Angefordert"
+	},
+	"whitelistEntry": {
+		"verifiedAt": "Verifiziert",
+		"remove": "Entfernen"
+	}
 }

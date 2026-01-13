@@ -21,7 +21,8 @@
 		organizationadminListOrganizationTokens,
 		organizationadminCreateOrganizationToken,
 		organizationadminUpdateOrganizationToken,
-		organizationadminDeleteOrganizationToken
+		organizationadminDeleteOrganizationToken,
+		organizationadminCreateBlacklistEntry
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		OrganizationMemberSchema,
@@ -658,6 +659,37 @@
 		}
 	}));
 
+	// Blacklist member mutation
+	const blacklistMemberMutation = createMutation(() => ({
+		mutationFn: async ({ userId, reason }: { userId: string; reason: string }) => {
+			const response = await organizationadminCreateBlacklistEntry({
+				path: { slug: organization.slug },
+				body: { user_id: userId, reason: reason || '' },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+
+			if (response.error) {
+				throw new Error('Failed to blacklist member');
+			}
+
+			return response.data;
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ['organization', organization.slug, 'members']
+			});
+			queryClient.invalidateQueries({
+				queryKey: ['organization', organization.slug, 'blacklist']
+			});
+			manageMemberModalOpen = false;
+			memberToManage = null;
+			toast.success('Member has been blacklisted');
+		},
+		onError: () => {
+			toast.error('Failed to blacklist member');
+		}
+	}));
+
 	// Handlers
 	function handleEditPermissions(staff: OrganizationStaffSchema) {
 		selectedStaff = staff;
@@ -703,7 +735,8 @@
 		if (
 			!updateMemberMutation.isPending &&
 			!promoteToStaffMutation.isPending &&
-			!removeMemberMutation.isPending
+			!removeMemberMutation.isPending &&
+			!blacklistMemberMutation.isPending
 		) {
 			manageMemberModalOpen = false;
 			memberToManage = null;
@@ -731,6 +764,12 @@
 	function handleRemoveMemberFromModal() {
 		if (memberToManage) {
 			removeMemberMutation.mutate(memberToManage);
+		}
+	}
+
+	function handleBlacklistMemberFromModal(reason: string) {
+		if (memberToManage?.user.id) {
+			blacklistMemberMutation.mutate({ userId: memberToManage.user.id, reason });
 		}
 	}
 
@@ -1424,9 +1463,11 @@
 	onUpdateTier={handleUpdateMemberTier}
 	onMakeStaff={handleMakeStaffFromModal}
 	onRemove={handleRemoveMemberFromModal}
+	onBlacklist={handleBlacklistMemberFromModal}
 	isUpdating={updateMemberMutation.isPending}
 	isPromoting={promoteToStaffMutation.isPending}
 	isRemoving={removeMemberMutation.isPending}
+	isBlacklisting={blacklistMemberMutation.isPending}
 />
 
 <!-- Approve Membership Modal -->

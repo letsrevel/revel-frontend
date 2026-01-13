@@ -5,6 +5,7 @@
 	import { cn } from '$lib/utils/cn';
 	import { Button } from '$lib/components/ui/button';
 	import RequestInvitationButton from './RequestInvitationButton.svelte';
+	import RequestWhitelistButton from './RequestWhitelistButton.svelte';
 	import ClaimInvitationButton from './ClaimInvitationButton.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { eventJoinWaitlist, eventLeaveWaitlist } from '$lib/api';
@@ -19,7 +20,8 @@
 		Ticket,
 		Loader2,
 		ArrowUpCircle,
-		X
+		X,
+		ShieldCheck
 	} from 'lucide-svelte';
 
 	interface Props {
@@ -27,12 +29,14 @@
 		eventId: string;
 		eventSlug: string;
 		organizationSlug: string;
+		organizationName?: string;
 		questionnaireIds?: string[] | null;
 		retryOn?: string | null;
 		disabled?: boolean;
 		eventName?: string;
 		eventTokenDetails?: EventTokenSchema | null;
 		onInvitationRequestSuccess?: () => void;
+		onWhitelistRequestSuccess?: () => void;
 		class?: string;
 	}
 
@@ -41,11 +45,13 @@
 		eventId,
 		eventSlug,
 		organizationSlug,
+		organizationName = '',
 		questionnaireIds,
 		disabled = false,
 		eventName = '',
 		eventTokenDetails,
 		onInvitationRequestSuccess,
+		onWhitelistRequestSuccess,
 		class: className
 	}: Props = $props();
 
@@ -73,7 +79,9 @@
 			join_waitlist: ListPlus,
 			wait_for_open_spot: Clock,
 			wait_for_event_to_open: Bell,
-			upgrade_membership: ArrowUpCircle
+			upgrade_membership: ArrowUpCircle,
+			request_whitelist: ShieldCheck,
+			wait_for_whitelist_approval: Clock
 		};
 
 		return iconMap[step] || Check;
@@ -97,7 +105,8 @@
 			step === 'complete_questionnaire' ||
 			step === 'request_invitation' ||
 			step === 'become_member' ||
-			step === 'join_waitlist'
+			step === 'join_waitlist' ||
+			step === 'request_whitelist'
 		) {
 			return 'default';
 		}
@@ -145,6 +154,12 @@
 		// request_invitation is handled by RequestInvitationButton component
 		// No action needed here
 		if (nextStep === 'request_invitation') {
+			return;
+		}
+
+		// request_whitelist is handled by RequestWhitelistButton component
+		// No action needed here
+		if (nextStep === 'request_whitelist') {
 			return;
 		}
 
@@ -280,6 +295,23 @@
 		/>
 	{:else if nextStep === 'wait_for_invitation_approval'}
 		<!-- Pending invitation approval status -->
+		<Button variant="secondary" disabled={true} class="w-full">
+			<Clock class="h-5 w-5" aria-hidden="true" />
+			<span>{buttonText}</span>
+		</Button>
+	{:else if nextStep === 'request_whitelist'}
+		<!-- Use RequestWhitelistButton for whitelist/verification requests -->
+		<RequestWhitelistButton
+			{organizationSlug}
+			{organizationName}
+			{eventId}
+			{isAuthenticated}
+			hasAlreadyRequested={false}
+			onSuccess={onWhitelistRequestSuccess}
+			class="w-full"
+		/>
+	{:else if nextStep === 'wait_for_whitelist_approval'}
+		<!-- Pending whitelist/verification approval status -->
 		<Button variant="secondary" disabled={true} class="w-full">
 			<Clock class="h-5 w-5" aria-hidden="true" />
 			<span>{buttonText}</span>

@@ -47,6 +47,7 @@
 		onGuestRsvpClick?: () => void;
 		onGuestTicketClick?: () => void;
 		onInvitationRequestSuccess?: () => void;
+		onWhitelistRequestSuccess?: () => void;
 		class?: string;
 	}
 
@@ -65,6 +66,7 @@
 		onGuestRsvpClick,
 		onGuestTicketClick,
 		onInvitationRequestSuccess,
+		onWhitelistRequestSuccess,
 		class: className
 	}: Props = $props();
 
@@ -403,10 +405,12 @@
 							eventId={event.id}
 							eventSlug={event.slug}
 							organizationSlug={event.organization.slug}
+							organizationName={event.organization.name}
 							eventName={event.name}
 							{eventTokenDetails}
 							applyBefore={event.apply_before}
 							{onInvitationRequestSuccess}
+							{onWhitelistRequestSuccess}
 						/>
 					</div>
 				{:else}
