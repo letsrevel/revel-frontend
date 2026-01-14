@@ -359,8 +359,15 @@
 			</div>
 		{:else if isAttending && attendanceStatusText}
 			<!-- Attendance Status Display (if user is attending) -->
+			{@const hasPendingTicket =
+				userTickets.length > 0 && userTickets.some((t) => t.status === 'pending')}
 			<div
-				class="flex items-center gap-2 rounded-md bg-green-50 p-3 text-green-900 dark:bg-green-950/50 dark:text-green-100"
+				class={cn(
+					'flex items-center gap-2 rounded-md p-3',
+					hasPendingTicket
+						? 'bg-orange-50 text-orange-900 dark:bg-orange-950/50 dark:text-orange-100'
+						: 'bg-green-50 text-green-900 dark:bg-green-950/50 dark:text-green-100'
+				)}
 				role="status"
 				aria-live="polite"
 			>

@@ -286,16 +286,6 @@
 											{getQuantityDisplay(tier)}
 										</div>
 									</div>
-
-									<!-- Payment Method & Instructions -->
-									{#if (tier as any).manual_payment_instructions}
-										<div class="mt-2 rounded-md border border-border bg-muted/50 p-2 text-xs">
-											<p class="font-medium text-muted-foreground">
-												{m['ticketTierModal.paymentInstructions']()}
-											</p>
-											<p class="mt-1">{(tier as any).manual_payment_instructions}</p>
-										</div>
-									{/if}
 								</div>
 
 								<!-- Action Button -->

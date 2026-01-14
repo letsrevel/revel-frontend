@@ -19,17 +19,13 @@
 		AlertCircle,
 		CreditCard,
 		Wallet,
-		Info,
 		Plus,
 		Minus,
 		User,
-		MapPin,
 		Shuffle,
 		DoorOpen,
 		Armchair,
-		Loader2,
-		Accessibility,
-		EyeOff
+		Loader2
 	} from 'lucide-svelte';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import type {
@@ -794,17 +790,6 @@
 						</div>
 					</div>
 				</div>
-			{/if}
-
-			<!-- Payment Instructions for Non-Online Payment Methods -->
-			{#if !isOnlinePayment && tier.manual_payment_instructions}
-				<Alert>
-					<Info class="h-4 w-4" />
-					<AlertDescription>
-						<p class="font-medium">{m['ticketConfirmationDialog.paymentInstructions']()}</p>
-						<p class="mt-1 text-sm">{tier.manual_payment_instructions}</p>
-					</AlertDescription>
-				</Alert>
 			{/if}
 
 			<!-- Online Payment Notice -->
