@@ -74,6 +74,7 @@
 
 	$effect(() => {
 		const serverAccessToken = data.auth.accessToken;
+		const hasRefreshToken = data.auth.hasRefreshToken;
 		const currentAccessToken = authStore.accessToken;
 
 		// Only trigger effect if the server token has actually changed
@@ -83,6 +84,7 @@
 
 		console.log('[ROOT LAYOUT] Auth sync effect triggered', {
 			hasServerToken: !!serverAccessToken,
+			hasRefreshToken,
 			hasCurrentToken: !!currentAccessToken,
 			previousServerToken: !!previousServerToken
 		});
@@ -130,7 +132,33 @@
 			console.log('[ROOT LAYOUT] Both server and client have tokens (already authenticated)');
 			// Token refresh is handled by interceptor and auto-refresh timer
 		}
-		// Case 4: Neither has token (browsing as guest)
+		// Case 4: No access token but has refresh token (access token expired, need to refresh)
+		// This happens when user returns after the 1-hour access token expired
+		// but the 30-day refresh token is still valid (Remember Me was checked)
+		else if (!serverAccessToken && hasRefreshToken && !currentAccessToken) {
+			console.log(
+				'[ROOT LAYOUT] No access token but refresh token exists, attempting token refresh'
+			);
+
+			// Prevent multiple simultaneous refresh attempts
+			if (!initializationPromise) {
+				initializationPromise = authStore
+					.refreshAccessToken()
+					.then(async () => {
+						console.log('[ROOT LAYOUT] Token refresh successful, initializing auth');
+						// After successful refresh, fetch user data
+						await authStore.initialize();
+					})
+					.catch((err) => {
+						console.error('[ROOT LAYOUT] Token refresh failed:', err);
+						// User will remain logged out - refresh token may be expired or invalid
+					})
+					.finally(() => {
+						initializationPromise = null;
+					});
+			}
+		}
+		// Case 5: Neither has token (browsing as guest)
 		else {
 			console.log('[ROOT LAYOUT] No tokens, user not authenticated');
 		}
