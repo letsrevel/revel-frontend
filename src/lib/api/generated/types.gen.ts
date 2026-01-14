@@ -9947,7 +9947,7 @@ export type OrganizationadminDeleteSeat79E8Ef17Data = {
 		label: string;
 	};
 	query?: never;
-	url: '/api/organization-admin/{slug}/venues/{venue_id}/sectors/{sector_id}/seats/{label}';
+	url: '/api/organization-admin/{slug}/venues/{venue_id}/sectors/{sector_id}/seats/by-label/{label}';
 };
 
 export type OrganizationadminDeleteSeat79E8Ef17Responses = {
@@ -9981,7 +9981,7 @@ export type OrganizationadminUpdateSeatDaaed049Data = {
 		label: string;
 	};
 	query?: never;
-	url: '/api/organization-admin/{slug}/venues/{venue_id}/sectors/{sector_id}/seats/{label}';
+	url: '/api/organization-admin/{slug}/venues/{venue_id}/sectors/{sector_id}/seats/by-label/{label}';
 };
 
 export type OrganizationadminUpdateSeatDaaed049Responses = {
@@ -10811,7 +10811,7 @@ export type EventGetEventBySlugs2Bd94A7eData = {
 		event_slug: string;
 	};
 	query?: never;
-	url: '/api/events/{org_slug}/{event_slug}';
+	url: '/api/events/{org_slug}/event/{event_slug}';
 };
 
 export type EventGetEventBySlugs2Bd94A7eResponses = {
