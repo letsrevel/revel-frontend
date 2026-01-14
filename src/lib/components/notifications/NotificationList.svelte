@@ -17,9 +17,10 @@
 		compact?: boolean;
 		maxItems?: number;
 		class?: string;
+		onNavigate?: () => void;
 	}
 
-	let { authToken, compact = false, maxItems = 5, class: className }: Props = $props();
+	let { authToken, compact = false, maxItems = 5, class: className, onNavigate }: Props = $props();
 
 	// Query client for invalidation
 	const queryClient = useQueryClient();
@@ -299,6 +300,7 @@
 							{authToken}
 							onStatusChange={handleStatusChange}
 							{compact}
+							{onNavigate}
 						/>
 					</div>
 				{/each}

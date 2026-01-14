@@ -19,6 +19,14 @@
 
 	let { authToken, pollingInterval = 60000, maxItems = 5, class: className }: Props = $props();
 
+	// Control dropdown open state
+	let isOpen = $state(false);
+
+	// Close the dropdown
+	function closeDropdown(): void {
+		isOpen = false;
+	}
+
 	const queryClient = useQueryClient();
 
 	// Mark all as read mutation
@@ -51,7 +59,7 @@
 	}
 </script>
 
-<DropdownMenu.Root>
+<DropdownMenu.Root bind:open={isOpen}>
 	<DropdownMenu.Trigger>
 		{#snippet child({ props })}
 			<Button
@@ -94,7 +102,7 @@
 
 		<!-- Notification List (compact mode) -->
 		<div class="min-h-0 flex-1 overflow-y-auto">
-			<NotificationList {authToken} compact={true} {maxItems} class="p-2" />
+			<NotificationList {authToken} compact={true} {maxItems} class="p-2" onNavigate={closeDropdown} />
 		</div>
 
 		<!-- Footer with View All link -->

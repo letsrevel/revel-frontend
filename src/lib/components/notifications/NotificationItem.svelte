@@ -17,6 +17,7 @@
 		notification: NotificationSchema;
 		authToken: string;
 		onStatusChange?: (notification: NotificationSchema) => void;
+		onNavigate?: () => void;
 		compact?: boolean;
 		class?: string;
 	}
@@ -25,6 +26,7 @@
 		notification,
 		authToken,
 		onStatusChange,
+		onNavigate,
 		compact = false,
 		class: className
 	}: Props = $props();
@@ -112,6 +114,8 @@
 			if (!isRead) {
 				markReadMutation.mutate();
 			}
+			// Close the dropdown if callback provided
+			onNavigate?.();
 			return;
 		}
 
@@ -123,9 +127,12 @@
 		// Extract URL from context if available
 		const url = extractUrlFromContext(notification.context);
 		if (url) {
+			// Close the dropdown before navigating
+			onNavigate?.();
 			goto(url);
 		} else {
 			// Fallback: navigate to notifications page
+			onNavigate?.();
 			goto('/account/notifications');
 		}
 	}
