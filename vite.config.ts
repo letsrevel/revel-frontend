@@ -12,6 +12,11 @@ export default defineConfig({
 	server: {
 		host: '0.0.0.0', // Listen on all network interfaces for mobile testing
 		port: 5173,
-		strictPort: false
+		strictPort: false,
+		// Warmup Paraglide files during server startup to improve Firefox dev performance
+		// Paraglide generates ~3700 individual JS files which causes slow initial loads
+		warmup: {
+			clientFiles: ['./src/lib/paraglide/messages.js', './src/lib/paraglide/runtime.js']
+		}
 	}
 });

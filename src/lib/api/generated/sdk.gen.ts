@@ -3763,7 +3763,7 @@ export const organizationadminDeleteSeat = <ThrowOnError extends boolean = false
 				type: 'http'
 			}
 		],
-		url: '/api/organization-admin/{slug}/venues/{venue_id}/sectors/{sector_id}/seats/{label}',
+		url: '/api/organization-admin/{slug}/venues/{venue_id}/sectors/{sector_id}/seats/by-label/{label}',
 		...options
 	});
 };
@@ -3793,7 +3793,7 @@ export const organizationadminUpdateSeat = <ThrowOnError extends boolean = false
 				type: 'http'
 			}
 		],
-		url: '/api/organization-admin/{slug}/venues/{venue_id}/sectors/{sector_id}/seats/{label}',
+		url: '/api/organization-admin/{slug}/venues/{venue_id}/sectors/{sector_id}/seats/by-label/{label}',
 		...options,
 		headers: {
 			'Content-Type': 'application/json',
@@ -4595,7 +4595,7 @@ export const eventGetEventBySlugs = <ThrowOnError extends boolean = false>(
 				type: 'http'
 			}
 		],
-		url: '/api/events/{org_slug}/{event_slug}',
+		url: '/api/events/{org_slug}/event/{event_slug}',
 		...options
 	});
 };
