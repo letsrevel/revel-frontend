@@ -102,7 +102,13 @@
 
 		<!-- Notification List (compact mode) -->
 		<div class="min-h-0 flex-1 overflow-y-auto">
-			<NotificationList {authToken} compact={true} {maxItems} class="p-2" onNavigate={closeDropdown} />
+			<NotificationList
+				{authToken}
+				compact={true}
+				{maxItems}
+				class="p-2"
+				onNavigate={closeDropdown}
+			/>
 		</div>
 
 		<!-- Footer with View All link -->
