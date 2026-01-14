@@ -17,6 +17,7 @@
 		notification: NotificationSchema;
 		authToken: string;
 		onStatusChange?: (notification: NotificationSchema) => void;
+		onNavigate?: () => void;
 		compact?: boolean;
 		class?: string;
 	}
@@ -25,6 +26,7 @@
 		notification,
 		authToken,
 		onStatusChange,
+		onNavigate,
 		compact = false,
 		class: className
 	}: Props = $props();
@@ -103,7 +105,20 @@
 	}
 
 	// Handle navigation to related content
-	function handleClick(): void {
+	function handleClick(event: MouseEvent): void {
+		// Check if the click was on a link inside the notification body
+		// If so, let the link handle its own navigation
+		const target = event.target as HTMLElement;
+		if (target.tagName === 'A' || target.closest('a')) {
+			// Mark as read but don't navigate - let the link handle it
+			if (!isRead) {
+				markReadMutation.mutate();
+			}
+			// Close the dropdown if callback provided
+			onNavigate?.();
+			return;
+		}
+
 		// Mark as read on click (if not already)
 		if (!isRead) {
 			markReadMutation.mutate();
@@ -112,10 +127,31 @@
 		// Extract URL from context if available
 		const url = extractUrlFromContext(notification.context);
 		if (url) {
+			// Close the dropdown before navigating
+			onNavigate?.();
 			goto(url);
 		} else {
 			// Fallback: navigate to notifications page
+			onNavigate?.();
 			goto('/account/notifications');
+		}
+	}
+
+	// Convert absolute URL to relative path for SvelteKit navigation
+	function toRelativePath(url: string): string {
+		// If it's already a relative path, return as-is
+		if (url.startsWith('/')) {
+			return url;
+		}
+
+		// Try to parse as URL and extract pathname
+		try {
+			const parsed = new URL(url);
+			// Return the pathname (and search/hash if present)
+			return parsed.pathname + parsed.search + parsed.hash;
+		} catch {
+			// If parsing fails, return original (might be a relative path without leading /)
+			return url.startsWith('/') ? url : `/${url}`;
 		}
 	}
 
@@ -123,17 +159,17 @@
 	function extractUrlFromContext(context: Record<string, unknown>): string | null {
 		// Backend provides frontend_url with correct routing
 		if (context.frontend_url && typeof context.frontend_url === 'string') {
-			return context.frontend_url;
+			return toRelativePath(context.frontend_url);
+		}
+
+		// Check for submission_url (questionnaire notifications) - prioritize this for admin actions
+		if (context.submission_url && typeof context.submission_url === 'string') {
+			return toRelativePath(context.submission_url);
 		}
 
 		// Check for event_url (provided in many notification contexts)
 		if (context.event_url && typeof context.event_url === 'string') {
-			return context.event_url;
-		}
-
-		// Check for submission_url (questionnaire notifications)
-		if (context.submission_url && typeof context.submission_url === 'string') {
-			return context.submission_url;
+			return toRelativePath(context.event_url);
 		}
 
 		// Fallback to context patterns for older notifications
@@ -146,14 +182,11 @@
 		if (context.invitation_id) {
 			return `/invitations/${context.invitation_id}`;
 		}
-		if (context.url) {
-			return context.url as string;
+		if (context.url && typeof context.url === 'string') {
+			return toRelativePath(context.url);
 		}
 		return null;
 	}
-
-	// Check if the notification has a specific URL (vs fallback to notifications page)
-	let hasSpecificUrl = $derived(extractUrlFromContext(notification.context) !== null);
 
 	// Compute notification type badge variant
 	let notificationTypeVariant = $derived.by(() => {
@@ -174,11 +207,11 @@
 	)}
 	role="button"
 	tabindex={0}
-	onclick={handleClick}
+	onclick={(e) => handleClick(e)}
 	onkeydown={(e) => {
 		if (e.key === 'Enter' || e.key === ' ') {
 			e.preventDefault();
-			handleClick();
+			handleClick(e as unknown as MouseEvent);
 		}
 	}}
 	aria-label={`${notification.title}. ${isRead ? 'Read' : 'Unread'}. Click to view details.`}
@@ -251,6 +284,7 @@
 	.line-clamp-2 {
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}
