@@ -3,7 +3,7 @@
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { createMutation } from '@tanstack/svelte-query';
-	import { eventadminDuplicateEvent } from '$lib/api/generated/sdk.gen';
+	import { eventadmincoreDuplicateEvent } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { goto } from '$app/navigation';
 	import { Copy, Loader2 } from 'lucide-svelte';
@@ -52,7 +52,7 @@
 		mutationFn: async () => {
 			if (!accessToken) throw new Error(m['duplicateEventModal.error_notAuthenticated']());
 
-			const response = await eventadminDuplicateEvent({
+			const response = await eventadmincoreDuplicateEvent({
 				path: { event_id: eventId },
 				body: {
 					name: newName.trim(),

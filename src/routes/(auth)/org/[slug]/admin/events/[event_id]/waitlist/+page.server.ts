@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { eventadminListWaitlist } from '$lib/api';
+import { eventadminwaitlistListWaitlist } from '$lib/api';
 import { extractErrorMessage } from '$lib/utils/errors';
 
 export const load: PageServerLoad = async ({ params, locals, fetch }) => {
@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 
 	// Load initial waitlist data
 	try {
-		const response = await eventadminListWaitlist({
+		const response = await eventadminwaitlistListWaitlist({
 			fetch,
 			path: { event_id: params.event_id },
 			query: { page: 1, page_size: 20 },

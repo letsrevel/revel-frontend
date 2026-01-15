@@ -4,8 +4,8 @@
 	import { goto } from '$app/navigation';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
-		organizationadminListVenues,
-		organizationadminDeleteVenue
+		organizationadminvenuesListVenues,
+		organizationadminvenuesDeleteVenue
 	} from '$lib/api/generated/sdk.gen';
 	import type { VenueDetailSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -29,7 +29,7 @@
 	const venuesQuery = createQuery<VenueDetailSchema[]>(() => ({
 		queryKey: ['organization-venues', organization.slug, searchQuery],
 		queryFn: async () => {
-			const response = await organizationadminListVenues({
+			const response = await organizationadminvenuesListVenues({
 				path: { slug: organization.slug },
 				query: {
 					search: searchQuery || undefined
@@ -50,7 +50,7 @@
 	// Delete mutation
 	const deleteMutation = createMutation(() => ({
 		mutationFn: async (venueId: string) => {
-			const response = await organizationadminDeleteVenue({
+			const response = await organizationadminvenuesDeleteVenue({
 				path: { slug: organization.slug, venue_id: venueId },
 				headers: {
 					Authorization: `Bearer ${accessToken}`

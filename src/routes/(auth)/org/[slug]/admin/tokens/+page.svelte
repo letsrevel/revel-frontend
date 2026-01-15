@@ -3,11 +3,11 @@
 	import type { PageData } from './$types';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
-		organizationadminListOrganizationTokens,
-		organizationadminCreateOrganizationToken,
-		organizationadminUpdateOrganizationToken,
-		organizationadminDeleteOrganizationToken,
-		organizationadminListMembershipTiers
+		organizationadmintokensListOrganizationTokens,
+		organizationadmintokensCreateOrganizationToken,
+		organizationadmintokensUpdateOrganizationToken,
+		organizationadmintokensDeleteOrganizationToken,
+		organizationadminmembersListMembershipTiers
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		OrganizationTokenSchema,
@@ -49,7 +49,7 @@
 	const tokensQuery = createQuery(() => ({
 		queryKey: ['organization', organization.slug, 'tokens', searchQuery],
 		queryFn: async () => {
-			const response = await organizationadminListOrganizationTokens({
+			const response = await organizationadmintokensListOrganizationTokens({
 				path: { slug: organization.slug },
 				query: { search: searchQuery || undefined, page_size: 100 },
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -68,7 +68,7 @@
 	const tiersQuery = createQuery(() => ({
 		queryKey: ['organization', organization.slug, 'membership-tiers'],
 		queryFn: async () => {
-			const response = await organizationadminListMembershipTiers({
+			const response = await organizationadminmembersListMembershipTiers({
 				path: { slug: organization.slug },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
@@ -85,7 +85,7 @@
 	// Create mutation
 	const createTokenMutation = createMutation(() => ({
 		mutationFn: async (tokenData: OrganizationTokenCreateSchema) => {
-			const response = await organizationadminCreateOrganizationToken({
+			const response = await organizationadmintokensCreateOrganizationToken({
 				path: { slug: organization.slug },
 				body: tokenData,
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -118,7 +118,7 @@
 			tokenId: string;
 			data: OrganizationTokenUpdateSchema;
 		}) => {
-			const response = await organizationadminUpdateOrganizationToken({
+			const response = await organizationadmintokensUpdateOrganizationToken({
 				path: { slug: organization.slug, token_id: tokenId },
 				body: tokenData,
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -145,7 +145,7 @@
 	// Delete mutation
 	const deleteTokenMutation = createMutation(() => ({
 		mutationFn: async (tokenId: string) => {
-			const response = await organizationadminDeleteOrganizationToken({
+			const response = await organizationadmintokensDeleteOrganizationToken({
 				path: { slug: organization.slug, token_id: tokenId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});

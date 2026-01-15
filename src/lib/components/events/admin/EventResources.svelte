@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { organizationadminListResources } from '$lib/api/generated/sdk.gen';
+	import { organizationadminresourcesListResources } from '$lib/api/generated/sdk.gen';
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { FileText, Link as LinkIcon, AlignLeft, ExternalLink, Plus } from 'lucide-svelte';
@@ -29,7 +29,7 @@
 	const resourcesQuery = createQuery<AdditionalResourceSchema[]>(() => ({
 		queryKey: ['organization-resources-for-event', organizationSlug, eventId],
 		queryFn: async () => {
-			const response = await organizationadminListResources({
+			const response = await organizationadminresourcesListResources({
 				path: { slug: organizationSlug },
 				headers: {
 					Authorization: `Bearer ${accessToken}`

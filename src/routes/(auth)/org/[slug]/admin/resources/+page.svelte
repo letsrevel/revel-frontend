@@ -3,8 +3,8 @@
 	import { page } from '$app/stores';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
-		organizationadminListResources,
-		organizationadminDeleteResource
+		organizationadminresourcesListResources,
+		organizationadminresourcesDeleteResource
 	} from '$lib/api/generated/sdk.gen';
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -31,7 +31,7 @@
 	const resourcesQuery = createQuery<AdditionalResourceSchema[]>(() => ({
 		queryKey: ['organization-resources', organization.slug, typeFilter, searchQuery],
 		queryFn: async () => {
-			const response = await organizationadminListResources({
+			const response = await organizationadminresourcesListResources({
 				path: { slug: organization.slug },
 				query: {
 					resource_type: typeFilter !== 'all' ? typeFilter : undefined,
@@ -62,7 +62,7 @@
 	// Delete mutation
 	const deleteMutation = createMutation(() => ({
 		mutationFn: async (resourceId: string) => {
-			const response = await organizationadminDeleteResource({
+			const response = await organizationadminresourcesDeleteResource({
 				path: { slug: organization.slug, resource_id: resourceId },
 				headers: {
 					Authorization: `Bearer ${accessToken}`

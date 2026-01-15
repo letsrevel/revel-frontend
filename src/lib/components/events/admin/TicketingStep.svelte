@@ -2,8 +2,8 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
 	import {
-		eventadminListTicketTiers,
-		organizationadminListMembershipTiers
+		eventadminticketsListTicketTiers,
+		organizationadminmembersListMembershipTiers
 	} from '$lib/api/generated/sdk.gen';
 	import type { TicketTierDetailSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
@@ -45,7 +45,7 @@
 	let tiersQuery = createQuery(() => ({
 		queryKey: ['event-admin', eventId, 'ticket-tiers'],
 		queryFn: () =>
-			eventadminListTicketTiers({
+			eventadminticketsListTicketTiers({
 				path: { event_id: eventId }
 			})
 	}));
@@ -55,7 +55,7 @@
 		queryKey: ['organization', organizationSlug, 'membership-tiers'],
 		queryFn: async () => {
 			if (!accessToken) return null;
-			const response = await organizationadminListMembershipTiers({
+			const response = await organizationadminmembersListMembershipTiers({
 				path: { slug: organizationSlug },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});

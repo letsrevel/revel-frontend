@@ -1,5 +1,5 @@
 import { redirect } from '@sveltejs/kit';
-import { organizationadminVerifyContactEmail } from '$lib/api/generated/sdk.gen';
+import { organizationadmincoreVerifyContactEmail } from '$lib/api/generated/sdk.gen';
 import type { PageServerLoad } from './$types';
 import { extractErrorMessage } from '$lib/utils/errors';
 
@@ -34,7 +34,7 @@ export const load: PageServerLoad = async ({ params, url, locals, cookies }) => 
 
 	try {
 		// Call the verification endpoint with token in body
-		const { data, error: apiError } = await organizationadminVerifyContactEmail({
+		const { data, error: apiError } = await organizationadmincoreVerifyContactEmail({
 			headers: {
 				Authorization: `Bearer ${accessToken}`
 			},

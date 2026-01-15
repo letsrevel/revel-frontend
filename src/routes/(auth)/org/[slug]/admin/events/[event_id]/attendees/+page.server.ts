@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { eventGetEvent, eventadminListRsvps } from '$lib/api';
+import { eventGetEvent, eventadminrsvpsListRsvps } from '$lib/api';
 
 export const load: PageServerLoad = async ({ parent, params, locals, fetch, url }) => {
 	const parentData = await parent();
@@ -76,7 +76,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 	let previousPage: string | null = null;
 
 	try {
-		const rsvpResponse = await eventadminListRsvps({
+		const rsvpResponse = await eventadminrsvpsListRsvps({
 			fetch,
 			path: { event_id: params.event_id },
 			query: {

@@ -2,18 +2,18 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
-		organizationadminCreateEvent,
-		eventadminUpdateEvent,
-		eventadminUploadLogo,
-		eventadminUploadCoverArt,
-		eventadminDeleteLogo,
-		eventadminDeleteCoverArt,
+		organizationadmincoreCreateEvent,
+		eventadmincoreUpdateEvent,
+		eventadmincoreUploadLogo,
+		eventadmincoreUploadCoverArt,
+		eventadmincoreDeleteLogo,
+		eventadmincoreDeleteCoverArt,
 		eventListResources,
-		organizationadminGetResource,
-		organizationadminUpdateResource,
+		organizationadminresourcesGetResource,
+		organizationadminresourcesUpdateResource,
 		questionnaireListOrgQuestionnaires,
-		eventadminAddTags,
-		eventadminRemoveTags
+		eventadmincoreAddTags,
+		eventadmincoreRemoveTags
 	} from '$lib/api/generated/sdk.gen';
 	import { toDateTimeLocal, toISOString } from '$lib/utils/datetime';
 	import type {
@@ -161,7 +161,7 @@
 	// Create event mutation
 	const createEventMutation = createMutation(() => ({
 		mutationFn: async (data: EventCreateSchema) => {
-			const response = await organizationadminCreateEvent({
+			const response = await organizationadmincoreCreateEvent({
 				path: { slug: organization.slug },
 				body: data
 			});
@@ -187,7 +187,7 @@
 	// Update event mutation
 	const updateEventMutation = createMutation(() => ({
 		mutationFn: async ({ id, data }: { id: string; data: Partial<EventEditSchema> }) => {
-			const response = await eventadminUpdateEvent({
+			const response = await eventadmincoreUpdateEvent({
 				path: { event_id: id },
 				body: data as EventEditSchema
 			});
@@ -212,7 +212,7 @@
 	// Upload logo mutation
 	const uploadLogoMutation = createMutation(() => ({
 		mutationFn: async ({ id, file }: { id: string; file: File }) => {
-			const response = await eventadminUploadLogo({
+			const response = await eventadmincoreUploadLogo({
 				path: { event_id: id },
 				body: { logo: file }
 			});
@@ -228,7 +228,7 @@
 	// Upload cover art mutation
 	const uploadCoverArtMutation = createMutation(() => ({
 		mutationFn: async ({ id, file }: { id: string; file: File }) => {
-			const response = await eventadminUploadCoverArt({
+			const response = await eventadmincoreUploadCoverArt({
 				path: { event_id: id },
 				body: { cover_art: file }
 			});
@@ -244,7 +244,7 @@
 	// Delete logo mutation
 	const deleteLogoMutation = createMutation(() => ({
 		mutationFn: async (id: string) => {
-			const response = await eventadminDeleteLogo({
+			const response = await eventadmincoreDeleteLogo({
 				path: { event_id: id }
 			});
 
@@ -259,7 +259,7 @@
 	// Delete cover art mutation
 	const deleteCoverArtMutation = createMutation(() => ({
 		mutationFn: async (id: string) => {
-			const response = await eventadminDeleteCoverArt({
+			const response = await eventadmincoreDeleteCoverArt({
 				path: { event_id: id }
 			});
 
@@ -287,7 +287,7 @@
 		for (const resourceId of addedResourceIds) {
 			const promise = (async () => {
 				// Fetch current resource state
-				const resourceResponse = await organizationadminGetResource({
+				const resourceResponse = await organizationadminresourcesGetResource({
 					path: {
 						slug: organization.slug,
 						resource_id: resourceId
@@ -298,7 +298,7 @@
 					const currentEventIds = resourceResponse.data.event_ids || [];
 					// Add this event if not already present
 					if (!currentEventIds.includes(currentEventId)) {
-						await organizationadminUpdateResource({
+						await organizationadminresourcesUpdateResource({
 							path: {
 								slug: organization.slug,
 								resource_id: resourceId
@@ -317,7 +317,7 @@
 		for (const resourceId of removedResourceIds) {
 			const promise = (async () => {
 				// Fetch current resource state
-				const resourceResponse = await organizationadminGetResource({
+				const resourceResponse = await organizationadminresourcesGetResource({
 					path: {
 						slug: organization.slug,
 						resource_id: resourceId
@@ -327,7 +327,7 @@
 				if (resourceResponse.data) {
 					const currentEventIds = resourceResponse.data.event_ids || [];
 					// Remove this event
-					await organizationadminUpdateResource({
+					await organizationadminresourcesUpdateResource({
 						path: {
 							slug: organization.slug,
 							resource_id: resourceId
@@ -357,7 +357,7 @@
 
 		// Add new tags
 		if (addedTags.length > 0) {
-			await eventadminAddTags({
+			await eventadmincoreAddTags({
 				path: { event_id: currentEventId },
 				body: { tags: addedTags }
 			});
@@ -365,7 +365,7 @@
 
 		// Remove deleted tags
 		if (removedTags.length > 0) {
-			await eventadminRemoveTags({
+			await eventadmincoreRemoveTags({
 				path: { event_id: currentEventId },
 				body: { tags: removedTags }
 			});

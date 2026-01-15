@@ -3,7 +3,7 @@
 	import { page } from '$app/stores';
 	import type { PageData } from './$types';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import { eventadminListWaitlist, eventadminDeleteWaitlistEntry } from '$lib/api';
+	import { eventadminwaitlistListWaitlist, eventadminwaitlistDeleteWaitlistEntry } from '$lib/api';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { cn } from '$lib/utils/cn';
 	import { Users, Trash2, Calendar, Loader2, AlertCircle } from 'lucide-svelte';
@@ -23,7 +23,7 @@
 	let waitlistQuery = createQuery(() => ({
 		queryKey: ['waitlist', data.eventId, currentPage],
 		queryFn: async () => {
-			const response = await eventadminListWaitlist({
+			const response = await eventadminwaitlistListWaitlist({
 				path: { event_id: data.eventId },
 				query: { page: currentPage, page_size: pageSize },
 				headers: {
@@ -43,7 +43,7 @@
 	// Delete mutation
 	let deleteMutation = createMutation(() => ({
 		mutationFn: async (waitlistId: string) => {
-			const response = await eventadminDeleteWaitlistEntry({
+			const response = await eventadminwaitlistDeleteWaitlistEntry({
 				path: { event_id: data.eventId, waitlist_id: waitlistId },
 				headers: {
 					Authorization: `Bearer ${accessToken}`

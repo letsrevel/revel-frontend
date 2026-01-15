@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation } from '@tanstack/svelte-query';
-	import { organizationadminUpdateResource } from '$lib/api/generated/sdk.gen';
+	import { organizationadminresourcesUpdateResource } from '$lib/api/generated/sdk.gen';
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { getApiUrl } from '$lib/config/api';
@@ -170,7 +170,7 @@
 				body
 			});
 
-			const response = await organizationadminUpdateResource({
+			const response = await organizationadminresourcesUpdateResource({
 				path: { slug: organizationSlug, resource_id: resource.id },
 				body,
 				headers: {

@@ -35,11 +35,11 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
-		eventadminListEventTokens,
-		eventadminCreateEventToken,
-		eventadminUpdateEventToken,
-		eventadminDeleteEventToken,
-		organizationadminListMembers
+		eventadmintokensListEventTokens,
+		eventadmintokensCreateEventToken,
+		eventadmintokensUpdateEventToken,
+		eventadmintokensDeleteEventToken,
+		organizationadminmembersListMembers
 	} from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
@@ -235,7 +235,7 @@
 		isLoadingEmailSuggestions = true;
 
 		try {
-			const response = await organizationadminListMembers({
+			const response = await organizationadminmembersListMembers({
 				path: { slug: data.organization.slug },
 				query: { search, page_size: 10 },
 				headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined
@@ -518,7 +518,7 @@
 	const tokensQuery = createQuery(() => ({
 		queryKey: ['event', data.event.id, 'tokens', tokenSearchQuery],
 		queryFn: async () => {
-			const response = await eventadminListEventTokens({
+			const response = await eventadmintokensListEventTokens({
 				path: { event_id: data.event.id },
 				query: { search: tokenSearchQuery || undefined, page_size: 100 },
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -536,7 +536,7 @@
 	// Create token mutation
 	const createTokenMutation = createMutation(() => ({
 		mutationFn: async (tokenData: EventTokenCreateSchema) => {
-			const response = await eventadminCreateEventToken({
+			const response = await eventadmintokensCreateEventToken({
 				path: { event_id: data.event.id },
 				body: tokenData,
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -569,7 +569,7 @@
 			tokenId: string;
 			data: EventTokenUpdateSchema;
 		}) => {
-			const response = await eventadminUpdateEventToken({
+			const response = await eventadmintokensUpdateEventToken({
 				path: { event_id: data.event.id, token_id: tokenId },
 				body: tokenData,
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -596,7 +596,7 @@
 	// Delete token mutation
 	const deleteTokenMutation = createMutation(() => ({
 		mutationFn: async (tokenId: string) => {
-			const response = await eventadminDeleteEventToken({
+			const response = await eventadmintokensDeleteEventToken({
 				path: { event_id: data.event.id, token_id: tokenId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});

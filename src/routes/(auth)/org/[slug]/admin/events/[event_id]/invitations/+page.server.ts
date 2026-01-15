@@ -1,15 +1,15 @@
 import { error, fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import {
-	eventadminListInvitationRequests,
-	eventadminApproveInvitationRequest,
-	eventadminRejectInvitationRequest,
-	eventadminListInvitations,
-	eventadminListPendingInvitations,
-	eventadminCreateInvitations,
-	eventadminDeleteInvitationEndpoint,
+	eventadmininvitationrequestsListInvitationRequests,
+	eventadmininvitationrequestsApproveInvitationRequest,
+	eventadmininvitationrequestsRejectInvitationRequest,
+	eventadmininvitationsListInvitations,
+	eventadmininvitationsListPendingInvitations,
+	eventadmininvitationsCreateInvitations,
+	eventadmininvitationsDeleteInvitationEndpoint,
 	eventGetEvent,
-	eventadminListTicketTiers
+	eventadminticketsListTicketTiers
 } from '$lib/api/generated/sdk.gen';
 import type { TicketTierSchema } from '$lib/api/generated/types.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
@@ -74,7 +74,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 	};
 
 	try {
-		const response = await eventadminListInvitationRequests({
+		const response = await eventadmininvitationrequestsListInvitationRequests({
 			fetch,
 			path: { event_id: params.event_id },
 			query: {
@@ -115,7 +115,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 	};
 
 	try {
-		const response = await eventadminListInvitations({
+		const response = await eventadmininvitationsListInvitations({
 			fetch,
 			path: { event_id: params.event_id },
 			query: {
@@ -155,7 +155,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 	};
 
 	try {
-		const response = await eventadminListPendingInvitations({
+		const response = await eventadmininvitationsListPendingInvitations({
 			fetch,
 			path: { event_id: params.event_id },
 			query: {
@@ -187,7 +187,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 	let ticketTiers: TicketTierSchema[] = [];
 	if (event.requires_ticket) {
 		try {
-			const tiersResponse = await eventadminListTicketTiers({
+			const tiersResponse = await eventadminticketsListTicketTiers({
 				fetch,
 				path: { event_id: params.event_id },
 				headers
@@ -238,7 +238,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			const response = await eventadminApproveInvitationRequest({
+			const response = await eventadmininvitationrequestsApproveInvitationRequest({
 				fetch,
 				path: { event_id: params.event_id, request_id: requestId },
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -272,7 +272,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			const response = await eventadminRejectInvitationRequest({
+			const response = await eventadmininvitationrequestsRejectInvitationRequest({
 				fetch,
 				path: { event_id: params.event_id, request_id: requestId },
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -330,7 +330,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			const response = await eventadminCreateInvitations({
+			const response = await eventadmininvitationsCreateInvitations({
 				fetch,
 				path: { event_id: params.event_id },
 				body: {
@@ -376,7 +376,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			const response = await eventadminDeleteInvitationEndpoint({
+			const response = await eventadmininvitationsDeleteInvitationEndpoint({
 				fetch,
 				path: {
 					event_id: params.event_id,
@@ -428,7 +428,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			const response = await eventadminCreateInvitations({
+			const response = await eventadmininvitationsCreateInvitations({
 				fetch,
 				path: { event_id: params.event_id },
 				body: {
@@ -494,7 +494,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			const response = await eventadminCreateInvitations({
+			const response = await eventadmininvitationsCreateInvitations({
 				fetch,
 				path: { event_id: params.event_id },
 				body: {

@@ -24,13 +24,13 @@
 	import { getBackendUrl } from '$lib/config/api';
 	import { toast } from 'svelte-sonner';
 	import {
-		organizationadminUploadLogo,
-		organizationadminUploadCoverArt,
-		organizationadminDeleteLogo,
-		organizationadminDeleteCoverArt,
-		organizationadminAddTags,
-		organizationadminRemoveTags,
-		organizationadminUpdateContactEmail,
+		organizationadmincoreUploadLogo,
+		organizationadmincoreUploadCoverArt,
+		organizationadmincoreDeleteLogo,
+		organizationadmincoreDeleteCoverArt,
+		organizationadminmembersAddTags,
+		organizationadminmembersRemoveTags,
+		organizationadmincoreUpdateContactEmail,
 		tagListTags
 	} from '$lib/api/generated/sdk.gen';
 
@@ -136,7 +136,7 @@
 		emailSent = false;
 
 		try {
-			const { data: orgData, error } = await organizationadminUpdateContactEmail({
+			const { data: orgData, error } = await organizationadmincoreUpdateContactEmail({
 				headers: {
 					Authorization: `Bearer ${accessToken}`
 				},
@@ -185,7 +185,7 @@
 
 		try {
 			console.log('[LOGO UPLOAD] Starting upload for:', logoFile.name);
-			const response = await organizationadminUploadLogo({
+			const response = await organizationadmincoreUploadLogo({
 				path: { slug: data.organization.slug },
 				body: {
 					logo: logoFile
@@ -228,7 +228,7 @@
 
 		try {
 			console.log('[COVER UPLOAD] Starting upload for:', coverFile.name);
-			const response = await organizationadminUploadCoverArt({
+			const response = await organizationadmincoreUploadCoverArt({
 				path: { slug: data.organization.slug },
 				body: {
 					cover_art: coverFile
@@ -311,7 +311,7 @@
 		// Delete logo if marked for deletion
 		if (shouldDeleteLogo && data.organization.logo) {
 			console.log('[LOGO] Deleting logo');
-			const response = await organizationadminDeleteLogo({
+			const response = await organizationadmincoreDeleteLogo({
 				path: { slug: data.organization.slug },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
@@ -325,7 +325,7 @@
 		// Delete cover if marked for deletion
 		if (shouldDeleteCover && data.organization.cover_art) {
 			console.log('[COVER] Deleting cover art');
-			const response = await organizationadminDeleteCoverArt({
+			const response = await organizationadmincoreDeleteCoverArt({
 				path: { slug: data.organization.slug },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
@@ -423,7 +423,7 @@
 
 		// Add new tags
 		if (addedTags.length > 0) {
-			await organizationadminAddTags({
+			await organizationadminmembersAddTags({
 				path: { slug: data.organization.slug },
 				body: { tags: addedTags },
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -432,7 +432,7 @@
 
 		// Remove deleted tags
 		if (removedTags.length > 0) {
-			await organizationadminRemoveTags({
+			await organizationadminmembersRemoveTags({
 				path: { slug: data.organization.slug },
 				body: { tags: removedTags },
 				headers: { Authorization: `Bearer ${accessToken}` }

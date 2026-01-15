@@ -1,6 +1,6 @@
 import { fail, type Actions, error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { organizationadminUpdateOrganization } from '$lib/api/generated';
+import { organizationadmincoreUpdateOrganization } from '$lib/api/generated';
 import { extractErrorMessage } from '$lib/utils/errors';
 
 /**
@@ -83,7 +83,7 @@ export const actions: Actions = {
 		updateData.telegram_url = telegramUrl?.trim() || null;
 
 		try {
-			const { data, error: apiError } = await organizationadminUpdateOrganization({
+			const { data, error: apiError } = await organizationadmincoreUpdateOrganization({
 				path: {
 					slug
 				},
