@@ -666,8 +666,8 @@
 					type="single"
 					value={questionnaireType}
 					onValueChange={(v) => {
-						// Only allow admission for now
-						if (v === 'admission') {
+						// Allow admission and feedback types
+						if (v === 'admission' || v === 'feedback') {
 							questionnaireType = v;
 						}
 					}}
@@ -684,6 +684,14 @@
 								</div>
 							</div>
 						</SelectItem>
+						<SelectItem value="feedback" label="Feedback">
+							<div class="flex flex-col gap-0.5">
+								<div class="font-medium">Feedback</div>
+								<div class="text-xs text-muted-foreground">
+									Collect post-event feedback from attendees
+								</div>
+							</div>
+						</SelectItem>
 						<SelectItem value="membership" label="Membership" disabled>
 							<div class="flex flex-col gap-0.5">
 								<div class="flex items-center gap-2 font-medium">
@@ -695,20 +703,6 @@
 								</div>
 								<div class="text-xs text-muted-foreground">
 									Gate organization membership - required for joining
-								</div>
-							</div>
-						</SelectItem>
-						<SelectItem value="feedback" label="Feedback" disabled>
-							<div class="flex flex-col gap-0.5">
-								<div class="flex items-center gap-2 font-medium">
-									Feedback
-									<span
-										class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
-										>Coming soon</span
-									>
-								</div>
-								<div class="text-xs text-muted-foreground">
-									Collect post-event feedback from attendees
 								</div>
 							</div>
 						</SelectItem>
