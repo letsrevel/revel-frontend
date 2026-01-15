@@ -124,10 +124,45 @@
 
 	// Editing state - enabled when questionnaire is in draft status
 	let editingQuestionId = $state<string | null>(null);
+	let editingQuestionText = $state('');
 	let editingSectionId = $state<string | null>(null);
+	let editingSectionName = $state('');
+	let editingOptionId = $state<string | null>(null);
+	let editingOptionText = $state('');
 	let isAddingSection = $state(false);
 	let isAddingQuestion = $state<{ sectionId: string | null; type: 'mc' | 'ft' } | null>(null);
 	let operationInProgress = $state(false);
+
+	// Helper to start editing a question
+	function startEditingQuestion(questionId: string, currentText: string) {
+		if (!canEdit) return;
+		editingQuestionId = questionId;
+		editingQuestionText = currentText;
+	}
+
+	// Helper to start editing a section
+	function startEditingSection(sectionId: string, currentName: string) {
+		if (!canEdit) return;
+		editingSectionId = sectionId;
+		editingSectionName = currentName;
+	}
+
+	// Helper to start editing an option
+	function startEditingOption(optionId: string, currentText: string) {
+		if (!canEdit) return;
+		editingOptionId = optionId;
+		editingOptionText = currentText;
+	}
+
+	// Cancel all editing
+	function cancelEditing() {
+		editingQuestionId = null;
+		editingQuestionText = '';
+		editingSectionId = null;
+		editingSectionName = '';
+		editingOptionId = null;
+		editingOptionText = '';
+	}
 
 	// Check if editing is allowed (only in draft status)
 	const canEdit = $derived(q?.status === 'draft');
@@ -322,6 +357,10 @@
 
 	async function addSection() {
 		if (!canEdit || operationInProgress) return;
+
+		const sectionName = prompt('Enter section name:', `Section ${(sections?.length || 0) + 1}`);
+		if (!sectionName?.trim()) return;
+
 		operationInProgress = true;
 
 		try {
@@ -331,7 +370,7 @@
 			const response = await questionnaireCreateSection({
 				path: { org_questionnaire_id: getOrgQuestionnaireId() },
 				body: {
-					name: `Section ${(sections?.length || 0) + 1}`,
+					name: sectionName.trim(),
 					description: null,
 					order: sections?.length || 0
 				},
@@ -412,6 +451,16 @@
 
 	async function addMcQuestion(sectionId: string | null) {
 		if (!canEdit || operationInProgress) return;
+
+		const questionText = prompt('Enter the question:');
+		if (!questionText?.trim()) return;
+
+		const firstOption = prompt('Enter the first (correct) option:');
+		if (!firstOption?.trim()) return;
+
+		const secondOption = prompt('Enter the second (incorrect) option:');
+		if (!secondOption?.trim()) return;
+
 		operationInProgress = true;
 
 		try {
@@ -422,7 +471,7 @@
 				path: { org_questionnaire_id: getOrgQuestionnaireId() },
 				body: {
 					section_id: sectionId,
-					question: 'New question',
+					question: questionText.trim(),
 					is_mandatory: true,
 					order: 0,
 					positive_weight: 1.0,
@@ -431,8 +480,8 @@
 					allow_multiple_answers: false,
 					shuffle_options: true,
 					options: [
-						{ option: 'Option 1', is_correct: true, order: 0 },
-						{ option: 'Option 2', is_correct: false, order: 1 }
+						{ option: firstOption.trim(), is_correct: true, order: 0 },
+						{ option: secondOption.trim(), is_correct: false, order: 1 }
 					]
 				},
 				headers: { Authorization: `Bearer ${user.accessToken}` }
@@ -524,6 +573,10 @@
 
 	async function addFtQuestion(sectionId: string | null) {
 		if (!canEdit || operationInProgress) return;
+
+		const questionText = prompt('Enter the question:');
+		if (!questionText?.trim()) return;
+
 		operationInProgress = true;
 
 		try {
@@ -534,7 +587,7 @@
 				path: { org_questionnaire_id: getOrgQuestionnaireId() },
 				body: {
 					section_id: sectionId,
-					question: 'New free text question',
+					question: questionText.trim(),
 					is_mandatory: true,
 					order: 0,
 					positive_weight: 1.0,
@@ -629,6 +682,10 @@
 
 	async function addMcOption(questionId: string | undefined) {
 		if (!canEdit || operationInProgress || !questionId) return;
+
+		const optionText = prompt('Enter option text:');
+		if (!optionText?.trim()) return;
+
 		operationInProgress = true;
 
 		try {
@@ -638,7 +695,7 @@
 			const response = await questionnaireCreateMcOption({
 				path: { org_questionnaire_id: getOrgQuestionnaireId(), question_id: questionId },
 				body: {
-					option: 'New option',
+					option: optionText.trim(),
 					is_correct: false,
 					order: 0
 				},
@@ -1333,21 +1390,52 @@
 													</div>
 												{/if}
 											</div>
-											<p class="font-medium">{question.question}</p>
+											{#if canEdit}
+												<button
+													type="button"
+													class="cursor-pointer text-left font-medium hover:text-primary hover:underline"
+													onclick={() => {
+														const newText = prompt('Edit question:', question.question);
+														if (newText?.trim() && newText !== question.question) {
+															updateMcQuestion(question.id, { question: newText.trim() });
+														}
+													}}
+												>
+													{question.question}
+												</button>
+											{:else}
+												<p class="font-medium">{question.question}</p>
+											{/if}
 											<div class="mt-2 space-y-1">
 												{#each question.options as option, oIdx (option.id ?? `opt-${oIdx}`)}
 													<div class="group flex items-center gap-2 text-sm">
 														<button
 															type="button"
-															class="flex items-center gap-2 {canEdit ? 'cursor-pointer hover:text-primary' : ''}"
+															class="flex items-center gap-1 {canEdit ? 'cursor-pointer hover:text-primary' : ''}"
 															onclick={() => canEdit && updateMcOption(option.id, { is_correct: !option.is_correct })}
 															disabled={!canEdit || operationInProgress}
+															title="Click to toggle correct/incorrect"
 														>
 															<span class={option.is_correct ? 'font-medium text-green-600' : 'text-muted-foreground'}>
 																{option.is_correct ? '✓' : '○'}
 															</span>
-															<span class={option.is_correct ? 'font-medium' : ''}>{option.option}</span>
 														</button>
+														{#if canEdit}
+															<button
+																type="button"
+																class="cursor-pointer hover:text-primary hover:underline {option.is_correct ? 'font-medium' : ''}"
+																onclick={() => {
+																	const newText = prompt('Edit option:', option.option);
+																	if (newText?.trim() && newText !== option.option) {
+																		updateMcOption(option.id, { option: newText.trim() });
+																	}
+																}}
+															>
+																{option.option}
+															</button>
+														{:else}
+															<span class={option.is_correct ? 'font-medium' : ''}>{option.option}</span>
+														{/if}
 														{#if canEdit}
 															<Button
 																variant="ghost"
@@ -1405,7 +1493,22 @@
 													</div>
 												{/if}
 											</div>
-											<p class="font-medium">{question.question}</p>
+											{#if canEdit}
+												<button
+													type="button"
+													class="cursor-pointer text-left font-medium hover:text-primary hover:underline"
+													onclick={() => {
+														const newText = prompt('Edit question:', question.question);
+														if (newText?.trim() && newText !== question.question) {
+															updateFtQuestion(question.id, { question: newText.trim() });
+														}
+													}}
+												>
+													{question.question}
+												</button>
+											{:else}
+												<p class="font-medium">{question.question}</p>
+											{/if}
 										</div>
 									</div>
 								</div>
@@ -1418,7 +1521,22 @@
 						<div class="space-y-3 rounded-lg border-2 border-dashed border-muted p-4">
 							<div class="flex items-center justify-between border-b pb-2">
 								<div class="flex items-center gap-2">
-									<h3 class="font-semibold">{section.name}</h3>
+									{#if canEdit}
+										<button
+											type="button"
+											class="cursor-pointer font-semibold hover:text-primary hover:underline"
+											onclick={() => {
+												const newName = prompt('Edit section name:', section.name);
+												if (newName?.trim() && newName !== section.name && section.id) {
+													updateSection(section.id, { name: newName.trim() });
+												}
+											}}
+										>
+											{section.name}
+										</button>
+									{:else}
+										<h3 class="font-semibold">{section.name}</h3>
+									{/if}
 									<span class="text-sm text-muted-foreground">
 										({(section.multiplechoicequestion_questions?.length || 0) +
 											(section.freetextquestion_questions?.length || 0)} questions)
@@ -1429,7 +1547,7 @@
 										<Button
 											variant="ghost"
 											size="sm"
-											onclick={() => addMcQuestion(section.id)}
+											onclick={() => addMcQuestion(section.id ?? null)}
 											disabled={operationInProgress}
 											class="h-8 gap-1 text-xs"
 										>
@@ -1439,7 +1557,7 @@
 										<Button
 											variant="ghost"
 											size="sm"
-											onclick={() => addFtQuestion(section.id)}
+											onclick={() => addFtQuestion(section.id ?? null)}
 											disabled={operationInProgress}
 											class="h-8 gap-1 text-xs"
 										>
@@ -1449,7 +1567,7 @@
 										<Button
 											variant="ghost"
 											size="sm"
-											onclick={() => deleteSection(section.id)}
+											onclick={() => deleteSection(section.id ?? '')}
 											disabled={operationInProgress}
 											class="h-8 w-8 p-0 text-destructive hover:text-destructive"
 										>
@@ -1488,21 +1606,52 @@
 													</div>
 												{/if}
 											</div>
-											<p class="font-medium">{question.question}</p>
+											{#if canEdit}
+												<button
+													type="button"
+													class="cursor-pointer text-left font-medium hover:text-primary hover:underline"
+													onclick={() => {
+														const newText = prompt('Edit question:', question.question);
+														if (newText?.trim() && newText !== question.question) {
+															updateMcQuestion(question.id, { question: newText.trim() });
+														}
+													}}
+												>
+													{question.question}
+												</button>
+											{:else}
+												<p class="font-medium">{question.question}</p>
+											{/if}
 											<div class="mt-2 space-y-1">
 												{#each question.options as option, oIdx (option.id ?? `opt-${oIdx}`)}
 													<div class="group flex items-center gap-2 text-sm">
 														<button
 															type="button"
-															class="flex items-center gap-2 {canEdit ? 'cursor-pointer hover:text-primary' : ''}"
+															class="flex items-center gap-1 {canEdit ? 'cursor-pointer hover:text-primary' : ''}"
 															onclick={() => canEdit && updateMcOption(option.id, { is_correct: !option.is_correct })}
 															disabled={!canEdit || operationInProgress}
+															title="Click to toggle correct/incorrect"
 														>
 															<span class={option.is_correct ? 'font-medium text-green-600' : 'text-muted-foreground'}>
 																{option.is_correct ? '✓' : '○'}
 															</span>
-															<span class={option.is_correct ? 'font-medium' : ''}>{option.option}</span>
 														</button>
+														{#if canEdit}
+															<button
+																type="button"
+																class="cursor-pointer hover:text-primary hover:underline {option.is_correct ? 'font-medium' : ''}"
+																onclick={() => {
+																	const newText = prompt('Edit option:', option.option);
+																	if (newText?.trim() && newText !== option.option) {
+																		updateMcOption(option.id, { option: newText.trim() });
+																	}
+																}}
+															>
+																{option.option}
+															</button>
+														{:else}
+															<span class={option.is_correct ? 'font-medium' : ''}>{option.option}</span>
+														{/if}
 														{#if canEdit}
 															<Button
 																variant="ghost"
@@ -1560,7 +1709,22 @@
 													</div>
 												{/if}
 											</div>
-											<p class="font-medium">{question.question}</p>
+											{#if canEdit}
+												<button
+													type="button"
+													class="cursor-pointer text-left font-medium hover:text-primary hover:underline"
+													onclick={() => {
+														const newText = prompt('Edit question:', question.question);
+														if (newText?.trim() && newText !== question.question) {
+															updateFtQuestion(question.id, { question: newText.trim() });
+														}
+													}}
+												>
+													{question.question}
+												</button>
+											{:else}
+												<p class="font-medium">{question.question}</p>
+											{/if}
 										</div>
 									</div>
 								</div>
