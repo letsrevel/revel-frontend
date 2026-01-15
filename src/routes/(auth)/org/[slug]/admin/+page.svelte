@@ -3,7 +3,18 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
-	import { Calendar, Repeat, Users, Settings, FileText, Plus } from 'lucide-svelte';
+	import {
+		Calendar,
+		Repeat,
+		Users,
+		Settings,
+		FileText,
+		Plus,
+		ClipboardList,
+		FolderOpen,
+		Ban,
+		MapPin
+	} from 'lucide-svelte';
 	import { OrganizationDescription } from '$lib/components/organizations';
 
 	let { data }: { data: PageData } = $props();
@@ -13,6 +24,7 @@
 
 	// Quick action cards (derived to properly track organization reactivity)
 	const quickActions = $derived([
+		// Row 1 - Primary actions
 		{
 			title: m['orgAdmin.dashboard.quickActions.events.title'](),
 			description: m['orgAdmin.dashboard.quickActions.events.description'](),
@@ -47,6 +59,43 @@
 			href: `/org/${organization.slug}/admin/settings`,
 			color: 'text-purple-600 dark:text-purple-400',
 			bgColor: 'bg-purple-50 dark:bg-purple-950',
+			badge: undefined as string | undefined
+		},
+		// Row 2 - Secondary actions
+		{
+			title: m['orgAdmin.dashboard.quickActions.questionnaires.title'](),
+			description: m['orgAdmin.dashboard.quickActions.questionnaires.description'](),
+			icon: ClipboardList,
+			href: `/org/${organization.slug}/admin/questionnaires`,
+			color: 'text-orange-600 dark:text-orange-400',
+			bgColor: 'bg-orange-50 dark:bg-orange-950',
+			badge: undefined as string | undefined
+		},
+		{
+			title: m['orgAdmin.dashboard.quickActions.resources.title'](),
+			description: m['orgAdmin.dashboard.quickActions.resources.description'](),
+			icon: FolderOpen,
+			href: `/org/${organization.slug}/admin/resources`,
+			color: 'text-cyan-600 dark:text-cyan-400',
+			bgColor: 'bg-cyan-50 dark:bg-cyan-950',
+			badge: undefined as string | undefined
+		},
+		{
+			title: m['orgAdmin.dashboard.quickActions.blacklist.title'](),
+			description: m['orgAdmin.dashboard.quickActions.blacklist.description'](),
+			icon: Ban,
+			href: `/org/${organization.slug}/admin/blacklist`,
+			color: 'text-red-600 dark:text-red-400',
+			bgColor: 'bg-red-50 dark:bg-red-950',
+			badge: undefined as string | undefined
+		},
+		{
+			title: m['orgAdmin.dashboard.quickActions.venues.title'](),
+			description: m['orgAdmin.dashboard.quickActions.venues.description'](),
+			icon: MapPin,
+			href: `/org/${organization.slug}/admin/venues`,
+			color: 'text-pink-600 dark:text-pink-400',
+			bgColor: 'bg-pink-50 dark:bg-pink-950',
 			badge: undefined as string | undefined
 		}
 	]);

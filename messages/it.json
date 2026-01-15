@@ -545,6 +545,22 @@
 				"settings": {
 					"title": "Impostazioni",
 					"description": "Configura le impostazioni dell'organizzazione"
+				},
+				"questionnaires": {
+					"title": "Questionari",
+					"description": "Crea e gestisci questionari"
+				},
+				"resources": {
+					"title": "Risorse",
+					"description": "Gestisci file e risorse"
+				},
+				"blacklist": {
+					"title": "Lista nera",
+					"description": "Gestisci utenti bloccati"
+				},
+				"venues": {
+					"title": "Luoghi",
+					"description": "Gestisci i luoghi degli eventi"
 				}
 			},
 			"orgDetails": {

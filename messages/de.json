@@ -545,6 +545,22 @@
 				"settings": {
 					"title": "Einstellungen",
 					"description": "Organisationseinstellungen konfigurieren"
+				},
+				"questionnaires": {
+					"title": "Fragebögen",
+					"description": "Fragebögen erstellen und verwalten"
+				},
+				"resources": {
+					"title": "Ressourcen",
+					"description": "Dateien und Ressourcen verwalten"
+				},
+				"blacklist": {
+					"title": "Sperrliste",
+					"description": "Gesperrte Benutzer verwalten"
+				},
+				"venues": {
+					"title": "Veranstaltungsorte",
+					"description": "Veranstaltungsorte verwalten"
 				}
 			},
 			"orgDetails": {
