@@ -773,12 +773,25 @@
 			const authHeader = { Authorization: `Bearer ${user.accessToken}` };
 
 			// Track what exists in API vs what we have locally
-			const existingSectionIds = new Set((q?.sections || []).map((s: any) => s.id).filter(Boolean));
+			// Only track NON-CONDITIONAL sections/questions for deletion
+			// (conditional items have depends_on_option_id and are managed by the backend)
+			const existingSectionIds = new Set(
+				(q?.sections || [])
+					.filter((s: any) => !s.depends_on_option_id)
+					.map((s: any) => s.id)
+					.filter(Boolean)
+			);
 			const existingTopMcIds = new Set(
-				(q?.multiplechoicequestion_questions || []).map((q: any) => q.id).filter(Boolean)
+				(q?.multiplechoicequestion_questions || [])
+					.filter((q: any) => !q.depends_on_option_id)
+					.map((q: any) => q.id)
+					.filter(Boolean)
 			);
 			const existingTopFtIds = new Set(
-				(q?.freetextquestion_questions || []).map((q: any) => q.id).filter(Boolean)
+				(q?.freetextquestion_questions || [])
+					.filter((q: any) => !q.depends_on_option_id)
+					.map((q: any) => q.id)
+					.filter(Boolean)
 			);
 
 			// 1. Update metadata
