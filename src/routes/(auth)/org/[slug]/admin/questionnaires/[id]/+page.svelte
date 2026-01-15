@@ -241,7 +241,7 @@
 
 			// Build update payload (metadata only)
 			const response = await questionnaireUpdateOrgQuestionnaire({
-				path: { org_questionnaire_id: questionnaire.id },
+				path: { org_questionnaire_id: getOrgQuestionnaireId() },
 				body: {
 					name,
 					min_score: minScore,
@@ -292,7 +292,7 @@
 
 			const response = await questionnaireUpdateQuestionnaireStatus({
 				path: {
-					org_questionnaire_id: questionnaire.id,
+					org_questionnaire_id: getOrgQuestionnaireId(),
 					status: newStatus
 				},
 				headers: { Authorization: `Bearer ${user.accessToken}` }
@@ -312,6 +312,12 @@
 		}
 	}
 
+	// Helper to get org questionnaire ID safely
+	function getOrgQuestionnaireId(): string {
+		if (!questionnaire?.id) throw new Error('Questionnaire not loaded');
+		return questionnaire.id;
+	}
+
 	// ===== SECTION CRUD OPERATIONS =====
 
 	async function addSection() {
@@ -323,7 +329,7 @@
 			if (!user.accessToken) throw new Error('Not authenticated');
 
 			const response = await questionnaireCreateSection({
-				path: { org_questionnaire_id: questionnaire.id },
+				path: { org_questionnaire_id: getOrgQuestionnaireId() },
 				body: {
 					name: `Section ${(sections?.length || 0) + 1}`,
 					description: null,
@@ -355,7 +361,7 @@
 			if (!section) throw new Error('Section not found');
 
 			const response = await questionnaireUpdateSection({
-				path: { org_questionnaire_id: questionnaire.id, section_id: sectionId },
+				path: { org_questionnaire_id: getOrgQuestionnaireId(), section_id: sectionId },
 				body: {
 					name: updates.name ?? section.name,
 					description: updates.description !== undefined ? updates.description : section.description,
@@ -388,7 +394,7 @@
 			if (!user.accessToken) throw new Error('Not authenticated');
 
 			const response = await questionnaireDeleteSection({
-				path: { org_questionnaire_id: questionnaire.id, section_id: sectionId },
+				path: { org_questionnaire_id: getOrgQuestionnaireId(), section_id: sectionId },
 				headers: { Authorization: `Bearer ${user.accessToken}` }
 			});
 
@@ -413,7 +419,7 @@
 			if (!user.accessToken) throw new Error('Not authenticated');
 
 			const response = await questionnaireCreateMcQuestion({
-				path: { org_questionnaire_id: questionnaire.id },
+				path: { org_questionnaire_id: getOrgQuestionnaireId() },
 				body: {
 					section_id: sectionId,
 					question: 'New question',
@@ -443,8 +449,8 @@
 		}
 	}
 
-	async function updateMcQuestion(questionId: string, updates: { question?: string; hint?: string | null; is_mandatory?: boolean; positive_weight?: number; negative_weight?: number; is_fatal?: boolean; allow_multiple_answers?: boolean; shuffle_options?: boolean }) {
-		if (!canEdit || operationInProgress) return;
+	async function updateMcQuestion(questionId: string | undefined, updates: { question?: string; hint?: string | null; is_mandatory?: boolean; positive_weight?: number; negative_weight?: number; is_fatal?: boolean; allow_multiple_answers?: boolean; shuffle_options?: boolean }) {
+		if (!canEdit || operationInProgress || !questionId) return;
 		operationInProgress = true;
 
 		try {
@@ -462,7 +468,7 @@
 			if (!currentQuestion) throw new Error('Question not found');
 
 			const response = await questionnaireUpdateMcQuestion({
-				path: { org_questionnaire_id: questionnaire.id, question_id: questionId },
+				path: { org_questionnaire_id: getOrgQuestionnaireId(), question_id: questionId },
 				body: {
 					question: updates.question ?? currentQuestion.question,
 					hint: updates.hint !== undefined ? updates.hint : currentQuestion.hint,
@@ -487,8 +493,8 @@
 		}
 	}
 
-	async function deleteMcQuestion(questionId: string) {
-		if (!canEdit || operationInProgress) return;
+	async function deleteMcQuestion(questionId: string | undefined) {
+		if (!canEdit || operationInProgress || !questionId) return;
 
 		const confirmed = confirm('Are you sure you want to delete this question?');
 		if (!confirmed) return;
@@ -500,7 +506,7 @@
 			if (!user.accessToken) throw new Error('Not authenticated');
 
 			const response = await questionnaireDeleteMcQuestion({
-				path: { org_questionnaire_id: questionnaire.id, question_id: questionId },
+				path: { org_questionnaire_id: getOrgQuestionnaireId(), question_id: questionId },
 				headers: { Authorization: `Bearer ${user.accessToken}` }
 			});
 
@@ -525,7 +531,7 @@
 			if (!user.accessToken) throw new Error('Not authenticated');
 
 			const response = await questionnaireCreateFtQuestion({
-				path: { org_questionnaire_id: questionnaire.id },
+				path: { org_questionnaire_id: getOrgQuestionnaireId() },
 				body: {
 					section_id: sectionId,
 					question: 'New free text question',
@@ -549,8 +555,8 @@
 		}
 	}
 
-	async function updateFtQuestion(questionId: string, updates: { question?: string; hint?: string | null; is_mandatory?: boolean; positive_weight?: number; negative_weight?: number; is_fatal?: boolean; llm_guidelines?: string | null }) {
-		if (!canEdit || operationInProgress) return;
+	async function updateFtQuestion(questionId: string | undefined, updates: { question?: string; hint?: string | null; is_mandatory?: boolean; positive_weight?: number; negative_weight?: number; is_fatal?: boolean; llm_guidelines?: string | null }) {
+		if (!canEdit || operationInProgress || !questionId) return;
 		operationInProgress = true;
 
 		try {
@@ -568,7 +574,7 @@
 			if (!currentQuestion) throw new Error('Question not found');
 
 			const response = await questionnaireUpdateFtQuestion({
-				path: { org_questionnaire_id: questionnaire.id, question_id: questionId },
+				path: { org_questionnaire_id: getOrgQuestionnaireId(), question_id: questionId },
 				body: {
 					question: updates.question ?? currentQuestion.question,
 					hint: updates.hint !== undefined ? updates.hint : currentQuestion.hint,
@@ -592,8 +598,8 @@
 		}
 	}
 
-	async function deleteFtQuestion(questionId: string) {
-		if (!canEdit || operationInProgress) return;
+	async function deleteFtQuestion(questionId: string | undefined) {
+		if (!canEdit || operationInProgress || !questionId) return;
 
 		const confirmed = confirm('Are you sure you want to delete this question?');
 		if (!confirmed) return;
@@ -605,7 +611,7 @@
 			if (!user.accessToken) throw new Error('Not authenticated');
 
 			const response = await questionnaireDeleteFtQuestion({
-				path: { org_questionnaire_id: questionnaire.id, question_id: questionId },
+				path: { org_questionnaire_id: getOrgQuestionnaireId(), question_id: questionId },
 				headers: { Authorization: `Bearer ${user.accessToken}` }
 			});
 
@@ -621,8 +627,8 @@
 
 	// ===== MC OPTION CRUD OPERATIONS =====
 
-	async function addMcOption(questionId: string) {
-		if (!canEdit || operationInProgress) return;
+	async function addMcOption(questionId: string | undefined) {
+		if (!canEdit || operationInProgress || !questionId) return;
 		operationInProgress = true;
 
 		try {
@@ -630,7 +636,7 @@
 			if (!user.accessToken) throw new Error('Not authenticated');
 
 			const response = await questionnaireCreateMcOption({
-				path: { org_questionnaire_id: questionnaire.id, question_id: questionId },
+				path: { org_questionnaire_id: getOrgQuestionnaireId(), question_id: questionId },
 				body: {
 					option: 'New option',
 					is_correct: false,
@@ -649,8 +655,8 @@
 		}
 	}
 
-	async function updateMcOption(optionId: string, updates: { option?: string; is_correct?: boolean; order?: number }) {
-		if (!canEdit || operationInProgress) return;
+	async function updateMcOption(optionId: string | undefined, updates: { option?: string; is_correct?: boolean; order?: number }) {
+		if (!canEdit || operationInProgress || !optionId) return;
 		operationInProgress = true;
 
 		try {
@@ -658,7 +664,7 @@
 			if (!user.accessToken) throw new Error('Not authenticated');
 
 			const response = await questionnaireUpdateMcOption({
-				path: { org_questionnaire_id: questionnaire.id, option_id: optionId },
+				path: { org_questionnaire_id: getOrgQuestionnaireId(), option_id: optionId },
 				body: updates,
 				headers: { Authorization: `Bearer ${user.accessToken}` }
 			});
@@ -673,8 +679,8 @@
 		}
 	}
 
-	async function deleteMcOption(optionId: string) {
-		if (!canEdit || operationInProgress) return;
+	async function deleteMcOption(optionId: string | undefined) {
+		if (!canEdit || operationInProgress || !optionId) return;
 
 		const confirmed = confirm('Are you sure you want to delete this option?');
 		if (!confirmed) return;
@@ -686,7 +692,7 @@
 			if (!user.accessToken) throw new Error('Not authenticated');
 
 			const response = await questionnaireDeleteMcOption({
-				path: { org_questionnaire_id: questionnaire.id, option_id: optionId },
+				path: { org_questionnaire_id: getOrgQuestionnaireId(), option_id: optionId },
 				headers: { Authorization: `Bearer ${user.accessToken}` }
 			});
 
