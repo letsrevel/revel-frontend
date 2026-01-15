@@ -128,10 +128,30 @@
 			authStore.logout();
 			initializationPromise = null;
 		}
-		// Case 3: Both have tokens (normal navigation while authenticated)
+		// Case 3: Both have tokens - check if they're different (e.g., impersonation)
 		else if (serverAccessToken && currentAccessToken) {
-			console.log('[ROOT LAYOUT] Both server and client have tokens (already authenticated)');
-			// Token refresh is handled by interceptor and auto-refresh timer
+			// If tokens are different, update to the server token
+			// This handles impersonation where admin was logged in with their own token
+			// but server now has the impersonation token
+			if (serverAccessToken !== currentAccessToken) {
+				console.log('[ROOT LAYOUT] Server token differs from client token, updating auth');
+				authStore.setAccessToken(serverAccessToken);
+
+				// Re-initialize to fetch new user data for the impersonated user
+				if (!initializationPromise) {
+					initializationPromise = authStore
+						.initialize()
+						.catch((err) => {
+							console.error('[ROOT LAYOUT] Auth re-initialization failed:', err);
+						})
+						.finally(() => {
+							initializationPromise = null;
+						});
+				}
+			} else {
+				console.log('[ROOT LAYOUT] Both server and client have same token (already authenticated)');
+				// Token refresh is handled by interceptor and auto-refresh timer
+			}
 		}
 		// Case 4: No access token but has refresh token (access token expired, need to refresh)
 		// This happens when user returns after the 1-hour access token expired
