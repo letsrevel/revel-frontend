@@ -380,6 +380,7 @@
 
 <!-- Multiple Choice Question Snippet -->
 {#snippet multipleChoiceQuestion(question: ConditionalQuestion, isConditional: boolean)}
+	{@const useCheckboxes = question.allow_multiple_answers || (question.options?.length || 0) <= 1}
 	<div class={cn('space-y-3', isConditional && 'border-l-2 border-primary/30 pl-4')}>
 		<div class="flex items-start gap-2">
 			{#if isConditional}
@@ -398,7 +399,6 @@
 			</div>
 		</div>
 
-		{@const useCheckboxes = question.allow_multiple_answers || (question.options?.length || 0) <= 1}
 		{#if useCheckboxes}
 			<!-- Checkboxes: for multiple answers OR single option (single option = yes/no choice) -->
 			<div class="space-y-2">
