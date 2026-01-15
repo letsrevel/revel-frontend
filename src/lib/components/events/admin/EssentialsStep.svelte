@@ -11,7 +11,7 @@
 	import VenueSelector from './VenueSelector.svelte';
 	import { Calendar, Eye, Users, Ticket, Pencil, Check, X, Link, Loader2 } from 'lucide-svelte';
 	import { createMutation } from '@tanstack/svelte-query';
-	import { eventadminEditSlug } from '$lib/api/generated/sdk.gen';
+	import { eventadmincoreEditSlug } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 
 	interface Props {
@@ -87,7 +87,7 @@
 		mutationFn: async (newSlug: string) => {
 			if (!accessToken || !eventId) throw new Error(m['essentialsStep.error_notAuthenticated']());
 
-			const response = await eventadminEditSlug({
+			const response = await eventadmincoreEditSlug({
 				path: { event_id: eventId },
 				body: { slug: newSlug },
 				headers: {

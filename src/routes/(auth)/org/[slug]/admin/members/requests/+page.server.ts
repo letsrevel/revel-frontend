@@ -1,9 +1,9 @@
 import { error, fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import {
-	organizationadminListMembershipRequests,
-	organizationadminApproveMembershipRequest,
-	organizationadminRejectMembershipRequest
+	organizationadminmembershiprequestsListMembershipRequests,
+	organizationadminmembershiprequestsApproveMembershipRequest,
+	organizationadminmembershiprequestsRejectMembershipRequest
 } from '$lib/api/generated/sdk.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
 
@@ -29,7 +29,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies }) => 
 	const status = url.searchParams.get('status') || undefined;
 
 	try {
-		const response = await organizationadminListMembershipRequests({
+		const response = await organizationadminmembershiprequestsListMembershipRequests({
 			path: { slug: params.slug },
 			query: {
 				page,
@@ -107,7 +107,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			const response = await organizationadminApproveMembershipRequest({
+			const response = await organizationadminmembershiprequestsApproveMembershipRequest({
 				path: {
 					slug: params.slug,
 					request_id: requestId
@@ -170,7 +170,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			const response = await organizationadminRejectMembershipRequest({
+			const response = await organizationadminmembershiprequestsRejectMembershipRequest({
 				path: {
 					slug: params.slug,
 					request_id: requestId

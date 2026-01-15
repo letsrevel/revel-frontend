@@ -3,7 +3,7 @@ import type { PageServerLoad } from './$types';
 import {
 	eventseriesGetEventSeries,
 	questionnaireListOrgQuestionnaires,
-	organizationadminListResources
+	organizationadminresourcesListResources
 } from '$lib/api';
 
 export const load: PageServerLoad = async ({ parent, params, locals, fetch }) => {
@@ -91,7 +91,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch }) =>
 	// Load organization's resources
 	const resources = [];
 	try {
-		const resourcesResponse = await organizationadminListResources({
+		const resourcesResponse = await organizationadminresourcesListResources({
 			path: { slug: organization.slug },
 			query: {
 				page_size: 100

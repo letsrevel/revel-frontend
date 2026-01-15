@@ -14,8 +14,8 @@
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import {
-		organizationadminStripeConnect,
-		organizationadminStripeAccountVerify
+		organizationadmincoreStripeConnect,
+		organizationadmincoreStripeAccountVerify
 	} from '$lib/api/generated/sdk.gen';
 	import StripeConnectModal from './StripeConnectModal.svelte';
 
@@ -71,7 +71,7 @@
 		? createQuery(() => ({
 				queryKey: ['stripe-status', organizationSlug],
 				queryFn: async () => {
-					const response = await organizationadminStripeAccountVerify({
+					const response = await organizationadmincoreStripeAccountVerify({
 						path: { slug: organizationSlug },
 						headers: { Authorization: `Bearer ${accessToken}` }
 					});
@@ -90,7 +90,7 @@
 	const connectMutation = browser
 		? createMutation(() => ({
 				mutationFn: async (email: string) => {
-					const response = await organizationadminStripeConnect({
+					const response = await organizationadmincoreStripeConnect({
 						path: { slug: organizationSlug },
 						headers: { Authorization: `Bearer ${accessToken}` },
 						body: { email }

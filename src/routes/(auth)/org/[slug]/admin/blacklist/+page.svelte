@@ -2,15 +2,15 @@
 	import { page } from '$app/stores';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
-		organizationadminListBlacklist,
-		organizationadminCreateBlacklistEntry,
-		organizationadminUpdateBlacklistEntry,
-		organizationadminDeleteBlacklistEntry,
-		organizationadminListWhitelistRequests,
-		organizationadminApproveWhitelistRequest,
-		organizationadminRejectWhitelistRequest,
-		organizationadminListWhitelist,
-		organizationadminDeleteWhitelistEntry
+		organizationadminblacklistListBlacklist,
+		organizationadminblacklistCreateBlacklistEntry,
+		organizationadminblacklistUpdateBlacklistEntry,
+		organizationadminblacklistDeleteBlacklistEntry,
+		organizationadminwhitelistListWhitelistRequests,
+		organizationadminwhitelistApproveWhitelistRequest,
+		organizationadminwhitelistRejectWhitelistRequest,
+		organizationadminwhitelistListWhitelist,
+		organizationadminwhitelistDeleteWhitelistEntry
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		BlacklistEntrySchema,
@@ -75,7 +75,7 @@
 	const blacklistQuery = createQuery(() => ({
 		queryKey: ['organization', organization.slug, 'blacklist', blacklistSearch, blacklistPage],
 		queryFn: async () => {
-			const response = await organizationadminListBlacklist({
+			const response = await organizationadminblacklistListBlacklist({
 				path: { slug: organization.slug },
 				query: {
 					search: blacklistSearch || undefined,
@@ -104,7 +104,7 @@
 			requestsPage
 		],
 		queryFn: async () => {
-			const response = await organizationadminListWhitelistRequests({
+			const response = await organizationadminwhitelistListWhitelistRequests({
 				path: { slug: organization.slug },
 				query: {
 					status: requestStatusFilter !== 'all' ? requestStatusFilter : undefined,
@@ -127,7 +127,7 @@
 	const whitelistQuery = createQuery(() => ({
 		queryKey: ['organization', organization.slug, 'whitelist', whitelistPage],
 		queryFn: async () => {
-			const response = await organizationadminListWhitelist({
+			const response = await organizationadminwhitelistListWhitelist({
 				path: { slug: organization.slug },
 				query: {
 					page: whitelistPage,
@@ -148,7 +148,7 @@
 	// Create blacklist entry mutation
 	const createBlacklistMutation = createMutation(() => ({
 		mutationFn: async (data: BlacklistCreateSchema) => {
-			const response = await organizationadminCreateBlacklistEntry({
+			const response = await organizationadminblacklistCreateBlacklistEntry({
 				path: { slug: organization.slug },
 				body: data,
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -181,7 +181,7 @@
 			entryId: string;
 			data: { reason?: string; first_name?: string; last_name?: string; preferred_name?: string };
 		}) => {
-			const response = await organizationadminUpdateBlacklistEntry({
+			const response = await organizationadminblacklistUpdateBlacklistEntry({
 				path: { slug: organization.slug, entry_id: entryId },
 				body: data,
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -209,7 +209,7 @@
 	// Delete blacklist entry mutation
 	const deleteBlacklistMutation = createMutation(() => ({
 		mutationFn: async (entryId: string) => {
-			const response = await organizationadminDeleteBlacklistEntry({
+			const response = await organizationadminblacklistDeleteBlacklistEntry({
 				path: { slug: organization.slug, entry_id: entryId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
@@ -237,7 +237,7 @@
 	// Approve whitelist request mutation
 	const approveRequestMutation = createMutation(() => ({
 		mutationFn: async (requestId: string) => {
-			const response = await organizationadminApproveWhitelistRequest({
+			const response = await organizationadminwhitelistApproveWhitelistRequest({
 				path: { slug: organization.slug, request_id: requestId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
@@ -265,7 +265,7 @@
 	// Reject whitelist request mutation
 	const rejectRequestMutation = createMutation(() => ({
 		mutationFn: async (requestId: string) => {
-			const response = await organizationadminRejectWhitelistRequest({
+			const response = await organizationadminwhitelistRejectWhitelistRequest({
 				path: { slug: organization.slug, request_id: requestId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
@@ -290,7 +290,7 @@
 	// Delete whitelist entry mutation
 	const deleteWhitelistMutation = createMutation(() => ({
 		mutationFn: async (entryId: string) => {
-			const response = await organizationadminDeleteWhitelistEntry({
+			const response = await organizationadminwhitelistDeleteWhitelistEntry({
 				path: { slug: organization.slug, entry_id: entryId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});

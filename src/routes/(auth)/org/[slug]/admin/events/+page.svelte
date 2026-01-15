@@ -4,7 +4,10 @@
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
-	import { eventadminUpdateEventStatus, eventadminDeleteEvent } from '$lib/api/generated/sdk.gen';
+	import {
+		eventadmincoreUpdateEventStatus,
+		eventadmincoreDeleteEvent
+	} from '$lib/api/generated/sdk.gen';
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { cn } from '$lib/utils/cn';
@@ -46,7 +49,7 @@
 			eventId: string;
 			status: 'draft' | 'open' | 'closed' | 'cancelled';
 		}) => {
-			const response = await eventadminUpdateEventStatus({
+			const response = await eventadmincoreUpdateEventStatus({
 				path: { event_id: eventId, status },
 				headers: {
 					Authorization: `Bearer ${accessToken}`
@@ -82,7 +85,7 @@
 	// Delete event mutation
 	const deleteEventMutation = createMutation(() => ({
 		mutationFn: async (eventId: string) => {
-			const response = await eventadminDeleteEvent({
+			const response = await eventadmincoreDeleteEvent({
 				path: { event_id: eventId },
 				headers: {
 					Authorization: `Bearer ${accessToken}`

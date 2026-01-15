@@ -2,7 +2,8 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Plus, X, FileText } from 'lucide-svelte';
+	import * as Tooltip from '$lib/components/ui/tooltip';
+	import { Plus, X, FileText, AlertTriangle } from 'lucide-svelte';
 	import type { OrganizationQuestionnaireInListSchema } from '$lib/api/generated';
 	import { questionnaireUnassignEvent } from '$lib/api/generated/sdk.gen';
 	import { invalidateAll } from '$app/navigation';
@@ -66,6 +67,30 @@
 		feedback: () => m['eventQuestionnaires.type_feedback'](),
 		generic: () => m['eventQuestionnaires.type_generic']()
 	};
+
+	// Status styling
+	const statusStyles: Record<string, { bg: string; text: string; label: () => string }> = {
+		draft: {
+			bg: 'bg-amber-100 dark:bg-amber-900/30',
+			text: 'text-amber-700 dark:text-amber-300',
+			label: () => m['eventQuestionnaires.status_draft']()
+		},
+		ready: {
+			bg: 'bg-blue-100 dark:bg-blue-900/30',
+			text: 'text-blue-700 dark:text-blue-300',
+			label: () => m['eventQuestionnaires.status_ready']()
+		},
+		published: {
+			bg: 'bg-green-100 dark:bg-green-900/30',
+			text: 'text-green-700 dark:text-green-300',
+			label: () => m['eventQuestionnaires.status_published']()
+		}
+	};
+
+	// Check if any questionnaire is not published
+	const hasUnpublishedQuestionnaires = $derived(
+		assignedQuestionnaires.some((q) => q.questionnaire.status !== 'published')
+	);
 </script>
 
 <div class="space-y-4">
@@ -83,6 +108,21 @@
 		</Button>
 	</div>
 
+	<!-- Warning if any questionnaire is not published -->
+	{#if hasUnpublishedQuestionnaires}
+		<div
+			class="flex items-start gap-3 rounded-lg border border-orange-300 bg-orange-50 p-3 dark:border-orange-700 dark:bg-orange-950/50"
+		>
+			<AlertTriangle
+				class="h-5 w-5 flex-shrink-0 text-orange-600 dark:text-orange-400"
+				aria-hidden="true"
+			/>
+			<p class="text-sm text-orange-800 dark:text-orange-200">
+				{m['eventQuestionnaires.unpublishedWarning']()}
+			</p>
+		</div>
+	{/if}
+
 	<!-- List of Assigned Questionnaires -->
 	{#if assignedQuestionnaires.length === 0}
 		<div class="rounded-lg border border-dashed p-8 text-center">
@@ -95,13 +135,36 @@
 	{:else}
 		<div class="space-y-2">
 			{#each assignedQuestionnaires as questionnaire (questionnaire.id)}
-				<div class="flex items-center justify-between rounded-lg border p-3">
+				{@const status = questionnaire.questionnaire.status}
+				{@const style = statusStyles[status] || statusStyles.draft}
+				{@const isNotPublished = status !== 'published'}
+				<div
+					class="flex items-center justify-between rounded-lg border p-3 {isNotPublished
+						? 'border-orange-200 dark:border-orange-800'
+						: ''}"
+				>
 					<div class="min-w-0 flex-1">
-						<div class="flex items-center gap-2">
+						<div class="flex flex-wrap items-center gap-2">
+							{#if isNotPublished}
+								<Tooltip.Root>
+									<Tooltip.Trigger>
+										<AlertTriangle
+											class="h-4 w-4 text-orange-500"
+											aria-label={m['eventQuestionnaires.notEnforcedTooltip']()}
+										/>
+									</Tooltip.Trigger>
+									<Tooltip.Content>
+										<p>{m['eventQuestionnaires.notEnforcedTooltip']()}</p>
+									</Tooltip.Content>
+								</Tooltip.Root>
+							{/if}
 							<p class="font-medium">{questionnaire.questionnaire.name}</p>
 							<Badge variant="outline" class="text-xs">
 								{typeLabels[questionnaire.questionnaire_type]?.() ||
 									questionnaire.questionnaire_type}
+							</Badge>
+							<Badge class="{style.bg} {style.text} text-xs">
+								{style.label()}
 							</Badge>
 						</div>
 					</div>

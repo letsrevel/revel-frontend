@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
-import { organizationadminGetOrganization, permissionMyPermissions } from '$lib/api';
+import { organizationadmincoreGetOrganization, permissionMyPermissions } from '$lib/api';
 
 export const load: LayoutServerLoad = async ({ locals, params, fetch }) => {
 	const user = locals.user;
@@ -17,7 +17,7 @@ export const load: LayoutServerLoad = async ({ locals, params, fetch }) => {
 
 	try {
 		// Load organization with admin details (includes platform fees and Stripe info)
-		const orgResponse = await organizationadminGetOrganization({
+		const orgResponse = await organizationadmincoreGetOrganization({
 			fetch,
 			path: { slug: params.slug },
 			headers

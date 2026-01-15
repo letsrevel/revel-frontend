@@ -6,8 +6,8 @@
 	} from '$lib/api/generated/types.gen';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
-		organizationadminCreateSector,
-		organizationadminUpdateSector
+		organizationadminvenuesCreateSector,
+		organizationadminvenuesUpdateSector
 	} from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { X } from 'lucide-svelte';
@@ -36,7 +36,7 @@
 	// Create mutation
 	const createMutationFn = createMutation(() => ({
 		mutationFn: async (data: VenueSectorCreateSchema) => {
-			const response = await organizationadminCreateSector({
+			const response = await organizationadminvenuesCreateSector({
 				path: { slug: organizationSlug, venue_id: venueId },
 				body: data,
 				headers: {
@@ -65,7 +65,7 @@
 		mutationFn: async (data: Omit<VenueSectorCreateSchema, 'seats'>) => {
 			if (!sector?.id) throw new Error('No sector ID');
 
-			const response = await organizationadminUpdateSector({
+			const response = await organizationadminvenuesUpdateSector({
 				path: { slug: organizationSlug, venue_id: venueId, sector_id: sector.id },
 				body: data,
 				headers: {

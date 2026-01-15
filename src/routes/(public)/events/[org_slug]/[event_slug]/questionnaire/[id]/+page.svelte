@@ -380,6 +380,7 @@
 
 <!-- Multiple Choice Question Snippet -->
 {#snippet multipleChoiceQuestion(question: ConditionalQuestion, isConditional: boolean)}
+	{@const useCheckboxes = question.allow_multiple_answers || (question.options?.length || 0) <= 1}
 	<div class={cn('space-y-3', isConditional && 'border-l-2 border-primary/30 pl-4')}>
 		<div class="flex items-start gap-2">
 			{#if isConditional}
@@ -398,8 +399,8 @@
 			</div>
 		</div>
 
-		{#if question.allow_multiple_answers}
-			<!-- Checkboxes for multiple answers -->
+		{#if useCheckboxes}
+			<!-- Checkboxes: for multiple answers OR single option (single option = yes/no choice) -->
 			<div class="space-y-2">
 				{#each question.options || [] as option (option.id)}
 					<div class="space-y-2">
@@ -423,7 +424,7 @@
 				{/each}
 			</div>
 		{:else}
-			<!-- Radio buttons for single answer -->
+			<!-- Radio buttons for single answer (only when 2+ options) -->
 			<RadioGroup
 				value={multipleChoiceAnswers.get(question.id)?.[0] || ''}
 				onValueChange={(value: string) =>

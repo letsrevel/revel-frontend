@@ -6,7 +6,10 @@
 	import EventWizard from '$lib/components/events/admin/EventWizard.svelte';
 	import DuplicateEventModal from '$lib/components/events/admin/DuplicateEventModal.svelte';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
-	import { eventadminUpdateEventStatus, eventadminDeleteEvent } from '$lib/api/generated/sdk.gen';
+	import {
+		eventadmincoreUpdateEventStatus,
+		eventadmincoreDeleteEvent
+	} from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { CheckCircle, XCircle, FileEdit, Trash2, Ban, MoreVertical, Copy } from 'lucide-svelte';
@@ -26,7 +29,7 @@
 		mutationFn: async (status: 'draft' | 'open' | 'closed' | 'cancelled') => {
 			if (!accessToken) throw new Error(m['eventEditPage.error_notAuthenticated']());
 
-			const response = await eventadminUpdateEventStatus({
+			const response = await eventadmincoreUpdateEventStatus({
 				path: { event_id: event.id, status },
 				headers: {
 					Authorization: `Bearer ${accessToken}`
@@ -64,7 +67,7 @@
 		mutationFn: async () => {
 			if (!accessToken) throw new Error(m['eventEditPage.error_notAuthenticated']());
 
-			const response = await eventadminDeleteEvent({
+			const response = await eventadmincoreDeleteEvent({
 				path: { event_id: event.id },
 				headers: {
 					Authorization: `Bearer ${accessToken}`

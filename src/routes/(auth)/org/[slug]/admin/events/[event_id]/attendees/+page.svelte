@@ -5,11 +5,11 @@
 	import { createMutation } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
 	import {
-		eventadminUpdateRsvp,
-		eventadminDeleteRsvp,
-		organizationadminListMembershipTiers,
-		organizationadminAddMember,
-		organizationadminCreateBlacklistEntry
+		eventadminrsvpsUpdateRsvp,
+		eventadminrsvpsDeleteRsvp,
+		organizationadminmembersListMembershipTiers,
+		organizationadminmembersAddMember,
+		organizationadminblacklistCreateBlacklistEntry
 	} from '$lib/api';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { cn } from '$lib/utils/cn';
@@ -78,7 +78,7 @@
 	// Update RSVP mutation
 	const updateRsvpMutation = createMutation(() => ({
 		mutationFn: async ({ rsvpId, status }: { rsvpId: string; status: 'yes' | 'maybe' | 'no' }) => {
-			const response = await eventadminUpdateRsvp({
+			const response = await eventadminrsvpsUpdateRsvp({
 				path: { event_id: data.event.id, rsvp_id: rsvpId },
 				body: { status: status as any }, // Type assertion due to OpenAPI schema issue
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -106,7 +106,7 @@
 	// Delete RSVP mutation
 	const deleteRsvpMutation = createMutation(() => ({
 		mutationFn: async (rsvpId: string) => {
-			const response = await eventadminDeleteRsvp({
+			const response = await eventadminrsvpsDeleteRsvp({
 				path: { event_id: data.event.id, rsvp_id: rsvpId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
@@ -133,7 +133,7 @@
 	// Add member mutation
 	const addMemberMutation = createMutation(() => ({
 		mutationFn: async ({ userId, tierId }: { userId: string; tierId: string }) => {
-			const response = await organizationadminAddMember({
+			const response = await organizationadminmembersAddMember({
 				path: { slug: organization.slug, user_id: userId },
 				body: { tier_id: tierId },
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -166,7 +166,7 @@
 	// Blacklist user mutation
 	const blacklistMutation = createMutation(() => ({
 		mutationFn: async (userId: string) => {
-			const response = await organizationadminCreateBlacklistEntry({
+			const response = await organizationadminblacklistCreateBlacklistEntry({
 				path: { slug: organization.slug },
 				body: { user_id: userId, reason: '' },
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -217,7 +217,7 @@
 		if (membershipTiers.length === 0) {
 			tiersLoading = true;
 			try {
-				const response = await organizationadminListMembershipTiers({
+				const response = await organizationadminmembersListMembershipTiers({
 					path: { slug: organization.slug },
 					headers: { Authorization: `Bearer ${accessToken}` }
 				});

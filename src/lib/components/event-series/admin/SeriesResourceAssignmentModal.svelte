@@ -7,8 +7,8 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Search, Loader2, Box, AlertCircle, FileText, Link, File } from 'lucide-svelte';
 	import {
-		organizationadminListResources,
-		organizationadminUpdateResource,
+		organizationadminresourcesListResources,
+		organizationadminresourcesUpdateResource,
 		type AdditionalResourceSchema,
 		type EventSeriesRetrieveSchema
 	} from '$lib/api/generated';
@@ -51,7 +51,7 @@
 	async function loadResources() {
 		isLoading = true;
 		try {
-			const response = await organizationadminListResources({
+			const response = await organizationadminresourcesListResources({
 				path: { slug: organizationSlug },
 				query: {
 					page_size: 100
@@ -116,7 +116,7 @@
 				// Add this series
 				const updatedSeriesIds = [...currentSeriesIds, series.id];
 
-				const response = await organizationadminUpdateResource({
+				const response = await organizationadminresourcesUpdateResource({
 					path: { slug: organizationSlug, resource_id: resourceId },
 					body: { event_series_ids: updatedSeriesIds },
 					headers: { Authorization: `Bearer ${accessToken}` }
@@ -136,7 +136,7 @@
 				const currentSeriesIds = resource.event_series_ids || [];
 				const updatedSeriesIds = currentSeriesIds.filter((id: string) => id !== series.id);
 
-				const response = await organizationadminUpdateResource({
+				const response = await organizationadminresourcesUpdateResource({
 					path: { slug: organizationSlug, resource_id: resourceId },
 					body: { event_series_ids: updatedSeriesIds },
 					headers: { Authorization: `Bearer ${accessToken}` }

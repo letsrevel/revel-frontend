@@ -7,8 +7,8 @@
 	} from '$lib/api/generated/types.gen';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
-		organizationadminCreateVenue,
-		organizationadminUpdateVenue
+		organizationadminvenuesCreateVenue,
+		organizationadminvenuesUpdateVenue
 	} from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { X } from 'lucide-svelte';
@@ -51,7 +51,7 @@
 	// Create mutation
 	const createMutationFn = createMutation(() => ({
 		mutationFn: async (data: VenueCreateSchema) => {
-			const response = await organizationadminCreateVenue({
+			const response = await organizationadminvenuesCreateVenue({
 				path: { slug: organizationSlug },
 				body: data,
 				headers: {
@@ -81,7 +81,7 @@
 		mutationFn: async (data: VenueCreateSchema) => {
 			if (!venue?.id) throw new Error('No venue ID');
 
-			const response = await organizationadminUpdateVenue({
+			const response = await organizationadminvenuesUpdateVenue({
 				path: { slug: organizationSlug, venue_id: venue.id },
 				body: data,
 				headers: {

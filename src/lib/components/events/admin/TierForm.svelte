@@ -2,10 +2,10 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import {
-		eventadminCreateTicketTier,
-		eventadminUpdateTicketTier,
-		eventadminDeleteTicketTier,
-		organizationadminListVenues
+		eventadminticketsCreateTicketTier,
+		eventadminticketsUpdateTicketTier,
+		eventadminticketsDeleteTicketTier,
+		organizationadminvenuesListVenues
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		TicketTierDetailSchema,
@@ -194,7 +194,7 @@
 	const venuesQuery = createQuery<VenueDetailSchema[]>(() => ({
 		queryKey: ['organization-venues', organizationSlug],
 		queryFn: async () => {
-			const response = await organizationadminListVenues({
+			const response = await organizationadminvenuesListVenues({
 				path: { slug: organizationSlug },
 				headers: {
 					Authorization: `Bearer ${accessToken}`
@@ -242,7 +242,7 @@
 
 	const tierCreateMutation = createMutation(() => ({
 		mutationFn: (data: TicketTierCreateSchema) =>
-			eventadminCreateTicketTier({
+			eventadminticketsCreateTicketTier({
 				path: { event_id: eventId },
 				body: data
 			}),
@@ -254,7 +254,7 @@
 
 	const tierUpdateMutation = createMutation(() => ({
 		mutationFn: (data: TicketTierUpdateSchema) =>
-			eventadminUpdateTicketTier({
+			eventadminticketsUpdateTicketTier({
 				path: { event_id: eventId, tier_id: tier!.id! },
 				body: data
 			}),
@@ -266,7 +266,7 @@
 
 	const tierDeleteMutation = createMutation(() => ({
 		mutationFn: () =>
-			eventadminDeleteTicketTier({
+			eventadminticketsDeleteTicketTier({
 				path: { event_id: eventId, tier_id: tier!.id! }
 			}),
 		onSuccess: () => {

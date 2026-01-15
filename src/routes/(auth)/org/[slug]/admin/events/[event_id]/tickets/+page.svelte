@@ -21,13 +21,13 @@
 		Ban
 	} from 'lucide-svelte';
 	import {
-		eventadminConfirmTicketPayment,
-		eventadminCancelTicket,
-		eventadminCheckInTicket,
-		eventadminGetTicket,
-		organizationadminListMembershipTiers,
-		organizationadminAddMember,
-		organizationadminCreateBlacklistEntry
+		eventadminticketsConfirmTicketPayment,
+		eventadminticketsCancelTicket,
+		eventadminticketsCheckInTicket,
+		eventadminticketsGetTicket,
+		organizationadminmembersListMembershipTiers,
+		organizationadminmembersAddMember,
+		organizationadminblacklistCreateBlacklistEntry
 	} from '$lib/api';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import type { PageData } from './$types';
@@ -89,7 +89,7 @@
 	 */
 	const confirmPaymentMutation = createMutation(() => ({
 		mutationFn: async (ticketId: string) => {
-			const response = await eventadminConfirmTicketPayment({
+			const response = await eventadminticketsConfirmTicketPayment({
 				path: { event_id: data.event.id, ticket_id: ticketId },
 				headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
 			});
@@ -112,7 +112,7 @@
 	 */
 	const cancelTicketMutation = createMutation(() => ({
 		mutationFn: async (ticketId: string) => {
-			const response = await eventadminCancelTicket({
+			const response = await eventadminticketsCancelTicket({
 				path: { event_id: data.event.id, ticket_id: ticketId },
 				headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
 			});
@@ -135,7 +135,7 @@
 	 */
 	const checkInTicketMutation = createMutation(() => ({
 		mutationFn: async (ticketId: string) => {
-			const response = await eventadminCheckInTicket({
+			const response = await eventadminticketsCheckInTicket({
 				path: { event_id: data.event.id, ticket_id: ticketId },
 				headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
 			});
@@ -164,7 +164,7 @@
 	 */
 	const addMemberMutation = createMutation(() => ({
 		mutationFn: async ({ userId, tierId }: { userId: string; tierId: string }) => {
-			const response = await organizationadminAddMember({
+			const response = await organizationadminmembersAddMember({
 				path: { slug: data.event.organization.slug, user_id: userId },
 				body: { tier_id: tierId },
 				headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
@@ -199,7 +199,7 @@
 	 */
 	const blacklistMutation = createMutation(() => ({
 		mutationFn: async (userId: string) => {
-			const response = await organizationadminCreateBlacklistEntry({
+			const response = await organizationadminblacklistCreateBlacklistEntry({
 				path: { slug: data.event.organization.slug },
 				body: { user_id: userId, reason: '' },
 				headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
@@ -250,7 +250,7 @@
 		if (membershipTiers.length === 0) {
 			tiersLoading = true;
 			try {
-				const response = await organizationadminListMembershipTiers({
+				const response = await organizationadminmembersListMembershipTiers({
 					path: { slug: data.event.organization.slug },
 					headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
 				});
@@ -416,7 +416,7 @@
 	async function handleQRScan(ticketId: string) {
 		try {
 			// Fetch ticket details
-			const response = await eventadminGetTicket({
+			const response = await eventadminticketsGetTicket({
 				path: { event_id: data.event.id, ticket_id: ticketId },
 				headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
 			});

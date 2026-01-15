@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { organizationadminListVenues } from '$lib/api/generated/sdk.gen';
+	import { organizationadminvenuesListVenues } from '$lib/api/generated/sdk.gen';
 	import type { VenueDetailSchema, VenueSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Building2, ChevronDown, X, MapPin, Users } from 'lucide-svelte';
@@ -33,7 +33,7 @@
 	const venuesQuery = createQuery<VenueDetailSchema[]>(() => ({
 		queryKey: ['organization-venues', organizationSlug],
 		queryFn: async () => {
-			const response = await organizationadminListVenues({
+			const response = await organizationadminvenuesListVenues({
 				path: { slug: organizationSlug },
 				headers: {
 					Authorization: `Bearer ${accessToken}`

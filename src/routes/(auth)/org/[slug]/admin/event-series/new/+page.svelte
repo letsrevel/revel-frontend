@@ -9,7 +9,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import { organizationadminCreateEventSeries } from '$lib/api/generated';
+	import { organizationadmincoreCreateEventSeries } from '$lib/api/generated';
 
 	let { data }: { data: PageData } = $props();
 
@@ -49,7 +49,7 @@
 		error = null;
 
 		try {
-			const response = await organizationadminCreateEventSeries({
+			const response = await organizationadmincoreCreateEventSeries({
 				path: { slug: organization.slug },
 				body: {
 					name: name.trim(),

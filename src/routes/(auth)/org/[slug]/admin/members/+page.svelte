@@ -4,25 +4,25 @@
 	import type { PageData } from './$types';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
-		organizationadminListMembers,
-		organizationadminListStaff,
-		organizationadminListMembershipRequests,
-		organizationadminRemoveMember,
-		organizationadminRemoveStaff,
-		organizationadminApproveMembershipRequest,
-		organizationadminRejectMembershipRequest,
-		organizationadminUpdateStaffPermissions,
-		organizationadminAddStaff,
-		organizationadminUpdateMember,
-		organizationadminListMembershipTiers,
-		organizationadminCreateMembershipTier,
-		organizationadminUpdateMembershipTier,
-		organizationadminDeleteMembershipTier,
-		organizationadminListOrganizationTokens,
-		organizationadminCreateOrganizationToken,
-		organizationadminUpdateOrganizationToken,
-		organizationadminDeleteOrganizationToken,
-		organizationadminCreateBlacklistEntry
+		organizationadminmembersListMembers,
+		organizationadminmembersListStaff,
+		organizationadminmembershiprequestsListMembershipRequests,
+		organizationadminmembersRemoveMember,
+		organizationadminmembersRemoveStaff,
+		organizationadminmembershiprequestsApproveMembershipRequest,
+		organizationadminmembershiprequestsRejectMembershipRequest,
+		organizationadminmembersUpdateStaffPermissions,
+		organizationadminmembersAddStaff,
+		organizationadminmembersUpdateMember,
+		organizationadminmembersListMembershipTiers,
+		organizationadminmembersCreateMembershipTier,
+		organizationadminmembersUpdateMembershipTier,
+		organizationadminmembersDeleteMembershipTier,
+		organizationadmintokensListOrganizationTokens,
+		organizationadmintokensCreateOrganizationToken,
+		organizationadmintokensUpdateOrganizationToken,
+		organizationadmintokensDeleteOrganizationToken,
+		organizationadminblacklistCreateBlacklistEntry
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		OrganizationMemberSchema,
@@ -138,7 +138,7 @@
 			memberTierFilter
 		],
 		queryFn: async () => {
-			const response = await organizationadminListMembers({
+			const response = await organizationadminmembersListMembers({
 				path: { slug: organization.slug },
 				query: {
 					search: memberSearch || undefined,
@@ -162,7 +162,7 @@
 	const staffQuery = createQuery(() => ({
 		queryKey: ['organization', organization.slug, 'staff', staffSearch],
 		queryFn: async () => {
-			const response = await organizationadminListStaff({
+			const response = await organizationadminmembersListStaff({
 				path: { slug: organization.slug },
 				query: { search: staffSearch || undefined, page_size: 100 },
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -187,7 +187,7 @@
 			requestsPage
 		],
 		queryFn: async () => {
-			const response = await organizationadminListMembershipRequests({
+			const response = await organizationadminmembershiprequestsListMembershipRequests({
 				path: { slug: organization.slug },
 				query: {
 					status: requestStatusFilter !== 'all' ? requestStatusFilter : undefined,
@@ -210,7 +210,7 @@
 	const tiersQuery = createQuery(() => ({
 		queryKey: ['organization', organization.slug, 'membership-tiers'],
 		queryFn: async () => {
-			const response = await organizationadminListMembershipTiers({
+			const response = await organizationadminmembersListMembershipTiers({
 				path: { slug: organization.slug },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
@@ -228,7 +228,7 @@
 	const tokensQuery = createQuery(() => ({
 		queryKey: ['organization', organization.slug, 'tokens', tokenSearch],
 		queryFn: async () => {
-			const response = await organizationadminListOrganizationTokens({
+			const response = await organizationadmintokensListOrganizationTokens({
 				path: { slug: organization.slug },
 				query: { search: tokenSearch || undefined, page_size: 100 },
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -251,7 +251,7 @@
 				throw new Error('User ID not found in member data');
 			}
 
-			const response = await organizationadminRemoveMember({
+			const response = await organizationadminmembersRemoveMember({
 				path: { slug: organization.slug, user_id: userId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
@@ -280,7 +280,7 @@
 				throw new Error('User ID not found in staff data');
 			}
 
-			const response = await organizationadminRemoveStaff({
+			const response = await organizationadminmembersRemoveStaff({
 				path: { slug: organization.slug, user_id: userId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
@@ -312,7 +312,7 @@
 				throw new Error('Request ID not found');
 			}
 
-			const response = await organizationadminApproveMembershipRequest({
+			const response = await organizationadminmembershiprequestsApproveMembershipRequest({
 				path: { slug: organization.slug, request_id: request.id },
 				body: { tier_id: tierId },
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -348,7 +348,7 @@
 				throw new Error('Request ID not found');
 			}
 
-			const response = await organizationadminRejectMembershipRequest({
+			const response = await organizationadminmembershiprequestsRejectMembershipRequest({
 				path: { slug: organization.slug, request_id: request.id },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
@@ -383,7 +383,7 @@
 				throw new Error('User ID not found in staff data');
 			}
 
-			const response = await organizationadminUpdateStaffPermissions({
+			const response = await organizationadminmembersUpdateStaffPermissions({
 				path: { slug: organization.slug, user_id: userId },
 				body: { default: permissions },
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -413,7 +413,7 @@
 				throw new Error('User ID not found in member data');
 			}
 
-			const response = await organizationadminAddStaff({
+			const response = await organizationadminmembersAddStaff({
 				path: { slug: organization.slug, user_id: userId },
 				// Pass null for default permissions
 				body: null,
@@ -457,7 +457,7 @@
 				throw new Error('User ID not found in member data');
 			}
 
-			const response = await organizationadminUpdateMember({
+			const response = await organizationadminmembersUpdateMember({
 				path: { slug: organization.slug, user_id: userId },
 				body: {
 					status: status,
@@ -486,7 +486,7 @@
 	// Create tier mutation
 	const createTierMutation = createMutation(() => ({
 		mutationFn: async ({ name, description }: { name: string; description: string }) => {
-			const response = await organizationadminCreateMembershipTier({
+			const response = await organizationadminmembersCreateMembershipTier({
 				path: { slug: organization.slug },
 				body: { name, description },
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -519,7 +519,7 @@
 			name: string;
 			description: string;
 		}) => {
-			const response = await organizationadminUpdateMembershipTier({
+			const response = await organizationadminmembersUpdateMembershipTier({
 				path: { slug: organization.slug, tier_id: tierId },
 				body: { name, description },
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -548,7 +548,7 @@
 	// Delete tier mutation
 	const deleteTierMutation = createMutation(() => ({
 		mutationFn: async (tierId: string) => {
-			const response = await organizationadminDeleteMembershipTier({
+			const response = await organizationadminmembersDeleteMembershipTier({
 				path: { slug: organization.slug, tier_id: tierId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
@@ -576,7 +576,7 @@
 	// Create token mutation
 	const createTokenMutation = createMutation(() => ({
 		mutationFn: async (tokenData: OrganizationTokenCreateSchema) => {
-			const response = await organizationadminCreateOrganizationToken({
+			const response = await organizationadmintokensCreateOrganizationToken({
 				path: { slug: organization.slug },
 				body: tokenData,
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -609,7 +609,7 @@
 			tokenId: string;
 			data: OrganizationTokenUpdateSchema;
 		}) => {
-			const response = await organizationadminUpdateOrganizationToken({
+			const response = await organizationadmintokensUpdateOrganizationToken({
 				path: { slug: organization.slug, token_id: tokenId },
 				body: tokenData,
 				headers: { Authorization: `Bearer ${accessToken}` }
@@ -636,7 +636,7 @@
 	// Delete token mutation
 	const deleteTokenMutation = createMutation(() => ({
 		mutationFn: async (tokenId: string) => {
-			const response = await organizationadminDeleteOrganizationToken({
+			const response = await organizationadmintokensDeleteOrganizationToken({
 				path: { slug: organization.slug, token_id: tokenId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
@@ -662,7 +662,7 @@
 	// Blacklist member mutation
 	const blacklistMemberMutation = createMutation(() => ({
 		mutationFn: async ({ userId, reason }: { userId: string; reason: string }) => {
-			const response = await organizationadminCreateBlacklistEntry({
+			const response = await organizationadminblacklistCreateBlacklistEntry({
 				path: { slug: organization.slug },
 				body: { user_id: userId, reason: reason || '' },
 				headers: { Authorization: `Bearer ${accessToken}` }

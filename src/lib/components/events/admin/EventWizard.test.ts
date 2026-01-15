@@ -25,10 +25,10 @@ vi.mock('$app/navigation', () => ({
 
 // Mock API SDK
 vi.mock('$lib/api/generated/sdk.gen', () => ({
-	organizationadminCreateEvent: vi.fn(),
-	eventadminUpdateEvent: vi.fn(),
-	eventadminUploadLogo: vi.fn(),
-	eventadminUploadCoverArt: vi.fn()
+	organizationadmincoreCreateEvent: vi.fn(),
+	eventadmincoreUpdateEvent: vi.fn(),
+	eventadmincoreUploadLogo: vi.fn(),
+	eventadmincoreUploadCoverArt: vi.fn()
 }));
 
 const mockOrganization: OrganizationRetrieveSchema = {

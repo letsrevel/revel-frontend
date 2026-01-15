@@ -4,9 +4,9 @@
 	import { goto } from '$app/navigation';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
-		organizationadminGetVenue,
-		organizationadminListSectors,
-		organizationadminDeleteSector
+		organizationadminvenuesGetVenue,
+		organizationadminvenuesListSectors,
+		organizationadminvenuesDeleteSector
 	} from '$lib/api/generated/sdk.gen';
 	import type { VenueDetailSchema, VenueSectorWithSeatsSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -28,7 +28,7 @@
 	const venueQuery = createQuery<VenueDetailSchema>(() => ({
 		queryKey: ['venue', organization.slug, venueId],
 		queryFn: async () => {
-			const response = await organizationadminGetVenue({
+			const response = await organizationadminvenuesGetVenue({
 				path: { slug: organization.slug, venue_id: venueId },
 				headers: {
 					Authorization: `Bearer ${accessToken}`
@@ -47,7 +47,7 @@
 	const sectorsQuery = createQuery<VenueSectorWithSeatsSchema[]>(() => ({
 		queryKey: ['venue-sectors', organization.slug, venueId],
 		queryFn: async () => {
-			const response = await organizationadminListSectors({
+			const response = await organizationadminvenuesListSectors({
 				path: { slug: organization.slug, venue_id: venueId },
 				headers: {
 					Authorization: `Bearer ${accessToken}`
@@ -65,7 +65,7 @@
 	// Delete mutation
 	const deleteMutation = createMutation(() => ({
 		mutationFn: async (sectorId: string) => {
-			const response = await organizationadminDeleteSector({
+			const response = await organizationadminvenuesDeleteSector({
 				path: { slug: organization.slug, venue_id: venueId, sector_id: sectorId },
 				headers: {
 					Authorization: `Bearer ${accessToken}`

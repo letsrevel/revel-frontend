@@ -4,11 +4,11 @@
 	import { goto } from '$app/navigation';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
-		organizationadminGetSector,
-		organizationadminBulkCreateSeats,
-		organizationadminBulkDeleteSeats,
-		organizationadminBulkUpdateSeats,
-		organizationadminUpdateSector
+		organizationadminvenuesGetSector,
+		organizationadminvenuesBulkCreateSeats,
+		organizationadminvenuesBulkDeleteSeats,
+		organizationadminvenuesBulkUpdateSeats,
+		organizationadminvenuesUpdateSector
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		VenueSectorWithSeatsSchema,
@@ -30,7 +30,7 @@
 	const sectorQuery = createQuery<VenueSectorWithSeatsSchema>(() => ({
 		queryKey: ['sector', organization.slug, venueId, sectorId],
 		queryFn: async () => {
-			const response = await organizationadminGetSector({
+			const response = await organizationadminvenuesGetSector({
 				path: { slug: organization.slug, venue_id: venueId, sector_id: sectorId },
 				headers: {
 					Authorization: `Bearer ${accessToken}`
@@ -48,7 +48,7 @@
 	// Bulk create mutation
 	const bulkCreateMutation = createMutation(() => ({
 		mutationFn: async (seats: VenueSeatInputSchema[]) => {
-			const response = await organizationadminBulkCreateSeats({
+			const response = await organizationadminvenuesBulkCreateSeats({
 				path: { slug: organization.slug, venue_id: venueId, sector_id: sectorId },
 				body: { seats },
 				headers: {
@@ -74,7 +74,7 @@
 	// Bulk delete mutation
 	const bulkDeleteMutation = createMutation(() => ({
 		mutationFn: async (labels: string[]) => {
-			const response = await organizationadminBulkDeleteSeats({
+			const response = await organizationadminvenuesBulkDeleteSeats({
 				path: { slug: organization.slug, venue_id: venueId, sector_id: sectorId },
 				body: { labels },
 				headers: {
@@ -100,7 +100,7 @@
 	// Bulk update mutation (for existing seats - position changes due to aisles)
 	const bulkUpdateMutation = createMutation(() => ({
 		mutationFn: async (seats: VenueSeatBulkUpdateItemSchema[]) => {
-			const response = await organizationadminBulkUpdateSeats({
+			const response = await organizationadminvenuesBulkUpdateSeats({
 				path: { slug: organization.slug, venue_id: venueId, sector_id: sectorId },
 				body: { seats },
 				headers: {
@@ -126,7 +126,7 @@
 	// Sector metadata update mutation (for aisles and row order)
 	const updateSectorMutation = createMutation(() => ({
 		mutationFn: async (metadata: { aisles: AisleMetadata }) => {
-			const response = await organizationadminUpdateSector({
+			const response = await organizationadminvenuesUpdateSector({
 				path: { slug: organization.slug, venue_id: venueId, sector_id: sectorId },
 				body: { metadata },
 				headers: {
