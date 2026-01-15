@@ -545,6 +545,22 @@
 				"settings": {
 					"title": "Settings",
 					"description": "Configure organization settings"
+				},
+				"questionnaires": {
+					"title": "Questionnaires",
+					"description": "Create and manage questionnaires"
+				},
+				"resources": {
+					"title": "Resources",
+					"description": "Manage files and resources"
+				},
+				"blacklist": {
+					"title": "Blacklist",
+					"description": "Manage blocked users"
+				},
+				"venues": {
+					"title": "Venues",
+					"description": "Manage event venues"
 				}
 			},
 			"orgDetails": {
