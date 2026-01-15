@@ -1802,9 +1802,7 @@ export const organizationCreateOrganization = <ThrowOnError extends boolean = fa
  * **Error Cases:**
  * - 404: Token doesn't exist or has been deleted
  */
-export const organizationGetOrganizationTokenDetails = <
-	ThrowOnError extends boolean = false
->(
+export const organizationGetOrganizationTokenDetails = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationGetOrganizationTokenDetails33Fa69B8Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -1976,9 +1974,7 @@ export const organizationClaimInvitation = <ThrowOnError extends boolean = false
  * - 400: Organization not found
  * - 400: Email address has changed since verification was sent
  */
-export const organizationadmincoreVerifyContactEmail = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadmincoreVerifyContactEmail = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadmincoreVerifyContactEmailD7B69Eb6Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -2091,9 +2087,7 @@ export const organizationadmincoreGetOrganization = <ThrowOnError extends boolea
  * Note: contact_email cannot be updated through this endpoint.
  * Use the update-contact-email endpoint instead for email changes.
  */
-export const organizationadmincoreUpdateOrganization = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadmincoreUpdateOrganization = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadmincoreUpdateOrganization227031F1Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
@@ -2145,9 +2139,7 @@ export const organizationadmincoreUpdateOrganization = <
  * - 400: Email is the same as current contact email
  * - 403: User lacks edit_organization permission
  */
-export const organizationadmincoreUpdateContactEmail = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadmincoreUpdateContactEmail = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadmincoreUpdateContactEmailB4Baa377Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -2212,9 +2204,7 @@ export const organizationadmincoreStripeConnect = <ThrowOnError extends boolean 
  *
  * Get the organization's Stripe account status.
  */
-export const organizationadmincoreStripeAccountVerify = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadmincoreStripeAccountVerify = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadmincoreStripeAccountVerifyC5E527C2Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -2286,9 +2276,7 @@ export const organizationadmincoreDeleteCoverArt = <ThrowOnError extends boolean
  *
  * Create a new event series.
  */
-export const organizationadmincoreCreateEventSeries = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadmincoreCreateEventSeries = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadmincoreCreateEventSeries6789EbbeData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -2618,9 +2606,7 @@ export const organizationadmintokensUpdateOrganizationToken = <
  * - Clean up expired or unused tokens
  * - Verify staff invitation tokens are properly restricted
  */
-export const organizationadmintokensListOrganizationTokens = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadmintokensListOrganizationTokens = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadmintokensListOrganizationTokens7219C556Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -2865,9 +2851,7 @@ export const organizationadminmembershiprequestsApproveMembershipRequest = <
  *
  * Delete a resource from the organization.
  */
-export const organizationadminresourcesDeleteResource = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminresourcesDeleteResource = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminresourcesDeleteResourceD1F0BabaData, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
@@ -2915,9 +2899,7 @@ export const organizationadminresourcesGetResource = <ThrowOnError extends boole
  *
  * Update a resource for the organization.
  */
-export const organizationadminresourcesUpdateResource = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminresourcesUpdateResource = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminresourcesUpdateResource4C91Ca95Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
@@ -2945,9 +2927,7 @@ export const organizationadminresourcesUpdateResource = <
  *
  * List all resources for a specific organization.
  */
-export const organizationadminresourcesListResources = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminresourcesListResources = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminresourcesListResourcesA21A4A4dData, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -2974,9 +2954,7 @@ export const organizationadminresourcesListResources = <
  * Accepts multipart/form-data with individual form fields for each schema property.
  * For FILE type resources, include the file parameter.
  */
-export const organizationadminresourcesCreateResource = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminresourcesCreateResource = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminresourcesCreateResourceD328Eb20Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -3037,9 +3015,7 @@ export const organizationadminmembersUpdateStaffPermissions = <
  *
  * Members assigned to this tier will have their tier set to NULL (due to SET_NULL on the FK).
  */
-export const organizationadminmembersDeleteMembershipTier = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminmembersDeleteMembershipTier = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminmembersDeleteMembershipTier5Eb073DfData, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
@@ -3063,9 +3039,7 @@ export const organizationadminmembersDeleteMembershipTier = <
  *
  * Update a membership tier.
  */
-export const organizationadminmembersUpdateMembershipTier = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminmembersUpdateMembershipTier = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminmembersUpdateMembershipTier786Db8A8Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
@@ -3284,9 +3258,7 @@ export const organizationadminmembersListStaff = <ThrowOnError extends boolean =
  *
  * List all membership tiers for an organization.
  */
-export const organizationadminmembersListMembershipTiers = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminmembersListMembershipTiers = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminmembersListMembershipTiersBe656087Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -3310,9 +3282,7 @@ export const organizationadminmembersListMembershipTiers = <
  *
  * Create a new membership tier for the organization.
  */
-export const organizationadminmembersCreateMembershipTier = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminmembersCreateMembershipTier = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminmembersCreateMembershipTier138F53C5Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -3771,9 +3741,7 @@ export const organizationadminvenuesCreateSector = <ThrowOnError extends boolean
  * Note: Seat labels cannot be changed. To rename a seat,
  * delete it and create a new one with the desired label.
  */
-export const organizationadminvenuesBulkUpdateSeats = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminvenuesBulkUpdateSeats = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminvenuesBulkUpdateSeats8463102dData, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
@@ -3804,9 +3772,7 @@ export const organizationadminvenuesBulkUpdateSeats = <
  * This operation is atomic - if any seat cannot be deleted (due to having
  * active/pending tickets for future events or not existing), no seats will be deleted.
  */
-export const organizationadminvenuesBulkDeleteSeats = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminvenuesBulkDeleteSeats = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminvenuesBulkDeleteSeatsFa5C6Bd7Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -3837,9 +3803,7 @@ export const organizationadminvenuesBulkDeleteSeats = <
  * If the sector has a shape and seats have positions,
  * all positions must be within the shape polygon.
  */
-export const organizationadminvenuesBulkCreateSeats = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminvenuesBulkCreateSeats = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminvenuesBulkCreateSeats8Ac04C2eData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -3896,9 +3860,7 @@ export const organizationadminblacklistDeleteBlacklistEntry = <
  *
  * Get details of a specific blacklist entry.
  */
-export const organizationadminblacklistGetBlacklistEntry = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminblacklistGetBlacklistEntry = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminblacklistGetBlacklistEntry62827FbfData, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -3962,9 +3924,7 @@ export const organizationadminblacklistUpdateBlacklistEntry = <
  *
  * Supports searching by email, telegram username, and name fields.
  */
-export const organizationadminblacklistListBlacklist = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminblacklistListBlacklist = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminblacklistListBlacklist9135D07eData, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -4093,9 +4053,7 @@ export const organizationadminwhitelistListWhitelistRequests = <
  * These are users who were cleared despite fuzzy-matching blacklist entries.
  * Whitelisted users are those with an APPROVED whitelist request.
  */
-export const organizationadminwhitelistListWhitelist = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminwhitelistListWhitelist = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminwhitelistListWhitelist62C0E128Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -4119,9 +4077,7 @@ export const organizationadminwhitelistListWhitelist = <
  *
  * Get details of a whitelist request including matched blacklist entries.
  */
-export const organizationadminwhitelistGetWhitelistRequest = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminwhitelistGetWhitelistRequest = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminwhitelistGetWhitelistRequest59534337Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -6080,9 +6036,7 @@ export const eventadminticketsCancelTicket = <ThrowOnError extends boolean = fal
  *
  * List all pending invitations for unregistered users.
  */
-export const eventadmininvitationsListPendingInvitations = <
-	ThrowOnError extends boolean = false
->(
+export const eventadmininvitationsListPendingInvitations = <ThrowOnError extends boolean = false>(
 	options: Options<EventadmininvitationsListPendingInvitations8B7F4515Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -6130,9 +6084,7 @@ export const eventadmininvitationsListInvitations = <ThrowOnError extends boolea
  *
  * Create direct invitations for users by email addresses.
  */
-export const eventadmininvitationsCreateInvitations = <
-	ThrowOnError extends boolean = false
->(
+export const eventadmininvitationsCreateInvitations = <ThrowOnError extends boolean = false>(
 	options: Options<EventadmininvitationsCreateInvitations225E01DfData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -6160,9 +6112,7 @@ export const eventadmininvitationsCreateInvitations = <
  *
  * Delete an invitation (registered or pending).
  */
-export const eventadmininvitationsDeleteInvitationEndpoint = <
-	ThrowOnError extends boolean = false
->(
+export const eventadmininvitationsDeleteInvitationEndpoint = <ThrowOnError extends boolean = false>(
 	options: Options<EventadmininvitationsDeleteInvitationEndpointFdc4263cData, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
@@ -7008,9 +6958,7 @@ export const questionnaireUpdateSection = <ThrowOnError extends boolean = false>
  *
  * Requires 'edit_questionnaire' permission.
  */
-export const questionnaireUpdateQuestionnaireStatus = <
-	ThrowOnError extends boolean = false
->(
+export const questionnaireUpdateQuestionnaireStatus = <ThrowOnError extends boolean = false>(
 	options: Options<QuestionnaireUpdateQuestionnaireStatusEd6A7F82Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -7762,9 +7710,7 @@ export const userpreferencesGetGeneralPreferences = <ThrowOnError extends boolea
  * Modify visibility and location settings.
  * For notification preferences, use the /notification-preferences endpoint.
  */
-export const userpreferencesUpdateGeneralPreferences = <
-	ThrowOnError extends boolean = false
->(
+export const userpreferencesUpdateGeneralPreferences = <ThrowOnError extends boolean = false>(
 	options: Options<UserpreferencesUpdateGeneralPreferencesCf4C2F7cData, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
@@ -8031,9 +7977,7 @@ export const notificationpreferenceGetPreferences = <ThrowOnError extends boolea
  *
  * Update notification preferences.
  */
-export const notificationpreferenceUpdatePreferences = <
-	ThrowOnError extends boolean = false
->(
+export const notificationpreferenceUpdatePreferences = <ThrowOnError extends boolean = false>(
 	options: Options<NotificationpreferenceUpdatePreferences63A5Ea1aData, ThrowOnError>
 ) => {
 	return (options.client ?? client).patch<

@@ -4,7 +4,10 @@
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
-	import { eventadmincoreUpdateEventStatus, eventadmincoreDeleteEvent } from '$lib/api/generated/sdk.gen';
+	import {
+		eventadmincoreUpdateEventStatus,
+		eventadmincoreDeleteEvent
+	} from '$lib/api/generated/sdk.gen';
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { cn } from '$lib/utils/cn';
