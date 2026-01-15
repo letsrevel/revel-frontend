@@ -8,6 +8,7 @@
 	import { Toaster, toast } from 'svelte-sonner';
 	import { extractErrorMessage, isAuthError } from '$lib/utils/errors';
 	import DemoBanner from '$lib/components/common/DemoBanner.svelte';
+	import ImpersonationBanner from '$lib/components/common/ImpersonationBanner.svelte';
 	import type { LayoutData } from './$types';
 
 	interface Props {
@@ -174,6 +175,7 @@
 <ModeWatcher />
 <QueryClientProvider client={queryClient}>
 	<Toaster richColors position="top-right" />
+	<ImpersonationBanner />
 	<DemoBanner />
 	{@render children()}
 </QueryClientProvider>

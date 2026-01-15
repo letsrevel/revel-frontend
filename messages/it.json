@@ -4375,5 +4375,23 @@
 	"whitelistEntry": {
 		"verifiedAt": "Verificato",
 		"remove": "Rimuovi"
+	},
+	"impersonatePage": {
+		"title": "Impersonificazione",
+		"errorTitle": "Impersonificazione fallita",
+		"missingTokenHelp": "Potresti essere arrivato a questa pagina direttamente. Avvia l'impersonificazione dal pannello di amministrazione.",
+		"invalidTokenHelp": "Il token di impersonificazione è scaduto o è già stato utilizzato. Avvia una nuova sessione dal pannello di amministrazione.",
+		"forbiddenHelp": "L'utente che stai cercando di impersonare potrebbe aver ricevuto privilegi di staff o superutente nel frattempo.",
+		"genericHelp": "Riprova più tardi o contatta l'assistenza se il problema persiste.",
+		"goToLogin": "Vai al Login",
+		"retry": "Riprova"
+	},
+	"impersonationBanner": {
+		"title": "Modalità Impersonificazione",
+		"by": "Da",
+		"expired": "Sessione Scaduta",
+		"timeRemainingTitle": "Tempo rimanente fino alla scadenza della sessione",
+		"timeRemainingLabel": "{time} rimanenti",
+		"notice": "Stai visualizzando questa applicazione come un altro utente. Tutte le azioni saranno registrate e attribuite all'utente impersonificato."
 	}
 }
