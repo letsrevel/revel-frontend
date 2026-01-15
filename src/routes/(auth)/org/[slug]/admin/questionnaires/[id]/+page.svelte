@@ -126,7 +126,7 @@
 	}
 
 	// Convert API MC question to local format
-	function convertApiMcQuestion(apiQuestion: any, order: number): Question {
+	function convertApiMcQuestion(apiQuestion: any, fallbackOrder: number): Question {
 		return {
 			id: crypto.randomUUID(),
 			type: 'multiple_choice',
@@ -134,7 +134,7 @@
 			hint: apiQuestion.hint || undefined,
 			reviewerNotes: apiQuestion.reviewer_notes || undefined,
 			required: apiQuestion.is_mandatory ?? true,
-			order: order,
+			order: apiQuestion.order ?? fallbackOrder,
 			positiveWeight: apiQuestion.positive_weight ?? 1.0,
 			negativeWeight: apiQuestion.negative_weight ?? 0.0,
 			isFatal: apiQuestion.is_fatal ?? false,
@@ -146,7 +146,7 @@
 	}
 
 	// Convert API FT question to local format
-	function convertApiFtQuestion(apiQuestion: any, order: number): Question {
+	function convertApiFtQuestion(apiQuestion: any, fallbackOrder: number): Question {
 		return {
 			id: crypto.randomUUID(),
 			type: 'free_text',
@@ -154,7 +154,7 @@
 			hint: apiQuestion.hint || undefined,
 			reviewerNotes: apiQuestion.reviewer_notes || undefined,
 			required: apiQuestion.is_mandatory ?? true,
-			order: order,
+			order: apiQuestion.order ?? fallbackOrder,
 			positiveWeight: apiQuestion.positive_weight ?? 1.0,
 			negativeWeight: apiQuestion.negative_weight ?? 0.0,
 			isFatal: apiQuestion.is_fatal ?? false,
@@ -166,10 +166,10 @@
 	// Convert API section to local format
 	function convertApiSection(apiSection: any): Section {
 		const mcQuestions = (apiSection.multiplechoicequestion_questions || []).map(
-			(q: any, i: number) => convertApiMcQuestion(q, i)
+			(apiQ: any, i: number) => convertApiMcQuestion(apiQ, apiQ.order ?? i)
 		);
-		const ftQuestions = (apiSection.freetextquestion_questions || []).map((q: any, i: number) =>
-			convertApiFtQuestion(q, mcQuestions.length + i)
+		const ftQuestions = (apiSection.freetextquestion_questions || []).map((apiQ: any, i: number) =>
+			convertApiFtQuestion(apiQ, apiQ.order ?? mcQuestions.length + i)
 		);
 
 		return {
@@ -209,13 +209,25 @@
 					: null;
 		}
 
-		// Convert top-level questions
-		const topMc = (q.multiplechoicequestion_questions || []).map((q: any, i: number) =>
-			convertApiMcQuestion(q, i)
-		);
-		const topFt = (q.freetextquestion_questions || []).map((q: any, i: number) =>
-			convertApiFtQuestion(q, topMc.length + i)
-		);
+		// First, collect all question IDs that belong to sections
+		// This prevents duplicates if API returns questions at multiple levels
+		const sectionQuestionIds = new Set<string>();
+		for (const apiSection of q.sections || []) {
+			for (const mcq of apiSection.multiplechoicequestion_questions || []) {
+				if (mcq.id) sectionQuestionIds.add(mcq.id);
+			}
+			for (const ftq of apiSection.freetextquestion_questions || []) {
+				if (ftq.id) sectionQuestionIds.add(ftq.id);
+			}
+		}
+
+		// Convert top-level questions, excluding any that belong to sections
+		const topMc = (q.multiplechoicequestion_questions || [])
+			.filter((apiQ: any) => !sectionQuestionIds.has(apiQ.id))
+			.map((apiQ: any) => convertApiMcQuestion(apiQ, apiQ.order ?? 0));
+		const topFt = (q.freetextquestion_questions || [])
+			.filter((apiQ: any) => !sectionQuestionIds.has(apiQ.id))
+			.map((apiQ: any) => convertApiFtQuestion(apiQ, apiQ.order ?? 0));
 		topLevelQuestions = [...topMc, ...topFt].sort((a, b) => a.order - b.order);
 
 		// Convert sections
