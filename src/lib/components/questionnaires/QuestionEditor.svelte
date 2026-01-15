@@ -71,6 +71,26 @@
 	// Collapsible sections state
 	let showAdvanced = $state(false);
 	let expandedOptions = $state<Set<number>>(new Set());
+	let hasAutoExpandedOnce = $state(false);
+
+	// Auto-expand options that have conditional content on initial load
+	$effect(() => {
+		if (!hasAutoExpandedOnce && question.options && question.options.length > 0) {
+			const optionsWithContent = new Set<number>();
+			question.options.forEach((opt, index) => {
+				if (
+					(opt.conditionalQuestions?.length || 0) > 0 ||
+					(opt.conditionalSections?.length || 0) > 0
+				) {
+					optionsWithContent.add(index);
+				}
+			});
+			if (optionsWithContent.size > 0) {
+				expandedOptions = optionsWithContent;
+			}
+			hasAutoExpandedOnce = true;
+		}
+	});
 
 	// Toggle option expansion for conditional questions
 	function toggleOptionExpanded(index: number) {

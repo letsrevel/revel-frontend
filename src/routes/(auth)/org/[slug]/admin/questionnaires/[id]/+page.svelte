@@ -120,8 +120,9 @@
 		return {
 			text: apiOption.option || '',
 			isCorrect: apiOption.is_correct || false,
+			conditionalQuestions: [],
+			conditionalSections: [],
 			_apiId: apiOption.id
-			// TODO: Handle conditional questions/sections if needed
 		};
 	}
 
@@ -209,8 +210,7 @@
 					: null;
 		}
 
-		// First, collect all question IDs that belong to sections
-		// This prevents duplicates if API returns questions at multiple levels
+		// ===== Step 1: Collect IDs of questions that belong to sections =====
 		const sectionQuestionIds = new Set<string>();
 		for (const apiSection of q.sections || []) {
 			for (const mcq of apiSection.multiplechoicequestion_questions || []) {
@@ -221,19 +221,153 @@
 			}
 		}
 
-		// Convert top-level questions, excluding any that belong to sections
+		// ===== Step 2: Collect IDs of questions/sections that are conditional (depend on an option) =====
+		const conditionalQuestionIds = new Set<string>();
+		const conditionalSectionIds = new Set<string>();
+
+		// Collect all conditional questions (those with depends_on_option_id)
+		for (const mcq of q.multiplechoicequestion_questions || []) {
+			if (mcq.depends_on_option_id) {
+				conditionalQuestionIds.add(mcq.id);
+			}
+		}
+		for (const ftq of q.freetextquestion_questions || []) {
+			if (ftq.depends_on_option_id) {
+				conditionalQuestionIds.add(ftq.id);
+			}
+		}
+		// Also check sections within sections for conditional questions
+		for (const apiSection of q.sections || []) {
+			if (apiSection.depends_on_option_id) {
+				conditionalSectionIds.add(apiSection.id);
+			}
+			for (const mcq of apiSection.multiplechoicequestion_questions || []) {
+				if (mcq.depends_on_option_id) {
+					conditionalQuestionIds.add(mcq.id);
+				}
+			}
+			for (const ftq of apiSection.freetextquestion_questions || []) {
+				if (ftq.depends_on_option_id) {
+					conditionalQuestionIds.add(ftq.id);
+				}
+			}
+		}
+
+		// ===== Step 3: Convert questions, excluding section questions and conditional questions =====
 		const topMc = (q.multiplechoicequestion_questions || [])
-			.filter((apiQ: any) => !sectionQuestionIds.has(apiQ.id))
+			.filter(
+				(apiQ: any) => !sectionQuestionIds.has(apiQ.id) && !conditionalQuestionIds.has(apiQ.id)
+			)
 			.map((apiQ: any) => convertApiMcQuestion(apiQ, apiQ.order ?? 0));
 		const topFt = (q.freetextquestion_questions || [])
-			.filter((apiQ: any) => !sectionQuestionIds.has(apiQ.id))
+			.filter(
+				(apiQ: any) => !sectionQuestionIds.has(apiQ.id) && !conditionalQuestionIds.has(apiQ.id)
+			)
 			.map((apiQ: any) => convertApiFtQuestion(apiQ, apiQ.order ?? 0));
 		topLevelQuestions = [...topMc, ...topFt].sort((a, b) => a.order - b.order);
 
-		// Convert sections
+		// ===== Step 4: Convert sections, excluding conditional sections =====
 		sections = (q.sections || [])
+			.filter((apiSection: any) => !conditionalSectionIds.has(apiSection.id))
 			.map(convertApiSection)
 			.sort((a: Section, b: Section) => a.order - b.order);
+
+		// ===== Step 5: Build a map of option API IDs to option objects =====
+		// This lets us attach conditional questions/sections to their parent options
+		const optionMap = new Map<string, Option>();
+
+		// Collect options from top-level questions
+		for (const question of topLevelQuestions) {
+			if (question.options) {
+				for (const option of question.options) {
+					if (option._apiId) {
+						optionMap.set(option._apiId, option);
+					}
+				}
+			}
+		}
+
+		// Collect options from section questions
+		for (const section of sections) {
+			for (const question of section.questions) {
+				if (question.options) {
+					for (const option of question.options) {
+						if (option._apiId) {
+							optionMap.set(option._apiId, option);
+						}
+					}
+				}
+			}
+		}
+
+		// ===== Step 6: Attach conditional questions to their parent options =====
+		// Conditional MC questions
+		for (const apiQ of q.multiplechoicequestion_questions || []) {
+			if (apiQ.depends_on_option_id && conditionalQuestionIds.has(apiQ.id)) {
+				const parentOption = optionMap.get(apiQ.depends_on_option_id);
+				if (parentOption) {
+					const convertedQ = convertApiMcQuestion(apiQ, apiQ.order ?? 0);
+					parentOption.conditionalQuestions = parentOption.conditionalQuestions || [];
+					parentOption.conditionalQuestions.push(convertedQ);
+					// Also add nested options to the map
+					if (convertedQ.options) {
+						for (const opt of convertedQ.options) {
+							if (opt._apiId) optionMap.set(opt._apiId, opt);
+						}
+					}
+				}
+			}
+		}
+
+		// Conditional FT questions
+		for (const apiQ of q.freetextquestion_questions || []) {
+			if (apiQ.depends_on_option_id && conditionalQuestionIds.has(apiQ.id)) {
+				const parentOption = optionMap.get(apiQ.depends_on_option_id);
+				if (parentOption) {
+					const convertedQ = convertApiFtQuestion(apiQ, apiQ.order ?? 0);
+					parentOption.conditionalQuestions = parentOption.conditionalQuestions || [];
+					parentOption.conditionalQuestions.push(convertedQ);
+				}
+			}
+		}
+
+		// Conditional sections
+		for (const apiSection of q.sections || []) {
+			if (apiSection.depends_on_option_id && conditionalSectionIds.has(apiSection.id)) {
+				const parentOption = optionMap.get(apiSection.depends_on_option_id);
+				if (parentOption) {
+					const convertedSection: ConditionalSection = {
+						id: crypto.randomUUID(),
+						name: apiSection.name || '',
+						description: apiSection.description || undefined,
+						order: apiSection.order ?? 0,
+						questions: []
+					};
+					// Convert section questions (excluding any nested conditionals)
+					const sectionMc = (apiSection.multiplechoicequestion_questions || [])
+						.filter((mcq: any) => !mcq.depends_on_option_id)
+						.map((mcq: any) => convertApiMcQuestion(mcq, mcq.order ?? 0));
+					const sectionFt = (apiSection.freetextquestion_questions || [])
+						.filter((ftq: any) => !ftq.depends_on_option_id)
+						.map((ftq: any) => convertApiFtQuestion(ftq, ftq.order ?? 0));
+					convertedSection.questions = [...sectionMc, ...sectionFt].sort(
+						(a, b) => a.order - b.order
+					);
+					parentOption.conditionalSections = parentOption.conditionalSections || [];
+					parentOption.conditionalSections.push(convertedSection);
+				}
+			}
+		}
+
+		// Sort conditional questions within each option by order
+		for (const option of optionMap.values()) {
+			if (option.conditionalQuestions && option.conditionalQuestions.length > 1) {
+				option.conditionalQuestions.sort((a, b) => a.order - b.order);
+			}
+			if (option.conditionalSections && option.conditionalSections.length > 1) {
+				option.conditionalSections.sort((a, b) => a.order - b.order);
+			}
+		}
 
 		// Mark as initialized
 		isInitialized = true;
