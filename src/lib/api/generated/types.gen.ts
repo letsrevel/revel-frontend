@@ -4489,6 +4489,7 @@ export type SectionSchema = {
  * - RSVP: User's RSVP status (for non-ticketed events)
  * - Eligibility: Whether user can purchase tickets and why not
  * - Purchase limits: How many more tickets can be purchased
+ * - Feedback questionnaires: Available after event ends for attendees
  */
 export type EventUserStatusResponse = {
 	/**
@@ -4504,6 +4505,12 @@ export type EventUserStatusResponse = {
 	 * Remaining Tickets
 	 */
 	remaining_tickets?: number | null;
+	/**
+	 * Feedback Questionnaires
+	 *
+	 * List of questionnaire IDs available for feedback (only after event ends)
+	 */
+	feedback_questionnaires?: Array<string>;
 };
 
 /**

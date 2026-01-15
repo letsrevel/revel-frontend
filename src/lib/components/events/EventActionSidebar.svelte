@@ -29,7 +29,7 @@
 	import ActionButton from './ActionButton.svelte';
 	import EventRSVP from './EventRSVP.svelte';
 	import EligibilityStatusDisplay from './EligibilityStatusDisplay.svelte';
-	import { Check, Ticket, Settings, Users, Mail, CalendarDays } from 'lucide-svelte';
+	import { Check, Ticket, Settings, Users, Mail, CalendarDays, MessageSquare } from 'lucide-svelte';
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
 
 	interface Props {
@@ -218,6 +218,28 @@
 		if (userStatus.status !== 'pending') return false;
 		if (!userStatus.tier) return false;
 		return userStatus.tier.payment_method === 'online';
+	});
+
+	/**
+	 * Get feedback questionnaire IDs available for the user (after event ends)
+	 */
+	let feedbackQuestionnaires = $derived.by((): string[] => {
+		if (!userStatus) return [];
+		if (!isUserStatusResponse(userStatus)) return [];
+		return userStatus.feedback_questionnaires ?? [];
+	});
+
+	/**
+	 * Check if feedback questionnaires are available
+	 */
+	let hasFeedbackQuestionnaires = $derived(feedbackQuestionnaires.length > 0);
+
+	/**
+	 * Check if the event has ended (end date is in the past)
+	 */
+	let eventHasEnded = $derived.by(() => {
+		if (!event.end) return false;
+		return new Date(event.end) < new Date();
 	});
 
 	/**
@@ -437,27 +459,35 @@
 		<!-- Secondary Actions (if user is attending) -->
 		{#if isAttending && !shouldShowResumePayment}
 			<div class="space-y-2">
-				<button
-					type="button"
-					onclick={handleSecondaryAction}
-					class="w-full cursor-pointer rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				>
-					{#if userTickets.length > 0}
+				<!-- Show Ticket button (always available) or Change RSVP (only for ongoing events) -->
+				{#if userTickets.length > 0}
+					<button
+						type="button"
+						onclick={handleSecondaryAction}
+						class="w-full cursor-pointer rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>
 						<span class="flex items-center justify-center gap-2">
 							<Ticket class="h-4 w-4" aria-hidden="true" />
 							{userTickets.length === 1
 								? m['eventActionSidebar.showTicket']()
 								: m['eventActionSidebar.showTickets']({ count: userTickets.length })}
 						</span>
-					{:else}
+					</button>
+				{:else if !eventHasEnded}
+					<!-- Only show Change RSVP for ongoing/future events -->
+					<button
+						type="button"
+						onclick={handleSecondaryAction}
+						class="w-full cursor-pointer rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>
 						{showManageRSVP
 							? m['eventActionSidebar.hideRsvp']()
 							: m['eventActionSidebar.changeRsvp']()}
-					{/if}
-				</button>
+					</button>
+				{/if}
 
-				<!-- Buy More Tickets Button (if allowed) -->
-				{#if canPurchaseMore && event.requires_ticket}
+				<!-- Buy More Tickets Button (if allowed and event not ended) -->
+				{#if canPurchaseMore && event.requires_ticket && !eventHasEnded}
 					<button
 						type="button"
 						onclick={onGetTicketsClick}
@@ -487,6 +517,31 @@
 						{m['eventActionSidebar.addToCalendar']()}
 					</span>
 				</button>
+
+				<!-- Feedback Questionnaires (after event ends) -->
+				{#if hasFeedbackQuestionnaires}
+					<div
+						class="mt-4 rounded-md border-2 border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950/50"
+					>
+						<div class="mb-2 flex items-center gap-2 text-blue-900 dark:text-blue-100">
+							<MessageSquare class="h-5 w-5" aria-hidden="true" />
+							<span class="font-semibold">{m['eventActionSidebar.feedbackAvailable']()}</span>
+						</div>
+						<p class="mb-3 text-sm text-blue-800 dark:text-blue-200">
+							{m['eventActionSidebar.feedbackDescription']()}
+						</p>
+						{#each feedbackQuestionnaires as questionnaireId}
+							<a
+								href="/events/{event.organization
+									.slug}/{event.slug}/questionnaire/{questionnaireId}"
+								class="flex w-full items-center justify-center gap-2 rounded-md border-2 border-blue-600 bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-blue-500 dark:bg-blue-500"
+							>
+								<MessageSquare class="h-4 w-4" aria-hidden="true" />
+								{m['eventActionSidebar.giveFeedback']()}
+							</a>
+						{/each}
+					</div>
+				{/if}
 			</div>
 
 			<!-- Show EventRSVP when managing -->

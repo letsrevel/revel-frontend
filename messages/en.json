@@ -1216,7 +1216,12 @@
 		"manageTickets": "Manage Tickets",
 		"manageAttendees": "Manage Attendees",
 		"manageInvitations": "Manage Invitations",
-		"pendingPaymentDescription": "Complete your payment to confirm your ticket. Your reservation will expire if payment is not completed."
+		"pendingPaymentDescription": "Complete your payment to confirm your ticket. Your reservation will expire if payment is not completed.",
+		"feedbackAvailable": "Feedback Available",
+		"feedbackDescription": "Share your experience with the organizers",
+		"giveFeedback": "Give Feedback",
+		"feedbackQuestionnaires": "{count} feedback questionnaire available",
+		"feedbackQuestionnaires_plural": "{count} feedback questionnaires available"
 	},
 	"eventQuickInfo": {
 		"limitedSpots": "Limited spots remaining",

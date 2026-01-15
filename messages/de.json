@@ -1216,7 +1216,12 @@
 		"manageTickets": "Tickets verwalten",
 		"manageAttendees": "Teilnehmende verwalten",
 		"manageInvitations": "Einladungen verwalten",
-		"pendingPaymentDescription": "Schließe deine Zahlung ab, um dein Ticket zu bestätigen. Deine Reservierung verfällt, wenn die Zahlung nicht abgeschlossen wird."
+		"pendingPaymentDescription": "Schließe deine Zahlung ab, um dein Ticket zu bestätigen. Deine Reservierung verfällt, wenn die Zahlung nicht abgeschlossen wird.",
+		"feedbackAvailable": "Feedback verfügbar",
+		"feedbackDescription": "Teile deine Erfahrungen mit den Organisatoren",
+		"giveFeedback": "Feedback geben",
+		"feedbackQuestionnaires": "{count} Feedback-Fragebogen verfügbar",
+		"feedbackQuestionnaires_plural": "{count} Feedback-Fragebögen verfügbar"
 	},
 	"eventQuickInfo": {
 		"limitedSpots": "Begrenzte Plätze verfügbar",
