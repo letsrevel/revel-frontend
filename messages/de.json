@@ -4375,5 +4375,23 @@
 	"whitelistEntry": {
 		"verifiedAt": "Verifiziert",
 		"remove": "Entfernen"
+	},
+	"impersonatePage": {
+		"title": "Identitätswechsel",
+		"errorTitle": "Identitätswechsel fehlgeschlagen",
+		"missingTokenHelp": "Möglicherweise haben Sie diese Seite direkt aufgerufen. Bitte starten Sie den Identitätswechsel über das Admin-Panel.",
+		"invalidTokenHelp": "Das Identitätswechsel-Token ist abgelaufen oder wurde bereits verwendet. Bitte starten Sie eine neue Sitzung über das Admin-Panel.",
+		"forbiddenHelp": "Der Benutzer, dessen Identität Sie annehmen möchten, hat möglicherweise zwischenzeitlich Mitarbeiter- oder Administratorrechte erhalten.",
+		"genericHelp": "Bitte versuchen Sie es später erneut oder kontaktieren Sie den Support, wenn das Problem weiterhin besteht.",
+		"goToLogin": "Zur Anmeldung",
+		"retry": "Erneut versuchen"
+	},
+	"impersonationBanner": {
+		"title": "Identitätswechsel-Modus",
+		"by": "Von",
+		"expired": "Sitzung abgelaufen",
+		"timeRemainingTitle": "Verbleibende Zeit bis zum Ablauf der Sitzung",
+		"timeRemainingLabel": "{time} verbleibend",
+		"notice": "Sie sehen diese Anwendung als ein anderer Benutzer. Alle Aktionen werden protokolliert und dem nachgeahmten Benutzer zugeordnet."
 	}
 }

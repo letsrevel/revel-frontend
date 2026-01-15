@@ -6,6 +6,7 @@ import {
 	permissionMyPermissions
 } from '$lib/api/client';
 import { setLocale } from '$lib/paraglide/runtime.js';
+import { getImpersonationInfo, type ImpersonationInfo } from '$lib/utils/impersonation';
 
 /**
  * Auth store using Svelte 5 Runes
@@ -43,6 +44,21 @@ class AuthStore {
 
 	get isLoading() {
 		return this._isLoading;
+	}
+
+	/**
+	 * Get impersonation info from the current access token
+	 * Returns information about whether this is an impersonated session
+	 */
+	get impersonationInfo(): ImpersonationInfo {
+		return getImpersonationInfo(this._accessToken);
+	}
+
+	/**
+	 * Check if the current session is impersonated
+	 */
+	get isImpersonated(): boolean {
+		return this.impersonationInfo.isImpersonated;
 	}
 
 	/**
@@ -200,8 +216,19 @@ class AuthStore {
 	 * This method uses a shared promise to ensure only ONE refresh happens at a time,
 	 * even if called from multiple sources (proactive timer + reactive interceptor).
 	 * Concurrent calls will wait for the in-flight refresh to complete.
+	 *
+	 * IMPERSONATION: Refresh is disabled for impersonated sessions.
+	 * Impersonation sessions are intentionally limited to 15 minutes
+	 * and cannot be extended.
 	 */
 	async refreshAccessToken(): Promise<void> {
+		// IMPORTANT: Do NOT refresh impersonated sessions
+		// Impersonation tokens are intentionally short-lived and non-renewable
+		if (this.isImpersonated) {
+			console.log('[AUTH STORE] Impersonation session - refresh disabled');
+			throw new Error('Impersonation sessions cannot be refreshed');
+		}
+
 		// If refresh is already in progress, wait for it to complete
 		if (this._refreshPromise) {
 			console.log('[AUTH STORE] Refresh already in progress, waiting...');
@@ -376,6 +403,9 @@ class AuthStore {
 	 *
 	 * IMPORTANT: Always call this after setting/updating the access token
 	 * to ensure the refresh chain continues.
+	 *
+	 * IMPERSONATION: For impersonated sessions, we schedule a logout
+	 * instead of a refresh. Impersonation sessions cannot be extended.
 	 */
 	private scheduleTokenRefresh(token: string): void {
 		// Clear any existing timer
@@ -392,16 +422,41 @@ class AuthStore {
 			return;
 		}
 
-		// Calculate time until refresh (5 minutes before expiration for buffer)
+		// Calculate time until expiration
 		const expiresAt = decoded.exp * 1000; // Convert to milliseconds
 		const now = Date.now();
-		const refreshBuffer = 5 * 60 * 1000; // 5 minutes in milliseconds (increased from 3)
-		const timeUntilRefresh = expiresAt - now - refreshBuffer;
-
 		const expiresInMinutes = Math.round((expiresAt - now) / 60000);
-		const refreshInMinutes = Math.round(timeUntilRefresh / 60000);
 
 		console.log(`[AUTH STORE] Token expires in ${expiresInMinutes} minutes`);
+
+		// Check if this is an impersonated session
+		const impersonationInfo = getImpersonationInfo(token);
+		if (impersonationInfo.isImpersonated) {
+			// For impersonation sessions: schedule logout when token expires
+			// Do NOT attempt to refresh - impersonation sessions are intentionally limited
+			const timeUntilExpiry = expiresAt - now;
+
+			if (timeUntilExpiry <= 0) {
+				console.log('[AUTH STORE] Impersonation session expired, logging out');
+				this.logout();
+				return;
+			}
+
+			console.log(
+				`[AUTH STORE] Impersonation session - scheduling logout in ${expiresInMinutes} minutes`
+			);
+
+			this._tokenExpiryTimer = setTimeout(() => {
+				console.log('[AUTH STORE] Impersonation session expired, logging out');
+				this.logout();
+			}, timeUntilExpiry);
+			return;
+		}
+
+		// Regular session: schedule refresh 5 minutes before expiration
+		const refreshBuffer = 5 * 60 * 1000; // 5 minutes in milliseconds
+		const timeUntilRefresh = expiresAt - now - refreshBuffer;
+		const refreshInMinutes = Math.round(timeUntilRefresh / 60000);
 
 		// If token expires in less than 5 minutes, refresh immediately
 		if (timeUntilRefresh <= 0) {

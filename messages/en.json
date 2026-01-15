@@ -4375,5 +4375,23 @@
 	"whitelistEntry": {
 		"verifiedAt": "Verified",
 		"remove": "Remove"
+	},
+	"impersonatePage": {
+		"title": "Impersonation",
+		"errorTitle": "Impersonation Failed",
+		"missingTokenHelp": "You may have arrived at this page directly. Please initiate impersonation from the admin panel.",
+		"invalidTokenHelp": "The impersonation token has expired or has already been used. Please initiate a new impersonation session from the admin panel.",
+		"forbiddenHelp": "The user you are trying to impersonate may have been granted staff or superuser privileges since the impersonation was initiated.",
+		"genericHelp": "Please try again later or contact support if the problem persists.",
+		"goToLogin": "Go to Login",
+		"retry": "Try Again"
+	},
+	"impersonationBanner": {
+		"title": "Impersonation Mode",
+		"by": "By",
+		"expired": "Session Expired",
+		"timeRemainingTitle": "Time remaining until session expires",
+		"timeRemainingLabel": "{time} remaining",
+		"notice": "You are viewing this application as another user. All actions will be logged and attributed to the impersonated user."
 	}
 }
