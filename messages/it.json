@@ -1216,7 +1216,12 @@
 		"manageTickets": "Gestisci biglietti",
 		"manageAttendees": "Gestisci partecipanti",
 		"manageInvitations": "Gestisci inviti",
-		"pendingPaymentDescription": "Completa il pagamento per confermare il tuo biglietto. La tua prenotazione scadrà se il pagamento non viene completato."
+		"pendingPaymentDescription": "Completa il pagamento per confermare il tuo biglietto. La tua prenotazione scadrà se il pagamento non viene completato.",
+		"feedbackAvailable": "Feedback disponibile",
+		"feedbackDescription": "Condividi la tua esperienza con gli organizzatori",
+		"giveFeedback": "Lascia un feedback",
+		"feedbackQuestionnaires": "{count} questionario di feedback disponibile",
+		"feedbackQuestionnaires_plural": "{count} questionari di feedback disponibili"
 	},
 	"eventQuickInfo": {
 		"limitedSpots": "Posti limitati disponibili",
