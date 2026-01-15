@@ -165,13 +165,16 @@
 	}
 
 	// Convert API section to local format
-	function convertApiSection(apiSection: any): Section {
-		const mcQuestions = (apiSection.multiplechoicequestion_questions || []).map(
-			(apiQ: any, i: number) => convertApiMcQuestion(apiQ, apiQ.order ?? i)
-		);
-		const ftQuestions = (apiSection.freetextquestion_questions || []).map((apiQ: any, i: number) =>
-			convertApiFtQuestion(apiQ, apiQ.order ?? mcQuestions.length + i)
-		);
+	// conditionalQuestionIds is optional - if provided, those questions will be excluded
+	function convertApiSection(apiSection: any, conditionalQuestionIds?: Set<string>): Section {
+		const mcQuestions = (apiSection.multiplechoicequestion_questions || [])
+			.filter((apiQ: any) => !conditionalQuestionIds?.has(apiQ.id))
+			.map((apiQ: any, i: number) => convertApiMcQuestion(apiQ, apiQ.order ?? i));
+		const ftQuestions = (apiSection.freetextquestion_questions || [])
+			.filter((apiQ: any) => !conditionalQuestionIds?.has(apiQ.id))
+			.map((apiQ: any, i: number) =>
+				convertApiFtQuestion(apiQ, apiQ.order ?? mcQuestions.length + i)
+			);
 
 		return {
 			id: crypto.randomUUID(),
@@ -267,9 +270,10 @@
 		topLevelQuestions = [...topMc, ...topFt].sort((a, b) => a.order - b.order);
 
 		// ===== Step 4: Convert sections, excluding conditional sections =====
+		// Also pass conditionalQuestionIds so section questions that are conditional get filtered out
 		sections = (q.sections || [])
 			.filter((apiSection: any) => !conditionalSectionIds.has(apiSection.id))
-			.map(convertApiSection)
+			.map((apiSection: any) => convertApiSection(apiSection, conditionalQuestionIds))
 			.sort((a: Section, b: Section) => a.order - b.order);
 
 		// ===== Step 5: Build a map of option API IDs to option objects =====
@@ -301,33 +305,51 @@
 		}
 
 		// ===== Step 6: Attach conditional questions to their parent options =====
-		// Conditional MC questions
-		for (const apiQ of q.multiplechoicequestion_questions || []) {
-			if (apiQ.depends_on_option_id && conditionalQuestionIds.has(apiQ.id)) {
-				const parentOption = optionMap.get(apiQ.depends_on_option_id);
-				if (parentOption) {
-					const convertedQ = convertApiMcQuestion(apiQ, apiQ.order ?? 0);
-					parentOption.conditionalQuestions = parentOption.conditionalQuestions || [];
-					parentOption.conditionalQuestions.push(convertedQ);
-					// Also add nested options to the map
-					if (convertedQ.options) {
-						for (const opt of convertedQ.options) {
-							if (opt._apiId) optionMap.set(opt._apiId, opt);
-						}
+		// Helper function to process conditional questions
+		function attachConditionalQuestion(apiQ: any, type: 'mc' | 'ft') {
+			if (!apiQ.depends_on_option_id || !conditionalQuestionIds.has(apiQ.id)) return;
+
+			const parentOption = optionMap.get(apiQ.depends_on_option_id);
+			if (parentOption) {
+				// Check if already attached (to avoid duplicates)
+				const existingIds = new Set(
+					parentOption.conditionalQuestions?.map((q: Question) => q._apiId) || []
+				);
+				if (existingIds.has(apiQ.id)) return;
+
+				const convertedQ =
+					type === 'mc'
+						? convertApiMcQuestion(apiQ, apiQ.order ?? 0)
+						: convertApiFtQuestion(apiQ, apiQ.order ?? 0);
+				parentOption.conditionalQuestions = parentOption.conditionalQuestions || [];
+				parentOption.conditionalQuestions.push(convertedQ);
+
+				// Also add nested options to the map (for MC questions)
+				if (type === 'mc' && convertedQ.options) {
+					for (const opt of convertedQ.options) {
+						if (opt._apiId) optionMap.set(opt._apiId, opt);
 					}
 				}
 			}
 		}
 
-		// Conditional FT questions
+		// Conditional MC questions - check both top-level and within sections
+		for (const apiQ of q.multiplechoicequestion_questions || []) {
+			attachConditionalQuestion(apiQ, 'mc');
+		}
+		for (const apiSection of q.sections || []) {
+			for (const apiQ of apiSection.multiplechoicequestion_questions || []) {
+				attachConditionalQuestion(apiQ, 'mc');
+			}
+		}
+
+		// Conditional FT questions - check both top-level and within sections
 		for (const apiQ of q.freetextquestion_questions || []) {
-			if (apiQ.depends_on_option_id && conditionalQuestionIds.has(apiQ.id)) {
-				const parentOption = optionMap.get(apiQ.depends_on_option_id);
-				if (parentOption) {
-					const convertedQ = convertApiFtQuestion(apiQ, apiQ.order ?? 0);
-					parentOption.conditionalQuestions = parentOption.conditionalQuestions || [];
-					parentOption.conditionalQuestions.push(convertedQ);
-				}
+			attachConditionalQuestion(apiQ, 'ft');
+		}
+		for (const apiSection of q.sections || []) {
+			for (const apiQ of apiSection.freetextquestion_questions || []) {
+				attachConditionalQuestion(apiQ, 'ft');
 			}
 		}
 
@@ -823,12 +845,14 @@
 				if (section._apiId) {
 					localSectionApiIds.add(section._apiId);
 					// Update existing section
+					// Note: depends_on_option_id included for conditional sections
 					await questionnaireUpdateSection({
 						path: { org_questionnaire_id: orgQuestionnaireId, section_id: section._apiId },
 						body: {
 							name: section.name,
 							description: section.description || null,
-							order: section.order
+							order: section.order,
+							depends_on_option_id: (section as any)._dependsOnOptionId ?? null
 						},
 						headers: authHeader
 					});
@@ -924,12 +948,20 @@
 		orgQuestionnaireId: string
 	) {
 		// Get existing questions in this section from API
+		// IMPORTANT: Filter out conditional questions (those with depends_on_option_id)
+		// They are managed separately via option.conditionalQuestions
 		const apiSection = (q?.sections || []).find((s: any) => s.id === sectionApiId);
 		const existingMcIds = new Set(
-			(apiSection?.multiplechoicequestion_questions || []).map((q: any) => q.id).filter(Boolean)
+			(apiSection?.multiplechoicequestion_questions || [])
+				.filter((q: any) => !q.depends_on_option_id)
+				.map((q: any) => q.id)
+				.filter(Boolean)
 		);
 		const existingFtIds = new Set(
-			(apiSection?.freetextquestion_questions || []).map((q: any) => q.id).filter(Boolean)
+			(apiSection?.freetextquestion_questions || [])
+				.filter((q: any) => !q.depends_on_option_id)
+				.map((q: any) => q.id)
+				.filter(Boolean)
 		);
 
 		const localMcApiIds = new Set<string>();
@@ -990,11 +1022,13 @@
 	async function syncMcQuestion(
 		question: Question,
 		authHeader: { Authorization: string },
-		orgQuestionnaireId: string
+		orgQuestionnaireId: string,
+		dependsOnOptionId?: string | null
 	) {
 		if (!question._apiId) return;
 
 		// Update the question
+		// IMPORTANT: Include depends_on_option_id to preserve conditional question relationships
 		await questionnaireUpdateMcQuestion({
 			path: { org_questionnaire_id: orgQuestionnaireId, question_id: question._apiId },
 			body: {
@@ -1005,7 +1039,8 @@
 				negative_weight: String(question.negativeWeight),
 				is_fatal: question.isFatal,
 				allow_multiple_answers: question.allowMultipleAnswers || false,
-				shuffle_options: question.shuffleOptions ?? true
+				shuffle_options: question.shuffleOptions ?? true,
+				depends_on_option_id: dependsOnOptionId ?? null
 			},
 			headers: authHeader
 		});
@@ -1043,6 +1078,9 @@
 		const existingOptionIds = new Set(existingOptions.map((o: any) => o.id).filter(Boolean));
 		const localOptionApiIds = new Set<string>();
 
+		// Track options and their API IDs for syncing conditional questions
+		const optionsToSync: { option: Option; apiId: string }[] = [];
+
 		for (let i = 0; i < (question.options || []).length; i++) {
 			const option = question.options![i];
 			if (option._apiId) {
@@ -1057,9 +1095,11 @@
 					},
 					headers: authHeader
 				});
+				// Track for conditional question sync
+				optionsToSync.push({ option, apiId: option._apiId });
 			} else if (option.text.trim()) {
 				// Create new option
-				await questionnaireCreateMcOption({
+				const response = await questionnaireCreateMcOption({
 					path: { org_questionnaire_id: orgQuestionnaireId, question_id: question._apiId },
 					body: {
 						option: option.text,
@@ -1068,6 +1108,11 @@
 					},
 					headers: authHeader
 				});
+				// Track newly created option for conditional question sync
+				const newOptionId = (response.data as { id?: string })?.id;
+				if (newOptionId) {
+					optionsToSync.push({ option, apiId: newOptionId });
+				}
 			}
 		}
 
@@ -1080,15 +1125,24 @@
 				});
 			}
 		}
+
+		// Sync conditional questions and sections for each option
+		// We sync ALL options (not just ones with conditional content) to handle deletions
+		for (const { option, apiId } of optionsToSync) {
+			await syncConditionalQuestions(option, apiId, authHeader, orgQuestionnaireId);
+			await syncConditionalSections(option, apiId, authHeader, orgQuestionnaireId);
+		}
 	}
 
 	async function syncFtQuestion(
 		question: Question,
 		authHeader: { Authorization: string },
-		orgQuestionnaireId: string
+		orgQuestionnaireId: string,
+		dependsOnOptionId?: string | null
 	) {
 		if (!question._apiId) return;
 
+		// IMPORTANT: Include depends_on_option_id to preserve conditional question relationships
 		await questionnaireUpdateFtQuestion({
 			path: { org_questionnaire_id: orgQuestionnaireId, question_id: question._apiId },
 			body: {
@@ -1098,7 +1152,8 @@
 				positive_weight: String(question.positiveWeight),
 				negative_weight: String(question.negativeWeight),
 				is_fatal: question.isFatal,
-				llm_guidelines: question.llmGuidelines || null
+				llm_guidelines: question.llmGuidelines || null,
+				depends_on_option_id: dependsOnOptionId ?? null
 			},
 			headers: authHeader
 		});
@@ -1108,34 +1163,256 @@
 		question: Question,
 		sectionId: string | null,
 		authHeader: { Authorization: string },
-		orgQuestionnaireId: string
+		orgQuestionnaireId: string,
+		dependsOnOptionId?: string | null
 	) {
 		const apiFormat = mcQuestionToApiFormat(question);
-		await questionnaireCreateMcQuestion({
+		const response = await questionnaireCreateMcQuestion({
 			path: { org_questionnaire_id: orgQuestionnaireId },
 			body: {
 				section_id: sectionId,
+				depends_on_option_id: dependsOnOptionId || null,
 				...apiFormat
 			},
 			headers: authHeader
 		});
+		return response.data;
 	}
 
 	async function createFtQuestion(
 		question: Question,
 		sectionId: string | null,
 		authHeader: { Authorization: string },
-		orgQuestionnaireId: string
+		orgQuestionnaireId: string,
+		dependsOnOptionId?: string | null
 	) {
 		const apiFormat = ftQuestionToApiFormat(question);
-		await questionnaireCreateFtQuestion({
+		const response = await questionnaireCreateFtQuestion({
 			path: { org_questionnaire_id: orgQuestionnaireId },
 			body: {
 				section_id: sectionId,
+				depends_on_option_id: dependsOnOptionId || null,
 				...apiFormat
 			},
 			headers: authHeader
 		});
+		return response.data;
+	}
+
+	// Sync conditional questions for an option
+	async function syncConditionalQuestions(
+		option: Option,
+		optionApiId: string,
+		authHeader: { Authorization: string },
+		orgQuestionnaireId: string
+	) {
+		const conditionalQuestions = option.conditionalQuestions || [];
+
+		// Get existing conditional questions for this option from API
+		// We need to find them across all questions in the questionnaire
+		const existingConditionalMcIds = new Set<string>();
+		const existingConditionalFtIds = new Set<string>();
+
+		// Check top-level questions
+		for (const apiQ of q?.multiplechoicequestion_questions || []) {
+			if (apiQ.depends_on_option_id === optionApiId) {
+				existingConditionalMcIds.add(apiQ.id);
+			}
+		}
+		for (const apiQ of q?.freetextquestion_questions || []) {
+			if (apiQ.depends_on_option_id === optionApiId) {
+				existingConditionalFtIds.add(apiQ.id);
+			}
+		}
+
+		// Check section questions
+		for (const apiSection of q?.sections || []) {
+			for (const apiQ of apiSection.multiplechoicequestion_questions || []) {
+				if (apiQ.depends_on_option_id === optionApiId) {
+					existingConditionalMcIds.add(apiQ.id);
+				}
+			}
+			for (const apiQ of apiSection.freetextquestion_questions || []) {
+				if (apiQ.depends_on_option_id === optionApiId) {
+					existingConditionalFtIds.add(apiQ.id);
+				}
+			}
+		}
+
+		const localConditionalMcIds = new Set<string>();
+		const localConditionalFtIds = new Set<string>();
+
+		// Sync each conditional question
+		for (const condQ of conditionalQuestions) {
+			if (condQ.type === 'multiple_choice') {
+				if (condQ._apiId) {
+					localConditionalMcIds.add(condQ._apiId);
+					// Update existing conditional question - pass optionApiId to preserve dependency
+					await syncMcQuestion(condQ, authHeader, orgQuestionnaireId, optionApiId);
+				} else {
+					// Create new conditional question
+					await createMcQuestion(condQ, null, authHeader, orgQuestionnaireId, optionApiId);
+				}
+			} else {
+				if (condQ._apiId) {
+					localConditionalFtIds.add(condQ._apiId);
+					// Update existing conditional question - pass optionApiId to preserve dependency
+					await syncFtQuestion(condQ, authHeader, orgQuestionnaireId, optionApiId);
+				} else {
+					// Create new conditional question
+					await createFtQuestion(condQ, null, authHeader, orgQuestionnaireId, optionApiId);
+				}
+			}
+		}
+
+		// Delete removed conditional questions
+		for (const existingId of existingConditionalMcIds) {
+			if (!localConditionalMcIds.has(existingId)) {
+				await questionnaireDeleteMcQuestion({
+					path: { org_questionnaire_id: orgQuestionnaireId, question_id: existingId },
+					headers: authHeader
+				});
+			}
+		}
+		for (const existingId of existingConditionalFtIds) {
+			if (!localConditionalFtIds.has(existingId)) {
+				await questionnaireDeleteFtQuestion({
+					path: { org_questionnaire_id: orgQuestionnaireId, question_id: existingId },
+					headers: authHeader
+				});
+			}
+		}
+	}
+
+	// Sync conditional sections for an option
+	async function syncConditionalSections(
+		option: Option,
+		optionApiId: string,
+		authHeader: { Authorization: string },
+		orgQuestionnaireId: string
+	) {
+		const conditionalSections = option.conditionalSections || [];
+
+		// Get existing conditional sections for this option from API
+		const existingConditionalSectionIds = new Set<string>();
+
+		for (const apiSection of q?.sections || []) {
+			if (apiSection.depends_on_option_id === optionApiId) {
+				existingConditionalSectionIds.add(apiSection.id);
+			}
+		}
+
+		const localConditionalSectionIds = new Set<string>();
+
+		// Sync each conditional section
+		for (const condSection of conditionalSections) {
+			if ((condSection as any)._apiId) {
+				const apiId = (condSection as any)._apiId;
+				localConditionalSectionIds.add(apiId);
+				// Update existing conditional section
+				await questionnaireUpdateSection({
+					path: { org_questionnaire_id: orgQuestionnaireId, section_id: apiId },
+					body: {
+						name: condSection.name,
+						description: condSection.description || null,
+						order: condSection.order,
+						depends_on_option_id: optionApiId
+					},
+					headers: authHeader
+				});
+				// Sync questions in this conditional section
+				await syncConditionalSectionQuestions(condSection, apiId, authHeader, orgQuestionnaireId);
+			} else {
+				// Create new conditional section
+				const sectionResponse = await questionnaireCreateSection({
+					path: { org_questionnaire_id: orgQuestionnaireId },
+					body: {
+						name: condSection.name,
+						description: condSection.description || null,
+						order: condSection.order,
+						depends_on_option_id: optionApiId
+					},
+					headers: authHeader
+				});
+				const sectionData = sectionResponse.data as { id?: string } | undefined;
+				if (sectionData?.id) {
+					// Create questions in new conditional section
+					await createSectionQuestions(
+						condSection as any,
+						sectionData.id,
+						authHeader,
+						orgQuestionnaireId
+					);
+				}
+			}
+		}
+
+		// Delete removed conditional sections
+		for (const existingId of existingConditionalSectionIds) {
+			if (!localConditionalSectionIds.has(existingId)) {
+				await questionnaireDeleteSection({
+					path: { org_questionnaire_id: orgQuestionnaireId, section_id: existingId },
+					headers: authHeader
+				});
+			}
+		}
+	}
+
+	// Sync questions in a conditional section (similar to syncSectionQuestions but for conditional sections)
+	async function syncConditionalSectionQuestions(
+		section: ConditionalSection,
+		sectionApiId: string,
+		authHeader: { Authorization: string },
+		orgQuestionnaireId: string
+	) {
+		// Get existing questions in this section from API
+		const apiSection = (q?.sections || []).find((s: any) => s.id === sectionApiId);
+		const existingMcIds = new Set(
+			(apiSection?.multiplechoicequestion_questions || []).map((q: any) => q.id).filter(Boolean)
+		);
+		const existingFtIds = new Set(
+			(apiSection?.freetextquestion_questions || []).map((q: any) => q.id).filter(Boolean)
+		);
+
+		const localMcIds = new Set<string>();
+		const localFtIds = new Set<string>();
+
+		// Sync each question
+		for (const question of section.questions) {
+			if (question.type === 'multiple_choice') {
+				if (question._apiId) {
+					localMcIds.add(question._apiId);
+					await syncMcQuestion(question, authHeader, orgQuestionnaireId);
+				} else {
+					await createMcQuestion(question, sectionApiId, authHeader, orgQuestionnaireId);
+				}
+			} else {
+				if (question._apiId) {
+					localFtIds.add(question._apiId);
+					await syncFtQuestion(question, authHeader, orgQuestionnaireId);
+				} else {
+					await createFtQuestion(question, sectionApiId, authHeader, orgQuestionnaireId);
+				}
+			}
+		}
+
+		// Delete removed questions
+		for (const existingId of existingMcIds) {
+			if (!localMcIds.has(existingId)) {
+				await questionnaireDeleteMcQuestion({
+					path: { org_questionnaire_id: orgQuestionnaireId, question_id: existingId },
+					headers: authHeader
+				});
+			}
+		}
+		for (const existingId of existingFtIds) {
+			if (!localFtIds.has(existingId)) {
+				await questionnaireDeleteFtQuestion({
+					path: { org_questionnaire_id: orgQuestionnaireId, question_id: existingId },
+					headers: authHeader
+				});
+			}
+		}
 	}
 </script>
 
@@ -1906,6 +2183,77 @@
 														</span>
 														<span class={option.isCorrect ? 'font-medium' : ''}>{option.text}</span>
 													</div>
+													<!-- Display conditional questions for this option -->
+													{#if option.conditionalQuestions && option.conditionalQuestions.length > 0}
+														<div class="ml-6 mt-2 space-y-2 border-l-2 border-primary/30 pl-4">
+															<p class="text-xs font-medium text-muted-foreground">
+																↳ If selected, show:
+															</p>
+															{#each option.conditionalQuestions as condQ}
+																<div class="rounded border bg-muted/50 p-3">
+																	<div class="mb-1 flex items-center gap-2">
+																		<span
+																			class="rounded px-2 py-0.5 text-xs font-medium {condQ.type ===
+																			'multiple_choice'
+																				? 'bg-blue-100 text-blue-700'
+																				: 'bg-purple-100 text-purple-700'}"
+																		>
+																			{condQ.type === 'multiple_choice' ? 'MC' : 'FT'}
+																		</span>
+																		{#if condQ.required}
+																			<span class="text-xs text-destructive">Required</span>
+																		{/if}
+																	</div>
+																	<p class="text-sm">{condQ.text}</p>
+																	{#if condQ.type === 'multiple_choice' && condQ.options}
+																		<div class="mt-1 space-y-0.5">
+																			{#each condQ.options as condOpt}
+																				<div
+																					class="flex items-center gap-1 text-xs text-muted-foreground"
+																				>
+																					<span>{condOpt.isCorrect ? '✓' : '○'}</span>
+																					<span>{condOpt.text}</span>
+																				</div>
+																			{/each}
+																		</div>
+																	{/if}
+																</div>
+															{/each}
+														</div>
+													{/if}
+													<!-- Display conditional sections for this option -->
+													{#if option.conditionalSections && option.conditionalSections.length > 0}
+														<div class="ml-6 mt-2 space-y-2 border-l-2 border-green-500/30 pl-4">
+															<p class="text-xs font-medium text-muted-foreground">
+																↳ If selected, show section:
+															</p>
+															{#each option.conditionalSections as condSection}
+																<div class="rounded border border-green-500/50 bg-green-50/50 p-3">
+																	<p class="mb-2 text-sm font-medium">{condSection.name}</p>
+																	{#if condSection.description}
+																		<p class="mb-2 text-xs text-muted-foreground">
+																			{condSection.description}
+																		</p>
+																	{/if}
+																	{#each condSection.questions as condQ}
+																		<div class="mt-2 rounded border bg-background p-2">
+																			<div class="mb-1 flex items-center gap-2">
+																				<span
+																					class="rounded px-2 py-0.5 text-xs font-medium {condQ.type ===
+																					'multiple_choice'
+																						? 'bg-blue-100 text-blue-700'
+																						: 'bg-purple-100 text-purple-700'}"
+																				>
+																					{condQ.type === 'multiple_choice' ? 'MC' : 'FT'}
+																				</span>
+																			</div>
+																			<p class="text-sm">{condQ.text}</p>
+																		</div>
+																	{/each}
+																</div>
+															{/each}
+														</div>
+													{/if}
 												{/each}
 											</div>
 										{/if}
@@ -1954,6 +2302,77 @@
 														</span>
 														<span class={option.isCorrect ? 'font-medium' : ''}>{option.text}</span>
 													</div>
+													<!-- Display conditional questions for this option -->
+													{#if option.conditionalQuestions && option.conditionalQuestions.length > 0}
+														<div class="ml-6 mt-2 space-y-2 border-l-2 border-primary/30 pl-4">
+															<p class="text-xs font-medium text-muted-foreground">
+																↳ If selected, show:
+															</p>
+															{#each option.conditionalQuestions as condQ}
+																<div class="rounded border bg-muted/50 p-3">
+																	<div class="mb-1 flex items-center gap-2">
+																		<span
+																			class="rounded px-2 py-0.5 text-xs font-medium {condQ.type ===
+																			'multiple_choice'
+																				? 'bg-blue-100 text-blue-700'
+																				: 'bg-purple-100 text-purple-700'}"
+																		>
+																			{condQ.type === 'multiple_choice' ? 'MC' : 'FT'}
+																		</span>
+																		{#if condQ.required}
+																			<span class="text-xs text-destructive">Required</span>
+																		{/if}
+																	</div>
+																	<p class="text-sm">{condQ.text}</p>
+																	{#if condQ.type === 'multiple_choice' && condQ.options}
+																		<div class="mt-1 space-y-0.5">
+																			{#each condQ.options as condOpt}
+																				<div
+																					class="flex items-center gap-1 text-xs text-muted-foreground"
+																				>
+																					<span>{condOpt.isCorrect ? '✓' : '○'}</span>
+																					<span>{condOpt.text}</span>
+																				</div>
+																			{/each}
+																		</div>
+																	{/if}
+																</div>
+															{/each}
+														</div>
+													{/if}
+													<!-- Display conditional sections for this option -->
+													{#if option.conditionalSections && option.conditionalSections.length > 0}
+														<div class="ml-6 mt-2 space-y-2 border-l-2 border-green-500/30 pl-4">
+															<p class="text-xs font-medium text-muted-foreground">
+																↳ If selected, show section:
+															</p>
+															{#each option.conditionalSections as condSection}
+																<div class="rounded border border-green-500/50 bg-green-50/50 p-3">
+																	<p class="mb-2 text-sm font-medium">{condSection.name}</p>
+																	{#if condSection.description}
+																		<p class="mb-2 text-xs text-muted-foreground">
+																			{condSection.description}
+																		</p>
+																	{/if}
+																	{#each condSection.questions as condQ}
+																		<div class="mt-2 rounded border bg-background p-2">
+																			<div class="mb-1 flex items-center gap-2">
+																				<span
+																					class="rounded px-2 py-0.5 text-xs font-medium {condQ.type ===
+																					'multiple_choice'
+																						? 'bg-blue-100 text-blue-700'
+																						: 'bg-purple-100 text-purple-700'}"
+																				>
+																					{condQ.type === 'multiple_choice' ? 'MC' : 'FT'}
+																				</span>
+																			</div>
+																			<p class="text-sm">{condQ.text}</p>
+																		</div>
+																	{/each}
+																</div>
+															{/each}
+														</div>
+													{/if}
 												{/each}
 											</div>
 										{/if}
