@@ -1026,19 +1026,28 @@
 	<Card
 		class="mb-6 {currentStatus === 'draft'
 			? 'border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-950/30'
-			: ''}"
+			: currentStatus === 'ready'
+				? 'border-blue-300 bg-blue-50 dark:border-blue-700 dark:bg-blue-950/30'
+				: ''}"
 	>
 		<CardHeader>
 			<div class="flex items-center justify-between">
 				<div>
 					<CardTitle>{m['questionnaireEditPage.status.title']()}</CardTitle>
 					<CardDescription
-						class={currentStatus === 'draft' ? 'text-amber-700 dark:text-amber-300' : ''}
-						>{m['questionnaireEditPage.status.description']()}</CardDescription
+						class={currentStatus === 'draft'
+							? 'text-amber-700 dark:text-amber-300'
+							: currentStatus === 'ready'
+								? 'text-blue-700 dark:text-blue-300'
+								: ''}>{m['questionnaireEditPage.status.description']()}</CardDescription
 					>
 				</div>
 				{#if currentStatus === 'draft'}
 					<Badge class="bg-amber-500 text-sm text-white hover:bg-amber-600">
+						{currentStatusInfo.label}
+					</Badge>
+				{:else if currentStatus === 'ready'}
+					<Badge class="bg-blue-500 text-sm text-white hover:bg-blue-600">
 						{currentStatusInfo.label}
 					</Badge>
 				{:else}
@@ -1053,10 +1062,27 @@
 				<p
 					class="text-sm {currentStatus === 'draft'
 						? 'text-amber-700 dark:text-amber-300'
-						: 'text-muted-foreground'}"
+						: currentStatus === 'ready'
+							? 'text-blue-700 dark:text-blue-300'
+							: 'text-muted-foreground'}"
 				>
 					{currentStatusInfo.description}
 				</p>
+
+				{#if currentStatus === 'ready'}
+					<!-- Warning for "ready" but not published status -->
+					<div
+						class="flex items-start gap-3 rounded-lg border border-orange-300 bg-orange-50 p-4 dark:border-orange-700 dark:bg-orange-950/50"
+					>
+						<AlertTriangle
+							class="h-5 w-5 flex-shrink-0 text-orange-600 dark:text-orange-400"
+							aria-hidden="true"
+						/>
+						<p class="text-sm font-medium text-orange-800 dark:text-orange-200">
+							{m['questionnaireEditPage.status.ready_warning']()}
+						</p>
+					</div>
+				{/if}
 
 				<div class="flex flex-wrap gap-2">
 					{#if currentStatus !== 'draft'}

@@ -1405,7 +1405,12 @@
 		"type_admission": "Admission",
 		"type_membership": "Membership",
 		"type_feedback": "Feedback",
-		"type_generic": "Generic"
+		"type_generic": "Generic",
+		"status_draft": "Draft",
+		"status_ready": "Ready",
+		"status_published": "Published",
+		"unpublishedWarning": "One or more questionnaires are not published. Users will not be required to complete them until they are published.",
+		"notEnforcedTooltip": "Not enforced - questionnaire must be published"
 	},
 	"eventResourcesAdmin": {
 		"attachResources": "Attach Resources",
@@ -3292,6 +3297,7 @@
 			"draft_description": "Questionnaire is being created and not yet ready for use",
 			"ready_label": "Ready",
 			"ready_description": "Questionnaire is complete and ready to be published",
+			"ready_warning": "This questionnaire is not yet enforced. You must publish it for users to be required to complete it before participating in assigned events.",
 			"published_label": "Published",
 			"published_description": "Questionnaire is live and can be assigned to events",
 			"markAsDraftButton": "Mark as Draft",
