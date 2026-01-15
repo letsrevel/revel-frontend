@@ -60,40 +60,42 @@
 	let { data }: Props = $props();
 
 	// Initialize form state from existing questionnaire (reactive)
-	const questionnaire = $derived(data.questionnaire!);
-	let name = $state(questionnaire.questionnaire.name);
-	let questionnaireType = $state(questionnaire.questionnaire_type);
-	let minScore = $state(Number(questionnaire.questionnaire.min_score));
+	const questionnaire = $derived(data.questionnaire);
+
+	// Early return if questionnaire is not loaded
+	const isLoaded = $derived(!!questionnaire?.questionnaire);
+
+	// Safe access to nested questionnaire
+	const q = $derived(questionnaire?.questionnaire);
+
+	let name = $state(q?.name ?? '');
+	let questionnaireType = $state(questionnaire?.questionnaire_type ?? 'admission');
+	let minScore = $state(Number(q?.min_score ?? 0));
 	let evaluationMode = $state<QuestionnaireEvaluationMode>(
-		questionnaire.questionnaire.evaluation_mode as QuestionnaireEvaluationMode
+		(q?.evaluation_mode as QuestionnaireEvaluationMode) ?? 'automatic'
 	);
-	let shuffleQuestions = $state(questionnaire.questionnaire.shuffle_questions ?? false);
-	let shuffleSections = $state(questionnaire.questionnaire.shuffle_sections ?? false);
-	let llmGuidelines = $state(questionnaire.questionnaire.llm_guidelines || '');
-	let membersExempt = $state(questionnaire.members_exempt ?? false);
+	let shuffleQuestions = $state(q?.shuffle_questions ?? false);
+	let shuffleSections = $state(q?.shuffle_sections ?? false);
+	let llmGuidelines = $state(q?.llm_guidelines || '');
+	let membersExempt = $state(questionnaire?.members_exempt ?? false);
 
 	// Convert seconds to appropriate units for display
 	let maxSubmissionAge = $state<number | null>(
-		questionnaire.max_submission_age && typeof questionnaire.max_submission_age === 'number'
+		questionnaire?.max_submission_age && typeof questionnaire.max_submission_age === 'number'
 			? Math.round(questionnaire.max_submission_age / 86400)
 			: null
 	); // Convert seconds to days
 	let canRetakeAfter = $state<number | null>(
-		questionnaire.questionnaire.can_retake_after &&
-			typeof questionnaire.questionnaire.can_retake_after === 'number'
-			? Math.round(questionnaire.questionnaire.can_retake_after / 3600)
+		q?.can_retake_after && typeof q.can_retake_after === 'number'
+			? Math.round(q.can_retake_after / 3600)
 			: null
 	); // Convert seconds to hours
 	let maxAttempts = $state<number>(0); // 0 = unlimited
 
 	// Questions (read-only display)
-	const sections = $derived(questionnaire.questionnaire.sections || []);
-	const topLevelMCQuestions = $derived(
-		questionnaire.questionnaire.multiplechoicequestion_questions || []
-	);
-	const topLevelFTQuestions = $derived(
-		questionnaire.questionnaire.freetextquestion_questions || []
-	);
+	const sections = $derived(q?.sections ?? []);
+	const topLevelMCQuestions = $derived(q?.multiplechoicequestion_questions ?? []);
+	const topLevelFTQuestions = $derived(q?.freetextquestion_questions ?? []);
 
 	// Count total questions
 	const totalQuestions = $derived(() => {
@@ -128,11 +130,11 @@
 	let operationInProgress = $state(false);
 
 	// Check if editing is allowed (only in draft status)
-	const canEdit = $derived(questionnaire.questionnaire.status === 'draft');
+	const canEdit = $derived(q?.status === 'draft');
 
 	// Current status
 	const currentStatus = $derived<QuestionnaireStatus>(
-		questionnaire.questionnaire.status as QuestionnaireStatus
+		(q?.status as QuestionnaireStatus) ?? 'draft'
 	);
 
 	// Status labels, variants, and descriptions
@@ -700,9 +702,17 @@
 </script>
 
 <svelte:head>
-	<title>{m['questionnaireEditPage.pageTitle']()} - {questionnaire.questionnaire.name}</title>
+	<title>{m['questionnaireEditPage.pageTitle']()} - {q?.name ?? ''}</title>
 </svelte:head>
 
+{#if !isLoaded}
+	<div class="flex min-h-[50vh] items-center justify-center">
+		<div class="text-center">
+			<div class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+			<p class="mt-4 text-muted-foreground">Loading questionnaire...</p>
+		</div>
+	</div>
+{:else}
 <!-- Header -->
 <div class="mb-6">
 	<Button
@@ -1290,7 +1300,7 @@
 					{#if topLevelMCQuestions.length > 0 || topLevelFTQuestions.length > 0}
 						<div class="space-y-3">
 							<h3 class="text-sm font-medium text-muted-foreground">Top-level Questions</h3>
-							{#each topLevelMCQuestions as question (question.id)}
+							{#each topLevelMCQuestions as question, idx (question.id ?? `mc-${idx}`)}
 								<div class="rounded-lg border p-4 {canEdit ? 'hover:border-primary/50' : ''}">
 									<div class="flex items-start gap-3">
 										<div class="flex-1">
@@ -1319,7 +1329,7 @@
 											</div>
 											<p class="font-medium">{question.question}</p>
 											<div class="mt-2 space-y-1">
-												{#each question.options as option (option.id)}
+												{#each question.options as option, oIdx (option.id ?? `opt-${oIdx}`)}
 													<div class="group flex items-center gap-2 text-sm">
 														<button
 															type="button"
@@ -1362,7 +1372,7 @@
 									</div>
 								</div>
 							{/each}
-							{#each topLevelFTQuestions as question (question.id)}
+							{#each topLevelFTQuestions as question, idx (question.id ?? `ft-${idx}`)}
 								<div class="rounded-lg border p-4 {canEdit ? 'hover:border-primary/50' : ''}">
 									<div class="flex items-start gap-3">
 										<div class="flex-1">
@@ -1398,7 +1408,7 @@
 					{/if}
 
 					<!-- Sectioned questions -->
-					{#each sections as section (section.id)}
+					{#each sections as section, sIdx (section.id ?? `section-${sIdx}`)}
 						<div class="space-y-3 rounded-lg border-2 border-dashed border-muted p-4">
 							<div class="flex items-center justify-between border-b pb-2">
 								<div class="flex items-center gap-2">
@@ -1445,7 +1455,7 @@
 							{#if section.description}
 								<p class="text-sm text-muted-foreground">{section.description}</p>
 							{/if}
-							{#each section.multiplechoicequestion_questions || [] as question (question.id)}
+							{#each section.multiplechoicequestion_questions || [] as question, qIdx (question.id ?? `smc-${qIdx}`)}
 								<div class="rounded-lg border bg-background p-4 {canEdit ? 'hover:border-primary/50' : ''}">
 									<div class="flex items-start gap-3">
 										<div class="flex-1">
@@ -1474,7 +1484,7 @@
 											</div>
 											<p class="font-medium">{question.question}</p>
 											<div class="mt-2 space-y-1">
-												{#each question.options as option (option.id)}
+												{#each question.options as option, oIdx (option.id ?? `opt-${oIdx}`)}
 													<div class="group flex items-center gap-2 text-sm">
 														<button
 															type="button"
@@ -1517,7 +1527,7 @@
 									</div>
 								</div>
 							{/each}
-							{#each section.freetextquestion_questions || [] as question (question.id)}
+							{#each section.freetextquestion_questions || [] as question, qIdx (question.id ?? `sft-${qIdx}`)}
 								<div class="rounded-lg border bg-background p-4 {canEdit ? 'hover:border-primary/50' : ''}">
 									<div class="flex items-start gap-3">
 										<div class="flex-1">
@@ -1578,7 +1588,7 @@
 </div>
 
 <!-- Assignment Modal -->
-{#if isAssignmentModalOpen}
+{#if isAssignmentModalOpen && questionnaire}
 	<QuestionnaireAssignmentModal
 		bind:open={isAssignmentModalOpen}
 		{questionnaire}
@@ -1586,4 +1596,5 @@
 		accessToken={data.auth.accessToken || ''}
 		onClose={() => (isAssignmentModalOpen = false)}
 	/>
+{/if}
 {/if}
