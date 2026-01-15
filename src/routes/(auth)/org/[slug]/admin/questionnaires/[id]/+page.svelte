@@ -20,12 +20,31 @@
 		FileEdit,
 		Send,
 		CalendarCheck,
-		Calendar
+		Calendar,
+		Plus,
+		Trash2,
+		Pencil,
+		Check,
+		X,
+		GripVertical,
+		FolderPlus
 	} from 'lucide-svelte';
 	import QuestionnaireAssignmentModal from '$lib/components/questionnaires/QuestionnaireAssignmentModal.svelte';
 	import {
 		questionnaireUpdateOrgQuestionnaire,
-		questionnaireUpdateQuestionnaireStatus
+		questionnaireUpdateQuestionnaireStatus,
+		questionnaireCreateSection,
+		questionnaireUpdateSection,
+		questionnaireDeleteSection,
+		questionnaireCreateMcQuestion,
+		questionnaireUpdateMcQuestion,
+		questionnaireDeleteMcQuestion,
+		questionnaireCreateMcOption,
+		questionnaireUpdateMcOption,
+		questionnaireDeleteMcOption,
+		questionnaireCreateFtQuestion,
+		questionnaireUpdateFtQuestion,
+		questionnaireDeleteFtQuestion
 	} from '$lib/api/generated/sdk.gen';
 	import type { PageData } from './$types';
 	import type {
@@ -100,6 +119,16 @@
 
 	// Assignment modal state
 	let isAssignmentModalOpen = $state(false);
+
+	// Editing state - enabled when questionnaire is in draft status
+	let editingQuestionId = $state<string | null>(null);
+	let editingSectionId = $state<string | null>(null);
+	let isAddingSection = $state(false);
+	let isAddingQuestion = $state<{ sectionId: string | null; type: 'mc' | 'ft' } | null>(null);
+	let operationInProgress = $state(false);
+
+	// Check if editing is allowed (only in draft status)
+	const canEdit = $derived(questionnaire.questionnaire.status === 'draft');
 
 	// Current status
 	const currentStatus = $derived<QuestionnaireStatus>(
@@ -280,6 +309,394 @@
 			isChangingStatus = false;
 		}
 	}
+
+	// ===== SECTION CRUD OPERATIONS =====
+
+	async function addSection() {
+		if (!canEdit || operationInProgress) return;
+		operationInProgress = true;
+
+		try {
+			const user = data.auth;
+			if (!user.accessToken) throw new Error('Not authenticated');
+
+			const response = await questionnaireCreateSection({
+				path: { org_questionnaire_id: questionnaire.id },
+				body: {
+					name: `Section ${(sections?.length || 0) + 1}`,
+					description: null,
+					order: sections?.length || 0
+				},
+				headers: { Authorization: `Bearer ${user.accessToken}` }
+			});
+
+			if (response.error) throw new Error('Failed to create section');
+			await invalidateAll();
+		} catch (err) {
+			console.error('Failed to add section:', err);
+			alert('Failed to add section. Please try again.');
+		} finally {
+			operationInProgress = false;
+			isAddingSection = false;
+		}
+	}
+
+	async function updateSection(sectionId: string, updates: { name?: string; description?: string | null; order?: number }) {
+		if (!canEdit || operationInProgress) return;
+		operationInProgress = true;
+
+		try {
+			const user = data.auth;
+			if (!user.accessToken) throw new Error('Not authenticated');
+
+			const section = sections.find(s => s.id === sectionId);
+			if (!section) throw new Error('Section not found');
+
+			const response = await questionnaireUpdateSection({
+				path: { org_questionnaire_id: questionnaire.id, section_id: sectionId },
+				body: {
+					name: updates.name ?? section.name,
+					description: updates.description !== undefined ? updates.description : section.description,
+					order: updates.order ?? section.order
+				},
+				headers: { Authorization: `Bearer ${user.accessToken}` }
+			});
+
+			if (response.error) throw new Error('Failed to update section');
+			await invalidateAll();
+		} catch (err) {
+			console.error('Failed to update section:', err);
+			alert('Failed to update section. Please try again.');
+		} finally {
+			operationInProgress = false;
+			editingSectionId = null;
+		}
+	}
+
+	async function deleteSection(sectionId: string) {
+		if (!canEdit || operationInProgress) return;
+
+		const confirmed = confirm('Are you sure you want to delete this section? All questions in this section will also be deleted.');
+		if (!confirmed) return;
+
+		operationInProgress = true;
+
+		try {
+			const user = data.auth;
+			if (!user.accessToken) throw new Error('Not authenticated');
+
+			const response = await questionnaireDeleteSection({
+				path: { org_questionnaire_id: questionnaire.id, section_id: sectionId },
+				headers: { Authorization: `Bearer ${user.accessToken}` }
+			});
+
+			if (response.error) throw new Error('Failed to delete section');
+			await invalidateAll();
+		} catch (err) {
+			console.error('Failed to delete section:', err);
+			alert('Failed to delete section. Please try again.');
+		} finally {
+			operationInProgress = false;
+		}
+	}
+
+	// ===== MC QUESTION CRUD OPERATIONS =====
+
+	async function addMcQuestion(sectionId: string | null) {
+		if (!canEdit || operationInProgress) return;
+		operationInProgress = true;
+
+		try {
+			const user = data.auth;
+			if (!user.accessToken) throw new Error('Not authenticated');
+
+			const response = await questionnaireCreateMcQuestion({
+				path: { org_questionnaire_id: questionnaire.id },
+				body: {
+					section_id: sectionId,
+					question: 'New question',
+					is_mandatory: true,
+					order: 0,
+					positive_weight: 1.0,
+					negative_weight: 0.0,
+					is_fatal: false,
+					allow_multiple_answers: false,
+					shuffle_options: true,
+					options: [
+						{ option: 'Option 1', is_correct: true, order: 0 },
+						{ option: 'Option 2', is_correct: false, order: 1 }
+					]
+				},
+				headers: { Authorization: `Bearer ${user.accessToken}` }
+			});
+
+			if (response.error) throw new Error('Failed to create question');
+			await invalidateAll();
+		} catch (err) {
+			console.error('Failed to add MC question:', err);
+			alert('Failed to add question. Please try again.');
+		} finally {
+			operationInProgress = false;
+			isAddingQuestion = null;
+		}
+	}
+
+	async function updateMcQuestion(questionId: string, updates: { question?: string; hint?: string | null; is_mandatory?: boolean; positive_weight?: number; negative_weight?: number; is_fatal?: boolean; allow_multiple_answers?: boolean; shuffle_options?: boolean }) {
+		if (!canEdit || operationInProgress) return;
+		operationInProgress = true;
+
+		try {
+			const user = data.auth;
+			if (!user.accessToken) throw new Error('Not authenticated');
+
+			// Find the question to get current values
+			let currentQuestion = topLevelMCQuestions.find(q => q.id === questionId);
+			if (!currentQuestion) {
+				for (const section of sections) {
+					currentQuestion = section.multiplechoicequestion_questions?.find(q => q.id === questionId);
+					if (currentQuestion) break;
+				}
+			}
+			if (!currentQuestion) throw new Error('Question not found');
+
+			const response = await questionnaireUpdateMcQuestion({
+				path: { org_questionnaire_id: questionnaire.id, question_id: questionId },
+				body: {
+					question: updates.question ?? currentQuestion.question,
+					hint: updates.hint !== undefined ? updates.hint : currentQuestion.hint,
+					is_mandatory: updates.is_mandatory ?? currentQuestion.is_mandatory,
+					positive_weight: updates.positive_weight ?? currentQuestion.positive_weight,
+					negative_weight: updates.negative_weight ?? currentQuestion.negative_weight,
+					is_fatal: updates.is_fatal ?? currentQuestion.is_fatal,
+					allow_multiple_answers: updates.allow_multiple_answers ?? currentQuestion.allow_multiple_answers,
+					shuffle_options: updates.shuffle_options ?? currentQuestion.shuffle_options
+				},
+				headers: { Authorization: `Bearer ${user.accessToken}` }
+			});
+
+			if (response.error) throw new Error('Failed to update question');
+			await invalidateAll();
+		} catch (err) {
+			console.error('Failed to update MC question:', err);
+			alert('Failed to update question. Please try again.');
+		} finally {
+			operationInProgress = false;
+			editingQuestionId = null;
+		}
+	}
+
+	async function deleteMcQuestion(questionId: string) {
+		if (!canEdit || operationInProgress) return;
+
+		const confirmed = confirm('Are you sure you want to delete this question?');
+		if (!confirmed) return;
+
+		operationInProgress = true;
+
+		try {
+			const user = data.auth;
+			if (!user.accessToken) throw new Error('Not authenticated');
+
+			const response = await questionnaireDeleteMcQuestion({
+				path: { org_questionnaire_id: questionnaire.id, question_id: questionId },
+				headers: { Authorization: `Bearer ${user.accessToken}` }
+			});
+
+			if (response.error) throw new Error('Failed to delete question');
+			await invalidateAll();
+		} catch (err) {
+			console.error('Failed to delete MC question:', err);
+			alert('Failed to delete question. Please try again.');
+		} finally {
+			operationInProgress = false;
+		}
+	}
+
+	// ===== FT QUESTION CRUD OPERATIONS =====
+
+	async function addFtQuestion(sectionId: string | null) {
+		if (!canEdit || operationInProgress) return;
+		operationInProgress = true;
+
+		try {
+			const user = data.auth;
+			if (!user.accessToken) throw new Error('Not authenticated');
+
+			const response = await questionnaireCreateFtQuestion({
+				path: { org_questionnaire_id: questionnaire.id },
+				body: {
+					section_id: sectionId,
+					question: 'New free text question',
+					is_mandatory: true,
+					order: 0,
+					positive_weight: 1.0,
+					negative_weight: 0.0,
+					is_fatal: false
+				},
+				headers: { Authorization: `Bearer ${user.accessToken}` }
+			});
+
+			if (response.error) throw new Error('Failed to create question');
+			await invalidateAll();
+		} catch (err) {
+			console.error('Failed to add FT question:', err);
+			alert('Failed to add question. Please try again.');
+		} finally {
+			operationInProgress = false;
+			isAddingQuestion = null;
+		}
+	}
+
+	async function updateFtQuestion(questionId: string, updates: { question?: string; hint?: string | null; is_mandatory?: boolean; positive_weight?: number; negative_weight?: number; is_fatal?: boolean; llm_guidelines?: string | null }) {
+		if (!canEdit || operationInProgress) return;
+		operationInProgress = true;
+
+		try {
+			const user = data.auth;
+			if (!user.accessToken) throw new Error('Not authenticated');
+
+			// Find the question to get current values
+			let currentQuestion = topLevelFTQuestions.find(q => q.id === questionId);
+			if (!currentQuestion) {
+				for (const section of sections) {
+					currentQuestion = section.freetextquestion_questions?.find(q => q.id === questionId);
+					if (currentQuestion) break;
+				}
+			}
+			if (!currentQuestion) throw new Error('Question not found');
+
+			const response = await questionnaireUpdateFtQuestion({
+				path: { org_questionnaire_id: questionnaire.id, question_id: questionId },
+				body: {
+					question: updates.question ?? currentQuestion.question,
+					hint: updates.hint !== undefined ? updates.hint : currentQuestion.hint,
+					is_mandatory: updates.is_mandatory ?? currentQuestion.is_mandatory,
+					positive_weight: updates.positive_weight ?? currentQuestion.positive_weight,
+					negative_weight: updates.negative_weight ?? currentQuestion.negative_weight,
+					is_fatal: updates.is_fatal ?? currentQuestion.is_fatal,
+					llm_guidelines: updates.llm_guidelines !== undefined ? updates.llm_guidelines : currentQuestion.llm_guidelines
+				},
+				headers: { Authorization: `Bearer ${user.accessToken}` }
+			});
+
+			if (response.error) throw new Error('Failed to update question');
+			await invalidateAll();
+		} catch (err) {
+			console.error('Failed to update FT question:', err);
+			alert('Failed to update question. Please try again.');
+		} finally {
+			operationInProgress = false;
+			editingQuestionId = null;
+		}
+	}
+
+	async function deleteFtQuestion(questionId: string) {
+		if (!canEdit || operationInProgress) return;
+
+		const confirmed = confirm('Are you sure you want to delete this question?');
+		if (!confirmed) return;
+
+		operationInProgress = true;
+
+		try {
+			const user = data.auth;
+			if (!user.accessToken) throw new Error('Not authenticated');
+
+			const response = await questionnaireDeleteFtQuestion({
+				path: { org_questionnaire_id: questionnaire.id, question_id: questionId },
+				headers: { Authorization: `Bearer ${user.accessToken}` }
+			});
+
+			if (response.error) throw new Error('Failed to delete question');
+			await invalidateAll();
+		} catch (err) {
+			console.error('Failed to delete FT question:', err);
+			alert('Failed to delete question. Please try again.');
+		} finally {
+			operationInProgress = false;
+		}
+	}
+
+	// ===== MC OPTION CRUD OPERATIONS =====
+
+	async function addMcOption(questionId: string) {
+		if (!canEdit || operationInProgress) return;
+		operationInProgress = true;
+
+		try {
+			const user = data.auth;
+			if (!user.accessToken) throw new Error('Not authenticated');
+
+			const response = await questionnaireCreateMcOption({
+				path: { org_questionnaire_id: questionnaire.id, question_id: questionId },
+				body: {
+					option: 'New option',
+					is_correct: false,
+					order: 0
+				},
+				headers: { Authorization: `Bearer ${user.accessToken}` }
+			});
+
+			if (response.error) throw new Error('Failed to create option');
+			await invalidateAll();
+		} catch (err) {
+			console.error('Failed to add option:', err);
+			alert('Failed to add option. Please try again.');
+		} finally {
+			operationInProgress = false;
+		}
+	}
+
+	async function updateMcOption(optionId: string, updates: { option?: string; is_correct?: boolean; order?: number }) {
+		if (!canEdit || operationInProgress) return;
+		operationInProgress = true;
+
+		try {
+			const user = data.auth;
+			if (!user.accessToken) throw new Error('Not authenticated');
+
+			const response = await questionnaireUpdateMcOption({
+				path: { org_questionnaire_id: questionnaire.id, option_id: optionId },
+				body: updates,
+				headers: { Authorization: `Bearer ${user.accessToken}` }
+			});
+
+			if (response.error) throw new Error('Failed to update option');
+			await invalidateAll();
+		} catch (err) {
+			console.error('Failed to update option:', err);
+			alert('Failed to update option. Please try again.');
+		} finally {
+			operationInProgress = false;
+		}
+	}
+
+	async function deleteMcOption(optionId: string) {
+		if (!canEdit || operationInProgress) return;
+
+		const confirmed = confirm('Are you sure you want to delete this option?');
+		if (!confirmed) return;
+
+		operationInProgress = true;
+
+		try {
+			const user = data.auth;
+			if (!user.accessToken) throw new Error('Not authenticated');
+
+			const response = await questionnaireDeleteMcOption({
+				path: { org_questionnaire_id: questionnaire.id, option_id: optionId },
+				headers: { Authorization: `Bearer ${user.accessToken}` }
+			});
+
+			if (response.error) throw new Error('Failed to delete option');
+			await invalidateAll();
+		} catch (err) {
+			console.error('Failed to delete option:', err);
+			alert('Failed to delete option. Please try again.');
+		} finally {
+			operationInProgress = false;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -396,24 +813,42 @@
 	</CardContent>
 </Card>
 
-<!-- Warning Banner -->
-<div
-	class="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-900 dark:bg-yellow-950"
->
-	<div class="flex gap-3">
-		<AlertTriangle class="h-5 w-5 flex-shrink-0 text-yellow-600 dark:text-yellow-500" />
-		<div class="text-sm">
-			<p class="font-medium text-yellow-800 dark:text-yellow-200">
-				Questions cannot be edited after creation
-			</p>
-			<p class="mt-1 text-yellow-700 dark:text-yellow-300">
-				To preserve submission integrity, you can only edit the questionnaire name, type, and
-				settings. Questions and their structure are read-only. If you need to change questions,
-				create a new questionnaire.
-			</p>
+<!-- Info Banner -->
+{#if canEdit}
+	<div
+		class="mb-6 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-900 dark:bg-green-950"
+	>
+		<div class="flex gap-3">
+			<Pencil class="h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-500" />
+			<div class="text-sm">
+				<p class="font-medium text-green-800 dark:text-green-200">
+					Editing enabled
+				</p>
+				<p class="mt-1 text-green-700 dark:text-green-300">
+					This questionnaire is in draft status. You can edit questions, sections, and options.
+					Once published, editing will be restricted to preserve submission integrity.
+				</p>
+			</div>
 		</div>
 	</div>
-</div>
+{:else}
+	<div
+		class="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-900 dark:bg-yellow-950"
+	>
+		<div class="flex gap-3">
+			<AlertTriangle class="h-5 w-5 flex-shrink-0 text-yellow-600 dark:text-yellow-500" />
+			<div class="text-sm">
+				<p class="font-medium text-yellow-800 dark:text-yellow-200">
+					Questions cannot be edited
+				</p>
+				<p class="mt-1 text-yellow-700 dark:text-yellow-300">
+					This questionnaire is {currentStatus}. To edit questions, change the status back to draft.
+					Note: this may affect existing submissions.
+				</p>
+			</div>
+		</div>
+	</div>
+{/if}
 
 <!-- Form -->
 <div class="mx-auto max-w-4xl space-y-6">
@@ -793,75 +1228,165 @@
 		</CardContent>
 	</Card>
 
-	<!-- Questions (Read-Only Display) -->
+	<!-- Questions Section -->
 	<Card>
 		<CardHeader>
-			<CardTitle>{m['questionnaireEditPage.questions.title']()} ({totalQuestions()})</CardTitle>
-			<CardDescription>{m['questionnaireEditPage.questions.description']()}</CardDescription>
+			<div class="flex items-center justify-between">
+				<div>
+					<CardTitle>{m['questionnaireEditPage.questions.title']()} ({totalQuestions()})</CardTitle>
+					<CardDescription>{m['questionnaireEditPage.questions.description']()}</CardDescription>
+				</div>
+				{#if canEdit}
+					<div class="flex gap-2">
+						<Button
+							variant="outline"
+							size="sm"
+							onclick={() => addMcQuestion(null)}
+							disabled={operationInProgress}
+							class="gap-2"
+						>
+							<Plus class="h-4 w-4" />
+							MC Question
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							onclick={() => addFtQuestion(null)}
+							disabled={operationInProgress}
+							class="gap-2"
+						>
+							<Plus class="h-4 w-4" />
+							Text Question
+						</Button>
+						<Button
+							variant="secondary"
+							size="sm"
+							onclick={addSection}
+							disabled={operationInProgress}
+							class="gap-2"
+						>
+							<FolderPlus class="h-4 w-4" />
+							Section
+						</Button>
+					</div>
+				{/if}
+			</div>
 		</CardHeader>
 		<CardContent>
-			{#if totalQuestions() === 0}
+			{#if totalQuestions() === 0 && sections.length === 0}
 				<div class="rounded-lg border border-dashed p-8 text-center">
 					<p class="text-sm text-muted-foreground">
 						{m['questionnaireEditPage.questions.empty']()}
 					</p>
+					{#if canEdit}
+						<p class="mt-2 text-sm text-muted-foreground">
+							Click the buttons above to add questions or sections.
+						</p>
+					{/if}
 				</div>
 			{:else}
 				<div class="space-y-6">
 					<!-- Top-level questions (no section) -->
 					{#if topLevelMCQuestions.length > 0 || topLevelFTQuestions.length > 0}
 						<div class="space-y-3">
-							{#each topLevelMCQuestions as question}
-								<div class="rounded-lg border p-4">
+							<h3 class="text-sm font-medium text-muted-foreground">Top-level Questions</h3>
+							{#each topLevelMCQuestions as question (question.id)}
+								<div class="rounded-lg border p-4 {canEdit ? 'hover:border-primary/50' : ''}">
 									<div class="flex items-start gap-3">
 										<div class="flex-1">
-											<div class="mb-2 flex items-center gap-2">
-												<span
-													class="rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700"
-												>
-													{m['questionnaireEditPage.questions.multipleChoiceLabel']()}
-												</span>
-												{#if question.is_mandatory}
-													<span class="text-xs text-destructive"
-														>{m['questionnaireEditPage.questions.requiredLabel']()}</span
-													>
+											<div class="mb-2 flex items-center justify-between">
+												<div class="flex items-center gap-2">
+													<span class="rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700">
+														{m['questionnaireEditPage.questions.multipleChoiceLabel']()}
+													</span>
+													{#if question.is_mandatory}
+														<span class="text-xs text-destructive">{m['questionnaireEditPage.questions.requiredLabel']()}</span>
+													{/if}
+												</div>
+												{#if canEdit}
+													<div class="flex gap-1">
+														<Button
+															variant="ghost"
+															size="sm"
+															onclick={() => deleteMcQuestion(question.id)}
+															disabled={operationInProgress}
+															class="h-8 w-8 p-0 text-destructive hover:text-destructive"
+														>
+															<Trash2 class="h-4 w-4" />
+														</Button>
+													</div>
 												{/if}
 											</div>
 											<p class="font-medium">{question.question}</p>
 											<div class="mt-2 space-y-1">
-												{#each question.options as option}
-													<div class="flex items-center gap-2 text-sm">
-														<span
-															class={option.is_correct
-																? 'font-medium text-green-600'
-																: 'text-muted-foreground'}
+												{#each question.options as option (option.id)}
+													<div class="group flex items-center gap-2 text-sm">
+														<button
+															type="button"
+															class="flex items-center gap-2 {canEdit ? 'cursor-pointer hover:text-primary' : ''}"
+															onclick={() => canEdit && updateMcOption(option.id, { is_correct: !option.is_correct })}
+															disabled={!canEdit || operationInProgress}
 														>
-															{option.is_correct ? '✓' : '○'}
-														</span>
-														<span class={option.is_correct ? 'font-medium' : ''}>
-															{option.option}
-														</span>
+															<span class={option.is_correct ? 'font-medium text-green-600' : 'text-muted-foreground'}>
+																{option.is_correct ? '✓' : '○'}
+															</span>
+															<span class={option.is_correct ? 'font-medium' : ''}>{option.option}</span>
+														</button>
+														{#if canEdit}
+															<Button
+																variant="ghost"
+																size="sm"
+																onclick={() => deleteMcOption(option.id)}
+																disabled={operationInProgress}
+																class="invisible h-6 w-6 p-0 text-destructive group-hover:visible"
+															>
+																<X class="h-3 w-3" />
+															</Button>
+														{/if}
 													</div>
 												{/each}
+												{#if canEdit}
+													<Button
+														variant="ghost"
+														size="sm"
+														onclick={() => addMcOption(question.id)}
+														disabled={operationInProgress}
+														class="mt-1 h-7 gap-1 text-xs"
+													>
+														<Plus class="h-3 w-3" />
+														Add option
+													</Button>
+												{/if}
 											</div>
 										</div>
 									</div>
 								</div>
 							{/each}
-							{#each topLevelFTQuestions as question}
-								<div class="rounded-lg border p-4">
+							{#each topLevelFTQuestions as question (question.id)}
+								<div class="rounded-lg border p-4 {canEdit ? 'hover:border-primary/50' : ''}">
 									<div class="flex items-start gap-3">
 										<div class="flex-1">
-											<div class="mb-2 flex items-center gap-2">
-												<span
-													class="rounded bg-purple-100 px-2 py-1 text-xs font-medium text-purple-700"
-												>
-													{m['questionnaireEditPage.questions.freeTextLabel']()}
-												</span>
-												{#if question.is_mandatory}
-													<span class="text-xs text-destructive"
-														>{m['questionnaireEditPage.questions.requiredLabel']()}</span
-													>
+											<div class="mb-2 flex items-center justify-between">
+												<div class="flex items-center gap-2">
+													<span class="rounded bg-purple-100 px-2 py-1 text-xs font-medium text-purple-700">
+														{m['questionnaireEditPage.questions.freeTextLabel']()}
+													</span>
+													{#if question.is_mandatory}
+														<span class="text-xs text-destructive">{m['questionnaireEditPage.questions.requiredLabel']()}</span>
+													{/if}
+												</div>
+												{#if canEdit}
+													<div class="flex gap-1">
+														<Button
+															variant="ghost"
+															size="sm"
+															onclick={() => deleteFtQuestion(question.id)}
+															disabled={operationInProgress}
+															class="h-8 w-8 p-0 text-destructive hover:text-destructive"
+														>
+															<Trash2 class="h-4 w-4" />
+														</Button>
+													</div>
 												{/if}
 											</div>
 											<p class="font-medium">{question.question}</p>
@@ -873,66 +1398,150 @@
 					{/if}
 
 					<!-- Sectioned questions -->
-					{#each sections as section}
-						<div class="space-y-3">
-							<div class="flex items-center gap-2 border-b pb-2">
-								<h3 class="font-semibold">{section.name}</h3>
-								<span class="text-sm text-muted-foreground">
-									({(section.multiplechoicequestion_questions?.length || 0) +
-										(section.freetextquestion_questions?.length || 0)} questions)
-								</span>
+					{#each sections as section (section.id)}
+						<div class="space-y-3 rounded-lg border-2 border-dashed border-muted p-4">
+							<div class="flex items-center justify-between border-b pb-2">
+								<div class="flex items-center gap-2">
+									<h3 class="font-semibold">{section.name}</h3>
+									<span class="text-sm text-muted-foreground">
+										({(section.multiplechoicequestion_questions?.length || 0) +
+											(section.freetextquestion_questions?.length || 0)} questions)
+									</span>
+								</div>
+								{#if canEdit}
+									<div class="flex gap-1">
+										<Button
+											variant="ghost"
+											size="sm"
+											onclick={() => addMcQuestion(section.id)}
+											disabled={operationInProgress}
+											class="h-8 gap-1 text-xs"
+										>
+											<Plus class="h-3 w-3" />
+											MC
+										</Button>
+										<Button
+											variant="ghost"
+											size="sm"
+											onclick={() => addFtQuestion(section.id)}
+											disabled={operationInProgress}
+											class="h-8 gap-1 text-xs"
+										>
+											<Plus class="h-3 w-3" />
+											Text
+										</Button>
+										<Button
+											variant="ghost"
+											size="sm"
+											onclick={() => deleteSection(section.id)}
+											disabled={operationInProgress}
+											class="h-8 w-8 p-0 text-destructive hover:text-destructive"
+										>
+											<Trash2 class="h-4 w-4" />
+										</Button>
+									</div>
+								{/if}
 							</div>
-							{#each section.multiplechoicequestion_questions || [] as question}
-								<div class="rounded-lg border p-4">
+							{#if section.description}
+								<p class="text-sm text-muted-foreground">{section.description}</p>
+							{/if}
+							{#each section.multiplechoicequestion_questions || [] as question (question.id)}
+								<div class="rounded-lg border bg-background p-4 {canEdit ? 'hover:border-primary/50' : ''}">
 									<div class="flex items-start gap-3">
 										<div class="flex-1">
-											<div class="mb-2 flex items-center gap-2">
-												<span
-													class="rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700"
-												>
-													{m['questionnaireEditPage.questions.multipleChoiceLabel']()}
-												</span>
-												{#if question.is_mandatory}
-													<span class="text-xs text-destructive"
-														>{m['questionnaireEditPage.questions.requiredLabel']()}</span
-													>
+											<div class="mb-2 flex items-center justify-between">
+												<div class="flex items-center gap-2">
+													<span class="rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700">
+														{m['questionnaireEditPage.questions.multipleChoiceLabel']()}
+													</span>
+													{#if question.is_mandatory}
+														<span class="text-xs text-destructive">{m['questionnaireEditPage.questions.requiredLabel']()}</span>
+													{/if}
+												</div>
+												{#if canEdit}
+													<div class="flex gap-1">
+														<Button
+															variant="ghost"
+															size="sm"
+															onclick={() => deleteMcQuestion(question.id)}
+															disabled={operationInProgress}
+															class="h-8 w-8 p-0 text-destructive hover:text-destructive"
+														>
+															<Trash2 class="h-4 w-4" />
+														</Button>
+													</div>
 												{/if}
 											</div>
 											<p class="font-medium">{question.question}</p>
 											<div class="mt-2 space-y-1">
-												{#each question.options as option}
-													<div class="flex items-center gap-2 text-sm">
-														<span
-															class={option.is_correct
-																? 'font-medium text-green-600'
-																: 'text-muted-foreground'}
+												{#each question.options as option (option.id)}
+													<div class="group flex items-center gap-2 text-sm">
+														<button
+															type="button"
+															class="flex items-center gap-2 {canEdit ? 'cursor-pointer hover:text-primary' : ''}"
+															onclick={() => canEdit && updateMcOption(option.id, { is_correct: !option.is_correct })}
+															disabled={!canEdit || operationInProgress}
 														>
-															{option.is_correct ? '✓' : '○'}
-														</span>
-														<span class={option.is_correct ? 'font-medium' : ''}>
-															{option.option}
-														</span>
+															<span class={option.is_correct ? 'font-medium text-green-600' : 'text-muted-foreground'}>
+																{option.is_correct ? '✓' : '○'}
+															</span>
+															<span class={option.is_correct ? 'font-medium' : ''}>{option.option}</span>
+														</button>
+														{#if canEdit}
+															<Button
+																variant="ghost"
+																size="sm"
+																onclick={() => deleteMcOption(option.id)}
+																disabled={operationInProgress}
+																class="invisible h-6 w-6 p-0 text-destructive group-hover:visible"
+															>
+																<X class="h-3 w-3" />
+															</Button>
+														{/if}
 													</div>
 												{/each}
+												{#if canEdit}
+													<Button
+														variant="ghost"
+														size="sm"
+														onclick={() => addMcOption(question.id)}
+														disabled={operationInProgress}
+														class="mt-1 h-7 gap-1 text-xs"
+													>
+														<Plus class="h-3 w-3" />
+														Add option
+													</Button>
+												{/if}
 											</div>
 										</div>
 									</div>
 								</div>
 							{/each}
-							{#each section.freetextquestion_questions || [] as question}
-								<div class="rounded-lg border p-4">
+							{#each section.freetextquestion_questions || [] as question (question.id)}
+								<div class="rounded-lg border bg-background p-4 {canEdit ? 'hover:border-primary/50' : ''}">
 									<div class="flex items-start gap-3">
 										<div class="flex-1">
-											<div class="mb-2 flex items-center gap-2">
-												<span
-													class="rounded bg-purple-100 px-2 py-1 text-xs font-medium text-purple-700"
-												>
-													{m['questionnaireEditPage.questions.freeTextLabel']()}
-												</span>
-												{#if question.is_mandatory}
-													<span class="text-xs text-destructive"
-														>{m['questionnaireEditPage.questions.requiredLabel']()}</span
-													>
+											<div class="mb-2 flex items-center justify-between">
+												<div class="flex items-center gap-2">
+													<span class="rounded bg-purple-100 px-2 py-1 text-xs font-medium text-purple-700">
+														{m['questionnaireEditPage.questions.freeTextLabel']()}
+													</span>
+													{#if question.is_mandatory}
+														<span class="text-xs text-destructive">{m['questionnaireEditPage.questions.requiredLabel']()}</span>
+													{/if}
+												</div>
+												{#if canEdit}
+													<div class="flex gap-1">
+														<Button
+															variant="ghost"
+															size="sm"
+															onclick={() => deleteFtQuestion(question.id)}
+															disabled={operationInProgress}
+															class="h-8 w-8 p-0 text-destructive hover:text-destructive"
+														>
+															<Trash2 class="h-4 w-4" />
+														</Button>
+													</div>
 												{/if}
 											</div>
 											<p class="font-medium">{question.question}</p>
@@ -940,6 +1549,14 @@
 									</div>
 								</div>
 							{/each}
+							{#if (section.multiplechoicequestion_questions?.length || 0) === 0 && (section.freetextquestion_questions?.length || 0) === 0}
+								<div class="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
+									No questions in this section yet.
+									{#if canEdit}
+										Use the buttons above to add questions.
+									{/if}
+								</div>
+							{/if}
 						</div>
 					{/each}
 				</div>
