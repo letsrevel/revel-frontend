@@ -492,7 +492,21 @@
 			"previousPage": "Pagina precedente",
 			"nextPage": "Pagina successiva"
 		},
-		"seeAllOrganizations": "Vedi tutte le {count} organizzazioni"
+		"seeAllOrganizations": "Vedi tutte le {count} organizzazioni",
+		"followingButton": "Seguiti",
+		"following": {
+			"title": "Seguiti",
+			"organizations": "Organizzazioni",
+			"eventSeries": "Serie di eventi",
+			"noOrganizations": "Non stai seguendo nessuna organizzazione",
+			"noEventSeries": "Non stai seguendo nessuna serie di eventi",
+			"discoverOrganizations": "Scopri organizzazioni",
+			"discoverEventSeries": "Sfoglia eventi",
+			"searchPlaceholder": "Cerca...",
+			"showing": "Mostrando {count} di {total}",
+			"previousPage": "Pagina precedente",
+			"nextPage": "Pagina successiva"
+		}
 	},
 	"orgAdmin": {
 		"layout": {
@@ -4393,5 +4407,18 @@
 		"timeRemainingTitle": "Tempo rimanente fino alla scadenza della sessione",
 		"timeRemainingLabel": "{time} rimanenti",
 		"notice": "Stai visualizzando questa applicazione come un altro utente. Tutte le azioni saranno registrate e attribuite all'utente impersonificato."
+	},
+	"follow": {
+		"follow": "Segui",
+		"following": "Seguendo",
+		"unfollow": "Non seguire più",
+		"notifyNewEvents": "Notificami per nuovi eventi",
+		"notifyAnnouncements": "Notificami per annunci",
+		"followSuccess": "Ora segui {name}",
+		"unfollowSuccess": "Non segui più {name}",
+		"preferencesUpdated": "Preferenze aggiornate",
+		"updateError": "Impossibile aggiornare le preferenze",
+		"followError": "Impossibile seguire",
+		"unfollowError": "Impossibile smettere di seguire"
 	}
 }

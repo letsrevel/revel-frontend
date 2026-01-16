@@ -12,6 +12,7 @@
 	} from '$lib/utils/seo';
 	import * as m from '$lib/paraglide/messages.js';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+	import FollowButton from '$lib/components/common/FollowButton.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -238,6 +239,17 @@
 									{/each}
 								</div>
 							{/if}
+
+							<!-- Follow Button -->
+							<div class="mt-4">
+								<FollowButton
+									entityType="event-series"
+									entityId={series.id}
+									entityName={series.name}
+									isAuthenticated={data.isAuthenticated}
+									variant="outline"
+								/>
+							</div>
 						</div>
 					</div>
 				</div>

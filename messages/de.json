@@ -492,7 +492,21 @@
 			"previousPage": "Vorherige Seite",
 			"nextPage": "Nächste Seite"
 		},
-		"seeAllOrganizations": "Alle {count} Organisationen ansehen"
+		"seeAllOrganizations": "Alle {count} Organisationen ansehen",
+		"followingButton": "Folge ich",
+		"following": {
+			"title": "Folge ich",
+			"organizations": "Organisationen",
+			"eventSeries": "Eventreihen",
+			"noOrganizations": "Du folgst noch keinen Organisationen",
+			"noEventSeries": "Du folgst noch keinen Eventreihen",
+			"discoverOrganizations": "Organisationen entdecken",
+			"discoverEventSeries": "Events durchsuchen",
+			"searchPlaceholder": "Suchen...",
+			"showing": "Zeige {count} von {total}",
+			"previousPage": "Vorherige Seite",
+			"nextPage": "Nächste Seite"
+		}
 	},
 	"orgAdmin": {
 		"layout": {
@@ -4393,5 +4407,18 @@
 		"timeRemainingTitle": "Verbleibende Zeit bis zum Ablauf der Sitzung",
 		"timeRemainingLabel": "{time} verbleibend",
 		"notice": "Sie sehen diese Anwendung als ein anderer Benutzer. Alle Aktionen werden protokolliert und dem nachgeahmten Benutzer zugeordnet."
+	},
+	"follow": {
+		"follow": "Folgen",
+		"following": "Folgst du",
+		"unfollow": "Entfolgen",
+		"notifyNewEvents": "Bei neuen Events benachrichtigen",
+		"notifyAnnouncements": "Bei Ankündigungen benachrichtigen",
+		"followSuccess": "Du folgst jetzt {name}",
+		"unfollowSuccess": "Du folgst {name} nicht mehr",
+		"preferencesUpdated": "Einstellungen aktualisiert",
+		"updateError": "Einstellungen konnten nicht aktualisiert werden",
+		"followError": "Folgen fehlgeschlagen",
+		"unfollowError": "Entfolgen fehlgeschlagen"
 	}
 }
