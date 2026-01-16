@@ -492,7 +492,21 @@
 			"previousPage": "Previous page",
 			"nextPage": "Next page"
 		},
-		"seeAllOrganizations": "See all {count} organizations"
+		"seeAllOrganizations": "See all {count} organizations",
+		"followingButton": "Following",
+		"following": {
+			"title": "Following",
+			"organizations": "Organizations",
+			"eventSeries": "Event Series",
+			"noOrganizations": "You're not following any organizations yet",
+			"noEventSeries": "You're not following any event series yet",
+			"discoverOrganizations": "Discover Organizations",
+			"discoverEventSeries": "Browse Events",
+			"searchPlaceholder": "Search...",
+			"showing": "Showing {count} of {total}",
+			"previousPage": "Previous page",
+			"nextPage": "Next page"
+		}
 	},
 	"orgAdmin": {
 		"layout": {
@@ -4393,5 +4407,18 @@
 		"timeRemainingTitle": "Time remaining until session expires",
 		"timeRemainingLabel": "{time} remaining",
 		"notice": "You are viewing this application as another user. All actions will be logged and attributed to the impersonated user."
+	},
+	"follow": {
+		"follow": "Follow",
+		"following": "Following",
+		"unfollow": "Unfollow",
+		"notifyNewEvents": "Notify me about new events",
+		"notifyAnnouncements": "Notify me about announcements",
+		"followSuccess": "You are now following {name}",
+		"unfollowSuccess": "You have unfollowed {name}",
+		"preferencesUpdated": "Preferences updated",
+		"updateError": "Failed to update preferences",
+		"followError": "Failed to follow",
+		"unfollowError": "Failed to unfollow"
 	}
 }

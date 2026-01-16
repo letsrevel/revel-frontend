@@ -34,7 +34,8 @@
 		Award,
 		Crown,
 		PlusCircle,
-		List
+		List,
+		Heart
 	} from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { MembershipStatus } from '$lib/api/generated/types.gen';
@@ -471,6 +472,14 @@
 				<span>{m['dashboard.myOrganizationsButton']()}</span>
 			</button>
 		{/if}
+
+		<a
+			href="/dashboard/following"
+			class="inline-flex items-center gap-2 rounded-lg border bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+		>
+			<Heart class="h-4 w-4" aria-hidden="true" />
+			<span>{m['dashboard.following.title']()}</span>
+		</a>
 
 		{#if organizations.filter((org) => hasAdminPermissions(org.id)).length === 1}
 			<!-- Single admin org - direct link -->

@@ -9,6 +9,7 @@
 	import { getBackendUrl } from '$lib/config/api';
 	import RequestMembershipButton from '$lib/components/organization/RequestMembershipButton.svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+	import FollowButton from '$lib/components/common/FollowButton.svelte';
 
 	interface Props {
 		organization: OrganizationRetrieveSchema;
@@ -98,6 +99,15 @@
 					class="inline-flex"
 				/>
 			{/if}
+
+			<!-- Follow Button -->
+			<FollowButton
+				entityType="organization"
+				entityId={organization.slug}
+				entityName={organization.name}
+				{isAuthenticated}
+				variant="outline"
+			/>
 		</div>
 	</div>
 </section>

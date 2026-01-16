@@ -21,6 +21,7 @@
 	import { eventListEvents, eventseriesListEventSeries } from '$lib/api/generated/sdk.gen';
 	import RequestMembershipButton from '$lib/components/organization/RequestMembershipButton.svelte';
 	import ClaimMembershipButton from '$lib/components/organizations/ClaimMembershipButton.svelte';
+	import FollowButton from '$lib/components/common/FollowButton.svelte';
 	import {
 		generateOrganizationMeta,
 		generateOrganizationStructuredData,
@@ -354,6 +355,15 @@
 						isStaff={data.isStaff}
 					/>
 				{/if}
+
+				<!-- Follow Button -->
+				<FollowButton
+					entityType="organization"
+					entityId={organization.slug}
+					entityName={organization.name}
+					isAuthenticated={data.isAuthenticated}
+					variant="outline"
+				/>
 			</div>
 		</div>
 

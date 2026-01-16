@@ -93,7 +93,8 @@ export const load: PageServerLoad = async ({ params, url, fetch, locals }) => {
 			page: eventsPage,
 			pageSize,
 			orderBy,
-			canEdit
+			canEdit,
+			isAuthenticated: !!locals.user
 		};
 	} catch (err) {
 		console.error('Error loading event series:', err);
