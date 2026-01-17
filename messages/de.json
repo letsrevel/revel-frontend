@@ -1792,7 +1792,10 @@
 		"fileUnavailable": "Nicht verfügbar",
 		"multipleChoice": "Multiple Choice",
 		"freeText": "Freitext",
-		"fileUpload": "Datei-Upload"
+		"fileUpload": "Datei-Upload",
+		"previewImage": "Bild anzeigen",
+		"imagePreview": "Bildvorschau",
+		"closePreview": "Vorschau schließen"
 	},
 	"questionEditor": {
 		"answerOptions": "Antwortoptionen",

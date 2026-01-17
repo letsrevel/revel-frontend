@@ -3,7 +3,15 @@
 	import { Card } from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
-	import { Check, CornerDownRight, FileIcon, Download, AlertCircle } from 'lucide-svelte';
+	import {
+		Check,
+		CornerDownRight,
+		FileIcon,
+		Download,
+		AlertCircle,
+		X,
+		ZoomIn
+	} from 'lucide-svelte';
 	import type { QuestionAnswerDetailSchema } from '$lib/api/generated';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import { getImageUrl } from '$lib/utils';
@@ -31,6 +39,17 @@
 	}
 
 	let { answers }: Props = $props();
+
+	// Image preview modal state
+	let previewImage = $state<{ url: string; filename: string } | null>(null);
+
+	function openImagePreview(url: string, filename: string) {
+		previewImage = { url, filename };
+	}
+
+	function closeImagePreview() {
+		previewImage = null;
+	}
 
 	// Check if a question is conditional (has depends_on_option_id)
 	function isConditionalQuestion(answer: QuestionAnswerDetailSchema): boolean {
@@ -192,11 +211,27 @@
 								{#each uploadedFiles as file (file.file_id)}
 									<div class="flex items-center gap-3 rounded-lg border bg-card p-3">
 										{#if file.file_url && isImage(file.mime_type)}
-											<img
-												src={getImageUrl(file.file_url)}
-												alt={file.original_filename}
-												class="h-12 w-12 rounded object-cover"
-											/>
+											<button
+												type="button"
+												class="group relative h-12 w-12 shrink-0 cursor-pointer overflow-hidden rounded focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+												onclick={() =>
+													openImagePreview(getImageUrl(file.file_url!), file.original_filename)}
+												aria-label={m['questionAnswerDisplay.previewImage']?.() || 'Preview image'}
+											>
+												<img
+													src={getImageUrl(file.file_url)}
+													alt={file.original_filename}
+													class="h-full w-full object-cover transition-transform group-hover:scale-110"
+												/>
+												<div
+													class="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/40"
+												>
+													<ZoomIn
+														class="h-5 w-5 text-white opacity-0 transition-opacity group-hover:opacity-100"
+														aria-hidden="true"
+													/>
+												</div>
+											</button>
 										{:else if file.file_url}
 											<div class="flex h-12 w-12 items-center justify-center rounded bg-muted">
 												<FileIcon class="h-6 w-6 text-muted-foreground" aria-hidden="true" />
@@ -213,17 +248,33 @@
 											</p>
 										</div>
 										{#if file.file_url}
-											<Button
-												variant="ghost"
-												size="icon"
-												class="h-8 w-8 shrink-0"
-												href={getImageUrl(file.file_url)}
-												target="_blank"
-												rel="noopener noreferrer"
-												aria-label={m['questionAnswerDisplay.downloadFile']?.() || 'Download file'}
-											>
-												<Download class="h-4 w-4" />
-											</Button>
+											<div class="flex shrink-0 gap-1">
+												{#if isImage(file.mime_type)}
+													<Button
+														variant="ghost"
+														size="icon"
+														class="h-8 w-8"
+														onclick={() =>
+															openImagePreview(getImageUrl(file.file_url!), file.original_filename)}
+														aria-label={m['questionAnswerDisplay.previewImage']?.() ||
+															'Preview image'}
+													>
+														<ZoomIn class="h-4 w-4" />
+													</Button>
+												{/if}
+												<Button
+													variant="ghost"
+													size="icon"
+													class="h-8 w-8"
+													href={getImageUrl(file.file_url)}
+													target="_blank"
+													rel="noopener noreferrer"
+													aria-label={m['questionAnswerDisplay.downloadFile']?.() ||
+														'Download file'}
+												>
+													<Download class="h-4 w-4" />
+												</Button>
+											</div>
 										{:else}
 											<span class="text-xs text-muted-foreground">
 												{m['questionAnswerDisplay.fileUnavailable']?.() || 'Unavailable'}
@@ -247,3 +298,45 @@
 		</Card>
 	{/each}
 </div>
+
+<!-- Image Preview Modal -->
+{#if previewImage}
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+		role="dialog"
+		aria-modal="true"
+		aria-label={m['questionAnswerDisplay.imagePreview']?.() || 'Image preview'}
+		tabindex="-1"
+		onclick={(e) => {
+			if (e.target === e.currentTarget) closeImagePreview();
+		}}
+		onkeydown={(e) => {
+			if (e.key === 'Escape') closeImagePreview();
+		}}
+	>
+		<div class="relative max-h-[90vh] max-w-[90vw]">
+			<!-- Close button -->
+			<Button
+				variant="ghost"
+				size="icon"
+				class="absolute -right-2 -top-2 z-10 h-10 w-10 rounded-full bg-background shadow-lg hover:bg-accent"
+				onclick={closeImagePreview}
+				aria-label={m['questionAnswerDisplay.closePreview']?.() || 'Close preview'}
+			>
+				<X class="h-5 w-5" />
+			</Button>
+
+			<!-- Image -->
+			<img
+				src={previewImage.url}
+				alt={previewImage.filename}
+				class="max-h-[85vh] max-w-[85vw] rounded-lg object-contain shadow-2xl"
+			/>
+
+			<!-- Filename -->
+			<div class="absolute -bottom-10 left-0 right-0 text-center">
+				<p class="text-sm text-white/80">{previewImage.filename}</p>
+			</div>
+		</div>
+	</div>
+{/if}

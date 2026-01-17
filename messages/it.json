@@ -1792,7 +1792,10 @@
 		"fileUnavailable": "Non disponibile",
 		"multipleChoice": "Scelta multipla",
 		"freeText": "Testo libero",
-		"fileUpload": "Caricamento file"
+		"fileUpload": "Caricamento file",
+		"previewImage": "Anteprima immagine",
+		"imagePreview": "Anteprima immagine",
+		"closePreview": "Chiudi anteprima"
 	},
 	"questionEditor": {
 		"answerOptions": "Opzioni di Risposta",
