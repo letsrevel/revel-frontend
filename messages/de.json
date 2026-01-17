@@ -1786,14 +1786,24 @@
 	},
 	"questionAnswerDisplay": {
 		"noOptionSelected": "Keine Option ausgewählt",
-		"unknownAnswerFormat": "Unbekanntes Antwortformat"
+		"unknownAnswerFormat": "Unbekanntes Antwortformat",
+		"noFilesUploaded": "Keine Dateien hochgeladen",
+		"downloadFile": "Datei herunterladen",
+		"fileUnavailable": "Nicht verfügbar",
+		"multipleChoice": "Multiple Choice",
+		"freeText": "Freitext",
+		"fileUpload": "Datei-Upload"
 	},
 	"questionEditor": {
 		"answerOptions": "Antwortoptionen",
 		"checkBoxes": "Kontrollkästchen markieren, um richtige Antworten zu kennzeichnen",
 		"removeOption": "Option entfernen",
 		"questionSettings": "Frageneinstellungen",
-		"llmGuidelines": "LLM-Richtlinien (Optional)"
+		"llmGuidelines": "LLM-Richtlinien (Optional)",
+		"fileUpload": "Datei-Upload",
+		"allowedFileTypes": "Erlaubte Dateitypen",
+		"maxFileSize": "Maximale Dateigröße",
+		"maxFiles": "Maximale Anzahl an Dateien"
 	},
 	"questionnaireAssignmentModal": {
 		"assignQuestionnaire": "Fragebogen zu Veranstaltungen & Serien zuweisen",
@@ -2976,8 +2986,21 @@
 		"requestingExport": "Requesting Export...",
 		"exportRequested": "Export Requested",
 		"requestDataExport": "Request Data Export",
-		"exportLimitNote": "You can request a data export once every 24 hours",
-		"dangerZone": "Danger Zone",
+		"exportLimitNote": "Du kannst einmal alle 24 Stunden einen Datenexport anfordern",
+		"yourFilesTitle": "Deine Dateien",
+		"yourFilesDescription": "Dateien, die du für Fragebogen-Antworten und andere Funktionen hochgeladen hast. Hier kannst du alle deine hochgeladenen Dateien einsehen und verwalten.",
+		"loadingFiles": "Lade deine Dateien...",
+		"filesLoadError": "Fehler beim Laden deiner Dateien. Bitte versuche es später erneut.",
+		"deleteFile": "Datei löschen",
+		"filesCount": "{count} Datei{plural} hochgeladen",
+		"noFilesTitle": "Keine Dateien hochgeladen",
+		"noFilesDescription": "Dateien, die du für Fragebogen-Antworten hochlädst, erscheinen hier.",
+		"fileDeleteModal_title": "Datei löschen?",
+		"fileDeleteModal_description": "Diese Aktion kann nicht rückgängig gemacht werden. Die Datei wird dauerhaft aus deinem Konto entfernt.",
+		"fileDeleteModal_warning": "Achtung: Wenn diese Datei in einer noch nicht überprüften Fragebogen-Einreichung verwendet wird, kann das Löschen deine Bewerbung beeinflussen.",
+		"fileDeleteModal_cancel": "Abbrechen",
+		"fileDeleteModal_confirm": "Datei löschen",
+		"dangerZone": "Gefahrenzone",
 		"deletionWarning": "Once you delete your account, there is no going back. All your data will be permanently removed and cannot be recovered.",
 		"whatWillBeDeleted": "What will be deleted:",
 		"delete_profile": "Your profile and account credentials",
@@ -4420,5 +4443,21 @@
 		"updateError": "Einstellungen konnten nicht aktualisiert werden",
 		"followError": "Folgen fehlgeschlagen",
 		"unfollowError": "Entfolgen fehlgeschlagen"
+	},
+	"fileUploader": {
+		"allFiles": "Alle Dateien",
+		"error_invalidFileType": "Ungültiger Dateityp. Erlaubt: {accept}",
+		"error_fileTooLarge": "Datei zu groß. Max: {maxSize}",
+		"error_tooManyFiles": "Maximal {maxFiles} Dateien erlaubt",
+		"error_uploadFailed": "Datei-Upload fehlgeschlagen",
+		"removeFile": "Datei entfernen",
+		"uploadFile": "Datei hochladen",
+		"dropFilesHere": "Dateien hier ablegen",
+		"clickToUpload": "Klicken zum Hochladen oder Drag & Drop",
+		"uploading": "Wird hochgeladen...",
+		"retryUpload": "Erneut versuchen",
+		"required": "erforderlich",
+		"upTo": "bis zu {maxSize}",
+		"maxFiles": "Maximal {count} Dateien"
 	}
 }

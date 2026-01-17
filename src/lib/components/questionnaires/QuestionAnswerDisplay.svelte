@@ -2,9 +2,11 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Card } from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Check, CornerDownRight } from 'lucide-svelte';
+	import { Button } from '$lib/components/ui/button';
+	import { Check, CornerDownRight, FileIcon, Download, AlertCircle } from 'lucide-svelte';
 	import type { QuestionAnswerDetailSchema } from '$lib/api/generated';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+	import { getImageUrl } from '$lib/utils';
 
 	interface MultipleChoiceAnswerContent {
 		option_id: string;
@@ -14,6 +16,14 @@
 
 	interface FreeTextAnswerContent {
 		answer: string;
+	}
+
+	interface FileUploadAnswerContent {
+		file_id: string;
+		original_filename: string;
+		mime_type: string;
+		file_size: number;
+		file_url?: string | null;
 	}
 
 	interface Props {
@@ -48,6 +58,14 @@
 				: m['questionAnswerDisplay.noOptionSelected']();
 		}
 
+		if (answer.question_type === 'file_upload') {
+			const files = content as unknown as FileUploadAnswerContent[];
+			const fileNames = files.map((f) => f.original_filename).filter(Boolean);
+			return fileNames.length > 0
+				? fileNames.join(', ')
+				: m['questionAnswerDisplay.noFilesUploaded']?.() || 'No files uploaded';
+		}
+
 		return m['questionAnswerDisplay.unknownAnswerFormat']();
 	}
 
@@ -60,6 +78,45 @@
 			return answer.answer_content as unknown as MultipleChoiceAnswerContent[];
 		}
 		return [];
+	}
+
+	function getUploadedFiles(answer: QuestionAnswerDetailSchema): FileUploadAnswerContent[] {
+		if (
+			answer.question_type === 'file_upload' &&
+			Array.isArray(answer.answer_content) &&
+			answer.answer_content.length > 0
+		) {
+			return answer.answer_content as unknown as FileUploadAnswerContent[];
+		}
+		return [];
+	}
+
+	// Format file size for display
+	function formatFileSize(bytes: number): string {
+		if (bytes === 0) return '0 B';
+		const k = 1024;
+		const sizes = ['B', 'KB', 'MB', 'GB'];
+		const i = Math.floor(Math.log(bytes) / Math.log(k));
+		return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+	}
+
+	// Check if file is an image
+	function isImage(mimeType: string): boolean {
+		return mimeType.startsWith('image/');
+	}
+
+	// Get badge label for question type
+	function getQuestionTypeBadge(questionType: string): string {
+		switch (questionType) {
+			case 'multiple_choice':
+				return m['questionAnswerDisplay.multipleChoice']?.() || 'Multiple Choice';
+			case 'free_text':
+				return m['questionAnswerDisplay.freeText']?.() || 'Free Text';
+			case 'file_upload':
+				return m['questionAnswerDisplay.fileUpload']?.() || 'File Upload';
+			default:
+				return questionType;
+		}
 	}
 </script>
 
@@ -84,7 +141,7 @@
 						<CornerDownRight class="mt-0.5 h-4 w-4 shrink-0 text-primary/60" aria-hidden="true" />
 					{/if}
 					<Badge variant={isConditional ? 'secondary' : 'outline'} class="shrink-0">
-						{answer.question_type === 'multiple_choice' ? 'Multiple Choice' : 'Free Text'}
+						{getQuestionTypeBadge(answer.question_type)}
 					</Badge>
 					{#if isConditional}
 						<Badge variant="outline" class="shrink-0 text-xs">Conditional</Badge>
@@ -126,6 +183,58 @@
 						{:else}
 							<p class="text-sm italic text-muted-foreground">
 								{m['questionAnswerDisplay.noOptionSelected']()}
+							</p>
+						{/if}
+					{:else if answer.question_type === 'file_upload'}
+						{@const uploadedFiles = getUploadedFiles(answer)}
+						{#if uploadedFiles.length > 0}
+							<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+								{#each uploadedFiles as file (file.file_id)}
+									<div class="flex items-center gap-3 rounded-lg border bg-card p-3">
+										{#if file.file_url && isImage(file.mime_type)}
+											<img
+												src={getImageUrl(file.file_url)}
+												alt={file.original_filename}
+												class="h-12 w-12 rounded object-cover"
+											/>
+										{:else if file.file_url}
+											<div class="flex h-12 w-12 items-center justify-center rounded bg-muted">
+												<FileIcon class="h-6 w-6 text-muted-foreground" aria-hidden="true" />
+											</div>
+										{:else}
+											<div class="flex h-12 w-12 items-center justify-center rounded bg-muted/50">
+												<AlertCircle class="h-6 w-6 text-muted-foreground" aria-hidden="true" />
+											</div>
+										{/if}
+										<div class="min-w-0 flex-1">
+											<p class="truncate text-sm font-medium">{file.original_filename}</p>
+											<p class="text-xs text-muted-foreground">
+												{formatFileSize(file.file_size)}
+											</p>
+										</div>
+										{#if file.file_url}
+											<Button
+												variant="ghost"
+												size="icon"
+												class="h-8 w-8 shrink-0"
+												href={getImageUrl(file.file_url)}
+												target="_blank"
+												rel="noopener noreferrer"
+												aria-label={m['questionAnswerDisplay.downloadFile']?.() || 'Download file'}
+											>
+												<Download class="h-4 w-4" />
+											</Button>
+										{:else}
+											<span class="text-xs text-muted-foreground">
+												{m['questionAnswerDisplay.fileUnavailable']?.() || 'Unavailable'}
+											</span>
+										{/if}
+									</div>
+								{/each}
+							</div>
+						{:else}
+							<p class="text-sm italic text-muted-foreground">
+								{m['questionAnswerDisplay.noFilesUploaded']?.() || 'No files uploaded'}
 							</p>
 						{/if}
 					{:else}

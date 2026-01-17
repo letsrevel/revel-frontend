@@ -8,13 +8,15 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { RadioGroup, RadioGroupItem } from '$lib/components/ui/radio-group';
-	import { ArrowLeft, Check, Loader2, AlertCircle, CornerDownRight } from 'lucide-svelte';
+	import { ArrowLeft, Check, Loader2, AlertCircle, CornerDownRight, Upload } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
 	import * as m from '$lib/paraglide/messages.js';
 	import { toast } from 'svelte-sonner';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { slide } from 'svelte/transition';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+	import FileUploadQuestion from '$lib/components/questionnaires/FileUploadQuestion.svelte';
+	import type { QuestionnaireFileSchema } from '$lib/api/generated';
 	import {
 		flattenQuestionnaire,
 		getVisibleQuestionIds,
@@ -38,6 +40,7 @@
 	// Form state - using SvelteMap for fine-grained reactivity
 	let multipleChoiceAnswers = new SvelteMap<string, string[]>();
 	let freeTextAnswers = new SvelteMap<string, string>();
+	let fileUploadAnswers = new SvelteMap<string, QuestionnaireFileSchema[]>();
 	let validationErrors = new SvelteMap<string, string>();
 
 	// Track all selected option IDs across all questions
@@ -123,9 +126,14 @@
 						if (!answers || answers.length === 0) {
 							validationErrors.set(q.id, m['questionnaireSubmissionPage.validation_required']());
 						}
-					} else {
+					} else if (q.type === 'free_text') {
 						const answer = freeTextAnswers.get(q.id);
 						if (!answer || answer.trim().length === 0) {
+							validationErrors.set(q.id, m['questionnaireSubmissionPage.validation_required']());
+						}
+					} else if (q.type === 'file_upload') {
+						const files = fileUploadAnswers.get(q.id);
+						if (!files || files.length === 0) {
 							validationErrors.set(q.id, m['questionnaireSubmissionPage.validation_required']());
 						}
 					}
@@ -153,10 +161,18 @@
 					answer: answer.trim()
 				}));
 
+			const visibleFuAnswers = Array.from(fileUploadAnswers.entries())
+				.filter(([questionId, files]) => visibleQuestionIds.has(questionId) && files.length > 0)
+				.map(([question_id, files]) => ({
+					question_id,
+					file_ids: files.map((f) => f.id)
+				}));
+
 			const submission = {
 				questionnaire_id: data.questionnaire.id,
 				multiple_choice_answers: visibleMcAnswers,
 				free_text_answers: visibleFtAnswers,
+				file_upload_answers: visibleFuAnswers,
 				status: 'ready' as const
 			};
 
@@ -243,6 +259,13 @@
 		validationErrors.delete(questionId);
 	}
 
+	function handleFileUploadChange(questionId: string, files: QuestionnaireFileSchema[]) {
+		fileUploadAnswers.set(questionId, files);
+
+		// Clear validation error
+		validationErrors.delete(questionId);
+	}
+
 	function handleSubmit(e: Event) {
 		e.preventDefault();
 		submitMutation.mutate();
@@ -308,6 +331,8 @@
 						{#if isVisible}
 							{#if question.type === 'multiple_choice'}
 								{@render multipleChoiceQuestion(question, false)}
+							{:else if question.type === 'file_upload'}
+								{@render fileUploadQuestion(question, false)}
 							{:else}
 								{@render freeTextQuestion(question, false)}
 							{/if}
@@ -328,6 +353,8 @@
 						<div class="rounded-lg border bg-card p-6">
 							{#if question.type === 'multiple_choice'}
 								{@render multipleChoiceQuestion(question, false)}
+							{:else if question.type === 'file_upload'}
+								{@render fileUploadQuestion(question, false)}
 							{:else}
 								{@render freeTextQuestion(question, false)}
 							{/if}
@@ -450,6 +477,40 @@
 {/snippet}
 
 <!-- Free Text Question Snippet -->
+
+<!-- File Upload Question Snippet -->
+{#snippet fileUploadQuestion(question: ConditionalQuestion, isConditional: boolean)}
+	<div class={cn('space-y-2', isConditional && 'border-l-2 border-primary/30 pl-4')}>
+		<div class="flex items-start gap-2">
+			{#if isConditional}
+				<CornerDownRight class="mt-1 h-4 w-4 shrink-0 text-primary/60" aria-hidden="true" />
+			{/if}
+			<div class="flex-1">
+				<Label for={question.id} class="text-base">
+					<MarkdownContent content={question.question} inline={true} />
+					{#if question.is_mandatory}
+						<span class="text-destructive">*</span>
+					{/if}
+				</Label>
+				{#if question.hint}
+					<MarkdownContent content={question.hint} class="mt-1 text-sm text-muted-foreground" />
+				{/if}
+			</div>
+		</div>
+
+		<FileUploadQuestion
+			questionId={question.id}
+			selectedFiles={fileUploadAnswers.get(question.id) || []}
+			accept={question.allowed_mime_types?.join(',') || '*/*'}
+			maxSize={question.max_file_size || 10 * 1024 * 1024}
+			maxFiles={question.max_files || 1}
+			required={question.is_mandatory}
+			error={validationErrors.get(question.id)}
+			onFilesChange={(files) => handleFileUploadChange(question.id, files)}
+		/>
+	</div>
+{/snippet}
+
 {#snippet freeTextQuestion(question: ConditionalQuestion, isConditional: boolean)}
 	<div class={cn('space-y-2', isConditional && 'border-l-2 border-primary/30 pl-4')}>
 		<div class="flex items-start gap-2">
@@ -516,8 +577,10 @@
 			{#each getQuestionsForOption(flattened, optionId).sort((a, b) => a.order - b.order) as conditionalQ (conditionalQ.id)}
 				{#if conditionalQ.type === 'multiple_choice'}
 					{@render multipleChoiceQuestion(conditionalQ, true)}
-				{:else}
+				{:else if conditionalQ.type === 'free_text'}
 					{@render freeTextQuestion(conditionalQ, true)}
+				{:else if conditionalQ.type === 'file_upload'}
+					{@render fileUploadQuestion(conditionalQ, true)}
 				{/if}
 			{/each}
 
@@ -537,8 +600,10 @@
 						{#each conditionalSection.questions.sort((a, b) => a.order - b.order) as sectionQ (sectionQ.id)}
 							{#if sectionQ.type === 'multiple_choice'}
 								{@render multipleChoiceQuestion(sectionQ, true)}
-							{:else}
+							{:else if sectionQ.type === 'free_text'}
 								{@render freeTextQuestion(sectionQ, true)}
+							{:else if sectionQ.type === 'file_upload'}
+								{@render fileUploadQuestion(sectionQ, true)}
 							{/if}
 						{/each}
 					</div>

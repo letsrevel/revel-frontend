@@ -25,7 +25,8 @@
 		Calendar,
 		Plus,
 		FolderPlus,
-		Pencil
+		Pencil,
+		Upload
 	} from 'lucide-svelte';
 	import QuestionnaireAssignmentModal from '$lib/components/questionnaires/QuestionnaireAssignmentModal.svelte';
 	import QuestionEditor from '$lib/components/questionnaires/QuestionEditor.svelte';
@@ -44,7 +45,10 @@
 		questionnaireDeleteMcOption,
 		questionnaireCreateFtQuestion,
 		questionnaireUpdateFtQuestion,
-		questionnaireDeleteFtQuestion
+		questionnaireDeleteFtQuestion,
+		questionnaireCreateFuQuestion,
+		questionnaireUpdateFuQuestion,
+		questionnaireDeleteFuQuestion
 	} from '$lib/api/generated/sdk.gen';
 	import type { PageData } from './$types';
 	import type {
@@ -72,7 +76,7 @@
 
 	interface Question {
 		id: string;
-		type: 'multiple_choice' | 'free_text';
+		type: 'multiple_choice' | 'free_text' | 'file_upload';
 		text: string;
 		hint?: string;
 		reviewerNotes?: string;
@@ -87,6 +91,10 @@
 		shuffleOptions?: boolean;
 		// For free text
 		llmGuidelines?: string;
+		// For file upload
+		allowedMimeTypes?: string[];
+		maxFileSize?: number;
+		maxFiles?: number;
 		// For tracking existing questions from API
 		_apiId?: string;
 	}
@@ -164,6 +172,26 @@
 		};
 	}
 
+	// Convert API FU question to local format
+	function convertApiFuQuestion(apiQuestion: any, fallbackOrder: number): Question {
+		return {
+			id: crypto.randomUUID(),
+			type: 'file_upload',
+			text: apiQuestion.question || '',
+			hint: apiQuestion.hint || undefined,
+			reviewerNotes: apiQuestion.reviewer_notes || undefined,
+			required: apiQuestion.is_mandatory ?? true,
+			order: apiQuestion.order ?? fallbackOrder,
+			positiveWeight: parseFloat(apiQuestion.positive_weight) || 1.0,
+			negativeWeight: parseFloat(apiQuestion.negative_weight) || 0.0,
+			isFatal: apiQuestion.is_fatal ?? false,
+			allowedMimeTypes: apiQuestion.allowed_mime_types || ['*/*'],
+			maxFileSize: apiQuestion.max_file_size || 10 * 1024 * 1024,
+			maxFiles: apiQuestion.max_files || 1,
+			_apiId: apiQuestion.id
+		};
+	}
+
 	// Convert API section to local format
 	// conditionalQuestionIds is optional - if provided, those questions will be excluded
 	function convertApiSection(apiSection: any, conditionalQuestionIds?: Set<string>): Section {
@@ -175,13 +203,18 @@
 			.map((apiQ: any, i: number) =>
 				convertApiFtQuestion(apiQ, apiQ.order ?? mcQuestions.length + i)
 			);
+		const fuQuestions = (apiSection.fileuploadquestion_questions || [])
+			.filter((apiQ: any) => !conditionalQuestionIds?.has(apiQ.id))
+			.map((apiQ: any, i: number) =>
+				convertApiFuQuestion(apiQ, apiQ.order ?? mcQuestions.length + ftQuestions.length + i)
+			);
 
 		return {
 			id: crypto.randomUUID(),
 			name: apiSection.name || '',
 			description: apiSection.description || undefined,
 			order: apiSection.order ?? 0,
-			questions: [...mcQuestions, ...ftQuestions].sort((a, b) => a.order - b.order),
+			questions: [...mcQuestions, ...ftQuestions, ...fuQuestions].sort((a, b) => a.order - b.order),
 			_apiId: apiSection.id
 		};
 	}
@@ -222,6 +255,9 @@
 			for (const ftq of apiSection.freetextquestion_questions || []) {
 				if (ftq.id) sectionQuestionIds.add(ftq.id);
 			}
+			for (const fuq of apiSection.fileuploadquestion_questions || []) {
+				if (fuq.id) sectionQuestionIds.add(fuq.id);
+			}
 		}
 
 		// ===== Step 2: Collect IDs of questions/sections that are conditional (depend on an option) =====
@@ -239,6 +275,11 @@
 				conditionalQuestionIds.add(ftq.id);
 			}
 		}
+		for (const fuq of q.fileuploadquestion_questions || []) {
+			if (fuq.depends_on_option_id) {
+				conditionalQuestionIds.add(fuq.id);
+			}
+		}
 		// Also check sections within sections for conditional questions
 		for (const apiSection of q.sections || []) {
 			if (apiSection.depends_on_option_id) {
@@ -254,6 +295,11 @@
 					conditionalQuestionIds.add(ftq.id);
 				}
 			}
+			for (const fuq of apiSection.fileuploadquestion_questions || []) {
+				if (fuq.depends_on_option_id) {
+					conditionalQuestionIds.add(fuq.id);
+				}
+			}
 		}
 
 		// ===== Step 3: Convert questions, excluding section questions and conditional questions =====
@@ -267,7 +313,12 @@
 				(apiQ: any) => !sectionQuestionIds.has(apiQ.id) && !conditionalQuestionIds.has(apiQ.id)
 			)
 			.map((apiQ: any) => convertApiFtQuestion(apiQ, apiQ.order ?? 0));
-		topLevelQuestions = [...topMc, ...topFt].sort((a, b) => a.order - b.order);
+		const topFu = (q.fileuploadquestion_questions || [])
+			.filter(
+				(apiQ: any) => !sectionQuestionIds.has(apiQ.id) && !conditionalQuestionIds.has(apiQ.id)
+			)
+			.map((apiQ: any) => convertApiFuQuestion(apiQ, apiQ.order ?? 0));
+		topLevelQuestions = [...topMc, ...topFt, ...topFu].sort((a, b) => a.order - b.order);
 
 		// ===== Step 4: Convert sections, excluding conditional sections =====
 		// Also pass conditionalQuestionIds so section questions that are conditional get filtered out
@@ -527,8 +578,11 @@
 	// ===== Question/Section Management Functions (same as create page) =====
 
 	// Helper to create a new question
-	function createQuestion(type: 'multiple_choice' | 'free_text', order: number): Question {
-		return {
+	function createQuestion(
+		type: 'multiple_choice' | 'free_text' | 'file_upload',
+		order: number
+	): Question {
+		const base = {
 			id: crypto.randomUUID(),
 			type,
 			text: '',
@@ -536,22 +590,33 @@
 			order,
 			positiveWeight: 1.0,
 			negativeWeight: 0.0,
-			isFatal: false,
-			...(type === 'multiple_choice'
-				? {
-						options: [
-							{ text: '', isCorrect: false },
-							{ text: '', isCorrect: false }
-						],
-						allowMultipleAnswers: false,
-						shuffleOptions: true
-					}
-				: { llmGuidelines: '' })
+			isFatal: false
 		};
+
+		if (type === 'multiple_choice') {
+			return {
+				...base,
+				options: [
+					{ text: '', isCorrect: false },
+					{ text: '', isCorrect: false }
+				],
+				allowMultipleAnswers: false,
+				shuffleOptions: true
+			};
+		} else if (type === 'free_text') {
+			return { ...base, llmGuidelines: '' };
+		} else {
+			return {
+				...base,
+				allowedMimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'],
+				maxFileSize: 10 * 1024 * 1024,
+				maxFiles: 1
+			};
+		}
 	}
 
 	// Add a new top-level question
-	function addTopLevelQuestion(type: 'multiple_choice' | 'free_text') {
+	function addTopLevelQuestion(type: 'multiple_choice' | 'free_text' | 'file_upload') {
 		const newQuestion = createQuestion(type, topLevelQuestions.length);
 		topLevelQuestions = [...topLevelQuestions, newQuestion];
 	}
@@ -591,7 +656,10 @@
 	}
 
 	// Add a question to a section
-	function addQuestionToSection(sectionId: string, type: 'multiple_choice' | 'free_text') {
+	function addQuestionToSection(
+		sectionId: string,
+		type: 'multiple_choice' | 'free_text' | 'file_upload'
+	) {
 		sections = sections.map((s) => {
 			if (s.id === sectionId) {
 				const newQuestion = createQuestion(type, s.questions.length);
@@ -776,6 +844,23 @@
 		};
 	}
 
+	// Helper to convert local FU question to API format
+	function fuQuestionToApiFormat(q: Question) {
+		return {
+			question: q.text,
+			hint: q.hint || null,
+			reviewer_notes: q.reviewerNotes || null,
+			is_mandatory: q.required,
+			order: q.order,
+			positive_weight: String(q.positiveWeight),
+			negative_weight: String(q.negativeWeight),
+			is_fatal: q.isFatal,
+			allowed_mime_types: q.allowedMimeTypes || ['*/*'],
+			max_file_size: q.maxFileSize || 10 * 1024 * 1024,
+			max_files: q.maxFiles || 1
+		};
+	}
+
 	async function saveQuestionnaire() {
 		saveError = null;
 
@@ -811,6 +896,12 @@
 			);
 			const existingTopFtIds = new Set(
 				(q?.freetextquestion_questions || [])
+					.filter((q: any) => !q.depends_on_option_id)
+					.map((q: any) => q.id)
+					.filter(Boolean)
+			);
+			const existingTopFuIds = new Set(
+				(q?.fileuploadquestion_questions || [])
 					.filter((q: any) => !q.depends_on_option_id)
 					.map((q: any) => q.id)
 					.filter(Boolean)
@@ -892,6 +983,7 @@
 			// 3. Sync top-level questions
 			const localTopMcApiIds = new Set<string>();
 			const localTopFtApiIds = new Set<string>();
+			const localTopFuApiIds = new Set<string>();
 
 			for (const question of topLevelQuestions) {
 				if (question.type === 'multiple_choice') {
@@ -901,12 +993,19 @@
 					} else {
 						await createMcQuestion(question, null, authHeader, orgQuestionnaireId);
 					}
-				} else {
+				} else if (question.type === 'free_text') {
 					if (question._apiId) {
 						localTopFtApiIds.add(question._apiId);
 						await syncFtQuestion(question, authHeader, orgQuestionnaireId);
 					} else {
 						await createFtQuestion(question, null, authHeader, orgQuestionnaireId);
+					}
+				} else if (question.type === 'file_upload') {
+					if (question._apiId) {
+						localTopFuApiIds.add(question._apiId);
+						await syncFuQuestion(question, authHeader, orgQuestionnaireId);
+					} else {
+						await createFuQuestion(question, null, authHeader, orgQuestionnaireId);
 					}
 				}
 			}
@@ -923,6 +1022,14 @@
 			for (const existingId of existingTopFtIds) {
 				if (!localTopFtApiIds.has(existingId)) {
 					await questionnaireDeleteFtQuestion({
+						path: { org_questionnaire_id: orgQuestionnaireId, question_id: existingId },
+						headers: authHeader
+					});
+				}
+			}
+			for (const existingId of existingTopFuIds) {
+				if (!localTopFuApiIds.has(existingId)) {
+					await questionnaireDeleteFuQuestion({
 						path: { org_questionnaire_id: orgQuestionnaireId, question_id: existingId },
 						headers: authHeader
 					});
@@ -963,9 +1070,16 @@
 				.map((q: any) => q.id)
 				.filter(Boolean)
 		);
+		const existingFuIds = new Set(
+			(apiSection?.fileuploadquestion_questions || [])
+				.filter((q: any) => !q.depends_on_option_id)
+				.map((q: any) => q.id)
+				.filter(Boolean)
+		);
 
 		const localMcApiIds = new Set<string>();
 		const localFtApiIds = new Set<string>();
+		const localFuApiIds = new Set<string>();
 
 		for (const question of section.questions) {
 			if (question.type === 'multiple_choice') {
@@ -975,12 +1089,19 @@
 				} else {
 					await createMcQuestion(question, sectionApiId, authHeader, orgQuestionnaireId);
 				}
-			} else {
+			} else if (question.type === 'free_text') {
 				if (question._apiId) {
 					localFtApiIds.add(question._apiId);
 					await syncFtQuestion(question, authHeader, orgQuestionnaireId);
 				} else {
 					await createFtQuestion(question, sectionApiId, authHeader, orgQuestionnaireId);
+				}
+			} else if (question.type === 'file_upload') {
+				if (question._apiId) {
+					localFuApiIds.add(question._apiId);
+					await syncFuQuestion(question, authHeader, orgQuestionnaireId);
+				} else {
+					await createFuQuestion(question, sectionApiId, authHeader, orgQuestionnaireId);
 				}
 			}
 		}
@@ -1002,6 +1123,14 @@
 				});
 			}
 		}
+		for (const existingId of existingFuIds) {
+			if (!localFuApiIds.has(existingId)) {
+				await questionnaireDeleteFuQuestion({
+					path: { org_questionnaire_id: orgQuestionnaireId, question_id: existingId },
+					headers: authHeader
+				});
+			}
+		}
 	}
 
 	async function createSectionQuestions(
@@ -1013,8 +1142,10 @@
 		for (const question of section.questions) {
 			if (question.type === 'multiple_choice') {
 				await createMcQuestion(question, sectionApiId, authHeader, orgQuestionnaireId);
-			} else {
+			} else if (question.type === 'free_text') {
 				await createFtQuestion(question, sectionApiId, authHeader, orgQuestionnaireId);
+			} else if (question.type === 'file_upload') {
+				await createFuQuestion(question, sectionApiId, authHeader, orgQuestionnaireId);
 			}
 		}
 	}
@@ -1188,6 +1319,52 @@
 	) {
 		const apiFormat = ftQuestionToApiFormat(question);
 		const response = await questionnaireCreateFtQuestion({
+			path: { org_questionnaire_id: orgQuestionnaireId },
+			body: {
+				section_id: sectionId,
+				depends_on_option_id: dependsOnOptionId || null,
+				...apiFormat
+			},
+			headers: authHeader
+		});
+		return response.data;
+	}
+
+	async function syncFuQuestion(
+		question: Question,
+		authHeader: { Authorization: string },
+		orgQuestionnaireId: string,
+		dependsOnOptionId?: string | null
+	) {
+		if (!question._apiId) return;
+
+		await questionnaireUpdateFuQuestion({
+			path: { org_questionnaire_id: orgQuestionnaireId, question_id: question._apiId },
+			body: {
+				question: question.text,
+				hint: question.hint || null,
+				is_mandatory: question.required,
+				positive_weight: String(question.positiveWeight),
+				negative_weight: String(question.negativeWeight),
+				is_fatal: question.isFatal,
+				allowed_mime_types: question.allowedMimeTypes || ['*/*'],
+				max_file_size: question.maxFileSize || 10 * 1024 * 1024,
+				max_files: question.maxFiles || 1,
+				depends_on_option_id: dependsOnOptionId ?? null
+			},
+			headers: authHeader
+		});
+	}
+
+	async function createFuQuestion(
+		question: Question,
+		sectionId: string | null,
+		authHeader: { Authorization: string },
+		orgQuestionnaireId: string,
+		dependsOnOptionId?: string | null
+	) {
+		const apiFormat = fuQuestionToApiFormat(question);
+		const response = await questionnaireCreateFuQuestion({
 			path: { org_questionnaire_id: orgQuestionnaireId },
 			body: {
 				section_id: sectionId,
@@ -2022,6 +2199,15 @@
 								<Plus class="h-4 w-4" />
 								Free Text
 							</Button>
+							<Button
+								variant="outline"
+								size="sm"
+								onclick={() => addTopLevelQuestion('file_upload')}
+								class="gap-2"
+							>
+								<Upload class="h-4 w-4" />
+								File Upload
+							</Button>
 							<Button variant="secondary" size="sm" onclick={addSection} class="gap-2">
 								<FolderPlus class="h-4 w-4" />
 								Add Section
@@ -2161,9 +2347,15 @@
 												class="rounded px-2 py-1 text-xs font-medium {question.type ===
 												'multiple_choice'
 													? 'bg-blue-100 text-blue-700'
-													: 'bg-purple-100 text-purple-700'}"
+													: question.type === 'file_upload'
+														? 'bg-green-100 text-green-700'
+														: 'bg-purple-100 text-purple-700'}"
 											>
-												{question.type === 'multiple_choice' ? 'Multiple Choice' : 'Free Text'}
+												{question.type === 'multiple_choice'
+													? 'Multiple Choice'
+													: question.type === 'file_upload'
+														? 'File Upload'
+														: 'Free Text'}
 											</span>
 											{#if question.required}
 												<span class="text-xs text-destructive">Required</span>
@@ -2280,9 +2472,15 @@
 												class="rounded px-2 py-1 text-xs font-medium {question.type ===
 												'multiple_choice'
 													? 'bg-blue-100 text-blue-700'
-													: 'bg-purple-100 text-purple-700'}"
+													: question.type === 'file_upload'
+														? 'bg-green-100 text-green-700'
+														: 'bg-purple-100 text-purple-700'}"
 											>
-												{question.type === 'multiple_choice' ? 'Multiple Choice' : 'Free Text'}
+												{question.type === 'multiple_choice'
+													? 'Multiple Choice'
+													: question.type === 'file_upload'
+														? 'File Upload'
+														: 'Free Text'}
 											</span>
 											{#if question.required}
 												<span class="text-xs text-destructive">Required</span>
@@ -2414,6 +2612,15 @@
 						>
 							<Plus class="h-4 w-4" />
 							Free Text
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							onclick={() => addTopLevelQuestion('file_upload')}
+							class="gap-2"
+						>
+							<Upload class="h-4 w-4" />
+							File Upload
 						</Button>
 						<Button variant="secondary" size="sm" onclick={addSection} class="gap-2">
 							<FolderPlus class="h-4 w-4" />

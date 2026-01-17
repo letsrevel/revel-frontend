@@ -16,11 +16,41 @@
 		CornerDownRight,
 		FileText,
 		ListChecks,
-		FolderPlus
+		FolderPlus,
+		Upload
 	} from 'lucide-svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import { slide } from 'svelte/transition';
+	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
+
+	// File type categories for file upload questions
+	const FILE_TYPE_CATEGORIES = [
+		{
+			id: 'images',
+			label: 'Images (JPEG, PNG, GIF, WebP)',
+			mimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+		},
+		{ id: 'documents', label: 'Documents (PDF)', mimeTypes: ['application/pdf'] },
+		{
+			id: 'spreadsheets',
+			label: 'Spreadsheets (Excel)',
+			mimeTypes: [
+				'application/vnd.ms-excel',
+				'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+			]
+		},
+		{ id: 'text', label: 'Text Files (TXT, CSV)', mimeTypes: ['text/plain', 'text/csv'] },
+		{ id: 'archives', label: 'Archives (ZIP)', mimeTypes: ['application/zip'] }
+	];
+
+	// File size options (in bytes)
+	const FILE_SIZE_OPTIONS = [
+		{ value: 1048576, label: '1 MB' },
+		{ value: 5242880, label: '5 MB' },
+		{ value: 10485760, label: '10 MB' },
+		{ value: 26214400, label: '25 MB' }
+	];
 
 	// Conditional section type (shown when option is selected)
 	interface ConditionalSection {
@@ -42,7 +72,7 @@
 
 	interface Question {
 		id: string;
-		type: 'multiple_choice' | 'free_text';
+		type: 'multiple_choice' | 'free_text' | 'file_upload';
 		text: string;
 		hint?: string;
 		reviewerNotes?: string;
@@ -57,6 +87,10 @@
 		shuffleOptions?: boolean;
 		// For free text
 		llmGuidelines?: string;
+		// For file upload
+		allowedMimeTypes?: string[];
+		maxFileSize?: number;
+		maxFiles?: number;
 	}
 
 	interface Props {
@@ -152,8 +186,11 @@
 	}
 
 	// Create a new question object
-	function createQuestion(type: 'multiple_choice' | 'free_text', order: number): Question {
-		return {
+	function createQuestion(
+		type: 'multiple_choice' | 'free_text' | 'file_upload',
+		order: number
+	): Question {
+		const base: Question = {
 			id: crypto.randomUUID(),
 			type,
 			text: '',
@@ -161,22 +198,40 @@
 			order,
 			positiveWeight: 1.0,
 			negativeWeight: 0.0,
-			isFatal: false,
-			...(type === 'multiple_choice'
-				? {
-						options: [
-							{ text: '', isCorrect: false },
-							{ text: '', isCorrect: false }
-						],
-						allowMultipleAnswers: false,
-						shuffleOptions: true
-					}
-				: { llmGuidelines: '' })
+			isFatal: false
 		};
+
+		if (type === 'multiple_choice') {
+			return {
+				...base,
+				options: [
+					{ text: '', isCorrect: false },
+					{ text: '', isCorrect: false }
+				],
+				allowMultipleAnswers: false,
+				shuffleOptions: true
+			};
+		} else if (type === 'free_text') {
+			return {
+				...base,
+				llmGuidelines: ''
+			};
+		} else {
+			// file_upload
+			return {
+				...base,
+				allowedMimeTypes: ['image/jpeg', 'image/png', 'application/pdf'],
+				maxFileSize: 5242880, // 5MB
+				maxFiles: 1
+			};
+		}
 	}
 
 	// Add conditional question to an option
-	function addConditionalQuestion(optionIndex: number, type: 'multiple_choice' | 'free_text') {
+	function addConditionalQuestion(
+		optionIndex: number,
+		type: 'multiple_choice' | 'free_text' | 'file_upload'
+	) {
 		if (question.type === 'multiple_choice' && question.options) {
 			const newOptions = [...question.options];
 			const currentConditionals = newOptions[optionIndex].conditionalQuestions || [];
@@ -295,7 +350,7 @@
 	function addQuestionToConditionalSection(
 		optionIndex: number,
 		sectionIndex: number,
-		type: 'multiple_choice' | 'free_text'
+		type: 'multiple_choice' | 'free_text' | 'file_upload'
 	) {
 		if (question.type === 'multiple_choice' && question.options) {
 			const newOptions = [...question.options];
@@ -370,7 +425,11 @@
 					<div class="flex items-center justify-between">
 						<div class="flex items-center gap-2">
 							<Badge variant={isNested ? 'secondary' : 'outline'}>
-								{question.type === 'multiple_choice' ? 'Multiple Choice' : 'Free Text'}
+								{question.type === 'multiple_choice'
+									? 'Multiple Choice'
+									: question.type === 'free_text'
+										? 'Free Text'
+										: 'File Upload'}
 							</Badge>
 							{#if isNested}
 								<Badge variant="outline" class="text-xs">Conditional</Badge>
@@ -514,6 +573,16 @@
 														<Button
 															variant="outline"
 															size="sm"
+															onclick={() => addConditionalQuestion(index, 'file_upload')}
+															class="gap-1 text-xs"
+															title="Add file upload question"
+														>
+															<Upload class="h-3 w-3" />
+															FU
+														</Button>
+														<Button
+															variant="outline"
+															size="sm"
 															onclick={() => addConditionalSection(index)}
 															class="gap-1 text-xs"
 															title="Add section with multiple questions"
@@ -533,7 +602,7 @@
 														{#each option.conditionalQuestions as condQ, condIndex (condQ.id)}
 															<svelte:self
 																question={condQ}
-																onUpdate={(updates) =>
+																onUpdate={(updates: Partial<Question>) =>
 																	updateConditionalQuestion(index, condIndex, updates)}
 																onRemove={() => removeConditionalQuestion(index, condIndex)}
 																isNested={true}
@@ -633,6 +702,20 @@
 																					<FileText class="h-3 w-3" />
 																					FT
 																				</Button>
+																				<Button
+																					variant="outline"
+																					size="sm"
+																					onclick={() =>
+																						addQuestionToConditionalSection(
+																							index,
+																							sectionIndex,
+																							'file_upload'
+																						)}
+																					class="gap-1 text-xs"
+																				>
+																					<Upload class="h-3 w-3" />
+																					FU
+																				</Button>
 																			</div>
 																		</div>
 
@@ -641,7 +724,7 @@
 																				{#each condSection.questions as sectionQ, questionIndex (sectionQ.id)}
 																					<svelte:self
 																						question={sectionQ}
-																						onUpdate={(updates) =>
+																						onUpdate={(updates: Partial<Question>) =>
 																							updateQuestionInConditionalSection(
 																								index,
 																								sectionIndex,
@@ -738,6 +821,104 @@
 							<p class="text-xs text-muted-foreground">
 								Optional question-specific guidelines for AI evaluation
 							</p>
+						</div>
+					{/if}
+
+					<!-- File Upload Settings -->
+					{#if question.type === 'file_upload'}
+						<div class="space-y-4">
+							<!-- Allowed File Types -->
+							<div class="space-y-2">
+								<Label>{m['questionEditor.allowedFileTypes']?.() || 'Allowed File Types'}</Label>
+								<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+									{#each FILE_TYPE_CATEGORIES as category (category.id)}
+										{@const isSelected = category.mimeTypes.every((mime) =>
+											question.allowedMimeTypes?.includes(mime)
+										)}
+										<div class="flex items-center space-x-2">
+											<Checkbox
+												id="filetype-{question.id}-{category.id}"
+												checked={isSelected}
+												onCheckedChange={(checked) => {
+													let newMimeTypes = [...(question.allowedMimeTypes || [])];
+													if (checked) {
+														// Add all mime types from this category
+														category.mimeTypes.forEach((mime) => {
+															if (!newMimeTypes.includes(mime)) {
+																newMimeTypes.push(mime);
+															}
+														});
+													} else {
+														// Remove all mime types from this category
+														newMimeTypes = newMimeTypes.filter(
+															(mime) => !category.mimeTypes.includes(mime)
+														);
+													}
+													onUpdate({ allowedMimeTypes: newMimeTypes });
+												}}
+											/>
+											<Label
+												for="filetype-{question.id}-{category.id}"
+												class="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+											>
+												{category.label}
+											</Label>
+										</div>
+									{/each}
+								</div>
+								{#if (question.allowedMimeTypes?.length || 0) === 0}
+									<p class="text-xs text-destructive">Please select at least one file type</p>
+								{/if}
+							</div>
+
+							<div class="grid gap-4 sm:grid-cols-2">
+								<!-- Max File Size -->
+								<div class="space-y-2">
+									<Label for="maxsize-{question.id}"
+										>{m['questionEditor.maxFileSize']?.() || 'Maximum File Size'}</Label
+									>
+									<Select
+										type="single"
+										value={String(question.maxFileSize || 5242880)}
+										onValueChange={(value) => {
+											if (value) {
+												onUpdate({ maxFileSize: parseInt(value) });
+											}
+										}}
+									>
+										<SelectTrigger id="maxsize-{question.id}" class="w-full">
+											{FILE_SIZE_OPTIONS.find((o) => o.value === (question.maxFileSize || 5242880))
+												?.label || '5 MB'}
+										</SelectTrigger>
+										<SelectContent>
+											{#each FILE_SIZE_OPTIONS as option (option.value)}
+												<SelectItem value={String(option.value)}>
+													{option.label}
+												</SelectItem>
+											{/each}
+										</SelectContent>
+									</Select>
+								</div>
+
+								<!-- Max Number of Files -->
+								<div class="space-y-2">
+									<Label for="maxfiles-{question.id}"
+										>{m['questionEditor.maxFiles']?.() || 'Maximum Number of Files'}</Label
+									>
+									<Input
+										id="maxfiles-{question.id}"
+										type="number"
+										value={question.maxFiles || 1}
+										oninput={(e) => {
+											const val = parseInt(e.currentTarget.value) || 1;
+											onUpdate({ maxFiles: Math.max(1, Math.min(10, val)) });
+										}}
+										min={1}
+										max={10}
+									/>
+									<p class="text-xs text-muted-foreground">1-10 files allowed</p>
+								</div>
+							</div>
 						</div>
 					{/if}
 

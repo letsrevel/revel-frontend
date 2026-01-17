@@ -3,7 +3,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { GripVertical, Trash2, Plus, ChevronDown, ChevronUp } from 'lucide-svelte';
+	import { GripVertical, Trash2, Plus, ChevronDown, ChevronUp, Upload } from 'lucide-svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import QuestionEditor from './QuestionEditor.svelte';
 	import { dndzone, SHADOW_PLACEHOLDER_ITEM_ID } from 'svelte-dnd-action';
@@ -11,7 +11,7 @@
 
 	interface Question {
 		id: string;
-		type: 'multiple_choice' | 'free_text';
+		type: 'multiple_choice' | 'free_text' | 'file_upload';
 		text: string;
 		hint?: string;
 		reviewerNotes?: string;
@@ -26,6 +26,10 @@
 		shuffleOptions?: boolean;
 		// For free text
 		llmGuidelines?: string;
+		// For file upload
+		allowedMimeTypes?: string[];
+		maxFileSize?: number;
+		maxFiles?: number;
 	}
 
 	interface Section {
@@ -40,7 +44,7 @@
 		section: Section;
 		onUpdate: (updates: Partial<Section>) => void;
 		onRemove: () => void;
-		onAddQuestion: (type: 'multiple_choice' | 'free_text') => void;
+		onAddQuestion: (type: 'multiple_choice' | 'free_text' | 'file_upload') => void;
 		onUpdateQuestion: (questionId: string, updates: Partial<Question>) => void;
 		onRemoveQuestion: (questionId: string) => void;
 		onQuestionsReorder: (questions: Question[]) => void;
@@ -165,6 +169,15 @@
 							<Plus class="h-4 w-4" />
 							Free Text
 						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							onclick={() => onAddQuestion('file_upload')}
+							class="gap-2"
+						>
+							<Upload class="h-4 w-4" />
+							File Upload
+						</Button>
 					</div>
 				</div>
 
@@ -219,6 +232,15 @@
 						>
 							<Plus class="h-4 w-4" />
 							Free Text
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							onclick={() => onAddQuestion('file_upload')}
+							class="gap-2"
+						>
+							<Upload class="h-4 w-4" />
+							File Upload
 						</Button>
 					</div>
 				{/if}

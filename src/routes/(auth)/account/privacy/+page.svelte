@@ -2,7 +2,21 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
 	import type { ActionData } from './$types';
-	import { Trash2, AlertTriangle, Mail, Loader2, Download, Check } from 'lucide-svelte';
+	import {
+		Trash2,
+		AlertTriangle,
+		Mail,
+		Loader2,
+		Download,
+		Check,
+		FileIcon,
+		FolderOpen
+	} from 'lucide-svelte';
+	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
+	import { questionnairefileListFiles, questionnairefileDeleteFile } from '$lib/api/generated';
+	import type { QuestionnaireFileSchema } from '$lib/api/generated';
+	import { getImageUrl } from '$lib/utils';
+	import { Button } from '$lib/components/ui/button';
 
 	interface Props {
 		form: ActionData;
@@ -16,12 +30,76 @@
 	let isSubmitting = $state(false);
 	let isExporting = $state(false);
 
+	// Files section state
+	let deletingFileId = $state<string | null>(null);
+	let showFileDeleteModal = $state(false);
+	let fileToDelete = $state<QuestionnaireFileSchema | null>(null);
+
 	// Success states
 	let success = $derived(form?.success || false);
 	let exportSuccess = $derived(form?.exportSuccess || false);
 
 	// Error handling
 	let errors = $derived((form?.errors || {}) as Record<string, string>);
+
+	// Query client for cache invalidation
+	const queryClient = useQueryClient();
+
+	// Query for user's files
+	const filesQuery = createQuery(() => ({
+		queryKey: ['user-files'],
+		queryFn: async () => {
+			const response = await questionnairefileListFiles({
+				query: { page: 1, page_size: 100 }
+			});
+			return response.data?.results || [];
+		}
+	}));
+
+	// Mutation for deleting files
+	const deleteMutation = createMutation(() => ({
+		mutationFn: async (fileId: string) => {
+			await questionnairefileDeleteFile({ path: { file_id: fileId } });
+			return fileId;
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['user-files'] });
+			queryClient.invalidateQueries({ queryKey: ['questionnaire-files'] });
+			deletingFileId = null;
+		},
+		onError: () => {
+			deletingFileId = null;
+		}
+	}));
+
+	function openFileDeleteModal(file: QuestionnaireFileSchema) {
+		fileToDelete = file;
+		showFileDeleteModal = true;
+	}
+
+	function closeFileDeleteModal() {
+		showFileDeleteModal = false;
+		fileToDelete = null;
+	}
+
+	function confirmDeleteFile() {
+		if (!fileToDelete) return;
+		deletingFileId = fileToDelete.id;
+		deleteMutation.mutate(fileToDelete.id);
+		closeFileDeleteModal();
+	}
+
+	function formatFileSize(bytes: number): string {
+		if (bytes === 0) return '0 B';
+		const k = 1024;
+		const sizes = ['B', 'KB', 'MB', 'GB'];
+		const i = Math.floor(Math.log(bytes) / Math.log(k));
+		return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+	}
+
+	function isImage(mimeType: string): boolean {
+		return mimeType.startsWith('image/');
+	}
 
 	function openDeletionModal() {
 		showDeletionModal = true;
@@ -179,6 +257,90 @@
 						{m['accountPrivacyPage.exportLimitNote']()}
 					</p>
 				</form>
+			</div>
+		</div>
+	</section>
+
+	<!-- Your Files Section -->
+	<section class="mb-12 rounded-lg border border-border bg-card p-6">
+		<div class="flex items-start gap-4">
+			<div
+				class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary/10"
+			>
+				<FolderOpen class="h-6 w-6 text-primary" aria-hidden="true" />
+			</div>
+			<div class="flex-1">
+				<h2 class="text-xl font-semibold">{m['accountPrivacyPage.yourFilesTitle']()}</h2>
+				<p class="mt-2 text-sm text-muted-foreground">
+					{m['accountPrivacyPage.yourFilesDescription']()}
+				</p>
+
+				<div class="mt-6">
+					{#if filesQuery.isPending}
+						<div class="flex items-center justify-center py-8">
+							<Loader2 class="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
+							<span class="ml-2 text-sm text-muted-foreground"
+								>{m['accountPrivacyPage.loadingFiles']()}</span
+							>
+						</div>
+					{:else if filesQuery.error}
+						<div class="rounded-md border border-destructive bg-destructive/10 p-4">
+							<p class="text-sm text-destructive">{m['accountPrivacyPage.filesLoadError']()}</p>
+						</div>
+					{:else if filesQuery.data && filesQuery.data.length > 0}
+						<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+							{#each filesQuery.data as file (file.id)}
+								<div class="relative flex items-center gap-3 rounded-lg border bg-background p-3">
+									{#if isImage(file.mime_type) && file.file_url}
+										<img
+											src={getImageUrl(file.file_url)}
+											alt={file.original_filename}
+											class="h-12 w-12 rounded object-cover"
+										/>
+									{:else}
+										<div class="flex h-12 w-12 items-center justify-center rounded bg-muted">
+											<FileIcon class="h-6 w-6 text-muted-foreground" aria-hidden="true" />
+										</div>
+									{/if}
+									<div class="min-w-0 flex-1">
+										<p class="truncate text-sm font-medium">{file.original_filename}</p>
+										<p class="text-xs text-muted-foreground">
+											{formatFileSize(file.file_size)}
+										</p>
+									</div>
+									<Button
+										variant="ghost"
+										size="icon"
+										class="h-8 w-8 shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
+										onclick={() => openFileDeleteModal(file)}
+										disabled={deletingFileId === file.id}
+										aria-label={m['accountPrivacyPage.deleteFile']()}
+									>
+										{#if deletingFileId === file.id}
+											<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
+										{:else}
+											<Trash2 class="h-4 w-4" aria-hidden="true" />
+										{/if}
+									</Button>
+								</div>
+							{/each}
+						</div>
+						<p class="mt-4 text-xs text-muted-foreground">
+							{m['accountPrivacyPage.filesCount']({
+								count: filesQuery.data.length,
+								plural: filesQuery.data.length === 1 ? '' : 's'
+							})}
+						</p>
+					{:else}
+						<div class="flex flex-col items-center justify-center py-8 text-center">
+							<FolderOpen class="h-12 w-12 text-muted-foreground/50" aria-hidden="true" />
+							<p class="mt-4 text-sm font-medium">{m['accountPrivacyPage.noFilesTitle']()}</p>
+							<p class="mt-1 text-xs text-muted-foreground">
+								{m['accountPrivacyPage.noFilesDescription']()}
+							</p>
+						</div>
+					{/if}
+				</div>
 			</div>
 		</div>
 	</section>
@@ -349,6 +511,85 @@
 					</button>
 				</div>
 			</form>
+		</div>
+	</div>
+{/if}
+
+<!-- File Deletion Confirmation Modal -->
+{#if showFileDeleteModal && fileToDelete}
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+		role="dialog"
+		aria-modal="true"
+		aria-labelledby="file-deletion-modal-title"
+		tabindex="-1"
+		onclick={(e) => {
+			if (e.target === e.currentTarget) closeFileDeleteModal();
+		}}
+		onkeydown={(e) => {
+			if (e.key === 'Escape') closeFileDeleteModal();
+		}}
+	>
+		<div class="w-full max-w-md rounded-lg bg-background p-6 shadow-lg">
+			<div class="mb-4 flex items-start gap-3">
+				<div
+					class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-destructive/10"
+				>
+					<AlertTriangle class="h-5 w-5 text-destructive" aria-hidden="true" />
+				</div>
+				<div class="flex-1">
+					<h2 id="file-deletion-modal-title" class="text-lg font-semibold">
+						{m['accountPrivacyPage.fileDeleteModal_title']()}
+					</h2>
+					<p class="mt-1 text-sm text-muted-foreground">
+						{m['accountPrivacyPage.fileDeleteModal_description']()}
+					</p>
+				</div>
+			</div>
+
+			<div class="mb-6 rounded-md bg-muted/50 p-4">
+				<div class="flex items-center gap-3">
+					{#if isImage(fileToDelete.mime_type) && fileToDelete.file_url}
+						<img
+							src={getImageUrl(fileToDelete.file_url)}
+							alt={fileToDelete.original_filename}
+							class="h-12 w-12 rounded object-cover"
+						/>
+					{:else}
+						<div class="flex h-12 w-12 items-center justify-center rounded bg-muted">
+							<FileIcon class="h-6 w-6 text-muted-foreground" aria-hidden="true" />
+						</div>
+					{/if}
+					<div class="min-w-0 flex-1">
+						<p class="truncate text-sm font-medium">{fileToDelete.original_filename}</p>
+						<p class="text-xs text-muted-foreground">{formatFileSize(fileToDelete.file_size)}</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="mb-6 rounded-md border border-amber-500/30 bg-amber-50 p-4 dark:bg-amber-950/30">
+				<p class="text-sm text-amber-800 dark:text-amber-200">
+					{m['accountPrivacyPage.fileDeleteModal_warning']()}
+				</p>
+			</div>
+
+			<div class="flex gap-3">
+				<button
+					type="button"
+					onclick={closeFileDeleteModal}
+					class="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+				>
+					{m['accountPrivacyPage.fileDeleteModal_cancel']()}
+				</button>
+				<button
+					type="button"
+					onclick={confirmDeleteFile}
+					class="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-md bg-destructive px-4 py-2 text-sm font-semibold text-destructive-foreground transition-colors hover:bg-destructive/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+				>
+					<Trash2 class="h-4 w-4" aria-hidden="true" />
+					{m['accountPrivacyPage.fileDeleteModal_confirm']()}
+				</button>
+			</div>
 		</div>
 	</div>
 {/if}

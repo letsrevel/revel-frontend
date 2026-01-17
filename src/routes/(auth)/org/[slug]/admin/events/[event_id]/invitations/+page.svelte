@@ -1731,11 +1731,9 @@
 							{#each data.ticketTiers as tier (tier.id)}
 								<option value={tier.id}>
 									{tier.name}
-									{#if tier.price !== null && tier.price !== undefined && tier.price !== 0}
-										- {tier.currency === 'EUR' ? '€' : tier.currency}{(typeof tier.price ===
-										'number'
-											? tier.price / 100
-											: parseFloat(tier.price) / 100
+									{#if tier.price !== null && tier.price !== undefined && parseFloat(tier.price) !== 0}
+										- {tier.currency === 'EUR' ? '€' : tier.currency}{(
+											parseFloat(tier.price) / 100
 										).toFixed(2)}
 									{:else}
 										- {m['eventInvitationsAdmin.free']()}
@@ -1906,10 +1904,8 @@
 								{#each data.ticketTiers as tier (tier.id)}
 									<option value={tier.id}>
 										{tier.name}
-										{#if tier.price !== null && tier.price !== undefined && tier.price !== 0}
-											- {tier.currency}{typeof tier.price === 'number'
-												? tier.price.toFixed(2)
-												: tier.price}
+										{#if tier.price !== null && tier.price !== undefined && parseFloat(tier.price) !== 0}
+											- {tier.currency}{parseFloat(tier.price).toFixed(2)}
 										{:else}
 											- {m['eventInvitationsAdmin.free']()}
 										{/if}
@@ -2087,11 +2083,9 @@
 							{#each data.ticketTiers as tier (tier.id)}
 								<option value={tier.id}>
 									{tier.name}
-									{#if tier.price !== null && tier.price !== undefined && tier.price !== 0}
-										- {tier.currency === 'EUR' ? '€' : tier.currency}{(typeof tier.price ===
-										'number'
-											? tier.price / 100
-											: parseFloat(tier.price) / 100
+									{#if tier.price !== null && tier.price !== undefined && parseFloat(tier.price) !== 0}
+										- {tier.currency === 'EUR' ? '€' : tier.currency}{(
+											parseFloat(tier.price) / 100
 										).toFixed(2)}
 									{:else}
 										- {m['eventInvitationsAdmin.free']()}

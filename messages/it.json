@@ -1786,14 +1786,24 @@
 	},
 	"questionAnswerDisplay": {
 		"noOptionSelected": "Nessuna opzione selezionata",
-		"unknownAnswerFormat": "Formato risposta sconosciuto"
+		"unknownAnswerFormat": "Formato risposta sconosciuto",
+		"noFilesUploaded": "Nessun file caricato",
+		"downloadFile": "Scarica file",
+		"fileUnavailable": "Non disponibile",
+		"multipleChoice": "Scelta multipla",
+		"freeText": "Testo libero",
+		"fileUpload": "Caricamento file"
 	},
 	"questionEditor": {
 		"answerOptions": "Opzioni di Risposta",
 		"checkBoxes": "Seleziona le caselle per contrassegnare le risposte corrette",
 		"removeOption": "Rimuovi opzione",
 		"questionSettings": "Impostazioni Domanda",
-		"llmGuidelines": "Linee Guida LLM (Facoltativo)"
+		"llmGuidelines": "Linee Guida LLM (Facoltativo)",
+		"fileUpload": "Caricamento File",
+		"allowedFileTypes": "Tipi di file consentiti",
+		"maxFileSize": "Dimensione massima del file",
+		"maxFiles": "Numero massimo di file"
 	},
 	"questionnaireAssignmentModal": {
 		"assignQuestionnaire": "Assegna Questionario a Eventi e Serie",
@@ -2976,8 +2986,21 @@
 		"requestingExport": "Requesting Export...",
 		"exportRequested": "Export Requested",
 		"requestDataExport": "Request Data Export",
-		"exportLimitNote": "You can request a data export once every 24 hours",
-		"dangerZone": "Danger Zone",
+		"exportLimitNote": "Puoi richiedere un export dei dati una volta ogni 24 ore",
+		"yourFilesTitle": "I tuoi file",
+		"yourFilesDescription": "File che hai caricato per le risposte ai questionari e altre funzionalità. Qui puoi visualizzare e gestire tutti i tuoi file caricati.",
+		"loadingFiles": "Caricamento dei tuoi file...",
+		"filesLoadError": "Errore nel caricamento dei tuoi file. Riprova più tardi.",
+		"deleteFile": "Elimina file",
+		"filesCount": "{count} file caricat{plural}",
+		"noFilesTitle": "Nessun file caricato",
+		"noFilesDescription": "I file che carichi per le risposte ai questionari appariranno qui.",
+		"fileDeleteModal_title": "Eliminare il file?",
+		"fileDeleteModal_description": "Questa azione non può essere annullata. Il file verrà rimosso permanentemente dal tuo account.",
+		"fileDeleteModal_warning": "Attenzione: Se questo file è utilizzato in una risposta a un questionario non ancora verificata, eliminarlo potrebbe influire sulla tua candidatura.",
+		"fileDeleteModal_cancel": "Annulla",
+		"fileDeleteModal_confirm": "Elimina file",
+		"dangerZone": "Zona pericolosa",
 		"deletionWarning": "Once you delete your account, there is no going back. All your data will be permanently removed and cannot be recovered.",
 		"whatWillBeDeleted": "What will be deleted:",
 		"delete_profile": "Your profile and account credentials",
@@ -4420,5 +4443,21 @@
 		"updateError": "Impossibile aggiornare le preferenze",
 		"followError": "Impossibile seguire",
 		"unfollowError": "Impossibile smettere di seguire"
+	},
+	"fileUploader": {
+		"allFiles": "Tutti i file",
+		"error_invalidFileType": "Tipo di file non valido. Permessi: {accept}",
+		"error_fileTooLarge": "File troppo grande. Max: {maxSize}",
+		"error_tooManyFiles": "Massimo {maxFiles} file consentiti",
+		"error_uploadFailed": "Caricamento file fallito",
+		"removeFile": "Rimuovi file",
+		"uploadFile": "Carica file",
+		"dropFilesHere": "Trascina i file qui",
+		"clickToUpload": "Clicca per caricare o trascina",
+		"uploading": "Caricamento in corso...",
+		"retryUpload": "Riprova",
+		"required": "obbligatorio",
+		"upTo": "fino a {maxSize}",
+		"maxFiles": "Massimo {count} file"
 	}
 }
