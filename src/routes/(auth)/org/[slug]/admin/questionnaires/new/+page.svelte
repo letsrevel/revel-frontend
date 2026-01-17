@@ -15,7 +15,7 @@
 		CardHeader,
 		CardTitle
 	} from '$lib/components/ui/card';
-	import { Plus, ArrowLeft, FolderPlus } from 'lucide-svelte';
+	import { Plus, ArrowLeft, FolderPlus, Upload } from 'lucide-svelte';
 	import QuestionEditor from '$lib/components/questionnaires/QuestionEditor.svelte';
 	import SectionEditor from '$lib/components/questionnaires/SectionEditor.svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
@@ -39,7 +39,7 @@
 	// Question type definition (used for both top-level and conditional questions)
 	interface Question {
 		id: string;
-		type: 'multiple_choice' | 'free_text';
+		type: 'multiple_choice' | 'free_text' | 'file_upload';
 		text: string;
 		hint?: string;
 		reviewerNotes?: string;
@@ -54,6 +54,10 @@
 		shuffleOptions?: boolean;
 		// For free text
 		llmGuidelines?: string;
+		// For file upload
+		allowedMimeTypes?: string[];
+		maxFileSize?: number;
+		maxFiles?: number;
 	}
 
 	// Conditional section type (shown when option is selected)
@@ -169,8 +173,11 @@
 	);
 
 	// Helper to create a new question
-	function createQuestion(type: 'multiple_choice' | 'free_text', order: number): Question {
-		return {
+	function createQuestion(
+		type: 'multiple_choice' | 'free_text' | 'file_upload',
+		order: number
+	): Question {
+		const base: Question = {
 			id: crypto.randomUUID(),
 			type,
 			text: '',
@@ -178,22 +185,37 @@
 			order,
 			positiveWeight: 1.0,
 			negativeWeight: 0.0,
-			isFatal: false,
-			...(type === 'multiple_choice'
-				? {
-						options: [
-							{ text: '', isCorrect: false },
-							{ text: '', isCorrect: false }
-						],
-						allowMultipleAnswers: false,
-						shuffleOptions: true
-					}
-				: { llmGuidelines: '' })
+			isFatal: false
 		};
+
+		if (type === 'multiple_choice') {
+			return {
+				...base,
+				options: [
+					{ text: '', isCorrect: false },
+					{ text: '', isCorrect: false }
+				],
+				allowMultipleAnswers: false,
+				shuffleOptions: true
+			};
+		} else if (type === 'free_text') {
+			return {
+				...base,
+				llmGuidelines: ''
+			};
+		} else {
+			// file_upload
+			return {
+				...base,
+				allowedMimeTypes: ['image/jpeg', 'image/png', 'application/pdf'],
+				maxFileSize: 5242880, // 5MB
+				maxFiles: 1
+			};
+		}
 	}
 
 	// Add a new top-level question (not in any section)
-	function addTopLevelQuestion(type: 'multiple_choice' | 'free_text') {
+	function addTopLevelQuestion(type: 'multiple_choice' | 'free_text' | 'file_upload') {
 		const newQuestion = createQuestion(type, topLevelQuestions.length);
 		topLevelQuestions = [...topLevelQuestions, newQuestion];
 	}
@@ -235,7 +257,10 @@
 	}
 
 	// Add a question to a section
-	function addQuestionToSection(sectionId: string, type: 'multiple_choice' | 'free_text') {
+	function addQuestionToSection(
+		sectionId: string,
+		type: 'multiple_choice' | 'free_text' | 'file_upload'
+	) {
 		sections = sections.map((s) => {
 			if (s.id === sectionId) {
 				const newQuestion = createQuestion(type, s.questions.length);
@@ -447,13 +472,17 @@
 		const ftQuestions = s.questions
 			.filter((q) => q.type === 'free_text' && q.text.trim())
 			.map((q, idx) => conditionalFtQuestionToApiFormat(q, idx));
+		const fuQuestions = s.questions
+			.filter((q) => q.type === 'file_upload' && q.text.trim())
+			.map((q, idx) => conditionalFuQuestionToApiFormat(q, idx));
 
 		return {
 			name: s.name,
 			description: s.description || null,
 			order: order,
 			...(mcQuestions.length > 0 ? { multiplechoicequestion_questions: mcQuestions } : {}),
-			...(ftQuestions.length > 0 ? { freetextquestion_questions: ftQuestions } : {})
+			...(ftQuestions.length > 0 ? { freetextquestion_questions: ftQuestions } : {}),
+			...(fuQuestions.length > 0 ? { fileuploadquestion_questions: fuQuestions } : {})
 		};
 	}
 
@@ -481,6 +510,9 @@
 						const conditionalFt = (o.conditionalQuestions || [])
 							.filter((cq) => cq.type === 'free_text' && cq.text.trim())
 							.map((cq, idx) => conditionalFtQuestionToApiFormat(cq, idx));
+						const conditionalFu = (o.conditionalQuestions || [])
+							.filter((cq) => cq.type === 'file_upload' && cq.text.trim())
+							.map((cq, idx) => conditionalFuQuestionToApiFormat(cq, idx));
 						// Get conditional sections for this option
 						const conditionalSections = (o.conditionalSections || [])
 							.filter((cs) => cs.name.trim())
@@ -493,6 +525,7 @@
 							// Include conditional content if any exists
 							...(conditionalMc.length > 0 ? { conditional_mc_questions: conditionalMc } : {}),
 							...(conditionalFt.length > 0 ? { conditional_ft_questions: conditionalFt } : {}),
+							...(conditionalFu.length > 0 ? { conditional_fu_questions: conditionalFu } : {}),
 							...(conditionalSections.length > 0
 								? { conditional_sections: conditionalSections }
 								: {})
@@ -513,6 +546,39 @@
 			negative_weight: q.negativeWeight,
 			is_fatal: q.isFatal,
 			llm_guidelines: q.llmGuidelines || null
+		};
+	}
+
+	// Helper to convert a FU (file upload) question to API format
+	function fuQuestionToApiFormat(q: Question) {
+		return {
+			question: q.text,
+			hint: q.hint || null,
+			reviewer_notes: q.reviewerNotes || null,
+			is_mandatory: q.required,
+			order: q.order,
+			positive_weight: q.positiveWeight,
+			negative_weight: q.negativeWeight,
+			is_fatal: q.isFatal,
+			allowed_mime_types: q.allowedMimeTypes || ['image/jpeg', 'image/png', 'application/pdf'],
+			max_file_size: q.maxFileSize || 5242880,
+			max_files: q.maxFiles || 1
+		};
+	}
+
+	// Helper to convert a conditional FU question to API format
+	function conditionalFuQuestionToApiFormat(q: Question, order: number): Record<string, unknown> {
+		return {
+			question: q.text,
+			hint: q.hint || null,
+			is_mandatory: q.required,
+			order: order,
+			positive_weight: q.positiveWeight,
+			negative_weight: q.negativeWeight,
+			is_fatal: q.isFatal,
+			allowed_mime_types: q.allowedMimeTypes || ['image/jpeg', 'image/png', 'application/pdf'],
+			max_file_size: q.maxFileSize || 5242880,
+			max_files: q.maxFiles || 1
 		};
 	}
 
@@ -543,7 +609,10 @@
 					.map((q) => mcQuestionToApiFormat(q)),
 				freetextquestion_questions: s.questions
 					.filter((q) => q.type === 'free_text')
-					.map((q) => ftQuestionToApiFormat(q))
+					.map((q) => ftQuestionToApiFormat(q)),
+				fileuploadquestion_questions: s.questions
+					.filter((q) => q.type === 'file_upload')
+					.map((q) => fuQuestionToApiFormat(q))
 			}));
 
 			// Top-level questions (not in any section)
@@ -553,6 +622,9 @@
 			const topLevelFT = topLevelQuestions
 				.filter((q) => q.type === 'free_text')
 				.map((q) => ftQuestionToApiFormat(q));
+			const topLevelFU = topLevelQuestions
+				.filter((q) => q.type === 'file_upload')
+				.map((q) => fuQuestionToApiFormat(q));
 
 			// Create questionnaire
 			const response = await questionnaireCreateOrgQuestionnaire({
@@ -572,7 +644,8 @@
 					members_exempt: membersExempt,
 					sections: apiSections,
 					multiplechoicequestion_questions: topLevelMC,
-					freetextquestion_questions: topLevelFT
+					freetextquestion_questions: topLevelFT,
+					fileuploadquestion_questions: topLevelFU
 				},
 				headers: { Authorization: `Bearer ${user.accessToken}` }
 			});
@@ -949,6 +1022,15 @@
 						<Plus class="h-4 w-4" />
 						Free Text
 					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						onclick={() => addTopLevelQuestion('file_upload')}
+						class="gap-2"
+					>
+						<Upload class="h-4 w-4" />
+						File Upload
+					</Button>
 					<Button variant="secondary" size="sm" onclick={addSection} class="gap-2">
 						<FolderPlus class="h-4 w-4" />
 						Add Section
@@ -1023,6 +1105,15 @@
 								<Plus class="h-4 w-4" />
 								Free Text
 							</Button>
+							<Button
+								variant="outline"
+								size="sm"
+								onclick={() => addTopLevelQuestion('file_upload')}
+								class="gap-2"
+							>
+								<Upload class="h-4 w-4" />
+								File Upload
+							</Button>
 						</div>
 					{/if}
 				</div>
@@ -1078,7 +1169,7 @@
 
 			<!-- Bottom action bar -->
 			{#if totalQuestionCount > 0 || sections.length > 0}
-				<div class="flex justify-center gap-2 border-t pt-4">
+				<div class="flex flex-wrap justify-center gap-2 border-t pt-4">
 					<Button
 						variant="outline"
 						size="sm"
@@ -1096,6 +1187,15 @@
 					>
 						<Plus class="h-4 w-4" />
 						Free Text
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						onclick={() => addTopLevelQuestion('file_upload')}
+						class="gap-2"
+					>
+						<Upload class="h-4 w-4" />
+						File Upload
 					</Button>
 					<Button variant="secondary" size="sm" onclick={addSection} class="gap-2">
 						<FolderPlus class="h-4 w-4" />

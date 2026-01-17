@@ -1786,14 +1786,27 @@
 	},
 	"questionAnswerDisplay": {
 		"noOptionSelected": "No option selected",
-		"unknownAnswerFormat": "Unknown answer format"
+		"unknownAnswerFormat": "Unknown answer format",
+		"noFilesUploaded": "No files uploaded",
+		"downloadFile": "Download file",
+		"fileUnavailable": "Unavailable",
+		"multipleChoice": "Multiple Choice",
+		"freeText": "Free Text",
+		"fileUpload": "File Upload",
+		"previewImage": "Preview image",
+		"imagePreview": "Image preview",
+		"closePreview": "Close preview"
 	},
 	"questionEditor": {
 		"answerOptions": "Answer Options",
 		"checkBoxes": "Check boxes to mark correct answers",
 		"removeOption": "Remove option",
 		"questionSettings": "Question Settings",
-		"llmGuidelines": "LLM Guidelines (Optional)"
+		"llmGuidelines": "LLM Guidelines (Optional)",
+		"fileUpload": "File Upload",
+		"allowedFileTypes": "Allowed File Types",
+		"maxFileSize": "Maximum File Size",
+		"maxFiles": "Maximum Number of Files"
 	},
 	"questionnaireAssignmentModal": {
 		"assignQuestionnaire": "Assign Questionnaire to Events & Series",
@@ -2977,6 +2990,19 @@
 		"exportRequested": "Export Requested",
 		"requestDataExport": "Request Data Export",
 		"exportLimitNote": "You can request a data export once every 24 hours",
+		"yourFilesTitle": "Your Files",
+		"yourFilesDescription": "Files you've uploaded to questionnaire responses and other features. You can view and manage all your uploaded files here.",
+		"loadingFiles": "Loading your files...",
+		"filesLoadError": "Failed to load your files. Please try again later.",
+		"deleteFile": "Delete file",
+		"filesCount": "{count} file{plural} uploaded",
+		"noFilesTitle": "No files uploaded",
+		"noFilesDescription": "Files you upload to questionnaire responses will appear here.",
+		"fileDeleteModal_title": "Delete File?",
+		"fileDeleteModal_description": "This action cannot be undone. The file will be permanently removed from your account.",
+		"fileDeleteModal_warning": "Warning: If this file is used in a questionnaire submission that hasn't been reviewed yet, deleting it may affect your application.",
+		"fileDeleteModal_cancel": "Cancel",
+		"fileDeleteModal_confirm": "Delete File",
 		"dangerZone": "Danger Zone",
 		"deletionWarning": "Once you delete your account, there is no going back. All your data will be permanently removed and cannot be recovered.",
 		"whatWillBeDeleted": "What will be deleted:",
@@ -4420,5 +4446,21 @@
 		"updateError": "Failed to update preferences",
 		"followError": "Failed to follow",
 		"unfollowError": "Failed to unfollow"
+	},
+	"fileUploader": {
+		"allFiles": "All files",
+		"error_invalidFileType": "Invalid file type. Allowed: {accept}",
+		"error_fileTooLarge": "File too large. Max: {maxSize}",
+		"error_tooManyFiles": "Maximum {maxFiles} files allowed",
+		"error_uploadFailed": "Failed to upload file",
+		"removeFile": "Remove file",
+		"uploadFile": "Upload file",
+		"dropFilesHere": "Drop files here",
+		"clickToUpload": "Click to upload or drag and drop",
+		"uploading": "Uploading...",
+		"retryUpload": "Retry upload",
+		"required": "required",
+		"upTo": "up to {maxSize}",
+		"maxFiles": "Maximum {count} files"
 	}
 }

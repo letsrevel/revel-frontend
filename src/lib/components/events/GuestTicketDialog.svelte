@@ -545,9 +545,7 @@
 								{#if !isPwyc}
 									<p class="text-lg font-bold text-primary">
 										{tier.currency}
-										{typeof tier.price === 'string'
-											? parseFloat(tier.price).toFixed(2)
-											: tier.price?.toFixed(2) || '0.00'}
+										{parseFloat(tier.price).toFixed(2)}
 									</p>
 								{/if}
 							</div>

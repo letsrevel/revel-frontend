@@ -10,7 +10,8 @@ import type {
 	QuestionnaireSchema,
 	SectionSchema,
 	MultipleChoiceQuestionSchema,
-	FreeTextQuestionSchema
+	FreeTextQuestionSchema,
+	FileUploadQuestionSchema
 } from '$lib/api/generated';
 
 /**
@@ -23,10 +24,14 @@ export interface ConditionalQuestion {
 	is_mandatory: boolean;
 	order: number;
 	depends_on_option_id?: string | null;
-	type: 'multiple_choice' | 'free_text';
+	type: 'multiple_choice' | 'free_text' | 'file_upload';
 	// For multiple choice
 	allow_multiple_answers?: boolean;
 	options?: Array<{ id: string; option: string; order: number }>;
+	// For file upload
+	allowed_mime_types?: string[];
+	max_file_size?: number;
+	max_files?: number;
 }
 
 /**
@@ -90,12 +95,33 @@ function ftToConditional(q: FreeTextQuestionSchema): ConditionalQuestion {
 }
 
 /**
+ * Convert a FileUploadQuestionSchema to ConditionalQuestion.
+ */
+function fuToConditional(q: FileUploadQuestionSchema): ConditionalQuestion {
+	return {
+		id: q.id,
+		question: q.question,
+		hint: q.hint,
+		is_mandatory: q.is_mandatory,
+		order: q.order,
+		depends_on_option_id: q.depends_on_option_id,
+		type: 'file_upload',
+		allowed_mime_types: q.allowed_mime_types,
+		max_file_size: q.max_file_size,
+		max_files: q.max_files
+	};
+}
+
+/**
  * Convert a SectionSchema to ConditionalSection.
  */
 function sectionToConditional(s: SectionSchema): ConditionalSection {
 	const mcQuestions = (s.multiple_choice_questions || []).map(mcToConditional);
 	const ftQuestions = (s.free_text_questions || []).map(ftToConditional);
-	const allQuestions = [...mcQuestions, ...ftQuestions].sort((a, b) => a.order - b.order);
+	const fuQuestions = (s.file_upload_questions || []).map(fuToConditional);
+	const allQuestions = [...mcQuestions, ...ftQuestions, ...fuQuestions].sort(
+		(a, b) => a.order - b.order
+	);
 
 	return {
 		id: s.id,
@@ -119,7 +145,10 @@ export function flattenQuestionnaire(questionnaire: QuestionnaireSchema): Flatte
 	// Process top-level questions
 	const mcQuestions = (questionnaire.multiple_choice_questions || []).map(mcToConditional);
 	const ftQuestions = (questionnaire.free_text_questions || []).map(ftToConditional);
-	const allTopLevel = [...mcQuestions, ...ftQuestions].sort((a, b) => a.order - b.order);
+	const fuQuestions = (questionnaire.file_upload_questions || []).map(fuToConditional);
+	const allTopLevel = [...mcQuestions, ...ftQuestions, ...fuQuestions].sort(
+		(a, b) => a.order - b.order
+	);
 
 	// Separate conditional from non-conditional top-level questions
 	const topLevelQuestions: ConditionalQuestion[] = [];
