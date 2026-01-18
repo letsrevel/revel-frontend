@@ -254,6 +254,12 @@ export function getEligibilityExplanation(eligibility: EventUserEligibility): st
 			: "You're eligible to attend this event";
 	}
 
+	// For complete_profile, always show our message since the backend reason
+	// may be misleading (e.g., "Event is full" when the real issue is profile)
+	if (eligibility.next_step === 'complete_profile') {
+		return getNextStepMessage(eligibility.next_step);
+	}
+
 	// Not allowed - show reason
 	if (eligibility.reason) {
 		return eligibility.reason;
