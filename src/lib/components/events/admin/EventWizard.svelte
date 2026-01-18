@@ -442,6 +442,7 @@
 					accept_invitation_requests: formData.accept_invitation_requests || false,
 					apply_before: toISOString(formData.apply_before),
 					can_attend_without_login: formData.can_attend_without_login || false,
+					requires_full_profile: formData.requires_full_profile || false,
 					event_series_id: formData.event_series_id || null,
 					venue_id: formData.venue_id || null,
 					location_maps_url: formData.location_maps_url || null,
@@ -458,6 +459,7 @@
 					event_type: (formData.event_type || 'public') as any, // Backend has wrong enum
 					status: 'draft' as any, // Create as draft by default
 					requires_ticket: formData.requires_ticket || false, // Send explicit false when unchecked
+					requires_full_profile: formData.requires_full_profile || false,
 					venue_id: formData.venue_id || null
 				} as any; // Cast to any because requires_ticket is not yet in backend schema
 
@@ -507,6 +509,7 @@
 				accept_invitation_requests: formData.accept_invitation_requests || false,
 				apply_before: toISOString(formData.apply_before),
 				can_attend_without_login: formData.can_attend_without_login || false,
+				requires_full_profile: formData.requires_full_profile || false,
 				event_series_id: formData.event_series_id || null,
 				venue_id: formData.venue_id || null,
 				location_maps_url: formData.location_maps_url || null,
