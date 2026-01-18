@@ -149,7 +149,8 @@ export function getNextStepMessage(nextStep: NextStep): string {
 		wait_for_event_to_open: 'Check back when registration opens',
 		upgrade_membership: 'Upgrade your membership tier to attend this event',
 		request_whitelist: 'Additional verification is required to access this organization',
-		wait_for_whitelist_approval: 'Your verification request is pending approval'
+		wait_for_whitelist_approval: 'Your verification request is pending approval',
+		complete_profile: 'Complete your profile to attend this event'
 	};
 
 	return messages[nextStep] || 'Check your eligibility status';
@@ -173,7 +174,8 @@ export function getActionButtonText(nextStep: NextStep): string {
 		wait_for_event_to_open: 'Notify Me',
 		upgrade_membership: 'Upgrade Membership',
 		request_whitelist: 'Request Verification',
-		wait_for_whitelist_approval: 'Verification Pending'
+		wait_for_whitelist_approval: 'Verification Pending',
+		complete_profile: 'Complete Profile'
 	};
 
 	return buttonTexts[nextStep] || 'View Details';
@@ -213,7 +215,8 @@ export function getNextStepIcon(nextStep: NextStep): string {
 		wait_for_event_to_open: 'Bell',
 		upgrade_membership: 'ArrowUpCircle',
 		request_whitelist: 'ShieldCheck',
-		wait_for_whitelist_approval: 'Clock'
+		wait_for_whitelist_approval: 'Clock',
+		complete_profile: 'UserCircle'
 	};
 
 	return icons[nextStep] || 'Info';
@@ -314,4 +317,24 @@ export function getMultipleTicketsStatusText(tickets: EventTicketSchemaActual[])
  */
 export function hasPendingOnlinePayment(tickets: EventTicketSchemaActual[]): boolean {
 	return tickets.some((t) => t.status === 'pending' && t.tier?.payment_method === 'online');
+}
+
+/**
+ * Get user-friendly label for a missing profile field
+ */
+export function getMissingProfileFieldLabel(field: string): string {
+	const labels: Record<string, string> = {
+		profile_picture: 'Profile picture',
+		pronouns: 'Pronouns',
+		name: 'Display name'
+	};
+
+	return labels[field] || field;
+}
+
+/**
+ * Get all missing profile field labels
+ */
+export function getMissingProfileFieldLabels(fields: string[]): string[] {
+	return fields.map(getMissingProfileFieldLabel);
 }

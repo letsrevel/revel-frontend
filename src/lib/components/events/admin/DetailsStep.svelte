@@ -35,6 +35,7 @@
 			organization_logo?: string;
 			organization_cover_art?: string;
 			requires_ticket?: boolean;
+			requires_full_profile?: boolean;
 			address_visibility?: ResourceVisibility;
 			venue_id?: string | null;
 			location_maps_url?: string | null;
@@ -49,6 +50,7 @@
 		onUpdate: (
 			data: Partial<EventCreateSchema> & {
 				tags?: string[];
+				requires_full_profile?: boolean;
 				address_visibility?: ResourceVisibility;
 				location_maps_url?: string | null;
 				location_maps_embed?: string | null;
@@ -726,6 +728,27 @@
 						<div class="font-medium">{m['detailsStep.acceptInvitationRequests']()}</div>
 						<div class="text-sm text-muted-foreground">
 							{m['detailsStep.invitationRequestHint']()}
+						</div>
+					</div>
+				</label>
+
+				<!-- Require Full Profile -->
+				<label
+					class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+				>
+					<input
+						type="checkbox"
+						checked={formData.requires_full_profile || false}
+						onchange={(e) => onUpdate({ requires_full_profile: e.currentTarget.checked })}
+						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+					/>
+					<div class="flex-1">
+						<div class="font-medium">
+							{m['detailsStep.requireFullProfile']?.() ?? 'Require Complete Profile'}
+						</div>
+						<div class="text-sm text-muted-foreground">
+							{m['detailsStep.requireFullProfileHint']?.() ??
+								'Attendees must have a profile picture, name, and pronouns to RSVP or purchase tickets'}
 						</div>
 					</div>
 				</label>

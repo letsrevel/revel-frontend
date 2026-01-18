@@ -1204,7 +1204,8 @@
 		"visibilityToBoth": "Visibile a membri e invitati"
 	},
 	"eligibilityStatusDisplay": {
-		"available": "Disponibile"
+		"available": "Disponibile",
+		"missingProfileFields": "Aggiungi quanto segue al tuo profilo:"
 	},
 	"eventActionSidebar": {
 		"youreAttending": "Stai partecipando",
@@ -1370,6 +1371,8 @@
 		"waitlistOpen": "Lista d'attesa attiva",
 		"enablePotluck": "Abilita coordinamento potluck",
 		"acceptInvitationRequests": "Accetta richieste di invito",
+		"requireFullProfile": "Richiedi profilo completo",
+		"requireFullProfileHint": "I partecipanti devono avere una foto profilo, nome e pronomi per confermare presenza o acquistare biglietti",
 		"applicationDeadline": "Scadenza Candidatura",
 		"applicationDeadlineHint": "Termine per l'invio di richieste di invito o questionari. Fuso orario: {timezone}",
 		"canAttendWithoutLogin": "Consenti partecipazione ospite",

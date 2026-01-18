@@ -1204,7 +1204,8 @@
 		"visibilityToBoth": "Visible to members and invitees"
 	},
 	"eligibilityStatusDisplay": {
-		"available": "Available"
+		"available": "Available",
+		"missingProfileFields": "Please add the following to your profile:"
 	},
 	"eventActionSidebar": {
 		"youreAttending": "You're attending",
@@ -1370,6 +1371,8 @@
 		"waitlistOpen": "Waitlist enabled",
 		"enablePotluck": "Enable potluck coordination",
 		"acceptInvitationRequests": "Accept invitation requests",
+		"requireFullProfile": "Require complete profile",
+		"requireFullProfileHint": "Attendees must have a profile picture, name, and pronouns to RSVP or purchase tickets",
 		"applicationDeadline": "Application Deadline",
 		"applicationDeadlineHint": "Deadline for submitting invitation requests or questionnaires. Timezone: {timezone}",
 		"canAttendWithoutLogin": "Allow guest attendance",

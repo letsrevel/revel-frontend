@@ -21,7 +21,8 @@
 		Loader2,
 		ArrowUpCircle,
 		X,
-		ShieldCheck
+		ShieldCheck,
+		UserCircle
 	} from 'lucide-svelte';
 
 	interface Props {
@@ -81,7 +82,8 @@
 			wait_for_event_to_open: Bell,
 			upgrade_membership: ArrowUpCircle,
 			request_whitelist: ShieldCheck,
-			wait_for_whitelist_approval: Clock
+			wait_for_whitelist_approval: Clock,
+			complete_profile: UserCircle
 		};
 
 		return iconMap[step] || Check;
@@ -106,7 +108,8 @@
 			step === 'request_invitation' ||
 			step === 'become_member' ||
 			step === 'join_waitlist' ||
-			step === 'request_whitelist'
+			step === 'request_whitelist' ||
+			step === 'complete_profile'
 		) {
 			return 'default';
 		}
@@ -135,6 +138,12 @@
 		// Navigation actions
 		if (nextStep === 'become_member') {
 			window.location.href = `/org/${organizationSlug}`;
+			return;
+		}
+
+		if (nextStep === 'complete_profile') {
+			// Navigate to profile settings page
+			window.location.href = '/account/profile';
 			return;
 		}
 

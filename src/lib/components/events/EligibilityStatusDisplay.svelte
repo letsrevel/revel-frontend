@@ -4,7 +4,8 @@
 	import {
 		getEligibilityExplanation,
 		formatRetryDate,
-		getNextStepMessage
+		getNextStepMessage,
+		getMissingProfileFieldLabel
 	} from '$lib/utils/eligibility';
 	import {
 		CheckCircle2,
@@ -18,7 +19,8 @@
 		Bell,
 		ArrowUpCircle,
 		Calendar,
-		ShieldCheck
+		ShieldCheck,
+		UserCircle
 	} from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
 	import IneligibilityActionButton from './IneligibilityActionButton.svelte';
@@ -123,7 +125,8 @@
 			wait_for_event_to_open: Bell,
 			upgrade_membership: ArrowUpCircle,
 			request_whitelist: ShieldCheck,
-			wait_for_whitelist_approval: Clock
+			wait_for_whitelist_approval: Clock,
+			complete_profile: UserCircle
 		};
 
 		return iconMap[eligibility.next_step] || AlertCircle;
@@ -216,6 +219,24 @@
 						You can retry {retryText}
 					</div>
 				{/if}
+			{/if}
+
+			<!-- Missing Profile Fields -->
+			{#if eligibility.missing_profile_fields && eligibility.missing_profile_fields.length > 0}
+				<div class="mt-2 space-y-1.5">
+					<p class="text-sm font-medium">
+						{m['eligibilityStatusDisplay.missingProfileFields']?.() ??
+							'Please add the following to your profile:'}
+					</p>
+					<ul class="space-y-1 text-sm text-muted-foreground">
+						{#each eligibility.missing_profile_fields as field}
+							<li class="flex items-center gap-2">
+								<span class="text-primary">•</span>
+								<span>{getMissingProfileFieldLabel(field)}</span>
+							</li>
+						{/each}
+					</ul>
+				</div>
 			{/if}
 
 			<!-- Retry Date -->
