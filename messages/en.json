@@ -1204,7 +1204,8 @@
 		"visibilityToBoth": "Visible to members and invitees"
 	},
 	"eligibilityStatusDisplay": {
-		"available": "Available"
+		"available": "Available",
+		"missingProfileFields": "Please add the following to your profile:"
 	},
 	"eventActionSidebar": {
 		"youreAttending": "You're attending",
@@ -1370,6 +1371,8 @@
 		"waitlistOpen": "Waitlist enabled",
 		"enablePotluck": "Enable potluck coordination",
 		"acceptInvitationRequests": "Accept invitation requests",
+		"requireFullProfile": "Require complete profile",
+		"requireFullProfileHint": "Attendees must have a profile picture, name, and pronouns to RSVP or purchase tickets",
 		"applicationDeadline": "Application Deadline",
 		"applicationDeadlineHint": "Deadline for submitting invitation requests or questionnaires. Timezone: {timezone}",
 		"canAttendWithoutLogin": "Allow guest attendance",
@@ -2025,7 +2028,24 @@
 		"pronouns": "Pronouns",
 		"saving": "Saving...",
 		"saveChanges": "Save Changes",
-		"configure": "Configure privacy, notifications and location"
+		"configure": "Configure privacy, notifications and location",
+		"profilePicture_label": "Profile Picture",
+		"profilePicture_upload": "Upload Photo",
+		"profilePicture_uploading": "Uploading...",
+		"profilePicture_remove": "Remove",
+		"profilePicture_deleting": "Deleting...",
+		"profilePicture_confirm": "Confirm",
+		"profilePicture_cancel": "Cancel",
+		"profilePicture_hint": "JPG, PNG, GIF, or WebP. Max 10MB.",
+		"profilePicture_uploadSuccess": "Profile picture uploaded successfully",
+		"profilePicture_uploadError": "Failed to upload profile picture. Please try again.",
+		"profilePicture_deleteSuccess": "Profile picture deleted",
+		"profilePicture_deleteError": "Failed to delete profile picture. Please try again.",
+		"profilePicture_invalidFormat": "Invalid file format. Please use JPG, PNG, GIF, or WebP.",
+		"profilePicture_tooLarge": "File too large. Maximum size is {size}.",
+		"bio_label": "Bio",
+		"bio_placeholder": "Tell us about yourself...",
+		"bio_hint": "A short bio about yourself. This will be visible to event organizers and other attendees. Maximum 500 characters."
 	},
 	"securityPage": {
 		"title": "Security Settings - Revel",
@@ -2715,7 +2735,10 @@
 		"deadlineLessThanOneHour": "Less than 1 hour left",
 		"deadlineHoursLeft": "{hours} hours left to apply",
 		"deadlineTomorrow": "Tomorrow",
-		"deadlineDaysLeft": "{days} days left to apply"
+		"deadlineDaysLeft": "{days} days left to apply",
+		"completeProfile": "Complete your profile",
+		"completeProfileExplanation": "This event requires you to have a complete profile to attend.",
+		"missingProfileFields": "Please add the following to your profile:"
 	},
 	"accountDeletion": {
 		"title": "Confirm Account Deletion - Revel",

@@ -102,11 +102,11 @@
 	<div class="flex flex-col gap-4 p-4 md:p-6">
 		<!-- Header with Event Info -->
 		<div class="flex items-start gap-4">
-			<!-- Event Logo/Icon -->
+			<!-- Event Logo/Icon (prefer thumbnail for card display) -->
 			<div class="shrink-0">
-				{#if request.event.logo}
+				{#if (request.event as any).logo_thumbnail_url || request.event.logo}
 					<img
-						src={getImageUrl(request.event.logo)}
+						src={getImageUrl((request.event as any).logo_thumbnail_url || request.event.logo)}
 						alt=""
 						class="h-16 w-16 rounded-lg border object-cover"
 					/>

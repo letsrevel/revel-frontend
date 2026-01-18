@@ -1,5 +1,6 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
+/// <reference types="@sveltejs/kit" />
 import type { RevelUserSchema } from '$lib/api';
 import '@testing-library/jest-dom/vitest';
 

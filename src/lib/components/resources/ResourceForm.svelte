@@ -67,7 +67,7 @@
 			newErrors.name = 'Name is required';
 		}
 
-		if (resourceType === 'file' && !file && !resource?.file) {
+		if (resourceType === 'file' && !file && !resource?.file_url) {
 			newErrors.file = 'Please select a file';
 		}
 
@@ -251,10 +251,10 @@
 				{#if !resource}<span class="text-destructive" aria-label="required">*</span>{/if}
 			</label>
 
-			{#if resource?.file}
+			{#if resource?.file_url}
 				<div class="rounded-md bg-muted p-3 text-sm">
 					<p class="font-medium">{m['resourceForm.currentFile']()}</p>
-					<p class="truncate text-muted-foreground">{resource.file}</p>
+					<p class="truncate text-muted-foreground">{resource.file_url}</p>
 					<p class="mt-2 text-xs text-muted-foreground">
 						Upload a new file to replace the current one
 					</p>

@@ -4,6 +4,7 @@
 	import { eventGetEventAttendees } from '$lib/api';
 	import type { AttendeeSchema, VisibilityPreference } from '$lib/api/generated/types.gen';
 	import { Users, ChevronDown, Loader2, Settings } from 'lucide-svelte';
+	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 
 	interface Props {
 		eventId: string;
@@ -97,13 +98,13 @@
 					<!-- Show first 10 attendees -->
 					{#each attendees.slice(0, 10) as attendee, index (index)}
 						<div class="flex items-start gap-3">
-							<!-- Avatar placeholder -->
-							<div
-								class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary"
-								aria-hidden="true"
-							>
-								{attendee.display_name.charAt(0).toUpperCase()}
-							</div>
+							<UserAvatar
+								profilePictureUrl={(attendee as any).profile_picture_url}
+								thumbnailUrl={(attendee as any).profile_picture_thumbnail_url}
+								displayName={attendee.display_name}
+								size="md"
+								class="shrink-0"
+							/>
 
 							<!-- Attendee info -->
 							<div class="min-w-0 flex-1">
@@ -118,13 +119,13 @@
 					<!-- Show all attendees -->
 					{#each attendees as attendee, index (index)}
 						<div class="flex items-start gap-3">
-							<!-- Avatar placeholder -->
-							<div
-								class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary"
-								aria-hidden="true"
-							>
-								{attendee.display_name.charAt(0).toUpperCase()}
-							</div>
+							<UserAvatar
+								profilePictureUrl={(attendee as any).profile_picture_url}
+								thumbnailUrl={(attendee as any).profile_picture_thumbnail_url}
+								displayName={attendee.display_name}
+								size="md"
+								class="shrink-0"
+							/>
 
 							<!-- Attendee info -->
 							<div class="min-w-0 flex-1">

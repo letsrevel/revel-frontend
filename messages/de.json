@@ -1204,7 +1204,8 @@
 		"visibilityToBoth": "Sichtbar für Mitglieder und Eingeladene"
 	},
 	"eligibilityStatusDisplay": {
-		"available": "Verfügbar"
+		"available": "Verfügbar",
+		"missingProfileFields": "Bitte füge folgendes zu deinem Profil hinzu:"
 	},
 	"eventActionSidebar": {
 		"youreAttending": "Du nimmst teil",
@@ -1370,6 +1371,8 @@
 		"waitlistOpen": "Warteliste aktiviert",
 		"enablePotluck": "Potluck-Koordination aktivieren",
 		"acceptInvitationRequests": "Einladungsanfragen akzeptieren",
+		"requireFullProfile": "Vollständiges Profil erforderlich",
+		"requireFullProfileHint": "Teilnehmer müssen ein Profilbild, Namen und Pronomen haben, um sich anzumelden oder Tickets zu kaufen",
 		"applicationDeadline": "Bewerbungsfrist",
 		"applicationDeadlineHint": "Frist für die Einreichung von Einladungsanfragen oder Fragebögen. Zeitzone: {timezone}",
 		"canAttendWithoutLogin": "Gastteilnahme erlauben",
@@ -2025,7 +2028,24 @@
 		"pronouns": "Pronomen",
 		"saving": "Speichern...",
 		"saveChanges": "Änderungen speichern",
-		"configure": "Datenschutz, Benachrichtigungen und Standort konfigurieren"
+		"configure": "Datenschutz, Benachrichtigungen und Standort konfigurieren",
+		"profilePicture_label": "Profilbild",
+		"profilePicture_upload": "Foto hochladen",
+		"profilePicture_uploading": "Hochladen...",
+		"profilePicture_remove": "Entfernen",
+		"profilePicture_deleting": "Löschen...",
+		"profilePicture_confirm": "Bestätigen",
+		"profilePicture_cancel": "Abbrechen",
+		"profilePicture_hint": "JPG, PNG, GIF oder WebP. Max. 10MB.",
+		"profilePicture_uploadSuccess": "Profilbild erfolgreich hochgeladen",
+		"profilePicture_uploadError": "Profilbild konnte nicht hochgeladen werden. Bitte versuche es erneut.",
+		"profilePicture_deleteSuccess": "Profilbild gelöscht",
+		"profilePicture_deleteError": "Profilbild konnte nicht gelöscht werden. Bitte versuche es erneut.",
+		"profilePicture_invalidFormat": "Ungültiges Dateiformat. Bitte verwende JPG, PNG, GIF oder WebP.",
+		"profilePicture_tooLarge": "Datei zu groß. Maximale Größe ist {size}.",
+		"bio_label": "Bio",
+		"bio_placeholder": "Erzähle uns etwas über dich...",
+		"bio_hint": "Eine kurze Beschreibung über dich. Diese wird für Veranstalter und andere Teilnehmer sichtbar sein. Maximal 500 Zeichen."
 	},
 	"securityPage": {
 		"title": "Sicherheitseinstellungen - Revel",
@@ -2715,7 +2735,10 @@
 		"deadlineLessThanOneHour": "Weniger als 1 Stunde übrig",
 		"deadlineHoursLeft": "Noch {hours} Stunden zur Bewerbung",
 		"deadlineTomorrow": "Morgen",
-		"deadlineDaysLeft": "Noch {days} Tage zur Bewerbung"
+		"deadlineDaysLeft": "Noch {days} Tage zur Bewerbung",
+		"completeProfile": "Profil vervollständigen",
+		"completeProfileExplanation": "Diese Veranstaltung erfordert ein vollständiges Profil zur Teilnahme.",
+		"missingProfileFields": "Bitte ergänze folgende Angaben in deinem Profil:"
 	},
 	"actionButton": {
 		"signInToAttend": "Sign in to attend",

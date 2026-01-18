@@ -5,6 +5,7 @@
 	import { Users, Check, X, Calendar, AlertCircle } from 'lucide-svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import { cn } from '$lib/utils/cn';
+	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 
 	interface Props {
 		data: PageData;
@@ -212,20 +213,16 @@
 								<!-- User -->
 								<td class="px-6 py-4">
 									<div class="flex items-center gap-3">
-										{#if (request.user as any).profile_picture}
-											<img
-												src={(request.user as any).profile_picture}
-												alt="{request.user.first_name} {request.user.last_name}"
-												class="h-10 w-10 rounded-full object-cover"
-											/>
-										{:else}
-											<div
-												class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-sm font-bold text-primary-foreground"
-											>
-												{request.user.first_name?.charAt(0) ||
-													((request.user as any).username?.charAt(0).toUpperCase() ?? '?')}
-											</div>
-										{/if}
+										<UserAvatar
+											profilePictureUrl={(request.user as any).profile_picture_url}
+											thumbnailUrl={(request.user as any).profile_picture_thumbnail_url}
+											displayName={request.user.first_name ||
+												(request.user as any).username ||
+												'User'}
+											firstName={request.user.first_name}
+											lastName={request.user.last_name}
+											size="md"
+										/>
 										<div>
 											<p class="font-medium">
 												{request.user.first_name}

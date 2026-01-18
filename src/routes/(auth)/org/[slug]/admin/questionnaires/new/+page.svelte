@@ -20,6 +20,10 @@
 	import SectionEditor from '$lib/components/questionnaires/SectionEditor.svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import { questionnaireCreateOrgQuestionnaire } from '$lib/api/generated/sdk.gen';
+	import type {
+		SectionCreateSchema,
+		MultipleChoiceQuestionCreateSchema
+	} from '$lib/api/generated/types.gen';
 	import type { PageData } from './$types';
 
 	interface Props {
@@ -642,8 +646,8 @@
 					llm_guidelines: llmGuidelines || null,
 					can_retake_after: canRetakeAfter !== null ? String(canRetakeAfter * 3600) : undefined, // Convert hours to seconds
 					members_exempt: membersExempt,
-					sections: apiSections,
-					multiplechoicequestion_questions: topLevelMC,
+					sections: apiSections as SectionCreateSchema[],
+					multiplechoicequestion_questions: topLevelMC as MultipleChoiceQuestionCreateSchema[],
 					freetextquestion_questions: topLevelFT,
 					fileuploadquestion_questions: topLevelFU
 				},
