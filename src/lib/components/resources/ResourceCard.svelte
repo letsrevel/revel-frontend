@@ -16,7 +16,6 @@
 		Ticket
 	} from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
-	import { getBackendUrl } from '$lib/config/api';
 
 	interface Props {
 		resource: AdditionalResourceSchema;
@@ -80,14 +79,14 @@
 	// Get resource content preview
 	const contentPreview = $derived.by(() => {
 		if (resource.resource_type === 'file') {
-			if (!resource.file) return 'No file attached';
+			if (!resource.file_url) return 'No file attached';
 			// Extract filename from path (handle both URLs and paths)
 			try {
 				// Try as URL first (for absolute URLs)
-				return new URL(resource.file).pathname.split('/').pop() || 'Unknown file';
+				return new URL(resource.file_url).pathname.split('/').pop() || 'Unknown file';
 			} catch {
 				// If not a valid URL, treat as path
-				return resource.file.split('/').pop() || 'Unknown file';
+				return resource.file_url.split('/').pop() || 'Unknown file';
 			}
 		} else if (resource.resource_type === 'link') {
 			return resource.link || 'No link provided';
@@ -109,10 +108,9 @@
 	}
 
 	function handleResourceClick() {
-		if (resource.resource_type === 'file' && resource.file) {
+		if (resource.resource_type === 'file' && resource.file_url) {
 			// Open file in new tab (browser will download if it can't display)
-			const fileUrl = getBackendUrl(resource.file);
-			window.open(fileUrl, '_blank');
+			window.open(resource.file_url, '_blank');
 		} else if (resource.resource_type === 'link' && resource.link) {
 			// Open link in new tab
 			window.open(resource.link, '_blank');
@@ -121,7 +119,7 @@
 	}
 
 	const isClickable = $derived(
-		(resource.resource_type === 'file' && resource.file) ||
+		(resource.resource_type === 'file' && resource.file_url) ||
 			(resource.resource_type === 'link' && resource.link)
 	);
 </script>

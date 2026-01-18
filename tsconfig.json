@@ -24,6 +24,12 @@
 		"module": "ESNext",
 		"target": "ES2022"
 	},
-	"include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.js", "src/**/*.svelte"],
+	"include": [
+		".svelte-kit/ambient.d.ts",
+		"src/**/*.d.ts",
+		"src/**/*.ts",
+		"src/**/*.js",
+		"src/**/*.svelte"
+	],
 	"exclude": ["node_modules", "**/*.test.ts", "**/*.test.js", "**/*.spec.ts", "**/*.spec.js"]
 }

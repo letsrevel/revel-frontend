@@ -2,7 +2,6 @@
 	import { page } from '$app/stores';
 	import { FileText, Search, Filter } from 'lucide-svelte';
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
-	import { getBackendUrl } from '$lib/config/api';
 	import * as m from '$lib/paraglide/messages.js';
 
 	const data = $derived($page.data);
@@ -34,9 +33,8 @@
 	});
 
 	function openResource(resource: AdditionalResourceSchema) {
-		if (resource.resource_type === 'file' && resource.file) {
-			const fileUrl = getBackendUrl(resource.file);
-			window.open(fileUrl, '_blank');
+		if (resource.resource_type === 'file' && resource.file_url) {
+			window.open(resource.file_url, '_blank');
 		} else if (resource.resource_type === 'link' && resource.link) {
 			window.open(resource.link, '_blank');
 		}

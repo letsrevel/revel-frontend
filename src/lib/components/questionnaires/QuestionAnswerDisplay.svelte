@@ -217,7 +217,10 @@
 												type="button"
 												class="group relative h-12 w-12 shrink-0 cursor-pointer overflow-hidden rounded focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
 												onclick={() =>
-													openImagePreview(getImageUrl(file.file_url!), file.original_filename)}
+													openImagePreview(
+														getImageUrl(file.file_url as string) as string,
+														file.original_filename
+													)}
 												aria-label={m['questionAnswerDisplay.previewImage']?.() || 'Preview image'}
 											>
 												<img
@@ -257,7 +260,10 @@
 														size="icon"
 														class="h-8 w-8"
 														onclick={() =>
-															openImagePreview(getImageUrl(file.file_url!), file.original_filename)}
+															openImagePreview(
+																getImageUrl(file.file_url as string) as string,
+																file.original_filename
+															)}
 														aria-label={m['questionAnswerDisplay.previewImage']?.() ||
 															'Preview image'}
 													>
