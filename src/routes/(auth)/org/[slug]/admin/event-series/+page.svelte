@@ -5,6 +5,7 @@
 	import type { PageData } from './$types';
 	import type { EventSeriesRetrieveSchema } from '$lib/api/generated/types.gen';
 	import { Repeat, Calendar, Edit, Eye, Tag, Plus } from 'lucide-svelte';
+	import { getImageUrl } from '$lib/utils/url';
 
 	let { data }: { data: PageData } = $props();
 
@@ -102,7 +103,7 @@
 						<div class="flex items-start gap-3">
 							{#if series.logo}
 								<img
-									src={series.logo}
+									src={getImageUrl((series as any).logo_thumbnail_url || series.logo)}
 									alt="{series.name} logo"
 									class="h-12 w-12 flex-shrink-0 rounded-lg object-cover"
 								/>

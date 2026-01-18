@@ -817,7 +817,7 @@
 						>
 							{#if org.logo}
 								<img
-									src={getImageUrl(org.logo)}
+									src={getImageUrl((org as any).logo_thumbnail_url || org.logo)}
 									alt=""
 									class="h-16 w-16 rounded-full border object-cover"
 								/>

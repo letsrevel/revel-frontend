@@ -283,7 +283,7 @@
 							<div class="mb-3 flex items-start gap-3">
 								{#if org.logo}
 									<img
-										src={getImageUrl(org.logo)}
+										src={getImageUrl((org as any).logo_thumbnail_url || org.logo)}
 										alt={org.name}
 										class="h-12 w-12 rounded-lg object-cover"
 									/>
@@ -416,7 +416,7 @@
 							<div class="mb-3 flex items-start gap-3">
 								{#if series.logo}
 									<img
-										src={getImageUrl(series.logo)}
+										src={getImageUrl((series as any).logo_thumbnail_url || series.logo)}
 										alt={series.name}
 										class="h-12 w-12 rounded-lg object-cover"
 									/>
