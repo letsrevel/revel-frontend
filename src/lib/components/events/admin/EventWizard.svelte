@@ -138,6 +138,7 @@
 		accept_invitation_requests: existingEvent?.accept_invitation_requests || false,
 		apply_before: toDateTimeLocal((existingEvent as any)?.apply_before) || null,
 		can_attend_without_login: existingEvent?.can_attend_without_login || false,
+		requires_full_profile: (existingEvent as any)?.requires_full_profile || false,
 		event_series_id: existingEvent?.event_series?.id || null,
 		venue_id: existingEvent?.venue?.id || null,
 		tags: existingEvent?.tags || [],
