@@ -2718,7 +2718,10 @@
 		"deadlineLessThanOneHour": "Less than 1 hour left",
 		"deadlineHoursLeft": "{hours} hours left to apply",
 		"deadlineTomorrow": "Tomorrow",
-		"deadlineDaysLeft": "{days} days left to apply"
+		"deadlineDaysLeft": "{days} days left to apply",
+		"completeProfile": "Complete your profile",
+		"completeProfileExplanation": "This event requires you to have a complete profile to attend.",
+		"missingProfileFields": "Please add the following to your profile:"
 	},
 	"accountDeletion": {
 		"title": "Confirm Account Deletion - Revel",

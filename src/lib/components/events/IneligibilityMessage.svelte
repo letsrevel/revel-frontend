@@ -11,8 +11,10 @@
 		Ticket,
 		Bell,
 		XCircle,
-		Calendar
+		Calendar,
+		UserCircle
 	} from 'lucide-svelte';
+	import { getMissingProfileFieldLabel } from '$lib/utils/eligibility';
 	import IneligibilityActionButton from './IneligibilityActionButton.svelte';
 	import RetryCountdown from './RetryCountdown.svelte';
 	import * as m from '$lib/paraglide/messages.js';
@@ -116,7 +118,8 @@
 			join_waitlist: Users,
 			wait_for_open_spot: Clock,
 			purchase_ticket: Ticket,
-			rsvp: AlertCircle
+			rsvp: AlertCircle,
+			complete_profile: UserCircle
 		};
 
 		return iconMap[nextStep] || AlertCircle;
@@ -137,6 +140,11 @@
 			nextStep === 'wait_for_open_spot'
 		) {
 			return 'info';
+		}
+
+		// Warning (actionable profile completion)
+		if (nextStep === 'complete_profile') {
+			return 'warning';
 		}
 
 		// Destructive (hard blockers)
@@ -173,7 +181,10 @@
 				return m['ineligibilityMessage.questionnaireUnderReview']();
 			if (reason.includes('Questionnaire evaluation was insufficient'))
 				return m['ineligibilityMessage.questionnaireNotPassed']();
-			if (reason.includes('full')) return m['ineligibilityMessage.eventFull']();
+			if (reason.includes('full profile') || reason.includes('Requires full profile'))
+				return m['ineligibilityMessage.completeProfile']?.() ?? 'Complete your profile';
+			if (reason.includes('Event is full') || reason === 'Event is full.')
+				return m['ineligibilityMessage.eventFull']();
 			if (reason.includes('Sold out')) return m['ineligibilityMessage.soldOut']();
 			if (reason.includes('not open')) return m['ineligibilityMessage.registrationNotOpen']();
 			if (reason.includes('finished')) return m['ineligibilityMessage.eventEnded']();
@@ -196,6 +207,8 @@
 			return m['ineligibilityMessage.invitationRequired']();
 		if (eligibility.next_step === 'complete_questionnaire')
 			return m['ineligibilityMessage.questionnaireRequired']();
+		if (eligibility.next_step === 'complete_profile')
+			return m['ineligibilityMessage.completeProfile']?.() ?? 'Complete your profile';
 		if (eligibility.next_step === 'join_waitlist') return m['ineligibilityMessage.eventFull']();
 		if (eligibility.next_step === 'wait_for_open_spot')
 			return m['ineligibilityMessage.onWaitlist']();
@@ -358,6 +371,24 @@
 							? m['ineligibilityMessage.questionnaireFailed_singular']()
 							: m['ineligibilityMessage.questionnaireFailed_plural']()}
 					</p>
+				</div>
+			{/if}
+
+			<!-- Missing Profile Fields -->
+			{#if eligibility.missing_profile_fields && eligibility.missing_profile_fields.length > 0}
+				<div class="space-y-1.5">
+					<p class="text-sm font-medium">
+						{m['ineligibilityMessage.missingProfileFields']?.() ??
+							'Please add the following to your profile:'}
+					</p>
+					<ul class="space-y-1 text-sm opacity-80">
+						{#each eligibility.missing_profile_fields as field}
+							<li class="flex items-center gap-2">
+								<span>•</span>
+								<span>{getMissingProfileFieldLabel(field)}</span>
+							</li>
+						{/each}
+					</ul>
 				</div>
 			{/if}
 

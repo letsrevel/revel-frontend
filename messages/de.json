@@ -2718,7 +2718,10 @@
 		"deadlineLessThanOneHour": "Weniger als 1 Stunde übrig",
 		"deadlineHoursLeft": "Noch {hours} Stunden zur Bewerbung",
 		"deadlineTomorrow": "Morgen",
-		"deadlineDaysLeft": "Noch {days} Tage zur Bewerbung"
+		"deadlineDaysLeft": "Noch {days} Tage zur Bewerbung",
+		"completeProfile": "Profil vervollständigen",
+		"completeProfileExplanation": "Diese Veranstaltung erfordert ein vollständiges Profil zur Teilnahme.",
+		"missingProfileFields": "Bitte ergänze folgende Angaben in deinem Profil:"
 	},
 	"actionButton": {
 		"signInToAttend": "Sign in to attend",

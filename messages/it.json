@@ -2718,7 +2718,10 @@
 		"deadlineLessThanOneHour": "Meno di 1 ora rimanente",
 		"deadlineHoursLeft": "{hours} ore rimanenti per candidarsi",
 		"deadlineTomorrow": "Domani",
-		"deadlineDaysLeft": "{days} giorni rimanenti per candidarsi"
+		"deadlineDaysLeft": "{days} giorni rimanenti per candidarsi",
+		"completeProfile": "Completa il tuo profilo",
+		"completeProfileExplanation": "Questo evento richiede un profilo completo per partecipare.",
+		"missingProfileFields": "Aggiungi le seguenti informazioni al tuo profilo:"
 	},
 	"actionButton": {
 		"signInToAttend": "Sign in to attend",
