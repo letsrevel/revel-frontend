@@ -8,6 +8,8 @@
 	import DietaryPreferencesManager from '$lib/components/profile/DietaryPreferencesManager.svelte';
 	import DietaryRestrictionsManager from '$lib/components/profile/DietaryRestrictionsManager.svelte';
 	import TelegramConnectionManager from '$lib/components/profile/TelegramConnectionManager.svelte';
+	import ProfilePictureUploader from '$lib/components/profile/ProfilePictureUploader.svelte';
+	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import { accountResendVerificationEmail } from '$lib/api/generated';
 
 	interface Props {
@@ -31,6 +33,8 @@
 	let preferredName = $state(data.user?.preferred_name || '');
 	let pronouns = $state(data.user?.pronouns || '');
 	let language = $state<'en' | 'de' | 'it'>((data.user?.language as 'en' | 'de' | 'it') || 'en');
+	let bio = $state(data.user?.bio || '');
+	let profilePictureUrl = $state<string | null>(data.user?.profile_picture_url ?? null);
 
 	// Check if current pronouns is custom (not in common list)
 	let showCustomPronouns = $derived(
@@ -129,6 +133,22 @@
 		</div>
 	{/if}
 
+	<!-- Profile Picture Section -->
+	{#if data.accessToken && data.user}
+		<div class="mb-8">
+			<ProfilePictureUploader
+				currentPictureUrl={profilePictureUrl}
+				displayName={data.user.display_name}
+				firstName={data.user.first_name}
+				lastName={data.user.last_name}
+				accessToken={data.accessToken}
+				onUpdate={(newUrl) => {
+					profilePictureUrl = newUrl;
+				}}
+			/>
+		</div>
+	{/if}
+
 	<form
 		method="POST"
 		action="?/updateProfile"
@@ -147,6 +167,8 @@
 					preferredName = user?.preferred_name || '';
 					pronouns = user?.pronouns || '';
 					language = (user?.language || 'en') as 'en' | 'de' | 'it';
+					bio = user?.bio || '';
+					profilePictureUrl = user?.profile_picture_url ?? null;
 					// Update locale immediately on successful save
 					if (user?.language) {
 						setLocale(user.language as 'en' | 'de' | 'it');
@@ -409,6 +431,23 @@
 			{#if errors.language}
 				<p id="language-error" class="text-sm text-destructive" role="alert">{errors.language}</p>
 			{/if}
+		</div>
+
+		<!-- Bio Field -->
+		<div class="space-y-2">
+			<MarkdownEditor
+				bind:value={bio}
+				id="bio"
+				label={m['profilePage.bio_label']()}
+				placeholder={m['profilePage.bio_placeholder']()}
+				rows={4}
+				disabled={isSubmitting}
+				error={errors.bio}
+			/>
+			<input type="hidden" name="bio" value={bio} />
+			<p class="text-xs text-muted-foreground">
+				{m['profilePage.bio_hint']()}
+			</p>
 		</div>
 
 		<div class="flex gap-4">

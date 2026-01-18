@@ -12,6 +12,7 @@
 	} from '$lib/components/ui/dialog';
 	import { CheckCircle, XCircle, MessageSquare } from 'lucide-svelte';
 	import { formatDistanceToNow } from 'date-fns';
+	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 
 	interface Props {
 		request: OrganizationMembershipRequestRetrieve;
@@ -61,68 +62,81 @@
 >
 	<div class="space-y-3">
 		<!-- Request Info -->
-		<div class="min-w-0">
-			<div class="flex items-start justify-between gap-2">
-				<div class="min-w-0 flex-1">
-					<h3 class="truncate font-semibold text-foreground">
-						{displayName}
-					</h3>
-					{#if request.user.pronouns}
-						<p class="text-sm text-muted-foreground">({request.user.pronouns})</p>
+		<div class="flex gap-3">
+			<!-- Avatar -->
+			<UserAvatar
+				profilePictureUrl={(request.user as any).profile_picture_url}
+				thumbnailUrl={(request.user as any).profile_picture_thumbnail_url}
+				{displayName}
+				firstName={request.user.first_name}
+				lastName={request.user.last_name}
+				size="lg"
+				class="shrink-0"
+			/>
+
+			<div class="min-w-0 flex-1">
+				<div class="flex items-start justify-between gap-2">
+					<div class="min-w-0 flex-1">
+						<h3 class="truncate font-semibold text-foreground">
+							{displayName}
+						</h3>
+						{#if request.user.pronouns}
+							<p class="text-sm text-muted-foreground">({request.user.pronouns})</p>
+						{/if}
+					</div>
+				</div>
+
+				<!-- Name Details -->
+				<div class="mt-2 space-y-1 text-sm text-muted-foreground">
+					{#if request.user.first_name || request.user.last_name}
+						<p class="truncate">
+							{#if request.user.first_name}
+								<span class="font-medium">{m['membershipRequestCard.first']()}</span>
+								{request.user.first_name}
+							{/if}
+							{#if request.user.first_name && request.user.last_name}
+								<span class="mx-2">•</span>
+							{/if}
+							{#if request.user.last_name}
+								<span class="font-medium">{m['membershipRequestCard.last']()}</span>
+								{request.user.last_name}
+							{/if}
+						</p>
+					{/if}
+					{#if request.user.preferred_name}
+						<p class="truncate">
+							<span class="font-medium">{m['membershipRequestCard.preferred']()}</span>
+							{request.user.preferred_name}
+						</p>
 					{/if}
 				</div>
-			</div>
 
-			<!-- Name Details -->
-			<div class="mt-2 space-y-1 text-sm text-muted-foreground">
-				{#if request.user.first_name || request.user.last_name}
-					<p class="truncate">
-						{#if request.user.first_name}
-							<span class="font-medium">{m['membershipRequestCard.first']()}</span>
-							{request.user.first_name}
-						{/if}
-						{#if request.user.first_name && request.user.last_name}
-							<span class="mx-2">•</span>
-						{/if}
-						{#if request.user.last_name}
-							<span class="font-medium">{m['membershipRequestCard.last']()}</span>
-							{request.user.last_name}
-						{/if}
+				{#if request.user.email}
+					<p class="mt-2 truncate text-sm text-muted-foreground">{request.user.email}</p>
+				{/if}
+
+				{#if (request.user as any).phone_number}
+					<p class="mt-1 truncate text-sm text-muted-foreground">
+						📞 {(request.user as any).phone_number}
 					</p>
 				{/if}
-				{#if request.user.preferred_name}
-					<p class="truncate">
-						<span class="font-medium">{m['membershipRequestCard.preferred']()}</span>
-						{request.user.preferred_name}
+
+				<!-- Request Date and Status -->
+				<div class="mt-2 flex items-center gap-2">
+					<p class="text-xs text-muted-foreground">
+						Requested {createdAt}
 					</p>
-				{/if}
-			</div>
-
-			{#if request.user.email}
-				<p class="mt-2 truncate text-sm text-muted-foreground">{request.user.email}</p>
-			{/if}
-
-			{#if (request.user as any).phone_number}
-				<p class="mt-1 truncate text-sm text-muted-foreground">
-					📞 {(request.user as any).phone_number}
-				</p>
-			{/if}
-
-			<!-- Request Date and Status -->
-			<div class="mt-2 flex items-center gap-2">
-				<p class="text-xs text-muted-foreground">
-					Requested {createdAt}
-				</p>
-				{#if !showActions && request.status}
-					<span
-						class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {request.status ===
-						'approved'
-							? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
-							: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'}"
-					>
-						{request.status === 'approved' ? 'Approved' : 'Rejected'}
-					</span>
-				{/if}
+					{#if !showActions && request.status}
+						<span
+							class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {request.status ===
+							'approved'
+								? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
+								: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'}"
+						>
+							{request.status === 'approved' ? 'Approved' : 'Rejected'}
+						</span>
+					{/if}
+				</div>
 			</div>
 		</div>
 

@@ -26,9 +26,13 @@
 	});
 
 	// Image URLs with backend URL prepended
+	// Prefer thumbnail variants for card display (optimized for smaller sizes)
+	let coverArtThumbnailUrl = $derived(getImageUrl((organization as any).cover_art_thumbnail_url));
 	let coverArtUrl = $derived(getImageUrl(organization.cover_art));
+	let logoThumbnailUrl = $derived(getImageUrl((organization as any).logo_thumbnail_url));
 	let logoUrl = $derived(getImageUrl(organization.logo));
-	let imageUrl = $derived(!imageError ? coverArtUrl : null);
+	let imageUrl = $derived(!imageError ? coverArtThumbnailUrl || coverArtUrl : null);
+	let logoDisplayUrl = $derived(logoThumbnailUrl || logoUrl);
 
 	// Fallback gradient based on organization ID
 	const gradients = [
@@ -103,14 +107,14 @@
 		{:else}
 			<!-- Fallback gradient with organization logo -->
 			<div class={cn('h-full w-full bg-gradient-to-br', fallbackGradient)}>
-				{#if logoUrl}
+				{#if logoDisplayUrl}
 					<div class="flex h-full w-full items-center justify-center p-4">
 						<!-- Square container for logo -->
 						<div
 							class="aspect-square w-full max-w-[60%] overflow-hidden rounded-lg bg-white/10 p-4 backdrop-blur-sm"
 						>
 							<img
-								src={logoUrl}
+								src={logoDisplayUrl}
 								alt=""
 								class="h-full w-full object-contain opacity-90"
 								loading="lazy"

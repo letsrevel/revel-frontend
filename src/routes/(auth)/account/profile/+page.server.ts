@@ -51,7 +51,8 @@ export const actions: Actions = {
 			last_name: formData.get('last_name') as string,
 			preferred_name: formData.get('preferred_name') as string,
 			pronouns: formData.get('pronouns') as string,
-			language: formData.get('language') as string
+			language: formData.get('language') as string,
+			bio: (formData.get('bio') as string) || ''
 		};
 
 		// Validate

@@ -46,6 +46,7 @@
 	import EventTokenCard from '$lib/components/tokens/EventTokenCard.svelte';
 	import EventTokenModal from '$lib/components/tokens/EventTokenModal.svelte';
 	import TokenShareDialog from '$lib/components/tokens/TokenShareDialog.svelte';
+	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 	import { getEventTokenUrl } from '$lib/utils/tokens';
 
 	interface Props {
@@ -904,21 +905,14 @@
 										<!-- User -->
 										<td class="px-6 py-4">
 											<div class="flex items-center gap-3">
-												{#if request.user.profile_picture}
-													<img
-														src={request.user.profile_picture}
-														alt={getUserDisplayName(request.user)}
-														class="h-10 w-10 rounded-full object-cover"
-													/>
-												{:else}
-													<div
-														class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-sm font-bold text-primary-foreground"
-													>
-														{request.user.first_name?.charAt(0) ||
-															request.user.username?.charAt(0).toUpperCase() ||
-															'?'}
-													</div>
-												{/if}
+												<UserAvatar
+													profilePictureUrl={request.user.profile_picture_url}
+													thumbnailUrl={request.user.profile_picture_thumbnail_url}
+													displayName={getUserDisplayName(request.user)}
+													firstName={request.user.first_name}
+													lastName={request.user.last_name}
+													size="md"
+												/>
 												<div>
 													<p class="font-medium">
 														{getUserDisplayName(request.user)}
@@ -1199,19 +1193,14 @@
 											<!-- User -->
 											<td class="px-4 py-4">
 												<div class="flex items-center gap-2">
-													{#if invitation.user.profile_picture}
-														<img
-															src={invitation.user.profile_picture}
-															alt={getUserDisplayName(invitation.user)}
-															class="h-8 w-8 rounded-full object-cover"
-														/>
-													{:else}
-														<div
-															class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-xs font-bold text-primary-foreground"
-														>
-															{invitation.user.first_name?.charAt(0) || '?'}
-														</div>
-													{/if}
+													<UserAvatar
+														profilePictureUrl={invitation.user.profile_picture_url}
+														thumbnailUrl={invitation.user.profile_picture_thumbnail_url}
+														displayName={getUserDisplayName(invitation.user)}
+														firstName={invitation.user.first_name}
+														lastName={invitation.user.last_name}
+														size="sm"
+													/>
 													<span class="text-sm font-medium">
 														{getUserDisplayName(invitation.user)}
 													</span>

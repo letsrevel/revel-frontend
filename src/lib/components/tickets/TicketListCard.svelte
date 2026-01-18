@@ -9,7 +9,7 @@
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
 	import { getImageUrl } from '$lib/utils/url';
 	import { formatEventDateRange } from '$lib/utils/date';
-	import { getEventLogo } from '$lib/utils/event';
+	import { getEventLogo, getEventLogoThumbnail } from '$lib/utils/event';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 
 	interface Props {
@@ -21,8 +21,10 @@
 	let showTicketModal = $state(false);
 
 	// Logo with fallback hierarchy: event -> series -> organization
+	// Prefer thumbnail for card display (64x64)
+	let logoThumbnailPath = $derived(getEventLogoThumbnail(ticket.event));
 	let logoPath = $derived(getEventLogo(ticket.event));
-	let logoUrl = $derived(getImageUrl(logoPath));
+	let logoUrl = $derived(getImageUrl(logoThumbnailPath || logoPath));
 
 	// Format event date
 	let eventDate = $derived.by(() => {

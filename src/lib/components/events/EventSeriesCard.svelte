@@ -17,12 +17,26 @@
 	let imageError = $state(false);
 
 	// Image URLs with backend URL prepended and fallback to organization
+	// Prefer thumbnail variants for card display (optimized for smaller sizes)
+	let seriesCoverArtThumbnailUrl = $derived(getImageUrl((series as any).cover_art_thumbnail_url));
 	let seriesCoverArtUrl = $derived(getImageUrl(series.cover_art));
+	let orgCoverArtThumbnailUrl = $derived(
+		getImageUrl((series.organization as any).cover_art_thumbnail_url)
+	);
 	let orgCoverArtUrl = $derived(getImageUrl(series.organization.cover_art));
-	let imageUrl = $derived(!imageError ? seriesCoverArtUrl || orgCoverArtUrl : null);
+	let imageUrl = $derived(
+		!imageError
+			? seriesCoverArtThumbnailUrl || seriesCoverArtUrl || orgCoverArtThumbnailUrl || orgCoverArtUrl
+			: null
+	);
+
+	let seriesLogoThumbnailUrl = $derived(getImageUrl((series as any).logo_thumbnail_url));
 	let seriesLogoUrl = $derived(getImageUrl(series.logo));
+	let orgLogoThumbnailUrl = $derived(getImageUrl((series.organization as any).logo_thumbnail_url));
 	let orgLogoUrl = $derived(getImageUrl(series.organization.logo));
-	let logoUrl = $derived(seriesLogoUrl || orgLogoUrl);
+	let logoUrl = $derived(
+		seriesLogoThumbnailUrl || seriesLogoUrl || orgLogoThumbnailUrl || orgLogoUrl
+	);
 
 	// Fallback gradient based on series ID
 	const gradients = [

@@ -1,7 +1,13 @@
 <script lang="ts">
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
-	import { getEventCoverArt, getEventFallbackGradient, getEventLogo } from '$lib/utils/event';
+	import {
+		getEventCoverArt,
+		getEventCoverArtThumbnail,
+		getEventFallbackGradient,
+		getEventLogo,
+		getEventLogoThumbnail
+	} from '$lib/utils/event';
 	import { getImageUrl } from '$lib/utils/url';
 	import { Calendar } from 'lucide-svelte';
 	import EventBadges from './EventBadges.svelte';
@@ -19,11 +25,15 @@
 	// Image state
 	let imageError = $state(false);
 
-	// Computed values
+	// Computed values - prefer thumbnail variants for card display (optimized sizes)
+	let coverArtThumbnailPath = $derived(getEventCoverArtThumbnail(event));
 	let coverArtPath = $derived(getEventCoverArt(event));
-	let coverArtUrl = $derived(!imageError ? getImageUrl(coverArtPath) : null);
+	let coverArtUrl = $derived(
+		!imageError ? getImageUrl(coverArtThumbnailPath || coverArtPath) : null
+	);
+	let logoThumbnailPath = $derived(getEventLogoThumbnail(event));
 	let logoPath = $derived(getEventLogo(event));
-	let logoUrl = $derived(getImageUrl(logoPath));
+	let logoUrl = $derived(getImageUrl(logoThumbnailPath || logoPath));
 	let fallbackGradient = $derived(getEventFallbackGradient(event.id));
 
 	function handleImageError(): void {
