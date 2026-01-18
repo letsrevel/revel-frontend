@@ -6,7 +6,8 @@
 	import QuestionAnswerDisplay from '$lib/components/questionnaires/QuestionAnswerDisplay.svelte';
 	import AutoEvalRecommendation from '$lib/components/questionnaires/AutoEvalRecommendation.svelte';
 	import EvaluationForm from '$lib/components/questionnaires/EvaluationForm.svelte';
-	import { ArrowLeft, User, Mail, Calendar, CalendarDays, ExternalLink } from 'lucide-svelte';
+	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
+	import { ArrowLeft, Mail, Calendar, CalendarDays, ExternalLink } from 'lucide-svelte';
 	import {
 		isPendingReview,
 		type QuestionnaireEvaluationStatus
@@ -149,13 +150,17 @@
 				</h3>
 
 				<div class="space-y-4">
-					<!-- Display Name -->
+					<!-- Display Name with Profile Picture -->
 					<div class="flex items-start gap-3">
-						<div
-							class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10"
-						>
-							<User class="h-5 w-5 text-primary" aria-hidden="true" />
-						</div>
+						<UserAvatar
+							profilePictureUrl={data.submission.user.profile_picture_url}
+							thumbnailUrl={data.submission.user.profile_picture_thumbnail_url}
+							displayName={data.submission.user.display_name}
+							firstName={data.submission.user.first_name}
+							lastName={data.submission.user.last_name}
+							size="md"
+							class="shrink-0"
+						/>
 						<div class="flex-1">
 							<p class="text-sm font-medium text-muted-foreground">
 								{m['questionnaireSubmissionDetailPage.nameLabel']()}
