@@ -14,6 +14,7 @@
 		PlusCircle
 	} from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
+	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 
 	interface Props {
 		mobile?: boolean;
@@ -84,14 +85,6 @@
 		return Object.values(permissions.organization_permissions).some((perms) => perms === 'owner');
 	}
 
-	// Get user initials for avatar
-	let userInitials = $derived(() => {
-		if (!user) return '?';
-		const first = user.first_name?.[0] || '';
-		const last = user.last_name?.[0] || '';
-		return (first + last).toUpperCase() || user.email[0].toUpperCase();
-	});
-
 	// Get display name
 	let displayName = $derived(
 		user?.preferred_name || user?.first_name || user?.email.split('@')[0] || 'User'
@@ -139,11 +132,14 @@
 	<!-- Mobile User Menu -->
 	<div class="space-y-2">
 		<div class="flex items-center gap-3 rounded-md bg-muted p-4">
-			<div
-				class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground"
-			>
-				{userInitials()}
-			</div>
+			<UserAvatar
+				profilePictureUrl={user?.profile_picture_url}
+				thumbnailUrl={user?.profile_picture_thumbnail_url}
+				{displayName}
+				firstName={user?.first_name}
+				lastName={user?.last_name}
+				size="md"
+			/>
 			<div class="flex-1">
 				<p class="font-medium">{displayName}</p>
 				<p class="text-sm text-muted-foreground">{user?.email}</p>
@@ -227,11 +223,14 @@
 			aria-haspopup="true"
 			aria-label={m['userMenu.userMenu']()}
 		>
-			<div
-				class="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground"
-			>
-				{userInitials()}
-			</div>
+			<UserAvatar
+				profilePictureUrl={user?.profile_picture_url}
+				thumbnailUrl={user?.profile_picture_thumbnail_url}
+				{displayName}
+				firstName={user?.first_name}
+				lastName={user?.last_name}
+				size="sm"
+			/>
 			<span class="hidden text-sm font-medium lg:block">{displayName}</span>
 		</button>
 

@@ -5,7 +5,12 @@
 	import { Calendar, MapPin, CheckCircle2, XCircle, HelpCircle } from 'lucide-svelte';
 	import { getImageUrl } from '$lib/utils/url';
 	import { formatEventDateRange } from '$lib/utils/date';
-	import { getEventLogo, getEventCoverArt } from '$lib/utils/event';
+	import {
+		getEventLogo,
+		getEventLogoThumbnail,
+		getEventCoverArt,
+		getEventCoverArtThumbnail
+	} from '$lib/utils/event';
 
 	interface Props {
 		rsvp: UserRsvpSchema;
@@ -14,12 +19,16 @@
 	let { rsvp }: Props = $props();
 
 	// Logo with fallback hierarchy: event -> series -> organization
+	// Prefer thumbnail for card display (64x64)
+	let logoThumbnailPath = $derived(getEventLogoThumbnail(rsvp.event));
 	let logoPath = $derived(getEventLogo(rsvp.event));
-	let logoUrl = $derived(getImageUrl(logoPath));
+	let logoUrl = $derived(getImageUrl(logoThumbnailPath || logoPath));
 
 	// Cover art with fallback hierarchy (for secondary fallback)
+	// Prefer thumbnail for card display
+	let coverArtThumbnailPath = $derived(getEventCoverArtThumbnail(rsvp.event));
 	let coverArtPath = $derived(getEventCoverArt(rsvp.event));
-	let coverArtUrl = $derived(getImageUrl(coverArtPath));
+	let coverArtUrl = $derived(getImageUrl(coverArtThumbnailPath || coverArtPath));
 
 	// Format event date
 	let eventDate = $derived.by(() => {

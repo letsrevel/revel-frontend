@@ -5,7 +5,7 @@
 	import { Calendar, MapPin, Ticket, CheckCircle2 } from 'lucide-svelte';
 	import { getImageUrl } from '$lib/utils/url';
 	import { formatEventDateRange } from '$lib/utils/date';
-	import { getEventLogo } from '$lib/utils/event';
+	import { getEventLogo, getEventLogoThumbnail } from '$lib/utils/event';
 
 	interface Props {
 		invitation: MyEventInvitationSchema;
@@ -14,8 +14,10 @@
 	let { invitation }: Props = $props();
 
 	// Logo with fallback hierarchy: event -> series -> organization
+	// Prefer thumbnail for card display (64x64)
+	let logoThumbnailPath = $derived(getEventLogoThumbnail(invitation.event));
 	let logoPath = $derived(getEventLogo(invitation.event));
-	let logoUrl = $derived(getImageUrl(logoPath));
+	let logoUrl = $derived(getImageUrl(logoThumbnailPath || logoPath));
 
 	// Format event date
 	let eventDate = $derived.by(() => {

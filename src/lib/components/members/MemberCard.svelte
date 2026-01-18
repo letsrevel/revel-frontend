@@ -4,6 +4,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Settings } from 'lucide-svelte';
 	import { formatDistanceToNow } from 'date-fns';
+	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 
 	interface Props {
 		member: OrganizationMemberSchema;
@@ -44,6 +45,17 @@
 	class="rounded-lg border border-border bg-card p-4 shadow-sm transition-shadow hover:shadow-md"
 >
 	<div class="flex items-start justify-between gap-4">
+		<!-- Avatar -->
+		<UserAvatar
+			profilePictureUrl={(member.user as any).profile_picture_url}
+			thumbnailUrl={(member.user as any).profile_picture_thumbnail_url}
+			{displayName}
+			firstName={member.user.first_name}
+			lastName={member.user.last_name}
+			size="lg"
+			class="shrink-0"
+		/>
+
 		<!-- Member Info -->
 		<div class="min-w-0 flex-1">
 			<div class="flex items-center gap-2">

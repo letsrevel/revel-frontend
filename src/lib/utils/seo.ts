@@ -72,24 +72,32 @@ export function stripMarkdown(markdown: string | null | undefined): string {
 }
 
 /**
- * Get preview image for an event following the priority hierarchy:
- * 1. event.logo
+ * Get preview image for an event following the priority hierarchy.
+ * Prefers social variants (optimized for 1200x630 social cards) when available:
+ * 1. event.cover_art_social_url (preferred for social sharing)
  * 2. event.cover_art
- * 3. event.event_series.logo
+ * 3. event.event_series.cover_art_social_url
  * 4. event.event_series.cover_art
- * 5. event.organization.logo
+ * 5. event.organization.cover_art_social_url
  * 6. event.organization.cover_art
+ * 7. event.logo (fallback)
+ * 8. event.organization.logo (fallback)
  *
  * Returns absolute URL relative to backend
  */
 export function getEventPreviewImage(event: EventDetailSchema): string | undefined {
+	const e = event as any;
 	const candidates = [
-		event.logo,
+		// Prefer social variants for og:image/twitter:image (1200x630)
+		e.cover_art_social_url,
 		event.cover_art,
-		event.event_series?.logo,
+		e.event_series?.cover_art_social_url,
 		event.event_series?.cover_art,
-		event.organization.logo,
-		event.organization.cover_art
+		e.organization?.cover_art_social_url,
+		event.organization.cover_art,
+		// Logos as fallback
+		event.logo,
+		event.organization.logo
 	];
 
 	const firstAvailable = candidates.find((url) => url != null);
@@ -97,36 +105,52 @@ export function getEventPreviewImage(event: EventDetailSchema): string | undefin
 }
 
 /**
- * Get preview image for an organization following the priority hierarchy:
- * 1. organization.logo
+ * Get preview image for an organization following the priority hierarchy.
+ * Prefers social variants (optimized for 1200x630 social cards) when available:
+ * 1. organization.cover_art_social_url (preferred for social sharing)
  * 2. organization.cover_art
+ * 3. organization.logo (fallback)
  *
  * Returns absolute URL relative to backend
  */
 export function getOrganizationPreviewImage(
 	organization: OrganizationRetrieveSchema
 ): string | undefined {
-	const candidates = [organization.logo, organization.cover_art];
+	const o = organization as any;
+	const candidates = [
+		// Prefer social variant for og:image/twitter:image (1200x630)
+		o.cover_art_social_url,
+		organization.cover_art,
+		organization.logo
+	];
 
 	const firstAvailable = candidates.find((url) => url != null);
 	return firstAvailable ? getBackendUrl(firstAvailable) : undefined;
 }
 
 /**
- * Get preview image for an event series following the priority hierarchy:
- * 1. series.logo
+ * Get preview image for an event series following the priority hierarchy.
+ * Prefers social variants (optimized for 1200x630 social cards) when available:
+ * 1. series.cover_art_social_url (preferred for social sharing)
  * 2. series.cover_art
- * 3. series.organization.logo
+ * 3. series.organization.cover_art_social_url
  * 4. series.organization.cover_art
+ * 5. series.logo (fallback)
+ * 6. series.organization.logo (fallback)
  *
  * Returns absolute URL relative to backend
  */
 export function getEventSeriesPreviewImage(series: EventSeriesRetrieveSchema): string | undefined {
+	const s = series as any;
 	const candidates = [
-		series.logo,
+		// Prefer social variants for og:image/twitter:image (1200x630)
+		s.cover_art_social_url,
 		series.cover_art,
-		series.organization.logo,
-		series.organization.cover_art
+		s.organization?.cover_art_social_url,
+		series.organization.cover_art,
+		// Logos as fallback
+		series.logo,
+		series.organization.logo
 	];
 
 	const firstAvailable = candidates.find((url) => url != null);

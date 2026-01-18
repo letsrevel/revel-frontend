@@ -137,6 +137,38 @@ export function getEventLogo(
 }
 
 /**
+ * Get event logo thumbnail with fallback hierarchy (optimized for small displays):
+ * 1. Event's logo_thumbnail_url
+ * 2. Event series' logo_thumbnail_url (if event is part of a series)
+ * 3. Organization's logo_thumbnail_url
+ *
+ * @param event Event data (can be MinimalEventSchema, EventInListSchema, or EventDetailSchema)
+ * @returns Logo thumbnail URL path (relative) or null if no thumbnail available
+ */
+export function getEventLogoThumbnail(
+	event: MinimalEventSchema | EventDetailSchema | EventInListSchema
+): string | null {
+	const e = event as any;
+
+	// First priority: Event's own logo thumbnail
+	if (e.logo_thumbnail_url) {
+		return e.logo_thumbnail_url;
+	}
+
+	// Second priority: Event series logo thumbnail
+	if (e.event_series?.logo_thumbnail_url) {
+		return e.event_series.logo_thumbnail_url;
+	}
+
+	// Third priority: Organization logo thumbnail
+	if (e.organization?.logo_thumbnail_url) {
+		return e.organization.logo_thumbnail_url;
+	}
+
+	return null;
+}
+
+/**
  * Get event cover art with fallback hierarchy:
  * 1. Event's cover_art
  * 2. Event series' cover_art (if event is part of a series)
@@ -161,6 +193,70 @@ export function getEventCoverArt(
 	// Third priority: Organization cover art (may not exist in MinimalEventSchema)
 	if ('organization' in event && event.organization?.cover_art) {
 		return event.organization.cover_art;
+	}
+
+	return null;
+}
+
+/**
+ * Get event cover art thumbnail with fallback hierarchy (optimized for card displays):
+ * 1. Event's cover_art_thumbnail_url
+ * 2. Event series' cover_art_thumbnail_url (if event is part of a series)
+ * 3. Organization's cover_art_thumbnail_url
+ *
+ * @param event Event data (can be MinimalEventSchema, EventInListSchema, or EventDetailSchema)
+ * @returns Cover art thumbnail URL path (relative) or null if no thumbnail available
+ */
+export function getEventCoverArtThumbnail(
+	event: MinimalEventSchema | EventDetailSchema | EventInListSchema
+): string | null {
+	const e = event as any;
+
+	// First priority: Event's own cover art thumbnail
+	if (e.cover_art_thumbnail_url) {
+		return e.cover_art_thumbnail_url;
+	}
+
+	// Second priority: Event series cover art thumbnail
+	if (e.event_series?.cover_art_thumbnail_url) {
+		return e.event_series.cover_art_thumbnail_url;
+	}
+
+	// Third priority: Organization cover art thumbnail
+	if (e.organization?.cover_art_thumbnail_url) {
+		return e.organization.cover_art_thumbnail_url;
+	}
+
+	return null;
+}
+
+/**
+ * Get event cover art social variant with fallback hierarchy (optimized for og:image/twitter:image):
+ * 1. Event's cover_art_social_url
+ * 2. Event series' cover_art_social_url (if event is part of a series)
+ * 3. Organization's cover_art_social_url
+ *
+ * @param event Event data (can be MinimalEventSchema, EventInListSchema, or EventDetailSchema)
+ * @returns Cover art social URL path (relative) or null if no social variant available
+ */
+export function getEventCoverArtSocial(
+	event: MinimalEventSchema | EventDetailSchema | EventInListSchema
+): string | null {
+	const e = event as any;
+
+	// First priority: Event's own cover art social variant
+	if (e.cover_art_social_url) {
+		return e.cover_art_social_url;
+	}
+
+	// Second priority: Event series cover art social variant
+	if (e.event_series?.cover_art_social_url) {
+		return e.event_series.cover_art_social_url;
+	}
+
+	// Third priority: Organization cover art social variant
+	if (e.organization?.cover_art_social_url) {
+		return e.organization.cover_art_social_url;
 	}
 
 	return null;
