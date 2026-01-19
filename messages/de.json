@@ -2040,7 +2040,7 @@
 		"profilePicture_deleting": "Löschen...",
 		"profilePicture_confirm": "Bestätigen",
 		"profilePicture_cancel": "Abbrechen",
-		"profilePicture_hint": "JPG, PNG, GIF oder WebP. Max. 10MB.",
+		"profilePicture_hint": "JPG, PNG, GIF, WebP oder HEIC. Maximal 10MB.",
 		"profilePicture_uploadSuccess": "Profilbild erfolgreich hochgeladen",
 		"profilePicture_uploadError": "Profilbild konnte nicht hochgeladen werden. Bitte versuche es erneut.",
 		"profilePicture_deleteSuccess": "Profilbild gelöscht",
@@ -4489,5 +4489,18 @@
 		"required": "erforderlich",
 		"upTo": "bis zu {maxSize}",
 		"maxFiles": "Maximal {count} Dateien"
+	},
+	"imageCropper": {
+		"title": "Bild zuschneiden",
+		"loading": "Bild wird geladen...",
+		"loadError": "Bild konnte nicht geladen werden. Bitte versuche es erneut.",
+		"cropError": "Bild konnte nicht verarbeitet werden. Bitte versuche es erneut.",
+		"rotateLeft": "Nach links drehen",
+		"rotateRight": "Nach rechts drehen",
+		"reset": "Zurücksetzen",
+		"cancel": "Abbrechen",
+		"save": "Speichern",
+		"processing": "Wird verarbeitet...",
+		"heicConverting": "Bildformat wird konvertiert..."
 	}
 }

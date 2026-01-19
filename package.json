@@ -64,11 +64,13 @@
 		"@tanstack/svelte-query": "^6.0.3",
 		"clsx": "^2.1.1",
 		"date-fns": "^4.1.0",
+		"heic2any": "^0.0.4",
 		"html5-qrcode": "^2.3.8",
 		"lucide-svelte": "^0.469.0",
 		"marked": "^17.0.1",
 		"mode-watcher": "^0.4.1",
 		"qrcode": "^1.5.4",
+		"svelte-crop-window": "^0.1.1",
 		"svelte-dnd-action": "^0.9.69",
 		"svelte-sonner": "^1.0.5",
 		"sveltekit-superforms": "^2.28.1",
@@ -80,5 +82,10 @@
 		"node": ">=20.0.0",
 		"pnpm": ">=9.0.0"
 	},
-	"packageManager": "pnpm@9.15.0"
+	"packageManager": "pnpm@9.15.0",
+	"pnpm": {
+		"patchedDependencies": {
+			"svelte-crop-window@0.1.1": "patches/svelte-crop-window@0.1.1.patch"
+		}
+	}
 }

@@ -3,6 +3,7 @@
 	import { cn } from '$lib/utils/cn';
 	import { accountUploadProfilePicture, accountDeleteProfilePicture } from '$lib/api/generated';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
+	import ImageCropperModal from '$lib/components/common/ImageCropperModal.svelte';
 	import { Upload, Trash2, Loader2 } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 
@@ -54,12 +55,23 @@
 	let isUploading = $state(false);
 	let isDeleting = $state(false);
 	let showDeleteConfirm = $state(false);
+	let showCropper = $state(false);
+	let selectedFile = $state<File | null>(null);
 	let fileInput = $state<HTMLInputElement>();
 	let error = $state<string | null>(null);
 
 	// Maximum file size (10MB)
 	const MAX_FILE_SIZE = 10 * 1024 * 1024;
-	const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+	const ACCEPTED_TYPES = [
+		'image/jpeg',
+		'image/png',
+		'image/gif',
+		'image/webp',
+		'image/heic',
+		'image/heif'
+	];
+	// Note: Some browsers don't recognize heic/heif mime types, so we also check by extension
+	const ACCEPTED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif'];
 
 	function formatFileSize(bytes: number): string {
 		if (bytes === 0) return '0 Bytes';
@@ -70,7 +82,13 @@
 	}
 
 	function validateFile(file: File): string | null {
-		if (!ACCEPTED_TYPES.includes(file.type)) {
+		// Check by mime type OR by extension (HEIC files may have empty/wrong mime type on some browsers)
+		const hasValidType = ACCEPTED_TYPES.includes(file.type);
+		const hasValidExtension = ACCEPTED_EXTENSIONS.some((ext) =>
+			file.name.toLowerCase().endsWith(ext)
+		);
+
+		if (!hasValidType && !hasValidExtension) {
 			return m['profilePage.profilePicture_invalidFormat']();
 		}
 		if (file.size > MAX_FILE_SIZE) {
@@ -79,7 +97,7 @@
 		return null;
 	}
 
-	async function handleFileSelect(event: Event) {
+	function handleFileSelect(event: Event) {
 		const target = event.target as HTMLInputElement;
 		const file = target.files?.[0];
 		if (!file) return;
@@ -88,8 +106,34 @@
 		const validationError = validateFile(file);
 		if (validationError) {
 			error = validationError;
+			// Reset file input
+			if (fileInput) {
+				fileInput.value = '';
+			}
 			return;
 		}
+
+		// Show cropper modal
+		selectedFile = file;
+		showCropper = true;
+
+		// Reset file input
+		if (fileInput) {
+			fileInput.value = '';
+		}
+	}
+
+	function handleCropperCancel() {
+		showCropper = false;
+		selectedFile = null;
+	}
+
+	async function handleCropperSave(blob: Blob) {
+		showCropper = false;
+		selectedFile = null;
+
+		// Convert blob to File for the API
+		const file = new File([blob], 'profile-picture.jpg', { type: 'image/jpeg' });
 
 		isUploading = true;
 		try {
@@ -113,10 +157,6 @@
 			toast.error(error);
 		} finally {
 			isUploading = false;
-			// Reset file input
-			if (fileInput) {
-				fileInput.value = '';
-			}
 		}
 	}
 
@@ -241,11 +281,22 @@
 		bind:this={fileInput}
 		type="file"
 		id="profile-picture-input"
-		accept={ACCEPTED_TYPES.join(',')}
+		accept={[...ACCEPTED_TYPES, '.heic', '.heif'].join(',')}
 		onchange={handleFileSelect}
 		class="sr-only"
 		aria-labelledby="profile-picture-label"
 	/>
+
+	<!-- Image Cropper Modal -->
+	{#if showCropper && selectedFile}
+		<ImageCropperModal
+			file={selectedFile}
+			aspectRatio={1}
+			shape="round"
+			onSave={handleCropperSave}
+			onCancel={handleCropperCancel}
+		/>
+	{/if}
 
 	<!-- Error message -->
 	{#if error}
