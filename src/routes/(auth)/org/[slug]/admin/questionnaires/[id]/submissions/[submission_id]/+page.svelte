@@ -154,6 +154,7 @@
 					<div class="flex items-start gap-3">
 						<UserAvatar
 							profilePictureUrl={data.submission.user.profile_picture_url}
+							previewUrl={data.submission.user.profile_picture_preview_url}
 							thumbnailUrl={data.submission.user.profile_picture_thumbnail_url}
 							displayName={data.submission.user.display_name}
 							firstName={data.submission.user.first_name}

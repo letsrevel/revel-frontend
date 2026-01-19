@@ -31,6 +31,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import MakeMemberModal from '$lib/components/members/MakeMemberModal.svelte';
+	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 	import type { RsvpDetailSchema, MembershipTierSchema } from '$lib/api/generated/types.gen';
 	import * as m from '$lib/paraglide/messages.js';
 
@@ -632,15 +633,32 @@
 					{#each data.rsvps as rsvp (rsvp.id)}
 						<tr class="hover:bg-muted/50">
 							<td class="whitespace-nowrap px-6 py-4 text-sm font-medium">
-								<div class="flex items-center gap-2">
-									<span>{getUserDisplayName(rsvp.user)}</span>
-									{#if rsvp.membership}
-										<Badge variant="secondary" class="text-xs">
-											{rsvp.membership.tier?.name
-												? m['memberBadge.tierName']({ tier: rsvp.membership.tier.name })
-												: m['memberBadge.member']()}
-										</Badge>
-									{/if}
+								<div class="flex items-center gap-3">
+									<UserAvatar
+										profilePictureUrl={rsvp.user.profile_picture_url}
+										previewUrl={rsvp.user.profile_picture_preview_url}
+										thumbnailUrl={rsvp.user.profile_picture_thumbnail_url}
+										displayName={getUserDisplayName(rsvp.user)}
+										firstName={rsvp.user.first_name}
+										lastName={rsvp.user.last_name}
+										size="sm"
+										clickable={true}
+									/>
+									<div class="flex flex-col">
+										<div class="flex items-center gap-2">
+											<span>{getUserDisplayName(rsvp.user)}</span>
+											{#if rsvp.user.pronouns}
+												<span class="text-xs text-muted-foreground">({rsvp.user.pronouns})</span>
+											{/if}
+										</div>
+										{#if rsvp.membership}
+											<Badge variant="secondary" class="mt-0.5 w-fit text-xs">
+												{rsvp.membership.tier?.name
+													? m['memberBadge.tierName']({ tier: rsvp.membership.tier.name })
+													: m['memberBadge.member']()}
+											</Badge>
+										{/if}
+									</div>
 								</div>
 							</td>
 							<td class="whitespace-nowrap px-6 py-4 text-sm text-muted-foreground">
@@ -730,22 +748,37 @@
 				<div class="rounded-lg border border-border bg-card p-4">
 					<div class="space-y-3">
 						<div class="flex items-start justify-between gap-2">
-							<div>
-								<div class="flex items-center gap-2">
-									<p class="font-medium">{getUserDisplayName(rsvp.user)}</p>
-									{#if rsvp.membership}
-										<Badge variant="secondary" class="text-xs">
-											{rsvp.membership.tier?.name
-												? m['memberBadge.tierName']({ tier: rsvp.membership.tier.name })
-												: m['memberBadge.member']()}
-										</Badge>
-									{/if}
+							<div class="flex items-start gap-3">
+								<UserAvatar
+									profilePictureUrl={rsvp.user.profile_picture_url}
+									previewUrl={rsvp.user.profile_picture_preview_url}
+									thumbnailUrl={rsvp.user.profile_picture_thumbnail_url}
+									displayName={getUserDisplayName(rsvp.user)}
+									firstName={rsvp.user.first_name}
+									lastName={rsvp.user.last_name}
+									size="md"
+									clickable={true}
+								/>
+								<div>
+									<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+										<p class="font-medium">{getUserDisplayName(rsvp.user)}</p>
+										{#if rsvp.user.pronouns}
+											<span class="text-xs text-muted-foreground">({rsvp.user.pronouns})</span>
+										{/if}
+										{#if rsvp.membership}
+											<Badge variant="secondary" class="text-xs">
+												{rsvp.membership.tier?.name
+													? m['memberBadge.tierName']({ tier: rsvp.membership.tier.name })
+													: m['memberBadge.member']()}
+											</Badge>
+										{/if}
+									</div>
+									<p class="text-sm text-muted-foreground">{getUserEmail(rsvp.user)}</p>
 								</div>
-								<p class="text-sm text-muted-foreground">{getUserEmail(rsvp.user)}</p>
 							</div>
 							<span
 								class={cn(
-									'rounded-full px-2 py-1 text-xs font-semibold',
+									'shrink-0 rounded-full px-2 py-1 text-xs font-semibold',
 									getStatusColor(rsvp.status)
 								)}
 							>

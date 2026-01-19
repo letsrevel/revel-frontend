@@ -907,11 +907,13 @@
 											<div class="flex items-center gap-3">
 												<UserAvatar
 													profilePictureUrl={request.user.profile_picture_url}
+													previewUrl={request.user.profile_picture_preview_url}
 													thumbnailUrl={request.user.profile_picture_thumbnail_url}
 													displayName={getUserDisplayName(request.user)}
 													firstName={request.user.first_name}
 													lastName={request.user.last_name}
 													size="md"
+													clickable={true}
 												/>
 												<div>
 													<p class="font-medium">
@@ -1195,11 +1197,13 @@
 												<div class="flex items-center gap-2">
 													<UserAvatar
 														profilePictureUrl={invitation.user.profile_picture_url}
+														previewUrl={invitation.user.profile_picture_preview_url}
 														thumbnailUrl={invitation.user.profile_picture_thumbnail_url}
 														displayName={getUserDisplayName(invitation.user)}
 														firstName={invitation.user.first_name}
 														lastName={invitation.user.last_name}
 														size="sm"
+														clickable={true}
 													/>
 													<span class="text-sm font-medium">
 														{getUserDisplayName(invitation.user)}

@@ -10,9 +10,10 @@
 	 * Displays a user's profile picture or initials fallback.
 	 * Used consistently across the app wherever user info is displayed.
 	 *
-	 * For performance, pass both `profilePictureUrl` and `thumbnailUrl`:
+	 * For performance, pass `thumbnailUrl` and optionally `previewUrl`:
 	 * - Small sizes (xs, sm, md) will automatically use the thumbnail
-	 * - Large sizes (lg, xl) will use the full picture
+	 * - Large sizes (lg, xl) will use the preview or fall back to original
+	 * - Click-to-expand dialog uses preview for optimal size/quality balance
 	 *
 	 * Set `clickable={true}` to enable click-to-expand functionality.
 	 *
@@ -20,6 +21,7 @@
 	 * ```svelte
 	 * <UserAvatar
 	 *   profilePictureUrl={user.profile_picture_url}
+	 *   previewUrl={user.profile_picture_preview_url}
 	 *   thumbnailUrl={user.profile_picture_thumbnail_url}
 	 *   displayName={user.display_name}
 	 *   firstName={user.first_name}
@@ -32,6 +34,8 @@
 	interface Props {
 		/** URL to the full-size profile picture (null if none) */
 		profilePictureUrl?: string | null;
+		/** URL to the preview version for expanded dialog (null if none, falls back to original) */
+		previewUrl?: string | null;
 		/** URL to the thumbnail version for better performance in lists (null if none) */
 		thumbnailUrl?: string | null;
 		/** Display name for the user (used for alt text and initials fallback) */
@@ -50,6 +54,7 @@
 
 	let {
 		profilePictureUrl = null,
+		previewUrl = null,
 		thumbnailUrl = null,
 		displayName,
 		firstName = '',
@@ -87,20 +92,24 @@
 
 	// Select the best image URL based on size
 	// Small sizes (xs, sm, md) use thumbnail if available for better performance
-	// Large sizes (lg, xl) use the full picture
+	// Large sizes (lg, xl) use preview or fall back to original
 	const selectedUrl = $derived.by(() => {
 		const useSmallImage = size === 'xs' || size === 'sm' || size === 'md';
 		if (useSmallImage && thumbnailUrl) {
 			return thumbnailUrl;
 		}
-		return profilePictureUrl;
+		// For larger sizes, prefer preview over original
+		return previewUrl || profilePictureUrl;
 	});
 
 	// Get the full URL for the profile picture (handles relative URLs from backend)
 	const fullPictureUrl = $derived(selectedUrl ? getBackendUrl(selectedUrl) : null);
 
-	// Get the full-size URL for the expanded dialog (always use full picture, not thumbnail)
-	const fullSizePictureUrl = $derived(profilePictureUrl ? getBackendUrl(profilePictureUrl) : null);
+	// Get the URL for the expanded dialog (prefer preview for optimal size/quality)
+	const expandedPictureUrl = $derived.by(() => {
+		const url = previewUrl || profilePictureUrl;
+		return url ? getBackendUrl(url) : null;
+	});
 
 	// Determine if avatar should be clickable (only if there's a picture and clickable is true)
 	const isClickable = $derived(clickable && fullPictureUrl);
@@ -151,14 +160,14 @@
 {/if}
 
 <!-- Expanded image dialog -->
-{#if clickable && fullSizePictureUrl}
+{#if clickable && expandedPictureUrl}
 	<Dialog.Root bind:open={isDialogOpen}>
 		<Dialog.Content class="max-w-md border-0 bg-transparent p-0 shadow-none sm:max-w-lg">
 			<Dialog.Title class="sr-only">{displayName}'s profile picture</Dialog.Title>
 			<Dialog.Description class="sr-only">Enlarged view of profile picture</Dialog.Description>
 			<div class="relative">
 				<img
-					src={fullSizePictureUrl}
+					src={expandedPictureUrl}
 					alt={altText}
 					class="max-h-[80vh] w-full rounded-lg object-contain"
 				/>

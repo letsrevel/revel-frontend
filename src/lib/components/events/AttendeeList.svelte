@@ -109,6 +109,7 @@
 						<div class="flex items-start gap-3">
 							<UserAvatar
 								profilePictureUrl={attendee.profile_picture_url}
+								previewUrl={attendee.profile_picture_preview_url}
 								thumbnailUrl={attendee.profile_picture_thumbnail_url}
 								displayName={attendee.display_name}
 								size="md"
@@ -131,6 +132,7 @@
 						<div class="flex items-start gap-3">
 							<UserAvatar
 								profilePictureUrl={attendee.profile_picture_url}
+								previewUrl={attendee.profile_picture_preview_url}
 								thumbnailUrl={attendee.profile_picture_thumbnail_url}
 								displayName={attendee.display_name}
 								size="md"

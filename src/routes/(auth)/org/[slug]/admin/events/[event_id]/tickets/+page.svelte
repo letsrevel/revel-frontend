@@ -4,6 +4,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
+	import { cn } from '$lib/utils/cn';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Badge } from '$lib/components/ui/badge';
@@ -36,6 +37,7 @@
 	import QRScannerModal from '$lib/components/tickets/QRScannerModal.svelte';
 	import CheckInDialog from '$lib/components/tickets/CheckInDialog.svelte';
 	import MakeMemberModal from '$lib/components/members/MakeMemberModal.svelte';
+	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -863,41 +865,59 @@
 							{@const seatInfo = getSeatDisplay(ticket)}
 							<tr class="hover:bg-muted/30">
 								<td class="px-4 py-3">
-									<div>
-										{#if guestName}
-											<div class="flex items-center gap-2">
-												<span class="font-medium">{guestName}</span>
-												{#if ticket.membership}
-													<Badge variant="secondary" class="text-xs">
-														{ticket.membership.tier?.name
-															? m['memberBadge.tierName']({ tier: ticket.membership.tier.name })
-															: m['memberBadge.member']()}
-													</Badge>
-												{/if}
-											</div>
+									<div class="flex items-start gap-3">
+										<UserAvatar
+											profilePictureUrl={ticket.user.profile_picture_url}
+											previewUrl={ticket.user.profile_picture_preview_url}
+											thumbnailUrl={ticket.user.profile_picture_thumbnail_url}
+											displayName={getUserDisplayName(ticket.user)}
+											firstName={ticket.user.first_name}
+											lastName={ticket.user.last_name}
+											size="sm"
+											clickable={true}
+										/>
+										<div>
+											{#if guestName}
+												<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+													<span class="font-medium">{guestName}</span>
+													{#if ticket.user.pronouns}
+														<span class="text-xs text-muted-foreground">({ticket.user.pronouns})</span>
+													{/if}
+													{#if ticket.membership}
+														<Badge variant="secondary" class="text-xs">
+															{ticket.membership.tier?.name
+																? m['memberBadge.tierName']({ tier: ticket.membership.tier.name })
+																: m['memberBadge.member']()}
+														</Badge>
+													{/if}
+												</div>
+												<div class="text-sm text-muted-foreground">
+													(Purchased by {getUserDisplayName(ticket.user)})
+												</div>
+											{:else}
+												<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+													<span class="font-medium">{getUserDisplayName(ticket.user)}</span>
+													{#if ticket.user.pronouns}
+														<span class="text-xs text-muted-foreground">({ticket.user.pronouns})</span>
+													{/if}
+													{#if ticket.membership}
+														<Badge variant="secondary" class="text-xs">
+															{ticket.membership.tier?.name
+																? m['memberBadge.tierName']({ tier: ticket.membership.tier.name })
+																: m['memberBadge.member']()}
+														</Badge>
+													{/if}
+												</div>
+											{/if}
 											<div class="text-sm text-muted-foreground">
-												(Purchased by {getUserDisplayName(ticket.user)})
+												{getUserEmail(ticket.user)}
 											</div>
-										{:else}
-											<div class="flex items-center gap-2">
-												<span class="font-medium">{getUserDisplayName(ticket.user)}</span>
-												{#if ticket.membership}
-													<Badge variant="secondary" class="text-xs">
-														{ticket.membership.tier?.name
-															? m['memberBadge.tierName']({ tier: ticket.membership.tier.name })
-															: m['memberBadge.member']()}
-													</Badge>
-												{/if}
-											</div>
-										{/if}
-										<div class="text-sm text-muted-foreground">
-											{getUserEmail(ticket.user)}
+											{#if seatInfo}
+												<div class="mt-1 text-xs text-primary">
+													{seatInfo}
+												</div>
+											{/if}
 										</div>
-										{#if seatInfo}
-											<div class="mt-1 text-xs text-primary">
-												{seatInfo}
-											</div>
-										{/if}
 									</div>
 								</td>
 								<td class="px-4 py-3">
@@ -1017,40 +1037,58 @@
 					{@const guestName = getGuestNameIfDifferent(ticket)}
 					{@const seatInfo = getSeatDisplay(ticket)}
 					<div class="rounded-lg border bg-card p-4">
-						<div class="mb-3 flex items-start justify-between">
-							<div class="flex-1">
-								{#if guestName}
-									<div class="flex items-center gap-2">
-										<span class="font-semibold">{guestName}</span>
-										{#if ticket.membership}
-											<Badge variant="secondary" class="text-xs">
-												{ticket.membership.tier?.name
-													? m['memberBadge.tierName']({ tier: ticket.membership.tier.name })
-													: m['memberBadge.member']()}
-											</Badge>
-										{/if}
-									</div>
-									<div class="text-sm text-muted-foreground">
-										(Purchased by {getUserDisplayName(ticket.user)})
-									</div>
-								{:else}
-									<div class="flex items-center gap-2">
-										<span class="font-semibold">{getUserDisplayName(ticket.user)}</span>
-										{#if ticket.membership}
-											<Badge variant="secondary" class="text-xs">
-												{ticket.membership.tier?.name
-													? m['memberBadge.tierName']({ tier: ticket.membership.tier.name })
-													: m['memberBadge.member']()}
-											</Badge>
-										{/if}
-									</div>
-								{/if}
-								<div class="text-sm text-muted-foreground">{getUserEmail(ticket.user)}</div>
-								{#if seatInfo}
-									<div class="mt-1 text-xs text-primary">{seatInfo}</div>
-								{/if}
+						<div class="mb-3 flex items-start justify-between gap-2">
+							<div class="flex flex-1 items-start gap-3">
+								<UserAvatar
+									profilePictureUrl={ticket.user.profile_picture_url}
+									previewUrl={ticket.user.profile_picture_preview_url}
+									thumbnailUrl={ticket.user.profile_picture_thumbnail_url}
+									displayName={getUserDisplayName(ticket.user)}
+									firstName={ticket.user.first_name}
+									lastName={ticket.user.last_name}
+									size="md"
+									clickable={true}
+								/>
+								<div>
+									{#if guestName}
+										<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+											<span class="font-semibold">{guestName}</span>
+											{#if ticket.user.pronouns}
+												<span class="text-xs text-muted-foreground">({ticket.user.pronouns})</span>
+											{/if}
+											{#if ticket.membership}
+												<Badge variant="secondary" class="text-xs">
+													{ticket.membership.tier?.name
+														? m['memberBadge.tierName']({ tier: ticket.membership.tier.name })
+														: m['memberBadge.member']()}
+												</Badge>
+											{/if}
+										</div>
+										<div class="text-sm text-muted-foreground">
+											(Purchased by {getUserDisplayName(ticket.user)})
+										</div>
+									{:else}
+										<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+											<span class="font-semibold">{getUserDisplayName(ticket.user)}</span>
+											{#if ticket.user.pronouns}
+												<span class="text-xs text-muted-foreground">({ticket.user.pronouns})</span>
+											{/if}
+											{#if ticket.membership}
+												<Badge variant="secondary" class="text-xs">
+													{ticket.membership.tier?.name
+														? m['memberBadge.tierName']({ tier: ticket.membership.tier.name })
+														: m['memberBadge.member']()}
+												</Badge>
+											{/if}
+										</div>
+									{/if}
+									<div class="text-sm text-muted-foreground">{getUserEmail(ticket.user)}</div>
+									{#if seatInfo}
+										<div class="mt-1 text-xs text-primary">{seatInfo}</div>
+									{/if}
+								</div>
 							</div>
-							<span class={getStatusColor(ticket.status)}>
+							<span class={cn('shrink-0', getStatusColor(ticket.status))}>
 								{getStatusLabel(ticket.status)}
 							</span>
 						</div>
