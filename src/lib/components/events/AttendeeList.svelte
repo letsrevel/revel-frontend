@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { browser } from '$app/environment';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { eventGetEventAttendees } from '$lib/api';
 	import type { AttendeeSchema, VisibilityPreference } from '$lib/api/generated/types.gen';
@@ -14,6 +15,14 @@
 	}
 
 	let { eventId, totalAttendees, isAuthenticated, userVisibility = null }: Props = $props();
+
+	// Build settings URL with redirect back to current page
+	let settingsUrl = $derived.by(() => {
+		if (browser) {
+			return `/account/settings?redirect=${encodeURIComponent(window.location.pathname)}`;
+		}
+		return '/account/settings';
+	});
 
 	// Map visibility preference to translation key
 	function getVisibilityLabel(visibility: VisibilityPreference): string {
@@ -99,18 +108,20 @@
 					{#each attendees.slice(0, 10) as attendee, index (index)}
 						<div class="flex items-start gap-3">
 							<UserAvatar
-								profilePictureUrl={(attendee as any).profile_picture_url}
-								thumbnailUrl={(attendee as any).profile_picture_thumbnail_url}
+								profilePictureUrl={attendee.profile_picture_url}
+								previewUrl={attendee.profile_picture_preview_url}
+								thumbnailUrl={attendee.profile_picture_thumbnail_url}
 								displayName={attendee.display_name}
 								size="md"
 								class="shrink-0"
+								clickable={true}
 							/>
 
 							<!-- Attendee info -->
 							<div class="min-w-0 flex-1">
 								<p class="truncate font-medium">{attendee.display_name}</p>
 								{#if attendee.pronouns}
-									<p class="truncate text-sm text-muted-foreground">{attendee.pronouns}</p>
+									<p class="truncate text-sm text-muted-foreground">({attendee.pronouns})</p>
 								{/if}
 							</div>
 						</div>
@@ -120,18 +131,20 @@
 					{#each attendees as attendee, index (index)}
 						<div class="flex items-start gap-3">
 							<UserAvatar
-								profilePictureUrl={(attendee as any).profile_picture_url}
-								thumbnailUrl={(attendee as any).profile_picture_thumbnail_url}
+								profilePictureUrl={attendee.profile_picture_url}
+								previewUrl={attendee.profile_picture_preview_url}
+								thumbnailUrl={attendee.profile_picture_thumbnail_url}
 								displayName={attendee.display_name}
 								size="md"
 								class="shrink-0"
+								clickable={true}
 							/>
 
 							<!-- Attendee info -->
 							<div class="min-w-0 flex-1">
 								<p class="truncate font-medium">{attendee.display_name}</p>
 								{#if attendee.pronouns}
-									<p class="truncate text-sm text-muted-foreground">{attendee.pronouns}</p>
+									<p class="truncate text-sm text-muted-foreground">({attendee.pronouns})</p>
 								{/if}
 							</div>
 						</div>
@@ -196,7 +209,7 @@
 						</span>
 					</div>
 					<a
-						href="/account/settings"
+						href={settingsUrl}
 						class="text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						{m['attendeeList.manageVisibility']()}

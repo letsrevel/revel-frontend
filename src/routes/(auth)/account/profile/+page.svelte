@@ -2,6 +2,8 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { setLocale } from '$lib/paraglide/runtime.js';
 	import { enhance, applyAction } from '$app/forms';
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import type { PageData, ActionData } from './$types';
 	import { COMMON_PRONOUNS } from '$lib/schemas/profile';
 	import { Loader2, Check, Info, ShieldCheck, ShieldAlert, Mail } from 'lucide-svelte';
@@ -49,6 +51,9 @@
 	let email = $derived(data.user?.email || '');
 	let emailVerified = $derived(data.user?.email_verified || false);
 	let canResendEmail = $derived(!isResendingVerification && resendCooldown === 0);
+
+	// Check for redirect URL (used when coming from events that require profile completion)
+	let redirectUrl = $derived($page.url.searchParams.get('redirect'));
 
 	function startCooldown() {
 		resendCooldown = 60; // 60 second cooldown
@@ -113,6 +118,18 @@
 		<p class="mt-2 text-muted-foreground">Manage your personal information</p>
 	</div>
 
+	{#if redirectUrl}
+		<div
+			class="mb-6 rounded-md border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950"
+		>
+			<p class="text-sm text-blue-800 dark:text-blue-200">
+				<Info class="mr-2 inline-block h-4 w-4" aria-hidden="true" />
+				{m['profile.completeToReturn']?.() ||
+					"Complete your profile to continue. You'll be redirected back after saving."}
+			</p>
+		</div>
+	{/if}
+
 	{#if success}
 		<div
 			role="status"
@@ -121,7 +138,11 @@
 			<div class="flex items-center gap-2">
 				<Check class="h-5 w-5 text-green-600 dark:text-green-400" aria-hidden="true" />
 				<p class="text-sm font-medium text-green-800 dark:text-green-200">
-					Profile updated successfully
+					{#if redirectUrl}
+						{m['profile.savedRedirecting']?.() || 'Profile updated! Redirecting...'}
+					{:else}
+						Profile updated successfully
+					{/if}
 				</p>
 			</div>
 		</div>
@@ -176,6 +197,15 @@
 					// Show success message by triggering a manual update with the result
 					// This will set the form prop without reloading
 					await applyAction(result);
+
+					// Check for redirect parameter and navigate if present
+					const redirectUrl = $page.url.searchParams.get('redirect');
+					if (redirectUrl) {
+						// Small delay to show success message before redirecting
+						setTimeout(() => {
+							goto(redirectUrl);
+						}, 1000);
+					}
 				} else if (result.type === 'failure') {
 					// On validation errors, apply the result to show errors
 					await applyAction(result);

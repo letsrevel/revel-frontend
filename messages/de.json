@@ -913,7 +913,9 @@
 		"buttons_submitText": "Änderungen speichern",
 		"buttons_submittingText": "Speichern...",
 		"settingsLink_text": "Datenschutz, Benachrichtigungen und Standort konfigurieren",
-		"settingsLink_ariaHidden": "→"
+		"settingsLink_ariaHidden": "→",
+		"completeToReturn": "Vervollständige dein Profil, um fortzufahren. Du wirst nach dem Speichern zurückgeleitet.",
+		"savedRedirecting": "Profil aktualisiert! Weiterleitung..."
 	},
 	"telegram": {
 		"heading": "Telegram",
@@ -1034,6 +1036,8 @@
 		"subheading": "Verwalte deine Präferenzen und Benachrichtigungseinstellungen",
 		"successMessage": "Einstellungen erfolgreich aktualisiert",
 		"formErrors_genericError": "Beim Aktualisieren der Einstellungen ist ein Fehler aufgetreten",
+		"updateToReturn": "Aktualisiere deine Einstellungen, um fortzufahren. Du wirst nach dem Speichern zurückgeleitet.",
+		"savedRedirecting": "Einstellungen gespeichert! Weiterleitung...",
 		"privacy_heading": "Privatsphäre",
 		"privacy_description": "Kontrolliere, wer dich auf Teilnehmerlisten sehen kann",
 		"privacy_visibilityLabel": "Zeige mich auf Teilnehmerlisten",

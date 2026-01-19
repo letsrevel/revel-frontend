@@ -913,7 +913,9 @@
 		"buttons_submitText": "Salva Modifiche",
 		"buttons_submittingText": "Salvataggio...",
 		"settingsLink_text": "Configura privacy, notifiche e posizione",
-		"settingsLink_ariaHidden": "→"
+		"settingsLink_ariaHidden": "→",
+		"completeToReturn": "Completa il tuo profilo per continuare. Verrai reindirizzato dopo il salvataggio.",
+		"savedRedirecting": "Profilo aggiornato! Reindirizzamento..."
 	},
 	"telegram": {
 		"heading": "Telegram",
@@ -1034,6 +1036,8 @@
 		"subheading": "Gestisci le tue preferenze e le impostazioni di notifica",
 		"successMessage": "Impostazioni aggiornate con successo",
 		"formErrors_genericError": "Si è verificato un errore durante l'aggiornamento delle impostazioni",
+		"updateToReturn": "Aggiorna le tue impostazioni per continuare. Verrai reindirizzato dopo il salvataggio.",
+		"savedRedirecting": "Impostazioni salvate! Reindirizzamento...",
 		"privacy_heading": "Privacy",
 		"privacy_description": "Controlla chi può vederti nelle liste partecipanti",
 		"privacy_visibilityLabel": "Mostrami nelle liste partecipanti",

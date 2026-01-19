@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { browser } from '$app/environment';
 	import { eventGetDietarySummary } from '$lib/api';
 	import { createQuery } from '@tanstack/svelte-query';
 	import {
@@ -22,6 +23,15 @@
 	}
 
 	let { eventId, authToken, isAuthenticated }: Props = $props();
+
+	// Build profile URL with redirect back to current page
+	let profileDietaryUrl = $derived.by(() => {
+		const baseUrl = '/account/profile#dietary-section';
+		if (browser) {
+			return `${baseUrl.replace('#', '')}?redirect=${encodeURIComponent(window.location.pathname)}#dietary-section`;
+		}
+		return baseUrl;
+	});
 
 	// State
 	let isExpanded = $state(false);
@@ -161,14 +171,12 @@
 			</div>
 			<div class="flex items-center gap-2">
 				<a
-					href="/account/profile#dietary-section"
-					target="_blank"
+					href={profileDietaryUrl}
 					onclick={(e) => e.stopPropagation()}
 					class="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
 					aria-label="Add your dietary preferences and restrictions"
 				>
 					<span>{m['dietary.profile_quickActionButton']()}</span>
-					<ExternalLink class="h-4 w-4" aria-hidden="true" />
 				</a>
 				{#if isExpanded}
 					<ChevronUp class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
@@ -266,12 +274,10 @@
 			{m['dietary.eventSummary_emptyStateDescription']()}
 		</p>
 		<a
-			href="/account/profile#dietary-section"
-			target="_blank"
+			href={profileDietaryUrl}
 			class="mt-4 inline-flex items-center gap-1 text-sm text-primary hover:underline"
 		>
 			<span>{m['dietary.profile_quickActionButton']()}</span>
-			<ExternalLink class="h-4 w-4" aria-hidden="true" />
 		</a>
 	</div>
 {/if}
