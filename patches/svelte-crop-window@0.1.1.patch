@@ -1,0 +1,11 @@
+diff --git a/index.js b/index.js
+index f9571775ef10c4580c413a9737040e4c0c7aaa88..6e1a856aecce93617251cd16548168f417733b80 100644
+--- a/index.js
++++ b/index.js
+@@ -1,4 +1,4 @@
+-export { defaultOptions, defaultValue } from './types';
++export { defaultOptions, defaultValue } from './types.js';
+ export { default as CropWindow } from './crop_window/CropWindow.svelte';
+ export { default as Overlay } from './overlay/Overlay.svelte';
+-export { defaultOverlayOptions } from './overlay/overlay';
++export { defaultOverlayOptions } from './overlay/overlay.js';

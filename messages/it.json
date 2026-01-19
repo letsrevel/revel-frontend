@@ -2040,7 +2040,7 @@
 		"profilePicture_deleting": "Eliminazione...",
 		"profilePicture_confirm": "Conferma",
 		"profilePicture_cancel": "Annulla",
-		"profilePicture_hint": "JPG, PNG, GIF o WebP. Max 10MB.",
+		"profilePicture_hint": "JPG, PNG, GIF, WebP o HEIC. Max 10MB.",
 		"profilePicture_uploadSuccess": "Foto profilo caricata con successo",
 		"profilePicture_uploadError": "Impossibile caricare la foto profilo. Riprova.",
 		"profilePicture_deleteSuccess": "Foto profilo eliminata",
@@ -4489,5 +4489,20 @@
 		"required": "obbligatorio",
 		"upTo": "fino a {maxSize}",
 		"maxFiles": "Massimo {count} file"
+	},
+	"imageCropper": {
+		"title": "Ritaglia immagine",
+		"loading": "Caricamento immagine...",
+		"loadError": "Impossibile caricare l'immagine. Riprova.",
+		"cropError": "Impossibile elaborare l'immagine. Riprova.",
+		"rotateLeft": "Ruota a sinistra",
+		"rotateRight": "Ruota a destra",
+		"reset": "Ripristina",
+		"cancel": "Annulla",
+		"save": "Salva",
+		"processing": "Elaborazione...",
+		"heicConverting": "Conversione formato immagine...",
+		"zoomIn": "Ingrandisci",
+		"zoomOut": "Riduci"
 	}
 }
