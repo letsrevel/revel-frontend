@@ -913,7 +913,9 @@
 		"buttons_submitText": "Save Changes",
 		"buttons_submittingText": "Saving...",
 		"settingsLink_text": "Configure privacy, notifications and location",
-		"settingsLink_ariaHidden": "→"
+		"settingsLink_ariaHidden": "→",
+		"completeToReturn": "Complete your profile to continue. You'll be redirected back after saving.",
+		"savedRedirecting": "Profile updated! Redirecting..."
 	},
 	"telegram": {
 		"heading": "Telegram",
@@ -1034,6 +1036,8 @@
 		"subheading": "Manage your preferences and notification settings",
 		"successMessage": "Settings updated successfully",
 		"formErrors_genericError": "An error occurred while updating settings",
+		"updateToReturn": "Update your settings to continue. You'll be redirected back after saving.",
+		"savedRedirecting": "Settings saved! Redirecting...",
 		"privacy_heading": "Privacy",
 		"privacy_description": "Control who can see you on attendee lists",
 		"privacy_visibilityLabel": "Show me on attendee lists",

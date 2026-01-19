@@ -142,8 +142,11 @@
 		}
 
 		if (nextStep === 'complete_profile') {
-			// Navigate to profile settings page
-			window.location.href = '/account/profile';
+			// Navigate to profile settings page with redirect back to event
+			const eventUrl =
+				organizationSlug && eventSlug ? `/events/${organizationSlug}/${eventSlug}` : '';
+			const redirectParam = eventUrl ? `?redirect=${encodeURIComponent(eventUrl)}` : '';
+			window.location.href = `/account/profile${redirectParam}`;
 			return;
 		}
 

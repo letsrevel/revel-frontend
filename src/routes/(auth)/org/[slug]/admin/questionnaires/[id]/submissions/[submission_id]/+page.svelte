@@ -160,6 +160,7 @@
 							lastName={data.submission.user.last_name}
 							size="md"
 							class="shrink-0"
+							clickable={true}
 						/>
 						<div class="flex-1">
 							<p class="text-sm font-medium text-muted-foreground">

@@ -1,5 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import { NotificationPreferencesForm } from '$lib/components/notifications';
 	import CityAutocomplete from '$lib/components/forms/CityAutocomplete.svelte';
@@ -9,13 +11,16 @@
 	import { userpreferencesUpdateGeneralPreferences } from '$lib/api/generated';
 	import type { CitySchema } from '$lib/api/generated';
 	import { toast } from 'svelte-sonner';
-	import { Loader2, Eye } from 'lucide-svelte';
+	import { Loader2, Eye, Info } from 'lucide-svelte';
 
 	interface Props {
 		data: PageData;
 	}
 
 	let { data }: Props = $props();
+
+	// Check for redirect URL (used when coming from events)
+	let redirectUrl = $derived($page.url.searchParams.get('redirect'));
 
 	// General preferences state
 	let selectedCity = $state<CitySchema | null>(data.generalPreferences?.city || null);
@@ -51,7 +56,14 @@
 			if (error) {
 				toast.error(m['accountSettingsPage.general.updateError']());
 			} else {
-				toast.success(m['accountSettingsPage.general.updateSuccess']());
+				if (redirectUrl) {
+					toast.success(m['settings.savedRedirecting']?.() || 'Settings saved! Redirecting...');
+					setTimeout(() => {
+						goto(redirectUrl);
+					}, 1000);
+				} else {
+					toast.success(m['accountSettingsPage.general.updateSuccess']());
+				}
 			}
 		} catch (err) {
 			toast.error(m['accountSettingsPage.general.updateError']());
@@ -71,6 +83,18 @@
 		<h1 class="text-3xl font-bold tracking-tight">{m['accountSettingsPage.title']()}</h1>
 		<p class="mt-2 text-muted-foreground">{m['accountSettingsPage.subtitle']()}</p>
 	</div>
+
+	{#if redirectUrl}
+		<div
+			class="mb-6 rounded-md border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950"
+		>
+			<p class="text-sm text-blue-800 dark:text-blue-200">
+				<Info class="mr-2 inline-block h-4 w-4" aria-hidden="true" />
+				{m['settings.updateToReturn']?.() ||
+					"Update your settings to continue. You'll be redirected back after saving."}
+			</p>
+		</div>
+	{/if}
 
 	{#if data.accessToken}
 		<!-- General Preferences -->
