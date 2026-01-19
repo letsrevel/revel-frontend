@@ -4501,6 +4501,8 @@
 		"cancel": "Abbrechen",
 		"save": "Speichern",
 		"processing": "Wird verarbeitet...",
-		"heicConverting": "Bildformat wird konvertiert..."
+		"heicConverting": "Bildformat wird konvertiert...",
+		"zoomIn": "Vergrößern",
+		"zoomOut": "Verkleinern"
 	}
 }

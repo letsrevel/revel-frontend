@@ -4501,6 +4501,8 @@
 		"cancel": "Cancel",
 		"save": "Save",
 		"processing": "Processing...",
-		"heicConverting": "Converting image format..."
+		"heicConverting": "Converting image format...",
+		"zoomIn": "Zoom in",
+		"zoomOut": "Zoom out"
 	}
 }

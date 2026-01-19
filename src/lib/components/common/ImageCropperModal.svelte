@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { CropWindow, defaultValue, type CropValue, type Media } from 'svelte-crop-window';
-	import { X, RotateCcw, RotateCw, Check, Loader2 } from 'lucide-svelte';
+	import { X, RotateCcw, RotateCw, ZoomIn, ZoomOut, Check, Loader2 } from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
 	/**
@@ -228,6 +228,19 @@
 		cropValue.rotation = (cropValue.rotation + 90) % 360;
 	}
 
+	// Zoom controls
+	const ZOOM_STEP = 0.2;
+	const MIN_ZOOM = 0.5;
+	const MAX_ZOOM = 5;
+
+	function zoomIn() {
+		cropValue.scale = Math.min(cropValue.scale + ZOOM_STEP, MAX_ZOOM);
+	}
+
+	function zoomOut() {
+		cropValue.scale = Math.max(cropValue.scale - ZOOM_STEP, MIN_ZOOM);
+	}
+
 	// Reset crop
 	function resetCrop() {
 		cropValue = { ...defaultValue, aspect: aspectRatio };
@@ -312,16 +325,30 @@
 
 		<!-- Controls -->
 		{#if !isLoading && !error}
-			<div class="flex items-center justify-center gap-4 border-t px-4 py-3">
-				<button
-					type="button"
-					onclick={rotateLeft}
-					class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-					aria-label={m['imageCropper.rotateLeft']()}
-					title={m['imageCropper.rotateLeft']()}
-				>
-					<RotateCcw class="h-5 w-5" />
-				</button>
+			<div class="flex items-center justify-between border-t px-4 py-3">
+				<!-- Zoom controls -->
+				<div class="flex items-center gap-1">
+					<button
+						type="button"
+						onclick={zoomOut}
+						class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+						aria-label={m['imageCropper.zoomOut']()}
+						title={m['imageCropper.zoomOut']()}
+					>
+						<ZoomOut class="h-5 w-5" />
+					</button>
+					<button
+						type="button"
+						onclick={zoomIn}
+						class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+						aria-label={m['imageCropper.zoomIn']()}
+						title={m['imageCropper.zoomIn']()}
+					>
+						<ZoomIn class="h-5 w-5" />
+					</button>
+				</div>
+
+				<!-- Reset -->
 				<button
 					type="button"
 					onclick={resetCrop}
@@ -329,15 +356,28 @@
 				>
 					{m['imageCropper.reset']()}
 				</button>
-				<button
-					type="button"
-					onclick={rotateRight}
-					class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-					aria-label={m['imageCropper.rotateRight']()}
-					title={m['imageCropper.rotateRight']()}
-				>
-					<RotateCw class="h-5 w-5" />
-				</button>
+
+				<!-- Rotate controls -->
+				<div class="flex items-center gap-1">
+					<button
+						type="button"
+						onclick={rotateLeft}
+						class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+						aria-label={m['imageCropper.rotateLeft']()}
+						title={m['imageCropper.rotateLeft']()}
+					>
+						<RotateCcw class="h-5 w-5" />
+					</button>
+					<button
+						type="button"
+						onclick={rotateRight}
+						class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+						aria-label={m['imageCropper.rotateRight']()}
+						title={m['imageCropper.rotateRight']()}
+					>
+						<RotateCw class="h-5 w-5" />
+					</button>
+				</div>
 			</div>
 		{/if}
 
