@@ -10,8 +10,9 @@ RUN corepack enable
 
 WORKDIR /app
 
-# Copy dependency files
+# Copy dependency files and patches (needed for pnpm install)
 COPY package.json pnpm-lock.yaml ./
+COPY patches ./patches
 
 # Install dependencies with caching
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
