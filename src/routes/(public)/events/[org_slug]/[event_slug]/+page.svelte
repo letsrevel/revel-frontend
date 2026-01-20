@@ -18,7 +18,6 @@
 	import DietarySummary from '$lib/components/events/DietarySummary.svelte';
 	import EventResources from '$lib/components/events/EventResources.svelte';
 	import AttendeeList from '$lib/components/events/AttendeeList.svelte';
-	import PronounDistribution from '$lib/components/events/PronounDistribution.svelte';
 	import TicketTierList from '$lib/components/tickets/TicketTierList.svelte';
 	import MyTicket from '$lib/components/tickets/MyTicket.svelte';
 	import TicketTierModal from '$lib/components/tickets/TicketTierModal.svelte';
@@ -852,11 +851,6 @@
 						userVisibility={data.userVisibility}
 					/>
 				</div>
-
-				<!-- Pronoun Distribution (mobile only) -->
-				<div class="lg:hidden">
-					<PronounDistribution eventId={event.id} isAuthenticated={data.isAuthenticated} />
-				</div>
 			</div>
 
 			<!-- Right Column: Action Sidebar (desktop only) -->
@@ -920,9 +914,6 @@
 						isAuthenticated={data.isAuthenticated}
 						userVisibility={data.userVisibility}
 					/>
-
-					<!-- Pronoun Distribution (desktop only) -->
-					<PronounDistribution eventId={event.id} isAuthenticated={data.isAuthenticated} />
 				</div>
 			</aside>
 		</div>
