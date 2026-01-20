@@ -10,7 +10,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { DollarSign } from 'lucide-svelte';
+	import { DollarSign, AlertCircle } from 'lucide-svelte';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 
 	interface Props {
@@ -24,14 +24,14 @@
 	let { open = $bindable(), tier, onClose, onConfirm, isProcessing = false }: Props = $props();
 
 	// Get min and max values from tier
-	let minAmount = $derived(() => {
+	let minAmount = $derived.by(() => {
 		if (tier.pwyc_min) {
 			return typeof tier.pwyc_min === 'string' ? parseFloat(tier.pwyc_min) : tier.pwyc_min;
 		}
 		return 1; // Minimum is always 1
 	});
 
-	let maxAmount = $derived(() => {
+	let maxAmount = $derived.by(() => {
 		if (!tier.pwyc_max) return null;
 		return typeof tier.pwyc_max === 'string' ? parseFloat(tier.pwyc_max) : tier.pwyc_max;
 	});
@@ -39,6 +39,37 @@
 	// State
 	let amount = $state('');
 	let error = $state('');
+
+	// Validation state for button disabled and UI hints
+	let amountValidation = $derived.by(() => {
+		const trimmed = amount.trim();
+		if (!trimmed) {
+			return { valid: false, error: 'empty' as const };
+		}
+
+		const value = parseFloat(trimmed);
+		if (isNaN(value)) {
+			return { valid: false, error: 'invalid' as const };
+		}
+
+		if (value < minAmount) {
+			return { valid: false, error: 'below_min' as const };
+		}
+
+		if (maxAmount !== null && value > maxAmount) {
+			return { valid: false, error: 'above_max' as const };
+		}
+
+		return { valid: true, error: null };
+	});
+
+	// Quick amount suggestions
+	let suggestions = $derived.by(() => {
+		if (maxAmount !== null) {
+			return [minAmount, Math.round((minAmount + maxAmount) / 2), maxAmount];
+		}
+		return [minAmount, minAmount * 2, minAmount * 3];
+	});
 
 	// Reset state when dialog opens/closes
 	$effect(() => {
@@ -64,14 +95,13 @@
 			return false;
 		}
 
-		if (value < minAmount()) {
-			error = `Minimum amount is ${tier.currency}${minAmount().toFixed(2)}`;
+		if (value < minAmount) {
+			error = `Minimum amount is ${tier.currency}${minAmount.toFixed(2)}`;
 			return false;
 		}
 
-		const max = maxAmount();
-		if (max !== null && value > max) {
-			error = `Maximum amount is ${tier.currency}${max.toFixed(2)}`;
+		if (maxAmount !== null && value > maxAmount) {
+			error = `Maximum amount is ${tier.currency}${maxAmount.toFixed(2)}`;
 			return false;
 		}
 
@@ -90,13 +120,6 @@
 			e.preventDefault();
 			handleConfirm();
 		}
-	}
-
-	function getSuggestions(min: number, max: number | null): number[] {
-		if (max !== null) {
-			return [min, Math.round((min + max) / 2), max];
-		}
-		return [min, min * 2, min * 3];
 	}
 </script>
 
@@ -118,8 +141,8 @@
 					<p class="mt-1 text-xs text-muted-foreground">{tier.description}</p>
 				{/if}
 				<div class="mt-2 text-xs text-muted-foreground">
-					Range: {tier.currency}{minAmount().toFixed(2)} - {maxAmount() !== null
-						? `${tier.currency}${maxAmount()?.toFixed(2)}`
+					Range: {tier.currency}{minAmount.toFixed(2)} - {maxAmount !== null
+						? `${tier.currency}${maxAmount.toFixed(2)}`
 						: 'any amount'}
 				</div>
 			</div>
@@ -134,15 +157,15 @@
 					<Input
 						id="pwyc-amount"
 						type="number"
-						min={minAmount()}
-						max={maxAmount() ?? undefined}
+						min={minAmount}
+						max={maxAmount ?? undefined}
 						step="0.01"
 						bind:value={amount}
 						onkeydown={handleKeydown}
 						class="pl-12"
-						placeholder={minAmount().toFixed(2)}
+						placeholder={minAmount.toFixed(2)}
 						disabled={isProcessing}
-						aria-invalid={error ? 'true' : 'false'}
+						aria-invalid={error || !amountValidation.valid ? 'true' : 'false'}
 						aria-describedby={error ? 'amount-error' : undefined}
 					/>
 				</div>
@@ -157,7 +180,7 @@
 			<div class="space-y-2">
 				<p class="text-sm font-medium">{m['pwycModal.quickSelect']()}</p>
 				<div class="grid grid-cols-3 gap-2">
-					{#each getSuggestions(minAmount(), maxAmount()) as suggested}
+					{#each suggestions as suggested (suggested)}
 						<Button
 							variant="outline"
 							size="sm"
@@ -174,12 +197,32 @@
 			</div>
 		</div>
 
+		<!-- Validation hint when button would be disabled -->
+		{#if !amountValidation.valid && !isProcessing}
+			<p class="text-center text-sm text-amber-600 dark:text-amber-500">
+				<AlertCircle class="mr-1 inline-block h-4 w-4" />
+				{#if amountValidation.error === 'empty'}
+					Please enter a payment amount
+				{:else if amountValidation.error === 'invalid'}
+					Please enter a valid number
+				{:else if amountValidation.error === 'below_min'}
+					Amount must be at least {tier.currency}{minAmount.toFixed(2)}
+				{:else if amountValidation.error === 'above_max'}
+					Amount cannot exceed {tier.currency}{maxAmount?.toFixed(2)}
+				{/if}
+			</p>
+		{/if}
+
 		<!-- Actions -->
 		<div class="flex gap-3">
 			<Button variant="outline" onclick={onClose} disabled={isProcessing} class="flex-1">
 				Cancel
 			</Button>
-			<Button onclick={handleConfirm} disabled={isProcessing || !amount.trim()} class="flex-1">
+			<Button
+				onclick={handleConfirm}
+				disabled={isProcessing || !amountValidation.valid}
+				class="flex-1"
+			>
 				{isProcessing ? 'Processing...' : 'Continue'}
 			</Button>
 		</div>

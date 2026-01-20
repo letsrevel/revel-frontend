@@ -172,7 +172,7 @@
 	}
 
 	// PWYC min/max
-	let minAmount = $derived(() => {
+	let minAmount = $derived.by(() => {
 		if (!isPwyc) return 0;
 		if (tier.pwyc_min) {
 			return typeof tier.pwyc_min === 'string' ? parseFloat(tier.pwyc_min) : tier.pwyc_min;
@@ -180,20 +180,18 @@
 		return 1;
 	});
 
-	let maxAmount = $derived(() => {
+	let maxAmount = $derived.by(() => {
 		if (!isPwyc || !tier.pwyc_max) return null;
 		return typeof tier.pwyc_max === 'string' ? parseFloat(tier.pwyc_max) : tier.pwyc_max;
 	});
 
 	// Format price display
-	let priceDisplay = $derived(() => {
+	let priceDisplay = $derived.by(() => {
 		if (isFree) return 'Free';
 
 		if (isPwyc) {
-			const min = minAmount();
-			const max = maxAmount();
-			const maxDisplay = max ? `${tier.currency} ${max.toFixed(2)}` : 'any amount';
-			return `${tier.currency} ${min.toFixed(2)} - ${maxDisplay}`;
+			const maxDisplay = maxAmount ? `${tier.currency} ${maxAmount.toFixed(2)}` : 'any amount';
+			return `${tier.currency} ${minAmount.toFixed(2)} - ${maxDisplay}`;
 		}
 
 		const price = typeof tier.price === 'string' ? parseFloat(tier.price) : tier.price;
@@ -201,7 +199,7 @@
 	});
 
 	// Dialog title
-	let dialogTitle = $derived(() => {
+	let dialogTitle = $derived.by(() => {
 		if (isFree) return 'Claim Free Ticket';
 		if (isOfflinePayment) return 'Reserve Ticket';
 		if (isPwyc) return 'Get Your Ticket';
@@ -257,12 +255,37 @@
 	// Check if all guest names are filled (at least the first character)
 	let allGuestNamesFilled = $derived(guestNames.every((name) => name.trim().length > 0));
 
+	// PWYC validation state for canSubmit and UI hints
+	let pwycValidation = $derived.by(() => {
+		if (!isPwyc) return { valid: true, error: null as string | null };
+
+		const trimmed = pwycAmount.trim();
+		if (!trimmed) {
+			return { valid: false, error: 'empty' as const };
+		}
+
+		const value = parseFloat(trimmed);
+		if (isNaN(value)) {
+			return { valid: false, error: 'invalid' as const };
+		}
+
+		if (value < minAmount) {
+			return { valid: false, error: 'below_min' as const };
+		}
+
+		if (maxAmount !== null && value > maxAmount) {
+			return { valid: false, error: 'above_max' as const };
+		}
+
+		return { valid: true, error: null };
+	});
+
 	// Check if form is valid for submission
 	let canSubmit = $derived.by(() => {
 		// Must have all guest names filled when showing guest name inputs
 		if (showGuestNames && !allGuestNamesFilled) return false;
-		// Must have PWYC amount when applicable
-		if (isPwyc && !pwycAmount.trim()) return false;
+		// Must have valid PWYC amount when applicable (within range)
+		if (isPwyc && !pwycValidation.valid) return false;
 		// Must have all seats selected when user_choice mode
 		if (isUserChoiceSeat && selectedSeatIds.length !== quantity) return false;
 		return true;
@@ -347,15 +370,13 @@
 			return false;
 		}
 
-		const min = minAmount();
-		if (value < min) {
-			pwycError = `Minimum amount is ${tier.currency} ${min.toFixed(2)}`;
+		if (value < minAmount) {
+			pwycError = `Minimum amount is ${tier.currency} ${minAmount.toFixed(2)}`;
 			return false;
 		}
 
-		const max = maxAmount();
-		if (max !== null && value > max) {
-			pwycError = `Maximum amount is ${tier.currency} ${max.toFixed(2)}`;
+		if (maxAmount !== null && value > maxAmount) {
+			pwycError = `Maximum amount is ${tier.currency} ${maxAmount.toFixed(2)}`;
 			return false;
 		}
 
@@ -482,12 +503,12 @@
 	}
 
 	// Quick amount suggestions for PWYC
-	function getSuggestions(min: number, max: number | null): number[] {
-		if (max !== null) {
-			return [min, Math.round((min + max) / 2), max];
+	let pwycSuggestions = $derived.by(() => {
+		if (maxAmount !== null) {
+			return [minAmount, Math.round((minAmount + maxAmount) / 2), maxAmount];
 		}
-		return [min, min * 2, min * 3];
-	}
+		return [minAmount, minAmount * 2, minAmount * 3];
+	});
 </script>
 
 <Dialog bind:open>
@@ -496,7 +517,7 @@
 			<DialogTitle class="flex items-center gap-2 text-xl">
 				{@const Icon = dialogIcon}
 				<Icon class="h-5 w-5 text-primary" aria-hidden="true" />
-				{dialogTitle()}
+				{dialogTitle}
 			</DialogTitle>
 			<DialogDescription>
 				{#if isFree}
@@ -524,7 +545,7 @@
 						{/if}
 						{#if !isPwyc}
 							<p class="text-lg font-bold text-primary">
-								{priceDisplay()}
+								{priceDisplay}
 								{#if quantity > 1}
 									<span class="text-sm font-normal text-muted-foreground"> × {quantity}</span>
 								{/if}
@@ -740,8 +761,8 @@
 						<Label for="pwyc-amount">{m['ticketConfirmationDialog.paymentAmount']()}</Label>
 						<div class="text-xs text-muted-foreground">
 							Range: {tier.currency}
-							{minAmount().toFixed(2)} - {maxAmount() !== null
-								? `${tier.currency} ${maxAmount()?.toFixed(2)}`
+							{minAmount.toFixed(2)} - {maxAmount !== null
+								? `${tier.currency} ${maxAmount.toFixed(2)}`
 								: 'any amount'}
 						</div>
 						<div class="relative">
@@ -751,15 +772,15 @@
 							<Input
 								id="pwyc-amount"
 								type="number"
-								min={minAmount()}
-								max={maxAmount() ?? undefined}
+								min={minAmount}
+								max={maxAmount ?? undefined}
 								step="0.01"
 								bind:value={pwycAmount}
 								onkeydown={handleKeydown}
 								class="pl-12 text-lg font-semibold"
-								placeholder={minAmount().toFixed(2)}
+								placeholder={minAmount.toFixed(2)}
 								disabled={isProcessing}
-								aria-invalid={pwycError ? 'true' : 'false'}
+								aria-invalid={pwycError || !pwycValidation.valid ? 'true' : 'false'}
 								aria-describedby={pwycError ? 'amount-error' : undefined}
 							/>
 						</div>
@@ -774,7 +795,7 @@
 					<div class="space-y-2">
 						<p class="text-sm font-medium">{m['ticketConfirmationDialog.quickSelect']()}</p>
 						<div class="grid grid-cols-3 gap-2">
-							{#each getSuggestions(minAmount(), maxAmount()) as suggested}
+							{#each pwycSuggestions as suggested (suggested)}
 								<Button
 									variant="outline"
 									size="sm"
@@ -837,9 +858,17 @@
 						{quantity === 1
 							? 'Please enter your name above'
 							: 'Please enter names for all ticket holders above'}
-					{:else if isPwyc && !pwycAmount.trim()}
+					{:else if isPwyc && !pwycValidation.valid}
 						<AlertCircle class="mr-1 inline-block h-4 w-4" />
-						Please enter a payment amount
+						{#if pwycValidation.error === 'empty'}
+							Please enter a payment amount
+						{:else if pwycValidation.error === 'invalid'}
+							Please enter a valid number
+						{:else if pwycValidation.error === 'below_min'}
+							Amount must be at least {tier.currency} {minAmount.toFixed(2)}
+						{:else if pwycValidation.error === 'above_max'}
+							Amount cannot exceed {tier.currency} {maxAmount?.toFixed(2)}
+						{/if}
 					{:else if isUserChoiceSeat && selectedSeatIds.length !== quantity}
 						<AlertCircle class="mr-1 inline-block h-4 w-4" />
 						Please select {quantity - selectedSeatIds.length} more seat{quantity -
