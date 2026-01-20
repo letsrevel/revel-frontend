@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { eventClaimInvitation } from '$lib/api/generated/sdk.gen';
+	import { eventpublicdiscoveryClaimInvitation } from '$lib/api/generated/sdk.gen';
 	import { Loader2, Check, LogIn } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
@@ -35,7 +35,7 @@
 		isLoading = true;
 
 		try {
-			const response = await eventClaimInvitation({
+			const response = await eventpublicdiscoveryClaimInvitation({
 				path: { token: tokenId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});

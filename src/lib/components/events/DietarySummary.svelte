@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { browser } from '$app/environment';
-	import { eventGetDietarySummary } from '$lib/api';
+	import { eventpublicdetailsGetDietarySummary } from '$lib/api';
 	import { createQuery } from '@tanstack/svelte-query';
 	import {
 		Loader2,
@@ -43,7 +43,7 @@
 			if (!authToken) {
 				throw new Error('Not authenticated');
 			}
-			const response = await eventGetDietarySummary({
+			const response = await eventpublicdetailsGetDietarySummary({
 				path: { event_id: eventId },
 				headers: { Authorization: `Bearer ${authToken}` }
 			});

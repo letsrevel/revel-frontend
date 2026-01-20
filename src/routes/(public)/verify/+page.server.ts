@@ -4,7 +4,7 @@ import type { Cookies } from '@sveltejs/kit';
 import {
 	accountVerifyEmail,
 	organizationClaimInvitation,
-	eventClaimInvitation
+	eventpublicdiscoveryClaimInvitation
 } from '$lib/api/generated/sdk.gen';
 import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '$lib/utils/cookies';
 import { extractErrorMessage } from '$lib/utils/errors';
@@ -50,7 +50,7 @@ async function claimPendingTokens(
 	if (eventToken) {
 		console.log('[VERIFY] Attempting to claim event token:', eventToken);
 		try {
-			const response = await eventClaimInvitation({
+			const response = await eventpublicdiscoveryClaimInvitation({
 				path: { token: eventToken },
 				headers: { Authorization: `Bearer ${accessToken}` },
 				fetch: fetchFn

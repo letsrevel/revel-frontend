@@ -4,7 +4,7 @@
 	import {
 		dashboardDashboardEvents,
 		dashboardDashboardOrganizations,
-		eventListEvents,
+		eventpublicdiscoveryListEvents,
 		dashboardDashboardTickets,
 		dashboardDashboardInvitations,
 		dashboardDashboardRsvps,
@@ -211,7 +211,7 @@
 	const upcomingEventsQuery = createQuery(() => ({
 		queryKey: ['upcoming-events'],
 		queryFn: async () => {
-			const response = await eventListEvents({
+			const response = await eventpublicdiscoveryListEvents({
 				query: {
 					page_size: 6
 				}

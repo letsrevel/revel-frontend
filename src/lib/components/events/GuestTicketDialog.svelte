@@ -27,9 +27,9 @@
 	} from 'lucide-svelte';
 	import { guestUserSchema, createGuestPwycSchema } from '$lib/schemas/guestAttendance';
 	import {
-		eventGuestTicketCheckout,
-		eventGuestTicketPwycCheckout,
-		eventGetTierSeatAvailability
+		eventpublicguestGuestTicketCheckout,
+		eventpublicguestGuestTicketPwycCheckout,
+		eventpublicticketsGetTierSeatAvailability
 	} from '$lib/api';
 	import { handleGuestAttendanceError } from '$lib/utils/guestAttendance';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
@@ -185,7 +185,7 @@
 		seatLoadError = null;
 
 		try {
-			const response = await eventGetTierSeatAvailability({
+			const response = await eventpublicticketsGetTierSeatAvailability({
 				path: { event_id: eventId, tier_id: tier.id }
 				// No auth headers for guest users
 			});
@@ -430,7 +430,7 @@
 			if (isPwyc) {
 				// PWYC checkout
 				const pwycNumber = parseFloat(formData.pwyc || '0');
-				response = await eventGuestTicketPwycCheckout({
+				response = await eventpublicguestGuestTicketPwycCheckout({
 					path: { event_id: eventId, tier_id: tier.id },
 					body: {
 						email: formData.email,
@@ -442,7 +442,7 @@
 				});
 			} else {
 				// Fixed-price checkout
-				response = await eventGuestTicketCheckout({
+				response = await eventpublicguestGuestTicketCheckout({
 					path: { event_id: eventId, tier_id: tier.id },
 					body: {
 						email: formData.email,

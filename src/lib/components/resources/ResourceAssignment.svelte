@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { eventListEvents } from '$lib/api/generated/sdk.gen';
+	import { eventpublicdiscoveryListEvents } from '$lib/api/generated/sdk.gen';
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Check, Search } from 'lucide-svelte';
@@ -28,7 +28,7 @@
 	const eventsQuery = createQuery<EventInListSchema[]>(() => ({
 		queryKey: ['organization-events', organizationId],
 		queryFn: async () => {
-			const response = await eventListEvents({
+			const response = await eventpublicdiscoveryListEvents({
 				query: {
 					organization: organizationId,
 					page_size: 100 // Get a large number of events for assignment

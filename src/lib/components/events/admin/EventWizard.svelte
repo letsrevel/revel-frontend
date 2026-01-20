@@ -8,7 +8,7 @@
 		eventadmincoreUploadCoverArt,
 		eventadmincoreDeleteLogo,
 		eventadmincoreDeleteCoverArt,
-		eventListResources,
+		eventpublicdetailsListResources,
 		organizationadminresourcesGetResource,
 		organizationadminresourcesUpdateResource,
 		questionnaireListOrgQuestionnaires,
@@ -69,7 +69,7 @@
 	$effect(() => {
 		if (existingEvent?.id) {
 			// Fetch resources for this event
-			eventListResources({
+			eventpublicdetailsListResources({
 				path: {
 					event_id: existingEvent.id
 				}

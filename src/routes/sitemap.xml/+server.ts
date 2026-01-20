@@ -1,5 +1,5 @@
 import {
-	eventListEvents,
+	eventpublicdiscoveryListEvents,
 	organizationListOrganizations,
 	eventseriesListEventSeries
 } from '$lib/api';
@@ -72,7 +72,7 @@ export const GET: RequestHandler = async ({ fetch, url }) => {
 		// Fetch all data in parallel for better performance
 		const [eventsResponse, orgsResponse, seriesResponse] = await Promise.all([
 			// Fetch upcoming public events
-			eventListEvents({
+			eventpublicdiscoveryListEvents({
 				fetch,
 				query: {
 					page: 1,

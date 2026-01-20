@@ -8,7 +8,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Search, MapPin, Loader2, Calendar, Repeat, Info } from 'lucide-svelte';
 	import {
-		eventListEvents,
+		eventpublicdiscoveryListEvents,
 		eventseriesListEventSeries,
 		questionnaireReplaceEvents,
 		questionnaireReplaceEventSeries,
@@ -66,7 +66,7 @@
 	async function loadEvents() {
 		isLoadingEvents = true;
 		try {
-			const response = await eventListEvents({
+			const response = await eventpublicdiscoveryListEvents({
 				query: {
 					organization: organizationId,
 					page_size: 100 // Fetch all org events

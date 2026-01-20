@@ -9,7 +9,7 @@
 	import { Calendar, Filter, List } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { eventCalendarEvents } from '$lib/api/generated/sdk.gen';
+	import { eventpublicdiscoveryCalendarEvents } from '$lib/api/generated/sdk.gen';
 	import {
 		parseFilters,
 		filtersToParams,
@@ -93,7 +93,7 @@
 			currentFilters
 		],
 		queryFn: async () => {
-			const result = await eventCalendarEvents({
+			const result = await eventpublicdiscoveryCalendarEvents({
 				query: {
 					week: calendarParams.view === 'week' ? calendarParams.week : undefined,
 					month: calendarParams.view === 'month' ? calendarParams.month : undefined,

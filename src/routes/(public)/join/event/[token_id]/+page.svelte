@@ -13,7 +13,7 @@
 	} from '$lib/components/ui/card';
 	import { Calendar, MapPin, CheckCircle, Clock, Loader2, Ticket } from 'lucide-svelte';
 	import { createMutation } from '@tanstack/svelte-query';
-	import { eventClaimInvitation } from '$lib/api/generated/sdk.gen';
+	import { eventpublicdiscoveryClaimInvitation } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
 	import { getExpirationDisplay, formatTokenUsage } from '$lib/utils/tokens';
@@ -29,7 +29,7 @@
 	// Claim mutation
 	const claimMutation = createMutation(() => ({
 		mutationFn: async () => {
-			const response = await eventClaimInvitation({
+			const response = await eventpublicdiscoveryClaimInvitation({
 				path: { token: token.id },
 				headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
 			});

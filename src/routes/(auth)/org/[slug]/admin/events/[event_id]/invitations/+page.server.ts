@@ -8,7 +8,7 @@ import {
 	eventadmininvitationsListPendingInvitations,
 	eventadmininvitationsCreateInvitations,
 	eventadmininvitationsDeleteInvitationEndpoint,
-	eventGetEvent,
+	eventpublicdetailsGetEvent,
 	eventadminticketsListTicketTiers
 } from '$lib/api/generated/sdk.gen';
 import type { TicketTierSchema } from '$lib/api/generated/types.gen';
@@ -28,7 +28,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 	// Load event to verify ownership
 	let event;
 	try {
-		const eventResponse = await eventGetEvent({
+		const eventResponse = await eventpublicdetailsGetEvent({
 			fetch,
 			path: { event_id: params.event_id },
 			headers: {

@@ -2,7 +2,7 @@
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
 	import { createMutation } from '@tanstack/svelte-query';
-	import { eventSubmitQuestionnaire } from '$lib/api/client';
+	import { eventpublicattendanceSubmitQuestionnaire } from '$lib/api';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
@@ -176,7 +176,7 @@
 				status: 'ready' as const
 			};
 
-			const { data: result, error } = await eventSubmitQuestionnaire({
+			const { data: result, error } = await eventpublicattendanceSubmitQuestionnaire({
 				path: {
 					event_id: data.event.id,
 					questionnaire_id: data.questionnaire.id

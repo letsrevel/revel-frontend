@@ -1,6 +1,9 @@
 import type { PageServerLoad } from './$types';
 import { error, redirect } from '@sveltejs/kit';
-import { eventGetEventBySlugs, eventGetQuestionnaire } from '$lib/api/client';
+import {
+	eventpublicdetailsGetEventBySlugs,
+	eventpublicattendanceGetQuestionnaire
+} from '$lib/api/client';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const { org_slug, event_slug, id: questionnaireId } = params;
@@ -12,7 +15,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	}
 
 	// Fetch the event to get its ID (pass auth to see private events)
-	const { data: event, error: eventError } = await eventGetEventBySlugs({
+	const { data: event, error: eventError } = await eventpublicdetailsGetEventBySlugs({
 		path: { event_slug, org_slug },
 		headers
 	});
@@ -31,12 +34,13 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	}
 
 	// Fetch the questionnaire
-	const { data: questionnaire, error: questionnaireError } = await eventGetQuestionnaire({
-		path: { event_id: event.id, questionnaire_id: questionnaireId },
-		headers: {
-			Authorization: `Bearer ${locals.user.accessToken}`
-		}
-	});
+	const { data: questionnaire, error: questionnaireError } =
+		await eventpublicattendanceGetQuestionnaire({
+			path: { event_id: event.id, questionnaire_id: questionnaireId },
+			headers: {
+				Authorization: `Bearer ${locals.user.accessToken}`
+			}
+		});
 
 	if (questionnaireError || !questionnaire) {
 		console.error('Failed to fetch questionnaire:', questionnaireError);

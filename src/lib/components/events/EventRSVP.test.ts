@@ -7,10 +7,10 @@ import type { EventUserEligibility, EventRsvpSchema } from '$lib/api/generated/t
 
 // Mock the API function
 vi.mock('$lib/api/generated/sdk.gen', () => ({
-	eventRsvpEvent: vi.fn()
+	eventpublicattendanceRsvpEvent: vi.fn()
 }));
 
-import { eventRsvpEvent } from '$lib/api/generated/sdk.gen';
+import { eventpublicattendanceRsvpEvent } from '$lib/api/generated/sdk.gen';
 
 describe('EventRSVP', () => {
 	let queryClient: QueryClient;
@@ -162,7 +162,7 @@ describe('EventRSVP', () => {
 			}
 		};
 
-		vi.mocked(eventRsvpEvent).mockResolvedValue(mockRsvpResponse);
+		vi.mocked(eventpublicattendanceRsvpEvent).mockResolvedValue(mockRsvpResponse);
 
 		const eligibilityStatus: EventUserEligibility = {
 			allowed: true,
@@ -183,7 +183,7 @@ describe('EventRSVP', () => {
 		await user.click(yesButton);
 
 		await waitFor(() => {
-			expect(eventRsvpEvent).toHaveBeenCalledWith({
+			expect(eventpublicattendanceRsvpEvent).toHaveBeenCalledWith({
 				path: { event_id: 'event-123', answer: 'yes' }
 			});
 		});
@@ -197,7 +197,7 @@ describe('EventRSVP', () => {
 		const user = userEvent.setup();
 		const mockError = new Error('Network error');
 
-		vi.mocked(eventRsvpEvent).mockRejectedValue(mockError);
+		vi.mocked(eventpublicattendanceRsvpEvent).mockRejectedValue(mockError);
 
 		const eligibilityStatus: EventUserEligibility = {
 			allowed: true,

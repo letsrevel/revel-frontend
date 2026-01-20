@@ -1,4 +1,4 @@
-import { eventListEvents } from '$lib/api';
+import { eventpublicdiscoveryListEvents } from '$lib/api';
 import { getBackendUrl } from '$lib/config/api';
 import type { RequestHandler } from './$types';
 
@@ -49,7 +49,7 @@ export const GET: RequestHandler = async ({ fetch, url }) => {
 
 	try {
 		// Fetch upcoming public events
-		const eventsResponse = await eventListEvents({
+		const eventsResponse = await eventpublicdiscoveryListEvents({
 			fetch,
 			query: {
 				page: 1,

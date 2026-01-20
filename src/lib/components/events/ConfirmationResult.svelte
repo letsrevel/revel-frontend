@@ -4,7 +4,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { CheckCircle2, XCircle, Loader2 } from 'lucide-svelte';
-	import { eventConfirmGuestAction } from '$lib/api';
+	import { eventpublicdiscoveryConfirmGuestAction } from '$lib/api';
 	import { handleGuestAttendanceError } from '$lib/utils/guestAttendance';
 
 	interface Props {
@@ -34,7 +34,7 @@
 		isLoading = true;
 
 		try {
-			const response = await eventConfirmGuestAction({
+			const response = await eventpublicdiscoveryConfirmGuestAction({
 				body: { token }
 			});
 

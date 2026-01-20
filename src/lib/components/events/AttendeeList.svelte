@@ -2,10 +2,14 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { browser } from '$app/environment';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { eventGetEventAttendees } from '$lib/api';
-	import type { AttendeeSchema, VisibilityPreference } from '$lib/api/generated/types.gen';
-	import { Users, ChevronDown, Loader2, Settings } from 'lucide-svelte';
+	import {
+		eventpublicdetailsGetEventAttendees,
+		eventpublicdetailsGetPronounDistribution
+	} from '$lib/api';
+	import type { VisibilityPreference } from '$lib/api/generated/types.gen';
+	import { Users, ChevronDown, ChevronUp, Loader2, Settings, BarChart3 } from 'lucide-svelte';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
+	import { slide } from 'svelte/transition';
 
 	interface Props {
 		eventId: string;
@@ -46,12 +50,13 @@
 	const PAGE_SIZE = 100;
 	let currentPage = $state(1);
 	let showAll = $state(false);
+	let showPronounDistribution = $state(false);
 
 	// Query for attendee list
 	let attendeesQuery = createQuery(() => ({
 		queryKey: ['event-attendees', eventId, currentPage],
 		queryFn: async () => {
-			const response = await eventGetEventAttendees({
+			const response = await eventpublicdetailsGetEventAttendees({
 				path: { event_id: eventId },
 				query: { page: currentPage, page_size: PAGE_SIZE }
 			});
@@ -65,11 +70,56 @@
 		enabled: isAuthenticated
 	}));
 
-	// Derived state
+	// Query for pronoun distribution (only fetched when expanded)
+	let pronounQuery = createQuery(() => ({
+		queryKey: ['event-pronoun-distribution', eventId],
+		queryFn: async () => {
+			const response = await eventpublicdetailsGetPronounDistribution({
+				path: { event_id: eventId }
+			});
+
+			if (!response.data) {
+				throw new Error('Failed to load pronoun distribution');
+			}
+
+			return response.data;
+		},
+		enabled: isAuthenticated && showPronounDistribution
+	}));
+
+	// Derived state for attendees
 	let attendees = $derived(attendeesQuery.data?.results ?? []);
 	let visibleCount = $derived(attendees.length);
 	let hasMore = $derived(!!attendeesQuery.data?.next);
 	let hiddenCount = $derived(totalAttendees - visibleCount);
+
+	// Derived state for pronouns
+	let distribution = $derived(pronounQuery.data?.distribution ?? []);
+	let pronounTotalAttendees = $derived(pronounQuery.data?.total_attendees ?? 0);
+	let totalWithPronouns = $derived(pronounQuery.data?.total_with_pronouns ?? 0);
+	let totalWithoutPronouns = $derived(pronounQuery.data?.total_without_pronouns ?? 0);
+
+	// Calculate percentage for bar width
+	function getPercentage(count: number): number {
+		if (pronounTotalAttendees === 0) return 0;
+		return (count / pronounTotalAttendees) * 100;
+	}
+
+	// Get color class for pronoun bars - cycle through colors
+	const colorClasses = [
+		'bg-violet-500',
+		'bg-blue-500',
+		'bg-emerald-500',
+		'bg-amber-500',
+		'bg-rose-500',
+		'bg-cyan-500',
+		'bg-fuchsia-500',
+		'bg-lime-500'
+	];
+
+	function getColorClass(index: number): string {
+		return colorClasses[index % colorClasses.length];
+	}
 
 	// Load next page
 	function loadMore() {
@@ -196,6 +246,101 @@
 				{/if}
 			</div>
 		{/if}
+
+		<!-- Pronoun Distribution Toggle -->
+		<div class="mt-4 border-t pt-4">
+			<button
+				type="button"
+				class="flex w-full items-center justify-between gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+				onclick={() => (showPronounDistribution = !showPronounDistribution)}
+				aria-expanded={showPronounDistribution}
+				aria-controls="pronoun-distribution"
+			>
+				<span class="flex items-center gap-2">
+					<BarChart3 class="h-4 w-4" aria-hidden="true" />
+					{m['pronounDistribution.title']()}
+				</span>
+				{#if showPronounDistribution}
+					<ChevronUp class="h-4 w-4" aria-hidden="true" />
+				{:else}
+					<ChevronDown class="h-4 w-4" aria-hidden="true" />
+				{/if}
+			</button>
+
+			<!-- Pronoun Distribution Content -->
+			{#if showPronounDistribution}
+				<div id="pronoun-distribution" class="mt-3" transition:slide={{ duration: 200 }}>
+					{#if pronounQuery.isLoading}
+						<div class="flex items-center justify-center py-4">
+							<Loader2 class="h-5 w-5 animate-spin text-muted-foreground" aria-hidden="true" />
+							<span class="sr-only">{m['pronounDistribution.loading']()}</span>
+						</div>
+					{:else if pronounQuery.isError}
+						<p class="text-sm text-destructive">{m['pronounDistribution.error']()}</p>
+					{:else if pronounTotalAttendees === 0}
+						<p class="text-sm text-muted-foreground">{m['pronounDistribution.noAttendees']()}</p>
+					{:else}
+						<!-- Distribution bars -->
+						<div class="space-y-2">
+							{#each distribution as item, index (item.pronouns)}
+								<div class="space-y-1">
+									<div class="flex items-center justify-between text-xs">
+										<span class="font-medium">{item.pronouns}</span>
+										<span class="text-muted-foreground">
+											{item.count} ({Math.round(getPercentage(item.count))}%)
+										</span>
+									</div>
+									<div class="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+										<div
+											class={`h-full rounded-full transition-all duration-500 ${getColorClass(index)}`}
+											style="width: {getPercentage(item.count)}%"
+											role="progressbar"
+											aria-valuenow={item.count}
+											aria-valuemin={0}
+											aria-valuemax={pronounTotalAttendees}
+											aria-label="{item.pronouns}: {item.count}"
+										></div>
+									</div>
+								</div>
+							{/each}
+
+							<!-- Not specified bar -->
+							{#if totalWithoutPronouns > 0}
+								<div class="space-y-1">
+									<div class="flex items-center justify-between text-xs">
+										<span class="font-medium text-muted-foreground">
+											{m['pronounDistribution.notSpecified']()}
+										</span>
+										<span class="text-muted-foreground">
+											{totalWithoutPronouns} ({Math.round(getPercentage(totalWithoutPronouns))}%)
+										</span>
+									</div>
+									<div class="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+										<div
+											class="h-full rounded-full bg-gray-400 transition-all duration-500 dark:bg-gray-600"
+											style="width: {getPercentage(totalWithoutPronouns)}%"
+											role="progressbar"
+											aria-valuenow={totalWithoutPronouns}
+											aria-valuemin={0}
+											aria-valuemax={pronounTotalAttendees}
+											aria-label="{m['pronounDistribution.notSpecified']()}: {totalWithoutPronouns}"
+										></div>
+									</div>
+								</div>
+							{/if}
+						</div>
+
+						<!-- Summary -->
+						<p class="mt-3 text-xs text-muted-foreground">
+							{m['pronounDistribution.summary']({
+								withPronouns: totalWithPronouns,
+								total: pronounTotalAttendees
+							})}
+						</p>
+					{/if}
+				</div>
+			{/if}
+		</div>
 
 		<!-- User visibility settings info -->
 		{#if userVisibility}
