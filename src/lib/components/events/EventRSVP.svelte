@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
-	import { eventRsvpEvent } from '$lib/api/generated/sdk.gen';
+	import { eventpublicattendanceRsvpEvent } from '$lib/api/generated/sdk.gen';
 	import type { UserEventStatus } from '$lib/utils/eligibility';
 	import { isRSVP, isEligibility, isUserStatusResponse } from '$lib/utils/eligibility';
 	import { cn } from '$lib/utils/cn';
@@ -55,7 +55,7 @@
 	// Mutation: RSVP to event
 	const rsvpMutation = createMutation(() => ({
 		mutationFn: async (answer: 'yes' | 'no' | 'maybe') => {
-			const response = await eventRsvpEvent({
+			const response = await eventpublicattendanceRsvpEvent({
 				path: { event_id: eventId, answer }
 			});
 

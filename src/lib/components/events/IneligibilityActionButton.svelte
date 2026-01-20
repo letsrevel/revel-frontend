@@ -8,7 +8,7 @@
 	import RequestWhitelistButton from './RequestWhitelistButton.svelte';
 	import ClaimInvitationButton from './ClaimInvitationButton.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { eventJoinWaitlist, eventLeaveWaitlist } from '$lib/api';
+	import { eventpublicattendanceJoinWaitlist, eventpublicattendanceLeaveWaitlist } from '$lib/api';
 	import {
 		Check,
 		ClipboardList,
@@ -178,7 +178,7 @@
 		if (nextStep === 'join_waitlist') {
 			isLoading = true;
 			try {
-				const response = await eventJoinWaitlist({
+				const response = await eventpublicattendanceJoinWaitlist({
 					path: { event_id: eventId },
 					headers: {
 						Authorization: `Bearer ${authStore.accessToken}`
@@ -228,7 +228,7 @@
 		errorMessage = '';
 
 		try {
-			const response = await eventLeaveWaitlist({
+			const response = await eventpublicattendanceLeaveWaitlist({
 				path: { event_id: eventId },
 				headers: {
 					Authorization: `Bearer ${authStore.accessToken}`

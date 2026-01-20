@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import type { CitySchema } from '$lib/api/generated/types.gen';
 import {
-	eventGetEvent,
+	eventpublicdetailsGetEvent,
 	userpreferencesGetGeneralPreferences,
 	dashboardDashboardEventSeries,
 	questionnaireListOrgQuestionnaires
@@ -24,7 +24,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch }) =>
 	// Load event
 	let event;
 	try {
-		const eventResponse = await eventGetEvent({
+		const eventResponse = await eventpublicdetailsGetEvent({
 			fetch,
 			path: { event_id: params.event_id },
 			headers

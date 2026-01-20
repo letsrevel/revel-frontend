@@ -1,13 +1,13 @@
 import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
-import { eventGetEventTokenDetails } from '$lib/api/generated/sdk.gen';
+import { eventpublicdiscoveryGetEventTokenDetails } from '$lib/api/generated/sdk.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const tokenId = params.token_id;
 
 	// Fetch token details (no auth required)
-	const response = await eventGetEventTokenDetails({
+	const response = await eventpublicdiscoveryGetEventTokenDetails({
 		path: { token_id: tokenId }
 	});
 

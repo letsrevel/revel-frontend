@@ -1207,6 +1207,14 @@
 		"visibilityToInvitees": "Visibile agli invitati",
 		"visibilityToBoth": "Visibile a membri e invitati"
 	},
+	"pronounDistribution": {
+		"title": "Distribuzione Pronomi",
+		"loading": "Caricamento distribuzione pronomi...",
+		"error": "Impossibile caricare la distribuzione dei pronomi.",
+		"noAttendees": "Nessun partecipante ancora.",
+		"notSpecified": "Non specificato",
+		"summary": "{withPronouns} di {total} partecipanti hanno condiviso i loro pronomi"
+	},
 	"eligibilityStatusDisplay": {
 		"available": "Disponibile",
 		"missingProfileFields": "Aggiungi quanto segue al tuo profilo:"

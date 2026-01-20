@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { browser } from '$app/environment';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { eventGetEventAttendees } from '$lib/api';
+	import { eventpublicdetailsGetEventAttendees } from '$lib/api';
 	import type { AttendeeSchema, VisibilityPreference } from '$lib/api/generated/types.gen';
 	import { Users, ChevronDown, Loader2, Settings } from 'lucide-svelte';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
@@ -51,7 +51,7 @@
 	let attendeesQuery = createQuery(() => ({
 		queryKey: ['event-attendees', eventId, currentPage],
 		queryFn: async () => {
-			const response = await eventGetEventAttendees({
+			const response = await eventpublicdetailsGetEventAttendees({
 				path: { event_id: eventId },
 				query: { page: currentPage, page_size: PAGE_SIZE }
 			});

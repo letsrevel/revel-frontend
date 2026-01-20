@@ -1,12 +1,12 @@
 import { error } from '@sveltejs/kit';
 import {
-	eventGetEventBySlugs,
-	eventGetMyEventStatus,
+	eventpublicdetailsGetEventBySlugs,
+	eventpublicattendanceGetMyEventStatus,
 	potluckListPotluckItems,
 	permissionMyPermissions,
-	eventListResources,
-	eventListTiers,
-	eventGetEventTokenDetails,
+	eventpublicdetailsListResources,
+	eventpublicticketsListTiers,
+	eventpublicdiscoveryGetEventTokenDetails,
 	userpreferencesGetGeneralPreferences
 } from '$lib/api';
 import type { PageServerLoad } from './$types';
@@ -39,7 +39,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 		}
 
 		// Fetch event details (pass auth to see private events)
-		const eventResponse = await eventGetEventBySlugs({
+		const eventResponse = await eventpublicdetailsGetEventBySlugs({
 			fetch,
 			path: { org_slug, event_slug },
 			headers
@@ -56,7 +56,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 
 		if (locals.user) {
 			try {
-				const statusResponse = await eventGetMyEventStatus({
+				const statusResponse = await eventpublicattendanceGetMyEventStatus({
 					fetch,
 					path: { event_id: event.id },
 					headers
@@ -141,7 +141,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 		let resources: AdditionalResourceSchema[] = [];
 		try {
 			console.log('[EVENT PAGE SERVER] Fetching resources for event:', event.id);
-			const resourcesResponse = await eventListResources({
+			const resourcesResponse = await eventpublicdetailsListResources({
 				fetch,
 				path: { event_id: event.id },
 				headers
@@ -165,7 +165,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 		let ticketTiers: TicketTierSchema[] = [];
 		if (event.requires_ticket) {
 			try {
-				const tiersResponse = await eventListTiers({
+				const tiersResponse = await eventpublicticketsListTiers({
 					fetch,
 					path: { event_id: event.id },
 					headers
@@ -184,7 +184,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 		let eventTokenDetails: EventTokenSchema | null = null;
 		if (eventToken) {
 			try {
-				const tokenResponse = await eventGetEventTokenDetails({
+				const tokenResponse = await eventpublicdiscoveryGetEventTokenDetails({
 					fetch,
 					path: { token_id: eventToken },
 					headers

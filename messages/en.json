@@ -1207,6 +1207,14 @@
 		"visibilityToInvitees": "Visible to invitees",
 		"visibilityToBoth": "Visible to members and invitees"
 	},
+	"pronounDistribution": {
+		"title": "Pronoun Distribution",
+		"loading": "Loading pronoun distribution...",
+		"error": "Failed to load pronoun distribution.",
+		"noAttendees": "No attendees yet.",
+		"notSpecified": "Not specified",
+		"summary": "{withPronouns} of {total} attendees have shared their pronouns"
+	},
 	"eligibilityStatusDisplay": {
 		"available": "Available",
 		"missingProfileFields": "Please add the following to your profile:"

@@ -18,7 +18,10 @@
 	import { OrganizationDescription } from '$lib/components/organizations';
 	import { getImageUrl } from '$lib/utils/url';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { eventListEvents, eventseriesListEventSeries } from '$lib/api/generated/sdk.gen';
+	import {
+		eventpublicdiscoveryListEvents,
+		eventseriesListEventSeries
+	} from '$lib/api/generated/sdk.gen';
 	import RequestMembershipButton from '$lib/components/organization/RequestMembershipButton.svelte';
 	import ClaimMembershipButton from '$lib/components/organizations/ClaimMembershipButton.svelte';
 	import FollowButton from '$lib/components/common/FollowButton.svelte';
@@ -136,7 +139,7 @@
 	const eventsQuery = createQuery(() => ({
 		queryKey: ['org-events', organization.id, includePastEvents, eventsOrderBy, eventsPage],
 		queryFn: async () => {
-			const response = await eventListEvents({
+			const response = await eventpublicdiscoveryListEvents({
 				query: {
 					organization: organization.id,
 					include_past: includePastEvents,

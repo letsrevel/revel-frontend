@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import {
 	eventseriesGetEventSeriesBySlugs,
-	eventListEvents,
+	eventpublicdiscoveryListEvents,
 	permissionMyPermissions
 } from '$lib/api';
 import { error as svelteKitError } from '@sveltejs/kit';
@@ -38,7 +38,7 @@ export const load: PageServerLoad = async ({ params, url, fetch, locals }) => {
 		const series = seriesResponse.data;
 
 		// Fetch events for this series
-		const eventsResponse = await eventListEvents({
+		const eventsResponse = await eventpublicdiscoveryListEvents({
 			fetch,
 			query: {
 				event_series: series.id,

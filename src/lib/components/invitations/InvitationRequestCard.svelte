@@ -6,7 +6,7 @@
 	import { getImageUrl } from '$lib/utils/url';
 	import { formatEventDateRange } from '$lib/utils/date';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
-	import { eventDeleteInvitationRequest } from '$lib/api/generated/sdk.gen';
+	import { eventpublicdiscoveryDeleteInvitationRequest } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
 
@@ -73,7 +73,7 @@
 			if (!accessToken || !request.id) {
 				throw new Error('Missing authentication or request ID');
 			}
-			await eventDeleteInvitationRequest({
+			await eventpublicdiscoveryDeleteInvitationRequest({
 				headers: { Authorization: `Bearer ${accessToken}` },
 				path: { request_id: request.id }
 			});

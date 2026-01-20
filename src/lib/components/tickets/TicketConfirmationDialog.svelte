@@ -34,7 +34,7 @@
 		VenueSeatSchema,
 		SectorAvailabilitySchema
 	} from '$lib/api/generated/types.gen';
-	import { eventGetTierSeatAvailability } from '$lib/api/generated/sdk.gen';
+	import { eventpublicticketsGetTierSeatAvailability } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import SeatSelector from './SeatSelector.svelte';
 
@@ -132,7 +132,7 @@
 		seatLoadError = null;
 
 		try {
-			const response = await eventGetTierSeatAvailability({
+			const response = await eventpublicticketsGetTierSeatAvailability({
 				path: { event_id: eventId, tier_id: tier.id },
 				headers: authStore.getAuthHeaders()
 			});

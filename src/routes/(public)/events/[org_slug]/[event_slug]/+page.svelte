@@ -3,11 +3,11 @@
 	import { page } from '$app/state';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
-		eventTicketCheckout,
-		eventTicketPwycCheckout,
-		eventGetMyEventStatus,
-		eventResumeCheckout,
-		eventCancelCheckout
+		eventpublicticketsTicketCheckout,
+		eventpublicticketsTicketPwycCheckout,
+		eventpublicattendanceGetMyEventStatus,
+		eventpublicdiscoveryResumeCheckout,
+		eventpublicdiscoveryCancelCheckout
 	} from '$lib/api';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import EventHeader from '$lib/components/events/EventHeader.svelte';
@@ -18,6 +18,7 @@
 	import DietarySummary from '$lib/components/events/DietarySummary.svelte';
 	import EventResources from '$lib/components/events/EventResources.svelte';
 	import AttendeeList from '$lib/components/events/AttendeeList.svelte';
+	import PronounDistribution from '$lib/components/events/PronounDistribution.svelte';
 	import TicketTierList from '$lib/components/tickets/TicketTierList.svelte';
 	import MyTicket from '$lib/components/tickets/MyTicket.svelte';
 	import TicketTierModal from '$lib/components/tickets/TicketTierModal.svelte';
@@ -244,7 +245,7 @@
 	 */
 	async function refreshUserStatus() {
 		try {
-			const response = await eventGetMyEventStatus({
+			const response = await eventpublicattendanceGetMyEventStatus({
 				path: { event_id: event.id }
 			});
 			if (response.data) {
@@ -315,7 +316,7 @@
 	let claimTicketMutation = createMutation(() => ({
 		mutationFn: async ({ tierId, tickets }: CheckoutParams) => {
 			const body: BatchCheckoutPayload = { tickets };
-			const response = await eventTicketCheckout({
+			const response = await eventpublicticketsTicketCheckout({
 				path: { event_id: event.id, tier_id: tierId },
 				body
 			});
@@ -332,7 +333,7 @@
 	let checkoutMutation = createMutation(() => ({
 		mutationFn: async ({ tierId, tickets }: CheckoutParams) => {
 			const body: BatchCheckoutPayload = { tickets };
-			const response = await eventTicketCheckout({
+			const response = await eventpublicticketsTicketCheckout({
 				path: { event_id: event.id, tier_id: tierId },
 				body
 			});
@@ -352,7 +353,7 @@
 				tickets,
 				price_per_ticket: pricePerTicket
 			};
-			const response = await eventTicketPwycCheckout({
+			const response = await eventpublicticketsTicketPwycCheckout({
 				path: { event_id: event.id, tier_id: tierId },
 				body
 			});
@@ -410,7 +411,7 @@
 	// Resume payment mutation (for pending tickets with online payment)
 	let resumePaymentMutation = createMutation(() => ({
 		mutationFn: async (paymentId: string) => {
-			const response = await eventResumeCheckout({
+			const response = await eventpublicdiscoveryResumeCheckout({
 				path: { payment_id: paymentId }
 			});
 
@@ -444,7 +445,7 @@
 	// Cancel reservation mutation (for pending tickets with online payment)
 	let cancelReservationMutation = createMutation(() => ({
 		mutationFn: async (paymentId: string) => {
-			const response = await eventCancelCheckout({
+			const response = await eventpublicdiscoveryCancelCheckout({
 				path: { payment_id: paymentId }
 			});
 
@@ -851,6 +852,11 @@
 						userVisibility={data.userVisibility}
 					/>
 				</div>
+
+				<!-- Pronoun Distribution (mobile only) -->
+				<div class="lg:hidden">
+					<PronounDistribution eventId={event.id} isAuthenticated={data.isAuthenticated} />
+				</div>
 			</div>
 
 			<!-- Right Column: Action Sidebar (desktop only) -->
@@ -914,6 +920,9 @@
 						isAuthenticated={data.isAuthenticated}
 						userVisibility={data.userVisibility}
 					/>
+
+					<!-- Pronoun Distribution (desktop only) -->
+					<PronounDistribution eventId={event.id} isAuthenticated={data.isAuthenticated} />
 				</div>
 			</aside>
 		</div>

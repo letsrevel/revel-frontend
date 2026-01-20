@@ -15,7 +15,7 @@
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { UserPlus, CheckCircle2, AlertCircle } from 'lucide-svelte';
 	import { guestRsvpSchema, type GuestRsvpData } from '$lib/schemas/guestAttendance';
-	import { eventGuestRsvp } from '$lib/api';
+	import { eventpublicguestGuestRsvp } from '$lib/api';
 	import { handleGuestAttendanceError } from '$lib/utils/guestAttendance';
 
 	interface Props {
@@ -106,7 +106,7 @@
 		errorMessage = null;
 
 		try {
-			const response = await eventGuestRsvp({
+			const response = await eventpublicguestGuestRsvp({
 				path: { event_id: eventId, answer: formData.answer },
 				body: {
 					email: formData.email,

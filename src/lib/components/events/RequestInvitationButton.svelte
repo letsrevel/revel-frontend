@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
-	import { eventCreateInvitationRequest } from '$lib/api/generated/sdk.gen';
+	import { eventpublicattendanceCreateInvitationRequest } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Mail, Send, AlertCircle } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -40,7 +40,7 @@
 				throw new Error(m['requestInvitationButton.mustBeLoggedIn']());
 			}
 
-			const response = await eventCreateInvitationRequest({
+			const response = await eventpublicattendanceCreateInvitationRequest({
 				path: { event_id: eventId },
 				body: {
 					message: messageText || undefined

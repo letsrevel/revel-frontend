@@ -1207,6 +1207,14 @@
 		"visibilityToInvitees": "Sichtbar für Eingeladene",
 		"visibilityToBoth": "Sichtbar für Mitglieder und Eingeladene"
 	},
+	"pronounDistribution": {
+		"title": "Pronomen-Verteilung",
+		"loading": "Pronomen-Verteilung wird geladen...",
+		"error": "Pronomen-Verteilung konnte nicht geladen werden.",
+		"noAttendees": "Noch keine Teilnehmenden.",
+		"notSpecified": "Nicht angegeben",
+		"summary": "{withPronouns} von {total} Teilnehmenden haben ihre Pronomen geteilt"
+	},
 	"eligibilityStatusDisplay": {
 		"available": "Verfügbar",
 		"missingProfileFields": "Bitte füge folgendes zu deinem Profil hinzu:"
