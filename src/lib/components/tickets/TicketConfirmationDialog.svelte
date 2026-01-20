@@ -775,7 +775,11 @@
 								min={minAmount}
 								max={maxAmount ?? undefined}
 								step="0.01"
-								bind:value={pwycAmount}
+								value={pwycAmount}
+								oninput={(e) => {
+									pwycAmount = e.currentTarget.value;
+									pwycError = '';
+								}}
 								onkeydown={handleKeydown}
 								class="pl-12 text-lg font-semibold"
 								placeholder={minAmount.toFixed(2)}

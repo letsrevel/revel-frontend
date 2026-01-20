@@ -160,7 +160,11 @@
 						min={minAmount}
 						max={maxAmount ?? undefined}
 						step="0.01"
-						bind:value={amount}
+						value={amount}
+						oninput={(e) => {
+							amount = e.currentTarget.value;
+							error = '';
+						}}
 						onkeydown={handleKeydown}
 						class="pl-12"
 						placeholder={minAmount.toFixed(2)}
