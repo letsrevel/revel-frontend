@@ -599,6 +599,18 @@
 			currency: currencySymbol
 		}).format(numPrice);
 	}
+
+	/**
+	 * Get the effective price for a ticket (price_paid if available, otherwise tier price)
+	 */
+	function getTicketPrice(ticket: any): number | string | undefined {
+		// Use price_paid if available (for PWYC or other variable pricing)
+		if (ticket.price_paid !== undefined && ticket.price_paid !== null) {
+			return ticket.price_paid;
+		}
+		// Fall back to tier price
+		return ticket.tier?.price;
+	}
 </script>
 
 <svelte:head>
@@ -929,7 +941,7 @@
 								</td>
 								<td class="px-4 py-3">
 									<div class="font-medium">
-										{formatPrice(ticket.tier?.price, ticket.tier?.currency)}
+										{formatPrice(getTicketPrice(ticket), ticket.tier?.currency)}
 									</div>
 								</td>
 								<td class="px-4 py-3">
@@ -1105,7 +1117,7 @@
 							<div class="flex items-center justify-between">
 								<span class="text-muted-foreground">{m['eventTicketsAdmin.headerPrice']()}:</span>
 								<span class="font-medium"
-									>{formatPrice(ticket.tier?.price, ticket.tier?.currency)}</span
+									>{formatPrice(getTicketPrice(ticket), ticket.tier?.currency)}</span
 								>
 							</div>
 							<div class="flex items-center justify-between">
