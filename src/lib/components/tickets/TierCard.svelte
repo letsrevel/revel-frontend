@@ -7,6 +7,7 @@
 	import { Card } from '$lib/components/ui/card';
 	import { Ticket, Clock, Users, AlertCircle } from 'lucide-svelte';
 	import TicketConfirmationDialog from './TicketConfirmationDialog.svelte';
+	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 
 	interface Props {
 		tier: TierSchemaWithId;
@@ -224,7 +225,7 @@
 			<div class="mt-2 text-2xl font-bold text-primary">{priceDisplay()}</div>
 
 			{#if tier.description}
-				<p class="mt-2 text-sm text-muted-foreground">{tier.description}</p>
+				<MarkdownContent content={tier.description} class="mt-2 text-sm text-muted-foreground" />
 			{/if}
 
 			<!-- Status Indicators -->

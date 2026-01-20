@@ -3,6 +3,7 @@
 	import type { EventTicketSchemaActual } from '$lib/utils/eligibility';
 	import { Card } from '$lib/components/ui/card';
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
+	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import { Ticket, Calendar, MapPin, Download, User, Armchair } from 'lucide-svelte';
 	import QRCode from 'qrcode';
 	import { onMount } from 'svelte';
@@ -213,9 +214,10 @@
 								<p class="text-sm font-medium text-orange-900 dark:text-orange-100">
 									Payment Instructions:
 								</p>
-								<p class="mt-1 text-sm text-orange-800 dark:text-orange-200">
-									{ticket.tier.manual_payment_instructions}
-								</p>
+								<MarkdownContent
+									content={ticket.tier.manual_payment_instructions}
+									class="mt-1 text-sm text-orange-800 dark:text-orange-200"
+								/>
 							</div>
 						{/if}
 

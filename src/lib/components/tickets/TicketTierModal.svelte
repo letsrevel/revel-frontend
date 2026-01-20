@@ -7,6 +7,7 @@
 	import { Card } from '$lib/components/ui/card';
 	import DemoCardInfo from '$lib/components/common/DemoCardInfo.svelte';
 	import TicketConfirmationDialog from './TicketConfirmationDialog.svelte';
+	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import { Ticket, Check, AlertCircle } from 'lucide-svelte';
 
 	interface Props {
@@ -268,7 +269,10 @@
 									<div>
 										<h3 class="text-lg font-semibold">{tier.name}</h3>
 										{#if tier.description}
-											<p class="text-sm text-muted-foreground">{tier.description}</p>
+											<MarkdownContent
+												content={tier.description}
+												class="text-sm text-muted-foreground"
+											/>
 										{/if}
 									</div>
 
