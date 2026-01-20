@@ -3,6 +3,7 @@
 	import type { TicketTierDetailSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
+	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import { Edit, Building2, LayoutGrid, Armchair } from 'lucide-svelte';
 
 	interface Props {
@@ -143,7 +144,7 @@
 
 			<!-- Description -->
 			{#if tier.description}
-				<p class="mt-1 text-sm text-muted-foreground">{tier.description}</p>
+				<MarkdownContent content={tier.description} class="mt-1 text-sm text-muted-foreground" />
 			{/if}
 
 			<!-- Tier Details Grid -->
@@ -246,7 +247,7 @@
 					<p class="text-xs font-medium text-muted-foreground">
 						{m['tierCard.paymentInstructions']()}
 					</p>
-					<p class="mt-1 text-sm">{tier.manual_payment_instructions}</p>
+					<MarkdownContent content={tier.manual_payment_instructions} class="mt-1 text-sm" />
 				</div>
 			{/if}
 		</div>

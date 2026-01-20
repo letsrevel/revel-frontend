@@ -20,7 +20,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { Textarea } from '$lib/components/ui/textarea';
+	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Building2, LayoutGrid, Armchair } from 'lucide-svelte';
 
@@ -399,9 +399,9 @@
 
 			<!-- Description -->
 			<div>
-				<Label for="tier-description">{m['tierForm.descriptionOptional']()}</Label>
-				<Textarea
+				<MarkdownEditor
 					id="tier-description"
+					label={m['tierForm.descriptionOptional']()}
 					bind:value={description}
 					rows={3}
 					placeholder="What's included in this tier?"
@@ -535,11 +535,9 @@
 			<!-- Manual Payment Instructions (for offline/at_the_door payments) -->
 			{#if paymentMethod === 'offline' || paymentMethod === 'at_the_door'}
 				<div>
-					<Label for="payment-instructions"
-						>{m['tierForm.paymentInstructions']?.() ?? 'Payment Instructions'}</Label
-					>
-					<Textarea
+					<MarkdownEditor
 						id="payment-instructions"
+						label={m['tierForm.paymentInstructions']?.() ?? 'Payment Instructions'}
 						bind:value={manualPaymentInstructions}
 						rows={3}
 						placeholder={m['tierForm.paymentInstructionsPlaceholder']?.() ??

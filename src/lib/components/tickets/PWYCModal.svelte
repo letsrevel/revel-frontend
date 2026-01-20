@@ -12,6 +12,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { DollarSign, AlertCircle } from 'lucide-svelte';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
+	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 
 	interface Props {
 		open: boolean;
@@ -138,7 +139,7 @@
 					<span>{tier.name}</span>
 				</div>
 				{#if tier.description}
-					<p class="mt-1 text-xs text-muted-foreground">{tier.description}</p>
+					<MarkdownContent content={tier.description} class="mt-1 text-xs text-muted-foreground" />
 				{/if}
 				<div class="mt-2 text-xs text-muted-foreground">
 					Range: {tier.currency}{minAmount.toFixed(2)} - {maxAmount !== null

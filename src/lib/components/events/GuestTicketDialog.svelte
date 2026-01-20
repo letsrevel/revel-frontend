@@ -33,6 +33,7 @@
 	} from '$lib/api';
 	import { handleGuestAttendanceError } from '$lib/utils/guestAttendance';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
+	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import type {
 		SeatAssignmentMode,
 		VenueSeatSchema,
@@ -540,7 +541,10 @@
 							<div class="flex-1 space-y-1">
 								<h3 class="font-semibold">{tier.name}</h3>
 								{#if tier.description}
-									<p class="text-sm text-muted-foreground">{tier.description}</p>
+									<MarkdownContent
+										content={tier.description}
+										class="text-sm text-muted-foreground"
+									/>
 								{/if}
 								{#if !isPwyc}
 									<p class="text-lg font-bold text-primary">

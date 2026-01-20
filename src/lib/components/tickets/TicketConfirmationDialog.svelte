@@ -37,6 +37,7 @@
 	import { eventpublicticketsGetTierSeatAvailability } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import SeatSelector from './SeatSelector.svelte';
+	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 
 	interface ConfirmPayload {
 		amount?: number;
@@ -541,7 +542,7 @@
 					<div class="flex-1 space-y-1">
 						<h3 class="font-semibold">{tier.name}</h3>
 						{#if tier.description}
-							<p class="text-sm text-muted-foreground">{tier.description}</p>
+							<MarkdownContent content={tier.description} class="text-sm text-muted-foreground" />
 						{/if}
 						{#if !isPwyc}
 							<p class="text-lg font-bold text-primary">
