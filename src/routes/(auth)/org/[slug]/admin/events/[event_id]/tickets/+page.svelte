@@ -993,17 +993,6 @@
 												{m['makeMemberAction.button']()}
 											</Button>
 										{/if}
-										{#if canManageTicket(ticket) && ticket.status !== 'cancelled'}
-											<Button
-												size="sm"
-												variant="outline"
-												onclick={() => handleCancelTicket(ticket)}
-												disabled={cancelTicketMutation.isPending}
-											>
-												<X class="h-4 w-4" aria-hidden="true" />
-												Cancel
-											</Button>
-										{/if}
 										{#if ticket.tier?.payment_method === 'online' && ticket.payment?.stripe_dashboard_url}
 											<Button
 												size="sm"
@@ -1015,20 +1004,30 @@
 											</Button>
 										{/if}
 										<!-- More actions dropdown -->
-										{#if ticket.user?.id}
-											<DropdownMenu.Root>
-												<DropdownMenu.Trigger>
-													{#snippet child({ props })}
-														<button
-															{...props}
-															class="inline-flex items-center justify-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-															aria-label="More actions for {getUserDisplayName(ticket.user)}"
-														>
-															<MoreVertical class="h-4 w-4" aria-hidden="true" />
-														</button>
-													{/snippet}
-												</DropdownMenu.Trigger>
-												<DropdownMenu.Content align="end">
+										<DropdownMenu.Root>
+											<DropdownMenu.Trigger>
+												{#snippet child({ props })}
+													<button
+														{...props}
+														class="inline-flex items-center justify-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+														aria-label="More actions for {getUserDisplayName(ticket.user)}"
+													>
+														<MoreVertical class="h-4 w-4" aria-hidden="true" />
+													</button>
+												{/snippet}
+											</DropdownMenu.Trigger>
+											<DropdownMenu.Content align="end">
+												{#if canManageTicket(ticket) && ticket.status !== 'cancelled'}
+													<DropdownMenu.Item
+														onclick={() => handleCancelTicket(ticket)}
+														disabled={cancelTicketMutation.isPending}
+														class="text-destructive focus:text-destructive"
+													>
+														<X class="mr-2 h-4 w-4" aria-hidden="true" />
+														Cancel Ticket
+													</DropdownMenu.Item>
+												{/if}
+												{#if ticket.user?.id}
 													<DropdownMenu.Item
 														onclick={() => openBlacklistDialog(ticket)}
 														class="text-destructive focus:text-destructive"
@@ -1036,9 +1035,9 @@
 														<Ban class="mr-2 h-4 w-4" aria-hidden="true" />
 														Blacklist User
 													</DropdownMenu.Item>
-												</DropdownMenu.Content>
-											</DropdownMenu.Root>
-										{/if}
+												{/if}
+											</DropdownMenu.Content>
+										</DropdownMenu.Root>
 									</div>
 								</td>
 							</tr>
@@ -1172,18 +1171,6 @@
 									{m['makeMemberAction.button']()}
 								</Button>
 							{/if}
-							{#if canManageTicket(ticket) && ticket.status !== 'cancelled'}
-								<Button
-									size="sm"
-									variant="outline"
-									onclick={() => handleCancelTicket(ticket)}
-									disabled={cancelTicketMutation.isPending}
-									class="flex-1"
-								>
-									<X class="h-4 w-4" aria-hidden="true" />
-									Cancel
-								</Button>
-							{/if}
 							{#if ticket.tier?.payment_method === 'online' && ticket.payment?.stripe_dashboard_url}
 								<Button
 									size="sm"
@@ -1196,20 +1183,30 @@
 								</Button>
 							{/if}
 							<!-- More actions dropdown for mobile -->
-							{#if ticket.user?.id}
-								<DropdownMenu.Root>
-									<DropdownMenu.Trigger>
-										{#snippet child({ props })}
-											<button
-												{...props}
-												class="inline-flex items-center justify-center rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-												aria-label="More actions for {getUserDisplayName(ticket.user)}"
-											>
-												<MoreVertical class="h-4 w-4" aria-hidden="true" />
-											</button>
-										{/snippet}
-									</DropdownMenu.Trigger>
-									<DropdownMenu.Content align="end">
+							<DropdownMenu.Root>
+								<DropdownMenu.Trigger>
+									{#snippet child({ props })}
+										<button
+											{...props}
+											class="inline-flex items-center justify-center rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+											aria-label="More actions for {getUserDisplayName(ticket.user)}"
+										>
+											<MoreVertical class="h-4 w-4" aria-hidden="true" />
+										</button>
+									{/snippet}
+								</DropdownMenu.Trigger>
+								<DropdownMenu.Content align="end">
+									{#if canManageTicket(ticket) && ticket.status !== 'cancelled'}
+										<DropdownMenu.Item
+											onclick={() => handleCancelTicket(ticket)}
+											disabled={cancelTicketMutation.isPending}
+											class="text-destructive focus:text-destructive"
+										>
+											<X class="mr-2 h-4 w-4" aria-hidden="true" />
+											Cancel Ticket
+										</DropdownMenu.Item>
+									{/if}
+									{#if ticket.user?.id}
 										<DropdownMenu.Item
 											onclick={() => openBlacklistDialog(ticket)}
 											class="text-destructive focus:text-destructive"
@@ -1217,9 +1214,9 @@
 											<Ban class="mr-2 h-4 w-4" aria-hidden="true" />
 											Blacklist User
 										</DropdownMenu.Item>
-									</DropdownMenu.Content>
-								</DropdownMenu.Root>
-							{/if}
+									{/if}
+								</DropdownMenu.Content>
+							</DropdownMenu.Root>
 						</div>
 					</div>
 				{/each}
