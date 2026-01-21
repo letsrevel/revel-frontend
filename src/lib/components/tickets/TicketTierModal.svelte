@@ -1,7 +1,11 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
-	import type { MembershipTierSchema, TicketPurchaseItem } from '$lib/api/generated/types.gen';
+	import type {
+		MembershipTierSchema,
+		TicketPurchaseItem,
+		TierRemainingTicketsSchema
+	} from '$lib/api/generated/types.gen';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
@@ -19,9 +23,9 @@
 		hasTicket: boolean;
 		membershipTier?: MembershipTierSchema | null;
 		canAttendWithoutLogin?: boolean;
-		/** Maximum tickets user can purchase (from remaining_tickets) */
-		maxQuantity?: number | null;
-		/** Event-level max tickets per user (fallback when maxQuantity is null) */
+		/** Per-tier remaining tickets info (from my-status endpoint) */
+		tierRemainingTickets?: TierRemainingTicketsSchema[];
+		/** Event-level max tickets per user (fallback when tier-specific limit is null) */
 		eventMaxTicketsPerUser?: number | null;
 		/** User's display name for auto-fill */
 		userName?: string;
@@ -44,7 +48,7 @@
 		hasTicket,
 		membershipTier = null,
 		canAttendWithoutLogin = false,
-		maxQuantity = null,
+		tierRemainingTickets,
 		eventMaxTicketsPerUser = null,
 		userName = '',
 		onClose,
@@ -52,6 +56,60 @@
 		onCheckout,
 		onGuestTierClick
 	}: Props = $props();
+
+	/**
+	 * Get remaining tickets info for a specific tier
+	 */
+	function getTierRemainingInfo(tierId: string): TierRemainingTicketsSchema | undefined {
+		return tierRemainingTickets?.find((t) => t.tier_id === tierId);
+	}
+
+	/**
+	 * Check tier purchase status based on sold_out and remaining fields
+	 */
+	function getTierPurchaseStatus(tier: TierSchemaWithId): {
+		canPurchase: boolean;
+		reason?: string;
+		remaining?: number | null;
+	} {
+		const tierInfo = getTierRemainingInfo(tier.id);
+
+		// If no tier info, check inventory only
+		if (!tierInfo) {
+			const available = isTierAvailable(tier);
+			return {
+				canPurchase: available,
+				reason: available ? undefined : 'Sold out'
+			};
+		}
+
+		// Tier is sold out (no inventory)
+		if (tierInfo.sold_out) {
+			return { canPurchase: false, reason: 'Sold out' };
+		}
+
+		// User has hit their personal limit for this tier
+		if (tierInfo.remaining === 0) {
+			return { canPurchase: false, reason: 'Limit reached' };
+		}
+
+		// Can purchase
+		return {
+			canPurchase: true,
+			remaining: tierInfo.remaining
+		};
+	}
+
+	/**
+	 * Get max quantity user can purchase for a specific tier
+	 */
+	function getMaxQuantityForTier(tierId: string): number | null {
+		const tierInfo = getTierRemainingInfo(tierId);
+		if (tierInfo?.remaining !== undefined) {
+			return tierInfo.remaining;
+		}
+		return eventMaxTicketsPerUser;
+	}
 
 	// Confirmation dialog state
 	let showConfirmation = $state(false);
@@ -96,8 +154,24 @@
 	}
 
 	function getQuantityDisplay(tier: TierSchemaWithId): string {
+		const tierInfo = getTierRemainingInfo(tier.id);
+
+		// If we have per-tier info, show user-specific limits
+		if (tierInfo) {
+			if (tierInfo.sold_out) {
+				return 'Sold out';
+			}
+			if (tierInfo.remaining === 0) {
+				return 'You reached your limit';
+			}
+			if (tierInfo.remaining !== null && tierInfo.remaining !== undefined) {
+				return `You can get ${tierInfo.remaining} more`;
+			}
+		}
+
+		// Fallback to inventory-based display
 		// If total_available is null, it means infinite/unlimited
-		if (tier.total_available === null) return 'Unlimited';
+		if (tier.total_available === null) return 'Available';
 
 		// If it's a number, check if sold out
 		if (tier.total_available === 0) return 'Sold out';
@@ -106,6 +180,11 @@
 	}
 
 	function isTierAvailable(tier: TierSchemaWithId): boolean {
+		// Check per-tier info first
+		const purchaseStatus = getTierPurchaseStatus(tier);
+		if (!purchaseStatus.canPurchase) return false;
+
+		// Fallback: check inventory
 		// If total_available is null, it means infinite/unlimited - always available
 		if (tier.total_available === null) return true;
 
@@ -261,6 +340,7 @@
 			{:else}
 				{#each tiers as tier (tier.id)}
 					{@const membershipRestriction = checkMembershipTierRestriction(tier)}
+					{@const purchaseStatus = getTierPurchaseStatus(tier)}
 					<Card class="overflow-hidden p-0">
 						<div class="p-4">
 							<div class="flex items-start justify-between gap-4">
@@ -298,26 +378,27 @@
 										<Button variant="secondary" size="sm" disabled
 											>{m['ticketTierModal.signIn']()}</Button
 										>
-									{:else if !isAuthenticated && canAttendWithoutLogin && isTierAvailable(tier)}
+									{:else if !isAuthenticated && canAttendWithoutLogin && purchaseStatus.canPurchase}
 										<Button variant="default" size="sm" onclick={() => onGuestTierClick?.(tier)}>
 											<Ticket class="mr-2 h-4 w-4" />
 											Get Ticket
 										</Button>
-									{:else if !isAuthenticated && canAttendWithoutLogin && !isTierAvailable(tier)}
-										<Button variant="secondary" size="sm" disabled
-											>{m['ticketTierModal.soldOut']()}</Button
-										>
-									{:else if hasTicket && maxQuantity === 0}
-										<!-- Only show "Claimed" if user has ticket AND can't buy more (maxQuantity=0) -->
-										<!-- Note: maxQuantity=null means unlimited, so we allow purchase in that case -->
+									{:else if !isAuthenticated && canAttendWithoutLogin && !purchaseStatus.canPurchase}
 										<Button variant="secondary" size="sm" disabled>
-											<Check class="mr-2 h-4 w-4" />
-											Claimed
+											{purchaseStatus.reason === 'Limit reached'
+												? 'Limit Reached'
+												: m['ticketTierModal.soldOut']()}
 										</Button>
-									{:else if !isTierAvailable(tier)}
-										<Button variant="secondary" size="sm" disabled
-											>{m['ticketTierModal.soldOut']()}</Button
-										>
+									{:else if !purchaseStatus.canPurchase}
+										<!-- User cannot purchase from this tier (sold out or limit reached) -->
+										<Button variant="secondary" size="sm" disabled>
+											{#if purchaseStatus.reason === 'Limit reached'}
+												<Check class="mr-2 h-4 w-4" />
+												Limit Reached
+											{:else}
+												{m['ticketTierModal.soldOut']()}
+											{/if}
+										</Button>
 									{:else if !membershipRestriction.allowed}
 										<Button variant="secondary" size="sm" disabled>
 											<AlertCircle class="mr-2 h-4 w-4" />
@@ -367,7 +448,7 @@
 		onClose={closeConfirmation}
 		onConfirm={handleConfirm}
 		{isProcessing}
-		{maxQuantity}
+		maxQuantity={getMaxQuantityForTier(selectedTier.id)}
 		{eventMaxTicketsPerUser}
 		{userName}
 	/>
