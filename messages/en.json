@@ -1406,6 +1406,27 @@
 		"mapsPreview": "Preview",
 		"mapsPreviewTitle": "Map preview"
 	},
+	"locationSection": {
+		"title": "Location",
+		"addAddress": "Add Address",
+		"addAddressHint": "Enter a custom address for this event",
+		"selectVenue": "Select Venue",
+		"selectVenueHint": "Choose from your organization's venues",
+		"changeLocationType": "Change location type",
+		"cityLabel": "City",
+		"cityRequired": "City is required",
+		"cityFromVenue": "City is set from the selected venue",
+		"addressLabel": "Address",
+		"addressPlaceholder": "Enter the event address",
+		"addressFromVenue": "Address is set from the selected venue",
+		"addressVisibility": "Address Visibility",
+		"mapsSection": "Maps Integration (optional)",
+		"mapsUrl": "Maps Link",
+		"mapsUrlHint": "Shareable link to the location (e.g., Google Maps)",
+		"mapsEmbed": "Embed Code",
+		"mapsEmbedHint": "Paste iframe HTML from Google Maps",
+		"mapsPreview": "Preview"
+	},
 	"SFwESEssentialsStep": {
 		"clearDescriptiveName": "Choose a clear, descriptive name for your event",
 		"optionalOpenEnded": "Optional - leave blank for open-ended events",

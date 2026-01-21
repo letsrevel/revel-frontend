@@ -21,6 +21,7 @@
 		EventEditSchema,
 		EventDetailSchema,
 		CitySchema,
+		VenueDetailSchema,
 		OrganizationRetrieveSchema,
 		OrganizationQuestionnaireInListSchema,
 		ResourceVisibility
@@ -149,6 +150,47 @@
 		location_maps_url: (existingEvent as any)?.location_maps_url || null,
 		location_maps_embed: (existingEvent as any)?.location_maps_embed || null
 	});
+
+	// Location selection state (for Step 2)
+	let selectedCity = $state<CitySchema | null>(existingEvent?.city || orgCity || userCity || null);
+	let selectedVenue = $state<VenueDetailSchema | null>(
+		existingEvent?.venue ? (existingEvent.venue as VenueDetailSchema) : null
+	);
+
+	/**
+	 * Handle city selection in Step 2
+	 */
+	function handleCitySelect(city: CitySchema | null): void {
+		selectedCity = city;
+		formData = { ...formData, city_id: city?.id || null };
+	}
+
+	/**
+	 * Handle venue selection in Step 2
+	 */
+	function handleVenueSelect(venue: VenueDetailSchema | null): void {
+		selectedVenue = venue;
+		if (venue) {
+			// Auto-populate city from venue
+			if (venue.city) {
+				selectedCity = venue.city;
+				formData = {
+					...formData,
+					venue_id: venue.id,
+					city_id: venue.city.id,
+					address: venue.address || null
+				};
+			} else {
+				formData = {
+					...formData,
+					venue_id: venue.id,
+					address: venue.address || null
+				};
+			}
+		} else {
+			formData = { ...formData, venue_id: null };
+		}
+	}
 
 	// Image uploads (separate from form data)
 	let logoFile = $state<File | null>(null);
@@ -395,6 +437,18 @@
 			}
 		}
 
+		// Note: city_id validation moved to Step 2 (LocationSection)
+
+		validationErrors = errors;
+		return Object.keys(errors).length === 0;
+	}
+
+	/**
+	 * Validate Step 2 (Details) - validates city is selected
+	 */
+	function validateStep2(): boolean {
+		const errors: Record<string, string> = {};
+
 		if (!formData.city_id) {
 			errors.city_id = m['eventWizard.error_cityRequired']();
 		}
@@ -484,6 +538,12 @@
 	 * Handle Step 2 submission (Save & Exit)
 	 */
 	async function handleStep2Submit(): Promise<void> {
+		// Validate Step 2 (city_id is required)
+		if (!validateStep2()) {
+			errorMessage = m['eventWizard.error_fixValidation']();
+			return;
+		}
+
 		if (!eventId) {
 			errorMessage = m['eventWizard.error_eventIdNotFound']();
 			return;
@@ -495,6 +555,7 @@
 		try {
 			// Update event with all details - convert datetime-local to ISO with timezone
 			const updateData: Partial<EventEditSchema> = {
+				city_id: formData.city_id!, // Now required from LocationSection
 				description: formData.description || null,
 				end: toISOString(formData.end),
 				address: formData.address || null,
@@ -697,10 +758,6 @@
 		<EssentialsStep
 			{formData}
 			{validationErrors}
-			{orgCity}
-			{userCity}
-			eventCity={existingEvent?.city}
-			eventVenue={existingEvent?.venue}
 			{isEditMode}
 			onUpdate={updateFormData}
 			onSubmit={handleStep1Submit}
@@ -719,6 +776,12 @@
 				organizationId={organization.id}
 				organizationSlug={organization.slug}
 				accessToken={$page.data.auth?.accessToken}
+				{selectedCity}
+				{selectedVenue}
+				{validationErrors}
+				{isEditMode}
+				onCitySelect={handleCitySelect}
+				onVenueSelect={handleVenueSelect}
 				onUpdate={updateFormData}
 				onUpdateImages={updateImages}
 			/>

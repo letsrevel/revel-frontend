@@ -11,7 +11,7 @@
 		organizationadminvenuesUpdateVenue
 	} from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { X } from 'lucide-svelte';
+	import { X, ChevronDown, ChevronRight, Map, HelpCircle } from 'lucide-svelte';
 	import CityAutocomplete from '$lib/components/forms/CityAutocomplete.svelte';
 	import { toast } from 'svelte-sonner';
 
@@ -35,6 +35,42 @@
 	let cityId = $state<number | undefined>(venue?.city?.id ?? undefined);
 	let selectedCity = $state<CitySchema | null>(venue?.city ?? null);
 	let address = $state(venue?.address ?? '');
+	let locationMapsUrl = $state(venue?.location_maps_url ?? '');
+	let locationMapsEmbed = $state(venue?.location_maps_embed ?? '');
+
+	// Maps section collapsed state - auto-expand if there's data
+	let hasMapsData = $derived(!!locationMapsUrl || !!locationMapsEmbed);
+	let mapsExpanded = $state(false);
+
+	// Auto-expand maps section when data exists on load
+	$effect(() => {
+		if (hasMapsData && !mapsExpanded) {
+			mapsExpanded = true;
+		}
+	});
+
+	/**
+	 * Extract embed URL from Google Maps embed iframe code
+	 */
+	function extractEmbedUrl(input: string): string {
+		// If it's already a URL, return as-is
+		if (input.startsWith('http://') || input.startsWith('https://')) {
+			return input;
+		}
+
+		// Try to extract src from iframe
+		const srcMatch = input.match(/src=["']([^"']+)["']/);
+		if (srcMatch?.[1]) {
+			return srcMatch[1];
+		}
+
+		return input;
+	}
+
+	function handleMapsEmbedInput(e: Event) {
+		const target = e.target as HTMLTextAreaElement;
+		locationMapsEmbed = extractEmbedUrl(target.value);
+	}
 
 	// Helper to extract error message from API response
 	function getErrorMessage(error: any): string {
@@ -116,7 +152,9 @@
 			description: description.trim() || undefined,
 			capacity: capacity || undefined,
 			city_id: cityId || undefined,
-			address: address.trim() || undefined
+			address: address.trim() || undefined,
+			location_maps_url: locationMapsUrl.trim() || undefined,
+			location_maps_embed: locationMapsEmbed.trim() || undefined
 		};
 
 		if (isEditing) {
@@ -148,9 +186,9 @@
 	aria-labelledby="venue-modal-title"
 >
 	<!-- Modal content -->
-	<div class="w-full max-w-lg rounded-lg bg-background shadow-xl">
+	<div class="flex max-h-[90vh] w-full max-w-lg flex-col rounded-lg bg-background shadow-xl">
 		<!-- Header -->
-		<div class="flex items-center justify-between border-b px-6 py-4">
+		<div class="flex shrink-0 items-center justify-between border-b px-6 py-4">
 			<h2 id="venue-modal-title" class="text-xl font-semibold">
 				{isEditing
 					? m['orgAdmin.venues.form.editTitle']()
@@ -167,7 +205,7 @@
 		</div>
 
 		<!-- Form -->
-		<form onsubmit={handleSubmit} class="p-6">
+		<form onsubmit={handleSubmit} class="flex-1 overflow-y-auto p-6">
 			<div class="space-y-4">
 				<!-- Name -->
 				<div>
@@ -238,6 +276,89 @@
 						placeholder={m['orgAdmin.venues.form.addressPlaceholder']()}
 						class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					/>
+				</div>
+
+				<!-- Maps Integration (collapsible) -->
+				<div class="rounded-lg border border-border">
+					<button
+						type="button"
+						onclick={() => (mapsExpanded = !mapsExpanded)}
+						class="flex w-full items-center justify-between p-3 text-left transition-colors hover:bg-accent/50"
+						aria-expanded={mapsExpanded}
+						aria-controls="venue-maps-section"
+					>
+						<span class="flex items-center gap-2 text-sm font-medium">
+							<Map class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+							{m['locationSection.mapsSection']()}
+						</span>
+						{#if mapsExpanded}
+							<ChevronDown class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+						{:else}
+							<ChevronRight class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+						{/if}
+					</button>
+
+					{#if mapsExpanded}
+						<div id="venue-maps-section" class="space-y-4 border-t p-3">
+							<!-- Maps URL -->
+							<div>
+								<label for="venue-maps-url" class="mb-1.5 block text-sm font-medium">
+									{m['locationSection.mapsUrl']()}
+								</label>
+								<input
+									id="venue-maps-url"
+									type="url"
+									bind:value={locationMapsUrl}
+									placeholder="https://maps.google.com/..."
+									class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+								/>
+								<p class="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+									<HelpCircle class="h-3 w-3" aria-hidden="true" />
+									{m['locationSection.mapsUrlHint']()}
+								</p>
+							</div>
+
+							<!-- Maps Embed -->
+							<div>
+								<label for="venue-maps-embed" class="mb-1.5 block text-sm font-medium">
+									{m['locationSection.mapsEmbed']()}
+								</label>
+								<textarea
+									id="venue-maps-embed"
+									value={locationMapsEmbed}
+									oninput={handleMapsEmbedInput}
+									placeholder="<iframe src=&quot;https://www.google.com/maps/embed?...&quot;>"
+									rows="3"
+									class="w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+								></textarea>
+								<p class="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+									<HelpCircle class="h-3 w-3" aria-hidden="true" />
+									{m['locationSection.mapsEmbedHint']()}
+								</p>
+							</div>
+
+							<!-- Map Preview -->
+							{#if locationMapsEmbed}
+								<div>
+									<p class="mb-2 text-sm font-medium">
+										{m['locationSection.mapsPreview']?.() ?? 'Preview'}
+									</p>
+									<div class="overflow-hidden rounded-lg border">
+										<iframe
+											src={locationMapsEmbed}
+											width="100%"
+											height="200"
+											style="border:0;"
+											allowfullscreen
+											loading="lazy"
+											referrerpolicy="no-referrer-when-downgrade"
+											title="Map preview"
+										></iframe>
+									</div>
+								</div>
+							{/if}
+						</div>
+					{/if}
 				</div>
 			</div>
 

@@ -45,6 +45,9 @@
 		return event.address ? `${event.address}, ${cityCountry}` : cityCountry;
 	});
 
+	// Compute maps URL - prioritize event's URL, fall back to venue's URL
+	let mapsUrl = $derived(event.location_maps_url || event.venue?.location_maps_url || null);
+
 	// Date range display
 	let dateRange = $derived(formatEventDateRange(event.start, event.end));
 
@@ -110,9 +113,9 @@
 					</button>
 
 					<!-- Location -->
-					{#if event.location_maps_url}
+					{#if mapsUrl}
 						<a
-							href={event.location_maps_url}
+							href={mapsUrl}
 							target="_blank"
 							rel="noopener noreferrer"
 							class="group flex items-center gap-2 transition-all hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/50"
