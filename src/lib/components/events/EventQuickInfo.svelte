@@ -89,11 +89,18 @@
 	});
 
 	let capacityDisplay = $derived.by(() => {
-		if (!event.max_attendees || event.max_attendees === 0) return null;
-		return m['eventQuickInfo.spotsTaken']({
-			current: event.attendee_count,
-			max: event.max_attendees
-		});
+		// Show "X / Y spots taken" when there's a max limit
+		if (event.max_attendees && event.max_attendees > 0) {
+			return m['eventQuickInfo.spotsTaken']({
+				current: event.attendee_count,
+				max: event.max_attendees
+			});
+		}
+		// Show "X attending" when there's no limit but there are attendees
+		if (event.attendee_count > 0) {
+			return m['eventQuickInfo.attendeeCount']({ count: event.attendee_count });
+		}
+		return null;
 	});
 
 	let isNearCapacity = $derived.by(() => {
