@@ -14,6 +14,9 @@
 		X,
 		Ticket,
 		CreditCard,
+		Banknote,
+		Coins,
+		Gift,
 		AlertTriangle,
 		QrCode,
 		ExternalLink,
@@ -679,6 +682,20 @@
 	}
 </script>
 
+{#snippet paymentMethodIcon(method: string)}
+	{#if method === 'online'}
+		<CreditCard class="h-3 w-3" aria-hidden="true" />
+	{:else if method === 'offline'}
+		<Banknote class="h-3 w-3" aria-hidden="true" />
+	{:else if method === 'at_the_door'}
+		<Coins class="h-3 w-3" aria-hidden="true" />
+	{:else if method === 'free'}
+		<Gift class="h-3 w-3" aria-hidden="true" />
+	{:else}
+		<CreditCard class="h-3 w-3" aria-hidden="true" />
+	{/if}
+{/snippet}
+
 <svelte:head>
 	<title>{m['eventTicketsAdmin.pageTitle']()} - {data.event.name} | Revel</title>
 </svelte:head>
@@ -1000,7 +1017,7 @@
 								</td>
 								<td class="px-4 py-3">
 									<div class="flex items-center gap-1 text-sm">
-										<CreditCard class="h-3 w-3" aria-hidden="true" />
+										{@render paymentMethodIcon(ticket.tier?.payment_method || '')}
 										{getPaymentMethodLabel(ticket.tier?.payment_method || '')}
 									</div>
 								</td>
@@ -1175,7 +1192,7 @@
 							<div class="flex items-center justify-between">
 								<span class="text-muted-foreground">{m['eventTicketsAdmin.labelPayment']()}:</span>
 								<span class="flex items-center gap-1">
-									<CreditCard class="h-3 w-3" aria-hidden="true" />
+									{@render paymentMethodIcon(ticket.tier?.payment_method || '')}
 									{getPaymentMethodLabel(ticket.tier?.payment_method || '')}
 								</span>
 							</div>
