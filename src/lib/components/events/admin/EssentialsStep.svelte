@@ -1,14 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import type {
-		EventCreateSchema,
-		CitySchema,
-		VenueSchema,
-		VenueDetailSchema
-	} from '$lib/api/generated/types.gen';
+	import type { EventCreateSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
-	import CityAutocomplete from '$lib/components/forms/CityAutocomplete.svelte';
-	import VenueSelector from './VenueSelector.svelte';
 	import { Calendar, Eye, Users, Ticket, Pencil, Check, X, Link, Loader2 } from 'lucide-svelte';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { eventadmincoreEditSlug } from '$lib/api/generated/sdk.gen';
@@ -17,10 +10,6 @@
 	interface Props {
 		formData: Partial<EventCreateSchema> & { requires_ticket?: boolean; venue_id?: string | null };
 		validationErrors: Record<string, string>;
-		orgCity?: CitySchema | null;
-		userCity?: CitySchema | null;
-		eventCity?: CitySchema | null;
-		eventVenue?: VenueSchema | null;
 		isEditMode: boolean;
 		onUpdate: (
 			data: Partial<EventCreateSchema> & { requires_ticket?: boolean; venue_id?: string | null }
@@ -37,10 +26,6 @@
 	let {
 		formData,
 		validationErrors,
-		orgCity,
-		userCity,
-		eventCity,
-		eventVenue,
 		isEditMode,
 		onUpdate,
 		onSubmit,
@@ -159,66 +144,6 @@
 		const slug = isEditingSlug ? editedSlug : currentSlug;
 		return `/events/${organizationSlug}/${slug || 'your-event-slug'}`;
 	});
-
-	// Local state for city selection
-	let selectedCity = $state<CitySchema | null>(null);
-
-	// Local state for venue selection
-	let selectedVenue = $state<VenueSchema | null>(eventVenue || null);
-
-	// Initialize selected city from form data
-	$effect(() => {
-		if (formData.city_id && !selectedCity) {
-			// If editing, prioritize the event's city
-			if (eventCity && eventCity.id === formData.city_id) {
-				selectedCity = eventCity;
-			}
-			// Otherwise check org or user city
-			else if (orgCity && orgCity.id === formData.city_id) {
-				selectedCity = orgCity;
-			} else if (userCity && userCity.id === formData.city_id) {
-				selectedCity = userCity;
-			}
-		}
-	});
-
-	// Initialize selected venue from form data
-	$effect(() => {
-		if (eventVenue && !selectedVenue) {
-			selectedVenue = eventVenue;
-		}
-	});
-
-	/**
-	 * Handle city selection
-	 */
-	function handleCitySelect(city: CitySchema | null): void {
-		selectedCity = city;
-		onUpdate({ city_id: city?.id || null });
-	}
-
-	/**
-	 * Handle venue selection
-	 * When a venue is selected, auto-populate city and address from venue
-	 */
-	function handleVenueSelect(venue: VenueDetailSchema | null): void {
-		selectedVenue = venue;
-		if (venue) {
-			// Update venue_id and auto-populate city and address from venue
-			onUpdate({
-				venue_id: venue.id,
-				city_id: venue.city?.id || formData.city_id || null,
-				address: venue.address || formData.address || null
-			});
-			// Update local city state if venue has a city
-			if (venue.city) {
-				selectedCity = venue.city;
-			}
-		} else {
-			// Clear venue_id when deselecting (keep address for manual entry)
-			onUpdate({ venue_id: null });
-		}
-	}
 
 	/**
 	 * Handle form submission
@@ -434,37 +359,6 @@
 			</p>
 		{/if}
 		<p class="text-xs text-muted-foreground">{m['SFwESEssentialsStep.optionalOpenEnded']()}</p>
-	</div>
-
-	<!-- Venue Selection (optional) -->
-	{#if organizationSlug}
-		<VenueSelector {organizationSlug} {selectedVenue} onSelect={handleVenueSelect} />
-	{/if}
-
-	<!-- City -->
-	<div class="space-y-2">
-		<CityAutocomplete
-			value={selectedCity}
-			onSelect={handleCitySelect}
-			error={validationErrors.city_id}
-			label="City"
-			description=""
-			disabled={!!selectedVenue}
-		/>
-		{#if validationErrors.city_id}
-			<p class="text-sm text-destructive" role="alert">
-				{validationErrors.city_id}
-			</p>
-		{/if}
-		{#if selectedVenue}
-			<p class="text-xs text-muted-foreground">
-				{m['essentialsStep.cityFromVenue']?.() ?? 'City is auto-populated from the selected venue'}
-			</p>
-		{:else}
-			<p class="text-xs text-muted-foreground">
-				{m['SFwESEssentialsStep.whereWillThisEventTakePlace']()}
-			</p>
-		{/if}
 	</div>
 
 	<!-- Visibility -->

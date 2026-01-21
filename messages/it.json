@@ -1406,6 +1406,27 @@
 		"mapsPreview": "Anteprima",
 		"mapsPreviewTitle": "Anteprima mappa"
 	},
+	"locationSection": {
+		"title": "Posizione",
+		"addAddress": "Aggiungi Indirizzo",
+		"addAddressHint": "Inserisci un indirizzo personalizzato per questo evento",
+		"selectVenue": "Seleziona Location",
+		"selectVenueHint": "Scegli tra le location della tua organizzazione",
+		"changeLocationType": "Cambia tipo di posizione",
+		"cityLabel": "Città",
+		"cityRequired": "La città è obbligatoria",
+		"cityFromVenue": "La città è impostata dalla location selezionata",
+		"addressLabel": "Indirizzo",
+		"addressPlaceholder": "Inserisci l'indirizzo dell'evento",
+		"addressFromVenue": "L'indirizzo è impostato dalla location selezionata",
+		"addressVisibility": "Visibilità Indirizzo",
+		"mapsSection": "Integrazione Mappe (opzionale)",
+		"mapsUrl": "Link Mappa",
+		"mapsUrlHint": "Link condivisibile alla posizione (es. Google Maps)",
+		"mapsEmbed": "Codice di incorporamento",
+		"mapsEmbedHint": "Incolla il codice iframe da Google Maps",
+		"mapsPreview": "Anteprima"
+	},
 	"SFwESEssentialsStep": {
 		"clearDescriptiveName": "Scegli un nome chiaro e descrittivo per il tuo evento",
 		"optionalOpenEnded": "Facoltativo - lascia vuoto per eventi senza fine",

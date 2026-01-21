@@ -16,6 +16,10 @@
 	// Computed values
 	let formattedStartDate = $derived(formatEventDate(event.start));
 
+	// Maps URLs - prioritize event's data, fall back to venue's data
+	let mapsUrl = $derived(event.location_maps_url || event.venue?.location_maps_url || null);
+	let mapsEmbed = $derived(event.location_maps_embed || event.venue?.location_maps_embed || null);
+
 	// Location split into two lines for better readability
 	let locationDisplay = $derived.by((): { primary: string; secondary?: string } => {
 		// If event has a venue, use venue's name and address as primary, city as secondary
@@ -148,9 +152,9 @@
 	<div class={itemClasses} role="listitem">
 		<MapPin class={iconClasses} aria-hidden="true" />
 		<div class={textClasses}>
-			{#if event.location_maps_url}
+			{#if mapsUrl}
 				<a
-					href={event.location_maps_url}
+					href={mapsUrl}
 					target="_blank"
 					rel="noopener noreferrer"
 					class="group block text-primary hover:underline"
@@ -163,7 +167,7 @@
 				</a>
 				{#if locationDisplay.secondary}
 					<a
-						href={event.location_maps_url}
+						href={mapsUrl}
 						target="_blank"
 						rel="noopener noreferrer"
 						class="block text-xs text-muted-foreground hover:text-primary hover:underline"
@@ -181,10 +185,10 @@
 	</div>
 
 	<!-- Map Embed -->
-	{#if event.location_maps_embed}
+	{#if mapsEmbed}
 		<div class="mt-3 overflow-hidden rounded-lg border" role="listitem">
 			<iframe
-				src={event.location_maps_embed}
+				src={mapsEmbed}
 				width="100%"
 				height="200"
 				style="border:0;"

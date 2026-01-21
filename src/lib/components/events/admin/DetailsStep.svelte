@@ -3,27 +3,26 @@
 	import type {
 		EventCreateSchema,
 		EventSeriesRetrieveSchema,
-		ResourceVisibility
+		ResourceVisibility,
+		CitySchema,
+		VenueDetailSchema
 	} from '$lib/api/generated/types.gen';
 	import { getBackendUrl } from '$lib/config/api';
 	import {
 		FileText,
-		MapPin,
 		Users,
 		Settings,
 		Image,
 		ChevronDown,
 		ChevronRight,
 		CheckSquare,
-		Hash,
-		Eye,
-		Map,
-		HelpCircle
+		Hash
 	} from 'lucide-svelte';
 	import ImageUploader from '$lib/components/forms/ImageUploader.svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import EventQuestionnaires from './EventQuestionnaires.svelte';
 	import EventQuestionnaireAssignmentModal from './EventQuestionnaireAssignmentModal.svelte';
+	import LocationSection from './LocationSection.svelte';
 	import type { OrganizationQuestionnaireInListSchema } from '$lib/api/generated';
 	import { tagListTags } from '$lib/api/generated/sdk.gen';
 
@@ -38,6 +37,7 @@
 			requires_full_profile?: boolean;
 			address_visibility?: ResourceVisibility;
 			venue_id?: string | null;
+			city_id?: number | null;
 			location_maps_url?: string | null;
 			location_maps_embed?: string | null;
 		};
@@ -47,11 +47,20 @@
 		organizationId?: string;
 		organizationSlug?: string;
 		accessToken?: string;
+		// Location section props
+		selectedCity?: CitySchema | null;
+		selectedVenue?: VenueDetailSchema | null;
+		validationErrors?: Record<string, string>;
+		isEditMode?: boolean;
+		onCitySelect?: (city: CitySchema | null) => void;
+		onVenueSelect?: (venue: VenueDetailSchema | null) => void;
 		onUpdate: (
 			data: Partial<EventCreateSchema> & {
 				tags?: string[];
 				requires_full_profile?: boolean;
 				address_visibility?: ResourceVisibility;
+				venue_id?: string | null;
+				city_id?: number | null;
 				location_maps_url?: string | null;
 				location_maps_embed?: string | null;
 			}
@@ -72,6 +81,16 @@
 		organizationId = '',
 		organizationSlug = '',
 		accessToken = '',
+		selectedCity = null,
+		selectedVenue = null,
+		validationErrors = {},
+		isEditMode = false,
+		onCitySelect = () => {
+			/* noop */
+		},
+		onVenueSelect = () => {
+			/* noop */
+		},
 		onUpdate,
 		onUpdateImages
 	}: Props = $props();
@@ -278,48 +297,22 @@
 
 	// Derived state
 	let isSectionOpen = (section: string) => openSections.has(section);
-
-	// Check if event has a venue (address from venue is read-only)
-	let hasVenue = $derived(!!formData.venue_id);
-
-	/**
-	 * Extract the src URL from an iframe HTML string.
-	 * If the input is already a URL (starts with http), return as-is.
-	 * If it's an iframe, extract the src attribute.
-	 */
-	function extractEmbedUrl(input: string | null): string | null {
-		if (!input) return null;
-
-		const trimmed = input.trim();
-		if (!trimmed) return null;
-
-		// If it's already a URL, return as-is
-		if (trimmed.startsWith('http')) {
-			return trimmed;
-		}
-
-		// If it looks like an iframe, extract the src
-		if (trimmed.toLowerCase().startsWith('<iframe')) {
-			const match = trimmed.match(/src=["']([^"']+)["']/);
-			if (match) {
-				return match[1];
-			}
-		}
-
-		// Return as-is if we can't parse it
-		return trimmed;
-	}
-
-	/**
-	 * Handle maps embed input - extract URL from iframe if needed
-	 */
-	function handleMapsEmbedInput(value: string | null): void {
-		const extractedUrl = extractEmbedUrl(value);
-		onUpdate({ location_maps_embed: extractedUrl });
-	}
 </script>
 
 <div class="space-y-4">
+	<!-- Location Section -->
+	<LocationSection
+		{formData}
+		{selectedCity}
+		{selectedVenue}
+		organizationSlug={organizationSlug || ''}
+		{validationErrors}
+		{isEditMode}
+		{onUpdate}
+		{onCitySelect}
+		{onVenueSelect}
+	/>
+
 	<!-- Basic Details Section -->
 	<div class="overflow-hidden rounded-lg border border-border">
 		<button
@@ -350,167 +343,6 @@
 					rows={8}
 					onValueChange={handleDescriptionChange}
 				/>
-
-				<!-- Address -->
-				<div class="space-y-2">
-					<label for="address" class="block text-sm font-medium">
-						<span class="flex items-center gap-2">
-							<MapPin class="h-4 w-4" aria-hidden="true" />
-							{m['detailsStep.address']()}
-						</span>
-					</label>
-					<input
-						id="address"
-						type="text"
-						value={formData.address || ''}
-						oninput={(e) => onUpdate({ address: e.currentTarget.value })}
-						placeholder={m['detailsStep.addressPlaceholder']()}
-						disabled={hasVenue}
-						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-					/>
-					{#if hasVenue}
-						<p class="text-xs text-muted-foreground">
-							{m['detailsStep.addressFromVenue']?.() ?? 'Address is set from the selected venue'}
-						</p>
-					{/if}
-				</div>
-
-				<!-- Address Visibility (hidden when venue is selected) -->
-				{#if !hasVenue}
-					<div class="space-y-2">
-						<label for="address-visibility" class="block text-sm font-medium">
-							<span class="flex items-center gap-2">
-								<Eye class="h-4 w-4" aria-hidden="true" />
-								{m['detailsStep.addressVisibility']()}
-							</span>
-						</label>
-						<select
-							id="address-visibility"
-							value={formData.address_visibility || 'public'}
-							onchange={(e) =>
-								onUpdate({ address_visibility: e.currentTarget.value as ResourceVisibility })}
-							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-						>
-							<option value="public">{m['detailsStep.addressVisibilityPublic']()}</option>
-							<option value="members-only">{m['detailsStep.addressVisibilityMembersOnly']()}</option
-							>
-							<option value="attendees-only"
-								>{m['detailsStep.addressVisibilityAttendeesOnly']()}</option
-							>
-							<option value="private">{m['detailsStep.addressVisibilityPrivate']()}</option>
-						</select>
-						<p class="text-xs text-muted-foreground">
-							{m['detailsStep.addressVisibilityHint']()}
-						</p>
-					</div>
-				{/if}
-			</div>
-		{/if}
-	</div>
-
-	<!-- Maps Section -->
-	<div class="overflow-hidden rounded-lg border border-border">
-		<button
-			type="button"
-			onclick={() => toggleSection('maps')}
-			class="flex w-full items-center justify-between bg-muted/50 p-4 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-			aria-expanded={isSectionOpen('maps')}
-		>
-			<div class="flex items-center gap-2 font-semibold">
-				<Map class="h-5 w-5" aria-hidden="true" />
-				{m['detailsStep.mapsSection']?.() ?? 'Maps Integration'}
-			</div>
-			{#if isSectionOpen('maps')}
-				<ChevronDown class="h-5 w-5" aria-hidden="true" />
-			{:else}
-				<ChevronRight class="h-5 w-5" aria-hidden="true" />
-			{/if}
-		</button>
-
-		{#if isSectionOpen('maps')}
-			<div class="space-y-4 p-4">
-				<!-- Info Box -->
-				<div
-					class="flex items-start gap-3 rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900 dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-100"
-				>
-					<HelpCircle class="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
-					<div class="space-y-2">
-						<p class="font-medium">{m['detailsStep.mapsHelpTitle']?.() ?? 'How to add a map'}</p>
-						<ol class="list-inside list-decimal space-y-1 text-xs">
-							<li>
-								{m['detailsStep.mapsHelpStep1']?.() ??
-									'Open your location in Google Maps (or another maps service)'}
-							</li>
-							<li>{m['detailsStep.mapsHelpStep2']?.() ?? 'Click the "Share" button'}</li>
-							<li>
-								{m['detailsStep.mapsHelpStep3']?.() ??
-									'Copy the link and paste it in the "Maps Link" field below'}
-							</li>
-							<li>
-								{m['detailsStep.mapsHelpStep4']?.() ??
-									'For the embedded map: click "Embed a map", copy the entire HTML code, and paste it below'}
-							</li>
-						</ol>
-					</div>
-				</div>
-
-				<!-- Maps URL -->
-				<div class="space-y-2">
-					<label for="maps-url" class="block text-sm font-medium">
-						{m['detailsStep.mapsUrl']?.() ?? 'Maps Link'}
-					</label>
-					<input
-						id="maps-url"
-						type="url"
-						value={formData.location_maps_url || ''}
-						oninput={(e) => onUpdate({ location_maps_url: e.currentTarget.value || null })}
-						placeholder={m['detailsStep.mapsUrlPlaceholder']?.() ?? 'https://maps.google.com/...'}
-						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-					/>
-					<p class="text-xs text-muted-foreground">
-						{m['detailsStep.mapsUrlHint']?.() ??
-							'The shareable link to the location. Attendees can click this to open the map.'}
-					</p>
-				</div>
-
-				<!-- Maps Embed -->
-				<div class="space-y-2">
-					<label for="maps-embed" class="block text-sm font-medium">
-						{m['detailsStep.mapsEmbed']?.() ?? 'Map Embed Code'}
-					</label>
-					<textarea
-						id="maps-embed"
-						value={formData.location_maps_embed || ''}
-						oninput={(e) => handleMapsEmbedInput(e.currentTarget.value || null)}
-						placeholder={m['detailsStep.mapsEmbedPlaceholder']?.() ??
-							'<iframe src="https://www.google.com/maps/embed?..." ...></iframe>'}
-						rows={3}
-						class="flex w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-					></textarea>
-					<p class="text-xs text-muted-foreground">
-						{m['detailsStep.mapsEmbedHint']?.() ??
-							'Paste the full <iframe> embed code from "Embed a map". This shows an interactive map on your event page.'}
-					</p>
-				</div>
-
-				<!-- Preview (if embed is provided) -->
-				{#if formData.location_maps_embed}
-					<div class="space-y-2">
-						<p class="text-sm font-medium">{m['detailsStep.mapsPreview']?.() ?? 'Preview'}</p>
-						<div class="overflow-hidden rounded-lg border">
-							<iframe
-								src={formData.location_maps_embed}
-								width="100%"
-								height="200"
-								style="border:0;"
-								allowfullscreen
-								loading="lazy"
-								referrerpolicy="no-referrer-when-downgrade"
-								title={m['detailsStep.mapsPreviewTitle']?.() ?? 'Map preview'}
-							></iframe>
-						</div>
-					</div>
-				{/if}
 			</div>
 		{/if}
 	</div>

@@ -1406,6 +1406,27 @@
 		"mapsPreview": "Vorschau",
 		"mapsPreviewTitle": "Kartenvorschau"
 	},
+	"locationSection": {
+		"title": "Standort",
+		"addAddress": "Adresse hinzufügen",
+		"addAddressHint": "Gib eine eigene Adresse für diese Veranstaltung ein",
+		"selectVenue": "Veranstaltungsort auswählen",
+		"selectVenueHint": "Wähle aus den Veranstaltungsorten deiner Organisation",
+		"changeLocationType": "Standorttyp ändern",
+		"cityLabel": "Stadt",
+		"cityRequired": "Stadt ist erforderlich",
+		"cityFromVenue": "Stadt wird vom ausgewählten Veranstaltungsort übernommen",
+		"addressLabel": "Adresse",
+		"addressPlaceholder": "Gib die Veranstaltungsadresse ein",
+		"addressFromVenue": "Adresse wird vom ausgewählten Veranstaltungsort übernommen",
+		"addressVisibility": "Adresssichtbarkeit",
+		"mapsSection": "Karten-Integration (optional)",
+		"mapsUrl": "Kartenlink",
+		"mapsUrlHint": "Teilbarer Link zum Standort (z.B. Google Maps)",
+		"mapsEmbed": "Einbettungscode",
+		"mapsEmbedHint": "Füge iframe-HTML von Google Maps ein",
+		"mapsPreview": "Vorschau"
+	},
 	"SFwESEssentialsStep": {
 		"clearDescriptiveName": "Wähle einen klaren, beschreibenden Namen für deine Veranstaltung",
 		"optionalOpenEnded": "Optional - leer lassen für offene Veranstaltungen",
