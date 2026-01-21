@@ -1155,7 +1155,7 @@
 	},
 	"demoBanner": {
 		"demoMode": "Demo Mode",
-		"description": "This is a demo environment. All data will be reset at midnight CET (approximately {time} {timezone}). Feel free to explore and test all features!",
+		"description": "This is a demo environment. All data will be reset at midnight CET (approximately {time} {timezone}). Feel free to explore and test all features! Emails can be explored and debugged on <link>mailpit.letsrevel.io</link>.",
 		"slowHardwareWarning": "Note: The demo runs on slow hardware and may take a moment to load."
 	},
 	"demoCardInfo": {
@@ -2953,7 +2953,7 @@
 		"filterByStatus": "Filter by Status",
 		"filterByPaymentMethod": "Filter by Payment Method",
 		"filterAll": "All",
-		"statusPending": "Pending Payment",
+		"statusPending": "Pending",
 		"statusActive": "Active",
 		"statusCheckedIn": "Checked In",
 		"statusCancelled": "Cancelled",
@@ -2993,7 +2993,13 @@
 		"cancelTicketKeep": "Keep Ticket",
 		"unknownUser": "Unknown User",
 		"notAvailable": "N/A",
-		"free": "Free"
+		"free": "Free",
+		"actionUnconfirmPayment": "Revert to Pending",
+		"unconfirmPaymentTitle": "Revert Payment Status",
+		"unconfirmPaymentMessage": "Are you sure you want to revert this ticket to pending status? The payment confirmation will be undone.",
+		"unconfirmPaymentConfirm": "Revert to Pending",
+		"unconfirmPaymentSuccess": "Ticket reverted to pending status",
+		"unconfirmPaymentError": "Failed to revert payment status"
 	},
 	"confirmDialog": {
 		"confirm": "Confirm",
