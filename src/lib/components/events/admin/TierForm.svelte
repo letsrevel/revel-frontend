@@ -824,6 +824,25 @@
 											'Optionally restrict this tier to a specific sector'}
 									{/if}
 								</p>
+
+								<!-- Sector Hard Limit Warning -->
+								{#if sectorId}
+									{@const selectedSector = selectedVenueSectors.find((s) => s.id === sectorId)}
+									{#if selectedSector?.capacity}
+										<div
+											class="mt-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-800 dark:bg-amber-950"
+										>
+											<p class="font-medium text-amber-800 dark:text-amber-200">
+												{m['tierForm.sectorHardLimit.title']()}
+											</p>
+											<p class="mt-1 text-amber-700 dark:text-amber-300">
+												{m['tierForm.sectorHardLimit.description']({
+													capacity: selectedSector.capacity.toString()
+												})}
+											</p>
+										</div>
+									{/if}
+								{/if}
 							</div>
 						{:else if venueId}
 							<p class="text-xs {sectorRequired ? 'text-destructive' : 'text-muted-foreground'}">

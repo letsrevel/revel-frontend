@@ -1513,7 +1513,10 @@
 		"buttonBack": "Back",
 		"buttonSaveExit": "Save & Exit",
 		"buttonSaving": "Saving...",
-		"buttonContinueTicketing": "Continue to Ticketing"
+		"buttonContinueTicketing": "Continue to Ticketing",
+		"effectiveCapacity.label": "Effective Capacity",
+		"effectiveCapacity.limitedByVenue": "{capacity} (limited by venue)",
+		"effectiveCapacity.warning": "Your max attendees ({maxAttendees}) exceeds venue capacity ({venueCapacity}). The effective limit will be {effectiveCapacity}."
 	},
 	"attendeesAdmin": {
 		"pageTitle": "Manage Attendees",
@@ -4231,7 +4234,7 @@
 	"orgAdmin.venues.form.descriptionPlaceholder": "Describe the venue...",
 	"orgAdmin.venues.form.capacityLabel": "Total Capacity",
 	"orgAdmin.venues.form.capacityPlaceholder": "e.g., 500",
-	"orgAdmin.venues.form.capacityHelp": "Optional. Leave empty if capacity is determined by sectors.",
+	"orgAdmin.venues.form.capacityHelp": "Combined with event max attendees to determine effective capacity (minimum of both). Leave empty for unlimited.",
 	"orgAdmin.venues.form.cityLabel": "City",
 	"orgAdmin.venues.form.addressLabel": "Address",
 	"orgAdmin.venues.form.addressPlaceholder": "Street address",
@@ -4273,7 +4276,7 @@
 	"orgAdmin.sectors.form.codeHelp": "Optional short code for seat labels",
 	"orgAdmin.sectors.form.capacityLabel": "Capacity",
 	"orgAdmin.sectors.form.capacityPlaceholder": "e.g., 100",
-	"orgAdmin.sectors.form.capacityHelp": "Optional. Calculated from seats if not set.",
+	"orgAdmin.sectors.form.capacityHelp": "Hard capacity limit for GA tiers. Cannot be overridden by special invitations. For seated sectors, capacity is determined by seat count.",
 	"orgAdmin.sectors.form.displayOrderLabel": "Display Order",
 	"orgAdmin.sectors.form.displayOrderHelp": "Lower numbers appear first",
 	"orgAdmin.sectors.form.cancel": "Cancel",
@@ -4379,6 +4382,8 @@
 	"tierForm.seatingConfig.noVenueConfigured": "To enable seat assignment, configure a venue for this event in Basic Info.",
 	"tierForm.seatingConfig.noVenueSelected": "No venue configured for event",
 	"tierForm.seatingConfig.venueFromEvent": "Venue is set at the event level in Basic Info.",
+	"tierForm.sectorHardLimit.title": "Sector Hard Limit",
+	"tierForm.sectorHardLimit.description": "This tier is limited to {capacity} attendees. This is a hard limit that cannot be overridden by special invitations.",
 	"requestWhitelistButton": {
 		"mustBeLoggedIn": "You must be logged in to request verification",
 		"failedToSubmit": "Failed to submit verification request",
