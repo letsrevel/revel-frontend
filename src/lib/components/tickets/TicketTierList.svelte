@@ -5,7 +5,8 @@
 	import type {
 		EventTokenSchema,
 		MembershipTierSchema,
-		TicketPurchaseItem
+		TicketPurchaseItem,
+		TierRemainingTicketsSchema
 	} from '$lib/api/generated/types.gen';
 	import { isEligibility } from '$lib/utils/eligibility';
 	import TierCard from './TierCard.svelte';
@@ -25,6 +26,8 @@
 		eventName?: string;
 		eventTokenDetails?: EventTokenSchema | null;
 		canAttendWithoutLogin?: boolean;
+		/** Per-tier remaining tickets info (from my-status endpoint) */
+		tierRemainingTickets?: TierRemainingTicketsSchema[];
 		onClaimTicket: (tierId: string, tickets?: TicketPurchaseItem[]) => void | Promise<void>;
 		onCheckout?: (
 			tierId: string,
@@ -47,10 +50,18 @@
 		eventName,
 		eventTokenDetails,
 		canAttendWithoutLogin = false,
+		tierRemainingTickets,
 		onClaimTicket,
 		onCheckout,
 		onGuestTierClick
 	}: Props = $props();
+
+	/**
+	 * Get remaining tickets info for a specific tier
+	 */
+	function getTierRemainingInfo(tierId: string): TierRemainingTicketsSchema | undefined {
+		return tierRemainingTickets?.find((t) => t.tier_id === tierId);
+	}
 
 	// Filter out hidden tiers and sort by price
 	let visibleTiers = $derived(
@@ -114,6 +125,7 @@
 					{isEligible}
 					{membershipTier}
 					{canAttendWithoutLogin}
+					tierRemainingInfo={getTierRemainingInfo(tier.id)}
 					{onClaimTicket}
 					{onCheckout}
 					{onGuestTierClick}

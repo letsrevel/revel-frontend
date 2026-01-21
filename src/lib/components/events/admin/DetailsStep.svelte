@@ -429,6 +429,35 @@
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					/>
 					<p class="text-xs text-muted-foreground">{m['detailsStep.unlimitedCapacity']()}</p>
+
+					<!-- Effective Capacity Display -->
+					{#if selectedVenue?.capacity}
+						{@const venueCapacity = selectedVenue.capacity}
+						{@const maxAttendees = formData.max_attendees}
+						{@const effectiveCapacity = maxAttendees
+							? Math.min(maxAttendees, venueCapacity)
+							: venueCapacity}
+						<div class="mt-3 rounded-md bg-muted p-3 text-sm">
+							<div class="font-medium">
+								{m['eventWizard.effectiveCapacity.label']()}: {effectiveCapacity}
+							</div>
+							{#if maxAttendees && maxAttendees > venueCapacity}
+								<p class="mt-1.5 text-amber-600 dark:text-amber-400">
+									⚠️ {m['eventWizard.effectiveCapacity.warning']({
+										maxAttendees: maxAttendees.toString(),
+										venueCapacity: venueCapacity.toString(),
+										effectiveCapacity: effectiveCapacity.toString()
+									})}
+								</p>
+							{:else if !maxAttendees}
+								<p class="mt-1 text-muted-foreground">
+									{m['eventWizard.effectiveCapacity.limitedByVenue']({
+										capacity: venueCapacity.toString()
+									})}
+								</p>
+							{/if}
+						</div>
+					{/if}
 				</div>
 
 				<!-- Waitlist Open -->

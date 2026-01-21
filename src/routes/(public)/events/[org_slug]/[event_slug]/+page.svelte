@@ -171,9 +171,13 @@
 	});
 
 	// Get per-tier remaining tickets info for the user
+	// Only show user-specific remaining info if they can actually purchase more
 	let tierRemainingTickets = $derived.by((): TierRemainingTicketsSchema[] | undefined => {
 		if (!userStatus) return undefined;
 		if (isUserStatusResponse(userStatus)) {
+			// If user can't purchase more (eligibility check failed), don't show per-user limits
+			// The remaining_tickets data may be inaccurate in this case
+			if (userStatus.can_purchase_more === false) return undefined;
 			return userStatus.remaining_tickets;
 		}
 		return undefined;
@@ -796,6 +800,7 @@
 						eventName={event.name}
 						eventTokenDetails={data.eventTokenDetails}
 						canAttendWithoutLogin={event.can_attend_without_login}
+						{tierRemainingTickets}
 						onClaimTicket={handleClaimTicket}
 						onCheckout={handleCheckout}
 						onGuestTierClick={openGuestTicketDialog}

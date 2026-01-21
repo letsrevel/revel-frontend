@@ -74,9 +74,10 @@
 	} {
 		const tierInfo = getTierRemainingInfo(tier.id);
 
-		// If no tier info, check inventory only
+		// If no tier info, check inventory only (without calling isTierAvailable to avoid circular dependency)
 		if (!tierInfo) {
-			const available = isTierAvailable(tier);
+			// If total_available is null, it means unlimited - always available
+			const available = tier.total_available === null || tier.total_available > 0;
 			return {
 				canPurchase: available,
 				reason: available ? undefined : 'Sold out'
