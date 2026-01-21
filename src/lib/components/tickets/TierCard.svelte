@@ -1,7 +1,11 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
-	import type { MembershipTierSchema, TicketPurchaseItem } from '$lib/api/generated/types.gen';
+	import type {
+		MembershipTierSchema,
+		TicketPurchaseItem,
+		TierRemainingTicketsSchema
+	} from '$lib/api/generated/types.gen';
 	import { hasTierId } from '$lib/types/tickets';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
@@ -18,6 +22,8 @@
 		isEligible?: boolean;
 		membershipTier?: MembershipTierSchema | null;
 		canAttendWithoutLogin?: boolean;
+		/** Per-tier remaining tickets info (from my-status endpoint) */
+		tierRemainingInfo?: TierRemainingTicketsSchema;
 		onClaimTicket: (tierId: string, tickets?: TicketPurchaseItem[]) => void | Promise<void>;
 		onCheckout?: (
 			tierId: string,
@@ -36,10 +42,41 @@
 		isEligible = true,
 		membershipTier = null,
 		canAttendWithoutLogin = false,
+		tierRemainingInfo,
 		onClaimTicket,
 		onCheckout,
 		onGuestTierClick
 	}: Props = $props();
+
+	/**
+	 * Check tier purchase status based on per-tier info from my-status endpoint
+	 * This takes precedence over the general isEligible flag
+	 */
+	let tierPurchaseStatus = $derived.by(() => {
+		// If no tier-specific info, fall back to general isEligible
+		if (!tierRemainingInfo) {
+			return { canPurchase: isEligible, reason: isEligible ? undefined : 'Not eligible' };
+		}
+
+		// Tier is sold out (no inventory)
+		if (tierRemainingInfo.sold_out) {
+			return { canPurchase: false, reason: 'Sold out' };
+		}
+
+		// User has hit their personal limit for this tier
+		if (tierRemainingInfo.remaining === 0) {
+			return { canPurchase: false, reason: 'Limit reached' };
+		}
+
+		// Can purchase
+		return { canPurchase: true, reason: undefined };
+	});
+
+	/**
+	 * Effective eligibility - considers both general eligibility and per-tier status
+	 * If we have tier-specific info, use it; otherwise fall back to isEligible
+	 */
+	let effectiveEligible = $derived(tierRemainingInfo ? tierPurchaseStatus.canPurchase : isEligible);
 
 	// Check if tier has ID (required for checkout)
 	let hasId = $derived(hasTierId(tier));
@@ -111,7 +148,7 @@
 		hasId &&
 			isAuthenticated &&
 			!hasTicket &&
-			isEligible &&
+			effectiveEligible &&
 			salesStatus.active &&
 			availabilityStatus.available &&
 			tier.payment_method === 'free'
@@ -122,7 +159,7 @@
 		hasId &&
 			isAuthenticated &&
 			!hasTicket &&
-			isEligible &&
+			effectiveEligible &&
 			salesStatus.active &&
 			availabilityStatus.available &&
 			tier.payment_method === 'online' &&
@@ -134,7 +171,7 @@
 		hasId &&
 			isAuthenticated &&
 			!hasTicket &&
-			isEligible &&
+			effectiveEligible &&
 			salesStatus.active &&
 			availabilityStatus.available &&
 			(tier.payment_method === 'offline' || tier.payment_method === 'at_the_door')
@@ -284,9 +321,26 @@
 				<Button onclick={() => onGuestTierClick?.(tier)} class="w-full sm:w-auto">
 					Get Ticket
 				</Button>
-			{:else if !isEligible}
-				<!-- User is authenticated but not eligible - show disabled button -->
-				<Button disabled class="w-full sm:w-auto">{m['tierCardAdmin.notEligible']()}</Button>
+			{:else if !effectiveEligible}
+				<!-- User is authenticated but not eligible for this tier - show reason -->
+				<Button disabled class="w-full sm:w-auto">
+					{#if tierPurchaseStatus.reason === 'Sold out'}
+						{m['tierCardAdmin.soldOut']()}
+					{:else if tierPurchaseStatus.reason === 'Limit reached'}
+						Limit Reached
+					{:else}
+						{m['tierCardAdmin.notEligible']()}
+					{/if}
+				</Button>
+				{#if tierPurchaseStatus.reason && tierPurchaseStatus.reason !== 'Not eligible'}
+					<p class="max-w-[250px] text-right text-xs text-muted-foreground">
+						{tierPurchaseStatus.reason === 'Limit reached'
+							? "You've reached your ticket limit for this tier"
+							: tierPurchaseStatus.reason === 'Sold out'
+								? 'No more tickets available'
+								: tierPurchaseStatus.reason}
+					</p>
+				{/if}
 			{:else if canClaim}
 				<Button onclick={handleButtonClick} disabled={isClaiming} class="w-full sm:w-auto">
 					{isClaiming ? 'Claiming...' : 'Claim Free Ticket'}

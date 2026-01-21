@@ -796,6 +796,7 @@
 						eventName={event.name}
 						eventTokenDetails={data.eventTokenDetails}
 						canAttendWithoutLogin={event.can_attend_without_login}
+						{tierRemainingTickets}
 						onClaimTicket={handleClaimTicket}
 						onCheckout={handleCheckout}
 						onGuestTierClick={openGuestTicketDialog}
