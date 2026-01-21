@@ -1260,6 +1260,7 @@
 		"staffOnly": "Staff Only",
 		"event": "Event",
 		"spotsTaken": "{current} / {max} spots taken",
+		"attendeeCount": "{count} attending",
 		"rsvpClosed": "RSVP closed",
 		"rsvpBy": "RSVP by {deadline}",
 		"openInMaps": "Open in Maps",

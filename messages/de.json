@@ -1260,6 +1260,7 @@
 		"staffOnly": "Nur für Mitarbeitende",
 		"event": "Event",
 		"spotsTaken": "{current} / {max} Plätze belegt",
+		"attendeeCount": "{count} Teilnehmende",
 		"rsvpClosed": "Anmeldung geschlossen",
 		"rsvpBy": "Anmeldung bis {deadline}",
 		"openInMaps": "In Karten öffnen",
