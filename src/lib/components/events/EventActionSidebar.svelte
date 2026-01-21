@@ -101,17 +101,6 @@
 	});
 
 	/**
-	 * Get remaining tickets user can purchase
-	 */
-	let remainingTickets = $derived.by((): number | null => {
-		if (!userStatus) return null;
-		if (isUserStatusResponse(userStatus)) {
-			return userStatus.remaining_tickets ?? null;
-		}
-		return null;
-	});
-
-	/**
 	 * Check if user is attending (has approved RSVP or active ticket)
 	 */
 	let isAttending = $derived.by(() => {
@@ -496,11 +485,6 @@
 						<span class="flex items-center justify-center gap-2">
 							<Ticket class="h-4 w-4" aria-hidden="true" />
 							{m['eventActionSidebar.buyMoreTickets']()}
-							{#if remainingTickets !== null}
-								<span class="text-xs opacity-75"
-									>{m['eventActionSidebar.ticketsLeft']({ count: remainingTickets })}</span
-								>
-							{/if}
 						</span>
 					</button>
 				{/if}

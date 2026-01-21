@@ -39,7 +39,8 @@
 		BatchCheckoutPayload,
 		BatchCheckoutPwycPayload,
 		BatchCheckoutResponse,
-		TicketPurchaseItem
+		TicketPurchaseItem,
+		TierRemainingTicketsSchema
 	} from '$lib/api/generated/types.gen';
 	import { getPotluckPermissions } from '$lib/utils/permissions';
 	import { formatEventLocation } from '$lib/utils/event';
@@ -169,13 +170,13 @@
 		return false; // Legacy: single ticket = can't buy more
 	});
 
-	// Get remaining tickets user can purchase
-	let remainingTickets = $derived.by((): number | null => {
-		if (!userStatus) return null;
+	// Get per-tier remaining tickets info for the user
+	let tierRemainingTickets = $derived.by((): TierRemainingTicketsSchema[] | undefined => {
+		if (!userStatus) return undefined;
 		if (isUserStatusResponse(userStatus)) {
-			return userStatus.remaining_tickets ?? null;
+			return userStatus.remaining_tickets;
 		}
-		return null;
+		return undefined;
 	});
 
 	// Get user's display name for ticket purchase forms
@@ -945,7 +946,7 @@
 	hasTicket={!!userTicket}
 	membershipTier={data.membershipTier}
 	canAttendWithoutLogin={event.can_attend_without_login}
-	maxQuantity={remainingTickets}
+	{tierRemainingTickets}
 	eventMaxTicketsPerUser={event.max_tickets_per_user}
 	userName={userDisplayName}
 	onClose={closeTicketTierModal}
