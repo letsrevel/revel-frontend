@@ -85,8 +85,12 @@
 		selectedVenue = null,
 		validationErrors = {},
 		isEditMode = false,
-		onCitySelect = () => {},
-		onVenueSelect = () => {},
+		onCitySelect = () => {
+			/* noop */
+		},
+		onVenueSelect = () => {
+			/* noop */
+		},
 		onUpdate,
 		onUpdateImages
 	}: Props = $props();
