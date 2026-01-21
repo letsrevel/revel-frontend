@@ -43,7 +43,13 @@
 			<div class="flex-1 text-sm">
 				<p class="font-semibold">{m['demoBanner.demoMode']()}</p>
 				<p class="mt-1">
-					{m['demoBanner.description']({ time: midnightUserTime, timezone: userTimezone })}
+					{@html m['demoBanner.description']({
+						time: midnightUserTime,
+						timezone: userTimezone
+					}).replace(
+						/<link>(.*?)<\/link>/,
+						'<a href="https://mailpit.letsrevel.io" target="_blank" rel="noopener noreferrer" class="underline hover:no-underline font-medium">$1</a>'
+					)}
 				</p>
 				<p class="mt-1 text-xs opacity-90">
 					{m['demoBanner.slowHardwareWarning']()}

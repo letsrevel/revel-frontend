@@ -14,15 +14,20 @@
 		X,
 		Ticket,
 		CreditCard,
+		Banknote,
+		Coins,
+		Gift,
 		AlertTriangle,
 		QrCode,
 		ExternalLink,
 		UserPlus,
 		MoreVertical,
-		Ban
+		Ban,
+		Undo2
 	} from 'lucide-svelte';
 	import {
 		eventadminticketsConfirmTicketPayment,
+		eventadminticketsUnconfirmTicketPayment,
 		eventadminticketsCancelTicket,
 		eventadminticketsCheckInTicket,
 		eventadminticketsGetTicket,
@@ -68,6 +73,10 @@
 	let showBlacklistDialog = $state(false);
 	let ticketToBlacklist = $state<any>(null);
 
+	// Unconfirm payment confirmation state
+	let showUnconfirmPaymentDialog = $state(false);
+	let ticketToUnconfirm = $state<any>(null);
+
 	/**
 	 * Derived: Check if there are multiple pages
 	 */
@@ -106,6 +115,33 @@
 			showConfirmPaymentDialog = false;
 			ticketToConfirm = null;
 			invalidateAll();
+		}
+	}));
+
+	/**
+	 * Unconfirm payment mutation
+	 */
+	const unconfirmPaymentMutation = createMutation(() => ({
+		mutationFn: async (ticketId: string) => {
+			const response = await eventadminticketsUnconfirmTicketPayment({
+				path: { event_id: data.event.id, ticket_id: ticketId },
+				headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
+			});
+
+			if (response.error) {
+				throw new Error('Failed to unconfirm payment');
+			}
+
+			return response.data;
+		},
+		onSuccess: () => {
+			showUnconfirmPaymentDialog = false;
+			ticketToUnconfirm = null;
+			toast.success(m['eventTicketsAdmin.unconfirmPaymentSuccess']());
+			invalidateAll();
+		},
+		onError: () => {
+			toast.error(m['eventTicketsAdmin.unconfirmPaymentError']());
 		}
 	}));
 
@@ -303,6 +339,39 @@
 	function cancelBlacklist() {
 		showBlacklistDialog = false;
 		ticketToBlacklist = null;
+	}
+
+	/**
+	 * Open unconfirm payment dialog
+	 */
+	function openUnconfirmPaymentDialog(ticket: any) {
+		ticketToUnconfirm = ticket;
+		showUnconfirmPaymentDialog = true;
+	}
+
+	/**
+	 * Confirm unconfirm payment
+	 */
+	function confirmUnconfirmPayment() {
+		if (ticketToUnconfirm) {
+			unconfirmPaymentMutation.mutate(ticketToUnconfirm.id);
+		}
+	}
+
+	/**
+	 * Cancel unconfirm payment
+	 */
+	function cancelUnconfirmPayment() {
+		showUnconfirmPaymentDialog = false;
+		ticketToUnconfirm = null;
+	}
+
+	/**
+	 * Check if payment can be unconfirmed (active ticket with offline/at_the_door payment)
+	 */
+	function canUnconfirmPayment(ticket: any): boolean {
+		const method = ticket.tier?.payment_method;
+		return ticket.status === 'active' && (method === 'offline' || method === 'at_the_door');
 	}
 
 	/**
@@ -542,9 +611,9 @@
 			case 'online':
 				return m['eventTicketsAdmin.paymentOnline']();
 			case 'offline':
-				return m['eventTicketsAdmin.labelPayment']();
+				return m['eventTicketsAdmin.paymentOffline']();
 			case 'at_the_door':
-				return m['eventTicketsAdmin.labelPayment']();
+				return m['eventTicketsAdmin.paymentAtDoor']();
 			case 'free':
 				return m['eventTicketsAdmin.paymentFree']();
 			default:
@@ -613,6 +682,20 @@
 	}
 </script>
 
+{#snippet paymentMethodIcon(method: string)}
+	{#if method === 'online'}
+		<CreditCard class="h-3 w-3" aria-hidden="true" />
+	{:else if method === 'offline'}
+		<Banknote class="h-3 w-3" aria-hidden="true" />
+	{:else if method === 'at_the_door'}
+		<Coins class="h-3 w-3" aria-hidden="true" />
+	{:else if method === 'free'}
+		<Gift class="h-3 w-3" aria-hidden="true" />
+	{:else}
+		<CreditCard class="h-3 w-3" aria-hidden="true" />
+	{/if}
+{/snippet}
+
 <svelte:head>
 	<title>{m['eventTicketsAdmin.pageTitle']()} - {data.event.name} | Revel</title>
 </svelte:head>
@@ -646,7 +729,7 @@
 			{m['eventTicketsAdmin.scanQRButton']()}
 		</Button>
 		<p class="mt-2 text-sm text-muted-foreground">
-			Scan attendee QR codes to check them in to the event
+			{m['eventTicketsAdmin.scanQRDescription']()}
 		</p>
 	</div>
 
@@ -672,23 +755,23 @@
 		<div class="grid gap-4 sm:grid-cols-5">
 			<div class="rounded-lg border bg-card p-4">
 				<div class="text-2xl font-bold">{stats.total}</div>
-				<div class="text-sm text-muted-foreground">Total (page)</div>
+				<div class="text-sm text-muted-foreground">{m['eventTicketsAdmin.statsTotalPage']()}</div>
 			</div>
 			<div class="rounded-lg border bg-card p-4">
 				<div class="text-2xl font-bold text-yellow-600">{stats.pending}</div>
-				<div class="text-sm text-muted-foreground">Pending</div>
+				<div class="text-sm text-muted-foreground">{m['eventTicketsAdmin.statsPending']()}</div>
 			</div>
 			<div class="rounded-lg border bg-card p-4">
 				<div class="text-2xl font-bold text-green-600">{stats.active}</div>
-				<div class="text-sm text-muted-foreground">Active</div>
+				<div class="text-sm text-muted-foreground">{m['eventTicketsAdmin.statsActive']()}</div>
 			</div>
 			<div class="rounded-lg border bg-card p-4">
 				<div class="text-2xl font-bold text-blue-600">{stats.checkedIn}</div>
-				<div class="text-sm text-muted-foreground">Checked In</div>
+				<div class="text-sm text-muted-foreground">{m['eventTicketsAdmin.statsCheckedIn']()}</div>
 			</div>
 			<div class="rounded-lg border bg-card p-4">
 				<div class="text-2xl font-bold text-red-600">{stats.cancelled}</div>
-				<div class="text-sm text-muted-foreground">Cancelled</div>
+				<div class="text-sm text-muted-foreground">{m['eventTicketsAdmin.statsCancelled']()}</div>
 			</div>
 		</div>
 	</div>
@@ -713,7 +796,7 @@
 
 		<!-- Status Filters -->
 		<div>
-			<h3 class="mb-2 text-sm font-semibold">Filter by Status</h3>
+			<h3 class="mb-2 text-sm font-semibold">{m['eventTicketsAdmin.filterByStatus']()}</h3>
 			<div class="flex flex-wrap gap-2">
 				<button
 					type="button"
@@ -723,7 +806,7 @@
 						? 'border-primary bg-primary text-primary-foreground'
 						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
 				>
-					All
+					{m['eventTicketsAdmin.filterAll']()}
 				</button>
 				<button
 					type="button"
@@ -733,7 +816,7 @@
 						? 'border-primary bg-primary text-primary-foreground'
 						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
 				>
-					Pending
+					{m['eventTicketsAdmin.statsPending']()}
 				</button>
 				<button
 					type="button"
@@ -743,7 +826,7 @@
 						? 'border-primary bg-primary text-primary-foreground'
 						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
 				>
-					Active
+					{m['eventTicketsAdmin.statsActive']()}
 				</button>
 				<button
 					type="button"
@@ -753,7 +836,7 @@
 						? 'border-primary bg-primary text-primary-foreground'
 						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
 				>
-					Checked In
+					{m['eventTicketsAdmin.statsCheckedIn']()}
 				</button>
 				<button
 					type="button"
@@ -763,14 +846,14 @@
 						? 'border-primary bg-primary text-primary-foreground'
 						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
 				>
-					Cancelled
+					{m['eventTicketsAdmin.statsCancelled']()}
 				</button>
 			</div>
 		</div>
 
 		<!-- Payment Method Filters -->
 		<div>
-			<h3 class="mb-2 text-sm font-semibold">Filter by Payment Method</h3>
+			<h3 class="mb-2 text-sm font-semibold">{m['eventTicketsAdmin.filterByPaymentMethod']()}</h3>
 			<div class="flex flex-wrap gap-2">
 				<button
 					type="button"
@@ -780,7 +863,7 @@
 						? 'border-primary bg-primary text-primary-foreground'
 						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
 				>
-					All
+					{m['eventTicketsAdmin.filterAll']()}
 				</button>
 				<button
 					type="button"
@@ -790,7 +873,7 @@
 						? 'border-primary bg-primary text-primary-foreground'
 						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
 				>
-					Online (Stripe)
+					{m['eventTicketsAdmin.paymentOnline']()}
 				</button>
 				<button
 					type="button"
@@ -800,7 +883,7 @@
 						? 'border-primary bg-primary text-primary-foreground'
 						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
 				>
-					Offline
+					{m['eventTicketsAdmin.paymentOffline']()}
 				</button>
 				<button
 					type="button"
@@ -810,7 +893,7 @@
 						? 'border-primary bg-primary text-primary-foreground'
 						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
 				>
-					At the Door
+					{m['eventTicketsAdmin.paymentAtDoor']()}
 				</button>
 				<button
 					type="button"
@@ -820,7 +903,7 @@
 						? 'border-primary bg-primary text-primary-foreground'
 						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
 				>
-					Free
+					{m['eventTicketsAdmin.paymentFree']()}
 				</button>
 			</div>
 		</div>
@@ -858,7 +941,7 @@
 								>{m['eventTicketsAdmin.headerPrice']()}</th
 							>
 							<th class="px-4 py-3 text-left text-sm font-semibold"
-								>{m['eventTicketsAdmin.labelPayment']()}</th
+								>{m['eventTicketsAdmin.headerPaymentMethod']()}</th
 							>
 							<th class="px-4 py-3 text-left text-sm font-semibold"
 								>{m['eventTicketsAdmin.headerStatus']()}</th
@@ -892,18 +975,6 @@
 											{#if guestName}
 												<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
 													<span class="font-medium">{guestName}</span>
-													{#if ticket.user.pronouns}
-														<span class="text-xs text-muted-foreground"
-															>({ticket.user.pronouns})</span
-														>
-													{/if}
-													{#if ticket.membership}
-														<Badge variant="secondary" class="text-xs">
-															{ticket.membership.tier?.name
-																? m['memberBadge.tierName']({ tier: ticket.membership.tier.name })
-																: m['memberBadge.member']()}
-														</Badge>
-													{/if}
 												</div>
 												<div class="text-sm text-muted-foreground">
 													(Purchased by {getUserDisplayName(ticket.user)})
@@ -946,7 +1017,7 @@
 								</td>
 								<td class="px-4 py-3">
 									<div class="flex items-center gap-1 text-sm">
-										<CreditCard class="h-3 w-3" aria-hidden="true" />
+										{@render paymentMethodIcon(ticket.tier?.payment_method || '')}
 										{getPaymentMethodLabel(ticket.tier?.payment_method || '')}
 									</div>
 								</td>
@@ -968,7 +1039,7 @@
 												disabled={checkInTicketMutation.isPending}
 											>
 												<Check class="h-4 w-4" aria-hidden="true" />
-												Check In
+												{m['eventTicketsAdmin.actionCheckIn']()}
 											</Button>
 										{/if}
 										{#if canConfirmPayment(ticket)}
@@ -979,7 +1050,7 @@
 												disabled={confirmPaymentMutation.isPending}
 											>
 												<Check class="h-4 w-4" aria-hidden="true" />
-												Confirm Payment
+												{m['eventTicketsAdmin.actionConfirmPayment']()}
 											</Button>
 										{/if}
 										{#if !ticket.membership && ticket.user?.id}
@@ -1017,6 +1088,15 @@
 												{/snippet}
 											</DropdownMenu.Trigger>
 											<DropdownMenu.Content align="end">
+												{#if canUnconfirmPayment(ticket)}
+													<DropdownMenu.Item
+														onclick={() => openUnconfirmPaymentDialog(ticket)}
+														disabled={unconfirmPaymentMutation.isPending}
+													>
+														<Undo2 class="mr-2 h-4 w-4" aria-hidden="true" />
+														{m['eventTicketsAdmin.actionUnconfirmPayment']()}
+													</DropdownMenu.Item>
+												{/if}
 												{#if canManageTicket(ticket) && ticket.status !== 'cancelled'}
 													<DropdownMenu.Item
 														onclick={() => handleCancelTicket(ticket)}
@@ -1068,16 +1148,6 @@
 									{#if guestName}
 										<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
 											<span class="font-semibold">{guestName}</span>
-											{#if ticket.user.pronouns}
-												<span class="text-xs text-muted-foreground">({ticket.user.pronouns})</span>
-											{/if}
-											{#if ticket.membership}
-												<Badge variant="secondary" class="text-xs">
-													{ticket.membership.tier?.name
-														? m['memberBadge.tierName']({ tier: ticket.membership.tier.name })
-														: m['memberBadge.member']()}
-												</Badge>
-											{/if}
 										</div>
 										<div class="text-sm text-muted-foreground">
 											(Purchased by {getUserDisplayName(ticket.user)})
@@ -1122,7 +1192,7 @@
 							<div class="flex items-center justify-between">
 								<span class="text-muted-foreground">{m['eventTicketsAdmin.labelPayment']()}:</span>
 								<span class="flex items-center gap-1">
-									<CreditCard class="h-3 w-3" aria-hidden="true" />
+									{@render paymentMethodIcon(ticket.tier?.payment_method || '')}
 									{getPaymentMethodLabel(ticket.tier?.payment_method || '')}
 								</span>
 							</div>
@@ -1196,6 +1266,15 @@
 									{/snippet}
 								</DropdownMenu.Trigger>
 								<DropdownMenu.Content align="end">
+									{#if canUnconfirmPayment(ticket)}
+										<DropdownMenu.Item
+											onclick={() => openUnconfirmPaymentDialog(ticket)}
+											disabled={unconfirmPaymentMutation.isPending}
+										>
+											<Undo2 class="mr-2 h-4 w-4" aria-hidden="true" />
+											{m['eventTicketsAdmin.actionUnconfirmPayment']()}
+										</DropdownMenu.Item>
+									{/if}
 									{#if canManageTicket(ticket) && ticket.status !== 'cancelled'}
 										<DropdownMenu.Item
 											onclick={() => handleCancelTicket(ticket)}
@@ -1256,12 +1335,12 @@
 <!-- Confirm Payment Dialog -->
 <ConfirmDialog
 	isOpen={showConfirmPaymentDialog}
-	title="Confirm Payment"
+	title={m['eventTicketsAdmin.confirmPaymentTitle']()}
 	message={ticketToConfirm?.status === 'cancelled'
-		? 'Are you sure you want to confirm this payment and reactivate the ticket? The ticket holder will be notified.'
-		: 'Are you sure you want to confirm this payment and activate the ticket? The ticket holder will be notified.'}
-	confirmText="Confirm Payment"
-	cancelText="Cancel"
+		? m['eventTicketsAdmin.confirmPaymentMessageReactivate']()
+		: m['eventTicketsAdmin.confirmPaymentMessageActivate']()}
+	confirmText={m['eventTicketsAdmin.confirmPaymentButton']()}
+	cancelText={m['eventTicketsAdmin.confirmPaymentCancel']()}
 	onConfirm={submitConfirmPayment}
 	onCancel={() => {
 		showConfirmPaymentDialog = false;
@@ -1273,10 +1352,10 @@
 <!-- Cancel Confirmation Dialog -->
 <ConfirmDialog
 	isOpen={showCancelDialog}
-	title="Cancel Ticket"
-	message="Are you sure you want to cancel this ticket? This action cannot be undone. The ticket holder will be notified."
-	confirmText="Cancel Ticket"
-	cancelText="Keep Ticket"
+	title={m['eventTicketsAdmin.cancelTicketTitle']()}
+	message={m['eventTicketsAdmin.cancelTicketMessage']()}
+	confirmText={m['eventTicketsAdmin.cancelTicketButton']()}
+	cancelText={m['eventTicketsAdmin.cancelTicketKeep']()}
 	onConfirm={submitCancelTicket}
 	onCancel={() => {
 		showCancelDialog = false;
@@ -1330,4 +1409,16 @@
 	onConfirm={confirmBlacklist}
 	onCancel={cancelBlacklist}
 	variant="danger"
+/>
+
+<!-- Unconfirm Payment Confirmation Dialog -->
+<ConfirmDialog
+	isOpen={showUnconfirmPaymentDialog}
+	title={m['eventTicketsAdmin.unconfirmPaymentTitle']()}
+	message={m['eventTicketsAdmin.unconfirmPaymentMessage']()}
+	confirmText={m['eventTicketsAdmin.unconfirmPaymentConfirm']()}
+	cancelText={m['confirmDialog.cancel']()}
+	onConfirm={confirmUnconfirmPayment}
+	onCancel={cancelUnconfirmPayment}
+	variant="warning"
 />
