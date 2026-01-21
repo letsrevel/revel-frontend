@@ -274,7 +274,7 @@
 					</div>
 				{/if}
 
-				{#if tier.total_available !== null}
+				{#if tier.total_available !== null && effectiveEligible}
 					<div
 						class="flex items-center gap-1.5"
 						class:text-destructive={!availabilityStatus.available}
