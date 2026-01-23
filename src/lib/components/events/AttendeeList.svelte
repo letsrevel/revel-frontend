@@ -106,9 +106,10 @@
 	}
 
 	// Get color class for pronoun bars - cycle through colors
+	// IMPORTANT: Avoid bg-blue-* and bg-slate-* as they can blend with bg-secondary background
 	const colorClasses = [
 		'bg-violet-500',
-		'bg-blue-500',
+		'bg-orange-500',
 		'bg-emerald-500',
 		'bg-amber-500',
 		'bg-rose-500',
