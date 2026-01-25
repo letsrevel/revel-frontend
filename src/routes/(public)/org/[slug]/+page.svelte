@@ -14,6 +14,7 @@
 		AtSign
 	} from 'lucide-svelte';
 	import ResourceCard from '$lib/components/resources/ResourceCard.svelte';
+	import OrgAnnouncements from '$lib/components/announcements/OrgAnnouncements.svelte';
 	import { EventCard, EventSeriesCard } from '$lib/components/events';
 	import { OrganizationDescription } from '$lib/components/organizations';
 	import { getImageUrl } from '$lib/utils/url';
@@ -601,5 +602,8 @@
 				{/if}
 			{/if}
 		</section>
+
+		<!-- Announcements Section -->
+		<OrgAnnouncements organizationSlug={organization.slug} />
 	</div>
 </div>

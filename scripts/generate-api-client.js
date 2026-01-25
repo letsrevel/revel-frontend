@@ -2,7 +2,7 @@ import { writeFileSync, readFileSync } from 'fs';
 import { createClient } from '@hey-api/openapi-ts';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000';
-const OPENAPI_PATH = `${BACKEND_URL}/api/openapi.json`;
+const OPENAPI_PATH = `${BACKEND_URL}/openapi.json`;
 
 console.log(`Generating API client from ${OPENAPI_PATH}...`);
 

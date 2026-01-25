@@ -17,6 +17,7 @@
 	import PotluckSection from '$lib/components/events/PotluckSection.svelte';
 	import DietarySummary from '$lib/components/events/DietarySummary.svelte';
 	import EventResources from '$lib/components/events/EventResources.svelte';
+	import EventAnnouncements from '$lib/components/announcements/EventAnnouncements.svelte';
 	import AttendeeList from '$lib/components/events/AttendeeList.svelte';
 	import TicketTierList from '$lib/components/tickets/TicketTierList.svelte';
 	import MyTicket from '$lib/components/tickets/MyTicket.svelte';
@@ -809,6 +810,9 @@
 
 				<!-- Resources Section -->
 				<EventResources resources={data.resources} />
+
+				<!-- Announcements Section -->
+				<EventAnnouncements eventId={event.id} />
 
 				<!-- Organization Info (below details on mobile, hidden on desktop) -->
 				<div class="lg:hidden">

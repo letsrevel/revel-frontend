@@ -53,7 +53,11 @@
 			href: `/org/${data.organization.slug}/admin/venues`,
 			label: m['orgAdmin.nav.venues']()
 		},
-		{ href: `/org/${data.organization.slug}/admin/settings`, label: m['orgAdmin.nav.settings']() }
+		{ href: `/org/${data.organization.slug}/admin/settings`, label: m['orgAdmin.nav.settings']() },
+		{
+			href: `/org/${data.organization.slug}/admin/announcements`,
+			label: m['orgAdmin.nav.announcements']()
+		}
 	];
 
 	// Check if link is active
