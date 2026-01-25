@@ -158,6 +158,16 @@
 					description: 'Review questionnaire responses'
 				}
 			]
+		},
+		{
+			title: 'Announcements',
+			permissions: [
+				{
+					key: 'send_announcements',
+					label: 'Send Announcements',
+					description: 'Create and send organization announcements'
+				}
+			]
 		}
 	];
 

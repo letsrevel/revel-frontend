@@ -13,14 +13,58 @@
 		ClipboardList,
 		FolderOpen,
 		Ban,
-		MapPin
+		MapPin,
+		Megaphone
 	} from 'lucide-svelte';
 	import { OrganizationDescription } from '$lib/components/organizations';
+	import AnnouncementModal from '$lib/components/announcements/AnnouncementModal.svelte';
+	import { createQuery } from '@tanstack/svelte-query';
+	import {
+		eventpublicdiscoveryListEvents,
+		organizationadminmembersListMembershipTiers
+	} from '$lib/api/generated/sdk.gen';
+	import { authStore } from '$lib/stores/auth.svelte';
 
 	let { data }: { data: PageData } = $props();
 
 	const organization = $derived($page.data.organization);
 	const canCreateEvent = $derived(data.canCreateEvent);
+
+	// State for announcement modal
+	let announcementModalOpen = $state(false);
+
+	// Auth token for queries
+	let accessToken = $derived(authStore.accessToken);
+
+	// Fetch events for announcement modal
+	let eventsQuery = createQuery(() => ({
+		queryKey: ['admin-events', organization?.id],
+		queryFn: async () => {
+			const response = await eventpublicdiscoveryListEvents({
+				query: { organization: organization?.id, page_size: 100 }
+			});
+			if (response.error) throw response.error;
+			return response.data;
+		},
+		enabled: !!organization?.id
+	}));
+
+	// Fetch tiers for announcement modal
+	let tiersQuery = createQuery(() => ({
+		queryKey: ['membership-tiers', organization?.slug],
+		queryFn: async () => {
+			const response = await organizationadminmembersListMembershipTiers({
+				path: { slug: organization!.slug },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+			if (response.error) throw response.error;
+			return response.data;
+		},
+		enabled: !!accessToken && !!organization?.slug
+	}));
+
+	let eventsList = $derived(eventsQuery.data?.results ?? []);
+	let tiersList = $derived(tiersQuery.data ?? []);
 
 	// Quick action cards (derived to properly track organization reactivity)
 	const quickActions = $derived([
@@ -97,6 +141,15 @@
 			color: 'text-pink-600 dark:text-pink-400',
 			bgColor: 'bg-pink-50 dark:bg-pink-950',
 			badge: undefined as string | undefined
+		},
+		{
+			title: m['announcements.title'](),
+			description: m['announcements.pageDescription'](),
+			icon: Megaphone,
+			href: `/org/${organization.slug}/admin/announcements`,
+			color: 'text-yellow-600 dark:text-yellow-400',
+			bgColor: 'bg-yellow-50 dark:bg-yellow-950',
+			badge: undefined as string | undefined
 		}
 	]);
 
@@ -135,16 +188,26 @@
 	<div class="space-y-4">
 		<div class="flex items-center justify-between">
 			<h2 class="text-lg font-semibold">{m['orgAdmin.dashboard.quickActionsHeading']()}</h2>
-			{#if canCreateEvent}
+			<div class="flex items-center gap-2">
 				<button
 					type="button"
-					onclick={createEvent}
-					class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					onclick={() => (announcementModalOpen = true)}
+					class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				>
-					<Plus class="h-4 w-4" aria-hidden="true" />
-					{m['orgAdmin.dashboard.createEventButton']()}
+					<Megaphone class="h-4 w-4" aria-hidden="true" />
+					{m['announcements.new']()}
 				</button>
-			{/if}
+				{#if canCreateEvent}
+					<button
+						type="button"
+						onclick={createEvent}
+						class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>
+						<Plus class="h-4 w-4" aria-hidden="true" />
+						{m['orgAdmin.dashboard.createEventButton']()}
+					</button>
+				{/if}
+			</div>
 		</div>
 
 		<!-- Action Cards Grid -->
@@ -284,6 +347,16 @@
 		</div>
 	{/if}
 </div>
+
+<AnnouncementModal
+	open={announcementModalOpen}
+	announcement={null}
+	organizationSlug={organization.slug}
+	events={eventsList}
+	tiers={tiersList}
+	onClose={() => (announcementModalOpen = false)}
+	onSuccess={() => (announcementModalOpen = false)}
+/>
 
 <style>
 	/* Ensure consistent focus states for accessibility */

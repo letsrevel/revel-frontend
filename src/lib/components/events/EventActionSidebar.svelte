@@ -29,8 +29,24 @@
 	import ActionButton from './ActionButton.svelte';
 	import EventRSVP from './EventRSVP.svelte';
 	import EligibilityStatusDisplay from './EligibilityStatusDisplay.svelte';
-	import { Check, Ticket, Settings, Users, Mail, CalendarDays, MessageSquare } from 'lucide-svelte';
+	import {
+		Check,
+		Ticket,
+		Settings,
+		Users,
+		Mail,
+		CalendarDays,
+		MessageSquare,
+		Megaphone
+	} from 'lucide-svelte';
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
+	import AnnouncementModal from '$lib/components/announcements/AnnouncementModal.svelte';
+	import { createQuery } from '@tanstack/svelte-query';
+	import {
+		eventpublicdiscoveryListEvents,
+		organizationadminmembersListMembershipTiers
+	} from '$lib/api/generated/sdk.gen';
+	import { authStore } from '$lib/stores/auth.svelte';
 
 	interface Props {
 		event: EventDetailSchema;
@@ -246,6 +262,12 @@
 	// State for showing RSVP management
 	let showManageRSVP = $state(false);
 
+	// State for announcement modal
+	let announcementModalOpen = $state(false);
+
+	// Derived auth token
+	let accessToken = $derived(authStore.accessToken);
+
 	/**
 	 * Check if user can manage this event (owner or staff)
 	 */
@@ -257,6 +279,36 @@
 		// User can manage if they are owner or staff
 		return !!orgPermissions;
 	});
+
+	// Fetch events for announcement modal (only when modal might be used)
+	let eventsQuery = createQuery(() => ({
+		queryKey: ['admin-events', event.organization?.id],
+		queryFn: async () => {
+			const response = await eventpublicdiscoveryListEvents({
+				query: { organization: event.organization?.id, page_size: 100 }
+			});
+			if (response.error) throw response.error;
+			return response.data;
+		},
+		enabled: !!canManageEvent && !!event.organization?.id
+	}));
+
+	// Fetch tiers for announcement modal
+	let tiersQuery = createQuery(() => ({
+		queryKey: ['membership-tiers', event.organization?.slug],
+		queryFn: async () => {
+			const response = await organizationadminmembersListMembershipTiers({
+				path: { slug: event.organization!.slug },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+			if (response.error) throw response.error;
+			return response.data;
+		},
+		enabled: !!canManageEvent && !!accessToken && !!event.organization?.slug
+	}));
+
+	let eventsList = $derived(eventsQuery.data?.results ?? []);
+	let tiersList = $derived(tiersQuery.data ?? []);
 
 	/**
 	 * Download iCal file for this event
@@ -585,6 +637,14 @@
 						<Mail class="h-4 w-4" aria-hidden="true" />
 						{m['eventActionSidebar.manageInvitations']()}
 					</a>
+					<button
+						type="button"
+						onclick={() => (announcementModalOpen = true)}
+						class="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					>
+						<Megaphone class="h-4 w-4" aria-hidden="true" />
+						{m['eventActions.announcement']()}
+					</button>
 				</div>
 			</div>
 		{/if}
@@ -611,3 +671,17 @@
 		</div>
 	</div>
 </aside>
+
+<!-- Announcement Modal -->
+{#if canManageEvent && event.organization}
+	<AnnouncementModal
+		open={announcementModalOpen}
+		announcement={null}
+		organizationSlug={event.organization.slug}
+		preSelectedEventId={event.id}
+		events={eventsList}
+		tiers={tiersList}
+		onClose={() => (announcementModalOpen = false)}
+		onSuccess={() => (announcementModalOpen = false)}
+	/>
+{/if}
