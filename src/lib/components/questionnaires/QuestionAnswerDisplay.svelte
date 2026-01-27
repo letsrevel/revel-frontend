@@ -14,7 +14,9 @@
 	} from 'lucide-svelte';
 	import type { QuestionAnswerDetailSchema } from '$lib/api/generated';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+	import AudioPlayer from './AudioPlayer.svelte';
 	import { getImageUrl } from '$lib/utils';
+	import { isAudio } from '$lib/utils/audio';
 
 	interface MultipleChoiceAnswerContent {
 		option_id: string;
@@ -209,86 +211,99 @@
 					{:else if answer.question_type === 'file_upload'}
 						{@const uploadedFiles = getUploadedFiles(answer)}
 						{#if uploadedFiles.length > 0}
-							<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+							<div class="flex flex-col gap-2">
 								{#each uploadedFiles as file (file.file_id)}
-									<div class="flex items-center gap-3 rounded-lg border bg-card p-3">
-										{#if file.file_url && isImage(file.mime_type)}
-											<button
-												type="button"
-												class="group relative h-12 w-12 shrink-0 cursor-pointer overflow-hidden rounded focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-												onclick={() =>
-													openImagePreview(
-														getImageUrl(file.file_url as string) as string,
-														file.original_filename
-													)}
-												aria-label={m['questionAnswerDisplay.previewImage']?.() || 'Preview image'}
-											>
-												<img
-													src={getImageUrl(file.thumbnail_url || file.file_url)}
-													alt={file.original_filename}
-													class="h-full w-full object-cover transition-transform group-hover:scale-110"
-												/>
-												<div
-													class="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/40"
-												>
-													<ZoomIn
-														class="h-5 w-5 text-white opacity-0 transition-opacity group-hover:opacity-100"
-														aria-hidden="true"
-													/>
-												</div>
-											</button>
-										{:else if file.file_url}
-											<div class="flex h-12 w-12 items-center justify-center rounded bg-muted">
-												<FileIcon class="h-6 w-6 text-muted-foreground" aria-hidden="true" />
-											</div>
-										{:else}
-											<div class="flex h-12 w-12 items-center justify-center rounded bg-muted/50">
-												<AlertCircle class="h-6 w-6 text-muted-foreground" aria-hidden="true" />
-											</div>
-										{/if}
-										<div class="min-w-0 flex-1">
+									{#if file.file_url && isAudio(file.mime_type)}
+										<!-- Audio file: show inline player -->
+										<div class="flex flex-col gap-1">
 											<p class="truncate text-sm font-medium">{file.original_filename}</p>
-											<p class="text-xs text-muted-foreground">
-												{formatFileSize(file.file_size)}
-											</p>
+											<AudioPlayer
+												src={getImageUrl(file.file_url) as string}
+												filename={file.original_filename}
+											/>
 										</div>
-										{#if file.file_url}
-											<div class="flex shrink-0 gap-1">
-												{#if isImage(file.mime_type)}
+									{:else}
+										<!-- Non-audio file: show existing card UI -->
+										<div class="flex items-center gap-3 rounded-lg border bg-card p-3">
+											{#if file.file_url && isImage(file.mime_type)}
+												<button
+													type="button"
+													class="group relative h-12 w-12 shrink-0 cursor-pointer overflow-hidden rounded focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+													onclick={() =>
+														openImagePreview(
+															getImageUrl(file.file_url as string) as string,
+															file.original_filename
+														)}
+													aria-label={m['questionAnswerDisplay.previewImage']?.() ||
+														'Preview image'}
+												>
+													<img
+														src={getImageUrl(file.thumbnail_url || file.file_url)}
+														alt={file.original_filename}
+														class="h-full w-full object-cover transition-transform group-hover:scale-110"
+													/>
+													<div
+														class="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/40"
+													>
+														<ZoomIn
+															class="h-5 w-5 text-white opacity-0 transition-opacity group-hover:opacity-100"
+															aria-hidden="true"
+														/>
+													</div>
+												</button>
+											{:else if file.file_url}
+												<div class="flex h-12 w-12 items-center justify-center rounded bg-muted">
+													<FileIcon class="h-6 w-6 text-muted-foreground" aria-hidden="true" />
+												</div>
+											{:else}
+												<div class="flex h-12 w-12 items-center justify-center rounded bg-muted/50">
+													<AlertCircle class="h-6 w-6 text-muted-foreground" aria-hidden="true" />
+												</div>
+											{/if}
+											<div class="min-w-0 flex-1">
+												<p class="truncate text-sm font-medium">{file.original_filename}</p>
+												<p class="text-xs text-muted-foreground">
+													{formatFileSize(file.file_size)}
+												</p>
+											</div>
+											{#if file.file_url}
+												<div class="flex shrink-0 gap-1">
+													{#if isImage(file.mime_type)}
+														<Button
+															variant="ghost"
+															size="icon"
+															class="h-8 w-8"
+															onclick={() =>
+																openImagePreview(
+																	getImageUrl(file.file_url as string) as string,
+																	file.original_filename
+																)}
+															aria-label={m['questionAnswerDisplay.previewImage']?.() ||
+																'Preview image'}
+														>
+															<ZoomIn class="h-4 w-4" />
+														</Button>
+													{/if}
 													<Button
 														variant="ghost"
 														size="icon"
 														class="h-8 w-8"
-														onclick={() =>
-															openImagePreview(
-																getImageUrl(file.file_url as string) as string,
-																file.original_filename
-															)}
-														aria-label={m['questionAnswerDisplay.previewImage']?.() ||
-															'Preview image'}
+														href={getImageUrl(file.file_url)}
+														target="_blank"
+														rel="noopener noreferrer"
+														aria-label={m['questionAnswerDisplay.downloadFile']?.() ||
+															'Download file'}
 													>
-														<ZoomIn class="h-4 w-4" />
+														<Download class="h-4 w-4" />
 													</Button>
-												{/if}
-												<Button
-													variant="ghost"
-													size="icon"
-													class="h-8 w-8"
-													href={getImageUrl(file.file_url)}
-													target="_blank"
-													rel="noopener noreferrer"
-													aria-label={m['questionAnswerDisplay.downloadFile']?.() ||
-														'Download file'}
-												>
-													<Download class="h-4 w-4" />
-												</Button>
-											</div>
-										{:else}
-											<span class="text-xs text-muted-foreground">
-												{m['questionAnswerDisplay.fileUnavailable']?.() || 'Unavailable'}
-											</span>
-										{/if}
-									</div>
+												</div>
+											{:else}
+												<span class="text-xs text-muted-foreground">
+													{m['questionAnswerDisplay.fileUnavailable']?.() || 'Unavailable'}
+												</span>
+											{/if}
+										</div>
+									{/if}
 								{/each}
 							</div>
 						{:else}

@@ -34,13 +34,21 @@
 		return 'bg-green-500';
 	});
 
-	// Label based on score
+	// Label based on score - only show positive labels when ALL requirements are met
 	let strengthLabel = $derived.by(() => {
-		if (score === 0) return 'No password';
-		if (score <= 2) return 'Weak';
-		if (score === 3) return 'Fair';
-		if (score === 4) return 'Good';
-		return 'Strong';
+		if (score === 0) return m['passwordStrength.noPassword']();
+		if (score <= 2) return m['passwordStrength.weak']();
+		if (score === 3) return m['passwordStrength.fair']();
+		if (score === 4) return m['passwordStrength.almostThere']();
+		return m['passwordStrength.strong']();
+	});
+
+	// Label color based on whether all requirements are met
+	let labelColor = $derived.by(() => {
+		if (score === 5) return 'text-green-600 dark:text-green-400';
+		if (score === 4) return 'text-blue-500';
+		if (score === 3) return 'text-yellow-500';
+		return 'text-red-500';
 	});
 
 	// Update isValid whenever password requirements change
@@ -69,7 +77,7 @@
 	{#if password.length > 0}
 		<div class="flex items-center justify-between text-sm">
 			<span class="text-muted-foreground">{m['passwordStrength.strength']()}</span>
-			<span class="font-medium" data-testid="strength-label">{strengthLabel}</span>
+			<span class="font-medium {labelColor}" data-testid="strength-label">{strengthLabel}</span>
 		</div>
 	{/if}
 
@@ -79,7 +87,7 @@
 			<div
 				class="flex items-center gap-2 {hasMinLength
 					? 'text-green-600 dark:text-green-400'
-					: 'text-muted-foreground'}"
+					: 'text-red-500 dark:text-red-400'}"
 			>
 				{#if hasMinLength}
 					<Check class="h-3.5 w-3.5" aria-hidden="true" />
@@ -92,7 +100,7 @@
 			<div
 				class="flex items-center gap-2 {hasUppercase
 					? 'text-green-600 dark:text-green-400'
-					: 'text-muted-foreground'}"
+					: 'text-red-500 dark:text-red-400'}"
 			>
 				{#if hasUppercase}
 					<Check class="h-3.5 w-3.5" aria-hidden="true" />
@@ -105,7 +113,7 @@
 			<div
 				class="flex items-center gap-2 {hasLowercase
 					? 'text-green-600 dark:text-green-400'
-					: 'text-muted-foreground'}"
+					: 'text-red-500 dark:text-red-400'}"
 			>
 				{#if hasLowercase}
 					<Check class="h-3.5 w-3.5" aria-hidden="true" />
@@ -118,7 +126,7 @@
 			<div
 				class="flex items-center gap-2 {hasDigit
 					? 'text-green-600 dark:text-green-400'
-					: 'text-muted-foreground'}"
+					: 'text-red-500 dark:text-red-400'}"
 			>
 				{#if hasDigit}
 					<Check class="h-3.5 w-3.5" aria-hidden="true" />
@@ -131,7 +139,7 @@
 			<div
 				class="flex items-center gap-2 {hasSpecial
 					? 'text-green-600 dark:text-green-400'
-					: 'text-muted-foreground'}"
+					: 'text-red-500 dark:text-red-400'}"
 			>
 				{#if hasSpecial}
 					<Check class="h-3.5 w-3.5" aria-hidden="true" />

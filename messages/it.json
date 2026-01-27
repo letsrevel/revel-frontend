@@ -3199,7 +3199,12 @@
 		"oneUppercase": "Una lettera maiuscola",
 		"oneLowercase": "Una lettera minuscola",
 		"oneNumber": "Un numero",
-		"oneSpecial": "Un carattere speciale (!@#$%...)"
+		"oneSpecial": "Un carattere speciale (!@#$%...)",
+		"noPassword": "Nessuna password",
+		"weak": "Debole",
+		"fair": "Discreta",
+		"almostThere": "Quasi fatto",
+		"strong": "Forte"
 	},
 	"permissionsEditor": {
 		"editPermissionsFor": "Modifica Permessi per",
@@ -4614,5 +4619,31 @@
 		"requestedAt": "Richiesto"
 	},
 	"announcements.form.loadingEvents": "Caricamento eventi...",
-	"announcements.view": "Visualizza"
+	"announcements.view": "Visualizza",
+	"audioPlayer": {
+		"playerLabel": "Lettore audio",
+		"play": "Riproduci",
+		"pause": "Pausa",
+		"speed": "Velocità di riproduzione",
+		"seekLabel": "Cerca",
+		"download": "Scarica audio"
+	},
+	"audioRecorder": {
+		"record": "Registra",
+		"recordAudio": "Registra audio",
+		"recording": "Registrazione in corso...",
+		"stop": "Ferma registrazione",
+		"cancel": "Annulla",
+		"tryAgain": "Riprova",
+		"processing": "Elaborazione registrazione...",
+		"requestingPermission": "Richiesta accesso al microfono...",
+		"permissionDenied": "Accesso al microfono negato. Abilitalo nelle impostazioni del browser.",
+		"noMicrophone": "Nessun microfono trovato. Collega un microfono.",
+		"notSupported": "La registrazione audio non è supportata in questo browser",
+		"recordingError": "Registrazione fallita",
+		"noAudioRecorded": "Nessun audio registrato",
+		"fileTooLarge": "La registrazione è troppo grande",
+		"maxDuration": "Durata max: {duration}",
+		"timeRemaining": "{time} rimanenti"
+	}
 }
