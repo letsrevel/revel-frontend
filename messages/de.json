@@ -3199,7 +3199,12 @@
 		"oneUppercase": "Ein Großbuchstabe",
 		"oneLowercase": "Ein Kleinbuchstabe",
 		"oneNumber": "Eine Zahl",
-		"oneSpecial": "Ein Sonderzeichen (!@#$%...)"
+		"oneSpecial": "Ein Sonderzeichen (!@#$%...)",
+		"noPassword": "Kein Passwort",
+		"weak": "Schwach",
+		"fair": "Mittel",
+		"almostThere": "Fast geschafft",
+		"strong": "Stark"
 	},
 	"permissionsEditor": {
 		"editPermissionsFor": "Berechtigungen bearbeiten für",
@@ -4614,5 +4619,31 @@
 		"requestedAt": "Angefordert"
 	},
 	"announcements.form.loadingEvents": "Ereignisse laden...",
-	"announcements.view": "Ansehen"
+	"announcements.view": "Ansehen",
+	"audioPlayer": {
+		"playerLabel": "Audioplayer",
+		"play": "Abspielen",
+		"pause": "Pause",
+		"speed": "Wiedergabegeschwindigkeit",
+		"seekLabel": "Spulen",
+		"download": "Audio herunterladen"
+	},
+	"audioRecorder": {
+		"record": "Aufnehmen",
+		"recordAudio": "Audio aufnehmen",
+		"recording": "Aufnahme läuft...",
+		"stop": "Aufnahme stoppen",
+		"cancel": "Abbrechen",
+		"tryAgain": "Erneut versuchen",
+		"processing": "Aufnahme wird verarbeitet...",
+		"requestingPermission": "Mikrofonzugriff wird angefordert...",
+		"permissionDenied": "Mikrofonzugriff verweigert. Bitte in den Browsereinstellungen aktivieren.",
+		"noMicrophone": "Kein Mikrofon gefunden. Bitte ein Mikrofon anschließen.",
+		"notSupported": "Audioaufnahme wird in diesem Browser nicht unterstützt",
+		"recordingError": "Aufnahme fehlgeschlagen",
+		"noAudioRecorded": "Es wurde kein Audio aufgenommen",
+		"fileTooLarge": "Aufnahme ist zu groß",
+		"maxDuration": "Max. Dauer: {duration}",
+		"timeRemaining": "{time} verbleibend"
+	}
 }

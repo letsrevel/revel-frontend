@@ -17,6 +17,8 @@
 	import type { QuestionnaireFileSchema } from '$lib/api/generated';
 	import { getImageUrl } from '$lib/utils';
 	import { Button } from '$lib/components/ui/button';
+	import AudioPlayer from '$lib/components/questionnaires/AudioPlayer.svelte';
+	import { isAudio } from '$lib/utils/audio';
 
 	interface Props {
 		form: ActionData;
@@ -291,23 +293,38 @@
 						<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
 							{#each filesQuery.data as file (file.id)}
 								<div class="relative flex items-center gap-3 rounded-lg border bg-background p-3">
-									{#if isImage(file.mime_type) && file.file_url}
+									{#if file.file_url && isAudio(file.mime_type)}
+										<!-- Audio file: show inline player -->
+										<div class="min-w-0 flex-1">
+											<p class="mb-1 truncate text-sm font-medium">{file.original_filename}</p>
+											<AudioPlayer
+												src={getImageUrl(file.file_url) as string}
+												filename={file.original_filename}
+											/>
+										</div>
+									{:else if isImage(file.mime_type) && file.file_url}
 										<img
 											src={getImageUrl(file.file_url)}
 											alt={file.original_filename}
 											class="h-12 w-12 rounded object-cover"
 										/>
+										<div class="min-w-0 flex-1">
+											<p class="truncate text-sm font-medium">{file.original_filename}</p>
+											<p class="text-xs text-muted-foreground">
+												{formatFileSize(file.file_size)}
+											</p>
+										</div>
 									{:else}
 										<div class="flex h-12 w-12 items-center justify-center rounded bg-muted">
 											<FileIcon class="h-6 w-6 text-muted-foreground" aria-hidden="true" />
 										</div>
+										<div class="min-w-0 flex-1">
+											<p class="truncate text-sm font-medium">{file.original_filename}</p>
+											<p class="text-xs text-muted-foreground">
+												{formatFileSize(file.file_size)}
+											</p>
+										</div>
 									{/if}
-									<div class="min-w-0 flex-1">
-										<p class="truncate text-sm font-medium">{file.original_filename}</p>
-										<p class="text-xs text-muted-foreground">
-											{formatFileSize(file.file_size)}
-										</p>
-									</div>
 									<Button
 										variant="ghost"
 										size="icon"

@@ -2,11 +2,13 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { cn } from '$lib/utils/cn';
 	import { getImageUrl } from '$lib/utils';
-	import { Upload, X, FileIcon, Loader2, Clock, ChevronDown, ChevronUp } from 'lucide-svelte';
+	import { Upload, X, FileIcon, Loader2, Clock, ChevronDown, ChevronUp, Mic } from 'lucide-svelte';
 	import type { QuestionnaireFileSchema } from '$lib/api/generated';
 	import { questionnairefileUploadFile, questionnairefileListFiles } from '$lib/api/generated';
 	import { Button } from '$lib/components/ui/button';
 	import { createQuery } from '@tanstack/svelte-query';
+	import AudioRecorder from './AudioRecorder.svelte';
+	import { acceptsAudioTypes, isMediaRecorderSupported } from '$lib/utils/audio';
 
 	/**
 	 * FileUploadQuestion Component
@@ -71,6 +73,9 @@
 	// Recent files panel state
 	let showRecentFiles = $state(false);
 
+	// Audio recording state
+	let showRecorder = $state(false);
+
 	// Query for recent files
 	const recentFilesQuery = createQuery(() => ({
 		queryKey: ['questionnaire-files', 'recent'],
@@ -86,6 +91,11 @@
 
 	// Check if we can add more files
 	const canAddMore = $derived(selectedFiles.length + pendingUploads.length < maxFiles && !disabled);
+
+	// Check if audio recording is possible
+	const canRecordAudio = $derived(
+		acceptsAudioTypes(accept) && isMediaRecorderSupported() && canAddMore
+	);
 
 	// Format file size
 	function formatFileSize(bytes: number): string {
@@ -116,11 +126,14 @@
 	function validateFile(file: File): string | null {
 		if (accept !== '*/*') {
 			const acceptedTypes = accept.split(',').map((type) => type.trim());
+			// Get base MIME type without codec parameters (e.g., "audio/webm;codecs=opus" -> "audio/webm")
+			const fileBaseType = file.type.split(';')[0];
 			const isValid = acceptedTypes.some((type) => {
 				if (type.endsWith('/*')) {
-					return file.type.startsWith(type.slice(0, -2));
+					return fileBaseType.startsWith(type.slice(0, -2));
 				}
-				return file.type === type;
+				// Compare base types (ignore codec parameters)
+				return fileBaseType === type;
 			});
 			if (!isValid) {
 				return `Invalid file type. Allowed: ${formatAcceptedTypes(accept)}`;
@@ -273,6 +286,17 @@
 		return mimeType.startsWith('image/');
 	}
 
+	// Handle recording complete
+	function handleRecordingComplete(file: File): void {
+		showRecorder = false;
+		handleFiles([file]);
+	}
+
+	// Handle recording cancel
+	function handleRecordingCancel(): void {
+		showRecorder = false;
+	}
+
 	// Check if a recent file can be selected (matches accept criteria)
 	function canSelectRecentFile(file: QuestionnaireFileSchema): boolean {
 		if (selectedFiles.some((f) => f.id === file.id)) return false;
@@ -386,6 +410,21 @@
 				</p>
 			</div>
 
+			<!-- Record audio button (only if audio types accepted) -->
+			{#if canRecordAudio && !showRecorder}
+				<Button
+					type="button"
+					variant="outline"
+					size="sm"
+					class="h-auto flex-col gap-1 px-4 py-3"
+					onclick={() => (showRecorder = true)}
+					{disabled}
+				>
+					<Mic class="h-5 w-5" />
+					<span class="text-xs">{m['audioRecorder.record']?.() || 'Record'}</span>
+				</Button>
+			{/if}
+
 			<!-- Select recent button -->
 			<Button
 				type="button"
@@ -404,6 +443,16 @@
 				{/if}
 			</Button>
 		</div>
+	{/if}
+
+	<!-- Audio recorder panel -->
+	{#if showRecorder}
+		<AudioRecorder
+			{maxSize}
+			{disabled}
+			onRecordingComplete={handleRecordingComplete}
+			onCancel={handleRecordingCancel}
+		/>
 	{/if}
 
 	<!-- Recent files panel -->

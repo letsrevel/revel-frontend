@@ -31,6 +31,13 @@
 			label: 'Images (JPEG, PNG, GIF, WebP)',
 			mimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 		},
+		{
+			id: 'audio',
+			label: 'Audio (MP3, WAV, OGG)',
+			// video/webm included because browser MediaRecorder produces video/webm container
+			// even for audio-only recordings (libmagic detects WebM container as video/webm)
+			mimeTypes: ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/webm', 'audio/aac', 'video/webm']
+		},
 		{ id: 'documents', label: 'Documents (PDF)', mimeTypes: ['application/pdf'] },
 		{
 			id: 'spreadsheets',
