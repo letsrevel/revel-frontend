@@ -19,7 +19,16 @@
 	let showPassword = $state(false);
 	let showConfirmPassword = $state(false);
 	let isSubmitting = $state(false);
-	let isPasswordValid = $state(false);
+
+	// Password validation - calculated directly to avoid cross-component binding timing issues
+	// that can occur in some browsers (e.g., Brave on mobile) with $bindable + $effect patterns
+	let isPasswordValid = $derived(
+		password.length >= 8 &&
+			/[A-Z]/.test(password) &&
+			/[a-z]/.test(password) &&
+			/\d/.test(password) &&
+			/[!@#$%^&*(),.?":{}|<>\-\[\]=]/.test(password)
+	);
 
 	// Error handling - type assertion needed due to ActionData union
 	let errors = $derived((form?.errors || {}) as Record<string, string>);
@@ -146,11 +155,7 @@
 
 				<!-- Password Strength Indicator with Requirements -->
 				{#if password}
-					<PasswordStrengthIndicator
-						{password}
-						showRequirements={true}
-						bind:isValid={isPasswordValid}
-					/>
+					<PasswordStrengthIndicator {password} showRequirements={true} />
 				{/if}
 			</div>
 
