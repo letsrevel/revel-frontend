@@ -3,6 +3,7 @@
 	import { FileText, Search, Filter } from 'lucide-svelte';
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
 	import * as m from '$lib/paraglide/messages.js';
+	import { getBackendUrl } from '$lib/config/api';
 
 	const data = $derived($page.data);
 	const organization = $derived(data.organization);
@@ -34,7 +35,8 @@
 
 	function openResource(resource: AdditionalResourceSchema) {
 		if (resource.resource_type === 'file' && resource.file_url) {
-			window.open(resource.file_url, '_blank');
+			// file_url may be a relative path from the backend, so we need to prepend the API base URL
+			window.open(getBackendUrl(resource.file_url), '_blank');
 		} else if (resource.resource_type === 'link' && resource.link) {
 			window.open(resource.link, '_blank');
 		}

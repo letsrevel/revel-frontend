@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
 	import { FileText, Link as LinkIcon, AlignLeft, ExternalLink, Download } from 'lucide-svelte';
+	import { getBackendUrl } from '$lib/config/api';
 
 	interface Props {
 		resources: AdditionalResourceSchema[];
@@ -24,7 +25,8 @@
 
 	function openResource(resource: AdditionalResourceSchema) {
 		if (resource.resource_type === 'file' && resource.file_url) {
-			window.open(resource.file_url, '_blank');
+			// file_url may be a relative path from the backend, so we need to prepend the API base URL
+			window.open(getBackendUrl(resource.file_url), '_blank');
 		} else if (resource.resource_type === 'link' && resource.link) {
 			window.open(resource.link, '_blank');
 		}
