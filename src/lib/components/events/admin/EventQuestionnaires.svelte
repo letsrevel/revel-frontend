@@ -146,17 +146,19 @@
 					<div class="min-w-0 flex-1">
 						<div class="flex flex-wrap items-center gap-2">
 							{#if isNotPublished}
-								<Tooltip.Root>
-									<Tooltip.Trigger>
-										<AlertTriangle
-											class="h-4 w-4 text-orange-500"
-											aria-label={m['eventQuestionnaires.notEnforcedTooltip']()}
-										/>
-									</Tooltip.Trigger>
-									<Tooltip.Content>
-										<p>{m['eventQuestionnaires.notEnforcedTooltip']()}</p>
-									</Tooltip.Content>
-								</Tooltip.Root>
+								<Tooltip.Provider>
+									<Tooltip.Root>
+										<Tooltip.Trigger>
+											<AlertTriangle
+												class="h-4 w-4 text-orange-500"
+												aria-label={m['eventQuestionnaires.notEnforcedTooltip']()}
+											/>
+										</Tooltip.Trigger>
+										<Tooltip.Content>
+											<p>{m['eventQuestionnaires.notEnforcedTooltip']()}</p>
+										</Tooltip.Content>
+									</Tooltip.Root>
+								</Tooltip.Provider>
 							{/if}
 							<p class="font-medium">{questionnaire.questionnaire.name}</p>
 							<Badge variant="outline" class="text-xs">
