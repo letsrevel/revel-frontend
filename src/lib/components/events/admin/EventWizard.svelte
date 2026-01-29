@@ -809,6 +809,12 @@
 					type="button"
 					onclick={() => {
 						if (formData.requires_ticket && eventId) {
+							// Validate step 2 before navigating to ticketing
+							if (!validateStep2()) {
+								errorMessage = m['eventWizard.error_fixValidation']();
+								return;
+							}
+							errorMessage = null;
 							currentStep = 3;
 						} else {
 							handleStep2Submit();
