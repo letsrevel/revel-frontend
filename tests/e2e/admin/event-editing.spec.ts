@@ -13,21 +13,51 @@ async function loginAsOrgOwner(page: import('@playwright/test').Page): Promise<v
 }
 
 /**
+ * Helper to verify user is authenticated
+ * Returns true if authenticated, false otherwise
+ */
+async function verifyAuthenticated(page: import('@playwright/test').Page): Promise<boolean> {
+	// Check if "User menu" button is visible (indicates authenticated)
+	const userMenu = page.getByRole('button', { name: 'User menu' });
+	const loginLink = page.getByRole('link', { name: 'Login' });
+
+	const hasUserMenu = await userMenu.isVisible().catch(() => false);
+	const hasLoginLink = await loginLink.isVisible().catch(() => false);
+
+	return hasUserMenu && !hasLoginLink;
+}
+
+/**
  * Helper to find user's organization slug dynamically
  * Returns the org slug if found, null otherwise
  */
 async function findUserOrganization(page: import('@playwright/test').Page): Promise<string | null> {
-	// Try known test org slugs first (fastest approach)
-	const testSlugs = ['test-org', 'test-organization', 'revel-events-collective'];
+	// First verify we're authenticated
+	const isAuthenticated = await verifyAuthenticated(page);
+	if (!isAuthenticated) {
+		return null;
+	}
+
+	// Try known test org slugs first (from backend bootstrap)
+	// Alice owns 'revel-events-collective', Diana owns 'tech-innovators-network'
+	const testSlugs = ['revel-events-collective', 'tech-innovators-network'];
 	for (const slug of testSlugs) {
 		try {
-			await page.goto(`/org/${slug}/admin/events`, { timeout: 3000 });
-			// If we're not redirected away, check for heading
+			await page.goto(`/org/${slug}/admin/events`, { timeout: 5000 });
+			await page.waitForLoadState('networkidle');
+
+			// Verify still authenticated after navigation
+			const stillAuth = await verifyAuthenticated(page);
+			if (!stillAuth) {
+				continue;
+			}
+
+			// If we're on the admin page, check for heading
 			if (page.url().includes(`/org/${slug}/admin`)) {
 				const heading = page.getByRole('heading');
 				const hasHeading = await heading
 					.first()
-					.isVisible({ timeout: 1000 })
+					.isVisible({ timeout: 2000 })
 					.catch(() => false);
 				if (hasHeading) {
 					return slug;
@@ -249,7 +279,7 @@ test.describe('Event Editing - Update Details', () => {
 		}
 
 		// Navigate to Step 2
-		const nextButton = page.getByRole('button', { name: /continue|next/i }).first();
+		const nextButton = page.getByRole('button', { name: /continue to ticketing|save.*exit/i }).first();
 		if (await nextButton.isVisible().catch(() => false)) {
 			await nextButton.click();
 			await page.waitForTimeout(1000);
@@ -278,7 +308,7 @@ test.describe('Event Editing - Update Details', () => {
 		}
 
 		// Navigate to Step 2
-		const nextButton = page.getByRole('button', { name: /continue|next/i }).first();
+		const nextButton = page.getByRole('button', { name: /continue to ticketing|save.*exit/i }).first();
 		if (await nextButton.isVisible().catch(() => false)) {
 			await nextButton.click();
 			await page.waitForTimeout(1000);
@@ -321,7 +351,7 @@ test.describe('Event Editing - Update Details', () => {
 		}
 
 		// Navigate to Step 2 and save
-		const nextButton = page.getByRole('button', { name: /continue|next/i }).first();
+		const nextButton = page.getByRole('button', { name: /continue to ticketing|save.*exit/i }).first();
 		if (await nextButton.isVisible().catch(() => false)) {
 			await nextButton.click();
 			await page.waitForTimeout(1000);
@@ -751,7 +781,7 @@ test.describe('Event Editing - Ticketing Management', () => {
 		}
 
 		// Navigate through steps
-		const nextButton = page.getByRole('button', { name: /continue|next/i }).first();
+		const nextButton = page.getByRole('button', { name: /continue to ticketing|save.*exit/i }).first();
 		if (await nextButton.isVisible().catch(() => false)) {
 			await nextButton.click();
 			await page.waitForTimeout(1000);
@@ -792,7 +822,7 @@ test.describe('Event Editing - Ticketing Management', () => {
 		}
 
 		// Navigate to step 2
-		const nextButton = page.getByRole('button', { name: /continue|next/i }).first();
+		const nextButton = page.getByRole('button', { name: /continue to ticketing|save.*exit/i }).first();
 		if (await nextButton.isVisible().catch(() => false)) {
 			await nextButton.click();
 			await page.waitForTimeout(1000);

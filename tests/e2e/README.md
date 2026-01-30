@@ -34,13 +34,19 @@ pnpm exec playwright show-report
 
 ## Test Users
 
-Tests use seeded users from the backend:
+Tests use seeded users from the backend (`make bootstrap`):
 
-| User    | Email                      | Password      | Role               |
-|---------|----------------------------|---------------|--------------------|
-| Alice   | alice.owner@example.com    | password123   | Organization owner |
-| Bob     | bob.member@example.com     | password123   | Organization member|
-| Charlie | charlie.guest@example.com  | password123   | Regular user       |
+| User    | Email                      | Password      | Role                    | Organization              |
+|---------|----------------------------|---------------|-------------------------|---------------------------|
+| Alice   | alice.owner@example.com    | password123   | Organization owner      | Revel Events Collective   |
+| Bob     | bob.staff@example.com      | password123   | Organization staff      | Revel Events Collective   |
+| Charlie | charlie.member@example.com | password123   | Organization member     | Revel Events Collective   |
+| Diana   | diana.owner@example.com    | password123   | Organization owner      | Tech Innovators Network   |
+| George  | george.attendee@example.com| password123   | Regular attendee        | -                         |
+
+**Organization Slugs:**
+- `revel-events-collective` - Owned by Alice, staff: Bob, member: Charlie
+- `tech-innovators-network` - Owned by Diana
 
 ## Directory Structure
 

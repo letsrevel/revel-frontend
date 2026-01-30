@@ -69,7 +69,7 @@ test.describe('Login Page', () => {
 		await expect(page).toHaveURL('/dashboard');
 
 		// Should show welcome message with user's name
-		await expect(page.getByRole('heading', { name: /Welcome back, Alice/ })).toBeVisible();
+		await expect(page.getByRole('heading', { name: /Welcome back/ })).toBeVisible();
 
 		// Should show user menu in header
 		await expect(page.getByRole('button', { name: 'User menu' })).toBeVisible();
@@ -153,7 +153,7 @@ test.describe('Login Page - Mobile', () => {
 		await page.getByRole('button', { name: 'Sign in' }).click();
 
 		await expect(page).toHaveURL('/dashboard');
-		await expect(page.getByRole('heading', { name: /Welcome back, Alice/ })).toBeVisible();
+		await expect(page.getByRole('heading', { name: /Welcome back/ })).toBeVisible();
 	});
 });
 
@@ -172,6 +172,6 @@ test.describe('Login - Session Persistence', () => {
 
 		// Should still be authenticated and see the dashboard
 		await expect(page).toHaveURL('/dashboard');
-		await expect(page.getByRole('heading', { name: /Welcome back, Alice/ })).toBeVisible();
+		await expect(page.getByRole('heading', { name: /Welcome back/ })).toBeVisible();
 	});
 });

@@ -15,20 +15,36 @@ export interface TestOrganization {
 	name: string;
 }
 
-// Known test data from backend seed
-// Note: These values need to match actual seed data from the backend
+// Known test data from backend seed (`make bootstrap`)
+// See: revel-backend/src/events/management/commands/bootstrap_helpers/
 export const TEST_DATA = {
 	organizations: {
-		testOrg: {
-			id: 'test-org-id',
-			slug: 'test-org',
-			name: 'Test Organization'
+		// Organization Alpha - owned by Alice
+		revelEventsCollective: {
+			id: 'revel-events-collective-id', // Actual ID assigned at bootstrap
+			slug: 'revel-events-collective',
+			name: 'Revel Events Collective',
+			owner: 'alice.owner@example.com'
+		},
+		// Organization Beta - owned by Diana
+		techInnovatorsNetwork: {
+			id: 'tech-innovators-network-id',
+			slug: 'tech-innovators-network',
+			name: 'Tech Innovators Network',
+			owner: 'diana.owner@example.com'
 		}
 	},
+	// Organization slugs for quick access
+	orgSlugs: {
+		alpha: 'revel-events-collective',
+		beta: 'tech-innovators-network'
+	},
 	events: {
+		// Note: Actual event slugs will be created by backend bootstrap
+		// These are placeholder structures - tests should discover events dynamically
 		publicFreeEvent: {
 			id: 'public-free-event-id',
-			orgSlug: 'test-org',
+			orgSlug: 'revel-events-collective',
 			slug: 'public-free-event',
 			name: 'Public Free Event',
 			requiresTicket: false,
@@ -36,7 +52,7 @@ export const TEST_DATA = {
 		},
 		ticketedEvent: {
 			id: 'ticketed-event-id',
-			orgSlug: 'test-org',
+			orgSlug: 'revel-events-collective',
 			slug: 'ticketed-event',
 			name: 'Ticketed Event',
 			requiresTicket: true,
@@ -44,7 +60,7 @@ export const TEST_DATA = {
 		},
 		membersOnlyEvent: {
 			id: 'members-only-event-id',
-			orgSlug: 'test-org',
+			orgSlug: 'tech-innovators-network',
 			slug: 'members-only-event',
 			name: 'Members Only Event',
 			requiresTicket: false,

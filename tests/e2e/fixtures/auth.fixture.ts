@@ -1,24 +1,45 @@
 import { test as base, type Page } from '@playwright/test';
 
-// Test users (from backend seed data)
+// Test users (from backend seed data - `make bootstrap`)
+// See: revel-backend/src/events/management/commands/bootstrap_helpers/users.py
 export const TEST_USERS = {
+	// Organization Alpha
 	alice: {
 		email: 'alice.owner@example.com',
 		password: 'password123',
 		firstName: 'Alice',
-		lastName: 'Owner'
+		lastName: 'Owner',
+		role: 'org_owner'
 	},
 	bob: {
-		email: 'bob.member@example.com',
+		email: 'bob.staff@example.com',
 		password: 'password123',
 		firstName: 'Bob',
-		lastName: 'Member'
+		lastName: 'Staff',
+		role: 'org_staff'
 	},
 	charlie: {
-		email: 'charlie.guest@example.com',
+		email: 'charlie.member@example.com',
 		password: 'password123',
 		firstName: 'Charlie',
-		lastName: 'Guest'
+		lastName: 'Member',
+		role: 'org_member'
+	},
+	// Organization Beta
+	diana: {
+		email: 'diana.owner@example.com',
+		password: 'password123',
+		firstName: 'Diana',
+		lastName: 'Owner',
+		role: 'org_owner'
+	},
+	// Regular attendee
+	george: {
+		email: 'george.attendee@example.com',
+		password: 'password123',
+		firstName: 'George',
+		lastName: 'Attendee',
+		role: 'attendee'
 	}
 } as const;
 
