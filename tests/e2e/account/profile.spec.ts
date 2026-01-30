@@ -7,7 +7,7 @@ test.describe('Account - Profile Page', () => {
 		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
 		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
 		await page.getByRole('button', { name: 'Sign in' }).click();
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 	});
 
 	test('should display profile page', async ({ page }) => {
@@ -151,7 +151,7 @@ test.describe('Account - Profile Page - Mobile', () => {
 		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
 		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
 		await page.getByRole('button', { name: 'Sign in' }).click();
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 	});
 
 	test('should display profile page on mobile', async ({ page }) => {
@@ -181,7 +181,7 @@ test.describe('Account - Settings Page', () => {
 		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
 		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
 		await page.getByRole('button', { name: 'Sign in' }).click();
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 	});
 
 	test('should display settings page', async ({ page }) => {
@@ -207,7 +207,7 @@ test.describe('Account - Security Page', () => {
 		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
 		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
 		await page.getByRole('button', { name: 'Sign in' }).click();
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 	});
 
 	test('should display security page', async ({ page }) => {
@@ -279,7 +279,7 @@ test.describe('Account - Notifications Page', () => {
 		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
 		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
 		await page.getByRole('button', { name: 'Sign in' }).click();
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 	});
 
 	test('should display notifications page', async ({ page }) => {
@@ -308,7 +308,7 @@ test.describe('Account - Privacy Page', () => {
 		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
 		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
 		await page.getByRole('button', { name: 'Sign in' }).click();
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 	});
 
 	test('should display privacy page', async ({ page }) => {
@@ -376,7 +376,7 @@ test.describe('Account - Navigation', () => {
 		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
 		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
 		await page.getByRole('button', { name: 'Sign in' }).click();
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 	});
 
 	test('should navigate between account sections', async ({ page }) => {

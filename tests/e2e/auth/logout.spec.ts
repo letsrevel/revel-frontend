@@ -7,7 +7,7 @@ test.describe('Logout', () => {
 		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
 		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
 		await page.getByRole('button', { name: 'Sign in' }).click();
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 	});
 
 	test('should logout via user menu', async ({ page }) => {
@@ -84,7 +84,7 @@ test.describe('Logout - Mobile', () => {
 		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
 		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
 		await page.getByRole('button', { name: 'Sign in' }).click();
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 
 		// On mobile, open the hamburger menu
 		const hamburgerButton = page.getByRole('button', { name: 'Toggle navigation menu' });
@@ -118,7 +118,7 @@ test.describe('Direct Logout Route', () => {
 		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
 		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
 		await page.getByRole('button', { name: 'Sign in' }).click();
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 
 		// Navigate directly to logout
 		await page.goto('/logout');

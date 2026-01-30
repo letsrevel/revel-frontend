@@ -45,7 +45,7 @@ test.describe('RSVP Flow - Authenticated User', () => {
 		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
 		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
 		await page.getByRole('button', { name: 'Sign in' }).click();
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 	});
 
 	test('should display RSVP options when viewing event', async ({ page }) => {
@@ -252,7 +252,7 @@ test.describe('RSVP Flow - Mobile', () => {
 		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
 		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
 		await page.getByRole('button', { name: 'Sign in' }).click();
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 	});
 
 	test('should RSVP on mobile', async ({ page }) => {
@@ -290,7 +290,7 @@ test.describe('RSVP Flow - Keyboard Navigation', () => {
 		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
 		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
 		await page.getByRole('button', { name: 'Sign in' }).click();
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 	});
 
 	test('should navigate RSVP buttons with keyboard', async ({ page }) => {

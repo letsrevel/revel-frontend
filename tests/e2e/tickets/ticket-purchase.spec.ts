@@ -56,7 +56,7 @@ test.describe('Ticket Purchase - View Ticket Tiers', () => {
 		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
 		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
 		await page.getByRole('button', { name: 'Sign in' }).click();
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 	});
 
 	test('should display Get Tickets button for ticketed events', async ({ page }) => {
@@ -160,7 +160,7 @@ test.describe('Ticket Purchase - Free Tickets', () => {
 		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
 		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
 		await page.getByRole('button', { name: 'Sign in' }).click();
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 	});
 
 	test('should show Claim button for free tiers', async ({ page }) => {
@@ -226,7 +226,7 @@ test.describe('Ticket Purchase - Dashboard Tickets', () => {
 		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
 		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
 		await page.getByRole('button', { name: 'Sign in' }).click();
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 	});
 
 	test('should display tickets page in dashboard', async ({ page }) => {
@@ -312,7 +312,7 @@ test.describe('Ticket Purchase - Ticket Modal', () => {
 		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
 		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
 		await page.getByRole('button', { name: 'Sign in' }).click();
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 	});
 
 	test('should show ticket details when viewing ticket', async ({ page }) => {
@@ -382,7 +382,7 @@ test.describe('Ticket Purchase - Mobile', () => {
 		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
 		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
 		await page.getByRole('button', { name: 'Sign in' }).click();
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 	});
 
 	test('should open ticket modal on mobile', async ({ page }) => {

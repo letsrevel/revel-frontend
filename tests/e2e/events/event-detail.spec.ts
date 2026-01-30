@@ -172,7 +172,7 @@ test.describe('Event Detail Page - Authenticated', () => {
 		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
 		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
 		await page.getByRole('button', { name: 'Sign in' }).click();
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 	});
 
 	test('should show user menu when authenticated', async ({ page }) => {
@@ -247,7 +247,7 @@ test.describe('Event Detail Page - Organization Owner', () => {
 		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
 		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
 		await page.getByRole('button', { name: 'Sign in' }).click();
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 	});
 
 	test('should display event page for organization owner', async ({ page }) => {

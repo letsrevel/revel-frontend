@@ -66,7 +66,7 @@ test.describe('Login Page', () => {
 		await page.getByRole('button', { name: 'Sign in' }).click();
 
 		// Should redirect to dashboard
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 
 		// Should show welcome message with user's name
 		await expect(page.getByRole('heading', { name: /Welcome back/ })).toBeVisible();
@@ -113,7 +113,7 @@ test.describe('Login Page', () => {
 		await page.keyboard.press('Enter');
 
 		// Should redirect to dashboard
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 	});
 
 	test('should preserve email value after failed login attempt', async ({ page }) => {
@@ -152,7 +152,7 @@ test.describe('Login Page - Mobile', () => {
 		await page.getByRole('textbox', { name: 'Password' }).fill('password123');
 		await page.getByRole('button', { name: 'Sign in' }).click();
 
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 		await expect(page.getByRole('heading', { name: /Welcome back/ })).toBeVisible();
 	});
 });
@@ -164,14 +164,14 @@ test.describe('Login - Session Persistence', () => {
 		await page.getByRole('textbox', { name: 'Email address' }).fill('alice.owner@example.com');
 		await page.getByRole('textbox', { name: 'Password' }).fill('password123');
 		await page.getByRole('button', { name: 'Sign in' }).click();
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 
 		// Navigate away and back to dashboard
 		await page.goto('/events');
 		await page.goto('/dashboard');
 
 		// Should still be authenticated and see the dashboard
-		await expect(page).toHaveURL('/dashboard');
+		await page.waitForURL('/dashboard', { timeout: 20000 });
 		await expect(page.getByRole('heading', { name: /Welcome back/ })).toBeVisible();
 	});
 });

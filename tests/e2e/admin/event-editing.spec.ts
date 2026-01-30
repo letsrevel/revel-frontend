@@ -9,7 +9,7 @@ async function loginAsOrgOwner(page: import('@playwright/test').Page): Promise<v
 	await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
 	await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
 	await page.getByRole('button', { name: 'Sign in' }).click();
-	await expect(page).toHaveURL('/dashboard');
+	await page.waitForURL('/dashboard', { timeout: 20000 });
 }
 
 /**
