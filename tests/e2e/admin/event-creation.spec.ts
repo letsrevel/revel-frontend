@@ -214,7 +214,9 @@ test.describe('Event Creation - Wizard Structure', () => {
 		if (!success) return;
 
 		// Try to submit without filling required fields
-		const nextButton = page.getByRole('button', { name: /continue to ticketing|save.*exit/i }).first();
+		const nextButton = page
+			.getByRole('button', { name: /continue to ticketing|save.*exit/i })
+			.first();
 		await nextButton.click();
 		await page.waitForTimeout(500);
 
@@ -249,7 +251,9 @@ test.describe('Event Creation - Wizard Structure', () => {
 		await startInput.fill(pastDate.toISOString().slice(0, 16));
 
 		// Try to submit
-		const nextButton = page.getByRole('button', { name: /continue to ticketing|save.*exit/i }).first();
+		const nextButton = page
+			.getByRole('button', { name: /continue to ticketing|save.*exit/i })
+			.first();
 		await nextButton.click();
 		await page.waitForTimeout(500);
 
@@ -276,10 +280,7 @@ test.describe('Event Creation - RSVP Events', () => {
 
 		// Fill Step 1
 		const eventName = generateEventName();
-		await page
-			.locator('#event-name')
-			.first()
-			.fill(eventName);
+		await page.locator('#event-name').first().fill(eventName);
 
 		// Set start date to tomorrow
 		const startInput = page.locator('input[type="datetime-local"]').first();
@@ -296,7 +297,9 @@ test.describe('Event Creation - RSVP Events', () => {
 		}
 
 		// Click continue
-		const nextButton = page.getByRole('button', { name: /continue to ticketing|save.*exit/i }).first();
+		const nextButton = page
+			.getByRole('button', { name: /continue to ticketing|save.*exit/i })
+			.first();
 		await nextButton.click();
 
 		// Should move to Step 2 (Details)
@@ -406,10 +409,7 @@ test.describe('Event Creation - Ticketed Events', () => {
 
 		// Fill Step 1
 		const eventName = generateEventName();
-		await page
-			.locator('#event-name')
-			.first()
-			.fill(eventName);
+		await page.locator('#event-name').first().fill(eventName);
 		await page.locator('input[type="datetime-local"]').first().fill(getTomorrowDate());
 
 		// Enable "Requires ticket"
@@ -443,19 +443,36 @@ test.describe('Event Creation - Ticketed Events', () => {
 		await page.locator('input[type="datetime-local"]').first().fill(getTomorrowDate());
 
 		// Enable tickets using switch/checkbox
-		const ticketSwitch = page.locator('button[role="switch"]').filter({ hasText: /requires.*ticket/i });
+		const ticketSwitch = page
+			.locator('button[role="switch"]')
+			.filter({ hasText: /requires.*ticket/i });
 		const ticketCheckbox = page.getByRole('checkbox', { name: /requires.*ticket/i });
 		const ticketLabel = page.locator('label').filter({ hasText: /requires.*ticket/i });
 
 		// Try to find and click the ticket toggle
 		let ticketEnabled = false;
-		if (await ticketSwitch.first().isVisible().catch(() => false)) {
+		if (
+			await ticketSwitch
+				.first()
+				.isVisible()
+				.catch(() => false)
+		) {
 			await ticketSwitch.first().click();
 			ticketEnabled = true;
-		} else if (await ticketCheckbox.first().isVisible().catch(() => false)) {
+		} else if (
+			await ticketCheckbox
+				.first()
+				.isVisible()
+				.catch(() => false)
+		) {
 			await ticketCheckbox.first().click();
 			ticketEnabled = true;
-		} else if (await ticketLabel.first().isVisible().catch(() => false)) {
+		} else if (
+			await ticketLabel
+				.first()
+				.isVisible()
+				.catch(() => false)
+		) {
 			await ticketLabel.first().click();
 			ticketEnabled = true;
 		}
@@ -787,10 +804,7 @@ test.describe('Event Creation - Save & Draft', () => {
 
 		// Fill Step 1
 		const eventName = generateEventName();
-		await page
-			.locator('#event-name')
-			.first()
-			.fill(eventName);
+		await page.locator('#event-name').first().fill(eventName);
 		await page.locator('input[type="datetime-local"]').first().fill(getTomorrowDate());
 
 		// Continue to Step 2
@@ -828,10 +842,7 @@ test.describe('Event Creation - Save & Draft', () => {
 		if (!success) return;
 
 		// Fill Step 1 and continue
-		await page
-			.locator('#event-name')
-			.first()
-			.fill(generateEventName());
+		await page.locator('#event-name').first().fill(generateEventName());
 		await page.locator('input[type="datetime-local"]').first().fill(getTomorrowDate());
 		await page
 			.getByRole('button', { name: /continue to ticketing|save.*exit/i })
@@ -867,10 +878,7 @@ test.describe('Event Creation - Visibility Options', () => {
 		if (!success) return;
 
 		// Fill essentials
-		await page
-			.locator('#event-name')
-			.first()
-			.fill(generateEventName());
+		await page.locator('#event-name').first().fill(generateEventName());
 		await page.locator('input[type="datetime-local"]').first().fill(getTomorrowDate());
 
 		// Select public visibility
@@ -895,10 +903,7 @@ test.describe('Event Creation - Visibility Options', () => {
 		const success = await navigateToEventCreation(page);
 		if (!success) return;
 
-		await page
-			.locator('#event-name')
-			.first()
-			.fill(generateEventName());
+		await page.locator('#event-name').first().fill(generateEventName());
 		await page.locator('input[type="datetime-local"]').first().fill(getTomorrowDate());
 
 		// Select unlisted visibility
@@ -923,10 +928,7 @@ test.describe('Event Creation - Visibility Options', () => {
 		const success = await navigateToEventCreation(page);
 		if (!success) return;
 
-		await page
-			.locator('#event-name')
-			.first()
-			.fill(generateEventName());
+		await page.locator('#event-name').first().fill(generateEventName());
 		await page.locator('input[type="datetime-local"]').first().fill(getTomorrowDate());
 
 		// Select private visibility
@@ -957,10 +959,7 @@ test.describe('Event Creation - Event Types', () => {
 		const success = await navigateToEventCreation(page);
 		if (!success) return;
 
-		await page
-			.locator('#event-name')
-			.first()
-			.fill(generateEventName());
+		await page.locator('#event-name').first().fill(generateEventName());
 		await page.locator('input[type="datetime-local"]').first().fill(getTomorrowDate());
 
 		// Select public event type
@@ -990,10 +989,7 @@ test.describe('Event Creation - Event Types', () => {
 		const success = await navigateToEventCreation(page);
 		if (!success) return;
 
-		await page
-			.locator('#event-name')
-			.first()
-			.fill(generateEventName());
+		await page.locator('#event-name').first().fill(generateEventName());
 		await page.locator('input[type="datetime-local"]').first().fill(getTomorrowDate());
 
 		// Select members only
@@ -1023,10 +1019,7 @@ test.describe('Event Creation - Event Types', () => {
 		const success = await navigateToEventCreation(page);
 		if (!success) return;
 
-		await page
-			.locator('#event-name')
-			.first()
-			.fill(generateEventName());
+		await page.locator('#event-name').first().fill(generateEventName());
 		await page.locator('input[type="datetime-local"]').first().fill(getTomorrowDate());
 
 		// Select invitation only
@@ -1078,14 +1071,13 @@ test.describe('Event Creation - Mobile', () => {
 		if (!success) return;
 
 		// Fill step 1
-		await page
-			.locator('#event-name')
-			.first()
-			.fill(generateEventName());
+		await page.locator('#event-name').first().fill(generateEventName());
 		await page.locator('input[type="datetime-local"]').first().fill(getTomorrowDate());
 
 		// Continue button should be visible and clickable
-		const nextButton = page.getByRole('button', { name: /continue to ticketing|save.*exit/i }).first();
+		const nextButton = page
+			.getByRole('button', { name: /continue to ticketing|save.*exit/i })
+			.first();
 		await nextButton.scrollIntoViewIfNeeded();
 		await expect(nextButton).toBeVisible();
 	});

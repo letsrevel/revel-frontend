@@ -279,7 +279,9 @@ test.describe('Event Editing - Update Details', () => {
 		}
 
 		// Navigate to Step 2
-		const nextButton = page.getByRole('button', { name: /continue to ticketing|save.*exit/i }).first();
+		const nextButton = page
+			.getByRole('button', { name: /continue to ticketing|save.*exit/i })
+			.first();
 		if (await nextButton.isVisible().catch(() => false)) {
 			await nextButton.click();
 			await page.waitForTimeout(1000);
@@ -308,7 +310,9 @@ test.describe('Event Editing - Update Details', () => {
 		}
 
 		// Navigate to Step 2
-		const nextButton = page.getByRole('button', { name: /continue to ticketing|save.*exit/i }).first();
+		const nextButton = page
+			.getByRole('button', { name: /continue to ticketing|save.*exit/i })
+			.first();
 		if (await nextButton.isVisible().catch(() => false)) {
 			await nextButton.click();
 			await page.waitForTimeout(1000);
@@ -351,7 +355,9 @@ test.describe('Event Editing - Update Details', () => {
 		}
 
 		// Navigate to Step 2 and save
-		const nextButton = page.getByRole('button', { name: /continue to ticketing|save.*exit/i }).first();
+		const nextButton = page
+			.getByRole('button', { name: /continue to ticketing|save.*exit/i })
+			.first();
 		if (await nextButton.isVisible().catch(() => false)) {
 			await nextButton.click();
 			await page.waitForTimeout(1000);
@@ -781,7 +787,9 @@ test.describe('Event Editing - Ticketing Management', () => {
 		}
 
 		// Navigate through steps
-		const nextButton = page.getByRole('button', { name: /continue to ticketing|save.*exit/i }).first();
+		const nextButton = page
+			.getByRole('button', { name: /continue to ticketing|save.*exit/i })
+			.first();
 		if (await nextButton.isVisible().catch(() => false)) {
 			await nextButton.click();
 			await page.waitForTimeout(1000);
@@ -822,7 +830,9 @@ test.describe('Event Editing - Ticketing Management', () => {
 		}
 
 		// Navigate to step 2
-		const nextButton = page.getByRole('button', { name: /continue to ticketing|save.*exit/i }).first();
+		const nextButton = page
+			.getByRole('button', { name: /continue to ticketing|save.*exit/i })
+			.first();
 		if (await nextButton.isVisible().catch(() => false)) {
 			await nextButton.click();
 			await page.waitForTimeout(1000);

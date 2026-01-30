@@ -6,25 +6,29 @@ import { TEST_USERS } from '../fixtures/auth.fixture';
  */
 async function navigateToFirstEvent(page: import('@playwright/test').Page): Promise<boolean> {
 	await page.goto('/events');
+	await page.waitForLoadState('networkidle');
+	await page.waitForTimeout(2000);
 
-	const eventList = page.locator('[role="list"][aria-label*="listings"]');
-	const emptyState = page.getByText(/no.*events.*found/i);
+	// Try multiple selectors for finding event links
+	const eventListItem = page.locator('[role="listitem"]').first();
+	const eventLinks = page.locator('a[href*="/events/"]').filter({ hasText: /.+/ });
 
-	try {
-		await expect(eventList.or(emptyState).first()).toBeVisible({ timeout: 10000 });
-	} catch {
+	const hasListItem = await eventListItem.isVisible().catch(() => false);
+	const hasEventLinks = (await eventLinks.count()) > 0;
+
+	if (!hasListItem && !hasEventLinks) {
 		return false;
 	}
 
-	const hasEvents = await eventList.isVisible().catch(() => false);
-	if (!hasEvents) return false;
+	// Click the first available event link
+	if (hasListItem) {
+		const link = eventListItem.getByRole('link').first();
+		await link.click();
+	} else {
+		await eventLinks.first().click();
+	}
 
-	const firstEventLink = page.locator('[role="listitem"]').first().getByRole('link').first();
-	const linkVisible = await firstEventLink.isVisible().catch(() => false);
-	if (!linkVisible) return false;
-
-	await firstEventLink.click();
-
+	// Wait for navigation and page load
 	try {
 		await expect(page).toHaveURL(/\/events\/[^/]+\/[^/]+$/, { timeout: 10000 });
 		await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 10000 });
@@ -46,11 +50,40 @@ test.describe('RSVP Flow - Authenticated User', () => {
 
 	test('should display RSVP options when viewing event', async ({ page }) => {
 		const success = await navigateToFirstEvent(page);
-		if (!success) return;
+		if (!success) {
+			test.skip(true, 'No events available to test');
+			return;
+		}
 
-		// Action sidebar should be attached
-		const actionSidebar = page.locator('aside[aria-label="Event actions"]');
-		await expect(actionSidebar.first()).toBeAttached({ timeout: 10000 });
+		// Look for RSVP-related elements on the page (sidebar or mobile actions)
+		// The sidebar uses EventActionSidebar component which contains RSVP buttons
+		const yesButton = page.getByRole('button', { name: /^yes$/i });
+		const maybeButton = page.getByRole('button', { name: /^maybe$/i });
+		const getTicketsButton = page.getByRole('button', { name: /get tickets|buy tickets/i });
+		const rsvpQuestion = page.getByText(/will you attend|are you going/i);
+
+		// Wait for any of these to appear
+		await page.waitForTimeout(2000);
+
+		const hasYesButton = await yesButton
+			.first()
+			.isVisible()
+			.catch(() => false);
+		const hasMaybeButton = await maybeButton
+			.first()
+			.isVisible()
+			.catch(() => false);
+		const hasGetTickets = await getTicketsButton
+			.first()
+			.isVisible()
+			.catch(() => false);
+		const hasRsvpQuestion = await rsvpQuestion
+			.first()
+			.isVisible()
+			.catch(() => false);
+
+		// At least one form of RSVP action should be available
+		expect(hasYesButton || hasMaybeButton || hasGetTickets || hasRsvpQuestion).toBe(true);
 	});
 
 	test('should show RSVP buttons for non-ticketed event', async ({ page }) => {
