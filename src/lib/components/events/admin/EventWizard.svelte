@@ -63,6 +63,8 @@
 
 	// Auto-scroll to top when step changes
 	$effect(() => {
+		// Reference currentStep to make the effect reactive to step changes
+		currentStep;
 		window.scrollTo({ top: 0, behavior: 'smooth' });
 	});
 
