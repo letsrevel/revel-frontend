@@ -73,14 +73,8 @@ test.describe('Logout - Mobile', () => {
 	test.use({ viewport: { width: 375, height: 667 } });
 
 	test('should logout on mobile', async ({ page }) => {
-		// Login
-		await page.goto('/login');
-
-		// Fill login form - the form should be visible even with mobile menu
-		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
-		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
-		await page.getByRole('button', { name: 'Sign in' }).click();
-		await page.waitForURL('/dashboard', { timeout: 20000 });
+		// Login with retry logic
+		await loginAsUser(page, 'alice');
 
 		// On mobile, open the hamburger menu
 		const hamburgerButton = page.getByRole('button', { name: 'Toggle navigation menu' });
@@ -109,12 +103,8 @@ test.describe('Logout - Mobile', () => {
 
 test.describe('Direct Logout Route', () => {
 	test('should handle direct navigation to /logout', async ({ page }) => {
-		// Login first
-		await page.goto('/login');
-		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
-		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
-		await page.getByRole('button', { name: 'Sign in' }).click();
-		await page.waitForURL('/dashboard', { timeout: 20000 });
+		// Login first with retry logic
+		await loginAsUser(page, 'alice');
 
 		// Navigate directly to logout
 		await page.goto('/logout');
