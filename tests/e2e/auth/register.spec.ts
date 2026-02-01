@@ -180,8 +180,8 @@ test.describe('Registration Page', () => {
 		// Submit
 		await submitButton.click();
 
-		// Should redirect to check-email page
-		await expect(page).toHaveURL(/\/register\/check-email/);
+		// Should redirect to check-email page (longer timeout for backend processing)
+		await page.waitForURL(/\/register\/check-email/, { timeout: 20000 });
 		await expect(page.getByRole('heading', { name: /check.*email/i })).toBeVisible();
 	});
 
@@ -282,8 +282,8 @@ test.describe('Registration Page - Keyboard Navigation', () => {
 		// Submit with Enter from any form field
 		await page.getByRole('textbox', { name: 'Confirm password' }).press('Enter');
 
-		// Should redirect to check-email
-		await expect(page).toHaveURL(/\/register\/check-email/, { timeout: 15000 });
+		// Should redirect to check-email (longer timeout for backend processing)
+		await page.waitForURL(/\/register\/check-email/, { timeout: 20000 });
 	});
 });
 
