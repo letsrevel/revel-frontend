@@ -26,11 +26,12 @@
 
 	// Build profile URL with redirect back to current page
 	let profileDietaryUrl = $derived.by(() => {
-		const baseUrl = '/account/profile#dietary-section';
+		const basePath = '/account/profile';
+		const hash = '#dietary-section';
 		if (browser) {
-			return `${baseUrl.replace('#', '')}?redirect=${encodeURIComponent(window.location.pathname)}#dietary-section`;
+			return `${basePath}?redirect=${encodeURIComponent(window.location.pathname)}${hash}`;
 		}
-		return baseUrl;
+		return `${basePath}${hash}`;
 	});
 
 	// State
