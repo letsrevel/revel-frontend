@@ -1,16 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { TEST_USERS } from '../fixtures/auth.fixture';
+import { loginAsUser } from '../fixtures/auth.fixture';
 
 test.describe('Dashboard - Main Page', () => {
 	test.beforeEach(async ({ page }) => {
-		// Login as Alice with retry logic for reliability under load
-		await page.goto('/login');
-		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
-		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
-		await page.getByRole('button', { name: 'Sign in' }).click();
-
-		// Wait for navigation with longer timeout - backend may be slow under load
-		await page.waitForURL('/dashboard', { timeout: 15000 });
+		await loginAsUser(page, 'alice');
 	});
 
 	test('should display welcome message with user name', async ({ page }) => {
@@ -104,11 +97,7 @@ test.describe('Dashboard - Main Page', () => {
 
 test.describe('Dashboard - Your Events Section', () => {
 	test.beforeEach(async ({ page }) => {
-		await page.goto('/login');
-		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
-		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
-		await page.getByRole('button', { name: 'Sign in' }).click();
-		await page.waitForURL('/dashboard', { timeout: 20000 });
+		await loginAsUser(page, 'alice');
 	});
 
 	test('should display Your Events section if user has events', async ({ page }) => {
@@ -213,11 +202,7 @@ test.describe('Dashboard - Your Events Section', () => {
 
 test.describe('Dashboard - Organizations Section', () => {
 	test.beforeEach(async ({ page }) => {
-		await page.goto('/login');
-		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
-		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
-		await page.getByRole('button', { name: 'Sign in' }).click();
-		await page.waitForURL('/dashboard', { timeout: 20000 });
+		await loginAsUser(page, 'alice');
 	});
 
 	test('should display organization cards or empty state', async ({ page }) => {
@@ -297,11 +282,7 @@ test.describe('Dashboard - Mobile', () => {
 	test.use({ viewport: { width: 375, height: 667 } });
 
 	test.beforeEach(async ({ page }) => {
-		await page.goto('/login');
-		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
-		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
-		await page.getByRole('button', { name: 'Sign in' }).click();
-		await page.waitForURL('/dashboard', { timeout: 20000 });
+		await loginAsUser(page, 'alice');
 	});
 
 	test('should display dashboard on mobile', async ({ page }) => {
@@ -335,11 +316,7 @@ test.describe('Dashboard - Mobile', () => {
 
 test.describe('Dashboard - Activity Cards', () => {
 	test.beforeEach(async ({ page }) => {
-		await page.goto('/login');
-		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
-		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
-		await page.getByRole('button', { name: 'Sign in' }).click();
-		await page.waitForURL('/dashboard', { timeout: 20000 });
+		await loginAsUser(page, 'alice');
 	});
 
 	test('should navigate to tickets page from Active Tickets card', async ({ page }) => {

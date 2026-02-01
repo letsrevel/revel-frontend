@@ -51,17 +51,35 @@ export type TestUser = keyof typeof TEST_USERS;
  */
 export async function loginAsUser(
 	page: Page,
-	user: TestUser | { email: string; password: string }
+	user: TestUser | { email: string; password: string },
+	maxRetries = 3
 ): Promise<void> {
 	const userData = typeof user === 'string' ? TEST_USERS[user] : user;
 
-	await page.goto('/login');
-	await page.getByRole('textbox', { name: 'Email address' }).fill(userData.email);
-	await page.getByRole('textbox', { name: 'Password' }).fill(userData.password);
-	await page.getByRole('button', { name: 'Sign in' }).click();
+	for (let attempt = 1; attempt <= maxRetries; attempt++) {
+		await page.goto('/login');
+		await page.getByRole('textbox', { name: 'Email address' }).fill(userData.email);
+		await page.getByRole('textbox', { name: 'Password' }).fill(userData.password);
+		await page.getByRole('button', { name: 'Sign in' }).click();
 
-	// Wait for dashboard with longer timeout - backend may be slow under load
-	await page.waitForURL('/dashboard', { timeout: 20000 });
+		try {
+			// Wait for dashboard - shorter timeout per attempt
+			await page.waitForURL('/dashboard', { timeout: 10000 });
+			return; // Success!
+		} catch {
+			// Check if we're on login page with error (failed login)
+			const currentUrl = page.url();
+			if (currentUrl.includes('/login') && attempt < maxRetries) {
+				// Login failed, retry
+				continue;
+			}
+			if (attempt === maxRetries) {
+				throw new Error(
+					`Login failed after ${maxRetries} attempts. Current URL: ${currentUrl}`
+				);
+			}
+		}
+	}
 }
 
 // Extended test type with auth helpers

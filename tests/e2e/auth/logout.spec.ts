@@ -1,13 +1,9 @@
-import { test, expect, TEST_USERS } from '../fixtures/auth.fixture';
+import { test, expect, loginAsUser } from '../fixtures/auth.fixture';
 
 test.describe('Logout', () => {
 	test.beforeEach(async ({ page }) => {
-		// Login first
-		await page.goto('/login');
-		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
-		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
-		await page.getByRole('button', { name: 'Sign in' }).click();
-		await page.waitForURL('/dashboard', { timeout: 20000 });
+		// Login first (with retry logic)
+		await loginAsUser(page, 'alice');
 	});
 
 	test('should logout via user menu', async ({ page }) => {
