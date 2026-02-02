@@ -50,9 +50,12 @@
 	});
 
 	// Fetch invitations
+	// NOTE: Include !!accessToken in queryKey to ensure TanStack Query refetches when auth state changes
+	// This fixes a bug where navigating to this page client-side would show empty data
 	const invitationsQuery = createQuery(() => ({
 		queryKey: [
 			'dashboard-invitations',
+			!!accessToken,
 			invitationsDebounced,
 			includePastInvitations,
 			currentPage
@@ -76,9 +79,11 @@
 	}));
 
 	// Fetch invitation requests
+	// NOTE: Include !!accessToken in queryKey to ensure TanStack Query refetches when auth state changes
 	const requestsQuery = createQuery(() => ({
 		queryKey: [
 			'dashboard-invitation-requests',
+			!!accessToken,
 			requestsDebounced,
 			requestsStatus,
 			currentPage
