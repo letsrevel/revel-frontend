@@ -39,14 +39,19 @@
 		// Update cookie (for non-logged-in users and SSR)
 		document.cookie = `user_language=${lang}; path=/; max-age=31536000; SameSite=Lax`;
 
-		// If user is logged in, persist to backend (don't await - fire and forget)
+		// If user is logged in, persist to backend
+		// IMPORTANT: We must await this call before invalidateAll() to prevent a race condition.
+		// Without await, fetchUserData() would reset the locale to the old language from the backend.
 		if (authStore.isAuthenticated) {
-			accountUpdateLanguage({
-				body: { language: typedLang },
-				headers: authStore.getAuthHeaders()
-			}).catch((error) => {
+			try {
+				await accountUpdateLanguage({
+					body: { language: typedLang },
+					headers: authStore.getAuthHeaders()
+				});
+			} catch (error) {
 				console.error('[LanguageSwitcher] Failed to update language in backend:', error);
-			});
+				// Continue with local language change even if backend update fails
+			}
 		}
 
 		// For SEO pages, navigate directly WITHOUT calling setLocale
