@@ -48,7 +48,8 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
 				name: body.name,
 				item_type: body.item_type,
 				quantity: body.quantity || undefined,
-				note: body.note || undefined
+				note: body.note || undefined,
+				claim: body.claim ?? false
 			},
 			headers: {
 				Authorization: `Bearer ${locals.user.accessToken}`

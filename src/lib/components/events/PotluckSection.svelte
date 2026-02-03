@@ -63,7 +63,7 @@
 	let errorMessage = $state<string | null>(null); // For non-modal errors (claim/unclaim)
 	let modalErrorMessage = $state<string | null>(null); // For modal errors (create/update)
 
-	// Mutation: Create item
+	// Mutation: Create item (with atomic claim support)
 	const createItemMutation = createMutation<
 		PotluckItemRetrieveSchema,
 		Error,
@@ -72,8 +72,13 @@
 		mutationFn: async (
 			data: PotluckItemCreateSchema & { claimItem?: boolean }
 		): Promise<PotluckItemRetrieveSchema> => {
-			// Create the item
-			const createResponse = await fetch(`/api/events/${event.id}/potluck`, {
+			// Determine if we should claim atomically:
+			// - Regular users always claim their items
+			// - Organizers (hasManagePermission) only claim if checkbox is checked
+			const shouldClaim = permissions.hasManagePermission ? (data.claimItem ?? false) : true;
+
+			// Single request with atomic claim flag
+			const response = await fetch(`/api/events/${event.id}/potluck`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				credentials: 'include',
@@ -81,36 +86,19 @@
 					name: data.name,
 					item_type: data.item_type,
 					quantity: data.quantity || undefined,
-					note: data.note || undefined
+					note: data.note || undefined,
+					claim: shouldClaim
 				})
 			});
 
-			if (!createResponse.ok) {
-				if (createResponse.status === 403) {
+			if (!response.ok) {
+				if (response.status === 403) {
 					throw new Error(m['potluck.error_noPermissionCreate']());
 				}
 				throw new Error(m['potluck.error_failedToCreate']());
 			}
-			const createdItem = await createResponse.json();
 
-			// If user with manage permission chose not to claim, we're done
-			if (permissions.hasManagePermission && !data.claimItem) {
-				return createdItem;
-			}
-
-			// Otherwise, claim the item
-			const claimResponse = await fetch(`/api/events/${event.id}/potluck/${createdItem.id}/claim`, {
-				method: 'POST',
-				credentials: 'include'
-			});
-
-			if (!claimResponse.ok) {
-				if (claimResponse.status === 403) {
-					throw new Error(m['potluck.error_noPermissionClaim']());
-				}
-				throw new Error(m['potluck.error_failedToClaim']());
-			}
-			return claimResponse.json();
+			return response.json();
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['potluck-items', event.id] });
