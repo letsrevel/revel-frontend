@@ -4597,6 +4597,15 @@
 		"clearSelection": "Cancella selezione",
 		"help": "Seleziona la sede in cui si terrà questo evento"
 	},
+	"venueInfo": {
+		"moreInfo": "Più info sulla sede",
+		"modalTitle": "Dettagli sede",
+		"address": "Indirizzo",
+		"capacity": "Capienza",
+		"capacityPeople": "{count} persone",
+		"viewOnMaps": "Visualizza su Google Maps",
+		"about": "Informazioni sulla sede"
+	},
 	"verifyPage": {
 		"emailVerified": "Email verificata!",
 		"verificationFailed": "Verifica fallita"

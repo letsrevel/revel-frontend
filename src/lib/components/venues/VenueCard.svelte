@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { VenueDetailSchema, CitySchema } from '$lib/api/generated/types.gen';
 	import { MapPin, Users, Edit, Trash2, LayoutGrid } from 'lucide-svelte';
+	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 
 	interface Props {
 		venue: VenueDetailSchema;
@@ -29,7 +30,9 @@
 		<div class="min-w-0 flex-1">
 			<h3 class="truncate text-lg font-semibold">{venue.name}</h3>
 			{#if venue.description}
-				<p class="mt-1 line-clamp-2 text-sm text-muted-foreground">{venue.description}</p>
+				<div class="mt-1 line-clamp-2 text-sm text-muted-foreground">
+					<MarkdownContent content={venue.description} inline={true} class="!prose-sm" />
+				</div>
 			{/if}
 
 			<div class="mt-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">

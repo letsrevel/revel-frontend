@@ -13,6 +13,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { X, ChevronDown, ChevronRight, Map, HelpCircle } from 'lucide-svelte';
 	import CityAutocomplete from '$lib/components/forms/CityAutocomplete.svelte';
+	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import { toast } from 'svelte-sonner';
 
 	interface Props {
@@ -224,16 +225,13 @@
 
 				<!-- Description -->
 				<div>
-					<label for="venue-description" class="mb-1.5 block text-sm font-medium">
-						{m['orgAdmin.venues.form.descriptionLabel']()}
-					</label>
-					<textarea
-						id="venue-description"
+					<MarkdownEditor
 						bind:value={description}
+						id="venue-description"
+						label={m['orgAdmin.venues.form.descriptionLabel']()}
 						placeholder={m['orgAdmin.venues.form.descriptionPlaceholder']()}
-						rows="3"
-						class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-					></textarea>
+						rows={4}
+					/>
 				</div>
 
 				<!-- Capacity -->
