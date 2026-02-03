@@ -1515,7 +1515,8 @@
 		"maxUses": "Utilizzi Massimi",
 		"noTicketTier": "Nessun livello biglietto",
 		"advancedOptions": "Opzioni Invito Avanzate",
-		"waiveDeadline": "Esonera dalla scadenza RSVP"
+		"waiveDeadline": "Esonera dalla scadenza RSVP",
+		"waiveApplyDeadline": "Esonera dalla scadenza di candidatura"
 	},
 	"eventWizard": {
 		"eventCreatedSuccess": "Event created successfully!",

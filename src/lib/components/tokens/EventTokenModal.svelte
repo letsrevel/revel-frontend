@@ -58,6 +58,7 @@
 	let overridesMaxAttendees = $state(false);
 	let waivesMembershipRequired = $state(false);
 	let waivesRsvpDeadline = $state(false);
+	let waivesApplyDeadline = $state(false);
 
 	// Reset form
 	$effect(() => {
@@ -77,6 +78,7 @@
 				overridesMaxAttendees = invitation?.overrides_max_attendees ?? false;
 				waivesMembershipRequired = invitation?.waives_membership_required ?? false;
 				waivesRsvpDeadline = invitation?.waives_rsvp_deadline ?? false;
+				waivesApplyDeadline = invitation?.waives_apply_deadline ?? false;
 			} else {
 				name = '';
 				duration = '1440';
@@ -92,6 +94,7 @@
 				overridesMaxAttendees = false;
 				waivesMembershipRequired = false;
 				waivesRsvpDeadline = false;
+				waivesApplyDeadline = false;
 			}
 		}
 	});
@@ -105,7 +108,8 @@
 					waives_purchase: waivesPurchase,
 					overrides_max_attendees: overridesMaxAttendees,
 					waives_membership_required: waivesMembershipRequired,
-					waives_rsvp_deadline: waivesRsvpDeadline
+					waives_rsvp_deadline: waivesRsvpDeadline,
+					waives_apply_deadline: waivesApplyDeadline
 				}
 			: null;
 
@@ -367,6 +371,24 @@
 									>
 									<p class="text-xs text-muted-foreground">
 										Users can RSVP even after the RSVP deadline has passed
+									</p>
+								</div>
+							</div>
+
+							<!-- Waives Apply Deadline -->
+							<div class="flex items-start space-x-2">
+								<input
+									type="checkbox"
+									id="waives-apply-deadline"
+									bind:checked={waivesApplyDeadline}
+									class="mt-0.5 h-4 w-4 rounded border-gray-300"
+								/>
+								<div class="flex-1">
+									<Label for="waives-apply-deadline" class="font-normal"
+										>{m['eventTokenModal.waiveApplyDeadline']()}</Label
+									>
+									<p class="text-xs text-muted-foreground">
+										Users can apply even after the application deadline has passed
 									</p>
 								</div>
 							</div>

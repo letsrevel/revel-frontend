@@ -1515,7 +1515,8 @@
 		"maxUses": "Maximale Nutzungen",
 		"noTicketTier": "Keine Ticketstufe",
 		"advancedOptions": "Erweiterte Einladungsoptionen",
-		"waiveDeadline": "Zusagefrist aufheben"
+		"waiveDeadline": "Zusagefrist aufheben",
+		"waiveApplyDeadline": "Bewerbungsfrist aufheben"
 	},
 	"eventWizard": {
 		"eventCreatedSuccess": "Event created successfully!",
