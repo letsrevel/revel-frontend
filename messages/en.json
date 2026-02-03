@@ -1515,7 +1515,8 @@
 		"maxUses": "Maximum Uses",
 		"noTicketTier": "No ticket tier",
 		"advancedOptions": "Advanced Invitation Options",
-		"waiveDeadline": "Waive RSVP deadline"
+		"waiveDeadline": "Waive RSVP deadline",
+		"waiveApplyDeadline": "Waive application deadline"
 	},
 	"eventWizard": {
 		"eventCreatedSuccess": "Event created successfully!",
