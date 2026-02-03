@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { PUBLIC_VERSION } from '$env/static/public';
 	import { appStore } from '$lib/stores/app.svelte';
-	import { Github, Bug } from 'lucide-svelte';
+	import { Github, Bug, Info } from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import * as Tooltip from '$lib/components/ui/tooltip';
@@ -204,6 +204,7 @@
 									>
 										<Github class="h-4 w-4" aria-hidden="true" />
 										<span>{m['footer.frontend']()}: v{FRONTEND_VERSION}</span>
+										<Info class="h-3.5 w-3.5 text-muted-foreground/70" aria-hidden="true" />
 									</a>
 								</Tooltip.Trigger>
 								<Tooltip.Content class="max-w-xs">
@@ -238,6 +239,7 @@
 										<span
 											>{m['footer.backend']()}: v{backendVersion}{isDemoMode ? ' (demo)' : ''}</span
 										>
+										<Info class="h-3.5 w-3.5 text-muted-foreground/70" aria-hidden="true" />
 									</a>
 								</Tooltip.Trigger>
 								<Tooltip.Content class="max-w-xs">
