@@ -58,26 +58,49 @@
 </script>
 
 <footer class="border-t bg-muted/30">
-	<div class="container mx-auto px-4 py-8 md:py-12">
-		<div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-			<!-- About Section -->
-			<div>
-				<h3 class="mb-4 text-lg font-semibold">{m['footer.aboutTitle']()}</h3>
-				<p class="mb-4 text-sm text-muted-foreground">
-					{m['footer.aboutDescription']()}
-				</p>
-				<ul class="space-y-2 text-sm">
-					<li>
-						<a
-							href="https://forms.gle/7wAqQXqrWk3X6Ddu7"
-							target="_blank"
-							rel="noopener noreferrer"
-							class="text-muted-foreground transition-colors hover:text-foreground"
-						>
-							{m['footer.sendFeedback']()}
-						</a>
-					</li>
-				</ul>
+	<div class="container mx-auto max-w-5xl px-4 py-8 md:py-12">
+		<div class="grid grid-cols-2 gap-8 md:grid-cols-4">
+			<!-- Solutions - spans 2 columns on md+ -->
+			<div class="col-span-2">
+				<h3 class="mb-4 text-lg font-semibold">{m['footer.solutionsTitle']()}</h3>
+				<div class="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+					<a
+						href="{landingPagePrefix}/eventbrite-alternative"
+						class="text-muted-foreground transition-colors hover:text-foreground"
+					>
+						{m['footer.solutionEventbrite']()}
+					</a>
+					<a
+						href="{landingPagePrefix}/privacy-focused-events"
+						class="text-muted-foreground transition-colors hover:text-foreground"
+					>
+						{m['footer.solutionPrivacy']()}
+					</a>
+					<a
+						href="{landingPagePrefix}/self-hosted-event-platform"
+						class="text-muted-foreground transition-colors hover:text-foreground"
+					>
+						{m['footer.solutionSelfHosted']()}
+					</a>
+					<a
+						href="{landingPagePrefix}/community-first-event-platform"
+						class="text-muted-foreground transition-colors hover:text-foreground"
+					>
+						{m['footer.solutionCommunity']()}
+					</a>
+					<a
+						href="{landingPagePrefix}/queer-event-management"
+						class="text-muted-foreground transition-colors hover:text-foreground"
+					>
+						{m['footer.solutionQueer']()}
+					</a>
+					<a
+						href="{landingPagePrefix}/kink-event-ticketing"
+						class="text-muted-foreground transition-colors hover:text-foreground"
+					>
+						{m['footer.solutionKink']()}
+					</a>
+				</div>
 			</div>
 
 			<!-- Legal Links -->
@@ -138,141 +161,105 @@
 							{m['footer.github']()}
 						</a>
 					</li>
+					<li>
+						<a
+							href="https://forms.gle/7wAqQXqrWk3X6Ddu7"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="text-muted-foreground transition-colors hover:text-foreground"
+						>
+							{m['footer.sendFeedback']()}
+						</a>
+					</li>
 				</ul>
 			</div>
-
-			<!-- Solutions / Use Cases - 2 columns -->
-			<div>
-				<h3 class="mb-4 text-lg font-semibold">{m['footer.solutionsTitle']()}</h3>
-				<div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-					<a
-						href="{landingPagePrefix}/eventbrite-alternative"
-						class="text-muted-foreground transition-colors hover:text-foreground"
-					>
-						{m['footer.solutionEventbrite']()}
-					</a>
-					<a
-						href="{landingPagePrefix}/self-hosted-event-platform"
-						class="text-muted-foreground transition-colors hover:text-foreground"
-					>
-						{m['footer.solutionSelfHosted']()}
-					</a>
-					<a
-						href="{landingPagePrefix}/queer-event-management"
-						class="text-muted-foreground transition-colors hover:text-foreground"
-					>
-						{m['footer.solutionQueer']()}
-					</a>
-					<a
-						href="{landingPagePrefix}/privacy-focused-events"
-						class="text-muted-foreground transition-colors hover:text-foreground"
-					>
-						{m['footer.solutionPrivacy']()}
-					</a>
-					<a
-						href="{landingPagePrefix}/kink-event-ticketing"
-						class="text-muted-foreground transition-colors hover:text-foreground"
-					>
-						{m['footer.solutionKink']()}
-					</a>
-					<a
-						href="{landingPagePrefix}/community-first-event-platform"
-						class="text-muted-foreground transition-colors hover:text-foreground"
-					>
-						{m['footer.solutionCommunity']()}
-					</a>
-				</div>
-			</div>
-
-			<!-- Version Info -->
-			<div>
-				<h3 class="mb-4 text-lg font-semibold">{m['footer.versionInfoTitle']()}</h3>
-				<Tooltip.Provider>
-					<ul class="space-y-2 text-sm text-muted-foreground">
-						<li class="flex items-center gap-2">
-							<Tooltip.Root>
-								<Tooltip.Trigger
-									onmouseenter={() => fetchReleaseNotes('frontend', FRONTEND_VERSION)}
-									onfocus={() => fetchReleaseNotes('frontend', FRONTEND_VERSION)}
-								>
-									<a
-										href={FRONTEND_REPO}
-										target="_blank"
-										rel="noopener noreferrer"
-										class="flex items-center gap-2 transition-colors hover:text-foreground"
-										aria-label="{m['footer.frontend']()} repository on GitHub"
-									>
-										<Github class="h-4 w-4" aria-hidden="true" />
-										<span>{m['footer.frontend']()}: v{FRONTEND_VERSION}</span>
-										<Info class="h-3.5 w-3.5 text-muted-foreground/70" aria-hidden="true" />
-									</a>
-								</Tooltip.Trigger>
-								<Tooltip.Content class="max-w-xs">
-									{#if loadingNotes[`frontend-${FRONTEND_VERSION}`]}
-										<p class="text-xs">Loading...</p>
-									{:else if releaseNotesCache[`frontend-${FRONTEND_VERSION}`]?.length}
-										<ul class="space-y-1 text-xs">
-											{#each releaseNotesCache[`frontend-${FRONTEND_VERSION}`] as note, i (i)}
-												<li>- {note}</li>
-											{/each}
-										</ul>
-									{:else}
-										<p class="text-xs">No release notes</p>
-									{/if}
-								</Tooltip.Content>
-							</Tooltip.Root>
-						</li>
-						<li class="flex items-center gap-2">
-							<Tooltip.Root>
-								<Tooltip.Trigger
-									onmouseenter={() => fetchReleaseNotes('backend', backendVersion)}
-									onfocus={() => fetchReleaseNotes('backend', backendVersion)}
-								>
-									<a
-										href={BACKEND_REPO}
-										target="_blank"
-										rel="noopener noreferrer"
-										class="flex items-center gap-2 transition-colors hover:text-foreground"
-										aria-label="{m['footer.backend']()} repository on GitHub"
-									>
-										<Github class="h-4 w-4" aria-hidden="true" />
-										<span
-											>{m['footer.backend']()}: v{backendVersion}{isDemoMode ? ' (demo)' : ''}</span
-										>
-										<Info class="h-3.5 w-3.5 text-muted-foreground/70" aria-hidden="true" />
-									</a>
-								</Tooltip.Trigger>
-								<Tooltip.Content class="max-w-xs">
-									{#if loadingNotes[`backend-${backendVersion}`]}
-										<p class="text-xs">Loading...</p>
-									{:else if releaseNotesCache[`backend-${backendVersion}`]?.length}
-										<ul class="space-y-1 text-xs">
-											{#each releaseNotesCache[`backend-${backendVersion}`] as note, i (i)}
-												<li>- {note}</li>
-											{/each}
-										</ul>
-									{:else}
-										<p class="text-xs">No release notes</p>
-									{/if}
-								</Tooltip.Content>
-							</Tooltip.Root>
-						</li>
-						<li class="flex items-center gap-2">
-							<a
-								href="https://forms.gle/c6ovKV92nMQEbR877"
-								target="_blank"
-								rel="noopener noreferrer"
-								class="flex items-center gap-2 transition-colors hover:text-foreground"
-								aria-label={m['footer.reportBug']()}
-							>
-								<Bug class="h-4 w-4" aria-hidden="true" />
-								<span>{m['footer.reportBug']()}</span>
-							</a>
-						</li>
-					</ul>
-				</Tooltip.Provider>
-			</div>
 		</div>
+
+		<!-- Version Info - Compact inline -->
+		<Tooltip.Provider>
+			<div
+				class="mt-8 flex flex-wrap items-center justify-center gap-4 border-t pt-6 text-xs text-muted-foreground"
+			>
+				<Tooltip.Root>
+					<Tooltip.Trigger
+						onmouseenter={() => fetchReleaseNotes('frontend', FRONTEND_VERSION)}
+						onfocus={() => fetchReleaseNotes('frontend', FRONTEND_VERSION)}
+					>
+						<a
+							href={FRONTEND_REPO}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="flex items-center gap-1.5 transition-colors hover:text-foreground"
+							aria-label="{m['footer.frontend']()} repository on GitHub"
+						>
+							<Github class="h-3.5 w-3.5" aria-hidden="true" />
+							<span>FE v{FRONTEND_VERSION}</span>
+							<Info class="h-3 w-3 text-muted-foreground/70" aria-hidden="true" />
+						</a>
+					</Tooltip.Trigger>
+					<Tooltip.Content class="max-w-xs">
+						{#if loadingNotes[`frontend-${FRONTEND_VERSION}`]}
+							<p class="text-xs">Loading...</p>
+						{:else if releaseNotesCache[`frontend-${FRONTEND_VERSION}`]?.length}
+							<ul class="space-y-1 text-xs">
+								{#each releaseNotesCache[`frontend-${FRONTEND_VERSION}`] as note, i (i)}
+									<li>- {note}</li>
+								{/each}
+							</ul>
+						{:else}
+							<p class="text-xs">No release notes</p>
+						{/if}
+					</Tooltip.Content>
+				</Tooltip.Root>
+
+				<span class="text-muted-foreground/50">|</span>
+
+				<Tooltip.Root>
+					<Tooltip.Trigger
+						onmouseenter={() => fetchReleaseNotes('backend', backendVersion)}
+						onfocus={() => fetchReleaseNotes('backend', backendVersion)}
+					>
+						<a
+							href={BACKEND_REPO}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="flex items-center gap-1.5 transition-colors hover:text-foreground"
+							aria-label="{m['footer.backend']()} repository on GitHub"
+						>
+							<Github class="h-3.5 w-3.5" aria-hidden="true" />
+							<span>BE v{backendVersion}{isDemoMode ? ' (demo)' : ''}</span>
+							<Info class="h-3 w-3 text-muted-foreground/70" aria-hidden="true" />
+						</a>
+					</Tooltip.Trigger>
+					<Tooltip.Content class="max-w-xs">
+						{#if loadingNotes[`backend-${backendVersion}`]}
+							<p class="text-xs">Loading...</p>
+						{:else if releaseNotesCache[`backend-${backendVersion}`]?.length}
+							<ul class="space-y-1 text-xs">
+								{#each releaseNotesCache[`backend-${backendVersion}`] as note, i (i)}
+									<li>- {note}</li>
+								{/each}
+							</ul>
+						{:else}
+							<p class="text-xs">No release notes</p>
+						{/if}
+					</Tooltip.Content>
+				</Tooltip.Root>
+
+				<span class="text-muted-foreground/50">|</span>
+
+				<a
+					href="https://forms.gle/c6ovKV92nMQEbR877"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="flex items-center gap-1.5 transition-colors hover:text-foreground"
+					aria-label={m['footer.reportBug']()}
+				>
+					<Bug class="h-3.5 w-3.5" aria-hidden="true" />
+					<span>{m['footer.reportBug']()}</span>
+				</a>
+			</div>
+		</Tooltip.Provider>
 
 		<!-- Cookie Notice -->
 		<div class="mt-8 border-t pt-8">
