@@ -3,7 +3,17 @@
 	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
 	import { formatEventDate, getRSVPDeadlineRelative, isRSVPClosingSoon } from '$lib/utils/date';
 	import { cn } from '$lib/utils/cn';
-	import { Calendar, MapPin, Users, Clock, Globe, Building2, ExternalLink } from 'lucide-svelte';
+	import {
+		Calendar,
+		MapPin,
+		Users,
+		Clock,
+		Globe,
+		Building2,
+		ExternalLink,
+		Info
+	} from 'lucide-svelte';
+	import VenueInfoModal from '$lib/components/venues/VenueInfoModal.svelte';
 
 	interface Props {
 		event: EventDetailSchema;
@@ -142,6 +152,19 @@
 
 	// Text wrapper classes
 	let textClasses = $derived('flex-1 min-w-0');
+
+	// Venue info modal state
+	let venueInfoModalOpen = $state(false);
+
+	// Check if venue has meaningful additional info worth showing in modal
+	let hasVenueAdditionalInfo = $derived.by(() => {
+		if (!event.venue) return false;
+		return !!(
+			event.venue.description?.trim() ||
+			(event.venue.capacity && event.venue.capacity > 0) ||
+			event.venue.location_maps_embed
+		);
+	});
 </script>
 
 <div class={containerClasses} role="list" aria-label="Event quick information">
@@ -187,6 +210,16 @@
 				{#if locationDisplay.secondary}
 					<span class="block text-xs text-muted-foreground">{locationDisplay.secondary}</span>
 				{/if}
+			{/if}
+			{#if hasVenueAdditionalInfo && event.venue}
+				<button
+					type="button"
+					onclick={() => (venueInfoModalOpen = true)}
+					class="mt-1 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+				>
+					<Info class="h-3 w-3" aria-hidden="true" />
+					{m['venueInfo.moreInfo']()}
+				</button>
 			{/if}
 		</div>
 	</div>
@@ -254,3 +287,12 @@
 		</div>
 	{/if}
 </div>
+
+<!-- Venue Info Modal -->
+{#if event.venue && hasVenueAdditionalInfo}
+	<VenueInfoModal
+		bind:open={venueInfoModalOpen}
+		venue={event.venue}
+		onClose={() => (venueInfoModalOpen = false)}
+	/>
+{/if}

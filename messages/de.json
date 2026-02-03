@@ -4597,6 +4597,15 @@
 		"clearSelection": "Auswahl löschen",
 		"help": "Wähle den Veranstaltungsort für dieses Event"
 	},
+	"venueInfo": {
+		"moreInfo": "Mehr Infos zum Veranstaltungsort",
+		"modalTitle": "Veranstaltungsort-Details",
+		"address": "Adresse",
+		"capacity": "Kapazität",
+		"capacityPeople": "{count} Personen",
+		"viewOnMaps": "Auf Google Maps ansehen",
+		"about": "Über diesen Veranstaltungsort"
+	},
 	"verifyPage": {
 		"emailVerified": "E-Mail verifiziert!",
 		"verificationFailed": "Verifizierung fehlgeschlagen"

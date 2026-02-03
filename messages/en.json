@@ -4597,6 +4597,15 @@
 		"clearSelection": "Clear selection",
 		"help": "Select the venue where this event will be held"
 	},
+	"venueInfo": {
+		"moreInfo": "More info about the venue",
+		"modalTitle": "Venue Details",
+		"address": "Address",
+		"capacity": "Capacity",
+		"capacityPeople": "{count} people",
+		"viewOnMaps": "View on Google Maps",
+		"about": "About this venue"
+	},
 	"verifyPage": {
 		"emailVerified": "Email verified!",
 		"verificationFailed": "Verification failed"
