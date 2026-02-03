@@ -10,6 +10,7 @@
 	import IneligibilityMessage from './IneligibilityMessage.svelte';
 	import { Check, AlertCircle } from 'lucide-svelte';
 	import { browser } from '$app/environment';
+	import { invalidateAll } from '$app/navigation';
 
 	import type { EventDetailSchema, EventTokenSchema } from '$lib/api/generated/types.gen';
 
@@ -123,6 +124,10 @@
 
 			// Invalidate queries to refresh data
 			queryClient.invalidateQueries({ queryKey: ['event', eventId, 'status'] });
+
+			// Refresh page data to update visibility-dependent fields (address, maps URLs, etc.)
+			// This re-runs the +page.server.ts load function with the new RSVP status
+			invalidateAll();
 
 			// Auto-hide success message after 5 seconds
 			setTimeout(() => {
