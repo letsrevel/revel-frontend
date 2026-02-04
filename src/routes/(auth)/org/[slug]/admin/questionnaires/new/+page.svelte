@@ -665,8 +665,8 @@
 				throw new Error('Failed to create questionnaire');
 			}
 
-			// Redirect to questionnaire list
-			await goto(`/org/${data.organization.slug}/admin/questionnaires`);
+			// Redirect to the edit page of the newly created questionnaire
+			await goto(`/org/${data.organization.slug}/admin/questionnaires/${response.data.id}`);
 		} catch (err) {
 			console.error('Failed to save questionnaire:', err);
 			saveError = 'Failed to save questionnaire. Please try again.';

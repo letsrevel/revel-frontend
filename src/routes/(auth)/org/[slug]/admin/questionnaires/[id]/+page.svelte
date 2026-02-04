@@ -493,8 +493,12 @@
 	// Assignment modal state
 	let isAssignmentModalOpen = $state(false);
 
-	// Check if editing is allowed (only in draft status)
-	const canEdit = $derived(q?.status === 'draft');
+	// Edit mode state - user must explicitly enable editing
+	// This protects against accidental modifications while still allowing edits to any questionnaire
+	let isEditMode = $state(false);
+
+	// Derived helper for UI - combines edit mode with data availability
+	const canEdit = $derived(isEditMode && isLoaded);
 
 	// Current status
 	const currentStatus = $derived<QuestionnaireStatus>(
@@ -1036,9 +1040,13 @@
 				}
 			}
 
-			// Refresh and redirect
+			// Refresh data, re-initialize state from API, and exit edit mode (stay on same page)
+			isInitialized = false; // Reset so initializeFromApi() runs again after data refresh
 			await invalidateAll();
-			await goto(`/org/${data.organizationSlug}/admin/questionnaires`);
+			isEditMode = false;
+
+			// Scroll to top so user sees the updated questionnaire
+			window.scrollTo({ top: 0, behavior: 'smooth' });
 		} catch (err) {
 			console.error('Failed to save questionnaire:', err);
 			saveError = 'Failed to save questionnaire. Please try again.';
@@ -1743,34 +1751,49 @@
 	</Card>
 
 	<!-- Info Banner -->
-	{#if canEdit}
+	{#if isEditMode}
 		<div
 			class="mb-6 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-900 dark:bg-green-950"
 		>
-			<div class="flex gap-3">
-				<Pencil class="h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-500" />
-				<div class="text-sm">
-					<p class="font-medium text-green-800 dark:text-green-200">Editing enabled</p>
-					<p class="mt-1 text-green-700 dark:text-green-300">
-						This questionnaire is in draft status. You can edit questions, sections, and options.
-						Once published, editing will be restricted to preserve submission integrity.
-					</p>
+			<div class="flex items-start justify-between gap-3">
+				<div class="flex gap-3">
+					<Pencil class="h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-500" />
+					<div class="text-sm">
+						<p class="font-medium text-green-800 dark:text-green-200">Edit mode enabled</p>
+						<p class="mt-1 text-green-700 dark:text-green-300">
+							You can now edit questions, sections, and options. Changes will be saved when you
+							click Save.
+						</p>
+					</div>
 				</div>
+				<Button variant="outline" size="sm" onclick={() => (isEditMode = false)} class="shrink-0">
+					Cancel Editing
+				</Button>
 			</div>
 		</div>
 	{:else}
 		<div
-			class="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-900 dark:bg-yellow-950"
+			class="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950"
 		>
-			<div class="flex gap-3">
-				<AlertTriangle class="h-5 w-5 flex-shrink-0 text-yellow-600 dark:text-yellow-500" />
-				<div class="text-sm">
-					<p class="font-medium text-yellow-800 dark:text-yellow-200">Questions cannot be edited</p>
-					<p class="mt-1 text-yellow-700 dark:text-yellow-300">
-						This questionnaire is {currentStatus}. To edit questions, change the status back to
-						draft. Note: this may affect existing submissions.
-					</p>
+			<div class="flex items-start justify-between gap-3">
+				<div class="flex gap-3">
+					<FileEdit class="h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-500" />
+					<div class="text-sm">
+						<p class="font-medium text-blue-800 dark:text-blue-200">View mode</p>
+						<p class="mt-1 text-blue-700 dark:text-blue-300">
+							Click "Edit Questionnaire" to modify questions, sections, and options.
+						</p>
+					</div>
 				</div>
+				<Button
+					variant="default"
+					size="sm"
+					onclick={() => (isEditMode = true)}
+					class="shrink-0 gap-2"
+				>
+					<Pencil class="h-4 w-4" />
+					Edit Questionnaire
+				</Button>
 			</div>
 		</div>
 	{/if}
