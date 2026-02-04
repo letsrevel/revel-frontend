@@ -8,6 +8,7 @@ import {
 	getRememberMeCookieOptions
 } from '$lib/utils/cookies';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { claimPendingTokens, setClaimFlashCookie } from '$lib/server/token-claim';
 
 export const actions = {
 	// Standard email/password login
@@ -70,6 +71,10 @@ export const actions = {
 					data.rememberMe ? 'true' : 'false',
 					getRememberMeCookieOptions(data.rememberMe)
 				);
+
+				// Claim any pending invitation tokens (org/event)
+				const claimResults = await claimPendingTokens(cookies, access, fetch);
+				setClaimFlashCookie(cookies, claimResults);
 
 				// Redirect to returnUrl or dashboard
 				const returnUrl = url.searchParams.get('returnUrl') || '/dashboard';
@@ -157,6 +162,10 @@ export const actions = {
 					data.rememberMe ? 'true' : 'false',
 					getRememberMeCookieOptions(data.rememberMe)
 				);
+
+				// Claim any pending invitation tokens (org/event)
+				const claimResults = await claimPendingTokens(cookies, access, fetch);
+				setClaimFlashCookie(cookies, claimResults);
 
 				// Redirect to returnUrl or dashboard
 				const returnUrl = url.searchParams.get('returnUrl') || '/dashboard';
