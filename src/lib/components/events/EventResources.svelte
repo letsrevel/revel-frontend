@@ -3,6 +3,7 @@
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
 	import { FileText, Link as LinkIcon, AlignLeft, ExternalLink, Download } from 'lucide-svelte';
 	import { getBackendUrl } from '$lib/config/api';
+	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 
 	interface Props {
 		resources: AdditionalResourceSchema[];
@@ -60,9 +61,11 @@
 							{resource.name || 'Untitled Resource'}
 						</h3>
 						{#if resource.description}
-							<p class="mt-1 line-clamp-2 text-sm text-muted-foreground">
-								{resource.description}
-							</p>
+							<MarkdownContent
+								content={resource.description}
+								inline
+								class="!prose-sm mt-1 line-clamp-2 text-muted-foreground [&>*]:m-0"
+							/>
 						{/if}
 
 						{#if resource.resource_type === 'text' && resource.text}
