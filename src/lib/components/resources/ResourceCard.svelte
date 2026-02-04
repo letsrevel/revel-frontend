@@ -17,6 +17,7 @@
 	} from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
 	import { getBackendUrl } from '$lib/config/api';
+	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 
 	interface Props {
 		resource: AdditionalResourceSchema;
@@ -187,10 +188,11 @@
 
 	<!-- Description -->
 	{#if resource.description}
-		<p class="line-clamp-2 text-sm text-muted-foreground">
-			{resource.description}
-		</p>
-	{/if}
+		<MarkdownContent
+			content={resource.description}
+			inline
+			class="!prose-sm line-clamp-2 text-muted-foreground [&>*]:m-0"
+		/>{/if}
 
 	<!-- Content Preview -->
 	{#if isClickable}
