@@ -5,7 +5,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Search, Loader2, Box, AlertCircle, FileText, Link, File } from 'lucide-svelte';
+	import { Search, Loader2, Box, AlertCircle, FileText, Link, File, Plus } from 'lucide-svelte';
 	import {
 		organizationadminresourcesListResources,
 		organizationadminresourcesUpdateResource,
@@ -185,15 +185,49 @@
 		if (originalIds.size !== selectedIds.size) return true;
 		return ![...originalIds].every((id) => selectedIds.has(id));
 	});
+
+	// Track last fetch time for debounced refresh on focus
+	let lastFetchTime = $state(Date.now());
+
+	// Refresh resources when window regains focus (user returns from new tab after creating a resource)
+	$effect(() => {
+		if (!open) return;
+
+		function handleFocus() {
+			// Debounce: only refresh if modal is open and 2+ seconds have passed
+			if (Date.now() - lastFetchTime > 2000) {
+				loadResources();
+				lastFetchTime = Date.now();
+			}
+		}
+
+		window.addEventListener('focus', handleFocus);
+		return () => window.removeEventListener('focus', handleFocus);
+	});
 </script>
 
 <Dialog bind:open>
 	<DialogContent class="max-h-[90vh] max-w-2xl overflow-hidden p-0">
 		<DialogHeader class="border-b p-6 pb-4">
-			<DialogTitle>{m['seriesResourceAssignmentModal.assignResources']()}</DialogTitle>
-			<p class="mt-1 text-sm text-muted-foreground">
-				Select which resources should be available for events in "{series.name}"
-			</p>
+			<div class="flex items-start justify-between">
+				<div>
+					<DialogTitle>{m['seriesResourceAssignmentModal.assignResources']()}</DialogTitle>
+					<p class="mt-1 text-sm text-muted-foreground">
+						Select which resources should be available for events in "{series.name}"
+					</p>
+				</div>
+				<Button
+					href="/org/{organizationSlug}/admin/resources/new"
+					target="_blank"
+					rel="noopener noreferrer"
+					variant="outline"
+					size="sm"
+					class="gap-2"
+				>
+					<Plus class="h-4 w-4" />
+					New Resource
+				</Button>
+			</div>
 		</DialogHeader>
 
 		<!-- Warning Banner -->

@@ -87,6 +87,23 @@
 	const resources = $derived(resourcesQuery.data || []);
 	const isLoading = $derived(resourcesQuery.isLoading);
 	const error = $derived(resourcesQuery.error);
+
+	// Track last fetch time for debounced refresh on focus
+	let lastFetchTime = $state(Date.now());
+
+	// Refresh resources when window regains focus (user returns from new tab after creating a resource)
+	$effect(() => {
+		function handleFocus() {
+			// Debounce: only refresh if 2+ seconds have passed since last fetch
+			if (Date.now() - lastFetchTime > 2000) {
+				resourcesQuery.refetch();
+				lastFetchTime = Date.now();
+			}
+		}
+
+		window.addEventListener('focus', handleFocus);
+		return () => window.removeEventListener('focus', handleFocus);
+	});
 </script>
 
 <div class="space-y-4">

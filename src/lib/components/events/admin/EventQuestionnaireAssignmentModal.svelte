@@ -170,6 +170,25 @@
 		if (originalIds.size !== selectedIds.size) return true;
 		return ![...originalIds].every((id) => selectedIds.has(id));
 	});
+
+	// Track last fetch time for debounced refresh on focus
+	let lastFetchTime = $state(Date.now());
+
+	// Refresh questionnaires when window regains focus (user returns from new tab)
+	$effect(() => {
+		if (!open) return;
+
+		function handleFocus() {
+			// Debounce: only refresh if modal is open and 2+ seconds have passed
+			if (Date.now() - lastFetchTime > 2000) {
+				loadQuestionnaires();
+				lastFetchTime = Date.now();
+			}
+		}
+
+		window.addEventListener('focus', handleFocus);
+		return () => window.removeEventListener('focus', handleFocus);
+	});
 </script>
 
 <Dialog bind:open>
@@ -184,6 +203,8 @@
 				</div>
 				<Button
 					href="/org/{organizationSlug}/admin/questionnaires/new"
+					target="_blank"
+					rel="noopener noreferrer"
 					variant="outline"
 					size="sm"
 					class="gap-2"
