@@ -593,7 +593,9 @@
 		"text_tbd": "Noch offen",
 		"errors_refreshPage": "Bitte aktualisiere die Seite oder schau später wieder vorbei.",
 		"errors_tryAgain": "Bitte versuche es erneut.",
-		"accessibility_skipTo": "Zu {section} springen"
+		"accessibility_skipTo": "Zu {section} springen",
+		"claimSuccess_organization": "Du wurdest zu {name} hinzugefügt!",
+		"claimSuccess_event": "Du wurdest zu {name} eingeladen!"
 	},
 	"confirmDeletionPage": {
 		"title": "Kontolöschung bestätigen - Revel",

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import { onMount } from 'svelte';
+	import { afterNavigate } from '$app/navigation';
 	import { ModeWatcher } from 'mode-watcher';
 	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -10,6 +11,8 @@
 	import DemoBanner from '$lib/components/common/DemoBanner.svelte';
 	import ImpersonationBanner from '$lib/components/common/ImpersonationBanner.svelte';
 	import type { LayoutData } from './$types';
+	import * as m from '$lib/paraglide/messages.js';
+	import type { ClaimResult } from '$lib/server/token-claim';
 
 	interface Props {
 		data: LayoutData;
@@ -185,9 +188,56 @@
 		}
 	});
 
-	// Fetch backend version once on mount
+	// Handle flash messages after navigation (including client-side navigation from login)
+	// Using afterNavigate instead of onMount because login uses use:enhance for client-side navigation
+	afterNavigate(({ from, to }) => {
+		console.log('[ROOT LAYOUT] afterNavigate triggered', {
+			from: from?.url?.pathname,
+			to: to?.url?.pathname,
+			allCookies: document.cookie
+		});
+
+		// Check for claim flash cookie (from login/signup with pending tokens)
+		const claimFlashCookie = document.cookie
+			.split('; ')
+			.find((row) => row.startsWith('claim_flash='));
+
+		if (claimFlashCookie) {
+			try {
+				// Cookie value is URL-encoded base64 JSON (SvelteKit URL-encodes cookie values)
+				const urlEncodedValue = claimFlashCookie.substring('claim_flash='.length);
+				console.log('[ROOT LAYOUT] Found claim_flash cookie (URL-encoded):', urlEncodedValue);
+				const base64Value = decodeURIComponent(urlEncodedValue);
+				console.log('[ROOT LAYOUT] After URL decode (base64):', base64Value);
+				const jsonString = atob(base64Value);
+				console.log('[ROOT LAYOUT] Decoded JSON:', jsonString);
+				const claims = JSON.parse(jsonString) as ClaimResult[];
+				console.log('[ROOT LAYOUT] Parsed claims:', claims);
+
+				// Show toast for each successful claim
+				for (const claim of claims) {
+					if (claim.success && claim.name) {
+						if (claim.type === 'organization') {
+							toast.success(m['common.claimSuccess_organization']({ name: claim.name }));
+						} else if (claim.type === 'event') {
+							toast.success(m['common.claimSuccess_event']({ name: claim.name }));
+						}
+					}
+				}
+
+				// Delete the cookie after reading
+				document.cookie = 'claim_flash=; path=/; max-age=0';
+				console.log('[ROOT LAYOUT] Processed and cleared claim_flash cookie');
+			} catch (error) {
+				console.warn('[ROOT LAYOUT] Error processing claim_flash cookie:', error);
+				// Clear the cookie even on error
+				document.cookie = 'claim_flash=; path=/; max-age=0';
+			}
+		}
+	});
+
+	// Fetch backend version on initial mount
 	onMount(async () => {
-		console.log('[ROOT LAYOUT] onMount - fetching backend version');
 		await appStore.fetchBackendVersion();
 	});
 </script>

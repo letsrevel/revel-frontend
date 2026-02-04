@@ -593,7 +593,9 @@
 		"text_tbd": "Da definire",
 		"errors_refreshPage": "Prova a ricaricare la pagina o riprova più tardi.",
 		"errors_tryAgain": "Riprova.",
-		"accessibility_skipTo": "Passa a {section}"
+		"accessibility_skipTo": "Passa a {section}",
+		"claimSuccess_organization": "Sei stato aggiunto a {name}!",
+		"claimSuccess_event": "Sei stato invitato a {name}!"
 	},
 	"confirmDeletionPage": {
 		"title": "Conferma Eliminazione Account - Revel",

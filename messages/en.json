@@ -593,7 +593,9 @@
 		"text_tbd": "TBD",
 		"errors_refreshPage": "Please try refreshing the page or check back later.",
 		"errors_tryAgain": "Please try again.",
-		"accessibility_skipTo": "Skip to {section}"
+		"accessibility_skipTo": "Skip to {section}",
+		"claimSuccess_organization": "You've been added to {name}!",
+		"claimSuccess_event": "You've been invited to {name}!"
 	},
 	"confirmDeletionPage": {
 		"title": "Confirm Account Deletion - Revel",

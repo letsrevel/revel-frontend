@@ -593,6 +593,8 @@
 				queryKey: ['organization', organization.slug, 'tokens']
 			});
 			isCreateTokenModalOpen = false;
+			// Switch to Invite Links tab to show the newly created token
+			activeTab = 'tokens';
 			toast.success('Invitation link created successfully');
 		},
 		onError: () => {
