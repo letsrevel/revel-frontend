@@ -53,6 +53,7 @@
 	let viewDialogOpen = $state(false);
 	let viewingAnnouncement = $state<AnnouncementSchema | null>(null);
 	let isLoadingView = $state(false);
+	let editingAnnouncementId = $state<string | null>(null);
 
 	// Derived
 	let accessToken = $derived(authStore.accessToken);
@@ -159,11 +160,23 @@
 		modalOpen = true;
 	}
 
-	function openEditModal(announcement: AnnouncementListSchema) {
-		// We need to fetch full announcement details for editing
-		// For now, cast it - the modal will handle partial data
-		selectedAnnouncement = announcement as unknown as AnnouncementSchema;
-		modalOpen = true;
+	async function openEditModal(announcement: AnnouncementListSchema) {
+		if (!announcement.id) return;
+		editingAnnouncementId = announcement.id;
+
+		try {
+			const response = await organizationadminannouncementsGetAnnouncement({
+				path: { slug: organizationSlug, announcement_id: announcement.id },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+			if (response.error) throw response.error;
+			selectedAnnouncement = response.data ?? null;
+			modalOpen = true;
+		} catch {
+			toast.error(m['announcements.toast.error']());
+		} finally {
+			editingAnnouncementId = null;
+		}
 	}
 
 	function handleModalSuccess() {
@@ -282,6 +295,7 @@
 					{#each announcements as announcement (announcement.id)}
 						<AnnouncementCard
 							{announcement}
+							isLoadingEdit={editingAnnouncementId === announcement.id}
 							onView={() => openViewDialog(announcement)}
 							onEdit={() => openEditModal(announcement)}
 							onDelete={() => confirmDelete(announcement)}

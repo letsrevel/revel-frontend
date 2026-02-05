@@ -67,7 +67,7 @@
 		if (open) {
 			if (announcement) {
 				title = announcement.title;
-				body = announcement.body;
+				body = announcement.body ?? '';
 				pastVisibility = announcement.past_visibility ?? true;
 
 				// Determine target type from announcement
