@@ -12,20 +12,22 @@
 		Calendar,
 		Layers,
 		MoreHorizontal,
-		Eye
+		Eye,
+		Loader2
 	} from 'lucide-svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { formatRelativeTime } from '$lib/utils/time';
 
 	interface Props {
 		announcement: AnnouncementListSchema;
+		isLoadingEdit?: boolean;
 		onView?: () => void;
 		onEdit?: () => void;
 		onDelete?: () => void;
 		onSend?: () => void;
 	}
 
-	let { announcement, onView, onEdit, onDelete, onSend }: Props = $props();
+	let { announcement, isLoadingEdit = false, onView, onEdit, onDelete, onSend }: Props = $props();
 
 	let isDraft = $derived(announcement.status === 'draft');
 
@@ -104,8 +106,12 @@
 	<div class="flex shrink-0 items-center gap-2">
 		{#if isDraft}
 			<!-- Quick actions for drafts -->
-			<Button variant="outline" size="sm" onclick={onEdit}>
-				<Edit class="mr-1.5 h-4 w-4" aria-hidden="true" />
+			<Button variant="outline" size="sm" onclick={onEdit} disabled={isLoadingEdit}>
+				{#if isLoadingEdit}
+					<Loader2 class="mr-1.5 h-4 w-4 animate-spin" aria-hidden="true" />
+				{:else}
+					<Edit class="mr-1.5 h-4 w-4" aria-hidden="true" />
+				{/if}
 				{m['announcements.edit']()}
 			</Button>
 			<Button variant="default" size="sm" onclick={onSend}>
