@@ -85,7 +85,8 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 				tier__payment_method: paymentMethod as any,
 				search,
 				page,
-				page_size: pageSize
+				page_size: pageSize,
+				include_past: true // Always show tickets in admin, even for past events
 			},
 			headers
 		});

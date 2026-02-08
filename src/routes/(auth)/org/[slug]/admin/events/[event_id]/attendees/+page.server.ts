@@ -83,7 +83,8 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 				status: status as any,
 				search,
 				page,
-				page_size: pageSize
+				page_size: pageSize,
+				include_past: true // Always show RSVPs in admin, even for past events
 			},
 			headers
 		});
