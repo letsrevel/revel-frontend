@@ -264,6 +264,7 @@
 
 	// State for announcement modal
 	let announcementModalOpen = $state(false);
+	let includePastEvents = $state(false);
 
 	// Derived auth token
 	let accessToken = $derived(authStore.accessToken);
@@ -282,10 +283,14 @@
 
 	// Fetch events for announcement modal (only when modal might be used)
 	let eventsQuery = createQuery(() => ({
-		queryKey: ['admin-events', event.organization?.id],
+		queryKey: ['admin-events', event.organization?.id, includePastEvents],
 		queryFn: async () => {
 			const response = await eventpublicdiscoveryListEvents({
-				query: { organization: event.organization?.id, page_size: 100 }
+				query: {
+					organization: event.organization?.id,
+					page_size: 100,
+					include_past: includePastEvents
+				}
 			});
 			if (response.error) throw response.error;
 			return response.data;
@@ -308,6 +313,7 @@
 	}));
 
 	let eventsList = $derived(eventsQuery.data?.results ?? []);
+	let eventsLoading = $derived(eventsQuery.isLoading);
 	let tiersList = $derived(tiersQuery.data ?? []);
 
 	/**
@@ -680,8 +686,13 @@
 		organizationSlug={event.organization.slug}
 		preSelectedEventId={event.id}
 		events={eventsList}
+		{eventsLoading}
+		{includePastEvents}
 		tiers={tiersList}
 		onClose={() => (announcementModalOpen = false)}
 		onSuccess={() => (announcementModalOpen = false)}
+		onIncludePastChange={(includePast) => {
+			includePastEvents = includePast;
+		}}
 	/>
 {/if}
