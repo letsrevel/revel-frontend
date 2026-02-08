@@ -30,9 +30,12 @@
 		organizationSlug: string;
 		preSelectedEventId?: string;
 		events?: EventInListSchema[];
+		eventsLoading?: boolean;
+		includePastEvents?: boolean;
 		tiers?: MembershipTierSchema[];
 		onClose: () => void;
 		onSuccess: () => void;
+		onIncludePastChange?: (includePast: boolean) => void;
 	}
 
 	let {
@@ -41,9 +44,12 @@
 		organizationSlug,
 		preSelectedEventId,
 		events = [],
+		eventsLoading = false,
+		includePastEvents = false,
 		tiers = [],
 		onClose,
-		onSuccess
+		onSuccess,
+		onIncludePastChange
 	}: Props = $props();
 
 	const queryClient = useQueryClient();
@@ -435,10 +441,19 @@
 				{#if targetType === 'event'}
 					<div class="ml-11 space-y-2">
 						<Label for="event-select">{m['announcements.form.selectEvent']()}</Label>
-						{#if events.length === 0}
+						{#if eventsLoading}
 							<div class="flex items-center gap-2 text-sm text-muted-foreground">
 								<Loader2 class="h-4 w-4 animate-spin" />
 								{m['announcements.form.loadingEvents']()}
+							</div>
+						{:else if events.length === 0}
+							<div class="rounded-md border border-dashed p-4 text-center">
+								<p class="text-sm font-medium text-muted-foreground">
+									{m['announcements.form.noEvents']()}
+								</p>
+								<p class="mt-1 text-xs text-muted-foreground">
+									{m['announcements.form.noEventsDescription']()}
+								</p>
 							</div>
 						{:else}
 							<select
@@ -457,6 +472,22 @@
 								{/each}
 							</select>
 						{/if}
+						<!-- Include past events checkbox -->
+						<div class="flex items-center gap-2">
+							<Checkbox
+								id="include-past-events"
+								checked={includePastEvents}
+								onCheckedChange={(checked) => {
+									if (onIncludePastChange) {
+										onIncludePastChange(checked === true);
+									}
+								}}
+								disabled={isSaving || eventsLoading}
+							/>
+							<Label for="include-past-events" class="cursor-pointer text-sm font-normal">
+								{m['announcements.form.includePastEvents']()}
+							</Label>
+						</div>
 					</div>
 				{/if}
 

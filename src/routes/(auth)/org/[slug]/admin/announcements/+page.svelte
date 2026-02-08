@@ -54,6 +54,7 @@
 	let viewingAnnouncement = $state<AnnouncementSchema | null>(null);
 	let isLoadingView = $state(false);
 	let editingAnnouncementId = $state<string | null>(null);
+	let includePastEvents = $state(false);
 
 	// Derived
 	let accessToken = $derived(authStore.accessToken);
@@ -81,10 +82,10 @@
 
 	// Fetch events for the modal
 	let eventsQuery = createQuery(() => ({
-		queryKey: ['admin-events', organizationId],
+		queryKey: ['admin-events', organizationId, includePastEvents],
 		queryFn: async () => {
 			const response = await eventpublicdiscoveryListEvents({
-				query: { organization: organizationId, page_size: 100 }
+				query: { organization: organizationId, page_size: 100, include_past: includePastEvents }
 			});
 			if (response.error) throw response.error;
 			return response.data;
@@ -151,6 +152,7 @@
 	// Derived data
 	let announcements = $derived(announcementsQuery.data?.results ?? []);
 	let events = $derived(eventsQuery.data?.results ?? []);
+	let eventsLoading = $derived(eventsQuery.isLoading);
 	let tiers = $derived(tiersQuery.data ?? []);
 	let isLoading = $derived(announcementsQuery.isLoading);
 
@@ -336,12 +338,17 @@
 	announcement={selectedAnnouncement}
 	{organizationSlug}
 	{events}
+	{eventsLoading}
+	{includePastEvents}
 	{tiers}
 	onClose={() => {
 		modalOpen = false;
 		selectedAnnouncement = null;
 	}}
 	onSuccess={handleModalSuccess}
+	onIncludePastChange={(includePast) => {
+		includePastEvents = includePast;
+	}}
 />
 
 <!-- Delete Confirmation Dialog -->
