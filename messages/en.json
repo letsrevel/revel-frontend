@@ -3538,7 +3538,8 @@
 		"assigningToSeries": "Assigning to a series applies the questionnaire to",
 		"allEvents": "all events",
 		"loadingEventSeries": "Loading event series...",
-		"cancel": "Cancel"
+		"cancel": "Cancel",
+		"includePastEvents": "Include past events"
 	},
 	"questionnaireCard": {
 		"type_admission": "Admission",
