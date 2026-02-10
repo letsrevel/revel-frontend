@@ -1,4 +1,5 @@
 import { apiApiVersion } from '$lib/api/client';
+import type { BannerSchema } from '$lib/api/generated/types.gen';
 
 /**
  * App-level store using Svelte 5 Runes
@@ -9,6 +10,8 @@ class AppStore {
 	private _backendVersion = $state<string | null>(null);
 	private _isDemoMode = $state<boolean>(false);
 	private _isLoadingVersion = $state<boolean>(false);
+	private _banner = $state<BannerSchema | null>(null);
+	private _bannerExpiryTimer: ReturnType<typeof setTimeout> | null = null;
 
 	// Public computed state
 	get backendVersion() {
@@ -21,6 +24,10 @@ class AppStore {
 
 	get isLoadingVersion() {
 		return this._isLoadingVersion;
+	}
+
+	get banner() {
+		return this._banner;
 	}
 
 	/**
@@ -46,6 +53,19 @@ class AppStore {
 
 			this._backendVersion = data.version;
 			this._isDemoMode = data.demo ?? false;
+			this._banner = data.banner ?? null;
+
+			// Client-side expiry: auto-clear banner when ends_at passes
+			if (this._banner?.ends_at) {
+				const ms = new Date(this._banner.ends_at).getTime() - Date.now();
+				if (ms > 0) {
+					this._bannerExpiryTimer = setTimeout(() => {
+						this._banner = null;
+					}, ms);
+				} else {
+					this._banner = null;
+				}
+			}
 		} catch (error) {
 			console.error('Failed to fetch backend version:', error);
 			this._backendVersion = 'Unknown';

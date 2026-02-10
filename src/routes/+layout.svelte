@@ -10,6 +10,7 @@
 	import { extractErrorMessage, isAuthError } from '$lib/utils/errors';
 	import DemoBanner from '$lib/components/common/DemoBanner.svelte';
 	import ImpersonationBanner from '$lib/components/common/ImpersonationBanner.svelte';
+	import MaintenanceBanner from '$lib/components/common/MaintenanceBanner.svelte';
 	import type { LayoutData } from './$types';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { ClaimResult } from '$lib/server/token-claim';
@@ -247,5 +248,6 @@
 	<Toaster richColors position="top-right" />
 	<ImpersonationBanner />
 	<DemoBanner />
+	<MaintenanceBanner />
 	{@render children()}
 </QueryClientProvider>
