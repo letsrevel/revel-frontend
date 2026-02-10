@@ -3538,7 +3538,8 @@
 		"assigningToSeries": "Zuweisung zu einer Serie wendet den Fragebogen auf",
 		"allEvents": "alle Veranstaltungen",
 		"loadingEventSeries": "Veranstaltungsserien werden geladen...",
-		"cancel": "Abbrechen"
+		"cancel": "Abbrechen",
+		"includePastEvents": "Vergangene Veranstaltungen einbeziehen"
 	},
 	"questionnaireCard": {
 		"type_admission": "Admission",

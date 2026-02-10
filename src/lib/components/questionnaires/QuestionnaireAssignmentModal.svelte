@@ -36,6 +36,7 @@
 	let isLoadingEvents = $state(true);
 	let allEvents = $state<EventInListSchema[]>([]);
 	let selectedEventIds = $state<Set<string>>(new Set());
+	let includePastEvents = $state(false);
 
 	// Series state
 	let searchQuerySeries = $state('');
@@ -63,13 +64,24 @@
 		}
 	});
 
+	// Re-fetch events when includePastEvents changes
+	$effect(() => {
+		// Track the includePastEvents value
+		const _ = includePastEvents;
+		// Only re-fetch if modal is open and we've already loaded once
+		if (open && !isLoadingEvents) {
+			loadEvents();
+		}
+	});
+
 	async function loadEvents() {
 		isLoadingEvents = true;
 		try {
 			const response = await eventpublicdiscoveryListEvents({
 				query: {
 					organization: organizationId,
-					page_size: 100 // Fetch all org events
+					page_size: 100, // Fetch all org events
+					include_past: includePastEvents
 				},
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
@@ -256,6 +268,18 @@
 
 			<!-- Events Tab -->
 			<TabsContent value="events">
+				<!-- Include past events checkbox -->
+				<div class="mx-6 mt-4 flex items-center gap-2">
+					<Checkbox
+						id="include-past-events"
+						checked={includePastEvents}
+						onCheckedChange={(checked) => (includePastEvents = !!checked)}
+					/>
+					<label for="include-past-events" class="cursor-pointer text-sm text-muted-foreground">
+						{m['questionnaireAssignmentModal.includePastEvents']()}
+					</label>
+				</div>
+
 				<!-- Search Bar -->
 				<div class="border-b px-6 py-4">
 					<div class="relative">
