@@ -749,6 +749,11 @@
 		"description": "Dies ist eine Demo-Umgebung. Alle Daten werden um Mitternacht MEZ (ungefähr {time} {timezone}) zurückgesetzt. Erkunde und teste gerne alle Funktionen! E-Mails können auf <link>mailpit.letsrevel.io</link> eingesehen und debuggt werden.",
 		"slowHardwareWarning": "Hinweis: Die Demo läuft auf langsamer Hardware und kann einen Moment zum Laden benötigen."
 	},
+	"maintenanceBanner": {
+		"scheduled": "Geplant: {time}",
+		"until": "Bis: {time}",
+		"dismiss": "Wartungshinweis ausblenden"
+	},
 	"demoCardInfo": {
 		"demoPaymentTestCard": "Demo-Zahlungstestkarte",
 		"expiry": "Ablauf:",

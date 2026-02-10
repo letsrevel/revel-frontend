@@ -749,6 +749,11 @@
 		"description": "This is a demo environment. All data will be reset at midnight CET (approximately {time} {timezone}). Feel free to explore and test all features! Emails can be explored and debugged on <link>mailpit.letsrevel.io</link>.",
 		"slowHardwareWarning": "Note: The demo runs on slow hardware and may take a moment to load."
 	},
+	"maintenanceBanner": {
+		"scheduled": "Scheduled: {time}",
+		"until": "Until: {time}",
+		"dismiss": "Dismiss maintenance banner"
+	},
 	"demoCardInfo": {
 		"demoPaymentTestCard": "Demo Payment Test Card",
 		"expiry": "Expiry:",
