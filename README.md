@@ -144,6 +144,7 @@ This frontend embodies Revel's core values:
 | `pnpm test`         | Run unit tests with Vitest                       |
 | `pnpm test:ui`      | Run tests with interactive UI                    |
 | `pnpm test:e2e`     | Run end-to-end tests with Playwright             |
+| `pnpm test:coverage`| Generate test coverage report                    |
 | `pnpm lint`         | Lint code with ESLint                            |
 | `pnpm format`       | Format code with Prettier                        |
 | `pnpm check`        | Run SvelteKit type checking and validation       |
@@ -178,13 +179,64 @@ revel-frontend/
 │   └── app.html             # HTML template
 ├── static/                  # Static assets (images, fonts, etc.)
 ├── tests/
-│   ├── unit/               # Unit tests
+│   ├── unit/               # Unit tests (Vitest)
 │   ├── integration/        # Integration tests
-│   └── e2e/                # End-to-end tests
+│   └── e2e/                # End-to-end tests (Playwright)
+│       ├── auth/           # Authentication tests
+│       ├── events/         # Event discovery tests
+│       ├── dashboard/      # Dashboard tests
+│       ├── account/        # Account management tests
+│       ├── tickets/        # Ticket purchase tests
+│       ├── admin/          # Event creation/editing tests
+│       └── fixtures/       # Test helpers and data
 ├── backend_context/         # Symlinked backend documentation
 ├── .env.example            # Environment variable template
 └── package.json
 ```
+
+---
+
+## 🧪 Testing
+
+### Unit Tests (Vitest)
+
+```bash
+pnpm test              # Run all unit tests
+pnpm test:ui           # Run with interactive UI
+pnpm test:coverage     # Generate coverage report
+```
+
+### End-to-End Tests (Playwright)
+
+Comprehensive E2E test coverage for critical user flows:
+
+```bash
+pnpm test:e2e                                    # Run all E2E tests
+pnpm exec playwright test --project=chromium     # Run on specific browser
+pnpm exec playwright test --ui                   # Interactive UI mode
+pnpm exec playwright show-report                 # View HTML report
+```
+
+**Test Suites:**
+
+| Suite | Tests | Coverage |
+|-------|-------|----------|
+| `auth/` | 15+ | Registration, password reset, logout |
+| `events/` | 40+ | Event listing, detail, RSVP, potluck |
+| `dashboard/` | 40+ | Dashboard, RSVPs, tickets, invitations |
+| `account/` | 25+ | Profile, settings, security, privacy |
+| `tickets/` | 16+ | Ticket tiers, purchase, dashboard |
+| `admin/` | 62 | Event creation wizard, editing, publication |
+
+**Run specific suites:**
+
+```bash
+pnpm exec playwright test tests/e2e/admin/       # Event admin tests
+pnpm exec playwright test tests/e2e/events/      # Event discovery tests
+pnpm exec playwright test tests/e2e/dashboard/   # Dashboard tests
+```
+
+See [`tests/e2e/README.md`](tests/e2e/README.md) for detailed documentation on test structure, writing new tests, and troubleshooting.
 
 ---
 
