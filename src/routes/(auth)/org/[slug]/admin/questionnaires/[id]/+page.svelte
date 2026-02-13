@@ -240,6 +240,7 @@
 		if (questionnaire) {
 			questionnaireType = questionnaire.questionnaire_type || 'admission';
 			membersExempt = questionnaire.members_exempt ?? false;
+			perEvent = questionnaire.per_event ?? false;
 			maxSubmissionAge =
 				questionnaire.max_submission_age && typeof questionnaire.max_submission_age === 'number'
 					? Math.round(questionnaire.max_submission_age / 86400)
@@ -460,6 +461,7 @@
 	let canRetakeAfter = $state<number | null>(null);
 	let maxAttempts = $state(0);
 	let membersExempt = $state(false);
+	let perEvent = $state(false);
 
 	// Local state for questions/sections (same as create page)
 	let topLevelQuestions = $state<Question[]>([]);
@@ -925,7 +927,8 @@
 					llm_guidelines: llmGuidelines || null,
 					can_retake_after: canRetakeAfter ? (canRetakeAfter * 3600).toString() : null,
 					max_attempts: maxAttempts,
-					members_exempt: membersExempt
+					members_exempt: membersExempt,
+					per_event: perEvent
 				},
 				headers: authHeader
 			});
@@ -1627,8 +1630,21 @@
 			{m['questionnaireEditPage.backButton']()}
 		</Button>
 
-		<h1 class="text-3xl font-bold tracking-tight">{m['questionnaireEditPage.title']()}</h1>
-		<p class="mt-2 text-sm text-muted-foreground">{m['questionnaireEditPage.subtitle']()}</p>
+		<div class="flex items-center justify-between">
+			<div>
+				<h1 class="text-3xl font-bold tracking-tight">{m['questionnaireEditPage.title']()}</h1>
+				<p class="mt-2 text-sm text-muted-foreground">{m['questionnaireEditPage.subtitle']()}</p>
+			</div>
+			<div class="flex gap-2">
+				<Button
+					href="/org/{data.organizationSlug}/admin/questionnaires/{data.questionnaire?.id}/summary"
+					variant="outline"
+					size="sm"
+				>
+					{m['questionnaireEditPage.viewSummary']()}
+				</Button>
+			</div>
+		</div>
 	</div>
 
 	<!-- Status Management -->
@@ -2027,6 +2043,27 @@
 						{m['questionnaireEditPage.membersExemptDescription']()}
 					</p>
 				</div>
+
+				<!-- Per-Event Completion (only for admission type) -->
+				{#if questionnaireType === 'admission'}
+					<div class="space-y-2">
+						<div class="flex items-center space-x-2">
+							<input
+								id="per-event"
+								type="checkbox"
+								bind:checked={perEvent}
+								class="h-4 w-4 rounded border-gray-300"
+								disabled={!canEdit}
+							/>
+							<Label for="per-event" class="font-normal"
+								>{m['questionnaireEditPage.perEventLabel']()}</Label
+							>
+						</div>
+						<p class="text-xs text-muted-foreground">
+							{m['questionnaireEditPage.perEventDescription']()}
+						</p>
+					</div>
+				{/if}
 
 				<!-- LLM Guidelines -->
 				<div class="space-y-2">

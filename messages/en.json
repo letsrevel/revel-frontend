@@ -3681,7 +3681,10 @@
 		"error_statusChangeFailed": "Failed to change status",
 		"error_statusChangeFailedMessage": "Failed to change status. Please try again.",
 		"membersExemptLabel": "Exempt organization members from this questionnaire",
-		"membersExemptDescription": "When enabled, organization members will automatically bypass this questionnaire and be considered as having passed it"
+		"membersExemptDescription": "When enabled, organization members will automatically bypass this questionnaire and be considered as having passed it",
+		"perEventLabel": "Require per-event completion",
+		"perEventDescription": "When enabled, users must fill out this questionnaire for each event individually.",
+		"viewSummary": "View Summary"
 	},
 	"questionnaireNewPage": {
 		"pageTitle": "Create Questionnaire",
@@ -3738,12 +3741,40 @@
 		"creating": "Creating...",
 		"cancelButton": "Cancel",
 		"membersExemptLabel": "Exempt organization members from this questionnaire",
-		"membersExemptDescription": "When enabled, organization members will automatically bypass this questionnaire and be considered as having passed it"
+		"membersExemptDescription": "When enabled, organization members will automatically bypass this questionnaire and be considered as having passed it",
+		"perEventLabel": "Require per-event completion",
+		"perEventDescription": "When enabled, users must fill out this questionnaire for each event individually."
 	},
 	"questionnairePage": {
 		"autoEvaluated": "This answer will be automatically evaluated by AI",
 		"humanReviewed": "This answer will be evaluated by AI and reviewed by a human",
 		"submissionFailed": "Submission Failed"
+	},
+	"questionnaireSummaryPage": {
+		"pageTitle": "Questionnaire Summary",
+		"title": "Summary",
+		"backToQuestionnaire": "Back to Questionnaire",
+		"filterByEvent": "Filter by Event",
+		"filterByEventSeries": "Filter by Event Series",
+		"allEvents": "All Events",
+		"allSeries": "All Series",
+		"totalSubmissions": "Total Submissions",
+		"uniqueUsers": "Unique Users",
+		"approvalRate": "Approval Rate",
+		"pendingReview": "Pending Review",
+		"statusBreakdown": "Status Breakdown (per user)",
+		"approved": "Approved",
+		"rejected": "Rejected",
+		"notEvaluated": "Not Evaluated",
+		"scoreStats": "Score Statistics",
+		"min": "Min",
+		"avg": "Average",
+		"max": "Max",
+		"mcDistributions": "Answer Distributions",
+		"correct": "Correct",
+		"noSubmissions": "No submissions yet",
+		"noSubmissionsDescription": "Submissions will appear here once users start completing the questionnaire.",
+		"responses": "responses"
 	},
 	"questionnaireSubmissionDetailPage": {
 		"pageTitle": "Review Submission",
