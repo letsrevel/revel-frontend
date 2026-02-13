@@ -1,12 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
-import { questionnaireListSubmissions } from '$lib/api/client';
-import {
-	isApproved,
-	isRejected,
-	isPendingReview,
-	type QuestionnaireEvaluationStatus
-} from '$lib/utils/questionnaire-types';
+import { questionnaireListSubmissions, questionnaireGetSummary } from '$lib/api/client';
 
 export const load: PageServerLoad = async ({ params, url, locals, fetch }) => {
 	const { slug, id } = params;
@@ -31,39 +25,52 @@ export const load: PageServerLoad = async ({ params, url, locals, fetch }) => {
 		| 'submitted_at'
 		| '-submitted_at';
 
-	// Fetch submissions
-	const { data: submissionsData, error: submissionsError } = await questionnaireListSubmissions({
-		fetch,
-		path: {
-			org_questionnaire_id: id
-		},
-		query: {
-			page,
-			page_size: pageSize,
-			search,
-			evaluation_status: evaluationStatusFilter,
-			order_by: orderBy
-		},
-		headers
-	});
+	// Fetch submissions and summary in parallel
+	const [submissionsResult, summaryResult] = await Promise.all([
+		questionnaireListSubmissions({
+			fetch,
+			path: {
+				org_questionnaire_id: id
+			},
+			query: {
+				page,
+				page_size: pageSize,
+				search,
+				evaluation_status: evaluationStatusFilter,
+				order_by: orderBy
+			},
+			headers
+		}),
+		questionnaireGetSummary({
+			fetch,
+			path: {
+				org_questionnaire_id: id
+			},
+			headers
+		})
+	]);
 
-	if (submissionsError || !submissionsData) {
-		console.error('Failed to fetch submissions:', submissionsError);
+	if (submissionsResult.error || !submissionsResult.data) {
+		console.error('Failed to fetch submissions:', submissionsResult.error);
 		throw error(500, 'Failed to load submissions');
 	}
 
-	// Calculate stats from the response
-	const stats = {
-		pendingCount: submissionsData.results.filter((s) =>
-			isPendingReview(s.evaluation_status as QuestionnaireEvaluationStatus | null)
-		).length,
-		approvedCount: submissionsData.results.filter((s) =>
-			isApproved(s.evaluation_status as QuestionnaireEvaluationStatus | null)
-		).length,
-		rejectedCount: submissionsData.results.filter((s) =>
-			isRejected(s.evaluation_status as QuestionnaireEvaluationStatus | null)
-		).length
-	};
+	const submissionsData = submissionsResult.data;
+
+	// Use summary data for accurate stats across all submissions
+	const stats = summaryResult.data
+		? {
+				pendingCount:
+					(summaryResult.data.by_status_per_user.pending_review ?? 0) +
+					(summaryResult.data.by_status_per_user.not_evaluated ?? 0),
+				approvedCount: summaryResult.data.by_status_per_user.approved ?? 0,
+				rejectedCount: summaryResult.data.by_status_per_user.rejected ?? 0
+			}
+		: {
+				pendingCount: 0,
+				approvedCount: 0,
+				rejectedCount: 0
+			};
 
 	return {
 		submissions: submissionsData.results,

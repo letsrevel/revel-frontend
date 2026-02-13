@@ -94,6 +94,7 @@
 	let maxSubmissionAge = $state<number | null>(null); // Duration in days
 	let canRetakeAfter = $state<number | null>(null); // Duration in hours
 	let membersExempt = $state(false); // Exempt members from questionnaire
+	let perEvent = $state(false); // Require per-event completion
 
 	// Error state for displaying validation errors
 	let saveError = $state<string | null>(null);
@@ -646,6 +647,7 @@
 					llm_guidelines: llmGuidelines || null,
 					can_retake_after: canRetakeAfter !== null ? String(canRetakeAfter * 3600) : undefined, // Convert hours to seconds
 					members_exempt: membersExempt,
+					per_event: perEvent,
 					sections: apiSections as SectionCreateSchema[],
 					multiplechoicequestion_questions: topLevelMC as MultipleChoiceQuestionCreateSchema[],
 					freetextquestion_questions: topLevelFT,
@@ -926,6 +928,26 @@
 					{m['questionnaireNewPage.membersExemptDescription']()}
 				</p>
 			</div>
+
+			<!-- Per-Event Completion (only for admission type) -->
+			{#if questionnaireType === 'admission'}
+				<div class="space-y-2">
+					<div class="flex items-center space-x-2">
+						<input
+							id="per-event"
+							type="checkbox"
+							bind:checked={perEvent}
+							class="h-4 w-4 rounded border-gray-300"
+						/>
+						<Label for="per-event" class="font-normal"
+							>{m['questionnaireNewPage.perEventLabel']()}</Label
+						>
+					</div>
+					<p class="text-xs text-muted-foreground">
+						{m['questionnaireNewPage.perEventDescription']()}
+					</p>
+				</div>
+			{/if}
 
 			<!-- LLM Guidelines -->
 			<div class="space-y-2">

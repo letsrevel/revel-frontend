@@ -3681,7 +3681,10 @@
 		"error_statusChangeFailed": "Statusänderung fehlgeschlagen",
 		"error_statusChangeFailedMessage": "Statusänderung fehlgeschlagen. Bitte versuche es erneut.",
 		"membersExemptLabel": "Organisationsmitglieder von diesem Fragebogen ausnehmen",
-		"membersExemptDescription": "Wenn aktiviert, werden Organisationsmitglieder diesen Fragebogen automatisch überspringen und als bestanden betrachtet"
+		"membersExemptDescription": "Wenn aktiviert, werden Organisationsmitglieder diesen Fragebogen automatisch überspringen und als bestanden betrachtet",
+		"perEventLabel": "Pro-Event-Ausfüllung erforderlich",
+		"perEventDescription": "Wenn aktiviert, müssen Benutzer diesen Fragebogen für jedes Event einzeln ausfüllen.",
+		"viewSummary": "Zusammenfassung anzeigen"
 	},
 	"questionnaireNewPage": {
 		"pageTitle": "Create Questionnaire",
@@ -3738,12 +3741,40 @@
 		"creating": "Creating...",
 		"cancelButton": "Cancel",
 		"membersExemptLabel": "Organisationsmitglieder von diesem Fragebogen ausnehmen",
-		"membersExemptDescription": "Wenn aktiviert, werden Organisationsmitglieder diesen Fragebogen automatisch überspringen und als bestanden betrachtet"
+		"membersExemptDescription": "Wenn aktiviert, werden Organisationsmitglieder diesen Fragebogen automatisch überspringen und als bestanden betrachtet",
+		"perEventLabel": "Pro-Event-Ausfüllung erforderlich",
+		"perEventDescription": "Wenn aktiviert, müssen Benutzer diesen Fragebogen für jedes Event einzeln ausfüllen."
 	},
 	"questionnairePage": {
 		"autoEvaluated": "Diese Antwort wird automatisch von KI bewertet",
 		"humanReviewed": "Diese Antwort wird von KI bewertet und von einem Menschen überprüft",
 		"submissionFailed": "Übermittlung fehlgeschlagen"
+	},
+	"questionnaireSummaryPage": {
+		"pageTitle": "Fragebogen-Zusammenfassung",
+		"title": "Zusammenfassung",
+		"backToQuestionnaire": "Zurück zum Fragebogen",
+		"filterByEvent": "Nach Event filtern",
+		"filterByEventSeries": "Nach Eventserie filtern",
+		"allEvents": "Alle Events",
+		"allSeries": "Alle Serien",
+		"totalSubmissions": "Gesamteinreichungen",
+		"uniqueUsers": "Einzigartige Benutzer",
+		"approvalRate": "Genehmigungsrate",
+		"pendingReview": "Ausstehende Überprüfung",
+		"statusBreakdown": "Statusverteilung (pro Benutzer)",
+		"approved": "Genehmigt",
+		"rejected": "Abgelehnt",
+		"notEvaluated": "Nicht bewertet",
+		"scoreStats": "Punktestatistik",
+		"min": "Min",
+		"avg": "Durchschnitt",
+		"max": "Max",
+		"mcDistributions": "Antwortverteilungen",
+		"correct": "Richtig",
+		"noSubmissions": "Noch keine Einreichungen",
+		"noSubmissionsDescription": "Einreichungen erscheinen hier, sobald Benutzer den Fragebogen ausfüllen.",
+		"responses": "Antworten"
 	},
 	"questionnaireSubmissionDetailPage": {
 		"pageTitle": "Einreichung prüfen",

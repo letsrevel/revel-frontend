@@ -91,8 +91,19 @@
 			<ArrowLeft class="h-4 w-4" />
 			{m['questionnaireSubmissionsPage.backToQuestionnaires']()}
 		</a>
-		<h1 class="text-3xl font-bold">{m['questionnaireSubmissionsPage.title']()}</h1>
-		<p class="mt-2 text-muted-foreground">{m['questionnaireSubmissionsPage.subtitle']()}</p>
+		<div class="flex items-center justify-between">
+			<div>
+				<h1 class="text-3xl font-bold">{m['questionnaireSubmissionsPage.title']()}</h1>
+				<p class="mt-2 text-muted-foreground">{m['questionnaireSubmissionsPage.subtitle']()}</p>
+			</div>
+			<Button
+				href="/org/{data.organizationSlug}/admin/questionnaires/{data.questionnaireId}/summary"
+				variant="outline"
+				size="sm"
+			>
+				View Summary
+			</Button>
+		</div>
 	</div>
 
 	<!-- Stats -->

@@ -3681,7 +3681,10 @@
 		"error_statusChangeFailed": "Cambio di stato fallito",
 		"error_statusChangeFailedMessage": "Cambio di stato fallito. Riprova.",
 		"membersExemptLabel": "Esenta i membri dell'organizzazione da questo questionario",
-		"membersExemptDescription": "Quando attivato, i membri dell'organizzazione salteranno automaticamente questo questionario e saranno considerati come se lo avessero superato"
+		"membersExemptDescription": "Quando attivato, i membri dell'organizzazione salteranno automaticamente questo questionario e saranno considerati come se lo avessero superato",
+		"perEventLabel": "Richiedi compilazione per ogni evento",
+		"perEventDescription": "Quando attivato, gli utenti devono compilare questo questionario per ogni evento singolarmente.",
+		"viewSummary": "Vedi Riepilogo"
 	},
 	"questionnaireNewPage": {
 		"pageTitle": "Create Questionnaire",
@@ -3738,12 +3741,40 @@
 		"creating": "Creating...",
 		"cancelButton": "Cancel",
 		"membersExemptLabel": "Esenta i membri dell'organizzazione da questo questionario",
-		"membersExemptDescription": "Quando attivato, i membri dell'organizzazione salteranno automaticamente questo questionario e saranno considerati come se lo avessero superato"
+		"membersExemptDescription": "Quando attivato, i membri dell'organizzazione salteranno automaticamente questo questionario e saranno considerati come se lo avessero superato",
+		"perEventLabel": "Richiedi compilazione per ogni evento",
+		"perEventDescription": "Quando attivato, gli utenti devono compilare questo questionario per ogni evento singolarmente."
 	},
 	"questionnairePage": {
 		"autoEvaluated": "Questa risposta verrà valutata automaticamente dall'AI",
 		"humanReviewed": "Questa risposta verrà valutata dall'AI e rivista da un umano",
 		"submissionFailed": "Invio Fallito"
+	},
+	"questionnaireSummaryPage": {
+		"pageTitle": "Riepilogo Questionario",
+		"title": "Riepilogo",
+		"backToQuestionnaire": "Torna al Questionario",
+		"filterByEvent": "Filtra per Evento",
+		"filterByEventSeries": "Filtra per Serie di Eventi",
+		"allEvents": "Tutti gli Eventi",
+		"allSeries": "Tutte le Serie",
+		"totalSubmissions": "Invii Totali",
+		"uniqueUsers": "Utenti Unici",
+		"approvalRate": "Tasso di Approvazione",
+		"pendingReview": "In Attesa di Revisione",
+		"statusBreakdown": "Ripartizione Stato (per utente)",
+		"approved": "Approvati",
+		"rejected": "Rifiutati",
+		"notEvaluated": "Non Valutati",
+		"scoreStats": "Statistiche Punteggio",
+		"min": "Min",
+		"avg": "Media",
+		"max": "Max",
+		"mcDistributions": "Distribuzione Risposte",
+		"correct": "Corretta",
+		"noSubmissions": "Nessun invio ancora",
+		"noSubmissionsDescription": "Gli invii appariranno qui quando gli utenti inizieranno a compilare il questionario.",
+		"responses": "risposte"
 	},
 	"questionnaireSubmissionDetailPage": {
 		"pageTitle": "Valuta Risposta",
