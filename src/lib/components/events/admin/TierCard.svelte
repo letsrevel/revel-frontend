@@ -4,15 +4,17 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
-	import { Edit, Building2, LayoutGrid, Armchair } from 'lucide-svelte';
+	import { Edit, Building2, LayoutGrid, Armchair, ChevronUp, ChevronDown } from 'lucide-svelte';
 
 	interface Props {
 		tier: TicketTierDetailSchema;
 		onEdit: () => void;
 		onDelete?: () => void; // Phase 2: Add delete functionality
+		onMoveUp?: () => void;
+		onMoveDown?: () => void;
 	}
 
-	let { tier, onEdit }: Props = $props();
+	let { tier, onEdit, onMoveUp, onMoveDown }: Props = $props();
 
 	const CURRENCY_SYMBOLS: Record<string, string> = {
 		EUR: '€',
@@ -252,8 +254,34 @@
 			{/if}
 		</div>
 
-		<Button variant="ghost" size="icon" onclick={onEdit} aria-label="Edit {tier.name}">
-			<Edit class="h-4 w-4" />
-		</Button>
+		<div class="flex flex-col items-center gap-1">
+			{#if onMoveUp || onMoveDown}
+				<div class="flex flex-col">
+					<Button
+						variant="ghost"
+						size="icon"
+						class="h-7 w-7"
+						onclick={onMoveUp}
+						disabled={!onMoveUp}
+						aria-label="Move {tier.name} up"
+					>
+						<ChevronUp class="h-4 w-4" />
+					</Button>
+					<Button
+						variant="ghost"
+						size="icon"
+						class="h-7 w-7"
+						onclick={onMoveDown}
+						disabled={!onMoveDown}
+						aria-label="Move {tier.name} down"
+					>
+						<ChevronDown class="h-4 w-4" />
+					</Button>
+				</div>
+			{/if}
+			<Button variant="ghost" size="icon" onclick={onEdit} aria-label="Edit {tier.name}">
+				<Edit class="h-4 w-4" />
+			</Button>
+		</div>
 	</div>
 </Card>
