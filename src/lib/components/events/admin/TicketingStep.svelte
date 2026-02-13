@@ -1,8 +1,9 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { createQuery } from '@tanstack/svelte-query';
+	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		eventadminticketsListTicketTiers,
+		eventadminticketsReorderTicketTiers,
 		organizationadminmembersListMembershipTiers
 	} from '$lib/api/generated/sdk.gen';
 	import type { TicketTierDetailSchema } from '$lib/api/generated/types.gen';
@@ -13,6 +14,7 @@
 	import TierCard from './TierCard.svelte';
 	import TierForm from './TierForm.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { toast } from 'svelte-sonner';
 
 	// EventFormData is a flexible type for form state
 	interface EventFormData {
@@ -64,11 +66,66 @@
 		enabled: !!accessToken
 	}));
 
+	const queryClient = useQueryClient();
+
 	let editingTier = $state<TicketTierDetailSchema | null>(null);
 	let showTierForm = $state(false);
 
 	let tiers = $derived(tiersQuery.data?.data?.results ?? []);
 	let membershipTiers = $derived(membershipTiersQuery.data ?? []);
+
+	// --- Tier reordering via up/down buttons ---
+	const reorderMutation = createMutation<unknown, unknown, string[]>(() => ({
+		mutationFn: async (tierIds: string[]) => {
+			return await eventadminticketsReorderTicketTiers({
+				path: { event_id: eventId },
+				body: { tier_ids: tierIds }
+			});
+		},
+		onMutate: async () => {
+			await queryClient.cancelQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
+			return {
+				previousData: queryClient.getQueryData(['event-admin', eventId, 'ticket-tiers'])
+			};
+		},
+		onSuccess: async () => {
+			toast.success('Tier order updated');
+			await queryClient.invalidateQueries({
+				queryKey: ['event-admin', eventId, 'ticket-tiers']
+			});
+		},
+		onError: (_err, _vars, context) => {
+			toast.error('Failed to reorder tiers');
+			const ctx = context as { previousData?: unknown } | undefined;
+			if (ctx?.previousData) {
+				queryClient.setQueryData(['event-admin', eventId, 'ticket-tiers'], ctx.previousData);
+			}
+		}
+	}));
+
+	function handleMoveTier(index: number, direction: 'up' | 'down') {
+		const swapIndex = direction === 'up' ? index - 1 : index + 1;
+		if (swapIndex < 0 || swapIndex >= tiers.length) return;
+
+		// Build new order by swapping the two tiers
+		const tierIds = tiers.map((t) => t.id).filter((id): id is string => !!id);
+		[tierIds[index], tierIds[swapIndex]] = [tierIds[swapIndex], tierIds[index]];
+
+		// Optimistic update: set the swapped order in the query cache immediately
+		const currentData = queryClient.getQueryData(['event-admin', eventId, 'ticket-tiers']) as
+			| { data?: { results?: TicketTierDetailSchema[] } }
+			| undefined;
+		if (currentData?.data?.results) {
+			const newResults = [...currentData.data.results];
+			[newResults[index], newResults[swapIndex]] = [newResults[swapIndex], newResults[index]];
+			queryClient.setQueryData(['event-admin', eventId, 'ticket-tiers'], {
+				...currentData,
+				data: { ...currentData.data, results: newResults }
+			});
+		}
+
+		reorderMutation.mutate(tierIds);
+	}
 
 	// Max tickets per user - stored as string for input, converted to number (default: 1)
 	let maxTicketsInput = $state(formData.max_tickets_per_user?.toString() ?? '1');
@@ -176,8 +233,15 @@
 		</div>
 	{:else}
 		<div class="space-y-4">
-			{#each tiers as tier (tier.id)}
-				<TierCard {tier} onEdit={() => handleEditTier(tier)} />
+			{#each tiers as tier, index (tier.id)}
+				<TierCard
+					{tier}
+					onEdit={() => handleEditTier(tier)}
+					onMoveUp={tiers.length >= 2 && index > 0 ? () => handleMoveTier(index, 'up') : undefined}
+					onMoveDown={tiers.length >= 2 && index < tiers.length - 1
+						? () => handleMoveTier(index, 'down')
+						: undefined}
+				/>
 			{/each}
 		</div>
 
