@@ -17,16 +17,16 @@
 	let imageError = $state(false);
 
 	// Image URLs with backend URL prepended and fallback to organization
-	// Prefer thumbnail variants for card display (optimized for smaller sizes)
-	let seriesCoverArtThumbnailUrl = $derived(getImageUrl((series as any).cover_art_thumbnail_url));
+	// Prefer social preview for card display (1200x630, matches aspect-video ratio)
+	let seriesCoverArtSocialUrl = $derived(getImageUrl((series as any).cover_art_social_url));
 	let seriesCoverArtUrl = $derived(getImageUrl(series.cover_art));
-	let orgCoverArtThumbnailUrl = $derived(
-		getImageUrl((series.organization as any).cover_art_thumbnail_url)
+	let orgCoverArtSocialUrl = $derived(
+		getImageUrl((series.organization as any).cover_art_social_url)
 	);
 	let orgCoverArtUrl = $derived(getImageUrl(series.organization.cover_art));
 	let imageUrl = $derived(
 		!imageError
-			? seriesCoverArtThumbnailUrl || seriesCoverArtUrl || orgCoverArtThumbnailUrl || orgCoverArtUrl
+			? seriesCoverArtSocialUrl || seriesCoverArtUrl || orgCoverArtSocialUrl || orgCoverArtUrl
 			: null
 	);
 
