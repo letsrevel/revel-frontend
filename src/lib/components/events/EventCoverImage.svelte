@@ -3,7 +3,7 @@
 	import { cn } from '$lib/utils/cn';
 	import {
 		getEventCoverArt,
-		getEventCoverArtThumbnail,
+		getEventCoverArtSocial,
 		getEventFallbackGradient,
 		getEventLogo,
 		getEventLogoThumbnail
@@ -25,11 +25,11 @@
 	// Image state
 	let imageError = $state(false);
 
-	// Computed values - prefer thumbnail variants for card display (optimized sizes)
-	let coverArtThumbnailPath = $derived(getEventCoverArtThumbnail(event));
+	// Computed values - prefer social preview for card display (1200x630, matches aspect-video ratio)
+	let coverArtSocialPath = $derived(getEventCoverArtSocial(event));
 	let coverArtPath = $derived(getEventCoverArt(event));
 	let coverArtUrl = $derived(
-		!imageError ? getImageUrl(coverArtThumbnailPath || coverArtPath) : null
+		!imageError ? getImageUrl(coverArtSocialPath || coverArtPath) : null
 	);
 	let logoThumbnailPath = $derived(getEventLogoThumbnail(event));
 	let logoPath = $derived(getEventLogo(event));

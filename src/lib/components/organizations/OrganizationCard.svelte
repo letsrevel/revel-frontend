@@ -26,12 +26,12 @@
 	});
 
 	// Image URLs with backend URL prepended
-	// Prefer thumbnail variants for card display (optimized for smaller sizes)
-	let coverArtThumbnailUrl = $derived(getImageUrl((organization as any).cover_art_thumbnail_url));
+	// Prefer social preview for card display (1200x630, matches aspect-video ratio)
+	let coverArtSocialUrl = $derived(getImageUrl((organization as any).cover_art_social_url));
 	let coverArtUrl = $derived(getImageUrl(organization.cover_art));
 	let logoThumbnailUrl = $derived(getImageUrl((organization as any).logo_thumbnail_url));
 	let logoUrl = $derived(getImageUrl(organization.logo));
-	let imageUrl = $derived(!imageError ? coverArtThumbnailUrl || coverArtUrl : null);
+	let imageUrl = $derived(!imageError ? coverArtSocialUrl || coverArtUrl : null);
 	let logoDisplayUrl = $derived(logoThumbnailUrl || logoUrl);
 
 	// Fallback gradient based on organization ID
