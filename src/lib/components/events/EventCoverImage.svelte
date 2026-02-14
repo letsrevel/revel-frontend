@@ -28,9 +28,7 @@
 	// Computed values - prefer social preview for card display (1200x630, matches aspect-video ratio)
 	let coverArtSocialPath = $derived(getEventCoverArtSocial(event));
 	let coverArtPath = $derived(getEventCoverArt(event));
-	let coverArtUrl = $derived(
-		!imageError ? getImageUrl(coverArtSocialPath || coverArtPath) : null
-	);
+	let coverArtUrl = $derived(!imageError ? getImageUrl(coverArtSocialPath || coverArtPath) : null);
 	let logoThumbnailPath = $derived(getEventLogoThumbnail(event));
 	let logoPath = $derived(getEventLogo(event));
 	let logoUrl = $derived(getImageUrl(logoThumbnailPath || logoPath));
