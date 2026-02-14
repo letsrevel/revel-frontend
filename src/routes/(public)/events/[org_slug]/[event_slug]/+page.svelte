@@ -386,7 +386,7 @@
 	 */
 	async function handleClaimTicket(tierId: string, tickets?: TicketPurchaseItem[]) {
 		const ticketItems = tickets || [{ guest_name: getDefaultGuestName() }];
-		claimTicketMutation.mutate({ tierId, tickets: ticketItems });
+		await claimTicketMutation.mutateAsync({ tierId, tickets: ticketItems });
 	}
 
 	/**
@@ -406,10 +406,14 @@
 
 		if (isPwyc && amount !== undefined) {
 			// PWYC checkout with amount from confirmation dialog
-			pwycCheckoutMutation.mutate({ tierId, tickets: ticketItems, pricePerTicket: amount });
+			await pwycCheckoutMutation.mutateAsync({
+				tierId,
+				tickets: ticketItems,
+				pricePerTicket: amount
+			});
 		} else {
 			// Direct checkout for fixed-price tiers
-			checkoutMutation.mutate({ tierId, tickets: ticketItems });
+			await checkoutMutation.mutateAsync({ tierId, tickets: ticketItems });
 		}
 	}
 
