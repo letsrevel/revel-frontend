@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
 	import { X, AlertCircle, CheckCircle, Clock, XCircle } from 'lucide-svelte';
 	import { fade, scale } from 'svelte/transition';
 
@@ -16,6 +17,9 @@
 		price?: number | string;
 		currency?: string;
 		payment_method?: string;
+		price_type?: string;
+		pwyc_min?: string;
+		pwyc_max?: string | null;
 		venue?: {
 			name?: string;
 		} | null;
@@ -39,13 +43,14 @@
 		tier?: TicketTier;
 		guest_name?: string;
 		seat?: TicketSeat;
+		price_paid?: string | null;
 	}
 
 	interface Props {
 		isOpen: boolean;
 		ticket: Ticket | null;
 		needsPaymentConfirmation: boolean;
-		onConfirm: () => void;
+		onConfirm: (pricePaid?: string) => void;
 		onCancel: () => void;
 		isLoading?: boolean;
 	}
@@ -58,6 +63,74 @@
 		onCancel,
 		isLoading = false
 	}: Props = $props();
+
+	// PWYC state
+	let pwycPricePaid = $state('');
+
+	/**
+	 * Whether this ticket needs a PWYC price input at check-in
+	 */
+	let needsPwycInput = $derived(
+		!!ticket &&
+			ticket.tier?.price_type === 'pwyc' &&
+			(ticket.tier?.payment_method === 'offline' || ticket.tier?.payment_method === 'at_the_door')
+	);
+
+	/**
+	 * Whether the confirm button can be clicked
+	 */
+	let canSubmit = $derived(
+		!isLoading && (!needsPwycInput || (pwycPricePaid !== '' && parseFloat(pwycPricePaid) > 0))
+	);
+
+	/**
+	 * PWYC range warning message
+	 */
+	let pwycWarning = $derived.by(() => {
+		if (!needsPwycInput || !ticket?.tier) return null;
+		const num = parseFloat(pwycPricePaid);
+		if (isNaN(num) || num <= 0) return null;
+
+		const min = ticket.tier.pwyc_min ? parseFloat(ticket.tier.pwyc_min) : null;
+		const max = ticket.tier.pwyc_max ? parseFloat(ticket.tier.pwyc_max) : null;
+		const currency = ticket.tier.currency?.toUpperCase() || 'EUR';
+		const fmt = (v: number) =>
+			new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(v);
+
+		if (min !== null && max !== null && (num < min || num > max)) {
+			return `This amount is outside the suggested range (${fmt(min)} \u2013 ${fmt(max)})`;
+		}
+		if (min !== null && max === null && num < min) {
+			return `This amount is below the suggested minimum (${fmt(min)})`;
+		}
+		return null;
+	});
+
+	/**
+	 * PWYC suggested range hint text
+	 */
+	let pwycRangeHint = $derived.by(() => {
+		if (!needsPwycInput || !ticket?.tier) return null;
+		const min = ticket.tier.pwyc_min ? parseFloat(ticket.tier.pwyc_min) : null;
+		const max = ticket.tier.pwyc_max ? parseFloat(ticket.tier.pwyc_max) : null;
+		const currency = ticket.tier.currency?.toUpperCase() || 'EUR';
+		const fmt = (v: number) =>
+			new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(v);
+
+		if (min !== null && max !== null) return `Suggested range: ${fmt(min)} \u2013 ${fmt(max)}`;
+		if (min !== null) return `Suggested minimum: ${fmt(min)}`;
+		return null;
+	});
+
+	// Pre-fill with pwyc_min on open, reset on close
+	$effect(() => {
+		if (isOpen && needsPwycInput && ticket?.tier) {
+			pwycPricePaid = ticket.price_paid || ticket.tier.pwyc_min || '';
+		}
+		if (!isOpen) {
+			pwycPricePaid = '';
+		}
+	});
 
 	/**
 	 * Get user display name
@@ -190,6 +263,7 @@
 	 */
 	function handleBackdropClick(event: MouseEvent) {
 		if (event.target === event.currentTarget && !isLoading) {
+			pwycPricePaid = '';
 			onCancel();
 		}
 	}
@@ -199,6 +273,7 @@
 	 */
 	function handleKeyDown(event: KeyboardEvent) {
 		if (event.key === 'Escape' && !isLoading) {
+			pwycPricePaid = '';
 			onCancel();
 		}
 	}
@@ -237,7 +312,9 @@
 			<!-- Header -->
 			<div class="flex items-center justify-between border-b px-6 py-4">
 				<h2 id="checkin-dialog-title" class="text-xl font-bold">
-					{needsPaymentConfirmation ? 'Confirm Payment & Check In' : 'Check In Attendee'}
+					{needsPaymentConfirmation || needsPwycInput
+						? 'Confirm Payment & Check In'
+						: 'Check In Attendee'}
 				</h2>
 				<button
 					type="button"
@@ -321,7 +398,15 @@
 						<div class="flex items-center justify-between px-4 py-3">
 							<span class="text-sm text-muted-foreground">{m['checkInDialog.price']()}</span>
 							<span class="font-medium">
-								{formatPrice(ticket.tier?.price, ticket.tier?.currency)}
+								{#if ticket.tier?.price_type === 'pwyc' && ticket.tier?.pwyc_min}
+									{formatPrice(
+										ticket.tier.pwyc_min,
+										ticket.tier.currency
+									)}{#if ticket.tier.pwyc_max}
+										{' '}&ndash; {formatPrice(ticket.tier.pwyc_max, ticket.tier.currency)}{/if}
+								{:else}
+									{formatPrice(ticket.tier?.price, ticket.tier?.currency)}
+								{/if}
 							</span>
 						</div>
 						<div class="flex items-center justify-between px-4 py-3">
@@ -345,21 +430,57 @@
 						</p>
 					</div>
 				{/if}
+
+				{#if needsPwycInput}
+					<div class="space-y-2">
+						<label for="checkin-pwyc-price-input" class="block text-sm font-medium text-foreground">
+							Amount paid ({ticket.tier?.currency?.toUpperCase() || 'EUR'})
+						</label>
+						<Input
+							id="checkin-pwyc-price-input"
+							type="number"
+							step="0.01"
+							min="0.01"
+							bind:value={pwycPricePaid}
+							placeholder={ticket.tier?.pwyc_min || '0.00'}
+							aria-describedby={pwycWarning
+								? 'checkin-pwyc-warning'
+								: pwycRangeHint
+									? 'checkin-pwyc-hint'
+									: undefined}
+						/>
+						{#if pwycWarning}
+							<p id="checkin-pwyc-warning" class="text-sm text-orange-600 dark:text-orange-400">
+								{pwycWarning}
+							</p>
+						{/if}
+						{#if pwycRangeHint}
+							<p id="checkin-pwyc-hint" class="text-sm text-muted-foreground">
+								{pwycRangeHint}
+							</p>
+						{/if}
+					</div>
+				{/if}
 			</div>
 
 			<!-- Actions -->
 			<div class="flex justify-end gap-2 border-t px-6 py-4">
-				<Button variant="outline" onclick={onCancel} disabled={isLoading}
-					>{m['checkInDialog.cancel']()}</Button
+				<Button
+					variant="outline"
+					onclick={() => {
+						onCancel();
+						pwycPricePaid = '';
+					}}
+					disabled={isLoading}>{m['checkInDialog.cancel']()}</Button
 				>
 				<Button
 					variant="default"
-					onclick={onConfirm}
-					disabled={isLoading || !canCheckIn(ticket.status, needsPaymentConfirmation)}
+					onclick={() => onConfirm(needsPwycInput ? pwycPricePaid : undefined)}
+					disabled={!canSubmit || !canCheckIn(ticket.status, needsPaymentConfirmation)}
 				>
 					{#if isLoading}
 						Checking In...
-					{:else if needsPaymentConfirmation}
+					{:else if needsPaymentConfirmation || needsPwycInput}
 						Confirm Payment & Check In
 					{:else}
 						Check In

@@ -4,6 +4,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
+	import { fade, scale } from 'svelte/transition';
 	import { cn } from '$lib/utils/cn';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -77,6 +78,9 @@
 	let showUnconfirmPaymentDialog = $state(false);
 	let ticketToUnconfirm = $state<any>(null);
 
+	// PWYC confirm payment state
+	let pwycPricePaid = $state('');
+
 	/**
 	 * Derived: Check if there are multiple pages
 	 */
@@ -99,9 +103,10 @@
 	 * Confirm payment mutation
 	 */
 	const confirmPaymentMutation = createMutation(() => ({
-		mutationFn: async (ticketId: string) => {
+		mutationFn: async ({ ticketId, pricePaid }: { ticketId: string; pricePaid?: string }) => {
 			const response = await eventadminticketsConfirmTicketPayment({
 				path: { event_id: data.event.id, ticket_id: ticketId },
+				body: pricePaid ? { price_paid: pricePaid } : undefined,
 				headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
 			});
 
@@ -114,6 +119,7 @@
 		onSuccess: () => {
 			showConfirmPaymentDialog = false;
 			ticketToConfirm = null;
+			pwycPricePaid = '';
 			invalidateAll();
 		}
 	}));
@@ -172,9 +178,10 @@
 	 * Check-in ticket mutation
 	 */
 	const checkInTicketMutation = createMutation(() => ({
-		mutationFn: async (ticketId: string) => {
+		mutationFn: async ({ ticketId, pricePaid }: { ticketId: string; pricePaid?: string }) => {
 			const response = await eventadminticketsCheckInTicket({
 				path: { event_id: data.event.id, ticket_id: ticketId },
+				body: pricePaid ? { price_paid: pricePaid } : undefined,
 				headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
 			});
 
@@ -431,10 +438,51 @@
 	}
 
 	/**
+	 * Check if a ticket's tier is PWYC with offline/at_the_door payment
+	 */
+	function isPwycTicket(ticket: any): boolean {
+		return (
+			ticket.tier?.price_type === 'pwyc' &&
+			(ticket.tier?.payment_method === 'offline' || ticket.tier?.payment_method === 'at_the_door')
+		);
+	}
+
+	/**
+	 * Get PWYC range warning message, if applicable
+	 */
+	function getPwycWarning(ticket: any, value: string): string | null {
+		const num = parseFloat(value);
+		if (isNaN(num) || num <= 0) return null;
+
+		const min = ticket.tier?.pwyc_min ? parseFloat(ticket.tier.pwyc_min) : null;
+		const max = ticket.tier?.pwyc_max ? parseFloat(ticket.tier.pwyc_max) : null;
+
+		if (min !== null && max !== null && (num < min || num > max)) {
+			const currency = ticket.tier?.currency?.toUpperCase() || 'EUR';
+			const fmt = (v: number) =>
+				new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(v);
+			return `This amount is outside the suggested range (${fmt(min)} \u2013 ${fmt(max)})`;
+		}
+		if (min !== null && max === null && num < min) {
+			const currency = ticket.tier?.currency?.toUpperCase() || 'EUR';
+			const fmt = (v: number) =>
+				new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(v);
+			return `This amount is below the suggested minimum (${fmt(min)})`;
+		}
+		return null;
+	}
+
+	/**
 	 * Handle confirm payment
 	 */
 	function handleConfirmPayment(ticket: any) {
 		ticketToConfirm = ticket;
+		// Pre-fill with pwyc_min for PWYC tiers
+		if (isPwycTicket(ticket)) {
+			pwycPricePaid = ticket.price_paid || ticket.tier?.pwyc_min || '';
+		} else {
+			pwycPricePaid = '';
+		}
 		showConfirmPaymentDialog = true;
 	}
 
@@ -443,7 +491,8 @@
 	 */
 	function submitConfirmPayment() {
 		if (ticketToConfirm) {
-			confirmPaymentMutation.mutate(ticketToConfirm.id);
+			const pricePaid = isPwycTicket(ticketToConfirm) ? pwycPricePaid : undefined;
+			confirmPaymentMutation.mutate({ ticketId: ticketToConfirm.id, pricePaid });
 		}
 	}
 
@@ -475,9 +524,9 @@
 	/**
 	 * Submit check-in
 	 */
-	function submitCheckIn() {
+	function submitCheckIn(pricePaid?: string) {
 		if (ticketToCheckIn) {
-			checkInTicketMutation.mutate(ticketToCheckIn.id);
+			checkInTicketMutation.mutate({ ticketId: ticketToCheckIn.id, pricePaid });
 		}
 	}
 
@@ -1333,21 +1382,125 @@
 </div>
 
 <!-- Confirm Payment Dialog -->
-<ConfirmDialog
-	isOpen={showConfirmPaymentDialog}
-	title={m['eventTicketsAdmin.confirmPaymentTitle']()}
-	message={ticketToConfirm?.status === 'cancelled'
-		? m['eventTicketsAdmin.confirmPaymentMessageReactivate']()
-		: m['eventTicketsAdmin.confirmPaymentMessageActivate']()}
-	confirmText={m['eventTicketsAdmin.confirmPaymentButton']()}
-	cancelText={m['eventTicketsAdmin.confirmPaymentCancel']()}
-	onConfirm={submitConfirmPayment}
-	onCancel={() => {
-		showConfirmPaymentDialog = false;
-		ticketToConfirm = null;
-	}}
-	variant="info"
-/>
+{#if showConfirmPaymentDialog && ticketToConfirm}
+	{@const pwyc = isPwycTicket(ticketToConfirm)}
+	{@const pwycWarning = pwyc ? getPwycWarning(ticketToConfirm, pwycPricePaid) : null}
+	{@const pwycValid = !pwyc || (pwycPricePaid !== '' && parseFloat(pwycPricePaid) > 0)}
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div
+		role="presentation"
+		onclick={(e) => {
+			if (e.target === e.currentTarget) {
+				showConfirmPaymentDialog = false;
+				ticketToConfirm = null;
+				pwycPricePaid = '';
+			}
+		}}
+		onkeydown={(e) => {
+			if (e.key === 'Escape') {
+				showConfirmPaymentDialog = false;
+				ticketToConfirm = null;
+				pwycPricePaid = '';
+			}
+		}}
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+		transition:fade={{ duration: 150 }}
+	>
+		<div
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="confirm-payment-dialog-title"
+			class="relative mx-4 w-full max-w-lg rounded-lg border bg-card p-6 shadow-lg"
+			transition:scale={{ duration: 150, start: 0.95 }}
+		>
+			<!-- Close button -->
+			<button
+				type="button"
+				onclick={() => {
+					showConfirmPaymentDialog = false;
+					ticketToConfirm = null;
+					pwycPricePaid = '';
+				}}
+				aria-label="Close dialog"
+				class="absolute right-4 top-4 rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+			>
+				<X class="h-4 w-4" aria-hidden="true" />
+			</button>
+
+			<!-- Icon + Title -->
+			<div class="flex items-start gap-4">
+				<div
+					class="shrink-0 rounded-full bg-blue-100 p-3 text-blue-600 dark:bg-blue-950 dark:text-blue-400"
+					aria-hidden="true"
+				>
+					<AlertTriangle class="h-6 w-6" />
+				</div>
+				<div class="flex-1 pt-1">
+					<h2 id="confirm-payment-dialog-title" class="text-lg font-semibold text-foreground">
+						{m['eventTicketsAdmin.confirmPaymentTitle']()}
+					</h2>
+				</div>
+			</div>
+
+			<!-- Message -->
+			<div class="mt-4 text-sm text-muted-foreground">
+				{ticketToConfirm.status === 'cancelled'
+					? m['eventTicketsAdmin.confirmPaymentMessageReactivate']()
+					: m['eventTicketsAdmin.confirmPaymentMessageActivate']()}
+			</div>
+
+			<!-- PWYC Price Input -->
+			{#if pwyc}
+				<div class="mt-4 space-y-2">
+					<label for="pwyc-price-input" class="block text-sm font-medium text-foreground">
+						Amount paid ({ticketToConfirm.tier?.currency?.toUpperCase() || 'EUR'})
+					</label>
+					<Input
+						id="pwyc-price-input"
+						type="number"
+						step="0.01"
+						min="0.01"
+						bind:value={pwycPricePaid}
+						placeholder={ticketToConfirm.tier?.pwyc_min || '0.00'}
+						aria-describedby={pwycWarning ? 'pwyc-warning' : undefined}
+					/>
+					{#if pwycWarning}
+						<p id="pwyc-warning" class="text-sm text-orange-600 dark:text-orange-400">
+							{pwycWarning}
+						</p>
+					{/if}
+				</div>
+			{/if}
+
+			<!-- Actions -->
+			<div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+				<button
+					type="button"
+					onclick={() => {
+						showConfirmPaymentDialog = false;
+						ticketToConfirm = null;
+						pwycPricePaid = '';
+					}}
+					class="rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				>
+					{m['eventTicketsAdmin.confirmPaymentCancel']()}
+				</button>
+				<button
+					type="button"
+					onclick={submitConfirmPayment}
+					disabled={confirmPaymentMutation.isPending || !pwycValid}
+					class="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
+				>
+					{#if confirmPaymentMutation.isPending}
+						Confirming...
+					{:else}
+						{m['eventTicketsAdmin.confirmPaymentButton']()}
+					{/if}
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
 
 <!-- Cancel Confirmation Dialog -->
 <ConfirmDialog

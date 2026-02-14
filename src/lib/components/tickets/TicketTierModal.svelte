@@ -221,21 +221,6 @@
 			// PWYC tiers require the PWYC endpoint regardless of payment method
 			if (isPwyc && onCheckout) {
 				await onCheckout(selectedTier.id, true, amount, tickets);
-
-				// For non-online PWYC, close dialogs immediately
-				if (!isOnline) {
-					showConfirmation = false;
-					selectedTier = null;
-					onClose();
-					isProcessing = false;
-				} else {
-					// For online payments, keep loading state until redirect
-					setTimeout(() => {
-						if (isProcessing) {
-							isProcessing = false;
-						}
-					}, 10000);
-				}
 			}
 			// Free tickets or offline/at-the-door (reservation) - non-PWYC
 			else if (
@@ -244,31 +229,23 @@
 				selectedTier.payment_method === 'at_the_door'
 			) {
 				await onClaimTicket(selectedTier.id, tickets);
-
-				// Close dialogs for non-online payments (they complete immediately)
-				showConfirmation = false;
-				selectedTier = null;
-				onClose();
-				isProcessing = false;
 			}
 			// Online payment (fixed price)
 			else if (isOnline && onCheckout) {
-				// For online payments, start the checkout process
-				// Don't close the modal - keep showing loading state until redirect
 				await onCheckout(selectedTier.id, false, undefined, tickets);
+			}
 
-				// Note: For online payments, the page will redirect to Stripe,
-				// so we keep the loading state visible. If there's an error,
-				// the error will be shown by the TicketConfirmationDialog.
-				// We only reset if there's no redirect (edge case)
+			// For online payments (Stripe redirect), keep loading state visible.
+			// The page will redirect, so we set a timeout as a safety fallback.
+			if (isOnline) {
 				setTimeout(() => {
-					// If we're still here after 10 seconds, something might have gone wrong
-					// Reset the state so user can try again
 					if (isProcessing) {
 						isProcessing = false;
 					}
 				}, 10000);
 			}
+			// For non-online payments, the parent's onSuccess handler closes
+			// the tier modal (which tears down this component), so no cleanup needed here.
 		} catch (error) {
 			// On error, reset state so user can try again
 			isProcessing = false;
