@@ -603,6 +603,22 @@
 			{/if}
 		</section>
 
+		<!-- Tags Section -->
+		{#if organization.tags && organization.tags.length > 0}
+			<section aria-labelledby="tags-heading" class="border-t pt-8">
+				<h2 id="tags-heading" class="mb-4 text-xl font-semibold">
+					{m['eventDetails.tags_heading']()}
+				</h2>
+				<div class="flex flex-wrap gap-2">
+					{#each organization.tags as tag (tag)}
+						<span class="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+							{tag}
+						</span>
+					{/each}
+				</div>
+			</section>
+		{/if}
+
 		<!-- Announcements Section -->
 		<OrgAnnouncements organizationSlug={organization.slug} />
 	</div>
