@@ -1044,8 +1044,8 @@
 			}
 
 			// Refresh data, re-initialize state from API, and exit edit mode (stay on same page)
-			isInitialized = false; // Reset so initializeFromApi() runs again after data refresh
 			await invalidateAll();
+			initializeFromApi(); // Explicitly re-init with fresh data (avoids race with $effect)
 			isEditMode = false;
 
 			// Scroll to top so user sees the updated questionnaire
