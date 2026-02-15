@@ -63,16 +63,8 @@
 		return tierRemainingTickets?.find((t) => t.tier_id === tierId);
 	}
 
-	// Filter out hidden tiers and sort by price
-	let visibleTiers = $derived(
-		tiers
-			.filter((tier) => tier.payment_method !== 'hidden')
-			.sort((a, b) => {
-				const priceA = typeof a.price === 'string' ? parseFloat(a.price) : a.price;
-				const priceB = typeof b.price === 'string' ? parseFloat(b.price) : b.price;
-				return priceA - priceB;
-			})
-	);
+	// Filter out hidden tiers (preserve backend ordering)
+	let visibleTiers = $derived(tiers.filter((tier) => tier.payment_method !== 'hidden'));
 
 	let hasTiers = $derived(visibleTiers.length > 0);
 
