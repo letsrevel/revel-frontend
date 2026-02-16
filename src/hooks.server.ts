@@ -1,18 +1,20 @@
 import type { Handle } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { i18nHandle } from '$lib/i18n';
+import { tokenRefresh } from '$lib/api/generated';
+import {
+	getAccessTokenCookieOptions,
+	getRefreshTokenCookieOptions,
+	getRememberMeCookieOptions
+} from '$lib/utils/cookies';
 
 /**
  * Server-side hooks for authentication and internationalization
  *
- * IMPORTANT: This hook does NOT perform token refresh to avoid race conditions
- * with client-side refresh mechanisms. Token refresh is handled exclusively by:
- * 1. Client-side API interceptor (catches 401 errors)
- * 2. Client-side auto-refresh timer (proactive refresh before expiry)
- *
- * This hook only:
+ * This hook:
  * - Decodes the access token to populate event.locals.user
- * - Validates token structure (not expiry)
+ * - Refreshes expired access tokens using the refresh token (for cold starts)
+ * - Validates token structure
  * - Clears invalid tokens
  * - Detects and sets user language preference
  */
@@ -140,7 +142,6 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	});
 
 	// If we have an access token, decode it to populate locals.user
-	// We do NOT check expiry here - let the client handle refresh
 	if (accessToken) {
 		console.log('[HOOKS] Access token exists, decoding JWT');
 		try {
@@ -151,9 +152,6 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 				// Clear invalid token
 				event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
 			} else {
-				// Populate locals.user from decoded JWT
-				// Note: We don't check expiry - expired tokens will trigger 401
-				// and client-side refresh will handle it
 				console.log('[HOOKS] JWT decoded successfully');
 				event.locals.user = {
 					id: decoded.user_id || decoded.sub,
@@ -165,6 +163,52 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 			console.error('[HOOKS] Error processing JWT:', error);
 			// Token is malformed, clear it
 			event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
+		}
+	} else if (refreshToken) {
+		// No access token but refresh token exists — the access token expired.
+		// Refresh it now so locals.user is populated before any load function runs.
+		// This fixes 401 errors on cold start with "remember me" enabled.
+		console.log('[HOOKS] No access token but refresh token exists, attempting refresh');
+		const rememberMe = event.cookies.get('remember_me') === 'true';
+
+		try {
+			const { data, error: refreshError } = await tokenRefresh({
+				body: { refresh: refreshToken }
+			});
+
+			if (refreshError || !data || !data.access || !data.refresh) {
+				console.error('[HOOKS] Token refresh failed:', refreshError);
+				event.cookies.delete('refresh_token', { path: '/', httpOnly: true, sameSite: 'lax' });
+				event.cookies.delete('remember_me', { path: '/' });
+			} else {
+				console.log('[HOOKS] Token refresh successful');
+
+				// Set new cookies
+				event.cookies.set('access_token', data.access, getAccessTokenCookieOptions(rememberMe));
+				event.cookies.set(
+					'refresh_token',
+					data.refresh,
+					getRefreshTokenCookieOptions(rememberMe)
+				);
+				event.cookies.set(
+					'remember_me',
+					rememberMe ? 'true' : 'false',
+					getRememberMeCookieOptions(rememberMe)
+				);
+
+				// Decode the new access token and populate locals.user
+				const decoded = decodeJWT(data.access);
+				if (decoded) {
+					event.locals.user = {
+						id: decoded.user_id || decoded.sub,
+						email: decoded.email,
+						accessToken: data.access
+					};
+				}
+			}
+		} catch (error) {
+			console.error('[HOOKS] Token refresh error:', error);
+			// Don't block page load — user will appear logged out
 		}
 	}
 
