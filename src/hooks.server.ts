@@ -185,11 +185,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 
 				// Set new cookies
 				event.cookies.set('access_token', data.access, getAccessTokenCookieOptions(rememberMe));
-				event.cookies.set(
-					'refresh_token',
-					data.refresh,
-					getRefreshTokenCookieOptions(rememberMe)
-				);
+				event.cookies.set('refresh_token', data.refresh, getRefreshTokenCookieOptions(rememberMe));
 				event.cookies.set(
 					'remember_me',
 					rememberMe ? 'true' : 'false',
