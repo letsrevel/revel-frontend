@@ -1,6 +1,6 @@
 {
 	"name": "revel-frontend",
-	"version": "1.35.3",
+	"version": "1.36.0",
 	"private": true,
 	"type": "module",
 	"scripts": {

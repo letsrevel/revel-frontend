@@ -210,6 +210,8 @@
 	},
 	"addToWallet.addToAppleWallet": "Zu Apple Wallet hinzufügen",
 	"addToWallet.downloading": "Wird heruntergeladen...",
+	"downloadPdf.download": "PDF herunterladen",
+	"downloadPdf.downloading": "Wird heruntergeladen...",
 	"adminButton": {
 		"selectOrganization": "Organisation auswählen"
 	},
