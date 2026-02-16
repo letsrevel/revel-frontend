@@ -5,12 +5,12 @@
 	import { Button } from '$lib/components/ui/button';
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
 	import AddToWalletButton from './AddToWalletButton.svelte';
+	import DownloadPdfButton from './DownloadPdfButton.svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import {
 		Ticket,
 		Calendar,
 		MapPin,
-		Download,
 		User,
 		Armchair,
 		ChevronLeft,
@@ -120,16 +120,6 @@
 		const date = new Date(ticket.checked_in_at);
 		return date.toLocaleString();
 	});
-
-	// Download QR code
-	function downloadQRCode() {
-		if (!qrCodeDataUrl) return;
-
-		const link = document.createElement('a');
-		link.download = `ticket-${ticket.id}.png`;
-		link.href = qrCodeDataUrl;
-		link.click();
-	}
 
 	// Check if ticket is pending and payment method allows resume
 	let canResumePayment = $derived.by(() => {
@@ -482,14 +472,9 @@
 							/>
 							<p class="text-center text-sm text-muted-foreground">{m['myTicketModal.showQr']()}</p>
 							<div class="flex w-full flex-col gap-2">
-								<button
-									type="button"
-									onclick={downloadQRCode}
-									class="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-								>
-									<Download class="h-4 w-4" aria-hidden="true" />
-									Download QR Code
-								</button>
+								{#if ticket.id}
+									<DownloadPdfButton ticketId={ticket.id} pdfUrl={ticket.pdf_url} />
+								{/if}
 								{#if ticket.apple_pass_available && ticket.id}
 									<AddToWalletButton ticketId={ticket.id} {eventName} variant="secondary" />
 								{/if}

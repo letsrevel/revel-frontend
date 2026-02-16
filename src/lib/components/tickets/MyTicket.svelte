@@ -4,7 +4,8 @@
 	import { Card } from '$lib/components/ui/card';
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
-	import { Ticket, Calendar, MapPin, Download, User, Armchair } from 'lucide-svelte';
+	import DownloadPdfButton from './DownloadPdfButton.svelte';
+	import { Ticket, Calendar, MapPin, User, Armchair } from 'lucide-svelte';
 	import QRCode from 'qrcode';
 	import { onMount } from 'svelte';
 
@@ -64,16 +65,6 @@
 		const date = new Date(ticket.checked_in_at);
 		return date.toLocaleString();
 	});
-
-	// Download QR code
-	function downloadQRCode() {
-		if (!qrCodeDataUrl) return;
-
-		const link = document.createElement('a');
-		link.download = `ticket-${ticket.id}.png`;
-		link.href = qrCodeDataUrl;
-		link.click();
-	}
 
 	// Check if ticket is pending and payment method allows resume
 	let canResumePayment = $derived(() => {
@@ -279,13 +270,9 @@
 						class="h-64 w-64 rounded-lg border border-border bg-white"
 					/>
 					<p class="text-center text-sm text-muted-foreground">{m['myTicket.showQr']()}</p>
-					<button
-						onclick={downloadQRCode}
-						class="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-					>
-						<Download class="h-4 w-4" aria-hidden="true" />
-						Download QR Code
-					</button>
+					{#if ticket.id}
+						<DownloadPdfButton ticketId={ticket.id} pdfUrl={ticket.pdf_url} />
+					{/if}
 				{:else}
 					<div class="text-center text-sm text-destructive">
 						Unable to generate QR code. Please refresh the page.
