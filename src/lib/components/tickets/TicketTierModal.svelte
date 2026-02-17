@@ -243,9 +243,15 @@
 						isProcessing = false;
 					}
 				}, 10000);
+			} else {
+				// For non-online payments (free, offline, at_the_door):
+				// reset processing state and close the confirmation dialog.
+				// The parent's onSuccess handler already closed the tier modal
+				// and showed a toast, but the confirmation dialog is a separate
+				// Dialog instance that must be closed explicitly.
+				isProcessing = false;
+				closeConfirmation();
 			}
-			// For non-online payments, the parent's onSuccess handler closes
-			// the tier modal (which tears down this component), so no cleanup needed here.
 		} catch (error) {
 			// On error, reset state so user can try again
 			isProcessing = false;
