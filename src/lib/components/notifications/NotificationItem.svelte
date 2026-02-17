@@ -247,10 +247,12 @@
 			</div>
 
 			<!-- Body content -->
-			<MarkdownContent
-				content={notification.body}
-				class={cn('text-sm text-muted-foreground', compact && 'line-clamp-2')}
-			/>
+			<div class="notification-body">
+				<MarkdownContent
+					content={notification.body}
+					class={cn('text-sm text-muted-foreground', compact && 'line-clamp-2')}
+				/>
+			</div>
 		</div>
 
 		<!-- Action button -->
@@ -278,6 +280,19 @@
 	:global(.prose) {
 		word-break: break-word;
 		overflow-wrap: break-word;
+	}
+
+	/* Flatten headings inside notification body to regular text size */
+	.notification-body :global(h1),
+	.notification-body :global(h2),
+	.notification-body :global(h3),
+	.notification-body :global(h4),
+	.notification-body :global(h5),
+	.notification-body :global(h6) {
+		font-size: inherit;
+		font-weight: 600;
+		margin: 0;
+		line-height: inherit;
 	}
 
 	/* Line clamp for compact mode */
