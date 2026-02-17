@@ -87,6 +87,10 @@ export function extractErrorMessage(error: unknown): string {
 			if ('detail' in body && typeof body.detail === 'string') {
 				return body.detail;
 			}
+			// Handle EventUserEligibility format (e.g. { allowed: false, reason: "..." })
+			if ('reason' in body && typeof body.reason === 'string') {
+				return body.reason;
+			}
 			if ('message' in body && typeof body.message === 'string') {
 				return body.message;
 			}

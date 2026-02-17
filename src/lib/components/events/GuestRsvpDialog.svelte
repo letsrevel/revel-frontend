@@ -17,6 +17,7 @@
 	import { guestRsvpSchema, type GuestRsvpData } from '$lib/schemas/guestAttendance';
 	import { eventpublicguestGuestRsvp } from '$lib/api';
 	import { handleGuestAttendanceError } from '$lib/utils/guestAttendance';
+	import { authStore } from '$lib/stores/auth.svelte';
 
 	interface Props {
 		open: boolean;
@@ -40,9 +41,26 @@
 	let isSubmitting = $state(false);
 	let showSuccess = $state(false);
 	let errorMessage = $state<string | null>(null);
+	let requiresAccount = $state(false);
+
+	// Next steps that guests can perform without an account
+	const GUEST_COMPATIBLE_STEPS = new Set([
+		'purchase_ticket',
+		'rsvp',
+		'wait_for_event_to_open',
+		'wait_for_open_spot'
+	]);
 
 	// Validation errors (field-specific)
 	let fieldErrors = $state<Partial<Record<keyof GuestRsvpData, string>>>({});
+
+	// Close dialog if user becomes authenticated (e.g. token refresh after page load)
+	$effect(() => {
+		if (open && authStore.isAuthenticated) {
+			open = false;
+			onClose();
+		}
+	});
 
 	// Reset state when dialog opens/closes
 	$effect(() => {
@@ -56,6 +74,7 @@
 			fieldErrors = {};
 			errorMessage = null;
 			showSuccess = false;
+			requiresAccount = false;
 		}
 	});
 
@@ -114,6 +133,19 @@
 					last_name: formData.last_name
 				}
 			});
+
+			// Check for API error (400, 422, etc.) - client doesn't throw on HTTP errors
+			if (response.error) {
+				const err = response.error as any;
+
+				// Check for eligibility response with next_step
+				if (err?.next_step && !GUEST_COMPATIBLE_STEPS.has(err.next_step)) {
+					requiresAccount = true;
+				}
+
+				const errorDetail = err?.detail || err?.reason || 'Failed to submit RSVP';
+				throw new Error(typeof errorDetail === 'string' ? errorDetail : 'Failed to submit RSVP');
+			}
 
 			// Success - show confirmation message
 			showSuccess = true;
@@ -288,6 +320,24 @@
 							<AlertCircle class="h-4 w-4" />
 							<AlertDescription>
 								{errorMessage}
+								{#if requiresAccount}
+									<p class="mt-2">
+										<a
+											href="/login?redirect={encodeURIComponent(window.location.pathname)}"
+											class="font-medium underline hover:no-underline"
+										>
+											Log in
+										</a>
+										{' '}or{' '}
+										<a
+											href="/register?redirect={encodeURIComponent(window.location.pathname)}"
+											class="font-medium underline hover:no-underline"
+										>
+											create an account
+										</a>
+										{' '}to continue.
+									</p>
+								{/if}
 							</AlertDescription>
 						</Alert>
 					{/if}
