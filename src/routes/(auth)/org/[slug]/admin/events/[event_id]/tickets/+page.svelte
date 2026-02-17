@@ -719,10 +719,15 @@
 	}
 
 	/**
-	 * Get the effective price for a ticket (price_paid if available, otherwise tier price)
+	 * Get the effective price for a ticket.
+	 * Priority: payment.amount > price_paid > tier.price
 	 */
 	function getTicketPrice(ticket: any): number | string | undefined {
-		// Use price_paid if available (for PWYC or other variable pricing)
+		// Payment object always prevails (online payments via Stripe)
+		if (ticket.payment?.amount !== undefined && ticket.payment?.amount !== null) {
+			return ticket.payment.amount;
+		}
+		// Then price_paid (PWYC or admin-confirmed offline payments)
 		if (ticket.price_paid !== undefined && ticket.price_paid !== null) {
 			return ticket.price_paid;
 		}
@@ -1061,7 +1066,10 @@
 								</td>
 								<td class="px-4 py-3">
 									<div class="font-medium">
-										{formatPrice(getTicketPrice(ticket), ticket.tier?.currency)}
+										{formatPrice(
+											getTicketPrice(ticket),
+											ticket.payment?.currency || ticket.tier?.currency
+										)}
 									</div>
 								</td>
 								<td class="px-4 py-3">
@@ -1235,7 +1243,10 @@
 							<div class="flex items-center justify-between">
 								<span class="text-muted-foreground">{m['eventTicketsAdmin.headerPrice']()}:</span>
 								<span class="font-medium"
-									>{formatPrice(getTicketPrice(ticket), ticket.tier?.currency)}</span
+									>{formatPrice(
+										getTicketPrice(ticket),
+										ticket.payment?.currency || ticket.tier?.currency
+									)}</span
 								>
 							</div>
 							<div class="flex items-center justify-between">
