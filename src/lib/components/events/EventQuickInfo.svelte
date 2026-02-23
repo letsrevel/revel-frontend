@@ -29,7 +29,9 @@
 
 	// Maps URLs - prioritize event's data, fall back to venue's data
 	let mapsUrl = $derived(event.location_maps_url || event.venue?.location_maps_url || null);
-	let mapsEmbed = $derived(sanitizeMapEmbedUrl(event.location_maps_embed || event.venue?.location_maps_embed || null));
+	let mapsEmbed = $derived(
+		sanitizeMapEmbedUrl(event.location_maps_embed || event.venue?.location_maps_embed || null)
+	);
 
 	// Location split into two lines for better readability
 	let locationDisplay = $derived.by((): { primary: string; secondary?: string } => {

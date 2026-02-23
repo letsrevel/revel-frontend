@@ -44,7 +44,9 @@ export function sanitizeMapEmbedUrl(input: string | null | undefined): string | 
 	}
 
 	const hostname = url.hostname.toLowerCase();
-	if (!ALLOWED_EMBED_HOSTS.some((allowed) => hostname === allowed || hostname.endsWith('.' + allowed))) {
+	if (
+		!ALLOWED_EMBED_HOSTS.some((allowed) => hostname === allowed || hostname.endsWith('.' + allowed))
+	) {
 		return null;
 	}
 
