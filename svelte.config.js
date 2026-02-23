@@ -34,7 +34,7 @@ const config = {
 				'style-src': ['self', 'unsafe-inline'], // Svelte transitions create inline <style>
 				'img-src': ['self', apiUrl, 'data:', 'blob:'],
 				'font-src': ['self', 'data:'],
-				'connect-src': ['self', apiUrl],
+				'connect-src': ['self', apiUrl, 'https://api.github.com'],
 				'frame-src': [
 					'https://www.google.com',
 					'https://google.com',
