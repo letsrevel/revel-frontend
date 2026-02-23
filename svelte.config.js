@@ -21,6 +21,39 @@ const config = {
 			$utils: 'src/lib/utils',
 			$stores: 'src/lib/stores',
 			$api: 'src/lib/api'
+		},
+
+		// Content Security Policy — report-only mode for safe rollout.
+		// Once validated (no console violations), move reportOnly -> directives to enforce.
+		csp: {
+			mode: 'auto',
+			reportOnly: {
+				'default-src': ['self'],
+				'script-src': ['self'],
+				'style-src': ['self', 'unsafe-inline'], // Svelte transitions create inline <style>
+				'img-src': ['self', 'https://api.letsrevel.io', 'data:', 'blob:'],
+				'font-src': ['self', 'data:'],
+				'connect-src': ['self', 'https://api.letsrevel.io'],
+				'frame-src': [
+					'https://www.google.com',
+					'https://google.com',
+					'https://maps.google.com',
+					'https://www.openstreetmap.org',
+					'https://openstreetmap.org',
+					'https://www.bing.com',
+					'https://bing.com',
+					'https://maps.app.goo.gl',
+					'https://goo.gl',
+					'https://yandex.com',
+					'https://yandex.ru',
+					'https://map.baidu.com'
+				],
+				'manifest-src': ['self'],
+				'base-uri': ['self'],
+				'form-action': ['self'],
+				'frame-ancestors': ['none'],
+				'object-src': ['none']
+			}
 		}
 	}
 };

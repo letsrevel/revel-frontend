@@ -28,7 +28,7 @@
 		"@lucide/svelte": "^0.482.0",
 		"@playwright/test": "^1.49.0",
 		"@sveltejs/adapter-node": "^5.4.0",
-		"@sveltejs/kit": "^2.0.0",
+		"@sveltejs/kit": "^2.49.5",
 		"@sveltejs/vite-plugin-svelte": "^5.0.0",
 		"@tailwindcss/typography": "^0.5.19",
 		"@testing-library/jest-dom": "^6",
@@ -86,6 +86,11 @@
 	"pnpm": {
 		"patchedDependencies": {
 			"svelte-crop-window@0.1.1": "patches/svelte-crop-window@0.1.1.patch"
+		},
+		"overrides": {
+			"devalue": ">=5.6.2",
+			"cookie": "0.7.0",
+			"set-cookie-parser": "2.7.2"
 		}
 	}
 }

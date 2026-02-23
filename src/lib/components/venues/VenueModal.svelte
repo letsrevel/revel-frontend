@@ -15,6 +15,7 @@
 	import CityAutocomplete from '$lib/components/forms/CityAutocomplete.svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import { toast } from 'svelte-sonner';
+	import { extractMapEmbedUrl } from '$lib/utils/maps';
 
 	interface Props {
 		venue: VenueDetailSchema | null;
@@ -50,27 +51,9 @@
 		}
 	});
 
-	/**
-	 * Extract embed URL from Google Maps embed iframe code
-	 */
-	function extractEmbedUrl(input: string): string {
-		// If it's already a URL, return as-is
-		if (input.startsWith('http://') || input.startsWith('https://')) {
-			return input;
-		}
-
-		// Try to extract src from iframe
-		const srcMatch = input.match(/src=["']([^"']+)["']/);
-		if (srcMatch?.[1]) {
-			return srcMatch[1];
-		}
-
-		return input;
-	}
-
 	function handleMapsEmbedInput(e: Event) {
 		const target = e.target as HTMLTextAreaElement;
-		locationMapsEmbed = extractEmbedUrl(target.value);
+		locationMapsEmbed = extractMapEmbedUrl(target.value) ?? '';
 	}
 
 	// Helper to extract error message from API response
@@ -347,7 +330,7 @@
 											width="100%"
 											height="200"
 											style="border:0;"
-											allowfullscreen
+											sandbox="allow-scripts"
 											loading="lazy"
 											referrerpolicy="no-referrer-when-downgrade"
 											title="Map preview"

@@ -96,3 +96,7 @@ yarn.lock
 
 # Backend symlink
 revel-backend
+
+.playwright-mcp/
+screenshots/
+
