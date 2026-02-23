@@ -13,6 +13,7 @@
 		HelpCircle,
 		ArrowLeft
 	} from 'lucide-svelte';
+	import { extractMapEmbedUrl } from '$lib/utils/maps';
 
 	type LocationMode = 'none' | 'address' | 'venue';
 
@@ -147,34 +148,10 @@
 	}
 
 	/**
-	 * Extract the src URL from an iframe HTML string.
-	 */
-	function extractEmbedUrl(input: string | null): string | null {
-		if (!input) return null;
-		const trimmed = input.trim();
-		if (!trimmed) return null;
-
-		// If it's already a URL, return as-is
-		if (trimmed.startsWith('http')) {
-			return trimmed;
-		}
-
-		// If it looks like an iframe, extract the src
-		if (trimmed.toLowerCase().startsWith('<iframe')) {
-			const match = trimmed.match(/src=["']([^"']+)["']/);
-			if (match) {
-				return match[1];
-			}
-		}
-
-		return trimmed;
-	}
-
-	/**
-	 * Handle maps embed input
+	 * Handle maps embed input - validates and sanitizes the URL
 	 */
 	function handleMapsEmbedInput(value: string | null): void {
-		const extractedUrl = extractEmbedUrl(value);
+		const extractedUrl = extractMapEmbedUrl(value);
 		onUpdate({ location_maps_embed: extractedUrl });
 	}
 
@@ -409,7 +386,7 @@
 										width="100%"
 										height="200"
 										style="border:0;"
-										allowfullscreen
+										sandbox="allow-scripts"
 										loading="lazy"
 										referrerpolicy="no-referrer-when-downgrade"
 										title={m['detailsStep.mapsPreviewTitle']?.() ?? 'Map preview'}

@@ -4,6 +4,7 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import { ExternalLink, MapPin, Users } from 'lucide-svelte';
+	import { sanitizeMapEmbedUrl } from '$lib/utils/maps';
 
 	interface Props {
 		open: boolean;
@@ -34,7 +35,8 @@
 	// Check if venue has meaningful additional info
 	let hasDescription = $derived(!!venue.description?.trim());
 	let hasCapacity = $derived(!!venue.capacity && venue.capacity > 0);
-	let hasMapEmbed = $derived(!!venue.location_maps_embed);
+	let safeMapEmbed = $derived(sanitizeMapEmbedUrl(venue.location_maps_embed));
+	let hasMapEmbed = $derived(!!safeMapEmbed);
 	let hasMapsUrl = $derived(!!venue.location_maps_url);
 
 	function handleOpenChange(newOpen: boolean) {
@@ -97,11 +99,11 @@
 			{#if hasMapEmbed}
 				<div class="overflow-hidden rounded-lg border">
 					<iframe
-						src={venue.location_maps_embed}
+						src={safeMapEmbed}
 						width="100%"
 						height="200"
 						style="border:0;"
-						allowfullscreen
+						sandbox="allow-scripts"
 						loading="lazy"
 						referrerpolicy="no-referrer-when-downgrade"
 						title="Map of {venue.name}"

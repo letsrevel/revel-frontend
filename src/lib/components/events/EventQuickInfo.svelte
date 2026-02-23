@@ -14,6 +14,7 @@
 		Info
 	} from 'lucide-svelte';
 	import VenueInfoModal from '$lib/components/venues/VenueInfoModal.svelte';
+	import { sanitizeMapEmbedUrl } from '$lib/utils/maps';
 
 	interface Props {
 		event: EventDetailSchema;
@@ -28,7 +29,9 @@
 
 	// Maps URLs - prioritize event's data, fall back to venue's data
 	let mapsUrl = $derived(event.location_maps_url || event.venue?.location_maps_url || null);
-	let mapsEmbed = $derived(event.location_maps_embed || event.venue?.location_maps_embed || null);
+	let mapsEmbed = $derived(
+		sanitizeMapEmbedUrl(event.location_maps_embed || event.venue?.location_maps_embed || null)
+	);
 
 	// Location split into two lines for better readability
 	let locationDisplay = $derived.by((): { primary: string; secondary?: string } => {
@@ -232,7 +235,7 @@
 				width="100%"
 				height="200"
 				style="border:0;"
-				allowfullscreen
+				sandbox="allow-scripts"
 				loading="lazy"
 				referrerpolicy="no-referrer-when-downgrade"
 				title="{m['eventQuickInfo.mapOf']()} {locationDisplay.primary}"
