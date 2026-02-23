@@ -23,11 +23,10 @@ const config = {
 			$api: 'src/lib/api'
 		},
 
-		// Content Security Policy — report-only mode for safe rollout.
-		// Once validated (no console violations), move reportOnly -> directives to enforce.
+		// Content Security Policy — enforced
 		csp: {
 			mode: 'auto',
-			reportOnly: {
+			directives: {
 				'default-src': ['self'],
 				'script-src': ['self'],
 				'style-src': ['self', 'unsafe-inline'], // Svelte transitions create inline <style>
