@@ -92,7 +92,9 @@
 			{/if}
 			<CardTitle class="text-2xl">{m['joinOrgPage.invitedTitle']()}</CardTitle>
 			<CardDescription class="text-lg">
-				{@html m['joinOrgPage.joinSubtitle']({ organizationName: escapeHtml(token.organization.name) })}
+				{@html m['joinOrgPage.joinSubtitle']({
+					organizationName: escapeHtml(token.organization.name)
+				})}
 			</CardDescription>
 		</CardHeader>
 

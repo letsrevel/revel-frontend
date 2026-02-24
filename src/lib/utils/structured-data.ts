@@ -169,7 +169,8 @@ function getEventStatus(_status: EventDetailSchema['status']): string {
  */
 export function structuredDataToJsonLd(data: EventStructuredData): string {
 	try {
-		return JSON.stringify(data, null, 0); // No whitespace for production
+		// Escape </ sequences to prevent closing the <script> tag from within JSON values
+		return JSON.stringify(data, null, 0).replace(/</g, '\\u003c');
 	} catch (error) {
 		console.error('[SEO] Failed to serialize structured data:', error);
 		// Return minimal valid JSON-LD as fallback
@@ -177,6 +178,6 @@ export function structuredDataToJsonLd(data: EventStructuredData): string {
 			'@context': 'https://schema.org',
 			'@type': 'Event',
 			name: data.name || 'Event'
-		});
+		}).replace(/</g, '\\u003c');
 	}
 }

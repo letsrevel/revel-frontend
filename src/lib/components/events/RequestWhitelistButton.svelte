@@ -164,7 +164,8 @@
 						{#if organizationName}
 							{@html m['requestWhitelistButton.submitRequestToOrg']?.({
 								organizationName: `<strong>${escapeHtml(organizationName)}</strong>`
-							}) ?? `Submit a verification request to <strong>${escapeHtml(organizationName)}</strong>`}
+							}) ??
+								`Submit a verification request to <strong>${escapeHtml(organizationName)}</strong>`}
 						{:else}
 							{m['requestWhitelistButton.submitRequestDescription']?.() ??
 								"Submit a verification request to access this organization's events."}
