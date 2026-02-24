@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { marked } from 'marked';
 	import { cn } from '$lib/utils/cn';
+	import { sanitizeHtml } from '$lib/utils/sanitize';
 
 	/**
 	 * Props interface for MarkdownContent component
@@ -44,10 +45,8 @@
 	let renderedHtml = $derived.by(() => {
 		if (!hasContent || !content) return '';
 		try {
-			if (inline) {
-				return marked.parseInline(content);
-			}
-			return marked.parse(content);
+			const raw = inline ? marked.parseInline(content) : marked.parse(content);
+			return sanitizeHtml(typeof raw === 'string' ? raw : String(raw));
 		} catch {
 			// If parsing fails, return the raw content escaped
 			return content.replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -61,7 +60,7 @@
 		role="region"
 		aria-label={ariaLabel}
 	>
-		<!-- Content is sanitized markdown from backend, safe to render -->
+		<!-- Content is sanitized by DOMPurify before rendering -->
 		{@html renderedHtml}
 	</div>
 {/if}

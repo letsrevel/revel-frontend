@@ -343,7 +343,8 @@ export function generateOrganizationStructuredData(
  */
 export function toJsonLd(data: Record<string, unknown> | object): string {
 	try {
-		return JSON.stringify(data, null, 0);
+		// Escape </ sequences to prevent closing the <script> tag from within JSON values
+		return JSON.stringify(data, null, 0).replace(/</g, '\\u003c');
 	} catch (error) {
 		console.error('[SEO] Failed to serialize breadcrumb data:', error);
 		// Return minimal valid JSON-LD as fallback
@@ -351,7 +352,7 @@ export function toJsonLd(data: Record<string, unknown> | object): string {
 			'@context': 'https://schema.org',
 			'@type': 'BreadcrumbList',
 			itemListElement: []
-		});
+		}).replace(/</g, '\\u003c');
 	}
 }
 

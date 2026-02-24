@@ -2,6 +2,7 @@ import adapter from '@sveltejs/adapter-node';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 const apiUrl = process.env.PUBLIC_API_URL || 'https://api.letsrevel.io';
+const isDev = process.env.NODE_ENV !== 'production';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -34,7 +35,12 @@ const config = {
 				'style-src': ['self', 'unsafe-inline'], // Svelte transitions create inline <style>
 				'img-src': ['self', apiUrl, 'data:', 'blob:'],
 				'font-src': ['self', 'data:'],
-				'connect-src': ['self', apiUrl, 'https://api.github.com'],
+				'connect-src': [
+					'self',
+					apiUrl,
+					'https://api.github.com',
+					...(isDev ? ['http://localhost:*', 'ws://localhost:*'] : [])
+				],
 				'frame-src': [
 					'https://www.google.com',
 					'https://google.com',
