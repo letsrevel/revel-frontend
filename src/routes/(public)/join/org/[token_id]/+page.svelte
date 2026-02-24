@@ -17,6 +17,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
 	import { getExpirationDisplay, formatTokenUsage } from '$lib/utils/tokens';
+	import { escapeHtml } from '$lib/utils/sanitize';
 
 	let { data }: { data: PageData } = $props();
 
@@ -91,7 +92,7 @@
 			{/if}
 			<CardTitle class="text-2xl">{m['joinOrgPage.invitedTitle']()}</CardTitle>
 			<CardDescription class="text-lg">
-				{@html m['joinOrgPage.joinSubtitle']({ organizationName: token.organization.name })}
+				{@html m['joinOrgPage.joinSubtitle']({ organizationName: escapeHtml(token.organization.name) })}
 			</CardDescription>
 		</CardHeader>
 

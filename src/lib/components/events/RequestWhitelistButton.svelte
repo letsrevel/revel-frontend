@@ -6,6 +6,7 @@
 	import { ShieldCheck, Send, AlertCircle } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
+	import { escapeHtml } from '$lib/utils/sanitize';
 
 	interface Props {
 		organizationSlug: string;
@@ -162,8 +163,8 @@
 					<Dialog.Description>
 						{#if organizationName}
 							{@html m['requestWhitelistButton.submitRequestToOrg']?.({
-								organizationName: `<strong>${organizationName}</strong>`
-							}) ?? `Submit a verification request to <strong>${organizationName}</strong>`}
+								organizationName: `<strong>${escapeHtml(organizationName)}</strong>`
+							}) ?? `Submit a verification request to <strong>${escapeHtml(organizationName)}</strong>`}
 						{:else}
 							{m['requestWhitelistButton.submitRequestDescription']?.() ??
 								"Submit a verification request to access this organization's events."}

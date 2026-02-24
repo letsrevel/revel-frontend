@@ -6,6 +6,7 @@
 	import { Mail, Send, AlertCircle } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
+	import { escapeHtml } from '$lib/utils/sanitize';
 
 	interface Props {
 		eventId: string;
@@ -152,7 +153,7 @@
 					<Dialog.Title>{m['requestInvitationButton.requestInvitation']()}</Dialog.Title>
 					<Dialog.Description>
 						{@html m['requestInvitationButton.submitRequestToEvent']({
-							eventName: `<strong>${eventName}</strong>`
+							eventName: `<strong>${escapeHtml(eventName)}</strong>`
 						})}
 					</Dialog.Description>
 				</Dialog.Header>
