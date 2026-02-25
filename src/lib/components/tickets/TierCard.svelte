@@ -190,18 +190,23 @@
 		isClaiming = true;
 		try {
 			const { amount, tickets } = payload;
+			const isPwyc = tier.price_type === 'pwyc';
 
-			// Free tickets or offline/at-the-door (reservation)
-			if (
+			// PWYC tiers require the PWYC endpoint regardless of payment method
+			if (isPwyc && onCheckout) {
+				await onCheckout(tier.id, true, amount, tickets);
+			}
+			// Free tickets or offline/at-the-door (reservation) - non-PWYC
+			else if (
 				tier.payment_method === 'free' ||
 				tier.payment_method === 'offline' ||
 				tier.payment_method === 'at_the_door'
 			) {
 				await onClaimTicket(tier.id, tickets);
 			}
-			// Online payment (with or without PWYC)
+			// Online payment (fixed price)
 			else if (tier.payment_method === 'online' && onCheckout) {
-				await onCheckout(tier.id, tier.price_type === 'pwyc', amount, tickets);
+				await onCheckout(tier.id, false, undefined, tickets);
 			}
 
 			// Close dialog on success
