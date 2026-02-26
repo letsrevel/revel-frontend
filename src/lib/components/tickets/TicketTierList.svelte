@@ -5,7 +5,6 @@
 	import type {
 		EventTokenSchema,
 		MembershipTierSchema,
-		TicketPurchaseItem,
 		TierRemainingTicketsSchema
 	} from '$lib/api/generated/types.gen';
 	import { isEligibility } from '$lib/utils/eligibility';
@@ -28,13 +27,7 @@
 		canAttendWithoutLogin?: boolean;
 		/** Per-tier remaining tickets info (from my-status endpoint) */
 		tierRemainingTickets?: TierRemainingTicketsSchema[];
-		onClaimTicket: (tierId: string, tickets?: TicketPurchaseItem[]) => void | Promise<void>;
-		onCheckout?: (
-			tierId: string,
-			isPwyc: boolean,
-			amount?: number,
-			tickets?: TicketPurchaseItem[]
-		) => void | Promise<void>;
+		onSelectTier: (tier: TierSchemaWithId) => void;
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
 
@@ -51,8 +44,7 @@
 		eventTokenDetails,
 		canAttendWithoutLogin = false,
 		tierRemainingTickets,
-		onClaimTicket,
-		onCheckout,
+		onSelectTier,
 		onGuestTierClick
 	}: Props = $props();
 
@@ -111,15 +103,13 @@
 			{#each visibleTiers as tier (tier.id || tier.event_id + tier.name)}
 				<TierCard
 					{tier}
-					eventId={eventId ?? ''}
 					{isAuthenticated}
 					{hasTicket}
 					{isEligible}
 					{membershipTier}
 					{canAttendWithoutLogin}
 					tierRemainingInfo={getTierRemainingInfo(tier.id)}
-					{onClaimTicket}
-					{onCheckout}
+					{onSelectTier}
 					{onGuestTierClick}
 				/>
 			{/each}

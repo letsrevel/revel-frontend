@@ -4497,7 +4497,11 @@
 		"soldOut": "Sold Out",
 		"signInToGetTicket": "Sign in to Get Ticket",
 		"notEligible": "Not Eligible",
-		"comingSoon": "Coming Soon"
+		"comingSoon": "Coming Soon",
+		"claimFreeTicket": "Claim Free Ticket",
+		"buyTicket": "Buy Ticket",
+		"reserveTicket": "Reserve Ticket",
+		"getTicket": "Get Ticket"
 	},
 	"tierDelete": {
 		"title": "Delete Membership Tier",

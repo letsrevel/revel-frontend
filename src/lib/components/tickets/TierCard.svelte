@@ -3,20 +3,16 @@
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import type {
 		MembershipTierSchema,
-		TicketPurchaseItem,
 		TierRemainingTicketsSchema
 	} from '$lib/api/generated/types.gen';
 	import { hasTierId } from '$lib/types/tickets';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
 	import { Ticket, Clock, Users, AlertCircle } from 'lucide-svelte';
-	import TicketConfirmationDialog from './TicketConfirmationDialog.svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 
 	interface Props {
 		tier: TierSchemaWithId;
-		/** Event ID for seat availability API */
-		eventId: string;
 		isAuthenticated: boolean;
 		hasTicket?: boolean;
 		isEligible?: boolean;
@@ -24,27 +20,19 @@
 		canAttendWithoutLogin?: boolean;
 		/** Per-tier remaining tickets info (from my-status endpoint) */
 		tierRemainingInfo?: TierRemainingTicketsSchema;
-		onClaimTicket: (tierId: string, tickets?: TicketPurchaseItem[]) => void | Promise<void>;
-		onCheckout?: (
-			tierId: string,
-			isPwyc: boolean,
-			amount?: number,
-			tickets?: TicketPurchaseItem[]
-		) => void | Promise<void>;
+		onSelectTier: (tier: TierSchemaWithId) => void;
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
 
 	let {
 		tier,
-		eventId,
 		isAuthenticated,
 		hasTicket = false,
 		isEligible = true,
 		membershipTier = null,
 		canAttendWithoutLogin = false,
 		tierRemainingInfo,
-		onClaimTicket,
-		onCheckout,
+		onSelectTier,
 		onGuestTierClick
 	}: Props = $props();
 
@@ -80,9 +68,6 @@
 
 	// Check if tier has ID (required for checkout)
 	let hasId = $derived(hasTierId(tier));
-
-	let isClaiming = $state(false);
-	let showConfirmation = $state(false);
 
 	// Format price display
 	let priceDisplay = $derived(() => {
@@ -162,8 +147,7 @@
 			effectiveEligible &&
 			salesStatus.active &&
 			availabilityStatus.available &&
-			tier.payment_method === 'online' &&
-			onCheckout !== undefined
+			tier.payment_method === 'online'
 	);
 
 	// Can reserve offline/at-the-door ticket
@@ -176,49 +160,6 @@
 			availabilityStatus.available &&
 			(tier.payment_method === 'offline' || tier.payment_method === 'at_the_door')
 	);
-
-	// Open confirmation dialog instead of immediate action
-	function handleButtonClick() {
-		if (!hasId || hasTicket || !salesStatus.active || !availabilityStatus.available) return;
-		showConfirmation = true;
-	}
-
-	// Confirmation dialog callback - now triggers the actual backend action
-	async function handleConfirm(payload: { amount?: number; tickets: TicketPurchaseItem[] }) {
-		if (!hasId || isClaiming) return;
-
-		isClaiming = true;
-		try {
-			const { amount, tickets } = payload;
-			const isPwyc = tier.price_type === 'pwyc';
-
-			// PWYC tiers require the PWYC endpoint regardless of payment method
-			if (isPwyc && onCheckout) {
-				await onCheckout(tier.id, true, amount, tickets);
-			}
-			// Free tickets or offline/at-the-door (reservation) - non-PWYC
-			else if (
-				tier.payment_method === 'free' ||
-				tier.payment_method === 'offline' ||
-				tier.payment_method === 'at_the_door'
-			) {
-				await onClaimTicket(tier.id, tickets);
-			}
-			// Online payment (fixed price)
-			else if (tier.payment_method === 'online' && onCheckout) {
-				await onCheckout(tier.id, false, undefined, tickets);
-			}
-
-			// Close dialog on success
-			showConfirmation = false;
-		} finally {
-			isClaiming = false;
-		}
-	}
-
-	function closeConfirmation() {
-		showConfirmation = false;
-	}
 
 	// Check if user has required membership tier for restricted tickets
 	function checkMembershipTierRestriction(): { allowed: boolean; reason?: string } {
@@ -324,7 +265,7 @@
 				>
 			{:else if !isAuthenticated && canAttendWithoutLogin}
 				<Button onclick={() => onGuestTierClick?.(tier)} class="w-full sm:w-auto">
-					Get Ticket
+					{m['tierCardAdmin.getTicket']()}
 				</Button>
 			{:else if !effectiveEligible}
 				<!-- User is authenticated but not eligible for this tier - show reason -->
@@ -347,21 +288,16 @@
 					</p>
 				{/if}
 			{:else if canClaim}
-				<Button onclick={handleButtonClick} disabled={isClaiming} class="w-full sm:w-auto">
-					{isClaiming ? 'Claiming...' : 'Claim Free Ticket'}
+				<Button onclick={() => onSelectTier(tier)} class="w-full sm:w-auto">
+					{m['tierCardAdmin.claimFreeTicket']()}
 				</Button>
 			{:else if canCheckout}
-				<Button onclick={handleButtonClick} disabled={isClaiming} class="w-full sm:w-auto">
-					{isClaiming ? 'Processing...' : 'Get Ticket'}
-				</Button>
-			{:else if canReserve}
-				<Button
-					onclick={handleButtonClick}
-					disabled={isClaiming}
-					variant="outline"
-					class="w-full sm:w-auto"
+				<Button onclick={() => onSelectTier(tier)} class="w-full sm:w-auto"
+					>{m['tierCardAdmin.buyTicket']()}</Button
 				>
-					{isClaiming ? 'Reserving...' : 'Reserve Ticket'}
+			{:else if canReserve}
+				<Button onclick={() => onSelectTier(tier)} variant="outline" class="w-full sm:w-auto">
+					{m['tierCardAdmin.reserveTicket']()}
 				</Button>
 			{:else}
 				<div class="rounded-md bg-muted px-4 py-2 text-sm text-muted-foreground">
@@ -371,13 +307,3 @@
 		</div>
 	</div>
 </Card>
-
-<!-- Confirmation Dialog -->
-<TicketConfirmationDialog
-	bind:open={showConfirmation}
-	{tier}
-	{eventId}
-	onClose={closeConfirmation}
-	onConfirm={handleConfirm}
-	isProcessing={isClaiming}
-/>

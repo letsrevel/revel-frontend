@@ -249,9 +249,8 @@
 	// Whether to show quantity selector (more than 1 ticket allowed)
 	let showQuantitySelector = $derived(effectiveMaxQuantity > 1);
 
-	// Show guest name input only when user can purchase more than one ticket
-	// If max is 1, we use the userName automatically
-	let showGuestNames = $derived(effectiveMaxQuantity > 1);
+	// Always show guest name inputs so users can verify/edit their name
+	let showGuestNames = true;
 
 	// Check if all guest names are filled (at least the first character)
 	let allGuestNamesFilled = $derived(guestNames.every((name) => name.trim().length > 0));
@@ -388,9 +387,6 @@
 	function validateGuestNames(): boolean {
 		guestNameError = '';
 
-		// Only validate if showing guest name inputs
-		if (!showGuestNames) return true;
-
 		// Check if any guest name is empty
 		const emptyIndex = guestNames.findIndex((name) => !name.trim());
 		if (emptyIndex >= 0) {
@@ -429,8 +425,7 @@
 		// Build tickets array
 		const tickets: TicketPurchaseItem[] = guestNames.map((name, index) => {
 			const ticket: TicketPurchaseItem = {
-				// Use userName when not showing guest names (single ticket purchase with max=1)
-				guest_name: showGuestNames ? name.trim() || '' : userName || ''
+				guest_name: name.trim()
 			};
 
 			// Add seat_id for user_choice mode
