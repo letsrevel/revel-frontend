@@ -4497,7 +4497,11 @@
 		"soldOut": "Ausverkauft",
 		"signInToGetTicket": "Anmelden, um Ticket zu bekommen",
 		"notEligible": "Nicht berechtigt",
-		"comingSoon": "Demnächst"
+		"comingSoon": "Demnächst",
+		"claimFreeTicket": "Gratis-Ticket sichern",
+		"buyTicket": "Ticket kaufen",
+		"reserveTicket": "Ticket reservieren",
+		"getTicket": "Ticket holen"
 	},
 	"tierDelete": {
 		"title": "Mitgliedschaftsstufe löschen",

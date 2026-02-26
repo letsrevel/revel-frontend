@@ -4497,7 +4497,11 @@
 		"soldOut": "Esauriti",
 		"signInToGetTicket": "Accedi per Ottenere Biglietto",
 		"notEligible": "Non Idoneo",
-		"comingSoon": "In Arrivo"
+		"comingSoon": "In Arrivo",
+		"claimFreeTicket": "Riscuoti Biglietto Gratuito",
+		"buyTicket": "Acquista Biglietto",
+		"reserveTicket": "Prenota Biglietto",
+		"getTicket": "Ottieni Biglietto"
 	},
 	"tierDelete": {
 		"title": "Elimina livello di iscrizione",

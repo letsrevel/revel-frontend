@@ -193,6 +193,7 @@
 	let showGuestRsvpDialog = $state(false);
 	let showGuestTicketDialog = $state(false);
 	let selectedTierForGuest = $state<TierSchemaWithId | null>(null);
+	let preSelectedTier = $state<TierSchemaWithId | null>(null);
 
 	// Handle modals
 	function openTicketTierModal() {
@@ -201,10 +202,16 @@
 
 	function closeTicketTierModal() {
 		showTicketTierModal = false;
+		preSelectedTier = null;
 	}
 
 	function openMyTicketModal() {
 		showMyTicketModal = true;
+	}
+
+	function handleSelectTier(tier: TierSchemaWithId) {
+		preSelectedTier = tier;
+		showTicketTierModal = true;
 	}
 
 	// Guest dialog handlers
@@ -806,8 +813,7 @@
 						eventTokenDetails={data.eventTokenDetails}
 						canAttendWithoutLogin={event.can_attend_without_login}
 						{tierRemainingTickets}
-						onClaimTicket={handleClaimTicket}
-						onCheckout={handleCheckout}
+						onSelectTier={handleSelectTier}
 						onGuestTierClick={openGuestTicketDialog}
 					/>
 				{/if}
@@ -962,6 +968,7 @@
 	{tierRemainingTickets}
 	eventMaxTicketsPerUser={event.max_tickets_per_user}
 	userName={userDisplayName}
+	{preSelectedTier}
 	onClose={closeTicketTierModal}
 	onClaimTicket={handleClaimTicket}
 	onCheckout={handleCheckout}
