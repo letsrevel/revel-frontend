@@ -26,42 +26,42 @@ const config = {
 			$api: 'src/lib/api'
 		},
 
-		// Content Security Policy — enforced
-		csp: {
-			mode: 'auto',
-			directives: {
-				'default-src': ['self'],
-				'script-src': ['self'],
-				'style-src': ['self', 'unsafe-inline'], // Svelte transitions create inline <style>
-				'img-src': ['self', apiUrl, 'data:', 'blob:'],
-				'font-src': ['self', 'data:'],
-				'connect-src': [
-					'self',
-					apiUrl,
-					'https://api.github.com',
-					...(isDev ? ['http://localhost:*', 'ws://localhost:*'] : [])
-				],
-				'frame-src': [
-					'https://www.google.com',
-					'https://google.com',
-					'https://maps.google.com',
-					'https://www.openstreetmap.org',
-					'https://openstreetmap.org',
-					'https://www.bing.com',
-					'https://bing.com',
-					'https://maps.app.goo.gl',
-					'https://goo.gl',
-					'https://yandex.com',
-					'https://yandex.ru',
-					'https://map.baidu.com'
-				],
-				'manifest-src': ['self'],
-				'base-uri': ['self'],
-				'form-action': ['self'],
-				'frame-ancestors': ['none'],
-				'object-src': ['none']
-			}
-		}
+		// Content Security Policy — only enforced in production
+		// In dev, Vite's HMR injects inline scripts without the CSP nonce, which breaks the page
+		...(isDev
+			? {}
+			: {
+					csp: {
+						mode: 'auto',
+						directives: {
+							'default-src': ['self'],
+							'script-src': ['self'],
+							'style-src': ['self', 'unsafe-inline'], // Svelte transitions create inline <style>
+							'img-src': ['self', apiUrl, 'data:', 'blob:'],
+							'font-src': ['self', 'data:'],
+							'connect-src': ['self', apiUrl, 'https://api.github.com'],
+							'frame-src': [
+								'https://www.google.com',
+								'https://google.com',
+								'https://maps.google.com',
+								'https://www.openstreetmap.org',
+								'https://openstreetmap.org',
+								'https://www.bing.com',
+								'https://bing.com',
+								'https://maps.app.goo.gl',
+								'https://goo.gl',
+								'https://yandex.com',
+								'https://yandex.ru',
+								'https://map.baidu.com'
+							],
+							'manifest-src': ['self'],
+							'base-uri': ['self'],
+							'form-action': ['self'],
+							'frame-ancestors': ['none'],
+							'object-src': ['none']
+						}
+					}
+				})
 	}
 };
 

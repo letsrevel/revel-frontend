@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { generateHomeMeta, generateWebSiteStructuredData, toJsonLd } from '$lib/utils/seo';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import { onMount } from 'svelte';
@@ -91,6 +92,8 @@
 		}).format(amount);
 	}
 
+	let isAuthenticated = $derived(authStore.isAuthenticated);
+
 	// Landing page URLs based on current locale
 	// Landing pages are NOT paraglide-translated, they use /de/ and /it/ prefixes
 	let landingPagePrefix = $derived(getLocale() === 'en' ? '' : `/${getLocale()}`);
@@ -158,18 +161,32 @@
 			>
 				{m['nav.browseEvents']()}
 			</a>
-			<a
-				href="/register"
-				class="rounded-md border border-primary px-6 py-3 text-base font-semibold text-primary hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-			>
-				{m['home.getStarted']()}
-			</a>
+			{#if isAuthenticated}
+				<a
+					href="/dashboard"
+					class="rounded-md border border-primary px-6 py-3 text-base font-semibold text-primary hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+				>
+					{m['userMenu.dashboard']()}
+				</a>
+			{:else}
+				<a
+					href="/register"
+					class="rounded-md border border-primary px-6 py-3 text-base font-semibold text-primary hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+				>
+					{m['home.getStarted']()}
+				</a>
+			{/if}
 		</div>
-		<div class="mt-4">
-			<a href="/login" class="text-sm text-muted-foreground hover:text-foreground hover:underline">
-				{m['home.alreadyHaveAccount']()}
-			</a>
-		</div>
+		{#if !isAuthenticated}
+			<div class="mt-4">
+				<a
+					href="/login"
+					class="text-sm text-muted-foreground hover:text-foreground hover:underline"
+				>
+					{m['home.alreadyHaveAccount']()}
+				</a>
+			</div>
+		{/if}
 	</div>
 
 	<!-- Features Section -->
