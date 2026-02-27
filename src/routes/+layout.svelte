@@ -130,6 +130,7 @@
 		else if (!serverAccessToken && currentAccessToken) {
 			console.log('[ROOT LAYOUT] No server token, clearing auth state (logout)');
 			authStore.logout();
+			queryClient.clear();
 			initializationPromise = null;
 		}
 		// Case 3: Both have tokens - check if they're different (e.g., impersonation)

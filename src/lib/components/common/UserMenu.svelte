@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { createQuery } from '@tanstack/svelte-query';
+	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { dashboardDashboardOrganizations } from '$lib/api/generated/sdk.gen';
 	import {
 		User,
@@ -23,6 +23,7 @@
 
 	let { mobile = false, onItemClick }: Props = $props();
 
+	const queryClient = useQueryClient();
 	let dropdownOpen = $state(false);
 	let user = $derived(authStore.user);
 	let accessToken = $derived(authStore.accessToken);
@@ -101,8 +102,10 @@
 
 	function handleLogout() {
 		if (onItemClick) onItemClick();
-		// Navigate to logout endpoint which clears cookies and redirects
-		// The $effect in root layout will handle clearing client-side state
+		// Clear client-side state immediately so navbar updates in the same tick
+		authStore.logout();
+		queryClient.clear();
+		// Then navigate to server endpoint to clear cookies
 		goto('/logout');
 	}
 
