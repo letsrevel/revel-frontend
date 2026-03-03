@@ -1425,6 +1425,7 @@
 						<OrganizationTokenCard
 							{token}
 							organizationSlug={organization.slug}
+							isOwner={!!data.isOwner}
 							onEdit={(t) => (tokenToEdit = t)}
 							onDelete={(t) => (tokenToDelete = t)}
 							onShare={(t) => (tokenToShare = t)}
@@ -1558,6 +1559,7 @@
 <OrganizationTokenModal
 	open={isCreateTokenModalOpen}
 	membershipTiers={tiers}
+	isOwner={!!data.isOwner}
 	isLoading={createTokenMutation.isPending}
 	onClose={() => (isCreateTokenModalOpen = false)}
 	onSave={handleCreateTokenSave}
@@ -1568,6 +1570,7 @@
 	open={!!tokenToEdit}
 	token={tokenToEdit}
 	membershipTiers={tiers}
+	isOwner={!!data.isOwner}
 	isLoading={updateTokenMutation.isPending}
 	onClose={() => (tokenToEdit = null)}
 	onSave={handleEditTokenSave}

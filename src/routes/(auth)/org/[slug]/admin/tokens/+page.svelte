@@ -35,6 +35,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 
 	const organization = $derived($page.data.organization);
+	const isOwner = $derived(!!$page.data.isOwner);
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
 
@@ -247,6 +248,7 @@
 				<OrganizationTokenCard
 					{token}
 					organizationSlug={organization.slug}
+					{isOwner}
 					onEdit={(t) => (tokenToEdit = t)}
 					onDelete={(t) => (tokenToDelete = t)}
 					onShare={(t) => (tokenToShare = t)}
@@ -260,6 +262,7 @@
 <OrganizationTokenModal
 	open={isCreateModalOpen}
 	{membershipTiers}
+	{isOwner}
 	isLoading={createTokenMutation.isPending}
 	onClose={() => (isCreateModalOpen = false)}
 	onSave={handleCreateSave}
@@ -270,6 +273,7 @@
 	open={!!tokenToEdit}
 	token={tokenToEdit}
 	{membershipTiers}
+	{isOwner}
 	isLoading={updateTokenMutation.isPending}
 	onClose={() => (tokenToEdit = null)}
 	onSave={handleEditSave}
