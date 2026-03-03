@@ -35,7 +35,15 @@
 		) => void | Promise<void>;
 	}
 
-	let { open, token = null, membershipTiers, isOwner = true, isLoading = false, onClose, onSave }: Props = $props();
+	let {
+		open,
+		token = null,
+		membershipTiers,
+		isOwner = true,
+		isLoading = false,
+		onClose,
+		onSave
+	}: Props = $props();
 
 	const isEdit = $derived(!!token);
 
@@ -230,25 +238,25 @@
 				{/if}
 
 				{#if isOwner}
-				<label
-					class="flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors hover:bg-accent"
-				>
-					<Checkbox
-						checked={grantsStaffStatus}
-						onCheckedChange={(checked) => (grantsStaffStatus = !!checked)}
-						id="grants-staff"
-					/>
-					<div class="flex-1">
-						<div class="flex items-center gap-2 font-medium">
-							<span>{m['organizationTokenModal.grantStaff']()}</span>
-							<span class="text-xs text-muted-foreground">⚠️ Sensitive</span>
+					<label
+						class="flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors hover:bg-accent"
+					>
+						<Checkbox
+							checked={grantsStaffStatus}
+							onCheckedChange={(checked) => (grantsStaffStatus = !!checked)}
+							id="grants-staff"
+						/>
+						<div class="flex-1">
+							<div class="flex items-center gap-2 font-medium">
+								<span>{m['organizationTokenModal.grantStaff']()}</span>
+								<span class="text-xs text-muted-foreground">⚠️ Sensitive</span>
+							</div>
+							<div class="text-sm text-muted-foreground">
+								Users become staff with permissions when claiming
+							</div>
 						</div>
-						<div class="text-sm text-muted-foreground">
-							Users become staff with permissions when claiming
-						</div>
-					</div>
-				</label>
-			{/if}
+					</label>
+				{/if}
 
 				{#if showStaffWarning}
 					<div class="rounded-md bg-yellow-50 p-3 text-sm text-yellow-800">
