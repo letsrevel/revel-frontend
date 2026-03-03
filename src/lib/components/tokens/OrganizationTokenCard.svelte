@@ -15,12 +15,15 @@
 	interface Props {
 		token: OrganizationTokenSchema;
 		organizationSlug: string;
+		isOwner?: boolean;
 		onEdit: (token: OrganizationTokenSchema) => void;
 		onDelete: (token: OrganizationTokenSchema) => void;
 		onShare: (token: OrganizationTokenSchema) => void;
 	}
 
-	let { token, organizationSlug, onEdit, onDelete, onShare }: Props = $props();
+	let { token, organizationSlug, isOwner = true, onEdit, onDelete, onShare }: Props = $props();
+
+	const canEditOrDelete = $derived(isOwner || !token.grants_staff_status);
 
 	const status = $derived(getOrganizationTokenStatus(token));
 	const usageDisplay = $derived(formatTokenUsage(token.uses, token.max_uses));
@@ -97,25 +100,27 @@
 			>
 				<Copy class="h-4 w-4" aria-hidden="true" />
 			</Button>
-			<Button
-				variant="ghost"
-				size="sm"
-				onclick={() => onEdit(token)}
-				aria-label="Edit token"
-				title="Edit"
-			>
-				<Edit class="h-4 w-4" aria-hidden="true" />
-			</Button>
-			<Button
-				variant="ghost"
-				size="sm"
-				onclick={() => onDelete(token)}
-				aria-label="Delete token"
-				title="Delete"
-				class="text-destructive hover:text-destructive"
-			>
-				<Trash2 class="h-4 w-4" aria-hidden="true" />
-			</Button>
+			{#if canEditOrDelete}
+				<Button
+					variant="ghost"
+					size="sm"
+					onclick={() => onEdit(token)}
+					aria-label="Edit token"
+					title="Edit"
+				>
+					<Edit class="h-4 w-4" aria-hidden="true" />
+				</Button>
+				<Button
+					variant="ghost"
+					size="sm"
+					onclick={() => onDelete(token)}
+					aria-label="Delete token"
+					title="Delete"
+					class="text-destructive hover:text-destructive"
+				>
+					<Trash2 class="h-4 w-4" aria-hidden="true" />
+				</Button>
+			{/if}
 		</div>
 	</div>
 </div>

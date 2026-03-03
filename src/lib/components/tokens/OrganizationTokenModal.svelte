@@ -27,6 +27,7 @@
 		open: boolean;
 		token?: OrganizationTokenSchema | null;
 		membershipTiers: MembershipTierSchema[];
+		isOwner?: boolean;
 		isLoading?: boolean;
 		onClose: () => void;
 		onSave: (
@@ -34,7 +35,7 @@
 		) => void | Promise<void>;
 	}
 
-	let { open, token = null, membershipTiers, isLoading = false, onClose, onSave }: Props = $props();
+	let { open, token = null, membershipTiers, isOwner = true, isLoading = false, onClose, onSave }: Props = $props();
 
 	const isEdit = $derived(!!token);
 
@@ -99,7 +100,7 @@
 	}
 
 	const showStaffWarning = $derived(grantsStaffStatus);
-	const showBothUncheckedWarning = $derived(!grantsMembership && !grantsStaffStatus);
+	const showBothUncheckedWarning = $derived(!grantsMembership && !grantsStaffStatus && isOwner);
 	const showTierRequiredWarning = $derived(
 		grantsMembership && membershipTiers.length > 0 && !membershipTierId
 	);
@@ -228,6 +229,7 @@
 					</div>
 				{/if}
 
+				{#if isOwner}
 				<label
 					class="flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors hover:bg-accent"
 				>
@@ -246,6 +248,7 @@
 						</div>
 					</div>
 				</label>
+			{/if}
 
 				{#if showStaffWarning}
 					<div class="rounded-md bg-yellow-50 p-3 text-sm text-yellow-800">
