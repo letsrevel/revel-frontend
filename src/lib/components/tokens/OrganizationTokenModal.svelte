@@ -108,11 +108,12 @@
 	}
 
 	const showStaffWarning = $derived(grantsStaffStatus);
-	const showBothUncheckedWarning = $derived(!grantsMembership && !grantsStaffStatus && isOwner);
+	const bothUnchecked = $derived(!grantsMembership && !grantsStaffStatus);
+	const showBothUncheckedWarning = $derived(bothUnchecked && isOwner);
 	const showTierRequiredWarning = $derived(
 		grantsMembership && membershipTiers.length > 0 && !membershipTierId
 	);
-	const isFormValid = $derived(!showBothUncheckedWarning && !showTierRequiredWarning);
+	const isFormValid = $derived(!bothUnchecked && !showTierRequiredWarning);
 </script>
 
 <Dialog
