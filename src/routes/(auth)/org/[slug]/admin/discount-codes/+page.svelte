@@ -113,7 +113,8 @@
 		if (code.discount_type === 'percentage') {
 			return `${code.discount_value}%`;
 		}
-		return `${code.currency || ''} ${code.discount_value}`;
+		const prefix = code.currency ? `${code.currency} ` : '';
+		return `${prefix}${code.discount_value}`;
 	}
 
 	function formatUsage(code: DiscountCodeSchema): string {
@@ -180,6 +181,7 @@
 			<input
 				type="search"
 				bind:value={searchQuery}
+				oninput={() => (currentPage = 1)}
 				placeholder="Search by code..."
 				class="w-full rounded-md border border-input bg-background py-2 pl-10 pr-4 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				aria-label="Search discount codes"
@@ -188,6 +190,7 @@
 
 		<select
 			bind:value={activeFilter}
+			onchange={() => (currentPage = 1)}
 			class="rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			aria-label="Filter by status"
 		>
@@ -198,6 +201,7 @@
 
 		<select
 			bind:value={typeFilter}
+			onchange={() => (currentPage = 1)}
 			class="rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			aria-label="Filter by type"
 		>
@@ -423,6 +427,7 @@
 						size="sm"
 						onclick={() => (currentPage = Math.max(1, currentPage - 1))}
 						disabled={currentPage <= 1}
+						aria-label="Previous page"
 					>
 						<ChevronLeft class="h-4 w-4" />
 					</Button>
@@ -434,6 +439,7 @@
 						size="sm"
 						onclick={() => (currentPage = Math.min(totalPages, currentPage + 1))}
 						disabled={currentPage >= totalPages}
+						aria-label="Next page"
 					>
 						<ChevronRight class="h-4 w-4" />
 					</Button>

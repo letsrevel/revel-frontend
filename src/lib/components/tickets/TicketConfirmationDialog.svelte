@@ -558,7 +558,13 @@
 
 			if (response.error) {
 				const err = response.error as any;
-				discountError = err?.detail || 'Failed to validate code';
+				const detail = err?.detail;
+				discountError =
+					typeof detail === 'string'
+						? detail
+						: Array.isArray(detail)
+							? detail.map((d: { msg?: string }) => d.msg || String(d)).join(', ')
+							: 'Failed to validate code';
 				return;
 			}
 

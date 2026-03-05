@@ -103,7 +103,7 @@
 			errors.discount_value = 'Discount value is required';
 		} else {
 			const val = parseFloat(valueStr);
-			if (isNaN(val) || val < 0) {
+			if (isNaN(val) || val <= 0) {
 				errors.discount_value = 'Must be a positive number';
 			} else if (discountType === 'percentage' && val > 100) {
 				errors.discount_value = 'Percentage cannot exceed 100';
@@ -155,9 +155,11 @@
 				.toUpperCase(),
 			discount_type: discountType,
 			discount_value: String(discountValue ?? '').trim(),
-			currency: String(currency ?? '')
-				.trim()
-				.toUpperCase(),
+			currency: showCurrency
+				? String(currency ?? '')
+						.trim()
+						.toUpperCase()
+				: '',
 			valid_from: validFrom ? new Date(validFrom).toISOString() : '',
 			valid_until: validUntil ? new Date(validUntil).toISOString() : '',
 			max_uses: String(maxUses ?? '').trim(),

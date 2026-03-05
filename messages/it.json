@@ -2826,6 +2826,7 @@
 	"orgAdmin.events.status.draft": "Bozza",
 	"orgAdmin.events.status.open": "Aperto",
 	"orgAdmin.nav.announcements": "Annunci",
+	"orgAdmin.nav.discountCodes": "Codici Sconto",
 	"orgAdmin.nav.venues": "Luoghi",
 	"orgAdmin.questionnaires": {
 		"pageTitle": "Questionari",

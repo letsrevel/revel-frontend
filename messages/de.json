@@ -2826,6 +2826,7 @@
 	"orgAdmin.events.status.draft": "Entwurf",
 	"orgAdmin.events.status.open": "Offen",
 	"orgAdmin.nav.announcements": "Ankündigungen",
+	"orgAdmin.nav.discountCodes": "Rabattcodes",
 	"orgAdmin.nav.venues": "Veranstaltungsorte",
 	"orgAdmin.questionnaires": {
 		"pageTitle": "Fragebögen",

@@ -23,7 +23,7 @@
 		{ href: `/org/${data.organization.slug}/admin/events`, label: m['orgAdmin.nav.events']() },
 		{
 			href: `/org/${data.organization.slug}/admin/discount-codes`,
-			label: 'Discount Codes'
+			label: m['orgAdmin.nav.discountCodes']()
 		},
 		{
 			href: `/org/${data.organization.slug}/admin/event-series`,

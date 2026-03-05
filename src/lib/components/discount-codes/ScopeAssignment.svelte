@@ -187,6 +187,17 @@
 		onTiersChange?.(Array.from(newSet));
 	}
 
+	// Prune orphan tier IDs when available tiers change (e.g. after event deselected and tiers re-fetched)
+	$effect(() => {
+		if (!tiersQuery.data) return;
+		const validTierIds = new Set(tiersQuery.data.map((t) => t.id).filter(Boolean));
+		const pruned = new Set([...tiersSet].filter((id) => validTierIds.has(id)));
+		if (pruned.size !== tiersSet.size) {
+			tiersSet = pruned;
+			onTiersChange?.(Array.from(pruned));
+		}
+	});
+
 	const hasAnyScope = $derived(seriesSet.size > 0 || eventsSet.size > 0 || tiersSet.size > 0);
 </script>
 
