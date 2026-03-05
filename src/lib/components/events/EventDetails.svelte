@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
 	import { formatEventDate, getRSVPDeadlineRelative, isRSVPClosingSoon } from '$lib/utils/date';
-	import { Users, Clock, Info, Calendar } from 'lucide-svelte';
+	import { Users, Clock, Info, Calendar, Eye } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
 	import * as m from '$lib/paraglide/messages.js';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
@@ -37,6 +37,14 @@
 		if (event.max_attendees === undefined || event.max_attendees === 0) return false;
 		const remaining = event.max_attendees - event.attendee_count;
 		return remaining <= 10 && remaining > 0;
+	});
+
+	// Show visibility when it differs from event_type
+	let visibilityMismatch = $derived.by(() => {
+		const eventType = (event.event_type as string) || 'public';
+		const visibility = event.visibility || 'public';
+		if (eventType === visibility) return null;
+		return (visibility as string).replace(/-/g, ' ');
 	});
 </script>
 
@@ -138,6 +146,14 @@
 					<div class="mt-1 font-medium capitalize">
 						{event.event_type.replace('-', ' ')}
 					</div>
+					{#if visibilityMismatch}
+						<div class="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
+							<Eye class="h-3.5 w-3.5" aria-hidden="true" />
+							<span class="capitalize"
+								>{m['eventDetails.visibilityNote']({ visibility: visibilityMismatch })}</span
+							>
+						</div>
+					{/if}
 					{#if event.requires_ticket}
 						<div class="mt-1 text-sm text-muted-foreground">
 							{m['eventDetails.eventType_ticketed']()}

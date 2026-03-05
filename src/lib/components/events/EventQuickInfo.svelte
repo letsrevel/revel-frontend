@@ -73,8 +73,8 @@
 		return { primary: cityCountry };
 	});
 
-	let eventTypeDisplay = $derived.by(() => {
-		switch (event.visibility) {
+	function formatEventTypeLabel(value: string): string {
+		switch (value) {
 			case 'public':
 				return m['eventQuickInfo.publicEvent']();
 			case 'private':
@@ -86,10 +86,13 @@
 			default:
 				return m['eventQuickInfo.event']();
 		}
-	});
+	}
+
+	let eventTypeDisplay = $derived(formatEventTypeLabel((event.event_type as string) || 'public'));
 
 	let eventTypeIcon = $derived.by(() => {
-		switch (event.visibility) {
+		const eventType = (event.event_type as string) || 'public';
+		switch (eventType) {
 			case 'public':
 				return Globe;
 			case 'private':
@@ -99,6 +102,14 @@
 			default:
 				return Globe;
 		}
+	});
+
+	// Show visibility only when it differs from event_type
+	let visibilityMismatch = $derived.by(() => {
+		const eventType = (event.event_type as string) || 'public';
+		const visibility = event.visibility || 'public';
+		if (eventType === visibility) return null;
+		return (visibility as string).replace(/-/g, ' ');
 	});
 
 	let capacityDisplay = $derived.by(() => {
@@ -250,6 +261,11 @@
 			<IconComponent class={iconClasses} aria-hidden="true" />
 			<div class={textClasses}>
 				<span class="block">{eventTypeDisplay}</span>
+				{#if visibilityMismatch}
+					<span class="block text-xs text-muted-foreground">
+						{m['eventQuickInfo.visibilityNote']({ visibility: visibilityMismatch })}
+					</span>
+				{/if}
 			</div>
 		</div>
 	{/if}

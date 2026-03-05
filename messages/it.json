@@ -1097,6 +1097,7 @@
 		"eventType_label": "Tipo di Evento",
 		"eventType_ticketed": "Evento con biglietti",
 		"eventType_freeRsvp": "Conferma gratuita",
+		"visibilityNote": "Visibilità: {visibility}",
 		"tags_heading": "Tag",
 		"series_heading": "Parte di una serie",
 		"invitation_heading": "Dettagli Invito",
@@ -1304,7 +1305,8 @@
 		"rsvpClosed": "RSVP chiuso",
 		"rsvpBy": "RSVP entro {deadline}",
 		"openInMaps": "Apri in Mappe",
-		"mapOf": "Mappa di"
+		"mapOf": "Mappa di",
+		"visibilityNote": "Visibilità: {visibility}"
 	},
 	"eventRSVP": {
 		"goingTo": "You're going to {eventName}!",
