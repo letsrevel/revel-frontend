@@ -11,7 +11,8 @@
 		Instagram,
 		Facebook,
 		Send,
-		AtSign
+		AtSign,
+		Ticket
 	} from 'lucide-svelte';
 	import ResourceCard from '$lib/components/resources/ResourceCard.svelte';
 	import OrgAnnouncements from '$lib/components/announcements/OrgAnnouncements.svelte';
@@ -41,6 +42,7 @@
 
 	// Filter state for events
 	let includePastEvents = $state(true);
+	let ticketType = $state<'ticketed' | 'free' | undefined>(undefined);
 	let eventsOrderBy = $state<'start' | '-start'>('-start'); // Newest first by default
 
 	// Pagination state
@@ -138,12 +140,21 @@
 
 	// Fetch events for this organization
 	const eventsQuery = createQuery(() => ({
-		queryKey: ['org-events', organization.id, includePastEvents, eventsOrderBy, eventsPage],
+		queryKey: [
+			'org-events',
+			organization.id,
+			includePastEvents,
+			ticketType,
+			eventsOrderBy,
+			eventsPage
+		],
 		queryFn: async () => {
 			const response = await eventpublicdiscoveryListEvents({
 				query: {
 					organization: organization.id,
 					include_past: includePastEvents,
+					requires_ticket:
+						ticketType === 'ticketed' ? true : ticketType === 'free' ? false : undefined,
 					page: eventsPage,
 					page_size: pageSize,
 					order_by: eventsOrderBy
@@ -169,8 +180,9 @@
 
 	// Reset page when filter changes
 	$effect(() => {
-		// Watch includePastEvents and eventsOrderBy
+		// Watch includePastEvents, ticketType and eventsOrderBy
 		includePastEvents;
+		ticketType;
 		eventsOrderBy;
 		eventsPage = 1;
 	});
@@ -495,6 +507,25 @@
 							bind:checked={includePastEvents}
 							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
 						/>
+					</div>
+
+					<!-- Ticket Type Filter -->
+					<div class="flex items-center gap-2">
+						<Ticket class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+						{#each [{ value: 'ticketed', label: m['filters.ticketType.ticketed']() }, { value: 'free', label: m['filters.ticketType.free']() }] as option (option.value)}
+							{@const isSelected = ticketType === option.value}
+							<button
+								type="button"
+								onclick={() =>
+									(ticketType = isSelected ? undefined : (option.value as 'ticketed' | 'free'))}
+								class="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {isSelected
+									? 'border-primary bg-primary text-primary-foreground hover:bg-primary/90'
+									: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
+								aria-pressed={isSelected}
+							>
+								{option.label}
+							</button>
+						{/each}
 					</div>
 
 					<!-- Sort Order Toggle -->

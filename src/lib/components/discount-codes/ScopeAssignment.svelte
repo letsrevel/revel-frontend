@@ -77,12 +77,12 @@
 		}
 	}));
 
-	// Fetch events
+	// Fetch events (only ticketed — discount codes don't apply to RSVP-only events)
 	const eventsQuery = createQuery<EventInListSchema[]>(() => ({
 		queryKey: ['org-events-for-scope', organizationId],
 		queryFn: async () => {
 			const response = await eventpublicdiscoveryListEvents({
-				query: { organization: organizationId, page_size: 100 },
+				query: { organization: organizationId, requires_ticket: true, page_size: 100 },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (response.error) throw new Error('Failed to load events');

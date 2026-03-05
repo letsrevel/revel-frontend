@@ -5,6 +5,7 @@
 	import { Filter, X } from 'lucide-svelte';
 	import SearchInput from './SearchInput.svelte';
 	import DateFilter from './DateFilter.svelte';
+	import TicketedFilter from './TicketedFilter.svelte';
 	import TagsFilter from './TagsFilter.svelte';
 	import EventTypeFilter from './EventTypeFilter.svelte';
 	import CityFilter from './CityFilter.svelte';
@@ -48,6 +49,10 @@
 
 	function handleTogglePast(value: boolean): void {
 		onUpdateFilters({ includePast: value });
+	}
+
+	function handleChangeTicketType(type: FilterState['ticketType']): void {
+		onUpdateFilters({ ticketType: type });
 	}
 
 	function handleToggleTag(tag: string): void {
@@ -260,6 +265,15 @@
 
 				<!-- Date Filter -->
 				<DateFilter includePast={filters.includePast ?? false} onTogglePast={handleTogglePast} />
+
+				<!-- Divider -->
+				<div class="border-t" role="separator"></div>
+
+				<!-- Ticket Type Filter -->
+				<TicketedFilter
+					ticketType={filters.ticketType}
+					onChangeTicketType={handleChangeTicketType}
+				/>
 
 				<!-- Divider -->
 				<div class="border-t" role="separator"></div>

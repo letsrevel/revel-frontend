@@ -1647,6 +1647,12 @@
 			"closeFilters": "Filter schließen",
 			"clearAll": "Alle Filter löschen",
 			"showResults": "Zeige {count} {eventPlural}"
+		},
+		"ticketType": {
+			"heading": "Ticket-Typ",
+			"ticketed": "Mit Ticket",
+			"free": "Kostenlose RSVP",
+			"showing": "{ticketType} Veranstaltungen anzeigen"
 		}
 	},
 	"follow": {

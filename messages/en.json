@@ -1647,6 +1647,12 @@
 			"closeFilters": "Close filters",
 			"clearAll": "Clear all filters",
 			"showResults": "Show {count} {eventPlural}"
+		},
+		"ticketType": {
+			"heading": "Ticket Type",
+			"ticketed": "Ticketed",
+			"free": "Free RSVP",
+			"showing": "Showing {ticketType} events"
 		}
 	},
 	"follow": {
