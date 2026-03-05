@@ -252,12 +252,7 @@
 					/>
 				</div>
 
-				<div
-					class="max-h-48 overflow-y-auto"
-					role="listbox"
-					aria-label="Event series"
-					aria-multiselectable="true"
-				>
+				<div class="max-h-48 overflow-y-auto" role="group" aria-label="Event series">
 					{#if seriesQuery.isLoading}
 						<div class="flex items-center justify-center py-4">
 							<div
@@ -278,8 +273,8 @@
 											'flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-accent',
 											seriesSet.has(series.id || '') && 'bg-primary/5'
 										)}
-										role="option"
-										aria-selected={seriesSet.has(series.id || '')}
+										role="checkbox"
+										aria-checked={seriesSet.has(series.id || '')}
 									>
 										<div
 											class={cn(
@@ -343,12 +338,7 @@
 					/>
 				</div>
 
-				<div
-					class="max-h-48 overflow-y-auto"
-					role="listbox"
-					aria-label="Events"
-					aria-multiselectable="true"
-				>
+				<div class="max-h-48 overflow-y-auto" role="group" aria-label="Events">
 					{#if eventsQuery.isLoading}
 						<div class="flex items-center justify-center py-4">
 							<div
@@ -369,8 +359,8 @@
 											'flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-accent',
 											eventsSet.has(event.id || '') && 'bg-primary/5'
 										)}
-										role="option"
-										aria-selected={eventsSet.has(event.id || '')}
+										role="checkbox"
+										aria-checked={eventsSet.has(event.id || '')}
 									>
 										<div
 											class={cn(
@@ -444,12 +434,7 @@
 						/>
 					</div>
 
-					<div
-						class="max-h-48 overflow-y-auto"
-						role="listbox"
-						aria-label="Ticket tiers"
-						aria-multiselectable="true"
-					>
+					<div class="max-h-48 overflow-y-auto" role="group" aria-label="Ticket tiers">
 						{#if tiersQuery.isLoading}
 							<div class="flex items-center justify-center py-4">
 								<div
@@ -470,8 +455,8 @@
 												'flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-accent',
 												tiersSet.has(tier.id || '') && 'bg-primary/5'
 											)}
-											role="option"
-											aria-selected={tiersSet.has(tier.id || '')}
+											role="checkbox"
+											aria-checked={tiersSet.has(tier.id || '')}
 										>
 											<div
 												class={cn(

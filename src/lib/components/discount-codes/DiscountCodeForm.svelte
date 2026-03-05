@@ -239,7 +239,7 @@
 			<Label for="discount_value">
 				Discount Value
 				{#if discountType === 'percentage'}
-					<span class="text-muted-foreground">(0-100)</span>
+					<span class="text-muted-foreground">(1-100)</span>
 				{/if}
 			</Label>
 			<div class="relative">
@@ -249,7 +249,7 @@
 					bind:value={discountValue}
 					placeholder={discountType === 'percentage' ? '20' : '5.00'}
 					disabled={isSubmitting}
-					min="0"
+					min={discountType === 'percentage' ? '1' : '0.01'}
 					max={discountType === 'percentage' ? '100' : undefined}
 					step={discountType === 'percentage' ? '1' : '0.01'}
 					aria-invalid={validationErrors.discount_value ? 'true' : undefined}

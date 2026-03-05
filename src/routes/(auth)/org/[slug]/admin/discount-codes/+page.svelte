@@ -407,6 +407,7 @@
 							size="sm"
 							onclick={() => handleDelete(code)}
 							class="text-destructive hover:text-destructive"
+							aria-label="Delete discount code {code.code}"
 						>
 							<Trash2 class="h-4 w-4" />
 						</Button>
