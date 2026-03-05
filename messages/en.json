@@ -1652,7 +1652,8 @@
 			"heading": "Ticket Type",
 			"ticketed": "Ticketed",
 			"free": "Free RSVP",
-			"showing": "Showing {ticketType} events"
+			"showingTicketed": "Showing ticketed events only",
+			"showingFree": "Showing free RSVP events only"
 		}
 	},
 	"follow": {

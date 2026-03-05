@@ -1652,7 +1652,8 @@
 			"heading": "Tipo di biglietto",
 			"ticketed": "Con biglietto",
 			"free": "RSVP gratuito",
-			"showing": "Mostra eventi {ticketType}"
+			"showingTicketed": "Solo eventi con biglietto",
+			"showingFree": "Solo eventi RSVP gratuiti"
 		}
 	},
 	"follow": {

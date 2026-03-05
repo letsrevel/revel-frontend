@@ -56,12 +56,9 @@
 
 	{#if ticketType}
 		<p class="text-xs text-muted-foreground">
-			{m['filters.ticketType.showing']({
-				ticketType:
-					ticketType === 'ticketed'
-						? m['filters.ticketType.ticketed']().toLowerCase()
-						: m['filters.ticketType.free']().toLowerCase()
-			})}
+			{ticketType === 'ticketed'
+				? m['filters.ticketType.showingTicketed']()
+				: m['filters.ticketType.showingFree']()}
 		</p>
 	{/if}
 </div>
