@@ -29,13 +29,16 @@
 		userName?: string;
 		/** Pre-selected tier from inline TierCard click */
 		preSelectedTier?: TierSchemaWithId | null;
+		/** Pre-filled discount code (e.g. from URL param) */
+		initialDiscountCode?: string;
 		onClose: () => void;
-		onClaimTicket: (tierId: string, tickets?: TicketPurchaseItem[]) => void;
+		onClaimTicket: (tierId: string, tickets?: TicketPurchaseItem[], discountCode?: string) => void;
 		onCheckout?: (
 			tierId: string,
 			isPwyc: boolean,
 			amount?: number,
-			tickets?: TicketPurchaseItem[]
+			tickets?: TicketPurchaseItem[],
+			discountCode?: string
 		) => void;
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
@@ -52,6 +55,7 @@
 		eventMaxTicketsPerUser = null,
 		userName = '',
 		preSelectedTier = null,
+		initialDiscountCode = '',
 		onClose,
 		onClaimTicket,
 		onCheckout,
@@ -158,18 +162,19 @@
 	async function handleConfirm(payload: {
 		amount?: number;
 		tickets: TicketPurchaseItem[];
+		discountCode?: string;
 	}): Promise<void> {
 		if (!selectedTier || isProcessing) return;
 
 		isProcessing = true;
-		const { amount, tickets } = payload;
+		const { amount, tickets, discountCode } = payload;
 		const isOnline = selectedTier.payment_method === 'online';
 		const isPwyc = selectedTier.price_type === 'pwyc';
 
 		try {
 			// PWYC tiers require the PWYC endpoint regardless of payment method
 			if (isPwyc && onCheckout) {
-				await onCheckout(selectedTier.id, true, amount, tickets);
+				await onCheckout(selectedTier.id, true, amount, tickets, discountCode);
 			}
 			// Free tickets or offline/at-the-door (reservation) - non-PWYC
 			else if (
@@ -177,11 +182,11 @@
 				selectedTier.payment_method === 'offline' ||
 				selectedTier.payment_method === 'at_the_door'
 			) {
-				await onClaimTicket(selectedTier.id, tickets);
+				await onClaimTicket(selectedTier.id, tickets, discountCode);
 			}
 			// Online payment (fixed price)
 			else if (isOnline && onCheckout) {
-				await onCheckout(selectedTier.id, false, undefined, tickets);
+				await onCheckout(selectedTier.id, false, undefined, tickets, discountCode);
 			}
 
 			// For online payments (Stripe redirect), keep loading state visible.
@@ -261,5 +266,6 @@
 		maxQuantity={getMaxQuantityForTier(selectedTier.id)}
 		{eventMaxTicketsPerUser}
 		{userName}
+		{initialDiscountCode}
 	/>
 {/if}

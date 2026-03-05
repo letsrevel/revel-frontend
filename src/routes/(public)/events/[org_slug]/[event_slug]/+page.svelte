@@ -187,6 +187,9 @@
 	// Get user's display name for ticket purchase forms
 	let userDisplayName = $derived(authStore.user?.display_name ?? '');
 
+	// Discount code from URL param
+	let initialDiscountCode = $state('');
+
 	// Modal states
 	let showTicketTierModal = $state(false);
 	let showMyTicketModal = $state(false);
@@ -246,6 +249,7 @@
 	interface CheckoutParams {
 		tierId: string;
 		tickets: TicketPurchaseItem[];
+		discountCode?: string;
 	}
 
 	interface PwycCheckoutParams extends CheckoutParams {
@@ -326,8 +330,11 @@
 
 	// Ticket claiming mutation (for free/offline tickets) - batch version
 	let claimTicketMutation = createMutation(() => ({
-		mutationFn: async ({ tierId, tickets }: CheckoutParams) => {
-			const body: BatchCheckoutPayload = { tickets };
+		mutationFn: async ({ tierId, tickets, discountCode }: CheckoutParams) => {
+			const body: BatchCheckoutPayload = {
+				tickets,
+				discount_code: discountCode || undefined
+			};
 			const response = await eventpublicticketsTicketCheckout({
 				path: { event_id: event.id, tier_id: tierId },
 				body
@@ -343,8 +350,11 @@
 
 	// Fixed-price checkout mutation (for online payments) - batch version
 	let checkoutMutation = createMutation(() => ({
-		mutationFn: async ({ tierId, tickets }: CheckoutParams) => {
-			const body: BatchCheckoutPayload = { tickets };
+		mutationFn: async ({ tierId, tickets, discountCode }: CheckoutParams) => {
+			const body: BatchCheckoutPayload = {
+				tickets,
+				discount_code: discountCode || undefined
+			};
 			const response = await eventpublicticketsTicketCheckout({
 				path: { event_id: event.id, tier_id: tierId },
 				body
@@ -390,10 +400,15 @@
 	 * Handle claiming free/offline tickets
 	 * @param tierId - Tier ID to purchase from
 	 * @param tickets - Optional tickets array (defaults to single ticket with empty guest name)
+	 * @param discountCode - Optional discount code
 	 */
-	async function handleClaimTicket(tierId: string, tickets?: TicketPurchaseItem[]) {
+	async function handleClaimTicket(
+		tierId: string,
+		tickets?: TicketPurchaseItem[],
+		discountCode?: string
+	) {
 		const ticketItems = tickets || [{ guest_name: getDefaultGuestName() }];
-		await claimTicketMutation.mutateAsync({ tierId, tickets: ticketItems });
+		await claimTicketMutation.mutateAsync({ tierId, tickets: ticketItems, discountCode });
 	}
 
 	/**
@@ -402,12 +417,14 @@
 	 * @param isPwyc - Whether this is a PWYC tier
 	 * @param amount - Price per ticket for PWYC tiers
 	 * @param tickets - Optional tickets array (defaults to single ticket with empty guest name)
+	 * @param discountCode - Optional discount code
 	 */
 	async function handleCheckout(
 		tierId: string,
 		isPwyc: boolean,
 		amount?: number,
-		tickets?: TicketPurchaseItem[]
+		tickets?: TicketPurchaseItem[],
+		discountCode?: string
 	) {
 		const ticketItems = tickets || [{ guest_name: getDefaultGuestName() }];
 
@@ -420,7 +437,11 @@
 			});
 		} else {
 			// Direct checkout for fixed-price tiers
-			await checkoutMutation.mutateAsync({ tierId, tickets: ticketItems });
+			await checkoutMutation.mutateAsync({
+				tierId,
+				tickets: ticketItems,
+				discountCode
+			});
 		}
 	}
 
@@ -587,6 +608,15 @@
 						openMyTicketModal();
 					}
 				}, 1000);
+			}
+
+			// Check for discount code
+			const discountParam = urlParams.get('discount');
+			if (discountParam) {
+				initialDiscountCode = discountParam.toUpperCase();
+				// Remove parameter from URL
+				const cleanUrl = window.location.pathname;
+				window.history.replaceState({}, '', cleanUrl);
 			}
 		}
 	});
@@ -969,6 +999,7 @@
 	eventMaxTicketsPerUser={event.max_tickets_per_user}
 	userName={userDisplayName}
 	{preSelectedTier}
+	{initialDiscountCode}
 	onClose={closeTicketTierModal}
 	onClaimTicket={handleClaimTicket}
 	onCheckout={handleCheckout}

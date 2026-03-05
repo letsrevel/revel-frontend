@@ -20,18 +20,14 @@
 		EUR: '€',
 		USD: '$',
 		GBP: '£',
-		JPY: '¥',
-		AUD: 'A$',
-		CAD: 'C$',
 		CHF: 'CHF',
-		CNY: '¥',
-		INR: '₹',
-		KRW: '₩',
-		RUB: '₽',
-		TRY: '₺',
-		BRL: 'R$',
-		MXN: 'Mex$',
-		ZAR: 'R'
+		BGN: 'лв',
+		CZK: 'Kč',
+		DKK: 'kr',
+		HUF: 'Ft',
+		PLN: 'zł',
+		RON: 'lei',
+		SEK: 'kr'
 	};
 
 	function formatPrice(amount: string | number, currency: string): string {
