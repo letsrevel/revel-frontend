@@ -1647,6 +1647,13 @@
 			"closeFilters": "Close filters",
 			"clearAll": "Clear all filters",
 			"showResults": "Show {count} {eventPlural}"
+		},
+		"ticketType": {
+			"heading": "Ticket Type",
+			"ticketed": "Ticketed",
+			"free": "Free RSVP",
+			"showingTicketed": "Showing ticketed events only",
+			"showingFree": "Showing free RSVP events only"
 		}
 	},
 	"follow": {
@@ -2826,6 +2833,7 @@
 	"orgAdmin.events.status.draft": "Draft",
 	"orgAdmin.events.status.open": "Open",
 	"orgAdmin.nav.announcements": "Announcements",
+	"orgAdmin.nav.discountCodes": "Discount Codes",
 	"orgAdmin.nav.venues": "Venues",
 	"orgAdmin.questionnaires": {
 		"pageTitle": "Questionnaires",

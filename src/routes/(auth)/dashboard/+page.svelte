@@ -105,6 +105,7 @@
 
 	// Your Events filter state (default to "All")
 	let yourEventsFilters = $state({ ...filterPresets[0].filters });
+	let ticketType = $state<'ticketed' | 'free' | undefined>(undefined);
 
 	// View mode (list or calendar) for Your Events section
 	let viewMode = $derived<'list' | 'calendar'>(
@@ -136,7 +137,7 @@
 
 	// Fetch "Your Events" with active filters
 	const yourEventsQuery = createQuery(() => ({
-		queryKey: ['dashboard-your-events', yourEventsFilters],
+		queryKey: ['dashboard-your-events', yourEventsFilters, ticketType],
 		queryFn: async () => {
 			if (!accessToken) return [];
 
@@ -144,6 +145,8 @@
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
 					...yourEventsFilters,
+					requires_ticket:
+						ticketType === 'ticketed' ? true : ticketType === 'free' ? false : undefined,
 					page_size: 10
 				}
 			});
@@ -161,7 +164,8 @@
 			calendarParams.year,
 			calendarParams.month,
 			calendarParams.week,
-			yourEventsFilters
+			yourEventsFilters,
+			ticketType
 		],
 		queryFn: async () => {
 			if (!accessToken) return [];
@@ -173,7 +177,9 @@
 					month: calendarParams.view === 'month' ? calendarParams.month : undefined,
 					year: calendarParams.year,
 					// Apply same filters as list view
-					...yourEventsFilters
+					...yourEventsFilters,
+					requires_ticket:
+						ticketType === 'ticketed' ? true : ticketType === 'free' ? false : undefined
 				}
 			});
 
@@ -682,6 +688,23 @@
 										{(m as unknown as Record<string, () => string>)[preset.labelKey]()}
 									</button>
 								{/if}
+							{/each}
+
+							<!-- Ticket Type Toggle -->
+							<span class="ml-1 text-muted-foreground">|</span>
+							{#each [{ value: 'ticketed', label: m['filters.ticketType.ticketed']() }, { value: 'free', label: m['filters.ticketType.free']() }] as option (option.value)}
+								{@const isSelected = ticketType === option.value}
+								<button
+									type="button"
+									onclick={() =>
+										(ticketType = isSelected ? undefined : (option.value as 'ticketed' | 'free'))}
+									class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {isSelected
+										? 'bg-primary text-primary-foreground hover:bg-primary/90'
+										: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
+									aria-pressed={isSelected}
+								>
+									{option.label}
+								</button>
 							{/each}
 						</div>
 					{/if}

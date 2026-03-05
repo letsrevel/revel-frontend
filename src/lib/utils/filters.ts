@@ -16,6 +16,7 @@ export interface EventFilters {
 	visibility?: 'public' | 'private' | 'members-only' | 'staff-only';
 	tags?: string[];
 	includePast?: boolean;
+	ticketType?: 'ticketed' | 'free';
 	orderBy?: 'start' | '-start' | 'distance';
 	page?: number;
 	pageSize?: number;
@@ -78,6 +79,10 @@ export function parseFilters(searchParams: URLSearchParams): EventFilters {
 	const includePast = searchParams.get('include_past');
 	if (includePast === 'true') filters.includePast = true;
 
+	// Ticket type
+	const ticketType = searchParams.get('ticket_type');
+	if (ticketType === 'ticketed' || ticketType === 'free') filters.ticketType = ticketType;
+
 	// Order by
 	const orderBy = searchParams.get('order_by');
 	if (orderBy === 'start' || orderBy === '-start' || orderBy === 'distance') {
@@ -114,6 +119,7 @@ export function filtersToParams(filters: EventFilters): URLSearchParams {
 	if (filters.visibility) params.set('visibility', filters.visibility);
 	if (filters.tags && filters.tags.length > 0) params.set('tags', filters.tags.join(','));
 	if (filters.includePast) params.set('include_past', 'true');
+	if (filters.ticketType) params.set('ticket_type', filters.ticketType);
 	if (filters.orderBy) params.set('order_by', filters.orderBy);
 	if (filters.page && filters.page > 1) params.set('page', filters.page.toString());
 	if (filters.pageSize && filters.pageSize !== 20) {
@@ -137,6 +143,8 @@ export function filtersToApiParams(filters: EventFilters) {
 		visibility: filters.visibility,
 		tags: filters.tags,
 		include_past: filters.includePast ?? false,
+		requires_ticket:
+			filters.ticketType === 'ticketed' ? true : filters.ticketType === 'free' ? false : undefined,
 		order_by: filters.orderBy ?? 'distance', // Default to 'distance' (nearest first)
 		page: filters.page ?? 1,
 		page_size: filters.pageSize ?? 20
@@ -157,6 +165,7 @@ export function hasActiveFilters(filters: EventFilters): boolean {
 		filters.visibility ||
 		(filters.tags && filters.tags.length > 0) ||
 		filters.includePast ||
+		filters.ticketType ||
 		(filters.orderBy && filters.orderBy !== 'distance') // 'distance' is now the default
 	);
 }
@@ -176,6 +185,7 @@ export function countActiveFilters(filters: EventFilters): number {
 	if (filters.visibility) count++;
 	if (filters.tags && filters.tags.length > 0) count += filters.tags.length;
 	if (filters.includePast) count++;
+	if (filters.ticketType) count++;
 	if (filters.orderBy && filters.orderBy !== 'distance') count++; // 'distance' is now the default
 
 	return count;
@@ -277,6 +287,12 @@ export function getFilterDescriptions(filters: EventFilters): string[] {
 
 	if (filters.includePast) {
 		descriptions.push(`Including past events`);
+	}
+
+	if (filters.ticketType === 'ticketed') {
+		descriptions.push(`Ticketed events only`);
+	} else if (filters.ticketType === 'free') {
+		descriptions.push(`Free RSVP events only`);
 	}
 
 	if (filters.orderBy === '-start') {

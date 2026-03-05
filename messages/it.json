@@ -1647,6 +1647,13 @@
 			"closeFilters": "Chiudi filtri",
 			"clearAll": "Cancella tutti i filtri",
 			"showResults": "Mostra {count} {eventPlural}"
+		},
+		"ticketType": {
+			"heading": "Tipo di biglietto",
+			"ticketed": "Con biglietto",
+			"free": "RSVP gratuito",
+			"showingTicketed": "Solo eventi con biglietto",
+			"showingFree": "Solo eventi RSVP gratuiti"
 		}
 	},
 	"follow": {
@@ -2826,6 +2833,7 @@
 	"orgAdmin.events.status.draft": "Bozza",
 	"orgAdmin.events.status.open": "Aperto",
 	"orgAdmin.nav.announcements": "Annunci",
+	"orgAdmin.nav.discountCodes": "Codici Sconto",
 	"orgAdmin.nav.venues": "Luoghi",
 	"orgAdmin.questionnaires": {
 		"pageTitle": "Questionari",

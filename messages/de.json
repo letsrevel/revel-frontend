@@ -1647,6 +1647,13 @@
 			"closeFilters": "Filter schließen",
 			"clearAll": "Alle Filter löschen",
 			"showResults": "Zeige {count} {eventPlural}"
+		},
+		"ticketType": {
+			"heading": "Ticket-Typ",
+			"ticketed": "Mit Ticket",
+			"free": "Kostenlose RSVP",
+			"showingTicketed": "Nur Veranstaltungen mit Tickets",
+			"showingFree": "Nur kostenlose RSVP-Veranstaltungen"
 		}
 	},
 	"follow": {
@@ -2826,6 +2833,7 @@
 	"orgAdmin.events.status.draft": "Entwurf",
 	"orgAdmin.events.status.open": "Offen",
 	"orgAdmin.nav.announcements": "Ankündigungen",
+	"orgAdmin.nav.discountCodes": "Rabattcodes",
 	"orgAdmin.nav.venues": "Veranstaltungsorte",
 	"orgAdmin.questionnaires": {
 		"pageTitle": "Fragebögen",

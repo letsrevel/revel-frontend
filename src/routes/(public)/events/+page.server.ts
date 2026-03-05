@@ -16,6 +16,9 @@ export const load: PageServerLoad = async ({ url, fetch, locals }) => {
 	const tagsParam = url.searchParams.get('tags');
 	const tags = tagsParam ? tagsParam.split(',').filter(Boolean) : undefined;
 	const includePast = url.searchParams.get('include_past') === 'true';
+	const ticketType = url.searchParams.get('ticket_type') || undefined;
+	const requiresTicket =
+		ticketType === 'ticketed' ? true : ticketType === 'free' ? false : undefined;
 	const orderBy = url.searchParams.get('order_by') || 'distance';
 
 	try {
@@ -30,6 +33,7 @@ export const load: PageServerLoad = async ({ url, fetch, locals }) => {
 			page,
 			page_size: pageSize,
 			include_past: includePast,
+			requires_ticket: requiresTicket,
 			order_by: orderBy as any
 		};
 

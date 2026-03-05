@@ -103,7 +103,13 @@
 					organization: currentFilters.organizationId,
 					event_type: currentFilters.eventType as any,
 					visibility: currentFilters.visibility as any,
-					tags: currentFilters.tags
+					tags: currentFilters.tags,
+					requires_ticket:
+						currentFilters.ticketType === 'ticketed'
+							? true
+							: currentFilters.ticketType === 'free'
+								? false
+								: undefined
 				}
 			});
 
@@ -411,7 +417,8 @@
 						'organization',
 						'event_type',
 						'visibility',
-						'tags'
+						'tags',
+						'ticket_type'
 					]}
 				/>
 
