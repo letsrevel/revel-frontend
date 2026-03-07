@@ -9,7 +9,8 @@
 		eventadminrsvpsDeleteRsvp,
 		organizationadminmembersListMembershipTiers,
 		organizationadminmembersAddMember,
-		organizationadminblacklistCreateBlacklistEntry
+		organizationadminblacklistCreateBlacklistEntry,
+		eventadminticketsExportAttendees
 	} from '$lib/api';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { cn } from '$lib/utils/cn';
@@ -30,6 +31,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Badge } from '$lib/components/ui/badge';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import ExportButton from '$lib/components/common/ExportButton.svelte';
 	import MakeMemberModal from '$lib/components/members/MakeMemberModal.svelte';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 	import type { RsvpDetailSchema, MembershipTierSchema } from '$lib/api/generated/types.gen';
@@ -432,6 +434,17 @@
 	function getUserEmail(user: any): string {
 		return user.email || 'N/A';
 	}
+
+	async function handleExportAttendees(): Promise<string> {
+		const response = await eventadminticketsExportAttendees({
+			path: { event_id: data.event.id },
+			headers: { Authorization: `Bearer ${accessToken}` }
+		});
+		if (response.error || !response.data?.id) {
+			throw new Error('Export failed');
+		}
+		return response.data.id;
+	}
 </script>
 
 <svelte:head>
@@ -452,8 +465,19 @@
 				{m['attendeesAdmin.backToEvents']()}
 			</a>
 		</div>
-		<h1 class="text-2xl font-bold tracking-tight md:text-3xl">{m['attendeesAdmin.pageTitle']()}</h1>
-		<p class="mt-1 text-sm text-muted-foreground">{data.event.name}</p>
+		<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+			<div>
+				<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
+					{m['attendeesAdmin.pageTitle']()}
+				</h1>
+				<p class="mt-1 text-sm text-muted-foreground">{data.event.name}</p>
+			</div>
+			<ExportButton
+				label={m['exportButton.exportAttendees']()}
+				onExport={handleExportAttendees}
+				{accessToken}
+			/>
+		</div>
 	</div>
 
 	<!-- Stats (always shown) -->

@@ -15,6 +15,10 @@
 	import StatusBreakdownBar from '$lib/components/questionnaires/StatusBreakdownBar.svelte';
 	import McQuestionChart from '$lib/components/questionnaires/McQuestionChart.svelte';
 	import ScoreStatsCard from '$lib/components/questionnaires/ScoreStatsCard.svelte';
+	import PronounDistributionChart from '$lib/components/common/PronounDistributionChart.svelte';
+	import ExportButton from '$lib/components/common/ExportButton.svelte';
+	import { questionnaireExportSubmissions } from '$lib/api';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import type { PageData } from './$types';
 
 	interface Props {
@@ -75,6 +79,21 @@
 		}
 		return m['questionnaireSummaryPage.allSeries']();
 	});
+
+	async function handleExportSubmissions(): Promise<string> {
+		const response = await questionnaireExportSubmissions({
+			path: { org_questionnaire_id: data.questionnaireId },
+			query: {
+				event_id: data.filters.eventId ?? undefined,
+				event_series_id: data.filters.eventSeriesId ?? undefined
+			},
+			headers: { Authorization: `Bearer ${authStore.accessToken}` }
+		});
+		if (response.error || !response.data?.id) {
+			throw new Error('Export failed');
+		}
+		return response.data.id;
+	}
 </script>
 
 <svelte:head>
@@ -91,8 +110,17 @@
 			<ArrowLeft class="h-4 w-4" />
 			{m['questionnaireSummaryPage.backToQuestionnaire']()}
 		</a>
-		<h1 class="text-3xl font-bold">{m['questionnaireSummaryPage.title']()}</h1>
-		<p class="mt-1 text-muted-foreground">{questionnaire?.questionnaire.name}</p>
+		<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+			<div>
+				<h1 class="text-3xl font-bold">{m['questionnaireSummaryPage.title']()}</h1>
+				<p class="mt-1 text-muted-foreground">{questionnaire?.questionnaire.name}</p>
+			</div>
+			<ExportButton
+				label={m['exportButton.exportSubmissions']()}
+				onExport={handleExportSubmissions}
+				accessToken={authStore.accessToken}
+			/>
+		</div>
 	</div>
 
 	<!-- Filters -->
@@ -256,6 +284,23 @@
 				max={summary.score_stats.max}
 			/>
 		</div>
+
+		<!-- Pronoun Distribution -->
+		{#if summary.pronoun_distribution && summary.pronoun_distribution.total_attendees > 0}
+			<Card class="mb-8">
+				<CardHeader>
+					<CardTitle class="text-base">{m['pronounDistribution.title']()}</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<PronounDistributionChart
+						distribution={summary.pronoun_distribution.distribution ?? []}
+						totalAttendees={summary.pronoun_distribution.total_attendees}
+						totalWithPronouns={summary.pronoun_distribution.total_with_pronouns}
+						totalWithoutPronouns={summary.pronoun_distribution.total_without_pronouns}
+					/>
+				</CardContent>
+			</Card>
+		{/if}
 
 		<!-- MC Question Distributions -->
 		{#if summary.mc_question_stats.length > 0}
