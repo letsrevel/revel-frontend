@@ -3486,7 +3486,7 @@
 		"exporting": "Wird exportiert...",
 		"exportStarted": "Export gestartet, Datei wird vorbereitet...",
 		"exportReady": "Export fertig! Der Download sollte automatisch starten.",
-		"exportError": "Export fehlgeschlagen. Bitte versuchen Sie es erneut."
+		"exportError": "Export fehlgeschlagen. Bitte versuche es erneut."
 	},
 	"pwycModal": {
 		"pwyc": "Zahle, was du kannst",

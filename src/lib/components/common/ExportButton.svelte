@@ -22,6 +22,10 @@
 	const MAX_POLLS = 60;
 
 	async function pollExportStatus(exportId: string): Promise<string> {
+		if (!accessToken) {
+			throw new Error('Missing access token');
+		}
+
 		for (let i = 0; i < MAX_POLLS; i++) {
 			await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
 
@@ -41,8 +45,13 @@
 			}
 
 			if (exportData.download_url) {
-				const baseUrl = (PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
-				return `${baseUrl}${exportData.download_url}`;
+				if (/^https?:\/\//.test(exportData.download_url)) {
+					return exportData.download_url;
+				}
+				if (!PUBLIC_API_URL) {
+					throw new Error('PUBLIC_API_URL is not configured');
+				}
+				return `${PUBLIC_API_URL.replace(/\/$/, '')}${exportData.download_url}`;
 			}
 		}
 
@@ -76,7 +85,12 @@
 	}
 </script>
 
-<Button variant="outline" size="sm" onclick={handleExport} disabled={disabled || isExporting}>
+<Button
+	variant="outline"
+	size="sm"
+	onclick={handleExport}
+	disabled={disabled || isExporting || !accessToken}
+>
 	{#if isExporting}
 		<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 		{m['exportButton.exporting']()}
