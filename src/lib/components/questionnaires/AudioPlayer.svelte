@@ -107,11 +107,7 @@
 
 	function handleError() {
 		if (mediaElement?.error) {
-			console.error(
-				'Audio playback error:',
-				mediaElement.error.code,
-				mediaElement.error.message
-			);
+			console.error('Audio playback error:', mediaElement.error.code, mediaElement.error.message);
 		}
 		isLoaded = false;
 		isPlaying = false;
@@ -150,7 +146,7 @@
 <!-- Hidden video element (used instead of <audio> for video/webm MIME type compatibility) -->
 <video
 	bind:this={mediaElement}
-	src={src}
+	{src}
 	preload="metadata"
 	onloadedmetadata={handleLoadedMetadata}
 	ontimeupdate={handleTimeUpdate}
