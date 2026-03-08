@@ -3480,6 +3480,14 @@
 		"notSpecified": "Non specificato",
 		"summary": "{withPronouns} di {total} partecipanti hanno condiviso i loro pronomi"
 	},
+	"exportButton": {
+		"exportAttendees": "Esporta Partecipanti",
+		"exportSubmissions": "Esporta Risposte",
+		"exporting": "Esportazione in corso...",
+		"exportStarted": "Esportazione avviata, preparazione del file...",
+		"exportReady": "Esportazione pronta! Il download dovrebbe iniziare automaticamente.",
+		"exportError": "Esportazione fallita. Riprova."
+	},
 	"pwycModal": {
 		"pwyc": "Paga Quanto Vuoi",
 		"chooseAmount": "Scegli quanto vuoi pagare per il tuo biglietto.",

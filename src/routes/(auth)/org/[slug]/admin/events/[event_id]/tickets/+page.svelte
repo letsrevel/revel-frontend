@@ -34,7 +34,8 @@
 		eventadminticketsGetTicket,
 		organizationadminmembersListMembershipTiers,
 		organizationadminmembersAddMember,
-		organizationadminblacklistCreateBlacklistEntry
+		organizationadminblacklistCreateBlacklistEntry,
+		eventadminticketsExportAttendees
 	} from '$lib/api';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import type { PageData } from './$types';
@@ -43,6 +44,7 @@
 	import QRScannerModal from '$lib/components/tickets/QRScannerModal.svelte';
 	import CheckInDialog from '$lib/components/tickets/CheckInDialog.svelte';
 	import MakeMemberModal from '$lib/components/members/MakeMemberModal.svelte';
+	import ExportButton from '$lib/components/common/ExportButton.svelte';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -734,6 +736,17 @@
 		// Fall back to tier price
 		return ticket.tier?.price;
 	}
+
+	async function handleExportAttendees(): Promise<string> {
+		const response = await eventadminticketsExportAttendees({
+			path: { event_id: data.event.id },
+			headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
+		});
+		if (response.error || !response.data?.id) {
+			throw new Error('Export failed');
+		}
+		return response.data.id;
+	}
 </script>
 
 {#snippet paymentMethodIcon(method: string)}
@@ -768,8 +781,17 @@
 			<span>/</span>
 			<span>{data.event.name}</span>
 		</div>
-		<h1 class="text-3xl font-bold">{m['eventTicketsAdmin.pageTitle']()}</h1>
-		<p class="mt-2 text-muted-foreground">{m['eventTicketsAdmin.pageDescription']()}</p>
+		<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+			<div>
+				<h1 class="text-3xl font-bold">{m['eventTicketsAdmin.pageTitle']()}</h1>
+				<p class="mt-2 text-muted-foreground">{m['eventTicketsAdmin.pageDescription']()}</p>
+			</div>
+			<ExportButton
+				label={m['exportButton.exportAttendees']()}
+				onExport={handleExportAttendees}
+				accessToken={$page.data.user?.accessToken ?? null}
+			/>
+		</div>
 	</div>
 
 	<!-- Check-in Button (QR Scanner) -->

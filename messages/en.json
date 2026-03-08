@@ -3480,6 +3480,14 @@
 		"notSpecified": "Not specified",
 		"summary": "{withPronouns} of {total} attendees have shared their pronouns"
 	},
+	"exportButton": {
+		"exportAttendees": "Export Attendees",
+		"exportSubmissions": "Export Submissions",
+		"exporting": "Exporting...",
+		"exportStarted": "Export started, preparing your file...",
+		"exportReady": "Export ready! Your download should start automatically.",
+		"exportError": "Failed to export. Please try again."
+	},
 	"pwycModal": {
 		"pwyc": "Pay What You Can",
 		"chooseAmount": "Choose how much you'd like to pay for your ticket.",
