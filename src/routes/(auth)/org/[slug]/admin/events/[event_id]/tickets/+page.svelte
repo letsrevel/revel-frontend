@@ -786,11 +786,25 @@
 				<h1 class="text-3xl font-bold">{m['eventTicketsAdmin.pageTitle']()}</h1>
 				<p class="mt-2 text-muted-foreground">{m['eventTicketsAdmin.pageDescription']()}</p>
 			</div>
-			<ExportButton
-				label={m['exportButton.exportAttendees']()}
-				onExport={handleExportAttendees}
-				accessToken={$page.data.user?.accessToken ?? null}
-			/>
+			<div class="flex flex-wrap items-center gap-2">
+				<a
+					href="/org/{data.event.organization.slug}/admin/events/{data.event.id}/edit"
+					class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+				>
+					{m['eventEditor.editEvent']()}
+				</a>
+				<a
+					href="/org/{data.event.organization.slug}/admin/events/{data.event.id}/edit?tab=ticketing"
+					class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+				>
+					{m['eventEditor.ticketing']()}
+				</a>
+				<ExportButton
+					label={m['exportButton.exportAttendees']()}
+					onExport={handleExportAttendees}
+					accessToken={$page.data.user?.accessToken ?? null}
+				/>
+			</div>
 		</div>
 	</div>
 

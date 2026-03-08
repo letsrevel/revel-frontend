@@ -472,11 +472,19 @@
 				</h1>
 				<p class="mt-1 text-sm text-muted-foreground">{data.event.name}</p>
 			</div>
-			<ExportButton
-				label={m['exportButton.exportAttendees']()}
-				onExport={handleExportAttendees}
-				{accessToken}
-			/>
+			<div class="flex flex-wrap items-center gap-2">
+				<a
+					href="/org/{organization.slug}/admin/events/{data.event.id}/edit"
+					class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+				>
+					{m['eventEditor.editEvent']()}
+				</a>
+				<ExportButton
+					label={m['exportButton.exportAttendees']()}
+					onExport={handleExportAttendees}
+					{accessToken}
+				/>
+			</div>
 		</div>
 	</div>
 

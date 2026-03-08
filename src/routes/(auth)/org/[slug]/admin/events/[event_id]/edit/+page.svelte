@@ -3,7 +3,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
-	import EventWizard from '$lib/components/events/admin/EventWizard.svelte';
+	import EventEditor from '$lib/components/events/admin/EventEditor.svelte';
 	import DuplicateEventModal from '$lib/components/events/admin/DuplicateEventModal.svelte';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -287,15 +287,16 @@
 		</div>
 	</div>
 
-	<!-- Event Wizard Component -->
-	<div class="rounded-lg border bg-card p-6 text-card-foreground shadow-sm md:p-8">
-		<EventWizard
+	<!-- Event Editor Component -->
+	<div class="rounded-lg border bg-card text-card-foreground shadow-sm">
+		<EventEditor
 			{organization}
 			existingEvent={event}
 			userCity={data.userCity}
 			orgCity={data.orgCity}
 			eventSeries={data.eventSeries}
 			questionnaires={data.questionnaires}
+			initialTab={($page.url.searchParams.get('tab') as 'details' | 'ticketing') ?? undefined}
 		/>
 	</div>
 </div>
