@@ -799,11 +799,13 @@
 			{/if}
 
 			<!-- Navigation -->
-			<div class="flex justify-between border-t border-border pt-6">
+			<div
+				class="flex flex-col-reverse gap-3 border-t border-border pt-6 sm:flex-row sm:justify-between"
+			>
 				<button
 					type="button"
 					onclick={handleBackToStep1}
-					class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-6 py-3 font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					class="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-6 py-3 font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				>
 					← {m['eventWizard.buttonBack']()}
 				</button>
@@ -824,7 +826,7 @@
 					}}
 					disabled={isSaving}
 					class={cn(
-						'inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+						'inline-flex items-center justify-center gap-2 rounded-md bg-primary px-6 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
 						isSaving && 'cursor-not-allowed opacity-50'
 					)}
 				>

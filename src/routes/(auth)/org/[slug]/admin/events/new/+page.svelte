@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import type { PageData } from './$types';
-	import EventWizard from '$lib/components/events/admin/EventWizard.svelte';
+	import EventEditor from '$lib/components/events/admin/EventEditor.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -27,9 +27,9 @@
 		</p>
 	</div>
 
-	<!-- Event Wizard Component -->
-	<div class="rounded-lg border bg-card p-6 text-card-foreground shadow-sm md:p-8">
-		<EventWizard
+	<!-- Event Editor Component -->
+	<div class="rounded-lg border bg-card text-card-foreground shadow-sm">
+		<EventEditor
 			{organization}
 			userCity={data.userCity}
 			orgCity={data.orgCity}

@@ -1561,6 +1561,15 @@
 		"effectiveCapacity.limitedByVenue": "{capacity} (begrenzt durch Veranstaltungsort)",
 		"effectiveCapacity.warning": "Deine maximale Teilnehmerzahl ({maxAttendees}) übersteigt die Kapazität des Veranstaltungsortes ({venueCapacity}). Das effektive Limit beträgt {effectiveCapacity}."
 	},
+	"eventEditor": {
+		"save": "Speichern",
+		"saveAndExit": "Speichern & Beenden",
+		"saving": "Speichern...",
+		"tabDetails": "Event-Details",
+		"tabTicketing": "Ticketing",
+		"editEvent": "Event bearbeiten",
+		"ticketing": "Ticketing"
+	},
 	"eventsAdminPage": {
 		"title": "Veranstaltungen - Revel",
 		"heading": "Veranstaltungen",

@@ -18,8 +18,11 @@
 
 	let { src, filename, class: className = '' }: Props = $props();
 
-	// Audio element reference
-	let audioElement = $state<HTMLAudioElement | null>(null);
+	// Use <video> instead of <audio> because MediaRecorder-produced WebM files
+	// have video/webm MIME type, which <audio> elements may reject in some browsers.
+	// The <video> element handles both audio/* and video/* content types,
+	// and its JavaScript API (play, pause, currentTime, duration) is identical.
+	let mediaElement = $state<HTMLVideoElement | null>(null);
 
 	// Playback state
 	let isPlaying = $state(false);
@@ -30,7 +33,7 @@
 	// Derived values
 	let formattedCurrentTime = $derived(formatAudioDuration(currentTime));
 	let formattedDuration = $derived(formatAudioDuration(duration));
-	let progress = $derived(duration > 0 ? (currentTime / duration) * 100 : 0);
+	let progress = $derived(duration > 0 && isFinite(duration) ? (currentTime / duration) * 100 : 0);
 	let speedLabel = $derived(audioPreferences.getSpeedLabel(audioPreferences.playbackSpeed));
 
 	// Initialize preferences on mount
@@ -40,31 +43,56 @@
 
 	// Effect to sync playback rate when it changes
 	$effect(() => {
-		if (audioElement) {
-			audioElement.playbackRate = audioPreferences.playbackSpeed;
+		if (mediaElement) {
+			mediaElement.playbackRate = audioPreferences.playbackSpeed;
 		}
 	});
 
+	// MediaRecorder-produced WebM files often lack duration metadata in the header.
+	// The browser reports Infinity until the full file is buffered.
+	// This function resolves the real duration by briefly seeking to the end.
+	function resolveDuration() {
+		if (!mediaElement || !isFinite(mediaElement.duration)) return;
+		duration = mediaElement.duration;
+	}
+
 	// Audio event handlers
 	function handleLoadedMetadata() {
-		if (audioElement) {
-			duration = audioElement.duration;
+		if (mediaElement) {
 			isLoaded = true;
-			// Apply current speed preference
-			audioElement.playbackRate = audioPreferences.playbackSpeed;
+			mediaElement.playbackRate = audioPreferences.playbackSpeed;
+
+			if (isFinite(mediaElement.duration)) {
+				duration = mediaElement.duration;
+			} else {
+				// Duration unknown (common for MediaRecorder WebM files).
+				// Seek to a large value to force the browser to determine the real duration.
+				mediaElement.currentTime = 1e10;
+			}
 		}
 	}
 
 	function handleTimeUpdate() {
-		if (audioElement) {
-			currentTime = audioElement.currentTime;
+		if (mediaElement) {
+			// After the seek-to-end trick, the browser snaps to the real end
+			// and the duration becomes finite. Capture it and reset to start.
+			if (!isFinite(duration) && isFinite(mediaElement.duration)) {
+				duration = mediaElement.duration;
+				mediaElement.currentTime = 0;
+				return;
+			}
+			currentTime = mediaElement.currentTime;
 		}
+	}
+
+	function handleDurationChange() {
+		resolveDuration();
 	}
 
 	function handleEnded() {
 		isPlaying = false;
-		if (audioElement) {
-			audioElement.currentTime = 0;
+		if (mediaElement) {
+			mediaElement.currentTime = 0;
 			currentTime = 0;
 		}
 	}
@@ -78,32 +106,34 @@
 	}
 
 	function handleError() {
-		// Reset state on error - audio file may be corrupted or unsupported
+		if (mediaElement?.error) {
+			console.error('Audio playback error:', mediaElement.error.code, mediaElement.error.message);
+		}
 		isLoaded = false;
 		isPlaying = false;
 	}
 
 	// Control handlers
 	function togglePlayPause() {
-		if (!audioElement) return;
+		if (!mediaElement) return;
 
 		if (isPlaying) {
-			audioElement.pause();
+			mediaElement.pause();
 		} else {
-			audioElement.play().catch((error) => {
+			mediaElement.play().catch((error) => {
 				console.error('Failed to play audio:', error);
 			});
 		}
 	}
 
 	function handleSeek(event: Event) {
-		if (!audioElement || !isLoaded) return;
+		if (!mediaElement || !isLoaded) return;
 
 		const target = event.target as HTMLInputElement;
 		const seekTime = (parseFloat(target.value) / 100) * duration;
 		// Guard against non-finite values (NaN, Infinity)
 		if (!isFinite(seekTime)) return;
-		audioElement.currentTime = seekTime;
+		mediaElement.currentTime = seekTime;
 		currentTime = seekTime;
 	}
 
@@ -113,19 +143,21 @@
 	}
 </script>
 
-<!-- Hidden audio element -->
-<audio
-	bind:this={audioElement}
+<!-- Hidden video element (used instead of <audio> for video/webm MIME type compatibility) -->
+<video
+	bind:this={mediaElement}
 	{src}
 	preload="metadata"
 	onloadedmetadata={handleLoadedMetadata}
 	ontimeupdate={handleTimeUpdate}
+	ondurationchange={handleDurationChange}
 	onended={handleEnded}
 	onplay={handlePlay}
 	onpause={handlePause}
 	onerror={handleError}
 	aria-hidden="true"
-></audio>
+	class="hidden"
+></video>
 
 <!-- Player UI -->
 <div
@@ -160,7 +192,7 @@
 			step="0.1"
 			value={progress}
 			oninput={handleSeek}
-			disabled={!isLoaded}
+			disabled={!isLoaded || !isFinite(duration)}
 			class="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-muted accent-primary disabled:cursor-not-allowed disabled:opacity-50 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-primary [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary"
 			aria-label={m['audioPlayer.seekLabel']?.() || 'Seek'}
 			aria-valuemin={0}

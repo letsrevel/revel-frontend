@@ -1561,6 +1561,15 @@
 		"effectiveCapacity.limitedByVenue": "{capacity} (limited by venue)",
 		"effectiveCapacity.warning": "Your max attendees ({maxAttendees}) exceeds venue capacity ({venueCapacity}). The effective limit will be {effectiveCapacity}."
 	},
+	"eventEditor": {
+		"save": "Save",
+		"saveAndExit": "Save & Exit",
+		"saving": "Saving...",
+		"tabDetails": "Event Details",
+		"tabTicketing": "Ticketing",
+		"editEvent": "Edit Event",
+		"ticketing": "Ticketing"
+	},
 	"eventsAdminPage": {
 		"title": "Events - Revel",
 		"heading": "Events",

@@ -16,6 +16,8 @@
 		) => void;
 		onSubmit: () => void;
 		isSaving: boolean;
+		/** When true (default), renders with form wrapper and nav buttons. When false, renders as div without nav. */
+		standalone?: boolean;
 		// Slug editing props (only used in edit mode)
 		eventId?: string;
 		eventSlug?: string;
@@ -30,6 +32,7 @@
 		onUpdate,
 		onSubmit,
 		isSaving,
+		standalone = true,
 		eventId,
 		eventSlug,
 		organizationSlug,
@@ -189,7 +192,7 @@
 	});
 </script>
 
-<form onsubmit={handleSubmit} class="space-y-6">
+{#snippet fields()}
 	<!-- Event Name -->
 	<div class="space-y-2">
 		<label for="event-name" class="block text-sm font-medium">
@@ -657,24 +660,36 @@
 			</ul>
 		</div>
 	</div>
+{/snippet}
 
-	<!-- Navigation Buttons -->
-	<div class="flex justify-between border-t border-border pt-6">
-		<a
-			href=".."
-			class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-6 py-3 font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+{#if standalone}
+	<form onsubmit={handleSubmit} class="space-y-6">
+		{@render fields()}
+
+		<!-- Navigation Buttons -->
+		<div
+			class="flex flex-col-reverse gap-3 border-t border-border pt-6 sm:flex-row sm:justify-between"
 		>
-			Cancel
-		</a>
-		<button
-			type="submit"
-			disabled={isSaving}
-			class={cn(
-				'rounded-md bg-primary px-6 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-				isSaving && 'cursor-not-allowed opacity-50'
-			)}
-		>
-			{isSaving ? 'Creating Event...' : isEditMode ? 'Update & Continue' : 'Create Event'}
-		</button>
+			<a
+				href=".."
+				class="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-6 py-3 font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+			>
+				Cancel
+			</a>
+			<button
+				type="submit"
+				disabled={isSaving}
+				class={cn(
+					'rounded-md bg-primary px-6 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+					isSaving && 'cursor-not-allowed opacity-50'
+				)}
+			>
+				{isSaving ? 'Creating Event...' : isEditMode ? 'Update & Continue' : 'Create Event'}
+			</button>
+		</div>
+	</form>
+{:else}
+	<div class="space-y-6">
+		{@render fields()}
 	</div>
-</form>
+{/if}

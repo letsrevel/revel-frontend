@@ -29,6 +29,8 @@
 		onUpdate: (updates: Partial<EventFormData>) => void;
 		onBack: () => void;
 		onNext: () => void;
+		/** When true (default), renders nav buttons at bottom. When false, parent handles save. */
+		standalone?: boolean;
 	}
 
 	let {
@@ -38,7 +40,8 @@
 		formData,
 		onUpdate,
 		onBack,
-		onNext
+		onNext,
+		standalone = true
 	}: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
@@ -270,11 +273,15 @@
 		</p>
 	</button>
 
-	<!-- Navigation -->
-	<div class="flex justify-between border-t border-border pt-6">
-		<Button variant="outline" onclick={onBack}>{m['ticketingStep.back']()}</Button>
-		<Button onclick={onNext}>{m['ticketingStep.saveAndExit']()}</Button>
-	</div>
+	<!-- Navigation (only in standalone mode) -->
+	{#if standalone}
+		<div
+			class="flex flex-col-reverse gap-3 border-t border-border pt-6 sm:flex-row sm:justify-between"
+		>
+			<Button variant="outline" onclick={onBack}>{m['ticketingStep.back']()}</Button>
+			<Button onclick={onNext}>{m['ticketingStep.saveAndExit']()}</Button>
+		</div>
+	{/if}
 </div>
 
 {#if showTierForm}
