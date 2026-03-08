@@ -3480,6 +3480,14 @@
 		"notSpecified": "Nicht angegeben",
 		"summary": "{withPronouns} von {total} Teilnehmenden haben ihre Pronomen geteilt"
 	},
+	"exportButton": {
+		"exportAttendees": "Teilnehmende exportieren",
+		"exportSubmissions": "Einreichungen exportieren",
+		"exporting": "Wird exportiert...",
+		"exportStarted": "Export gestartet, Datei wird vorbereitet...",
+		"exportReady": "Export fertig! Der Download sollte automatisch starten.",
+		"exportError": "Export fehlgeschlagen. Bitte versuchen Sie es erneut."
+	},
 	"pwycModal": {
 		"pwyc": "Zahle, was du kannst",
 		"chooseAmount": "Wähle, wie viel du für dein Ticket bezahlen möchtest.",
