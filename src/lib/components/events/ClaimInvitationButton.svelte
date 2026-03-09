@@ -52,9 +52,13 @@
 
 			onSuccess?.();
 
-			// Reload page after a short delay to show updated status
+			// Strip the ?et= token from the URL before reloading so the claim
+			// button doesn't reappear on the next page load
+			const url = new URL(window.location.href);
+			url.searchParams.delete('et');
+
 			setTimeout(() => {
-				window.location.reload();
+				window.location.replace(url.toString());
 			}, 1000);
 		} catch (err: any) {
 			console.error('Failed to claim invitation:', err);
