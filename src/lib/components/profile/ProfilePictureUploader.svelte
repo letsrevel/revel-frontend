@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { cn } from '$lib/utils/cn';
 	import { accountUploadProfilePicture, accountDeleteProfilePicture } from '$lib/api/generated';
+	import type { RevelUserSchema } from '$lib/api/generated/types.gen';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 	import ImageCropperModal from '$lib/components/common/ImageCropperModal.svelte';
 	import { Upload, Trash2, Loader2 } from 'lucide-svelte';
@@ -37,7 +38,7 @@
 		/** Access token for API calls */
 		accessToken: string;
 		/** Callback when profile picture is updated */
-		onUpdate?: (newUrl: string | null) => void;
+		onUpdate?: (newUrl: string | null, userData?: RevelUserSchema) => void;
 		/** Additional CSS classes */
 		class?: string;
 	}
@@ -148,7 +149,7 @@
 
 			if (response.data) {
 				const newUrl = response.data.profile_picture_url ?? null;
-				onUpdate?.(newUrl);
+				onUpdate?.(newUrl, response.data);
 				toast.success(m['profilePage.profilePicture_uploadSuccess']());
 			}
 		} catch (err) {

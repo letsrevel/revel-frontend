@@ -80,7 +80,6 @@
 	let showCreateDialog = $state(false);
 	let invitationEmails = $state('');
 	let invitationMessage = $state('');
-	let selectedTierId = $state('');
 	let emailTags = $state<string[]>([]);
 	let emailInputValue = $state('');
 	let emailSuggestions = $state<Array<{ email: string; name: string }>>([]);
@@ -96,7 +95,6 @@
 	>(null);
 	let editingType = $state<'registered' | 'pending' | null>(null);
 	let editFormData = $state({
-		tier_id: '',
 		waives_questionnaire: false,
 		waives_purchase: false,
 		waives_membership_required: false,
@@ -110,7 +108,6 @@
 	let selectedPendingIds = $state<Set<string>>(new Set());
 	let showBulkEditDialog = $state(false);
 	let bulkEditFormData = $state({
-		tier_id: '',
 		waives_questionnaire: false,
 		waives_purchase: false,
 		waives_membership_required: false,
@@ -204,8 +201,6 @@
 	 * Open create invitation dialog
 	 */
 	function openCreateDialog() {
-		// Default to no tier (optional)
-		selectedTierId = '';
 		showCreateDialog = true;
 	}
 
@@ -215,7 +210,6 @@
 	function resetCreateForm() {
 		invitationEmails = '';
 		invitationMessage = '';
-		selectedTierId = '';
 		emailTags = [];
 		emailInputValue = '';
 		emailSuggestions = [];
@@ -390,7 +384,6 @@
 		editingInvitation = invitation;
 		editingType = type;
 		editFormData = {
-			tier_id: invitation.tier?.id || '',
 			waives_questionnaire: invitation.waives_questionnaire,
 			waives_purchase: invitation.waives_purchase,
 			waives_membership_required: invitation.waives_membership_required,
@@ -408,7 +401,6 @@
 		editingInvitation = null;
 		editingType = null;
 		editFormData = {
-			tier_id: '',
 			waives_questionnaire: false,
 			waives_purchase: false,
 			waives_membership_required: false,
@@ -470,9 +462,7 @@
 	 * Open bulk edit dialog
 	 */
 	function openBulkEditDialog() {
-		// Initialize with no tier (optional)
 		bulkEditFormData = {
-			tier_id: '',
 			waives_questionnaire: false,
 			waives_purchase: false,
 			waives_membership_required: false,
@@ -488,7 +478,6 @@
 	 */
 	function resetBulkEditForm() {
 		bulkEditFormData = {
-			tier_id: '',
 			waives_questionnaire: false,
 			waives_purchase: false,
 			waives_membership_required: false,
@@ -1155,11 +1144,6 @@
 										<th
 											class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
 										>
-											{m['eventInvitationsAdmin.headerTier']()}
-										</th>
-										<th
-											class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
-										>
 											{m['eventInvitationsAdmin.headerProperties']()}
 										</th>
 										<th
@@ -1215,11 +1199,6 @@
 											<td class="px-4 py-4 text-sm text-muted-foreground">
 												{invitation.user.email || 'N/A'}
 											</td>
-
-											<!-- Tier -->
-											<td class="px-4 py-4 text-sm"
-												>{invitation.tier?.name || m['eventInvitationsAdmin.noTier']()}</td
-											>
 
 											<!-- Properties -->
 											<td class="px-4 py-4">
@@ -1379,11 +1358,6 @@
 										<th
 											class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
 										>
-											{m['eventInvitationsAdmin.headerTier']()}
-										</th>
-										<th
-											class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
-										>
 											{m['eventInvitationsAdmin.headerProperties']()}
 										</th>
 										<th
@@ -1418,11 +1392,6 @@
 
 											<!-- Email -->
 											<td class="px-4 py-4 text-sm font-medium">{invitation.email}</td>
-
-											<!-- Tier -->
-											<td class="px-4 py-4 text-sm"
-												>{invitation.tier?.name || m['eventInvitationsAdmin.noTier']()}</td
-											>
 
 											<!-- Properties -->
 											<td class="px-4 py-4">
@@ -1707,46 +1676,6 @@
 				</p>
 			</div>
 
-			<!-- Tier selection (only for ticketed events) -->
-			{#if data.event.requires_ticket}
-				<div>
-					<label for="tier_id" class="block text-sm font-medium">
-						{m['eventInvitationsAdmin.tierLabel']()}
-					</label>
-					{#if data.ticketTiers && data.ticketTiers.length > 0}
-						<select
-							id="tier_id"
-							name="tier_id"
-							bind:value={selectedTierId}
-							class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-						>
-							<option value="">{m['eventInvitationsAdmin.tierNone']()}</option>
-							{#each data.ticketTiers as tier (tier.id)}
-								<option value={tier.id}>
-									{tier.name}
-									{#if tier.price !== null && tier.price !== undefined && parseFloat(tier.price) !== 0}
-										- {tier.currency === 'EUR' ? '€' : tier.currency}{(
-											parseFloat(tier.price) / 100
-										).toFixed(2)}
-									{:else}
-										- {m['eventInvitationsAdmin.free']()}
-									{/if}
-								</option>
-							{/each}
-						</select>
-					{:else}
-						<div
-							class="mt-1 rounded-md border-2 border-gray-300 bg-gray-50 px-3 py-2 text-sm text-muted-foreground dark:border-gray-600 dark:bg-gray-900"
-						>
-							{m['eventInvitationsAdmin.noTiersConfigured']()}
-						</div>
-					{/if}
-					<p class="mt-1 text-xs text-muted-foreground">
-						{m['eventInvitationsAdmin.tierHint']()}
-					</p>
-				</div>
-			{/if}
-
 			<!-- Custom message -->
 			<div>
 				<label for="custom_message" class="block text-sm font-medium">
@@ -1878,44 +1807,6 @@
 					<input type="hidden" name="email" value={editingInvitation.user.email || ''} />
 				{:else if editingType === 'pending' && 'email' in editingInvitation}
 					<input type="hidden" name="email" value={editingInvitation.email} />
-				{/if}
-
-				<!-- Tier selection (only for ticketed events) -->
-				{#if data.event.requires_ticket}
-					<div>
-						<label for="edit_tier_id" class="block text-sm font-medium">
-							{m['eventInvitationsAdmin.tierLabel']()}
-						</label>
-						{#if data.ticketTiers && data.ticketTiers.length > 0}
-							<select
-								id="edit_tier_id"
-								name="tier_id"
-								bind:value={editFormData.tier_id}
-								class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-							>
-								<option value="">{m['eventInvitationsAdmin.tierNone']()}</option>
-								{#each data.ticketTiers as tier (tier.id)}
-									<option value={tier.id}>
-										{tier.name}
-										{#if tier.price !== null && tier.price !== undefined && parseFloat(tier.price) !== 0}
-											- {tier.currency}{parseFloat(tier.price).toFixed(2)}
-										{:else}
-											- {m['eventInvitationsAdmin.free']()}
-										{/if}
-									</option>
-								{/each}
-							</select>
-						{:else}
-							<div
-								class="mt-1 rounded-md border-2 border-gray-300 bg-gray-50 px-3 py-2 text-sm text-muted-foreground dark:border-gray-600 dark:bg-gray-900"
-							>
-								{m['eventInvitationsAdmin.noTiersConfigured']()}
-							</div>
-						{/if}
-						<p class="mt-1 text-xs text-muted-foreground">
-							{m['eventInvitationsAdmin.tierHint']()}
-						</p>
-					</div>
 				{/if}
 
 				<!-- Custom message -->
@@ -2059,46 +1950,6 @@
 				])}
 			/>
 
-			<!-- Tier selection (only for ticketed events) -->
-			{#if data.event.requires_ticket}
-				<div>
-					<label for="bulk_tier_id" class="block text-sm font-medium">
-						{m['eventInvitationsAdmin.tierLabel']()}
-					</label>
-					{#if data.ticketTiers && data.ticketTiers.length > 0}
-						<select
-							id="bulk_tier_id"
-							name="tier_id"
-							bind:value={bulkEditFormData.tier_id}
-							class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-						>
-							<option value="">{m['eventInvitationsAdmin.tierNone']()}</option>
-							{#each data.ticketTiers as tier (tier.id)}
-								<option value={tier.id}>
-									{tier.name}
-									{#if tier.price !== null && tier.price !== undefined && parseFloat(tier.price) !== 0}
-										- {tier.currency === 'EUR' ? '€' : tier.currency}{(
-											parseFloat(tier.price) / 100
-										).toFixed(2)}
-									{:else}
-										- {m['eventInvitationsAdmin.free']()}
-									{/if}
-								</option>
-							{/each}
-						</select>
-					{:else}
-						<div
-							class="mt-1 rounded-md border-2 border-gray-300 bg-gray-50 px-3 py-2 text-sm text-muted-foreground dark:border-gray-600 dark:bg-gray-900"
-						>
-							{m['eventInvitationsAdmin.noTiersConfigured']()}
-						</div>
-					{/if}
-					<p class="mt-1 text-xs text-muted-foreground">
-						{m['eventInvitationsAdmin.tierHint']()}
-					</p>
-				</div>
-			{/if}
-
 			<!-- Custom message -->
 			<div>
 				<label for="bulk_custom_message" class="block text-sm font-medium">
@@ -2200,8 +2051,6 @@
 <!-- Create Token Modal -->
 <EventTokenModal
 	open={isCreateTokenModalOpen}
-	ticketTiers={data.ticketTiers}
-	isTicketedEvent={data.event.requires_ticket}
 	isLoading={createTokenMutation.isPending}
 	onClose={() => (isCreateTokenModalOpen = false)}
 	onSave={handleCreateTokenSave}
@@ -2211,8 +2060,6 @@
 <EventTokenModal
 	open={!!tokenToEdit}
 	token={tokenToEdit}
-	ticketTiers={data.ticketTiers}
-	isTicketedEvent={data.event.requires_ticket}
 	isLoading={updateTokenMutation.isPending}
 	onClose={() => (tokenToEdit = null)}
 	onSave={handleEditTokenSave}

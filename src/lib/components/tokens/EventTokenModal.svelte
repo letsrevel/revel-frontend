@@ -24,22 +24,12 @@
 	interface Props {
 		open: boolean;
 		token?: EventTokenSchema | null;
-		ticketTiers?: Array<{ id: string; name: string }>;
-		isTicketedEvent?: boolean;
 		isLoading?: boolean;
 		onClose: () => void;
 		onSave: (data: EventTokenCreateSchema | EventTokenUpdateSchema) => void | Promise<void>;
 	}
 
-	let {
-		open,
-		token = null,
-		ticketTiers = [],
-		isTicketedEvent = false,
-		isLoading = false,
-		onClose,
-		onSave
-	}: Props = $props();
+	let { open, token = null, isLoading = false, onClose, onSave }: Props = $props();
 
 	const isEdit = $derived(!!token);
 
@@ -48,7 +38,6 @@
 	let duration = $state<string>('1440');
 	let maxUses = $state<number>(1);
 	let grantsInvitation = $state(true); // Default to granting invitation
-	let ticketTierId = $state<string | null>(null);
 	let expiresAt = $state<string>('');
 
 	// Advanced invitation options
@@ -67,7 +56,6 @@
 				name = token.name || '';
 				maxUses = token.max_uses ?? 1;
 				grantsInvitation = token.grants_invitation ?? true;
-				ticketTierId = token.ticket_tier || null;
 				expiresAt = toDateTimeLocal(token.expires_at);
 				duration = '1440';
 
@@ -84,7 +72,6 @@
 				duration = '1440';
 				maxUses = 1;
 				grantsInvitation = true;
-				ticketTierId = null;
 				expiresAt = '';
 
 				// Reset advanced options
@@ -119,7 +106,6 @@
 				max_uses: grantsInvitation ? maxUses : 0,
 				expires_at: toISOString(expiresAt),
 				grants_invitation: grantsInvitation,
-				ticket_tier_id: ticketTierId || null,
 				invitation_payload
 			};
 			onSave(updateData);
@@ -129,14 +115,11 @@
 				duration: parseInt(duration, 10),
 				max_uses: grantsInvitation ? maxUses : 0,
 				grants_invitation: grantsInvitation,
-				ticket_tier_id: ticketTierId || null,
 				invitation_payload
 			};
 			onSave(createData);
 		}
 	}
-
-	const showTicketTierRequired = $derived(grantsInvitation && isTicketedEvent && !ticketTierId);
 </script>
 
 <Dialog
@@ -207,11 +190,7 @@
 					class="h-4 w-4 rounded border-gray-300"
 				/>
 				<Label for="grants-invitation" class="font-normal">
-					{#if isTicketedEvent}
-						Grant invitation (allows users to buy tickets)
-					{:else}
-						Grant invitation (allows users to RSVP)
-					{/if}
+					Grant invitation (allows users to RSVP or buy tickets)
 				</Label>
 			</div>
 
@@ -238,31 +217,6 @@
 						</p>
 					{/if}
 				</div>
-
-				<!-- Ticket Tier (only if granting invitation) -->
-				{#if ticketTiers.length > 0}
-					<div class="space-y-2">
-						<Label for="ticket-tier">
-							Ticket Tier {isTicketedEvent ? '(required)' : '(optional)'}
-						</Label>
-						<select
-							id="ticket-tier"
-							bind:value={ticketTierId}
-							class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-						>
-							<option value={null}>{m['eventTokenModal.noTicketTier']()}</option>
-							{#each ticketTiers as tier}
-								<option value={tier.id}>{tier.name}</option>
-							{/each}
-						</select>
-						{#if showTicketTierRequired}
-							<p class="flex items-center gap-1 text-xs text-destructive">
-								<AlertCircle class="h-3 w-3" aria-hidden="true" />
-								Ticket tier is required for ticketed events
-							</p>
-						{/if}
-					</div>
-				{/if}
 
 				<!-- Advanced Invitation Options -->
 				<div class="space-y-3 rounded-lg border border-border p-4">
@@ -401,7 +355,7 @@
 				<Button type="button" variant="outline" onclick={onClose} disabled={isLoading}>
 					Cancel
 				</Button>
-				<Button type="submit" disabled={isLoading || showTicketTierRequired}>
+				<Button type="submit" disabled={isLoading}>
 					{#if isLoading}
 						<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 					{/if}

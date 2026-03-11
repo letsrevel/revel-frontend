@@ -8,10 +8,8 @@ import {
 	eventadmininvitationsListPendingInvitations,
 	eventadmininvitationsCreateInvitations,
 	eventadmininvitationsDeleteInvitationEndpoint,
-	eventpublicdetailsGetEvent,
-	eventadminticketsListTicketTiers
+	eventpublicdetailsGetEvent
 } from '$lib/api/generated/sdk.gen';
-import type { TicketTierSchema } from '$lib/api/generated/types.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
 
 /**
@@ -183,28 +181,9 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 		console.error('Error loading pending invitations:', err);
 	}
 
-	// Load ticket tiers if event requires tickets
-	let ticketTiers: TicketTierSchema[] = [];
-	if (event.requires_ticket) {
-		try {
-			const tiersResponse = await eventadminticketsListTicketTiers({
-				fetch,
-				path: { event_id: params.event_id },
-				headers
-			});
-
-			if (tiersResponse.data?.results) {
-				ticketTiers = tiersResponse.data.results as TicketTierSchema[];
-			}
-		} catch (err) {
-			console.error('Error loading ticket tiers:', err);
-		}
-	}
-
 	return {
 		organization,
 		event,
-		ticketTiers,
 		activeTab,
 		invitationRequests,
 		requestsPagination,
@@ -300,7 +279,6 @@ export const actions: Actions = {
 
 		const formData = await request.formData();
 		const emailsRaw = formData.get('emails') as string | null;
-		const tierId = (formData.get('tier_id') as string | null) || null;
 		const customMessage = (formData.get('custom_message') as string | null) || null;
 		const waivesQuestionnaire = formData.get('waives_questionnaire') === 'true';
 		const waivesPurchase = formData.get('waives_purchase') === 'true';
@@ -310,13 +288,6 @@ export const actions: Actions = {
 
 		if (!emailsRaw) {
 			return fail(400, { errors: { form: 'Emails are required' } });
-		}
-
-		// Validate that tier is provided if waiving purchase
-		if (waivesPurchase && !tierId) {
-			return fail(400, {
-				errors: { form: 'Tier is required when waiving purchase requirement' }
-			});
 		}
 
 		// Parse emails (comma or newline separated)
@@ -335,7 +306,6 @@ export const actions: Actions = {
 				path: { event_id: params.event_id },
 				body: {
 					emails,
-					tier_id: (tierId ?? undefined) as string,
 					custom_message: customMessage ?? undefined,
 					waives_questionnaire: waivesQuestionnaire,
 					waives_purchase: waivesPurchase,
@@ -407,7 +377,6 @@ export const actions: Actions = {
 
 		const formData = await request.formData();
 		const email = formData.get('email') as string | null;
-		const tierId = (formData.get('tier_id') as string | null) || null;
 		const customMessage = (formData.get('custom_message') as string | null) || null;
 		const waivesQuestionnaire = formData.get('waives_questionnaire') === 'true';
 		const waivesPurchase = formData.get('waives_purchase') === 'true';
@@ -419,20 +388,12 @@ export const actions: Actions = {
 			return fail(400, { errors: { form: 'Email is required' } });
 		}
 
-		// Validate that tier is provided if waiving purchase
-		if (waivesPurchase && !tierId) {
-			return fail(400, {
-				errors: { form: 'Tier is required when waiving purchase requirement' }
-			});
-		}
-
 		try {
 			const response = await eventadmininvitationsCreateInvitations({
 				fetch,
 				path: { event_id: params.event_id },
 				body: {
 					emails: [email!],
-					tier_id: (tierId ?? undefined) as string,
 					custom_message: customMessage ?? undefined,
 					waives_questionnaire: waivesQuestionnaire,
 					waives_purchase: waivesPurchase,
@@ -465,7 +426,6 @@ export const actions: Actions = {
 
 		const formData = await request.formData();
 		const emailsRaw = formData.get('emails') as string | null;
-		const tierId = (formData.get('tier_id') as string | null) || null;
 		const customMessage = (formData.get('custom_message') as string | null) || null;
 		const waivesQuestionnaire = formData.get('waives_questionnaire') === 'true';
 		const waivesPurchase = formData.get('waives_purchase') === 'true';
@@ -475,13 +435,6 @@ export const actions: Actions = {
 
 		if (!emailsRaw) {
 			return fail(400, { errors: { form: 'Emails are required' } });
-		}
-
-		// Validate that tier is provided if waiving purchase
-		if (waivesPurchase && !tierId) {
-			return fail(400, {
-				errors: { form: 'Tier is required when waiving purchase requirement' }
-			});
 		}
 
 		// Parse emails
@@ -497,7 +450,6 @@ export const actions: Actions = {
 				path: { event_id: params.event_id },
 				body: {
 					emails,
-					tier_id: (tierId ?? undefined) as string,
 					custom_message: customMessage ?? undefined,
 					waives_questionnaire: waivesQuestionnaire,
 					waives_purchase: waivesPurchase,

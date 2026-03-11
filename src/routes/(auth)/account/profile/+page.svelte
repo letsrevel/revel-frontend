@@ -13,6 +13,7 @@
 	import ProfilePictureUploader from '$lib/components/profile/ProfilePictureUploader.svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import { accountResendVerificationEmail } from '$lib/api/generated';
+	import { authStore } from '$lib/stores/auth.svelte';
 
 	interface Props {
 		data: PageData;
@@ -163,8 +164,22 @@
 				firstName={data.user.first_name}
 				lastName={data.user.last_name}
 				accessToken={data.accessToken}
-				onUpdate={(newUrl) => {
+				onUpdate={(newUrl, userData) => {
 					profilePictureUrl = newUrl;
+					if (userData) {
+						authStore.setUser(userData);
+					} else {
+						// Delete case — clear picture fields on current user
+						const currentUser = authStore.user;
+						if (currentUser) {
+							authStore.setUser({
+								...currentUser,
+								profile_picture_url: undefined,
+								profile_picture_thumbnail_url: undefined,
+								profile_picture_preview_url: undefined
+							});
+						}
+					}
 				}}
 			/>
 		</div>
@@ -190,6 +205,10 @@
 					language = (user?.language || 'en') as 'en' | 'de' | 'it';
 					bio = user?.bio || '';
 					profilePictureUrl = user?.profile_picture_url ?? null;
+					// Propagate updated user to global auth store so navbar updates immediately
+					if (user) {
+						authStore.setUser(user);
+					}
 					// Update locale immediately on successful save
 					if (user?.language) {
 						setLocale(user.language as 'en' | 'de' | 'it');

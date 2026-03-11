@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { MyEventInvitationSchema } from '$lib/api/generated/types.gen';
 	import { Card } from '$lib/components/ui/card';
-	import { Calendar, MapPin, Ticket, CheckCircle2 } from 'lucide-svelte';
+	import { Calendar, MapPin, Ticket, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-svelte';
 	import { getImageUrl } from '$lib/utils/url';
 	import { formatEventDateRange } from '$lib/utils/date';
 	import { getEventLogo, getEventLogoThumbnail } from '$lib/utils/event';
@@ -12,6 +12,8 @@
 	}
 
 	let { invitation }: Props = $props();
+
+	let messageExpanded = $state(false);
 
 	// Logo with fallback hierarchy: event -> series -> organization
 	// Prefer thumbnail for card display (64x64)
@@ -107,7 +109,24 @@
 		<!-- Custom Message -->
 		{#if invitation.custom_message}
 			<div class="rounded-md border bg-muted/50 p-3">
-				<p class="text-sm italic text-muted-foreground">"{invitation.custom_message}"</p>
+				<p class="text-sm italic text-muted-foreground" class:line-clamp-3={!messageExpanded}>
+					"{invitation.custom_message}"
+				</p>
+				{#if invitation.custom_message.length > 150}
+					<button
+						type="button"
+						onclick={() => (messageExpanded = !messageExpanded)}
+						class="mt-1 inline-flex items-center gap-0.5 text-xs font-medium text-primary hover:underline"
+					>
+						{#if messageExpanded}
+							Show less
+							<ChevronUp class="h-3 w-3" aria-hidden="true" />
+						{:else}
+							Show more
+							<ChevronDown class="h-3 w-3" aria-hidden="true" />
+						{/if}
+					</button>
+				{/if}
 			</div>
 		{/if}
 
