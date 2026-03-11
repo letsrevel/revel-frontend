@@ -109,7 +109,11 @@
 		<!-- Custom Message -->
 		{#if invitation.custom_message}
 			<div class="rounded-md border bg-muted/50 p-3">
-				<p id="invitation-message-{invitation.event.id}" class="text-sm italic text-muted-foreground" class:line-clamp-3={!messageExpanded}>
+				<p
+					id="invitation-message-{invitation.event.id}"
+					class="text-sm italic text-muted-foreground"
+					class:line-clamp-3={!messageExpanded}
+				>
 					"{invitation.custom_message}"
 				</p>
 				{#if invitation.custom_message.length > 150}
