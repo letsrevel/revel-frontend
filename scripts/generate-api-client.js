@@ -1,8 +1,11 @@
-import { writeFileSync, readFileSync } from 'fs';
+import { writeFileSync, readFileSync, existsSync } from 'fs';
+import { resolve } from 'path';
 import { createClient } from '@hey-api/openapi-ts';
 
+// Try local backend artifact first, fall back to live server
+const LOCAL_SPEC = resolve(import.meta.dirname, '../../revel-backend/.artifacts/openapi.json');
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000';
-const OPENAPI_PATH = `${BACKEND_URL}/api/openapi.json`;
+const OPENAPI_PATH = existsSync(LOCAL_SPEC) ? LOCAL_SPEC : `${BACKEND_URL}/api/openapi.json`;
 
 console.log(`Generating API client from ${OPENAPI_PATH}...`);
 
