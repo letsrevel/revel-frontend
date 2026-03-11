@@ -1100,7 +1100,12 @@
 								<td class="px-4 py-3">
 									<div class="font-medium">{ticket.tier?.name || 'N/A'}</div>
 								</td>
-								<td class="px-4 py-3">
+								<td
+									class="px-4 py-3"
+									title={ticket.payment?.vat_amount != null
+										? `Net: ${ticket.payment.net_amount} / VAT: ${ticket.payment.vat_amount} (${ticket.payment.vat_rate}%)`
+										: undefined}
+								>
 									<div class="font-medium">
 										{formatPrice(
 											getTicketPrice(ticket),
@@ -1298,6 +1303,48 @@
 								>
 								<span>{new Date(ticket.created_at).toLocaleDateString()}</span>
 							</div>
+							{#if ticket.payment?.vat_amount != null}
+								<div class="mt-2 space-y-1 border-t pt-2">
+									<p class="text-xs font-medium text-muted-foreground">VAT Breakdown</p>
+									<div class="flex items-center justify-between text-xs">
+										<span class="text-muted-foreground">Net:</span>
+										<span class="font-mono"
+											>{formatPrice(
+												ticket.payment.net_amount,
+												ticket.payment.currency || ticket.tier?.currency
+											)}</span
+										>
+									</div>
+									<div class="flex items-center justify-between text-xs">
+										<span class="text-muted-foreground">VAT ({ticket.payment.vat_rate}%):</span>
+										<span class="font-mono"
+											>{formatPrice(
+												ticket.payment.vat_amount,
+												ticket.payment.currency || ticket.tier?.currency
+											)}</span
+										>
+									</div>
+									{#if ticket.payment.platform_fee_net != null}
+										<div class="flex items-center justify-between text-xs">
+											<span class="text-muted-foreground">Platform fee (net):</span>
+											<span class="font-mono"
+												>{formatPrice(
+													ticket.payment.platform_fee_net,
+													ticket.payment.currency || ticket.tier?.currency
+												)}</span
+											>
+										</div>
+										{#if ticket.payment.platform_fee_reverse_charge}
+											<div class="flex items-center justify-between text-xs">
+												<span class="text-muted-foreground">Reverse charge:</span>
+												<span class="font-medium text-blue-600 dark:text-blue-400"
+													>Yes (EU B2B)</span
+												>
+											</div>
+										{/if}
+									{/if}
+								</div>
+							{/if}
 						</div>
 
 						<div class="mt-3 flex flex-wrap gap-2">

@@ -2844,8 +2844,108 @@
 	"orgAdmin.events.status.draft": "Bozza",
 	"orgAdmin.events.status.open": "Aperto",
 	"orgAdmin.nav.announcements": "Annunci",
+	"orgAdmin.nav.billing": "Fatturazione",
 	"orgAdmin.nav.discountCodes": "Codici Sconto",
 	"orgAdmin.nav.venues": "Luoghi",
+	"orgAdmin.billing": {
+		"pageTitle": "Fatturazione e IVA",
+		"pageDescription": "Gestisci le informazioni di fatturazione, le impostazioni IVA e visualizza le fatture",
+		"billingInfo": {
+			"title": "Informazioni di Fatturazione",
+			"description": "Imposta i dettagli di fatturazione per le fatture e la conformità fiscale",
+			"country": "Paese",
+			"countryPlaceholder": "Seleziona un paese UE",
+			"countryHelp": "Deve essere uno stato membro dell'UE",
+			"countryDisabledHint": "Rimuovi la partita IVA per cambiare il paese",
+			"vatRate": "Aliquota IVA predefinita (%)",
+			"vatRatePlaceholder": "es. 22.00",
+			"vatRateHelp": "Aliquota IVA predefinita per la vendita dei biglietti. Può essere sovrascritta per ogni fascia di biglietto.",
+			"billingAddress": "Indirizzo di Fatturazione",
+			"billingAddressPlaceholder": "Inserisci il tuo indirizzo di fatturazione",
+			"billingEmail": "Email di Fatturazione",
+			"billingEmailPlaceholder": "fatturazione@esempio.com",
+			"billingEmailHelp": "Lascia vuoto per usare l'email di contatto dell'organizzazione",
+			"saveButton": "Salva Informazioni",
+			"saving": "Salvataggio...",
+			"saved": "Informazioni di fatturazione aggiornate",
+			"error": "Impossibile aggiornare le informazioni di fatturazione"
+		},
+		"vatId": {
+			"title": "Partita IVA",
+			"description": "Valida la tua partita IVA per l'idoneità al reverse charge",
+			"inputPlaceholder": "es. IT12345678901",
+			"inputHelp": "Prefisso paese a 2 lettere seguito da 2-13 caratteri alfanumerici",
+			"validateButton": "Valida e Salva",
+			"validating": "Validazione...",
+			"removeButton": "Rimuovi Partita IVA",
+			"removeConfirmTitle": "Rimuovere la Partita IVA?",
+			"removeConfirmDescription": "Questo rimuoverà la tua partita IVA e disabiliterà il reverse charge sulle fatture future.",
+			"removeConfirmButton": "Sì, Rimuovi",
+			"statusValidated": "Validata",
+			"statusPending": "In attesa di validazione",
+			"statusNotSet": "Non impostata",
+			"validatedAt": "Validata il {date}",
+			"saved": "Partita IVA validata e salvata",
+			"savedPending": "Partita IVA salvata. La validazione è temporaneamente non disponibile e avverrà automaticamente.",
+			"removed": "Partita IVA rimossa",
+			"invalid": "La partita IVA non è valida secondo il VIES",
+			"error": "Impossibile aggiornare la partita IVA"
+		},
+		"nudge": {
+			"title": "Completa le Informazioni di Fatturazione",
+			"message": "Aggiungi le informazioni di fatturazione per abilitare la vendita online dei biglietti e ricevere fatture corrette.",
+			"action": "Aggiungi Info Fatturazione"
+		},
+		"invoices": {
+			"title": "Fatture",
+			"description": "Fatture delle commissioni della piattaforma per la tua organizzazione",
+			"empty": "Nessuna fattura",
+			"emptyDescription": "Le fatture appariranno qui dopo il primo periodo di fatturazione con vendite online.",
+			"columns": {
+				"invoiceNumber": "Fattura #",
+				"period": "Periodo",
+				"status": "Stato",
+				"grossAmount": "Importo",
+				"currency": "Valuta"
+			},
+			"status": {
+				"draft": "Bozza",
+				"issued": "Emessa",
+				"paid": "Pagata",
+				"cancelled": "Annullata"
+			},
+			"detail": {
+				"title": "Dettagli Fattura",
+				"breakdown": "Dettaglio Commissioni",
+				"gross": "Importo Lordo",
+				"net": "Importo Netto",
+				"vat": "IVA",
+				"vatRate": "Aliquota IVA",
+				"reverseCharge": "Reverse Charge",
+				"reverseChargeYes": "Sì — IVA non addebitata (B2B UE)",
+				"reverseChargeNo": "No",
+				"orgInfo": "Info Organizzazione",
+				"platformInfo": "Info Piattaforma",
+				"stats": "Statistiche del Periodo",
+				"totalTickets": "Biglietti Venduti",
+				"totalRevenue": "Ricavo Totale Biglietti",
+				"downloadPdf": "Scarica PDF",
+				"pdfNotReady": "Il PDF della fattura non è ancora stato generato. Riprova più tardi.",
+				"downloadError": "Impossibile scaricare la fattura"
+			}
+		},
+		"creditNotes": {
+			"title": "Note di Credito",
+			"description": "Note di credito emesse per le fatture delle commissioni della piattaforma",
+			"empty": "Nessuna nota di credito",
+			"emptyDescription": "Le note di credito appariranno qui se verranno effettuati aggiustamenti alle fatture.",
+			"columns": {
+				"creditNoteNumber": "Nota di Credito #",
+				"linkedInvoice": "Fattura Collegata",
+				"grossAmount": "Importo"
+			}
+		}
+	},
 	"orgAdmin.questionnaires": {
 		"pageTitle": "Questionari",
 		"metaDescription": "Gestisci moduli di ammissione e sondaggi per {orgName}",

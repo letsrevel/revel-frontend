@@ -579,6 +579,7 @@
 		stripeAccountId={data.organization.stripe_account_id ?? null}
 		stripeAccountEmail={data.organization.stripe_account_email ?? null}
 		accessToken={accessToken || ''}
+		billingInfoMissing={!data.organization.vat_country_code || !data.organization.billing_address}
 	/>
 
 	<!-- Images Section (Outside Form) -->

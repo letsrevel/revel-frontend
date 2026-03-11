@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
-	import { Menu, ChevronRight, Home } from 'lucide-svelte';
+	import { Menu, ChevronRight, Home, AlertCircle } from 'lucide-svelte';
 	import type { LayoutData } from './$types';
 
 	interface Props {
@@ -57,6 +57,19 @@
 			href: `/org/${data.organization.slug}/admin/venues`,
 			label: m['orgAdmin.nav.venues']()
 		},
+		...(data.isOwner
+			? [
+					{
+						href: `/org/${data.organization.slug}/admin/billing`,
+						label: m['orgAdmin.nav.billing'](),
+						badge:
+							data.organization.is_stripe_connected &&
+							(!data.organization.vat_country_code || !data.organization.billing_address)
+								? 'warning'
+								: undefined
+					}
+				]
+			: []),
 		{ href: `/org/${data.organization.slug}/admin/settings`, label: m['orgAdmin.nav.settings']() },
 		{
 			href: `/org/${data.organization.slug}/admin/announcements`,
@@ -171,7 +184,7 @@
 						<li>
 							<a
 								href={item.href}
-								class="block border-b-2 py-4 text-sm font-medium transition-colors {isActive(
+								class="relative block border-b-2 py-4 text-sm font-medium transition-colors {isActive(
 									item.href
 								)
 									? 'border-primary text-foreground'
@@ -179,6 +192,16 @@
 								aria-current={isActive(item.href) ? 'page' : undefined}
 							>
 								{item.label}
+								{#if item.badge === 'warning'}
+									<span
+										class="absolute -right-1.5 top-3 flex h-2.5 w-2.5"
+										aria-label="Action required"
+									>
+										<span class="absolute h-full w-full animate-ping rounded-full bg-destructive/60"
+										></span>
+										<span class="relative h-2 w-2 rounded-full bg-destructive"></span>
+									</span>
+								{/if}
 							</a>
 						</li>
 					{/each}
@@ -230,7 +253,7 @@
 							<a
 								href={item.href}
 								onclick={closeMobileMenu}
-								class="block rounded-md px-3 py-2 text-sm font-medium transition-colors {isActive(
+								class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors {isActive(
 									item.href
 								)
 									? 'bg-primary/10 text-primary'
@@ -238,6 +261,10 @@
 								aria-current={isActive(item.href) ? 'page' : undefined}
 							>
 								{item.label}
+								{#if item.badge === 'warning'}
+									<span class="h-2 w-2 rounded-full bg-destructive" aria-label="Action required"
+									></span>
+								{/if}
 							</a>
 						</li>
 					{/each}

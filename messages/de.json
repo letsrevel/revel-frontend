@@ -2844,8 +2844,108 @@
 	"orgAdmin.events.status.draft": "Entwurf",
 	"orgAdmin.events.status.open": "Offen",
 	"orgAdmin.nav.announcements": "Ankündigungen",
+	"orgAdmin.nav.billing": "Abrechnung",
 	"orgAdmin.nav.discountCodes": "Rabattcodes",
 	"orgAdmin.nav.venues": "Veranstaltungsorte",
+	"orgAdmin.billing": {
+		"pageTitle": "Abrechnung & USt",
+		"pageDescription": "Verwalte deine Rechnungsdaten, USt-Einstellungen und sieh Rechnungen ein",
+		"billingInfo": {
+			"title": "Rechnungsinformationen",
+			"description": "Lege deine Rechnungsdetails für Rechnungen und Steuerkonformität fest",
+			"country": "Land",
+			"countryPlaceholder": "EU-Land auswählen",
+			"countryHelp": "Muss ein EU-Mitgliedsstaat sein",
+			"countryDisabledHint": "USt-ID entfernen, um das Land zu ändern",
+			"vatRate": "Standard-USt-Satz (%)",
+			"vatRatePlaceholder": "z.B. 19.00",
+			"vatRateHelp": "Standard-USt-Satz für den Ticketverkauf. Kann pro Ticketkategorie überschrieben werden.",
+			"billingAddress": "Rechnungsadresse",
+			"billingAddressPlaceholder": "Gib deine Rechnungsadresse ein",
+			"billingEmail": "Rechnungs-E-Mail",
+			"billingEmailPlaceholder": "rechnung@beispiel.de",
+			"billingEmailHelp": "Leer lassen, um die Kontakt-E-Mail der Organisation zu verwenden",
+			"saveButton": "Rechnungsdaten speichern",
+			"saving": "Speichern...",
+			"saved": "Rechnungsinformationen aktualisiert",
+			"error": "Rechnungsinformationen konnten nicht aktualisiert werden"
+		},
+		"vatId": {
+			"title": "USt-ID",
+			"description": "Validiere deine USt-ID für die Reverse-Charge-Berechtigung",
+			"inputPlaceholder": "z.B. DE123456789",
+			"inputHelp": "2-Buchstaben-Ländercode gefolgt von 2-13 alphanumerischen Zeichen",
+			"validateButton": "Validieren & Speichern",
+			"validating": "Validierung...",
+			"removeButton": "USt-ID entfernen",
+			"removeConfirmTitle": "USt-ID entfernen?",
+			"removeConfirmDescription": "Dies entfernt deine USt-ID und deaktiviert das Reverse-Charge-Verfahren auf zukünftigen Rechnungen.",
+			"removeConfirmButton": "Ja, entfernen",
+			"statusValidated": "Validiert",
+			"statusPending": "Validierung ausstehend",
+			"statusNotSet": "Nicht gesetzt",
+			"validatedAt": "Validiert am {date}",
+			"saved": "USt-ID validiert und gespeichert",
+			"savedPending": "USt-ID gespeichert. Die Validierung ist vorübergehend nicht verfügbar und wird automatisch durchgeführt.",
+			"removed": "USt-ID entfernt",
+			"invalid": "Die USt-ID ist laut VIES nicht gültig",
+			"error": "USt-ID konnte nicht aktualisiert werden"
+		},
+		"nudge": {
+			"title": "Rechnungsdaten vervollständigen",
+			"message": "Füge deine Rechnungsdaten hinzu, um den Online-Ticketverkauf zu ermöglichen und korrekte Rechnungen zu erhalten.",
+			"action": "Rechnungsdaten hinzufügen"
+		},
+		"invoices": {
+			"title": "Rechnungen",
+			"description": "Plattformgebühren-Rechnungen für deine Organisation",
+			"empty": "Noch keine Rechnungen",
+			"emptyDescription": "Rechnungen erscheinen hier nach deiner ersten Abrechnungsperiode mit Online-Ticketverkäufen.",
+			"columns": {
+				"invoiceNumber": "Rechnung #",
+				"period": "Zeitraum",
+				"status": "Status",
+				"grossAmount": "Betrag",
+				"currency": "Währung"
+			},
+			"status": {
+				"draft": "Entwurf",
+				"issued": "Ausgestellt",
+				"paid": "Bezahlt",
+				"cancelled": "Storniert"
+			},
+			"detail": {
+				"title": "Rechnungsdetails",
+				"breakdown": "Gebührenaufschlüsselung",
+				"gross": "Bruttobetrag",
+				"net": "Nettobetrag",
+				"vat": "USt",
+				"vatRate": "USt-Satz",
+				"reverseCharge": "Reverse Charge",
+				"reverseChargeYes": "Ja — USt nicht berechnet (EU B2B)",
+				"reverseChargeNo": "Nein",
+				"orgInfo": "Organisationsinfo",
+				"platformInfo": "Plattforminfo",
+				"stats": "Periodenstatistiken",
+				"totalTickets": "Verkaufte Tickets",
+				"totalRevenue": "Gesamtticketerlös",
+				"downloadPdf": "PDF herunterladen",
+				"pdfNotReady": "Die Rechnungs-PDF wurde noch nicht erstellt. Bitte versuche es später erneut.",
+				"downloadError": "Rechnung konnte nicht heruntergeladen werden"
+			}
+		},
+		"creditNotes": {
+			"title": "Gutschriften",
+			"description": "Gutschriften für Plattformgebühren-Rechnungen",
+			"empty": "Keine Gutschriften",
+			"emptyDescription": "Gutschriften erscheinen hier, wenn Rechnungsanpassungen vorgenommen werden.",
+			"columns": {
+				"creditNoteNumber": "Gutschrift #",
+				"linkedInvoice": "Zugehörige Rechnung",
+				"grossAmount": "Betrag"
+			}
+		}
+	},
 	"orgAdmin.questionnaires": {
 		"pageTitle": "Fragebögen",
 		"metaDescription": "Verwalte Aufnahmeformulare und Umfragen für {orgName}",

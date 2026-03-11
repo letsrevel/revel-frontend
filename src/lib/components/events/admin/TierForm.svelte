@@ -22,6 +22,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { extractErrorMessage } from '$lib/utils/errors';
 	import { Building2, LayoutGrid, Armchair } from 'lucide-svelte';
 
 	interface Props {
@@ -110,6 +111,7 @@
 	let pwycMin = $state(tier?.pwyc_min ? String(tier.pwyc_min) : '1');
 	let pwycMax = $state(tier?.pwyc_max ? String(tier.pwyc_max) : '');
 	let currency = $state(tier?.currency ?? 'EUR');
+	let vatRateOverride = $state(tier?.vat_rate ? String(tier.vat_rate) : '');
 	let manualPaymentInstructions = $state(tier?.manual_payment_instructions ?? '');
 	let totalQuantity = $state<string>(
 		tier?.total_quantity !== null && tier?.total_quantity !== undefined
@@ -291,6 +293,8 @@
 			purchasable_by: purchasableBy,
 			restricted_to_membership_tiers_ids:
 				restrictedToMembershipTiersIds.length > 0 ? restrictedToMembershipTiersIds : null,
+			// VAT rate override (optional)
+			vat_rate: vatRateOverride ? parseFloat(vatRateOverride) : null,
 			// Venue and seating configuration
 			seat_assignment_mode: seatAssignmentMode,
 			max_tickets_per_user: maxTicketsPerUser ? parseInt(maxTicketsPerUser) : null,
@@ -486,6 +490,26 @@
 						</div>
 					</div>
 				{/if}
+			{/if}
+
+			<!-- VAT Rate Override (for paid tiers) -->
+			{#if paymentMethod !== 'free'}
+				<div>
+					<Label for="vat-rate-override">VAT Rate Override (%)</Label>
+					<Input
+						id="vat-rate-override"
+						type="number"
+						step="0.01"
+						min="0"
+						max="100"
+						bind:value={vatRateOverride}
+						placeholder="Leave empty to use org default"
+						disabled={isPending}
+					/>
+					<p class="mt-1 text-xs text-muted-foreground">
+						Leave empty to use your organization's default VAT rate
+					</p>
+				</div>
 			{/if}
 
 			<!-- Manual Payment Instructions (for offline/at_the_door payments) -->
@@ -840,12 +864,21 @@
 			</div>
 
 			{#if error}
+				{@const errorMsg = extractErrorMessage(error)}
+				{@const isBillingError = errorMsg.toLowerCase().includes('billing information is required')}
 				<div class="rounded-lg bg-destructive/10 p-3" role="alert">
 					<p class="font-medium text-destructive">{m['tierForm.error']()}</p>
 					<p class="mt-1 text-sm text-destructive/90">
-						{(error as any)?.message || 'An error occurred. Please try again.'}
+						{errorMsg}
 					</p>
-					{#if (error as any)?.detail}
+					{#if isBillingError}
+						<a
+							href="/org/{organizationSlug}/admin/billing"
+							class="mt-2 inline-flex items-center gap-1 text-sm font-medium text-destructive underline hover:text-destructive/80"
+						>
+							Complete your billing info
+						</a>
+					{:else if (error as any)?.detail}
 						<div class="mt-2 space-y-1">
 							{#if Array.isArray((error as any).detail)}
 								{#each (error as any).detail as detail}
