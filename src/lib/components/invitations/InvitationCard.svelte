@@ -109,13 +109,15 @@
 		<!-- Custom Message -->
 		{#if invitation.custom_message}
 			<div class="rounded-md border bg-muted/50 p-3">
-				<p class="text-sm italic text-muted-foreground" class:line-clamp-3={!messageExpanded}>
+				<p id="invitation-message-{invitation.event.id}" class="text-sm italic text-muted-foreground" class:line-clamp-3={!messageExpanded}>
 					"{invitation.custom_message}"
 				</p>
 				{#if invitation.custom_message.length > 150}
 					<button
 						type="button"
 						onclick={() => (messageExpanded = !messageExpanded)}
+						aria-expanded={messageExpanded}
+						aria-controls="invitation-message-{invitation.event.id}"
 						class="mt-1 inline-flex items-center gap-0.5 text-xs font-medium text-primary hover:underline"
 					>
 						{#if messageExpanded}
