@@ -2056,9 +2056,7 @@ export const organizationCreateMembershipRequest = <ThrowOnError extends boolean
  * **Error Cases:**
  * - 404: Token doesn't exist or has been deleted
  */
-export const organizationGetOrganizationTokenDetails = <
-	ThrowOnError extends boolean = false
->(
+export const organizationGetOrganizationTokenDetails = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationGetOrganizationTokenDetails8452E471Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -2365,9 +2363,7 @@ export const organizationadmincoreGetOrganization = <ThrowOnError extends boolea
  * Note: contact_email cannot be updated through this endpoint.
  * Use the update-contact-email endpoint instead for email changes.
  */
-export const organizationadmincoreUpdateOrganization = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadmincoreUpdateOrganization = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadmincoreUpdateOrganizationD47856AdData, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
@@ -2419,9 +2415,7 @@ export const organizationadmincoreUpdateOrganization = <
  * - 400: Email is the same as current contact email
  * - 403: User lacks edit_organization permission
  */
-export const organizationadmincoreUpdateContactEmail = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadmincoreUpdateContactEmail = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadmincoreUpdateContactEmail162F5308Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -2465,9 +2459,7 @@ export const organizationadmincoreUpdateContactEmail = <
  * - 400: Email address has changed since verification was sent
  * - 400: Token does not match the organization in the URL
  */
-export const organizationadmincoreVerifyContactEmail = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadmincoreVerifyContactEmail = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadmincoreVerifyContactEmailC7Bd235fData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -2532,9 +2524,7 @@ export const organizationadmincoreStripeConnect = <ThrowOnError extends boolean 
  *
  * Get the organization's Stripe account status.
  */
-export const organizationadmincoreStripeAccountVerify = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadmincoreStripeAccountVerify = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadmincoreStripeAccountVerify1F4Fae8aData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -2664,9 +2654,7 @@ export const organizationadmincoreDeleteCoverArt = <ThrowOnError extends boolean
  *
  * Create a new event series.
  */
-export const organizationadmincoreCreateEventSeries = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadmincoreCreateEventSeries = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadmincoreCreateEventSeriesD065Cd46Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -2781,9 +2769,7 @@ export const organizationadmincoreCreateEvent = <ThrowOnError extends boolean = 
  * - Clean up expired or unused tokens
  * - Verify staff invitation tokens are properly restricted
  */
-export const organizationadmintokensListOrganizationTokens = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadmintokensListOrganizationTokens = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadmintokensListOrganizationTokensA91D256bData, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -3244,9 +3230,7 @@ export const organizationadminmembershiprequestsRejectMembershipRequest = <
  *
  * List all resources for a specific organization.
  */
-export const organizationadminresourcesListResources = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminresourcesListResources = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminresourcesListResources6146Ced0Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -3273,9 +3257,7 @@ export const organizationadminresourcesListResources = <
  * Accepts multipart/form-data with individual form fields for each schema property.
  * For FILE type resources, include the file parameter.
  */
-export const organizationadminresourcesCreateResource = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminresourcesCreateResource = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminresourcesCreateResourceDa096394Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -3304,9 +3286,7 @@ export const organizationadminresourcesCreateResource = <
  *
  * Delete a resource from the organization.
  */
-export const organizationadminresourcesDeleteResource = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminresourcesDeleteResource = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminresourcesDeleteResource4Ce0Cb3cData, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
@@ -3354,9 +3334,7 @@ export const organizationadminresourcesGetResource = <ThrowOnError extends boole
  *
  * Update a resource for the organization.
  */
-export const organizationadminresourcesUpdateResource = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminresourcesUpdateResource = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminresourcesUpdateResource7902F7E9Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
@@ -3495,9 +3473,7 @@ export const organizationadminmembersUpdateMember = <ThrowOnError extends boolea
  *
  * List all membership tiers for an organization.
  */
-export const organizationadminmembersListMembershipTiers = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminmembersListMembershipTiers = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminmembersListMembershipTiers8Ae38327Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -3521,9 +3497,7 @@ export const organizationadminmembersListMembershipTiers = <
  *
  * Create a new membership tier for the organization.
  */
-export const organizationadminmembersCreateMembershipTier = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminmembersCreateMembershipTier = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminmembersCreateMembershipTierA1B0Ddb1Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -3553,9 +3527,7 @@ export const organizationadminmembersCreateMembershipTier = <
  *
  * Members assigned to this tier will have their tier set to NULL (due to SET_NULL on the FK).
  */
-export const organizationadminmembersDeleteMembershipTier = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminmembersDeleteMembershipTier = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminmembersDeleteMembershipTier2A25C502Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
@@ -3579,9 +3551,7 @@ export const organizationadminmembersDeleteMembershipTier = <
  *
  * Update a membership tier.
  */
-export const organizationadminmembersUpdateMembershipTier = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminmembersUpdateMembershipTier = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminmembersUpdateMembershipTier8C6Acb3bData, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
@@ -4086,9 +4056,7 @@ export const organizationadminvenuesUpdateSector = <ThrowOnError extends boolean
  * If the sector has a shape and seats have positions,
  * all positions must be within the shape polygon.
  */
-export const organizationadminvenuesBulkCreateSeats = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminvenuesBulkCreateSeats = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminvenuesBulkCreateSeatsEf8E6Cf5Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -4119,9 +4087,7 @@ export const organizationadminvenuesBulkCreateSeats = <
  * This operation is atomic - if any seat cannot be deleted (due to having
  * active/pending tickets for future events or not existing), no seats will be deleted.
  */
-export const organizationadminvenuesBulkDeleteSeats = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminvenuesBulkDeleteSeats = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminvenuesBulkDeleteSeats9Cdd1256Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -4155,9 +4121,7 @@ export const organizationadminvenuesBulkDeleteSeats = <
  * Note: Seat labels cannot be changed. To rename a seat,
  * delete it and create a new one with the desired label.
  */
-export const organizationadminvenuesBulkUpdateSeats = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminvenuesBulkUpdateSeats = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminvenuesBulkUpdateSeats696F4271Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
@@ -4253,9 +4217,7 @@ export const organizationadminvenuesUpdateSeat = <ThrowOnError extends boolean =
  *
  * Supports searching by email, telegram username, and name fields.
  */
-export const organizationadminblacklistListBlacklist = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminblacklistListBlacklist = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminblacklistListBlacklistB7E34A1bData, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -4349,9 +4311,7 @@ export const organizationadminblacklistDeleteBlacklistEntry = <
  *
  * Get details of a specific blacklist entry.
  */
-export const organizationadminblacklistGetBlacklistEntry = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminblacklistGetBlacklistEntry = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminblacklistGetBlacklistEntry32A92502Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -4440,9 +4400,7 @@ export const organizationadminwhitelistListWhitelistRequests = <
  *
  * Get details of a whitelist request including matched blacklist entries.
  */
-export const organizationadminwhitelistGetWhitelistRequest = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminwhitelistGetWhitelistRequest = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminwhitelistGetWhitelistRequestAce2A804Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -4527,9 +4485,7 @@ export const organizationadminwhitelistRejectWhitelistRequest = <
  * These are users who were cleared despite fuzzy-matching blacklist entries.
  * Whitelisted users are those with an APPROVED whitelist request.
  */
-export const organizationadminwhitelistListWhitelist = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminwhitelistListWhitelist = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminwhitelistListWhitelist43442F65Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -4696,9 +4652,7 @@ export const organizationadminannouncementsDeleteAnnouncement = <
  * Returns full announcement details including targeting configuration,
  * status, and recipient count (if sent).
  */
-export const organizationadminannouncementsGetAnnouncement = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadminannouncementsGetAnnouncement = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadminannouncementsGetAnnouncementC7Fde480Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -4912,9 +4866,7 @@ export const organizationadmindiscountcodesDeleteDiscountCode = <
  *
  * Get details of a specific discount code.
  */
-export const organizationadmindiscountcodesGetDiscountCode = <
-	ThrowOnError extends boolean = false
->(
+export const organizationadmindiscountcodesGetDiscountCode = <ThrowOnError extends boolean = false>(
 	options: Options<OrganizationadmindiscountcodesGetDiscountCode11B4D5CcData, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -5307,9 +5259,7 @@ export const eventpublicdiscoveryCalendarEvents = <ThrowOnError extends boolean 
  * **Error Cases:**
  * - 404: Token doesn't exist or has been deleted
  */
-export const eventpublicdiscoveryGetEventTokenDetails = <
-	ThrowOnError extends boolean = false
->(
+export const eventpublicdiscoveryGetEventTokenDetails = <ThrowOnError extends boolean = false>(
 	options: Options<EventpublicdiscoveryGetEventTokenDetails241D110aData, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -5365,9 +5315,7 @@ export const eventpublicdiscoveryClaimInvitation = <ThrowOnError extends boolean
  * that haven't been decided yet. Returns 404 if the request doesn't exist or doesn't
  * belong to you.
  */
-export const eventpublicdiscoveryDeleteInvitationRequest = <
-	ThrowOnError extends boolean = false
->(
+export const eventpublicdiscoveryDeleteInvitationRequest = <ThrowOnError extends boolean = false>(
 	options: Options<EventpublicdiscoveryDeleteInvitationRequestB4Fb1A26Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
@@ -5395,9 +5343,7 @@ export const eventpublicdiscoveryDeleteInvitationRequest = <
  * to prevent reuse. Returns the created RSVP or BatchCheckoutResponse with tickets on success.
  * Returns 400 if token is invalid, expired, already used, or if eligibility checks fail (e.g., event became full).
  */
-export const eventpublicdiscoveryConfirmGuestAction = <
-	ThrowOnError extends boolean = false
->(
+export const eventpublicdiscoveryConfirmGuestAction = <ThrowOnError extends boolean = false>(
 	options: Options<EventpublicdiscoveryConfirmGuestAction8C68549eData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -5631,9 +5577,7 @@ export const eventpublicdetailsGetDietarySummary = <ThrowOnError extends boolean
  * valid tickets). Helps organizers understand the pronoun breakdown for their event.
  * Includes totals for attendees with and without pronouns specified.
  */
-export const eventpublicdetailsGetPronounDistribution = <
-	ThrowOnError extends boolean = false
->(
+export const eventpublicdetailsGetPronounDistribution = <ThrowOnError extends boolean = false>(
 	options: Options<EventpublicdetailsGetPronounDistribution2D71Ad12Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -5664,9 +5608,7 @@ export const eventpublicdetailsGetPronounDistribution = <
  *
  * Announcements are ordered by sent date (newest first).
  */
-export const eventpublicdetailsListEventAnnouncements = <
-	ThrowOnError extends boolean = false
->(
+export const eventpublicdetailsListEventAnnouncements = <ThrowOnError extends boolean = false>(
 	options: Options<EventpublicdetailsListEventAnnouncements5D61636cData, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -5735,9 +5677,7 @@ export const eventpublicattendanceGetMyEventStatus = <ThrowOnError extends boole
  * submitted a request for this event. Check GET /{uuid:event_id}/my-status to see if you
  * need an invitation.
  */
-export const eventpublicattendanceCreateInvitationRequest = <
-	ThrowOnError extends boolean = false
->(
+export const eventpublicattendanceCreateInvitationRequest = <ThrowOnError extends boolean = false>(
 	options: Options<EventpublicattendanceCreateInvitationRequest5381B68fData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -5886,9 +5826,7 @@ export const eventpublicattendanceGetQuestionnaire = <ThrowOnError extends boole
  * For feedback questionnaires: Only accessible after the event has ended and only for users
  * who attended the event. Feedback submissions are not evaluated (no approval/rejection).
  */
-export const eventpublicattendanceSubmitQuestionnaire = <
-	ThrowOnError extends boolean = false
->(
+export const eventpublicattendanceSubmitQuestionnaire = <ThrowOnError extends boolean = false>(
 	options: Options<EventpublicattendanceSubmitQuestionnaire53F3506eData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -5958,9 +5896,7 @@ export const eventpublicticketsListTiers = <ThrowOnError extends boolean = false
  *
  * Returns 404 if the tier doesn't have seat assignment (NONE mode) or no sector is assigned.
  */
-export const eventpublicticketsGetTierSeatAvailability = <
-	ThrowOnError extends boolean = false
->(
+export const eventpublicticketsGetTierSeatAvailability = <ThrowOnError extends boolean = false>(
 	options: Options<EventpublicticketsGetTierSeatAvailability72D5Ce54Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -6205,9 +6141,7 @@ export const eventpublicguestGuestTicketCheckout = <ThrowOnError extends boolean
  * - `RANDOM`: System auto-assigns available seats
  * - `USER_CHOICE`: User must provide seat_id for each ticket
  */
-export const eventpublicguestGuestTicketPwycCheckout = <
-	ThrowOnError extends boolean = false
->(
+export const eventpublicguestGuestTicketPwycCheckout = <ThrowOnError extends boolean = false>(
 	options: Options<EventpublicguestGuestTicketPwycCheckoutB4Afe6F7Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -7137,9 +7071,7 @@ export const eventadminticketsConfirmTicketPayment = <ThrowOnError extends boole
  * Only applies to OFFLINE payment method. AT_THE_DOOR tickets are always
  * ACTIVE (commitment to attend) and should not be reverted to PENDING.
  */
-export const eventadminticketsUnconfirmTicketPayment = <
-	ThrowOnError extends boolean = false
->(
+export const eventadminticketsUnconfirmTicketPayment = <ThrowOnError extends boolean = false>(
 	options: Options<EventadminticketsUnconfirmTicketPayment7365B0AbData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -7298,9 +7230,7 @@ export const eventadmininvitationsListInvitations = <ThrowOnError extends boolea
  *
  * Create direct invitations for users by email addresses.
  */
-export const eventadmininvitationsCreateInvitations = <
-	ThrowOnError extends boolean = false
->(
+export const eventadmininvitationsCreateInvitations = <ThrowOnError extends boolean = false>(
 	options: Options<EventadmininvitationsCreateInvitations1783A49aData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -7328,9 +7258,7 @@ export const eventadmininvitationsCreateInvitations = <
  *
  * List all pending invitations for unregistered users.
  */
-export const eventadmininvitationsListPendingInvitations = <
-	ThrowOnError extends boolean = false
->(
+export const eventadmininvitationsListPendingInvitations = <ThrowOnError extends boolean = false>(
 	options: Options<EventadmininvitationsListPendingInvitations92A32D29Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).get<
@@ -7354,9 +7282,7 @@ export const eventadmininvitationsListPendingInvitations = <
  *
  * Delete an invitation (registered or pending).
  */
-export const eventadmininvitationsDeleteInvitationEndpoint = <
-	ThrowOnError extends boolean = false
->(
+export const eventadmininvitationsDeleteInvitationEndpoint = <ThrowOnError extends boolean = false>(
 	options: Options<EventadmininvitationsDeleteInvitationEndpointFd8D9E63Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).delete<
@@ -9021,9 +8947,7 @@ export const questionnaireEvaluateSubmission = <ThrowOnError extends boolean = f
  *
  * Requires 'edit_questionnaire' permission.
  */
-export const questionnaireUpdateQuestionnaireStatus = <
-	ThrowOnError extends boolean = false
->(
+export const questionnaireUpdateQuestionnaireStatus = <ThrowOnError extends boolean = false>(
 	options: Options<QuestionnaireUpdateQuestionnaireStatus24Bd339bData, ThrowOnError>
 ) => {
 	return (options.client ?? client).post<
@@ -9365,9 +9289,7 @@ export const userpreferencesGetGeneralPreferences = <ThrowOnError extends boolea
  * Modify visibility and location settings.
  * For notification preferences, use the /notification-preferences endpoint.
  */
-export const userpreferencesUpdateGeneralPreferences = <
-	ThrowOnError extends boolean = false
->(
+export const userpreferencesUpdateGeneralPreferences = <ThrowOnError extends boolean = false>(
 	options: Options<UserpreferencesUpdateGeneralPreferences264D6457Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).put<
@@ -9746,9 +9668,7 @@ export const notificationpreferenceGetPreferences = <ThrowOnError extends boolea
  *
  * Update notification preferences.
  */
-export const notificationpreferenceUpdatePreferences = <
-	ThrowOnError extends boolean = false
->(
+export const notificationpreferenceUpdatePreferences = <ThrowOnError extends boolean = false>(
 	options: Options<NotificationpreferenceUpdatePreferences789D9897Data, ThrowOnError>
 ) => {
 	return (options.client ?? client).patch<
