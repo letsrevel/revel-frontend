@@ -465,10 +465,10 @@
 	let perEvent = $state(false);
 	let requiresEvaluation = $state(true);
 
-	// Feedback questionnaires never require evaluation
-	$effect(() => {
-		if (questionnaireType === 'feedback') requiresEvaluation = false;
-	});
+	// Feedback type forces evaluation off; derive the effective value for the payload/UI
+	let effectiveRequiresEvaluation = $derived(
+		questionnaireType === 'feedback' ? false : requiresEvaluation
+	);
 
 	// Local state for questions/sections (same as create page)
 	let topLevelQuestions = $state<Question[]>([]);
@@ -936,7 +936,7 @@
 					max_attempts: maxAttempts,
 					members_exempt: membersExempt,
 					per_event: perEvent,
-					requires_evaluation: requiresEvaluation
+					requires_evaluation: effectiveRequiresEvaluation
 				},
 				headers: authHeader
 			});
@@ -1951,7 +1951,7 @@
 					{/if}
 				</div>
 
-				{#if requiresEvaluation}
+				{#if effectiveRequiresEvaluation}
 					<!-- Minimum Score -->
 					<div class="space-y-2">
 						<Label for="min-score">
@@ -2100,7 +2100,7 @@
 					</div>
 				{/if}
 
-				{#if requiresEvaluation}
+				{#if effectiveRequiresEvaluation}
 					<!-- LLM Guidelines -->
 					<div class="space-y-2">
 						<Label for="llm-guidelines"

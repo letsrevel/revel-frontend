@@ -97,10 +97,10 @@
 	let perEvent = $state(false); // Require per-event completion
 	let requiresEvaluation = $state(true);
 
-	// Feedback questionnaires never require evaluation
-	$effect(() => {
-		if (questionnaireType === 'feedback') requiresEvaluation = false;
-	});
+	// Feedback type forces evaluation off; derive the effective value for the payload/UI
+	let effectiveRequiresEvaluation = $derived(
+		questionnaireType === 'feedback' ? false : requiresEvaluation
+	);
 
 	// Error state for displaying validation errors
 	let saveError = $state<string | null>(null);
@@ -654,7 +654,7 @@
 					can_retake_after: canRetakeAfter !== null ? String(canRetakeAfter * 3600) : undefined, // Convert hours to seconds
 					members_exempt: membersExempt,
 					per_event: perEvent,
-					requires_evaluation: requiresEvaluation,
+					requires_evaluation: effectiveRequiresEvaluation,
 					sections: apiSections as SectionCreateSchema[],
 					multiplechoicequestion_questions: topLevelMC as MultipleChoiceQuestionCreateSchema[],
 					freetextquestion_questions: topLevelFT,
@@ -838,7 +838,7 @@
 				{/if}
 			</div>
 
-			{#if requiresEvaluation}
+			{#if effectiveRequiresEvaluation}
 				<!-- Minimum Score -->
 				<div class="space-y-2">
 					<Label for="min-score">
@@ -983,7 +983,7 @@
 				</div>
 			{/if}
 
-			{#if requiresEvaluation}
+			{#if effectiveRequiresEvaluation}
 				<!-- LLM Guidelines -->
 				<div class="space-y-2">
 					<Label for="llm-guidelines">
