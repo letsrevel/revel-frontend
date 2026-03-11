@@ -4830,5 +4830,25 @@
 		"fileTooLarge": "La registrazione è troppo grande",
 		"maxDuration": "Durata max: {duration}",
 		"timeRemaining": "{time} rimanenti"
-	}
+	},
+	"common.loading": "Caricamento",
+	"common.cancel": "Annulla",
+	"common.close": "Chiudi",
+	"common.actions": "Azioni",
+	"common.paginationPrevious": "Pagina precedente",
+	"common.paginationNext": "Pagina successiva",
+	"common.backToBilling": "Torna alla fatturazione",
+	"common.actionRequired": "Azione richiesta",
+	"common.downloadPdf": "Scarica PDF",
+	"tierForm.vatRateOverride": "Override aliquota IVA (%)",
+	"tierForm.vatRateOverridePlaceholder": "Lascia vuoto per usare il default dell'organizzazione",
+	"tierForm.vatRateOverrideHelp": "Lascia vuoto per usare l'aliquota IVA predefinita dell'organizzazione",
+	"tierForm.completeBillingInfo": "Completa le informazioni di fatturazione",
+	"tickets.vatBreakdown": "Dettaglio IVA",
+	"tickets.vatNet": "Netto",
+	"tickets.vatLabel": "IVA ({rate}%)",
+	"tickets.platformFeeNet": "Fee piattaforma (netto)",
+	"tickets.reverseCharge": "Reverse charge",
+	"tickets.reverseChargeYes": "Sì (B2B UE)",
+	"tickets.vatTooltip": "Netto: {net} / IVA: {vat} ({rate}%)"
 }

@@ -164,7 +164,7 @@
 		<a
 			href="/org/{slug}/admin/billing"
 			class="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-			aria-label="Back to billing"
+			aria-label={m['common.backToBilling']()}
 		>
 			<ArrowLeft class="h-5 w-5" />
 		</a>
@@ -180,7 +180,10 @@
 
 	{#if invoicesQuery?.isLoading}
 		<div class="flex items-center justify-center py-12">
-			<Loader2 class="h-6 w-6 animate-spin text-muted-foreground" aria-label="Loading" />
+			<Loader2
+				class="h-6 w-6 animate-spin text-muted-foreground"
+				aria-label={m['common.loading']()}
+			/>
 		</div>
 	{:else if invoicesQuery?.error}
 		<div
@@ -220,17 +223,22 @@
 							{m['orgAdmin.billing.invoices.columns.grossAmount']()}
 						</th>
 						<th class="px-4 py-3 text-center font-medium">
-							<span class="sr-only">Actions</span>
+							<span class="sr-only">{m['common.actions']()}</span>
 						</th>
 					</tr>
 				</thead>
 				<tbody class="divide-y">
 					{#each invoicesQuery.data.results as invoice (invoice.id)}
-						<tr
-							class="cursor-pointer transition-colors hover:bg-muted/30"
-							onclick={() => openDetail(invoice)}
-						>
-							<td class="px-4 py-3 font-medium">{invoice.invoice_number}</td>
+						<tr class="transition-colors hover:bg-muted/30">
+							<td class="px-4 py-3 font-medium">
+								<button
+									type="button"
+									class="rounded text-left underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+									onclick={() => openDetail(invoice)}
+								>
+									{invoice.invoice_number}
+								</button>
+							</td>
 							<td class="px-4 py-3 text-muted-foreground">
 								{formatPeriod(invoice.period_start, invoice.period_end)}
 							</td>
@@ -255,7 +263,7 @@
 										downloadMutation?.mutate(invoice.id);
 									}}
 									disabled={downloadMutation?.isPending}
-									aria-label="Download PDF"
+									aria-label={m['common.downloadPdf']()}
 								>
 									<Download class="h-4 w-4" />
 								</Button>
@@ -277,6 +285,7 @@
 						variant="outline"
 						size="sm"
 						disabled={currentPage <= 1}
+						aria-label={m['common.paginationPrevious']()}
 						onclick={() => (currentPage = Math.max(1, currentPage - 1))}
 					>
 						<ChevronLeft class="h-4 w-4" />
@@ -288,6 +297,7 @@
 						variant="outline"
 						size="sm"
 						disabled={currentPage >= totalPages}
+						aria-label={m['common.paginationNext']()}
 						onclick={() => (currentPage = Math.min(totalPages, currentPage + 1))}
 					>
 						<ChevronRight class="h-4 w-4" />
@@ -307,7 +317,7 @@
 		type="button"
 		class="fixed inset-0 z-40 bg-black/40"
 		onclick={closeDetail}
-		aria-label="Close invoice detail"
+		aria-label={m['common.close']()}
 	></button>
 
 	<!-- Drawer -->
@@ -320,7 +330,7 @@
 			<h2 class="text-lg font-semibold">
 				{m['orgAdmin.billing.invoices.detail.title']()}
 			</h2>
-			<Button variant="ghost" size="sm" onclick={closeDetail} aria-label="Close">
+			<Button variant="ghost" size="sm" onclick={closeDetail} aria-label={m['common.close']()}>
 				<X class="h-5 w-5" />
 			</Button>
 		</div>
@@ -328,7 +338,10 @@
 		<div class="flex-1 space-y-6 p-6">
 			{#if invoiceDetailQuery?.isLoading}
 				<div class="flex items-center justify-center py-12">
-					<Loader2 class="h-6 w-6 animate-spin text-muted-foreground" aria-label="Loading" />
+					<Loader2
+						class="h-6 w-6 animate-spin text-muted-foreground"
+						aria-label={m['common.loading']()}
+					/>
 				</div>
 			{:else if invoiceDetailQuery?.error}
 				<div

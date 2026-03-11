@@ -181,18 +181,19 @@
 					});
 					// Handle 503 (VIES unavailable) — saved but pending
 					if (response.response.status === 503) {
-						toast.info(m['orgAdmin.billing.vatId.savedPending']());
 						queryClient.invalidateQueries({ queryKey: ['billing-info', slug] });
-						return response.data;
+						return { pending: true } as const;
 					}
 					if (response.error) {
 						const msg = extractErrorMessage(response.error, m['orgAdmin.billing.vatId.error']());
 						throw new Error(msg);
 					}
-					return response.data!;
+					return { pending: false, data: response.data! } as const;
 				},
-				onSuccess: (data) => {
-					if (data) {
+				onSuccess: (result) => {
+					if (result.pending) {
+						toast.info(m['orgAdmin.billing.vatId.savedPending']());
+					} else {
 						queryClient.invalidateQueries({ queryKey: ['billing-info', slug] });
 						toast.success(m['orgAdmin.billing.vatId.saved']());
 					}
@@ -281,7 +282,10 @@
 
 	{#if billingQuery?.isLoading}
 		<div class="flex items-center justify-center py-12">
-			<Loader2 class="h-6 w-6 animate-spin text-muted-foreground" aria-label="Loading" />
+			<Loader2
+				class="h-6 w-6 animate-spin text-muted-foreground"
+				aria-label={m['common.loading']()}
+			/>
 		</div>
 	{:else if billingQuery?.error}
 		<div
@@ -456,7 +460,7 @@
 			<!-- VAT ID Input + Actions -->
 			<form onsubmit={handleValidateVatId} class="flex flex-col gap-3 sm:flex-row sm:items-end">
 				<div class="flex-1 space-y-2">
-					<Label for="vat-id-input">VAT ID</Label>
+					<Label for="vat-id-input">{m['orgAdmin.billing.vatId.title']()}</Label>
 					<Input
 						id="vat-id-input"
 						placeholder={m['orgAdmin.billing.vatId.inputPlaceholder']()}
@@ -503,7 +507,9 @@
 			</DialogDescription>
 		</DialogHeader>
 		<DialogFooter>
-			<Button variant="outline" onclick={() => (showRemoveDialog = false)}>Cancel</Button>
+			<Button variant="outline" onclick={() => (showRemoveDialog = false)}
+				>{m['common.cancel']()}</Button
+			>
 			<Button
 				variant="destructive"
 				onclick={() => deleteVatIdMutation?.mutate()}

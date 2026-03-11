@@ -111,7 +111,7 @@
 	let pwycMin = $state(tier?.pwyc_min ? String(tier.pwyc_min) : '1');
 	let pwycMax = $state(tier?.pwyc_max ? String(tier.pwyc_max) : '');
 	let currency = $state(tier?.currency ?? 'EUR');
-	let vatRateOverride = $state(tier?.vat_rate ? String(tier.vat_rate) : '');
+	let vatRateOverride = $state(tier?.vat_rate != null ? String(tier.vat_rate) : '');
 	let manualPaymentInstructions = $state(tier?.manual_payment_instructions ?? '');
 	let totalQuantity = $state<string>(
 		tier?.total_quantity !== null && tier?.total_quantity !== undefined
@@ -293,8 +293,13 @@
 			purchasable_by: purchasableBy,
 			restricted_to_membership_tiers_ids:
 				restrictedToMembershipTiersIds.length > 0 ? restrictedToMembershipTiersIds : null,
-			// VAT rate override (optional)
-			vat_rate: vatRateOverride ? parseFloat(vatRateOverride) : null,
+			// VAT rate override (optional, cleared for free tiers)
+			vat_rate:
+				paymentMethod === 'free'
+					? null
+					: vatRateOverride !== ''
+						? parseFloat(vatRateOverride)
+						: null,
 			// Venue and seating configuration
 			seat_assignment_mode: seatAssignmentMode,
 			max_tickets_per_user: maxTicketsPerUser ? parseInt(maxTicketsPerUser) : null,
@@ -495,7 +500,7 @@
 			<!-- VAT Rate Override (for paid tiers) -->
 			{#if paymentMethod !== 'free'}
 				<div>
-					<Label for="vat-rate-override">VAT Rate Override (%)</Label>
+					<Label for="vat-rate-override">{m['tierForm.vatRateOverride']()}</Label>
 					<Input
 						id="vat-rate-override"
 						type="number"
@@ -503,11 +508,11 @@
 						min="0"
 						max="100"
 						bind:value={vatRateOverride}
-						placeholder="Leave empty to use org default"
+						placeholder={m['tierForm.vatRateOverridePlaceholder']()}
 						disabled={isPending}
 					/>
 					<p class="mt-1 text-xs text-muted-foreground">
-						Leave empty to use your organization's default VAT rate
+						{m['tierForm.vatRateOverrideHelp']()}
 					</p>
 				</div>
 			{/if}
@@ -876,7 +881,7 @@
 							href="/org/{organizationSlug}/admin/billing"
 							class="mt-2 inline-flex items-center gap-1 text-sm font-medium text-destructive underline hover:text-destructive/80"
 						>
-							Complete your billing info
+							{m['tierForm.completeBillingInfo']()}
 						</a>
 					{:else if (error as any)?.detail}
 						<div class="mt-2 space-y-1">

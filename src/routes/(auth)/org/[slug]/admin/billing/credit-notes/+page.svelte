@@ -50,9 +50,9 @@
 		creditNotesQuery?.data ? Math.ceil(creditNotesQuery.data.count / pageSize) : 0
 	);
 
-	function formatCurrency(amount: string): string {
+	function formatCurrency(amount: string, currency = 'EUR'): string {
 		try {
-			return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'EUR' }).format(
+			return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(
 				parseFloat(amount)
 			);
 		} catch {
@@ -71,7 +71,7 @@
 		<a
 			href="/org/{slug}/admin/billing"
 			class="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-			aria-label="Back to billing"
+			aria-label={m['common.backToBilling']()}
 		>
 			<ArrowLeft class="h-5 w-5" />
 		</a>
@@ -87,7 +87,10 @@
 
 	{#if creditNotesQuery?.isLoading}
 		<div class="flex items-center justify-center py-12">
-			<Loader2 class="h-6 w-6 animate-spin text-muted-foreground" aria-label="Loading" />
+			<Loader2
+				class="h-6 w-6 animate-spin text-muted-foreground"
+				aria-label={m['common.loading']()}
+			/>
 		</div>
 	{:else if creditNotesQuery?.error}
 		<div
@@ -129,7 +132,14 @@
 					{#each creditNotesQuery.data.results as note (note.id)}
 						<tr class="transition-colors hover:bg-muted/30">
 							<td class="px-4 py-3 font-medium">{note.credit_note_number}</td>
-							<td class="px-4 py-3 text-muted-foreground">{note.invoice_id}</td>
+							<td class="px-4 py-3 text-muted-foreground">
+								<a
+									href="/org/{slug}/admin/billing/invoices?invoice={note.invoice_id}"
+									class="underline underline-offset-2 hover:text-foreground"
+								>
+									{note.invoice_id}
+								</a>
+							</td>
 							<td class="px-4 py-3 text-right font-mono">
 								{formatCurrency(note.fee_gross)}
 							</td>
@@ -150,6 +160,7 @@
 						variant="outline"
 						size="sm"
 						disabled={currentPage <= 1}
+						aria-label={m['common.paginationPrevious']()}
 						onclick={() => (currentPage = Math.max(1, currentPage - 1))}
 					>
 						<ChevronLeft class="h-4 w-4" />
@@ -161,6 +172,7 @@
 						variant="outline"
 						size="sm"
 						disabled={currentPage >= totalPages}
+						aria-label={m['common.paginationNext']()}
 						onclick={() => (currentPage = Math.min(totalPages, currentPage + 1))}
 					>
 						<ChevronRight class="h-4 w-4" />

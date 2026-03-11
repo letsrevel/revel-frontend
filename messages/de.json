@@ -4830,5 +4830,25 @@
 		"fileTooLarge": "Aufnahme ist zu groß",
 		"maxDuration": "Max. Dauer: {duration}",
 		"timeRemaining": "{time} verbleibend"
-	}
+	},
+	"common.loading": "Wird geladen",
+	"common.cancel": "Abbrechen",
+	"common.close": "Schließen",
+	"common.actions": "Aktionen",
+	"common.paginationPrevious": "Vorherige Seite",
+	"common.paginationNext": "Nächste Seite",
+	"common.backToBilling": "Zurück zur Abrechnung",
+	"common.actionRequired": "Handlung erforderlich",
+	"common.downloadPdf": "PDF herunterladen",
+	"tierForm.vatRateOverride": "MwSt-Satz Override (%)",
+	"tierForm.vatRateOverridePlaceholder": "Leer lassen für Organisations-Standard",
+	"tierForm.vatRateOverrideHelp": "Leer lassen, um den Standard-MwSt-Satz der Organisation zu verwenden",
+	"tierForm.completeBillingInfo": "Vervollständigen Sie Ihre Rechnungsdaten",
+	"tickets.vatBreakdown": "MwSt-Aufschlüsselung",
+	"tickets.vatNet": "Netto",
+	"tickets.vatLabel": "MwSt ({rate}%)",
+	"tickets.platformFeeNet": "Plattformgebühr (netto)",
+	"tickets.reverseCharge": "Reverse Charge",
+	"tickets.reverseChargeYes": "Ja (EU B2B)",
+	"tickets.vatTooltip": "Netto: {net} / MwSt: {vat} ({rate}%)"
 }

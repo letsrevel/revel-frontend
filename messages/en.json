@@ -4830,5 +4830,25 @@
 		"fileTooLarge": "Recording is too large",
 		"maxDuration": "Max duration: {duration}",
 		"timeRemaining": "{time} remaining"
-	}
+	},
+	"common.loading": "Loading",
+	"common.cancel": "Cancel",
+	"common.close": "Close",
+	"common.actions": "Actions",
+	"common.paginationPrevious": "Previous page",
+	"common.paginationNext": "Next page",
+	"common.backToBilling": "Back to billing",
+	"common.actionRequired": "Action required",
+	"common.downloadPdf": "Download PDF",
+	"tierForm.vatRateOverride": "VAT Rate Override (%)",
+	"tierForm.vatRateOverridePlaceholder": "Leave empty to use org default",
+	"tierForm.vatRateOverrideHelp": "Leave empty to use your organization's default VAT rate",
+	"tierForm.completeBillingInfo": "Complete your billing info",
+	"tickets.vatBreakdown": "VAT Breakdown",
+	"tickets.vatNet": "Net",
+	"tickets.vatLabel": "VAT ({rate}%)",
+	"tickets.platformFeeNet": "Platform fee (net)",
+	"tickets.reverseCharge": "Reverse charge",
+	"tickets.reverseChargeYes": "Yes (EU B2B)",
+	"tickets.vatTooltip": "Net: {net} / VAT: {vat} ({rate}%)"
 }

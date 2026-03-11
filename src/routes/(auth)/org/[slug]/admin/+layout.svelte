@@ -195,7 +195,9 @@
 								{#if item.badge === 'warning'}
 									<span
 										class="absolute -right-1.5 top-3 flex h-2.5 w-2.5"
-										aria-label="Action required"
+										title={m['common.actionRequired']()}
+										role="status"
+										aria-label={m['common.actionRequired']()}
 									>
 										<span class="absolute h-full w-full animate-ping rounded-full bg-destructive/60"
 										></span>
@@ -262,7 +264,10 @@
 							>
 								{item.label}
 								{#if item.badge === 'warning'}
-									<span class="h-2 w-2 rounded-full bg-destructive" aria-label="Action required"
+									<span
+										class="h-2 w-2 rounded-full bg-destructive"
+										role="status"
+										aria-label={m['common.actionRequired']()}
 									></span>
 								{/if}
 							</a>
