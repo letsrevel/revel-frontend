@@ -3750,9 +3750,6 @@
 		"evaluation": {
 			"title": "Evaluation Settings",
 			"description": "Configure how submissions are evaluated",
-			"requiresEvaluationLabel": "Require evaluation",
-			"requiresEvaluationDescription": "When disabled, submissions are accepted without evaluation (no AI scoring, no manual review). Useful for information-gathering questionnaires.",
-			"feedbackNoEvaluation": "Feedback questionnaires do not require evaluation.",
 			"minScoreLabel": "Minimum Score (%)",
 			"minScorePlaceholder": "e.g., 70",
 			"minScoreDescription": "Minimum score required to pass the questionnaire (0-100)",
@@ -3923,8 +3920,7 @@
 		"notSubmitted": "Not submitted",
 		"eventContextTitle": "Event Context",
 		"eventNameLabel": "Event",
-		"viewEventLink": "View event",
-		"noEvaluationRequired": "This questionnaire does not require evaluation. Submissions are accepted automatically."
+		"viewEventLink": "View event"
 	},
 	"questionnaireSubmissionPage": {
 		"pageTitle": "{questionnaireName} - {eventName}",
@@ -3934,7 +3930,7 @@
 		"aiWarning_automatic": "This answer will be automatically evaluated by AI",
 		"aiWarning_hybrid": "This answer will be evaluated by AI and reviewed by a human",
 		"textarea_placeholder": "Type your answer here...",
-		"characterCount": "{count}/1000 characters",
+		"characterCount": "{count}/500 characters",
 		"validation_required": "This question is required",
 		"validation_allRequired": "Please answer all required questions",
 		"button_cancel": "Cancel",
@@ -3986,8 +3982,7 @@
 		"firstPage": "First page",
 		"previousPage": "Previous page",
 		"nextPage": "Next page",
-		"lastPage": "Last page",
-		"totalSubmissions": "Total Submissions"
+		"lastPage": "Last page"
 	},
 	"questionnairesAdminPage": {
 		"title": "Questionnaires - Revel",

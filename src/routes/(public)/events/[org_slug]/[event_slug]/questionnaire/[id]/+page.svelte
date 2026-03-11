@@ -556,7 +556,7 @@
 			placeholder={m['questionnaireSubmissionPage.textarea_placeholder']()}
 			class={cn(validationErrors.has(question.id) && 'border-destructive')}
 			rows={4}
-			maxlength={1000}
+			maxlength={500}
 		/>
 		<p class="text-xs text-muted-foreground">
 			{m['questionnaireSubmissionPage.characterCount']({
