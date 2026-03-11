@@ -1100,7 +1100,16 @@
 								<td class="px-4 py-3">
 									<div class="font-medium">{ticket.tier?.name || 'N/A'}</div>
 								</td>
-								<td class="px-4 py-3">
+								<td
+									class="px-4 py-3"
+									title={ticket.payment?.vat_amount != null
+										? m['tickets.vatTooltip']({
+												net: ticket.payment.net_amount ?? '',
+												vat: ticket.payment.vat_amount ?? '',
+												rate: String(ticket.payment.vat_rate ?? '')
+											})
+										: undefined}
+								>
 									<div class="font-medium">
 										{formatPrice(
 											getTicketPrice(ticket),
@@ -1298,6 +1307,54 @@
 								>
 								<span>{new Date(ticket.created_at).toLocaleDateString()}</span>
 							</div>
+							{#if ticket.payment?.vat_amount != null}
+								<div class="mt-2 space-y-1 border-t pt-2">
+									<p class="text-xs font-medium text-muted-foreground">
+										{m['tickets.vatBreakdown']()}
+									</p>
+									<div class="flex items-center justify-between text-xs">
+										<span class="text-muted-foreground">{m['tickets.vatNet']()}:</span>
+										<span class="font-mono"
+											>{formatPrice(
+												ticket.payment.net_amount,
+												ticket.payment.currency || ticket.tier?.currency
+											)}</span
+										>
+									</div>
+									<div class="flex items-center justify-between text-xs">
+										<span class="text-muted-foreground"
+											>{m['tickets.vatLabel']({
+												rate: String(ticket.payment.vat_rate ?? '')
+											})}:</span
+										>
+										<span class="font-mono"
+											>{formatPrice(
+												ticket.payment.vat_amount,
+												ticket.payment.currency || ticket.tier?.currency
+											)}</span
+										>
+									</div>
+									{#if ticket.payment.platform_fee_net != null}
+										<div class="flex items-center justify-between text-xs">
+											<span class="text-muted-foreground">{m['tickets.platformFeeNet']()}:</span>
+											<span class="font-mono"
+												>{formatPrice(
+													ticket.payment.platform_fee_net,
+													ticket.payment.currency || ticket.tier?.currency
+												)}</span
+											>
+										</div>
+										{#if ticket.payment.platform_fee_reverse_charge}
+											<div class="flex items-center justify-between text-xs">
+												<span class="text-muted-foreground">{m['tickets.reverseCharge']()}:</span>
+												<span class="font-medium text-blue-600 dark:text-blue-400"
+													>{m['tickets.reverseChargeYes']()}</span
+												>
+											</div>
+										{/if}
+									{/if}
+								</div>
+							{/if}
 						</div>
 
 						<div class="mt-3 flex flex-wrap gap-2">

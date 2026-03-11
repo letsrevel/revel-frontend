@@ -2844,8 +2844,108 @@
 	"orgAdmin.events.status.draft": "Draft",
 	"orgAdmin.events.status.open": "Open",
 	"orgAdmin.nav.announcements": "Announcements",
+	"orgAdmin.nav.billing": "Billing",
 	"orgAdmin.nav.discountCodes": "Discount Codes",
 	"orgAdmin.nav.venues": "Venues",
+	"orgAdmin.billing": {
+		"pageTitle": "Billing & VAT",
+		"pageDescription": "Manage your billing information, VAT settings, and view invoices",
+		"billingInfo": {
+			"title": "Billing Information",
+			"description": "Set your billing details for invoices and tax compliance",
+			"country": "Country",
+			"countryPlaceholder": "Select an EU country",
+			"countryHelp": "Must be an EU member state",
+			"countryDisabledHint": "Remove VAT ID to change country",
+			"vatRate": "Default VAT Rate (%)",
+			"vatRatePlaceholder": "e.g. 22.00",
+			"vatRateHelp": "Default VAT rate for ticket sales. Can be overridden per ticket tier.",
+			"billingAddress": "Billing Address",
+			"billingAddressPlaceholder": "Enter your billing address",
+			"billingEmail": "Billing Email",
+			"billingEmailPlaceholder": "billing@example.com",
+			"billingEmailHelp": "Leave empty to use your organization contact email",
+			"saveButton": "Save Billing Info",
+			"saving": "Saving...",
+			"saved": "Billing information updated",
+			"error": "Failed to update billing information"
+		},
+		"vatId": {
+			"title": "VAT ID",
+			"description": "Validate your VAT ID for reverse charge eligibility",
+			"inputPlaceholder": "e.g. IT12345678901",
+			"inputHelp": "2-letter country prefix followed by 2-13 alphanumeric characters",
+			"validateButton": "Validate & Save",
+			"validating": "Validating...",
+			"removeButton": "Remove VAT ID",
+			"removeConfirmTitle": "Remove VAT ID?",
+			"removeConfirmDescription": "This will remove your VAT ID and disable reverse charge on future invoices.",
+			"removeConfirmButton": "Yes, Remove",
+			"statusValidated": "Validated",
+			"statusPending": "Pending Validation",
+			"statusNotSet": "Not Set",
+			"validatedAt": "Validated on {date}",
+			"saved": "VAT ID validated and saved",
+			"savedPending": "VAT ID saved. Validation is temporarily unavailable and will happen automatically.",
+			"removed": "VAT ID removed",
+			"invalid": "The VAT ID is not valid according to VIES",
+			"error": "Failed to update VAT ID"
+		},
+		"nudge": {
+			"title": "Complete Your Billing Info",
+			"message": "Add your billing information to enable online ticket sales and receive proper invoices.",
+			"action": "Add Billing Info"
+		},
+		"invoices": {
+			"title": "Invoices",
+			"description": "Platform fee invoices for your organization",
+			"empty": "No invoices yet",
+			"emptyDescription": "Invoices will appear here after your first billing period with online ticket sales.",
+			"columns": {
+				"invoiceNumber": "Invoice #",
+				"period": "Period",
+				"status": "Status",
+				"grossAmount": "Amount",
+				"currency": "Currency"
+			},
+			"status": {
+				"draft": "Draft",
+				"issued": "Issued",
+				"paid": "Paid",
+				"cancelled": "Cancelled"
+			},
+			"detail": {
+				"title": "Invoice Details",
+				"breakdown": "Fee Breakdown",
+				"gross": "Gross Amount",
+				"net": "Net Amount",
+				"vat": "VAT",
+				"vatRate": "VAT Rate",
+				"reverseCharge": "Reverse Charge",
+				"reverseChargeYes": "Yes — VAT not charged (EU B2B)",
+				"reverseChargeNo": "No",
+				"orgInfo": "Organization Info",
+				"platformInfo": "Platform Info",
+				"stats": "Period Statistics",
+				"totalTickets": "Total Tickets Sold",
+				"totalRevenue": "Total Ticket Revenue",
+				"downloadPdf": "Download PDF",
+				"pdfNotReady": "Invoice PDF not yet generated. Please try again later.",
+				"downloadError": "Failed to download invoice"
+			}
+		},
+		"creditNotes": {
+			"title": "Credit Notes",
+			"description": "Credit notes issued against platform fee invoices",
+			"empty": "No credit notes",
+			"emptyDescription": "Credit notes will appear here if any invoice adjustments are made.",
+			"columns": {
+				"creditNoteNumber": "Credit Note #",
+				"linkedInvoice": "Linked Invoice",
+				"grossAmount": "Amount"
+			}
+		}
+	},
 	"orgAdmin.questionnaires": {
 		"pageTitle": "Questionnaires",
 		"metaDescription": "Manage admission forms and surveys for {orgName}",
@@ -4730,5 +4830,25 @@
 		"fileTooLarge": "Recording is too large",
 		"maxDuration": "Max duration: {duration}",
 		"timeRemaining": "{time} remaining"
-	}
+	},
+	"common.loading": "Loading",
+	"common.cancel": "Cancel",
+	"common.close": "Close",
+	"common.actions": "Actions",
+	"common.paginationPrevious": "Previous page",
+	"common.paginationNext": "Next page",
+	"common.backToBilling": "Back to billing",
+	"common.actionRequired": "Action required",
+	"common.downloadPdf": "Download PDF",
+	"tierForm.vatRateOverride": "VAT Rate Override (%)",
+	"tierForm.vatRateOverridePlaceholder": "Leave empty to use org default",
+	"tierForm.vatRateOverrideHelp": "Leave empty to use your organization's default VAT rate",
+	"tierForm.completeBillingInfo": "Complete your billing info",
+	"tickets.vatBreakdown": "VAT Breakdown",
+	"tickets.vatNet": "Net",
+	"tickets.vatLabel": "VAT ({rate}%)",
+	"tickets.platformFeeNet": "Platform fee (net)",
+	"tickets.reverseCharge": "Reverse charge",
+	"tickets.reverseChargeYes": "Yes (EU B2B)",
+	"tickets.vatTooltip": "Net: {net} / VAT: {vat} ({rate}%)"
 }

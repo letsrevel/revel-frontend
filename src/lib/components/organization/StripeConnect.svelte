@@ -26,6 +26,7 @@
 		stripeAccountId: string | null;
 		stripeAccountEmail: string | null;
 		accessToken: string;
+		billingInfoMissing?: boolean;
 	}
 
 	let {
@@ -34,7 +35,8 @@
 		stripeDetailsSubmitted,
 		stripeAccountId,
 		stripeAccountEmail,
-		accessToken
+		accessToken,
+		billingInfoMissing = false
 	}: Props = $props();
 
 	// Derived: Is Stripe connected (has account ID)
@@ -432,6 +434,33 @@
 					<ExternalLink class="h-3 w-3" aria-hidden="true" />
 				</a>
 			{/if}
+		</div>
+	{/if}
+
+	<!-- Billing Info Nudge -->
+	{#if billingInfoMissing && status.type === 'fully-connected'}
+		<div
+			class="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-950/30"
+			role="alert"
+		>
+			<AlertCircle
+				class="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400"
+				aria-hidden="true"
+			/>
+			<div class="flex-1">
+				<p class="font-medium text-amber-900 dark:text-amber-100">
+					{m['orgAdmin.billing.nudge.title']()}
+				</p>
+				<p class="mt-1 text-sm text-amber-800 dark:text-amber-200">
+					{m['orgAdmin.billing.nudge.message']()}
+				</p>
+				<a
+					href="/org/{organizationSlug}/admin/billing"
+					class="mt-2 inline-flex items-center gap-1.5 rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-amber-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+				>
+					{m['orgAdmin.billing.nudge.action']()}
+				</a>
+			</div>
 		</div>
 	{/if}
 

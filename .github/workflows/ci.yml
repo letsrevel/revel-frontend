@@ -92,6 +92,7 @@ jobs:
       - name: Build application
         run: pnpm build
         env:
+          NODE_OPTIONS: --max-old-space-size=6144
           PUBLIC_API_URL: http://localhost:8000
           PUBLIC_VERSION: ${{ env.VERSION }}
 
