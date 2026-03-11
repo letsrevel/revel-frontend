@@ -3750,6 +3750,9 @@
 		"evaluation": {
 			"title": "Bewertungseinstellungen",
 			"description": "Konfigurieren, wie Einreichungen bewertet werden",
+			"requiresEvaluationLabel": "Bewertung erforderlich",
+			"requiresEvaluationDescription": "Wenn deaktiviert, werden Einreichungen ohne Bewertung akzeptiert (keine KI-Bewertung, keine manuelle Prüfung). Nützlich für Fragebögen zur Informationssammlung.",
+			"feedbackNoEvaluation": "Feedback-Fragebögen erfordern keine Bewertung.",
 			"minScoreLabel": "Mindestpunktzahl (%)",
 			"minScorePlaceholder": "z.B. 70",
 			"minScoreDescription": "Mindestpunktzahl zum Bestehen des Fragebogens (0-100)",
@@ -3920,7 +3923,8 @@
 		"notSubmitted": "Nicht eingereicht",
 		"eventContextTitle": "Event-Kontext",
 		"eventNameLabel": "Event",
-		"viewEventLink": "Event ansehen"
+		"viewEventLink": "Event ansehen",
+		"noEvaluationRequired": "Dieser Fragebogen erfordert keine Bewertung. Einreichungen werden automatisch akzeptiert."
 	},
 	"questionnaireSubmissionPage": {
 		"pageTitle": "{questionnaireName} - {eventName}",
@@ -3930,7 +3934,7 @@
 		"aiWarning_automatic": "Diese Antwort wird automatisch von KI bewertet",
 		"aiWarning_hybrid": "Diese Antwort wird von KI bewertet und von einem Menschen überprüft",
 		"textarea_placeholder": "Gib hier deine Antwort ein...",
-		"characterCount": "{count}/500 Zeichen",
+		"characterCount": "{count}/1000 Zeichen",
 		"validation_required": "Diese Frage ist erforderlich",
 		"validation_allRequired": "Bitte beantworte alle erforderlichen Fragen",
 		"button_cancel": "Abbrechen",
@@ -3982,7 +3986,8 @@
 		"firstPage": "First page",
 		"previousPage": "Previous page",
 		"nextPage": "Next page",
-		"lastPage": "Last page"
+		"lastPage": "Last page",
+		"totalSubmissions": "Einreichungen gesamt"
 	},
 	"questionnairesAdminPage": {
 		"title": "Fragebögen - Revel",
