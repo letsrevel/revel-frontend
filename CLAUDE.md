@@ -494,10 +494,20 @@ Look for your local network IP (usually `192.168.x.x` or `10.0.x.x`). Access fro
 
 ### Testing
 
+**Unit Tests (Vitest):**
 - `pnpm test` - Run unit tests with Vitest
 - `pnpm test:ui` - Run tests with interactive UI
-- `pnpm test:e2e` - Run end-to-end tests with Playwright
 - `pnpm test:coverage` - Generate test coverage report
+
+**E2E Tests (Playwright):**
+- `pnpm test:e2e` - Run all end-to-end tests
+- `pnpm exec playwright test --project=chromium` - Run on specific browser
+- `pnpm exec playwright test --ui` - Run with interactive UI (recommended for debugging)
+- `pnpm exec playwright test tests/e2e/admin/` - Run event admin tests only
+- `pnpm exec playwright test tests/e2e/events/` - Run event discovery tests only
+- `pnpm exec playwright show-report` - View HTML test report
+
+See [tests/e2e/README.md](tests/e2e/README.md) for comprehensive E2E test documentation.
 
 ## Project Architecture
 
@@ -888,19 +898,112 @@ it('calls onclick when clicked', async () => {
 
 #### E2E Tests (Playwright)
 
-- Test critical user journeys
-- Test on multiple browsers (Chromium, Firefox, WebKit)
-- Use Page Object Model pattern
+Comprehensive E2E test coverage for critical user flows. See [`tests/e2e/README.md`](tests/e2e/README.md) for detailed documentation.
+
+**Test Structure:**
+
+```
+tests/e2e/
+├── fixtures/           # Test helpers (auth, test data)
+├── auth/              # Authentication tests (register, password-reset, logout)
+├── events/            # Event discovery (listing, detail, RSVP, potluck)
+├── dashboard/         # Dashboard tests (main, RSVPs, tickets, invitations)
+├── account/           # Account management (profile, settings, security)
+├── tickets/           # Ticket purchase flow
+├── admin/             # Event creation/editing (62 tests)
+└── login.spec.ts      # Login tests
+```
+
+**Test Coverage by Suite:**
+
+| Suite | Tests | Coverage |
+|-------|-------|----------|
+| `auth/` | 15+ | Registration, password reset, logout |
+| `events/` | 40+ | Event listing, detail, RSVP flow, potluck |
+| `dashboard/` | 40+ | Dashboard, RSVPs, tickets, invitations, following |
+| `account/` | 25+ | Profile editing, settings, security, privacy |
+| `tickets/` | 16+ | Ticket tiers, free tickets, dashboard tickets |
+| `admin/` | 62 | Event creation wizard, editing, publication workflow |
+
+**Running E2E Tests:**
+
+```bash
+# Run all E2E tests
+pnpm test:e2e
+
+# Run on specific browser
+pnpm exec playwright test --project=chromium
+
+# Run specific test suite
+pnpm exec playwright test tests/e2e/admin/          # Event admin tests
+pnpm exec playwright test tests/e2e/events/         # Event discovery
+pnpm exec playwright test tests/e2e/dashboard/      # Dashboard tests
+
+# Run with UI mode (recommended for debugging)
+pnpm exec playwright test --ui
+
+# Run single test by name pattern
+pnpm exec playwright test -g "should create RSVP event"
+
+# View test report
+pnpm exec playwright show-report
+```
+
+**Test Users (from backend seed data):**
+
+| User | Email | Password | Role |
+|------|-------|----------|------|
+| Alice | alice.owner@example.com | password123 | Organization owner |
+| Bob | bob.member@example.com | password123 | Organization member |
+| Charlie | charlie.guest@example.com | password123 | Regular user |
+
+**Writing E2E Tests - Best Practices:**
 
 ```typescript
 import { test, expect } from '@playwright/test';
+import { TEST_USERS } from '../fixtures/auth.fixture';
 
-test('user can RSVP to event', async ({ page }) => {
-	await page.goto('/events/test-event');
-	await page.getByRole('button', { name: 'RSVP' }).click();
-	await expect(page.getByText('RSVP confirmed')).toBeVisible();
+test.describe('Feature Tests', () => {
+	test.beforeEach(async ({ page }) => {
+		// Login as test user
+		await page.goto('/login');
+		await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USERS.alice.email);
+		await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USERS.alice.password);
+		await page.getByRole('button', { name: 'Sign in' }).click();
+		await expect(page).toHaveURL('/dashboard');
+	});
+
+	test('should perform action', async ({ page }) => {
+		// Use accessible selectors
+		await page.getByRole('button', { name: 'Submit' }).click();
+		await expect(page.getByRole('heading', { name: 'Success' })).toBeVisible();
+	});
+
+	test('should handle empty states gracefully', async ({ page }) => {
+		// Tests should pass whether data exists or not
+		const hasData = await page.locator('[role="list"]').isVisible().catch(() => false);
+		const hasEmptyState = await page.getByText(/no.*found/i).isVisible().catch(() => false);
+		expect(hasData || hasEmptyState).toBe(true);
+	});
+});
+
+// Mobile viewport tests
+test.describe('Mobile', () => {
+	test.use({ viewport: { width: 375, height: 667 } });
+
+	test('should work on mobile', async ({ page }) => {
+		// Mobile-specific assertions
+	});
 });
 ```
+
+**Key Principles:**
+
+1. **Use accessible selectors:** Prefer `getByRole`, `getByLabel`, `getByText` over CSS selectors
+2. **Handle empty states:** Tests should pass whether data exists or not
+3. **Use explicit waits:** Avoid arbitrary `waitForTimeout`, use `expect().toBeVisible()`
+4. **Include mobile tests:** Add viewport-specific tests for responsive features
+5. **Increase timeout for slow operations:** Use `test.setTimeout(60000)` when needed
 
 ### Development Workflow
 
