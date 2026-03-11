@@ -3750,9 +3750,6 @@
 		"evaluation": {
 			"title": "Impostazioni di Valutazione",
 			"description": "Configura come vengono valutate le risposte",
-			"requiresEvaluationLabel": "Richiedi valutazione",
-			"requiresEvaluationDescription": "Quando disattivato, le risposte vengono accettate senza valutazione (nessun punteggio IA, nessuna revisione manuale). Utile per questionari informativi.",
-			"feedbackNoEvaluation": "I questionari di feedback non richiedono valutazione.",
 			"minScoreLabel": "Punteggio Minimo (%)",
 			"minScorePlaceholder": "es. 70",
 			"minScoreDescription": "Punteggio minimo richiesto per superare il questionario (0-100)",
@@ -3923,8 +3920,7 @@
 		"notSubmitted": "Non inviato",
 		"eventContextTitle": "Contesto Evento",
 		"eventNameLabel": "Evento",
-		"viewEventLink": "Visualizza evento",
-		"noEvaluationRequired": "Questo questionario non richiede valutazione. Le risposte vengono accettate automaticamente."
+		"viewEventLink": "Visualizza evento"
 	},
 	"questionnaireSubmissionPage": {
 		"pageTitle": "{questionnaireName} - {eventName}",
@@ -3934,7 +3930,7 @@
 		"aiWarning_automatic": "Questa risposta sarà valutata automaticamente dall'IA",
 		"aiWarning_hybrid": "Questa risposta sarà valutata dall'IA e verificata da un essere umano",
 		"textarea_placeholder": "Scrivi la tua risposta qui...",
-		"characterCount": "{count}/1000 caratteri",
+		"characterCount": "{count}/500 caratteri",
 		"validation_required": "Questa domanda è obbligatoria",
 		"validation_allRequired": "Si prega di rispondere a tutte le domande obbligatorie",
 		"button_cancel": "Annulla",
@@ -3986,8 +3982,7 @@
 		"firstPage": "First page",
 		"previousPage": "Previous page",
 		"nextPage": "Next page",
-		"lastPage": "Last page",
-		"totalSubmissions": "Totale Risposte"
+		"lastPage": "Last page"
 	},
 	"questionnairesAdminPage": {
 		"title": "Questionari - Revel",

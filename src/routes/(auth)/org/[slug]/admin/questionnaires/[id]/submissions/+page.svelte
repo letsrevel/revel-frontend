@@ -108,66 +108,49 @@
 
 	<!-- Stats -->
 	<div class="mb-8">
-		{#if data.requiresEvaluation}
-			<SubmissionStats
-				pendingCount={data.stats.pendingCount}
-				approvedCount={data.stats.approvedCount}
-				rejectedCount={data.stats.rejectedCount}
-			/>
-		{:else}
-			<Card class="p-6">
-				<div class="text-center">
-					<p class="text-2xl font-bold">
-						{data.stats.pendingCount + data.stats.approvedCount + data.stats.rejectedCount}
-					</p>
-					<p class="text-sm text-muted-foreground">
-						{m['questionnaireSubmissionsPage.totalSubmissions']()}
-					</p>
-				</div>
-			</Card>
-		{/if}
+		<SubmissionStats
+			pendingCount={data.stats.pendingCount}
+			approvedCount={data.stats.approvedCount}
+			rejectedCount={data.stats.rejectedCount}
+		/>
 	</div>
 
 	<!-- Filters and Sorting -->
 	<Card class="mb-6 p-6">
-		{#if data.requiresEvaluation}
-			<!-- Evaluation Status Filter -->
-			<div class="mb-6">
-				<h3 class="mb-3 text-sm font-medium">
-					{m['questionnaireSubmissionsPage.filterByStatus']()}
-				</h3>
-				<div class="flex flex-wrap gap-2">
-					<Button
-						variant={currentEvaluationStatus === '' ? 'default' : 'outline'}
-						size="sm"
-						onclick={() => setEvaluationStatusFilter('')}
-					>
-						{m['questionnaireSubmissionsPage.filter_all']()}
-					</Button>
-					<Button
-						variant={currentEvaluationStatus === 'pending review' ? 'secondary' : 'outline'}
-						size="sm"
-						onclick={() => setEvaluationStatusFilter('pending review')}
-					>
-						{m['questionnaireSubmissionsPage.filter_pendingReview']()}
-					</Button>
-					<Button
-						variant={currentEvaluationStatus === 'approved' ? 'default' : 'outline'}
-						size="sm"
-						onclick={() => setEvaluationStatusFilter('approved')}
-					>
-						{m['questionnaireSubmissionsPage.filter_approved']()}
-					</Button>
-					<Button
-						variant={currentEvaluationStatus === 'rejected' ? 'destructive' : 'outline'}
-						size="sm"
-						onclick={() => setEvaluationStatusFilter('rejected')}
-					>
-						{m['questionnaireSubmissionsPage.filter_rejected']()}
-					</Button>
-				</div>
+		<!-- Evaluation Status Filter -->
+		<div class="mb-6">
+			<h3 class="mb-3 text-sm font-medium">{m['questionnaireSubmissionsPage.filterByStatus']()}</h3>
+			<div class="flex flex-wrap gap-2">
+				<Button
+					variant={currentEvaluationStatus === '' ? 'default' : 'outline'}
+					size="sm"
+					onclick={() => setEvaluationStatusFilter('')}
+				>
+					{m['questionnaireSubmissionsPage.filter_all']()}
+				</Button>
+				<Button
+					variant={currentEvaluationStatus === 'pending review' ? 'secondary' : 'outline'}
+					size="sm"
+					onclick={() => setEvaluationStatusFilter('pending review')}
+				>
+					{m['questionnaireSubmissionsPage.filter_pendingReview']()}
+				</Button>
+				<Button
+					variant={currentEvaluationStatus === 'approved' ? 'default' : 'outline'}
+					size="sm"
+					onclick={() => setEvaluationStatusFilter('approved')}
+				>
+					{m['questionnaireSubmissionsPage.filter_approved']()}
+				</Button>
+				<Button
+					variant={currentEvaluationStatus === 'rejected' ? 'destructive' : 'outline'}
+					size="sm"
+					onclick={() => setEvaluationStatusFilter('rejected')}
+				>
+					{m['questionnaireSubmissionsPage.filter_rejected']()}
+				</Button>
 			</div>
-		{/if}
+		</div>
 
 		<!-- Sort Order -->
 		<div>
@@ -220,14 +203,12 @@
 							<th class="px-6 py-4 text-left text-sm font-medium"
 								>{m['questionnaireSubmissionsPage.header_submitted']()}</th
 							>
-							{#if data.requiresEvaluation}
-								<th class="px-6 py-4 text-left text-sm font-medium"
-									>{m['questionnaireSubmissionsPage.header_evaluationStatus']()}</th
-								>
-								<th class="px-6 py-4 text-left text-sm font-medium"
-									>{m['questionnaireSubmissionsPage.header_score']()}</th
-								>
-							{/if}
+							<th class="px-6 py-4 text-left text-sm font-medium"
+								>{m['questionnaireSubmissionsPage.header_evaluationStatus']()}</th
+							>
+							<th class="px-6 py-4 text-left text-sm font-medium"
+								>{m['questionnaireSubmissionsPage.header_score']()}</th
+							>
 							<th class="px-6 py-4 text-right text-sm font-medium"
 								>{m['questionnaireSubmissionsPage.header_actions']()}</th
 							>
@@ -243,24 +224,20 @@
 									</div>
 								</td>
 								<td class="px-6 py-4 text-sm">{formatDate(submission.submitted_at)}</td>
-								{#if data.requiresEvaluation}
-									<td class="px-6 py-4">
-										<SubmissionStatusBadge
-											status={(submission.evaluation_status ||
-												'pending review') as QuestionnaireEvaluationStatus}
-										/>
-									</td>
-									<td class="px-6 py-4 text-sm">{formatScore(submission.evaluation_score)}</td>
-								{/if}
+								<td class="px-6 py-4">
+									<SubmissionStatusBadge
+										status={(submission.evaluation_status ||
+											'pending review') as QuestionnaireEvaluationStatus}
+									/>
+								</td>
+								<td class="px-6 py-4 text-sm">{formatScore(submission.evaluation_score)}</td>
 								<td class="px-6 py-4 text-right">
 									<Button
 										href="/org/{data.organizationSlug}/admin/questionnaires/{data.questionnaireId}/submissions/{submission.id}"
 										variant="outline"
 										size="sm"
 									>
-										{data.requiresEvaluation
-											? m['questionnaireSubmissionsPage.reviewButton']()
-											: m['questionnaireSubmissionsPage.viewButton']()}
+										{m['questionnaireSubmissionsPage.reviewButton']()}
 									</Button>
 								</td>
 							</tr>
@@ -279,12 +256,10 @@
 							<h3 class="font-semibold">{submission.user.display_name}</h3>
 							<p class="text-sm text-muted-foreground">{submission.user.email}</p>
 						</div>
-						{#if data.requiresEvaluation}
-							<SubmissionStatusBadge
-								status={(submission.evaluation_status ||
-									'pending review') as QuestionnaireEvaluationStatus}
-							/>
-						{/if}
+						<SubmissionStatusBadge
+							status={(submission.evaluation_status ||
+								'pending review') as QuestionnaireEvaluationStatus}
+						/>
 					</div>
 
 					<div class="space-y-2 text-sm">
@@ -292,12 +267,10 @@
 							<span class="text-muted-foreground">Submitted:</span>
 							<span>{formatDate(submission.submitted_at)}</span>
 						</div>
-						{#if data.requiresEvaluation}
-							<div class="flex justify-between">
-								<span class="text-muted-foreground">Score:</span>
-								<span>{formatScore(submission.evaluation_score)}</span>
-							</div>
-						{/if}
+						<div class="flex justify-between">
+							<span class="text-muted-foreground">Score:</span>
+							<span>{formatScore(submission.evaluation_score)}</span>
+						</div>
 					</div>
 
 					<Button
@@ -306,9 +279,7 @@
 						size="sm"
 						class="mt-4 w-full"
 					>
-						{data.requiresEvaluation
-							? m['questionnaireSubmissionsPage.reviewButton']()
-							: m['questionnaireSubmissionsPage.viewButton']()}
+						{m['questionnaireSubmissionsPage.reviewButton']()}
 					</Button>
 				</Card>
 			{/each}

@@ -7,7 +7,7 @@
 	import AutoEvalRecommendation from '$lib/components/questionnaires/AutoEvalRecommendation.svelte';
 	import EvaluationForm from '$lib/components/questionnaires/EvaluationForm.svelte';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
-	import { ArrowLeft, Mail, Calendar, CalendarDays, ExternalLink, Info } from 'lucide-svelte';
+	import { ArrowLeft, Mail, Calendar, CalendarDays, ExternalLink } from 'lucide-svelte';
 	import {
 		isPendingReview,
 		type QuestionnaireEvaluationStatus
@@ -109,21 +109,9 @@
 	<div class="grid gap-8 lg:grid-cols-3">
 		<!-- Main Content - Answers and Evaluation -->
 		<div class="space-y-8 lg:col-span-2">
-			{#if !data.requiresEvaluation}
-				<!-- No evaluation required banner -->
-				<div
-					class="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950"
-				>
-					<Info class="mt-0.5 h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" />
-					<p class="text-sm text-blue-800 dark:text-blue-200">
-						{m['questionnaireSubmissionDetailPage.noEvaluationRequired']()}
-					</p>
-				</div>
-			{:else}
-				<!-- Auto-Evaluation Recommendation -->
-				{#if data.submission.evaluation}
-					<AutoEvalRecommendation evaluation={data.submission.evaluation} />
-				{/if}
+			<!-- Auto-Evaluation Recommendation -->
+			{#if data.submission.evaluation}
+				<AutoEvalRecommendation evaluation={data.submission.evaluation} />
 			{/if}
 
 			<!-- Questionnaire Answers -->
@@ -134,25 +122,23 @@
 				<QuestionAnswerDisplay answers={data.submission.answers} />
 			</div>
 
-			{#if data.requiresEvaluation}
-				<!-- Evaluation Form -->
-				<div>
-					<h2 class="mb-4 text-2xl font-semibold">
-						{isEvaluated
-							? m['questionnaireSubmissionDetailPage.changeEvaluationTitle']()
-							: m['questionnaireSubmissionDetailPage.evaluateTitle']()}
-					</h2>
-					<EvaluationForm
-						submissionId={data.submission.id}
-						currentStatus={(data.submission.evaluation?.status as
-							| 'approved'
-							| 'rejected'
-							| 'pending review'
-							| null) || null}
-						{isSubmitting}
-					/>
-				</div>
-			{/if}
+			<!-- Evaluation Form -->
+			<div>
+				<h2 class="mb-4 text-2xl font-semibold">
+					{isEvaluated
+						? m['questionnaireSubmissionDetailPage.changeEvaluationTitle']()
+						: m['questionnaireSubmissionDetailPage.evaluateTitle']()}
+				</h2>
+				<EvaluationForm
+					submissionId={data.submission.id}
+					currentStatus={(data.submission.evaluation?.status as
+						| 'approved'
+						| 'rejected'
+						| 'pending review'
+						| null) || null}
+					{isSubmitting}
+				/>
+			</div>
 		</div>
 
 		<!-- Sidebar - Submission Details -->

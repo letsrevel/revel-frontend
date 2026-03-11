@@ -1,10 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
-import {
-	questionnaireListSubmissions,
-	questionnaireGetSummary,
-	questionnaireGetOrgQuestionnaire
-} from '$lib/api/client';
+import { questionnaireListSubmissions, questionnaireGetSummary } from '$lib/api/client';
 
 export const load: PageServerLoad = async ({ params, url, locals, fetch }) => {
 	const { slug, id } = params;
@@ -29,8 +25,8 @@ export const load: PageServerLoad = async ({ params, url, locals, fetch }) => {
 		| 'submitted_at'
 		| '-submitted_at';
 
-	// Fetch submissions, summary, and org questionnaire in parallel
-	const [submissionsResult, summaryResult, questionnaireResult] = await Promise.all([
+	// Fetch submissions and summary in parallel
+	const [submissionsResult, summaryResult] = await Promise.all([
 		questionnaireListSubmissions({
 			fetch,
 			path: {
@@ -46,13 +42,6 @@ export const load: PageServerLoad = async ({ params, url, locals, fetch }) => {
 			headers
 		}),
 		questionnaireGetSummary({
-			fetch,
-			path: {
-				org_questionnaire_id: id
-			},
-			headers
-		}),
-		questionnaireGetOrgQuestionnaire({
 			fetch,
 			path: {
 				org_questionnaire_id: id
@@ -100,7 +89,6 @@ export const load: PageServerLoad = async ({ params, url, locals, fetch }) => {
 			orderBy
 		},
 		organizationSlug: slug,
-		questionnaireId: id,
-		requiresEvaluation: questionnaireResult.data?.requires_evaluation ?? true
+		questionnaireId: id
 	};
 };
