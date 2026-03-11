@@ -367,6 +367,13 @@ class AuthStore {
 	}
 
 	/**
+	 * Update user data (used after profile edits to keep navbar in sync)
+	 */
+	setUser(user: RevelUserSchema): void {
+		this._user = user;
+	}
+
+	/**
 	 * Update access token (used by interceptor after refresh)
 	 */
 	setAccessToken(token: string): void {
