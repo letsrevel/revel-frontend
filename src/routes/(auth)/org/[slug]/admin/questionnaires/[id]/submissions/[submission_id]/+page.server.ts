@@ -1,6 +1,10 @@
 import type { PageServerLoad, Actions } from './$types';
 import { error, fail, redirect } from '@sveltejs/kit';
-import { questionnaireGetSubmissionDetail, questionnaireEvaluateSubmission } from '$lib/api/client';
+import {
+	questionnaireGetSubmissionDetail,
+	questionnaireEvaluateSubmission,
+	questionnaireGetOrgQuestionnaire
+} from '$lib/api/client';
 
 export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 	const { slug, id, submission_id } = params;
@@ -16,25 +20,30 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 		Authorization: `Bearer ${user.accessToken}`
 	};
 
-	// Fetch submission detail
-	const { data: submissionData, error: submissionError } = await questionnaireGetSubmissionDetail({
-		fetch,
-		path: {
-			org_questionnaire_id: id,
-			submission_id
-		},
-		headers
-	});
+	// Fetch submission detail and org questionnaire in parallel
+	const [submissionResult, questionnaireResult] = await Promise.all([
+		questionnaireGetSubmissionDetail({
+			fetch,
+			path: { org_questionnaire_id: id, submission_id },
+			headers
+		}),
+		questionnaireGetOrgQuestionnaire({
+			fetch,
+			path: { org_questionnaire_id: id },
+			headers
+		})
+	]);
 
-	if (submissionError || !submissionData) {
-		console.error('Failed to fetch submission:', submissionError);
+	if (submissionResult.error || !submissionResult.data) {
+		console.error('Failed to fetch submission:', submissionResult.error);
 		throw error(404, 'Submission not found');
 	}
 
 	return {
-		submission: submissionData,
+		submission: submissionResult.data,
 		organizationSlug: slug,
-		questionnaireId: id
+		questionnaireId: id,
+		requiresEvaluation: questionnaireResult.data?.requires_evaluation ?? true
 	};
 };
 

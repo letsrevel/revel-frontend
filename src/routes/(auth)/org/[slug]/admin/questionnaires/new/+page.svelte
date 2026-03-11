@@ -95,6 +95,12 @@
 	let canRetakeAfter = $state<number | null>(null); // Duration in hours
 	let membersExempt = $state(false); // Exempt members from questionnaire
 	let perEvent = $state(false); // Require per-event completion
+	let requiresEvaluation = $state(true);
+
+	// Feedback type forces evaluation off; derive the effective value for the payload/UI
+	let effectiveRequiresEvaluation = $derived(
+		questionnaireType === 'feedback' ? false : requiresEvaluation
+	);
 
 	// Error state for displaying validation errors
 	let saveError = $state<string | null>(null);
@@ -648,6 +654,7 @@
 					can_retake_after: canRetakeAfter !== null ? String(canRetakeAfter * 3600) : undefined, // Convert hours to seconds
 					members_exempt: membersExempt,
 					per_event: perEvent,
+					requires_evaluation: effectiveRequiresEvaluation,
 					sections: apiSections as SectionCreateSchema[],
 					multiplechoicequestion_questions: topLevelMC as MultipleChoiceQuestionCreateSchema[],
 					freetextquestion_questions: topLevelFT,
@@ -806,75 +813,102 @@
 				</p>
 			</div>
 
-			<!-- Minimum Score -->
+			<!-- Requires Evaluation -->
 			<div class="space-y-2">
-				<Label for="min-score">
-					Minimum Score (%)
-					<span class="text-destructive">*</span>
-				</Label>
-				<Input
-					id="min-score"
-					type="number"
-					bind:value={minScore}
-					min="0"
-					max="100"
-					step="1"
-					placeholder="0"
-				/>
-				<p class="text-xs text-muted-foreground">
-					Minimum score required to pass the questionnaire (0-100)
-				</p>
+				<div class="flex items-center space-x-2">
+					<input
+						id="requires-evaluation"
+						type="checkbox"
+						bind:checked={requiresEvaluation}
+						class="h-4 w-4 rounded border-gray-300"
+						disabled={questionnaireType === 'feedback'}
+					/>
+					<Label for="requires-evaluation" class="font-normal"
+						>{m['questionnaireEditPage.evaluation.requiresEvaluationLabel']()}</Label
+					>
+				</div>
+				{#if questionnaireType === 'feedback'}
+					<p class="text-xs italic text-muted-foreground">
+						{m['questionnaireEditPage.evaluation.feedbackNoEvaluation']()}
+					</p>
+				{:else}
+					<p class="text-xs text-muted-foreground">
+						{m['questionnaireEditPage.evaluation.requiresEvaluationDescription']()}
+					</p>
+				{/if}
 			</div>
 
-			<!-- Evaluation Mode -->
-			<div class="space-y-2">
-				<Label for="evaluation-mode">
-					{m['questionnaireNewPage.evaluationModeLabel']()}
-					<span class="text-destructive">*</span>
-				</Label>
-				<Select
-					type="single"
-					value={evaluationMode}
-					onValueChange={(v) => {
-						if (v) {
-							evaluationMode = v as typeof evaluationMode;
-						}
-					}}
-				>
-					<SelectTrigger id="evaluation-mode">
-						{evaluationModes[evaluationMode]?.label ?? 'Automatic'}
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="automatic" label="Automatic">
-							<div class="flex flex-col gap-0.5">
-								<div class="font-medium">Automatic</div>
-								<div class="text-xs text-muted-foreground">
-									AI evaluates all responses automatically
+			{#if effectiveRequiresEvaluation}
+				<!-- Minimum Score -->
+				<div class="space-y-2">
+					<Label for="min-score">
+						Minimum Score (%)
+						<span class="text-destructive">*</span>
+					</Label>
+					<Input
+						id="min-score"
+						type="number"
+						bind:value={minScore}
+						min="0"
+						max="100"
+						step="1"
+						placeholder="0"
+					/>
+					<p class="text-xs text-muted-foreground">
+						Minimum score required to pass the questionnaire (0-100)
+					</p>
+				</div>
+
+				<!-- Evaluation Mode -->
+				<div class="space-y-2">
+					<Label for="evaluation-mode">
+						{m['questionnaireNewPage.evaluationModeLabel']()}
+						<span class="text-destructive">*</span>
+					</Label>
+					<Select
+						type="single"
+						value={evaluationMode}
+						onValueChange={(v) => {
+							if (v) {
+								evaluationMode = v as typeof evaluationMode;
+							}
+						}}
+					>
+						<SelectTrigger id="evaluation-mode">
+							{evaluationModes[evaluationMode]?.label ?? 'Automatic'}
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="automatic" label="Automatic">
+								<div class="flex flex-col gap-0.5">
+									<div class="font-medium">Automatic</div>
+									<div class="text-xs text-muted-foreground">
+										AI evaluates all responses automatically
+									</div>
 								</div>
-							</div>
-						</SelectItem>
-						<SelectItem value="manual" label="Manual">
-							<div class="flex flex-col gap-0.5">
-								<div class="font-medium">Manual</div>
-								<div class="text-xs text-muted-foreground">
-									Staff manually reviews all submissions
+							</SelectItem>
+							<SelectItem value="manual" label="Manual">
+								<div class="flex flex-col gap-0.5">
+									<div class="font-medium">Manual</div>
+									<div class="text-xs text-muted-foreground">
+										Staff manually reviews all submissions
+									</div>
 								</div>
-							</div>
-						</SelectItem>
-						<SelectItem value="hybrid" label="Hybrid">
-							<div class="flex flex-col gap-0.5">
-								<div class="font-medium">Hybrid</div>
-								<div class="text-xs text-muted-foreground">
-									AI pre-scores, staff reviews final decision
+							</SelectItem>
+							<SelectItem value="hybrid" label="Hybrid">
+								<div class="flex flex-col gap-0.5">
+									<div class="font-medium">Hybrid</div>
+									<div class="text-xs text-muted-foreground">
+										AI pre-scores, staff reviews final decision
+									</div>
 								</div>
-							</div>
-						</SelectItem>
-					</SelectContent>
-				</Select>
-				<p class="text-xs text-muted-foreground">
-					{selectedEvaluationDescription}
-				</p>
-			</div>
+							</SelectItem>
+						</SelectContent>
+					</Select>
+					<p class="text-xs text-muted-foreground">
+						{selectedEvaluationDescription}
+					</p>
+				</div>
+			{/if}
 		</CardContent>
 	</Card>
 
@@ -949,37 +983,39 @@
 				</div>
 			{/if}
 
-			<!-- LLM Guidelines -->
-			<div class="space-y-2">
-				<Label for="llm-guidelines">
-					LLM Guidelines
-					{#if needsLlmGuidelines}
-						<span class="text-destructive">*</span>
-					{/if}
-				</Label>
-				<Textarea
-					id="llm-guidelines"
-					bind:value={llmGuidelines}
-					placeholder="Instructions for the AI when evaluating free-text answers..."
-					rows={4}
-					class={showLlmWarning ? 'border-destructive' : ''}
-				/>
-				{#if showLlmWarning}
-					<p class="text-sm text-destructive">
-						⚠️ LLM guidelines are required when using automatic/hybrid evaluation with free text
-						questions
-					</p>
-				{:else}
-					<p class="text-xs text-muted-foreground">
+			{#if effectiveRequiresEvaluation}
+				<!-- LLM Guidelines -->
+				<div class="space-y-2">
+					<Label for="llm-guidelines">
+						LLM Guidelines
 						{#if needsLlmGuidelines}
-							Required for automatic/hybrid evaluation of free-text questions
-						{:else}
-							Optional guidelines for AI evaluation (only needed for free-text questions with
-							automatic/hybrid mode)
+							<span class="text-destructive">*</span>
 						{/if}
-					</p>
-				{/if}
-			</div>
+					</Label>
+					<Textarea
+						id="llm-guidelines"
+						bind:value={llmGuidelines}
+						placeholder="Instructions for the AI when evaluating free-text answers..."
+						rows={4}
+						class={showLlmWarning ? 'border-destructive' : ''}
+					/>
+					{#if showLlmWarning}
+						<p class="text-sm text-destructive">
+							⚠️ LLM guidelines are required when using automatic/hybrid evaluation with free text
+							questions
+						</p>
+					{:else}
+						<p class="text-xs text-muted-foreground">
+							{#if needsLlmGuidelines}
+								Required for automatic/hybrid evaluation of free-text questions
+							{:else}
+								Optional guidelines for AI evaluation (only needed for free-text questions with
+								automatic/hybrid mode)
+							{/if}
+						</p>
+					{/if}
+				</div>
+			{/if}
 
 			<!-- Duration Settings -->
 			<div class="grid gap-4 sm:grid-cols-2">
