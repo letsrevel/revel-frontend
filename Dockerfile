@@ -46,7 +46,7 @@ RUN sed -i "s|'http://localhost:8000'|'${PUBLIC_API_URL}'|g" src/lib/api/generat
 # Build the application
 # This creates the production build in the `build` directory
 # SvelteKit will embed PUBLIC_* env vars into the client bundle
-ENV NODE_OPTIONS="--max-old-space-size=4096"
+ENV NODE_OPTIONS="--max-old-space-size=6144"
 RUN pnpm build
 
 # ─────────────────────────────────────────────────────────────────────────────
