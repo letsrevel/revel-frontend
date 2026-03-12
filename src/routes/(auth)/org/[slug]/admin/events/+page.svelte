@@ -10,26 +10,19 @@
 	} from '$lib/api/generated/sdk.gen';
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { cn } from '$lib/utils/cn';
 	import { formatEventDateRange } from '$lib/utils/date';
 	import EventCoverImage from '$lib/components/events/EventCoverImage.svelte';
 	import EventBadges from '$lib/components/events/EventBadges.svelte';
 	import DuplicateEventModal from '$lib/components/events/admin/DuplicateEventModal.svelte';
+	import AdminEventCard from '$lib/components/events/admin/AdminEventCard.svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import {
 		Plus,
 		Calendar,
-		MapPin,
-		Users,
-		Edit,
 		Eye,
+		Users,
 		Trash2,
-		CheckCircle,
-		XCircle,
-		UserCheck,
 		Mail,
-		ListPlus,
-		Ban,
 		MoreVertical,
 		Copy
 	} from 'lucide-svelte';
@@ -112,129 +105,38 @@
 		}
 	}));
 
-	/**
-	 * Navigate to create event page
-	 */
 	function createEvent(): void {
 		goto(`/org/${organization.slug}/admin/events/new`);
 	}
 
-	/**
-	 * Navigate to edit event page
-	 */
-	function editEvent(eventId: string): void {
-		goto(`/org/${organization.slug}/admin/events/${eventId}/edit`);
-	}
-
-	/**
-	 * Navigate to public event page
-	 */
-	function viewEvent(eventSlug: string): void {
-		goto(`/events/${organization.slug}/${eventSlug}`);
-	}
-
-	/**
-	 * Navigate to attendees management page
-	 */
-	function manageAttendees(eventId: string): void {
-		goto(`/org/${organization.slug}/admin/events/${eventId}/attendees`);
-	}
-
-	/**
-	 * Navigate to tickets management page
-	 */
-	function manageTickets(eventId: string): void {
-		goto(`/org/${organization.slug}/admin/events/${eventId}/tickets`);
-	}
-
-	/**
-	 * Navigate to invitations management page
-	 */
-	function manageInvitations(eventId: string): void {
-		goto(`/org/${organization.slug}/admin/events/${eventId}/invitations`);
-	}
-
-	/**
-	 * Navigate to waitlist management page
-	 */
-	function manageWaitlist(eventId: string): void {
-		goto(`/org/${organization.slug}/admin/events/${eventId}/waitlist`);
-	}
-
-	/**
-	 * Publish event (draft → open)
-	 */
 	function publishEvent(eventId: string): void {
 		if (confirm(m['orgAdmin.events.confirmations.publish']())) {
 			updateStatusMutation.mutate({ eventId, status: 'open' });
 		}
 	}
 
-	/**
-	 * Close event (open → closed)
-	 */
 	function closeEvent(eventId: string): void {
 		if (confirm(m['orgAdmin.events.confirmations.close']())) {
 			updateStatusMutation.mutate({ eventId, status: 'closed' });
 		}
 	}
 
-	/**
-	 * Cancel event (any → cancelled)
-	 */
 	function cancelEvent(eventId: string): void {
 		if (confirm(m['orgAdmin.events.confirmations.cancel']())) {
 			updateStatusMutation.mutate({ eventId, status: 'cancelled' });
 		}
 	}
 
-	/**
-	 * Delete event (permanently delete)
-	 */
 	function deleteEvent(eventId: string): void {
 		if (confirm(m['orgAdmin.events.confirmations.delete']())) {
 			deleteEventMutation.mutate(eventId);
 		}
 	}
 
-	/**
-	 * Reopen event (closed → open)
-	 */
 	function reopenEvent(eventId: string): void {
 		if (confirm(m['orgAdmin.events.confirmations.reopen']())) {
 			updateStatusMutation.mutate({ eventId, status: 'open' });
 		}
-	}
-
-	/**
-	 * Get status badge color
-	 */
-	function getStatusColor(status: string): string {
-		switch (status) {
-			case 'draft':
-				return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
-			case 'open':
-				return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100';
-			case 'closed':
-				return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100';
-			case 'cancelled':
-				return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100';
-			default:
-				return 'bg-gray-100 text-gray-800';
-		}
-	}
-
-	/**
-	 * Format date
-	 */
-	function formatDate(date: string): string {
-		return new Date(date).toLocaleDateString('en-US', {
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric',
-			hour: 'numeric',
-			minute: '2-digit'
-		});
 	}
 
 	// Helper to check if event is past (ended)
@@ -274,9 +176,6 @@
 		start: string;
 	} | null>(null);
 
-	/**
-	 * Open duplicate modal for an event
-	 */
 	function openDuplicateModal(event: EventInListSchema): void {
 		duplicateEventData = {
 			id: event.id,
@@ -286,9 +185,6 @@
 		showDuplicateModal = true;
 	}
 
-	/**
-	 * Close duplicate modal
-	 */
 	function closeDuplicateModal(): void {
 		showDuplicateModal = false;
 		duplicateEventData = null;
@@ -355,108 +251,15 @@
 				</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each draftEvents as event (event.id)}
-						<div
-							class="flex flex-col overflow-hidden rounded-lg border border-border bg-card shadow-sm transition-shadow hover:shadow-md"
-						>
-							<!-- Cover Image -->
-							<EventCoverImage {event} />
-
-							<!-- Card Content -->
-							<div class="flex flex-1 flex-col gap-3 p-4">
-								<!-- Header -->
-								<div class="flex items-start justify-between gap-2">
-									<h3 class="flex-1 font-semibold">{event.name}</h3>
-									<div class="flex items-center gap-2">
-										<span
-											class={cn(
-												'rounded-full px-2 py-1 text-xs font-medium',
-												getStatusColor(event.status)
-											)}
-										>
-											{m['orgAdmin.events.status.draft']()}
-										</span>
-										<!-- More Actions Dropdown -->
-										<DropdownMenu.Root>
-											<DropdownMenu.Trigger>
-												{#snippet child({ props })}
-													<button
-														{...props}
-														type="button"
-														class="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-														aria-label={m['orgAdmin.events.actions.moreActions']()}
-													>
-														<MoreVertical class="h-4 w-4" aria-hidden="true" />
-													</button>
-												{/snippet}
-											</DropdownMenu.Trigger>
-											<DropdownMenu.Content align="end" class="w-48">
-												<DropdownMenu.Item onclick={() => openDuplicateModal(event)}>
-													<Copy class="mr-2 h-4 w-4" />
-													{m['orgAdmin.events.actions.duplicate']()}
-												</DropdownMenu.Item>
-												<DropdownMenu.Separator />
-												<DropdownMenu.Item
-													onclick={() => cancelEvent(event.id)}
-													class="text-orange-600 focus:text-orange-600"
-												>
-													<Ban class="mr-2 h-4 w-4" />
-													{m['orgAdmin.events.actions.cancel']()}
-												</DropdownMenu.Item>
-												<DropdownMenu.Item
-													onclick={() => deleteEvent(event.id)}
-													class="text-destructive focus:text-destructive"
-												>
-													<Trash2 class="mr-2 h-4 w-4" />
-													{m['orgAdmin.events.actions.delete']()}
-												</DropdownMenu.Item>
-											</DropdownMenu.Content>
-										</DropdownMenu.Root>
-									</div>
-								</div>
-
-								<!-- Event details -->
-								<div class="space-y-2 text-sm text-muted-foreground">
-									<div class="flex items-center gap-2">
-										<Calendar class="h-4 w-4" aria-hidden="true" />
-										{formatDate(event.start)}
-									</div>
-									{#if event.city}
-										<div class="flex items-center gap-2">
-											<MapPin class="h-4 w-4" aria-hidden="true" />
-											{event.city.name}, {event.city.country}
-										</div>
-									{/if}
-								</div>
-
-								<!-- Actions -->
-								<div class="flex flex-wrap gap-2 border-t border-border pt-3">
-									<button
-										type="button"
-										onclick={() => viewEvent(event.slug)}
-										class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
-									>
-										<Eye class="h-4 w-4" aria-hidden="true" />
-										{m['orgAdmin.events.actions.preview']()}
-									</button>
-									<button
-										type="button"
-										onclick={() => editEvent(event.id)}
-										class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
-									>
-										<Edit class="h-4 w-4" aria-hidden="true" />
-										{m['orgAdmin.events.actions.edit']()}
-									</button>
-									<button
-										type="button"
-										onclick={() => publishEvent(event.id)}
-										class="inline-flex items-center gap-1 rounded-md bg-green-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-green-700"
-									>
-										<CheckCircle class="h-4 w-4" aria-hidden="true" />
-										{m['orgAdmin.events.actions.publish']()}
-									</button>
-								</div>
-							</div>
-						</div>
+						<AdminEventCard
+							{event}
+							organizationSlug={organization.slug}
+							variant="draft"
+							onPublish={publishEvent}
+							onCancel={cancelEvent}
+							onDelete={deleteEvent}
+							onDuplicate={openDuplicateModal}
+						/>
 					{/each}
 				</div>
 			</div>
@@ -473,153 +276,15 @@
 				</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each openEvents as event (event.id)}
-						<div
-							class="flex flex-col overflow-hidden rounded-lg border border-border bg-card shadow-sm transition-shadow hover:shadow-md"
-						>
-							<!-- Cover Image -->
-							<EventCoverImage {event} />
-
-							<!-- Card Content -->
-							<div class="flex flex-1 flex-col gap-3 p-4">
-								<!-- Header -->
-								<div class="flex items-start justify-between gap-2">
-									<h3 class="flex-1 font-semibold">{event.name}</h3>
-									<div class="flex items-center gap-2">
-										<span
-											class={cn(
-												'rounded-full px-2 py-1 text-xs font-medium',
-												getStatusColor(event.status)
-											)}
-										>
-											{m['orgAdmin.events.status.published']()}
-										</span>
-										<!-- More Actions Dropdown -->
-										<DropdownMenu.Root>
-											<DropdownMenu.Trigger>
-												{#snippet child({ props })}
-													<button
-														{...props}
-														type="button"
-														class="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-														aria-label={m['orgAdmin.events.actions.moreActions']()}
-													>
-														<MoreVertical class="h-4 w-4" aria-hidden="true" />
-													</button>
-												{/snippet}
-											</DropdownMenu.Trigger>
-											<DropdownMenu.Content align="end" class="w-48">
-												<DropdownMenu.Item onclick={() => openDuplicateModal(event)}>
-													<Copy class="mr-2 h-4 w-4" />
-													{m['orgAdmin.events.actions.duplicate']()}
-												</DropdownMenu.Item>
-												<DropdownMenu.Separator />
-												<DropdownMenu.Item
-													onclick={() => closeEvent(event.id)}
-													class="text-red-600 focus:text-red-600"
-												>
-													<XCircle class="mr-2 h-4 w-4" />
-													{m['orgAdmin.events.actions.close']()}
-												</DropdownMenu.Item>
-												<DropdownMenu.Item
-													onclick={() => cancelEvent(event.id)}
-													class="text-orange-600 focus:text-orange-600"
-												>
-													<Ban class="mr-2 h-4 w-4" />
-													{m['orgAdmin.events.actions.cancel']()}
-												</DropdownMenu.Item>
-												<DropdownMenu.Item
-													onclick={() => deleteEvent(event.id)}
-													class="text-destructive focus:text-destructive"
-												>
-													<Trash2 class="mr-2 h-4 w-4" />
-													{m['orgAdmin.events.actions.delete']()}
-												</DropdownMenu.Item>
-											</DropdownMenu.Content>
-										</DropdownMenu.Root>
-									</div>
-								</div>
-
-								<!-- Event details -->
-								<div class="space-y-2 text-sm text-muted-foreground">
-									<div class="flex items-center gap-2">
-										<Calendar class="h-4 w-4" aria-hidden="true" />
-										{formatDate(event.start)}
-									</div>
-									{#if event.city}
-										<div class="flex items-center gap-2">
-											<MapPin class="h-4 w-4" aria-hidden="true" />
-											{event.city.name}, {event.city.country}
-										</div>
-									{/if}
-									{#if event.attendee_count !== undefined}
-										<div class="flex items-center gap-2">
-											<Users class="h-4 w-4" aria-hidden="true" />
-											{event.attendee_count}
-											{event.requires_ticket
-												? m['orgAdmin.events.attendeeCount.attendees']()
-												: m['orgAdmin.events.attendeeCount.rsvps']()}
-										</div>
-									{/if}
-								</div>
-
-								<!-- Actions -->
-								<div class="flex flex-wrap gap-2 border-t border-border pt-3">
-									<button
-										type="button"
-										onclick={() => viewEvent(event.slug)}
-										class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
-									>
-										<Eye class="h-4 w-4" aria-hidden="true" />
-										{m['orgAdmin.events.actions.view']()}
-									</button>
-									<button
-										type="button"
-										onclick={() => editEvent(event.id)}
-										class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
-									>
-										<Edit class="h-4 w-4" aria-hidden="true" />
-										{m['orgAdmin.events.actions.edit']()}
-									</button>
-									{#if event.requires_ticket}
-										<button
-											type="button"
-											onclick={() => manageTickets(event.id)}
-											class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-blue-700"
-										>
-											<UserCheck class="h-4 w-4" aria-hidden="true" />
-											{m['orgAdmin.events.actions.tickets']()}
-										</button>
-									{:else}
-										<button
-											type="button"
-											onclick={() => manageAttendees(event.id)}
-											class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-blue-700"
-										>
-											<UserCheck class="h-4 w-4" aria-hidden="true" />
-											{m['orgAdmin.events.actions.attendees']()}
-										</button>
-									{/if}
-									<button
-										type="button"
-										onclick={() => manageInvitations(event.id)}
-										class="inline-flex items-center gap-1 rounded-md bg-purple-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-purple-700"
-									>
-										<Mail class="h-4 w-4" aria-hidden="true" />
-										{m['orgAdmin.events.actions.invitations']()}
-									</button>
-									{#if event.waitlist_open}
-										<button
-											type="button"
-											onclick={() => manageWaitlist(event.id)}
-											class="inline-flex items-center gap-1 rounded-md bg-amber-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-amber-700"
-										>
-											<ListPlus class="h-4 w-4" aria-hidden="true" />
-											{m['orgAdmin.events.actions.waitlist']()}
-										</button>
-									{/if}
-								</div>
-							</div>
-						</div>
+						<AdminEventCard
+							{event}
+							organizationSlug={organization.slug}
+							variant="open"
+							onClose={closeEvent}
+							onCancel={cancelEvent}
+							onDelete={deleteEvent}
+							onDuplicate={openDuplicateModal}
+						/>
 					{/each}
 				</div>
 			</div>
@@ -636,146 +301,15 @@
 				</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each closedEvents as event (event.id)}
-						<div
-							class="flex flex-col overflow-hidden rounded-lg border border-border bg-card opacity-75 shadow-sm transition-shadow hover:shadow-md"
-						>
-							<!-- Cover Image -->
-							<EventCoverImage {event} />
-
-							<!-- Card Content -->
-							<div class="flex flex-1 flex-col gap-3 p-4">
-								<!-- Header -->
-								<div class="flex items-start justify-between gap-2">
-									<h3 class="flex-1 font-semibold">{event.name}</h3>
-									<div class="flex items-center gap-2">
-										<span
-											class={cn(
-												'rounded-full px-2 py-1 text-xs font-medium',
-												getStatusColor(event.status)
-											)}
-										>
-											{m['orgAdmin.events.status.closed']()}
-										</span>
-										<!-- More Actions Dropdown -->
-										<DropdownMenu.Root>
-											<DropdownMenu.Trigger>
-												{#snippet child({ props })}
-													<button
-														{...props}
-														type="button"
-														class="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-														aria-label={m['orgAdmin.events.actions.moreActions']()}
-													>
-														<MoreVertical class="h-4 w-4" aria-hidden="true" />
-													</button>
-												{/snippet}
-											</DropdownMenu.Trigger>
-											<DropdownMenu.Content align="end" class="w-48">
-												<DropdownMenu.Item onclick={() => openDuplicateModal(event)}>
-													<Copy class="mr-2 h-4 w-4" />
-													{m['orgAdmin.events.actions.duplicate']()}
-												</DropdownMenu.Item>
-												<DropdownMenu.Separator />
-												<DropdownMenu.Item
-													onclick={() => cancelEvent(event.id)}
-													class="text-orange-600 focus:text-orange-600"
-												>
-													<Ban class="mr-2 h-4 w-4" />
-													{m['orgAdmin.events.actions.cancel']()}
-												</DropdownMenu.Item>
-												<DropdownMenu.Item
-													onclick={() => deleteEvent(event.id)}
-													class="text-destructive focus:text-destructive"
-												>
-													<Trash2 class="mr-2 h-4 w-4" />
-													{m['orgAdmin.events.actions.delete']()}
-												</DropdownMenu.Item>
-											</DropdownMenu.Content>
-										</DropdownMenu.Root>
-									</div>
-								</div>
-
-								<!-- Event details -->
-								<div class="space-y-2 text-sm text-muted-foreground">
-									<div class="flex items-center gap-2">
-										<Calendar class="h-4 w-4" aria-hidden="true" />
-										{formatDate(event.start)}
-									</div>
-									{#if event.city}
-										<div class="flex items-center gap-2">
-											<MapPin class="h-4 w-4" aria-hidden="true" />
-											{event.city.name}, {event.city.country}
-										</div>
-									{/if}
-									{#if event.attendee_count !== undefined}
-										<div class="flex items-center gap-2">
-											<Users class="h-4 w-4" aria-hidden="true" />
-											{event.attendee_count}
-											{event.requires_ticket
-												? m['orgAdmin.events.attendeeCount.attendees']()
-												: m['orgAdmin.events.attendeeCount.rsvps']()}
-										</div>
-									{/if}
-								</div>
-
-								<!-- Actions -->
-								<div class="flex flex-wrap gap-2 border-t border-border pt-3">
-									<button
-										type="button"
-										onclick={() => viewEvent(event.slug)}
-										class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
-									>
-										<Eye class="h-4 w-4" aria-hidden="true" />
-										{m['orgAdmin.events.actions.view']()}
-									</button>
-									{#if event.requires_ticket}
-										<button
-											type="button"
-											onclick={() => manageTickets(event.id)}
-											class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-blue-700"
-										>
-											<UserCheck class="h-4 w-4" aria-hidden="true" />
-											{m['orgAdmin.events.actions.tickets']()}
-										</button>
-									{:else}
-										<button
-											type="button"
-											onclick={() => manageAttendees(event.id)}
-											class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-blue-700"
-										>
-											<UserCheck class="h-4 w-4" aria-hidden="true" />
-											{m['orgAdmin.events.actions.attendees']()}
-										</button>
-									{/if}
-									<button
-										type="button"
-										onclick={() => manageInvitations(event.id)}
-										class="inline-flex items-center gap-1 rounded-md bg-purple-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-purple-700"
-									>
-										<Mail class="h-4 w-4" aria-hidden="true" />
-										{m['orgAdmin.events.actions.invitations']()}
-									</button>
-									{#if event.waitlist_open}
-										<button
-											type="button"
-											onclick={() => manageWaitlist(event.id)}
-											class="inline-flex items-center gap-1 rounded-md bg-amber-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-amber-700"
-										>
-											<ListPlus class="h-4 w-4" aria-hidden="true" />
-											{m['orgAdmin.events.actions.waitlist']()}
-										</button>
-									{/if}
-									<button
-										type="button"
-										onclick={() => reopenEvent(event.id)}
-										class="inline-flex items-center gap-1 rounded-md bg-green-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-green-700"
-									>
-										<CheckCircle class="h-4 w-4" aria-hidden="true" />
-										{m['orgAdmin.events.actions.reopen']()}
-									</button>
-								</div>
-							</div>
-						</div>
+						<AdminEventCard
+							{event}
+							organizationSlug={organization.slug}
+							variant="closed"
+							onCancel={cancelEvent}
+							onReopen={reopenEvent}
+							onDelete={deleteEvent}
+							onDuplicate={openDuplicateModal}
+						/>
 					{/each}
 				</div>
 			</div>
@@ -793,139 +327,14 @@
 				</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each cancelledEvents as event (event.id)}
-						<div
-							class="flex flex-col overflow-hidden rounded-lg border border-border bg-card opacity-75 shadow-sm transition-shadow hover:shadow-md"
-						>
-							<!-- Cover Image -->
-							<EventCoverImage {event} />
-
-							<!-- Card Content -->
-							<div class="flex flex-1 flex-col gap-3 p-4">
-								<!-- Header -->
-								<div class="flex items-start justify-between gap-2">
-									<h3 class="flex-1 font-semibold">{event.name}</h3>
-									<div class="flex items-center gap-2">
-										<span
-											class={cn(
-												'rounded-full px-2 py-1 text-xs font-medium',
-												getStatusColor(event.status)
-											)}
-										>
-											{m['orgAdmin.events.status.cancelled']()}
-										</span>
-										<!-- More Actions Dropdown -->
-										<DropdownMenu.Root>
-											<DropdownMenu.Trigger>
-												{#snippet child({ props })}
-													<button
-														{...props}
-														type="button"
-														class="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-														aria-label={m['orgAdmin.events.actions.moreActions']()}
-													>
-														<MoreVertical class="h-4 w-4" aria-hidden="true" />
-													</button>
-												{/snippet}
-											</DropdownMenu.Trigger>
-											<DropdownMenu.Content align="end" class="w-48">
-												<DropdownMenu.Item onclick={() => openDuplicateModal(event)}>
-													<Copy class="mr-2 h-4 w-4" />
-													{m['orgAdmin.events.actions.duplicate']()}
-												</DropdownMenu.Item>
-												<DropdownMenu.Separator />
-												<DropdownMenu.Item
-													onclick={() => deleteEvent(event.id)}
-													class="text-destructive focus:text-destructive"
-												>
-													<Trash2 class="mr-2 h-4 w-4" />
-													{m['orgAdmin.events.actions.delete']()}
-												</DropdownMenu.Item>
-											</DropdownMenu.Content>
-										</DropdownMenu.Root>
-									</div>
-								</div>
-
-								<!-- Event details -->
-								<div class="space-y-2 text-sm text-muted-foreground">
-									<div class="flex items-center gap-2">
-										<Calendar class="h-4 w-4" aria-hidden="true" />
-										{formatDate(event.start)}
-									</div>
-									{#if event.city}
-										<div class="flex items-center gap-2">
-											<MapPin class="h-4 w-4" aria-hidden="true" />
-											{event.city.name}, {event.city.country}
-										</div>
-									{/if}
-									{#if event.attendee_count !== undefined}
-										<div class="flex items-center gap-2">
-											<Users class="h-4 w-4" aria-hidden="true" />
-											{event.attendee_count}
-											{event.requires_ticket
-												? m['orgAdmin.events.attendeeCount.attendees']()
-												: m['orgAdmin.events.attendeeCount.rsvps']()}
-										</div>
-									{/if}
-								</div>
-
-								<!-- Actions -->
-								<div class="flex flex-wrap gap-2 border-t border-border pt-3">
-									<button
-										type="button"
-										onclick={() => viewEvent(event.slug)}
-										class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
-									>
-										<Eye class="h-4 w-4" aria-hidden="true" />
-										{m['orgAdmin.events.actions.view']()}
-									</button>
-									{#if event.requires_ticket}
-										<button
-											type="button"
-											onclick={() => manageTickets(event.id)}
-											class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-blue-700"
-										>
-											<UserCheck class="h-4 w-4" aria-hidden="true" />
-											{m['orgAdmin.events.actions.tickets']()}
-										</button>
-									{:else}
-										<button
-											type="button"
-											onclick={() => manageAttendees(event.id)}
-											class="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-blue-700"
-										>
-											<UserCheck class="h-4 w-4" aria-hidden="true" />
-											{m['orgAdmin.events.actions.attendees']()}
-										</button>
-									{/if}
-									<button
-										type="button"
-										onclick={() => manageInvitations(event.id)}
-										class="inline-flex items-center gap-1 rounded-md bg-purple-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-purple-700"
-									>
-										<Mail class="h-4 w-4" aria-hidden="true" />
-										{m['orgAdmin.events.actions.invitations']()}
-									</button>
-									{#if event.waitlist_open}
-										<button
-											type="button"
-											onclick={() => manageWaitlist(event.id)}
-											class="inline-flex items-center gap-1 rounded-md bg-amber-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-amber-700"
-										>
-											<ListPlus class="h-4 w-4" aria-hidden="true" />
-											{m['orgAdmin.events.actions.waitlist']()}
-										</button>
-									{/if}
-									<button
-										type="button"
-										onclick={() => reopenEvent(event.id)}
-										class="inline-flex items-center gap-1 rounded-md bg-green-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-green-700"
-									>
-										<CheckCircle class="h-4 w-4" aria-hidden="true" />
-										{m['orgAdmin.events.actions.reopen']()}
-									</button>
-								</div>
-							</div>
-						</div>
+						<AdminEventCard
+							{event}
+							organizationSlug={organization.slug}
+							variant="cancelled"
+							onReopen={reopenEvent}
+							onDelete={deleteEvent}
+							onDuplicate={openDuplicateModal}
+						/>
 					{/each}
 				</div>
 			</div>
@@ -993,12 +402,10 @@
 												{formatEventDateRange(event.start, event.end)}
 											</time>
 										</div>
-										<!-- Location not available in EventInListSchema -->
 									</div>
 								</div>
 
 								<div class="mt-auto flex flex-wrap gap-2">
-									<!-- View Event -->
 									<a
 										href="/events/{data.organization.slug}/{event.slug}"
 										class="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
@@ -1006,8 +413,6 @@
 										<Eye class="h-4 w-4" aria-hidden="true" />
 										{m['orgAdmin.events.actions.view']()}
 									</a>
-
-									<!-- Manage Tickets/Attendees -->
 									<a
 										href="/org/{data.organization.slug}/admin/events/{event.id}/attendees"
 										class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
@@ -1015,8 +420,6 @@
 										<Users class="h-4 w-4" aria-hidden="true" />
 										{m['orgAdmin.events.actions.tickets']()}
 									</a>
-
-									<!-- Invitations -->
 									<a
 										href="/org/{data.organization.slug}/admin/events/{event.id}/invitations"
 										class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"

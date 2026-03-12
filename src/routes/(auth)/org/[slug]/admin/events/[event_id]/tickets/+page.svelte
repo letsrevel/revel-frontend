@@ -6,6 +6,9 @@
 	import { toast } from 'svelte-sonner';
 	import { fade, scale } from 'svelte/transition';
 	import { cn } from '$lib/utils/cn';
+	import { getUserDisplayName } from '$lib/utils/user-display';
+	import { getTicketStatusColor, getTicketStatusLabel } from '$lib/utils/status-colors';
+	import { formatPrice } from '$lib/utils/format';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Badge } from '$lib/components/ui/badge';
@@ -558,23 +561,12 @@
 	}
 
 	/**
-	 * Get user display name
-	 */
-	function getUserDisplayName(user: any): string {
-		if (user.preferred_name) return user.preferred_name;
-		if (user.first_name && user.last_name) return `${user.first_name} ${user.last_name}`;
-		if (user.first_name) return user.first_name;
-		if (user.email) return user.email;
-		return m['eventTicketsAdmin.unknownUser']();
-	}
-
-	/**
 	 * Get guest name if different from user display name
 	 */
 	function getGuestNameIfDifferent(ticket: any): string | null {
 		const guestName = ticket.guest_name;
 		if (!guestName) return null;
-		const userDisplayName = getUserDisplayName(ticket.user);
+		const userDisplayName = getUserDisplayName(ticket.user, m['eventTicketsAdmin.unknownUser']());
 		// Check if guest name is meaningfully different from user display name
 		if (guestName.toLowerCase().trim() === userDisplayName.toLowerCase().trim()) return null;
 		return guestName;
@@ -611,48 +603,6 @@
 		return parts.length > 0 ? parts.join(' • ') : null;
 	}
 
-	/**
-	 * Get user email
-	 */
-	function getUserEmail(user: any): string {
-		return user.email || 'N/A';
-	}
-
-	/**
-	 * Get status color classes
-	 */
-	function getStatusColor(status: string): string {
-		switch (status) {
-			case 'pending':
-				return 'rounded-full bg-yellow-100 px-2 py-1 text-xs font-semibold text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100';
-			case 'active':
-				return 'rounded-full bg-green-100 px-2 py-1 text-xs font-semibold text-green-800 dark:bg-green-900 dark:text-green-100';
-			case 'checked_in':
-				return 'rounded-full bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-800 dark:bg-blue-900 dark:text-blue-100';
-			case 'cancelled':
-				return 'rounded-full bg-red-100 px-2 py-1 text-xs font-semibold text-red-800 dark:bg-red-900 dark:text-red-100';
-			default:
-				return 'rounded-full bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-800 dark:bg-gray-900 dark:text-gray-100';
-		}
-	}
-
-	/**
-	 * Get status label
-	 */
-	function getStatusLabel(status: string): string {
-		switch (status) {
-			case 'pending':
-				return m['eventTicketsAdmin.statusPending']();
-			case 'active':
-				return m['eventTicketsAdmin.statusActive']();
-			case 'checked_in':
-				return m['eventTicketsAdmin.statusCheckedIn']();
-			case 'cancelled':
-				return m['eventTicketsAdmin.statusCancelled']();
-			default:
-				return status;
-		}
-	}
 
 	/**
 	 * Get payment method label
@@ -706,19 +656,6 @@
 		);
 	}
 
-	/**
-	 * Format price with currency
-	 */
-	function formatPrice(price: number | string | undefined, currency: string | undefined): string {
-		if (price === undefined || price === null) return m['eventTicketsAdmin.free']();
-		const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-		if (numPrice === 0) return m['eventTicketsAdmin.free']();
-		const currencySymbol = currency?.toUpperCase() || 'USD';
-		return new Intl.NumberFormat('en-US', {
-			style: 'currency',
-			currency: currencySymbol
-		}).format(numPrice);
-	}
 
 	/**
 	 * Get the effective price for a ticket.
@@ -1087,7 +1024,7 @@
 												</div>
 											{/if}
 											<div class="text-sm text-muted-foreground">
-												{getUserEmail(ticket.user)}
+												{ticket.user.email || 'N/A'}
 											</div>
 											{#if seatInfo}
 												<div class="mt-1 text-xs text-primary">
@@ -1113,7 +1050,8 @@
 									<div class="font-medium">
 										{formatPrice(
 											getTicketPrice(ticket),
-											ticket.payment?.currency || ticket.tier?.currency
+											ticket.payment?.currency || ticket.tier?.currency,
+											m['eventTicketsAdmin.free']()
 										)}
 									</div>
 								</td>
@@ -1124,8 +1062,8 @@
 									</div>
 								</td>
 								<td class="px-4 py-3">
-									<span class={getStatusColor(ticket.status)}>
-										{getStatusLabel(ticket.status)}
+									<span class={cn('rounded-full px-2 py-1 text-xs font-semibold', getTicketStatusColor(ticket.status))}>
+										{getTicketStatusLabel(ticket.status)}
 									</span>
 								</td>
 								<td class="px-4 py-3 text-sm text-muted-foreground">
@@ -1269,14 +1207,14 @@
 											{/if}
 										</div>
 									{/if}
-									<div class="text-sm text-muted-foreground">{getUserEmail(ticket.user)}</div>
+									<div class="text-sm text-muted-foreground">{ticket.user.email || 'N/A'}</div>
 									{#if seatInfo}
 										<div class="mt-1 text-xs text-primary">{seatInfo}</div>
 									{/if}
 								</div>
 							</div>
-							<span class={cn('shrink-0', getStatusColor(ticket.status))}>
-								{getStatusLabel(ticket.status)}
+							<span class={cn('shrink-0 rounded-full px-2 py-1 text-xs font-semibold', getTicketStatusColor(ticket.status))}>
+								{getTicketStatusLabel(ticket.status)}
 							</span>
 						</div>
 
@@ -1290,7 +1228,8 @@
 								<span class="font-medium"
 									>{formatPrice(
 										getTicketPrice(ticket),
-										ticket.payment?.currency || ticket.tier?.currency
+										ticket.payment?.currency || ticket.tier?.currency,
+										m['eventTicketsAdmin.free']()
 									)}</span
 								>
 							</div>

@@ -31,6 +31,7 @@
 	} from 'lucide-svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import { cn } from '$lib/utils/cn';
+	import { getUserDisplayName } from '$lib/utils/user-display';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
@@ -186,16 +187,6 @@
 		}, 500);
 	}
 
-	/**
-	 * Get user display name
-	 */
-	function getUserDisplayName(user: any): string {
-		if (user.preferred_name) return user.preferred_name;
-		if (user.first_name && user.last_name) return `${user.first_name} ${user.last_name}`;
-		if (user.first_name) return user.first_name;
-		if (user.email) return user.email;
-		return m['eventInvitationsAdmin.unknownUser']();
-	}
 
 	/**
 	 * Open create invitation dialog
@@ -898,7 +889,7 @@
 													profilePictureUrl={request.user.profile_picture_url}
 													previewUrl={request.user.profile_picture_preview_url}
 													thumbnailUrl={request.user.profile_picture_thumbnail_url}
-													displayName={getUserDisplayName(request.user)}
+													displayName={getUserDisplayName(request.user, m['eventInvitationsAdmin.unknownUser']())}
 													firstName={request.user.first_name}
 													lastName={request.user.last_name}
 													size="md"
@@ -906,7 +897,7 @@
 												/>
 												<div>
 													<p class="font-medium">
-														{getUserDisplayName(request.user)}
+														{getUserDisplayName(request.user, m['eventInvitationsAdmin.unknownUser']())}
 													</p>
 													{#if request.user.username}
 														<p class="text-sm text-muted-foreground">@{request.user.username}</p>
@@ -1183,14 +1174,14 @@
 														profilePictureUrl={invitation.user.profile_picture_url}
 														previewUrl={invitation.user.profile_picture_preview_url}
 														thumbnailUrl={invitation.user.profile_picture_thumbnail_url}
-														displayName={getUserDisplayName(invitation.user)}
+														displayName={getUserDisplayName(invitation.user, m['eventInvitationsAdmin.unknownUser']())}
 														firstName={invitation.user.first_name}
 														lastName={invitation.user.last_name}
 														size="sm"
 														clickable={true}
 													/>
 													<span class="text-sm font-medium">
-														{getUserDisplayName(invitation.user)}
+														{getUserDisplayName(invitation.user, m['eventInvitationsAdmin.unknownUser']())}
 													</span>
 												</div>
 											</td>
@@ -1778,7 +1769,7 @@
 				{#if editingInvitation}
 					{#if editingType === 'registered' && 'user' in editingInvitation}
 						{m['eventInvitationsAdmin.editDialogDescriptionUser']({
-							userName: getUserDisplayName(editingInvitation.user)
+							userName: getUserDisplayName(editingInvitation.user, m['eventInvitationsAdmin.unknownUser']())
 						})}
 					{:else if editingType === 'pending' && 'email' in editingInvitation}
 						{m['eventInvitationsAdmin.editDialogDescriptionEmail']({
