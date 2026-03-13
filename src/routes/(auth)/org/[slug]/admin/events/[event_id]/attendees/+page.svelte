@@ -14,6 +14,8 @@
 	} from '$lib/api';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { cn } from '$lib/utils/cn';
+	import { getUserDisplayName } from '$lib/utils/user-display';
+	import { getRsvpStatusColor, getRsvpStatusLabel } from '$lib/utils/status-colors';
 	import {
 		Search,
 		Users,
@@ -384,57 +386,6 @@
 		});
 	}
 
-	/**
-	 * Get status badge color
-	 */
-	function getStatusColor(status: string): string {
-		switch (status) {
-			case 'yes':
-				return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100';
-			case 'maybe':
-				return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100';
-			case 'no':
-				return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100';
-			default:
-				return 'bg-gray-100 text-gray-800';
-		}
-	}
-
-	/**
-	 * Get status label
-	 */
-	function getStatusLabel(status: string): string {
-		switch (status) {
-			case 'yes':
-				return m['attendeesAdmin.statusLabelYes']();
-			case 'maybe':
-				return m['attendeesAdmin.statusLabelMaybe']();
-			case 'no':
-				return m['attendeesAdmin.statusLabelNo']();
-			default:
-				return status;
-		}
-	}
-
-	/**
-	 * Get user display name
-	 */
-	function getUserDisplayName(user: any): string {
-		if (user.preferred_name) return user.preferred_name;
-		if (user.first_name && user.last_name) return `${user.first_name} ${user.last_name}`;
-		if (user.first_name) return user.first_name;
-		// Fallback to email if available (backend might include it despite schema)
-		if (user.email) return user.email;
-		return 'Unknown User';
-	}
-
-	/**
-	 * Get user email (might not be available in schema)
-	 */
-	function getUserEmail(user: any): string {
-		return user.email || 'N/A';
-	}
-
 	async function handleExportAttendees(): Promise<string> {
 		const response = await eventadminticketsExportAttendees({
 			path: { event_id: data.event.id },
@@ -694,16 +645,16 @@
 								</div>
 							</td>
 							<td class="whitespace-nowrap px-6 py-4 text-sm text-muted-foreground">
-								{getUserEmail(rsvp.user)}
+								{rsvp.user.email || 'N/A'}
 							</td>
 							<td class="whitespace-nowrap px-6 py-4 text-sm">
 								<span
 									class={cn(
 										'inline-flex rounded-full px-2 py-1 text-xs font-semibold',
-										getStatusColor(rsvp.status)
+										getRsvpStatusColor(rsvp.status)
 									)}
 								>
-									{getStatusLabel(rsvp.status)}
+									{getRsvpStatusLabel(rsvp.status)}
 								</span>
 							</td>
 							<td class="whitespace-nowrap px-6 py-4 text-sm text-muted-foreground">
@@ -805,16 +756,16 @@
 											</Badge>
 										{/if}
 									</div>
-									<p class="text-sm text-muted-foreground">{getUserEmail(rsvp.user)}</p>
+									<p class="text-sm text-muted-foreground">{rsvp.user.email || 'N/A'}</p>
 								</div>
 							</div>
 							<span
 								class={cn(
 									'shrink-0 rounded-full px-2 py-1 text-xs font-semibold',
-									getStatusColor(rsvp.status)
+									getRsvpStatusColor(rsvp.status)
 								)}
 							>
-								{getStatusLabel(rsvp.status)}
+								{getRsvpStatusLabel(rsvp.status)}
 							</span>
 						</div>
 
@@ -937,10 +888,10 @@
 						<span
 							class={cn(
 								'inline-flex rounded-full px-2 py-1 text-xs font-semibold',
-								getStatusColor(editingRsvp.status)
+								getRsvpStatusColor(editingRsvp.status)
 							)}
 						>
-							{getStatusLabel(editingRsvp.status)}
+							{getRsvpStatusLabel(editingRsvp.status)}
 						</span>
 					</p>
 				</div>

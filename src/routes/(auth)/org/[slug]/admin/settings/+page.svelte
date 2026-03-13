@@ -4,7 +4,9 @@
 	import type { PageData, ActionData } from './$types';
 	import CityAutocomplete from '$lib/components/forms/CityAutocomplete.svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
-	import ImageUploader from '$lib/components/forms/ImageUploader.svelte';
+	import OrgImageUploader from '$lib/components/organization/OrgImageUploader.svelte';
+	import OrgTagManager from '$lib/components/organization/OrgTagManager.svelte';
+	import OrgContactEmailModal from '$lib/components/organization/OrgContactEmailModal.svelte';
 	import StripeConnect from '$lib/components/organization/StripeConnect.svelte';
 	import type { CitySchema } from '$lib/api/generated';
 	import {
@@ -12,27 +14,14 @@
 		AlertCircle,
 		Check,
 		Eye,
-		Hash,
 		Mail,
-		X,
 		Instagram,
 		Facebook,
 		Send,
 		AtSign
 	} from 'lucide-svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { getBackendUrl } from '$lib/config/api';
 	import { toast } from 'svelte-sonner';
-	import {
-		organizationadmincoreUploadLogo,
-		organizationadmincoreUploadCoverArt,
-		organizationadmincoreDeleteLogo,
-		organizationadmincoreDeleteCoverArt,
-		organizationadminmembersAddTags,
-		organizationadminmembersRemoveTags,
-		organizationadmincoreUpdateContactEmail,
-		tagListTags
-	} from '$lib/api/generated/sdk.gen';
 
 	interface Props {
 		data: PageData;
@@ -57,45 +46,12 @@
 	let blueskyUrl = $state(data.organization.bluesky_url || '');
 	let telegramUrl = $state(data.organization.telegram_url || '');
 
-	// Email change modal state
+	// Email modal state
 	let showEmailModal = $state(false);
-	let newEmail = $state('');
-	let isUpdatingEmail = $state(false);
-	let emailUpdateError = $state<string | null>(null);
-	let emailSent = $state(false);
 
-	// Image upload state
-	let logoFile = $state<File | null>(null);
-	let coverFile = $state<File | null>(null);
-	let uploadingLogo = $state(false);
-	let uploadingCover = $state(false);
-	let uploadError = $state<string | null>(null);
-	let lastUploadedLogoName = $state<string | null>(null);
-	let lastUploadedCoverName = $state<string | null>(null);
-
-	// Track if user wants to delete images (will be processed on form save)
-	let shouldDeleteLogo = $state(false);
-	let shouldDeleteCover = $state(false);
-
-	// Tag management state
-	let tags = $state<string[]>(data.organization.tags || []);
-	let initialTags = $state<string[]>(data.organization.tags || []);
-	let tagInput = $state('');
-	let tagSuggestions = $state<string[]>([]);
-	let showTagSuggestions = $state(false);
-	let isLoadingTagSuggestions = $state(false);
-	let tagSearchTimeout: ReturnType<typeof setTimeout> | null = null;
-
-	// Helper function to get full image URL
-	function getImageUrl(path: string | null | undefined): string | null {
-		if (!path) return null;
-		// getBackendUrl already handles full URLs and path normalization
-		return getBackendUrl(path);
-	}
-
-	// Computed full URLs for images (hide if marked for deletion)
-	const logoUrl = $derived(shouldDeleteLogo ? null : getImageUrl(data.organization.logo));
-	const coverUrl = $derived(shouldDeleteCover ? null : getImageUrl(data.organization.cover_art));
+	// Registered save callbacks from child components
+	let saveImageChanges: (() => Promise<void>) | null = $state(null);
+	let saveTagChanges: (() => Promise<void>) | null = $state(null);
 
 	// Sync form state when data changes (after submission)
 	$effect(() => {
@@ -104,9 +60,6 @@
 		selectedCity = data.organization.city || null;
 		visibility = data.organization.visibility || 'public';
 		acceptNewMembers = data.organization.accept_membership_requests || false;
-		tags = data.organization.tags || [];
-		initialTags = data.organization.tags || [];
-		// Social media fields
 		instagramUrl = data.organization.instagram_url || '';
 		facebookUrl = data.organization.facebook_url || '';
 		blueskyUrl = data.organization.bluesky_url || '';
@@ -127,320 +80,10 @@
 		selectedCity = city;
 	}
 
-	// Update contact email
-	async function handleEmailUpdate() {
-		if (!accessToken || !newEmail.trim()) return;
-
-		isUpdatingEmail = true;
-		emailUpdateError = null;
-		emailSent = false;
-
-		try {
-			const { data: orgData, error } = await organizationadmincoreUpdateContactEmail({
-				headers: {
-					Authorization: `Bearer ${accessToken}`
-				},
-				path: {
-					slug: data.organization.slug
-				},
-				body: {
-					email: newEmail.trim()
-				}
-			});
-
-			if (error || !orgData) {
-				emailUpdateError =
-					typeof error === 'object' && error && 'detail' in error
-						? (error as { detail?: string }).detail || 'Failed to update email'
-						: 'Failed to update email';
-				return;
-			}
-
-			// Check if email was already verified (same as user's email)
-			if (orgData.contact_email_verified) {
-				toast.success('Email updated successfully - no verification needed');
-				showEmailModal = false;
-				newEmail = '';
-				// Refresh page to show new email
-				window.location.reload();
-			} else {
-				// Verification email sent
-				emailSent = true;
-				toast.success('Verification email sent! Please check your inbox.');
-			}
-		} catch (err) {
-			console.error('[EMAIL UPDATE] Error:', err);
-			emailUpdateError = 'An unexpected error occurred';
-		} finally {
-			isUpdatingEmail = false;
-		}
-	}
-
-	// Upload logo
-	async function uploadLogo() {
-		if (!logoFile || !accessToken) return;
-
-		uploadingLogo = true;
-		uploadError = null;
-
-		try {
-			console.log('[LOGO UPLOAD] Starting upload for:', logoFile.name);
-			const response = await organizationadmincoreUploadLogo({
-				path: { slug: data.organization.slug },
-				body: {
-					logo: logoFile
-				},
-				headers: {
-					Authorization: `Bearer ${accessToken}`
-				}
-			});
-
-			console.log('[LOGO UPLOAD] Response:', response);
-
-			if (response.error) {
-				const errorMsg =
-					typeof response.error === 'object' && response.error && 'detail' in response.error
-						? String(response.error.detail)
-						: JSON.stringify(response.error);
-				throw new Error(`Upload failed: ${errorMsg}`);
-			}
-
-			if (!response.data) {
-				throw new Error('Failed to upload logo - no data returned');
-			}
-
-			console.log('[LOGO UPLOAD] Success, reloading page');
-			// Refresh the page to show the new logo
-			window.location.reload();
-		} catch (err) {
-			console.error('[LOGO UPLOAD] Error:', err);
-			uploadError = err instanceof Error ? err.message : 'Failed to upload logo';
-			uploadingLogo = false;
-		}
-	}
-
-	// Upload cover art
-	async function uploadCover() {
-		if (!coverFile || !accessToken) return;
-
-		uploadingCover = true;
-		uploadError = null;
-
-		try {
-			console.log('[COVER UPLOAD] Starting upload for:', coverFile.name);
-			const response = await organizationadmincoreUploadCoverArt({
-				path: { slug: data.organization.slug },
-				body: {
-					cover_art: coverFile
-				},
-				headers: {
-					Authorization: `Bearer ${accessToken}`
-				}
-			});
-
-			console.log('[COVER UPLOAD] Response:', response);
-
-			if (response.error) {
-				const errorMsg =
-					typeof response.error === 'object' && response.error && 'detail' in response.error
-						? String(response.error.detail)
-						: JSON.stringify(response.error);
-				throw new Error(`Upload failed: ${errorMsg}`);
-			}
-
-			if (!response.data) {
-				throw new Error('Failed to upload cover art - no data returned');
-			}
-
-			console.log('[COVER UPLOAD] Success, reloading page');
-			// Refresh the page to show the new cover
-			window.location.reload();
-		} catch (err) {
-			console.error('[COVER UPLOAD] Error:', err);
-			uploadError = err instanceof Error ? err.message : 'Failed to upload cover art';
-			uploadingCover = false;
-		}
-	}
-
-	// Handle logo file selection
-	function handleLogoFileSelect(file: File | null) {
-		logoFile = file;
-		if (file) {
-			shouldDeleteLogo = false; // If selecting a new file, cancel delete
-		}
-	}
-
-	// Handle cover file selection
-	function handleCoverFileSelect(file: File | null) {
-		coverFile = file;
-		if (file) {
-			shouldDeleteCover = false; // If selecting a new file, cancel delete
-		}
-	}
-
-	// Handle logo removal
-	function handleRemoveLogo() {
-		logoFile = null;
-		shouldDeleteLogo = true;
-	}
-
-	// Handle cover removal
-	function handleRemoveCover() {
-		coverFile = null;
-		shouldDeleteCover = true;
-	}
-
-	// Process image uploads/deletions when form is submitted
-	async function processImageChanges() {
-		if (!accessToken) return;
-
-		// Upload logo if a new file was selected
-		if (logoFile && logoFile.name !== lastUploadedLogoName) {
-			console.log('[LOGO] Uploading new logo:', logoFile.name);
-			await uploadLogo();
-			lastUploadedLogoName = logoFile.name;
-		}
-
-		// Upload cover if a new file was selected
-		if (coverFile && coverFile.name !== lastUploadedCoverName) {
-			console.log('[COVER] Uploading new cover:', coverFile.name);
-			await uploadCover();
-			lastUploadedCoverName = coverFile.name;
-		}
-
-		// Delete logo if marked for deletion
-		if (shouldDeleteLogo && data.organization.logo) {
-			console.log('[LOGO] Deleting logo');
-			const response = await organizationadmincoreDeleteLogo({
-				path: { slug: data.organization.slug },
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
-			if (response.error) {
-				console.error('[LOGO] Delete failed:', response.error);
-			} else {
-				shouldDeleteLogo = false;
-			}
-		}
-
-		// Delete cover if marked for deletion
-		if (shouldDeleteCover && data.organization.cover_art) {
-			console.log('[COVER] Deleting cover art');
-			const response = await organizationadmincoreDeleteCoverArt({
-				path: { slug: data.organization.slug },
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
-			if (response.error) {
-				console.error('[COVER] Delete failed:', response.error);
-			} else {
-				shouldDeleteCover = false;
-			}
-		}
-
-		// Save tag associations
-		await saveTagAssociations();
-	}
-
-	/**
-	 * Fetch tag suggestions from API
-	 */
-	async function fetchTagSuggestions(search: string): Promise<void> {
-		if (!search.trim()) {
-			tagSuggestions = [];
-			showTagSuggestions = false;
-			return;
-		}
-
-		isLoadingTagSuggestions = true;
-
-		try {
-			const response = await tagListTags({
-				query: { search: search.trim() }
-			});
-
-			if (response.data?.results) {
-				// Filter out tags that are already added
-				tagSuggestions = response.data.results
-					.map((tag) => tag.name)
-					.filter((tagName) => !tags.includes(tagName));
-				showTagSuggestions = tagSuggestions.length > 0;
-			}
-		} catch (error) {
-			console.error('Failed to fetch tag suggestions:', error);
-			tagSuggestions = [];
-		} finally {
-			isLoadingTagSuggestions = false;
-		}
-	}
-
-	/**
-	 * Handle tag input changes (with debouncing)
-	 */
-	function handleTagInput(e: Event): void {
-		const target = e.target as HTMLInputElement;
-		const value = target.value;
-		tagInput = value;
-
-		// Clear existing timeout
-		if (tagSearchTimeout) {
-			clearTimeout(tagSearchTimeout);
-		}
-
-		// Debounce search
-		tagSearchTimeout = setTimeout(() => {
-			fetchTagSuggestions(value);
-		}, 300);
-	}
-
-	/**
-	 * Add tag
-	 */
-	function addTag(tag?: string): void {
-		const tagToAdd = tag || tagInput.trim();
-		if (tagToAdd && !tags.includes(tagToAdd)) {
-			tags = [...tags, tagToAdd];
-			tagInput = '';
-			tagSuggestions = [];
-			showTagSuggestions = false;
-		}
-	}
-
-	/**
-	 * Remove tag
-	 */
-	function removeTag(tag: string): void {
-		tags = tags.filter((t) => t !== tag);
-	}
-
-	/**
-	 * Save tag associations (add/remove tags)
-	 */
-	async function saveTagAssociations(): Promise<void> {
-		if (!accessToken) return;
-
-		// Determine which tags were added and removed
-		const addedTags = tags.filter((tag) => !initialTags.includes(tag));
-		const removedTags = initialTags.filter((tag) => !tags.includes(tag));
-
-		// Add new tags
-		if (addedTags.length > 0) {
-			await organizationadminmembersAddTags({
-				path: { slug: data.organization.slug },
-				body: { tags: addedTags },
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
-		}
-
-		// Remove deleted tags
-		if (removedTags.length > 0) {
-			await organizationadminmembersRemoveTags({
-				path: { slug: data.organization.slug },
-				body: { tags: removedTags },
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
-		}
-
-		// Update initialTags to current state
-		initialTags = [...tags];
+	// Process all child component changes when form is submitted
+	async function processChildChanges() {
+		await saveImageChanges?.();
+		await saveTagChanges?.();
 	}
 </script>
 
@@ -584,70 +227,21 @@
 	/>
 
 	<!-- Images Section (Outside Form) -->
-	<section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
-		<h2 class="text-lg font-semibold">{m['orgAdmin.settings.branding.heading']()}</h2>
-
-		{#if uploadError}
-			<div
-				class="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
-				role="alert"
-			>
-				<AlertCircle class="h-5 w-5 shrink-0" aria-hidden="true" />
-				<p class="text-sm font-medium">{uploadError}</p>
-			</div>
-		{/if}
-
-		<!-- Logo -->
-		<div>
-			<ImageUploader
-				value={logoFile}
-				preview={logoUrl}
-				label={m['orgAdmin.settings.branding.logoLabel']()}
-				accept="image/*"
-				maxSize={5 * 1024 * 1024}
-				aspectRatio="square"
-				disabled={uploadingLogo}
-				onFileSelect={(file) => {
-					if (file) {
-						handleLogoFileSelect(file);
-					} else {
-						handleRemoveLogo();
-					}
-				}}
-			/>
-			<p class="mt-1 text-xs text-muted-foreground">{m['orgAdmin.settings.branding.logoHelp']()}</p>
-		</div>
-
-		<!-- Cover Art -->
-		<div>
-			<ImageUploader
-				value={coverFile}
-				preview={coverUrl}
-				label={m['orgAdmin.settings.branding.coverLabel']()}
-				accept="image/*"
-				maxSize={10 * 1024 * 1024}
-				disabled={uploadingCover}
-				onFileSelect={(file) => {
-					if (file) {
-						handleCoverFileSelect(file);
-					} else {
-						handleRemoveCover();
-					}
-				}}
-			/>
-			<p class="mt-1 text-xs text-muted-foreground">
-				{m['orgAdmin.settings.branding.coverHelp']()}
-			</p>
-		</div>
-	</section>
+	<OrgImageUploader
+		slug={data.organization.slug}
+		logoPath={data.organization.logo}
+		coverArtPath={data.organization.cover_art}
+		{accessToken}
+		onRegisterSave={(fn) => (saveImageChanges = fn)}
+	/>
 
 	<form
 		method="POST"
 		use:enhance={() => {
 			isSubmitting = true;
 			return async ({ update }) => {
-				// Process image changes (upload new files, delete removed files)
-				await processImageChanges();
+				// Process image and tag changes
+				await processChildChanges();
 
 				// Submit form data (description, address, city, visibility)
 				await update();
@@ -729,123 +323,12 @@
 			</div>
 
 			<!-- Tags -->
-			<div class="space-y-2">
-				<label for="tags-input" class="block text-sm font-medium">
-					<span class="flex items-center gap-2">
-						<Hash class="h-4 w-4" aria-hidden="true" />
-						Tags
-					</span>
-				</label>
-				<div class="flex gap-2">
-					<div class="relative flex-1">
-						<input
-							id="tags-input"
-							type="text"
-							value={tagInput}
-							oninput={handleTagInput}
-							onkeydown={(e) => {
-								if (e.key === 'Enter') {
-									e.preventDefault();
-									addTag();
-								}
-							}}
-							onfocus={() => {
-								if (tagInput.trim() && tagSuggestions.length > 0) {
-									showTagSuggestions = true;
-								}
-							}}
-							onblur={() => {
-								setTimeout(() => {
-									showTagSuggestions = false;
-								}, 200);
-							}}
-							placeholder="Add tags..."
-							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-							autocomplete="off"
-						/>
-
-						{#if showTagSuggestions && tagSuggestions.length > 0}
-							<div
-								class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-input bg-popover text-popover-foreground shadow-md"
-							>
-								{#each tagSuggestions as suggestion}
-									<button
-										type="button"
-										onclick={() => addTag(suggestion)}
-										class="flex w-full cursor-pointer items-center px-3 py-2 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-									>
-										<Hash class="mr-2 h-3 w-3" aria-hidden="true" />
-										{suggestion}
-									</button>
-								{/each}
-							</div>
-						{/if}
-
-						{#if isLoadingTagSuggestions}
-							<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-								<svg
-									class="h-4 w-4 animate-spin text-muted-foreground"
-									xmlns="http://www.w3.org/2000/svg"
-									fill="none"
-									viewBox="0 0 24 24"
-									aria-hidden="true"
-								>
-									<circle
-										class="opacity-25"
-										cx="12"
-										cy="12"
-										r="10"
-										stroke="currentColor"
-										stroke-width="4"
-									/>
-									<path
-										class="opacity-75"
-										fill="currentColor"
-										d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-									/>
-								</svg>
-							</div>
-						{/if}
-					</div>
-					<button
-						type="button"
-						onclick={() => addTag()}
-						class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-					>
-						Add
-					</button>
-				</div>
-				{#if tags.length > 0}
-					<div class="flex flex-wrap gap-2">
-						{#each tags as tag}
-							<span class="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm">
-								{tag}
-								<button
-									type="button"
-									onclick={() => removeTag(tag)}
-									class="ml-1 rounded-full p-0.5 transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-									aria-label="Remove {tag} tag"
-								>
-									<svg
-										class="h-3 w-3"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-										aria-hidden="true"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M6 18L18 6M6 6l12 12"
-										/>
-									</svg>
-								</button>
-							</span>
-						{/each}
-					</div>
-				{/if}
-			</div>
+			<OrgTagManager
+				slug={data.organization.slug}
+				{accessToken}
+				initialTags={data.organization.tags || []}
+				onRegisterSave={(fn) => (saveTagChanges = fn)}
+			/>
 		</section>
 
 		<!-- Social Media Links -->
@@ -959,9 +442,6 @@
 						type="button"
 						onclick={() => {
 							showEmailModal = true;
-							newEmail = data.organization.contact_email || '';
-							emailUpdateError = null;
-							emailSent = false;
 						}}
 						class="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
 					>
@@ -1014,140 +494,13 @@
 </div>
 
 <!-- Email Change Modal -->
-{#if showEmailModal}
-	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-		onclick={(e) => {
-			if (e.target === e.currentTarget && !isUpdatingEmail) {
-				showEmailModal = false;
-			}
-		}}
-		role="dialog"
-		aria-modal="true"
-		aria-labelledby="email-modal-title"
-	>
-		<div class="w-full max-w-md rounded-lg bg-background p-6 shadow-xl">
-			<div class="mb-4 flex items-start justify-between">
-				<h3 id="email-modal-title" class="text-lg font-semibold">Change Contact Email</h3>
-				<button
-					type="button"
-					onclick={() => (showEmailModal = false)}
-					disabled={isUpdatingEmail}
-					class="rounded-md p-1 hover:bg-accent"
-					aria-label="Close"
-				>
-					<X class="h-5 w-5" aria-hidden="true" />
-				</button>
-			</div>
-
-			{#if emailSent}
-				<!-- Success state -->
-				<div class="space-y-4">
-					<div class="rounded-md bg-green-50 p-4 dark:bg-green-950">
-						<div class="flex gap-3">
-							<Check
-								class="h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400"
-								aria-hidden="true"
-							/>
-							<div>
-								<h4 class="font-medium text-green-900 dark:text-green-100">
-									Verification Email Sent
-								</h4>
-								<p class="mt-1 text-sm text-green-800 dark:text-green-200">
-									We've sent a verification link to <strong>{newEmail}</strong>. Please check your
-									inbox and click the link to verify your new contact email.
-								</p>
-							</div>
-						</div>
-					</div>
-					<div class="flex justify-end gap-2">
-						<button
-							type="button"
-							onclick={handleEmailUpdate}
-							disabled={isUpdatingEmail}
-							class="rounded-md px-4 py-2 text-sm font-medium text-primary hover:bg-accent"
-						>
-							Resend Email
-						</button>
-						<button
-							type="button"
-							onclick={() => {
-								showEmailModal = false;
-								newEmail = '';
-								emailSent = false;
-							}}
-							class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-						>
-							Done
-						</button>
-					</div>
-				</div>
-			{:else}
-				<!-- Input form -->
-				<div class="space-y-4">
-					<div>
-						<label for="new-email" class="block text-sm font-medium"> New Contact Email </label>
-						<input
-							id="new-email"
-							type="email"
-							bind:value={newEmail}
-							disabled={isUpdatingEmail}
-							placeholder="organization@example.com"
-							class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800"
-						/>
-						<p class="mt-1 text-xs text-muted-foreground">
-							If this email is different from your account email, a verification email will be sent.
-						</p>
-					</div>
-
-					{#if emailUpdateError}
-						<div class="rounded-md bg-red-50 p-3 dark:bg-red-950">
-							<div class="flex gap-2">
-								<AlertCircle
-									class="h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400"
-									aria-hidden="true"
-								/>
-								<p class="text-sm text-red-800 dark:text-red-200">
-									{emailUpdateError}
-								</p>
-							</div>
-						</div>
-					{/if}
-
-					<div class="flex justify-end gap-2">
-						<button
-							type="button"
-							onclick={() => {
-								showEmailModal = false;
-								newEmail = '';
-							}}
-							disabled={isUpdatingEmail}
-							class="rounded-md border px-4 py-2 text-sm font-medium hover:bg-accent"
-						>
-							Cancel
-						</button>
-						<button
-							type="button"
-							onclick={handleEmailUpdate}
-							disabled={isUpdatingEmail || !newEmail.trim()}
-							class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-						>
-							{#if isUpdatingEmail}
-								<div
-									class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-									aria-hidden="true"
-								></div>
-								Updating...
-							{:else}
-								Update Email
-							{/if}
-						</button>
-					</div>
-				</div>
-			{/if}
-		</div>
-	</div>
-{/if}
+<OrgContactEmailModal
+	slug={data.organization.slug}
+	{accessToken}
+	currentEmail={data.organization.contact_email || ''}
+	bind:open={showEmailModal}
+	onClose={() => (showEmailModal = false)}
+/>
 
 <style>
 	/* Ensure consistent focus states for accessibility */
