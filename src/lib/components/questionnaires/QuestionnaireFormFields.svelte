@@ -352,9 +352,7 @@
 					class="h-4 w-4 rounded border-gray-300"
 					disabled={!canEdit}
 				/>
-				<Label for="shuffle-questions" class="font-normal"
-					>Shuffle questions for each user</Label
-				>
+				<Label for="shuffle-questions" class="font-normal">Shuffle questions for each user</Label>
 			</div>
 			<div class="flex items-center space-x-2">
 				<input

@@ -23,10 +23,7 @@ import {
 	questionnaireUpdateFuQuestion,
 	questionnaireDeleteFuQuestion
 } from '$lib/api/generated/sdk.gen';
-import type {
-	QuestionnaireEvaluationMode,
-	QuestionnaireType
-} from '$lib/api/generated/types.gen';
+import type { QuestionnaireEvaluationMode, QuestionnaireType } from '$lib/api/generated/types.gen';
 
 import type {
 	QuestionnaireOption,
@@ -481,13 +478,7 @@ export async function syncConditionalSections(
 				},
 				headers: authHeader
 			});
-			await syncConditionalSectionQuestions(
-				condSection,
-				apiId,
-				authHeader,
-				orgQuestionnaireId,
-				q
-			);
+			await syncConditionalSectionQuestions(condSection, apiId, authHeader, orgQuestionnaireId, q);
 		} else {
 			const sectionResponse = await questionnaireCreateSection({
 				path: { org_questionnaire_id: orgQuestionnaireId },
@@ -532,14 +523,10 @@ export async function syncConditionalSectionQuestions(
 ) {
 	const apiSection = (q?.sections || []).find((s: any) => s.id === sectionApiId);
 	const existingMcIds = new Set<string>(
-		(apiSection?.multiplechoicequestion_questions || [])
-			.map((apiQ: any) => apiQ.id)
-			.filter(Boolean)
+		(apiSection?.multiplechoicequestion_questions || []).map((apiQ: any) => apiQ.id).filter(Boolean)
 	);
 	const existingFtIds = new Set<string>(
-		(apiSection?.freetextquestion_questions || [])
-			.map((apiQ: any) => apiQ.id)
-			.filter(Boolean)
+		(apiSection?.freetextquestion_questions || []).map((apiQ: any) => apiQ.id).filter(Boolean)
 	);
 
 	const localMcIds = new Set<string>();

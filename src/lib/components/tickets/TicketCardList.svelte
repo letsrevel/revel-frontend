@@ -158,9 +158,7 @@
 					</span>
 				</div>
 				<div class="flex items-center justify-between">
-					<span class="text-muted-foreground"
-						>{m['eventTicketsAdmin.headerPurchased']()}:</span
-					>
+					<span class="text-muted-foreground">{m['eventTicketsAdmin.headerPurchased']()}:</span>
 					<span>{new Date(ticket.created_at).toLocaleDateString()}</span>
 				</div>
 				{#if ticket.payment?.vat_amount != null}

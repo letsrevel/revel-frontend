@@ -21,11 +21,7 @@
 		<div class="mt-2 space-y-1">
 			{#each question.options as option}
 				<div class="flex items-center gap-2 text-sm">
-					<span
-						class={option.isCorrect
-							? 'font-medium text-green-600'
-							: 'text-muted-foreground'}
-					>
+					<span class={option.isCorrect ? 'font-medium text-green-600' : 'text-muted-foreground'}>
 						{option.isCorrect ? '\u2713' : '\u25CB'}
 					</span>
 					<span class={option.isCorrect ? 'font-medium' : ''}>{option.text}</span>
@@ -33,15 +29,12 @@
 				<!-- Display conditional questions for this option -->
 				{#if option.conditionalQuestions && option.conditionalQuestions.length > 0}
 					<div class="ml-6 mt-2 space-y-2 border-l-2 border-primary/30 pl-4">
-						<p class="text-xs font-medium text-muted-foreground">
-							&#8627; If selected, show:
-						</p>
+						<p class="text-xs font-medium text-muted-foreground">&#8627; If selected, show:</p>
 						{#each option.conditionalQuestions as condQ}
 							<div class="rounded border bg-muted/50 p-3">
 								<div class="mb-1 flex items-center gap-2">
 									<span
-										class="rounded px-2 py-0.5 text-xs font-medium {condQ.type ===
-										'multiple_choice'
+										class="rounded px-2 py-0.5 text-xs font-medium {condQ.type === 'multiple_choice'
 											? 'bg-blue-100 text-blue-700'
 											: 'bg-purple-100 text-purple-700'}"
 									>
@@ -55,9 +48,7 @@
 								{#if condQ.type === 'multiple_choice' && condQ.options}
 									<div class="mt-1 space-y-0.5">
 										{#each condQ.options as condOpt}
-											<div
-												class="flex items-center gap-1 text-xs text-muted-foreground"
-											>
+											<div class="flex items-center gap-1 text-xs text-muted-foreground">
 												<span>{condOpt.isCorrect ? '\u2713' : '\u25CB'}</span>
 												<span>{condOpt.text}</span>
 											</div>
@@ -160,9 +151,7 @@
 				</div>
 			{/each}
 			{#if section.questions.length === 0}
-				<div
-					class="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground"
-				>
+				<div class="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
 					No questions in this section.
 				</div>
 			{/if}

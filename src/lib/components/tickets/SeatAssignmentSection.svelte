@@ -109,14 +109,10 @@
 	<div class="rounded-lg border border-border bg-muted/30 p-4">
 		<div class="flex items-start gap-3">
 			{#if isRandomSeat}
-				<Shuffle
-					class="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-500"
-					aria-hidden="true"
-				/>
+				<Shuffle class="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-500" aria-hidden="true" />
 				<div class="space-y-1">
 					<p class="font-medium text-foreground">
-						{m['ticketConfirmationDialog.randomSeatAssignment']?.() ??
-							'Random Seat Assignment'}
+						{m['ticketConfirmationDialog.randomSeatAssignment']?.() ?? 'Random Seat Assignment'}
 					</p>
 					<p class="text-sm text-muted-foreground">
 						{m['ticketConfirmationDialog.randomSeatAssignmentDesc']?.() ??

@@ -218,19 +218,13 @@ export function initializeFromApiData(questionnaire: any, q: any): InitFromApiRe
 
 	// ===== Step 3: Convert top-level questions (excluding section/conditional) =====
 	const topMc = (q.multiplechoicequestion_questions || [])
-		.filter(
-			(apiQ: any) => !sectionQuestionIds.has(apiQ.id) && !conditionalQuestionIds.has(apiQ.id)
-		)
+		.filter((apiQ: any) => !sectionQuestionIds.has(apiQ.id) && !conditionalQuestionIds.has(apiQ.id))
 		.map((apiQ: any) => convertApiMcQuestion(apiQ, apiQ.order ?? 0));
 	const topFt = (q.freetextquestion_questions || [])
-		.filter(
-			(apiQ: any) => !sectionQuestionIds.has(apiQ.id) && !conditionalQuestionIds.has(apiQ.id)
-		)
+		.filter((apiQ: any) => !sectionQuestionIds.has(apiQ.id) && !conditionalQuestionIds.has(apiQ.id))
 		.map((apiQ: any) => convertApiFtQuestion(apiQ, apiQ.order ?? 0));
 	const topFu = (q.fileuploadquestion_questions || [])
-		.filter(
-			(apiQ: any) => !sectionQuestionIds.has(apiQ.id) && !conditionalQuestionIds.has(apiQ.id)
-		)
+		.filter((apiQ: any) => !sectionQuestionIds.has(apiQ.id) && !conditionalQuestionIds.has(apiQ.id))
 		.map((apiQ: any) => convertApiFuQuestion(apiQ, apiQ.order ?? 0));
 	const topLevelQuestions = [...topMc, ...topFt, ...topFu].sort((a, b) => a.order - b.order);
 
@@ -324,9 +318,7 @@ export function initializeFromApiData(questionnaire: any, q: any): InitFromApiRe
 				const sectionFt = (apiSection.freetextquestion_questions || [])
 					.filter((ftq: any) => !ftq.depends_on_option_id)
 					.map((ftq: any) => convertApiFtQuestion(ftq, ftq.order ?? 0));
-				convertedSection.questions = [...sectionMc, ...sectionFt].sort(
-					(a, b) => a.order - b.order
-				);
+				convertedSection.questions = [...sectionMc, ...sectionFt].sort((a, b) => a.order - b.order);
 				parentOption.conditionalSections = parentOption.conditionalSections || [];
 				parentOption.conditionalSections.push(convertedSection);
 			}

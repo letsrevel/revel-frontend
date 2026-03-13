@@ -5,16 +5,7 @@
 		PendingEventInvitationListSchema
 	} from '$lib/api/generated/types.gen';
 	import { enhance } from '$app/forms';
-	import {
-		Search,
-		Mail,
-		UserPlus,
-		Trash2,
-		Plus,
-		Edit,
-		CheckSquare,
-		Square
-	} from 'lucide-svelte';
+	import { Search, Mail, UserPlus, Trash2, Plus, Edit, CheckSquare, Square } from 'lucide-svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import { getUserDisplayName } from '$lib/utils/user-display';
 	import { Button } from '$lib/components/ui/button';

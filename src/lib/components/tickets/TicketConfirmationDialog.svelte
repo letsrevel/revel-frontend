@@ -241,7 +241,8 @@
 		const value = parseFloat(trimmed);
 		if (isNaN(value)) return { valid: false, error: 'invalid' as const };
 		if (value < minAmount) return { valid: false, error: 'below_min' as const };
-		if (maxAmount !== null && value > maxAmount) return { valid: false, error: 'above_max' as const };
+		if (maxAmount !== null && value > maxAmount)
+			return { valid: false, error: 'above_max' as const };
 		return { valid: true, error: null };
 	});
 

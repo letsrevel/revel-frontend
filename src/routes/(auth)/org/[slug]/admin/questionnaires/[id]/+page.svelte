@@ -407,11 +407,7 @@
 	</div>
 
 	<!-- Status Management -->
-	<QuestionnaireStatusBar
-		{currentStatus}
-		{isChangingStatus}
-		onChangeStatus={changeStatus}
-	/>
+	<QuestionnaireStatusBar {currentStatus} {isChangingStatus} onChangeStatus={changeStatus} />
 
 	<!-- Info Banner -->
 	{#if isEditMode}
