@@ -10,7 +10,6 @@ import {
 	createQuestion,
 	type QuestionnaireQuestion,
 	type QuestionnaireSection,
-	type QuestionnaireOption,
 	type QuestionnaireConditionalSection,
 	type QuestionType
 } from './questionnaire-form-types';

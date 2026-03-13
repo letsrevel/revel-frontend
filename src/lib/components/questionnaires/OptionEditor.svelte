@@ -8,7 +8,6 @@
 		X,
 		ChevronDown,
 		ChevronUp,
-		CornerDownRight,
 		FileText,
 		ListChecks,
 		FolderPlus,

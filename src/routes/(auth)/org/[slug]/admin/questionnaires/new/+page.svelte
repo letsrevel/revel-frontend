@@ -28,16 +28,10 @@
 	} from '$lib/api/generated/types.gen';
 	import type { PageData } from './$types';
 	import type {
-		QuestionnaireOption as Option,
 		QuestionnaireQuestion as Question,
-		QuestionnaireConditionalSection as ConditionalSection,
 		QuestionnaireSection as Section
 	} from '$lib/utils/questionnaire-form-types';
-	import {
-		createQuestion,
-		DND_FLIP_DURATION_MS,
-		DND_DROP_TARGET_STYLE
-	} from '$lib/utils/questionnaire-form-types';
+	import { DND_FLIP_DURATION_MS, DND_DROP_TARGET_STYLE } from '$lib/utils/questionnaire-form-types';
 	import {
 		addTopLevelQuestion as _addTopLevelQuestion,
 		removeTopLevelQuestion as _removeTopLevelQuestion,

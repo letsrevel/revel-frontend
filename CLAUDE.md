@@ -459,45 +459,46 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ## Development Commands
 
-This project uses npm/pnpm scripts for development tasks:
+This project uses a comprehensive Makefile for development tasks. **Use `make` commands as the primary interface.**
 
 ### Primary Development Commands
 
-- `pnpm dev` - Start development server with hot reload (accessible on local network via 0.0.0.0)
-- `pnpm build` - Build production-ready application
-- `pnpm preview` - Preview production build locally
-- `pnpm generate:api` - Generate TypeScript API client from backend OpenAPI spec
+- `make dev` - Start development server (accessible on local network via 0.0.0.0)
+- `make build` - Production build
+- `make preview` - Preview production build locally
+- `make generate-api` - Regenerate TypeScript API client from backend OpenAPI spec
 
-#### Mobile Testing
+### Code Quality — The Quality Gate
 
-The dev server is configured to listen on `0.0.0.0` (all network interfaces) for mobile testing:
+- `make check` - **Run ALL quality checks** (format, lint, types, i18n, file-length). Must pass before committing.
+- `make fix` - Auto-fix formatting and lint issues. Run this first, then `make check`.
 
-```bash
-pnpm dev
-# Server runs on: http://localhost:5173
-# Network access: http://YOUR_LOCAL_IP:5173
-```
-
-To find your local IP:
-
-- **macOS/Linux**: `ifconfig | grep "inet " | grep -v 127.0.0.1`
-- **Windows**: `ipconfig`
-
-Look for your local network IP (usually `192.168.x.x` or `10.0.x.x`). Access from phone/tablet on same WiFi network.
-
-### Code Quality
-
-- `pnpm check` - Run SvelteKit type checking and validation
-- `pnpm check:watch` - Run type checking in watch mode
-- `pnpm lint` - Lint code with ESLint
-- `pnpm format` - Format code with Prettier
+Individual checks (also available separately):
+- `make format-check` - Verify Prettier formatting
+- `make lint` - ESLint with `--max-warnings 0` (warnings are errors)
+- `make types` - SvelteKit type checking (`svelte-check`)
+- `make i18n-check` - Translation file validation
+- `make file-length` - Source file line count enforcement (Svelte: 750, TS/JS: 500)
 
 ### Testing
 
-- `pnpm test` - Run unit tests with Vitest
-- `pnpm test:ui` - Run tests with interactive UI
-- `pnpm test:e2e` - Run end-to-end tests with Playwright
-- `pnpm test:coverage` - Generate test coverage report
+- `make test` - Run unit tests (saves failures to `.tests.output`)
+- `make test-coverage` - Run tests with coverage report
+- `make test-e2e` - Run Playwright E2E tests
+
+### Workflow: Before Committing
+
+```bash
+make fix      # Auto-fix what can be auto-fixed
+make check    # Verify everything passes
+make test     # Run tests
+```
+
+#### Mobile Testing
+
+The dev server listens on `0.0.0.0` for mobile testing:
+- **macOS/Linux**: `ifconfig | grep "inet " | grep -v 127.0.0.1`
+- Access from phone/tablet on same WiFi at `http://YOUR_LOCAL_IP:5173`
 
 ## Project Architecture
 
@@ -924,10 +925,11 @@ test('user can RSVP to event', async ({ page }) => {
 
 #### Before Committing
 
-1. Run all checks: `pnpm check && pnpm lint && pnpm test`
-2. Format code: `pnpm format`
-3. Test accessibility manually (keyboard navigation, screen reader)
-4. Commit with conventional commit messages: `feat: add event RSVP flow`
+1. Auto-fix: `make fix`
+2. Run all checks: `make check`
+3. Run tests: `make test`
+4. Test accessibility manually (keyboard navigation, screen reader)
+5. Commit with conventional commit messages: `feat: add event RSVP flow`
 
 #### Pull Request Guidelines
 

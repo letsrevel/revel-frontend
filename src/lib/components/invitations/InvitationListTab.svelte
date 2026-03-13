@@ -13,8 +13,7 @@
 		Plus,
 		Edit,
 		CheckSquare,
-		Square,
-		Calendar
+		Square
 	} from 'lucide-svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import { getUserDisplayName } from '$lib/utils/user-display';
