@@ -65,9 +65,7 @@
 		}
 	});
 
-	let showAttendeeCount = $derived(
-		variant !== 'draft' && event.attendee_count !== undefined
-	);
+	let showAttendeeCount = $derived(variant !== 'draft' && event.attendee_count !== undefined);
 
 	let showEdit = $derived(variant === 'draft' || variant === 'open');
 	let showManagement = $derived(variant !== 'draft');

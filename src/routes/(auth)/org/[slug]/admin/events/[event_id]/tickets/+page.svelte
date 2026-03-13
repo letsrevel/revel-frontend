@@ -5,30 +5,15 @@
 	import { createMutation } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
 	import { fade, scale } from 'svelte/transition';
-	import { cn } from '$lib/utils/cn';
 	import { getUserDisplayName } from '$lib/utils/user-display';
-	import { getTicketStatusColor, getTicketStatusLabel } from '$lib/utils/status-colors';
-	import { formatPrice } from '$lib/utils/format';
+	import {
+		needsPaymentConfirmation,
+		isPwycTicket,
+		getPwycWarning
+	} from '$lib/utils/ticket-helpers';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
-	import { Badge } from '$lib/components/ui/badge';
-	import {
-		Search,
-		Check,
-		X,
-		Ticket,
-		CreditCard,
-		Banknote,
-		Coins,
-		Gift,
-		AlertTriangle,
-		QrCode,
-		ExternalLink,
-		UserPlus,
-		MoreVertical,
-		Ban,
-		Undo2
-	} from 'lucide-svelte';
+	import { Ticket, AlertTriangle, QrCode, X } from 'lucide-svelte';
 	import {
 		eventadminticketsConfirmTicketPayment,
 		eventadminticketsUnconfirmTicketPayment,
@@ -40,15 +25,16 @@
 		organizationadminblacklistCreateBlacklistEntry,
 		eventadminticketsExportAttendees
 	} from '$lib/api';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import type { PageData } from './$types';
 	import type { MembershipTierSchema } from '$lib/api/generated/types.gen';
+	import TicketFilters from '$lib/components/tickets/TicketFilters.svelte';
+	import TicketTable from '$lib/components/tickets/TicketTable.svelte';
+	import TicketCardList from '$lib/components/tickets/TicketCardList.svelte';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import QRScannerModal from '$lib/components/tickets/QRScannerModal.svelte';
 	import CheckInDialog from '$lib/components/tickets/CheckInDialog.svelte';
 	import MakeMemberModal from '$lib/components/members/MakeMemberModal.svelte';
 	import ExportButton from '$lib/components/common/ExportButton.svelte';
-	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -379,14 +365,6 @@
 	}
 
 	/**
-	 * Check if payment can be unconfirmed (active ticket with offline/at_the_door payment)
-	 */
-	function canUnconfirmPayment(ticket: any): boolean {
-		const method = ticket.tier?.payment_method;
-		return ticket.status === 'active' && (method === 'offline' || method === 'at_the_door');
-	}
-
-	/**
 	 * Handle search input
 	 */
 	function handleSearch(event: Event) {
@@ -440,41 +418,6 @@
 		const params = new URLSearchParams($page.url.searchParams);
 		params.set('page', pageNum.toString());
 		goto(`?${params.toString()}`, { replaceState: true, keepFocus: true });
-	}
-
-	/**
-	 * Check if a ticket's tier is PWYC with offline/at_the_door payment
-	 */
-	function isPwycTicket(ticket: any): boolean {
-		return (
-			ticket.tier?.price_type === 'pwyc' &&
-			(ticket.tier?.payment_method === 'offline' || ticket.tier?.payment_method === 'at_the_door')
-		);
-	}
-
-	/**
-	 * Get PWYC range warning message, if applicable
-	 */
-	function getPwycWarning(ticket: any, value: string): string | null {
-		const num = parseFloat(value);
-		if (isNaN(num) || num <= 0) return null;
-
-		const min = ticket.tier?.pwyc_min ? parseFloat(ticket.tier.pwyc_min) : null;
-		const max = ticket.tier?.pwyc_max ? parseFloat(ticket.tier.pwyc_max) : null;
-
-		if (min !== null && max !== null && (num < min || num > max)) {
-			const currency = ticket.tier?.currency?.toUpperCase() || 'EUR';
-			const fmt = (v: number) =>
-				new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(v);
-			return `This amount is outside the suggested range (${fmt(min)} \u2013 ${fmt(max)})`;
-		}
-		if (min !== null && max === null && num < min) {
-			const currency = ticket.tier?.currency?.toUpperCase() || 'EUR';
-			const fmt = (v: number) =>
-				new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(v);
-			return `This amount is below the suggested minimum (${fmt(min)})`;
-		}
-		return null;
 	}
 
 	/**
@@ -560,120 +503,6 @@
 		}
 	}
 
-	/**
-	 * Get guest name if different from user display name
-	 */
-	function getGuestNameIfDifferent(ticket: any): string | null {
-		const guestName = ticket.guest_name;
-		if (!guestName) return null;
-		const userDisplayName = getUserDisplayName(ticket.user, m['eventTicketsAdmin.unknownUser']());
-		// Check if guest name is meaningfully different from user display name
-		if (guestName.toLowerCase().trim() === userDisplayName.toLowerCase().trim()) return null;
-		return guestName;
-	}
-
-	/**
-	 * Get venue/sector/seat display info from tier and seat
-	 */
-	function getSeatDisplay(ticket: any): string | null {
-		const tier = ticket.tier;
-		const seat = ticket.seat;
-
-		// If no venue/sector on tier and no seat, nothing to show
-		if (!tier?.venue && !tier?.sector && !seat) return null;
-
-		const parts: string[] = [];
-
-		// Add venue name from tier
-		if (tier?.venue?.name) parts.push(tier.venue.name);
-
-		// Add sector name from tier
-		if (tier?.sector?.name) parts.push(tier.sector.name);
-
-		// Add seat info if available
-		if (seat) {
-			// MinimalSeatSchema has: label, row, number, is_accessible, is_obstructed_view
-			if (seat.row) parts.push(`Row ${seat.row}`);
-			if (seat.number) parts.push(`Seat ${seat.number}`);
-			if (seat.label && !seat.row && !seat.number) parts.push(seat.label);
-			if (seat.is_accessible) parts.push('♿');
-			if (seat.is_obstructed_view) parts.push('⚠️ Obstructed');
-		}
-
-		return parts.length > 0 ? parts.join(' • ') : null;
-	}
-
-
-	/**
-	 * Get payment method label
-	 */
-	function getPaymentMethodLabel(method: string): string {
-		switch (method) {
-			case 'online':
-				return m['eventTicketsAdmin.paymentOnline']();
-			case 'offline':
-				return m['eventTicketsAdmin.paymentOffline']();
-			case 'at_the_door':
-				return m['eventTicketsAdmin.paymentAtDoor']();
-			case 'free':
-				return m['eventTicketsAdmin.paymentFree']();
-			default:
-				return method;
-		}
-	}
-
-	/**
-	 * Check if ticket can be managed (non-Stripe)
-	 */
-	function canManageTicket(ticket: any): boolean {
-		const method = ticket.tier?.payment_method;
-		return method === 'offline' || method === 'at_the_door' || method === 'free';
-	}
-
-	/**
-	 * Check if ticket can be checked in
-	 */
-	function canCheckIn(ticket: any): boolean {
-		return ticket.status === 'active' || needsPaymentConfirmation(ticket);
-	}
-
-	/**
-	 * Check if payment needs confirmation at check-in
-	 */
-	function needsPaymentConfirmation(ticket: any): boolean {
-		const method = ticket.tier?.payment_method;
-		return ticket.status === 'pending' && (method === 'offline' || method === 'at_the_door');
-	}
-
-	/**
-	 * Check if payment can be confirmed
-	 */
-	function canConfirmPayment(ticket: any): boolean {
-		const method = ticket.tier?.payment_method;
-		return (
-			(ticket.status === 'pending' || ticket.status === 'cancelled') &&
-			(method === 'offline' || method === 'at_the_door')
-		);
-	}
-
-
-	/**
-	 * Get the effective price for a ticket.
-	 * Priority: payment.amount > price_paid > tier.price
-	 */
-	function getTicketPrice(ticket: any): number | string | undefined {
-		// Payment object always prevails (online payments via Stripe)
-		if (ticket.payment?.amount !== undefined && ticket.payment?.amount !== null) {
-			return ticket.payment.amount;
-		}
-		// Then price_paid (PWYC or admin-confirmed offline payments)
-		if (ticket.price_paid !== undefined && ticket.price_paid !== null) {
-			return ticket.price_paid;
-		}
-		// Fall back to tier price
-		return ticket.tier?.price;
-	}
-
 	async function handleExportAttendees(): Promise<string> {
 		const response = await eventadminticketsExportAttendees({
 			path: { event_id: data.event.id },
@@ -685,20 +514,6 @@
 		return response.data.id;
 	}
 </script>
-
-{#snippet paymentMethodIcon(method: string)}
-	{#if method === 'online'}
-		<CreditCard class="h-3 w-3" aria-hidden="true" />
-	{:else if method === 'offline'}
-		<Banknote class="h-3 w-3" aria-hidden="true" />
-	{:else if method === 'at_the_door'}
-		<Coins class="h-3 w-3" aria-hidden="true" />
-	{:else if method === 'free'}
-		<Gift class="h-3 w-3" aria-hidden="true" />
-	{:else}
-		<CreditCard class="h-3 w-3" aria-hidden="true" />
-	{/if}
-{/snippet}
 
 <svelte:head>
 	<title>{m['eventTicketsAdmin.pageTitle']()} - {data.event.name} | Revel</title>
@@ -804,137 +619,14 @@
 	</div>
 
 	<!-- Search and Filters -->
-	<div class="mt-6 space-y-4">
-		<!-- Search -->
-		<div class="relative">
-			<Search
-				class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-				aria-hidden="true"
-			/>
-			<Input
-				type="search"
-				placeholder={m['eventTicketsAdmin.searchPlaceholder']()}
-				value={searchQuery}
-				oninput={handleSearch}
-				class="pl-10"
-				aria-label="Search tickets"
-			/>
-		</div>
-
-		<!-- Status Filters -->
-		<div>
-			<h3 class="mb-2 text-sm font-semibold">{m['eventTicketsAdmin.filterByStatus']()}</h3>
-			<div class="flex flex-wrap gap-2">
-				<button
-					type="button"
-					onclick={() => setStatusFilter(null)}
-					class="rounded-md border px-3 py-1 text-sm font-medium transition-colors {selectedStatus ===
-					null
-						? 'border-primary bg-primary text-primary-foreground'
-						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
-				>
-					{m['eventTicketsAdmin.filterAll']()}
-				</button>
-				<button
-					type="button"
-					onclick={() => setStatusFilter('pending')}
-					class="rounded-md border px-3 py-1 text-sm font-medium transition-colors {selectedStatus ===
-					'pending'
-						? 'border-primary bg-primary text-primary-foreground'
-						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
-				>
-					{m['eventTicketsAdmin.statsPending']()}
-				</button>
-				<button
-					type="button"
-					onclick={() => setStatusFilter('active')}
-					class="rounded-md border px-3 py-1 text-sm font-medium transition-colors {selectedStatus ===
-					'active'
-						? 'border-primary bg-primary text-primary-foreground'
-						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
-				>
-					{m['eventTicketsAdmin.statsActive']()}
-				</button>
-				<button
-					type="button"
-					onclick={() => setStatusFilter('checked_in')}
-					class="rounded-md border px-3 py-1 text-sm font-medium transition-colors {selectedStatus ===
-					'checked_in'
-						? 'border-primary bg-primary text-primary-foreground'
-						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
-				>
-					{m['eventTicketsAdmin.statsCheckedIn']()}
-				</button>
-				<button
-					type="button"
-					onclick={() => setStatusFilter('cancelled')}
-					class="rounded-md border px-3 py-1 text-sm font-medium transition-colors {selectedStatus ===
-					'cancelled'
-						? 'border-primary bg-primary text-primary-foreground'
-						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
-				>
-					{m['eventTicketsAdmin.statsCancelled']()}
-				</button>
-			</div>
-		</div>
-
-		<!-- Payment Method Filters -->
-		<div>
-			<h3 class="mb-2 text-sm font-semibold">{m['eventTicketsAdmin.filterByPaymentMethod']()}</h3>
-			<div class="flex flex-wrap gap-2">
-				<button
-					type="button"
-					onclick={() => setPaymentMethodFilter(null)}
-					class="rounded-md border px-3 py-1 text-sm font-medium transition-colors {selectedPaymentMethod ===
-					null
-						? 'border-primary bg-primary text-primary-foreground'
-						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
-				>
-					{m['eventTicketsAdmin.filterAll']()}
-				</button>
-				<button
-					type="button"
-					onclick={() => setPaymentMethodFilter('online')}
-					class="rounded-md border px-3 py-1 text-sm font-medium transition-colors {selectedPaymentMethod ===
-					'online'
-						? 'border-primary bg-primary text-primary-foreground'
-						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
-				>
-					{m['eventTicketsAdmin.paymentOnline']()}
-				</button>
-				<button
-					type="button"
-					onclick={() => setPaymentMethodFilter('offline')}
-					class="rounded-md border px-3 py-1 text-sm font-medium transition-colors {selectedPaymentMethod ===
-					'offline'
-						? 'border-primary bg-primary text-primary-foreground'
-						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
-				>
-					{m['eventTicketsAdmin.paymentOffline']()}
-				</button>
-				<button
-					type="button"
-					onclick={() => setPaymentMethodFilter('at_the_door')}
-					class="rounded-md border px-3 py-1 text-sm font-medium transition-colors {selectedPaymentMethod ===
-					'at_the_door'
-						? 'border-primary bg-primary text-primary-foreground'
-						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
-				>
-					{m['eventTicketsAdmin.paymentAtDoor']()}
-				</button>
-				<button
-					type="button"
-					onclick={() => setPaymentMethodFilter('free')}
-					class="rounded-md border px-3 py-1 text-sm font-medium transition-colors {selectedPaymentMethod ===
-					'free'
-						? 'border-primary bg-primary text-primary-foreground'
-						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
-				>
-					{m['eventTicketsAdmin.paymentFree']()}
-				</button>
-			</div>
-		</div>
-	</div>
+	<TicketFilters
+		{searchQuery}
+		{selectedStatus}
+		{selectedPaymentMethod}
+		onSearch={handleSearch}
+		onStatusFilter={setStatusFilter}
+		onPaymentMethodFilter={setPaymentMethodFilter}
+	/>
 
 	<!-- Tickets List -->
 	<div class="mt-6">
@@ -954,444 +646,38 @@
 			</div>
 		{:else}
 			<!-- Desktop Table -->
-			<div class="hidden overflow-x-auto rounded-lg border md:block">
-				<table class="w-full">
-					<thead class="border-b bg-muted/50">
-						<tr>
-							<th class="px-4 py-3 text-left text-sm font-semibold"
-								>{m['eventTicketsAdmin.headerAttendee']()}</th
-							>
-							<th class="px-4 py-3 text-left text-sm font-semibold"
-								>{m['eventTicketsAdmin.headerTier']()}</th
-							>
-							<th class="px-4 py-3 text-left text-sm font-semibold"
-								>{m['eventTicketsAdmin.headerPrice']()}</th
-							>
-							<th class="px-4 py-3 text-left text-sm font-semibold"
-								>{m['eventTicketsAdmin.headerPaymentMethod']()}</th
-							>
-							<th class="px-4 py-3 text-left text-sm font-semibold"
-								>{m['eventTicketsAdmin.headerStatus']()}</th
-							>
-							<th class="px-4 py-3 text-left text-sm font-semibold"
-								>{m['eventTicketsAdmin.headerPurchased']()}</th
-							>
-							<th class="px-4 py-3 text-right text-sm font-semibold"
-								>{m['eventTicketsAdmin.headerActions']()}</th
-							>
-						</tr>
-					</thead>
-					<tbody class="divide-y">
-						{#each data.tickets as ticket}
-							{@const guestName = getGuestNameIfDifferent(ticket)}
-							{@const seatInfo = getSeatDisplay(ticket)}
-							<tr class="hover:bg-muted/30">
-								<td class="px-4 py-3">
-									<div class="flex items-start gap-3">
-										<UserAvatar
-											profilePictureUrl={ticket.user.profile_picture_url}
-											previewUrl={ticket.user.profile_picture_preview_url}
-											thumbnailUrl={ticket.user.profile_picture_thumbnail_url}
-											displayName={getUserDisplayName(ticket.user)}
-											firstName={ticket.user.first_name}
-											lastName={ticket.user.last_name}
-											size="sm"
-											clickable={true}
-										/>
-										<div>
-											{#if guestName}
-												<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-													<span class="font-medium">{guestName}</span>
-												</div>
-												<div class="text-sm text-muted-foreground">
-													(Purchased by {getUserDisplayName(ticket.user)})
-												</div>
-											{:else}
-												<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-													<span class="font-medium">{getUserDisplayName(ticket.user)}</span>
-													{#if ticket.user.pronouns}
-														<span class="text-xs text-muted-foreground"
-															>({ticket.user.pronouns})</span
-														>
-													{/if}
-													{#if ticket.membership}
-														<Badge variant="secondary" class="text-xs">
-															{ticket.membership.tier?.name
-																? m['memberBadge.tierName']({ tier: ticket.membership.tier.name })
-																: m['memberBadge.member']()}
-														</Badge>
-													{/if}
-												</div>
-											{/if}
-											<div class="text-sm text-muted-foreground">
-												{ticket.user.email || 'N/A'}
-											</div>
-											{#if seatInfo}
-												<div class="mt-1 text-xs text-primary">
-													{seatInfo}
-												</div>
-											{/if}
-										</div>
-									</div>
-								</td>
-								<td class="px-4 py-3">
-									<div class="font-medium">{ticket.tier?.name || 'N/A'}</div>
-								</td>
-								<td
-									class="px-4 py-3"
-									title={ticket.payment?.vat_amount != null
-										? m['tickets.vatTooltip']({
-												net: ticket.payment.net_amount ?? '',
-												vat: ticket.payment.vat_amount ?? '',
-												rate: String(ticket.payment.vat_rate ?? '')
-											})
-										: undefined}
-								>
-									<div class="font-medium">
-										{formatPrice(
-											getTicketPrice(ticket),
-											ticket.payment?.currency || ticket.tier?.currency,
-											m['eventTicketsAdmin.free']()
-										)}
-									</div>
-								</td>
-								<td class="px-4 py-3">
-									<div class="flex items-center gap-1 text-sm">
-										{@render paymentMethodIcon(ticket.tier?.payment_method || '')}
-										{getPaymentMethodLabel(ticket.tier?.payment_method || '')}
-									</div>
-								</td>
-								<td class="px-4 py-3">
-									<span class={cn('rounded-full px-2 py-1 text-xs font-semibold', getTicketStatusColor(ticket.status))}>
-										{getTicketStatusLabel(ticket.status)}
-									</span>
-								</td>
-								<td class="px-4 py-3 text-sm text-muted-foreground">
-									{new Date(ticket.created_at).toLocaleDateString()}
-								</td>
-								<td class="px-4 py-3">
-									<div class="flex justify-end gap-2">
-										{#if canCheckIn(ticket)}
-											<Button
-												size="sm"
-												variant="default"
-												onclick={() => handleCheckIn(ticket)}
-												disabled={checkInTicketMutation.isPending}
-											>
-												<Check class="h-4 w-4" aria-hidden="true" />
-												{m['eventTicketsAdmin.actionCheckIn']()}
-											</Button>
-										{/if}
-										{#if canConfirmPayment(ticket)}
-											<Button
-												size="sm"
-												variant="default"
-												onclick={() => handleConfirmPayment(ticket)}
-												disabled={confirmPaymentMutation.isPending}
-											>
-												<Check class="h-4 w-4" aria-hidden="true" />
-												{m['eventTicketsAdmin.actionConfirmPayment']()}
-											</Button>
-										{/if}
-										{#if !ticket.membership && ticket.user?.id}
-											<Button
-												size="sm"
-												variant="outline"
-												onclick={() => openMakeMemberModal(ticket)}
-												disabled={addMemberMutation.isPending || tiersLoading}
-											>
-												<UserPlus class="h-4 w-4" aria-hidden="true" />
-												{m['makeMemberAction.button']()}
-											</Button>
-										{/if}
-										{#if ticket.tier?.payment_method === 'online' && ticket.payment?.stripe_dashboard_url}
-											<Button
-												size="sm"
-												variant="outline"
-												onclick={() => window.open(ticket.payment.stripe_dashboard_url, '_blank')}
-											>
-												<ExternalLink class="h-4 w-4" aria-hidden="true" />
-												Manage on Stripe
-											</Button>
-										{/if}
-										<!-- More actions dropdown -->
-										<DropdownMenu.Root>
-											<DropdownMenu.Trigger>
-												{#snippet child({ props })}
-													<button
-														{...props}
-														class="inline-flex items-center justify-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-														aria-label="More actions for {getUserDisplayName(ticket.user)}"
-													>
-														<MoreVertical class="h-4 w-4" aria-hidden="true" />
-													</button>
-												{/snippet}
-											</DropdownMenu.Trigger>
-											<DropdownMenu.Content align="end">
-												{#if canUnconfirmPayment(ticket)}
-													<DropdownMenu.Item
-														onclick={() => openUnconfirmPaymentDialog(ticket)}
-														disabled={unconfirmPaymentMutation.isPending}
-													>
-														<Undo2 class="mr-2 h-4 w-4" aria-hidden="true" />
-														{m['eventTicketsAdmin.actionUnconfirmPayment']()}
-													</DropdownMenu.Item>
-												{/if}
-												{#if canManageTicket(ticket) && ticket.status !== 'cancelled'}
-													<DropdownMenu.Item
-														onclick={() => handleCancelTicket(ticket)}
-														disabled={cancelTicketMutation.isPending}
-														class="text-destructive focus:text-destructive"
-													>
-														<X class="mr-2 h-4 w-4" aria-hidden="true" />
-														Cancel Ticket
-													</DropdownMenu.Item>
-												{/if}
-												{#if ticket.user?.id}
-													<DropdownMenu.Item
-														onclick={() => openBlacklistDialog(ticket)}
-														class="text-destructive focus:text-destructive"
-													>
-														<Ban class="mr-2 h-4 w-4" aria-hidden="true" />
-														Blacklist User
-													</DropdownMenu.Item>
-												{/if}
-											</DropdownMenu.Content>
-										</DropdownMenu.Root>
-									</div>
-								</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-			</div>
+			<TicketTable
+				tickets={data.tickets}
+				checkInPending={checkInTicketMutation.isPending}
+				confirmPaymentPending={confirmPaymentMutation.isPending}
+				cancelTicketPending={cancelTicketMutation.isPending}
+				addMemberPending={addMemberMutation.isPending}
+				unconfirmPaymentPending={unconfirmPaymentMutation.isPending}
+				{tiersLoading}
+				onCheckIn={handleCheckIn}
+				onConfirmPayment={handleConfirmPayment}
+				onMakeMember={openMakeMemberModal}
+				onCancelTicket={handleCancelTicket}
+				onBlacklist={openBlacklistDialog}
+				onUnconfirmPayment={openUnconfirmPaymentDialog}
+			/>
 
 			<!-- Mobile Cards -->
-			<div class="space-y-4 md:hidden">
-				{#each data.tickets as ticket}
-					{@const guestName = getGuestNameIfDifferent(ticket)}
-					{@const seatInfo = getSeatDisplay(ticket)}
-					<div class="rounded-lg border bg-card p-4">
-						<div class="mb-3 flex items-start justify-between gap-2">
-							<div class="flex flex-1 items-start gap-3">
-								<UserAvatar
-									profilePictureUrl={ticket.user.profile_picture_url}
-									previewUrl={ticket.user.profile_picture_preview_url}
-									thumbnailUrl={ticket.user.profile_picture_thumbnail_url}
-									displayName={getUserDisplayName(ticket.user)}
-									firstName={ticket.user.first_name}
-									lastName={ticket.user.last_name}
-									size="md"
-									clickable={true}
-								/>
-								<div>
-									{#if guestName}
-										<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-											<span class="font-semibold">{guestName}</span>
-										</div>
-										<div class="text-sm text-muted-foreground">
-											(Purchased by {getUserDisplayName(ticket.user)})
-										</div>
-									{:else}
-										<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-											<span class="font-semibold">{getUserDisplayName(ticket.user)}</span>
-											{#if ticket.user.pronouns}
-												<span class="text-xs text-muted-foreground">({ticket.user.pronouns})</span>
-											{/if}
-											{#if ticket.membership}
-												<Badge variant="secondary" class="text-xs">
-													{ticket.membership.tier?.name
-														? m['memberBadge.tierName']({ tier: ticket.membership.tier.name })
-														: m['memberBadge.member']()}
-												</Badge>
-											{/if}
-										</div>
-									{/if}
-									<div class="text-sm text-muted-foreground">{ticket.user.email || 'N/A'}</div>
-									{#if seatInfo}
-										<div class="mt-1 text-xs text-primary">{seatInfo}</div>
-									{/if}
-								</div>
-							</div>
-							<span class={cn('shrink-0 rounded-full px-2 py-1 text-xs font-semibold', getTicketStatusColor(ticket.status))}>
-								{getTicketStatusLabel(ticket.status)}
-							</span>
-						</div>
-
-						<div class="space-y-2 text-sm">
-							<div class="flex items-center justify-between">
-								<span class="text-muted-foreground">{m['eventTicketsAdmin.headerTier']()}:</span>
-								<span class="font-medium">{ticket.tier?.name || 'N/A'}</span>
-							</div>
-							<div class="flex items-center justify-between">
-								<span class="text-muted-foreground">{m['eventTicketsAdmin.headerPrice']()}:</span>
-								<span class="font-medium"
-									>{formatPrice(
-										getTicketPrice(ticket),
-										ticket.payment?.currency || ticket.tier?.currency,
-										m['eventTicketsAdmin.free']()
-									)}</span
-								>
-							</div>
-							<div class="flex items-center justify-between">
-								<span class="text-muted-foreground">{m['eventTicketsAdmin.labelPayment']()}:</span>
-								<span class="flex items-center gap-1">
-									{@render paymentMethodIcon(ticket.tier?.payment_method || '')}
-									{getPaymentMethodLabel(ticket.tier?.payment_method || '')}
-								</span>
-							</div>
-							<div class="flex items-center justify-between">
-								<span class="text-muted-foreground"
-									>{m['eventTicketsAdmin.headerPurchased']()}:</span
-								>
-								<span>{new Date(ticket.created_at).toLocaleDateString()}</span>
-							</div>
-							{#if ticket.payment?.vat_amount != null}
-								<div class="mt-2 space-y-1 border-t pt-2">
-									<p class="text-xs font-medium text-muted-foreground">
-										{m['tickets.vatBreakdown']()}
-									</p>
-									<div class="flex items-center justify-between text-xs">
-										<span class="text-muted-foreground">{m['tickets.vatNet']()}:</span>
-										<span class="font-mono"
-											>{formatPrice(
-												ticket.payment.net_amount,
-												ticket.payment.currency || ticket.tier?.currency
-											)}</span
-										>
-									</div>
-									<div class="flex items-center justify-between text-xs">
-										<span class="text-muted-foreground"
-											>{m['tickets.vatLabel']({
-												rate: String(ticket.payment.vat_rate ?? '')
-											})}:</span
-										>
-										<span class="font-mono"
-											>{formatPrice(
-												ticket.payment.vat_amount,
-												ticket.payment.currency || ticket.tier?.currency
-											)}</span
-										>
-									</div>
-									{#if ticket.payment.platform_fee_net != null}
-										<div class="flex items-center justify-between text-xs">
-											<span class="text-muted-foreground">{m['tickets.platformFeeNet']()}:</span>
-											<span class="font-mono"
-												>{formatPrice(
-													ticket.payment.platform_fee_net,
-													ticket.payment.currency || ticket.tier?.currency
-												)}</span
-											>
-										</div>
-										{#if ticket.payment.platform_fee_reverse_charge}
-											<div class="flex items-center justify-between text-xs">
-												<span class="text-muted-foreground">{m['tickets.reverseCharge']()}:</span>
-												<span class="font-medium text-blue-600 dark:text-blue-400"
-													>{m['tickets.reverseChargeYes']()}</span
-												>
-											</div>
-										{/if}
-									{/if}
-								</div>
-							{/if}
-						</div>
-
-						<div class="mt-3 flex flex-wrap gap-2">
-							{#if canCheckIn(ticket)}
-								<Button
-									size="sm"
-									variant="default"
-									onclick={() => handleCheckIn(ticket)}
-									disabled={checkInTicketMutation.isPending}
-									class="flex-1"
-								>
-									<Check class="h-4 w-4" aria-hidden="true" />
-									{m['eventTicketsAdmin.actionCheckIn']()}
-								</Button>
-							{/if}
-							{#if canConfirmPayment(ticket)}
-								<Button
-									size="sm"
-									variant="default"
-									onclick={() => handleConfirmPayment(ticket)}
-									disabled={confirmPaymentMutation.isPending}
-									class="flex-1"
-								>
-									<Check class="h-4 w-4" aria-hidden="true" />
-									{m['eventTicketsAdmin.actionConfirmPayment']()}
-								</Button>
-							{/if}
-							{#if !ticket.membership && ticket.user?.id}
-								<Button
-									size="sm"
-									variant="outline"
-									onclick={() => openMakeMemberModal(ticket)}
-									disabled={addMemberMutation.isPending || tiersLoading}
-									class="flex-1"
-								>
-									<UserPlus class="h-4 w-4" aria-hidden="true" />
-									{m['makeMemberAction.button']()}
-								</Button>
-							{/if}
-							{#if ticket.tier?.payment_method === 'online' && ticket.payment?.stripe_dashboard_url}
-								<Button
-									size="sm"
-									variant="outline"
-									onclick={() => window.open(ticket.payment.stripe_dashboard_url, '_blank')}
-									class="w-full"
-								>
-									<ExternalLink class="h-4 w-4" aria-hidden="true" />
-									Manage on Stripe
-								</Button>
-							{/if}
-							<!-- More actions dropdown for mobile -->
-							<DropdownMenu.Root>
-								<DropdownMenu.Trigger>
-									{#snippet child({ props })}
-										<button
-											{...props}
-											class="inline-flex items-center justify-center rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-											aria-label="More actions for {getUserDisplayName(ticket.user)}"
-										>
-											<MoreVertical class="h-4 w-4" aria-hidden="true" />
-										</button>
-									{/snippet}
-								</DropdownMenu.Trigger>
-								<DropdownMenu.Content align="end">
-									{#if canUnconfirmPayment(ticket)}
-										<DropdownMenu.Item
-											onclick={() => openUnconfirmPaymentDialog(ticket)}
-											disabled={unconfirmPaymentMutation.isPending}
-										>
-											<Undo2 class="mr-2 h-4 w-4" aria-hidden="true" />
-											{m['eventTicketsAdmin.actionUnconfirmPayment']()}
-										</DropdownMenu.Item>
-									{/if}
-									{#if canManageTicket(ticket) && ticket.status !== 'cancelled'}
-										<DropdownMenu.Item
-											onclick={() => handleCancelTicket(ticket)}
-											disabled={cancelTicketMutation.isPending}
-											class="text-destructive focus:text-destructive"
-										>
-											<X class="mr-2 h-4 w-4" aria-hidden="true" />
-											Cancel Ticket
-										</DropdownMenu.Item>
-									{/if}
-									{#if ticket.user?.id}
-										<DropdownMenu.Item
-											onclick={() => openBlacklistDialog(ticket)}
-											class="text-destructive focus:text-destructive"
-										>
-											<Ban class="mr-2 h-4 w-4" aria-hidden="true" />
-											Blacklist User
-										</DropdownMenu.Item>
-									{/if}
-								</DropdownMenu.Content>
-							</DropdownMenu.Root>
-						</div>
-					</div>
-				{/each}
-			</div>
+			<TicketCardList
+				tickets={data.tickets}
+				checkInPending={checkInTicketMutation.isPending}
+				confirmPaymentPending={confirmPaymentMutation.isPending}
+				cancelTicketPending={cancelTicketMutation.isPending}
+				addMemberPending={addMemberMutation.isPending}
+				unconfirmPaymentPending={unconfirmPaymentMutation.isPending}
+				{tiersLoading}
+				onCheckIn={handleCheckIn}
+				onConfirmPayment={handleConfirmPayment}
+				onMakeMember={openMakeMemberModal}
+				onCancelTicket={handleCancelTicket}
+				onBlacklist={openBlacklistDialog}
+				onUnconfirmPayment={openUnconfirmPaymentDialog}
+			/>
 		{/if}
 
 		<!-- Pagination -->

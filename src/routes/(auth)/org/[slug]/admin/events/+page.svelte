@@ -16,16 +16,7 @@
 	import DuplicateEventModal from '$lib/components/events/admin/DuplicateEventModal.svelte';
 	import AdminEventCard from '$lib/components/events/admin/AdminEventCard.svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import {
-		Plus,
-		Calendar,
-		Eye,
-		Users,
-		Trash2,
-		Mail,
-		MoreVertical,
-		Copy
-	} from 'lucide-svelte';
+	import { Plus, Calendar, Eye, Users, Trash2, Mail, MoreVertical, Copy } from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
 

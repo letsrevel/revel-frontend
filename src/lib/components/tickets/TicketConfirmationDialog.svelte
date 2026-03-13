@@ -9,10 +9,8 @@
 		DialogFooter
 	} from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
-	import { Checkbox } from '$lib/components/ui/checkbox';
 	import {
 		Ticket,
 		DollarSign,
@@ -21,30 +19,22 @@
 		Wallet,
 		Plus,
 		Minus,
-		User,
-		Shuffle,
-		DoorOpen,
-		Armchair,
-		Loader2,
-		Tag,
-		X,
-		ChevronDown
+		Loader2
 	} from 'lucide-svelte';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import type {
 		TicketPurchaseItem,
 		SeatAssignmentMode,
-		VenueSeatSchema,
 		SectorAvailabilitySchema,
 		DiscountCodeValidationResponse
 	} from '$lib/api/generated/types.gen';
-	import {
-		eventpublicticketsGetTierSeatAvailability,
-		eventpublicticketsValidateDiscount
-	} from '$lib/api/generated/sdk.gen';
+	import { eventpublicticketsGetTierSeatAvailability } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import SeatSelector from './SeatSelector.svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+	import DiscountCodeInput from './DiscountCodeInput.svelte';
+	import GuestNameInputs from './GuestNameInputs.svelte';
+	import PwycInput from './PwycInput.svelte';
+	import SeatAssignmentSection from './SeatAssignmentSection.svelte';
 
 	interface ConfirmPayload {
 		amount?: number;
@@ -103,11 +93,7 @@
 	let apiError = $state('');
 
 	// Discount code state
-	let discountOpen = $state(!!initialDiscountCode);
-	let discountCodeInput = $state(initialDiscountCode);
-	let isValidatingDiscount = $state(false);
 	let discountResult = $state<DiscountCodeValidationResponse | null>(null);
-	let discountError = $state('');
 	let appliedDiscountCode = $state('');
 
 	// Whether discount codes are applicable (not for free/PWYC tiers)
@@ -139,27 +125,16 @@
 	let seatLoadError = $state<string | null>(null);
 	let selectedSeatIds = $state<string[]>([]);
 
-	// Computed: available seats from the sector
-	let availableSeats = $derived<VenueSeatSchema[]>(
-		seatAvailability?.seats?.filter((s) => s.available && s.id) ?? []
-	);
-
-	// Computed: whether seat selection is valid (enough seats selected for quantity)
-	let seatSelectionValid = $derived(!isUserChoiceSeat || selectedSeatIds.length === quantity);
-
 	// Fetch seat availability when dialog opens with user_choice mode
 	async function fetchSeatAvailability() {
 		if (!isUserChoiceSeat || !eventId || !tier.id) return;
-
 		isLoadingSeats = true;
 		seatLoadError = null;
-
 		try {
 			const response = await eventpublicticketsGetTierSeatAvailability({
 				path: { event_id: eventId, tier_id: tier.id },
 				headers: authStore.getAuthHeaders()
 			});
-
 			if (response.error) {
 				seatLoadError = 'Failed to load available seats';
 				console.error('Seat availability error:', response.error);
@@ -176,22 +151,13 @@
 
 	// Toggle seat selection
 	function toggleSeat(seatId: string) {
-		// Clear error when user makes a selection
 		seatSelectionError = '';
-
 		const index = selectedSeatIds.indexOf(seatId);
 		if (index >= 0) {
-			// Deselect
 			selectedSeatIds = selectedSeatIds.filter((id) => id !== seatId);
 		} else if (selectedSeatIds.length < quantity) {
-			// Select (if not at max)
 			selectedSeatIds = [...selectedSeatIds, seatId];
 		}
-	}
-
-	// Check if a seat is selected
-	function isSeatSelected(seatId: string): boolean {
-		return selectedSeatIds.includes(seatId);
 	}
 
 	// PWYC min/max
@@ -211,12 +177,10 @@
 	// Format price display
 	let priceDisplay = $derived.by(() => {
 		if (isFree) return 'Free';
-
 		if (isPwyc) {
 			const maxDisplay = maxAmount ? `${tier.currency} ${maxAmount.toFixed(2)}` : 'any amount';
 			return `${tier.currency} ${minAmount.toFixed(2)} - ${maxDisplay}`;
 		}
-
 		const price = typeof tier.price === 'string' ? parseFloat(tier.price) : tier.price;
 		return `${tier.currency} ${price.toFixed(2)}`;
 	});
@@ -247,24 +211,16 @@
 
 	// Calculated max quantity based on tier availability, tier limit, and user limit
 	let effectiveMaxQuantity = $derived.by(() => {
-		// Start with a large default
 		let max = 100;
-
-		// Limit by tier availability (how many tickets are left for this tier)
 		if (tier.total_available !== null && tier.total_available > 0) {
 			max = Math.min(max, tier.total_available);
 		}
-
-		// Limit by effective max per user (tier's or event's max_tickets_per_user)
 		if (effectiveMaxPerUser !== null && effectiveMaxPerUser > 0) {
 			max = Math.min(max, effectiveMaxPerUser);
 		}
-
-		// Limit by user's remaining quota (from backend, considers existing purchases)
 		if (maxQuantity !== null && maxQuantity > 0) {
 			max = Math.min(max, maxQuantity);
 		}
-
 		return Math.max(1, max);
 	});
 
@@ -280,38 +236,25 @@
 	// PWYC validation state for canSubmit and UI hints
 	let pwycValidation = $derived.by(() => {
 		if (!isPwyc) return { valid: true, error: null as string | null };
-
 		const trimmed = pwycAmount.trim();
-		if (!trimmed) {
-			return { valid: false, error: 'empty' as const };
-		}
-
+		if (!trimmed) return { valid: false, error: 'empty' as const };
 		const value = parseFloat(trimmed);
-		if (isNaN(value)) {
-			return { valid: false, error: 'invalid' as const };
-		}
-
-		if (value < minAmount) {
-			return { valid: false, error: 'below_min' as const };
-		}
-
-		if (maxAmount !== null && value > maxAmount) {
-			return { valid: false, error: 'above_max' as const };
-		}
-
+		if (isNaN(value)) return { valid: false, error: 'invalid' as const };
+		if (value < minAmount) return { valid: false, error: 'below_min' as const };
+		if (maxAmount !== null && value > maxAmount) return { valid: false, error: 'above_max' as const };
 		return { valid: true, error: null };
 	});
 
 	// Check if form is valid for submission
 	let canSubmit = $derived.by(() => {
-		// Must have all guest names filled when showing guest name inputs
 		if (showGuestNames && !allGuestNamesFilled) return false;
-		// Must have valid PWYC amount when applicable (within range)
 		if (isPwyc && !pwycValidation.valid) return false;
-		// Must have all seats selected when user_choice mode
 		if (isUserChoiceSeat && selectedSeatIds.length !== quantity) return false;
 		return true;
 	});
+
+	// Reference to DiscountCodeInput for resetting its internal state
+	let discountCodeInputRef: DiscountCodeInput | undefined = $state();
 
 	// Reset state when dialog opens/closes
 	$effect(() => {
@@ -328,13 +271,9 @@
 			seatLoadError = null;
 			discountResult = null;
 			appliedDiscountCode = '';
-			discountError = '';
-			discountCodeInput = initialDiscountCode;
-			discountOpen = !!initialDiscountCode;
+			discountCodeInputRef?.resetInput(initialDiscountCode, !!initialDiscountCode);
 		} else {
-			// Initialize with user's name when dialog opens
 			guestNames = [userName || ''];
-			// Fetch seat availability if user_choice mode
 			if (isUserChoiceSeat) {
 				fetchSeatAvailability();
 			}
@@ -345,12 +284,9 @@
 	$effect(() => {
 		const newLength = quantity;
 		const currentLength = guestNames.length;
-
 		if (newLength > currentLength) {
-			// Add new entries
 			guestNames = [...guestNames, ...Array(newLength - currentLength).fill('')];
 		} else if (newLength < currentLength) {
-			// Remove extra entries
 			guestNames = guestNames.slice(0, newLength);
 		}
 	});
@@ -362,59 +298,34 @@
 		}
 	});
 
-	// Quantity control functions
 	function incrementQuantity() {
-		if (quantity < effectiveMaxQuantity) {
-			quantity++;
-		}
+		if (quantity < effectiveMaxQuantity) quantity++;
 	}
 
 	function decrementQuantity() {
-		if (quantity > 1) {
-			quantity--;
-		}
+		if (quantity > 1) quantity--;
 	}
 
 	function updateGuestName(index: number, value: string) {
 		guestNames[index] = value;
 	}
 
-	// PWYC validation
-	function validatePwycAmount(): boolean {
-		if (!isPwyc) return true;
-
-		pwycError = '';
-
-		if (!pwycAmount.trim()) {
-			pwycError = 'Please enter an amount';
-			return false;
-		}
-
-		const value = parseFloat(pwycAmount);
-
-		if (isNaN(value)) {
-			pwycError = 'Please enter a valid number';
-			return false;
-		}
-
-		if (value < minAmount) {
-			pwycError = `Minimum amount is ${tier.currency} ${minAmount.toFixed(2)}`;
-			return false;
-		}
-
-		if (maxAmount !== null && value > maxAmount) {
-			pwycError = `Maximum amount is ${tier.currency} ${maxAmount.toFixed(2)}`;
-			return false;
-		}
-
-		return true;
+	// Set PWYC error message based on validation state
+	function setPwycErrorMessage(): boolean {
+		if (!isPwyc || pwycValidation.valid) return true;
+		const errorMap: Record<string, string> = {
+			empty: 'Please enter an amount',
+			invalid: 'Please enter a valid number',
+			below_min: `Minimum amount is ${tier.currency} ${minAmount.toFixed(2)}`,
+			above_max: `Maximum amount is ${tier.currency} ${maxAmount?.toFixed(2)}`
+		};
+		pwycError = errorMap[pwycValidation.error ?? ''] ?? 'Invalid amount';
+		return false;
 	}
 
-	// Guest names validation
-	function validateGuestNames(): boolean {
+	// Set guest name error message based on validation state
+	function setGuestNameErrorMessage(): boolean {
 		guestNameError = '';
-
-		// Check if any guest name is empty
 		const emptyIndex = guestNames.findIndex((name) => !name.trim());
 		if (emptyIndex >= 0) {
 			guestNameError =
@@ -423,21 +334,28 @@
 					: `Please enter a name for ticket holder ${emptyIndex + 1}`;
 			return false;
 		}
-
 		return true;
 	}
 
-	async function handleConfirm() {
-		// Clear any previous API error
-		apiError = '';
-
-		// Validate guest names first
-		if (!validateGuestNames()) return;
-
-		// For PWYC, validate amount
-		if (isPwyc) {
-			if (!validatePwycAmount()) return;
+	function extractErrorMessage(err: unknown): string {
+		const fallback = 'Something went wrong. Please try again.';
+		if (!err || typeof err !== 'object') return fallback;
+		const obj = err as Record<string, unknown>;
+		const resp = obj.response as Record<string, unknown> | undefined;
+		const data = resp?.data as Record<string, unknown> | undefined;
+		if (typeof data?.detail === 'string') return data.detail;
+		if (Array.isArray(data?.detail)) {
+			return data.detail.map((d: { msg?: string }) => d.msg || String(d)).join(', ');
 		}
+		if (typeof obj.detail === 'string') return obj.detail;
+		if (typeof obj.message === 'string') return obj.message;
+		return fallback;
+	}
+
+	async function handleConfirm() {
+		apiError = '';
+		if (!setGuestNameErrorMessage()) return;
+		if (!setPwycErrorMessage()) return;
 
 		// For user_choice seats, validate seat selection
 		if (isUserChoiceSeat && selectedSeatIds.length !== quantity) {
@@ -451,75 +369,22 @@
 
 		// Build tickets array
 		const tickets: TicketPurchaseItem[] = guestNames.map((name, index) => {
-			const ticket: TicketPurchaseItem = {
-				guest_name: name.trim()
-			};
-
-			// Add seat_id for user_choice mode
+			const ticket: TicketPurchaseItem = { guest_name: name.trim() };
 			if (isUserChoiceSeat && selectedSeatIds[index]) {
 				ticket.seat_id = selectedSeatIds[index];
 			}
-
 			return ticket;
 		});
 
-		const payload: ConfirmPayload = {
-			tickets
-		};
-
-		// Add PWYC amount if applicable
-		if (isPwyc && pwycAmount.trim()) {
-			payload.amount = parseFloat(pwycAmount);
-		}
-
-		// Add discount code if applied
-		if (appliedDiscountCode && discountResult?.valid) {
-			payload.discountCode = appliedDiscountCode;
-		}
+		const payload: ConfirmPayload = { tickets };
+		if (isPwyc && pwycAmount.trim()) payload.amount = parseFloat(pwycAmount);
+		if (appliedDiscountCode && discountResult?.valid) payload.discountCode = appliedDiscountCode;
 
 		try {
 			await onConfirm(payload);
 		} catch (err: unknown) {
-			// Handle API errors
 			console.error('Ticket purchase error:', err);
-
-			// Extract error message from various error formats
-			let errorMessage = 'Something went wrong. Please try again.';
-
-			if (err && typeof err === 'object') {
-				const errorObj = err as Record<string, unknown>;
-
-				// Check for response.data.detail (common API error format)
-				if (errorObj.response && typeof errorObj.response === 'object') {
-					const response = errorObj.response as Record<string, unknown>;
-					if (response.data && typeof response.data === 'object') {
-						const data = response.data as Record<string, unknown>;
-						if (typeof data.detail === 'string') {
-							errorMessage = data.detail;
-						} else if (Array.isArray(data.detail)) {
-							// Pydantic validation errors
-							errorMessage = data.detail
-								.map((d: { msg?: string }) => d.msg || String(d))
-								.join(', ');
-						}
-					}
-				}
-
-				// Check for direct error.detail
-				if (typeof errorObj.detail === 'string') {
-					errorMessage = errorObj.detail;
-				}
-
-				// Check for error.message
-				if (
-					typeof errorObj.message === 'string' &&
-					!errorMessage.includes('Something went wrong')
-				) {
-					errorMessage = errorObj.message;
-				}
-			}
-
-			apiError = errorMessage;
+			apiError = extractErrorMessage(err);
 		}
 	}
 
@@ -538,58 +403,15 @@
 		return [minAmount, minAmount * 2, minAmount * 3];
 	});
 
-	// Discount code functions
-	async function validateDiscountCode() {
-		const code = discountCodeInput.trim().toUpperCase();
-		if (!code) {
-			discountError = 'Please enter a discount code';
-			return;
-		}
-
-		isValidatingDiscount = true;
-		discountError = '';
-		discountResult = null;
-
-		try {
-			const response = await eventpublicticketsValidateDiscount({
-				path: { event_id: eventId, tier_id: tier.id },
-				body: { code }
-			});
-
-			if (response.error) {
-				const err = response.error as any;
-				const detail = err?.detail;
-				discountError =
-					typeof detail === 'string'
-						? detail
-						: Array.isArray(detail)
-							? detail.map((d: { msg?: string }) => d.msg || String(d)).join(', ')
-							: 'Failed to validate code';
-				return;
-			}
-
-			if (response.data) {
-				if (response.data.valid) {
-					discountResult = response.data;
-					appliedDiscountCode = code;
-					discountError = '';
-				} else {
-					discountError = response.data.message || 'Invalid discount code';
-					discountResult = null;
-				}
-			}
-		} catch {
-			discountError = 'Failed to validate discount code';
-		} finally {
-			isValidatingDiscount = false;
-		}
+	// Discount code callbacks
+	function handleDiscountApply(code: string, result: DiscountCodeValidationResponse) {
+		appliedDiscountCode = code;
+		discountResult = result;
 	}
 
-	function removeDiscount() {
+	function handleDiscountRemove() {
 		discountResult = null;
 		appliedDiscountCode = '';
-		discountCodeInput = '';
-		discountError = '';
 	}
 
 	// Computed discounted price display
@@ -601,14 +423,6 @@
 	let discountedPrice = $derived.by(() => {
 		if (!discountResult?.discounted_price) return null;
 		return parseFloat(discountResult.discounted_price);
-	});
-
-	let discountBadge = $derived.by(() => {
-		if (!discountResult) return '';
-		if (discountResult.discount_type === 'percentage') {
-			return `-${discountResult.discount_value}%`;
-		}
-		return `-${tier.currency} ${discountResult.discount_value}`;
 	});
 </script>
 
@@ -664,121 +478,20 @@
 			</div>
 
 			<!-- Seat Assignment Info / Selection -->
-			{#if isUserChoiceSeat}
-				<!-- Seat Selection UI for user_choice mode -->
-				<div class="space-y-3">
-					<div class="flex items-center justify-between">
-						<Label class="flex items-center gap-2">
-							<Armchair class="h-4 w-4" />
-							{m['ticketConfirmationDialog.selectSeats']?.() ?? 'Select Your Seats'}
-						</Label>
-						<span class="text-sm text-muted-foreground">
-							{selectedSeatIds.length} / {quantity}
-							{m['ticketConfirmationDialog.seatsSelected']?.() ?? 'selected'}
-						</span>
-					</div>
-
-					{#if tierVenue || tierSector}
-						<p class="text-sm text-muted-foreground">
-							{#if tierVenue}
-								<span class="font-medium">{tierVenue.name}</span>
-							{/if}
-							{#if tierSector}
-								<span> - {tierSector.name}</span>
-							{/if}
-						</p>
-					{/if}
-
-					{#if isLoadingSeats}
-						<div class="flex items-center justify-center py-8">
-							<Loader2 class="h-6 w-6 animate-spin text-muted-foreground" />
-							<span class="ml-2 text-sm text-muted-foreground">
-								{m['ticketConfirmationDialog.loadingSeats']?.() ?? 'Loading available seats...'}
-							</span>
-						</div>
-					{:else if seatLoadError}
-						<Alert variant="destructive">
-							<AlertCircle class="h-4 w-4" />
-							<AlertDescription>{seatLoadError}</AlertDescription>
-						</Alert>
-					{:else if availableSeats.length === 0}
-						<Alert>
-							<AlertCircle class="h-4 w-4" />
-							<AlertDescription>
-								{m['ticketConfirmationDialog.noSeatsAvailable']?.() ??
-									'No seats available for selection.'}
-							</AlertDescription>
-						</Alert>
-					{:else}
-						<!-- Seat Selection Grid -->
-						<div class="max-h-64 overflow-y-auto rounded-lg border border-border bg-background p-3">
-							<SeatSelector
-								seats={seatAvailability?.seats ?? []}
-								{selectedSeatIds}
-								maxSelectable={quantity}
-								onToggle={toggleSeat}
-							/>
-						</div>
-						<!-- Seat Selection Error -->
-						{#if seatSelectionError}
-							<Alert variant="destructive" class="mt-3">
-								<AlertCircle class="h-4 w-4" />
-								<AlertDescription>{seatSelectionError}</AlertDescription>
-							</Alert>
-						{/if}
-					{/if}
-				</div>
-			{:else if hasSeatedTier}
-				<div class="rounded-lg border border-border bg-muted/30 p-4">
-					<div class="flex items-start gap-3">
-						{#if isRandomSeat}
-							<Shuffle
-								class="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-500"
-								aria-hidden="true"
-							/>
-							<div class="space-y-1">
-								<p class="font-medium text-foreground">
-									{m['ticketConfirmationDialog.randomSeatAssignment']?.() ??
-										'Random Seat Assignment'}
-								</p>
-								<p class="text-sm text-muted-foreground">
-									{m['ticketConfirmationDialog.randomSeatAssignmentDesc']?.() ??
-										'Seats will be randomly assigned to you from the available seats in the designated sector.'}
-								</p>
-								{#if tierVenue || tierSector}
-									<p class="mt-2 text-sm">
-										{#if tierVenue}
-											<span class="font-medium">{tierVenue.name}</span>
-										{/if}
-										{#if tierSector}
-											<span class="text-muted-foreground">
-												{tierVenue ? ' - ' : ''}{tierSector.name}
-											</span>
-										{/if}
-									</p>
-								{/if}
-							</div>
-						{/if}
-					</div>
-				</div>
-			{:else if tierVenue}
-				<!-- General Entrance with venue info -->
-				<div class="rounded-lg border border-border bg-muted/30 p-4">
-					<div class="flex items-start gap-3">
-						<DoorOpen class="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-						<div class="space-y-1">
-							<p class="font-medium text-foreground">
-								{m['ticketConfirmationDialog.generalEntrance']?.() ?? 'General Entrance'}
-							</p>
-							<p class="text-sm text-muted-foreground">
-								{m['ticketConfirmationDialog.generalEntranceDesc']?.() ??
-									'This ticket grants general admission without assigned seating.'}
-							</p>
-							<p class="mt-2 text-sm font-medium">{tierVenue.name}</p>
-						</div>
-					</div>
-				</div>
-			{/if}
+			<SeatAssignmentSection
+				{isUserChoiceSeat}
+				{isRandomSeat}
+				{hasSeatedTier}
+				{tierVenue}
+				{tierSector}
+				{quantity}
+				{selectedSeatIds}
+				{seatSelectionError}
+				{isLoadingSeats}
+				{seatLoadError}
+				{seatAvailability}
+				onToggleSeat={toggleSeat}
+			/>
 
 			<!-- Quantity Selector -->
 			{#if showQuantitySelector}
@@ -815,228 +528,51 @@
 
 			<!-- Guest Names -->
 			{#if showGuestNames}
-				<div class="space-y-3 rounded-lg border-2 border-primary/20 bg-primary/5 p-4">
-					<div class="flex items-center gap-2">
-						<User class="h-5 w-5 text-primary" aria-hidden="true" />
-						<Label class="text-base font-semibold">
-							{quantity === 1 ? 'Ticket Holder' : 'Ticket Holders'}
-						</Label>
-						<span class="text-sm text-destructive">*</span>
-					</div>
-					<p class="text-sm text-muted-foreground">
-						{quantity === 1
-							? 'Please enter your name for the ticket'
-							: 'Please enter a name for each ticket holder'}
-					</p>
-					<div class="space-y-2">
-						{#each guestNames as name, index (index)}
-							<div class="flex items-center gap-2">
-								<span
-									class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary"
-								>
-									{index + 1}
-								</span>
-								<Input
-									type="text"
-									value={name}
-									oninput={(e) => {
-										updateGuestName(index, e.currentTarget.value);
-										guestNameError = ''; // Clear error on input
-									}}
-									placeholder={index === 0 ? 'Your name' : `Guest ${index + 1} name`}
-									disabled={isProcessing}
-									class="flex-1"
-									required
-									aria-invalid={guestNameError && !name.trim() ? 'true' : 'false'}
-								/>
-							</div>
-						{/each}
-					</div>
-					{#if guestNameError}
-						<Alert variant="destructive">
-							<AlertCircle class="h-4 w-4" />
-							<AlertDescription>{guestNameError}</AlertDescription>
-						</Alert>
-					{/if}
-				</div>
+				<GuestNameInputs
+					{guestNames}
+					{quantity}
+					{isProcessing}
+					{guestNameError}
+					onUpdateName={updateGuestName}
+					onClearError={() => (guestNameError = '')}
+				/>
 			{/if}
 
 			<!-- Discount Code Section (not for free/PWYC tiers) -->
 			{#if discountApplicable}
-				<div class="rounded-lg border">
-					<button
-						type="button"
-						onclick={() => (discountOpen = !discountOpen)}
-						class="flex w-full items-center justify-between px-4 py-3 text-sm font-medium hover:bg-accent"
-						aria-expanded={discountOpen}
-					>
-						<span class="flex items-center gap-2">
-							<Tag class="h-4 w-4" aria-hidden="true" />
-							Have a discount code?
-						</span>
-						<ChevronDown
-							class="h-4 w-4 transition-transform {discountOpen ? 'rotate-180' : ''}"
-							aria-hidden="true"
-						/>
-					</button>
-
-					{#if discountOpen}
-						<div class="space-y-3 border-t px-4 py-3">
-							{#if appliedDiscountCode && discountResult?.valid}
-								<!-- Applied discount display -->
-								<div class="rounded-md bg-emerald-50 p-3 dark:bg-emerald-950/30">
-									<div class="flex items-center justify-between">
-										<div class="flex items-center gap-2">
-											<Tag
-												class="h-4 w-4 text-emerald-600 dark:text-emerald-400"
-												aria-hidden="true"
-											/>
-											<span class="font-mono font-semibold text-emerald-800 dark:text-emerald-300">
-												{appliedDiscountCode}
-											</span>
-											<span
-												class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300"
-											>
-												{discountBadge}
-											</span>
-										</div>
-										<button
-											type="button"
-											onclick={removeDiscount}
-											disabled={isProcessing}
-											class="rounded-md p-1 text-emerald-600 hover:bg-emerald-100 dark:text-emerald-400 dark:hover:bg-emerald-900/50"
-											aria-label="Remove discount code"
-										>
-											<X class="h-4 w-4" />
-										</button>
-									</div>
-
-									{#if discountedPrice !== null}
-										<div class="mt-2 text-sm">
-											<span class="text-muted-foreground line-through">
-												{tier.currency}
-												{originalPrice.toFixed(2)}
-											</span>
-											<span class="ml-2 font-semibold text-emerald-800 dark:text-emerald-300">
-												{tier.currency}
-												{discountedPrice.toFixed(2)}
-											</span>
-											<span class="text-muted-foreground"> / ticket</span>
-
-											{#if quantity > 1}
-												<p class="mt-1 font-medium text-emerald-800 dark:text-emerald-300">
-													Total: {tier.currency}
-													{(discountedPrice * quantity).toFixed(2)}
-												</p>
-											{/if}
-										</div>
-									{/if}
-								</div>
-							{:else}
-								<!-- Discount code input -->
-								<div class="flex gap-2">
-									<Input
-										type="text"
-										bind:value={discountCodeInput}
-										placeholder="Enter code"
-										disabled={isProcessing || isValidatingDiscount}
-										class="flex-1 uppercase"
-										aria-label="Discount code"
-										aria-invalid={discountError ? 'true' : undefined}
-										aria-describedby={discountError ? 'discount-error' : undefined}
-										onkeydown={(e) => {
-											if (e.key === 'Enter') {
-												e.preventDefault();
-												e.stopPropagation();
-												validateDiscountCode();
-											}
-										}}
-									/>
-									<Button
-										variant="outline"
-										onclick={validateDiscountCode}
-										disabled={isProcessing || isValidatingDiscount || !discountCodeInput.trim()}
-									>
-										{#if isValidatingDiscount}
-											<Loader2 class="h-4 w-4 animate-spin" />
-										{:else}
-											Apply
-										{/if}
-									</Button>
-								</div>
-
-								{#if discountError}
-									<p id="discount-error" class="text-sm text-destructive" role="alert">
-										{discountError}
-									</p>
-								{/if}
-							{/if}
-						</div>
-					{/if}
-				</div>
+				<DiscountCodeInput
+					bind:this={discountCodeInputRef}
+					{eventId}
+					tierId={tier.id}
+					currency={tier.currency}
+					{originalPrice}
+					{quantity}
+					{isProcessing}
+					initialOpen={!!initialDiscountCode}
+					initialCode={initialDiscountCode}
+					{appliedDiscountCode}
+					{discountResult}
+					onApply={handleDiscountApply}
+					onRemove={handleDiscountRemove}
+				/>
 			{/if}
 
 			<!-- PWYC Amount Selection -->
 			{#if isPwyc}
-				<div class="space-y-3">
-					<div class="space-y-2">
-						<Label for="pwyc-amount">{m['ticketConfirmationDialog.paymentAmount']()}</Label>
-						<div class="text-xs text-muted-foreground">
-							Range: {tier.currency}
-							{minAmount.toFixed(2)} - {maxAmount !== null
-								? `${tier.currency} ${maxAmount.toFixed(2)}`
-								: 'any amount'}
-						</div>
-						<div class="relative">
-							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-								{tier.currency}
-							</span>
-							<Input
-								id="pwyc-amount"
-								type="number"
-								min={minAmount}
-								max={maxAmount ?? undefined}
-								step="0.01"
-								value={pwycAmount}
-								oninput={(e) => {
-									pwycAmount = e.currentTarget.value;
-									pwycError = '';
-								}}
-								onkeydown={handleKeydown}
-								class="pl-12 text-lg font-semibold"
-								placeholder={minAmount.toFixed(2)}
-								disabled={isProcessing}
-								aria-invalid={pwycError || !pwycValidation.valid ? 'true' : 'false'}
-								aria-describedby={pwycError ? 'amount-error' : undefined}
-							/>
-						</div>
-						{#if pwycError}
-							<p id="amount-error" class="text-sm text-destructive" role="alert">
-								{pwycError}
-							</p>
-						{/if}
-					</div>
-
-					<!-- Quick Amount Suggestions -->
-					<div class="space-y-2">
-						<p class="text-sm font-medium">{m['ticketConfirmationDialog.quickSelect']()}</p>
-						<div class="grid grid-cols-3 gap-2">
-							{#each pwycSuggestions as suggested (suggested)}
-								<Button
-									variant="outline"
-									size="sm"
-									onclick={() => {
-										pwycAmount = suggested.toFixed(2);
-										pwycError = '';
-									}}
-									disabled={isProcessing}
-								>
-									{tier.currency}{suggested.toFixed(2)}
-								</Button>
-							{/each}
-						</div>
-					</div>
-				</div>
+				<PwycInput
+					currency={tier.currency}
+					{minAmount}
+					{maxAmount}
+					{pwycAmount}
+					{pwycError}
+					{isProcessing}
+					suggestions={pwycSuggestions}
+					onAmountChange={(value) => {
+						pwycAmount = value;
+						pwycError = '';
+					}}
+					onKeydown={handleKeydown}
+				/>
 			{/if}
 
 			<!-- Online Payment Notice -->

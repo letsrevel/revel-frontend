@@ -22,65 +22,45 @@
 	import { questionnaireCreateOrgQuestionnaire } from '$lib/api/generated/sdk.gen';
 	import type {
 		SectionCreateSchema,
-		MultipleChoiceQuestionCreateSchema
+		MultipleChoiceQuestionCreateSchema,
+		FreeTextQuestionCreateSchema,
+		FileUploadQuestionCreateSchema
 	} from '$lib/api/generated/types.gen';
 	import type { PageData } from './$types';
+	import type {
+		QuestionnaireOption as Option,
+		QuestionnaireQuestion as Question,
+		QuestionnaireConditionalSection as ConditionalSection,
+		QuestionnaireSection as Section
+	} from '$lib/utils/questionnaire-form-types';
+	import {
+		createQuestion,
+		DND_FLIP_DURATION_MS,
+		DND_DROP_TARGET_STYLE
+	} from '$lib/utils/questionnaire-form-types';
+	import {
+		addTopLevelQuestion as _addTopLevelQuestion,
+		removeTopLevelQuestion as _removeTopLevelQuestion,
+		updateTopLevelQuestion as _updateTopLevelQuestion,
+		addSection as _addSection,
+		removeSection as _removeSection,
+		updateSection as _updateSection,
+		addQuestionToSection as _addQuestionToSection,
+		removeQuestionFromSection as _removeQuestionFromSection,
+		updateQuestionInSection as _updateQuestionInSection,
+		reorderQuestionsInSection as _reorderQuestionsInSection,
+		mcQuestionToCreateApiFormat,
+		ftQuestionToCreateApiFormat,
+		fuQuestionToCreateApiFormat,
+		buildCreateApiSections,
+		parseValidationErrors
+	} from '$lib/utils/questionnaire-form-helpers';
 
 	interface Props {
 		data: PageData;
 	}
 
 	let { data }: Props = $props();
-
-	// Forward declaration for recursive types
-	interface Option {
-		text: string;
-		isCorrect: boolean;
-		conditionalQuestions?: Question[];
-		conditionalSections?: ConditionalSection[];
-	}
-
-	// Question type definition (used for both top-level and conditional questions)
-	interface Question {
-		id: string;
-		type: 'multiple_choice' | 'free_text' | 'file_upload';
-		text: string;
-		hint?: string;
-		reviewerNotes?: string;
-		required: boolean;
-		order: number;
-		positiveWeight: number;
-		negativeWeight: number;
-		isFatal: boolean;
-		// For multiple choice
-		options?: Option[];
-		allowMultipleAnswers?: boolean;
-		shuffleOptions?: boolean;
-		// For free text
-		llmGuidelines?: string;
-		// For file upload
-		allowedMimeTypes?: string[];
-		maxFileSize?: number;
-		maxFiles?: number;
-	}
-
-	// Conditional section type (shown when option is selected)
-	interface ConditionalSection {
-		id: string;
-		name: string;
-		description?: string;
-		order: number;
-		questions: Question[];
-	}
-
-	// Section type definition
-	interface Section {
-		id: string;
-		name: string;
-		description?: string;
-		order: number;
-		questions: Question[];
-	}
 
 	// Form state
 	let name = $state('');
@@ -183,152 +163,58 @@
 			'AI evaluates all responses automatically - fastest approval process'
 	);
 
-	// Helper to create a new question
-	function createQuestion(
-		type: 'multiple_choice' | 'free_text' | 'file_upload',
-		order: number
-	): Question {
-		const base: Question = {
-			id: crypto.randomUUID(),
-			type,
-			text: '',
-			required: true,
-			order,
-			positiveWeight: 1.0,
-			negativeWeight: 0.0,
-			isFatal: false
-		};
+	// ===== Wrapper functions that delegate to pure helpers and reassign $state =====
 
-		if (type === 'multiple_choice') {
-			return {
-				...base,
-				options: [
-					{ text: '', isCorrect: false },
-					{ text: '', isCorrect: false }
-				],
-				allowMultipleAnswers: false,
-				shuffleOptions: true
-			};
-		} else if (type === 'free_text') {
-			return {
-				...base,
-				llmGuidelines: ''
-			};
-		} else {
-			// file_upload
-			return {
-				...base,
-				allowedMimeTypes: ['image/jpeg', 'image/png', 'application/pdf'],
-				maxFileSize: 5242880, // 5MB
-				maxFiles: 1
-			};
-		}
-	}
-
-	// Add a new top-level question (not in any section)
 	function addTopLevelQuestion(type: 'multiple_choice' | 'free_text' | 'file_upload') {
-		const newQuestion = createQuestion(type, topLevelQuestions.length);
-		topLevelQuestions = [...topLevelQuestions, newQuestion];
+		topLevelQuestions = _addTopLevelQuestion(topLevelQuestions, type);
 	}
 
-	// Remove a top-level question
 	function removeTopLevelQuestion(id: string) {
-		topLevelQuestions = topLevelQuestions.filter((q) => q.id !== id);
-		// Re-order remaining questions
-		topLevelQuestions = topLevelQuestions.map((q, index) => ({ ...q, order: index }));
+		topLevelQuestions = _removeTopLevelQuestion(topLevelQuestions, id);
 	}
 
-	// Update a top-level question
 	function updateTopLevelQuestion(id: string, updates: Partial<Question>) {
-		topLevelQuestions = topLevelQuestions.map((q) => (q.id === id ? { ...q, ...updates } : q));
+		topLevelQuestions = _updateTopLevelQuestion(topLevelQuestions, id, updates);
 	}
 
-	// Add a new section
 	function addSection() {
-		const newSection: Section = {
-			id: crypto.randomUUID(),
-			name: `Section ${sections.length + 1}`,
-			description: '',
-			order: sections.length,
-			questions: []
-		};
-		sections = [...sections, newSection];
+		sections = _addSection(sections);
 	}
 
-	// Remove a section
 	function removeSection(id: string) {
-		sections = sections.filter((s) => s.id !== id);
-		// Re-order remaining sections
-		sections = sections.map((s, index) => ({ ...s, order: index }));
+		sections = _removeSection(sections, id);
 	}
 
-	// Update a section
 	function updateSection(id: string, updates: Partial<Section>) {
-		sections = sections.map((s) => (s.id === id ? { ...s, ...updates } : s));
+		sections = _updateSection(sections, id, updates);
 	}
 
-	// Add a question to a section
 	function addQuestionToSection(
 		sectionId: string,
 		type: 'multiple_choice' | 'free_text' | 'file_upload'
 	) {
-		sections = sections.map((s) => {
-			if (s.id === sectionId) {
-				const newQuestion = createQuestion(type, s.questions.length);
-				return { ...s, questions: [...s.questions, newQuestion] };
-			}
-			return s;
-		});
+		sections = _addQuestionToSection(sections, sectionId, type);
 	}
 
-	// Remove a question from a section
 	function removeQuestionFromSection(sectionId: string, questionId: string) {
-		sections = sections.map((s) => {
-			if (s.id === sectionId) {
-				const newQuestions = s.questions
-					.filter((q) => q.id !== questionId)
-					.map((q, index) => ({ ...q, order: index }));
-				return { ...s, questions: newQuestions };
-			}
-			return s;
-		});
+		sections = _removeQuestionFromSection(sections, sectionId, questionId);
 	}
 
-	// Update a question in a section
 	function updateQuestionInSection(
 		sectionId: string,
 		questionId: string,
 		updates: Partial<Question>
 	) {
-		sections = sections.map((s) => {
-			if (s.id === sectionId) {
-				return {
-					...s,
-					questions: s.questions.map((q) => (q.id === questionId ? { ...q, ...updates } : q))
-				};
-			}
-			return s;
-		});
+		sections = _updateQuestionInSection(sections, sectionId, questionId, updates);
 	}
 
-	// Reorder questions in a section (from drag-and-drop)
 	function reorderQuestionsInSection(sectionId: string, newQuestions: Question[]) {
-		sections = sections.map((s) => {
-			if (s.id === sectionId) {
-				return { ...s, questions: newQuestions };
-			}
-			return s;
-		});
+		sections = _reorderQuestionsInSection(sections, sectionId, newQuestions);
 	}
 
-	// DnD flip duration
-	const flipDurationMs = 200;
-
-	// DnD drop target style
-	const dropTargetStyle = {
-		outline: '2px dashed hsl(var(--primary))',
-		borderRadius: '8px'
-	};
+	// DnD config
+	const flipDurationMs = DND_FLIP_DURATION_MS;
+	const dropTargetStyle = DND_DROP_TARGET_STYLE;
 
 	// Handle drag and drop for top-level questions
 	function handleTopLevelQuestionsDndConsider(e: CustomEvent<{ items: Question[] }>) {
@@ -373,226 +259,6 @@
 		return Object.keys(errors).length === 0;
 	}
 
-	// Helper to parse validation error messages from API response
-	function parseValidationErrors(errorData: unknown): string {
-		if (!errorData || typeof errorData !== 'object') {
-			return 'An unknown validation error occurred.';
-		}
-
-		const messages: string[] = [];
-
-		// Handle different error formats
-		if (Array.isArray(errorData)) {
-			// Array of errors
-			for (const err of errorData) {
-				if (typeof err === 'string') {
-					messages.push(err);
-				} else if (err && typeof err === 'object') {
-					// Object with field errors
-					for (const [field, fieldErrors] of Object.entries(err)) {
-						if (Array.isArray(fieldErrors)) {
-							for (const fieldErr of fieldErrors) {
-								if (typeof fieldErr === 'string') {
-									messages.push(`${field}: ${fieldErr}`);
-								} else if (fieldErr && typeof fieldErr === 'object' && 'message' in fieldErr) {
-									messages.push(`${field}: ${(fieldErr as { message: string }).message}`);
-								}
-							}
-						} else if (typeof fieldErrors === 'string') {
-							messages.push(`${field}: ${fieldErrors}`);
-						}
-					}
-				}
-			}
-		} else {
-			// Object with field errors
-			for (const [field, fieldErrors] of Object.entries(errorData)) {
-				if (Array.isArray(fieldErrors)) {
-					for (const err of fieldErrors) {
-						if (typeof err === 'string') {
-							messages.push(`${field}: ${err}`);
-						} else if (err && typeof err === 'object' && 'message' in err) {
-							messages.push(`${field}: ${(err as { message: string }).message}`);
-						}
-					}
-				} else if (typeof fieldErrors === 'string') {
-					messages.push(`${field}: ${fieldErrors}`);
-				}
-			}
-		}
-
-		if (messages.length === 0) {
-			return 'Validation failed. Please check your input.';
-		}
-
-		// Format common error messages to be more user-friendly
-		return messages
-			.map((msg) => {
-				// Make common errors more readable
-				if (msg.includes('multiple correct answers')) {
-					return 'A question with "Allow multiple answers" disabled cannot have multiple correct options marked. Please enable "Allow multiple answers" or select only one correct option.';
-				}
-				return msg;
-			})
-			.join('\n');
-	}
-
-	// Helper to convert a conditional MC question to API format (no double nesting allowed)
-	function conditionalMcQuestionToApiFormat(q: Question, order: number): Record<string, unknown> {
-		return {
-			question: q.text,
-			hint: q.hint || null,
-			is_mandatory: q.required,
-			order: order,
-			positive_weight: q.positiveWeight,
-			negative_weight: q.negativeWeight,
-			is_fatal: q.isFatal,
-			allow_multiple_answers: q.allowMultipleAnswers || false,
-			shuffle_options: q.shuffleOptions ?? true,
-			options:
-				q.options
-					?.filter((o) => o.text.trim())
-					.map((o, i) => ({
-						option: o.text,
-						is_correct: o.isCorrect,
-						order: i
-						// Note: nested conditionals inside conditional questions are not supported
-					})) || []
-		};
-	}
-
-	// Helper to convert a conditional FT question to API format
-	function conditionalFtQuestionToApiFormat(q: Question, order: number): Record<string, unknown> {
-		return {
-			question: q.text,
-			hint: q.hint || null,
-			is_mandatory: q.required,
-			order: order,
-			positive_weight: q.positiveWeight,
-			negative_weight: q.negativeWeight,
-			is_fatal: q.isFatal,
-			llm_guidelines: q.llmGuidelines || null
-		};
-	}
-
-	// Helper to convert a conditional section to API format
-	function conditionalSectionToApiFormat(s: ConditionalSection, order: number) {
-		const mcQuestions = s.questions
-			.filter((q) => q.type === 'multiple_choice' && q.text.trim())
-			.map((q, idx) => conditionalMcQuestionToApiFormat(q, idx));
-		const ftQuestions = s.questions
-			.filter((q) => q.type === 'free_text' && q.text.trim())
-			.map((q, idx) => conditionalFtQuestionToApiFormat(q, idx));
-		const fuQuestions = s.questions
-			.filter((q) => q.type === 'file_upload' && q.text.trim())
-			.map((q, idx) => conditionalFuQuestionToApiFormat(q, idx));
-
-		return {
-			name: s.name,
-			description: s.description || null,
-			order: order,
-			...(mcQuestions.length > 0 ? { multiplechoicequestion_questions: mcQuestions } : {}),
-			...(ftQuestions.length > 0 ? { freetextquestion_questions: ftQuestions } : {}),
-			...(fuQuestions.length > 0 ? { fileuploadquestion_questions: fuQuestions } : {})
-		};
-	}
-
-	// Helper to convert a MC question to API format
-	function mcQuestionToApiFormat(q: Question) {
-		return {
-			question: q.text,
-			hint: q.hint || null,
-			reviewer_notes: q.reviewerNotes || null,
-			is_mandatory: q.required,
-			order: q.order,
-			positive_weight: q.positiveWeight,
-			negative_weight: q.negativeWeight,
-			is_fatal: q.isFatal,
-			allow_multiple_answers: q.allowMultipleAnswers || false,
-			shuffle_options: q.shuffleOptions ?? true,
-			options:
-				q.options
-					?.filter((o) => o.text.trim())
-					.map((o, i) => {
-						// Get conditional questions for this option
-						const conditionalMc = (o.conditionalQuestions || [])
-							.filter((cq) => cq.type === 'multiple_choice' && cq.text.trim())
-							.map((cq, idx) => conditionalMcQuestionToApiFormat(cq, idx));
-						const conditionalFt = (o.conditionalQuestions || [])
-							.filter((cq) => cq.type === 'free_text' && cq.text.trim())
-							.map((cq, idx) => conditionalFtQuestionToApiFormat(cq, idx));
-						const conditionalFu = (o.conditionalQuestions || [])
-							.filter((cq) => cq.type === 'file_upload' && cq.text.trim())
-							.map((cq, idx) => conditionalFuQuestionToApiFormat(cq, idx));
-						// Get conditional sections for this option
-						const conditionalSections = (o.conditionalSections || [])
-							.filter((cs) => cs.name.trim())
-							.map((cs, idx) => conditionalSectionToApiFormat(cs, idx));
-
-						return {
-							option: o.text,
-							is_correct: o.isCorrect,
-							order: i,
-							// Include conditional content if any exists
-							...(conditionalMc.length > 0 ? { conditional_mc_questions: conditionalMc } : {}),
-							...(conditionalFt.length > 0 ? { conditional_ft_questions: conditionalFt } : {}),
-							...(conditionalFu.length > 0 ? { conditional_fu_questions: conditionalFu } : {}),
-							...(conditionalSections.length > 0
-								? { conditional_sections: conditionalSections }
-								: {})
-						};
-					}) || []
-		};
-	}
-
-	// Helper to convert a FT question to API format
-	function ftQuestionToApiFormat(q: Question) {
-		return {
-			question: q.text,
-			hint: q.hint || null,
-			reviewer_notes: q.reviewerNotes || null,
-			is_mandatory: q.required,
-			order: q.order,
-			positive_weight: q.positiveWeight,
-			negative_weight: q.negativeWeight,
-			is_fatal: q.isFatal,
-			llm_guidelines: q.llmGuidelines || null
-		};
-	}
-
-	// Helper to convert a FU (file upload) question to API format
-	function fuQuestionToApiFormat(q: Question) {
-		return {
-			question: q.text,
-			hint: q.hint || null,
-			reviewer_notes: q.reviewerNotes || null,
-			is_mandatory: q.required,
-			order: q.order,
-			positive_weight: q.positiveWeight,
-			negative_weight: q.negativeWeight,
-			is_fatal: q.isFatal,
-			allowed_mime_types: q.allowedMimeTypes || ['image/jpeg', 'image/png', 'application/pdf'],
-			max_file_size: q.maxFileSize || 5242880,
-			max_files: q.maxFiles || 1
-		};
-	}
-
-	// Helper to convert a conditional FU question to API format
-	function conditionalFuQuestionToApiFormat(q: Question, order: number): Record<string, unknown> {
-		return {
-			question: q.text,
-			hint: q.hint || null,
-			is_mandatory: q.required,
-			order: order,
-			positive_weight: q.positiveWeight,
-			negative_weight: q.negativeWeight,
-			is_fatal: q.isFatal,
-			allowed_mime_types: q.allowedMimeTypes || ['image/jpeg', 'image/png', 'application/pdf'],
-			max_file_size: q.maxFileSize || 5242880,
-			max_files: q.maxFiles || 1
-		};
-	}
-
 	// Save questionnaire
 	async function saveQuestionnaire() {
 		// Clear previous error
@@ -611,31 +277,18 @@
 			}
 
 			// Build sections array for API
-			const apiSections = sections.map((s) => ({
-				name: s.name,
-				description: s.description || null,
-				order: s.order,
-				multiplechoicequestion_questions: s.questions
-					.filter((q) => q.type === 'multiple_choice')
-					.map((q) => mcQuestionToApiFormat(q)),
-				freetextquestion_questions: s.questions
-					.filter((q) => q.type === 'free_text')
-					.map((q) => ftQuestionToApiFormat(q)),
-				fileuploadquestion_questions: s.questions
-					.filter((q) => q.type === 'file_upload')
-					.map((q) => fuQuestionToApiFormat(q))
-			}));
+			const apiSections = buildCreateApiSections(sections);
 
 			// Top-level questions (not in any section)
 			const topLevelMC = topLevelQuestions
 				.filter((q) => q.type === 'multiple_choice')
-				.map((q) => mcQuestionToApiFormat(q));
+				.map((q) => mcQuestionToCreateApiFormat(q));
 			const topLevelFT = topLevelQuestions
 				.filter((q) => q.type === 'free_text')
-				.map((q) => ftQuestionToApiFormat(q));
+				.map((q) => ftQuestionToCreateApiFormat(q));
 			const topLevelFU = topLevelQuestions
 				.filter((q) => q.type === 'file_upload')
-				.map((q) => fuQuestionToApiFormat(q));
+				.map((q) => fuQuestionToCreateApiFormat(q));
 
 			// Create questionnaire
 			const response = await questionnaireCreateOrgQuestionnaire({
@@ -657,8 +310,8 @@
 					requires_evaluation: effectiveRequiresEvaluation,
 					sections: apiSections as SectionCreateSchema[],
 					multiplechoicequestion_questions: topLevelMC as MultipleChoiceQuestionCreateSchema[],
-					freetextquestion_questions: topLevelFT,
-					fileuploadquestion_questions: topLevelFU
+					freetextquestion_questions: topLevelFT as FreeTextQuestionCreateSchema[],
+					fileuploadquestion_questions: topLevelFU as FileUploadQuestionCreateSchema[]
 				},
 				headers: { Authorization: `Bearer ${user.accessToken}` }
 			});

@@ -10,54 +10,14 @@
 		GripVertical,
 		Trash2,
 		Plus,
-		X,
 		ChevronDown,
 		ChevronUp,
-		CornerDownRight,
-		FileText,
-		ListChecks,
-		FolderPlus,
-		Upload
+		CornerDownRight
 	} from 'lucide-svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
-	import { slide } from 'svelte/transition';
-	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
-
-	// File type categories for file upload questions
-	const FILE_TYPE_CATEGORIES = [
-		{
-			id: 'images',
-			label: 'Images (JPEG, PNG, GIF, WebP)',
-			mimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
-		},
-		{
-			id: 'audio',
-			label: 'Audio (MP3, WAV, OGG)',
-			// video/webm included because browser MediaRecorder produces video/webm container
-			// even for audio-only recordings (libmagic detects WebM container as video/webm)
-			mimeTypes: ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/webm', 'audio/aac', 'video/webm']
-		},
-		{ id: 'documents', label: 'Documents (PDF)', mimeTypes: ['application/pdf'] },
-		{
-			id: 'spreadsheets',
-			label: 'Spreadsheets (Excel)',
-			mimeTypes: [
-				'application/vnd.ms-excel',
-				'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-			]
-		},
-		{ id: 'text', label: 'Text Files (TXT, CSV)', mimeTypes: ['text/plain', 'text/csv'] },
-		{ id: 'archives', label: 'Archives (ZIP)', mimeTypes: ['application/zip'] }
-	];
-
-	// File size options (in bytes)
-	const FILE_SIZE_OPTIONS = [
-		{ value: 1048576, label: '1 MB' },
-		{ value: 5242880, label: '5 MB' },
-		{ value: 10485760, label: '10 MB' },
-		{ value: 26214400, label: '25 MB' }
-	];
+	import OptionEditor from './OptionEditor.svelte';
+	import FileUploadConfig from './FileUploadConfig.svelte';
 
 	// Conditional section type (shown when option is selected)
 	interface ConditionalSection {
@@ -285,20 +245,6 @@
 		}
 	}
 
-	// Check if option has conditional content (questions or sections)
-	function optionHasConditionals(index: number): boolean {
-		const opt = question.options?.[index];
-		return (
-			(opt?.conditionalQuestions?.length || 0) > 0 || (opt?.conditionalSections?.length || 0) > 0
-		);
-	}
-
-	// Get total count of conditional items for an option
-	function getConditionalsCount(index: number): number {
-		const opt = question.options?.[index];
-		return (opt?.conditionalQuestions?.length || 0) + (opt?.conditionalSections?.length || 0);
-	}
-
 	// Add conditional section to an option
 	function addConditionalSection(optionIndex: number) {
 		if (question.type === 'multiple_choice' && question.options) {
@@ -498,278 +444,32 @@
 							</div>
 							<div class="space-y-3">
 								{#each question.options || [] as option, index (index)}
-									<div class="space-y-2 rounded-md border p-3">
-										<div class="flex items-center gap-2">
-											<Checkbox
-												checked={option.isCorrect}
-												onCheckedChange={(checked) => updateOptionCorrect(index, checked === true)}
-												title="Mark as correct answer"
-											/>
-											<Input
-												value={option.text}
-												oninput={(e) => updateOption(index, e.currentTarget.value)}
-												placeholder="Option {index + 1}"
-												class="flex-1"
-											/>
-											{#if !isNested}
-												<Button
-													variant="ghost"
-													size="sm"
-													onclick={() => toggleOptionExpanded(index)}
-													class="gap-1 text-xs"
-													title="Add conditional questions"
-												>
-													{#if expandedOptions.has(index)}
-														<ChevronUp class="h-4 w-4" />
-													{:else}
-														<ChevronDown class="h-4 w-4" />
-													{/if}
-													{#if optionHasConditionals(index)}
-														<Badge variant="secondary" class="text-xs">
-															{getConditionalsCount(index)}
-														</Badge>
-													{/if}
-												</Button>
-											{/if}
-											{#if (question.options?.length || 0) > 2}
-												<Button
-													variant="ghost"
-													size="icon"
-													onclick={() => removeOption(index)}
-													class="flex-shrink-0"
-												>
-													<X class="h-4 w-4" />
-													<span class="sr-only"
-														>{m['questionEditor.removeOption']()} {index + 1}</span
-													>
-												</Button>
-											{/if}
-										</div>
-
-										<!-- Conditional content for this option (only for non-nested questions) -->
-										{#if !isNested && expandedOptions.has(index)}
-											<div
-												transition:slide={{ duration: 200 }}
-												class="mt-3 space-y-4 border-t pt-3"
-											>
-												<div class="flex items-center justify-between">
-													<Label class="text-sm text-muted-foreground">
-														Conditional content (shown when this option is selected)
-													</Label>
-													<div class="flex gap-1">
-														<Button
-															variant="outline"
-															size="sm"
-															onclick={() => addConditionalQuestion(index, 'multiple_choice')}
-															class="gap-1 text-xs"
-															title="Add multiple choice question"
-														>
-															<ListChecks class="h-3 w-3" />
-															MC
-														</Button>
-														<Button
-															variant="outline"
-															size="sm"
-															onclick={() => addConditionalQuestion(index, 'free_text')}
-															class="gap-1 text-xs"
-															title="Add free text question"
-														>
-															<FileText class="h-3 w-3" />
-															FT
-														</Button>
-														<Button
-															variant="outline"
-															size="sm"
-															onclick={() => addConditionalQuestion(index, 'file_upload')}
-															class="gap-1 text-xs"
-															title="Add file upload question"
-														>
-															<Upload class="h-3 w-3" />
-															FU
-														</Button>
-														<Button
-															variant="outline"
-															size="sm"
-															onclick={() => addConditionalSection(index)}
-															class="gap-1 text-xs"
-															title="Add section with multiple questions"
-														>
-															<FolderPlus class="h-3 w-3" />
-															Section
-														</Button>
-													</div>
-												</div>
-
-												<!-- Conditional Questions - use svelte:self for recursion -->
-												{#if option.conditionalQuestions && option.conditionalQuestions.length > 0}
-													<div class="space-y-3 pl-4">
-														<Label class="text-xs font-medium text-muted-foreground">
-															Questions ({option.conditionalQuestions.length})
-														</Label>
-														{#each option.conditionalQuestions as condQ, condIndex (condQ.id)}
-															<svelte:self
-																question={condQ}
-																onUpdate={(updates: Partial<Question>) =>
-																	updateConditionalQuestion(index, condIndex, updates)}
-																onRemove={() => removeConditionalQuestion(index, condIndex)}
-																isNested={true}
-															/>
-														{/each}
-													</div>
-												{/if}
-
-												<!-- Conditional Sections -->
-												{#if option.conditionalSections && option.conditionalSections.length > 0}
-													<div class="space-y-3 pl-4">
-														<Label class="text-xs font-medium text-muted-foreground">
-															Sections ({option.conditionalSections.length})
-														</Label>
-														{#each option.conditionalSections as condSection, sectionIndex (condSection.id)}
-															<div
-																class="rounded-md border-2 border-dashed border-primary/40 bg-primary/5 p-4"
-															>
-																<div class="space-y-4">
-																	<!-- Section header -->
-																	<div class="flex items-center justify-between">
-																		<div class="flex items-center gap-2">
-																			<FolderPlus
-																				class="h-4 w-4 text-primary/60"
-																				aria-hidden="true"
-																			/>
-																			<Badge variant="outline" class="text-xs">Section</Badge>
-																		</div>
-																		<Button
-																			variant="ghost"
-																			size="sm"
-																			onclick={() => removeConditionalSection(index, sectionIndex)}
-																			class="h-6 w-6 p-0 text-destructive hover:text-destructive"
-																		>
-																			<X class="h-4 w-4" />
-																		</Button>
-																	</div>
-
-																	<!-- Section name -->
-																	<div class="space-y-2">
-																		<Label class="text-sm">Section Name</Label>
-																		<Input
-																			value={condSection.name}
-																			oninput={(e) =>
-																				updateConditionalSection(index, sectionIndex, {
-																					name: e.currentTarget.value
-																				})}
-																			placeholder="Enter section name..."
-																		/>
-																	</div>
-
-																	<!-- Section description -->
-																	<div class="space-y-2">
-																		<Label class="text-sm">Description (optional)</Label>
-																		<Input
-																			value={condSection.description || ''}
-																			oninput={(e) =>
-																				updateConditionalSection(index, sectionIndex, {
-																					description: e.currentTarget.value || undefined
-																				})}
-																			placeholder="Brief description of this section..."
-																		/>
-																	</div>
-
-																	<!-- Section questions - use svelte:self for recursion -->
-																	<div class="space-y-3">
-																		<div class="flex items-center justify-between">
-																			<Label class="text-sm">
-																				Questions ({condSection.questions.length})
-																			</Label>
-																			<div class="flex gap-1">
-																				<Button
-																					variant="outline"
-																					size="sm"
-																					onclick={() =>
-																						addQuestionToConditionalSection(
-																							index,
-																							sectionIndex,
-																							'multiple_choice'
-																						)}
-																					class="gap-1 text-xs"
-																				>
-																					<ListChecks class="h-3 w-3" />
-																					MC
-																				</Button>
-																				<Button
-																					variant="outline"
-																					size="sm"
-																					onclick={() =>
-																						addQuestionToConditionalSection(
-																							index,
-																							sectionIndex,
-																							'free_text'
-																						)}
-																					class="gap-1 text-xs"
-																				>
-																					<FileText class="h-3 w-3" />
-																					FT
-																				</Button>
-																				<Button
-																					variant="outline"
-																					size="sm"
-																					onclick={() =>
-																						addQuestionToConditionalSection(
-																							index,
-																							sectionIndex,
-																							'file_upload'
-																						)}
-																					class="gap-1 text-xs"
-																				>
-																					<Upload class="h-3 w-3" />
-																					FU
-																				</Button>
-																			</div>
-																		</div>
-
-																		{#if condSection.questions.length > 0}
-																			<div class="space-y-2">
-																				{#each condSection.questions as sectionQ, questionIndex (sectionQ.id)}
-																					<svelte:self
-																						question={sectionQ}
-																						onUpdate={(updates: Partial<Question>) =>
-																							updateQuestionInConditionalSection(
-																								index,
-																								sectionIndex,
-																								questionIndex,
-																								updates
-																							)}
-																						onRemove={() =>
-																							removeQuestionFromConditionalSection(
-																								index,
-																								sectionIndex,
-																								questionIndex
-																							)}
-																						isNested={true}
-																					/>
-																				{/each}
-																			</div>
-																		{:else}
-																			<p class="pl-4 text-xs text-muted-foreground">
-																				No questions in this section yet.
-																			</p>
-																		{/if}
-																	</div>
-																</div>
-															</div>
-														{/each}
-													</div>
-												{/if}
-
-												<!-- Empty state -->
-												{#if !optionHasConditionals(index)}
-													<p class="pl-4 text-xs text-muted-foreground">
-														No conditional content. Add questions or sections that will appear when
-														this option is selected.
-													</p>
-												{/if}
-											</div>
-										{/if}
-									</div>
+									<OptionEditor
+										{option}
+										{index}
+										{isNested}
+										isExpanded={expandedOptions.has(index)}
+										canRemove={(question.options?.length || 0) > 2}
+										onUpdateText={(text) => updateOption(index, text)}
+										onUpdateCorrect={(isCorrect) => updateOptionCorrect(index, isCorrect)}
+										onRemove={() => removeOption(index)}
+										onToggleExpanded={() => toggleOptionExpanded(index)}
+										onAddConditionalQuestion={(type) => addConditionalQuestion(index, type)}
+										onUpdateConditionalQuestion={(qIndex, updates) =>
+											updateConditionalQuestion(index, qIndex, updates)}
+										onRemoveConditionalQuestion={(qIndex) =>
+											removeConditionalQuestion(index, qIndex)}
+										onAddConditionalSection={() => addConditionalSection(index)}
+										onUpdateConditionalSection={(sIndex, updates) =>
+											updateConditionalSection(index, sIndex, updates)}
+										onRemoveConditionalSection={(sIndex) => removeConditionalSection(index, sIndex)}
+										onAddQuestionToSection={(sIndex, type) =>
+											addQuestionToConditionalSection(index, sIndex, type)}
+										onUpdateQuestionInSection={(sIndex, qIndex, updates) =>
+											updateQuestionInConditionalSection(index, sIndex, qIndex, updates)}
+										onRemoveQuestionFromSection={(sIndex, qIndex) =>
+											removeQuestionFromConditionalSection(index, sIndex, qIndex)}
+									/>
 								{/each}
 							</div>
 							<Button variant="outline" size="sm" onclick={addOption} class="gap-2">
@@ -833,100 +533,13 @@
 
 					<!-- File Upload Settings -->
 					{#if question.type === 'file_upload'}
-						<div class="space-y-4">
-							<!-- Allowed File Types -->
-							<div class="space-y-2">
-								<Label>{m['questionEditor.allowedFileTypes']?.() || 'Allowed File Types'}</Label>
-								<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-									{#each FILE_TYPE_CATEGORIES as category (category.id)}
-										{@const isSelected = category.mimeTypes.every((mime) =>
-											question.allowedMimeTypes?.includes(mime)
-										)}
-										<div class="flex items-center space-x-2">
-											<Checkbox
-												id="filetype-{question.id}-{category.id}"
-												checked={isSelected}
-												onCheckedChange={(checked) => {
-													let newMimeTypes = [...(question.allowedMimeTypes || [])];
-													if (checked) {
-														// Add all mime types from this category
-														category.mimeTypes.forEach((mime) => {
-															if (!newMimeTypes.includes(mime)) {
-																newMimeTypes.push(mime);
-															}
-														});
-													} else {
-														// Remove all mime types from this category
-														newMimeTypes = newMimeTypes.filter(
-															(mime) => !category.mimeTypes.includes(mime)
-														);
-													}
-													onUpdate({ allowedMimeTypes: newMimeTypes });
-												}}
-											/>
-											<Label
-												for="filetype-{question.id}-{category.id}"
-												class="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-											>
-												{category.label}
-											</Label>
-										</div>
-									{/each}
-								</div>
-								{#if (question.allowedMimeTypes?.length || 0) === 0}
-									<p class="text-xs text-destructive">Please select at least one file type</p>
-								{/if}
-							</div>
-
-							<div class="grid gap-4 sm:grid-cols-2">
-								<!-- Max File Size -->
-								<div class="space-y-2">
-									<Label for="maxsize-{question.id}"
-										>{m['questionEditor.maxFileSize']?.() || 'Maximum File Size'}</Label
-									>
-									<Select
-										type="single"
-										value={String(question.maxFileSize || 5242880)}
-										onValueChange={(value) => {
-											if (value) {
-												onUpdate({ maxFileSize: parseInt(value) });
-											}
-										}}
-									>
-										<SelectTrigger id="maxsize-{question.id}" class="w-full">
-											{FILE_SIZE_OPTIONS.find((o) => o.value === (question.maxFileSize || 5242880))
-												?.label || '5 MB'}
-										</SelectTrigger>
-										<SelectContent>
-											{#each FILE_SIZE_OPTIONS as option (option.value)}
-												<SelectItem value={String(option.value)}>
-													{option.label}
-												</SelectItem>
-											{/each}
-										</SelectContent>
-									</Select>
-								</div>
-
-								<!-- Max Number of Files -->
-								<div class="space-y-2">
-									<Label for="maxfiles-{question.id}"
-										>{m['questionEditor.maxFiles']?.() || 'Maximum Number of Files'}</Label
-									>
-									<Input
-										id="maxfiles-{question.id}"
-										type="number"
-										value={question.maxFiles || 1}
-										oninput={(e) => {
-											const val = parseInt(e.currentTarget.value) || 1;
-											onUpdate({ maxFiles: Math.max(1, Math.min(10, val)) });
-										}}
-										min={1}
-										max={10}
-									/>
-									<p class="text-xs text-muted-foreground">1-10 files allowed</p>
-								</div>
-							</div>
-						</div>
+						<FileUploadConfig
+							questionId={question.id}
+							allowedMimeTypes={question.allowedMimeTypes || []}
+							maxFileSize={question.maxFileSize || 5242880}
+							maxFiles={question.maxFiles || 1}
+							onUpdate={(updates) => onUpdate(updates)}
+						/>
 					{/if}
 
 					<!-- Advanced Settings (collapsible) - only for top-level questions -->

@@ -6,6 +6,7 @@
 	import { fade, scale } from 'svelte/transition';
 	import { getUserDisplayName } from '$lib/utils/user-display';
 	import { formatPrice } from '$lib/utils/format';
+	import { getGuestNameIfDifferent, getSeatDisplay } from '$lib/utils/ticket-helpers';
 
 	interface TicketUser {
 		email?: string;
@@ -133,47 +134,6 @@
 			pwycPricePaid = '';
 		}
 	});
-
-	/**
-	 * Get guest name if different from user display name
-	 */
-	function getGuestNameIfDifferent(ticket: Ticket): string | null {
-		const guestName = ticket.guest_name;
-		if (!guestName) return null;
-		const userDisplayName = getUserDisplayName(ticket.user);
-		if (guestName.toLowerCase().trim() === userDisplayName.toLowerCase().trim()) return null;
-		return guestName;
-	}
-
-	/**
-	 * Get venue/sector/seat display info from tier and seat
-	 */
-	function getSeatDisplay(ticket: Ticket): string | null {
-		const tier = ticket.tier;
-		const seat = ticket.seat;
-
-		// If no venue/sector on tier and no seat, nothing to show
-		if (!tier?.venue && !tier?.sector && !seat) return null;
-
-		const parts: string[] = [];
-
-		// Add venue name from tier
-		if (tier?.venue?.name) parts.push(tier.venue.name);
-
-		// Add sector name from tier
-		if (tier?.sector?.name) parts.push(tier.sector.name);
-
-		// Add seat info if available
-		if (seat) {
-			if (seat.row) parts.push(`Row ${seat.row}`);
-			if (seat.number) parts.push(`Seat ${seat.number}`);
-			if (seat.label && !seat.row && !seat.number) parts.push(seat.label);
-			if (seat.is_accessible) parts.push('♿');
-			if (seat.is_obstructed_view) parts.push('⚠️ Obstructed');
-		}
-
-		return parts.length > 0 ? parts.join(' • ') : null;
-	}
 
 	/**
 	 * Get payment method label

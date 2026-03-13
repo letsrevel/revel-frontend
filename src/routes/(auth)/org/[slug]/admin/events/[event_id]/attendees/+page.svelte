@@ -386,7 +386,6 @@
 		});
 	}
 
-
 	async function handleExportAttendees(): Promise<string> {
 		const response = await eventadminticketsExportAttendees({
 			path: { event_id: data.event.id },
