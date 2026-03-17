@@ -14,7 +14,7 @@
 		onMoveDown?: () => void;
 	}
 
-	let { tier, onEdit, onMoveUp, onMoveDown }: Props = $props();
+	const { tier, onEdit, onMoveUp, onMoveDown }: Props = $props();
 
 	const CURRENCY_SYMBOLS: Record<string, string> = {
 		EUR: '€',
@@ -47,7 +47,7 @@
 		});
 	}
 
-	let priceDisplay = $derived(() => {
+	const priceDisplay = $derived(() => {
 		const currency = tier.currency || 'EUR';
 		if (tier.payment_method === 'free') return 'Free';
 		if (tier.price_type === 'pwyc') {
@@ -58,18 +58,18 @@
 		return formatPrice(tier.price || 0, currency);
 	});
 
-	let priceTypeDisplay = $derived(() => {
+	const priceTypeDisplay = $derived(() => {
 		if (tier.payment_method === 'free') return 'Free';
 		return tier.price_type === 'pwyc' ? 'Pay What You Can' : 'Fixed Price';
 	});
 
-	let quantityDisplay = $derived(() => {
+	const quantityDisplay = $derived(() => {
 		if (tier.total_quantity === null) return 'Unlimited';
 		const available = tier.total_available ?? 0;
 		return `${available} of ${tier.total_quantity} remaining`;
 	});
 
-	let paymentMethodDisplay = $derived(() => {
+	const paymentMethodDisplay = $derived(() => {
 		const methods: Record<string, string> = {
 			free: 'Free',
 			online: 'Online (Stripe)',
@@ -80,11 +80,11 @@
 		return methods[pm] || pm.replace(/_/g, ' ');
 	});
 
-	let visibilityDisplay = $derived(() => {
+	const visibilityDisplay = $derived(() => {
 		return (tier.visibility ?? 'public').replace(/-/g, ' ');
 	});
 
-	let purchasableByDisplay = $derived(() => {
+	const purchasableByDisplay = $derived(() => {
 		const options: Record<string, string> = {
 			public: 'Anyone',
 			members: 'Members Only',
@@ -95,7 +95,7 @@
 		return options[pb] || pb.replace(/_/g, ' ');
 	});
 
-	let salesWindowDisplay = $derived(() => {
+	const salesWindowDisplay = $derived(() => {
 		const start = formatDate(tier.sales_start_at);
 		const end = formatDate(tier.sales_end_at);
 		if (start === 'Not set' && end === 'Not set') return 'Always available';
@@ -104,7 +104,7 @@
 		return `${start} - ${end}`;
 	});
 
-	let seatAssignmentDisplay = $derived(() => {
+	const seatAssignmentDisplay = $derived(() => {
 		const modes: Record<string, string> = {
 			none: m['tierCard.seatAssignment.none']?.() ?? 'General Admission',
 			random: m['tierCard.seatAssignment.random']?.() ?? 'Random Assignment',
@@ -113,7 +113,7 @@
 		return modes[tier.seat_assignment_mode] || modes.none;
 	});
 
-	let maxTicketsDisplay = $derived(() => {
+	const maxTicketsDisplay = $derived(() => {
 		if (tier.max_tickets_per_user === null || tier.max_tickets_per_user === undefined) {
 			return m['tierCard.maxTickets.inherit']?.() ?? 'Inherited from event';
 		}
@@ -121,7 +121,7 @@
 	});
 
 	// Check if this tier has venue/seating configuration
-	let hasSeatingConfig = $derived(
+	const hasSeatingConfig = $derived(
 		tier.seat_assignment_mode !== 'none' || tier.venue || tier.sector
 	);
 </script>

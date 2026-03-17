@@ -9,7 +9,7 @@
 		class?: string;
 	}
 
-	let { includePast = false, onTogglePast, class: className }: Props = $props();
+	const { includePast = false, onTogglePast, class: className }: Props = $props();
 
 	function handleToggle(): void {
 		onTogglePast(!includePast);

@@ -15,7 +15,7 @@
 		class?: string;
 	}
 
-	let {
+	const {
 		organizationSlug,
 		selectedVenue,
 		onSelect,
@@ -50,7 +50,7 @@
 	}));
 
 	// Filter venues based on search query
-	let filteredVenues = $derived.by(() => {
+	const filteredVenues = $derived.by(() => {
 		const venues = venuesQuery.data || [];
 		if (!searchQuery.trim()) return venues;
 

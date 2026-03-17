@@ -13,7 +13,7 @@
 		onEventClick?: (event: EventInListSchema) => void;
 	}
 
-	let { year, week, days, events, isLoading = false, onEventClick }: Props = $props();
+	const { year, week, days, events, isLoading = false, onEventClick }: Props = $props();
 
 	// Get events for each day
 	function getEventsByDay(day: Date) {

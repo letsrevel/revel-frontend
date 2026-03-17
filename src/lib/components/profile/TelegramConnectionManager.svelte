@@ -32,7 +32,7 @@
 		authToken: string;
 	}
 
-	let { authToken }: Props = $props();
+	const { authToken }: Props = $props();
 
 	const queryClient = useQueryClient();
 
@@ -99,10 +99,10 @@
 	let otpError = $state('');
 
 	// Derived state
-	let isConnected = $derived(statusQuery.data?.connected ?? false);
-	let telegramUsername = $derived(statusQuery.data?.telegram_username ?? null);
-	let botName = $derived(botNameQuery.data?.botname ?? '');
-	let botLink = $derived(botName ? `https://t.me/${botName}` : '');
+	const isConnected = $derived(statusQuery.data?.connected ?? false);
+	const telegramUsername = $derived(statusQuery.data?.telegram_username ?? null);
+	const botName = $derived(botNameQuery.data?.botname ?? '');
+	const botLink = $derived(botName ? `https://t.me/${botName}` : '');
 
 	// Reset OTP when dialog closes
 	$effect(() => {

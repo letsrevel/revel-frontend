@@ -17,10 +17,10 @@
 		data: PageData;
 	}
 
-	let { data }: Props = $props();
+	const { data }: Props = $props();
 
 	// Check for redirect URL (used when coming from events)
-	let redirectUrl = $derived($page.url.searchParams.get('redirect'));
+	const redirectUrl = $derived($page.url.searchParams.get('redirect'));
 
 	// General preferences state
 	let selectedCity = $state<CitySchema | null>(data.generalPreferences?.city || null);

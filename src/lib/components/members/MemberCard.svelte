@@ -13,15 +13,15 @@
 		onManage: (member: OrganizationMemberSchema) => void;
 	}
 
-	let { member, isStaff = false, canManage, onManage }: Props = $props();
+	const { member, isStaff = false, canManage, onManage }: Props = $props();
 
 	// Format member since date
-	let memberSince = $derived(
+	const memberSince = $derived(
 		formatDistanceToNow(new Date(member.member_since), { addSuffix: true })
 	);
 
 	// Display name (preferred name or first name or email)
-	let displayName = $derived(
+	const displayName = $derived(
 		member.user.preferred_name ||
 			(member.user.first_name && member.user.last_name
 				? `${member.user.first_name} ${member.user.last_name}`

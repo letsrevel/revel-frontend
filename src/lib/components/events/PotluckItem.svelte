@@ -17,7 +17,7 @@
 		class?: string;
 	}
 
-	let {
+	const {
 		item,
 		hasManagePermission,
 		canClaim,
@@ -30,8 +30,8 @@
 
 	// Compute permissions for this specific item
 	// is_owned is optional and should only be true if explicitly true
-	let canEdit = $derived(canEditPotluckItem(item.is_owned === true, hasManagePermission));
-	let canDelete = $derived(canDeletePotluckItem(item.is_owned === true, hasManagePermission));
+	const canEdit = $derived(canEditPotluckItem(item.is_owned === true, hasManagePermission));
+	const canDelete = $derived(canDeletePotluckItem(item.is_owned === true, hasManagePermission));
 
 	// Item type display names mapping
 	const ITEM_TYPE_LABELS: Record<string, () => string> = {
@@ -53,39 +53,39 @@
 	};
 
 	// Computed values
-	let itemTypeLabel = $derived(
+	const itemTypeLabel = $derived(
 		ITEM_TYPE_LABELS[item.item_type]?.() || m['potluck.itemType_misc']()
 	);
 
-	let statusBadgeText = $derived.by(() => {
+	const statusBadgeText = $derived.by(() => {
 		if (item.is_owned) return m['potluck.status_youreBringing']();
 		if (item.is_assigned) return m['potluck.status_claimed']();
 		return m['potluck.status_unclaimed']();
 	});
 
-	let statusBadgeVariant = $derived.by(() => {
+	const statusBadgeVariant = $derived.by(() => {
 		if (item.is_owned) return 'success';
 		if (item.is_assigned) return 'info';
 		return 'default';
 	});
 
-	let buttonText = $derived.by(() => {
+	const buttonText = $derived.by(() => {
 		if (item.is_owned) return m['potluck.button_unclaim']();
 		if (item.is_assigned) return m['potluck.button_alreadyClaimed']();
 		if (!canClaim) return m['potluck.button_rsvpToClaim']();
 		return m['potluck.button_illBringThis']();
 	});
 
-	let isButtonDisabled = $derived((item.is_assigned && !item.is_owned) || !canClaim);
+	const isButtonDisabled = $derived((item.is_assigned && !item.is_owned) || !canClaim);
 
-	let buttonVariant = $derived.by(() => {
+	const buttonVariant = $derived.by(() => {
 		if (item.is_owned) return 'secondary';
 		if (item.is_assigned || !canClaim) return 'disabled';
 		return 'primary';
 	});
 
 	// Descriptive label for screen readers
-	let descriptiveLabel = $derived.by(() => {
+	const descriptiveLabel = $derived.by(() => {
 		const parts = [item.name, itemTypeLabel];
 		if (item.quantity) parts.push(item.quantity);
 		parts.push(statusBadgeText);
@@ -93,7 +93,7 @@
 	});
 
 	// Metadata text (type + quantity)
-	let metadataText = $derived.by(() => {
+	const metadataText = $derived.by(() => {
 		if (item.quantity) {
 			return `${itemTypeLabel} • ${item.quantity}`;
 		}

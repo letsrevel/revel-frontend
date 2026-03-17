@@ -19,7 +19,7 @@
 		isProcessing?: boolean;
 	}
 
-	let { request, tiers, open, onClose, onConfirm, isProcessing = false }: Props = $props();
+	const { request, tiers, open, onClose, onConfirm, isProcessing = false }: Props = $props();
 
 	// Selected tier
 	let selectedTierId = $state<string | null>(null);
@@ -37,7 +37,7 @@
 	});
 
 	// Display name
-	let displayName = $derived(
+	const displayName = $derived(
 		request
 			? request.user.preferred_name ||
 					(request.user.first_name && request.user.last_name

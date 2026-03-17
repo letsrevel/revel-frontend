@@ -33,7 +33,7 @@
 		onSearchInput: (e: Event) => void;
 	}
 
-	let {
+	const {
 		registeredInvitations,
 		pendingInvitations,
 		registeredPagination,
@@ -80,7 +80,7 @@
 		custom_message: ''
 	});
 
-	let totalSelected = $derived(selectedRegisteredIds.size + selectedPendingIds.size);
+	const totalSelected = $derived(selectedRegisteredIds.size + selectedPendingIds.size);
 
 	function formatDate(dateString: string): string {
 		try {

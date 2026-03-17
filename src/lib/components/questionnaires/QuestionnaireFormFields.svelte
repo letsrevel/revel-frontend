@@ -45,7 +45,7 @@
 		onMaxAttemptsChange: (value: number) => void;
 	}
 
-	let {
+	const {
 		name,
 		questionnaireType,
 		requiresEvaluation,

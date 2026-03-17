@@ -38,7 +38,7 @@
 		onDuplicate?: (event: EventInListSchema) => void;
 	}
 
-	let {
+	const {
 		event,
 		organizationSlug,
 		variant,
@@ -50,9 +50,9 @@
 		onDuplicate
 	}: Props = $props();
 
-	let faded = $derived(variant === 'closed' || variant === 'cancelled');
+	const faded = $derived(variant === 'closed' || variant === 'cancelled');
 
-	let statusLabel = $derived.by(() => {
+	const statusLabel = $derived.by(() => {
 		switch (variant) {
 			case 'draft':
 				return m['orgAdmin.events.status.draft']();
@@ -65,10 +65,10 @@
 		}
 	});
 
-	let showAttendeeCount = $derived(variant !== 'draft' && event.attendee_count !== undefined);
+	const showAttendeeCount = $derived(variant !== 'draft' && event.attendee_count !== undefined);
 
-	let showEdit = $derived(variant === 'draft' || variant === 'open');
-	let showManagement = $derived(variant !== 'draft');
+	const showEdit = $derived(variant === 'draft' || variant === 'open');
+	const showManagement = $derived(variant !== 'draft');
 
 	function viewEvent(): void {
 		goto(`/events/${organizationSlug}/${event.slug}`);

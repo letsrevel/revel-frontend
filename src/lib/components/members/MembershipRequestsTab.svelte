@@ -24,7 +24,7 @@
 		tiers: MembershipTierSchema[];
 	}
 
-	let { organization, tiers }: Props = $props();
+	const { organization, tiers }: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
@@ -136,8 +136,8 @@
 	}));
 
 	// Derived data
-	let requests = $derived(requestsQuery.data?.results || []);
-	let requestsPagination = $derived({
+	const requests = $derived(requestsQuery.data?.results || []);
+	const requestsPagination = $derived({
 		page: requestsPage,
 		pageSize: 50,
 		totalCount: requestsQuery.data?.count || 0,

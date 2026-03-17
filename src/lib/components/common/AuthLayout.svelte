@@ -6,7 +6,7 @@
 		children?: import('svelte').Snippet;
 	}
 
-	let { children }: Props = $props();
+	const { children }: Props = $props();
 </script>
 
 <div class="flex min-h-screen flex-col">

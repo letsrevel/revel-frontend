@@ -11,30 +11,32 @@
 		class?: string;
 	}
 
-	let { series, variant = 'standard', class: className }: Props = $props();
+	const { series, variant = 'standard', class: className }: Props = $props();
 
 	// Image state
 	let imageError = $state(false);
 
 	// Image URLs with backend URL prepended and fallback to organization
 	// Prefer social preview for card display (1200x630, matches aspect-video ratio)
-	let seriesCoverArtSocialUrl = $derived(getImageUrl((series as any).cover_art_social_url));
-	let seriesCoverArtUrl = $derived(getImageUrl(series.cover_art));
-	let orgCoverArtSocialUrl = $derived(
+	const seriesCoverArtSocialUrl = $derived(getImageUrl((series as any).cover_art_social_url));
+	const seriesCoverArtUrl = $derived(getImageUrl(series.cover_art));
+	const orgCoverArtSocialUrl = $derived(
 		getImageUrl((series.organization as any).cover_art_social_url)
 	);
-	let orgCoverArtUrl = $derived(getImageUrl(series.organization.cover_art));
-	let imageUrl = $derived(
+	const orgCoverArtUrl = $derived(getImageUrl(series.organization.cover_art));
+	const imageUrl = $derived(
 		!imageError
 			? seriesCoverArtSocialUrl || seriesCoverArtUrl || orgCoverArtSocialUrl || orgCoverArtUrl
 			: null
 	);
 
-	let seriesLogoThumbnailUrl = $derived(getImageUrl((series as any).logo_thumbnail_url));
-	let seriesLogoUrl = $derived(getImageUrl(series.logo));
-	let orgLogoThumbnailUrl = $derived(getImageUrl((series.organization as any).logo_thumbnail_url));
-	let orgLogoUrl = $derived(getImageUrl(series.organization.logo));
-	let logoUrl = $derived(
+	const seriesLogoThumbnailUrl = $derived(getImageUrl((series as any).logo_thumbnail_url));
+	const seriesLogoUrl = $derived(getImageUrl(series.logo));
+	const orgLogoThumbnailUrl = $derived(
+		getImageUrl((series.organization as any).logo_thumbnail_url)
+	);
+	const orgLogoUrl = $derived(getImageUrl(series.organization.logo));
+	const logoUrl = $derived(
 		seriesLogoThumbnailUrl || seriesLogoUrl || orgLogoThumbnailUrl || orgLogoUrl
 	);
 
@@ -46,10 +48,10 @@
 		'from-purple-500 to-indigo-600',
 		'from-red-500 to-orange-600'
 	];
-	let fallbackGradient = $derived(gradients[series.id.charCodeAt(0) % gradients.length]);
+	const fallbackGradient = $derived(gradients[series.id.charCodeAt(0) % gradients.length]);
 
 	// Accessible card label for screen readers
-	let accessibleLabel = $derived.by(() => {
+	const accessibleLabel = $derived.by(() => {
 		const parts = [series.name, `by ${series.organization.name}`];
 		if (series.description) {
 			parts.push(series.description);
@@ -62,7 +64,7 @@
 	}
 
 	// Container classes based on variant
-	let containerClasses = $derived(
+	const containerClasses = $derived(
 		cn(
 			'group relative overflow-hidden rounded-lg border bg-card transition-all',
 			'hover:shadow-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
@@ -73,7 +75,7 @@
 	);
 
 	// Image container classes based on variant
-	let imageContainerClasses = $derived(
+	const imageContainerClasses = $derived(
 		cn(
 			'relative overflow-hidden',
 			variant === 'compact' && 'w-32 shrink-0 md:w-full md:aspect-video',

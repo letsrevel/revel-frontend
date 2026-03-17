@@ -97,27 +97,27 @@
 	let appliedDiscountCode = $state('');
 
 	// Whether discount codes are applicable (not for free/PWYC tiers)
-	let discountApplicable = $derived(tier.payment_method !== 'free' && tier.price_type !== 'pwyc');
+	const discountApplicable = $derived(tier.payment_method !== 'free' && tier.price_type !== 'pwyc');
 
 	// Computed values
-	let isPwyc = $derived(tier.price_type === 'pwyc');
-	let isFree = $derived(tier.payment_method === 'free');
-	let isOnlinePayment = $derived(tier.payment_method === 'online');
-	let isOfflinePayment = $derived(
+	const isPwyc = $derived(tier.price_type === 'pwyc');
+	const isFree = $derived(tier.payment_method === 'free');
+	const isOnlinePayment = $derived(tier.payment_method === 'online');
+	const isOfflinePayment = $derived(
 		tier.payment_method === 'offline' || tier.payment_method === 'at_the_door'
 	);
 
 	// Seat assignment mode
-	let seatAssignmentMode = $derived<SeatAssignmentMode>(
+	const seatAssignmentMode = $derived<SeatAssignmentMode>(
 		(tier as any).seat_assignment_mode ?? 'none'
 	);
-	let hasSeatedTier = $derived(seatAssignmentMode !== 'none');
-	let isUserChoiceSeat = $derived(seatAssignmentMode === 'user_choice');
-	let isRandomSeat = $derived(seatAssignmentMode === 'random');
+	const hasSeatedTier = $derived(seatAssignmentMode !== 'none');
+	const isUserChoiceSeat = $derived(seatAssignmentMode === 'user_choice');
+	const isRandomSeat = $derived(seatAssignmentMode === 'random');
 
 	// Venue/sector info for display
-	let tierVenue = $derived((tier as any).venue ?? null);
-	let tierSector = $derived((tier as any).sector ?? null);
+	const tierVenue = $derived((tier as any).venue ?? null);
+	const tierSector = $derived((tier as any).sector ?? null);
 
 	// Seat selection state (for user_choice mode)
 	let seatAvailability = $state<SectorAvailabilitySchema | null>(null);
@@ -161,7 +161,7 @@
 	}
 
 	// PWYC min/max
-	let minAmount = $derived.by(() => {
+	const minAmount = $derived.by(() => {
 		if (!isPwyc) return 0;
 		if (tier.pwyc_min) {
 			return typeof tier.pwyc_min === 'string' ? parseFloat(tier.pwyc_min) : tier.pwyc_min;
@@ -169,13 +169,13 @@
 		return 1;
 	});
 
-	let maxAmount = $derived.by(() => {
+	const maxAmount = $derived.by(() => {
 		if (!isPwyc || !tier.pwyc_max) return null;
 		return typeof tier.pwyc_max === 'string' ? parseFloat(tier.pwyc_max) : tier.pwyc_max;
 	});
 
 	// Format price display
-	let priceDisplay = $derived.by(() => {
+	const priceDisplay = $derived.by(() => {
 		if (isFree) return 'Free';
 		if (isPwyc) {
 			const maxDisplay = maxAmount ? `${tier.currency} ${maxAmount.toFixed(2)}` : 'any amount';
@@ -186,7 +186,7 @@
 	});
 
 	// Dialog title
-	let dialogTitle = $derived.by(() => {
+	const dialogTitle = $derived.by(() => {
 		if (isFree) return 'Claim Free Ticket';
 		if (isOfflinePayment) return 'Reserve Ticket';
 		if (isPwyc) return 'Get Your Ticket';
@@ -194,7 +194,7 @@
 	});
 
 	// Dialog icon component
-	let dialogIcon = $derived.by(() => {
+	const dialogIcon = $derived.by(() => {
 		if (isFree) return Ticket;
 		if (isOfflinePayment) return Wallet;
 		if (isOnlinePayment) return CreditCard;
@@ -202,15 +202,15 @@
 	});
 
 	// Tier-level max tickets per user (can override event-level setting)
-	let tierMaxTicketsPerUser = $derived<number | null>((tier as any).max_tickets_per_user ?? null);
+	const tierMaxTicketsPerUser = $derived<number | null>((tier as any).max_tickets_per_user ?? null);
 
 	// Effective max per user: use tier's value if set, otherwise fall back to event-level
-	let effectiveMaxPerUser = $derived<number | null>(
+	const effectiveMaxPerUser = $derived<number | null>(
 		tierMaxTicketsPerUser !== null ? tierMaxTicketsPerUser : eventMaxTicketsPerUser
 	);
 
 	// Calculated max quantity based on tier availability, tier limit, and user limit
-	let effectiveMaxQuantity = $derived.by(() => {
+	const effectiveMaxQuantity = $derived.by(() => {
 		let max = 100;
 		if (tier.total_available !== null && tier.total_available > 0) {
 			max = Math.min(max, tier.total_available);
@@ -225,16 +225,16 @@
 	});
 
 	// Whether to show quantity selector (more than 1 ticket allowed)
-	let showQuantitySelector = $derived(effectiveMaxQuantity > 1);
+	const showQuantitySelector = $derived(effectiveMaxQuantity > 1);
 
 	// Always show guest name inputs so users can verify/edit their name
-	let showGuestNames = true;
+	const showGuestNames = true;
 
 	// Check if all guest names are filled (at least the first character)
-	let allGuestNamesFilled = $derived(guestNames.every((name) => name.trim().length > 0));
+	const allGuestNamesFilled = $derived(guestNames.every((name) => name.trim().length > 0));
 
 	// PWYC validation state for canSubmit and UI hints
-	let pwycValidation = $derived.by(() => {
+	const pwycValidation = $derived.by(() => {
 		if (!isPwyc) return { valid: true, error: null as string | null };
 		const trimmed = pwycAmount.trim();
 		if (!trimmed) return { valid: false, error: 'empty' as const };
@@ -247,7 +247,7 @@
 	});
 
 	// Check if form is valid for submission
-	let canSubmit = $derived.by(() => {
+	const canSubmit = $derived.by(() => {
 		if (showGuestNames && !allGuestNamesFilled) return false;
 		if (isPwyc && !pwycValidation.valid) return false;
 		if (isUserChoiceSeat && selectedSeatIds.length !== quantity) return false;
@@ -397,7 +397,7 @@
 	}
 
 	// Quick amount suggestions for PWYC
-	let pwycSuggestions = $derived.by(() => {
+	const pwycSuggestions = $derived.by(() => {
 		if (maxAmount !== null) {
 			return [minAmount, Math.round((minAmount + maxAmount) / 2), maxAmount];
 		}
@@ -416,12 +416,12 @@
 	}
 
 	// Computed discounted price display
-	let originalPrice = $derived.by(() => {
+	const originalPrice = $derived.by(() => {
 		if (isFree || isPwyc) return 0;
 		return typeof tier.price === 'string' ? parseFloat(tier.price) : (tier.price ?? 0);
 	});
 
-	let discountedPrice = $derived.by(() => {
+	const discountedPrice = $derived.by(() => {
 		if (!discountResult?.discounted_price) return null;
 		return parseFloat(discountResult.discounted_price);
 	});

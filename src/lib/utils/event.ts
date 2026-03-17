@@ -20,8 +20,8 @@ import type {
  */
 export function getEventAccessDisplay(
 	event: EventInListSchema,
-	userIsMember: boolean = false,
-	userIsStaff: boolean = false
+	userIsMember = false,
+	userIsStaff = false
 ): string {
 	// Note: free_for_members and free_for_staff fields have been removed from the backend.
 	// Pricing/access is now managed through ticket tier membership/staff restrictions.

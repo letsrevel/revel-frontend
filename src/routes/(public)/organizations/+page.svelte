@@ -29,25 +29,25 @@
 		data: PageData;
 	}
 
-	let { data }: Props = $props();
+	const { data }: Props = $props();
 
 	// Generate comprehensive meta tags for organizations listing page
-	let metaTags = $derived(generateOrganizationsListingMeta($page.url.origin));
+	const metaTags = $derived(generateOrganizationsListingMeta($page.url.origin));
 
 	// Generate BreadcrumbList structured data
-	let breadcrumbData = $derived(
+	const breadcrumbData = $derived(
 		generateBreadcrumbStructuredData([
 			{ name: 'Home', url: $page.url.origin },
 			{ name: 'Organizations', url: `${$page.url.origin}/organizations` }
 		])
 	);
-	let breadcrumbJsonLd = $derived(toJsonLd(breadcrumbData));
+	const breadcrumbJsonLd = $derived(toJsonLd(breadcrumbData));
 
 	// Derived state from server load data
-	let organizations = $derived(data.organizations);
+	const organizations = $derived(data.organizations);
 
 	// Generate ItemList structured data from organizations
-	let orgListItems = $derived<ListItem[]>(
+	const orgListItems = $derived<ListItem[]>(
 		organizations.map((org) => ({
 			name: org.name,
 			url: `${$page.url.origin}/org/${org.slug}`,
@@ -58,31 +58,31 @@
 					: undefined
 		}))
 	);
-	let itemListData = $derived(
+	const itemListData = $derived(
 		generateItemListStructuredData(
 			orgListItems,
 			'Organizations on Revel',
 			'Community organizations on Revel'
 		)
 	);
-	let itemListJsonLd = $derived(toJsonLd(itemListData));
-	let totalCount = $derived(data.totalCount);
-	let currentPage = $derived(data.page);
-	let pageSize = $derived(data.pageSize);
-	let error = $derived(data.error);
+	const itemListJsonLd = $derived(toJsonLd(itemListData));
+	const totalCount = $derived(data.totalCount);
+	const currentPage = $derived(data.page);
+	const pageSize = $derived(data.pageSize);
+	const error = $derived(data.error);
 
 	// Parse current filters from URL
-	let currentFilters = $derived(parseOrganizationFilters($page.url.searchParams));
+	const currentFilters = $derived(parseOrganizationFilters($page.url.searchParams));
 
 	// Mobile filter sheet state
 	let isMobileFilterOpen = $state(false);
 
 	// Calculate pagination info
-	let totalPages = $derived(Math.ceil(totalCount / pageSize));
-	let hasNextPage = $derived(currentPage < totalPages);
-	let hasPrevPage = $derived(currentPage > 1);
-	let showingFrom = $derived((currentPage - 1) * pageSize + 1);
-	let showingTo = $derived(Math.min(currentPage * pageSize, totalCount));
+	const totalPages = $derived(Math.ceil(totalCount / pageSize));
+	const hasNextPage = $derived(currentPage < totalPages);
+	const hasPrevPage = $derived(currentPage > 1);
+	const showingFrom = $derived((currentPage - 1) * pageSize + 1);
+	const showingTo = $derived(Math.min(currentPage * pageSize, totalCount));
 
 	// Filter update handlers
 	function handleUpdateFilters(updates: Partial<FilterState>): void {

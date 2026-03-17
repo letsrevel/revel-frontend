@@ -38,7 +38,7 @@
 		onFilesChange?: (files: QuestionnaireFileSchema[]) => void;
 	}
 
-	let {
+	const {
 		questionId,
 		selectedFiles = [],
 		accept = '*/*',

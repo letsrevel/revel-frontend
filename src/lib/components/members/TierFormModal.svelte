@@ -16,7 +16,7 @@
 		isSaving?: boolean;
 	}
 
-	let { tier, open, onClose, onSave, isSaving = false }: Props = $props();
+	const { tier, open, onClose, onSave, isSaving = false }: Props = $props();
 
 	// Form state
 	let tierName = $state('');
@@ -70,7 +70,7 @@
 	}
 
 	// Is editing mode
-	let isEditing = $derived(!!tier);
+	const isEditing = $derived(!!tier);
 </script>
 
 <Dialog

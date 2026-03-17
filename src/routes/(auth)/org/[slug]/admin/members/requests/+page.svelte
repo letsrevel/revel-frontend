@@ -12,13 +12,13 @@
 		form: ActionData;
 	}
 
-	let { data, form }: Props = $props();
+	const { data, form }: Props = $props();
 
 	// Track which request is being processed
 	let processingRequestId = $state<string | null>(null);
 
 	// Get active status filter from URL
-	let activeStatusFilter = $state<string | null>(data.filters?.status || null);
+	const activeStatusFilter = $state<string | null>(data.filters?.status || null);
 
 	// Format date helper
 	function formatDate(dateString: string): string {

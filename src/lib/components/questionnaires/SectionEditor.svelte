@@ -51,7 +51,7 @@
 		dropTargetStyle?: Record<string, string>;
 	}
 
-	let {
+	const {
 		section,
 		onUpdate,
 		onRemove,

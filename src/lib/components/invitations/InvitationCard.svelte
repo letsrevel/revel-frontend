@@ -11,36 +11,36 @@
 		invitation: MyEventInvitationSchema;
 	}
 
-	let { invitation }: Props = $props();
+	const { invitation }: Props = $props();
 
 	let messageExpanded = $state(false);
 
 	// Logo with fallback hierarchy: event -> series -> organization
 	// Prefer thumbnail for card display (64x64)
-	let logoThumbnailPath = $derived(getEventLogoThumbnail(invitation.event));
-	let logoPath = $derived(getEventLogo(invitation.event));
-	let logoUrl = $derived(getImageUrl(logoThumbnailPath || logoPath));
+	const logoThumbnailPath = $derived(getEventLogoThumbnail(invitation.event));
+	const logoPath = $derived(getEventLogo(invitation.event));
+	const logoUrl = $derived(getImageUrl(logoThumbnailPath || logoPath));
 
 	// Format event date
-	let eventDate = $derived.by(() => {
+	const eventDate = $derived.by(() => {
 		if (!invitation.event.start) return null;
 		return formatEventDateRange(invitation.event.start, invitation.event.start);
 	});
 
 	// Get event location
-	let eventLocation = $derived.by(() => {
+	const eventLocation = $derived.by(() => {
 		const event = invitation.event as any;
 		return event.venue_name || event.location || null;
 	});
 
 	// Format created date
-	let createdDate = $derived.by(() => {
+	const createdDate = $derived.by(() => {
 		const date = new Date(invitation.created_at);
 		return date.toLocaleDateString();
 	});
 
 	// Get privileges granted by this invitation
-	let privileges = $derived.by(() => {
+	const privileges = $derived.by(() => {
 		const priv: string[] = [];
 		if (invitation.waives_purchase) priv.push('Free admission');
 		if (invitation.waives_questionnaire) priv.push('No questionnaire required');

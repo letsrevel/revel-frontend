@@ -15,10 +15,10 @@
 		form: ActionData;
 	}
 
-	let { form }: Props = $props();
+	const { form }: Props = $props();
 
 	// Demo mode state
-	let isDemoMode = $derived(appStore.isDemoMode);
+	const isDemoMode = $derived(appStore.isDemoMode);
 
 	// Form state
 	let email = $state(form?.email || '');
@@ -31,12 +31,12 @@
 	let selectedAccountEmail = $state('');
 
 	// 2FA state - derive from form
-	let requires2FA = $derived(form?.requires2FA || false);
-	let tempToken = $derived(form?.tempToken || '');
+	const requires2FA = $derived(form?.requires2FA || false);
+	const tempToken = $derived(form?.tempToken || '');
 	let otpCode = $state('');
 
 	// Error handling - type assertion needed due to ActionData union
-	let errors = $derived((form?.errors || {}) as Record<string, string>);
+	const errors = $derived((form?.errors || {}) as Record<string, string>);
 
 	// Handle demo account selection
 	function selectDemoAccount(accountEmail: string) {

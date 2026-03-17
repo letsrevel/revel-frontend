@@ -11,7 +11,7 @@
 		class?: string;
 	}
 
-	let { selectedOrganization = null, onChangeOrganization, class: className }: Props = $props();
+	const { selectedOrganization = null, onChangeOrganization, class: className }: Props = $props();
 
 	let searchQuery = $state('');
 	let isSearching = $state(false);

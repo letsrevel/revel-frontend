@@ -24,7 +24,7 @@
 		form: ActionData;
 	}
 
-	let { form }: Props = $props();
+	const { form }: Props = $props();
 
 	// State for confirmation modal
 	let showDeletionModal = $state(false);
@@ -38,11 +38,11 @@
 	let fileToDelete = $state<QuestionnaireFileSchema | null>(null);
 
 	// Success states
-	let success = $derived(form?.success || false);
-	let exportSuccess = $derived(form?.exportSuccess || false);
+	const success = $derived(form?.success || false);
+	const exportSuccess = $derived(form?.exportSuccess || false);
 
 	// Error handling
-	let errors = $derived((form?.errors || {}) as Record<string, string>);
+	const errors = $derived((form?.errors || {}) as Record<string, string>);
 
 	// Query client for cache invalidation
 	const queryClient = useQueryClient();

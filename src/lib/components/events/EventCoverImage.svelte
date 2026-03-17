@@ -20,19 +20,21 @@
 		class?: string;
 	}
 
-	let { event, userStatus = null, showBadges = true, class: className }: Props = $props();
+	const { event, userStatus = null, showBadges = true, class: className }: Props = $props();
 
 	// Image state
 	let imageError = $state(false);
 
 	// Computed values - prefer social preview for card display (1200x630, matches aspect-video ratio)
-	let coverArtSocialPath = $derived(getEventCoverArtSocial(event));
-	let coverArtPath = $derived(getEventCoverArt(event));
-	let coverArtUrl = $derived(!imageError ? getImageUrl(coverArtSocialPath || coverArtPath) : null);
-	let logoThumbnailPath = $derived(getEventLogoThumbnail(event));
-	let logoPath = $derived(getEventLogo(event));
-	let logoUrl = $derived(getImageUrl(logoThumbnailPath || logoPath));
-	let fallbackGradient = $derived(getEventFallbackGradient(event.id));
+	const coverArtSocialPath = $derived(getEventCoverArtSocial(event));
+	const coverArtPath = $derived(getEventCoverArt(event));
+	const coverArtUrl = $derived(
+		!imageError ? getImageUrl(coverArtSocialPath || coverArtPath) : null
+	);
+	const logoThumbnailPath = $derived(getEventLogoThumbnail(event));
+	const logoPath = $derived(getEventLogo(event));
+	const logoUrl = $derived(getImageUrl(logoThumbnailPath || logoPath));
+	const fallbackGradient = $derived(getEventFallbackGradient(event.id));
 
 	function handleImageError(): void {
 		imageError = true;

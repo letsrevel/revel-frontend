@@ -10,9 +10,9 @@
 		class?: string;
 	}
 
-	let { eventType, onChangeEventType, class: className }: Props = $props();
+	const { eventType, onChangeEventType, class: className }: Props = $props();
 
-	let options = $derived.by(() => [
+	const options = $derived.by(() => [
 		{ value: 'public' as const, label: m['filters.eventType.public']() },
 		{ value: 'private' as const, label: m['filters.eventType.private']() },
 		{ value: 'members-only' as const, label: m['filters.eventType.membersOnly']() }

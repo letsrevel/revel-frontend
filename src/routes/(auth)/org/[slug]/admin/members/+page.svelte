@@ -18,7 +18,7 @@
 	import TiersTab from '$lib/components/members/TiersTab.svelte';
 	import OrganizationTokensTab from '$lib/components/members/OrganizationTokensTab.svelte';
 
-	let { data }: { data: PageData } = $props();
+	const { data }: { data: PageData } = $props();
 
 	const organization = $derived($page.data.organization);
 	const accessToken = $derived(authStore.accessToken);
@@ -86,12 +86,12 @@
 	}));
 
 	// Derived data for badge counts and shared state
-	let members = $derived(membersQuery.data?.results || []);
-	let staff = $derived(staffQuery.data?.results || []);
-	let tiers = $derived(tiersQuery.data || []);
+	const members = $derived(membersQuery.data?.results || []);
+	const staff = $derived(staffQuery.data?.results || []);
+	const tiers = $derived(tiersQuery.data || []);
 
 	// Create a Set of staff user IDs for quick lookup (used by MembersTab)
-	let staffUserIds = $derived(
+	const staffUserIds = $derived(
 		new Set(staff.map((s) => s.user.id).filter((id): id is string => !!id))
 	);
 </script>

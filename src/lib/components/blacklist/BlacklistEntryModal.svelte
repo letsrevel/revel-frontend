@@ -29,7 +29,7 @@
 		isDeleting?: boolean;
 	}
 
-	let {
+	const {
 		entry,
 		open,
 		onClose,
@@ -58,7 +58,7 @@
 	});
 
 	// Display name
-	let displayName = $derived.by(() => {
+	const displayName = $derived.by(() => {
 		if (!entry) return '';
 		if (entry.user_display_name) return entry.user_display_name;
 		if (entry.preferred_name) return entry.preferred_name;
@@ -70,17 +70,17 @@
 	});
 
 	// Check if linked to a registered user
-	let isLinkedUser = $derived(!!entry?.user_id);
+	const isLinkedUser = $derived(!!entry?.user_id);
 
 	// Format created date
-	let createdAgo = $derived(
+	const createdAgo = $derived(
 		entry?.created_at
 			? formatDistanceToNow(new Date(entry.created_at), { addSuffix: true })
 			: 'Unknown'
 	);
 
 	// Check if there are changes
-	let hasChanges = $derived(
+	const hasChanges = $derived(
 		reason !== (entry?.reason || '') ||
 			firstName !== (entry?.first_name || '') ||
 			lastName !== (entry?.last_name || '') ||

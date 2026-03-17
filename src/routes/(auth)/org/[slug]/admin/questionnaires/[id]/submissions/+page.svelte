@@ -21,11 +21,11 @@
 		data: PageData;
 	}
 
-	let { data }: Props = $props();
+	const { data }: Props = $props();
 
 	// Current filter values
-	let currentEvaluationStatus = $derived(data.filters.evaluationStatus || '');
-	let currentOrderBy = $derived(data.filters.orderBy || '-submitted_at');
+	const currentEvaluationStatus = $derived(data.filters.evaluationStatus || '');
+	const currentOrderBy = $derived(data.filters.orderBy || '-submitted_at');
 
 	function setEvaluationStatusFilter(status: string) {
 		const params = new URLSearchParams($page.url.searchParams);

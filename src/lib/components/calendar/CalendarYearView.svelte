@@ -12,7 +12,7 @@
 		isLoading?: boolean;
 	}
 
-	let { year, months, events, isLoading = false }: Props = $props();
+	const { year, months, events, isLoading = false }: Props = $props();
 
 	// Count events per month
 	function getEventsInMonth(month: number): number {

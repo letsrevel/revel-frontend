@@ -43,7 +43,7 @@
 		class?: string;
 	}
 
-	let {
+	const {
 		currentPictureUrl,
 		displayName,
 		firstName = '',

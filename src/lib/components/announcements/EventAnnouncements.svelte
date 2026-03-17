@@ -12,16 +12,16 @@
 		defaultOpen?: boolean;
 	}
 
-	let { eventId, defaultOpen = true }: Props = $props();
+	const { eventId, defaultOpen = true }: Props = $props();
 
 	// State
 	let isExpanded = $state(defaultOpen);
 
 	// Derived
-	let accessToken = $derived(authStore.accessToken);
+	const accessToken = $derived(authStore.accessToken);
 
 	// Fetch announcements
-	let announcementsQuery = createQuery(() => ({
+	const announcementsQuery = createQuery(() => ({
 		queryKey: ['event-announcements', eventId],
 		queryFn: async () => {
 			const response = await eventpublicdetailsListEventAnnouncements({
@@ -33,9 +33,9 @@
 		}
 	}));
 
-	let announcements = $derived(announcementsQuery.data ?? []);
-	let isLoading = $derived(announcementsQuery.isLoading);
-	let hasAnnouncements = $derived(announcements.length > 0);
+	const announcements = $derived(announcementsQuery.data ?? []);
+	const isLoading = $derived(announcementsQuery.isLoading);
+	const hasAnnouncements = $derived(announcements.length > 0);
 
 	function toggleExpanded() {
 		isExpanded = !isExpanded;

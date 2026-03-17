@@ -45,7 +45,7 @@
 		questionnaires?: Array<{ id: string; [key: string]: unknown }>;
 	}
 
-	let { organization, existingEvent, userCity, orgCity, eventSeries = [] }: Props = $props();
+	const { organization, existingEvent, userCity, orgCity, eventSeries = [] }: Props = $props();
 	// questionnaires prop exists but is not currently used
 
 	const queryClient = useQueryClient();
@@ -672,7 +672,7 @@
 	}
 
 	// Derived state
-	let isEditMode = $derived(!!existingEvent);
+	const isEditMode = $derived(!!existingEvent);
 </script>
 
 <div class="mx-auto max-w-4xl space-y-6 p-4 md:p-6">

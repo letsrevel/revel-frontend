@@ -23,7 +23,7 @@
 		class?: string;
 	}
 
-	let {
+	const {
 		event,
 		permissions,
 		isAuthenticated,
@@ -38,11 +38,11 @@
 	let isExpanded = $state(hasRSVPd); // Default expanded if user RSVP'd
 	let isModalOpen = $state(false);
 	let searchQuery = $state('');
-	let selectedCategory = $state<string>('all');
+	const selectedCategory = $state<string>('all');
 	let editingItem = $state<PotluckItemRetrieveSchema | null>(null);
 
 	// Can user claim items (must have RSVP'd "yes")
-	let canClaim = $derived(isAuthenticated && hasRSVPd);
+	const canClaim = $derived(isAuthenticated && hasRSVPd);
 
 	// Query: Fetch potluck items
 	const itemsQuery = createQuery(() => ({
@@ -340,7 +340,7 @@
 	}));
 
 	// Computed: Filter and group items
-	let filteredItems = $derived.by(() => {
+	const filteredItems = $derived.by(() => {
 		const items = itemsQuery.data || [];
 
 		// Apply search filter
@@ -365,7 +365,7 @@
 	});
 
 	// Group items by category
-	let groupedItems = $derived.by(() => {
+	const groupedItems = $derived.by(() => {
 		const groups: Record<string, PotluckItemRetrieveSchema[]> = {
 			[m['potluck.category_foodDrink']()]: [],
 			[m['potluck.category_supplies']()]: [],
@@ -393,7 +393,7 @@
 	});
 
 	// Stats
-	let stats = $derived.by(() => {
+	const stats = $derived.by(() => {
 		const items = itemsQuery.data || [];
 		return {
 			total: items.length,

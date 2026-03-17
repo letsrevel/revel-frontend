@@ -23,7 +23,7 @@
 		class?: string;
 	}
 
-	let {
+	const {
 		filters,
 		totalCount,
 		isOpen,
@@ -34,14 +34,14 @@
 	}: Props = $props();
 
 	// Computed values
-	let activeFilterCount = $derived(countActiveFilters(filters));
-	let hasFilters = $derived(hasActiveFilters(filters));
+	const activeFilterCount = $derived(countActiveFilters(filters));
+	const hasFilters = $derived(hasActiveFilters(filters));
 
 	// Swipe gesture state
 	let touchStartY = $state(0);
 	let touchCurrentY = $state(0);
 	let isDragging = $state(false);
-	let translateY = $derived(isDragging ? Math.max(0, touchCurrentY - touchStartY) : 0);
+	const translateY = $derived(isDragging ? Math.max(0, touchCurrentY - touchStartY) : 0);
 
 	function handleSearch(value: string): void {
 		onUpdateFilters({ search: value || undefined });
@@ -92,13 +92,13 @@
 	}
 
 	// Derive selected city object from cityId
-	let selectedCity = $derived.by(() => {
+	const selectedCity = $derived.by(() => {
 		if (!filters.cityId) return null;
 		return null;
 	});
 
 	// Derive selected organization object from filters
-	let selectedOrganization = $derived.by(() => {
+	const selectedOrganization = $derived.by(() => {
 		if (!filters.organizationId) return null;
 		// Use stored name and slug from URL params if available
 		return {

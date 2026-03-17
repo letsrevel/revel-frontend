@@ -25,7 +25,7 @@
 		isError: boolean;
 	}
 
-	let { organization, tiers, members, isLoading, isError }: Props = $props();
+	const { organization, tiers, members, isLoading, isError }: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();

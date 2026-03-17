@@ -22,7 +22,7 @@
 		isProcessing?: boolean;
 	}
 
-	let { user, tiers, open, onClose, onConfirm, isProcessing = false }: Props = $props();
+	const { user, tiers, open, onClose, onConfirm, isProcessing = false }: Props = $props();
 
 	// Selected tier
 	let selectedTierId = $state<string | null>(null);

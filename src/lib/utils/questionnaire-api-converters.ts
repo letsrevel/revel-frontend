@@ -164,7 +164,7 @@ export function initializeFromApiData(questionnaire: any, q: any): InitFromApiRe
 		q.can_retake_after && typeof q.can_retake_after === 'number'
 			? Math.round(q.can_retake_after / 3600)
 			: null;
-	const maxAttempts = 0;
+	const maxAttempts = q.max_attempts ?? 0;
 
 	// From org questionnaire
 	const questionnaireType = questionnaire.questionnaire_type || 'admission';

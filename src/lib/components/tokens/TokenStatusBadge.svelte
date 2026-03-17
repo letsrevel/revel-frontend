@@ -7,7 +7,7 @@
 		class?: string;
 	}
 
-	let { status, class: className }: Props = $props();
+	const { status, class: className }: Props = $props();
 
 	const statusConfig = {
 		active: {

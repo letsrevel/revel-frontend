@@ -23,7 +23,7 @@
 		eventseriesadminRemoveTags
 	} from '$lib/api/generated';
 
-	let { data }: { data: PageData } = $props();
+	const { data }: { data: PageData } = $props();
 
 	const organization = $derived($page.data.organization);
 	const accessToken = $derived(authStore.accessToken);
@@ -41,7 +41,7 @@
 	// Tag state
 	let newTag = $state('');
 	let isAddingTag = $state(false);
-	let isDeletingTag = $state<Record<string, boolean>>({});
+	const isDeletingTag = $state<Record<string, boolean>>({});
 
 	// Image upload states - TODO: implement image upload/delete functionality
 	let isUploadingLogo = $state(false);

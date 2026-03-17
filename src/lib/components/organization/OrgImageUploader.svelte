@@ -18,7 +18,7 @@
 		onRegisterSave?: (saveFn: () => Promise<void>) => void;
 	}
 
-	let { slug, logoPath, coverArtPath, accessToken, onRegisterSave }: Props = $props();
+	const { slug, logoPath, coverArtPath, accessToken, onRegisterSave }: Props = $props();
 
 	// Image upload state
 	let logoFile = $state<File | null>(null);

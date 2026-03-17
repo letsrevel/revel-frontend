@@ -3,7 +3,7 @@
 	import ConfirmationResult from '$lib/components/events/ConfirmationResult.svelte';
 	import type { PageData } from './$types';
 
-	let { data }: { data: PageData } = $props();
+	const { data }: { data: PageData } = $props();
 
 	function handleEventNavigate(eventId: string) {
 		// Navigate to event detail page

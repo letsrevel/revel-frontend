@@ -41,7 +41,7 @@
 	const queryClient = useQueryClient();
 
 	// Store initial status for reset functionality
-	let initialStatus = $state<UserEventStatus | null>(userStatus);
+	const initialStatus = $state<UserEventStatus | null>(userStatus);
 	let showSuccess = $state(false);
 	let successMessage = $state('');
 	let successType = $state<'yes' | 'maybe' | 'no'>('yes');
@@ -229,7 +229,7 @@
 	}
 
 	// Computed: Determine current state
-	let currentRsvpAnswer = $derived.by(() => {
+	const currentRsvpAnswer = $derived.by(() => {
 		// First check if we have a locally stored answer (from this session)
 		if (userAnswer) return userAnswer;
 
@@ -257,7 +257,7 @@
 		return null;
 	});
 
-	let hasExistingRsvp = $derived.by(() => {
+	const hasExistingRsvp = $derived.by(() => {
 		if (!userStatus) return false;
 		// New format: UserEventStatusResponse with rsvp field
 		if (isUserStatusResponse(userStatus)) {
@@ -267,13 +267,13 @@
 		return isRSVP(userStatus);
 	});
 
-	let eligibilityStatus = $derived.by(() => {
+	const eligibilityStatus = $derived.by(() => {
 		if (!userStatus) return null;
 		if (!isEligibility(userStatus)) return null;
 		return userStatus;
 	});
 
-	let isEligible = $derived.by(() => {
+	const isEligible = $derived.by(() => {
 		// User is eligible if:
 		// 1. They have an eligibility status that says allowed
 		// 2. OR they already have an RSVP (they can change it)
@@ -282,12 +282,12 @@
 		return false;
 	});
 
-	let shouldShowButtons = $derived.by(() => {
+	const shouldShowButtons = $derived.by(() => {
 		// Show buttons if eligible and not in success state
 		return isEligible && !showSuccess;
 	});
 
-	let shouldShowIneligibleMessage = $derived.by(() => {
+	const shouldShowIneligibleMessage = $derived.by(() => {
 		// Show ineligible message if user has eligibility status and is not allowed
 		return eligibilityStatus && !eligibilityStatus.allowed && !showSuccess;
 	});
@@ -295,20 +295,20 @@
 	// Show RSVP if:
 	// 1. Event doesn't require tickets
 	// 2. Always show for non-ticketed events (to display login prompt if needed)
-	let shouldRender = $derived(!requiresTicket);
+	const shouldRender = $derived(!requiresTicket);
 
 	// Check if we should show guest button instead of regular RSVP
-	let shouldShowGuestButton = $derived(
+	const shouldShowGuestButton = $derived(
 		!isAuthenticated && event?.can_attend_without_login && onGuestRsvpClick
 	);
 
 	// Check if we should show login prompt (user not authenticated and event requires login)
-	let shouldShowLoginPrompt = $derived(
+	const shouldShowLoginPrompt = $derived(
 		!isAuthenticated && event && !event.can_attend_without_login
 	);
 
 	// Get current pathname for redirect (SSR-safe)
-	let currentPathname = $derived(browser ? window.location.pathname : '');
+	const currentPathname = $derived(browser ? window.location.pathname : '');
 </script>
 
 <!--

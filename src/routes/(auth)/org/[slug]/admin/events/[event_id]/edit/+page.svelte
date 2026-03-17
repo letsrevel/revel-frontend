@@ -14,7 +14,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { CheckCircle, XCircle, FileEdit, Trash2, Ban, MoreVertical, Copy } from 'lucide-svelte';
 
-	let { data }: { data: PageData } = $props();
+	const { data }: { data: PageData } = $props();
 
 	const organization = $derived($page.data.organization);
 	const event = $derived(data.event);

@@ -9,7 +9,7 @@
 		totalWithoutPronouns: number;
 	}
 
-	let { distribution, totalAttendees, totalWithPronouns, totalWithoutPronouns }: Props = $props();
+	const { distribution, totalAttendees, totalWithPronouns, totalWithoutPronouns }: Props = $props();
 
 	function getPercentage(count: number): number {
 		if (totalAttendees === 0) return 0;

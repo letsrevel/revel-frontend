@@ -22,7 +22,7 @@
 		class?: string;
 	}
 
-	let {
+	const {
 		organization,
 		isAuthenticated,
 		isMember,

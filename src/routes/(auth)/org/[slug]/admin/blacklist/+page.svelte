@@ -359,8 +359,8 @@
 	}
 
 	// Derived data
-	let blacklistEntries = $derived(blacklistQuery.data?.results || []);
-	let blacklistPagination = $derived({
+	const blacklistEntries = $derived(blacklistQuery.data?.results || []);
+	const blacklistPagination = $derived({
 		page: blacklistPage,
 		totalCount: blacklistQuery.data?.count || 0,
 		totalPages: Math.ceil((blacklistQuery.data?.count || 0) / pageSize),
@@ -368,8 +368,8 @@
 		hasPrev: blacklistQuery.data?.previous !== null
 	});
 
-	let whitelistRequests = $derived(whitelistRequestsQuery.data?.results || []);
-	let requestsPagination = $derived({
+	const whitelistRequests = $derived(whitelistRequestsQuery.data?.results || []);
+	const requestsPagination = $derived({
 		page: requestsPage,
 		totalCount: whitelistRequestsQuery.data?.count || 0,
 		totalPages: Math.ceil((whitelistRequestsQuery.data?.count || 0) / pageSize),
@@ -377,8 +377,8 @@
 		hasPrev: whitelistRequestsQuery.data?.previous !== null
 	});
 
-	let whitelistEntries = $derived(whitelistQuery.data?.results || []);
-	let whitelistPagination = $derived({
+	const whitelistEntries = $derived(whitelistQuery.data?.results || []);
+	const whitelistPagination = $derived({
 		page: whitelistPage,
 		totalCount: whitelistQuery.data?.count || 0,
 		totalPages: Math.ceil((whitelistQuery.data?.count || 0) / pageSize),
@@ -387,7 +387,7 @@
 	});
 
 	// Count pending requests for badge
-	let pendingRequestsCount = $derived(
+	const pendingRequestsCount = $derived(
 		requestStatusFilter === 'pending' ? whitelistRequestsQuery.data?.count || 0 : 0
 	);
 </script>

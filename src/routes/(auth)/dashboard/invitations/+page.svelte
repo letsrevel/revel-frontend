@@ -12,14 +12,14 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 
-	let accessToken = $derived(authStore.accessToken);
+	const accessToken = $derived(authStore.accessToken);
 
 	// Tab state
 	type TabType = 'invitations' | 'requests';
 	let activeTab = $state<TabType>('invitations');
 
 	// Get current page from URL params
-	let currentPage = $derived(Number(page.url.searchParams.get('page') || '1'));
+	const currentPage = $derived(Number(page.url.searchParams.get('page') || '1'));
 
 	// Invitations filters
 	let invitationsSearch = $state('');
@@ -106,11 +106,11 @@
 		enabled: !!accessToken && activeTab === 'requests'
 	}));
 
-	let invitations = $derived(invitationsQuery.data?.results || []);
-	let invitationsCount = $derived(invitationsQuery.data?.count || 0);
+	const invitations = $derived(invitationsQuery.data?.results || []);
+	const invitationsCount = $derived(invitationsQuery.data?.count || 0);
 
-	let requests = $derived(requestsQuery.data?.results || []);
-	let requestsCount = $derived(requestsQuery.data?.count || 0);
+	const requests = $derived(requestsQuery.data?.results || []);
+	const requestsCount = $derived(requestsQuery.data?.count || 0);
 
 	// Navigate to page
 	function navigateToPage(pageNum: number) {

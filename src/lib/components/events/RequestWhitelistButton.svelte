@@ -18,7 +18,7 @@
 		class?: string;
 	}
 
-	let {
+	const {
 		organizationSlug,
 		organizationName = '',
 		eventId,

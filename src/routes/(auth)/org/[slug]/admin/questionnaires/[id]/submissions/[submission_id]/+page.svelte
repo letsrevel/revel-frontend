@@ -17,10 +17,10 @@
 		data: PageData;
 	}
 
-	let { data }: Props = $props();
+	const { data }: Props = $props();
 
 	// Form submission state
-	let isSubmitting = $state(false);
+	const isSubmitting = $state(false);
 
 	function formatDate(dateString: string | null | undefined): string {
 		if (!dateString) return m['questionnaireSubmissionDetailPage.notSubmitted']();
@@ -35,7 +35,7 @@
 
 	// Check if submission is already evaluated
 	// Note: EvaluationResponseSchema doesn't have evaluated_by field, so we check status only
-	let isEvaluated = $derived(
+	const isEvaluated = $derived(
 		data.submission.evaluation &&
 			!isPendingReview(data.submission.evaluation.status as QuestionnaireEvaluationStatus)
 	);
@@ -48,7 +48,7 @@
 		event_start: string;
 	}
 
-	let eventMetadata = $derived.by(() => {
+	const eventMetadata = $derived.by(() => {
 		const metadata = data.submission.metadata;
 		if (metadata && metadata.source_event) {
 			const sourceEvent = metadata.source_event as SourceEventMetadata;

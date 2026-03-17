@@ -46,17 +46,17 @@
 	}: Props = $props();
 
 	// Normalize to array and filter out undefined/null values
-	let ticketArray = $derived(
+	const ticketArray = $derived(
 		(Array.isArray(tickets) ? tickets : [tickets]).filter((t): t is UserTicketSchema => t != null)
 	);
-	let totalTickets = $derived(ticketArray.length);
-	let hasMultipleTickets = $derived(totalTickets > 1);
+	const totalTickets = $derived(ticketArray.length);
+	const hasMultipleTickets = $derived(totalTickets > 1);
 
 	// Current ticket index for navigation
 	let currentIndex = $state(0);
 
 	// Current ticket being displayed - with guard for empty array
-	let ticket = $derived(ticketArray[currentIndex] ?? ticketArray[0]);
+	const ticket = $derived(ticketArray[currentIndex] ?? ticketArray[0]);
 
 	// Navigation functions
 	function goToPrevious() {
@@ -115,14 +115,14 @@
 	}
 
 	// Format checked in date
-	let checkedInDate = $derived.by(() => {
+	const checkedInDate = $derived.by(() => {
 		if (!ticket?.checked_in_at) return null;
 		const date = new Date(ticket.checked_in_at);
 		return date.toLocaleString();
 	});
 
 	// Check if ticket is pending and payment method allows resume
-	let canResumePayment = $derived.by(() => {
+	const canResumePayment = $derived.by(() => {
 		if (!ticket) return false;
 		if (ticket.status !== 'pending') return false;
 		if (!ticket.tier) return false;
@@ -135,7 +135,7 @@
 	});
 
 	// Check if ticket reservation can be cancelled (has pending online payment)
-	let canCancelReservation = $derived.by(() => {
+	const canCancelReservation = $derived.by(() => {
 		if (!ticket) return false;
 		if (ticket.status !== 'pending') return false;
 		if (!ticket.payment?.id) return false;
@@ -145,7 +145,7 @@
 
 	// Format seat information
 	// Venue/sector come from ticket.tier, seat info comes from ticket.seat
-	let seatInfo = $derived.by(() => {
+	const seatInfo = $derived.by(() => {
 		if (!ticket) return null;
 		const parts: string[] = [];
 
@@ -180,7 +180,7 @@
 	});
 
 	// Check if ticket has any seat info to display
-	let hasSeatInfo = $derived(
+	const hasSeatInfo = $derived(
 		!!(
 			ticket?.tier?.venue?.name ||
 			ticket?.tier?.sector?.name ||
@@ -197,7 +197,7 @@
 		isOnline: boolean;
 	}
 
-	let pendingPaymentGroups = $derived.by((): PaymentGroup[] => {
+	const pendingPaymentGroups = $derived.by((): PaymentGroup[] => {
 		const groups = new Map<string, UserTicketSchema[]>();
 
 		for (const t of ticketArray) {
@@ -218,18 +218,18 @@
 	});
 
 	// Check if current ticket is part of a pending payment group
-	let currentTicketPaymentGroup = $derived.by((): PaymentGroup | null => {
+	const currentTicketPaymentGroup = $derived.by((): PaymentGroup | null => {
 		if (!ticket?.payment?.id) return null;
 		return pendingPaymentGroups.find((g) => g.paymentId === ticket.payment?.id) ?? null;
 	});
 
 	// Count of active (non-cancelled, non-pending) tickets
-	let activeTicketCount = $derived(
+	const activeTicketCount = $derived(
 		ticketArray.filter((t) => t.status === 'active' || t.status === 'checked_in').length
 	);
 
 	// Count of pending tickets
-	let pendingTicketCount = $derived(ticketArray.filter((t) => t.status === 'pending').length);
+	const pendingTicketCount = $derived(ticketArray.filter((t) => t.status === 'pending').length);
 </script>
 
 <Dialog bind:open>

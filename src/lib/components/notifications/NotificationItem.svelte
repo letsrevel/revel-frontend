@@ -22,7 +22,7 @@
 		class?: string;
 	}
 
-	let {
+	const {
 		notification,
 		authToken,
 		onStatusChange,
@@ -35,10 +35,10 @@
 	let isRead = $state(notification.read_at !== null);
 
 	// Derived values
-	let relativeTime = $derived(formatRelativeTime(notification.created_at));
+	const relativeTime = $derived(formatRelativeTime(notification.created_at));
 
 	// Mark as read mutation
-	let markReadMutation = createMutation(() => ({
+	const markReadMutation = createMutation(() => ({
 		mutationFn: async () => {
 			return await notificationMarkRead({
 				path: { notification_id: notification.id },
@@ -66,7 +66,7 @@
 	}));
 
 	// Mark as unread mutation
-	let markUnreadMutation = createMutation(() => ({
+	const markUnreadMutation = createMutation(() => ({
 		mutationFn: async () => {
 			return await notificationMarkUnread({
 				path: { notification_id: notification.id },
@@ -189,7 +189,7 @@
 	}
 
 	// Compute notification type badge variant
-	let notificationTypeVariant = $derived.by(() => {
+	const notificationTypeVariant = $derived.by(() => {
 		const type = notification.notification_type.toLowerCase();
 		if (type.includes('invitation')) return 'default' as const;
 		if (type.includes('event')) return 'secondary' as const;

@@ -25,16 +25,24 @@
 		showActions?: boolean;
 	}
 
-	let { request, onApprove, onReject, isProcessing = false, showActions = true }: Props = $props();
+	const {
+		request,
+		onApprove,
+		onReject,
+		isProcessing = false,
+		showActions = true
+	}: Props = $props();
 
 	// Dialog state
 	let dialogOpen = $state(false);
 
 	// Format created at date
-	let createdAt = $derived(formatDistanceToNow(new Date(request.created_at), { addSuffix: true }));
+	const createdAt = $derived(
+		formatDistanceToNow(new Date(request.created_at), { addSuffix: true })
+	);
 
 	// Display name
-	let displayName = $derived(
+	const displayName = $derived(
 		request.user.preferred_name ||
 			(request.user.first_name && request.user.last_name
 				? `${request.user.first_name} ${request.user.last_name}`

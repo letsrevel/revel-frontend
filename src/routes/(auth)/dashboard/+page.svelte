@@ -40,12 +40,12 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { MembershipStatus } from '$lib/api/generated/types.gen';
 
-	let user = $derived(authStore.user);
-	let accessToken = $derived(authStore.accessToken);
-	let permissions = $derived(authStore.permissions);
+	const user = $derived(authStore.user);
+	const accessToken = $derived(authStore.accessToken);
+	const permissions = $derived(authStore.permissions);
 
 	// Get user's first name or preferred name
-	let firstName = $derived(user?.preferred_name || user?.first_name || 'there');
+	const firstName = $derived(user?.preferred_name || user?.first_name || 'there');
 
 	// Filter presets
 	const filterPresets = [
@@ -108,12 +108,12 @@
 	let ticketType = $state<'ticketed' | 'free' | undefined>(undefined);
 
 	// View mode (list or calendar) for Your Events section
-	let viewMode = $derived<'list' | 'calendar'>(
+	const viewMode = $derived<'list' | 'calendar'>(
 		($page.url.searchParams.get('viewMode') as 'list' | 'calendar') || 'list'
 	);
 
 	// Calendar state
-	let calendarParams = $derived(parseCalendarParams($page.url.searchParams));
+	const calendarParams = $derived(parseCalendarParams($page.url.searchParams));
 	let selectedEvent = $state<EventInListSchema | null>(null);
 
 	// Check if there are ANY events (with default "All" filter) to determine section visibility
@@ -286,18 +286,18 @@
 		enabled: !!accessToken
 	}));
 
-	let yourEvents = $derived(yourEventsQuery.data || []);
-	let organizations = $derived(organizationsQuery.data || []);
-	let upcomingEvents = $derived(upcomingEventsQuery.data || []);
-	let hasAnyEvents = $derived(hasAnyEventsQuery.data || false);
-	let activeTicketsCount = $derived(activeTicketsQuery.data || 0);
-	let pendingInvitationsCount = $derived(pendingInvitationsQuery.data || 0);
-	let upcomingRsvpsCount = $derived(upcomingRsvpsQuery.data || 0);
-	let calendarEvents = $derived(calendarQuery.data || []);
-	let isCalendarLoading = $derived(calendarQuery.isLoading);
+	const yourEvents = $derived(yourEventsQuery.data || []);
+	const organizations = $derived(organizationsQuery.data || []);
+	const upcomingEvents = $derived(upcomingEventsQuery.data || []);
+	const hasAnyEvents = $derived(hasAnyEventsQuery.data || false);
+	const activeTicketsCount = $derived(activeTicketsQuery.data || 0);
+	const pendingInvitationsCount = $derived(pendingInvitationsQuery.data || 0);
+	const upcomingRsvpsCount = $derived(upcomingRsvpsQuery.data || 0);
+	const calendarEvents = $derived(calendarQuery.data || []);
+	const isCalendarLoading = $derived(calendarQuery.isLoading);
 
 	// Check if user can organize events (is owner/staff of at least one org)
-	let canOrganizeEvents = $derived(() => {
+	const canOrganizeEvents = $derived(() => {
 		if (!permissions?.organization_permissions) return false;
 
 		// Check if user is owner or has organizing permissions for any org

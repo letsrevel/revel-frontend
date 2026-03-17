@@ -9,7 +9,7 @@
 		class?: string;
 	}
 
-	let { retryOn, class: className }: Props = $props();
+	const { retryOn, class: className }: Props = $props();
 
 	let countdown = $state('');
 	let intervalId: ReturnType<typeof setInterval> | null = null;

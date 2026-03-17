@@ -15,7 +15,7 @@
 		errors?: Record<string, string>;
 	}
 
-	let {
+	const {
 		resource = null,
 		organizationSlug,
 		organizationId,

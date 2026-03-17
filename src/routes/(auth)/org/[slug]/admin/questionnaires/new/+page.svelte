@@ -54,7 +54,7 @@
 		data: PageData;
 	}
 
-	let { data }: Props = $props();
+	const { data }: Props = $props();
 
 	// Form state
 	let name = $state('');
@@ -67,12 +67,13 @@
 	let llmGuidelines = $state('');
 	let maxSubmissionAge = $state<number | null>(null); // Duration in days
 	let canRetakeAfter = $state<number | null>(null); // Duration in hours
+	let maxAttempts = $state(0); // Max submission attempts (0 = unlimited)
 	let membersExempt = $state(false); // Exempt members from questionnaire
 	let perEvent = $state(false); // Require per-event completion
 	let requiresEvaluation = $state(true);
 
 	// Feedback type forces evaluation off; derive the effective value for the payload/UI
-	let effectiveRequiresEvaluation = $derived(
+	const effectiveRequiresEvaluation = $derived(
 		questionnaireType === 'feedback' ? false : requiresEvaluation
 	);
 
@@ -299,6 +300,7 @@
 					shuffle_sections: shuffleSections,
 					llm_guidelines: llmGuidelines || null,
 					can_retake_after: canRetakeAfter !== null ? String(canRetakeAfter * 3600) : undefined, // Convert hours to seconds
+					max_attempts: maxAttempts,
 					members_exempt: membersExempt,
 					per_event: perEvent,
 					requires_evaluation: effectiveRequiresEvaluation,
@@ -697,6 +699,18 @@
 						How long users must wait before retaking (in hours)
 					</p>
 				</div>
+			</div>
+
+			<!-- Max Attempts -->
+			<div class="space-y-2">
+				<Label for="max-attempts">
+					Max Attempts
+					<span class="text-destructive">*</span>
+				</Label>
+				<Input id="max-attempts" type="number" bind:value={maxAttempts} min="0" step="1" required />
+				<p class="text-xs text-muted-foreground">
+					Maximum number of submission attempts allowed (0 = unlimited)
+				</p>
 			</div>
 		</CardContent>
 	</Card>

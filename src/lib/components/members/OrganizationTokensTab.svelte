@@ -39,7 +39,7 @@
 		onCreateModalOpenChange: (open: boolean) => void;
 	}
 
-	let { organization, isOwner, tiers, isCreateModalOpen, onCreateModalOpenChange }: Props =
+	const { organization, isOwner, tiers, isCreateModalOpen, onCreateModalOpenChange }: Props =
 		$props();
 
 	const accessToken = $derived(authStore.accessToken);
@@ -157,8 +157,8 @@
 	}));
 
 	// Derived data
-	let tokens = $derived(tokensQuery.data?.results || []);
-	let shareUrl = $derived(
+	const tokens = $derived(tokensQuery.data?.results || []);
+	const shareUrl = $derived(
 		tokenToShare ? getOrganizationTokenUrl(tokenToShare.id || '', organization.slug) : ''
 	);
 

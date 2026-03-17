@@ -11,7 +11,7 @@
 		class?: string;
 	}
 
-	let { selectedTags = [], onToggleTag, class: className }: Props = $props();
+	const { selectedTags = [], onToggleTag, class: className }: Props = $props();
 
 	let availableTags = $state<string[]>([]);
 	let isLoading = $state(false);

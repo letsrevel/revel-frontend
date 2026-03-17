@@ -38,7 +38,7 @@
 		onIncludePastChange?: (includePast: boolean) => void;
 	}
 
-	let {
+	const {
 		announcement,
 		open,
 		organizationSlug,
@@ -65,8 +65,8 @@
 	let errors = $state<{ title?: string; body?: string; target?: string }>({});
 
 	// Derived
-	let isEditing = $derived(!!announcement);
-	let accessToken = $derived(authStore.accessToken);
+	const isEditing = $derived(!!announcement);
+	const accessToken = $derived(authStore.accessToken);
 
 	// Sync form with announcement prop (for editing)
 	$effect(() => {
@@ -182,8 +182,8 @@
 		}
 	}));
 
-	let isSaving = $derived(createMut.isPending || updateMut.isPending);
-	let isSending = $derived(sendMut.isPending);
+	const isSaving = $derived(createMut.isPending || updateMut.isPending);
+	const isSending = $derived(sendMut.isPending);
 
 	// Validation
 	function validate(): boolean {
@@ -316,7 +316,7 @@
 	];
 
 	// Filter options based on advanced toggle
-	let visibleOptions = $derived(
+	const visibleOptions = $derived(
 		showAdvanced ? targetOptions : targetOptions.filter((o) => !o.advanced)
 	);
 </script>

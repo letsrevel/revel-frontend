@@ -12,7 +12,7 @@
 		class?: string;
 	}
 
-	let {
+	const {
 		authToken,
 		pollingInterval = 60000,
 		onCountChange,
@@ -29,7 +29,7 @@
 	let isVisible = $state(true);
 
 	// Query for unread count with polling
-	let unreadQuery = createQuery(() => ({
+	const unreadQuery = createQuery(() => ({
 		queryKey: ['notifications', 'unread-count'],
 		queryFn: async () => {
 			return await notificationUnreadCount({
@@ -44,13 +44,13 @@
 	}));
 
 	// Derived values
-	let count = $derived(unreadQuery.data?.data?.count ?? 0);
-	let isLoading = $derived(unreadQuery.isLoading);
-	let isError = $derived(unreadQuery.isError);
-	let shouldShowBadge = $derived((count > 0 || showZero) && !isLoading);
+	const count = $derived(unreadQuery.data?.data?.count ?? 0);
+	const isLoading = $derived(unreadQuery.isLoading);
+	const isError = $derived(unreadQuery.isError);
+	const shouldShowBadge = $derived((count > 0 || showZero) && !isLoading);
 
 	// Display value with max count handling
-	let displayValue = $derived.by(() => {
+	const displayValue = $derived.by(() => {
 		if (count > maxCount) {
 			return `${maxCount}+`;
 		}
@@ -58,7 +58,7 @@
 	});
 
 	// ARIA label for accessibility
-	let ariaLabel = $derived.by(() => {
+	const ariaLabel = $derived.by(() => {
 		if (count === 0) {
 			return 'No unread notifications';
 		} else if (count === 1) {

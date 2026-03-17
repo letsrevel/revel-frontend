@@ -13,7 +13,7 @@
 		onRegisterSave?: (saveFn: () => Promise<void>) => void;
 	}
 
-	let { slug, accessToken, initialTags: initialTagsProp, onRegisterSave }: Props = $props();
+	const { slug, accessToken, initialTags: initialTagsProp, onRegisterSave }: Props = $props();
 
 	let tags = $state<string[]>([...initialTagsProp]);
 	let savedTags = $state<string[]>([...initialTagsProp]);

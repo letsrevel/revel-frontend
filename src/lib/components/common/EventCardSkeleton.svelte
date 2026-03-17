@@ -8,7 +8,7 @@
 		variant?: 'compact' | 'standard';
 	}
 
-	let { class: className, variant = 'standard' }: Props = $props();
+	const { class: className, variant = 'standard' }: Props = $props();
 </script>
 
 <div

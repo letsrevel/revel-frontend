@@ -8,9 +8,9 @@
 		notEvaluated: number;
 	}
 
-	let { approved, rejected, pendingReview, notEvaluated }: Props = $props();
+	const { approved, rejected, pendingReview, notEvaluated }: Props = $props();
 
-	let total = $derived(approved + rejected + pendingReview + notEvaluated);
+	const total = $derived(approved + rejected + pendingReview + notEvaluated);
 
 	function pct(value: number): number {
 		if (total === 0) return 0;

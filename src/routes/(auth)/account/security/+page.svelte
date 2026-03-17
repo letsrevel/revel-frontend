@@ -14,7 +14,7 @@
 		form: ActionData;
 	}
 
-	let { data, form }: Props = $props();
+	const { data, form }: Props = $props();
 
 	// State management
 	let isEnabling = $state(false);
@@ -31,10 +31,10 @@
 	let passwordResetRequested = $state(false);
 
 	// Derived state
-	let totpActive = $derived(data.totpActive);
-	let provisioningUri = $derived(form?.provisioningUri);
-	let setupSuccess = $derived(form?.verified);
-	let disableSuccess = $derived(form?.disabled);
+	const totpActive = $derived(data.totpActive);
+	const provisioningUri = $derived(form?.provisioningUri);
+	const setupSuccess = $derived(form?.verified);
+	const disableSuccess = $derived(form?.disabled);
 
 	// Debug logging - track all reactive changes
 	$effect(() => {
@@ -59,7 +59,7 @@
 	});
 
 	// Extract manual entry code from provisioning URI
-	let manualEntryCode = $derived.by(() => {
+	const manualEntryCode = $derived.by(() => {
 		if (!provisioningUri) return '';
 		const match = provisioningUri.match(/secret=([A-Z0-9]+)/);
 		return match ? match[1] : '';

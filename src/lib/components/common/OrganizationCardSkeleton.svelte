@@ -7,7 +7,7 @@
 		class?: string;
 	}
 
-	let { class: className }: Props = $props();
+	const { class: className }: Props = $props();
 </script>
 
 <div

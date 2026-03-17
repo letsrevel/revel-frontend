@@ -11,7 +11,7 @@
 		onTagsChange: (tags: string[]) => void;
 	}
 
-	let {
+	const {
 		emailTags,
 		organizationSlug,
 		accessToken,

@@ -4,7 +4,7 @@
 	import type { PageData } from './$types';
 	import EventEditor from '$lib/components/events/admin/EventEditor.svelte';
 
-	let { data }: { data: PageData } = $props();
+	const { data }: { data: PageData } = $props();
 
 	const organization = $derived($page.data.organization);
 </script>

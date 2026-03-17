@@ -36,7 +36,7 @@
 		onVenueSelect: (venue: VenueDetailSchema | null) => void;
 	}
 
-	let {
+	const {
 		formData,
 		selectedCity,
 		selectedVenue,
@@ -50,7 +50,7 @@
 
 	// Derive the expected mode from formData
 	// Note: city_id is not used for detection because it may be inherited from the organization
-	let derivedMode = $derived.by((): LocationMode => {
+	const derivedMode = $derived.by((): LocationMode => {
 		if (formData.venue_id) return 'venue';
 		if (formData.address) return 'address';
 		return 'none';
@@ -60,10 +60,10 @@
 	let userSelectedMode = $state<LocationMode | null>(null);
 
 	// Location mode: use user selection if available, otherwise derive from data
-	let locationMode = $derived(userSelectedMode ?? derivedMode);
+	const locationMode = $derived(userSelectedMode ?? derivedMode);
 
 	// Maps section expanded state - derive from whether maps data exists
-	let hasMapsData = $derived(!!formData.location_maps_url || !!formData.location_maps_embed);
+	const hasMapsData = $derived(!!formData.location_maps_url || !!formData.location_maps_embed);
 	let mapsExpanded = $state(false);
 
 	// Auto-expand maps section when data exists

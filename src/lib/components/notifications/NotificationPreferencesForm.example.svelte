@@ -13,7 +13,7 @@
 		authToken: string;
 	}
 
-	let { authToken }: Props = $props();
+	const { authToken }: Props = $props();
 
 	// Fetch current notification preferences
 	const preferencesQuery = createQuery(() => ({

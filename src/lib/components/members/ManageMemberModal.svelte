@@ -29,7 +29,7 @@
 		isBlacklisting?: boolean;
 	}
 
-	let {
+	const {
 		member,
 		tiers,
 		isStaff,
@@ -65,7 +65,7 @@
 	});
 
 	// Display name
-	let displayName = $derived(
+	const displayName = $derived(
 		member
 			? member.user.preferred_name ||
 					(member.user.first_name && member.user.last_name
@@ -75,9 +75,9 @@
 	);
 
 	// Check if changes were made
-	let hasStatusChanged = $derived(member && selectedStatus !== member.status);
-	let hasTierChanged = $derived(member && selectedTierId !== (member.tier?.id || null));
-	let hasChanges = $derived(hasStatusChanged || hasTierChanged);
+	const hasStatusChanged = $derived(member && selectedStatus !== member.status);
+	const hasTierChanged = $derived(member && selectedTierId !== (member.tier?.id || null));
+	const hasChanges = $derived(hasStatusChanged || hasTierChanged);
 
 	// Statuses
 	const statuses: MembershipStatus[] = ['active', 'paused', 'cancelled', 'banned'];
@@ -127,7 +127,7 @@
 	}
 
 	// Disabled state for actions
-	let isProcessing = $derived(isUpdating || isPromoting || isRemoving || isBlacklisting);
+	const isProcessing = $derived(isUpdating || isPromoting || isRemoving || isBlacklisting);
 
 	// Handle dialog open/close changes
 	function handleOpenChange(isOpen: boolean) {

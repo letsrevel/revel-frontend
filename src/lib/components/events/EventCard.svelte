@@ -16,12 +16,12 @@
 		class?: string;
 	}
 
-	let { event, variant = 'standard', userStatus = null, class: className }: Props = $props();
+	const { event, variant = 'standard', userStatus = null, class: className }: Props = $props();
 
 	// Computed values
-	let formattedDate = $derived(formatEventDate(event.start));
-	let screenReaderDate = $derived(formatEventDateForScreenReader(event.start));
-	let locationDisplay = $derived.by(() => {
+	const formattedDate = $derived(formatEventDate(event.start));
+	const screenReaderDate = $derived(formatEventDateForScreenReader(event.start));
+	const locationDisplay = $derived.by(() => {
 		// If event has a venue, use venue's name and city
 		if (event.venue) {
 			const city = event.venue.city || event.city;
@@ -36,13 +36,13 @@
 		if (!event.city) return m['eventCard.location_tbd']();
 		return event.city.country ? `${event.city.name}, ${event.city.country}` : event.city.name;
 	});
-	let accessDisplay = $derived(
+	const accessDisplay = $derived(
 		getEventAccessDisplay(event, false, false) // TODO: Pass actual user membership status
 	);
-	let isPast = $derived(isEventPast(event.end));
+	const isPast = $derived(isEventPast(event.end));
 
 	// Accessible card label for screen readers
-	let accessibleLabel = $derived.by(() => {
+	const accessibleLabel = $derived.by(() => {
 		const parts = [
 			event.name,
 			`by ${event.organization.name}`,
@@ -54,11 +54,11 @@
 	});
 
 	// Check if we're currently navigating to this card's event
-	let eventUrl = $derived(`/events/${event.organization.slug}/${event.slug}`);
-	let isNavigating = $derived($navigating !== null && $navigating.to?.url.pathname === eventUrl);
+	const eventUrl = $derived(`/events/${event.organization.slug}/${event.slug}`);
+	const isNavigating = $derived($navigating !== null && $navigating.to?.url.pathname === eventUrl);
 
 	// Container classes based on variant
-	let containerClasses = $derived(
+	const containerClasses = $derived(
 		cn(
 			'group relative overflow-hidden rounded-lg border bg-card transition-all',
 			'hover:shadow-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
@@ -70,7 +70,7 @@
 	);
 
 	// Image container classes based on variant
-	let imageContainerClasses = $derived(
+	const imageContainerClasses = $derived(
 		cn(
 			'relative overflow-hidden',
 			variant === 'compact' && 'w-32 shrink-0 md:w-full md:aspect-video',

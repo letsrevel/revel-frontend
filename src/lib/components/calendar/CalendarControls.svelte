@@ -22,10 +22,10 @@
 		preserveParams?: string[];
 	}
 
-	let { view, year, month, week, baseUrl, preserveParams = [] }: Props = $props();
+	const { view, year, month, week, baseUrl, preserveParams = [] }: Props = $props();
 
 	// Display title based on view
-	let displayTitle = $derived.by(() => {
+	const displayTitle = $derived.by(() => {
 		if (view === 'month') {
 			return formatMonthYear(year, month);
 		} else if (view === 'week') {

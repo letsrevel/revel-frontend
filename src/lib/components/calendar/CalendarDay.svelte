@@ -14,7 +14,7 @@
 		onEventClick?: (event: EventInListSchema) => void;
 	}
 
-	let {
+	const {
 		date,
 		dayEvents,
 		isCurrentMonth,
@@ -25,8 +25,8 @@
 	}: Props = $props();
 
 	const maxVisibleEvents = 3;
-	let visibleEvents = $derived(dayEvents.slice(0, maxVisibleEvents));
-	let hiddenCount = $derived(Math.max(0, dayEvents.length - maxVisibleEvents));
+	const visibleEvents = $derived(dayEvents.slice(0, maxVisibleEvents));
+	const hiddenCount = $derived(Math.max(0, dayEvents.length - maxVisibleEvents));
 </script>
 
 <div

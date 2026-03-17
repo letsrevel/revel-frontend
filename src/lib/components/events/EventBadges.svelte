@@ -17,13 +17,13 @@
 		class?: string;
 	}
 
-	let { event, userStatus = null, class: className }: Props = $props();
+	const { event, userStatus = null, class: className }: Props = $props();
 
 	/**
 	 * Calculate which badges to show based on priority system
 	 * Maximum 2 badges per card
 	 */
-	let badges = $derived.by(() => {
+	const badges = $derived.by(() => {
 		const result: Badge[] = [];
 
 		// Priority 0: Administrative Status (highest priority - show event status)

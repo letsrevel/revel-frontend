@@ -35,10 +35,10 @@
 	} from '$lib/utils/seo';
 	import * as m from '$lib/paraglide/messages.js';
 
-	let { data }: { data: PageData } = $props();
+	const { data }: { data: PageData } = $props();
 
 	// Create mutable copy for client-side updates
-	let organization = $state(data.organization);
+	const organization = $state(data.organization);
 
 	// Filter state for events
 	let includePastEvents = $state(true);
@@ -57,7 +57,7 @@
 	const coverUrl = $derived(getImageUrl(organization.cover_art));
 
 	// Compute location display
-	let locationDisplay = $derived.by(() => {
+	const locationDisplay = $derived.by(() => {
 		if (!organization.city) return organization.address || null;
 		const cityCountry = organization.city.country
 			? `${organization.city.name}, ${organization.city.country}`
@@ -66,7 +66,7 @@
 	});
 
 	// Check if organization has any social links
-	let hasSocialLinks = $derived(
+	const hasSocialLinks = $derived(
 		organization.instagram_url ||
 			organization.facebook_url ||
 			organization.bluesky_url ||
@@ -87,28 +87,28 @@
 		return gradients[hash % gradients.length];
 	}
 
-	let fallbackGradient = $derived(getOrgFallbackGradient(organization.id));
+	const fallbackGradient = $derived(getOrgFallbackGradient(organization.id));
 
 	// Generate comprehensive meta tags
-	let metaTags = $derived(
+	const metaTags = $derived(
 		generateOrganizationMeta(organization, `${page.url.origin}${page.url.pathname}`)
 	);
 
 	// Generate structured data
-	let structuredData = $derived(
+	const structuredData = $derived(
 		generateOrganizationStructuredData(organization, `${page.url.origin}${page.url.pathname}`)
 	);
-	let jsonLd = $derived(toJsonLd(structuredData));
+	const jsonLd = $derived(toJsonLd(structuredData));
 
 	// Generate BreadcrumbList structured data
-	let breadcrumbData = $derived(
+	const breadcrumbData = $derived(
 		generateBreadcrumbStructuredData([
 			{ name: 'Home', url: page.url.origin },
 			{ name: 'Organizations', url: `${page.url.origin}/organizations` },
 			{ name: organization.name, url: `${page.url.origin}${page.url.pathname}` }
 		])
 	);
-	let breadcrumbJsonLd = $derived(toJsonLd(breadcrumbData));
+	const breadcrumbJsonLd = $derived(toJsonLd(breadcrumbData));
 
 	// Filter resources to show only those marked for display on org page
 	const displayedResources = $derived(
@@ -134,9 +134,9 @@
 		}
 	}));
 
-	let eventSeries = $derived(seriesQuery.data?.results || []);
-	let seriesTotalCount = $derived(seriesQuery.data?.count || 0);
-	let seriesTotalPages = $derived(Math.ceil(seriesTotalCount / pageSize));
+	const eventSeries = $derived(seriesQuery.data?.results || []);
+	const seriesTotalCount = $derived(seriesQuery.data?.count || 0);
+	const seriesTotalPages = $derived(Math.ceil(seriesTotalCount / pageSize));
 
 	// Fetch events for this organization
 	const eventsQuery = createQuery(() => ({
@@ -168,9 +168,9 @@
 		}
 	}));
 
-	let events = $derived(eventsQuery.data?.results || []);
-	let eventsTotalCount = $derived(eventsQuery.data?.count || 0);
-	let eventsTotalPages = $derived(Math.ceil(eventsTotalCount / pageSize));
+	const events = $derived(eventsQuery.data?.results || []);
+	const eventsTotalCount = $derived(eventsQuery.data?.count || 0);
+	const eventsTotalPages = $derived(Math.ceil(eventsTotalCount / pageSize));
 
 	// Toggle event ordering
 	function toggleEventsOrder() {

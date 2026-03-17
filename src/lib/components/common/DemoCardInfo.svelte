@@ -4,7 +4,7 @@
 	import { toast } from 'svelte-sonner';
 	import { CreditCard, Copy, Check } from 'lucide-svelte';
 
-	let isDemoMode = $derived(appStore.isDemoMode);
+	const isDemoMode = $derived(appStore.isDemoMode);
 	let copied = $state(false);
 
 	// Test card number (formatted with spaces)

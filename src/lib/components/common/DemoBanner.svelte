@@ -4,7 +4,7 @@
 	import { AlertCircle } from 'lucide-svelte';
 
 	// Get demo mode from store
-	let isDemoMode = $derived(appStore.isDemoMode);
+	const isDemoMode = $derived(appStore.isDemoMode);
 
 	// Calculate user's timezone
 	const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -29,7 +29,7 @@
 		});
 	}
 
-	let midnightUserTime = $derived(getMidnightCETInUserTimezone());
+	const midnightUserTime = $derived(getMidnightCETInUserTimezone());
 </script>
 
 {#if isDemoMode}

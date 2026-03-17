@@ -9,10 +9,10 @@
 		class?: string;
 	}
 
-	let { status, class: className }: Props = $props();
+	const { status, class: className }: Props = $props();
 
 	// Map status to display config
-	let config = $derived.by(() => {
+	const config = $derived.by(() => {
 		switch (status) {
 			case 'approved':
 				return {
@@ -45,7 +45,7 @@
 		}
 	});
 
-	let IconComponent = $derived(config.icon);
+	const IconComponent = $derived(config.icon);
 </script>
 
 <!--

@@ -20,11 +20,11 @@
 		class?: string;
 	}
 
-	let { filters, onUpdateFilters, onClearFilters, class: className }: Props = $props();
+	const { filters, onUpdateFilters, onClearFilters, class: className }: Props = $props();
 
 	// Computed values
-	let activeFilterCount = $derived(countActiveFilters(filters));
-	let hasFilters = $derived(hasActiveFilters(filters));
+	const activeFilterCount = $derived(countActiveFilters(filters));
+	const hasFilters = $derived(hasActiveFilters(filters));
 
 	function handleSearch(value: string): void {
 		onUpdateFilters({ search: value || undefined });
@@ -75,7 +75,7 @@
 	}
 
 	// Derive selected city object from cityId
-	let selectedCity = $derived.by(() => {
+	const selectedCity = $derived.by(() => {
 		if (!filters.cityId) return null;
 		// We don't have the full city object, just the ID
 		// In a real implementation, you might want to store the full city object in the URL
@@ -84,7 +84,7 @@
 	});
 
 	// Derive selected organization object from filters
-	let selectedOrganization = $derived.by(() => {
+	const selectedOrganization = $derived.by(() => {
 		if (!filters.organizationId) return null;
 		// Use stored name and slug from URL params if available
 		return {

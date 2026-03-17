@@ -27,7 +27,7 @@
 		searchInput: string;
 	}
 
-	let {
+	const {
 		invitationRequests,
 		requestsPagination,
 		activeStatusFilter,

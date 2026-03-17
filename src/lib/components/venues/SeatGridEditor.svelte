@@ -25,7 +25,7 @@
 		isSaving: boolean;
 	}
 
-	let {
+	const {
 		existingSeats,
 		sectorMetadata,
 		onSave,
@@ -42,8 +42,8 @@
 	let invertRowOrder = $state(false);
 
 	// Aisle configuration (column/row indices after which aisles appear)
-	let verticalAisles = $state(new SvelteSet<number>());
-	let horizontalAisles = $state(new SvelteSet<number>());
+	const verticalAisles = $state(new SvelteSet<number>());
+	const horizontalAisles = $state(new SvelteSet<number>());
 
 	// Hover state for aisle insertion UI
 	let hoveredRowAisle = $state<number | null>(null);
@@ -55,10 +55,10 @@
 		is_accessible: boolean;
 		is_obstructed_view: boolean;
 	}
-	let seats = $state(new SvelteMap<string, SeatData>());
+	const seats = $state(new SvelteMap<string, SeatData>());
 
 	// Selection state
-	let selectedCells = $state(new SvelteSet<string>());
+	const selectedCells = $state(new SvelteSet<string>());
 	let isSelecting = $state(false);
 	let selectionStart = $state<{ row: number; col: number } | null>(null);
 	let selectionEnd = $state<{ row: number; col: number } | null>(null);

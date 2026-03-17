@@ -10,8 +10,8 @@
 
 	type BuilderProps = any;
 
-	let accessToken = $derived(authStore.accessToken);
-	let permissions = $derived(authStore.permissions);
+	const accessToken = $derived(authStore.accessToken);
+	const permissions = $derived(authStore.permissions);
 
 	// Fetch user's organizations (where they are owner or staff)
 	const organizationsQuery = createQuery(() => ({
@@ -37,7 +37,7 @@
 		staleTime: 5 * 60 * 1000 // 5 minutes
 	}));
 
-	let adminOrganizations = $derived(organizationsQuery.data || []);
+	const adminOrganizations = $derived(organizationsQuery.data || []);
 
 	// Helper to check if user has admin permissions for an organization
 	function hasAdminPermissions(orgId: string): boolean {
@@ -67,7 +67,7 @@
 	}
 
 	// Filter organizations to only those where user is admin
-	let userAdminOrgs = $derived(adminOrganizations.filter((org) => hasAdminPermissions(org.id)));
+	const userAdminOrgs = $derived(adminOrganizations.filter((org) => hasAdminPermissions(org.id)));
 
 	// Handle navigation based on number of admin orgs
 	function handleAdminClick() {
@@ -90,7 +90,7 @@
 	}
 
 	// Don't show button if no admin permissions
-	let shouldShow = $derived(userAdminOrgs.length > 0);
+	const shouldShow = $derived(userAdminOrgs.length > 0);
 </script>
 
 {#if shouldShow}

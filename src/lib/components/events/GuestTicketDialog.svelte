@@ -111,36 +111,36 @@
 	let seatSelectionError = $state('');
 
 	// Computed values
-	let isPwyc = $derived(tier.price_type === 'pwyc');
-	let isOnlinePayment = $derived(tier.payment_method === 'online');
+	const isPwyc = $derived(tier.price_type === 'pwyc');
+	const isOnlinePayment = $derived(tier.payment_method === 'online');
 
 	// Seat assignment mode
-	let seatAssignmentMode = $derived<SeatAssignmentMode>(
+	const seatAssignmentMode = $derived<SeatAssignmentMode>(
 		(tier as any).seat_assignment_mode ?? 'none'
 	);
-	let hasSeatedTier = $derived(seatAssignmentMode !== 'none');
-	let isUserChoiceSeat = $derived(seatAssignmentMode === 'user_choice');
-	let isRandomSeat = $derived(seatAssignmentMode === 'random');
+	const hasSeatedTier = $derived(seatAssignmentMode !== 'none');
+	const isUserChoiceSeat = $derived(seatAssignmentMode === 'user_choice');
+	const isRandomSeat = $derived(seatAssignmentMode === 'random');
 
 	// Venue/sector info for display
-	let tierVenue = $derived((tier as any).venue ?? null);
-	let tierSector = $derived((tier as any).sector ?? null);
+	const tierVenue = $derived((tier as any).venue ?? null);
+	const tierSector = $derived((tier as any).sector ?? null);
 
 	// Computed: available seats from the sector
-	let availableSeats = $derived<VenueSeatSchema[]>(
+	const availableSeats = $derived<VenueSeatSchema[]>(
 		seatAvailability?.seats?.filter((s) => s.available && s.id) ?? []
 	);
 
 	// Tier-level max tickets per user (can override event-level setting)
-	let tierMaxTicketsPerUser = $derived<number | null>((tier as any).max_tickets_per_user ?? null);
+	const tierMaxTicketsPerUser = $derived<number | null>((tier as any).max_tickets_per_user ?? null);
 
 	// Effective max per user: use tier's value if set, otherwise fall back to event-level
-	let effectiveMaxPerUser = $derived<number | null>(
+	const effectiveMaxPerUser = $derived<number | null>(
 		tierMaxTicketsPerUser !== null ? tierMaxTicketsPerUser : eventMaxTicketsPerUser
 	);
 
 	// Calculated max quantity based on tier availability, tier limit, and user limit
-	let effectiveMaxQuantity = $derived.by(() => {
+	const effectiveMaxQuantity = $derived.by(() => {
 		// Start with a large default
 		let max = 100;
 
@@ -163,19 +163,19 @@
 	});
 
 	// Whether to show quantity selector (more than 1 ticket allowed)
-	let showQuantitySelector = $derived(effectiveMaxQuantity > 1);
+	const showQuantitySelector = $derived(effectiveMaxQuantity > 1);
 
 	// Show guest name inputs only when user can purchase more than one ticket
-	let showGuestNames = $derived(effectiveMaxQuantity > 1);
+	const showGuestNames = $derived(effectiveMaxQuantity > 1);
 
 	// Check if all guest names are filled
-	let allGuestNamesFilled = $derived(guestNames.every((name) => name.trim().length > 0));
+	const allGuestNamesFilled = $derived(guestNames.every((name) => name.trim().length > 0));
 
 	// Computed: whether seat selection is valid (need as many seats as quantity)
-	let seatSelectionValid = $derived(!isUserChoiceSeat || selectedSeatIds.length === quantity);
+	const seatSelectionValid = $derived(!isUserChoiceSeat || selectedSeatIds.length === quantity);
 
 	// PWYC min/max
-	let minAmount = $derived(() => {
+	const minAmount = $derived(() => {
 		if (!isPwyc) return 0;
 		if (tier.pwyc_min) {
 			return typeof tier.pwyc_min === 'string' ? parseFloat(tier.pwyc_min) : tier.pwyc_min;
@@ -183,7 +183,7 @@
 		return 1;
 	});
 
-	let maxAmount = $derived(() => {
+	const maxAmount = $derived(() => {
 		if (!isPwyc || !tier.pwyc_max) return null;
 		return typeof tier.pwyc_max === 'string' ? parseFloat(tier.pwyc_max) : tier.pwyc_max;
 	});

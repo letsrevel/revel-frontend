@@ -14,31 +14,31 @@
 		request: EventInvitationRequestSchema;
 	}
 
-	let { request }: Props = $props();
+	const { request }: Props = $props();
 
 	const queryClient = useQueryClient();
-	let accessToken = $derived(authStore.accessToken);
+	const accessToken = $derived(authStore.accessToken);
 
 	// Format event date
-	let eventDate = $derived.by(() => {
+	const eventDate = $derived.by(() => {
 		if (!request.event.start) return null;
 		return formatEventDateRange(request.event.start, request.event.start);
 	});
 
 	// Get event location
-	let eventLocation = $derived.by(() => {
+	const eventLocation = $derived.by(() => {
 		const event = request.event as any;
 		return event.venue_name || event.location || null;
 	});
 
 	// Format created date
-	let createdDate = $derived.by(() => {
+	const createdDate = $derived.by(() => {
 		const date = new Date(request.created_at);
 		return date.toLocaleDateString();
 	});
 
 	// Status display
-	let statusDisplay = $derived.by(() => {
+	const statusDisplay = $derived.by(() => {
 		switch (request.status) {
 			case 'pending':
 				return {

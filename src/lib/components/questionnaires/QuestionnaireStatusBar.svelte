@@ -18,7 +18,7 @@
 		onChangeStatus: (newStatus: QuestionnaireStatus) => void;
 	}
 
-	let { currentStatus, isChangingStatus, onChangeStatus }: Props = $props();
+	const { currentStatus, isChangingStatus, onChangeStatus }: Props = $props();
 
 	// Status labels, variants, and descriptions
 	const statusInfo: Record<

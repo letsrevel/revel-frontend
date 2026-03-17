@@ -15,7 +15,7 @@
 	let { open = $bindable(), venue, onClose }: Props = $props();
 
 	// Build the full address display
-	let fullAddress = $derived.by(() => {
+	const fullAddress = $derived.by(() => {
 		const parts: string[] = [];
 
 		if (venue.address) {
@@ -33,11 +33,11 @@
 	});
 
 	// Check if venue has meaningful additional info
-	let hasDescription = $derived(!!venue.description?.trim());
-	let hasCapacity = $derived(!!venue.capacity && venue.capacity > 0);
-	let safeMapEmbed = $derived(sanitizeMapEmbedUrl(venue.location_maps_embed));
-	let hasMapEmbed = $derived(!!safeMapEmbed);
-	let hasMapsUrl = $derived(!!venue.location_maps_url);
+	const hasDescription = $derived(!!venue.description?.trim());
+	const hasCapacity = $derived(!!venue.capacity && venue.capacity > 0);
+	const safeMapEmbed = $derived(sanitizeMapEmbedUrl(venue.location_maps_embed));
+	const hasMapEmbed = $derived(!!safeMapEmbed);
+	const hasMapsUrl = $derived(!!venue.location_maps_url);
 
 	function handleOpenChange(newOpen: boolean) {
 		if (!newOpen) {

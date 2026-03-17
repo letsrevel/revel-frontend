@@ -84,7 +84,7 @@
 		onRemoveQuestionFromSection: (sectionIndex: number, questionIndex: number) => void;
 	}
 
-	let {
+	const {
 		option,
 		index,
 		isNested,
@@ -106,12 +106,12 @@
 	}: Props = $props();
 
 	// Check if option has conditional content (questions or sections)
-	let hasConditionals = $derived(
+	const hasConditionals = $derived(
 		(option.conditionalQuestions?.length || 0) > 0 || (option.conditionalSections?.length || 0) > 0
 	);
 
 	// Get total count of conditional items for an option
-	let conditionalsCount = $derived(
+	const conditionalsCount = $derived(
 		(option.conditionalQuestions?.length || 0) + (option.conditionalSections?.length || 0)
 	);
 </script>

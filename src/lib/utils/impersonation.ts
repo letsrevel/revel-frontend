@@ -133,7 +133,7 @@ export function getTokenExpiration(token: string | null): number | null {
  * @param bufferMs - Buffer time in milliseconds (default: 0)
  * @returns true if the token is expired or will expire within buffer time
  */
-export function isTokenExpired(token: string | null, bufferMs: number = 0): boolean {
+export function isTokenExpired(token: string | null, bufferMs = 0): boolean {
 	const expiration = getTokenExpiration(token);
 	if (!expiration) return true; // Treat unknown expiration as expired
 

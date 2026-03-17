@@ -19,10 +19,10 @@
 		userVisibility?: VisibilityPreference | null;
 	}
 
-	let { eventId, totalAttendees, isAuthenticated, userVisibility = null }: Props = $props();
+	const { eventId, totalAttendees, isAuthenticated, userVisibility = null }: Props = $props();
 
 	// Build settings URL with redirect back to current page
-	let settingsUrl = $derived.by(() => {
+	const settingsUrl = $derived.by(() => {
 		if (browser) {
 			return `/account/settings?redirect=${encodeURIComponent(window.location.pathname)}`;
 		}
@@ -54,7 +54,7 @@
 	let showPronounDistribution = $state(false);
 
 	// Query for attendee list
-	let attendeesQuery = createQuery(() => ({
+	const attendeesQuery = createQuery(() => ({
 		queryKey: ['event-attendees', eventId, currentPage],
 		queryFn: async () => {
 			const response = await eventpublicdetailsGetEventAttendees({
@@ -72,7 +72,7 @@
 	}));
 
 	// Query for pronoun distribution (only fetched when expanded)
-	let pronounQuery = createQuery(() => ({
+	const pronounQuery = createQuery(() => ({
 		queryKey: ['event-pronoun-distribution', eventId],
 		queryFn: async () => {
 			const response = await eventpublicdetailsGetPronounDistribution({
@@ -89,16 +89,16 @@
 	}));
 
 	// Derived state for attendees
-	let attendees = $derived(attendeesQuery.data?.results ?? []);
-	let visibleCount = $derived(attendees.length);
-	let hasMore = $derived(!!attendeesQuery.data?.next);
-	let hiddenCount = $derived(totalAttendees - visibleCount);
+	const attendees = $derived(attendeesQuery.data?.results ?? []);
+	const visibleCount = $derived(attendees.length);
+	const hasMore = $derived(!!attendeesQuery.data?.next);
+	const hiddenCount = $derived(totalAttendees - visibleCount);
 
 	// Derived state for pronouns
-	let distribution = $derived(pronounQuery.data?.distribution ?? []);
-	let pronounTotalAttendees = $derived(pronounQuery.data?.total_attendees ?? 0);
-	let totalWithPronouns = $derived(pronounQuery.data?.total_with_pronouns ?? 0);
-	let totalWithoutPronouns = $derived(pronounQuery.data?.total_without_pronouns ?? 0);
+	const distribution = $derived(pronounQuery.data?.distribution ?? []);
+	const pronounTotalAttendees = $derived(pronounQuery.data?.total_attendees ?? 0);
+	const totalWithPronouns = $derived(pronounQuery.data?.total_with_pronouns ?? 0);
+	const totalWithoutPronouns = $derived(pronounQuery.data?.total_without_pronouns ?? 0);
 
 	// Load next page
 	function loadMore() {

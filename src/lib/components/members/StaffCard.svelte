@@ -15,7 +15,7 @@
 		isRemoving?: boolean;
 	}
 
-	let {
+	const {
 		staff,
 		canRemove,
 		canEditPermissions,
@@ -25,10 +25,12 @@
 	}: Props = $props();
 
 	// Format staff since date
-	let staffSince = $derived(formatDistanceToNow(new Date(staff.staff_since), { addSuffix: true }));
+	const staffSince = $derived(
+		formatDistanceToNow(new Date(staff.staff_since), { addSuffix: true })
+	);
 
 	// Display name
-	let displayName = $derived(
+	const displayName = $derived(
 		staff.user.preferred_name ||
 			(staff.user.first_name && staff.user.last_name
 				? `${staff.user.first_name} ${staff.user.last_name}`
@@ -36,7 +38,7 @@
 	);
 
 	// Count active permissions
-	let activePermissionsCount = $derived(
+	const activePermissionsCount = $derived(
 		Object.values(staff.permissions?.default || {}).filter(Boolean).length
 	);
 

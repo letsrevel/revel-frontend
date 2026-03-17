@@ -39,7 +39,7 @@
 	import type { RsvpDetailSchema, MembershipTierSchema } from '$lib/api/generated/types.gen';
 	import * as m from '$lib/paraglide/messages.js';
 
-	let { data }: { data: PageData } = $props();
+	const { data }: { data: PageData } = $props();
 
 	const organization = $derived($page.data.organization);
 	const accessToken = $derived(authStore.accessToken);
@@ -69,10 +69,10 @@
 	let showBlacklistDialog = $state(false);
 
 	// Computed: Has multiple pages
-	let hasMultiplePages = $derived(!!data.nextPage || !!data.previousPage);
+	const hasMultiplePages = $derived(!!data.nextPage || !!data.previousPage);
 
 	// Computed: Stats (always shown)
-	let stats = $derived.by(() => {
+	const stats = $derived.by(() => {
 		const yesCount = data.rsvps.filter((r) => r.status === 'yes').length;
 		const maybeCount = data.rsvps.filter((r) => r.status === 'maybe').length;
 		const noCount = data.rsvps.filter((r) => r.status === 'no').length;

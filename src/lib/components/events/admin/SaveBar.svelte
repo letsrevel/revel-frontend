@@ -11,7 +11,7 @@
 		disabled?: boolean;
 	}
 
-	let { isSaving, onSave, onSaveAndExit, position, disabled = false }: Props = $props();
+	const { isSaving, onSave, onSaveAndExit, position, disabled = false }: Props = $props();
 </script>
 
 <div

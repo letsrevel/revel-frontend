@@ -11,7 +11,7 @@
 		class?: string;
 	}
 
-	let {
+	const {
 		value = '',
 		onSearch,
 		placeholder = m['filters.search.eventsPlaceholder'](),

@@ -11,7 +11,7 @@
 		onManageSectors: (venue: VenueDetailSchema) => void;
 	}
 
-	let { venue, onEdit, onDelete, onManageSectors }: Props = $props();
+	const { venue, onEdit, onDelete, onManageSectors }: Props = $props();
 
 	const sectorCount = $derived(venue.sectors?.length ?? 0);
 

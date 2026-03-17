@@ -9,7 +9,7 @@
 	import { getLanguageSwitchUrl } from '$lib/utils/seo-routes';
 
 	// Current locale
-	let currentLocale = $derived(getLocale());
+	const currentLocale = $derived(getLocale());
 
 	// Language options with flags
 	const languages = [
@@ -68,7 +68,7 @@
 	}
 
 	// Get current language details
-	let currentLanguage = $derived(
+	const currentLanguage = $derived(
 		languages.find((lang) => lang.code === currentLocale) || languages[0]
 	);
 </script>

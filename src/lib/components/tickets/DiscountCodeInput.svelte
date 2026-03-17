@@ -24,7 +24,7 @@
 		onRemove: () => void;
 	}
 
-	let {
+	const {
 		eventId,
 		tierId,
 		currency,
@@ -45,12 +45,12 @@
 	let discountError = $state('');
 
 	// Computed discounted price
-	let discountedPrice = $derived.by(() => {
+	const discountedPrice = $derived.by(() => {
 		if (!discountResult?.discounted_price) return null;
 		return parseFloat(discountResult.discounted_price);
 	});
 
-	let discountBadge = $derived.by(() => {
+	const discountBadge = $derived.by(() => {
 		if (!discountResult) return '';
 		if (discountResult.discount_type === 'percentage') {
 			return `-${discountResult.discount_value}%`;

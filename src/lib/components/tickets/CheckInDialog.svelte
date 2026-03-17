@@ -58,7 +58,7 @@
 		isLoading?: boolean;
 	}
 
-	let {
+	const {
 		isOpen,
 		ticket,
 		needsPaymentConfirmation,
@@ -73,7 +73,7 @@
 	/**
 	 * Whether this ticket needs a PWYC price input at check-in
 	 */
-	let needsPwycInput = $derived(
+	const needsPwycInput = $derived(
 		!!ticket &&
 			ticket.tier?.price_type === 'pwyc' &&
 			(ticket.tier?.payment_method === 'offline' || ticket.tier?.payment_method === 'at_the_door')
@@ -82,14 +82,14 @@
 	/**
 	 * Whether the confirm button can be clicked
 	 */
-	let canSubmit = $derived(
+	const canSubmit = $derived(
 		!isLoading && (!needsPwycInput || (pwycPricePaid !== '' && parseFloat(pwycPricePaid) > 0))
 	);
 
 	/**
 	 * PWYC range warning message
 	 */
-	let pwycWarning = $derived.by(() => {
+	const pwycWarning = $derived.by(() => {
 		if (!needsPwycInput || !ticket?.tier) return null;
 		const num = parseFloat(pwycPricePaid);
 		if (isNaN(num) || num <= 0) return null;
@@ -112,7 +112,7 @@
 	/**
 	 * PWYC suggested range hint text
 	 */
-	let pwycRangeHint = $derived.by(() => {
+	const pwycRangeHint = $derived.by(() => {
 		if (!needsPwycInput || !ticket?.tier) return null;
 		const min = ticket.tier.pwyc_min ? parseFloat(ticket.tier.pwyc_min) : null;
 		const max = ticket.tier.pwyc_max ? parseFloat(ticket.tier.pwyc_max) : null;

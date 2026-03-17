@@ -25,7 +25,7 @@
 		onSlugUpdated?: (newSlug: string) => void;
 	}
 
-	let {
+	const {
 		formData,
 		validationErrors,
 		isEditMode,
@@ -142,7 +142,7 @@
 	}
 
 	// Generate event URL preview
-	let eventUrlPreview = $derived.by(() => {
+	const eventUrlPreview = $derived.by(() => {
 		if (!organizationSlug) return '';
 		const slug = isEditingSlug ? editedSlug : currentSlug;
 		return `/events/${organizationSlug}/${slug || 'your-event-slug'}`;
@@ -159,7 +159,7 @@
 	/**
 	 * Get explanation for current visibility + event_type combination
 	 */
-	let combinationExplanation = $derived.by(() => {
+	const combinationExplanation = $derived.by(() => {
 		const visibility = formData.visibility || 'public';
 		const eventType = (formData.event_type as string) || 'public';
 

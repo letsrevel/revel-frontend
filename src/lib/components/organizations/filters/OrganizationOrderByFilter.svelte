@@ -10,7 +10,7 @@
 		class?: string;
 	}
 
-	let { orderBy = 'distance', onChangeOrderBy, class: className }: Props = $props();
+	const { orderBy = 'distance', onChangeOrderBy, class: className }: Props = $props();
 
 	const options = $derived.by(() => [
 		{

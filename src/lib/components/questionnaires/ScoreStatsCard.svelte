@@ -8,9 +8,9 @@
 		max: string | null | undefined;
 	}
 
-	let { min, avg, max }: Props = $props();
+	const { min, avg, max }: Props = $props();
 
-	let hasData = $derived(avg != null || min != null || max != null);
+	const hasData = $derived(avg != null || min != null || max != null);
 
 	function formatScore(value: string | null | undefined): string {
 		if (value == null) return '-';

@@ -24,7 +24,7 @@
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
 
-	let {
+	const {
 		tier,
 		isAuthenticated,
 		hasTicket = false,
@@ -40,7 +40,7 @@
 	 * Check tier purchase status based on per-tier info from my-status endpoint
 	 * This takes precedence over the general isEligible flag
 	 */
-	let tierPurchaseStatus = $derived.by(() => {
+	const tierPurchaseStatus = $derived.by(() => {
 		// If no tier-specific info, fall back to general isEligible
 		if (!tierRemainingInfo) {
 			return { canPurchase: isEligible, reason: isEligible ? undefined : 'Not eligible' };
@@ -64,13 +64,15 @@
 	 * Effective eligibility - considers both general eligibility and per-tier status
 	 * If we have tier-specific info, use it; otherwise fall back to isEligible
 	 */
-	let effectiveEligible = $derived(tierRemainingInfo ? tierPurchaseStatus.canPurchase : isEligible);
+	const effectiveEligible = $derived(
+		tierRemainingInfo ? tierPurchaseStatus.canPurchase : isEligible
+	);
 
 	// Check if tier has ID (required for checkout)
-	let hasId = $derived(hasTierId(tier));
+	const hasId = $derived(hasTierId(tier));
 
 	// Format price display
-	let priceDisplay = $derived(() => {
+	const priceDisplay = $derived(() => {
 		if (tier.payment_method === 'free') return 'Free';
 
 		if (tier.price_type === 'pwyc') {
@@ -95,7 +97,7 @@
 	});
 
 	// Check if sales are active
-	let salesStatus = $derived.by(() => {
+	const salesStatus = $derived.by(() => {
 		const now = new Date();
 
 		if (tier.sales_start_at) {
@@ -116,7 +118,7 @@
 	});
 
 	// Check availability
-	let availabilityStatus = $derived.by(() => {
+	const availabilityStatus = $derived.by(() => {
 		if (tier.total_available === null) {
 			return { available: true, message: 'Unlimited' };
 		}
@@ -129,7 +131,7 @@
 	});
 
 	// Can claim free ticket
-	let canClaim = $derived(
+	const canClaim = $derived(
 		hasId &&
 			isAuthenticated &&
 			!hasTicket &&
@@ -140,7 +142,7 @@
 	);
 
 	// Can checkout for online payment
-	let canCheckout = $derived(
+	const canCheckout = $derived(
 		hasId &&
 			isAuthenticated &&
 			!hasTicket &&
@@ -151,7 +153,7 @@
 	);
 
 	// Can reserve offline/at-the-door ticket
-	let canReserve = $derived(
+	const canReserve = $derived(
 		hasId &&
 			isAuthenticated &&
 			!hasTicket &&
@@ -193,7 +195,7 @@
 		return { allowed: true };
 	}
 
-	let membershipRestriction = $derived(checkMembershipTierRestriction());
+	const membershipRestriction = $derived(checkMembershipTierRestriction());
 </script>
 
 <Card class="p-4">

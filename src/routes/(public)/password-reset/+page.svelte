@@ -8,17 +8,17 @@
 		form: ActionData;
 	}
 
-	let { form }: Props = $props();
+	const { form }: Props = $props();
 
 	// Form state
 	let email = $state(form?.email || '');
 	let isSubmitting = $state(false);
 
 	// Success state - derive from form
-	let success = $derived(form?.success || false);
+	const success = $derived(form?.success || false);
 
 	// Error handling
-	let errors = $derived((form?.errors || {}) as Record<string, string>);
+	const errors = $derived((form?.errors || {}) as Record<string, string>);
 </script>
 
 <svelte:head>

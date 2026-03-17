@@ -4,7 +4,7 @@
 	import { Mail, Loader2 } from 'lucide-svelte';
 	import { accountResendVerificationEmail } from '$lib/api/generated/sdk.gen';
 
-	let email = $derived($page.url.searchParams.get('email') || '');
+	const email = $derived($page.url.searchParams.get('email') || '');
 	let isResending = $state(false);
 	let resendSuccess = $state(false);
 	let resendError = $state('');

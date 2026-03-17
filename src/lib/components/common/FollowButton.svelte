@@ -26,7 +26,7 @@
 		class?: string;
 	}
 
-	let {
+	const {
 		entityType,
 		entityId,
 		entityName,
@@ -72,10 +72,10 @@
 	}));
 
 	// Derived state - use .data directly without $ prefix
-	let isFollowing = $derived(followStatusQuery.data?.is_following ?? false);
-	let followData = $derived(followStatusQuery.data?.follow ?? null);
-	let notifyNewEvents = $derived(followData?.notify_new_events ?? true);
-	let notifyAnnouncements = $derived(
+	const isFollowing = $derived(followStatusQuery.data?.is_following ?? false);
+	const followData = $derived(followStatusQuery.data?.follow ?? null);
+	const notifyNewEvents = $derived(followData?.notify_new_events ?? true);
+	const notifyAnnouncements = $derived(
 		entityType === 'organization' && followData && 'notify_announcements' in followData
 			? (followData.notify_announcements ?? true)
 			: false
@@ -176,7 +176,7 @@
 	}));
 
 	// Loading state - use .isPending directly without $ prefix
-	let isLoading = $derived(
+	const isLoading = $derived(
 		followMutation.isPending || unfollowMutation.isPending || updateMutation.isPending
 	);
 

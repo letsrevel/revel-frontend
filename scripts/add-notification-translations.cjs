@@ -296,7 +296,7 @@ function addTranslations(lang, translations) {
 
 	if (settingsIndex !== -1) {
 		const newData = {};
-		let i = 0;
+		const i = 0;
 
 		for (const key of keys) {
 			newData[key] = data[key];

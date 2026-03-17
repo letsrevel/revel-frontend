@@ -33,7 +33,7 @@
 		standalone?: boolean;
 	}
 
-	let {
+	const {
 		eventId,
 		organizationSlug,
 		organizationStripeConnected,
@@ -47,7 +47,7 @@
 	const accessToken = $derived(authStore.accessToken);
 
 	// Fetch ticket tiers for this event
-	let tiersQuery = createQuery(() => ({
+	const tiersQuery = createQuery(() => ({
 		queryKey: ['event-admin', eventId, 'ticket-tiers'],
 		queryFn: () =>
 			eventadminticketsListTicketTiers({
@@ -56,7 +56,7 @@
 	}));
 
 	// Fetch membership tiers for the organization
-	let membershipTiersQuery = createQuery(() => ({
+	const membershipTiersQuery = createQuery(() => ({
 		queryKey: ['organization', organizationSlug, 'membership-tiers'],
 		queryFn: async () => {
 			if (!accessToken) return null;
@@ -74,8 +74,8 @@
 	let editingTier = $state<TicketTierDetailSchema | null>(null);
 	let showTierForm = $state(false);
 
-	let tiers = $derived(tiersQuery.data?.data?.results ?? []);
-	let membershipTiers = $derived(membershipTiersQuery.data ?? []);
+	const tiers = $derived(tiersQuery.data?.data?.results ?? []);
+	const membershipTiers = $derived(membershipTiersQuery.data ?? []);
 
 	// --- Tier reordering via up/down buttons ---
 	const reorderMutation = createMutation<unknown, unknown, string[]>(() => ({

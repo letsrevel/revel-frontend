@@ -18,7 +18,7 @@
 	import { goto } from '$app/navigation';
 	import { getImageUrl } from '$lib/utils/url';
 
-	let accessToken = $derived(authStore.accessToken);
+	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
 
 	// Tab state
@@ -26,7 +26,7 @@
 	let activeTab = $state<TabType>('organizations');
 
 	// Pagination
-	let currentPage = $derived(Number(page.url.searchParams.get('page') || '1'));
+	const currentPage = $derived(Number(page.url.searchParams.get('page') || '1'));
 	const pageSize = 12;
 
 	// Fetch followed organizations
@@ -67,13 +67,13 @@
 		enabled: !!accessToken && activeTab === 'event-series'
 	}));
 
-	let organizations = $derived(orgsQuery.data?.results || []);
-	let orgsCount = $derived(orgsQuery.data?.count || 0);
-	let orgsTotalPages = $derived(Math.ceil(orgsCount / pageSize));
+	const organizations = $derived(orgsQuery.data?.results || []);
+	const orgsCount = $derived(orgsQuery.data?.count || 0);
+	const orgsTotalPages = $derived(Math.ceil(orgsCount / pageSize));
 
-	let eventSeries = $derived(seriesQuery.data?.results || []);
-	let seriesCount = $derived(seriesQuery.data?.count || 0);
-	let seriesTotalPages = $derived(Math.ceil(seriesCount / pageSize));
+	const eventSeries = $derived(seriesQuery.data?.results || []);
+	const seriesCount = $derived(seriesQuery.data?.count || 0);
+	const seriesTotalPages = $derived(Math.ceil(seriesCount / pageSize));
 
 	// Navigate to page
 	function navigateToPage(pageNum: number) {

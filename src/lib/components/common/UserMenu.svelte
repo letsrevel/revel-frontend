@@ -21,13 +21,13 @@
 		onItemClick?: () => void;
 	}
 
-	let { mobile = false, onItemClick }: Props = $props();
+	const { mobile = false, onItemClick }: Props = $props();
 
 	const queryClient = useQueryClient();
 	let dropdownOpen = $state(false);
-	let user = $derived(authStore.user);
-	let accessToken = $derived(authStore.accessToken);
-	let permissions = $derived(authStore.permissions);
+	const user = $derived(authStore.user);
+	const accessToken = $derived(authStore.accessToken);
+	const permissions = $derived(authStore.permissions);
 
 	// Fetch user's organizations (where they are owner or staff)
 	const organizationsQuery = createQuery(() => ({
@@ -51,7 +51,7 @@
 		staleTime: 5 * 60 * 1000 // 5 minutes - organizations don't change frequently
 	}));
 
-	let userOrganizations = $derived(organizationsQuery.data || []);
+	const userOrganizations = $derived(organizationsQuery.data || []);
 
 	// Helper to check if user has admin permissions for an organization
 	function hasAdminPermissions(orgId: string): boolean {
@@ -87,12 +87,12 @@
 	}
 
 	// Get display name
-	let displayName = $derived(
+	const displayName = $derived(
 		user?.preferred_name || user?.first_name || user?.email.split('@')[0] || 'User'
 	);
 
 	// Menu items - using derived for reactivity
-	let menuItems = $derived([
+	const menuItems = $derived([
 		{ href: '/dashboard', label: m['userMenu.dashboard'](), icon: LayoutDashboard },
 		{ href: '/account/profile', label: m['userMenu.profile'](), icon: User },
 		{ href: '/account/security', label: m['userMenu.security'](), icon: Shield },

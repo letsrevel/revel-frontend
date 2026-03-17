@@ -24,15 +24,15 @@
 		isLoading?: boolean;
 	}
 
-	let { view, year, month, week, events, onEventClick, isLoading = false }: Props = $props();
+	const { view, year, month, week, events, onEventClick, isLoading = false }: Props = $props();
 
 	// Group events by date for efficient lookup
-	let eventsByDate = $derived(groupEventsByDate(events));
+	const eventsByDate = $derived(groupEventsByDate(events));
 
 	// Get calendar data based on view
-	let calendarGrid = $derived(view === 'month' ? getMonthCalendarGrid(year, month) : []);
-	let weekDays = $derived(view === 'week' ? getWeekDays(year, week) : []);
-	let yearMonths = $derived(view === 'year' ? getYearMonths(year) : []);
+	const calendarGrid = $derived(view === 'month' ? getMonthCalendarGrid(year, month) : []);
+	const weekDays = $derived(view === 'week' ? getWeekDays(year, week) : []);
+	const yearMonths = $derived(view === 'year' ? getYearMonths(year) : []);
 
 	// Weekday labels (Mon-Sun)
 	const weekdayLabels = [

@@ -10,13 +10,13 @@
 		data: PageData;
 	}
 
-	let { data }: Props = $props();
+	const { data }: Props = $props();
 
 	// Search state
 	let searchQuery = $state('');
 
 	// Filtered questionnaires based on search
-	let filteredQuestionnaires = $derived(
+	const filteredQuestionnaires = $derived(
 		data.questionnaires.filter((q) =>
 			q.questionnaire.name.toLowerCase().includes(searchQuery.toLowerCase())
 		)

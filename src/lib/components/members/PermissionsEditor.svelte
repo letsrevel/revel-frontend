@@ -22,7 +22,7 @@
 		isSaving?: boolean;
 	}
 
-	let { staff, open, onClose, onSave, isSaving = false }: Props = $props();
+	const { staff, open, onClose, onSave, isSaving = false }: Props = $props();
 
 	// Local permissions state
 	let permissions = $state<PermissionMap>({} as PermissionMap);
@@ -35,7 +35,7 @@
 	});
 
 	// Display name
-	let displayName = $derived(
+	const displayName = $derived(
 		staff
 			? staff.user.preferred_name ||
 					(staff.user.first_name && staff.user.last_name

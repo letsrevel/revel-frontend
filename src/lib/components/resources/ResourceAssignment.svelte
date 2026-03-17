@@ -14,7 +14,7 @@
 		disabled?: boolean;
 	}
 
-	let {
+	const {
 		organizationId,
 		selectedEventIds = [],
 		onSelectionChange,

@@ -12,7 +12,7 @@
 		onPaymentMethodFilter: (method: string | null) => void;
 	}
 
-	let {
+	const {
 		searchQuery,
 		selectedStatus,
 		selectedPaymentMethod,

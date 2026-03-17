@@ -9,11 +9,11 @@
 		rejectedCount: number;
 	}
 
-	let { pendingCount, approvedCount, rejectedCount }: Props = $props();
+	const { pendingCount, approvedCount, rejectedCount }: Props = $props();
 
 	// Calculate approval rate
-	let totalEvaluated = $derived(approvedCount + rejectedCount);
-	let approvalRate = $derived(
+	const totalEvaluated = $derived(approvedCount + rejectedCount);
+	const approvalRate = $derived(
 		totalEvaluated > 0 ? Math.round((approvedCount / totalEvaluated) * 100) : 0
 	);
 </script>

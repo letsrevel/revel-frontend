@@ -60,7 +60,7 @@
 		data: PageData;
 	}
 
-	let { data }: Props = $props();
+	const { data }: Props = $props();
 
 	// ===== Load and Convert Data =====
 
@@ -111,7 +111,7 @@
 	let requiresEvaluation = $state(true);
 
 	// Feedback type forces evaluation off; derive the effective value for the payload/UI
-	let effectiveRequiresEvaluation = $derived(
+	const effectiveRequiresEvaluation = $derived(
 		questionnaireType === 'feedback' ? false : requiresEvaluation
 	);
 

@@ -27,12 +27,12 @@
 		onSend?: () => void;
 	}
 
-	let { announcement, isLoadingEdit = false, onView, onEdit, onDelete, onSend }: Props = $props();
+	const { announcement, isLoadingEdit = false, onView, onEdit, onDelete, onSend }: Props = $props();
 
-	let isDraft = $derived(announcement.status === 'draft');
+	const isDraft = $derived(announcement.status === 'draft');
 
 	// Determine target description
-	let targetInfo = $derived.by(() => {
+	const targetInfo = $derived.by(() => {
 		if (announcement.event_name) {
 			return {
 				icon: Calendar,

@@ -7,7 +7,7 @@
 	import { Repeat, Calendar, Edit, Eye, Tag, Plus } from 'lucide-svelte';
 	import { getImageUrl } from '$lib/utils/url';
 
-	let { data }: { data: PageData } = $props();
+	const { data }: { data: PageData } = $props();
 
 	const organization = $derived($page.data.organization);
 

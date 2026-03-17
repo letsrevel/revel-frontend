@@ -68,7 +68,7 @@
 	let showSuggestions = $state(false);
 
 	// Filtered suggestions based on input
-	let filteredSuggestions = $derived.by(() => {
+	const filteredSuggestions = $derived.by(() => {
 		if (!inputValue || !suggestions.length) return [];
 
 		const input = inputValue.toLowerCase().trim();

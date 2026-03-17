@@ -16,7 +16,7 @@
 		class?: string;
 	}
 
-	let { src, filename, class: className = '' }: Props = $props();
+	const { src, filename, class: className = '' }: Props = $props();
 
 	// Use <video> instead of <audio> because MediaRecorder-produced WebM files
 	// have video/webm MIME type, which <audio> elements may reject in some browsers.
@@ -31,10 +31,12 @@
 	let isLoaded = $state(false);
 
 	// Derived values
-	let formattedCurrentTime = $derived(formatAudioDuration(currentTime));
-	let formattedDuration = $derived(formatAudioDuration(duration));
-	let progress = $derived(duration > 0 && isFinite(duration) ? (currentTime / duration) * 100 : 0);
-	let speedLabel = $derived(audioPreferences.getSpeedLabel(audioPreferences.playbackSpeed));
+	const formattedCurrentTime = $derived(formatAudioDuration(currentTime));
+	const formattedDuration = $derived(formatAudioDuration(duration));
+	const progress = $derived(
+		duration > 0 && isFinite(duration) ? (currentTime / duration) * 100 : 0
+	);
+	const speedLabel = $derived(audioPreferences.getSpeedLabel(audioPreferences.playbackSpeed));
 
 	// Initialize preferences on mount
 	onMount(() => {

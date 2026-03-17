@@ -25,7 +25,7 @@
 	} from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 
-	let { data }: { data: PageData } = $props();
+	const { data }: { data: PageData } = $props();
 
 	const organization = $derived($page.data.organization);
 	const canCreateEvent = $derived(data.canCreateEvent);
@@ -34,10 +34,10 @@
 	let announcementModalOpen = $state(false);
 
 	// Auth token for queries
-	let accessToken = $derived(authStore.accessToken);
+	const accessToken = $derived(authStore.accessToken);
 
 	// Fetch events for announcement modal
-	let eventsQuery = createQuery(() => ({
+	const eventsQuery = createQuery(() => ({
 		queryKey: ['admin-events', organization?.id],
 		queryFn: async () => {
 			const response = await eventpublicdiscoveryListEvents({
@@ -50,7 +50,7 @@
 	}));
 
 	// Fetch tiers for announcement modal
-	let tiersQuery = createQuery(() => ({
+	const tiersQuery = createQuery(() => ({
 		queryKey: ['membership-tiers', organization?.slug],
 		queryFn: async () => {
 			const response = await organizationadminmembersListMembershipTiers({
@@ -63,8 +63,8 @@
 		enabled: !!accessToken && !!organization?.slug
 	}));
 
-	let eventsList = $derived(eventsQuery.data?.results ?? []);
-	let tiersList = $derived(tiersQuery.data ?? []);
+	const eventsList = $derived(eventsQuery.data?.results ?? []);
+	const tiersList = $derived(tiersQuery.data ?? []);
 
 	// Quick action cards (derived to properly track organization reactivity)
 	const quickActions = $derived([
@@ -153,7 +153,7 @@
 		}
 	]);
 
-	function navigateTo(href: string, disabled: boolean = false) {
+	function navigateTo(href: string, disabled = false) {
 		if (!disabled) {
 			goto(href);
 		}

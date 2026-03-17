@@ -135,10 +135,10 @@
 	});
 
 	// Filter hidden tiers (same as TicketTierList)
-	let visibleTiers = $derived(tiers.filter((tier) => tier.payment_method !== 'hidden'));
+	const visibleTiers = $derived(tiers.filter((tier) => tier.payment_method !== 'hidden'));
 
 	// Check if any tier uses online payment
-	let hasOnlinePayment = $derived(visibleTiers.some((tier) => tier.payment_method === 'online'));
+	const hasOnlinePayment = $derived(visibleTiers.some((tier) => tier.payment_method === 'online'));
 
 	// Open confirmation dialog for selected tier
 	function handleTierClick(tier: TierSchemaWithId): void {

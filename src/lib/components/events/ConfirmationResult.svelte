@@ -12,7 +12,7 @@
 		onEventNavigate?: (eventId: string) => void;
 	}
 
-	let { token, onEventNavigate }: Props = $props();
+	const { token, onEventNavigate }: Props = $props();
 
 	// State
 	let isLoading = $state(true);

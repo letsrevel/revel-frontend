@@ -9,7 +9,7 @@
 		sections: Section[];
 	}
 
-	let { topLevelQuestions, sections }: Props = $props();
+	const { topLevelQuestions, sections }: Props = $props();
 </script>
 
 <!--

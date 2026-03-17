@@ -12,13 +12,13 @@
 		class?: string;
 	}
 
-	let { organization, variant = 'standard', class: className }: Props = $props();
+	const { organization, variant = 'standard', class: className }: Props = $props();
 
 	// Image state
 	let imageError = $state(false);
 
 	// Computed values
-	let locationDisplay = $derived.by(() => {
+	const locationDisplay = $derived.by(() => {
 		if (!organization.city) return m['organizationProfile.location_tbd']();
 		return organization.city.country
 			? `${organization.city.name}, ${organization.city.country}`
@@ -27,12 +27,12 @@
 
 	// Image URLs with backend URL prepended
 	// Prefer social preview for card display (1200x630, matches aspect-video ratio)
-	let coverArtSocialUrl = $derived(getImageUrl((organization as any).cover_art_social_url));
-	let coverArtUrl = $derived(getImageUrl(organization.cover_art));
-	let logoThumbnailUrl = $derived(getImageUrl((organization as any).logo_thumbnail_url));
-	let logoUrl = $derived(getImageUrl(organization.logo));
-	let imageUrl = $derived(!imageError ? coverArtSocialUrl || coverArtUrl : null);
-	let logoDisplayUrl = $derived(logoThumbnailUrl || logoUrl);
+	const coverArtSocialUrl = $derived(getImageUrl((organization as any).cover_art_social_url));
+	const coverArtUrl = $derived(getImageUrl(organization.cover_art));
+	const logoThumbnailUrl = $derived(getImageUrl((organization as any).logo_thumbnail_url));
+	const logoUrl = $derived(getImageUrl(organization.logo));
+	const imageUrl = $derived(!imageError ? coverArtSocialUrl || coverArtUrl : null);
+	const logoDisplayUrl = $derived(logoThumbnailUrl || logoUrl);
 
 	// Fallback gradient based on organization ID
 	const gradients = [
@@ -42,15 +42,15 @@
 		'from-purple-500 to-indigo-600',
 		'from-red-500 to-orange-600'
 	];
-	let fallbackGradient = $derived(gradients[organization.id.charCodeAt(0) % gradients.length]);
+	const fallbackGradient = $derived(gradients[organization.id.charCodeAt(0) % gradients.length]);
 
 	// Get clean description text (strip markdown formatting for plain text display)
-	let descriptionText = $derived(
+	const descriptionText = $derived(
 		organization.description ? stripMarkdown(organization.description) : ''
 	);
 
 	// Accessible card label for screen readers
-	let accessibleLabel = $derived.by(() => {
+	const accessibleLabel = $derived.by(() => {
 		const parts = [organization.name, locationDisplay];
 		if (descriptionText) {
 			parts.push(descriptionText);
@@ -63,7 +63,7 @@
 	}
 
 	// Container classes based on variant
-	let containerClasses = $derived(
+	const containerClasses = $derived(
 		cn(
 			'group relative overflow-hidden rounded-lg border bg-card transition-all',
 			'hover:shadow-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
@@ -74,7 +74,7 @@
 	);
 
 	// Image container classes based on variant
-	let imageContainerClasses = $derived(
+	const imageContainerClasses = $derived(
 		cn(
 			'relative overflow-hidden',
 			variant === 'compact' && 'w-32 shrink-0 md:w-full md:aspect-video',

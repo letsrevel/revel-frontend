@@ -52,7 +52,7 @@
 		clickable?: boolean;
 	}
 
-	let {
+	const {
 		profilePictureUrl = null,
 		previewUrl = null,
 		thumbnailUrl = null,
