@@ -37,7 +37,7 @@
 		data: PageData;
 	}
 
-	let { data }: Props = $props();
+	const { data }: Props = $props();
 
 	const queryClient = useQueryClient();
 
@@ -57,12 +57,12 @@
 	let includePastEvents = $state(false);
 
 	// Derived
-	let accessToken = $derived(authStore.accessToken);
-	let organizationSlug = $derived(data.organization.slug);
-	let organizationId = $derived(data.organization.id);
+	const accessToken = $derived(authStore.accessToken);
+	const organizationSlug = $derived(data.organization.slug);
+	const organizationId = $derived(data.organization.id);
 
 	// Fetch announcements
-	let announcementsQuery = createQuery(() => ({
+	const announcementsQuery = createQuery(() => ({
 		queryKey: ['announcements', organizationSlug, activeTab, searchQuery],
 		queryFn: async () => {
 			const response = await organizationadminannouncementsListAnnouncements({
@@ -81,7 +81,7 @@
 	}));
 
 	// Fetch events for the modal
-	let eventsQuery = createQuery(() => ({
+	const eventsQuery = createQuery(() => ({
 		queryKey: ['admin-events', organizationId, includePastEvents],
 		queryFn: async () => {
 			const response = await eventpublicdiscoveryListEvents({
@@ -94,7 +94,7 @@
 	}));
 
 	// Fetch tiers for the modal
-	let tiersQuery = createQuery(() => ({
+	const tiersQuery = createQuery(() => ({
 		queryKey: ['membership-tiers', organizationSlug],
 		queryFn: async () => {
 			const response = await organizationadminmembersListMembershipTiers({
@@ -150,11 +150,11 @@
 	}));
 
 	// Derived data
-	let announcements = $derived(announcementsQuery.data?.results ?? []);
-	let events = $derived(eventsQuery.data?.results ?? []);
-	let eventsLoading = $derived(eventsQuery.isLoading);
-	let tiers = $derived(tiersQuery.data ?? []);
-	let isLoading = $derived(announcementsQuery.isLoading);
+	const announcements = $derived(announcementsQuery.data?.results ?? []);
+	const events = $derived(eventsQuery.data?.results ?? []);
+	const eventsLoading = $derived(eventsQuery.isLoading);
+	const tiers = $derived(tiersQuery.data ?? []);
+	const isLoading = $derived(announcementsQuery.isLoading);
 
 	// Handlers
 	function openCreateModal() {

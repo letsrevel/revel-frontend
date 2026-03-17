@@ -12,7 +12,7 @@
 		class?: string;
 	}
 
-	let { isOrganizer, onSubmit, onCancel, isOpen = true, class: className }: Props = $props();
+	const { isOrganizer, onSubmit, onCancel, isOpen = true, class: className }: Props = $props();
 
 	// Form state
 	let name = $state('');
@@ -43,7 +43,7 @@
 	// Validation
 	let errors = $state<Record<string, string>>({});
 
-	let isValid = $derived.by(() => {
+	const isValid = $derived.by(() => {
 		return name.trim().length > 0 && name.trim().length <= 100 && itemType.trim().length > 0;
 	});
 

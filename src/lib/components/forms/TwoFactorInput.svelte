@@ -9,10 +9,10 @@
 
 	let { value = $bindable(''), error, disabled = false, onInput }: Props = $props();
 
-	let inputs: HTMLInputElement[] = [];
+	const inputs: HTMLInputElement[] = [];
 
 	// Create array of 6 digit slots - always render all 6 inputs
-	let digits = $derived.by(() => {
+	const digits = $derived.by(() => {
 		const valueDigits = value.split('').slice(0, 6);
 		// Always return exactly 6 items, filling with empty strings
 		return Array.from({ length: 6 }, (_, i) => valueDigits[i] || '');

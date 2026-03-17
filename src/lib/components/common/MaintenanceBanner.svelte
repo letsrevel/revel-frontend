@@ -4,16 +4,16 @@
 	import { format } from 'date-fns';
 	import { Bug, Info, AlertTriangle, AlertCircle, AlertOctagon, X } from 'lucide-svelte';
 
-	let banner = $derived(appStore.banner);
+	const banner = $derived(appStore.banner);
 
 	// Compute a hash-like key from the banner message for sessionStorage dismissal
-	let dismissKey = $derived(banner ? `maintenance-banner-${hashString(banner.message)}` : '');
+	const dismissKey = $derived(banner ? `maintenance-banner-${hashString(banner.message)}` : '');
 
 	// Track a version counter that changes when we dismiss or when dismissKey changes
 	let dismissVersion = $state(0);
 
 	// Check sessionStorage reactively when dismissKey or dismissVersion changes
-	let isDismissed = $derived.by(() => {
+	const isDismissed = $derived.by(() => {
 		// Track dismissVersion to re-evaluate after dismiss()
 		void dismissVersion;
 		if (dismissKey && typeof sessionStorage !== 'undefined') {
@@ -22,7 +22,7 @@
 		return false;
 	});
 
-	let visible = $derived(banner != null && !isDismissed);
+	const visible = $derived(banner != null && !isDismissed);
 
 	function dismiss() {
 		if (dismissKey && typeof sessionStorage !== 'undefined') {
@@ -78,7 +78,7 @@
 		}
 	} as const;
 
-	let config = $derived(banner ? severityConfig[banner.severity] : severityConfig.info);
+	const config = $derived(banner ? severityConfig[banner.severity] : severityConfig.info);
 </script>
 
 {#if visible && banner}

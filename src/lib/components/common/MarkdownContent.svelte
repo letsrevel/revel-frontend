@@ -26,7 +26,7 @@
 		inline?: boolean;
 	}
 
-	let { content, class: className, ariaLabel, inline = false }: Props = $props();
+	const { content, class: className, ariaLabel, inline = false }: Props = $props();
 
 	// Configure marked for safe rendering
 	marked.setOptions({
@@ -37,12 +37,12 @@
 	/**
 	 * Determine if we have valid content to display
 	 */
-	let hasContent = $derived(!!content && content.trim().length > 0);
+	const hasContent = $derived(!!content && content.trim().length > 0);
 
 	/**
 	 * Parse markdown to HTML
 	 */
-	let renderedHtml = $derived.by(() => {
+	const renderedHtml = $derived.by(() => {
 		if (!hasContent || !content) return '';
 		try {
 			const raw = inline ? marked.parseInline(content) : marked.parse(content);

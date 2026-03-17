@@ -9,7 +9,7 @@
 	import { Users, Trash2, Calendar, Loader2, AlertCircle } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 
-	let { data }: { data: PageData } = $props();
+	const { data }: { data: PageData } = $props();
 
 	const organization = $derived($page.data.organization);
 	const accessToken = $derived(authStore.accessToken);
@@ -17,10 +17,10 @@
 
 	// Pagination state
 	let currentPage = $state(1);
-	let pageSize = $state(20);
+	const pageSize = $state(20);
 
 	// Fetch waitlist with pagination
-	let waitlistQuery = createQuery(() => ({
+	const waitlistQuery = createQuery(() => ({
 		queryKey: ['waitlist', data.eventId, currentPage],
 		queryFn: async () => {
 			const response = await eventadminwaitlistListWaitlist({
@@ -41,7 +41,7 @@
 	}));
 
 	// Delete mutation
-	let deleteMutation = createMutation(() => ({
+	const deleteMutation = createMutation(() => ({
 		mutationFn: async (waitlistId: string) => {
 			const response = await eventadminwaitlistDeleteWaitlistEntry({
 				path: { event_id: data.eventId, waitlist_id: waitlistId },
@@ -78,11 +78,11 @@
 	}
 
 	// Pagination controls
-	let totalPages = $derived(
+	const totalPages = $derived(
 		waitlistQuery.data ? Math.ceil(waitlistQuery.data.count / pageSize) : 1
 	);
-	let canGoPrev = $derived(currentPage > 1);
-	let canGoNext = $derived(currentPage < totalPages);
+	const canGoPrev = $derived(currentPage > 1);
+	const canGoNext = $derived(currentPage < totalPages);
 
 	function goToPrevPage() {
 		if (canGoPrev) {

@@ -11,7 +11,7 @@
 		onScan: (ticketId: string) => Promise<void>;
 	}
 
-	let { isOpen, onClose, onScan }: Props = $props();
+	const { isOpen, onClose, onScan }: Props = $props();
 
 	let scanner: Html5Qrcode | null = null;
 	let isScanning = $state(false);

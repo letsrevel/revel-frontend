@@ -10,7 +10,7 @@
 		onManageSeats: (sector: VenueSectorWithSeatsSchema) => void;
 	}
 
-	let { sector, onEdit, onDelete, onManageSeats }: Props = $props();
+	const { sector, onEdit, onDelete, onManageSeats }: Props = $props();
 
 	const seatCount = $derived(sector.seats?.length ?? 0);
 </script>

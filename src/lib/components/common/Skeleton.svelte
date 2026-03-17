@@ -9,9 +9,9 @@
 		height?: string;
 	}
 
-	let { class: className, variant = 'rectangular', width, height }: Props = $props();
+	const { class: className, variant = 'rectangular', width, height }: Props = $props();
 
-	let variantClasses = $derived(
+	const variantClasses = $derived(
 		cn(
 			'animate-pulse bg-muted',
 			variant === 'text' && 'h-4 rounded',
@@ -21,7 +21,7 @@
 		)
 	);
 
-	let styles = $derived.by(() => {
+	const styles = $derived.by(() => {
 		const styleObj: Record<string, string> = {};
 		if (width) styleObj.width = width;
 		if (height) styleObj.height = height;

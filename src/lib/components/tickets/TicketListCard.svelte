@@ -16,25 +16,25 @@
 		ticket: UserTicketSchema;
 	}
 
-	let { ticket }: Props = $props();
+	const { ticket }: Props = $props();
 
 	let showTicketModal = $state(false);
 
 	// Logo with fallback hierarchy: event -> series -> organization
 	// Prefer thumbnail for card display (64x64)
-	let logoThumbnailPath = $derived(getEventLogoThumbnail(ticket.event));
-	let logoPath = $derived(getEventLogo(ticket.event));
-	let logoUrl = $derived(getImageUrl(logoThumbnailPath || logoPath));
+	const logoThumbnailPath = $derived(getEventLogoThumbnail(ticket.event));
+	const logoPath = $derived(getEventLogo(ticket.event));
+	const logoUrl = $derived(getImageUrl(logoThumbnailPath || logoPath));
 
 	// Format event date
-	let eventDate = $derived.by(() => {
+	const eventDate = $derived.by(() => {
 		if (!ticket.event.start) return null;
 		// If no end date, just show start
 		return formatEventDateRange(ticket.event.start, ticket.event.start);
 	});
 
 	// Get event location (will use venue name if available, then fallback to address)
-	let eventLocation = $derived.by(() => {
+	const eventLocation = $derived.by(() => {
 		const venue = ticket.event.venue;
 		if (!venue) return null;
 		// Show venue name, and optionally address
@@ -63,14 +63,14 @@
 	}
 
 	// Check if ticket can show QR code
-	let canShowQRCode = $derived(
+	const canShowQRCode = $derived(
 		ticket.status === 'active' ||
 			ticket.status === 'checked_in' ||
 			(ticket.status as string) === 'pending'
 	);
 
 	// Format created date to match event date format (e.g., "Tue, Jan 13, 2025")
-	let createdDate = $derived.by(() => {
+	const createdDate = $derived.by(() => {
 		const date = new Date(ticket.created_at);
 		const locale = getLocale();
 		return date.toLocaleDateString(locale, {

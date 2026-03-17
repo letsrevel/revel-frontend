@@ -21,7 +21,7 @@
 		onSuccess: () => void;
 	}
 
-	let { sector, organizationSlug, venueId, onClose, onSuccess }: Props = $props();
+	const { sector, organizationSlug, venueId, onClose, onSuccess }: Props = $props();
 
 	const isEditing = $derived(!!sector);
 	const accessToken = $derived(authStore.accessToken);

@@ -14,16 +14,16 @@
 	const BACKEND_REPO = 'https://github.com/letsrevel/revel-backend';
 
 	// Get backend version and demo mode from store
-	let backendVersion = $derived(appStore.backendVersion || 'Loading...');
-	let isDemoMode = $derived(appStore.isDemoMode);
+	const backendVersion = $derived(appStore.backendVersion || 'Loading...');
+	const isDemoMode = $derived(appStore.isDemoMode);
 
 	// Landing page URLs based on current locale
 	// Landing pages are NOT paraglide-translated, they use /de/ and /it/ prefixes
-	let landingPagePrefix = $derived(getLocale() === 'en' ? '' : `/${getLocale()}`);
+	const landingPagePrefix = $derived(getLocale() === 'en' ? '' : `/${getLocale()}`);
 
 	// Cache for release notes
-	let releaseNotesCache = $state<Record<string, string[] | null>>({});
-	let loadingNotes = $state<Record<string, boolean>>({});
+	const releaseNotesCache = $state<Record<string, string[] | null>>({});
+	const loadingNotes = $state<Record<string, boolean>>({});
 
 	async function fetchReleaseNotes(repo: 'frontend' | 'backend', version: string) {
 		const cacheKey = `${repo}-${version}`;

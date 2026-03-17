@@ -21,7 +21,7 @@
 		onShare: (token: EventTokenSchema) => void;
 	}
 
-	let { token, orgSlug, eventSlug, onEdit, onDelete, onShare }: Props = $props();
+	const { token, orgSlug, eventSlug, onEdit, onDelete, onShare }: Props = $props();
 
 	const status = $derived(getEventTokenStatus(token));
 	const usageDisplay = $derived(formatTokenUsage(token.uses, token.max_uses));

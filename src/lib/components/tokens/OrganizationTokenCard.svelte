@@ -21,7 +21,7 @@
 		onShare: (token: OrganizationTokenSchema) => void;
 	}
 
-	let { token, organizationSlug, isOwner = true, onEdit, onDelete, onShare }: Props = $props();
+	const { token, organizationSlug, isOwner = true, onEdit, onDelete, onShare }: Props = $props();
 
 	const canEditOrDelete = $derived(isOwner || !token.grants_staff_status);
 

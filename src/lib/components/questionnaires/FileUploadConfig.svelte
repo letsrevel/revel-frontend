@@ -52,7 +52,7 @@
 		}) => void;
 	}
 
-	let { questionId, allowedMimeTypes, maxFileSize, maxFiles, onUpdate }: Props = $props();
+	const { questionId, allowedMimeTypes, maxFileSize, maxFiles, onUpdate }: Props = $props();
 </script>
 
 <div class="space-y-4">

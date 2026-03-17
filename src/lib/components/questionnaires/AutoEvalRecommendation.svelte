@@ -11,16 +11,16 @@
 		evaluation: EvaluationResponseSchema | null;
 	}
 
-	let { evaluation }: Props = $props();
+	const { evaluation }: Props = $props();
 
 	// Determine if auto-evaluation is present
-	let hasAutoEval = $derived(
+	const hasAutoEval = $derived(
 		evaluation &&
 			(evaluation.status as QuestionnaireEvaluationStatus) !== 'pending review' &&
 			evaluation.evaluator_id === null // Auto-eval has no evaluator
 	);
 
-	let statusConfig = $derived.by(() => {
+	const statusConfig = $derived.by(() => {
 		if (!evaluation || (evaluation.status as QuestionnaireEvaluationStatus) === 'pending review') {
 			return {
 				icon: AlertCircle,
@@ -53,7 +53,7 @@
 		};
 	});
 
-	let IconComponent = $derived(statusConfig.icon);
+	const IconComponent = $derived(statusConfig.icon);
 </script>
 
 <!--

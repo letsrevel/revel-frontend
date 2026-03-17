@@ -16,7 +16,7 @@
 		onKeydown: (e: KeyboardEvent) => void;
 	}
 
-	let {
+	const {
 		currency,
 		minAmount,
 		maxAmount,
@@ -29,7 +29,7 @@
 	}: Props = $props();
 
 	// Derive aria-invalid from error and validation state
-	let hasError = $derived(!!pwycError);
+	const hasError = $derived(!!pwycError);
 </script>
 
 <div class="space-y-3">

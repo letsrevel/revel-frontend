@@ -22,7 +22,7 @@
 		class?: string;
 	}
 
-	let {
+	const {
 		filters,
 		totalCount,
 		isOpen,
@@ -33,8 +33,8 @@
 	}: Props = $props();
 
 	// Computed values
-	let activeFilterCount = $derived(countActiveOrganizationFilters(filters));
-	let hasFilters = $derived(hasActiveOrganizationFilters(filters));
+	const activeFilterCount = $derived(countActiveOrganizationFilters(filters));
+	const hasFilters = $derived(hasActiveOrganizationFilters(filters));
 
 	function handleSearch(value: string): void {
 		onUpdateFilters({ search: value || undefined });
@@ -57,7 +57,7 @@
 	}
 
 	// Derive selected city object from cityId
-	let selectedCity = $derived.by(() => {
+	const selectedCity = $derived.by(() => {
 		if (!filters.cityId) return null;
 		return null;
 	});

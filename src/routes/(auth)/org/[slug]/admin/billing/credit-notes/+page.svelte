@@ -20,7 +20,7 @@
 		data: LayoutData;
 	}
 
-	let { data }: Props = $props();
+	const { data }: Props = $props();
 
 	const slug = $derived(data.organization.slug);
 	const accessToken = $derived(authStore.accessToken);

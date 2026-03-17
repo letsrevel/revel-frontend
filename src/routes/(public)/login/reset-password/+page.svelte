@@ -9,10 +9,10 @@
 		form: ActionData;
 	}
 
-	let { form }: Props = $props();
+	const { form }: Props = $props();
 
 	// Get token from URL query parameter
-	let token = $derived($page.url.searchParams.get('token') || '');
+	const token = $derived($page.url.searchParams.get('token') || '');
 
 	// Form state
 	let password = $state('');
@@ -22,10 +22,10 @@
 	let isSubmitting = $state(false);
 
 	// Success state
-	let success = $derived(form?.success || false);
+	const success = $derived(form?.success || false);
 
 	// Error handling
-	let errors = $derived((form?.errors || {}) as Record<string, string>);
+	const errors = $derived((form?.errors || {}) as Record<string, string>);
 </script>
 
 <svelte:head>

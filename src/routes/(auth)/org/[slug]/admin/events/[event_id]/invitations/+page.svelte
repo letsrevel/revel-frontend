@@ -14,7 +14,7 @@
 		form: ActionData;
 	}
 
-	let { data, form }: Props = $props();
+	const { data, form }: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
 

@@ -14,14 +14,14 @@
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import FollowButton from '$lib/components/common/FollowButton.svelte';
 
-	let { data }: { data: PageData } = $props();
+	const { data }: { data: PageData } = $props();
 
-	let series = $derived(data.series);
-	let events = $derived(data.events);
-	let totalCount = $derived(data.totalCount);
-	let currentPage = $derived(data.page);
-	let pageSize = $derived(data.pageSize);
-	let orderBy = $derived(data.orderBy);
+	const series = $derived(data.series);
+	const events = $derived(data.events);
+	const totalCount = $derived(data.totalCount);
+	const currentPage = $derived(data.page);
+	const pageSize = $derived(data.pageSize);
+	const orderBy = $derived(data.orderBy);
 
 	// Compute full image URLs
 	const coverUrl = $derived(getImageUrl(series.cover_art));
@@ -44,21 +44,21 @@
 		return gradients[hash % gradients.length];
 	}
 
-	let fallbackGradient = $derived(getSeriesFallbackGradient(series.id));
+	const fallbackGradient = $derived(getSeriesFallbackGradient(series.id));
 
 	// Generate comprehensive meta tags
-	let metaTags = $derived(
+	const metaTags = $derived(
 		generateEventSeriesMeta(series, `${$page.url.origin}${$page.url.pathname}`)
 	);
 
 	// Generate structured data
-	let structuredData = $derived(
+	const structuredData = $derived(
 		generateEventSeriesStructuredData(series, `${$page.url.origin}${$page.url.pathname}`)
 	);
-	let jsonLd = $derived(toJsonLd(structuredData));
+	const jsonLd = $derived(toJsonLd(structuredData));
 
 	// Generate BreadcrumbList structured data
-	let breadcrumbData = $derived(
+	const breadcrumbData = $derived(
 		generateBreadcrumbStructuredData([
 			{ name: 'Home', url: $page.url.origin },
 			{ name: 'Events', url: `${$page.url.origin}/events` },
@@ -69,12 +69,12 @@
 			{ name: series.name, url: `${$page.url.origin}${$page.url.pathname}` }
 		])
 	);
-	let breadcrumbJsonLd = $derived(toJsonLd(breadcrumbData));
+	const breadcrumbJsonLd = $derived(toJsonLd(breadcrumbData));
 
 	// Calculate pagination info
-	let totalPages = $derived(Math.ceil(totalCount / pageSize));
-	let hasNextPage = $derived(currentPage < totalPages);
-	let hasPrevPage = $derived(currentPage > 1);
+	const totalPages = $derived(Math.ceil(totalCount / pageSize));
+	const hasNextPage = $derived(currentPage < totalPages);
+	const hasPrevPage = $derived(currentPage > 1);
 </script>
 
 <svelte:head>

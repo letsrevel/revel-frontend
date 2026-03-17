@@ -31,10 +31,10 @@
 		showCard?: boolean;
 	}
 
-	let { description, organizationName, showCard = true }: Props = $props();
+	const { description, organizationName, showCard = true }: Props = $props();
 
 	// Determine if we have content to display
-	let hasContent = $derived(description && description.trim().length > 0);
+	const hasContent = $derived(description && description.trim().length > 0);
 </script>
 
 {#if hasContent}

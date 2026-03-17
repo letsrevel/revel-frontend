@@ -6,7 +6,7 @@
 	let dropdownOpen = $state(false);
 
 	// Using derived for reactivity
-	let themes = $derived([
+	const themes = $derived([
 		{ value: 'light' as const, label: m['theme.light'](), icon: Sun },
 		{ value: 'dark' as const, label: m['theme.dark'](), icon: Moon },
 		{ value: 'system' as const, label: m['theme.system'](), icon: Monitor }

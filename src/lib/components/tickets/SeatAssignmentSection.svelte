@@ -21,7 +21,7 @@
 		onToggleSeat: (seatId: string) => void;
 	}
 
-	let {
+	const {
 		isUserChoiceSeat,
 		isRandomSeat,
 		hasSeatedTier,
@@ -36,7 +36,7 @@
 		onToggleSeat
 	}: Props = $props();
 
-	let availableSeats = $derived<VenueSeatSchema[]>(
+	const availableSeats = $derived<VenueSeatSchema[]>(
 		seatAvailability?.seats?.filter((s) => s.available && s.id) ?? []
 	);
 </script>

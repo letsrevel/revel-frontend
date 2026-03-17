@@ -35,7 +35,7 @@
 		onClose: () => void;
 	}
 
-	let {
+	const {
 		tier,
 		eventId,
 		organizationSlug,
@@ -139,13 +139,13 @@
 	);
 	// Pre-fill venue: use tier's venue if editing, else fall back to event's venue
 	// Venue is read-only - it always comes from the event
-	let venueId = $state<string | null>(tier?.venue?.id ?? eventVenueId ?? null);
+	const venueId = $state<string | null>(tier?.venue?.id ?? eventVenueId ?? null);
 
 	// Check if event has a venue configured
-	let hasEventVenue = $derived(!!eventVenueId);
+	const hasEventVenue = $derived(!!eventVenueId);
 
 	// Seat assignment modes other than 'none' require an event venue
-	let canUseSeatAssignment = $derived(hasEventVenue);
+	const canUseSeatAssignment = $derived(hasEventVenue);
 	let sectorId = $state<string | null>(tier?.sector?.id ?? null);
 
 	// Fetch venues for the organization (fetch when seat assignment is not 'none' OR when we have a venue pre-selected)
@@ -169,14 +169,14 @@
 	}));
 
 	// Sector is required when seat assignment is random or user_choice
-	let sectorRequired = $derived(
+	const sectorRequired = $derived(
 		seatAssignmentMode === 'random' || seatAssignmentMode === 'user_choice'
 	);
 	// When sector is required, both venue and sector must be selected
-	let sectorValid = $derived(!sectorRequired || (!!venueId && !!sectorId));
+	const sectorValid = $derived(!sectorRequired || (!!venueId && !!sectorId));
 
 	// Get sectors from the selected venue
-	let selectedVenueSectors = $derived.by(() => {
+	const selectedVenueSectors = $derived.by(() => {
 		if (!venueId || !venuesQuery.data) return [];
 		const venue = venuesQuery.data.find((v) => v.id === venueId);
 		return venue?.sectors || [];
@@ -196,7 +196,7 @@
 	});
 
 	// Get current currency symbol for display
-	let currencySymbol = $derived(CURRENCY_SYMBOLS[currency] || currency);
+	const currencySymbol = $derived(CURRENCY_SYMBOLS[currency] || currency);
 
 	const tierCreateMutation = createMutation(() => ({
 		mutationFn: (data: TicketTierCreateSchema) =>
@@ -332,10 +332,10 @@
 		tierDeleteMutation.mutate();
 	}
 
-	let isPending = $derived(
+	const isPending = $derived(
 		tierCreateMutation.isPending || tierUpdateMutation.isPending || tierDeleteMutation.isPending
 	);
-	let error = $derived(
+	const error = $derived(
 		tierCreateMutation.error || tierUpdateMutation.error || tierDeleteMutation.error
 	);
 </script>

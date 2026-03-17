@@ -9,7 +9,7 @@
 		data: PageData;
 	}
 
-	let { data }: Props = $props();
+	const { data }: Props = $props();
 
 	// If we reach this page, it means the impersonation failed
 	// (successful impersonation redirects to dashboard in +page.server.ts)

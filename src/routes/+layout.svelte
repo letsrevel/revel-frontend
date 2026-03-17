@@ -20,7 +20,7 @@
 		children: import('svelte').Snippet;
 	}
 
-	let { data, children }: Props = $props();
+	const { data, children }: Props = $props();
 
 	const queryClient = new QueryClient({
 		defaultOptions: {

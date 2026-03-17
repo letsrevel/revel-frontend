@@ -10,9 +10,9 @@
 		class?: string;
 	}
 
-	let { orderBy = 'start', onChangeOrderBy, class: className }: Props = $props();
+	const { orderBy = 'start', onChangeOrderBy, class: className }: Props = $props();
 
-	let options = $derived.by(() => [
+	const options = $derived.by(() => [
 		{
 			value: 'start' as const,
 			label: m['filters.orderBy.soonestFirst'](),

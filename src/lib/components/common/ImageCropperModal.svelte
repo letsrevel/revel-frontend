@@ -40,7 +40,7 @@
 		onCancel: () => void;
 	}
 
-	let {
+	const {
 		file,
 		aspectRatio = 1,
 		shape = 'rect',

@@ -31,7 +31,7 @@
 		class?: string;
 	}
 
-	let {
+	const {
 		eligibility,
 		eventId,
 		eventSlug,
@@ -83,7 +83,7 @@
 	/**
 	 * Check if we should show the deadline for this next step
 	 */
-	let shouldShowDeadline = $derived.by(() => {
+	const shouldShowDeadline = $derived.by(() => {
 		if (!applyBefore) return false;
 		const deadline = new Date(applyBefore);
 		if (deadline < new Date()) return false; // Deadline passed, don't show countdown
@@ -98,7 +98,7 @@
 	/**
 	 * Check if the reason is specifically about application deadline
 	 */
-	let isApplicationDeadlinePassed = $derived.by(() => {
+	const isApplicationDeadlinePassed = $derived.by(() => {
 		return eligibility.reason?.includes('application deadline has passed');
 	});
 
@@ -297,10 +297,10 @@
 	}
 
 	// Computed values
-	let IconComponent = $derived(getIconComponent(eligibility.next_step));
-	let variant = $derived(getVariant(eligibility.next_step));
-	let headerText = $derived(getHeaderText());
-	let explanationText = $derived(getExplanationText());
+	const IconComponent = $derived(getIconComponent(eligibility.next_step));
+	const variant = $derived(getVariant(eligibility.next_step));
+	const headerText = $derived(getHeaderText());
+	const explanationText = $derived(getExplanationText());
 </script>
 
 <!--

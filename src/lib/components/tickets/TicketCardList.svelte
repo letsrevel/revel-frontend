@@ -48,7 +48,7 @@
 		onUnconfirmPayment: (ticket: any) => void;
 	}
 
-	let {
+	const {
 		tickets,
 		checkInPending,
 		confirmPaymentPending,

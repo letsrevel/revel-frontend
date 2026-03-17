@@ -23,7 +23,7 @@
 		onCancel?: () => void;
 	}
 
-	let { maxSize, disabled = false, onRecordingComplete, onCancel }: Props = $props();
+	const { maxSize, disabled = false, onRecordingComplete, onCancel }: Props = $props();
 
 	// State machine
 	type RecordingState = 'idle' | 'requesting' | 'recording' | 'processing' | 'error';
@@ -39,13 +39,13 @@
 	let timerInterval: ReturnType<typeof setInterval> | null = $state(null);
 
 	// Derived values
-	let isSupported = $derived(isMediaRecorderSupported());
-	let mimeType = $derived(getSupportedMimeType());
-	let maxDuration = $derived(estimateMaxDuration(maxSize));
-	let remainingSeconds = $derived(Math.max(0, maxDuration - elapsedSeconds));
-	let formattedElapsed = $derived(formatAudioDuration(elapsedSeconds));
-	let formattedRemaining = $derived(formatAudioDuration(remainingSeconds));
-	let isNearLimit = $derived(remainingSeconds < 30 && remainingSeconds > 0);
+	const isSupported = $derived(isMediaRecorderSupported());
+	const mimeType = $derived(getSupportedMimeType());
+	const maxDuration = $derived(estimateMaxDuration(maxSize));
+	const remainingSeconds = $derived(Math.max(0, maxDuration - elapsedSeconds));
+	const formattedElapsed = $derived(formatAudioDuration(elapsedSeconds));
+	const formattedRemaining = $derived(formatAudioDuration(remainingSeconds));
+	const isNearLimit = $derived(remainingSeconds < 30 && remainingSeconds > 0);
 
 	// Clean up on unmount
 	onDestroy(() => {

@@ -12,21 +12,21 @@
 	let { password, showRequirements = true, isValid = $bindable(false) }: Props = $props();
 
 	// Check individual requirements
-	let hasMinLength = $derived(password.length >= 8);
-	let hasUppercase = $derived(/[A-Z]/.test(password));
-	let hasLowercase = $derived(/[a-z]/.test(password));
-	let hasDigit = $derived(/\d/.test(password));
-	let hasSpecial = $derived(/[!@#$%^&*(),.?":{}|<>\-\[\]=]/.test(password));
+	const hasMinLength = $derived(password.length >= 8);
+	const hasUppercase = $derived(/[A-Z]/.test(password));
+	const hasLowercase = $derived(/[a-z]/.test(password));
+	const hasDigit = $derived(/\d/.test(password));
+	const hasSpecial = $derived(/[!@#$%^&*(),.?":{}|<>\-\[\]=]/.test(password));
 
 	// Calculate strength score (0-5)
-	let score = $derived(
+	const score = $derived(
 		[hasMinLength, hasUppercase, hasLowercase, hasDigit, hasSpecial].filter(Boolean).length
 	);
 
-	let widthPercentage = $derived((score / 5) * 100);
+	const widthPercentage = $derived((score / 5) * 100);
 
 	// Color based on score
-	let barColor = $derived.by(() => {
+	const barColor = $derived.by(() => {
 		if (score === 0) return 'bg-transparent';
 		if (score <= 2) return 'bg-red-500';
 		if (score === 3) return 'bg-yellow-500';
@@ -35,7 +35,7 @@
 	});
 
 	// Label based on score - only show positive labels when ALL requirements are met
-	let strengthLabel = $derived.by(() => {
+	const strengthLabel = $derived.by(() => {
 		if (score === 0) return m['passwordStrength.noPassword']();
 		if (score <= 2) return m['passwordStrength.weak']();
 		if (score === 3) return m['passwordStrength.fair']();
@@ -44,7 +44,7 @@
 	});
 
 	// Label color based on whether all requirements are met
-	let labelColor = $derived.by(() => {
+	const labelColor = $derived.by(() => {
 		if (score === 5) return 'text-green-600 dark:text-green-400';
 		if (score === 4) return 'text-blue-500';
 		if (score === 3) return 'text-yellow-500';

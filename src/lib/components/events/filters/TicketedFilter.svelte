@@ -10,9 +10,9 @@
 		class?: string;
 	}
 
-	let { ticketType, onChangeTicketType, class: className }: Props = $props();
+	const { ticketType, onChangeTicketType, class: className }: Props = $props();
 
-	let options = $derived.by(() => [
+	const options = $derived.by(() => [
 		{ value: 'ticketed' as const, label: m['filters.ticketType.ticketed']() },
 		{ value: 'free' as const, label: m['filters.ticketType.free']() }
 	]);

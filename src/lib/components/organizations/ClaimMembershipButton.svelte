@@ -16,7 +16,7 @@
 		onSuccess?: () => void;
 	}
 
-	let {
+	const {
 		tokenId,
 		tokenDetails,
 		organizationName = m['claimMembershipButton.thisOrganization'](),
@@ -70,13 +70,13 @@
 		}
 	}
 
-	let buttonText = $derived.by(() => {
+	const buttonText = $derived.by(() => {
 		if (showSuccess) return m['claimMembershipButton.claimed']();
 		if (!isAuthenticated) return m['claimMembershipButton.loginToClaim']();
 		return m['claimMembershipButton.claimMembership']();
 	});
 
-	let grantsMembership = $derived(tokenDetails?.grants_membership ?? true);
+	const grantsMembership = $derived(tokenDetails?.grants_membership ?? true);
 </script>
 
 {#if grantsMembership}

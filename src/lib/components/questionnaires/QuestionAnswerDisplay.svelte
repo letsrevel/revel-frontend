@@ -42,7 +42,7 @@
 		answers: QuestionAnswerDetailSchema[];
 	}
 
-	let { answers }: Props = $props();
+	const { answers }: Props = $props();
 
 	// Image preview modal state
 	let previewImage = $state<{ url: string; filename: string } | null>(null);

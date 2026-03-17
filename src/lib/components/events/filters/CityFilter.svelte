@@ -11,7 +11,7 @@
 		class?: string;
 	}
 
-	let { selectedCity = null, onChangeCity, class: className }: Props = $props();
+	const { selectedCity = null, onChangeCity, class: className }: Props = $props();
 
 	let searchQuery = $state('');
 	let isSearching = $state(false);

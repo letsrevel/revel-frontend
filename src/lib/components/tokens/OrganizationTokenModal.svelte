@@ -35,7 +35,7 @@
 		) => void | Promise<void>;
 	}
 
-	let {
+	const {
 		open,
 		token = null,
 		membershipTiers,

@@ -20,7 +20,7 @@
 		form: ActionData;
 	}
 
-	let { data, form }: Props = $props();
+	const { data, form }: Props = $props();
 
 	let isSubmitting = $state(false);
 	let manuallyShowingCustom = $state(false);
@@ -40,21 +40,21 @@
 	let profilePictureUrl = $state<string | null>(data.user?.profile_picture_url ?? null);
 
 	// Check if current pronouns is custom (not in common list)
-	let showCustomPronouns = $derived(
+	const showCustomPronouns = $derived(
 		manuallyShowingCustom ||
 			(pronouns !== '' &&
 				!COMMON_PRONOUNS.slice(0, -1).includes(pronouns as (typeof COMMON_PRONOUNS)[number]))
 	);
 
-	let success = $derived(form?.success || false);
-	let errors = $derived((form?.errors || {}) as Record<string, string>);
+	const success = $derived(form?.success || false);
+	const errors = $derived((form?.errors || {}) as Record<string, string>);
 	// Email comes from data.user (populated by load function)
-	let email = $derived(data.user?.email || '');
-	let emailVerified = $derived(data.user?.email_verified || false);
-	let canResendEmail = $derived(!isResendingVerification && resendCooldown === 0);
+	const email = $derived(data.user?.email || '');
+	const emailVerified = $derived(data.user?.email_verified || false);
+	const canResendEmail = $derived(!isResendingVerification && resendCooldown === 0);
 
 	// Check for redirect URL (used when coming from events that require profile completion)
-	let redirectUrl = $derived($page.url.searchParams.get('redirect'));
+	const redirectUrl = $derived($page.url.searchParams.get('redirect'));
 
 	function startCooldown() {
 		resendCooldown = 60; // 60 second cooldown

@@ -16,7 +16,7 @@
 		class?: string;
 	}
 
-	let {
+	const {
 		isOpen,
 		title,
 		message,

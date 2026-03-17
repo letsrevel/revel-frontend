@@ -39,7 +39,7 @@
 		class?: string;
 	}
 
-	let {
+	const {
 		eligibility,
 		eventId,
 		eventSlug,
@@ -94,7 +94,7 @@
 	/**
 	 * Check if we should show the deadline for this next step
 	 */
-	let shouldShowDeadline = $derived.by(() => {
+	const shouldShowDeadline = $derived.by(() => {
 		if (!applyBefore) return false;
 		const deadline = new Date(applyBefore);
 		if (deadline < new Date()) return false; // Deadline passed, don't show countdown
@@ -107,7 +107,7 @@
 	});
 
 	// Get icon component based on next_step
-	let IconComponent = $derived.by(() => {
+	const IconComponent = $derived.by(() => {
 		if (eligibility.allowed) return CheckCircle2;
 		if (!eligibility.next_step) return XCircle;
 
@@ -133,10 +133,10 @@
 	});
 
 	// Get color variant based on allowed status
-	let variant = $derived(eligibility.allowed ? 'success' : 'warning');
+	const variant = $derived(eligibility.allowed ? 'success' : 'warning');
 
 	// Format retry date if applicable
-	let retryText = $derived.by(() => {
+	const retryText = $derived.by(() => {
 		if (eligibility.retry_on) {
 			return formatRetryDate(eligibility.retry_on);
 		}

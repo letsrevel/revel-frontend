@@ -29,18 +29,18 @@
 	} from 'lucide-svelte';
 
 	// Generate comprehensive meta tags for home page
-	let metaTags = $derived(generateHomeMeta(page.url.origin));
+	const metaTags = $derived(generateHomeMeta(page.url.origin));
 
 	// Generate WebSite structured data for SEO
-	let websiteStructuredData = $derived(generateWebSiteStructuredData(page.url.origin));
-	let websiteJsonLd = $derived(toJsonLd(websiteStructuredData));
+	const websiteStructuredData = $derived(generateWebSiteStructuredData(page.url.origin));
+	const websiteJsonLd = $derived(toJsonLd(websiteStructuredData));
 
 	// Animated letter for Italian welcome (client-side only)
 	const letters = ['a', 'o', 'ə'] as const;
 	let currentLetterIndex = $state(0);
-	let currentLetter = $derived(letters[currentLetterIndex]);
+	const currentLetter = $derived(letters[currentLetterIndex]);
 	let rotation = $state(0);
-	let isItalian = $derived(browser && getLocale() === 'it');
+	const isItalian = $derived(browser && getLocale() === 'it');
 
 	// Beta access mailto link with pre-populated subject
 	const betaAccessEmail = 'contact@letsrevel.io';
@@ -78,10 +78,10 @@
 	const REVEL_PERCENTAGE = 0.015; // 1.5%
 	const REVEL_FIXED = 0.25; // €0.25
 
-	let stripeFee = $derived(ticketPrice * STRIPE_PERCENTAGE + STRIPE_FIXED);
-	let revelFee = $derived(ticketPrice * REVEL_PERCENTAGE + REVEL_FIXED);
-	let totalFees = $derived(stripeFee + revelFee);
-	let organizerReceives = $derived(ticketPrice - totalFees);
+	const stripeFee = $derived(ticketPrice * STRIPE_PERCENTAGE + STRIPE_FIXED);
+	const revelFee = $derived(ticketPrice * REVEL_PERCENTAGE + REVEL_FIXED);
+	const totalFees = $derived(stripeFee + revelFee);
+	const organizerReceives = $derived(ticketPrice - totalFees);
 
 	function formatCurrency(amount: number): string {
 		return new Intl.NumberFormat('en-EU', {
@@ -92,11 +92,11 @@
 		}).format(amount);
 	}
 
-	let isAuthenticated = $derived(authStore.isAuthenticated);
+	const isAuthenticated = $derived(authStore.isAuthenticated);
 
 	// Landing page URLs based on current locale
 	// Landing pages are NOT paraglide-translated, they use /de/ and /it/ prefixes
-	let landingPagePrefix = $derived(getLocale() === 'en' ? '' : `/${getLocale()}`);
+	const landingPagePrefix = $derived(getLocale() === 'en' ? '' : `/${getLocale()}`);
 </script>
 
 <svelte:head>

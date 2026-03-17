@@ -40,7 +40,7 @@
 		unsubscribeToken?: string; // Token for unsubscribe mode (unauthenticated)
 	}
 
-	let { preferences, onSave, disabled = false, authToken, unsubscribeToken }: Props = $props();
+	const { preferences, onSave, disabled = false, authToken, unsubscribeToken }: Props = $props();
 
 	// Determine if we're in unsubscribe mode
 	const isUnsubscribeMode = $derived(!!unsubscribeToken);
@@ -62,7 +62,7 @@
 	}));
 
 	// Fetch available notification types (only in authenticated mode)
-	let availableTypesQuery = createQuery(() => ({
+	const availableTypesQuery = createQuery(() => ({
 		queryKey: ['notification-types'],
 		queryFn: async () => {
 			console.log('[NotificationPreferences] Fetching available notification types...');
@@ -81,7 +81,7 @@
 		retry: 1
 	}));
 
-	let availableTypes = $derived.by(() => {
+	const availableTypes = $derived.by(() => {
 		const fullData = availableTypesQuery.data;
 		const data = fullData?.data;
 
@@ -147,7 +147,7 @@
 	});
 
 	// Derived state
-	let hasChanges = $derived.by(() => {
+	const hasChanges = $derived.by(() => {
 		// Default values to compare against if preferences is null
 		const defaultSilenceAll = false;
 		const defaultEventReminders = true;
@@ -176,12 +176,12 @@
 		);
 	});
 
-	let isFormDisabled = $derived(disabled || silenceAll);
-	let showTimePicker = $derived(digestFrequency === 'daily' || digestFrequency === 'weekly');
-	let isTelegramConnected = $derived(telegramStatusQuery.data?.connected ?? false);
+	const isFormDisabled = $derived(disabled || silenceAll);
+	const showTimePicker = $derived(digestFrequency === 'daily' || digestFrequency === 'weekly');
+	const isTelegramConnected = $derived(telegramStatusQuery.data?.connected ?? false);
 
 	// Validation
-	let validationError = $derived.by(() => {
+	const validationError = $derived.by(() => {
 		if (!silenceAll && enabledChannels.length === 0) {
 			return m['notificationPreferences.selectAtLeastOneChannel']();
 		}

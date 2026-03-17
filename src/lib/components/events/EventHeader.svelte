@@ -13,18 +13,18 @@
 		class?: string;
 	}
 
-	let { event, class: className }: Props = $props();
+	const { event, class: className }: Props = $props();
 
 	// Cover art with fallback hierarchy: event -> series -> organization
-	let coverArtPath = $derived(getEventCoverArt(event));
-	let coverImageUrl = $derived(getImageUrl(coverArtPath));
+	const coverArtPath = $derived(getEventCoverArt(event));
+	const coverImageUrl = $derived(getImageUrl(coverArtPath));
 
 	// Logo with fallback hierarchy: event -> series -> organization
-	let logoPath = $derived(getEventLogo(event));
-	let logoUrl = $derived(getImageUrl(logoPath));
+	const logoPath = $derived(getEventLogo(event));
+	const logoUrl = $derived(getImageUrl(logoPath));
 
 	// Compute location display - prioritize venue info when available
-	let locationDisplay = $derived.by(() => {
+	const locationDisplay = $derived.by(() => {
 		// If event has a venue, use venue's information
 		if (event.venue) {
 			const venueName = event.venue.name;
@@ -46,13 +46,13 @@
 	});
 
 	// Compute maps URL - prioritize event's URL, fall back to venue's URL
-	let mapsUrl = $derived(event.location_maps_url || event.venue?.location_maps_url || null);
+	const mapsUrl = $derived(event.location_maps_url || event.venue?.location_maps_url || null);
 
 	// Date range display
-	let dateRange = $derived(formatEventDateRange(event.start, event.end));
+	const dateRange = $derived(formatEventDateRange(event.start, event.end));
 
 	// Fallback gradient if no cover art
-	let fallbackGradient = $derived(getEventFallbackGradient(event.id));
+	const fallbackGradient = $derived(getEventFallbackGradient(event.id));
 
 	// Copy event link to clipboard
 	async function handleShare(): Promise<void> {

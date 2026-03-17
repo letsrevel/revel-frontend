@@ -22,10 +22,10 @@
 		isAuthenticated: boolean;
 	}
 
-	let { eventId, authToken, isAuthenticated }: Props = $props();
+	const { eventId, authToken, isAuthenticated }: Props = $props();
 
 	// Build profile URL with redirect back to current page
-	let profileDietaryUrl = $derived.by(() => {
+	const profileDietaryUrl = $derived.by(() => {
 		const basePath = '/account/profile';
 		const hash = '#dietary-section';
 		if (browser) {
@@ -54,9 +54,11 @@
 	}));
 
 	// Derived state
-	let dietarySummary = $derived<EventDietarySummarySchema | null>(dietarySummaryQuery.data ?? null);
-	let isLoading = $derived(dietarySummaryQuery.isLoading);
-	let hasData = $derived(
+	const dietarySummary = $derived<EventDietarySummarySchema | null>(
+		dietarySummaryQuery.data ?? null
+	);
+	const isLoading = $derived(dietarySummaryQuery.isLoading);
+	const hasData = $derived(
 		dietarySummary &&
 			((dietarySummary.preferences?.length ?? 0) > 0 ||
 				(dietarySummary.restrictions?.length ?? 0) > 0)

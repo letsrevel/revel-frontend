@@ -14,10 +14,10 @@
 		options: OptionStat[];
 	}
 
-	let { questionText, options }: Props = $props();
+	const { questionText, options }: Props = $props();
 
-	let maxCount = $derived(Math.max(...options.map((o) => o.count), 1));
-	let totalResponses = $derived(options.reduce((sum, o) => sum + o.count, 0));
+	const maxCount = $derived(Math.max(...options.map((o) => o.count), 1));
+	const totalResponses = $derived(options.reduce((sum, o) => sum + o.count, 0));
 
 	function pct(count: number): string {
 		if (totalResponses === 0) return '0%';

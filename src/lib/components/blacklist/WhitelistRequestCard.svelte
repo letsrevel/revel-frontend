@@ -13,17 +13,23 @@
 		showActions?: boolean;
 	}
 
-	let { request, onApprove, onReject, isProcessing = false, showActions = true }: Props = $props();
+	const {
+		request,
+		onApprove,
+		onReject,
+		isProcessing = false,
+		showActions = true
+	}: Props = $props();
 
 	// Format created date
-	let createdAgo = $derived(
+	const createdAgo = $derived(
 		request.created_at
 			? formatDistanceToNow(new Date(request.created_at), { addSuffix: true })
 			: 'Unknown'
 	);
 
 	// Format decided date
-	let decidedAgo = $derived(
+	const decidedAgo = $derived(
 		request.decided_at
 			? formatDistanceToNow(new Date(request.decided_at), { addSuffix: true })
 			: null
@@ -45,10 +51,10 @@
 		}
 	};
 
-	let statusStyle = $derived(
+	const statusStyle = $derived(
 		statusStyles[request.status as keyof typeof statusStyles] || statusStyles.pending
 	);
-	let StatusIcon = $derived(statusStyle.icon);
+	const StatusIcon = $derived(statusStyle.icon);
 
 	function handleApprove() {
 		onApprove(request);

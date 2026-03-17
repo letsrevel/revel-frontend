@@ -51,7 +51,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
 
-	let { data }: { data: PageData } = $props();
+	const { data }: { data: PageData } = $props();
 
 	// Server-side logging for staging diagnostics
 	if (typeof window === 'undefined') {
@@ -71,20 +71,20 @@
 	const queryClient = useQueryClient();
 
 	// Create mutable copies for client-side updates
-	let event = $state(data.event);
+	const event = $state(data.event);
 	let userStatus = $state(data.userStatus);
-	let ticketTiers = $state<TierSchemaWithId[]>(data.ticketTiers as TierSchemaWithId[]);
+	const ticketTiers = $state<TierSchemaWithId[]>(data.ticketTiers as TierSchemaWithId[]);
 
 	// Get structured data for SEO (with SSR-safe URL access)
-	let eventUrl = $derived(`${page.url.origin}${page.url.pathname}`);
-	let structuredData = $derived(generateEventStructuredData(event, eventUrl));
-	let jsonLd = $derived(structuredDataToJsonLd(structuredData));
+	const eventUrl = $derived(`${page.url.origin}${page.url.pathname}`);
+	const structuredData = $derived(generateEventStructuredData(event, eventUrl));
+	const jsonLd = $derived(structuredDataToJsonLd(structuredData));
 
 	// Generate comprehensive meta tags
-	let metaTags = $derived(generateEventMeta(event, eventUrl));
+	const metaTags = $derived(generateEventMeta(event, eventUrl));
 
 	// Generate BreadcrumbList structured data
-	let breadcrumbData = $derived(
+	const breadcrumbData = $derived(
 		generateBreadcrumbStructuredData([
 			{ name: 'Home', url: page.url.origin },
 			{ name: 'Events', url: `${page.url.origin}/events` },
@@ -92,7 +92,7 @@
 			{ name: event.name, url: eventUrl }
 		])
 	);
-	let breadcrumbJsonLd = $derived(toJsonLd(breadcrumbData));
+	const breadcrumbJsonLd = $derived(toJsonLd(breadcrumbData));
 
 	// SSR diagnostic checkpoint
 	if (typeof window === 'undefined') {
@@ -106,7 +106,7 @@
 
 	// Check if user has RSVP'd or has tickets (reactive to userStatus changes)
 	// Users with tickets should be able to claim potluck items
-	let hasRSVPd = $derived.by(() => {
+	const hasRSVPd = $derived.by(() => {
 		if (!userStatus) return false;
 
 		// New unified format: EventUserStatusResponse with tickets array and/or RSVP
@@ -132,7 +132,7 @@
 	});
 
 	// Compute permissions for potluck management
-	let potluckPermissions = $derived(
+	const potluckPermissions = $derived(
 		getPotluckPermissions(
 			data.userPermissions,
 			event.organization.id,
@@ -143,7 +143,7 @@
 	);
 
 	// Get user's tickets (handles both new and legacy formats)
-	let userTickets = $derived.by((): EventTicketSchemaActual[] => {
+	const userTickets = $derived.by((): EventTicketSchemaActual[] => {
 		if (!userStatus) return [];
 
 		// New format: EventUserStatusResponse with tickets array
@@ -160,10 +160,10 @@
 	});
 
 	// First user ticket (for backward compatibility)
-	let userTicket = $derived(userTickets.length > 0 ? userTickets[0] : null);
+	const userTicket = $derived(userTickets.length > 0 ? userTickets[0] : null);
 
 	// Check if user can purchase more tickets
-	let canPurchaseMore = $derived.by(() => {
+	const canPurchaseMore = $derived.by(() => {
 		if (!userStatus) return true;
 		if (isUserStatusResponse(userStatus)) {
 			return userStatus.can_purchase_more ?? true;
@@ -173,7 +173,7 @@
 
 	// Get per-tier remaining tickets info for the user
 	// Only show user-specific remaining info if they can actually purchase more
-	let tierRemainingTickets = $derived.by((): TierRemainingTicketsSchema[] | undefined => {
+	const tierRemainingTickets = $derived.by((): TierRemainingTicketsSchema[] | undefined => {
 		if (!userStatus) return undefined;
 		if (isUserStatusResponse(userStatus)) {
 			// If user can't purchase more (eligibility check failed), don't show per-user limits
@@ -185,7 +185,7 @@
 	});
 
 	// Get user's display name for ticket purchase forms
-	let userDisplayName = $derived(authStore.user?.display_name ?? '');
+	const userDisplayName = $derived(authStore.user?.display_name ?? '');
 
 	// Discount code from URL param
 	let initialDiscountCode = $state('');
@@ -329,7 +329,7 @@
 	}
 
 	// Ticket claiming mutation (for free/offline tickets) - batch version
-	let claimTicketMutation = createMutation(() => ({
+	const claimTicketMutation = createMutation(() => ({
 		mutationFn: async ({ tierId, tickets, discountCode }: CheckoutParams) => {
 			const body: BatchCheckoutPayload = {
 				tickets,
@@ -349,7 +349,7 @@
 	}));
 
 	// Fixed-price checkout mutation (for online payments) - batch version
-	let checkoutMutation = createMutation(() => ({
+	const checkoutMutation = createMutation(() => ({
 		mutationFn: async ({ tierId, tickets, discountCode }: CheckoutParams) => {
 			const body: BatchCheckoutPayload = {
 				tickets,
@@ -369,7 +369,7 @@
 	}));
 
 	// PWYC checkout mutation - batch version
-	let pwycCheckoutMutation = createMutation(() => ({
+	const pwycCheckoutMutation = createMutation(() => ({
 		mutationFn: async ({ tierId, tickets, pricePerTicket }: PwycCheckoutParams) => {
 			const body: BatchCheckoutPwycPayload = {
 				tickets,
@@ -446,7 +446,7 @@
 	}
 
 	// Resume payment mutation (for pending tickets with online payment)
-	let resumePaymentMutation = createMutation(() => ({
+	const resumePaymentMutation = createMutation(() => ({
 		mutationFn: async (paymentId: string) => {
 			const response = await eventpublicdiscoveryResumeCheckout({
 				path: { payment_id: paymentId }
@@ -480,7 +480,7 @@
 	}));
 
 	// Cancel reservation mutation (for pending tickets with online payment)
-	let cancelReservationMutation = createMutation(() => ({
+	const cancelReservationMutation = createMutation(() => ({
 		mutationFn: async (paymentId: string) => {
 			const response = await eventpublicdiscoveryCancelCheckout({
 				path: { payment_id: paymentId }

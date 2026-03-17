@@ -17,7 +17,7 @@
 		class?: string;
 	}
 
-	let {
+	const {
 		eventId,
 		eventName,
 		isAuthenticated,

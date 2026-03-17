@@ -14,7 +14,7 @@
 		disabled?: boolean;
 	}
 
-	let { label, onExport, accessToken, disabled = false }: Props = $props();
+	const { label, onExport, accessToken, disabled = false }: Props = $props();
 
 	let isExporting = $state(false);
 

@@ -4,8 +4,8 @@
 	import { Home, ArrowLeft, Lock, Search, ServerCrash, AlertCircle } from 'lucide-svelte';
 
 	// Get error details from page store
-	let status = $derived($page.status);
-	let message = $derived($page.error?.message || m['errorPage.defaultMessage']());
+	const status = $derived($page.status);
+	const message = $derived($page.error?.message || m['errorPage.defaultMessage']());
 
 	// Define error configurations for different status codes
 	const errorConfigs = {
@@ -69,7 +69,7 @@
 	};
 
 	// Get config for current status or default
-	let config = $derived(
+	const config = $derived(
 		errorConfigs[status as keyof typeof errorConfigs] || {
 			title: () => m['errorPage.errorDefault_title']({ status: status.toString() }),
 			description: () => message,

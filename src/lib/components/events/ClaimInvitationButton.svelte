@@ -16,7 +16,7 @@
 		onSuccess?: () => void;
 	}
 
-	let { tokenId, tokenDetails, class: className, onSuccess }: Props = $props();
+	const { tokenId, tokenDetails, class: className, onSuccess }: Props = $props();
 
 	const isAuthenticated = $derived(!!authStore.accessToken);
 	const accessToken = $derived(authStore.accessToken);
@@ -69,14 +69,14 @@
 	}
 
 	// Determine button text based on login state and token details
-	let buttonText = $derived.by(() => {
+	const buttonText = $derived.by(() => {
 		if (showSuccess) return m['claimInvitationButton.claimed']();
 		if (!isAuthenticated) return m['claimInvitationButton.loginToClaim']();
 		return m['claimInvitationButton.claimInvitation']();
 	});
 
 	// Check if token grants invitation
-	let grantsInvitation = $derived(tokenDetails?.grants_invitation ?? true);
+	const grantsInvitation = $derived(tokenDetails?.grants_invitation ?? true);
 </script>
 
 <!--

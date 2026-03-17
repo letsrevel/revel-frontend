@@ -20,7 +20,13 @@
 		onNavigate?: () => void;
 	}
 
-	let { authToken, compact = false, maxItems = 5, class: className, onNavigate }: Props = $props();
+	const {
+		authToken,
+		compact = false,
+		maxItems = 5,
+		class: className,
+		onNavigate
+	}: Props = $props();
 
 	// Query client for invalidation
 	const queryClient = useQueryClient();
@@ -32,13 +38,13 @@
 	const pageSize = compact ? maxItems : 20;
 
 	// Query key
-	let queryKey = $derived([
+	const queryKey = $derived([
 		'notifications',
 		{ unread_only: unreadOnly, notification_type: notificationType, page: currentPage }
 	]);
 
 	// Fetch notifications
-	let notificationsQuery = createQuery(() => ({
+	const notificationsQuery = createQuery(() => ({
 		queryKey,
 		queryFn: async () => {
 			return await notificationListNotifications({
@@ -54,16 +60,16 @@
 	}));
 
 	// Derived values
-	let notifications = $derived(notificationsQuery.data?.data?.results ?? []);
-	let totalCount = $derived(notificationsQuery.data?.data?.count ?? 0);
-	let totalPages = $derived(Math.ceil(totalCount / pageSize));
-	let hasUnread = $derived(notifications.some((n) => n.read_at === null));
-	let isLoading = $derived(notificationsQuery.isLoading);
-	let isError = $derived(notificationsQuery.isError);
-	let selectedTypeLabel = $derived(notificationType || 'All types');
+	const notifications = $derived(notificationsQuery.data?.data?.results ?? []);
+	const totalCount = $derived(notificationsQuery.data?.data?.count ?? 0);
+	const totalPages = $derived(Math.ceil(totalCount / pageSize));
+	const hasUnread = $derived(notifications.some((n) => n.read_at === null));
+	const isLoading = $derived(notificationsQuery.isLoading);
+	const isError = $derived(notificationsQuery.isError);
+	const selectedTypeLabel = $derived(notificationType || 'All types');
 
 	// Mark all as read mutation
-	let markAllReadMutation = createMutation(() => ({
+	const markAllReadMutation = createMutation(() => ({
 		mutationFn: async () => {
 			return await notificationMarkAllRead({
 				headers: { Authorization: `Bearer ${authToken}` }
@@ -107,14 +113,14 @@
 	}
 
 	// Get unique notification types from current results
-	let notificationTypes = $derived.by(() => {
+	const notificationTypes = $derived.by(() => {
 		if (!notifications || notifications.length === 0) return [];
 		const types = new Set(notifications.map((n) => n.notification_type));
 		return Array.from(types).sort();
 	});
 
 	// Empty state messages
-	let emptyMessage = $derived.by(() => {
+	const emptyMessage = $derived.by(() => {
 		if (unreadOnly) {
 			return 'No unread notifications';
 		}

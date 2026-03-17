@@ -3,7 +3,7 @@
 	import type { PageData } from './$types';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 
-	let { data }: { data: PageData } = $props();
+	const { data }: { data: PageData } = $props();
 </script>
 
 <svelte:head>

@@ -20,7 +20,7 @@
 		class?: string;
 	}
 
-	let { event, class: className }: Props = $props();
+	const { event, class: className }: Props = $props();
 
 	/**
 	 * Badge configuration with label, variant, and icon
@@ -43,7 +43,7 @@
 	 *
 	 * Note: Administrative status takes precedence over temporal status
 	 */
-	let badge = $derived.by((): BadgeConfig => {
+	const badge = $derived.by((): BadgeConfig => {
 		// 0. Check administrative status first (HIGHEST PRIORITY)
 		if (event.status === 'draft') {
 			return {

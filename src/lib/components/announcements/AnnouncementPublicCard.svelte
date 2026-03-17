@@ -9,7 +9,7 @@
 		showSource?: boolean;
 	}
 
-	let { announcement, showSource = false }: Props = $props();
+	const { announcement, showSource = false }: Props = $props();
 
 	/**
 	 * Simple markdown to HTML converter (same as MarkdownEditor)
@@ -60,7 +60,7 @@
 		return html;
 	}
 
-	let htmlBody = $derived(convertMarkdownToHtml(announcement.body));
+	const htmlBody = $derived(convertMarkdownToHtml(announcement.body));
 </script>
 
 <article class="rounded-lg border bg-card p-4">

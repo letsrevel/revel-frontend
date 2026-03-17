@@ -14,18 +14,18 @@
 	let mobileMenuOpen = $state(false);
 
 	// Get auth state
-	let isAuthenticated = $derived(authStore.isAuthenticated);
-	let accessToken = $derived(authStore.accessToken);
-	let currentPath = $derived($page.url.pathname);
+	const isAuthenticated = $derived(authStore.isAuthenticated);
+	const accessToken = $derived(authStore.accessToken);
+	const currentPath = $derived($page.url.pathname);
 
 	// Navigation items for public users - using translated strings
-	let publicNavItems = $derived([
+	const publicNavItems = $derived([
 		{ href: '/events', label: m['nav.browseEvents']() },
 		{ href: '/organizations', label: m['nav.organizations']() }
 	]);
 
 	// Navigation items for authenticated users - using translated strings
-	let authNavItems = $derived([
+	const authNavItems = $derived([
 		{ href: '/events', label: m['nav.browseEvents']() },
 		{ href: '/organizations', label: m['nav.organizations']() },
 		{ href: '/dashboard/tickets', label: m['nav.myTickets']() },
@@ -34,7 +34,7 @@
 	]);
 
 	// Determine which nav items to show
-	let navItems = $derived(isAuthenticated ? authNavItems : publicNavItems);
+	const navItems = $derived(isAuthenticated ? authNavItems : publicNavItems);
 
 	// Check if link is active
 	function isActive(href: string): boolean {

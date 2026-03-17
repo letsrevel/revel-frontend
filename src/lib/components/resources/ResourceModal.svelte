@@ -16,7 +16,7 @@
 		onSuccess: () => void;
 	}
 
-	let { resource = null, organizationSlug, organizationId, onClose, onSuccess }: Props = $props();
+	const { resource = null, organizationSlug, organizationId, onClose, onSuccess }: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
 	let errorMessage = $state<string | null>(null);

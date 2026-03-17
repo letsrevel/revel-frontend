@@ -26,7 +26,7 @@
 		isDeleting?: boolean;
 	}
 
-	let { resource, onEdit, onDelete, isDeleting = false }: Props = $props();
+	const { resource, onEdit, onDelete, isDeleting = false }: Props = $props();
 
 	// Get icon based on resource type
 	const icon = $derived.by(() => {

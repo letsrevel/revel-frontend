@@ -12,11 +12,11 @@
 		class?: string;
 	}
 
-	let { resources, onEdit, onDelete, isDeleting = false, class: className }: Props = $props();
+	const { resources, onEdit, onDelete, isDeleting = false, class: className }: Props = $props();
 
 	// Group resources by type for better organization (optional)
 	// Currently unused but kept for potential future use
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 	const _groupedResources = $derived.by(() => {
 		const groups: Record<string, AdditionalResourceSchema[]> = {
 			file: [],

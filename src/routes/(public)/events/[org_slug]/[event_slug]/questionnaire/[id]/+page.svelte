@@ -32,19 +32,19 @@
 		data: PageData;
 	}
 
-	let { data }: Props = $props();
+	const { data }: Props = $props();
 
 	// Flatten the questionnaire for easier conditional handling
-	let flattened = $derived(flattenQuestionnaire(data.questionnaire));
+	const flattened = $derived(flattenQuestionnaire(data.questionnaire));
 
 	// Form state - using SvelteMap for fine-grained reactivity
-	let multipleChoiceAnswers = new SvelteMap<string, string[]>();
-	let freeTextAnswers = new SvelteMap<string, string>();
-	let fileUploadAnswers = new SvelteMap<string, QuestionnaireFileSchema[]>();
-	let validationErrors = new SvelteMap<string, string>();
+	const multipleChoiceAnswers = new SvelteMap<string, string[]>();
+	const freeTextAnswers = new SvelteMap<string, string>();
+	const fileUploadAnswers = new SvelteMap<string, QuestionnaireFileSchema[]>();
+	const validationErrors = new SvelteMap<string, string>();
 
 	// Track all selected option IDs across all questions
-	let selectedOptionIds = $derived.by(() => {
+	const selectedOptionIds = $derived.by(() => {
 		const ids = new SvelteSet<string>();
 		for (const [, optionIds] of multipleChoiceAnswers) {
 			for (const id of optionIds) {
@@ -55,8 +55,8 @@
 	});
 
 	// Compute visible questions and sections based on selections
-	let visibleQuestionIds = $derived(getVisibleQuestionIds(flattened, selectedOptionIds));
-	let visibleSectionIds = $derived(getVisibleSectionIds(flattened, selectedOptionIds));
+	const visibleQuestionIds = $derived(getVisibleQuestionIds(flattened, selectedOptionIds));
+	const visibleSectionIds = $derived(getVisibleSectionIds(flattened, selectedOptionIds));
 
 	// Helper to check if a question is visible
 	function isQuestionVisible(questionId: string): boolean {
@@ -69,7 +69,7 @@
 	}
 
 	// Get all visible questions (for validation and submission)
-	let allVisibleQuestions = $derived.by(() => {
+	const allVisibleQuestions = $derived.by(() => {
 		const questions: ConditionalQuestion[] = [];
 
 		// Top-level questions (non-conditional are always included)

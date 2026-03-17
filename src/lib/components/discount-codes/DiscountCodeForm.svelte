@@ -31,7 +31,7 @@
 		errorMessage?: string;
 	}
 
-	let {
+	const {
 		organizationId,
 		existingCode = null,
 		onSubmit,
@@ -81,7 +81,7 @@
 		return local.toISOString().slice(0, 16);
 	}
 
-	let showCurrency = $derived(discountType === 'fixed_amount' && tierIds.length === 0);
+	const showCurrency = $derived(discountType === 'fixed_amount' && tierIds.length === 0);
 
 	function validate(): boolean {
 		const errors: Record<string, string> = {};

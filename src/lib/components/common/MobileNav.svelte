@@ -13,7 +13,7 @@
 
 	let { open = $bindable(false), navItems, isAuthenticated, onClose }: Props = $props();
 
-	let currentPath = $derived($page.url.pathname);
+	const currentPath = $derived($page.url.pathname);
 
 	// Check if link is active
 	function isActive(href: string): boolean {

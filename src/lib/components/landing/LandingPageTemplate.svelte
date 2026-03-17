@@ -23,7 +23,7 @@
 		content: LandingPageContent;
 	}
 
-	let { content }: Props = $props();
+	const { content }: Props = $props();
 
 	// Icon mapping
 	const iconMap = {

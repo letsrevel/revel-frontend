@@ -20,7 +20,7 @@
 		class?: string;
 	}
 
-	let {
+	const {
 		item = null,
 		isOpen,
 		hasManagePermission,
@@ -31,7 +31,7 @@
 	}: Props = $props();
 
 	// Determine if we're in create or edit mode
-	let isCreateMode = $derived(!item);
+	const isCreateMode = $derived(!item);
 
 	// Form state - initialize with item data (edit) or empty (create)
 	let name = $state(item?.name || '');
@@ -62,7 +62,7 @@
 	// Validation
 	let errors = $state<Record<string, string>>({});
 
-	let isValid = $derived.by(() => {
+	const isValid = $derived.by(() => {
 		return name.trim().length > 0 && name.trim().length <= 100 && itemType.trim().length > 0;
 	});
 

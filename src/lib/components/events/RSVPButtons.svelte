@@ -12,7 +12,7 @@
 		class?: string;
 	}
 
-	let {
+	const {
 		onSelect,
 		currentAnswer = null,
 		isLoading = false,

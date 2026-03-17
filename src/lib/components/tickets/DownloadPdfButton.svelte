@@ -16,7 +16,7 @@
 		class?: string;
 	}
 
-	let { ticketId, pdfUrl, variant = 'default', class: className = '' }: Props = $props();
+	const { ticketId, pdfUrl, variant = 'default', class: className = '' }: Props = $props();
 
 	let isDownloading = $state(false);
 	let error = $state<string | null>(null);

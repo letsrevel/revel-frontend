@@ -22,7 +22,7 @@
 		class?: string;
 	}
 
-	let {
+	const {
 		userStatus,
 		requiresTicket,
 		isAuthenticated,
@@ -32,7 +32,7 @@
 	}: Props = $props();
 
 	// Determine button state
-	let buttonText = $derived.by(() => {
+	const buttonText = $derived.by(() => {
 		if (!isAuthenticated && !canAttendWithoutLogin) {
 			return requiresTicket
 				? m['actionButton.loginToGetTickets']()
@@ -65,7 +65,7 @@
 		return requiresTicket ? m['actionButton.getTickets']() : m['actionButton.viewDetails']();
 	});
 
-	let isDisabled = $derived.by(() => {
+	const isDisabled = $derived.by(() => {
 		if (!isAuthenticated && !canAttendWithoutLogin) return false; // Can redirect to sign in
 		if (!isAuthenticated && canAttendWithoutLogin) return false; // Can show guest dialog
 
@@ -84,7 +84,7 @@
 		return false;
 	});
 
-	let variant = $derived.by(() => {
+	const variant = $derived.by(() => {
 		if (!isAuthenticated) return 'secondary';
 
 		if (!userStatus) return 'primary';

@@ -25,18 +25,18 @@
 		data: PageData;
 	}
 
-	let { data }: Props = $props();
+	const { data }: Props = $props();
 
-	let summary = $derived(data.summary!);
-	let questionnaire = $derived(data.questionnaire!);
-	let events = $derived(questionnaire?.events ?? []);
-	let eventSeries = $derived(questionnaire?.event_series ?? []);
+	const summary = $derived(data.summary!);
+	const questionnaire = $derived(data.questionnaire!);
+	const events = $derived(questionnaire?.events ?? []);
+	const eventSeries = $derived(questionnaire?.event_series ?? []);
 
 	// Derived stats
-	let totalEvaluated = $derived(
+	const totalEvaluated = $derived(
 		(summary?.by_status_per_user.approved ?? 0) + (summary?.by_status_per_user.rejected ?? 0)
 	);
-	let approvalRate = $derived(
+	const approvalRate = $derived(
 		totalEvaluated > 0
 			? Math.round(((summary?.by_status_per_user.approved ?? 0) / totalEvaluated) * 100)
 			: 0
@@ -64,7 +64,7 @@
 		goto(`?${params.toString()}`, { replaceState: true });
 	}
 
-	let selectedEventLabel = $derived(() => {
+	const selectedEventLabel = $derived(() => {
 		if (data.filters.eventId) {
 			const ev = events.find((e) => e.id === data.filters.eventId);
 			return ev?.name ?? data.filters.eventId;
@@ -72,7 +72,7 @@
 		return m['questionnaireSummaryPage.allEvents']();
 	});
 
-	let selectedSeriesLabel = $derived(() => {
+	const selectedSeriesLabel = $derived(() => {
 		if (data.filters.eventSeriesId) {
 			const s = eventSeries.find((es) => es.id === data.filters.eventSeriesId);
 			return s?.name ?? data.filters.eventSeriesId;

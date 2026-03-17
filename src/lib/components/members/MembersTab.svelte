@@ -34,7 +34,7 @@
 		staffUserIds: Set<string>;
 	}
 
-	let { organization, isOwner, permissions, tiers, staffUserIds }: Props = $props();
+	const { organization, isOwner, permissions, tiers, staffUserIds }: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
@@ -220,7 +220,7 @@
 	}));
 
 	// Derived data
-	let members = $derived(membersQuery.data?.results || []);
+	const members = $derived(membersQuery.data?.results || []);
 
 	// Handlers
 	function handleManageMember(member: OrganizationMemberSchema) {

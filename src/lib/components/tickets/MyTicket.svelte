@@ -22,7 +22,7 @@
 		onViewAllTickets?: () => void;
 	}
 
-	let {
+	const {
 		ticket,
 		eventName,
 		eventDate,
@@ -60,14 +60,14 @@
 	});
 
 	// Format checked in date
-	let checkedInDate = $derived(() => {
+	const checkedInDate = $derived(() => {
 		if (!ticket.checked_in_at) return null;
 		const date = new Date(ticket.checked_in_at);
 		return date.toLocaleString();
 	});
 
 	// Check if ticket is pending and payment method allows resume
-	let canResumePayment = $derived(() => {
+	const canResumePayment = $derived(() => {
 		if (ticket.status !== 'pending') return false;
 		if (!ticket.tier) return false;
 
@@ -79,7 +79,7 @@
 
 	// Format seat information
 	// Venue/sector come from ticket.tier, seat info comes from ticket.seat
-	let seatInfo = $derived.by(() => {
+	const seatInfo = $derived.by(() => {
 		const parts: string[] = [];
 
 		// Add venue if available (from tier)
@@ -113,7 +113,7 @@
 	});
 
 	// Check if ticket has any seat info to display
-	let hasSeatInfo = $derived(
+	const hasSeatInfo = $derived(
 		!!(
 			ticket.tier?.venue?.name ||
 			ticket.tier?.sector?.name ||

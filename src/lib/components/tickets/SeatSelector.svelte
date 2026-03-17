@@ -10,10 +10,10 @@
 		onToggle: (seatId: string) => void;
 	}
 
-	let { seats, selectedSeatIds, maxSelectable, onToggle }: Props = $props();
+	const { seats, selectedSeatIds, maxSelectable, onToggle }: Props = $props();
 
 	// Group seats by row for grid display
-	let seatsByRow = $derived(() => {
+	const seatsByRow = $derived(() => {
 		const byRow = new Map<string, VenueSeatSchema[]>();
 		for (const seat of seats) {
 			const row = seat.row || '?';

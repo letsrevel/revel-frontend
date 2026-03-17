@@ -9,7 +9,7 @@
 		resources: AdditionalResourceSchema[];
 	}
 
-	let { resources = [] }: Props = $props();
+	const { resources = [] }: Props = $props();
 
 	function getIcon(type: string) {
 		switch (type) {

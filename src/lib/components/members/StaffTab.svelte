@@ -22,7 +22,7 @@
 		isOwner: boolean;
 	}
 
-	let { organization, isOwner }: Props = $props();
+	const { organization, isOwner }: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
@@ -121,7 +121,7 @@
 	}));
 
 	// Derived data
-	let staff = $derived(staffQuery.data?.results || []);
+	const staff = $derived(staffQuery.data?.results || []);
 
 	// Handlers
 	function handleEditPermissions(s: OrganizationStaffSchema) {

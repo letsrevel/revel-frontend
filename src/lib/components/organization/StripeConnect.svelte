@@ -29,7 +29,7 @@
 		billingInfoMissing?: boolean;
 	}
 
-	let {
+	const {
 		organizationSlug,
 		stripeChargesEnabled,
 		stripeDetailsSubmitted,
@@ -143,7 +143,7 @@
 
 	// Determine overall status
 	// Use query data if available (manual refresh), otherwise use props
-	let status = $derived.by(() => {
+	const status = $derived.by(() => {
 		if (!isConnected) {
 			return {
 				type: 'not-connected',

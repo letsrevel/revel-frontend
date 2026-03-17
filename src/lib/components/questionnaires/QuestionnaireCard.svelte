@@ -34,7 +34,7 @@
 		accessToken: string;
 	}
 
-	let { questionnaire, organizationSlug, organizationId, accessToken }: Props = $props();
+	const { questionnaire, organizationSlug, organizationId, accessToken }: Props = $props();
 
 	// Delete state
 	let isDeleting = $state(false);

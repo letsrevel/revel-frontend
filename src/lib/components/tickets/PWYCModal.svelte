@@ -25,14 +25,14 @@
 	let { open = $bindable(), tier, onClose, onConfirm, isProcessing = false }: Props = $props();
 
 	// Get min and max values from tier
-	let minAmount = $derived.by(() => {
+	const minAmount = $derived.by(() => {
 		if (tier.pwyc_min) {
 			return typeof tier.pwyc_min === 'string' ? parseFloat(tier.pwyc_min) : tier.pwyc_min;
 		}
 		return 1; // Minimum is always 1
 	});
 
-	let maxAmount = $derived.by(() => {
+	const maxAmount = $derived.by(() => {
 		if (!tier.pwyc_max) return null;
 		return typeof tier.pwyc_max === 'string' ? parseFloat(tier.pwyc_max) : tier.pwyc_max;
 	});
@@ -42,7 +42,7 @@
 	let error = $state('');
 
 	// Validation state for button disabled and UI hints
-	let amountValidation = $derived.by(() => {
+	const amountValidation = $derived.by(() => {
 		const trimmed = amount.trim();
 		if (!trimmed) {
 			return { valid: false, error: 'empty' as const };
@@ -65,7 +65,7 @@
 	});
 
 	// Quick amount suggestions
-	let suggestions = $derived.by(() => {
+	const suggestions = $derived.by(() => {
 		if (maxAmount !== null) {
 			return [minAmount, Math.round((minAmount + maxAmount) / 2), maxAmount];
 		}

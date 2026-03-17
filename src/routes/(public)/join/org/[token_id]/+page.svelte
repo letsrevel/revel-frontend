@@ -19,7 +19,7 @@
 	import { getExpirationDisplay, formatTokenUsage } from '$lib/utils/tokens';
 	import { escapeHtml } from '$lib/utils/sanitize';
 
-	let { data }: { data: PageData } = $props();
+	const { data }: { data: PageData } = $props();
 
 	const token = $derived(data.token);
 	const isAuthenticated = $derived(authStore.isAuthenticated);

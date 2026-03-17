@@ -5,7 +5,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 
 	// Get impersonation info from the current access token
-	let impersonationInfo = $derived(getImpersonationInfo(authStore.accessToken));
+	const impersonationInfo = $derived(getImpersonationInfo(authStore.accessToken));
 
 	// Calculate time remaining until session expires
 	let timeRemaining = $state<string | null>(null);

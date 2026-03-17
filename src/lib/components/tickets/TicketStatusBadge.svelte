@@ -8,9 +8,9 @@
 		class?: string;
 	}
 
-	let { status, class: className }: Props = $props();
+	const { status, class: className }: Props = $props();
 
-	let config = $derived.by(() => {
+	const config = $derived.by(() => {
 		switch (status) {
 			case 'active':
 				return {
@@ -50,7 +50,7 @@
 		}
 	});
 
-	let Icon = $derived(config.icon);
+	const Icon = $derived(config.icon);
 </script>
 
 <span

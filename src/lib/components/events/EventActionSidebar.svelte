@@ -89,7 +89,7 @@
 	/**
 	 * Get user's active tickets from the new response format
 	 */
-	let userTickets = $derived.by((): EventTicketSchemaActual[] => {
+	const userTickets = $derived.by((): EventTicketSchemaActual[] => {
 		if (!userStatus) return [];
 
 		// New format: EventUserStatusResponse with tickets array
@@ -108,7 +108,7 @@
 	/**
 	 * Check if user can purchase more tickets
 	 */
-	let canPurchaseMore = $derived.by(() => {
+	const canPurchaseMore = $derived.by(() => {
 		if (!userStatus) return true;
 		if (isUserStatusResponse(userStatus)) {
 			return userStatus.can_purchase_more ?? true;
@@ -119,7 +119,7 @@
 	/**
 	 * Check if user is attending (has approved RSVP or active ticket)
 	 */
-	let isAttending = $derived.by(() => {
+	const isAttending = $derived.by(() => {
 		if (!userStatus) return false;
 
 		// New format: EventUserStatusResponse
@@ -147,7 +147,7 @@
 	/**
 	 * Get attendance status display text
 	 */
-	let attendanceStatusText = $derived.by(() => {
+	const attendanceStatusText = $derived.by(() => {
 		if (!userStatus) return null;
 
 		// New format: EventUserStatusResponse
@@ -183,7 +183,7 @@
 	/**
 	 * Get ticket tier name if applicable (for single ticket display)
 	 */
-	let ticketTierName = $derived.by(() => {
+	const ticketTierName = $derived.by(() => {
 		// New format: show tier name of first ticket
 		if (userTickets.length === 1 && userTickets[0].tier) {
 			return userTickets[0].tier.name;
@@ -199,7 +199,7 @@
 	/**
 	 * Check if eligibility should be shown
 	 */
-	let shouldShowEligibility = $derived.by(() => {
+	const shouldShowEligibility = $derived.by(() => {
 		if (!userStatus) return false;
 		if (isUserStatusResponse(userStatus)) return false; // New format doesn't use eligibility this way
 		if (!isEligibility(userStatus)) return false;
@@ -209,7 +209,7 @@
 	/**
 	 * Check if ticket is pending with online payment (should show Resume Payment directly)
 	 */
-	let shouldShowResumePayment = $derived.by(() => {
+	const shouldShowResumePayment = $derived.by(() => {
 		if (!userStatus) return false;
 
 		// New format: check if any tickets have pending online payment
@@ -228,7 +228,7 @@
 	/**
 	 * Get feedback questionnaire IDs available for the user (after event ends)
 	 */
-	let feedbackQuestionnaires = $derived.by((): string[] => {
+	const feedbackQuestionnaires = $derived.by((): string[] => {
 		if (!userStatus) return [];
 		if (!isUserStatusResponse(userStatus)) return [];
 		return userStatus.feedback_questionnaires ?? [];
@@ -237,12 +237,12 @@
 	/**
 	 * Check if feedback questionnaires are available
 	 */
-	let hasFeedbackQuestionnaires = $derived(feedbackQuestionnaires.length > 0);
+	const hasFeedbackQuestionnaires = $derived(feedbackQuestionnaires.length > 0);
 
 	/**
 	 * Check if the event has ended (end date is in the past)
 	 */
-	let eventHasEnded = $derived.by(() => {
+	const eventHasEnded = $derived.by(() => {
 		if (!event.end) return false;
 		return new Date(event.end) < new Date();
 	});
@@ -250,7 +250,7 @@
 	/**
 	 * Container classes based on variant
 	 */
-	let containerClasses = $derived(
+	const containerClasses = $derived(
 		cn(
 			'rounded-lg border bg-card',
 			variant === 'sidebar' && 'sticky top-4',
@@ -267,12 +267,12 @@
 	let includePastEvents = $state(false);
 
 	// Derived auth token
-	let accessToken = $derived(authStore.accessToken);
+	const accessToken = $derived(authStore.accessToken);
 
 	/**
 	 * Check if user can manage this event (owner or staff)
 	 */
-	let canManageEvent = $derived.by(() => {
+	const canManageEvent = $derived.by(() => {
 		if (!userPermissions || !event.organization?.id) return false;
 
 		const orgPermissions = userPermissions.organization_permissions?.[event.organization.id];
@@ -282,7 +282,7 @@
 	});
 
 	// Fetch events for announcement modal (only when modal might be used)
-	let eventsQuery = createQuery(() => ({
+	const eventsQuery = createQuery(() => ({
 		queryKey: ['admin-events', event.organization?.id, includePastEvents],
 		queryFn: async () => {
 			const response = await eventpublicdiscoveryListEvents({
@@ -299,7 +299,7 @@
 	}));
 
 	// Fetch tiers for announcement modal
-	let tiersQuery = createQuery(() => ({
+	const tiersQuery = createQuery(() => ({
 		queryKey: ['membership-tiers', event.organization?.slug],
 		queryFn: async () => {
 			const response = await organizationadminmembersListMembershipTiers({
@@ -312,9 +312,9 @@
 		enabled: !!canManageEvent && !!accessToken && !!event.organization?.slug
 	}));
 
-	let eventsList = $derived(eventsQuery.data?.results ?? []);
-	let eventsLoading = $derived(eventsQuery.isLoading);
-	let tiersList = $derived(tiersQuery.data ?? []);
+	const eventsList = $derived(eventsQuery.data?.results ?? []);
+	const eventsLoading = $derived(eventsQuery.isLoading);
+	const tiersList = $derived(tiersQuery.data ?? []);
 
 	/**
 	 * Download iCal file for this event

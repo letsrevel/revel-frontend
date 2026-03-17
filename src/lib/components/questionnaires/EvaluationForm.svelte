@@ -15,7 +15,7 @@
 		onCancel?: () => void;
 	}
 
-	let { submissionId, currentStatus = null, isSubmitting = false, onCancel }: Props = $props();
+	const { submissionId, currentStatus = null, isSubmitting = false, onCancel }: Props = $props();
 
 	// Form state
 	let showAdvancedOptions = $state(false);

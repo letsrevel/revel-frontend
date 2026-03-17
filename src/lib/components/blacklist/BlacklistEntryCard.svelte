@@ -9,17 +9,17 @@
 		onManage: (entry: BlacklistEntrySchema) => void;
 	}
 
-	let { entry, onManage }: Props = $props();
+	const { entry, onManage }: Props = $props();
 
 	// Format created date
-	let createdAgo = $derived(
+	const createdAgo = $derived(
 		entry.created_at
 			? formatDistanceToNow(new Date(entry.created_at), { addSuffix: true })
 			: 'Unknown'
 	);
 
 	// Display name from entry
-	let displayName = $derived.by(() => {
+	const displayName = $derived.by(() => {
 		if (entry.user_display_name) return entry.user_display_name;
 		if (entry.preferred_name) return entry.preferred_name;
 		if (entry.first_name && entry.last_name) return `${entry.first_name} ${entry.last_name}`;
@@ -30,7 +30,7 @@
 	});
 
 	// Check if linked to a registered user
-	let isLinkedUser = $derived(!!entry.user_id);
+	const isLinkedUser = $derived(!!entry.user_id);
 
 	function handleManage() {
 		onManage(entry);

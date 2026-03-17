@@ -73,7 +73,7 @@
 		}) => void;
 	}
 
-	let {
+	const {
 		formData,
 		eventSeries = [],
 		questionnaires = [],
@@ -296,7 +296,7 @@
 	}
 
 	// Derived state
-	let isSectionOpen = (section: string) => openSections.has(section);
+	const isSectionOpen = (section: string) => openSections.has(section);
 </script>
 
 <div class="space-y-4">

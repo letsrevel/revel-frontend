@@ -10,11 +10,11 @@
 		isRemoving?: boolean;
 	}
 
-	let { entry, onRemove, isRemoving = false }: Props = $props();
+	const { entry, onRemove, isRemoving = false }: Props = $props();
 
 	// Format verified date (use decided_at if available, fallback to created_at)
-	let verifiedDate = $derived(entry.decided_at || entry.created_at);
-	let verifiedAgo = $derived(
+	const verifiedDate = $derived(entry.decided_at || entry.created_at);
+	const verifiedAgo = $derived(
 		verifiedDate ? formatDistanceToNow(new Date(verifiedDate), { addSuffix: true }) : 'Unknown'
 	);
 

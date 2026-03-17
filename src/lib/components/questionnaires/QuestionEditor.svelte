@@ -67,7 +67,7 @@
 		isNested?: boolean;
 	}
 
-	let { question, onUpdate, onRemove, isNested = false }: Props = $props();
+	const { question, onUpdate, onRemove, isNested = false }: Props = $props();
 
 	// Collapsible sections state
 	let showAdvanced = $state(false);

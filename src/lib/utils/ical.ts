@@ -70,7 +70,7 @@ function foldLine(line: string): string {
 /**
  * Generate a unique UID for the calendar event
  */
-function generateUID(eventId: string, domain: string = 'revel.events'): string {
+function generateUID(eventId: string, domain = 'revel.events'): string {
 	return `${eventId}@${domain}`;
 }
 
@@ -171,7 +171,7 @@ export function generateICalFromRevelEvent(event: {
 	};
 }): string {
 	// Format location
-	let location = event.venue_name || event.location || undefined;
+	const location = event.venue_name || event.location || undefined;
 
 	// Create full URL to event using correct format: /events/org-slug/event-slug
 	const eventUrl =

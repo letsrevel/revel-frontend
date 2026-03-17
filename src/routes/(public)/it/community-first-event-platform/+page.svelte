@@ -7,7 +7,7 @@
 	const content = getLandingPage('it', 'community-first-event-platform')!;
 
 	// Generate breadcrumb structured data
-	let breadcrumbData = $derived(
+	const breadcrumbData = $derived(
 		generateBreadcrumbStructuredData([
 			{ name: 'Home', url: page.url.origin },
 			{
@@ -16,10 +16,10 @@
 			}
 		])
 	);
-	let breadcrumbJsonLd = $derived(toJsonLd(breadcrumbData));
+	const breadcrumbJsonLd = $derived(toJsonLd(breadcrumbData));
 
 	// Generate FAQ structured data
-	let faqStructuredData = $derived({
+	const faqStructuredData = $derived({
 		'@context': 'https://schema.org',
 		'@type': 'FAQPage',
 		mainEntity: content.faq.map((item) => ({
@@ -31,10 +31,10 @@
 			}
 		}))
 	});
-	let faqJsonLd = $derived(JSON.stringify(faqStructuredData));
+	const faqJsonLd = $derived(JSON.stringify(faqStructuredData));
 
 	// Generate WebPage structured data
-	let webPageStructuredData = $derived({
+	const webPageStructuredData = $derived({
 		'@context': 'https://schema.org',
 		'@type': 'WebPage',
 		name: content.meta.title,
@@ -47,7 +47,7 @@
 			url: page.url.origin
 		}
 	});
-	let webPageJsonLd = $derived(JSON.stringify(webPageStructuredData));
+	const webPageJsonLd = $derived(JSON.stringify(webPageStructuredData));
 </script>
 
 <svelte:head>

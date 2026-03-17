@@ -11,13 +11,13 @@
 		organizationSlug: string;
 	}
 
-	let { organizationSlug }: Props = $props();
+	const { organizationSlug }: Props = $props();
 
 	// Derived
-	let accessToken = $derived(authStore.accessToken);
+	const accessToken = $derived(authStore.accessToken);
 
 	// Fetch announcements
-	let announcementsQuery = createQuery(() => ({
+	const announcementsQuery = createQuery(() => ({
 		queryKey: ['org-member-announcements', organizationSlug],
 		queryFn: async () => {
 			const response = await organizationListMemberAnnouncements({
@@ -30,9 +30,9 @@
 		enabled: !!accessToken // Only fetch if authenticated
 	}));
 
-	let announcements = $derived(announcementsQuery.data ?? []);
-	let isLoading = $derived(announcementsQuery.isLoading);
-	let hasAnnouncements = $derived(announcements.length > 0);
+	const announcements = $derived(announcementsQuery.data ?? []);
+	const isLoading = $derived(announcementsQuery.isLoading);
+	const hasAnnouncements = $derived(announcements.length > 0);
 </script>
 
 {#if hasAnnouncements || isLoading}

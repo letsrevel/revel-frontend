@@ -19,7 +19,7 @@
 		authToken: string;
 	}
 
-	let { authToken }: Props = $props();
+	const { authToken }: Props = $props();
 
 	// State
 	let showAddDialog = $state(false);
@@ -120,17 +120,17 @@
 	}));
 
 	// Derived state
-	let userPreferences = $derived(
+	const userPreferences = $derived(
 		(userPreferencesQuery.data as UserDietaryPreferenceSchema[] | undefined) ?? []
 	);
-	let availablePreferences = $derived(
+	const availablePreferences = $derived(
 		(availablePreferencesQuery.data as DietaryPreferenceSchema[] | undefined) ?? []
 	);
-	let isLoading = $derived(userPreferencesQuery.isLoading || availablePreferencesQuery.isLoading);
-	let isAddingPreference = $derived(addPreferenceMutation.isPending);
+	const isLoading = $derived(userPreferencesQuery.isLoading || availablePreferencesQuery.isLoading);
+	const isAddingPreference = $derived(addPreferenceMutation.isPending);
 
 	// Get preferences that user hasn't added yet
-	let unselectedPreferences = $derived(
+	const unselectedPreferences = $derived(
 		availablePreferences.filter(
 			(pref: DietaryPreferenceSchema) =>
 				!userPreferences.some(

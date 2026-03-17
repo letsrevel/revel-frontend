@@ -24,7 +24,7 @@
 		onSuccess: () => void;
 	}
 
-	let { venue, organizationSlug, onClose, onSuccess }: Props = $props();
+	const { venue, organizationSlug, onClose, onSuccess }: Props = $props();
 
 	const isEditing = $derived(!!venue);
 	const accessToken = $derived(authStore.accessToken);
@@ -41,7 +41,7 @@
 	let locationMapsEmbed = $state(venue?.location_maps_embed ?? '');
 
 	// Maps section collapsed state - auto-expand if there's data
-	let hasMapsData = $derived(!!locationMapsUrl || !!locationMapsEmbed);
+	const hasMapsData = $derived(!!locationMapsUrl || !!locationMapsEmbed);
 	let mapsExpanded = $state(false);
 
 	// Auto-expand maps section when data exists on load

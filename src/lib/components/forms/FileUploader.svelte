@@ -54,7 +54,7 @@
 		onUploadError?: (file: File, error: string) => void;
 	}
 
-	let {
+	const {
 		uploadedFiles = [],
 		id,
 		label,

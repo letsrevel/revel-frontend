@@ -22,7 +22,7 @@
 		return 'address' in e || 'city' in e;
 	}
 
-	let { event, open, onClose }: Props = $props();
+	const { event, open, onClose }: Props = $props();
 
 	function handleViewDetails() {
 		if (event) {

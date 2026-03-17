@@ -22,19 +22,19 @@
 		class?: string;
 	}
 
-	let { event, variant = 'compact', class: className }: Props = $props();
+	const { event, variant = 'compact', class: className }: Props = $props();
 
 	// Computed values
-	let formattedStartDate = $derived(formatEventDate(event.start));
+	const formattedStartDate = $derived(formatEventDate(event.start));
 
 	// Maps URLs - prioritize event's data, fall back to venue's data
-	let mapsUrl = $derived(event.location_maps_url || event.venue?.location_maps_url || null);
-	let mapsEmbed = $derived(
+	const mapsUrl = $derived(event.location_maps_url || event.venue?.location_maps_url || null);
+	const mapsEmbed = $derived(
 		sanitizeMapEmbedUrl(event.location_maps_embed || event.venue?.location_maps_embed || null)
 	);
 
 	// Location split into two lines for better readability
-	let locationDisplay = $derived.by((): { primary: string; secondary?: string } => {
+	const locationDisplay = $derived.by((): { primary: string; secondary?: string } => {
 		// If event has a venue, use venue's name and address as primary, city as secondary
 		if (event.venue) {
 			const primaryParts: string[] = [event.venue.name];
@@ -88,9 +88,9 @@
 		}
 	}
 
-	let eventTypeDisplay = $derived(formatEventTypeLabel((event.event_type as string) || 'public'));
+	const eventTypeDisplay = $derived(formatEventTypeLabel((event.event_type as string) || 'public'));
 
-	let eventTypeIcon = $derived.by(() => {
+	const eventTypeIcon = $derived.by(() => {
 		const eventType = (event.event_type as string) || 'public';
 		switch (eventType) {
 			case 'public':
@@ -120,14 +120,14 @@
 	}
 
 	// Show visibility only when it differs from event_type
-	let visibilityMismatch = $derived.by(() => {
+	const visibilityMismatch = $derived.by(() => {
 		const eventType = (event.event_type as string) || 'public';
 		const visibility = event.visibility || 'public';
 		if (eventType === visibility) return null;
 		return formatVisibilityLabel(visibility);
 	});
 
-	let capacityDisplay = $derived.by(() => {
+	const capacityDisplay = $derived.by(() => {
 		// Show "X / Y spots taken" when there's a max limit
 		if (event.max_attendees && event.max_attendees > 0) {
 			return m['eventQuickInfo.spotsTaken']({
@@ -142,13 +142,13 @@
 		return null;
 	});
 
-	let isNearCapacity = $derived.by(() => {
+	const isNearCapacity = $derived.by(() => {
 		if (!event.max_attendees || event.max_attendees === 0) return false;
 		const remaining = event.max_attendees - event.attendee_count;
 		return remaining <= 10 && remaining > 0;
 	});
 
-	let rsvpDeadlineDisplay = $derived.by(() => {
+	const rsvpDeadlineDisplay = $derived.by(() => {
 		if (!event.rsvp_before) return null;
 		const relative = getRSVPDeadlineRelative(event.rsvp_before);
 		return relative === 'closed'
@@ -156,13 +156,13 @@
 			: m['eventQuickInfo.rsvpBy']({ deadline: relative });
 	});
 
-	let isDeadlineSoon = $derived.by(() => {
+	const isDeadlineSoon = $derived.by(() => {
 		if (!event.rsvp_before) return false;
 		return isRSVPClosingSoon(event.rsvp_before);
 	});
 
 	// Container classes based on variant
-	let containerClasses = $derived(
+	const containerClasses = $derived(
 		cn(
 			'space-y-2',
 			variant === 'detailed' && 'space-y-3 text-base',
@@ -172,21 +172,21 @@
 	);
 
 	// Item classes based on variant
-	let itemClasses = $derived(cn('flex items-start gap-2', variant === 'detailed' && 'gap-3'));
+	const itemClasses = $derived(cn('flex items-start gap-2', variant === 'detailed' && 'gap-3'));
 
 	// Icon classes based on variant
-	let iconClasses = $derived(
+	const iconClasses = $derived(
 		cn('shrink-0 text-muted-foreground', variant === 'detailed' ? 'h-5 w-5' : 'h-4 w-4')
 	);
 
 	// Text wrapper classes
-	let textClasses = $derived('flex-1 min-w-0');
+	const textClasses = $derived('flex-1 min-w-0');
 
 	// Venue info modal state
 	let venueInfoModalOpen = $state(false);
 
 	// Check if venue has meaningful additional info worth showing in modal
-	let hasVenueAdditionalInfo = $derived.by(() => {
+	const hasVenueAdditionalInfo = $derived.by(() => {
 		if (!event.venue) return false;
 		return !!(
 			event.venue.description?.trim() ||

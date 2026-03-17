@@ -9,7 +9,7 @@
 		form: ActionData;
 	}
 
-	let { form }: Props = $props();
+	const { form }: Props = $props();
 
 	// Form state
 	let email = $state(form?.email || '');
@@ -22,7 +22,7 @@
 
 	// Password validation - calculated directly to avoid cross-component binding timing issues
 	// that can occur in some browsers (e.g., Brave on mobile) with $bindable + $effect patterns
-	let isPasswordValid = $derived(
+	const isPasswordValid = $derived(
 		password.length >= 8 &&
 			/[A-Z]/.test(password) &&
 			/[a-z]/.test(password) &&
@@ -31,11 +31,11 @@
 	);
 
 	// Error handling - type assertion needed due to ActionData union
-	let errors = $derived((form?.errors || {}) as Record<string, string>);
-	let hasErrors = $derived(errors && Object.keys(errors).length > 0);
+	const errors = $derived((form?.errors || {}) as Record<string, string>);
+	const hasErrors = $derived(errors && Object.keys(errors).length > 0);
 
 	// Check if form is valid for submission
-	let canSubmit = $derived(
+	const canSubmit = $derived(
 		email.length > 0 &&
 			password.length > 0 &&
 			isPasswordValid &&

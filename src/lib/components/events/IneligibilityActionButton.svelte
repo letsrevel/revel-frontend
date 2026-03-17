@@ -41,7 +41,7 @@
 		class?: string;
 	}
 
-	let {
+	const {
 		nextStep,
 		eventId,
 		eventSlug,
@@ -258,16 +258,16 @@
 	}
 
 	// Computed values
-	let IconComponent = $derived(nextStep ? getIconComponent(nextStep) : Check);
-	let buttonText = $derived(
+	const IconComponent = $derived(nextStep ? getIconComponent(nextStep) : Check);
+	const buttonText = $derived(
 		showSuccess
 			? m['ineligibilityActionButton.requestSent']()
 			: nextStep
 				? getActionButtonText(nextStep)
 				: 'Continue'
 	);
-	let buttonVariant = $derived(nextStep ? getButtonVariant(nextStep) : 'outline');
-	let isButtonDisabled = $derived(
+	const buttonVariant = $derived(nextStep ? getButtonVariant(nextStep) : 'outline');
+	const isButtonDisabled = $derived(
 		disabled || (nextStep && isActionDisabled(nextStep)) || isLoading || showSuccess
 	);
 </script>

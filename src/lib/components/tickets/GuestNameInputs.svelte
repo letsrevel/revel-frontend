@@ -13,7 +13,7 @@
 		onClearError: () => void;
 	}
 
-	let { guestNames, quantity, isProcessing, guestNameError, onUpdateName, onClearError }: Props =
+	const { guestNames, quantity, isProcessing, guestNameError, onUpdateName, onClearError }: Props =
 		$props();
 </script>
 

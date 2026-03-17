@@ -11,21 +11,21 @@
 		class?: string;
 	}
 
-	let { event, class: className }: Props = $props();
+	const { event, class: className }: Props = $props();
 
 	// Compute RSVP deadline info
-	let rsvpDeadlineText = $derived.by(() => {
+	const rsvpDeadlineText = $derived.by(() => {
 		if (!event.rsvp_before) return null;
 		return getRSVPDeadlineRelative(event.rsvp_before);
 	});
 
-	let isDeadlineSoon = $derived.by(() => {
+	const isDeadlineSoon = $derived.by(() => {
 		if (!event.rsvp_before) return false;
 		return isRSVPClosingSoon(event.rsvp_before);
 	});
 
 	// Compute capacity info
-	let capacityText = $derived.by(() => {
+	const capacityText = $derived.by(() => {
 		if (event.max_attendees === undefined || event.max_attendees === 0) return null;
 		const remaining = event.max_attendees - event.attendee_count;
 		if (remaining <= 0) return m['eventDetails.attendance_full']();
@@ -33,7 +33,7 @@
 		return m['eventDetails.attendance_attending']({ count: event.attendee_count });
 	});
 
-	let isNearCapacity = $derived.by(() => {
+	const isNearCapacity = $derived.by(() => {
 		if (event.max_attendees === undefined || event.max_attendees === 0) return false;
 		const remaining = event.max_attendees - event.attendee_count;
 		return remaining <= 10 && remaining > 0;
@@ -55,7 +55,7 @@
 	}
 
 	// Show visibility when it differs from event_type
-	let visibilityMismatch = $derived.by(() => {
+	const visibilityMismatch = $derived.by(() => {
 		const eventType = (event.event_type as string) || 'public';
 		const visibility = event.visibility || 'public';
 		if (eventType === visibility) return null;

@@ -17,13 +17,13 @@
 		form: ActionData;
 	}
 
-	let { data, form }: Props = $props();
+	const { data, form }: Props = $props();
 
-	let user = $derived(authStore.user); // Use authStore.user for full user object with email_verified
-	let permissions = $derived(authStore.permissions);
+	const user = $derived(authStore.user); // Use authStore.user for full user object with email_verified
+	const permissions = $derived(authStore.permissions);
 
 	// Check if user already owns an organization
-	let ownsOrganization = $derived.by(() => {
+	const ownsOrganization = $derived.by(() => {
 		if (!permissions?.organization_permissions) return false;
 		return Object.values(permissions.organization_permissions).some((perms) => perms === 'owner');
 	});
@@ -36,7 +36,7 @@
 	let description = $state('');
 
 	// Track the original email reactively (use authStore if available, else server data)
-	let originalEmail = $derived(user?.email || data.user?.email || '');
+	const originalEmail = $derived(user?.email || data.user?.email || '');
 
 	// Update contact email when authStore loads (if not already set)
 	$effect(() => {
@@ -46,14 +46,14 @@
 	});
 
 	// Track if user has changed the contact email from default
-	let contactEmailChanged = $derived(contactEmail !== originalEmail);
+	const contactEmailChanged = $derived(contactEmail !== originalEmail);
 
 	// Form state
 	let isSubmitting = $state(false);
 	let showConfirmDialog = $state(false);
 	let formElement = $state<HTMLFormElement>();
 
-	let errors = $derived((form?.errors || {}) as Record<string, string>);
+	const errors = $derived((form?.errors || {}) as Record<string, string>);
 
 	function showConfirmation(e: Event) {
 		e.preventDefault();

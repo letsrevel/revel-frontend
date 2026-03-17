@@ -126,7 +126,7 @@
 	/**
 	 * Insert markdown formatting at cursor position
 	 */
-	function insertFormatting(before: string, after: string = ''): void {
+	function insertFormatting(before: string, after = ''): void {
 		if (!textarea) return;
 
 		const start = textarea.selectionStart;

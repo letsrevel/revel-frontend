@@ -6,7 +6,7 @@
 	import { goto } from '$app/navigation';
 	import { Bell } from 'lucide-svelte';
 
-	let { data }: { data: PageData } = $props();
+	const { data }: { data: PageData } = $props();
 
 	// Default preferences for unsubscribe page:
 	// - Silence all notifications: checked

@@ -15,7 +15,7 @@
 		disabled?: boolean;
 	}
 
-	let {
+	const {
 		organizationSlug,
 		eventId = null,
 		selectedResourceIds = [],

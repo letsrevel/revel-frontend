@@ -17,10 +17,10 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 
-	let accessToken = $derived(authStore.accessToken);
+	const accessToken = $derived(authStore.accessToken);
 
 	// Get current page from URL params
-	let currentPage = $derived(Number(page.url.searchParams.get('page') || '1'));
+	const currentPage = $derived(Number(page.url.searchParams.get('page') || '1'));
 
 	const statusFilters: Array<{ label: string; value: RsvpStatus | null }> = [
 		{ label: m['dashboard.rsvps.status_all'](), value: null },
@@ -68,11 +68,11 @@
 		enabled: !!accessToken
 	}));
 
-	let rsvps = $derived(rsvpsQuery.data?.results || []);
-	let totalCount = $derived(rsvpsQuery.data?.count || 0);
-	let totalPages = $derived(Math.ceil(totalCount / 12));
-	let hasNextPage = $derived(currentPage < totalPages);
-	let hasPrevPage = $derived(currentPage > 1);
+	const rsvps = $derived(rsvpsQuery.data?.results || []);
+	const totalCount = $derived(rsvpsQuery.data?.count || 0);
+	const totalPages = $derived(Math.ceil(totalCount / 12));
+	const hasNextPage = $derived(currentPage < totalPages);
+	const hasPrevPage = $derived(currentPage > 1);
 
 	// Apply filter
 	function applyStatusFilter(status: RsvpStatus | null) {

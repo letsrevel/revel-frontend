@@ -36,7 +36,7 @@
 	import MakeMemberModal from '$lib/components/members/MakeMemberModal.svelte';
 	import ExportButton from '$lib/components/common/ExportButton.svelte';
 
-	let { data }: { data: PageData } = $props();
+	const { data }: { data: PageData } = $props();
 
 	// Search state
 	let searchQuery = $state(data.filters.search || '');
@@ -75,12 +75,12 @@
 	/**
 	 * Derived: Check if there are multiple pages
 	 */
-	let hasMultiplePages = $derived(!!(data.nextPage || data.previousPage));
+	const hasMultiplePages = $derived(!!(data.nextPage || data.previousPage));
 
 	/**
 	 * Derived: Calculate stats from current page tickets
 	 */
-	let stats = $derived.by(() => {
+	const stats = $derived.by(() => {
 		const total = data.tickets.length;
 		const pending = data.tickets.filter((t) => t.status === 'pending').length;
 		const active = data.tickets.filter((t) => t.status === 'active').length;

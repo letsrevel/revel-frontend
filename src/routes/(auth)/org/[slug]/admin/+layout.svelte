@@ -9,13 +9,13 @@
 		children: import('svelte').Snippet;
 	}
 
-	let { data, children }: Props = $props();
+	const { data, children }: Props = $props();
 
 	// Mobile menu state
 	let mobileMenuOpen = $state(false);
 
 	// Get current path
-	let currentPath = $derived($page.url.pathname);
+	const currentPath = $derived($page.url.pathname);
 
 	// Admin navigation items
 	const navItems = [
@@ -98,7 +98,7 @@
 	}
 
 	// Breadcrumb structure
-	let breadcrumbs = $derived([
+	const breadcrumbs = $derived([
 		{ href: '/', label: m['orgAdmin.breadcrumbs.home']() },
 		{ href: '/organizations', label: m['orgAdmin.breadcrumbs.organizations']() },
 		{ href: `/org/${data.organization.slug}`, label: data.organization.name },

@@ -16,7 +16,7 @@
 		onAssignClick: () => void;
 	}
 
-	let {
+	const {
 		eventId,
 		assignedQuestionnaires,
 		organizationId: _organizationId,

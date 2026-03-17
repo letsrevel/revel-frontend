@@ -11,7 +11,7 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { organizationadmincoreCreateEventSeries } from '$lib/api/generated';
 
-	let { data }: { data: PageData } = $props();
+	const { data }: { data: PageData } = $props();
 
 	const organization = $derived($page.data.organization);
 	const accessToken = $derived(authStore.accessToken);

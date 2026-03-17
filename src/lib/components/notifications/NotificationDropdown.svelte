@@ -17,7 +17,7 @@
 		class?: string;
 	}
 
-	let { authToken, pollingInterval = 60000, maxItems = 5, class: className }: Props = $props();
+	const { authToken, pollingInterval = 60000, maxItems = 5, class: className }: Props = $props();
 
 	// Control dropdown open state
 	let isOpen = $state(false);
@@ -30,7 +30,7 @@
 	const queryClient = useQueryClient();
 
 	// Mark all as read mutation
-	let markAllReadMutation = createMutation(() => ({
+	const markAllReadMutation = createMutation(() => ({
 		mutationFn: async () => {
 			return await notificationMarkAllRead({
 				headers: { Authorization: `Bearer ${authToken}` }

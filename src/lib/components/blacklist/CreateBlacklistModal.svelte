@@ -21,7 +21,7 @@
 		isCreating?: boolean;
 	}
 
-	let { open, onClose, onCreate, isCreating = false }: Props = $props();
+	const { open, onClose, onCreate, isCreating = false }: Props = $props();
 
 	// Form state
 	let email = $state('');
@@ -46,7 +46,7 @@
 	});
 
 	// Validate that at least one identifier or name is provided
-	let isValid = $derived(
+	const isValid = $derived(
 		!!(
 			email.trim() ||
 			telegramUsername.trim() ||

@@ -13,7 +13,7 @@
 		description?: string;
 	}
 
-	let {
+	const {
 		value,
 		onSelect,
 		disabled = false,
@@ -40,7 +40,7 @@
 	}
 
 	// Derived display value
-	let displayValue = $derived(value ? formatCity(value) : searchQuery);
+	const displayValue = $derived(value ? formatCity(value) : searchQuery);
 
 	// Debounced search function
 	async function performSearch(query: string) {

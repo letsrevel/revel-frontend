@@ -18,7 +18,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Plus, Calendar, Eye, Users, Trash2, Mail, MoreVertical, Copy } from 'lucide-svelte';
 
-	let { data }: { data: PageData } = $props();
+	const { data }: { data: PageData } = $props();
 
 	const organization = $derived($page.data.organization);
 	const accessToken = $derived(authStore.accessToken);
@@ -139,25 +139,25 @@
 	// Derived state: group events by status and time
 	// Note: Status type in OpenAPI is incorrect, using string comparison
 	// Past events are separated regardless of status
-	let draftEvents = $derived(
+	const draftEvents = $derived(
 		data.events.filter(
 			(e: EventInListSchema) => (e.status as string) === 'draft' && !isPastEvent(e)
 		)
 	);
-	let openEvents = $derived(
+	const openEvents = $derived(
 		data.events.filter((e: EventInListSchema) => (e.status as string) === 'open' && !isPastEvent(e))
 	);
-	let closedEvents = $derived(
+	const closedEvents = $derived(
 		data.events.filter(
 			(e: EventInListSchema) => (e.status as string) === 'closed' && !isPastEvent(e)
 		)
 	);
-	let cancelledEvents = $derived(
+	const cancelledEvents = $derived(
 		data.events.filter(
 			(e: EventInListSchema) => (e.status as string) === 'cancelled' && !isPastEvent(e)
 		)
 	);
-	let pastEvents = $derived(data.events.filter((e: EventInListSchema) => isPastEvent(e)));
+	const pastEvents = $derived(data.events.filter((e: EventInListSchema) => isPastEvent(e)));
 
 	// Duplicate modal state
 	let showDuplicateModal = $state(false);

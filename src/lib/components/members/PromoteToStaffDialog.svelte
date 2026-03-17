@@ -20,10 +20,10 @@
 		isPromoting?: boolean;
 	}
 
-	let { member, open, onClose, onConfirm, isPromoting = false }: Props = $props();
+	const { member, open, onClose, onConfirm, isPromoting = false }: Props = $props();
 
 	// Display name
-	let displayName = $derived(
+	const displayName = $derived(
 		member
 			? member.user.preferred_name ||
 					(member.user.first_name && member.user.last_name

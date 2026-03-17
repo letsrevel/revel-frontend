@@ -42,7 +42,7 @@ export function getAuthCookieOptions(maxAge?: number) {
  * Access token cookie options (1 hour lifetime, or session cookie)
  * @param rememberMe - If true, cookie persists for 1 hour. If false, cookie is session-only.
  */
-export function getAccessTokenCookieOptions(rememberMe: boolean = true) {
+export function getAccessTokenCookieOptions(rememberMe = true) {
 	// Access token always has maxAge since it's short-lived (1 hour)
 	// The rememberMe flag affects the refresh token, not the access token
 	return getAuthCookieOptions(60 * 60); // 1 hour
@@ -59,7 +59,7 @@ export function getAccessTokenCookieOptions(rememberMe: boolean = true) {
  * When rememberMe is true, the cookie persists for 30 days (matching the backend
  * token lifetime), keeping the user logged in across browser sessions.
  */
-export function getRefreshTokenCookieOptions(rememberMe: boolean = true) {
+export function getRefreshTokenCookieOptions(rememberMe = true) {
 	if (rememberMe) {
 		return getAuthCookieOptions(60 * 60 * 24 * 30); // 30 days
 	}

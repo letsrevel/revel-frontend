@@ -16,40 +16,40 @@
 		rsvp: UserRsvpSchema;
 	}
 
-	let { rsvp }: Props = $props();
+	const { rsvp }: Props = $props();
 
 	// Logo with fallback hierarchy: event -> series -> organization
 	// Prefer thumbnail for card display (64x64)
-	let logoThumbnailPath = $derived(getEventLogoThumbnail(rsvp.event));
-	let logoPath = $derived(getEventLogo(rsvp.event));
-	let logoUrl = $derived(getImageUrl(logoThumbnailPath || logoPath));
+	const logoThumbnailPath = $derived(getEventLogoThumbnail(rsvp.event));
+	const logoPath = $derived(getEventLogo(rsvp.event));
+	const logoUrl = $derived(getImageUrl(logoThumbnailPath || logoPath));
 
 	// Cover art with fallback hierarchy (for secondary fallback)
 	// Prefer thumbnail for card display
-	let coverArtThumbnailPath = $derived(getEventCoverArtThumbnail(rsvp.event));
-	let coverArtPath = $derived(getEventCoverArt(rsvp.event));
-	let coverArtUrl = $derived(getImageUrl(coverArtThumbnailPath || coverArtPath));
+	const coverArtThumbnailPath = $derived(getEventCoverArtThumbnail(rsvp.event));
+	const coverArtPath = $derived(getEventCoverArt(rsvp.event));
+	const coverArtUrl = $derived(getImageUrl(coverArtThumbnailPath || coverArtPath));
 
 	// Format event date
-	let eventDate = $derived.by(() => {
+	const eventDate = $derived.by(() => {
 		if (!rsvp.event.start) return null;
 		return formatEventDateRange(rsvp.event.start, rsvp.event.end || rsvp.event.start);
 	});
 
 	// Get event location
-	let eventLocation = $derived.by(() => {
+	const eventLocation = $derived.by(() => {
 		const event = rsvp.event as any;
 		return event.venue_name || event.location || null;
 	});
 
 	// Format created date
-	let createdDate = $derived.by(() => {
+	const createdDate = $derived.by(() => {
 		const date = new Date(rsvp.created_at);
 		return date.toLocaleDateString();
 	});
 
 	// Get RSVP status info
-	let statusInfo = $derived.by(() => {
+	const statusInfo = $derived.by(() => {
 		switch (rsvp.status) {
 			case 'yes':
 				return {

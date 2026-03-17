@@ -31,7 +31,7 @@
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
 
-	let {
+	const {
 		tiers,
 		isAuthenticated,
 		hasTicket = false,
@@ -56,22 +56,22 @@
 	}
 
 	// Filter out hidden tiers (preserve backend ordering)
-	let visibleTiers = $derived(tiers.filter((tier) => tier.payment_method !== 'hidden'));
+	const visibleTiers = $derived(tiers.filter((tier) => tier.payment_method !== 'hidden'));
 
-	let hasTiers = $derived(visibleTiers.length > 0);
+	const hasTiers = $derived(visibleTiers.length > 0);
 
 	// Check if any tier uses online payment
-	let hasOnlinePayment = $derived(visibleTiers.some((tier) => tier.payment_method === 'online'));
+	const hasOnlinePayment = $derived(visibleTiers.some((tier) => tier.payment_method === 'online'));
 
 	// Check if user is not eligible
-	let shouldShowEligibility = $derived.by(() => {
+	const shouldShowEligibility = $derived.by(() => {
 		if (!userStatus) return false;
 		if (!isEligibility(userStatus)) return false;
 		return !userStatus.allowed;
 	});
 
 	// Check if user is eligible to purchase tickets
-	let isEligible = $derived.by(() => {
+	const isEligible = $derived.by(() => {
 		if (!userStatus) return true; // If no status, assume eligible (default behavior)
 		if (!isEligibility(userStatus)) return true; // If not eligibility check, assume eligible
 		return userStatus.allowed;

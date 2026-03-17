@@ -19,7 +19,7 @@
 	import { getExpirationDisplay, formatTokenUsage } from '$lib/utils/tokens';
 	import { formatEventDate } from '$lib/utils/date';
 
-	let { data }: { data: PageData } = $props();
+	const { data }: { data: PageData } = $props();
 
 	const token = $derived(data.token);
 	const event = $derived(token.event);

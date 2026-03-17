@@ -21,7 +21,7 @@
 		authToken: string;
 	}
 
-	let { authToken }: Props = $props();
+	const { authToken }: Props = $props();
 
 	// State
 	let showAddDialog = $state(false);
@@ -179,15 +179,15 @@
 	}));
 
 	// Derived state
-	let restrictions = $derived(
+	const restrictions = $derived(
 		(restrictionsQuery.data as DietaryRestrictionSchema[] | undefined) ?? []
 	);
-	let isLoading = $derived(restrictionsQuery.isLoading);
-	let isAddingRestriction = $derived(
+	const isLoading = $derived(restrictionsQuery.isLoading);
+	const isAddingRestriction = $derived(
 		addRestrictionMutation.isPending || createFoodItemMutation.isPending
 	);
-	let foodItems = $derived((foodItemsQuery.data as FoodItemSchema[] | undefined) ?? []);
-	let isFetchingFoodItems = $derived(foodItemsQuery.isFetching);
+	const foodItems = $derived((foodItemsQuery.data as FoodItemSchema[] | undefined) ?? []);
+	const isFetchingFoodItems = $derived(foodItemsQuery.isFetching);
 
 	// Get severity label
 	function getSeverityLabel(type: RestrictionType): string {

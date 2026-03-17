@@ -46,7 +46,7 @@
 		initialTab?: 'details' | 'ticketing';
 	}
 
-	let {
+	const {
 		organization,
 		existingEvent,
 		userCity,
@@ -117,8 +117,8 @@
 	// Editor state (after formData so derived can reference it)
 	let eventCreated = $state(false);
 	let activeTab = $state<'details' | 'ticketing'>(initialTab ?? 'details');
-	let isEditMode = $derived(!!existingEvent);
-	let showTabs = $derived(isEditMode && !!formData.requires_ticket);
+	const isEditMode = $derived(!!existingEvent);
+	const showTabs = $derived(isEditMode && !!formData.requires_ticket);
 	let tabsEl = $state<HTMLDivElement | null>(null);
 
 	// Scroll to tabs when arriving with initialTab from another page

@@ -29,7 +29,7 @@
 		onSave: (data: EventTokenCreateSchema | EventTokenUpdateSchema) => void | Promise<void>;
 	}
 
-	let { open, token = null, isLoading = false, onClose, onSave }: Props = $props();
+	const { open, token = null, isLoading = false, onClose, onSave }: Props = $props();
 
 	const isEdit = $derived(!!token);
 

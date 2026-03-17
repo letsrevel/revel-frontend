@@ -28,7 +28,7 @@
 		eventSlug: string;
 	}
 
-	let { eventId, orgSlug, eventSlug }: Props = $props();
+	const { eventId, orgSlug, eventSlug }: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();

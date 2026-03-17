@@ -8,7 +8,7 @@
 		children?: Snippet;
 	}
 
-	let { variant = 'default', class: className, children, ...restProps }: Props = $props();
+	const { variant = 'default', class: className, children, ...restProps }: Props = $props();
 
 	const variantClasses = {
 		default: 'border-transparent bg-primary text-primary-foreground hover:bg-primary/80',
