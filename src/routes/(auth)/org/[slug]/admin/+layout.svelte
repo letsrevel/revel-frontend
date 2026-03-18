@@ -64,7 +64,11 @@
 						label: m['orgAdmin.nav.billing'](),
 						badge:
 							data.organization.is_stripe_connected &&
-							(!data.organization.vat_country_code || !data.organization.billing_address)
+							(parseFloat(data.organization.platform_fee_percent) > 0 ||
+								parseFloat(data.organization.platform_fee_fixed) > 0) &&
+							(!data.organization.vat_country_code ||
+								!data.organization.billing_address ||
+								!data.organization.billing_name)
 								? 'warning'
 								: undefined
 					}
