@@ -17,6 +17,7 @@
 		Trash2
 	} from 'lucide-svelte';
 	import { browser } from '$app/environment';
+	import { invalidateAll } from '$app/navigation';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
 	import { extractErrorMessage } from '$lib/utils/errors';
@@ -96,6 +97,7 @@
 	// ─── Billing Info Form State ────────────────────────────────────
 	let countryCode = $state('');
 	let vatRate = $state('');
+	let billingName = $state('');
 	let billingAddress = $state('');
 	let billingEmail = $state('');
 	let billingFormDirty = $state(false);
@@ -105,6 +107,7 @@
 		if (billingQuery?.data && !billingFormDirty) {
 			countryCode = billingQuery.data.vat_country_code || '';
 			vatRate = billingQuery.data.vat_rate || '';
+			billingName = billingQuery.data.billing_name || '';
 			billingAddress = billingQuery.data.billing_address || '';
 			billingEmail = billingQuery.data.billing_email || '';
 		}
@@ -126,6 +129,7 @@
 					else body.vat_country_code = null;
 					if (vatRate) body.vat_rate = parseFloat(vatRate);
 					else body.vat_rate = null;
+					body.billing_name = billingName || null;
 					body.billing_address = billingAddress || null;
 					body.billing_email = billingEmail || null;
 
@@ -146,6 +150,7 @@
 				onSuccess: () => {
 					billingFormDirty = false;
 					queryClient.invalidateQueries({ queryKey: ['billing-info', slug] });
+					invalidateAll();
 					toast.success(m['orgAdmin.billing.billingInfo.saved']());
 				},
 				onError: (error: Error) => {
@@ -367,6 +372,21 @@
 					/>
 					<p class="text-xs text-muted-foreground">
 						{m['orgAdmin.billing.billingInfo.vatRateHelp']()}
+					</p>
+				</div>
+
+				<!-- Billing Name -->
+				<div class="space-y-2">
+					<Label for="billing-name">{m['orgAdmin.billing.billingInfo.billingName']()}</Label>
+					<Input
+						id="billing-name"
+						type="text"
+						placeholder={m['orgAdmin.billing.billingInfo.billingNamePlaceholder']()}
+						bind:value={billingName}
+						oninput={markBillingDirty}
+					/>
+					<p class="text-xs text-muted-foreground">
+						{m['orgAdmin.billing.billingInfo.billingNameHelp']()}
 					</p>
 				</div>
 

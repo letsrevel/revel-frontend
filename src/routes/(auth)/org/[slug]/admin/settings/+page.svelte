@@ -223,7 +223,8 @@
 		stripeAccountEmail={data.organization.stripe_account_email ?? null}
 		accessToken={accessToken || ''}
 		billingInfoMissing={!data.organization.vat_country_code ||
-			!data.organization.billing_address?.trim()}
+			!data.organization.billing_address?.trim() ||
+			!data.organization.billing_name?.trim()}
 	/>
 
 	<!-- Images Section (Outside Form) -->
