@@ -13,6 +13,51 @@ import type {
 	QuestionnaireSection
 } from './questionnaire-form-types';
 
+// ===== Timedelta Parsing Helpers =====
+
+/**
+ * Parse a Django timedelta value (number of seconds or "HH:MM:SS" string) to hours.
+ * Returns null for null/undefined/zero values (meaning immediate retake allowed).
+ */
+function parseTimedeltaToHours(value: unknown): number | null {
+	if (!value) return null;
+	if (typeof value === 'number') return Math.round(value / 3600) || null;
+	if (typeof value === 'string') {
+		// Django timedelta string format: "HH:MM:SS" or "D days, HH:MM:SS"
+		const match = value.match(/(?:(\d+)\s+days?,\s*)?(\d+):(\d+):(\d+)/);
+		if (match) {
+			const days = parseInt(match[1] || '0');
+			const hours = parseInt(match[2]);
+			const minutes = parseInt(match[3]);
+			const seconds = parseInt(match[4]);
+			const totalHours = days * 24 + hours + minutes / 60 + seconds / 3600;
+			return Math.round(totalHours) || null;
+		}
+	}
+	return null;
+}
+
+/**
+ * Parse a Django timedelta value (number of seconds or "HH:MM:SS" string) to days.
+ * Returns null for null/undefined/zero values.
+ */
+function parseTimedeltaToDays(value: unknown): number | null {
+	if (!value) return null;
+	if (typeof value === 'number') return Math.round(value / 86400) || null;
+	if (typeof value === 'string') {
+		const match = value.match(/(?:(\d+)\s+days?,\s*)?(\d+):(\d+):(\d+)/);
+		if (match) {
+			const days = parseInt(match[1] || '0');
+			const hours = parseInt(match[2]);
+			const minutes = parseInt(match[3]);
+			const seconds = parseInt(match[4]);
+			const totalDays = days + (hours * 3600 + minutes * 60 + seconds) / 86400;
+			return Math.round(totalDays) || null;
+		}
+	}
+	return null;
+}
+
 // ===== API → Local Converters =====
 
 /** Convert an API option to local format. */
@@ -160,10 +205,7 @@ export function initializeFromApiData(questionnaire: any, q: any): InitFromApiRe
 	const shuffleQuestions = q.shuffle_questions ?? false;
 	const shuffleSections = q.shuffle_sections ?? false;
 	const llmGuidelines = q.llm_guidelines || '';
-	const canRetakeAfter =
-		q.can_retake_after && typeof q.can_retake_after === 'number'
-			? Math.round(q.can_retake_after / 3600)
-			: null;
+	const canRetakeAfter = parseTimedeltaToHours(q.can_retake_after);
 	const maxAttempts = q.max_attempts ?? 0;
 
 	// From org questionnaire
@@ -171,10 +213,7 @@ export function initializeFromApiData(questionnaire: any, q: any): InitFromApiRe
 	const membersExempt = questionnaire.members_exempt ?? false;
 	const perEvent = questionnaire.per_event ?? false;
 	const requiresEvaluation = questionnaire.requires_evaluation ?? true;
-	const maxSubmissionAge =
-		questionnaire.max_submission_age && typeof questionnaire.max_submission_age === 'number'
-			? Math.round(questionnaire.max_submission_age / 86400)
-			: null;
+	const maxSubmissionAge = parseTimedeltaToDays(questionnaire.max_submission_age);
 
 	// ===== Step 1: Collect IDs of questions that belong to sections =====
 	const sectionQuestionIds = new Set<string>();

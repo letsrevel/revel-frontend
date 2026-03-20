@@ -227,20 +227,13 @@ export function getNextStepIcon(nextStep: NextStep): string {
  */
 export function formatRetryDate(retryOn: string | null | undefined): string | null {
 	if (!retryOn) return null;
-
 	const date = new Date(retryOn);
-	const now = new Date();
-	const diff = date.getTime() - now.getTime();
-	const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-
-	if (days === 0) return 'later today';
-	if (days === 1) return 'tomorrow';
-	if (days < 7) return `in ${days} days`;
-
-	return date.toLocaleDateString('en-US', {
-		month: 'long',
+	return date.toLocaleString('en-US', {
+		month: 'short',
 		day: 'numeric',
-		year: 'numeric'
+		year: 'numeric',
+		hour: 'numeric',
+		minute: '2-digit'
 	});
 }
 

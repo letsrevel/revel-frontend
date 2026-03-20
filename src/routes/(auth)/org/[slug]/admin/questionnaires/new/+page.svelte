@@ -67,7 +67,7 @@
 	let llmGuidelines = $state('');
 	let maxSubmissionAge = $state<number | null>(null); // Duration in days
 	let canRetakeAfter = $state<number | null>(null); // Duration in hours
-	let maxAttempts = $state(0); // Max submission attempts (0 = unlimited)
+	let maxAttempts = $state(1); // Max submission attempts (0 = unlimited)
 	let membersExempt = $state(false); // Exempt members from questionnaire
 	let perEvent = $state(false); // Require per-event completion
 	let requiresEvaluation = $state(true);
@@ -294,12 +294,11 @@
 					min_score: minScore,
 					evaluation_mode: evaluationMode,
 					questionnaire_type: questionnaireType,
-					max_submission_age:
-						maxSubmissionAge !== null ? String(maxSubmissionAge * 86400) : undefined, // Convert days to seconds
+					max_submission_age: maxSubmissionAge ? `P${maxSubmissionAge}D` : undefined,
 					shuffle_questions: shuffleQuestions,
 					shuffle_sections: shuffleSections,
 					llm_guidelines: llmGuidelines || null,
-					can_retake_after: canRetakeAfter !== null ? String(canRetakeAfter * 3600) : undefined, // Convert hours to seconds
+					can_retake_after: canRetakeAfter ? `PT${canRetakeAfter * 3600}S` : undefined,
 					max_attempts: maxAttempts,
 					members_exempt: membersExempt,
 					per_event: perEvent,
@@ -692,33 +691,35 @@
 			<div class="grid gap-4 sm:grid-cols-2">
 				<!-- Max Submission Age -->
 				<div class="space-y-2">
-					<Label for="max-submission-age">Submission Validity (days)</Label>
+					<Label for="max-submission-age"
+						>{m['questionnaireNewPage.submissionValidityLabel']()}</Label
+					>
 					<Input
 						id="max-submission-age"
 						type="number"
 						bind:value={maxSubmissionAge}
 						min="0"
 						step="1"
-						placeholder="Leave empty for no expiry"
+						placeholder={m['questionnaireNewPage.submissionValidityPlaceholder']()}
 					/>
 					<p class="text-xs text-muted-foreground">
-						How long a completed submission remains valid before user must retake (in days)
+						{m['questionnaireNewPage.submissionValidityDescription']()}
 					</p>
 				</div>
 
 				<!-- Can Retake After -->
 				<div class="space-y-2">
-					<Label for="can-retake-after">Retake Cooldown (hours)</Label>
+					<Label for="can-retake-after">{m['questionnaireNewPage.retakeCooldownLabel']()}</Label>
 					<Input
 						id="can-retake-after"
 						type="number"
 						bind:value={canRetakeAfter}
 						min="0"
 						step="1"
-						placeholder="Leave empty to prevent retakes"
+						placeholder={m['questionnaireNewPage.retakeCooldownPlaceholder']()}
 					/>
 					<p class="text-xs text-muted-foreground">
-						How long users must wait before retaking (in hours)
+						{m['questionnaireNewPage.retakeCooldownDescription']()}
 					</p>
 				</div>
 			</div>
