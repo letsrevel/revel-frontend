@@ -106,6 +106,7 @@ function getStatusMessage(status: number): string | null {
 		403: 'Forbidden. You do not have permission to perform this action.',
 		404: 'Resource not found.',
 		409: 'Conflict. This action conflicts with existing data.',
+		410: 'This link is no longer valid. It may have expired or reached its usage limit.',
 		422: 'Validation error. Please check your input.',
 		429: 'Too many requests. Please wait a moment and try again.',
 		500: 'Server error. Please try again later.',
