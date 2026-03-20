@@ -99,6 +99,9 @@
 	);
 	const showLlmWarning = $derived(needsLlmGuidelines && !llmGuidelines.trim());
 
+	// LLM guidelines are only relevant for hybrid/automatic evaluation
+	const showLlmGuidelines = $derived(effectiveRequiresEvaluation && evaluationMode !== 'manual');
+
 	// Form validation
 	let errors = $state<{
 		name?: string;
@@ -651,7 +654,7 @@
 				</div>
 			{/if}
 
-			{#if effectiveRequiresEvaluation}
+			{#if showLlmGuidelines}
 				<!-- LLM Guidelines -->
 				<div class="space-y-2">
 					<Label for="llm-guidelines">
@@ -815,6 +818,7 @@
 									{question}
 									onUpdate={(updates) => updateTopLevelQuestion(question.id, updates)}
 									onRemove={() => removeTopLevelQuestion(question.id)}
+									{showLlmGuidelines}
 								/>
 							</div>
 						{/each}
@@ -899,6 +903,7 @@
 										onQuestionsReorder={(questions) =>
 											reorderQuestionsInSection(section.id, questions)}
 										{dropTargetStyle}
+										{showLlmGuidelines}
 									/>
 								</div>
 							{/each}

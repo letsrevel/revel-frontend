@@ -421,7 +421,7 @@
 			</div>
 		{/if}
 
-		{#if effectiveRequiresEvaluation}
+		{#if effectiveRequiresEvaluation && evaluationMode !== 'manual'}
 			<!-- LLM Guidelines -->
 			<div class="space-y-2">
 				<Label for="llm-guidelines"
