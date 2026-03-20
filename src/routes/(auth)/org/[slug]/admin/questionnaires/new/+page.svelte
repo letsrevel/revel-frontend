@@ -67,7 +67,7 @@
 	let llmGuidelines = $state('');
 	let maxSubmissionAge = $state<number | null>(null); // Duration in days
 	let canRetakeAfter = $state<number | null>(null); // Duration in hours
-	let maxAttempts = $state(0); // Max submission attempts (0 = unlimited)
+	let maxAttempts = $state(1); // Max submission attempts (0 = unlimited)
 	let membersExempt = $state(false); // Exempt members from questionnaire
 	let perEvent = $state(false); // Require per-event completion
 	let requiresEvaluation = $state(true);
@@ -294,12 +294,11 @@
 					min_score: minScore,
 					evaluation_mode: evaluationMode,
 					questionnaire_type: questionnaireType,
-					max_submission_age:
-						maxSubmissionAge !== null ? String(maxSubmissionAge * 86400) : undefined, // Convert days to seconds
+					max_submission_age: maxSubmissionAge ? `P${maxSubmissionAge}D` : undefined,
 					shuffle_questions: shuffleQuestions,
 					shuffle_sections: shuffleSections,
 					llm_guidelines: llmGuidelines || null,
-					can_retake_after: canRetakeAfter !== null ? String(canRetakeAfter * 3600) : undefined, // Convert hours to seconds
+					can_retake_after: canRetakeAfter ? `PT${canRetakeAfter * 3600}S` : undefined,
 					max_attempts: maxAttempts,
 					members_exempt: membersExempt,
 					per_event: perEvent,
@@ -313,21 +312,29 @@
 			});
 
 			if (response.error) {
-				// Handle 422 validation errors
 				if (response.response.status === 422) {
-					const errorMessage = parseValidationErrors(response.error);
-					saveError = errorMessage;
+					saveError = parseValidationErrors(response.error);
 					console.error('Validation error:', response.error);
-					return;
+				} else {
+					const err = response.error;
+					const detail =
+						err && typeof err === 'object' && 'detail' in err && typeof err.detail === 'string'
+							? err.detail
+							: null;
+					saveError = detail
+						? `Failed to create questionnaire: ${detail}`
+						: `Failed to create questionnaire (HTTP ${response.response.status}).`;
+					console.error('API error:', response.error);
 				}
-				throw new Error('Failed to create questionnaire');
+				return;
 			}
 
 			// Redirect to the edit page of the newly created questionnaire
 			await goto(`/org/${data.organization.slug}/admin/questionnaires/${response.data.id}`);
 		} catch (err) {
 			console.error('Failed to save questionnaire:', err);
-			saveError = 'Failed to save questionnaire. Please try again.';
+			const message = err instanceof Error ? err.message : String(err);
+			saveError = `Failed to save questionnaire: ${message}`;
 		} finally {
 			isSaving = false;
 		}
@@ -524,17 +531,9 @@
 						}}
 					>
 						<SelectTrigger id="evaluation-mode">
-							{evaluationModes[evaluationMode]?.label ?? 'Automatic'}
+							{evaluationModes[evaluationMode]?.label ?? 'Manual'}
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="automatic" label="Automatic">
-								<div class="flex flex-col gap-0.5">
-									<div class="font-medium">Automatic</div>
-									<div class="text-xs text-muted-foreground">
-										AI evaluates all responses automatically
-									</div>
-								</div>
-							</SelectItem>
 							<SelectItem value="manual" label="Manual">
 								<div class="flex flex-col gap-0.5">
 									<div class="font-medium">Manual</div>
@@ -543,11 +542,31 @@
 									</div>
 								</div>
 							</SelectItem>
-							<SelectItem value="hybrid" label="Hybrid">
+							<SelectItem value="hybrid" label="Hybrid" disabled>
 								<div class="flex flex-col gap-0.5">
-									<div class="font-medium">Hybrid</div>
+									<div class="flex items-center gap-2 font-medium">
+										Hybrid
+										<span
+											class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
+											>Coming soon</span
+										>
+									</div>
 									<div class="text-xs text-muted-foreground">
 										AI pre-scores, staff reviews final decision
+									</div>
+								</div>
+							</SelectItem>
+							<SelectItem value="automatic" label="Automatic" disabled>
+								<div class="flex flex-col gap-0.5">
+									<div class="flex items-center gap-2 font-medium">
+										Automatic
+										<span
+											class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
+											>Coming soon</span
+										>
+									</div>
+									<div class="text-xs text-muted-foreground">
+										AI evaluates all responses automatically
 									</div>
 								</div>
 							</SelectItem>
@@ -670,33 +689,35 @@
 			<div class="grid gap-4 sm:grid-cols-2">
 				<!-- Max Submission Age -->
 				<div class="space-y-2">
-					<Label for="max-submission-age">Submission Validity (days)</Label>
+					<Label for="max-submission-age"
+						>{m['questionnaireNewPage.submissionValidityLabel']()}</Label
+					>
 					<Input
 						id="max-submission-age"
 						type="number"
 						bind:value={maxSubmissionAge}
 						min="0"
 						step="1"
-						placeholder="Leave empty for no expiry"
+						placeholder={m['questionnaireNewPage.submissionValidityPlaceholder']()}
 					/>
 					<p class="text-xs text-muted-foreground">
-						How long a completed submission remains valid before user must retake (in days)
+						{m['questionnaireNewPage.submissionValidityDescription']()}
 					</p>
 				</div>
 
 				<!-- Can Retake After -->
 				<div class="space-y-2">
-					<Label for="can-retake-after">Retake Cooldown (hours)</Label>
+					<Label for="can-retake-after">{m['questionnaireNewPage.retakeCooldownLabel']()}</Label>
 					<Input
 						id="can-retake-after"
 						type="number"
 						bind:value={canRetakeAfter}
 						min="0"
 						step="1"
-						placeholder="Leave empty to prevent retakes"
+						placeholder={m['questionnaireNewPage.retakeCooldownPlaceholder']()}
 					/>
 					<p class="text-xs text-muted-foreground">
-						How long users must wait before retaking (in hours)
+						{m['questionnaireNewPage.retakeCooldownDescription']()}
 					</p>
 				</div>
 			</div>

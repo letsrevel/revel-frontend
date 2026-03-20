@@ -126,22 +126,22 @@
 		city_id: existingEvent?.city?.id || orgCity?.id || userCity?.id || null,
 		visibility: existingEvent?.visibility || 'public',
 		event_type: (existingEvent?.event_type as any) || ('public' as any), // Backend API has wrong enum type
-		requires_ticket: (existingEvent as any)?.requires_ticket || false,
+		requires_ticket: existingEvent?.requires_ticket || false,
 		description: existingEvent?.description || '',
 		address: existingEvent?.address || '',
-		address_visibility: (existingEvent as any)?.address_visibility || 'public',
+		address_visibility: existingEvent?.address_visibility || 'public',
 		rsvp_before: toDateTimeLocal(existingEvent?.rsvp_before) || null,
 		max_attendees: existingEvent?.max_attendees || undefined,
-		max_tickets_per_user: (existingEvent as any)?.max_tickets_per_user ?? 1,
+		max_tickets_per_user: existingEvent?.max_tickets_per_user ?? 1,
 		waitlist_open: existingEvent?.waitlist_open || false,
 		invitation_message: existingEvent?.invitation_message || '',
-		check_in_starts_at: toDateTimeLocal((existingEvent as any)?.check_in_starts_at) || null,
-		check_in_ends_at: toDateTimeLocal((existingEvent as any)?.check_in_ends_at) || null,
+		check_in_starts_at: toDateTimeLocal(existingEvent?.check_in_starts_at) || null,
+		check_in_ends_at: toDateTimeLocal(existingEvent?.check_in_ends_at) || null,
 		potluck_open: existingEvent?.potluck_open || false,
 		accept_invitation_requests: existingEvent?.accept_invitation_requests || false,
-		apply_before: toDateTimeLocal((existingEvent as any)?.apply_before) || null,
+		apply_before: toDateTimeLocal(existingEvent?.apply_before) || null,
 		can_attend_without_login: existingEvent?.can_attend_without_login || false,
-		requires_full_profile: (existingEvent as any)?.requires_full_profile || false,
+		requires_full_profile: existingEvent?.requires_full_profile || false,
 		event_series_id: existingEvent?.event_series?.id || null,
 		venue_id: existingEvent?.venue?.id || null,
 		tags: existingEvent?.tags || [],
@@ -149,8 +149,8 @@
 		cover_art: existingEvent?.cover_art || undefined,
 		organization_logo: organization.logo || undefined,
 		organization_cover_art: organization.cover_art || undefined,
-		location_maps_url: (existingEvent as any)?.location_maps_url || null,
-		location_maps_embed: (existingEvent as any)?.location_maps_embed || null
+		location_maps_url: existingEvent?.location_maps_url || null,
+		location_maps_embed: existingEvent?.location_maps_embed || null
 	});
 
 	// Location selection state (for Step 2)
