@@ -2168,7 +2168,9 @@
 			"contactUs": "Contattaci",
 			"calculateYourFees": "Calcola le tue commissioni"
 		},
-		"eeaCards": "carte SEE"
+		"eeaCards": "carte SEE",
+		"pricingExcludingStripeFees": "escluse le commissioni Stripe",
+		"pricingHappyToNegotiate": "Siamo disponibili a trattare"
 	},
 	"learnMore.startOrganizing": "Inizia a Organizzare",
 	"learnMore.startOrganizingDescription": "Crea la tua organizzazione e inizia a ospitare eventi straordinari per la tua comunità.",

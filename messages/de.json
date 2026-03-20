@@ -2168,7 +2168,9 @@
 			"contactUs": "Kontaktiere uns",
 			"calculateYourFees": "Berechne deine Gebühren"
 		},
-		"eeaCards": "EWR-Karten"
+		"eeaCards": "EWR-Karten",
+		"pricingExcludingStripeFees": "exklusive Stripe-Gebühren",
+		"pricingHappyToNegotiate": "Wir verhandeln gerne"
 	},
 	"learnMore.startOrganizing": "Jetzt organisieren",
 	"learnMore.startOrganizingDescription": "Erstelle deine Organisation und beginne, großartige Veranstaltungen für deine Community zu veranstalten.",
