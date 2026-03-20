@@ -843,11 +843,14 @@
 									</span>
 									<Input
 										id="pwyc-amount"
-										type="number"
-										min={minAmount()}
-										max={maxAmount() ?? undefined}
-										step="0.01"
-										bind:value={formData.pwyc}
+										type="text"
+										inputmode="decimal"
+										value={formData.pwyc}
+										oninput={(e) => {
+											formData.pwyc = (e.currentTarget as HTMLInputElement).value
+												.replace(/,/g, '.')
+												.replace(/[^\d.]/g, '');
+										}}
 										onkeydown={handleKeydown}
 										onblur={() => handleBlur('pwyc')}
 										class="pl-12 text-lg font-semibold"

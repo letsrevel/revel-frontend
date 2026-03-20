@@ -98,7 +98,7 @@
 		const max = ticket.tier.pwyc_max ? parseFloat(ticket.tier.pwyc_max) : null;
 		const currency = ticket.tier.currency?.toUpperCase() || 'EUR';
 		const fmt = (v: number) =>
-			new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(v);
+			new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(v);
 
 		if (min !== null && max !== null && (num < min || num > max)) {
 			return `This amount is outside the suggested range (${fmt(min)} \u2013 ${fmt(max)})`;
@@ -118,7 +118,7 @@
 		const max = ticket.tier.pwyc_max ? parseFloat(ticket.tier.pwyc_max) : null;
 		const currency = ticket.tier.currency?.toUpperCase() || 'EUR';
 		const fmt = (v: number) =>
-			new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(v);
+			new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(v);
 
 		if (min !== null && max !== null) return `Suggested range: ${fmt(min)} \u2013 ${fmt(max)}`;
 		if (min !== null) return `Suggested minimum: ${fmt(min)}`;
@@ -375,10 +375,14 @@
 						</label>
 						<Input
 							id="checkin-pwyc-price-input"
-							type="number"
-							step="0.01"
-							min="0.01"
-							bind:value={pwycPricePaid}
+							type="text"
+							inputmode="decimal"
+							value={pwycPricePaid}
+							oninput={(e) => {
+								pwycPricePaid = (e.currentTarget as HTMLInputElement).value
+									.replace(/,/g, '.')
+									.replace(/[^\d.]/g, '');
+							}}
 							placeholder={ticket.tier?.pwyc_min || '0.00'}
 							aria-describedby={pwycWarning
 								? 'checkin-pwyc-warning'
