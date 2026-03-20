@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
-	import { Home, ArrowLeft, Lock, Search, ServerCrash, AlertCircle } from 'lucide-svelte';
+	import { Home, ArrowLeft, Lock, Search, ServerCrash, AlertCircle, LinkIcon } from 'lucide-svelte';
 
 	// Get error details from page store
 	const status = $derived($page.status);
@@ -37,6 +37,20 @@
 			showBackButton: false,
 			showHomeButton: true,
 			showLoginButton: true
+		},
+		410: {
+			title: () => m['errorPage.error410_title'](),
+			description: () => m['errorPage.error410_description'](),
+			icon: LinkIcon,
+			iconColor: 'text-orange-600 dark:text-orange-400',
+			iconBg: 'bg-orange-50 dark:bg-orange-950',
+			suggestions: () => [
+				m['errorPage.error410_suggestion1'](),
+				m['errorPage.error410_suggestion2'](),
+				m['errorPage.error410_suggestion3']()
+			],
+			showBackButton: true,
+			showHomeButton: true
 		},
 		403: {
 			title: () => m['errorPage.error403_title'](),
