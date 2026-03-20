@@ -2173,7 +2173,9 @@
 			"contactUs": "Contact us",
 			"calculateYourFees": "Calculate your fees"
 		},
-		"eeaCards": "EEA cards"
+		"eeaCards": "EEA cards",
+		"pricingExcludingStripeFees": "excluding Stripe's fees",
+		"pricingHappyToNegotiate": "We're happy to negotiate"
 	},
 	"learnMore.startOrganizing": "Start Organizing",
 	"learnMore.startOrganizingDescription": "Create your organization and start hosting amazing events for your community.",
