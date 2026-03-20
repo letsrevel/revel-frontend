@@ -115,6 +115,9 @@
 		questionnaireType === 'feedback' ? false : requiresEvaluation
 	);
 
+	// LLM guidelines are only relevant for hybrid/automatic evaluation
+	const showLlmGuidelines = $derived(effectiveRequiresEvaluation && evaluationMode !== 'manual');
+
 	// Local state for questions/sections (same as create page)
 	let topLevelQuestions = $state<Question[]>([]);
 	let sections = $state<Section[]>([]);
@@ -663,6 +666,7 @@
 										{question}
 										onUpdate={(updates) => updateTopLevelQuestion(question.id, updates)}
 										onRemove={() => removeTopLevelQuestion(question.id)}
+										{showLlmGuidelines}
 									/>
 								</div>
 							{/each}
@@ -737,6 +741,7 @@
 											onQuestionsReorder={(questions) =>
 												reorderQuestionsInSection(section.id, questions)}
 											{dropTargetStyle}
+											{showLlmGuidelines}
 										/>
 									</div>
 								{/each}
