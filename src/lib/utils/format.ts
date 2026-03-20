@@ -15,7 +15,7 @@ export function formatPrice(
 	const numPrice = typeof price === 'string' ? parseFloat(price) : price;
 	if (numPrice === 0) return freeLabel;
 	const currencyCode = currency?.toUpperCase() || 'USD';
-	return new Intl.NumberFormat('en-US', {
+	return new Intl.NumberFormat(undefined, {
 		style: 'currency',
 		currency: currencyCode
 	}).format(numPrice);

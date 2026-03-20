@@ -786,10 +786,14 @@
 					</label>
 					<Input
 						id="pwyc-price-input"
-						type="number"
-						step="0.01"
-						min="0.01"
-						bind:value={pwycPricePaid}
+						type="text"
+						inputmode="decimal"
+						value={pwycPricePaid}
+						oninput={(e) => {
+							pwycPricePaid = (e.currentTarget as HTMLInputElement).value
+								.replace(/,/g, '.')
+								.replace(/[^\d.]/g, '');
+						}}
 						placeholder={ticketToConfirm.tier?.pwyc_min || '0.00'}
 						aria-describedby={pwycWarning ? 'pwyc-warning' : undefined}
 					/>

@@ -198,6 +198,19 @@
 	// Get current currency symbol for display
 	const currencySymbol = $derived(CURRENCY_SYMBOLS[currency] || currency);
 
+	/** Normalize decimal input: replace comma with dot, strip invalid chars, allow only one dot */
+	function normalizeDecimalInput(value: string): string {
+		let normalized = value.replace(/,/g, '.');
+		normalized = normalized.replace(/[^\d.]/g, '');
+		const firstDotIndex = normalized.indexOf('.');
+		if (firstDotIndex !== -1) {
+			normalized =
+				normalized.slice(0, firstDotIndex + 1) +
+				normalized.slice(firstDotIndex + 1).replace(/\./g, '');
+		}
+		return normalized;
+	}
+
 	const tierCreateMutation = createMutation(() => ({
 		mutationFn: (data: TicketTierCreateSchema) =>
 			eventadminticketsCreateTicketTier({
@@ -266,15 +279,16 @@
 		e.preventDefault();
 
 		// Determine the price value based on payment method and price type
+		// Normalize all decimal values to ensure dots (not commas) as decimal separator
 		let finalPrice = '0';
 		if (paymentMethod === 'free') {
 			finalPrice = '0';
 		} else if (priceType === 'pwyc') {
 			// For PWYC (especially with Stripe), use minimum price as the price field
-			finalPrice = pwycMin || '1';
+			finalPrice = normalizeDecimalInput(pwycMin || '1');
 		} else {
 			// Fixed price
-			finalPrice = price;
+			finalPrice = normalizeDecimalInput(price);
 		}
 
 		// Build the data object, omitting null values for pwyc fields
@@ -298,7 +312,7 @@
 				paymentMethod === 'free'
 					? null
 					: vatRateOverride !== ''
-						? parseFloat(vatRateOverride)
+						? parseFloat(normalizeDecimalInput(vatRateOverride))
 						: null,
 			// Venue and seating configuration
 			seat_assignment_mode: seatAssignmentMode,
@@ -310,10 +324,10 @@
 		// Only include pwyc fields if price_type is 'pwyc' and they have values
 		if (priceType === 'pwyc') {
 			if (pwycMin) {
-				baseData.pwyc_min = pwycMin;
+				baseData.pwyc_min = normalizeDecimalInput(pwycMin);
 			}
 			if (pwycMax) {
-				baseData.pwyc_max = pwycMax;
+				baseData.pwyc_max = normalizeDecimalInput(pwycMax);
 			}
 		}
 
@@ -445,10 +459,12 @@
 							>
 							<Input
 								id="price"
-								type="number"
-								step="0.01"
-								min="0"
-								bind:value={price}
+								type="text"
+								inputmode="decimal"
+								value={price}
+								oninput={(e) => {
+									price = normalizeDecimalInput((e.currentTarget as HTMLInputElement).value);
+								}}
 								required
 								disabled={isPending}
 								class="pl-10"
@@ -465,10 +481,12 @@
 								>
 								<Input
 									id="pwyc-min"
-									type="number"
-									step="0.01"
-									min="1"
-									bind:value={pwycMin}
+									type="text"
+									inputmode="decimal"
+									value={pwycMin}
+									oninput={(e) => {
+										pwycMin = normalizeDecimalInput((e.currentTarget as HTMLInputElement).value);
+									}}
 									required
 									disabled={isPending}
 									class="pl-10"
@@ -483,10 +501,12 @@
 								>
 								<Input
 									id="pwyc-max"
-									type="number"
-									step="0.01"
-									min="1"
-									bind:value={pwycMax}
+									type="text"
+									inputmode="decimal"
+									value={pwycMax}
+									oninput={(e) => {
+										pwycMax = normalizeDecimalInput((e.currentTarget as HTMLInputElement).value);
+									}}
 									disabled={isPending}
 									class="pl-10"
 									placeholder="No limit"
@@ -503,11 +523,12 @@
 					<Label for="vat-rate-override">{m['tierForm.vatRateOverride']()}</Label>
 					<Input
 						id="vat-rate-override"
-						type="number"
-						step="0.01"
-						min="0"
-						max="100"
-						bind:value={vatRateOverride}
+						type="text"
+						inputmode="decimal"
+						value={vatRateOverride}
+						oninput={(e) => {
+							vatRateOverride = normalizeDecimalInput((e.currentTarget as HTMLInputElement).value);
+						}}
 						placeholder={m['tierForm.vatRateOverridePlaceholder']()}
 						disabled={isPending}
 					/>

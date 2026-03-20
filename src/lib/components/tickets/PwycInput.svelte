@@ -47,13 +47,14 @@
 			</span>
 			<Input
 				id="pwyc-amount"
-				type="number"
-				min={minAmount}
-				max={maxAmount ?? undefined}
-				step="0.01"
+				type="text"
+				inputmode="decimal"
 				value={pwycAmount}
 				oninput={(e) => {
-					onAmountChange(e.currentTarget.value);
+					const val = (e.currentTarget as HTMLInputElement).value
+						.replace(/,/g, '.')
+						.replace(/[^\d.]/g, '');
+					onAmountChange(val);
 				}}
 				onkeydown={onKeydown}
 				class="pl-12 text-lg font-semibold"
