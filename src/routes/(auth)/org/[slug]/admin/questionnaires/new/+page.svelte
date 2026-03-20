@@ -313,21 +313,31 @@
 			});
 
 			if (response.error) {
-				// Handle 422 validation errors
 				if (response.response.status === 422) {
-					const errorMessage = parseValidationErrors(response.error);
-					saveError = errorMessage;
+					saveError = parseValidationErrors(response.error);
 					console.error('Validation error:', response.error);
-					return;
+				} else {
+					let backendMessage = '';
+					const err = response.error;
+					if (err && typeof err === 'object' && 'detail' in err && typeof err.detail === 'string') {
+						backendMessage = err.detail;
+					} else {
+						backendMessage = parseValidationErrors(err);
+					}
+					saveError = backendMessage
+						? `Failed to create questionnaire: ${backendMessage}`
+						: `Failed to create questionnaire (HTTP ${response.response.status}).`;
+					console.error('API error:', response.error);
 				}
-				throw new Error('Failed to create questionnaire');
+				return;
 			}
 
 			// Redirect to the edit page of the newly created questionnaire
 			await goto(`/org/${data.organization.slug}/admin/questionnaires/${response.data.id}`);
 		} catch (err) {
 			console.error('Failed to save questionnaire:', err);
-			saveError = 'Failed to save questionnaire. Please try again.';
+			const message = err instanceof Error ? err.message : String(err);
+			saveError = `Failed to save questionnaire: ${message}`;
 		} finally {
 			isSaving = false;
 		}
@@ -527,14 +537,6 @@
 							{evaluationModes[evaluationMode]?.label ?? 'Automatic'}
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="automatic" label="Automatic">
-								<div class="flex flex-col gap-0.5">
-									<div class="font-medium">Automatic</div>
-									<div class="text-xs text-muted-foreground">
-										AI evaluates all responses automatically
-									</div>
-								</div>
-							</SelectItem>
 							<SelectItem value="manual" label="Manual">
 								<div class="flex flex-col gap-0.5">
 									<div class="font-medium">Manual</div>
@@ -543,11 +545,31 @@
 									</div>
 								</div>
 							</SelectItem>
-							<SelectItem value="hybrid" label="Hybrid">
+							<SelectItem value="hybrid" label="Hybrid" disabled>
 								<div class="flex flex-col gap-0.5">
-									<div class="font-medium">Hybrid</div>
+									<div class="flex items-center gap-2 font-medium">
+										Hybrid
+										<span
+											class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
+											>Coming soon</span
+										>
+									</div>
 									<div class="text-xs text-muted-foreground">
 										AI pre-scores, staff reviews final decision
+									</div>
+								</div>
+							</SelectItem>
+							<SelectItem value="automatic" label="Automatic" disabled>
+								<div class="flex flex-col gap-0.5">
+									<div class="flex items-center gap-2 font-medium">
+										Automatic
+										<span
+											class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
+											>Coming soon</span
+										>
+									</div>
+									<div class="text-xs text-muted-foreground">
+										AI evaluates all responses automatically
 									</div>
 								</div>
 							</SelectItem>
