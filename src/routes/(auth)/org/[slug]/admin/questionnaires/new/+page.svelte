@@ -316,15 +316,13 @@
 					saveError = parseValidationErrors(response.error);
 					console.error('Validation error:', response.error);
 				} else {
-					let backendMessage = '';
 					const err = response.error;
-					if (err && typeof err === 'object' && 'detail' in err && typeof err.detail === 'string') {
-						backendMessage = err.detail;
-					} else {
-						backendMessage = parseValidationErrors(err);
-					}
-					saveError = backendMessage
-						? `Failed to create questionnaire: ${backendMessage}`
+					const detail =
+						err && typeof err === 'object' && 'detail' in err && typeof err.detail === 'string'
+							? err.detail
+							: null;
+					saveError = detail
+						? `Failed to create questionnaire: ${detail}`
 						: `Failed to create questionnaire (HTTP ${response.response.status}).`;
 					console.error('API error:', response.error);
 				}
