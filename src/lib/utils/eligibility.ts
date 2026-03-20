@@ -228,7 +228,8 @@ export function getNextStepIcon(nextStep: NextStep): string {
 export function formatRetryDate(retryOn: string | null | undefined): string | null {
 	if (!retryOn) return null;
 	const date = new Date(retryOn);
-	return date.toLocaleString('en-US', {
+	if (isNaN(date.getTime())) return null;
+	return date.toLocaleString(undefined, {
 		month: 'short',
 		day: 'numeric',
 		year: 'numeric',

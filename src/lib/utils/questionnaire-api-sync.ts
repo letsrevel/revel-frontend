@@ -663,7 +663,12 @@ export async function saveQuestionnaireIncremental(params: {
 	});
 
 	if (metadataResponse.error) {
-		throw new Error('Failed to update questionnaire metadata');
+		const err = metadataResponse.error;
+		const detail =
+			err && typeof err === 'object' && 'detail' in err && typeof err.detail === 'string'
+				? err.detail
+				: JSON.stringify(err);
+		throw new Error(`Failed to update questionnaire metadata: ${detail}`);
 	}
 
 	// 2. Sync sections

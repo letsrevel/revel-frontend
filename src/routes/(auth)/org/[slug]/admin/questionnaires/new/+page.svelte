@@ -531,7 +531,7 @@
 						}}
 					>
 						<SelectTrigger id="evaluation-mode">
-							{evaluationModes[evaluationMode]?.label ?? 'Automatic'}
+							{evaluationModes[evaluationMode]?.label ?? 'Manual'}
 						</SelectTrigger>
 						<SelectContent>
 							<SelectItem value="manual" label="Manual">
