@@ -1130,7 +1130,9 @@
 		"downloadCalendarTitle": "Kalenderereignis herunterladen",
 		"shareLocation": "Veranstaltungsort teilen",
 		"organizedBy": "Organisiert von",
-		"locationTbd": "Location TBD"
+		"locationTbd": "Location TBD",
+		"linkCopiedToClipboard": "Link in die Zwischenablage kopiert!",
+		"failedToCopyLink": "Link konnte nicht kopiert werden"
 	},
 	"eventInvitationsAdmin": {
 		"backToEvents": "Back to Events",

@@ -59,9 +59,9 @@
 	async function handleShare(): Promise<void> {
 		try {
 			await navigator.clipboard.writeText(window.location.href);
-			toast.success('Link copied to clipboard!');
+			toast.success(m['eventHeader.linkCopiedToClipboard']());
 		} catch {
-			toast.error('Failed to copy link');
+			toast.error(m['eventHeader.failedToCopyLink']());
 		}
 	}
 
