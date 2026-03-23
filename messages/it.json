@@ -683,7 +683,8 @@
 			"noRequests": "Nessuna richiesta trovata",
 			"status_pending": "In Attesa",
 			"status_approved": "Approvato",
-			"status_rejected": "Rifiutato"
+			"status_rejected": "Rifiutato",
+			"showAccepted": "Mostra già accettati"
 		},
 		"rsvps": {
 			"title": "Le Mie Conferme",

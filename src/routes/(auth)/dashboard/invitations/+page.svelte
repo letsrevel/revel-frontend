@@ -24,6 +24,7 @@
 	// Invitations filters
 	let invitationsSearch = $state('');
 	let includePastInvitations = $state(false);
+	let showAcceptedInvitations = $state(false);
 
 	// Invitation requests filters
 	let requestsSearch = $state('');
@@ -58,6 +59,7 @@
 			!!accessToken,
 			invitationsDebounced,
 			includePastInvitations,
+			showAcceptedInvitations,
 			currentPage
 		] as const,
 		queryFn: async () => {
@@ -68,6 +70,7 @@
 				query: {
 					search: invitationsDebounced || undefined,
 					include_past: includePastInvitations,
+					exclude_accepted: !showAcceptedInvitations,
 					page: currentPage,
 					page_size: 12
 				}
@@ -228,6 +231,15 @@
 						class="h-4 w-4 cursor-pointer rounded border-input text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					/>
 					<span class="text-sm">{m['dashboard.tickets.includePast']()}</span>
+				</label>
+				<label class="flex cursor-pointer items-center gap-2">
+					<input
+						type="checkbox"
+						bind:checked={showAcceptedInvitations}
+						onchange={() => navigateToPage(1)}
+						class="h-4 w-4 cursor-pointer rounded border-input text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
+					/>
+					<span class="text-sm">{m['dashboard.invitations.showAccepted']()}</span>
 				</label>
 			</div>
 

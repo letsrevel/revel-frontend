@@ -14,10 +14,19 @@
 		},
 		{
 			id: 'audio',
-			label: 'Audio (MP3, WAV, OGG)',
+			label: 'Audio (MP3, WAV, OGG, M4A)',
 			// video/webm included because browser MediaRecorder produces video/webm container
 			// even for audio-only recordings (libmagic detects WebM container as video/webm)
-			mimeTypes: ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/webm', 'audio/aac', 'video/webm']
+			// audio/mp4 covers .m4a files (AAC audio in MP4 container)
+			mimeTypes: [
+				'audio/mpeg',
+				'audio/wav',
+				'audio/ogg',
+				'audio/webm',
+				'audio/aac',
+				'audio/mp4',
+				'video/webm'
+			]
 		},
 		{ id: 'documents', label: 'Documents (PDF)', mimeTypes: ['application/pdf'] },
 		{

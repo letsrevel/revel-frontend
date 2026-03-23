@@ -683,7 +683,8 @@
 			"noRequests": "No requests found",
 			"status_pending": "Pending",
 			"status_approved": "Approved",
-			"status_rejected": "Rejected"
+			"status_rejected": "Rejected",
+			"showAccepted": "Show already accepted"
 		},
 		"rsvps": {
 			"title": "My RSVPs",
