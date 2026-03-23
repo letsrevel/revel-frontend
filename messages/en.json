@@ -1136,7 +1136,9 @@
 		"downloadCalendarTitle": "Download calendar event",
 		"shareLocation": "Share event location",
 		"organizedBy": "Organized by",
-		"locationTbd": "Location TBD"
+		"locationTbd": "Location TBD",
+		"linkCopiedToClipboard": "Link copied to clipboard!",
+		"failedToCopyLink": "Failed to copy link"
 	},
 	"eventInvitationsAdmin": {
 		"backToEvents": "Back to Events",

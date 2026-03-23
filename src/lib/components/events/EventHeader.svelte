@@ -7,6 +7,7 @@
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
 	import { MapPin, Calendar, Share2, ExternalLink } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
+	import { toast } from 'svelte-sonner';
 
 	interface Props {
 		event: EventDetailSchema;
@@ -58,9 +59,9 @@
 	async function handleShare(): Promise<void> {
 		try {
 			await navigator.clipboard.writeText(window.location.href);
-			// TODO: Show toast notification "Link copied!"
-		} catch (err) {
-			console.error('Failed to copy link:', err);
+			toast.success(m['eventHeader.linkCopiedToClipboard']());
+		} catch {
+			toast.error(m['eventHeader.failedToCopyLink']());
 		}
 	}
 
