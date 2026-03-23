@@ -1,15 +1,18 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import type { ActionData } from './$types';
+	import { page } from '$app/stores';
+	import type { ActionData, PageData } from './$types';
 	import PasswordStrengthIndicator from '$lib/components/forms/PasswordStrengthIndicator.svelte';
+	import ReferralCodeInput from '$lib/components/referral/ReferralCodeInput.svelte';
 	import { Eye, EyeOff, Loader2 } from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
+		data: PageData;
 		form: ActionData;
 	}
 
-	const { form }: Props = $props();
+	const { data, form }: Props = $props();
 
 	// Form state
 	let email = $state(form?.email || '');
@@ -19,6 +22,12 @@
 	let showPassword = $state(false);
 	let showConfirmPassword = $state(false);
 	let isSubmitting = $state(false);
+
+	// Referral code: URL param takes priority, then cookie fallback
+	const initialReferralCode = $derived(
+		$page.url.searchParams.get('ref') || data.referralCodeFromCookie || ''
+	);
+	let referralCode = $state('');
 
 	// Password validation - calculated directly to avoid cross-component binding timing issues
 	// that can occur in some browsers (e.g., Brave on mobile) with $bindable + $effect patterns
@@ -242,6 +251,20 @@
 				<p id="terms-error" class="text-sm text-destructive" role="alert">
 					{errors.acceptTerms}
 				</p>
+			{/if}
+
+			<!-- Referral Code (collapsible) -->
+			<ReferralCodeInput
+				initialCode={initialReferralCode}
+				isProcessing={isSubmitting}
+				validatedCode={referralCode}
+				onValidated={(code) => (referralCode = code)}
+				onRemove={() => (referralCode = '')}
+			/>
+
+			<!-- Hidden referral code input for form submission -->
+			{#if referralCode}
+				<input type="hidden" name="referralCode" value={referralCode} />
 			{/if}
 
 			<!-- Submit Button -->

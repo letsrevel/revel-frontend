@@ -11,7 +11,9 @@
 		Shield,
 		Lock,
 		LayoutDashboard,
-		PlusCircle
+		PlusCircle,
+		Gift,
+		FileText
 	} from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
@@ -52,6 +54,7 @@
 	}));
 
 	const userOrganizations = $derived(organizationsQuery.data || []);
+	const isReferrer = $derived(!!user?.referral_code);
 
 	// Helper to check if user has admin permissions for an organization
 	function hasAdminPermissions(orgId: string): boolean {
@@ -161,6 +164,31 @@
 			</a>
 		{/each}
 
+		<!-- Referral Section (Mobile) -->
+		{#if isReferrer}
+			<div class="space-y-2 border-t pt-4">
+				<div class="px-4 text-sm font-semibold text-muted-foreground">
+					{m['referral.referralProgram']()}
+				</div>
+				<a
+					href="/account/referral"
+					class="flex items-center gap-3 rounded-md px-4 py-2 text-base transition-colors hover:bg-accent hover:text-accent-foreground"
+					onclick={handleItemClick}
+				>
+					<Gift class="h-5 w-5" aria-hidden="true" />
+					<span>{m['referral.settings']()}</span>
+				</a>
+				<a
+					href="/account/referral/payouts"
+					class="flex items-center gap-3 rounded-md px-4 py-2 text-base transition-colors hover:bg-accent hover:text-accent-foreground"
+					onclick={handleItemClick}
+				>
+					<FileText class="h-5 w-5" aria-hidden="true" />
+					<span>{m['referral.payouts']()}</span>
+				</a>
+			</div>
+		{/if}
+
 		<!-- Organizations Section (Mobile) -->
 		{#if userOrganizations.length > 0 || !ownsOrganization()}
 			<div class="space-y-2 border-t pt-4">
@@ -264,6 +292,35 @@
 						</a>
 					{/each}
 				</div>
+
+				<!-- Referral Section (Desktop) -->
+				{#if isReferrer}
+					<div class="border-t">
+						<div class="p-1">
+							<div class="px-3 py-2 text-xs font-semibold text-muted-foreground">
+								{m['referral.referralProgram']()}
+							</div>
+							<a
+								href="/account/referral"
+								class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+								onclick={handleItemClick}
+								role="menuitem"
+							>
+								<Gift class="h-4 w-4" aria-hidden="true" />
+								<span>{m['referral.settings']()}</span>
+							</a>
+							<a
+								href="/account/referral/payouts"
+								class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+								onclick={handleItemClick}
+								role="menuitem"
+							>
+								<FileText class="h-4 w-4" aria-hidden="true" />
+								<span>{m['referral.payouts']()}</span>
+							</a>
+						</div>
+					</div>
+				{/if}
 
 				<!-- Organizations Section -->
 				{#if userOrganizations.length > 0 || !ownsOrganization()}

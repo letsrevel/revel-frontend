@@ -59,6 +59,7 @@
 		isNested: boolean;
 		isExpanded: boolean;
 		canRemove: boolean;
+		showLlmGuidelines?: boolean;
 		onUpdateText: (text: string) => void;
 		onUpdateCorrect: (isCorrect: boolean) => void;
 		onRemove: () => void;
@@ -90,6 +91,7 @@
 		isNested,
 		isExpanded,
 		canRemove,
+		showLlmGuidelines = true,
 		onUpdateText,
 		onUpdateCorrect,
 		onRemove,
@@ -220,6 +222,7 @@
 							onUpdate={(updates) => onUpdateConditionalQuestion(condIndex, updates)}
 							onRemove={() => onRemoveConditionalQuestion(condIndex)}
 							isNested={true}
+							{showLlmGuidelines}
 						/>
 					{/each}
 				</div>
@@ -322,6 +325,7 @@
 														onUpdateQuestionInSection(sectionIndex, questionIndex, updates)}
 													onRemove={() => onRemoveQuestionFromSection(sectionIndex, questionIndex)}
 													isNested={true}
+													{showLlmGuidelines}
 												/>
 											{/each}
 										</div>

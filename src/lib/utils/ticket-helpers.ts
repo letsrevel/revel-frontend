@@ -117,7 +117,7 @@ export function getPwycWarning(ticket: any, value: string): string | null {
 
 	const currency = ticket.tier?.currency?.toUpperCase() || 'EUR';
 	const fmt = (v: number) =>
-		new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(v);
+		new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(v);
 
 	if (min !== null && max !== null && (num < min || num > max)) {
 		return `This amount is outside the suggested range (${fmt(min)} \u2013 ${fmt(max)})`;

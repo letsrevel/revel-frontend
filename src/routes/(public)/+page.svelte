@@ -537,7 +537,7 @@
 						rel="noopener noreferrer"
 						class="text-primary hover:underline"
 					>
-						(excluding Stripe's fees)
+						({m['learnMore.pricingExcludingStripeFees']()})
 					</a>
 				</div>
 			</div>
@@ -562,7 +562,7 @@
 							href="mailto:contact@letsrevel.io?subject=Revel%20Fee%20Negotiation"
 							class="text-primary hover:underline"
 						>
-							We're happy to negotiate
+							{m['learnMore.pricingHappyToNegotiate']()}
 						</a>
 					</div>
 				</div>

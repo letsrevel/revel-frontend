@@ -124,7 +124,7 @@
 
 	const selectedEvaluationDescription = $derived(
 		evaluationModes[evaluationMode]?.description ??
-			m['questionnaireEditPage.evaluation.automatic_description']()
+			m['questionnaireEditPage.evaluation.manual_description']()
 	);
 </script>
 
@@ -297,17 +297,9 @@
 					disabled={!canEdit}
 				>
 					<SelectTrigger id="evaluation-mode">
-						{evaluationModes[evaluationMode]?.label ?? 'Automatic'}
+						{evaluationModes[evaluationMode]?.label ?? 'Manual'}
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="automatic" label="Automatic">
-							<div class="flex flex-col gap-0.5">
-								<div class="font-medium">Automatic</div>
-								<div class="text-xs text-muted-foreground">
-									AI evaluates all responses automatically
-								</div>
-							</div>
-						</SelectItem>
 						<SelectItem value="manual" label="Manual">
 							<div class="flex flex-col gap-0.5">
 								<div class="font-medium">Manual</div>
@@ -316,11 +308,31 @@
 								</div>
 							</div>
 						</SelectItem>
-						<SelectItem value="hybrid" label="Hybrid">
+						<SelectItem value="hybrid" label="Hybrid" disabled>
 							<div class="flex flex-col gap-0.5">
-								<div class="font-medium">Hybrid</div>
+								<div class="flex items-center gap-2 font-medium">
+									Hybrid
+									<span
+										class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
+										>Coming soon</span
+									>
+								</div>
 								<div class="text-xs text-muted-foreground">
 									AI pre-scores, staff reviews final decision
+								</div>
+							</div>
+						</SelectItem>
+						<SelectItem value="automatic" label="Automatic" disabled>
+							<div class="flex flex-col gap-0.5">
+								<div class="flex items-center gap-2 font-medium">
+									Automatic
+									<span
+										class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
+										>Coming soon</span
+									>
+								</div>
+								<div class="text-xs text-muted-foreground">
+									AI evaluates all responses automatically
 								</div>
 							</div>
 						</SelectItem>
@@ -409,7 +421,7 @@
 			</div>
 		{/if}
 
-		{#if effectiveRequiresEvaluation}
+		{#if effectiveRequiresEvaluation && evaluationMode !== 'manual'}
 			<!-- LLM Guidelines -->
 			<div class="space-y-2">
 				<Label for="llm-guidelines"

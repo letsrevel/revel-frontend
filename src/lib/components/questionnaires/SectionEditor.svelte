@@ -49,6 +49,7 @@
 		onRemoveQuestion: (questionId: string) => void;
 		onQuestionsReorder: (questions: Question[]) => void;
 		dropTargetStyle?: Record<string, string>;
+		showLlmGuidelines?: boolean;
 	}
 
 	const {
@@ -59,7 +60,8 @@
 		onUpdateQuestion,
 		onRemoveQuestion,
 		onQuestionsReorder,
-		dropTargetStyle = { outline: '2px dashed hsl(var(--primary))', borderRadius: '8px' }
+		dropTargetStyle = { outline: '2px dashed hsl(var(--primary))', borderRadius: '8px' },
+		showLlmGuidelines = true
 	}: Props = $props();
 
 	// Collapsible state
@@ -199,6 +201,7 @@
 								{question}
 								onUpdate={(updates) => onUpdateQuestion(question.id, updates)}
 								onRemove={() => onRemoveQuestion(question.id)}
+								{showLlmGuidelines}
 							/>
 						</div>
 					{/each}

@@ -65,9 +65,16 @@
 		onUpdate: (updates: Partial<Question>) => void;
 		onRemove: () => void;
 		isNested?: boolean;
+		showLlmGuidelines?: boolean;
 	}
 
-	const { question, onUpdate, onRemove, isNested = false }: Props = $props();
+	const {
+		question,
+		onUpdate,
+		onRemove,
+		isNested = false,
+		showLlmGuidelines = true
+	}: Props = $props();
 
 	// Collapsible sections state
 	let showAdvanced = $state(false);
@@ -132,21 +139,10 @@
 		}
 	}
 
-	// Update option isCorrect - with validation for single correct answer
+	// Update option isCorrect
 	function updateOptionCorrect(index: number, isCorrect: boolean) {
 		if (question.type === 'multiple_choice' && question.options) {
 			const newOptions = [...question.options];
-
-			// If allowMultipleAnswers is false and we're setting this option as correct,
-			// uncheck all other options first
-			if (isCorrect && !question.allowMultipleAnswers) {
-				newOptions.forEach((opt, i) => {
-					if (i !== index && opt.isCorrect) {
-						newOptions[i] = { ...opt, isCorrect: false };
-					}
-				});
-			}
-
 			newOptions[index] = { ...newOptions[index], isCorrect };
 			onUpdate({ options: newOptions });
 		}
@@ -450,6 +446,7 @@
 										{isNested}
 										isExpanded={expandedOptions.has(index)}
 										canRemove={(question.options?.length || 0) > 2}
+										{showLlmGuidelines}
 										onUpdateText={(text) => updateOption(index, text)}
 										onUpdateCorrect={(isCorrect) => updateOptionCorrect(index, isCorrect)}
 										onRemove={() => removeOption(index)}
@@ -514,7 +511,7 @@
 					{/if}
 
 					<!-- Free Text Settings -->
-					{#if question.type === 'free_text'}
+					{#if question.type === 'free_text' && showLlmGuidelines}
 						<div class="space-y-2">
 							<Label for="llm-guidelines-{question.id}">{m['questionEditor.llmGuidelines']()}</Label
 							>

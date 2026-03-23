@@ -1,4 +1,4 @@
-import { error } from '@sveltejs/kit';
+import { error, isHttpError } from '@sveltejs/kit';
 import {
 	eventpublicdetailsGetEvent,
 	eventpublicattendanceGetMyEventStatus,
@@ -46,6 +46,9 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 		});
 
 		if (!eventResponse.data) {
+			if (eventResponse.response?.status === 410) {
+				throw error(410, 'This invitation link is no longer valid');
+			}
 			throw error(404, 'Event not found');
 		}
 
@@ -236,6 +239,9 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 			accessToken: locals.user?.accessToken ?? null
 		};
 	} catch (err) {
+		// Re-throw SvelteKit errors (e.g. our own throw error() calls above)
+		if (isHttpError(err)) throw err;
+
 		// Handle different error types
 		if (typeof err === 'object' && err !== null && 'status' in err) {
 			const status = (err as { status: number }).status;

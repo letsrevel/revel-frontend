@@ -157,13 +157,13 @@
 					</span>
 					<Input
 						id="pwyc-amount"
-						type="number"
-						min={minAmount}
-						max={maxAmount ?? undefined}
-						step="0.01"
+						type="text"
+						inputmode="decimal"
 						value={amount}
 						oninput={(e) => {
-							amount = e.currentTarget.value;
+							amount = (e.currentTarget as HTMLInputElement).value
+								.replace(/,/g, '.')
+								.replace(/[^\d.]/g, '');
 							error = '';
 						}}
 						onkeydown={handleKeydown}

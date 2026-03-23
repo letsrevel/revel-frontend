@@ -1,4 +1,4 @@
-import { error } from '@sveltejs/kit';
+import { error, isHttpError } from '@sveltejs/kit';
 import {
 	organizationGetOrganization,
 	permissionMyPermissions,
@@ -38,6 +38,9 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 		});
 
 		if (!orgResponse.data) {
+			if (orgResponse.response?.status === 410) {
+				throw error(410, 'This invitation link is no longer valid');
+			}
 			throw error(404, 'Organization not found');
 		}
 
@@ -129,6 +132,9 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 			isAuthenticated: !!locals.user
 		};
 	} catch (err) {
+		// Re-throw SvelteKit errors (e.g. our own throw error() calls above)
+		if (isHttpError(err)) throw err;
+
 		// Handle different error types
 		if (typeof err === 'object' && err !== null && 'status' in err) {
 			const status = (err as { status: number }).status;

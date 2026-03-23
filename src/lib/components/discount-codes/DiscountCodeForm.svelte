@@ -95,6 +95,8 @@
 
 		if (!codeStr.trim()) {
 			errors.code = 'Code is required';
+		} else if (!/^[\p{L}\p{N}]+$/u.test(codeStr.trim())) {
+			errors.code = 'Code must contain only letters and numbers';
 		} else if (codeStr.trim().length > 64) {
 			errors.code = 'Code must be 64 characters or less';
 		}
@@ -195,6 +197,11 @@
 			class="uppercase"
 			aria-invalid={validationErrors.code ? 'true' : undefined}
 			aria-describedby={validationErrors.code ? 'code-error' : undefined}
+			oninput={() => {
+				code = String(code ?? '')
+					.replace(/[^\p{L}\p{N}]/gu, '')
+					.toUpperCase();
+			}}
 		/>
 		{#if isEditing}
 			<p class="text-xs text-muted-foreground">Code cannot be changed after creation.</p>
@@ -245,13 +252,16 @@
 			<div class="relative">
 				<Input
 					id="discount_value"
-					type="number"
-					bind:value={discountValue}
+					type="text"
+					inputmode="decimal"
+					value={discountValue}
+					oninput={(e) => {
+						discountValue = (e.currentTarget as HTMLInputElement).value
+							.replace(/,/g, '.')
+							.replace(/[^\d.]/g, '');
+					}}
 					placeholder={discountType === 'percentage' ? '20' : '5.00'}
 					disabled={isSubmitting}
-					min={discountType === 'percentage' ? '1' : '0.01'}
-					max={discountType === 'percentage' ? '100' : undefined}
-					step={discountType === 'percentage' ? '1' : '0.01'}
 					aria-invalid={validationErrors.discount_value ? 'true' : undefined}
 					aria-describedby={validationErrors.discount_value ? 'value-error' : undefined}
 				/>
@@ -370,11 +380,15 @@
 			<Label for="min_purchase_amount">Min Purchase Amount</Label>
 			<Input
 				id="min_purchase_amount"
-				type="number"
-				bind:value={minPurchaseAmount}
+				type="text"
+				inputmode="decimal"
+				value={minPurchaseAmount}
+				oninput={(e) => {
+					minPurchaseAmount = (e.currentTarget as HTMLInputElement).value
+						.replace(/,/g, '.')
+						.replace(/[^\d.]/g, '');
+				}}
 				disabled={isSubmitting}
-				min="0"
-				step="0.01"
 				aria-invalid={validationErrors.min_purchase_amount ? 'true' : undefined}
 				aria-describedby={validationErrors.min_purchase_amount ? 'min-amount-error' : undefined}
 			/>
