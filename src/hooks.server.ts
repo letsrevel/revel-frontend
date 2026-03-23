@@ -68,6 +68,18 @@ const handleTokenCapture: Handle = async ({ event, resolve }) => {
 		});
 	}
 
+	// Check for referral code (?ref=) — new code always prevails
+	const referralCode = event.url.searchParams.get('ref');
+	if (referralCode) {
+		event.cookies.set('referral_code', referralCode, {
+			path: '/',
+			httpOnly: false, // Readable by client-side JS on the registration page
+			secure: false,
+			sameSite: 'lax',
+			maxAge: 60 * 60 * 24 * 30 // 30 days
+		});
+	}
+
 	return resolve(event);
 };
 

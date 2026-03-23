@@ -95,6 +95,8 @@
 
 		if (!codeStr.trim()) {
 			errors.code = 'Code is required';
+		} else if (!/^[\p{L}\p{N}]+$/u.test(codeStr.trim())) {
+			errors.code = 'Code must contain only letters and numbers';
 		} else if (codeStr.trim().length > 64) {
 			errors.code = 'Code must be 64 characters or less';
 		}
@@ -195,6 +197,11 @@
 			class="uppercase"
 			aria-invalid={validationErrors.code ? 'true' : undefined}
 			aria-describedby={validationErrors.code ? 'code-error' : undefined}
+			oninput={() => {
+				code = String(code ?? '')
+					.replace(/[^\p{L}\p{N}]/gu, '')
+					.toUpperCase();
+			}}
 		/>
 		{#if isEditing}
 			<p class="text-xs text-muted-foreground">Code cannot be changed after creation.</p>
