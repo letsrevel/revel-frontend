@@ -645,9 +645,7 @@
 						<h3 class="text-sm font-medium text-muted-foreground">
 							Top-level Questions ({topLevelQuestions.length})
 						</h3>
-						<p class="text-xs text-muted-foreground">
-							Use the arrow buttons to reorder questions.
-						</p>
+						<p class="text-xs text-muted-foreground">Use the arrow buttons to reorder questions.</p>
 						<div class="space-y-4">
 							{#each topLevelQuestions as question, index (question.id)}
 								<QuestionEditor
@@ -721,8 +719,7 @@
 											updateQuestionInSection(section.id, questionId, updates)}
 										onRemoveQuestion={(questionId) =>
 											removeQuestionFromSection(section.id, questionId)}
-										onMoveQuestionUp={(qIndex) =>
-											moveQuestionInSection(section.id, qIndex, 'up')}
+										onMoveQuestionUp={(qIndex) => moveQuestionInSection(section.id, qIndex, 'up')}
 										onMoveQuestionDown={(qIndex) =>
 											moveQuestionInSection(section.id, qIndex, 'down')}
 										{showLlmGuidelines}
