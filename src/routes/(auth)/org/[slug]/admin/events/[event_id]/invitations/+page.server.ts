@@ -8,7 +8,8 @@ import {
 	eventadmininvitationsListPendingInvitations,
 	eventadmininvitationsCreateInvitations,
 	eventadmininvitationsDeleteInvitationEndpoint,
-	eventpublicdetailsGetEvent
+	eventpublicdetailsGetEvent,
+	eventadminticketsListTicketTiers
 } from '$lib/api/generated/sdk.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
 
@@ -181,6 +182,20 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 		console.error('Error loading pending invitations:', err);
 	}
 
+	// Load ticket tiers for tier selection in invitation forms
+	let ticketTiers: any[] = [];
+	try {
+		const tierResponse = await eventadminticketsListTicketTiers({
+			fetch,
+			path: { event_id: params.event_id },
+			query: { page_size: 100 },
+			headers
+		});
+		ticketTiers = tierResponse.data?.results || [];
+	} catch {
+		/* non-critical */
+	}
+
 	return {
 		organization,
 		event,
@@ -191,6 +206,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 		registeredPagination,
 		pendingInvitations,
 		pendingPagination,
+		ticketTiers,
 		filters: {
 			status,
 			search
@@ -285,6 +301,8 @@ export const actions: Actions = {
 		const waivesMembershipRequired = formData.get('waives_membership_required') === 'true';
 		const waivesRsvpDeadline = formData.get('waives_rsvp_deadline') === 'true';
 		const overridesMaxAttendees = formData.get('overrides_max_attendees') === 'true';
+		const tierIdsRaw = formData.get('tier_ids') as string | null;
+		const tierIds: string[] = tierIdsRaw ? JSON.parse(tierIdsRaw) : [];
 
 		if (!emailsRaw) {
 			return fail(400, { errors: { form: 'Emails are required' } });
@@ -311,7 +329,8 @@ export const actions: Actions = {
 					waives_purchase: waivesPurchase,
 					overrides_max_attendees: overridesMaxAttendees,
 					waives_membership_required: waivesMembershipRequired,
-					waives_rsvp_deadline: waivesRsvpDeadline
+					waives_rsvp_deadline: waivesRsvpDeadline,
+					tier_ids: tierIds
 				},
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
@@ -383,6 +402,8 @@ export const actions: Actions = {
 		const waivesMembershipRequired = formData.get('waives_membership_required') === 'true';
 		const waivesRsvpDeadline = formData.get('waives_rsvp_deadline') === 'true';
 		const overridesMaxAttendees = formData.get('overrides_max_attendees') === 'true';
+		const tierIdsRaw = formData.get('tier_ids') as string | null;
+		const tierIds: string[] = tierIdsRaw ? JSON.parse(tierIdsRaw) : [];
 
 		if (!email) {
 			return fail(400, { errors: { form: 'Email is required' } });
@@ -399,7 +420,8 @@ export const actions: Actions = {
 					waives_purchase: waivesPurchase,
 					overrides_max_attendees: overridesMaxAttendees,
 					waives_membership_required: waivesMembershipRequired,
-					waives_rsvp_deadline: waivesRsvpDeadline
+					waives_rsvp_deadline: waivesRsvpDeadline,
+					tier_ids: tierIds
 				},
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
@@ -432,6 +454,8 @@ export const actions: Actions = {
 		const waivesMembershipRequired = formData.get('waives_membership_required') === 'true';
 		const waivesRsvpDeadline = formData.get('waives_rsvp_deadline') === 'true';
 		const overridesMaxAttendees = formData.get('overrides_max_attendees') === 'true';
+		const tierIdsRaw = formData.get('tier_ids') as string | null;
+		const tierIds: string[] = tierIdsRaw ? JSON.parse(tierIdsRaw) : [];
 
 		if (!emailsRaw) {
 			return fail(400, { errors: { form: 'Emails are required' } });
@@ -455,7 +479,8 @@ export const actions: Actions = {
 					waives_purchase: waivesPurchase,
 					overrides_max_attendees: overridesMaxAttendees,
 					waives_membership_required: waivesMembershipRequired,
-					waives_rsvp_deadline: waivesRsvpDeadline
+					waives_rsvp_deadline: waivesRsvpDeadline,
+					tier_ids: tierIds
 				},
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});

@@ -13,7 +13,8 @@
 		eventadmintokensListEventTokens,
 		eventadmintokensCreateEventToken,
 		eventadmintokensUpdateEventToken,
-		eventadmintokensDeleteEventToken
+		eventadmintokensDeleteEventToken,
+		eventadminticketsListTicketTiers
 	} from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
@@ -57,6 +58,26 @@
 		},
 		enabled: !!accessToken
 	}));
+
+	// Fetch ticket tiers for tier selection
+	const ticketTiersQuery = createQuery(() => ({
+		queryKey: ['event-admin', eventId, 'ticket-tiers'],
+		queryFn: async () => {
+			const response = await eventadminticketsListTicketTiers({
+				path: { event_id: eventId },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+
+			if (response.error) {
+				throw new Error('Failed to fetch ticket tiers');
+			}
+
+			return response.data;
+		},
+		enabled: !!accessToken
+	}));
+
+	const ticketTiers = $derived(ticketTiersQuery.data?.results || []);
 
 	// Create token mutation
 	const createTokenMutation = createMutation(() => ({
@@ -228,6 +249,7 @@
 <EventTokenModal
 	open={isCreateTokenModalOpen}
 	isLoading={createTokenMutation.isPending}
+	{ticketTiers}
 	onClose={() => (isCreateTokenModalOpen = false)}
 	onSave={handleCreateTokenSave}
 />
@@ -237,6 +259,7 @@
 	open={!!tokenToEdit}
 	token={tokenToEdit}
 	isLoading={updateTokenMutation.isPending}
+	{ticketTiers}
 	onClose={() => (tokenToEdit = null)}
 	onSave={handleEditTokenSave}
 />

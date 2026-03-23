@@ -41,9 +41,9 @@
 		}
 	}
 
-	const hasTicketTier = $derived(!!token.ticket_tier);
+	const hasTicketTiers = $derived((token.ticket_tiers?.length ?? 0) > 0);
 	const accessType = $derived(
-		token.grants_invitation ? (hasTicketTier ? 'Invitation + Ticket' : 'Invitation') : 'View Only'
+		token.grants_invitation ? (hasTicketTiers ? 'Invitation + Ticket' : 'Invitation') : 'View Only'
 	);
 </script>
 
@@ -76,10 +76,10 @@
 				</div>
 			</div>
 
-			{#if hasTicketTier}
+			{#if hasTicketTiers}
 				<div class="text-sm text-muted-foreground">
 					<span class="font-medium">{m['eventTokenCard.ticketTier']()}</span>
-					{token.ticket_tier}
+					{token.ticket_tiers?.map((t) => t.name).join(', ')}
 				</div>
 			{/if}
 		</div>

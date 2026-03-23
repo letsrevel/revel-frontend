@@ -129,6 +129,24 @@
 	let restrictedToMembershipTiersIds = $state<string[]>(
 		tier?.restricted_to_membership_tiers?.map((t) => t.id).filter((id): id is string => !!id) ?? []
 	);
+	let restrictVisibilityToLinkedInvitations = $state(
+		tier?.restrict_visibility_to_linked_invitations ?? false
+	);
+	let restrictPurchaseToLinkedInvitations = $state(
+		tier?.restrict_purchase_to_linked_invitations ?? false
+	);
+
+	// Auto-reset restriction toggles when parent condition no longer applies
+	$effect(() => {
+		if (visibility !== 'private') {
+			restrictVisibilityToLinkedInvitations = false;
+		}
+	});
+	$effect(() => {
+		if (purchasableBy !== 'invited' && purchasableBy !== 'invited_and_members') {
+			restrictPurchaseToLinkedInvitations = false;
+		}
+	});
 
 	// Venue and seating state
 	let seatAssignmentMode = $state<SeatAssignmentMode>(tier?.seat_assignment_mode ?? 'none');
@@ -307,6 +325,12 @@
 			purchasable_by: purchasableBy,
 			restricted_to_membership_tiers_ids:
 				restrictedToMembershipTiersIds.length > 0 ? restrictedToMembershipTiersIds : null,
+			restrict_visibility_to_linked_invitations:
+				visibility === 'private' ? restrictVisibilityToLinkedInvitations : false,
+			restrict_purchase_to_linked_invitations:
+				purchasableBy === 'invited' || purchasableBy === 'invited_and_members'
+					? restrictPurchaseToLinkedInvitations
+					: false,
 			// VAT rate override (optional, cleared for free tiers)
 			vat_rate:
 				paymentMethod === 'free'
@@ -607,6 +631,23 @@
 					<option value="members-only">{m['tierForm.membersOnly']()}</option>
 					<option value="staff-only">{m['tierForm.staffOnly']()}</option>
 				</select>
+
+				{#if visibility === 'private'}
+					<label class="mt-2 flex cursor-pointer items-start gap-2">
+						<input
+							type="checkbox"
+							bind:checked={restrictVisibilityToLinkedInvitations}
+							disabled={isPending}
+							class="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary"
+						/>
+						<div>
+							<span class="text-sm font-medium">Only show to linked invitees</span>
+							<p class="text-xs text-muted-foreground">
+								Only users whose invitation explicitly links to this tier can see it
+							</p>
+						</div>
+					</label>
+				{/if}
 			</div>
 
 			<!-- Purchasable By -->
@@ -623,6 +664,23 @@
 					<option value="invited">{m['tierForm.invitedOnly']()}</option>
 					<option value="invited_and_members">{m['tierForm.invitedAndMembers']()}</option>
 				</select>
+
+				{#if purchasableBy === 'invited' || purchasableBy === 'invited_and_members'}
+					<label class="mt-2 flex cursor-pointer items-start gap-2">
+						<input
+							type="checkbox"
+							bind:checked={restrictPurchaseToLinkedInvitations}
+							disabled={isPending}
+							class="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary"
+						/>
+						<div>
+							<span class="text-sm font-medium">Only allow purchase by linked invitees</span>
+							<p class="text-xs text-muted-foreground">
+								Only users whose invitation explicitly links to this tier can purchase it
+							</p>
+						</div>
+					</label>
+				{/if}
 			</div>
 
 			<!-- Restricted to Membership Tiers -->

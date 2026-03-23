@@ -78,6 +78,11 @@
 	} {
 		const tierInfo = getTierRemainingInfo(tier.id);
 
+		// Tier-level purchasability (from tier listing endpoint)
+		if (tier.can_purchase === false) {
+			return { canPurchase: false, reason: 'Not available' };
+		}
+
 		if (!tierInfo) {
 			const available = tier.total_available === null || tier.total_available > 0;
 			return {
