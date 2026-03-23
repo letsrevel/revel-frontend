@@ -49,6 +49,9 @@ vite.config.ts.timestamp-*
 # Paraglide (auto-generated i18n runtime)
 src/lib/paraglide/
 
+# Inlang plugin cache (auto-generated)
+project.inlang/cache/
+
 # IDE & Editor
 .vscode/*
 !.vscode/settings.json

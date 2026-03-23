@@ -683,7 +683,8 @@
 			"noRequests": "Keine Anfragen gefunden",
 			"status_pending": "Ausstehend",
 			"status_approved": "Genehmigt",
-			"status_rejected": "Abgelehnt"
+			"status_rejected": "Abgelehnt",
+			"showAccepted": "Bereits akzeptierte anzeigen"
 		},
 		"rsvps": {
 			"title": "Meine Zusagen",
