@@ -3,7 +3,8 @@
 	import type {
 		EventTokenSchema,
 		EventTokenCreateSchema,
-		EventTokenUpdateSchema
+		EventTokenUpdateSchema,
+		TicketTierDetailSchema
 	} from '$lib/api/generated/types.gen';
 	import {
 		Dialog,
@@ -25,11 +26,19 @@
 		open: boolean;
 		token?: EventTokenSchema | null;
 		isLoading?: boolean;
+		ticketTiers?: TicketTierDetailSchema[];
 		onClose: () => void;
 		onSave: (data: EventTokenCreateSchema | EventTokenUpdateSchema) => void | Promise<void>;
 	}
 
-	const { open, token = null, isLoading = false, onClose, onSave }: Props = $props();
+	const {
+		open,
+		token = null,
+		isLoading = false,
+		ticketTiers = [],
+		onClose,
+		onSave
+	}: Props = $props();
 
 	const isEdit = $derived(!!token);
 
@@ -48,6 +57,7 @@
 	let waivesMembershipRequired = $state(false);
 	let waivesRsvpDeadline = $state(false);
 	let waivesApplyDeadline = $state(false);
+	let selectedTierIds = $state<string[]>([]);
 
 	// Reset form
 	$effect(() => {
@@ -67,6 +77,7 @@
 				waivesMembershipRequired = invitation?.waives_membership_required ?? false;
 				waivesRsvpDeadline = invitation?.waives_rsvp_deadline ?? false;
 				waivesApplyDeadline = invitation?.waives_apply_deadline ?? false;
+				selectedTierIds = token.ticket_tiers?.map((t) => t.id) ?? [];
 			} else {
 				name = '';
 				duration = '1440';
@@ -82,6 +93,7 @@
 				waivesMembershipRequired = false;
 				waivesRsvpDeadline = false;
 				waivesApplyDeadline = false;
+				selectedTierIds = [];
 			}
 		}
 	});
@@ -106,7 +118,8 @@
 				max_uses: grantsInvitation ? maxUses : 0,
 				expires_at: toISOString(expiresAt),
 				grants_invitation: grantsInvitation,
-				invitation_payload
+				invitation_payload,
+				ticket_tier_ids: selectedTierIds
 			};
 			onSave(updateData);
 		} else {
@@ -115,7 +128,8 @@
 				duration: parseInt(duration, 10),
 				max_uses: grantsInvitation ? maxUses : 0,
 				grants_invitation: grantsInvitation,
-				invitation_payload
+				invitation_payload,
+				ticket_tier_ids: selectedTierIds
 			};
 			onSave(createData);
 		}
@@ -349,6 +363,38 @@
 						</div>
 					{/if}
 				</div>
+
+				<!-- Ticket tier selection -->
+				{#if ticketTiers.length > 0}
+					<div class="space-y-3 rounded-lg border border-border p-4">
+						<h4 class="text-sm font-semibold">Assign Ticket Tiers (Optional)</h4>
+						<p class="text-xs text-muted-foreground">
+							Link specific tiers to this invitation link. Leave empty for no tier restriction.
+						</p>
+						{#each ticketTiers as tier}
+							{#if tier.id}
+								<label class="flex cursor-pointer items-start gap-2">
+									<input
+										type="checkbox"
+										checked={selectedTierIds.includes(tier.id)}
+										onchange={(e) => {
+											const checked = e.currentTarget.checked;
+											if (checked && tier.id && !selectedTierIds.includes(tier.id)) {
+												selectedTierIds = [...selectedTierIds, tier.id];
+											} else if (!checked && tier.id) {
+												selectedTierIds = selectedTierIds.filter((id) => id !== tier.id);
+											}
+										}}
+										class="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary"
+									/>
+									<div class="flex-1">
+										<span class="text-sm font-medium">{tier.name}</span>
+									</div>
+								</label>
+							{/if}
+						{/each}
+					</div>
+				{/if}
 			{/if}
 
 			<DialogFooter>

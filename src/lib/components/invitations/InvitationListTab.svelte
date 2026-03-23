@@ -2,7 +2,8 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type {
 		EventInvitationListSchema,
-		PendingEventInvitationListSchema
+		PendingEventInvitationListSchema,
+		TicketTierDetailSchema
 	} from '$lib/api/generated/types.gen';
 	import { enhance } from '$app/forms';
 	import { Search, Mail, UserPlus, Trash2, Plus, Edit, CheckSquare, Square } from 'lucide-svelte';
@@ -31,6 +32,7 @@
 		accessToken: string | null;
 		searchInput: string;
 		onSearchInput: (e: Event) => void;
+		ticketTiers?: TicketTierDetailSchema[];
 	}
 
 	const {
@@ -41,7 +43,8 @@
 		organizationSlug,
 		accessToken,
 		searchInput,
-		onSearchInput
+		onSearchInput,
+		ticketTiers = []
 	}: Props = $props();
 
 	let processingId = $state<string | null>(null);
@@ -51,6 +54,7 @@
 	let invitationEmails = $state('');
 	let invitationMessage = $state('');
 	let emailTags = $state<string[]>([]);
+	let createTierIds = $state<string[]>([]);
 
 	// Edit invitation state
 	let showEditDialog = $state(false);
@@ -64,7 +68,8 @@
 		waives_membership_required: false,
 		waives_rsvp_deadline: false,
 		overrides_max_attendees: false,
-		custom_message: ''
+		custom_message: '',
+		tier_ids: [] as string[]
 	});
 
 	// Bulk selection state
@@ -77,7 +82,8 @@
 		waives_membership_required: false,
 		waives_rsvp_deadline: false,
 		overrides_max_attendees: false,
-		custom_message: ''
+		custom_message: '',
+		tier_ids: [] as string[]
 	});
 
 	const totalSelected = $derived(selectedRegisteredIds.size + selectedPendingIds.size);
@@ -95,6 +101,7 @@
 		invitationEmails = '';
 		invitationMessage = '';
 		emailTags = [];
+		createTierIds = [];
 	}
 
 	function openEditDialog(
@@ -109,7 +116,8 @@
 			waives_membership_required: invitation.waives_membership_required,
 			waives_rsvp_deadline: invitation.waives_rsvp_deadline,
 			overrides_max_attendees: invitation.overrides_max_attendees,
-			custom_message: invitation.custom_message || ''
+			custom_message: invitation.custom_message || '',
+			tier_ids: invitation.tiers?.map((t) => t.id) ?? []
 		};
 		showEditDialog = true;
 	}
@@ -123,7 +131,8 @@
 			waives_membership_required: false,
 			waives_rsvp_deadline: false,
 			overrides_max_attendees: false,
-			custom_message: ''
+			custom_message: '',
+			tier_ids: []
 		};
 	}
 
@@ -170,7 +179,8 @@
 			waives_membership_required: false,
 			waives_rsvp_deadline: false,
 			overrides_max_attendees: false,
-			custom_message: ''
+			custom_message: '',
+			tier_ids: []
 		};
 		showBulkEditDialog = true;
 	}
@@ -182,7 +192,8 @@
 			waives_membership_required: false,
 			waives_rsvp_deadline: false,
 			overrides_max_attendees: false,
-			custom_message: ''
+			custom_message: '',
+			tier_ids: []
 		};
 	}
 
@@ -575,8 +586,9 @@
 			}}
 			class="space-y-4"
 		>
-			<!-- Hidden email input for form submission -->
+			<!-- Hidden inputs for form submission -->
 			<input type="hidden" name="emails" value={invitationEmails} />
+			<input type="hidden" name="tier_ids" value={JSON.stringify(createTierIds)} />
 
 			<!-- Email addresses with tag input -->
 			<EmailTagInput
@@ -608,6 +620,9 @@
 
 			<!-- Invitation properties -->
 			{@render invitationPropertiesCheckboxes()}
+
+			<!-- Ticket tier selection -->
+			{@render tierCheckboxes(createTierIds, (ids) => (createTierIds = ids))}
 
 			<Dialog.Footer>
 				<Button type="button" variant="outline" onclick={() => (showCreateDialog = false)}>
@@ -663,6 +678,8 @@
 			}}
 			class="space-y-4"
 		>
+			<input type="hidden" name="tier_ids" value={JSON.stringify(editFormData.tier_ids)} />
+
 			{#if editingInvitation}
 				<!-- Hidden email field -->
 				{#if editingType === 'registered' && 'user' in editingInvitation}
@@ -751,6 +768,9 @@
 						<span class="text-sm">{m['eventInvitationsAdmin.overrideMaxAttendees']()}</span>
 					</label>
 				</div>
+
+				<!-- Ticket tier selection -->
+				{@render tierCheckboxes(editFormData.tier_ids, (ids) => (editFormData.tier_ids = ids))}
 			{/if}
 
 			<Dialog.Footer>
@@ -811,6 +831,7 @@
 						.filter((e) => e)
 				])}
 			/>
+			<input type="hidden" name="tier_ids" value={JSON.stringify(bulkEditFormData.tier_ids)} />
 
 			<!-- Custom message -->
 			<div>
@@ -893,6 +914,12 @@
 				</label>
 			</div>
 
+			<!-- Ticket tier selection -->
+			{@render tierCheckboxes(
+				bulkEditFormData.tier_ids,
+				(ids) => (bulkEditFormData.tier_ids = ids)
+			)}
+
 			<Dialog.Footer>
 				<Button type="button" variant="outline" onclick={() => (showBulkEditDialog = false)}>
 					{m['eventInvitationsAdmin.cancel']()}
@@ -952,6 +979,16 @@
 			>
 				{m['eventInvitationsAdmin.overrideCap']()}
 			</span>
+		{/if}
+		{#if invitation.tiers?.length}
+			{#each invitation.tiers as tier}
+				<span
+					class="inline-flex items-center rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
+					title="Assigned tier: {tier.name}"
+				>
+					{tier.name}
+				</span>
+			{/each}
 		{/if}
 		{#if invitation.custom_message}
 			<span
@@ -1018,4 +1055,37 @@
 			<span class="text-sm">{m['eventInvitationsAdmin.overrideMaxAttendees']()}</span>
 		</label>
 	</div>
+{/snippet}
+
+{#snippet tierCheckboxes(selectedIds: string[], onUpdate: (ids: string[]) => void)}
+	{#if ticketTiers.length > 0}
+		<div class="space-y-3 rounded-lg border border-border p-4">
+			<h4 class="text-sm font-semibold">Assign Ticket Tiers (Optional)</h4>
+			<p class="text-xs text-muted-foreground">
+				Link specific tiers to this invitation. Leave empty for no tier restriction.
+			</p>
+			{#each ticketTiers as tier}
+				{#if tier.id}
+					<label class="flex cursor-pointer items-start gap-2">
+						<input
+							type="checkbox"
+							checked={selectedIds.includes(tier.id)}
+							onchange={(e) => {
+								const checked = e.currentTarget.checked;
+								if (checked && tier.id && !selectedIds.includes(tier.id)) {
+									onUpdate([...selectedIds, tier.id]);
+								} else if (!checked && tier.id) {
+									onUpdate(selectedIds.filter((id) => id !== tier.id));
+								}
+							}}
+							class="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary"
+						/>
+						<div class="flex-1">
+							<span class="text-sm font-medium">{tier.name}</span>
+						</div>
+					</label>
+				{/if}
+			{/each}
+		</div>
+	{/if}
 {/snippet}

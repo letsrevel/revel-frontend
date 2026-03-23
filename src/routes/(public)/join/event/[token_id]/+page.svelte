@@ -111,12 +111,14 @@
 					</div>
 				{/if}
 
-				{#if token.ticket_tier}
+				{#if token.ticket_tiers?.length}
 					<div class="flex items-start gap-2 text-sm">
 						<Ticket class="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
 						<div>
 							<div class="font-medium">{m['joinEventPage.ticketTierLabel']()}</div>
-							<div class="text-muted-foreground">{token.ticket_tier}</div>
+							<div class="text-muted-foreground">
+								{token.ticket_tiers.map((t) => t.name).join(', ')}
+							</div>
 						</div>
 					</div>
 				{/if}
@@ -149,7 +151,7 @@
 						<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
 						<span>{m['joinEventPage.benefit_invitation']()}</span>
 					</li>
-					{#if token.ticket_tier}
+					{#if token.ticket_tiers?.length}
 						<li class="flex items-center gap-2">
 							<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
 							<span>{m['joinEventPage.benefit_autoTicket']()}</span>

@@ -47,7 +47,8 @@
 		if (invitation.waives_membership_required) priv.push('No membership required');
 		if (invitation.waives_rsvp_deadline) priv.push('Extended RSVP deadline');
 		if (invitation.overrides_max_attendees) priv.push('Priority access (bypasses capacity)');
-		if (invitation.tier) priv.push(`Assigned tier: ${invitation.tier.name}`);
+		if (invitation.tiers?.length)
+			priv.push(`Assigned tiers: ${invitation.tiers.map((t) => t.name).join(', ')}`);
 		return priv;
 	});
 </script>

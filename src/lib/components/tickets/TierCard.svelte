@@ -41,7 +41,12 @@
 	 * This takes precedence over the general isEligible flag
 	 */
 	const tierPurchaseStatus = $derived.by(() => {
-		// If no tier-specific info, fall back to general isEligible
+		// Tier-level purchasability (from tier listing endpoint, accounts for invitation-linked restrictions)
+		if (tier.can_purchase === false) {
+			return { canPurchase: false, reason: 'Not available' };
+		}
+
+		// If no per-user remaining info, fall back to general isEligible
 		if (!tierRemainingInfo) {
 			return { canPurchase: isEligible, reason: isEligible ? undefined : 'Not eligible' };
 		}
@@ -198,7 +203,7 @@
 	const membershipRestriction = $derived(checkMembershipTierRestriction());
 </script>
 
-<Card class="p-4">
+<Card class="p-4 {tier.can_purchase === false ? 'opacity-60' : ''}">
 	<div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 		<!-- Tier Info -->
 		<div class="flex-1">

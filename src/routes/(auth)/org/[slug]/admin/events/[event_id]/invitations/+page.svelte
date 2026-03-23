@@ -207,6 +207,7 @@
 			registeredPagination={data.registeredPagination}
 			pendingPagination={data.pendingPagination}
 			organizationSlug={data.organization.slug}
+			ticketTiers={data.ticketTiers}
 			{accessToken}
 			{searchInput}
 			onSearchInput={handleSearchInput}
