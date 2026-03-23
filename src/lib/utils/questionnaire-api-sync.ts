@@ -63,6 +63,7 @@ export async function syncMcQuestion(
 	authHeader: AuthHeader,
 	orgQuestionnaireId: string,
 	q: any,
+	sectionId?: string | null,
 	dependsOnOptionId?: string | null
 ) {
 	if (!question._apiId) return;
@@ -73,11 +74,13 @@ export async function syncMcQuestion(
 			question: question.text,
 			hint: question.hint || null,
 			is_mandatory: question.required,
+			order: question.order,
 			positive_weight: String(question.positiveWeight),
 			negative_weight: String(question.negativeWeight),
 			is_fatal: question.isFatal,
 			allow_multiple_answers: question.allowMultipleAnswers || false,
 			shuffle_options: question.shuffleOptions ?? true,
+			section_id: sectionId ?? null,
 			depends_on_option_id: dependsOnOptionId ?? null
 		},
 		headers: authHeader
@@ -163,6 +166,7 @@ export async function syncFtQuestion(
 	question: QuestionnaireQuestion,
 	authHeader: AuthHeader,
 	orgQuestionnaireId: string,
+	sectionId?: string | null,
 	dependsOnOptionId?: string | null
 ) {
 	if (!question._apiId) return;
@@ -173,10 +177,12 @@ export async function syncFtQuestion(
 			question: question.text,
 			hint: question.hint || null,
 			is_mandatory: question.required,
+			order: question.order,
 			positive_weight: String(question.positiveWeight),
 			negative_weight: String(question.negativeWeight),
 			is_fatal: question.isFatal,
 			llm_guidelines: question.llmGuidelines || null,
+			section_id: sectionId ?? null,
 			depends_on_option_id: dependsOnOptionId ?? null
 		},
 		headers: authHeader
@@ -188,6 +194,7 @@ export async function syncFuQuestion(
 	question: QuestionnaireQuestion,
 	authHeader: AuthHeader,
 	orgQuestionnaireId: string,
+	sectionId?: string | null,
 	dependsOnOptionId?: string | null
 ) {
 	if (!question._apiId) return;
@@ -198,12 +205,14 @@ export async function syncFuQuestion(
 			question: question.text,
 			hint: question.hint || null,
 			is_mandatory: question.required,
+			order: question.order,
 			positive_weight: String(question.positiveWeight),
 			negative_weight: String(question.negativeWeight),
 			is_fatal: question.isFatal,
 			allowed_mime_types: question.allowedMimeTypes || ['*/*'],
 			max_file_size: question.maxFileSize || 10 * 1024 * 1024,
 			max_files: question.maxFiles || 1,
+			section_id: sectionId ?? null,
 			depends_on_option_id: dependsOnOptionId ?? null
 		},
 		headers: authHeader
@@ -328,21 +337,21 @@ export async function syncSectionQuestions(
 		if (question.type === 'multiple_choice') {
 			if (question._apiId) {
 				localMcApiIds.add(question._apiId);
-				await syncMcQuestion(question, authHeader, orgQuestionnaireId, q);
+				await syncMcQuestion(question, authHeader, orgQuestionnaireId, q, sectionApiId);
 			} else {
 				await createMcQuestion(question, sectionApiId, authHeader, orgQuestionnaireId);
 			}
 		} else if (question.type === 'free_text') {
 			if (question._apiId) {
 				localFtApiIds.add(question._apiId);
-				await syncFtQuestion(question, authHeader, orgQuestionnaireId);
+				await syncFtQuestion(question, authHeader, orgQuestionnaireId, sectionApiId);
 			} else {
 				await createFtQuestion(question, sectionApiId, authHeader, orgQuestionnaireId);
 			}
 		} else if (question.type === 'file_upload') {
 			if (question._apiId) {
 				localFuApiIds.add(question._apiId);
-				await syncFuQuestion(question, authHeader, orgQuestionnaireId);
+				await syncFuQuestion(question, authHeader, orgQuestionnaireId, sectionApiId);
 			} else {
 				await createFuQuestion(question, sectionApiId, authHeader, orgQuestionnaireId);
 			}

@@ -1,8 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { goto } from '$app/navigation';
-	import { flip } from 'svelte/animate';
-	import { dndzone, SHADOW_PLACEHOLDER_ITEM_ID } from 'svelte-dnd-action';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
@@ -31,7 +29,6 @@
 		QuestionnaireQuestion as Question,
 		QuestionnaireSection as Section
 	} from '$lib/utils/questionnaire-form-types';
-	import { DND_FLIP_DURATION_MS, DND_DROP_TARGET_STYLE } from '$lib/utils/questionnaire-form-types';
 	import {
 		addTopLevelQuestion as _addTopLevelQuestion,
 		removeTopLevelQuestion as _removeTopLevelQuestion,
@@ -42,7 +39,6 @@
 		addQuestionToSection as _addQuestionToSection,
 		removeQuestionFromSection as _removeQuestionFromSection,
 		updateQuestionInSection as _updateQuestionInSection,
-		reorderQuestionsInSection as _reorderQuestionsInSection,
 		mcQuestionToCreateApiFormat,
 		ftQuestionToCreateApiFormat,
 		fuQuestionToCreateApiFormat,
@@ -206,34 +202,37 @@
 		sections = _updateQuestionInSection(sections, sectionId, questionId, updates);
 	}
 
-	function reorderQuestionsInSection(sectionId: string, newQuestions: Question[]) {
-		sections = _reorderQuestionsInSection(sections, sectionId, newQuestions);
+	// Move top-level question up/down
+	function moveTopLevelQuestion(index: number, direction: 'up' | 'down') {
+		const targetIndex = direction === 'up' ? index - 1 : index + 1;
+		if (targetIndex < 0 || targetIndex >= topLevelQuestions.length) return;
+		const snapshot = $state.snapshot(topLevelQuestions);
+		[snapshot[index], snapshot[targetIndex]] = [snapshot[targetIndex], snapshot[index]];
+		topLevelQuestions = snapshot.map((q, i) => ({ ...q, order: i }));
 	}
 
-	// DnD config
-	const flipDurationMs = DND_FLIP_DURATION_MS;
-	const dropTargetStyle = DND_DROP_TARGET_STYLE;
-
-	// Handle drag and drop for top-level questions
-	function handleTopLevelQuestionsDndConsider(e: CustomEvent<{ items: Question[] }>) {
-		topLevelQuestions = e.detail.items;
+	// Move section up/down
+	function moveSection(index: number, direction: 'up' | 'down') {
+		const targetIndex = direction === 'up' ? index - 1 : index + 1;
+		if (targetIndex < 0 || targetIndex >= sections.length) return;
+		const snapshot = $state.snapshot(sections);
+		[snapshot[index], snapshot[targetIndex]] = [snapshot[targetIndex], snapshot[index]];
+		sections = snapshot.map((s, i) => ({ ...s, order: i }));
 	}
 
-	function handleTopLevelQuestionsDndFinalize(e: CustomEvent<{ items: Question[] }>) {
-		topLevelQuestions = e.detail.items
-			.filter((q) => q.id !== SHADOW_PLACEHOLDER_ITEM_ID)
-			.map((q, index) => ({ ...q, order: index }));
-	}
-
-	// Handle drag and drop for sections
-	function handleSectionsDndConsider(e: CustomEvent<{ items: Section[] }>) {
-		sections = e.detail.items;
-	}
-
-	function handleSectionsDndFinalize(e: CustomEvent<{ items: Section[] }>) {
-		sections = e.detail.items
-			.filter((s) => s.id !== SHADOW_PLACEHOLDER_ITEM_ID)
-			.map((s, index) => ({ ...s, order: index }));
+	// Move question within a section up/down
+	function moveQuestionInSection(sectionId: string, index: number, direction: 'up' | 'down') {
+		const sectionSnapshot = $state.snapshot(sections);
+		const section = sectionSnapshot.find((s) => s.id === sectionId);
+		if (!section) return;
+		const targetIndex = direction === 'up' ? index - 1 : index + 1;
+		if (targetIndex < 0 || targetIndex >= section.questions.length) return;
+		[section.questions[index], section.questions[targetIndex]] = [
+			section.questions[targetIndex],
+			section.questions[index]
+		];
+		section.questions = section.questions.map((q, i) => ({ ...q, order: i }));
+		sections = sectionSnapshot;
 	}
 
 	// Validate form
@@ -798,36 +797,26 @@
 					<h3 class="text-sm font-medium text-muted-foreground">
 						Top-level Questions ({topLevelQuestions.length})
 					</h3>
-					<p class="text-xs text-muted-foreground">
-						Drag questions to reorder, or drag them into a section below.
-					</p>
-					<div
-						class="min-h-[60px] space-y-4 rounded-lg"
-						use:dndzone={{
-							items: topLevelQuestions,
-							flipDurationMs,
-							dropTargetStyle,
-							type: 'questions'
-						}}
-						onconsider={handleTopLevelQuestionsDndConsider}
-						onfinalize={handleTopLevelQuestionsDndFinalize}
-					>
-						{#each topLevelQuestions.filter((q) => q.id !== SHADOW_PLACEHOLDER_ITEM_ID) as question (question.id)}
-							<div animate:flip={{ duration: flipDurationMs }}>
-								<QuestionEditor
-									{question}
-									onUpdate={(updates) => updateTopLevelQuestion(question.id, updates)}
-									onRemove={() => removeTopLevelQuestion(question.id)}
-									{showLlmGuidelines}
-								/>
-							</div>
+					<p class="text-xs text-muted-foreground">Use the arrow buttons to reorder questions.</p>
+					<div class="space-y-4">
+						{#each topLevelQuestions as question, index (question.id)}
+							<QuestionEditor
+								{question}
+								onUpdate={(updates) => updateTopLevelQuestion(question.id, updates)}
+								onRemove={() => removeTopLevelQuestion(question.id)}
+								onMoveUp={() => moveTopLevelQuestion(index, 'up')}
+								onMoveDown={() => moveTopLevelQuestion(index, 'down')}
+								isFirst={index === 0}
+								isLast={index === topLevelQuestions.length - 1}
+								{showLlmGuidelines}
+							/>
 						{/each}
 					</div>
 
 					{#if topLevelQuestions.length === 0}
 						<div class="rounded-lg border border-dashed p-4 text-center">
 							<p class="text-sm text-muted-foreground">
-								No top-level questions. Add questions here or drag them from a section.
+								No top-level questions. Add questions using the buttons below.
 							</p>
 						</div>
 					{/if}
@@ -874,38 +863,28 @@
 								Sections ({sections.length})
 							</h3>
 							<p class="text-xs text-muted-foreground">
-								Drag sections to reorder. Drag questions between sections.
+								Use the arrow buttons to reorder sections and questions.
 							</p>
 						</div>
-						<div
-							class="min-h-[60px] space-y-4 rounded-lg"
-							use:dndzone={{
-								items: sections,
-								flipDurationMs,
-								dropTargetStyle,
-								type: 'sections',
-								dragDisabled: false
-							}}
-							onconsider={handleSectionsDndConsider}
-							onfinalize={handleSectionsDndFinalize}
-						>
-							{#each sections.filter((s) => s.id !== SHADOW_PLACEHOLDER_ITEM_ID) as section (section.id)}
-								<div animate:flip={{ duration: flipDurationMs }}>
-									<SectionEditor
-										{section}
-										onUpdate={(updates) => updateSection(section.id, updates)}
-										onRemove={() => removeSection(section.id)}
-										onAddQuestion={(type) => addQuestionToSection(section.id, type)}
-										onUpdateQuestion={(questionId, updates) =>
-											updateQuestionInSection(section.id, questionId, updates)}
-										onRemoveQuestion={(questionId) =>
-											removeQuestionFromSection(section.id, questionId)}
-										onQuestionsReorder={(questions) =>
-											reorderQuestionsInSection(section.id, questions)}
-										{dropTargetStyle}
-										{showLlmGuidelines}
-									/>
-								</div>
+						<div class="space-y-4">
+							{#each sections as section, index (section.id)}
+								<SectionEditor
+									{section}
+									onUpdate={(updates) => updateSection(section.id, updates)}
+									onRemove={() => removeSection(section.id)}
+									onMoveUp={() => moveSection(index, 'up')}
+									onMoveDown={() => moveSection(index, 'down')}
+									isFirst={index === 0}
+									isLast={index === sections.length - 1}
+									onAddQuestion={(type) => addQuestionToSection(section.id, type)}
+									onUpdateQuestion={(questionId, updates) =>
+										updateQuestionInSection(section.id, questionId, updates)}
+									onRemoveQuestion={(questionId) =>
+										removeQuestionFromSection(section.id, questionId)}
+									onMoveQuestionUp={(qIndex) => moveQuestionInSection(section.id, qIndex, 'up')}
+									onMoveQuestionDown={(qIndex) => moveQuestionInSection(section.id, qIndex, 'down')}
+									{showLlmGuidelines}
+								/>
 							{/each}
 						</div>
 					</div>

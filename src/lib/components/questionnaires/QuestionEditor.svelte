@@ -7,7 +7,8 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import {
-		GripVertical,
+		ArrowUp,
+		ArrowDown,
 		Trash2,
 		Plus,
 		ChevronDown,
@@ -64,6 +65,10 @@
 		question: Question;
 		onUpdate: (updates: Partial<Question>) => void;
 		onRemove: () => void;
+		onMoveUp?: () => void;
+		onMoveDown?: () => void;
+		isFirst?: boolean;
+		isLast?: boolean;
 		isNested?: boolean;
 		showLlmGuidelines?: boolean;
 	}
@@ -72,6 +77,10 @@
 		question,
 		onUpdate,
 		onRemove,
+		onMoveUp,
+		onMoveDown,
+		isFirst = false,
+		isLast = false,
 		isNested = false,
 		showLlmGuidelines = true
 	}: Props = $props();
@@ -360,8 +369,25 @@
 			<!-- Header -->
 			<div class="flex items-start gap-3">
 				{#if !isNested}
-					<div class="cursor-grab pt-2">
-						<GripVertical class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+					<div class="flex flex-col gap-0.5 pt-1">
+						<button
+							type="button"
+							onclick={onMoveUp}
+							disabled={isFirst}
+							class="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
+							aria-label="Move question up"
+						>
+							<ArrowUp class="h-4 w-4" aria-hidden="true" />
+						</button>
+						<button
+							type="button"
+							onclick={onMoveDown}
+							disabled={isLast}
+							class="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
+							aria-label="Move question down"
+						>
+							<ArrowDown class="h-4 w-4" aria-hidden="true" />
+						</button>
 					</div>
 				{:else}
 					<div class="pt-2">

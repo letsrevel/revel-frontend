@@ -33,9 +33,9 @@
 	// Copy-to-clipboard state (tracks which code ID was just copied)
 	let copiedCodeId = $state<string | null>(null);
 
-	function copyCode(codeId: string, codeText: string) {
+	function copyCode(codeId: string | null | undefined, codeText: string): void {
 		navigator.clipboard.writeText(codeText);
-		copiedCodeId = codeId;
+		copiedCodeId = codeId ?? null;
 		setTimeout(() => (copiedCodeId = null), 2000);
 	}
 
