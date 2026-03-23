@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { page } from '$app/stores';
+	import { onMount } from 'svelte';
 	import type { ActionData, PageData } from './$types';
 	import PasswordStrengthIndicator from '$lib/components/forms/PasswordStrengthIndicator.svelte';
 	import ReferralCodeInput from '$lib/components/referral/ReferralCodeInput.svelte';
@@ -52,6 +53,43 @@
 			acceptTerms &&
 			!isSubmitting
 	);
+
+	// Sync browser autofill/form restoration with reactive state.
+	// Chrome may fill fields before Svelte hydration (SSR) or restore them
+	// from bfcache/session restore without firing input events.
+	function syncFormValues() {
+		const get = (id: string) => document.getElementById(id) as HTMLInputElement | null;
+		const emailEl = get('email');
+		const passwordEl = get('password');
+		const confirmEl = get('confirmPassword');
+		const termsEl = get('acceptTerms');
+
+		if (emailEl?.value && !email) email = emailEl.value;
+		if (passwordEl?.value && !password) password = passwordEl.value;
+		if (confirmEl?.value && !confirmPassword) confirmPassword = confirmEl.value;
+		if (termsEl?.checked && !acceptTerms) acceptTerms = termsEl.checked;
+	}
+
+	onMount(() => {
+		// Check for autofill after hydration at staggered intervals
+		const t1 = setTimeout(syncFormValues, 100);
+		const t2 = setTimeout(syncFormValues, 1000);
+
+		// Handle bfcache restoration (back/forward navigation)
+		const handlePageShow = (e: PageTransitionEvent) => {
+			if (e.persisted) {
+				isSubmitting = false;
+				setTimeout(syncFormValues, 50);
+			}
+		};
+		window.addEventListener('pageshow', handlePageShow);
+
+		return () => {
+			clearTimeout(t1);
+			clearTimeout(t2);
+			window.removeEventListener('pageshow', handlePageShow);
+		};
+	});
 </script>
 
 <svelte:head>
@@ -82,7 +120,14 @@
 				if (isSubmitting) return;
 				isSubmitting = true;
 
+				// Safety timeout: reset isSubmitting if the response never arrives
+				// (e.g., network hang, browser extension interference)
+				const safetyTimeout = setTimeout(() => {
+					isSubmitting = false;
+				}, 30_000);
+
 				return async ({ update }) => {
+					clearTimeout(safetyTimeout);
 					isSubmitting = false;
 					await update();
 				};

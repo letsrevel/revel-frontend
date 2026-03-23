@@ -3,11 +3,9 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { GripVertical, Trash2, Plus, ChevronDown, ChevronUp, Upload } from 'lucide-svelte';
+	import { ArrowUp, ArrowDown, Trash2, Plus, ChevronDown, ChevronUp, Upload } from 'lucide-svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import QuestionEditor from './QuestionEditor.svelte';
-	import { dndzone, SHADOW_PLACEHOLDER_ITEM_ID } from 'svelte-dnd-action';
-	import { flip } from 'svelte/animate';
 
 	interface Question {
 		id: string;
@@ -44,11 +42,15 @@
 		section: Section;
 		onUpdate: (updates: Partial<Section>) => void;
 		onRemove: () => void;
+		onMoveUp?: () => void;
+		onMoveDown?: () => void;
+		isFirst?: boolean;
+		isLast?: boolean;
 		onAddQuestion: (type: 'multiple_choice' | 'free_text' | 'file_upload') => void;
 		onUpdateQuestion: (questionId: string, updates: Partial<Question>) => void;
 		onRemoveQuestion: (questionId: string) => void;
-		onQuestionsReorder: (questions: Question[]) => void;
-		dropTargetStyle?: Record<string, string>;
+		onMoveQuestionUp: (index: number) => void;
+		onMoveQuestionDown: (index: number) => void;
 		showLlmGuidelines?: boolean;
 	}
 
@@ -56,41 +58,45 @@
 		section,
 		onUpdate,
 		onRemove,
+		onMoveUp,
+		onMoveDown,
+		isFirst = false,
+		isLast = false,
 		onAddQuestion,
 		onUpdateQuestion,
 		onRemoveQuestion,
-		onQuestionsReorder,
-		dropTargetStyle = { outline: '2px dashed hsl(var(--primary))', borderRadius: '8px' },
+		onMoveQuestionUp,
+		onMoveQuestionDown,
 		showLlmGuidelines = true
 	}: Props = $props();
 
 	// Collapsible state
 	let isExpanded = $state(true);
-
-	// DnD flip duration
-	const flipDurationMs = 200;
-
-	// Handle drag and drop for questions
-	function handleDndConsider(e: CustomEvent<{ items: Question[] }>) {
-		// Update the section's questions during drag
-		onQuestionsReorder(e.detail.items);
-	}
-
-	function handleDndFinalize(e: CustomEvent<{ items: Question[] }>) {
-		// Finalize the reorder and update order values
-		const reorderedQuestions = e.detail.items
-			.filter((q) => q.id !== SHADOW_PLACEHOLDER_ITEM_ID)
-			.map((q, index) => ({ ...q, order: index }));
-		onQuestionsReorder(reorderedQuestions);
-	}
 </script>
 
 <Card class="border-2 border-dashed border-primary/30">
 	<CardHeader class="pb-3">
 		<div class="flex items-start gap-3">
-			<!-- Drag handle for section -->
-			<div class="section-drag-handle cursor-grab pt-2" aria-label="Drag to reorder section">
-				<GripVertical class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+			<!-- Move section up/down -->
+			<div class="flex flex-col gap-0.5 pt-1">
+				<button
+					type="button"
+					onclick={onMoveUp}
+					disabled={isFirst}
+					class="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
+					aria-label="Move section up"
+				>
+					<ArrowUp class="h-4 w-4" aria-hidden="true" />
+				</button>
+				<button
+					type="button"
+					onclick={onMoveDown}
+					disabled={isLast}
+					class="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
+					aria-label="Move section down"
+				>
+					<ArrowDown class="h-4 w-4" aria-hidden="true" />
+				</button>
 			</div>
 
 			<div class="flex-1 space-y-3">
@@ -183,34 +189,26 @@
 					</div>
 				</div>
 
-				<!-- Drag and drop zone for questions -->
-				<div
-					class="min-h-[80px] space-y-4 rounded-lg pl-4"
-					use:dndzone={{
-						items: section.questions,
-						flipDurationMs,
-						dropTargetStyle,
-						type: 'questions'
-					}}
-					onconsider={handleDndConsider}
-					onfinalize={handleDndFinalize}
-				>
-					{#each section.questions.filter((q) => q.id !== SHADOW_PLACEHOLDER_ITEM_ID) as question (question.id)}
-						<div animate:flip={{ duration: flipDurationMs }}>
-							<QuestionEditor
-								{question}
-								onUpdate={(updates) => onUpdateQuestion(question.id, updates)}
-								onRemove={() => onRemoveQuestion(question.id)}
-								{showLlmGuidelines}
-							/>
-						</div>
+				<!-- Questions list -->
+				<div class="space-y-4 pl-4">
+					{#each section.questions as question, index (question.id)}
+						<QuestionEditor
+							{question}
+							onUpdate={(updates) => onUpdateQuestion(question.id, updates)}
+							onRemove={() => onRemoveQuestion(question.id)}
+							onMoveUp={() => onMoveQuestionUp?.(index)}
+							onMoveDown={() => onMoveQuestionDown?.(index)}
+							isFirst={index === 0}
+							isLast={index === section.questions.length - 1}
+							{showLlmGuidelines}
+						/>
 					{/each}
 				</div>
 
 				{#if section.questions.length === 0}
 					<div class="rounded-lg border border-dashed p-6 text-center">
 						<p class="text-sm text-muted-foreground">
-							No questions yet. Add questions or drag them here from another section.
+							No questions yet. Add questions using the buttons above.
 						</p>
 					</div>
 				{/if}
