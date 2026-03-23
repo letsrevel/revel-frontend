@@ -193,6 +193,9 @@
 						aria-label="Discount code"
 						aria-invalid={discountError ? 'true' : undefined}
 						aria-describedby={discountError ? 'discount-error' : undefined}
+						oninput={() => {
+							discountCodeInput = discountCodeInput.replace(/[^\p{L}\p{N}]/gu, '').toUpperCase();
+						}}
 						onkeydown={(e) => {
 							if (e.key === 'Enter') {
 								e.preventDefault();
