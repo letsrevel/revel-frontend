@@ -21,12 +21,23 @@
 		ToggleRight,
 		ChevronLeft,
 		ChevronRight,
-		AlertCircle
+		AlertCircle,
+		Copy,
+		Check
 	} from 'lucide-svelte';
 
 	const organization = $derived($page.data.organization);
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
+
+	// Copy-to-clipboard state (tracks which code ID was just copied)
+	let copiedCodeId = $state<string | null>(null);
+
+	function copyCode(codeId: string, codeText: string) {
+		navigator.clipboard.writeText(codeText);
+		copiedCodeId = codeId;
+		setTimeout(() => (copiedCodeId = null), 2000);
+	}
 
 	// Filters
 	let searchQuery = $state('');
@@ -265,7 +276,21 @@
 						{#each codes as code (code.id)}
 							<tr class="hover:bg-muted/30">
 								<td class="px-4 py-3">
-									<span class="font-mono font-semibold">{code.code}</span>
+									<span class="flex items-center gap-1.5">
+										<span class="font-mono font-semibold">{code.code}</span>
+										<button
+											type="button"
+											onclick={() => copyCode(code.id, code.code)}
+											class="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+											aria-label="Copy code {code.code}"
+										>
+											{#if copiedCodeId === code.id}
+												<Check class="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
+											{:else}
+												<Copy class="h-3.5 w-3.5" aria-hidden="true" />
+											{/if}
+										</button>
+									</span>
 								</td>
 								<td class="px-4 py-3">
 									<span
@@ -344,7 +369,21 @@
 				<div class="rounded-lg border p-4">
 					<div class="flex items-start justify-between">
 						<div>
-							<p class="font-mono text-lg font-semibold">{code.code}</p>
+							<p class="flex items-center gap-2 font-mono text-lg font-semibold">
+								{code.code}
+								<button
+									type="button"
+									onclick={() => copyCode(code.id, code.code)}
+									class="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+									aria-label="Copy code {code.code}"
+								>
+									{#if copiedCodeId === code.id}
+										<Check class="h-4 w-4 text-emerald-600" aria-hidden="true" />
+									{:else}
+										<Copy class="h-4 w-4" aria-hidden="true" />
+									{/if}
+								</button>
+							</p>
 							<span
 								class="mt-1 inline-flex rounded-full px-2 py-0.5 text-xs font-medium {code.discount_type ===
 								'percentage'
