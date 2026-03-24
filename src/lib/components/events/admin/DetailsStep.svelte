@@ -621,8 +621,7 @@
 					<input
 						type="checkbox"
 						checked={formData.public_pronoun_distribution || false}
-						onchange={(e) =>
-							onUpdate({ public_pronoun_distribution: e.currentTarget.checked })}
+						onchange={(e) => onUpdate({ public_pronoun_distribution: e.currentTarget.checked })}
 						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 					/>
 					<div class="flex-1">
