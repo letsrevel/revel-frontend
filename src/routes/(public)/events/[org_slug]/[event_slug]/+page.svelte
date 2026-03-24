@@ -899,6 +899,7 @@
 						totalAttendees={event.attendee_count}
 						isAuthenticated={data.isAuthenticated}
 						userVisibility={data.userVisibility}
+						showPronounDistribution={event.public_pronoun_distribution || data.isOwner || data.isStaff}
 					/>
 				</div>
 			</div>
@@ -963,6 +964,7 @@
 						totalAttendees={event.attendee_count}
 						isAuthenticated={data.isAuthenticated}
 						userVisibility={data.userVisibility}
+						showPronounDistribution={event.public_pronoun_distribution || data.isOwner || data.isStaff}
 					/>
 				</div>
 			</aside>

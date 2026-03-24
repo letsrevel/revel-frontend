@@ -808,6 +808,8 @@
 		"acceptInvitationRequests": "Einladungsanfragen akzeptieren",
 		"requireFullProfile": "Vollständiges Profil erforderlich",
 		"requireFullProfileHint": "Teilnehmer müssen ein Profilbild, Namen und Pronomen haben, um sich anzumelden oder Tickets zu kaufen",
+		"publicPronounDistribution": "Öffentliche Pronomen-Verteilung",
+		"publicPronounDistributionHint": "Pronomen-Verteilungsstatistiken für alle Teilnehmer anzeigen, nicht nur für das Team",
 		"applicationDeadline": "Bewerbungsfrist",
 		"applicationDeadlineHint": "Frist für die Einreichung von Einladungsanfragen oder Fragebögen. Zeitzone: {timezone}",
 		"canAttendWithoutLogin": "Gastteilnahme erlauben",

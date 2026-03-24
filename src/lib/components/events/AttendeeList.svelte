@@ -17,9 +17,16 @@
 		totalAttendees: number;
 		isAuthenticated: boolean;
 		userVisibility?: VisibilityPreference | null;
+		showPronounDistribution?: boolean;
 	}
 
-	const { eventId, totalAttendees, isAuthenticated, userVisibility = null }: Props = $props();
+	const {
+		eventId,
+		totalAttendees,
+		isAuthenticated,
+		userVisibility = null,
+		showPronounDistribution: canShowPronounDistribution = false
+	}: Props = $props();
 
 	// Build settings URL with redirect back to current page
 	const settingsUrl = $derived.by(() => {
@@ -51,7 +58,7 @@
 	const PAGE_SIZE = 100;
 	let currentPage = $state(1);
 	let showAll = $state(false);
-	let showPronounDistribution = $state(false);
+	let pronounSectionExpanded = $state(false);
 
 	// Query for attendee list
 	const attendeesQuery = createQuery(() => ({
@@ -85,7 +92,7 @@
 
 			return response.data;
 		},
-		enabled: isAuthenticated && showPronounDistribution
+		enabled: isAuthenticated && canShowPronounDistribution && pronounSectionExpanded
 	}));
 
 	// Derived state for attendees
@@ -227,19 +234,20 @@
 		{/if}
 
 		<!-- Pronoun Distribution Toggle -->
+		{#if canShowPronounDistribution}
 		<div class="mt-4 border-t pt-4">
 			<button
 				type="button"
 				class="flex w-full items-center justify-between gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-				onclick={() => (showPronounDistribution = !showPronounDistribution)}
-				aria-expanded={showPronounDistribution}
+				onclick={() => (pronounSectionExpanded = !pronounSectionExpanded)}
+				aria-expanded={pronounSectionExpanded}
 				aria-controls="pronoun-distribution"
 			>
 				<span class="flex items-center gap-2">
 					<BarChart3 class="h-4 w-4" aria-hidden="true" />
 					{m['pronounDistribution.title']()}
 				</span>
-				{#if showPronounDistribution}
+				{#if pronounSectionExpanded}
 					<ChevronUp class="h-4 w-4" aria-hidden="true" />
 				{:else}
 					<ChevronDown class="h-4 w-4" aria-hidden="true" />
@@ -247,7 +255,7 @@
 			</button>
 
 			<!-- Pronoun Distribution Content -->
-			{#if showPronounDistribution}
+			{#if pronounSectionExpanded}
 				<div id="pronoun-distribution" class="mt-3" transition:slide={{ duration: 200 }}>
 					{#if pronounQuery.isLoading}
 						<div class="flex items-center justify-center py-4">
@@ -269,6 +277,7 @@
 				</div>
 			{/if}
 		</div>
+		{/if}
 
 		<!-- User visibility settings info -->
 		{#if userVisibility}
