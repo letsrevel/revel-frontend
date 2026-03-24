@@ -808,6 +808,8 @@
 		"acceptInvitationRequests": "Accept invitation requests",
 		"requireFullProfile": "Require complete profile",
 		"requireFullProfileHint": "Attendees must have a profile picture, name, and pronouns to RSVP or purchase tickets",
+		"publicPronounDistribution": "Public pronoun distribution",
+		"publicPronounDistributionHint": "Show pronoun distribution statistics to all attendees, not just staff",
 		"applicationDeadline": "Application Deadline",
 		"applicationDeadlineHint": "Deadline for submitting invitation requests or questionnaires. Timezone: {timezone}",
 		"canAttendWithoutLogin": "Allow guest attendance",

@@ -17,9 +17,16 @@
 		totalAttendees: number;
 		isAuthenticated: boolean;
 		userVisibility?: VisibilityPreference | null;
+		showPronounDistribution?: boolean;
 	}
 
-	const { eventId, totalAttendees, isAuthenticated, userVisibility = null }: Props = $props();
+	const {
+		eventId,
+		totalAttendees,
+		isAuthenticated,
+		userVisibility = null,
+		showPronounDistribution: canShowPronounDistribution = false
+	}: Props = $props();
 
 	// Build settings URL with redirect back to current page
 	const settingsUrl = $derived.by(() => {
@@ -51,7 +58,7 @@
 	const PAGE_SIZE = 100;
 	let currentPage = $state(1);
 	let showAll = $state(false);
-	let showPronounDistribution = $state(false);
+	let pronounSectionExpanded = $state(false);
 
 	// Query for attendee list
 	const attendeesQuery = createQuery(() => ({
@@ -85,7 +92,7 @@
 
 			return response.data;
 		},
-		enabled: isAuthenticated && showPronounDistribution
+		enabled: isAuthenticated && canShowPronounDistribution && pronounSectionExpanded
 	}));
 
 	// Derived state for attendees
@@ -227,48 +234,50 @@
 		{/if}
 
 		<!-- Pronoun Distribution Toggle -->
-		<div class="mt-4 border-t pt-4">
-			<button
-				type="button"
-				class="flex w-full items-center justify-between gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-				onclick={() => (showPronounDistribution = !showPronounDistribution)}
-				aria-expanded={showPronounDistribution}
-				aria-controls="pronoun-distribution"
-			>
-				<span class="flex items-center gap-2">
-					<BarChart3 class="h-4 w-4" aria-hidden="true" />
-					{m['pronounDistribution.title']()}
-				</span>
-				{#if showPronounDistribution}
-					<ChevronUp class="h-4 w-4" aria-hidden="true" />
-				{:else}
-					<ChevronDown class="h-4 w-4" aria-hidden="true" />
-				{/if}
-			</button>
-
-			<!-- Pronoun Distribution Content -->
-			{#if showPronounDistribution}
-				<div id="pronoun-distribution" class="mt-3" transition:slide={{ duration: 200 }}>
-					{#if pronounQuery.isLoading}
-						<div class="flex items-center justify-center py-4">
-							<Loader2 class="h-5 w-5 animate-spin text-muted-foreground" aria-hidden="true" />
-							<span class="sr-only">{m['pronounDistribution.loading']()}</span>
-						</div>
-					{:else if pronounQuery.isError}
-						<p class="text-sm text-destructive">{m['pronounDistribution.error']()}</p>
-					{:else if pronounTotalAttendees === 0}
-						<p class="text-sm text-muted-foreground">{m['pronounDistribution.noAttendees']()}</p>
+		{#if canShowPronounDistribution}
+			<div class="mt-4 border-t pt-4">
+				<button
+					type="button"
+					class="flex w-full items-center justify-between gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+					onclick={() => (pronounSectionExpanded = !pronounSectionExpanded)}
+					aria-expanded={pronounSectionExpanded}
+					aria-controls="pronoun-distribution"
+				>
+					<span class="flex items-center gap-2">
+						<BarChart3 class="h-4 w-4" aria-hidden="true" />
+						{m['pronounDistribution.title']()}
+					</span>
+					{#if pronounSectionExpanded}
+						<ChevronUp class="h-4 w-4" aria-hidden="true" />
 					{:else}
-						<PronounDistributionChart
-							{distribution}
-							totalAttendees={pronounTotalAttendees}
-							{totalWithPronouns}
-							{totalWithoutPronouns}
-						/>
+						<ChevronDown class="h-4 w-4" aria-hidden="true" />
 					{/if}
-				</div>
-			{/if}
-		</div>
+				</button>
+
+				<!-- Pronoun Distribution Content -->
+				{#if pronounSectionExpanded}
+					<div id="pronoun-distribution" class="mt-3" transition:slide={{ duration: 200 }}>
+						{#if pronounQuery.isLoading}
+							<div class="flex items-center justify-center py-4">
+								<Loader2 class="h-5 w-5 animate-spin text-muted-foreground" aria-hidden="true" />
+								<span class="sr-only">{m['pronounDistribution.loading']()}</span>
+							</div>
+						{:else if pronounQuery.isError}
+							<p class="text-sm text-destructive">{m['pronounDistribution.error']()}</p>
+						{:else if pronounTotalAttendees === 0}
+							<p class="text-sm text-muted-foreground">{m['pronounDistribution.noAttendees']()}</p>
+						{:else}
+							<PronounDistributionChart
+								{distribution}
+								totalAttendees={pronounTotalAttendees}
+								{totalWithPronouns}
+								{totalWithoutPronouns}
+							/>
+						{/if}
+					</div>
+				{/if}
+			</div>
+		{/if}
 
 		<!-- User visibility settings info -->
 		{#if userVisibility}

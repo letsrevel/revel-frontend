@@ -808,6 +808,8 @@
 		"acceptInvitationRequests": "Accetta richieste di invito",
 		"requireFullProfile": "Richiedi profilo completo",
 		"requireFullProfileHint": "I partecipanti devono avere una foto profilo, nome e pronomi per confermare presenza o acquistare biglietti",
+		"publicPronounDistribution": "Distribuzione pronomi pubblica",
+		"publicPronounDistributionHint": "Mostra le statistiche sulla distribuzione dei pronomi a tutti i partecipanti, non solo allo staff",
 		"applicationDeadline": "Scadenza Candidatura",
 		"applicationDeadlineHint": "Termine per l'invio di richieste di invito o questionari. Fuso orario: {timezone}",
 		"canAttendWithoutLogin": "Consenti partecipazione ospite",
