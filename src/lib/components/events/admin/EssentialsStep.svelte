@@ -186,8 +186,15 @@
 		// Special case: public visibility + members-only type → join org CTA
 		const showJoinOrgHint = visibility === 'public' && eventType === 'members-only';
 
+		// Build the full "who can view" sentence
+		const viewDescription =
+			visibility === 'unlisted'
+				? 'This event is hidden from search results and listings — only accessible via direct link'
+				: `${whoCanSee} can see this event in search results and listings`;
+
 		return {
 			whoCanSee,
+			viewDescription,
 			whoCanAttend,
 			showJoinOrgHint
 		};
@@ -583,7 +590,7 @@
 					<div class="mt-2 space-y-1 text-sm text-blue-800 dark:text-blue-200">
 						<p>
 							<strong>Who can view:</strong>
-							{combinationExplanation.whoCanSee} can see this event in search results and listings
+							{combinationExplanation.viewDescription}
 						</p>
 						<p>
 							<strong>Who can attend:</strong>
