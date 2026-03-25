@@ -6,6 +6,8 @@
 		"whereWillThisEventTakePlace": "Where will this event take place?",
 		"public": "Public",
 		"anyoneCanSee": "Anyone can see the event",
+		"unlisted": "Unlisted",
+		"unlistedDescription": "Accessible via direct link only — not shown in listings",
 		"private": "Private",
 		"onlyInvitedUsers": "Only invited users can see the event",
 		"membersOnly": "Members Only",
@@ -1082,7 +1084,8 @@
 		"rsvpClosed": "RSVP Closed",
 		"membersOnly": "Members Only",
 		"private": "Private",
-		"public": "Public"
+		"public": "Public",
+		"unlisted": "Unlisted"
 	},
 	"eventCard": {
 		"viewDetails": "View event details",

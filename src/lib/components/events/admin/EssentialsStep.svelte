@@ -167,11 +167,13 @@
 		const whoCanSee =
 			visibility === 'public'
 				? 'Everyone'
-				: visibility === 'members-only'
-					? 'Only organization members'
-					: visibility === 'staff-only'
-						? 'Only organization staff'
-						: 'Only invited users'; // private
+				: visibility === 'unlisted'
+					? 'Only people with the direct link'
+					: visibility === 'members-only'
+						? 'Only organization members'
+						: visibility === 'staff-only'
+							? 'Only organization staff'
+							: 'Only invited users'; // private
 
 		// Define who can attend
 		const whoCanAttend =
@@ -390,6 +392,27 @@
 					</div>
 					<div class="text-sm text-muted-foreground group-hover:text-accent-foreground/80">
 						{m['SFwESEssentialsStep.anyoneCanSee']()}
+					</div>
+				</div>
+			</label>
+
+			<label
+				class="group flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+			>
+				<input
+					type="radio"
+					name="visibility"
+					value="unlisted"
+					checked={formData.visibility === 'unlisted'}
+					onchange={(e) => onUpdate({ visibility: e.currentTarget.value as 'unlisted' })}
+					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+				/>
+				<div class="flex-1">
+					<div class="font-medium group-hover:text-accent-foreground">
+						{m['SFwESEssentialsStep.unlisted']()}
+					</div>
+					<div class="text-sm text-muted-foreground group-hover:text-accent-foreground/80">
+						{m['SFwESEssentialsStep.unlistedDescription']()}
 					</div>
 				</div>
 			</label>

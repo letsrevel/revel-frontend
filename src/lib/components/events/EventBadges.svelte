@@ -4,11 +4,13 @@
 	import { isEventPast, isRSVPClosed } from '$lib/utils/date';
 	import { isEventFull } from '$lib/utils/event';
 	import { cn } from '$lib/utils/cn';
+	import { EyeOff } from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Badge {
 		label: string;
 		variant: 'default' | 'success' | 'secondary' | 'destructive' | 'outline' | 'cancelled';
+		hasIcon?: boolean;
 	}
 
 	interface Props {
@@ -34,6 +36,11 @@
 			result.push({ label: m['orgAdmin.events.status.cancelled'](), variant: 'cancelled' });
 		} else if (event.status === 'closed') {
 			result.push({ label: m['orgAdmin.events.status.closed'](), variant: 'destructive' });
+		}
+
+		// Priority 0.5: Unlisted visibility (important context for staff/owners who can see it)
+		if (event.visibility === 'unlisted') {
+			result.push({ label: m['eventBadges.unlisted'](), variant: 'outline', hasIcon: true });
 		}
 
 		// If we already have 2 badges, stop here
@@ -89,7 +96,7 @@
 	 */
 	function getBadgeClasses(variant: Badge['variant']): string {
 		const baseClasses =
-			'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors';
+			'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors';
 
 		const variantClasses = {
 			default: 'bg-primary text-primary-foreground hover:bg-primary/90',
@@ -110,6 +117,9 @@
 	<div class={cn('flex flex-wrap gap-2', className)}>
 		{#each badges as badge}
 			<span class={getBadgeClasses(badge.variant)}>
+				{#if badge.hasIcon}
+					<EyeOff class="h-3 w-3" aria-hidden="true" />
+				{/if}
 				{badge.label}
 			</span>
 		{/each}
