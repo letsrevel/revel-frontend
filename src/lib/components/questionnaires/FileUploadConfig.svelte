@@ -17,7 +17,8 @@
 			label: 'Audio (MP3, WAV, OGG, M4A)',
 			// video/webm included because browser MediaRecorder produces video/webm container
 			// even for audio-only recordings (libmagic detects WebM container as video/webm)
-			// audio/mp4 covers .m4a files (AAC audio in MP4 container)
+			// audio/mp4 and video/mp4 cover .m4a files (AAC audio in MP4 container)
+			// as libmagic may detect these as either audio/mp4 or video/mp4
 			mimeTypes: [
 				'audio/mpeg',
 				'audio/wav',
@@ -25,6 +26,7 @@
 				'audio/webm',
 				'audio/aac',
 				'audio/mp4',
+				'video/mp4',
 				'video/webm'
 			]
 		},
