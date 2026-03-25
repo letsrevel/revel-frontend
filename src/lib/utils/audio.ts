@@ -10,7 +10,8 @@
 export function isAudio(mimeType: string): boolean {
 	// video/webm is included because browser MediaRecorder produces video/webm container
 	// even for audio-only recordings (libmagic detects WebM container as video/webm)
-	return mimeType.startsWith('audio/') || mimeType === 'video/webm';
+	// video/mp4 is included because libmagic may detect .m4a files as video/mp4
+	return mimeType.startsWith('audio/') || mimeType === 'video/webm' || mimeType === 'video/mp4';
 }
 
 /**

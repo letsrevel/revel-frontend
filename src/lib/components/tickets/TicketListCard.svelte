@@ -177,8 +177,8 @@
 					</a>
 				{/if}
 
-				<!-- Add to Wallet -->
-				{#if ticket.apple_pass_available && ticket.id}
+				<!-- Add to Wallet (hide for cancelled tickets) -->
+				{#if ticket.apple_pass_available && ticket.id && ticket.status !== 'cancelled'}
 					<AddToWalletButton ticketId={ticket.id} eventName={ticket.event.name} variant="default" />
 				{/if}
 			</div>
