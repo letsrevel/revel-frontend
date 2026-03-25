@@ -13,6 +13,7 @@
 		Users,
 		Edit,
 		Eye,
+		EyeOff,
 		Trash2,
 		CheckCircle,
 		XCircle,
@@ -110,6 +111,15 @@
 		<div class="flex items-start justify-between gap-2">
 			<h3 class="flex-1 font-semibold">{event.name}</h3>
 			<div class="flex items-center gap-2">
+				{#if event.visibility === 'unlisted'}
+					<span
+						class="inline-flex items-center gap-1 rounded-full border border-input bg-background px-2 py-1 text-xs font-medium text-muted-foreground"
+						title={m['eventBadges.unlisted']()}
+					>
+						<EyeOff class="h-3 w-3" aria-hidden="true" />
+						{m['eventBadges.unlisted']()}
+					</span>
+				{/if}
 				<span
 					class={cn(
 						'rounded-full px-2 py-1 text-xs font-medium',

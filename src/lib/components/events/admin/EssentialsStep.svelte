@@ -167,11 +167,13 @@
 		const whoCanSee =
 			visibility === 'public'
 				? 'Everyone'
-				: visibility === 'members-only'
-					? 'Only organization members'
-					: visibility === 'staff-only'
-						? 'Only organization staff'
-						: 'Only invited users'; // private
+				: visibility === 'unlisted'
+					? 'Only people with the direct link'
+					: visibility === 'members-only'
+						? 'Only organization members'
+						: visibility === 'staff-only'
+							? 'Only organization staff'
+							: 'Only invited users'; // private
 
 		// Define who can attend
 		const whoCanAttend =
@@ -184,8 +186,15 @@
 		// Special case: public visibility + members-only type → join org CTA
 		const showJoinOrgHint = visibility === 'public' && eventType === 'members-only';
 
+		// Build the full "who can view" sentence
+		const viewDescription =
+			visibility === 'unlisted'
+				? 'This event is hidden from search results and listings — only accessible via direct link'
+				: `${whoCanSee} can see this event in search results and listings`;
+
 		return {
 			whoCanSee,
+			viewDescription,
 			whoCanAttend,
 			showJoinOrgHint
 		};
@@ -400,6 +409,27 @@
 				<input
 					type="radio"
 					name="visibility"
+					value="unlisted"
+					checked={formData.visibility === 'unlisted'}
+					onchange={(e) => onUpdate({ visibility: e.currentTarget.value as 'unlisted' })}
+					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+				/>
+				<div class="flex-1">
+					<div class="font-medium group-hover:text-accent-foreground">
+						{m['SFwESEssentialsStep.unlisted']()}
+					</div>
+					<div class="text-sm text-muted-foreground group-hover:text-accent-foreground/80">
+						{m['SFwESEssentialsStep.unlistedDescription']()}
+					</div>
+				</div>
+			</label>
+
+			<label
+				class="group flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+			>
+				<input
+					type="radio"
+					name="visibility"
 					value="private"
 					checked={formData.visibility === 'private'}
 					onchange={(e) => onUpdate({ visibility: e.currentTarget.value as 'private' })}
@@ -560,7 +590,7 @@
 					<div class="mt-2 space-y-1 text-sm text-blue-800 dark:text-blue-200">
 						<p>
 							<strong>Who can view:</strong>
-							{combinationExplanation.whoCanSee} can see this event in search results and listings
+							{combinationExplanation.viewDescription}
 						</p>
 						<p>
 							<strong>Who can attend:</strong>
