@@ -953,29 +953,47 @@
 	}
 
 	.warm-keyword {
-		background: linear-gradient(135deg, hsl(30 80% 70%) 0%, hsl(350 65% 65%) 100%);
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
+		color: hsl(30 80% 65%);
+	}
+
+	@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+		.warm-keyword {
+			background: linear-gradient(135deg, hsl(30 80% 70%) 0%, hsl(350 65% 65%) 100%);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			background-clip: text;
+		}
 	}
 
 	:global(.revel-shine) {
 		display: inline-block;
-		background: linear-gradient(
-			105deg,
-			hsl(var(--primary)) 0%,
-			hsl(var(--primary)) 40%,
-			hsl(30 80% 70%) 48%,
-			hsl(350 65% 70%) 52%,
-			hsl(var(--primary)) 60%,
-			hsl(var(--primary)) 100%
-		);
-		background-size: 400% 100%;
-		background-position: 100% 0;
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
-		animation: shine-glare 7.5s ease-in-out infinite;
+		color: hsl(var(--primary));
+	}
+
+	@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+		:global(.revel-shine) {
+			background: linear-gradient(
+				105deg,
+				hsl(var(--primary)) 0%,
+				hsl(var(--primary)) 40%,
+				hsl(30 80% 70%) 48%,
+				hsl(350 65% 70%) 52%,
+				hsl(var(--primary)) 60%,
+				hsl(var(--primary)) 100%
+			);
+			background-size: 400% 100%;
+			background-position: 100% 0;
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			background-clip: text;
+			animation: shine-glare 7.5s ease-in-out infinite;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		:global(.revel-shine) {
+			animation: none;
+		}
 	}
 
 	@keyframes shine-glare {
