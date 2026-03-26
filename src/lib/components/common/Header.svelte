@@ -61,10 +61,7 @@
 	<div class="container mx-auto flex h-16 items-center justify-between px-4">
 		<!-- Logo -->
 		<div class="flex items-center gap-6">
-			<a
-				href={isAuthenticated ? '/dashboard' : '/'}
-				class="text-2xl font-bold text-primary transition-colors hover:text-primary/80"
-			>
+			<a href="/" class="text-2xl font-bold text-primary transition-colors hover:text-primary/80">
 				Revel
 			</a>
 

@@ -133,62 +133,72 @@
 	{@html `<script type="application/ld+json">${websiteJsonLd}<\/script>`}
 </svelte:head>
 
-<div class="container mx-auto px-4 py-16">
-	<div class="flex flex-col items-center justify-center text-center">
-		<h1 class="text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
-			{#if isItalian}
-				<!-- Italian with animated letter flip -->
-				Benvenut<span class="flip-container">
-					<span class="flip-letter" style="transform: rotateY({rotation}deg)">
-						{currentLetter}
+<div class="hero-warm-glow">
+	<div class="container mx-auto px-4 py-16">
+		<div class="flex flex-col items-center justify-center text-center">
+			<h1 class="text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
+				{#if isItalian}
+					<!-- Italian with animated letter flip -->
+					Benvenut<span class="flip-container">
+						<span class="flip-letter" style="transform: rotateY({rotation}deg)">
+							{currentLetter}
+						</span>
 					</span>
-				</span>
-				su <span class="text-primary">Revel</span>
-			{:else}
-				<!-- Other languages using i18n -->
-				{@html m['home.welcomeToRevel']({
-					revel: `<span class="text-primary">Revel</span>`
-				})}
-			{/if}
-		</h1>
-		<p class="mt-6 max-w-2xl text-lg text-muted-foreground">
-			{m['home.tagline']()}
-		</p>
-		<div class="mt-10 flex flex-wrap items-center justify-center gap-4">
-			<a
-				href="/events"
-				class="rounded-md bg-primary px-6 py-3 text-base font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+					su <span class="revel-shine">Revel</span>
+				{:else}
+					<!-- Other languages using i18n -->
+					{@html m['home.welcomeToRevel']({
+						revel: `<span class="revel-shine">Revel</span>`
+					})}
+				{/if}
+			</h1>
+			<p
+				class="mt-8 flex flex-wrap items-center justify-center gap-3 text-2xl font-semibold tracking-wide text-foreground/90 sm:gap-5 sm:text-3xl md:text-4xl"
 			>
-				{m['nav.browseEvents']()}
-			</a>
-			{#if isAuthenticated}
+				<span class="warm-keyword">{m['home.keywordFree']()}</span>
+				<span class="text-foreground/30" aria-hidden="true">&middot;</span>
+				<span class="warm-keyword">{m['home.keywordOpen']()}</span>
+				<span class="text-foreground/30" aria-hidden="true">&middot;</span>
+				<span class="warm-keyword">{m['home.keywordSafe']()}</span>
+			</p>
+			<div class="mt-10 flex flex-wrap items-center justify-center gap-4">
 				<a
-					href="/dashboard"
-					class="rounded-md border border-primary px-6 py-3 text-base font-semibold text-primary hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+					href="/events"
+					class="rounded-md bg-primary px-6 py-3 text-base font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
 				>
-					{m['userMenu.dashboard']()}
+					{m['nav.browseEvents']()}
 				</a>
-			{:else}
-				<a
-					href="/register"
-					class="rounded-md border border-primary px-6 py-3 text-base font-semibold text-primary hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-				>
-					{m['home.getStarted']()}
-				</a>
+				{#if isAuthenticated}
+					<a
+						href="/dashboard"
+						class="rounded-md border border-primary px-6 py-3 text-base font-semibold text-primary hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+					>
+						{m['userMenu.dashboard']()}
+					</a>
+				{:else}
+					<a
+						href="/register"
+						class="rounded-md border border-primary px-6 py-3 text-base font-semibold text-primary hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+					>
+						{m['home.getStarted']()}
+					</a>
+				{/if}
+			</div>
+			{#if !isAuthenticated}
+				<div class="mt-4">
+					<a
+						href="/login"
+						class="text-sm text-muted-foreground hover:text-foreground hover:underline"
+					>
+						{m['home.alreadyHaveAccount']()}
+					</a>
+				</div>
 			{/if}
 		</div>
-		{#if !isAuthenticated}
-			<div class="mt-4">
-				<a
-					href="/login"
-					class="text-sm text-muted-foreground hover:text-foreground hover:underline"
-				>
-					{m['home.alreadyHaveAccount']()}
-				</a>
-			</div>
-		{/if}
 	</div>
+</div>
 
+<div class="container mx-auto px-4">
 	<!-- Features Section -->
 	<div class="mt-24 grid gap-8 md:grid-cols-3">
 		<div class="rounded-lg border bg-card p-6 text-center">
@@ -912,5 +922,69 @@
 		display: inline-block;
 		transition: transform 0.6s ease-in-out;
 		transform-style: preserve-3d;
+	}
+
+	.hero-warm-glow {
+		position: relative;
+		overflow: hidden;
+	}
+
+	.hero-warm-glow::before {
+		content: '';
+		position: absolute;
+		top: -40%;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 80%;
+		height: 100%;
+		background: radial-gradient(
+			ellipse at center,
+			hsl(30 80% 55% / 0.06) 0%,
+			hsl(350 70% 55% / 0.03) 40%,
+			transparent 70%
+		);
+		pointer-events: none;
+		z-index: 0;
+	}
+
+	.hero-warm-glow > :global(*) {
+		position: relative;
+		z-index: 1;
+	}
+
+	.warm-keyword {
+		background: linear-gradient(135deg, hsl(30 80% 70%) 0%, hsl(350 65% 65%) 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+	}
+
+	:global(.revel-shine) {
+		display: inline-block;
+		background: linear-gradient(
+			105deg,
+			hsl(var(--primary)) 0%,
+			hsl(var(--primary)) 40%,
+			hsl(30 80% 70%) 48%,
+			hsl(350 65% 70%) 52%,
+			hsl(var(--primary)) 60%,
+			hsl(var(--primary)) 100%
+		);
+		background-size: 400% 100%;
+		background-position: 100% 0;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		animation: shine-glare 7.5s ease-in-out infinite;
+	}
+
+	@keyframes shine-glare {
+		0%,
+		67% {
+			background-position: 100% 0;
+		}
+		100% {
+			background-position: 0% 0;
+		}
 	}
 </style>
