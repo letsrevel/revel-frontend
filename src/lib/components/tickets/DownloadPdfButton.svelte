@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { ticketwalletDownloadPdf } from '$lib/api/generated/sdk.gen';
+	import { getBackendUrl } from '$lib/config/api';
 	import { FileDown } from 'lucide-svelte';
 
 	interface Props {
@@ -26,9 +27,9 @@
 		error = null;
 
 		try {
-			// If we have a pre-signed URL, use it directly
+			// If we have a pre-signed URL, resolve it against the backend
 			if (pdfUrl) {
-				window.open(pdfUrl, '_blank');
+				window.open(getBackendUrl(pdfUrl), '_blank');
 				return;
 			}
 

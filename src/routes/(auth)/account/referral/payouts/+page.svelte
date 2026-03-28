@@ -3,6 +3,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { goto } from '$app/navigation';
+	import { getBackendUrl } from '$lib/config/api';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { FileText, Download, Eye, Loader2, ArrowLeft } from 'lucide-svelte';
@@ -82,7 +83,7 @@
 			});
 			if (response.error) throw new Error('Failed to get download URL');
 			if (response.data?.download_url) {
-				window.open(response.data.download_url, '_blank');
+				window.open(getBackendUrl(response.data.download_url), '_blank');
 			}
 		} finally {
 			isDownloading = false;
