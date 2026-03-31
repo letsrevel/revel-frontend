@@ -2,17 +2,15 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { onMount } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
+	import { createQuery, createMutation } from '@tanstack/svelte-query';
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
 	import {
 		Check,
 		AlertCircle,
 		AlertTriangle,
 		CreditCard,
 		ExternalLink,
-		FileText,
 		Copy,
 		CircleCheck,
 		Circle,
@@ -21,18 +19,14 @@
 	import {
 		referralstripeConnect,
 		referralstripeVerify,
-		userbillingGetBillingProfile,
-		userbillingCreateBillingProfile,
-		userbillingUpdateBillingProfile,
-		userbillingSetVatId,
-		userbillingDeleteVatId
+		userbillingGetBillingProfile
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		UserBillingProfileSchema,
 		StripeAccountStatusSchema
 	} from '$lib/api/generated/types.gen';
+	import { BillingProfileForm } from '$lib/components/billing';
 
-	const queryClient = useQueryClient();
 	const user = $derived(authStore.user);
 	const accessToken = $derived(authStore.accessToken);
 	const referralCode = $derived(user?.referral_code);
@@ -120,27 +114,6 @@
 	const billingProfile = $derived(billingQuery.data);
 	const hasBillingProfile = $derived(billingProfile !== null && billingProfile !== undefined);
 
-	// Form state for billing
-	let billingName = $state('');
-	let billingAddress = $state('');
-	let vatCountryCode = $state('');
-	let billingEmail = $state('');
-	let vatIdInput = $state('');
-	let selfBillingAgreed = $state(false);
-	let billingSaveStatus = $state<'idle' | 'saving' | 'saved' | 'error'>('idle');
-
-	// Sync form state from query data
-	$effect(() => {
-		if (billingProfile) {
-			billingName = billingProfile.billing_name || '';
-			billingAddress = billingProfile.billing_address || '';
-			vatCountryCode = billingProfile.vat_country_code || '';
-			billingEmail = billingProfile.billing_email || '';
-			vatIdInput = billingProfile.vat_id || '';
-			selfBillingAgreed = billingProfile.self_billing_agreed ?? false;
-		}
-	});
-
 	const isBillingComplete = $derived(
 		hasBillingProfile &&
 			!!billingProfile?.billing_name &&
@@ -152,79 +125,6 @@
 
 	// Payout eligibility
 	const isPayoutEligible = $derived(isStripeFullySetup && isBillingComplete && isSelfBillingAgreed);
-
-	// Billing save mutation
-	const billingSaveMutation = createMutation(() => ({
-		mutationFn: async () => {
-			const headers = { Authorization: `Bearer ${accessToken}` };
-			const body = {
-				billing_name: billingName,
-				billing_address: billingAddress,
-				vat_country_code: vatCountryCode,
-				...(billingEmail ? { billing_email: billingEmail } : {}),
-				self_billing_agreed: selfBillingAgreed
-			};
-
-			if (hasBillingProfile) {
-				const response = await userbillingUpdateBillingProfile({
-					headers,
-					body
-				});
-				if (response.error) throw new Error('Failed to update billing profile');
-				return response.data;
-			} else {
-				const response = await userbillingCreateBillingProfile({
-					headers,
-					body
-				});
-				if (response.error) throw new Error('Failed to create billing profile');
-				return response.data;
-			}
-		},
-		onSuccess: () => {
-			billingSaveStatus = 'saved';
-			queryClient.invalidateQueries({ queryKey: ['user-billing-profile'] });
-			setTimeout(() => (billingSaveStatus = 'idle'), 2000);
-		},
-		onError: () => {
-			billingSaveStatus = 'error';
-			setTimeout(() => (billingSaveStatus = 'idle'), 3000);
-		}
-	}));
-
-	function handleBillingSave() {
-		billingSaveStatus = 'saving';
-		billingSaveMutation.mutate();
-	}
-
-	// VAT ID mutations
-	const vatSetMutation = createMutation(() => ({
-		mutationFn: async () => {
-			const response = await userbillingSetVatId({
-				headers: { Authorization: `Bearer ${accessToken}` },
-				body: { vat_id: vatIdInput }
-			});
-			if (response.error) throw new Error('Failed to set VAT ID');
-			return response.data;
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['user-billing-profile'] });
-		}
-	}));
-
-	const vatDeleteMutation = createMutation(() => ({
-		mutationFn: async () => {
-			const response = await userbillingDeleteVatId({
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
-			if (response.error) throw new Error('Failed to remove VAT ID');
-			return response.data;
-		},
-		onSuccess: () => {
-			vatIdInput = '';
-			queryClient.invalidateQueries({ queryKey: ['user-billing-profile'] });
-		}
-	}));
 
 	// Copy referral link
 	let linkCopied = $state(false);
@@ -487,191 +387,13 @@
 		<!-- Billing Information -->
 		<section class="mt-6 rounded-lg border bg-card p-6">
 			<div class="mb-4 flex items-center gap-2">
-				<FileText class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-				<h2 class="text-lg font-semibold">{m['referral.billingInfo']()}</h2>
+				<CreditCard class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+				<div>
+					<h2 class="text-lg font-semibold">{m['billing.form.title']()}</h2>
+					<p class="mt-1 text-sm text-muted-foreground">{m['billing.form.description']()}</p>
+				</div>
 			</div>
-			<p class="text-sm text-muted-foreground">{m['referral.billingInfoDescription']()}</p>
-
-			{#if hasBillingProfile && !isBillingComplete}
-				<div
-					class="mt-4 flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-950/30"
-					role="alert"
-				>
-					<AlertTriangle
-						class="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400"
-						aria-hidden="true"
-					/>
-					<div>
-						<p class="font-medium text-amber-900 dark:text-amber-100">
-							{m['referral.billingIncomplete']()}
-						</p>
-						<p class="mt-1 text-sm text-amber-800 dark:text-amber-200">
-							{m['referral.billingIncompleteDescription']()}
-						</p>
-					</div>
-				</div>
-			{/if}
-
-			<form
-				onsubmit={(e) => {
-					e.preventDefault();
-					handleBillingSave();
-				}}
-				class="mt-4 space-y-4"
-			>
-				<div class="space-y-2">
-					<label for="billingName" class="block text-sm font-medium">
-						{m['referral.billingName']()} *
-					</label>
-					<Input
-						id="billingName"
-						bind:value={billingName}
-						placeholder={m['referral.billingNamePlaceholder']()}
-						required
-					/>
-				</div>
-
-				<div class="space-y-2">
-					<label for="billingAddress" class="block text-sm font-medium">
-						{m['referral.billingAddress']()} *
-					</label>
-					<Input
-						id="billingAddress"
-						bind:value={billingAddress}
-						placeholder={m['referral.billingAddressPlaceholder']()}
-						required
-					/>
-				</div>
-
-				<div class="space-y-2">
-					<label for="vatCountryCode" class="block text-sm font-medium">
-						{m['referral.vatCountryCode']()} *
-					</label>
-					<Input
-						id="vatCountryCode"
-						bind:value={vatCountryCode}
-						placeholder={m['referral.vatCountryCodePlaceholder']()}
-						maxlength={2}
-						class="uppercase"
-						required
-					/>
-				</div>
-
-				<div class="space-y-2">
-					<label for="billingEmail" class="block text-sm font-medium">
-						{m['referral.billingEmail']()}
-					</label>
-					<Input
-						id="billingEmail"
-						type="email"
-						bind:value={billingEmail}
-						placeholder={m['referral.billingEmailPlaceholder']()}
-					/>
-				</div>
-
-				<!-- Self-Billing Agreement -->
-				<div class="rounded-lg border bg-muted/50 p-4">
-					<h3 class="text-sm font-semibold">{m['referral.selfBilling']()}</h3>
-					<p class="mt-1 text-xs text-muted-foreground">
-						{m['referral.selfBillingDescription']()}
-					</p>
-					<label class="mt-3 flex items-start gap-3">
-						<input
-							type="checkbox"
-							bind:checked={selfBillingAgreed}
-							class="mt-1 h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
-						/>
-						<span class="text-sm">
-							{m['referral.selfBillingCheckbox']()}
-							<a
-								href="/legal/terms"
-								target="_blank"
-								rel="noopener noreferrer"
-								class="text-primary underline-offset-4 hover:underline"
-							>
-								{m['referral.termsAndConditions']()}
-							</a>.
-						</span>
-					</label>
-				</div>
-
-				<div class="flex items-center gap-3">
-					<Button type="submit" disabled={billingSaveMutation.isPending || !billingName}>
-						{#if billingSaveStatus === 'saving'}
-							<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-							{m['referral.saving']()}
-						{:else if billingSaveStatus === 'saved'}
-							<Check class="mr-2 h-4 w-4" aria-hidden="true" />
-							{m['referral.saved']()}
-						{:else}
-							{hasBillingProfile ? m['referral.updateBilling']() : m['referral.saveBilling']()}
-						{/if}
-					</Button>
-
-					{#if billingSaveStatus === 'error'}
-						<span class="text-sm text-destructive">{m['referral.error']()}</span>
-					{/if}
-				</div>
-			</form>
-
-			<!-- VAT ID Section (only shown after billing profile exists) -->
-			{#if hasBillingProfile}
-				<div class="mt-6 border-t pt-4">
-					<h3 class="text-sm font-semibold">{m['referral.vatId']()}</h3>
-					<p class="mt-1 text-xs text-muted-foreground">
-						{m['referral.vatIdDescription']()}
-					</p>
-
-					{#if billingProfile?.vat_id}
-						<div class="mt-3 flex items-center gap-3">
-							<span class="font-mono text-sm">{billingProfile.vat_id}</span>
-							{#if billingProfile.vat_id_validated}
-								<span
-									class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300"
-								>
-									<Check class="h-3 w-3" aria-hidden="true" />
-									{m['referral.vatIdValidated']()}
-								</span>
-							{:else}
-								<span
-									class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/50 dark:text-amber-300"
-								>
-									<AlertCircle class="h-3 w-3" aria-hidden="true" />
-									{m['referral.vatIdNotValidated']()}
-								</span>
-							{/if}
-							<Button
-								variant="ghost"
-								size="sm"
-								onclick={() => vatDeleteMutation.mutate()}
-								disabled={vatDeleteMutation.isPending}
-								class="text-destructive"
-							>
-								{m['referral.removeVatId']()}
-							</Button>
-						</div>
-					{:else}
-						<div class="mt-3 flex gap-2">
-							<Input
-								bind:value={vatIdInput}
-								placeholder={m['referral.vatIdPlaceholder']()}
-								class="max-w-xs uppercase"
-							/>
-							<Button
-								variant="outline"
-								onclick={() => vatSetMutation.mutate()}
-								disabled={vatSetMutation.isPending || !vatIdInput.trim()}
-							>
-								{#if vatSetMutation.isPending}
-									<Loader2 class="h-4 w-4 animate-spin" />
-								{:else}
-									{m['referral.setVatId']()}
-								{/if}
-							</Button>
-						</div>
-					{/if}
-				</div>
-			{/if}
+			<BillingProfileForm authToken={accessToken} showSelfBilling={true} />
 		</section>
 
 		<!-- Link to Payouts -->

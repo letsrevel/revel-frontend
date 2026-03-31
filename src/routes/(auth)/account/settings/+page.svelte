@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import { NotificationPreferencesForm } from '$lib/components/notifications';
+	import { BillingProfileForm } from '$lib/components/billing';
 	import CityAutocomplete from '$lib/components/forms/CityAutocomplete.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
@@ -11,7 +12,7 @@
 	import { userpreferencesUpdateGeneralPreferences } from '$lib/api/generated';
 	import type { CitySchema } from '$lib/api/generated';
 	import { toast } from 'svelte-sonner';
-	import { Loader2, Eye, Info } from 'lucide-svelte';
+	import { Loader2, Eye, Info, FileText } from 'lucide-svelte';
 
 	interface Props {
 		data: PageData;
@@ -175,6 +176,20 @@
 					</Button>
 				</div>
 			</div>
+		</div>
+
+		<!-- Billing Information -->
+		<div class="mb-8 rounded-lg border bg-card p-6">
+			<div class="mb-4 flex items-center gap-2">
+				<FileText class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+				<div>
+					<h2 class="text-xl font-semibold">{m['accountSettingsPage.billing.title']()}</h2>
+					<p class="mt-1 text-sm text-muted-foreground">
+						{m['accountSettingsPage.billing.description']()}
+					</p>
+				</div>
+			</div>
+			<BillingProfileForm authToken={data.accessToken} />
 		</div>
 
 		<!-- Notification Settings -->

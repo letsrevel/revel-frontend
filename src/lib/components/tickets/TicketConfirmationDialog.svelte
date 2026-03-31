@@ -26,12 +26,14 @@
 		TicketPurchaseItem,
 		SeatAssignmentMode,
 		SectorAvailabilitySchema,
-		DiscountCodeValidationResponse
+		DiscountCodeValidationResponse,
+		BuyerBillingInfoSchema
 	} from '$lib/api/generated/types.gen';
 	import { eventpublicticketsGetTierSeatAvailability } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import DiscountCodeInput from './DiscountCodeInput.svelte';
+	import CheckoutBillingSection from './CheckoutBillingSection.svelte';
 	import GuestNameInputs from './GuestNameInputs.svelte';
 	import PwycInput from './PwycInput.svelte';
 	import SeatAssignmentSection from './SeatAssignmentSection.svelte';
@@ -40,6 +42,7 @@
 		amount?: number;
 		tickets: TicketPurchaseItem[];
 		discountCode?: string;
+		billingInfo?: BuyerBillingInfoSchema;
 	}
 
 	interface Props {
@@ -91,6 +94,12 @@
 
 	// API error from backend
 	let apiError = $state('');
+
+	// Billing section ref
+	let billingSection: CheckoutBillingSection | undefined = $state();
+
+	// Whether invoicing is available for this tier
+	const invoicingAvailable = $derived(!!tier.invoicing_available);
 
 	// Discount code state
 	let discountResult = $state<DiscountCodeValidationResponse | null>(null);
@@ -358,6 +367,9 @@
 		if (!setGuestNameErrorMessage()) return;
 		if (!setPwycErrorMessage()) return;
 
+		// Validate billing section if open
+		if (billingSection && !billingSection.validate()) return;
+
 		// For user_choice seats, validate seat selection
 		if (isUserChoiceSeat && selectedSeatIds.length !== quantity) {
 			const remaining = quantity - selectedSeatIds.length;
@@ -380,6 +392,10 @@
 		const payload: ConfirmPayload = { tickets };
 		if (isPwyc && pwycAmount.trim()) payload.amount = parseFloat(pwycAmount);
 		if (appliedDiscountCode && discountResult?.valid) payload.discountCode = appliedDiscountCode;
+
+		// Attach billing info if provided
+		const billingInfo = billingSection?.getBillingInfo();
+		if (billingInfo) payload.billingInfo = billingInfo;
 
 		try {
 			await onConfirm(payload);
@@ -573,6 +589,27 @@
 						pwycError = '';
 					}}
 					onKeydown={handleKeydown}
+				/>
+			{/if}
+
+			<!-- Billing Information (for invoicing) -->
+			{#if invoicingAvailable}
+				<CheckoutBillingSection
+					bind:this={billingSection}
+					{eventId}
+					tierId={tier.id}
+					tierName={tier.name}
+					{quantity}
+					currency={tier.currency}
+					price={tier.price}
+					{isPwyc}
+					pwycAmount={isPwyc ? pwycAmount : undefined}
+					discountCode={appliedDiscountCode && discountResult?.valid
+						? appliedDiscountCode
+						: undefined}
+					isAuthenticated={!!authStore.accessToken}
+					authToken={authStore.accessToken}
+					disabled={isProcessing}
 				/>
 			{/if}
 

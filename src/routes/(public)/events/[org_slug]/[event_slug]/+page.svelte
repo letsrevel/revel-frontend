@@ -41,7 +41,8 @@
 		BatchCheckoutPwycPayload,
 		BatchCheckoutResponse,
 		TicketPurchaseItem,
-		TierRemainingTicketsSchema
+		TierRemainingTicketsSchema,
+		BuyerBillingInfoSchema
 	} from '$lib/api/generated/types.gen';
 	import { getPotluckPermissions } from '$lib/utils/permissions';
 	import { formatEventLocation } from '$lib/utils/event';
@@ -250,6 +251,7 @@
 		tierId: string;
 		tickets: TicketPurchaseItem[];
 		discountCode?: string;
+		billingInfo?: BuyerBillingInfoSchema;
 	}
 
 	interface PwycCheckoutParams extends CheckoutParams {
@@ -330,10 +332,11 @@
 
 	// Ticket claiming mutation (for free/offline tickets) - batch version
 	const claimTicketMutation = createMutation(() => ({
-		mutationFn: async ({ tierId, tickets, discountCode }: CheckoutParams) => {
+		mutationFn: async ({ tierId, tickets, discountCode, billingInfo }: CheckoutParams) => {
 			const body: BatchCheckoutPayload = {
 				tickets,
-				discount_code: discountCode || undefined
+				discount_code: discountCode || undefined,
+				billing_info: billingInfo || undefined
 			};
 			const response = await eventpublicticketsTicketCheckout({
 				path: { event_id: event.id, tier_id: tierId },
@@ -350,10 +353,11 @@
 
 	// Fixed-price checkout mutation (for online payments) - batch version
 	const checkoutMutation = createMutation(() => ({
-		mutationFn: async ({ tierId, tickets, discountCode }: CheckoutParams) => {
+		mutationFn: async ({ tierId, tickets, discountCode, billingInfo }: CheckoutParams) => {
 			const body: BatchCheckoutPayload = {
 				tickets,
-				discount_code: discountCode || undefined
+				discount_code: discountCode || undefined,
+				billing_info: billingInfo || undefined
 			};
 			const response = await eventpublicticketsTicketCheckout({
 				path: { event_id: event.id, tier_id: tierId },
@@ -370,10 +374,11 @@
 
 	// PWYC checkout mutation - batch version
 	const pwycCheckoutMutation = createMutation(() => ({
-		mutationFn: async ({ tierId, tickets, pricePerTicket }: PwycCheckoutParams) => {
+		mutationFn: async ({ tierId, tickets, pricePerTicket, billingInfo }: PwycCheckoutParams) => {
 			const body: BatchCheckoutPwycPayload = {
 				tickets,
-				price_per_ticket: pricePerTicket
+				price_per_ticket: pricePerTicket,
+				billing_info: billingInfo || undefined
 			};
 			const response = await eventpublicticketsTicketPwycCheckout({
 				path: { event_id: event.id, tier_id: tierId },
@@ -405,10 +410,16 @@
 	async function handleClaimTicket(
 		tierId: string,
 		tickets?: TicketPurchaseItem[],
-		discountCode?: string
+		discountCode?: string,
+		billingInfo?: BuyerBillingInfoSchema
 	) {
 		const ticketItems = tickets || [{ guest_name: getDefaultGuestName() }];
-		await claimTicketMutation.mutateAsync({ tierId, tickets: ticketItems, discountCode });
+		await claimTicketMutation.mutateAsync({
+			tierId,
+			tickets: ticketItems,
+			discountCode,
+			billingInfo
+		});
 	}
 
 	/**
@@ -418,13 +429,15 @@
 	 * @param amount - Price per ticket for PWYC tiers
 	 * @param tickets - Optional tickets array (defaults to single ticket with empty guest name)
 	 * @param discountCode - Optional discount code
+	 * @param billingInfo - Optional billing info for invoicing
 	 */
 	async function handleCheckout(
 		tierId: string,
 		isPwyc: boolean,
 		amount?: number,
 		tickets?: TicketPurchaseItem[],
-		discountCode?: string
+		discountCode?: string,
+		billingInfo?: BuyerBillingInfoSchema
 	) {
 		const ticketItems = tickets || [{ guest_name: getDefaultGuestName() }];
 
@@ -433,14 +446,16 @@
 			await pwycCheckoutMutation.mutateAsync({
 				tierId,
 				tickets: ticketItems,
-				pricePerTicket: amount
+				pricePerTicket: amount,
+				billingInfo
 			});
 		} else {
 			// Direct checkout for fixed-price tiers
 			await checkoutMutation.mutateAsync({
 				tierId,
 				tickets: ticketItems,
-				discountCode
+				discountCode,
+				billingInfo
 			});
 		}
 	}
