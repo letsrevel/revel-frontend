@@ -2190,7 +2190,8 @@
 		},
 		"eeaCards": "EEA cards",
 		"pricingExcludingStripeFees": "excluding Stripe's fees",
-		"pricingHappyToNegotiate": "We're happy to negotiate"
+		"pricingHappyToNegotiate": "We're happy to negotiate",
+		"feesExcludeVat": "Platform fees are exclusive of VAT, where applicable."
 	},
 	"learnMore.startOrganizing": "Start Organizing",
 	"learnMore.startOrganizingDescription": "Create your organization and start hosting amazing events for your community.",
