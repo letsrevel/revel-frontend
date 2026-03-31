@@ -40,6 +40,7 @@
 		SectorAvailabilitySchema
 	} from '$lib/api/generated/types.gen';
 	import SeatSelector from '$lib/components/tickets/SeatSelector.svelte';
+	import CheckoutBillingSection from '$lib/components/tickets/CheckoutBillingSection.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 
 	interface Props {
@@ -90,6 +91,10 @@
 	let showSuccess = $state(false);
 	let errorMessage = $state<string | null>(null);
 	let requiresAccount = $state(false);
+
+	// Billing section
+	let billingSection: CheckoutBillingSection | undefined = $state();
+	const invoicingAvailable = $derived(!!tier.invoicing_available);
 
 	// Next steps that guests can perform without an account
 	const GUEST_COMPATIBLE_STEPS = new Set([
@@ -412,6 +417,9 @@
 		// Validate guest names
 		if (!validateGuestNames()) return;
 
+		// Validate billing section if open
+		if (billingSection && !billingSection.validate()) return;
+
 		// Validate seat selection for user_choice mode
 		if (isUserChoiceSeat && selectedSeatIds.length !== quantity) {
 			const remaining = quantity - selectedSeatIds.length;
@@ -447,6 +455,8 @@
 				return ticket;
 			});
 
+			const billingInfo = billingSection?.getBillingInfo() || undefined;
+
 			if (isPwyc) {
 				// PWYC checkout
 				const pwycNumber = parseFloat(formData.pwyc || '0');
@@ -457,7 +467,8 @@
 						first_name: formData.first_name,
 						last_name: formData.last_name,
 						tickets,
-						price_per_ticket: pwycNumber
+						price_per_ticket: pwycNumber,
+						billing_info: billingInfo
 					}
 				});
 			} else {
@@ -468,7 +479,8 @@
 						email: formData.email,
 						first_name: formData.first_name,
 						last_name: formData.last_name,
-						tickets
+						tickets,
+						billing_info: billingInfo
 					}
 				});
 			}
@@ -888,6 +900,23 @@
 								</div>
 							</div>
 						</div>
+					{/if}
+
+					<!-- Billing Information (for invoicing) -->
+					{#if invoicingAvailable}
+						<CheckoutBillingSection
+							bind:this={billingSection}
+							{eventId}
+							tierId={tier.id}
+							tierName={tier.name}
+							{quantity}
+							currency={tier.currency}
+							price={tier.price}
+							{isPwyc}
+							pwycAmount={isPwyc ? formData.pwyc : undefined}
+							isAuthenticated={false}
+							disabled={isSubmitting}
+						/>
 					{/if}
 
 					<!-- Online Payment Notice -->

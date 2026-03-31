@@ -13,7 +13,8 @@
 		LayoutDashboard,
 		PlusCircle,
 		Gift,
-		FileText
+		FileText,
+		Receipt
 	} from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
@@ -100,7 +101,8 @@
 		{ href: '/account/profile', label: m['userMenu.profile'](), icon: User },
 		{ href: '/account/security', label: m['userMenu.security'](), icon: Shield },
 		{ href: '/account/privacy', label: m['userMenu.privacy'](), icon: Lock },
-		{ href: '/account/settings', label: m['userMenu.settings'](), icon: Settings }
+		{ href: '/account/settings', label: m['userMenu.settings'](), icon: Settings },
+		{ href: '/account/invoices', label: m['userMenu.invoices'](), icon: Receipt }
 	]);
 
 	function handleLogout() {

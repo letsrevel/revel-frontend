@@ -4,7 +4,8 @@
 	import type {
 		MembershipTierSchema,
 		TicketPurchaseItem,
-		TierRemainingTicketsSchema
+		TierRemainingTicketsSchema,
+		BuyerBillingInfoSchema
 	} from '$lib/api/generated/types.gen';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import DemoCardInfo from '$lib/components/common/DemoCardInfo.svelte';
@@ -32,13 +33,19 @@
 		/** Pre-filled discount code (e.g. from URL param) */
 		initialDiscountCode?: string;
 		onClose: () => void;
-		onClaimTicket: (tierId: string, tickets?: TicketPurchaseItem[], discountCode?: string) => void;
+		onClaimTicket: (
+			tierId: string,
+			tickets?: TicketPurchaseItem[],
+			discountCode?: string,
+			billingInfo?: BuyerBillingInfoSchema
+		) => void;
 		onCheckout?: (
 			tierId: string,
 			isPwyc: boolean,
 			amount?: number,
 			tickets?: TicketPurchaseItem[],
-			discountCode?: string
+			discountCode?: string,
+			billingInfo?: BuyerBillingInfoSchema
 		) => void;
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
@@ -168,18 +175,19 @@
 		amount?: number;
 		tickets: TicketPurchaseItem[];
 		discountCode?: string;
+		billingInfo?: BuyerBillingInfoSchema;
 	}): Promise<void> {
 		if (!selectedTier || isProcessing) return;
 
 		isProcessing = true;
-		const { amount, tickets, discountCode } = payload;
+		const { amount, tickets, discountCode, billingInfo } = payload;
 		const isOnline = selectedTier.payment_method === 'online';
 		const isPwyc = selectedTier.price_type === 'pwyc';
 
 		try {
 			// PWYC tiers require the PWYC endpoint regardless of payment method
 			if (isPwyc && onCheckout) {
-				await onCheckout(selectedTier.id, true, amount, tickets, discountCode);
+				await onCheckout(selectedTier.id, true, amount, tickets, discountCode, billingInfo);
 			}
 			// Free tickets or offline/at-the-door (reservation) - non-PWYC
 			else if (
@@ -187,11 +195,11 @@
 				selectedTier.payment_method === 'offline' ||
 				selectedTier.payment_method === 'at_the_door'
 			) {
-				await onClaimTicket(selectedTier.id, tickets, discountCode);
+				await onClaimTicket(selectedTier.id, tickets, discountCode, billingInfo);
 			}
 			// Online payment (fixed price)
 			else if (isOnline && onCheckout) {
-				await onCheckout(selectedTier.id, false, undefined, tickets, discountCode);
+				await onCheckout(selectedTier.id, false, undefined, tickets, discountCode, billingInfo);
 			}
 
 			// For online payments (Stripe redirect), keep loading state visible.
