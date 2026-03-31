@@ -2190,7 +2190,8 @@
 		},
 		"eeaCards": "EWR-Karten",
 		"pricingExcludingStripeFees": "exklusive Stripe-Gebühren",
-		"pricingHappyToNegotiate": "Wir verhandeln gerne"
+		"pricingHappyToNegotiate": "Wir verhandeln gerne",
+		"feesExcludeVat": "Plattformgebühren verstehen sich zzgl. MwSt., sofern anwendbar."
 	},
 	"learnMore.startOrganizing": "Jetzt organisieren",
 	"learnMore.startOrganizingDescription": "Erstelle deine Organisation und beginne, großartige Veranstaltungen für deine Community zu veranstalten.",

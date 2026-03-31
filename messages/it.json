@@ -2190,7 +2190,8 @@
 		},
 		"eeaCards": "carte SEE",
 		"pricingExcludingStripeFees": "escluse le commissioni Stripe",
-		"pricingHappyToNegotiate": "Siamo disponibili a trattare"
+		"pricingHappyToNegotiate": "Siamo disponibili a trattare",
+		"feesExcludeVat": "Le commissioni della piattaforma sono al netto dell'IVA, ove applicabile."
 	},
 	"learnMore.startOrganizing": "Inizia a Organizzare",
 	"learnMore.startOrganizingDescription": "Crea la tua organizzazione e inizia a ospitare eventi straordinari per la tua comunità.",

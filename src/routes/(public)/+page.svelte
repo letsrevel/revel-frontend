@@ -575,6 +575,9 @@
 							{m['learnMore.pricingHappyToNegotiate']()}
 						</a>
 					</div>
+					<p class="mt-2 text-xs text-muted-foreground/70">
+						{m['learnMore.feesExcludeVat']()}
+					</p>
 				</div>
 			</div>
 		</div>
@@ -893,6 +896,9 @@
 						fees: formatCurrency(totalFees),
 						percentage: ((totalFees / ticketPrice) * 100).toFixed(1)
 					})}
+				</p>
+				<p class="text-center text-xs text-muted-foreground/70">
+					{m['learnMore.feesExcludeVat']()}
 				</p>
 			</div>
 
