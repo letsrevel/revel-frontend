@@ -566,7 +566,7 @@
 
 <!-- Create Invitation Dialog -->
 <Dialog.Root open={showCreateDialog} onOpenChange={(open) => (showCreateDialog = open)}>
-	<Dialog.Content class="sm:max-w-[600px]">
+	<Dialog.Content class="flex max-h-[90dvh] flex-col sm:max-w-[600px]">
 		<Dialog.Header>
 			<Dialog.Title>{m['eventInvitationsAdmin.createInvitations']()}</Dialog.Title>
 			<Dialog.Description>
@@ -584,45 +584,47 @@
 					showCreateDialog = false;
 				};
 			}}
-			class="space-y-4"
+			class="flex min-h-0 flex-1 flex-col gap-4"
 		>
-			<!-- Hidden inputs for form submission -->
-			<input type="hidden" name="emails" value={invitationEmails} />
-			<input type="hidden" name="tier_ids" value={JSON.stringify(createTierIds)} />
+			<div class="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
+				<!-- Hidden inputs for form submission -->
+				<input type="hidden" name="emails" value={invitationEmails} />
+				<input type="hidden" name="tier_ids" value={JSON.stringify(createTierIds)} />
 
-			<!-- Email addresses with tag input -->
-			<EmailTagInput
-				{emailTags}
-				{organizationSlug}
-				{accessToken}
-				placeholder={m['eventInvitationsAdmin.emailPlaceholder']()}
-				onTagsChange={handleEmailTagsChange}
-			/>
+				<!-- Email addresses with tag input -->
+				<EmailTagInput
+					{emailTags}
+					{organizationSlug}
+					{accessToken}
+					placeholder={m['eventInvitationsAdmin.emailPlaceholder']()}
+					onTagsChange={handleEmailTagsChange}
+				/>
 
-			<!-- Custom message -->
-			<div>
-				<label for="custom_message" class="block text-sm font-medium">
-					{m['eventInvitationsAdmin.customMessageLabel']()}
-				</label>
-				<textarea
-					id="custom_message"
-					name="custom_message"
-					bind:value={invitationMessage}
-					placeholder={m['eventInvitationsAdmin.customMessagePlaceholder']()}
-					rows="3"
-					maxlength="500"
-					class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-				></textarea>
-				<p class="mt-1 text-xs text-muted-foreground">
-					{m['eventInvitationsAdmin.charactersCount']({ count: invitationMessage.length })}
-				</p>
+				<!-- Custom message -->
+				<div>
+					<label for="custom_message" class="block text-sm font-medium">
+						{m['eventInvitationsAdmin.customMessageLabel']()}
+					</label>
+					<textarea
+						id="custom_message"
+						name="custom_message"
+						bind:value={invitationMessage}
+						placeholder={m['eventInvitationsAdmin.customMessagePlaceholder']()}
+						rows="3"
+						maxlength="500"
+						class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+					></textarea>
+					<p class="mt-1 text-xs text-muted-foreground">
+						{m['eventInvitationsAdmin.charactersCount']({ count: invitationMessage.length })}
+					</p>
+				</div>
+
+				<!-- Invitation properties -->
+				{@render invitationPropertiesCheckboxes()}
+
+				<!-- Ticket tier selection -->
+				{@render tierCheckboxes(createTierIds, (ids) => (createTierIds = ids))}
 			</div>
-
-			<!-- Invitation properties -->
-			{@render invitationPropertiesCheckboxes()}
-
-			<!-- Ticket tier selection -->
-			{@render tierCheckboxes(createTierIds, (ids) => (createTierIds = ids))}
 
 			<Dialog.Footer>
 				<Button type="button" variant="outline" onclick={() => (showCreateDialog = false)}>
@@ -645,7 +647,7 @@
 		if (!open) resetEditForm();
 	}}
 >
-	<Dialog.Content class="sm:max-w-[600px]">
+	<Dialog.Content class="flex max-h-[90dvh] flex-col sm:max-w-[600px]">
 		<Dialog.Header>
 			<Dialog.Title>{m['eventInvitationsAdmin.editDialogTitle']()}</Dialog.Title>
 			<Dialog.Description>
@@ -676,102 +678,104 @@
 					showEditDialog = false;
 				};
 			}}
-			class="space-y-4"
+			class="flex min-h-0 flex-1 flex-col gap-4"
 		>
-			<input type="hidden" name="tier_ids" value={JSON.stringify(editFormData.tier_ids)} />
+			<div class="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
+				<input type="hidden" name="tier_ids" value={JSON.stringify(editFormData.tier_ids)} />
 
-			{#if editingInvitation}
-				<!-- Hidden email field -->
-				{#if editingType === 'registered' && 'user' in editingInvitation}
-					<input type="hidden" name="email" value={editingInvitation.user.email || ''} />
-				{:else if editingType === 'pending' && 'email' in editingInvitation}
-					<input type="hidden" name="email" value={editingInvitation.email} />
+				{#if editingInvitation}
+					<!-- Hidden email field -->
+					{#if editingType === 'registered' && 'user' in editingInvitation}
+						<input type="hidden" name="email" value={editingInvitation.user.email || ''} />
+					{:else if editingType === 'pending' && 'email' in editingInvitation}
+						<input type="hidden" name="email" value={editingInvitation.email} />
+					{/if}
+
+					<!-- Custom message -->
+					<div>
+						<label for="edit_custom_message" class="block text-sm font-medium">
+							{m['eventInvitationsAdmin.customMessageLabel']()}
+						</label>
+						<textarea
+							id="edit_custom_message"
+							name="custom_message"
+							bind:value={editFormData.custom_message}
+							placeholder={m['eventInvitationsAdmin.customMessagePlaceholder']()}
+							rows="3"
+							maxlength="500"
+							class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+						></textarea>
+						<p class="mt-1 text-xs text-muted-foreground">
+							{m['eventInvitationsAdmin.charactersCount']({
+								count: editFormData.custom_message.length
+							})}
+						</p>
+					</div>
+
+					<!-- Invitation properties -->
+					<div class="space-y-3 rounded-lg border border-border p-4">
+						<h4 class="text-sm font-semibold">{m['eventInvitationsAdmin.propertiesTitle']()}</h4>
+
+						<label class="flex items-center gap-2">
+							<input
+								type="checkbox"
+								name="waives_questionnaire"
+								value="true"
+								bind:checked={editFormData.waives_questionnaire}
+								class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+							/>
+							<span class="text-sm">{m['eventInvitationsAdmin.waiveQuestionnaire']()}</span>
+						</label>
+
+						<label class="flex items-center gap-2">
+							<input
+								type="checkbox"
+								name="waives_purchase"
+								value="true"
+								bind:checked={editFormData.waives_purchase}
+								class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+							/>
+							<span class="text-sm">{m['eventInvitationsAdmin.waivePurchase']()}</span>
+						</label>
+
+						<label class="flex items-center gap-2">
+							<input
+								type="checkbox"
+								name="waives_membership_required"
+								value="true"
+								bind:checked={editFormData.waives_membership_required}
+								class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+							/>
+							<span class="text-sm">{m['eventInvitationsAdmin.waiveMembership']()}</span>
+						</label>
+
+						<label class="flex items-center gap-2">
+							<input
+								type="checkbox"
+								name="waives_rsvp_deadline"
+								value="true"
+								bind:checked={editFormData.waives_rsvp_deadline}
+								class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+							/>
+							<span class="text-sm">{m['eventInvitationsAdmin.waiveDeadline']()}</span>
+						</label>
+
+						<label class="flex items-center gap-2">
+							<input
+								type="checkbox"
+								name="overrides_max_attendees"
+								value="true"
+								bind:checked={editFormData.overrides_max_attendees}
+								class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+							/>
+							<span class="text-sm">{m['eventInvitationsAdmin.overrideMaxAttendees']()}</span>
+						</label>
+					</div>
+
+					<!-- Ticket tier selection -->
+					{@render tierCheckboxes(editFormData.tier_ids, (ids) => (editFormData.tier_ids = ids))}
 				{/if}
-
-				<!-- Custom message -->
-				<div>
-					<label for="edit_custom_message" class="block text-sm font-medium">
-						{m['eventInvitationsAdmin.customMessageLabel']()}
-					</label>
-					<textarea
-						id="edit_custom_message"
-						name="custom_message"
-						bind:value={editFormData.custom_message}
-						placeholder={m['eventInvitationsAdmin.customMessagePlaceholder']()}
-						rows="3"
-						maxlength="500"
-						class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-					></textarea>
-					<p class="mt-1 text-xs text-muted-foreground">
-						{m['eventInvitationsAdmin.charactersCount']({
-							count: editFormData.custom_message.length
-						})}
-					</p>
-				</div>
-
-				<!-- Invitation properties -->
-				<div class="space-y-3 rounded-lg border border-border p-4">
-					<h4 class="text-sm font-semibold">{m['eventInvitationsAdmin.propertiesTitle']()}</h4>
-
-					<label class="flex items-center gap-2">
-						<input
-							type="checkbox"
-							name="waives_questionnaire"
-							value="true"
-							bind:checked={editFormData.waives_questionnaire}
-							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
-						/>
-						<span class="text-sm">{m['eventInvitationsAdmin.waiveQuestionnaire']()}</span>
-					</label>
-
-					<label class="flex items-center gap-2">
-						<input
-							type="checkbox"
-							name="waives_purchase"
-							value="true"
-							bind:checked={editFormData.waives_purchase}
-							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
-						/>
-						<span class="text-sm">{m['eventInvitationsAdmin.waivePurchase']()}</span>
-					</label>
-
-					<label class="flex items-center gap-2">
-						<input
-							type="checkbox"
-							name="waives_membership_required"
-							value="true"
-							bind:checked={editFormData.waives_membership_required}
-							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
-						/>
-						<span class="text-sm">{m['eventInvitationsAdmin.waiveMembership']()}</span>
-					</label>
-
-					<label class="flex items-center gap-2">
-						<input
-							type="checkbox"
-							name="waives_rsvp_deadline"
-							value="true"
-							bind:checked={editFormData.waives_rsvp_deadline}
-							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
-						/>
-						<span class="text-sm">{m['eventInvitationsAdmin.waiveDeadline']()}</span>
-					</label>
-
-					<label class="flex items-center gap-2">
-						<input
-							type="checkbox"
-							name="overrides_max_attendees"
-							value="true"
-							bind:checked={editFormData.overrides_max_attendees}
-							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
-						/>
-						<span class="text-sm">{m['eventInvitationsAdmin.overrideMaxAttendees']()}</span>
-					</label>
-				</div>
-
-				<!-- Ticket tier selection -->
-				{@render tierCheckboxes(editFormData.tier_ids, (ids) => (editFormData.tier_ids = ids))}
-			{/if}
+			</div>
 
 			<Dialog.Footer>
 				<Button type="button" variant="outline" onclick={() => (showEditDialog = false)}>
@@ -794,7 +798,7 @@
 		if (!open) resetBulkEditForm();
 	}}
 >
-	<Dialog.Content class="sm:max-w-[600px]">
+	<Dialog.Content class="flex max-h-[90dvh] flex-col sm:max-w-[600px]">
 		<Dialog.Header>
 			<Dialog.Title>{m['eventInvitationsAdmin.bulkEditDialogTitle']()}</Dialog.Title>
 			<Dialog.Description>
@@ -816,109 +820,111 @@
 					clearSelections();
 				};
 			}}
-			class="space-y-4"
+			class="flex min-h-0 flex-1 flex-col gap-4"
 		>
-			<!-- Hidden emails field (JSON array) -->
-			<input
-				type="hidden"
-				name="emails"
-				value={JSON.stringify([
-					...Array.from(selectedRegisteredIds)
-						.map((id) => registeredInvitations.find((inv) => inv.id === id)?.user?.email)
-						.filter((e) => e),
-					...Array.from(selectedPendingIds)
-						.map((id) => pendingInvitations.find((inv) => inv.id === id)?.email)
-						.filter((e) => e)
-				])}
-			/>
-			<input type="hidden" name="tier_ids" value={JSON.stringify(bulkEditFormData.tier_ids)} />
+			<div class="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
+				<!-- Hidden emails field (JSON array) -->
+				<input
+					type="hidden"
+					name="emails"
+					value={JSON.stringify([
+						...Array.from(selectedRegisteredIds)
+							.map((id) => registeredInvitations.find((inv) => inv.id === id)?.user?.email)
+							.filter((e) => e),
+						...Array.from(selectedPendingIds)
+							.map((id) => pendingInvitations.find((inv) => inv.id === id)?.email)
+							.filter((e) => e)
+					])}
+				/>
+				<input type="hidden" name="tier_ids" value={JSON.stringify(bulkEditFormData.tier_ids)} />
 
-			<!-- Custom message -->
-			<div>
-				<label for="bulk_custom_message" class="block text-sm font-medium">
-					{m['eventInvitationsAdmin.customMessageLabel']()}
-				</label>
-				<textarea
-					id="bulk_custom_message"
-					name="custom_message"
-					bind:value={bulkEditFormData.custom_message}
-					placeholder={m['eventInvitationsAdmin.customMessagePlaceholder']()}
-					rows="3"
-					maxlength="500"
-					class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-				></textarea>
-				<p class="mt-1 text-xs text-muted-foreground">
-					{m['eventInvitationsAdmin.charactersCount']({
-						count: bulkEditFormData.custom_message.length
-					})}
-				</p>
+				<!-- Custom message -->
+				<div>
+					<label for="bulk_custom_message" class="block text-sm font-medium">
+						{m['eventInvitationsAdmin.customMessageLabel']()}
+					</label>
+					<textarea
+						id="bulk_custom_message"
+						name="custom_message"
+						bind:value={bulkEditFormData.custom_message}
+						placeholder={m['eventInvitationsAdmin.customMessagePlaceholder']()}
+						rows="3"
+						maxlength="500"
+						class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+					></textarea>
+					<p class="mt-1 text-xs text-muted-foreground">
+						{m['eventInvitationsAdmin.charactersCount']({
+							count: bulkEditFormData.custom_message.length
+						})}
+					</p>
+				</div>
+
+				<!-- Invitation properties -->
+				<div class="space-y-3 rounded-lg border border-border p-4">
+					<h4 class="text-sm font-semibold">{m['eventInvitationsAdmin.propertiesTitle']()}</h4>
+
+					<label class="flex items-center gap-2">
+						<input
+							type="checkbox"
+							name="waives_questionnaire"
+							value="true"
+							bind:checked={bulkEditFormData.waives_questionnaire}
+							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+						/>
+						<span class="text-sm">{m['eventInvitationsAdmin.waiveQuestionnaire']()}</span>
+					</label>
+
+					<label class="flex items-center gap-2">
+						<input
+							type="checkbox"
+							name="waives_purchase"
+							value="true"
+							bind:checked={bulkEditFormData.waives_purchase}
+							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+						/>
+						<span class="text-sm">{m['eventInvitationsAdmin.waivePurchase']()}</span>
+					</label>
+
+					<label class="flex items-center gap-2">
+						<input
+							type="checkbox"
+							name="waives_membership_required"
+							value="true"
+							bind:checked={bulkEditFormData.waives_membership_required}
+							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+						/>
+						<span class="text-sm">{m['eventInvitationsAdmin.waiveMembership']()}</span>
+					</label>
+
+					<label class="flex items-center gap-2">
+						<input
+							type="checkbox"
+							name="waives_rsvp_deadline"
+							value="true"
+							bind:checked={bulkEditFormData.waives_rsvp_deadline}
+							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+						/>
+						<span class="text-sm">{m['eventInvitationsAdmin.waiveDeadline']()}</span>
+					</label>
+
+					<label class="flex items-center gap-2">
+						<input
+							type="checkbox"
+							name="overrides_max_attendees"
+							value="true"
+							bind:checked={bulkEditFormData.overrides_max_attendees}
+							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+						/>
+						<span class="text-sm">{m['eventInvitationsAdmin.overrideMaxAttendees']()}</span>
+					</label>
+				</div>
+
+				<!-- Ticket tier selection -->
+				{@render tierCheckboxes(
+					bulkEditFormData.tier_ids,
+					(ids) => (bulkEditFormData.tier_ids = ids)
+				)}
 			</div>
-
-			<!-- Invitation properties -->
-			<div class="space-y-3 rounded-lg border border-border p-4">
-				<h4 class="text-sm font-semibold">{m['eventInvitationsAdmin.propertiesTitle']()}</h4>
-
-				<label class="flex items-center gap-2">
-					<input
-						type="checkbox"
-						name="waives_questionnaire"
-						value="true"
-						bind:checked={bulkEditFormData.waives_questionnaire}
-						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
-					/>
-					<span class="text-sm">{m['eventInvitationsAdmin.waiveQuestionnaire']()}</span>
-				</label>
-
-				<label class="flex items-center gap-2">
-					<input
-						type="checkbox"
-						name="waives_purchase"
-						value="true"
-						bind:checked={bulkEditFormData.waives_purchase}
-						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
-					/>
-					<span class="text-sm">{m['eventInvitationsAdmin.waivePurchase']()}</span>
-				</label>
-
-				<label class="flex items-center gap-2">
-					<input
-						type="checkbox"
-						name="waives_membership_required"
-						value="true"
-						bind:checked={bulkEditFormData.waives_membership_required}
-						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
-					/>
-					<span class="text-sm">{m['eventInvitationsAdmin.waiveMembership']()}</span>
-				</label>
-
-				<label class="flex items-center gap-2">
-					<input
-						type="checkbox"
-						name="waives_rsvp_deadline"
-						value="true"
-						bind:checked={bulkEditFormData.waives_rsvp_deadline}
-						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
-					/>
-					<span class="text-sm">{m['eventInvitationsAdmin.waiveDeadline']()}</span>
-				</label>
-
-				<label class="flex items-center gap-2">
-					<input
-						type="checkbox"
-						name="overrides_max_attendees"
-						value="true"
-						bind:checked={bulkEditFormData.overrides_max_attendees}
-						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
-					/>
-					<span class="text-sm">{m['eventInvitationsAdmin.overrideMaxAttendees']()}</span>
-				</label>
-			</div>
-
-			<!-- Ticket tier selection -->
-			{@render tierCheckboxes(
-				bulkEditFormData.tier_ids,
-				(ids) => (bulkEditFormData.tier_ids = ids)
-			)}
 
 			<Dialog.Footer>
 				<Button type="button" variant="outline" onclick={() => (showBulkEditDialog = false)}>

@@ -164,7 +164,10 @@
 				type="single"
 				value={questionnaireType}
 				onValueChange={(v) => {
-					if (v === 'admission' && canEdit) {
+					if (
+						canEdit &&
+						(v === 'admission' || v === 'membership' || v === 'feedback' || v === 'generic')
+					) {
 						onQuestionnaireTypeChange(v);
 					}
 				}}
@@ -196,15 +199,9 @@
 							</div>
 						</div>
 					</SelectItem>
-					<SelectItem value="feedback" label="Feedback" disabled>
+					<SelectItem value="feedback" label="Feedback">
 						<div class="flex flex-col gap-0.5">
-							<div class="flex items-center gap-2 font-medium">
-								Feedback
-								<span
-									class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
-									>Coming soon</span
-								>
-							</div>
+							<div class="font-medium">Feedback</div>
 							<div class="text-xs text-muted-foreground">
 								Collect post-event feedback from attendees
 							</div>
