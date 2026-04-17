@@ -164,7 +164,10 @@
 				type="single"
 				value={questionnaireType}
 				onValueChange={(v) => {
-					if ((v === 'admission' || v === 'feedback') && canEdit) {
+					if (
+						canEdit &&
+						(v === 'admission' || v === 'membership' || v === 'feedback' || v === 'generic')
+					) {
 						onQuestionnaireTypeChange(v);
 					}
 				}}
