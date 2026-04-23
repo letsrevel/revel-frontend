@@ -1,6 +1,13 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vitest/config';
 
+// Under Vitest only, add the `svelte` resolve condition so bits-ui (which
+// ships only `types` + `svelte` export conditions) resolves from its main
+// entry. Outside Vitest we leave `resolve.conditions` undefined so Vite's
+// defaults (`module`, `browser`, `default`, …) remain in force — overriding
+// them here breaks client module resolution during SSR/hydration.
+const viteResolve = process.env.VITEST ? { conditions: ['browser', 'svelte'] } : undefined;
+
 export default defineConfig({
 	plugins: [sveltekit()],
 	test: {
@@ -9,6 +16,7 @@ export default defineConfig({
 		globals: true,
 		setupFiles: ['./vitest.setup.ts']
 	},
+	resolve: viteResolve,
 	server: {
 		host: '0.0.0.0', // Listen on all network interfaces for mobile testing
 		port: 5173,

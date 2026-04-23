@@ -5326,7 +5326,9 @@
 				"cancelOccurrence": "Cancel occurrence",
 				"generateNow": "Generate now",
 				"pause": "Pause",
-				"resume": "Resume"
+				"resume": "Resume",
+				"moreActions": "More actions",
+				"closeSheet": "Close"
 			}
 		},
 		"seriesList": {
@@ -5372,7 +5374,56 @@
 		},
 		"templateDialog": {
 			"title": "Edit template",
+			"description": "Changes apply to the template blueprint. Choose how they flow to existing occurrences on the next step.",
 			"notEditableHelper": "Some fields can only be edited on individual occurrences. Changing them here would require rescheduling every scheduled date.",
+			"loading": "Loading template…",
+			"loadError": "Couldn't load the template event. Please close the dialog and try again.",
+			"sections": {
+				"details": "Details",
+				"visibility": "Visibility & access",
+				"location": "Location",
+				"capacity": "Capacity & tickets",
+				"attendance": "Attendance options"
+			},
+			"fields": {
+				"nameLabel": "Template name",
+				"namePlaceholder": "Event name",
+				"descriptionLabel": "Description",
+				"descriptionPlaceholder": "Describe the event template…",
+				"invitationMessageLabel": "Invitation message",
+				"invitationMessagePlaceholder": "Welcome message shown to invitees…",
+				"eventTypeLabel": "Who can attend",
+				"visibilityLabel": "Who can see the event",
+				"addressLabel": "Address",
+				"addressPlaceholder": "123 Main St, Suite 100",
+				"addressHelper": "Editing the address here does not re-geocode the pin. Coordinates must be updated separately.",
+				"addressVisibilityLabel": "Address visibility",
+				"maxAttendeesLabel": "Maximum attendees",
+				"maxAttendeesHelper": "Leave empty for unlimited capacity.",
+				"maxTicketsPerUserLabel": "Max tickets per user",
+				"maxTicketsPerUserHelper": "Leave empty to allow unlimited tickets per user."
+			},
+			"toggles": {
+				"requiresTicket": "Requires a ticket to attend",
+				"waitlistOpen": "Enable waitlist when full",
+				"requiresFullProfile": "Require complete attendee profile",
+				"potluckOpen": "Enable potluck coordination",
+				"acceptInvitationRequests": "Accept invitation requests",
+				"publicPronounDistribution": "Show pronoun distribution publicly",
+				"canAttendWithoutLogin": "Allow guest attendance"
+			},
+			"locked": {
+				"heading": "Locked fields",
+				"subheading": "These fields live on each occurrence, not the template.",
+				"startLabel": "Start",
+				"startHelper": "Start and end are per-occurrence. Edit an individual date from its occurrence row.",
+				"endLabel": "End",
+				"rsvpBeforeLabel": "RSVP deadline",
+				"rsvpBeforeHelper": "RSVP and application deadlines are per-occurrence offsets anchored to each date.",
+				"applyBeforeLabel": "Application deadline",
+				"statusLabel": "Status",
+				"statusHelper": "Templates always stay DRAFT. Use auto-publish on the series to control occurrence status."
+			},
 			"propagate": {
 				"heading": "Apply these changes to…",
 				"none": {
@@ -5389,7 +5440,17 @@
 					"body": "Overwrites every upcoming occurrence, including your manual edits. This cannot be undone."
 				}
 			},
-			"applyButton": "Apply changes"
+			"buttons": {
+				"continueToPropagate": "Review changes",
+				"backToForm": "Back",
+				"cancel": "Cancel",
+				"apply": "Apply changes",
+				"applying": "Applying…"
+			},
+			"applyButton": "Apply changes",
+			"savedToast": "Template saved",
+			"errorToast": "Couldn't save the template. Please try again.",
+			"noChangesToast": "No changes to apply."
 		},
 		"recurrenceDialog": {
 			"title": "Edit recurrence",
@@ -5423,6 +5484,8 @@
 		},
 		"seriesSettings": {
 			"title": "Series settings",
+			"description": "Update the series name, media, and tags. Recurrence and template edits live in their own dialogs.",
+			"cancelButton": "Cancel",
 			"saveButton": "Save",
 			"savedToast": "Series settings saved."
 		},
