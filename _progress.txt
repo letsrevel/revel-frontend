@@ -1,0 +1,211 @@
+# Recurring Events — Progress Log
+
+> Append-only log of what was done, in reverse-chronological order. Use
+> `_todo.txt` to track the checklist; this file tells the story of
+> how we got there (decisions made mid-implementation, QA outcomes, blockers hit).
+>
+> **Format:** one section per working session with `YYYY-MM-DD` heading.
+
+---
+
+## 2026-04-23 — Phase 1 wizard landed (1.1 → 1.8; 1.9 partial, 1.10 scoped)
+
+Session picked up from Phase 0, ran through the full Phase 1 wizard surface.
+
+### What shipped
+
+- **1.1** Route scaffold at
+  `src/routes/(auth)/org/[slug]/admin/event-series/new-recurring/`
+  (`+page.server.ts` loads `userCity`, `orgCity`, org `questionnaires`; mirrors
+  `events/new` and enforces the `canCreateEvent` gate from the admin layout;
+  `+page.svelte` is the thin shell that mounts the wizard).
+- **1.2** `RecurringEventWizard.svelte` — 2-step shell with `currentStep`
+  runestate (`'event' | 'recurrence'`), merged event validation
+  (name + start + city_id) so users can't advance to Step B with an invalid
+  template, and back-nav that preserves all state.
+- **1.3** Step A composition — `EssentialsStep standalone={false}` +
+  `DetailsStep` (already headless) mounted inside the wizard. Anchor-date
+  helper renders under the form once `start` is non-empty. Image upload is a
+  **no-op in the wizard**: per plan, media is set on the series dashboard
+  after creation (deliberately excluded from the atomic recurring-create
+  payload).
+- **1.4** `RecurrencePicker.svelte` — frequency segmented control (radio
+  group) with frequency-change reset rule (Appendix C), interval input with
+  natural-language suffix, weekly weekday multiselect (accessible toggle
+  group with `aria-pressed`), monthly day-of-month / nth-weekday mode
+  switcher, boundary radios (None/Until/Count) that enforce mutex by
+  nulling the other field on switch, and datetime-local helpers for `until`
+  that round-trip correctly.
+- **1.5** `RecurrenceSummary.svelte` — tiny controlled wrapper over
+  `formatRecurrence`. Used inline under the picker as live preview.
+- **1.6** Submit flow — `organizationadminrecurringeventsCreateRecurringEvent`
+  via `createMutation`; payload assembled from wizard state per Appendix B.
+  On success: `toast.success` + `goto('/org/{slug}/admin/event-series/{id}')`.
+  The landing URL is the Phase-2 dashboard; until that ships it will render
+  a 404 — acceptable hand-off, Phase 2 fills it in.
+- **1.7** Error handling — 422 payloads are parsed for `errors[].loc/msg`
+  and split between Step A (`event.*`, `name`, `start`, `city_id`) and
+  Step B (`recurrence.*`, series-level). If any step-A errors surface from
+  the server, the wizard snaps back to Step A and scrolls to the first
+  `.text-destructive` / `[aria-invalid=true]`. 400 `detail` bubbles into
+  both an inline banner and a toast. Network errors get a toast via the
+  same path.
+- **1.8** Series list page — primary CTA now navigates to
+  `.../new-recurring`; a small "Create an empty series instead" secondary
+  button under it points at the legacy `.../new` flow. Empty-state CTA
+  likewise updated. List-row click navigation **intentionally not changed
+  yet** (still goes to `.../edit`) — that change (Appendix G §1) is
+  deferred to Phase 2.8 when the dashboard it should point at exists.
+- i18n — added three missing picker keys
+  (`weekdayGroupLabel`, `ordinalLabel`, `weekdayLabel`) and two
+  series-list keys (`seriesList.primaryCta`, `seriesList.secondaryLink`)
+  in EN / IT / DE (IT + DE mirror English per the Phase-0 convention;
+  real translations in Phase 5). `pnpm paraglide:compile` run; all keys
+  exported as dotted-path identifiers.
+
+### Deviations / decisions
+
+- **Picker is rule-only, not Step-B-entire.** The plan's Phase 1 step 4
+  reads as if `RecurrencePicker` owned the whole of Step B (series name,
+  advanced settings, etc.). The component-inventory row for the picker
+  says it's shared with `RecurrenceEditDialog`, which doesn't need
+  series-level settings. To make the picker cleanly reusable, Step B's
+  shell (series name/description + advanced auto_publish /
+  generation_window_weeks disclosure) lives in `RecurringEventWizard`
+  itself, and the picker handles only the `RecurrenceRule*` subset.
+  This matches how the edit dialog (Phase 3.2) will want to consume it.
+- **No non-null assertions.** Followed scoped lint strictness (`--max-
+  warnings 0` on touched files) and replaced the EventWizard-style `!`
+  post-fix with explicit presence guards before the mutation fires
+  (validation already runs before submit, so the guard is defensive only).
+- **Auto-derive weekday hint.** When the user picks a `start` in Step A
+  and the recurrence is weekly with no weekday selected, the wizard
+  pre-selects the weekday of `start` as a convenience. This hinges on
+  `seriesNameTouched` / unselected-weekday checks so it never
+  overwrites user intent.
+
+### QA
+
+Scoped gate against files touched this session:
+
+- `pnpm paraglide:compile` → clean.
+- `pnpm exec svelte-check` → **0 errors** (339 pre-existing warnings
+  elsewhere unchanged).
+- `pnpm exec eslint --max-warnings 0` on the three new components + the
+  new route dir + `event-series/+page.svelte` → **0 errors, 0 warnings**
+  on files touched this session. (The scoped sweep surfaces 18
+  pre-existing warnings in `SeriesQuestionnaireAssignmentModal` and
+  `SeriesResourceAssignmentModal` that predate this phase; not my
+  files — left alone.)
+- `pnpm i18n:validate` → **100% parity** across EN/IT/DE, placeholders
+  aligned.
+- `pnpm exec prettier --write` → applied; format-check clean.
+- Unit tests: Phase 0 `recurrence.test.ts` **57/57 still green**.
+- `svelte-autofixer` run on both `RecurrencePicker.svelte` and
+  `RecurrenceSummary.svelte` (script-only distillation) → 0 issues, 0
+  suggestions.
+
+### Known deferrals (carried into Phase 2)
+
+- **Playwright smoke.** The wizard's happy path redirects to
+  `/org/{slug}/admin/event-series/{id}` — the Phase-2 dashboard, which
+  doesn't exist yet. Running a full create-to-dashboard smoke is
+  meaningful only after Phase 2.1 ships. Placeholder on Phase 2.10
+  (the §QA gate that explicitly covers Playwright) to cover create +
+  dashboard render together.
+- **Component-test harness (`bits-ui` resolve error).** `pnpm exec vitest
+  run src/lib/components/event-series/admin/RecurrencePicker.test.ts`
+  fails with `Failed to resolve entry for package "bits-ui"`. The same
+  error affects ~25 pre-existing component-test files (including
+  `EventWizard.test.ts`). Not a Phase-1 regression. The test file is
+  authored and will light up automatically once the harness is fixed.
+  Leaving as a separate cleanup task — scope creep to fix here.
+- **Series-list row-click redirect.** Appendix G §1 asks list rows to
+  link to `.../{series_id}/` (the new dashboard). Defer to Phase 2.8
+  alongside the `/edit` → `?settings=open` redirect.
+
+### Next up
+
+- Phase 2 — Series admin dashboard. Start with **2.1** (route scaffold
+  + parallel loads for detail + drift + upcoming occurrences).
+- The wizard's "create then land on dashboard" story closes only once
+  2.1 is in. Until then, the create flow succeeds but the landing page
+  will be a 404 — flag if users test before Phase 2 merges.
+
+## 2026-04-23 — Phase 0 complete
+
+Kickoff + all of Phase 0 landed in the same session.
+
+### What shipped
+
+- Branch `feature/recurring-events-phase-0` cut from `main`.
+- Working-files contract wired between plan, `_todo.txt`, this log. Plan now
+  serves as the PRD; plan got a §QA gate (`make fix && make check && make test`,
+  plus Playwright trigger rules).
+- **0.1** `pnpm generate:api` run. `sdk.gen.ts` exposes all
+  `organizationadminrecurringevents*` functions (Appendix A is accurate);
+  `types.gen.ts` exposes `RecurringEventCreateSchema`,
+  `EventSeriesRecurrenceDetailSchema`, `EventSeriesDriftSchema`,
+  `RecurrenceRuleSchema`, `RecurrenceRuleCreateSchema`,
+  `RecurrenceRuleUpdateSchema`, `TemplateEditSchema`,
+  `EventSeriesRecurrenceUpdateSchema`, `CancelOccurrenceSchema`,
+  `GenerateSeriesEventsSchema`, `Frequency`, `MonthlyType`, `PropagateScope`.
+- **0.2** `src/lib/utils/recurrence.ts` — `formatRecurrence`, `parseExdates`,
+  `mutualExclusionGuard`, `weekdayLabel`, `ordinalLabel`, `inferBoundaryKind`,
+  plus an internal `ordinalSuffixEn` for "15th" rendering. English-only copy for
+  now; `locale` param plumbed through for paraglide-backed swap in Phase 5.
+- **0.3** `src/lib/types/recurrence.ts` — friendly `Recurrence*` aliases,
+  `FREQUENCIES` / `MONTHLY_TYPES` / `PROPAGATE_SCOPES` / `WEEKDAYS` /
+  `WEEKDAY_ORDINALS` constant arrays, `RecurrenceDescriptor` narrow interface
+  covering the `formatRecurrence` input shape.
+- **0.4** `src/lib/queries/event-series.ts` — `seriesQueryKeys.detail /
+  recurrenceDetail / drift / occurrences` plus `invalidateSeries` /
+  `invalidateDrift` / `invalidateOccurrences` helpers for the mutating flows
+  to come in Phase 3.
+- **0.5** All Appendix D i18n keys added to `messages/en.json` under a nested
+  `recurringEvents` object (~161 leaf keys after paraglide compilation).
+  Mirrored to `it.json` / `de.json` with English copy so the key set stays
+  aligned across locales; real IT + DE copy belongs in Phase 5.
+  - Deviation from plan: plan said "flat prefix `recurringevents.*` lower-case".
+    Project convention is camelCase (`eventSeriesEditPage`, etc.); went with
+    `recurringEvents.*` nested object to match. Lower-casing still happens at
+    paraglide compile time, so no observable difference downstream.
+  - ICU plural syntax isn't used elsewhere in the codebase; rewrote two keys
+    (`drift.banner.title`, `generateNow.successToast`) as `{one, other}` sub-
+    keys matching the existing `recurringEvents.summary.*` pattern.
+- **0.6** 57-case unit test for the utilities (`recurrence.test.ts`) — covers
+  every branch of `formatRecurrence` (daily / weekly / monthly-day /
+  monthly-weekday / yearly × interval 1 / >1 × boundary none / until / count),
+  English ordinal suffixes (2nd / 3rd / 11th / 12th / 21st / 31st) and edge
+  cases (empty / invalid / unordered weekdays; invalid day_of_month; bogus
+  nth_weekday combinations). `en-GB` locale pinned for the `until`-formatted
+  date case so CI doesn't drift.
+
+### QA
+
+Scoped gate against the files this phase touched:
+
+- `pnpm format` — auto-applied prettier; format-check clean.
+- `pnpm exec eslint` on the four new files with `--max-warnings 0` → **0
+  problems**.
+- `pnpm exec vitest run src/lib/utils/recurrence.test.ts` → **57 passed**.
+- `make types` — 0 errors in new files (pre-existing warnings elsewhere
+  unchanged).
+- `pnpm i18n:validate` — 4613 keys aligned across EN/IT/DE, placeholder parity
+  clean.
+
+Note: the repo-wide `make check` (which runs `make lint` with `--max-warnings 0`)
+currently fails on ~889 pre-existing warnings in unrelated files. Not a
+regression from this phase; flagged here so Phase 1+ don't mistake it for a
+Phase 0 failure. Suggest the team tackle it as a separate hygiene sweep.
+
+Playwright smoke was not run: Phase 0 is utility-only and introduces no UI, so
+per the plan's §QA trigger rules it's deliberately skipped.
+
+### Next up
+
+- Phase 1.1 — scaffold the new `.../admin/event-series/new-recurring/` route
+  with server `+page.server.ts` load (org + cities, mirroring `events/new`).
+- Before coding: seed a first recurring series on the local backend so the
+  dashboard work in Phase 2 has something to render. The wizard built in
+  Phase 1 will take care of this.

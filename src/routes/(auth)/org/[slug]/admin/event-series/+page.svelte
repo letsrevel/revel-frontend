@@ -12,9 +12,16 @@
 	const organization = $derived($page.data.organization);
 
 	/**
-	 * Navigate to create event series page
+	 * Navigate to the recurring-series wizard (primary CTA).
 	 */
-	function createSeries(): void {
+	function createRecurringSeries(): void {
+		goto(`/org/${organization.slug}/admin/event-series/new-recurring`);
+	}
+
+	/**
+	 * Navigate to the empty-series form (secondary affordance).
+	 */
+	function createEmptySeries(): void {
 		goto(`/org/${organization.slug}/admin/event-series/new`);
 	}
 
@@ -66,14 +73,23 @@
 			</p>
 		</div>
 
-		<button
-			type="button"
-			onclick={createSeries}
-			class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-		>
-			<Plus class="h-5 w-5" aria-hidden="true" />
-			{m['orgAdmin.eventSeries.createSeriesButton']()}
-		</button>
+		<div class="flex flex-col items-start gap-1 sm:items-end">
+			<button
+				type="button"
+				onclick={createRecurringSeries}
+				class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+			>
+				<Plus class="h-5 w-5" aria-hidden="true" />
+				{m['recurringEvents.seriesList.primaryCta']()}
+			</button>
+			<button
+				type="button"
+				onclick={createEmptySeries}
+				class="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+			>
+				{m['recurringEvents.seriesList.secondaryLink']()}
+			</button>
+		</div>
 	</div>
 
 	<!-- Empty state -->
@@ -86,11 +102,18 @@
 			</p>
 			<button
 				type="button"
-				onclick={createSeries}
+				onclick={createRecurringSeries}
 				class="mt-6 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			>
 				<Plus class="h-4 w-4" aria-hidden="true" />
-				{m['orgAdmin.eventSeries.createSeriesButton']()}
+				{m['recurringEvents.seriesList.primaryCta']()}
+			</button>
+			<button
+				type="button"
+				onclick={createEmptySeries}
+				class="mt-3 text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+			>
+				{m['recurringEvents.seriesList.secondaryLink']()}
 			</button>
 		</div>
 	{:else}
