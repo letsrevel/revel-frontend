@@ -8,6 +8,164 @@
 
 ---
 
+## 2026-04-24 — Phase 3.6 CancelDriftedOccurrencesDialog landed
+
+Shippable: the drift banner's "Cancel all N stale dates" button now
+opens a dialog that lists every drifted occurrence, sequentially
+POSTs `/cancel-occurrence` per row with live per-row status, and
+handles partial failure deterministically (stop + report + leave
+dialog open for retry). Armed by an "I understand" checkbox per
+plan §Phase 3 §6.
+
+### What shipped
+
+- **`src/lib/components/event-series/admin/CancelDriftedOccurrencesDialog.svelte`**
+  (296 lines).
+    - bits-ui `Dialog` with a scrollable rows list (max-h-[90vh] +
+      overflow-y-auto; each row: formatted date + status badge +
+      `data-testid="drift-bulk-row"` + `data-row-status` attr for
+      the Playwright smoke).
+    - **Row status state**: `Record<string, RowStatus>` proxied
+      through Svelte 5's `$state`, keyed by occurrence id. Deep
+      reactivity means per-key updates (`rowStatuses[id] = 'inFlight'`)
+      re-render individual badges without reassigning the whole
+      record. Status values: `pending` / `inFlight` / `done` /
+      `error` — each with a distinct badge style (muted / primary
+      with spinner / green-100 with Check / destructive with X).
+    - **Sequential loop**: `runLoop()` iterates `driftedOccurrences`
+      in order, setting `inFlight` → `await` the cancel POST →
+      `done` or `error`. Stops on first error, leaves successful
+      rows as `done` (never rolls back — their refunds have already
+      fired per backend contract). `running` flag disables the
+      confirm + close buttons mid-flight so the user can't
+      interleave.
+    - **Retry semantics**: the confirm button stays enabled after a
+      partial failure (canConfirm = armed && !running && !allDone &&
+      total > 0). On click, the loop picks up where it stopped —
+      skips `done` rows (backend is idempotent for exdates, but
+      skipping avoids a wasted POST) and re-attempts `error` +
+      `pending` rows in order.
+    - **Arming checkbox**: `armed` boolean, required before the
+      confirm button enables. Uses destructive-variant styling on
+      the checkbox + button. The checkbox stays checked across
+      retries so the user doesn't have to re-arm mid-flow.
+    - **Safety threshold** (plan §Phase 3 §6): when `total > 25`,
+      a `thresholdWarning` banner appears above the rows list
+      ("This will cancel {n} dates and refund all associated tickets.
+      The loop runs one date at a time and may take a minute for
+      long lists."). No hard block.
+    - **Partial-failure banner** (`drift-bulk-partial` testid):
+      renders when `failedCount > 0 && !running`, using the Phase-0-
+      seeded `partialFailure` key with `{done}/{total}/{remaining}`
+      params. Includes the last error's message as a muted footnote
+      so the user has context beyond "Failed".
+    - **Invalidation policy**: full `invalidateSeries` on full
+      success, **and** on close-after-partial-progress if any row is
+      `done` (guarded by `hasInvalidated` so we don't double-run it
+      on the full-success path). This keeps the dashboard honest
+      about successful cancels even if the user bails out mid-run.
+
+- **`CadenceDriftBanner.svelte`** — the `onBulkCancel` prop was
+  already seeded in Phase 2 (Phase 3 hook stub). No component edit
+  needed; the dashboard wires it up now.
+
+- **Dashboard wire-up**: imported `CancelDriftedOccurrencesDialog`,
+  added `showDriftBulkCancel = $state(false)`, added a
+  `driftedOccurrences` derived rune (`upcomingOccurrences ∩
+  staleIds`) that's passed straight into the dialog's
+  `driftedOccurrences` prop. Threaded `onBulkCancel={() =>
+  (showDriftBulkCancel = true)}` into `CadenceDriftBanner`. Dialog
+  mounts inside the same `{#if series}` block as the other Phase-3
+  dialogs.
+
+- **i18n** — extended the Phase-0-seeded
+  `recurringEvents.drift.bulkDialog.*` block (9 seeded leaf keys +
+  4 `rowStatus.*` sub-keys) with 2 more: `thresholdWarning` (ICU
+  `{n}` param) + `errorToast`. Mirrored across EN/IT/DE with EN
+  copy. `pnpm paraglide:compile` + `pnpm i18n:validate` → **4703
+  keys, 100% parity**.
+
+### Deviations / decisions
+
+- **`Record<string, RowStatus>` over `Map<string, RowStatus>`.**
+  Svelte 5's `$state()` proxy handles both, but plain records give
+  per-key reactivity semantics that match how the template consumes
+  them (`rowStatuses[occurrence.id]`). Maps would work but require a
+  `.set()`/`.get()` access pattern that reads worse in the template
+  `{#each}`.
+- **Full `invalidateSeries` on close-after-partial-progress.** Plan
+  §Phase 3 §6 says "do not roll back successful cancels". Rolling
+  back would require backend support (doesn't exist); a fresh
+  invalidation is the honest alternative — the dashboard shows the
+  shrunken drift count + the new exdates chips + the `status=CANCELLED`
+  rows without any client-side bookkeeping. `hasInvalidated` gates
+  the duplicate call on full-success path (where `onClose()` runs
+  after the invalidation inside `runLoop`).
+- **Confirm button label uses `remainingCount`, not `total`.** As
+  rows succeed, the label flips from "Cancel N dates" → "Cancel
+  N-k dates" automatically. Matches how the user thinks about what's
+  left to do, and the Phase-0 `confirm` key was seeded with `{n}`
+  exactly for this kind of use.
+- **No separate retry button.** The plan's partial-failure copy
+  literally ends with "Retry?" — making the confirm button itself
+  the retry is simpler than a second button with a separate label.
+  The same button path handles initial submit + resume-from-error
+  because the loop skips `done` rows.
+- **Stopping on first failure** over "collect all failures, report
+  at end". Per plan: "Do not parallelize — backend throttling and
+  partial-failure traceability both benefit from sequential
+  execution." Same reasoning: stop-on-failure gives the user a
+  deterministic "N/N cancelled, error at row X" story rather than a
+  confusing list of which specific rows failed.
+- **No Vitest component test.** Same bits-ui Vitest harness carryover
+  that has blocked every Phase-3 dialog. The sequential-loop logic
+  deserves its own test (mock the cancel SDK, assert rows transition
+  correctly), but that's blocked until the harness tail is unblocked.
+  Playwright at 3.7/3.8 will cover the interactive surface via the
+  dev server.
+
+### QA (scoped)
+
+- `pnpm exec prettier --check` on new component + dashboard page +
+  three message files → clean (one auto-format pass).
+- `pnpm exec eslint --max-warnings 0 --no-warn-ignored` on new file
+  + dashboard → **0 errors, 0 warnings**.
+- `pnpm exec svelte-check` → **0 errors, 339 warnings** repo-wide —
+  same baseline as 3.2 / 3.3 / 3.4 / 3.5.
+- `pnpm paraglide:compile` → clean; `pnpm i18n:validate` → **4703
+  keys, 100% parity** across EN/IT/DE.
+- `wc -l`: `CancelDriftedOccurrencesDialog.svelte` 296 / dashboard
+  `+page.svelte` 413 — both well under the 750-line Svelte gate.
+- Vitest: **106 / 106 passed** (same 6 suites).
+  `RecurrencePicker.test.ts` bits-ui harness failure unchanged.
+
+### Known carryovers (unchanged from 3.5)
+
+- **EventEditor prefill consumer** for ExdatesChipList's chip action.
+- **bits-ui Vitest harness** — the sequential-loop test in particular
+  would benefit from unit coverage once the harness unblocks.
+- **`canEdit` uses coarse `$page.data.canCreateEvent`** — Appendix F
+  permission pass still open.
+
+### Milestone — all five Phase-3 dialogs + the bulk-cancel affordance
+are shipped. Next is the test + Playwright tranche (3.7) and the
+§QA gate smoke (3.8).
+
+### Next
+
+- **3.7** per-modal tests + Playwright end-to-end (UX release checklist
+  flow: create → dashboard → edit template with propagation → cancel
+  one → pause → resume). Component tests are blocked by the bits-ui
+  harness; Playwright is the viable surface. Plan for the smoke:
+  drive the full flow on the local dev server against the demo
+  backend on :8000 (chromium + webkit + mobile viewports; Firefox
+  still skipped per the 2.10 finding about paraglide cold-load
+  timeouts).
+- **3.8** QA gate + full Playwright smoke on the shipped
+  feature surface.
+
+---
+
 ## 2026-04-24 — Phase 3.5 PauseResumeButton landed
 
 Shippable: the dashboard's pause/resume toggle now fully functional.

@@ -27,6 +27,7 @@
 	import CancelOccurrenceDialog from '$lib/components/event-series/admin/CancelOccurrenceDialog.svelte';
 	import GenerateNowButton from '$lib/components/event-series/admin/GenerateNowButton.svelte';
 	import PauseResumeButton from '$lib/components/event-series/admin/PauseResumeButton.svelte';
+	import CancelDriftedOccurrencesDialog from '$lib/components/event-series/admin/CancelDriftedOccurrencesDialog.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -112,6 +113,12 @@
 	// but never appear on the attendee surface, and they'd just confuse the list.
 	const upcomingOccurrences = $derived(upcoming.filter((e: EventInListSchema) => !e.is_template));
 	const pastOccurrences = $derived(past.filter((e: EventInListSchema) => !e.is_template));
+	// Drifted occurrences fed to the bulk-cancel dialog — upcoming ∩ staleIds.
+	// The backend's drift endpoint guarantees these are upcoming, non-cancelled,
+	// non-template rows, so a second-order filter here is just a safety net.
+	const driftedOccurrences = $derived(
+		upcomingOccurrences.filter((e: EventInListSchema) => staleIds.has(e.id))
+	);
 
 	const exdates = $derived(series?.exdates ?? []);
 	const hasRecurrenceRule = $derived(!!series?.recurrence_rule);
@@ -130,6 +137,7 @@
 	let showCancelOccurrence = $state(false);
 	let showGenerateNow = $state(false);
 	let showPauseResume = $state(false);
+	let showDriftBulkCancel = $state(false);
 	// `null` → header-mode picker; ISO string → row-mode prefill. The dashboard
 	// flips this before setting `showCancelOccurrence=true` so the dialog's
 	// open-effect seed picks up the right source.
@@ -234,7 +242,11 @@
 	{/if}
 
 	<!-- Drift banner -->
-	<CadenceDriftBanner count={staleIds.size} {canEdit} />
+	<CadenceDriftBanner
+		count={staleIds.size}
+		{canEdit}
+		onBulkCancel={() => (showDriftBulkCancel = true)}
+	/>
 
 	<!-- Tabs -->
 	<div class="border-b border-border">
@@ -382,6 +394,14 @@
 		organizationSlug={organization.slug}
 		{accessToken}
 		onClose={() => (showPauseResume = false)}
+	/>
+	<CancelDriftedOccurrencesDialog
+		bind:open={showDriftBulkCancel}
+		{series}
+		organizationSlug={organization.slug}
+		{accessToken}
+		{driftedOccurrences}
+		onClose={() => (showDriftBulkCancel = false)}
 	/>
 {/if}
 

@@ -5364,7 +5364,9 @@
 				"confirm": "Cancel {n} dates",
 				"cancel": "Keep dates",
 				"partialFailure": "{done}/{total} cancelled; {remaining} left. Retry?",
-				"successToast": "{n} dates cancelled."
+				"successToast": "{n} dates cancelled.",
+				"thresholdWarning": "This will cancel {n} dates and refund all associated tickets. The loop runs one date at a time and may take a minute for long lists.",
+				"errorToast": "Couldn't cancel some of the dates. Please try again."
 			}
 		},
 		"exdates": {
