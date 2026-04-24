@@ -125,7 +125,11 @@
 	const hasTemplate = $derived(!!series?.template_event);
 	const isDegraded = $derived(!hasRecurrenceRule || !hasTemplate);
 	const isPaused = $derived(series && series.is_active === false);
-	const canEdit = $derived($page.data.canCreateEvent === true);
+	// Appendix F: Phase 3 mutating endpoints accept either `create_event` or
+	// `edit_event_series`. `canManageRecurring` (set on the admin layout) is
+	// the union and gates every header-action + row-action + drift-banner
+	// entry point on this dashboard.
+	const canEdit = $derived($page.data.canManageRecurring === true);
 
 	// Series-settings dialog. Auto-opens when the dashboard is loaded with
 	// `?settings=open` (the 301 redirect from the retired `/edit` route sets this

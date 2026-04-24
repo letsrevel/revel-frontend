@@ -35,6 +35,8 @@
 			orgCity={data.orgCity}
 			eventSeries={data.eventSeries}
 			questionnaires={data.questionnaires}
+			initialStart={data.initialStart}
+			initialEventSeriesId={data.initialEventSeriesId}
 		/>
 	</div>
 </div>

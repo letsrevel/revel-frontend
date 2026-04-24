@@ -54,11 +54,16 @@
 		organization_cover_art?: string;
 	};
 
+	// Neutral defaults — prop-derived values (city_id, organization logo/cover)
+	// get seeded in the mount effect below. Initialising directly from props
+	// would trigger Svelte's `state_referenced_locally` warning because the
+	// static analyser can't see that `organization`/`orgCity`/`userCity` are
+	// route-level props that don't change during the component's life.
 	let formData = $state<TemplateFormData>({
 		name: '',
 		start: '',
 		end: '',
-		city_id: orgCity?.id ?? userCity?.id ?? null,
+		city_id: null,
 		visibility: 'public',
 		event_type: 'public',
 		requires_ticket: false,
@@ -79,14 +84,30 @@
 		requires_full_profile: false,
 		venue_id: null,
 		tags: [],
-		organization_logo: organization.logo ?? undefined,
-		organization_cover_art: organization.cover_art ?? undefined,
+		organization_logo: undefined,
+		organization_cover_art: undefined,
 		location_maps_url: null,
 		location_maps_embed: null
 	});
 
-	let selectedCity = $state<CitySchema | null>(orgCity ?? userCity ?? null);
+	let selectedCity = $state<CitySchema | null>(null);
 	let selectedVenue = $state<VenueDetailSchema | null>(null);
+
+	// Seed prop-derived fields on mount. We only run this once — subsequent
+	// changes to `formData` are user edits we don't want to clobber.
+	let hasSeededFromProps = $state(false);
+	$effect(() => {
+		if (hasSeededFromProps) return;
+		hasSeededFromProps = true;
+		const defaultCity = orgCity ?? userCity ?? null;
+		formData = {
+			...formData,
+			city_id: defaultCity?.id ?? null,
+			organization_logo: organization.logo ?? undefined,
+			organization_cover_art: organization.cover_art ?? undefined
+		};
+		selectedCity = defaultCity;
+	});
 
 	function handleCitySelect(city: CitySchema | null): void {
 		selectedCity = city;

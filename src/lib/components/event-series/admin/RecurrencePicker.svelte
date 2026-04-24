@@ -308,7 +308,7 @@
 		<div class="space-y-4">
 			<div
 				role="radiogroup"
-				aria-label={m['recurringEvents.picker.monthlyType.day']()}
+				aria-label={m['recurringEvents.picker.monthlyTypeLabel']()}
 				class="flex flex-col gap-2 sm:flex-row"
 			>
 				<button

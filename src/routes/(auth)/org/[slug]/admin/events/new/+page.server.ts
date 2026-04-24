@@ -7,7 +7,7 @@ import {
 	questionnaireListOrgQuestionnaires
 } from '$lib/api';
 
-export const load: PageServerLoad = async ({ parent, locals, fetch }) => {
+export const load: PageServerLoad = async ({ parent, locals, fetch, url }) => {
 	const parentData = await parent();
 	const { organization } = parentData;
 	const user = locals.user;
@@ -76,10 +76,20 @@ export const load: PageServerLoad = async ({ parent, locals, fetch }) => {
 		console.debug('Failed to load questionnaires:', err);
 	}
 
+	// Prefill hooks. Driven by `?start=<ISO>&event_series_id=<UUID>` query
+	// params (e.g. from the ExdatesChipList "Create one-off event for this
+	// date" chip action on the recurring-series dashboard). The EventEditor
+	// component seeds these into its initial form state in create mode only;
+	// both are optional and null when absent.
+	const initialStart = url.searchParams.get('start');
+	const initialEventSeriesId = url.searchParams.get('event_series_id');
+
 	return {
 		userCity,
 		orgCity: organization.city || null,
 		eventSeries,
-		questionnaires
+		questionnaires,
+		initialStart,
+		initialEventSeriesId
 	};
 };

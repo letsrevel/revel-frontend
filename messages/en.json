@@ -5247,6 +5247,7 @@
 				"day": "Day of month",
 				"weekday": "Nth weekday"
 			},
+			"monthlyTypeLabel": "Monthly pattern",
 			"dayOfMonthLabel": "Day of month",
 			"weekdayGroupLabel": "Repeat on",
 			"ordinalLabel": "Position",

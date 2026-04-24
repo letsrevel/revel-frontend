@@ -39,19 +39,18 @@
 
 	const queryClient = useQueryClient();
 
-	// Form state — seeded from the admin schema we already have. The dialog also
-	// fetches the public series on open to surface current logo/cover/tags (which
-	// the admin recurrence schema does not expose). See progress log for the
-	// deviation note on why we reach for the public GET instead of extending the
-	// admin schema.
-	let name = $state(series.name);
-	let description = $state(series.description ?? '');
+	// Neutral defaults — the open effect below seeds from `series`. Keeps
+	// Svelte's static analyser from flagging the prop capture as
+	// `state_referenced_locally` (the prop is stable across the component's
+	// life but the analyser doesn't know that).
+	let name = $state('');
+	let description = $state('');
 	let newTag = $state('');
 	let updateError = $state<string | null>(null);
 	let addTagError = $state<string | null>(null);
 
 	// Re-sync form fields any time the dialog is re-opened or the server state
-	// changes underneath us.
+	// changes underneath us. Also handles the initial seed on first open.
 	$effect(() => {
 		if (open) {
 			name = series.name;
