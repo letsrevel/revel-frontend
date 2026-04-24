@@ -8,6 +8,136 @@
 
 ---
 
+## 2026-04-24 — Phase 3.4 GenerateNowButton landed
+
+Shippable: the manual-generate affordance wired through the existing
+`SeriesHeaderCard.onGenerateNow` prop (desktop action row + mobile
+action sheet both covered by Phase 2.2/2.9). The dialog respects the
+UX-doc §6 toast split (plural "{n} new occurrences scheduled through
+{date}" vs. "Already up to date — no new occurrences to generate.")
+and uses the Phase-0-seeded `successToast.one/other` + `upToDateToast`
+keys verbatim.
+
+### What shipped
+
+- **`src/lib/components/event-series/admin/GenerateNowButton.svelte`**
+  (195 lines — smaller than CancelOccurrenceDialog, as predicted).
+    - bits-ui `Dialog` in the same pattern as CancelOccurrenceDialog:
+      single-step, destructive-adjacent but not red-styled (generate
+      is safe-by-default). Block-form eslint-disable around the
+      bindable destructure for consistency with 3.3.
+    - Body: a single `<input type="datetime-local">` for the optional
+      `until` override + a helper line that surfaces the series'
+      `generation_window_weeks` via an ICU `{weeks}` param. Empty input
+      = use the default window (SDK accepts `body: null`).
+    - Submit path branches toast on the response array:
+      `response.length === 0` → `upToDateToast`; `=== 1` → `successToast.one`;
+      `> 1` → `successToast.other` with `{ n, date }`. The `{date}` is
+      the latest `start` among the freshly-generated events — defensive
+      max in case the backend ever changes its ordering (currently
+      creation order = ascending, but the max is the honest horizon).
+    - POST via `organizationadminrecurringeventsGenerateEvents` with
+      `{ until: new Date(localValue).toISOString() }` when the user
+      supplies one (browser tz → UTC conversion), or `null` otherwise.
+      Full `invalidateSeries` on success regardless of result size —
+      even a zero-event response means the backend touched the horizon
+      cursor, and `last_generated_until` on the admin detail surface
+      may have moved.
+    - `data-testid`s across the interactive surface:
+      `generate-now-dialog`, `generate-now-until`, `generate-now-error`,
+      `generate-now-cancel`, `generate-now-submit` — ready for Playwright
+      at 3.7/3.8.
+
+- **Dashboard wire-up** at the series dashboard page: imported
+  `GenerateNowButton`, added `showGenerateNow = $state(false)`, threaded
+  `onGenerateNow={() => (showGenerateNow = true)}` on the
+  `SeriesHeaderCard` prop surface, mounted the dialog inside the
+  `{#if series}` block next to the other Phase-3 dialogs.
+
+- **i18n** — extended the existing Phase-0 `recurringEvents.generateNow.*`
+  block (5 seeded keys: `untilLabel`, `successToast.one`,
+  `successToast.other`, `upToDateToast`, `action`) with 6 more leaf keys:
+  `title`, `description`, `untilHelper` (ICU `{weeks}` param),
+  `submitting`, `cancelButton`, `errorToast`. Mirrored across EN/IT/DE
+  with EN copy. `pnpm paraglide:compile` + `pnpm i18n:validate` →
+  **4698 keys, 100% parity**.
+
+### Deviations / decisions
+
+- **Dialog over Popover.** Plan §Phase 3 §4 says "popover for the
+  optional `until`". A dialog is one extra click but matches the rest
+  of the Phase-3 pattern (SeriesHeaderCard's `onGenerateNow` was wired
+  as a no-arg callback in Phase 2, same as the other header actions —
+  switching to a popover would have required a separate trigger on the
+  desktop row + a coerced bottom-sheet path on mobile; a dialog lets
+  both paths share the same open mechanism). Net a11y + maintenance
+  win vs. a single extra dismiss click. Filename kept as
+  `GenerateNowButton.svelte` per the plan's component inventory.
+- **Kept the datetime-local input free-form** (unlike the header-mode
+  picker in CancelOccurrenceDialog, which uses a `<select>` over the
+  upcoming occurrences list). Reason: `until` in generate has a
+  different contract from `occurrence_date` in cancel — `until` is a
+  horizon cap and any datetime the user picks maps onto the recurrence
+  rule deterministically; there's no exact-match requirement to trap
+  the user into 422s. Free-form is the right UX here.
+- **Sequential `if/else if/else` rather than a single ICU
+  `successToast` with `{n}`.** Paraglide's compiled output flattens
+  the nested one/other into separate accessors
+  (`.successToast.one` / `.successToast.other`), so the consumer has
+  to branch. Matches how `CadenceDriftBanner` already consumes
+  `drift.banner.title.one/other`. The extra `events.length === 0`
+  branch falls out naturally to the `upToDateToast` key.
+- **Full invalidation even on zero-event success.** `last_generated_until`
+  on the admin detail can move forward without materialising new
+  events (if the horizon was already past the window), and drift
+  recomputes off the current rule + last-generated-until pair. A
+  targeted invalidation would miss the horizon-advance case, so the
+  uniform `invalidateSeries` call is the cheapest safe option.
+- **No Vitest component test.** Same bits-ui Vitest harness carryover
+  that has blocked every Phase-3 dialog so far. Playwright coverage
+  lands at 3.7/3.8.
+
+### QA (scoped)
+
+- `pnpm exec prettier --check` on the new component + dashboard page +
+  three message files → clean (one auto-format pass on the component
+  after initial write; prettier wrapped the ternary body).
+- `pnpm exec eslint --max-warnings 0 --no-warn-ignored` on the new
+  file + dashboard → **0 errors, 0 warnings**.
+- `pnpm exec svelte-check` → **0 errors, 339 warnings** repo-wide —
+  exact same baseline as 3.2 / 3.3.
+- `pnpm paraglide:compile` → clean; `pnpm i18n:validate` → **4698
+  keys, 100% parity** across EN/IT/DE.
+- `wc -l`: `GenerateNowButton.svelte` 195 / dashboard `+page.svelte`
+  383 — both well under the 750-line Svelte gate.
+- Vitest on the green set: **106 / 106 passed** (same 6 suites as
+  3.3). `RecurrencePicker.test.ts` bits-ui harness failure unchanged.
+
+### Known carryovers (unchanged from 3.3)
+
+- **EventEditor prefill consumer** for ExdatesChipList's chip action.
+- **bits-ui Vitest harness** — still pending Vite 5↔6 realignment.
+  The new `generate-now-*` testids light up at Playwright time.
+- **`canEdit` uses coarse `$page.data.canCreateEvent`** — Appendix F
+  permission pass still open. GenerateNowButton inherits the
+  dashboard's gate via the hidden header action row; no regression.
+
+### Next
+
+- **3.5** `PauseResumeButton.svelte` — pause needs a confirm
+  (Phase-0-seeded copy `pauseResume.pauseConfirm` + `.pauseConfirmBody`
+  + `.pausedToast` / `.resumedToast`); resume is single-click. Likely
+  smaller than GenerateNowButton — no datetime input, just a confirm
+  dialog for pause and a straight mutation for resume.
+- **3.6** `CancelDriftedOccurrencesDialog.svelte` — optional bulk-cancel;
+  sequential `POST /cancel-occurrence` loop with per-row status. May
+  defer per plan §estimate.
+- **3.7** per-modal tests + Playwright end-to-end (UX release checklist
+  flow).
+- **3.8** QA gate + full Playwright smoke.
+
+---
+
 ## 2026-04-24 — Phase 3.3 CancelOccurrenceDialog landed
 
 Shippable: the cancel-occurrence dialog wired into both entry points

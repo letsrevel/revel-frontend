@@ -25,6 +25,7 @@
 	import TemplateEditDialog from '$lib/components/event-series/admin/TemplateEditDialog.svelte';
 	import RecurrenceEditDialog from '$lib/components/event-series/admin/RecurrenceEditDialog.svelte';
 	import CancelOccurrenceDialog from '$lib/components/event-series/admin/CancelOccurrenceDialog.svelte';
+	import GenerateNowButton from '$lib/components/event-series/admin/GenerateNowButton.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -126,6 +127,7 @@
 	let showTemplateEdit = $state(false);
 	let showRecurrenceEdit = $state(false);
 	let showCancelOccurrence = $state(false);
+	let showGenerateNow = $state(false);
 	// `null` → header-mode picker; ISO string → row-mode prefill. The dashboard
 	// flips this before setting `showCancelOccurrence=true` so the dialog's
 	// open-effect seed picks up the right source.
@@ -192,6 +194,7 @@
 					onEditTemplate={() => (showTemplateEdit = true)}
 					onEditRecurrence={() => (showRecurrenceEdit = true)}
 					onCancelOccurrence={openCancelOccurrenceFromHeader}
+					onGenerateNow={() => (showGenerateNow = true)}
 				/>
 			{/if}
 		</div>
@@ -362,6 +365,13 @@
 		occurrences={upcomingOccurrences}
 		initialDate={cancelOccurrenceInitialDate}
 		onClose={() => (showCancelOccurrence = false)}
+	/>
+	<GenerateNowButton
+		bind:open={showGenerateNow}
+		{series}
+		organizationSlug={organization.slug}
+		{accessToken}
+		onClose={() => (showGenerateNow = false)}
 	/>
 {/if}
 

@@ -5499,7 +5499,13 @@
 				"other": "{n} new occurrences scheduled through {date}."
 			},
 			"upToDateToast": "Already up to date — no new occurrences to generate.",
-			"action": "Generate now"
+			"action": "Generate now",
+			"title": "Generate now",
+			"description": "Materialise upcoming occurrences. Leave the date blank to fill to the default window.",
+			"untilHelper": "Leave blank to use the series' generation window ({weeks} weeks).",
+			"submitting": "Generating…",
+			"cancelButton": "Cancel",
+			"errorToast": "Couldn't generate occurrences. Please try again."
 		},
 		"pauseResume": {
 			"pauseConfirm": "Pause series?",
