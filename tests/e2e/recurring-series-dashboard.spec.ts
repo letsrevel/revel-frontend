@@ -20,6 +20,14 @@ import { test, expect, type Page } from '@playwright/test';
 const ORG_SLUG = 'revel-events-collective';
 const ALICE_EMAIL = 'alice.owner@example.com';
 
+// Captured by the "creates a weekly series" test below and reused by the
+// Phase 3 mutating-flow tests. Module-level persists across tests in the
+// same worker (`workers: 1` for the local smoke), so the phase-3 tests can
+// pin to a known-healthy series without iterating through seed data (which
+// includes a degraded series "Seasonal Community Gatherings" with no
+// recurrence_rule — actions are disabled on that one).
+let freshSeriesPath: string | null = null;
+
 /**
  * datetime-local inputs want `YYYY-MM-DDTHH:mm` without seconds or a timezone
  * suffix. Anchor the series a week out to satisfy the wizard's "start must be
@@ -145,6 +153,18 @@ test.describe('Recurring series dashboard', () => {
 			timeout: 30_000
 		});
 
+		// Capture the freshly-created series URL for the Phase 3 mutating-flow
+		// tests below. Each of those needs a known-healthy series (the seed
+		// data contains a degraded one that disables all actions); pinning to
+		// the wizard's output keeps them deterministic without having to
+		// iterate through seed rows.
+		const capturedMatch = page
+			.url()
+			.match(new RegExp(`/org/${ORG_SLUG}/admin/event-series/${UUID}/?`));
+		if (capturedMatch) {
+			freshSeriesPath = capturedMatch[0].replace(/\/?$/, '/');
+		}
+
 		// SeriesHeaderCard renders the series name as an h1. The admin layout
 		// also puts the org name in an h1, so match by accessible name instead
 		// of level alone.
@@ -231,5 +251,261 @@ test.describe('Recurring series dashboard', () => {
 		await expect(page.getByTestId('series-settings-dialog')).toBeVisible({
 			timeout: 10_000
 		});
+	});
+});
+
+/**
+ * Phase 3 mutating-dialog smoke.
+ *
+ * Each scenario independently navigates to the first admin series on Alice's
+ * org and exercises one mutating flow end-to-end. All scenarios skip when no
+ * series exists, matching the pattern the settings-dialog test uses — the
+ * create-and-render test in the block above seeds the org with at least one
+ * series, but the order isn't enforced so the skip is the honest guard.
+ *
+ * Each test's assertion strategy: trigger → dialog opens → interact →
+ * dialog closes → authoritative post-mutation state reads back from the
+ * dashboard (not from a toast, since `svelte-sonner` toasts auto-dismiss and
+ * the timing is flaky under Playwright's auto-waiting).
+ */
+
+/**
+ * Navigate to the freshly-created series the wizard test captured. Returns
+ * true on success, false when `freshSeriesPath` was never set (wizard test
+ * skipped / failed). Pinning to the wizard's output keeps each Phase 3
+ * test deterministic — the demo seed data includes a degraded series
+ * ("Seasonal Community Gatherings" with no recurrence_rule / template_event)
+ * that disables every header action, so iterating "first series on the list"
+ * lands on it and every subsequent click fails on a disabled button.
+ */
+async function openFreshWizardSeries(page: Page): Promise<boolean> {
+	if (!freshSeriesPath) return false;
+	await page.goto(freshSeriesPath);
+	await page.waitForLoadState('networkidle');
+	// Dev-server hydration + auth store settle. Matches the timing used by
+	// the wizard test; clicks issued too early race the `canEdit` derivation
+	// on initial render.
+	await page.waitForTimeout(2500);
+
+	// Confirm the header action row hydrated, so subsequent clicks land on
+	// enabled buttons. Race a desktop-row testid against the action sheet
+	// trigger so the helper works on every viewport.
+	await Promise.race([
+		page
+			.getByTestId('action-cancel-occurrence')
+			.first()
+			.waitFor({ state: 'visible', timeout: 15_000 }),
+		page.getByTestId('action-sheet-trigger').waitFor({ state: 'visible', timeout: 15_000 })
+	]);
+	return true;
+}
+
+test.describe('Recurring series dashboard — Phase 3 mutating flows', () => {
+	test.skip(
+		({ browserName }) => browserName === 'firefox',
+		'Firefox cold-load against the dev server exceeds Playwright timeouts.'
+	);
+
+	test('cancels an occurrence via the row quick-action', async ({ page }) => {
+		test.setTimeout(180_000);
+		await loginAsAliceOwner(page);
+		if (!(await openFreshWizardSeries(page))) {
+			test.skip(true, 'Wizard test did not capture a series; skipping row-cancel smoke.');
+			return;
+		}
+
+		// Need at least one cancellable occurrence row (draft/open). Row-cancel
+		// buttons only render when `canEdit && isCancellable`, so waiting for
+		// the button itself is the right signal.
+		const rowCancel = page.getByTestId('row-cancel-occurrence').first();
+		if (!(await rowCancel.isVisible().catch(() => false))) {
+			test.skip(true, 'No cancellable upcoming occurrences on the first series.');
+			return;
+		}
+
+		const initialRowCount = await page.getByTestId('occurrence-row').count();
+
+		await rowCancel.click();
+
+		// Dialog opens in row mode — the selected-date testid appears only
+		// when `initialDate` was provided (the component's isRowMode branch).
+		await expect(page.getByTestId('cancel-occurrence-dialog')).toBeVisible({ timeout: 10_000 });
+		await expect(page.getByTestId('cancel-occurrence-selected-date')).toBeVisible();
+
+		await page.getByTestId('cancel-occurrence-confirm').click();
+
+		// Dialog closes on mutation success (onClose fires in onSuccess).
+		await expect(page.getByTestId('cancel-occurrence-dialog')).toBeHidden({ timeout: 15_000 });
+
+		// Authoritative signal that the dashboard refetched: either the
+		// occurrence-row count dropped by one (the cancelled row was
+		// materialised and now has status=CANCELLED, which the `driftedIds`
+		// list keeps visible but `upcomingOccurrences` may still include —
+		// we don't rely on that) *or* the exdates chip list now renders a
+		// chip (backend always appends to `exdates` on cancel). The exdates
+		// check is the deterministic one per UX §5.
+		await expect(page.getByTestId('exdates-list')).toBeVisible({ timeout: 15_000 });
+		// Sanity check the count hasn't gone *up* — a race between the old
+		// and new query data should never inflate the list.
+		const afterRowCount = await page.getByTestId('occurrence-row').count();
+		expect(afterRowCount).toBeLessThanOrEqual(initialRowCount);
+	});
+
+	test('cancels an occurrence via the header picker', async ({ page }) => {
+		test.setTimeout(180_000);
+		await loginAsAliceOwner(page);
+		if (!(await openFreshWizardSeries(page))) {
+			test.skip(true, 'Wizard test did not capture a series; skipping header-cancel smoke.');
+			return;
+		}
+
+		await clickHeaderAction(page, 'action-cancel-occurrence');
+		await expect(page.getByTestId('cancel-occurrence-dialog')).toBeVisible({ timeout: 10_000 });
+
+		// Header mode: the select should render (unless there are no
+		// cancellable upcoming occurrences, in which case the picker-empty
+		// state shows and we skip).
+		const picker = page.getByTestId('cancel-occurrence-picker');
+		const pickerEmpty = page.getByTestId('cancel-occurrence-picker-empty');
+		if (await pickerEmpty.isVisible().catch(() => false)) {
+			test.skip(true, 'No cancellable upcoming occurrences in the header picker.');
+			return;
+		}
+		await expect(picker).toBeVisible();
+
+		// Pick the first real option. The placeholder is disabled so
+		// `selectOption({ index: 1 })` lands on the first occurrence.
+		await picker.selectOption({ index: 1 });
+
+		await page.getByTestId('cancel-occurrence-confirm').click();
+		await expect(page.getByTestId('cancel-occurrence-dialog')).toBeHidden({ timeout: 15_000 });
+
+		// Same authoritative read-back as the row test.
+		await expect(page.getByTestId('exdates-list')).toBeVisible({ timeout: 15_000 });
+	});
+
+	test('opens and submits the generate-now dialog', async ({ page }) => {
+		test.setTimeout(180_000);
+		await loginAsAliceOwner(page);
+		if (!(await openFreshWizardSeries(page))) {
+			test.skip(true, 'Wizard test did not capture a series; skipping generate-now smoke.');
+			return;
+		}
+
+		await clickHeaderAction(page, 'action-generate-now');
+		await expect(page.getByTestId('generate-now-dialog')).toBeVisible({ timeout: 10_000 });
+
+		// Empty `until` — uses the default generation window. The backend
+		// may return zero events (series already at horizon) or N events;
+		// either way the dialog closes and we get a toast. We assert the
+		// dialog closed, not the toast content (toast timing is flaky).
+		await page.getByTestId('generate-now-submit').click();
+
+		await expect(page.getByTestId('generate-now-dialog')).toBeHidden({ timeout: 20_000 });
+	});
+
+	test('pauses the series then resumes it', async ({ page }) => {
+		test.setTimeout(180_000);
+		await loginAsAliceOwner(page);
+		if (!(await openFreshWizardSeries(page))) {
+			test.skip(true, 'Wizard test did not capture a series; skipping pause/resume smoke.');
+			return;
+		}
+
+		// Skip if the series is already paused — resume-then-pause needs the
+		// same copy flip in the header chip and would make the serial story
+		// confusing. Rather than branch, skip gracefully.
+		const pausedChip = page.getByLabel('Paused').first();
+		if (await pausedChip.isVisible().catch(() => false)) {
+			test.skip(true, 'Series is already paused; skipping pause/resume smoke.');
+			return;
+		}
+
+		// --- Pause: dialog opens, user confirms, status flips to paused ---
+		await clickHeaderAction(page, 'action-pause-resume');
+		await expect(page.getByTestId('pause-resume-dialog')).toBeVisible({ timeout: 10_000 });
+
+		// Let the bits-ui Dialog's open animation fully settle and any leftover
+		// action-sheet backdrop unmount. On Mobile Safari the dialog is
+		// visually present within ~100ms of the action click, but pointer
+		// events don't reliably hit the confirm button until the sheet's
+		// backdrop has been torn down. 500ms covers the observed race.
+		await page.waitForTimeout(500);
+
+		const confirmBtn = page.getByTestId('pause-resume-confirm');
+		await confirmBtn.waitFor({ state: 'visible' });
+		await confirmBtn.scrollIntoViewIfNeeded();
+		const pausePromise = page.waitForResponse(
+			(resp) => resp.url().includes('/pause') && resp.request().method() === 'POST',
+			{ timeout: 15_000 }
+		);
+		await confirmBtn.click();
+		const pauseResp = await pausePromise;
+		expect(pauseResp.ok()).toBe(true);
+
+		// Dialog closes on success.
+		await expect(page.getByTestId('pause-resume-dialog')).toBeHidden({ timeout: 15_000 });
+
+		// Status chip flips to "Paused" once `invalidateSeries` refetches and
+		// the dashboard's reactive derivation picks up `series.is_active=false`.
+		await expect(page.getByLabel('Paused').first()).toBeVisible({ timeout: 15_000 });
+
+		// --- Resume: single-click, no dialog. Status flips back to active ---
+		// Let the pause-success side effects fully settle before clicking the
+		// now-Resume button. In particular: PauseResumeButton's open-effect
+		// snapshot is driven by `decisionMadeForOpen` which resets when
+		// `open` flips to false; we want to make sure that reset has actually
+		// propagated before re-toggling open.
+		await page.waitForTimeout(500);
+
+		// Same authoritative pattern — wait for the backend POST to complete
+		// rather than polling the chip, since the resume path has no dialog
+		// UI to serve as a visual checkpoint.
+		const resumePromise = page.waitForResponse(
+			(resp) => resp.url().includes('/resume') && resp.request().method() === 'POST',
+			{ timeout: 15_000 }
+		);
+		await clickHeaderAction(page, 'action-pause-resume');
+		const resumeResp = await resumePromise;
+		expect(resumeResp.ok()).toBe(true);
+
+		// Chip flips back to Active once the query invalidation settles.
+		await expect(page.getByLabel('Active').first()).toBeVisible({ timeout: 15_000 });
+	});
+
+	test('cancels drifted occurrences in bulk', async ({ page }) => {
+		test.setTimeout(180_000);
+		await loginAsAliceOwner(page);
+		if (!(await openFreshWizardSeries(page))) {
+			test.skip(true, 'Wizard test did not capture a series; skipping bulk-cancel smoke.');
+			return;
+		}
+
+		// The drift banner is data-driven — only renders when the backend
+		// reports `stale_occurrences.length > 0`. Fresh seed data has no
+		// drift, so skip gracefully when the banner isn't present. Drift is
+		// produced by editing the recurrence rule of an existing series;
+		// that's covered by the RecurrenceEditDialog's own flow which we
+		// don't exercise here to keep the smoke focused.
+		const driftBanner = page.getByTestId('drift-banner');
+		if (!(await driftBanner.isVisible().catch(() => false))) {
+			test.skip(true, 'No drifted occurrences on the first series; skipping bulk-cancel smoke.');
+			return;
+		}
+
+		await page.getByTestId('drift-bulk-cancel').click();
+		await expect(page.getByTestId('drift-bulk-dialog')).toBeVisible({ timeout: 10_000 });
+
+		// Arm the destructive confirm by ticking the "I understand" checkbox.
+		await page.getByTestId('drift-bulk-arm').check();
+		await page.getByTestId('drift-bulk-confirm').click();
+
+		// Rows transition pending → inFlight → done. We wait for the dialog
+		// to close (which only happens on full success) rather than polling
+		// individual rows.
+		await expect(page.getByTestId('drift-bulk-dialog')).toBeHidden({ timeout: 60_000 });
+
+		// Drift banner disappears once `stale_occurrences` is empty.
+		await expect(driftBanner).toBeHidden({ timeout: 15_000 });
 	});
 });

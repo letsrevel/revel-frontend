@@ -29,20 +29,31 @@
 	// The component handles both flows through a single `open` prop:
 	//  - active series + open=true  → render the confirm dialog below
 	//  - paused series + open=true  → fire resume immediately (no dialog), close
-	// The `resumeFiredForOpen` latch prevents the open effect from firing the
-	// resume mutation twice for the same open cycle (it resets on close).
+	// `decisionMadeForOpen` latches at the first post-open effect tick so the
+	// component picks its path exactly once per open cycle. Without it, the
+	// pause mutation's own `invalidateSeries` refetch flips `isPaused` to
+	// true *while the dialog is still open* (the onSuccess awaits the refetch
+	// before calling `onClose`), and the effect would then fire an immediate
+	// resume — net-net the series would ping-pong paused→active and the user
+	// would see "Active" again. Caught by the Playwright pause/resume smoke
+	// on Mobile Safari, where the backend + refetch are slow enough that the
+	// race reliably triggers.
 	const isPaused = $derived(series.is_active === false);
 	let errorBanner = $state<string | null>(null);
-	let resumeFiredForOpen = $state(false);
+	let decisionMadeForOpen = $state(false);
 
 	$effect(() => {
 		if (!open) {
-			resumeFiredForOpen = false;
+			decisionMadeForOpen = false;
 			errorBanner = null;
 			return;
 		}
-		if (isPaused && !resumeFiredForOpen) {
-			resumeFiredForOpen = true;
+		if (decisionMadeForOpen) return;
+		decisionMadeForOpen = true;
+		// Snapshot `isPaused` at the first open tick. Subsequent transitions
+		// (e.g. the pause mutation flipping the backend state) are side
+		// effects, not new "the user opened this dialog" intent.
+		if (isPaused) {
 			resumeMutation.mutate();
 		}
 	});

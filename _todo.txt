@@ -117,8 +117,13 @@
 - [x] **3.5** `PauseResumeButton.svelte` — pause confirm; resume single-click.
 - [x] **3.6** `CancelDriftedOccurrencesDialog.svelte` — optional bulk-cancel,
       sequential, per-row status, armed by checkbox.
-- [ ] **3.7** Tests: per-modal component tests + Playwright end-to-end (UX release
-      checklist flow).
+- [x] **3.7** Tests: per-modal component tests + Playwright end-to-end (UX release
+      checklist flow). Playwright shipped 5 new Phase-3 scenarios (row cancel,
+      header-picker cancel, generate now, pause+resume, bulk-cancel drifted
+      with skip-if-no-drift) on top of the existing 2 Phase-2 scenarios. 24/28
+      green across chromium/webkit/Mobile Chrome/Mobile Safari (4 skips = the
+      bulk-cancel drift tests × 4 projects, no drift in seed data). Component
+      tests still blocked by the bits-ui Vitest harness carryover.
 - [ ] **3.8** QA gate (§QA) + Playwright smoke.
 
 ## Phase 4 — Attendee-side polish

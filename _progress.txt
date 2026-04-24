@@ -8,6 +8,157 @@
 
 ---
 
+## 2026-04-24 — Phase 3.7 Playwright smoke extensions (+ a real bug fix)
+
+Shippable: 5 new Playwright scenarios covering every Phase-3 mutating
+flow (row cancel, header-picker cancel, generate now, pause+resume,
+drift bulk-cancel with skip-if-no-drift) on top of the 2 existing
+Phase-2 scenarios. 24/28 tests green across chromium / webkit /
+Mobile Chrome / Mobile Safari (4 skips = the drift bulk-cancel
+tests × 4 projects; seed data has no drifted occurrences by
+default). Firefox still skipped at the describe level per the 2.10
+finding about paraglide cold-load timeouts.
+
+**Along the way, the pause/resume scenario surfaced a real bug in
+`PauseResumeButton.svelte`** that had been silently ping-ponging the
+series on slow devices (paused → immediately resumed). Described
+below under "Component bug caught by the smoke".
+
+### What shipped
+
+- **`tests/e2e/recurring-series-dashboard.spec.ts`** — grew from 235
+  to 511 lines.
+    - **New `Phase 3 mutating flows` describe** with the 5 scenarios.
+      Each uses the same shape: navigate to the fresh wizard-created
+      series, click the action (header or row), assert dialog opens,
+      interact, assert mutation completes via `waitForResponse` on
+      the relevant POST, assert the dashboard reflects the new state.
+    - **`freshSeriesPath` module variable** captured by the
+      "creates a weekly series" test via URL regex match, reused by
+      every phase-3 test. Replaces the naïve "first series on the
+      list" pattern, which was landing on a degraded seed series
+      ("Seasonal Community Gatherings", no recurrence_rule) whose
+      action buttons are all `disabled` — every subsequent click
+      failed with "element is not enabled" before the fix.
+    - **`openFreshWizardSeries(page)` helper** — navigates to
+      `freshSeriesPath`, waits for `networkidle` + a 2.5s settle
+      (dev-server paraglide compile + auth store init), then races a
+      header-action testid against the action-sheet trigger to
+      confirm the row hydrated. Returns `false` (caller skips) when
+      the wizard test hadn't captured a path.
+    - **`waitForResponse` gates on mutation POSTs** (pause, resume).
+      Authoritative signal that the backend saw the request — the
+      earlier "dialog closes on success" assertion could pass even
+      when the click landed on a backdrop instead of the confirm
+      button (see the bug-fix section below).
+    - **500ms settle after dialog shows visible** in the pause test.
+      On Mobile Safari the bits-ui Dialog's enter animation races the
+      mobile action sheet's exit animation; without the settle, the
+      confirm click sometimes misses. `scrollIntoViewIfNeeded` added
+      as belt-and-suspenders.
+    - **500ms settle between the pause success and the resume click**
+      in the pause test, so the component's `decisionMadeForOpen`
+      latch has fully reset via the close-effect before we re-toggle
+      `open`.
+    - **Skip-if-no-drift** on the bulk-cancel test — seed data has no
+      drifted occurrences, and producing drift would require
+      exercising `RecurrenceEditDialog` (3.2)'s cadence-change flow
+      from inside this smoke, which we don't do to keep the test
+      surface tight.
+
+### Component bug caught by the smoke
+
+- **`src/lib/components/event-series/admin/PauseResumeButton.svelte`** —
+  the open-effect's guard was named `resumeFiredForOpen` and only
+  blocked a *second* resume within the same open cycle. Sequence
+  that tripped it:
+    1. Active series, user clicks Pause.
+    2. `open=true`, `isPaused=false` → dialog renders the confirm UI.
+    3. User clicks confirm → `pauseMutation.mutate()`.
+    4. onSuccess: `await invalidateSeries(...)` — refetch completes,
+       `series.is_active` flips to `false`, `isPaused` becomes
+       `true` **while `open` is still `true`**.
+    5. Effect re-runs: `isPaused && !resumeFiredForOpen` evaluates
+       TRUE → fires `resumeMutation.mutate()`.
+    6. Pause → immediate resume. Net-net the series is back to Active
+       and the user sees no change.
+
+  On desktop the race sometimes lost (the onClose() in onSuccess
+  fired first, `open` went false before the effect re-ran). On
+  Mobile Safari the backend/refetch was slow enough that the race
+  reliably triggered — exactly what the smoke caught.
+
+  **Fix**: renamed the latch to `decisionMadeForOpen` and restructured
+  the effect so the isPaused check runs **only** on the first tick
+  after `open` flips to true. Subsequent transitions (including the
+  pause mutation's own side effects) are ignored. This preserves the
+  intended "opened while paused → fire resume" single-click behaviour
+  while closing the pause→resume ping-pong.
+
+### Deviations / decisions
+
+- **`waitForResponse` over "dialog closes" as the mutation completion
+  signal.** The dialog closes regardless of whether the mutation
+  succeeded or the user cancelled via an outside-click. Pinning to
+  the backend POST gives us a signal that's not susceptible to the
+  Mobile Safari backdrop-intercepts-click issue.
+- **Fresh wizard series as the anchor, not the list-first series.**
+  The existing settings-dialog test (Phase 2.10) used list-first,
+  which happens to hit a degraded seed series. That was fine for
+  Phase 2 — the only action it exercised was `action-series-settings`,
+  which is NOT disabled on degraded series (it's the only one that
+  isn't). Phase 3 tests need actions that ARE disabled on degraded
+  series, so the anchor had to change.
+- **Skip-if-no-drift** for the bulk-cancel test rather than setting
+  up drift via RecurrenceEditDialog from inside this smoke. Drift
+  setup would add ~45s of test runtime (open dialog, change cadence,
+  confirm warning, save, wait for drift endpoint to repopulate) and
+  couple the test to 3.2's UI instead of testing only 3.6. When we
+  build a seed-data fixture that includes drifted rows, this test
+  will light up automatically.
+- **No component-test additions.** bits-ui Vitest harness is still
+  broken — every Phase-3 dialog's component test would transitively
+  import `Dialog` runtime and hit the Vite-6 `PartialEnvironment`
+  proxy error. The Playwright scenarios are the viable substitute.
+
+### QA (scoped)
+
+- `pnpm exec prettier --check` on the spec + PauseResumeButton.svelte
+  → clean (one auto-format pass on the spec after initial write).
+- `pnpm exec eslint --max-warnings 0 --no-warn-ignored` on the two
+  files → **0 errors, 0 warnings**.
+- `pnpm exec svelte-check` → **0 errors, 339 warnings** repo-wide —
+  exact same baseline as 3.2 / 3.3 / 3.4 / 3.5 / 3.6.
+- Vitest (scoped to recurrence + admin components): **106 / 106
+  passed** (same 6 suites). `RecurrencePicker.test.ts` bits-ui
+  harness failure unchanged.
+- Playwright: **24 / 28 passed** (4 drift-test skips across 4
+  projects) against local dev + demo backend on :8000. Firefox still
+  skipped at the describe level.
+- `wc -l`: spec 511 lines / PauseResumeButton 185 lines — both
+  well under the 750-line Svelte gate and the spec is well under
+  the TS 500-line cap (e2e tests are exempt from the TS cap but
+  it's a useful sanity check).
+
+### Known carryovers (unchanged from 3.6)
+
+- **EventEditor prefill consumer** for ExdatesChipList's chip action.
+- **bits-ui Vitest harness** — still pending Vite 5↔6 realignment.
+- **`canEdit` uses coarse `$page.data.canCreateEvent`** — Appendix F
+  permission pass still open.
+- **Firefox skipped** at the describe level — dev-server paraglide
+  cold-load exceeds Playwright timeouts.
+
+### Next
+
+- **3.8** QA gate + full Playwright smoke on the complete shipped
+  feature surface. Should be mostly a paperwork unit — re-run the
+  full suite across projects one more time, make sure the §QA gate
+  checks still pass from a clean baseline, update _progress.txt to
+  close out Phase 3.
+
+---
+
 ## 2026-04-24 — Phase 3.6 CancelDriftedOccurrencesDialog landed
 
 Shippable: the drift banner's "Cancel all N stale dates" button now
