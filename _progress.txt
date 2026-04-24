@@ -8,6 +8,183 @@
 
 ---
 
+## 2026-04-24 — Phase 3.3 CancelOccurrenceDialog landed
+
+Shippable: the cancel-occurrence dialog wired into both entry points
+(row-level quick action + header-level picker), backed by a single
+`CancelOccurrenceDialog.svelte` that branches on an optional
+`initialDate` prop. Full series invalidation on success means the
+dashboard's `ExdatesChipList`, drift banner, and occurrence rows all
+refresh automatically — the backend flips `status=CANCELLED` on a
+materialised event and appends to `exdates`; the FE just follows.
+
+### What shipped
+
+- **`src/lib/components/event-series/admin/CancelOccurrenceDialog.svelte`**
+  (243 lines — the smallest Phase-3 dialog so far, as expected).
+    - bits-ui `Dialog` wrapper mirroring the `RecurrenceEditDialog` /
+      `TemplateEditDialog` pattern. No second step; the verbatim UX §5
+      tickets-and-refund copy sits inline in a warning banner below
+      the date context so the user sees it *before* confirming.
+    - **Row mode** (`initialDate` is a non-empty ISO string): renders a
+      read-only `<p>` with the formatted start under an "Occurrence to
+      cancel" label. No picker. The backend requires an exact match
+      against a scheduled start, so row mode re-uses `event.start`
+      verbatim — no rounding, no re-formatting.
+    - **Header mode** (`initialDate` is `null`): renders a native
+      `<select>` populated from `occurrences.filter(status ∈ {draft,
+      open})`. Preferred over a `datetime-local` input because the
+      exact-match backend contract makes a free-form picker a 422-trap.
+      The filter mirrors `OccurrenceRow`'s `isCancellable` gate. Empty
+      state (no cancellable upcoming occurrences) renders a dashed-
+      border helper ("No upcoming occurrences to cancel.") so the
+      dialog is still navigable with keyboard.
+    - Button row: **Keep date** (outline) + **Cancel date** (destructive
+      variant). Destructive confirm flips to a loader + "Cancelling…"
+      while the mutation is pending; `Keep` is disabled during pending
+      and the dialog's `onOpenChange` close is also guarded — user
+      can't dismiss a mid-flight POST.
+    - POST via `organizationadminrecurringeventsCancelOccurrence` with
+      `{ occurrence_date: selectedDate }`. On success: full
+      `invalidateSeries(queryClient, slug, id)` which covers detail +
+      drift + occurrences + the public series detail key. Toast copy
+      is the Phase-0-seeded `successToast` ("Date cancelled."). On
+      error: `response.error.detail` → banner + toast verbatim;
+      `response.error.errors` → first message; else generic errorToast.
+    - `data-testids` across the interactive surface:
+      `cancel-occurrence-dialog`, `cancel-occurrence-selected-date`
+      (row mode), `cancel-occurrence-picker`,
+      `cancel-occurrence-picker-empty`, `cancel-occurrence-body`,
+      `cancel-occurrence-error`, `cancel-occurrence-keep`,
+      `cancel-occurrence-confirm` — lined up for the 3.7/3.8
+      Playwright smoke.
+
+- **Dashboard wire-up** at
+  `src/routes/(auth)/org/[slug]/admin/event-series/[series_id]/+page.svelte`:
+  imported `CancelOccurrenceDialog`, added `showCancelOccurrence` +
+  `cancelOccurrenceInitialDate` state runes and two small helpers
+  (`openCancelOccurrenceFromRow`, `openCancelOccurrenceFromHeader`)
+  that flip `initialDate` before showing the dialog so the dialog's
+  open-effect seed picks up the right source. Wired
+  `SeriesHeaderCard.onCancelOccurrence` (header entry — was previously
+  a no-op prop; the Phase-2 header card + action sheet already
+  threaded it through with `data-testid="action-cancel-occurrence"`)
+  and `OccurrenceRow.onCancelOccurrence` (row entry — was also a
+  dangling prop, the row component had the callback + testid
+  `row-cancel-occurrence` shipped in Phase 2.3). Dialog mounts inside
+  the same `{#if series}` block as the other Phase-3 dialogs.
+
+- **i18n** — extended the existing Phase-0
+  `recurringEvents.cancelOccurrenceDialog.*` block (5 seeded keys:
+  title, body, confirm, keep, successToast) with 7 more leaf keys:
+  selectedDateLabel, picker.{label,placeholder,empty}, cancelling,
+  errorToast. Mirrored across EN/IT/DE with EN copy per the Phase-0
+  convention — real IT + DE translations land in Phase 5. `pnpm
+  paraglide:compile` + `pnpm i18n:validate` → **4692 keys, 100%
+  parity** across all three locales.
+
+### Deviations / decisions
+
+- **Single component + optional `initialDate` prop** rather than a
+  `mode: 'row' | 'header'` discriminator. The shape is smaller (no
+  enum plumbing, no `if (mode === …)` branches everywhere) and the
+  truthiness check on `initialDate` reads the same either way.
+- **`<select>` over `<input type="datetime-local">`** for header mode.
+  UX doc §5 is explicit: "must be an exact match against a scheduled
+  start". A datetime-local picker lets the user input *any* time and
+  the backend would 422 any non-exact match — a trap we'd need to
+  build client-side round-trip validation to avoid. A select of the
+  existing upcoming starts is both safer (no mismatched timestamps)
+  and faster for the organiser (click vs. full datetime entry).
+- **No separate picker step.** The select + the warning body both fit
+  in the same view; no reason to make the user click twice.
+- **Eslint-disable became a block pair** (`eslint-disable` +
+  `eslint-enable` around the destructure). 7 props pushed the
+  destructure off the 100-char printWidth cap; the single-line
+  `eslint-disable-next-line` pattern the other dialogs use only
+  covers `let {`, not the per-identifier prefer-const fires on lines
+  inside the multi-line destructure. Block pair keeps the rationale
+  comment visible and shuts ESLint up on the whole statement. The
+  autofixer's "unused directive" false positive (see 3.2 carryover)
+  doesn't apply here because the block form has a different shape
+  that the autofixer's static inference handles differently.
+- **Full-series invalidation** on success via `invalidateSeries` — the
+  plan §Phase 3 §3 says "invalidate series detail + occurrences +
+  drift queries"; the helper already covers all three plus the
+  public detail cache, which matches how cancelOccurrence's backend
+  side-effects fan out (exdates bump in the recurrence detail, status
+  flip on the materialised event, drift recomputation).
+- **No dedicated 422 handling for an exact-match mismatch.** The
+  `<select>` gates the payload to an exact scheduled start, so the
+  422 path should be unreachable under the current flow. Backend
+  error banners still surface `detail` verbatim if it ever happens
+  (e.g. a stale query + an already-cancelled date in the select).
+- **No Vitest component test for the dialog.** bits-ui Vitest harness
+  tail is still broken (Vite 5↔6 realignment is the fix; see 2.10 /
+  2.11 / 3.1 / 3.2 carryovers). Playwright coverage lands at 3.7/3.8.
+
+### QA (scoped)
+
+- `pnpm exec prettier --check` on the new dialog + dashboard page +
+  three message files → clean (one auto-format pass on the dialog
+  after initial write; prettier broke the 7-prop destructure).
+- `pnpm exec eslint --max-warnings 0 --no-warn-ignored` on the new
+  file + dashboard → **0 errors, 0 warnings** (after switching the
+  single-line eslint-disable to a block pair; see deviation above).
+- `pnpm exec svelte-check` → **0 errors, 339 warnings** repo-wide —
+  exact same baseline as the end of 3.2. No new
+  `state_referenced_locally` warnings thanks to the neutral-default
+  + open-effect seed for `selectedDate`.
+- `pnpm paraglide:compile` → clean; `pnpm i18n:validate` → **4692
+  keys, 100% parity** across EN/IT/DE.
+- `wc -l` on touched files: `CancelOccurrenceDialog.svelte` 243 /
+  dashboard `+page.svelte` 373 — both well under the 750-line
+  Svelte gate (pre-existing file-length violations elsewhere
+  unchanged).
+- Vitest on the green set: **106 / 106 passed** across
+  `recurrence.test.ts` (57), `RecurrenceSummary` (6),
+  `CadenceDriftBanner` (7), `SeriesActionSheet` (14),
+  `ExdatesChipList` (8), `SeriesHeaderCard` (14). The pre-existing
+  `RecurrencePicker.test.ts` harness failure is unchanged — same
+  Vite-6 `PartialEnvironment` proxy error on bits-ui's
+  `select-viewport.svelte` that has tracked forward since 2.10.
+- Playwright smoke deferred to 3.7/3.8 per the plan — the 3.3 change
+  doesn't alter existing Phase-2 surfaces, so the existing
+  `tests/e2e/recurring-series-dashboard.spec.ts` (8/8 green, 2
+  skipped) is still the canonical regression signal.
+
+### Known carryovers (unchanged from 3.2)
+
+- **EventEditor prefill consumer** for ExdatesChipList's chip action —
+  still the same <1h follow-up.
+- **bits-ui Vitest harness** — still pending Vite 5↔6 realignment.
+  The new `cancel-occurrence-*` testids will light up at Playwright
+  time (3.7/3.8).
+- **`canEdit` uses coarse `$page.data.canCreateEvent`** — the
+  Appendix F finer-grained permission pass is still open. The new
+  dialog inherits the dashboard's existing gate; row-action + header
+  buttons are hidden in `canEdit === false` paths, so no regression
+  but no improvement either. Worth folding into 3.7 scope or a
+  dedicated sweep in Phase 5.
+
+### Next
+
+- **3.4** `GenerateNowButton.svelte` — optional `until` popover; plural
+  toast on non-empty result vs. "already up to date" neutral toast.
+  Single-button surface so no full dialog needed; the popover + the
+  mutation should fit in ~150 lines.
+- **3.5** `PauseResumeButton.svelte` — pause needs a confirm (copy
+  already seeded in Phase 0); resume is single-click. Even smaller.
+- **3.6** `CancelDriftedOccurrencesDialog.svelte` — optional bulk, the
+  sequential per-date loop is the interesting part. May be deferred
+  per plan §estimate if we want to ship the main feature sooner.
+- **3.7** per-modal tests + Playwright end-to-end (the UX release
+  checklist flow: create → dashboard → edit template with
+  propagation → cancel one → pause → resume).
+- **3.8** QA gate + full Playwright smoke.
+
+---
+
 ## 2026-04-24 — Phase 3.2 RecurrenceEditDialog landed
 
 Picked up straight from 3.1's clean slate. Shippable: the recurrence-edit

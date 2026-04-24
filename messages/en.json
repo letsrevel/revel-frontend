@@ -5482,7 +5482,15 @@
 			"body": "Cancel this date only — the series keeps running. If the event has sold tickets, holders will be notified and refunded per your refund policy.",
 			"confirm": "Cancel date",
 			"keep": "Keep date",
-			"successToast": "Date cancelled."
+			"successToast": "Date cancelled.",
+			"selectedDateLabel": "Occurrence to cancel",
+			"picker": {
+				"label": "Pick an occurrence to cancel",
+				"placeholder": "Select a date",
+				"empty": "No upcoming occurrences to cancel."
+			},
+			"cancelling": "Cancelling…",
+			"errorToast": "Couldn't cancel this date. Please try again."
 		},
 		"generateNow": {
 			"untilLabel": "Generate up to (optional)",

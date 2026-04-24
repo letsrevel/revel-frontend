@@ -24,6 +24,7 @@
 	import SeriesSettingsDialog from '$lib/components/event-series/admin/SeriesSettingsDialog.svelte';
 	import TemplateEditDialog from '$lib/components/event-series/admin/TemplateEditDialog.svelte';
 	import RecurrenceEditDialog from '$lib/components/event-series/admin/RecurrenceEditDialog.svelte';
+	import CancelOccurrenceDialog from '$lib/components/event-series/admin/CancelOccurrenceDialog.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -124,7 +125,22 @@
 	let showSeriesSettings = $state(false);
 	let showTemplateEdit = $state(false);
 	let showRecurrenceEdit = $state(false);
+	let showCancelOccurrence = $state(false);
+	// `null` → header-mode picker; ISO string → row-mode prefill. The dashboard
+	// flips this before setting `showCancelOccurrence=true` so the dialog's
+	// open-effect seed picks up the right source.
+	let cancelOccurrenceInitialDate = $state<string | null>(null);
 	let hasHandledSettingsParam = $state(false);
+
+	function openCancelOccurrenceFromRow(event: EventInListSchema): void {
+		cancelOccurrenceInitialDate = event.start;
+		showCancelOccurrence = true;
+	}
+
+	function openCancelOccurrenceFromHeader(): void {
+		cancelOccurrenceInitialDate = null;
+		showCancelOccurrence = true;
+	}
 
 	$effect(() => {
 		if (hasHandledSettingsParam) return;
@@ -175,6 +191,7 @@
 					onSeriesSettings={() => (showSeriesSettings = true)}
 					onEditTemplate={() => (showTemplateEdit = true)}
 					onEditRecurrence={() => (showRecurrenceEdit = true)}
+					onCancelOccurrence={openCancelOccurrenceFromHeader}
 				/>
 			{/if}
 		</div>
@@ -265,6 +282,7 @@
 								organizationSlug={organization.slug}
 								driftedIds={staleIds}
 								{canEdit}
+								onCancelOccurrence={openCancelOccurrenceFromRow}
 							/>
 						</li>
 					{/each}
@@ -335,6 +353,15 @@
 		organizationSlug={organization.slug}
 		{accessToken}
 		onClose={() => (showRecurrenceEdit = false)}
+	/>
+	<CancelOccurrenceDialog
+		bind:open={showCancelOccurrence}
+		{series}
+		organizationSlug={organization.slug}
+		{accessToken}
+		occurrences={upcomingOccurrences}
+		initialDate={cancelOccurrenceInitialDate}
+		onClose={() => (showCancelOccurrence = false)}
 	/>
 {/if}
 

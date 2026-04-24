@@ -111,7 +111,7 @@
       RecurrencePicker's `dtstartReadOnly` notice polished to show the formatted
       anchor + the Phase-0-seeded "Contact support to reschedule" helper. 454
       lines — well under the 750-line gate; no sub-component split needed.
-- [ ] **3.3** `CancelOccurrenceDialog.svelte` — row + header entry points; invalidates
+- [x] **3.3** `CancelOccurrenceDialog.svelte` — row + header entry points; invalidates
       detail + occurrences + drift.
 - [ ] **3.4** `GenerateNowButton.svelte` — optional `until`; plural/up-to-date toasts.
 - [ ] **3.5** `PauseResumeButton.svelte` — pause confirm; resume single-click.
