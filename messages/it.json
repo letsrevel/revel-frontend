@@ -5454,9 +5454,28 @@
 		},
 		"recurrenceDialog": {
 			"title": "Edit recurrence",
+			"description": "Update how the series schedules new occurrences. Already-scheduled dates keep their current times.",
 			"dtstartReadOnlyHelper": "The anchor date can't be changed here — it would require rescheduling every occurrence. Contact support if you need this.",
+			"anchorLabel": "Anchor date",
 			"cadenceChangeConfirm": "Changing the schedule only affects occurrences not yet created. Upcoming occurrences already on the calendar keep their dates — you can cancel them individually if needed.",
-			"save": "Save changes"
+			"confirmHeading": "Confirm schedule change",
+			"sections": {
+				"recurrence": "Recurrence rule",
+				"settings": "Series settings"
+			},
+			"buttons": {
+				"cancel": "Cancel",
+				"back": "Back",
+				"review": "Review changes",
+				"save": "Save changes",
+				"saving": "Saving…",
+				"confirm": "Yes, save changes"
+			},
+			"save": "Save changes",
+			"savedToast": "Recurrence saved",
+			"errorToast": "Couldn't save the recurrence. Please try again.",
+			"noChangesToast": "No changes to apply.",
+			"loadError": "Couldn't load the series. Please close the dialog and try again."
 		},
 		"cancelOccurrenceDialog": {
 			"title": "Cancel this date",

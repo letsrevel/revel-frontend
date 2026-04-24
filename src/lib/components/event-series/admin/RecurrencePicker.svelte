@@ -14,6 +14,7 @@
 		type BoundaryKind
 	} from '$lib/types/recurrence';
 	import { inferBoundaryKind } from '$lib/utils/recurrence';
+	import { formatEventDate } from '$lib/utils/date';
 
 	interface Props {
 		rule: Partial<RecurrenceRuleCreate>;
@@ -456,9 +457,15 @@
 
 	<!-- dtstart read-only notice (edit mode) -->
 	{#if dtstartReadOnly && rule.dtstart}
-		<div class="rounded-md border border-border bg-muted/50 p-3 text-sm text-muted-foreground">
-			<strong class="text-foreground">Anchor:</strong>
-			{rule.dtstart}
+		<div
+			class="space-y-1 rounded-md border border-border bg-muted/50 p-3 text-sm text-muted-foreground"
+			data-testid="recurrence-picker-anchor-readonly"
+		>
+			<div class="text-foreground">
+				<strong>{m['recurringEvents.recurrenceDialog.anchorLabel']()}:</strong>
+				<span data-testid="recurrence-picker-anchor-value">{formatEventDate(rule.dtstart)}</span>
+			</div>
+			<p>{m['recurringEvents.recurrenceDialog.dtstartReadOnlyHelper']()}</p>
 		</div>
 	{/if}
 </div>

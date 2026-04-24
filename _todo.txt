@@ -101,8 +101,16 @@
       `organizationadminrecurringeventsUpdateTemplate` with `?propagate=`;
       invalidates series detail + drift + occurrences + template event cache
       on success.
-- [ ] **3.2** `RecurrenceEditDialog.svelte` — reuses `RecurrencePicker` edit-mode;
-      cadence change confirmation; partial PATCH.
+- [x] **3.2** `RecurrenceEditDialog.svelte` — reuses `RecurrencePicker` edit-mode;
+      cadence change confirmation; partial PATCH. Two-step flow (form → confirm)
+      that only branches to the cadence-change warning when a recurrence-rule
+      field actually changed (pure settings edits skip straight to PATCH). PATCH
+      via `organizationadminrecurringeventsUpdateRecurrence` with a dirty diff
+      built against `series.recurrence_rule` + series settings. Invalidates
+      series detail + drift + occurrences on success via `invalidateSeries`.
+      RecurrencePicker's `dtstartReadOnly` notice polished to show the formatted
+      anchor + the Phase-0-seeded "Contact support to reschedule" helper. 454
+      lines — well under the 750-line gate; no sub-component split needed.
 - [ ] **3.3** `CancelOccurrenceDialog.svelte` — row + header entry points; invalidates
       detail + occurrences + drift.
 - [ ] **3.4** `GenerateNowButton.svelte` — optional `until`; plural/up-to-date toasts.

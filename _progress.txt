@@ -8,6 +8,207 @@
 
 ---
 
+## 2026-04-24 — Phase 3.2 RecurrenceEditDialog landed
+
+Picked up straight from 3.1's clean slate. Shippable: the recurrence-edit
+dialog wired into the series dashboard, the existing `RecurrencePicker`
+extended with a proper read-only anchor notice, and the three-locale
+`recurringEvents.recurrenceDialog.*` key block fleshed out for the new
+surface.
+
+### What shipped
+
+- **`src/lib/components/event-series/admin/RecurrenceEditDialog.svelte`**
+  (454 lines — RecurrencePicker does the heavy lifting so no sub-component
+  split was necessary).
+    - bits-ui `Dialog` wrapper mirroring the `TemplateEditDialog` pattern
+      (same prefer-const eslint escape hatch on the bindable `open`
+      destructure per TemplateEditDialog.svelte:36).
+    - **Step 1 — form:** two sections. First is `RecurrencePicker`
+      rendered with `dtstartReadOnly={true}` and fed the current rule
+      (seeded from `series.recurrence_rule` on open). Second is a small
+      "Series settings" section with the `auto_publish` toggle + the
+      `generation_window_weeks` number input, reusing the wizard's
+      existing `recurringEvents.wizard.autoPublish*` + `.generationWindow*`
+      translations so no duplicate real copy had to land.
+    - **Step 2 — confirm:** the verbatim UX-doc cadence-change warning
+      ("Changing the schedule only affects occurrences not yet created.
+      Upcoming occurrences already on the calendar keep their dates — you
+      can cancel them individually if needed.") in a warning banner with
+      `AlertTriangle` icon. Back + confirm buttons (`role="button"`,
+      keyboard-accessible). The confirm step **only** renders when a
+      recurrence-rule field actually changed — pure settings edits
+      (`auto_publish` / `generation_window_weeks`) skip straight to PATCH
+      since they don't shift already-scheduled dates and therefore don't
+      warrant the "already on the calendar" warning.
+    - **Dirty-tracking via `$derived.by`** — field-level compare against
+      `series.recurrence_rule` + series-level settings. Each nullable
+      field is normalized `undefined → null` before comparison so the
+      picker's "switch frequency → clear weekdays/monthly_type/…"
+      behaviour doesn't produce spurious diffs against backend nulls.
+      Weekdays array compared by sorted-element-wise equality. The
+      `EventSeriesRecurrenceUpdateSchema` body is built lazily from three
+      separate `$derived` flags (`recurrenceChanged`, `autoPublishChanged`,
+      `windowChanged`) so the "has changes" gate and the cadence-confirm
+      branch both read from the same source of truth.
+    - **Pre-submit validation** mirrors the wizard's `validateRecurrence`
+      exactly (weekdays required on weekly, day_of_month on monthly-day,
+      nth_weekday+weekday on monthly-weekday, mutualExclusionGuard for
+      boundary, `until > dtstart`). Errors are surfaced via the picker's
+      existing `validationErrors` prop — no duplicate UI needed.
+    - **PATCH** via `organizationadminrecurringeventsUpdateRecurrence`
+      with the minimal diff body. On success: `invalidateSeries(…)`
+      covers the series detail + drift + occurrences triple — the
+      backend recomputes drift after recurrence edits per PR #378, and
+      the dashboard's `CadenceDriftBanner` refetches automatically.
+    - **Error handling** per plan §Phase 1.6: `response.error.detail` →
+      banner + toast verbatim; `response.error.errors` → first message
+      surfaced. Close-while-pending guard on `onOpenChange` + the Cancel
+      button matches TemplateEditDialog's pattern so a user can't dismiss
+      a mid-flight PATCH.
+    - **data-testids across every actionable surface**
+      (`recurrence-edit-dialog`, `recurrence-edit-auto-publish`,
+      `recurrence-edit-window`, `recurrence-edit-cancel`,
+      `recurrence-edit-continue`, `recurrence-edit-confirm-banner`,
+      `recurrence-edit-back`, `recurrence-edit-save`,
+      `recurrence-edit-error`) + `recurrence-picker-anchor-readonly`
+      + `recurrence-picker-anchor-value` on the picker for the 3.7
+      Playwright smoke to drive the whole flow.
+
+- **`src/lib/components/event-series/admin/RecurrencePicker.svelte`** —
+  the `dtstartReadOnly` notice was a stub in Phase 1 (raw
+  `<strong>Anchor:</strong> <isoString>`). Polished to render the
+  formatted date via `formatEventDate` + the Phase-0-seeded
+  `recurringEvents.recurrenceDialog.dtstartReadOnlyHelper` copy that
+  matches the UX doc verbatim ("The anchor date can't be changed here —
+  it would require rescheduling every occurrence. Contact support if you
+  need this."). The `recurringEvents.recurrenceDialog.anchorLabel` key
+  ("Anchor date") was added alongside the rest of the dialog's new keys.
+  Formatter imported from the existing `$lib/utils/date` util.
+
+- **Dashboard wire-up** at
+  `src/routes/(auth)/org/[slug]/admin/event-series/[series_id]/+page.svelte`:
+  imported `RecurrenceEditDialog`, added a `showRecurrenceEdit` state
+  rune, threaded it into `SeriesHeaderCard.onEditRecurrence` (the prop
+  has been wired through the desktop row + mobile action sheet with
+  `data-testid="action-edit-recurrence"` since Phase 2.2/2.9 — no
+  changes needed there). Dialog mounts inside the same `{#if series}`
+  block as `TemplateEditDialog` so the token / slug / series props are
+  always defined.
+
+- **i18n** — extended the existing `recurringEvents.recurrenceDialog.*`
+  block (3 seeded keys from Phase 0) with 15 more leaf keys covering
+  description, confirm heading, sections, buttons (cancel/back/review/
+  save/saving/confirm), savedToast, errorToast, noChangesToast,
+  loadError, plus the new anchorLabel. Mirrored across EN/IT/DE with EN
+  copy per the Phase-0 convention — real IT + DE translations land in
+  Phase 5. `pnpm paraglide:compile` + `pnpm i18n:validate` → **4686
+  keys, 100% parity** across all three locales.
+
+### Deviations / decisions
+
+- **`rule` / `autoPublish` / `generationWindowWeeks` initialized to
+  neutral defaults, seeded from `series` in an `$effect`.** First pass
+  seeded state directly from `series.X` at declaration time, matching
+  the existing `SeriesSettingsDialog.svelte` pattern. That works at
+  runtime but triggers Svelte 5's
+  `svelte:state_referenced_locally` warning (prop-in-state captures
+  only the initial value; the static analyzer can't see the re-seed
+  effect). Switched to `$state({})` / `$state(false)` / `$state(8)` +
+  a same-session open effect — drops the two new warnings introduced
+  in the first pass, keeping the repo at its 339-warning baseline. The
+  open effect gates on `if (!open) return` so first mount with
+  `open=false` stays cheap and re-opens always pick up the freshest
+  `series` snapshot.
+- **Confirm step scoped to cadence changes only.** The UX doc's
+  cadence-change copy ("Upcoming occurrences already on the calendar
+  keep their dates…") is semantically a *cadence* warning — a pure
+  settings edit (`auto_publish` toggle, window-weeks nudge) doesn't
+  shift any scheduled dates and therefore doesn't merit the scare
+  copy. The continue button's label flips too: "Review changes" when
+  cadence is dirty, "Save changes" when only settings are. This keeps
+  the confirmation friction proportional to the change's real impact
+  without needing a second variant of the dialog.
+- **Reused `recurringEvents.wizard.autoPublish*` +
+  `.generationWindow*` keys** instead of duplicating them under
+  `recurrenceDialog`. The wizard's copy is already well-tuned ("Auto-
+  publish new dates" / "New dates go live the moment they are
+  created." / "Occurrences are scheduled up to {weeks} weeks ahead…")
+  and the dialog is editing the same two fields for the same series,
+  so two copies of the same string would just be i18n churn.
+- **No sub-component split needed.** TemplateEditDialog landed at 737
+  lines and needed `TemplateLockedFields.svelte` extraction to pass
+  the 750-line gate. RecurrenceEditDialog is 454 lines because
+  `RecurrencePicker` owns the entire rule-editing surface — no
+  extraction required for this one.
+- **No Vitest component test for the dialog.** bits-ui Vitest harness
+  tail is still broken (see 2.10 / 2.11 carryovers) — any component
+  test transitively importing Dialog / DropdownMenu / Label runtime
+  hits the `PartialEnvironment` Vite-6 proxy error. Playwright smoke
+  is the viable coverage surface and lands at 3.7/3.8.
+- **Full-series invalidation on success via `invalidateSeries`.** Plan
+  §Phase 3 §2 says invalidate "series detail + drift queries". The
+  `invalidateSeries` helper covers those plus the occurrences list,
+  which is a superset we need here: a cadence change followed by a
+  daily beat run could regenerate occurrences under the new cadence,
+  and the dashboard's upcoming list will want to reflect any new
+  drift-state derivations. One helper call keeps the mutation site
+  free of bookkeeping.
+
+### QA (scoped)
+
+- `pnpm exec prettier --check` on the new dialog + the modified
+  RecurrencePicker + dashboard page + three message files → clean
+  (one auto-format pass on the picker after the read-only notice edit).
+- `pnpm exec eslint --max-warnings 0 --no-warn-ignored` on the four
+  touched files → 0 errors, 0 warnings.
+- `pnpm exec svelte-check` → **0 errors, 339 warnings** repo-wide —
+  back to the 3.1 baseline after fixing the two new
+  `state_referenced_locally` warnings in the first pass (see above).
+- `pnpm paraglide:compile` → clean; `pnpm i18n:validate` → **4686
+  keys, 100% parity** across EN/IT/DE.
+- `make file-length` scoped: `RecurrenceEditDialog.svelte` 454 /
+  `RecurrencePicker.svelte` 471 / dashboard `+page.svelte` 346 — all
+  well under the 750-line Svelte cap. Pre-existing file-length
+  violations in unrelated areas (questionnaires, blacklist,
+  attendees, tickets, dashboard, auth store, seo util,
+  questionnaire-api-sync) are unchanged.
+- Vitest on the green 106/106 set (57 `recurrence.test.ts` + 14
+  `CadenceDriftBanner` + 7 `RecurrenceSummary` + 8 `ExdatesChipList` +
+  14 `SeriesActionSheet` + 14 `SeriesHeaderCard`) → **106 passed,
+  0 failed**. The pre-existing `RecurrencePicker.test.ts` failure
+  (bits-ui harness transitive via `Label` runtime) is unchanged — a
+  2.10 carryover tracked separately.
+- `pnpm exec playwright test --list tests/e2e/recurring-series-dashboard.spec.ts`
+  → 10 tests parsed across 5 projects (unchanged from 2.11). Mid-phase
+  Playwright smoke for the dialog lands at 3.7; the 3.2 change doesn't
+  touch existing Phase-2 surfaces so the existing spec is still the
+  canonical regression signal.
+
+### Known carryovers (unchanged from 3.1)
+
+- **EventEditor prefill consumer** for ExdatesChipList's chip action —
+  still a <1h follow-up.
+- **bits-ui Vitest harness** — still pending Vite 5↔6 realignment.
+  The new `recurrence-edit-*` testids will light up at Playwright time
+  (3.7/3.8). The related `RecurrencePicker.test.ts` failure persists
+  for the same reason.
+- **`canEdit` uses coarse `$page.data.canCreateEvent`** — Appendix F
+  finer-grained permissions are still on the plate; the new dialog
+  doesn't render when `canEdit === false` because the SeriesHeaderCard
+  action row it hangs off is hidden in that path, so no regression but
+  no improvement either.
+- **ImageUploader post-upload refresh** — Phase 5 polish.
+
+### Next up
+
+- **3.3** `CancelOccurrenceDialog.svelte` — row-level + header-level
+  entry points; confirmation copy w/ tickets-notified-and-refunded
+  caveat; `invalidateSeries` on success (covers detail + occurrences
+  + drift).
+
+---
+
 ## 2026-04-23 — Phase 3.1 TemplateEditDialog landed
 
 Picked up straight from Phase 2.11's clean slate. First Phase-3 shippable:

@@ -23,6 +23,7 @@
 	import CadenceDriftBanner from '$lib/components/event-series/admin/CadenceDriftBanner.svelte';
 	import SeriesSettingsDialog from '$lib/components/event-series/admin/SeriesSettingsDialog.svelte';
 	import TemplateEditDialog from '$lib/components/event-series/admin/TemplateEditDialog.svelte';
+	import RecurrenceEditDialog from '$lib/components/event-series/admin/RecurrenceEditDialog.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -122,6 +123,7 @@
 	// it doesn't reopen the dialog on every re-render or on refresh.
 	let showSeriesSettings = $state(false);
 	let showTemplateEdit = $state(false);
+	let showRecurrenceEdit = $state(false);
 	let hasHandledSettingsParam = $state(false);
 
 	$effect(() => {
@@ -172,6 +174,7 @@
 					{canEdit}
 					onSeriesSettings={() => (showSeriesSettings = true)}
 					onEditTemplate={() => (showTemplateEdit = true)}
+					onEditRecurrence={() => (showRecurrenceEdit = true)}
 				/>
 			{/if}
 		</div>
@@ -325,6 +328,13 @@
 		organizationSlug={organization.slug}
 		{accessToken}
 		onClose={() => (showTemplateEdit = false)}
+	/>
+	<RecurrenceEditDialog
+		bind:open={showRecurrenceEdit}
+		{series}
+		organizationSlug={organization.slug}
+		{accessToken}
+		onClose={() => (showRecurrenceEdit = false)}
 	/>
 {/if}
 
