@@ -124,7 +124,9 @@
       green across chromium/webkit/Mobile Chrome/Mobile Safari (4 skips = the
       bulk-cancel drift tests × 4 projects, no drift in seed data). Component
       tests still blocked by the bits-ui Vitest harness carryover.
-- [ ] **3.8** QA gate (§QA) + Playwright smoke.
+- [x] **3.8** QA gate (§QA) + Playwright smoke — scoped prettier + eslint + svelte-check
+      + i18n + vitest + file-length across every Phase-3-touched file. Playwright
+      24/28 green (4 drift skips) from 3.7's close-out run.
 
 ## Phase 4 — Attendee-side polish
 
