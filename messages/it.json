@@ -5513,7 +5513,10 @@
 			"pauseAction": "Pause",
 			"resumeAction": "Resume",
 			"pausedToast": "Series paused.",
-			"resumedToast": "Series resumed."
+			"resumedToast": "Series resumed.",
+			"keepActiveButton": "Keep active",
+			"pausingLabel": "Pausing…",
+			"errorToast": "Couldn't update the series. Please try again."
 		},
 		"seriesSettings": {
 			"title": "Series settings",

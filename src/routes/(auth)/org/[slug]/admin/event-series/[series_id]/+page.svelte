@@ -26,6 +26,7 @@
 	import RecurrenceEditDialog from '$lib/components/event-series/admin/RecurrenceEditDialog.svelte';
 	import CancelOccurrenceDialog from '$lib/components/event-series/admin/CancelOccurrenceDialog.svelte';
 	import GenerateNowButton from '$lib/components/event-series/admin/GenerateNowButton.svelte';
+	import PauseResumeButton from '$lib/components/event-series/admin/PauseResumeButton.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -128,6 +129,7 @@
 	let showRecurrenceEdit = $state(false);
 	let showCancelOccurrence = $state(false);
 	let showGenerateNow = $state(false);
+	let showPauseResume = $state(false);
 	// `null` → header-mode picker; ISO string → row-mode prefill. The dashboard
 	// flips this before setting `showCancelOccurrence=true` so the dialog's
 	// open-effect seed picks up the right source.
@@ -195,6 +197,7 @@
 					onEditRecurrence={() => (showRecurrenceEdit = true)}
 					onCancelOccurrence={openCancelOccurrenceFromHeader}
 					onGenerateNow={() => (showGenerateNow = true)}
+					onPauseResume={() => (showPauseResume = true)}
 				/>
 			{/if}
 		</div>
@@ -372,6 +375,13 @@
 		organizationSlug={organization.slug}
 		{accessToken}
 		onClose={() => (showGenerateNow = false)}
+	/>
+	<PauseResumeButton
+		bind:open={showPauseResume}
+		{series}
+		organizationSlug={organization.slug}
+		{accessToken}
+		onClose={() => (showPauseResume = false)}
 	/>
 {/if}
 

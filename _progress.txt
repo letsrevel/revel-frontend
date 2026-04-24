@@ -8,6 +8,127 @@
 
 ---
 
+## 2026-04-24 — Phase 3.5 PauseResumeButton landed
+
+Shippable: the dashboard's pause/resume toggle now fully functional.
+Pause opens a confirm dialog (verbatim Phase-0 copy); resume is a
+single-click with no UI — the component handles both flows off the
+same `open` bindable, branching on `series.is_active` via an effect.
+
+### What shipped
+
+- **`src/lib/components/event-series/admin/PauseResumeButton.svelte`**
+  (174 lines — the smallest Phase-3 component so far).
+    - Owns both the pause and the resume mutations via TanStack Query.
+    - Single `open` bindable prop drives both flows:
+      - `active + open=true` → render bits-ui `Dialog` with the
+        verbatim Phase-0 `pauseConfirm` + `pauseConfirmBody` copy,
+        destructive-variant "Pause" button. User confirms →
+        `organizationadminrecurringeventsPauseSeries` POST.
+      - `paused + open=true` → no dialog; an open-effect fires
+        `organizationadminrecurringeventsResumeSeries` once (guarded by
+        a `resumeFiredForOpen` latch that resets on close), auto-closes
+        on success. Resume has no confirm step per UX §7.
+    - Resume error path skips the dialog (there's no surface to
+      attach an errorBanner to — the dialog isn't rendered when
+      paused) and falls through to a toast + `onClose()` so the bound
+      `open` resets.
+    - Pause error path populates the dialog's in-body errorBanner +
+      toast, same as the other Phase-3 mutating dialogs.
+    - `invalidateSeries` on both success paths — covers the status
+      flip on the detail surface, the action-row button swap
+      ("Pause" ↔ "Resume"), and the paused banner on the dashboard.
+    - `data-testid`s: `pause-resume-dialog`, `pause-resume-error`,
+      `pause-resume-keep`, `pause-resume-confirm` — covers the
+      pause path only (resume has no UI to target, so the Playwright
+      smoke at 3.7/3.8 asserts via the post-resume dashboard state
+      and the `action-pause-resume` button label swap).
+
+- **Dashboard wire-up**: imported `PauseResumeButton`, added
+  `showPauseResume = $state(false)`, threaded
+  `onPauseResume={() => (showPauseResume = true)}` on the
+  `SeriesHeaderCard` prop surface (already wired through desktop row +
+  mobile action sheet with `data-testid="action-pause-resume"` in
+  Phase 2.2/2.9). Dialog mounts inside the same `{#if series}` block
+  as the other Phase-3 dialogs. The dashboard doesn't need to branch
+  on `is_active` itself — the component's effect owns that branching,
+  so the dashboard uniformly sets `showPauseResume=true` and lets the
+  component decide whether to render a dialog or fire resume.
+
+- **i18n** — extended the existing Phase-0 `recurringEvents.pauseResume.*`
+  block (6 seeded keys: `pauseConfirm`, `pauseConfirmBody`,
+  `pauseAction`, `resumeAction`, `pausedToast`, `resumedToast`) with
+  3 more leaf keys: `keepActiveButton`, `pausingLabel`, `errorToast`.
+  No `resumingLabel` — resume fires without a UI surface, so there's
+  nothing to show a loader on. Mirrored across EN/IT/DE with EN copy.
+  `pnpm paraglide:compile` + `pnpm i18n:validate` → **4701 keys, 100%
+  parity**.
+
+### Deviations / decisions
+
+- **Both mutations co-located in one component.** The obvious
+  alternative was "dialog component for pause + resume mutation
+  inline on the dashboard". Putting both mutations in the one
+  component keeps the pause/resume flow semantically cohesive and
+  lets the component own the branching off `is_active`. The effect-
+  fires-resume approach is a hair unusual, but the `resumeFiredForOpen`
+  latch makes it deterministic and the test surface is the post-resume
+  dashboard state (status chip + action button label), not the
+  mutation machinery.
+- **No dialog for resume.** UX §7 is explicit: "Confirmation required
+  for Pause" — resume is a single click. A dialog with a single
+  confirm button would be friction without purpose. The resume toast
+  (`resumedToast`) is the user-facing acknowledgment.
+- **`resumeFiredForOpen` latch** rather than `resumeMutation.isIdle`
+  as the guard. The mutation's status resets between runs; a local
+  boolean gives deterministic "fire once per open cycle" semantics
+  and resets on close so a re-open (e.g. from a different dashboard
+  surface) fires the mutation again as expected.
+- **Destructive variant on the pause confirm button.** Matches the
+  3.3 CancelOccurrenceDialog. Pause is reversible but the UX doc
+  warns users up-front that existing occurrences stay scheduled — the
+  destructive styling helps signal "this changes behaviour".
+- **No Vitest component test.** Same bits-ui Vitest harness carryover.
+  Playwright at 3.7/3.8.
+
+### QA (scoped)
+
+- `pnpm exec prettier --check` on the new component + dashboard page +
+  three message files → clean.
+- `pnpm exec eslint --max-warnings 0 --no-warn-ignored` on the new
+  file + dashboard → **0 errors, 0 warnings**.
+- `pnpm exec svelte-check` → **0 errors, 339 warnings** repo-wide —
+  exact same baseline as 3.2 / 3.3 / 3.4.
+- `pnpm paraglide:compile` → clean; `pnpm i18n:validate` → **4701
+  keys, 100% parity** across EN/IT/DE.
+- `wc -l`: `PauseResumeButton.svelte` 174 / dashboard `+page.svelte`
+  393 — both well under 750.
+- Vitest: **106 / 106 passed** (same 6 suites). `RecurrencePicker
+  .test.ts` bits-ui harness failure unchanged.
+
+### Known carryovers (unchanged from 3.4)
+
+- **EventEditor prefill consumer** for ExdatesChipList's chip action.
+- **bits-ui Vitest harness** — still pending Vite 5↔6 realignment.
+- **`canEdit` uses coarse `$page.data.canCreateEvent`** — Appendix F
+  permission pass still open.
+
+### Next
+
+- **3.6** `CancelDriftedOccurrencesDialog.svelte` — optional bulk-cancel.
+  Non-trivial because of the sequential per-date loop + per-row live
+  status + "I understand" arming checkbox. May defer per plan §estimate
+  if we want to ship Phase 3 sooner without the bulk affordance (per-
+  date cancel already works via the existing drifted row's cancel
+  action — just slower for long lists).
+- **3.7** per-modal tests (bits-ui harness is the blocker; Playwright
+  is the viable surface) + end-to-end Playwright smoke (UX release
+  checklist flow: create → dashboard → edit template with propagation
+  → cancel one → pause → resume).
+- **3.8** QA gate + full Playwright smoke.
+
+---
+
 ## 2026-04-24 — Phase 3.4 GenerateNowButton landed
 
 Shippable: the manual-generate affordance wired through the existing

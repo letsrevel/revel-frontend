@@ -114,7 +114,7 @@
 - [x] **3.3** `CancelOccurrenceDialog.svelte` — row + header entry points; invalidates
       detail + occurrences + drift.
 - [x] **3.4** `GenerateNowButton.svelte` — optional `until`; plural/up-to-date toasts.
-- [ ] **3.5** `PauseResumeButton.svelte` — pause confirm; resume single-click.
+- [x] **3.5** `PauseResumeButton.svelte` — pause confirm; resume single-click.
 - [ ] **3.6** `CancelDriftedOccurrencesDialog.svelte` — optional bulk-cancel,
       sequential, per-row status, armed by checkbox.
 - [ ] **3.7** Tests: per-modal component tests + Playwright end-to-end (UX release
