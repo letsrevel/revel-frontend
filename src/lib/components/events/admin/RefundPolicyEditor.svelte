@@ -189,7 +189,7 @@
 			<div class="mt-2 flex flex-wrap gap-2">
 				<Button type="button" variant="secondary" size="sm" onclick={applyDefaultPolicy} {disabled}>
 					<Undo2 class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-					100% until event start
+					{m['refundPolicy.fullRefundPreset']()}
 				</Button>
 				<Button type="button" variant="outline" size="sm" onclick={addBracket} {disabled}>
 					<Plus class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
@@ -268,9 +268,7 @@
 			size="sm"
 			onclick={addBracket}
 			disabled={disabled || !canAddBracket}
-			title={!canAddBracket
-				? 'Last bracket already covers up to 0 hours before the event — remove or edit it first.'
-				: undefined}
+			title={!canAddBracket ? m['refundPolicy.addBracketDisabledHint']() : undefined}
 		>
 			<Plus class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
 			{m['refundPolicy.addBracket']()}

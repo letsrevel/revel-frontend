@@ -80,8 +80,14 @@
 			});
 			if (response.error) {
 				const errorAny = response.error as { code?: CancellationBlockReason; detail?: string };
+				// 409: stable block reason → re-render the dialog with the localized copy.
 				if (errorAny?.code) {
 					throw new Error(`code:${errorAny.code}`);
+				}
+				// 502: Stripe refund couldn't be issued. Detect by HTTP status, not prose,
+				// so the toast is right even if the backend message changes/localizes.
+				if (response.response?.status === 502) {
+					throw new Error('stripe-502');
 				}
 				throw new Error(extractErrorMessage(response.error) || 'cancel-failed');
 			}
@@ -105,13 +111,12 @@
 			onCancelled?.(data);
 		},
 		onError: (err: Error) => {
-			// 502 from Stripe → distinct copy
 			const msg = err.message || '';
-			if (msg.includes('Stripe') || msg.toLowerCase().includes('refund')) {
+			if (msg === 'stripe-502') {
 				toast.error(m['cancelTicket.errorStripe'](), { duration: 6000 });
 				return;
 			}
-			// Mapped block reason → render in dialog instead of toast
+			// Mapped block reason → render in dialog instead of toast.
 			if (msg.startsWith('code:')) {
 				return;
 			}
@@ -201,8 +206,12 @@
 	}
 </script>
 
-<Dialog bind:open onOpenChange={(v) => (v ? null : handleClose())}>
-	<DialogContent class="max-h-[90vh] max-w-md overflow-y-auto">
+<Dialog bind:open>
+	<DialogContent
+		class="max-h-[90vh] max-w-md overflow-y-auto"
+		escapeKeydownBehavior={cancelMutation.isPending ? 'ignore' : 'close'}
+		interactOutsideBehavior={cancelMutation.isPending ? 'ignore' : 'close'}
+	>
 		<DialogHeader>
 			<DialogTitle class="flex items-center gap-2">
 				<X class="h-5 w-5 text-destructive" aria-hidden="true" />
