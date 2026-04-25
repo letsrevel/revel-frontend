@@ -44,7 +44,15 @@
 	const isPaused = $derived(series.is_active === false);
 	const hasRecurrenceRule = $derived(!!series.recurrence_rule);
 	const hasTemplate = $derived(!!series.template_event);
-	const isDegraded = $derived(!hasRecurrenceRule || !hasTemplate);
+	// Three legitimate shapes — see dashboard `+page.svelte` for the full
+	// taxonomy. `isEmpty` (both fields null) is an intentional grouping
+	// container; recurring actions are hidden because they simply don't
+	// apply. `!isRecurring && !isEmpty` is the broken case where exactly one
+	// field is missing — actions render disabled (visible affordance, but
+	// guarded against the inevitable 400) so the contact-support banner
+	// gives organisers context for the greyed-out row.
+	const isEmpty = $derived(!hasRecurrenceRule && !hasTemplate);
+	const isRecurring = $derived(hasRecurrenceRule && hasTemplate);
 
 	const horizonLabel = $derived(
 		series.last_generated_until
@@ -54,10 +62,9 @@
 			: m['recurringEvents.dashboard.horizonUnknown']()
 	);
 
-	// Actions that require a template or a rule — disable them in degraded state
-	// so the organiser can't PATCH into a 400.
-	const actionsDisabled = $derived(!canEdit || isDegraded);
-	const pauseResumeDisabled = $derived(!canEdit || isDegraded);
+	const showRecurringActions = $derived(canEdit && !isEmpty);
+	const actionsDisabled = $derived(!canEdit || !isRecurring);
+	const pauseResumeDisabled = $derived(!canEdit || !isRecurring);
 
 	let actionSheetOpen = $state(false);
 </script>
@@ -115,7 +122,9 @@
 	     data-testids so Playwright hooks still resolve in either viewport. -->
 	{#if canEdit}
 		<div class="mt-4 border-t border-border pt-4">
-			<!-- Desktop action row -->
+			<!-- Desktop action row. Recurring-only actions render only when the
+			     series actually has a recurrence rule + template — empty series
+			     get a slimmed-down row with just "Series settings". -->
 			<div class="hidden flex-wrap gap-2 md:flex">
 				<Button
 					variant="outline"
@@ -127,90 +136,109 @@
 					<Settings class="h-4 w-4" aria-hidden="true" />
 					{m['recurringEvents.dashboard.actions.seriesSettings']()}
 				</Button>
-				<Button
-					variant="outline"
-					size="sm"
-					onclick={onEditTemplate}
-					disabled={actionsDisabled}
-					data-testid="action-edit-template"
-				>
-					<FileText class="h-4 w-4" aria-hidden="true" />
-					{m['recurringEvents.dashboard.actions.editTemplate']()}
-				</Button>
-				<Button
-					variant="outline"
-					size="sm"
-					onclick={onEditRecurrence}
-					disabled={actionsDisabled}
-					data-testid="action-edit-recurrence"
-				>
-					<Repeat class="h-4 w-4" aria-hidden="true" />
-					{m['recurringEvents.dashboard.actions.editRecurrence']()}
-				</Button>
-				<Button
-					variant="outline"
-					size="sm"
-					onclick={onCancelOccurrence}
-					disabled={actionsDisabled}
-					data-testid="action-cancel-occurrence"
-				>
-					<CalendarX class="h-4 w-4" aria-hidden="true" />
-					{m['recurringEvents.dashboard.actions.cancelOccurrence']()}
-				</Button>
-				<Button
-					variant="outline"
-					size="sm"
-					onclick={onGenerateNow}
-					disabled={actionsDisabled}
-					data-testid="action-generate-now"
-				>
-					<RefreshCw class="h-4 w-4" aria-hidden="true" />
-					{m['recurringEvents.dashboard.actions.generateNow']()}
-				</Button>
-				<Button
-					variant={isPaused ? 'default' : 'outline'}
-					size="sm"
-					onclick={onPauseResume}
-					disabled={pauseResumeDisabled}
-					data-testid="action-pause-resume"
-				>
-					{#if isPaused}
-						<Play class="h-4 w-4" aria-hidden="true" />
-						{m['recurringEvents.dashboard.actions.resume']()}
-					{:else}
-						<Pause class="h-4 w-4" aria-hidden="true" />
-						{m['recurringEvents.dashboard.actions.pause']()}
-					{/if}
-				</Button>
+				{#if showRecurringActions}
+					<Button
+						variant="outline"
+						size="sm"
+						onclick={onEditTemplate}
+						disabled={actionsDisabled}
+						data-testid="action-edit-template"
+					>
+						<FileText class="h-4 w-4" aria-hidden="true" />
+						{m['recurringEvents.dashboard.actions.editTemplate']()}
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						onclick={onEditRecurrence}
+						disabled={actionsDisabled}
+						data-testid="action-edit-recurrence"
+					>
+						<Repeat class="h-4 w-4" aria-hidden="true" />
+						{m['recurringEvents.dashboard.actions.editRecurrence']()}
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						onclick={onCancelOccurrence}
+						disabled={actionsDisabled}
+						data-testid="action-cancel-occurrence"
+					>
+						<CalendarX class="h-4 w-4" aria-hidden="true" />
+						{m['recurringEvents.dashboard.actions.cancelOccurrence']()}
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						onclick={onGenerateNow}
+						disabled={actionsDisabled}
+						data-testid="action-generate-now"
+					>
+						<RefreshCw class="h-4 w-4" aria-hidden="true" />
+						{m['recurringEvents.dashboard.actions.generateNow']()}
+					</Button>
+					<Button
+						variant={isPaused ? 'default' : 'outline'}
+						size="sm"
+						onclick={onPauseResume}
+						disabled={pauseResumeDisabled}
+						data-testid="action-pause-resume"
+					>
+						{#if isPaused}
+							<Play class="h-4 w-4" aria-hidden="true" />
+							{m['recurringEvents.dashboard.actions.resume']()}
+						{:else}
+							<Pause class="h-4 w-4" aria-hidden="true" />
+							{m['recurringEvents.dashboard.actions.pause']()}
+						{/if}
+					</Button>
+				{/if}
 			</div>
 
-			<!-- Mobile trigger — collapses the row to a bottom action sheet on narrow viewports. -->
-			<Button
-				variant="outline"
-				size="sm"
-				onclick={() => (actionSheetOpen = true)}
-				class="w-full md:hidden"
-				data-testid="action-sheet-trigger"
-			>
-				<MoreHorizontal class="h-4 w-4" aria-hidden="true" />
-				{m['recurringEvents.dashboard.actions.moreActions']()}
-			</Button>
+			<!-- Mobile trigger. Empty series only have "Series settings" available,
+			     so the bottom-sheet trigger is replaced by the direct button to
+			     avoid burying a single action behind an extra tap. -->
+			{#if showRecurringActions}
+				<Button
+					variant="outline"
+					size="sm"
+					onclick={() => (actionSheetOpen = true)}
+					class="w-full md:hidden"
+					data-testid="action-sheet-trigger"
+				>
+					<MoreHorizontal class="h-4 w-4" aria-hidden="true" />
+					{m['recurringEvents.dashboard.actions.moreActions']()}
+				</Button>
+			{:else}
+				<Button
+					variant="outline"
+					size="sm"
+					onclick={onSeriesSettings}
+					class="w-full md:hidden"
+					data-testid="action-series-settings-mobile"
+				>
+					<Settings class="h-4 w-4" aria-hidden="true" />
+					{m['recurringEvents.dashboard.actions.seriesSettings']()}
+				</Button>
+			{/if}
 		</div>
 
-		<!-- Mobile action sheet (rendered outside the bordered block so it can
-		     portal to the viewport edge; content mirrors the desktop row). -->
-		<SeriesActionSheet
-			isOpen={actionSheetOpen}
-			{isPaused}
-			{actionsDisabled}
-			{pauseResumeDisabled}
-			onClose={() => (actionSheetOpen = false)}
-			{onSeriesSettings}
-			{onEditTemplate}
-			{onEditRecurrence}
-			{onCancelOccurrence}
-			{onGenerateNow}
-			{onPauseResume}
-		/>
+		{#if showRecurringActions}
+			<!-- Mobile action sheet (rendered outside the bordered block so it can
+			     portal to the viewport edge; content mirrors the desktop row). -->
+			<SeriesActionSheet
+				isOpen={actionSheetOpen}
+				{isPaused}
+				{actionsDisabled}
+				{pauseResumeDisabled}
+				onClose={() => (actionSheetOpen = false)}
+				{onSeriesSettings}
+				{onEditTemplate}
+				{onEditRecurrence}
+				{onCancelOccurrence}
+				{onGenerateNow}
+				{onPauseResume}
+			/>
+		{/if}
 	{/if}
 </header>

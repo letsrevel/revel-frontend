@@ -3,7 +3,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { ArrowLeft, AlertTriangle, Pause } from 'lucide-svelte';
+	import { ArrowLeft, AlertTriangle, Info, Pause } from 'lucide-svelte';
 	import type { PageData } from './$types';
 	import {
 		organizationadminrecurringeventsGetSeriesDetail,
@@ -123,7 +123,15 @@
 	const exdates = $derived(series?.exdates ?? []);
 	const hasRecurrenceRule = $derived(!!series?.recurrence_rule);
 	const hasTemplate = $derived(!!series?.template_event);
-	const isDegraded = $derived(!hasRecurrenceRule || !hasTemplate);
+	// Three legitimate shapes:
+	//  - recurring + healthy: both fields set → full action surface
+	//  - empty (intentional): both fields null → grouping-only series
+	//    created via the "empty series" flow; recurring actions don't apply
+	//  - broken: exactly one field null → legacy/migration mismatch, the
+	//    only state where the "Contact support to repair" banner is honest
+	const isEmpty = $derived(!hasRecurrenceRule && !hasTemplate);
+	const isRecurring = $derived(hasRecurrenceRule && hasTemplate);
+	const isBroken = $derived(!isEmpty && !isRecurring);
 	const isPaused = $derived(series && series.is_active === false);
 	// Appendix F: Phase 3 mutating endpoints accept either `create_event` or
 	// `edit_event_series`. `canManageRecurring` (set on the admin layout) is
@@ -215,8 +223,11 @@
 		</div>
 	</div>
 
-	<!-- Degraded state (repair banner) -->
-	{#if isDegraded}
+	<!-- Series-state banner. Three mutually-exclusive paths: broken (one of
+	     recurrence_rule/template_event missing — contact support), empty
+	     (both null — intentional grouping series, just an info note), or
+	     recurring + paused (the existing pause banner). -->
+	{#if isBroken}
 		<div
 			class="border-warning/50 bg-warning/10 flex items-start gap-3 rounded-lg border p-4 text-sm"
 			role="alert"
@@ -234,6 +245,16 @@
 					contact@letsrevel.io
 				</a>
 			</div>
+		</div>
+	{:else if isEmpty}
+		<div
+			class="flex items-start gap-3 rounded-lg border border-border bg-muted/50 p-4 text-sm"
+			role="status"
+		>
+			<Info class="mt-0.5 h-5 w-5 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
+			<p class="flex-1 text-muted-foreground">
+				{m['recurringEvents.dashboard.emptySeriesBanner']()}
+			</p>
 		</div>
 	{:else if isPaused}
 		<div

@@ -6,23 +6,20 @@
 	import type { EventSeriesRetrieveSchema } from '$lib/api/generated/types.gen';
 	import { Repeat, Calendar, Edit, Eye, Tag, Plus } from 'lucide-svelte';
 	import { getImageUrl } from '$lib/utils/url';
+	import NewSeriesPickerDialog from '$lib/components/event-series/admin/NewSeriesPickerDialog.svelte';
 
 	const { data }: { data: PageData } = $props();
 
 	const organization = $derived($page.data.organization);
 
-	/**
-	 * Navigate to the recurring-series wizard (primary CTA).
-	 */
-	function createRecurringSeries(): void {
-		goto(`/org/${organization.slug}/admin/event-series/new-recurring`);
-	}
+	// "New series" → opens a picker that lets the organiser choose between
+	// the recurring wizard and the empty-series form. The two flows are
+	// equally valid (recurring is more common but neither is the "default")
+	// — see the picker dialog component for the full copy.
+	let showNewSeriesPicker = $state(false);
 
-	/**
-	 * Navigate to the empty-series form (secondary affordance).
-	 */
-	function createEmptySeries(): void {
-		goto(`/org/${organization.slug}/admin/event-series/new`);
+	function openNewSeriesPicker(): void {
+		showNewSeriesPicker = true;
 	}
 
 	/**
@@ -74,23 +71,15 @@
 			</p>
 		</div>
 
-		<div class="flex flex-col items-start gap-1 sm:items-end">
-			<button
-				type="button"
-				onclick={createRecurringSeries}
-				class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-			>
-				<Plus class="h-5 w-5" aria-hidden="true" />
-				{m['recurringEvents.seriesList.primaryCta']()}
-			</button>
-			<button
-				type="button"
-				onclick={createEmptySeries}
-				class="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-			>
-				{m['recurringEvents.seriesList.secondaryLink']()}
-			</button>
-		</div>
+		<button
+			type="button"
+			onclick={openNewSeriesPicker}
+			class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+			data-testid="new-series-button"
+		>
+			<Plus class="h-5 w-5" aria-hidden="true" />
+			{m['recurringEvents.seriesList.primaryCta']()}
+		</button>
 	</div>
 
 	<!-- Empty state -->
@@ -103,18 +92,11 @@
 			</p>
 			<button
 				type="button"
-				onclick={createRecurringSeries}
+				onclick={openNewSeriesPicker}
 				class="mt-6 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			>
 				<Plus class="h-4 w-4" aria-hidden="true" />
 				{m['recurringEvents.seriesList.primaryCta']()}
-			</button>
-			<button
-				type="button"
-				onclick={createEmptySeries}
-				class="mt-3 text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-			>
-				{m['recurringEvents.seriesList.secondaryLink']()}
 			</button>
 		</div>
 	{:else}
@@ -206,6 +188,12 @@
 		</div>
 	{/if}
 </div>
+
+<NewSeriesPickerDialog
+	bind:open={showNewSeriesPicker}
+	organizationSlug={organization.slug}
+	onClose={() => (showNewSeriesPicker = false)}
+/>
 
 <style>
 	/* Ensure consistent focus states for accessibility */

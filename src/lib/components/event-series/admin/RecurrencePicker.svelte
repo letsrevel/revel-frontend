@@ -29,9 +29,31 @@
 	const interval = $derived(rule.interval ?? 1);
 	const monthlyType = $derived<MonthlyType>(rule.monthly_type ?? 'day');
 	const selectedWeekdays = $derived<Set<number>>(new Set(rule.weekdays ?? []));
-	const boundaryKind = $derived<BoundaryKind>(
-		inferBoundaryKind({ frequency, until: rule.until, count: rule.count })
-	);
+
+	// Boundary radio kind tracks user intent locally rather than deriving
+	// from the rule. If we derived (via `inferBoundaryKind`), clicking
+	// "Until date" wouldn't stick: the click clears `count` but doesn't
+	// fill `until` (the user hasn't picked a date yet), so the rule stays
+	// `{ until: null, count: null }` and the inferred kind reverts to
+	// 'none' — defeating the radio. Local state preserves the click and
+	// reveals the date/count input so the user can fill it in.
+	let selectedBoundary = $state<BoundaryKind>('none');
+	let hasSeededBoundary = $state(false);
+
+	$effect(() => {
+		const inferred = inferBoundaryKind({ frequency, until: rule.until, count: rule.count });
+		if (!hasSeededBoundary) {
+			hasSeededBoundary = true;
+			selectedBoundary = inferred;
+			return;
+		}
+		// External changes that *do* carry concrete data (e.g. parent re-seeds
+		// from a fetched rule) should override the local state. Empty rule
+		// updates don't — they'd clobber a user's mid-form click.
+		if (inferred !== 'none') {
+			selectedBoundary = inferred;
+		}
+	});
 
 	function patch(next: Partial<RecurrenceRuleCreate>): void {
 		onChange({ ...rule, ...next });
@@ -101,7 +123,8 @@
 
 	function handleBoundaryChange(next: string): void {
 		const kind = next as BoundaryKind;
-		if (kind === boundaryKind) return;
+		if (kind === selectedBoundary) return;
+		selectedBoundary = kind;
 		if (kind === 'none') {
 			patch({ until: null, count: null });
 		} else if (kind === 'until') {
@@ -407,7 +430,7 @@
 	<!-- Boundary: none / until / count -->
 	<fieldset class="space-y-3">
 		<legend class="text-sm font-medium">{m['recurringEvents.picker.boundary.label']()}</legend>
-		<RadioGroup value={boundaryKind} onValueChange={handleBoundaryChange} class="space-y-2">
+		<RadioGroup value={selectedBoundary} onValueChange={handleBoundaryChange} class="space-y-2">
 			<div class="flex items-center gap-2">
 				<RadioGroupItem value="none" id="boundary-none" />
 				<Label for="boundary-none">{m['recurringEvents.picker.boundary.none']()}</Label>
@@ -417,7 +440,7 @@
 					<RadioGroupItem value="until" id="boundary-until" />
 					<Label for="boundary-until">{m['recurringEvents.picker.boundary.until']()}</Label>
 				</div>
-				{#if boundaryKind === 'until'}
+				{#if selectedBoundary === 'until'}
 					<Input
 						type="datetime-local"
 						value={untilForInput}
@@ -432,7 +455,7 @@
 					<RadioGroupItem value="count" id="boundary-count" />
 					<Label for="boundary-count">{m['recurringEvents.picker.boundary.count']()}</Label>
 				</div>
-				{#if boundaryKind === 'count'}
+				{#if selectedBoundary === 'count'}
 					<Input
 						type="number"
 						min={1}

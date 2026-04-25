@@ -5319,6 +5319,7 @@
 			"pastHeading": "Past occurrences",
 			"exdatesHeading": "Cancelled dates",
 			"pausedBanner": "This series is paused. No new occurrences will be created until you resume it.",
+			"emptySeriesBanner": "This series doesn't follow a recurrence pattern — it's a grouping container. Attach individual events to organise them under one series.",
 			"repairSeriesBanner": "This series is missing a recurrence rule or a template event. Contact support to repair it.",
 			"actions": {
 				"seriesSettings": "Series settings",
@@ -5333,8 +5334,22 @@
 			}
 		},
 		"seriesList": {
-			"primaryCta": "New recurring series",
-			"secondaryLink": "Create an empty series instead"
+			"primaryCta": "New series"
+		},
+		"newSeriesPicker": {
+			"title": "Create a new series",
+			"description": "How should this series schedule its events?",
+			"recurring": {
+				"title": "Recurring",
+				"body": "Define a template event and a recurrence pattern. Occurrences are scheduled automatically and managed from a single dashboard.",
+				"badge": "Most common"
+			},
+			"empty": {
+				"title": "Grouping only",
+				"body": "An empty series is a container. Create individual events on the dates you want and attach them — useful when dates are unrelated but share branding.",
+				"badge": "Manual"
+			},
+			"cancel": "Cancel"
 		},
 		"row": {
 			"modifiedBadge": "Manually edited",
