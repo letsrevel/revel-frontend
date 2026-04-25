@@ -25,14 +25,8 @@ describe('RecurrencePicker — frequency segmented control', () => {
 
 	it('marks the current frequency as aria-checked', () => {
 		mount({ frequency: 'monthly', interval: 1 });
-		expect(screen.getByRole('radio', { name: 'Monthly' })).toHaveAttribute(
-			'aria-checked',
-			'true'
-		);
-		expect(screen.getByRole('radio', { name: 'Weekly' })).toHaveAttribute(
-			'aria-checked',
-			'false'
-		);
+		expect(screen.getByRole('radio', { name: 'Monthly' })).toHaveAttribute('aria-checked', 'true');
+		expect(screen.getByRole('radio', { name: 'Weekly' })).toHaveAttribute('aria-checked', 'false');
 	});
 
 	it('clears conditional fields when switching frequency', async () => {
@@ -87,14 +81,8 @@ describe('RecurrencePicker — weekly weekday multiselect', () => {
 
 	it('sets aria-pressed on selected weekday toggles', () => {
 		mount({ frequency: 'weekly', interval: 1, weekdays: [1, 3] });
-		expect(screen.getByRole('button', { name: 'Tuesday' })).toHaveAttribute(
-			'aria-pressed',
-			'true'
-		);
-		expect(screen.getByRole('button', { name: 'Monday' })).toHaveAttribute(
-			'aria-pressed',
-			'false'
-		);
+		expect(screen.getByRole('button', { name: 'Tuesday' })).toHaveAttribute('aria-pressed', 'true');
+		expect(screen.getByRole('button', { name: 'Monday' })).toHaveAttribute('aria-pressed', 'false');
 	});
 });
 
