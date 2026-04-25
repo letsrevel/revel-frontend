@@ -82,9 +82,59 @@
 		};
 	});
 
+	// Focus management for the WAI-ARIA modal-dialog pattern. On open we
+	// move focus inside the sheet (so screen readers and keyboard users land
+	// on the dialog instead of being stranded behind the backdrop); on close
+	// we restore focus to whatever had it before. Tab containment lives in
+	// `handleKeydown` below and wraps focus so the user can never tab back
+	// out to elements behind the overlay.
+	let sheetEl = $state<HTMLDivElement | null>(null);
+	let previousFocus: HTMLElement | null = null;
+	const FOCUSABLE_SELECTOR =
+		'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+	$effect(() => {
+		if (!isOpen) return;
+		previousFocus = (document.activeElement as HTMLElement | null) ?? null;
+		requestAnimationFrame(() => {
+			if (!sheetEl) return;
+			const first = sheetEl.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
+			first?.focus();
+		});
+		return () => {
+			if (previousFocus && document.contains(previousFocus)) {
+				previousFocus.focus();
+			}
+			previousFocus = null;
+		};
+	});
+
+	function getFocusables(): HTMLElement[] {
+		if (!sheetEl) return [];
+		return Array.from(sheetEl.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+	}
+
 	function handleKeydown(event: KeyboardEvent): void {
-		if (event.key === 'Escape' && isOpen) {
+		if (!isOpen) return;
+		if (event.key === 'Escape') {
 			onClose();
+			return;
+		}
+		if (event.key !== 'Tab') return;
+		// Tab containment: when the user reaches the boundary of the focus
+		// ring, wrap to the other end. Without this, Tab would land on
+		// elements behind the backdrop and break the modal contract.
+		const focusables = getFocusables();
+		if (focusables.length === 0) return;
+		const first = focusables[0];
+		const last = focusables[focusables.length - 1];
+		const active = document.activeElement as HTMLElement | null;
+		if (event.shiftKey && (active === first || !sheetEl?.contains(active))) {
+			event.preventDefault();
+			last.focus();
+		} else if (!event.shiftKey && active === last) {
+			event.preventDefault();
+			first.focus();
 		}
 	}
 
@@ -108,6 +158,7 @@
 
 	<!-- Sheet -->
 	<div
+		bind:this={sheetEl}
 		class={cn(
 			'fixed inset-x-0 bottom-0 z-50 flex max-h-[85vh] flex-col rounded-t-2xl border-t bg-background shadow-2xl md:hidden',
 			!isDragging && 'transition-transform'

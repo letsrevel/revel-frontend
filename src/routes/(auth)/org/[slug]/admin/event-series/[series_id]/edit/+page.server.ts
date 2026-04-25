@@ -12,5 +12,8 @@ import type { PageServerLoad } from './$types';
  * `/edit` during the transition.
  */
 export const load: PageServerLoad = async ({ params }) => {
-	throw redirect(301, `/org/${params.slug}/admin/event-series/${params.series_id}/?settings=open`);
+	// No trailing slash before the query string — SvelteKit's default
+	// `trailingSlash: 'never'` would otherwise re-redirect to the no-slash
+	// form, costing every old `/edit` link a second 301 hop.
+	throw redirect(301, `/org/${params.slug}/admin/event-series/${params.series_id}?settings=open`);
 };

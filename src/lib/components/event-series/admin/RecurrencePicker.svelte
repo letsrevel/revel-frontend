@@ -134,6 +134,54 @@
 		}
 	}
 
+	/**
+	 * WAI-ARIA radiogroup keyboard pattern for the segmented controls below.
+	 * Arrow keys cycle through siblings (with wrap), Home / End jump to the
+	 * ends. The selected option owns tabindex=0 (roving tabindex) so Tab
+	 * enters and leaves the group as a single stop.
+	 */
+	function handleRadiogroupKey<T extends string>(
+		event: KeyboardEvent,
+		items: readonly T[],
+		current: T,
+		select: (next: T) => void
+	): void {
+		const idx = items.indexOf(current);
+		let next: T | null = null;
+		switch (event.key) {
+			case 'ArrowRight':
+			case 'ArrowDown':
+				next = items[(idx + 1 + items.length) % items.length];
+				break;
+			case 'ArrowLeft':
+			case 'ArrowUp':
+				next = items[(idx - 1 + items.length) % items.length];
+				break;
+			case 'Home':
+				next = items[0];
+				break;
+			case 'End':
+				next = items[items.length - 1];
+				break;
+		}
+		if (next === null || next === current) return;
+		event.preventDefault();
+		select(next);
+		// Focus the newly-selected radio so the user keeps keyboard context.
+		// `requestAnimationFrame` lets Svelte tick first so the new tabindex
+		// has propagated before we move focus.
+		requestAnimationFrame(() => {
+			const group = (event.currentTarget as HTMLElement | null)?.closest(
+				'[role="radiogroup"]'
+			) as HTMLElement | null;
+			if (!group) return;
+			const target = group.querySelector<HTMLElement>(`[role="radio"][data-rg-value="${next}"]`);
+			target?.focus();
+		});
+	}
+
+	const MONTHLY_TYPES = ['day', 'weekday'] as const satisfies readonly MonthlyType[];
+
 	function handleUntilInput(event: Event): void {
 		const raw = (event.target as HTMLInputElement).value;
 		patch({ until: raw ? new Date(raw).toISOString() : null });
@@ -255,7 +303,10 @@
 					type="button"
 					role="radio"
 					aria-checked={frequency === freq}
+					tabindex={frequency === freq ? 0 : -1}
+					data-rg-value={freq}
 					onclick={() => selectFrequency(freq)}
+					onkeydown={(e) => handleRadiogroupKey(e, FREQUENCIES, frequency, selectFrequency)}
 					class={cn(
 						'rounded-md border px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
 						frequency === freq
@@ -338,7 +389,11 @@
 					type="button"
 					role="radio"
 					aria-checked={monthlyType === 'day'}
+					tabindex={monthlyType === 'day' ? 0 : -1}
+					data-rg-value="day"
 					onclick={() => handleMonthlyTypeChange('day')}
+					onkeydown={(e) =>
+						handleRadiogroupKey(e, MONTHLY_TYPES, monthlyType, handleMonthlyTypeChange)}
 					class={cn(
 						'rounded-md border px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
 						monthlyType === 'day'
@@ -352,7 +407,11 @@
 					type="button"
 					role="radio"
 					aria-checked={monthlyType === 'weekday'}
+					tabindex={monthlyType === 'weekday' ? 0 : -1}
+					data-rg-value="weekday"
 					onclick={() => handleMonthlyTypeChange('weekday')}
+					onkeydown={(e) =>
+						handleRadiogroupKey(e, MONTHLY_TYPES, monthlyType, handleMonthlyTypeChange)}
 					class={cn(
 						'rounded-md border px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
 						monthlyType === 'weekday'

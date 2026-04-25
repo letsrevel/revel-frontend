@@ -51,6 +51,12 @@
 	// in-flight progress, so a close-after-partial-success invalidation
 	// doesn't duplicate the work from a full-success path.
 	let hasInvalidated = $state(false);
+	// Latch the per-open seed so reactive reads of `driftedOccurrences`
+	// (parent query refetches mid-run, refetchOnWindowFocus, etc.) don't
+	// re-trigger the seeding branch and clobber `rowStatuses` / `armed` /
+	// `running` while the user is still looking at the dialog. Resets in
+	// the close branch of the same effect so a re-open seeds fresh.
+	let hasSeededForOpen = $state(false);
 
 	const total = $derived(driftedOccurrences.length);
 	const doneCount = $derived(Object.values(rowStatuses).filter((s) => s === 'done').length);
@@ -68,11 +74,17 @@
 	$effect(() => {
 		if (!open) {
 			hasInvalidated = false;
+			hasSeededForOpen = false;
 			return;
 		}
+		if (hasSeededForOpen) return;
+		hasSeededForOpen = true;
 		// Seed row statuses from the snapshot at open time. Concurrent changes
 		// to the dashboard's drift list don't leak into an in-progress run —
-		// the dialog operates on what was there when the user opened it.
+		// the dialog operates on what was there when the user opened it. The
+		// `hasSeededForOpen` latch above prevents reactive reads of
+		// `driftedOccurrences` (e.g. parent refetchOnWindowFocus mid-loop)
+		// from re-firing this branch and clobbering live state.
 		const seeded: Record<string, RowStatus> = {};
 		for (const o of driftedOccurrences) seeded[o.id] = 'pending';
 		rowStatuses = seeded;

@@ -57,7 +57,7 @@
 	// Mode is stable for the lifetime of an open dialog — set at open time.
 	// In row mode we render a read-only label; in header mode we render the
 	// picker. Callers toggle the mode by swapping `initialDate` before setting
-	// `open=true` (handled by the dashboard's `cancelOccurrenceSource` rune).
+	// `open=true` (handled by the dashboard's `cancelOccurrenceInitialDate` rune).
 	const isRowMode = $derived(typeof initialDate === 'string' && initialDate.length > 0);
 
 	// Match the row-action filter in `OccurrenceRow`: only `draft` and `open`

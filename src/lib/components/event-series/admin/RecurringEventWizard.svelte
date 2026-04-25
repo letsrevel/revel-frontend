@@ -228,9 +228,10 @@
 
 	function validateRecurrence(): boolean {
 		const errors: Record<string, string> = {};
-		if (!recurrenceData.frequency) {
-			errors.frequency = m['recurringEvents.picker.validation.weekdaysRequired']();
-		}
+		// `frequency` is initialized to 'weekly' at component mount and only
+		// ever updated via the picker's segmented control, which constrains
+		// it to one of the four valid values — no falsy-frequency check is
+		// needed (and the prior version cited the wrong i18n key here).
 		if (recurrenceData.frequency === 'weekly') {
 			if (!recurrenceData.weekdays || recurrenceData.weekdays.length === 0) {
 				errors.weekdays = m['recurringEvents.picker.validation.weekdaysRequired']();
