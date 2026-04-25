@@ -97,6 +97,62 @@ export function extractErrorMessage(
 }
 
 /**
+ * Extract per-field validation errors from an API error.
+ *
+ * Handles two shapes:
+ * - Django/DRF-style: `{ errors: { field: ["msg1", "msg2"] } }`
+ * - Pydantic detail array: `{ detail: [{ loc: [..., field], msg: "..." }, ...] }`
+ *
+ * Returns `[]` when no field-keyed errors are present so callers can fall back
+ * to the generic message.
+ */
+export function extractFieldErrors(error: unknown): { field: string; messages: string[] }[] {
+	if (!error || typeof error !== 'object') return [];
+
+	const errorObj = error as ApiErrorResponse & {
+		body?: ApiErrorResponse;
+		detail?: string | Array<{ loc?: (string | number)[]; msg: string }>;
+	};
+	const source = errorObj.body ?? errorObj;
+
+	const out: { field: string; messages: string[] }[] = [];
+
+	if (source.errors && typeof source.errors === 'object') {
+		for (const [field, messages] of Object.entries(source.errors)) {
+			if (Array.isArray(messages) && messages.length > 0) {
+				out.push({
+					field,
+					messages: messages.filter((m): m is string => typeof m === 'string')
+				});
+			}
+		}
+	}
+
+	const detail = source.detail;
+	if (Array.isArray(detail)) {
+		const grouped = new Map<string, string[]>();
+		for (const raw of detail) {
+			const d = raw as { msg?: unknown; loc?: unknown };
+			if (!d || typeof d !== 'object' || typeof d.msg !== 'string') continue;
+			// loc is e.g. ["body", "refund_policy", "tiers", 0, "hours_before_event"]
+			// Drop the "body" prefix that Pydantic adds, keep the rest as a dotted path.
+			const loc = Array.isArray(d.loc)
+				? d.loc.filter((p: unknown) => p !== 'body').map((p: unknown) => String(p))
+				: [];
+			const field = loc.join('.') || '_';
+			const existing = grouped.get(field) ?? [];
+			existing.push(d.msg);
+			grouped.set(field, existing);
+		}
+		for (const [field, messages] of grouped) {
+			out.push({ field, messages });
+		}
+	}
+
+	return out;
+}
+
+/**
  * Get a user-friendly error message for an HTTP status code
  */
 function getStatusMessage(status: number): string | null {

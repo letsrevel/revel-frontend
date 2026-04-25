@@ -6,6 +6,7 @@
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
 	import AddToWalletButton from './AddToWalletButton.svelte';
 	import DownloadPdfButton from './DownloadPdfButton.svelte';
+	import CancelTicketDialog from './CancelTicketDialog.svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import {
 		Ticket,
@@ -15,8 +16,7 @@
 		Armchair,
 		ChevronLeft,
 		ChevronRight,
-		X,
-		AlertTriangle
+		X
 	} from 'lucide-svelte';
 	import QRCode from 'qrcode';
 
@@ -31,6 +31,8 @@
 		isResumingPayment?: boolean;
 		onCancelReservation?: (paymentId: string) => void;
 		isCancellingReservation?: boolean;
+		/** Called after a ticket is successfully cancelled — parent should refresh data. */
+		onTicketCancelled?: () => void;
 	}
 
 	let {
@@ -42,8 +44,12 @@
 		onResumePayment,
 		isResumingPayment = false,
 		onCancelReservation,
-		isCancellingReservation = false
+		isCancellingReservation = false,
+		onTicketCancelled
 	}: Props = $props();
+
+	let showCancelDialog = $state(false);
+	let ticketIdToCancel = $state<string | null>(null);
 
 	// Normalize to array and filter out undefined/null values
 	const ticketArray = $derived(
@@ -142,6 +148,32 @@
 		// Only allow cancel for online payments (pending Stripe checkout)
 		return ticket.tier?.payment_method === 'online';
 	});
+
+	// Self-cancellation gate: ticket is active, the tier opted in, and the event
+	// hasn't started. The preview endpoint is still the source of truth for
+	// edge cases (past deadline, etc.) and surfaces them inside the dialog.
+	const canSelfCancel = $derived.by(() => {
+		if (!ticket?.id) return false;
+		if (ticket.status !== 'active') return false;
+		if (!ticket.tier?.allow_user_cancellation) return false;
+		if (ticket.event?.start) {
+			const startMs = new Date(ticket.event.start).getTime();
+			if (Number.isFinite(startMs) && startMs <= Date.now()) return false;
+		}
+		return true;
+	});
+
+	function openCancelDialog(): void {
+		if (!ticket?.id) return;
+		ticketIdToCancel = ticket.id;
+		showCancelDialog = true;
+	}
+
+	function handleTicketCancelled(): void {
+		showCancelDialog = false;
+		ticketIdToCancel = null;
+		onTicketCancelled?.();
+	}
 
 	// Format seat information
 	// Venue/sector come from ticket.tier, seat info comes from ticket.seat
@@ -496,6 +528,30 @@
 					</div>
 				{/if}
 
+				<!-- Cancelled banner -->
+				{#if ticket.status === 'cancelled'}
+					<div class="rounded-lg border border-border bg-muted/50 p-4 text-sm" role="status">
+						<p class="font-medium text-foreground">
+							{m['cancelTicket.cancelledBanner.genericTitle']()}
+						</p>
+					</div>
+				{/if}
+
+				<!-- Self-cancel action -->
+				{#if canSelfCancel}
+					<div class="border-t border-border pt-4">
+						<Button
+							type="button"
+							variant="outline"
+							class="w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
+							onclick={openCancelDialog}
+						>
+							<X class="mr-2 h-4 w-4" aria-hidden="true" />
+							{m['cancelTicket.button']()}
+						</Button>
+					</div>
+				{/if}
+
 				<!-- Ticket ID -->
 				<div class="border-t border-border pt-4">
 					<p class="text-xs text-muted-foreground">{m['myTicketModal.ticketId']()} {ticket.id}</p>
@@ -504,3 +560,11 @@
 		{/if}
 	</DialogContent>
 </Dialog>
+
+{#if ticketIdToCancel}
+	<CancelTicketDialog
+		bind:open={showCancelDialog}
+		ticketId={ticketIdToCancel}
+		onCancelled={handleTicketCancelled}
+	/>
+{/if}

@@ -185,14 +185,40 @@
 						</div>
 					</td>
 					<td class="px-4 py-3">
-						<span
-							class={cn(
-								'rounded-full px-2 py-1 text-xs font-semibold',
-								getTicketStatusColor(ticket.status)
-							)}
-						>
-							{getTicketStatusLabel(ticket.status)}
-						</span>
+						<div class="flex flex-col gap-1">
+							<span
+								class={cn(
+									'inline-flex w-fit rounded-full px-2 py-1 text-xs font-semibold',
+									getTicketStatusColor(ticket.status)
+								)}
+							>
+								{getTicketStatusLabel(ticket.status)}
+							</span>
+							{#if ticket.status === 'cancelled' && ticket.payment?.refund_status}
+								{@const rs = ticket.payment.refund_status as 'pending' | 'succeeded' | 'failed'}
+								<span
+									class={cn(
+										'inline-flex w-fit items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium',
+										rs === 'succeeded' &&
+											'border-green-300 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-300',
+										rs === 'pending' &&
+											'border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300',
+										rs === 'failed' && 'border-destructive/50 bg-destructive/10 text-destructive'
+									)}
+									title={ticket.payment.refund_amount && ticket.payment.currency
+										? `${ticket.payment.refund_amount} ${ticket.payment.currency}`
+										: undefined}
+								>
+									{#if rs === 'succeeded'}
+										{m['adminTicketTable.refundStatus.succeeded']()}
+									{:else if rs === 'pending'}
+										{m['adminTicketTable.refundStatus.pending']()}
+									{:else}
+										{m['adminTicketTable.refundStatus.failed']()}
+									{/if}
+								</span>
+							{/if}
+						</div>
 					</td>
 					<td class="px-4 py-3 text-sm text-muted-foreground">
 						{new Date(ticket.created_at).toLocaleDateString()}

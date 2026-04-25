@@ -21,6 +21,7 @@
 		Minus,
 		Loader2
 	} from 'lucide-svelte';
+	import CancellationPolicySummary from './CancellationPolicySummary.svelte';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import type {
 		TicketPurchaseItem,
@@ -493,6 +494,9 @@
 					<Ticket class="h-8 w-8 shrink-0 text-muted-foreground" aria-hidden="true" />
 				</div>
 			</div>
+
+			<!-- Cancellation Policy (no-ops until backend exposes the fields on the public tier schema) -->
+			<CancellationPolicySummary {tier} />
 
 			<!-- Seat Assignment Info / Selection -->
 			<SeatAssignmentSection
