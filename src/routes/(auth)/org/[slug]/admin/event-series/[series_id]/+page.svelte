@@ -28,6 +28,7 @@
 	import GenerateNowButton from '$lib/components/event-series/admin/GenerateNowButton.svelte';
 	import PauseResumeButton from '$lib/components/event-series/admin/PauseResumeButton.svelte';
 	import CancelDriftedOccurrencesDialog from '$lib/components/event-series/admin/CancelDriftedOccurrencesDialog.svelte';
+	import PublishOccurrenceDialog from '$lib/components/event-series/admin/PublishOccurrenceDialog.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -150,10 +151,15 @@
 	let showGenerateNow = $state(false);
 	let showPauseResume = $state(false);
 	let showDriftBulkCancel = $state(false);
+	let showPublishOccurrence = $state(false);
 	// `null` → header-mode picker; ISO string → row-mode prefill. The dashboard
 	// flips this before setting `showCancelOccurrence=true` so the dialog's
 	// open-effect seed picks up the right source.
 	let cancelOccurrenceInitialDate = $state<string | null>(null);
+	// Candidate event for the publish-confirmation dialog. Null while no row
+	// has been picked; flipped to the EventInListSchema being acted on right
+	// before the dialog opens so the confirm body can show its formatted date.
+	let publishCandidate = $state<EventInListSchema | null>(null);
 	let hasHandledSettingsParam = $state(false);
 
 	function openCancelOccurrenceFromRow(event: EventInListSchema): void {
@@ -164,6 +170,16 @@
 	function openCancelOccurrenceFromHeader(): void {
 		cancelOccurrenceInitialDate = null;
 		showCancelOccurrence = true;
+	}
+
+	function openPublishOccurrence(eventId: string): void {
+		// OccurrenceRow's `onPublish` callback signature mirrors the existing
+		// AdminEventCard contract (eventId only). Look up the full event from
+		// the upcoming list so the confirm dialog can display the date.
+		const ev = upcomingOccurrences.find((e) => e.id === eventId);
+		if (!ev) return;
+		publishCandidate = ev;
+		showPublishOccurrence = true;
 	}
 
 	$effect(() => {
@@ -326,6 +342,7 @@
 								driftedIds={staleIds}
 								{canEdit}
 								onCancelOccurrence={openCancelOccurrenceFromRow}
+								onPublish={openPublishOccurrence}
 							/>
 						</li>
 					{/each}
@@ -427,6 +444,14 @@
 		{accessToken}
 		{driftedOccurrences}
 		onClose={() => (showDriftBulkCancel = false)}
+	/>
+	<PublishOccurrenceDialog
+		bind:open={showPublishOccurrence}
+		event={publishCandidate}
+		organizationSlug={organization.slug}
+		seriesId={series.id}
+		{accessToken}
+		onClose={() => (showPublishOccurrence = false)}
 	/>
 {/if}
 

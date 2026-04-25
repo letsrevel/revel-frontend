@@ -1,7 +1,16 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { goto } from '$app/navigation';
-	import { CalendarX, Edit, Eye, MoreVertical, Copy, CheckCircle, XCircle } from 'lucide-svelte';
+	import {
+		CalendarX,
+		Edit,
+		Eye,
+		Megaphone,
+		MoreVertical,
+		Copy,
+		CheckCircle,
+		XCircle
+	} from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { formatEventDate } from '$lib/utils/date';
@@ -174,8 +183,21 @@
 
 	<!-- Action cluster. Sticks to the right on desktop, wraps to a left-aligned
 	     row on mobile. Icon buttons keep the row slim while preserving every
-	     management entry point AdminEventCard offered. -->
+	     management entry point AdminEventCard offered. Publish is promoted to
+	     a top-level filled button (rather than buried in the More dropdown)
+	     so it reads as the primary next-step for draft occurrences. -->
 	<div class="flex flex-shrink-0 flex-wrap items-center gap-1 sm:gap-1.5">
+		{#if canEdit && variant === 'draft' && onPublish}
+			<Button
+				size="sm"
+				onclick={() => onPublish(event.id)}
+				class="h-8 gap-1 bg-green-600 px-2 text-white hover:bg-green-700 focus-visible:ring-green-700 dark:bg-green-600 dark:hover:bg-green-500"
+				data-testid="row-publish-occurrence"
+			>
+				<Megaphone class="h-4 w-4" aria-hidden="true" />
+				<span class="hidden sm:inline">{m['orgAdmin.events.actions.publish']()}</span>
+			</Button>
+		{/if}
 		<Button
 			variant="ghost"
 			size="sm"
@@ -208,7 +230,7 @@
 				<CalendarX class="h-4 w-4" aria-hidden="true" />
 			</Button>
 		{/if}
-		{#if canEdit && (onPublish || onClose || onReopen || onDuplicate)}
+		{#if canEdit && (onClose || onReopen || onDuplicate)}
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger>
 					{#snippet child({ props })}
@@ -223,12 +245,6 @@
 					{/snippet}
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content align="end" class="w-44">
-					{#if variant === 'draft' && onPublish}
-						<DropdownMenu.Item onclick={() => onPublish(event.id)}>
-							<CheckCircle class="mr-2 h-4 w-4" aria-hidden="true" />
-							{m['orgAdmin.events.actions.publish']()}
-						</DropdownMenu.Item>
-					{/if}
 					{#if variant === 'open' && onClose}
 						<DropdownMenu.Item
 							onclick={() => onClose(event.id)}

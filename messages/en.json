@@ -5495,6 +5495,16 @@
 			"noChangesToast": "No changes to apply.",
 			"loadError": "Couldn't load the series. Please close the dialog and try again."
 		},
+		"publishOccurrenceDialog": {
+			"title": "Publish this date",
+			"body": "This occurrence will go live. Anyone following the series gets notified, and (if applicable) attendees can RSVP, request invitations, or buy tickets.",
+			"confirm": "Publish",
+			"keep": "Keep as draft",
+			"publishing": "Publishing…",
+			"selectedDateLabel": "Occurrence to publish",
+			"successToast": "Date published.",
+			"errorToast": "Couldn't publish this date. Please try again."
+		},
 		"cancelOccurrenceDialog": {
 			"title": "Cancel this date",
 			"body": "Cancel this date only — the series keeps running. If the event has sold tickets, holders will be notified and refunded per your refund policy.",
