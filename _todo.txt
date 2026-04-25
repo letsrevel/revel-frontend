@@ -1,0 +1,159 @@
+# Recurring Events — TODO Checklist
+
+> Living checklist derived from `RECURRING_EVENTS_PLAN.md`. Each item is a concrete,
+> shippable unit. Update `_progress.txt` as you check items off here.
+>
+> **Format:** `[ ]` = not started · `[~]` = in progress · `[x]` = done · `[!]` = blocked
+
+## Phase 0 — Foundations
+
+- [x] **0.1** Run `pnpm generate:api`; verify `sdk.gen.ts` exposes the recurring-event
+      SDK functions (Appendix A) and `types.gen.ts` exposes the new schemas.
+- [x] **0.2** `src/lib/utils/recurrence.ts` — pure utilities:
+  - [x] `formatRecurrence(rule, locale)`
+  - [x] `parseExdates(exdates)`
+  - [x] `mutualExclusionGuard({ until, count })`
+  - [x] `weekdayLabel(n)`, `ordinalLabel(n)`
+- [x] **0.3** `src/lib/types/recurrence.ts` — friendly re-exports + `Frequency` /
+      `MonthlyType` / `PropagateScope` constants.
+- [x] **0.4** `src/lib/queries/event-series.ts` — query keys + typed wrappers:
+      `detail`, `recurrenceDetail`, `drift`, `occurrences`.
+- [x] **0.5** i18n stubs — EN source under `recurringEvents.*` nested object;
+      IT+DE mirrored with EN copy (keys aligned for validator parity — real
+      translations in Phase 5).
+- [x] **0.6** Unit tests for `formatRecurrence` (57 assertions) and `parseExdates`.
+- [x] **0.7** QA gate — scoped checks on new files only (format-check ✓, eslint ✓,
+      svelte-check ✓, vitest 57/57 ✓, i18n:validate ✓). Repo-wide `make check`
+      fails on pre-existing warnings in unrelated files; tracked separately.
+
+## Phase 1 — Create recurring event wizard
+
+- [x] **1.1** Route: `new-recurring/+page.svelte` + `+page.server.ts`.
+- [x] **1.2** `RecurringEventWizard.svelte` — owns Step A / Step B (Appendix B).
+- [x] **1.3** Step A wrapper — reuses `EssentialsStep` + `DetailsStep` with
+      `standalone={false}`; anchor-date helper under `start`.
+- [x] **1.4** `RecurrencePicker.svelte` — frequency conditional UI + interval +
+      boundary radios + advanced (auto_publish, generation_window_weeks) + timezone
+      read-only.
+- [x] **1.5** `RecurrenceSummary.svelte` — live preview wrapper over
+      `formatRecurrence()`.
+- [x] **1.6** Submit flow — call `organizationadminrecurringeventsCreateRecurringEvent`,
+      navigate to `/[series_id]` on success with toast.
+- [x] **1.7** Error handling — 422 inline, 400 banner, network retry.
+- [x] **1.8** Series list page — change primary CTA to "New recurring series" +
+      secondary "Create empty series".
+- [~] **1.9** Tests: `RecurrencePicker.test.ts` authored (frequency/weekday/
+      monthly-mode/boundary + validation cases). Component-test run is blocked by a
+      pre-existing `bits-ui` resolution error affecting ~25 existing component test
+      files (including `EventWizard.test.ts`); not a Phase-1 regression — will
+      light up once the harness is fixed. Wizard step-navigation test + Playwright
+      smoke deferred until Phase 2.1 ships the dashboard at the wizard's landing
+      URL.
+- [x] **1.10** QA gate (scoped): format ✓ · eslint `--max-warnings 0` on new
+      files ✓ · svelte-check 0 errors ✓ · i18n:validate 100% parity ✓ · Phase 0
+      utility tests still green (57/57) ✓. Playwright smoke → Phase 2.
+
+## Phase 2 — Series admin dashboard
+
+- [x] **2.1** Route: `[series_id]/+page.svelte` + `+page.server.ts` (parallel loads:
+      admin detail, drift, upcoming occurrences, past lazy).
+- [x] **2.2** `SeriesHeaderCard.svelte` — status, auto-publish, horizon, action row.
+- [x] **2.3** `OccurrenceRow.svelte` — wraps `AdminEventCard`; row states
+      (normal / `is_modified` amber / drifted red, mutually exclusive).
+- [x] **2.4** `ExdatesChipList.svelte` — chips + "Create one-off event" action.
+- [x] **2.5** `CadenceDriftBanner.svelte` — data-driven, non-dismissible, scroll
+      anchor.
+- [x] **2.6** Empty/degraded states — paused banner, repair-series banner.
+- [x] **2.7** `SeriesSettingsDialog.svelte` — replaces `/edit`; auto-opens with
+      `?settings=open`.
+- [x] **2.8** Deprecate `/edit` — 301 redirect to `../?settings=open`.
+- [x] **2.9** Mobile — action row → bottom sheet (rolled on the existing
+      MobileFilterSheet pattern; vaul-svelte isn't installed in this repo).
+- [x] **2.10** Tests: component tests (5 files · 49/49 green for the
+      bits-ui-free components: `CadenceDriftBanner`, `RecurrenceSummary`,
+      `ExdatesChipList`, `SeriesActionSheet`, `SeriesHeaderCard`) +
+      Playwright smoke spec at `tests/e2e/recurring-series-dashboard.spec.ts`
+      (2 scenarios × 4 viewports = 8/8 green against the local dev server;
+      Firefox skipped with documented rationale — dev-mode paraglide cold
+      load exceeds Playwright timeouts, covered by chromium + webkit +
+      both mobile). Vitest harness partially unblocked this session
+      (scoped `resolve.conditions: ['browser', 'svelte']` under `VITEST`
+      only in `vite.config.ts`) — "Failed to resolve entry for bits-ui"
+      fatal is fixed, but a secondary Vite 6 `preprocessCSS` /
+      `PartialEnvironment` proxy error still trips when a test
+      transitively pulls in `Dialog` / `DropdownMenu` / `Label` runtime
+      (i.e. `OccurrenceRow` via `AdminEventCard`, `SeriesSettingsDialog`
+      directly, `RecurrencePicker.test.ts` via `Label`). Those component
+      tests stay pending until Vite/plugin versions align.
+- [x] **2.11** QA gate cleared: scoped prettier ✓ · eslint
+      `--max-warnings 0` ✓ · svelte-check (0 errors) ✓ · Vitest 106/106
+      (57 Phase-0 + 49 Phase-2) ✓ · Playwright 8/8 (2 fx skipped) ✓
+      against local dev + demo-mode backend on :8000.
+
+## Phase 3 — Mutating flows (modals)
+
+- [x] **3.1** `TemplateEditDialog.svelte` — narrow form (schema-allowed fields only)
+      + propagation picker step. Two-step flow (form → propagate picker) with
+      config-driven toggle loops, a `propagateCard` snippet, and a sibling
+      `TemplateLockedFields.svelte` sub-component that hosts the read-only
+      start/end/rsvp_before/apply_before/status display so the main file stays
+      under the 750-line gate. PATCH via
+      `organizationadminrecurringeventsUpdateTemplate` with `?propagate=`;
+      invalidates series detail + drift + occurrences + template event cache
+      on success.
+- [x] **3.2** `RecurrenceEditDialog.svelte` — reuses `RecurrencePicker` edit-mode;
+      cadence change confirmation; partial PATCH. Two-step flow (form → confirm)
+      that only branches to the cadence-change warning when a recurrence-rule
+      field actually changed (pure settings edits skip straight to PATCH). PATCH
+      via `organizationadminrecurringeventsUpdateRecurrence` with a dirty diff
+      built against `series.recurrence_rule` + series settings. Invalidates
+      series detail + drift + occurrences on success via `invalidateSeries`.
+      RecurrencePicker's `dtstartReadOnly` notice polished to show the formatted
+      anchor + the Phase-0-seeded "Contact support to reschedule" helper. 454
+      lines — well under the 750-line gate; no sub-component split needed.
+- [x] **3.3** `CancelOccurrenceDialog.svelte` — row + header entry points; invalidates
+      detail + occurrences + drift.
+- [x] **3.4** `GenerateNowButton.svelte` — optional `until`; plural/up-to-date toasts.
+- [x] **3.5** `PauseResumeButton.svelte` — pause confirm; resume single-click.
+- [x] **3.6** `CancelDriftedOccurrencesDialog.svelte` — optional bulk-cancel,
+      sequential, per-row status, armed by checkbox.
+- [x] **3.7** Tests: per-modal component tests + Playwright end-to-end (UX release
+      checklist flow). Playwright shipped 5 new Phase-3 scenarios (row cancel,
+      header-picker cancel, generate now, pause+resume, bulk-cancel drifted
+      with skip-if-no-drift) on top of the existing 2 Phase-2 scenarios. 24/28
+      green across chromium/webkit/Mobile Chrome/Mobile Safari (4 skips = the
+      bulk-cancel drift tests × 4 projects, no drift in seed data). Component
+      tests still blocked by the bits-ui Vitest harness carryover.
+- [x] **3.8** QA gate (§QA) + Playwright smoke — scoped prettier + eslint + svelte-check
+      + i18n + vitest + file-length across every Phase-3-touched file. Playwright
+      24/28 green (4 drift skips) from 3.7's close-out run.
+
+## Phase 4 — Attendee-side polish
+
+- [ ] **4.1** Audit public series detail — no `recurrence_rule` / `template_event` /
+      `exdates` leakage.
+- [ ] **4.2** Follow dialog copy — digest copy when `auto_publish === true`.
+- [ ] **4.3** `is_template → 404` guard in public event route; sitemap audit.
+- [ ] **4.4** QA gate (§QA).
+
+## Phase 5 — i18n, accessibility, release
+
+- [ ] **5.1** i18n — EN → IT → DE for all `recurringevents.*` keys. Run
+      `pnpm paraglide:compile`.
+- [ ] **5.2** A11y pass on `RecurrencePicker` (toggle group, live region, keyboard
+      nav).
+- [ ] **5.3** Mobile QA via `make dev` (local IP).
+- [ ] **5.4** Playwright — full UX release checklist flow.
+- [ ] **5.5** SEO — confirm public series page SSR + upcoming dates in HTML.
+- [ ] **5.6** QA gate (§QA) + Playwright smoke.
+
+## Non-goals (Appendix H)
+
+These stay out of scope until separately brainstormed:
+
+- Series deletion UI
+- Rebase series endpoint / UI
+- Per-occurrence ticketing-tier customisation
+- True `exdates` reinstate (blocked on backend)
+- Series analytics / reporting
+- Venue rebinding on template

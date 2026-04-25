@@ -1,6 +1,6 @@
 {
 	"name": "revel-frontend",
-	"version": "1.48.1",
+	"version": "1.49.0",
 	"private": true,
 	"type": "module",
 	"scripts": {
@@ -60,7 +60,7 @@
 		"typescript": "^5.7.2",
 		"typescript-eslint": "^8.46.3",
 		"vite": "^6.0.3",
-		"vitest": "^2.1.8"
+		"vitest": "^3.2.4"
 	},
 	"dependencies": {
 		"@tanstack/svelte-query": "^6.0.3",

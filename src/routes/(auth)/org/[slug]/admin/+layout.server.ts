@@ -48,22 +48,36 @@ export const load: LayoutServerLoad = async ({ locals, params, fetch }) => {
 			throw error(403, 'You do not have permission to manage this organization');
 		}
 
-		// Extract permission flags for UI conditional rendering
+		// Extract permission flags for UI conditional rendering.
+		// Each flag mirrors a backend OrganizationPermission guard.
 		let canCreateEvent = false;
+		let canEditEventSeries = false;
 
 		if (isOwner) {
-			// Owners have all permissions
+			// Owners have all permissions.
 			canCreateEvent = true;
+			canEditEventSeries = true;
 		} else if (isStaff && typeof orgPermissions === 'object') {
-			// Check if staff member has create_event permission
 			canCreateEvent = orgPermissions.default?.create_event === true;
+			canEditEventSeries = orgPermissions.default?.edit_event_series === true;
 		}
+
+		// Recurring-events admin endpoints accept either `create_event` OR
+		// `edit_event_series` per plan Appendix F / backend
+		// OrganizationPermission decorators. Dashboard surfaces (series
+		// settings, template edit, recurrence edit, cancel occurrence,
+		// generate now, pause/resume, bulk-cancel drifted) gate on the
+		// union so a staff member with only `edit_event_series` (no
+		// `create_event`) can still run every Phase 3 flow.
+		const canManageRecurring = canCreateEvent || canEditEventSeries;
 
 		return {
 			organization,
 			isOwner,
 			isStaff,
 			canCreateEvent,
+			canEditEventSeries,
+			canManageRecurring,
 			permissions
 		};
 	} catch (err) {

@@ -5186,5 +5186,382 @@
 			"totalGross": "Gesamt",
 			"billingNameRequired": "Rechtlicher Name ist für die Rechnung erforderlich"
 		}
+	},
+	"recurringEvents": {
+		"wizard": {
+			"title": "Create recurring series",
+			"pageDescription": "Set up a repeating event series for {organizationName}",
+			"stepAHeading": "Template event",
+			"stepBHeading": "Recurrence & series settings",
+			"anchorHelper": "This is also the anchor date for the recurrence — every future occurrence is computed from here.",
+			"seriesNameLabel": "Series name",
+			"seriesNamePlaceholder": "e.g. Weekly community meetup",
+			"seriesDescriptionLabel": "Series description (optional)",
+			"timezoneLabel": "Timezone",
+			"timezoneHelper": "Times are anchored to the UTC start you chose. DST-aware recurrence is coming later.",
+			"autoPublishLabel": "Auto-publish new dates",
+			"autoPublishOnHelper": "New dates go live the moment they are created.",
+			"autoPublishOffHelper": "New dates are drafts — you review and publish each one.",
+			"generationWindowLabel": "How far ahead to schedule",
+			"generationWindowHelper": "Occurrences are scheduled up to {weeks} weeks ahead. New ones appear automatically each day.",
+			"next": "Continue",
+			"back": "Back",
+			"create": "Create series",
+			"createPending": "Creating…",
+			"createdToast": "Series \"{seriesName}\" created."
+		},
+		"picker": {
+			"frequencyLabel": "Repeat",
+			"frequency": {
+				"daily": "Daily",
+				"weekly": "Weekly",
+				"monthly": "Monthly",
+				"yearly": "Yearly"
+			},
+			"intervalLabel": "Every",
+			"intervalSuffix": {
+				"daily": "days",
+				"weekly": "weeks",
+				"monthly": "months",
+				"yearly": "years"
+			},
+			"weekdayShort": {
+				"0": "Mon",
+				"1": "Tue",
+				"2": "Wed",
+				"3": "Thu",
+				"4": "Fri",
+				"5": "Sat",
+				"6": "Sun"
+			},
+			"weekdayLong": {
+				"0": "Monday",
+				"1": "Tuesday",
+				"2": "Wednesday",
+				"3": "Thursday",
+				"4": "Friday",
+				"5": "Saturday",
+				"6": "Sunday"
+			},
+			"monthlyType": {
+				"day": "Day of month",
+				"weekday": "Nth weekday"
+			},
+			"monthlyTypeLabel": "Monthly pattern",
+			"dayOfMonthLabel": "Day of month",
+			"weekdayGroupLabel": "Repeat on",
+			"ordinalLabel": "Position",
+			"weekdayLabel": "Weekday",
+			"ordinal": {
+				"1": "first",
+				"2": "second",
+				"3": "third",
+				"4": "fourth",
+				"last": "last"
+			},
+			"boundary": {
+				"label": "Ends",
+				"none": "Never",
+				"until": "On date",
+				"count": "After N occurrences"
+			},
+			"untilLabel": "End date",
+			"countLabel": "Number of occurrences",
+			"validation": {
+				"weekdaysRequired": "Pick at least one weekday.",
+				"dayOfMonthRequired": "Enter a day between 1 and 31.",
+				"nthWeekdayRequired": "Pick both an ordinal and a weekday.",
+				"boundaryMutex": "Pick either an end date or a number of occurrences — not both.",
+				"untilAfterStart": "End date must be after the start.",
+				"countMin": "Must be at least 1."
+			}
+		},
+		"summary": {
+			"daily": {
+				"one": "Every day",
+				"other": "Every {n} days"
+			},
+			"weekly": {
+				"simple": "Every {weekdays}",
+				"interval": "Every {n} weeks on {weekdays}"
+			},
+			"monthlyDay": {
+				"simple": "The {day} of every month",
+				"interval": "Every {n} months on the {day}"
+			},
+			"monthlyWeekday": {
+				"simple": "The {ordinal} {weekday} of every month",
+				"interval": "Every {n} months on the {ordinal} {weekday}"
+			},
+			"yearly": {
+				"one": "Every year",
+				"other": "Every {n} years"
+			},
+			"boundary": {
+				"until": "until {date}",
+				"count": {
+					"one": "for 1 occurrence",
+					"other": "for {n} occurrences"
+				},
+				"none": "with no end date"
+			}
+		},
+		"dashboard": {
+			"title": "{seriesName}",
+			"pageDescription": "Manage recurring series {seriesName}",
+			"statusActive": "Active",
+			"statusPaused": "Paused",
+			"autoPublishOn": "Auto-publish on",
+			"autoPublishOff": "Review each draft",
+			"horizonLabel": "Scheduled up to {date}",
+			"horizonUnknown": "Not scheduled yet",
+			"upcomingHeading": "Upcoming occurrences",
+			"pastHeading": "Past occurrences",
+			"exdatesHeading": "Cancelled dates",
+			"pausedBanner": "This series is paused. No new occurrences will be created until you resume it.",
+			"emptySeriesBanner": "This series doesn't follow a recurrence pattern — it's a grouping container. Attach individual events to organise them under one series.",
+			"repairSeriesBanner": "This series is missing a recurrence rule or a template event. Contact support to repair it.",
+			"actions": {
+				"seriesSettings": "Series settings",
+				"editTemplate": "Edit template",
+				"editRecurrence": "Edit recurrence",
+				"cancelOccurrence": "Cancel occurrence",
+				"generateNow": "Generate now",
+				"pause": "Pause",
+				"resume": "Resume",
+				"moreActions": "More actions",
+				"closeSheet": "Close"
+			}
+		},
+		"seriesList": {
+			"primaryCta": "New series"
+		},
+		"newSeriesPicker": {
+			"title": "Create a new series",
+			"description": "How should this series schedule its events?",
+			"recurring": {
+				"title": "Recurring",
+				"body": "Define a template event and a recurrence pattern. Occurrences are scheduled automatically and managed from a single dashboard.",
+				"badge": "Most common"
+			},
+			"empty": {
+				"title": "Grouping only",
+				"body": "An empty series is a container. Create individual events on the dates you want and attach them — useful when dates are unrelated but share branding.",
+				"badge": "Manual"
+			},
+			"cancel": "Cancel"
+		},
+		"row": {
+			"modifiedBadge": "Manually edited",
+			"driftedBadge": "Off-schedule",
+			"weekIndex": "Week {n}",
+			"cancelAction": "Cancel this date"
+		},
+		"drift": {
+			"banner": {
+				"title": {
+					"one": "1 occurrence off the current schedule",
+					"other": "{n} occurrences off the current schedule"
+				},
+				"body": "These occurrences were scheduled under the previous rule. They will not be regenerated; cancel them individually or in bulk to clean up the calendar.",
+				"reviewAnchor": "Review stale dates",
+				"bulkCancelCta": "Cancel all {n} stale dates"
+			},
+			"bulkDialog": {
+				"title": "Cancel stale dates",
+				"explainer": "These dates will be removed from the calendar. Tickets sold for these events will be cancelled and refunded. This cannot be undone.",
+				"armCheckbox": "I understand these events will be cancelled and tickets refunded.",
+				"rowStatus": {
+					"pending": "Waiting",
+					"inFlight": "Cancelling…",
+					"done": "Cancelled",
+					"error": "Failed"
+				},
+				"confirm": "Cancel {n} dates",
+				"cancel": "Keep dates",
+				"partialFailure": "{done}/{total} cancelled; {remaining} left. Retry?",
+				"successToast": "{n} dates cancelled.",
+				"thresholdWarning": "This will cancel {n} dates and refund all associated tickets. The loop runs one date at a time and may take a minute for long lists.",
+				"errorToast": "Couldn't cancel some of the dates. Please try again."
+			}
+		},
+		"exdates": {
+			"empty": "No cancelled dates.",
+			"createOneOffAction": "Create one-off event for this date",
+			"semanticHelper": "Creating a one-off event adds a standalone event to the series; it won't pick up future changes to the template."
+		},
+		"templateDialog": {
+			"title": "Edit template",
+			"description": "Changes apply to the template blueprint. Choose how they flow to existing occurrences on the next step.",
+			"notEditableHelper": "Some fields can only be edited on individual occurrences. Changing them here would require rescheduling every scheduled date.",
+			"loading": "Loading template…",
+			"loadError": "Couldn't load the template event. Please close the dialog and try again.",
+			"sections": {
+				"details": "Details",
+				"visibility": "Visibility & access",
+				"location": "Location",
+				"capacity": "Capacity & tickets",
+				"attendance": "Attendance options"
+			},
+			"fields": {
+				"nameLabel": "Template name",
+				"namePlaceholder": "Event name",
+				"descriptionLabel": "Description",
+				"descriptionPlaceholder": "Describe the event template…",
+				"invitationMessageLabel": "Invitation message",
+				"invitationMessagePlaceholder": "Welcome message shown to invitees…",
+				"eventTypeLabel": "Who can attend",
+				"visibilityLabel": "Who can see the event",
+				"addressLabel": "Address",
+				"addressPlaceholder": "123 Main St, Suite 100",
+				"addressHelper": "Editing the address here does not re-geocode the pin. Coordinates must be updated separately.",
+				"addressVisibilityLabel": "Address visibility",
+				"maxAttendeesLabel": "Maximum attendees",
+				"maxAttendeesHelper": "Leave empty for unlimited capacity.",
+				"maxTicketsPerUserLabel": "Max tickets per user",
+				"maxTicketsPerUserHelper": "Leave empty to allow unlimited tickets per user."
+			},
+			"toggles": {
+				"requiresTicket": "Requires a ticket to attend",
+				"waitlistOpen": "Enable waitlist when full",
+				"requiresFullProfile": "Require complete attendee profile",
+				"potluckOpen": "Enable potluck coordination",
+				"acceptInvitationRequests": "Accept invitation requests",
+				"publicPronounDistribution": "Show pronoun distribution publicly",
+				"canAttendWithoutLogin": "Allow guest attendance"
+			},
+			"locked": {
+				"heading": "Locked fields",
+				"subheading": "These fields live on each occurrence, not the template.",
+				"startLabel": "Start",
+				"startHelper": "Start and end are per-occurrence. Edit an individual date from its occurrence row.",
+				"endLabel": "End",
+				"rsvpBeforeLabel": "RSVP deadline",
+				"rsvpBeforeHelper": "RSVP and application deadlines are per-occurrence offsets anchored to each date.",
+				"applyBeforeLabel": "Application deadline",
+				"statusLabel": "Status",
+				"statusHelper": "Templates always stay DRAFT. Use auto-publish on the series to control occurrence status."
+			},
+			"propagate": {
+				"heading": "Apply these changes to…",
+				"none": {
+					"title": "Only this template",
+					"body": "Saves changes to the template. New occurrences will pick them up; existing ones are unchanged."
+				},
+				"futureUnmodified": {
+					"title": "Future occurrences that haven't been manually edited",
+					"body": "Apply to upcoming occurrences except those you've edited directly.",
+					"recommendedBadge": "Recommended"
+				},
+				"allFuture": {
+					"title": "All future occurrences, including manually edited ones",
+					"body": "Overwrites every upcoming occurrence, including your manual edits. This cannot be undone."
+				}
+			},
+			"buttons": {
+				"continueToPropagate": "Review changes",
+				"backToForm": "Back",
+				"cancel": "Cancel",
+				"apply": "Apply changes",
+				"applying": "Applying…"
+			},
+			"applyButton": "Apply changes",
+			"savedToast": "Template saved",
+			"errorToast": "Couldn't save the template. Please try again.",
+			"noChangesToast": "No changes to apply."
+		},
+		"recurrenceDialog": {
+			"title": "Edit recurrence",
+			"description": "Update how the series schedules new occurrences. Already-scheduled dates keep their current times.",
+			"dtstartReadOnlyHelper": "The anchor date can't be changed here — it would require rescheduling every occurrence. Contact support if you need this.",
+			"anchorLabel": "Anchor date",
+			"cadenceChangeConfirm": "Changing the schedule only affects occurrences not yet created. Upcoming occurrences already on the calendar keep their dates — you can cancel them individually if needed.",
+			"confirmHeading": "Confirm schedule change",
+			"sections": {
+				"recurrence": "Recurrence rule",
+				"settings": "Series settings"
+			},
+			"buttons": {
+				"cancel": "Cancel",
+				"back": "Back",
+				"review": "Review changes",
+				"save": "Save changes",
+				"saving": "Saving…",
+				"confirm": "Yes, save changes"
+			},
+			"save": "Save changes",
+			"savedToast": "Recurrence saved",
+			"errorToast": "Couldn't save the recurrence. Please try again.",
+			"noChangesToast": "No changes to apply.",
+			"loadError": "Couldn't load the series. Please close the dialog and try again."
+		},
+		"publishOccurrenceDialog": {
+			"title": "Publish this date",
+			"body": "This occurrence will go live. Anyone following the series gets notified, and (if applicable) attendees can RSVP, request invitations, or buy tickets.",
+			"confirm": "Publish",
+			"keep": "Keep as draft",
+			"publishing": "Publishing…",
+			"selectedDateLabel": "Occurrence to publish",
+			"successToast": "Date published.",
+			"errorToast": "Couldn't publish this date. Please try again."
+		},
+		"cancelOccurrenceDialog": {
+			"title": "Cancel this date",
+			"body": "Cancel this date only — the series keeps running. If the event has sold tickets, holders will be notified and refunded per your refund policy.",
+			"confirm": "Cancel date",
+			"keep": "Keep date",
+			"successToast": "Date cancelled.",
+			"selectedDateLabel": "Occurrence to cancel",
+			"picker": {
+				"label": "Pick an occurrence to cancel",
+				"placeholder": "Select a date",
+				"empty": "No upcoming occurrences to cancel."
+			},
+			"cancelling": "Cancelling…",
+			"errorToast": "Couldn't cancel this date. Please try again."
+		},
+		"generateNow": {
+			"untilLabel": "Generate up to (optional)",
+			"successToast": {
+				"one": "1 new occurrence scheduled through {date}.",
+				"other": "{n} new occurrences scheduled through {date}."
+			},
+			"upToDateToast": "Already up to date — no new occurrences to generate.",
+			"action": "Generate now",
+			"title": "Generate now",
+			"description": "Materialise upcoming occurrences. Leave the date blank to fill to the default window.",
+			"untilHelper": "Leave blank to use the series' generation window ({weeks} weeks).",
+			"submitting": "Generating…",
+			"cancelButton": "Cancel",
+			"errorToast": "Couldn't generate occurrences. Please try again."
+		},
+		"pauseResume": {
+			"pauseConfirm": "Pause series?",
+			"pauseConfirmBody": "Stop creating new occurrences. Existing events stay scheduled — cancel them individually if you need to.",
+			"pauseAction": "Pause",
+			"resumeAction": "Resume",
+			"pausedToast": "Series paused.",
+			"resumedToast": "Series resumed.",
+			"keepActiveButton": "Keep active",
+			"pausingLabel": "Pausing…",
+			"errorToast": "Couldn't update the series. Please try again."
+		},
+		"seriesSettings": {
+			"title": "Series settings",
+			"description": "Update the series name, media, and tags. Recurrence and template edits live in their own dialogs.",
+			"cancelButton": "Cancel",
+			"saveButton": "Save",
+			"savedToast": "Series settings saved."
+		},
+		"error": {
+			"422Generic": "Please check the highlighted fields.",
+			"400Generic": "The request could not be completed.",
+			"networkRetry": "Network error. Please try again."
+		},
+		"listPage": {
+			"createRecurring": "New recurring series",
+			"createEmpty": "Create empty series",
+			"createEmptyHelper": "An empty series is useful for grouping one-off events that share branding."
+		}
 	}
 }

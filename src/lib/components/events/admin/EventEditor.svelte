@@ -44,6 +44,15 @@
 		eventSeries?: Array<{ id: string; [key: string]: unknown }>;
 		questionnaires?: Array<{ id: string; [key: string]: unknown }>;
 		initialTab?: 'details' | 'ticketing';
+		/** Optional `start` datetime to seed the form with (create mode only).
+		 *  Used by the ExdatesChipList "Create one-off event for this date"
+		 *  action on the recurring-series dashboard, which navigates here with
+		 *  `?start=<ISO>` pinned to the cancelled occurrence's instant. */
+		initialStart?: string | null;
+		/** Optional event-series id to pre-select (create mode only). Comes
+		 *  from the same ExdatesChipList chip action so the new one-off event
+		 *  is pre-attached to the originating series. */
+		initialEventSeriesId?: string | null;
 	}
 
 	const {
@@ -52,7 +61,9 @@
 		userCity,
 		orgCity,
 		eventSeries = [],
-		initialTab
+		initialTab,
+		initialStart,
+		initialEventSeriesId
 	}: Props = $props();
 
 	const queryClient = useQueryClient();
@@ -121,6 +132,29 @@
 	const isEditMode = $derived(!!existingEvent);
 	const showTabs = $derived(isEditMode && !!formData.requires_ticket);
 	let tabsEl = $state<HTMLDivElement | null>(null);
+
+	// Create-mode prefill from the `initialStart` / `initialEventSeriesId`
+	// props (ExdatesChipList chip action on the recurring-series dashboard).
+	// Gated to first-mount + create-mode so we never clobber user edits or
+	// an existingEvent's loaded values; the `hasSeededFromPrefill` latch
+	// keeps the effect idempotent across reactivity ticks.
+	let hasSeededFromPrefill = $state(false);
+	$effect(() => {
+		if (existingEvent) return;
+		if (hasSeededFromPrefill) return;
+		hasSeededFromPrefill = true;
+		const patch: Partial<typeof formData> = {};
+		if (initialStart) {
+			const converted = toDateTimeLocal(initialStart);
+			if (converted) patch.start = converted;
+		}
+		if (initialEventSeriesId) {
+			patch.event_series_id = initialEventSeriesId;
+		}
+		if (Object.keys(patch).length > 0) {
+			formData = { ...formData, ...patch };
+		}
+	});
 
 	// Scroll to tabs when arriving with initialTab from another page
 	$effect(() => {

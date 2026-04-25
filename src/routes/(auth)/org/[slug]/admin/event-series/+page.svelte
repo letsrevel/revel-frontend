@@ -6,23 +6,28 @@
 	import type { EventSeriesRetrieveSchema } from '$lib/api/generated/types.gen';
 	import { Repeat, Calendar, Edit, Eye, Tag, Plus } from 'lucide-svelte';
 	import { getImageUrl } from '$lib/utils/url';
+	import NewSeriesPickerDialog from '$lib/components/event-series/admin/NewSeriesPickerDialog.svelte';
 
 	const { data }: { data: PageData } = $props();
 
 	const organization = $derived($page.data.organization);
 
-	/**
-	 * Navigate to create event series page
-	 */
-	function createSeries(): void {
-		goto(`/org/${organization.slug}/admin/event-series/new`);
+	// "New series" → opens a picker that lets the organiser choose between
+	// the recurring wizard and the empty-series form. The two flows are
+	// equally valid (recurring is more common but neither is the "default")
+	// — see the picker dialog component for the full copy.
+	let showNewSeriesPicker = $state(false);
+
+	function openNewSeriesPicker(): void {
+		showNewSeriesPicker = true;
 	}
 
 	/**
-	 * Navigate to edit event series page
+	 * Navigate to the series dashboard. Metadata editing (name/description/logo/
+	 * cover/tags) lives in the settings dialog there.
 	 */
 	function editSeries(seriesId: string): void {
-		goto(`/org/${organization.slug}/admin/event-series/${seriesId}/edit`);
+		goto(`/org/${organization.slug}/admin/event-series/${seriesId}/`);
 	}
 
 	/**
@@ -68,11 +73,12 @@
 
 		<button
 			type="button"
-			onclick={createSeries}
+			onclick={openNewSeriesPicker}
 			class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+			data-testid="new-series-button"
 		>
 			<Plus class="h-5 w-5" aria-hidden="true" />
-			{m['orgAdmin.eventSeries.createSeriesButton']()}
+			{m['recurringEvents.seriesList.primaryCta']()}
 		</button>
 	</div>
 
@@ -86,11 +92,11 @@
 			</p>
 			<button
 				type="button"
-				onclick={createSeries}
+				onclick={openNewSeriesPicker}
 				class="mt-6 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			>
 				<Plus class="h-4 w-4" aria-hidden="true" />
-				{m['orgAdmin.eventSeries.createSeriesButton']()}
+				{m['recurringEvents.seriesList.primaryCta']()}
 			</button>
 		</div>
 	{:else}
@@ -103,7 +109,7 @@
 						<div class="flex items-start gap-3">
 							{#if series.logo}
 								<img
-									src={getImageUrl((series as any).logo_thumbnail_url || series.logo)}
+									src={getImageUrl(series.logo_thumbnail_url || series.logo)}
 									alt="{series.name} logo"
 									class="h-12 w-12 flex-shrink-0 rounded-lg object-cover"
 								/>
@@ -182,6 +188,12 @@
 		</div>
 	{/if}
 </div>
+
+<NewSeriesPickerDialog
+	bind:open={showNewSeriesPicker}
+	organizationSlug={organization.slug}
+	onClose={() => (showNewSeriesPicker = false)}
+/>
 
 <style>
 	/* Ensure consistent focus states for accessibility */
