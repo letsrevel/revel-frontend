@@ -1039,6 +1039,11 @@
 		isResumingPayment={resumePaymentMutation.isPending}
 		onCancelReservation={handleCancelReservation}
 		isCancellingReservation={cancelReservationMutation.isPending}
+		onTicketCancelled={async () => {
+			showMyTicketModal = false;
+			await refreshUserStatus();
+			queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
+		}}
 	/>
 {/if}
 

@@ -31,6 +31,7 @@
 	} from 'lucide-svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
+	import RefundStatusBadge from './RefundStatusBadge.svelte';
 
 	interface Props {
 		tickets: any[];
@@ -185,14 +186,23 @@
 						</div>
 					</td>
 					<td class="px-4 py-3">
-						<span
-							class={cn(
-								'rounded-full px-2 py-1 text-xs font-semibold',
-								getTicketStatusColor(ticket.status)
-							)}
-						>
-							{getTicketStatusLabel(ticket.status)}
-						</span>
+						<div class="flex flex-col gap-1">
+							<span
+								class={cn(
+									'inline-flex w-fit rounded-full px-2 py-1 text-xs font-semibold',
+									getTicketStatusColor(ticket.status)
+								)}
+							>
+								{getTicketStatusLabel(ticket.status)}
+							</span>
+							{#if ticket.status === 'cancelled'}
+								<RefundStatusBadge
+									status={ticket.payment?.refund_status}
+									amount={ticket.payment?.refund_amount}
+									currency={ticket.payment?.currency}
+								/>
+							{/if}
+						</div>
 					</td>
 					<td class="px-4 py-3 text-sm text-muted-foreground">
 						{new Date(ticket.created_at).toLocaleDateString()}

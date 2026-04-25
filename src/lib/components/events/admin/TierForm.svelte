@@ -14,16 +14,19 @@
 		MembershipTierSchema,
 		VenueDetailSchema,
 		VenueSectorSchema,
-		SeatAssignmentMode
+		SeatAssignmentMode,
+		RefundPolicy
 	} from '$lib/api/generated/types.gen';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
+	import RefundPolicyEditor from './RefundPolicyEditor.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { extractErrorMessage } from '$lib/utils/errors';
-	import { Building2, LayoutGrid, Armchair } from 'lucide-svelte';
+	import { extractErrorMessage, extractFieldErrors } from '$lib/utils/errors';
+	import { tierFieldLabel } from './tier-field-labels';
+	import { Building2, LayoutGrid, Armchair, Undo2 } from 'lucide-svelte';
 
 	interface Props {
 		tier: TicketTierDetailSchema | null; // null = create new
@@ -135,6 +138,23 @@
 	let restrictPurchaseToLinkedInvitations = $state(
 		tier?.restrict_purchase_to_linked_invitations ?? false
 	);
+
+	// Cancellation & refund policy state
+	let allowUserCancellation = $state(tier?.allow_user_cancellation ?? false);
+	let cancellationDeadlineHours = $state<string>(
+		tier?.cancellation_deadline_hours !== null && tier?.cancellation_deadline_hours !== undefined
+			? String(tier.cancellation_deadline_hours)
+			: ''
+	);
+	let refundPolicy = $state<RefundPolicy | null>(tier?.refund_policy ?? null);
+	let refundPolicyValid = $state(true);
+
+	// Switching to a free tier removes the entire refund policy — backend ignores it.
+	$effect(() => {
+		if (paymentMethod === 'free' && allowUserCancellation) {
+			allowUserCancellation = false;
+		}
+	});
 
 	// Auto-reset restriction toggles when parent condition no longer applies
 	$effect(() => {
@@ -342,7 +362,14 @@
 			seat_assignment_mode: seatAssignmentMode,
 			max_tickets_per_user: maxTicketsPerUser ? parseInt(maxTicketsPerUser) : null,
 			venue_id: seatAssignmentMode !== 'none' ? venueId : null,
-			sector_id: seatAssignmentMode !== 'none' ? sectorId : null
+			sector_id: seatAssignmentMode !== 'none' ? sectorId : null,
+			// Cancellation & refund policy (only meaningful for paid tiers)
+			allow_user_cancellation: paymentMethod === 'free' ? false : allowUserCancellation,
+			cancellation_deadline_hours:
+				paymentMethod !== 'free' && allowUserCancellation && cancellationDeadlineHours !== ''
+					? parseInt(cancellationDeadlineHours)
+					: null,
+			refund_policy: paymentMethod !== 'free' && allowUserCancellation ? refundPolicy : null
 		};
 
 		// Only include pwyc fields if price_type is 'pwyc' and they have values
@@ -578,6 +605,61 @@
 						{m['tierForm.paymentInstructionsHelp']?.() ??
 							'Instructions shown to attendees after reserving their ticket'}
 					</p>
+				</div>
+			{/if}
+
+			<!-- Cancellation & Refunds (only for paid tiers) -->
+			{#if paymentMethod !== 'free'}
+				<div class="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
+					<div class="flex items-center gap-2 text-sm font-medium">
+						<Undo2 class="h-4 w-4 text-primary" aria-hidden="true" />
+						{m['refundPolicy.sectionTitle']()}
+					</div>
+
+					<label class="flex cursor-pointer items-start gap-2">
+						<input
+							type="checkbox"
+							bind:checked={allowUserCancellation}
+							disabled={isPending}
+							class="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary"
+						/>
+						<div>
+							<span class="text-sm font-medium">
+								{m['refundPolicy.allowCancellationLabel']()}
+							</span>
+							<p class="text-xs text-muted-foreground">
+								{m['refundPolicy.allowCancellationHelp']()}
+							</p>
+						</div>
+					</label>
+
+					{#if allowUserCancellation}
+						<div>
+							<Label for="cancellation-deadline-hours">
+								{m['refundPolicy.deadlineLabel']()}
+							</Label>
+							<Input
+								id="cancellation-deadline-hours"
+								type="number"
+								min="0"
+								step="1"
+								bind:value={cancellationDeadlineHours}
+								placeholder={m['refundPolicy.deadlinePlaceholder']()}
+								disabled={isPending}
+							/>
+							<p class="mt-1 text-xs text-muted-foreground">
+								{m['refundPolicy.deadlineHelp']()}
+							</p>
+						</div>
+
+						<RefundPolicyEditor
+							value={refundPolicy}
+							disabled={isPending}
+							{currencySymbol}
+							onChange={(next) => (refundPolicy = next)}
+							onValidityChange={(valid) => (refundPolicyValid = valid)}
+						/>
+					{/if}
 				</div>
 			{/if}
 
@@ -941,20 +1023,41 @@
 					<Button type="button" variant="outline" onclick={onClose} disabled={isPending}>
 						Cancel
 					</Button>
-					<Button type="submit" disabled={isPending || !name.trim() || !sectorValid}>
+					<Button
+						type="submit"
+						disabled={isPending ||
+							!name.trim() ||
+							!sectorValid ||
+							(paymentMethod !== 'free' && allowUserCancellation && !refundPolicyValid)}
+					>
 						{isPending ? 'Saving...' : tier ? 'Save Changes' : 'Create Tier'}
 					</Button>
 				</div>
 			</div>
 
 			{#if error}
+				{@const fieldErrors = extractFieldErrors(error)}
 				{@const errorMsg = extractErrorMessage(error)}
 				{@const isBillingError = errorMsg.toLowerCase().includes('billing information is required')}
 				<div class="rounded-lg bg-destructive/10 p-3" role="alert">
 					<p class="font-medium text-destructive">{m['tierForm.error']()}</p>
-					<p class="mt-1 text-sm text-destructive/90">
-						{errorMsg}
-					</p>
+
+					{#if fieldErrors.length > 0}
+						<p class="mt-1 text-sm text-destructive/90">
+							{m['tierForm.fieldErrorsTitle']()}
+						</p>
+						<ul class="mt-1 space-y-1">
+							{#each fieldErrors as { field, messages } (field)}
+								<li class="text-sm text-destructive/90">
+									<span class="font-medium">{tierFieldLabel(field)}:</span>
+									{messages.join(', ')}
+								</li>
+							{/each}
+						</ul>
+					{:else}
+						<p class="mt-1 text-sm text-destructive/90">{errorMsg}</p>
+					{/if}
+
 					{#if isBillingError}
 						<a
 							href="/org/{organizationSlug}/admin/billing"
@@ -962,18 +1065,6 @@
 						>
 							{m['tierForm.completeBillingInfo']()}
 						</a>
-					{:else if (error as any)?.detail}
-						<div class="mt-2 space-y-1">
-							{#if Array.isArray((error as any).detail)}
-								{#each (error as any).detail as detail}
-									<p class="text-xs text-destructive/80">
-										• {detail.loc ? detail.loc.join(' → ') + ': ' : ''}{detail.msg}
-									</p>
-								{/each}
-							{:else if typeof (error as any).detail === 'string'}
-								<p class="text-xs text-destructive/80">{(error as any).detail}</p>
-							{/if}
-						</div>
 					{/if}
 				</div>
 			{/if}

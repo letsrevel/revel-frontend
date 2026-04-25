@@ -11,6 +11,9 @@
 	import { formatEventDateRange } from '$lib/utils/date';
 	import { getEventLogo, getEventLogoThumbnail } from '$lib/utils/event';
 	import { getLocale } from '$lib/paraglide/runtime.js';
+	import { useQueryClient } from '@tanstack/svelte-query';
+
+	const queryClient = useQueryClient();
 
 	interface Props {
 		ticket: UserTicketSchema;
@@ -194,5 +197,9 @@
 		eventName={ticket.event.name}
 		eventDate={eventDate ?? undefined}
 		eventLocation={eventLocation ?? undefined}
+		onTicketCancelled={() => {
+			showTicketModal = false;
+			queryClient.invalidateQueries({ queryKey: ['dashboard-tickets'] });
+		}}
 	/>
 {/if}
