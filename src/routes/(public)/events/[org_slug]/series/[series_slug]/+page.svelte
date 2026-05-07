@@ -1,15 +1,9 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { page } from '$app/stores';
 	import { Calendar, ArrowLeft, Repeat, ArrowDownUp, Settings } from 'lucide-svelte';
 	import { EventCard } from '$lib/components/events';
 	import { getImageUrl } from '$lib/utils/url';
-	import {
-		generateEventSeriesMeta,
-		generateEventSeriesStructuredData,
-		generateBreadcrumbStructuredData,
-		toJsonLd
-	} from '$lib/utils/seo';
+	import { SeoHead } from '$lib/seo';
 	import * as m from '$lib/paraglide/messages.js';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import FollowButton from '$lib/components/common/FollowButton.svelte';
@@ -46,81 +40,13 @@
 
 	const fallbackGradient = $derived(getSeriesFallbackGradient(series.id));
 
-	// Generate comprehensive meta tags
-	const metaTags = $derived(
-		generateEventSeriesMeta(series, `${$page.url.origin}${$page.url.pathname}`)
-	);
-
-	// Generate structured data
-	const structuredData = $derived(
-		generateEventSeriesStructuredData(series, `${$page.url.origin}${$page.url.pathname}`)
-	);
-	const jsonLd = $derived(toJsonLd(structuredData));
-
-	// Generate BreadcrumbList structured data
-	const breadcrumbData = $derived(
-		generateBreadcrumbStructuredData([
-			{ name: 'Home', url: $page.url.origin },
-			{ name: 'Events', url: `${$page.url.origin}/events` },
-			{
-				name: series.organization.name,
-				url: `${$page.url.origin}/org/${series.organization.slug}`
-			},
-			{ name: series.name, url: `${$page.url.origin}${$page.url.pathname}` }
-		])
-	);
-	const breadcrumbJsonLd = $derived(toJsonLd(breadcrumbData));
-
 	// Calculate pagination info
 	const totalPages = $derived(Math.ceil(totalCount / pageSize));
 	const hasNextPage = $derived(currentPage < totalPages);
 	const hasPrevPage = $derived(currentPage > 1);
 </script>
 
-<svelte:head>
-	<title>{metaTags.title}</title>
-	<meta name="description" content={metaTags.description} />
-	{#if metaTags.canonical}
-		<link rel="canonical" href={metaTags.canonical} />
-	{/if}
-
-	<!-- Open Graph -->
-	<meta property="og:type" content={metaTags.ogType || 'website'} />
-	<meta property="og:title" content={metaTags.ogTitle || metaTags.title} />
-	<meta property="og:description" content={metaTags.ogDescription || metaTags.description} />
-	{#if metaTags.ogImage}
-		<meta property="og:image" content={metaTags.ogImage} />
-		<meta property="og:image:width" content="1200" />
-		<meta property="og:image:height" content="630" />
-		<meta
-			property="og:image:alt"
-			content={m['eventSeriesDetailPage.coverImageAlt']({ seriesName: series.name })}
-		/>
-	{/if}
-	<meta property="og:url" content={metaTags.ogUrl || $page.url.href} />
-	<meta property="og:site_name" content="Revel" />
-	<meta property="og:locale" content="en_US" />
-
-	<!-- Twitter Card -->
-	<meta name="twitter:card" content={metaTags.twitterCard || 'summary_large_image'} />
-	<meta name="twitter:title" content={metaTags.twitterTitle || metaTags.title} />
-	<meta name="twitter:description" content={metaTags.twitterDescription || metaTags.description} />
-	{#if metaTags.twitterImage}
-		<meta name="twitter:image" content={metaTags.twitterImage} />
-		<meta
-			name="twitter:image:alt"
-			content={m['eventSeriesDetailPage.coverImageAlt']({ seriesName: series.name })}
-		/>
-	{/if}
-
-	<!-- Additional SEO meta tags -->
-	<meta name="robots" content="index, follow" />
-	<meta name="author" content={series.organization.name} />
-
-	<!-- Structured Data (JSON-LD) -->
-	{@html `<script type="application/ld+json">${jsonLd}<\/script>`}
-	{@html `<script type="application/ld+json">${breadcrumbJsonLd}<\/script>`}
-</svelte:head>
+<SeoHead config={data.seo} />
 
 <div class="min-h-screen bg-background">
 	<!-- Hero Section with Cover Art -->
