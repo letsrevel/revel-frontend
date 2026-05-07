@@ -27,12 +27,7 @@
 	import RequestMembershipButton from '$lib/components/organization/RequestMembershipButton.svelte';
 	import ClaimMembershipButton from '$lib/components/organizations/ClaimMembershipButton.svelte';
 	import FollowButton from '$lib/components/common/FollowButton.svelte';
-	import {
-		generateOrganizationMeta,
-		generateOrganizationStructuredData,
-		generateBreadcrumbStructuredData,
-		toJsonLd
-	} from '$lib/utils/seo';
+	import { SeoHead } from '$lib/seo';
 	import * as m from '$lib/paraglide/messages.js';
 
 	const { data }: { data: PageData } = $props();
@@ -88,27 +83,6 @@
 	}
 
 	const fallbackGradient = $derived(getOrgFallbackGradient(organization.id));
-
-	// Generate comprehensive meta tags
-	const metaTags = $derived(
-		generateOrganizationMeta(organization, `${page.url.origin}${page.url.pathname}`)
-	);
-
-	// Generate structured data
-	const structuredData = $derived(
-		generateOrganizationStructuredData(organization, `${page.url.origin}${page.url.pathname}`)
-	);
-	const jsonLd = $derived(toJsonLd(structuredData));
-
-	// Generate BreadcrumbList structured data
-	const breadcrumbData = $derived(
-		generateBreadcrumbStructuredData([
-			{ name: 'Home', url: page.url.origin },
-			{ name: 'Organizations', url: `${page.url.origin}/organizations` },
-			{ name: organization.name, url: `${page.url.origin}${page.url.pathname}` }
-		])
-	);
-	const breadcrumbJsonLd = $derived(toJsonLd(breadcrumbData));
 
 	// Filter resources to show only those marked for display on org page
 	const displayedResources = $derived(
@@ -188,43 +162,7 @@
 	});
 </script>
 
-<svelte:head>
-	<title>{metaTags.title}</title>
-	<meta name="description" content={metaTags.description} />
-	{#if metaTags.canonical}
-		<link rel="canonical" href={metaTags.canonical} />
-	{/if}
-
-	<!-- Open Graph -->
-	<meta property="og:type" content={metaTags.ogType || 'website'} />
-	<meta property="og:title" content={metaTags.ogTitle || metaTags.title} />
-	<meta property="og:description" content={metaTags.ogDescription || metaTags.description} />
-	{#if metaTags.ogImage}
-		<meta property="og:image" content={metaTags.ogImage} />
-		<meta property="og:image:width" content="1200" />
-		<meta property="og:image:height" content="630" />
-		<meta property="og:image:alt" content={`${organization.name} cover image`} />
-	{/if}
-	<meta property="og:url" content={metaTags.ogUrl || page.url.href} />
-	<meta property="og:site_name" content="Revel" />
-	<meta property="og:locale" content="en_US" />
-
-	<!-- Twitter Card -->
-	<meta name="twitter:card" content={metaTags.twitterCard || 'summary_large_image'} />
-	<meta name="twitter:title" content={metaTags.twitterTitle || metaTags.title} />
-	<meta name="twitter:description" content={metaTags.twitterDescription || metaTags.description} />
-	{#if metaTags.twitterImage}
-		<meta name="twitter:image" content={metaTags.twitterImage} />
-		<meta name="twitter:image:alt" content={`${organization.name} cover image`} />
-	{/if}
-
-	<!-- Additional SEO meta tags -->
-	<meta name="robots" content="index, follow" />
-
-	<!-- Structured Data (JSON-LD) -->
-	{@html `<script type="application/ld+json">${jsonLd}<\/script>`}
-	{@html `<script type="application/ld+json">${breadcrumbJsonLd}<\/script>`}
-</svelte:head>
+<SeoHead config={data.seo} />
 
 <div class="min-h-screen bg-background">
 	<!-- Hero Section with Cover Art -->
