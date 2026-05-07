@@ -1,7 +1,12 @@
 <script lang="ts">
-	import { page } from '$app/state';
-	import { generateHomeMeta, generateWebSiteStructuredData, toJsonLd } from '$lib/utils/seo';
+	import type { PageData } from './$types';
+	import { SeoHead } from '$lib/seo';
 	import { authStore } from '$lib/stores/auth.svelte';
+
+	interface Props {
+		data: PageData;
+	}
+	const { data }: Props = $props();
 	import * as m from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import { onMount } from 'svelte';
@@ -27,13 +32,6 @@
 		Server,
 		Lock
 	} from 'lucide-svelte';
-
-	// Generate comprehensive meta tags for home page
-	const metaTags = $derived(generateHomeMeta(page.url.origin));
-
-	// Generate WebSite structured data for SEO
-	const websiteStructuredData = $derived(generateWebSiteStructuredData(page.url.origin));
-	const websiteJsonLd = $derived(toJsonLd(websiteStructuredData));
 
 	// Animated letter for Italian welcome (client-side only)
 	const letters = ['a', 'o', 'ə'] as const;
@@ -99,39 +97,7 @@
 	const landingPagePrefix = $derived(getLocale() === 'en' ? '' : `/${getLocale()}`);
 </script>
 
-<svelte:head>
-	<title>{metaTags.title}</title>
-	<meta name="description" content={metaTags.description} />
-	{#if metaTags.canonical}
-		<link rel="canonical" href={metaTags.canonical} />
-	{/if}
-
-	<!-- Open Graph -->
-	<meta property="og:type" content={metaTags.ogType || 'website'} />
-	<meta property="og:title" content={metaTags.ogTitle || metaTags.title} />
-	<meta property="og:description" content={metaTags.ogDescription || metaTags.description} />
-	{#if metaTags.ogImage}
-		<meta property="og:image" content={metaTags.ogImage} />
-	{/if}
-	<meta property="og:url" content={metaTags.ogUrl || page.url.href} />
-	<meta property="og:site_name" content="Revel" />
-	<meta property="og:locale" content="en_US" />
-
-	<!-- Twitter Card -->
-	<meta name="twitter:card" content={metaTags.twitterCard || 'summary_large_image'} />
-	<meta name="twitter:title" content={metaTags.twitterTitle || metaTags.title} />
-	<meta name="twitter:description" content={metaTags.twitterDescription || metaTags.description} />
-	{#if metaTags.twitterImage}
-		<meta name="twitter:image" content={metaTags.twitterImage} />
-	{/if}
-
-	<!-- Additional SEO meta tags -->
-	<meta name="robots" content="index, follow" />
-	<meta name="keywords" content={m['home.keywords']()} />
-
-	<!-- Structured Data (JSON-LD) -->
-	{@html `<script type="application/ld+json">${websiteJsonLd}<\/script>`}
-</svelte:head>
+<SeoHead config={data.seo} />
 
 <div class="hero-warm-glow">
 	<div class="container mx-auto px-4 py-16">
