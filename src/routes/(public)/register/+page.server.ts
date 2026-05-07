@@ -3,8 +3,10 @@ import type { Actions, PageServerLoad } from './$types';
 import { registerSchema } from '$lib/schemas/auth';
 import { accountRegister, apiApiVersion } from '$lib/api/generated/sdk.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { buildSeo } from '$lib/seo';
+import { resolveLang } from '$lib/seo/server';
 
-export const load: PageServerLoad = async ({ fetch, cookies }) => {
+export const load: PageServerLoad = async ({ fetch, cookies, url, request }) => {
 	// Check if backend is in demo mode
 	try {
 		const { data } = await apiApiVersion({ fetch });
@@ -21,8 +23,12 @@ export const load: PageServerLoad = async ({ fetch, cookies }) => {
 		console.error('[REGISTER] Failed to check demo mode:', error);
 	}
 
+	const lang = resolveLang(request);
+	const seo = buildSeo({ kind: 'auth', url, lang, page: 'register' });
+
 	return {
-		referralCodeFromCookie: cookies.get('referral_code') || ''
+		referralCodeFromCookie: cookies.get('referral_code') || '',
+		seo
 	};
 };
 

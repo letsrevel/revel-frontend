@@ -1,5 +1,5 @@
 import { fail, redirect, isRedirect } from '@sveltejs/kit';
-import type { Actions } from './$types';
+import type { Actions, PageServerLoad } from './$types';
 import { loginSchema, otpSchema } from '$lib/schemas/auth';
 import { authObtainToken, authObtainTokenWithOtp } from '$lib/api/client';
 import {
@@ -9,6 +9,14 @@ import {
 } from '$lib/utils/cookies';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { claimPendingTokens, setClaimFlashCookie } from '$lib/server/token-claim';
+import { buildSeo } from '$lib/seo';
+import { resolveLang } from '$lib/seo/server';
+
+export const load: PageServerLoad = ({ url, request }) => {
+	const lang = resolveLang(request);
+	const seo = buildSeo({ kind: 'auth', url, lang, page: 'login' });
+	return { seo };
+};
 
 export const actions = {
 	// Standard email/password login

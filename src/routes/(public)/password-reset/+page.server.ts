@@ -1,6 +1,15 @@
 import { fail, type Actions } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
 import { passwordResetRequestSchema } from '$lib/schemas/auth';
 import { accountResetPasswordRequest } from '$lib/api/generated';
+import { buildSeo } from '$lib/seo';
+import { resolveLang } from '$lib/seo/server';
+
+export const load: PageServerLoad = ({ url, request }) => {
+	const lang = resolveLang(request);
+	const seo = buildSeo({ kind: 'auth', url, lang, page: 'password-reset' });
+	return { seo };
+};
 
 export const actions: Actions = {
 	resetRequest: async ({ request }) => {

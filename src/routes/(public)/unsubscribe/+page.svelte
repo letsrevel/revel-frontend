@@ -5,6 +5,7 @@
 	import type { NotificationPreferenceSchema } from '$lib/api/generated/types.gen';
 	import { goto } from '$app/navigation';
 	import { Bell } from 'lucide-svelte';
+	import { SeoHead } from '$lib/seo';
 
 	const { data }: { data: PageData } = $props();
 
@@ -32,11 +33,7 @@
 	}
 </script>
 
-<svelte:head>
-	<title>{m['unsubscribePage.pageTitle']()} - Revel</title>
-	<meta name="description" content={m['unsubscribePage.pageDescription']()} />
-	<meta name="robots" content="noindex, nofollow" />
-</svelte:head>
+<SeoHead config={data.seo} />
 
 <div class="container mx-auto max-w-2xl px-4 py-8">
 	{#if !data.token}
