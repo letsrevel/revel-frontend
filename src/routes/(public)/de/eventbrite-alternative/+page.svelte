@@ -2,83 +2,25 @@
 	import { page } from '$app/state';
 	import { getLandingPage } from '$lib/data/landing-pages';
 	import { LandingPageTemplate } from '$lib/components/landing';
-	import { toJsonLd, generateBreadcrumbStructuredData } from '$lib/utils/seo';
+	import { SeoHead, buildSeo } from '$lib/seo';
+	import { landingExtras } from '$lib/seo/landing';
 
-	const content = getLandingPage('de', 'eventbrite-alternative')!;
+	const SLUG = 'eventbrite-alternative';
+	const content = getLandingPage('de', SLUG)!;
 
-	// Generate breadcrumb structured data
-	const breadcrumbData = $derived(
-		generateBreadcrumbStructuredData([
-			{ name: 'Startseite', url: page.url.origin },
-			{ name: content.hero.headline, url: `${page.url.origin}/de/eventbrite-alternative` }
-		])
+	const seoConfig = $derived(
+		buildSeo({
+			kind: 'landing',
+			url: page.url,
+			lang: 'de',
+			slug: SLUG,
+			title: content.meta.title,
+			description: content.meta.description,
+			extraJsonLd: landingExtras(content, page.url.origin)
+		})
 	);
-	const breadcrumbJsonLd = $derived(toJsonLd(breadcrumbData));
-
-	// Generate FAQ structured data
-	const faqStructuredData = $derived({
-		'@context': 'https://schema.org',
-		'@type': 'FAQPage',
-		mainEntity: content.faq.map((item) => ({
-			'@type': 'Question',
-			name: item.question,
-			acceptedAnswer: {
-				'@type': 'Answer',
-				text: item.answer
-			}
-		}))
-	});
-	const faqJsonLd = $derived(JSON.stringify(faqStructuredData));
-
-	// Generate WebPage structured data
-	const webPageStructuredData = $derived({
-		'@context': 'https://schema.org',
-		'@type': 'WebPage',
-		name: content.meta.title,
-		description: content.meta.description,
-		url: `${page.url.origin}/de/eventbrite-alternative`,
-		inLanguage: 'de',
-		isPartOf: {
-			'@type': 'WebSite',
-			name: 'Revel',
-			url: page.url.origin
-		}
-	});
-	const webPageJsonLd = $derived(JSON.stringify(webPageStructuredData));
 </script>
 
-<svelte:head>
-	<title>{content.meta.title}</title>
-	<meta name="description" content={content.meta.description} />
-	<meta name="keywords" content={content.meta.keywords} />
-	<link rel="canonical" href="{page.url.origin}/de/eventbrite-alternative" />
-
-	<!-- Open Graph -->
-	<meta property="og:type" content="website" />
-	<meta property="og:title" content={content.meta.title} />
-	<meta property="og:description" content={content.meta.description} />
-	<meta property="og:url" content="{page.url.origin}/de/eventbrite-alternative" />
-	<meta property="og:site_name" content="Revel" />
-	<meta property="og:locale" content="de_DE" />
-
-	<!-- Twitter -->
-	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:title" content={content.meta.title} />
-	<meta name="twitter:description" content={content.meta.description} />
-
-	<!-- Alternate language versions -->
-	<link rel="alternate" hreflang="en" href="{page.url.origin}/eventbrite-alternative" />
-	<link rel="alternate" hreflang="de" href="{page.url.origin}/de/eventbrite-alternative" />
-	<link rel="alternate" hreflang="it" href="{page.url.origin}/it/eventbrite-alternative" />
-	<link rel="alternate" hreflang="x-default" href="{page.url.origin}/eventbrite-alternative" />
-
-	<!-- Structured Data -->
-	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-	{@html '<script type="application/ld+json">' + breadcrumbJsonLd + '</script>'}
-	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-	{@html '<script type="application/ld+json">' + faqJsonLd + '</script>'}
-	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-	{@html '<script type="application/ld+json">' + webPageJsonLd + '</script>'}
-</svelte:head>
+<SeoHead config={seoConfig} />
 
 <LandingPageTemplate {content} />
