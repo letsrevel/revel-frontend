@@ -18,14 +18,7 @@
 	} from '$lib/utils/filters';
 	import type { EventFilters as FilterState } from '$lib/utils/filters';
 	import { parseCalendarParams, getCurrentPeriod } from '$lib/utils/calendar';
-	import {
-		generateEventsListingMeta,
-		generateBreadcrumbStructuredData,
-		generateItemListStructuredData,
-		toJsonLd,
-		type ListItem
-	} from '$lib/utils/seo';
-	import { getBackendUrl } from '$lib/config/api';
+	import { SeoHead } from '$lib/seo';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
@@ -34,37 +27,8 @@
 
 	const { data }: Props = $props();
 
-	// Generate comprehensive meta tags for events listing page
-	const metaTags = $derived(generateEventsListingMeta($page.url.origin));
-
-	// Generate BreadcrumbList structured data
-	const breadcrumbData = $derived(
-		generateBreadcrumbStructuredData([
-			{ name: 'Home', url: $page.url.origin },
-			{ name: 'Events', url: `${$page.url.origin}/events` }
-		])
-	);
-	const breadcrumbJsonLd = $derived(toJsonLd(breadcrumbData));
-
 	// Derived state from server load data
 	const events = $derived(data.events);
-
-	// Generate ItemList structured data from events
-	const eventListItems = $derived<ListItem[]>(
-		events.map((event) => ({
-			name: event.name,
-			url: `${$page.url.origin}/events/${event.organization.slug}/${event.slug}`,
-			image: event.logo
-				? getBackendUrl(event.logo)
-				: event.cover_art
-					? getBackendUrl(event.cover_art)
-					: undefined
-		}))
-	);
-	const itemListData = $derived(
-		generateItemListStructuredData(eventListItems, 'Events on Revel', 'Community events on Revel')
-	);
-	const itemListJsonLd = $derived(toJsonLd(itemListData));
 	const totalCount = $derived(data.totalCount);
 	const currentPage = $derived(data.page);
 	const pageSize = $derived(data.pageSize);
@@ -190,39 +154,7 @@
 	}
 </script>
 
-<svelte:head>
-	<title>{metaTags.title}</title>
-	<meta name="description" content={metaTags.description} />
-	{#if metaTags.canonical}
-		<link rel="canonical" href={metaTags.canonical} />
-	{/if}
-
-	<!-- Open Graph -->
-	<meta property="og:type" content={metaTags.ogType || 'website'} />
-	<meta property="og:title" content={metaTags.ogTitle || metaTags.title} />
-	<meta property="og:description" content={metaTags.ogDescription || metaTags.description} />
-	<meta property="og:url" content={metaTags.ogUrl || $page.url.href} />
-	<meta property="og:site_name" content="Revel" />
-	<meta property="og:locale" content="en_US" />
-
-	<!-- Twitter Card -->
-	<meta name="twitter:card" content={metaTags.twitterCard || 'summary_large_image'} />
-	<meta name="twitter:title" content={metaTags.twitterTitle || metaTags.title} />
-	<meta name="twitter:description" content={metaTags.twitterDescription || metaTags.description} />
-
-	<!-- Additional SEO meta tags -->
-	<meta name="robots" content="index, follow" />
-	<meta
-		name="keywords"
-		content="events, community, discover, browse, concerts, workshops, meetups"
-	/>
-
-	<!-- Structured Data (JSON-LD) -->
-	{@html `<script type="application/ld+json">${breadcrumbJsonLd}<\/script>`}
-	{#if events.length > 0}
-		{@html `<script type="application/ld+json">${itemListJsonLd}<\/script>`}
-	{/if}
-</svelte:head>
+<SeoHead config={data.seo} />
 
 <div class="container mx-auto px-4 py-8">
 	<!-- Skip to content link for keyboard navigation -->

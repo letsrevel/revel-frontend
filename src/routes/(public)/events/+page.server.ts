@@ -1,8 +1,12 @@
 import type { PageServerLoad } from './$types';
 import { eventpublicdiscoveryListEvents } from '$lib/api';
 import { error as svelteKitError } from '@sveltejs/kit';
+import { buildSeo } from '$lib/seo';
+import { resolveLang } from '$lib/seo/server';
 
-export const load: PageServerLoad = async ({ url, fetch, locals }) => {
+export const load: PageServerLoad = async ({ request, url, fetch, locals }) => {
+	const lang = resolveLang(request);
+	const seo = buildSeo({ kind: 'events-listing', url, lang });
 	// Parse query parameters
 	const search = url.searchParams.get('search') || undefined;
 	const page = parseInt(url.searchParams.get('page') || '1');
@@ -64,6 +68,7 @@ export const load: PageServerLoad = async ({ url, fetch, locals }) => {
 
 		// Return paginated data
 		return {
+			seo,
 			events: response.data.results,
 			totalCount: response.data.count,
 			page,
@@ -86,6 +91,7 @@ export const load: PageServerLoad = async ({ url, fetch, locals }) => {
 
 		// Return empty state rather than throwing to allow graceful degradation
 		return {
+			seo,
 			events: [],
 			totalCount: 0,
 			page: 1,
