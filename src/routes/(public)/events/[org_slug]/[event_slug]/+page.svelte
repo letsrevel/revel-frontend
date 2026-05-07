@@ -25,8 +25,7 @@
 	import MyTicketModal from '$lib/components/tickets/MyTicketModal.svelte';
 	import GuestRsvpDialog from '$lib/components/events/GuestRsvpDialog.svelte';
 	import GuestTicketDialog from '$lib/components/events/GuestTicketDialog.svelte';
-	import { generateEventStructuredData, structuredDataToJsonLd } from '$lib/utils/structured-data';
-	import { generateEventMeta, generateBreadcrumbStructuredData, toJsonLd } from '$lib/utils/seo';
+	import { SeoHead } from '$lib/seo';
 	import {
 		isRSVP,
 		isTicket,
@@ -75,35 +74,6 @@
 	const event = $state(data.event);
 	let userStatus = $state(data.userStatus);
 	const ticketTiers = $state<TierSchemaWithId[]>(data.ticketTiers as TierSchemaWithId[]);
-
-	// Get structured data for SEO (with SSR-safe URL access)
-	const eventUrl = $derived(`${page.url.origin}${page.url.pathname}`);
-	const structuredData = $derived(generateEventStructuredData(event, eventUrl));
-	const jsonLd = $derived(structuredDataToJsonLd(structuredData));
-
-	// Generate comprehensive meta tags
-	const metaTags = $derived(generateEventMeta(event, eventUrl));
-
-	// Generate BreadcrumbList structured data
-	const breadcrumbData = $derived(
-		generateBreadcrumbStructuredData([
-			{ name: 'Home', url: page.url.origin },
-			{ name: 'Events', url: `${page.url.origin}/events` },
-			{ name: event.organization.name, url: `${page.url.origin}/org/${event.organization.slug}` },
-			{ name: event.name, url: eventUrl }
-		])
-	);
-	const breadcrumbJsonLd = $derived(toJsonLd(breadcrumbData));
-
-	// SSR diagnostic checkpoint
-	if (typeof window === 'undefined') {
-		console.log('[EVENT PAGE SSR] Derived state computed', {
-			eventUrlLength: eventUrl?.length || 0,
-			jsonLdLength: jsonLd?.length || 0,
-			breadcrumbJsonLdLength: breadcrumbJsonLd?.length || 0,
-			hasMetaTags: !!metaTags
-		});
-	}
 
 	// Check if user has RSVP'd or has tickets (reactive to userStatus changes)
 	// Users with tickets should be able to claim potluck items
@@ -637,56 +607,7 @@
 	});
 </script>
 
-<svelte:head>
-	<title>{metaTags.title}</title>
-	<meta name="description" content={metaTags.description} />
-	{#if metaTags.canonical}
-		<link rel="canonical" href={metaTags.canonical} />
-	{/if}
-
-	<!-- Open Graph -->
-	<meta property="og:type" content={metaTags.ogType || 'website'} />
-	<meta property="og:title" content={metaTags.ogTitle || metaTags.title} />
-	<meta property="og:description" content={metaTags.ogDescription || metaTags.description} />
-	{#if metaTags.ogImage}
-		<meta property="og:image" content={metaTags.ogImage} />
-		<meta property="og:image:width" content="1200" />
-		<meta property="og:image:height" content="630" />
-		<meta property="og:image:alt" content={`${event.name} cover image`} />
-	{/if}
-	<meta property="og:url" content={metaTags.ogUrl || page.url.href} />
-	<meta property="og:site_name" content="Revel" />
-	<meta property="og:locale" content="en_US" />
-
-	<!-- Twitter Card -->
-	<meta name="twitter:card" content={metaTags.twitterCard || 'summary_large_image'} />
-	<meta name="twitter:title" content={metaTags.twitterTitle || metaTags.title} />
-	<meta name="twitter:description" content={metaTags.twitterDescription || metaTags.description} />
-	{#if metaTags.twitterImage}
-		<meta name="twitter:image" content={metaTags.twitterImage} />
-		<meta name="twitter:image:alt" content={`${event.name} cover image`} />
-	{/if}
-
-	<!-- Additional SEO meta tags -->
-	<meta name="robots" content="index, follow" />
-	<meta name="author" content={event.organization.name} />
-
-	<!-- Event-specific meta tags -->
-	{#if event.start}
-		<meta property="event:start_time" content={event.start} />
-	{/if}
-	{#if event.end}
-		<meta property="event:end_time" content={event.end} />
-	{/if}
-
-	<!-- Structured Data (JSON-LD) -->
-	{#if jsonLd}
-		{@html `<script type="application/ld+json">${jsonLd}<\/script>`}
-	{/if}
-	{#if breadcrumbJsonLd}
-		{@html `<script type="application/ld+json">${breadcrumbJsonLd}<\/script>`}
-	{/if}
-</svelte:head>
+<SeoHead config={data.seo} />
 
 <div class="min-h-screen bg-background">
 	<!-- Payment Success Message -->

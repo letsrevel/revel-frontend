@@ -1,4 +1,6 @@
 import { error, isHttpError } from '@sveltejs/kit';
+import { buildSeo } from '$lib/seo';
+import { resolveLang } from '$lib/seo/server';
 import {
 	eventpublicdetailsGetEvent,
 	eventpublicattendanceGetMyEventStatus,
@@ -22,7 +24,7 @@ import type {
 	VisibilityPreference
 } from '$lib/api/generated/types.gen';
 
-export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
+export const load: PageServerLoad = async ({ params, locals, fetch, url, request, setHeaders }) => {
 	const { id } = params;
 
 	try {
@@ -53,6 +55,17 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 		}
 
 		const event = eventResponse.data;
+
+		// Compute SEO and soft-404 for past/cancelled events
+		const lang = resolveLang(request);
+		const eventStart = event.start ? new Date(event.start) : null;
+		const isCancelled = event.status === 'cancelled';
+		const isPast = eventStart != null && eventStart.getTime() < Date.now();
+		const indexable = !isCancelled && !isPast;
+		if (!indexable) {
+			setHeaders({ 'X-Robots-Tag': 'noindex,follow' });
+		}
+		const seo = buildSeo({ kind: 'event', url, lang, event, indexable });
 
 		// If user is authenticated, fetch their status
 		let userStatus: UserEventStatus | null = null;
@@ -221,6 +234,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 		}
 
 		return {
+			seo,
 			event,
 			userStatus,
 			potluckItems,
