@@ -1,4 +1,4 @@
-.PHONY: dev build preview format format-check lint lint-fix types i18n-check file-length audit-images audit-soft-404 check fix test test-coverage test-e2e generate-api bump-version bump-minor release
+.PHONY: dev build preview format format-check lint lint-fix types i18n-check file-length audit-images audit-soft-404 check fix test test-coverage test-e2e generate-api bump-version bump-minor release lhci
 
 # ─────────────────────────────────────────────
 # Development
@@ -110,3 +110,10 @@ release:
 	else \
 		echo "Release aborted."; \
 	fi
+
+# ─────────────────────────────────────────────
+# Lighthouse CI
+# ─────────────────────────────────────────────
+
+lhci:
+	pnpm build && pnpm lhci autorun
