@@ -2,7 +2,7 @@
 	import type { OrganizationRetrieveSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import { getImageUrl } from '$lib/utils/url';
-	import { stripMarkdown } from '$lib/utils/seo';
+	import { stripMarkdown } from '$lib/seo';
 	import { MapPin, Users, Tag } from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
