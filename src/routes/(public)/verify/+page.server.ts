@@ -4,12 +4,17 @@ import { accountVerifyEmail } from '$lib/api/generated/sdk.gen';
 import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '$lib/utils/cookies';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { claimPendingTokens, setClaimFlashCookie } from '$lib/server/token-claim';
+import { buildSeo } from '$lib/seo';
+import { resolveLang } from '$lib/seo/server';
 
-export const load: PageServerLoad = async ({ url, fetch, cookies }) => {
+export const load: PageServerLoad = async ({ url, request, fetch, cookies }) => {
+	const lang = resolveLang(request);
+	const seo = buildSeo({ kind: 'auth', url, lang, page: 'verify' });
 	const token = url.searchParams.get('token');
 
 	if (!token) {
 		return {
+			seo,
 			success: false,
 			error: 'Verification token is missing'
 		};
@@ -67,6 +72,7 @@ export const load: PageServerLoad = async ({ url, fetch, cookies }) => {
 		if (!response.response.ok && response.error) {
 			const errorMessage = extractErrorMessage(response.error, 'Verification failed');
 			return {
+				seo,
 				success: false,
 				error: errorMessage
 			};
@@ -74,6 +80,7 @@ export const load: PageServerLoad = async ({ url, fetch, cookies }) => {
 
 		// Neither data nor error (shouldn't happen)
 		return {
+			seo,
 			success: false,
 			error: 'Invalid response from server'
 		};
@@ -90,6 +97,7 @@ export const load: PageServerLoad = async ({ url, fetch, cookies }) => {
 			'An unexpected error occurred during verification'
 		);
 		return {
+			seo,
 			success: false,
 			error: errorMessage
 		};

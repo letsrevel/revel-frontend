@@ -7,6 +7,7 @@
 	import ReferralCodeInput from '$lib/components/referral/ReferralCodeInput.svelte';
 	import { Eye, EyeOff, Loader2 } from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
+	import { SeoHead } from '$lib/seo';
 
 	interface Props {
 		data: PageData;
@@ -92,10 +93,7 @@
 	});
 </script>
 
-<svelte:head>
-	<title>{m['register.title']()}</title>
-	<meta name="description" content={m['register.metaDescription']()} />
-</svelte:head>
+<SeoHead config={data.seo} />
 
 <div class="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
 	<div class="w-full max-w-md space-y-8">

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import type { ActionData } from './$types';
+	import type { ActionData, PageData } from './$types';
 	import TwoFactorInput from '$lib/components/forms/TwoFactorInput.svelte';
 	import { Eye, EyeOff, Loader2, ArrowLeft, ExternalLink } from 'lucide-svelte';
 	import { appStore } from '$lib/stores/app.svelte';
@@ -10,12 +10,14 @@
 		DEMO_ACCOUNTS_README_URL
 	} from '$lib/constants/demo-accounts';
 	import * as m from '$lib/paraglide/messages.js';
+	import { SeoHead } from '$lib/seo';
 
 	interface Props {
+		data: PageData;
 		form: ActionData;
 	}
 
-	const { form }: Props = $props();
+	const { data, form }: Props = $props();
 
 	// Demo mode state
 	const isDemoMode = $derived(appStore.isDemoMode);
@@ -51,10 +53,7 @@
 	}
 </script>
 
-<svelte:head>
-	<title>{m['login.title']()}</title>
-	<meta name="description" content={m['login.metaDescription']()} />
-</svelte:head>
+<SeoHead config={data.seo} />
 
 <div class="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
 	<div class="w-full max-w-md space-y-8">

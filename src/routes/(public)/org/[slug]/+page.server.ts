@@ -1,4 +1,6 @@
 import { error, isHttpError } from '@sveltejs/kit';
+import { buildSeo } from '$lib/seo';
+import { resolveLang } from '$lib/seo/server';
 import {
 	organizationGetOrganization,
 	permissionMyPermissions,
@@ -14,7 +16,7 @@ import type {
 } from '$lib/api/generated/types.gen';
 import { canPerformAction } from '$lib/utils/permissions';
 
-export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
+export const load: PageServerLoad = async ({ params, locals, fetch, url, request }) => {
 	const { slug } = params;
 
 	try {
@@ -119,7 +121,11 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url }) => {
 			}
 		}
 
+		const lang = resolveLang(request);
+		const seo = buildSeo({ kind: 'org', url, lang, org: organization });
+
 		return {
+			seo,
 			organization,
 			resources,
 			canEdit,

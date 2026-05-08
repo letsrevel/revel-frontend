@@ -1,14 +1,16 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
-	import type { ActionData } from './$types';
+	import type { ActionData, PageData } from './$types';
 	import { Loader2, ArrowLeft, Mail } from 'lucide-svelte';
+	import { SeoHead } from '$lib/seo';
 
 	interface Props {
+		data: PageData;
 		form: ActionData;
 	}
 
-	const { form }: Props = $props();
+	const { data, form }: Props = $props();
 
 	// Form state
 	let email = $state(form?.email || '');
@@ -21,10 +23,7 @@
 	const errors = $derived((form?.errors || {}) as Record<string, string>);
 </script>
 
-<svelte:head>
-	<title>{m['passwordResetPage.title']()}</title>
-	<meta name="description" content="Reset your Revel account password" />
-</svelte:head>
+<SeoHead config={data.seo} />
 
 <div class="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
 	<div class="w-full max-w-md space-y-8">

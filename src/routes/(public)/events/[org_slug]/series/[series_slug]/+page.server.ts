@@ -1,4 +1,6 @@
 import type { PageServerLoad } from './$types';
+import { buildSeo } from '$lib/seo';
+import { resolveLang } from '$lib/seo/server';
 import {
 	eventseriesGetEventSeriesBySlugs,
 	eventpublicdiscoveryListEvents,
@@ -8,7 +10,7 @@ import { error as svelteKitError } from '@sveltejs/kit';
 import type { OrganizationPermissionsSchema } from '$lib/api/generated/types.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
 
-export const load: PageServerLoad = async ({ params, url, fetch, locals }) => {
+export const load: PageServerLoad = async ({ params, url, fetch, locals, request }) => {
 	const { org_slug, series_slug } = params;
 
 	// Parse pagination and ordering
@@ -86,7 +88,11 @@ export const load: PageServerLoad = async ({ params, url, fetch, locals }) => {
 			}
 		}
 
+		const lang = resolveLang(request);
+		const seo = buildSeo({ kind: 'series', url, lang, series });
+
 		return {
+			seo,
 			series,
 			events: eventsResponse.data?.results || [],
 			totalCount: eventsResponse.data?.count || 0,

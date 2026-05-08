@@ -75,6 +75,11 @@ Crawl-delay: 10
 
 # Sitemap location
 Sitemap: ${baseUrl}/sitemap.xml
+# Sub-sitemaps (also discoverable via the index above)
+Sitemap: ${baseUrl}/sitemap-static.xml
+Sitemap: ${baseUrl}/sitemap-events-1.xml
+Sitemap: ${baseUrl}/sitemap-orgs-1.xml
+Sitemap: ${baseUrl}/sitemap-series-1.xml
 
 # RSS/Atom Feed for events
 # Note: This is informational - crawlers use <link rel="alternate"> in HTML

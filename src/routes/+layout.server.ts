@@ -1,4 +1,5 @@
 import type { LayoutServerLoad } from './$types';
+import { env as publicEnv } from '$env/dynamic/public';
 
 /**
  * Root layout server load function
@@ -15,6 +16,10 @@ export const load: LayoutServerLoad = async ({ cookies }) => {
 		auth: {
 			accessToken: accessToken || null,
 			hasRefreshToken: !!refreshToken
+		},
+		siteVerification: {
+			google: publicEnv.PUBLIC_GOOGLE_SITE_VERIFICATION ?? '',
+			bing: publicEnv.PUBLIC_BING_SITE_VERIFICATION ?? ''
 		}
 	};
 };

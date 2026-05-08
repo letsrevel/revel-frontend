@@ -15,7 +15,7 @@
 	import OrganizationCardSkeleton from '$lib/components/common/OrganizationCardSkeleton.svelte';
 	import { CalendarView, CalendarControls, EventModal } from '$lib/components/calendar';
 	import { getImageUrl } from '$lib/utils/url';
-	import { stripMarkdown } from '$lib/utils/seo';
+	import { stripMarkdown } from '$lib/seo';
 	import { parseCalendarParams, getCurrentPeriod } from '$lib/utils/calendar';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';

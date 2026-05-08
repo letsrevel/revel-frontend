@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData } from './$types';
 	import { CheckCircle, XCircle } from 'lucide-svelte';
+	import { SeoHead } from '$lib/seo';
 
 	interface Props {
 		data: PageData;
@@ -10,10 +11,7 @@
 	const { data }: Props = $props();
 </script>
 
-<svelte:head>
-	<title>{data.success ? 'Email Verified' : 'Verification Failed'} - Revel</title>
-	<meta name="description" content="Email verification result" />
-</svelte:head>
+<SeoHead config={data.seo} />
 
 <div class="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
 	<div class="w-full max-w-md space-y-8 text-center">

@@ -244,6 +244,15 @@
 	});
 </script>
 
+<svelte:head>
+	{#if data.siteVerification?.google}
+		<meta name="google-site-verification" content={data.siteVerification.google} />
+	{/if}
+	{#if data.siteVerification?.bing}
+		<meta name="msvalidate.01" content={data.siteVerification.bing} />
+	{/if}
+</svelte:head>
+
 <ModeWatcher />
 <QueryClientProvider client={queryClient}>
 	<Toaster richColors position="top-right" />

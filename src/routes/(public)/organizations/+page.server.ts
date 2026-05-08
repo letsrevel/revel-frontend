@@ -1,8 +1,11 @@
 import type { PageServerLoad } from './$types';
 import { organizationListOrganizations } from '$lib/api';
 import { error as svelteKitError } from '@sveltejs/kit';
+import { buildSeo } from '$lib/seo';
+import { resolveLang } from '$lib/seo/server';
+import { getBackendUrl } from '$lib/config/api';
 
-export const load: PageServerLoad = async ({ url, fetch, locals }) => {
+export const load: PageServerLoad = async ({ request, url, fetch, locals }) => {
 	// Parse query parameters
 	const search = url.searchParams.get('search') || undefined;
 	const page = parseInt(url.searchParams.get('page') || '1');
@@ -50,9 +53,19 @@ export const load: PageServerLoad = async ({ url, fetch, locals }) => {
 			throw svelteKitError(500, 'Invalid API response');
 		}
 
+		const lang = resolveLang(request);
+		const organizations = response.data.results;
+		const items = organizations.slice(0, 25).map((o) => ({
+			name: o.name,
+			url: `${url.origin}/org/${o.slug}`,
+			image: o.logo ? getBackendUrl(o.logo) : undefined
+		}));
+		const seo = buildSeo({ kind: 'orgs-listing', url, lang, items });
+
 		// Return paginated data
 		return {
-			organizations: response.data.results,
+			seo,
+			organizations,
 			totalCount: response.data.count,
 			page,
 			pageSize,
@@ -68,8 +81,12 @@ export const load: PageServerLoad = async ({ url, fetch, locals }) => {
 	} catch (err) {
 		console.error('Error loading organizations:', err);
 
+		const lang = resolveLang(request);
+		const seo = buildSeo({ kind: 'orgs-listing', url, lang });
+
 		// Return empty state rather than throwing to allow graceful degradation
 		return {
+			seo,
 			organizations: [],
 			totalCount: 0,
 			page: 1,
