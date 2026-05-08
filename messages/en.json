@@ -2776,7 +2776,16 @@
 				"contactEmailPlaceholder": "contact@yourorganization.com",
 				"emailVerified": "✓ Email verified",
 				"emailNotVerified": "Email not yet verified",
-				"contactEmailHelp": "Public contact email for inquiries about your organization"
+				"contactEmailHelp": "Public contact email for inquiries about your organization",
+				"contactMethodLabel": "Public Contact Method",
+				"contactMethodHelp": "Choose how non-members can reach your organization from your public pages.",
+				"contactMethodNone": "None",
+				"contactMethodNoneHelp": "Do not show a contact button on public pages.",
+				"contactMethodEmail": "Email link",
+				"contactMethodEmailHelp": "Show a button that opens the visitor's email client with your contact email pre-filled.",
+				"contactMethodForm": "Contact form",
+				"contactMethodFormHelp": "Show a button that opens an in-app message form. Messages are emailed to your verified contact email.",
+				"contactMethodVerifyHint": "Verify your contact email above to enable Email link or Contact form options."
 			},
 			"social": {
 				"heading": "Social Media Links",
@@ -3477,6 +3486,32 @@
 	},
 	"organizationDescription": {
 		"about": "About"
+	},
+	"orgContactButton": {
+		"contactOrganizer": "Contact organizer",
+		"emailAriaLabel": "Email {organizationName}",
+		"dialogTitle": "Contact {organizationName}",
+		"dialogDesc": "Send a message to {organizationName}. Your account email will be shared with the organizer so they can reply.",
+		"subjectLabel": "Subject",
+		"subjectOptional": "(Optional)",
+		"subjectPlaceholder": "What's this about?",
+		"messageLabel": "Message",
+		"messagePlaceholder": "Write your message...",
+		"characters": "characters",
+		"cancel": "Cancel",
+		"send": "Send message",
+		"sending": "Sending...",
+		"close": "Close",
+		"successTitle": "Message sent",
+		"successDesc": "Your message has been delivered to {organizationName}. They'll reply by email.",
+		"toast_messageSent": "Your message has been sent.",
+		"errors_loginRequired": "You must be signed in with a verified email to send messages.",
+		"errors_genericFailure": "Failed to send your message. Please try again."
+	},
+	"orgContactEmailModal": {
+		"toast_emailUpdated": "Email updated successfully — no verification needed.",
+		"toast_verificationSent": "Verification email sent! Please check your inbox.",
+		"toast_contactMethodReset": "Contact method reset to None — re-enable it after verifying the new email."
 	},
 	"organizationInfo": {
 		"aboutOrganizer": "About the organizer",

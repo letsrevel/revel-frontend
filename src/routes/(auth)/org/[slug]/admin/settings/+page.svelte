@@ -38,6 +38,7 @@
 	let selectedCity = $state<CitySchema | null>(data.organization.city || null);
 	let visibility = $state(data.organization.visibility || 'public');
 	let acceptNewMembers = $state(data.organization.accept_membership_requests || false);
+	let contactMethod = $state<'none' | 'email' | 'form'>(data.organization.contact_method || 'none');
 	let isSubmitting = $state(false);
 
 	// Social media state
@@ -60,11 +61,16 @@
 		selectedCity = data.organization.city || null;
 		visibility = data.organization.visibility || 'public';
 		acceptNewMembers = data.organization.accept_membership_requests || false;
+		contactMethod = data.organization.contact_method || 'none';
 		instagramUrl = data.organization.instagram_url || '';
 		facebookUrl = data.organization.facebook_url || '';
 		blueskyUrl = data.organization.bluesky_url || '';
 		telegramUrl = data.organization.telegram_url || '';
 	});
+
+	// If selected method requires a verified email but it isn't, force back to 'none' on submit.
+	const contactEmailVerified = $derived(data.organization.contact_email_verified === true);
+	const canEnableContact = $derived(contactEmailVerified);
 
 	// Show toast notification on form errors
 	$effect(() => {
@@ -465,6 +471,48 @@
 					{m['orgAdmin.settings.membership.contactEmailHelp']()}
 				</p>
 			</div>
+
+			<!-- Contact Method -->
+			<div>
+				<label for="contact_method" class="block text-sm font-medium">
+					{m['orgAdmin.settings.membership.contactMethodLabel']()}
+				</label>
+				<select
+					id="contact_method"
+					name="contact_method"
+					bind:value={contactMethod}
+					class="mt-1 flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 sm:max-w-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+				>
+					<option value="none">
+						{m['orgAdmin.settings.membership.contactMethodNone']()}
+					</option>
+					<option value="email" disabled={!canEnableContact}>
+						{m['orgAdmin.settings.membership.contactMethodEmail']()}
+					</option>
+					<option value="form" disabled={!canEnableContact}>
+						{m['orgAdmin.settings.membership.contactMethodForm']()}
+					</option>
+				</select>
+				<p class="mt-1 text-xs text-muted-foreground">
+					{#if contactMethod === 'none'}
+						{m['orgAdmin.settings.membership.contactMethodNoneHelp']()}
+					{:else if contactMethod === 'email'}
+						{m['orgAdmin.settings.membership.contactMethodEmailHelp']()}
+					{:else if contactMethod === 'form'}
+						{m['orgAdmin.settings.membership.contactMethodFormHelp']()}
+					{/if}
+				</p>
+
+				{#if !canEnableContact}
+					<div
+						class="mt-2 flex items-start gap-2 rounded-md border border-orange-200 bg-orange-50 p-3 text-xs text-orange-800 dark:border-orange-900 dark:bg-orange-950 dark:text-orange-200"
+						role="note"
+					>
+						<AlertCircle class="h-4 w-4 shrink-0" aria-hidden="true" />
+						<span>{m['orgAdmin.settings.membership.contactMethodVerifyHint']()}</span>
+					</div>
+				{/if}
+			</div>
 		</section>
 
 		<!-- Actions -->
@@ -499,6 +547,7 @@
 	slug={data.organization.slug}
 	{accessToken}
 	currentEmail={data.organization.contact_email || ''}
+	currentContactMethod={data.organization.contact_method}
 	bind:open={showEmailModal}
 	onClose={() => (showEmailModal = false)}
 />

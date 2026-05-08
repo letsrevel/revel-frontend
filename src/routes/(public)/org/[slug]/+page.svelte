@@ -25,6 +25,7 @@
 		eventseriesListEventSeries
 	} from '$lib/api/generated/sdk.gen';
 	import RequestMembershipButton from '$lib/components/organization/RequestMembershipButton.svelte';
+	import OrgContactButton from '$lib/components/organization/OrgContactButton.svelte';
 	import ClaimMembershipButton from '$lib/components/organizations/ClaimMembershipButton.svelte';
 	import FollowButton from '$lib/components/common/FollowButton.svelte';
 	import { SeoHead } from '$lib/seo';
@@ -320,6 +321,18 @@
 					isAuthenticated={data.isAuthenticated}
 					variant="outline"
 				/>
+
+				<!-- Contact Organizer Button -->
+				{#if organization.contact_method && organization.contact_method !== 'none'}
+					<OrgContactButton
+						organizationSlug={organization.slug}
+						organizationName={organization.name}
+						contactMethod={organization.contact_method}
+						contactEmail={organization.contact_email}
+						isAuthenticated={data.isAuthenticated}
+						variant="outline"
+					/>
+				{/if}
 			</div>
 		</div>
 

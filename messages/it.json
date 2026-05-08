@@ -2776,7 +2776,16 @@
 				"contactEmailPlaceholder": "contatto@tuaorganizzazione.it",
 				"emailVerified": "✓ Email verificata",
 				"emailNotVerified": "Email non ancora verificata",
-				"contactEmailHelp": "Email di contatto pubblica per richieste sulla tua organizzazione"
+				"contactEmailHelp": "Email di contatto pubblica per richieste sulla tua organizzazione",
+				"contactMethodLabel": "Metodo di Contatto Pubblico",
+				"contactMethodHelp": "Scegli come i non-membri possono contattare la tua organizzazione dalle pagine pubbliche.",
+				"contactMethodNone": "Nessuno",
+				"contactMethodNoneHelp": "Non mostrare alcun pulsante di contatto sulle pagine pubbliche.",
+				"contactMethodEmail": "Link email",
+				"contactMethodEmailHelp": "Mostra un pulsante che apre il client email del visitatore con il tuo indirizzo precompilato.",
+				"contactMethodForm": "Modulo di contatto",
+				"contactMethodFormHelp": "Mostra un pulsante che apre un modulo di messaggio nell'app. I messaggi vengono inviati alla tua email di contatto verificata.",
+				"contactMethodVerifyHint": "Verifica la tua email di contatto sopra per abilitare le opzioni Link email o Modulo di contatto."
 			},
 			"social": {
 				"heading": "Link Social Media",
@@ -3477,6 +3486,32 @@
 	},
 	"organizationDescription": {
 		"about": "Informazioni"
+	},
+	"orgContactButton": {
+		"contactOrganizer": "Contatta organizzatore",
+		"emailAriaLabel": "Invia email a {organizationName}",
+		"dialogTitle": "Contatta {organizationName}",
+		"dialogDesc": "Invia un messaggio a {organizationName}. L'email del tuo account sarà condivisa con l'organizzatore per poterti rispondere.",
+		"subjectLabel": "Oggetto",
+		"subjectOptional": "(Opzionale)",
+		"subjectPlaceholder": "Di cosa si tratta?",
+		"messageLabel": "Messaggio",
+		"messagePlaceholder": "Scrivi il tuo messaggio...",
+		"characters": "caratteri",
+		"cancel": "Annulla",
+		"send": "Invia messaggio",
+		"sending": "Invio in corso...",
+		"close": "Chiudi",
+		"successTitle": "Messaggio inviato",
+		"successDesc": "Il tuo messaggio è stato consegnato a {organizationName}. Risponderanno via email.",
+		"toast_messageSent": "Il tuo messaggio è stato inviato.",
+		"errors_loginRequired": "Devi essere autenticato con un'email verificata per inviare messaggi.",
+		"errors_genericFailure": "Impossibile inviare il messaggio. Riprova."
+	},
+	"orgContactEmailModal": {
+		"toast_emailUpdated": "Email aggiornata con successo — nessuna verifica necessaria.",
+		"toast_verificationSent": "Email di verifica inviata! Controlla la tua casella di posta.",
+		"toast_contactMethodReset": "Metodo di contatto reimpostato su Nessuno — riattivalo dopo aver verificato la nuova email."
 	},
 	"organizationInfo": {
 		"aboutOrganizer": "Informazioni sull'organizzatore",

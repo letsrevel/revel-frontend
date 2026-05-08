@@ -42,6 +42,9 @@ export const actions: Actions = {
 		const visibility = (formData.get('visibility') as string) || 'public';
 		const acceptNewMembers = formData.get('accept_membership_requests') === 'true';
 		const contactEmail = formData.get('contact_email') as string;
+		const contactMethodRaw = formData.get('contact_method') as string | null;
+		const contactMethod: 'none' | 'email' | 'form' =
+			contactMethodRaw === 'email' || contactMethodRaw === 'form' ? contactMethodRaw : 'none';
 		const slug = params.slug;
 
 		// Social media fields
@@ -53,7 +56,8 @@ export const actions: Actions = {
 		// Prepare update payload with only editable fields
 		const updateData: any = {
 			visibility,
-			accept_membership_requests: acceptNewMembers
+			accept_membership_requests: acceptNewMembers,
+			contact_method: contactMethod
 		};
 
 		// Add optional fields only if they have values
