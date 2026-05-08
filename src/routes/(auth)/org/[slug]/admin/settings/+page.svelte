@@ -481,7 +481,7 @@
 					id="contact_method"
 					name="contact_method"
 					bind:value={contactMethod}
-					class="mt-1 flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 sm:max-w-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+					class="mt-1 flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 sm:max-w-xs"
 				>
 					<option value="none">
 						{m['orgAdmin.settings.membership.contactMethodNone']()}
