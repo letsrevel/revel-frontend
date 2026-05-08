@@ -32,13 +32,18 @@ export const GET: RequestHandler = async ({ params, fetch, url }) => {
 	if (!Number.isInteger(page) || page < 1) throw error(404, 'Invalid sitemap page');
 
 	const baseUrl = url.origin;
-	const resp = await organizationListOrganizations({ fetch, query: { page, page_size: PAGE_SIZE } });
+	const resp = await organizationListOrganizations({
+		fetch,
+		query: { page, page_size: PAGE_SIZE }
+	});
 	const orgs = resp.data?.results ?? [];
 	if (orgs.length === 0 && page > 1) throw error(404, 'No orgs on this page');
 
 	const urls = orgs.map((o) => {
 		const loc = `${baseUrl}/org/${o.slug}`;
-		const lastmod = (o.updated_at ? new Date(o.updated_at) : new Date()).toISOString().split('T')[0];
+		const lastmod = (o.updated_at ? new Date(o.updated_at) : new Date())
+			.toISOString()
+			.split('T')[0];
 		return `<url>
   <loc>${escapeXml(loc)}</loc>
   ${alts(loc)}

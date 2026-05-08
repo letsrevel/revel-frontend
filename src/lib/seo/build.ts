@@ -5,13 +5,7 @@ import type {
 	EventSeriesRetrieveSchema
 } from '$lib/api/generated/types.gen';
 import { getBackendUrl } from '$lib/config/api';
-import {
-	LANGS,
-	OG_LOCALE,
-	SITE_NAME,
-	TWITTER_SITE,
-	type Lang
-} from './constants';
+import { LANGS, OG_LOCALE, SITE_NAME, TWITTER_SITE, type Lang } from './constants';
 import type { SeoConfig } from './types';
 import { sameUrlHreflang, landingPageHreflang } from './hreflang';
 import {
@@ -70,7 +64,11 @@ function truncate(s: string, max: number): string {
 
 function stripHtml(html: string | null | undefined): string {
 	if (!html) return '';
-	return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+	return html
+		.replace(/<[^>]*>/g, '')
+		.replace(/&nbsp;/g, ' ')
+		.replace(/\s+/g, ' ')
+		.trim();
 }
 
 function alternateLocales(lang: Lang): string[] {
@@ -239,8 +237,7 @@ export function buildSeo(input: BuildSeoInput): SeoConfig {
 			const truncated = truncate(desc, 155);
 			const image = getEventImage(event);
 			const title = `${event.name} | Revel`;
-			const description =
-				truncated || `Join ${event.name} organized by ${event.organization.name}`;
+			const description = truncated || `Join ${event.name} organized by ${event.organization.name}`;
 			return {
 				title,
 				description,
@@ -282,8 +279,7 @@ export function buildSeo(input: BuildSeoInput): SeoConfig {
 			const truncated = truncate(desc, 155);
 			const image = getOrgImage(org);
 			const title = `${org.name} | Revel`;
-			const description =
-				truncated || `${org.name} on Revel - Community events and experiences`;
+			const description = truncated || `${org.name} on Revel - Community events and experiences`;
 			return {
 				title,
 				description,

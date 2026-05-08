@@ -33,9 +33,9 @@ function escapeXml(s: string): string {
 
 function sameUrlAlternates(loc: string): string {
 	return (
-		LANGS.map(
-			(l) => `<xhtml:link rel="alternate" hreflang="${l}" href="${escapeXml(loc)}"/>`
-		).join('') + `<xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(loc)}"/>`
+		LANGS.map((l) => `<xhtml:link rel="alternate" hreflang="${l}" href="${escapeXml(loc)}"/>`).join(
+			''
+		) + `<xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(loc)}"/>`
 	);
 }
 

@@ -28,7 +28,6 @@
 	"devDependencies": {
 		"@hey-api/openapi-ts": "^0.85.2",
 		"@inlang/paraglide-js": "^2.4.0",
-		"@lhci/cli": "^0.15.1",
 		"@lucide/svelte": "^0.482.0",
 		"@playwright/test": "^1.49.0",
 		"@sveltejs/adapter-node": "^5.4.0",

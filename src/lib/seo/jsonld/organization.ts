@@ -19,7 +19,11 @@ export interface OrganizationJsonLd {
 
 function stripHtml(html: string | null | undefined): string {
 	if (!html) return '';
-	return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+	return html
+		.replace(/<[^>]*>/g, '')
+		.replace(/&nbsp;/g, ' ')
+		.replace(/\s+/g, ' ')
+		.trim();
 }
 
 export function generateOrganizationJsonLd(

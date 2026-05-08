@@ -38,7 +38,9 @@ export const GET: RequestHandler = async ({ params, fetch, url }) => {
 
 	const urls = series.map((s) => {
 		const loc = `${baseUrl}/events/${s.organization.slug}/series/${s.slug}`;
-		const lastmod = (s.updated_at ? new Date(s.updated_at) : new Date()).toISOString().split('T')[0];
+		const lastmod = (s.updated_at ? new Date(s.updated_at) : new Date())
+			.toISOString()
+			.split('T')[0];
 		return `<url>
   <loc>${escapeXml(loc)}</loc>
   ${alts(loc)}

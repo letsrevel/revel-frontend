@@ -13,12 +13,15 @@
 
 ## How this gets populated
 
-The Lighthouse CI workflow (`.github/workflows/lighthouse.yml`) runs three rounds against each URL on every PR. The first run after this PR merges produces:
+Lighthouse CI was removed from this PR (env config friction; revisit later). For now run Lighthouse manually:
 
-1. Public report URLs from `temporary-public-storage` upload target
-2. Per-metric numbers (Performance / LCP / CLS / INP / Accessibility / SEO scores)
+```bash
+# Against deployed prod
+npx @lhci/cli@latest collect --url=https://letsrevel.io/ --url=https://letsrevel.io/events --url=https://letsrevel.io/eventbrite-alternative --numberOfRuns=3
+# Or use https://pagespeed.web.dev/ for a one-off run per URL
+```
 
-Copy those numbers into the table below, then write the findings.
+Capture the per-metric numbers (Performance / LCP / CLS / INP / Accessibility / SEO scores) and copy into the table below.
 
 ## Summary
 
@@ -44,9 +47,9 @@ Pending real data. Two options once findings are in hand:
 - **Phase 1.5 (recommended if findings are mostly XS/S):** Land a follow-up PR with the CWV fixes before starting Phase 2. Keeps the foundation crisp before adding more code.
 - **Roll into Phase 2:** If most findings are M/L (require structural changes — image lazy loading strategy, route-level code splitting, font subsetting), bundle them with the long-tail indexation work.
 
-## Lighthouse budgets (set in `lighthouserc.cjs`)
+## Aspirational budgets
 
-These were chosen as aspirational targets — if the first run can't hit them, soften them by 10% (do not weaken the SEO target below 1.0):
+When Lighthouse CI is reintroduced (Phase 2 or sooner), these are the targets to assert against — soften by 10% if the first real run can't hit them, but do not weaken the SEO target below 1.0:
 
 | Metric | Budget |
 |--------|--------|

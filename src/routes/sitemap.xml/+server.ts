@@ -20,7 +20,10 @@ export const GET: RequestHandler = async ({ fetch, url }) => {
 	let seriesCount = 0;
 	try {
 		const [eventsResp, orgsResp, seriesResp] = await Promise.all([
-			eventpublicdiscoveryListEvents({ fetch, query: { page: 1, page_size: 1, include_past: false } }),
+			eventpublicdiscoveryListEvents({
+				fetch,
+				query: { page: 1, page_size: 1, include_past: false }
+			}),
 			organizationListOrganizations({ fetch, query: { page: 1, page_size: 1 } }),
 			eventseriesListEventSeries({ fetch, query: { page: 1, page_size: 1 } })
 		]);

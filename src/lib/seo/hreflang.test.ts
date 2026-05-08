@@ -1,8 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-	sameUrlHreflang,
-	landingPageHreflang
-} from '$lib/seo/hreflang';
+import { sameUrlHreflang, landingPageHreflang } from '$lib/seo/hreflang';
 
 describe('sameUrlHreflang', () => {
 	it('returns en/de/it/x-default all pointing to the same absolute URL', () => {

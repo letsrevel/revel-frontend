@@ -20,9 +20,7 @@ export function sameUrlHreflang(absoluteUrl: string): HreflangEntry[] {
 export function landingPageHreflang(origin: string, slug: string): HreflangEntry[] {
 	const prefix: Record<Lang, string> = { en: '', de: '/de', it: '/it' };
 	return [
-		...LANGS.map(
-			(lang) => ({ lang, href: `${origin}${prefix[lang]}/${slug}` }) as HreflangEntry
-		),
+		...LANGS.map((lang) => ({ lang, href: `${origin}${prefix[lang]}/${slug}` }) as HreflangEntry),
 		{ lang: X_DEFAULT, href: `${origin}/${slug}` }
 	];
 }

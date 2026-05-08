@@ -23,7 +23,10 @@ export function generateWebSiteJsonLd(origin: string): WebSiteJsonLd {
 			'Community-focused event management platform. Discover events, connect with organizers, and create unforgettable experiences.',
 		potentialAction: {
 			'@type': 'SearchAction',
-			target: { '@type': 'EntryPoint', urlTemplate: `${origin}/events?search={search_term_string}` },
+			target: {
+				'@type': 'EntryPoint',
+				urlTemplate: `${origin}/events?search={search_term_string}`
+			},
 			'query-input': 'required name=search_term_string'
 		}
 	};
