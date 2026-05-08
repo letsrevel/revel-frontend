@@ -8,6 +8,7 @@
 	import { cn } from '$lib/utils/cn';
 	import { getBackendUrl } from '$lib/config/api';
 	import RequestMembershipButton from '$lib/components/organization/RequestMembershipButton.svelte';
+	import OrgContactButton from '$lib/components/organization/OrgContactButton.svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import FollowButton from '$lib/components/common/FollowButton.svelte';
 
@@ -109,6 +110,18 @@
 				{isAuthenticated}
 				variant="outline"
 			/>
+
+			<!-- Contact Organizer Button -->
+			{#if organization.contact_method && organization.contact_method !== 'none'}
+				<OrgContactButton
+					organizationSlug={organization.slug}
+					organizationName={organization.name}
+					contactMethod={organization.contact_method}
+					contactEmail={organization.contact_email}
+					{isAuthenticated}
+					variant="outline"
+				/>
+			{/if}
 		</div>
 	</div>
 </section>

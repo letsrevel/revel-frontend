@@ -1,17 +1,30 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { AlertCircle, Check, X } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
-	import { organizationadmincoreUpdateContactEmail } from '$lib/api/generated/sdk.gen';
+	import {
+		organizationadmincoreUpdateContactEmail,
+		organizationadmincoreGetOrganization
+	} from '$lib/api/generated/sdk.gen';
+	import type { ContactMethod } from '$lib/api/generated/types.gen';
 
 	interface Props {
 		slug: string;
 		accessToken: string | null;
 		currentEmail: string;
+		currentContactMethod?: ContactMethod;
 		open: boolean;
 		onClose: () => void;
 	}
 
-	let { slug, accessToken, currentEmail, open = $bindable(), onClose }: Props = $props();
+	let {
+		slug,
+		accessToken,
+		currentEmail,
+		currentContactMethod = 'none',
+		open = $bindable(),
+		onClose
+	}: Props = $props();
 
 	let newEmail = $state('');
 	let isUpdatingEmail = $state(false);
@@ -61,13 +74,29 @@
 				return;
 			}
 
-			if (orgData.contact_email_verified) {
-				toast.success('Email updated successfully - no verification needed');
+			// Re-fetch the admin payload to read contact_email_verified, which is not exposed
+			// on the public OrganizationRetrieveSchema returned by the update endpoint.
+			const adminResponse = await organizationadmincoreGetOrganization({
+				headers: { Authorization: `Bearer ${accessToken}` },
+				path: { slug }
+			});
+			const adminOrg = adminResponse.data;
+			const isVerified = adminOrg?.contact_email_verified === true;
+			const newContactMethod = adminOrg?.contact_method ?? orgData.contact_method;
+
+			const wasContactEnabled = currentContactMethod === 'email' || currentContactMethod === 'form';
+			const contactMethodReset = wasContactEnabled && newContactMethod === 'none';
+
+			if (isVerified) {
+				toast.success(m['orgContactEmailModal.toast_emailUpdated']());
 				close();
 				window.location.reload();
 			} else {
 				emailSent = true;
-				toast.success('Verification email sent! Please check your inbox.');
+				toast.success(m['orgContactEmailModal.toast_verificationSent']());
+				if (contactMethodReset) {
+					toast.info(m['orgContactEmailModal.toast_contactMethodReset']());
+				}
 			}
 		} catch (err) {
 			console.error('[EMAIL UPDATE] Error:', err);

@@ -2776,7 +2776,16 @@
 				"contactEmailPlaceholder": "kontakt@ihreorganisation.de",
 				"emailVerified": "✓ E-Mail verifiziert",
 				"emailNotVerified": "E-Mail noch nicht verifiziert",
-				"contactEmailHelp": "Öffentliche Kontakt-E-Mail für Anfragen zu Ihrer Organisation"
+				"contactEmailHelp": "Öffentliche Kontakt-E-Mail für Anfragen zu Ihrer Organisation",
+				"contactMethodLabel": "Öffentliche Kontaktmethode",
+				"contactMethodHelp": "Wählen Sie, wie Nicht-Mitglieder Ihre Organisation über die öffentlichen Seiten erreichen können.",
+				"contactMethodNone": "Keine",
+				"contactMethodNoneHelp": "Keine Kontakt-Schaltfläche auf öffentlichen Seiten anzeigen.",
+				"contactMethodEmail": "E-Mail-Link",
+				"contactMethodEmailHelp": "Zeige eine Schaltfläche, die den E-Mail-Client des Besuchers mit Ihrer Kontakt-E-Mail vorausgefüllt öffnet.",
+				"contactMethodForm": "Kontaktformular",
+				"contactMethodFormHelp": "Zeige eine Schaltfläche, die ein In-App-Nachrichtenformular öffnet. Nachrichten werden an Ihre verifizierte Kontakt-E-Mail gesendet.",
+				"contactMethodVerifyHint": "Verifizieren Sie oben Ihre Kontakt-E-Mail, um die Optionen E-Mail-Link oder Kontaktformular zu aktivieren."
 			},
 			"social": {
 				"heading": "Social-Media-Links",
@@ -3477,6 +3486,32 @@
 	},
 	"organizationDescription": {
 		"about": "Über"
+	},
+	"orgContactButton": {
+		"contactOrganizer": "Organisator kontaktieren",
+		"emailAriaLabel": "E-Mail an {organizationName}",
+		"dialogTitle": "{organizationName} kontaktieren",
+		"dialogDesc": "Sende eine Nachricht an {organizationName}. Die E-Mail-Adresse deines Kontos wird mit dem Organisator geteilt, damit dieser antworten kann.",
+		"subjectLabel": "Betreff",
+		"subjectOptional": "(Optional)",
+		"subjectPlaceholder": "Worum geht es?",
+		"messageLabel": "Nachricht",
+		"messagePlaceholder": "Schreibe deine Nachricht...",
+		"characters": "Zeichen",
+		"cancel": "Abbrechen",
+		"send": "Nachricht senden",
+		"sending": "Wird gesendet...",
+		"close": "Schließen",
+		"successTitle": "Nachricht gesendet",
+		"successDesc": "Deine Nachricht wurde an {organizationName} übermittelt. Sie werden per E-Mail antworten.",
+		"toast_messageSent": "Deine Nachricht wurde gesendet.",
+		"errors_loginRequired": "Du musst mit einer verifizierten E-Mail-Adresse angemeldet sein, um Nachrichten zu senden.",
+		"errors_genericFailure": "Nachricht konnte nicht gesendet werden. Bitte versuche es erneut."
+	},
+	"orgContactEmailModal": {
+		"toast_emailUpdated": "E-Mail erfolgreich aktualisiert — keine Verifizierung erforderlich.",
+		"toast_verificationSent": "Verifizierungs-E-Mail gesendet! Bitte prüfe deinen Posteingang.",
+		"toast_contactMethodReset": "Kontaktmethode auf Keine zurückgesetzt — aktiviere sie erneut, nachdem die neue E-Mail verifiziert wurde."
 	},
 	"organizationInfo": {
 		"aboutOrganizer": "Über die Organisierenden",
