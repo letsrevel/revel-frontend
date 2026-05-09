@@ -497,6 +497,11 @@
 				? m['recurringEvents.wizard.stepAHeading']()
 				: m['recurringEvents.wizard.stepBHeading']()}
 		</h2>
+		{#if currentStep === 'event'}
+			<p class="text-sm text-muted-foreground">
+				{m['recurringEvents.wizard.stepAExplainer']()}
+			</p>
+		{/if}
 	</div>
 
 	{#if errorBanner}

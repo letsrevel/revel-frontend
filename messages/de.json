@@ -835,7 +835,14 @@
 		"mapsEmbedPlaceholder": "<iframe src=\"https://www.google.com/maps/embed?...\" ...></iframe>",
 		"mapsEmbedHint": "Füge den vollständigen <iframe>-Einbettungscode von \"Karte einbetten\" ein. Dies zeigt eine interaktive Karte auf deiner Veranstaltungsseite.",
 		"mapsPreview": "Vorschau",
-		"mapsPreviewTitle": "Kartenvorschau"
+		"mapsPreviewTitle": "Kartenvorschau",
+		"guestAttendanceWarningTitle": "Nicht kompatibel mit Screening, Einladungen oder Member-Only-Events",
+		"guestAttendanceWarningBody": "Aktiviere das nur für komplett öffentliche Events ohne zusätzliche Einschränkungen. Screening-Fragebögen, RSVP-Einladungen und Member-Only-Beschränkungen greifen für Gäste nicht.",
+		"waitlistInfoButton": "Wie funktioniert die Warteliste?",
+		"waitlistInfoTitle": "So funktioniert die Warteliste",
+		"waitlistInfoBody1": "Sobald ein Platz frei wird — etwa durch eine Stornierung oder weil du die Kapazität erhöhst — werden alle auf der Warteliste gleichzeitig benachrichtigt. Wer zuerst zugreift, bekommt den Platz.",
+		"waitlistInfoBody2": "Wir arbeiten an einer intelligenteren Warteliste. Vorschläge sind willkommen.",
+		"waitlistInfoFeedbackCta": "Feedback auf GitHub geben"
 	},
 	"dialogContent": {
 		"close": "Schließen"
@@ -1585,7 +1592,8 @@
 		"tabDetails": "Event-Details",
 		"tabTicketing": "Ticketing",
 		"editEvent": "Event bearbeiten",
-		"ticketing": "Ticketing"
+		"ticketing": "Ticketing",
+		"validationErrorToast": "Bitte behebe die markierten Fehler, bevor du speicherst."
 	},
 	"eventsAdminPage": {
 		"title": "Veranstaltungen - Revel",
@@ -5375,7 +5383,8 @@
 			"back": "Back",
 			"create": "Create series",
 			"createPending": "Creating…",
-			"createdToast": "Series \"{seriesName}\" created."
+			"createdToast": "Series \"{seriesName}\" created.",
+			"stepAExplainer": "Das Template-Event ist die Vorlage für jede Veranstaltung dieser Serie. Konfiguriere die Details einmal — Titel, Ort, Kapazität, Ticketing — und wir nutzen sie für jede geplante Veranstaltung."
 		},
 		"picker": {
 			"frequencyLabel": "Repeat",

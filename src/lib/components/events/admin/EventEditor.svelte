@@ -370,6 +370,15 @@
 
 	// --- Validation ---
 
+	function scrollToFirstInvalid(): void {
+		requestAnimationFrame(() => {
+			const el = document.querySelector('[aria-invalid="true"]');
+			if (el && 'scrollIntoView' in el) {
+				el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			}
+		});
+	}
+
 	function validateEssentials(): boolean {
 		const errors: Record<string, string> = {};
 		if (!formData.name || formData.name.trim().length < 3) {
@@ -401,6 +410,8 @@
 	async function handleCreateEvent(): Promise<void> {
 		if (!validateEssentials()) {
 			errorMessage = m['eventWizard.error_fixValidation']();
+			toast.error(m['eventEditor.validationErrorToast']());
+			scrollToFirstInvalid();
 			return;
 		}
 
@@ -436,6 +447,8 @@
 	async function handleSave(andExit: boolean): Promise<void> {
 		if (!validateEssentials() || !validateDetails()) {
 			errorMessage = m['eventWizard.error_fixValidation']();
+			toast.error(m['eventEditor.validationErrorToast']());
+			scrollToFirstInvalid();
 			return;
 		}
 

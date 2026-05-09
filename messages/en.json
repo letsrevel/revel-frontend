@@ -835,7 +835,14 @@
 		"mapsEmbedPlaceholder": "<iframe src=\"https://www.google.com/maps/embed?...\" ...></iframe>",
 		"mapsEmbedHint": "Paste the full <iframe> embed code from \"Embed a map\". This shows an interactive map on your event page.",
 		"mapsPreview": "Preview",
-		"mapsPreviewTitle": "Map preview"
+		"mapsPreviewTitle": "Map preview",
+		"guestAttendanceWarningTitle": "Incompatible with screening, invitations, and member-only events",
+		"guestAttendanceWarningBody": "Use this only for fully public events with no additional gating. Screening questionnaires, RSVP invitations, and member-only restrictions don't apply to guests.",
+		"waitlistInfoButton": "How does the waitlist work?",
+		"waitlistInfoTitle": "How the waitlist works",
+		"waitlistInfoBody1": "When a spot opens up — because someone cancels or you raise the capacity — everyone on the waitlist is notified at the same time. Whoever claims it first keeps it.",
+		"waitlistInfoBody2": "We're working on smarter waitlist behavior. Suggestions are very welcome.",
+		"waitlistInfoFeedbackCta": "Share feedback on GitHub"
 	},
 	"dialogContent": {
 		"close": "Close"
@@ -1585,7 +1592,8 @@
 		"tabDetails": "Event Details",
 		"tabTicketing": "Ticketing",
 		"editEvent": "Edit Event",
-		"ticketing": "Ticketing"
+		"ticketing": "Ticketing",
+		"validationErrorToast": "Please fix the highlighted errors before saving."
 	},
 	"eventsAdminPage": {
 		"title": "Events - Revel",
@@ -5375,7 +5383,8 @@
 			"back": "Back",
 			"create": "Create series",
 			"createPending": "Creating…",
-			"createdToast": "Series \"{seriesName}\" created."
+			"createdToast": "Series \"{seriesName}\" created.",
+			"stepAExplainer": "The template event is the blueprint for every occurrence in this series. Configure its details once — title, location, capacity, ticketing — and we'll reuse them when scheduling each occurrence."
 		},
 		"picker": {
 			"frequencyLabel": "Repeat",

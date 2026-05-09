@@ -128,13 +128,13 @@
 </script>
 
 <Dialog {open} onOpenChange={handleOpenChange}>
-	<DialogContent class="max-w-lg">
-		<DialogHeader>
+	<DialogContent class="flex max-h-[90dvh] flex-col sm:max-w-lg">
+		<DialogHeader class="shrink-0">
 			<DialogTitle>Blacklist Entry: {displayName}</DialogTitle>
 		</DialogHeader>
 
 		{#if entry}
-			<div class="space-y-4 py-4">
+			<div class="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
 				<!-- Status Badge -->
 				<div class="flex items-center gap-2">
 					{#if isLinkedUser}
@@ -258,7 +258,7 @@
 				{/if}
 			</div>
 
-			<DialogFooter class="flex-col gap-2 sm:flex-row sm:justify-between">
+			<DialogFooter class="shrink-0 flex-col gap-2 sm:flex-row sm:justify-between">
 				<Button variant="destructive" onclick={handleDelete} disabled={isUpdating || isDeleting}>
 					{#if isDeleting}
 						<Loader2 class="mr-2 h-4 w-4 animate-spin" />

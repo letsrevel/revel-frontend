@@ -835,7 +835,14 @@
 		"mapsEmbedPlaceholder": "<iframe src=\"https://www.google.com/maps/embed?...\" ...></iframe>",
 		"mapsEmbedHint": "Incolla il codice <iframe> completo da \"Incorpora mappa\". Questo mostra una mappa interattiva sulla pagina del tuo evento.",
 		"mapsPreview": "Anteprima",
-		"mapsPreviewTitle": "Anteprima mappa"
+		"mapsPreviewTitle": "Anteprima mappa",
+		"guestAttendanceWarningTitle": "Non compatibile con questionari di screening, inviti o eventi riservati ai membri",
+		"guestAttendanceWarningBody": "Usalo solo per eventi completamente pubblici, senza altre restrizioni. Questionari di screening, inviti RSVP e restrizioni 'solo membri' non si applicano agli ospiti.",
+		"waitlistInfoButton": "Come funziona la lista d'attesa?",
+		"waitlistInfoTitle": "Come funziona la lista d'attesa",
+		"waitlistInfoBody1": "Quando si libera un posto — perché qualcuno cancella o perché aumenti la capienza — tutte le persone in lista d'attesa vengono avvisate contemporaneamente. Chi lo prende per primo se lo tiene.",
+		"waitlistInfoBody2": "Stiamo lavorando a una gestione più avanzata della lista d'attesa. I tuoi suggerimenti sono benvenuti.",
+		"waitlistInfoFeedbackCta": "Lascia un feedback su GitHub"
 	},
 	"dialogContent": {
 		"close": "Chiudi"
@@ -1585,7 +1592,8 @@
 		"tabDetails": "Dettagli Evento",
 		"tabTicketing": "Biglietteria",
 		"editEvent": "Modifica Evento",
-		"ticketing": "Biglietteria"
+		"ticketing": "Biglietteria",
+		"validationErrorToast": "Correggi gli errori evidenziati prima di salvare."
 	},
 	"eventsAdminPage": {
 		"title": "Eventi - Revel",
@@ -5375,7 +5383,8 @@
 			"back": "Back",
 			"create": "Create series",
 			"createPending": "Creating…",
-			"createdToast": "Series \"{seriesName}\" created."
+			"createdToast": "Series \"{seriesName}\" created.",
+			"stepAExplainer": "L'evento template è il modello per ogni occorrenza della serie. Configurane i dettagli una volta — titolo, luogo, capienza, biglietti — e li riutilizzeremo per ogni occorrenza pianificata."
 		},
 		"picker": {
 			"frequencyLabel": "Repeat",

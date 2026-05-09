@@ -16,13 +16,17 @@
 		ChevronDown,
 		ChevronRight,
 		CheckSquare,
-		Hash
+		Hash,
+		AlertTriangle,
+		Info,
+		ExternalLink
 	} from 'lucide-svelte';
 	import ImageUploader from '$lib/components/forms/ImageUploader.svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import EventQuestionnaires from './EventQuestionnaires.svelte';
 	import EventQuestionnaireAssignmentModal from './EventQuestionnaireAssignmentModal.svelte';
 	import LocationSection from './LocationSection.svelte';
+	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import type { OrganizationQuestionnaireInListSchema } from '$lib/api/generated';
 	import { tagListTags } from '$lib/api/generated/sdk.gen';
 
@@ -97,6 +101,9 @@
 
 	// Modal state for questionnaire assignment
 	let isQuestionnaireModalOpen = $state(false);
+
+	// Modal state for waitlist info dialog
+	let waitlistInfoOpen = $state(false);
 
 	// Accordion state - automatically open advanced section if event has tags
 	let openSections = $state<Set<string>>(
@@ -475,6 +482,18 @@
 						<div class="text-sm text-muted-foreground">
 							{m['detailsStep.waitlistHint']()}
 						</div>
+						<button
+							type="button"
+							onclick={(e) => {
+								e.preventDefault();
+								e.stopPropagation();
+								waitlistInfoOpen = true;
+							}}
+							class="mt-1 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+						>
+							<Info class="h-3.5 w-3.5" aria-hidden="true" />
+							{m['detailsStep.waitlistInfoButton']()}
+						</button>
 					</div>
 				</label>
 
@@ -672,6 +691,22 @@
 						</div>
 					</div>
 				</label>
+
+				{#if formData.can_attend_without_login}
+					<div class="rounded-lg border border-destructive bg-destructive/10 p-4" role="alert">
+						<div class="flex items-start gap-3">
+							<AlertTriangle class="mt-0.5 h-5 w-5 shrink-0 text-destructive" aria-hidden="true" />
+							<div class="flex-1 space-y-1">
+								<p class="font-medium text-destructive">
+									{m['detailsStep.guestAttendanceWarningTitle']()}
+								</p>
+								<p class="text-sm text-destructive/90">
+									{m['detailsStep.guestAttendanceWarningBody']()}
+								</p>
+							</div>
+						</div>
+					</div>
+				{/if}
 
 				<!-- Tags -->
 				<div class="relative space-y-2">
@@ -915,3 +950,25 @@
 		onClose={() => (isQuestionnaireModalOpen = false)}
 	/>
 {/if}
+
+<!-- Waitlist Info Dialog -->
+<Dialog bind:open={waitlistInfoOpen}>
+	<DialogContent class="sm:max-w-md">
+		<DialogHeader>
+			<DialogTitle>{m['detailsStep.waitlistInfoTitle']()}</DialogTitle>
+		</DialogHeader>
+		<div class="space-y-3 text-sm text-muted-foreground">
+			<p>{m['detailsStep.waitlistInfoBody1']()}</p>
+			<p>{m['detailsStep.waitlistInfoBody2']()}</p>
+			<a
+				href="https://github.com/letsrevel/revel-backend/issues/2"
+				target="_blank"
+				rel="noopener noreferrer"
+				class="inline-flex items-center gap-1 text-primary hover:underline"
+			>
+				{m['detailsStep.waitlistInfoFeedbackCta']()}
+				<ExternalLink class="h-3.5 w-3.5" aria-hidden="true" />
+			</a>
+		</div>
+	</DialogContent>
+</Dialog>
