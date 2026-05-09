@@ -422,7 +422,31 @@
 		"noReason": "No reason provided",
 		"createdAt": "Created",
 		"edit": "Edit",
-		"delete": "Delete"
+		"delete": "Delete",
+		"title": "Blacklist Entry: {displayName}",
+		"registeredUserBadge": "Registered User",
+		"manualEntryBadge": "Manual Entry",
+		"contactInfoReadonlyHeader": "Contact Information (Read-only)",
+		"noContactInfo": "No contact information",
+		"firstNameLabel": "First Name",
+		"firstNamePlaceholder": "First name",
+		"lastNameLabel": "Last Name",
+		"lastNamePlaceholder": "Last name",
+		"preferredNameLabel": "Preferred Name",
+		"preferredNamePlaceholder": "Preferred name or nickname",
+		"reasonLabel": "Reason for Blacklisting",
+		"reasonPlaceholder": "Explain why this person is blacklisted...",
+		"addedAgo": "Added {createdAgo}",
+		"byUser": "by {name}",
+		"deleteConfirmTitle": "Are you sure you want to remove this blacklist entry?",
+		"linkedUserDeleteHint": "The user will regain access to this organization.",
+		"actionCannotBeUndone": "This action cannot be undone.",
+		"removingButton": "Removing...",
+		"confirmRemoveButton": "Confirm Remove",
+		"removeButton": "Remove from Blacklist",
+		"cancelButton": "Cancel",
+		"saveButton": "Save Changes",
+		"unknownName": "Unknown"
 	},
 	"blacklistModal": {
 		"createTitle": "Add to Blacklist",
@@ -436,11 +460,31 @@
 		"name": "Name (for reference)",
 		"namePlaceholder": "John Doe",
 		"reason": "Reason",
-		"reasonPlaceholder": "Why is this person being blocked?",
+		"reasonPlaceholder": "Explain why this person should be blacklisted...",
 		"atLeastOneRequired": "At least one contact method is required",
 		"create": "Add to Blacklist",
 		"save": "Save Changes",
-		"cancel": "Cancel"
+		"cancel": "Cancel",
+		"title": "Add to Blacklist",
+		"description": "Add a person to the organization's blacklist. They will be blocked from accessing any events.",
+		"importantHeader": "Important",
+		"identifierMatchInfo": "If the provided identifiers (email, telegram, phone) match an existing registered user, the entry will automatically be linked to them.",
+		"contactInfoHeader": "Contact Information",
+		"emailLabel": "Email Address",
+		"telegramLabel": "Telegram Username",
+		"phoneLabel": "Phone Number",
+		"nameInfoHeader": "Name Information",
+		"firstNameLabel": "First Name",
+		"firstNamePlaceholder": "First name",
+		"lastNameLabel": "Last Name",
+		"lastNamePlaceholder": "Last name",
+		"preferredNameLabel": "Preferred Name / Alias",
+		"preferredNamePlaceholder": "Known as...",
+		"preferredNameHint": "If this person goes by a different name or alias, enter it here. This helps with fuzzy matching.",
+		"reasonLabel": "Reason for Blacklisting",
+		"atLeastOneRequiredHint": "Please provide at least one identifier (email, telegram, phone) or name.",
+		"cancelButton": "Cancel",
+		"submitButton": "Add to Blacklist"
 	},
 	"blacklistPage": {
 		"title": "Blacklist & Verification",
@@ -606,7 +650,8 @@
 		"errors_tryAgain": "Please try again.",
 		"accessibility_skipTo": "Skip to {section}",
 		"claimSuccess_organization": "You've been added to {name}!",
-		"claimSuccess_event": "You've been invited to {name}!"
+		"claimSuccess_event": "You've been invited to {name}!",
+		"opensInNewTab": "opens in a new tab"
 	},
 	"confirmDeletionPage": {
 		"title": "Confirm Account Deletion - Revel",
@@ -835,7 +880,14 @@
 		"mapsEmbedPlaceholder": "<iframe src=\"https://www.google.com/maps/embed?...\" ...></iframe>",
 		"mapsEmbedHint": "Paste the full <iframe> embed code from \"Embed a map\". This shows an interactive map on your event page.",
 		"mapsPreview": "Preview",
-		"mapsPreviewTitle": "Map preview"
+		"mapsPreviewTitle": "Map preview",
+		"guestAttendanceWarningTitle": "Some features still require an account",
+		"guestAttendanceWarningBody": "If your event uses screening questionnaires, RSVP invitations, or member-only restrictions, attendees will still be prompted to create an account before participating. This setting is best for fully public events with no extra gating.",
+		"waitlistInfoButton": "How does the waitlist work?",
+		"waitlistInfoTitle": "How the waitlist works",
+		"waitlistInfoBody1": "When a spot opens up — because someone cancels or you raise the capacity — everyone on the waitlist is notified at the same time. Whoever claims it first keeps it.",
+		"waitlistInfoBody2": "We're working on smarter waitlist behavior. Suggestions are very welcome.",
+		"waitlistInfoFeedbackCta": "Share feedback on GitHub"
 	},
 	"dialogContent": {
 		"close": "Close"
@@ -1585,7 +1637,8 @@
 		"tabDetails": "Event Details",
 		"tabTicketing": "Ticketing",
 		"editEvent": "Edit Event",
-		"ticketing": "Ticketing"
+		"ticketing": "Ticketing",
+		"validationErrorToast": "Please fix the highlighted errors before saving."
 	},
 	"eventsAdminPage": {
 		"title": "Events - Revel",
@@ -5375,7 +5428,8 @@
 			"back": "Back",
 			"create": "Create series",
 			"createPending": "Creating…",
-			"createdToast": "Series \"{seriesName}\" created."
+			"createdToast": "Series \"{seriesName}\" created.",
+			"stepAExplainer": "The template event is the blueprint for every occurrence in this series. Configure its details once — title, location, capacity, ticketing — and we'll reuse them when scheduling each occurrence."
 		},
 		"picker": {
 			"frequencyLabel": "Repeat",

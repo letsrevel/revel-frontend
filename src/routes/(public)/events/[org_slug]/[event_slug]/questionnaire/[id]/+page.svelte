@@ -214,9 +214,7 @@
 			}
 
 			// Redirect back to event page
-			setTimeout(() => {
-				goto(`/events/${data.event.organization.slug}/${data.event.slug}`);
-			}, 2000);
+			goto(`/events/${data.event.organization.slug}/${data.event.slug}`);
 		},
 		onError: (error: Error) => {
 			toast.error(m['questionnaireSubmissionPage.toast_error_title'](), {

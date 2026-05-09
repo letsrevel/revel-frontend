@@ -693,7 +693,7 @@
 {/snippet}
 
 {#if standalone}
-	<form onsubmit={handleSubmit} class="space-y-6">
+	<form onsubmit={handleSubmit} novalidate class="space-y-6">
 		{@render fields()}
 
 		<!-- Navigation Buttons -->

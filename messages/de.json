@@ -422,7 +422,31 @@
 		"noReason": "Kein Grund angegeben",
 		"createdAt": "Erstellt",
 		"edit": "Bearbeiten",
-		"delete": "Löschen"
+		"delete": "Löschen",
+		"title": "Blacklist-Eintrag: {displayName}",
+		"registeredUserBadge": "Registrierter Nutzer",
+		"manualEntryBadge": "Manueller Eintrag",
+		"contactInfoReadonlyHeader": "Kontaktinformationen (schreibgeschützt)",
+		"noContactInfo": "Keine Kontaktinformationen",
+		"firstNameLabel": "Vorname",
+		"firstNamePlaceholder": "Vorname",
+		"lastNameLabel": "Nachname",
+		"lastNamePlaceholder": "Nachname",
+		"preferredNameLabel": "Bevorzugter Name",
+		"preferredNamePlaceholder": "Bevorzugter Name oder Spitzname",
+		"reasonLabel": "Grund für die Blacklist-Aufnahme",
+		"reasonPlaceholder": "Erkläre, warum diese Person auf der Blacklist steht …",
+		"addedAgo": "Hinzugefügt {createdAgo}",
+		"byUser": "von {name}",
+		"deleteConfirmTitle": "Möchtest du diesen Blacklist-Eintrag wirklich entfernen?",
+		"linkedUserDeleteHint": "Der Nutzer erhält wieder Zugriff auf diese Organisation.",
+		"actionCannotBeUndone": "Diese Aktion kann nicht rückgängig gemacht werden.",
+		"removingButton": "Entferne ...",
+		"confirmRemoveButton": "Entfernen bestätigen",
+		"removeButton": "Von Blacklist entfernen",
+		"cancelButton": "Abbrechen",
+		"saveButton": "Änderungen speichern",
+		"unknownName": "Unbekannt"
 	},
 	"blacklistModal": {
 		"createTitle": "Zur Sperrliste hinzufügen",
@@ -436,11 +460,31 @@
 		"name": "Name (zur Referenz)",
 		"namePlaceholder": "Max Mustermann",
 		"reason": "Grund",
-		"reasonPlaceholder": "Warum wird diese Person gesperrt?",
+		"reasonPlaceholder": "Erkläre, warum diese Person auf die Blacklist gesetzt werden soll …",
 		"atLeastOneRequired": "Mindestens eine Kontaktmethode ist erforderlich",
 		"create": "Zur Sperrliste hinzufügen",
 		"save": "Änderungen speichern",
-		"cancel": "Abbrechen"
+		"cancel": "Abbrechen",
+		"title": "Zur Blacklist hinzufügen",
+		"description": "Füge eine Person zur Blacklist der Organisation hinzu. Diese Person wird von allen Events ausgeschlossen.",
+		"importantHeader": "Wichtig",
+		"identifierMatchInfo": "Wenn die angegebenen Identifikatoren (E-Mail, Telegram, Telefon) zu einem registrierten Konto passen, wird der Eintrag automatisch verknüpft.",
+		"contactInfoHeader": "Kontaktinformationen",
+		"emailLabel": "E-Mail-Adresse",
+		"telegramLabel": "Telegram-Benutzername",
+		"phoneLabel": "Telefonnummer",
+		"nameInfoHeader": "Namensangaben",
+		"firstNameLabel": "Vorname",
+		"firstNamePlaceholder": "Vorname",
+		"lastNameLabel": "Nachname",
+		"lastNamePlaceholder": "Nachname",
+		"preferredNameLabel": "Bevorzugter Name / Alias",
+		"preferredNamePlaceholder": "Bekannt als ...",
+		"preferredNameHint": "Falls diese Person unter einem anderen Namen oder Alias bekannt ist, gib ihn hier ein. Das hilft beim unscharfen Abgleich.",
+		"reasonLabel": "Grund für die Blacklist-Aufnahme",
+		"atLeastOneRequiredHint": "Bitte gib mindestens einen Identifikator (E-Mail, Telegram, Telefon) oder einen Namen an.",
+		"cancelButton": "Abbrechen",
+		"submitButton": "Zur Blacklist hinzufügen"
 	},
 	"blacklistPage": {
 		"title": "Sperrliste & Verifizierung",
@@ -606,7 +650,8 @@
 		"errors_tryAgain": "Bitte versuche es erneut.",
 		"accessibility_skipTo": "Zu {section} springen",
 		"claimSuccess_organization": "Du wurdest zu {name} hinzugefügt!",
-		"claimSuccess_event": "Du wurdest zu {name} eingeladen!"
+		"claimSuccess_event": "Du wurdest zu {name} eingeladen!",
+		"opensInNewTab": "öffnet in neuem Tab"
 	},
 	"confirmDeletionPage": {
 		"title": "Kontolöschung bestätigen - Revel",
@@ -835,7 +880,14 @@
 		"mapsEmbedPlaceholder": "<iframe src=\"https://www.google.com/maps/embed?...\" ...></iframe>",
 		"mapsEmbedHint": "Füge den vollständigen <iframe>-Einbettungscode von \"Karte einbetten\" ein. Dies zeigt eine interaktive Karte auf deiner Veranstaltungsseite.",
 		"mapsPreview": "Vorschau",
-		"mapsPreviewTitle": "Kartenvorschau"
+		"mapsPreviewTitle": "Kartenvorschau",
+		"guestAttendanceWarningTitle": "Manche Funktionen erfordern trotzdem ein Konto",
+		"guestAttendanceWarningBody": "Wenn dein Event Screening-Fragebögen, RSVP-Einladungen oder Member-Only-Beschränkungen nutzt, werden Teilnehmende trotzdem aufgefordert, ein Konto zu erstellen. Diese Einstellung passt am besten zu komplett öffentlichen Events ohne zusätzliche Einschränkungen.",
+		"waitlistInfoButton": "Wie funktioniert die Warteliste?",
+		"waitlistInfoTitle": "So funktioniert die Warteliste",
+		"waitlistInfoBody1": "Sobald ein Platz frei wird — etwa durch eine Stornierung oder weil du die Kapazität erhöhst — werden alle auf der Warteliste gleichzeitig benachrichtigt. Wer zuerst zugreift, bekommt den Platz.",
+		"waitlistInfoBody2": "Wir arbeiten an einer intelligenteren Warteliste. Vorschläge sind willkommen.",
+		"waitlistInfoFeedbackCta": "Feedback auf GitHub geben"
 	},
 	"dialogContent": {
 		"close": "Schließen"
@@ -1585,7 +1637,8 @@
 		"tabDetails": "Event-Details",
 		"tabTicketing": "Ticketing",
 		"editEvent": "Event bearbeiten",
-		"ticketing": "Ticketing"
+		"ticketing": "Ticketing",
+		"validationErrorToast": "Bitte behebe die markierten Fehler, bevor du speicherst."
 	},
 	"eventsAdminPage": {
 		"title": "Veranstaltungen - Revel",
@@ -5375,7 +5428,8 @@
 			"back": "Back",
 			"create": "Create series",
 			"createPending": "Creating…",
-			"createdToast": "Series \"{seriesName}\" created."
+			"createdToast": "Serie „{seriesName}\" erstellt.",
+			"stepAExplainer": "Das Template-Event ist die Vorlage für jede Veranstaltung dieser Serie. Konfiguriere die Details einmal — Titel, Ort, Kapazität, Ticketing — und wir nutzen sie für jede geplante Veranstaltung."
 		},
 		"picker": {
 			"frequencyLabel": "Repeat",

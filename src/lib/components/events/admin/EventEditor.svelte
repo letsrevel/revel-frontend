@@ -35,6 +35,7 @@
 	import SaveBar from './SaveBar.svelte';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { toast } from 'svelte-sonner';
+	import { scrollToFirstInvalid } from '$lib/utils/scroll';
 
 	interface Props {
 		organization: OrganizationRetrieveSchema;
@@ -401,6 +402,8 @@
 	async function handleCreateEvent(): Promise<void> {
 		if (!validateEssentials()) {
 			errorMessage = m['eventWizard.error_fixValidation']();
+			toast.error(m['eventEditor.validationErrorToast']());
+			scrollToFirstInvalid();
 			return;
 		}
 
@@ -436,6 +439,8 @@
 	async function handleSave(andExit: boolean): Promise<void> {
 		if (!validateEssentials() || !validateDetails()) {
 			errorMessage = m['eventWizard.error_fixValidation']();
+			toast.error(m['eventEditor.validationErrorToast']());
+			scrollToFirstInvalid();
 			return;
 		}
 

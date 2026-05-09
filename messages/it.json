@@ -422,7 +422,31 @@
 		"noReason": "Nessun motivo fornito",
 		"createdAt": "Creato",
 		"edit": "Modifica",
-		"delete": "Elimina"
+		"delete": "Elimina",
+		"title": "Voce blacklist: {displayName}",
+		"registeredUserBadge": "Utente registrato",
+		"manualEntryBadge": "Voce manuale",
+		"contactInfoReadonlyHeader": "Informazioni di contatto (sola lettura)",
+		"noContactInfo": "Nessuna informazione di contatto",
+		"firstNameLabel": "Nome",
+		"firstNamePlaceholder": "Nome",
+		"lastNameLabel": "Cognome",
+		"lastNamePlaceholder": "Cognome",
+		"preferredNameLabel": "Nome preferito",
+		"preferredNamePlaceholder": "Nome preferito o soprannome",
+		"reasonLabel": "Motivo del blocco",
+		"reasonPlaceholder": "Spiega perché questa persona è bloccata...",
+		"addedAgo": "Aggiunta {createdAgo}",
+		"byUser": "da {name}",
+		"deleteConfirmTitle": "Vuoi davvero rimuovere questa voce dalla blacklist?",
+		"linkedUserDeleteHint": "L'utente potrà di nuovo accedere a questa organizzazione.",
+		"actionCannotBeUndone": "Questa azione non può essere annullata.",
+		"removingButton": "Rimozione...",
+		"confirmRemoveButton": "Conferma rimozione",
+		"removeButton": "Rimuovi dalla blacklist",
+		"cancelButton": "Annulla",
+		"saveButton": "Salva modifiche",
+		"unknownName": "Sconosciuto"
 	},
 	"blacklistModal": {
 		"createTitle": "Aggiungi alla lista nera",
@@ -436,11 +460,31 @@
 		"name": "Nome (per riferimento)",
 		"namePlaceholder": "Mario Rossi",
 		"reason": "Motivo",
-		"reasonPlaceholder": "Perché questa persona viene bloccata?",
+		"reasonPlaceholder": "Spiega perché questa persona dovrebbe essere bloccata...",
 		"atLeastOneRequired": "Almeno un metodo di contatto è richiesto",
 		"create": "Aggiungi alla lista nera",
 		"save": "Salva modifiche",
-		"cancel": "Annulla"
+		"cancel": "Annulla",
+		"title": "Aggiungi alla blacklist",
+		"description": "Aggiungi una persona alla blacklist dell'organizzazione. Non potrà più accedere agli eventi.",
+		"importantHeader": "Importante",
+		"identifierMatchInfo": "Se gli identificatori forniti (email, Telegram, telefono) corrispondono a un utente registrato, la voce verrà collegata automaticamente al suo account.",
+		"contactInfoHeader": "Informazioni di contatto",
+		"emailLabel": "Indirizzo email",
+		"telegramLabel": "Username Telegram",
+		"phoneLabel": "Numero di telefono",
+		"nameInfoHeader": "Nome",
+		"firstNameLabel": "Nome",
+		"firstNamePlaceholder": "Nome",
+		"lastNameLabel": "Cognome",
+		"lastNamePlaceholder": "Cognome",
+		"preferredNameLabel": "Nome preferito / Alias",
+		"preferredNamePlaceholder": "Conosciuto come...",
+		"preferredNameHint": "Se questa persona usa un altro nome o alias, inseriscilo qui. Aiuta nel confronto approssimativo.",
+		"reasonLabel": "Motivo del blocco",
+		"atLeastOneRequiredHint": "Fornisci almeno un identificatore (email, Telegram, telefono) o un nome.",
+		"cancelButton": "Annulla",
+		"submitButton": "Aggiungi alla blacklist"
 	},
 	"blacklistPage": {
 		"title": "Lista nera e verifica",
@@ -606,7 +650,8 @@
 		"errors_tryAgain": "Riprova.",
 		"accessibility_skipTo": "Passa a {section}",
 		"claimSuccess_organization": "Sei stato aggiunto a {name}!",
-		"claimSuccess_event": "Sei stato invitato a {name}!"
+		"claimSuccess_event": "Sei stato invitato a {name}!",
+		"opensInNewTab": "si apre in una nuova scheda"
 	},
 	"confirmDeletionPage": {
 		"title": "Conferma Eliminazione Account - Revel",
@@ -835,7 +880,14 @@
 		"mapsEmbedPlaceholder": "<iframe src=\"https://www.google.com/maps/embed?...\" ...></iframe>",
 		"mapsEmbedHint": "Incolla il codice <iframe> completo da \"Incorpora mappa\". Questo mostra una mappa interattiva sulla pagina del tuo evento.",
 		"mapsPreview": "Anteprima",
-		"mapsPreviewTitle": "Anteprima mappa"
+		"mapsPreviewTitle": "Anteprima mappa",
+		"guestAttendanceWarningTitle": "Alcune funzionalità richiedono comunque un account",
+		"guestAttendanceWarningBody": "Se il tuo evento usa questionari di screening, inviti RSVP o restrizioni 'solo membri', i partecipanti dovranno comunque creare un account prima di partecipare. Questa opzione è ideale per eventi completamente pubblici senza restrizioni aggiuntive.",
+		"waitlistInfoButton": "Come funziona la lista d'attesa?",
+		"waitlistInfoTitle": "Come funziona la lista d'attesa",
+		"waitlistInfoBody1": "Quando si libera un posto — perché qualcuno cancella o perché aumenti la capienza — tutte le persone in lista d'attesa vengono avvisate contemporaneamente. Chi lo prende per primo se lo tiene.",
+		"waitlistInfoBody2": "Stiamo lavorando a una gestione più avanzata della lista d'attesa. I tuoi suggerimenti sono benvenuti.",
+		"waitlistInfoFeedbackCta": "Lascia un feedback su GitHub"
 	},
 	"dialogContent": {
 		"close": "Chiudi"
@@ -1585,7 +1637,8 @@
 		"tabDetails": "Dettagli Evento",
 		"tabTicketing": "Biglietteria",
 		"editEvent": "Modifica Evento",
-		"ticketing": "Biglietteria"
+		"ticketing": "Biglietteria",
+		"validationErrorToast": "Correggi gli errori evidenziati prima di salvare."
 	},
 	"eventsAdminPage": {
 		"title": "Eventi - Revel",
@@ -5375,7 +5428,8 @@
 			"back": "Back",
 			"create": "Create series",
 			"createPending": "Creating…",
-			"createdToast": "Series \"{seriesName}\" created."
+			"createdToast": "Serie \"{seriesName}\" creata.",
+			"stepAExplainer": "L'evento template è il modello per ogni occorrenza della serie. Configurane i dettagli una volta — titolo, luogo, capienza, biglietti — e li riutilizzeremo per ogni occorrenza pianificata."
 		},
 		"picker": {
 			"frequencyLabel": "Repeat",

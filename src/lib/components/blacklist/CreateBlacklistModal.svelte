@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { BlacklistCreateSchema } from '$lib/api/generated/types.gen';
 	import {
 		Dialog,
@@ -80,12 +81,11 @@
 </script>
 
 <Dialog {open} onOpenChange={handleOpenChange}>
-	<DialogContent class="max-w-lg">
-		<DialogHeader>
-			<DialogTitle>Add to Blacklist</DialogTitle>
+	<DialogContent class="flex max-h-[90dvh] flex-col sm:max-w-lg">
+		<DialogHeader class="shrink-0">
+			<DialogTitle>{m['blacklistModal.title']()}</DialogTitle>
 			<DialogDescription>
-				Add a person to the organization's blacklist. They will be blocked from accessing any
-				events.
+				{m['blacklistModal.description']()}
 			</DialogDescription>
 		</DialogHeader>
 
@@ -94,129 +94,140 @@
 				e.preventDefault();
 				handleSubmit();
 			}}
-			class="space-y-4 py-4"
+			class="flex min-h-0 flex-1 flex-col gap-4"
 		>
-			<!-- Warning -->
-			<div
-				class="flex gap-3 rounded-md border border-amber-500/50 bg-amber-50 p-3 dark:bg-amber-950/30"
-			>
-				<AlertTriangle class="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
-				<div class="text-sm">
-					<p class="font-medium text-amber-900 dark:text-amber-100">Important</p>
-					<p class="mt-1 text-amber-800 dark:text-amber-200">
-						If the provided identifiers (email, telegram, phone) match an existing registered user,
-						the entry will automatically be linked to them.
-					</p>
+			<div class="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
+				<!-- Warning -->
+				<div
+					class="flex gap-3 rounded-md border border-amber-500/50 bg-amber-50 p-3 dark:bg-amber-950/30"
+				>
+					<AlertTriangle class="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
+					<div class="text-sm">
+						<p class="font-medium text-amber-900 dark:text-amber-100">
+							{m['blacklistModal.importantHeader']()}
+						</p>
+						<p class="mt-1 text-amber-800 dark:text-amber-200">
+							{m['blacklistModal.identifierMatchInfo']()}
+						</p>
+					</div>
 				</div>
-			</div>
 
-			<!-- Identifiers Section -->
-			<div class="space-y-4">
-				<p class="text-sm font-medium text-muted-foreground">Contact Information</p>
+				<!-- Identifiers Section -->
+				<div class="space-y-4">
+					<p class="text-sm font-medium text-muted-foreground">
+						{m['blacklistModal.contactInfoHeader']()}
+					</p>
 
+					<div class="space-y-2">
+						<Label for="email">{m['blacklistModal.emailLabel']()}</Label>
+						<Input
+							id="email"
+							type="email"
+							bind:value={email}
+							placeholder="email@example.com"
+							disabled={isCreating}
+						/>
+					</div>
+
+					<div class="grid gap-4 sm:grid-cols-2">
+						<div class="space-y-2">
+							<Label for="telegram">{m['blacklistModal.telegramLabel']()}</Label>
+							<Input
+								id="telegram"
+								bind:value={telegramUsername}
+								placeholder="@username"
+								disabled={isCreating}
+							/>
+						</div>
+						<div class="space-y-2">
+							<Label for="phone">{m['blacklistModal.phoneLabel']()}</Label>
+							<Input
+								id="phone"
+								type="tel"
+								bind:value={phoneNumber}
+								placeholder="+1234567890"
+								disabled={isCreating}
+							/>
+						</div>
+					</div>
+				</div>
+
+				<!-- Name Section -->
+				<div class="space-y-4">
+					<p class="text-sm font-medium text-muted-foreground">
+						{m['blacklistModal.nameInfoHeader']()}
+					</p>
+
+					<div class="grid gap-4 sm:grid-cols-2">
+						<div class="space-y-2">
+							<Label for="first-name">{m['blacklistModal.firstNameLabel']()}</Label>
+							<Input
+								id="first-name"
+								bind:value={firstName}
+								placeholder={m['blacklistModal.firstNamePlaceholder']()}
+								disabled={isCreating}
+							/>
+						</div>
+						<div class="space-y-2">
+							<Label for="last-name">{m['blacklistModal.lastNameLabel']()}</Label>
+							<Input
+								id="last-name"
+								bind:value={lastName}
+								placeholder={m['blacklistModal.lastNamePlaceholder']()}
+								disabled={isCreating}
+							/>
+						</div>
+					</div>
+
+					<div class="space-y-2">
+						<Label for="preferred-name">{m['blacklistModal.preferredNameLabel']()}</Label>
+						<Input
+							id="preferred-name"
+							bind:value={preferredName}
+							placeholder={m['blacklistModal.preferredNamePlaceholder']()}
+							disabled={isCreating}
+						/>
+						<p class="text-xs text-muted-foreground">
+							{m['blacklistModal.preferredNameHint']()}
+						</p>
+					</div>
+				</div>
+
+				<!-- Reason Section -->
 				<div class="space-y-2">
-					<Label for="email">Email Address</Label>
-					<Input
-						id="email"
-						type="email"
-						bind:value={email}
-						placeholder="email@example.com"
+					<Label for="reason">{m['blacklistModal.reasonLabel']()}</Label>
+					<Textarea
+						id="reason"
+						bind:value={reason}
+						placeholder={m['blacklistModal.reasonPlaceholder']()}
+						rows={3}
 						disabled={isCreating}
 					/>
 				</div>
 
-				<div class="grid gap-4 sm:grid-cols-2">
-					<div class="space-y-2">
-						<Label for="telegram">Telegram Username</Label>
-						<Input
-							id="telegram"
-							bind:value={telegramUsername}
-							placeholder="@username"
-							disabled={isCreating}
-						/>
-					</div>
-					<div class="space-y-2">
-						<Label for="phone">Phone Number</Label>
-						<Input
-							id="phone"
-							type="tel"
-							bind:value={phoneNumber}
-							placeholder="+1234567890"
-							disabled={isCreating}
-						/>
-					</div>
-				</div>
-			</div>
-
-			<!-- Name Section -->
-			<div class="space-y-4">
-				<p class="text-sm font-medium text-muted-foreground">Name Information</p>
-
-				<div class="grid gap-4 sm:grid-cols-2">
-					<div class="space-y-2">
-						<Label for="first-name">First Name</Label>
-						<Input
-							id="first-name"
-							bind:value={firstName}
-							placeholder="First name"
-							disabled={isCreating}
-						/>
-					</div>
-					<div class="space-y-2">
-						<Label for="last-name">Last Name</Label>
-						<Input
-							id="last-name"
-							bind:value={lastName}
-							placeholder="Last name"
-							disabled={isCreating}
-						/>
-					</div>
-				</div>
-
-				<div class="space-y-2">
-					<Label for="preferred-name">Preferred Name / Alias</Label>
-					<Input
-						id="preferred-name"
-						bind:value={preferredName}
-						placeholder="Known as..."
-						disabled={isCreating}
-					/>
-					<p class="text-xs text-muted-foreground">
-						If this person goes by a different name or alias, enter it here. This helps with fuzzy
-						matching.
+				{#if !isValid}
+					<p class="text-sm text-muted-foreground">
+						{m['blacklistModal.atLeastOneRequiredHint']()}
 					</p>
-				</div>
-			</div>
-
-			<!-- Reason Section -->
-			<div class="space-y-2">
-				<Label for="reason">Reason for Blacklisting</Label>
-				<Textarea
-					id="reason"
-					bind:value={reason}
-					placeholder="Explain why this person should be blacklisted..."
-					rows={3}
-					disabled={isCreating}
-				/>
-			</div>
-
-			{#if !isValid}
-				<p class="text-sm text-muted-foreground">
-					Please provide at least one identifier (email, telegram, phone) or name.
-				</p>
-			{/if}
-		</form>
-
-		<DialogFooter>
-			<Button variant="outline" onclick={() => handleOpenChange(false)} disabled={isCreating}>
-				Cancel
-			</Button>
-			<Button onclick={handleSubmit} disabled={!isValid || isCreating}>
-				{#if isCreating}
-					<Loader2 class="mr-2 h-4 w-4 animate-spin" />
 				{/if}
-				Add to Blacklist
-			</Button>
-		</DialogFooter>
+			</div>
+
+			<DialogFooter class="shrink-0">
+				<Button
+					type="button"
+					variant="outline"
+					onclick={() => handleOpenChange(false)}
+					disabled={isCreating}
+				>
+					{m['blacklistModal.cancelButton']()}
+				</Button>
+				<Button type="button" onclick={handleSubmit} disabled={!isValid || isCreating}>
+					{#if isCreating}
+						<Loader2 class="mr-2 h-4 w-4 animate-spin" />
+					{/if}
+					{m['blacklistModal.submitButton']()}
+				</Button>
+			</DialogFooter>
+		</form>
 	</DialogContent>
 </Dialog>

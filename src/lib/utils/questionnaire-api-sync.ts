@@ -421,14 +421,14 @@ export async function syncConditionalQuestions(
 		if (condQ.type === 'multiple_choice') {
 			if (condQ._apiId) {
 				localConditionalMcIds.add(condQ._apiId);
-				await syncMcQuestion(condQ, authHeader, orgQuestionnaireId, q, optionApiId);
+				await syncMcQuestion(condQ, authHeader, orgQuestionnaireId, q, null, optionApiId);
 			} else {
 				await createMcQuestion(condQ, null, authHeader, orgQuestionnaireId, optionApiId);
 			}
 		} else {
 			if (condQ._apiId) {
 				localConditionalFtIds.add(condQ._apiId);
-				await syncFtQuestion(condQ, authHeader, orgQuestionnaireId, optionApiId);
+				await syncFtQuestion(condQ, authHeader, orgQuestionnaireId, null, optionApiId);
 			} else {
 				await createFtQuestion(condQ, null, authHeader, orgQuestionnaireId, optionApiId);
 			}
@@ -545,14 +545,14 @@ export async function syncConditionalSectionQuestions(
 		if (question.type === 'multiple_choice') {
 			if (question._apiId) {
 				localMcIds.add(question._apiId);
-				await syncMcQuestion(question, authHeader, orgQuestionnaireId, q);
+				await syncMcQuestion(question, authHeader, orgQuestionnaireId, q, sectionApiId);
 			} else {
 				await createMcQuestion(question, sectionApiId, authHeader, orgQuestionnaireId);
 			}
 		} else {
 			if (question._apiId) {
 				localFtIds.add(question._apiId);
-				await syncFtQuestion(question, authHeader, orgQuestionnaireId);
+				await syncFtQuestion(question, authHeader, orgQuestionnaireId, sectionApiId);
 			} else {
 				await createFtQuestion(question, sectionApiId, authHeader, orgQuestionnaireId);
 			}

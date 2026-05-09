@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { BlacklistEntrySchema } from '$lib/api/generated/types.gen';
 	import {
 		Dialog,
@@ -66,17 +67,15 @@
 		if (entry.first_name) return entry.first_name;
 		if (entry.email) return entry.email;
 		if (entry.telegram_username) return `@${entry.telegram_username}`;
-		return 'Unknown';
+		return m['blacklistEntry.unknownName']();
 	});
 
 	// Check if linked to a registered user
 	const isLinkedUser = $derived(!!entry?.user_id);
 
-	// Format created date
+	// Format created date — null when missing so the "Added …" line can be hidden
 	const createdAgo = $derived(
-		entry?.created_at
-			? formatDistanceToNow(new Date(entry.created_at), { addSuffix: true })
-			: 'Unknown'
+		entry?.created_at ? formatDistanceToNow(new Date(entry.created_at), { addSuffix: true }) : null
 	);
 
 	// Check if there are changes
@@ -128,13 +127,13 @@
 </script>
 
 <Dialog {open} onOpenChange={handleOpenChange}>
-	<DialogContent class="max-w-lg">
-		<DialogHeader>
-			<DialogTitle>Blacklist Entry: {displayName}</DialogTitle>
+	<DialogContent class="flex max-h-[90dvh] flex-col sm:max-w-lg">
+		<DialogHeader class="shrink-0">
+			<DialogTitle>{m['blacklistEntry.title']({ displayName })}</DialogTitle>
 		</DialogHeader>
 
 		{#if entry}
-			<div class="space-y-4 py-4">
+			<div class="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
 				<!-- Status Badge -->
 				<div class="flex items-center gap-2">
 					{#if isLinkedUser}
@@ -142,13 +141,13 @@
 							class="inline-flex items-center rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-900 dark:text-purple-100"
 						>
 							<User class="mr-1 h-3 w-3" />
-							Registered User
+							{m['blacklistEntry.registeredUserBadge']()}
 						</span>
 					{:else}
 						<span
 							class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-800 dark:text-gray-100"
 						>
-							Manual Entry
+							{m['blacklistEntry.manualEntryBadge']()}
 						</span>
 					{/if}
 				</div>
@@ -156,7 +155,7 @@
 				<!-- Contact Details (Read-only) -->
 				<div class="space-y-2 rounded-md border border-border bg-muted/30 p-3">
 					<p class="text-xs font-medium uppercase text-muted-foreground">
-						Contact Information (Read-only)
+						{m['blacklistEntry.contactInfoReadonlyHeader']()}
 					</p>
 
 					{#if entry.email}
@@ -181,7 +180,9 @@
 					{/if}
 
 					{#if !entry.email && !entry.telegram_username && !entry.phone_number}
-						<p class="text-sm italic text-muted-foreground">No contact information</p>
+						<p class="text-sm italic text-muted-foreground">
+							{m['blacklistEntry.noContactInfo']()}
+						</p>
 					{/if}
 				</div>
 
@@ -189,42 +190,42 @@
 				{#if !isLinkedUser}
 					<div class="grid gap-4 sm:grid-cols-2">
 						<div class="space-y-2">
-							<Label for="first-name">First Name</Label>
+							<Label for="first-name">{m['blacklistEntry.firstNameLabel']()}</Label>
 							<Input
 								id="first-name"
 								bind:value={firstName}
-								placeholder="First name"
+								placeholder={m['blacklistEntry.firstNamePlaceholder']()}
 								disabled={isUpdating || isDeleting}
 							/>
 						</div>
 						<div class="space-y-2">
-							<Label for="last-name">Last Name</Label>
+							<Label for="last-name">{m['blacklistEntry.lastNameLabel']()}</Label>
 							<Input
 								id="last-name"
 								bind:value={lastName}
-								placeholder="Last name"
+								placeholder={m['blacklistEntry.lastNamePlaceholder']()}
 								disabled={isUpdating || isDeleting}
 							/>
 						</div>
 					</div>
 
 					<div class="space-y-2">
-						<Label for="preferred-name">Preferred Name</Label>
+						<Label for="preferred-name">{m['blacklistEntry.preferredNameLabel']()}</Label>
 						<Input
 							id="preferred-name"
 							bind:value={preferredName}
-							placeholder="Preferred name or nickname"
+							placeholder={m['blacklistEntry.preferredNamePlaceholder']()}
 							disabled={isUpdating || isDeleting}
 						/>
 					</div>
 				{/if}
 
 				<div class="space-y-2">
-					<Label for="reason">Reason for Blacklisting</Label>
+					<Label for="reason">{m['blacklistEntry.reasonLabel']()}</Label>
 					<Textarea
 						id="reason"
 						bind:value={reason}
-						placeholder="Explain why this person is blacklisted..."
+						placeholder={m['blacklistEntry.reasonPlaceholder']()}
 						rows={3}
 						disabled={isUpdating || isDeleting}
 					/>
@@ -232,12 +233,14 @@
 
 				<!-- Metadata -->
 				<div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-					<span class="flex items-center gap-1">
-						<Calendar class="h-3 w-3" />
-						Added {createdAgo}
-					</span>
+					{#if createdAgo}
+						<span class="flex items-center gap-1">
+							<Calendar class="h-3 w-3" />
+							{m['blacklistEntry.addedAgo']({ createdAgo })}
+						</span>
+					{/if}
 					{#if entry.created_by_name}
-						<span>by {entry.created_by_name}</span>
+						<span>{m['blacklistEntry.byUser']({ name: entry.created_by_name })}</span>
 					{/if}
 				</div>
 
@@ -245,30 +248,30 @@
 				{#if showDeleteConfirm}
 					<div class="rounded-md border border-destructive/50 bg-destructive/10 p-3">
 						<p class="text-sm font-medium text-destructive">
-							Are you sure you want to remove this blacklist entry?
+							{m['blacklistEntry.deleteConfirmTitle']()}
 						</p>
 						<p class="mt-1 text-xs text-muted-foreground">
 							{#if isLinkedUser}
-								The user will regain access to this organization.
+								{m['blacklistEntry.linkedUserDeleteHint']()}
 							{:else}
-								This action cannot be undone.
+								{m['blacklistEntry.actionCannotBeUndone']()}
 							{/if}
 						</p>
 					</div>
 				{/if}
 			</div>
 
-			<DialogFooter class="flex-col gap-2 sm:flex-row sm:justify-between">
+			<DialogFooter class="shrink-0 flex-col gap-2 sm:flex-row sm:justify-between">
 				<Button variant="destructive" onclick={handleDelete} disabled={isUpdating || isDeleting}>
 					{#if isDeleting}
 						<Loader2 class="mr-2 h-4 w-4 animate-spin" />
-						Removing...
+						{m['blacklistEntry.removingButton']()}
 					{:else if showDeleteConfirm}
 						<Trash2 class="mr-2 h-4 w-4" />
-						Confirm Remove
+						{m['blacklistEntry.confirmRemoveButton']()}
 					{:else}
 						<Trash2 class="mr-2 h-4 w-4" />
-						Remove from Blacklist
+						{m['blacklistEntry.removeButton']()}
 					{/if}
 				</Button>
 
@@ -278,13 +281,13 @@
 						onclick={() => handleOpenChange(false)}
 						disabled={isUpdating || isDeleting}
 					>
-						Cancel
+						{m['blacklistEntry.cancelButton']()}
 					</Button>
 					<Button onclick={handleSave} disabled={!hasChanges || isUpdating || isDeleting}>
 						{#if isUpdating}
 							<Loader2 class="mr-2 h-4 w-4 animate-spin" />
 						{/if}
-						Save Changes
+						{m['blacklistEntry.saveButton']()}
 					</Button>
 				</div>
 			</DialogFooter>
