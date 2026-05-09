@@ -6,7 +6,7 @@ beforeAll(() => {
 	// `vi.spyOn(el, 'scrollIntoView')` works in each test.
 	if (!Element.prototype.scrollIntoView) {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		(Element.prototype as any).scrollIntoView = () => {};
+		(Element.prototype as any).scrollIntoView = vi.fn();
 	}
 });
 
@@ -31,8 +31,8 @@ describe('scrollToFirstInvalid', () => {
 		b.setAttribute('aria-invalid', 'true');
 		document.body.append(a, b);
 
-		const spyA = vi.spyOn(a, 'scrollIntoView').mockImplementation(() => {});
-		const spyB = vi.spyOn(b, 'scrollIntoView').mockImplementation(() => {});
+		const spyA = vi.spyOn(a, 'scrollIntoView');
+		const spyB = vi.spyOn(b, 'scrollIntoView');
 
 		scrollToFirstInvalid();
 		await nextFrame();
@@ -45,7 +45,7 @@ describe('scrollToFirstInvalid', () => {
 	it('is a no-op when no element is marked aria-invalid', async () => {
 		const input = document.createElement('input');
 		document.body.append(input);
-		const spy = vi.spyOn(input, 'scrollIntoView').mockImplementation(() => {});
+		const spy = vi.spyOn(input, 'scrollIntoView');
 
 		scrollToFirstInvalid();
 		await nextFrame();
@@ -57,7 +57,7 @@ describe('scrollToFirstInvalid', () => {
 		const input = document.createElement('input');
 		input.setAttribute('aria-invalid', 'false');
 		document.body.append(input);
-		const spy = vi.spyOn(input, 'scrollIntoView').mockImplementation(() => {});
+		const spy = vi.spyOn(input, 'scrollIntoView');
 
 		scrollToFirstInvalid();
 		await nextFrame();
