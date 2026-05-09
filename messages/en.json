@@ -650,7 +650,8 @@
 		"errors_tryAgain": "Please try again.",
 		"accessibility_skipTo": "Skip to {section}",
 		"claimSuccess_organization": "You've been added to {name}!",
-		"claimSuccess_event": "You've been invited to {name}!"
+		"claimSuccess_event": "You've been invited to {name}!",
+		"opensInNewTab": "opens in a new tab"
 	},
 	"confirmDeletionPage": {
 		"title": "Confirm Account Deletion - Revel",

@@ -650,7 +650,8 @@
 		"errors_tryAgain": "Riprova.",
 		"accessibility_skipTo": "Passa a {section}",
 		"claimSuccess_organization": "Sei stato aggiunto a {name}!",
-		"claimSuccess_event": "Sei stato invitato a {name}!"
+		"claimSuccess_event": "Sei stato invitato a {name}!",
+		"opensInNewTab": "si apre in una nuova scheda"
 	},
 	"confirmDeletionPage": {
 		"title": "Conferma Eliminazione Account - Revel",
@@ -5427,7 +5428,7 @@
 			"back": "Back",
 			"create": "Create series",
 			"createPending": "Creating…",
-			"createdToast": "Series \"{seriesName}\" created.",
+			"createdToast": "Serie \"{seriesName}\" creata.",
 			"stepAExplainer": "L'evento template è il modello per ogni occorrenza della serie. Configurane i dettagli una volta — titolo, luogo, capienza, biglietti — e li riutilizzeremo per ogni occorrenza pianificata."
 		},
 		"picker": {

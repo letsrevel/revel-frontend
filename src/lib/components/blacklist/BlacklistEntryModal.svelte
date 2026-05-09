@@ -73,11 +73,9 @@
 	// Check if linked to a registered user
 	const isLinkedUser = $derived(!!entry?.user_id);
 
-	// Format created date
+	// Format created date — null when missing so the "Added …" line can be hidden
 	const createdAgo = $derived(
-		entry?.created_at
-			? formatDistanceToNow(new Date(entry.created_at), { addSuffix: true })
-			: m['blacklistEntry.unknownName']()
+		entry?.created_at ? formatDistanceToNow(new Date(entry.created_at), { addSuffix: true }) : null
 	);
 
 	// Check if there are changes
@@ -235,10 +233,12 @@
 
 				<!-- Metadata -->
 				<div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-					<span class="flex items-center gap-1">
-						<Calendar class="h-3 w-3" />
-						{m['blacklistEntry.addedAgo']({ createdAgo })}
-					</span>
+					{#if createdAgo}
+						<span class="flex items-center gap-1">
+							<Calendar class="h-3 w-3" />
+							{m['blacklistEntry.addedAgo']({ createdAgo })}
+						</span>
+					{/if}
 					{#if entry.created_by_name}
 						<span>{m['blacklistEntry.byUser']({ name: entry.created_by_name })}</span>
 					{/if}

@@ -650,7 +650,8 @@
 		"errors_tryAgain": "Bitte versuche es erneut.",
 		"accessibility_skipTo": "Zu {section} springen",
 		"claimSuccess_organization": "Du wurdest zu {name} hinzugefügt!",
-		"claimSuccess_event": "Du wurdest zu {name} eingeladen!"
+		"claimSuccess_event": "Du wurdest zu {name} eingeladen!",
+		"opensInNewTab": "öffnet in neuem Tab"
 	},
 	"confirmDeletionPage": {
 		"title": "Kontolöschung bestätigen - Revel",
@@ -5427,7 +5428,7 @@
 			"back": "Back",
 			"create": "Create series",
 			"createPending": "Creating…",
-			"createdToast": "Series \"{seriesName}\" created.",
+			"createdToast": "Serie „{seriesName}\" erstellt.",
 			"stepAExplainer": "Das Template-Event ist die Vorlage für jede Veranstaltung dieser Serie. Konfiguriere die Details einmal — Titel, Ort, Kapazität, Ticketing — und wir nutzen sie für jede geplante Veranstaltung."
 		},
 		"picker": {
