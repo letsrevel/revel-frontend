@@ -35,6 +35,7 @@
 	import SaveBar from './SaveBar.svelte';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { toast } from 'svelte-sonner';
+	import { scrollToFirstInvalid } from '$lib/utils/scroll';
 
 	interface Props {
 		organization: OrganizationRetrieveSchema;
@@ -369,15 +370,6 @@
 	}
 
 	// --- Validation ---
-
-	function scrollToFirstInvalid(): void {
-		requestAnimationFrame(() => {
-			const el = document.querySelector('[aria-invalid="true"]');
-			if (el && 'scrollIntoView' in el) {
-				el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-			}
-		});
-	}
 
 	function validateEssentials(): boolean {
 		const errors: Record<string, string> = {};

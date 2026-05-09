@@ -17,6 +17,7 @@
 	import RecurrencePicker from './RecurrencePicker.svelte';
 	import RecurrenceSummary from './RecurrenceSummary.svelte';
 	import { mutualExclusionGuard } from '$lib/utils/recurrence';
+	import { scrollToFirstInvalid } from '$lib/utils/scroll';
 	import { organizationadminrecurringeventsCreateRecurringEvent } from '$lib/api/generated/sdk.gen';
 	import type {
 		EventCreateSchema,
@@ -403,7 +404,7 @@
 				if (Object.keys(evErrors).length > 0) {
 					validationErrors = evErrors;
 					currentStep = 'event';
-					scrollToFirstError();
+					scrollToFirstInvalid();
 				}
 				if (Object.keys(rcErrors).length > 0) {
 					recurrenceErrors = rcErrors;
@@ -437,15 +438,6 @@
 			if (path) out[path] = msg;
 		}
 		return out;
-	}
-
-	function scrollToFirstError(): void {
-		requestAnimationFrame(() => {
-			const el = document.querySelector('[aria-invalid="true"], .text-destructive');
-			if (el && 'scrollIntoView' in el) {
-				el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-			}
-		});
 	}
 
 	function submit(): void {
