@@ -87,7 +87,7 @@
 			is_active: formData.is_active,
 			max_uses_per_user: parseInt(formData.max_uses_per_user) || 1,
 			min_purchase_amount: formData.min_purchase_amount || '0',
-			currency: formData.currency || null,
+			currency: (formData.currency || null) as DiscountCodeUpdateSchema['currency'],
 			valid_from: formData.valid_from || null,
 			valid_until: formData.valid_until || null,
 			max_uses: formData.max_uses ? parseInt(formData.max_uses) : null,

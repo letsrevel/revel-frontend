@@ -68,7 +68,8 @@
 			min_purchase_amount: formData.min_purchase_amount || '0'
 		};
 
-		if (formData.currency) payload.currency = formData.currency;
+		if (formData.currency)
+			payload.currency = formData.currency as DiscountCodeCreateSchema['currency'];
 		if (formData.valid_from) payload.valid_from = formData.valid_from;
 		if (formData.valid_until) payload.valid_until = formData.valid_until;
 		if (formData.max_uses) payload.max_uses = parseInt(formData.max_uses);
