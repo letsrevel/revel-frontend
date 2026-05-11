@@ -17,17 +17,36 @@
 	const { tier, onEdit, onMoveUp, onMoveDown }: Props = $props();
 
 	const CURRENCY_SYMBOLS: Record<string, string> = {
-		EUR: '€',
-		USD: '$',
-		GBP: '£',
+		AUD: 'A$',
+		BRL: 'R$',
+		CAD: 'C$',
 		CHF: 'CHF',
-		BGN: 'лв',
+		CNY: 'CN¥',
 		CZK: 'Kč',
 		DKK: 'kr',
+		EUR: '€',
+		GBP: '£',
+		HKD: 'HK$',
 		HUF: 'Ft',
+		IDR: 'Rp',
+		ILS: '₪',
+		INR: '₹',
+		ISK: 'kr',
+		JPY: '¥',
+		KRW: '₩',
+		MXN: 'MX$',
+		MYR: 'RM',
+		NOK: 'kr',
+		NZD: 'NZ$',
+		PHP: '₱',
 		PLN: 'zł',
 		RON: 'lei',
-		SEK: 'kr'
+		SEK: 'kr',
+		SGD: 'S$',
+		THB: '฿',
+		TRY: '₺',
+		USD: '$',
+		ZAR: 'R'
 	};
 
 	function formatPrice(amount: string | number, currency: string): string {
