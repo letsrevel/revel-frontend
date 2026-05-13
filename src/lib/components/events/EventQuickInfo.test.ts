@@ -64,7 +64,7 @@ describe('EventQuickInfo', () => {
 	it('displays private event type', () => {
 		const privateEvent = { ...mockEvent, event_type: 'private' as const };
 		render(EventQuickInfo, { props: { event: privateEvent } });
-		expect(screen.getByText('Private Event')).toBeInTheDocument();
+		expect(screen.getByText('Invitation only')).toBeInTheDocument();
 	});
 
 	it('displays members-only event type', () => {

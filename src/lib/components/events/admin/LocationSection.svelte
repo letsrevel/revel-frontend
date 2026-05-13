@@ -281,7 +281,7 @@
 						>{m['detailsStep.addressVisibilityAttendeesOnly']?.() ?? 'Attendees Only'}</option
 					>
 					<option value="private"
-						>{m['detailsStep.addressVisibilityPrivate']?.() ?? 'Private'}</option
+						>{m['detailsStep.addressVisibilityPrivate']?.() ?? 'Invitation only'}</option
 					>
 				</select>
 				<p class="text-xs text-muted-foreground">

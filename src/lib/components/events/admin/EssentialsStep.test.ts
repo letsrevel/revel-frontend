@@ -66,7 +66,8 @@ describe('EssentialsStep', () => {
 		render(EssentialsStep, { props: mockProps });
 
 		expect(screen.getByText('Public')).toBeInTheDocument();
-		expect(screen.getByText('Private')).toBeInTheDocument();
+		// Renders for both visibility and event_type radios
+		expect(screen.getAllByText('Invitation only').length).toBeGreaterThan(0);
 		expect(screen.getByText('Members Only')).toBeInTheDocument();
 		expect(screen.getByText('Staff Only')).toBeInTheDocument();
 	});
