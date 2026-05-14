@@ -16,6 +16,7 @@
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Shield, Plus, Pencil, Trash2, Loader2 } from 'lucide-svelte';
 	import TierFormModal from '$lib/components/members/TierFormModal.svelte';
+	import PlansList from '$lib/components/members/PlansList.svelte';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -259,6 +260,9 @@
 							<Trash2 class="h-4 w-4" />
 						</Button>
 					</div>
+				</div>
+				<div class="mt-3 border-t pt-3">
+					<PlansList {organization} {tier} />
 				</div>
 			</div>
 		{/each}
