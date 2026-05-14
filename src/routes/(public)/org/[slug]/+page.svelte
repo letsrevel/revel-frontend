@@ -27,6 +27,7 @@
 	import RequestMembershipButton from '$lib/components/organization/RequestMembershipButton.svelte';
 	import OrgContactButton from '$lib/components/organization/OrgContactButton.svelte';
 	import ClaimMembershipButton from '$lib/components/organizations/ClaimMembershipButton.svelte';
+	import OrgMembershipInline from '$lib/components/account/OrgMembershipInline.svelte';
 	import FollowButton from '$lib/components/common/FollowButton.svelte';
 	import { SeoHead } from '$lib/seo';
 	import * as m from '$lib/paraglide/messages.js';
@@ -335,6 +336,12 @@
 				{/if}
 			</div>
 		</div>
+
+		{#if data.isAuthenticated && organization.id}
+			<div class="mb-6">
+				<OrgMembershipInline orgId={organization.id} orgName={organization.name} />
+			</div>
+		{/if}
 
 		<!-- Organization Description -->
 		<div class="mb-12">
