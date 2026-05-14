@@ -111,4 +111,7 @@ describe('getDateLine', () => {
 	it('expired → "Ended …"', () => {
 		expect(getDateLine(makeSub('expired')).kind).toBe('ended');
 	});
+	it('pending → kind: pending', () => {
+		expect(getDateLine(makeSub('pending')).kind).toBe('pending');
+	});
 });
