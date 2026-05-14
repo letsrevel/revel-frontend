@@ -45,7 +45,12 @@
 	});
 
 	const subsQuery = createQuery(() => ({
-		queryKey: ['organization', organization.slug, 'subscriptions', { search: debounced, page: pageNum }],
+		queryKey: [
+			'organization',
+			organization.slug,
+			'subscriptions',
+			{ search: debounced, page: pageNum }
+		],
 		queryFn: async () => {
 			const res = await organizationadminsubscriptionsListSubscriptions({
 				path: { slug: organization.slug },
@@ -131,7 +136,9 @@
 						<th class="px-3 py-2 text-left">{m['orgAdmin.members.subscriptions.col.user']()}</th>
 						<th class="px-3 py-2 text-left">{m['orgAdmin.members.subscriptions.col.plan']()}</th>
 						<th class="px-3 py-2 text-left">{m['orgAdmin.members.subscriptions.col.status']()}</th>
-						<th class="px-3 py-2 text-left">{m['orgAdmin.members.subscriptions.col.periodEnd']()}</th>
+						<th class="px-3 py-2 text-left"
+							>{m['orgAdmin.members.subscriptions.col.periodEnd']()}</th
+						>
 					</tr>
 				</thead>
 				<tbody>

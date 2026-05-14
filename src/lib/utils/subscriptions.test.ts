@@ -60,17 +60,17 @@ describe('formatPlanPrice', () => {
 		expect(formatPlanPrice(basePlan, 'en')).toBe('€10.00 / month');
 	});
 	it('formats annual', () => {
-		expect(
-			formatPlanPrice({ ...basePlan, period_unit: 'year', period_count: 1 }, 'en')
-		).toBe('€10.00 / year');
+		expect(formatPlanPrice({ ...basePlan, period_unit: 'year', period_count: 1 }, 'en')).toBe(
+			'€10.00 / year'
+		);
 	});
 	it('formats N-month', () => {
 		expect(formatPlanPrice({ ...basePlan, period_count: 3 }, 'en')).toBe('€10.00 / 3 months');
 	});
 	it('formats N-year', () => {
-		expect(
-			formatPlanPrice({ ...basePlan, period_unit: 'year', period_count: 2 }, 'en')
-		).toBe('€10.00 / 2 years');
+		expect(formatPlanPrice({ ...basePlan, period_unit: 'year', period_count: 2 }, 'en')).toBe(
+			'€10.00 / 2 years'
+		);
 	});
 });
 

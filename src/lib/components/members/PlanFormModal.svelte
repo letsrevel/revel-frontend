@@ -100,10 +100,7 @@
 			</DialogTitle>
 		</DialogHeader>
 
-		<form
-			onsubmit={handleSubmit}
-			class="space-y-4"
-		>
+		<form onsubmit={handleSubmit} class="space-y-4">
 			<div class="space-y-1">
 				<Label for="plan-name">{m['orgAdmin.members.plans.form.name']()}</Label>
 				<Input id="plan-name" bind:value={name} maxlength={255} required disabled={isSaving} />

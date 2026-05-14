@@ -103,7 +103,8 @@ export function getDateLine(sub: MySubscriptionSchema | SubscriptionSchema): Dat
 	if (sub.status === 'cancelled' || sub.status === 'expired') {
 		return { kind: 'ended', date: sub.cancelled_at ?? sub.updated_at };
 	}
-	if (sub.status === 'past_due') return { kind: 'period_ends', date: sub.current_period_end ?? null };
+	if (sub.status === 'past_due')
+		return { kind: 'period_ends', date: sub.current_period_end ?? null };
 	// active
 	if (sub.cancel_at_period_end) return { kind: 'cancels', date: sub.current_period_end ?? null };
 	return { kind: 'renewal', date: sub.current_period_end ?? null };

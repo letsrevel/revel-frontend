@@ -1,9 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import type {
-		SubscriptionSchema,
-		PaymentRecordSchema
-	} from '$lib/api/generated/types.gen';
+	import type { SubscriptionSchema, PaymentRecordSchema } from '$lib/api/generated/types.gen';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
