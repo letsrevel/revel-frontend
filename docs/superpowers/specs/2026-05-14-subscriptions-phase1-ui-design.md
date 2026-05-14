@@ -427,7 +427,7 @@ Accessibility: axe scan on each new route + manual screen-reader pass.
 
 ## Known backend gaps (coordinate with PR 403)
 
-Verified against `origin/dev/subscriptions` (PR 403) on 2026-05-14.
+Verified against `origin/dev/subscriptions` (PR 403) on 2026-05-14. Backend issue [#404](https://github.com/letsrevel/revel-backend/issues/404) tracks gaps #1 and #2 (proposed pre-403 PR).
 
 1. **No `GET /subscriptions/{id}/payments` endpoint.** ❌ Still missing in PR 403. The drawer can only display payments observed via the create-payment mutation cache in the current session. Mitigation in Phase 1: accept empty payments on drawer open, append from successful `POST .../payments` responses, and treat the table as session-cached. **Pre-403 backend PR proposed** — see follow-up issue (low conflict risk; additive route).
 2. **`MySubscriptionSchema` returns `organization_id` only** — no name/slug/logo. ❌ Still unenriched in PR 403. Member listing page must batch-fetch org metadata via existing endpoints. **Pre-403 backend PR proposed** — same follow-up issue (low conflict risk; additive fields).
