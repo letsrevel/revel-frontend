@@ -11,12 +11,13 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Tabs, TabsList, TabsTrigger, TabsContent } from '$lib/components/ui/tabs';
 	import { Button } from '$lib/components/ui/button';
-	import { Users, UserCog, UserPlus, Shield, Link, Plus } from 'lucide-svelte';
+	import { Users, UserCog, UserPlus, Shield, Link, Plus, CreditCard } from 'lucide-svelte';
 	import MembersTab from '$lib/components/members/MembersTab.svelte';
 	import StaffTab from '$lib/components/members/StaffTab.svelte';
 	import MembershipRequestsTab from '$lib/components/members/MembershipRequestsTab.svelte';
 	import TiersTab from '$lib/components/members/TiersTab.svelte';
 	import OrganizationTokensTab from '$lib/components/members/OrganizationTokensTab.svelte';
+	import SubscriptionsTab from '$lib/components/members/SubscriptionsTab.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -165,6 +166,12 @@
 					{/if}
 				</TabsTrigger>
 
+				<TabsTrigger value="subscriptions" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
+					<CreditCard class="h-4 w-4 shrink-0" />
+					<span class="hidden sm:inline">{m['orgAdmin.members.tabs.subscriptions']()}</span>
+					<span class="sm:hidden">{m['orgAdmin.members.tabs.subscriptions']()}</span>
+				</TabsTrigger>
+
 				<TabsTrigger value="tokens" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
 					<Link class="h-4 w-4 shrink-0" />
 					<span class="hidden sm:inline">Invite Links</span>
@@ -203,6 +210,11 @@
 				isLoading={tiersQuery.isLoading}
 				isError={tiersQuery.isError}
 			/>
+		</TabsContent>
+
+		<!-- Subscriptions Tab -->
+		<TabsContent value="subscriptions" class="space-y-4">
+			<SubscriptionsTab {organization} />
 		</TabsContent>
 
 		<!-- Tokens Tab -->
