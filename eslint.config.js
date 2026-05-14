@@ -58,6 +58,7 @@ export default [
 			'build/',
 			'.svelte-kit/',
 			'dist/',
+			'.claude/**',
 			'src/lib/api/generated/**',
 			'src/lib/paraglide/**',
 			'*.config.js',

@@ -12,3 +12,4 @@ yarn.lock
 .claude
 .dev-docs
 *.md
+src/lib/api/generated
