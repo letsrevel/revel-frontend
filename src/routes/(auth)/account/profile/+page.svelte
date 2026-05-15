@@ -334,8 +334,10 @@
 		<div class="grid gap-6 sm:grid-cols-2">
 			<div class="space-y-2">
 				<label for="first_name" class="block text-sm font-medium">
-					First Name
-					<span class="text-xs font-normal text-muted-foreground">(optional)</span>
+					{m['profile.firstName_label']()}
+					<span class="text-xs font-normal text-muted-foreground"
+						>{m['profile.preferredName_labelOptional']()}</span
+					>
 				</label>
 				<input
 					id="first_name"
@@ -358,8 +360,10 @@
 
 			<div class="space-y-2">
 				<label for="last_name" class="block text-sm font-medium">
-					Last Name
-					<span class="text-xs font-normal text-muted-foreground">(optional)</span>
+					{m['profile.lastName_label']()}
+					<span class="text-xs font-normal text-muted-foreground"
+						>{m['profile.preferredName_labelOptional']()}</span
+					>
 				</label>
 				<input
 					id="last_name"
@@ -383,8 +387,10 @@
 
 		<div class="space-y-2">
 			<label for="preferred_name" class="block text-sm font-medium">
-				Preferred Name
-				<span class="text-xs font-normal text-muted-foreground">(optional)</span>
+				{m['profile.preferredName_label']()}
+				<span class="text-xs font-normal text-muted-foreground"
+					>{m['profile.preferredName_labelOptional']()}</span
+				>
 			</label>
 			<input
 				id="preferred_name"
