@@ -2536,7 +2536,7 @@
 		"flatFeeHelp": "Optionaler Pauschalbetrag, der unabhängig von der Stufe einbehalten wird.",
 		"bracketsTitle": "Rückerstattungsstufen",
 		"bracketsHelp": "Wird mindestens N Stunden vor Veranstaltung storniert, werden X% des Preises erstattet. Stufen müssen nach absteigender Stundenzahl und nicht steigender Prozentzahl sortiert sein — die früheste Stufe ist die großzügigste.",
-		"bracketHoursLabel": "Stunden vor Veranstaltung",
+		"bracketHoursLabel": "Zeit vor Veranstaltung",
 		"bracketPercentageLabel": "% Rückerstattung",
 		"addBracket": "Weitere Stufe hinzufügen",
 		"addBracketDisabledHint": "Die letzte Stufe deckt bereits bis 0 Stunden vor der Veranstaltung ab — entferne oder bearbeite sie zuerst.",

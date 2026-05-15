@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { RefundPolicy, RefundPolicyTier } from '$lib/api/generated/types.gen';
+	import { DurationInput } from '$lib/components/forms';
 	import { Label } from '$lib/components/ui/label';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
@@ -204,21 +205,18 @@
 					class="grid grid-cols-[1fr_1fr_auto] items-end gap-2 rounded-md border border-border bg-background p-3"
 				>
 					<div>
-						<Label for={`refund-hours-${i}`} class="text-xs">
-							{m['refundPolicy.bracketHoursLabel']()}
-						</Label>
-						<Input
+						<DurationInput
 							id={`refund-hours-${i}`}
-							type="number"
-							min="0"
-							step="1"
-							value={bracket.hoursBeforeEvent}
-							oninput={(e) =>
-								updateBracket(
-									i,
-									'hoursBeforeEvent',
-									(e.currentTarget as HTMLInputElement).value.replace(/[^\d]/g, '')
-								)}
+							label={m['refundPolicy.bracketHoursLabel']()}
+							storageUnit="hours"
+							defaultUnit="days"
+							bind:value={
+								() => {
+									const n = Number(bracket.hoursBeforeEvent);
+									return Number.isFinite(n) && bracket.hoursBeforeEvent !== '' ? n : 0;
+								},
+								(v) => updateBracket(i, 'hoursBeforeEvent', String(v ?? 0))
+							}
 							{disabled}
 						/>
 					</div>

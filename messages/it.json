@@ -2536,7 +2536,7 @@
 		"flatFeeHelp": "Commissione fissa facoltativa trattenuta da ogni rimborso indipendentemente dalla fascia.",
 		"bracketsTitle": "Fasce di rimborso",
 		"bracketsHelp": "Se annullato almeno N ore prima dell'evento, rimborsa X% del prezzo. Le fasce devono essere ordinate per ore decrescenti e percentuali non crescenti — la fascia più anticipata è la più generosa.",
-		"bracketHoursLabel": "Ore prima dell'evento",
+		"bracketHoursLabel": "Tempo prima dell'evento",
 		"bracketPercentageLabel": "% rimborso",
 		"addBracket": "Aggiungi un'altra fascia",
 		"addBracketDisabledHint": "L'ultima fascia copre già fino a 0 ore prima dell'evento — rimuovila o modificala prima.",

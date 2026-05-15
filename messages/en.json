@@ -2536,7 +2536,7 @@
 		"flatFeeHelp": "Optional flat fee retained from each refund regardless of the bracket.",
 		"bracketsTitle": "Refund brackets",
 		"bracketsHelp": "If cancelled at least N hours before the event, refund X% of the ticket price. Brackets must be sorted by descending hours and non-increasing percentages — your earliest bracket is the most generous.",
-		"bracketHoursLabel": "Hours before event",
+		"bracketHoursLabel": "Time before event",
 		"bracketPercentageLabel": "Refund %",
 		"addBracket": "Add another bracket",
 		"addBracketDisabledHint": "Last bracket already covers up to 0 hours before the event — remove or edit it first.",
