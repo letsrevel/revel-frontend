@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { DurationInput } from '$lib/components/forms';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
@@ -440,49 +441,29 @@
 
 		<!-- Duration Settings -->
 		<div class="grid gap-4 sm:grid-cols-2">
-			<div class="space-y-2">
-				<Label for="max-submission-age"
-					>{m['questionnaireEditPage.advanced.submissionValidityLabel']()}</Label
-				>
-				<Input
-					id="max-submission-age"
-					type="number"
-					value={maxSubmissionAge}
-					oninput={(e) => {
-						const val = e.currentTarget.value;
-						onMaxSubmissionAgeChange(val === '' ? null : Number(val));
-					}}
-					min="0"
-					step="1"
-					placeholder={m['questionnaireEditPage.advanced.submissionValidityPlaceholder']()}
-					disabled={!canEdit}
-				/>
-				<p class="text-xs text-muted-foreground">
-					{m['questionnaireEditPage.advanced.submissionValidityDescription']()}
-				</p>
-			</div>
+			<DurationInput
+				id="max-submission-age"
+				label={m['questionnaireEditPage.advanced.submissionValidityLabel']()}
+				helpText={m['questionnaireEditPage.advanced.submissionValidityDescription']()}
+				bind:value={() => maxSubmissionAge, (v) => onMaxSubmissionAgeChange(v)}
+				storageUnit="days"
+				defaultUnit="days"
+				emptyValue={null}
+				emptyLabel={m['questionnaireEditPage.advanced.submissionValidityNoLimit']()}
+				disabled={!canEdit}
+			/>
 
-			<div class="space-y-2">
-				<Label for="can-retake-after"
-					>{m['questionnaireEditPage.advanced.retakeCooldownLabel']()}</Label
-				>
-				<Input
-					id="can-retake-after"
-					type="number"
-					value={canRetakeAfter}
-					oninput={(e) => {
-						const val = e.currentTarget.value;
-						onCanRetakeAfterChange(val === '' ? null : Number(val));
-					}}
-					min="0"
-					step="1"
-					placeholder={m['questionnaireEditPage.advanced.retakeCooldownPlaceholder']()}
-					disabled={!canEdit}
-				/>
-				<p class="text-xs text-muted-foreground">
-					{m['questionnaireEditPage.advanced.retakeCooldownDescription']()}
-				</p>
-			</div>
+			<DurationInput
+				id="can-retake-after"
+				label={m['questionnaireEditPage.advanced.retakeCooldownLabel']()}
+				helpText={m['questionnaireEditPage.advanced.retakeCooldownDescription']()}
+				bind:value={() => canRetakeAfter, (v) => onCanRetakeAfterChange(v)}
+				storageUnit="hours"
+				defaultUnit="hours"
+				emptyValue={null}
+				emptyLabel={m['questionnaireEditPage.advanced.retakeCooldownNoLimit']()}
+				disabled={!canEdit}
+			/>
 		</div>
 
 		<!-- Max Attempts -->
