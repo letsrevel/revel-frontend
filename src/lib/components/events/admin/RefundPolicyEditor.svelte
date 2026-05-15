@@ -61,21 +61,33 @@
 	 * Pick a strictly-smaller default for the new bracket's hours_before_event.
 	 * Backend rule: tiers must be sorted by strictly-descending hours, so the new
 	 * bracket needs hours < last.hours. We can't add anything below 0.
+	 *
+	 * Halving prefers whole days while there are >=2 days of headroom so the
+	 * DurationInput picker renders in days. Falls back to halving hours once
+	 * the remainder is sub-2-day.
 	 */
 	function nextBracketDefaults(last: BracketDraft | undefined): BracketDraft | null {
 		if (!last) {
-			// Starting fresh: 24h refund window with full refund is a sensible seed.
-			return { hoursBeforeEvent: '24', refundPercentage: '100' };
+			// Starting fresh: 3-day refund window with full refund. Multi-day so the
+			// picker renders as days and the next halving stays in days for one more step.
+			return { hoursBeforeEvent: '72', refundPercentage: '100' };
 		}
 		const lastHours = Number(last.hoursBeforeEvent);
 		if (!Number.isFinite(lastHours) || lastHours <= 0) {
 			// No room below — caller should disable the button before reaching here.
 			return null;
 		}
+		const lastDays = lastHours / 24;
+		let nextHours: number;
+		if (lastDays >= 2) {
+			const halfDays = Math.floor(lastDays / 2);
+			nextHours = halfDays * 24;
+		} else {
+			const halfHours = Math.floor(lastHours / 2);
+			nextHours = halfHours < lastHours ? halfHours : lastHours - 1;
+		}
+		nextHours = Math.max(0, nextHours);
 		const lastPct = Number(last.refundPercentage);
-		const halfHours = Math.floor(lastHours / 2);
-		// Halving floors to 0 once lastHours is 1; clamp to lastHours-1 so the rule holds.
-		const nextHours = Math.max(0, halfHours < lastHours ? halfHours : lastHours - 1);
 		const nextPct = Math.max(0, Math.floor((Number.isFinite(lastPct) ? lastPct : 0) / 2));
 		return {
 			hoursBeforeEvent: String(nextHours),
