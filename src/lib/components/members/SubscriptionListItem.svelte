@@ -10,6 +10,7 @@
 	}
 
 	const { sub, onClick }: Props = $props();
+	const tierName = $derived(sub.plan.tier_name);
 
 	function fmtDate(d: string | null | undefined): string {
 		if (!d) return '—';
@@ -35,6 +36,7 @@
 		<div class="font-medium">{sub.user_display_name}</div>
 		<div class="text-xs text-muted-foreground">{sub.user_email}</div>
 	</td>
+	<td class="px-3 py-2 text-sm">{tierName || '—'}</td>
 	<td class="px-3 py-2">
 		<div>{sub.plan.name}</div>
 		<div class="text-xs text-muted-foreground">{formatPlanPrice(sub.plan)}</div>
@@ -57,7 +59,8 @@
 		<StatusBadge status={sub.status} />
 	</div>
 	<div class="mt-2 text-sm">
-		{sub.plan.name} · {formatPlanPrice(sub.plan)}
+		{#if tierName}<span class="font-medium">{tierName}</span> ·
+		{/if}{sub.plan.name} · {formatPlanPrice(sub.plan)}
 	</div>
 	<div class="mt-1 text-xs text-muted-foreground">
 		{m['orgAdmin.members.subscriptions.col.periodEnd']()}: {fmtDate(sub.current_period_end)}

@@ -17,6 +17,13 @@
 	import SubscriptionListItem from './SubscriptionListItem.svelte';
 	import SubscriptionCreateModal from './SubscriptionCreateModal.svelte';
 	import SubscriptionDrawer from './SubscriptionDrawer.svelte';
+	import { onDestroy } from 'svelte';
+
+	// Buffer matching the bits-ui Dialog close animation. Chaining a Dialog
+	// open inside another Dialog's close handler in the same tick leaves
+	// `pointer-events: none` stuck on <body>; waiting for the close to settle
+	// avoids that.
+	const DIALOG_CLOSE_MS = 250;
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -32,6 +39,8 @@
 	let pageNum = $state(1);
 	let createOpen = $state(false);
 	let drawerSubId = $state<string | null>(null);
+	let drawerOpenTimer: ReturnType<typeof setTimeout> | undefined;
+	onDestroy(() => clearTimeout(drawerOpenTimer));
 
 	let timer: ReturnType<typeof setTimeout> | undefined;
 	$effect(() => {
@@ -89,7 +98,11 @@
 				queryKey: ['organization', organization.slug, 'members']
 			});
 			createOpen = false;
-			drawerSubId = sub.id ?? null;
+			const id = sub.id ?? null;
+			clearTimeout(drawerOpenTimer);
+			drawerOpenTimer = setTimeout(() => {
+				drawerSubId = id;
+			}, DIALOG_CLOSE_MS);
 		},
 		onError: (err: Error) => alert(`Failed to create subscription: ${err.message}`)
 	}));
@@ -140,6 +153,7 @@
 				<thead class="border-b">
 					<tr>
 						<th class="px-3 py-2 text-left">{m['orgAdmin.members.subscriptions.col.user']()}</th>
+						<th class="px-3 py-2 text-left">{m['orgAdmin.members.subscriptions.col.tier']()}</th>
 						<th class="px-3 py-2 text-left">{m['orgAdmin.members.subscriptions.col.plan']()}</th>
 						<th class="px-3 py-2 text-left">{m['orgAdmin.members.subscriptions.col.status']()}</th>
 						<th class="px-3 py-2 text-left"

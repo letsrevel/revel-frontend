@@ -1,14 +1,10 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
-	import {
-		organizationadminmembersListMembershipTiers,
-		organizationadminsubscriptionsListPlans
-	} from '$lib/api/generated/sdk.gen';
+	import { organizationadminsubscriptionsListOrganizationPlans } from '$lib/api/generated/sdk.gen';
 	import type {
 		OrganizationAdminDetailSchema,
 		PlanSchema,
-		MembershipTierSchema,
 		OrganizationMemberSchema,
 		SubscriptionCreateSchema
 	} from '$lib/api/generated/types.gen';
@@ -43,40 +39,38 @@
 	let notes = $state('');
 	let errors = $state<{ user?: string; plan?: string }>({});
 
-	const tiersQuery = createQuery(() => ({
-		queryKey: ['organization', organization.slug, 'membership-tiers'],
+	const plansQuery = createQuery(() => ({
+		queryKey: ['organization', organization.slug, 'plans', { is_active: true }],
 		queryFn: async () => {
-			const res = await organizationadminmembersListMembershipTiers({
+			const res = await organizationadminsubscriptionsListOrganizationPlans({
 				path: { slug: organization.slug },
+				query: { is_active: true },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			if (res.error) throw new Error('Failed to load tiers');
-			return res.data as MembershipTierSchema[];
+			if (res.error) throw new Error('Failed to load plans');
+			return res.data as PlanSchema[];
 		},
 		enabled: open && !!accessToken
 	}));
 
-	let allPlans = $state<PlanSchema[]>([]);
-	$effect(() => {
-		if (!open || !tiersQuery.data) return;
-		(async () => {
-			const all: PlanSchema[] = [];
-			for (const t of tiersQuery.data) {
-				const r = await organizationadminsubscriptionsListPlans({
-					path: { slug: organization.slug, tier_id: t.id ?? '' },
-					headers: { Authorization: `Bearer ${accessToken}` }
-				});
-				if (!r.error && r.data) {
-					all.push(...(r.data as PlanSchema[]).filter((p) => p.is_active !== false));
-				}
+	// Group plans by tier (preserves backend order: tier asc, plan asc).
+	const plansByTier = $derived.by(() => {
+		const all = plansQuery.data ?? [];
+		const groups = new Map<string, { tierName: string; plans: PlanSchema[] }>();
+		for (const p of all) {
+			let g = groups.get(p.tier_id);
+			if (!g) {
+				g = { tierName: p.tier_name, plans: [] };
+				groups.set(p.tier_id, g);
 			}
-			allPlans = all;
-		})();
+			g.plans.push(p);
+		}
+		return Array.from(groups, ([tierId, g]) => ({ tierId, ...g }));
 	});
 
 	// Sync currency to selected plan's currency
 	$effect(() => {
-		const p = allPlans.find((pl) => pl.id === planId);
+		const p = (plansQuery.data ?? []).find((pl) => pl.id === planId);
 		if (p) currency = p.currency;
 	});
 
@@ -150,8 +144,12 @@
 					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
 					<option value="" disabled>—</option>
-					{#each allPlans as p (p.id)}
-						<option value={p.id ?? ''}>{p.name} — {formatPlanPrice(p)}</option>
+					{#each plansByTier as group (group.tierId)}
+						<optgroup label={group.tierName}>
+							{#each group.plans as p (p.id)}
+								<option value={p.id ?? ''}>{p.name} — {formatPlanPrice(p)}</option>
+							{/each}
+						</optgroup>
 					{/each}
 				</select>
 				{#if errors.plan}<p class="text-sm text-red-600">{errors.plan}</p>{/if}
