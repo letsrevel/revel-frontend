@@ -18,7 +18,19 @@
 </script>
 
 <!-- Desktop row -->
-<tr class="hidden cursor-pointer hover:bg-accent md:table-row" onclick={onClick}>
+<tr
+	class="hidden cursor-pointer hover:bg-accent focus-visible:bg-accent focus-visible:outline-none md:table-row"
+	tabindex="0"
+	role="button"
+	aria-label={m['orgAdmin.members.subscriptions.openDrawer']()}
+	onclick={onClick}
+	onkeydown={(e) => {
+		if (e.key === 'Enter' || e.key === ' ') {
+			e.preventDefault();
+			onClick();
+		}
+	}}
+>
 	<td class="px-3 py-2">
 		<div class="font-medium">{sub.user_display_name}</div>
 		<div class="text-xs text-muted-foreground">{sub.user_email}</div>

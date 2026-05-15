@@ -18,6 +18,8 @@
 	const { organization, value, onSelect, placeholder = '' }: Props = $props();
 	const accessToken = $derived(authStore.accessToken);
 
+	const listboxId = $props.id();
+
 	let query = $state('');
 	let debounced = $state('');
 	let open = $state(false);
@@ -61,29 +63,32 @@
 		onfocus={() => (open = true)}
 		onblur={() => setTimeout(() => (open = false), 150)}
 		{placeholder}
+		role="combobox"
 		aria-autocomplete="list"
 		aria-expanded={open}
+		aria-controls={listboxId}
 	/>
 	{#if open && results.length > 0}
 		<ul
+			id={listboxId}
 			role="listbox"
 			class="absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-md border bg-popover shadow-lg"
 		>
 			{#each results as r (r.user.id ?? r.user.email ?? r.user.display_name)}
-				<li role="option" aria-selected={value?.user.id === r.user.id}>
-					<button
-						type="button"
-						class="block w-full px-3 py-2 text-left text-sm hover:bg-accent"
-						onmousedown={(e) => {
-							e.preventDefault();
-							pick(r);
-						}}
-					>
-						<div class="font-medium">{r.user.display_name}</div>
-						{#if r.user.email}
-							<div class="text-xs text-muted-foreground">{r.user.email}</div>
-						{/if}
-					</button>
+				<li
+					role="option"
+					aria-selected={value?.user.id === r.user.id}
+					tabindex="-1"
+					class="cursor-pointer px-3 py-2 text-sm hover:bg-accent aria-selected:bg-accent"
+					onmousedown={(e) => {
+						e.preventDefault();
+						pick(r);
+					}}
+				>
+					<div class="font-medium">{r.user.display_name}</div>
+					{#if r.user.email}
+						<div class="text-xs text-muted-foreground">{r.user.email}</div>
+					{/if}
 				</li>
 			{/each}
 		</ul>

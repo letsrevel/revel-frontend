@@ -24,9 +24,9 @@
 	<table class="w-full text-sm">
 		<thead class="border-b text-left">
 			<tr>
-				<th class="py-2">Date</th>
-				<th class="py-2">Amount</th>
-				<th class="py-2">Status</th>
+				<th class="py-2">{m['orgAdmin.members.subscriptions.drawer.paymentsCol.date']()}</th>
+				<th class="py-2">{m['orgAdmin.members.subscriptions.drawer.paymentsCol.amount']()}</th>
+				<th class="py-2">{m['orgAdmin.members.subscriptions.drawer.paymentsCol.status']()}</th>
 				<th class="py-2"></th>
 			</tr>
 		</thead>

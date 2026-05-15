@@ -32,6 +32,10 @@
 	let errors = $state<{ name?: string; price?: string; period?: string }>({});
 
 	$effect(() => {
+		// Track `open` so reopening the create modal after abandoning a prior
+		// attempt resets the fields. Tracking `plan` alone misses the transition
+		// from closed → open when plan is null both times.
+		open;
 		if (plan) {
 			name = plan.name;
 			description = plan.description ?? '';
@@ -162,8 +166,8 @@
 						disabled={isSaving}
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					>
-						<option value="month">month(s)</option>
-						<option value="year">year(s)</option>
+						<option value="month">{m['orgAdmin.members.plans.form.periodMonth']()}</option>
+						<option value="year">{m['orgAdmin.members.plans.form.periodYear']()}</option>
 					</select>
 				</div>
 			</div>

@@ -2915,7 +2915,8 @@
 				"staff": "Personal",
 				"requests": "Anfragen",
 				"tiers": "Stufen",
-				"subscriptions": "Subscriptions"
+				"subscriptions": "Subscriptions",
+				"subscriptionsShort": "Subs"
 			},
 			"search": {
 				"members": "Mitglieder nach Name oder E-Mail suchen...",
@@ -2991,7 +2992,9 @@
 						"nameRequired": "Name is required",
 						"priceInvalid": "Price must be 0 or more",
 						"periodInvalid": "Period count must be between 1 and 120"
-					}
+					},
+					"periodMonth": "month(s)",
+					"periodYear": "year(s)"
 				}
 			},
 			"subscriptions": {
@@ -3028,7 +3031,12 @@
 					"cancel": "Cancel",
 					"payments": "Payments",
 					"paymentsEmpty": "No payments yet.",
-					"refund": "Refund"
+					"refund": "Refund",
+					"paymentsCol": {
+						"date": "Date",
+						"amount": "Amount",
+						"status": "Status"
+					}
 				},
 				"cancel": {
 					"title": "Cancel subscription",
@@ -3049,14 +3057,21 @@
 					"currencyWarning": "This subscription is billed in {planCurrency} — recording in {selected} is unusual.",
 					"submit": "Record payment",
 					"occurredAt": "Payment date",
-					"occurredAtHint": "Leave empty to use the current date. Set this when backfilling past payments."
+					"occurredAtHint": "Leave empty to use the current date. Set this when backfilling past payments.",
+					"statusOption": {
+						"succeeded": "Succeeded",
+						"pending": "Pending",
+						"failed": "Failed"
+					}
 				},
 				"refund": {
 					"title": "Mark payment as refunded",
 					"body": "This records the refund for bookkeeping. Issue the actual refund out-of-band (cash, bank transfer, or Stripe dashboard).",
 					"notes": "Notes",
 					"submit": "Mark refunded"
-				}
+				},
+				"emptyFiltered": "No matching subscriptions on this page.",
+				"openDrawer": "Open subscription details"
 			}
 		},
 		"eventSeries": {

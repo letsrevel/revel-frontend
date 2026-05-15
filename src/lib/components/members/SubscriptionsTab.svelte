@@ -54,7 +54,7 @@
 		queryFn: async () => {
 			const res = await organizationadminsubscriptionsListSubscriptions({
 				path: { slug: organization.slug },
-				query: { page: pageNum, page_size: 20, search: debounced || undefined },
+				query: { page: pageNum, page_size: 100, search: debounced || undefined },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (res.error) throw new Error('Failed to load subscriptions');
@@ -126,7 +126,13 @@
 	{#if subsQuery.isLoading}
 		<Loader2 class="h-5 w-5 animate-spin" />
 	{:else if filtered.length === 0}
-		<p class="text-sm text-muted-foreground">{m['orgAdmin.members.subscriptions.empty']()}</p>
+		<p class="text-sm text-muted-foreground">
+			{#if statusFilter !== 'all' && subs.length > 0}
+				{m['orgAdmin.members.subscriptions.emptyFiltered']()}
+			{:else}
+				{m['orgAdmin.members.subscriptions.empty']()}
+			{/if}
+		</p>
 	{:else}
 		<!-- Desktop table -->
 		<div class="hidden overflow-x-auto md:block">

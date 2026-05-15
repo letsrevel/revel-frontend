@@ -132,7 +132,7 @@
 	<!-- Tabs -->
 	<Tabs bind:value={activeTab} class="w-full">
 		<div class="sticky top-32 z-20 -mb-px bg-background pb-3 pt-1">
-			<TabsList class="h-auto w-full grid-cols-3 gap-0.5 sm:grid-cols-5 sm:gap-1">
+			<TabsList class="h-auto w-full grid-cols-3 gap-0.5 sm:grid-cols-6 sm:gap-1">
 				<TabsTrigger value="members" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
 					<Users class="h-4 w-4 shrink-0" />
 					<span class="hidden sm:inline">{m['orgAdmin.members.tabs.members']()}</span>
@@ -169,7 +169,7 @@
 				<TabsTrigger value="subscriptions" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
 					<CreditCard class="h-4 w-4 shrink-0" />
 					<span class="hidden sm:inline">{m['orgAdmin.members.tabs.subscriptions']()}</span>
-					<span class="sm:hidden">{m['orgAdmin.members.tabs.subscriptions']()}</span>
+					<span class="sm:hidden">{m['orgAdmin.members.tabs.subscriptionsShort']()}</span>
 				</TabsTrigger>
 
 				<TabsTrigger value="tokens" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">

@@ -95,9 +95,15 @@
 					bind:value={status}
 					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
-					<option value="succeeded">Succeeded</option>
-					<option value="pending">Pending</option>
-					<option value="failed">Failed</option>
+					<option value="succeeded">
+						{m['orgAdmin.members.subscriptions.recordPayment.statusOption.succeeded']()}
+					</option>
+					<option value="pending">
+						{m['orgAdmin.members.subscriptions.recordPayment.statusOption.pending']()}
+					</option>
+					<option value="failed">
+						{m['orgAdmin.members.subscriptions.recordPayment.statusOption.failed']()}
+					</option>
 				</select>
 			</div>
 
