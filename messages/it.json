@@ -3047,7 +3047,9 @@
 					"status": "Status",
 					"notes": "Notes",
 					"currencyWarning": "This subscription is billed in {planCurrency} — recording in {selected} is unusual.",
-					"submit": "Record payment"
+					"submit": "Record payment",
+					"occurredAt": "Payment date",
+					"occurredAtHint": "Leave empty to use the current date. Set this when backfilling past payments."
 				},
 				"refund": {
 					"title": "Mark payment as refunded",

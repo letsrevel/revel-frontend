@@ -23,6 +23,7 @@
 	let currency = $state<string>('EUR');
 	let status = $state<'succeeded' | 'pending' | 'failed'>('succeeded');
 	let notes = $state('');
+	let occurredAt = $state('');
 
 	$effect(() => {
 		if (open) {
@@ -30,6 +31,7 @@
 			currency = subscription.plan.currency ?? 'EUR';
 			status = 'succeeded';
 			notes = '';
+			occurredAt = '';
 		}
 	});
 
@@ -37,12 +39,17 @@
 
 	function handleSubmit(e: Event) {
 		e.preventDefault();
-		onSubmit({
+		const payload: PaymentRecordSchema = {
 			amount,
 			currency: currency as PaymentRecordSchema['currency'],
 			status,
 			notes
-		});
+		};
+		if (occurredAt) {
+			// datetime-local gives us "YYYY-MM-DDTHH:mm"; backend expects ISO8601
+			payload.occurred_at = new Date(occurredAt).toISOString();
+		}
+		onSubmit(payload);
 	}
 </script>
 
@@ -92,6 +99,16 @@
 					<option value="pending">Pending</option>
 					<option value="failed">Failed</option>
 				</select>
+			</div>
+
+			<div class="space-y-1">
+				<Label for="rp-occurred">
+					{m['orgAdmin.members.subscriptions.recordPayment.occurredAt']()}
+				</Label>
+				<Input id="rp-occurred" type="datetime-local" bind:value={occurredAt} />
+				<p class="text-xs text-muted-foreground">
+					{m['orgAdmin.members.subscriptions.recordPayment.occurredAtHint']()}
+				</p>
 			</div>
 
 			<div class="space-y-1">

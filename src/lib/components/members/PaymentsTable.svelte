@@ -33,7 +33,7 @@
 		<tbody>
 			{#each payments as p (p.id)}
 				<tr class="border-b last:border-0">
-					<td class="py-2">{fmtDate(p.created_at)}</td>
+					<td class="py-2">{fmtDate(p.occurred_at ?? p.created_at)}</td>
 					<td class="py-2">{p.amount} {p.currency}</td>
 					<td class="py-2 capitalize">{p.status}</td>
 					<td class="py-2 text-right">
