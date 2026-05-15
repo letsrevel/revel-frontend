@@ -22,6 +22,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
+	import { DurationInput } from '$lib/components/forms';
 	import RefundPolicyEditor from './RefundPolicyEditor.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { extractErrorMessage, extractFieldErrors } from '$lib/utils/errors';
@@ -177,10 +178,10 @@
 
 	// Cancellation & refund policy state
 	let allowUserCancellation = $state(tier?.allow_user_cancellation ?? false);
-	let cancellationDeadlineHours = $state<string>(
+	let cancellationDeadlineHours = $state<number | null>(
 		tier?.cancellation_deadline_hours !== null && tier?.cancellation_deadline_hours !== undefined
-			? String(tier.cancellation_deadline_hours)
-			: ''
+			? tier.cancellation_deadline_hours
+			: null
 	);
 	let refundPolicy = $state<RefundPolicy | null>(tier?.refund_policy ?? null);
 	let refundPolicyValid = $state(true);
@@ -402,8 +403,8 @@
 			// Cancellation & refund policy (only meaningful for paid tiers)
 			allow_user_cancellation: paymentMethod === 'free' ? false : allowUserCancellation,
 			cancellation_deadline_hours:
-				paymentMethod !== 'free' && allowUserCancellation && cancellationDeadlineHours !== ''
-					? parseInt(cancellationDeadlineHours)
+				paymentMethod !== 'free' && allowUserCancellation && cancellationDeadlineHours !== null
+					? cancellationDeadlineHours
 					: null,
 			refund_policy: paymentMethod !== 'free' && allowUserCancellation ? refundPolicy : null
 		};
@@ -670,23 +671,17 @@
 					</label>
 
 					{#if allowUserCancellation}
-						<div>
-							<Label for="cancellation-deadline-hours">
-								{m['refundPolicy.deadlineLabel']()}
-							</Label>
-							<Input
-								id="cancellation-deadline-hours"
-								type="number"
-								min="0"
-								step="1"
-								bind:value={cancellationDeadlineHours}
-								placeholder={m['refundPolicy.deadlinePlaceholder']()}
-								disabled={isPending}
-							/>
-							<p class="mt-1 text-xs text-muted-foreground">
-								{m['refundPolicy.deadlineHelp']()}
-							</p>
-						</div>
+						<DurationInput
+							id="cancellation-deadline-hours"
+							label={m['refundPolicy.deadlineLabel']()}
+							helpText={m['refundPolicy.deadlineHelp']()}
+							bind:value={cancellationDeadlineHours}
+							storageUnit="hours"
+							defaultUnit="days"
+							emptyValue={null}
+							emptyLabel={m['refundPolicy.deadlineNoLimit']()}
+							disabled={isPending}
+						/>
 
 						<RefundPolicyEditor
 							value={refundPolicy}
