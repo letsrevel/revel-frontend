@@ -5907,7 +5907,8 @@
 				"cta": "Discover organizations"
 			},
 			"viewOrg": "View org",
-			"contactOrg": "Reach out to the organizer to renew."
+			"contactOrg": "Reach out to the organizer to renew.",
+			"memberSince": "Member since {date}"
 		}
 	},
 	"orgPublic": {
