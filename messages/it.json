@@ -5170,7 +5170,8 @@
 		"settings": "Impostazioni",
 		"myOrganizations": "Le Mie Organizzazioni",
 		"adminDashboard": "Dashboard Admin",
-		"invoices": "Le Mie Fatture"
+		"invoices": "Le Mie Fatture",
+		"memberships": "Memberships"
 	},
 	"userMenu.createOrganization": "Crea Organizzazione",
 	"venueSelector": {

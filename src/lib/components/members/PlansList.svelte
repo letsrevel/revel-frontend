@@ -167,13 +167,13 @@
 	{:else if plans.length === 0}
 		<p class="text-sm text-muted-foreground">{m['orgAdmin.members.plans.empty']()}</p>
 	{:else}
-		<div class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
+		<div class="space-y-2">
 			{#each plans as p (p.id)}
 				<Card class={p.is_active !== false ? '' : 'opacity-60'}>
 					<CardContent class="p-3">
 						<div class="flex items-start justify-between gap-2">
-							<div>
-								<p class="font-medium">{p.name}</p>
+							<div class="min-w-0 flex-1">
+								<p class="truncate font-medium">{p.name}</p>
 								<p class="text-sm text-muted-foreground">{formatPlanPrice(p)}</p>
 								{#if p.is_active === false}
 									<p class="mt-1 text-xs text-muted-foreground">
@@ -181,35 +181,35 @@
 									</p>
 								{/if}
 							</div>
-							<div class="flex gap-1">
+							<div class="flex shrink-0 gap-0.5">
 								<Button
 									size="icon"
 									variant="ghost"
-									class="h-8 w-8"
+									class="h-7 w-7"
 									aria-label={m['orgAdmin.members.plans.edit']()}
 									onclick={() => openEdit(p)}
 								>
-									<Pencil class="h-4 w-4" />
+									<Pencil class="h-3.5 w-3.5" />
 								</Button>
 								{#if p.is_active !== false}
 									<Button
 										size="icon"
 										variant="ghost"
-										class="h-8 w-8"
+										class="h-7 w-7"
 										aria-label={m['orgAdmin.members.plans.archive']()}
 										onclick={() => archiveMut.mutate(p.id ?? '')}
 									>
-										<Archive class="h-4 w-4" />
+										<Archive class="h-3.5 w-3.5" />
 									</Button>
 								{/if}
 								<Button
 									size="icon"
 									variant="ghost"
-									class="h-8 w-8 text-destructive"
+									class="h-7 w-7 text-destructive"
 									aria-label={m['orgAdmin.members.plans.delete.title']()}
 									onclick={() => handleDelete(p)}
 								>
-									<Trash2 class="h-4 w-4" />
+									<Trash2 class="h-3.5 w-3.5" />
 								</Button>
 							</div>
 						</div>

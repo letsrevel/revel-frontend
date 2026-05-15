@@ -5170,7 +5170,8 @@
 		"settings": "Settings",
 		"myOrganizations": "My Organizations",
 		"adminDashboard": "Admin Dashboard",
-		"invoices": "My Invoices"
+		"invoices": "My Invoices",
+		"memberships": "Memberships"
 	},
 	"userMenu.createOrganization": "Create Organization",
 	"venueSelector": {
