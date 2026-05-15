@@ -72,6 +72,7 @@
 	});
 
 	const inputId = $derived(id || `duration-${Math.random().toString(36).slice(2, 9)}`);
+	const helpId = $derived(helpText ? `${inputId}-help` : undefined);
 	const allowedUnits = $derived(ALLOWED_UNITS[storageUnit]);
 	const hasChip = $derived(emptyLabel !== undefined && emptyValue !== undefined);
 	const isEmpty = $derived(value === (emptyValue ?? null));
@@ -112,7 +113,17 @@
 			return;
 		}
 		const n = Number(raw);
-		displayAmount = Number.isFinite(n) ? n : '';
+		if (!Number.isFinite(n)) {
+			displayAmount = '';
+			emit('', displayUnit);
+			return;
+		}
+		if (n < min) {
+			displayAmount = min;
+			emit(min, displayUnit);
+			return;
+		}
+		displayAmount = n;
 		emit(displayAmount, displayUnit);
 	}
 
@@ -176,13 +187,14 @@
 			id={inputId}
 			type="number"
 			class="w-28"
-			value={displayAmount === '' ? '' : displayAmount}
+			value={displayAmount}
 			oninput={handleAmountInput}
 			min={String(min)}
 			step="1"
 			{disabled}
 			{required}
-			aria-label={label}
+			inputmode="numeric"
+			aria-describedby={helpId}
 		/>
 		<Select
 			type="single"
@@ -202,6 +214,6 @@
 	</div>
 
 	{#if helpText}
-		<p class="text-xs text-muted-foreground">{helpText}</p>
+		<p id={helpId} class="text-xs text-muted-foreground">{helpText}</p>
 	{/if}
 </div>
