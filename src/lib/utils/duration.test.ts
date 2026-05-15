@@ -81,13 +81,6 @@ describe('ALLOWED_UNITS', () => {
 	});
 
 	it('allows all units when storage is minutes', () => {
-		expect(ALLOWED_UNITS.minutes).toEqual([
-			'minutes',
-			'hours',
-			'days',
-			'weeks',
-			'months',
-			'years'
-		]);
+		expect(ALLOWED_UNITS.minutes).toEqual(['minutes', 'hours', 'days', 'weeks', 'months', 'years']);
 	});
 });

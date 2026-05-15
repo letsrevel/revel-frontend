@@ -222,9 +222,7 @@ describe('DurationInput', () => {
 				helpText: 'How long the ticket is valid after purchase'
 			}
 		});
-		expect(
-			screen.getByText('How long the ticket is valid after purchase')
-		).toBeInTheDocument();
+		expect(screen.getByText('How long the ticket is valid after purchase')).toBeInTheDocument();
 	});
 
 	// ─── Bonus: required indicator ────────────────────────────────────────────

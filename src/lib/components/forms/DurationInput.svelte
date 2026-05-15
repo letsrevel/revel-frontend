@@ -2,12 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import {
-		Select,
-		SelectContent,
-		SelectItem,
-		SelectTrigger
-	} from '$lib/components/ui/select';
+	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
 	import { cn } from '$lib/utils/cn';
 	import {
 		ALLOWED_UNITS,
