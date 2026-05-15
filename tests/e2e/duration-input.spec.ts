@@ -22,7 +22,9 @@ test.describe('DurationInput — questionnaire admin', () => {
 		await validityInput.fill('30');
 		await expect(validityInput).toHaveValue('30');
 
-		// The unit dropdown surfaces "Days" by default.
-		await expect(page.getByRole('combobox').first()).toContainText(/days/i);
+		// The unit dropdown surfaces "Days" by default. Target the trigger by its
+		// component-generated aria-label so we assert against the unit select
+		// specifically, not some other combobox on the page.
+		await expect(page.getByLabel(/submission validity unit/i)).toContainText(/days/i);
 	});
 });
