@@ -9,7 +9,7 @@
 	import { AlertTriangle, FileText, Loader2 } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import {
-		eventpublicdetailsGetEvent,
+		organizationadminrecurringeventsGetSeriesTemplateEvent,
 		organizationadminrecurringeventsUpdateTemplate
 	} from '$lib/api/generated/sdk.gen';
 	import type {
@@ -89,12 +89,15 @@
 	// template_event. MinimalEventSchema on the admin detail only carries
 	// id/name/start/end; the TemplateEditSchema surface needs visibility,
 	// capacity, toggles, etc., which only EventDetailSchema provides.
+	// Templates are filtered out by the public `/events/{event_id}` endpoint's
+	// visibility queryset (is_template=False), so we use the dedicated
+	// org-admin path that returns the full schema gated on edit_event_series.
 	const templateQuery = createQuery<EventDetailSchema>(() => ({
-		queryKey: ['event-detail', templateId],
+		queryKey: ['event-series-template', organizationSlug, series.id],
 		queryFn: async () => {
 			if (!templateId) throw new Error('No template event on this series');
-			const response = await eventpublicdetailsGetEvent({
-				path: { event_id: templateId },
+			const response = await organizationadminrecurringeventsGetSeriesTemplateEvent({
+				path: { slug: organizationSlug, series_id: series.id },
 				headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined
 			});
 			if (response.error || !response.data) throw new Error('Failed to load template');
@@ -285,9 +288,9 @@
 		},
 		onSuccess: async () => {
 			await invalidateSeries(queryClient, organizationSlug, series.id);
-			if (templateId) {
-				await queryClient.invalidateQueries({ queryKey: ['event-detail', templateId] });
-			}
+			await queryClient.invalidateQueries({
+				queryKey: ['event-series-template', organizationSlug, series.id]
+			});
 			toast.success(m['recurringEvents.templateDialog.savedToast']());
 			onClose();
 		},

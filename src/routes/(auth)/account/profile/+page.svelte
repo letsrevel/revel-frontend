@@ -333,12 +333,16 @@
 
 		<div class="grid gap-6 sm:grid-cols-2">
 			<div class="space-y-2">
-				<label for="first_name" class="block text-sm font-medium">First Name</label>
+				<label for="first_name" class="block text-sm font-medium">
+					{m['profile.firstName_label']()}
+					<span class="text-xs font-normal text-muted-foreground"
+						>{m['profile.preferredName_labelOptional']()}</span
+					>
+				</label>
 				<input
 					id="first_name"
 					name="first_name"
 					type="text"
-					required
 					bind:value={firstName}
 					aria-invalid={!!errors.first_name}
 					aria-describedby={errors.first_name ? 'first-name-error' : undefined}
@@ -355,12 +359,16 @@
 			</div>
 
 			<div class="space-y-2">
-				<label for="last_name" class="block text-sm font-medium">Last Name</label>
+				<label for="last_name" class="block text-sm font-medium">
+					{m['profile.lastName_label']()}
+					<span class="text-xs font-normal text-muted-foreground"
+						>{m['profile.preferredName_labelOptional']()}</span
+					>
+				</label>
 				<input
 					id="last_name"
 					name="last_name"
 					type="text"
-					required
 					bind:value={lastName}
 					aria-invalid={!!errors.last_name}
 					aria-describedby={errors.last_name ? 'last-name-error' : undefined}
@@ -379,8 +387,10 @@
 
 		<div class="space-y-2">
 			<label for="preferred_name" class="block text-sm font-medium">
-				Preferred Name
-				<span class="text-xs font-normal text-muted-foreground">(optional)</span>
+				{m['profile.preferredName_label']()}
+				<span class="text-xs font-normal text-muted-foreground"
+					>{m['profile.preferredName_labelOptional']()}</span
+				>
 			</label>
 			<input
 				id="preferred_name"
