@@ -1,10 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { createQuery } from '@tanstack/svelte-query';
-	import {
-		organizationadminmembersListMembershipTiers,
-		organizationadminsubscriptionsListPlans
-	} from '$lib/api/generated/sdk.gen';
+	import { organizationadminsubscriptionsListPlans } from '$lib/api/generated/sdk.gen';
 	import type {
 		OrganizationAdminDetailSchema,
 		PlanSchema,
@@ -26,13 +22,14 @@
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
+		tiers: MembershipTierSchema[];
 		open: boolean;
 		onClose: () => void;
 		onSubmit: (payload: SubscriptionCreateSchema) => void;
 		isSubmitting?: boolean;
 	}
 
-	const { organization, open, onClose, onSubmit, isSubmitting = false }: Props = $props();
+	const { organization, tiers, open, onClose, onSubmit, isSubmitting = false }: Props = $props();
 	const accessToken = $derived(authStore.accessToken);
 
 	let selectedMember = $state<OrganizationMemberSchema | null>(null);
@@ -43,25 +40,12 @@
 	let notes = $state('');
 	let errors = $state<{ user?: string; plan?: string }>({});
 
-	const tiersQuery = createQuery(() => ({
-		queryKey: ['organization', organization.slug, 'membership-tiers'],
-		queryFn: async () => {
-			const res = await organizationadminmembersListMembershipTiers({
-				path: { slug: organization.slug },
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
-			if (res.error) throw new Error('Failed to load tiers');
-			return res.data as MembershipTierSchema[];
-		},
-		enabled: open && !!accessToken
-	}));
-
 	let allPlans = $state<PlanSchema[]>([]);
 	$effect(() => {
-		if (!open || !tiersQuery.data) return;
+		if (!open || tiers.length === 0) return;
 		(async () => {
 			const all: PlanSchema[] = [];
-			for (const t of tiersQuery.data) {
+			for (const t of tiers) {
 				const r = await organizationadminsubscriptionsListPlans({
 					path: { slug: organization.slug, tier_id: t.id ?? '' },
 					headers: { Authorization: `Bearer ${accessToken}` }
@@ -73,6 +57,16 @@
 			allPlans = all;
 		})();
 	});
+
+	// Group plans by tier for the dropdown (preserves tier order)
+	const plansByTier = $derived(
+		tiers
+			.map((t) => ({
+				tier: t,
+				plans: allPlans.filter((p) => p.tier_id === t.id)
+			}))
+			.filter((g) => g.plans.length > 0)
+	);
 
 	// Sync currency to selected plan's currency
 	$effect(() => {
@@ -150,8 +144,12 @@
 					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
 					<option value="" disabled>—</option>
-					{#each allPlans as p (p.id)}
-						<option value={p.id ?? ''}>{p.name} — {formatPlanPrice(p)}</option>
+					{#each plansByTier as group (group.tier.id)}
+						<optgroup label={group.tier.name}>
+							{#each group.plans as p (p.id)}
+								<option value={p.id ?? ''}>{p.name} — {formatPlanPrice(p)}</option>
+							{/each}
+						</optgroup>
 					{/each}
 				</select>
 				{#if errors.plan}<p class="text-sm text-red-600">{errors.plan}</p>{/if}

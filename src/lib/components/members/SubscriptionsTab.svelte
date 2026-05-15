@@ -8,7 +8,8 @@
 	import type {
 		SubscriptionSchema,
 		OrganizationAdminDetailSchema,
-		SubscriptionCreateSchema
+		SubscriptionCreateSchema,
+		MembershipTierSchema
 	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -20,9 +21,13 @@
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
+		tiers: MembershipTierSchema[];
 	}
 
-	const { organization }: Props = $props();
+	const { organization, tiers }: Props = $props();
+	const tierNameById = $derived(
+		new Map(tiers.filter((t) => t.id).map((t) => [t.id as string, t.name]))
+	);
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
 
@@ -89,7 +94,13 @@
 				queryKey: ['organization', organization.slug, 'members']
 			});
 			createOpen = false;
-			drawerSubId = sub.id ?? null;
+			// Wait for the create dialog's close animation before opening the drawer.
+			// Otherwise bits-ui's body-lock stack gets out of sync and leaves
+			// `pointer-events: none` on the body, making the tabs unclickable.
+			const id = sub.id ?? null;
+			setTimeout(() => {
+				drawerSubId = id;
+			}, 250);
 		},
 		onError: (err: Error) => alert(`Failed to create subscription: ${err.message}`)
 	}));
@@ -140,6 +151,7 @@
 				<thead class="border-b">
 					<tr>
 						<th class="px-3 py-2 text-left">{m['orgAdmin.members.subscriptions.col.user']()}</th>
+						<th class="px-3 py-2 text-left">{m['orgAdmin.members.subscriptions.col.tier']()}</th>
 						<th class="px-3 py-2 text-left">{m['orgAdmin.members.subscriptions.col.plan']()}</th>
 						<th class="px-3 py-2 text-left">{m['orgAdmin.members.subscriptions.col.status']()}</th>
 						<th class="px-3 py-2 text-left"
@@ -149,7 +161,11 @@
 				</thead>
 				<tbody>
 					{#each filtered as s (s.id)}
-						<SubscriptionListItem sub={s} onClick={() => (drawerSubId = s.id ?? null)} />
+						<SubscriptionListItem
+							sub={s}
+							tierName={tierNameById.get(s.plan.tier_id) ?? null}
+							onClick={() => (drawerSubId = s.id ?? null)}
+						/>
 					{/each}
 				</tbody>
 			</table>
@@ -158,7 +174,11 @@
 		<!-- Mobile cards -->
 		<div class="grid gap-2 md:hidden">
 			{#each filtered as s (s.id)}
-				<SubscriptionListItem sub={s} onClick={() => (drawerSubId = s.id ?? null)} />
+				<SubscriptionListItem
+					sub={s}
+					tierName={tierNameById.get(s.plan.tier_id) ?? null}
+					onClick={() => (drawerSubId = s.id ?? null)}
+				/>
 			{/each}
 		</div>
 	{/if}
@@ -166,6 +186,7 @@
 
 <SubscriptionCreateModal
 	{organization}
+	{tiers}
 	open={createOpen}
 	onClose={() => (createOpen = false)}
 	onSubmit={(p) => createMut.mutate(p)}

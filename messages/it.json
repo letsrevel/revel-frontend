@@ -3020,6 +3020,7 @@
 				"empty": "No subscriptions yet.",
 				"col": {
 					"user": "User",
+					"tier": "Type",
 					"plan": "Plan",
 					"status": "Status",
 					"periodEnd": "Period end"
