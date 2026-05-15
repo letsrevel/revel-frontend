@@ -6,7 +6,8 @@
  */
 
 export { default as DateTimePicker } from './DateTimePicker.svelte';
-export { default as MarkdownEditor } from './MarkdownEditor.svelte';
+export { default as DurationInput } from './DurationInput.svelte';
 export { default as ImageUploader } from './ImageUploader.svelte';
+export { default as MarkdownEditor } from './MarkdownEditor.svelte';
 export { default as TagInput } from './TagInput.svelte';
 export { default as TwoFactorInput } from './TwoFactorInput.svelte';
