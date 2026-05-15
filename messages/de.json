@@ -798,6 +798,16 @@
 		}
 	},
 	"dashboard.createOrganizationButton": "Organisation erstellen",
+	"duration": {
+		"unit": {
+			"minutes": "Minuten",
+			"hours": "Stunden",
+			"days": "Tage",
+			"weeks": "Wochen",
+			"months": "Monate (30 Tage)",
+			"years": "Jahre (365 Tage)"
+		}
+	},
 	"demoBanner": {
 		"demoMode": "Demo-Modus",
 		"description": "Dies ist eine Demo-Umgebung. Alle Daten werden um Mitternacht MEZ (ungefähr {time} {timezone}) zurückgesetzt. Erkunde und teste gerne alle Funktionen! E-Mails können auf <link>mailpit.letsrevel.io</link> eingesehen und debuggt werden.",
