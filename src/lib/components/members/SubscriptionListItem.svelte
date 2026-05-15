@@ -6,11 +6,11 @@
 
 	interface Props {
 		sub: SubscriptionSchema;
-		tierName?: string | null;
 		onClick: () => void;
 	}
 
-	const { sub, tierName = null, onClick }: Props = $props();
+	const { sub, onClick }: Props = $props();
+	const tierName = $derived(sub.plan.tier_name);
 
 	function fmtDate(d: string | null | undefined): string {
 		if (!d) return '—';
@@ -36,7 +36,7 @@
 		<div class="font-medium">{sub.user_display_name}</div>
 		<div class="text-xs text-muted-foreground">{sub.user_email}</div>
 	</td>
-	<td class="px-3 py-2 text-sm">{tierName ?? '—'}</td>
+	<td class="px-3 py-2 text-sm">{tierName || '—'}</td>
 	<td class="px-3 py-2">
 		<div>{sub.plan.name}</div>
 		<div class="text-xs text-muted-foreground">{formatPlanPrice(sub.plan)}</div>

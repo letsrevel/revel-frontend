@@ -1,10 +1,10 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { organizationadminsubscriptionsListPlans } from '$lib/api/generated/sdk.gen';
+	import { createQuery } from '@tanstack/svelte-query';
+	import { organizationadminsubscriptionsListOrganizationPlans } from '$lib/api/generated/sdk.gen';
 	import type {
 		OrganizationAdminDetailSchema,
 		PlanSchema,
-		MembershipTierSchema,
 		OrganizationMemberSchema,
 		SubscriptionCreateSchema
 	} from '$lib/api/generated/types.gen';
@@ -22,14 +22,13 @@
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
-		tiers: MembershipTierSchema[];
 		open: boolean;
 		onClose: () => void;
 		onSubmit: (payload: SubscriptionCreateSchema) => void;
 		isSubmitting?: boolean;
 	}
 
-	const { organization, tiers, open, onClose, onSubmit, isSubmitting = false }: Props = $props();
+	const { organization, open, onClose, onSubmit, isSubmitting = false }: Props = $props();
 	const accessToken = $derived(authStore.accessToken);
 
 	let selectedMember = $state<OrganizationMemberSchema | null>(null);
@@ -40,37 +39,38 @@
 	let notes = $state('');
 	let errors = $state<{ user?: string; plan?: string }>({});
 
-	let allPlans = $state<PlanSchema[]>([]);
-	$effect(() => {
-		if (!open || tiers.length === 0) return;
-		(async () => {
-			const all: PlanSchema[] = [];
-			for (const t of tiers) {
-				const r = await organizationadminsubscriptionsListPlans({
-					path: { slug: organization.slug, tier_id: t.id ?? '' },
-					headers: { Authorization: `Bearer ${accessToken}` }
-				});
-				if (!r.error && r.data) {
-					all.push(...(r.data as PlanSchema[]).filter((p) => p.is_active !== false));
-				}
-			}
-			allPlans = all;
-		})();
-	});
+	const plansQuery = createQuery(() => ({
+		queryKey: ['organization', organization.slug, 'plans', { is_active: true }],
+		queryFn: async () => {
+			const res = await organizationadminsubscriptionsListOrganizationPlans({
+				path: { slug: organization.slug },
+				query: { is_active: true },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+			if (res.error) throw new Error('Failed to load plans');
+			return res.data as PlanSchema[];
+		},
+		enabled: open && !!accessToken
+	}));
 
-	// Group plans by tier for the dropdown (preserves tier order)
-	const plansByTier = $derived(
-		tiers
-			.map((t) => ({
-				tier: t,
-				plans: allPlans.filter((p) => p.tier_id === t.id)
-			}))
-			.filter((g) => g.plans.length > 0)
-	);
+	// Group plans by tier (preserves backend order: tier asc, plan asc).
+	const plansByTier = $derived.by(() => {
+		const all = plansQuery.data ?? [];
+		const groups = new Map<string, { tierName: string; plans: PlanSchema[] }>();
+		for (const p of all) {
+			let g = groups.get(p.tier_id);
+			if (!g) {
+				g = { tierName: p.tier_name, plans: [] };
+				groups.set(p.tier_id, g);
+			}
+			g.plans.push(p);
+		}
+		return Array.from(groups, ([tierId, g]) => ({ tierId, ...g }));
+	});
 
 	// Sync currency to selected plan's currency
 	$effect(() => {
-		const p = allPlans.find((pl) => pl.id === planId);
+		const p = (plansQuery.data ?? []).find((pl) => pl.id === planId);
 		if (p) currency = p.currency;
 	});
 
@@ -144,8 +144,8 @@
 					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
 					<option value="" disabled>—</option>
-					{#each plansByTier as group (group.tier.id)}
-						<optgroup label={group.tier.name}>
+					{#each plansByTier as group (group.tierId)}
+						<optgroup label={group.tierName}>
 							{#each group.plans as p (p.id)}
 								<option value={p.id ?? ''}>{p.name} — {formatPlanPrice(p)}</option>
 							{/each}

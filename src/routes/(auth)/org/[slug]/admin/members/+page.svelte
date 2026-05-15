@@ -214,7 +214,7 @@
 
 		<!-- Subscriptions Tab -->
 		<TabsContent value="subscriptions" class="space-y-4">
-			<SubscriptionsTab {organization} {tiers} />
+			<SubscriptionsTab {organization} />
 		</TabsContent>
 
 		<!-- Tokens Tab -->

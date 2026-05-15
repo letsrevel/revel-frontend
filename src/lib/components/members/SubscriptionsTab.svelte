@@ -8,8 +8,7 @@
 	import type {
 		SubscriptionSchema,
 		OrganizationAdminDetailSchema,
-		SubscriptionCreateSchema,
-		MembershipTierSchema
+		SubscriptionCreateSchema
 	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -28,13 +27,9 @@
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
-		tiers: MembershipTierSchema[];
 	}
 
-	const { organization, tiers }: Props = $props();
-	const tierNameById = $derived(
-		new Map(tiers.filter((t) => t.id).map((t) => [t.id as string, t.name]))
-	);
+	const { organization }: Props = $props();
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
 
@@ -168,11 +163,7 @@
 				</thead>
 				<tbody>
 					{#each filtered as s (s.id)}
-						<SubscriptionListItem
-							sub={s}
-							tierName={tierNameById.get(s.plan.tier_id) ?? null}
-							onClick={() => (drawerSubId = s.id ?? null)}
-						/>
+						<SubscriptionListItem sub={s} onClick={() => (drawerSubId = s.id ?? null)} />
 					{/each}
 				</tbody>
 			</table>
@@ -181,11 +172,7 @@
 		<!-- Mobile cards -->
 		<div class="grid gap-2 md:hidden">
 			{#each filtered as s (s.id)}
-				<SubscriptionListItem
-					sub={s}
-					tierName={tierNameById.get(s.plan.tier_id) ?? null}
-					onClick={() => (drawerSubId = s.id ?? null)}
-				/>
+				<SubscriptionListItem sub={s} onClick={() => (drawerSubId = s.id ?? null)} />
 			{/each}
 		</div>
 	{/if}
@@ -193,7 +180,6 @@
 
 <SubscriptionCreateModal
 	{organization}
-	{tiers}
 	open={createOpen}
 	onClose={() => (createOpen = false)}
 	onSubmit={(p) => createMut.mutate(p)}
