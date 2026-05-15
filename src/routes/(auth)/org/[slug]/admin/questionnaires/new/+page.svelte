@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { goto } from '$app/navigation';
+	import { DurationInput } from '$lib/components/forms';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
@@ -689,39 +690,27 @@
 
 			<!-- Duration Settings -->
 			<div class="grid gap-4 sm:grid-cols-2">
-				<!-- Max Submission Age -->
-				<div class="space-y-2">
-					<Label for="max-submission-age"
-						>{m['questionnaireNewPage.submissionValidityLabel']()}</Label
-					>
-					<Input
-						id="max-submission-age"
-						type="number"
-						bind:value={maxSubmissionAge}
-						min="0"
-						step="1"
-						placeholder={m['questionnaireNewPage.submissionValidityPlaceholder']()}
-					/>
-					<p class="text-xs text-muted-foreground">
-						{m['questionnaireNewPage.submissionValidityDescription']()}
-					</p>
-				</div>
+				<DurationInput
+					id="max-submission-age"
+					label={m['questionnaireNewPage.submissionValidityLabel']()}
+					helpText={m['questionnaireNewPage.submissionValidityDescription']()}
+					bind:value={() => maxSubmissionAge, (v) => (maxSubmissionAge = v)}
+					storageUnit="days"
+					defaultUnit="days"
+					emptyValue={null}
+					emptyLabel={m['questionnaireNewPage.submissionValidityNoLimit']()}
+				/>
 
-				<!-- Can Retake After -->
-				<div class="space-y-2">
-					<Label for="can-retake-after">{m['questionnaireNewPage.retakeCooldownLabel']()}</Label>
-					<Input
-						id="can-retake-after"
-						type="number"
-						bind:value={canRetakeAfter}
-						min="0"
-						step="1"
-						placeholder={m['questionnaireNewPage.retakeCooldownPlaceholder']()}
-					/>
-					<p class="text-xs text-muted-foreground">
-						{m['questionnaireNewPage.retakeCooldownDescription']()}
-					</p>
-				</div>
+				<DurationInput
+					id="can-retake-after"
+					label={m['questionnaireNewPage.retakeCooldownLabel']()}
+					helpText={m['questionnaireNewPage.retakeCooldownDescription']()}
+					bind:value={() => canRetakeAfter, (v) => (canRetakeAfter = v)}
+					storageUnit="hours"
+					defaultUnit="hours"
+					emptyValue={null}
+					emptyLabel={m['questionnaireNewPage.retakeCooldownNoLimit']()}
+				/>
 			</div>
 
 			<!-- Max Attempts -->
