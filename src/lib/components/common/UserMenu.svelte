@@ -14,7 +14,8 @@
 		PlusCircle,
 		Gift,
 		FileText,
-		Receipt
+		Receipt,
+		CreditCard
 	} from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
@@ -102,7 +103,8 @@
 		{ href: '/account/security', label: m['userMenu.security'](), icon: Shield },
 		{ href: '/account/privacy', label: m['userMenu.privacy'](), icon: Lock },
 		{ href: '/account/settings', label: m['userMenu.settings'](), icon: Settings },
-		{ href: '/account/invoices', label: m['userMenu.invoices'](), icon: Receipt }
+		{ href: '/account/invoices', label: m['userMenu.invoices'](), icon: Receipt },
+		{ href: '/account/memberships', label: m['userMenu.memberships'](), icon: CreditCard }
 	]);
 
 	function handleLogout() {

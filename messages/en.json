@@ -2914,7 +2914,9 @@
 				"members": "Members",
 				"staff": "Staff",
 				"requests": "Requests",
-				"tiers": "Tiers"
+				"tiers": "Tiers",
+				"subscriptions": "Subscriptions",
+				"subscriptionsShort": "Subs"
 			},
 			"search": {
 				"members": "Search members by name or email...",
@@ -2962,6 +2964,114 @@
 				"_plural": "s",
 				"editAriaLabel": "Edit {name}",
 				"deleteAriaLabel": "Delete {name}"
+			},
+			"plans": {
+				"title": "Plans",
+				"empty": "No plans yet.",
+				"add": "Add plan",
+				"archived": "Archived",
+				"edit": "Edit",
+				"archive": "Archive",
+				"delete": {
+					"title": "Delete plan",
+					"body": "This permanently deletes the plan. If subscribers exist, archive it instead.",
+					"inUse": "This plan has subscribers and can't be deleted — archive it instead.",
+					"archiveInstead": "Archive instead"
+				},
+				"form": {
+					"create": "Create plan",
+					"update": "Edit plan",
+					"name": "Name",
+					"description": "Description",
+					"price": "Price",
+					"currency": "Currency",
+					"periodUnit": "Period",
+					"periodCount": "Every",
+					"isActive": "Active (available for new subscriptions)",
+					"errors": {
+						"nameRequired": "Name is required",
+						"priceInvalid": "Price must be 0 or more",
+						"periodInvalid": "Period count must be between 1 and 120"
+					},
+					"periodMonth": "month(s)",
+					"periodYear": "year(s)"
+				}
+			},
+			"subscriptions": {
+				"title": "Subscriptions",
+				"searchPlaceholder": "Search by name or email…",
+				"filter": {
+					"all": "All statuses"
+				},
+				"create": {
+					"title": "Create subscription",
+					"user": "User",
+					"plan": "Plan",
+					"recordInitial": "Record initial payment",
+					"amount": "Amount",
+					"currency": "Currency",
+					"notes": "Notes",
+					"submit": "Create",
+					"errors": {
+						"userRequired": "Pick a member",
+						"planRequired": "Pick a plan"
+					}
+				},
+				"empty": "No subscriptions yet.",
+				"col": {
+					"user": "User",
+					"plan": "Plan",
+					"status": "Status",
+					"periodEnd": "Period end"
+				},
+				"drawer": {
+					"recordPayment": "Record payment",
+					"pause": "Pause",
+					"resume": "Resume",
+					"cancel": "Cancel",
+					"payments": "Payments",
+					"paymentsEmpty": "No payments yet.",
+					"refund": "Refund",
+					"paymentsCol": {
+						"date": "Date",
+						"amount": "Amount",
+						"status": "Status"
+					}
+				},
+				"cancel": {
+					"title": "Cancel subscription",
+					"atPeriodEnd": "At the end of the current period ({date})",
+					"atPeriodEndDesc": "The member keeps access until then.",
+					"immediate": "Immediately",
+					"immediateDesc": "Access is revoked now. No refund is issued automatically.",
+					"immediateConfirm": "I understand access is revoked immediately.",
+					"keep": "Keep subscription",
+					"confirm": "Confirm cancellation"
+				},
+				"recordPayment": {
+					"title": "Record payment",
+					"amount": "Amount",
+					"currency": "Currency",
+					"status": "Status",
+					"notes": "Notes",
+					"currencyWarning": "This subscription is billed in {planCurrency} — recording in {selected} is unusual.",
+					"submit": "Record payment",
+					"occurredAt": "Payment date",
+					"occurredAtHint": "Leave empty to use the current date. Set this when backfilling past payments.",
+					"statusOption": {
+						"succeeded": "Succeeded",
+						"pending": "Pending",
+						"failed": "Failed"
+					}
+				},
+				"refund": {
+					"title": "Mark payment as refunded",
+					"body": "This records the refund for bookkeeping. Issue the actual refund out-of-band (cash, bank transfer, or Stripe dashboard).",
+					"notes": "Notes",
+					"submit": "Mark refunded"
+				},
+				"emptyFiltered": "No matching subscriptions on this page.",
+				"openDrawer": "Open subscription details"
 			}
 		},
 		"eventSeries": {
@@ -5077,7 +5187,8 @@
 		"settings": "Settings",
 		"myOrganizations": "My Organizations",
 		"adminDashboard": "Admin Dashboard",
-		"invoices": "My Invoices"
+		"invoices": "My Invoices",
+		"memberships": "Memberships"
 	},
 	"userMenu.createOrganization": "Create Organization",
 	"venueSelector": {
@@ -5784,6 +5895,43 @@
 			"createRecurring": "New recurring series",
 			"createEmpty": "Create empty series",
 			"createEmptyHelper": "An empty series is useful for grouping one-off events that share branding."
+		}
+	},
+	"subscriptions": {
+		"status": {
+			"active": "Active",
+			"pending": "Pending",
+			"past_due": "Past due",
+			"paused": "Paused",
+			"cancelled": "Cancelled",
+			"expired": "Expired"
+		},
+		"dateLine": {
+			"renewal": "Next renewal: {date}",
+			"cancels": "Cancels on {date}",
+			"periodEnds": "Period ends {date}",
+			"pausedSince": "Paused since {date}",
+			"ended": "Ended {date}",
+			"pending": "Awaiting first payment"
+		}
+	},
+	"account": {
+		"memberships": {
+			"title": "My Memberships",
+			"empty": {
+				"title": "You don't have any active memberships.",
+				"body": "Memberships are managed by the organizations you belong to.",
+				"cta": "Discover organizations"
+			},
+			"viewOrg": "View org",
+			"contactOrg": "Reach out to the organizer to renew.",
+			"memberSince": "Member since {date}"
+		}
+	},
+	"orgPublic": {
+		"yourMembership": {
+			"title": "Your membership",
+			"managedBy": "Managed by {org} staff"
 		}
 	}
 }
