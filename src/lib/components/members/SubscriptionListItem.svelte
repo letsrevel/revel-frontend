@@ -59,9 +59,8 @@
 		<StatusBadge status={sub.status} />
 	</div>
 	<div class="mt-2 text-sm">
-		{#if tierName}<span class="text-muted-foreground">{tierName} · </span>{/if}{sub.plan.name} · {formatPlanPrice(
-			sub.plan
-		)}
+		{#if tierName}<span class="font-medium">{tierName}</span> ·
+		{/if}{sub.plan.name} · {formatPlanPrice(sub.plan)}
 	</div>
 	<div class="mt-1 text-xs text-muted-foreground">
 		{m['orgAdmin.members.subscriptions.col.periodEnd']()}: {fmtDate(sub.current_period_end)}

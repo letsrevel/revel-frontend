@@ -18,6 +18,13 @@
 	import SubscriptionListItem from './SubscriptionListItem.svelte';
 	import SubscriptionCreateModal from './SubscriptionCreateModal.svelte';
 	import SubscriptionDrawer from './SubscriptionDrawer.svelte';
+	import { onDestroy } from 'svelte';
+
+	// Buffer matching the bits-ui Dialog close animation. Chaining a Dialog
+	// open inside another Dialog's close handler in the same tick leaves
+	// `pointer-events: none` stuck on <body>; waiting for the close to settle
+	// avoids that.
+	const DIALOG_CLOSE_MS = 250;
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -37,6 +44,8 @@
 	let pageNum = $state(1);
 	let createOpen = $state(false);
 	let drawerSubId = $state<string | null>(null);
+	let drawerOpenTimer: ReturnType<typeof setTimeout> | undefined;
+	onDestroy(() => clearTimeout(drawerOpenTimer));
 
 	let timer: ReturnType<typeof setTimeout> | undefined;
 	$effect(() => {
@@ -94,13 +103,11 @@
 				queryKey: ['organization', organization.slug, 'members']
 			});
 			createOpen = false;
-			// Wait for the create dialog's close animation before opening the drawer.
-			// Otherwise bits-ui's body-lock stack gets out of sync and leaves
-			// `pointer-events: none` on the body, making the tabs unclickable.
 			const id = sub.id ?? null;
-			setTimeout(() => {
+			clearTimeout(drawerOpenTimer);
+			drawerOpenTimer = setTimeout(() => {
 				drawerSubId = id;
-			}, 250);
+			}, DIALOG_CLOSE_MS);
 		},
 		onError: (err: Error) => alert(`Failed to create subscription: ${err.message}`)
 	}));
