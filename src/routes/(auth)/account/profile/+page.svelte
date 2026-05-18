@@ -328,6 +328,12 @@
 				{/if}
 
 				<p class="text-xs text-muted-foreground">{m['profile.email_hint']()}</p>
+				<a
+					href="/account/security#email"
+					class="inline-block text-sm text-primary underline-offset-4 hover:underline"
+				>
+					{m['profile.email_changeLink']()}
+				</a>
 			</div>
 		</div>
 
