@@ -4,7 +4,9 @@ import {
 	loginSchema,
 	otpSchema,
 	resendVerificationSchema,
-	calculatePasswordStrength
+	calculatePasswordStrength,
+	emailChangeRequestSchema,
+	emailChangeConfirmSchema
 } from './auth';
 
 describe('Auth Schemas', () => {
@@ -237,6 +239,55 @@ describe('Auth Schemas', () => {
 
 		it('should reject invalid email', () => {
 			const result = resendVerificationSchema.safeParse({ email: 'not-an-email' });
+			expect(result.success).toBe(false);
+		});
+	});
+
+	describe('emailChangeRequestSchema', () => {
+		it('accepts a valid new email and password', () => {
+			const result = emailChangeRequestSchema.safeParse({
+				new_email: 'new@example.com',
+				password: 'somePassword123'
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it('lowercases the new email', () => {
+			const result = emailChangeRequestSchema.safeParse({
+				new_email: 'New@Example.COM',
+				password: 'somePassword123'
+			});
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.new_email).toBe('new@example.com');
+			}
+		});
+
+		it('rejects an invalid email', () => {
+			const result = emailChangeRequestSchema.safeParse({
+				new_email: 'not-an-email',
+				password: 'somePassword123'
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it('rejects an empty password', () => {
+			const result = emailChangeRequestSchema.safeParse({
+				new_email: 'new@example.com',
+				password: ''
+			});
+			expect(result.success).toBe(false);
+		});
+	});
+
+	describe('emailChangeConfirmSchema', () => {
+		it('accepts a non-empty token', () => {
+			const result = emailChangeConfirmSchema.safeParse({ token: 'abc.def.ghi' });
+			expect(result.success).toBe(true);
+		});
+
+		it('rejects an empty token', () => {
+			const result = emailChangeConfirmSchema.safeParse({ token: '' });
 			expect(result.success).toBe(false);
 		});
 	});

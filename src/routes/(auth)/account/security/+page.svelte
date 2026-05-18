@@ -5,6 +5,7 @@
 	import { Shield, CheckCircle, XCircle, AlertCircle, Copy, Check, Key, Mail } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import TwoFactorInput from '$lib/components/forms/TwoFactorInput.svelte';
+	import EmailChangeCard from './email-change-card.svelte';
 	import type { PageData, ActionData } from './$types';
 	import QRCode from 'qrcode';
 	import { accountResetPasswordRequest } from '$lib/api/generated';
@@ -462,6 +463,8 @@
 			</div>
 		</div>
 	</div>
+
+	<EmailChangeCard user={data.user} {form} />
 
 	<!-- Password Change Section -->
 	<div class="mt-6 rounded-lg border bg-card p-6">

@@ -105,6 +105,26 @@ export const accountDeletionConfirmSchema = z.object({
 export type AccountDeletionConfirmFormData = z.infer<typeof accountDeletionConfirmSchema>;
 
 /**
+ * Email change request schema (initiation form on /account/security).
+ * Mirrors the backend's `EmailChangeRequestSchema`: lowercased EmailStr + current password.
+ */
+export const emailChangeRequestSchema = z.object({
+	new_email: z.string().trim().toLowerCase().email('Invalid email address'),
+	password: z.string().min(1, 'Password is required')
+});
+
+export type EmailChangeRequestFormData = z.infer<typeof emailChangeRequestSchema>;
+
+/**
+ * Email change confirmation schema (token from the email link).
+ */
+export const emailChangeConfirmSchema = z.object({
+	token: z.string().min(1, 'Confirmation token is required')
+});
+
+export type EmailChangeConfirmFormData = z.infer<typeof emailChangeConfirmSchema>;
+
+/**
  * Password strength calculator
  * Returns score from 0 (weakest) to 4 (strongest)
  */
