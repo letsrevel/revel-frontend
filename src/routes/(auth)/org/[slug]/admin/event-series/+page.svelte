@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import type { EventSeriesRetrieveSchema } from '$lib/api/generated/types.gen';
-	import { Repeat, Calendar, Edit, Eye, Tag, Plus } from 'lucide-svelte';
+	import { Repeat, Calendar, Edit, Eye, Tag, Plus, Folder } from 'lucide-svelte';
 	import { getImageUrl } from '$lib/utils/url';
 	import NewSeriesPickerDialog from '$lib/components/event-series/admin/NewSeriesPickerDialog.svelte';
 
@@ -103,21 +103,45 @@
 		<!-- Series List -->
 		<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 			{#each data.series as series (series.id)}
-				<div class="rounded-lg border border-border bg-card p-4 shadow-sm">
+				{@const isRecurring = series.is_recurring ?? false}
+				{@const typeLabel = isRecurring
+					? m['recurringEvents.newSeriesPicker.recurring.title']()
+					: m['recurringEvents.newSeriesPicker.empty.title']()}
+				<div class="relative rounded-lg border border-border bg-card p-4 shadow-sm">
+					<!-- Corner type indicator: always visible so organisers can tell
+					     recurring (Repeat) from grouping-only (Folder) even when a
+					     logo is set. -->
+					<span
+						class="absolute right-3 top-3 inline-flex h-6 w-6 items-center justify-center rounded-full bg-muted text-muted-foreground"
+						title={typeLabel}
+						aria-label={typeLabel}
+					>
+						{#if isRecurring}
+							<Repeat class="h-3 w-3" aria-hidden="true" />
+						{:else}
+							<Folder class="h-3 w-3" aria-hidden="true" />
+						{/if}
+					</span>
 					<div class="space-y-3">
 						<!-- Logo and Header -->
-						<div class="flex items-start gap-3">
+						<div class="flex items-start gap-3 pr-8">
 							{#if series.logo}
 								<img
 									src={getImageUrl(series.logo_thumbnail_url || series.logo)}
 									alt="{series.name} logo"
 									class="h-12 w-12 flex-shrink-0 rounded-lg object-cover"
 								/>
-							{:else}
+							{:else if isRecurring}
 								<div
 									class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-950"
 								>
 									<Repeat class="h-6 w-6 text-indigo-600 dark:text-indigo-400" aria-hidden="true" />
+								</div>
+							{:else}
+								<div
+									class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-muted"
+								>
+									<Folder class="h-6 w-6 text-muted-foreground" aria-hidden="true" />
 								</div>
 							{/if}
 							<div class="min-w-0 flex-1">

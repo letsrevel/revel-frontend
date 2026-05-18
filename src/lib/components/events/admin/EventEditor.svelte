@@ -378,7 +378,11 @@
 		}
 		if (!formData.start) {
 			errors.start = m['eventWizard.error_startRequired']();
-		} else {
+		} else if (!isEditMode && !eventCreated) {
+			// Future-start is only enforced at creation. When editing an existing
+			// event, the start may legitimately be in the past (e.g. organisers
+			// updating venue/details after the event has begun); the backend
+			// allows this.
 			const startDate = new Date(formData.start);
 			if (startDate <= new Date()) {
 				errors.start = m['eventWizard.error_startFuture']();

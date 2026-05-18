@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
-	import { Calendar, Repeat, ArrowRight } from 'lucide-svelte';
+	import { Folder, Repeat, ArrowRight } from 'lucide-svelte';
 
 	interface Props {
 		open: boolean;
@@ -85,7 +85,7 @@
 					<span
 						class="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md bg-secondary text-secondary-foreground"
 					>
-						<Calendar class="h-5 w-5" aria-hidden="true" />
+						<Folder class="h-5 w-5" aria-hidden="true" />
 					</span>
 					<span
 						class="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-secondary-foreground"
