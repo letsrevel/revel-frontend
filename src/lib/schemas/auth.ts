@@ -109,11 +109,7 @@ export type AccountDeletionConfirmFormData = z.infer<typeof accountDeletionConfi
  * Mirrors the backend's `EmailChangeRequestSchema`: lowercased EmailStr + current password.
  */
 export const emailChangeRequestSchema = z.object({
-	new_email: z
-		.string()
-		.trim()
-		.toLowerCase()
-		.email('Invalid email address'),
+	new_email: z.string().trim().toLowerCase().email('Invalid email address'),
 	password: z.string().min(1, 'Password is required')
 });
 

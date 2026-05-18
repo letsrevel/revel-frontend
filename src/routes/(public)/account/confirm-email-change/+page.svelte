@@ -43,7 +43,9 @@
 				>
 					<CheckCircle class="h-8 w-8 text-green-600 dark:text-green-400" aria-hidden="true" />
 				</div>
-				<h1 class="text-3xl font-bold tracking-tight">{m['confirmEmailChange.success_heading']()}</h1>
+				<h1 class="text-3xl font-bold tracking-tight">
+					{m['confirmEmailChange.success_heading']()}
+				</h1>
 			</div>
 
 			<div
