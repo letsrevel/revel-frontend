@@ -3,7 +3,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
-	import type { EventSeriesRetrieveSchema } from '$lib/api/generated/types.gen';
+	import type { EventSeriesInListSchema } from '$lib/api/generated/types.gen';
 	import { Repeat, Calendar, Edit, Eye, Tag, Plus, Folder } from 'lucide-svelte';
 	import { getImageUrl } from '$lib/utils/url';
 	import NewSeriesPickerDialog from '$lib/components/event-series/admin/NewSeriesPickerDialog.svelte';
@@ -38,11 +38,9 @@
 	}
 
 	/**
-	 * Get event count for a series (from events array length)
+	 * Get event count for a series (from events array length, if present)
 	 */
-	function getEventCount(series: EventSeriesRetrieveSchema): number {
-		// EventSeriesRetrieveSchema might have an events array or count
-		// Check if the type has this field
+	function getEventCount(series: EventSeriesInListSchema): number {
 		if ('events' in series && Array.isArray(series.events)) {
 			return series.events.length;
 		}
@@ -112,6 +110,7 @@
 					     recurring (Repeat) from grouping-only (Folder) even when a
 					     logo is set. -->
 					<span
+						role="img"
 						class="absolute right-3 top-3 inline-flex h-6 w-6 items-center justify-center rounded-full bg-muted text-muted-foreground"
 						title={typeLabel}
 						aria-label={typeLabel}
