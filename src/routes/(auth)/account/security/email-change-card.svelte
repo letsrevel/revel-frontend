@@ -28,8 +28,8 @@
 	let isSubmitting = $state(false);
 	let cancelDialogOpen = $state(false);
 
-	let changeButtonEl: HTMLButtonElement | null = null;
-	let newEmailInputEl: HTMLInputElement | null = null;
+	let changeButtonEl = $state<HTMLButtonElement | null>(null);
+	let newEmailInputEl = $state<HTMLInputElement | null>(null);
 	let wasFormOpen = false;
 	let dismissed = $state(false);
 
@@ -238,9 +238,7 @@
 									disabled={isSubmitting}
 									placeholder={m['accountSecurityPage.emailChange_passwordPlaceholder']()}
 									aria-invalid={!!passwordErrorMessage}
-									aria-describedby={passwordErrorMessage
-										? 'emailChange_password_error'
-										: undefined}
+									aria-describedby={passwordErrorMessage ? 'emailChange_password_error' : undefined}
 									class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {passwordErrorMessage
 										? 'border-destructive'
 										: ''}"
@@ -310,7 +308,9 @@
 								{m['accountSecurityPage.emailChange_successBody']({ new_email: submittedEmail })}
 							</p>
 							<p class="text-green-700 dark:text-green-300">
-								{m['accountSecurityPage.emailChange_successNotice']({ current_email: currentEmail })}
+								{m['accountSecurityPage.emailChange_successNotice']({
+									current_email: currentEmail
+								})}
 							</p>
 							<p class="text-xs text-green-700 dark:text-green-300">
 								{m['accountSecurityPage.emailChange_successExpiry']()}

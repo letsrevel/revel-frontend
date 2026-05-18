@@ -7,7 +7,7 @@ import EmailChangeCard from './email-change-card.svelte';
 // mounts without errors. The `enhance` action is used on the form element but
 // its progressive-enhancement behaviour is not under test here.
 vi.mock('$app/forms', () => ({
-	enhance: () => ({ destroy: () => {} }),
+	enhance: () => ({ destroy: () => undefined }),
 	applyAction: vi.fn()
 }));
 
