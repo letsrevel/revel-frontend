@@ -31,6 +31,7 @@
 	let changeButtonEl = $state<HTMLButtonElement | null>(null);
 	let newEmailInputEl = $state<HTMLInputElement | null>(null);
 	let wasFormOpen = false;
+	let dismissed = $state(false);
 
 	$effect(() => {
 		if (showForm && !wasFormOpen) {
@@ -47,7 +48,18 @@
 	const emailVerified = $derived(user?.email_verified ?? false);
 
 	const submittedEmail = $derived(form?.emailChange?.new_email ?? '');
-	const submissionSucceeded = $derived(!!submittedEmail && !form?.emailChange?.failed);
+
+	let lastSeenEmail = '';
+	$effect(() => {
+		if (submittedEmail && submittedEmail !== lastSeenEmail) {
+			lastSeenEmail = submittedEmail;
+			dismissed = false;
+		}
+	});
+
+	const submissionSucceeded = $derived(
+		!!submittedEmail && !form?.emailChange?.failed && !dismissed
+	);
 
 	const hasUnsavedInput = $derived(newEmail.length > 0 || password.length > 0);
 
@@ -81,6 +93,7 @@
 		newEmail = '';
 		password = '';
 		showPassword = false;
+		dismissed = true;
 	}
 
 	function attemptCancel() {
