@@ -98,6 +98,7 @@ yarn.lock
 
 # Development documentation (keep locally only)
 .dev-docs/
+docs/superpowers/
 
 # Backend symlink
 revel-backend

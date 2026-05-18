@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) and other AI assista
 
 ## Important Reference Documents
 
-- **`COMMON_FIXES.md`** - Common issues and their solutions. **READ THIS FIRST** to avoid recurring mistakes with TanStack Query, backend enums, and Svelte 5 patterns.
+- **`.dev-docs/guides/common-fixes.md`** (local-only, gitignored) - Common issues and their solutions. **READ THIS FIRST** to avoid recurring mistakes with TanStack Query, backend enums, and Svelte 5 patterns.
 
 ## Tracking Project Progress
 
