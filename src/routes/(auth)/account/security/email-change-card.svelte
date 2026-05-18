@@ -63,7 +63,12 @@
 
 	const hasUnsavedInput = $derived(newEmail.length > 0 || password.length > 0);
 
-	const fieldErrorKey = $derived(form?.errors ?? {});
+	// Only treat `form` as ours when the requestEmailChange action ran. Other
+	// actions on the same page (2FA setup/verify/disable) also write into the
+	// shared `form` prop; without this guard their errors would bleed into the
+	// email-change card's error region.
+	const isOurActionResult = $derived(form?.emailChange !== undefined);
+	const fieldErrorKey = $derived(isOurActionResult ? (form?.errors ?? {}) : {});
 
 	const emailErrorMessage = $derived.by(() => {
 		const key = fieldErrorKey.new_email;

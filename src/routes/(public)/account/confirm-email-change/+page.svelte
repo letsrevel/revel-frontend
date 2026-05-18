@@ -164,14 +164,24 @@
 						isSubmitting = false;
 						await applyAction(result);
 						if (result.type === 'success') {
-							// Push the new user object into the auth store directly — initialize()
-							// is idempotent and would skip refetching, leaving the cached email
-							// stale in the header and profile until a full reload.
-							const updatedUser = (result.data as { user?: RevelUserSchema } | undefined)?.user;
-							if (updatedUser) {
-								authStore.setUser(updatedUser);
+							// The backend rotated our token pair. Update the auth store
+							// eagerly so the in-memory access token + refresh timer match
+							// the new cookies we just wrote. Without this we depend on the
+							// layout's auth-sync effect, which is racy — any code touching
+							// authStore.accessToken between now and that effect would see
+							// the old token.
+							const data = result.data as
+								| { access_token?: string | null; user?: RevelUserSchema }
+								| undefined;
+							if (data?.access_token) {
+								authStore.setAccessToken(data.access_token);
 							}
-							// Ensure SSR data (e.g. the profile page's data.user) is refreshed too.
+							// initialize() is idempotent and would skip refetching while a
+							// user object is cached, so push the fresh user object directly.
+							if (data?.user) {
+								authStore.setUser(data.user);
+							}
+							// Refresh SSR data (e.g. the profile page's data.user).
 							await invalidateAll();
 						}
 					};

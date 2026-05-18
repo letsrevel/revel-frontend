@@ -24,11 +24,15 @@ export const actions: Actions = {
 
 			if (response.response.ok && response.data) {
 				const tokens = response.data.token as { access: string; refresh: string };
+				// Honour the user's existing remember_me preference so a session-only
+				// login doesn't get silently upgraded to a 30-day persistent cookie
+				// after they confirm an email change. Defaults to false if absent.
+				const rememberMe = cookies.get('remember_me') === 'true';
 				if (tokens?.access) {
-					cookies.set('access_token', tokens.access, getAccessTokenCookieOptions());
+					cookies.set('access_token', tokens.access, getAccessTokenCookieOptions(rememberMe));
 				}
 				if (tokens?.refresh) {
-					cookies.set('refresh_token', tokens.refresh, getRefreshTokenCookieOptions());
+					cookies.set('refresh_token', tokens.refresh, getRefreshTokenCookieOptions(rememberMe));
 				}
 
 				const newEmail = response.data.user?.email ?? '';
@@ -36,7 +40,8 @@ export const actions: Actions = {
 				return {
 					success: true,
 					new_email: newEmail,
-					user: response.data.user
+					user: response.data.user,
+					access_token: tokens?.access ?? null
 				};
 			}
 

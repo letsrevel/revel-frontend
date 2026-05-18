@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
+import type { RevelUserSchema } from '$lib/api/generated/types.gen';
 import EmailChangeCard from './email-change-card.svelte';
 
 // $app/forms is not available in jsdom; provide no-op stubs so the component
@@ -23,7 +24,7 @@ const baseUser = {
 	first_name: '',
 	last_name: '',
 	username: 'current@example.com'
-} as any;
+} as unknown as RevelUserSchema;
 
 describe('EmailChangeCard', () => {
 	it('renders the current email in resting state', () => {
