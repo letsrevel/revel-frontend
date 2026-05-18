@@ -5686,7 +5686,7 @@
 			"recurring": {
 				"title": "Recurring",
 				"body": "Define a template event and a recurrence pattern. Occurrences are scheduled automatically and managed from a single dashboard.",
-				"badge": "Most common"
+				"badge": "Automatic"
 			},
 			"empty": {
 				"title": "Grouping only",
