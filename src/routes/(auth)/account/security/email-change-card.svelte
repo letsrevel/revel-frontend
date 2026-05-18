@@ -28,8 +28,8 @@
 	let isSubmitting = $state(false);
 	let cancelDialogOpen = $state(false);
 
-	let changeButtonEl = $state<HTMLButtonElement | null>(null);
-	let newEmailInputEl = $state<HTMLInputElement | null>(null);
+	let changeButtonEl: HTMLButtonElement | null = null;
+	let newEmailInputEl: HTMLInputElement | null = null;
 	let wasFormOpen = false;
 	let dismissed = $state(false);
 
@@ -65,28 +65,28 @@
 
 	const fieldErrorKey = $derived(form?.errors ?? {});
 
-	function emailErrorMessage(): string | null {
+	const emailErrorMessage = $derived.by(() => {
 		const key = fieldErrorKey.new_email;
 		if (!key) return null;
 		if (key === 'sameEmail') return m['accountSecurityPage.emailChange_error_sameEmail']();
 		if (key === 'duplicate') return m['accountSecurityPage.emailChange_error_duplicate']();
 		return key; // fallback: raw zod message
-	}
+	});
 
-	function passwordErrorMessage(): string | null {
+	const passwordErrorMessage = $derived.by(() => {
 		const key = fieldErrorKey.password;
 		if (!key) return null;
 		if (key === 'wrongPassword') return m['accountSecurityPage.emailChange_error_wrongPassword']();
 		return key;
-	}
+	});
 
-	function formErrorMessage(): string | null {
+	const formErrorMessage = $derived.by(() => {
 		const key = fieldErrorKey.form;
 		if (!key) return null;
 		if (key === 'throttled') return m['accountSecurityPage.emailChange_error_throttled']();
 		if (key === 'generic') return m['accountSecurityPage.emailChange_error_generic']();
 		return key;
-	}
+	});
 
 	function resetForm() {
 		showForm = false;
@@ -165,7 +165,6 @@
 
 					<div
 						class="mt-4 flex items-start gap-3 rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950"
-						role="status"
 					>
 						<AlertTriangle
 							class="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-700 dark:text-amber-400"
@@ -211,15 +210,15 @@
 								bind:this={newEmailInputEl}
 								disabled={isSubmitting}
 								placeholder={m['accountSecurityPage.emailChange_newEmailPlaceholder']()}
-								aria-invalid={!!emailErrorMessage()}
-								aria-describedby={emailErrorMessage() ? 'emailChange_new_email_error' : undefined}
-								class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {emailErrorMessage()
+								aria-invalid={!!emailErrorMessage}
+								aria-describedby={emailErrorMessage ? 'emailChange_new_email_error' : undefined}
+								class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {emailErrorMessage
 									? 'border-destructive'
 									: ''}"
 							/>
-							{#if emailErrorMessage()}
+							{#if emailErrorMessage}
 								<p id="emailChange_new_email_error" class="text-sm text-destructive" role="alert">
-									{emailErrorMessage()}
+									{emailErrorMessage}
 								</p>
 							{/if}
 						</div>
@@ -238,11 +237,11 @@
 									bind:value={password}
 									disabled={isSubmitting}
 									placeholder={m['accountSecurityPage.emailChange_passwordPlaceholder']()}
-									aria-invalid={!!passwordErrorMessage()}
-									aria-describedby={passwordErrorMessage()
+									aria-invalid={!!passwordErrorMessage}
+									aria-describedby={passwordErrorMessage
 										? 'emailChange_password_error'
 										: undefined}
-									class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {passwordErrorMessage()
+									class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {passwordErrorMessage
 										? 'border-destructive'
 										: ''}"
 								/>
@@ -261,16 +260,16 @@
 									{/if}
 								</button>
 							</div>
-							{#if passwordErrorMessage()}
+							{#if passwordErrorMessage}
 								<p id="emailChange_password_error" class="text-sm text-destructive" role="alert">
-									{passwordErrorMessage()}
+									{passwordErrorMessage}
 								</p>
 							{/if}
 						</div>
 
-						{#if formErrorMessage()}
+						{#if formErrorMessage}
 							<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-3">
-								<p class="text-sm font-medium text-destructive">{formErrorMessage()}</p>
+								<p class="text-sm font-medium text-destructive">{formErrorMessage}</p>
 							</div>
 						{/if}
 
