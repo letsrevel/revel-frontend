@@ -35,7 +35,8 @@ export const actions: Actions = {
 
 				return {
 					success: true,
-					new_email: newEmail
+					new_email: newEmail,
+					user: response.data.user
 				};
 			}
 

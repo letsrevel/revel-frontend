@@ -4,6 +4,8 @@
 	import { invalidateAll } from '$app/navigation';
 	import { AlertTriangle, CheckCircle, Loader2, Mail } from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
+	import { authStore } from '$lib/stores/auth.svelte';
+	import type { RevelUserSchema } from '$lib/api/generated/types.gen';
 	import type { ActionData } from './$types';
 
 	interface Props {
@@ -162,7 +164,14 @@
 						isSubmitting = false;
 						await applyAction(result);
 						if (result.type === 'success') {
-							// Ensure the root layout picks up the new cookies / user data.
+							// Push the new user object into the auth store directly — initialize()
+							// is idempotent and would skip refetching, leaving the cached email
+							// stale in the header and profile until a full reload.
+							const updatedUser = (result.data as { user?: RevelUserSchema } | undefined)?.user;
+							if (updatedUser) {
+								authStore.setUser(updatedUser);
+							}
+							// Ensure SSR data (e.g. the profile page's data.user) is refreshed too.
 							await invalidateAll();
 						}
 					};
