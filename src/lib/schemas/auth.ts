@@ -113,7 +113,7 @@ export const emailChangeRequestSchema = z.object({
 		.string()
 		.trim()
 		.toLowerCase()
-		.email('Please enter a valid email address'),
+		.email('Invalid email address'),
 	password: z.string().min(1, 'Password is required')
 });
 
