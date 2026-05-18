@@ -252,7 +252,10 @@ export const actions: Actions = {
 					new_email: validation.data.new_email,
 					password: validation.data.password
 				},
-				headers: { Authorization: `Bearer ${accessToken}` }
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+					'Accept-Language': 'en'
+				}
 			});
 
 			if (response.response.ok) {
