@@ -206,6 +206,23 @@
 		return typeof v === 'string' && v.length > 0 ? v : null;
 	}
 
+	// Reactive clock — flips `expired` when the offer crosses its deadline so the
+	// Claim CTA and styling stop misleading the user post-expiry.
+	let waitlistNow = $state(Date.now());
+	$effect(() => {
+		if (!isWaitlistSpot) return;
+		const expiresAt = readString(notification.context, 'expires_at');
+		const targetMs = expiresAt ? Date.parse(expiresAt) : NaN;
+		if (!Number.isFinite(targetMs)) return;
+		if (Date.now() >= targetMs) return;
+		const id = setInterval(() => {
+			const next = Date.now();
+			waitlistNow = next;
+			if (next >= targetMs) clearInterval(id);
+		}, 30_000);
+		return () => clearInterval(id);
+	});
+
 	const waitlistSpotData = $derived.by(() => {
 		if (!isWaitlistSpot) return null;
 		const ctx = notification.context;
@@ -216,7 +233,7 @@
 
 		const expiresMs = expiresAt ? Date.parse(expiresAt) : NaN;
 		const hasOffer = Number.isFinite(expiresMs);
-		const expired = hasOffer ? expiresMs <= Date.now() : false;
+		const expired = hasOffer ? expiresMs <= waitlistNow : false;
 
 		// Localized absolute time string for the body. Prefer the
 		// backend-provided pre-formatted string (already in event TZ); fall
@@ -278,7 +295,7 @@
 			handleClick(e as unknown as MouseEvent);
 		}
 	}}
-	aria-label={`${notification.title}. ${isRead ? 'Read' : 'Unread'}. Click to view details.`}
+	aria-label={`${isWaitlistSpot ? m['notifications.waitlistSpot.title']() : notification.title}. ${isRead ? 'Read' : 'Unread'}. Click to view details.`}
 >
 	<div class="flex items-start gap-3">
 		<!-- Unread indicator -->

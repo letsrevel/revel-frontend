@@ -10,6 +10,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { eventpublicattendanceJoinWaitlist, eventpublicattendanceLeaveWaitlist } from '$lib/api';
 	import { useQueryClient } from '@tanstack/svelte-query';
+	import { invalidateAll } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 	import {
 		Check,
@@ -189,7 +190,11 @@
 				});
 
 				if (response.error) {
-					// 409: capacity opened up between page load and click — invite refresh
+					// 409: capacity opened up between page load and click — invite refresh.
+					// The public event page is SSR-loaded, so we re-run all load
+					// functions via invalidateAll() and also bust the TanStack cache
+					// keys other components (RequestInvitationButton, EventRSVP, …)
+					// watch.
 					if (response.response?.status === 409) {
 						toast.warning(m['joinWaitlist.capacityOpen'](), {
 							action: {
@@ -197,6 +202,7 @@
 								onClick: () => {
 									queryClient.invalidateQueries({ queryKey: ['event-status', eventId] });
 									queryClient.invalidateQueries({ queryKey: ['event', eventId] });
+									void invalidateAll();
 								}
 							}
 						});

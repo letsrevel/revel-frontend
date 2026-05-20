@@ -174,7 +174,7 @@
 		}
 
 		if (!eventId) {
-			toast.error('Missing event id');
+			toast.error(m['waitlistSettings.error.missingEventId']());
 			return;
 		}
 
@@ -188,7 +188,9 @@
 				if (Object.keys(parsed).length > 0) {
 					fieldErrors = parsed;
 				} else {
-					toast.error(err instanceof Error ? err.message : 'Failed to update settings');
+					toast.error(
+						err instanceof Error ? err.message : m['waitlistSettings.error.updateFailed']()
+					);
 				}
 			}
 		});
@@ -263,7 +265,7 @@
 
 		<DialogFooter>
 			<Button variant="ghost" onclick={handleCancel} disabled={updateMutation.isPending}>
-				Cancel
+				{m['common.cancel']()}
 			</Button>
 			<Button onclick={handleSave} disabled={mode === 'edit' && updateMutation.isPending}>
 				{#if mode === 'edit' && updateMutation.isPending}

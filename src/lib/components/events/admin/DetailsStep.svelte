@@ -27,17 +27,8 @@
 	import EventQuestionnaireAssignmentModal from './EventQuestionnaireAssignmentModal.svelte';
 	import LocationSection from './LocationSection.svelte';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
-	import {
-		Tooltip,
-		TooltipContent,
-		TooltipProvider,
-		TooltipTrigger
-	} from '$lib/components/ui/tooltip';
-	import { Button } from '$lib/components/ui/button';
-	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
-	import WaitlistSettingsModal from '$lib/components/events/waitlist/WaitlistSettingsModal.svelte';
+	import WaitlistAdvancedSection from './WaitlistAdvancedSection.svelte';
 	import type { OrganizationQuestionnaireInListSchema } from '$lib/api/generated';
-	import type { WaitlistSettingsUpdateSchema } from '$lib/api/generated/types.gen';
 	import { tagListTags } from '$lib/api/generated/sdk.gen';
 
 	interface Props {
@@ -122,32 +113,20 @@
 	// Modal state for questionnaire assignment
 	let isQuestionnaireModalOpen = $state(false);
 
-	// Modal state for waitlist info dialog
 	let waitlistInfoOpen = $state(false);
-
-	// Modal state for advanced waitlist settings modal
-	let waitlistSettingsModalOpen = $state(false);
-
-	// Close-waitlist confirm-dialog state
 	let closeWaitlistConfirmOpen = $state(false);
 
-	/**
-	 * Handle the waitlist_open checkbox change. If the user is closing the
-	 * waitlist AND there are pending offers (seats_held > 0), show a confirm
-	 * dialog before propagating the change.
-	 */
+	// If the user closes the waitlist while pending offers are held, defer the
+	// change behind a confirm dialog (otherwise revoking those offers is silent).
 	function handleWaitlistOpenChange(e: Event & { currentTarget: HTMLInputElement }): void {
 		const nextValue = e.currentTarget.checked;
 		const wasOpen = formData.waitlist_open === true;
 		const seatsHeld = formData.seats_held ?? 0;
-
 		if (wasOpen && !nextValue && seatsHeld > 0) {
-			// Revert UI; await user confirm
 			e.currentTarget.checked = true;
 			closeWaitlistConfirmOpen = true;
 			return;
 		}
-
 		onUpdate({ waitlist_open: nextValue });
 	}
 
@@ -158,17 +137,6 @@
 
 	function cancelCloseWaitlist(): void {
 		closeWaitlistConfirmOpen = false;
-	}
-
-	function handleWaitlistSettingsSave(values: WaitlistSettingsUpdateSchema): void {
-		// WaitlistSettingsUpdateSchema allows `waitlist_open: null`; EventCreateSchema
-		// only accepts boolean | undefined. Coerce null → undefined to satisfy the
-		// onUpdate contract; the modal only sets boolean values anyway.
-		const { waitlist_open, ...rest } = values;
-		onUpdate({
-			...rest,
-			waitlist_open: waitlist_open ?? undefined
-		});
 	}
 
 	// Accordion state - automatically open advanced section if event has tags
@@ -564,34 +532,14 @@
 						</div>
 					</label>
 
-					<!-- Configure advanced waitlist settings -->
-					{#if formData.waitlist_open}
-						<Button
-							type="button"
-							variant="outline"
-							size="sm"
-							onclick={() => (waitlistSettingsModalOpen = true)}
-						>
-							{m['waitlistSettings.openButton']()}
-						</Button>
-					{:else}
-						<TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger>
-									{#snippet child({ props })}
-										<span {...props} class="inline-block">
-											<Button type="button" variant="outline" size="sm" disabled>
-												{m['waitlistSettings.openButton']()}
-											</Button>
-										</span>
-									{/snippet}
-								</TooltipTrigger>
-								<TooltipContent>
-									<p class="max-w-xs text-sm">{m['waitlistSettings.closedTooltip']()}</p>
-								</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>
-					{/if}
+					<WaitlistAdvancedSection
+						{formData}
+						{isEditMode}
+						confirmCloseOpen={closeWaitlistConfirmOpen}
+						onConfirmClose={confirmCloseWaitlist}
+						onCancelClose={cancelCloseWaitlist}
+						{onUpdate}
+					/>
 				</div>
 
 				<!-- Invitation Message -->
@@ -1073,46 +1021,3 @@
 		</div>
 	</DialogContent>
 </Dialog>
-
-<!-- Advanced Waitlist Settings Modal -->
-{#if isEditMode && formData.id}
-	<WaitlistSettingsModal
-		bind:open={waitlistSettingsModalOpen}
-		onOpenChange={(v) => (waitlistSettingsModalOpen = v)}
-		mode="edit"
-		eventId={formData.id}
-		initialValues={{
-			waitlist_open: formData.waitlist_open ?? false,
-			waitlist_time_window: formData.waitlist_time_window ?? null,
-			waitlist_batch_size: formData.waitlist_batch_size ?? 0,
-			waitlist_cutoff_date: formData.waitlist_cutoff_date ?? null,
-			waitlist_lottery_mode: formData.waitlist_lottery_mode ?? false
-		}}
-	/>
-{:else}
-	<WaitlistSettingsModal
-		bind:open={waitlistSettingsModalOpen}
-		onOpenChange={(v) => (waitlistSettingsModalOpen = v)}
-		mode="create"
-		initialValues={{
-			waitlist_open: formData.waitlist_open ?? false,
-			waitlist_time_window: formData.waitlist_time_window ?? null,
-			waitlist_batch_size: formData.waitlist_batch_size ?? 0,
-			waitlist_cutoff_date: formData.waitlist_cutoff_date ?? null,
-			waitlist_lottery_mode: formData.waitlist_lottery_mode ?? false
-		}}
-		onSave={handleWaitlistSettingsSave}
-	/>
-{/if}
-
-<!-- Close-waitlist Confirmation Dialog -->
-<ConfirmDialog
-	isOpen={closeWaitlistConfirmOpen}
-	title={m['waitlistSettings.closeConfirm.title']()}
-	message={m['waitlistSettings.closeConfirm.body']({
-		count: (formData.seats_held ?? 0).toString()
-	})}
-	variant="warning"
-	onConfirm={confirmCloseWaitlist}
-	onCancel={cancelCloseWaitlist}
-/>

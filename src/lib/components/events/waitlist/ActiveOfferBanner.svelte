@@ -21,8 +21,12 @@
 	// so refreshing once a minute is plenty. The nested OfferExpiryCountdown
 	// drives its own faster timer for the digit display when <24h.
 	$effect(() => {
+		if (!Number.isFinite(targetMs)) return;
+		if (Date.now() >= targetMs) return;
 		const id = setInterval(() => {
-			now = Date.now();
+			const next = Date.now();
+			now = next;
+			if (next >= targetMs) clearInterval(id);
 		}, 60_000);
 		return () => clearInterval(id);
 	});
