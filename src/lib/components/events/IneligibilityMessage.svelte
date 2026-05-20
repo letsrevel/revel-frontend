@@ -42,8 +42,19 @@
 		class: className
 	}: Props = $props();
 
+	// Prefer the stable backend `reason_code` enum; fall back to literal prose
+	// while older code paths or pre-deploy backends still ship reason as a string.
 	const SPOTS_RESERVED_REASON = 'Spots are currently reserved for waitlist members.';
 	const WAITING_FOR_BATCH_REASON = 'You are on the waitlist. Waiting for your turn.';
+
+	const isSpotsReserved = $derived(
+		eligibility.reason_code === 'spots_reserved_for_waitlist' ||
+			eligibility.reason === SPOTS_RESERVED_REASON
+	);
+	const isWaitingForBatch = $derived(
+		eligibility.reason_code === 'on_waitlist_waiting_for_batch' ||
+			eligibility.reason === WAITING_FOR_BATCH_REASON
+	);
 
 	/**
 	 * Format an ISO datetime to the user's locale (absolute time)
@@ -143,11 +154,8 @@
 	function getVariant(
 		nextStep: string | null | undefined
 	): 'warning' | 'info' | 'destructive' | 'muted' {
-		// Waiting/holding states keyed off the new reason strings aren't blockers
-		if (
-			eligibility.reason === SPOTS_RESERVED_REASON ||
-			eligibility.reason === WAITING_FOR_BATCH_REASON
-		) {
+		// Waiting/holding states keyed off the new reason codes aren't blockers
+		if (isSpotsReserved || isWaitingForBatch) {
 			return 'info';
 		}
 
@@ -188,14 +196,13 @@
 	 * Get header text based on reason or next_step
 	 */
 	function getHeaderText(): string {
+		// Advanced waitlist reasons (prefer machine-readable code)
+		if (isSpotsReserved) return m['ineligibilityMessage.spotsReserved.header']();
+		if (isWaitingForBatch) return m['ineligibilityMessage.waitingForBatch.header']();
+
 		if (eligibility.reason) {
 			// Extract the first sentence or key phrase
 			const reason = eligibility.reason;
-
-			// Advanced waitlist reasons (exact match)
-			if (reason === SPOTS_RESERVED_REASON) return m['ineligibilityMessage.spotsReserved.header']();
-			if (reason === WAITING_FOR_BATCH_REASON)
-				return m['ineligibilityMessage.waitingForBatch.header']();
 
 			// Map common reasons to friendly headers
 			if (reason.includes('Only members')) return m['ineligibilityMessage.membersOnly']();
@@ -246,10 +253,9 @@
 	 */
 	function getExplanationText(): string | null {
 		const nextStep = eligibility.next_step;
-		const reason = eligibility.reason;
 
 		// Advanced waitlist reasons take precedence — they describe waiting/holding states
-		if (reason === SPOTS_RESERVED_REASON) {
+		if (isSpotsReserved) {
 			if (
 				eligibility.pending_offers_count &&
 				eligibility.pending_offers_count > 0 &&
@@ -263,7 +269,7 @@
 			return null;
 		}
 
-		if (reason === WAITING_FOR_BATCH_REASON) {
+		if (isWaitingForBatch) {
 			const position = eligibility.waitlist_position;
 			if (position == null) return null;
 			if (

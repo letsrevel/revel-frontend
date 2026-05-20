@@ -226,11 +226,6 @@
 		return parts.length > 0 ? parts.join(' ') : '—';
 	}
 
-	function shortUserId(id: string | null | undefined): string {
-		if (!id) return '—';
-		return id.length > 8 ? `${id.slice(0, 8)}…` : id;
-	}
-
 	const totalPages = $derived(
 		waitlistQuery.data ? Math.ceil(waitlistQuery.data.count / pageSize) : 1
 	);
@@ -392,7 +387,6 @@
 				isRevokePending={revokeOfferMutation.isPending}
 				isReactivatePending={reactivateOfferMutation.isPending}
 				{formatDateTime}
-				{shortUserId}
 			/>
 		</TabsContent>
 	</Tabs>

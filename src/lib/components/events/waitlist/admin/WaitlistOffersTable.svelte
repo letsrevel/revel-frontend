@@ -29,7 +29,6 @@
 		isRevokePending: boolean;
 		isReactivatePending: boolean;
 		formatDateTime: (iso: string) => string;
-		shortUserId: (id: string | null | undefined) => string;
 	}
 
 	const {
@@ -51,9 +50,12 @@
 		activeActionOfferId,
 		isRevokePending,
 		isReactivatePending,
-		formatDateTime,
-		shortUserId
+		formatDateTime
 	}: Props = $props();
+
+	function fullName(u: { first_name?: string | null; last_name?: string | null }): string {
+		return `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim();
+	}
 
 	function offerActionLabel(status: WaitlistOfferStatus): string {
 		switch (status) {
@@ -126,13 +128,18 @@
 					</tr>
 				</thead>
 				<tbody class="divide-y">
-					{#each data.results as offer (offer.id ?? offer.batch_id + offer.user)}
+					{#each data.results as offer (offer.id ?? `${offer.batch_id}-${offer.user.id}`)}
 						{@const busy =
 							activeActionOfferId === offer.id && (isRevokePending || isReactivatePending)}
 						{@const label = offerActionLabel(offer.status)}
 						<tr class="transition-colors hover:bg-muted/50">
-							<td class="px-4 py-3 font-mono text-xs text-muted-foreground">
-								{shortUserId(offer.user)}
+							<td class="px-4 py-3 text-sm">
+								<div class="font-medium">
+									{offer.user.display_name || fullName(offer.user) || offer.user.email}
+								</div>
+								{#if offer.user.email && (offer.user.display_name || fullName(offer.user))}
+									<div class="text-xs text-muted-foreground">{offer.user.email}</div>
+								{/if}
 							</td>
 							<td class="px-4 py-3 text-sm">
 								<WaitlistOfferStatusBadge status={offer.status} />
@@ -173,13 +180,18 @@
 		</div>
 
 		<div class="grid gap-4 md:hidden">
-			{#each data.results as offer (offer.id ?? offer.batch_id + offer.user)}
+			{#each data.results as offer (offer.id ?? `${offer.batch_id}-${offer.user.id}`)}
 				{@const busy = activeActionOfferId === offer.id && (isRevokePending || isReactivatePending)}
 				{@const label = offerActionLabel(offer.status)}
 				<div class="space-y-3 rounded-lg border bg-card p-4">
 					<div class="flex items-start justify-between gap-2">
-						<div class="font-mono text-xs text-muted-foreground">
-							{shortUserId(offer.user)}
+						<div class="min-w-0 flex-1">
+							<div class="truncate text-sm font-medium">
+								{offer.user.display_name || fullName(offer.user) || offer.user.email}
+							</div>
+							{#if offer.user.email && (offer.user.display_name || fullName(offer.user))}
+								<div class="truncate text-xs text-muted-foreground">{offer.user.email}</div>
+							{/if}
 						</div>
 						<WaitlistOfferStatusBadge status={offer.status} />
 					</div>
