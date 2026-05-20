@@ -950,8 +950,8 @@
 		"guestAttendanceWarningBody": "If your event uses screening questionnaires, RSVP invitations, or member-only restrictions, attendees will still be prompted to create an account before participating. This setting is best for fully public events with no extra gating.",
 		"waitlistInfoButton": "How does the waitlist work?",
 		"waitlistInfoTitle": "How the waitlist works",
-		"waitlistInfoBody1": "When the waitlist is enabled, people can sign up to wait for a spot. As soon as capacity opens — because someone cancels or you raise the limit — Revel offers seats to waitlisted users automatically.",
-		"waitlistInfoBody2": "By default everyone on the waitlist is notified at once and the first to register keeps the spot. Set an Offer time window in the advanced settings to switch to batched offers: Revel picks a configurable batch (in FIFO order, or randomly with Lottery mode) and reserves their seats for that window. Unclaimed seats automatically roll over to the next batch.",
+		"waitlistInfoBody1": "When the waitlist is enabled, people can sign up to wait for a spot. How Revel handles them when capacity opens depends on the advanced settings.",
+		"waitlistInfoBody2": "Without an Offer time window the waitlist is passive — people sign up and wait, and Revel sends no automated notifications. Set an Offer time window to enable batched offers: when a spot opens (a cancellation, a raised capacity), Revel picks a configurable batch (in FIFO order, or randomly with Lottery mode), reserves their seats for that window, and notifies them. Unclaimed seats automatically roll over to the next batch.",
 		"waitlistInfoBody3": "Configure batch size, the time window, lottery mode, and a final cutoff date via the Configure waitlist button.",
 		"waitlistInfoFeedbackCta": "Share feedback on GitHub"
 	},

@@ -950,8 +950,8 @@
 		"guestAttendanceWarningBody": "Wenn dein Event Screening-Fragebögen, RSVP-Einladungen oder Member-Only-Beschränkungen nutzt, werden Teilnehmende trotzdem aufgefordert, ein Konto zu erstellen. Diese Einstellung passt am besten zu komplett öffentlichen Events ohne zusätzliche Einschränkungen.",
 		"waitlistInfoButton": "Wie funktioniert die Warteliste?",
 		"waitlistInfoTitle": "So funktioniert die Warteliste",
-		"waitlistInfoBody1": "Wenn die Warteliste aktiviert ist, können sich Personen anmelden, um auf einen freien Platz zu warten. Sobald Kapazität frei wird — etwa durch eine Stornierung oder weil du das Limit erhöhst — bietet Revel die Plätze automatisch den Personen auf der Warteliste an.",
-		"waitlistInfoBody2": "Standardmäßig werden alle auf der Warteliste gleichzeitig benachrichtigt und wer sich zuerst anmeldet, behält den Platz. Lege in den erweiterten Einstellungen ein Angebots-Zeitfenster fest, um zu gestaffelten Angeboten zu wechseln: Revel wählt dann eine konfigurierbare Gruppe (in FIFO-Reihenfolge oder zufällig mit Losverfahren) und reserviert deren Plätze für dieses Zeitfenster. Nicht eingelöste Plätze gehen automatisch in die nächste Runde über.",
+		"waitlistInfoBody1": "Wenn die Warteliste aktiviert ist, können sich Personen anmelden, um auf einen freien Platz zu warten. Was passiert, wenn Kapazität frei wird, hängt von den erweiterten Einstellungen ab.",
+		"waitlistInfoBody2": "Ohne Angebots-Zeitfenster ist die Warteliste passiv — Personen melden sich an und warten, Revel sendet keine automatischen Benachrichtigungen. Lege ein Angebots-Zeitfenster fest, um gestaffelte Angebote zu aktivieren: Wenn ein Platz frei wird (Stornierung, höhere Kapazität), wählt Revel eine konfigurierbare Gruppe (in FIFO-Reihenfolge oder zufällig mit Losverfahren), reserviert deren Plätze für dieses Zeitfenster und benachrichtigt sie. Nicht eingelöste Plätze gehen automatisch in die nächste Runde über.",
 		"waitlistInfoBody3": "Konfiguriere Gruppengröße, Zeitfenster, Losverfahren und ein finales Cutoff-Datum über die Schaltfläche „Warteliste konfigurieren\".",
 		"waitlistInfoFeedbackCta": "Feedback auf GitHub geben"
 	},
