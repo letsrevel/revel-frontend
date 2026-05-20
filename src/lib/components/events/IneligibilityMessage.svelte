@@ -42,6 +42,18 @@
 		class: className
 	}: Props = $props();
 
+	const SPOTS_RESERVED_REASON = 'Spots are currently reserved for waitlist members.';
+	const WAITING_FOR_BATCH_REASON = 'You are on the waitlist. Waiting for your turn.';
+
+	/**
+	 * Format an ISO datetime to the user's locale (absolute time)
+	 */
+	function formatTime(iso: string): string {
+		const date = new Date(iso);
+		if (isNaN(date.getTime())) return iso;
+		return date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+	}
+
 	/**
 	 * Format the apply_before deadline for display
 	 */
@@ -131,6 +143,14 @@
 	function getVariant(
 		nextStep: string | null | undefined
 	): 'warning' | 'info' | 'destructive' | 'muted' {
+		// Waiting/holding states keyed off the new reason strings aren't blockers
+		if (
+			eligibility.reason === SPOTS_RESERVED_REASON ||
+			eligibility.reason === WAITING_FOR_BATCH_REASON
+		) {
+			return 'info';
+		}
+
 		if (!nextStep) return 'muted';
 
 		// Info (waiting states)
@@ -171,6 +191,11 @@
 		if (eligibility.reason) {
 			// Extract the first sentence or key phrase
 			const reason = eligibility.reason;
+
+			// Advanced waitlist reasons (exact match)
+			if (reason === SPOTS_RESERVED_REASON) return m['ineligibilityMessage.spotsReserved.header']();
+			if (reason === WAITING_FOR_BATCH_REASON)
+				return m['ineligibilityMessage.waitingForBatch.header']();
 
 			// Map common reasons to friendly headers
 			if (reason.includes('Only members')) return m['ineligibilityMessage.membersOnly']();
@@ -221,6 +246,39 @@
 	 */
 	function getExplanationText(): string | null {
 		const nextStep = eligibility.next_step;
+		const reason = eligibility.reason;
+
+		// Advanced waitlist reasons take precedence — they describe waiting/holding states
+		if (reason === SPOTS_RESERVED_REASON) {
+			if (
+				eligibility.pending_offers_count &&
+				eligibility.pending_offers_count > 0 &&
+				eligibility.next_batch_at
+			) {
+				return m['ineligibilityMessage.spotsReserved.body']({
+					count: eligibility.pending_offers_count,
+					time: formatTime(eligibility.next_batch_at)
+				});
+			}
+			return null;
+		}
+
+		if (reason === WAITING_FOR_BATCH_REASON) {
+			const position = eligibility.waitlist_position;
+			if (position == null) return null;
+			if (
+				eligibility.pending_offers_count &&
+				eligibility.pending_offers_count > 0 &&
+				eligibility.next_batch_at
+			) {
+				return m['ineligibilityMessage.waitingForBatch.body']({
+					position,
+					count: eligibility.pending_offers_count,
+					time: formatTime(eligibility.next_batch_at)
+				});
+			}
+			return m['ineligibilityMessage.waitingForBatch.bodyNoCount']({ position });
+		}
 
 		if (nextStep === 'become_member') {
 			return m['ineligibilityMessage.membersOnlyExplanation']({ organizationName });

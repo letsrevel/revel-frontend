@@ -39,6 +39,12 @@
 		return remaining <= 10 && remaining > 0;
 	});
 
+	const seatsHeldText = $derived.by(() => {
+		const held = event.seats_held ?? 0;
+		if (held <= 0) return null;
+		return m['orgAdmin.waitlist.offer.seatsHeldHint']({ count: held });
+	});
+
 	function formatVisibilityLabel(value: string): string {
 		switch (value) {
 			case 'public':
@@ -122,6 +128,11 @@
 							aria-live="polite"
 						>
 							{capacityText}
+							{#if seatsHeldText}
+								<span class="ml-1 text-xs font-normal text-muted-foreground">
+									· {seatsHeldText}
+								</span>
+							{/if}
 						</div>
 					</div>
 				</div>

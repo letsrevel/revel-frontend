@@ -9,6 +9,8 @@
 	import ClaimInvitationButton from './ClaimInvitationButton.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { eventpublicattendanceJoinWaitlist, eventpublicattendanceLeaveWaitlist } from '$lib/api';
+	import { useQueryClient } from '@tanstack/svelte-query';
+	import { toast } from 'svelte-sonner';
 	import {
 		Check,
 		ClipboardList,
@@ -57,6 +59,7 @@
 	}: Props = $props();
 
 	const isAuthenticated = $derived(!!authStore.accessToken);
+	const queryClient = useQueryClient();
 
 	let isLoading = $state(false);
 	let isLeavingWaitlist = $state(false);
@@ -186,14 +189,27 @@
 				});
 
 				if (response.error) {
-					showError = true;
-					const errorDetail =
-						typeof response.error === 'object' &&
-						response.error !== null &&
-						'detail' in response.error
-							? (response.error.detail as string)
-							: m['ineligibilityActionButton.waitlist_error']();
-					errorMessage = errorDetail;
+					// 409: capacity opened up between page load and click — invite refresh
+					if (response.response?.status === 409) {
+						toast.warning(m['joinWaitlist.capacityOpen'](), {
+							action: {
+								label: m['joinWaitlist.refreshAction'](),
+								onClick: () => {
+									queryClient.invalidateQueries({ queryKey: ['event-status', eventId] });
+									queryClient.invalidateQueries({ queryKey: ['event', eventId] });
+								}
+							}
+						});
+					} else {
+						showError = true;
+						const errorDetail =
+							typeof response.error === 'object' &&
+							response.error !== null &&
+							'detail' in response.error
+								? (response.error.detail as string)
+								: m['ineligibilityActionButton.waitlist_error']();
+						errorMessage = errorDetail;
+					}
 				} else {
 					showSuccess = true;
 					// Optionally refresh the page or update UI to reflect waitlist status

@@ -5,13 +5,14 @@
 	import { Card } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Circle, Check, X, Clock } from 'lucide-svelte';
+	import { Circle, Check, X, Clock, Ticket } from 'lucide-svelte';
 	import { formatRelativeTime } from '$lib/utils/time';
 	import { goto } from '$app/navigation';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
 	import { cn } from '$lib/utils/cn';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+	import OfferExpiryCountdown from '$lib/components/events/waitlist/OfferExpiryCountdown.svelte';
 
 	interface Props {
 		notification: NotificationSchema;
@@ -196,12 +197,75 @@
 		if (type.includes('rsvp')) return 'outline' as const;
 		return 'secondary' as const;
 	});
+
+	// ===== Waitlist spot available =====
+	const isWaitlistSpot = $derived(notification.notification_type === 'waitlist_spot_available');
+
+	function readString(ctx: Record<string, unknown>, key: string): string | null {
+		const v = ctx[key];
+		return typeof v === 'string' && v.length > 0 ? v : null;
+	}
+
+	const waitlistSpotData = $derived.by(() => {
+		if (!isWaitlistSpot) return null;
+		const ctx = notification.context;
+		const expiresAt = readString(ctx, 'expires_at');
+		const expiresAtFormatted = readString(ctx, 'expires_at_formatted');
+		const eventName = readString(ctx, 'event_name') ?? '';
+		const claimUrl = extractUrlFromContext(ctx) ?? '/account/notifications';
+
+		const expiresMs = expiresAt ? Date.parse(expiresAt) : NaN;
+		const hasOffer = Number.isFinite(expiresMs);
+		const expired = hasOffer ? expiresMs <= Date.now() : false;
+
+		// Localized absolute time string for the body. Prefer the
+		// backend-provided pre-formatted string (already in event TZ); fall
+		// back to client locale formatting if missing.
+		let timeText = expiresAtFormatted ?? '';
+		if (!timeText && expiresAt) {
+			const d = new Date(expiresAt);
+			if (!isNaN(d.getTime())) {
+				timeText = d.toLocaleString(undefined, {
+					month: 'short',
+					day: 'numeric',
+					year: 'numeric',
+					hour: 'numeric',
+					minute: '2-digit'
+				});
+			}
+		}
+
+		return {
+			expiresAt,
+			eventName,
+			claimUrl,
+			hasOffer,
+			expired,
+			timeText
+		};
+	});
+
+	function handleClaim(event: MouseEvent): void {
+		event.stopPropagation();
+		const data = waitlistSpotData;
+		if (!data) return;
+		if (!isRead) {
+			markReadMutation.mutate();
+		}
+		onNavigate?.();
+		goto(data.claimUrl);
+	}
 </script>
 
 <Card
 	class={cn(
 		'group cursor-pointer overflow-hidden transition-all hover:shadow-md',
 		!isRead && 'border-l-4 border-l-primary bg-primary/5',
+		isWaitlistSpot &&
+			waitlistSpotData &&
+			!waitlistSpotData.expired &&
+			'border-l-4 border-l-amber-500 bg-amber-50 dark:bg-amber-950/30',
+		isWaitlistSpot && waitlistSpotData?.expired && 'border-l-4 border-l-muted bg-muted/30',
 		compact ? 'p-3' : 'p-4 md:p-6',
 		className
 	)}
@@ -232,7 +296,7 @@
 			<div class="mb-2 flex flex-wrap items-start justify-between gap-2">
 				<div class="min-w-0 flex-1">
 					<h3 class={cn('text-base font-semibold leading-tight', !isRead && 'font-bold')}>
-						{notification.title}
+						{isWaitlistSpot ? m['notifications.waitlistSpot.title']() : notification.title}
 					</h3>
 					<Badge variant={notificationTypeVariant} class="mt-1 text-xs">
 						{notification.notification_type}
@@ -247,12 +311,48 @@
 			</div>
 
 			<!-- Body content -->
-			<div class="notification-body">
-				<MarkdownContent
-					content={notification.body}
-					class={cn('text-sm text-muted-foreground', compact && 'line-clamp-2')}
-				/>
-			</div>
+			{#if isWaitlistSpot && waitlistSpotData}
+				<div class="space-y-3">
+					<p class={cn('text-sm', compact && 'line-clamp-2')}>
+						{m['notifications.waitlistSpot.body']({
+							event: waitlistSpotData.eventName,
+							time: waitlistSpotData.timeText
+						})}
+					</p>
+
+					{#if waitlistSpotData.hasOffer}
+						<div class="text-sm font-medium">
+							{#if waitlistSpotData.expired}
+								<span class="text-muted-foreground">{m['activeOffer.expired']()}</span>
+							{:else}
+								<OfferExpiryCountdown expiresAt={waitlistSpotData.expiresAt} />
+							{/if}
+						</div>
+					{/if}
+
+					{#if !waitlistSpotData.expired}
+						<Button
+							size={compact ? 'sm' : 'default'}
+							class={cn(
+								'min-h-11 w-full sm:w-auto',
+								'bg-amber-600 text-white hover:bg-amber-700',
+								'focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2'
+							)}
+							onclick={handleClaim}
+						>
+							<Ticket class="mr-2 h-4 w-4" aria-hidden="true" />
+							{m['notifications.waitlistSpot.cta']()}
+						</Button>
+					{/if}
+				</div>
+			{:else}
+				<div class="notification-body">
+					<MarkdownContent
+						content={notification.body}
+						class={cn('text-sm text-muted-foreground', compact && 'line-clamp-2')}
+					/>
+				</div>
+			{/if}
 		</div>
 
 		<!-- Action button -->
