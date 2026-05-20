@@ -1008,6 +1008,7 @@
 		<div class="space-y-3 text-sm text-muted-foreground">
 			<p>{m['detailsStep.waitlistInfoBody1']()}</p>
 			<p>{m['detailsStep.waitlistInfoBody2']()}</p>
+			<p>{m['detailsStep.waitlistInfoBody3']()}</p>
 			<a
 				href="https://github.com/letsrevel/revel-backend/issues/2"
 				target="_blank"
