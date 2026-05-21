@@ -11,6 +11,7 @@
 	import WaitlistSettingsCard from '$lib/components/events/waitlist/admin/WaitlistSettingsCard.svelte';
 	import WaitlistEntriesTable from '$lib/components/events/waitlist/admin/WaitlistEntriesTable.svelte';
 	import WaitlistOffersTable from '$lib/components/events/waitlist/admin/WaitlistOffersTable.svelte';
+	import IssueOfferDialog from '$lib/components/events/waitlist/admin/IssueOfferDialog.svelte';
 	import {
 		createWaitlistSettingsQueryOptions,
 		createWaitlistOffersQueryOptions,
@@ -157,16 +158,55 @@
 		toast.error(detail || fallback);
 	}
 
+	// "Issue offer" goes through a dialog so the admin picks an expiry. The
+	// payload always includes expires_at — the backend 400s when neither the
+	// event's `waitlist_time_window` setting nor a body value is provided.
+	let issueOfferEntry = $state<WaitlistEntrySchema | null>(null);
+	let issueOfferDialogOpen = $state(false);
+
+	function isoDurationToMinutes(iso: string | null | undefined): number | null {
+		if (!iso) return null;
+		const re = /^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/;
+		const match = re.exec(iso);
+		if (!match) return null;
+		const [, d, h, mm, s] = match;
+		const total =
+			(d ? parseInt(d, 10) : 0) * 1440 +
+			(h ? parseInt(h, 10) : 0) * 60 +
+			(mm ? parseInt(mm, 10) : 0) +
+			Math.round((s ? parseInt(s, 10) : 0) / 60);
+		return total > 0 ? total : null;
+	}
+
+	const issueOfferDefaultMinutes = $derived(
+		isoDurationToMinutes(settingsQuery.data?.waitlist_time_window) ?? 24 * 60
+	);
+
+	function entryUserName(entry: WaitlistEntrySchema | null): string {
+		if (!entry) return '';
+		const u = entry.user;
+		return u.display_name || `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim() || u.email || '';
+	}
+
 	function issueOffer(entry: WaitlistEntrySchema) {
+		issueOfferEntry = entry;
+		issueOfferDialogOpen = true;
+	}
+
+	function handleIssueOfferConfirm(expiresAt: string) {
+		const entry = issueOfferEntry;
+		if (!entry) return;
 		activeActionEntryId = entry.id;
 		createOfferMutation.mutate(
-			{ waitlist_entry_id: entry.id },
+			{ waitlist_entry_id: entry.id, expires_at: expiresAt },
 			{
 				onSettled: () => {
 					activeActionEntryId = null;
 				},
 				onSuccess: () => {
 					toast.success(m['orgAdmin.waitlist.offer.issue']());
+					issueOfferDialogOpen = false;
+					issueOfferEntry = null;
 				},
 				onError: (err) => handleMutationError(err, 'Failed to issue offer')
 			}
@@ -391,6 +431,18 @@
 		</TabsContent>
 	</Tabs>
 </div>
+
+<IssueOfferDialog
+	bind:open={issueOfferDialogOpen}
+	onOpenChange={(v) => {
+		issueOfferDialogOpen = v;
+		if (!v) issueOfferEntry = null;
+	}}
+	userName={entryUserName(issueOfferEntry)}
+	defaultMinutes={issueOfferDefaultMinutes}
+	isPending={createOfferMutation.isPending}
+	onConfirm={handleIssueOfferConfirm}
+/>
 
 <style>
 	:global(button:focus-visible) {
