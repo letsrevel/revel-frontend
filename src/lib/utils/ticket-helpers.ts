@@ -73,10 +73,7 @@ export function needsPaymentConfirmation(ticket: any): boolean {
  */
 export function canConfirmPayment(ticket: any): boolean {
 	const method = ticket.tier?.payment_method;
-	return (
-		(ticket.status === 'pending' || ticket.status === 'cancelled') &&
-		(method === 'offline' || method === 'at_the_door')
-	);
+	return ticket.status === 'pending' && (method === 'offline' || method === 'at_the_door');
 }
 
 /**
