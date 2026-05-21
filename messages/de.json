@@ -951,7 +951,7 @@
 		"waitlistInfoButton": "Wie funktioniert die Warteliste?",
 		"waitlistInfoTitle": "So funktioniert die Warteliste",
 		"waitlistInfoBody1": "Wenn die Warteliste aktiviert ist, können sich Personen anmelden, um auf einen freien Platz zu warten. Was passiert, wenn Kapazität frei wird, hängt von den erweiterten Einstellungen ab.",
-		"waitlistInfoBody2": "Ohne Angebots-Zeitfenster ist die Warteliste passiv — Personen melden sich an und warten, Revel sendet keine automatischen Benachrichtigungen. Lege ein Angebots-Zeitfenster fest, um gestaffelte Angebote zu aktivieren: Wenn ein Platz frei wird (Stornierung, höhere Kapazität), wählt Revel eine konfigurierbare Gruppe (in FIFO-Reihenfolge oder zufällig mit Losverfahren), reserviert deren Plätze für dieses Zeitfenster und benachrichtigt sie. Nicht eingelöste Plätze gehen automatisch in die nächste Runde über.",
+		"waitlistInfoBody2": "Ohne Angebots-Zeitfenster ist die Warteliste passiv: Wenn ein Platz frei wird (Stornierung, höhere Kapazität), werden alle auf der Warteliste gleichzeitig benachrichtigt und wer sich zuerst anmeldet, behält den Platz — keine Plätze werden reserviert. Lege ein Angebots-Zeitfenster fest, um stattdessen gestaffelte Angebote zu aktivieren: Revel wählt eine konfigurierbare Gruppe (in FIFO-Reihenfolge oder zufällig mit Losverfahren), reserviert deren Plätze für dieses Zeitfenster und benachrichtigt nur diese Gruppe. Nicht eingelöste Plätze gehen automatisch in die nächste Runde über.",
 		"waitlistInfoBody3": "Konfiguriere Gruppengröße, Zeitfenster, Losverfahren und ein finales Cutoff-Datum über die Schaltfläche „Warteliste konfigurieren\".",
 		"waitlistInfoFeedbackCta": "Feedback auf GitHub geben"
 	},
@@ -1187,6 +1187,7 @@
 		"manageTickets": "Tickets verwalten",
 		"manageAttendees": "Teilnehmende verwalten",
 		"manageInvitations": "Einladungen verwalten",
+		"manageWaitlist": "Warteliste verwalten",
 		"pendingPaymentDescription": "Schließe deine Zahlung ab, um dein Ticket zu bestätigen. Deine Reservierung verfällt, wenn die Zahlung nicht abgeschlossen wird.",
 		"feedbackAvailable": "Feedback verfügbar",
 		"feedbackDescription": "Teile deine Erfahrungen mit den Organisatoren",

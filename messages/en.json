@@ -951,7 +951,7 @@
 		"waitlistInfoButton": "How does the waitlist work?",
 		"waitlistInfoTitle": "How the waitlist works",
 		"waitlistInfoBody1": "When the waitlist is enabled, people can sign up to wait for a spot. How Revel handles them when capacity opens depends on the advanced settings.",
-		"waitlistInfoBody2": "Without an Offer time window the waitlist is passive — people sign up and wait, and Revel sends no automated notifications. Set an Offer time window to enable batched offers: when a spot opens (a cancellation, a raised capacity), Revel picks a configurable batch (in FIFO order, or randomly with Lottery mode), reserves their seats for that window, and notifies them. Unclaimed seats automatically roll over to the next batch.",
+		"waitlistInfoBody2": "Without an Offer time window the waitlist is passive: when a spot opens (a cancellation, a raised capacity), everyone on the waitlist is notified at the same time and the first to register keeps it — no seats are reserved. Set an Offer time window to enable batched offers instead: Revel picks a configurable batch (in FIFO order, or randomly with Lottery mode), reserves their seats for that window, and notifies only that batch. Unclaimed seats automatically roll over to the next batch.",
 		"waitlistInfoBody3": "Configure batch size, the time window, lottery mode, and a final cutoff date via the Configure waitlist button.",
 		"waitlistInfoFeedbackCta": "Share feedback on GitHub"
 	},
@@ -1187,6 +1187,7 @@
 		"manageTickets": "Manage Tickets",
 		"manageAttendees": "Manage Attendees",
 		"manageInvitations": "Manage Invitations",
+		"manageWaitlist": "Manage Waitlist",
 		"pendingPaymentDescription": "Complete your payment to confirm your ticket. Your reservation will expire if payment is not completed.",
 		"feedbackAvailable": "Feedback Available",
 		"feedbackDescription": "Share your experience with the organizers",

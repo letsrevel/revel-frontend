@@ -37,7 +37,8 @@
 		Mail,
 		CalendarDays,
 		MessageSquare,
-		Megaphone
+		Megaphone,
+		ListPlus
 	} from 'lucide-svelte';
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
 	import AnnouncementModal from '$lib/components/announcements/AnnouncementModal.svelte';
@@ -634,6 +635,15 @@
 						>
 							<Users class="h-4 w-4" aria-hidden="true" />
 							{m['eventActionSidebar.manageAttendees']()}
+						</a>
+					{/if}
+					{#if event.waitlist_open}
+						<a
+							href="/org/{event.organization.slug}/admin/events/{event.id}/waitlist"
+							class="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						>
+							<ListPlus class="h-4 w-4" aria-hidden="true" />
+							{m['eventActionSidebar.manageWaitlist']()}
 						</a>
 					{/if}
 					<a
