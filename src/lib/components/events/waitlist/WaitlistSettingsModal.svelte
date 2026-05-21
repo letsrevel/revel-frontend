@@ -217,7 +217,7 @@
 					label={m['waitlistSettings.timeWindow.label']()}
 					helpText={m['waitlistSettings.timeWindow.helper']()}
 					emptyValue={null}
-					emptyLabel="—"
+					emptyLabel={m['waitlistSettings.notSet']()}
 					min={0}
 				/>
 				{#if fieldErrors.waitlist_time_window}
@@ -226,7 +226,19 @@
 			</div>
 
 			<div class="space-y-1.5">
-				<Label for="waitlist-batch-size">{m['waitlistSettings.batchSize.label']()}</Label>
+				<div class="flex items-center gap-2">
+					<Label for="waitlist-batch-size">{m['waitlistSettings.batchSize.label']()}</Label>
+					<button
+						type="button"
+						aria-pressed={batchSize === 0}
+						onclick={() => (batchSize = 0)}
+						class="rounded-full border px-2.5 py-0.5 text-xs transition-colors {batchSize === 0
+							? 'border-primary bg-primary/10 text-primary'
+							: 'border-border text-muted-foreground hover:border-primary hover:text-primary'}"
+					>
+						{m['waitlistSettings.notSet']()}
+					</button>
+				</div>
 				<Input id="waitlist-batch-size" type="number" min="0" step="1" bind:value={batchSize} />
 				<p class="text-xs text-muted-foreground">{m['waitlistSettings.batchSize.helper']()}</p>
 				{#if fieldErrors.waitlist_batch_size}
@@ -245,7 +257,7 @@
 							? 'border-primary bg-primary/10 text-primary'
 							: 'border-border text-muted-foreground hover:border-primary hover:text-primary'}"
 					>
-						{m['waitlistSettings.cutoffDate.notSet']()}
+						{m['waitlistSettings.notSet']()}
 					</button>
 				</div>
 				<Input id="waitlist-cutoff-date" type="datetime-local" bind:value={cutoffLocal} />
