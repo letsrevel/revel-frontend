@@ -42,6 +42,29 @@
 		class: className
 	}: Props = $props();
 
+	// Prefer the stable backend `reason_code` enum; fall back to literal prose
+	// while older code paths or pre-deploy backends still ship reason as a string.
+	const SPOTS_RESERVED_REASON = 'Spots are currently reserved for waitlist members.';
+	const WAITING_FOR_BATCH_REASON = 'You are on the waitlist. Waiting for your turn.';
+
+	const isSpotsReserved = $derived(
+		eligibility.reason_code === 'spots_reserved_for_waitlist' ||
+			eligibility.reason === SPOTS_RESERVED_REASON
+	);
+	const isWaitingForBatch = $derived(
+		eligibility.reason_code === 'on_waitlist_waiting_for_batch' ||
+			eligibility.reason === WAITING_FOR_BATCH_REASON
+	);
+
+	/**
+	 * Format an ISO datetime to the user's locale (absolute time)
+	 */
+	function formatTime(iso: string): string {
+		const date = new Date(iso);
+		if (isNaN(date.getTime())) return iso;
+		return date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+	}
+
 	/**
 	 * Format the apply_before deadline for display
 	 */
@@ -131,6 +154,11 @@
 	function getVariant(
 		nextStep: string | null | undefined
 	): 'warning' | 'info' | 'destructive' | 'muted' {
+		// Waiting/holding states keyed off the new reason codes aren't blockers
+		if (isSpotsReserved || isWaitingForBatch) {
+			return 'info';
+		}
+
 		if (!nextStep) return 'muted';
 
 		// Info (waiting states)
@@ -168,6 +196,10 @@
 	 * Get header text based on reason or next_step
 	 */
 	function getHeaderText(): string {
+		// Advanced waitlist reasons (prefer machine-readable code)
+		if (isSpotsReserved) return m['ineligibilityMessage.spotsReserved.header']();
+		if (isWaitingForBatch) return m['ineligibilityMessage.waitingForBatch.header']();
+
 		if (eligibility.reason) {
 			// Extract the first sentence or key phrase
 			const reason = eligibility.reason;
@@ -221,6 +253,38 @@
 	 */
 	function getExplanationText(): string | null {
 		const nextStep = eligibility.next_step;
+
+		// Advanced waitlist reasons take precedence — they describe waiting/holding states
+		if (isSpotsReserved) {
+			if (
+				eligibility.pending_offers_count &&
+				eligibility.pending_offers_count > 0 &&
+				eligibility.next_batch_at
+			) {
+				return m['ineligibilityMessage.spotsReserved.body']({
+					count: eligibility.pending_offers_count,
+					time: formatTime(eligibility.next_batch_at)
+				});
+			}
+			return null;
+		}
+
+		if (isWaitingForBatch) {
+			const position = eligibility.waitlist_position;
+			if (position == null) return null;
+			if (
+				eligibility.pending_offers_count &&
+				eligibility.pending_offers_count > 0 &&
+				eligibility.next_batch_at
+			) {
+				return m['ineligibilityMessage.waitingForBatch.body']({
+					position,
+					count: eligibility.pending_offers_count,
+					time: formatTime(eligibility.next_batch_at)
+				});
+			}
+			return m['ineligibilityMessage.waitingForBatch.bodyNoCount']({ position });
+		}
 
 		if (nextStep === 'become_member') {
 			return m['ineligibilityMessage.membersOnlyExplanation']({ organizationName });

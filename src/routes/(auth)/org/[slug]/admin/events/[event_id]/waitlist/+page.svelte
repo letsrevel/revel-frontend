@@ -5,9 +5,22 @@
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { eventadminwaitlistListWaitlist, eventadminwaitlistDeleteWaitlistEntry } from '$lib/api';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { cn } from '$lib/utils/cn';
-	import { Users, Trash2, Calendar, Loader2, AlertCircle } from 'lucide-svelte';
+	import { AlertCircle, X } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
+	import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
+	import WaitlistSettingsCard from '$lib/components/events/waitlist/admin/WaitlistSettingsCard.svelte';
+	import WaitlistEntriesTable from '$lib/components/events/waitlist/admin/WaitlistEntriesTable.svelte';
+	import WaitlistOffersTable from '$lib/components/events/waitlist/admin/WaitlistOffersTable.svelte';
+	import OfferExpiryDialog from '$lib/components/events/waitlist/admin/OfferExpiryDialog.svelte';
+	import {
+		createWaitlistSettingsQueryOptions,
+		createWaitlistOffersQueryOptions,
+		createCreateWaitlistOfferMutationOptions,
+		createRevokeWaitlistOfferMutationOptions,
+		createReactivateWaitlistOfferMutationOptions
+	} from '$lib/api/queries/waitlist-offers';
+	import type { WaitlistEntrySchema, WaitlistOfferStatus } from '$lib/api/generated/types.gen';
+	import { toast } from 'svelte-sonner';
 
 	const { data }: { data: PageData } = $props();
 
@@ -15,11 +28,29 @@
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
 
-	// Pagination state
 	let currentPage = $state(1);
 	const pageSize = $state(20);
 
-	// Fetch waitlist with pagination
+	let activeTab = $state<'entries' | 'offers'>('entries');
+
+	// Backend default page_size for waitlist offers is 20 (see openapi.json:
+	// eventadminwaitlistoffers_list_waitlist_offers). Keep this in sync if the
+	// backend default changes or pass page_size explicitly.
+	const OFFERS_PAGE_SIZE = 20;
+	const offerStatusFilters: readonly WaitlistOfferStatus[] = [
+		'pending',
+		'claimed',
+		'expired',
+		'revoked'
+	];
+	let offerStatus = $state<WaitlistOfferStatus>('pending');
+	let offerPage = $state(1);
+
+	let capacityBannerOpen = $state(false);
+
+	let activeActionEntryId = $state<string | null>(null);
+	let activeActionOfferId = $state<string | null>(null);
+
 	const waitlistQuery = createQuery(() => ({
 		queryKey: ['waitlist', data.eventId, currentPage],
 		queryFn: async () => {
@@ -40,7 +71,18 @@
 		initialData: currentPage === 1 ? data.waitlistData : undefined
 	}));
 
-	// Delete mutation
+	const settingsQuery = createQuery(
+		createWaitlistSettingsQueryOptions(data.eventId, () => accessToken)
+	);
+
+	const offersQuery = createQuery(
+		createWaitlistOffersQueryOptions(
+			data.eventId,
+			() => accessToken,
+			() => ({ status: offerStatus, page: offerPage })
+		)
+	);
+
 	const deleteMutation = createMutation(() => ({
 		mutationFn: async (waitlistId: string) => {
 			const response = await eventadminwaitlistDeleteWaitlistEntry({
@@ -61,14 +103,173 @@
 		}
 	}));
 
+	const createOfferMutation = createMutation(
+		createCreateWaitlistOfferMutationOptions(data.eventId, () => accessToken, queryClient)
+	);
+
+	const revokeOfferMutation = createMutation(
+		createRevokeWaitlistOfferMutationOptions(data.eventId, () => accessToken, queryClient)
+	);
+
+	const reactivateOfferMutation = createMutation(
+		createReactivateWaitlistOfferMutationOptions(data.eventId, () => accessToken, queryClient)
+	);
+
 	function handleDelete(waitlistId: string, userName: string) {
 		if (confirm(m['orgAdmin.waitlist.confirmDelete']({ userName }))) {
 			deleteMutation.mutate(waitlistId);
 		}
 	}
 
-	function formatDate(date: string): string {
-		return new Date(date).toLocaleDateString('en-US', {
+	function getErrorStatus(err: unknown): number | null {
+		if (err && typeof err === 'object') {
+			const e = err as { status?: unknown; statusCode?: unknown };
+			if (typeof e.status === 'number') return e.status;
+			if (typeof e.statusCode === 'number') return e.statusCode;
+		}
+		return null;
+	}
+
+	function getErrorDetail(err: unknown): string {
+		if (err && typeof err === 'object') {
+			const e = err as { detail?: unknown; message?: unknown };
+			if (typeof e.detail === 'string') return e.detail;
+			if (typeof e.message === 'string') return e.message;
+		}
+		if (err instanceof Error) return err.message;
+		return '';
+	}
+
+	function isCapacityError(err: unknown): boolean {
+		return /capacity/i.test(getErrorDetail(err));
+	}
+
+	function handleMutationError(err: unknown, fallback: string) {
+		const status = getErrorStatus(err);
+		const detail = getErrorDetail(err);
+		if (status === 409 || /capacity/i.test(detail) || /pending offer/i.test(detail)) {
+			if (isCapacityError(err)) {
+				capacityBannerOpen = true;
+				return;
+			}
+			toast.error(detail || fallback);
+			return;
+		}
+		toast.error(detail || fallback);
+	}
+
+	// Issue and reactivate both go through OfferExpiryDialog so the admin
+	// picks the expiry up-front. The payload always includes expires_at —
+	// the backend 400s when neither the event's `waitlist_time_window`
+	// setting nor a body value is provided.
+	type ExpiryDialogState =
+		| { mode: 'issue'; entry: WaitlistEntrySchema }
+		| { mode: 'reactivate'; offerId: string; userName: string };
+
+	let expiryDialogState = $state<ExpiryDialogState | null>(null);
+	let expiryDialogOpen = $state(false);
+
+	function isoDurationToMinutes(iso: string | null | undefined): number | null {
+		if (!iso) return null;
+		const re = /^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/;
+		const match = re.exec(iso);
+		if (!match) return null;
+		const [, d, h, mm, s] = match;
+		const total =
+			(d ? parseInt(d, 10) : 0) * 1440 +
+			(h ? parseInt(h, 10) : 0) * 60 +
+			(mm ? parseInt(mm, 10) : 0) +
+			Math.round((s ? parseInt(s, 10) : 0) / 60);
+		return total > 0 ? total : null;
+	}
+
+	const expiryDialogDefaultMinutes = $derived(
+		isoDurationToMinutes(settingsQuery.data?.waitlist_time_window) ?? 24 * 60
+	);
+
+	function entryUserName(entry: WaitlistEntrySchema): string {
+		const u = entry.user;
+		return u.display_name || `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim() || u.email || '';
+	}
+
+	const expiryDialogUserName = $derived(
+		expiryDialogState
+			? expiryDialogState.mode === 'issue'
+				? entryUserName(expiryDialogState.entry)
+				: expiryDialogState.userName
+			: ''
+	);
+	const expiryDialogMode = $derived(expiryDialogState?.mode ?? 'issue');
+	const expiryDialogIsPending = $derived(
+		expiryDialogState?.mode === 'reactivate'
+			? reactivateOfferMutation.isPending
+			: createOfferMutation.isPending
+	);
+
+	function issueOffer(entry: WaitlistEntrySchema) {
+		expiryDialogState = { mode: 'issue', entry };
+		expiryDialogOpen = true;
+	}
+
+	function reactivateOffer(args: { offerId: string; userName: string }) {
+		expiryDialogState = { mode: 'reactivate', offerId: args.offerId, userName: args.userName };
+		expiryDialogOpen = true;
+	}
+
+	function handleExpiryDialogConfirm(expiresAt: string) {
+		const state = expiryDialogState;
+		if (!state) return;
+		if (state.mode === 'issue') {
+			const entry = state.entry;
+			activeActionEntryId = entry.id;
+			createOfferMutation.mutate(
+				{ waitlist_entry_id: entry.id, expires_at: expiresAt },
+				{
+					onSettled: () => {
+						activeActionEntryId = null;
+					},
+					onSuccess: () => {
+						toast.success(m['orgAdmin.waitlist.offer.issue']());
+						expiryDialogOpen = false;
+						expiryDialogState = null;
+					},
+					onError: (err) => handleMutationError(err, 'Failed to issue offer')
+				}
+			);
+		} else {
+			activeActionOfferId = state.offerId;
+			reactivateOfferMutation.mutate(
+				{ offerId: state.offerId, body: { expires_at: expiresAt } },
+				{
+					onSettled: () => {
+						activeActionOfferId = null;
+					},
+					onSuccess: () => {
+						toast.success(m['orgAdmin.waitlist.offer.reactivate']());
+						expiryDialogOpen = false;
+						expiryDialogState = null;
+					},
+					onError: (err) => handleMutationError(err, 'Failed to reactivate offer')
+				}
+			);
+		}
+	}
+
+	function revokeOffer(offerId: string) {
+		activeActionOfferId = offerId;
+		revokeOfferMutation.mutate(offerId, {
+			onSettled: () => {
+				activeActionOfferId = null;
+			},
+			onSuccess: () => {
+				toast.success(m['orgAdmin.waitlist.offer.revoke']());
+			},
+			onError: (err) => handleMutationError(err, 'Failed to revoke offer')
+		});
+	}
+
+	function formatDateTime(iso: string): string {
+		return new Date(iso).toLocaleString('en-US', {
 			month: 'short',
 			day: 'numeric',
 			year: 'numeric',
@@ -77,7 +278,20 @@
 		});
 	}
 
-	// Pagination controls
+	function humanizeIsoDuration(iso: string | null | undefined): string {
+		if (!iso) return '—';
+		const re = /^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/;
+		const match = re.exec(iso);
+		if (!match) return iso;
+		const [, d, h, mm, s] = match;
+		const parts: string[] = [];
+		if (d && d !== '0') parts.push(`${d}d`);
+		if (h && h !== '0') parts.push(`${h}h`);
+		if (mm && mm !== '0') parts.push(`${mm}m`);
+		if (s && s !== '0') parts.push(`${s}s`);
+		return parts.length > 0 ? parts.join(' ') : '—';
+	}
+
 	const totalPages = $derived(
 		waitlistQuery.data ? Math.ceil(waitlistQuery.data.count / pageSize) : 1
 	);
@@ -95,6 +309,38 @@
 			currentPage++;
 		}
 	}
+
+	const offersTotalPages = $derived(
+		offersQuery.data ? Math.max(1, Math.ceil(offersQuery.data.count / OFFERS_PAGE_SIZE)) : 1
+	);
+	const offersCanGoPrev = $derived(offerPage > 1);
+	const offersCanGoNext = $derived(offerPage < offersTotalPages);
+
+	function offersGoPrev() {
+		if (offersCanGoPrev) offerPage--;
+	}
+	function offersGoNext() {
+		if (offersCanGoNext) offerPage++;
+	}
+
+	function selectOfferStatus(status: WaitlistOfferStatus) {
+		offerStatus = status;
+		offerPage = 1;
+	}
+
+	function jumpToPendingOffers() {
+		activeTab = 'offers';
+		selectOfferStatus('pending');
+		capacityBannerOpen = false;
+		if (typeof document !== 'undefined') {
+			const el = document.getElementById('waitlist-offers-section');
+			if (el) {
+				el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			}
+		}
+	}
+
+	const settings = $derived(settingsQuery.data ?? null);
 </script>
 
 <svelte:head>
@@ -107,7 +353,6 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<!-- Header -->
 	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 		<div>
 			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
@@ -117,187 +362,116 @@
 		</div>
 	</div>
 
-	<!-- Loading State -->
-	{#if waitlistQuery.isLoading}
-		<div class="flex items-center justify-center py-12">
-			<Loader2 class="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
-			<span class="sr-only">{m['orgAdmin.waitlist.loading']()}</span>
-		</div>
-		<!-- Error State -->
-	{:else if waitlistQuery.isError}
+	{#if capacityBannerOpen}
 		<div
-			class="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center"
+			class="flex flex-col gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-100 sm:flex-row sm:items-center sm:justify-between"
 			role="alert"
 		>
-			<AlertCircle class="mx-auto h-12 w-12 text-destructive" aria-hidden="true" />
-			<h3 class="mt-4 text-lg font-semibold text-destructive">
-				{m['orgAdmin.waitlist.error.title']()}
-			</h3>
-			<p class="mt-2 text-sm text-destructive/80">
-				{m['orgAdmin.waitlist.error.description']()}
-			</p>
-		</div>
-		<!-- Empty State -->
-	{:else if waitlistQuery.data && waitlistQuery.data.results.length === 0}
-		<div class="rounded-lg border border-border bg-card p-12 text-center">
-			<Users class="mx-auto h-12 w-12 text-muted-foreground" aria-hidden="true" />
-			<h3 class="mt-4 text-lg font-semibold">{m['orgAdmin.waitlist.empty.title']()}</h3>
-			<p class="mt-2 text-sm text-muted-foreground">
-				{m['orgAdmin.waitlist.empty.description']()}
-			</p>
-		</div>
-		<!-- Waitlist Table -->
-	{:else if waitlistQuery.data}
-		<div class="space-y-4">
-			<!-- Stats -->
-			<div class="rounded-lg border bg-card p-4">
-				<div class="flex items-center gap-2">
-					<Users class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-					<p class="text-sm font-medium">
-						{m['orgAdmin.waitlist.totalCount']({
-							count: waitlistQuery.data.count,
-							plural:
-								waitlistQuery.data.count === 1 ? '' : m['orgAdmin.waitlist.totalCount_plural']()
-						})}
-					</p>
-				</div>
+			<div class="flex items-start gap-2">
+				<AlertCircle class="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
+				<span>{m['orgAdmin.waitlist.offer.capacityBanner']()}</span>
 			</div>
-
-			<!-- Desktop Table -->
-			<div class="hidden overflow-hidden rounded-lg border md:block">
-				<table class="w-full border-collapse">
-					<thead class="bg-muted/50">
-						<tr>
-							<th class="px-4 py-3 text-left text-sm font-medium">
-								{m['orgAdmin.waitlist.table.user']()}
-							</th>
-							<th class="px-4 py-3 text-left text-sm font-medium">
-								{m['orgAdmin.waitlist.table.email']()}
-							</th>
-							<th class="px-4 py-3 text-left text-sm font-medium">
-								{m['orgAdmin.waitlist.table.joinedAt']()}
-							</th>
-							<th class="px-4 py-3 text-right text-sm font-medium">
-								{m['orgAdmin.waitlist.table.actions']()}
-							</th>
-						</tr>
-					</thead>
-					<tbody class="divide-y">
-						{#each waitlistQuery.data.results as entry (entry.id)}
-							<tr class="transition-colors hover:bg-muted/50">
-								<td class="px-4 py-3 text-sm">
-									<div class="font-medium">
-										{entry.user.first_name}
-										{entry.user.last_name}
-									</div>
-								</td>
-								<td class="px-4 py-3 text-sm text-muted-foreground">
-									{entry.user.email}
-								</td>
-								<td class="px-4 py-3 text-sm text-muted-foreground">
-									<div class="flex items-center gap-2">
-										<Calendar class="h-4 w-4" aria-hidden="true" />
-										{formatDate(entry.created_at)}
-									</div>
-								</td>
-								<td class="px-4 py-3 text-right">
-									<Button
-										variant="ghost"
-										size="sm"
-										onclick={() =>
-											handleDelete(entry.id, `${entry.user.first_name} ${entry.user.last_name}`)}
-										disabled={deleteMutation.isPending}
-										class="text-destructive hover:bg-destructive/10 hover:text-destructive"
-									>
-										{#if deleteMutation.isPending}
-											<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-										{:else}
-											<Trash2 class="h-4 w-4" aria-hidden="true" />
-										{/if}
-										<span class="ml-1">{m['orgAdmin.waitlist.actions.remove']()}</span>
-									</Button>
-								</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
+			<div class="flex items-center gap-2">
+				<Button
+					variant="outline"
+					size="sm"
+					onclick={jumpToPendingOffers}
+					class="border-amber-400 bg-white text-amber-900 hover:bg-amber-100 dark:bg-amber-900/40 dark:text-amber-100 dark:hover:bg-amber-900/70"
+				>
+					{m['orgAdmin.waitlist.offer.viewPendingShortcut']()}
+				</Button>
+				<Button
+					variant="ghost"
+					size="sm"
+					aria-label="Dismiss"
+					onclick={() => (capacityBannerOpen = false)}
+				>
+					<X class="h-4 w-4" aria-hidden="true" />
+				</Button>
 			</div>
-
-			<!-- Mobile Cards -->
-			<div class="grid gap-4 md:hidden">
-				{#each waitlistQuery.data.results as entry (entry.id)}
-					<div class="rounded-lg border bg-card p-4">
-						<div class="space-y-3">
-							<div>
-								<div class="font-medium">
-									{entry.user.first_name}
-									{entry.user.last_name}
-								</div>
-								<div class="text-sm text-muted-foreground">{entry.user.email}</div>
-							</div>
-
-							<div class="flex items-center gap-2 text-sm text-muted-foreground">
-								<Calendar class="h-4 w-4" aria-hidden="true" />
-								{formatDate(entry.created_at)}
-							</div>
-
-							<div class="border-t pt-3">
-								<Button
-									variant="destructive"
-									size="sm"
-									onclick={() =>
-										handleDelete(entry.id, `${entry.user.first_name} ${entry.user.last_name}`)}
-									disabled={deleteMutation.isPending}
-									class="w-full"
-								>
-									{#if deleteMutation.isPending}
-										<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-									{:else}
-										<Trash2 class="h-4 w-4" aria-hidden="true" />
-									{/if}
-									<span class="ml-1">{m['orgAdmin.waitlist.actions.remove']()}</span>
-								</Button>
-							</div>
-						</div>
-					</div>
-				{/each}
-			</div>
-
-			<!-- Pagination -->
-			{#if totalPages > 1}
-				<div class="flex items-center justify-between border-t pt-4">
-					<p class="text-sm text-muted-foreground">
-						{m['orgAdmin.waitlist.pagination.info']({
-							current: currentPage,
-							total: totalPages
-						})}
-					</p>
-					<div class="flex gap-2">
-						<Button
-							variant="outline"
-							size="sm"
-							onclick={goToPrevPage}
-							disabled={!canGoPrev || waitlistQuery.isFetching}
-						>
-							{m['orgAdmin.waitlist.pagination.previous']()}
-						</Button>
-						<Button
-							variant="outline"
-							size="sm"
-							onclick={goToNextPage}
-							disabled={!canGoNext || waitlistQuery.isFetching}
-						>
-							{m['orgAdmin.waitlist.pagination.next']()}
-						</Button>
-					</div>
-				</div>
-			{/if}
 		</div>
 	{/if}
+
+	<WaitlistSettingsCard
+		eventId={data.eventId}
+		{settings}
+		isLoading={settingsQuery.isLoading}
+		{formatDateTime}
+		{humanizeIsoDuration}
+	/>
+
+	<Tabs bind:value={activeTab} class="w-full">
+		<TabsList class="grid w-full grid-cols-2 sm:inline-flex sm:w-auto">
+			<TabsTrigger value="entries">{m['orgAdmin.waitlist.offer.tabsEntries']()}</TabsTrigger>
+			<TabsTrigger value="offers">{m['orgAdmin.waitlist.offer.tabsOffers']()}</TabsTrigger>
+		</TabsList>
+
+		<TabsContent value="entries" class="mt-4 space-y-4">
+			<WaitlistEntriesTable
+				data={waitlistQuery.data}
+				isLoading={waitlistQuery.isLoading}
+				isError={waitlistQuery.isError}
+				isFetching={waitlistQuery.isFetching}
+				{currentPage}
+				{totalPages}
+				{canGoPrev}
+				{canGoNext}
+				onPrev={goToPrevPage}
+				onNext={goToNextPage}
+				onIssueOffer={issueOffer}
+				onRevokeOffer={revokeOffer}
+				onReactivateOffer={reactivateOffer}
+				onDelete={handleDelete}
+				{activeActionEntryId}
+				{activeActionOfferId}
+				isCreatePending={createOfferMutation.isPending}
+				isRevokePending={revokeOfferMutation.isPending}
+				isReactivatePending={reactivateOfferMutation.isPending}
+				isDeletePending={deleteMutation.isPending}
+				{formatDateTime}
+			/>
+		</TabsContent>
+
+		<TabsContent value="offers" class="mt-4 space-y-4">
+			<WaitlistOffersTable
+				data={offersQuery.data}
+				isLoading={offersQuery.isLoading}
+				isError={offersQuery.isError}
+				isFetching={offersQuery.isFetching}
+				{offerStatus}
+				{offerStatusFilters}
+				onSelectStatus={selectOfferStatus}
+				currentPage={offerPage}
+				totalPages={offersTotalPages}
+				canGoPrev={offersCanGoPrev}
+				canGoNext={offersCanGoNext}
+				onPrev={offersGoPrev}
+				onNext={offersGoNext}
+				onRevokeOffer={revokeOffer}
+				onReactivateOffer={reactivateOffer}
+				{activeActionOfferId}
+				isRevokePending={revokeOfferMutation.isPending}
+				isReactivatePending={reactivateOfferMutation.isPending}
+				{formatDateTime}
+			/>
+		</TabsContent>
+	</Tabs>
 </div>
 
+<OfferExpiryDialog
+	bind:open={expiryDialogOpen}
+	onOpenChange={(v) => {
+		expiryDialogOpen = v;
+		if (!v) expiryDialogState = null;
+	}}
+	mode={expiryDialogMode}
+	userName={expiryDialogUserName}
+	defaultMinutes={expiryDialogDefaultMinutes}
+	isPending={expiryDialogIsPending}
+	onConfirm={handleExpiryDialogConfirm}
+/>
+
 <style>
-	/* Ensure consistent focus states for accessibility */
 	:global(button:focus-visible) {
 		outline: 2px solid hsl(var(--ring));
 		outline-offset: 2px;

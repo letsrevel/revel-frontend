@@ -13,6 +13,7 @@
 	import EventHeader from '$lib/components/events/EventHeader.svelte';
 	import EventDetails from '$lib/components/events/EventDetails.svelte';
 	import EventActionSidebar from '$lib/components/events/EventActionSidebar.svelte';
+	import ActiveOfferBanner from '$lib/components/events/waitlist/ActiveOfferBanner.svelte';
 	import OrganizationInfo from '$lib/components/events/OrganizationInfo.svelte';
 	import PotluckSection from '$lib/components/events/PotluckSection.svelte';
 	import DietarySummary from '$lib/components/events/DietarySummary.svelte';
@@ -29,9 +30,11 @@
 	import {
 		isRSVP,
 		isTicket,
+		isEligibility,
 		isUserStatusResponse,
 		hasActiveTickets,
 		hasPositiveRsvp,
+		hasActiveWaitlistOffer,
 		getActiveTickets,
 		type EventTicketSchemaActual
 	} from '$lib/utils/eligibility';
@@ -157,6 +160,14 @@
 
 	// Get user's display name for ticket purchase forms
 	const userDisplayName = $derived(authStore.user?.display_name ?? '');
+
+	// Active waitlist offer (eligibility-shaped userStatus with allowed=true + expiry)
+	const activeOfferExpiresAt = $derived.by((): string | null => {
+		if (!userStatus) return null;
+		if (!isEligibility(userStatus)) return null;
+		if (!hasActiveWaitlistOffer(userStatus)) return null;
+		return userStatus.active_offer_expires_at ?? null;
+	});
 
 	// Discount code from URL param
 	let initialDiscountCode = $state('');
@@ -695,6 +706,13 @@
 					<p class="text-sm">{m['guest_attendance.ticket_confirmed_body']()}</p>
 				</div>
 			</div>
+		</div>
+	{/if}
+
+	<!-- Active Waitlist Offer Banner (highest priority — surfaces above hero) -->
+	{#if activeOfferExpiresAt}
+		<div class="container mx-auto px-6 pt-4 md:px-8">
+			<ActiveOfferBanner expiresAt={activeOfferExpiresAt} eventName={event.name} />
 		</div>
 	{/if}
 

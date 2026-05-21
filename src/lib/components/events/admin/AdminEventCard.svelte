@@ -263,16 +263,14 @@
 					<Mail class="h-4 w-4" aria-hidden="true" />
 					{m['orgAdmin.events.actions.invitations']()}
 				</button>
-				{#if event.waitlist_open}
-					<button
-						type="button"
-						onclick={manageWaitlist}
-						class="inline-flex items-center gap-1 rounded-md bg-amber-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-amber-700"
-					>
-						<ListPlus class="h-4 w-4" aria-hidden="true" />
-						{m['orgAdmin.events.actions.waitlist']()}
-					</button>
-				{/if}
+				<button
+					type="button"
+					onclick={manageWaitlist}
+					class="inline-flex items-center gap-1 rounded-md bg-amber-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-amber-700"
+				>
+					<ListPlus class="h-4 w-4" aria-hidden="true" />
+					{m['orgAdmin.events.actions.waitlist']()}
+				</button>
 			{/if}
 			{#if (variant === 'closed' || variant === 'cancelled') && onReopen}
 				<button

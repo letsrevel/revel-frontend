@@ -9,6 +9,9 @@
 	import ClaimInvitationButton from './ClaimInvitationButton.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { eventpublicattendanceJoinWaitlist, eventpublicattendanceLeaveWaitlist } from '$lib/api';
+	import { useQueryClient } from '@tanstack/svelte-query';
+	import { invalidateAll } from '$app/navigation';
+	import { toast } from 'svelte-sonner';
 	import {
 		Check,
 		ClipboardList,
@@ -57,6 +60,7 @@
 	}: Props = $props();
 
 	const isAuthenticated = $derived(!!authStore.accessToken);
+	const queryClient = useQueryClient();
 
 	let isLoading = $state(false);
 	let isLeavingWaitlist = $state(false);
@@ -186,14 +190,32 @@
 				});
 
 				if (response.error) {
-					showError = true;
-					const errorDetail =
-						typeof response.error === 'object' &&
-						response.error !== null &&
-						'detail' in response.error
-							? (response.error.detail as string)
-							: m['ineligibilityActionButton.waitlist_error']();
-					errorMessage = errorDetail;
+					// 409: capacity opened up between page load and click — invite refresh.
+					// The public event page is SSR-loaded, so we re-run all load
+					// functions via invalidateAll() and also bust the TanStack cache
+					// keys other components (RequestInvitationButton, EventRSVP, …)
+					// watch.
+					if (response.response?.status === 409) {
+						toast.warning(m['joinWaitlist.capacityOpen'](), {
+							action: {
+								label: m['joinWaitlist.refreshAction'](),
+								onClick: () => {
+									queryClient.invalidateQueries({ queryKey: ['event-status', eventId] });
+									queryClient.invalidateQueries({ queryKey: ['event', eventId] });
+									void invalidateAll();
+								}
+							}
+						});
+					} else {
+						showError = true;
+						const errorDetail =
+							typeof response.error === 'object' &&
+							response.error !== null &&
+							'detail' in response.error
+								? (response.error.detail as string)
+								: m['ineligibilityActionButton.waitlist_error']();
+						errorMessage = errorDetail;
+					}
 				} else {
 					showSuccess = true;
 					// Optionally refresh the page or update UI to reflect waitlist status

@@ -81,6 +81,7 @@
 	// Form data state (must be declared before derived state that references it)
 	let formData = $state<
 		Partial<EventCreateSchema> & {
+			id?: string;
 			tags?: string[];
 			logo?: string;
 			cover_art?: string;
@@ -91,8 +92,15 @@
 			venue_id?: string | null;
 			location_maps_url?: string | null;
 			location_maps_embed?: string | null;
+			seats_held?: number;
+			waitlist_time_window?: string | null;
+			waitlist_batch_size?: number | null;
+			waitlist_cutoff_date?: string | null;
+			waitlist_lottery_mode?: boolean | null;
 		}
 	>({
+		id: existingEvent?.id,
+		seats_held: existingEvent?.seats_held ?? 0,
 		name: existingEvent?.name || '',
 		start: toDateTimeLocal(existingEvent?.start) || '',
 		end: toDateTimeLocal(existingEvent?.end) || '',

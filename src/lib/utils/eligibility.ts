@@ -320,6 +320,15 @@ export function hasPendingOnlinePayment(tickets: EventTicketSchemaActual[]): boo
 }
 
 /**
+ * Returns true when the user is allowed AND holds an active (pending) waitlist
+ * offer. The backend signals this purely via `active_offer_expires_at`; there is
+ * no dedicated next_step.
+ */
+export function hasActiveWaitlistOffer(eligibility: EventUserEligibility): boolean {
+	return eligibility.allowed === true && !!eligibility.active_offer_expires_at;
+}
+
+/**
  * Get user-friendly label for a missing profile field
  */
 export function getMissingProfileFieldLabel(field: string): string {

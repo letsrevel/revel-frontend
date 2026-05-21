@@ -27,11 +27,13 @@
 	import EventQuestionnaireAssignmentModal from './EventQuestionnaireAssignmentModal.svelte';
 	import LocationSection from './LocationSection.svelte';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
+	import WaitlistAdvancedSection from './WaitlistAdvancedSection.svelte';
 	import type { OrganizationQuestionnaireInListSchema } from '$lib/api/generated';
 	import { tagListTags } from '$lib/api/generated/sdk.gen';
 
 	interface Props {
 		formData: Partial<EventCreateSchema> & {
+			id?: string;
 			tags?: string[];
 			logo?: string;
 			cover_art?: string;
@@ -44,6 +46,11 @@
 			city_id?: number | null;
 			location_maps_url?: string | null;
 			location_maps_embed?: string | null;
+			seats_held?: number;
+			waitlist_time_window?: string | null;
+			waitlist_batch_size?: number | null;
+			waitlist_cutoff_date?: string | null;
+			waitlist_lottery_mode?: boolean | null;
 		};
 		eventSeries?: EventSeriesRetrieveSchema[];
 		questionnaires?: OrganizationQuestionnaireInListSchema[];
@@ -67,6 +74,10 @@
 				city_id?: number | null;
 				location_maps_url?: string | null;
 				location_maps_embed?: string | null;
+				waitlist_time_window?: string | null;
+				waitlist_batch_size?: number | null;
+				waitlist_cutoff_date?: string | null;
+				waitlist_lottery_mode?: boolean | null;
 			}
 		) => void;
 		onUpdateImages: (data: {
@@ -102,8 +113,31 @@
 	// Modal state for questionnaire assignment
 	let isQuestionnaireModalOpen = $state(false);
 
-	// Modal state for waitlist info dialog
 	let waitlistInfoOpen = $state(false);
+	let closeWaitlistConfirmOpen = $state(false);
+
+	// If the user closes the waitlist while pending offers are held, defer the
+	// change behind a confirm dialog (otherwise revoking those offers is silent).
+	function handleWaitlistOpenChange(e: Event & { currentTarget: HTMLInputElement }): void {
+		const nextValue = e.currentTarget.checked;
+		const wasOpen = formData.waitlist_open === true;
+		const seatsHeld = formData.seats_held ?? 0;
+		if (wasOpen && !nextValue && seatsHeld > 0) {
+			e.currentTarget.checked = true;
+			closeWaitlistConfirmOpen = true;
+			return;
+		}
+		onUpdate({ waitlist_open: nextValue });
+	}
+
+	function confirmCloseWaitlist(): void {
+		closeWaitlistConfirmOpen = false;
+		onUpdate({ waitlist_open: false });
+	}
+
+	function cancelCloseWaitlist(): void {
+		closeWaitlistConfirmOpen = false;
+	}
 
 	// Accordion state - automatically open advanced section if event has tags
 	let openSections = $state<Set<string>>(
@@ -468,34 +502,45 @@
 				</div>
 
 				<!-- Waitlist Open -->
-				<label
-					class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
-				>
-					<input
-						type="checkbox"
-						checked={formData.waitlist_open || false}
-						onchange={(e) => onUpdate({ waitlist_open: e.currentTarget.checked })}
-						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
-					/>
-					<div class="flex-1">
-						<div class="font-medium">{m['detailsStep.waitlistOpen']()}</div>
-						<div class="text-sm text-muted-foreground">
-							{m['detailsStep.waitlistHint']()}
+				<div class="space-y-2">
+					<label
+						class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+					>
+						<input
+							type="checkbox"
+							checked={formData.waitlist_open || false}
+							onchange={handleWaitlistOpenChange}
+							class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+						/>
+						<div class="flex-1">
+							<div class="font-medium">{m['detailsStep.waitlistOpen']()}</div>
+							<div class="text-sm text-muted-foreground">
+								{m['detailsStep.waitlistHint']()}
+							</div>
+							<button
+								type="button"
+								onclick={(e) => {
+									e.preventDefault();
+									e.stopPropagation();
+									waitlistInfoOpen = true;
+								}}
+								class="mt-1 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+							>
+								<Info class="h-3.5 w-3.5" aria-hidden="true" />
+								{m['detailsStep.waitlistInfoButton']()}
+							</button>
 						</div>
-						<button
-							type="button"
-							onclick={(e) => {
-								e.preventDefault();
-								e.stopPropagation();
-								waitlistInfoOpen = true;
-							}}
-							class="mt-1 inline-flex items-center gap-1 text-xs text-primary hover:underline"
-						>
-							<Info class="h-3.5 w-3.5" aria-hidden="true" />
-							{m['detailsStep.waitlistInfoButton']()}
-						</button>
-					</div>
-				</label>
+					</label>
+
+					<WaitlistAdvancedSection
+						{formData}
+						{isEditMode}
+						confirmCloseOpen={closeWaitlistConfirmOpen}
+						onConfirmClose={confirmCloseWaitlist}
+						onCancelClose={cancelCloseWaitlist}
+						{onUpdate}
+					/>
+				</div>
 
 				<!-- Invitation Message -->
 				<div class="space-y-2">
@@ -963,6 +1008,7 @@
 		<div class="space-y-3 text-sm text-muted-foreground">
 			<p>{m['detailsStep.waitlistInfoBody1']()}</p>
 			<p>{m['detailsStep.waitlistInfoBody2']()}</p>
+			<p>{m['detailsStep.waitlistInfoBody3']()}</p>
 			<a
 				href="https://github.com/letsrevel/revel-backend/issues/2"
 				target="_blank"
