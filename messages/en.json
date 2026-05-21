@@ -6010,6 +6010,7 @@
 	"waitlistSettings.batchSize.helper": "0 = notify everyone simultaneously when capacity opens.",
 	"waitlistSettings.cutoffDate.label": "Cutoff date",
 	"waitlistSettings.cutoffDate.helper": "After this date, every remaining person on the waitlist is notified one last time and any free seats are first-come-first-served until the event starts. Must be before event start.",
+	"waitlistSettings.cutoffDate.notSet": "Not set",
 	"waitlistSettings.lotteryMode.label": "Lottery mode",
 	"waitlistSettings.lotteryMode.helper": "Pick recipients at random instead of in waitlist order.",
 	"waitlistSettings.openButton": "Configure waitlist",

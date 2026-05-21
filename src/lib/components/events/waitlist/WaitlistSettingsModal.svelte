@@ -235,7 +235,19 @@
 			</div>
 
 			<div class="space-y-1.5">
-				<Label for="waitlist-cutoff-date">{m['waitlistSettings.cutoffDate.label']()}</Label>
+				<div class="flex items-center gap-2">
+					<Label for="waitlist-cutoff-date">{m['waitlistSettings.cutoffDate.label']()}</Label>
+					<button
+						type="button"
+						aria-pressed={!cutoffLocal}
+						onclick={() => (cutoffLocal = '')}
+						class="rounded-full border px-2.5 py-0.5 text-xs transition-colors {!cutoffLocal
+							? 'border-primary bg-primary/10 text-primary'
+							: 'border-border text-muted-foreground hover:border-primary hover:text-primary'}"
+					>
+						{m['waitlistSettings.cutoffDate.notSet']()}
+					</button>
+				</div>
 				<Input id="waitlist-cutoff-date" type="datetime-local" bind:value={cutoffLocal} />
 				<p class="text-xs text-muted-foreground">{m['waitlistSettings.cutoffDate.helper']()}</p>
 				{#if fieldErrors.waitlist_cutoff_date}
