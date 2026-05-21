@@ -6011,7 +6011,7 @@
 	"waitlistSettings.cutoffDate.label": "Cutoff date",
 	"waitlistSettings.cutoffDate.helper": "Nach diesem Datum wird jede verbleibende Person auf der Warteliste ein letztes Mal benachrichtigt, und freie Plätze werden bis zum Eventbeginn an die Erstanmeldenden vergeben. Muss vor dem Eventbeginn liegen.",
 	"waitlistSettings.lotteryMode.label": "Lottery mode",
-	"waitlistSettings.lotteryMode.helper": "Empfänger zufällig auswählen statt in der Reihenfolge der Anmeldung (wer zuerst kommt, mahlt zuerst).",
+	"waitlistSettings.lotteryMode.helper": "Empfänger zufällig auswählen statt in der Reihenfolge der Anmeldung.",
 	"waitlistSettings.openButton": "Configure waitlist",
 	"waitlistSettings.closedTooltip": "Enable the waitlist to configure advanced settings.",
 	"waitlistSettings.save": "Save",
