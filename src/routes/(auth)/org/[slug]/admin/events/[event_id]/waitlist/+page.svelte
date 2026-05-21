@@ -11,7 +11,7 @@
 	import WaitlistSettingsCard from '$lib/components/events/waitlist/admin/WaitlistSettingsCard.svelte';
 	import WaitlistEntriesTable from '$lib/components/events/waitlist/admin/WaitlistEntriesTable.svelte';
 	import WaitlistOffersTable from '$lib/components/events/waitlist/admin/WaitlistOffersTable.svelte';
-	import IssueOfferDialog from '$lib/components/events/waitlist/admin/IssueOfferDialog.svelte';
+	import OfferExpiryDialog from '$lib/components/events/waitlist/admin/OfferExpiryDialog.svelte';
 	import {
 		createWaitlistSettingsQueryOptions,
 		createWaitlistOffersQueryOptions,
@@ -158,11 +158,16 @@
 		toast.error(detail || fallback);
 	}
 
-	// "Issue offer" goes through a dialog so the admin picks an expiry. The
-	// payload always includes expires_at — the backend 400s when neither the
-	// event's `waitlist_time_window` setting nor a body value is provided.
-	let issueOfferEntry = $state<WaitlistEntrySchema | null>(null);
-	let issueOfferDialogOpen = $state(false);
+	// Issue and reactivate both go through OfferExpiryDialog so the admin
+	// picks the expiry up-front. The payload always includes expires_at —
+	// the backend 400s when neither the event's `waitlist_time_window`
+	// setting nor a body value is provided.
+	type ExpiryDialogState =
+		| { mode: 'issue'; entry: WaitlistEntrySchema }
+		| { mode: 'reactivate'; offerId: string; userName: string };
+
+	let expiryDialogState = $state<ExpiryDialogState | null>(null);
+	let expiryDialogOpen = $state(false);
 
 	function isoDurationToMinutes(iso: string | null | undefined): number | null {
 		if (!iso) return null;
@@ -178,39 +183,76 @@
 		return total > 0 ? total : null;
 	}
 
-	const issueOfferDefaultMinutes = $derived(
+	const expiryDialogDefaultMinutes = $derived(
 		isoDurationToMinutes(settingsQuery.data?.waitlist_time_window) ?? 24 * 60
 	);
 
-	function entryUserName(entry: WaitlistEntrySchema | null): string {
-		if (!entry) return '';
+	function entryUserName(entry: WaitlistEntrySchema): string {
 		const u = entry.user;
 		return u.display_name || `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim() || u.email || '';
 	}
 
+	const expiryDialogUserName = $derived(
+		expiryDialogState
+			? expiryDialogState.mode === 'issue'
+				? entryUserName(expiryDialogState.entry)
+				: expiryDialogState.userName
+			: ''
+	);
+	const expiryDialogMode = $derived(expiryDialogState?.mode ?? 'issue');
+	const expiryDialogIsPending = $derived(
+		expiryDialogState?.mode === 'reactivate'
+			? reactivateOfferMutation.isPending
+			: createOfferMutation.isPending
+	);
+
 	function issueOffer(entry: WaitlistEntrySchema) {
-		issueOfferEntry = entry;
-		issueOfferDialogOpen = true;
+		expiryDialogState = { mode: 'issue', entry };
+		expiryDialogOpen = true;
 	}
 
-	function handleIssueOfferConfirm(expiresAt: string) {
-		const entry = issueOfferEntry;
-		if (!entry) return;
-		activeActionEntryId = entry.id;
-		createOfferMutation.mutate(
-			{ waitlist_entry_id: entry.id, expires_at: expiresAt },
-			{
-				onSettled: () => {
-					activeActionEntryId = null;
-				},
-				onSuccess: () => {
-					toast.success(m['orgAdmin.waitlist.offer.issue']());
-					issueOfferDialogOpen = false;
-					issueOfferEntry = null;
-				},
-				onError: (err) => handleMutationError(err, 'Failed to issue offer')
-			}
-		);
+	function reactivateOffer(args: { offerId: string; userName: string }) {
+		expiryDialogState = { mode: 'reactivate', offerId: args.offerId, userName: args.userName };
+		expiryDialogOpen = true;
+	}
+
+	function handleExpiryDialogConfirm(expiresAt: string) {
+		const state = expiryDialogState;
+		if (!state) return;
+		if (state.mode === 'issue') {
+			const entry = state.entry;
+			activeActionEntryId = entry.id;
+			createOfferMutation.mutate(
+				{ waitlist_entry_id: entry.id, expires_at: expiresAt },
+				{
+					onSettled: () => {
+						activeActionEntryId = null;
+					},
+					onSuccess: () => {
+						toast.success(m['orgAdmin.waitlist.offer.issue']());
+						expiryDialogOpen = false;
+						expiryDialogState = null;
+					},
+					onError: (err) => handleMutationError(err, 'Failed to issue offer')
+				}
+			);
+		} else {
+			activeActionOfferId = state.offerId;
+			reactivateOfferMutation.mutate(
+				{ offerId: state.offerId, body: { expires_at: expiresAt } },
+				{
+					onSettled: () => {
+						activeActionOfferId = null;
+					},
+					onSuccess: () => {
+						toast.success(m['orgAdmin.waitlist.offer.reactivate']());
+						expiryDialogOpen = false;
+						expiryDialogState = null;
+					},
+					onError: (err) => handleMutationError(err, 'Failed to reactivate offer')
+				}
+			);
+		}
 	}
 
 	function revokeOffer(offerId: string) {
@@ -224,22 +266,6 @@
 			},
 			onError: (err) => handleMutationError(err, 'Failed to revoke offer')
 		});
-	}
-
-	function reactivateOffer(offerId: string) {
-		activeActionOfferId = offerId;
-		reactivateOfferMutation.mutate(
-			{ offerId },
-			{
-				onSettled: () => {
-					activeActionOfferId = null;
-				},
-				onSuccess: () => {
-					toast.success(m['orgAdmin.waitlist.offer.reactivate']());
-				},
-				onError: (err) => handleMutationError(err, 'Failed to reactivate offer')
-			}
-		);
 	}
 
 	function formatDateTime(iso: string): string {
@@ -432,16 +458,17 @@
 	</Tabs>
 </div>
 
-<IssueOfferDialog
-	bind:open={issueOfferDialogOpen}
+<OfferExpiryDialog
+	bind:open={expiryDialogOpen}
 	onOpenChange={(v) => {
-		issueOfferDialogOpen = v;
-		if (!v) issueOfferEntry = null;
+		expiryDialogOpen = v;
+		if (!v) expiryDialogState = null;
 	}}
-	userName={entryUserName(issueOfferEntry)}
-	defaultMinutes={issueOfferDefaultMinutes}
-	isPending={createOfferMutation.isPending}
-	onConfirm={handleIssueOfferConfirm}
+	mode={expiryDialogMode}
+	userName={expiryDialogUserName}
+	defaultMinutes={expiryDialogDefaultMinutes}
+	isPending={expiryDialogIsPending}
+	onConfirm={handleExpiryDialogConfirm}
 />
 
 <style>

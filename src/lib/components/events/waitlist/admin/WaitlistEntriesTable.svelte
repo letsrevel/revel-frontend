@@ -32,7 +32,7 @@
 		onNext: () => void;
 		onIssueOffer: (entry: WaitlistEntrySchema) => void;
 		onRevokeOffer: (offerId: string) => void;
-		onReactivateOffer: (offerId: string) => void;
+		onReactivateOffer: (args: { offerId: string; userName: string }) => void;
 		onDelete: (waitlistId: string, userName: string) => void;
 		activeActionEntryId: string | null;
 		activeActionOfferId: string | null;
@@ -209,7 +209,8 @@
 									<Button
 										variant="outline"
 										size="sm"
-										onclick={() => onReactivateOffer(offer.id ?? '')}
+										onclick={() =>
+											onReactivateOffer({ offerId: offer.id ?? '', userName: fullName(entry) })}
 										disabled={offerBusy || !offer.id}
 									>
 										{#if offerBusy}
@@ -309,7 +310,8 @@
 							<Button
 								variant="outline"
 								size="sm"
-								onclick={() => onReactivateOffer(offer.id ?? '')}
+								onclick={() =>
+									onReactivateOffer({ offerId: offer.id ?? '', userName: fullName(entry) })}
 								disabled={offerBusy || !offer.id}
 								class="w-full"
 							>

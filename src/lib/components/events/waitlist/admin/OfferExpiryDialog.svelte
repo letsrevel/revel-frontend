@@ -12,9 +12,12 @@
 	import DurationInput from '$lib/components/forms/DurationInput.svelte';
 	import { Loader2 } from 'lucide-svelte';
 
+	type Mode = 'issue' | 'reactivate';
+
 	interface Props {
 		open: boolean;
 		onOpenChange: (v: boolean) => void;
+		mode: Mode;
 		userName: string;
 		// Default duration in minutes. Caller passes parsed setting (or fallback).
 		defaultMinutes: number;
@@ -25,6 +28,7 @@
 	let {
 		open = $bindable(),
 		onOpenChange,
+		mode,
 		userName,
 		defaultMinutes,
 		isPending,
@@ -33,8 +37,8 @@
 
 	let minutes = $state<number | null>(defaultMinutes);
 
-	// When the dialog reopens for a different entry the caller may pass a new
-	// defaultMinutes; reset the editable copy to track it on open transitions.
+	// When the dialog reopens for a different entry/offer the caller may pass a
+	// new defaultMinutes; reset the editable copy on open transitions.
 	let wasOpen = $state(false);
 	$effect(() => {
 		if (open && !wasOpen) {
@@ -42,6 +46,10 @@
 		}
 		wasOpen = open;
 	});
+
+	const titleKey = $derived(`orgAdmin.waitlist.offer.${mode}Dialog.title` as const);
+	const descriptionKey = $derived(`orgAdmin.waitlist.offer.${mode}Dialog.description` as const);
+	const confirmKey = $derived(`orgAdmin.waitlist.offer.${mode}Dialog.confirm` as const);
 
 	function handleConfirm(): void {
 		const safeMinutes =
@@ -61,10 +69,10 @@
 	<DialogContent class="max-w-md">
 		<DialogHeader>
 			<DialogTitle>
-				{m['orgAdmin.waitlist.offer.issueDialog.title']({ userName })}
+				{m[titleKey]({ userName })}
 			</DialogTitle>
 			<DialogDescription>
-				{m['orgAdmin.waitlist.offer.issueDialog.description']()}
+				{m[descriptionKey]()}
 			</DialogDescription>
 		</DialogHeader>
 
@@ -73,8 +81,8 @@
 				bind:value={minutes}
 				storageUnit="minutes"
 				defaultUnit="hours"
-				label={m['orgAdmin.waitlist.offer.issueDialog.durationLabel']()}
-				helpText={m['orgAdmin.waitlist.offer.issueDialog.durationHelper']()}
+				label={m['orgAdmin.waitlist.offer.expiryDialog.durationLabel']()}
+				helpText={m['orgAdmin.waitlist.offer.expiryDialog.durationHelper']()}
 				min={1}
 			/>
 		</div>
@@ -87,7 +95,7 @@
 				{#if isPending}
 					<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 				{/if}
-				{m['orgAdmin.waitlist.offer.issueDialog.confirm']()}
+				{m[confirmKey]()}
 			</Button>
 		</DialogFooter>
 	</DialogContent>

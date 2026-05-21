@@ -24,7 +24,7 @@
 		onPrev: () => void;
 		onNext: () => void;
 		onRevokeOffer: (offerId: string) => void;
-		onReactivateOffer: (offerId: string) => void;
+		onReactivateOffer: (args: { offerId: string; userName: string }) => void;
 		activeActionOfferId: string | null;
 		isRevokePending: boolean;
 		isReactivatePending: boolean;
@@ -159,7 +159,14 @@
 										onclick={() =>
 											offer.status === 'pending'
 												? onRevokeOffer(offer.id ?? '')
-												: onReactivateOffer(offer.id ?? '')}
+												: onReactivateOffer({
+														offerId: offer.id ?? '',
+														userName:
+															offer.user.display_name ||
+															fullName(offer.user) ||
+															offer.user.email ||
+															''
+													})}
 										disabled={busy || !offer.id}
 									>
 										{#if busy}
@@ -211,7 +218,11 @@
 								onclick={() =>
 									offer.status === 'pending'
 										? onRevokeOffer(offer.id ?? '')
-										: onReactivateOffer(offer.id ?? '')}
+										: onReactivateOffer({
+												offerId: offer.id ?? '',
+												userName:
+													offer.user.display_name || fullName(offer.user) || offer.user.email || ''
+											})}
 								disabled={busy || !offer.id}
 							>
 								{#if busy}
