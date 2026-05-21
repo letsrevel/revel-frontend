@@ -76,7 +76,7 @@
 	 */
 	function convertMarkdownToHtml(markdown: string): string {
 		if (!markdown)
-			return `<p class="text-muted-foreground">{m['markdownEditor.nothingToPreview']()}</p>`;
+			return `<p class="text-muted-foreground">${m['markdownEditor.nothingToPreview']()}</p>`;
 
 		let html = markdown;
 
