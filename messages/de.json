@@ -3766,6 +3766,7 @@
 		"events_oldestFirst": "Älteste zuerst",
 		"events_sortNewestLabel": "Zeige neueste zuerst",
 		"events_sortOldestLabel": "Zeige älteste zuerst",
+		"events_calendar": "Kalender",
 		"events_browseAll": "Alle durchsuchen",
 		"events_loading": "Veranstaltungen werden geladen...",
 		"events_failed": "Fehler beim Laden der Veranstaltungen",

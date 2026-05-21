@@ -5,6 +5,7 @@
 		MapPin,
 		Settings,
 		Calendar,
+		CalendarDays,
 		ArrowRight,
 		Repeat,
 		ArrowDownUp,
@@ -500,6 +501,17 @@
 							? m['organizationProfile.events_newestFirst']()
 							: m['organizationProfile.events_oldestFirst']()}
 					</button>
+
+					<!-- Calendar View Shortcut -->
+					<a
+						href="/events?organization={organization.id}&organization_name={encodeURIComponent(
+							organization.name
+						)}&organization_slug={organization.slug}&viewMode=calendar"
+						class="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+					>
+						<CalendarDays class="h-4 w-4" aria-hidden="true" />
+						{m['organizationProfile.events_calendar']()}
+					</a>
 
 					<!-- Browse All Button -->
 					<a
