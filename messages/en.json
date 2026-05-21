@@ -950,9 +950,9 @@
 		"guestAttendanceWarningBody": "If your event uses screening questionnaires, RSVP invitations, or member-only restrictions, attendees will still be prompted to create an account before participating. This setting is best for fully public events with no extra gating.",
 		"waitlistInfoButton": "How does the waitlist work?",
 		"waitlistInfoTitle": "How the waitlist works",
-		"waitlistInfoBody1": "When your event is full, people who still want to come can sign up to wait.",
-		"waitlistInfoBody2": "If a spot opens up — someone cancels, or you make more room — everyone on the waitlist is told at the same time, and whoever signs up first keeps the spot.",
-		"waitlistInfoBody3": "Want a fairer system? Click Configure waitlist. You can offer spots to a few people at a time and give them a deadline to claim. If they don't, the spot passes to the next group. You can pick names in order (first come, first served) or at random, and set a final date when the waitlist opens up to everyone.",
+		"waitlistInfoBody1": "When your event is full, people can join a waitlist to be notified if a spot opens up.",
+		"waitlistInfoBody2": "By default, when a spot becomes available — someone cancels, or you raise the capacity — everyone on the waitlist is notified at the same time, and whoever signs up first keeps it. No seats are reserved.",
+		"waitlistInfoBody3": "Open Configure waitlist for finer control. You can hand out spots to a few people at a time and hold those seats just for them for a set window. Pick recipients in waitlist order or randomly (Lottery mode), and set a cutoff date after which the waitlist opens up to everyone at once.",
 		"waitlistInfoFeedbackCta": "Share feedback on GitHub"
 	},
 	"dialogContent": {

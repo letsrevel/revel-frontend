@@ -950,9 +950,9 @@
 		"guestAttendanceWarningBody": "Wenn dein Event Screening-Fragebögen, RSVP-Einladungen oder Member-Only-Beschränkungen nutzt, werden Teilnehmende trotzdem aufgefordert, ein Konto zu erstellen. Diese Einstellung passt am besten zu komplett öffentlichen Events ohne zusätzliche Einschränkungen.",
 		"waitlistInfoButton": "Wie funktioniert die Warteliste?",
 		"waitlistInfoTitle": "So funktioniert die Warteliste",
-		"waitlistInfoBody1": "Wenn dein Event ausgebucht ist, können sich Personen, die trotzdem teilnehmen möchten, auf eine Warteliste setzen lassen.",
-		"waitlistInfoBody2": "Wird ein Platz frei — durch eine Stornierung oder weil du mehr Plätze freigibst — werden alle auf der Warteliste gleichzeitig benachrichtigt, und wer sich zuerst anmeldet, behält den Platz.",
-		"waitlistInfoBody3": "Möchtest du es fairer machen? Klicke auf „Warteliste konfigurieren“. Du kannst Plätze nur an wenige Personen gleichzeitig anbieten und ihnen eine Frist zum Annehmen geben. Lassen sie die Frist verstreichen, geht der Platz an die nächste Gruppe. Du kannst Personen in der Reihenfolge ihrer Anmeldung (wer zuerst kommt, mahlt zuerst) oder zufällig auswählen und ein finales Datum festlegen, ab dem die Warteliste für alle gleichzeitig geöffnet wird.",
+		"waitlistInfoBody1": "Wenn dein Event ausgebucht ist, können sich Personen auf eine Warteliste setzen lassen, um benachrichtigt zu werden, sobald ein Platz frei wird.",
+		"waitlistInfoBody2": "Standardmäßig werden alle auf der Warteliste gleichzeitig benachrichtigt, sobald ein Platz frei wird — durch eine Stornierung oder weil du die Kapazität erhöhst. Wer sich zuerst anmeldet, bekommt den Platz. Es werden keine Plätze reserviert.",
+		"waitlistInfoBody3": "Öffne „Warteliste konfigurieren“ für mehr Kontrolle. Du kannst Plätze immer nur einigen Personen gleichzeitig anbieten und ihnen die Sitze für ein festgelegtes Zeitfenster reservieren. Wähle Empfänger in Wartelisten-Reihenfolge oder zufällig (Losverfahren) und lege ein Cutoff-Datum fest, ab dem die Warteliste für alle gleichzeitig geöffnet wird.",
 		"waitlistInfoFeedbackCta": "Feedback auf GitHub geben"
 	},
 	"dialogContent": {
