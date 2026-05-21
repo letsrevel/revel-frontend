@@ -952,7 +952,7 @@
 		"waitlistInfoTitle": "So funktioniert die Warteliste",
 		"waitlistInfoBody1": "Wenn dein Event ausgebucht ist, können sich Personen auf eine Warteliste setzen lassen, um benachrichtigt zu werden, sobald ein Platz frei wird.",
 		"waitlistInfoBody2": "Standardmäßig werden alle auf der Warteliste gleichzeitig benachrichtigt, sobald ein Platz frei wird — durch eine Stornierung oder weil du die Kapazität erhöhst. Wer sich zuerst anmeldet, bekommt den Platz. Es werden keine Plätze reserviert.",
-		"waitlistInfoBody3": "Öffne „Warteliste konfigurieren“ für mehr Kontrolle. Du kannst Plätze immer nur einigen Personen gleichzeitig anbieten und ihnen die Sitze für ein festgelegtes Zeitfenster reservieren. Wähle Empfänger in Wartelisten-Reihenfolge oder zufällig (Losverfahren) und lege ein Cutoff-Datum fest, ab dem die Warteliste für alle gleichzeitig geöffnet wird.",
+		"waitlistInfoBody3": "Öffne „Warteliste konfigurieren“ für mehr Kontrolle. Du kannst Plätze immer nur einigen Personen gleichzeitig anbieten und ihnen die Sitze für ein festgelegtes Zeitfenster reservieren. Wähle Empfänger in Wartelisten-Reihenfolge oder zufällig (Losverfahren) und lege ein Cutoff-Datum fest — danach wird jede verbleibende Person auf der Warteliste ein letztes Mal benachrichtigt, und freie Plätze werden bis zum Eventbeginn an die Erstanmeldenden vergeben.",
 		"waitlistInfoFeedbackCta": "Feedback auf GitHub geben"
 	},
 	"dialogContent": {
@@ -6009,7 +6009,7 @@
 	"waitlistSettings.batchSize.label": "Batch size",
 	"waitlistSettings.batchSize.helper": "0 = notify everyone simultaneously when capacity opens.",
 	"waitlistSettings.cutoffDate.label": "Cutoff date",
-	"waitlistSettings.cutoffDate.helper": "After this date the waitlist opens to everyone at once. Must be before event start.",
+	"waitlistSettings.cutoffDate.helper": "Nach diesem Datum wird jede verbleibende Person auf der Warteliste ein letztes Mal benachrichtigt, und freie Plätze werden bis zum Eventbeginn an die Erstanmeldenden vergeben. Muss vor dem Eventbeginn liegen.",
 	"waitlistSettings.lotteryMode.label": "Lottery mode",
 	"waitlistSettings.lotteryMode.helper": "Randomly select batch members instead of FIFO order.",
 	"waitlistSettings.openButton": "Configure waitlist",

@@ -952,7 +952,7 @@
 		"waitlistInfoTitle": "How the waitlist works",
 		"waitlistInfoBody1": "When your event is full, people can join a waitlist to be notified if a spot opens up.",
 		"waitlistInfoBody2": "By default, when a spot becomes available — someone cancels, or you raise the capacity — everyone on the waitlist is notified at the same time, and whoever signs up first keeps it. No seats are reserved.",
-		"waitlistInfoBody3": "Open Configure waitlist for finer control. You can hand out spots to a few people at a time and hold those seats just for them for a set window. Pick recipients in waitlist order or randomly (Lottery mode), and set a cutoff date after which the waitlist opens up to everyone at once.",
+		"waitlistInfoBody3": "Open Configure waitlist for finer control. You can hand out spots to a few people at a time and hold those seats just for them for a set window. Pick recipients in waitlist order or randomly (Lottery mode), and set a cutoff date — after that, every remaining person on the waitlist is notified one last time and any free seats are first-come-first-served until the event starts.",
 		"waitlistInfoFeedbackCta": "Share feedback on GitHub"
 	},
 	"dialogContent": {
@@ -6009,7 +6009,7 @@
 	"waitlistSettings.batchSize.label": "Batch size",
 	"waitlistSettings.batchSize.helper": "0 = notify everyone simultaneously when capacity opens.",
 	"waitlistSettings.cutoffDate.label": "Cutoff date",
-	"waitlistSettings.cutoffDate.helper": "After this date the waitlist opens to everyone at once. Must be before event start.",
+	"waitlistSettings.cutoffDate.helper": "After this date, every remaining person on the waitlist is notified one last time and any free seats are first-come-first-served until the event starts. Must be before event start.",
 	"waitlistSettings.lotteryMode.label": "Lottery mode",
 	"waitlistSettings.lotteryMode.helper": "Randomly select batch members instead of FIFO order.",
 	"waitlistSettings.openButton": "Configure waitlist",
