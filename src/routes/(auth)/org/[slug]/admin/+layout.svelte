@@ -50,6 +50,10 @@
 			label: m['orgAdmin.nav.questionnaires']()
 		},
 		{
+			href: `/org/${data.organization.slug}/admin/polls`,
+			label: m['orgAdmin.nav.polls']()
+		},
+		{
 			href: `/org/${data.organization.slug}/admin/resources`,
 			label: m['orgAdmin.nav.resources']()
 		},

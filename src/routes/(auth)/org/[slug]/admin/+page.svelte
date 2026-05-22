@@ -14,7 +14,8 @@
 		FolderOpen,
 		Ban,
 		MapPin,
-		Megaphone
+		Megaphone,
+		BarChart3
 	} from 'lucide-svelte';
 	import { OrganizationDescription } from '$lib/components/organizations';
 	import AnnouncementModal from '$lib/components/announcements/AnnouncementModal.svelte';
@@ -113,6 +114,15 @@
 			href: `/org/${organization.slug}/admin/questionnaires`,
 			color: 'text-orange-600 dark:text-orange-400',
 			bgColor: 'bg-orange-50 dark:bg-orange-950',
+			badge: undefined as string | undefined
+		},
+		{
+			title: m['orgAdmin.dashboard.quickActions.polls.title'](),
+			description: m['orgAdmin.dashboard.quickActions.polls.description'](),
+			icon: BarChart3,
+			href: `/org/${organization.slug}/admin/polls`,
+			color: 'text-cyan-600 dark:text-cyan-400',
+			bgColor: 'bg-cyan-50 dark:bg-cyan-950',
 			badge: undefined as string | undefined
 		},
 		{
