@@ -6227,6 +6227,14 @@
 		"withdrawConfirm": "Deine Stimme zurückziehen?",
 		"withdrawSuccess": "Deine Stimme wurde zurückgezogen.",
 		"resultsTitle": "Ergebnisse",
-		"resultsEmpty": "Noch keine Stimmen."
+		"resultsEmpty": "Noch keine Stimmen.",
+		"withdrawError": "Stimme konnte nicht zurückgezogen werden. Bitte versuche es erneut.",
+		"signIn": "Anmelden",
+		"castVoteTitle": "Stimme abgeben"
+	},
+	"pollResults": {
+		"totalVoters_one": "{count} Stimme",
+		"totalVoters_other": "{count} Stimmen",
+		"freeTextHeading": "Freitext-Antworten"
 	}
 }

@@ -6227,6 +6227,14 @@
 		"withdrawConfirm": "Withdraw your vote?",
 		"withdrawSuccess": "Your vote has been withdrawn.",
 		"resultsTitle": "Results",
-		"resultsEmpty": "No votes yet."
+		"resultsEmpty": "No votes yet.",
+		"withdrawError": "Failed to withdraw your vote. Please try again.",
+		"signIn": "Sign in",
+		"castVoteTitle": "Cast your vote"
+	},
+	"pollResults": {
+		"totalVoters_one": "{count} voter",
+		"totalVoters_other": "{count} voters",
+		"freeTextHeading": "Free-text answers"
 	}
 }

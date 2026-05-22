@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import McQuestionChart from '$lib/components/questionnaires/McQuestionChart.svelte';
 	import type { PollResultsSchema } from '$lib/api/generated/types.gen';
 
@@ -7,12 +8,17 @@
 		staffAnonymous: boolean;
 	}
 	const { results, staffAnonymous }: Props = $props();
+
+	const votersLabel = $derived(
+		results.total_voters === 1
+			? m['pollResults.totalVoters_one']({ count: String(results.total_voters) })
+			: m['pollResults.totalVoters_other']({ count: String(results.total_voters) })
+	);
 </script>
 
 <div class="space-y-6">
 	<p class="text-sm text-muted-foreground">
-		<strong class="text-foreground">{results.total_voters}</strong>
-		voters
+		<strong class="text-foreground">{votersLabel}</strong>
 	</p>
 
 	{#each results.mc_question_stats ?? [] as stat (stat.question_id)}
@@ -21,7 +27,7 @@
 
 	{#if (results.free_text_responses ?? []).length > 0}
 		<section class="space-y-2">
-			<h3 class="text-sm font-medium">Free-text answers</h3>
+			<h3 class="text-sm font-medium">{m['pollResults.freeTextHeading']()}</h3>
 			<ul class="space-y-2">
 				{#each results.free_text_responses ?? [] as r, i (i)}
 					<li class="rounded-md border bg-muted/30 p-3 text-sm">

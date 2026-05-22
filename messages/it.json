@@ -6227,6 +6227,14 @@
 		"withdrawConfirm": "Ritirare il tuo voto?",
 		"withdrawSuccess": "Il tuo voto è stato ritirato.",
 		"resultsTitle": "Risultati",
-		"resultsEmpty": "Ancora nessun voto."
+		"resultsEmpty": "Ancora nessun voto.",
+		"withdrawError": "Impossibile ritirare il tuo voto. Riprova.",
+		"signIn": "Accedi",
+		"castVoteTitle": "Vota"
+	},
+	"pollResults": {
+		"totalVoters_one": "{count} voto",
+		"totalVoters_other": "{count} voti",
+		"freeTextHeading": "Risposte a testo libero"
 	}
 }

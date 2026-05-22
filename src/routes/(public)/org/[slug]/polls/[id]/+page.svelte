@@ -38,7 +38,7 @@
 			await invalidateAll();
 		} catch (e) {
 			console.error(e);
-			toast.error(m['pollEditPage.saveError']());
+			toast.error(m['pollVoterPage.withdrawError']());
 		} finally {
 			withdrawing = false;
 		}
@@ -69,7 +69,9 @@
 		<Card class="border-blue-500/50 bg-blue-50/30 dark:bg-blue-950/20">
 			<CardContent class="space-y-2 py-4 text-sm">
 				<p>{m['pollVoterPage.signInToVote']()}</p>
-				<Button href={`/login?next=${encodeURIComponent($page.url.pathname)}`}>Sign in</Button>
+				<Button href={`/login?next=${encodeURIComponent($page.url.pathname)}`}
+					>{m['pollVoterPage.signIn']()}</Button
+				>
 			</CardContent>
 		</Card>
 	{:else if poll.status === 'draft'}
@@ -105,7 +107,7 @@
 	{#if poll.user_can_vote && poll.questionnaire}
 		<Card>
 			<CardHeader>
-				<CardTitle>Cast your vote</CardTitle>
+				<CardTitle>{m['pollVoterPage.castVoteTitle']()}</CardTitle>
 			</CardHeader>
 			<CardContent>
 				<p class="text-sm italic text-muted-foreground">

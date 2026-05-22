@@ -98,7 +98,7 @@
 		}
 	}
 
-	const voteLabel = $derived(() => {
+	const voteLabel = $derived.by(() => {
 		if (voteCount === undefined) return null;
 		const f = formatVoteCount(voteCount);
 		if (f.key === 'votes_zero') return m['pollCard.votes_zero']();
@@ -150,10 +150,10 @@
 	</CardHeader>
 	<CardContent>
 		<div class="space-y-4">
-			{#if voteLabel() || poll.closes_at || poll.closed_at || poll.status === 'draft'}
+			{#if voteLabel || poll.closes_at || poll.closed_at || poll.status === 'draft'}
 				<div class="flex flex-wrap gap-4 text-sm text-muted-foreground">
-					{#if voteLabel()}
-						<span>{voteLabel()}</span>
+					{#if voteLabel}
+						<span>{voteLabel}</span>
 					{/if}
 					{#if poll.status === 'open' && poll.closes_at}
 						<span
