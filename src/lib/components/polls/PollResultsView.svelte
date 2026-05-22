@@ -28,7 +28,8 @@
 						<p class="whitespace-pre-wrap">{r.answer}</p>
 						<p class="mt-1 text-xs text-muted-foreground">
 							{new Date(r.answered_at).toLocaleString()}
-							{#if r.user_id && !staffAnonymous} · {r.user_id}{/if}
+							{#if r.user_id && !staffAnonymous}
+								· {r.user_id}{/if}
 						</p>
 					</li>
 				{/each}

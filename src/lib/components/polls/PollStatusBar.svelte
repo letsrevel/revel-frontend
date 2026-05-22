@@ -110,12 +110,7 @@
 				</Button>
 			{/if}
 			{#if poll.status === 'closed'}
-				<Button
-					variant="outline"
-					onclick={() => (reopenOpen = true)}
-					disabled={busy}
-					class="gap-2"
-				>
+				<Button variant="outline" onclick={() => (reopenOpen = true)} disabled={busy} class="gap-2">
 					<RotateCcw class="h-4 w-4" />
 					{m['pollStatusBar.reopenButton']()}
 				</Button>

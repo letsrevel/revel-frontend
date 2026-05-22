@@ -54,7 +54,10 @@ test.describe('polls admin', () => {
 
 		// Add a multiple-choice question. The card has two "Multiple Choice"
 		// buttons (top + bottom of the questions card) — picking the first works.
-		await page.getByRole('button', { name: /multiple choice/i }).first().click();
+		await page
+			.getByRole('button', { name: /multiple choice/i })
+			.first()
+			.click();
 
 		// Fill in the question text and two options. The question editor renders
 		// a question input and "Add option" affordance — match by visible role/label.

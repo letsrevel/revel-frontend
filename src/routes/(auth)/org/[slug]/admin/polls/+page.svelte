@@ -15,9 +15,7 @@
 	let searchQuery = $state('');
 
 	const filtered = $derived(
-		data.polls.filter((p) =>
-			p.questionnaire_name.toLowerCase().includes(searchQuery.toLowerCase())
-		)
+		data.polls.filter((p) => p.questionnaire_name.toLowerCase().includes(searchQuery.toLowerCase()))
 	);
 </script>
 

@@ -9,12 +9,7 @@
 	} from '$lib/components/ui/card';
 	import { Label } from '$lib/components/ui/label';
 	import Lock from '@lucide/svelte/icons/lock';
-	import {
-		Select,
-		SelectContent,
-		SelectItem,
-		SelectTrigger
-	} from '$lib/components/ui/select';
+	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
 	import { resultVisibilityRequiresPublicAnonymous } from '$lib/utils/polls';
 	import type { PollResultTiming, ResourceVisibility } from '$lib/api/generated/types.gen';
 

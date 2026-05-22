@@ -24,20 +24,14 @@
 </script>
 
 <div class="flex flex-col gap-2 sm:flex-row">
-	<Input
-		type="text"
-		readonly
-		value={url}
-		aria-label="Poll share URL"
-		class="font-mono text-xs"
-	/>
+	<Input type="text" readonly value={url} aria-label="Poll share URL" class="font-mono text-xs" />
 	<Button
 		type="button"
 		variant="default"
 		size="sm"
 		onclick={handleCopy}
 		{disabled}
-		class="gap-2 shrink-0"
+		class="shrink-0 gap-2"
 	>
 		<Copy class="h-4 w-4" aria-hidden="true" />
 		{m['pollCard.copyLink']()}
