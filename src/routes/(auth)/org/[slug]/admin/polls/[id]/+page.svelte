@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { ArrowLeft, Lock, Trash2 } from 'lucide-svelte';
+	import { ArrowLeft, Trash2 } from 'lucide-svelte';
+	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import {
 		Card,
@@ -33,6 +34,9 @@
 	const voterUrl = $derived(buildPollVoterUrl($page.url.origin, data.organization.slug, poll.id));
 
 	// Editable state initialized from poll
+	let name = $state(poll.questionnaire?.name ?? '');
+	let description = $state(poll.questionnaire?.description ?? '');
+	let formErrors = $state<{ name?: string }>({});
 	let voteVisibility = $state(poll.vote_visibility);
 	let resultVisibility = $state(poll.result_visibility);
 	let eventId = $state<string | null>(poll.event_id);
@@ -50,6 +54,11 @@
 	let deleting = $state(false);
 
 	async function save() {
+		formErrors = {};
+		if (!name.trim()) {
+			formErrors = { name: m['pollNewPage.errorNameRequired']() };
+			return;
+		}
 		const err = validateClosesAt(closesAt);
 		closesAtError = err ? m['pollNewPage.closesAtPast']() : null;
 		if (closesAtError) return;
@@ -59,6 +68,8 @@
 				path: { poll_id: poll.id },
 				headers: { Authorization: `Bearer ${data.accessToken}` },
 				body: {
+					name: name.trim(),
+					description: description || null,
 					vote_visibility: voteVisibility,
 					result_visibility: resultVisibility,
 					event_id: eventId,
@@ -116,36 +127,33 @@
 		<ArrowLeft class="h-4 w-4" />
 		{m['pollEditPage.backToList']()}
 	</Button>
-	<h1 class="text-3xl font-bold tracking-tight">
-		{poll.questionnaire?.name ?? m['pollEditPage.pageTitle']()}
-	</h1>
+	<h1 class="text-3xl font-bold tracking-tight">{name || poll.questionnaire?.name || m['pollEditPage.pageTitle']()}</h1>
 </div>
 
 <div class="mx-auto max-w-4xl space-y-6">
 	<PollStatusBar {poll} {voterUrl} accessToken={data.accessToken ?? ''} />
 
-	<!-- Basics — read-only -->
+	<!-- Basics — editable -->
 	<Card>
 		<CardHeader>
-			<CardTitle class="flex items-center gap-2">
-				{m['pollNewPage.basicsTitle']()}
-				<Lock class="h-4 w-4 text-muted-foreground" />
-			</CardTitle>
-			<CardDescription>{m['pollEditPage.nameLockTooltip']()}</CardDescription>
+			<CardTitle>{m['pollNewPage.basicsTitle']()}</CardTitle>
+			<CardDescription>{m['pollNewPage.basicsDescription']()}</CardDescription>
 		</CardHeader>
 		<CardContent class="space-y-4">
 			<div class="space-y-2">
 				<Label for="name">{m['pollNewPage.nameLabel']()}</Label>
-				<Input id="name" value={poll.questionnaire?.name ?? ''} readonly />
+				<Input id="name" bind:value={name} />
+				{#if formErrors.name}
+					<p class="text-sm text-destructive">{formErrors.name}</p>
+				{/if}
 			</div>
-			{#if poll.questionnaire?.description}
-				<div class="space-y-2">
-					<Label>{m['pollNewPage.descriptionLabel']()}</Label>
-					<div class="rounded-md border bg-muted/40 p-3 text-sm">
-						{poll.questionnaire.description}
-					</div>
-				</div>
-			{/if}
+			<MarkdownEditor
+				id="description"
+				label={m['pollNewPage.descriptionLabel']()}
+				bind:value={description}
+				placeholder={m['pollNewPage.descriptionPlaceholder']()}
+				rows={3}
+			/>
 		</CardContent>
 	</Card>
 
