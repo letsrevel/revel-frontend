@@ -18,6 +18,7 @@
 	import PollAudienceCard from '$lib/components/polls/PollAudienceCard.svelte';
 	import PollAnonymityCard from '$lib/components/polls/PollAnonymityCard.svelte';
 	import PollScheduleCard from '$lib/components/polls/PollScheduleCard.svelte';
+	import PollResultsView from '$lib/components/polls/PollResultsView.svelte';
 	import { pollPatchPoll, pollDeletePollAction } from '$lib/api/generated/sdk.gen';
 	import { buildPollVoterUrl, isPollDraft, validateClosesAt } from '$lib/utils/polls';
 	import type { PageData } from './$types';
@@ -236,16 +237,14 @@
 		</CardContent>
 	</Card>
 
-	<!-- Results placeholder — full component lands in Task 12 -->
+	<!-- Results -->
 	<Card id="results">
 		<CardHeader>
 			<CardTitle>{m['pollEditPage.resultsTitle']()}</CardTitle>
 		</CardHeader>
 		<CardContent>
 			{#if poll.results && poll.results.total_voters > 0}
-				<p class="text-sm text-muted-foreground">
-					{poll.results.total_voters} voters — full results view lands in Task 12.
-				</p>
+				<PollResultsView results={poll.results} staffAnonymous={poll.staff_anonymous} />
 			{:else}
 				<p class="text-sm text-muted-foreground">{m['pollEditPage.resultsEmpty']()}</p>
 			{/if}
