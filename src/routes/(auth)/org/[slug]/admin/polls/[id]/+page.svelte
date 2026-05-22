@@ -127,7 +127,9 @@
 		<ArrowLeft class="h-4 w-4" />
 		{m['pollEditPage.backToList']()}
 	</Button>
-	<h1 class="text-3xl font-bold tracking-tight">{name || poll.questionnaire?.name || m['pollEditPage.pageTitle']()}</h1>
+	<h1 class="text-3xl font-bold tracking-tight">
+		{name || poll.questionnaire?.name || m['pollEditPage.pageTitle']()}
+	</h1>
 </div>
 
 <div class="mx-auto max-w-4xl space-y-6">
