@@ -7,6 +7,7 @@
 	import { toast } from 'svelte-sonner';
 	import PollStatusBadge from '$lib/components/polls/PollStatusBadge.svelte';
 	import PollResultsView from '$lib/components/polls/PollResultsView.svelte';
+	import PollVoteForm from '$lib/components/polls/PollVoteForm.svelte';
 	import { pollWithdrawVoteAction } from '$lib/api/generated/sdk.gen';
 	import type { PageData } from './$types';
 
@@ -17,12 +18,22 @@
 	const poll = $derived(data.poll);
 
 	let withdrawing = $state(false);
+	// When true, hide the "voted" banner and show the form so the user can change their vote.
+	let editing = $state(false);
 
 	const requiresAuth = $derived(
 		!data.isAuthenticated &&
 			poll.vote_visibility !== 'public' &&
 			poll.vote_visibility !== 'unlisted'
 	);
+
+	// Show the vote form when: user can vote AND questionnaire is present AND (hasn't voted yet OR is actively editing)
+	const showForm = $derived(
+		!!poll.questionnaire && poll.user_can_vote && (!poll.user_has_voted || editing)
+	);
+
+	// Show the "voted" banner only when voted AND not currently editing
+	const showVotedBanner = $derived(poll.user_has_voted && !editing);
 
 	async function withdrawVote() {
 		if (!confirm(m['pollVoterPage.withdrawConfirm']())) return;
@@ -42,6 +53,10 @@
 		} finally {
 			withdrawing = false;
 		}
+	}
+
+	function handleVoteSuccess() {
+		editing = false;
 	}
 </script>
 
@@ -90,29 +105,37 @@
 		<Card class="border-amber-500/50">
 			<CardContent class="py-4 text-sm">{m['pollVoterPage.ineligibleBanner']()}</CardContent>
 		</Card>
-	{:else if poll.user_has_voted}
+	{:else if showVotedBanner}
 		<Card>
 			<CardContent class="space-y-2 py-4 text-sm">
 				<p>{m['pollVoterPage.votedBanner']()}</p>
 				{#if poll.status === 'open' && poll.allow_vote_changes}
-					<Button variant="outline" size="sm" onclick={withdrawVote} disabled={withdrawing}>
-						{m['pollVoterPage.withdrawVote']()}
-					</Button>
+					<div class="flex flex-wrap gap-2">
+						<Button variant="outline" size="sm" onclick={() => (editing = true)}>
+							{m['pollVoterPage.changeVote']()}
+						</Button>
+						<Button variant="outline" size="sm" onclick={withdrawVote} disabled={withdrawing}>
+							{m['pollVoterPage.withdrawVote']()}
+						</Button>
+					</div>
 				{/if}
 			</CardContent>
 		</Card>
 	{/if}
 
-	<!-- Vote form placeholder (gated on backend exposing PollDetailSchema.questionnaire) -->
-	{#if poll.user_can_vote && poll.questionnaire}
+	<!-- Vote form -->
+	{#if showForm && poll.questionnaire && data.accessToken}
 		<Card>
 			<CardHeader>
 				<CardTitle>{m['pollVoterPage.castVoteTitle']()}</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<p class="text-sm italic text-muted-foreground">
-					Vote form will render here once the backend populates PollDetailSchema.questionnaire.
-				</p>
+				<PollVoteForm
+					questionnaire={poll.questionnaire}
+					pollId={poll.id}
+					accessToken={data.accessToken}
+					onSuccess={handleVoteSuccess}
+				/>
 			</CardContent>
 		</Card>
 	{/if}
