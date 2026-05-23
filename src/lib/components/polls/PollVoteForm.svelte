@@ -25,15 +25,15 @@
 		optionHasDependents,
 		type ConditionalQuestion
 	} from '$lib/utils/conditional-questions';
+	import { authStore } from '$lib/stores/auth.svelte';
 
 	interface Props {
 		questionnaire: QuestionnaireResponseSchema;
 		pollId: string;
-		accessToken: string;
 		onSuccess?: () => void;
 	}
 
-	const { questionnaire, pollId, accessToken, onSuccess }: Props = $props();
+	const { questionnaire, pollId, onSuccess }: Props = $props();
 
 	const flattened = $derived(flattenQuestionnaire(questionnaire));
 
@@ -56,6 +56,19 @@
 
 	const visibleQuestionIds = $derived(getVisibleQuestionIds(flattened, selectedOptionIds));
 	const visibleSectionIds = $derived(getVisibleSectionIds(flattened, selectedOptionIds));
+
+	// Prune answers for questions that are no longer visible (e.g. conditional branches)
+	$effect(() => {
+		for (const qid of multipleChoiceAnswers.keys()) {
+			if (!visibleQuestionIds.has(qid)) multipleChoiceAnswers.delete(qid);
+		}
+		for (const qid of freeTextAnswers.keys()) {
+			if (!visibleQuestionIds.has(qid)) freeTextAnswers.delete(qid);
+		}
+		for (const qid of fileUploadAnswers.keys()) {
+			if (!visibleQuestionIds.has(qid)) fileUploadAnswers.delete(qid);
+		}
+	});
 
 	function isQuestionVisible(questionId: string): boolean {
 		return visibleQuestionIds.has(questionId);
@@ -138,9 +151,13 @@
 				.filter(([qid, files]) => visibleQuestionIds.has(qid) && files.length > 0)
 				.map(([question_id, files]) => ({ question_id, file_ids: files.map((f) => f.id) }));
 
+			if (!authStore.accessToken) {
+				throw new Error('not authenticated');
+			}
+
 			const res = await pollVote({
 				path: { poll_id: pollId },
-				headers: { Authorization: `Bearer ${accessToken}` },
+				headers: { Authorization: `Bearer ${authStore.accessToken}` },
 				body: { mc_answers, free_text_answers, file_upload_answers }
 			});
 
@@ -153,6 +170,9 @@
 					toast.error(m['pollVoterPage.submitErrorConflict']());
 					await invalidateAll();
 					throw new Error('conflict');
+				} else if (status === 422) {
+					toast.error(m['pollVoterPage.submitErrorValidation']());
+					throw new Error('validation');
 				} else if (status === 403) {
 					toast.error(m['pollVoterPage.submitErrorIneligible']());
 					throw new Error('ineligible');

@@ -9,6 +9,7 @@
 	import PollResultsView from '$lib/components/polls/PollResultsView.svelte';
 	import PollVoteForm from '$lib/components/polls/PollVoteForm.svelte';
 	import { pollWithdrawVoteAction } from '$lib/api/generated/sdk.gen';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import type { PageData } from './$types';
 
 	interface Props {
@@ -37,12 +38,12 @@
 
 	async function withdrawVote() {
 		if (!confirm(m['pollVoterPage.withdrawConfirm']())) return;
-		if (!data.accessToken) return;
+		if (!authStore.accessToken) return;
 		withdrawing = true;
 		try {
 			const res = await pollWithdrawVoteAction({
 				path: { poll_id: poll.id },
-				headers: { Authorization: `Bearer ${data.accessToken}` }
+				headers: { Authorization: `Bearer ${authStore.accessToken}` }
 			});
 			if (res.error) throw new Error('withdraw');
 			toast.success(m['pollVoterPage.withdrawSuccess']());
@@ -124,7 +125,7 @@
 	{/if}
 
 	<!-- Vote form -->
-	{#if showForm && poll.questionnaire && data.accessToken}
+	{#if showForm && poll.questionnaire}
 		<Card>
 			<CardHeader>
 				<CardTitle>{m['pollVoterPage.castVoteTitle']()}</CardTitle>
@@ -133,7 +134,6 @@
 				<PollVoteForm
 					questionnaire={poll.questionnaire}
 					pollId={poll.id}
-					accessToken={data.accessToken}
 					onSuccess={handleVoteSuccess}
 				/>
 			</CardContent>
