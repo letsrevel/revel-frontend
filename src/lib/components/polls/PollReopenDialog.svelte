@@ -15,13 +15,28 @@
 	interface Props {
 		open: boolean;
 		submitting: boolean;
+		/** Poll's current closes_at — when null, "Keep open" defaults to checked. */
+		currentClosesAt: string | null;
 		onCancel: () => void;
 		onConfirm: (closesAt: string | null, clearClosesAt: boolean) => void;
 	}
-	let { open = $bindable(), submitting, onCancel, onConfirm }: Props = $props();
+	let { open = $bindable(), submitting, currentClosesAt, onCancel, onConfirm }: Props = $props();
 
 	let closesAt = $state<string>('');
-	let clearClosesAt = $state(false);
+	// Default to "keep open" when the poll had no prior schedule — that's the
+	// only state the backend will accept without an explicit future date.
+	let clearClosesAt = $state(currentClosesAt === null);
+
+	// Reset state whenever the dialog re-opens (so closing/reopening doesn't
+	// inherit stale values from the previous attempt).
+	$effect(() => {
+		if (open) {
+			closesAt = '';
+			clearClosesAt = currentClosesAt === null;
+		}
+	});
+
+	const canSubmit = $derived(clearClosesAt || !!closesAt);
 </script>
 
 <Dialog bind:open>
@@ -53,7 +68,7 @@
 						clearClosesAt ? null : closesAt ? new Date(closesAt).toISOString() : null,
 						clearClosesAt
 					)}
-				disabled={submitting}
+				disabled={submitting || !canSubmit}
 			>
 				{m['pollReopenDialog.confirm']()}
 			</Button>

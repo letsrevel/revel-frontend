@@ -64,12 +64,20 @@
 				headers: authHeaders(),
 				body: { closes_at: closesAt, clear_closes_at: clearClosesAt }
 			});
-			if (r.error) throw new Error(`reopen poll failed: ${JSON.stringify(r.error)}`);
+			if (r.error) {
+				// Surface the backend's specific message (e.g. "Closing time must
+				// be in the future.") instead of a generic lifecycle toast — the
+				// reopen endpoint has user-actionable validation that the operator
+				// needs to see.
+				const detail =
+					(r.error as { detail?: string } | undefined)?.detail ?? JSON.stringify(r.error);
+				throw new Error(detail);
+			}
 			reopenOpen = false;
 			await invalidateAll();
 		} catch (e) {
 			console.error(e);
-			toast.error(m['pollStatusBar.lifecycleError']());
+			toast.error(e instanceof Error ? e.message : m['pollStatusBar.lifecycleError']());
 		} finally {
 			busy = false;
 		}
@@ -133,6 +141,7 @@
 <PollReopenDialog
 	bind:open={reopenOpen}
 	submitting={busy}
+	currentClosesAt={poll.closes_at}
 	onCancel={() => (reopenOpen = false)}
 	onConfirm={reopen}
 />
