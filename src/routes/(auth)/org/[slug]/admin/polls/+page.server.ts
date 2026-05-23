@@ -23,9 +23,10 @@ export const load: PageServerLoad = async ({ locals, parent, fetch }) => {
 	});
 
 	if (response.error) {
-		console.error('Failed to load polls:', response.error);
+		const status = response.response?.status ?? 500;
+		console.error(`Failed to load polls: ${status}`, response.error);
 		const message = extractErrorMessage(response.error, 'Failed to load polls');
-		throw error(500, message);
+		throw error(status === 404 ? 404 : status >= 500 ? 500 : 502, message);
 	}
 
 	return {

@@ -32,7 +32,7 @@
 		busy = true;
 		try {
 			const r = await pollOpenPollAction({ path: { poll_id: poll.id }, headers: authHeaders() });
-			if (r.error) throw new Error('open');
+			if (r.error) throw new Error(`open poll failed: ${JSON.stringify(r.error)}`);
 			await invalidateAll();
 		} catch (e) {
 			console.error(e);
@@ -46,7 +46,7 @@
 		busy = true;
 		try {
 			const r = await pollClosePollAction({ path: { poll_id: poll.id }, headers: authHeaders() });
-			if (r.error) throw new Error('close');
+			if (r.error) throw new Error(`close poll failed: ${JSON.stringify(r.error)}`);
 			await invalidateAll();
 		} catch (e) {
 			console.error(e);
@@ -64,7 +64,7 @@
 				headers: authHeaders(),
 				body: { closes_at: closesAt, clear_closes_at: clearClosesAt }
 			});
-			if (r.error) throw new Error('reopen');
+			if (r.error) throw new Error(`reopen poll failed: ${JSON.stringify(r.error)}`);
 			reopenOpen = false;
 			await invalidateAll();
 		} catch (e) {

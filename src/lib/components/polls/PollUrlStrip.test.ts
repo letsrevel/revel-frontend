@@ -1,5 +1,4 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
-import { userEvent } from '@testing-library/user-event';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import PollUrlStrip from './PollUrlStrip.svelte';
 

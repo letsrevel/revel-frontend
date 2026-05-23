@@ -2,7 +2,7 @@ import type { PollStatus, ResourceVisibility } from '$lib/api/generated/types.ge
 
 export function buildPollVoterUrl(origin: string, slug: string, pollId: string): string {
 	const cleanOrigin = origin.replace(/\/+$/, '');
-	return `${cleanOrigin}/org/${slug}/polls/${pollId}`;
+	return `${cleanOrigin}/org/${encodeURIComponent(slug)}/polls/${encodeURIComponent(pollId)}`;
 }
 
 export function isPollDraft(status: PollStatus): boolean {

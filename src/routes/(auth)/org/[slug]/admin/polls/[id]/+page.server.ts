@@ -4,6 +4,7 @@ import {
 	eventpublicdiscoveryListEvents,
 	organizationadminmembersListMembershipTiers
 } from '$lib/api/generated/sdk.gen';
+import { extractErrorMessage } from '$lib/utils/errors';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, locals, parent, fetch }) => {
@@ -29,7 +30,12 @@ export const load: PageServerLoad = async ({ params, locals, parent, fetch }) =>
 		})
 	]);
 
-	if (pollRes.error) throw error(404, 'Poll not found');
+	if (pollRes.error) {
+		const status = pollRes.response?.status ?? 500;
+		console.error(`Failed to load poll: ${status}`, pollRes.error);
+		const message = extractErrorMessage(pollRes.error, 'Failed to load poll');
+		throw error(status === 404 ? 404 : status >= 500 ? 500 : 502, message);
+	}
 
 	return {
 		poll: pollRes.data!,

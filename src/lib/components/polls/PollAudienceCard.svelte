@@ -23,8 +23,6 @@
 		resultTierIds: string[];
 		events: EventInListSchema[];
 		tiers: MembershipTierSchema[];
-		/** When true, lock event/tier-related controls that have downstream constraints. */
-		locked?: boolean;
 	}
 
 	let {
@@ -34,8 +32,7 @@
 		voteTierIds = $bindable(),
 		resultTierIds = $bindable(),
 		events,
-		tiers,
-		locked = false
+		tiers
 	}: Props = $props();
 
 	const visibilityOptions: { value: ResourceVisibility; label: string }[] = [
@@ -75,7 +72,6 @@
 				onValueChange={(v) => {
 					if (v) voteVisibility = v as ResourceVisibility;
 				}}
-				disabled={locked}
 			>
 				<SelectTrigger id="vote-visibility"
 					>{visibilityOptions.find((o) => o.value === voteVisibility)?.label}</SelectTrigger

@@ -34,9 +34,11 @@
 				closesAt = v === '' ? null : v;
 			}}
 			class={error ? 'border-destructive' : ''}
+			aria-invalid={error ? true : undefined}
+			aria-describedby={error ? 'closes-at-error' : undefined}
 		/>
 		{#if error}
-			<p class="text-sm text-destructive">{error}</p>
+			<p id="closes-at-error" class="text-sm text-destructive">{error}</p>
 		{/if}
 	</CardContent>
 </Card>

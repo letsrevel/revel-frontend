@@ -18,9 +18,9 @@
 </script>
 
 {#if status === 'draft'}
-	<Badge class="bg-amber-500 text-xs text-white hover:bg-amber-600">{label}</Badge>
+	<Badge class="bg-amber-600 text-xs text-white hover:bg-amber-700">{label}</Badge>
 {:else if status === 'open'}
-	<Badge class="bg-emerald-600 text-xs text-white hover:bg-emerald-700">{label}</Badge>
+	<Badge class="bg-emerald-700 text-xs text-white hover:bg-emerald-800">{label}</Badge>
 {:else}
 	<Badge variant="secondary" class="text-xs">{label}</Badge>
 {/if}
