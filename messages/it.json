@@ -6225,6 +6225,7 @@
 		"submitErrorIneligible": "Non sei autorizzato a votare in questo sondaggio.",
 		"submitErrorConflict": "Hai già votato in questo sondaggio.",
 		"withdrawConfirm": "Ritirare il tuo voto?",
+		"withdrawConfirmTitle": "Ritira il tuo voto",
 		"withdrawSuccess": "Il tuo voto è stato ritirato.",
 		"resultsTitle": "Risultati",
 		"resultsEmpty": "Ancora nessun voto.",

@@ -16,6 +16,7 @@
 	import { page } from '$app/stores';
 	import { goto, invalidateAll } from '$app/navigation';
 	import PollStatusBar from '$lib/components/polls/PollStatusBar.svelte';
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import PollAudienceCard from '$lib/components/polls/PollAudienceCard.svelte';
 	import PollAnonymityCard from '$lib/components/polls/PollAnonymityCard.svelte';
 	import PollScheduleCard from '$lib/components/polls/PollScheduleCard.svelte';
@@ -220,11 +221,9 @@
 		}
 	}
 
+	let deleteConfirmOpen = $state(false);
+
 	async function deletePoll() {
-		const confirmed = confirm(
-			m['pollEditPage.deleteConfirm']({ name: poll.questionnaire?.name ?? '' })
-		);
-		if (!confirmed) return;
 		deleting = true;
 		try {
 			const res = await pollDeletePollAction({
@@ -232,6 +231,7 @@
 				headers: { Authorization: `Bearer ${data.accessToken}` }
 			});
 			if (res.error) throw new Error('delete');
+			deleteConfirmOpen = false;
 			await goto(`/org/${data.organization.slug}/admin/polls`);
 		} catch (e) {
 			console.error(e);
@@ -482,7 +482,7 @@
 			<CardContent>
 				<Button
 					variant="outline"
-					onclick={deletePoll}
+					onclick={() => (deleteConfirmOpen = true)}
 					disabled={deleting}
 					class="gap-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
 				>
@@ -493,3 +493,13 @@
 		</Card>
 	{/if}
 </div>
+
+<ConfirmDialog
+	isOpen={deleteConfirmOpen}
+	variant="danger"
+	title={m['pollEditPage.deleteSectionTitle']()}
+	message={m['pollEditPage.deleteConfirm']({ name: poll.questionnaire?.name ?? '' })}
+	confirmText={m['pollEditPage.deleteButton']()}
+	onCancel={() => (deleteConfirmOpen = false)}
+	onConfirm={deletePoll}
+/>

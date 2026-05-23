@@ -9,6 +9,7 @@
 	import PollResultsView from '$lib/components/polls/PollResultsView.svelte';
 	import PollStatusBadge from '$lib/components/polls/PollStatusBadge.svelte';
 	import PollVoteForm from '$lib/components/polls/PollVoteForm.svelte';
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import { pollWithdrawVoteAction } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import type { PageData } from './$types';
@@ -20,6 +21,7 @@
 	const poll = $derived(data.poll);
 
 	let withdrawing = $state(false);
+	let withdrawConfirmOpen = $state(false);
 	// When true, hide the "voted" banner and show the form so the user can change their vote.
 	let editing = $state(false);
 
@@ -43,7 +45,6 @@
 
 	async function withdrawVote() {
 		if (!poll) return;
-		if (!confirm(m['pollVoterPage.withdrawConfirm']())) return;
 		if (!authStore.accessToken) return;
 		withdrawing = true;
 		try {
@@ -53,6 +54,7 @@
 			});
 			if (res.error) throw new Error('withdraw');
 			toast.success(m['pollVoterPage.withdrawSuccess']());
+			withdrawConfirmOpen = false;
 			await invalidateAll();
 		} catch (e) {
 			console.error(e);
@@ -157,7 +159,12 @@
 							<Button variant="outline" size="sm" onclick={() => (editing = true)}>
 								{m['pollVoterPage.changeVote']()}
 							</Button>
-							<Button variant="outline" size="sm" onclick={withdrawVote} disabled={withdrawing}>
+							<Button
+								variant="outline"
+								size="sm"
+								onclick={() => (withdrawConfirmOpen = true)}
+								disabled={withdrawing}
+							>
 								{m['pollVoterPage.withdrawVote']()}
 							</Button>
 						</div>
@@ -199,3 +206,13 @@
 		{/if}
 	{/if}
 </main>
+
+<ConfirmDialog
+	isOpen={withdrawConfirmOpen}
+	variant="danger"
+	title={m['pollVoterPage.withdrawConfirmTitle']()}
+	message={m['pollVoterPage.withdrawConfirm']()}
+	confirmText={m['pollVoterPage.withdrawVote']()}
+	onCancel={() => (withdrawConfirmOpen = false)}
+	onConfirm={withdrawVote}
+/>

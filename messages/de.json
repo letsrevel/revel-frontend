@@ -6225,6 +6225,7 @@
 		"submitErrorIneligible": "Du darfst an dieser Umfrage nicht teilnehmen.",
 		"submitErrorConflict": "Du hast bereits an dieser Umfrage abgestimmt.",
 		"withdrawConfirm": "Deine Stimme zurückziehen?",
+		"withdrawConfirmTitle": "Stimme zurückziehen",
 		"withdrawSuccess": "Deine Stimme wurde zurückgezogen.",
 		"resultsTitle": "Ergebnisse",
 		"resultsEmpty": "Noch keine Stimmen.",

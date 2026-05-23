@@ -6225,6 +6225,7 @@
 		"submitErrorIneligible": "You're not allowed to vote on this poll.",
 		"submitErrorConflict": "You already voted on this poll.",
 		"withdrawConfirm": "Withdraw your vote?",
+		"withdrawConfirmTitle": "Withdraw your vote",
 		"withdrawSuccess": "Your vote has been withdrawn.",
 		"resultsTitle": "Results",
 		"resultsEmpty": "No votes yet.",
