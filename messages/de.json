@@ -6239,7 +6239,8 @@
 	"pollResults": {
 		"totalVoters_one": "{count} Stimme",
 		"totalVoters_other": "{count} Stimmen",
-		"freeTextHeading": "Freitext-Antworten"
+		"freeTextHeading": "Freitext-Antworten",
+		"userIdLabel": "Benutzer"
 	},
 	"pollPrivacy": {
 		"canVote": "Wer abstimmen kann: {audience}",

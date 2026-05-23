@@ -32,10 +32,22 @@
 				{#each results.free_text_responses ?? [] as r, i (i)}
 					<li class="rounded-md border bg-muted/30 p-3 text-sm">
 						<p class="whitespace-pre-wrap">{r.answer}</p>
-						<p class="mt-1 text-xs text-muted-foreground">
-							{new Date(r.answered_at).toLocaleString()}
+						<p class="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+							<span>{new Date(r.answered_at).toLocaleString()}</span>
 							{#if r.user_id && !staffAnonymous}
-								· {r.user_id}{/if}
+								<!--
+									Backend currently ships only user_id (UUID) for staff_anon=false
+									polls. Truncate visually + keep the full id in `title` for
+									copy-paste. Resolving id → display name needs a backend change
+									(PollFreeTextResponseSchema would need a user_display field).
+								-->
+								<span
+									class="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px]"
+									title={r.user_id}
+								>
+									{m['pollResults.userIdLabel']()}: {r.user_id.slice(0, 8)}…
+								</span>
+							{/if}
 						</p>
 					</li>
 				{/each}
