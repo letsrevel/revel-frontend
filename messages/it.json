@@ -6237,5 +6237,22 @@
 		"totalVoters_one": "{count} voto",
 		"totalVoters_other": "{count} voti",
 		"freeTextHeading": "Risposte a testo libero"
+	},
+	"pollPrivacy": {
+		"canVote": "Chi può votare: {audience}",
+		"canSeeResults": "Risultati visibili a: {audience} ({when})",
+		"anonymousToVoters": "La tua identità è nascosta agli altri votanti",
+		"identityVisibleToVoters": "La tua identità è visibile a chiunque possa vedere i risultati",
+		"identityVisibleToStaff": "Lo staff può vedere chi ha votato cosa",
+		"allowsChanges": "Puoi modificare o ritirare il tuo voto",
+		"audience_public": "tutti",
+		"audience_unlisted": "chi ha il link",
+		"audience_invited": "solo persone invitate",
+		"audience_members": "solo membri",
+		"audience_staff": "solo staff",
+		"audience_attendees": "solo partecipanti",
+		"timing_never": "i risultati non sono condivisi con i votanti",
+		"timing_afterVote": "dopo che hai votato",
+		"timing_afterClose": "dopo la chiusura del sondaggio"
 	}
 }

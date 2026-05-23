@@ -6237,5 +6237,22 @@
 		"totalVoters_one": "{count} Stimme",
 		"totalVoters_other": "{count} Stimmen",
 		"freeTextHeading": "Freitext-Antworten"
+	},
+	"pollPrivacy": {
+		"canVote": "Wer abstimmen kann: {audience}",
+		"canSeeResults": "Ergebnisse sichtbar für: {audience} ({when})",
+		"anonymousToVoters": "Deine Identität ist für andere Wähler:innen verborgen",
+		"identityVisibleToVoters": "Deine Identität ist für alle sichtbar, die die Ergebnisse sehen können",
+		"identityVisibleToStaff": "Das Team kann sehen, wer was abgestimmt hat",
+		"allowsChanges": "Du kannst deine Stimme ändern oder zurückziehen",
+		"audience_public": "alle",
+		"audience_unlisted": "alle mit dem Link",
+		"audience_invited": "nur eingeladene Personen",
+		"audience_members": "nur Mitglieder",
+		"audience_staff": "nur Team",
+		"audience_attendees": "nur Teilnehmende",
+		"timing_never": "Ergebnisse werden nicht mit Wähler:innen geteilt",
+		"timing_afterVote": "nachdem du abgestimmt hast",
+		"timing_afterClose": "nachdem die Umfrage geschlossen ist"
 	}
 }

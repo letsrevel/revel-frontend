@@ -6237,5 +6237,22 @@
 		"totalVoters_one": "{count} voter",
 		"totalVoters_other": "{count} voters",
 		"freeTextHeading": "Free-text answers"
+	},
+	"pollPrivacy": {
+		"canVote": "Who can vote: {audience}",
+		"canSeeResults": "Results visible to: {audience} ({when})",
+		"anonymousToVoters": "Your identity is hidden from other voters",
+		"identityVisibleToVoters": "Your identity is visible to anyone who can see results",
+		"identityVisibleToStaff": "Staff can see who voted what",
+		"allowsChanges": "You can change or withdraw your vote",
+		"audience_public": "anyone",
+		"audience_unlisted": "anyone with the link",
+		"audience_invited": "invited people only",
+		"audience_members": "members only",
+		"audience_staff": "staff only",
+		"audience_attendees": "attendees only",
+		"timing_never": "results are not shared with voters",
+		"timing_afterVote": "after you vote",
+		"timing_afterClose": "after the poll closes"
 	}
 }

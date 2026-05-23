@@ -5,8 +5,9 @@
 	import { page } from '$app/stores';
 	import { invalidateAll } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
-	import PollStatusBadge from '$lib/components/polls/PollStatusBadge.svelte';
+	import PollPrivacySummary from '$lib/components/polls/PollPrivacySummary.svelte';
 	import PollResultsView from '$lib/components/polls/PollResultsView.svelte';
+	import PollStatusBadge from '$lib/components/polls/PollStatusBadge.svelte';
 	import PollVoteForm from '$lib/components/polls/PollVoteForm.svelte';
 	import { pollWithdrawVoteAction } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -79,6 +80,15 @@
 			{/if}
 		</CardContent>
 	</Card>
+
+	<PollPrivacySummary
+		voteVisibility={poll.vote_visibility}
+		resultVisibility={poll.result_visibility}
+		resultTiming={poll.result_timing}
+		staffAnonymous={poll.staff_anonymous}
+		publicAnonymous={poll.public_anonymous}
+		allowVoteChanges={poll.allow_vote_changes}
+	/>
 
 	<!-- State banners -->
 	{#if requiresAuth}
