@@ -34,18 +34,26 @@
 						<p class="whitespace-pre-wrap">{r.answer}</p>
 						<p class="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
 							<span>{new Date(r.answered_at).toLocaleString()}</span>
-							{#if r.user_id && !staffAnonymous}
+							{#if !staffAnonymous && (r.user_display_name || r.user_email || r.user_id)}
 								<!--
-									Backend currently ships only user_id (UUID) for staff_anon=false
-									polls. Truncate visually + keep the full id in `title` for
-									copy-paste. Resolving id → display name needs a backend change
-									(PollFreeTextResponseSchema would need a user_display field).
+									Voter attribution. Backend ships user_display_name /
+									user_email / user_id when staff_anonymous=false (all three
+									null when staff_anonymous=true). Prefer display_name →
+									email → truncated UUID. Email shown via `title` when we
+									have a display name, so staff can disambiguate on hover.
 								-->
 								<span
-									class="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px]"
-									title={r.user_id}
+									class="rounded bg-muted px-1.5 py-0.5 text-[11px]"
+									title={r.user_email ?? r.user_id ?? undefined}
 								>
-									{m['pollResults.userIdLabel']()}: {r.user_id.slice(0, 8)}…
+									{m['pollResults.userIdLabel']()}:
+									{#if r.user_display_name}
+										{r.user_display_name}
+									{:else if r.user_email}
+										{r.user_email}
+									{:else if r.user_id}
+										<span class="font-mono">{r.user_id.slice(0, 8)}…</span>
+									{/if}
 								</span>
 							{/if}
 						</p>
