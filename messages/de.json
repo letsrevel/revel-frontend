@@ -6144,6 +6144,7 @@
 		"eventLabel": "Verknüpftes Event (optional)",
 		"eventPlaceholder": "Keines",
 		"eventRequiredHint": "Ein Event ist erforderlich, wenn die Sichtbarkeit auf \"Privat\" oder \"Nur Teilnehmende\" gesetzt ist.",
+		"tiersSectionTitle": "Stufenbeschränkung (optional)",
 		"voteTiersLabel": "Mitgliedschaftsstufen mit Abstimmungsrecht",
 		"resultTiersLabel": "Mitgliedschaftsstufen mit Zugang zu den Ergebnissen",
 		"tiersHint": "Leer lassen, um allen Mitgliedern Zugang zu gewähren.",

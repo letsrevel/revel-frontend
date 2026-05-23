@@ -9,6 +9,8 @@
 	} from '$lib/components/ui/card';
 	import { Label } from '$lib/components/ui/label';
 	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
+	import Users from '@lucide/svelte/icons/users';
+	import BarChart3 from '@lucide/svelte/icons/bar-chart-3';
 	import type {
 		ResourceVisibility,
 		EventInListSchema,
@@ -130,44 +132,65 @@
 			{/if}
 		</div>
 
-		{#if showVoteTiers}
-			<fieldset class="space-y-2 rounded-md border p-3">
-				<legend class="px-1 text-sm font-medium">{m['pollNewPage.voteTiersLabel']()}</legend>
-				{#each tiers as tier (tier.id)}
-					{#if tier.id}
-						<label class="flex items-center gap-2 text-sm">
-							<input
-								type="checkbox"
-								checked={voteTierIds.includes(tier.id)}
-								onchange={() => (voteTierIds = toggleTier(voteTierIds, tier.id!))}
-								class="h-4 w-4"
-							/>
-							{tier.name}
-						</label>
-					{/if}
-				{/each}
-				<p class="text-xs text-muted-foreground">{m['pollNewPage.tiersHint']()}</p>
-			</fieldset>
-		{/if}
+		{#if showVoteTiers || showResultTiers}
+			<!--
+				Tier scoping section. When both vote_visibility and
+				result_visibility are members-only, both pickers render — group
+				them under a shared subheading and use the same icons that
+				PollPrivacySummary uses for vote (Users) vs results (BarChart3)
+				so the visual language stays consistent across surfaces.
+			-->
+			<div class="space-y-3 rounded-md border border-dashed p-3">
+				<p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+					{m['pollNewPage.tiersSectionTitle']()}
+				</p>
 
-		{#if showResultTiers}
-			<fieldset class="space-y-2 rounded-md border p-3">
-				<legend class="px-1 text-sm font-medium">{m['pollNewPage.resultTiersLabel']()}</legend>
-				{#each tiers as tier (tier.id)}
-					{#if tier.id}
-						<label class="flex items-center gap-2 text-sm">
-							<input
-								type="checkbox"
-								checked={resultTierIds.includes(tier.id)}
-								onchange={() => (resultTierIds = toggleTier(resultTierIds, tier.id!))}
-								class="h-4 w-4"
-							/>
-							{tier.name}
-						</label>
-					{/if}
-				{/each}
+				{#if showVoteTiers}
+					<fieldset class="space-y-2">
+						<legend class="flex items-center gap-2 px-1 text-sm font-medium">
+							<Users class="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+							{m['pollNewPage.voteTiersLabel']()}
+						</legend>
+						{#each tiers as tier (tier.id)}
+							{#if tier.id}
+								<label class="flex items-center gap-2 pl-6 text-sm">
+									<input
+										type="checkbox"
+										checked={voteTierIds.includes(tier.id)}
+										onchange={() => (voteTierIds = toggleTier(voteTierIds, tier.id!))}
+										class="h-4 w-4"
+									/>
+									{tier.name}
+								</label>
+							{/if}
+						{/each}
+					</fieldset>
+				{/if}
+
+				{#if showResultTiers}
+					<fieldset class="space-y-2">
+						<legend class="flex items-center gap-2 px-1 text-sm font-medium">
+							<BarChart3 class="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+							{m['pollNewPage.resultTiersLabel']()}
+						</legend>
+						{#each tiers as tier (tier.id)}
+							{#if tier.id}
+								<label class="flex items-center gap-2 pl-6 text-sm">
+									<input
+										type="checkbox"
+										checked={resultTierIds.includes(tier.id)}
+										onchange={() => (resultTierIds = toggleTier(resultTierIds, tier.id!))}
+										class="h-4 w-4"
+									/>
+									{tier.name}
+								</label>
+							{/if}
+						{/each}
+					</fieldset>
+				{/if}
+
 				<p class="text-xs text-muted-foreground">{m['pollNewPage.tiersHint']()}</p>
-			</fieldset>
+			</div>
 		{/if}
 	</CardContent>
 </Card>

@@ -6144,6 +6144,7 @@
 		"eventLabel": "Linked event (optional)",
 		"eventPlaceholder": "None",
 		"eventRequiredHint": "An event is required when visibility is set to Private or Attendees only.",
+		"tiersSectionTitle": "Tier scoping (optional)",
 		"voteTiersLabel": "Membership tiers allowed to vote",
 		"resultTiersLabel": "Membership tiers allowed to see results",
 		"tiersHint": "Leave empty to allow all members.",

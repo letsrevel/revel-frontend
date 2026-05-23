@@ -6144,6 +6144,7 @@
 		"eventLabel": "Evento collegato (opzionale)",
 		"eventPlaceholder": "Nessuno",
 		"eventRequiredHint": "Un evento è obbligatorio quando la visibilità è impostata su Privato o Solo partecipanti.",
+		"tiersSectionTitle": "Limita per livello (opzionale)",
 		"voteTiersLabel": "Livelli di iscrizione autorizzati a votare",
 		"resultTiersLabel": "Livelli di iscrizione autorizzati a vedere i risultati",
 		"tiersHint": "Lascia vuoto per consentire a tutti i membri.",
