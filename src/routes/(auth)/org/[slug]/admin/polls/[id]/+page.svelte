@@ -402,9 +402,9 @@
 				{/if}
 			{:else if poll.questionnaire}
 				{@const q = poll.questionnaire}
-				{@const allMc = q.multiplechoicequestion_questions ?? []}
-				{@const allFt = q.freetextquestion_questions ?? []}
-				{@const allFu = q.fileuploadquestion_questions ?? []}
+				{@const allMc = q.multiple_choice_questions ?? []}
+				{@const allFt = q.free_text_questions ?? []}
+				{@const allFu = q.file_upload_questions ?? []}
 				{#if allMc.length + allFt.length + allFu.length > 0}
 					<div class="space-y-3">
 						{#each allMc as question (question.id)}

@@ -15,7 +15,7 @@
 	import { slide } from 'svelte/transition';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import FileUploadQuestion from '$lib/components/questionnaires/FileUploadQuestion.svelte';
-	import type { QuestionnaireFileSchema, QuestionnaireResponseSchema } from '$lib/api/generated';
+	import type { QuestionnaireFileSchema, QuestionnaireSchema } from '$lib/api/generated';
 	import {
 		flattenQuestionnaire,
 		getVisibleQuestionIds,
@@ -28,7 +28,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 
 	interface Props {
-		questionnaire: QuestionnaireResponseSchema;
+		questionnaire: QuestionnaireSchema;
 		pollId: string;
 		onSuccess?: () => void;
 	}
