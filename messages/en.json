@@ -6231,7 +6231,9 @@
 		"withdrawError": "Failed to withdraw your vote. Please try again.",
 		"signIn": "Sign in",
 		"castVoteTitle": "Cast your vote",
-		"submitErrorValidation": "Some answers are invalid. Please review and try again."
+		"submitErrorValidation": "Some answers are invalid. Please review and try again.",
+		"forbiddenTitle": "You don't have access to this poll",
+		"forbiddenBody": "This poll is restricted and you're not in its audience. If you think this is a mistake, contact the organisers — or sign in with a different account."
 	},
 	"pollResults": {
 		"totalVoters_one": "{count} voter",

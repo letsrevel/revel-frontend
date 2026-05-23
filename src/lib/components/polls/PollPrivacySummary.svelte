@@ -54,9 +54,7 @@
 	}
 
 	// Skip the results row when staff-only/never — results aren't shared with voters at all.
-	const showResultsRow = $derived(
-		!(resultVisibility === 'staff-only' && resultTiming === 'never')
-	);
+	const showResultsRow = $derived(!(resultVisibility === 'staff-only' && resultTiming === 'never'));
 
 	// Skip voter-anonymity row when only staff can see results — other voters see nothing.
 	const showVoterAnonymityRow = $derived(resultVisibility !== 'staff-only');

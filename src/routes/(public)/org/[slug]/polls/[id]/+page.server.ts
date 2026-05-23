@@ -17,6 +17,17 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 
 	if (res.error) {
 		const status = res.response?.status ?? 500;
+		// Backend distinguishes 403 (poll exists, caller not in any audience)
+		// from 404 (poll genuinely does not exist). Render an inline "no
+		// access" page for 403 so the user knows the poll is real but not
+		// for them, instead of bouncing them to the global 404 page.
+		if (status === 403) {
+			return {
+				poll: null,
+				forbidden: true as const,
+				isAuthenticated: !!accessToken
+			};
+		}
 		console.error(`Failed to load poll: ${status}`, res.error);
 		const message = extractErrorMessage(res.error, 'Failed to load poll');
 		throw error(status === 404 ? 404 : status >= 500 ? 500 : 502, message);
@@ -24,6 +35,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 
 	return {
 		poll: res.data!,
+		forbidden: false as const,
 		isAuthenticated: !!accessToken
 	};
 };

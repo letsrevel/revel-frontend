@@ -6231,7 +6231,9 @@
 		"withdrawError": "Impossibile ritirare il tuo voto. Riprova.",
 		"signIn": "Accedi",
 		"castVoteTitle": "Vota",
-		"submitErrorValidation": "Alcune risposte non sono valide. Controllale e riprova."
+		"submitErrorValidation": "Alcune risposte non sono valide. Controllale e riprova.",
+		"forbiddenTitle": "Non hai accesso a questo sondaggio",
+		"forbiddenBody": "Questo sondaggio è riservato e tu non sei nel pubblico previsto. Se pensi sia un errore, contatta gli organizzatori — oppure accedi con un altro account."
 	},
 	"pollResults": {
 		"totalVoters_one": "{count} voto",

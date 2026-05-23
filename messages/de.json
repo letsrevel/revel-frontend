@@ -6231,7 +6231,9 @@
 		"withdrawError": "Stimme konnte nicht zurückgezogen werden. Bitte versuche es erneut.",
 		"signIn": "Anmelden",
 		"castVoteTitle": "Stimme abgeben",
-		"submitErrorValidation": "Einige Antworten sind ungültig. Bitte überprüfe sie und versuche es erneut."
+		"submitErrorValidation": "Einige Antworten sind ungültig. Bitte überprüfe sie und versuche es erneut.",
+		"forbiddenTitle": "Du hast keinen Zugriff auf diese Umfrage",
+		"forbiddenBody": "Diese Umfrage ist eingeschränkt und du gehörst nicht zum Zielpublikum. Wenn das ein Fehler ist, wende dich an die Organisator:innen – oder melde dich mit einem anderen Konto an."
 	},
 	"pollResults": {
 		"totalVoters_one": "{count} Stimme",
