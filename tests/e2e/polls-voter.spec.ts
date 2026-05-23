@@ -23,13 +23,12 @@ import { test, expect, type Page } from '@playwright/test';
 //
 // What this covers
 // ----------------
-// - Admin (Alice) creates a public poll with one MC question + two options.
+// - Admin (Alice) creates a poll with one MC question + two options.
 // - Admin opens the poll.
-// - Voter (Charlie) lands on the public voter URL.
+// - Voter (Charlie) lands on the voter URL.
 // - The question text and both options render.
 // - Voter picks one option and submits.
 // - The "You voted on this poll." banner appears.
-// - The results panel shows total voters = 1 and a 100/0 split.
 //
 // Skips itself when the demo backend isn't reachable (no demo-account select).
 
@@ -58,46 +57,47 @@ async function logout(page: Page): Promise<void> {
 }
 
 test.describe('polls voter', () => {
-	// TODO(polls-ui): admin-side create-poll steps hit hydration race conditions
-	// against the dev-mode webServer in CI (textbox / dropdown queries time out
-	// before the form is interactive). The manual reproduction of the fix is
-	// solid; tracking E2E-flakiness fix separately. Marking skip until the
-	// admin-form click sequence is stabilized (probably needs explicit
-	// `waitFor` on each input + portal handling for shadcn-svelte Select).
-	test.skip('vote → results show 1 voter / 100 % winner', async ({ page }) => {
-		// --- Admin: create + open a public poll ------------------------------
+	test('vote → "You voted" banner', async ({ page }) => {
+		// --- Admin: create + open a poll ------------------------------------
+		// We use the form's defaults (vote_viz=members-only / result_viz=
+		// staff-only / timing=never). Charlie is a member of Alpha so the
+		// members-only default lets him vote, and bypassing the
+		// shadcn-svelte Select portals (which are timing-flaky against the
+		// dev-mode webServer) keeps the test stable.
 		await loginAsDemoUser(page, ALICE_EMAIL);
 
 		await page.goto(`/org/${ORG_SLUG}/admin/polls/new`);
 
+		// Wait for hydration to finish before any interaction. The MC question-
+		// type picker is rendered server-side, but its click handler is wired
+		// up during hydration — clicking too early no-ops silently.
+		await page.waitForLoadState('networkidle');
+
 		const pollName = `Voter smoke ${Date.now()}`;
 		await page.getByLabel(/poll name/i).fill(pollName);
 
-		// Form defaults are vote_viz=members-only / result_viz=staff-only /
-		// timing=never — which is enough to exercise the bug this test
-		// guards against (empty vote form rendering). Charlie is a member of
-		// Alpha so the members-only default lets him vote. We skip touching
-		// the shadcn-svelte Select dropdowns because their portal-rendered
-		// listbox is timing-sensitive in Playwright; the bug being asserted
-		// (questions don't render) is independent of timing/visibility.
-
-		// Single MC question with two options.
+		// Add a multiple-choice question. Click + assert the question count
+		// flips from "(0)" to "(1)" before continuing — this catches the
+		// hydration race instead of timing out on the next selector.
 		await page
-			.getByRole('button', { name: /^multiple choice$/i })
+			.getByRole('button', { name: /multiple choice/i })
 			.first()
 			.click();
-		await page
-			.getByRole('textbox', { name: /question/i })
-			.first()
-			.fill('Are you in?');
-		const options = page.getByRole('textbox', { name: /option/i });
-		await options.nth(0).fill('Yes');
-		await options.nth(1).fill('No');
+		await expect(page.getByRole('heading', { name: /questions \(1\)/i })).toBeVisible({
+			timeout: 10_000
+		});
+
+		const questionInput = page.getByRole('textbox', { name: /question text/i }).first();
+		await questionInput.fill('Are you in?');
+
+		// Anchor the regex so we hit the "Option 1" / "Option 2" inputs and not
+		// the "Description (optional)" textbox, which also matches /option/i.
+		await page.getByRole('textbox', { name: /^Option 1$/i }).fill('Yes');
+		await page.getByRole('textbox', { name: /^Option 2$/i }).fill('No');
 
 		await page.getByRole('button', { name: /^create poll$/i }).click();
 		await page.waitForURL(/\/admin\/polls\/([0-9a-f-]+)/, { timeout: 30_000 });
 
-		// Capture the UUID so the voter side can navigate straight to it.
 		const adminUrl = page.url();
 		const pollId = adminUrl.match(/\/admin\/polls\/([0-9a-f-]+)/)?.[1];
 		if (!pollId) throw new Error(`Could not extract poll id from ${adminUrl}`);
@@ -113,23 +113,32 @@ test.describe('polls voter', () => {
 		await loginAsDemoUser(page, CHARLIE_EMAIL);
 
 		await page.goto(`/org/${ORG_SLUG}/polls/${pollId}`);
+		// Same hydration guard as on the admin form — wait for the network
+		// to settle so the RadioGroupItem click handlers are bound before we
+		// click them.
+		await page.waitForLoadState('networkidle');
 
-		// The question text and both options must render. This is the assertion
-		// that would have caught the QuestionnaireResponseSchema regression —
-		// the empty-form bug rendered only "Cast your vote" + Submit.
+		// The question text must render. This is the regression guard for
+		// the QuestionnaireResponseSchema bug — the empty-form rendered only
+		// "Cast your vote" + Submit.
 		await expect(page.getByText('Are you in?', { exact: true })).toBeVisible({
 			timeout: 10_000
 		});
-		await expect(page.getByLabel('Yes', { exact: true })).toBeVisible();
-		await expect(page.getByLabel('No', { exact: true })).toBeVisible();
 
-		// Pick "Yes" and submit.
-		await page.getByLabel('Yes', { exact: true }).click();
+		// Wait for the radio buttons themselves (not just the labels) — the
+		// labels render before the radios bind their data-state, and clicking
+		// a not-yet-bound radio no-ops silently.
+		const radios = page.getByRole('radio');
+		await expect(radios).toHaveCount(2, { timeout: 10_000 });
+
+		// Pick the first option. Clicking the radio directly (rather than its
+		// label) avoids ambiguity when "Yes" / "No" text might appear
+		// elsewhere on the page.
+		await radios.first().click();
 		await page.getByRole('button', { name: /^submit vote$/i }).click();
 
 		// Post-vote: voted banner appears. We don't assert the results panel
-		// because the form's default timing=never hides results from voters
-		// (intentional; see the "form defaults" note above).
+		// because the form's default timing=never hides results from voters.
 		await expect(page.getByText(/you voted on this poll/i)).toBeVisible({ timeout: 10_000 });
 	});
 });
