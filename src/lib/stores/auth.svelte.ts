@@ -21,6 +21,12 @@ class AuthStore {
 	private _tokenExpiryTimer: ReturnType<typeof setTimeout> | null = null;
 	// Shared promise to prevent concurrent refresh attempts
 	private _refreshPromise: Promise<void> | null = null;
+	// True only while `logout()` is running. Used by `_performRefresh` to
+	// discard an in-flight refresh result if the user explicitly logged out
+	// mid-refresh. Previously we used `!_accessToken` for this check, but that
+	// gave a false positive during cold-hydration bootstrap (where the store
+	// is intentionally empty until the bootstrap refresh completes).
+	private _isLoggingOut = false;
 
 	// Public computed state using $derived
 	get user() {
@@ -190,6 +196,10 @@ class AuthStore {
 	 * Logout and clear all auth state
 	 */
 	async logout(): Promise<void> {
+		// Mark logout in progress so any concurrent refresh discards its
+		// result instead of resurrecting the session.
+		this._isLoggingOut = true;
+
 		// Clear the token refresh timer
 		this.clearTokenRefreshTimer();
 
@@ -203,6 +213,7 @@ class AuthStore {
 
 		// Note: Refresh token cookie will be cleared by server-side hook
 		// or by calling a logout endpoint if needed
+		this._isLoggingOut = false;
 	}
 
 	/**
@@ -277,10 +288,13 @@ class AuthStore {
 
 			console.log('[AUTH STORE] Token refresh successful, received new access token');
 
-			// Check if user has logged out while refresh was in progress
-			// If so, discard the refresh result
-			if (!this._accessToken) {
-				console.log('[AUTH STORE] User logged out during refresh, discarding new token');
+			// Check if user explicitly logged out while refresh was in progress.
+			// If so, discard the refresh result so logout wins the race.
+			// Note: `!_accessToken` is NOT the right check here — during cold
+			// hydration the store is empty by design and refresh is how we
+			// learn the token.
+			if (this._isLoggingOut) {
+				console.log('[AUTH STORE] Logout in progress, discarding new token');
 				return;
 			}
 

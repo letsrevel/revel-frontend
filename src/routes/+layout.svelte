@@ -62,52 +62,63 @@
 	});
 
 	/**
-	 * Sync auth state with server on navigation
+	 * Sync auth state with the server.
 	 *
-	 * IMPORTANT: This $effect watches data.auth.accessToken and syncs with authStore.
-	 * This ensures the UI updates immediately on both login and logout:
+	 * SECURITY: The server does NOT ship the access token in the SSR payload
+	 * (would land in the page HTML and leak via view-source / proxies). Instead
+	 * we observe the boolean flags `hasAccessToken` / `hasRefreshToken` and
+	 * derive client state from them:
 	 *
-	 * - On logout: Server clears cookies, accessToken becomes null, we clear authStore
-	 * - On login: Server sets cookies, accessToken appears, we initialize authStore
+	 * - has access token, client store empty → call `/api/auth/refresh` to
+	 *   mint a fresh access token into the in-memory store. Covers cold
+	 *   hydration after login, after impersonation, and after any session
+	 *   change on the server (since the new token's value isn't in the HTML,
+	 *   the only way to learn it is to ask).
+	 * - no access token, client store populated → logout cookies were cleared,
+	 *   drop client state.
 	 *
-	 * After initial setup, token refresh is handled by:
-	 * 1. Client-side API interceptor (catches 401 errors and refreshes)
-	 * 2. Client-side auto-refresh timer (proactive refresh before expiry)
+	 * The trade-off is one extra POST /api/auth/refresh on first paint per
+	 * cold authenticated load. Token refresh after that is handled by the
+	 * client-side auto-refresh timer and the 401 interceptor.
 	 */
-	let previousServerToken = $state<string | null>(null);
+	let previousServerHasToken = $state<boolean | null>(null);
 	let initializationPromise = $state<Promise<void> | null>(null);
 
 	$effect(() => {
-		const serverAccessToken = data.auth.accessToken;
+		const hasServerAccessToken = data.auth.hasAccessToken;
 		const hasRefreshToken = data.auth.hasRefreshToken;
 		const currentAccessToken = authStore.accessToken;
 
-		// Only trigger effect if the server token has actually changed
-		if (serverAccessToken === previousServerToken) {
+		// Skip if server-side auth presence hasn't changed.
+		if (hasServerAccessToken === previousServerHasToken) {
 			return;
 		}
 
 		console.log('[ROOT LAYOUT] Auth sync effect triggered', {
-			hasServerToken: !!serverAccessToken,
+			hasServerAccessToken,
 			hasRefreshToken,
 			hasCurrentToken: !!currentAccessToken,
-			previousServerToken: !!previousServerToken
+			previousServerHasToken
 		});
 
-		previousServerToken = serverAccessToken;
+		previousServerHasToken = hasServerAccessToken;
 
-		// Case 1: Server has token, but we don't (login or page refresh)
-		if (serverAccessToken && !currentAccessToken) {
-			console.log('[ROOT LAYOUT] Server provided access token, initializing auth');
-			authStore.setAccessToken(serverAccessToken);
+		// Case 1: Server says we're authenticated but the in-memory store is
+		// empty (cold hydration, login, or impersonation). Mint a fresh access
+		// token via the refresh endpoint so we have it in memory.
+		if (hasServerAccessToken && !currentAccessToken) {
+			console.log('[ROOT LAYOUT] Server has access cookie but client store empty, refreshing');
 
-			// Prevent multiple simultaneous initializations
 			if (!initializationPromise) {
-				// Fetch user data and permissions
 				initializationPromise = authStore
-					.initialize()
+					.refreshAccessToken()
+					.then(async () => {
+						// `refreshAccessToken` sets the token in the store; now fetch
+						// user data + permissions (idempotent if already present).
+						await authStore.initialize();
+					})
 					.catch((err) => {
-						console.error('[ROOT LAYOUT] Auth initialization failed:', err);
+						console.error('[ROOT LAYOUT] Auth bootstrap failed:', err);
 
 						// Check if ad blocker is blocking the request
 						if (err instanceof TypeError && err.message === 'Failed to fetch') {
@@ -126,65 +137,46 @@
 					});
 			}
 		}
-		// Case 2: Server has no token, but we do (logout)
-		else if (!serverAccessToken && currentAccessToken) {
-			console.log('[ROOT LAYOUT] No server token, clearing auth state (logout)');
+		// Case 2: Server has no access token, but client store still has one
+		// (logout, or session cleared server-side).
+		else if (!hasServerAccessToken && currentAccessToken) {
+			console.log('[ROOT LAYOUT] No server access cookie, clearing auth state (logout)');
 			authStore.logout();
 			queryClient.clear();
 			initializationPromise = null;
 		}
-		// Case 3: Both have tokens - check if they're different (e.g., impersonation)
-		else if (serverAccessToken && currentAccessToken) {
-			// If tokens are different, update to the server token
-			// This handles impersonation where admin was logged in with their own token
-			// but server now has the impersonation token
-			if (serverAccessToken !== currentAccessToken) {
-				console.log('[ROOT LAYOUT] Server token differs from client token, updating auth');
-				authStore.setAccessToken(serverAccessToken);
-
-				// Re-initialize to fetch new user data for the impersonated user
-				if (!initializationPromise) {
-					initializationPromise = authStore
-						.initialize()
-						.catch((err) => {
-							console.error('[ROOT LAYOUT] Auth re-initialization failed:', err);
-						})
-						.finally(() => {
-							initializationPromise = null;
-						});
-				}
-			} else {
-				console.log('[ROOT LAYOUT] Both server and client have same token (already authenticated)');
-				// Token refresh is handled by interceptor and auto-refresh timer
-			}
+		// Case 3: Both have tokens — already authenticated. Token refresh is
+		// handled by the auto-refresh timer and the 401 interceptor. No-op
+		// here; we no longer have a server-side token value to compare against.
+		else if (hasServerAccessToken && currentAccessToken) {
+			console.log('[ROOT LAYOUT] Both server and client have tokens (already authenticated)');
 		}
-		// Case 4: No access token but has refresh token (access token expired, need to refresh)
-		// This happens when user returns after the 1-hour access token expired
-		// but the 30-day refresh token is still valid (Remember Me was checked)
-		else if (!serverAccessToken && hasRefreshToken && !currentAccessToken) {
+		// Case 4: Access token cookie expired but refresh token is still valid
+		// (e.g. "Remember Me" user returning after the 1-hour access window).
+		// Same refresh path as case 1 — the in-memory store is empty either
+		// way, and `/api/auth/refresh` uses whichever refresh cookie is present.
+		else if (!hasServerAccessToken && hasRefreshToken && !currentAccessToken) {
 			console.log(
-				'[ROOT LAYOUT] No access token but refresh token exists, attempting token refresh'
+				'[ROOT LAYOUT] No access cookie but refresh cookie exists, attempting token refresh'
 			);
 
-			// Prevent multiple simultaneous refresh attempts
 			if (!initializationPromise) {
 				initializationPromise = authStore
 					.refreshAccessToken()
 					.then(async () => {
 						console.log('[ROOT LAYOUT] Token refresh successful, initializing auth');
-						// After successful refresh, fetch user data
 						await authStore.initialize();
 					})
 					.catch((err) => {
 						console.error('[ROOT LAYOUT] Token refresh failed:', err);
-						// User will remain logged out - refresh token may be expired or invalid
+						// User stays logged out — refresh token expired/invalid.
 					})
 					.finally(() => {
 						initializationPromise = null;
 					});
 			}
 		}
-		// Case 5: Neither has token (browsing as guest)
+		// Case 5: Neither cookie present (browsing as guest).
 		else {
 			console.log('[ROOT LAYOUT] No tokens, user not authenticated');
 		}

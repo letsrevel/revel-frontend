@@ -26,6 +26,7 @@
 	import QuestionEditor from '$lib/components/questionnaires/QuestionEditor.svelte';
 	import SectionEditor from '$lib/components/questionnaires/SectionEditor.svelte';
 	import { questionnaireUpdateQuestionnaireStatus } from '$lib/api/generated/sdk.gen';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import type { PageData } from './$types';
 	import type {
 		QuestionnaireEvaluationMode,
@@ -282,8 +283,8 @@
 		isChangingStatus = true;
 
 		try {
-			const user = data.auth;
-			if (!user.accessToken) {
+			const accessToken = authStore.accessToken;
+			if (!accessToken) {
 				throw new Error(m['questionnaireEditPage.error_notAuthenticated']());
 			}
 
@@ -292,7 +293,7 @@
 					org_questionnaire_id: getOrgQuestionnaireId(),
 					status: newStatus
 				},
-				headers: { Authorization: `Bearer ${user.accessToken}` }
+				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
 			if (response.error) {
@@ -320,13 +321,13 @@
 		isSaving = true;
 
 		try {
-			const user = data.auth;
-			if (!user.accessToken) {
+			const accessToken = authStore.accessToken;
+			if (!accessToken) {
 				throw new Error(m['questionnaireEditPage.error_notAuthenticated']());
 			}
 
 			const orgQuestionnaireId = getOrgQuestionnaireId();
-			const authHeader = { Authorization: `Bearer ${user.accessToken}` };
+			const authHeader = { Authorization: `Bearer ${accessToken}` };
 
 			await saveQuestionnaireIncremental({
 				orgQuestionnaireId,
@@ -817,7 +818,7 @@
 			bind:open={isAssignmentModalOpen}
 			{questionnaire}
 			organizationId={data.organization.id}
-			accessToken={data.auth.accessToken || ''}
+			accessToken={authStore.accessToken || ''}
 			onClose={() => (isAssignmentModalOpen = false)}
 		/>
 	{/if}
