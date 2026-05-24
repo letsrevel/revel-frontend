@@ -139,6 +139,26 @@
 				throw new Error(m['questionnaireSubmissionPage.validation_allRequired']());
 			}
 
+			// Safety net for the "phantom voter" case: even when every visible
+			// question is marked is_mandatory=false (poll built that way, or
+			// is_mandatory wasn't persisted), refuse to submit a vote that
+			// contains zero non-empty answers. Without this, an empty Submit
+			// click registers as a voter (total_voters increments) with all
+			// option counts staying 0, skewing results.
+			//
+			// The thrown error carries `silent: true` so the global "Action
+			// failed" toast in +layout.svelte's mutations.onError doesn't fire
+			// on top of the inline toast we just showed.
+			const hasAnyAnswer =
+				[...multipleChoiceAnswers.values()].some((opts) => opts.length > 0) ||
+				[...freeTextAnswers.values()].some((a) => a.trim().length > 0) ||
+				[...fileUploadAnswers.values()].some((files) => files.length > 0);
+
+			if (!hasAnyAnswer) {
+				toast.error(m['pollVoterPage.submitErrorEmpty']());
+				throw Object.assign(new Error('empty'), { silent: true });
+			}
+
 			const mc_answers = [...multipleChoiceAnswers.entries()]
 				.filter(([qid]) => visibleQuestionIds.has(qid))
 				.map(([question_id, option_ids]) => ({ question_id, option_ids }));

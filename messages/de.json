@@ -6234,6 +6234,7 @@
 		"signIn": "Anmelden",
 		"castVoteTitle": "Stimme abgeben",
 		"submitErrorValidation": "Einige Antworten sind ungültig. Bitte überprüfe sie und versuche es erneut.",
+		"submitErrorEmpty": "Wähle mindestens eine Antwort, bevor du abstimmst.",
 		"forbiddenTitle": "Du hast keinen Zugriff auf diese Umfrage",
 		"forbiddenBody": "Diese Umfrage ist eingeschränkt und du gehörst nicht zum Zielpublikum. Wenn das ein Fehler ist, wende dich an die Organisator:innen – oder melde dich mit einem anderen Konto an."
 	},

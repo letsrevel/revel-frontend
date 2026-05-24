@@ -49,6 +49,17 @@
 						return;
 					}
 
+					// Mutations that have already toasted a user-friendly inline
+					// message can mark their error with `silent: true` to opt out
+					// of this global "Action failed" toast and avoid a duplicate.
+					if (
+						error &&
+						typeof error === 'object' &&
+						(error as { silent?: boolean }).silent === true
+					) {
+						return;
+					}
+
 					// Extract user-friendly error message
 					const message = extractErrorMessage(error);
 

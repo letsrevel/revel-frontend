@@ -6234,6 +6234,7 @@
 		"signIn": "Accedi",
 		"castVoteTitle": "Vota",
 		"submitErrorValidation": "Alcune risposte non sono valide. Controllale e riprova.",
+		"submitErrorEmpty": "Seleziona almeno una risposta prima di votare.",
 		"forbiddenTitle": "Non hai accesso a questo sondaggio",
 		"forbiddenBody": "Questo sondaggio è riservato e tu non sei nel pubblico previsto. Se pensi sia un errore, contatta gli organizzatori — oppure accedi con un altro account."
 	},

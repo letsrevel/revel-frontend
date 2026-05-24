@@ -6234,6 +6234,7 @@
 		"signIn": "Sign in",
 		"castVoteTitle": "Cast your vote",
 		"submitErrorValidation": "Some answers are invalid. Please review and try again.",
+		"submitErrorEmpty": "Pick at least one answer before submitting your vote.",
 		"forbiddenTitle": "You don't have access to this poll",
 		"forbiddenBody": "This poll is restricted and you're not in its audience. If you think this is a mistake, contact the organisers — or sign in with a different account."
 	},
