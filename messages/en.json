@@ -6215,7 +6215,7 @@
 		"draftBanner": "This poll hasn't opened yet.",
 		"closedVotedBanner": "Voting is closed. Thanks for voting!",
 		"closedNotVotedBanner": "Voting is closed.",
-		"ineligibleBanner": "You don't have access to vote on this poll.",
+		"ineligibleBanner": "Voting on this poll is restricted to a different audience — see the rules above.",
 		"votedBanner": "You voted on this poll.",
 		"changeVote": "Change my vote",
 		"withdrawVote": "Withdraw vote",

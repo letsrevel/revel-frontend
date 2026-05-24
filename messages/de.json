@@ -6215,7 +6215,7 @@
 		"draftBanner": "Diese Umfrage wurde noch nicht geöffnet.",
 		"closedVotedBanner": "Die Abstimmung ist geschlossen. Danke für deine Teilnahme!",
 		"closedNotVotedBanner": "Die Abstimmung ist geschlossen.",
-		"ineligibleBanner": "Du hast keinen Zugang zu dieser Umfrage.",
+		"ineligibleBanner": "Diese Abstimmung ist auf eine andere Zielgruppe beschränkt — siehe die Regeln oben.",
 		"votedBanner": "Du hast an dieser Umfrage teilgenommen.",
 		"changeVote": "Stimme ändern",
 		"withdrawVote": "Stimme zurückziehen",

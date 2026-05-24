@@ -6215,7 +6215,7 @@
 		"draftBanner": "Questo sondaggio non è ancora stato aperto.",
 		"closedVotedBanner": "Le votazioni sono chiuse. Grazie per aver partecipato!",
 		"closedNotVotedBanner": "Le votazioni sono chiuse.",
-		"ineligibleBanner": "Non hai accesso a questo sondaggio.",
+		"ineligibleBanner": "Il voto su questo sondaggio è riservato a un pubblico diverso — vedi le regole sopra.",
 		"votedBanner": "Hai votato in questo sondaggio.",
 		"changeVote": "Cambia voto",
 		"withdrawVote": "Ritira il voto",

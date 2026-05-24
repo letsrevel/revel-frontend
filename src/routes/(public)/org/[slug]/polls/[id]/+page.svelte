@@ -147,6 +147,15 @@
 				<CardContent class="py-4 text-sm">{m['pollVoterPage.closedNotVotedBanner']()}</CardContent>
 			</Card>
 		{:else if poll.status === 'open' && !poll.user_can_vote && !poll.user_has_voted}
+			<!--
+				Authenticated viewer who passes the BE audience check
+				(otherwise we'd be in the data.forbidden branch above) but
+				can't vote — typically a tier mismatch. We deliberately KEEP
+				the PollPrivacySummary visible above this banner so the user
+				can see WHY they're ineligible ("members in tier X"), unlike
+				the forbidden card which strips all poll details from
+				non-audience callers.
+			-->
 			<Card class="border-amber-500/50">
 				<CardContent class="py-4 text-sm">{m['pollVoterPage.ineligibleBanner']()}</CardContent>
 			</Card>
