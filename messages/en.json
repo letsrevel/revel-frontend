@@ -901,6 +901,7 @@
 		"invitationMessagePlaceholder": "Welcome message for attendees...",
 		"invitationMessageHint": "Default message sent when users are directly invited to this event. Can be overridden on individual invitations.",
 		"advanced": "Advanced",
+		"admissionScreening": "Admission & Screening",
 		"checkinOpensAt": "Check-in Opens At",
 		"checkinOpensAtHint": "When ticket check-in becomes available (timezone: {timezone})",
 		"checkinClosesAt": "Check-in Closes At",
@@ -2818,7 +2819,7 @@
 				},
 				"questionnaires": {
 					"title": "Questionnaires",
-					"description": "Create and manage questionnaires"
+					"description": "Screen participants and gate attendance"
 				},
 				"resources": {
 					"title": "Resources",

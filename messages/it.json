@@ -901,6 +901,7 @@
 		"invitationMessagePlaceholder": "Messaggio di benvenuto per i partecipanti...",
 		"invitationMessageHint": "Messaggio predefinito inviato agli utenti invitati direttamente a questo evento. Può essere sovrascritto sui singoli inviti.",
 		"advanced": "Avanzate",
+		"admissionScreening": "Ammissione e selezione",
 		"checkinOpensAt": "Apertura check-in",
 		"checkinOpensAtHint": "Quando il check-in dei biglietti diventa disponibile (fuso orario: {timezone})",
 		"checkinClosesAt": "Chiusura check-in",
@@ -2818,7 +2819,7 @@
 				},
 				"questionnaires": {
 					"title": "Questionari",
-					"description": "Crea e gestisci questionari"
+					"description": "Verifica i partecipanti e regola l'accesso"
 				},
 				"resources": {
 					"title": "Risorse",

@@ -901,6 +901,7 @@
 		"invitationMessagePlaceholder": "Willkommensnachricht für Teilnehmende...",
 		"invitationMessageHint": "Standardnachricht, die gesendet wird, wenn Nutzer direkt zu dieser Veranstaltung eingeladen werden. Kann pro Einladung überschrieben werden.",
 		"advanced": "Erweitert",
+		"admissionScreening": "Zulassung & Prüfung",
 		"checkinOpensAt": "Check-in öffnet um",
 		"checkinOpensAtHint": "Wann der Ticket-Check-in verfügbar wird (Zeitzone: {timezone})",
 		"checkinClosesAt": "Check-in schließt um",
@@ -2818,7 +2819,7 @@
 				},
 				"questionnaires": {
 					"title": "Fragebögen",
-					"description": "Fragebögen erstellen und verwalten"
+					"description": "Teilnehmende prüfen und Zugang steuern"
 				},
 				"resources": {
 					"title": "Ressourcen",

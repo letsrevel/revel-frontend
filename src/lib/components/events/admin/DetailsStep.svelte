@@ -23,11 +23,11 @@
 	} from 'lucide-svelte';
 	import ImageUploader from '$lib/components/forms/ImageUploader.svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
-	import EventQuestionnaires from './EventQuestionnaires.svelte';
 	import EventQuestionnaireAssignmentModal from './EventQuestionnaireAssignmentModal.svelte';
 	import LocationSection from './LocationSection.svelte';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import WaitlistAdvancedSection from './WaitlistAdvancedSection.svelte';
+	import AdmissionScreeningSection from './AdmissionScreeningSection.svelte';
 	import type { OrganizationQuestionnaireInListSchema } from '$lib/api/generated';
 	import { tagListTags } from '$lib/api/generated/sdk.gen';
 
@@ -139,9 +139,22 @@
 		closeWaitlistConfirmOpen = false;
 	}
 
-	// Accordion state - automatically open advanced section if event has tags
+	// Accordion state. "basic" is always open; "advanced" auto-opens when the
+	// event already has tags, and "admission & screening" auto-opens when any of
+	// its controls is already set, so existing configuration isn't hidden behind
+	// a collapsed header on load.
+	const hasScreeningSettings =
+		!!formData.accept_invitation_requests ||
+		!!formData.requires_full_profile ||
+		!!formData.apply_before;
 	let openSections = $state<Set<string>>(
-		new Set(formData.tags && formData.tags.length > 0 ? ['basic', 'advanced'] : ['basic'])
+		new Set(
+			[
+				'basic',
+				formData.tags && formData.tags.length > 0 ? 'advanced' : null,
+				hasScreeningSettings ? 'screening' : null
+			].filter((s): s is string => s !== null)
+		)
 	);
 
 	// Tag input state
@@ -563,6 +576,19 @@
 		{/if}
 	</div>
 
+	<!-- Admission & Screening Section -->
+	<AdmissionScreeningSection
+		{formData}
+		isOpen={isSectionOpen('screening')}
+		onToggle={() => toggleSection('screening')}
+		{eventId}
+		{organizationId}
+		{accessToken}
+		{questionnaires}
+		{onUpdate}
+		onAssignQuestionnaire={() => (isQuestionnaireModalOpen = true)}
+	/>
+
 	<!-- Advanced Section -->
 	<div class="overflow-hidden rounded-lg border border-border">
 		<button
@@ -642,45 +668,6 @@
 					</div>
 				</label>
 
-				<!-- Accept Invitation Requests -->
-				<label
-					class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
-				>
-					<input
-						type="checkbox"
-						checked={formData.accept_invitation_requests || false}
-						onchange={(e) => onUpdate({ accept_invitation_requests: e.currentTarget.checked })}
-						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
-					/>
-					<div class="flex-1">
-						<div class="font-medium">{m['detailsStep.acceptInvitationRequests']()}</div>
-						<div class="text-sm text-muted-foreground">
-							{m['detailsStep.invitationRequestHint']()}
-						</div>
-					</div>
-				</label>
-
-				<!-- Require Full Profile -->
-				<label
-					class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
-				>
-					<input
-						type="checkbox"
-						checked={formData.requires_full_profile || false}
-						onchange={(e) => onUpdate({ requires_full_profile: e.currentTarget.checked })}
-						class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
-					/>
-					<div class="flex-1">
-						<div class="font-medium">
-							{m['detailsStep.requireFullProfile']?.() ?? 'Require Complete Profile'}
-						</div>
-						<div class="text-sm text-muted-foreground">
-							{m['detailsStep.requireFullProfileHint']?.() ??
-								'Attendees must have a profile picture, name, and pronouns to RSVP or purchase tickets'}
-						</div>
-					</div>
-				</label>
-
 				<!-- Public Pronoun Distribution -->
 				<label
 					class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
@@ -701,26 +688,6 @@
 						</div>
 					</div>
 				</label>
-
-				<!-- Application Deadline (Apply Before) -->
-				<div class="space-y-2">
-					<label for="apply-before" class="block text-sm font-medium">
-						{m['detailsStep.applicationDeadline']?.() ?? 'Application Deadline'}
-					</label>
-					<input
-						id="apply-before"
-						type="datetime-local"
-						value={formData.apply_before || ''}
-						oninput={(e) => onUpdate({ apply_before: e.currentTarget.value || null })}
-						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-					/>
-					<p class="text-xs text-muted-foreground">
-						{m['detailsStep.applicationDeadlineHint']?.({
-							timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-						}) ??
-							`Deadline for submitting invitation requests or questionnaires. Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`}
-					</p>
-				</div>
 
 				<!-- Allow Guest Attendance -->
 				<label
@@ -904,23 +871,6 @@
 								<option value={series.id}>{series.name}</option>
 							{/each}
 						</select>
-					</div>
-				{/if}
-
-				<!-- Questionnaires -->
-				{#if eventId && organizationId && accessToken}
-					<EventQuestionnaires
-						{eventId}
-						assignedQuestionnaires={questionnaires}
-						{organizationId}
-						{accessToken}
-						onAssignClick={() => (isQuestionnaireModalOpen = true)}
-					/>
-				{:else if questionnaires.length > 0}
-					<div class="space-y-2">
-						<p class="text-sm text-muted-foreground">
-							{m['detailsStep.saveToAssignQuestionnaires']()}
-						</p>
 					</div>
 				{/if}
 			</div>
