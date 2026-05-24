@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { Loader2, Save, ChevronDown } from 'lucide-svelte';
@@ -531,7 +531,7 @@
 				{questionnaires}
 				organizationId={organization.id}
 				organizationSlug={organization.slug}
-				accessToken={$page.data.auth?.accessToken}
+				accessToken={authStore.accessToken ?? undefined}
 				{selectedCity}
 				{selectedVenue}
 				{validationErrors}
