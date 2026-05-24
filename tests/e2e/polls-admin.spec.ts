@@ -49,15 +49,27 @@ test.describe('polls admin', () => {
 
 		await page.goto(`/org/${ORG_SLUG}/admin/polls/new`);
 
+		// Wait for hydration to finish before any interaction. The MC question-
+		// type picker is rendered server-side, but its click handler is wired up
+		// during hydration — clicking too early no-ops silently (the click lands,
+		// the button goes :active, but no question is added).
+		await page.waitForLoadState('networkidle');
+
 		const name = `Polls smoke ${Date.now()}`;
 		await page.getByLabel(/poll name/i).fill(name);
 
 		// Add a multiple-choice question. The card has two "Multiple Choice"
 		// buttons (top + bottom of the questions card) — picking the first works.
+		// Assert the question count flips from "(0)" to "(1)" before continuing,
+		// so a swallowed pre-hydration click fails here instead of timing out on
+		// the question textbox that never appears.
 		await page
 			.getByRole('button', { name: /multiple choice/i })
 			.first()
 			.click();
+		await expect(page.getByRole('heading', { name: /questions \(1\)/i })).toBeVisible({
+			timeout: 10_000
+		});
 
 		// Fill in the question text and two options. The question editor renders
 		// a question input and "Add option" affordance — match by visible role/label.
