@@ -192,6 +192,7 @@
 					<PollVoteForm
 						questionnaire={poll.questionnaire}
 						pollId={poll.id}
+						initialVote={poll.user_vote}
 						onSuccess={handleVoteSuccess}
 					/>
 				</CardContent>

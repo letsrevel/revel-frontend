@@ -15,7 +15,11 @@
 	import { slide } from 'svelte/transition';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import FileUploadQuestion from '$lib/components/questionnaires/FileUploadQuestion.svelte';
-	import type { QuestionnaireFileSchema, QuestionnaireSchema } from '$lib/api/generated';
+	import type {
+		QuestionnaireFileSchema,
+		QuestionnaireSchema,
+		PollVoteSchema
+	} from '$lib/api/generated';
 	import {
 		flattenQuestionnaire,
 		getVisibleQuestionIds,
@@ -30,10 +34,18 @@
 	interface Props {
 		questionnaire: QuestionnaireSchema;
 		pollId: string;
+		/**
+		 * The caller's existing vote, if they've already voted and are now
+		 * changing it. Used to pre-fill the form so "Change my vote" doesn't
+		 * make the user re-pick from scratch. MC + free-text answers pre-fill
+		 * fully; file uploads can't (the API returns file_ids only, not the
+		 * file metadata the upload widget needs to render).
+		 */
+		initialVote?: PollVoteSchema | null;
 		onSuccess?: () => void;
 	}
 
-	const { questionnaire, pollId, onSuccess }: Props = $props();
+	const { questionnaire, pollId, initialVote, onSuccess }: Props = $props();
 
 	const flattened = $derived(flattenQuestionnaire(questionnaire));
 
@@ -42,6 +54,14 @@
 	const freeTextAnswers = new SvelteMap<string, string>();
 	const fileUploadAnswers = new SvelteMap<string, QuestionnaireFileSchema[]>();
 	const validationErrors = new SvelteMap<string, string>();
+
+	// Seed the form from the caller's existing vote (change-vote flow).
+	for (const a of initialVote?.mc_answers ?? []) {
+		multipleChoiceAnswers.set(a.question_id, [...a.option_ids]);
+	}
+	for (const a of initialVote?.free_text_answers ?? []) {
+		freeTextAnswers.set(a.question_id, a.answer);
+	}
 
 	// Track all selected option IDs across all questions
 	const selectedOptionIds = $derived.by(() => {
