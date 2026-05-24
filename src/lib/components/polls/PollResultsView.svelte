@@ -29,7 +29,6 @@
 	userId: string | null | undefined
 )}
 	<span class="rounded bg-muted px-1.5 py-0.5 text-[11px]" title={email ?? userId ?? undefined}>
-		{m['pollResults.userIdLabel']()}:
 		{#if displayName}
 			{displayName}
 		{:else if email}
