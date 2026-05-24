@@ -16,13 +16,59 @@
 	);
 </script>
 
+<!--
+	Voter-attribution pill. Backend ships user_display_name / user_email /
+	user_id when staff_anonymous=false (all null when staff_anonymous=true).
+	Prefer display_name → email → truncated UUID; email/full-id in `title` for
+	hover disambiguation. Used for both MC per-option voters and free-text
+	answers, which share the same user_* shape.
+-->
+{#snippet voterPill(
+	displayName: string | null | undefined,
+	email: string | null | undefined,
+	userId: string | null | undefined
+)}
+	<span class="rounded bg-muted px-1.5 py-0.5 text-[11px]" title={email ?? userId ?? undefined}>
+		{m['pollResults.userIdLabel']()}:
+		{#if displayName}
+			{displayName}
+		{:else if email}
+			{email}
+		{:else if userId}
+			<span class="font-mono">{userId.slice(0, 8)}…</span>
+		{/if}
+	</span>
+{/snippet}
+
 <div class="space-y-6">
 	<p class="text-sm text-muted-foreground">
 		<strong class="text-foreground">{votersLabel}</strong>
 	</p>
 
 	{#each results.mc_question_stats ?? [] as stat (stat.question_id)}
-		<McQuestionChart questionText={stat.question_text} options={stat.options} />
+		<div class="space-y-2">
+			<McQuestionChart questionText={stat.question_text} options={stat.options} />
+
+			<!--
+				Per-option voter breakdown — only present when staff_anonymous=false
+				(the backend leaves `voters` null otherwise). Lists who picked each
+				option beneath the aggregate chart.
+			-->
+			{#if !staffAnonymous && stat.options.some((o) => o.voters && o.voters.length > 0)}
+				<ul class="space-y-1 pl-1 text-xs text-muted-foreground">
+					{#each stat.options as opt (opt.option_id)}
+						{#if opt.voters && opt.voters.length > 0}
+							<li class="flex flex-wrap items-center gap-x-2 gap-y-1">
+								<span class="font-medium text-foreground">{opt.option_text}:</span>
+								{#each opt.voters as voter (voter.user_id)}
+									{@render voterPill(voter.user_display_name, voter.user_email, voter.user_id)}
+								{/each}
+							</li>
+						{/if}
+					{/each}
+				</ul>
+			{/if}
+		</div>
 	{/each}
 
 	{#if (results.free_text_responses ?? []).length > 0}
@@ -35,26 +81,7 @@
 						<p class="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
 							<span>{new Date(r.answered_at).toLocaleString()}</span>
 							{#if !staffAnonymous && (r.user_display_name || r.user_email || r.user_id)}
-								<!--
-									Voter attribution. Backend ships user_display_name /
-									user_email / user_id when staff_anonymous=false (all three
-									null when staff_anonymous=true). Prefer display_name →
-									email → truncated UUID. Email shown via `title` when we
-									have a display name, so staff can disambiguate on hover.
-								-->
-								<span
-									class="rounded bg-muted px-1.5 py-0.5 text-[11px]"
-									title={r.user_email ?? r.user_id ?? undefined}
-								>
-									{m['pollResults.userIdLabel']()}:
-									{#if r.user_display_name}
-										{r.user_display_name}
-									{:else if r.user_email}
-										{r.user_email}
-									{:else if r.user_id}
-										<span class="font-mono">{r.user_id.slice(0, 8)}…</span>
-									{/if}
-								</span>
+								{@render voterPill(r.user_display_name, r.user_email, r.user_id)}
 							{/if}
 						</p>
 					</li>
