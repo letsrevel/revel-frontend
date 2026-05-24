@@ -4419,7 +4419,8 @@
 		"correct": "Richtig",
 		"noSubmissions": "Noch keine Einreichungen",
 		"noSubmissionsDescription": "Einreichungen erscheinen hier, sobald Benutzer den Fragebogen ausfüllen.",
-		"responses": "Antworten"
+		"responses_one": "{count} Antwort",
+		"responses_other": "{count} Antworten"
 	},
 	"questionnaireSubmissionDetailPage": {
 		"pageTitle": "Einreichung prüfen",

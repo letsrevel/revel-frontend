@@ -4419,7 +4419,8 @@
 		"correct": "Correct",
 		"noSubmissions": "No submissions yet",
 		"noSubmissionsDescription": "Submissions will appear here once users start completing the questionnaire.",
-		"responses": "responses"
+		"responses_one": "{count} response",
+		"responses_other": "{count} responses"
 	},
 	"questionnaireSubmissionDetailPage": {
 		"pageTitle": "Review Submission",

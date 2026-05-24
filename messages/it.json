@@ -4419,7 +4419,8 @@
 		"correct": "Corretta",
 		"noSubmissions": "Nessun invio ancora",
 		"noSubmissionsDescription": "Gli invii appariranno qui quando gli utenti inizieranno a compilare il questionario.",
-		"responses": "risposte"
+		"responses_one": "{count} risposta",
+		"responses_other": "{count} risposte"
 	},
 	"questionnaireSubmissionDetailPage": {
 		"pageTitle": "Valuta Risposta",
