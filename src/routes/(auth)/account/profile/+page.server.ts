@@ -21,14 +21,12 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		});
 
 		return {
-			user: data,
-			accessToken
+			user: data
 		};
 	} catch (error) {
 		console.error('Failed to fetch user data:', error);
 		return {
-			user: null,
-			accessToken: null
+			user: null
 		};
 	}
 };

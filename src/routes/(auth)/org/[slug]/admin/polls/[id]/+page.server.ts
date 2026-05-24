@@ -41,7 +41,6 @@ export const load: PageServerLoad = async ({ params, locals, parent, fetch }) =>
 		poll: pollRes.data!,
 		events: eventsRes.data?.results ?? [],
 		tiers: tiersRes.data ?? [],
-		accessToken: user.accessToken,
 		isOwner
 	};
 };

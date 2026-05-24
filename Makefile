@@ -1,4 +1,4 @@
-.PHONY: dev build preview format format-check lint lint-fix types i18n-check file-length audit-images audit-soft-404 check fix test test-coverage test-e2e generate-api bump-version bump-minor release
+.PHONY: dev build preview format format-check lint lint-fix types i18n-check file-length no-ssr-token audit-images audit-soft-404 check fix test test-coverage test-e2e generate-api bump-version bump-minor release
 
 # ─────────────────────────────────────────────
 # Development
@@ -38,6 +38,9 @@ i18n-check:
 file-length:
 	@./scripts/check-file-length.sh
 
+no-ssr-token:
+	@./scripts/check-no-ssr-token.sh
+
 audit-images:
 	pnpm audit:images
 
@@ -49,7 +52,7 @@ audit-soft-404:
 # ─────────────────────────────────────────────
 
 # Equivalent to backend's `make check`: format, lint, types, i18n, file-length
-check: format-check lint types i18n-check file-length audit-images
+check: format-check lint types i18n-check file-length no-ssr-token audit-images
 
 # Auto-fix everything that can be auto-fixed
 fix: format lint-fix

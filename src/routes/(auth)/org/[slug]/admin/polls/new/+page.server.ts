@@ -41,7 +41,6 @@ export const load: PageServerLoad = async ({ locals, parent, fetch }) => {
 
 	return {
 		events: eventsRes.data?.results ?? [],
-		tiers: tiersRes.data ?? [],
-		accessToken: user.accessToken
+		tiers: tiersRes.data ?? []
 	};
 };

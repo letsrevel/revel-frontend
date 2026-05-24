@@ -30,7 +30,6 @@ export const load: PageServerLoad = async ({ locals, parent, fetch }) => {
 	}
 
 	return {
-		polls: response.data?.results ?? [],
-		accessToken: user.accessToken
+		polls: response.data?.results ?? []
 	};
 };

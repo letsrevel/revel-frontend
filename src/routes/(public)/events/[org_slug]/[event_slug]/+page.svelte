@@ -754,7 +754,7 @@
 						<!-- Dietary Summary -->
 						<DietarySummary
 							eventId={event.id}
-							authToken={data.accessToken}
+							authToken={authStore.accessToken}
 							isAuthenticated={data.isAuthenticated}
 						/>
 

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import { ArrowLeft, Trash2, Plus, FolderPlus, Upload } from 'lucide-svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -171,7 +172,7 @@
 		try {
 			const res = await pollPatchPoll({
 				path: { poll_id: poll.id },
-				headers: { Authorization: `Bearer ${data.accessToken}` },
+				headers: { Authorization: `Bearer ${authStore.accessToken}` },
 				body: {
 					name: name.trim(),
 					description: description || null,
@@ -191,7 +192,7 @@
 				try {
 					await savePollQuestionsIncremental({
 						pollId: poll.id,
-						accessToken: data.accessToken ?? '',
+						accessToken: authStore.accessToken ?? '',
 						q: poll.questionnaire,
 						sections,
 						topLevelQuestions
@@ -228,7 +229,7 @@
 		try {
 			const res = await pollDeletePollAction({
 				path: { poll_id: poll.id },
-				headers: { Authorization: `Bearer ${data.accessToken}` }
+				headers: { Authorization: `Bearer ${authStore.accessToken}` }
 			});
 			if (res.error) throw new Error('delete');
 			deleteConfirmOpen = false;
@@ -266,7 +267,7 @@
 </div>
 
 <div class="mx-auto max-w-4xl space-y-6">
-	<PollStatusBar {poll} {voterUrl} accessToken={data.accessToken ?? ''} />
+	<PollStatusBar {poll} {voterUrl} accessToken={authStore.accessToken ?? ''} />
 
 	<!-- Basics — editable -->
 	<Card>

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import { NotificationList } from '$lib/components/notifications';
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
@@ -41,6 +42,10 @@
 		</Button>
 	</div>
 
-	<!-- Notification List Component -->
-	<NotificationList authToken={data.accessToken} />
+	<!-- Notification List Component. Gated on the in-memory token (populated by
+		the refresh-on-hydration flow); the route already redirects unauthenticated
+		users server-side. -->
+	{#if authStore.accessToken}
+		<NotificationList authToken={authStore.accessToken} />
+	{/if}
 </div>

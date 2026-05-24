@@ -156,14 +156,14 @@
 	{/if}
 
 	<!-- Profile Picture Section -->
-	{#if data.accessToken && data.user}
+	{#if authStore.accessToken && data.user}
 		<div class="mb-8">
 			<ProfilePictureUploader
 				currentPictureUrl={profilePictureUrl}
 				displayName={data.user.display_name}
 				firstName={data.user.first_name}
 				lastName={data.user.last_name}
-				accessToken={data.accessToken}
+				accessToken={authStore.accessToken}
 				onUpdate={(newUrl, userData) => {
 					profilePictureUrl = newUrl;
 					if (userData) {
@@ -532,7 +532,7 @@
 	</form>
 
 	<!-- Dietary Preferences & Restrictions Section -->
-	{#if data.accessToken}
+	{#if authStore.accessToken}
 		<div class="mt-12 space-y-6" id="dietary-section">
 			<div class="border-t pt-8">
 				<div class="mb-6">
@@ -556,8 +556,8 @@
 				</div>
 
 				<div class="space-y-8">
-					<DietaryPreferencesManager authToken={data.accessToken} />
-					<DietaryRestrictionsManager authToken={data.accessToken} />
+					<DietaryPreferencesManager authToken={authStore.accessToken} />
+					<DietaryRestrictionsManager authToken={authStore.accessToken} />
 				</div>
 			</div>
 		</div>
@@ -565,7 +565,7 @@
 		<!-- Telegram Connection Section -->
 		<div class="mt-12" id="telegram-section">
 			<div class="border-t pt-8">
-				<TelegramConnectionManager authToken={data.accessToken} />
+				<TelegramConnectionManager authToken={authStore.accessToken} />
 			</div>
 		</div>
 	{/if}

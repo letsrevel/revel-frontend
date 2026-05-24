@@ -256,9 +256,10 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 			isStaff,
 			eventTokenDetails,
 			userVisibility,
-			// Explicitly pass authentication state to the page
-			isAuthenticated: !!locals.user,
-			accessToken: locals.user?.accessToken ?? null
+			// Explicitly pass authentication state to the page. The token
+			// itself is NOT shipped — the client reads it from authStore to
+			// avoid serializing the JWT into the SSR HTML.
+			isAuthenticated: !!locals.user
 		};
 
 		// Log data sizes to detect potential serialization issues

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import { goto } from '$app/navigation';
 	import { ArrowLeft, Plus, FolderPlus, Upload } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -174,7 +175,7 @@
 		try {
 			const res = await pollCreatePoll({
 				path: { organization_id: data.organization.id },
-				headers: { Authorization: `Bearer ${data.accessToken}` },
+				headers: { Authorization: `Bearer ${authStore.accessToken}` },
 				body: {
 					name,
 					description: description || null,
