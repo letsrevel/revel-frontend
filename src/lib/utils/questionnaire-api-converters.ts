@@ -192,12 +192,46 @@ export interface InitFromApiResult {
 }
 
 /**
+ * Normalize a questionnaire-or-section object so its question collections are
+ * reachable under the Django reverse-relation names this converter reads
+ * (`multiplechoicequestion_questions`, etc.), regardless of whether the source
+ * used those or the underscored `QuestionnaireSchema` names
+ * (`multiple_choice_questions`, etc.).
+ *
+ * The questionnaire admin endpoints return `QuestionnaireResponseSchema`
+ * (run-together names); the poll detail endpoint embeds `QuestionnaireSchema`
+ * (underscored names). This converter is shared by both, so it has to accept
+ * either shape. Returns a shallow copy — the input is reactive `$state` and
+ * must not be mutated.
+ */
+function normalizeQuestionCollections<T extends Record<string, unknown>>(obj: T): T {
+	if (!obj) return obj;
+	return {
+		...obj,
+		multiplechoicequestion_questions:
+			obj.multiplechoicequestion_questions ?? obj.multiple_choice_questions ?? [],
+		freetextquestion_questions:
+			obj.freetextquestion_questions ?? obj.free_text_questions ?? [],
+		fileuploadquestion_questions:
+			obj.fileuploadquestion_questions ?? obj.file_upload_questions ?? []
+	};
+}
+
+/**
  * Parse the full API questionnaire + org-questionnaire data into local form state.
  *
  * @param questionnaire - The org-questionnaire wrapper (has `questionnaire_type`, etc.)
  * @param q - The inner questionnaire object (has sections, questions, etc.)
  */
-export function initializeFromApiData(questionnaire: any, q: any): InitFromApiResult {
+export function initializeFromApiData(questionnaire: any, rawQ: any): InitFromApiResult {
+	// Accept both QuestionnaireResponseSchema (run-together collection names)
+	// and QuestionnaireSchema (underscored). Normalize top-level + each section
+	// up-front so every downstream read of `*question_questions` resolves.
+	const q = normalizeQuestionCollections(rawQ);
+	q.sections = (rawQ.sections || []).map((s: Record<string, unknown>) =>
+		normalizeQuestionCollections(s)
+	);
+
 	// Basic info
 	const name = q.name || '';
 	const minScore = Number(q.min_score ?? 0);
