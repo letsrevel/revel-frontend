@@ -65,9 +65,7 @@
 							: 'bg-primary/60'}"
 						style="width: {barWidth(option.count)}"
 						role="img"
-						aria-label="{option.option_text}: {responsesLabel(option.count)} ({pct(
-							option.count
-						)})"
+						aria-label="{option.option_text}: {responsesLabel(option.count)} ({pct(option.count)})"
 					></div>
 				</div>
 			</div>
