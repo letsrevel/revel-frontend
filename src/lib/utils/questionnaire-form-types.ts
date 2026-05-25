@@ -53,6 +53,8 @@ export interface QuestionnaireConditionalSection {
 	description?: string;
 	order: number;
 	questions: QuestionnaireQuestion[];
+	/** Tracks the API ID for existing conditional sections (edit page only). */
+	_apiId?: string;
 }
 
 /** A top-level section grouping questions. */
@@ -64,6 +66,8 @@ export interface QuestionnaireSection {
 	questions: QuestionnaireQuestion[];
 	/** Tracks the API ID for existing sections (edit page only). */
 	_apiId?: string;
+	/** Tracks the option this section is conditional on, if any (edit page only). */
+	_dependsOnOptionId?: string | null;
 }
 
 // ===== Factory Functions =====

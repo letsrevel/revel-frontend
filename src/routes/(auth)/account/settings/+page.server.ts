@@ -11,8 +11,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 	if (!accessToken) {
 		return {
 			notificationPreferences: null,
-			generalPreferences: null,
-			accessToken: null
+			generalPreferences: null
 		};
 	}
 
@@ -32,15 +31,13 @@ export const load: PageServerLoad = async ({ cookies }) => {
 
 		return {
 			notificationPreferences: notificationData.data,
-			generalPreferences: generalData.data,
-			accessToken
+			generalPreferences: generalData.data
 		};
 	} catch (error) {
 		console.error('Failed to fetch preferences:', error);
 		return {
 			notificationPreferences: null,
-			generalPreferences: null,
-			accessToken
+			generalPreferences: null
 		};
 	}
 };

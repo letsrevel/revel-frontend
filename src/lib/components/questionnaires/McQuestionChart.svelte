@@ -28,6 +28,14 @@
 		if (maxCount === 0) return '0%';
 		return `${(count / maxCount) * 100}%`;
 	}
+
+	// Count-aware "{n} response(s)" — paraglide _one/_other isn't auto-selected
+	// here, so pick the variant explicitly (matches the PollResultsView pattern).
+	function responsesLabel(count: number): string {
+		return count === 1
+			? m['questionnaireSummaryPage.responses_one']({ count: String(count) })
+			: m['questionnaireSummaryPage.responses_other']({ count: String(count) });
+	}
 </script>
 
 <div class="space-y-3">
@@ -57,16 +65,13 @@
 							: 'bg-primary/60'}"
 						style="width: {barWidth(option.count)}"
 						role="img"
-						aria-label="{option.option_text}: {option.count} {m[
-							'questionnaireSummaryPage.responses'
-						]()} ({pct(option.count)})"
+						aria-label="{option.option_text}: {responsesLabel(option.count)} ({pct(option.count)})"
 					></div>
 				</div>
 			</div>
 		{/each}
 	</div>
 	<p class="text-xs text-muted-foreground">
-		{totalResponses}
-		{m['questionnaireSummaryPage.responses']()}
+		{responsesLabel(totalResponses)}
 	</p>
 </div>

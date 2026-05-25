@@ -21,6 +21,12 @@ class AuthStore {
 	private _tokenExpiryTimer: ReturnType<typeof setTimeout> | null = null;
 	// Shared promise to prevent concurrent refresh attempts
 	private _refreshPromise: Promise<void> | null = null;
+	// True only while `logout()` is running. Used by `_performRefresh` to
+	// discard an in-flight refresh result if the user explicitly logged out
+	// mid-refresh. Previously we used `!_accessToken` for this check, but that
+	// gave a false positive during cold-hydration bootstrap (where the store
+	// is intentionally empty until the bootstrap refresh completes).
+	private _isLoggingOut = false;
 
 	// Public computed state using $derived
 	get user() {
@@ -119,6 +125,9 @@ class AuthStore {
 	 * Login with email and password
 	 */
 	async login(username: string, password: string): Promise<void> {
+		// Intentional new session — clear any lingering logout guard from an
+		// earlier logout() in this same SPA session.
+		this._isLoggingOut = false;
 		this._isLoading = true;
 		try {
 			const { data, error } = await authObtainToken({
@@ -162,6 +171,8 @@ class AuthStore {
 	 * Complete 2FA login with OTP code
 	 */
 	async loginWithOTP(tempToken: string, otpCode: string): Promise<void> {
+		// Intentional new session — clear any lingering logout guard.
+		this._isLoggingOut = false;
 		this._isLoading = true;
 		try {
 			const { data, error } = await authObtainTokenWithOtp({
@@ -190,6 +201,10 @@ class AuthStore {
 	 * Logout and clear all auth state
 	 */
 	async logout(): Promise<void> {
+		// Mark logout in progress so any concurrent refresh discards its
+		// result instead of resurrecting the session.
+		this._isLoggingOut = true;
+
 		// Clear the token refresh timer
 		this.clearTokenRefreshTimer();
 
@@ -202,7 +217,14 @@ class AuthStore {
 		this._permissions = null;
 
 		// Note: Refresh token cookie will be cleared by server-side hook
-		// or by calling a logout endpoint if needed
+		// or by calling a logout endpoint if needed.
+		//
+		// Intentionally do NOT reset `_isLoggingOut` here. logout() runs
+		// synchronously, so a refresh fetch that is already in flight only
+		// resolves *after* this method returns; if we cleared the flag now the
+		// guard in _performRefresh() would see `false` and resurrect the
+		// session. The flag stays set until an intentional new login
+		// (login()/loginWithOTP()) clears it.
 	}
 
 	/**
@@ -277,10 +299,13 @@ class AuthStore {
 
 			console.log('[AUTH STORE] Token refresh successful, received new access token');
 
-			// Check if user has logged out while refresh was in progress
-			// If so, discard the refresh result
-			if (!this._accessToken) {
-				console.log('[AUTH STORE] User logged out during refresh, discarding new token');
+			// Check if user explicitly logged out while refresh was in progress.
+			// If so, discard the refresh result so logout wins the race.
+			// Note: `!_accessToken` is NOT the right check here — during cold
+			// hydration the store is empty by design and refresh is how we
+			// learn the token.
+			if (this._isLoggingOut) {
+				console.log('[AUTH STORE] Logout in progress, discarding new token');
 				return;
 			}
 
@@ -380,6 +405,57 @@ class AuthStore {
 		this._accessToken = token;
 		// Schedule automatic refresh before token expires
 		this.scheduleTokenRefresh(token);
+	}
+
+	/**
+	 * Bootstrap the in-memory access token from the httpOnly `access_token`
+	 * cookie via `/api/auth/session-token`.
+	 *
+	 * This is the bootstrap path for IMPERSONATION sessions: they carry an
+	 * access cookie but NO refresh cookie, so `refreshAccessToken()` 401s for
+	 * them. Unlike refresh, this adopts the existing token without minting a
+	 * new one. `setAccessToken` handles impersonation-aware scheduling (it
+	 * schedules a logout at expiry rather than a refresh).
+	 */
+	async loadSessionToken(): Promise<void> {
+		const response = await fetch('/api/auth/session-token', {
+			method: 'GET',
+			credentials: 'include'
+		});
+
+		if (!response.ok) {
+			throw new Error(`Session token bootstrap failed: ${response.status}`);
+		}
+
+		const data = await response.json();
+		if (!data?.access) {
+			throw new Error('No access token returned from session-token endpoint');
+		}
+
+		// Respect a logout that happened while this fetch was in flight.
+		if (this._isLoggingOut) {
+			return;
+		}
+
+		this.setAccessToken(data.access);
+	}
+
+	/**
+	 * Clear the in-memory identity for a server-side session SWAP (impersonation
+	 * start/stop, login-as-different-user) so the layout can immediately
+	 * re-bootstrap the new identity.
+	 *
+	 * Unlike `logout()`, this does NOT set `_isLoggingOut` — that flag would
+	 * block the very bootstrap (`refreshAccessToken`/`loadSessionToken`) that
+	 * runs right after a swap. The server cookies are not touched here; they
+	 * already reflect the new identity.
+	 */
+	resetForSwap(): void {
+		this.clearTokenRefreshTimer();
+		this._refreshPromise = null;
+		this._user = null;
+		this._accessToken = null;
+		this._permissions = null;
 	}
 
 	/**

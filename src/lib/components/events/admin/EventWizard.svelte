@@ -27,7 +27,7 @@
 		ResourceVisibility
 	} from '$lib/api/generated/types.gen';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import { cn } from '$lib/utils/cn';
 	import EssentialsStep from './EssentialsStep.svelte';
 	import DetailsStep from './DetailsStep.svelte';
@@ -777,7 +777,7 @@
 				{eventId}
 				organizationId={organization.id}
 				organizationSlug={organization.slug}
-				accessToken={$page.data.auth?.accessToken}
+				accessToken={authStore.accessToken ?? undefined}
 				{selectedCity}
 				{selectedVenue}
 				{validationErrors}

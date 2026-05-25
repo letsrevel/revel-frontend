@@ -901,6 +901,7 @@
 		"invitationMessagePlaceholder": "Messaggio di benvenuto per i partecipanti...",
 		"invitationMessageHint": "Messaggio predefinito inviato agli utenti invitati direttamente a questo evento. Può essere sovrascritto sui singoli inviti.",
 		"advanced": "Avanzate",
+		"admissionScreening": "Ammissione e selezione",
 		"checkinOpensAt": "Apertura check-in",
 		"checkinOpensAtHint": "Quando il check-in dei biglietti diventa disponibile (fuso orario: {timezone})",
 		"checkinClosesAt": "Chiusura check-in",
@@ -2783,7 +2784,8 @@
 			"questionnaires": "Questionari",
 			"resources": "Risorse",
 			"invitationLinks": "Link di Invito",
-			"settings": "Impostazioni"
+			"settings": "Impostazioni",
+			"polls": "Sondaggi"
 		},
 		"breadcrumbs": {
 			"home": "Home",
@@ -2817,7 +2819,7 @@
 				},
 				"questionnaires": {
 					"title": "Questionari",
-					"description": "Crea e gestisci questionari"
+					"description": "Verifica i partecipanti e regola l'accesso"
 				},
 				"resources": {
 					"title": "Risorse",
@@ -2830,6 +2832,10 @@
 				"venues": {
 					"title": "Luoghi",
 					"description": "Gestisci i luoghi degli eventi"
+				},
+				"polls": {
+					"title": "Sondaggi",
+					"description": "Crea sondaggi e raccogli le opinioni dei membri"
 				}
 			},
 			"orgDetails": {
@@ -3268,6 +3274,21 @@
 				"createdAt": "Creata il",
 				"previous": "Precedente",
 				"next": "Successivo"
+			}
+		},
+		"polls": {
+			"pageTitle": "Sondaggi",
+			"pageDescription": "Crea sondaggi per la tua organizzazione o un evento.",
+			"createPollButton": "Crea sondaggio",
+			"searchPlaceholder": "Cerca sondaggi per nome…",
+			"empty": {
+				"title": "Ancora nessun sondaggio",
+				"description": "Crea il tuo primo sondaggio per raccogliere le opinioni dei membri."
+			},
+			"noResults": {
+				"title": "Nessun sondaggio trovato",
+				"description": "Nessun sondaggio corrisponde a \"{query}\". Prova un'altra ricerca.",
+				"clearButton": "Cancella ricerca"
 			}
 		}
 	},
@@ -4399,7 +4420,8 @@
 		"correct": "Corretta",
 		"noSubmissions": "Nessun invio ancora",
 		"noSubmissionsDescription": "Gli invii appariranno qui quando gli utenti inizieranno a compilare il questionario.",
-		"responses": "risposte"
+		"responses_one": "{count} risposta",
+		"responses_other": "{count} risposte"
 	},
 	"questionnaireSubmissionDetailPage": {
 		"pageTitle": "Valuta Risposta",
@@ -6074,5 +6096,180 @@
 	"countdown.units.days": "{n}d",
 	"countdown.units.hours": "{n}h",
 	"countdown.units.minutes": "{n}m",
-	"countdown.units.seconds": "{n}s"
+	"countdown.units.seconds": "{n}s",
+	"pollCard": {
+		"status_draft": "Bozza",
+		"status_open": "Aperto",
+		"status_closed": "Chiuso",
+		"badge_anonymous": "Anonimo",
+		"badge_public": "Pubblico",
+		"badge_unlisted": "Non in elenco",
+		"badge_private": "Privato",
+		"badge_members": "Solo membri",
+		"badge_staff": "Solo staff",
+		"badge_attendees": "Solo partecipanti",
+		"votes_zero": "Ancora nessun voto",
+		"votes_one": "1 voto",
+		"votes_other": "{count} voti",
+		"closesIn": "Chiude {duration}",
+		"closedAgo": "Chiuso {ago}",
+		"notOpenedYet": "Non ancora aperto",
+		"openPoll": "Apri sondaggio",
+		"edit": "Modifica",
+		"results": "Risultati",
+		"copyLink": "Copia link",
+		"copySuccess": "Link del sondaggio copiato negli appunti",
+		"copyError": "Impossibile copiare il link",
+		"shareUrlLabel": "URL di condivisione del sondaggio",
+		"moreActions": "Altre azioni",
+		"viewAsVoter": "Visualizza come votante",
+		"close": "Chiudi sondaggio",
+		"reopen": "Riapri sondaggio",
+		"delete": "Elimina sondaggio",
+		"confirmDelete": "Eliminare il sondaggio \"{name}\"? Questa azione non può essere annullata.",
+		"deleting": "Eliminazione in corso…"
+	},
+	"pollNewPage": {
+		"pageTitle": "Crea sondaggio",
+		"backToList": "Torna ai sondaggi",
+		"basicsTitle": "Informazioni di base",
+		"basicsDescription": "Nome e descrizione visibili ai votanti.",
+		"nameLabel": "Nome del sondaggio",
+		"namePlaceholder": "Cosa mangiamo dopo il meetup?",
+		"descriptionLabel": "Descrizione (opzionale)",
+		"descriptionPlaceholder": "Contesto mostrato ai votanti prima che rispondano.",
+		"shuffleQuestions": "Mescola le domande",
+		"shuffleSections": "Mescola le sezioni",
+		"audienceTitle": "Destinatari",
+		"audienceDescription": "Chi può votare e chi può vedere i risultati.",
+		"voteVisibilityLabel": "Chi può votare",
+		"resultVisibilityLabel": "Chi può vedere i risultati",
+		"eventLabel": "Evento collegato (opzionale)",
+		"eventPlaceholder": "Nessuno",
+		"eventRequiredHint": "Un evento è obbligatorio quando la visibilità è impostata su Privato o Solo partecipanti.",
+		"tiersSectionTitle": "Limita per livello (opzionale)",
+		"voteTiersLabel": "Livelli di iscrizione autorizzati a votare",
+		"resultTiersLabel": "Livelli di iscrizione autorizzati a vedere i risultati",
+		"tiersHint": "Lascia vuoto per consentire a tutti i membri.",
+		"anonymityTitle": "Risultati e anonimato",
+		"anonymityDescription": "Queste impostazioni non potranno essere modificate in seguito.",
+		"resultTimingLabel": "Quando i votanti vedono i risultati",
+		"resultTimingNever": "Mai",
+		"resultTimingAfterVote": "Dopo aver votato",
+		"resultTimingAfterClose": "Dopo la chiusura del sondaggio",
+		"staffAnonymousLabel": "Nascondi le identità dei votanti allo staff",
+		"publicAnonymousLabel": "Nascondi le identità dei votanti agli altri votanti",
+		"publicAnonymousForced": "Obbligatorio perché i risultati sono pubblici o non in elenco.",
+		"allowVoteChangesLabel": "Consenti ai votanti di modificare il proprio voto (modificabile in seguito)",
+		"scheduleTitle": "Pianificazione",
+		"scheduleDescription": "Lascia vuoto per mantenere il sondaggio aperto finché non lo chiudi manualmente.",
+		"closesAtLabel": "Chiude il",
+		"closesAtPast": "L'orario di chiusura deve essere nel futuro.",
+		"questionsTitle": "Domande",
+		"addSection": "Aggiungi sezione",
+		"noQuestionsYet": "Ancora nessuna domanda.",
+		"createButton": "Crea sondaggio",
+		"creating": "Creazione in corso…",
+		"cancel": "Annulla",
+		"errorTitle": "Correggi quanto segue",
+		"errorNameRequired": "Il nome è obbligatorio.",
+		"errorNoQuestions": "Aggiungi almeno una domanda.",
+		"errorQuestionsNeedText": "Tutte le domande devono avere un testo.",
+		"errorEventRequired": "Scegli un evento — la visibilità Privato/Solo partecipanti lo richiede.",
+		"saveError": "Impossibile creare il sondaggio (HTTP {status})."
+	},
+	"pollEditPage": {
+		"pageTitle": "Modifica sondaggio",
+		"backToList": "Torna ai sondaggi",
+		"saveButton": "Salva modifiche",
+		"saving": "Salvataggio in corso…",
+		"saveSuccess": "Sondaggio aggiornato.",
+		"saveError": "Impossibile aggiornare il sondaggio.",
+		"nameLockTooltip": "Nome e descrizione possono essere modificati nella pagina di modifica del sondaggio.",
+		"anonymityLockTooltip": "Impostato alla creazione, non può essere modificato.",
+		"publicAnonymousLockedTooltip": "Richiede anonimato pubblico, che non può essere modificato dopo la creazione.",
+		"questionsLockedBanner": "Le domande vengono bloccate una volta che il sondaggio viene aperto. Per modificarle, crea un nuovo sondaggio.",
+		"addSection": "Aggiungi sezione",
+		"noQuestionsYet": "Ancora nessuna domanda.",
+		"noQuestionsDefined": "Nessuna domanda ancora definita.",
+		"noQuestionnaire": "Nessun questionario associato a questo sondaggio.",
+		"resultsTitle": "Risultati",
+		"resultsEmpty": "Ancora nessun voto.",
+		"deleteSectionTitle": "Zona pericolosa",
+		"deleteButton": "Elimina sondaggio",
+		"deleteConfirm": "Eliminare il sondaggio \"{name}\"? Questa azione non può essere annullata.",
+		"deleteError": "Impossibile eliminare il sondaggio."
+	},
+	"pollStatusBar": {
+		"openedAt": "Aperto {at}",
+		"closedAt": "Chiuso {at}",
+		"closesAt": "Chiude {at}",
+		"openButton": "Apri sondaggio",
+		"closeButton": "Chiudi sondaggio",
+		"reopenButton": "Riapri sondaggio",
+		"viewAsVoter": "Visualizza come votante",
+		"lifecycleError": "Impossibile cambiare lo stato del sondaggio. Riprova."
+	},
+	"pollReopenDialog": {
+		"title": "Riapri sondaggio",
+		"description": "Imposta facoltativamente un nuovo orario di chiusura.",
+		"closesAtLabel": "Nuovo orario di chiusura (opzionale)",
+		"clearClosesAtLabel": "Tieni aperto finché non lo chiudo manualmente",
+		"confirm": "Riapri",
+		"cancel": "Annulla"
+	},
+	"pollVoterPage": {
+		"title": "{name} – Sondaggio",
+		"organizedBy": "Organizzato da",
+		"linkedToEvent": "Collegato a",
+		"signInToVote": "Accedi per votare",
+		"draftBanner": "Questo sondaggio non è ancora stato aperto.",
+		"closedVotedBanner": "Le votazioni sono chiuse. Grazie per aver partecipato!",
+		"closedNotVotedBanner": "Le votazioni sono chiuse.",
+		"ineligibleBanner": "Il voto su questo sondaggio è riservato a un pubblico diverso — vedi le regole sopra.",
+		"votedBanner": "Hai votato in questo sondaggio.",
+		"changeVote": "Cambia voto",
+		"withdrawVote": "Ritira il voto",
+		"submitVote": "Invia voto",
+		"submitting": "Invio in corso…",
+		"submitSuccess": "Il tuo voto è stato registrato.",
+		"submitErrorAuth": "La tua sessione è scaduta. Accedi di nuovo per votare.",
+		"submitErrorClosed": "Questo sondaggio è appena stato chiuso.",
+		"submitErrorIneligible": "Non sei autorizzato a votare in questo sondaggio.",
+		"submitErrorConflict": "Hai già votato in questo sondaggio.",
+		"withdrawConfirm": "Ritirare il tuo voto?",
+		"withdrawConfirmTitle": "Ritira il tuo voto",
+		"withdrawSuccess": "Il tuo voto è stato ritirato.",
+		"resultsTitle": "Risultati",
+		"resultsEmpty": "Ancora nessun voto.",
+		"withdrawError": "Impossibile ritirare il tuo voto. Riprova.",
+		"signIn": "Accedi",
+		"castVoteTitle": "Vota",
+		"submitErrorValidation": "Alcune risposte non sono valide. Controllale e riprova.",
+		"submitErrorEmpty": "Seleziona almeno una risposta prima di votare.",
+		"forbiddenTitle": "Non hai accesso a questo sondaggio",
+		"forbiddenBody": "Questo sondaggio è riservato e tu non sei nel pubblico previsto. Se pensi sia un errore, contatta gli organizzatori — oppure accedi con un altro account."
+	},
+	"pollResults": {
+		"totalVoters_one": "{count} voto",
+		"totalVoters_other": "{count} voti",
+		"freeTextHeading": "Risposte a testo libero"
+	},
+	"pollPrivacy": {
+		"canVote": "Chi può votare: {audience}",
+		"canSeeResults": "Risultati visibili a: {audience} ({when})",
+		"anonymousToVoters": "La tua identità è nascosta agli altri votanti",
+		"identityVisibleToVoters": "La tua identità è visibile a chiunque possa vedere i risultati",
+		"identityVisibleToStaff": "Lo staff può vedere chi ha votato cosa",
+		"allowsChanges": "Puoi modificare o ritirare il tuo voto",
+		"audience_public": "tutti",
+		"audience_unlisted": "chi ha il link",
+		"audience_invited": "solo persone invitate",
+		"audience_members": "solo membri",
+		"audience_staff": "solo staff",
+		"audience_attendees": "solo partecipanti",
+		"timing_never": "i risultati non sono condivisi con i votanti",
+		"timing_afterVote": "dopo che hai votato",
+		"timing_afterClose": "dopo la chiusura del sondaggio"
+	}
 }

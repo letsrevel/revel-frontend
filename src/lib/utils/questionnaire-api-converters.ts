@@ -192,12 +192,45 @@ export interface InitFromApiResult {
 }
 
 /**
+ * Normalize a questionnaire-or-section object so its question collections are
+ * reachable under the Django reverse-relation names this converter reads
+ * (`multiplechoicequestion_questions`, etc.), regardless of whether the source
+ * used those or the underscored `QuestionnaireSchema` names
+ * (`multiple_choice_questions`, etc.).
+ *
+ * The questionnaire admin endpoints return `QuestionnaireResponseSchema`
+ * (run-together names); the poll detail endpoint embeds `QuestionnaireSchema`
+ * (underscored names). This converter is shared by both, so it has to accept
+ * either shape. Returns a shallow copy — the input is reactive `$state` and
+ * must not be mutated.
+ */
+export function normalizeQuestionCollections<T extends Record<string, unknown>>(obj: T): T {
+	if (!obj) return obj;
+	return {
+		...obj,
+		multiplechoicequestion_questions:
+			obj.multiplechoicequestion_questions ?? obj.multiple_choice_questions ?? [],
+		freetextquestion_questions: obj.freetextquestion_questions ?? obj.free_text_questions ?? [],
+		fileuploadquestion_questions:
+			obj.fileuploadquestion_questions ?? obj.file_upload_questions ?? []
+	};
+}
+
+/**
  * Parse the full API questionnaire + org-questionnaire data into local form state.
  *
  * @param questionnaire - The org-questionnaire wrapper (has `questionnaire_type`, etc.)
  * @param q - The inner questionnaire object (has sections, questions, etc.)
  */
-export function initializeFromApiData(questionnaire: any, q: any): InitFromApiResult {
+export function initializeFromApiData(questionnaire: any, rawQ: any): InitFromApiResult {
+	// Accept both QuestionnaireResponseSchema (run-together collection names)
+	// and QuestionnaireSchema (underscored). Normalize top-level + each section
+	// up-front so every downstream read of `*question_questions` resolves.
+	const q = normalizeQuestionCollections(rawQ);
+	q.sections = (rawQ.sections || []).map((s: Record<string, unknown>) =>
+		normalizeQuestionCollections(s)
+	);
+
 	// Basic info
 	const name = q.name || '';
 	const minScore = Number(q.min_score ?? 0);
@@ -294,7 +327,7 @@ export function initializeFromApiData(questionnaire: any, q: any): InitFromApiRe
 	}
 
 	// ===== Step 6: Attach conditional questions/sections to parent options =====
-	function attachConditionalQuestion(apiQ: any, type: 'mc' | 'ft') {
+	function attachConditionalQuestion(apiQ: any, type: 'mc' | 'ft' | 'fu') {
 		if (!apiQ.depends_on_option_id || !conditionalQuestionIds.has(apiQ.id)) return;
 
 		const parentOption = optionMap.get(apiQ.depends_on_option_id);
@@ -304,10 +337,14 @@ export function initializeFromApiData(questionnaire: any, q: any): InitFromApiRe
 			);
 			if (existingIds.has(apiQ.id)) return;
 
-			const convertedQ =
-				type === 'mc'
-					? convertApiMcQuestion(apiQ, apiQ.order ?? 0)
-					: convertApiFtQuestion(apiQ, apiQ.order ?? 0);
+			let convertedQ: QuestionnaireQuestion;
+			if (type === 'mc') {
+				convertedQ = convertApiMcQuestion(apiQ, apiQ.order ?? 0);
+			} else if (type === 'ft') {
+				convertedQ = convertApiFtQuestion(apiQ, apiQ.order ?? 0);
+			} else {
+				convertedQ = convertApiFuQuestion(apiQ, apiQ.order ?? 0);
+			}
 			parentOption.conditionalQuestions = parentOption.conditionalQuestions || [];
 			parentOption.conditionalQuestions.push(convertedQ);
 
@@ -319,23 +356,20 @@ export function initializeFromApiData(questionnaire: any, q: any): InitFromApiRe
 		}
 	}
 
-	// Conditional MC questions
-	for (const apiQ of q.multiplechoicequestion_questions || []) {
-		attachConditionalQuestion(apiQ, 'mc');
-	}
-	for (const apiSection of q.sections || []) {
-		for (const apiQ of apiSection.multiplechoicequestion_questions || []) {
-			attachConditionalQuestion(apiQ, 'mc');
+	// Conditional questions (MC / FT / FU), both top-level and inside sections.
+	const conditionalCollections: [string, 'mc' | 'ft' | 'fu'][] = [
+		['multiplechoicequestion_questions', 'mc'],
+		['freetextquestion_questions', 'ft'],
+		['fileuploadquestion_questions', 'fu']
+	];
+	for (const [collection, type] of conditionalCollections) {
+		for (const apiQ of q[collection] || []) {
+			attachConditionalQuestion(apiQ, type);
 		}
-	}
-
-	// Conditional FT questions
-	for (const apiQ of q.freetextquestion_questions || []) {
-		attachConditionalQuestion(apiQ, 'ft');
-	}
-	for (const apiSection of q.sections || []) {
-		for (const apiQ of apiSection.freetextquestion_questions || []) {
-			attachConditionalQuestion(apiQ, 'ft');
+		for (const apiSection of q.sections || []) {
+			for (const apiQ of apiSection[collection] || []) {
+				attachConditionalQuestion(apiQ, type);
+			}
 		}
 	}
 
@@ -357,7 +391,12 @@ export function initializeFromApiData(questionnaire: any, q: any): InitFromApiRe
 				const sectionFt = (apiSection.freetextquestion_questions || [])
 					.filter((ftq: any) => !ftq.depends_on_option_id)
 					.map((ftq: any) => convertApiFtQuestion(ftq, ftq.order ?? 0));
-				convertedSection.questions = [...sectionMc, ...sectionFt].sort((a, b) => a.order - b.order);
+				const sectionFu = (apiSection.fileuploadquestion_questions || [])
+					.filter((fuq: any) => !fuq.depends_on_option_id)
+					.map((fuq: any) => convertApiFuQuestion(fuq, fuq.order ?? 0));
+				convertedSection.questions = [...sectionMc, ...sectionFt, ...sectionFu].sort(
+					(a, b) => a.order - b.order
+				);
 				parentOption.conditionalSections = parentOption.conditionalSections || [];
 				parentOption.conditionalSections.push(convertedSection);
 			}

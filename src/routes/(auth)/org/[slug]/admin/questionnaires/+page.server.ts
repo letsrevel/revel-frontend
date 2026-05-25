@@ -28,7 +28,6 @@ export const load: PageServerLoad = async ({ locals, parent, fetch }) => {
 	}
 
 	return {
-		questionnaires: response.data?.results || [],
-		accessToken: user.accessToken
+		questionnaires: response.data?.results || []
 	};
 };

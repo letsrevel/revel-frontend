@@ -901,6 +901,7 @@
 		"invitationMessagePlaceholder": "Willkommensnachricht für Teilnehmende...",
 		"invitationMessageHint": "Standardnachricht, die gesendet wird, wenn Nutzer direkt zu dieser Veranstaltung eingeladen werden. Kann pro Einladung überschrieben werden.",
 		"advanced": "Erweitert",
+		"admissionScreening": "Zulassung & Prüfung",
 		"checkinOpensAt": "Check-in öffnet um",
 		"checkinOpensAtHint": "Wann der Ticket-Check-in verfügbar wird (Zeitzone: {timezone})",
 		"checkinClosesAt": "Check-in schließt um",
@@ -2783,7 +2784,8 @@
 			"questionnaires": "Fragebögen",
 			"resources": "Ressourcen",
 			"invitationLinks": "Einladungslinks",
-			"settings": "Einstellungen"
+			"settings": "Einstellungen",
+			"polls": "Umfragen"
 		},
 		"breadcrumbs": {
 			"home": "Startseite",
@@ -2817,7 +2819,7 @@
 				},
 				"questionnaires": {
 					"title": "Fragebögen",
-					"description": "Fragebögen erstellen und verwalten"
+					"description": "Teilnehmende prüfen und Zugang steuern"
 				},
 				"resources": {
 					"title": "Ressourcen",
@@ -2830,6 +2832,10 @@
 				"venues": {
 					"title": "Veranstaltungsorte",
 					"description": "Veranstaltungsorte verwalten"
+				},
+				"polls": {
+					"title": "Umfragen",
+					"description": "Umfragen erstellen und Mitgliedermeinungen einholen"
 				}
 			},
 			"orgDetails": {
@@ -3268,6 +3274,21 @@
 				"createdAt": "Erstellt",
 				"previous": "Zurück",
 				"next": "Weiter"
+			}
+		},
+		"polls": {
+			"pageTitle": "Umfragen",
+			"pageDescription": "Erstelle Umfragen für deine Organisation oder ein Event.",
+			"createPollButton": "Umfrage erstellen",
+			"searchPlaceholder": "Umfragen nach Name suchen…",
+			"empty": {
+				"title": "Noch keine Umfragen",
+				"description": "Erstelle deine erste Umfrage, um die Meinung deiner Mitglieder einzuholen."
+			},
+			"noResults": {
+				"title": "Keine Umfragen gefunden",
+				"description": "Keine Umfragen entsprechen \"{query}\". Versuche eine andere Suche.",
+				"clearButton": "Suche zurücksetzen"
 			}
 		}
 	},
@@ -4399,7 +4420,8 @@
 		"correct": "Richtig",
 		"noSubmissions": "Noch keine Einreichungen",
 		"noSubmissionsDescription": "Einreichungen erscheinen hier, sobald Benutzer den Fragebogen ausfüllen.",
-		"responses": "Antworten"
+		"responses_one": "{count} Antwort",
+		"responses_other": "{count} Antworten"
 	},
 	"questionnaireSubmissionDetailPage": {
 		"pageTitle": "Einreichung prüfen",
@@ -6074,5 +6096,180 @@
 	"countdown.units.days": "{n}d",
 	"countdown.units.hours": "{n}h",
 	"countdown.units.minutes": "{n}m",
-	"countdown.units.seconds": "{n}s"
+	"countdown.units.seconds": "{n}s",
+	"pollCard": {
+		"status_draft": "Entwurf",
+		"status_open": "Offen",
+		"status_closed": "Geschlossen",
+		"badge_anonymous": "Anonym",
+		"badge_public": "Öffentlich",
+		"badge_unlisted": "Nicht gelistet",
+		"badge_private": "Privat",
+		"badge_members": "Nur für Mitglieder",
+		"badge_staff": "Nur Team",
+		"badge_attendees": "Nur Teilnehmende",
+		"votes_zero": "Noch keine Stimmen",
+		"votes_one": "1 Stimme",
+		"votes_other": "{count} Stimmen",
+		"closesIn": "Schließt {duration}",
+		"closedAgo": "Geschlossen {ago}",
+		"notOpenedYet": "Noch nicht geöffnet",
+		"openPoll": "Umfrage öffnen",
+		"edit": "Bearbeiten",
+		"results": "Ergebnisse",
+		"copyLink": "Link kopieren",
+		"copySuccess": "Umfragelink in die Zwischenablage kopiert",
+		"copyError": "Fehler beim Kopieren des Links",
+		"shareUrlLabel": "Umfrage-Freigabelink",
+		"moreActions": "Weitere Aktionen",
+		"viewAsVoter": "Als Teilnehmer ansehen",
+		"close": "Umfrage schließen",
+		"reopen": "Umfrage wieder öffnen",
+		"delete": "Umfrage löschen",
+		"confirmDelete": "Umfrage \"{name}\" löschen? Dies kann nicht rückgängig gemacht werden.",
+		"deleting": "Wird gelöscht…"
+	},
+	"pollNewPage": {
+		"pageTitle": "Umfrage erstellen",
+		"backToList": "Zurück zu Umfragen",
+		"basicsTitle": "Grundlagen",
+		"basicsDescription": "Name und Beschreibung, die den Teilnehmenden angezeigt werden.",
+		"nameLabel": "Name der Umfrage",
+		"namePlaceholder": "Was sollen wir nach dem Treffen essen?",
+		"descriptionLabel": "Beschreibung (optional)",
+		"descriptionPlaceholder": "Kontext, der den Teilnehmenden vor der Abstimmung angezeigt wird.",
+		"shuffleQuestions": "Fragen zufällig anordnen",
+		"shuffleSections": "Abschnitte zufällig anordnen",
+		"audienceTitle": "Zielgruppe",
+		"audienceDescription": "Wer abstimmen darf und wer die Ergebnisse sehen kann.",
+		"voteVisibilityLabel": "Wer kann abstimmen",
+		"resultVisibilityLabel": "Wer kann die Ergebnisse sehen",
+		"eventLabel": "Verknüpftes Event (optional)",
+		"eventPlaceholder": "Keines",
+		"eventRequiredHint": "Ein Event ist erforderlich, wenn die Sichtbarkeit auf \"Privat\" oder \"Nur Teilnehmende\" gesetzt ist.",
+		"tiersSectionTitle": "Stufenbeschränkung (optional)",
+		"voteTiersLabel": "Mitgliedschaftsstufen mit Abstimmungsrecht",
+		"resultTiersLabel": "Mitgliedschaftsstufen mit Zugang zu den Ergebnissen",
+		"tiersHint": "Leer lassen, um allen Mitgliedern Zugang zu gewähren.",
+		"anonymityTitle": "Ergebnisse & Anonymität",
+		"anonymityDescription": "Diese Einstellungen können später nicht mehr geändert werden.",
+		"resultTimingLabel": "Wann Teilnehmende die Ergebnisse sehen",
+		"resultTimingNever": "Nie",
+		"resultTimingAfterVote": "Nach der Abstimmung",
+		"resultTimingAfterClose": "Nach Schließen der Umfrage",
+		"staffAnonymousLabel": "Identitäten der Abstimmenden vor dem Team verbergen",
+		"publicAnonymousLabel": "Identitäten der Abstimmenden vor anderen Teilnehmenden verbergen",
+		"publicAnonymousForced": "Erforderlich, da die Ergebnisse öffentlich oder nicht gelistet sind.",
+		"allowVoteChangesLabel": "Abstimmenden erlauben, ihre Stimme zu ändern (kann später geändert werden)",
+		"scheduleTitle": "Zeitplan",
+		"scheduleDescription": "Leer lassen, um die Umfrage offen zu halten, bis du sie manuell schließt.",
+		"closesAtLabel": "Schließt um",
+		"closesAtPast": "Der Schließzeitpunkt muss in der Zukunft liegen.",
+		"questionsTitle": "Fragen",
+		"addSection": "Abschnitt hinzufügen",
+		"noQuestionsYet": "Noch keine Fragen.",
+		"createButton": "Umfrage erstellen",
+		"creating": "Wird erstellt…",
+		"cancel": "Abbrechen",
+		"errorTitle": "Bitte korrigiere Folgendes",
+		"errorNameRequired": "Name ist erforderlich.",
+		"errorNoQuestions": "Füge mindestens eine Frage hinzu.",
+		"errorQuestionsNeedText": "Alle Fragen müssen einen Text haben.",
+		"errorEventRequired": "Wähle ein Event — Privat/Nur Teilnehmende erfordert eines.",
+		"saveError": "Umfrage konnte nicht erstellt werden (HTTP {status})."
+	},
+	"pollEditPage": {
+		"pageTitle": "Umfrage bearbeiten",
+		"backToList": "Zurück zu Umfragen",
+		"saveButton": "Änderungen speichern",
+		"saving": "Wird gespeichert…",
+		"saveSuccess": "Umfrage aktualisiert.",
+		"saveError": "Fehler beim Aktualisieren der Umfrage.",
+		"nameLockTooltip": "Name und Beschreibung können auf der Bearbeitungsseite der Umfrage geändert werden.",
+		"anonymityLockTooltip": "Beim Erstellen festgelegt, kann nicht mehr geändert werden.",
+		"publicAnonymousLockedTooltip": "Erfordert öffentliche Anonymität, die nach dem Erstellen nicht mehr geändert werden kann.",
+		"questionsLockedBanner": "Fragen werden gesperrt, sobald die Umfrage geöffnet wird. Erstelle eine neue Umfrage, um Fragen zu ändern.",
+		"addSection": "Abschnitt hinzufügen",
+		"noQuestionsYet": "Noch keine Fragen.",
+		"noQuestionsDefined": "Noch keine Fragen definiert.",
+		"noQuestionnaire": "Dieser Umfrage ist kein Fragebogen zugeordnet.",
+		"resultsTitle": "Ergebnisse",
+		"resultsEmpty": "Noch keine Stimmen.",
+		"deleteSectionTitle": "Gefahrenzone",
+		"deleteButton": "Umfrage löschen",
+		"deleteConfirm": "Umfrage \"{name}\" löschen? Dies kann nicht rückgängig gemacht werden.",
+		"deleteError": "Umfrage konnte nicht gelöscht werden."
+	},
+	"pollStatusBar": {
+		"openedAt": "Geöffnet {at}",
+		"closedAt": "Geschlossen {at}",
+		"closesAt": "Schließt {at}",
+		"openButton": "Umfrage öffnen",
+		"closeButton": "Umfrage schließen",
+		"reopenButton": "Umfrage wieder öffnen",
+		"viewAsVoter": "Als Teilnehmer ansehen",
+		"lifecycleError": "Status der Umfrage konnte nicht geändert werden. Bitte versuche es erneut."
+	},
+	"pollReopenDialog": {
+		"title": "Umfrage wieder öffnen",
+		"description": "Optional einen neuen Schließzeitpunkt festlegen.",
+		"closesAtLabel": "Neuer Schließzeitpunkt (optional)",
+		"clearClosesAtLabel": "Offen lassen, bis ich sie manuell schließe",
+		"confirm": "Wieder öffnen",
+		"cancel": "Abbrechen"
+	},
+	"pollVoterPage": {
+		"title": "{name} – Umfrage",
+		"organizedBy": "Organisiert von",
+		"linkedToEvent": "Verknüpft mit",
+		"signInToVote": "Anmelden, um abzustimmen",
+		"draftBanner": "Diese Umfrage wurde noch nicht geöffnet.",
+		"closedVotedBanner": "Die Abstimmung ist geschlossen. Danke für deine Teilnahme!",
+		"closedNotVotedBanner": "Die Abstimmung ist geschlossen.",
+		"ineligibleBanner": "Diese Abstimmung ist auf eine andere Zielgruppe beschränkt — siehe die Regeln oben.",
+		"votedBanner": "Du hast an dieser Umfrage teilgenommen.",
+		"changeVote": "Stimme ändern",
+		"withdrawVote": "Stimme zurückziehen",
+		"submitVote": "Abstimmen",
+		"submitting": "Wird gesendet…",
+		"submitSuccess": "Deine Stimme wurde erfasst.",
+		"submitErrorAuth": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an, um abzustimmen.",
+		"submitErrorClosed": "Diese Umfrage wurde gerade geschlossen.",
+		"submitErrorIneligible": "Du darfst an dieser Umfrage nicht teilnehmen.",
+		"submitErrorConflict": "Du hast bereits an dieser Umfrage abgestimmt.",
+		"withdrawConfirm": "Deine Stimme zurückziehen?",
+		"withdrawConfirmTitle": "Stimme zurückziehen",
+		"withdrawSuccess": "Deine Stimme wurde zurückgezogen.",
+		"resultsTitle": "Ergebnisse",
+		"resultsEmpty": "Noch keine Stimmen.",
+		"withdrawError": "Stimme konnte nicht zurückgezogen werden. Bitte versuche es erneut.",
+		"signIn": "Anmelden",
+		"castVoteTitle": "Stimme abgeben",
+		"submitErrorValidation": "Einige Antworten sind ungültig. Bitte überprüfe sie und versuche es erneut.",
+		"submitErrorEmpty": "Wähle mindestens eine Antwort, bevor du abstimmst.",
+		"forbiddenTitle": "Du hast keinen Zugriff auf diese Umfrage",
+		"forbiddenBody": "Diese Umfrage ist eingeschränkt und du gehörst nicht zum Zielpublikum. Wenn das ein Fehler ist, wende dich an die Organisator:innen – oder melde dich mit einem anderen Konto an."
+	},
+	"pollResults": {
+		"totalVoters_one": "{count} Stimme",
+		"totalVoters_other": "{count} Stimmen",
+		"freeTextHeading": "Freitext-Antworten"
+	},
+	"pollPrivacy": {
+		"canVote": "Wer abstimmen kann: {audience}",
+		"canSeeResults": "Ergebnisse sichtbar für: {audience} ({when})",
+		"anonymousToVoters": "Deine Identität ist für andere Wähler:innen verborgen",
+		"identityVisibleToVoters": "Deine Identität ist für alle sichtbar, die die Ergebnisse sehen können",
+		"identityVisibleToStaff": "Das Team kann sehen, wer was abgestimmt hat",
+		"allowsChanges": "Du kannst deine Stimme ändern oder zurückziehen",
+		"audience_public": "alle",
+		"audience_unlisted": "alle mit dem Link",
+		"audience_invited": "nur eingeladene Personen",
+		"audience_members": "nur Mitglieder",
+		"audience_staff": "nur Team",
+		"audience_attendees": "nur Teilnehmende",
+		"timing_never": "Ergebnisse werden nicht mit Wähler:innen geteilt",
+		"timing_afterVote": "nachdem du abgestimmt hast",
+		"timing_afterClose": "nachdem die Umfrage geschlossen ist"
+	}
 }

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
@@ -35,13 +36,13 @@
 	}
 
 	async function saveGeneralPreferences() {
-		if (!data.accessToken) return;
+		if (!authStore.accessToken) return;
 
 		isUpdatingGeneral = true;
 		try {
 			const { data: updatedPrefs, error } = await userpreferencesUpdateGeneralPreferences({
 				headers: {
-					Authorization: `Bearer ${data.accessToken}`
+					Authorization: `Bearer ${authStore.accessToken}`
 				},
 				body: {
 					city_id: selectedCity?.id || null,
@@ -97,7 +98,7 @@
 		</div>
 	{/if}
 
-	{#if data.accessToken}
+	{#if authStore.accessToken}
 		<!-- General Preferences -->
 		<div class="mb-8 rounded-lg border bg-card p-6">
 			<h2 class="mb-4 text-xl font-semibold">{m['accountSettingsPage.general.title']()}</h2>
@@ -189,13 +190,13 @@
 					</p>
 				</div>
 			</div>
-			<BillingProfileForm authToken={data.accessToken} />
+			<BillingProfileForm authToken={authStore.accessToken} />
 		</div>
 
 		<!-- Notification Settings -->
 		<NotificationPreferencesForm
 			preferences={data.notificationPreferences ?? null}
-			authToken={data.accessToken}
+			authToken={authStore.accessToken}
 		/>
 	{:else}
 		<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">

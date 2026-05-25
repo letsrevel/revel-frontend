@@ -901,6 +901,7 @@
 		"invitationMessagePlaceholder": "Welcome message for attendees...",
 		"invitationMessageHint": "Default message sent when users are directly invited to this event. Can be overridden on individual invitations.",
 		"advanced": "Advanced",
+		"admissionScreening": "Admission & Screening",
 		"checkinOpensAt": "Check-in Opens At",
 		"checkinOpensAtHint": "When ticket check-in becomes available (timezone: {timezone})",
 		"checkinClosesAt": "Check-in Closes At",
@@ -2783,7 +2784,8 @@
 			"questionnaires": "Questionnaires",
 			"resources": "Resources",
 			"invitationLinks": "Invitation Links",
-			"settings": "Settings"
+			"settings": "Settings",
+			"polls": "Polls"
 		},
 		"breadcrumbs": {
 			"home": "Home",
@@ -2817,7 +2819,7 @@
 				},
 				"questionnaires": {
 					"title": "Questionnaires",
-					"description": "Create and manage questionnaires"
+					"description": "Screen participants and gate attendance"
 				},
 				"resources": {
 					"title": "Resources",
@@ -2830,6 +2832,10 @@
 				"venues": {
 					"title": "Venues",
 					"description": "Manage event venues"
+				},
+				"polls": {
+					"title": "Polls",
+					"description": "Run polls and gather member input"
 				}
 			},
 			"orgDetails": {
@@ -3268,6 +3274,21 @@
 				"createdAt": "Created",
 				"previous": "Previous",
 				"next": "Next"
+			}
+		},
+		"polls": {
+			"pageTitle": "Polls",
+			"pageDescription": "Create polls scoped to your organization or an event.",
+			"createPollButton": "Create Poll",
+			"searchPlaceholder": "Search polls by name…",
+			"empty": {
+				"title": "No polls yet",
+				"description": "Create your first poll to gather member input."
+			},
+			"noResults": {
+				"title": "No polls match your search",
+				"description": "No polls match \"{query}\". Try a different search.",
+				"clearButton": "Clear search"
 			}
 		}
 	},
@@ -4399,7 +4420,8 @@
 		"correct": "Correct",
 		"noSubmissions": "No submissions yet",
 		"noSubmissionsDescription": "Submissions will appear here once users start completing the questionnaire.",
-		"responses": "responses"
+		"responses_one": "{count} response",
+		"responses_other": "{count} responses"
 	},
 	"questionnaireSubmissionDetailPage": {
 		"pageTitle": "Review Submission",
@@ -6074,5 +6096,180 @@
 	"countdown.units.days": "{n}d",
 	"countdown.units.hours": "{n}h",
 	"countdown.units.minutes": "{n}m",
-	"countdown.units.seconds": "{n}s"
+	"countdown.units.seconds": "{n}s",
+	"pollCard": {
+		"status_draft": "Draft",
+		"status_open": "Open",
+		"status_closed": "Closed",
+		"badge_anonymous": "Anonymous",
+		"badge_public": "Public",
+		"badge_unlisted": "Unlisted",
+		"badge_private": "Private",
+		"badge_members": "Members only",
+		"badge_staff": "Staff only",
+		"badge_attendees": "Attendees only",
+		"votes_zero": "No votes yet",
+		"votes_one": "1 vote",
+		"votes_other": "{count} votes",
+		"closesIn": "Closes {duration}",
+		"closedAgo": "Closed {ago}",
+		"notOpenedYet": "Not opened yet",
+		"openPoll": "Open poll",
+		"edit": "Edit",
+		"results": "Results",
+		"copyLink": "Copy link",
+		"copySuccess": "Poll link copied to clipboard",
+		"copyError": "Failed to copy link",
+		"shareUrlLabel": "Poll share URL",
+		"moreActions": "More actions",
+		"viewAsVoter": "View as voter",
+		"close": "Close poll",
+		"reopen": "Reopen poll",
+		"delete": "Delete poll",
+		"confirmDelete": "Delete poll \"{name}\"? This cannot be undone.",
+		"deleting": "Deleting…"
+	},
+	"pollNewPage": {
+		"pageTitle": "Create Poll",
+		"backToList": "Back to Polls",
+		"basicsTitle": "Basics",
+		"basicsDescription": "Name and description visible to voters.",
+		"nameLabel": "Poll name",
+		"namePlaceholder": "What should we eat after the meetup?",
+		"descriptionLabel": "Description (optional)",
+		"descriptionPlaceholder": "Context shown to voters before they answer.",
+		"shuffleQuestions": "Shuffle questions",
+		"shuffleSections": "Shuffle sections",
+		"audienceTitle": "Audience",
+		"audienceDescription": "Who can vote and who can see the results.",
+		"voteVisibilityLabel": "Who can vote",
+		"resultVisibilityLabel": "Who can see results",
+		"eventLabel": "Linked event (optional)",
+		"eventPlaceholder": "None",
+		"eventRequiredHint": "An event is required when visibility is set to Private or Attendees only.",
+		"tiersSectionTitle": "Tier scoping (optional)",
+		"voteTiersLabel": "Membership tiers allowed to vote",
+		"resultTiersLabel": "Membership tiers allowed to see results",
+		"tiersHint": "Leave empty to allow all members.",
+		"anonymityTitle": "Results & anonymity",
+		"anonymityDescription": "These cannot be changed later.",
+		"resultTimingLabel": "When voters see results",
+		"resultTimingNever": "Never",
+		"resultTimingAfterVote": "After voting",
+		"resultTimingAfterClose": "After the poll closes",
+		"staffAnonymousLabel": "Hide voter identities from staff",
+		"publicAnonymousLabel": "Hide voter identities from voters",
+		"publicAnonymousForced": "Required because results are public or unlisted.",
+		"allowVoteChangesLabel": "Allow voters to change their vote (can be changed later)",
+		"scheduleTitle": "Schedule",
+		"scheduleDescription": "Leave blank to keep the poll open until you close it manually.",
+		"closesAtLabel": "Closes at",
+		"closesAtPast": "Closing time must be in the future.",
+		"questionsTitle": "Questions",
+		"addSection": "Add Section",
+		"noQuestionsYet": "No questions yet.",
+		"createButton": "Create poll",
+		"creating": "Creating…",
+		"cancel": "Cancel",
+		"errorTitle": "Please fix the following",
+		"errorNameRequired": "Name is required.",
+		"errorNoQuestions": "Add at least one question.",
+		"errorQuestionsNeedText": "All questions need text.",
+		"errorEventRequired": "Choose an event — Private/Attendees-only visibility requires one.",
+		"saveError": "Failed to create poll (HTTP {status})."
+	},
+	"pollEditPage": {
+		"pageTitle": "Edit Poll",
+		"backToList": "Back to Polls",
+		"saveButton": "Save changes",
+		"saving": "Saving…",
+		"saveSuccess": "Poll updated.",
+		"saveError": "Failed to update poll.",
+		"nameLockTooltip": "Name and description can be edited on the poll edit page.",
+		"anonymityLockTooltip": "Set at creation, cannot be changed.",
+		"publicAnonymousLockedTooltip": "Requires public-anonymous, which can't be changed after creation.",
+		"questionsLockedBanner": "Questions are locked once the poll opens. To change questions, create a new poll.",
+		"addSection": "Add Section",
+		"noQuestionsYet": "No questions yet.",
+		"noQuestionsDefined": "No questions defined yet.",
+		"noQuestionnaire": "No questionnaire attached to this poll.",
+		"resultsTitle": "Results",
+		"resultsEmpty": "No votes yet.",
+		"deleteSectionTitle": "Danger zone",
+		"deleteButton": "Delete poll",
+		"deleteConfirm": "Delete poll \"{name}\"? This cannot be undone.",
+		"deleteError": "Failed to delete poll."
+	},
+	"pollStatusBar": {
+		"openedAt": "Opened {at}",
+		"closedAt": "Closed {at}",
+		"closesAt": "Closes {at}",
+		"openButton": "Open poll",
+		"closeButton": "Close poll",
+		"reopenButton": "Reopen poll",
+		"viewAsVoter": "View as voter",
+		"lifecycleError": "Could not change poll status. Please try again."
+	},
+	"pollReopenDialog": {
+		"title": "Reopen poll",
+		"description": "Optionally set a new closing time.",
+		"closesAtLabel": "New closes at (optional)",
+		"clearClosesAtLabel": "Keep open until I close it manually",
+		"confirm": "Reopen",
+		"cancel": "Cancel"
+	},
+	"pollVoterPage": {
+		"title": "{name} – Poll",
+		"organizedBy": "Organized by",
+		"linkedToEvent": "Linked to",
+		"signInToVote": "Sign in to vote",
+		"draftBanner": "This poll hasn't opened yet.",
+		"closedVotedBanner": "Voting is closed. Thanks for voting!",
+		"closedNotVotedBanner": "Voting is closed.",
+		"ineligibleBanner": "Voting on this poll is restricted to a different audience — see the rules above.",
+		"votedBanner": "You voted on this poll.",
+		"changeVote": "Change my vote",
+		"withdrawVote": "Withdraw vote",
+		"submitVote": "Submit vote",
+		"submitting": "Submitting…",
+		"submitSuccess": "Your vote was recorded.",
+		"submitErrorAuth": "Your session expired. Please sign in again to vote.",
+		"submitErrorClosed": "This poll just closed.",
+		"submitErrorIneligible": "You're not allowed to vote on this poll.",
+		"submitErrorConflict": "You already voted on this poll.",
+		"withdrawConfirm": "Withdraw your vote?",
+		"withdrawConfirmTitle": "Withdraw your vote",
+		"withdrawSuccess": "Your vote has been withdrawn.",
+		"resultsTitle": "Results",
+		"resultsEmpty": "No votes yet.",
+		"withdrawError": "Failed to withdraw your vote. Please try again.",
+		"signIn": "Sign in",
+		"castVoteTitle": "Cast your vote",
+		"submitErrorValidation": "Some answers are invalid. Please review and try again.",
+		"submitErrorEmpty": "Pick at least one answer before submitting your vote.",
+		"forbiddenTitle": "You don't have access to this poll",
+		"forbiddenBody": "This poll is restricted and you're not in its audience. If you think this is a mistake, contact the organisers — or sign in with a different account."
+	},
+	"pollResults": {
+		"totalVoters_one": "{count} voter",
+		"totalVoters_other": "{count} voters",
+		"freeTextHeading": "Free-text answers"
+	},
+	"pollPrivacy": {
+		"canVote": "Who can vote: {audience}",
+		"canSeeResults": "Results visible to: {audience} ({when})",
+		"anonymousToVoters": "Your identity is hidden from other voters",
+		"identityVisibleToVoters": "Your identity is visible to anyone who can see results",
+		"identityVisibleToStaff": "Staff can see who voted what",
+		"allowsChanges": "You can change or withdraw your vote",
+		"audience_public": "anyone",
+		"audience_unlisted": "anyone with the link",
+		"audience_invited": "invited people only",
+		"audience_members": "members only",
+		"audience_staff": "staff only",
+		"audience_attendees": "attendees only",
+		"timing_never": "results are not shared with voters",
+		"timing_afterVote": "after you vote",
+		"timing_afterClose": "after the poll closes"
+	}
 }
