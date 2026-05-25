@@ -209,6 +209,22 @@
 			toast.success(m['pollEditPage.saveSuccess']());
 			await invalidateAll();
 
+			// Re-sync the editable form fields from the freshly loaded poll so any
+			// server-side normalisation (trimmed name, canonical closes_at, etc.) is
+			// reflected instead of leaving the inputs showing the pre-save values.
+			name = poll.questionnaire?.name ?? '';
+			description = poll.questionnaire?.description ?? '';
+			voteVisibility = poll.vote_visibility;
+			resultVisibility = poll.result_visibility;
+			eventId = poll.event_id;
+			voteTierIds = poll.vote_membership_tier_ids;
+			resultTierIds = poll.result_membership_tier_ids;
+			resultTiming = poll.result_timing;
+			staffAnonymous = poll.staff_anonymous;
+			publicAnonymous = poll.public_anonymous;
+			allowVoteChanges = poll.allow_vote_changes;
+			closesAt = poll.closes_at ? toDateTimeLocal(poll.closes_at) : null;
+
 			// Re-derive editor state from the freshly loaded poll so newly-created
 			// question/option IDs are tracked for the next incremental save.
 			if (isDraft && poll.questionnaire) {

@@ -80,12 +80,12 @@ export const POST: RequestHandler = async ({ cookies }) => {
 			getRememberMeCookieOptions(rememberMe)
 		);
 
-		// Return the new tokens to the client
-		// Client needs access token to update its in-memory store
+		// Return ONLY the access token to the client. The refresh token stays in
+		// the httpOnly cookie set above and must never be exposed to client JS
+		// (the in-memory store only consumes `access`).
 		return json(
 			{
-				access: data.access,
-				refresh: data.refresh
+				access: data.access
 			},
 			{ headers: { 'Cache-Control': 'no-store, private' } }
 		);

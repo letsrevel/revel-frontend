@@ -20,6 +20,7 @@
 	import { BarChart3, Edit, ExternalLink, MoreHorizontal, Play, Trash2 } from 'lucide-svelte';
 	import PollStatusBadge from './PollStatusBadge.svelte';
 	import PollUrlStrip from './PollUrlStrip.svelte';
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import { toast } from 'svelte-sonner';
 	import {
 		pollOpenPollAction,
@@ -27,6 +28,7 @@
 		pollDeletePollAction
 	} from '$lib/api/generated/sdk.gen';
 	import { buildPollVoterUrl, isPollDraft, formatVoteCount } from '$lib/utils/polls';
+	import { formatRelativeTime } from '$lib/utils/date';
 	import type { PollListItemSchema } from '$lib/api/generated/types.gen';
 
 	interface Props {
@@ -45,6 +47,7 @@
 
 	let isLifecycleBusy = $state(false);
 	let isDeleting = $state(false);
+	let deleteConfirmOpen = $state(false);
 
 	function authHeaders(): Record<string, string> {
 		return accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
@@ -81,7 +84,6 @@
 	}
 
 	async function deletePoll() {
-		if (!confirm(m['pollCard.confirmDelete']({ name: poll.questionnaire_name }))) return;
 		isDeleting = true;
 		try {
 			const res = await pollDeletePollAction({
@@ -89,6 +91,7 @@
 				headers: authHeaders()
 			});
 			if (res.error) throw new Error('delete');
+			deleteConfirmOpen = false;
 			await invalidateAll();
 		} catch (e) {
 			console.error(e);
@@ -136,7 +139,7 @@
 					{/if}
 					{#if isOwner}
 						<DropdownMenuItem
-							onclick={deletePoll}
+							onclick={() => (deleteConfirmOpen = true)}
 							disabled={isDeleting}
 							class="text-destructive focus:text-destructive"
 						>
@@ -156,15 +159,9 @@
 						<span>{voteLabel}</span>
 					{/if}
 					{#if poll.status === 'open' && poll.closes_at}
-						<span
-							>{m['pollCard.closesIn']({
-								duration: new Date(poll.closes_at).toLocaleString()
-							})}</span
-						>
+						<span>{m['pollCard.closesIn']({ duration: formatRelativeTime(poll.closes_at) })}</span>
 					{:else if poll.status === 'closed' && poll.closed_at}
-						<span
-							>{m['pollCard.closedAgo']({ ago: new Date(poll.closed_at).toLocaleString() })}</span
-						>
+						<span>{m['pollCard.closedAgo']({ ago: formatRelativeTime(poll.closed_at) })}</span>
 					{:else if poll.status === 'draft'}
 						<span>{m['pollCard.notOpenedYet']()}</span>
 					{/if}
@@ -193,3 +190,13 @@
 		</div>
 	</CardContent>
 </Card>
+
+<ConfirmDialog
+	isOpen={deleteConfirmOpen}
+	title={m['pollCard.delete']()}
+	message={m['pollCard.confirmDelete']({ name: poll.questionnaire_name })}
+	confirmText={m['pollCard.delete']()}
+	variant="danger"
+	onCancel={() => (deleteConfirmOpen = false)}
+	onConfirm={deletePoll}
+/>

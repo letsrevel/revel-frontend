@@ -108,6 +108,37 @@ export function getRSVPDeadlineRelative(deadlineString: string): string {
 }
 
 /**
+ * Format an ISO datetime as a locale-aware relative time phrase.
+ *
+ * Future times read "in 3 days" / "in 2 hours"; past times read
+ * "2 hours ago" / "yesterday". Uses Intl.RelativeTimeFormat so the
+ * directional word ("in" / "ago" and its translations) is supplied by
+ * the active locale rather than hardcoded.
+ *
+ * @param dateString ISO 8601 date-time string
+ * @returns Relative phrase (e.g., "in 3 days", "2 hours ago")
+ */
+export function formatRelativeTime(dateString: string): string {
+	const diffMs = new Date(dateString).getTime() - Date.now();
+	const rtf = new Intl.RelativeTimeFormat(getCurrentLocale(), { numeric: 'auto' });
+
+	const units: [Intl.RelativeTimeFormatUnit, number][] = [
+		['year', 1000 * 60 * 60 * 24 * 365],
+		['month', 1000 * 60 * 60 * 24 * 30],
+		['day', 1000 * 60 * 60 * 24],
+		['hour', 1000 * 60 * 60],
+		['minute', 1000 * 60]
+	];
+
+	for (const [unit, ms] of units) {
+		if (Math.abs(diffMs) >= ms) {
+			return rtf.format(Math.round(diffMs / ms), unit);
+		}
+	}
+	return rtf.format(Math.round(diffMs / 1000), 'second');
+}
+
+/**
  * Check if an event is in the past
  * @param endString ISO 8601 end date-time string
  * @returns true if event has ended

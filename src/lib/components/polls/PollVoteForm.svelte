@@ -196,7 +196,11 @@
 				.map(([question_id, files]) => ({ question_id, file_ids: files.map((f) => f.id) }));
 
 			if (!authStore.accessToken) {
-				throw new Error('not authenticated');
+				// Inline toast + silent throw, matching the API-error branches below,
+				// so the global "Action failed" handler doesn't fire a second toast
+				// with the raw internal message.
+				toast.error(m['pollVoterPage.submitErrorAuth']());
+				throw Object.assign(new Error('not authenticated'), { silent: true });
 			}
 
 			const res = await pollVote({

@@ -50,6 +50,7 @@
 		parseValidationErrors
 	} from '$lib/utils/questionnaire-form-helpers';
 	import { validateClosesAt } from '$lib/utils/polls';
+	import { toISOString } from '$lib/utils/datetime';
 
 	interface Props {
 		data: PageData;
@@ -190,7 +191,7 @@
 					staff_anonymous: staffAnonymous,
 					public_anonymous: publicAnonymous,
 					allow_vote_changes: allowVoteChanges,
-					closes_at: closesAt ? new Date(closesAt).toISOString() : null,
+					closes_at: toISOString(closesAt),
 					sections: buildCreateApiSections(sections) as SectionCreateSchema[],
 					multiplechoicequestion_questions: topLevelQuestions
 						.filter((q) => q.type === 'multiple_choice')
