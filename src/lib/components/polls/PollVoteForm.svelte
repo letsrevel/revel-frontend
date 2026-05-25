@@ -156,7 +156,11 @@
 			}
 
 			if (validationErrors.size > 0) {
-				throw new Error(m['questionnaireSubmissionPage.validation_allRequired']());
+				// Required-field errors are surfaced inline per question; suppress
+				// the generic global "Action failed" toast.
+				throw Object.assign(new Error(m['questionnaireSubmissionPage.validation_allRequired']()), {
+					silent: true
+				});
 			}
 
 			// Safety net for the "phantom voter" case: even when every visible
@@ -202,23 +206,27 @@
 			});
 
 			if (res.error) {
+				// Each branch shows a specific inline toast, so the thrown error
+				// carries `silent: true` to suppress the global "Action failed"
+				// toast in +layout.svelte's mutations.onError (otherwise the user
+				// sees two toasts for one failure).
 				const status = res.response.status;
 				if (status === 423) {
 					toast.error(m['pollVoterPage.submitErrorClosed']());
-					throw new Error('closed');
+					throw Object.assign(new Error('closed'), { silent: true });
 				} else if (status === 409) {
 					toast.error(m['pollVoterPage.submitErrorConflict']());
 					await invalidateAll();
-					throw new Error('conflict');
+					throw Object.assign(new Error('conflict'), { silent: true });
 				} else if (status === 422) {
 					toast.error(m['pollVoterPage.submitErrorValidation']());
-					throw new Error('validation');
+					throw Object.assign(new Error('validation'), { silent: true });
 				} else if (status === 403) {
 					toast.error(m['pollVoterPage.submitErrorIneligible']());
-					throw new Error('ineligible');
+					throw Object.assign(new Error('ineligible'), { silent: true });
 				} else {
 					toast.error(m['pollEditPage.saveError']());
-					throw new Error('error');
+					throw Object.assign(new Error('error'), { silent: true });
 				}
 			}
 		},

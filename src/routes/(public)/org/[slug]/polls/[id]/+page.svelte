@@ -45,7 +45,12 @@
 
 	async function withdrawVote() {
 		if (!poll) return;
-		if (!authStore.accessToken) return;
+		if (!authStore.accessToken) {
+			// Don't fail silently — the user clicked withdraw and deserves feedback
+			// (e.g. the in-memory token hasn't rehydrated yet).
+			toast.error(m['pollVoterPage.withdrawError']());
+			return;
+		}
 		withdrawing = true;
 		try {
 			const res = await pollWithdrawVoteAction({

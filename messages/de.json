@@ -6181,7 +6181,7 @@
 		"saving": "Wird gespeichert…",
 		"saveSuccess": "Umfrage aktualisiert.",
 		"saveError": "Fehler beim Aktualisieren der Umfrage.",
-		"nameLockTooltip": "Name und Beschreibung können nach dem Erstellen der Umfrage nicht mehr bearbeitet werden. Erstelle eine neue Umfrage, um sie zu ändern.",
+		"nameLockTooltip": "Name und Beschreibung können auf der Bearbeitungsseite der Umfrage geändert werden.",
 		"anonymityLockTooltip": "Beim Erstellen festgelegt, kann nicht mehr geändert werden.",
 		"publicAnonymousLockedTooltip": "Erfordert öffentliche Anonymität, die nach dem Erstellen nicht mehr geändert werden kann.",
 		"questionsLockedBanner": "Fragen werden gesperrt, sobald die Umfrage geöffnet wird. Erstelle eine neue Umfrage, um Fragen zu ändern.",

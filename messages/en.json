@@ -6181,7 +6181,7 @@
 		"saving": "Saving…",
 		"saveSuccess": "Poll updated.",
 		"saveError": "Failed to update poll.",
-		"nameLockTooltip": "Name and description can't be edited after the poll is created. To change them, create a new poll.",
+		"nameLockTooltip": "Name and description can be edited on the poll edit page.",
 		"anonymityLockTooltip": "Set at creation, cannot be changed.",
 		"publicAnonymousLockedTooltip": "Requires public-anonymous, which can't be changed after creation.",
 		"questionsLockedBanner": "Questions are locked once the poll opens. To change questions, create a new poll.",

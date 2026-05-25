@@ -125,6 +125,9 @@ class AuthStore {
 	 * Login with email and password
 	 */
 	async login(username: string, password: string): Promise<void> {
+		// Intentional new session — clear any lingering logout guard from an
+		// earlier logout() in this same SPA session.
+		this._isLoggingOut = false;
 		this._isLoading = true;
 		try {
 			const { data, error } = await authObtainToken({
@@ -168,6 +171,8 @@ class AuthStore {
 	 * Complete 2FA login with OTP code
 	 */
 	async loginWithOTP(tempToken: string, otpCode: string): Promise<void> {
+		// Intentional new session — clear any lingering logout guard.
+		this._isLoggingOut = false;
 		this._isLoading = true;
 		try {
 			const { data, error } = await authObtainTokenWithOtp({
@@ -212,8 +217,14 @@ class AuthStore {
 		this._permissions = null;
 
 		// Note: Refresh token cookie will be cleared by server-side hook
-		// or by calling a logout endpoint if needed
-		this._isLoggingOut = false;
+		// or by calling a logout endpoint if needed.
+		//
+		// Intentionally do NOT reset `_isLoggingOut` here. logout() runs
+		// synchronously, so a refresh fetch that is already in flight only
+		// resolves *after* this method returns; if we cleared the flag now the
+		// guard in _performRefresh() would see `false` and resurrect the
+		// session. The flag stays set until an intentional new login
+		// (login()/loginWithOTP()) clears it.
 	}
 
 	/**

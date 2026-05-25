@@ -204,14 +204,13 @@ export interface InitFromApiResult {
  * either shape. Returns a shallow copy — the input is reactive `$state` and
  * must not be mutated.
  */
-function normalizeQuestionCollections<T extends Record<string, unknown>>(obj: T): T {
+export function normalizeQuestionCollections<T extends Record<string, unknown>>(obj: T): T {
 	if (!obj) return obj;
 	return {
 		...obj,
 		multiplechoicequestion_questions:
 			obj.multiplechoicequestion_questions ?? obj.multiple_choice_questions ?? [],
-		freetextquestion_questions:
-			obj.freetextquestion_questions ?? obj.free_text_questions ?? [],
+		freetextquestion_questions: obj.freetextquestion_questions ?? obj.free_text_questions ?? [],
 		fileuploadquestion_questions:
 			obj.fileuploadquestion_questions ?? obj.file_upload_questions ?? []
 	};

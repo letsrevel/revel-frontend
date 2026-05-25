@@ -6181,7 +6181,7 @@
 		"saving": "Salvataggio in corso…",
 		"saveSuccess": "Sondaggio aggiornato.",
 		"saveError": "Impossibile aggiornare il sondaggio.",
-		"nameLockTooltip": "Nome e descrizione non possono essere modificati dopo la creazione del sondaggio. Per cambiarli, crea un nuovo sondaggio.",
+		"nameLockTooltip": "Nome e descrizione possono essere modificati nella pagina di modifica del sondaggio.",
 		"anonymityLockTooltip": "Impostato alla creazione, non può essere modificato.",
 		"publicAnonymousLockedTooltip": "Richiede anonimato pubblico, che non può essere modificato dopo la creazione.",
 		"questionsLockedBanner": "Le domande vengono bloccate una volta che il sondaggio viene aperto. Per modificarle, crea un nuovo sondaggio.",

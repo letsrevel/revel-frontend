@@ -30,7 +30,9 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 		}
 		console.error(`Failed to load poll: ${status}`, res.error);
 		const message = extractErrorMessage(res.error, 'Failed to load poll');
-		throw error(status === 404 ? 404 : status >= 500 ? 500 : 502, message);
+		// 403 is handled above; preserve any other upstream client-error status
+		// (401/404/410/422) and only normalize 5xx / transport failures to 500.
+		throw error(status >= 400 && status < 500 ? status : 500, message);
 	}
 
 	return {

@@ -36,7 +36,8 @@ import type {
 import {
 	mcQuestionToEditApiFormat,
 	ftQuestionToEditApiFormat,
-	fuQuestionToEditApiFormat
+	fuQuestionToEditApiFormat,
+	normalizeQuestionCollections
 } from './questionnaire-api-converters';
 
 // ===== Internal Types =====
@@ -577,7 +578,20 @@ export async function savePollQuestionsIncremental(params: {
 	sections: QuestionnaireSection[];
 	topLevelQuestions: QuestionnaireQuestion[];
 }) {
-	const { pollId, accessToken, q, sections, topLevelQuestions } = params;
+	const { pollId, accessToken, q: rawQ, sections, topLevelQuestions } = params;
+
+	// Normalize the API questionnaire shape before diffing. The poll-detail
+	// endpoint embeds a `QuestionnaireSchema` with underscored collection names
+	// (`multiple_choice_questions`, ...), but every read below (and in the
+	// sub-helpers we pass `q` to) uses the Django reverse-relation names
+	// (`multiplechoicequestion_questions`, ...). Without this, the "existing IDs"
+	// sets are always empty, so removed questions/options/sections are never
+	// DELETEd on save and reappear after reload. normalizeQuestionCollections
+	// coalesces both shapes; we apply it top-level and per-section.
+	const q = normalizeQuestionCollections(rawQ);
+	q.sections = (rawQ?.sections || []).map((s: Record<string, unknown>) =>
+		normalizeQuestionCollections(s)
+	);
 
 	const authHeader: AuthHeader = { Authorization: `Bearer ${accessToken}` };
 
