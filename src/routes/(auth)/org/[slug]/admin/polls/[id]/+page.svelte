@@ -336,7 +336,8 @@
 							onclick={() => addTopLevelQuestion('multiple_choice')}
 							class="gap-2"
 						>
-							<Plus class="h-4 w-4" /> Multiple Choice
+							<Plus class="h-4 w-4" />
+							{m['questionAnswerDisplay.multipleChoice']()}
 						</Button>
 						<Button
 							variant="outline"
@@ -344,7 +345,8 @@
 							onclick={() => addTopLevelQuestion('free_text')}
 							class="gap-2"
 						>
-							<Plus class="h-4 w-4" /> Free Text
+							<Plus class="h-4 w-4" />
+							{m['questionAnswerDisplay.freeText']()}
 						</Button>
 						<Button
 							variant="outline"
@@ -352,10 +354,12 @@
 							onclick={() => addTopLevelQuestion('file_upload')}
 							class="gap-2"
 						>
-							<Upload class="h-4 w-4" /> File Upload
+							<Upload class="h-4 w-4" />
+							{m['questionAnswerDisplay.fileUpload']()}
 						</Button>
 						<Button variant="secondary" size="sm" onclick={addSection} class="gap-2">
-							<FolderPlus class="h-4 w-4" /> Add Section
+							<FolderPlus class="h-4 w-4" />
+							{m['pollEditPage.addSection']()}
 						</Button>
 					</div>
 				{/if}
@@ -398,7 +402,7 @@
 				</div>
 				{#if topLevelQuestions.length === 0 && sections.length === 0}
 					<div class="rounded-lg border border-dashed p-8 text-center">
-						<p class="text-sm text-muted-foreground">No questions yet.</p>
+						<p class="text-sm text-muted-foreground">{m['pollEditPage.noQuestionsYet']()}</p>
 					</div>
 				{/if}
 			{:else if poll.questionnaire}
@@ -412,7 +416,7 @@
 							<div class="rounded-lg border p-4">
 								<span
 									class="mb-2 inline-block rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700"
-									>Multiple Choice</span
+									>{m['questionAnswerDisplay.multipleChoice']()}</span
 								>
 								<p class="font-medium">{question.question}</p>
 								{#if question.options}
@@ -431,7 +435,7 @@
 							<div class="rounded-lg border p-4">
 								<span
 									class="mb-2 inline-block rounded bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700"
-									>Free Text</span
+									>{m['questionAnswerDisplay.freeText']()}</span
 								>
 								<p class="font-medium">{question.question}</p>
 							</div>
@@ -440,17 +444,19 @@
 							<div class="rounded-lg border p-4">
 								<span
 									class="mb-2 inline-block rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700"
-									>File Upload</span
+									>{m['questionAnswerDisplay.fileUpload']()}</span
 								>
 								<p class="font-medium">{question.question}</p>
 							</div>
 						{/each}
 					</div>
 				{:else}
-					<p class="text-sm italic text-muted-foreground">No questions defined yet.</p>
+					<p class="text-sm italic text-muted-foreground">
+						{m['pollEditPage.noQuestionsDefined']()}
+					</p>
 				{/if}
 			{:else}
-				<p class="text-sm italic text-muted-foreground">No questionnaire attached to this poll.</p>
+				<p class="text-sm italic text-muted-foreground">{m['pollEditPage.noQuestionnaire']()}</p>
 			{/if}
 		</CardContent>
 	</Card>

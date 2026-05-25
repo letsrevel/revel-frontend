@@ -39,6 +39,22 @@ export const load: PageServerLoad = async ({ params, locals, parent, fetch }) =>
 		const message = extractErrorMessage(pollRes.error, 'Failed to load poll');
 		throw error(status === 404 ? 404 : status >= 500 ? 500 : 502, message);
 	}
+	// The audience picker depends on these; surface a failure instead of
+	// silently rendering an empty event/tier list (mirrors new/+page.server.ts).
+	if (eventsRes.error) {
+		const status = eventsRes.response?.status ?? 500;
+		throw error(
+			status >= 500 ? 500 : 502,
+			extractErrorMessage(eventsRes.error, 'Failed to load events')
+		);
+	}
+	if (tiersRes.error) {
+		const status = tiersRes.response?.status ?? 500;
+		throw error(
+			status >= 500 ? 500 : 502,
+			extractErrorMessage(tiersRes.error, 'Failed to load membership tiers')
+		);
+	}
 
 	return {
 		poll: pollRes.data!,

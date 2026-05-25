@@ -316,7 +316,8 @@
 						onclick={() => addTopLevelQuestion('multiple_choice')}
 						class="gap-2"
 					>
-						<Plus class="h-4 w-4" /> Multiple Choice
+						<Plus class="h-4 w-4" />
+						{m['questionAnswerDisplay.multipleChoice']()}
 					</Button>
 					<Button
 						variant="outline"
@@ -324,7 +325,8 @@
 						onclick={() => addTopLevelQuestion('free_text')}
 						class="gap-2"
 					>
-						<Plus class="h-4 w-4" /> Free Text
+						<Plus class="h-4 w-4" />
+						{m['questionAnswerDisplay.freeText']()}
 					</Button>
 					<Button
 						variant="outline"
@@ -332,10 +334,12 @@
 						onclick={() => addTopLevelQuestion('file_upload')}
 						class="gap-2"
 					>
-						<Upload class="h-4 w-4" /> File Upload
+						<Upload class="h-4 w-4" />
+						{m['questionAnswerDisplay.fileUpload']()}
 					</Button>
 					<Button variant="secondary" size="sm" onclick={addSection} class="gap-2">
-						<FolderPlus class="h-4 w-4" /> Add Section
+						<FolderPlus class="h-4 w-4" />
+						{m['pollNewPage.addSection']()}
 					</Button>
 				</div>
 			</div>
@@ -343,7 +347,7 @@
 		<CardContent class="space-y-6">
 			{#if totalQuestionCount === 0 && sections.length === 0}
 				<div class="rounded-lg border border-dashed p-8 text-center">
-					<p class="text-sm text-muted-foreground">No questions yet.</p>
+					<p class="text-sm text-muted-foreground">{m['pollNewPage.noQuestionsYet']()}</p>
 				</div>
 			{:else}
 				<div class="space-y-4">

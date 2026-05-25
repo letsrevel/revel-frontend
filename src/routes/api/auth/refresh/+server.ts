@@ -82,10 +82,13 @@ export const POST: RequestHandler = async ({ cookies }) => {
 
 		// Return the new tokens to the client
 		// Client needs access token to update its in-memory store
-		return json({
-			access: data.access,
-			refresh: data.refresh
-		});
+		return json(
+			{
+				access: data.access,
+				refresh: data.refresh
+			},
+			{ headers: { 'Cache-Control': 'no-store, private' } }
+		);
 	} catch (err) {
 		console.error('[API /auth/refresh] Error during token refresh:', err);
 		// Clear invalid tokens

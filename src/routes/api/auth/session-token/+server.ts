@@ -30,5 +30,7 @@ export const GET: RequestHandler = async ({ cookies }) => {
 		throw error(401, 'No access token cookie');
 	}
 
-	return json({ access: accessToken });
+	// Never let an intermediary (proxy/CDN) cache a bearer-token response and
+	// hand it to another client.
+	return json({ access: accessToken }, { headers: { 'Cache-Control': 'no-store, private' } });
 };

@@ -95,6 +95,11 @@
 	let previousServerHasToken = $state<boolean | null>(null);
 	let previousFingerprint = $state<string | null | undefined>(undefined);
 	let initializationPromise = $state<Promise<void> | null>(null);
+	// Incremented every time a bootstrap starts. A session swap that lands while
+	// a bootstrap is in flight bumps it (indirectly, via a fresh bootstrap), so
+	// the stale in-flight promise can detect it was superseded and bail out
+	// instead of loading the previous identity's data.
+	let bootstrapGeneration = 0;
 
 	/**
 	 * Bootstrap the in-memory access token from the server session. Impersonation
@@ -104,9 +109,13 @@
 	 */
 	function bootstrapAuth(impersonated: boolean): void {
 		if (initializationPromise) return;
+		const generation = ++bootstrapGeneration;
 		const acquire = impersonated ? authStore.loadSessionToken() : authStore.refreshAccessToken();
 		initializationPromise = acquire
 			.then(async () => {
+				// A session swap may have superseded this bootstrap while the token
+				// request was in flight — don't load a stale identity's data.
+				if (generation !== bootstrapGeneration) return;
 				await authStore.initialize();
 			})
 			.catch((err) => {
@@ -124,7 +133,9 @@
 				}
 			})
 			.finally(() => {
-				initializationPromise = null;
+				// Only the current bootstrap clears the latch; a superseded one must
+				// not release the latch now held by its replacement.
+				if (generation === bootstrapGeneration) initializationPromise = null;
 			});
 	}
 
@@ -166,6 +177,10 @@
 			console.log('[ROOT LAYOUT] Server identity changed, resetting store for swap');
 			authStore.resetForSwap();
 			queryClient.clear();
+			// Release the latch so the new identity can bootstrap below (Case 1).
+			// A bootstrap for the previous identity may still be in flight; its
+			// generation guard makes it bail out when it resolves.
+			initializationPromise = null;
 		}
 
 		// Case 1: Server is authenticated but the in-memory store is empty (cold
