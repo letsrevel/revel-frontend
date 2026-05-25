@@ -6174,7 +6174,8 @@
 		"errorNameRequired": "Name ist erforderlich.",
 		"errorNoQuestions": "Füge mindestens eine Frage hinzu.",
 		"errorQuestionsNeedText": "Alle Fragen müssen einen Text haben.",
-		"errorEventRequired": "Wähle ein Event — Privat/Nur Teilnehmende erfordert eines."
+		"errorEventRequired": "Wähle ein Event — Privat/Nur Teilnehmende erfordert eines.",
+		"saveError": "Umfrage konnte nicht erstellt werden (HTTP {status})."
 	},
 	"pollEditPage": {
 		"pageTitle": "Umfrage bearbeiten",
@@ -6195,7 +6196,8 @@
 		"resultsEmpty": "Noch keine Stimmen.",
 		"deleteSectionTitle": "Gefahrenzone",
 		"deleteButton": "Umfrage löschen",
-		"deleteConfirm": "Umfrage \"{name}\" löschen? Dies kann nicht rückgängig gemacht werden."
+		"deleteConfirm": "Umfrage \"{name}\" löschen? Dies kann nicht rückgängig gemacht werden.",
+		"deleteError": "Umfrage konnte nicht gelöscht werden."
 	},
 	"pollStatusBar": {
 		"openedAt": "Geöffnet {at}",

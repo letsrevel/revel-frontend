@@ -26,6 +26,7 @@
 	import SectionEditor from '$lib/components/questionnaires/SectionEditor.svelte';
 	import { pollPatchPoll, pollDeletePollAction } from '$lib/api/generated/sdk.gen';
 	import { buildPollVoterUrl, isPollDraft, validateClosesAt } from '$lib/utils/polls';
+	import { toDateTimeLocal, toISOString } from '$lib/utils/datetime';
 	import { initializeFromApiData } from '$lib/utils/questionnaire-api-converters';
 	import {
 		addTopLevelQuestion as _addTopLevelQuestion,
@@ -67,9 +68,10 @@
 	let staffAnonymous = $state(poll.staff_anonymous);
 	let publicAnonymous = $state(poll.public_anonymous);
 	let allowVoteChanges = $state(poll.allow_vote_changes);
-	let closesAt = $state<string | null>(
-		poll.closes_at ? new Date(poll.closes_at).toISOString().slice(0, 16) : null
-	);
+	// Seed the datetime-local input in the user's local timezone (not UTC) so the
+	// field shows the same wall-clock time the backend stored. `toDateTimeLocal`
+	// pairs with `toISOString` on save to round-trip without timezone drift.
+	let closesAt = $state<string | null>(poll.closes_at ? toDateTimeLocal(poll.closes_at) : null);
 	let closesAtError = $state<string | null>(null);
 	let saving = $state(false);
 	let deleting = $state(false);
@@ -183,7 +185,7 @@
 					result_membership_tier_ids: resultTierIds,
 					result_timing: resultTiming,
 					allow_vote_changes: allowVoteChanges,
-					closes_at: closesAt ? new Date(closesAt).toISOString() : null
+					closes_at: toISOString(closesAt)
 				}
 			});
 			if (res.error) throw new Error('patch');
@@ -236,7 +238,7 @@
 			await goto(`/org/${data.organization.slug}/admin/polls`);
 		} catch (e) {
 			console.error(e);
-			toast.error(m['pollEditPage.saveError']());
+			toast.error(m['pollEditPage.deleteError']());
 		} finally {
 			deleting = false;
 		}

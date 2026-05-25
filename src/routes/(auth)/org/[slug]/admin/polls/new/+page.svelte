@@ -207,7 +207,7 @@
 				if (res.response.status === 422) {
 					saveError = parseValidationErrors(res.error);
 				} else {
-					saveError = `Failed to create poll (HTTP ${res.response.status}).`;
+					saveError = m['pollNewPage.saveError']({ status: res.response.status });
 				}
 				return;
 			}

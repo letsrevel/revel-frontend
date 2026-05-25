@@ -6174,7 +6174,8 @@
 		"errorNameRequired": "Il nome è obbligatorio.",
 		"errorNoQuestions": "Aggiungi almeno una domanda.",
 		"errorQuestionsNeedText": "Tutte le domande devono avere un testo.",
-		"errorEventRequired": "Scegli un evento — la visibilità Privato/Solo partecipanti lo richiede."
+		"errorEventRequired": "Scegli un evento — la visibilità Privato/Solo partecipanti lo richiede.",
+		"saveError": "Impossibile creare il sondaggio (HTTP {status})."
 	},
 	"pollEditPage": {
 		"pageTitle": "Modifica sondaggio",
@@ -6195,7 +6196,8 @@
 		"resultsEmpty": "Ancora nessun voto.",
 		"deleteSectionTitle": "Zona pericolosa",
 		"deleteButton": "Elimina sondaggio",
-		"deleteConfirm": "Eliminare il sondaggio \"{name}\"? Questa azione non può essere annullata."
+		"deleteConfirm": "Eliminare il sondaggio \"{name}\"? Questa azione non può essere annullata.",
+		"deleteError": "Impossibile eliminare il sondaggio."
 	},
 	"pollStatusBar": {
 		"openedAt": "Aperto {at}",

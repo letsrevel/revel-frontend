@@ -281,7 +281,7 @@
 		.filter((s) => !s.depends_on_option_id)
 		.sort((a, b) => a.order - b.order) as section (section.id)}
 		<div class="rounded-lg border bg-card p-6">
-			<h2 class="mb-2 text-xl font-semibold">{section.name}</h2>
+			<h3 class="mb-2 text-xl font-semibold">{section.name}</h3>
 			{#if section.description}
 				<div class="mb-6">
 					<MarkdownContent content={section.description} class="text-muted-foreground" />
@@ -375,7 +375,11 @@
 		</div>
 
 		{#if useCheckboxes}
-			<div class="space-y-2">
+			<div
+				class="space-y-2"
+				role="group"
+				aria-describedby={validationErrors.has(question.id) ? `${question.id}-error` : undefined}
+			>
 				{#each question.options ?? [] as option (option.id)}
 					<div class="space-y-2">
 						<div class="flex items-center space-x-2">
@@ -401,6 +405,8 @@
 				value={multipleChoiceAnswers.get(question.id)?.[0] ?? ''}
 				onValueChange={(value: string) =>
 					handleMultipleChoiceChange(question.id, value, true, false)}
+				aria-invalid={validationErrors.has(question.id) ? true : undefined}
+				aria-describedby={validationErrors.has(question.id) ? `${question.id}-error` : undefined}
 			>
 				{#each question.options ?? [] as option (option.id)}
 					<div class="space-y-2">
@@ -415,7 +421,9 @@
 		{/if}
 
 		{#if validationErrors.has(question.id)}
-			<p class="text-sm text-destructive">{validationErrors.get(question.id)}</p>
+			<p id="{question.id}-error" class="text-sm text-destructive">
+				{validationErrors.get(question.id)}
+			</p>
 		{/if}
 	</div>
 {/snippet}
@@ -445,6 +453,8 @@
 			class={cn(validationErrors.has(question.id) && 'border-destructive')}
 			rows={4}
 			maxlength={1000}
+			aria-invalid={validationErrors.has(question.id) ? true : undefined}
+			aria-describedby={validationErrors.has(question.id) ? `${question.id}-error` : undefined}
 		/>
 		<p class="text-xs text-muted-foreground">
 			{m['questionnaireSubmissionPage.characterCount']({
@@ -452,7 +462,9 @@
 			})}
 		</p>
 		{#if validationErrors.has(question.id)}
-			<p class="text-sm text-destructive">{validationErrors.get(question.id)}</p>
+			<p id="{question.id}-error" class="text-sm text-destructive">
+				{validationErrors.get(question.id)}
+			</p>
 		{/if}
 	</div>
 {/snippet}
@@ -503,7 +515,7 @@
 
 			{#each getSectionsForOption(flattened, optionId).sort((a, b) => a.order - b.order) as conditionalSection (conditionalSection.id)}
 				<div class="ml-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
-					<h3 class="mb-2 text-lg font-semibold">{conditionalSection.name}</h3>
+					<h4 class="mb-2 text-lg font-semibold">{conditionalSection.name}</h4>
 					{#if conditionalSection.description}
 						<div class="mb-4">
 							<MarkdownContent

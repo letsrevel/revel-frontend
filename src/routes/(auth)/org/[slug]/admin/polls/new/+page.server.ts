@@ -15,7 +15,10 @@ export const load: PageServerLoad = async ({ locals, parent, fetch }) => {
 	const [eventsRes, tiersRes] = await Promise.all([
 		eventpublicdiscoveryListEvents({
 			fetch,
-			query: { organization: organization.id, page_size: 100 }
+			// page_size max is 200 (backend cap). Covers orgs with up to 200
+			// events so a poll scoped to any of them resolves its name in the
+			// audience picker; beyond that the selected event would show blank.
+			query: { organization: organization.id, page_size: 200 }
 		}),
 		organizationadminmembersListMembershipTiers({
 			fetch,

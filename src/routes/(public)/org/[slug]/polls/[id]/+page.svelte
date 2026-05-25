@@ -88,7 +88,7 @@
 		-->
 		<Card class="border-amber-500/50">
 			<CardHeader>
-				<CardTitle>{m['pollVoterPage.forbiddenTitle']()}</CardTitle>
+				<CardTitle level={2}>{m['pollVoterPage.forbiddenTitle']()}</CardTitle>
 			</CardHeader>
 			<CardContent class="space-y-3 py-4 text-sm">
 				<p>{m['pollVoterPage.forbiddenBody']()}</p>
@@ -102,7 +102,7 @@
 	{:else if poll}
 		<Card>
 			<CardHeader>
-				<CardTitle class="flex items-center justify-between gap-2">
+				<CardTitle level={2} class="flex items-center justify-between gap-2">
 					<span>{poll.questionnaire?.name ?? 'Poll'}</span>
 					<PollStatusBadge status={poll.status} />
 				</CardTitle>
@@ -191,7 +191,7 @@
 		{#if showForm && poll.questionnaire}
 			<Card>
 				<CardHeader>
-					<CardTitle>{m['pollVoterPage.castVoteTitle']()}</CardTitle>
+					<CardTitle level={2}>{m['pollVoterPage.castVoteTitle']()}</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<PollVoteForm
@@ -208,7 +208,7 @@
 		{#if poll.user_can_see_results && poll.results}
 			<Card>
 				<CardHeader>
-					<CardTitle>{m['pollVoterPage.resultsTitle']()}</CardTitle>
+					<CardTitle level={2}>{m['pollVoterPage.resultsTitle']()}</CardTitle>
 				</CardHeader>
 				<CardContent>
 					{#if poll.results.total_voters > 0}

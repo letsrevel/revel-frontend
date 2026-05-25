@@ -6174,7 +6174,8 @@
 		"errorNameRequired": "Name is required.",
 		"errorNoQuestions": "Add at least one question.",
 		"errorQuestionsNeedText": "All questions need text.",
-		"errorEventRequired": "Choose an event — Private/Attendees-only visibility requires one."
+		"errorEventRequired": "Choose an event — Private/Attendees-only visibility requires one.",
+		"saveError": "Failed to create poll (HTTP {status})."
 	},
 	"pollEditPage": {
 		"pageTitle": "Edit Poll",
@@ -6195,7 +6196,8 @@
 		"resultsEmpty": "No votes yet.",
 		"deleteSectionTitle": "Danger zone",
 		"deleteButton": "Delete poll",
-		"deleteConfirm": "Delete poll \"{name}\"? This cannot be undone."
+		"deleteConfirm": "Delete poll \"{name}\"? This cannot be undone.",
+		"deleteError": "Failed to delete poll."
 	},
 	"pollStatusBar": {
 		"openedAt": "Opened {at}",

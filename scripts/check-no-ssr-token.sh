@@ -19,8 +19,11 @@ set -e
 
 FAILED=0
 
-# 1. Client-side reads of the token from page data (.svelte files).
-client_hits=$(grep -rnE "data\.(auth\??\.)?accessToken" src --include="*.svelte" || true)
+# 1. Client-side reads of the token from page data (.svelte / .ts / .svelte.ts).
+#    Matches data.accessToken, data.auth?.accessToken and data.auth!.accessToken.
+#    The generated API client is excluded — page-data reads never live there.
+client_hits=$(grep -rnE "data\.(auth[?!]?\.)?accessToken" src \
+	--include="*.svelte" --include="*.ts" --exclude-dir=generated || true)
 if [ -n "$client_hits" ]; then
 	echo "❌ Client components must read the token from authStore, not page data:"
 	echo "$client_hits"
