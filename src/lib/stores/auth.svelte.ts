@@ -408,6 +408,57 @@ class AuthStore {
 	}
 
 	/**
+	 * Bootstrap the in-memory access token from the httpOnly `access_token`
+	 * cookie via `/api/auth/session-token`.
+	 *
+	 * This is the bootstrap path for IMPERSONATION sessions: they carry an
+	 * access cookie but NO refresh cookie, so `refreshAccessToken()` 401s for
+	 * them. Unlike refresh, this adopts the existing token without minting a
+	 * new one. `setAccessToken` handles impersonation-aware scheduling (it
+	 * schedules a logout at expiry rather than a refresh).
+	 */
+	async loadSessionToken(): Promise<void> {
+		const response = await fetch('/api/auth/session-token', {
+			method: 'GET',
+			credentials: 'include'
+		});
+
+		if (!response.ok) {
+			throw new Error(`Session token bootstrap failed: ${response.status}`);
+		}
+
+		const data = await response.json();
+		if (!data?.access) {
+			throw new Error('No access token returned from session-token endpoint');
+		}
+
+		// Respect a logout that happened while this fetch was in flight.
+		if (this._isLoggingOut) {
+			return;
+		}
+
+		this.setAccessToken(data.access);
+	}
+
+	/**
+	 * Clear the in-memory identity for a server-side session SWAP (impersonation
+	 * start/stop, login-as-different-user) so the layout can immediately
+	 * re-bootstrap the new identity.
+	 *
+	 * Unlike `logout()`, this does NOT set `_isLoggingOut` — that flag would
+	 * block the very bootstrap (`refreshAccessToken`/`loadSessionToken`) that
+	 * runs right after a swap. The server cookies are not touched here; they
+	 * already reflect the new identity.
+	 */
+	resetForSwap(): void {
+		this.clearTokenRefreshTimer();
+		this._refreshPromise = null;
+		this._user = null;
+		this._accessToken = null;
+		this._permissions = null;
+	}
+
+	/**
 	 * Decode JWT token to get expiration time
 	 * Note: This is safe for client-side as JWT is just base64 encoded, not encrypted
 	 */

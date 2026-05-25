@@ -93,60 +93,90 @@
 	 * client-side auto-refresh timer and the 401 interceptor.
 	 */
 	let previousServerHasToken = $state<boolean | null>(null);
+	let previousFingerprint = $state<string | null | undefined>(undefined);
 	let initializationPromise = $state<Promise<void> | null>(null);
+
+	/**
+	 * Bootstrap the in-memory access token from the server session. Impersonation
+	 * sessions have no refresh cookie, so they adopt the existing access-cookie
+	 * token via /api/auth/session-token; everything else mints a fresh token via
+	 * /api/auth/refresh. Then loads user data + permissions.
+	 */
+	function bootstrapAuth(impersonated: boolean): void {
+		if (initializationPromise) return;
+		const acquire = impersonated ? authStore.loadSessionToken() : authStore.refreshAccessToken();
+		initializationPromise = acquire
+			.then(async () => {
+				await authStore.initialize();
+			})
+			.catch((err) => {
+				console.error('[ROOT LAYOUT] Auth bootstrap failed:', err);
+				// Surface the most common cause (ad blocker eating the request).
+				if (err instanceof TypeError && err.message === 'Failed to fetch') {
+					import('$lib/config/api').then(({ API_BASE_URL_DISPLAY }) => {
+						import('svelte-sonner').then(({ toast }) => {
+							toast.error('API Blocked', {
+								description: `Please disable your ad blocker for ${API_BASE_URL_DISPLAY} to use all features.`,
+								duration: 10000
+							});
+						});
+					});
+				}
+			})
+			.finally(() => {
+				initializationPromise = null;
+			});
+	}
 
 	$effect(() => {
 		const hasServerAccessToken = data.auth.hasAccessToken;
 		const hasRefreshToken = data.auth.hasRefreshToken;
+		const fingerprint = data.auth.fingerprint;
+		const impersonated = data.auth.impersonated;
 		const currentAccessToken = authStore.accessToken;
 
-		// Skip if server-side auth presence hasn't changed.
-		if (hasServerAccessToken === previousServerHasToken) {
+		// Re-run when the auth presence boolean OR the identity fingerprint
+		// changes. The fingerprint catches a server-side session SWAP
+		// (impersonation start/stop, login-as-different-user) where the boolean
+		// stays `true` but the identity changed — the boolean-only guard used to
+		// miss this and leave the stale identity in memory until a hard reload.
+		const presenceChanged = hasServerAccessToken !== previousServerHasToken;
+		const identityChanged = fingerprint !== previousFingerprint;
+		if (!presenceChanged && !identityChanged) {
 			return;
 		}
 
 		console.log('[ROOT LAYOUT] Auth sync effect triggered', {
 			hasServerAccessToken,
 			hasRefreshToken,
+			impersonated,
 			hasCurrentToken: !!currentAccessToken,
-			previousServerHasToken
+			presenceChanged,
+			identityChanged
 		});
 
 		previousServerHasToken = hasServerAccessToken;
+		previousFingerprint = fingerprint;
 
-		// Case 1: Server says we're authenticated but the in-memory store is
-		// empty (cold hydration, login, or impersonation). Mint a fresh access
-		// token via the refresh endpoint so we have it in memory.
-		if (hasServerAccessToken && !currentAccessToken) {
-			console.log('[ROOT LAYOUT] Server has access cookie but client store empty, refreshing');
+		// Session swap: server identity changed while we still hold a token for
+		// the previous identity. Drop the stale in-memory identity (without the
+		// logout guard, which would block the bootstrap below) so the new
+		// identity is loaded fresh.
+		if (hasServerAccessToken && currentAccessToken && identityChanged) {
+			console.log('[ROOT LAYOUT] Server identity changed, resetting store for swap');
+			authStore.resetForSwap();
+			queryClient.clear();
+		}
 
-			if (!initializationPromise) {
-				initializationPromise = authStore
-					.refreshAccessToken()
-					.then(async () => {
-						// `refreshAccessToken` sets the token in the store; now fetch
-						// user data + permissions (idempotent if already present).
-						await authStore.initialize();
-					})
-					.catch((err) => {
-						console.error('[ROOT LAYOUT] Auth bootstrap failed:', err);
-
-						// Check if ad blocker is blocking the request
-						if (err instanceof TypeError && err.message === 'Failed to fetch') {
-							import('$lib/config/api').then(({ API_BASE_URL_DISPLAY }) => {
-								import('svelte-sonner').then(({ toast }) => {
-									toast.error('API Blocked', {
-										description: `Please disable your ad blocker for ${API_BASE_URL_DISPLAY} to use all features.`,
-										duration: 10000
-									});
-								});
-							});
-						}
-					})
-					.finally(() => {
-						initializationPromise = null;
-					});
-			}
+		// Case 1: Server is authenticated but the in-memory store is empty (cold
+		// hydration, login, impersonation, or just-reset swap). Bootstrap the
+		// token. Note: read authStore.accessToken fresh here — resetForSwap()
+		// above may have just cleared it.
+		if (hasServerAccessToken && !authStore.accessToken) {
+			console.log('[ROOT LAYOUT] Server authenticated, store empty — bootstrapping', {
+				impersonated
+			});
+			bootstrapAuth(impersonated);
 		}
 		// Case 2: Server has no access token, but client store still has one
 		// (logout, or session cleared server-side).
@@ -156,40 +186,18 @@
 			queryClient.clear();
 			initializationPromise = null;
 		}
-		// Case 3: Both have tokens — already authenticated. Token refresh is
-		// handled by the auto-refresh timer and the 401 interceptor. No-op
-		// here; we no longer have a server-side token value to compare against.
-		else if (hasServerAccessToken && currentAccessToken) {
-			console.log('[ROOT LAYOUT] Both server and client have tokens (already authenticated)');
-		}
-		// Case 4: Access token cookie expired but refresh token is still valid
+		// Case 3: Access token cookie expired but refresh token is still valid
 		// (e.g. "Remember Me" user returning after the 1-hour access window).
-		// Same refresh path as case 1 — the in-memory store is empty either
-		// way, and `/api/auth/refresh` uses whichever refresh cookie is present.
-		else if (!hasServerAccessToken && hasRefreshToken && !currentAccessToken) {
-			console.log(
-				'[ROOT LAYOUT] No access cookie but refresh cookie exists, attempting token refresh'
-			);
-
-			if (!initializationPromise) {
-				initializationPromise = authStore
-					.refreshAccessToken()
-					.then(async () => {
-						console.log('[ROOT LAYOUT] Token refresh successful, initializing auth');
-						await authStore.initialize();
-					})
-					.catch((err) => {
-						console.error('[ROOT LAYOUT] Token refresh failed:', err);
-						// User stays logged out — refresh token expired/invalid.
-					})
-					.finally(() => {
-						initializationPromise = null;
-					});
-			}
+		// Impersonation never lands here (it has no refresh cookie), so refresh
+		// is correct.
+		else if (!hasServerAccessToken && hasRefreshToken && !authStore.accessToken) {
+			console.log('[ROOT LAYOUT] No access cookie but refresh cookie exists, refreshing');
+			bootstrapAuth(false);
 		}
-		// Case 5: Neither cookie present (browsing as guest).
+		// Case 4: Already authenticated with an unchanged identity (handled by the
+		// auto-refresh timer + 401 interceptor), or browsing as a guest.
 		else {
-			console.log('[ROOT LAYOUT] No tokens, user not authenticated');
+			console.log('[ROOT LAYOUT] No bootstrap needed');
 		}
 	});
 
