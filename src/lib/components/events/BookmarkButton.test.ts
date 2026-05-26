@@ -39,7 +39,11 @@ describe('BookmarkButton', () => {
 		(authStore as { accessToken: string | null }).accessToken = 'test-token';
 	});
 
-	function renderButton(props: { eventId: string; isBookmarked: boolean; variant?: 'float' | 'header' }) {
+	function renderButton(props: {
+		eventId: string;
+		isBookmarked: boolean;
+		variant?: 'float' | 'header';
+	}) {
 		return render(QueryClientTestWrapper, {
 			props: { client: queryClient, component: BookmarkButton, props }
 		});
@@ -82,7 +86,9 @@ describe('BookmarkButton', () => {
 
 		expect(btn).toHaveAttribute('aria-pressed', 'false');
 		await waitFor(() =>
-			expect(eventpublicattendanceUnbookmarkEvent).toHaveBeenCalledWith({ path: { event_id: 'e1' } })
+			expect(eventpublicattendanceUnbookmarkEvent).toHaveBeenCalledWith({
+				path: { event_id: 'e1' }
+			})
 		);
 		// Guard against calling the opposite (POST) endpoint.
 		expect(eventpublicattendanceBookmarkEvent).not.toHaveBeenCalled();
