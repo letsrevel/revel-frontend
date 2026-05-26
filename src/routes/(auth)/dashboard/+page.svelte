@@ -35,7 +35,8 @@
 		Crown,
 		PlusCircle,
 		List,
-		Heart
+		Heart,
+		Bookmark
 	} from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { MembershipStatus } from '$lib/api/generated/types.gen';
@@ -59,7 +60,8 @@
 				rsvp_maybe: true,
 				got_ticket: true,
 				got_invitation: true,
-				subscriber: true
+				subscriber: true,
+				bookmarked: false
 			}
 		},
 		{
@@ -72,7 +74,8 @@
 				rsvp_maybe: false,
 				got_ticket: false,
 				got_invitation: false,
-				subscriber: false
+				subscriber: false,
+				bookmarked: false
 			}
 		},
 		{
@@ -85,7 +88,8 @@
 				rsvp_maybe: true,
 				got_ticket: true,
 				got_invitation: false,
-				subscriber: false
+				subscriber: false,
+				bookmarked: false
 			}
 		},
 		{
@@ -98,7 +102,22 @@
 				rsvp_maybe: false,
 				got_ticket: false,
 				got_invitation: true,
-				subscriber: false
+				subscriber: false,
+				bookmarked: false
+			}
+		},
+		{
+			labelKey: 'dashboard.filters.bookmarked',
+			filters: {
+				owner: false,
+				staff: false,
+				member: false,
+				rsvp_yes: false,
+				rsvp_maybe: false,
+				got_ticket: false,
+				got_invitation: false,
+				subscriber: false,
+				bookmarked: true
 			}
 		}
 	];
@@ -685,6 +704,9 @@
 											? 'bg-primary text-primary-foreground hover:bg-primary/90'
 											: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
 									>
+										{#if preset.labelKey === 'dashboard.filters.bookmarked'}
+											<Bookmark class="mr-1 inline h-4 w-4 align-text-bottom" aria-hidden="true" />
+										{/if}
 										{(m as unknown as Record<string, () => string>)[preset.labelKey]()}
 									</button>
 								{/if}
