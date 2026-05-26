@@ -78,13 +78,6 @@
 			variant === 'standard' && 'aspect-video'
 		)
 	);
-
-	// Bookmark button sits over the cover image. On compact cards the image is a
-	// left-hand thumbnail in the mobile row layout, so anchor to the left there
-	// and back to the right once the card stacks (md:) like the standard variant.
-	const bookmarkPositionClasses = $derived(
-		cn('absolute top-2 z-20', variant === 'compact' ? 'left-2 md:left-auto md:right-2' : 'right-2')
-	);
 </script>
 
 <article class={containerClasses}>
@@ -98,12 +91,14 @@
 		<span class="sr-only">{m['eventCard.viewDetails']()}</span>
 	</a>
 
-	<!-- Bookmark toggle (renders only when authenticated; sits above the card link) -->
+	<!-- Bookmarked indicator: shows top-left only when bookmarked (badges live top-right);
+	     authenticated-only and clickable to remove the bookmark. -->
 	<BookmarkButton
 		eventId={event.id}
 		isBookmarked={event.is_bookmarked ?? false}
 		variant="float"
-		class={bookmarkPositionClasses}
+		onlyWhenBookmarked
+		class="absolute left-2 top-2 z-20"
 	/>
 
 	<!-- Skeleton loader overlay when navigating -->

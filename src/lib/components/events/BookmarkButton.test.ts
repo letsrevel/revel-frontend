@@ -18,7 +18,7 @@ vi.mock('$lib/stores/auth.svelte', () => ({
 
 // Mock toasts
 vi.mock('svelte-sonner', () => ({
-	toast: { error: vi.fn() }
+	toast: { success: vi.fn(), error: vi.fn() }
 }));
 
 import {
@@ -42,7 +42,8 @@ describe('BookmarkButton', () => {
 	function renderButton(props: {
 		eventId: string;
 		isBookmarked: boolean;
-		variant?: 'float' | 'header';
+		variant?: 'float' | 'inline';
+		onlyWhenBookmarked?: boolean;
 	}) {
 		return render(QueryClientTestWrapper, {
 			props: { client: queryClient, component: BookmarkButton, props }
@@ -60,7 +61,16 @@ describe('BookmarkButton', () => {
 		expect(screen.getByRole('button')).toHaveAttribute('aria-pressed', 'true');
 	});
 
-	it('optimistically bookmarks on click and calls the POST endpoint', async () => {
+	it('exposes a hover tooltip via the title attribute', () => {
+		renderButton({ eventId: 'e1', isBookmarked: false });
+		// title mirrors the aria-label so hovering shows "Bookmark this event"
+		expect(screen.getByRole('button')).toHaveAttribute(
+			'title',
+			screen.getByRole('button').getAttribute('aria-label') ?? ''
+		);
+	});
+
+	it('optimistically bookmarks on click, calls POST, and shows a success toast', async () => {
 		const user = userEvent.setup();
 		renderButton({ eventId: 'e1', isBookmarked: false });
 		const btn = screen.getByRole('button');
@@ -75,9 +85,10 @@ describe('BookmarkButton', () => {
 		);
 		// Guard against calling the opposite (DELETE) endpoint.
 		expect(eventpublicattendanceUnbookmarkEvent).not.toHaveBeenCalled();
+		await waitFor(() => expect(toast.success).toHaveBeenCalledTimes(1));
 	});
 
-	it('optimistically unbookmarks on click and calls the DELETE endpoint', async () => {
+	it('optimistically unbookmarks on click, calls DELETE, and shows a success toast', async () => {
 		const user = userEvent.setup();
 		renderButton({ eventId: 'e1', isBookmarked: true });
 		const btn = screen.getByRole('button');
@@ -92,6 +103,7 @@ describe('BookmarkButton', () => {
 		);
 		// Guard against calling the opposite (POST) endpoint.
 		expect(eventpublicattendanceBookmarkEvent).not.toHaveBeenCalled();
+		await waitFor(() => expect(toast.success).toHaveBeenCalledTimes(1));
 	});
 
 	it('reverts and shows an error toast when the mutation fails', async () => {
@@ -104,5 +116,32 @@ describe('BookmarkButton', () => {
 
 		await waitFor(() => expect(btn).toHaveAttribute('aria-pressed', 'false'));
 		expect(toast.error).toHaveBeenCalled();
+		expect(toast.success).not.toHaveBeenCalled();
+	});
+
+	describe('onlyWhenBookmarked (card indicator)', () => {
+		it('renders nothing when not bookmarked', () => {
+			const { container } = renderButton({
+				eventId: 'e1',
+				isBookmarked: false,
+				onlyWhenBookmarked: true
+			});
+			expect(container.querySelector('button')).toBeNull();
+		});
+
+		it('renders when bookmarked and disappears after removing the bookmark', async () => {
+			const user = userEvent.setup();
+			renderButton({ eventId: 'e1', isBookmarked: true, onlyWhenBookmarked: true });
+			const btn = screen.getByRole('button');
+			expect(btn).toHaveAttribute('aria-pressed', 'true');
+
+			await user.click(btn);
+
+			// Optimistic removal hides the indicator immediately.
+			await waitFor(() => expect(screen.queryByRole('button')).toBeNull());
+			expect(eventpublicattendanceUnbookmarkEvent).toHaveBeenCalledWith({
+				path: { event_id: 'e1' }
+			});
+		});
 	});
 });

@@ -727,6 +727,8 @@
 	"bookmark": {
 		"add": "Salva questo evento",
 		"remove": "Rimuovi dai salvati",
+		"added": "Evento salvato",
+		"removed": "Salvataggio rimosso",
 		"error": "Impossibile aggiornare il salvataggio. Riprova."
 	},
 	"contactPage": {

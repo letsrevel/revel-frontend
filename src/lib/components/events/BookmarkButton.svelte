@@ -13,11 +13,20 @@
 	interface Props {
 		eventId: string;
 		isBookmarked: boolean;
-		variant?: 'float' | 'header';
+		/** `float` overlays a cover image (translucent); `inline` is a button on a light surface. */
+		variant?: 'float' | 'inline';
+		/** When true the control renders only while bookmarked (a removable indicator, e.g. on cards). */
+		onlyWhenBookmarked?: boolean;
 		class?: string;
 	}
 
-	let { eventId, isBookmarked, variant = 'float', class: className }: Props = $props();
+	let {
+		eventId,
+		isBookmarked,
+		variant = 'float',
+		onlyWhenBookmarked = false,
+		class: className
+	}: Props = $props();
 
 	const queryClient = useQueryClient();
 	const isAuthenticated = $derived(!!authStore.accessToken);
@@ -47,7 +56,8 @@
 			if (context) bookmarked = context.previous;
 			toast.error(m['bookmark.error']());
 		},
-		onSuccess: () => {
+		onSuccess: (_data: void, next: boolean) => {
+			toast.success(next ? m['bookmark.added']() : m['bookmark.removed']());
 			// Keep the dashboard "Bookmarked" facet truthful.
 			queryClient.invalidateQueries({ queryKey: ['dashboard-your-events'] });
 		}
@@ -60,20 +70,30 @@
 		mutation.mutate(!bookmarked);
 	}
 
-	const sizeClasses = $derived(variant === 'header' ? 'h-11 w-11' : 'h-9 w-9');
+	const label = $derived(bookmarked ? m['bookmark.remove']() : m['bookmark.add']());
+
+	const buttonClasses = $derived(
+		cn(
+			'inline-flex h-9 w-9 items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2',
+			variant === 'float' &&
+				'rounded-full bg-black/45 text-white backdrop-blur-sm hover:bg-black/65 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/50',
+			variant === 'inline' &&
+				'rounded-md border bg-background hover:bg-accent focus-visible:ring-ring',
+			variant === 'inline' &&
+				(bookmarked ? 'text-primary' : 'text-muted-foreground hover:text-foreground'),
+			className
+		)
+	);
 </script>
 
-{#if isAuthenticated}
+{#if isAuthenticated && (!onlyWhenBookmarked || bookmarked)}
 	<button
 		type="button"
 		onclick={handleClick}
 		aria-pressed={bookmarked}
-		aria-label={bookmarked ? m['bookmark.remove']() : m['bookmark.add']()}
-		class={cn(
-			'inline-flex items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-sm transition-all hover:bg-black/65 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/50',
-			sizeClasses,
-			className
-		)}
+		aria-label={label}
+		title={label}
+		class={buttonClasses}
 	>
 		<Bookmark class={cn('h-5 w-5', bookmarked && 'fill-current')} aria-hidden="true" />
 	</button>

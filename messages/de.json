@@ -727,6 +727,8 @@
 	"bookmark": {
 		"add": "Dieses Event merken",
 		"remove": "Lesezeichen entfernen",
+		"added": "Event gemerkt",
+		"removed": "Lesezeichen entfernt",
 		"error": "Lesezeichen konnte nicht aktualisiert werden. Bitte versuche es erneut."
 	},
 	"contactPage": {

@@ -727,6 +727,8 @@
 	"bookmark": {
 		"add": "Bookmark this event",
 		"remove": "Remove bookmark",
+		"added": "Event bookmarked",
+		"removed": "Bookmark removed",
 		"error": "Couldn't update your bookmark. Please try again."
 	},
 	"contactPage": {
