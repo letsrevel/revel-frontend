@@ -16,6 +16,11 @@ vi.mock('$lib/stores/auth.svelte', () => ({
 	authStore: { accessToken: 'test-token' as string | null }
 }));
 
+// Mock SvelteKit navigation (invalidateAll runs on successful toggle)
+vi.mock('$app/navigation', () => ({
+	invalidateAll: vi.fn()
+}));
+
 // Mock toasts
 vi.mock('svelte-sonner', () => ({
 	toast: { success: vi.fn(), error: vi.fn() }
@@ -26,7 +31,10 @@ import {
 	eventpublicattendanceUnbookmarkEvent
 } from '$lib/api/generated/sdk.gen';
 import { authStore } from '$lib/stores/auth.svelte';
+import { invalidateAll } from '$app/navigation';
 import { toast } from 'svelte-sonner';
+
+const mockAuthStore = authStore as { accessToken: string | null };
 
 describe('BookmarkButton', () => {
 	let queryClient: QueryClient;
@@ -35,8 +43,9 @@ describe('BookmarkButton', () => {
 		queryClient = new QueryClient({
 			defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
 		});
+		vi.spyOn(queryClient, 'invalidateQueries');
 		vi.clearAllMocks();
-		(authStore as { accessToken: string | null }).accessToken = 'test-token';
+		mockAuthStore.accessToken = 'test-token';
 	});
 
 	function renderButton(props: {
@@ -51,7 +60,7 @@ describe('BookmarkButton', () => {
 	}
 
 	it('renders nothing when unauthenticated', () => {
-		(authStore as { accessToken: string | null }).accessToken = null;
+		mockAuthStore.accessToken = null;
 		const { container } = renderButton({ eventId: 'e1', isBookmarked: false });
 		expect(container.querySelector('button')).toBeNull();
 	});
@@ -64,13 +73,11 @@ describe('BookmarkButton', () => {
 	it('exposes a hover tooltip via the title attribute', () => {
 		renderButton({ eventId: 'e1', isBookmarked: false });
 		// title mirrors the aria-label so hovering shows "Bookmark this event"
-		expect(screen.getByRole('button')).toHaveAttribute(
-			'title',
-			screen.getByRole('button').getAttribute('aria-label') ?? ''
-		);
+		const btn = screen.getByRole('button');
+		expect(btn).toHaveAttribute('title', btn.getAttribute('aria-label') ?? '');
 	});
 
-	it('optimistically bookmarks on click, calls POST, and shows a success toast', async () => {
+	it('optimistically bookmarks on click, calls POST, toasts, and invalidates the dashboard', async () => {
 		const user = userEvent.setup();
 		renderButton({ eventId: 'e1', isBookmarked: false });
 		const btn = screen.getByRole('button');
@@ -86,6 +93,10 @@ describe('BookmarkButton', () => {
 		// Guard against calling the opposite (DELETE) endpoint.
 		expect(eventpublicattendanceUnbookmarkEvent).not.toHaveBeenCalled();
 		await waitFor(() => expect(toast.success).toHaveBeenCalledTimes(1));
+		expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
+			queryKey: ['dashboard-your-events']
+		});
+		expect(invalidateAll).toHaveBeenCalled();
 	});
 
 	it('optimistically unbookmarks on click, calls DELETE, and shows a success toast', async () => {
@@ -104,6 +115,23 @@ describe('BookmarkButton', () => {
 		// Guard against calling the opposite (POST) endpoint.
 		expect(eventpublicattendanceBookmarkEvent).not.toHaveBeenCalled();
 		await waitFor(() => expect(toast.success).toHaveBeenCalledTimes(1));
+	});
+
+	it('does not queue a second request while one is in flight', async () => {
+		const user = userEvent.setup();
+		// Hold the first request open so the second click lands while pending.
+		let resolveFirst: (() => void) | undefined;
+		vi.mocked(eventpublicattendanceBookmarkEvent).mockImplementationOnce(
+			() => new Promise((resolve) => (resolveFirst = () => resolve({ data: {} } as never)))
+		);
+		renderButton({ eventId: 'e1', isBookmarked: false });
+		const btn = screen.getByRole('button');
+
+		await user.click(btn);
+		await user.click(btn); // should be ignored (pending / disabled)
+
+		expect(eventpublicattendanceBookmarkEvent).toHaveBeenCalledTimes(1);
+		resolveFirst?.();
 	});
 
 	it('reverts and shows an error toast when the mutation fails', async () => {
@@ -129,7 +157,7 @@ describe('BookmarkButton', () => {
 			expect(container.querySelector('button')).toBeNull();
 		});
 
-		it('renders when bookmarked and disappears after removing the bookmark', async () => {
+		it('removes the bookmark, fires its success toast, then disappears', async () => {
 			const user = userEvent.setup();
 			renderButton({ eventId: 'e1', isBookmarked: true, onlyWhenBookmarked: true });
 			const btn = screen.getByRole('button');
@@ -137,11 +165,13 @@ describe('BookmarkButton', () => {
 
 			await user.click(btn);
 
-			// Optimistic removal hides the indicator immediately.
-			await waitFor(() => expect(screen.queryByRole('button')).toBeNull());
+			// onSuccess must fire (toast) even though the indicator ultimately unmounts.
+			await waitFor(() => expect(toast.success).toHaveBeenCalledTimes(1));
 			expect(eventpublicattendanceUnbookmarkEvent).toHaveBeenCalledWith({
 				path: { event_id: 'e1' }
 			});
+			// After the request settles the indicator is gone.
+			await waitFor(() => expect(screen.queryByRole('button')).toBeNull());
 		});
 	});
 });
