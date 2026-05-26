@@ -5,6 +5,7 @@
 	import { formatEventDate, formatEventDateForScreenReader, isEventPast } from '$lib/utils/date';
 	import { getEventAccessDisplay } from '$lib/utils/event';
 	import { Calendar, MapPin, Ticket, Tag } from 'lucide-svelte';
+	import BookmarkButton from './BookmarkButton.svelte';
 	import EventCoverImage from './EventCoverImage.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { navigating } from '$app/stores';
@@ -89,6 +90,14 @@
 	>
 		<span class="sr-only">{m['eventCard.viewDetails']()}</span>
 	</a>
+
+	<!-- Bookmark toggle (renders only when authenticated; sits above the card link) -->
+	<BookmarkButton
+		eventId={event.id}
+		isBookmarked={event.is_bookmarked ?? false}
+		variant="float"
+		class="absolute right-2 top-2 z-20"
+	/>
 
 	<!-- Skeleton loader overlay when navigating -->
 	{#if isNavigating}
