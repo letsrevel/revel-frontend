@@ -724,6 +724,11 @@
 		"cancel": "Cancel",
 		"closeDialog": "Close dialog"
 	},
+	"bookmark": {
+		"add": "Salva questo evento",
+		"remove": "Rimuovi dai salvati",
+		"error": "Impossibile aggiornare il salvataggio. Riprova."
+	},
 	"contactPage": {
 		"contactUs": "Contattaci",
 		"comingSoon": "Modulo di contatto in arrivo..."
@@ -745,7 +750,8 @@
 			"all": "Tutti",
 			"organizing": "Sto organizzando",
 			"attending": "Sto partecipando",
-			"invited": "Invitato"
+			"invited": "Invitato",
+			"bookmarked": "Salvati"
 		},
 		"activityCards": {
 			"activeTickets": "Biglietti Attivi",
