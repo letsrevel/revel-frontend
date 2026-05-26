@@ -724,6 +724,13 @@
 		"cancel": "Cancel",
 		"closeDialog": "Close dialog"
 	},
+	"bookmark": {
+		"add": "Dieses Event merken",
+		"remove": "Lesezeichen entfernen",
+		"added": "Event gemerkt",
+		"removed": "Lesezeichen entfernt",
+		"error": "Lesezeichen konnte nicht aktualisiert werden. Bitte versuche es erneut."
+	},
 	"contactPage": {
 		"contactUs": "Kontaktiere uns",
 		"comingSoon": "Kontaktformular demnächst verfügbar..."
@@ -745,7 +752,8 @@
 			"all": "Alle",
 			"organizing": "Organisiere ich",
 			"attending": "Nehme ich teil",
-			"invited": "Eingeladen"
+			"invited": "Eingeladen",
+			"bookmarked": "Gemerkt"
 		},
 		"activityCards": {
 			"activeTickets": "Aktive Tickets",

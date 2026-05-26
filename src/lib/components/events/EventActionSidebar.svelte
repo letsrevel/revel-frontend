@@ -25,6 +25,7 @@
 	} from '$lib/utils/eligibility';
 	import { cn } from '$lib/utils/cn';
 	import EventStatusBadge from './EventStatusBadge.svelte';
+	import BookmarkButton from './BookmarkButton.svelte';
 	import EventQuickInfo from './EventQuickInfo.svelte';
 	import ActionButton from './ActionButton.svelte';
 	import EventRSVP from './EventRSVP.svelte';
@@ -379,8 +380,14 @@
 -->
 <aside class={containerClasses} aria-label="Event actions">
 	<!-- Card Header -->
-	<div class="border-b p-4">
+	<div class="flex items-start justify-between gap-2 border-b p-4">
 		<EventStatusBadge {event} />
+		<BookmarkButton
+			eventId={event.id}
+			isBookmarked={event.is_bookmarked ?? false}
+			variant="inline"
+			class="shrink-0"
+		/>
 	</div>
 
 	<!-- Card Content -->

@@ -724,6 +724,13 @@
 		"cancel": "Cancel",
 		"closeDialog": "Close dialog"
 	},
+	"bookmark": {
+		"add": "Bookmark this event",
+		"remove": "Remove bookmark",
+		"added": "Event bookmarked",
+		"removed": "Bookmark removed",
+		"error": "Couldn't update your bookmark. Please try again."
+	},
 	"contactPage": {
 		"contactUs": "Contact Us",
 		"comingSoon": "Contact form coming soon..."
@@ -745,7 +752,8 @@
 			"all": "All",
 			"organizing": "Organizing",
 			"attending": "Attending",
-			"invited": "Invited"
+			"invited": "Invited",
+			"bookmarked": "Bookmarked"
 		},
 		"activityCards": {
 			"activeTickets": "Active Tickets",
