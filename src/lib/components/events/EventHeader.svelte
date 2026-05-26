@@ -6,6 +6,7 @@
 	import { getImageUrl } from '$lib/utils/url';
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
 	import { MapPin, Calendar, Share2, ExternalLink } from 'lucide-svelte';
+	import BookmarkButton from './BookmarkButton.svelte';
 	import { cn } from '$lib/utils/cn';
 	import { toast } from 'svelte-sonner';
 
@@ -94,10 +95,18 @@
 		<!-- Header Content Overlay -->
 		<div class="absolute inset-0 flex flex-col justify-end p-6 pb-12 md:p-8">
 			<div class="max-w-4xl">
-				<!-- Event Name -->
-				<h1 class="mb-3 text-3xl font-bold text-white md:text-4xl lg:text-5xl">
-					{event.name}
-				</h1>
+				<!-- Event Name + bookmark toggle -->
+				<div class="mb-3 flex items-start gap-3">
+					<h1 class="text-3xl font-bold text-white md:text-4xl lg:text-5xl">
+						{event.name}
+					</h1>
+					<BookmarkButton
+						eventId={event.id}
+						isBookmarked={event.is_bookmarked ?? false}
+						variant="header"
+						class="mt-1 shrink-0"
+					/>
+				</div>
 
 				<!-- Metadata Row -->
 				<div class="flex flex-col gap-2 text-sm text-white/90 md:text-base">
