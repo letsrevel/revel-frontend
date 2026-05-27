@@ -97,20 +97,22 @@
 			</DialogTitle>
 		</DialogHeader>
 
-		<form onsubmit={handleSubmit} class="mt-4 space-y-4">
+		<form onsubmit={handleSubmit} novalidate class="mt-4 space-y-4">
 			<p class="text-sm text-muted-foreground">
 				{m['duplicateQuestionnaireModal.description']()}
 			</p>
 
 			<div class="space-y-2">
 				<label for="duplicate-questionnaire-name" class="block text-sm font-medium">
-					{m['duplicateQuestionnaireModal.newName']()} <span class="text-destructive">*</span>
+					{m['duplicateQuestionnaireModal.newName']()}
+					<span class="text-destructive" aria-hidden="true">*</span>
 				</label>
 				<input
 					id="duplicate-questionnaire-name"
 					type="text"
 					bind:value={newName}
 					placeholder={m['duplicateQuestionnaireModal.namePlaceholder']()}
+					required
 					disabled={duplicateMutation.isPending}
 					class={cn(
 						'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'
