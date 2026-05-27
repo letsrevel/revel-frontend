@@ -31,7 +31,8 @@ describe('DuplicateQuestionnaireModal', () => {
 	});
 
 	function renderModal() {
-		return render(QueryClientTestWrapper, {
+		const onClose = vi.fn();
+		const result = render(QueryClientTestWrapper, {
 			props: {
 				client: queryClient,
 				component: DuplicateQuestionnaireModal,
@@ -40,10 +41,11 @@ describe('DuplicateQuestionnaireModal', () => {
 					orgQuestionnaireId: 'q1',
 					questionnaireName: 'Admission',
 					organizationSlug: 'acme',
-					onClose: vi.fn()
+					onClose
 				}
 			}
 		});
+		return { ...result, onClose };
 	}
 
 	it('prefills the name with "Copy of {name}"', () => {
@@ -52,9 +54,9 @@ describe('DuplicateQuestionnaireModal', () => {
 		expect(input.value).toBe('Copy of Admission');
 	});
 
-	it('submits name + copy_associations and navigates to the new draft', async () => {
+	it('submits name + copy_associations, navigates to the new draft, and closes', async () => {
 		const user = userEvent.setup();
-		renderModal();
+		const { onClose } = renderModal();
 		await user.click(screen.getByLabelText(/copy event & series links/i));
 		await user.click(screen.getByRole('button', { name: /^duplicate$/i }));
 
@@ -68,6 +70,7 @@ describe('DuplicateQuestionnaireModal', () => {
 		await waitFor(() =>
 			expect(goto).toHaveBeenCalledWith('/org/acme/admin/questionnaires/new-q-id')
 		);
+		await waitFor(() => expect(onClose).toHaveBeenCalledOnce());
 	});
 
 	it('blocks submit and shows an error when the name is empty', async () => {
