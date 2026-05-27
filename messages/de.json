@@ -1053,6 +1053,36 @@
 		"error_startRequired": "Startdatum ist erforderlich",
 		"error_startFuture": "Startdatum muss in der Zukunft liegen"
 	},
+	"duplicatePollModal": {
+		"title": "Umfrage duplizieren",
+		"description": "Erstellt eine Entwurfskopie dieser Umfrage mit allen Fragen und der Konfiguration. Stimmen werden nicht kopiert.",
+		"newName": "Name der neuen Umfrage",
+		"namePlaceholder": "Namen der neuen Umfrage eingeben",
+		"loading": "Umfrage wird geladen…",
+		"copyOf": "Kopie von {name}",
+		"cancel": "Abbrechen",
+		"duplicate": "Duplizieren",
+		"duplicating": "Wird dupliziert...",
+		"error_notAuthenticated": "Nicht authentifiziert",
+		"error_failedToLoad": "Umfrage konnte nicht geladen werden",
+		"error_failedToDuplicate": "Umfrage konnte nicht dupliziert werden",
+		"error_nameRequired": "Der Name der Umfrage ist erforderlich"
+	},
+	"duplicateQuestionnaireModal": {
+		"title": "Fragebogen duplizieren",
+		"description": "Erstellt eine Entwurfskopie dieses Fragebogens mit allen Abschnitten, Fragen und Optionen. Einreichungen und Antworten werden nicht kopiert.",
+		"newName": "Name des neuen Fragebogens",
+		"namePlaceholder": "Namen des neuen Fragebogens eingeben",
+		"copyAssociationsLabel": "Event- und Serien-Verknüpfungen kopieren",
+		"copyAssociationsHint": "Wenn aktiviert, wird die Kopie mit denselben Events und Serien wie das Original verknüpft. Andernfalls startet sie ohne Verknüpfungen.",
+		"copyOf": "Kopie von {name}",
+		"cancel": "Abbrechen",
+		"duplicate": "Duplizieren",
+		"duplicating": "Wird dupliziert...",
+		"error_notAuthenticated": "Nicht authentifiziert",
+		"error_failedToDuplicate": "Fragebogen konnte nicht dupliziert werden",
+		"error_nameRequired": "Der Name des Fragebogens ist erforderlich"
+	},
 	"editEventPage": {
 		"title": "Veranstaltung bearbeiten:",
 		"heading": "Veranstaltung bearbeiten"
@@ -4222,7 +4252,8 @@
 		"submissions": "Submissions",
 		"assignToEvents": "Assign to Events",
 		"delete": "Delete",
-		"deleting": "Deleting..."
+		"deleting": "Deleting...",
+		"duplicate": "Duplizieren"
 	},
 	"questionnaireEditPage": {
 		"pageTitle": "Fragebogen bearbeiten",
@@ -4338,7 +4369,8 @@
 		"membersExemptDescription": "Wenn aktiviert, werden Organisationsmitglieder diesen Fragebogen automatisch überspringen und als bestanden betrachtet",
 		"perEventLabel": "Pro-Event-Ausfüllung erforderlich",
 		"perEventDescription": "Wenn aktiviert, müssen Benutzer diesen Fragebogen für jedes Event einzeln ausfüllen.",
-		"viewSummary": "Zusammenfassung anzeigen"
+		"viewSummary": "Zusammenfassung anzeigen",
+		"duplicate": "Duplizieren"
 	},
 	"questionnaireNewPage": {
 		"pageTitle": "Create Questionnaire",
@@ -6135,7 +6167,8 @@
 		"reopen": "Umfrage wieder öffnen",
 		"delete": "Umfrage löschen",
 		"confirmDelete": "Umfrage \"{name}\" löschen? Dies kann nicht rückgängig gemacht werden.",
-		"deleting": "Wird gelöscht…"
+		"deleting": "Wird gelöscht…",
+		"duplicate": "Duplizieren"
 	},
 	"pollNewPage": {
 		"pageTitle": "Umfrage erstellen",
@@ -6206,7 +6239,8 @@
 		"deleteSectionTitle": "Gefahrenzone",
 		"deleteButton": "Umfrage löschen",
 		"deleteConfirm": "Umfrage \"{name}\" löschen? Dies kann nicht rückgängig gemacht werden.",
-		"deleteError": "Umfrage konnte nicht gelöscht werden."
+		"deleteError": "Umfrage konnte nicht gelöscht werden.",
+		"duplicate": "Duplizieren"
 	},
 	"pollStatusBar": {
 		"openedAt": "Geöffnet {at}",

@@ -1053,6 +1053,36 @@
 		"error_startRequired": "La data di inizio è obbligatoria",
 		"error_startFuture": "La data di inizio deve essere nel futuro"
 	},
+	"duplicatePollModal": {
+		"title": "Duplica sondaggio",
+		"description": "Crea una bozza di copia di questo sondaggio con tutte le domande e la configurazione. I voti non vengono copiati.",
+		"newName": "Nome del nuovo sondaggio",
+		"namePlaceholder": "Inserisci il nome del nuovo sondaggio",
+		"loading": "Caricamento sondaggio…",
+		"copyOf": "Copia di {name}",
+		"cancel": "Annulla",
+		"duplicate": "Duplica",
+		"duplicating": "Duplicazione...",
+		"error_notAuthenticated": "Non autenticato",
+		"error_failedToLoad": "Impossibile caricare il sondaggio",
+		"error_failedToDuplicate": "Impossibile duplicare il sondaggio",
+		"error_nameRequired": "Il nome del sondaggio è obbligatorio"
+	},
+	"duplicateQuestionnaireModal": {
+		"title": "Duplica questionario",
+		"description": "Crea una bozza di copia di questo questionario con tutte le sezioni, le domande e le opzioni. Le risposte inviate non vengono copiate.",
+		"newName": "Nome del nuovo questionario",
+		"namePlaceholder": "Inserisci il nome del nuovo questionario",
+		"copyAssociationsLabel": "Copia i collegamenti a eventi e serie",
+		"copyAssociationsHint": "Se selezionato, la copia viene collegata agli stessi eventi e serie dell'originale. Altrimenti parte senza collegamenti.",
+		"copyOf": "Copia di {name}",
+		"cancel": "Annulla",
+		"duplicate": "Duplica",
+		"duplicating": "Duplicazione...",
+		"error_notAuthenticated": "Non autenticato",
+		"error_failedToDuplicate": "Impossibile duplicare il questionario",
+		"error_nameRequired": "Il nome del questionario è obbligatorio"
+	},
 	"editEventPage": {
 		"title": "Modifica Evento:",
 		"heading": "Modifica Evento"
@@ -4222,7 +4252,8 @@
 		"submissions": "Submissions",
 		"assignToEvents": "Assign to Events",
 		"delete": "Delete",
-		"deleting": "Deleting..."
+		"deleting": "Deleting...",
+		"duplicate": "Duplica"
 	},
 	"questionnaireEditPage": {
 		"pageTitle": "Modifica Questionario",
@@ -4338,7 +4369,8 @@
 		"membersExemptDescription": "Quando attivato, i membri dell'organizzazione salteranno automaticamente questo questionario e saranno considerati come se lo avessero superato",
 		"perEventLabel": "Richiedi compilazione per ogni evento",
 		"perEventDescription": "Quando attivato, gli utenti devono compilare questo questionario per ogni evento singolarmente.",
-		"viewSummary": "Vedi Riepilogo"
+		"viewSummary": "Vedi Riepilogo",
+		"duplicate": "Duplica"
 	},
 	"questionnaireNewPage": {
 		"pageTitle": "Create Questionnaire",
@@ -6135,7 +6167,8 @@
 		"reopen": "Riapri sondaggio",
 		"delete": "Elimina sondaggio",
 		"confirmDelete": "Eliminare il sondaggio \"{name}\"? Questa azione non può essere annullata.",
-		"deleting": "Eliminazione in corso…"
+		"deleting": "Eliminazione in corso…",
+		"duplicate": "Duplica"
 	},
 	"pollNewPage": {
 		"pageTitle": "Crea sondaggio",
@@ -6206,7 +6239,8 @@
 		"deleteSectionTitle": "Zona pericolosa",
 		"deleteButton": "Elimina sondaggio",
 		"deleteConfirm": "Eliminare il sondaggio \"{name}\"? Questa azione non può essere annullata.",
-		"deleteError": "Impossibile eliminare il sondaggio."
+		"deleteError": "Impossibile eliminare il sondaggio.",
+		"duplicate": "Duplica"
 	},
 	"pollStatusBar": {
 		"openedAt": "Aperto {at}",
