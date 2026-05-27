@@ -63,8 +63,32 @@ describe('DuplicatePollModal', () => {
 	it('prefills the name and seeds anonymity from the fetched poll', async () => {
 		renderModal();
 		await waitFor(() => expect(pollGetPoll).toHaveBeenCalled());
+		await waitFor(() =>
+			expect(screen.getByRole('button', { name: /^duplicate$/i })).not.toBeDisabled()
+		);
 		const input = screen.getByLabelText(/new poll name/i) as HTMLInputElement;
 		expect(input.value).toBe('Copy of Weekly vote');
+		// Anonymity checkboxes reflect the fetched template values (both false here).
+		expect((screen.getByLabelText(/from staff/i) as HTMLInputElement).checked).toBe(false);
+		expect((screen.getByLabelText(/from voters/i) as HTMLInputElement).checked).toBe(false);
+	});
+
+	it('seeds non-trivial anonymity values from the fetched poll', async () => {
+		getPollResult.data = {
+			id: 'p1',
+			staff_anonymous: true,
+			public_anonymous: false,
+			result_visibility: 'private'
+		};
+		renderModal();
+		await waitFor(() => expect(pollGetPoll).toHaveBeenCalled());
+		await waitFor(() =>
+			expect((screen.getByLabelText(/from staff/i) as HTMLInputElement).checked).toBe(true)
+		);
+		// private visibility ⇒ public-anonymous is NOT forced, stays as the template's false
+		const publicCheckbox = screen.getByLabelText(/from voters/i) as HTMLInputElement;
+		expect(publicCheckbox.checked).toBe(false);
+		expect(publicCheckbox.disabled).toBe(false);
 	});
 
 	it('sends the override values, navigates on success, and closes', async () => {
