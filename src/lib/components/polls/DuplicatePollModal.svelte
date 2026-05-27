@@ -43,6 +43,11 @@
 		if (open) {
 			newName = m['duplicatePollModal.copyOf']({ name: pollName });
 			errorMessage = null;
+			// Reset to neutral defaults so a reused instance never flashes the
+			// previous poll's anonymity values before the fetch reseeds them.
+			staffAnonymous = false;
+			publicAnonymous = false;
+			resultVisibility = 'private';
 			void loadTemplate();
 		}
 	});
@@ -137,6 +142,13 @@
 			<p class="text-sm text-muted-foreground">
 				{m['duplicatePollModal.description']()}
 			</p>
+
+			{#if isLoadingTemplate}
+				<p class="flex items-center gap-2 text-sm text-muted-foreground" role="status">
+					<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
+					{m['duplicatePollModal.loading']()}
+				</p>
+			{/if}
 
 			<div class="space-y-2">
 				<label for="duplicate-poll-name" class="block text-sm font-medium">

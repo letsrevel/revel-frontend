@@ -123,8 +123,10 @@ describe('DuplicatePollModal', () => {
 		await waitFor(() => expect(pollGetPoll).toHaveBeenCalled());
 
 		const publicCheckbox = screen.getByLabelText(/from voters/i) as HTMLInputElement;
-		await waitFor(() => expect(publicCheckbox.checked).toBe(true));
-		expect(publicCheckbox.disabled).toBe(true);
+		await waitFor(() => {
+			expect(publicCheckbox.checked).toBe(true);
+			expect(publicCheckbox.disabled).toBe(true);
+		});
 	});
 
 	it('blocks submit and shows an error when the name is empty', async () => {
@@ -139,5 +141,15 @@ describe('DuplicatePollModal', () => {
 
 		expect(pollDuplicatePollAction).not.toHaveBeenCalled();
 		expect(screen.getByRole('alert')).toHaveTextContent(/required/i);
+	});
+
+	it('shows an inline error when the template fetch fails', async () => {
+		vi.mocked(pollGetPoll).mockResolvedValueOnce({
+			error: { detail: 'boom' }
+		} as unknown as Awaited<ReturnType<typeof pollGetPoll>>);
+		renderModal();
+
+		await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(/failed to load/i));
+		expect(pollDuplicatePollAction).not.toHaveBeenCalled();
 	});
 });
