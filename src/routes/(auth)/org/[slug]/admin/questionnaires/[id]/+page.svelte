@@ -402,11 +402,7 @@
 				<p class="mt-2 text-sm text-muted-foreground">{m['questionnaireEditPage.subtitle']()}</p>
 			</div>
 			<div class="flex gap-2">
-				<Button
-					variant="outline"
-					size="sm"
-					onclick={() => (isDuplicateModalOpen = true)}
-				>
+				<Button variant="outline" size="sm" onclick={() => (isDuplicateModalOpen = true)}>
 					{m['questionnaireEditPage.duplicate']()}
 				</Button>
 				<Button

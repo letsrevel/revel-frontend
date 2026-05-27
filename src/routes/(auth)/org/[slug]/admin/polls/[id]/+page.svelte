@@ -285,12 +285,7 @@
 		<h1 class="text-3xl font-bold tracking-tight">
 			{name || poll.questionnaire?.name || m['pollEditPage.pageTitle']()}
 		</h1>
-		<Button
-			variant="outline"
-			size="sm"
-			class="gap-2"
-			onclick={() => (isDuplicateModalOpen = true)}
-		>
+		<Button variant="outline" size="sm" class="gap-2" onclick={() => (isDuplicateModalOpen = true)}>
 			<Copy class="h-4 w-4" />
 			{m['pollEditPage.duplicate']()}
 		</Button>

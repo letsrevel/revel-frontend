@@ -41,8 +41,7 @@
 
 	const duplicateMutation = createMutation(() => ({
 		mutationFn: async () => {
-			if (!accessToken)
-				throw new Error(m['duplicateQuestionnaireModal.error_notAuthenticated']());
+			if (!accessToken) throw new Error(m['duplicateQuestionnaireModal.error_notAuthenticated']());
 
 			const response = await questionnaireDuplicateOrgQuestionnaire({
 				path: { org_questionnaire_id: orgQuestionnaireId },
