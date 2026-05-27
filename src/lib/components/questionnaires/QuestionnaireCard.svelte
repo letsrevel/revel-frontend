@@ -9,7 +9,7 @@
 	} from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Edit, Eye, FileText, Trash2, CalendarCheck, AlertCircle } from 'lucide-svelte';
+	import { Edit, Eye, FileText, Trash2, CalendarCheck, AlertCircle, Copy } from 'lucide-svelte';
 	import type {
 		OrganizationQuestionnaireInListSchema,
 		OrganizationQuestionnaireSchema
@@ -20,6 +20,7 @@
 	} from '$lib/api/generated/sdk.gen';
 	import { invalidateAll } from '$app/navigation';
 	import QuestionnaireAssignmentModal from './QuestionnaireAssignmentModal.svelte';
+	import DuplicateQuestionnaireModal from './DuplicateQuestionnaireModal.svelte';
 	import {
 		Tooltip,
 		TooltipContent,
@@ -38,6 +39,7 @@
 
 	// Delete state
 	let isDeleting = $state(false);
+	let isDuplicateModalOpen = $state(false);
 
 	// Assignment modal state
 	let isAssignmentModalOpen = $state(false);
@@ -269,6 +271,17 @@
 				{m['questionnaireCard.assignToEvents']()}
 			</Button>
 
+			<!-- Duplicate Button -->
+			<Button
+				variant="outline"
+				size="sm"
+				onclick={() => (isDuplicateModalOpen = true)}
+				class="w-full gap-2"
+			>
+				<Copy class="h-4 w-4" />
+				{m['questionnaireCard.duplicate']()}
+			</Button>
+
 			<!-- Delete Button -->
 			<Button
 				variant="outline"
@@ -294,3 +307,11 @@
 		onClose={() => (isAssignmentModalOpen = false)}
 	/>
 {/if}
+
+<DuplicateQuestionnaireModal
+	bind:open={isDuplicateModalOpen}
+	orgQuestionnaireId={questionnaire.id}
+	questionnaireName={questionnaire.questionnaire.name}
+	{organizationSlug}
+	onClose={() => (isDuplicateModalOpen = false)}
+/>

@@ -20,6 +20,7 @@
 		Upload
 	} from 'lucide-svelte';
 	import QuestionnaireAssignmentModal from '$lib/components/questionnaires/QuestionnaireAssignmentModal.svelte';
+	import DuplicateQuestionnaireModal from '$lib/components/questionnaires/DuplicateQuestionnaireModal.svelte';
 	import QuestionnaireStatusBar from '$lib/components/questionnaires/QuestionnaireStatusBar.svelte';
 	import QuestionnaireFormFields from '$lib/components/questionnaires/QuestionnaireFormFields.svelte';
 	import QuestionnaireReadOnlyView from '$lib/components/questionnaires/QuestionnaireReadOnlyView.svelte';
@@ -146,6 +147,9 @@
 
 	// Assignment modal state
 	let isAssignmentModalOpen = $state(false);
+
+	// Duplicate modal state
+	let isDuplicateModalOpen = $state(false);
 
 	// Edit mode state - user must explicitly enable editing
 	// This protects against accidental modifications while still allowing edits to any questionnaire
@@ -398,6 +402,13 @@
 				<p class="mt-2 text-sm text-muted-foreground">{m['questionnaireEditPage.subtitle']()}</p>
 			</div>
 			<div class="flex gap-2">
+				<Button
+					variant="outline"
+					size="sm"
+					onclick={() => (isDuplicateModalOpen = true)}
+				>
+					{m['questionnaireEditPage.duplicate']()}
+				</Button>
 				<Button
 					href="/org/{data.organizationSlug}/admin/questionnaires/{data.questionnaire?.id}/summary"
 					variant="outline"
@@ -820,6 +831,17 @@
 			organizationId={data.organization.id}
 			accessToken={authStore.accessToken || ''}
 			onClose={() => (isAssignmentModalOpen = false)}
+		/>
+	{/if}
+
+	<!-- Duplicate Modal -->
+	{#if data.questionnaire}
+		<DuplicateQuestionnaireModal
+			bind:open={isDuplicateModalOpen}
+			orgQuestionnaireId={data.questionnaire.id}
+			questionnaireName={data.questionnaire.questionnaire.name}
+			organizationSlug={data.organizationSlug}
+			onClose={() => (isDuplicateModalOpen = false)}
 		/>
 	{/if}
 {/if}
