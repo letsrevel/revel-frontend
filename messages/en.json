@@ -1053,6 +1053,36 @@
 		"error_startRequired": "Start date is required",
 		"error_startFuture": "Start date must be in the future"
 	},
+	"duplicatePollModal": {
+		"title": "Duplicate Poll",
+		"description": "Create a draft copy of this poll with all its questions and configuration. Votes are not copied.",
+		"newName": "New Poll Name",
+		"namePlaceholder": "Enter new poll name",
+		"loading": "Loading poll…",
+		"copyOf": "Copy of {name}",
+		"cancel": "Cancel",
+		"duplicate": "Duplicate",
+		"duplicating": "Duplicating...",
+		"error_notAuthenticated": "Not authenticated",
+		"error_failedToLoad": "Failed to load poll",
+		"error_failedToDuplicate": "Failed to duplicate poll",
+		"error_nameRequired": "Poll name is required"
+	},
+	"duplicateQuestionnaireModal": {
+		"title": "Duplicate Questionnaire",
+		"description": "Create a draft copy of this questionnaire with all its sections, questions, and options. Submissions and answers are not copied.",
+		"newName": "New Questionnaire Name",
+		"namePlaceholder": "Enter new questionnaire name",
+		"copyAssociationsLabel": "Copy event & series links",
+		"copyAssociationsHint": "When checked, the copy is attached to the same events and series as the original. Otherwise it starts unattached.",
+		"copyOf": "Copy of {name}",
+		"cancel": "Cancel",
+		"duplicate": "Duplicate",
+		"duplicating": "Duplicating...",
+		"error_notAuthenticated": "Not authenticated",
+		"error_failedToDuplicate": "Failed to duplicate questionnaire",
+		"error_nameRequired": "Questionnaire name is required"
+	},
 	"editEventPage": {
 		"title": "Edit Event:",
 		"heading": "Edit Event"
@@ -4222,7 +4252,8 @@
 		"submissions": "Submissions",
 		"assignToEvents": "Assign to Events",
 		"delete": "Delete",
-		"deleting": "Deleting..."
+		"deleting": "Deleting...",
+		"duplicate": "Duplicate"
 	},
 	"questionnaireEditPage": {
 		"pageTitle": "Edit Questionnaire",
@@ -4338,7 +4369,8 @@
 		"membersExemptDescription": "When enabled, organization members will automatically bypass this questionnaire and be considered as having passed it",
 		"perEventLabel": "Require per-event completion",
 		"perEventDescription": "When enabled, users must fill out this questionnaire for each event individually.",
-		"viewSummary": "View Summary"
+		"viewSummary": "View Summary",
+		"duplicate": "Duplicate"
 	},
 	"questionnaireNewPage": {
 		"pageTitle": "Create Questionnaire",
@@ -6135,7 +6167,8 @@
 		"reopen": "Reopen poll",
 		"delete": "Delete poll",
 		"confirmDelete": "Delete poll \"{name}\"? This cannot be undone.",
-		"deleting": "Deleting…"
+		"deleting": "Deleting…",
+		"duplicate": "Duplicate"
 	},
 	"pollNewPage": {
 		"pageTitle": "Create Poll",
@@ -6206,7 +6239,8 @@
 		"deleteSectionTitle": "Danger zone",
 		"deleteButton": "Delete poll",
 		"deleteConfirm": "Delete poll \"{name}\"? This cannot be undone.",
-		"deleteError": "Failed to delete poll."
+		"deleteError": "Failed to delete poll.",
+		"duplicate": "Duplicate"
 	},
 	"pollStatusBar": {
 		"openedAt": "Opened {at}",

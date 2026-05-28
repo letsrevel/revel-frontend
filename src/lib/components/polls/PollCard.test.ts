@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/svelte';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { QueryClient } from '@tanstack/svelte-query';
 import PollCard from './PollCard.svelte';
+import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import type { PollListItemSchema } from '$lib/api/generated/types.gen';
 
 function makePoll(overrides: Partial<PollListItemSchema> = {}): PollListItemSchema {
@@ -23,26 +25,38 @@ function makePoll(overrides: Partial<PollListItemSchema> = {}): PollListItemSche
 }
 
 describe('PollCard', () => {
-	it('shows the URL strip when poll is OPEN', () => {
-		render(PollCard, {
-			props: { poll: makePoll({ status: 'open' }), organizationSlug: 'acme' }
+	let queryClient: QueryClient;
+
+	beforeEach(() => {
+		queryClient = new QueryClient({
+			defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
 		});
+	});
+
+	function renderCard(poll: PollListItemSchema) {
+		return render(QueryClientTestWrapper, {
+			props: {
+				client: queryClient,
+				component: PollCard,
+				props: { poll, organizationSlug: 'acme' }
+			}
+		});
+	}
+
+	it('shows the URL strip when poll is OPEN', () => {
+		renderCard(makePoll({ status: 'open' }));
 		const input = screen.getByRole('textbox', { name: /share url/i });
 		expect((input as HTMLInputElement).value).toContain('/org/acme/polls/p1');
 	});
 
 	it('shows the Open poll CTA and hides the URL strip when DRAFT', () => {
-		render(PollCard, {
-			props: { poll: makePoll({ status: 'draft' }), organizationSlug: 'acme' }
-		});
+		renderCard(makePoll({ status: 'draft' }));
 		expect(screen.getByRole('button', { name: /open poll/i })).toBeInTheDocument();
 		expect(screen.queryByRole('textbox', { name: /share url/i })).toBeNull();
 	});
 
 	it('shows the Closed badge when poll is CLOSED', () => {
-		render(PollCard, {
-			props: { poll: makePoll({ status: 'closed' }), organizationSlug: 'acme' }
-		});
+		renderCard(makePoll({ status: 'closed' }));
 		expect(screen.getByText(/closed/i)).toBeInTheDocument();
 	});
 });

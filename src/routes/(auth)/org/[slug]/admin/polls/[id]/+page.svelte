@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { ArrowLeft, Trash2, Plus, FolderPlus, Upload } from 'lucide-svelte';
+	import { ArrowLeft, Copy, Trash2, Plus, FolderPlus, Upload } from 'lucide-svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import {
@@ -18,6 +18,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import PollStatusBar from '$lib/components/polls/PollStatusBar.svelte';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import DuplicatePollModal from '$lib/components/polls/DuplicatePollModal.svelte';
 	import PollAudienceCard from '$lib/components/polls/PollAudienceCard.svelte';
 	import PollAnonymityCard from '$lib/components/polls/PollAnonymityCard.svelte';
 	import PollScheduleCard from '$lib/components/polls/PollScheduleCard.svelte';
@@ -241,6 +242,7 @@
 	}
 
 	let deleteConfirmOpen = $state(false);
+	let isDuplicateModalOpen = $state(false);
 
 	async function deletePoll() {
 		deleting = true;
@@ -279,9 +281,15 @@
 		<ArrowLeft class="h-4 w-4" />
 		{m['pollEditPage.backToList']()}
 	</Button>
-	<h1 class="text-3xl font-bold tracking-tight">
-		{name || poll.questionnaire?.name || m['pollEditPage.pageTitle']()}
-	</h1>
+	<div class="flex items-center justify-between gap-2">
+		<h1 class="text-3xl font-bold tracking-tight">
+			{name || poll.questionnaire?.name || m['pollEditPage.pageTitle']()}
+		</h1>
+		<Button variant="outline" size="sm" class="gap-2" onclick={() => (isDuplicateModalOpen = true)}>
+			<Copy class="h-4 w-4" />
+			{m['pollEditPage.duplicate']()}
+		</Button>
+	</div>
 </div>
 
 <div class="mx-auto max-w-4xl space-y-6">
@@ -527,4 +535,12 @@
 	confirmText={m['pollEditPage.deleteButton']()}
 	onCancel={() => (deleteConfirmOpen = false)}
 	onConfirm={deletePoll}
+/>
+
+<DuplicatePollModal
+	bind:open={isDuplicateModalOpen}
+	pollId={poll.id}
+	pollName={poll.questionnaire?.name ?? ''}
+	organizationSlug={data.organization.slug}
+	onClose={() => (isDuplicateModalOpen = false)}
 />

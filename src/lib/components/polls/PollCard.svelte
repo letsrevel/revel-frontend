@@ -17,10 +17,11 @@
 		DropdownMenuItem,
 		DropdownMenuTrigger
 	} from '$lib/components/ui/dropdown-menu';
-	import { BarChart3, Edit, ExternalLink, MoreHorizontal, Play, Trash2 } from 'lucide-svelte';
+	import { BarChart3, Copy, Edit, ExternalLink, MoreHorizontal, Play, Trash2 } from 'lucide-svelte';
 	import PollStatusBadge from './PollStatusBadge.svelte';
 	import PollUrlStrip from './PollUrlStrip.svelte';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import DuplicatePollModal from './DuplicatePollModal.svelte';
 	import { toast } from 'svelte-sonner';
 	import {
 		pollOpenPollAction,
@@ -48,6 +49,7 @@
 	let isLifecycleBusy = $state(false);
 	let isDeleting = $state(false);
 	let deleteConfirmOpen = $state(false);
+	let isDuplicateModalOpen = $state(false);
 
 	function authHeaders(): Record<string, string> {
 		return accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
@@ -132,6 +134,10 @@
 						<ExternalLink class="mr-2 h-4 w-4" />
 						{m['pollCard.viewAsVoter']()}
 					</DropdownMenuItem>
+					<DropdownMenuItem onclick={() => (isDuplicateModalOpen = true)}>
+						<Copy class="mr-2 h-4 w-4" />
+						{m['pollCard.duplicate']()}
+					</DropdownMenuItem>
 					{#if poll.status === 'open'}
 						<DropdownMenuItem onclick={closePoll} disabled={isLifecycleBusy}>
 							{m['pollCard.close']()}
@@ -199,4 +205,12 @@
 	variant="danger"
 	onCancel={() => (deleteConfirmOpen = false)}
 	onConfirm={deletePoll}
+/>
+
+<DuplicatePollModal
+	bind:open={isDuplicateModalOpen}
+	pollId={poll.id}
+	pollName={poll.questionnaire_name}
+	{organizationSlug}
+	onClose={() => (isDuplicateModalOpen = false)}
 />
