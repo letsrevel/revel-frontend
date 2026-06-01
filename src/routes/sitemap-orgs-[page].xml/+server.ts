@@ -3,7 +3,7 @@ import { organizationListOrganizations } from '$lib/api';
 import { getBackendUrl } from '$lib/config/api';
 import type { RequestHandler } from './$types';
 
-const PAGE_SIZE = 5000;
+const PAGE_SIZE = 200;
 
 function escapeXml(s: string): string {
 	return s

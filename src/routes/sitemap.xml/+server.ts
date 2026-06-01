@@ -5,7 +5,7 @@ import {
 } from '$lib/api';
 import type { RequestHandler } from './$types';
 
-const PAGE_SIZE = 5000;
+const PAGE_SIZE = 200;
 
 function pages(total: number): number {
 	return Math.max(1, Math.ceil(total / PAGE_SIZE));
