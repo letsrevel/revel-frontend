@@ -14,6 +14,7 @@
 	import EventCoverImage from '$lib/components/events/EventCoverImage.svelte';
 	import EventBadges from '$lib/components/events/EventBadges.svelte';
 	import DuplicateEventModal from '$lib/components/events/admin/DuplicateEventModal.svelte';
+	import CancelEventDialog from '$lib/components/events/admin/CancelEventDialog.svelte';
 	import AdminEventCard from '$lib/components/events/admin/AdminEventCard.svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Plus, Calendar, Eye, Users, Trash2, Mail, MoreVertical, Copy } from 'lucide-svelte';
@@ -113,13 +114,19 @@
 	}
 
 	function cancelEvent(eventId: string): void {
-		if (confirm(m['orgAdmin.events.confirmations.cancel']())) {
-			updateStatusMutation.mutate({ eventId, status: 'cancelled' });
-		}
+		cancelEventId = eventId;
+		showCancelEventDialog = true;
 	}
 
 	function deleteEvent(eventId: string): void {
-		if (confirm(m['orgAdmin.events.confirmations.delete']())) {
+		// Stronger confirmation when deleting a cancelled event — attendees
+		// have already been notified and we're now wiping the record.
+		const target = data.events.find((e: EventInListSchema) => e.id === eventId);
+		const isCancelled = (target?.status as string) === 'cancelled';
+		const message = isCancelled
+			? m['orgAdmin.events.confirmations.deleteCancelled']()
+			: m['orgAdmin.events.confirmations.delete']();
+		if (confirm(message)) {
 			deleteEventMutation.mutate(eventId);
 		}
 	}
@@ -166,6 +173,18 @@
 		name: string;
 		start: string;
 	} | null>(null);
+
+	// Cancel event dialog state
+	let showCancelEventDialog = $state(false);
+	let cancelEventId = $state<string | null>(null);
+
+	// Drop the stale event id once the dialog closes so the conditional
+	// mount block tracks the lifecycle symmetrically with closeDuplicateModal.
+	$effect(() => {
+		if (!showCancelEventDialog) {
+			cancelEventId = null;
+		}
+	});
 
 	function openDuplicateModal(event: EventInListSchema): void {
 		duplicateEventData = {
@@ -438,6 +457,11 @@
 		organizationSlug={organization.slug}
 		onClose={closeDuplicateModal}
 	/>
+{/if}
+
+<!-- Cancel Event Dialog -->
+{#if cancelEventId}
+	<CancelEventDialog bind:open={showCancelEventDialog} eventId={cancelEventId} />
 {/if}
 
 <style>

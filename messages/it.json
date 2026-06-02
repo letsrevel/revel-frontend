@@ -1232,7 +1232,9 @@
 		"feedbackDescription": "Condividi la tua esperienza con gli organizzatori",
 		"giveFeedback": "Lascia un feedback",
 		"feedbackQuestionnaires": "{count} questionario di feedback disponibile",
-		"feedbackQuestionnaires_plural": "{count} questionari di feedback disponibili"
+		"feedbackQuestionnaires_plural": "{count} questionari di feedback disponibili",
+		"cancelledBannerTitle": "Questo evento è stato annullato",
+		"cancelledBannerReasonLabel": "Motivazione dell'organizzatore"
 	},
 	"eventActions.announcement": "Annuncio",
 	"eventActions.sendAnnouncement": "Invia Annuncio",
@@ -1296,7 +1298,16 @@
 		"statusUpdating": "Aggiornamento stato...",
 		"error_notAuthenticated": "Non autenticato",
 		"error_updateStatusFailed": "Aggiornamento stato fallito",
-		"error_updateStatusMessage": "Aggiornamento stato fallito: {message}"
+		"error_updateStatusMessage": "Aggiornamento stato fallito: {message}",
+		"tooltips": {
+			"publish": "Pubblica questo evento per consentire RSVP e acquisto biglietti.",
+			"close": "Interrompi RSVP e vendita biglietti. L'evento resta visibile.",
+			"draft": "Riporta in bozza. L'evento viene nascosto al pubblico.",
+			"reopen": "Riapri per RSVP e vendita biglietti.",
+			"cancel": "Annulla l'evento e notifica tutti i partecipanti.",
+			"delete": "Elimina definitivamente l'evento. Operazione irreversibile.",
+			"more": "Altre azioni"
+		}
 	},
 	"eventHeader": {
 		"downloadCalendarEvent": "Scarica evento calendario per {eventName}",
@@ -2553,6 +2564,20 @@
 		"ticketId": "ID Biglietto:"
 	},
 	"myTicketModal.ticketOf": "Biglietto {current} di {total}",
+	"cancelEvent": {
+		"dialogTitle": "Annulla questo evento",
+		"dialogDescription": "L'annullamento notificherà tutte le persone che hanno confermato la presenza, hanno un biglietto o sono in lista d'attesa.",
+		"sharedNotice": "Se aggiungi una motivazione, verrà inclusa nella notifica di annullamento e mostrata pubblicamente sulla pagina dell'evento a chiunque possa visualizzarla.",
+		"reasonLabel": "Motivazione (facoltativa)",
+		"reasonPlaceholder": "Perché viene annullato questo evento?",
+		"reasonHelp": "Fino a {max} caratteri. Visibile pubblicamente a chiunque possa vedere l'evento.",
+		"confirmButton": "Annulla evento",
+		"keepButton": "Mantieni evento",
+		"cancelling": "Annullamento…",
+		"successTitle": "Evento annullato",
+		"successDescription": "I partecipanti vengono notificati.",
+		"errorTitle": "Impossibile annullare l'evento"
+	},
 	"cancelTicket": {
 		"button": "Annulla biglietto",
 		"cancelling": "Annullamento…",
@@ -3342,6 +3367,7 @@
 	"orgAdmin.events.confirmations.cancel": "Sei sicuro di voler annullare questo evento? Sarà contrassegnato come annullato ma rimarrà visibile.",
 	"orgAdmin.events.confirmations.close": "Sei sicuro di voler chiudere questo evento?",
 	"orgAdmin.events.confirmations.delete": "Sei sicuro di voler eliminare permanentemente questo evento? Questa azione non può essere annullata.",
+	"orgAdmin.events.confirmations.deleteCancelled": "Questo evento è già stato annullato e i partecipanti sono stati notificati. Eliminandolo definitivamente sparirà anche dai tuoi archivi. Continuare?",
 	"orgAdmin.events.confirmations.publish": "Sei sicuro di voler pubblicare questo evento?",
 	"orgAdmin.events.confirmations.reopen": "Sei sicuro di voler riaprire questo evento?",
 	"orgAdmin.events.createEventButton": "Crea Evento",

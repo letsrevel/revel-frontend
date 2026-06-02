@@ -1232,7 +1232,9 @@
 		"feedbackDescription": "Share your experience with the organizers",
 		"giveFeedback": "Give Feedback",
 		"feedbackQuestionnaires": "{count} feedback questionnaire available",
-		"feedbackQuestionnaires_plural": "{count} feedback questionnaires available"
+		"feedbackQuestionnaires_plural": "{count} feedback questionnaires available",
+		"cancelledBannerTitle": "This event has been cancelled",
+		"cancelledBannerReasonLabel": "Reason from the organizer"
 	},
 	"eventActions.announcement": "Announcement",
 	"eventActions.sendAnnouncement": "Send Announcement",
@@ -1296,7 +1298,16 @@
 		"statusUpdating": "Updating status...",
 		"error_notAuthenticated": "Not authenticated",
 		"error_updateStatusFailed": "Failed to update status",
-		"error_updateStatusMessage": "Failed to update status: {message}"
+		"error_updateStatusMessage": "Failed to update status: {message}",
+		"tooltips": {
+			"publish": "Publish this event so people can RSVP or buy tickets.",
+			"close": "Stop accepting RSVPs and ticket sales. The event stays visible.",
+			"draft": "Move back to draft. The event is hidden from the public.",
+			"reopen": "Reopen for RSVPs and ticket sales.",
+			"cancel": "Cancel the event and notify everyone who is attending.",
+			"delete": "Permanently delete this event. This cannot be undone.",
+			"more": "More actions"
+		}
 	},
 	"eventHeader": {
 		"downloadCalendarEvent": "Download calendar event for {eventName}",
@@ -2553,6 +2564,20 @@
 		"ticketId": "Ticket ID:"
 	},
 	"myTicketModal.ticketOf": "Ticket {current} of {total}",
+	"cancelEvent": {
+		"dialogTitle": "Cancel this event",
+		"dialogDescription": "Cancelling will notify everyone who has RSVPed, has a ticket, or is on the waitlist.",
+		"sharedNotice": "If you add a reason it will be included in the cancellation notification and shown publicly on the event page to anyone who can view it.",
+		"reasonLabel": "Reason (optional)",
+		"reasonPlaceholder": "Why is this event being cancelled?",
+		"reasonHelp": "Up to {max} characters. Shown publicly to anyone who can view the event.",
+		"confirmButton": "Cancel event",
+		"keepButton": "Keep event",
+		"cancelling": "Cancelling…",
+		"successTitle": "Event cancelled",
+		"successDescription": "Participants are being notified.",
+		"errorTitle": "Could not cancel event"
+	},
 	"cancelTicket": {
 		"button": "Cancel ticket",
 		"cancelling": "Cancelling…",
@@ -3342,6 +3367,7 @@
 	"orgAdmin.events.confirmations.cancel": "Are you sure you want to cancel this event? This will mark the event as cancelled but keep it visible.",
 	"orgAdmin.events.confirmations.close": "Are you sure you want to close this event?",
 	"orgAdmin.events.confirmations.delete": "Are you sure you want to permanently delete this event? This action cannot be undone.",
+	"orgAdmin.events.confirmations.deleteCancelled": "This event has already been cancelled and attendees have been notified. Permanently deleting it will remove it from your records too. Continue?",
 	"orgAdmin.events.confirmations.publish": "Are you sure you want to publish this event?",
 	"orgAdmin.events.confirmations.reopen": "Are you sure you want to reopen this event?",
 	"orgAdmin.events.createEventButton": "Create Event",
