@@ -2570,7 +2570,7 @@
 		"sharedNotice": "Se aggiungi una motivazione, verrà inclusa nella notifica di annullamento e mostrata pubblicamente sulla pagina dell'evento a chiunque possa visualizzarla.",
 		"reasonLabel": "Motivazione (facoltativa)",
 		"reasonPlaceholder": "Perché viene annullato questo evento?",
-		"reasonHelp": "Fino a {max} caratteri. Visibile ai partecipanti.",
+		"reasonHelp": "Fino a {max} caratteri. Visibile pubblicamente a chiunque possa vedere l'evento.",
 		"confirmButton": "Annulla evento",
 		"keepButton": "Mantieni evento",
 		"cancelling": "Annullamento…",

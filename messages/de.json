@@ -2570,7 +2570,7 @@
 		"sharedNotice": "Wenn du einen Grund angibst, wird er in die Absagebenachrichtigung aufgenommen und öffentlich auf der Veranstaltungsseite für alle angezeigt, die diese Seite öffnen können.",
 		"reasonLabel": "Grund (optional)",
 		"reasonPlaceholder": "Warum wird diese Veranstaltung abgesagt?",
-		"reasonHelp": "Bis zu {max} Zeichen. Für Teilnehmende sichtbar.",
+		"reasonHelp": "Bis zu {max} Zeichen. Öffentlich sichtbar für alle, die diese Seite öffnen können.",
 		"confirmButton": "Veranstaltung absagen",
 		"keepButton": "Veranstaltung behalten",
 		"cancelling": "Wird abgesagt…",

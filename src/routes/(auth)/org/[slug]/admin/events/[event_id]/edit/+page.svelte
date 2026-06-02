@@ -124,6 +124,17 @@
 	}
 
 	/**
+	 * Reopen event (closed → open). Same mutation target as publish but
+	 * with reopen-specific confirmation copy so admins see the right
+	 * intent when transitioning from closed.
+	 */
+	function reopenEvent(): void {
+		if (confirm(m['orgAdmin.events.confirmations.reopen']())) {
+			updateStatusMutation.mutate('open');
+		}
+	}
+
+	/**
 	 * Cancel event (any → cancelled). Opens the dedicated dialog so the
 	 * organizer can attach an optional reason; the dialog drives the
 	 * mutation itself.
@@ -221,7 +232,7 @@
 										class="inline-flex items-center gap-2 rounded-md bg-green-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
 									>
 										<CheckCircle class="h-4 w-4" aria-hidden="true" />
-										Publish
+										{m['eventEditPage.publishButton']()}
 									</button>
 								{/snippet}
 							</Tooltip.Trigger>
@@ -240,7 +251,7 @@
 										class="inline-flex items-center gap-2 rounded-md bg-orange-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
 									>
 										<XCircle class="h-4 w-4" aria-hidden="true" />
-										Close
+										{m['eventEditPage.closeButton']()}
 									</button>
 								{/snippet}
 							</Tooltip.Trigger>
@@ -272,12 +283,12 @@
 									<button
 										{...props}
 										type="button"
-										onclick={publishEvent}
+										onclick={reopenEvent}
 										disabled={updateStatusMutation.isPending}
 										class="inline-flex items-center gap-2 rounded-md bg-green-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
 									>
 										<CheckCircle class="h-4 w-4" aria-hidden="true" />
-										Reopen
+										{m['eventEditPage.reopenButton']()}
 									</button>
 								{/snippet}
 							</Tooltip.Trigger>

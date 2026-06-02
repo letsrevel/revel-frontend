@@ -2570,7 +2570,7 @@
 		"sharedNotice": "If you add a reason it will be included in the cancellation notification and shown publicly on the event page to anyone who can view it.",
 		"reasonLabel": "Reason (optional)",
 		"reasonPlaceholder": "Why is this event being cancelled?",
-		"reasonHelp": "Up to {max} characters. Visible to participants.",
+		"reasonHelp": "Up to {max} characters. Shown publicly to anyone who can view the event.",
 		"confirmButton": "Cancel event",
 		"keepButton": "Keep event",
 		"cancelling": "Cancelling…",
