@@ -39,7 +39,8 @@
 		CalendarDays,
 		MessageSquare,
 		Megaphone,
-		ListPlus
+		ListPlus,
+		Ban
 	} from 'lucide-svelte';
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
 	import AnnouncementModal from '$lib/components/announcements/AnnouncementModal.svelte';
@@ -392,6 +393,31 @@
 
 	<!-- Card Content -->
 	<div class="space-y-4 p-4">
+		<!-- Event Cancelled Banner -->
+		{#if event.status === 'cancelled'}
+			<div
+				class="flex flex-col gap-2 rounded-md border-2 border-destructive/40 bg-destructive/10 p-4 text-destructive-foreground dark:bg-destructive/15"
+				role="alert"
+			>
+				<div class="flex items-start gap-2">
+					<Ban class="h-5 w-5 shrink-0 text-destructive" aria-hidden="true" />
+					<div class="flex-1 font-semibold text-destructive">
+						{m['eventActionSidebar.cancelledBannerTitle']()}
+					</div>
+				</div>
+				{#if event.cancellation_reason}
+					<div class="mt-1 text-sm">
+						<div class="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+							{m['eventActionSidebar.cancelledBannerReasonLabel']()}
+						</div>
+						<p class="whitespace-pre-line break-words text-foreground">
+							{event.cancellation_reason}
+						</p>
+					</div>
+				{/if}
+			</div>
+		{/if}
+
 		<!-- Pending Payment Warning (for online tickets pending payment) -->
 		{#if shouldShowResumePayment}
 			<div

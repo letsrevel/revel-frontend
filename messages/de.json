@@ -1232,7 +1232,9 @@
 		"feedbackDescription": "Teile deine Erfahrungen mit den Organisatoren",
 		"giveFeedback": "Feedback geben",
 		"feedbackQuestionnaires": "{count} Feedback-Fragebogen verfügbar",
-		"feedbackQuestionnaires_plural": "{count} Feedback-Fragebögen verfügbar"
+		"feedbackQuestionnaires_plural": "{count} Feedback-Fragebögen verfügbar",
+		"cancelledBannerTitle": "Diese Veranstaltung wurde abgesagt",
+		"cancelledBannerReasonLabel": "Begründung der Organisation"
 	},
 	"eventActions.announcement": "Ankündigung",
 	"eventActions.sendAnnouncement": "Ankündigung senden",
@@ -2553,6 +2555,20 @@
 		"ticketId": "Ticket-ID:"
 	},
 	"myTicketModal.ticketOf": "Ticket {current} von {total}",
+	"cancelEvent": {
+		"dialogTitle": "Veranstaltung absagen",
+		"dialogDescription": "Beim Absagen werden alle Personen benachrichtigt, die zugesagt haben, ein Ticket besitzen oder auf der Warteliste stehen.",
+		"sharedNotice": "Wenn du einen Grund angibst, wird er in die Absagebenachrichtigung aufgenommen und auf der Veranstaltungsseite für alle Teilnehmenden angezeigt.",
+		"reasonLabel": "Grund (optional)",
+		"reasonPlaceholder": "Warum wird diese Veranstaltung abgesagt?",
+		"reasonHelp": "Bis zu {max} Zeichen. Für Teilnehmende sichtbar.",
+		"confirmButton": "Veranstaltung absagen",
+		"keepButton": "Veranstaltung behalten",
+		"cancelling": "Wird abgesagt…",
+		"successTitle": "Veranstaltung abgesagt",
+		"successDescription": "Die Teilnehmenden werden benachrichtigt.",
+		"errorTitle": "Veranstaltung konnte nicht abgesagt werden"
+	},
 	"cancelTicket": {
 		"button": "Ticket stornieren",
 		"cancelling": "Storniere…",

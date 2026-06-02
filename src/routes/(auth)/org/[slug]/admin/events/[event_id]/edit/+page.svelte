@@ -5,6 +5,7 @@
 	import type { PageData } from './$types';
 	import EventEditor from '$lib/components/events/admin/EventEditor.svelte';
 	import DuplicateEventModal from '$lib/components/events/admin/DuplicateEventModal.svelte';
+	import CancelEventDialog from '$lib/components/events/admin/CancelEventDialog.svelte';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		eventadmincoreUpdateEventStatus,
@@ -122,12 +123,12 @@
 	}
 
 	/**
-	 * Cancel event (any → cancelled)
+	 * Cancel event (any → cancelled). Opens the dedicated dialog so the
+	 * organizer can attach an optional reason; the dialog drives the
+	 * mutation itself.
 	 */
 	function cancelEvent(): void {
-		if (confirm(m['orgAdmin.events.confirmations.cancel']())) {
-			updateStatusMutation.mutate('cancelled');
-		}
+		showCancelEventDialog = true;
 	}
 
 	/**
@@ -141,6 +142,9 @@
 
 	// Duplicate modal state
 	let showDuplicateModal = $state(false);
+
+	// Cancel event dialog state
+	let showCancelEventDialog = $state(false);
 
 	/**
 	 * Open duplicate modal
@@ -281,6 +285,12 @@
 							<Copy class="mr-2 h-4 w-4" />
 							{m['orgAdmin.events.actions.duplicate']()}
 						</DropdownMenu.Item>
+						{#if currentStatus === 'open' || currentStatus === 'closed'}
+							<DropdownMenu.Item onclick={cancelEvent} class="text-destructive">
+								<Ban class="mr-2 h-4 w-4" />
+								{m['cancelEvent.confirmButton']()}
+							</DropdownMenu.Item>
+						{/if}
 					</DropdownMenu.Content>
 				</DropdownMenu.Root>
 			</div>
@@ -310,6 +320,9 @@
 	organizationSlug={organization.slug}
 	onClose={closeDuplicateModal}
 />
+
+<!-- Cancel Event Dialog -->
+<CancelEventDialog bind:open={showCancelEventDialog} eventId={event.id} />
 
 <style>
 	/* Ensure consistent focus states for accessibility */

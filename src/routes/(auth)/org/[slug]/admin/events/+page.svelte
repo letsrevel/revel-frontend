@@ -14,6 +14,7 @@
 	import EventCoverImage from '$lib/components/events/EventCoverImage.svelte';
 	import EventBadges from '$lib/components/events/EventBadges.svelte';
 	import DuplicateEventModal from '$lib/components/events/admin/DuplicateEventModal.svelte';
+	import CancelEventDialog from '$lib/components/events/admin/CancelEventDialog.svelte';
 	import AdminEventCard from '$lib/components/events/admin/AdminEventCard.svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Plus, Calendar, Eye, Users, Trash2, Mail, MoreVertical, Copy } from 'lucide-svelte';
@@ -113,9 +114,8 @@
 	}
 
 	function cancelEvent(eventId: string): void {
-		if (confirm(m['orgAdmin.events.confirmations.cancel']())) {
-			updateStatusMutation.mutate({ eventId, status: 'cancelled' });
-		}
+		cancelEventId = eventId;
+		showCancelEventDialog = true;
 	}
 
 	function deleteEvent(eventId: string): void {
@@ -166,6 +166,10 @@
 		name: string;
 		start: string;
 	} | null>(null);
+
+	// Cancel event dialog state
+	let showCancelEventDialog = $state(false);
+	let cancelEventId = $state<string | null>(null);
 
 	function openDuplicateModal(event: EventInListSchema): void {
 		duplicateEventData = {
@@ -438,6 +442,11 @@
 		organizationSlug={organization.slug}
 		onClose={closeDuplicateModal}
 	/>
+{/if}
+
+<!-- Cancel Event Dialog -->
+{#if cancelEventId}
+	<CancelEventDialog bind:open={showCancelEventDialog} eventId={cancelEventId} />
 {/if}
 
 <style>

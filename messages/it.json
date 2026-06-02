@@ -1232,7 +1232,9 @@
 		"feedbackDescription": "Condividi la tua esperienza con gli organizzatori",
 		"giveFeedback": "Lascia un feedback",
 		"feedbackQuestionnaires": "{count} questionario di feedback disponibile",
-		"feedbackQuestionnaires_plural": "{count} questionari di feedback disponibili"
+		"feedbackQuestionnaires_plural": "{count} questionari di feedback disponibili",
+		"cancelledBannerTitle": "Questo evento è stato annullato",
+		"cancelledBannerReasonLabel": "Motivazione dell'organizzatore"
 	},
 	"eventActions.announcement": "Annuncio",
 	"eventActions.sendAnnouncement": "Invia Annuncio",
@@ -2553,6 +2555,20 @@
 		"ticketId": "ID Biglietto:"
 	},
 	"myTicketModal.ticketOf": "Biglietto {current} di {total}",
+	"cancelEvent": {
+		"dialogTitle": "Annulla questo evento",
+		"dialogDescription": "L'annullamento notificherà tutte le persone che hanno confermato la presenza, hanno un biglietto o sono in lista d'attesa.",
+		"sharedNotice": "Se aggiungi una motivazione, verrà inclusa nella notifica di annullamento e mostrata sulla pagina dell'evento a tutti i partecipanti.",
+		"reasonLabel": "Motivazione (facoltativa)",
+		"reasonPlaceholder": "Perché viene annullato questo evento?",
+		"reasonHelp": "Fino a {max} caratteri. Visibile ai partecipanti.",
+		"confirmButton": "Annulla evento",
+		"keepButton": "Mantieni evento",
+		"cancelling": "Annullamento…",
+		"successTitle": "Evento annullato",
+		"successDescription": "I partecipanti vengono notificati.",
+		"errorTitle": "Impossibile annullare l'evento"
+	},
 	"cancelTicket": {
 		"button": "Annulla biglietto",
 		"cancelling": "Annullamento…",

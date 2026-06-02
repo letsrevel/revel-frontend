@@ -1232,7 +1232,9 @@
 		"feedbackDescription": "Share your experience with the organizers",
 		"giveFeedback": "Give Feedback",
 		"feedbackQuestionnaires": "{count} feedback questionnaire available",
-		"feedbackQuestionnaires_plural": "{count} feedback questionnaires available"
+		"feedbackQuestionnaires_plural": "{count} feedback questionnaires available",
+		"cancelledBannerTitle": "This event has been cancelled",
+		"cancelledBannerReasonLabel": "Reason from the organizer"
 	},
 	"eventActions.announcement": "Announcement",
 	"eventActions.sendAnnouncement": "Send Announcement",
@@ -2553,6 +2555,20 @@
 		"ticketId": "Ticket ID:"
 	},
 	"myTicketModal.ticketOf": "Ticket {current} of {total}",
+	"cancelEvent": {
+		"dialogTitle": "Cancel this event",
+		"dialogDescription": "Cancelling will notify everyone who has RSVPed, has a ticket, or is on the waitlist.",
+		"sharedNotice": "If you add a reason it will be included in the cancellation notification and shown on the event page to all participants.",
+		"reasonLabel": "Reason (optional)",
+		"reasonPlaceholder": "Why is this event being cancelled?",
+		"reasonHelp": "Up to {max} characters. Visible to participants.",
+		"confirmButton": "Cancel event",
+		"keepButton": "Keep event",
+		"cancelling": "Cancelling…",
+		"successTitle": "Event cancelled",
+		"successDescription": "Participants are being notified.",
+		"errorTitle": "Could not cancel event"
+	},
 	"cancelTicket": {
 		"button": "Cancel ticket",
 		"cancelling": "Cancelling…",
