@@ -1298,7 +1298,16 @@
 		"statusUpdating": "Status wird aktualisiert...",
 		"error_notAuthenticated": "Nicht authentifiziert",
 		"error_updateStatusFailed": "Statusaktualisierung fehlgeschlagen",
-		"error_updateStatusMessage": "Statusaktualisierung fehlgeschlagen: {message}"
+		"error_updateStatusMessage": "Statusaktualisierung fehlgeschlagen: {message}",
+		"tooltips": {
+			"publish": "Veröffentliche diese Veranstaltung, damit Personen zusagen oder Tickets kaufen können.",
+			"close": "Anmeldungen und Ticketverkauf stoppen. Die Veranstaltung bleibt sichtbar.",
+			"draft": "Zurück in den Entwurf verschieben. Die Veranstaltung ist dann nicht öffentlich sichtbar.",
+			"reopen": "Erneut für Anmeldungen und Ticketverkauf öffnen.",
+			"cancel": "Veranstaltung absagen und alle Teilnehmenden benachrichtigen.",
+			"delete": "Veranstaltung dauerhaft löschen. Kann nicht rückgängig gemacht werden.",
+			"more": "Weitere Aktionen"
+		}
 	},
 	"eventHeader": {
 		"downloadCalendarEvent": "Kalenderereignis herunterladen für {eventName}",

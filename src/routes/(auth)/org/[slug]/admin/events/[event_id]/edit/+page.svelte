@@ -13,6 +13,7 @@
 	} from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { CheckCircle, XCircle, FileEdit, Trash2, Ban, MoreVertical, Copy } from 'lucide-svelte';
 
 	const { data }: { data: PageData } = $props();
@@ -199,101 +200,159 @@
 			</div>
 
 			<!-- Action Buttons -->
-			<div class="flex flex-wrap items-center gap-2">
-				{#if currentStatus === 'draft'}
-					<!-- Publish action -->
-					<button
-						type="button"
-						onclick={publishEvent}
-						disabled={updateStatusMutation.isPending}
-						class="inline-flex items-center gap-2 rounded-md bg-green-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
-					>
-						<CheckCircle class="h-4 w-4" aria-hidden="true" />
-						Publish
-					</button>
-				{:else if currentStatus === 'open'}
-					<!-- Close action -->
-					<button
-						type="button"
-						onclick={closeEvent}
-						disabled={updateStatusMutation.isPending}
-						class="inline-flex items-center gap-2 rounded-md bg-orange-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
-					>
-						<XCircle class="h-4 w-4" aria-hidden="true" />
-						Close
-					</button>
-					<!-- Mark as Draft -->
-					<button
-						type="button"
-						onclick={markAsDraft}
-						disabled={updateStatusMutation.isPending}
-						class="inline-flex items-center gap-2 rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:cursor-not-allowed disabled:opacity-50"
-					>
-						<FileEdit class="h-4 w-4" aria-hidden="true" />
-						{m['eventEditPage.draftButton']()}
-					</button>
-				{:else if currentStatus === 'closed'}
-					<!-- Reopen action -->
-					<button
-						type="button"
-						onclick={publishEvent}
-						disabled={updateStatusMutation.isPending}
-						class="inline-flex items-center gap-2 rounded-md bg-green-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
-					>
-						<CheckCircle class="h-4 w-4" aria-hidden="true" />
-						Reopen
-					</button>
-					<!-- Mark as Draft -->
-					<button
-						type="button"
-						onclick={markAsDraft}
-						disabled={updateStatusMutation.isPending}
-						class="inline-flex items-center gap-2 rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:cursor-not-allowed disabled:opacity-50"
-					>
-						<FileEdit class="h-4 w-4" aria-hidden="true" />
-						{m['eventEditPage.draftButton']()}
-					</button>
-				{/if}
+			<Tooltip.Provider delayDuration={300}>
+				<div class="flex flex-wrap items-center gap-2">
+					{#if currentStatus === 'draft'}
+						<!-- Publish action -->
+						<Tooltip.Root>
+							<Tooltip.Trigger>
+								{#snippet child({ props })}
+									<button
+										{...props}
+										type="button"
+										onclick={publishEvent}
+										disabled={updateStatusMutation.isPending}
+										class="inline-flex items-center gap-2 rounded-md bg-green-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+									>
+										<CheckCircle class="h-4 w-4" aria-hidden="true" />
+										Publish
+									</button>
+								{/snippet}
+							</Tooltip.Trigger>
+							<Tooltip.Content>{m['eventEditPage.tooltips.publish']()}</Tooltip.Content>
+						</Tooltip.Root>
+					{:else if currentStatus === 'open'}
+						<!-- Close action -->
+						<Tooltip.Root>
+							<Tooltip.Trigger>
+								{#snippet child({ props })}
+									<button
+										{...props}
+										type="button"
+										onclick={closeEvent}
+										disabled={updateStatusMutation.isPending}
+										class="inline-flex items-center gap-2 rounded-md bg-orange-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
+									>
+										<XCircle class="h-4 w-4" aria-hidden="true" />
+										Close
+									</button>
+								{/snippet}
+							</Tooltip.Trigger>
+							<Tooltip.Content>{m['eventEditPage.tooltips.close']()}</Tooltip.Content>
+						</Tooltip.Root>
+						<!-- Mark as Draft -->
+						<Tooltip.Root>
+							<Tooltip.Trigger>
+								{#snippet child({ props })}
+									<button
+										{...props}
+										type="button"
+										onclick={markAsDraft}
+										disabled={updateStatusMutation.isPending}
+										class="inline-flex items-center gap-2 rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:cursor-not-allowed disabled:opacity-50"
+									>
+										<FileEdit class="h-4 w-4" aria-hidden="true" />
+										{m['eventEditPage.draftButton']()}
+									</button>
+								{/snippet}
+							</Tooltip.Trigger>
+							<Tooltip.Content>{m['eventEditPage.tooltips.draft']()}</Tooltip.Content>
+						</Tooltip.Root>
+					{:else if currentStatus === 'closed'}
+						<!-- Reopen action -->
+						<Tooltip.Root>
+							<Tooltip.Trigger>
+								{#snippet child({ props })}
+									<button
+										{...props}
+										type="button"
+										onclick={publishEvent}
+										disabled={updateStatusMutation.isPending}
+										class="inline-flex items-center gap-2 rounded-md bg-green-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+									>
+										<CheckCircle class="h-4 w-4" aria-hidden="true" />
+										Reopen
+									</button>
+								{/snippet}
+							</Tooltip.Trigger>
+							<Tooltip.Content>{m['eventEditPage.tooltips.reopen']()}</Tooltip.Content>
+						</Tooltip.Root>
+						<!-- Mark as Draft -->
+						<Tooltip.Root>
+							<Tooltip.Trigger>
+								{#snippet child({ props })}
+									<button
+										{...props}
+										type="button"
+										onclick={markAsDraft}
+										disabled={updateStatusMutation.isPending}
+										class="inline-flex items-center gap-2 rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:cursor-not-allowed disabled:opacity-50"
+									>
+										<FileEdit class="h-4 w-4" aria-hidden="true" />
+										{m['eventEditPage.draftButton']()}
+									</button>
+								{/snippet}
+							</Tooltip.Trigger>
+							<Tooltip.Content>{m['eventEditPage.tooltips.draft']()}</Tooltip.Content>
+						</Tooltip.Root>
+					{/if}
 
-				<!-- Delete button (always available) -->
-				<button
-					type="button"
-					onclick={deleteEvent}
-					disabled={updateStatusMutation.isPending}
-					class="inline-flex items-center gap-2 rounded-md bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:cursor-not-allowed disabled:opacity-50"
-				>
-					<Trash2 class="h-4 w-4" aria-hidden="true" />
-					Delete
-				</button>
+					<!-- Cancel event button (open/closed only — reversible, notifies attendees) -->
+					{#if currentStatus === 'open' || currentStatus === 'closed'}
+						<Tooltip.Root>
+							<Tooltip.Trigger>
+								{#snippet child({ props })}
+									<button
+										{...props}
+										type="button"
+										onclick={cancelEvent}
+										disabled={updateStatusMutation.isPending}
+										class="inline-flex items-center gap-2 rounded-md bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:cursor-not-allowed disabled:opacity-50"
+									>
+										<Ban class="h-4 w-4" aria-hidden="true" />
+										{m['cancelEvent.confirmButton']()}
+									</button>
+								{/snippet}
+							</Tooltip.Trigger>
+							<Tooltip.Content>{m['eventEditPage.tooltips.cancel']()}</Tooltip.Content>
+						</Tooltip.Root>
+					{/if}
 
-				<!-- More Actions Dropdown -->
-				<DropdownMenu.Root>
-					<DropdownMenu.Trigger>
-						{#snippet child({ props })}
-							<button
-								{...props}
-								type="button"
-								class="inline-flex items-center justify-center rounded-md border border-input bg-background p-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-								aria-label={m['orgAdmin.events.actions.moreActions']()}
-							>
-								<MoreVertical class="h-4 w-4" aria-hidden="true" />
-							</button>
-						{/snippet}
-					</DropdownMenu.Trigger>
-					<DropdownMenu.Content align="end" class="w-48">
-						<DropdownMenu.Item onclick={openDuplicateModal}>
-							<Copy class="mr-2 h-4 w-4" />
-							{m['orgAdmin.events.actions.duplicate']()}
-						</DropdownMenu.Item>
-						{#if currentStatus === 'open' || currentStatus === 'closed'}
-							<DropdownMenu.Item onclick={cancelEvent} class="text-destructive">
-								<Ban class="mr-2 h-4 w-4" />
-								{m['cancelEvent.confirmButton']()}
-							</DropdownMenu.Item>
-						{/if}
-					</DropdownMenu.Content>
-				</DropdownMenu.Root>
-			</div>
+					<!-- More Actions Dropdown (Duplicate + Delete) -->
+					<Tooltip.Root>
+						<Tooltip.Trigger>
+							{#snippet child({ props: tooltipProps })}
+								<DropdownMenu.Root>
+									<DropdownMenu.Trigger>
+										{#snippet child({ props })}
+											<button
+												{...tooltipProps}
+												{...props}
+												type="button"
+												class="inline-flex items-center justify-center rounded-md border border-input bg-background p-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+												aria-label={m['orgAdmin.events.actions.moreActions']()}
+											>
+												<MoreVertical class="h-4 w-4" aria-hidden="true" />
+											</button>
+										{/snippet}
+									</DropdownMenu.Trigger>
+									<DropdownMenu.Content align="end" class="w-48">
+										<DropdownMenu.Item onclick={openDuplicateModal}>
+											<Copy class="mr-2 h-4 w-4" />
+											{m['orgAdmin.events.actions.duplicate']()}
+										</DropdownMenu.Item>
+										<DropdownMenu.Item onclick={deleteEvent} class="text-destructive">
+											<Trash2 class="mr-2 h-4 w-4" />
+											{m['orgAdmin.events.actions.delete']()}
+										</DropdownMenu.Item>
+									</DropdownMenu.Content>
+								</DropdownMenu.Root>
+							{/snippet}
+						</Tooltip.Trigger>
+						<Tooltip.Content>{m['eventEditPage.tooltips.more']()}</Tooltip.Content>
+					</Tooltip.Root>
+				</div>
+			</Tooltip.Provider>
 		</div>
 	</div>
 

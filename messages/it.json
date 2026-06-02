@@ -1298,7 +1298,16 @@
 		"statusUpdating": "Aggiornamento stato...",
 		"error_notAuthenticated": "Non autenticato",
 		"error_updateStatusFailed": "Aggiornamento stato fallito",
-		"error_updateStatusMessage": "Aggiornamento stato fallito: {message}"
+		"error_updateStatusMessage": "Aggiornamento stato fallito: {message}",
+		"tooltips": {
+			"publish": "Pubblica questo evento per consentire RSVP e acquisto biglietti.",
+			"close": "Interrompi RSVP e vendita biglietti. L'evento resta visibile.",
+			"draft": "Riporta in bozza. L'evento viene nascosto al pubblico.",
+			"reopen": "Riapri per RSVP e vendita biglietti.",
+			"cancel": "Annulla l'evento e notifica tutti i partecipanti.",
+			"delete": "Elimina definitivamente l'evento. Operazione irreversibile.",
+			"more": "Altre azioni"
+		}
 	},
 	"eventHeader": {
 		"downloadCalendarEvent": "Scarica evento calendario per {eventName}",

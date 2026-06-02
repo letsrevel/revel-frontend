@@ -1298,7 +1298,16 @@
 		"statusUpdating": "Updating status...",
 		"error_notAuthenticated": "Not authenticated",
 		"error_updateStatusFailed": "Failed to update status",
-		"error_updateStatusMessage": "Failed to update status: {message}"
+		"error_updateStatusMessage": "Failed to update status: {message}",
+		"tooltips": {
+			"publish": "Publish this event so people can RSVP or buy tickets.",
+			"close": "Stop accepting RSVPs and ticket sales. The event stays visible.",
+			"draft": "Move back to draft. The event is hidden from the public.",
+			"reopen": "Reopen for RSVPs and ticket sales.",
+			"cancel": "Cancel the event and notify everyone who is attending.",
+			"delete": "Permanently delete this event. This cannot be undone.",
+			"more": "More actions"
+		}
 	},
 	"eventHeader": {
 		"downloadCalendarEvent": "Download calendar event for {eventName}",
