@@ -119,7 +119,14 @@
 	}
 
 	function deleteEvent(eventId: string): void {
-		if (confirm(m['orgAdmin.events.confirmations.delete']())) {
+		// Stronger confirmation when deleting a cancelled event — attendees
+		// have already been notified and we're now wiping the record.
+		const target = data.events.find((e: EventInListSchema) => e.id === eventId);
+		const isCancelled = (target?.status as string) === 'cancelled';
+		const message = isCancelled
+			? m['orgAdmin.events.confirmations.deleteCancelled']()
+			: m['orgAdmin.events.confirmations.delete']();
+		if (confirm(message)) {
 			deleteEventMutation.mutate(eventId);
 		}
 	}
@@ -170,6 +177,14 @@
 	// Cancel event dialog state
 	let showCancelEventDialog = $state(false);
 	let cancelEventId = $state<string | null>(null);
+
+	// Drop the stale event id once the dialog closes so the conditional
+	// mount block tracks the lifecycle symmetrically with closeDuplicateModal.
+	$effect(() => {
+		if (!showCancelEventDialog) {
+			cancelEventId = null;
+		}
+	});
 
 	function openDuplicateModal(event: EventInListSchema): void {
 		duplicateEventData = {

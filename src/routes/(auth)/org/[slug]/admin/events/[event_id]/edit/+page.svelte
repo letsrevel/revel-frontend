@@ -133,10 +133,16 @@
 	}
 
 	/**
-	 * Delete event (permanent deletion)
+	 * Delete event (permanent deletion). Already-cancelled events get a
+	 * stronger confirmation that names what just happened (attendees
+	 * notified, record removal on top of that).
 	 */
 	function deleteEvent(): void {
-		if (confirm(m['orgAdmin.events.confirmations.delete']())) {
+		const message =
+			currentStatus === 'cancelled'
+				? m['orgAdmin.events.confirmations.deleteCancelled']()
+				: m['orgAdmin.events.confirmations.delete']();
+		if (confirm(message)) {
 			deleteEventMutation.mutate();
 		}
 	}
@@ -318,39 +324,37 @@
 						</Tooltip.Root>
 					{/if}
 
-					<!-- More Actions Dropdown (Duplicate + Delete) -->
-					<Tooltip.Root>
-						<Tooltip.Trigger>
-							{#snippet child({ props: tooltipProps })}
-								<DropdownMenu.Root>
-									<DropdownMenu.Trigger>
-										{#snippet child({ props })}
-											<button
-												{...tooltipProps}
-												{...props}
-												type="button"
-												class="inline-flex items-center justify-center rounded-md border border-input bg-background p-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-												aria-label={m['orgAdmin.events.actions.moreActions']()}
-											>
-												<MoreVertical class="h-4 w-4" aria-hidden="true" />
-											</button>
-										{/snippet}
-									</DropdownMenu.Trigger>
-									<DropdownMenu.Content align="end" class="w-48">
-										<DropdownMenu.Item onclick={openDuplicateModal}>
-											<Copy class="mr-2 h-4 w-4" />
-											{m['orgAdmin.events.actions.duplicate']()}
-										</DropdownMenu.Item>
-										<DropdownMenu.Item onclick={deleteEvent} class="text-destructive">
-											<Trash2 class="mr-2 h-4 w-4" />
-											{m['orgAdmin.events.actions.delete']()}
-										</DropdownMenu.Item>
-									</DropdownMenu.Content>
-								</DropdownMenu.Root>
+					<!-- More Actions Dropdown (Duplicate + Delete) — no Tooltip
+					     wrapper here because nesting Tooltip.Trigger child
+					     snippets with DropdownMenu.Trigger child snippets stacks
+					     two competing keyboard/focus handlers on the same
+					     button. The `aria-label` carries the accessible name
+					     and `title` provides a native browser tooltip on hover. -->
+					<DropdownMenu.Root>
+						<DropdownMenu.Trigger>
+							{#snippet child({ props })}
+								<button
+									{...props}
+									type="button"
+									class="inline-flex items-center justify-center rounded-md border border-input bg-background p-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+									aria-label={m['orgAdmin.events.actions.moreActions']()}
+									title={m['eventEditPage.tooltips.more']()}
+								>
+									<MoreVertical class="h-4 w-4" aria-hidden="true" />
+								</button>
 							{/snippet}
-						</Tooltip.Trigger>
-						<Tooltip.Content>{m['eventEditPage.tooltips.more']()}</Tooltip.Content>
-					</Tooltip.Root>
+						</DropdownMenu.Trigger>
+						<DropdownMenu.Content align="end" class="w-48">
+							<DropdownMenu.Item onclick={openDuplicateModal}>
+								<Copy class="mr-2 h-4 w-4" />
+								{m['orgAdmin.events.actions.duplicate']()}
+							</DropdownMenu.Item>
+							<DropdownMenu.Item onclick={deleteEvent} class="text-destructive">
+								<Trash2 class="mr-2 h-4 w-4" />
+								{m['orgAdmin.events.actions.delete']()}
+							</DropdownMenu.Item>
+						</DropdownMenu.Content>
+					</DropdownMenu.Root>
 				</div>
 			</Tooltip.Provider>
 		</div>

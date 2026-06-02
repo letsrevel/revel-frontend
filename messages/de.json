@@ -2567,7 +2567,7 @@
 	"cancelEvent": {
 		"dialogTitle": "Veranstaltung absagen",
 		"dialogDescription": "Beim Absagen werden alle Personen benachrichtigt, die zugesagt haben, ein Ticket besitzen oder auf der Warteliste stehen.",
-		"sharedNotice": "Wenn du einen Grund angibst, wird er in die Absagebenachrichtigung aufgenommen und auf der Veranstaltungsseite für alle Teilnehmenden angezeigt.",
+		"sharedNotice": "Wenn du einen Grund angibst, wird er in die Absagebenachrichtigung aufgenommen und öffentlich auf der Veranstaltungsseite für alle angezeigt, die diese Seite öffnen können.",
 		"reasonLabel": "Grund (optional)",
 		"reasonPlaceholder": "Warum wird diese Veranstaltung abgesagt?",
 		"reasonHelp": "Bis zu {max} Zeichen. Für Teilnehmende sichtbar.",
@@ -3367,6 +3367,7 @@
 	"orgAdmin.events.confirmations.cancel": "Möchtest du dieses Event wirklich absagen? Es wird als abgesagt markiert, bleibt aber sichtbar.",
 	"orgAdmin.events.confirmations.close": "Möchtest du dieses Event wirklich schließen?",
 	"orgAdmin.events.confirmations.delete": "Möchtest du dieses Event wirklich dauerhaft löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+	"orgAdmin.events.confirmations.deleteCancelled": "Diese Veranstaltung wurde bereits abgesagt und die Teilnehmenden wurden benachrichtigt. Beim dauerhaften Löschen verschwindet sie auch aus deinen Unterlagen. Fortfahren?",
 	"orgAdmin.events.confirmations.publish": "Möchtest du dieses Event wirklich veröffentlichen?",
 	"orgAdmin.events.confirmations.reopen": "Möchtest du dieses Event wirklich wieder öffnen?",
 	"orgAdmin.events.createEventButton": "Event erstellen",

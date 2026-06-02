@@ -2567,7 +2567,7 @@
 	"cancelEvent": {
 		"dialogTitle": "Annulla questo evento",
 		"dialogDescription": "L'annullamento notificherà tutte le persone che hanno confermato la presenza, hanno un biglietto o sono in lista d'attesa.",
-		"sharedNotice": "Se aggiungi una motivazione, verrà inclusa nella notifica di annullamento e mostrata sulla pagina dell'evento a tutti i partecipanti.",
+		"sharedNotice": "Se aggiungi una motivazione, verrà inclusa nella notifica di annullamento e mostrata pubblicamente sulla pagina dell'evento a chiunque possa visualizzarla.",
 		"reasonLabel": "Motivazione (facoltativa)",
 		"reasonPlaceholder": "Perché viene annullato questo evento?",
 		"reasonHelp": "Fino a {max} caratteri. Visibile ai partecipanti.",
@@ -3367,6 +3367,7 @@
 	"orgAdmin.events.confirmations.cancel": "Sei sicuro di voler annullare questo evento? Sarà contrassegnato come annullato ma rimarrà visibile.",
 	"orgAdmin.events.confirmations.close": "Sei sicuro di voler chiudere questo evento?",
 	"orgAdmin.events.confirmations.delete": "Sei sicuro di voler eliminare permanentemente questo evento? Questa azione non può essere annullata.",
+	"orgAdmin.events.confirmations.deleteCancelled": "Questo evento è già stato annullato e i partecipanti sono stati notificati. Eliminandolo definitivamente sparirà anche dai tuoi archivi. Continuare?",
 	"orgAdmin.events.confirmations.publish": "Sei sicuro di voler pubblicare questo evento?",
 	"orgAdmin.events.confirmations.reopen": "Sei sicuro di voler riaprire questo evento?",
 	"orgAdmin.events.createEventButton": "Crea Evento",

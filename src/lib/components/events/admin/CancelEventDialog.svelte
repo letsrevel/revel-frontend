@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { invalidateAll } from '$app/navigation';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { eventadmincoreUpdateEventStatus } from '$lib/api/generated/sdk.gen';
 	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
@@ -56,12 +57,16 @@
 			}
 			return response.data;
 		},
-		onSuccess: (data) => {
+		onSuccess: async (data) => {
 			toast.success(m['cancelEvent.successTitle'](), {
 				description: m['cancelEvent.successDescription'](),
 				duration: 6000
 			});
 			queryClient.invalidateQueries({ queryKey: ['events'] });
+			// Refresh the SvelteKit load functions so callers driven by
+			// data.event(s) (admin events list, edit page) reflect the new
+			// cancelled status without a full page reload.
+			await invalidateAll();
 			open = false;
 			onCancelled?.(data);
 		},
