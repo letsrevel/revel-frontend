@@ -261,6 +261,12 @@ export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
 	}
 
 	const rewritten = new Request(internalApiUrl + request.url.slice(API_BASE_URL.length), request);
+	// The visitor's request is always HTTPS in production; without this header
+	// Django's SECURE_SSL_REDIRECT 301s internal plain-HTTP calls to
+	// https://web:8000, where TLS meets gunicorn's plaintext port and times
+	// out — which took every SSR page down on first deploy. Set it
+	// unconditionally (not inside the getClientAddress() guard).
+	rewritten.headers.set('x-forwarded-proto', 'https');
 	try {
 		const clientIp = event.getClientAddress();
 		rewritten.headers.set('x-real-ip', clientIp);
