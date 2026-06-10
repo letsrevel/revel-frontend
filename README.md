@@ -303,5 +303,5 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 
 - **Backend Repository:** [letsrevel/revel-backend](https://github.com/letsrevel/revel-backend)
 - **Documentation:** Coming soon
-- **Community Discord:** [discord.gg/zy8nTDqQ](https://discord.gg/zy8nTDqQ)
+- **Community Discord:** [discord.gg/Rnwbzuvxvn](https://discord.gg/Rnwbzuvxvn)
 - **Live Demo:** Coming soon
