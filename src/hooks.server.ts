@@ -1,7 +1,9 @@
-import type { Handle } from '@sveltejs/kit';
+import type { Handle, HandleFetch } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
+import { env } from '$env/dynamic/private';
 import { i18nHandle } from '$lib/i18n';
 import { tokenRefresh } from '$lib/api/generated';
+import { API_BASE_URL } from '$lib/config/api';
 import {
 	getAccessTokenCookieOptions,
 	getRefreshTokenCookieOptions,
@@ -233,3 +235,38 @@ export const handle = sequence(
 	handleAuth,
 	handlePreloadOptimization
 );
+
+/**
+ * SSR fetch interception
+ *
+ * When INTERNAL_API_URL is set (production: http://web:8000), API calls made
+ * during SSR via the event-scoped `fetch` are rewritten from the public API
+ * origin to the internal docker network — skipping the Cloudflare/Caddy
+ * round-trip — and carry the real visitor IP in X-Real-IP / X-Forwarded-For,
+ * so the backend geolocates ("nearest first"), logs, and rate-limits the
+ * visitor instead of this server's egress IP.
+ *
+ * The public path cannot forward the IP: Caddy deliberately overwrites those
+ * headers on any request arriving from outside (anti-spoofing). The visitor IP
+ * comes from getClientAddress(), which adapter-node reads from the header
+ * configured via ADDRESS_HEADER (set by Caddy on the frontend proxy).
+ *
+ * When INTERNAL_API_URL is unset (local dev, or as a rollback switch), SSR
+ * fetches keep using the public API URL unchanged. See backend issue #487.
+ */
+export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
+	const internalApiUrl = env.INTERNAL_API_URL;
+	if (!internalApiUrl || !request.url.startsWith(API_BASE_URL)) {
+		return fetch(request);
+	}
+
+	const rewritten = new Request(internalApiUrl + request.url.slice(API_BASE_URL.length), request);
+	try {
+		const clientIp = event.getClientAddress();
+		rewritten.headers.set('x-real-ip', clientIp);
+		rewritten.headers.set('x-forwarded-for', clientIp);
+	} catch {
+		// getClientAddress() throws during prerendering — send without the IP
+	}
+	return fetch(rewritten);
+};
