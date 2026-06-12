@@ -268,9 +268,7 @@ export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
 	// never hit this because Caddy/Cloudflare buffer the request and restore
 	// Content-Length; the direct internal path talks to gunicorn unbuffered.
 	const body =
-		request.method === 'GET' || request.method === 'HEAD'
-			? undefined
-			: await request.arrayBuffer();
+		request.method === 'GET' || request.method === 'HEAD' ? undefined : await request.arrayBuffer();
 	const rewritten = new Request(internalApiUrl + request.url.slice(API_BASE_URL.length), {
 		method: request.method,
 		headers: request.headers,
