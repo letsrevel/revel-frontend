@@ -260,7 +260,22 @@ export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
 		return fetch(request);
 	}
 
-	const rewritten = new Request(internalApiUrl + request.url.slice(API_BASE_URL.length), request);
+	// Buffer the body instead of re-wrapping the Request directly:
+	// `new Request(url, request)` turns the body into a stream, which undici
+	// sends with `Transfer-Encoding: chunked` and no Content-Length. Django's
+	// WSGI layer reads `CONTENT_LENGTH or 0` bytes, so every POST/PATCH body
+	// arrived empty (422 "Field required" on login/register). The public path
+	// never hit this because Caddy/Cloudflare buffer the request and restore
+	// Content-Length; the direct internal path talks to gunicorn unbuffered.
+	const body =
+		request.method === 'GET' || request.method === 'HEAD'
+			? undefined
+			: await request.arrayBuffer();
+	const rewritten = new Request(internalApiUrl + request.url.slice(API_BASE_URL.length), {
+		method: request.method,
+		headers: request.headers,
+		body
+	});
 	// The visitor's request is always HTTPS in production; without this header
 	// Django's SECURE_SSL_REDIRECT 301s internal plain-HTTP calls to
 	// https://web:8000, where TLS meets gunicorn's plaintext port and times
