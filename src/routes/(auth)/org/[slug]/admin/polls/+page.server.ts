@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { pollListPolls } from '$lib/api/generated/sdk.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { log } from '$lib/server/logger';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, parent, fetch }) => {
@@ -24,7 +25,7 @@ export const load: PageServerLoad = async ({ locals, parent, fetch }) => {
 
 	if (response.error) {
 		const status = response.response?.status ?? 500;
-		console.error(`Failed to load polls: ${status}`, response.error);
+		log.error('polls_list_failed', { status, error: response.error });
 		const message = extractErrorMessage(response.error, 'Failed to load polls');
 		// Preserve upstream client-error statuses (401/403/404/410/422) so auth
 		// and permission failures surface correctly; normalize 5xx / transport

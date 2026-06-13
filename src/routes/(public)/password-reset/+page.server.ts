@@ -2,6 +2,7 @@ import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { passwordResetRequestSchema } from '$lib/schemas/auth';
 import { accountResetPasswordRequest } from '$lib/api/generated';
+import { log } from '$lib/server/logger';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 
@@ -48,7 +49,7 @@ export const actions: Actions = {
 				email: result.data.email
 			};
 		} catch (error) {
-			console.error('Password reset request error:', error);
+			log.error('password_reset_request_error', { error });
 
 			// Even on error, return success to prevent user enumeration
 			// The user will see the success message and check their email

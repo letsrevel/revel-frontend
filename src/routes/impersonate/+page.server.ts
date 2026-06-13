@@ -2,6 +2,7 @@ import { redirect, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { API_BASE_URL } from '$lib/config/api';
 import { getAccessTokenCookieOptions } from '$lib/utils/cookies';
+import { log } from '$lib/server/logger';
 
 /**
  * Impersonation token response from backend
@@ -39,7 +40,7 @@ export const load: PageServerLoad = async ({ url, cookies, fetch }) => {
 		};
 	}
 
-	console.log('[IMPERSONATE] Attempting to exchange impersonation token');
+	log.debug('impersonate_token_exchange_started');
 
 	try {
 		// Exchange the impersonation token for an access token
@@ -53,7 +54,7 @@ export const load: PageServerLoad = async ({ url, cookies, fetch }) => {
 
 		if (!response.ok) {
 			const status = response.status;
-			console.error('[IMPERSONATE] Token exchange failed with status:', status);
+			log.error('impersonate_token_exchange_failed', { status });
 
 			if (status === 401) {
 				return {
@@ -77,7 +78,7 @@ export const load: PageServerLoad = async ({ url, cookies, fetch }) => {
 		}
 
 		const data: ImpersonationResponse = await response.json();
-		console.log('[IMPERSONATE] Token exchange successful for user:', data.user.email);
+		log.debug('impersonate_token_exchange_successful', { user_id: data.user.id });
 
 		// IMPORTANT: For impersonation sessions, we only set the access token.
 		// NO refresh token - impersonation sessions should not be extendable.
@@ -96,7 +97,7 @@ export const load: PageServerLoad = async ({ url, cookies, fetch }) => {
 		cookies.delete('refresh_token', { path: '/' });
 		cookies.delete('remember_me', { path: '/' });
 
-		console.log('[IMPERSONATE] Access token set, redirecting to dashboard');
+		log.debug('impersonate_redirecting_to_dashboard');
 
 		// Redirect to dashboard
 		throw redirect(302, '/dashboard');
@@ -106,7 +107,7 @@ export const load: PageServerLoad = async ({ url, cookies, fetch }) => {
 			throw err;
 		}
 
-		console.error('[IMPERSONATE] Error during token exchange:', err);
+		log.error('impersonate_error', { error: err });
 
 		return {
 			error: 'network',

@@ -6,6 +6,7 @@ import {
 	dashboardDashboardEventSeries,
 	questionnaireListOrgQuestionnaires
 } from '$lib/api';
+import { log } from '$lib/server/logger';
 
 export const load: PageServerLoad = async ({ parent, locals, fetch, url }) => {
 	const parentData = await parent();
@@ -30,7 +31,7 @@ export const load: PageServerLoad = async ({ parent, locals, fetch, url }) => {
 		userCity = preferencesResponse.data?.city || null;
 	} catch (err) {
 		// Preferences not set or error - that's ok, we'll use organization city
-		console.debug('Failed to load user preferences:', err);
+		log.debug('user_preferences_load_failed', { error: err });
 	}
 
 	// Load organization's event series for dropdown
@@ -46,7 +47,7 @@ export const load: PageServerLoad = async ({ parent, locals, fetch, url }) => {
 		}
 	} catch (err) {
 		// No series yet or error - that's ok
-		console.debug('Failed to load event series:', err);
+		log.debug('event_series_load_failed', { error: err });
 	}
 
 	// Load organization's questionnaires for dropdown
@@ -73,7 +74,7 @@ export const load: PageServerLoad = async ({ parent, locals, fetch, url }) => {
 		}
 	} catch (err) {
 		// No questionnaires yet or error - that's ok
-		console.debug('Failed to load questionnaires:', err);
+		log.debug('questionnaires_load_failed', { error: err });
 	}
 
 	// Prefill hooks. Driven by `?start=<ISO>&event_series_id=<UUID>` query

@@ -4,6 +4,7 @@ import { error as svelteKitError } from '@sveltejs/kit';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 import { getBackendUrl } from '$lib/config/api';
+import { log } from '$lib/server/logger';
 
 export const load: PageServerLoad = async ({ request, url, fetch, locals }) => {
 	// Parse query parameters
@@ -43,13 +44,13 @@ export const load: PageServerLoad = async ({ request, url, fetch, locals }) => {
 
 		// Handle API errors
 		if (response.error) {
-			console.error('[Organizations Load] Failed to fetch organizations:', response.error);
+			log.error('organizations_fetch_failed', { error: response.error });
 			throw svelteKitError(500, 'Failed to load organizations. Please try again later.');
 		}
 
 		// Type guard: ensure response.data exists
 		if (!response.data) {
-			console.error('[Organizations Load] Invalid API response - no data');
+			log.warning('organizations_response_invalid');
 			throw svelteKitError(500, 'Invalid API response');
 		}
 
@@ -79,7 +80,7 @@ export const load: PageServerLoad = async ({ request, url, fetch, locals }) => {
 			}
 		};
 	} catch (err) {
-		console.error('Error loading organizations:', err);
+		log.error('organizations_load_error', { error: err });
 
 		const lang = resolveLang(request);
 		const seo = buildSeo({ kind: 'orgs-listing', url, lang });

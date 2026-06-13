@@ -5,6 +5,7 @@ import {
 	questionnaireGetSummary,
 	questionnaireGetOrgQuestionnaire
 } from '$lib/api/client';
+import { log } from '$lib/server/logger';
 
 export const load: PageServerLoad = async ({ params, url, locals, fetch }) => {
 	const { slug, id } = params;
@@ -62,7 +63,7 @@ export const load: PageServerLoad = async ({ params, url, locals, fetch }) => {
 	]);
 
 	if (submissionsResult.error || !submissionsResult.data) {
-		console.error('Failed to fetch submissions:', submissionsResult.error);
+		log.error('questionnaire_submissions_load_failed', { id, error: submissionsResult.error });
 		throw error(500, 'Failed to load submissions');
 	}
 

@@ -2,6 +2,7 @@ import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import type { CitySchema } from '$lib/api/generated/types.gen';
 import { userpreferencesGetGeneralPreferences, questionnaireListOrgQuestionnaires } from '$lib/api';
+import { log } from '$lib/server/logger';
 
 export const load: PageServerLoad = async ({ parent, locals, fetch }) => {
 	const { organization, canCreateEvent } = await parent();
@@ -27,7 +28,7 @@ export const load: PageServerLoad = async ({ parent, locals, fetch }) => {
 		});
 		userCity = preferencesResponse.data?.city || null;
 	} catch (err) {
-		console.debug('Failed to load user preferences:', err);
+		log.debug('user_preferences_load_failed', { error: err });
 	}
 
 	const questionnaires = [];
@@ -48,7 +49,7 @@ export const load: PageServerLoad = async ({ parent, locals, fetch }) => {
 			questionnaires.push(...orgQuestionnaires);
 		}
 	} catch (err) {
-		console.debug('Failed to load questionnaires:', err);
+		log.debug('questionnaires_load_failed', { error: err });
 	}
 
 	return {

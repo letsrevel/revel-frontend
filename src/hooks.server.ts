@@ -9,6 +9,14 @@ import {
 	getRefreshTokenCookieOptions,
 	getRememberMeCookieOptions
 } from '$lib/utils/cookies';
+import { log } from '$lib/server/logger';
+import { startMetricsServer } from '$lib/server/metrics';
+import { handleRequestLogging, handleSsrError } from '$lib/server/request-logging';
+
+// Start the internal Prometheus metrics listener (production-only, guarded so
+// dev/HMR/tests never bind the port). Importing metrics also registers the
+// custom collectors used by the request-logging and error hooks.
+startMetricsServer();
 
 /**
  * Server-side hooks for authentication and internationalization
@@ -35,7 +43,7 @@ function decodeJWT(token: string): any | null {
 		const decoded = Buffer.from(payload, 'base64url').toString('utf-8');
 		return JSON.parse(decoded);
 	} catch (error) {
-		console.error('[HOOKS] Failed to decode JWT:', error);
+		log.error('jwt_decode_failed', { error });
 		return null;
 	}
 }
@@ -47,7 +55,7 @@ const handleTokenCapture: Handle = async ({ event, resolve }) => {
 	// Check for organization token (?ot=)
 	const orgToken = event.url.searchParams.get('ot');
 	if (orgToken) {
-		console.log('[HOOKS] Organization token detected, storing in cookie');
+		log.debug('org_token_captured');
 		event.cookies.set('pending_org_token', orgToken, {
 			path: '/',
 			httpOnly: true,
@@ -60,7 +68,7 @@ const handleTokenCapture: Handle = async ({ event, resolve }) => {
 	// Check for event token (?et=)
 	const eventToken = event.url.searchParams.get('et');
 	if (eventToken) {
-		console.log('[HOOKS] Event token detected, storing in cookie');
+		log.debug('event_token_captured');
 		event.cookies.set('pending_event_token', eventToken, {
 			path: '/',
 			httpOnly: true,
@@ -149,24 +157,22 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	const accessToken = event.cookies.get('access_token');
 	const refreshToken = event.cookies.get('refresh_token');
 
-	console.log('[HOOKS] Request:', {
-		url: event.url.pathname,
-		hasAccessToken: !!accessToken,
-		hasRefreshToken: !!refreshToken
+	log.debug('auth_request', {
+		path: event.url.pathname,
+		has_access_token: !!accessToken,
+		has_refresh_token: !!refreshToken
 	});
 
 	// If we have an access token, decode it to populate locals.user
 	if (accessToken) {
-		console.log('[HOOKS] Access token exists, decoding JWT');
 		try {
 			const decoded = decodeJWT(accessToken);
 
 			if (!decoded) {
-				console.error('[HOOKS] Failed to decode JWT, token may be malformed');
+				log.warning('jwt_malformed', { reason: 'decode_returned_null' });
 				// Clear invalid token
 				event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
 			} else {
-				console.log('[HOOKS] JWT decoded successfully');
 				event.locals.user = {
 					id: decoded.user_id || decoded.sub,
 					email: decoded.email,
@@ -174,7 +180,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 				};
 			}
 		} catch (error) {
-			console.error('[HOOKS] Error processing JWT:', error);
+			log.warning('jwt_processing_error', { error });
 			// Token is malformed, clear it
 			event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
 		}
@@ -182,7 +188,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 		// No access token but refresh token exists — the access token expired.
 		// Refresh it now so locals.user is populated before any load function runs.
 		// This fixes 401 errors on cold start with "remember me" enabled.
-		console.log('[HOOKS] No access token but refresh token exists, attempting refresh');
+		log.debug('token_refresh_attempt', { reason: 'cold_start_access_token_missing' });
 		const rememberMe = event.cookies.get('remember_me') === 'true';
 
 		try {
@@ -191,11 +197,11 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 			});
 
 			if (refreshError || !data || !data.access || !data.refresh) {
-				console.error('[HOOKS] Token refresh failed:', refreshError);
+				log.warning('token_refresh_failed', { error: refreshError });
 				event.cookies.delete('refresh_token', { path: '/', httpOnly: true, sameSite: 'lax' });
 				event.cookies.delete('remember_me', { path: '/' });
 			} else {
-				console.log('[HOOKS] Token refresh successful');
+				log.debug('token_refresh_succeeded');
 
 				// Set new cookies
 				event.cookies.set('access_token', data.access, getAccessTokenCookieOptions(rememberMe));
@@ -217,7 +223,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 				}
 			}
 		} catch (error) {
-			console.error('[HOOKS] Token refresh error:', error);
+			log.error('token_refresh_error', { error });
 			// Don't block page load — user will appear logged out
 		}
 	}
@@ -226,15 +232,20 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 };
 
 /**
- * Combine token capture, authentication, i18n, and preload optimization hooks
- * Note: handlePreloadOptimization must be FIRST to properly intercept responses
+ * Combine request logging, token capture, authentication, i18n, and preload
+ * optimization hooks. handleRequestLogging is FIRST so it wraps and times the
+ * whole chain.
  */
 export const handle = sequence(
+	handleRequestLogging,
 	handleTokenCapture,
 	i18nHandle(),
 	handleAuth,
 	handlePreloadOptimization
 );
+
+// Unhandled SSR errors → structured error log + SSR error metric (see module).
+export const handleError = handleSsrError;
 
 /**
  * SSR fetch interception
@@ -280,6 +291,11 @@ export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
 	// out — which took every SSR page down on first deploy. Set it
 	// unconditionally (not inside the getClientAddress() guard).
 	rewritten.headers.set('x-forwarded-proto', 'https');
+	// Forward the per-request id so the backend's structlog binds the same
+	// request_id — frontend and backend lines for this request line up in Loki.
+	if (event.locals.requestId) {
+		rewritten.headers.set('x-request-id', event.locals.requestId);
+	}
 	try {
 		const clientIp = event.getClientAddress();
 		rewritten.headers.set('x-real-ip', clientIp);

@@ -7,6 +7,7 @@ import {
 	dashboardDashboardEventSeries,
 	questionnaireListOrgQuestionnaires
 } from '$lib/api';
+import { log } from '$lib/server/logger';
 
 export const load: PageServerLoad = async ({ parent, params, locals, fetch }) => {
 	const parentData = await parent();
@@ -54,7 +55,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch }) =>
 			throw err;
 		}
 
-		console.error('Error loading event:', err);
+		log.error('event_load_failed', { error: err, eventId: params.event_id });
 		throw error(500, 'Failed to load event');
 	}
 
@@ -73,7 +74,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch }) =>
 		userCity = preferencesResponse.data?.city || null;
 	} catch (err) {
 		// Preferences not set or error - that's ok
-		console.debug('Failed to load user preferences:', err);
+		log.debug('user_preferences_load_failed', { error: err });
 	}
 
 	// Load organization's event series for dropdown
@@ -89,7 +90,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch }) =>
 		}
 	} catch (err) {
 		// No series yet or error - that's ok
-		console.debug('Failed to load event series:', err);
+		log.debug('event_series_load_failed', { error: err });
 	}
 
 	// Load organization's questionnaires for dropdown
@@ -116,7 +117,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch }) =>
 		}
 	} catch (err) {
 		// No questionnaires yet or error - that's ok
-		console.debug('Failed to load questionnaires:', err);
+		log.debug('questionnaires_load_failed', { error: err });
 	}
 
 	return {

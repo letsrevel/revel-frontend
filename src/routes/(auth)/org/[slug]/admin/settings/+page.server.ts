@@ -2,6 +2,7 @@ import { fail, type Actions, error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { organizationadmincoreUpdateOrganization } from '$lib/api/generated';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { log } from '$lib/server/logger';
 
 /**
  * Load organization data for the settings page
@@ -116,7 +117,7 @@ export const actions: Actions = {
 				organization: data
 			};
 		} catch (err) {
-			console.error('Organization update error:', err);
+			log.error('organization_update_failed', { slug, error: err });
 			const errorMessage = extractErrorMessage(
 				err,
 				'An unexpected error occurred while updating your organization'

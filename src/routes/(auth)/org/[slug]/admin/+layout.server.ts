@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
 import { organizationadmincoreGetOrganization, permissionMyPermissions } from '$lib/api';
+import { log } from '$lib/server/logger';
 
 export const load: LayoutServerLoad = async ({ locals, params, fetch }) => {
 	const user = locals.user;
@@ -100,7 +101,7 @@ export const load: LayoutServerLoad = async ({ locals, params, fetch }) => {
 		}
 
 		// Generic error
-		console.error('Error loading organization admin:', err);
+		log.error('org_admin_load_failed', { error: err, slug: params.slug });
 		throw error(500, 'Failed to load organization');
 	}
 };

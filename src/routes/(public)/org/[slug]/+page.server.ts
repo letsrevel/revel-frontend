@@ -7,6 +7,7 @@ import {
 	organizationListResources,
 	organizationGetOrganizationTokenDetails
 } from '$lib/api';
+import { log } from '$lib/server/logger';
 import type { PageServerLoad } from './$types';
 import type {
 	OrganizationPermissionsSchema,
@@ -98,7 +99,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 			} catch (err) {
 				// If permissions fail to load, continue without them
 				// User will not be able to edit by default
-				console.error('Failed to fetch user permissions:', err);
+				log.error('org_permissions_fetch_failed', { error: err, slug });
 			}
 		}
 
@@ -117,7 +118,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 				}
 			} catch (err) {
 				// If token is invalid or expired, continue without it
-				console.error('Failed to fetch organization token details:', err);
+				log.error('org_token_details_fetch_failed', { error: err, slug });
 			}
 		}
 
@@ -155,7 +156,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 		}
 
 		// Generic error
-		console.error('Error loading organization:', err);
+		log.error('org_load_error', { error: err, slug });
 		throw error(500, 'Failed to load organization details');
 	}
 };

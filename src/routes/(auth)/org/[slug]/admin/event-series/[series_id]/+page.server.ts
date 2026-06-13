@@ -5,6 +5,7 @@ import {
 	organizationadminrecurringeventsGetSeriesDrift,
 	eventpublicdiscoveryListEvents
 } from '$lib/api';
+import { log } from '$lib/server/logger';
 import type {
 	EventSeriesRecurrenceDetailSchema,
 	EventSeriesDriftSchema,
@@ -64,7 +65,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch }) =>
 			if (status === 404) throw error(404, 'Event series not found');
 			if (status === 403) throw error(403, 'You do not have permission to manage this series');
 		}
-		console.error('[Series Dashboard] Failed to load series detail:', err);
+		log.error('series_detail_load_failed', { error: err });
 		throw error(500, 'Failed to load event series');
 	}
 
@@ -73,7 +74,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch }) =>
 		const status = (detailResponse as { response?: { status?: number } }).response?.status;
 		if (status === 404) throw error(404, 'Event series not found');
 		if (status === 403) throw error(403, 'You do not have permission to manage this series');
-		console.error('[Series Dashboard] Series detail response error:', detailResponse.error);
+		log.error('series_detail_response_error', { error: detailResponse.error });
 		throw error(500, 'Failed to load event series');
 	}
 
@@ -85,9 +86,9 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch }) =>
 	if (driftResult.status === 'fulfilled' && !driftResult.value.error && driftResult.value.data) {
 		drift = driftResult.value.data;
 	} else if (driftResult.status === 'rejected') {
-		console.warn('[Series Dashboard] Drift fetch failed; proceeding without drift data.');
+		log.warning('series_drift_fetch_failed');
 	} else if (driftResult.status === 'fulfilled' && driftResult.value.error) {
-		console.warn('[Series Dashboard] Drift response error:', driftResult.value.error);
+		log.warning('series_drift_response_error');
 	}
 
 	// Upcoming occurrences likewise non-fatal — show the dashboard with an empty
@@ -100,12 +101,9 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch }) =>
 	) {
 		upcoming = upcomingResult.value.data.results || [];
 	} else if (upcomingResult.status === 'rejected') {
-		console.warn('[Series Dashboard] Upcoming occurrences fetch failed:', upcomingResult.reason);
+		log.warning('series_upcoming_fetch_failed', { error: upcomingResult.reason });
 	} else if (upcomingResult.status === 'fulfilled' && upcomingResult.value.error) {
-		console.warn(
-			'[Series Dashboard] Upcoming occurrences response error:',
-			upcomingResult.value.error
-		);
+		log.warning('series_upcoming_response_error');
 	}
 
 	return {

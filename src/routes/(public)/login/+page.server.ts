@@ -9,6 +9,7 @@ import {
 } from '$lib/utils/cookies';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { claimPendingTokens, setClaimFlashCookie } from '$lib/server/token-claim';
+import { log } from '$lib/server/logger';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 
@@ -109,7 +110,7 @@ export const actions = {
 			}
 
 			// Only log actual unexpected errors
-			console.error('Unexpected login error:', error);
+			log.error('login_unexpected_error', { error });
 			const errorMessage = extractErrorMessage(
 				error,
 				'An unexpected error occurred. Please try again.'
@@ -202,7 +203,7 @@ export const actions = {
 			}
 
 			// Only log actual unexpected errors
-			console.error('Unexpected 2FA verification error:', error);
+			log.error('login_2fa_unexpected_error', { error });
 			const errorMessage = extractErrorMessage(
 				error,
 				'An unexpected error occurred. Please try again.'

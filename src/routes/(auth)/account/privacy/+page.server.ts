@@ -1,6 +1,7 @@
 import { fail, type Actions } from '@sveltejs/kit';
 import { accountDeleteAccountRequest, accountExportData } from '$lib/api/generated';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { log } from '$lib/server/logger';
 
 export const actions: Actions = {
 	exportData: async ({ cookies }) => {
@@ -25,7 +26,7 @@ export const actions: Actions = {
 				exportSuccess: true
 			};
 		} catch (error: any) {
-			console.error('Data export request error:', error);
+			log.error('data_export_request_failed', { error });
 
 			// Check for rate limiting (429 Too Many Requests)
 			if (error?.response?.status === 429) {
@@ -75,7 +76,7 @@ export const actions: Actions = {
 				success: true
 			};
 		} catch (error: any) {
-			console.error('Account deletion request error:', error);
+			log.error('account_deletion_request_failed', { error });
 
 			// Check for specific error types
 			if (error?.response?.status === 400) {

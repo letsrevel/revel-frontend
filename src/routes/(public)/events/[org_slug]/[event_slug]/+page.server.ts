@@ -1,6 +1,7 @@
 import { error, isHttpError } from '@sveltejs/kit';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
+import { log } from '$lib/server/logger';
 import {
 	eventpublicdetailsGetEventBySlugs,
 	eventpublicattendanceGetMyEventStatus,
@@ -86,7 +87,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 			} catch (err) {
 				// If user status fails, continue without it
 				// This is not critical - user can still view the event
-				console.error('Failed to fetch user event status:', err);
+				log.error('user_event_status_fetch_failed', { error: err, eventId: event.id });
 			}
 		}
 
@@ -106,7 +107,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 			} catch (err) {
 				// If potluck items fail to load, continue without them
 				// User will see empty state in the UI
-				console.error('Failed to fetch potluck items:', err);
+				log.error('potluck_items_fetch_failed', { error: err, eventId: event.id });
 			}
 		}
 
@@ -149,32 +150,26 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 			} catch (err) {
 				// If permissions fail to load, continue without them
 				// User will have limited permissions by default
-				console.error('Failed to fetch user permissions:', err);
+				log.error('user_permissions_fetch_failed', { error: err });
 			}
 		}
 
 		// Fetch event resources (authenticated endpoint for visibility filtering)
 		let resources: AdditionalResourceSchema[] = [];
 		try {
-			console.log('[EVENT PAGE SERVER] Fetching resources for event:', event.id);
 			const resourcesResponse = await eventpublicdetailsListResources({
 				fetch,
 				path: { event_id: event.id },
 				headers
 			});
 
-			console.log('[EVENT PAGE SERVER] Resources response:', {
-				hasData: !!resourcesResponse.data,
-				results: resourcesResponse.data?.results?.length || 0
-			});
-
 			if (resourcesResponse.data) {
 				resources = resourcesResponse.data.results || [];
 			}
-			console.log('[EVENT PAGE SERVER] Final resources count:', resources.length);
+			log.debug('event_resources_fetched', { eventId: event.id, count: resources.length });
 		} catch (err) {
 			// If resources fail to load, continue without them
-			console.error('[EVENT PAGE SERVER] Failed to fetch event resources:', err);
+			log.error('event_resources_fetch_failed', { error: err, eventId: event.id });
 		}
 
 		// Fetch ticket tiers (public endpoint, filtered by eligibility)
@@ -192,7 +187,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 				}
 			} catch (err) {
 				// If tiers fail to load, continue without them
-				console.error('Failed to fetch ticket tiers:', err);
+				log.error('ticket_tiers_fetch_failed', { error: err, eventId: event.id });
 			}
 		}
 
@@ -208,18 +203,14 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 
 				if (tokenResponse.data) {
 					eventTokenDetails = tokenResponse.data;
-					console.log('[EVENT PAGE SERVER] Token details fetched:', {
+					log.debug('event_token_details_fetched', {
 						tokenId: eventTokenDetails.id,
-						grantsInvitation: eventTokenDetails.grants_invitation,
-						hasAllFields: {
-							id: !!eventTokenDetails.id,
-							grants_invitation: eventTokenDetails.grants_invitation !== undefined
-						}
+						grantsInvitation: eventTokenDetails.grants_invitation
 					});
 				}
 			} catch (err) {
 				// If token is invalid or expired, continue without it
-				console.error('Failed to fetch event token details:', err);
+				log.error('event_token_details_fetch_failed', { error: err });
 			}
 		}
 
@@ -237,7 +228,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 				}
 			} catch (err) {
 				// If preferences fail to load, continue without them
-				console.error('Failed to fetch user preferences:', err);
+				log.error('user_preferences_fetch_failed', { error: err });
 			}
 		}
 
@@ -262,24 +253,13 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 			isAuthenticated: !!locals.user
 		};
 
-		// Log data sizes to detect potential serialization issues
-		console.log('[EVENT PAGE SERVER] Returning data:', {
-			hasEvent: !!returnData.event,
-			hasUserStatus: !!returnData.userStatus,
+		log.debug('event_page_data_ready', {
+			eventId: returnData.event.id,
 			potluckItemsCount: returnData.potluckItems.length,
 			resourcesCount: returnData.resources.length,
 			ticketTiersCount: returnData.ticketTiers.length,
-			hasEventTokenDetails: !!returnData.eventTokenDetails,
-			eventTokenId: returnData.eventTokenDetails?.id
+			hasEventTokenDetails: !!returnData.eventTokenDetails
 		});
-
-		// Try to serialize and check size
-		try {
-			const serialized = JSON.stringify(returnData);
-			console.log('[EVENT PAGE SERVER] Data serialization successful, size:', serialized.length);
-		} catch (err) {
-			console.error('[EVENT PAGE SERVER] Data serialization failed:', err);
-		}
 
 		return returnData;
 	} catch (err) {
@@ -300,7 +280,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch, url, request
 		}
 
 		// Generic error
-		console.error('Error loading event:', err);
+		log.error('event_load_error', { error: err, orgSlug: org_slug, eventSlug: event_slug });
 		throw error(500, 'Failed to load event details');
 	}
 };

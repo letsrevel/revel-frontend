@@ -12,6 +12,7 @@ import {
 	eventadminticketsListTicketTiers
 } from '$lib/api/generated/sdk.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { log } from '$lib/server/logger';
 
 /**
  * Load invitation requests AND invitations for this event
@@ -41,7 +42,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 
 		event = eventResponse.data;
 	} catch (err) {
-		console.error('Error loading event:', err);
+		log.error('event_load_failed', { error: err, eventId: params.event_id });
 		throw error(404, 'Event not found');
 	}
 
@@ -99,7 +100,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 			};
 		}
 	} catch (err) {
-		console.error('Error loading invitation requests:', err);
+		log.error('invitation_requests_load_failed', { error: err, eventId: params.event_id });
 	}
 
 	// Load registered invitations
@@ -139,7 +140,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 			};
 		}
 	} catch (err) {
-		console.error('Error loading registered invitations:', err);
+		log.error('registered_invitations_load_failed', { error: err, eventId: params.event_id });
 	}
 
 	// Load pending invitations
@@ -179,7 +180,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 			};
 		}
 	} catch (err) {
-		console.error('Error loading pending invitations:', err);
+		log.error('pending_invitations_load_failed', { error: err, eventId: params.event_id });
 	}
 
 	// Load ticket tiers for tier selection in invitation forms
@@ -246,7 +247,7 @@ export const actions: Actions = {
 
 			return { success: true, action: 'approved' };
 		} catch (err) {
-			console.error('Error approving invitation request:', err);
+			log.error('invitation_request_approve_failed', { error: err, eventId: params.event_id });
 			const errorMessage = extractErrorMessage(err, 'An unexpected error occurred');
 			return fail(500, { errors: { form: errorMessage } });
 		}
@@ -280,7 +281,7 @@ export const actions: Actions = {
 
 			return { success: true, action: 'rejected' };
 		} catch (err) {
-			console.error('Error rejecting invitation request:', err);
+			log.error('invitation_request_reject_failed', { error: err, eventId: params.event_id });
 			const errorMessage = extractErrorMessage(err, 'An unexpected error occurred');
 			return fail(500, { errors: { form: errorMessage } });
 		}
@@ -342,7 +343,7 @@ export const actions: Actions = {
 
 			return { success: true, action: 'created', data: response.data };
 		} catch (err) {
-			console.error('Error creating invitations:', err);
+			log.error('invitations_create_failed', { error: err, eventId: params.event_id });
 			const errorMessage = extractErrorMessage(err, 'An unexpected error occurred');
 			return fail(500, { errors: { form: errorMessage } });
 		}
@@ -381,7 +382,7 @@ export const actions: Actions = {
 
 			return { success: true, action: 'deleted' };
 		} catch (err) {
-			console.error('Error deleting invitation:', err);
+			log.error('invitation_delete_failed', { error: err, eventId: params.event_id });
 			const errorMessage = extractErrorMessage(err, 'An unexpected error occurred');
 			return fail(500, { errors: { form: errorMessage } });
 		}
@@ -433,7 +434,7 @@ export const actions: Actions = {
 
 			return { success: true, action: 'updated' };
 		} catch (err) {
-			console.error('Error updating invitation:', err);
+			log.error('invitation_update_failed', { error: err, eventId: params.event_id });
 			const errorMessage = extractErrorMessage(err, 'An unexpected error occurred');
 			return fail(500, { errors: { form: errorMessage } });
 		}
@@ -492,7 +493,7 @@ export const actions: Actions = {
 
 			return { success: true, action: 'bulk_updated', count: emails.length };
 		} catch (err) {
-			console.error('Error bulk updating invitations:', err);
+			log.error('invitations_bulk_update_failed', { error: err, eventId: params.event_id });
 			const errorMessage = extractErrorMessage(err, 'An unexpected error occurred');
 			return fail(500, { errors: { form: errorMessage } });
 		}

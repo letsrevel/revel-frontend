@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import { questionnaireGetOrgQuestionnaire } from '$lib/api/generated/sdk.gen';
 import type { PageServerLoad } from './$types';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { log } from '$lib/server/logger';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
 	const user = locals.user;
@@ -35,7 +36,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			organizationSlug: params.slug
 		};
 	} catch (err) {
-		console.error('Failed to load questionnaire:', err);
+		log.error('questionnaire_load_failed', { error: err });
 		const errorMessage = extractErrorMessage(err, 'Questionnaire not found');
 		throw error(404, errorMessage);
 	}

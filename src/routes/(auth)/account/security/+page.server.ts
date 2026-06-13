@@ -10,6 +10,7 @@ import {
 import { z } from 'zod';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { emailChangeRequestSchema } from '$lib/schemas/auth';
+import { log } from '$lib/server/logger';
 
 /**
  * Load current user's 2FA status
@@ -39,7 +40,7 @@ export const load: PageServerLoad = async ({ cookies, depends }) => {
 			user: data
 		};
 	} catch (error) {
-		console.error('Failed to fetch user data:', error);
+		log.error('security_user_fetch_failed', { error });
 		return {
 			totpActive: false,
 			user: null
@@ -62,41 +63,40 @@ export const actions: Actions = {
 		}
 
 		try {
-			console.log('[Server] Starting 2FA setup...');
+			log.debug('totp_setup_started');
 			const response = await otpSetupOtp({
 				headers: {
 					Authorization: `Bearer ${accessToken}`
 				}
 			});
 
-			console.log('[Server] OTP setup response:', response);
+			log.debug('totp_setup_response_received');
 
 			if (response.data) {
-				console.log('[Server] Response data:', response.data);
+				log.debug('totp_setup_succeeded');
 				// Backend returns 'uri', not 'provisioning_uri'
-				console.log('[Server] Provisioning URI:', response.data.uri);
 				const result = {
 					success: true,
 					provisioningUri: response.data.uri
 				};
-				console.log('[Server] Returning:', result);
+				log.debug('totp_setup_result_ready');
 				return result;
 			}
 
 			if (response.error) {
-				console.error('[Server] Error response:', response.error);
+				log.warning('totp_setup_error_response');
 				const errorMessage = extractErrorMessage(response.error, '2FA is already enabled');
 				return fail(400, {
 					errors: { form: errorMessage }
 				});
 			}
 
-			console.error('[Server] No data and no error in response');
+			log.error('totp_setup_empty_response');
 			return fail(500, {
 				errors: { form: 'Failed to setup 2FA' }
 			});
 		} catch (error) {
-			console.error('[Server] 2FA setup error:', error);
+			log.error('totp_setup_failed', { error });
 			const errorMessage = extractErrorMessage(error, 'An unexpected error occurred');
 			return fail(500, {
 				errors: { form: errorMessage }
@@ -156,7 +156,7 @@ export const actions: Actions = {
 				errors: { code: 'Failed to verify code' }
 			});
 		} catch (error) {
-			console.error('2FA verify error:', error);
+			log.error('totp_verify_failed', { error });
 			const errorMessage = extractErrorMessage(error, 'An unexpected error occurred');
 			return fail(500, {
 				errors: { code: errorMessage }
@@ -216,7 +216,7 @@ export const actions: Actions = {
 				errors: { code: 'Failed to disable 2FA' }
 			});
 		} catch (error) {
-			console.error('2FA disable error:', error);
+			log.error('totp_disable_failed', { error });
 			const errorMessage = extractErrorMessage(error, 'An unexpected error occurred');
 			return fail(500, {
 				errors: { code: errorMessage }
@@ -315,7 +315,7 @@ export const actions: Actions = {
 				emailChange: { failed: true }
 			});
 		} catch (error) {
-			console.error('Email change request error:', error);
+			log.error('email_change_request_failed', { error });
 			return fail(500, {
 				errors: { form: 'generic' },
 				emailChange: { failed: true }

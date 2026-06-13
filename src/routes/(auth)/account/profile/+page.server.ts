@@ -3,6 +3,7 @@ import type { PageServerLoad } from './$types';
 import { accountMe, accountUpdateProfile } from '$lib/api/generated';
 import { profileUpdateSchema } from '$lib/schemas/profile';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { log } from '$lib/server/logger';
 
 export const load: PageServerLoad = async ({ cookies }) => {
 	const accessToken = cookies.get('access_token');
@@ -24,7 +25,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 			user: data
 		};
 	} catch (error) {
-		console.error('Failed to fetch user data:', error);
+		log.error('profile_user_fetch_failed', { error });
 		return {
 			user: null
 		};
@@ -88,7 +89,7 @@ export const actions: Actions = {
 				...data
 			});
 		} catch (error: any) {
-			console.error('Profile update error:', error);
+			log.error('profile_update_failed', { error });
 
 			const errorMessage = extractErrorMessage(error, 'An unexpected error occurred');
 

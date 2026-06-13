@@ -1,6 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
+import { log } from '$lib/server/logger';
 import {
 	eventseriesGetEventSeriesBySlugs,
 	eventpublicdiscoveryListEvents,
@@ -33,7 +34,11 @@ export const load: PageServerLoad = async ({ params, url, fetch, locals, request
 		});
 
 		if (seriesResponse.error || !seriesResponse.data) {
-			console.error('[Event Series Load] Failed to fetch series:', seriesResponse.error);
+			log.error('event_series_fetch_failed', {
+				error: seriesResponse.error,
+				orgSlug: org_slug,
+				seriesSlug: series_slug
+			});
 			throw svelteKitError(404, 'Event series not found');
 		}
 
@@ -53,7 +58,10 @@ export const load: PageServerLoad = async ({ params, url, fetch, locals, request
 		});
 
 		if (eventsResponse.error) {
-			console.error('[Event Series Load] Failed to fetch events:', eventsResponse.error);
+			log.warning('event_series_events_fetch_failed', {
+				error: eventsResponse.error,
+				seriesId: series.id
+			});
 			// Don't fail the page if events fail, just show empty
 		}
 
@@ -84,7 +92,7 @@ export const load: PageServerLoad = async ({ params, url, fetch, locals, request
 				}
 			} catch (err) {
 				// If permissions fail to load, continue without them
-				console.error('Failed to fetch user permissions:', err);
+				log.error('user_permissions_fetch_failed', { error: err });
 			}
 		}
 
@@ -103,7 +111,11 @@ export const load: PageServerLoad = async ({ params, url, fetch, locals, request
 			isAuthenticated: !!locals.user
 		};
 	} catch (err) {
-		console.error('Error loading event series:', err);
+		log.error('event_series_load_error', {
+			error: err,
+			orgSlug: org_slug,
+			seriesSlug: series_slug
+		});
 
 		if (err && typeof err === 'object' && 'status' in err) {
 			throw err; // Re-throw SvelteKit errors

@@ -2,6 +2,7 @@ import { questionnaireListOrgQuestionnaires } from '$lib/api/generated/sdk.gen';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { log } from '$lib/server/logger';
 
 export const load: PageServerLoad = async ({ locals, parent, fetch }) => {
 	const user = locals.user;
@@ -22,7 +23,7 @@ export const load: PageServerLoad = async ({ locals, parent, fetch }) => {
 	});
 
 	if (response.error) {
-		console.error('Failed to load questionnaires:', response.error);
+		log.error('questionnaires_list_failed', { error: response.error });
 		const errorMessage = extractErrorMessage(response.error, 'Failed to load questionnaires');
 		throw error(500, errorMessage);
 	}

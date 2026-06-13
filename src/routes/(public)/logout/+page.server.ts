@@ -1,5 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import { log } from '$lib/server/logger';
 
 /**
  * Logout page - clears auth cookies and redirects to home
@@ -9,7 +10,7 @@ import type { PageServerLoad } from './$types';
  * before navigating here. This server load only handles cookie cleanup.
  */
 export const load: PageServerLoad = async ({ cookies }) => {
-	console.log('[LOGOUT] Clearing authentication cookies');
+	log.debug('logout_clearing_cookies');
 
 	// Clear access token cookie
 	cookies.delete('access_token', { path: '/' });
