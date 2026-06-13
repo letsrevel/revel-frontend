@@ -2591,6 +2591,7 @@
 		"refundFlatFeeNote": "Eine Bearbeitungsgebühr von {fee} wurde abgezogen.",
 		"refundCurrentWindowLabel": "Aktuelle Rückerstattung: {pct}% bis {deadline}",
 		"refundNoRefundShort": "Keine Rückerstattung",
+		"refundExpiredWindow": "Das letzte Erstattungsfenster ({pct}% bis {deadline}) ist abgelaufen.",
 		"deadlineLabel": "Stornierung möglich bis",
 		"deadlineNoDeadline": "Keine Frist gesetzt",
 		"refundScheduleTitle": "Rückerstattungsplan",
