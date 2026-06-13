@@ -1,0 +1,47 @@
+version: 2
+updates:
+  # JavaScript dependencies (pnpm). Grouped to keep PR noise low; a cooldown mirrors
+  # the pnpm `minimumReleaseAge` quarantine so Dependabot doesn't propose a version
+  # younger than our supply-chain hold-down window.
+  - package-ecosystem: npm
+    directory: '/'
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    cooldown:
+      default-days: 5
+    groups:
+      dev-minor-patch:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+      prod-minor-patch:
+        dependency-type: production
+        update-types:
+          - minor
+          - patch
+    labels:
+      - dependencies
+    commit-message:
+      prefix: chore
+      include: scope
+
+  # GitHub Actions — keeps the commit-SHA pins current (Dependabot updates the SHA
+  # and the trailing `# vN` comment together), so pinning never means going stale.
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      actions:
+        patterns:
+          - '*'
+    labels:
+      - dependencies
+      - ci
+    commit-message:
+      prefix: ci
