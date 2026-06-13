@@ -97,6 +97,26 @@ describe('logger — field contract (production JSON)', () => {
 		const streams = capture.lines.map((l) => l.stream);
 		expect(streams).toEqual(['out', 'out', 'err', 'err']);
 	});
+
+	it('does not let caller fields override the reserved contract fields', async () => {
+		const { log, restore } = await loadLogger({ NODE_ENV: 'production', LOG_LEVEL: 'debug' });
+		// A stray level/event/timestamp/logger in `fields` must not win — the
+		// `level` label drives Loki routing, so it must stay the real call level.
+		log.info('request_finished', {
+			level: 'error',
+			event: 'spoofed',
+			logger: 'evil',
+			timestamp: 'nope',
+			status_code: 200
+		});
+		restore();
+		const record = JSON.parse(capture.lines[0].line);
+		expect(record.level).toBe('info');
+		expect(record.event).toBe('request_finished');
+		expect(record.logger).toBe('frontend');
+		expect(record.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+		expect(record.status_code).toBe(200);
+	});
 });
 
 describe('logger — error serialization', () => {

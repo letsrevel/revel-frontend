@@ -73,12 +73,15 @@ function serializeError(error: unknown): SerializedError {
 /** Build the full event dict for a log line, applying the field contract. */
 function buildRecord(level: LogLevel, event: string, fields: LogFields): Record<string, unknown> {
 	const { error, ...rest } = fields as ErrorLogFields;
+	// Caller fields go FIRST so the reserved contract fields below always win — a
+	// stray `{ level }`/`{ event }` in `fields` must never override them (the
+	// `level` label drives Loki routing; see the field-contract note above).
 	const record: Record<string, unknown> = {
+		...rest,
 		event,
 		level,
 		timestamp: new Date().toISOString(),
-		logger: 'frontend',
-		...rest
+		logger: 'frontend'
 	};
 	if (error !== undefined) {
 		record.error = serializeError(error);
