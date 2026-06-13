@@ -21,7 +21,7 @@
 		class?: string;
 	}
 
-	let {
+	const {
 		eventId,
 		isBookmarked,
 		variant = 'float',

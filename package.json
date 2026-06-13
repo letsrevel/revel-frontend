@@ -5,7 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
-		"build": "vite build",
+		"build": "svelte-kit sync && vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
@@ -19,7 +19,7 @@
 		"test:coverage": "vitest run --coverage",
 		"test:e2e": "playwright test",
 		"generate:api": "node scripts/generate-api-client.js",
-		"paraglide:compile": "paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide",
+		"paraglide:compile": "node scripts/compile-i18n.js",
 		"i18n:validate": "node scripts/validate-translations.js",
 		"i18n:check-imports": "bash scripts/check-i18n-imports.sh",
 		"i18n:compile": "pnpm paraglide:compile && pnpm i18n:validate",

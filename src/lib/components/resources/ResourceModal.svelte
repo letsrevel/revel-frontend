@@ -252,8 +252,6 @@
 		<div
 			bind:this={modalElement}
 			class="relative my-8 w-full max-w-2xl rounded-lg bg-background p-6 shadow-xl md:p-8"
-			onclick={(e) => e.stopPropagation()}
-			onkeydown={(e) => e.key === 'Enter' && e.stopPropagation()}
 			role="document"
 		>
 			<!-- Header -->

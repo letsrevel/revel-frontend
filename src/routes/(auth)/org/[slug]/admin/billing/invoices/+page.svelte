@@ -321,10 +321,11 @@
 	></button>
 
 	<!-- Drawer -->
-	<aside
+	<div
 		class="fixed inset-y-0 right-0 z-50 flex w-full max-w-lg flex-col overflow-y-auto bg-background shadow-xl sm:max-w-xl"
 		role="dialog"
 		aria-label={m['orgAdmin.billing.invoices.detail.title']()}
+		tabindex="-1"
 	>
 		<div class="flex items-center justify-between border-b px-6 py-4">
 			<h2 class="text-lg font-semibold">
@@ -462,5 +463,5 @@
 				</Button>
 			{/if}
 		</div>
-	</aside>
+	</div>
 {/if}

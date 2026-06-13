@@ -256,9 +256,13 @@
 				readonly={isMaxTagsReached}
 				aria-invalid={!!error}
 				aria-describedby={error ? `${inputId}-error` : undefined}
+				role="combobox"
 				aria-autocomplete="list"
 				aria-controls="{inputId}-suggestions"
 				aria-expanded={showSuggestions}
+				aria-activedescendant={selectedSuggestionIndex >= 0
+					? `${inputId}-suggestion-${selectedSuggestionIndex}`
+					: undefined}
 				class={cn(
 					'min-w-[120px] flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground',
 					'text-gray-900 dark:text-gray-100',
@@ -276,9 +280,16 @@
 			>
 				{#each filteredSuggestions as suggestion, index (suggestion)}
 					<li
+						id="{inputId}-suggestion-{index}"
 						role="option"
 						aria-selected={index === selectedSuggestionIndex}
 						onclick={() => selectSuggestion(suggestion)}
+						onkeydown={(e) => {
+							if (e.key === 'Enter' || e.key === ' ') {
+								e.preventDefault();
+								selectSuggestion(suggestion);
+							}
+						}}
 						class={cn(
 							'cursor-pointer px-4 py-2 text-sm transition-colors',
 							index === selectedSuggestionIndex

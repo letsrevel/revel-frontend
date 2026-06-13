@@ -152,7 +152,8 @@
 </script>
 
 <div class="relative">
-	<label class="block text-sm font-medium">{m['eventInvitationsAdmin.emailAddressesLabel']()}</label
+	<label for="email-tag-input" class="block text-sm font-medium"
+		>{m['eventInvitationsAdmin.emailAddressesLabel']()}</label
 	>
 	<div
 		class="mt-1 flex min-h-[80px] flex-wrap gap-2 rounded-md border-2 border-gray-300 bg-white p-2 transition-colors focus-within:border-primary focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 dark:border-gray-600 dark:bg-gray-800"
@@ -174,6 +175,7 @@
 		{/each}
 		<div class="relative min-w-[200px] flex-1">
 			<input
+				id="email-tag-input"
 				type="text"
 				value={emailInputValue}
 				oninput={handleEmailInput}

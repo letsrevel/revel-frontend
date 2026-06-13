@@ -1,8 +1,17 @@
 name: Build
 
+# CI already builds the app natively on every push; this workflow only needs to
+# validate the Docker image itself, so it runs when Docker-related files change.
 on:
   push:
     branches: [main]
+    paths:
+      - 'Dockerfile'
+      - '.dockerignore'
+      - '.github/workflows/build.yaml'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'patches/**'
 
 permissions:
   contents: read
@@ -35,5 +44,3 @@ jobs:
           tags: |
             ghcr.io/letsrevel/revel-frontend:latest
             ghcr.io/letsrevel/revel-frontend:${{ env.VERSION }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max

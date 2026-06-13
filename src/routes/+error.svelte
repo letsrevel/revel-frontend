@@ -99,6 +99,8 @@
 		}
 	);
 
+	const ErrorIcon = $derived(config.icon);
+
 	function goBack() {
 		window.history.back();
 	}
@@ -114,11 +116,7 @@
 		<!-- Error Icon -->
 		<div class="mb-8 flex justify-center">
 			<div class="inline-flex rounded-full {config.iconBg} p-6">
-				<svelte:component
-					this={config.icon}
-					class="h-16 w-16 {config.iconColor}"
-					aria-hidden="true"
-				/>
+				<ErrorIcon class="h-16 w-16 {config.iconColor}" aria-hidden="true" />
 			</div>
 		</div>
 

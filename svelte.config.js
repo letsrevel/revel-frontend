@@ -10,6 +10,14 @@ const config = {
 	// for more information about preprocessors
 	preprocess: vitePreprocess(),
 
+	// `state_referenced_locally` fires ~260 times across ~60 files for the
+	// intentional "initialize local state from a prop" pattern, drowning out real
+	// warnings in build logs. Silenced here; every other compiler warning still surfaces.
+	onwarn: (warning, handler) => {
+		if (warning.code === 'state_referenced_locally') return;
+		handler(warning);
+	},
+
 	kit: {
 		// Using adapter-node for Docker/production deployment
 		// Builds a standalone Node.js server

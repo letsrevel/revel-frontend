@@ -764,6 +764,7 @@
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="fee-calculator-title"
+		tabindex="-1"
 	>
 		<div class="w-full max-w-md rounded-lg border bg-background shadow-xl">
 			<!-- Header -->

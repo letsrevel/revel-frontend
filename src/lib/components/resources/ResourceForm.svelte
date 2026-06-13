@@ -149,11 +149,14 @@
 	<!-- Resource Type Selection (only for new resources) -->
 	{#if !resource}
 		<div class="space-y-2">
-			<label class="block text-sm font-medium text-gray-900 dark:text-gray-100">
+			<span
+				id="resource-type-label"
+				class="block text-sm font-medium text-gray-900 dark:text-gray-100"
+			>
 				Resource Type
 				<span class="text-destructive" aria-label="required">*</span>
-			</label>
-			<div class="grid grid-cols-3 gap-3">
+			</span>
+			<div class="grid grid-cols-3 gap-3" role="group" aria-labelledby="resource-type-label">
 				<button
 					type="button"
 					onclick={() => handleTypeChange('file')}

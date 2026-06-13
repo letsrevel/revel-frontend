@@ -436,9 +436,9 @@
 
 			<!-- Contact Email (Read-only with Change Button) -->
 			<div>
-				<label class="block text-sm font-medium">
+				<span class="block text-sm font-medium">
 					{m['orgAdmin.settings.membership.contactEmailLabel']()}
-				</label>
+				</span>
 				<div class="mt-1 flex items-center gap-2">
 					<div
 						class="flex-1 rounded-md border-2 border-gray-300 bg-gray-50 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900"

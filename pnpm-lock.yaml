@@ -11,7 +11,7 @@ overrides:
 
 patchedDependencies:
   svelte-crop-window@0.1.1:
-    hash: akllwigc5wnxcdr7bddbzgbkji
+    hash: npd5ndjnjhqokv7jz3shauqnfu
     path: patches/svelte-crop-window@0.1.1.patch
 
 importers:
@@ -53,7 +53,7 @@ importers:
         version: 1.5.4
       svelte-crop-window:
         specifier: ^0.1.1
-        version: 0.1.1(patch_hash=akllwigc5wnxcdr7bddbzgbkji)
+        version: 0.1.1(patch_hash=npd5ndjnjhqokv7jz3shauqnfu)
       svelte-dnd-action:
         specifier: ^0.9.69
         version: 0.9.69(svelte@5.53.10)
@@ -5612,7 +5612,7 @@ snapshots:
     transitivePeerDependencies:
       - picomatch
 
-  svelte-crop-window@0.1.1(patch_hash=akllwigc5wnxcdr7bddbzgbkji): {}
+  svelte-crop-window@0.1.1(patch_hash=npd5ndjnjhqokv7jz3shauqnfu): {}
 
   svelte-dnd-action@0.9.69(svelte@5.53.10):
     dependencies:

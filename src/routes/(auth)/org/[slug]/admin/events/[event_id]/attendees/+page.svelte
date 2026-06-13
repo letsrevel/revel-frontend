@@ -906,8 +906,10 @@
 
 				<!-- New status selection -->
 				<div class="space-y-2">
-					<label class="text-sm font-medium">{m['attendeesAdmin.editModalNewStatus']()}</label>
-					<div class="space-y-2">
+					<span id="edit-rsvp-status-label" class="text-sm font-medium"
+						>{m['attendeesAdmin.editModalNewStatus']()}</span
+					>
+					<div class="space-y-2" role="radiogroup" aria-labelledby="edit-rsvp-status-label">
 						<label
 							class="flex cursor-pointer items-center gap-3 rounded-lg border border-border p-3 hover:bg-muted/50"
 						>

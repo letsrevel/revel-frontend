@@ -102,7 +102,7 @@
 			<!-- Token Info -->
 			<div class="space-y-3 rounded-lg bg-muted p-4">
 				<div class="flex items-center gap-2 text-sm">
-					<svelte:component this={Icon} class="h-4 w-4" aria-hidden="true" />
+					<Icon class="h-4 w-4" aria-hidden="true" />
 					<span class="font-medium">{m['joinOrgPage.accessTypeLabel']()}</span>
 					<span>{accessType}</span>
 				</div>
