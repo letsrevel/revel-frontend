@@ -67,6 +67,8 @@
 		}
 	});
 
+	const StatusIcon = $derived(statusDisplay.icon);
+
 	// Cancel mutation
 	const cancelMutation = createMutation(() => ({
 		mutationFn: async () => {
@@ -135,7 +137,7 @@
 					<div
 						class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium {statusDisplay.class}"
 					>
-						<svelte:component this={statusDisplay.icon} class="h-3 w-3" aria-hidden="true" />
+						<StatusIcon class="h-3 w-3" aria-hidden="true" />
 						{statusDisplay.label}
 					</div>
 				</div>

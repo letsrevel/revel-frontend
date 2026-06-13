@@ -77,6 +77,8 @@
 				};
 		}
 	});
+
+	const StatusIcon = $derived(statusInfo.icon);
 </script>
 
 <Card class="group overflow-hidden transition-shadow hover:shadow-lg">
@@ -93,7 +95,7 @@
 					<div
 						class="flex h-16 w-16 items-center justify-center rounded-lg bg-primary/10 text-primary"
 					>
-						<svelte:component this={statusInfo.icon} class="h-8 w-8" aria-hidden="true" />
+						<StatusIcon class="h-8 w-8" aria-hidden="true" />
 					</div>
 				{/if}
 			</div>
@@ -112,7 +114,7 @@
 					<div
 						class="mt-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium {statusInfo.colorClass}"
 					>
-						<svelte:component this={statusInfo.icon} class="h-3 w-3" aria-hidden="true" />
+						<StatusIcon class="h-3 w-3" aria-hidden="true" />
 						{statusInfo.label}
 					</div>
 				</div>

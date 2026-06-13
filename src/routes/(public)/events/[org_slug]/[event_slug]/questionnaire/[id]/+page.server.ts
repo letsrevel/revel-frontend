@@ -4,6 +4,7 @@ import {
 	eventpublicdetailsGetEventBySlugs,
 	eventpublicattendanceGetQuestionnaire
 } from '$lib/api/client';
+import { log } from '$lib/server/logger';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const { org_slug, event_slug, id: questionnaireId } = params;
@@ -21,7 +22,11 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	});
 
 	if (eventError || !event) {
-		console.error('Failed to fetch event:', eventError);
+		log.error('questionnaire_event_fetch_failed', {
+			error: eventError,
+			orgSlug: org_slug,
+			eventSlug: event_slug
+		});
 		throw error(404, 'Event not found');
 	}
 
@@ -43,7 +48,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		});
 
 	if (questionnaireError || !questionnaire) {
-		console.error('Failed to fetch questionnaire:', questionnaireError);
+		log.error('questionnaire_fetch_failed', { error: questionnaireError, questionnaireId });
 		throw error(404, 'Questionnaire not found');
 	}
 

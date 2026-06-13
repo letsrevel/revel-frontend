@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { pollGetPoll } from '$lib/api/generated/sdk.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { log } from '$lib/server/logger';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, locals, fetch }) => {
@@ -28,7 +29,7 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 				isAuthenticated: !!accessToken
 			};
 		}
-		console.error(`Failed to load poll: ${status}`, res.error);
+		log.error('poll_load_failed', { error: res.error, status });
 		const message = extractErrorMessage(res.error, 'Failed to load poll');
 		// 403 is handled above; preserve any other upstream client-error status
 		// (401/404/410/422) and only normalize 5xx / transport failures to 500.

@@ -238,10 +238,11 @@
 												<span class="font-medium">{foodItem}</span>
 												{#each severities as [severity, count]}
 													{@const info = getSeverityInfo(severity)}
+													{@const SeverityIcon = info.icon}
 													<span
 														class="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium {info.color}"
 													>
-														<svelte:component this={info.icon} class="h-3 w-3" aria-hidden="true" />
+														<SeverityIcon class="h-3 w-3" aria-hidden="true" />
 														<span>{count} {info.label}</span>
 													</span>
 												{/each}

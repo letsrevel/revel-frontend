@@ -3,6 +3,7 @@ import { accountEmailChangeConfirm } from '$lib/api/generated/sdk.gen';
 import { emailChangeConfirmSchema } from '$lib/schemas/auth';
 import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '$lib/utils/cookies';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { log } from '$lib/server/logger';
 
 export const actions: Actions = {
 	confirmEmailChange: async ({ request, cookies, fetch }) => {
@@ -61,7 +62,7 @@ export const actions: Actions = {
 
 			return fail(500, { errors: { form: 'generic' } });
 		} catch (error) {
-			console.error('Email change confirm error:', error);
+			log.error('email_change_confirm_error', { error });
 			return fail(500, { errors: { form: 'generic' } });
 		}
 	}

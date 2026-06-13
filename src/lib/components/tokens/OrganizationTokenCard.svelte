@@ -53,7 +53,7 @@
 	}
 
 	const accessType = $derived(getAccessTypeDisplay());
-	const icon = $derived(token.grants_staff_status ? Shield : Users);
+	const Icon = $derived(token.grants_staff_status ? Shield : Users);
 </script>
 
 <div class="rounded-lg border bg-card p-4 shadow-sm transition-shadow hover:shadow-md">
@@ -62,7 +62,7 @@
 		<div class="flex-1 space-y-2">
 			<!-- Name and Status -->
 			<div class="flex items-center gap-2">
-				<svelte:component this={icon} class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+				<Icon class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
 				<h3 class="font-semibold">
 					{token.name || 'Unnamed Token'}
 				</h3>

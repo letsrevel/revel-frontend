@@ -10,6 +10,10 @@ const viteResolve = process.env.VITEST ? { conditions: ['browser', 'svelte'] } :
 
 export default defineConfig({
 	plugins: [sveltekit()],
+	build: {
+		// Skip gzip-size reporting: it adds build time and hundreds of log lines in CI
+		reportCompressedSize: false
+	},
 	test: {
 		include: ['src/**/*.{test,spec}.{js,ts}'],
 		environment: 'jsdom',
@@ -22,7 +26,6 @@ export default defineConfig({
 		port: 5173,
 		strictPort: false,
 		// Warmup Paraglide files during server startup to improve Firefox dev performance
-		// Paraglide generates ~3700 individual JS files which causes slow initial loads
 		warmup: {
 			clientFiles: ['./src/lib/paraglide/messages.js', './src/lib/paraglide/runtime.js']
 		}

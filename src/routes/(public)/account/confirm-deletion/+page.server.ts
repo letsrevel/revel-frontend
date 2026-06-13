@@ -1,6 +1,7 @@
 import { fail, type Actions } from '@sveltejs/kit';
 import { accountDeletionConfirmSchema } from '$lib/schemas/auth';
 import { accountDeleteAccountConfirm } from '$lib/api/generated';
+import { log } from '$lib/server/logger';
 
 export const actions: Actions = {
 	confirmDeletion: async ({ request, cookies }) => {
@@ -40,7 +41,7 @@ export const actions: Actions = {
 				success: true
 			};
 		} catch (error: any) {
-			console.error('Account deletion confirmation error:', error);
+			log.error('account_deletion_confirm_error', { error });
 
 			// Check for specific error types
 			if (error?.response?.status === 400) {

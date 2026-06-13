@@ -7,7 +7,7 @@
 	// client from Svelte context. Passing a component as the provider's
 	// `children` prop (the older test pattern) does not propagate context under
 	// @tanstack/svelte-query v6 — the child must be a true template child.
-	let {
+	const {
 		client,
 		component,
 		props = {}

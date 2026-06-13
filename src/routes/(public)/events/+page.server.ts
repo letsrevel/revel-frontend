@@ -3,6 +3,7 @@ import { eventpublicdiscoveryListEvents } from '$lib/api';
 import { error as svelteKitError } from '@sveltejs/kit';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
+import { log } from '$lib/server/logger';
 
 export const load: PageServerLoad = async ({ request, url, fetch, locals }) => {
 	const lang = resolveLang(request);
@@ -56,13 +57,13 @@ export const load: PageServerLoad = async ({ request, url, fetch, locals }) => {
 
 		// Handle API errors
 		if (response.error) {
-			console.error('[Events Load] Failed to fetch events:', response.error);
+			log.error('events_load_failed', { error: response.error });
 			throw svelteKitError(500, 'Failed to load events. Please try again later.');
 		}
 
 		// Type guard: ensure response.data exists
 		if (!response.data) {
-			console.error('[Events Load] Invalid API response - no data');
+			log.error('events_load_invalid_response');
 			throw svelteKitError(500, 'Invalid API response');
 		}
 
@@ -87,7 +88,7 @@ export const load: PageServerLoad = async ({ request, url, fetch, locals }) => {
 			}
 		};
 	} catch (err) {
-		console.error('Error loading events:', err);
+		log.error('events_load_error', { error: err });
 
 		// Return empty state rather than throwing to allow graceful degradation
 		return {

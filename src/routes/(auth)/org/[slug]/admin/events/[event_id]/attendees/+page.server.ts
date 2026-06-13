@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { eventpublicdetailsGetEvent, eventadminrsvpsListRsvps } from '$lib/api';
+import { log } from '$lib/server/logger';
 
 export const load: PageServerLoad = async ({ parent, params, locals, fetch, url }) => {
 	const parentData = await parent();
@@ -46,7 +47,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 			throw err;
 		}
 
-		console.error('Error loading event:', err);
+		log.error('event_load_failed', { error: err, eventId: params.event_id });
 		throw error(500, 'Failed to load event');
 	}
 
@@ -98,7 +99,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 		nextPage = rsvpResponse.data.next;
 		previousPage = rsvpResponse.data.previous;
 	} catch (err) {
-		console.error('Error loading RSVPs:', err);
+		log.error('rsvps_load_failed', { error: err, eventId: params.event_id });
 		// Don't fail completely, just return empty list
 		rsvps = [];
 	}

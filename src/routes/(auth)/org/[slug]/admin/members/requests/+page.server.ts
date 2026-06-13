@@ -1,4 +1,4 @@
-import { error, fail, redirect, type Actions } from '@sveltejs/kit';
+import { error, fail, redirect, isHttpError, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import {
 	organizationadminmembershiprequestsListMembershipRequests,
@@ -6,6 +6,7 @@ import {
 	organizationadminmembershiprequestsRejectMembershipRequest
 } from '$lib/api/generated/sdk.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { log } from '$lib/server/logger';
 
 /**
  * Load membership requests for this organization
@@ -42,7 +43,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies }) => 
 		});
 
 		if (response.error) {
-			console.error('Failed to fetch membership requests:', response.error);
+			log.error('membership_requests_load_failed', { error: response.error, slug: params.slug });
 			throw error(500, 'Failed to load membership requests');
 		}
 
@@ -66,7 +67,8 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies }) => 
 			}
 		};
 	} catch (err) {
-		console.error('Error loading membership requests:', err);
+		if (isHttpError(err)) throw err;
+		log.error('membership_requests_load_failed', { error: err, slug: params.slug });
 		throw error(500, 'Failed to load membership requests');
 	}
 };
@@ -134,7 +136,7 @@ export const actions: Actions = {
 				action: 'approved'
 			};
 		} catch (err) {
-			console.error('Error approving membership request:', err);
+			log.error('membership_request_approve_failed', { error: err, slug: params.slug });
 			const errorMessage = extractErrorMessage(
 				err,
 				'An unexpected error occurred while approving the request'
@@ -194,7 +196,7 @@ export const actions: Actions = {
 				action: 'rejected'
 			};
 		} catch (err) {
-			console.error('Error rejecting membership request:', err);
+			log.error('membership_request_reject_failed', { error: err, slug: params.slug });
 			const errorMessage = extractErrorMessage(
 				err,
 				'An unexpected error occurred while rejecting the request'

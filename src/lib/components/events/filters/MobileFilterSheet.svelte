@@ -200,6 +200,7 @@
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="mobile-filter-title"
+		tabindex="-1"
 		ontouchstart={handleTouchStart}
 		ontouchmove={handleTouchMove}
 		ontouchend={handleTouchEnd}

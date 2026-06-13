@@ -3,6 +3,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { registerSchema } from '$lib/schemas/auth';
 import { accountRegister, apiApiVersion } from '$lib/api/generated/sdk.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { log } from '$lib/server/logger';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 
@@ -20,7 +21,7 @@ export const load: PageServerLoad = async ({ fetch, cookies, url, request }) => 
 			throw error;
 		}
 		// If version check fails, allow registration to proceed
-		console.error('[REGISTER] Failed to check demo mode:', error);
+		log.error('register_demo_check_failed', { error });
 	}
 
 	const lang = resolveLang(request);
@@ -71,21 +72,15 @@ export const actions = {
 				fetch
 			});
 
-			// DEBUG: Log the entire response structure
-			console.log('[REGISTER] Full response:', {
-				hasData: !!response.data,
-				hasError: !!response.error,
-				hasResponse: !!response.response,
-				responseOk: response.response?.ok,
-				responseStatus: response.response?.status,
-				dataKeys: response.data ? Object.keys(response.data) : null,
-				errorKeys: response.error ? Object.keys(response.error) : null
+			log.debug('register_response_received', {
+				response_ok: response.response?.ok,
+				response_status: response.response?.status
 			});
 
 			// Check response status - API client returns { data } on success, { error } on failure
 			// On successful 201 Created, response.response.ok will be true
 			if (response.response.ok && response.data) {
-				console.log('[REGISTER] Success detected, redirecting to check-email');
+				log.debug('register_redirecting_to_check_email');
 				// Success - redirect to check-email page
 				throw redirect(
 					303,
@@ -95,7 +90,7 @@ export const actions = {
 
 			// If response was not ok, handle the error
 			if (!response.response.ok && response.error) {
-				console.error('[REGISTER] Error response:', response.error);
+				log.warning('register_error_response', { status: response.response.status });
 
 				// Extract user-friendly error message from API error
 				const errorMessage = extractErrorMessage(response.error, 'Registration failed');
@@ -136,12 +131,11 @@ export const actions = {
 		} catch (error) {
 			// Re-throw redirects immediately without logging
 			if (isRedirect(error)) {
-				console.log('[REGISTER] Caught redirect, re-throwing');
 				throw error;
 			}
 
 			// Only log actual unexpected errors
-			console.error('[REGISTER] Unexpected registration error:', error);
+			log.error('register_unexpected_error', { error });
 			const errorMessage = extractErrorMessage(
 				error,
 				'An unexpected error occurred. Please try again.'

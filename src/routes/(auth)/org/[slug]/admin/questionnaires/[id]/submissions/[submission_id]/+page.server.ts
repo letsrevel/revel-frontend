@@ -5,6 +5,7 @@ import {
 	questionnaireEvaluateSubmission,
 	questionnaireGetOrgQuestionnaire
 } from '$lib/api/client';
+import { log } from '$lib/server/logger';
 
 export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 	const { slug, id, submission_id } = params;
@@ -35,7 +36,11 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 	]);
 
 	if (submissionResult.error || !submissionResult.data) {
-		console.error('Failed to fetch submission:', submissionResult.error);
+		log.error('submission_detail_load_failed', {
+			id,
+			submission_id,
+			error: submissionResult.error
+		});
 		throw error(404, 'Submission not found');
 	}
 
@@ -105,7 +110,7 @@ export const actions: Actions = {
 		});
 
 		if (evaluationError || !result) {
-			console.error('Failed to submit evaluation:', evaluationError);
+			log.error('submission_evaluation_failed', { id, submission_id, error: evaluationError });
 			return fail(500, { error: 'Failed to submit evaluation. Please try again.' });
 		}
 

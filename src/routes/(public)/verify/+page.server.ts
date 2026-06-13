@@ -4,6 +4,7 @@ import { accountVerifyEmail } from '$lib/api/generated/sdk.gen';
 import { getAccessTokenCookieOptions, getRefreshTokenCookieOptions } from '$lib/utils/cookies';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { claimPendingTokens, setClaimFlashCookie } from '$lib/server/token-claim';
+import { log } from '$lib/server/logger';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 
@@ -21,7 +22,7 @@ export const load: PageServerLoad = async ({ url, request, fetch, cookies }) => 
 	}
 
 	try {
-		console.log('[VERIFY] Starting verification for token');
+		log.debug('verify_started');
 
 		// Verify the email token
 		const response = await accountVerifyEmail({
@@ -29,10 +30,7 @@ export const load: PageServerLoad = async ({ url, request, fetch, cookies }) => 
 			fetch
 		});
 
-		console.log('[VERIFY] Response received', {
-			ok: response.response.ok,
-			hasData: !!response.data
-		});
+		log.debug('verify_response_received', { ok: response.response.ok });
 
 		// Check response status - API client returns { data } on success, { error } on failure
 		if (response.response.ok && response.data) {
@@ -40,20 +38,15 @@ export const load: PageServerLoad = async ({ url, request, fetch, cookies }) => 
 			const tokens = response.data.token as { access: string; refresh: string };
 			const { access, refresh } = tokens;
 
-			console.log('[VERIFY] Success! Setting cookies', {
-				hasAccess: !!access,
-				hasRefresh: !!refresh
-			});
+			log.debug('verify_setting_cookies');
 
 			// Store tokens in httpOnly cookies
 			if (access) {
 				cookies.set('access_token', access, getAccessTokenCookieOptions());
-				console.log('[VERIFY] Access token cookie set');
 			}
 
 			if (refresh) {
 				cookies.set('refresh_token', refresh, getRefreshTokenCookieOptions());
-				console.log('[VERIFY] Refresh token cookie set');
 			}
 
 			// Attempt to claim any pending invitation tokens
@@ -64,7 +57,6 @@ export const load: PageServerLoad = async ({ url, request, fetch, cookies }) => 
 			}
 
 			// Redirect to profile page after successful verification so user can complete their profile
-			console.log('[VERIFY] Redirecting to /account/profile');
 			throw redirect(303, '/account/profile');
 		}
 
@@ -91,7 +83,7 @@ export const load: PageServerLoad = async ({ url, request, fetch, cookies }) => 
 		}
 
 		// Log unexpected errors
-		console.error('[VERIFY] Unexpected verification error:', error);
+		log.error('verify_unexpected_error', { error });
 		const errorMessage = extractErrorMessage(
 			error,
 			'An unexpected error occurred during verification'

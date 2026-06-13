@@ -40,8 +40,6 @@ jobs:
           tags: |
             ghcr.io/letsrevel/revel-frontend:latest-demo
             ghcr.io/letsrevel/revel-frontend:${{ github.event.release.tag_name }}-demo
-          cache-from: type=gha,scope=demo
-          cache-to: type=gha,mode=max,scope=demo
 
   publish-prod:
     runs-on: ubuntu-latest
@@ -74,5 +72,3 @@ jobs:
           tags: |
             ghcr.io/letsrevel/revel-frontend:latest
             ghcr.io/letsrevel/revel-frontend:${{ github.event.release.tag_name }}
-          cache-from: type=gha,scope=prod
-          cache-to: type=gha,mode=max,scope=prod

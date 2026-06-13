@@ -4,6 +4,7 @@ import {
 	questionnaireGetSummary
 } from '$lib/api/generated/sdk.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { log } from '$lib/server/logger';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, params, url }) => {
@@ -62,7 +63,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		if (err && typeof err === 'object' && 'status' in err) {
 			throw err;
 		}
-		console.error('Failed to load questionnaire summary:', err);
+		log.error('questionnaire_summary_load_failed', { id, error: err });
 		const msg = extractErrorMessage(err, 'Failed to load summary');
 		throw error(500, msg);
 	}

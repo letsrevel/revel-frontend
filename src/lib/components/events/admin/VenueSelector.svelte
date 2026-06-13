@@ -100,40 +100,47 @@
 		</span>
 	</label>
 
-	<!-- Trigger button -->
-	<button
-		type="button"
-		onclick={() => (isOpen = !isOpen)}
-		{disabled}
-		aria-expanded={isOpen}
-		aria-haspopup="listbox"
+	<!-- Trigger -->
+	<div
 		class={cn(
-			'flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors',
-			'focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-			'disabled:cursor-not-allowed disabled:opacity-50',
+			'flex h-10 w-full items-center rounded-md border border-input bg-background text-sm transition-colors',
+			'focus-within:border-ring focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
+			disabled && 'cursor-not-allowed opacity-50',
 			isOpen && 'border-ring ring-2 ring-ring ring-offset-2'
 		)}
 	>
+		<button
+			type="button"
+			onclick={() => (isOpen = !isOpen)}
+			{disabled}
+			aria-expanded={isOpen}
+			aria-haspopup="listbox"
+			class="flex h-full min-w-0 flex-1 items-center justify-between px-3 py-2 text-left focus:outline-none disabled:cursor-not-allowed"
+		>
+			{#if selectedVenue}
+				<span class="flex items-center gap-2 truncate">
+					<Building2 class="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+					<span class="truncate font-medium">{selectedVenue.name}</span>
+				</span>
+			{:else}
+				<span class="text-muted-foreground">
+					{m['venueSelector.placeholder']?.() ?? 'Select a venue...'}
+				</span>
+				<ChevronDown class="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+			{/if}
+		</button>
 		{#if selectedVenue}
-			<span class="flex items-center gap-2 truncate">
-				<Building2 class="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-				<span class="truncate font-medium">{selectedVenue.name}</span>
-			</span>
 			<button
 				type="button"
 				onclick={handleClear}
-				class="ml-2 rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+				{disabled}
+				class="ml-2 mr-3 rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground disabled:cursor-not-allowed"
 				aria-label={m['venueSelector.clear']?.() ?? 'Clear venue selection'}
 			>
 				<X class="h-4 w-4" />
 			</button>
-		{:else}
-			<span class="text-muted-foreground">
-				{m['venueSelector.placeholder']?.() ?? 'Select a venue...'}
-			</span>
-			<ChevronDown class="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
 		{/if}
-	</button>
+	</div>
 
 	<!-- Dropdown -->
 	{#if isOpen}

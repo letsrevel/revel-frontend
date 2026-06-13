@@ -1,7 +1,8 @@
-import { error } from '@sveltejs/kit';
+import { error, isHttpError } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { eventadminwaitlistListWaitlist } from '$lib/api';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { log } from '$lib/server/logger';
 
 export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 	const user = locals.user;
@@ -33,7 +34,8 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 			eventId: params.event_id
 		};
 	} catch (err) {
-		console.error('Failed to load waitlist:', err);
+		if (isHttpError(err)) throw err;
+		log.error('waitlist_load_failed', { error: err, eventId: params.event_id });
 		if (typeof err === 'object' && err !== null && 'status' in err) {
 			const status = (err as { status: number }).status;
 

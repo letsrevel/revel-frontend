@@ -1,6 +1,7 @@
 import { fail, type Actions } from '@sveltejs/kit';
 import { passwordResetSchema } from '$lib/schemas/auth';
 import { accountResetPassword } from '$lib/api/generated';
+import { log } from '$lib/server/logger';
 
 export const actions: Actions = {
 	resetPassword: async ({ request }) => {
@@ -43,7 +44,7 @@ export const actions: Actions = {
 				success: true
 			};
 		} catch (error: any) {
-			console.error('Password reset error:', error);
+			log.error('password_reset_error', { error });
 
 			// Check for specific error types
 			if (error?.response?.status === 400) {
