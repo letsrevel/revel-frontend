@@ -2591,6 +2591,7 @@
 		"refundFlatFeeNote": "È stata trattenuta una commissione di {fee}.",
 		"refundCurrentWindowLabel": "Rimborso attuale: {pct}% fino al {deadline}",
 		"refundNoRefundShort": "Nessun rimborso",
+		"refundExpiredWindow": "L'ultima finestra di rimborso ({pct}% fino al {deadline}) è scaduta.",
 		"deadlineLabel": "Annullamento possibile fino al",
 		"deadlineNoDeadline": "Nessuna scadenza impostata",
 		"refundScheduleTitle": "Scadenze rimborsi",

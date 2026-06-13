@@ -1,9 +1,8 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { getLocale, setLocale, locales } from '$lib/paraglide/runtime.js';
+	import { getLocale, setLocale } from '$lib/paraglide/runtime.js';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
-	import { Globe } from 'lucide-svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { accountUpdateLanguage } from '$lib/api/client';
 	import { getLanguageSwitchUrl } from '$lib/utils/seo-routes';
@@ -11,11 +10,12 @@
 	// Current locale
 	const currentLocale = $derived(getLocale());
 
-	// Language options with flags
+	// Language options. We surface the ISO code (en/de/it) rather than a flag —
+	// flags map to countries, not languages, and read poorly at small sizes.
 	const languages = [
-		{ code: 'en', name: 'English', flag: '🇬🇧' },
-		{ code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-		{ code: 'it', name: 'Italiano', flag: '🇮🇹' }
+		{ code: 'en', name: 'English' },
+		{ code: 'de', name: 'Deutsch' },
+		{ code: 'it', name: 'Italiano' }
 	] as const;
 
 	type SupportedLanguage = 'en' | 'de' | 'it';
@@ -75,17 +75,17 @@
 
 <!-- Language Switcher Dropdown -->
 <div class="relative">
-	<!-- Trigger Button - Just the flag -->
+	<!-- Trigger Button - ISO language code -->
 	<button
 		type="button"
 		onclick={() => (isOpen = !isOpen)}
-		class="flex items-center justify-center rounded-md p-2 text-2xl transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
+		class="flex items-center justify-center rounded-md px-2.5 py-2 text-sm font-semibold lowercase tracking-wide transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
 		aria-label={m['languageSwitcher.selectLanguage']({ name: currentLanguage.name })}
 		aria-expanded={isOpen}
 		aria-haspopup="true"
 		title={currentLanguage.name}
 	>
-		{currentLanguage.flag}
+		{currentLanguage.code}
 	</button>
 
 	<!-- Dropdown Menu -->
@@ -94,7 +94,7 @@
 			class="absolute right-0 top-full z-50 mt-2 w-48 rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
 			role="menu"
 		>
-			{#each languages as lang}
+			{#each languages as lang (lang.code)}
 				<button
 					type="button"
 					onclick={() => switchLanguage(lang.code)}
@@ -104,7 +104,7 @@
 						: ''}"
 					role="menuitem"
 				>
-					<span class="text-lg">{lang.flag}</span>
+					<span class="w-6 text-xs font-semibold uppercase text-muted-foreground">{lang.code}</span>
 					<span>{lang.name}</span>
 					{#if currentLocale === lang.code}
 						<span class="ml-auto text-xs text-muted-foreground">✓</span>

@@ -163,13 +163,16 @@
 		});
 	}
 
-	function paymentMethodNote(method: PaymentMethod | undefined): string | null {
+	function paymentMethodNote(method: PaymentMethod | undefined, hasRefund: boolean): string | null {
 		if (!method) return null;
 		switch (method) {
+			// online/offline notes describe how a refund is delivered — they
+			// contradict a "No refund" quote, so suppress them when there's nothing
+			// to refund (see issue #397).
 			case 'online':
-				return m['cancelTicket.paymentMethodOnline']();
+				return hasRefund ? m['cancelTicket.paymentMethodOnline']() : null;
 			case 'offline':
-				return m['cancelTicket.paymentMethodOffline']();
+				return hasRefund ? m['cancelTicket.paymentMethodOffline']() : null;
 			case 'at_the_door':
 				return m['cancelTicket.paymentMethodAtTheDoor']();
 			case 'free':
@@ -199,6 +202,30 @@
 		const now = new Date().getTime();
 		return preview.windows.filter((w) => new Date(w.effective_until).getTime() > now);
 	});
+
+	// The most recent window that has already closed. When the quote is 0, the
+	// upcoming-windows list is empty and "No refund" looks like a bug; this lets
+	// us explain *why* — the last refund bracket has expired (issue #397).
+	const lastExpiredWindow = $derived.by((): RefundWindowSchema | null => {
+		if (!preview?.windows || preview.windows.length === 0) return null;
+		const now = new Date().getTime();
+		const past = preview.windows.filter((w) => new Date(w.effective_until).getTime() <= now);
+		if (past.length === 0) return null;
+		return past.reduce((latest, w) =>
+			new Date(w.effective_until).getTime() > new Date(latest.effective_until).getTime()
+				? w
+				: latest
+		);
+	});
+
+	// Show the "last window has passed" explanation only when there's genuinely
+	// nothing to refund on a paid ticket and we have an expired window to point to.
+	const showExpiredWindowNote = $derived(
+		!!preview &&
+			refundAmountNum === 0 &&
+			preview.payment_method !== 'free' &&
+			lastExpiredWindow !== null
+	);
 
 	function handleClose(): void {
 		if (cancelMutation.isPending) return;
@@ -274,6 +301,15 @@
 						</p>
 					{/if}
 
+					{#if showExpiredWindowNote && lastExpiredWindow}
+						<p class="mt-2 text-xs text-muted-foreground">
+							{m['cancelTicket.refundExpiredWindow']({
+								pct: lastExpiredWindow.refund_percentage,
+								deadline: formatDeadline(lastExpiredWindow.effective_until)
+							})}
+						</p>
+					{/if}
+
 					{#if preview.deadline}
 						<p class="mt-3 text-xs text-muted-foreground">
 							<span class="font-medium">{m['cancelTicket.deadlineLabel']()}:</span>
@@ -281,9 +317,9 @@
 						</p>
 					{/if}
 
-					{#if paymentMethodNote(preview.payment_method)}
+					{#if paymentMethodNote(preview.payment_method, refundAmountNum > 0)}
 						<p class="mt-3 text-xs text-muted-foreground">
-							{paymentMethodNote(preview.payment_method)}
+							{paymentMethodNote(preview.payment_method, refundAmountNum > 0)}
 						</p>
 					{/if}
 				</div>

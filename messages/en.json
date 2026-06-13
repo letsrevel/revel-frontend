@@ -2591,6 +2591,7 @@
 		"refundFlatFeeNote": "A {fee} processing fee has been deducted.",
 		"refundCurrentWindowLabel": "Current refund: {pct}% until {deadline}",
 		"refundNoRefundShort": "No refund",
+		"refundExpiredWindow": "The last refund window ({pct}% until {deadline}) has passed.",
 		"deadlineLabel": "Cancellation closes",
 		"deadlineNoDeadline": "No deadline set",
 		"refundScheduleTitle": "Refund schedule",
