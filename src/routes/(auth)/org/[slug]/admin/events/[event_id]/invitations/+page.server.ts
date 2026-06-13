@@ -1,4 +1,4 @@
-import { error, fail, redirect, type Actions } from '@sveltejs/kit';
+import { error, fail, redirect, isHttpError, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import {
 	eventadmininvitationrequestsListInvitationRequests,
@@ -42,6 +42,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 
 		event = eventResponse.data;
 	} catch (err) {
+		if (isHttpError(err)) throw err;
 		log.error('event_load_failed', { error: err, eventId: params.event_id });
 		throw error(404, 'Event not found');
 	}

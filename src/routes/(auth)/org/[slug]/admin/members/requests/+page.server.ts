@@ -1,4 +1,4 @@
-import { error, fail, redirect, type Actions } from '@sveltejs/kit';
+import { error, fail, redirect, isHttpError, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import {
 	organizationadminmembershiprequestsListMembershipRequests,
@@ -67,6 +67,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies }) => 
 			}
 		};
 	} catch (err) {
+		if (isHttpError(err)) throw err;
 		log.error('membership_requests_load_failed', { error: err, slug: params.slug });
 		throw error(500, 'Failed to load membership requests');
 	}
