@@ -36,8 +36,8 @@ jobs:
           # Supply-chain attestations published alongside the image to GHCR.
           sbom: true
           provenance: mode=max
+          # PUBLIC_API_URL is set at RUNTIME (see #396), not baked at build time.
           build-args: |
-            PUBLIC_API_URL=https://demo-api.letsrevel.io
             ORIGIN=https://demo.letsrevel.io
             PUBLIC_VERSION=${{ github.event.release.tag_name }}
           tags: |
@@ -71,8 +71,8 @@ jobs:
           # Supply-chain attestations published alongside the image to GHCR.
           sbom: true
           provenance: mode=max
+          # PUBLIC_API_URL is set at RUNTIME (see #396), not baked at build time.
           build-args: |
-            PUBLIC_API_URL=https://api.letsrevel.io
             ORIGIN=https://letsrevel.io
             PUBLIC_VERSION=${{ github.event.release.tag_name }}
           tags: |

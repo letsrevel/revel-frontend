@@ -5,7 +5,7 @@
  * All hardcoded URLs should be replaced with imports from this file.
  *
  * Configuration priority:
- * 1. PUBLIC_API_URL environment variable (from .env file via Vite)
+ * 1. PUBLIC_API_URL environment variable (read at RUNTIME via $env/dynamic/public)
  * 2. Fallback to localhost:8000 (development)
  *
  * @example
@@ -18,14 +18,18 @@
  * const imageUrl = getBackendUrl('/media/logos/org.png');
  */
 
+import { env } from '$env/dynamic/public';
+
 /**
  * Base URL for the backend API
  * This is the only place where the backend URL should be defined
  *
- * Note: PUBLIC_API_URL is injected by Vite from environment variables
- * It's replaced at build time with the actual value from .env
+ * Note: PUBLIC_API_URL is read at RUNTIME from the process environment via
+ * $env/dynamic/public (on the server by adapter-node at startup, and forwarded
+ * to the browser by SvelteKit). This lets a single prebuilt image be pointed at
+ * any backend by setting PUBLIC_API_URL at container runtime — see issue #396.
  */
-export const API_BASE_URL: string = import.meta.env.PUBLIC_API_URL || 'http://localhost:8000';
+export const API_BASE_URL: string = env.PUBLIC_API_URL || 'http://localhost:8000';
 
 /**
  * Get the full backend URL for a given path
