@@ -10,8 +10,10 @@ RUN corepack enable
 
 WORKDIR /app
 
-# Copy dependency files and patches (needed for pnpm install)
-COPY package.json pnpm-lock.yaml ./
+# Copy dependency files and patches (needed for pnpm install).
+# pnpm-workspace.yaml holds overrides / patchedDependencies / allowBuilds (pnpm 11),
+# so the install needs it or it would resolve unpatched/unhardened deps.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY patches ./patches
 
 # Install dependencies with caching
