@@ -64,7 +64,16 @@ try {
 	// Replace hardcoded baseUrl with the centralized runtime value
 	// Original: baseUrl: 'http://localhost:8000'
 	// New: baseUrl: API_BASE_URL
-	clientContent = clientContent.replace(/baseUrl:\s*['"].*?['"]/, 'baseUrl: API_BASE_URL');
+	// Fail fast if hey-api's output format drifts and the rewrite is a no-op,
+	// rather than emitting a client that silently keeps the hardcoded URL.
+	const rewritten = clientContent.replace(/baseUrl:\s*['"].*?['"]/, 'baseUrl: API_BASE_URL');
+	if (rewritten === clientContent) {
+		throw new Error(
+			'Failed to rewrite generated client baseUrl to API_BASE_URL — the expected ' +
+				"`baseUrl: '...'` literal was not found in client.gen.ts."
+		);
+	}
+	clientContent = rewritten;
 
 	writeFileSync(clientPath, clientContent);
 	console.log('✅ API client configured to use API_BASE_URL (runtime)!');

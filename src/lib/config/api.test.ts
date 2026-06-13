@@ -29,6 +29,17 @@ describe('config/api', () => {
 		expect(getBackendUrl('/media/logo.png')).toBe('https://api.example.com/media/logo.png');
 	});
 
+	it('strips a trailing slash so path joins do not double up', async () => {
+		vi.doMock('$env/dynamic/public', () => ({
+			env: { PUBLIC_API_URL: 'https://api.example.com/' }
+		}));
+		const { API_BASE_URL, getApiUrl, getBackendUrl } = await import('./api');
+
+		expect(API_BASE_URL).toBe('https://api.example.com');
+		expect(getApiUrl('/events')).toBe('https://api.example.com/api/events');
+		expect(getBackendUrl('/media/logo.png')).toBe('https://api.example.com/media/logo.png');
+	});
+
 	it('returns already-absolute URLs unchanged', async () => {
 		vi.doMock('$env/dynamic/public', () => ({
 			env: { PUBLIC_API_URL: 'https://api.example.com' }

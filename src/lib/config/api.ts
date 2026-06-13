@@ -28,8 +28,15 @@ import { env } from '$env/dynamic/public';
  * $env/dynamic/public (on the server by adapter-node at startup, and forwarded
  * to the browser by SvelteKit). This lets a single prebuilt image be pointed at
  * any backend by setting PUBLIC_API_URL at container runtime — see issue #396.
+ *
+ * Any trailing slash is stripped so callers can safely join paths: getApiUrl()
+ * and getBackendUrl() append `/api/...` and `/...`, which would otherwise double
+ * up (e.g. `https://api.example.com//api/events`) for a slash-suffixed value.
  */
-export const API_BASE_URL: string = env.PUBLIC_API_URL || 'http://localhost:8000';
+export const API_BASE_URL: string = (env.PUBLIC_API_URL || 'http://localhost:8000').replace(
+	/\/+$/,
+	''
+);
 
 /**
  * Get the full backend URL for a given path
