@@ -1,4 +1,4 @@
-.PHONY: dev build preview format format-check lint lint-fix types i18n-check file-length no-ssr-token audit-images audit-soft-404 check fix test test-coverage test-e2e generate-api bump-version bump-minor release
+.PHONY: dev build preview format format-check lint lint-fix types i18n-check file-length no-ssr-token audit-images audit-soft-404 audit licensecheck audit-deps check fix test test-coverage test-e2e generate-api bump-version bump-minor release
 
 # ─────────────────────────────────────────────
 # Development
@@ -46,6 +46,24 @@ audit-images:
 
 audit-soft-404:
 	pnpm tsx scripts/audit-soft-404.ts
+
+# ─────────────────────────────────────────────
+# Dependency security — backend parity (deps.yml / nightly-audit.yml)
+# ─────────────────────────────────────────────
+
+# Fail on known CVEs in shipped (production) dependencies at high severity or above.
+# Non-applicable advisories are documented in package.json -> pnpm.auditConfig.ignoreGhsas.
+# Mirrors the backend's `make audit` (pip-audit --strict).
+audit:
+	pnpm audit --prod --audit-level=high
+
+# Fail if a copyleft / source-available license enters the dependency tree.
+# Mirrors the backend's `make licensecheck`.
+licensecheck:
+	node scripts/check-licenses.mjs
+
+# Both dependency gates together (what the deps.yml workflow runs).
+audit-deps: audit licensecheck
 
 # ─────────────────────────────────────────────
 # Combined checks — run before committing

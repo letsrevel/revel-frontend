@@ -1,0 +1,73 @@
+# pnpm settings (pnpm >= 11). This repo is a single package, not a monorepo — the
+# file exists because pnpm 11 reads these settings here instead of package.json's
+# (now-ignored) "pnpm" field.
+
+# ── Supply-chain hardening ──────────────────────────────────────────────────────
+
+# Quarantine: refuse to install any package version published less than this many
+# minutes ago. Compromised releases are almost always yanked within hours, so a
+# multi-day hold-down means we simply never resolve a malicious fresh version.
+# Applies to all (incl. transitive) deps. NOTE: pnpm re-verifies the committed lockfile
+# against this policy on *every* install (including --frozen-lockfile in CI), so the
+# lockfile must only ever contain versions older than this cutoff — `pnpm install`
+# resolves to aged versions automatically. 1440 minutes = 1 day (pnpm's own default):
+# enough to catch supply-chain malware, which is almost always detected/yanked within
+# hours, without blocking same-week security patches. Raise for a stricter hold-down;
+# use minimumReleaseAgeExclude below to fast-track an urgent fix.
+minimumReleaseAge: 1440
+
+# Versions allowed to bypass the quarantine (e.g. an urgent security hotfix you must
+# take immediately). Format: 'name' or 'name@version'. Keep empty unless needed.
+minimumReleaseAgeExclude: []
+
+# Lifecycle-script allowlist (pnpm 11's `allowBuilds`, successor to
+# onlyBuiltDependencies). Dependency build/postinstall scripts do NOT run unless
+# explicitly allowed here — the primary defence against malicious install scripts.
+# Only packages that legitimately compile a binary at install time belong.
+#   esbuild: downloads its native binary in postinstall; the build needs it.
+allowBuilds:
+  esbuild: true
+
+# ── Dependency audit exceptions (consumed by `make audit` / pnpm audit) ──────────
+auditConfig:
+  ignoreGhsas:
+    # esbuild: "Missing binary integrity verification in the Deno installer."
+    # Only affects `deno install` of esbuild — we install via pnpm/Node, and esbuild
+    # is a build-time (dev) tool that is not shipped. Not applicable.
+    - GHSA-gv7w-rqvm-qjhr
+
+# ── Local patches ────────────────────────────────────────────────────────────────
+patchedDependencies:
+  svelte-crop-window@0.1.1: patches/svelte-crop-window@0.1.1.patch
+
+# ── Version overrides ────────────────────────────────────────────────────────────
+# Pre-existing pins (kept) plus the security remediation of 2026-06: each transitive
+# entry bumps a vulnerable range to its first patched version, scoped so it never
+# forces a cross-major jump. Direct deps were bumped in package.json instead.
+overrides:
+  cookie: '0.7.0'
+  set-cookie-parser: '2.7.2'
+  devalue: '>=5.8.1'
+  'glob@>=10.2.0 <10.5.0': '>=10.5.0'
+  'valibot@>=0.31.0 <1.2.0': '>=1.2.0'
+  'js-yaml@>=4.0.0 <4.1.1': '>=4.1.1'
+  'minimatch@<3.1.4': '>=3.1.4'
+  'minimatch@>=9.0.0 <9.0.7': '>=9.0.7'
+  'rollup@>=4.0.0 <4.59.0': '>=4.59.0'
+  'ajv@<6.14.0': '>=6.14.0'
+  'flatted@<=3.4.1': '>=3.4.2'
+  'undici@>=7.0.0 <7.24.0': '>=7.24.0'
+  'kysely@<=0.28.13': '>=0.28.14'
+  'effect@<3.20.0': '>=3.20.0'
+  'handlebars@>=4.0.0 <4.7.9': '>=4.7.9'
+  'brace-expansion@<1.1.13': '>=1.1.13'
+  'brace-expansion@>=2.0.0 <2.0.3': '>=2.0.3'
+  'brace-expansion@>=5.0.0 <5.0.6': '>=5.0.6'
+  picomatch: '>=4.0.4'
+  'yaml@>=1.0.0 <1.10.3': '>=1.10.3'
+  'dompurify@<3.4.0': '>=3.4.0'
+  'lodash@<=4.17.23': '>=4.18.0'
+  'defu@<=6.1.4': '>=6.1.5'
+  'ws@>=8.0.0 <8.20.1': '>=8.20.1'
+  'uuid@<11.1.1': '>=11.1.1'
+  'joi@<17.13.4': '>=17.13.4'

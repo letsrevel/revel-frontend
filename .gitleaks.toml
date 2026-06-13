@@ -1,0 +1,18 @@
+title = "revel-frontend gitleaks config"
+
+# Start from gitleaks' built-in ruleset, then narrow with the allowlist below.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Generated, vendored, and artifact paths — not source. Scanning their (often minified) contents produces false positives (e.g. minified identifiers that look like API keys)."
+paths = [
+  '''(^|/)node_modules/''',
+  '''(^|/)build/''',
+  '''(^|/)\.svelte-kit/''',
+  '''(^|/)\.playwright-mcp/''',
+  '''(^|/)coverage/''',
+  '''(^|/)test-results/''',
+  '''(^|/)playwright-report/''',
+  '''(^|/)pnpm-lock\.yaml$''',
+]

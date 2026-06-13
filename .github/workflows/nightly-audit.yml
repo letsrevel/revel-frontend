@@ -1,0 +1,154 @@
+name: Nightly dependency audit
+
+# Runs pnpm audit and the license check against main every night so newly-disclosed
+# CVEs (or licenses of existing deps being reclassified) surface within ~24h even when
+# no PR is open. The PR workflow (deps.yml) already catches issues on every push; this
+# job complements it by closing the gap between PRs.
+#
+# On failure each job opens (or bumps) a GitHub issue tagged `security` + `dependencies`
+# so the advisory lands in the tracker without relying on someone staring at the
+# Actions tab.
+#
+# Frontend mirror of revel-backend/.github/workflows/nightly-audit.yml.
+
+on:
+  schedule:
+    # 03:23 UTC every day — off the top of the hour, and offset from the backend's
+    # 03:17 job so the two repos don't audit at the exact same minute.
+    - cron: '23 3 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    name: pnpm audit (main)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          ref: main
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run pnpm audit
+        run: make audit
+
+      - name: Open tracker issue on failure
+        if: failure()
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const title = `Nightly pnpm-audit failure (${new Date().toISOString().slice(0, 10)})`;
+            const body = [
+              "The nightly dependency audit on `main` failed.",
+              "",
+              `Run: https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              "",
+              "Triage: run `make audit` locally. Bump the offending dependency (or add a",
+              "scoped `pnpm.overrides` entry); if the advisory is not applicable, add its",
+              "GHSA id to `pnpm.auditConfig.ignoreGhsas` in package.json with a reason.",
+            ].join("\n");
+            // Dedupe: if an open issue already carries the same title slug, bump it
+            // with a comment instead of filing a fresh one each night.
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              labels: "security,dependencies",
+              per_page: 50,
+            });
+            const match = existing.data.find((i) =>
+              i.title.startsWith("Nightly pnpm-audit failure")
+            );
+            if (match) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: match.number,
+                body: `Another failing run: https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ["security", "dependencies"],
+              });
+            }
+
+  licensecheck:
+    name: License compliance (main)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          ref: main
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run license check
+        run: make licensecheck
+
+      - name: Open tracker issue on failure
+        if: failure()
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const title = `Nightly license-check failure (${new Date().toISOString().slice(0, 10)})`;
+            const body = [
+              "The nightly license compliance check on `main` failed.",
+              "",
+              `Run: https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              "",
+              "Triage: run `make licensecheck` locally to see the offending package(s).",
+            ].join("\n");
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              labels: "security,dependencies",
+              per_page: 50,
+            });
+            const match = existing.data.find((i) =>
+              i.title.startsWith("Nightly license-check failure")
+            );
+            if (match) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: match.number,
+                body: `Another failing run: https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ["security", "dependencies"],
+              });
+            }
