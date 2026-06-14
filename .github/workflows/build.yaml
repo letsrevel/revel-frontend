@@ -42,9 +42,9 @@ jobs:
           push: false
           # Load into the local Docker daemon so the scan step can read it.
           load: true
-          # PUBLIC_API_URL is set at RUNTIME (see #396), not baked at build time.
+          # PUBLIC_API_URL and ORIGIN are set at RUNTIME (see #396), not baked at
+          # build time. Only PUBLIC_VERSION is embedded into the bundle.
           build-args: |
-            ORIGIN=https://demo.letsrevel.io
             PUBLIC_VERSION=${{ env.VERSION }}
           tags: |
             ghcr.io/letsrevel/revel-frontend:latest

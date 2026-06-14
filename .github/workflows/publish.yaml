@@ -9,9 +9,9 @@ permissions:
   packages: write
 
 jobs:
-  publish-demo:
+  publish:
     runs-on: ubuntu-latest
-    name: Publish Demo Image
+    name: Publish Docker Image
 
     steps:
       - name: Checkout code
@@ -27,7 +27,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
 
-      - name: Build and push Demo Docker image
+      # One image for all deployments. PUBLIC_API_URL and ORIGIN are set at
+      # RUNTIME (#396), so they are not build args; demo/prod differ only by the
+      # runtime env in their respective compose files. Only PUBLIC_VERSION (shown
+      # in the footer) is embedded at build time.
+      - name: Build and push Docker image
         uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
         with:
           context: .
@@ -36,44 +40,7 @@ jobs:
           # Supply-chain attestations published alongside the image to GHCR.
           sbom: true
           provenance: mode=max
-          # PUBLIC_API_URL is set at RUNTIME (see #396), not baked at build time.
           build-args: |
-            ORIGIN=https://demo.letsrevel.io
-            PUBLIC_VERSION=${{ github.event.release.tag_name }}
-          tags: |
-            ghcr.io/letsrevel/revel-frontend:latest-demo
-            ghcr.io/letsrevel/revel-frontend:${{ github.event.release.tag_name }}-demo
-
-  publish-prod:
-    runs-on: ubuntu-latest
-    name: Publish Production Image
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
-
-      - name: Log in to GHCR
-        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
-
-      - name: Build and push Production Docker image
-        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          # Supply-chain attestations published alongside the image to GHCR.
-          sbom: true
-          provenance: mode=max
-          # PUBLIC_API_URL is set at RUNTIME (see #396), not baked at build time.
-          build-args: |
-            ORIGIN=https://letsrevel.io
             PUBLIC_VERSION=${{ github.event.release.tag_name }}
           tags: |
             ghcr.io/letsrevel/revel-frontend:latest

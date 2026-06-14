@@ -23,15 +23,14 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
 # Copy source code
 COPY . .
 
-# Accept build arguments for environment variables that MUST be embedded at
-# build time (Vite inlines $env/static/public values into the bundle).
-# Note: PUBLIC_API_URL is intentionally NOT here — it is read at RUNTIME via
-# $env/dynamic/public so one prebuilt image can target any backend (see #396).
-ARG ORIGIN
+# Accept build arguments for values that MUST be embedded at build time (Vite
+# inlines $env/static/public values into the bundle). Only PUBLIC_VERSION
+# qualifies. PUBLIC_API_URL and ORIGIN are read at RUNTIME (PUBLIC_API_URL via
+# $env/dynamic/public, ORIGIN by adapter-node), so one prebuilt image can target
+# any backend (see #396).
 ARG PUBLIC_VERSION
 
 # Set as environment variables for the build process
-ENV ORIGIN=${ORIGIN}
 ENV PUBLIC_VERSION=${PUBLIC_VERSION}
 
 # Compile Paraglide i18n translations
