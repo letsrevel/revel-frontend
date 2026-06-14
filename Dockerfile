@@ -23,27 +23,20 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
 # Copy source code
 COPY . .
 
-# Accept build arguments for environment variables
-# These are required at BUILD time because Vite embeds them in the bundle
-ARG PUBLIC_API_URL
+# Accept build arguments for environment variables that MUST be embedded at
+# build time (Vite inlines $env/static/public values into the bundle).
+# Note: PUBLIC_API_URL is intentionally NOT here — it is read at RUNTIME via
+# $env/dynamic/public so one prebuilt image can target any backend (see #396).
 ARG ORIGIN
 ARG PUBLIC_VERSION
 
 # Set as environment variables for the build process
-ENV PUBLIC_API_URL=${PUBLIC_API_URL}
 ENV ORIGIN=${ORIGIN}
 ENV PUBLIC_VERSION=${PUBLIC_VERSION}
 
 # Compile Paraglide i18n translations
 # Generates runtime files from messages/*.json (en, de, it)
 RUN pnpm paraglide:compile
-
-# Replace ALL hardcoded localhost references with actual URL
-# Cannot regenerate API during build (backend not available in CI/CD)
-RUN sed -i "s|'http://localhost:8000'|'${PUBLIC_API_URL}'|g" src/lib/api/generated/client.gen.ts && \
-    sed -i "s|'http://localhost:8000'|'${PUBLIC_API_URL}'|g" src/lib/api/generated/types.gen.ts && \
-    sed -i "s|'http://localhost:8000'|'${PUBLIC_API_URL}'|g" src/lib/config/api.ts && \
-    sed -i "s|http://localhost:8000|${PUBLIC_API_URL}|g" src/lib/utils/url.ts
 
 # Build the application
 # This creates the production build in the `build` directory
@@ -70,6 +63,13 @@ COPY --from=builder --chown=appuser:appuser /app/package.json ./package.json
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOST=0.0.0.0
+
+# RUNTIME configuration (set these when running the container, e.g. via
+# `docker run -e` or compose). PUBLIC_API_URL points the frontend at your
+# backend; it is read at runtime via $env/dynamic/public, so the same image
+# works for any deployment. Falls back to http://localhost:8000 if unset.
+#   - PUBLIC_API_URL  (e.g. https://api.example.com)
+#   - ORIGIN          (public origin of this frontend, required by adapter-node)
 
 # Switch to non-root user
 USER appuser

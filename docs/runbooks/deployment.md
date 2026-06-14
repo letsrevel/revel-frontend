@@ -13,27 +13,23 @@ This document describes how to deploy the Revel Frontend application using Docke
 ### Building the Image
 
 ```bash
-# Build the Docker image with production environment variables
-# IMPORTANT: PUBLIC_* variables must be provided at BUILD time (not runtime)
-# because Vite embeds them in the client bundle
+# Build the Docker image.
+# NOTE: PUBLIC_API_URL and ORIGIN are read at RUNTIME (issue #396), not baked
+# into the bundle — set them when you run the container (see below). The same
+# image therefore works against any backend. Only PUBLIC_VERSION (shown in the
+# footer) is embedded at build time.
 docker build \
-  --build-arg PUBLIC_API_URL=https://demo-api.letsrevel.io \
-  --build-arg ORIGIN=https://demo.letsrevel.io \
   --build-arg PUBLIC_VERSION=0.1.2 \
   -t revel-frontend:latest .
 
 # Or with a specific version from the version file
 VERSION=$(cat version)
 docker build \
-  --build-arg PUBLIC_API_URL=https://demo-api.letsrevel.io \
-  --build-arg ORIGIN=https://demo.letsrevel.io \
   --build-arg PUBLIC_VERSION=$VERSION \
   -t revel-frontend:$VERSION .
 
-# For local development build:
+# For a local development build:
 docker build \
-  --build-arg PUBLIC_API_URL=http://localhost:8000 \
-  --build-arg ORIGIN=http://localhost:5173 \
   --build-arg PUBLIC_VERSION=dev \
   -t revel-frontend:dev .
 ```
@@ -56,9 +52,9 @@ docker run -p 3000:3000 \
 
 | Variable         | Description                                       | Default                 | Required |
 | ---------------- | ------------------------------------------------- | ----------------------- | -------- |
-| `PUBLIC_API_URL` | Backend API base URL (build-time)                 | -                       | Yes      |
+| `PUBLIC_API_URL` | Backend API base URL (runtime)                    | `http://localhost:8000` | Yes      |
 | `PUBLIC_VERSION` | Frontend version displayed in footer (build-time) | `dev`                   | No       |
-| `ORIGIN`         | SvelteKit origin for CSRF protection              | `http://localhost:3000` | Yes      |
+| `ORIGIN`         | SvelteKit origin for CSRF protection (runtime)    | `http://localhost:3000` | Yes      |
 | `PORT`           | Server port                                       | `3000`                  | No       |
 | `HOST`           | Server host                                       | `0.0.0.0`               | No       |
 | `NODE_ENV`       | Node environment                                  | `production`            | No       |

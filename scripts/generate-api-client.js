@@ -46,29 +46,37 @@ try {
 	writeFileSync(sdkPath, sdkContent);
 	console.log('✅ Hash suffixes removed from SDK!');
 
-	// Fix the client configuration to use SvelteKit environment variable
-	console.log('📝 Configuring API client to use PUBLIC_API_URL...');
+	// Point the client's baseUrl at the centralized, RUNTIME-resolved API URL.
+	// API_BASE_URL reads $env/dynamic/public, so a single prebuilt image can be
+	// pointed at any backend by setting PUBLIC_API_URL at container runtime (#396).
+	console.log('📝 Configuring API client to use API_BASE_URL (runtime)...');
 	const clientPath = './src/lib/api/generated/client.gen.ts';
 	let clientContent = readFileSync(clientPath, 'utf-8');
 
-	// Add SvelteKit env import at the top
-	if (!clientContent.includes("from '$env/static/public'")) {
+	// Add the centralized API config import at the top
+	if (!clientContent.includes("from '$lib/config/api'")) {
 		clientContent = clientContent.replace(
 			/(\/\/ This file is auto-generated[^\n]*\n\n)/,
-			"$1import { PUBLIC_API_URL } from '$env/static/public';\n"
+			"$1import { API_BASE_URL } from '$lib/config/api';\n"
 		);
 	}
 
-	// Replace hardcoded baseUrl with SvelteKit environment variable
+	// Replace hardcoded baseUrl with the centralized runtime value
 	// Original: baseUrl: 'http://localhost:8000'
-	// New: baseUrl: PUBLIC_API_URL || 'http://localhost:8000'
-	clientContent = clientContent.replace(
-		/baseUrl:\s*['"].*?['"]/,
-		"baseUrl: PUBLIC_API_URL || 'http://localhost:8000'"
-	);
+	// New: baseUrl: API_BASE_URL
+	// Fail fast if hey-api's output format drifts and the rewrite is a no-op,
+	// rather than emitting a client that silently keeps the hardcoded URL.
+	const rewritten = clientContent.replace(/baseUrl:\s*['"].*?['"]/, 'baseUrl: API_BASE_URL');
+	if (rewritten === clientContent) {
+		throw new Error(
+			'Failed to rewrite generated client baseUrl to API_BASE_URL — the expected ' +
+				"`baseUrl: '...'` literal was not found in client.gen.ts."
+		);
+	}
+	clientContent = rewritten;
 
 	writeFileSync(clientPath, clientContent);
-	console.log('✅ API client configured to use PUBLIC_API_URL!');
+	console.log('✅ API client configured to use API_BASE_URL (runtime)!');
 
 	// Create index.ts to export everything
 	const indexContent = `// Re-export everything from generated API

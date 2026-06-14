@@ -42,8 +42,8 @@ jobs:
           push: false
           # Load into the local Docker daemon so the scan step can read it.
           load: true
+          # PUBLIC_API_URL is set at RUNTIME (see #396), not baked at build time.
           build-args: |
-            PUBLIC_API_URL=https://demo-api.letsrevel.io
             ORIGIN=https://demo.letsrevel.io
             PUBLIC_VERSION=${{ env.VERSION }}
           tags: |

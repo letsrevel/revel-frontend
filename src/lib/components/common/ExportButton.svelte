@@ -4,7 +4,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Download, Loader2 } from 'lucide-svelte';
 	import { exportGetExportStatus } from '$lib/api';
-	import { PUBLIC_API_URL } from '$env/static/public';
+	import { getBackendUrl } from '$lib/config/api';
 
 	interface Props {
 		label: string;
@@ -45,13 +45,9 @@
 			}
 
 			if (exportData.download_url) {
-				if (/^https?:\/\//.test(exportData.download_url)) {
-					return exportData.download_url;
-				}
-				if (!PUBLIC_API_URL) {
-					throw new Error('PUBLIC_API_URL is not configured');
-				}
-				return `${PUBLIC_API_URL.replace(/\/$/, '')}${exportData.download_url}`;
+				// Absolute URLs are returned as-is; relative paths are resolved against
+				// the runtime-configured API base URL (see $lib/config/api).
+				return getBackendUrl(exportData.download_url);
 			}
 		}
 
