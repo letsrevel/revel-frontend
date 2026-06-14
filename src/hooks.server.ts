@@ -4,6 +4,7 @@ import { env } from '$env/dynamic/private';
 import { i18nHandle } from '$lib/i18n';
 import { tokenRefresh } from '$lib/api/generated';
 import { API_BASE_URL } from '$lib/config/api';
+import { appendCspApiOrigin } from '$lib/server/csp';
 import {
 	getAccessTokenCookieOptions,
 	getRefreshTokenCookieOptions,
@@ -151,6 +152,41 @@ const handlePreloadOptimization: Handle = async ({ event, resolve }) => {
 };
 
 /**
+ * Runtime CSP hook
+ *
+ * The CSP in svelte.config.js is generated at BUILD time and therefore cannot
+ * know the backend API origin, which is configured at RUNTIME via PUBLIC_API_URL
+ * ($env/dynamic/public) — see #396. Without this, a prebuilt image deployed
+ * against a different backend (e.g. the demo at demo-api.letsrevel.io) has that
+ * origin blocked by `connect-src`/`img-src`/`media-src`, breaking API calls and
+ * backend-served images.
+ *
+ * This hook appends the runtime origin (API_BASE_URL) to those directives in the
+ * CSP response header SvelteKit emits. It is a no-op when there is no CSP header
+ * (non-document responses), when the origin is already present (e.g. prod, where
+ * the API origin matches), or when API_BASE_URL is not an http(s) origin.
+ */
+const handleCsp: Handle = async ({ event, resolve }) => {
+	const response = await resolve(event);
+
+	const csp = response.headers.get('content-security-policy');
+	if (!csp) return response;
+
+	const patched = appendCspApiOrigin(csp, API_BASE_URL);
+	if (patched === csp) return response;
+
+	// SvelteKit's response headers are immutable; rebuild the response (same
+	// pattern as handlePreloadOptimization) to set the patched policy.
+	const headers = new Headers(response.headers);
+	headers.set('content-security-policy', patched);
+	return new Response(response.body, {
+		status: response.status,
+		statusText: response.statusText,
+		headers
+	});
+};
+
+/**
  * Authentication hook
  */
 const handleAuth: Handle = async ({ event, resolve }) => {
@@ -241,7 +277,8 @@ export const handle = sequence(
 	handleTokenCapture,
 	i18nHandle(),
 	handleAuth,
-	handlePreloadOptimization
+	handlePreloadOptimization,
+	handleCsp
 );
 
 // Unhandled SSR errors → structured error log + SSR error metric (see module).

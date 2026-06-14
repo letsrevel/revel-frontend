@@ -1,8 +1,12 @@
 import adapter from '@sveltejs/adapter-node';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
-const apiUrl = process.env.PUBLIC_API_URL || 'https://api.letsrevel.io';
 const isDev = process.env.NODE_ENV !== 'production';
+
+// NOTE (#396): the backend API origin is configured at RUNTIME (PUBLIC_API_URL via
+// $env/dynamic/public), so it cannot be baked into the CSP here at build time.
+// The runtime origin is appended to the API-dependent directives (img-src,
+// media-src, connect-src) per response in src/hooks.server.ts (handleCsp).
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -45,10 +49,12 @@ const config = {
 							'default-src': ['self'],
 							'script-src': ['self'],
 							'style-src': ['self', 'unsafe-inline'], // Svelte transitions create inline <style>
-							'img-src': ['self', apiUrl, 'data:', 'blob:'],
-							'media-src': ['self', apiUrl, 'blob:'],
+							// The runtime API origin is appended to img-src/media-src/connect-src
+							// in hooks.server.ts (handleCsp) — see #396.
+							'img-src': ['self', 'data:', 'blob:'],
+							'media-src': ['self', 'blob:'],
 							'font-src': ['self', 'data:'],
-							'connect-src': ['self', apiUrl, 'https://api.github.com'],
+							'connect-src': ['self', 'https://api.github.com'],
 							'frame-src': [
 								'https://www.google.com',
 								'https://google.com',
