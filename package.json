@@ -74,7 +74,7 @@
 		"html5-qrcode": "^2.3.8",
 		"isomorphic-dompurify": "^3.0.0",
 		"lucide-svelte": "^0.469.0",
-		"marked": "^17.0.1",
+		"marked": "^18.0.5",
 		"mode-watcher": "^0.4.1",
 		"prom-client": "^15.1.3",
 		"qrcode": "^1.5.4",
