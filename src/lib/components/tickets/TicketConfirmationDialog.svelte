@@ -338,8 +338,10 @@
 	// Default guest name for a hidden single-ticket input.
 	// Backend requires a non-empty guest_name (min_length 1); the buyer's profile
 	// name is used, mirroring getDefaultGuestName() on the non-dialog purchase path.
+	// Falls back to a localized placeholder so the payload is never empty when the
+	// buyer has no display name.
 	function getDefaultGuestName(): string {
-		return userName.trim();
+		return userName.trim() || m['ticketConfirmationDialog.defaultGuestName']();
 	}
 
 	// Set guest name error message based on validation state

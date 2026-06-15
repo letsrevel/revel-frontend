@@ -5112,7 +5112,8 @@
 		"selectSeats": "Seleziona i tuoi posti",
 		"seatsSelected": "selezionati",
 		"loadingSeats": "Caricamento posti disponibili...",
-		"noSeatsAvailable": "Nessun posto disponibile per la selezione."
+		"noSeatsAvailable": "Nessun posto disponibile per la selezione.",
+		"defaultGuestName": "Ospite"
 	},
 	"ticketConfirmationDialog.selectMoreSeats": "Seleziona ancora {count} posto/i",
 	"ticketListCard": {
