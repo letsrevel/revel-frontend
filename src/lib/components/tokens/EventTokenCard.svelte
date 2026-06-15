@@ -7,6 +7,7 @@
 	import {
 		getEventTokenStatus,
 		formatTokenUsage,
+		getExpirationDate,
 		getExpirationDisplay,
 		getEventTokenUrl
 	} from '$lib/utils/tokens';
@@ -25,7 +26,8 @@
 
 	const status = $derived(getEventTokenStatus(token));
 	const usageDisplay = $derived(formatTokenUsage(token.uses, token.max_uses));
-	const expirationDisplay = $derived(getExpirationDisplay(token.expires_at));
+	const expirationDate = $derived(getExpirationDate(token.expires_at));
+	const expirationCountdown = $derived(getExpirationDisplay(token.expires_at));
 
 	async function copyLink() {
 		if (!token.id) {
@@ -72,7 +74,7 @@
 				</div>
 				<div>
 					<span class="font-medium">{m['eventTokenCard.expires']()}</span>
-					{expirationDisplay}
+					<span title={expirationCountdown}>{expirationDate}</span>
 				</div>
 			</div>
 
