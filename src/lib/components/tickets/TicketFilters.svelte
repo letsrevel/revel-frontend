@@ -1,13 +1,12 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { Search } from 'lucide-svelte';
-	import { Input } from '$lib/components/ui/input';
+	import SearchInput from '$lib/components/events/filters/SearchInput.svelte';
 
 	interface Props {
 		searchQuery: string;
 		selectedStatus: string | null;
 		selectedPaymentMethod: string | null;
-		onSearch: (e: Event) => void;
+		onSearch: (value: string) => void;
 		onStatusFilter: (status: string | null) => void;
 		onPaymentMethodFilter: (method: string | null) => void;
 	}
@@ -24,20 +23,12 @@
 
 <div class="mt-6 space-y-4">
 	<!-- Search -->
-	<div class="relative">
-		<Search
-			class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-			aria-hidden="true"
-		/>
-		<Input
-			type="search"
-			placeholder={m['eventTicketsAdmin.searchPlaceholder']()}
-			value={searchQuery}
-			oninput={onSearch}
-			class="pl-10"
-			aria-label="Search tickets"
-		/>
-	</div>
+	<SearchInput
+		value={searchQuery}
+		{onSearch}
+		placeholder={m['eventTicketsAdmin.searchPlaceholder']()}
+		ariaLabel={m['eventTicketsAdmin.searchPlaceholder']()}
+	/>
 
 	<!-- Status Filters -->
 	<div>

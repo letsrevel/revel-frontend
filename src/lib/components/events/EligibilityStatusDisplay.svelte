@@ -36,6 +36,8 @@
 		applyBefore?: string | null;
 		onInvitationRequestSuccess?: () => void;
 		onWhitelistRequestSuccess?: () => void;
+		/** Opens the ticket-tier purchase modal (for the `purchase_ticket` step). */
+		onGetTicketsClick?: () => void;
 		class?: string;
 	}
 
@@ -50,6 +52,7 @@
 		applyBefore,
 		onInvitationRequestSuccess,
 		onWhitelistRequestSuccess,
+		onGetTicketsClick,
 		class: className
 	}: Props = $props();
 
@@ -278,6 +281,7 @@
 						retryOn={eligibility.retry_on}
 						{onInvitationRequestSuccess}
 						{onWhitelistRequestSuccess}
+						{onGetTicketsClick}
 					/>
 				</div>
 			{/if}

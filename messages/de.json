@@ -10,11 +10,18 @@
 		"unlistedDescription": "Nur über direkten Link erreichbar — nicht in Auflistungen angezeigt",
 		"private": "Nur mit Einladung",
 		"onlyInvitedUsers": "Nur eingeladene Nutzer können die Veranstaltung sehen",
-		"membersOnly": "Nur Mitglieder",
+		"membersOnly": "Nur Organisationsmitglieder",
 		"staffOnly": "Nur Personal",
 		"everyoneCanAttend": "Jeder kann teilnehmen (Zusage/Ticket bekommen)",
 		"onlyInvitedPeople": "Nur eingeladene Personen können teilnehmen",
-		"onlyOrganizationMembers": "Nur Organisationsmitglieder können teilnehmen"
+		"onlyOrganizationMembers": "Nur Organisationsmitglieder können teilnehmen",
+		"visibilityHeading": "Sichtbarkeit",
+		"eventTypeHeading": "Veranstaltungstyp",
+		"visibilitySubLabel": "Wer diese Veranstaltung finden und ansehen kann",
+		"eventTypeSubLabel": "Wer teilnahmeberechtigt ist",
+		"whatsTheDifference": "Was ist der Unterschied?",
+		"visibilityExplanation": "Die Sichtbarkeit bestimmt, wer die Veranstaltungsseite finden und ansehen kann.",
+		"eventTypeExplanation": "Der Veranstaltungstyp bestimmt, wer teilnahmeberechtigt ist (Zusage oder Ticket), unabhängig davon, wer sie sehen kann."
 	},
 	"accountDeletion": {
 		"title": "Confirm Account Deletion - Revel",
@@ -502,6 +509,24 @@
 		"saveButton": "Änderungen speichern",
 		"unknownName": "Unbekannt"
 	},
+	"discountCodeScope": {
+		"heading": "Auf bestimmten Bereich beschränken",
+		"helpScoped": "Der Rabatt gilt nur für die unten ausgewählten Elemente.",
+		"helpOrgWide": "Lass alles leer, um diesen Rabatt für die gesamte Organisation anzuwenden.",
+		"seriesHeading": "Veranstaltungsreihen",
+		"eventsHeading": "Veranstaltungen",
+		"tiersHeading": "Ticketkategorien",
+		"searchSeriesPlaceholder": "Reihen suchen...",
+		"searchEventsPlaceholder": "Veranstaltungen suchen...",
+		"searchTiersPlaceholder": "Kategorien suchen...",
+		"searchSeriesLabel": "Veranstaltungsreihen suchen",
+		"searchEventsLabel": "Veranstaltungen suchen",
+		"searchTiersLabel": "Ticketkategorien suchen",
+		"noSeriesFound": "Keine Reihen gefunden",
+		"noEventsFound": "Keine Veranstaltungen gefunden",
+		"noTiersFound": "Keine Kategorien gefunden",
+		"tiersHelp": "Leer lassen, um auf alle Kategorien der ausgewählten Veranstaltung(en) anzuwenden."
+	},
 	"blacklistModal": {
 		"createTitle": "Zur Sperrliste hinzufügen",
 		"editTitle": "Sperrlisteneintrag bearbeiten",
@@ -523,6 +548,7 @@
 		"description": "Füge eine Person zur Blacklist der Organisation hinzu. Diese Person wird von allen Events ausgeschlossen.",
 		"importantHeader": "Wichtig",
 		"identifierMatchInfo": "Wenn die angegebenen Identifikatoren (E-Mail, Telegram, Telefon) zu einem registrierten Konto passen, wird der Eintrag automatisch verknüpft.",
+		"gdprPersistInfo": "Manuelle E-Mail-/Namenseinträge werden unabhängig vom Benutzerkonto gespeichert und bleiben auch dann wirksam, wenn der Benutzer sein Konto löscht.",
 		"contactInfoHeader": "Kontaktinformationen",
 		"emailLabel": "E-Mail-Adresse",
 		"telegramLabel": "Telegram-Benutzername",
@@ -4303,7 +4329,10 @@
 			"publishButton": "Veröffentlichen",
 			"publishConfirm": "Bist du sicher, dass du diesen Fragebogen {action} möchtest?\n\n{description}",
 			"publishAction": "veröffentlichen",
-			"markAsAction": "als {status} markieren"
+			"markAsAction": "als {status} markieren",
+			"publishConfirmPublished": "Diesen Fragebogen veröffentlichen? Nach der Veröffentlichung müssen ihm zugewiesene Benutzer ihn ausfüllen, bevor sie teilnehmen können.",
+			"publishConfirmReady": "Diesen Fragebogen als bereit markieren? Er wird erst durchgesetzt, wenn du ihn veröffentlichst.",
+			"publishConfirmDraft": "Diesen Fragebogen als Entwurf markieren? Als Entwurf wird er nicht durchgesetzt."
 		},
 		"warning": {
 			"title": "Fragen können nach der Erstellung nicht bearbeitet werden",

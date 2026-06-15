@@ -1,4 +1,4 @@
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { eventpublicdetailsGetEvent, eventadminrsvpsListRsvps } from '$lib/api';
 import { log } from '$lib/server/logger';
@@ -56,12 +56,11 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 		throw error(403, 'Event does not belong to this organization');
 	}
 
-	// For now, only allow RSVP management for non-ticketed events
+	// Attendees (RSVP) management is only for non-ticketed events. If a stale or
+	// mislabeled link sends a ticketed event here, redirect to its Tickets page
+	// instead of dead-ending on a 400.
 	if (event.requires_ticket) {
-		throw error(
-			400,
-			'This event requires tickets. Ticket management is not yet available in this interface.'
-		);
+		redirect(302, `/org/${params.slug}/admin/events/${params.event_id}/tickets`);
 	}
 
 	// Get query parameters for filtering

@@ -10,11 +10,18 @@
 		"unlistedDescription": "Accessibile solo tramite link diretto — non mostrato negli elenchi",
 		"private": "Solo su invito",
 		"onlyInvitedUsers": "Solo gli utenti invitati possono vedere l'evento",
-		"membersOnly": "Solo Membri",
+		"membersOnly": "Solo membri dell'organizzazione",
 		"staffOnly": "Solo Staff",
 		"everyoneCanAttend": "Tutti possono partecipare (RSVP/ottenere biglietti)",
 		"onlyInvitedPeople": "Solo le persone invitate possono partecipare",
-		"onlyOrganizationMembers": "Solo i membri dell'organizzazione possono partecipare"
+		"onlyOrganizationMembers": "Solo i membri dell'organizzazione possono partecipare",
+		"visibilityHeading": "Visibilità",
+		"eventTypeHeading": "Tipo di evento",
+		"visibilitySubLabel": "Chi può trovare e vedere questo evento",
+		"eventTypeSubLabel": "Chi è idoneo a partecipare",
+		"whatsTheDifference": "Qual è la differenza?",
+		"visibilityExplanation": "La visibilità determina chi può trovare e vedere la pagina dell'evento.",
+		"eventTypeExplanation": "Il tipo di evento determina chi è idoneo a partecipare (RSVP o ottenere biglietti), indipendentemente da chi può vederlo."
 	},
 	"accountDeletion": {
 		"title": "Confirm Account Deletion - Revel",
@@ -502,6 +509,24 @@
 		"saveButton": "Salva modifiche",
 		"unknownName": "Sconosciuto"
 	},
+	"discountCodeScope": {
+		"heading": "Limita a un ambito specifico",
+		"helpScoped": "Lo sconto si applica solo agli elementi selezionati di seguito.",
+		"helpOrgWide": "Lascia tutto vuoto per applicare questo sconto a tutta l'organizzazione.",
+		"seriesHeading": "Serie di eventi",
+		"eventsHeading": "Eventi",
+		"tiersHeading": "Tipi di biglietto",
+		"searchSeriesPlaceholder": "Cerca serie...",
+		"searchEventsPlaceholder": "Cerca eventi...",
+		"searchTiersPlaceholder": "Cerca tipi...",
+		"searchSeriesLabel": "Cerca serie di eventi",
+		"searchEventsLabel": "Cerca eventi",
+		"searchTiersLabel": "Cerca tipi di biglietto",
+		"noSeriesFound": "Nessuna serie trovata",
+		"noEventsFound": "Nessun evento trovato",
+		"noTiersFound": "Nessun tipo trovato",
+		"tiersHelp": "Lascia vuoto per applicare a tutti i tipi di biglietto dell'evento/i selezionato/i."
+	},
 	"blacklistModal": {
 		"createTitle": "Aggiungi alla lista nera",
 		"editTitle": "Modifica voce lista nera",
@@ -523,6 +548,7 @@
 		"description": "Aggiungi una persona alla blacklist dell'organizzazione. Non potrà più accedere agli eventi.",
 		"importantHeader": "Importante",
 		"identifierMatchInfo": "Se gli identificatori forniti (email, Telegram, telefono) corrispondono a un utente registrato, la voce verrà collegata automaticamente al suo account.",
+		"gdprPersistInfo": "Le voci manuali con email/nome sono memorizzate indipendentemente dall'account utente e restano valide anche se l'utente elimina il proprio account.",
 		"contactInfoHeader": "Informazioni di contatto",
 		"emailLabel": "Indirizzo email",
 		"telegramLabel": "Username Telegram",
@@ -4303,7 +4329,10 @@
 			"publishButton": "Pubblica",
 			"publishConfirm": "Sei sicuro di voler {action} questo questionario?\n\n{description}",
 			"publishAction": "pubblicare",
-			"markAsAction": "contrassegnare come {status}"
+			"markAsAction": "contrassegnare come {status}",
+			"publishConfirmPublished": "Pubblicare questo questionario? Una volta pubblicato, gli utenti a cui è assegnato dovranno completarlo prima di partecipare.",
+			"publishConfirmReady": "Contrassegnare questo questionario come pronto? Non sarà applicato finché non lo pubblichi.",
+			"publishConfirmDraft": "Contrassegnare questo questionario come bozza? Come bozza non sarà applicato."
 		},
 		"warning": {
 			"title": "Le domande non possono essere modificate dopo la creazione",
