@@ -163,13 +163,6 @@
 		(q?.status as QuestionnaireStatus) ?? 'draft'
 	);
 
-	// Status info is needed for the changeStatus confirm dialog
-	const statusDescriptions: Record<QuestionnaireStatus, string> = {
-		draft: m['questionnaireEditPage.status.draft_description'](),
-		ready: m['questionnaireEditPage.status.ready_description'](),
-		published: m['questionnaireEditPage.status.published_description']()
-	};
-
 	// ===== Wrapper functions that delegate to pure helpers and reassign $state =====
 
 	function addTopLevelQuestion(type: 'multiple_choice' | 'free_text' | 'file_upload') {
@@ -277,10 +270,12 @@
 	}
 
 	async function changeStatus(newStatus: QuestionnaireStatus) {
-		const statusAction = newStatus === 'published' ? 'publish' : `mark as ${newStatus}`;
-		const confirmed = confirm(
-			`Are you sure you want to ${statusAction} this questionnaire?\n\n${statusDescriptions[newStatus]}`
-		);
+		const confirmMessages: Record<QuestionnaireStatus, string> = {
+			draft: m['questionnaireEditPage.status.publishConfirmDraft'](),
+			ready: m['questionnaireEditPage.status.publishConfirmReady'](),
+			published: m['questionnaireEditPage.status.publishConfirmPublished']()
+		};
+		const confirmed = confirm(confirmMessages[newStatus]);
 
 		if (!confirmed) return;
 
