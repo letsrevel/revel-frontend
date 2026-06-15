@@ -548,6 +548,7 @@
 		"description": "Aggiungi una persona alla blacklist dell'organizzazione. Non potrà più accedere agli eventi.",
 		"importantHeader": "Importante",
 		"identifierMatchInfo": "Se gli identificatori forniti (email, Telegram, telefono) corrispondono a un utente registrato, la voce verrà collegata automaticamente al suo account.",
+		"gdprPersistInfo": "Le voci manuali con email/nome sono memorizzate indipendentemente dall'account utente e restano valide anche se l'utente elimina il proprio account.",
 		"contactInfoHeader": "Informazioni di contatto",
 		"emailLabel": "Indirizzo email",
 		"telegramLabel": "Username Telegram",

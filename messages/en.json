@@ -548,6 +548,7 @@
 		"description": "Add a person to the organization's blacklist. They will be blocked from accessing any events.",
 		"importantHeader": "Important",
 		"identifierMatchInfo": "If the provided identifiers (email, telegram, phone) match an existing registered user, the entry will automatically be linked to them.",
+		"gdprPersistInfo": "Manual email/name entries are stored independently of the user account and remain in effect even if the user deletes their account.",
 		"contactInfoHeader": "Contact Information",
 		"emailLabel": "Email Address",
 		"telegramLabel": "Telegram Username",

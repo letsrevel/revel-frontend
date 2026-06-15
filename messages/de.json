@@ -548,6 +548,7 @@
 		"description": "Füge eine Person zur Blacklist der Organisation hinzu. Diese Person wird von allen Events ausgeschlossen.",
 		"importantHeader": "Wichtig",
 		"identifierMatchInfo": "Wenn die angegebenen Identifikatoren (E-Mail, Telegram, Telefon) zu einem registrierten Konto passen, wird der Eintrag automatisch verknüpft.",
+		"gdprPersistInfo": "Manuelle E-Mail-/Namenseinträge werden unabhängig vom Benutzerkonto gespeichert und bleiben auch dann wirksam, wenn der Benutzer sein Konto löscht.",
 		"contactInfoHeader": "Kontaktinformationen",
 		"emailLabel": "E-Mail-Adresse",
 		"telegramLabel": "Telegram-Benutzername",
