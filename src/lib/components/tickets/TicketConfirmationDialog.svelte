@@ -237,8 +237,9 @@
 	// Whether to show quantity selector (more than 1 ticket allowed)
 	const showQuantitySelector = $derived(effectiveMaxQuantity > 1);
 
-	// Always show guest name inputs so users can verify/edit their name
-	const showGuestNames = true;
+	// Only ask for guest names when purchasing multiple tickets.
+	// For a single ticket we default to the buyer's profile name (see handleConfirm).
+	const showGuestNames = $derived(quantity > 1);
 
 	// Check if all guest names are filled (at least the first character)
 	const allGuestNamesFilled = $derived(guestNames.every((name) => name.trim().length > 0));
@@ -334,9 +335,18 @@
 		return false;
 	}
 
+	// Default guest name for a hidden single-ticket input.
+	// Backend requires a non-empty guest_name (min_length 1); the buyer's profile
+	// name is used, mirroring getDefaultGuestName() on the non-dialog purchase path.
+	function getDefaultGuestName(): string {
+		return userName.trim();
+	}
+
 	// Set guest name error message based on validation state
 	function setGuestNameErrorMessage(): boolean {
 		guestNameError = '';
+		// When the name input is hidden (single ticket), we auto-fill in handleConfirm.
+		if (!showGuestNames) return true;
 		const emptyIndex = guestNames.findIndex((name) => !name.trim());
 		if (emptyIndex >= 0) {
 			guestNameError =
@@ -381,9 +391,11 @@
 		}
 		seatSelectionError = '';
 
-		// Build tickets array
+		// Build tickets array. For a hidden single-ticket name input, fall back to
+		// the buyer's profile name so guest_name is always non-empty.
 		const tickets: TicketPurchaseItem[] = guestNames.map((name, index) => {
-			const ticket: TicketPurchaseItem = { guest_name: name.trim() };
+			const trimmed = name.trim() || (!showGuestNames ? getDefaultGuestName() : '');
+			const ticket: TicketPurchaseItem = { guest_name: trimmed };
 			if (isUserChoiceSeat && selectedSeatIds[index]) {
 				ticket.seat_id = selectedSeatIds[index];
 			}
