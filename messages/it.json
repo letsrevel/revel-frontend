@@ -502,6 +502,24 @@
 		"saveButton": "Salva modifiche",
 		"unknownName": "Sconosciuto"
 	},
+	"discountCodeScope": {
+		"heading": "Limita a un ambito specifico",
+		"helpScoped": "Lo sconto si applica solo agli elementi selezionati di seguito.",
+		"helpOrgWide": "Lascia tutto vuoto per applicare questo sconto a tutta l'organizzazione.",
+		"seriesHeading": "Serie di eventi",
+		"eventsHeading": "Eventi",
+		"tiersHeading": "Tipi di biglietto",
+		"searchSeriesPlaceholder": "Cerca serie...",
+		"searchEventsPlaceholder": "Cerca eventi...",
+		"searchTiersPlaceholder": "Cerca tipi...",
+		"searchSeriesLabel": "Cerca serie di eventi",
+		"searchEventsLabel": "Cerca eventi",
+		"searchTiersLabel": "Cerca tipi di biglietto",
+		"noSeriesFound": "Nessuna serie trovata",
+		"noEventsFound": "Nessun evento trovato",
+		"noTiersFound": "Nessun tipo trovato",
+		"tiersHelp": "Lascia vuoto per applicare a tutti i tipi di biglietto dell'evento/i selezionato/i."
+	},
 	"blacklistModal": {
 		"createTitle": "Aggiungi alla lista nera",
 		"editTitle": "Modifica voce lista nera",

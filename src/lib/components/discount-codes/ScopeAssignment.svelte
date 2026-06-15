@@ -13,6 +13,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Check, Search, ChevronDown } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
+	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
 		organizationId: string;
@@ -203,12 +204,12 @@
 
 <div class="space-y-4">
 	<div>
-		<h3 class="text-sm font-medium">Restrict to specific scope</h3>
+		<h3 class="text-sm font-medium">{m['discountCodeScope.heading']()}</h3>
 		<p class="mt-1 text-xs text-muted-foreground">
 			{#if hasAnyScope}
-				Discount applies to selected items only (union logic).
+				{m['discountCodeScope.helpScoped']()}
 			{:else}
-				Leave all empty for org-wide applicability.
+				{m['discountCodeScope.helpOrgWide']()}
 			{/if}
 		</p>
 	</div>
@@ -222,7 +223,7 @@
 			aria-expanded={seriesOpen}
 		>
 			<span>
-				Event Series
+				{m['discountCodeScope.seriesHeading']()}
 				{#if seriesSet.size > 0}
 					<span class="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
 						{seriesSet.size}
@@ -245,10 +246,10 @@
 					<input
 						type="search"
 						bind:value={seriesSearch}
-						placeholder="Search series..."
+						placeholder={m['discountCodeScope.searchSeriesPlaceholder']()}
 						{disabled}
 						class="w-full rounded-md border border-input bg-background py-2 pl-10 pr-4 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-						aria-label="Search event series"
+						aria-label={m['discountCodeScope.searchSeriesLabel']()}
 					/>
 				</div>
 
@@ -260,7 +261,9 @@
 							></div>
 						</div>
 					{:else if filteredSeries.length === 0}
-						<p class="py-4 text-center text-sm text-muted-foreground">No series found</p>
+						<p class="py-4 text-center text-sm text-muted-foreground">
+							{m['discountCodeScope.noSeriesFound']()}
+						</p>
 					{:else}
 						<ul class="space-y-1">
 							{#each filteredSeries as series (series.id)}
@@ -308,7 +311,7 @@
 			aria-expanded={eventsOpen}
 		>
 			<span>
-				Events
+				{m['discountCodeScope.eventsHeading']()}
 				{#if eventsSet.size > 0}
 					<span class="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
 						{eventsSet.size}
@@ -331,10 +334,10 @@
 					<input
 						type="search"
 						bind:value={eventsSearch}
-						placeholder="Search events..."
+						placeholder={m['discountCodeScope.searchEventsPlaceholder']()}
 						{disabled}
 						class="w-full rounded-md border border-input bg-background py-2 pl-10 pr-4 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-						aria-label="Search events"
+						aria-label={m['discountCodeScope.searchEventsLabel']()}
 					/>
 				</div>
 
@@ -346,7 +349,9 @@
 							></div>
 						</div>
 					{:else if filteredEvents.length === 0}
-						<p class="py-4 text-center text-sm text-muted-foreground">No events found</p>
+						<p class="py-4 text-center text-sm text-muted-foreground">
+							{m['discountCodeScope.noEventsFound']()}
+						</p>
 					{:else}
 						<ul class="space-y-1">
 							{#each filteredEvents as event (event.id)}
@@ -404,7 +409,7 @@
 				aria-expanded={tiersOpen}
 			>
 				<span>
-					Ticket Tiers
+					{m['discountCodeScope.tiersHeading']()}
 					{#if tiersSet.size > 0}
 						<span class="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
 							{tiersSet.size}
@@ -419,6 +424,9 @@
 
 			{#if tiersOpen}
 				<div class="border-t px-4 py-3">
+					<p class="mb-3 text-xs text-muted-foreground">
+						{m['discountCodeScope.tiersHelp']()}
+					</p>
 					<div class="relative mb-3">
 						<Search
 							class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
@@ -427,10 +435,10 @@
 						<input
 							type="search"
 							bind:value={tiersSearch}
-							placeholder="Search tiers..."
+							placeholder={m['discountCodeScope.searchTiersPlaceholder']()}
 							{disabled}
 							class="w-full rounded-md border border-input bg-background py-2 pl-10 pr-4 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-							aria-label="Search ticket tiers"
+							aria-label={m['discountCodeScope.searchTiersLabel']()}
 						/>
 					</div>
 
@@ -442,7 +450,9 @@
 								></div>
 							</div>
 						{:else if filteredTiers.length === 0}
-							<p class="py-4 text-center text-sm text-muted-foreground">No tiers found</p>
+							<p class="py-4 text-center text-sm text-muted-foreground">
+								{m['discountCodeScope.noTiersFound']()}
+							</p>
 						{:else}
 							<ul class="space-y-1">
 								{#each filteredTiers as tier (tier.id)}

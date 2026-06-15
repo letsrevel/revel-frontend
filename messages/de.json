@@ -502,6 +502,24 @@
 		"saveButton": "Änderungen speichern",
 		"unknownName": "Unbekannt"
 	},
+	"discountCodeScope": {
+		"heading": "Auf bestimmten Bereich beschränken",
+		"helpScoped": "Der Rabatt gilt nur für die unten ausgewählten Elemente.",
+		"helpOrgWide": "Lass alles leer, um diesen Rabatt für die gesamte Organisation anzuwenden.",
+		"seriesHeading": "Veranstaltungsreihen",
+		"eventsHeading": "Veranstaltungen",
+		"tiersHeading": "Ticketkategorien",
+		"searchSeriesPlaceholder": "Reihen suchen...",
+		"searchEventsPlaceholder": "Veranstaltungen suchen...",
+		"searchTiersPlaceholder": "Kategorien suchen...",
+		"searchSeriesLabel": "Veranstaltungsreihen suchen",
+		"searchEventsLabel": "Veranstaltungen suchen",
+		"searchTiersLabel": "Ticketkategorien suchen",
+		"noSeriesFound": "Keine Reihen gefunden",
+		"noEventsFound": "Keine Veranstaltungen gefunden",
+		"noTiersFound": "Keine Kategorien gefunden",
+		"tiersHelp": "Leer lassen, um auf alle Kategorien der ausgewählten Veranstaltung(en) anzuwenden."
+	},
 	"blacklistModal": {
 		"createTitle": "Zur Sperrliste hinzufügen",
 		"editTitle": "Sperrlisteneintrag bearbeiten",
