@@ -41,6 +41,8 @@
 		eventTokenDetails?: EventTokenSchema | null;
 		onInvitationRequestSuccess?: () => void;
 		onWhitelistRequestSuccess?: () => void;
+		/** Opens the ticket-tier purchase modal (for the `purchase_ticket` step). */
+		onGetTicketsClick?: () => void;
 		class?: string;
 	}
 
@@ -56,6 +58,7 @@
 		eventTokenDetails,
 		onInvitationRequestSuccess,
 		onWhitelistRequestSuccess,
+		onGetTicketsClick,
 		class: className
 	}: Props = $props();
 
@@ -163,6 +166,21 @@
 				if (organizationSlug && eventSlug) {
 					window.location.href = `/events/${organizationSlug}/${eventSlug}`;
 				}
+			}
+			return;
+		}
+
+		// User is eligible to buy a ticket: open the ticket-tier purchase modal.
+		if (nextStep === 'purchase_ticket') {
+			onGetTicketsClick?.();
+			return;
+		}
+
+		// User is eligible to RSVP: route them to the event page where the RSVP
+		// controls live (this button can appear on summary/eligibility surfaces).
+		if (nextStep === 'rsvp') {
+			if (organizationSlug && eventSlug) {
+				window.location.href = `/events/${organizationSlug}/${eventSlug}`;
 			}
 			return;
 		}

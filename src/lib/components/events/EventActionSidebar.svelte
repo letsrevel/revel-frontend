@@ -490,8 +490,13 @@
 
 		<!-- Primary Action (if not attending) -->
 		{#if !isAttending}
-			<!-- RSVP Flow for non-ticketed events -->
-			{#if !event.requires_ticket}
+			<!-- RSVP Flow for non-ticketed events.
+			     Fail closed: only show RSVP when the event is explicitly known to
+			     be non-ticketed. `requires_ticket` is `boolean | null` on
+			     list/summary-built event objects, where null means unknown; a null
+			     value is treated as ticketed so RSVP is never shown on a ticketed
+			     event reached from a list surface (issue #430). -->
+			{#if event.requires_ticket === false}
 				<EventRSVP
 					eventId={event.id}
 					eventName={event.name}
@@ -521,6 +526,7 @@
 							applyBefore={event.apply_before}
 							{onInvitationRequestSuccess}
 							{onWhitelistRequestSuccess}
+							{onGetTicketsClick}
 						/>
 					</div>
 				{:else}
