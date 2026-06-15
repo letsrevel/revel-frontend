@@ -1,4 +1,4 @@
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { eventpublicdetailsGetEvent, eventadminticketsListTickets } from '$lib/api';
 import { log } from '$lib/server/logger';
@@ -56,12 +56,11 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 		throw error(403, 'Event does not belong to this organization');
 	}
 
-	// This page is only for ticketed events
+	// This page is only for ticketed events. If a stale or mislabeled link sends a
+	// non-ticketed (RSVP) event here, redirect to its Attendees page instead of
+	// dead-ending on a 400.
 	if (!event.requires_ticket) {
-		throw error(
-			400,
-			'This event does not require tickets. Use the attendees management page for RSVP-based events.'
-		);
+		redirect(302, `/org/${params.slug}/admin/events/${params.event_id}/attendees`);
 	}
 
 	// Get query parameters for filtering

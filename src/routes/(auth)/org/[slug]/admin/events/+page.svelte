@@ -17,7 +17,17 @@
 	import CancelEventDialog from '$lib/components/events/admin/CancelEventDialog.svelte';
 	import AdminEventCard from '$lib/components/events/admin/AdminEventCard.svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import { Plus, Calendar, Eye, Users, Trash2, Mail, MoreVertical, Copy } from 'lucide-svelte';
+	import {
+		Plus,
+		Calendar,
+		Eye,
+		Users,
+		Ticket,
+		Trash2,
+		Mail,
+		MoreVertical,
+		Copy
+	} from 'lucide-svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -423,13 +433,23 @@
 										<Eye class="h-4 w-4" aria-hidden="true" />
 										{m['orgAdmin.events.actions.view']()}
 									</a>
-									<a
-										href="/org/{data.organization.slug}/admin/events/{event.id}/attendees"
-										class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
-									>
-										<Users class="h-4 w-4" aria-hidden="true" />
-										{m['orgAdmin.events.actions.tickets']()}
-									</a>
+									{#if event.requires_ticket}
+										<a
+											href="/org/{data.organization.slug}/admin/events/{event.id}/tickets"
+											class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
+										>
+											<Ticket class="h-4 w-4" aria-hidden="true" />
+											{m['orgAdmin.events.actions.tickets']()}
+										</a>
+									{:else}
+										<a
+											href="/org/{data.organization.slug}/admin/events/{event.id}/attendees"
+											class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
+										>
+											<Users class="h-4 w-4" aria-hidden="true" />
+											{m['orgAdmin.events.actions.attendees']()}
+										</a>
+									{/if}
 									<a
 										href="/org/{data.organization.slug}/admin/events/{event.id}/invitations"
 										class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
