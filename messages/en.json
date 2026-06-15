@@ -5112,7 +5112,8 @@
 		"selectSeats": "Select Your Seats",
 		"seatsSelected": "selected",
 		"loadingSeats": "Loading available seats...",
-		"noSeatsAvailable": "No seats available for selection."
+		"noSeatsAvailable": "No seats available for selection.",
+		"defaultGuestName": "Guest"
 	},
 	"ticketConfirmationDialog.selectMoreSeats": "Please select {count} more seat(s)",
 	"ticketListCard": {

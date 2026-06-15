@@ -75,6 +75,7 @@
 				<div>
 					<span class="font-medium">{m['eventTokenCard.expires']()}</span>
 					<span title={expirationCountdown}>{expirationDate}</span>
+					<span class="sr-only">({expirationCountdown})</span>
 				</div>
 			</div>
 

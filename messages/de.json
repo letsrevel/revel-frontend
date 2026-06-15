@@ -5112,7 +5112,8 @@
 		"selectSeats": "Wähle deine Plätze",
 		"seatsSelected": "ausgewählt",
 		"loadingSeats": "Verfügbare Plätze werden geladen...",
-		"noSeatsAvailable": "Keine Plätze zur Auswahl verfügbar."
+		"noSeatsAvailable": "Keine Plätze zur Auswahl verfügbar.",
+		"defaultGuestName": "Gast"
 	},
 	"ticketConfirmationDialog.selectMoreSeats": "Bitte wähle noch {count} Sitzplatz/Sitzplätze",
 	"ticketListCard": {

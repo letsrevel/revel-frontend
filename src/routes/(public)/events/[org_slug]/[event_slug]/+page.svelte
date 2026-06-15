@@ -376,10 +376,11 @@
 
 	/**
 	 * Get default guest name for single ticket purchase
-	 * Uses logged-in user's display name when available
+	 * Uses logged-in user's display name when available, falling back to a
+	 * localized placeholder so guest_name is never empty (backend min_length 1).
 	 */
 	function getDefaultGuestName(): string {
-		return userDisplayName;
+		return userDisplayName.trim() || m['ticketConfirmationDialog.defaultGuestName']();
 	}
 
 	/**
