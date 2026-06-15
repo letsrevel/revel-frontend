@@ -19,7 +19,12 @@
 		eventName: string;
 		userStatus: UserEventStatus | null;
 		isAuthenticated: boolean;
-		requiresTicket: boolean;
+		/**
+		 * Whether the event requires a ticket. Non-null on EventDetailSchema but
+		 * `boolean | null` on list/summary schemas, where `null` means unknown.
+		 * The RSVP gate fails closed on null (treats it as ticketed).
+		 */
+		requiresTicket: boolean | null;
 		event?: EventDetailSchema;
 		eventTokenDetails?: EventTokenSchema | null;
 		onGuestRsvpClick?: () => void;
@@ -292,10 +297,12 @@
 		return eligibilityStatus && !eligibilityStatus.allowed && !showSuccess;
 	});
 
-	// Show RSVP if:
-	// 1. Event doesn't require tickets
-	// 2. Always show for non-ticketed events (to display login prompt if needed)
-	const shouldRender = $derived(!requiresTicket);
+	// Show RSVP only when the event is explicitly known to be non-ticketed.
+	// `requiresTicket` is non-null on EventDetailSchema, but list/summary
+	// schemas type it as `boolean | null`. A null value means "unknown", so we
+	// fail closed (treat as ticketed) to avoid rendering RSVP on a ticketed
+	// event reached from a list surface, which would 400 on submit (issue #430).
+	const shouldRender = $derived(requiresTicket === false);
 
 	// Check if we should show guest button instead of regular RSVP
 	const shouldShowGuestButton = $derived(
