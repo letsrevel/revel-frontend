@@ -10,11 +10,18 @@
 		"unlistedDescription": "Nur über direkten Link erreichbar — nicht in Auflistungen angezeigt",
 		"private": "Nur mit Einladung",
 		"onlyInvitedUsers": "Nur eingeladene Nutzer können die Veranstaltung sehen",
-		"membersOnly": "Nur Mitglieder",
+		"membersOnly": "Nur Organisationsmitglieder",
 		"staffOnly": "Nur Personal",
 		"everyoneCanAttend": "Jeder kann teilnehmen (Zusage/Ticket bekommen)",
 		"onlyInvitedPeople": "Nur eingeladene Personen können teilnehmen",
-		"onlyOrganizationMembers": "Nur Organisationsmitglieder können teilnehmen"
+		"onlyOrganizationMembers": "Nur Organisationsmitglieder können teilnehmen",
+		"visibilityHeading": "Sichtbarkeit",
+		"eventTypeHeading": "Veranstaltungstyp",
+		"visibilitySubLabel": "Wer diese Veranstaltung finden und ansehen kann",
+		"eventTypeSubLabel": "Wer teilnahmeberechtigt ist",
+		"whatsTheDifference": "Was ist der Unterschied?",
+		"visibilityExplanation": "Die Sichtbarkeit bestimmt, wer die Veranstaltungsseite finden und ansehen kann.",
+		"eventTypeExplanation": "Der Veranstaltungstyp bestimmt, wer teilnahmeberechtigt ist (Zusage oder Ticket), unabhängig davon, wer sie sehen kann."
 	},
 	"accountDeletion": {
 		"title": "Confirm Account Deletion - Revel",

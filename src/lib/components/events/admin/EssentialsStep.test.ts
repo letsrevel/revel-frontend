@@ -68,7 +68,7 @@ describe('EssentialsStep', () => {
 		expect(screen.getByText('Public')).toBeInTheDocument();
 		// Renders for both visibility and event_type radios
 		expect(screen.getAllByText('Invitation only').length).toBeGreaterThan(0);
-		expect(screen.getByText('Members Only')).toBeInTheDocument();
+		expect(screen.getAllByText('Organization members only').length).toBeGreaterThan(0);
 		expect(screen.getByText('Staff Only')).toBeInTheDocument();
 	});
 

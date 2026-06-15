@@ -10,11 +10,18 @@
 		"unlistedDescription": "Accessible via direct link only — not shown in listings",
 		"private": "Invitation only",
 		"onlyInvitedUsers": "Only invited users can see the event",
-		"membersOnly": "Members Only",
+		"membersOnly": "Organization members only",
 		"staffOnly": "Staff Only",
 		"everyoneCanAttend": "Everyone can attend (RSVP/get tickets)",
 		"onlyInvitedPeople": "Only invited people can attend",
-		"onlyOrganizationMembers": "Only organization members can attend"
+		"onlyOrganizationMembers": "Only organization members can attend",
+		"visibilityHeading": "Visibility",
+		"eventTypeHeading": "Event Type",
+		"visibilitySubLabel": "Who can find and view this event",
+		"eventTypeSubLabel": "Who is eligible to attend",
+		"whatsTheDifference": "What's the difference?",
+		"visibilityExplanation": "Visibility controls who can find and view the event page.",
+		"eventTypeExplanation": "Event Type controls who is eligible to attend (RSVP or get tickets), regardless of who can see it."
 	},
 	"accountDeletion": {
 		"title": "Confirm Account Deletion - Revel",
