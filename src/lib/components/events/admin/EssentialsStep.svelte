@@ -378,7 +378,10 @@
 		<label class="block text-sm font-medium">
 			<span class="flex items-center gap-2">
 				<Eye class="h-4 w-4" aria-hidden="true" />
-				Visibility
+				{m['SFwESEssentialsStep.visibilityHeading']()}
+			</span>
+			<span class="mt-0.5 block text-xs font-normal text-muted-foreground">
+				{m['SFwESEssentialsStep.visibilitySubLabel']()}
 			</span>
 		</label>
 		<div class="space-y-2" role="radiogroup" aria-label="Event visibility">
@@ -494,9 +497,34 @@
 		<label class="block text-sm font-medium">
 			<span class="flex items-center gap-2">
 				<Users class="h-4 w-4" aria-hidden="true" />
-				Event Type
+				{m['SFwESEssentialsStep.eventTypeHeading']()}
+			</span>
+			<span class="mt-0.5 block text-xs font-normal text-muted-foreground">
+				{m['SFwESEssentialsStep.eventTypeSubLabel']()}
 			</span>
 		</label>
+
+		<!-- Help text explaining Visibility vs Event Type -->
+		<div class="rounded-md bg-muted p-3 text-sm">
+			<p class="font-medium text-foreground">{m['SFwESEssentialsStep.whatsTheDifference']()}</p>
+			<ul class="mt-2 space-y-1.5 text-xs text-muted-foreground">
+				<li class="flex gap-2">
+					<span class="text-primary">•</span>
+					<span
+						><strong>{m['SFwESEssentialsStep.visibilityHeading']()}:</strong>
+						{m['SFwESEssentialsStep.visibilityExplanation']()}</span
+					>
+				</li>
+				<li class="flex gap-2">
+					<span class="text-primary">•</span>
+					<span
+						><strong>{m['SFwESEssentialsStep.eventTypeHeading']()}:</strong>
+						{m['SFwESEssentialsStep.eventTypeExplanation']()}</span
+					>
+				</li>
+			</ul>
+		</div>
+
 		<div class="space-y-2" role="radiogroup" aria-label="Event type">
 			<label
 				class="group flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
