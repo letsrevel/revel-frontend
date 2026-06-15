@@ -510,6 +510,11 @@
 			// Invalidate queries
 			queryClient.invalidateQueries({ queryKey: ['events'] });
 			queryClient.invalidateQueries({ queryKey: ['event', eventId] });
+			// Keep the dashboard truthful after create/update (prefix match covers
+			// the parameterised "Your Events" / calendar keys).
+			queryClient.invalidateQueries({ queryKey: ['dashboard-your-events'] });
+			queryClient.invalidateQueries({ queryKey: ['dashboard-has-events'] });
+			queryClient.invalidateQueries({ queryKey: ['dashboard-calendar'] });
 
 			toast.success(m['eventWizard.eventUpdatedSuccess']());
 
