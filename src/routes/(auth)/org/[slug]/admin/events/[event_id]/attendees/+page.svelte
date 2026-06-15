@@ -17,7 +17,6 @@
 	import { getUserDisplayName } from '$lib/utils/user-display';
 	import { getRsvpStatusColor, getRsvpStatusLabel } from '$lib/utils/status-colors';
 	import {
-		Search,
 		Users,
 		Edit,
 		Trash2,
@@ -30,8 +29,8 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
 	import { Badge } from '$lib/components/ui/badge';
+	import SearchInput from '$lib/components/events/filters/SearchInput.svelte';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import ExportButton from '$lib/components/common/ExportButton.svelte';
 	import MakeMemberModal from '$lib/components/members/MakeMemberModal.svelte';
@@ -290,17 +289,11 @@
 	/**
 	 * Handle search input with debounce
 	 */
-	let searchTimeout: ReturnType<typeof setTimeout>;
-	function handleSearchInput(e: Event) {
-		const target = e.target as HTMLInputElement;
-		searchInput = target.value;
-
-		// Debounce search
-		clearTimeout(searchTimeout);
-		searchTimeout = setTimeout(() => {
-			searchQuery = searchInput;
-			applyFilters();
-		}, 500);
+	function handleSearch(value: string) {
+		// SearchInput debounces internally, so apply filters immediately.
+		searchInput = value;
+		searchQuery = value;
+		applyFilters();
 	}
 
 	/**
@@ -507,19 +500,12 @@
 	<!-- Filters & Search -->
 	<div class="space-y-4">
 		<!-- Search bar -->
-		<div class="relative">
-			<Search
-				class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-				aria-hidden="true"
-			/>
-			<Input
-				type="search"
-				placeholder={m['attendeesAdmin.searchPlaceholder']()}
-				value={searchInput}
-				oninput={handleSearchInput}
-				class="pl-10"
-			/>
-		</div>
+		<SearchInput
+			value={searchInput}
+			onSearch={handleSearch}
+			placeholder={m['attendeesAdmin.searchPlaceholder']()}
+			ariaLabel={m['attendeesAdmin.searchPlaceholder']()}
+		/>
 
 		<!-- Filter buttons -->
 		<div class="flex flex-wrap gap-2">

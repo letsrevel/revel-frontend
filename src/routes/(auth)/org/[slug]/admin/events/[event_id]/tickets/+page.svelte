@@ -40,7 +40,6 @@
 
 	// Search state
 	let searchQuery = $state(data.filters.search || '');
-	let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
 	// Filter states
 	let selectedStatus = $state<string | null>(data.filters.status || null);
@@ -367,18 +366,10 @@
 	/**
 	 * Handle search input
 	 */
-	function handleSearch(event: Event) {
-		const target = event.target as HTMLInputElement;
-		searchQuery = target.value;
-
-		// Debounce search
-		if (searchTimeout) {
-			clearTimeout(searchTimeout);
-		}
-
-		searchTimeout = setTimeout(() => {
-			applyFilters();
-		}, 300);
+	function handleSearch(value: string) {
+		searchQuery = value;
+		// SearchInput debounces internally, so apply filters immediately.
+		applyFilters();
 	}
 
 	/**
