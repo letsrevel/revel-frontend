@@ -1,4 +1,5 @@
 import type { OrganizationTokenSchema, EventTokenSchema } from '$lib/api/generated/types.gen';
+import { formatDateTime } from '$lib/utils/date';
 
 /**
  * Determine the status of an organization token
@@ -99,6 +100,17 @@ export function getExpirationDisplay(expiresAt: string | null | undefined): stri
 	} else {
 		return 'Less than 1 hour';
 	}
+}
+
+/**
+ * Format the absolute expiration date for display.
+ * Returns 'Never' when there is no expiration.
+ */
+export function getExpirationDate(expiresAt: string | null | undefined): string {
+	if (!expiresAt) {
+		return 'Never';
+	}
+	return formatDateTime(expiresAt);
 }
 
 /**

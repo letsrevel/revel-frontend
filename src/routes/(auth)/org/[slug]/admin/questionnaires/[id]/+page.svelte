@@ -435,9 +435,16 @@
 						</p>
 					</div>
 				</div>
-				<Button variant="outline" size="sm" onclick={() => (isEditMode = false)} class="shrink-0">
-					Cancel Editing
-				</Button>
+				<div class="flex shrink-0 gap-2">
+					<Button variant="outline" size="sm" onclick={() => (isEditMode = false)}>
+						Cancel Editing
+					</Button>
+					<Button size="sm" onclick={saveQuestionnaire} disabled={isSaving || !canEdit}>
+						{isSaving
+							? m['questionnaireEditPage.savingButton']()
+							: m['questionnaireEditPage.saveButton']()}
+					</Button>
+				</div>
 			</div>
 		</div>
 	{:else}

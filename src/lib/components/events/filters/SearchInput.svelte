@@ -7,6 +7,7 @@
 		value: string;
 		onSearch: (value: string) => void;
 		placeholder?: string;
+		ariaLabel?: string;
 		debounceMs?: number;
 		class?: string;
 	}
@@ -15,6 +16,7 @@
 		value = '',
 		onSearch,
 		placeholder = m['filters.search.eventsPlaceholder'](),
+		ariaLabel = m['filters.search.eventsLabel'](),
 		debounceMs = 300,
 		class: className
 	}: Props = $props();
@@ -64,7 +66,7 @@
 			oninput={handleInput}
 			{placeholder}
 			class="h-10 w-full rounded-md border border-input bg-background pl-9 pr-9 text-sm ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-			aria-label={m['filters.search.eventsLabel']()}
+			aria-label={ariaLabel}
 		/>
 		{#if inputValue}
 			<button
