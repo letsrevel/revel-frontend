@@ -128,20 +128,26 @@
 				<span class="warm-keyword">{m['home.keywordSafe']()}</span>
 			</p>
 			<div class="mt-10 flex flex-wrap items-center justify-center gap-4">
-				<a
-					href="/events"
-					class="rounded-md bg-primary px-6 py-3 text-base font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-				>
-					{m['nav.browseEvents']()}
-				</a>
 				{#if isAuthenticated}
 					<a
 						href="/dashboard"
-						class="rounded-md border border-primary px-6 py-3 text-base font-semibold text-primary hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+						class="rounded-md bg-primary px-6 py-3 text-base font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
 					>
 						{m['userMenu.dashboard']()}
 					</a>
+					<a
+						href="/events"
+						class="rounded-md border border-primary px-6 py-3 text-base font-semibold text-primary hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+					>
+						{m['nav.browseEvents']()}
+					</a>
 				{:else}
+					<a
+						href="/events"
+						class="rounded-md bg-primary px-6 py-3 text-base font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+					>
+						{m['nav.browseEvents']()}
+					</a>
 					<a
 						href="/register"
 						class="rounded-md border border-primary px-6 py-3 text-base font-semibold text-primary hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
