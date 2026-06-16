@@ -12,6 +12,7 @@
 		isPendingReview,
 		type QuestionnaireEvaluationStatus
 	} from '$lib/utils/questionnaire-types';
+	import { resolveSubmissionBadgeStatus } from '$lib/utils/resolve-submission-badge-status';
 
 	interface Props {
 		data: PageData;
@@ -99,8 +100,10 @@
 				</p>
 			</div>
 			<SubmissionStatusBadge
-				status={(data.submission.evaluation?.status ||
-					'pending review') as QuestionnaireEvaluationStatus}
+				status={resolveSubmissionBadgeStatus(
+					data.requiresEvaluation,
+					data.submission.evaluation?.status as QuestionnaireEvaluationStatus | null | undefined
+				)}
 				class="shrink-0"
 			/>
 		</div>

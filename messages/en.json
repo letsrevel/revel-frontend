@@ -5011,7 +5011,8 @@
 		"approved": "Approved",
 		"rejected": "Rejected",
 		"pending": "Pending",
-		"draft": "Draft"
+		"draft": "Draft",
+		"autoAccepted": "Auto-accepted"
 	},
 	"submissionsAdminPage": {
 		"title": "Submissions - Questionnaire -",

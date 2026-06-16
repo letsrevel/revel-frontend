@@ -5011,7 +5011,8 @@
 		"approved": "Approved",
 		"rejected": "Rejected",
 		"pending": "Pending",
-		"draft": "Draft"
+		"draft": "Draft",
+		"autoAccepted": "Accettato automaticamente"
 	},
 	"submissionsAdminPage": {
 		"title": "Invii - Questionario -",
