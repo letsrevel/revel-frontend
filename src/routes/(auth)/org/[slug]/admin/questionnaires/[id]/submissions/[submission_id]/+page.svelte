@@ -102,7 +102,7 @@
 			<SubmissionStatusBadge
 				status={resolveSubmissionBadgeStatus(
 					data.requiresEvaluation,
-					data.submission.evaluation?.status as QuestionnaireEvaluationStatus | null | undefined
+					data.submission.evaluation?.status
 				)}
 				class="shrink-0"
 			/>

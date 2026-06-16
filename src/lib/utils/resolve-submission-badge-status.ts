@@ -1,5 +1,5 @@
 import type { QuestionnaireEvaluationStatus } from '$lib/api/generated/types.gen';
-import type { SubmissionBadgeStatus } from '$lib/components/questionnaires/SubmissionStatusBadge.svelte';
+import type { SubmissionBadgeStatus } from '$lib/utils/questionnaire-types';
 
 /**
  * Resolves the correct badge status for a questionnaire submission.

@@ -1,19 +1,9 @@
-<script lang="ts" module>
-	/**
-	 * SubmissionBadgeStatus extends the backend QuestionnaireEvaluationStatus with a
-	 * FE-only presentation status for submissions that need no human review.
-	 *
-	 * 'auto_accepted' is NOT a backend enum value — it is computed on the frontend
-	 * via resolveSubmissionBadgeStatus() when requiresEvaluation === false.
-	 */
-	export type SubmissionBadgeStatus = 'approved' | 'rejected' | 'pending review' | 'draft' | 'auto_accepted';
-</script>
-
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { Clock, Check, X, CheckCheck } from 'lucide-svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import { cn } from '$lib/utils/cn';
+	import type { SubmissionBadgeStatus } from '$lib/utils/questionnaire-types';
 
 	interface Props {
 		status: SubmissionBadgeStatus;
