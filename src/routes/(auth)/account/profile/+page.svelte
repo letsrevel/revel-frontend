@@ -14,7 +14,10 @@
 	import ProfilePictureUploader from '$lib/components/profile/ProfilePictureUploader.svelte';
 	import AttendeeVisibilitySelect from '$lib/components/profile/AttendeeVisibilitySelect.svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
-	import { accountResendVerificationEmail, userpreferencesUpdateGeneralPreferences } from '$lib/api/generated';
+	import {
+		accountResendVerificationEmail,
+		userpreferencesUpdateGeneralPreferences
+	} from '$lib/api/generated';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
 

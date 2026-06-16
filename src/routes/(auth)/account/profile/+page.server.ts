@@ -1,6 +1,10 @@
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { accountMe, accountUpdateProfile, userpreferencesGetGeneralPreferences } from '$lib/api/generated';
+import {
+	accountMe,
+	accountUpdateProfile,
+	userpreferencesGetGeneralPreferences
+} from '$lib/api/generated';
 import { profileUpdateSchema } from '$lib/schemas/profile';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { log } from '$lib/server/logger';
