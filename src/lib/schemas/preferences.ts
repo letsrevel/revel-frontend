@@ -1,17 +1,10 @@
 import { z } from 'zod';
 
 /**
- * Visibility options for attendee list
+ * Valid values for the attendee-list visibility preference.
+ * Single source of truth — the component (AttendeeVisibilitySelect) uses i18n keys for labels.
  */
-export const VISIBILITY_OPTIONS = [
-	{ value: 'never', label: 'Never show me' },
-	{ value: 'always', label: 'Always show me' },
-	{ value: 'to_members', label: 'Show only to members' },
-	{ value: 'to_invitees', label: 'Show only to invitees' },
-	{ value: 'to_both', label: 'Show to members and invitees' }
-] as const;
-
-export type VisibilityValue = (typeof VISIBILITY_OPTIONS)[number]['value'];
+export type VisibilityValue = 'never' | 'always' | 'to_members' | 'to_invitees' | 'to_both';
 
 /**
  * General preferences update schema

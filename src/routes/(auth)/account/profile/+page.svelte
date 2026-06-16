@@ -30,7 +30,7 @@
 	let isResendingVerification = $state(false);
 	let isSavingVisibility = $state(false);
 	let attendeeListVisibility = $state<VisibilityValue>(
-		(data.generalPreferences?.show_me_on_attendee_list as VisibilityValue) ?? 'never'
+		data.generalPreferences?.show_me_on_attendee_list ?? 'never'
 	);
 	let verificationEmailSent = $state(false);
 	let verificationError = $state<string | null>(null);
@@ -224,7 +224,8 @@
 						</h2>
 						<AttendeeVisibilitySelect
 							bind:value={attendeeListVisibility}
-							onchange={saveAttendeeVisibility}
+							onValueChange={saveAttendeeVisibility}
+							showHeading={false}
 							idPrefix="profile-privacy"
 						/>
 						{#if isSavingVisibility}

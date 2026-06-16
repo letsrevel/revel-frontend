@@ -8,12 +8,23 @@
 		/** Current visibility value (bindable) */
 		value: VisibilityValue;
 		/** Called whenever the selection changes */
-		onchange?: (value: VisibilityValue) => void;
+		onValueChange?: (value: VisibilityValue) => void;
 		/** Optional id prefix to avoid radio-id collisions when rendered twice on a page */
 		idPrefix?: string;
+		/**
+		 * When false the internal "Privacy Settings" heading + description are suppressed so
+		 * the host page can supply its own heading without creating two competing titles.
+		 * Defaults to true so existing usages (settings page) are unchanged.
+		 */
+		showHeading?: boolean;
 	}
 
-	let { value = $bindable(), onchange, idPrefix = 'attendee-visibility' }: Props = $props();
+	let {
+		value = $bindable(),
+		onValueChange,
+		idPrefix = 'attendee-visibility',
+		showHeading = true
+	}: Props = $props();
 
 	const OPTIONS: { value: VisibilityValue; labelKey: () => string }[] = [
 		{ value: 'never', labelKey: () => m['accountSettingsPage.privacyNever']() },
@@ -25,19 +36,21 @@
 
 	function handleChange(newValue: string) {
 		value = newValue as VisibilityValue;
-		onchange?.(value);
+		onValueChange?.(value);
 	}
 </script>
 
 <div class="space-y-3">
-	<div>
-		<p class="text-sm font-medium leading-none">
-			{m['notificationPreferences.privacySettings']()}
-		</p>
-		<p class="mt-1 text-sm text-muted-foreground">
-			{m['accountSettingsPage.privacyDescription']()}
-		</p>
-	</div>
+	{#if showHeading}
+		<div>
+			<p class="text-sm font-medium leading-none">
+				{m['notificationPreferences.privacySettings']()}
+			</p>
+			<p class="mt-1 text-sm text-muted-foreground">
+				{m['accountSettingsPage.privacyDescription']()}
+			</p>
+		</div>
+	{/if}
 
 	<RadioGroup.Root
 		{value}
@@ -54,4 +67,10 @@
 			</div>
 		{/each}
 	</RadioGroup.Root>
+
+	{#if !showHeading}
+		<p class="text-sm text-muted-foreground">
+			{m['accountSettingsPage.privacyDescription']()}
+		</p>
+	{/if}
 </div>

@@ -15,24 +15,14 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		};
 	}
 
+	let user: Awaited<ReturnType<typeof accountMe>>['data'] = undefined;
 	try {
-		const [{ data: user }, { data: generalPreferences }] = await Promise.all([
-			accountMe({
-				headers: {
-					Authorization: `Bearer ${accessToken}`
-				}
-			}),
-			userpreferencesGetGeneralPreferences({
-				headers: {
-					Authorization: `Bearer ${accessToken}`
-				}
-			})
-		]);
-
-		return {
-			user,
-			generalPreferences: generalPreferences ?? null
-		};
+		const { data } = await accountMe({
+			headers: {
+				Authorization: `Bearer ${accessToken}`
+			}
+		});
+		user = data;
 	} catch (error) {
 		log.error('profile_user_fetch_failed', { error });
 		return {
@@ -40,6 +30,19 @@ export const load: PageServerLoad = async ({ cookies }) => {
 			generalPreferences: null
 		};
 	}
+
+	// Preferences are non-critical: a failure must not take down the whole profile page.
+	// The component falls back to 'never' when generalPreferences is null.
+	const { data: generalPreferences } = await userpreferencesGetGeneralPreferences({
+		headers: {
+			Authorization: `Bearer ${accessToken}`
+		}
+	}).catch(() => ({ data: undefined }));
+
+	return {
+		user: user ?? null,
+		generalPreferences: generalPreferences ?? null
+	};
 };
 
 export const actions: Actions = {

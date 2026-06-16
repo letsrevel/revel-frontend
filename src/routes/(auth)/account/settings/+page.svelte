@@ -27,7 +27,7 @@
 	// General preferences state
 	let selectedCity = $state<CitySchema | null>(data.generalPreferences?.city || null);
 	let attendeeListVisibility = $state<VisibilityValue>(
-		(data.generalPreferences?.show_me_on_attendee_list as VisibilityValue) ?? 'never'
+		data.generalPreferences?.show_me_on_attendee_list ?? 'never'
 	);
 	let isUpdatingGeneral = $state(false);
 
