@@ -229,7 +229,6 @@
 							bind:value={attendeeListVisibility}
 							onValueChange={saveAttendeeVisibility}
 							showHeading={false}
-							idPrefix="profile-privacy"
 						/>
 						{#if isSavingVisibility}
 							<p class="flex items-center gap-1.5 text-xs text-muted-foreground" aria-live="polite">
@@ -634,7 +633,7 @@
 			href="/account/settings"
 			class="inline-flex items-center gap-2 text-sm text-primary underline-offset-4 hover:underline"
 		>
-			<span>Configure notifications and location</span>
+			<span>{m['profile.settingsLink_text']()}</span>
 			<span aria-hidden="true">→</span>
 		</a>
 	</div>

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { Label } from '$lib/components/ui/label';
-	import * as RadioGroup from '$lib/components/ui/radio-group';
+	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
 	import type { VisibilityValue } from '$lib/schemas/preferences';
 
 	interface Props {
@@ -9,8 +8,6 @@
 		value: VisibilityValue;
 		/** Called whenever the selection changes */
 		onValueChange?: (value: VisibilityValue) => void;
-		/** Optional id prefix to avoid radio-id collisions when rendered twice on a page */
-		idPrefix?: string;
 		/**
 		 * When false the internal "Privacy Settings" heading + description are suppressed so
 		 * the host page can supply its own heading without creating two competing titles.
@@ -19,25 +16,17 @@
 		showHeading?: boolean;
 	}
 
-	let {
-		value = $bindable(),
-		onValueChange,
-		idPrefix = 'attendee-visibility',
-		showHeading = true
-	}: Props = $props();
+	let { value = $bindable(), onValueChange, showHeading = true }: Props = $props();
 
-	const OPTIONS: { value: VisibilityValue; labelKey: () => string }[] = [
-		{ value: 'never', labelKey: () => m['accountSettingsPage.privacyNever']() },
-		{ value: 'to_members', labelKey: () => m['accountSettingsPage.privacyToMembers']() },
-		{ value: 'to_invitees', labelKey: () => m['accountSettingsPage.privacyToInvitees']() },
-		{ value: 'to_both', labelKey: () => m['accountSettingsPage.privacyToBoth']() },
-		{ value: 'always', labelKey: () => m['accountSettingsPage.privacyAlways']() }
+	const OPTIONS: { value: VisibilityValue; label: () => string }[] = [
+		{ value: 'never', label: () => m['accountSettingsPage.privacyNever']() },
+		{ value: 'to_members', label: () => m['accountSettingsPage.privacyToMembers']() },
+		{ value: 'to_invitees', label: () => m['accountSettingsPage.privacyToInvitees']() },
+		{ value: 'to_both', label: () => m['accountSettingsPage.privacyToBoth']() },
+		{ value: 'always', label: () => m['accountSettingsPage.privacyAlways']() }
 	];
 
-	function handleChange(newValue: string) {
-		value = newValue as VisibilityValue;
-		onValueChange?.(value);
-	}
+	const selectedLabel = $derived(OPTIONS.find((o) => o.value === value)?.label() ?? '');
 </script>
 
 <div class="space-y-3">
@@ -52,21 +41,25 @@
 		</div>
 	{/if}
 
-	<RadioGroup.Root
+	<Select
+		type="single"
 		{value}
-		onValueChange={handleChange}
-		class="space-y-2"
-		aria-label={m['notificationPreferences.privacySettings']()}
+		onValueChange={(v) => {
+			if (v) {
+				value = v as VisibilityValue;
+				onValueChange?.(value);
+			}
+		}}
 	>
-		{#each OPTIONS as option (option.value)}
-			<div class="flex items-center space-x-2">
-				<RadioGroup.Item value={option.value} id="{idPrefix}-{option.value}" />
-				<Label for="{idPrefix}-{option.value}" class="font-normal">
-					{option.labelKey()}
-				</Label>
-			</div>
-		{/each}
-	</RadioGroup.Root>
+		<SelectTrigger aria-label={m['notificationPreferences.privacySettings']()}>
+			{selectedLabel}
+		</SelectTrigger>
+		<SelectContent>
+			{#each OPTIONS as option (option.value)}
+				<SelectItem value={option.value} label={option.label()}>{option.label()}</SelectItem>
+			{/each}
+		</SelectContent>
+	</Select>
 
 	{#if !showHeading}
 		<p class="text-sm text-muted-foreground">

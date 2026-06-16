@@ -116,10 +116,7 @@
 				<div class="flex items-start gap-2">
 					<Eye class="mt-0.5 h-5 w-5 text-muted-foreground" aria-hidden="true" />
 					<div class="flex-1">
-						<AttendeeVisibilitySelect
-							bind:value={attendeeListVisibility}
-							idPrefix="settings-privacy"
-						/>
+						<AttendeeVisibilitySelect bind:value={attendeeListVisibility} />
 					</div>
 				</div>
 

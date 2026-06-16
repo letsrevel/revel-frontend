@@ -265,7 +265,7 @@
 		"saving": "Saving...",
 		"saveChanges": "Save Changes",
 		"errorNotLoggedIn": "You must be logged in to view settings.",
-		"attendeeListProfileHeading": "Attendee List Visibility",
+		"attendeeListProfileHeading": "Profile visibility",
 		"billing": {
 			"title": "Billing Information",
 			"description": "Your billing details for ticket purchase invoices and referral payouts."
@@ -4143,7 +4143,7 @@
 		"language_it": "Italian (Italiano)",
 		"buttons_submitText": "Save Changes",
 		"buttons_submittingText": "Saving...",
-		"settingsLink_text": "Configure privacy, notifications and location",
+		"settingsLink_text": "Configure notifications and location",
 		"settingsLink_ariaHidden": "→",
 		"completeToReturn": "Complete your profile to continue. You'll be redirected back after saving.",
 		"savedRedirecting": "Profile updated! Redirecting..."
