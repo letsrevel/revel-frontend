@@ -15,7 +15,7 @@
 		ChevronsRight,
 		ArrowUpDown
 	} from 'lucide-svelte';
-	import type { QuestionnaireEvaluationStatus } from '$lib/utils/questionnaire-types';
+	import { resolveSubmissionBadgeStatus } from '$lib/utils/resolve-submission-badge-status';
 
 	interface Props {
 		data: PageData;
@@ -220,10 +220,10 @@
 							<th class="px-6 py-4 text-left text-sm font-medium"
 								>{m['questionnaireSubmissionsPage.header_submitted']()}</th
 							>
+							<th class="px-6 py-4 text-left text-sm font-medium"
+								>{m['questionnaireSubmissionsPage.header_evaluationStatus']()}</th
+							>
 							{#if data.requiresEvaluation}
-								<th class="px-6 py-4 text-left text-sm font-medium"
-									>{m['questionnaireSubmissionsPage.header_evaluationStatus']()}</th
-								>
 								<th class="px-6 py-4 text-left text-sm font-medium"
 									>{m['questionnaireSubmissionsPage.header_score']()}</th
 								>
@@ -243,13 +243,15 @@
 									</div>
 								</td>
 								<td class="px-6 py-4 text-sm">{formatDate(submission.submitted_at)}</td>
+								<td class="px-6 py-4">
+									<SubmissionStatusBadge
+										status={resolveSubmissionBadgeStatus(
+											data.requiresEvaluation,
+											submission.evaluation_status
+										)}
+									/>
+								</td>
 								{#if data.requiresEvaluation}
-									<td class="px-6 py-4">
-										<SubmissionStatusBadge
-											status={(submission.evaluation_status ||
-												'pending review') as QuestionnaireEvaluationStatus}
-										/>
-									</td>
 									<td class="px-6 py-4 text-sm">{formatScore(submission.evaluation_score)}</td>
 								{/if}
 								<td class="px-6 py-4 text-right">
@@ -279,12 +281,12 @@
 							<h3 class="font-semibold">{submission.user.display_name}</h3>
 							<p class="text-sm text-muted-foreground">{submission.user.email}</p>
 						</div>
-						{#if data.requiresEvaluation}
-							<SubmissionStatusBadge
-								status={(submission.evaluation_status ||
-									'pending review') as QuestionnaireEvaluationStatus}
-							/>
-						{/if}
+						<SubmissionStatusBadge
+							status={resolveSubmissionBadgeStatus(
+								data.requiresEvaluation,
+								submission.evaluation_status
+							)}
+						/>
 					</div>
 
 					<div class="space-y-2 text-sm">

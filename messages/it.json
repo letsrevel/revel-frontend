@@ -11,7 +11,9 @@
 		"private": "Solo su invito",
 		"onlyInvitedUsers": "Solo gli utenti invitati possono vedere l'evento",
 		"membersOnly": "Solo membri dell'organizzazione",
+		"membersOnlyDescription": "Solo i membri dell'organizzazione possono vedere l'evento",
 		"staffOnly": "Solo Staff",
+		"staffOnlyDescription": "Solo il personale dell'organizzazione può vedere l'evento",
 		"everyoneCanAttend": "Tutti possono partecipare (RSVP/ottenere biglietti)",
 		"onlyInvitedPeople": "Solo le persone invitate possono partecipare",
 		"onlyOrganizationMembers": "Solo i membri dell'organizzazione possono partecipare",
@@ -263,6 +265,7 @@
 		"saving": "Saving...",
 		"saveChanges": "Save Changes",
 		"errorNotLoggedIn": "Devi essere loggato per visualizzare le impostazioni.",
+		"attendeeListProfileHeading": "Visibilità del profilo",
 		"billing": {
 			"title": "Dati di Fatturazione",
 			"description": "I tuoi dati di fatturazione per le fatture dei biglietti e i pagamenti referral."
@@ -4140,7 +4143,7 @@
 		"language_it": "Italiano",
 		"buttons_submitText": "Salva Modifiche",
 		"buttons_submittingText": "Salvataggio...",
-		"settingsLink_text": "Configura privacy, notifiche e posizione",
+		"settingsLink_text": "Configura notifiche e posizione",
 		"settingsLink_ariaHidden": "→",
 		"completeToReturn": "Completa il tuo profilo per continuare. Verrai reindirizzato dopo il salvataggio.",
 		"savedRedirecting": "Profilo aggiornato! Reindirizzamento..."
@@ -5009,7 +5012,8 @@
 		"approved": "Approved",
 		"rejected": "Rejected",
 		"pending": "Pending",
-		"draft": "Draft"
+		"draft": "Draft",
+		"autoAccepted": "Accettato automaticamente"
 	},
 	"submissionsAdminPage": {
 		"title": "Invii - Questionario -",

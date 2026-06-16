@@ -1,11 +1,12 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { Clock, Check, X } from 'lucide-svelte';
+	import { Clock, Check, X, CheckCheck } from 'lucide-svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import { cn } from '$lib/utils/cn';
+	import type { SubmissionBadgeStatus } from '$lib/utils/questionnaire-types';
 
 	interface Props {
-		status: 'approved' | 'rejected' | 'pending review' | 'draft';
+		status: SubmissionBadgeStatus;
 		class?: string;
 	}
 
@@ -42,6 +43,13 @@
 					variant: 'outline' as const,
 					className: 'bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100'
 				};
+			case 'auto_accepted':
+				return {
+					icon: CheckCheck,
+					label: m['submissionStatusBadge.autoAccepted'](),
+					variant: 'success' as const,
+					className: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100'
+				};
 		}
 	});
 
@@ -58,6 +66,7 @@
   @example
   <SubmissionStatusBadge status="approved" />
   <SubmissionStatusBadge status="pending review" />
+  <SubmissionStatusBadge status="auto_accepted" />
 -->
 <Badge class={cn(config.className, 'gap-1.5', className)}>
 	<IconComponent class="h-3 w-3" aria-hidden="true" />

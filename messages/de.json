@@ -11,7 +11,9 @@
 		"private": "Nur mit Einladung",
 		"onlyInvitedUsers": "Nur eingeladene Nutzer können die Veranstaltung sehen",
 		"membersOnly": "Nur Organisationsmitglieder",
+		"membersOnlyDescription": "Nur Organisationsmitglieder können die Veranstaltung sehen",
 		"staffOnly": "Nur Personal",
+		"staffOnlyDescription": "Nur das Personal der Organisation kann die Veranstaltung sehen",
 		"everyoneCanAttend": "Jeder kann teilnehmen (Zusage/Ticket bekommen)",
 		"onlyInvitedPeople": "Nur eingeladene Personen können teilnehmen",
 		"onlyOrganizationMembers": "Nur Organisationsmitglieder können teilnehmen",
@@ -263,6 +265,7 @@
 		"saving": "Saving...",
 		"saveChanges": "Save Changes",
 		"errorNotLoggedIn": "Du musst angemeldet sein, um die Einstellungen anzuzeigen.",
+		"attendeeListProfileHeading": "Profilsichtbarkeit",
 		"billing": {
 			"title": "Rechnungsinformationen",
 			"description": "Ihre Rechnungsdaten für Ticketrechnungen und Empfehlungsauszahlungen."
@@ -4140,7 +4143,7 @@
 		"language_it": "Italienisch (Italiano)",
 		"buttons_submitText": "Änderungen speichern",
 		"buttons_submittingText": "Speichern...",
-		"settingsLink_text": "Datenschutz, Benachrichtigungen und Standort konfigurieren",
+		"settingsLink_text": "Benachrichtigungen und Standort konfigurieren",
 		"settingsLink_ariaHidden": "→",
 		"completeToReturn": "Vervollständige dein Profil, um fortzufahren. Du wirst nach dem Speichern zurückgeleitet.",
 		"savedRedirecting": "Profil aktualisiert! Weiterleitung..."
@@ -5009,7 +5012,8 @@
 		"approved": "Approved",
 		"rejected": "Rejected",
 		"pending": "Pending",
-		"draft": "Draft"
+		"draft": "Draft",
+		"autoAccepted": "Automatisch akzeptiert"
 	},
 	"submissionsAdminPage": {
 		"title": "Übermittlungen - Fragebogen -",

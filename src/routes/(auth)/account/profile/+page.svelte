@@ -6,14 +6,20 @@
 	import { goto } from '$app/navigation';
 	import type { PageData, ActionData } from './$types';
 	import { COMMON_PRONOUNS } from '$lib/schemas/profile';
-	import { Loader2, Check, Info, ShieldCheck, ShieldAlert, Mail } from 'lucide-svelte';
+	import type { VisibilityValue } from '$lib/schemas/preferences';
+	import { Loader2, Check, Info, ShieldCheck, ShieldAlert, Mail, Eye } from 'lucide-svelte';
 	import DietaryPreferencesManager from '$lib/components/profile/DietaryPreferencesManager.svelte';
 	import DietaryRestrictionsManager from '$lib/components/profile/DietaryRestrictionsManager.svelte';
 	import TelegramConnectionManager from '$lib/components/profile/TelegramConnectionManager.svelte';
 	import ProfilePictureUploader from '$lib/components/profile/ProfilePictureUploader.svelte';
+	import AttendeeVisibilitySelect from '$lib/components/profile/AttendeeVisibilitySelect.svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
-	import { accountResendVerificationEmail } from '$lib/api/generated';
+	import {
+		accountResendVerificationEmail,
+		userpreferencesUpdateGeneralPreferences
+	} from '$lib/api/generated';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { toast } from 'svelte-sonner';
 
 	interface Props {
 		data: PageData;
@@ -25,6 +31,10 @@
 	let isSubmitting = $state(false);
 	let manuallyShowingCustom = $state(false);
 	let isResendingVerification = $state(false);
+	let isSavingVisibility = $state(false);
+	let attendeeListVisibility = $state<VisibilityValue>(
+		data.generalPreferences?.show_me_on_attendee_list ?? 'never'
+	);
 	let verificationEmailSent = $state(false);
 	let verificationError = $state<string | null>(null);
 	let resendCooldown = $state(0);
@@ -106,6 +116,30 @@
 			}
 		};
 	});
+
+	async function saveAttendeeVisibility(newValue: VisibilityValue) {
+		if (!authStore.accessToken) return;
+
+		isSavingVisibility = true;
+		try {
+			const { error } = await userpreferencesUpdateGeneralPreferences({
+				headers: { Authorization: `Bearer ${authStore.accessToken}` },
+				body: {
+					show_me_on_attendee_list: newValue
+				}
+			});
+
+			if (error) {
+				toast.error(m['accountSettingsPage.general.updateError']());
+			} else {
+				toast.success(m['accountSettingsPage.general.updateSuccess']());
+			}
+		} catch {
+			toast.error(m['accountSettingsPage.general.updateError']());
+		} finally {
+			isSavingVisibility = false;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -157,7 +191,7 @@
 
 	<!-- Profile Picture Section -->
 	{#if authStore.accessToken && data.user}
-		<div class="mb-8">
+		<div class="mb-8 space-y-6">
 			<ProfilePictureUploader
 				currentPictureUrl={profilePictureUrl}
 				displayName={data.user.display_name}
@@ -182,6 +216,29 @@
 					}
 				}}
 			/>
+
+			<!-- Attendee List Visibility — surfaced here so users can set it right next to their photo -->
+			<div class="rounded-lg border bg-card p-4">
+				<div class="flex items-start gap-3">
+					<Eye class="mt-0.5 h-5 w-5 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
+					<div class="flex-1 space-y-3">
+						<h2 class="text-base font-semibold">
+							{m['accountSettingsPage.attendeeListProfileHeading']()}
+						</h2>
+						<AttendeeVisibilitySelect
+							bind:value={attendeeListVisibility}
+							onValueChange={saveAttendeeVisibility}
+							showHeading={false}
+						/>
+						{#if isSavingVisibility}
+							<p class="flex items-center gap-1.5 text-xs text-muted-foreground" aria-live="polite">
+								<Loader2 class="h-3 w-3 animate-spin" aria-hidden="true" />
+								{m['accountSettingsPage.saving']()}
+							</p>
+						{/if}
+					</div>
+				</div>
+			</div>
 		</div>
 	{/if}
 
@@ -576,7 +633,7 @@
 			href="/account/settings"
 			class="inline-flex items-center gap-2 text-sm text-primary underline-offset-4 hover:underline"
 		>
-			<span>Configure privacy, notifications and location</span>
+			<span>{m['profile.settingsLink_text']()}</span>
 			<span aria-hidden="true">→</span>
 		</a>
 	</div>

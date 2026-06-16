@@ -32,6 +32,20 @@ export type QuestionnaireSubmissionStatus = ApiQuestionnaireSubmissionStatus;
 export type QuestionnaireStatus = ApiQuestionnaireStatus;
 
 /**
+ * SubmissionBadgeStatus extends the backend QuestionnaireEvaluationStatus with a
+ * FE-only presentation status for submissions that need no human review.
+ *
+ * 'auto_accepted' is NOT a backend enum value — it is computed on the frontend
+ * via resolveSubmissionBadgeStatus() when requiresEvaluation === false.
+ */
+export type SubmissionBadgeStatus =
+	| 'approved'
+	| 'rejected'
+	| 'pending review'
+	| 'draft'
+	| 'auto_accepted';
+
+/**
  * Type guards for questionnaire evaluation status
  */
 export function isApproved(status: QuestionnaireEvaluationStatus | null | undefined): boolean {

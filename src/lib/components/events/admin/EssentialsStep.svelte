@@ -464,7 +464,7 @@
 						{m['SFwESEssentialsStep.membersOnly']()}
 					</div>
 					<div class="text-sm text-muted-foreground group-hover:text-accent-foreground/80">
-						Only organization members can see the event
+						{m['SFwESEssentialsStep.membersOnlyDescription']()}
 					</div>
 				</div>
 			</label>
@@ -485,7 +485,7 @@
 						{m['SFwESEssentialsStep.staffOnly']()}
 					</div>
 					<div class="text-sm text-muted-foreground group-hover:text-accent-foreground/80">
-						Only org's staff members can see the event
+						{m['SFwESEssentialsStep.staffOnlyDescription']()}
 					</div>
 				</div>
 			</label>

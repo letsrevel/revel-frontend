@@ -7,11 +7,11 @@
 	import { NotificationPreferencesForm } from '$lib/components/notifications';
 	import { BillingProfileForm } from '$lib/components/billing';
 	import CityAutocomplete from '$lib/components/forms/CityAutocomplete.svelte';
+	import AttendeeVisibilitySelect from '$lib/components/profile/AttendeeVisibilitySelect.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { Label } from '$lib/components/ui/label';
-	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { userpreferencesUpdateGeneralPreferences } from '$lib/api/generated';
 	import type { CitySchema } from '$lib/api/generated';
+	import type { VisibilityValue } from '$lib/schemas/preferences';
 	import { toast } from 'svelte-sonner';
 	import { Loader2, Eye, Info, FileText } from 'lucide-svelte';
 
@@ -26,7 +26,7 @@
 
 	// General preferences state
 	let selectedCity = $state<CitySchema | null>(data.generalPreferences?.city || null);
-	let attendeeListVisibility = $state<string>(
+	let attendeeListVisibility = $state<VisibilityValue>(
 		data.generalPreferences?.show_me_on_attendee_list ?? 'never'
 	);
 	let isUpdatingGeneral = $state(false);
@@ -46,12 +46,7 @@
 				},
 				body: {
 					city_id: selectedCity?.id || null,
-					show_me_on_attendee_list: attendeeListVisibility as
-						| 'never'
-						| 'to_members'
-						| 'to_invitees'
-						| 'to_both'
-						| 'always'
+					show_me_on_attendee_list: attendeeListVisibility
 				}
 			});
 
@@ -118,51 +113,11 @@
 				</div>
 
 				<!-- Privacy Settings -->
-				<div class="space-y-3">
-					<div class="flex items-start gap-2">
-						<Eye class="mt-0.5 h-5 w-5 text-muted-foreground" aria-hidden="true" />
-						<div class="flex-1">
-							<Label class="text-base font-medium">
-								{m['notificationPreferences.privacySettings']()}
-							</Label>
-							<p class="mt-1 text-sm text-muted-foreground">
-								{m['accountSettingsPage.privacyDescription']()}
-							</p>
-						</div>
+				<div class="flex items-start gap-2">
+					<Eye class="mt-0.5 h-5 w-5 text-muted-foreground" aria-hidden="true" />
+					<div class="flex-1">
+						<AttendeeVisibilitySelect bind:value={attendeeListVisibility} />
 					</div>
-
-					<RadioGroup.Root bind:value={attendeeListVisibility} class="ml-7 space-y-2">
-						<div class="flex items-center space-x-2">
-							<RadioGroup.Item value="never" id="privacy-never" />
-							<Label for="privacy-never" class="font-normal">
-								{m['accountSettingsPage.privacyNever']()}
-							</Label>
-						</div>
-						<div class="flex items-center space-x-2">
-							<RadioGroup.Item value="to_members" id="privacy-members" />
-							<Label for="privacy-members" class="font-normal">
-								{m['accountSettingsPage.privacyToMembers']()}
-							</Label>
-						</div>
-						<div class="flex items-center space-x-2">
-							<RadioGroup.Item value="to_invitees" id="privacy-invitees" />
-							<Label for="privacy-invitees" class="font-normal">
-								{m['accountSettingsPage.privacyToInvitees']()}
-							</Label>
-						</div>
-						<div class="flex items-center space-x-2">
-							<RadioGroup.Item value="to_both" id="privacy-both" />
-							<Label for="privacy-both" class="font-normal">
-								{m['accountSettingsPage.privacyToBoth']()}
-							</Label>
-						</div>
-						<div class="flex items-center space-x-2">
-							<RadioGroup.Item value="always" id="privacy-always" />
-							<Label for="privacy-always" class="font-normal">
-								{m['accountSettingsPage.privacyAlways']()}
-							</Label>
-						</div>
-					</RadioGroup.Root>
 				</div>
 
 				<!-- Save Button -->
