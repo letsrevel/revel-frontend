@@ -1,6 +1,6 @@
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { accountMe, accountUpdateProfile } from '$lib/api/generated';
+import { accountMe, accountUpdateProfile, userpreferencesGetGeneralPreferences } from '$lib/api/generated';
 import { profileUpdateSchema } from '$lib/schemas/profile';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { log } from '$lib/server/logger';
@@ -10,24 +10,34 @@ export const load: PageServerLoad = async ({ cookies }) => {
 
 	if (!accessToken) {
 		return {
-			user: null
+			user: null,
+			generalPreferences: null
 		};
 	}
 
 	try {
-		const { data } = await accountMe({
-			headers: {
-				Authorization: `Bearer ${accessToken}`
-			}
-		});
+		const [{ data: user }, { data: generalPreferences }] = await Promise.all([
+			accountMe({
+				headers: {
+					Authorization: `Bearer ${accessToken}`
+				}
+			}),
+			userpreferencesGetGeneralPreferences({
+				headers: {
+					Authorization: `Bearer ${accessToken}`
+				}
+			})
+		]);
 
 		return {
-			user: data
+			user,
+			generalPreferences: generalPreferences ?? null
 		};
 	} catch (error) {
 		log.error('profile_user_fetch_failed', { error });
 		return {
-			user: null
+			user: null,
+			generalPreferences: null
 		};
 	}
 };

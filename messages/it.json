@@ -265,6 +265,7 @@
 		"saving": "Saving...",
 		"saveChanges": "Save Changes",
 		"errorNotLoggedIn": "Devi essere loggato per visualizzare le impostazioni.",
+		"attendeeListProfileHeading": "Visibilità nelle Liste Partecipanti",
 		"billing": {
 			"title": "Dati di Fatturazione",
 			"description": "I tuoi dati di fatturazione per le fatture dei biglietti e i pagamenti referral."

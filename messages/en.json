@@ -265,6 +265,7 @@
 		"saving": "Saving...",
 		"saveChanges": "Save Changes",
 		"errorNotLoggedIn": "You must be logged in to view settings.",
+		"attendeeListProfileHeading": "Attendee List Visibility",
 		"billing": {
 			"title": "Billing Information",
 			"description": "Your billing details for ticket purchase invoices and referral payouts."

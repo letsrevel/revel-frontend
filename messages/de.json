@@ -265,6 +265,7 @@
 		"saving": "Saving...",
 		"saveChanges": "Save Changes",
 		"errorNotLoggedIn": "Du musst angemeldet sein, um die Einstellungen anzuzeigen.",
+		"attendeeListProfileHeading": "Sichtbarkeit auf Teilnehmerlisten",
 		"billing": {
 			"title": "Rechnungsinformationen",
 			"description": "Ihre Rechnungsdaten für Ticketrechnungen und Empfehlungsauszahlungen."
