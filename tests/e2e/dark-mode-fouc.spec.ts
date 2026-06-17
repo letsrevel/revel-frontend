@@ -1,4 +1,12 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+
+// Seed the mode-watcher preference before any document script runs, so the
+// inline anti-FOUC script sees it on the very first paint.
+async function seedModePreference(page: Page, mode: 'dark' | 'light'): Promise<void> {
+	await page.addInitScript((value: string) => {
+		window.localStorage.setItem('mode-watcher-mode', value);
+	}, mode);
+}
 
 // Regression test for #440: dark-mode users saw a light flash (FOUC) on SSR
 // loads. The fix is a synchronous, nonced inline script in app.html that applies
@@ -36,11 +44,7 @@ test.describe('dark-mode anti-FOUC (#440)', () => {
 	});
 
 	test('applies the dark class before hydration for a dark-mode user', async ({ page }) => {
-		// Seed the mode-watcher preference before any document script runs, so the
-		// inline anti-FOUC script sees it on the very first paint.
-		await page.addInitScript(() => {
-			window.localStorage.setItem('mode-watcher-mode', 'dark');
-		});
+		await seedModePreference(page, 'dark');
 
 		await page.goto('/');
 
@@ -50,9 +54,7 @@ test.describe('dark-mode anti-FOUC (#440)', () => {
 	});
 
 	test('does not force dark on an explicit light-mode user', async ({ page }) => {
-		await page.addInitScript(() => {
-			window.localStorage.setItem('mode-watcher-mode', 'light');
-		});
+		await seedModePreference(page, 'light');
 
 		await page.goto('/');
 
