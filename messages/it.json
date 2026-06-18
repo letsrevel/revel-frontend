@@ -1724,6 +1724,8 @@
 		"unknownUser": "Sconosciuto",
 		"notAvailable": "N/D",
 		"free": "Gratuito",
+		"discountApplied": "Codice sconto {code} applicato: {amount} di sconto",
+		"discountAppliedNoAmount": "Codice sconto {code} applicato",
 		"actionUnconfirmPayment": "Ripristina a in attesa",
 		"unconfirmPaymentTitle": "Ripristina stato pagamento",
 		"unconfirmPaymentMessage": "Vuoi davvero ripristinare questo biglietto allo stato in attesa? La conferma del pagamento verrà annullata.",

@@ -1724,6 +1724,8 @@
 		"unknownUser": "Unknown User",
 		"notAvailable": "N/A",
 		"free": "Free",
+		"discountApplied": "Discount code {code} applied: {amount} off",
+		"discountAppliedNoAmount": "Discount code {code} applied",
 		"actionUnconfirmPayment": "Revert to Pending",
 		"unconfirmPaymentTitle": "Revert Payment Status",
 		"unconfirmPaymentMessage": "Are you sure you want to revert this ticket to pending status? The payment confirmation will be undone.",

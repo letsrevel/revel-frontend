@@ -32,6 +32,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 	import RefundStatusBadge from './RefundStatusBadge.svelte';
+	import TicketDiscountBadge from './TicketDiscountBadge.svelte';
 
 	interface Props {
 		tickets: any[];
@@ -178,6 +179,7 @@
 								m['eventTicketsAdmin.free']()
 							)}
 						</div>
+						<TicketDiscountBadge {ticket} />
 					</td>
 					<td class="px-4 py-3">
 						<div class="flex items-center gap-1 text-sm">
