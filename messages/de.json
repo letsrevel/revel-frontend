@@ -1731,7 +1731,21 @@
 		"unconfirmPaymentMessage": "Möchtest du dieses Ticket wirklich auf ausstehend zurücksetzen? Die Zahlungsbestätigung wird rückgängig gemacht.",
 		"unconfirmPaymentConfirm": "Auf Ausstehend zurücksetzen",
 		"unconfirmPaymentSuccess": "Ticket auf ausstehend zurückgesetzt",
-		"unconfirmPaymentError": "Zahlungsstatus konnte nicht zurückgesetzt werden"
+		"unconfirmPaymentError": "Zahlungsstatus konnte nicht zurückgesetzt werden",
+		"revenueTitle": "Gesamteinnahmen",
+		"revenuePaidTickets": "{count} bezahlte Tickets",
+		"revenueNet": "Netto {amount}",
+		"revenueRefunded": "{amount} erstattet",
+		"sortLabel": "Sortieren nach",
+		"sortDefault": "Standardreihenfolge",
+		"sortNewest": "Neueste zuerst",
+		"sortOldest": "Älteste zuerst",
+		"sortTierAsc": "Kategorie (A–Z)",
+		"sortTierDesc": "Kategorie (Z–A)",
+		"sortPriceAsc": "Preis (aufsteigend)",
+		"sortPriceDesc": "Preis (absteigend)",
+		"sortStatus": "Status",
+		"sortPayment": "Zahlungsart"
 	},
 	"eventTokenCard": {
 		"type": "Typ:",

@@ -1,6 +1,12 @@
 import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { eventpublicdetailsGetEvent, eventadminticketsListTickets } from '$lib/api';
+import {
+	eventpublicdetailsGetEvent,
+	eventadminticketsListTickets,
+	eventadminticketsGetEventRevenue
+} from '$lib/api';
+import { parseTicketOrderBy } from '$lib/components/tickets/ticket-sort';
+import type { EventRevenueSchema } from '$lib/api/generated/types.gen';
 import { log } from '$lib/server/logger';
 
 export const load: PageServerLoad = async ({ parent, params, locals, fetch, url }) => {
@@ -67,8 +73,22 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 	const status = url.searchParams.get('status') || undefined;
 	const paymentMethod = url.searchParams.get('payment_method') || undefined;
 	const search = url.searchParams.get('search') || undefined;
+	const orderBy = parseTicketOrderBy(url.searchParams.get('order_by'));
 	const page = parseInt(url.searchParams.get('page') || '1');
 	const pageSize = 100; // Fixed page size
+
+	// Whole-event revenue aggregate (independent of the current page / filters).
+	// Loaded in parallel with the ticket list; failures degrade to null.
+	const revenuePromise: Promise<EventRevenueSchema | null> = eventadminticketsGetEventRevenue({
+		fetch,
+		path: { event_id: params.event_id },
+		headers
+	})
+		.then((res) => res.data ?? null)
+		.catch((err) => {
+			log.error('event_revenue_load_failed', { error: err, eventId: params.event_id });
+			return null;
+		});
 
 	// Load tickets with filters
 	let tickets: any[] = [];
@@ -84,6 +104,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 				status: status as any,
 				tier__payment_method: paymentMethod as any,
 				search,
+				order_by: orderBy,
 				page,
 				page_size: pageSize,
 				include_past: true // Always show tickets in admin, even for past events
@@ -113,10 +134,12 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 		previousPage,
 		currentPage: page,
 		pageSize,
+		revenue: await revenuePromise,
 		filters: {
 			status,
 			paymentMethod,
-			search
+			search,
+			orderBy
 		}
 	};
 };

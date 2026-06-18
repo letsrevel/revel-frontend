@@ -1,24 +1,46 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import SearchInput from '$lib/components/events/filters/SearchInput.svelte';
+	import { parseTicketOrderBy, type TicketOrderBy } from './ticket-sort';
 
 	interface Props {
 		searchQuery: string;
 		selectedStatus: string | null;
 		selectedPaymentMethod: string | null;
+		selectedOrderBy?: TicketOrderBy;
 		onSearch: (value: string) => void;
 		onStatusFilter: (status: string | null) => void;
 		onPaymentMethodFilter: (method: string | null) => void;
+		onSort?: (orderBy: TicketOrderBy | undefined) => void;
 	}
 
 	const {
 		searchQuery,
 		selectedStatus,
 		selectedPaymentMethod,
+		selectedOrderBy,
 		onSearch,
 		onStatusFilter,
-		onPaymentMethodFilter
+		onPaymentMethodFilter,
+		onSort
 	}: Props = $props();
+
+	// Mobile sort options (the desktop table sorts via clickable column headers).
+	const sortOptions: { value: TicketOrderBy; label: () => string }[] = [
+		{ value: '-created_at', label: m['eventTicketsAdmin.sortNewest'] },
+		{ value: 'created_at', label: m['eventTicketsAdmin.sortOldest'] },
+		{ value: 'tier__name', label: m['eventTicketsAdmin.sortTierAsc'] },
+		{ value: '-tier__name', label: m['eventTicketsAdmin.sortTierDesc'] },
+		{ value: 'price', label: m['eventTicketsAdmin.sortPriceAsc'] },
+		{ value: '-price', label: m['eventTicketsAdmin.sortPriceDesc'] },
+		{ value: 'status', label: m['eventTicketsAdmin.sortStatus'] },
+		{ value: 'tier__payment_method', label: m['eventTicketsAdmin.sortPayment'] }
+	];
+
+	function handleSortChange(event: Event) {
+		const value = (event.currentTarget as HTMLSelectElement).value;
+		onSort?.(parseTicketOrderBy(value));
+	}
 </script>
 
 <div class="mt-6 space-y-4">
@@ -29,6 +51,26 @@
 		placeholder={m['eventTicketsAdmin.searchPlaceholder']()}
 		ariaLabel={m['eventTicketsAdmin.searchPlaceholder']()}
 	/>
+
+	<!-- Mobile sort (desktop uses the table column headers) -->
+	{#if onSort}
+		<div class="md:hidden">
+			<label for="ticket-sort" class="mb-2 block text-sm font-semibold">
+				{m['eventTicketsAdmin.sortLabel']()}
+			</label>
+			<select
+				id="ticket-sort"
+				value={selectedOrderBy ?? ''}
+				onchange={handleSortChange}
+				class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+			>
+				<option value="">{m['eventTicketsAdmin.sortDefault']()}</option>
+				{#each sortOptions as option (option.value)}
+					<option value={option.value}>{option.label()}</option>
+				{/each}
+			</select>
+		</div>
+	{/if}
 
 	<!-- Status Filters -->
 	<div>

@@ -30,6 +30,12 @@
 	import TicketFilters from '$lib/components/tickets/TicketFilters.svelte';
 	import TicketTable from '$lib/components/tickets/TicketTable.svelte';
 	import TicketCardList from '$lib/components/tickets/TicketCardList.svelte';
+	import TicketStats from '$lib/components/tickets/TicketStats.svelte';
+	import {
+		nextOrderBy,
+		type TicketOrderBy,
+		type TicketSortField
+	} from '$lib/components/tickets/ticket-sort';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import QRScannerModal from '$lib/components/tickets/QRScannerModal.svelte';
 	import CheckInDialog from '$lib/components/tickets/CheckInDialog.svelte';
@@ -44,6 +50,9 @@
 	// Filter states
 	let selectedStatus = $state<string | null>(data.filters.status || null);
 	let selectedPaymentMethod = $state<string | null>(data.filters.paymentMethod || null);
+
+	// Sort state (server-side, persisted in the URL)
+	let selectedOrderBy = $state<TicketOrderBy | undefined>(data.filters.orderBy ?? undefined);
 
 	// Confirmation dialogs
 	let showCancelDialog = $state(false);
@@ -380,10 +389,27 @@
 		if (searchQuery) params.set('search', searchQuery);
 		if (selectedStatus) params.set('status', selectedStatus);
 		if (selectedPaymentMethod) params.set('payment_method', selectedPaymentMethod);
+		if (selectedOrderBy) params.set('order_by', selectedOrderBy);
 		// Reset to page 1 when filters change
 		params.set('page', '1');
 
 		goto(`?${params.toString()}`, { replaceState: true, keepFocus: true });
+	}
+
+	/**
+	 * Set the sort order directly (used by the mobile sort select).
+	 */
+	function setOrderBy(orderBy: TicketOrderBy | undefined) {
+		selectedOrderBy = orderBy;
+		applyFilters();
+	}
+
+	/**
+	 * Toggle sort on a column header (asc ↔ desc).
+	 */
+	function handleSort(field: TicketSortField) {
+		selectedOrderBy = nextOrderBy(selectedOrderBy, field);
+		applyFilters();
 	}
 
 	/**
@@ -575,56 +601,18 @@
 	</div>
 
 	<!-- Stats (always shown) -->
-	<div class="space-y-4">
-		<!-- Warning for incomplete data -->
-		{#if hasMultiplePages}
-			<div
-				class="flex items-start gap-2 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-100"
-				role="alert"
-			>
-				<AlertTriangle class="h-5 w-5 shrink-0" aria-hidden="true" />
-				<div>
-					<p class="font-medium">Numbers shown are for the current page only</p>
-					<p class="text-sm">
-						Total tickets: {data.totalCount}. Navigate through pages to see all tickets.
-					</p>
-				</div>
-			</div>
-		{/if}
-
-		<!-- Stats grid -->
-		<div class="grid gap-4 sm:grid-cols-5">
-			<div class="rounded-lg border bg-card p-4">
-				<div class="text-2xl font-bold">{stats.total}</div>
-				<div class="text-sm text-muted-foreground">{m['eventTicketsAdmin.statsTotalPage']()}</div>
-			</div>
-			<div class="rounded-lg border bg-card p-4">
-				<div class="text-2xl font-bold text-yellow-600">{stats.pending}</div>
-				<div class="text-sm text-muted-foreground">{m['eventTicketsAdmin.statsPending']()}</div>
-			</div>
-			<div class="rounded-lg border bg-card p-4">
-				<div class="text-2xl font-bold text-green-600">{stats.active}</div>
-				<div class="text-sm text-muted-foreground">{m['eventTicketsAdmin.statsActive']()}</div>
-			</div>
-			<div class="rounded-lg border bg-card p-4">
-				<div class="text-2xl font-bold text-blue-600">{stats.checkedIn}</div>
-				<div class="text-sm text-muted-foreground">{m['eventTicketsAdmin.statsCheckedIn']()}</div>
-			</div>
-			<div class="rounded-lg border bg-card p-4">
-				<div class="text-2xl font-bold text-red-600">{stats.cancelled}</div>
-				<div class="text-sm text-muted-foreground">{m['eventTicketsAdmin.statsCancelled']()}</div>
-			</div>
-		</div>
-	</div>
+	<TicketStats {stats} totalCount={data.totalCount} {hasMultiplePages} revenue={data.revenue} />
 
 	<!-- Search and Filters -->
 	<TicketFilters
 		{searchQuery}
 		{selectedStatus}
 		{selectedPaymentMethod}
+		{selectedOrderBy}
 		onSearch={handleSearch}
 		onStatusFilter={setStatusFilter}
 		onPaymentMethodFilter={setPaymentMethodFilter}
+		onSort={setOrderBy}
 	/>
 
 	<!-- Tickets List -->
@@ -647,6 +635,8 @@
 			<!-- Desktop Table -->
 			<TicketTable
 				tickets={data.tickets}
+				orderBy={selectedOrderBy}
+				onSort={handleSort}
 				checkInPending={checkInTicketMutation.isPending}
 				confirmPaymentPending={confirmPaymentMutation.isPending}
 				cancelTicketPending={cancelTicketMutation.isPending}

@@ -1731,7 +1731,21 @@
 		"unconfirmPaymentMessage": "Vuoi davvero ripristinare questo biglietto allo stato in attesa? La conferma del pagamento verrà annullata.",
 		"unconfirmPaymentConfirm": "Ripristina a in attesa",
 		"unconfirmPaymentSuccess": "Biglietto ripristinato allo stato in attesa",
-		"unconfirmPaymentError": "Impossibile ripristinare lo stato del pagamento"
+		"unconfirmPaymentError": "Impossibile ripristinare lo stato del pagamento",
+		"revenueTitle": "Totale incassato",
+		"revenuePaidTickets": "{count} biglietti pagati",
+		"revenueNet": "Netto {amount}",
+		"revenueRefunded": "{amount} rimborsati",
+		"sortLabel": "Ordina per",
+		"sortDefault": "Ordine predefinito",
+		"sortNewest": "Più recenti",
+		"sortOldest": "Meno recenti",
+		"sortTierAsc": "Categoria (A–Z)",
+		"sortTierDesc": "Categoria (Z–A)",
+		"sortPriceAsc": "Prezzo (crescente)",
+		"sortPriceDesc": "Prezzo (decrescente)",
+		"sortStatus": "Stato",
+		"sortPayment": "Metodo di pagamento"
 	},
 	"eventTokenCard": {
 		"type": "Tipo:",
