@@ -13,6 +13,7 @@
 		Layers,
 		MoreHorizontal,
 		Eye,
+		CalendarOff,
 		Loader2
 	} from 'lucide-svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
@@ -25,11 +26,21 @@
 		onEdit?: () => void;
 		onDelete?: () => void;
 		onSend?: () => void;
+		onUnschedule?: () => void;
 	}
 
-	const { announcement, isLoadingEdit = false, onView, onEdit, onDelete, onSend }: Props = $props();
+	const {
+		announcement,
+		isLoadingEdit = false,
+		onView,
+		onEdit,
+		onDelete,
+		onSend,
+		onUnschedule
+	}: Props = $props();
 
 	const isDraft = $derived(announcement.status === 'draft');
+	const isScheduled = $derived(announcement.status === 'scheduled');
 
 	// Determine target description
 	const targetInfo = $derived.by(() => {
@@ -64,8 +75,14 @@
 	<div class="min-w-0 flex-1">
 		<div class="mb-2 flex items-center gap-2">
 			<h3 class="truncate font-medium">{announcement.title}</h3>
-			<Badge variant={isDraft ? 'secondary' : 'default'}>
-				{isDraft ? m['announcements.card.draft']() : m['announcements.card.sent']()}
+			<Badge variant={isDraft ? 'secondary' : isScheduled ? 'outline' : 'default'}>
+				{#if isDraft}
+					{m['announcements.card.draft']()}
+				{:else if isScheduled}
+					{m['announcements.card.scheduled']()}
+				{:else}
+					{m['announcements.card.sent']()}
+				{/if}
 			</Badge>
 		</div>
 
@@ -77,7 +94,17 @@
 			</div>
 
 			<!-- Date -->
-			{#if isDraft}
+			{#if isScheduled}
+				{#if announcement.scheduled_at}
+					<span
+						>{m['announcements.card.scheduledFor']({
+							date: formatRelativeTime(announcement.scheduled_at)
+						})}</span
+					>
+				{:else}
+					<span>{m['announcements.card.scheduledRelative']()}</span>
+				{/if}
+			{:else if isDraft}
 				<span
 					>{m['announcements.card.createdAt']({
 						date: formatRelativeTime(announcement.created_at)
@@ -92,7 +119,7 @@
 			{/if}
 
 			<!-- Recipient count (only for sent) -->
-			{#if !isDraft && announcement.recipient_count && announcement.recipient_count > 0}
+			{#if announcement.status === 'sent' && announcement.recipient_count && announcement.recipient_count > 0}
 				<span
 					>{m['announcements.card.recipients']({
 						count: String(announcement.recipient_count)
@@ -117,6 +144,20 @@
 			<Button variant="default" size="sm" onclick={onSend}>
 				<Send class="mr-1.5 h-4 w-4" aria-hidden="true" />
 				{m['announcements.send']()}
+			</Button>
+		{:else if isScheduled}
+			<!-- Quick actions for scheduled announcements -->
+			<Button variant="outline" size="sm" onclick={onEdit} disabled={isLoadingEdit}>
+				{#if isLoadingEdit}
+					<Loader2 class="mr-1.5 h-4 w-4 animate-spin" aria-hidden="true" />
+				{:else}
+					<Edit class="mr-1.5 h-4 w-4" aria-hidden="true" />
+				{/if}
+				{m['announcements.edit']()}
+			</Button>
+			<Button variant="outline" size="sm" onclick={onUnschedule}>
+				<CalendarOff class="mr-1.5 h-4 w-4" aria-hidden="true" />
+				{m['announcements.unschedule']()}
 			</Button>
 		{:else}
 			<!-- Quick action for sent announcements -->
@@ -154,6 +195,19 @@
 					<DropdownMenu.Item onclick={onDelete} class="text-destructive focus:text-destructive">
 						<Trash2 class="mr-2 h-4 w-4" />
 						{m['announcements.delete']()}
+					</DropdownMenu.Item>
+				{:else if isScheduled}
+					<DropdownMenu.Item onclick={onView}>
+						<Eye class="mr-2 h-4 w-4" />
+						{m['announcements.view']()}
+					</DropdownMenu.Item>
+					<DropdownMenu.Item onclick={onEdit}>
+						<Edit class="mr-2 h-4 w-4" />
+						{m['announcements.edit']()}
+					</DropdownMenu.Item>
+					<DropdownMenu.Item onclick={onUnschedule}>
+						<CalendarOff class="mr-2 h-4 w-4" />
+						{m['announcements.unschedule']()}
 					</DropdownMenu.Item>
 				{:else}
 					<!-- Sent announcements - view only -->

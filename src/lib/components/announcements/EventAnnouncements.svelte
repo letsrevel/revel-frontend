@@ -1,6 +1,5 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import type { AnnouncementPublicSchema } from '$lib/api/generated/types.gen';
 	import { eventpublicdetailsListEventAnnouncements } from '$lib/api/generated/sdk.gen';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -43,7 +42,7 @@
 </script>
 
 {#if hasAnnouncements || isLoading}
-	<section class="space-y-3">
+	<section class="space-y-3 rounded-lg border border-primary/30 bg-primary/5 p-4 sm:p-5">
 		<!-- Header -->
 		<button
 			type="button"
@@ -53,7 +52,7 @@
 			aria-controls="event-announcements-content"
 		>
 			<div class="flex items-center gap-2">
-				<Megaphone class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+				<Megaphone class="h-5 w-5 text-primary" aria-hidden="true" />
 				<h2 class="text-lg font-semibold">{m['announcements.public.title']()}</h2>
 				{#if hasAnnouncements}
 					<span class="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
