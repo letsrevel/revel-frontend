@@ -33,8 +33,10 @@
 		{ value: '-tier__name', label: m['eventTicketsAdmin.sortTierDesc'] },
 		{ value: 'price', label: m['eventTicketsAdmin.sortPriceAsc'] },
 		{ value: '-price', label: m['eventTicketsAdmin.sortPriceDesc'] },
-		{ value: 'status', label: m['eventTicketsAdmin.sortStatus'] },
-		{ value: 'tier__payment_method', label: m['eventTicketsAdmin.sortPayment'] }
+		{ value: 'status', label: m['eventTicketsAdmin.sortStatusAsc'] },
+		{ value: '-status', label: m['eventTicketsAdmin.sortStatusDesc'] },
+		{ value: 'tier__payment_method', label: m['eventTicketsAdmin.sortPaymentAsc'] },
+		{ value: '-tier__payment_method', label: m['eventTicketsAdmin.sortPaymentDesc'] }
 	];
 
 	function handleSortChange(event: Event) {

@@ -1744,8 +1744,10 @@
 		"sortTierDesc": "Kategorie (Z–A)",
 		"sortPriceAsc": "Preis (aufsteigend)",
 		"sortPriceDesc": "Preis (absteigend)",
-		"sortStatus": "Status",
-		"sortPayment": "Zahlungsart"
+		"sortStatusAsc": "Status (A–Z)",
+		"sortStatusDesc": "Status (Z–A)",
+		"sortPaymentAsc": "Zahlungsart (A–Z)",
+		"sortPaymentDesc": "Zahlungsart (Z–A)"
 	},
 	"eventTokenCard": {
 		"type": "Typ:",
