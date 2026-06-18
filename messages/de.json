@@ -1724,6 +1724,8 @@
 		"unknownUser": "Unbekannt",
 		"notAvailable": "k.A.",
 		"free": "Kostenlos",
+		"discountApplied": "Rabattcode {code} angewendet: {amount} Rabatt",
+		"discountAppliedNoAmount": "Rabattcode {code} angewendet",
 		"actionUnconfirmPayment": "Auf Ausstehend zurücksetzen",
 		"unconfirmPaymentTitle": "Zahlungsstatus zurücksetzen",
 		"unconfirmPaymentMessage": "Möchtest du dieses Ticket wirklich auf ausstehend zurücksetzen? Die Zahlungsbestätigung wird rückgängig gemacht.",

@@ -32,6 +32,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 	import RefundStatusBadge from './RefundStatusBadge.svelte';
+	import TicketDiscountBadge from './TicketDiscountBadge.svelte';
 
 	interface Props {
 		tickets: any[];
@@ -152,13 +153,16 @@
 				</div>
 				<div class="flex items-center justify-between">
 					<span class="text-muted-foreground">{m['eventTicketsAdmin.headerPrice']()}:</span>
-					<span class="font-medium"
-						>{formatPrice(
-							getTicketPrice(ticket),
-							ticket.payment?.currency || ticket.tier?.currency,
-							m['eventTicketsAdmin.free']()
-						)}</span
-					>
+					<div class="flex flex-col items-end">
+						<span class="font-medium"
+							>{formatPrice(
+								getTicketPrice(ticket),
+								ticket.payment?.currency || ticket.tier?.currency,
+								m['eventTicketsAdmin.free']()
+							)}</span
+						>
+						<TicketDiscountBadge {ticket} />
+					</div>
 				</div>
 				<div class="flex items-center justify-between">
 					<span class="text-muted-foreground">{m['eventTicketsAdmin.labelPayment']()}:</span>
