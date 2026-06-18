@@ -2,13 +2,15 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type {
 		AnnouncementSchema,
+		AnnouncementScheduleSchema,
 		EventInListSchema,
 		MembershipTierSchema
 	} from '$lib/api/generated/types.gen';
 	import {
 		organizationadminannouncementsCreateAnnouncement,
 		organizationadminannouncementsUpdateAnnouncement,
-		organizationadminannouncementsSendAnnouncement
+		organizationadminannouncementsSendAnnouncement,
+		organizationadminannouncementsScheduleAnnouncement
 	} from '$lib/api/generated/sdk.gen';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
@@ -16,6 +18,13 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
+	import AnnouncementScheduleFields from './AnnouncementScheduleFields.svelte';
+	import type {
+		SendMode,
+		ScheduleKind,
+		ScheduleAnchor,
+		OffsetDirection
+	} from './AnnouncementScheduleFields.svelte';
 	import { Loader2, ChevronDown, ChevronUp, Users, UserCog, Calendar, Layers } from 'lucide-svelte';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -61,8 +70,17 @@
 	let selectedEventId = $state<string | null>(null);
 	let selectedTierIds = $state<string[]>([]);
 	let pastVisibility = $state(true);
+	let resendToNewSignups = $state(false);
 	let showAdvanced = $state(false);
-	let errors = $state<{ title?: string; body?: string; target?: string }>({});
+	let errors = $state<{ title?: string; body?: string; target?: string; schedule?: string }>({});
+
+	// Scheduling (#454)
+	let sendMode = $state<SendMode>('now');
+	let scheduleKind = $state<ScheduleKind>('absolute');
+	let scheduledAt = $state('');
+	let scheduleAnchor = $state<ScheduleAnchor>('event_start');
+	let offsetDirection = $state<OffsetDirection>('before');
+	let offsetMinutes = $state<number | null>(null);
 
 	// Derived
 	const isEditing = $derived(!!announcement);
@@ -75,6 +93,32 @@
 				title = announcement.title;
 				body = announcement.body ?? '';
 				pastVisibility = announcement.past_visibility ?? true;
+				resendToNewSignups = announcement.resend_to_new_signups ?? false;
+
+				// Load existing schedule (#454) so editing a scheduled announcement
+				// reopens in the same mode.
+				if (announcement.status === 'scheduled') {
+					sendMode = 'schedule';
+					if (announcement.schedule_anchor) {
+						scheduleKind = 'relative';
+						scheduleAnchor = announcement.schedule_anchor;
+						const off = announcement.schedule_offset_minutes ?? 0;
+						offsetDirection = off < 0 ? 'before' : 'after';
+						offsetMinutes = Math.abs(off) || null;
+						scheduledAt = '';
+					} else {
+						scheduleKind = 'absolute';
+						scheduledAt = announcement.scheduled_at ?? '';
+						offsetMinutes = null;
+					}
+				} else {
+					sendMode = 'now';
+					scheduleKind = 'absolute';
+					scheduledAt = '';
+					scheduleAnchor = 'event_start';
+					offsetDirection = 'before';
+					offsetMinutes = null;
+				}
 
 				// Determine target type from announcement
 				if (announcement.event_id) {
@@ -97,7 +141,14 @@
 				selectedEventId = preSelectedEventId || null;
 				selectedTierIds = [];
 				pastVisibility = true;
+				resendToNewSignups = false;
 				showAdvanced = false;
+				sendMode = 'now';
+				scheduleKind = 'absolute';
+				scheduledAt = '';
+				scheduleAnchor = 'event_start';
+				offsetDirection = 'before';
+				offsetMinutes = null;
 			}
 			errors = {};
 		}
@@ -182,8 +233,33 @@
 		}
 	}));
 
+	// Schedule mutation (#454) — runs after create/update, mirroring send.
+	const scheduleMut = createMutation(() => ({
+		mutationFn: async (vars: { announcementId: string; payload: AnnouncementScheduleSchema }) => {
+			const response = await organizationadminannouncementsScheduleAnnouncement({
+				path: { slug: organizationSlug, announcement_id: vars.announcementId },
+				body: vars.payload,
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+			if (response.error) throw response.error;
+			return response.data;
+		},
+		onSuccess: () => {
+			toast.success(m['announcements.toast.scheduled']());
+			queryClient.invalidateQueries({ queryKey: ['announcements', organizationSlug] });
+			onSuccess();
+		},
+		onError: () => {
+			toast.error(m['announcements.toast.error']());
+		}
+	}));
+
 	const isSaving = $derived(createMut.isPending || updateMut.isPending);
 	const isSending = $derived(sendMut.isPending);
+	const isScheduling = $derived(scheduleMut.isPending);
+	const isBusy = $derived(isSaving || isSending || isScheduling);
+
+	const isEventTarget = $derived(targetType === 'event');
 
 	// Validation
 	function validate(): boolean {
@@ -209,6 +285,23 @@
 			return false;
 		}
 
+		// Validate schedule when scheduling (#454).
+		if (sendMode === 'schedule') {
+			if (scheduleKind === 'absolute') {
+				if (!scheduledAt) {
+					errors.schedule = m['announcements.validation.scheduledAtRequired']();
+					return false;
+				}
+				if (new Date(scheduledAt).getTime() <= Date.now()) {
+					errors.schedule = m['announcements.validation.scheduledAtFuture']();
+					return false;
+				}
+			} else if (!offsetMinutes || offsetMinutes < 1) {
+				errors.schedule = m['announcements.validation.offsetRequired']();
+				return false;
+			}
+		}
+
 		return true;
 	}
 
@@ -220,7 +313,24 @@
 			target_all_members: targetType === 'all_members',
 			target_tier_ids: targetType === 'tiers' ? selectedTierIds : [],
 			target_staff_only: targetType === 'staff_only',
-			past_visibility: pastVisibility
+			past_visibility: pastVisibility,
+			resend_to_new_signups: resendToNewSignups
+		};
+	}
+
+	function getSchedulePayload(): AnnouncementScheduleSchema {
+		if (scheduleKind === 'absolute') {
+			return {
+				scheduled_at: new Date(scheduledAt).toISOString(),
+				schedule_anchor: null,
+				schedule_offset_minutes: null
+			};
+		}
+		const magnitude = offsetMinutes ?? 0;
+		return {
+			scheduled_at: null,
+			schedule_anchor: scheduleAnchor,
+			schedule_offset_minutes: offsetDirection === 'before' ? -magnitude : magnitude
 		};
 	}
 
@@ -236,29 +346,25 @@
 		}
 	}
 
-	async function handleSend() {
+	async function handlePrimaryAction() {
 		if (!validate()) return;
 
 		const data = getFormData();
 
+		// After the draft is persisted, either send immediately or schedule it.
+		const finalize = (id?: string | null) => {
+			if (!id) return;
+			if (sendMode === 'schedule') {
+				scheduleMut.mutate({ announcementId: id, payload: getSchedulePayload() });
+			} else {
+				sendMut.mutate(id);
+			}
+		};
+
 		if (isEditing) {
-			// For existing announcements, update first then send
-			updateMut.mutate(data, {
-				onSuccess: (updatedAnnouncement) => {
-					if (updatedAnnouncement?.id) {
-						sendMut.mutate(updatedAnnouncement.id);
-					}
-				}
-			});
+			updateMut.mutate(data, { onSuccess: (updated) => finalize(updated?.id) });
 		} else {
-			// For new announcements, create first then send
-			createMut.mutate(data, {
-				onSuccess: (createdAnnouncement) => {
-					if (createdAnnouncement?.id) {
-						sendMut.mutate(createdAnnouncement.id);
-					}
-				}
-			});
+			createMut.mutate(data, { onSuccess: (created) => finalize(created?.id) });
 		}
 	}
 
@@ -522,12 +628,12 @@
 				{/if}
 			</div>
 
-			<!-- Past Visibility -->
+			<!-- Past Visibility (page visibility for late joiners) -->
 			<div class="flex items-start gap-3 rounded-lg border p-3">
 				<Checkbox
 					id="past-visibility"
 					bind:checked={pastVisibility}
-					disabled={isSaving}
+					disabled={isBusy}
 					class="mt-0.5"
 				/>
 				<div class="flex-1">
@@ -540,22 +646,55 @@
 				</div>
 			</div>
 
+			<!-- Email late joiners (delta send, #455) -->
+			<div class="flex items-start gap-3 rounded-lg border p-3">
+				<Checkbox
+					id="resend-new-signups"
+					bind:checked={resendToNewSignups}
+					disabled={isBusy}
+					class="mt-0.5"
+				/>
+				<div class="flex-1">
+					<Label for="resend-new-signups" class="cursor-pointer font-medium">
+						{m['announcements.form.resendToNewSignups']()}
+					</Label>
+					<p class="text-sm text-muted-foreground">
+						{m['announcements.form.resendToNewSignupsDesc']()}
+					</p>
+				</div>
+			</div>
+
+			<!-- Schedule (#454) -->
+			<AnnouncementScheduleFields
+				bind:sendMode
+				bind:scheduleKind
+				bind:scheduledAt
+				bind:scheduleAnchor
+				bind:offsetDirection
+				bind:offsetMinutes
+				{isEventTarget}
+				disabled={isBusy}
+				error={errors.schedule}
+			/>
+
 			<!-- Actions -->
 			<div class="flex justify-end gap-2 pt-4">
-				<Button type="button" variant="outline" onclick={onClose} disabled={isSaving || isSending}>
+				<Button type="button" variant="outline" onclick={onClose} disabled={isBusy}>
 					{m['announcements.cancel']()}
 				</Button>
-				<Button type="submit" variant="secondary" disabled={isSaving || isSending}>
+				<Button type="submit" variant="secondary" disabled={isBusy}>
 					{#if isSaving}
 						<Loader2 class="mr-2 h-4 w-4 animate-spin" />
 					{/if}
 					{isEditing ? m['announcements.updateDraft']() : m['announcements.saveDraft']()}
 				</Button>
-				<Button type="button" onclick={handleSend} disabled={isSaving || isSending}>
-					{#if isSending}
+				<Button type="button" onclick={handlePrimaryAction} disabled={isBusy}>
+					{#if isSending || isScheduling}
 						<Loader2 class="mr-2 h-4 w-4 animate-spin" />
 					{/if}
-					{m['announcements.send']()}
+					{sendMode === 'schedule'
+						? m['announcements.scheduleAction']()
+						: m['announcements.send']()}
 				</Button>
 			</div>
 		</form>

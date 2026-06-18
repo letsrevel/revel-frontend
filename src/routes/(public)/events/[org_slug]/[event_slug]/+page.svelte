@@ -748,6 +748,9 @@
 			<div class="space-y-8 lg:col-span-2">
 				<EventDetails {event} />
 
+				<!-- Announcements Section (high visibility, directly under details) -->
+				<EventAnnouncements eventId={event.id} />
+
 				<!-- Potluck Coordination Section -->
 				<!-- Show if potluck is open OR if there are existing items -->
 				{#if event.potluck_open || data.potluckItems.length > 0}
@@ -805,9 +808,6 @@
 
 				<!-- Resources Section -->
 				<EventResources resources={data.resources} />
-
-				<!-- Announcements Section -->
-				<EventAnnouncements eventId={event.id} />
 
 				<!-- Organization Info (below details on mobile, hidden on desktop) -->
 				<div class="lg:hidden">

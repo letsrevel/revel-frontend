@@ -9,6 +9,7 @@
 		organizationadminannouncementsListAnnouncements,
 		organizationadminannouncementsDeleteAnnouncement,
 		organizationadminannouncementsSendAnnouncement,
+		organizationadminannouncementsUnscheduleAnnouncement,
 		organizationadminannouncementsGetAnnouncement,
 		eventpublicdiscoveryListEvents,
 		organizationadminmembersListMembershipTiers
@@ -149,6 +150,31 @@
 		}
 	}));
 
+	// Unschedule mutation — reverts a scheduled announcement back to draft.
+	const unscheduleMutation = createMutation(() => ({
+		mutationFn: async (announcementId: string) => {
+			const response = await organizationadminannouncementsUnscheduleAnnouncement({
+				path: { slug: organizationSlug, announcement_id: announcementId },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+			if (response.error) throw response.error;
+			return response.data;
+		},
+		onSuccess: () => {
+			toast.success(m['announcements.toast.unscheduled']());
+			queryClient.invalidateQueries({ queryKey: ['announcements', organizationSlug] });
+		},
+		onError: () => {
+			toast.error(m['announcements.toast.error']());
+		}
+	}));
+
+	function handleUnschedule(announcement: AnnouncementListSchema) {
+		if (announcement.id) {
+			unscheduleMutation.mutate(announcement.id);
+		}
+	}
+
 	// Derived data
 	const announcements = $derived(announcementsQuery.data?.results ?? []);
 	const events = $derived(eventsQuery.data?.results ?? []);
@@ -262,6 +288,7 @@
 		<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 			<Tabs.List>
 				<Tabs.Trigger value="draft">{m['announcements.tabs.drafts']()}</Tabs.Trigger>
+				<Tabs.Trigger value="scheduled">{m['announcements.tabs.scheduled']()}</Tabs.Trigger>
 				<Tabs.Trigger value="sent">{m['announcements.tabs.sent']()}</Tabs.Trigger>
 			</Tabs.List>
 
@@ -302,6 +329,36 @@
 							onEdit={() => openEditModal(announcement)}
 							onDelete={() => confirmDelete(announcement)}
 							onSend={() => confirmSend(announcement)}
+						/>
+					{/each}
+				</div>
+			{/if}
+		</Tabs.Content>
+
+		<Tabs.Content value="scheduled" class="mt-4">
+			{#if isLoading}
+				<div class="flex items-center justify-center py-12">
+					<Loader2 class="h-8 w-8 animate-spin text-muted-foreground" />
+				</div>
+			{:else if announcements.length === 0}
+				<div
+					class="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center"
+				>
+					<Megaphone class="mb-4 h-12 w-12 text-muted-foreground/50" />
+					<h3 class="font-medium">{m['announcements.empty.scheduled']()}</h3>
+					<p class="text-sm text-muted-foreground">
+						{m['announcements.empty.scheduledDescription']()}
+					</p>
+				</div>
+			{:else}
+				<div class="space-y-3">
+					{#each announcements as announcement (announcement.id)}
+						<AnnouncementCard
+							{announcement}
+							isLoadingEdit={editingAnnouncementId === announcement.id}
+							onView={() => openViewDialog(announcement)}
+							onEdit={() => openEditModal(announcement)}
+							onUnschedule={() => handleUnschedule(announcement)}
 						/>
 					{/each}
 				</div>
