@@ -64,6 +64,50 @@
 			? m['announcements.schedule.direction.before']()
 			: m['announcements.schedule.direction.after']();
 	}
+
+	const MODE_VALUES = ['now', 'schedule'] as const satisfies readonly SendMode[];
+	const KIND_VALUES = ['absolute', 'relative'] as const satisfies readonly ScheduleKind[];
+
+	/**
+	 * WAI-ARIA radiogroup keyboard pattern: arrow keys cycle siblings (with
+	 * wrap), Home / End jump to the ends, and the selected radio owns
+	 * tabindex=0 (roving tabindex) so Tab enters/leaves the group as one stop.
+	 */
+	function handleRadiogroupKey<T extends string>(
+		event: KeyboardEvent,
+		items: readonly T[],
+		current: T,
+		select: (next: T) => void
+	): void {
+		if (disabled) return;
+		const idx = items.indexOf(current);
+		let next: T | null = null;
+		switch (event.key) {
+			case 'ArrowRight':
+			case 'ArrowDown':
+				next = items[(idx + 1 + items.length) % items.length];
+				break;
+			case 'ArrowLeft':
+			case 'ArrowUp':
+				next = items[(idx - 1 + items.length) % items.length];
+				break;
+			case 'Home':
+				next = items[0];
+				break;
+			case 'End':
+				next = items[items.length - 1];
+				break;
+		}
+		if (next === null || next === current) return;
+		event.preventDefault();
+		select(next);
+		// Focus the newly-selected radio so keyboard context follows selection.
+		// requestAnimationFrame lets Svelte apply the new tabindex first.
+		requestAnimationFrame(() => {
+			const group = (event.currentTarget as HTMLElement | null)?.closest('[role="radiogroup"]');
+			group?.querySelector<HTMLElement>(`[role="radio"][data-rg-value="${next}"]`)?.focus();
+		});
+	}
 </script>
 
 <div class="space-y-3">
@@ -80,7 +124,10 @@
 				type="button"
 				role="radio"
 				aria-checked={sendMode === option.value}
+				tabindex={sendMode === option.value ? 0 : -1}
+				data-rg-value={option.value}
 				onclick={() => (sendMode = option.value)}
+				onkeydown={(e) => handleRadiogroupKey(e, MODE_VALUES, sendMode, (v) => (sendMode = v))}
 				{disabled}
 				class={cn(
 					'flex items-center justify-center gap-2 rounded-lg border p-3 text-sm font-medium transition-colors',
@@ -100,11 +147,20 @@
 		<div class="space-y-3 rounded-lg border p-3">
 			<!-- Absolute / relative kind (relative only when targeting an event) -->
 			{#if isEventTarget}
-				<div class="flex flex-wrap gap-2">
+				<div
+					class="flex flex-wrap gap-2"
+					role="radiogroup"
+					aria-label={m['announcements.schedule.kindLegend']()}
+				>
 					<button
 						type="button"
-						aria-pressed={scheduleKind === 'absolute'}
+						role="radio"
+						aria-checked={scheduleKind === 'absolute'}
+						tabindex={scheduleKind === 'absolute' ? 0 : -1}
+						data-rg-value="absolute"
 						onclick={() => (scheduleKind = 'absolute')}
+						onkeydown={(e) =>
+							handleRadiogroupKey(e, KIND_VALUES, scheduleKind, (v) => (scheduleKind = v))}
 						{disabled}
 						class={cn(
 							'rounded-full border px-3 py-1 text-xs transition-colors',
@@ -118,8 +174,13 @@
 					</button>
 					<button
 						type="button"
-						aria-pressed={scheduleKind === 'relative'}
+						role="radio"
+						aria-checked={scheduleKind === 'relative'}
+						tabindex={scheduleKind === 'relative' ? 0 : -1}
+						data-rg-value="relative"
 						onclick={() => (scheduleKind = 'relative')}
+						onkeydown={(e) =>
+							handleRadiogroupKey(e, KIND_VALUES, scheduleKind, (v) => (scheduleKind = v))}
 						{disabled}
 						class={cn(
 							'rounded-full border px-3 py-1 text-xs transition-colors',

@@ -170,6 +170,9 @@
 	}));
 
 	function handleUnschedule(announcement: AnnouncementListSchema) {
+		// Guard against double-submit: a second call hits the now-draft
+		// announcement and 404s (the endpoint only accepts SCHEDULED).
+		if (unscheduleMutation.isPending) return;
 		if (announcement.id) {
 			unscheduleMutation.mutate(announcement.id);
 		}

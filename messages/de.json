@@ -6405,5 +6405,6 @@
 	"announcements.card.scheduledRelative": "Relativ zum Event geplant",
 	"announcements.tabs.scheduled": "Geplant",
 	"announcements.empty.scheduled": "Keine geplanten Ankündigungen",
-	"announcements.empty.scheduledDescription": "Für später geplante Ankündigungen erscheinen hier."
+	"announcements.empty.scheduledDescription": "Für später geplante Ankündigungen erscheinen hier.",
+	"announcements.schedule.kindLegend": "Planungsart"
 }

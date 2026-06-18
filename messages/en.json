@@ -6405,5 +6405,6 @@
 	"announcements.card.scheduledRelative": "Scheduled relative to event",
 	"announcements.tabs.scheduled": "Scheduled",
 	"announcements.empty.scheduled": "No scheduled announcements",
-	"announcements.empty.scheduledDescription": "Announcements scheduled to send later will appear here."
+	"announcements.empty.scheduledDescription": "Announcements scheduled to send later will appear here.",
+	"announcements.schedule.kindLegend": "Schedule type"
 }

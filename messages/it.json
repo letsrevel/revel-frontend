@@ -6405,5 +6405,6 @@
 	"announcements.card.scheduledRelative": "Pianificato rispetto all'evento",
 	"announcements.tabs.scheduled": "Pianificati",
 	"announcements.empty.scheduled": "Nessun annuncio pianificato",
-	"announcements.empty.scheduledDescription": "Gli annunci pianificati per un invio successivo appariranno qui."
+	"announcements.empty.scheduledDescription": "Gli annunci pianificati per un invio successivo appariranno qui.",
+	"announcements.schedule.kindLegend": "Tipo di pianificazione"
 }

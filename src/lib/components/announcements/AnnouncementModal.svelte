@@ -314,7 +314,9 @@
 			target_tier_ids: targetType === 'tiers' ? selectedTierIds : [],
 			target_staff_only: targetType === 'staff_only',
 			past_visibility: pastVisibility,
-			resend_to_new_signups: resendToNewSignups
+			// Backend rejects resend_to_new_signups unless the announcement targets
+			// an event, so never send it for member/staff/tier targets.
+			resend_to_new_signups: isEventTarget ? resendToNewSignups : false
 		};
 	}
 
@@ -646,23 +648,25 @@
 				</div>
 			</div>
 
-			<!-- Email late joiners (delta send, #455) -->
-			<div class="flex items-start gap-3 rounded-lg border p-3">
-				<Checkbox
-					id="resend-new-signups"
-					bind:checked={resendToNewSignups}
-					disabled={isBusy}
-					class="mt-0.5"
-				/>
-				<div class="flex-1">
-					<Label for="resend-new-signups" class="cursor-pointer font-medium">
-						{m['announcements.form.resendToNewSignups']()}
-					</Label>
-					<p class="text-sm text-muted-foreground">
-						{m['announcements.form.resendToNewSignupsDesc']()}
-					</p>
+			<!-- Email late joiners (delta send, #455) — event announcements only -->
+			{#if isEventTarget}
+				<div class="flex items-start gap-3 rounded-lg border p-3">
+					<Checkbox
+						id="resend-new-signups"
+						bind:checked={resendToNewSignups}
+						disabled={isBusy}
+						class="mt-0.5"
+					/>
+					<div class="flex-1">
+						<Label for="resend-new-signups" class="cursor-pointer font-medium">
+							{m['announcements.form.resendToNewSignups']()}
+						</Label>
+						<p class="text-sm text-muted-foreground">
+							{m['announcements.form.resendToNewSignupsDesc']()}
+						</p>
+					</div>
 				</div>
-			</div>
+			{/if}
 
 			<!-- Schedule (#454) -->
 			<AnnouncementScheduleFields
