@@ -17,6 +17,7 @@
 		Tag,
 		Pencil,
 		Trash2,
+		PowerOff,
 		ToggleLeft,
 		ToggleRight,
 		ChevronLeft,
@@ -25,6 +26,7 @@
 		Copy,
 		Check
 	} from 'lucide-svelte';
+	import { toast } from 'svelte-sonner';
 
 	const organization = $derived($page.data.organization);
 	const accessToken = $derived(authStore.accessToken);
@@ -79,7 +81,9 @@
 	const isLoading = $derived(codesQuery.isLoading);
 	const error = $derived(codesQuery.error);
 
-	// Delete mutation
+	// Delete mutation. The endpoint hard-deletes an unused code (row gone, code
+	// string freed for reuse) or deactivates a used one (history preserved), and
+	// reports which via `action`.
 	const deleteMutation = createMutation(() => ({
 		mutationFn: async (codeId: string) => {
 			const response = await organizationadmindiscountcodesDeleteDiscountCode({
@@ -87,9 +91,18 @@
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (response.error) throw new Error('Failed to delete discount code');
+			return response.data?.action;
 		},
-		onSuccess: () => {
+		onSuccess: (action) => {
 			queryClient.invalidateQueries({ queryKey: ['discount-codes'] });
+			if (action === 'deactivated') {
+				toast.success('Discount code deactivated (it has been used, so it can’t be deleted).');
+			} else {
+				toast.success('Discount code deleted.');
+			}
+		},
+		onError: () => {
+			toast.error('Failed to delete discount code. Please try again.');
 		}
 	}));
 
@@ -108,8 +121,17 @@
 		}
 	}));
 
+	// An unused code (never redeemed) is permanently removed; a used one can only
+	// be deactivated so its redemption history survives.
+	function willHardDelete(code: DiscountCodeSchema): boolean {
+		return (code.times_used ?? 0) === 0;
+	}
+
 	function handleDelete(code: DiscountCodeSchema) {
-		if (confirm(`Deactivate discount code "${code.code}"? This will soft-delete it.`)) {
+		const message = willHardDelete(code)
+			? `Delete discount code "${code.code}"? This permanently removes it and frees the code "${code.code}" for reuse.`
+			: `Deactivate discount code "${code.code}"? It has been used, so it can’t be deleted — its redemption history will be kept.`;
+		if (confirm(message)) {
 			if (code.id) deleteMutation.mutate(code.id);
 		}
 	}
@@ -349,10 +371,16 @@
 											type="button"
 											onclick={() => handleDelete(code)}
 											class="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-destructive"
-											title="Delete"
-											aria-label="Delete discount code"
+											title={willHardDelete(code) ? 'Delete' : 'Deactivate (code has been used)'}
+											aria-label={willHardDelete(code)
+												? `Delete discount code ${code.code}`
+												: `Deactivate discount code ${code.code}`}
 										>
-											<Trash2 class="h-4 w-4" />
+											{#if willHardDelete(code)}
+												<Trash2 class="h-4 w-4" />
+											{:else}
+												<PowerOff class="h-4 w-4" />
+											{/if}
 										</button>
 									</div>
 								</td>
@@ -446,9 +474,15 @@
 							size="sm"
 							onclick={() => handleDelete(code)}
 							class="text-destructive hover:text-destructive"
-							aria-label="Delete discount code {code.code}"
+							aria-label={willHardDelete(code)
+								? `Delete discount code ${code.code}`
+								: `Deactivate discount code ${code.code}`}
 						>
-							<Trash2 class="h-4 w-4" />
+							{#if willHardDelete(code)}
+								<Trash2 class="h-4 w-4" />
+							{:else}
+								<PowerOff class="h-4 w-4" />
+							{/if}
 						</Button>
 					</div>
 				</div>
