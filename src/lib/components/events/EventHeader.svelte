@@ -49,8 +49,8 @@
 	// Compute maps URL - prioritize event's URL, fall back to venue's URL
 	const mapsUrl = $derived(event.location_maps_url || event.venue?.location_maps_url || null);
 
-	// Date range display
-	const dateRange = $derived(formatEventDateRange(event.start, event.end));
+	// Date range display, rendered in the event's own timezone (#474)
+	const dateRange = $derived(formatEventDateRange(event.start, event.end, event.timezone));
 
 	// Fallback gradient if no cover art
 	const fallbackGradient = $derived(getEventFallbackGradient(event.id));

@@ -18,24 +18,86 @@ function getCurrentLocale(): string {
 }
 
 /**
+ * Build the `timeZone` slice of an Intl options object.
+ *
+ * When a `timeZone` (IANA name, e.g. "Europe/Vienna") is supplied, all date
+ * parts are computed in that zone; when omitted, Intl falls back to the
+ * viewer's browser timezone — preserving the original behaviour for callers
+ * that don't pass one (non-event datetimes, etc.).
+ */
+function tzOpt(timeZone?: string): { timeZone?: string } {
+	return timeZone ? { timeZone } : {};
+}
+
+/**
+ * Get the short timezone abbreviation for an instant (e.g. "CET", "PST",
+ * or "GMT+1" for zones the locale has no abbreviation for).
+ * Returns "" when no timezone is supplied so viewer-local displays are
+ * left unchanged.
+ */
+function getTimeZoneAbbreviation(date: Date, locale: string, timeZone?: string): string {
+	if (!timeZone) return '';
+	const parts = new Intl.DateTimeFormat(locale, {
+		timeZone,
+		timeZoneName: 'short'
+	}).formatToParts(date);
+	return parts.find((p) => p.type === 'timeZoneName')?.value ?? '';
+}
+
+/**
+ * The day-of-month as computed in the given timezone (falls back to the
+ * viewer's zone when none is supplied). Used instead of `Date.getDate()`,
+ * which is always viewer-local.
+ */
+function dayOfMonthInZone(date: Date, locale: string, timeZone?: string): string {
+	return date.toLocaleDateString(locale, { day: 'numeric', ...tzOpt(timeZone) });
+}
+
+/**
+ * Whether two instants land on the same calendar day in the given timezone.
+ * Uses en-CA (ISO-like YYYY-MM-DD) for a stable, locale-independent compare.
+ */
+function isSameDayInZone(a: Date, b: Date, timeZone?: string): boolean {
+	const opts: Intl.DateTimeFormatOptions = {
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit',
+		...tzOpt(timeZone)
+	};
+	return a.toLocaleDateString('en-CA', opts) === b.toLocaleDateString('en-CA', opts);
+}
+
+/**
+ * Append a timezone abbreviation to a formatted time string when present.
+ */
+function withTz(formatted: string, abbreviation: string): string {
+	return abbreviation ? `${formatted} ${abbreviation}` : formatted;
+}
+
+/**
  * Format a date-time string for event display
  * @param dateString ISO 8601 date-time string
- * @returns Formatted date string (e.g., "Fri, Oct 20 • 8:00 PM")
+ * @param timeZone Optional IANA timezone to render in (e.g. the event's timezone)
+ * @returns Formatted date string (e.g., "Fri, Oct 20 • 8:00 PM CET")
  */
-export function formatEventDate(dateString: string): string {
+export function formatEventDate(dateString: string, timeZone?: string): string {
 	const date = new Date(dateString);
 	const locale = getCurrentLocale();
 
-	const dayOfWeek = date.toLocaleDateString(locale, { weekday: 'short' });
-	const month = date.toLocaleDateString(locale, { month: 'short' });
-	const day = date.getDate();
+	const dayOfWeek = date.toLocaleDateString(locale, { weekday: 'short', ...tzOpt(timeZone) });
+	const month = date.toLocaleDateString(locale, { month: 'short', ...tzOpt(timeZone) });
+	const day = dayOfMonthInZone(date, locale, timeZone);
 	const time = date.toLocaleTimeString(locale, {
 		hour: 'numeric',
 		minute: '2-digit',
-		hour12: locale === 'en-US' // Only use 12-hour format for English
+		hour12: locale === 'en-US', // Only use 12-hour format for English
+		...tzOpt(timeZone)
 	});
 
-	return `${dayOfWeek}, ${month} ${day} • ${time}`;
+	return withTz(
+		`${dayOfWeek}, ${month} ${day} • ${time}`,
+		getTimeZoneAbbreviation(date, locale, timeZone)
+	);
 }
 
 /**
@@ -44,37 +106,48 @@ export function formatEventDate(dateString: string): string {
  * @param endString ISO 8601 end date-time string
  * @returns Formatted date range (e.g., "Fri, Oct 20 • 8:00 PM - 11:00 PM")
  */
-export function formatEventDateRange(startString: string, endString: string): string {
+export function formatEventDateRange(
+	startString: string,
+	endString: string,
+	timeZone?: string
+): string {
 	const start = new Date(startString);
 	const end = new Date(endString);
 	const locale = getCurrentLocale();
 
-	const dayOfWeek = start.toLocaleDateString(locale, { weekday: 'short' });
-	const month = start.toLocaleDateString(locale, { month: 'short' });
-	const day = start.getDate();
+	const dayOfWeek = start.toLocaleDateString(locale, { weekday: 'short', ...tzOpt(timeZone) });
+	const month = start.toLocaleDateString(locale, { month: 'short', ...tzOpt(timeZone) });
+	const day = dayOfMonthInZone(start, locale, timeZone);
 
 	const startTime = start.toLocaleTimeString(locale, {
 		hour: 'numeric',
 		minute: '2-digit',
-		hour12: locale === 'en-US'
+		hour12: locale === 'en-US',
+		...tzOpt(timeZone)
 	});
 	const endTime = end.toLocaleTimeString(locale, {
 		hour: 'numeric',
 		minute: '2-digit',
-		hour12: locale === 'en-US'
+		hour12: locale === 'en-US',
+		...tzOpt(timeZone)
 	});
 
+	const tz = getTimeZoneAbbreviation(start, locale, timeZone);
+
 	// If same day, show date once
-	if (start.toDateString() === end.toDateString()) {
-		return `${dayOfWeek}, ${month} ${day} • ${startTime} - ${endTime}`;
+	if (isSameDayInZone(start, end, timeZone)) {
+		return withTz(`${dayOfWeek}, ${month} ${day} • ${startTime} - ${endTime}`, tz);
 	}
 
 	// Different days
-	const endDayOfWeek = end.toLocaleDateString(locale, { weekday: 'short' });
-	const endMonth = end.toLocaleDateString(locale, { month: 'short' });
-	const endDay = end.getDate();
+	const endDayOfWeek = end.toLocaleDateString(locale, { weekday: 'short', ...tzOpt(timeZone) });
+	const endMonth = end.toLocaleDateString(locale, { month: 'short', ...tzOpt(timeZone) });
+	const endDay = dayOfMonthInZone(end, locale, timeZone);
 
-	return `${dayOfWeek}, ${month} ${day} • ${startTime} - ${endDayOfWeek}, ${endMonth} ${endDay} • ${endTime}`;
+	return withTz(
+		`${dayOfWeek}, ${month} ${day} • ${startTime} - ${endDayOfWeek}, ${endMonth} ${endDay} • ${endTime}`,
+		tz
+	);
 }
 
 /**
@@ -183,28 +256,30 @@ export function isRSVPClosingSoon(deadlineString: string | null): boolean {
  * @param dateString ISO 8601 date-time string
  * @returns Verbose date string (e.g., "Friday, October 20th, 2025 at 8:00 PM")
  */
-export function formatEventDateForScreenReader(dateString: string): string {
+export function formatEventDateForScreenReader(dateString: string, timeZone?: string): string {
 	const date = new Date(dateString);
 	const locale = getCurrentLocale();
 
-	const dayOfWeek = date.toLocaleDateString(locale, { weekday: 'long' });
-	const month = date.toLocaleDateString(locale, { month: 'long' });
-	const day = date.getDate();
-	const year = date.getFullYear();
+	const dayOfWeek = date.toLocaleDateString(locale, { weekday: 'long', ...tzOpt(timeZone) });
+	const month = date.toLocaleDateString(locale, { month: 'long', ...tzOpt(timeZone) });
+	const day = Number(date.toLocaleDateString('en-US', { day: 'numeric', ...tzOpt(timeZone) }));
+	const year = date.toLocaleDateString('en-US', { year: 'numeric', ...tzOpt(timeZone) });
 	const time = date.toLocaleTimeString(locale, {
 		hour: 'numeric',
 		minute: '2-digit',
-		hour12: locale === 'en-US'
+		hour12: locale === 'en-US',
+		...tzOpt(timeZone)
 	});
+	const tz = getTimeZoneAbbreviation(date, locale, timeZone);
 
 	// Add ordinal suffix (st, nd, rd, th) - only for English
 	if (locale === 'en-US') {
 		const ordinal = getOrdinalSuffix(day);
-		return `${dayOfWeek}, ${month} ${day}${ordinal}, ${year} at ${time}`;
+		return withTz(`${dayOfWeek}, ${month} ${day}${ordinal}, ${year} at ${time}`, tz);
 	}
 
 	// For other locales, use standard format
-	return `${dayOfWeek}, ${day} ${month} ${year} ${time}`;
+	return withTz(`${dayOfWeek}, ${day} ${month} ${year} ${time}`, tz);
 }
 
 /**
@@ -232,18 +307,21 @@ function getOrdinalSuffix(day: number): string {
  * @param dateString ISO 8601 date-time string
  * @returns Formatted date string (e.g., "Oct 20, 2025, 8:00 PM" for en-US or "20. Okt. 2025, 20:00" for de-DE)
  */
-export function formatDateTime(dateString: string): string {
+export function formatDateTime(dateString: string, timeZone?: string): string {
 	const date = new Date(dateString);
 	const locale = getCurrentLocale();
 
-	return date.toLocaleString(locale, {
+	const formatted = date.toLocaleString(locale, {
 		year: 'numeric',
 		month: 'short',
 		day: 'numeric',
 		hour: 'numeric',
 		minute: '2-digit',
-		hour12: locale === 'en-US'
+		hour12: locale === 'en-US',
+		...tzOpt(timeZone)
 	});
+
+	return withTz(formatted, getTimeZoneAbbreviation(date, locale, timeZone));
 }
 
 /**
@@ -251,13 +329,16 @@ export function formatDateTime(dateString: string): string {
  * @param dateString ISO 8601 date-time string
  * @returns Formatted date string (e.g., "Oct 20, 2025" for en-US or "20. Okt. 2025" for de-DE)
  */
-export function formatDate(dateString: string): string {
+export function formatDate(dateString: string, timeZone?: string): string {
 	const date = new Date(dateString);
 	const locale = getCurrentLocale();
 
+	// Date-only: apply the timezone so the calendar day is correct, but don't
+	// append a tz abbreviation (it reads oddly next to a date with no time).
 	return date.toLocaleDateString(locale, {
 		year: 'numeric',
 		month: 'short',
-		day: 'numeric'
+		day: 'numeric',
+		...tzOpt(timeZone)
 	});
 }

@@ -5,6 +5,7 @@
 	import { cn } from '$lib/utils/cn';
 	import * as m from '$lib/paraglide/messages.js';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+	import EventTimezoneNote from './EventTimezoneNote.svelte';
 
 	interface Props {
 		event: EventDetailSchema;
@@ -98,14 +99,15 @@
 					</div>
 					<div class="mt-1">
 						<time datetime={event.start} class="block font-medium">
-							{formatEventDate(event.start)}
+							{formatEventDate(event.start, event.timezone)}
 						</time>
 						{#if event.end}
 							<time datetime={event.end} class="block text-sm text-muted-foreground">
 								{m['eventDetails.dateTime_ends']()}
-								{formatEventDate(event.end)}
+								{formatEventDate(event.end, event.timezone)}
 							</time>
 						{/if}
+						<EventTimezoneNote class="mt-2" />
 					</div>
 				</div>
 			</div>

@@ -34,6 +34,8 @@
 		eventName?: string;
 		eventTokenDetails?: EventTokenSchema | null;
 		applyBefore?: string | null;
+		/** The event's IANA timezone, so the absolute deadline date renders event-local (#474). */
+		timezone?: string | null;
 		onInvitationRequestSuccess?: () => void;
 		onWhitelistRequestSuccess?: () => void;
 		/** Opens the ticket-tier purchase modal (for the `purchase_ticket` step). */
@@ -50,6 +52,7 @@
 		eventName,
 		eventTokenDetails,
 		applyBefore,
+		timezone,
 		onInvitationRequestSuccess,
 		onWhitelistRequestSuccess,
 		onGetTicketsClick,
@@ -90,7 +93,8 @@
 		return date.toLocaleDateString(undefined, {
 			month: 'long',
 			day: 'numeric',
-			year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+			year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
+			...(timezone ? { timeZone: timezone } : {})
 		});
 	}
 

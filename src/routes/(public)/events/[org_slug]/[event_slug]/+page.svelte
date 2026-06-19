@@ -801,6 +801,7 @@
 						eventTokenDetails={data.eventTokenDetails}
 						canAttendWithoutLogin={event.can_attend_without_login}
 						{tierRemainingTickets}
+						timezone={event.timezone}
 						onSelectTier={handleSelectTier}
 						onGuestTierClick={openGuestTicketDialog}
 					/>
@@ -957,6 +958,7 @@
 	membershipTier={data.membershipTier}
 	canAttendWithoutLogin={event.can_attend_without_login}
 	{tierRemainingTickets}
+	timezone={event.timezone}
 	eventMaxTicketsPerUser={event.max_tickets_per_user}
 	userName={userDisplayName}
 	{preSelectedTier}

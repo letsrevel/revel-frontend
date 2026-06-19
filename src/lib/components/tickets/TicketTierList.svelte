@@ -27,6 +27,8 @@
 		canAttendWithoutLogin?: boolean;
 		/** Per-tier remaining tickets info (from my-status endpoint) */
 		tierRemainingTickets?: TierRemainingTicketsSchema[];
+		/** The event's IANA timezone, so tier sales windows & deadlines render event-local (#474). */
+		timezone?: string | null;
 		onSelectTier: (tier: TierSchemaWithId) => void;
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
@@ -44,6 +46,7 @@
 		eventTokenDetails,
 		canAttendWithoutLogin = false,
 		tierRemainingTickets,
+		timezone,
 		onSelectTier,
 		onGuestTierClick
 	}: Props = $props();
@@ -95,6 +98,7 @@
 					{organizationSlug}
 					{eventName}
 					{eventTokenDetails}
+					{timezone}
 				/>
 			</div>
 		{/if}
@@ -109,6 +113,7 @@
 					{membershipTier}
 					{canAttendWithoutLogin}
 					tierRemainingInfo={getTierRemainingInfo(tier.id)}
+					{timezone}
 					{onSelectTier}
 					{onGuestTierClick}
 				/>

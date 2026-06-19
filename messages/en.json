@@ -1352,6 +1352,9 @@
 		"linkCopiedToClipboard": "Link copied to clipboard!",
 		"failedToCopyLink": "Failed to copy link"
 	},
+	"eventTime": {
+		"timezoneNote": "All times are shown in the event's local timezone."
+	},
 	"eventInvitationsAdmin": {
 		"backToEvents": "Back to Events",
 		"pageTitle": "Manage Invitations",

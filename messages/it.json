@@ -1352,6 +1352,9 @@
 		"linkCopiedToClipboard": "Link copiato negli appunti!",
 		"failedToCopyLink": "Impossibile copiare il link"
 	},
+	"eventTime": {
+		"timezoneNote": "Tutti gli orari sono mostrati nel fuso orario locale dell'evento."
+	},
 	"eventInvitationsAdmin": {
 		"backToEvents": "Back to Events",
 		"pageTitle": "Manage Invitations",
