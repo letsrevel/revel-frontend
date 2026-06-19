@@ -82,6 +82,10 @@
 	// `validFrom` / `validUntil` hold ISO 8601 strings (DateTimePicker's value format).
 	let validFrom = $state(existingCode?.valid_from ?? '');
 	let validUntil = $state(existingCode?.valid_until ?? '');
+	// Tracks the scoped-event date we auto-filled into `validUntil`, and whether the
+	// organizer has since edited the field manually (so we stop managing it).
+	let autoPrefilledValidUntil = $state<string | null>(null);
+	let validUntilManuallyEdited = $state(false);
 	let maxUses = $state(existingCode?.max_uses?.toString() || '');
 	let maxUsesPerUser = $state(existingCode?.max_uses_per_user?.toString() || '1');
 	let minPurchaseAmount = $state(existingCode?.min_purchase_amount || '0');
@@ -94,15 +98,41 @@
 	let validationErrors = $state<Record<string, string>>({});
 
 	/**
-	 * Prefill "Valid Until" from the single scoped event's date (revel-frontend#444).
-	 * Only when creating, exactly one event is scoped, the field is still empty, and the
-	 * event start is in the future — never clobbers a manual value, and never prefills a
-	 * past date (which would create an already-expired code).
+	 * Keep "Valid Until" in sync with the single scoped event's date (revel-frontend#444).
+	 * Only manages the field while creating and the organizer hasn't edited it manually.
+	 * - A single future event fills/updates the field (replacing a prior auto-fill).
+	 * - Losing the single-event scope (0 or 2+ events), or a past-dated event, clears our
+	 *   own auto-fill but never touches a value the organizer set themselves.
+	 * Never prefills a past date (which would create an already-expired code).
 	 */
 	function handleScopedEventDate(startIso: string | null): void {
-		if (isEditing || !startIso || validUntil) return;
-		if (new Date(startIso).getTime() <= Date.now()) return;
-		validUntil = startIso;
+		if (isEditing || validUntilManuallyEdited) return;
+
+		// Only a future single-event start is usable as a prefill.
+		const usable = startIso && new Date(startIso).getTime() > Date.now() ? startIso : null;
+
+		if (!usable) {
+			// Drop our own auto-fill when the prefill no longer applies; leave manual values be.
+			if (validUntil && validUntil === autoPrefilledValidUntil) {
+				validUntil = '';
+				autoPrefilledValidUntil = null;
+			}
+			return;
+		}
+
+		// Fill an empty field, or replace a value we previously auto-filled.
+		if (!validUntil || validUntil === autoPrefilledValidUntil) {
+			validUntil = usable;
+			autoPrefilledValidUntil = usable;
+		}
+	}
+
+	/** Mark the field as organizer-owned once they change it away from our auto-fill. */
+	function handleValidUntilChange(value: string): void {
+		if (value !== autoPrefilledValidUntil) {
+			validUntilManuallyEdited = true;
+			autoPrefilledValidUntil = null;
+		}
 	}
 
 	const showCurrency = $derived(discountType === 'fixed_amount' && tierIds.length === 0);
@@ -350,6 +380,7 @@
 				bind:value={validUntil}
 				disabled={isSubmitting}
 				error={validationErrors.valid_until}
+				onValueChange={handleValidUntilChange}
 			/>
 			{#if !validationErrors.valid_until}
 				<p class="text-xs text-muted-foreground">Leave empty for no expiry</p>
