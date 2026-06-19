@@ -34,8 +34,17 @@ export function formatMoney(
 	const parsed = typeof amount === 'string' ? parseFloat(amount) : (amount ?? 0);
 	const safe = Number.isFinite(parsed) ? parsed : 0;
 	const currencyCode = currency?.toUpperCase() || 'USD';
-	return new Intl.NumberFormat(undefined, {
-		style: 'currency',
-		currency: currencyCode
-	}).format(safe);
+	try {
+		return new Intl.NumberFormat(undefined, {
+			style: 'currency',
+			currency: currencyCode
+		}).format(safe);
+	} catch {
+		// Intl.NumberFormat throws RangeError on a malformed currency code
+		// (not exactly 3 letters). Fall back to USD rather than break rendering.
+		return new Intl.NumberFormat(undefined, {
+			style: 'currency',
+			currency: 'USD'
+		}).format(safe);
+	}
 }
