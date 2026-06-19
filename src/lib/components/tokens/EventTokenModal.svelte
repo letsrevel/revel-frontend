@@ -60,14 +60,15 @@
 
 	/**
 	 * Convert the chosen expiration (ISO) into the `duration` (minutes from now) the create
-	 * endpoint expects. Empty → 0 ("never"); a past/now value also collapses to "never"
-	 * since a negative duration isn't representable.
+	 * endpoint expects. Only an empty (or unparseable) value maps to 0 = "never expires"; a
+	 * non-empty date never silently collapses to "never" — a past/elapsed value yields the
+	 * 1-minute minimum so the link expires promptly rather than living forever.
 	 */
 	function expiryToDurationMinutes(iso: string): number {
 		if (!iso) return 0;
-		const diffMs = new Date(iso).getTime() - Date.now();
-		if (diffMs <= 0) return 0;
-		return Math.max(1, Math.round(diffMs / 60000));
+		const ms = new Date(iso).getTime();
+		if (Number.isNaN(ms)) return 0; // unparseable → treat as "never" (defensive)
+		return Math.max(1, Math.round((ms - Date.now()) / 60000));
 	}
 
 	// Advanced invitation options

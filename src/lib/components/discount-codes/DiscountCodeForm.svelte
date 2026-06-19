@@ -95,13 +95,14 @@
 
 	/**
 	 * Prefill "Valid Until" from the single scoped event's date (revel-frontend#444).
-	 * Only when creating, exactly one event is scoped, and the field is still empty —
-	 * never clobbers an existing value or an organizer's manual edit.
+	 * Only when creating, exactly one event is scoped, the field is still empty, and the
+	 * event start is in the future — never clobbers a manual value, and never prefills a
+	 * past date (which would create an already-expired code).
 	 */
 	function handleScopedEventDate(startIso: string | null): void {
-		if (!isEditing && startIso && !validUntil) {
-			validUntil = startIso;
-		}
+		if (isEditing || !startIso || validUntil) return;
+		if (new Date(startIso).getTime() <= Date.now()) return;
+		validUntil = startIso;
 	}
 
 	const showCurrency = $derived(discountType === 'fixed_amount' && tierIds.length === 0);
