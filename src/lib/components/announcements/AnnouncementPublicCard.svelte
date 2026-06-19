@@ -3,7 +3,7 @@
 	import type { AnnouncementPublicSchema } from '$lib/api/generated/types.gen';
 	import { formatRelativeTime } from '$lib/utils/time';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
-	import { Megaphone } from 'lucide-svelte';
+	import { Megaphone, Users, Layers, UserCog, Calendar } from 'lucide-svelte';
 
 	interface Props {
 		announcement: AnnouncementPublicSchema;
@@ -11,6 +11,22 @@
 	}
 
 	const { announcement, showSource = false }: Props = $props();
+
+	// Who can see this announcement. There's no truly public announcement — all
+	// are restricted — so we always surface the audience descriptor.
+	const audienceInfo = $derived.by(() => {
+		switch (announcement.audience) {
+			case 'members':
+				return { icon: Users, text: m['announcements.public.audience.members']() };
+			case 'tiers':
+				return { icon: Layers, text: m['announcements.public.audience.tiers']() };
+			case 'staff':
+				return { icon: UserCog, text: m['announcements.public.audience.staff']() };
+			case 'event':
+			default:
+				return { icon: Calendar, text: m['announcements.public.audience.event']() };
+		}
+	});
 </script>
 
 <article class="rounded-lg border bg-card p-4">
@@ -40,6 +56,13 @@
 					</span>
 				{/if}
 			</div>
+			<p
+				class="mt-1 inline-flex items-center gap-1.5 text-xs text-muted-foreground"
+				title={m['announcements.public.audienceLabel']()}
+			>
+				<audienceInfo.icon class="h-3.5 w-3.5" aria-hidden="true" />
+				<span>{audienceInfo.text}</span>
+			</p>
 		</div>
 	</div>
 
