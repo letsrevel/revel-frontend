@@ -57,6 +57,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			id: event.id,
 			name: event.name,
 			slug: event.slug,
+			requires_ticket: event.requires_ticket,
 			organization: {
 				name: event.organization.name,
 				slug: event.organization.slug

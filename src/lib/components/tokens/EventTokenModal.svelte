@@ -17,16 +17,16 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { RadioGroup, RadioGroupItem } from '$lib/components/ui/radio-group';
+	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 	import { AlertCircle, Loader2, ChevronDown, ChevronRight } from 'lucide-svelte';
-	import { durationOptions } from '$lib/utils/tokens';
-	import { toDateTimeLocal, toISOString } from '$lib/utils/datetime';
 
 	interface Props {
 		open: boolean;
 		token?: EventTokenSchema | null;
 		isLoading?: boolean;
 		ticketTiers?: TicketTierDetailSchema[];
+		/** Event start (ISO) used to prefill the expiration date on create. */
+		eventStart?: string | null;
 		onClose: () => void;
 		onSave: (data: EventTokenCreateSchema | EventTokenUpdateSchema) => void | Promise<void>;
 	}
@@ -36,18 +36,39 @@
 		token = null,
 		isLoading = false,
 		ticketTiers = [],
+		eventStart = null,
 		onClose,
 		onSave
 	}: Props = $props();
 
 	const isEdit = $derived(!!token);
 
-	// Form state
+	// Form state — `expiresAt` holds an ISO 8601 string (DateTimePicker's value format);
+	// an empty string means "never expires".
 	let name = $state('');
-	let duration = $state<string>('1440');
 	let maxUses = $state<number>(1);
 	let grantsInvitation = $state(true); // Default to granting invitation
 	let expiresAt = $state<string>('');
+
+	/** Default the create form's expiration to the event start, but only if it's in the future. */
+	function defaultCreateExpiry(): string {
+		if (eventStart && new Date(eventStart).getTime() > Date.now()) {
+			return eventStart;
+		}
+		return '';
+	}
+
+	/**
+	 * Convert the chosen expiration (ISO) into the `duration` (minutes from now) the create
+	 * endpoint expects. Empty → 0 ("never"); a past/now value also collapses to "never"
+	 * since a negative duration isn't representable.
+	 */
+	function expiryToDurationMinutes(iso: string): number {
+		if (!iso) return 0;
+		const diffMs = new Date(iso).getTime() - Date.now();
+		if (diffMs <= 0) return 0;
+		return Math.max(1, Math.round(diffMs / 60000));
+	}
 
 	// Advanced invitation options
 	let showAdvanced = $state(false);
@@ -66,8 +87,7 @@
 				name = token.name || '';
 				maxUses = token.max_uses ?? 1;
 				grantsInvitation = token.grants_invitation ?? true;
-				expiresAt = toDateTimeLocal(token.expires_at);
-				duration = '1440';
+				expiresAt = token.expires_at ?? '';
 
 				// Load advanced invitation options
 				const invitation = token.invitation_payload as any;
@@ -80,10 +100,9 @@
 				selectedTierIds = token.ticket_tiers?.map((t) => t.id) ?? [];
 			} else {
 				name = '';
-				duration = '1440';
 				maxUses = 1;
 				grantsInvitation = true;
-				expiresAt = '';
+				expiresAt = defaultCreateExpiry();
 
 				// Reset advanced options
 				showAdvanced = false;
@@ -116,7 +135,7 @@
 			const updateData: EventTokenUpdateSchema = {
 				name: name || null,
 				max_uses: grantsInvitation ? maxUses : 0,
-				expires_at: toISOString(expiresAt),
+				expires_at: expiresAt || null,
 				grants_invitation: grantsInvitation,
 				invitation_payload,
 				ticket_tier_ids: selectedTierIds
@@ -125,7 +144,7 @@
 		} else {
 			const createData: EventTokenCreateSchema = {
 				name: name || null,
-				duration: parseInt(duration, 10),
+				duration: expiryToDurationMinutes(expiresAt),
 				max_uses: grantsInvitation ? maxUses : 0,
 				grants_invitation: grantsInvitation,
 				invitation_payload,
@@ -172,28 +191,15 @@
 				/>
 			</div>
 
-			{#if !isEdit}
-				<!-- Duration -->
-				<div class="space-y-2">
-					<Label>{m['eventTokenModal.duration']()}</Label>
-					<RadioGroup bind:value={duration}>
-						{#each durationOptions as option}
-							<div class="flex items-center space-x-2">
-								<RadioGroupItem value={String(option.value)} id={`duration-${option.value}`} />
-								<Label for={`duration-${option.value}`} class="font-normal">
-									{option.label}
-								</Label>
-							</div>
-						{/each}
-					</RadioGroup>
-				</div>
-			{:else}
-				<!-- Expires At -->
-				<div class="space-y-2">
-					<Label for="expires-at">{m['eventTokenModal.expirationDate']()}</Label>
-					<Input id="expires-at" type="datetime-local" bind:value={expiresAt} />
-				</div>
-			{/if}
+			<!-- Expiration date (empty = never expires) -->
+			<div class="space-y-2">
+				<DateTimePicker
+					id="expires-at"
+					bind:value={expiresAt}
+					label={m['eventTokenModal.expirationDate']()}
+				/>
+				<p class="text-sm text-muted-foreground">{m['eventTokenModal.expirationHint']()}</p>
+			</div>
 
 			<!-- Grant Invitation -->
 			<div class="flex items-center space-x-2">

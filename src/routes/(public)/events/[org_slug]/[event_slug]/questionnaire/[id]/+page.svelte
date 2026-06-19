@@ -34,6 +34,12 @@
 
 	const { data }: Props = $props();
 
+	// Set once the questionnaire is submitted and no evaluation is required — the user is
+	// admitted immediately, so we show an inline confirmation instead of redirecting. (#441)
+	let autoAccepted = $state(false);
+	const isTicketed = $derived(!!data.event.requires_ticket);
+	const eventUrl = $derived(`/events/${data.event.organization.slug}/${data.event.slug}`);
+
 	// Flatten the questionnaire for easier conditional handling
 	const flattened = $derived(flattenQuestionnaire(data.questionnaire));
 
@@ -191,30 +197,24 @@
 			return result;
 		},
 		onSuccess: (result) => {
-			// Check if it's an evaluation response (has status field)
-			if ('status' in result) {
-				if (result.status === 'approved') {
-					toast.success(m['questionnaireSubmissionPage.toast_approved_title'](), {
-						description: m['questionnaireSubmissionPage.toast_approved_description']()
-					});
-				} else if (result.status === 'pending review') {
-					toast.info(m['questionnaireSubmissionPage.toast_pending_title'](), {
-						description: m['questionnaireSubmissionPage.toast_pending_description']()
-					});
-				} else if (result.status === 'rejected') {
-					toast.error(m['questionnaireSubmissionPage.toast_rejected_title'](), {
-						description: m['questionnaireSubmissionPage.toast_rejected_description']()
-					});
-				}
-			} else {
-				// Simple submission response
-				toast.success(m['questionnaireSubmissionPage.toast_success_title'](), {
-					description: m['questionnaireSubmissionPage.toast_success_description']()
-				});
+			// The submit endpoint always returns a submission response; evaluation (when needed)
+			// runs asynchronously. `requires_evaluation === false` means the user is admitted
+			// immediately with no review.
+			const requiresEvaluation =
+				'requires_evaluation' in result ? result.requires_evaluation : true;
+
+			if (!requiresEvaluation) {
+				// No review needed — surface an inline "you're in, go buy/RSVP" confirmation
+				// instead of silently redirecting.
+				autoAccepted = true;
+				return;
 			}
 
-			// Redirect back to event page
-			goto(`/events/${data.event.organization.slug}/${data.event.slug}`);
+			// Evaluation is pending — the organizers (or AI) will review the responses.
+			toast.info(m['questionnaireSubmissionPage.toast_pending_title'](), {
+				description: m['questionnaireSubmissionPage.toast_pending_description']()
+			});
+			goto(eventUrl);
 		},
 		onError: (error: Error) => {
 			toast.error(m['questionnaireSubmissionPage.toast_error_title'](), {
@@ -305,102 +305,128 @@
 		{/if}
 	</div>
 
-	<!-- Form -->
-	<form onsubmit={handleSubmit} class="space-y-8">
-		<!-- Non-conditional Sections -->
-		{#each flattened.sections
-			.filter((s) => !s.depends_on_option_id)
-			.sort((a, b) => a.order - b.order) as section (section.id)}
-			<div class="rounded-lg border bg-card p-6">
-				<h2 class="mb-2 text-xl font-semibold">{section.name}</h2>
-				{#if section.description}
-					<div class="mb-6">
-						<MarkdownContent content={section.description} class="text-muted-foreground" />
-					</div>
-				{:else}
-					<div class="mb-6"></div>
-				{/if}
+	{#if autoAccepted}
+		<!-- Auto-accepted: no evaluation needed, the user is admitted immediately (#441) -->
+		<div class="rounded-lg border bg-card p-8 text-center" role="status">
+			<div
+				class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10"
+			>
+				<Check class="h-6 w-6 text-primary" aria-hidden="true" />
+			</div>
+			<h2 class="text-2xl font-semibold">
+				{m['questionnaireSubmissionPage.accepted_title']()}
+			</h2>
+			<p class="mx-auto mt-2 max-w-md text-muted-foreground">
+				{isTicketed
+					? m['questionnaireSubmissionPage.accepted_description_ticket']()
+					: m['questionnaireSubmissionPage.accepted_description_rsvp']()}
+			</p>
+			<div class="mt-6">
+				<Button href={eventUrl}>
+					{isTicketed
+						? m['questionnaireSubmissionPage.accepted_cta_ticket']()
+						: m['questionnaireSubmissionPage.accepted_cta_rsvp']()}
+				</Button>
+			</div>
+		</div>
+	{:else}
+		<!-- Form -->
+		<form onsubmit={handleSubmit} class="space-y-8">
+			<!-- Non-conditional Sections -->
+			{#each flattened.sections
+				.filter((s) => !s.depends_on_option_id)
+				.sort((a, b) => a.order - b.order) as section (section.id)}
+				<div class="rounded-lg border bg-card p-6">
+					<h2 class="mb-2 text-xl font-semibold">{section.name}</h2>
+					{#if section.description}
+						<div class="mb-6">
+							<MarkdownContent content={section.description} class="text-muted-foreground" />
+						</div>
+					{:else}
+						<div class="mb-6"></div>
+					{/if}
 
+					<div class="space-y-6">
+						{#each section.questions
+							.filter((q) => !q.depends_on_option_id)
+							.sort((a, b) => a.order - b.order) as question (question.id)}
+							{@const isVisible = isQuestionVisible(question.id)}
+							{#if isVisible}
+								{#if question.type === 'multiple_choice'}
+									{@render multipleChoiceQuestion(question, false)}
+								{:else if question.type === 'file_upload'}
+									{@render fileUploadQuestion(question, false)}
+								{:else}
+									{@render freeTextQuestion(question, false)}
+								{/if}
+							{/if}
+						{/each}
+					</div>
+				</div>
+			{/each}
+
+			<!-- Top-level questions (not in any section, non-conditional) -->
+			{#if flattened.topLevelQuestions.filter((q) => !q.depends_on_option_id).length > 0}
 				<div class="space-y-6">
-					{#each section.questions
+					{#each flattened.topLevelQuestions
 						.filter((q) => !q.depends_on_option_id)
 						.sort((a, b) => a.order - b.order) as question (question.id)}
 						{@const isVisible = isQuestionVisible(question.id)}
 						{#if isVisible}
-							{#if question.type === 'multiple_choice'}
-								{@render multipleChoiceQuestion(question, false)}
-							{:else if question.type === 'file_upload'}
-								{@render fileUploadQuestion(question, false)}
-							{:else}
-								{@render freeTextQuestion(question, false)}
-							{/if}
+							<div class="rounded-lg border bg-card p-6">
+								{#if question.type === 'multiple_choice'}
+									{@render multipleChoiceQuestion(question, false)}
+								{:else if question.type === 'file_upload'}
+									{@render fileUploadQuestion(question, false)}
+								{:else}
+									{@render freeTextQuestion(question, false)}
+								{/if}
+							</div>
 						{/if}
 					{/each}
 				</div>
-			</div>
-		{/each}
+			{/if}
 
-		<!-- Top-level questions (not in any section, non-conditional) -->
-		{#if flattened.topLevelQuestions.filter((q) => !q.depends_on_option_id).length > 0}
-			<div class="space-y-6">
-				{#each flattened.topLevelQuestions
-					.filter((q) => !q.depends_on_option_id)
-					.sort((a, b) => a.order - b.order) as question (question.id)}
-					{@const isVisible = isQuestionVisible(question.id)}
-					{#if isVisible}
-						<div class="rounded-lg border bg-card p-6">
-							{#if question.type === 'multiple_choice'}
-								{@render multipleChoiceQuestion(question, false)}
-							{:else if question.type === 'file_upload'}
-								{@render fileUploadQuestion(question, false)}
-							{:else}
-								{@render freeTextQuestion(question, false)}
-							{/if}
-						</div>
+			<!-- Submit Button -->
+			<div class="flex items-center justify-end gap-4 border-t pt-6">
+				<Button
+					type="button"
+					variant="outline"
+					onclick={() => goto(`/events/${data.event.organization.slug}/${data.event.slug}`)}
+				>
+					{m['questionnaireSubmissionPage.button_cancel']()}
+				</Button>
+				<Button type="submit" disabled={submitMutation.isPending}>
+					{#if submitMutation.isPending}
+						<Loader2 class="h-5 w-5 animate-spin" />
+						{m['questionnaireSubmissionPage.button_submitting']()}
+					{:else if submitMutation.isSuccess}
+						<Check class="h-5 w-5" />
+						{m['questionnaireSubmissionPage.button_submitted']()}
+					{:else}
+						{m['questionnaireSubmissionPage.button_submit']()}
 					{/if}
-				{/each}
+				</Button>
 			</div>
-		{/if}
 
-		<!-- Submit Button -->
-		<div class="flex items-center justify-end gap-4 border-t pt-6">
-			<Button
-				type="button"
-				variant="outline"
-				onclick={() => goto(`/events/${data.event.organization.slug}/${data.event.slug}`)}
-			>
-				{m['questionnaireSubmissionPage.button_cancel']()}
-			</Button>
-			<Button type="submit" disabled={submitMutation.isPending}>
-				{#if submitMutation.isPending}
-					<Loader2 class="h-5 w-5 animate-spin" />
-					{m['questionnaireSubmissionPage.button_submitting']()}
-				{:else if submitMutation.isSuccess}
-					<Check class="h-5 w-5" />
-					{m['questionnaireSubmissionPage.button_submitted']()}
-				{:else}
-					{m['questionnaireSubmissionPage.button_submit']()}
-				{/if}
-			</Button>
-		</div>
-
-		<!-- Error message -->
-		{#if submitMutation.isError}
-			<div
-				class="flex items-start gap-3 rounded-md border border-destructive bg-destructive/10 p-4 text-destructive"
-				role="alert"
-			>
-				<AlertCircle class="mt-0.5 h-5 w-5 shrink-0" />
-				<div class="flex-1">
-					<p class="font-semibold">{m['questionnaireSubmissionPage.error_alert_title']()}</p>
-					<p class="mt-1 text-sm">
-						{submitMutation.error?.message ||
-							m['questionnaireSubmissionPage.error_alert_description']()}
-					</p>
+			<!-- Error message -->
+			{#if submitMutation.isError}
+				<div
+					class="flex items-start gap-3 rounded-md border border-destructive bg-destructive/10 p-4 text-destructive"
+					role="alert"
+				>
+					<AlertCircle class="mt-0.5 h-5 w-5 shrink-0" />
+					<div class="flex-1">
+						<p class="font-semibold">{m['questionnaireSubmissionPage.error_alert_title']()}</p>
+						<p class="mt-1 text-sm">
+							{submitMutation.error?.message ||
+								m['questionnaireSubmissionPage.error_alert_description']()}
+						</p>
+					</div>
 				</div>
-			</div>
-		{/if}
-	</form>
+			{/if}
+		</form>
+	{/if}
 </div>
 
 <!-- Multiple Choice Question Snippet -->

@@ -6,6 +6,7 @@
 	import { AlertCircle, Loader2 } from 'lucide-svelte';
 	import type { DiscountCodeSchema, DiscountType } from '$lib/api/generated/types.gen';
 	import ScopeAssignment from './ScopeAssignment.svelte';
+	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 
 	interface FormData {
 		code: string;
@@ -78,10 +79,9 @@
 		{ code: 'ZAR', name: 'South African Rand' }
 	];
 	let currency = $state(existingCode?.currency || 'EUR');
-	let validFrom = $state(existingCode?.valid_from ? toLocalDatetime(existingCode.valid_from) : '');
-	let validUntil = $state(
-		existingCode?.valid_until ? toLocalDatetime(existingCode.valid_until) : ''
-	);
+	// `validFrom` / `validUntil` hold ISO 8601 strings (DateTimePicker's value format).
+	let validFrom = $state(existingCode?.valid_from ?? '');
+	let validUntil = $state(existingCode?.valid_until ?? '');
 	let maxUses = $state(existingCode?.max_uses?.toString() || '');
 	let maxUsesPerUser = $state(existingCode?.max_uses_per_user?.toString() || '1');
 	let minPurchaseAmount = $state(existingCode?.min_purchase_amount || '0');
@@ -93,11 +93,15 @@
 	// Validation
 	let validationErrors = $state<Record<string, string>>({});
 
-	function toLocalDatetime(iso: string): string {
-		const d = new Date(iso);
-		const offset = d.getTimezoneOffset();
-		const local = new Date(d.getTime() - offset * 60000);
-		return local.toISOString().slice(0, 16);
+	/**
+	 * Prefill "Valid Until" from the single scoped event's date (revel-frontend#444).
+	 * Only when creating, exactly one event is scoped, and the field is still empty —
+	 * never clobbers an existing value or an organizer's manual edit.
+	 */
+	function handleScopedEventDate(startIso: string | null): void {
+		if (!isEditing && startIso && !validUntil) {
+			validUntil = startIso;
+		}
 	}
 
 	const showCurrency = $derived(discountType === 'fixed_amount' && tierIds.length === 0);
@@ -329,26 +333,24 @@
 	<!-- Validity Period -->
 	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 		<div class="space-y-2">
-			<Label for="valid_from">Valid From</Label>
-			<Input id="valid_from" type="datetime-local" bind:value={validFrom} disabled={isSubmitting} />
+			<DateTimePicker
+				id="valid_from"
+				label="Valid From"
+				bind:value={validFrom}
+				disabled={isSubmitting}
+			/>
 			<p class="text-xs text-muted-foreground">Leave empty for immediately valid</p>
 		</div>
 
 		<div class="space-y-2">
-			<Label for="valid_until">Valid Until</Label>
-			<Input
+			<DateTimePicker
 				id="valid_until"
-				type="datetime-local"
+				label="Valid Until"
 				bind:value={validUntil}
 				disabled={isSubmitting}
-				aria-invalid={validationErrors.valid_until ? 'true' : undefined}
-				aria-describedby={validationErrors.valid_until ? 'until-error' : undefined}
+				error={validationErrors.valid_until}
 			/>
-			{#if validationErrors.valid_until}
-				<p id="until-error" class="text-sm text-destructive">
-					{validationErrors.valid_until}
-				</p>
-			{:else}
+			{#if !validationErrors.valid_until}
 				<p class="text-xs text-muted-foreground">Leave empty for no expiry</p>
 			{/if}
 		</div>
@@ -454,6 +456,7 @@
 			onSeriesChange={(ids) => (seriesIds = ids)}
 			onEventsChange={(ids) => (eventIds = ids)}
 			onTiersChange={(ids) => (tierIds = ids)}
+			onScopedEventDateChange={handleScopedEventDate}
 			disabled={isSubmitting}
 		/>
 	</div>

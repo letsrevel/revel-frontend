@@ -217,6 +217,7 @@
 			eventId={data.event.id}
 			orgSlug={data.event.organization.slug}
 			eventSlug={data.event.slug}
+			eventStart={data.event.start}
 		/>
 	{/if}
 </div>
