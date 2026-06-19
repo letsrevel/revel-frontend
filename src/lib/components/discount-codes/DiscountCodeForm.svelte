@@ -6,6 +6,7 @@
 	import { AlertCircle, Loader2 } from 'lucide-svelte';
 	import type { DiscountCodeSchema, DiscountType } from '$lib/api/generated/types.gen';
 	import ScopeAssignment from './ScopeAssignment.svelte';
+	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 
 	interface FormData {
 		code: string;
@@ -78,10 +79,13 @@
 		{ code: 'ZAR', name: 'South African Rand' }
 	];
 	let currency = $state(existingCode?.currency || 'EUR');
-	let validFrom = $state(existingCode?.valid_from ? toLocalDatetime(existingCode.valid_from) : '');
-	let validUntil = $state(
-		existingCode?.valid_until ? toLocalDatetime(existingCode.valid_until) : ''
-	);
+	// `validFrom` / `validUntil` hold ISO 8601 strings (DateTimePicker's value format).
+	let validFrom = $state(existingCode?.valid_from ?? '');
+	let validUntil = $state(existingCode?.valid_until ?? '');
+	// Tracks the scoped-event date we auto-filled into `validUntil`, and whether the
+	// organizer has since edited the field manually (so we stop managing it).
+	let autoPrefilledValidUntil = $state<string | null>(null);
+	let validUntilManuallyEdited = $state(false);
 	let maxUses = $state(existingCode?.max_uses?.toString() || '');
 	let maxUsesPerUser = $state(existingCode?.max_uses_per_user?.toString() || '1');
 	let minPurchaseAmount = $state(existingCode?.min_purchase_amount || '0');
@@ -93,11 +97,42 @@
 	// Validation
 	let validationErrors = $state<Record<string, string>>({});
 
-	function toLocalDatetime(iso: string): string {
-		const d = new Date(iso);
-		const offset = d.getTimezoneOffset();
-		const local = new Date(d.getTime() - offset * 60000);
-		return local.toISOString().slice(0, 16);
+	/**
+	 * Keep "Valid Until" in sync with the single scoped event's date (revel-frontend#444).
+	 * Only manages the field while creating and the organizer hasn't edited it manually.
+	 * - A single future event fills/updates the field (replacing a prior auto-fill).
+	 * - Losing the single-event scope (0 or 2+ events), or a past-dated event, clears our
+	 *   own auto-fill but never touches a value the organizer set themselves.
+	 * Never prefills a past date (which would create an already-expired code).
+	 */
+	function handleScopedEventDate(startIso: string | null): void {
+		if (isEditing || validUntilManuallyEdited) return;
+
+		// Only a future single-event start is usable as a prefill.
+		const usable = startIso && new Date(startIso).getTime() > Date.now() ? startIso : null;
+
+		if (!usable) {
+			// Drop our own auto-fill when the prefill no longer applies; leave manual values be.
+			if (validUntil && validUntil === autoPrefilledValidUntil) {
+				validUntil = '';
+				autoPrefilledValidUntil = null;
+			}
+			return;
+		}
+
+		// Fill an empty field, or replace a value we previously auto-filled.
+		if (!validUntil || validUntil === autoPrefilledValidUntil) {
+			validUntil = usable;
+			autoPrefilledValidUntil = usable;
+		}
+	}
+
+	/** Mark the field as organizer-owned once they change it away from our auto-fill. */
+	function handleValidUntilChange(value: string): void {
+		if (value !== autoPrefilledValidUntil) {
+			validUntilManuallyEdited = true;
+			autoPrefilledValidUntil = null;
+		}
 	}
 
 	const showCurrency = $derived(discountType === 'fixed_amount' && tierIds.length === 0);
@@ -329,26 +364,25 @@
 	<!-- Validity Period -->
 	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 		<div class="space-y-2">
-			<Label for="valid_from">Valid From</Label>
-			<Input id="valid_from" type="datetime-local" bind:value={validFrom} disabled={isSubmitting} />
+			<DateTimePicker
+				id="valid_from"
+				label="Valid From"
+				bind:value={validFrom}
+				disabled={isSubmitting}
+			/>
 			<p class="text-xs text-muted-foreground">Leave empty for immediately valid</p>
 		</div>
 
 		<div class="space-y-2">
-			<Label for="valid_until">Valid Until</Label>
-			<Input
+			<DateTimePicker
 				id="valid_until"
-				type="datetime-local"
+				label="Valid Until"
 				bind:value={validUntil}
 				disabled={isSubmitting}
-				aria-invalid={validationErrors.valid_until ? 'true' : undefined}
-				aria-describedby={validationErrors.valid_until ? 'until-error' : undefined}
+				error={validationErrors.valid_until}
+				onValueChange={handleValidUntilChange}
 			/>
-			{#if validationErrors.valid_until}
-				<p id="until-error" class="text-sm text-destructive">
-					{validationErrors.valid_until}
-				</p>
-			{:else}
+			{#if !validationErrors.valid_until}
 				<p class="text-xs text-muted-foreground">Leave empty for no expiry</p>
 			{/if}
 		</div>
@@ -454,6 +488,7 @@
 			onSeriesChange={(ids) => (seriesIds = ids)}
 			onEventsChange={(ids) => (eventIds = ids)}
 			onTiersChange={(ids) => (tierIds = ids)}
+			onScopedEventDateChange={handleScopedEventDate}
 			disabled={isSubmitting}
 		/>
 	</div>

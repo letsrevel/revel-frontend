@@ -85,6 +85,15 @@
 		value = isoValue;
 		onValueChange?.(isoValue);
 	}
+
+	function handleKeydown(event: KeyboardEvent): void {
+		// Enter confirms the current value and dismisses the native picker popup,
+		// rather than submitting the surrounding form. (revel-frontend#446)
+		if (event.key === 'Enter') {
+			event.preventDefault();
+			(event.currentTarget as HTMLInputElement).blur();
+		}
+	}
 </script>
 
 <div class={cn('space-y-2', className)}>
@@ -99,10 +108,11 @@
 
 	<input
 		type="datetime-local"
-		{id}
+		id={inputId}
 		name={inputId}
 		bind:value={localValue}
 		oninput={handleInput}
+		onkeydown={handleKeydown}
 		{placeholder}
 		{required}
 		{disabled}

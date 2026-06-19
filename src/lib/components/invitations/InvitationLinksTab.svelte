@@ -27,9 +27,11 @@
 		eventId: string;
 		orgSlug: string;
 		eventSlug: string;
+		/** Event start (ISO) used to prefill the expiration date when creating a link. */
+		eventStart?: string | null;
 	}
 
-	const { eventId, orgSlug, eventSlug }: Props = $props();
+	const { eventId, orgSlug, eventSlug, eventStart = null }: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
@@ -250,6 +252,7 @@
 	open={isCreateTokenModalOpen}
 	isLoading={createTokenMutation.isPending}
 	{ticketTiers}
+	{eventStart}
 	onClose={() => (isCreateTokenModalOpen = false)}
 	onSave={handleCreateTokenSave}
 />

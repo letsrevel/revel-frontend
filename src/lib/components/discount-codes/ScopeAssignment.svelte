@@ -23,6 +23,8 @@
 		onSeriesChange?: (ids: string[]) => void;
 		onEventsChange?: (ids: string[]) => void;
 		onTiersChange?: (ids: string[]) => void;
+		/** Emits the scoped event's start (ISO) when exactly one event is selected, else null. */
+		onScopedEventDateChange?: (startIso: string | null) => void;
 		disabled?: boolean;
 	}
 
@@ -34,6 +36,7 @@
 		onSeriesChange,
 		onEventsChange,
 		onTiersChange,
+		onScopedEventDateChange,
 		disabled = false
 	}: Props = $props();
 
@@ -174,6 +177,14 @@
 		}
 		eventsSet = newSet;
 		onEventsChange?.(Array.from(newSet));
+
+		// Report the scoped event's date so the parent can prefill an expiration default.
+		if (newSet.size === 1) {
+			const scoped = eventsQuery.data?.find((e) => e.id === Array.from(newSet)[0]);
+			onScopedEventDateChange?.(scoped?.start ?? null);
+		} else {
+			onScopedEventDateChange?.(null);
+		}
 	}
 
 	function toggleTier(id: string) {

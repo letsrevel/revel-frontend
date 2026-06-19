@@ -111,6 +111,29 @@ describe('DateTimePicker', () => {
 		expect(input.max).toBe('2025-10-20T18:00');
 	});
 
+	it('confirms the value and prevents form submission on Enter (#446)', () => {
+		render(DateTimePicker, {
+			props: {
+				label: 'Start Time'
+			}
+		});
+
+		const input = screen.getByLabelText('Start Time') as HTMLInputElement;
+		input.focus();
+		expect(document.activeElement).toBe(input);
+
+		const event = new KeyboardEvent('keydown', {
+			key: 'Enter',
+			bubbles: true,
+			cancelable: true
+		});
+		// dispatchEvent returns false when a handler called preventDefault on a cancelable event.
+		const notPrevented = input.dispatchEvent(event);
+
+		expect(notPrevented).toBe(false); // Enter was intercepted (no implicit form submit)
+		expect(document.activeElement).not.toBe(input); // field was blurred (value committed)
+	});
+
 	it('is keyboard accessible', () => {
 		render(DateTimePicker, {
 			props: {
