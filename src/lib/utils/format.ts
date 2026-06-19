@@ -20,3 +20,31 @@ export function formatPrice(
 		currency: currencyCode
 	}).format(numPrice);
 }
+
+/**
+ * Format a monetary amount with currency, always showing the numeric value
+ * (including zero, e.g. "$0.00"). Unlike {@link formatPrice} it never
+ * substitutes a "Free" label — use it for accounting figures (revenue, net,
+ * refunds) where a zero amount is meaningful.
+ */
+export function formatMoney(
+	amount: number | string | null | undefined,
+	currency?: string | null
+): string {
+	const parsed = typeof amount === 'string' ? parseFloat(amount) : (amount ?? 0);
+	const safe = Number.isFinite(parsed) ? parsed : 0;
+	const currencyCode = currency?.toUpperCase() || 'USD';
+	try {
+		return new Intl.NumberFormat(undefined, {
+			style: 'currency',
+			currency: currencyCode
+		}).format(safe);
+	} catch {
+		// Intl.NumberFormat throws RangeError on a malformed currency code
+		// (not exactly 3 letters). Fall back to USD rather than break rendering.
+		return new Intl.NumberFormat(undefined, {
+			style: 'currency',
+			currency: 'USD'
+		}).format(safe);
+	}
+}

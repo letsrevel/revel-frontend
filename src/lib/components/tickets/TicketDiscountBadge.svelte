@@ -9,7 +9,7 @@
 		class?: string;
 	}
 
-	let { ticket, class: className = '' }: Props = $props();
+	const { ticket, class: className = '' }: Props = $props();
 
 	const code = $derived(ticket.discount_code?.code ?? null);
 	const currency = $derived(

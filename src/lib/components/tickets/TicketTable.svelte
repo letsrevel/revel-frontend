@@ -27,15 +27,23 @@
 		UserPlus,
 		MoreVertical,
 		Ban,
-		Undo2
+		Undo2,
+		ChevronUp,
+		ChevronDown,
+		ChevronsUpDown
 	} from 'lucide-svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 	import RefundStatusBadge from './RefundStatusBadge.svelte';
 	import TicketDiscountBadge from './TicketDiscountBadge.svelte';
+	import { sortDirection, type TicketOrderBy, type TicketSortField } from './ticket-sort';
 
 	interface Props {
 		tickets: any[];
+		/** Active sort, or undefined for the backend default order. */
+		orderBy?: TicketOrderBy;
+		/** Toggle sort on a column. Omit to render non-sortable headers. */
+		onSort?: (field: TicketSortField) => void;
 		checkInPending: boolean;
 		confirmPaymentPending: boolean;
 		cancelTicketPending: boolean;
@@ -52,6 +60,8 @@
 
 	const {
 		tickets,
+		orderBy,
+		onSort,
 		checkInPending,
 		confirmPaymentPending,
 		cancelTicketPending,
@@ -81,6 +91,33 @@
 	{/if}
 {/snippet}
 
+{#snippet sortableHeader(label: string, field: TicketSortField)}
+	{@const dir = sortDirection(orderBy, field)}
+	<th
+		class="px-4 py-3 text-left text-sm font-semibold"
+		aria-sort={dir === 'asc' ? 'ascending' : dir === 'desc' ? 'descending' : 'none'}
+	>
+		{#if onSort}
+			<button
+				type="button"
+				class="-mx-1 inline-flex items-center gap-1 rounded px-1 transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+				onclick={() => onSort(field)}
+			>
+				{label}
+				{#if dir === 'asc'}
+					<ChevronUp class="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+				{:else if dir === 'desc'}
+					<ChevronDown class="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+				{:else}
+					<ChevronsUpDown class="h-3.5 w-3.5 text-muted-foreground/40" aria-hidden="true" />
+				{/if}
+			</button>
+		{:else}
+			{label}
+		{/if}
+	</th>
+{/snippet}
+
 <div class="hidden overflow-x-auto rounded-lg border md:block">
 	<table class="w-full">
 		<thead class="border-b bg-muted/50">
@@ -88,21 +125,14 @@
 				<th class="px-4 py-3 text-left text-sm font-semibold"
 					>{m['eventTicketsAdmin.headerAttendee']()}</th
 				>
-				<th class="px-4 py-3 text-left text-sm font-semibold"
-					>{m['eventTicketsAdmin.headerTier']()}</th
-				>
-				<th class="px-4 py-3 text-left text-sm font-semibold"
-					>{m['eventTicketsAdmin.headerPrice']()}</th
-				>
-				<th class="px-4 py-3 text-left text-sm font-semibold"
-					>{m['eventTicketsAdmin.headerPaymentMethod']()}</th
-				>
-				<th class="px-4 py-3 text-left text-sm font-semibold"
-					>{m['eventTicketsAdmin.headerStatus']()}</th
-				>
-				<th class="px-4 py-3 text-left text-sm font-semibold"
-					>{m['eventTicketsAdmin.headerPurchased']()}</th
-				>
+				{@render sortableHeader(m['eventTicketsAdmin.headerTier'](), 'tier__name')}
+				{@render sortableHeader(m['eventTicketsAdmin.headerPrice'](), 'price')}
+				{@render sortableHeader(
+					m['eventTicketsAdmin.headerPaymentMethod'](),
+					'tier__payment_method'
+				)}
+				{@render sortableHeader(m['eventTicketsAdmin.headerStatus'](), 'status')}
+				{@render sortableHeader(m['eventTicketsAdmin.headerPurchased'](), 'created_at')}
 				<th class="px-4 py-3 text-right text-sm font-semibold"
 					>{m['eventTicketsAdmin.headerActions']()}</th
 				>
