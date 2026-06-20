@@ -49,8 +49,10 @@
 	// Compute maps URL - prioritize event's URL, fall back to venue's URL
 	const mapsUrl = $derived(event.location_maps_url || event.venue?.location_maps_url || null);
 
-	// Date range display, rendered in the event's own timezone (#474)
-	const dateRange = $derived(formatEventDateRange(event.start, event.end, event.timezone));
+	// Date range, rendered in the event's own timezone (#474). The abbreviation is
+	// suppressed here because EventDetails on the same page carries the canonical
+	// "Times shown in {place} ({offset})" label — avoids showing the tz twice.
+	const dateRange = $derived(formatEventDateRange(event.start, event.end, event.timezone, false));
 
 	// Fallback gradient if no cover art
 	const fallbackGradient = $derived(getEventFallbackGradient(event.id));

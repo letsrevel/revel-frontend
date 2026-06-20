@@ -140,21 +140,30 @@ export function formatEventDateRange(
 		...tzOpt(timeZone)
 	});
 
-	const tz = withAbbreviation ? getTimeZoneAbbreviation(start, locale, timeZone) : '';
+	const startTz = withAbbreviation ? getTimeZoneAbbreviation(start, locale, timeZone) : '';
 
-	// If same day, show date once
+	// If same day, show date once.
 	if (isSameDayInZone(start, end, timeZone)) {
-		return withTz(`${dayOfWeek}, ${month} ${day} • ${startTime} - ${endTime}`, tz);
+		return withTz(`${dayOfWeek}, ${month} ${day} • ${startTime} - ${endTime}`, startTz);
 	}
 
 	// Different days
 	const endDayOfWeek = end.toLocaleDateString(locale, { weekday: 'short', ...tzOpt(timeZone) });
 	const endMonth = end.toLocaleDateString(locale, { month: 'short', ...tzOpt(timeZone) });
 	const endDay = dayOfMonthInZone(end, locale, timeZone);
+	const endTz = withAbbreviation ? getTimeZoneAbbreviation(end, locale, timeZone) : '';
+
+	// A multi-day range can straddle a DST transition, in which case start and
+	// end have different abbreviations/offsets (e.g. GMT+1 → GMT+2). Append each
+	// to its own time so the end isn't mislabelled with the start's offset; when
+	// they match, append once at the end as before.
+	if (startTz !== endTz) {
+		return `${dayOfWeek}, ${month} ${day} • ${withTz(startTime, startTz)} - ${endDayOfWeek}, ${endMonth} ${endDay} • ${withTz(endTime, endTz)}`;
+	}
 
 	return withTz(
 		`${dayOfWeek}, ${month} ${day} • ${startTime} - ${endDayOfWeek}, ${endMonth} ${endDay} • ${endTime}`,
-		tz
+		startTz
 	);
 }
 
@@ -363,7 +372,7 @@ export function formatDate(dateString: string, timeZone?: string): string {
  * @param timeZone IANA timezone (e.g. the event's timezone)
  * @param place Optional human place name (e.g. the event's city); falls back to
  *   the IANA zone's last segment ("Europe/London" → "London")
- * @returns e.g. "London (GMT+1)", or just the offset when no place resolves
+ * @returns e.g. "London (GMT+1)", or just the place name when no offset is available
  */
 export function formatEventTimezoneLabel(
 	referenceString: string,

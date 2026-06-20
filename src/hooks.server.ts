@@ -61,9 +61,14 @@ function isAccessTokenExpired(decoded: { exp?: number } | null, skewSeconds = 30
 
 /**
  * Exchange the refresh token for a fresh access token, set the rotated cookies,
- * and populate `event.locals.user`. On failure, clear the auth cookies so the
- * request proceeds anonymously (public SSR loads must not break on a dead
- * session). Returns true when a user was established.
+ * and populate `event.locals.user`. Returns true when a user was established.
+ *
+ * On a definitive rejection (the backend refuses the refresh token — expired or
+ * revoked) the auth cookies are cleared so the request, and subsequent ones,
+ * proceed anonymously. On a transient error (the refresh request throws, e.g.
+ * the backend is briefly unreachable) the cookies are left intact so a later
+ * request can retry; this request still proceeds anonymously (locals.user is
+ * left unset). Either way a failed refresh never breaks public SSR loads.
  */
 async function refreshSession(
 	event: Parameters<Handle>[0]['event'],

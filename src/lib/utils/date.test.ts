@@ -73,6 +73,18 @@ describe('formatEventDateRange same-day detection is timezone-aware', () => {
 		// A cross-day range repeats the bullet separator for the end date.
 		expect(vienna.match(/•/g)?.length).toBe(2);
 	});
+
+	it('labels each end with its own offset across a DST transition', () => {
+		// Europe/Vienna springs forward on 2026-03-29: 23:00 Mar 28 is GMT+1,
+		// 13:00 Mar 29 is GMT+2. The end must not inherit the start's offset.
+		const out = formatEventDateRange(
+			'2026-03-28T22:00:00Z',
+			'2026-03-29T11:00:00Z',
+			'Europe/Vienna'
+		);
+		expect(out).toContain('11:00 PM GMT+1');
+		expect(out).toContain('1:00 PM GMT+2');
+	});
 });
 
 describe('formatDate applies the timezone to the calendar day without an abbreviation', () => {
