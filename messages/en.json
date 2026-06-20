@@ -347,6 +347,11 @@
 	"announcements.new": "New Announcement",
 	"announcements.pageDescription": "Create and manage announcements for your organization members and event attendees.",
 	"announcements.public.empty": "No announcements yet",
+	"announcements.public.audienceLabel": "Who can see this",
+	"announcements.public.audience.event": "Visible to attendees of this event",
+	"announcements.public.audience.members": "Visible to organization members",
+	"announcements.public.audience.tiers": "Visible to specific ticket tiers",
+	"announcements.public.audience.staff": "Visible to staff only",
 	"announcements.public.from": "From {name}",
 	"announcements.public.title": "Announcements",
 	"announcements.save": "Save",
@@ -529,6 +534,21 @@
 		"noEventsFound": "No events found",
 		"noTiersFound": "No tiers found",
 		"tiersHelp": "Leave empty to apply to all tiers of the selected event(s)."
+	},
+	"discountCodesAdmin": {
+		"delete": {
+			"confirmHardDelete": "Delete discount code \"{code}\"? Unused codes are permanently removed (freeing the code for reuse); if it's linked to any tickets it will be deactivated instead.",
+			"confirmDeactivate": "Deactivate discount code \"{code}\"? It has been used, so it can't be deleted — its redemption history will be kept.",
+			"titleHardDelete": "Delete",
+			"titleDeactivate": "Deactivate (code has been used)",
+			"ariaHardDelete": "Delete discount code {code}",
+			"ariaDeactivate": "Deactivate discount code {code}"
+		},
+		"toast": {
+			"deleted": "Discount code deleted.",
+			"deactivated": "Discount code deactivated (it has been used, so it can't be deleted).",
+			"deleteError": "Failed to delete discount code. Please try again."
+		}
 	},
 	"blacklistModal": {
 		"createTitle": "Add to Blacklist",
@@ -1346,6 +1366,9 @@
 		"locationTbd": "Location TBD",
 		"linkCopiedToClipboard": "Link copied to clipboard!",
 		"failedToCopyLink": "Failed to copy link"
+	},
+	"eventTime": {
+		"shownIn": "Times shown in {label}"
 	},
 	"eventInvitationsAdmin": {
 		"backToEvents": "Back to Events",
@@ -5262,7 +5285,12 @@
 		"maxTickets.inherit": "From event settings",
 		"seatAssignment.label": "Seat Assignment",
 		"maxTicketsPerUser": "Max Tickets Per User",
-		"venueAndSector": "Venue & Sector"
+		"venueAndSector": "Venue & Sector",
+		"salesStartOn": "Sales start {date}",
+		"salesEnded": "Sales ended",
+		"unlimited": "Unlimited",
+		"soldOut": "Sold out",
+		"remaining": "{count} remaining"
 	},
 	"tierCardAdmin": {
 		"notAvailable": "Not Available",

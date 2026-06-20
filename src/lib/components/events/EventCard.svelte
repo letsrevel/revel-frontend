@@ -20,8 +20,8 @@
 	const { event, variant = 'standard', userStatus = null, class: className }: Props = $props();
 
 	// Computed values
-	const formattedDate = $derived(formatEventDate(event.start));
-	const screenReaderDate = $derived(formatEventDateForScreenReader(event.start));
+	const formattedDate = $derived(formatEventDate(event.start, event.timezone));
+	const screenReaderDate = $derived(formatEventDateForScreenReader(event.start, event.timezone));
 	const locationDisplay = $derived.by(() => {
 		// If event has a venue, use venue's name and city
 		if (event.venue) {

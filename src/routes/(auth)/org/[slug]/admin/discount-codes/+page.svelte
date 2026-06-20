@@ -17,6 +17,7 @@
 		Tag,
 		Pencil,
 		Trash2,
+		PowerOff,
 		ToggleLeft,
 		ToggleRight,
 		ChevronLeft,
@@ -25,6 +26,8 @@
 		Copy,
 		Check
 	} from 'lucide-svelte';
+	import { toast } from 'svelte-sonner';
+	import * as m from '$lib/paraglide/messages.js';
 
 	const organization = $derived($page.data.organization);
 	const accessToken = $derived(authStore.accessToken);
@@ -79,17 +82,28 @@
 	const isLoading = $derived(codesQuery.isLoading);
 	const error = $derived(codesQuery.error);
 
-	// Delete mutation
+	// Delete mutation. The endpoint hard-deletes an unused code (row gone, code
+	// string freed for reuse) or deactivates a used one (history preserved), and
+	// reports which via `action`.
 	const deleteMutation = createMutation(() => ({
 		mutationFn: async (codeId: string) => {
 			const response = await organizationadmindiscountcodesDeleteDiscountCode({
 				path: { slug: organization.slug, code_id: codeId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			if (response.error) throw new Error('Failed to delete discount code');
+			if (response.error || !response.data) throw new Error('Failed to delete discount code');
+			return response.data.action;
 		},
-		onSuccess: () => {
+		onSuccess: (action) => {
 			queryClient.invalidateQueries({ queryKey: ['discount-codes'] });
+			if (action === 'deactivated') {
+				toast.success(m['discountCodesAdmin.toast.deactivated']());
+			} else {
+				toast.success(m['discountCodesAdmin.toast.deleted']());
+			}
+		},
+		onError: () => {
+			toast.error(m['discountCodesAdmin.toast.deleteError']());
 		}
 	}));
 
@@ -108,8 +122,20 @@
 		}
 	}));
 
+	// Best-guess at the delete outcome for the icon/confirm copy. The backend
+	// hard-deletes only when a code is both unused AND has no ticket references;
+	// the client can't see ticket references, so this is a heuristic on
+	// times_used. The confirm copy and the success toast (driven by the
+	// response `action`) cover the deactivate fallback honestly.
+	function willHardDelete(code: DiscountCodeSchema): boolean {
+		return (code.times_used ?? 0) === 0;
+	}
+
 	function handleDelete(code: DiscountCodeSchema) {
-		if (confirm(`Deactivate discount code "${code.code}"? This will soft-delete it.`)) {
+		const message = willHardDelete(code)
+			? m['discountCodesAdmin.delete.confirmHardDelete']({ code: code.code })
+			: m['discountCodesAdmin.delete.confirmDeactivate']({ code: code.code });
+		if (confirm(message)) {
 			if (code.id) deleteMutation.mutate(code.id);
 		}
 	}
@@ -349,10 +375,18 @@
 											type="button"
 											onclick={() => handleDelete(code)}
 											class="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-destructive"
-											title="Delete"
-											aria-label="Delete discount code"
+											title={willHardDelete(code)
+												? m['discountCodesAdmin.delete.titleHardDelete']()
+												: m['discountCodesAdmin.delete.titleDeactivate']()}
+											aria-label={willHardDelete(code)
+												? m['discountCodesAdmin.delete.ariaHardDelete']({ code: code.code })
+												: m['discountCodesAdmin.delete.ariaDeactivate']({ code: code.code })}
 										>
-											<Trash2 class="h-4 w-4" />
+											{#if willHardDelete(code)}
+												<Trash2 class="h-4 w-4" />
+											{:else}
+												<PowerOff class="h-4 w-4" />
+											{/if}
 										</button>
 									</div>
 								</td>
@@ -446,9 +480,15 @@
 							size="sm"
 							onclick={() => handleDelete(code)}
 							class="text-destructive hover:text-destructive"
-							aria-label="Delete discount code {code.code}"
+							aria-label={willHardDelete(code)
+								? m['discountCodesAdmin.delete.ariaHardDelete']({ code: code.code })
+								: m['discountCodesAdmin.delete.ariaDeactivate']({ code: code.code })}
 						>
-							<Trash2 class="h-4 w-4" />
+							{#if willHardDelete(code)}
+								<Trash2 class="h-4 w-4" />
+							{:else}
+								<PowerOff class="h-4 w-4" />
+							{/if}
 						</Button>
 					</div>
 				</div>

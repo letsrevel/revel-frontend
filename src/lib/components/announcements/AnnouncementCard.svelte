@@ -87,11 +87,11 @@
 		</div>
 
 		<div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-			<!-- Target -->
-			<div class="flex items-center gap-1.5">
-				<targetInfo.icon class="h-4 w-4" aria-hidden="true" />
+			<!-- Target / audience -->
+			<Badge variant="outline" class="gap-1.5 font-normal">
+				<targetInfo.icon class="h-3.5 w-3.5" aria-hidden="true" />
 				<span>{targetInfo.text}</span>
-			</div>
+			</Badge>
 
 			<!-- Date -->
 			{#if isScheduled}

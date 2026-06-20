@@ -10,6 +10,7 @@
 	import { Card } from '$lib/components/ui/card';
 	import { Ticket, Clock, Users, AlertCircle } from 'lucide-svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
+	import { formatDate } from '$lib/utils/date';
 
 	interface Props {
 		tier: TierSchemaWithId;
@@ -20,6 +21,8 @@
 		canAttendWithoutLogin?: boolean;
 		/** Per-tier remaining tickets info (from my-status endpoint) */
 		tierRemainingInfo?: TierRemainingTicketsSchema;
+		/** The event's IANA timezone, so sales windows render event-local (#474). */
+		timezone?: string | null;
 		onSelectTier: (tier: TierSchemaWithId) => void;
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 	}
@@ -32,6 +35,7 @@
 		membershipTier = null,
 		canAttendWithoutLogin = false,
 		tierRemainingInfo,
+		timezone,
 		onSelectTier,
 		onGuestTierClick
 	}: Props = $props();
@@ -108,14 +112,19 @@
 		if (tier.sales_start_at) {
 			const salesStart = new Date(tier.sales_start_at);
 			if (now < salesStart) {
-				return { active: false, message: `Sales start ${salesStart.toLocaleDateString()}` };
+				return {
+					active: false,
+					message: m['tierCard.salesStartOn']({
+						date: formatDate(tier.sales_start_at, timezone ?? undefined)
+					})
+				};
 			}
 		}
 
 		if (tier.sales_end_at) {
 			const salesEnd = new Date(tier.sales_end_at);
 			if (now > salesEnd) {
-				return { active: false, message: 'Sales ended' };
+				return { active: false, message: m['tierCard.salesEnded']() };
 			}
 		}
 
@@ -125,14 +134,17 @@
 	// Check availability
 	const availabilityStatus = $derived.by(() => {
 		if (tier.total_available === null) {
-			return { available: true, message: 'Unlimited' };
+			return { available: true, message: m['tierCard.unlimited']() };
 		}
 
 		if (tier.total_available === 0) {
-			return { available: false, message: 'Sold out' };
+			return { available: false, message: m['tierCard.soldOut']() };
 		}
 
-		return { available: true, message: `${tier.total_available} remaining` };
+		return {
+			available: true,
+			message: m['tierCard.remaining']({ count: tier.total_available })
+		};
 	});
 
 	// Can claim free ticket

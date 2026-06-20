@@ -25,7 +25,7 @@
 	const { event, variant = 'compact', class: className }: Props = $props();
 
 	// Computed values
-	const formattedStartDate = $derived(formatEventDate(event.start));
+	const formattedStartDate = $derived(formatEventDate(event.start, event.timezone));
 
 	// Maps URLs - prioritize event's data, fall back to venue's data
 	const mapsUrl = $derived(event.location_maps_url || event.venue?.location_maps_url || null);

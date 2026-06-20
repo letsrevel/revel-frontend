@@ -347,6 +347,11 @@
 	"announcements.new": "Nuovo Annuncio",
 	"announcements.pageDescription": "Crea e gestisci annunci per i membri della tua organizzazione e i partecipanti agli eventi.",
 	"announcements.public.empty": "Nessun annuncio ancora",
+	"announcements.public.audienceLabel": "Chi può vederlo",
+	"announcements.public.audience.event": "Visibile ai partecipanti di questo evento",
+	"announcements.public.audience.members": "Visibile ai membri dell’organizzazione",
+	"announcements.public.audience.tiers": "Visibile a specifici livelli di biglietto",
+	"announcements.public.audience.staff": "Visibile solo allo staff",
 	"announcements.public.from": "Da {name}",
 	"announcements.public.title": "Annunci",
 	"announcements.save": "Salva",
@@ -529,6 +534,21 @@
 		"noEventsFound": "Nessun evento trovato",
 		"noTiersFound": "Nessun tipo trovato",
 		"tiersHelp": "Lascia vuoto per applicare a tutti i tipi di biglietto dell'evento/i selezionato/i."
+	},
+	"discountCodesAdmin": {
+		"delete": {
+			"confirmHardDelete": "Eliminare il codice sconto \"{code}\"? I codici inutilizzati vengono rimossi definitivamente (il codice torna disponibile); se è collegato a dei biglietti verrà invece disattivato.",
+			"confirmDeactivate": "Disattivare il codice sconto \"{code}\"? È già stato utilizzato, quindi non può essere eliminato — la cronologia di utilizzo verrà mantenuta.",
+			"titleHardDelete": "Elimina",
+			"titleDeactivate": "Disattiva (codice già utilizzato)",
+			"ariaHardDelete": "Elimina codice sconto {code}",
+			"ariaDeactivate": "Disattiva codice sconto {code}"
+		},
+		"toast": {
+			"deleted": "Codice sconto eliminato.",
+			"deactivated": "Codice sconto disattivato (è stato utilizzato, quindi non può essere eliminato).",
+			"deleteError": "Impossibile eliminare il codice sconto. Riprova."
+		}
 	},
 	"blacklistModal": {
 		"createTitle": "Aggiungi alla lista nera",
@@ -1346,6 +1366,9 @@
 		"locationTbd": "Location TBD",
 		"linkCopiedToClipboard": "Link copiato negli appunti!",
 		"failedToCopyLink": "Impossibile copiare il link"
+	},
+	"eventTime": {
+		"shownIn": "Orari mostrati in {label}"
 	},
 	"eventInvitationsAdmin": {
 		"backToEvents": "Back to Events",
@@ -5262,7 +5285,12 @@
 		"maxTickets.inherit": "Dalle impostazioni evento",
 		"seatAssignment.label": "Assegnazione Posti",
 		"maxTicketsPerUser": "Max Biglietti per Utente",
-		"venueAndSector": "Sede e Settore"
+		"venueAndSector": "Sede e Settore",
+		"salesStartOn": "Vendite dal {date}",
+		"salesEnded": "Vendite terminate",
+		"unlimited": "Illimitato",
+		"soldOut": "Esaurito",
+		"remaining": "{count} rimanenti"
 	},
 	"tierCardAdmin": {
 		"notAvailable": "Non Disponibile",

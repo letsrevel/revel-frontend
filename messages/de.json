@@ -347,6 +347,11 @@
 	"announcements.new": "Neue Ankündigung",
 	"announcements.pageDescription": "Erstelle und verwalte Ankündigungen für deine Organisationsmitglieder und Veranstaltungsteilnehmer.",
 	"announcements.public.empty": "Noch keine Ankündigungen",
+	"announcements.public.audienceLabel": "Wer das sehen kann",
+	"announcements.public.audience.event": "Sichtbar für Teilnehmer dieser Veranstaltung",
+	"announcements.public.audience.members": "Sichtbar für Organisationsmitglieder",
+	"announcements.public.audience.tiers": "Sichtbar für bestimmte Ticket-Stufen",
+	"announcements.public.audience.staff": "Nur für das Team sichtbar",
 	"announcements.public.from": "Von {name}",
 	"announcements.public.title": "Ankündigungen",
 	"announcements.save": "Speichern",
@@ -529,6 +534,21 @@
 		"noEventsFound": "Keine Veranstaltungen gefunden",
 		"noTiersFound": "Keine Kategorien gefunden",
 		"tiersHelp": "Leer lassen, um auf alle Kategorien der ausgewählten Veranstaltung(en) anzuwenden."
+	},
+	"discountCodesAdmin": {
+		"delete": {
+			"confirmHardDelete": "Rabattcode \"{code}\" löschen? Unbenutzte Codes werden dauerhaft entfernt (der Code wird wieder verfügbar); ist er mit Tickets verknüpft, wird er stattdessen deaktiviert.",
+			"confirmDeactivate": "Rabattcode \"{code}\" deaktivieren? Er wurde bereits verwendet und kann daher nicht gelöscht werden — sein Einlöseverlauf bleibt erhalten.",
+			"titleHardDelete": "Löschen",
+			"titleDeactivate": "Deaktivieren (Code wurde verwendet)",
+			"ariaHardDelete": "Rabattcode {code} löschen",
+			"ariaDeactivate": "Rabattcode {code} deaktivieren"
+		},
+		"toast": {
+			"deleted": "Rabattcode gelöscht.",
+			"deactivated": "Rabattcode deaktiviert (er wurde verwendet und kann daher nicht gelöscht werden).",
+			"deleteError": "Rabattcode konnte nicht gelöscht werden. Bitte versuche es erneut."
+		}
 	},
 	"blacklistModal": {
 		"createTitle": "Zur Sperrliste hinzufügen",
@@ -1346,6 +1366,9 @@
 		"locationTbd": "Location TBD",
 		"linkCopiedToClipboard": "Link in die Zwischenablage kopiert!",
 		"failedToCopyLink": "Link konnte nicht kopiert werden"
+	},
+	"eventTime": {
+		"shownIn": "Zeiten werden in {label} angezeigt"
 	},
 	"eventInvitationsAdmin": {
 		"backToEvents": "Back to Events",
@@ -5262,7 +5285,12 @@
 		"maxTickets.inherit": "Von Eventeinstellungen",
 		"seatAssignment.label": "Sitzplatzzuweisung",
 		"maxTicketsPerUser": "Max. Tickets pro Benutzer",
-		"venueAndSector": "Veranstaltungsort & Sektor"
+		"venueAndSector": "Veranstaltungsort & Sektor",
+		"salesStartOn": "Verkauf startet {date}",
+		"salesEnded": "Verkauf beendet",
+		"unlimited": "Unbegrenzt",
+		"soldOut": "Ausverkauft",
+		"remaining": "{count} übrig"
 	},
 	"tierCardAdmin": {
 		"notAvailable": "Nicht verfügbar",

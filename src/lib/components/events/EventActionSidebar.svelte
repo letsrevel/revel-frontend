@@ -524,6 +524,7 @@
 							eventName={event.name}
 							{eventTokenDetails}
 							applyBefore={event.apply_before}
+							timezone={event.timezone}
 							{onInvitationRequestSuccess}
 							{onWhitelistRequestSuccess}
 							{onGetTicketsClick}

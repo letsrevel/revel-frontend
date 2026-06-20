@@ -24,6 +24,8 @@
 		canAttendWithoutLogin?: boolean;
 		/** Per-tier remaining tickets info (from my-status endpoint) */
 		tierRemainingTickets?: TierRemainingTicketsSchema[];
+		/** The event's IANA timezone, so tier sales windows render event-local (#474). */
+		timezone?: string | null;
 		/** Event-level max tickets per user (fallback when tier-specific limit is null) */
 		eventMaxTicketsPerUser?: number | null;
 		/** User's display name for auto-fill */
@@ -59,6 +61,7 @@
 		membershipTier = null,
 		canAttendWithoutLogin = false,
 		tierRemainingTickets,
+		timezone,
 		eventMaxTicketsPerUser = null,
 		userName = '',
 		preSelectedTier = null,
@@ -249,6 +252,7 @@
 						{membershipTier}
 						{canAttendWithoutLogin}
 						tierRemainingInfo={getTierRemainingInfo(tier.id)}
+						{timezone}
 						onSelectTier={handleTierClick}
 						{onGuestTierClick}
 					/>
