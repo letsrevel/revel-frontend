@@ -538,7 +538,11 @@
 	"discountCodesAdmin": {
 		"delete": {
 			"confirmHardDelete": "Eliminare il codice sconto \"{code}\"? I codici inutilizzati vengono rimossi definitivamente (il codice torna disponibile); se è collegato a dei biglietti verrà invece disattivato.",
-			"confirmDeactivate": "Disattivare il codice sconto \"{code}\"? È già stato utilizzato, quindi non può essere eliminato — la cronologia di utilizzo verrà mantenuta."
+			"confirmDeactivate": "Disattivare il codice sconto \"{code}\"? È già stato utilizzato, quindi non può essere eliminato — la cronologia di utilizzo verrà mantenuta.",
+			"titleHardDelete": "Elimina",
+			"titleDeactivate": "Disattiva (codice già utilizzato)",
+			"ariaHardDelete": "Elimina codice sconto {code}",
+			"ariaDeactivate": "Disattiva codice sconto {code}"
 		},
 		"toast": {
 			"deleted": "Codice sconto eliminato.",
@@ -5281,7 +5285,12 @@
 		"maxTickets.inherit": "Dalle impostazioni evento",
 		"seatAssignment.label": "Assegnazione Posti",
 		"maxTicketsPerUser": "Max Biglietti per Utente",
-		"venueAndSector": "Sede e Settore"
+		"venueAndSector": "Sede e Settore",
+		"salesStartOn": "Vendite dal {date}",
+		"salesEnded": "Vendite terminate",
+		"unlimited": "Illimitato",
+		"soldOut": "Esaurito",
+		"remaining": "{count} rimanenti"
 	},
 	"tierCardAdmin": {
 		"notAvailable": "Non Disponibile",

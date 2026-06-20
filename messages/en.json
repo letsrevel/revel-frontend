@@ -538,7 +538,11 @@
 	"discountCodesAdmin": {
 		"delete": {
 			"confirmHardDelete": "Delete discount code \"{code}\"? Unused codes are permanently removed (freeing the code for reuse); if it's linked to any tickets it will be deactivated instead.",
-			"confirmDeactivate": "Deactivate discount code \"{code}\"? It has been used, so it can't be deleted — its redemption history will be kept."
+			"confirmDeactivate": "Deactivate discount code \"{code}\"? It has been used, so it can't be deleted — its redemption history will be kept.",
+			"titleHardDelete": "Delete",
+			"titleDeactivate": "Deactivate (code has been used)",
+			"ariaHardDelete": "Delete discount code {code}",
+			"ariaDeactivate": "Deactivate discount code {code}"
 		},
 		"toast": {
 			"deleted": "Discount code deleted.",
@@ -5281,7 +5285,12 @@
 		"maxTickets.inherit": "From event settings",
 		"seatAssignment.label": "Seat Assignment",
 		"maxTicketsPerUser": "Max Tickets Per User",
-		"venueAndSector": "Venue & Sector"
+		"venueAndSector": "Venue & Sector",
+		"salesStartOn": "Sales start {date}",
+		"salesEnded": "Sales ended",
+		"unlimited": "Unlimited",
+		"soldOut": "Sold out",
+		"remaining": "{count} remaining"
 	},
 	"tierCardAdmin": {
 		"notAvailable": "Not Available",

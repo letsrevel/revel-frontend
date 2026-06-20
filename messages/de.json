@@ -538,7 +538,11 @@
 	"discountCodesAdmin": {
 		"delete": {
 			"confirmHardDelete": "Rabattcode \"{code}\" löschen? Unbenutzte Codes werden dauerhaft entfernt (der Code wird wieder verfügbar); ist er mit Tickets verknüpft, wird er stattdessen deaktiviert.",
-			"confirmDeactivate": "Rabattcode \"{code}\" deaktivieren? Er wurde bereits verwendet und kann daher nicht gelöscht werden — sein Einlöseverlauf bleibt erhalten."
+			"confirmDeactivate": "Rabattcode \"{code}\" deaktivieren? Er wurde bereits verwendet und kann daher nicht gelöscht werden — sein Einlöseverlauf bleibt erhalten.",
+			"titleHardDelete": "Löschen",
+			"titleDeactivate": "Deaktivieren (Code wurde verwendet)",
+			"ariaHardDelete": "Rabattcode {code} löschen",
+			"ariaDeactivate": "Rabattcode {code} deaktivieren"
 		},
 		"toast": {
 			"deleted": "Rabattcode gelöscht.",
@@ -5281,7 +5285,12 @@
 		"maxTickets.inherit": "Von Eventeinstellungen",
 		"seatAssignment.label": "Sitzplatzzuweisung",
 		"maxTicketsPerUser": "Max. Tickets pro Benutzer",
-		"venueAndSector": "Veranstaltungsort & Sektor"
+		"venueAndSector": "Veranstaltungsort & Sektor",
+		"salesStartOn": "Verkauf startet {date}",
+		"salesEnded": "Verkauf beendet",
+		"unlimited": "Unbegrenzt",
+		"soldOut": "Ausverkauft",
+		"remaining": "{count} übrig"
 	},
 	"tierCardAdmin": {
 		"notAvailable": "Nicht verfügbar",
