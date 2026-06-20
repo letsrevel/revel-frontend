@@ -91,8 +91,8 @@
 				path: { slug: organization.slug, code_id: codeId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			if (response.error) throw new Error('Failed to delete discount code');
-			return response.data?.action;
+			if (response.error || !response.data) throw new Error('Failed to delete discount code');
+			return response.data.action;
 		},
 		onSuccess: (action) => {
 			queryClient.invalidateQueries({ queryKey: ['discount-codes'] });
