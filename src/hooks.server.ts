@@ -50,6 +50,64 @@ function decodeJWT(token: string): any | null {
 }
 
 /**
+ * Whether a decoded JWT is expired (or expires within `skewSeconds`).
+ * A token with no numeric `exp` is treated as unusable so we fall back to a
+ * refresh rather than trusting it.
+ */
+function isAccessTokenExpired(decoded: { exp?: number } | null, skewSeconds = 30): boolean {
+	if (!decoded || typeof decoded.exp !== 'number') return true;
+	return decoded.exp <= Date.now() / 1000 + skewSeconds;
+}
+
+/**
+ * Exchange the refresh token for a fresh access token, set the rotated cookies,
+ * and populate `event.locals.user`. On failure, clear the auth cookies so the
+ * request proceeds anonymously (public SSR loads must not break on a dead
+ * session). Returns true when a user was established.
+ */
+async function refreshSession(
+	event: Parameters<Handle>[0]['event'],
+	refreshToken: string
+): Promise<boolean> {
+	const rememberMe = event.cookies.get('remember_me') === 'true';
+
+	try {
+		const { data, error: refreshError } = await tokenRefresh({ body: { refresh: refreshToken } });
+
+		if (refreshError || !data || !data.access || !data.refresh) {
+			log.warning('token_refresh_failed', { error: refreshError });
+			event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
+			event.cookies.delete('refresh_token', { path: '/', httpOnly: true, sameSite: 'lax' });
+			event.cookies.delete('remember_me', { path: '/' });
+			return false;
+		}
+
+		event.cookies.set('access_token', data.access, getAccessTokenCookieOptions(rememberMe));
+		event.cookies.set('refresh_token', data.refresh, getRefreshTokenCookieOptions(rememberMe));
+		event.cookies.set(
+			'remember_me',
+			rememberMe ? 'true' : 'false',
+			getRememberMeCookieOptions(rememberMe)
+		);
+
+		const decoded = decodeJWT(data.access);
+		if (decoded) {
+			event.locals.user = {
+				id: decoded.user_id || decoded.sub,
+				email: decoded.email,
+				accessToken: data.access
+			};
+			return true;
+		}
+		return false;
+	} catch (error) {
+		log.error('token_refresh_error', { error });
+		// Don't block page load — user will appear logged out.
+		return false;
+	}
+}
+
+/**
  * Token capture hook - stores invitation tokens from URL params in cookies
  */
 const handleTokenCapture: Handle = async ({ event, resolve }) => {
@@ -199,69 +257,33 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 		has_refresh_token: !!refreshToken
 	});
 
-	// If we have an access token, decode it to populate locals.user
-	if (accessToken) {
-		try {
-			const decoded = decodeJWT(accessToken);
+	// Decode the access token (if any) and check it's still valid. A structurally
+	// valid JWT can still be EXPIRED — decoding alone doesn't catch that, so we
+	// must inspect `exp`. An expired/malformed token used as-is makes the backend
+	// 401 every SSR call, which surfaced as public pages failing to load until
+	// the user manually logged out.
+	const decoded = accessToken ? decodeJWT(accessToken) : null;
 
-			if (!decoded) {
-				log.warning('jwt_malformed', { reason: 'decode_returned_null' });
-				// Clear invalid token
-				event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
-			} else {
-				event.locals.user = {
-					id: decoded.user_id || decoded.sub,
-					email: decoded.email,
-					accessToken
-				};
-			}
-		} catch (error) {
-			log.warning('jwt_processing_error', { error });
-			// Token is malformed, clear it
-			event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
-		}
+	if (accessToken && decoded && !isAccessTokenExpired(decoded)) {
+		// Usable access token — populate locals.user directly.
+		event.locals.user = {
+			id: decoded.user_id || decoded.sub,
+			email: decoded.email,
+			accessToken
+		};
 	} else if (refreshToken) {
-		// No access token but refresh token exists — the access token expired.
-		// Refresh it now so locals.user is populated before any load function runs.
-		// This fixes 401 errors on cold start with "remember me" enabled.
-		log.debug('token_refresh_attempt', { reason: 'cold_start_access_token_missing' });
-		const rememberMe = event.cookies.get('remember_me') === 'true';
-
-		try {
-			const { data, error: refreshError } = await tokenRefresh({
-				body: { refresh: refreshToken }
-			});
-
-			if (refreshError || !data || !data.access || !data.refresh) {
-				log.warning('token_refresh_failed', { error: refreshError });
-				event.cookies.delete('refresh_token', { path: '/', httpOnly: true, sameSite: 'lax' });
-				event.cookies.delete('remember_me', { path: '/' });
-			} else {
-				log.debug('token_refresh_succeeded');
-
-				// Set new cookies
-				event.cookies.set('access_token', data.access, getAccessTokenCookieOptions(rememberMe));
-				event.cookies.set('refresh_token', data.refresh, getRefreshTokenCookieOptions(rememberMe));
-				event.cookies.set(
-					'remember_me',
-					rememberMe ? 'true' : 'false',
-					getRememberMeCookieOptions(rememberMe)
-				);
-
-				// Decode the new access token and populate locals.user
-				const decoded = decodeJWT(data.access);
-				if (decoded) {
-					event.locals.user = {
-						id: decoded.user_id || decoded.sub,
-						email: decoded.email,
-						accessToken: data.access
-					};
-				}
-			}
-		} catch (error) {
-			log.error('token_refresh_error', { error });
-			// Don't block page load — user will appear logged out
-		}
+		// No usable access token (missing, malformed, or expired) but a refresh
+		// token exists — rotate it now so locals.user is set before any load runs.
+		// Covers both cold start ("remember me") and expired-cookie poisoning.
+		log.debug('token_refresh_attempt', {
+			reason: accessToken ? 'access_token_expired' : 'access_token_missing'
+		});
+		await refreshSession(event, refreshToken);
+	} else if (accessToken) {
+		// Stale/malformed access token and nothing to refresh with — clear it so
+		// the request (and any public SSR load) proceeds anonymously.
+		log.warning('jwt_unusable', { reason: decoded ? 'expired' : 'malformed' });
+		event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
 	}
 
 	return resolve(event);
