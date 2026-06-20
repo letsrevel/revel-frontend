@@ -104,7 +104,9 @@ export function formatEventDate(dateString: string, timeZone?: string): string {
  * Format a date range for event display
  * @param startString ISO 8601 start date-time string
  * @param endString ISO 8601 end date-time string
- * @returns Formatted date range (e.g., "Fri, Oct 20 • 8:00 PM - 11:00 PM")
+ * @param timeZone Optional IANA timezone to render in (e.g. the event's timezone);
+ *   when supplied, the tz abbreviation is appended (e.g. "… 11:00 PM CET")
+ * @returns Formatted date range (e.g., "Fri, Oct 20 • 8:00 PM - 11:00 PM CET")
  */
 export function formatEventDateRange(
 	startString: string,
@@ -254,7 +256,9 @@ export function isRSVPClosingSoon(deadlineString: string | null): boolean {
 /**
  * Format a date for screen readers (more verbose)
  * @param dateString ISO 8601 date-time string
- * @returns Verbose date string (e.g., "Friday, October 20th, 2025 at 8:00 PM")
+ * @param timeZone Optional IANA timezone to render in (e.g. the event's timezone);
+ *   when supplied, the tz abbreviation is appended (e.g. "… at 8:00 PM CET")
+ * @returns Verbose date string (e.g., "Friday, October 20th, 2025 at 8:00 PM CET")
  */
 export function formatEventDateForScreenReader(dateString: string, timeZone?: string): string {
 	const date = new Date(dateString);

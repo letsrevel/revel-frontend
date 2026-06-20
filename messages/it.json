@@ -535,6 +535,17 @@
 		"noTiersFound": "Nessun tipo trovato",
 		"tiersHelp": "Lascia vuoto per applicare a tutti i tipi di biglietto dell'evento/i selezionato/i."
 	},
+	"discountCodesAdmin": {
+		"delete": {
+			"confirmHardDelete": "Eliminare il codice sconto \"{code}\"? I codici inutilizzati vengono rimossi definitivamente (il codice torna disponibile); se è collegato a dei biglietti verrà invece disattivato.",
+			"confirmDeactivate": "Disattivare il codice sconto \"{code}\"? È già stato utilizzato, quindi non può essere eliminato — la cronologia di utilizzo verrà mantenuta."
+		},
+		"toast": {
+			"deleted": "Codice sconto eliminato.",
+			"deactivated": "Codice sconto disattivato (è stato utilizzato, quindi non può essere eliminato).",
+			"deleteError": "Impossibile eliminare il codice sconto. Riprova."
+		}
+	},
 	"blacklistModal": {
 		"createTitle": "Aggiungi alla lista nera",
 		"editTitle": "Modifica voce lista nera",

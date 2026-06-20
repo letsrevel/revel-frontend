@@ -535,6 +535,17 @@
 		"noTiersFound": "Keine Kategorien gefunden",
 		"tiersHelp": "Leer lassen, um auf alle Kategorien der ausgewählten Veranstaltung(en) anzuwenden."
 	},
+	"discountCodesAdmin": {
+		"delete": {
+			"confirmHardDelete": "Rabattcode \"{code}\" löschen? Unbenutzte Codes werden dauerhaft entfernt (der Code wird wieder verfügbar); ist er mit Tickets verknüpft, wird er stattdessen deaktiviert.",
+			"confirmDeactivate": "Rabattcode \"{code}\" deaktivieren? Er wurde bereits verwendet und kann daher nicht gelöscht werden — sein Einlöseverlauf bleibt erhalten."
+		},
+		"toast": {
+			"deleted": "Rabattcode gelöscht.",
+			"deactivated": "Rabattcode deaktiviert (er wurde verwendet und kann daher nicht gelöscht werden).",
+			"deleteError": "Rabattcode konnte nicht gelöscht werden. Bitte versuche es erneut."
+		}
+	},
 	"blacklistModal": {
 		"createTitle": "Zur Sperrliste hinzufügen",
 		"editTitle": "Sperrlisteneintrag bearbeiten",

@@ -535,6 +535,17 @@
 		"noTiersFound": "No tiers found",
 		"tiersHelp": "Leave empty to apply to all tiers of the selected event(s)."
 	},
+	"discountCodesAdmin": {
+		"delete": {
+			"confirmHardDelete": "Delete discount code \"{code}\"? Unused codes are permanently removed (freeing the code for reuse); if it's linked to any tickets it will be deactivated instead.",
+			"confirmDeactivate": "Deactivate discount code \"{code}\"? It has been used, so it can't be deleted — its redemption history will be kept."
+		},
+		"toast": {
+			"deleted": "Discount code deleted.",
+			"deactivated": "Discount code deactivated (it has been used, so it can't be deleted).",
+			"deleteError": "Failed to delete discount code. Please try again."
+		}
+	},
 	"blacklistModal": {
 		"createTitle": "Add to Blacklist",
 		"editTitle": "Edit Blacklist Entry",

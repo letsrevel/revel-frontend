@@ -27,6 +27,7 @@
 		Check
 	} from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
+	import * as m from '$lib/paraglide/messages.js';
 
 	const organization = $derived($page.data.organization);
 	const accessToken = $derived(authStore.accessToken);
@@ -96,13 +97,13 @@
 		onSuccess: (action) => {
 			queryClient.invalidateQueries({ queryKey: ['discount-codes'] });
 			if (action === 'deactivated') {
-				toast.success('Discount code deactivated (it has been used, so it can’t be deleted).');
+				toast.success(m['discountCodesAdmin.toast.deactivated']());
 			} else {
-				toast.success('Discount code deleted.');
+				toast.success(m['discountCodesAdmin.toast.deleted']());
 			}
 		},
 		onError: () => {
-			toast.error('Failed to delete discount code. Please try again.');
+			toast.error(m['discountCodesAdmin.toast.deleteError']());
 		}
 	}));
 
@@ -121,16 +122,19 @@
 		}
 	}));
 
-	// An unused code (never redeemed) is permanently removed; a used one can only
-	// be deactivated so its redemption history survives.
+	// Best-guess at the delete outcome for the icon/confirm copy. The backend
+	// hard-deletes only when a code is both unused AND has no ticket references;
+	// the client can't see ticket references, so this is a heuristic on
+	// times_used. The confirm copy and the success toast (driven by the
+	// response `action`) cover the deactivate fallback honestly.
 	function willHardDelete(code: DiscountCodeSchema): boolean {
 		return (code.times_used ?? 0) === 0;
 	}
 
 	function handleDelete(code: DiscountCodeSchema) {
 		const message = willHardDelete(code)
-			? `Delete discount code "${code.code}"? This permanently removes it and frees the code "${code.code}" for reuse.`
-			: `Deactivate discount code "${code.code}"? It has been used, so it can’t be deleted — its redemption history will be kept.`;
+			? m['discountCodesAdmin.delete.confirmHardDelete']({ code: code.code })
+			: m['discountCodesAdmin.delete.confirmDeactivate']({ code: code.code });
 		if (confirm(message)) {
 			if (code.id) deleteMutation.mutate(code.id);
 		}
