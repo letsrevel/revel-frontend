@@ -11,7 +11,8 @@ import {
 	formatEventDateRange,
 	formatEventDateForScreenReader,
 	formatDateTime,
-	formatDate
+	formatDate,
+	formatEventTimezoneLabel
 } from './date';
 
 // A fixed winter instant (no DST ambiguity):
@@ -35,6 +36,24 @@ describe('formatEventDate with an explicit timezone (#474)', () => {
 
 	it('omits the timezone abbreviation when no timezone is supplied (backward compatible)', () => {
 		expect(formatEventDate(WINTER_UTC)).not.toContain('EST');
+	});
+
+	it('omits the abbreviation when withAbbreviation is false (paired with a tz label)', () => {
+		const out = formatEventDate(WINTER_UTC, 'America/New_York', false);
+		expect(out).toContain('2:00 PM');
+		expect(out).not.toContain('EST');
+	});
+});
+
+describe('formatEventTimezoneLabel', () => {
+	it('combines the place name with the DST-aware offset', () => {
+		expect(formatEventTimezoneLabel(WINTER_UTC, 'America/New_York', 'New York')).toBe(
+			'New York (EST)'
+		);
+	});
+
+	it('falls back to the IANA zone tail when no place is given', () => {
+		expect(formatEventTimezoneLabel(WINTER_UTC, 'America/New_York')).toBe('New York (EST)');
 	});
 });
 

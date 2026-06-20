@@ -1364,7 +1364,7 @@
 		"failedToCopyLink": "Impossibile copiare il link"
 	},
 	"eventTime": {
-		"timezoneNote": "Tutti gli orari sono mostrati nel fuso orario locale dell'evento."
+		"shownIn": "Orari mostrati in {label}"
 	},
 	"eventInvitationsAdmin": {
 		"backToEvents": "Back to Events",

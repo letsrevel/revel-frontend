@@ -99,15 +99,20 @@
 					</div>
 					<div class="mt-1">
 						<time datetime={event.start} class="block font-medium">
-							{formatEventDate(event.start, event.timezone)}
+							{formatEventDate(event.start, event.timezone, false)}
 						</time>
 						{#if event.end}
 							<time datetime={event.end} class="block text-sm text-muted-foreground">
 								{m['eventDetails.dateTime_ends']()}
-								{formatEventDate(event.end, event.timezone)}
+								{formatEventDate(event.end, event.timezone, false)}
 							</time>
 						{/if}
-						<EventTimezoneNote class="mt-2" />
+						<EventTimezoneNote
+							start={event.start}
+							timeZone={event.timezone}
+							place={event.city?.name}
+							class="mt-2"
+						/>
 					</div>
 				</div>
 			</div>

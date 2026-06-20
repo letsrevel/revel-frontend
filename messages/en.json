@@ -1364,7 +1364,7 @@
 		"failedToCopyLink": "Failed to copy link"
 	},
 	"eventTime": {
-		"timezoneNote": "All times are shown in the event's local timezone."
+		"shownIn": "Times shown in {label}"
 	},
 	"eventInvitationsAdmin": {
 		"backToEvents": "Back to Events",

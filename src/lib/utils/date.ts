@@ -78,9 +78,15 @@ function withTz(formatted: string, abbreviation: string): string {
  * Format a date-time string for event display
  * @param dateString ISO 8601 date-time string
  * @param timeZone Optional IANA timezone to render in (e.g. the event's timezone)
- * @returns Formatted date string (e.g., "Fri, Oct 20 • 8:00 PM CET")
+ * @param withAbbreviation Append the tz abbreviation/offset (default true). Pass
+ *   false on surfaces that show a separate "Times shown in …" label instead.
+ * @returns Formatted date string (e.g., "Fri, Oct 20 • 8:00 PM GMT+1")
  */
-export function formatEventDate(dateString: string, timeZone?: string): string {
+export function formatEventDate(
+	dateString: string,
+	timeZone?: string,
+	withAbbreviation = true
+): string {
 	const date = new Date(dateString);
 	const locale = getCurrentLocale();
 
@@ -94,24 +100,24 @@ export function formatEventDate(dateString: string, timeZone?: string): string {
 		...tzOpt(timeZone)
 	});
 
-	return withTz(
-		`${dayOfWeek}, ${month} ${day} • ${time}`,
-		getTimeZoneAbbreviation(date, locale, timeZone)
-	);
+	const base = `${dayOfWeek}, ${month} ${day} • ${time}`;
+	return withAbbreviation ? withTz(base, getTimeZoneAbbreviation(date, locale, timeZone)) : base;
 }
 
 /**
  * Format a date range for event display
  * @param startString ISO 8601 start date-time string
  * @param endString ISO 8601 end date-time string
- * @param timeZone Optional IANA timezone to render in (e.g. the event's timezone);
- *   when supplied, the tz abbreviation is appended (e.g. "… 11:00 PM CET")
- * @returns Formatted date range (e.g., "Fri, Oct 20 • 8:00 PM - 11:00 PM CET")
+ * @param timeZone Optional IANA timezone to render in (e.g. the event's timezone)
+ * @param withAbbreviation Append the tz abbreviation/offset (default true). Pass
+ *   false on surfaces that show a separate "Times shown in …" label instead.
+ * @returns Formatted date range (e.g., "Fri, Oct 20 • 8:00 PM - 11:00 PM GMT+1")
  */
 export function formatEventDateRange(
 	startString: string,
 	endString: string,
-	timeZone?: string
+	timeZone?: string,
+	withAbbreviation = true
 ): string {
 	const start = new Date(startString);
 	const end = new Date(endString);
@@ -134,7 +140,7 @@ export function formatEventDateRange(
 		...tzOpt(timeZone)
 	});
 
-	const tz = getTimeZoneAbbreviation(start, locale, timeZone);
+	const tz = withAbbreviation ? getTimeZoneAbbreviation(start, locale, timeZone) : '';
 
 	// If same day, show date once
 	if (isSameDayInZone(start, end, timeZone)) {
@@ -345,4 +351,27 @@ export function formatDate(dateString: string, timeZone?: string): string {
 		day: 'numeric',
 		...tzOpt(timeZone)
 	});
+}
+
+/**
+ * Human label naming the timezone an event's times are shown in, e.g.
+ * "London (GMT+1)". Pair it with abbreviation-free times (pass
+ * `withAbbreviation: false` to the formatters) so a viewer understands the
+ * times are the event's local times, not their own — without a separate
+ * disclaimer.
+ * @param referenceString ISO 8601 instant used to resolve the (DST-aware) offset
+ * @param timeZone IANA timezone (e.g. the event's timezone)
+ * @param place Optional human place name (e.g. the event's city); falls back to
+ *   the IANA zone's last segment ("Europe/London" → "London")
+ * @returns e.g. "London (GMT+1)", or just the offset when no place resolves
+ */
+export function formatEventTimezoneLabel(
+	referenceString: string,
+	timeZone: string,
+	place?: string | null
+): string {
+	const locale = getCurrentLocale();
+	const offset = getTimeZoneAbbreviation(new Date(referenceString), locale, timeZone);
+	const name = place?.trim() || timeZone.split('/').pop()?.replace(/_/g, ' ') || timeZone;
+	return offset ? `${name} (${offset})` : name;
 }
