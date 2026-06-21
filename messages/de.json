@@ -4275,7 +4275,8 @@
 		"settingsLink_text": "Benachrichtigungen und Standort konfigurieren",
 		"settingsLink_ariaHidden": "→",
 		"completeToReturn": "Vervollständige dein Profil, um fortzufahren. Du wirst nach dem Speichern zurückgeleitet.",
-		"savedRedirecting": "Profil aktualisiert! Weiterleitung..."
+		"savedRedirecting": "Profil aktualisiert! Weiterleitung...",
+		"telegramUnavailable": "Telegram ist auf dieser Instanz nicht verfügbar."
 	},
 	"profilePage": {
 		"title": "Profil - Revel",

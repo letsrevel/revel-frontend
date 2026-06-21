@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
+	import { page } from '$app/stores';
 	import type { PageData, ActionData } from './$types';
 	import CityAutocomplete from '$lib/components/forms/CityAutocomplete.svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
@@ -31,6 +32,7 @@
 	const { data, form }: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
+	const features = $derived($page.data.features);
 
 	// Form state - always sync with latest data
 	let description = $state(data.organization.description || '');
@@ -393,20 +395,22 @@
 				</div>
 
 				<!-- Telegram -->
-				<div>
-					<label for="telegram_url" class="flex items-center gap-2 text-sm font-medium">
-						<Send class="h-4 w-4 text-blue-400" aria-hidden="true" />
-						Telegram
-					</label>
-					<input
-						type="url"
-						id="telegram_url"
-						name="telegram_url"
-						bind:value={telegramUrl}
-						placeholder="https://t.me/yourorg"
-						class="mt-1 flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-					/>
-				</div>
+				{#if features.telegram}
+					<div>
+						<label for="telegram_url" class="flex items-center gap-2 text-sm font-medium">
+							<Send class="h-4 w-4 text-blue-400" aria-hidden="true" />
+							Telegram
+						</label>
+						<input
+							type="url"
+							id="telegram_url"
+							name="telegram_url"
+							bind:value={telegramUrl}
+							placeholder="https://t.me/yourorg"
+							class="mt-1 flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+						/>
+					</div>
+				{/if}
 			</div>
 		</section>
 
