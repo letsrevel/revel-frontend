@@ -321,6 +321,29 @@ function getOrdinalSuffix(day: number): string {
 }
 
 /**
+ * Format only the time-of-day for an instant, in an optional timezone.
+ *
+ * Used by the event schedule/timeline where the calendar day is implied by the
+ * event itself, so only the clock time needs rendering. No tz abbreviation is
+ * appended — the schedule shows the event's timezone once, in a shared label.
+ *
+ * @param dateString ISO 8601 date-time string
+ * @param timeZone Optional IANA timezone to render in (e.g. the event's timezone)
+ * @returns Formatted time string (e.g., "8:00 PM" for en-US or "20:00" for de-DE)
+ */
+export function formatTimeOfDay(dateString: string, timeZone?: string): string {
+	const date = new Date(dateString);
+	const locale = getCurrentLocale();
+
+	return date.toLocaleTimeString(locale, {
+		hour: 'numeric',
+		minute: '2-digit',
+		hour12: locale === 'en-US',
+		...tzOpt(timeZone)
+	});
+}
+
+/**
  * Format a date for display in admin pages and lists
  * Uses locale-aware formatting with medium date and short time
  * @param dateString ISO 8601 date-time string
