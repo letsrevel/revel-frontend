@@ -26,7 +26,8 @@
 		Trash2,
 		Mail,
 		MoreVertical,
-		Copy
+		Copy,
+		Edit
 	} from 'lucide-svelte';
 
 	const { data }: { data: PageData } = $props();
@@ -432,6 +433,13 @@
 									>
 										<Eye class="h-4 w-4" aria-hidden="true" />
 										{m['orgAdmin.events.actions.view']()}
+									</a>
+									<a
+										href="/org/{data.organization.slug}/admin/events/{event.id}/edit"
+										class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
+									>
+										<Edit class="h-4 w-4" aria-hidden="true" />
+										{m['orgAdmin.events.actions.edit']()}
 									</a>
 									{#if event.requires_ticket}
 										<a

@@ -82,7 +82,7 @@
 
 	// Format price display
 	const priceDisplay = $derived(() => {
-		if (tier.payment_method === 'free') return 'Free';
+		if (tier.payment_method === 'free') return m['tierCardAdmin.free']();
 
 		if (tier.price_type === 'pwyc') {
 			const price = typeof tier.price === 'string' ? parseFloat(tier.price) : tier.price;
@@ -97,8 +97,10 @@
 					: tier.pwyc_max
 				: null;
 
-			const maxDisplay = max ? `${tier.currency} ${max.toFixed(2)}` : 'any';
-			return `Pay What You Can (${tier.currency} ${min.toFixed(2)} - ${maxDisplay})`;
+			const maxDisplay = max ? `${tier.currency} ${max.toFixed(2)}` : m['tierCardAdmin.pwycAny']();
+			return m['tierCardAdmin.pwyc']({
+				range: `${tier.currency} ${min.toFixed(2)} - ${maxDisplay}`
+			});
 		}
 
 		const price = typeof tier.price === 'string' ? parseFloat(tier.price) : tier.price;
@@ -192,13 +194,16 @@
 
 		// If tier is restricted but user is not authenticated
 		if (!isAuthenticated) {
-			return { allowed: false, reason: 'Sign in to check eligibility' };
+			return { allowed: false, reason: m['tierCardAdmin.signInToCheck']() };
 		}
 
 		// If user doesn't have a membership tier
 		if (!membershipTier || !membershipTier.id) {
 			const tierNames = restrictedTiers.map((t: MembershipTierSchema) => t.name).join(', ');
-			return { allowed: false, reason: `Requires membership: ${tierNames}` };
+			return {
+				allowed: false,
+				reason: m['tierCardAdmin.requiresMembership']({ tiers: tierNames })
+			};
 		}
 
 		// Check if user's membership tier is in the allowed list
@@ -206,7 +211,10 @@
 
 		if (!isAllowed) {
 			const tierNames = restrictedTiers.map((t: MembershipTierSchema) => t.name).join(', ');
-			return { allowed: false, reason: `Requires membership: ${tierNames}` };
+			return {
+				allowed: false,
+				reason: m['tierCardAdmin.requiresMembership']({ tiers: tierNames })
+			};
 		}
 
 		return { allowed: true };
@@ -255,13 +263,13 @@
 		<div class="flex shrink-0 flex-col items-end gap-2">
 			{#if !hasId}
 				<div class="rounded-md bg-destructive/10 px-4 py-2 text-sm text-destructive">
-					Configuration Error
+					{m['tierCardAdmin.configError']()}
 				</div>
 			{:else if hasTicket}
 				<div
 					class="rounded-md bg-green-100 px-4 py-2 text-sm font-medium text-green-800 dark:bg-green-950 dark:text-green-100"
 				>
-					✓ You have a ticket
+					✓ {m['tierCardAdmin.youHaveTicket']()}
 				</div>
 			{:else if !salesStatus.active}
 				<Button disabled class="w-full sm:w-auto">{m['tierCardAdmin.notAvailable']()}</Button>
@@ -271,7 +279,7 @@
 				<!-- User doesn't have required membership tier -->
 				<Button disabled class="w-full sm:w-auto">
 					<AlertCircle class="mr-2 h-4 w-4" />
-					Not Eligible
+					{m['tierCardAdmin.notEligible']()}
 				</Button>
 				{#if membershipRestriction.reason}
 					<p class="max-w-[250px] text-right text-xs text-muted-foreground">
@@ -292,7 +300,7 @@
 					{#if tierPurchaseStatus.reason === 'Sold out'}
 						{m['tierCardAdmin.soldOut']()}
 					{:else if tierPurchaseStatus.reason === 'Limit reached'}
-						Limit Reached
+						{m['tierCardAdmin.limitReached']()}
 					{:else}
 						{m['tierCardAdmin.notEligible']()}
 					{/if}
@@ -300,10 +308,10 @@
 				{#if tierPurchaseStatus.reason && tierPurchaseStatus.reason !== 'Not eligible'}
 					<p class="max-w-[250px] text-right text-xs text-muted-foreground">
 						{tierPurchaseStatus.reason === 'Limit reached'
-							? "You've reached your ticket limit for this tier"
+							? m['tierCardAdmin.limitReachedDetail']()
 							: tierPurchaseStatus.reason === 'Sold out'
-								? 'No more tickets available'
-								: tierPurchaseStatus.reason}
+								? m['tierCardAdmin.soldOutDetail']()
+								: m['tierCardAdmin.notAvailable']()}
 					</p>
 				{/if}
 			{:else if canClaim}

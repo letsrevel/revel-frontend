@@ -4,7 +4,6 @@
 	import { notificationMarkRead, notificationMarkUnread } from '$lib/api/generated';
 	import { Card } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
-	import { Badge } from '$lib/components/ui/badge';
 	import { Circle, Check, X, Clock, Ticket } from 'lucide-svelte';
 	import { formatRelativeTime } from '$lib/utils/time';
 	import { goto } from '$app/navigation';
@@ -189,15 +188,6 @@
 		return null;
 	}
 
-	// Compute notification type badge variant
-	const notificationTypeVariant = $derived.by(() => {
-		const type = notification.notification_type.toLowerCase();
-		if (type.includes('invitation')) return 'default' as const;
-		if (type.includes('event')) return 'secondary' as const;
-		if (type.includes('rsvp')) return 'outline' as const;
-		return 'secondary' as const;
-	});
-
 	// ===== Waitlist spot available =====
 	const isWaitlistSpot = $derived(notification.notification_type === 'waitlist_spot_available');
 
@@ -315,9 +305,6 @@
 					<h3 class={cn('text-base font-semibold leading-tight', !isRead && 'font-bold')}>
 						{isWaitlistSpot ? m['notifications.waitlistSpot.title']() : notification.title}
 					</h3>
-					<Badge variant={notificationTypeVariant} class="mt-1 text-xs">
-						{notification.notification_type}
-					</Badge>
 				</div>
 
 				<!-- Timestamp -->
@@ -330,7 +317,7 @@
 			<!-- Body content -->
 			{#if isWaitlistSpot && waitlistSpotData}
 				<div class="space-y-3">
-					<p class={cn('text-sm', compact && 'line-clamp-2')}>
+					<p class={cn('text-sm', compact && 'line-clamp-4')}>
 						{m['notifications.waitlistSpot.body']({
 							event: waitlistSpotData.eventName,
 							time: waitlistSpotData.timeText
@@ -366,7 +353,7 @@
 				<div class="notification-body">
 					<MarkdownContent
 						content={notification.body}
-						class={cn('text-sm text-muted-foreground', compact && 'line-clamp-2')}
+						class={cn('text-sm text-muted-foreground', compact && 'line-clamp-4')}
 					/>
 				</div>
 			{/if}
@@ -412,11 +399,11 @@
 		line-height: inherit;
 	}
 
-	/* Line clamp for compact mode */
-	.line-clamp-2 {
+	/* Line clamp for compact (dropdown) mode — 4 lines so messages aren't cut mid-sentence */
+	.line-clamp-4 {
 		display: -webkit-box;
-		-webkit-line-clamp: 2;
-		line-clamp: 2;
+		-webkit-line-clamp: 4;
+		line-clamp: 4;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}

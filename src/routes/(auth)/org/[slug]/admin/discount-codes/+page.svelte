@@ -27,6 +27,7 @@
 		Check
 	} from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
+	import { formatDate } from '$lib/utils/date';
 	import * as m from '$lib/paraglide/messages.js';
 
 	const organization = $derived($page.data.organization);
@@ -163,33 +164,35 @@
 	function formatScope(code: DiscountCodeSchema): string {
 		const parts: string[] = [];
 		if (code.series_ids && code.series_ids.length > 0) {
-			parts.push(`${code.series_ids.length} series`);
+			parts.push(m['discountCodesAdmin.scope.series']({ count: code.series_ids.length }));
 		}
 		if (code.event_ids && code.event_ids.length > 0) {
-			parts.push(`${code.event_ids.length} event${code.event_ids.length > 1 ? 's' : ''}`);
+			const n = code.event_ids.length;
+			parts.push(
+				n === 1
+					? m['discountCodesAdmin.scope.event']({ count: n })
+					: m['discountCodesAdmin.scope.events']({ count: n })
+			);
 		}
 		if (code.tier_ids && code.tier_ids.length > 0) {
-			parts.push(`${code.tier_ids.length} tier${code.tier_ids.length > 1 ? 's' : ''}`);
+			const n = code.tier_ids.length;
+			parts.push(
+				n === 1
+					? m['discountCodesAdmin.scope.tier']({ count: n })
+					: m['discountCodesAdmin.scope.tiers']({ count: n })
+			);
 		}
-		return parts.length > 0 ? parts.join(', ') : 'Org-wide';
+		return parts.length > 0 ? parts.join(', ') : m['discountCodesAdmin.scope.orgWide']();
 	}
 
 	function formatDateRange(code: DiscountCodeSchema): string {
-		if (!code.valid_from && !code.valid_until) return 'Always';
+		if (!code.valid_from && !code.valid_until) return m['discountCodesAdmin.dateRange.always']();
 		const from = code.valid_from
-			? new Date(code.valid_from).toLocaleDateString('en-US', {
-					month: 'short',
-					day: 'numeric',
-					year: 'numeric'
-				})
-			: 'Now';
+			? formatDate(code.valid_from)
+			: m['discountCodesAdmin.dateRange.now']();
 		const until = code.valid_until
-			? new Date(code.valid_until).toLocaleDateString('en-US', {
-					month: 'short',
-					day: 'numeric',
-					year: 'numeric'
-				})
-			: 'No expiry';
+			? formatDate(code.valid_until)
+			: m['discountCodesAdmin.dateRange.noExpiry']();
 		return `${from} → ${until}`;
 	}
 </script>
@@ -198,13 +201,15 @@
 	<!-- Header -->
 	<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 		<div>
-			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">Discount Codes</h1>
-			<p class="text-muted-foreground">Create and manage discount codes for ticket checkout.</p>
+			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
+				{m['discountCodesAdmin.heading']()}
+			</h1>
+			<p class="text-muted-foreground">{m['discountCodesAdmin.description']()}</p>
 		</div>
 
 		<Button onclick={() => goto(`/org/${organization.slug}/admin/discount-codes/new`)}>
 			<Plus class="mr-2 h-4 w-4" aria-hidden="true" />
-			New Discount Code
+			{m['discountCodesAdmin.newCode']()}
 		</Button>
 	</div>
 
@@ -219,9 +224,9 @@
 				type="search"
 				bind:value={searchQuery}
 				oninput={() => (currentPage = 1)}
-				placeholder="Search by code..."
+				placeholder={m['discountCodesAdmin.search.placeholder']()}
 				class="w-full rounded-md border border-input bg-background py-2 pl-10 pr-4 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				aria-label="Search discount codes"
+				aria-label={m['discountCodesAdmin.search.ariaLabel']()}
 			/>
 		</div>
 
@@ -229,22 +234,22 @@
 			bind:value={activeFilter}
 			onchange={() => (currentPage = 1)}
 			class="rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-			aria-label="Filter by status"
+			aria-label={m['discountCodesAdmin.filters.statusAria']()}
 		>
-			<option value="all">All Status</option>
-			<option value="active">Active</option>
-			<option value="inactive">Inactive</option>
+			<option value="all">{m['discountCodesAdmin.filters.allStatus']()}</option>
+			<option value="active">{m['discountCodesAdmin.status.active']()}</option>
+			<option value="inactive">{m['discountCodesAdmin.status.inactive']()}</option>
 		</select>
 
 		<select
 			bind:value={typeFilter}
 			onchange={() => (currentPage = 1)}
 			class="rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-			aria-label="Filter by type"
+			aria-label={m['discountCodesAdmin.filters.typeAria']()}
 		>
-			<option value="all">All Types</option>
-			<option value="percentage">Percentage</option>
-			<option value="fixed_amount">Fixed Amount</option>
+			<option value="all">{m['discountCodesAdmin.filters.allTypes']()}</option>
+			<option value="percentage">{m['discountCodesAdmin.discountType.percentage']()}</option>
+			<option value="fixed_amount">{m['discountCodesAdmin.discountType.fixedAmount']()}</option>
 		</select>
 	</div>
 
@@ -252,13 +257,13 @@
 	{#if error}
 		<Alert variant="destructive">
 			<AlertCircle class="h-4 w-4" />
-			<AlertDescription>Failed to load discount codes. Please try again.</AlertDescription>
+			<AlertDescription>{m['discountCodesAdmin.loadError']()}</AlertDescription>
 		</Alert>
 	{:else if isLoading}
 		<div class="flex items-center justify-center py-12">
 			<div
 				class="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"
-				aria-label="Loading discount codes"
+				aria-label={m['discountCodesAdmin.loadingAria']()}
 			></div>
 		</div>
 	{:else if codes.length === 0}
@@ -266,11 +271,11 @@
 			class="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center dark:border-gray-600"
 		>
 			<Tag class="mx-auto h-12 w-12 text-muted-foreground" aria-hidden="true" />
-			<h3 class="mt-4 text-lg font-semibold">No discount codes found</h3>
+			<h3 class="mt-4 text-lg font-semibold">{m['discountCodesAdmin.empty.title']()}</h3>
 			<p class="mt-2 text-sm text-muted-foreground">
 				{searchQuery || activeFilter !== 'all' || typeFilter !== 'all'
-					? 'Try adjusting your filters'
-					: 'Get started by creating your first discount code'}
+					? m['discountCodesAdmin.empty.adjustFilters']()
+					: m['discountCodesAdmin.empty.getStarted']()}
 			</p>
 			{#if !searchQuery && activeFilter === 'all' && typeFilter === 'all'}
 				<Button
@@ -278,7 +283,7 @@
 					onclick={() => goto(`/org/${organization.slug}/admin/discount-codes/new`)}
 				>
 					<Plus class="mr-2 h-4 w-4" aria-hidden="true" />
-					New Discount Code
+					{m['discountCodesAdmin.newCode']()}
 				</Button>
 			{/if}
 		</div>
@@ -289,13 +294,26 @@
 				<table class="w-full text-sm">
 					<thead class="bg-muted/50">
 						<tr>
-							<th class="px-4 py-3 text-left font-medium">Code</th>
-							<th class="px-4 py-3 text-left font-medium">Discount</th>
-							<th class="px-4 py-3 text-left font-medium">Status</th>
-							<th class="px-4 py-3 text-left font-medium">Usage</th>
-							<th class="px-4 py-3 text-left font-medium">Valid Period</th>
-							<th class="px-4 py-3 text-left font-medium">Scope</th>
-							<th class="px-4 py-3 text-right font-medium">Actions</th>
+							<th class="px-4 py-3 text-left font-medium">{m['discountCodesAdmin.table.code']()}</th
+							>
+							<th class="px-4 py-3 text-left font-medium"
+								>{m['discountCodesAdmin.table.discount']()}</th
+							>
+							<th class="px-4 py-3 text-left font-medium"
+								>{m['discountCodesAdmin.table.status']()}</th
+							>
+							<th class="px-4 py-3 text-left font-medium"
+								>{m['discountCodesAdmin.table.usage']()}</th
+							>
+							<th class="px-4 py-3 text-left font-medium"
+								>{m['discountCodesAdmin.table.validPeriod']()}</th
+							>
+							<th class="px-4 py-3 text-left font-medium"
+								>{m['discountCodesAdmin.table.scope']()}</th
+							>
+							<th class="px-4 py-3 text-right font-medium"
+								>{m['discountCodesAdmin.table.actions']()}</th
+							>
 						</tr>
 					</thead>
 					<tbody class="divide-y">
@@ -308,7 +326,7 @@
 											type="button"
 											onclick={() => copyCode(code.id, code.code)}
 											class="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground"
-											aria-label="Copy code {code.code}"
+											aria-label={m['discountCodesAdmin.actions.copyAria']({ code: code.code })}
 										>
 											{#if copiedCodeId === code.id}
 												<Check class="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
@@ -334,7 +352,9 @@
 											? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300'
 											: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'}"
 									>
-										{code.is_active ? 'Active' : 'Inactive'}
+										{code.is_active
+											? m['discountCodesAdmin.status.active']()
+											: m['discountCodesAdmin.status.inactive']()}
 									</span>
 								</td>
 								<td class="px-4 py-3 text-muted-foreground">
@@ -352,8 +372,12 @@
 											type="button"
 											onclick={() => handleToggleActive(code)}
 											class="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
-											title={code.is_active ? 'Deactivate' : 'Activate'}
-											aria-label={code.is_active ? 'Deactivate code' : 'Activate code'}
+											title={code.is_active
+												? m['discountCodesAdmin.actions.deactivate']()
+												: m['discountCodesAdmin.actions.activate']()}
+											aria-label={code.is_active
+												? m['discountCodesAdmin.actions.deactivateAria']()
+												: m['discountCodesAdmin.actions.activateAria']()}
 										>
 											{#if code.is_active}
 												<ToggleRight class="h-4 w-4 text-emerald-600" />
@@ -366,8 +390,8 @@
 											onclick={() =>
 												goto(`/org/${organization.slug}/admin/discount-codes/${code.id}/edit`)}
 											class="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
-											title="Edit"
-											aria-label="Edit discount code"
+											title={m['discountCodesAdmin.actions.edit']()}
+											aria-label={m['discountCodesAdmin.actions.editAria']()}
 										>
 											<Pencil class="h-4 w-4" />
 										</button>
@@ -409,7 +433,7 @@
 									type="button"
 									onclick={() => copyCode(code.id, code.code)}
 									class="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground"
-									aria-label="Copy code {code.code}"
+									aria-label={m['discountCodesAdmin.actions.copyAria']({ code: code.code })}
 								>
 									{#if copiedCodeId === code.id}
 										<Check class="h-4 w-4 text-emerald-600" aria-hidden="true" />
@@ -432,21 +456,29 @@
 								? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300'
 								: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'}"
 						>
-							{code.is_active ? 'Active' : 'Inactive'}
+							{code.is_active
+								? m['discountCodesAdmin.status.active']()
+								: m['discountCodesAdmin.status.inactive']()}
 						</span>
 					</div>
 
 					<div class="mt-3 grid grid-cols-2 gap-2 text-sm text-muted-foreground">
 						<div>
-							<span class="font-medium text-foreground">Usage:</span>
+							<span class="font-medium text-foreground"
+								>{m['discountCodesAdmin.card.usage']()}:</span
+							>
 							{formatUsage(code)}
 						</div>
 						<div>
-							<span class="font-medium text-foreground">Scope:</span>
+							<span class="font-medium text-foreground"
+								>{m['discountCodesAdmin.card.scope']()}:</span
+							>
 							{formatScope(code)}
 						</div>
 						<div class="col-span-2">
-							<span class="font-medium text-foreground">Valid:</span>
+							<span class="font-medium text-foreground"
+								>{m['discountCodesAdmin.card.valid']()}:</span
+							>
 							{formatDateRange(code)}
 						</div>
 					</div>
@@ -460,10 +492,10 @@
 						>
 							{#if code.is_active}
 								<ToggleRight class="mr-1 h-4 w-4 text-emerald-600" />
-								Deactivate
+								{m['discountCodesAdmin.actions.deactivate']()}
 							{:else}
 								<ToggleLeft class="mr-1 h-4 w-4" />
-								Activate
+								{m['discountCodesAdmin.actions.activate']()}
 							{/if}
 						</Button>
 						<Button
@@ -473,7 +505,7 @@
 							class="flex-1"
 						>
 							<Pencil class="mr-1 h-4 w-4" />
-							Edit
+							{m['discountCodesAdmin.actions.edit']()}
 						</Button>
 						<Button
 							variant="outline"
@@ -499,7 +531,9 @@
 		{#if totalPages > 1}
 			<div class="flex items-center justify-between border-t pt-4">
 				<p class="text-sm text-muted-foreground">
-					{totalCount} code{totalCount === 1 ? '' : 's'} total
+					{totalCount === 1
+						? m['discountCodesAdmin.pagination.totalOne']({ count: totalCount })
+						: m['discountCodesAdmin.pagination.total']({ count: totalCount })}
 				</p>
 				<div class="flex items-center gap-2">
 					<Button
@@ -507,19 +541,19 @@
 						size="sm"
 						onclick={() => (currentPage = Math.max(1, currentPage - 1))}
 						disabled={currentPage <= 1}
-						aria-label="Previous page"
+						aria-label={m['discountCodesAdmin.pagination.prevAria']()}
 					>
 						<ChevronLeft class="h-4 w-4" />
 					</Button>
 					<span class="text-sm">
-						Page {currentPage} of {totalPages}
+						{m['discountCodesAdmin.pagination.page']({ current: currentPage, total: totalPages })}
 					</span>
 					<Button
 						variant="outline"
 						size="sm"
 						onclick={() => (currentPage = Math.min(totalPages, currentPage + 1))}
 						disabled={currentPage >= totalPages}
-						aria-label="Next page"
+						aria-label={m['discountCodesAdmin.pagination.nextAria']()}
 					>
 						<ChevronRight class="h-4 w-4" />
 					</Button>
