@@ -3546,6 +3546,13 @@
 	"orgAdmin.nav.billing": "Fatturazione",
 	"orgAdmin.nav.discountCodes": "Codici Sconto",
 	"orgAdmin.nav.venues": "Luoghi",
+	"orgAdmin.nav.tickets": "Biglietti",
+	"orgAdmin.tickets.title": "Biglietti",
+	"orgAdmin.tickets.subtitle": "Seleziona un evento per gestirne i biglietti",
+	"orgAdmin.tickets.attendees": "{count} partecipanti",
+	"orgAdmin.tickets.empty.title": "Nessun evento con biglietti",
+	"orgAdmin.tickets.empty.description": "Quando crei un evento che richiede un biglietto, comparirà qui per la gestione dei biglietti.",
+	"orgAdmin.tickets.empty.cta": "Vai agli Eventi",
 	"orgAdmin.billing": {
 		"pageTitle": "Fatturazione e IVA",
 		"pageDescription": "Gestisci le informazioni di fatturazione, le impostazioni IVA e visualizza le fatture",
