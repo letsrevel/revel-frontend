@@ -12,6 +12,7 @@ import { claimPendingTokens, setClaimFlashCookie } from '$lib/server/token-claim
 import { log } from '$lib/server/logger';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
+import { safeReturnUrl } from '$lib/utils/safe-redirect';
 
 export const load: PageServerLoad = ({ url, request }) => {
 	const lang = resolveLang(request);
@@ -85,8 +86,8 @@ export const actions = {
 				const claimResults = await claimPendingTokens(cookies, access, fetch);
 				setClaimFlashCookie(cookies, claimResults);
 
-				// Redirect to returnUrl or dashboard
-				const returnUrl = url.searchParams.get('returnUrl') || '/dashboard';
+				// Redirect to returnUrl (same-origin only) or dashboard
+				const returnUrl = safeReturnUrl(url.searchParams.get('returnUrl'));
 				throw redirect(303, returnUrl);
 			}
 
@@ -176,8 +177,8 @@ export const actions = {
 				const claimResults = await claimPendingTokens(cookies, access, fetch);
 				setClaimFlashCookie(cookies, claimResults);
 
-				// Redirect to returnUrl or dashboard
-				const returnUrl = url.searchParams.get('returnUrl') || '/dashboard';
+				// Redirect to returnUrl (same-origin only) or dashboard
+				const returnUrl = safeReturnUrl(url.searchParams.get('returnUrl'));
 				throw redirect(303, returnUrl);
 			}
 
