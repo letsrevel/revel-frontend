@@ -584,6 +584,7 @@
 		},
 		"scope": {
 			"orgWide": "Tutta l'organizzazione",
+			"serie": "{count} serie",
 			"series": "{count} serie",
 			"event": "{count} evento",
 			"events": "{count} eventi",

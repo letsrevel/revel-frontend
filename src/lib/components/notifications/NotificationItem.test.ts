@@ -154,8 +154,8 @@ describe('NotificationItem', () => {
 			}
 		});
 
-		// Check if line-clamp-2 class is applied
-		const bodyElement = container.querySelector('.line-clamp-2');
+		// Check if the compact-mode line-clamp class is applied
+		const bodyElement = container.querySelector('.line-clamp-4');
 		expect(bodyElement).toBeInTheDocument();
 	});
 

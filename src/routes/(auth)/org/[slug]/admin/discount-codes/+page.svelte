@@ -164,7 +164,12 @@
 	function formatScope(code: DiscountCodeSchema): string {
 		const parts: string[] = [];
 		if (code.series_ids && code.series_ids.length > 0) {
-			parts.push(m['discountCodesAdmin.scope.series']({ count: code.series_ids.length }));
+			const n = code.series_ids.length;
+			parts.push(
+				n === 1
+					? m['discountCodesAdmin.scope.serie']({ count: n })
+					: m['discountCodesAdmin.scope.series']({ count: n })
+			);
 		}
 		if (code.event_ids && code.event_ids.length > 0) {
 			const n = code.event_ids.length;
@@ -527,14 +532,14 @@
 			{/each}
 		</div>
 
-		<!-- Pagination -->
-		{#if totalPages > 1}
-			<div class="flex items-center justify-between border-t pt-4">
-				<p class="text-sm text-muted-foreground">
-					{totalCount === 1
-						? m['discountCodesAdmin.pagination.totalOne']({ count: totalCount })
-						: m['discountCodesAdmin.pagination.total']({ count: totalCount })}
-				</p>
+		<!-- Pagination: total count always shows; prev/next only when multi-page -->
+		<div class="flex items-center justify-between border-t pt-4">
+			<p class="text-sm text-muted-foreground">
+				{totalCount === 1
+					? m['discountCodesAdmin.pagination.totalOne']({ count: totalCount })
+					: m['discountCodesAdmin.pagination.total']({ count: totalCount })}
+			</p>
+			{#if totalPages > 1}
 				<div class="flex items-center gap-2">
 					<Button
 						variant="outline"
@@ -558,7 +563,7 @@
 						<ChevronRight class="h-4 w-4" />
 					</Button>
 				</div>
-			</div>
-		{/if}
+			{/if}
+		</div>
 	{/if}
 </div>

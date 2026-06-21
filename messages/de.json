@@ -537,7 +537,7 @@
 	},
 	"discountCodesAdmin": {
 		"heading": "Rabattcodes",
-		"description": "Erstellen und verwalten Sie Rabattcodes für den Ticketkauf.",
+		"description": "Erstelle und verwalte Rabattcodes für den Ticketkauf.",
 		"newCode": "Neuer Rabattcode",
 		"search": {
 			"placeholder": "Nach Code suchen...",
@@ -553,12 +553,12 @@
 			"percentage": "Prozentual",
 			"fixedAmount": "Fester Betrag"
 		},
-		"loadError": "Rabattcodes konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
+		"loadError": "Rabattcodes konnten nicht geladen werden. Bitte versuche es erneut.",
 		"loadingAria": "Rabattcodes werden geladen",
 		"empty": {
 			"title": "Keine Rabattcodes gefunden",
-			"adjustFilters": "Passen Sie Ihre Filter an",
-			"getStarted": "Erstellen Sie Ihren ersten Rabattcode"
+			"adjustFilters": "Passe deine Filter an",
+			"getStarted": "Erstelle deinen ersten Rabattcode"
 		},
 		"table": {
 			"code": "Code",
@@ -584,6 +584,7 @@
 		},
 		"scope": {
 			"orgWide": "Organisationsweit",
+			"serie": "{count} Serie",
 			"series": "{count} Serien",
 			"event": "{count} Event",
 			"events": "{count} Events",
@@ -3354,11 +3355,11 @@
 			},
 			"grantsInfo": {
 				"title": "Was gewährt eine Mitgliedschaft?",
-				"intro": "Je nach Konfiguration können Mitglieder Ihrer Organisation Folgendes erhalten:",
+				"intro": "Je nach Konfiguration können Mitglieder deiner Organisation Folgendes erhalten:",
 				"coOrganizer": "Mitorganisator-Zugriff (Staff) zum Verwalten von Events, Mitgliedern und Einstellungen",
-				"screening": "Die Möglichkeit, Prüfungs-Fragebögen bei Ihren Events zu überspringen",
+				"screening": "Die Möglichkeit, Prüfungs-Fragebögen bei deinen Events zu überspringen",
 				"exclusive": "Zugang zu Events und Ticket-Stufen nur für Mitglieder",
-				"fees": "Mitgliedschaftsgebühren und Rabatte, die Sie einrichten"
+				"fees": "Mitgliedschaftsgebühren und Rabatte, die du einrichtest"
 			}
 		},
 		"eventSeries": {
@@ -4782,7 +4783,7 @@
 		"messagePlaceholder": "Erzähle den Organisierenden, warum du beitreten möchtest...",
 		"characters": "Zeichen",
 		"requestSubmittedDesc": "Deine Mitgliedschaftsanfrage wurde an {organizationName} gesendet. Du wirst benachrichtigt, wenn sie geprüft wurde.",
-		"requestDesc": "Stellen Sie eine Anfrage, um Mitglied von {organizationName} zu werden. Eine Mitgliedschaft kann Zugang zu Events und Ticket-Stufen nur für Mitglieder gewähren, das Überspringen von Prüfungs-Fragebögen ermöglichen sowie Mitgliedschaftsvorteile oder Rabatte bieten, die die Organisatoren anbieten.",
+		"requestDesc": "Stelle eine Anfrage, um Mitglied von {organizationName} zu werden. Eine Mitgliedschaft kann Zugang zu Events und Ticket-Stufen nur für Mitglieder gewähren, das Überspringen von Prüfungs-Fragebögen ermöglichen sowie Mitgliedschaftsvorteile oder Rabatte bieten, die die Organisierenden anbieten.",
 		"cancel": "Abbrechen",
 		"submitting": "Wird gesendet...",
 		"submitRequest": "Anfrage senden",
@@ -5382,12 +5383,12 @@
 		"reserveTicket": "Ticket reservieren",
 		"getTicket": "Ticket holen",
 		"configError": "Konfigurationsfehler",
-		"youHaveTicket": "Sie haben ein Ticket",
+		"youHaveTicket": "Du hast ein Ticket",
 		"limitReached": "Limit erreicht",
-		"limitReachedDetail": "Sie haben Ihr Ticketlimit für diese Stufe erreicht",
+		"limitReachedDetail": "Du hast dein Ticketlimit für diese Stufe erreicht",
 		"soldOutDetail": "Keine Tickets mehr verfügbar",
 		"free": "Kostenlos",
-		"pwyc": "Zahlen Sie, was Sie können ({range})",
+		"pwyc": "Zahle, was du kannst ({range})",
 		"pwycAny": "beliebig",
 		"requiresMembership": "Mitgliedschaft erforderlich: {tiers}",
 		"signInToCheck": "Anmelden, um die Berechtigung zu prüfen"
