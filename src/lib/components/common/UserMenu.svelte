@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { dashboardDashboardOrganizations } from '$lib/api/generated/sdk.gen';
@@ -32,6 +33,7 @@
 	const user = $derived(authStore.user);
 	const accessToken = $derived(authStore.accessToken);
 	const permissions = $derived(authStore.permissions);
+	const features = $derived($page.data.features);
 
 	// Fetch user's organizations (where they are owner or staff)
 	const organizationsQuery = createQuery(() => ({
@@ -194,7 +196,7 @@
 		{/if}
 
 		<!-- Organizations Section (Mobile) -->
-		{#if userOrganizations.length > 0 || !ownsOrganization()}
+		{#if userOrganizations.length > 0 || (!ownsOrganization() && features.organization_creation)}
 			<div class="space-y-2 border-t pt-4">
 				{#if userOrganizations.length > 0}
 					<div class="px-4 text-sm font-semibold text-muted-foreground">
@@ -224,8 +226,8 @@
 					{/each}
 				{/if}
 
-				<!-- Create Organization Link (if user doesn't own one) -->
-				{#if !ownsOrganization()}
+				<!-- Create Organization Link (if user doesn't own one and creation is enabled) -->
+				{#if !ownsOrganization() && features.organization_creation}
 					<a
 						href="/create-org"
 						class="flex items-center gap-3 rounded-md px-4 py-3 text-base transition-colors hover:bg-accent hover:text-accent-foreground"
@@ -327,7 +329,7 @@
 				{/if}
 
 				<!-- Organizations Section -->
-				{#if userOrganizations.length > 0 || !ownsOrganization()}
+				{#if userOrganizations.length > 0 || (!ownsOrganization() && features.organization_creation)}
 					<div class="border-t">
 						<div class="p-1">
 							{#if userOrganizations.length > 0}
@@ -360,8 +362,8 @@
 								{/each}
 							{/if}
 
-							<!-- Create Organization Link (if user doesn't own one) -->
-							{#if !ownsOrganization()}
+							<!-- Create Organization Link (if user doesn't own one and creation is enabled) -->
+							{#if !ownsOrganization() && features.organization_creation}
 								<a
 									href="/create-org"
 									class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"

@@ -44,6 +44,7 @@
 	const user = $derived(authStore.user);
 	const accessToken = $derived(authStore.accessToken);
 	const permissions = $derived(authStore.permissions);
+	const features = $derived($page.data.features);
 
 	// Get user's first name or preferred name
 	const firstName = $derived(user?.preferred_name || user?.first_name || 'there');
@@ -525,7 +526,7 @@
 				<Shield class="h-4 w-4" aria-hidden="true" />
 				<span>{m['dashboard.adminButton']()}</span>
 			</button>
-		{:else if !ownsOrganization()}
+		{:else if !ownsOrganization() && features.organization_creation}
 			<!-- User doesn't own an organization - show "Create Organization" CTA -->
 			<a
 				href="/create-org"

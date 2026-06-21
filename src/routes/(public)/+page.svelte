@@ -11,6 +11,7 @@
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
+	import { page } from '$app/stores';
 	import {
 		Mail,
 		Calendar,
@@ -91,6 +92,7 @@
 	}
 
 	const isAuthenticated = $derived(authStore.isAuthenticated);
+	const features = $derived($page.data.features);
 
 	// Landing page URLs based on current locale
 	// Landing pages are NOT paraglide-translated, they use /de/ and /it/ prefixes
@@ -742,6 +744,7 @@
 	</div>
 
 	<!-- Start Organizing CTA -->
+	{#if features.organization_creation}
 	<div class="rounded-lg border-2 border-primary bg-primary/5 p-8 text-center">
 		<h2 class="mb-4 text-3xl font-bold">{m['learnMore.startOrganizingTitle']()}</h2>
 		<p class="mx-auto mb-6 max-w-2xl text-lg text-muted-foreground">
@@ -758,6 +761,7 @@
 			{m['learnMore.startOrganizingNote']()}
 		</p>
 	</div>
+	{/if}
 </div>
 
 <!-- Fee Calculator Modal -->
