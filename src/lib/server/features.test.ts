@@ -9,7 +9,7 @@ import { getFeatures, __resetFeaturesCache } from './features';
 import { DEFAULT_FEATURES } from '$lib/utils/features';
 
 const mockedApiApiVersion = vi.mocked(apiApiVersion);
-const fakeFetch = (() => {}) as unknown as typeof globalThis.fetch;
+const fakeFetch = vi.fn() as unknown as typeof globalThis.fetch;
 
 beforeEach(() => {
 	__resetFeaturesCache();
