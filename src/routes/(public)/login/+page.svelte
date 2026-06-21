@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { applyAction, enhance } from '$app/forms';
+	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { ActionData, PageData } from './$types';
 	import TwoFactorInput from '$lib/components/forms/TwoFactorInput.svelte';
 	import { Eye, EyeOff, Loader2, ArrowLeft, ExternalLink } from 'lucide-svelte';
@@ -51,6 +52,34 @@
 	function backToLogin() {
 		window.location.href = '/login';
 	}
+
+	// Shared submit handler for the login / demo / 2FA forms.
+	//
+	// On success the server action issues a redirect (303 → returnUrl). We follow
+	// it with a FULL-PAGE navigation (mirroring the logout flow) rather than a
+	// client-side one. A client-side redirect does not re-run the root layout's
+	// server `load`, so its `auth.hasAccessToken` flag stays `false` and the
+	// navbar keeps rendering the logged-out chrome until a manual refresh. A full
+	// reload re-runs SSR with the freshly-set auth cookie, so the in-memory auth
+	// store bootstraps and the navbar reflects the authenticated session
+	// immediately. See #485.
+	//
+	// Non-redirect results (validation errors, the 2FA-required step) are applied
+	// in-place via `applyAction` so the form updates without a reload.
+	const handleSubmit: SubmitFunction = () => {
+		// Prevent duplicate submissions
+		if (isSubmitting) return;
+		isSubmitting = true;
+
+		return async ({ result }) => {
+			isSubmitting = false;
+			if (result.type === 'redirect') {
+				window.location.href = result.location;
+				return;
+			}
+			await applyAction(result);
+		};
+	};
 </script>
 
 <SeoHead config={data.seo} />
@@ -95,21 +124,7 @@
 						</a>
 					</div>
 
-					<form
-						method="POST"
-						action="?/login"
-						use:enhance={() => {
-							// Prevent duplicate submissions
-							if (isSubmitting) return;
-							isSubmitting = true;
-
-							return async ({ update }) => {
-								isSubmitting = false;
-								await update();
-							};
-						}}
-						class="space-y-4"
-					>
+					<form method="POST" action="?/login" use:enhance={handleSubmit} class="space-y-4">
 						<!-- Demo Account Selector -->
 						<div class="space-y-2">
 							<label for="demo-account" class="block text-sm font-medium">
@@ -174,21 +189,7 @@
 				</div>
 			{:else}
 				<!-- Standard Login Form -->
-				<form
-					method="POST"
-					action="?/login"
-					use:enhance={() => {
-						// Prevent duplicate submissions
-						if (isSubmitting) return;
-						isSubmitting = true;
-
-						return async ({ update }) => {
-							isSubmitting = false;
-							await update();
-						};
-					}}
-					class="space-y-6"
-				>
+				<form method="POST" action="?/login" use:enhance={handleSubmit} class="space-y-6">
 					<!-- Email Field -->
 					<div class="space-y-2">
 						<label for="email" class="block text-sm font-medium">
@@ -300,21 +301,7 @@
 			{/if}
 		{:else}
 			<!-- 2FA Verification Form -->
-			<form
-				method="POST"
-				action="?/verify2FA"
-				use:enhance={() => {
-					// Prevent duplicate submissions
-					if (isSubmitting) return;
-					isSubmitting = true;
-
-					return async ({ update }) => {
-						isSubmitting = false;
-						await update();
-					};
-				}}
-				class="space-y-6"
-			>
+			<form method="POST" action="?/verify2FA" use:enhance={handleSubmit} class="space-y-6">
 				<input type="hidden" name="tempToken" value={tempToken} />
 				<input type="hidden" name="rememberMe" value={rememberMe ? 'true' : 'false'} />
 
