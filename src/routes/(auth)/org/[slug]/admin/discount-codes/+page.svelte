@@ -27,12 +27,19 @@
 		Check
 	} from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
-	import { formatDate } from '$lib/utils/date';
+	import { formatDateTime } from '$lib/utils/date';
 	import * as m from '$lib/paraglide/messages.js';
 
 	const organization = $derived($page.data.organization);
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
+
+	// Discount validity (valid_from/valid_until) are UTC datetime instants with no
+	// associated timezone (orgs, unlike events, have none). Render them in the
+	// viewer's own zone with an explicit tz label so the same instant isn't shown
+	// as a different calendar day to admins in different zones — and so the time
+	// isn't silently dropped (the picker stores a precise moment, not a bare day).
+	const viewerTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 	// Copy-to-clipboard state (tracks which code ID was just copied)
 	let copiedCodeId = $state<string | null>(null);
@@ -193,10 +200,10 @@
 	function formatDateRange(code: DiscountCodeSchema): string {
 		if (!code.valid_from && !code.valid_until) return m['discountCodesAdmin.dateRange.always']();
 		const from = code.valid_from
-			? formatDate(code.valid_from)
+			? formatDateTime(code.valid_from, viewerTimeZone)
 			: m['discountCodesAdmin.dateRange.now']();
 		const until = code.valid_until
-			? formatDate(code.valid_until)
+			? formatDateTime(code.valid_until, viewerTimeZone)
 			: m['discountCodesAdmin.dateRange.noExpiry']();
 		return `${from} → ${until}`;
 	}
