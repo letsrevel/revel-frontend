@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
+	import type { EventDetailSchema, EventStatus } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import {
 		Calendar,
@@ -15,8 +15,17 @@
 
 	import * as m from '$lib/paraglide/messages.js';
 
+	/**
+	 * Only the fields the badge actually reads. Both EventDetailSchema and
+	 * EventInListSchema satisfy this, so the badge works in list contexts too.
+	 */
+	type EventStatusBadgeEvent = Pick<
+		EventDetailSchema,
+		'status' | 'start' | 'end' | 'max_attendees' | 'attendee_count'
+	> & { status: EventStatus };
+
 	interface Props {
-		event: EventDetailSchema;
+		event: EventStatusBadgeEvent;
 		class?: string;
 	}
 
