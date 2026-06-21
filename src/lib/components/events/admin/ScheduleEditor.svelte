@@ -52,6 +52,9 @@
 		<ul class="space-y-4">
 			{#each rows as row, index (row.id)}
 				{@const completeness = rowCompleteness(row)}
+				{@const titleInvalid = completeness === 'invalid' && !row.title.trim()}
+				{@const startMissing = completeness === 'invalid' && !row.startLocal}
+				{@const startBefore = startsBeforeAnchor(row, eventStart)}
 				<li class="space-y-3 rounded-lg border bg-muted/30 p-4">
 					<div class="flex items-center justify-between">
 						<span class="text-xs font-medium text-muted-foreground">
@@ -81,10 +84,15 @@
 							maxlength={150}
 							placeholder={m['eventScheduleAdmin.sessionTitlePlaceholder']()}
 							{disabled}
-							aria-invalid={completeness === 'invalid' && !row.title.trim()}
+							aria-invalid={titleInvalid}
+							aria-describedby={titleInvalid ? `schedule-title-error-${row.id}` : undefined}
 						/>
-						{#if completeness === 'invalid' && !row.title.trim()}
-							<p class="mt-1 text-xs text-destructive">
+						{#if titleInvalid}
+							<p
+								id="schedule-title-error-{row.id}"
+								class="mt-1 text-xs text-destructive"
+								role="alert"
+							>
 								{m['eventScheduleAdmin.titleRequired']()}
 							</p>
 						{/if}
@@ -101,10 +109,26 @@
 								type="datetime-local"
 								bind:value={row.startLocal}
 								{disabled}
-								aria-invalid={completeness === 'invalid' && !row.startLocal}
+								aria-invalid={startMissing}
+								aria-describedby={startMissing
+									? `schedule-start-error-${row.id}`
+									: startBefore
+										? `schedule-start-warning-${row.id}`
+										: undefined}
 							/>
-							{#if startsBeforeAnchor(row, eventStart)}
-								<p class="mt-1 flex items-start gap-1 text-xs text-amber-600 dark:text-amber-500">
+							{#if startMissing}
+								<p
+									id="schedule-start-error-{row.id}"
+									class="mt-1 text-xs text-destructive"
+									role="alert"
+								>
+									{m['eventScheduleAdmin.startRequired']()}
+								</p>
+							{:else if startBefore}
+								<p
+									id="schedule-start-warning-{row.id}"
+									class="mt-1 flex items-start gap-1 text-xs text-amber-600 dark:text-amber-500"
+								>
 									<AlertTriangle class="mt-0.5 h-3 w-3 shrink-0" aria-hidden="true" />
 									{m['eventScheduleAdmin.beforeStartWarning']()}
 								</p>

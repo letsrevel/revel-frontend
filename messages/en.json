@@ -14,6 +14,7 @@
 		"sessionTitle": "Session title",
 		"sessionTitlePlaceholder": "e.g. Doors open, Keynote, Dinner",
 		"titleRequired": "A session title is required",
+		"startRequired": "A start time is required",
 		"startsAt": "Starts at",
 		"beforeStartWarning": "This is before the event start, so it will be pinned to the start time.",
 		"duration": "Duration",

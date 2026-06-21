@@ -14,6 +14,7 @@
 		"sessionTitle": "Titel des Programmpunkts",
 		"sessionTitlePlaceholder": "z. B. Einlass, Keynote, Abendessen",
 		"titleRequired": "Ein Titel ist erforderlich",
+		"startRequired": "Eine Startzeit ist erforderlich",
 		"startsAt": "Beginnt um",
 		"beforeStartWarning": "Das liegt vor dem Veranstaltungsbeginn und wird daher auf die Startzeit gesetzt.",
 		"duration": "Dauer",

@@ -14,6 +14,7 @@
 		"sessionTitle": "Titolo della sessione",
 		"sessionTitlePlaceholder": "es. Apertura porte, Keynote, Cena",
 		"titleRequired": "Il titolo della sessione è obbligatorio",
+		"startRequired": "È richiesto un orario di inizio",
 		"startsAt": "Inizia alle",
 		"beforeStartWarning": "È prima dell'inizio dell'evento, quindi verrà fissata all'orario di inizio.",
 		"duration": "Durata",

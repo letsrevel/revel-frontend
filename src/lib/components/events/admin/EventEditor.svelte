@@ -486,6 +486,8 @@
 		}
 
 		if (!scheduleValid) {
+			// ScheduleEditor lives in the Details tab — surface it before scrolling.
+			if (showTabs) handleTabChange('details');
 			errorMessage = m['eventScheduleAdmin.incompleteError']();
 			toast.error(m['eventScheduleAdmin.incompleteError']());
 			scrollToFirstInvalid();
