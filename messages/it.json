@@ -1,5 +1,33 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"eventSchedule": {
+		"title": "Programma",
+		"description": "Cosa succede e quando",
+		"requiredBadge": "Obbligatorio"
+	},
+	"eventScheduleAdmin": {
+		"title": "Programma",
+		"description": "Aggiungi una scaletta di sessioni per questo evento. Gli orari sono relativi all'inizio dell'evento, così il programma resta corretto se duplichi l'evento.",
+		"empty": "Ancora nessuna sessione. Aggiungi la prima per creare la scaletta dell'evento.",
+		"sessionNumber": "Sessione {number}",
+		"removeSession": "Rimuovi sessione",
+		"sessionTitle": "Titolo della sessione",
+		"sessionTitlePlaceholder": "es. Apertura porte, Keynote, Cena",
+		"titleRequired": "Il titolo della sessione è obbligatorio",
+		"startsAt": "Inizia alle",
+		"beforeStartWarning": "È prima dell'inizio dell'evento, quindi verrà fissata all'orario di inizio.",
+		"duration": "Durata",
+		"noDuration": "Nessuna durata",
+		"location": "Luogo",
+		"locationPlaceholder": "es. Sala principale, Stanza 2",
+		"descriptionLabel": "Descrizione",
+		"descriptionPlaceholder": "Dettagli facoltativi su questa sessione",
+		"required": "Sessione obbligatoria",
+		"requiredHelp": "Evidenzia questa come una sessione da non perdere.",
+		"addSession": "Aggiungi sessione",
+		"saveError": "Impossibile salvare il programma",
+		"incompleteError": "Ogni sessione del programma necessita di un titolo e di un orario di inizio."
+	},
 	"SFwESEssentialsStep": {
 		"clearDescriptiveName": "Scegli un nome chiaro e descrittivo per il tuo evento",
 		"optionalOpenEnded": "Facoltativo - lascia vuoto per eventi senza fine",

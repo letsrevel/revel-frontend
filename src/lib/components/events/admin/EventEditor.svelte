@@ -13,7 +13,8 @@
 		organizationadminresourcesUpdateResource,
 		questionnaireListOrgQuestionnaires,
 		eventadmincoreAddTags,
-		eventadmincoreRemoveTags
+		eventadmincoreRemoveTags,
+		eventadmincoreUpdateEventSchedule
 	} from '$lib/api/generated/sdk.gen';
 	import { toDateTimeLocal, toISOString } from '$lib/utils/datetime';
 	import type {
@@ -31,6 +32,13 @@
 	import EssentialsStep from './EssentialsStep.svelte';
 	import DetailsStep from './DetailsStep.svelte';
 	import EventResources from './EventResources.svelte';
+	import ScheduleEditor from './ScheduleEditor.svelte';
+	import {
+		sessionsToRows,
+		rowsToSessions,
+		scheduleRowsValid,
+		type ScheduleRow
+	} from './schedule-rows';
 	import TicketingStep from './TicketingStep.svelte';
 	import SaveBar from './SaveBar.svelte';
 	import * as Tabs from '$lib/components/ui/tabs';
@@ -134,6 +142,17 @@
 		location_maps_url: existingEvent?.location_maps_url || null,
 		location_maps_embed: existingEvent?.location_maps_embed || null
 	});
+
+	// Schedule/timeline state. Rows are seeded once from the saved schedule,
+	// anchored to the (initial) event start, and edited as absolute clock times.
+	// `scheduleSessions` re-derives the offset-encoded payload against the
+	// CURRENT start, so moving the event start re-times sessions sensibly.
+	// handleSave persists it through the dedicated schedule endpoint.
+	let scheduleRows = $state<ScheduleRow[]>(
+		sessionsToRows(existingEvent?.schedule ?? [], formData.start || '')
+	);
+	const scheduleSessions = $derived(rowsToSessions(scheduleRows, formData.start || ''));
+	const scheduleValid = $derived(scheduleRowsValid(scheduleRows));
 
 	// Editor state (after formData so derived can reference it)
 	let eventCreated = $state(false);
@@ -377,6 +396,16 @@
 		initialTags = [...currentTags];
 	}
 
+	async function saveSchedule(currentEventId: string): Promise<void> {
+		const response = await eventadmincoreUpdateEventSchedule({
+			path: { event_id: currentEventId },
+			body: { sessions: scheduleSessions }
+		});
+		if (response.error) {
+			throw new Error(m['eventScheduleAdmin.saveError']());
+		}
+	}
+
 	// --- Validation ---
 
 	function validateEssentials(): boolean {
@@ -456,6 +485,13 @@
 			return;
 		}
 
+		if (!scheduleValid) {
+			errorMessage = m['eventScheduleAdmin.incompleteError']();
+			toast.error(m['eventScheduleAdmin.incompleteError']());
+			scrollToFirstInvalid();
+			return;
+		}
+
 		if (!eventId) {
 			errorMessage = m['eventWizard.error_eventIdNotFound']();
 			return;
@@ -506,6 +542,7 @@
 			// Save associations
 			await saveResourceAssociations(eventId);
 			await saveTagAssociations(eventId);
+			await saveSchedule(eventId);
 
 			// Invalidate queries
 			queryClient.invalidateQueries({ queryKey: ['events'] });
@@ -626,6 +663,41 @@
 			organizationSlug={organization.slug}
 		/>
 
+		{#snippet detailsSection()}
+			<DetailsStep
+				{formData}
+				eventSeries={eventSeries as any}
+				questionnaires={assignedQuestionnaires}
+				{eventId}
+				organizationId={organization.id}
+				organizationSlug={organization.slug}
+				accessToken={authStore.accessToken ?? undefined}
+				{selectedCity}
+				{selectedVenue}
+				{validationErrors}
+				{isEditMode}
+				onCitySelect={handleCitySelect}
+				onVenueSelect={handleVenueSelect}
+				onUpdate={updateFormData}
+				onUpdateImages={updateImages}
+			/>
+
+			{#if eventId}
+				<EventResources
+					organizationSlug={organization.slug}
+					{eventId}
+					{selectedResourceIds}
+					onSelectionChange={(ids) => (selectedResourceIds = ids)}
+				/>
+
+				<ScheduleEditor
+					bind:rows={scheduleRows}
+					eventStart={formData.start ?? ''}
+					disabled={isSaving}
+				/>
+			{/if}
+		{/snippet}
+
 		<!-- Tabs (only for ticketed events in edit mode) -->
 		{#if showTabs}
 			<div bind:this={tabsEl}></div>
@@ -640,32 +712,7 @@
 				</Tabs.List>
 
 				<Tabs.Content value="details" class="mt-6 space-y-6">
-					<DetailsStep
-						{formData}
-						eventSeries={eventSeries as any}
-						questionnaires={assignedQuestionnaires}
-						{eventId}
-						organizationId={organization.id}
-						organizationSlug={organization.slug}
-						accessToken={authStore.accessToken ?? undefined}
-						{selectedCity}
-						{selectedVenue}
-						{validationErrors}
-						{isEditMode}
-						onCitySelect={handleCitySelect}
-						onVenueSelect={handleVenueSelect}
-						onUpdate={updateFormData}
-						onUpdateImages={updateImages}
-					/>
-
-					{#if eventId}
-						<EventResources
-							organizationSlug={organization.slug}
-							{eventId}
-							{selectedResourceIds}
-							onSelectionChange={(ids) => (selectedResourceIds = ids)}
-						/>
-					{/if}
+					{@render detailsSection()}
 				</Tabs.Content>
 
 				<Tabs.Content value="ticketing" class="mt-6">
@@ -686,32 +733,7 @@
 		{:else}
 			<!-- Non-ticketed: Details + Resources directly -->
 			<div class="space-y-6">
-				<DetailsStep
-					{formData}
-					eventSeries={eventSeries as any}
-					questionnaires={assignedQuestionnaires}
-					{eventId}
-					organizationId={organization.id}
-					organizationSlug={organization.slug}
-					accessToken={authStore.accessToken ?? undefined}
-					{selectedCity}
-					{selectedVenue}
-					{validationErrors}
-					{isEditMode}
-					onCitySelect={handleCitySelect}
-					onVenueSelect={handleVenueSelect}
-					onUpdate={updateFormData}
-					onUpdateImages={updateImages}
-				/>
-
-				{#if eventId}
-					<EventResources
-						organizationSlug={organization.slug}
-						{eventId}
-						{selectedResourceIds}
-						onSelectionChange={(ids) => (selectedResourceIds = ids)}
-					/>
-				{/if}
+				{@render detailsSection()}
 			</div>
 		{/if}
 

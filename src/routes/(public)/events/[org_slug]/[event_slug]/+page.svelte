@@ -18,6 +18,7 @@
 	import PotluckSection from '$lib/components/events/PotluckSection.svelte';
 	import DietarySummary from '$lib/components/events/DietarySummary.svelte';
 	import EventResources from '$lib/components/events/EventResources.svelte';
+	import EventSchedule from '$lib/components/events/EventSchedule.svelte';
 	import EventAnnouncements from '$lib/components/announcements/EventAnnouncements.svelte';
 	import EventGuestSignInPrompt from '$lib/components/events/EventGuestSignInPrompt.svelte';
 	import AttendeeList from '$lib/components/events/AttendeeList.svelte';
@@ -812,6 +813,13 @@
 						onGuestTierClick={openGuestTicketDialog}
 					/>
 				{/if}
+
+				<!-- Schedule / Timeline Section -->
+				<EventSchedule
+					schedule={event.schedule}
+					eventStart={event.start}
+					timezone={event.timezone}
+				/>
 
 				<!-- Resources Section -->
 				<EventResources resources={data.resources} />
