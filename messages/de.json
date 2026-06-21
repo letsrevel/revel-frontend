@@ -536,6 +536,78 @@
 		"tiersHelp": "Leer lassen, um auf alle Kategorien der ausgewählten Veranstaltung(en) anzuwenden."
 	},
 	"discountCodesAdmin": {
+		"heading": "Rabattcodes",
+		"description": "Erstelle und verwalte Rabattcodes für den Ticketkauf.",
+		"newCode": "Neuer Rabattcode",
+		"search": {
+			"placeholder": "Nach Code suchen...",
+			"ariaLabel": "Rabattcodes durchsuchen"
+		},
+		"filters": {
+			"statusAria": "Nach Status filtern",
+			"typeAria": "Nach Typ filtern",
+			"allStatus": "Alle Status",
+			"allTypes": "Alle Typen"
+		},
+		"discountType": {
+			"percentage": "Prozentual",
+			"fixedAmount": "Fester Betrag"
+		},
+		"loadError": "Rabattcodes konnten nicht geladen werden. Bitte versuche es erneut.",
+		"loadingAria": "Rabattcodes werden geladen",
+		"empty": {
+			"title": "Keine Rabattcodes gefunden",
+			"adjustFilters": "Passe deine Filter an",
+			"getStarted": "Erstelle deinen ersten Rabattcode"
+		},
+		"table": {
+			"code": "Code",
+			"discount": "Rabatt",
+			"status": "Status",
+			"usage": "Nutzung",
+			"validPeriod": "Gültigkeitszeitraum",
+			"scope": "Geltungsbereich",
+			"actions": "Aktionen"
+		},
+		"status": {
+			"active": "Aktiv",
+			"inactive": "Inaktiv"
+		},
+		"actions": {
+			"copyAria": "Code {code} kopieren",
+			"activate": "Aktivieren",
+			"deactivate": "Deaktivieren",
+			"activateAria": "Code aktivieren",
+			"deactivateAria": "Code deaktivieren",
+			"edit": "Bearbeiten",
+			"editAria": "Rabattcode bearbeiten"
+		},
+		"scope": {
+			"orgWide": "Organisationsweit",
+			"serie": "{count} Serie",
+			"series": "{count} Serien",
+			"event": "{count} Event",
+			"events": "{count} Events",
+			"tier": "{count} Stufe",
+			"tiers": "{count} Stufen"
+		},
+		"dateRange": {
+			"always": "Immer",
+			"now": "Jetzt",
+			"noExpiry": "Kein Ablauf"
+		},
+		"card": {
+			"usage": "Nutzung",
+			"scope": "Geltungsbereich",
+			"valid": "Gültig"
+		},
+		"pagination": {
+			"total": "{count} Codes insgesamt",
+			"totalOne": "{count} Code insgesamt",
+			"page": "Seite {current} von {total}",
+			"prevAria": "Vorherige Seite",
+			"nextAria": "Nächste Seite"
+		},
 		"delete": {
 			"confirmHardDelete": "Rabattcode \"{code}\" löschen? Unbenutzte Codes werden dauerhaft entfernt (der Code wird wieder verfügbar); ist er mit Tickets verknüpft, wird er stattdessen deaktiviert.",
 			"confirmDeactivate": "Rabattcode \"{code}\" deaktivieren? Er wurde bereits verwendet und kann daher nicht gelöscht werden — sein Einlöseverlauf bleibt erhalten.",
@@ -3280,6 +3352,14 @@
 				},
 				"emptyFiltered": "No matching subscriptions on this page.",
 				"openDrawer": "Open subscription details"
+			},
+			"grantsInfo": {
+				"title": "Was gewährt eine Mitgliedschaft?",
+				"intro": "Je nach Konfiguration können Mitglieder deiner Organisation Folgendes erhalten:",
+				"coOrganizer": "Mitorganisator-Zugriff (Staff) zum Verwalten von Events, Mitgliedern und Einstellungen",
+				"screening": "Die Möglichkeit, Prüfungs-Fragebögen bei deinen Events zu überspringen",
+				"exclusive": "Zugang zu Events und Ticket-Stufen nur für Mitglieder",
+				"fees": "Mitgliedschaftsgebühren und Rabatte, die du einrichtest"
 			}
 		},
 		"eventSeries": {
@@ -4703,7 +4783,7 @@
 		"messagePlaceholder": "Erzähle den Organisierenden, warum du beitreten möchtest...",
 		"characters": "Zeichen",
 		"requestSubmittedDesc": "Deine Mitgliedschaftsanfrage wurde an {organizationName} gesendet. Du wirst benachrichtigt, wenn sie geprüft wurde.",
-		"requestDesc": "Sende eine Anfrage, um Mitglied von {organizationName} zu werden. Mitglieder haben möglicherweise Zugang zu exklusiven Events und Inhalten.",
+		"requestDesc": "Stelle eine Anfrage, um Mitglied von {organizationName} zu werden. Eine Mitgliedschaft kann Zugang zu Events und Ticket-Stufen nur für Mitglieder gewähren, das Überspringen von Prüfungs-Fragebögen ermöglichen sowie Mitgliedschaftsvorteile oder Rabatte bieten, die die Organisierenden anbieten.",
 		"cancel": "Abbrechen",
 		"submitting": "Wird gesendet...",
 		"submitRequest": "Anfrage senden",
@@ -5301,7 +5381,17 @@
 		"claimFreeTicket": "Gratis-Ticket sichern",
 		"buyTicket": "Ticket kaufen",
 		"reserveTicket": "Ticket reservieren",
-		"getTicket": "Ticket holen"
+		"getTicket": "Ticket holen",
+		"configError": "Konfigurationsfehler",
+		"youHaveTicket": "Du hast ein Ticket",
+		"limitReached": "Limit erreicht",
+		"limitReachedDetail": "Du hast dein Ticketlimit für diese Stufe erreicht",
+		"soldOutDetail": "Keine Tickets mehr verfügbar",
+		"free": "Kostenlos",
+		"pwyc": "Zahle, was du kannst ({range})",
+		"pwycAny": "beliebig",
+		"requiresMembership": "Mitgliedschaft erforderlich: {tiers}",
+		"signInToCheck": "Anmelden, um die Berechtigung zu prüfen"
 	},
 	"tierDelete": {
 		"title": "Mitgliedschaftsstufe löschen",

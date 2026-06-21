@@ -536,6 +536,78 @@
 		"tiersHelp": "Lascia vuoto per applicare a tutti i tipi di biglietto dell'evento/i selezionato/i."
 	},
 	"discountCodesAdmin": {
+		"heading": "Codici sconto",
+		"description": "Crea e gestisci i codici sconto per l'acquisto dei biglietti.",
+		"newCode": "Nuovo codice sconto",
+		"search": {
+			"placeholder": "Cerca per codice...",
+			"ariaLabel": "Cerca codici sconto"
+		},
+		"filters": {
+			"statusAria": "Filtra per stato",
+			"typeAria": "Filtra per tipo",
+			"allStatus": "Tutti gli stati",
+			"allTypes": "Tutti i tipi"
+		},
+		"discountType": {
+			"percentage": "Percentuale",
+			"fixedAmount": "Importo fisso"
+		},
+		"loadError": "Impossibile caricare i codici sconto. Riprova.",
+		"loadingAria": "Caricamento codici sconto",
+		"empty": {
+			"title": "Nessun codice sconto trovato",
+			"adjustFilters": "Prova a modificare i filtri",
+			"getStarted": "Inizia creando il tuo primo codice sconto"
+		},
+		"table": {
+			"code": "Codice",
+			"discount": "Sconto",
+			"status": "Stato",
+			"usage": "Utilizzo",
+			"validPeriod": "Periodo di validità",
+			"scope": "Ambito",
+			"actions": "Azioni"
+		},
+		"status": {
+			"active": "Attivo",
+			"inactive": "Inattivo"
+		},
+		"actions": {
+			"copyAria": "Copia codice {code}",
+			"activate": "Attiva",
+			"deactivate": "Disattiva",
+			"activateAria": "Attiva codice",
+			"deactivateAria": "Disattiva codice",
+			"edit": "Modifica",
+			"editAria": "Modifica codice sconto"
+		},
+		"scope": {
+			"orgWide": "Tutta l'organizzazione",
+			"serie": "{count} serie",
+			"series": "{count} serie",
+			"event": "{count} evento",
+			"events": "{count} eventi",
+			"tier": "{count} livello",
+			"tiers": "{count} livelli"
+		},
+		"dateRange": {
+			"always": "Sempre",
+			"now": "Ora",
+			"noExpiry": "Senza scadenza"
+		},
+		"card": {
+			"usage": "Utilizzo",
+			"scope": "Ambito",
+			"valid": "Valido"
+		},
+		"pagination": {
+			"total": "{count} codici in totale",
+			"totalOne": "{count} codice in totale",
+			"page": "Pagina {current} di {total}",
+			"prevAria": "Pagina precedente",
+			"nextAria": "Pagina successiva"
+		},
 		"delete": {
 			"confirmHardDelete": "Eliminare il codice sconto \"{code}\"? I codici inutilizzati vengono rimossi definitivamente (il codice torna disponibile); se è collegato a dei biglietti verrà invece disattivato.",
 			"confirmDeactivate": "Disattivare il codice sconto \"{code}\"? È già stato utilizzato, quindi non può essere eliminato — la cronologia di utilizzo verrà mantenuta.",
@@ -3280,6 +3352,14 @@
 				},
 				"emptyFiltered": "No matching subscriptions on this page.",
 				"openDrawer": "Open subscription details"
+			},
+			"grantsInfo": {
+				"title": "Cosa offre l'iscrizione?",
+				"intro": "A seconda di come li configuri, i membri della tua organizzazione possono ottenere:",
+				"coOrganizer": "Accesso da co-organizzatore (staff) per gestire eventi, membri e impostazioni",
+				"screening": "La possibilità di saltare i questionari di selezione sui tuoi eventi",
+				"exclusive": "Accesso a eventi e livelli di biglietto riservati ai membri",
+				"fees": "Quote di iscrizione e sconti che configuri"
 			}
 		},
 		"eventSeries": {
@@ -4703,7 +4783,7 @@
 		"messagePlaceholder": "Racconta agli organizzatori perché vorresti unirti...",
 		"characters": "caratteri",
 		"requestSubmittedDesc": "La tua richiesta di iscrizione è stata inviata a {organizationName}. Sarai avvisato quando verrà esaminata.",
-		"requestDesc": "Invia una richiesta per diventare membro di {organizationName}. I membri potrebbero avere accesso a eventi e contenuti esclusivi.",
+		"requestDesc": "Invia una richiesta per diventare membro di {organizationName}. L'iscrizione può dare accesso a eventi e livelli di biglietto riservati ai membri, la possibilità di saltare i questionari di selezione e gli eventuali vantaggi o sconti offerti dagli organizzatori.",
 		"cancel": "Annulla",
 		"submitting": "Invio in corso...",
 		"submitRequest": "Invia richiesta",
@@ -5301,7 +5381,17 @@
 		"claimFreeTicket": "Riscuoti Biglietto Gratuito",
 		"buyTicket": "Acquista Biglietto",
 		"reserveTicket": "Prenota Biglietto",
-		"getTicket": "Ottieni Biglietto"
+		"getTicket": "Ottieni Biglietto",
+		"configError": "Errore di configurazione",
+		"youHaveTicket": "Hai un biglietto",
+		"limitReached": "Limite raggiunto",
+		"limitReachedDetail": "Hai raggiunto il limite di biglietti per questo livello",
+		"soldOutDetail": "Nessun biglietto disponibile",
+		"free": "Gratuito",
+		"pwyc": "Paga quanto puoi ({range})",
+		"pwycAny": "qualsiasi",
+		"requiresMembership": "Iscrizione richiesta: {tiers}",
+		"signInToCheck": "Accedi per verificare l'idoneità"
 	},
 	"tierDelete": {
 		"title": "Elimina livello di iscrizione",

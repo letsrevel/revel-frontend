@@ -68,7 +68,11 @@
 
 	const showAttendeeCount = $derived(variant !== 'draft' && event.attendee_count !== undefined);
 
-	const showEdit = $derived(variant === 'draft' || variant === 'open');
+	// Editing is valid for any status (the edit route has no date/status guard),
+	// so organizers can fix details on closed/cancelled events too — see #447.
+	const showEdit = $derived(
+		variant === 'draft' || variant === 'open' || variant === 'closed' || variant === 'cancelled'
+	);
 	const showManagement = $derived(variant !== 'draft');
 
 	function viewEvent(): void {

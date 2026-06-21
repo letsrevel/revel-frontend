@@ -11,7 +11,17 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Tabs, TabsList, TabsTrigger, TabsContent } from '$lib/components/ui/tabs';
 	import { Button } from '$lib/components/ui/button';
-	import { Users, UserCog, UserPlus, Shield, Link, Plus, CreditCard } from 'lucide-svelte';
+	import {
+		Users,
+		UserCog,
+		UserPlus,
+		Shield,
+		Link,
+		Plus,
+		CreditCard,
+		Info,
+		ChevronDown
+	} from 'lucide-svelte';
 	import MembersTab from '$lib/components/members/MembersTab.svelte';
 	import StaffTab from '$lib/components/members/StaffTab.svelte';
 	import MembershipRequestsTab from '$lib/components/members/MembershipRequestsTab.svelte';
@@ -128,6 +138,29 @@
 			Invite members
 		</Button>
 	</div>
+
+	<!-- What membership grants (discreet inline disclosure, collapsed by default) -->
+	<details class="group">
+		<summary
+			class="inline-flex cursor-pointer list-none items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground [&::-webkit-details-marker]:hidden"
+		>
+			<Info class="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+			<span>{m['orgAdmin.members.grantsInfo.title']()}</span>
+			<ChevronDown
+				class="h-4 w-4 shrink-0 transition-transform group-open:rotate-180"
+				aria-hidden="true"
+			/>
+		</summary>
+		<div class="mt-2 space-y-2 rounded-lg bg-muted/40 p-3 text-sm text-muted-foreground">
+			<p>{m['orgAdmin.members.grantsInfo.intro']()}</p>
+			<ul class="ml-4 list-disc space-y-1">
+				<li>{m['orgAdmin.members.grantsInfo.coOrganizer']()}</li>
+				<li>{m['orgAdmin.members.grantsInfo.screening']()}</li>
+				<li>{m['orgAdmin.members.grantsInfo.exclusive']()}</li>
+				<li>{m['orgAdmin.members.grantsInfo.fees']()}</li>
+			</ul>
+		</div>
+	</details>
 
 	<!-- Tabs -->
 	<Tabs bind:value={activeTab} class="w-full">
