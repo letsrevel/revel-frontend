@@ -3546,6 +3546,13 @@
 	"orgAdmin.nav.billing": "Abrechnung",
 	"orgAdmin.nav.discountCodes": "Rabattcodes",
 	"orgAdmin.nav.venues": "Veranstaltungsorte",
+	"orgAdmin.nav.tickets": "Tickets",
+	"orgAdmin.tickets.title": "Tickets",
+	"orgAdmin.tickets.subtitle": "Wähle ein Event aus, um dessen Tickets zu verwalten",
+	"orgAdmin.tickets.attendees": "{count} Teilnehmende",
+	"orgAdmin.tickets.empty.title": "Noch keine Events mit Tickets",
+	"orgAdmin.tickets.empty.description": "Sobald du ein Event erstellst, das ein Ticket erfordert, erscheint es hier zur Ticketverwaltung.",
+	"orgAdmin.tickets.empty.cta": "Zu den Events",
 	"orgAdmin.billing": {
 		"pageTitle": "Abrechnung & USt",
 		"pageDescription": "Verwalte deine Rechnungsdaten, USt-Einstellungen und sieh Rechnungen ein",

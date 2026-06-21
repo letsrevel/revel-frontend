@@ -3546,6 +3546,13 @@
 	"orgAdmin.nav.billing": "Billing",
 	"orgAdmin.nav.discountCodes": "Discount Codes",
 	"orgAdmin.nav.venues": "Venues",
+	"orgAdmin.nav.tickets": "Tickets",
+	"orgAdmin.tickets.title": "Tickets",
+	"orgAdmin.tickets.subtitle": "Select an event to manage its tickets",
+	"orgAdmin.tickets.attendees": "{count} attendees",
+	"orgAdmin.tickets.empty.title": "No ticketed events yet",
+	"orgAdmin.tickets.empty.description": "Once you create an event that requires a ticket, it will show up here for ticket management.",
+	"orgAdmin.tickets.empty.cta": "Go to Events",
 	"orgAdmin.billing": {
 		"pageTitle": "Billing & VAT",
 		"pageDescription": "Manage your billing information, VAT settings, and view invoices",
