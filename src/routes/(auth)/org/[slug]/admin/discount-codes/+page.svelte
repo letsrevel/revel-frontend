@@ -171,6 +171,10 @@
 	function formatScope(code: DiscountCodeSchema): string {
 		const parts: string[] = [];
 		if (code.series_ids && code.series_ids.length > 0) {
+			// Singular/plural split is only grammatically distinct in German
+			// (Serie/Serien). en ("series") and it ("serie") are invariant, so their
+			// scope.serie and scope.series values intentionally match — i18n parity
+			// requires the key in every locale; the duplication is not a copy-paste slip.
 			const n = code.series_ids.length;
 			parts.push(
 				n === 1
