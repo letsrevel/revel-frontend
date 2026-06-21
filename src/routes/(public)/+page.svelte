@@ -745,22 +745,22 @@
 
 	<!-- Start Organizing CTA -->
 	{#if features.organization_creation}
-	<div class="rounded-lg border-2 border-primary bg-primary/5 p-8 text-center">
-		<h2 class="mb-4 text-3xl font-bold">{m['learnMore.startOrganizingTitle']()}</h2>
-		<p class="mx-auto mb-6 max-w-2xl text-lg text-muted-foreground">
-			{m['learnMore.startOrganizingDescription']()}
-		</p>
-		<a
-			href="/create-org"
-			class="inline-flex items-center gap-2 rounded-md bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-		>
-			<Building2 class="h-5 w-5" aria-hidden="true" />
-			{m['learnMore.startOrganizing']()}
-		</a>
-		<p class="mt-4 text-sm text-muted-foreground">
-			{m['learnMore.startOrganizingNote']()}
-		</p>
-	</div>
+		<div class="rounded-lg border-2 border-primary bg-primary/5 p-8 text-center">
+			<h2 class="mb-4 text-3xl font-bold">{m['learnMore.startOrganizingTitle']()}</h2>
+			<p class="mx-auto mb-6 max-w-2xl text-lg text-muted-foreground">
+				{m['learnMore.startOrganizingDescription']()}
+			</p>
+			<a
+				href="/create-org"
+				class="inline-flex items-center gap-2 rounded-md bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+			>
+				<Building2 class="h-5 w-5" aria-hidden="true" />
+				{m['learnMore.startOrganizing']()}
+			</a>
+			<p class="mt-4 text-sm text-muted-foreground">
+				{m['learnMore.startOrganizingNote']()}
+			</p>
+		</div>
 	{/if}
 </div>
 
