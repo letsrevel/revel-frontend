@@ -109,6 +109,63 @@
 	>
 </svelte:head>
 
+<!-- Next/Previous navigation through the (filtered) submission list; rendered at
+	 the top and again below the evaluation form so reviewers can advance without
+	 scrolling back up after approving/rejecting. -->
+{#snippet submissionNav()}
+	{#if previousHref || nextHref}
+		<nav
+			class="flex items-center gap-1"
+			aria-label={m['questionnaireSubmissionDetailPage.navLabel']()}
+		>
+			{#if previousHref}
+				<a
+					href={previousHref}
+					class="inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				>
+					<ChevronLeft class="h-4 w-4" aria-hidden="true" />
+					{m['questionnaireSubmissionDetailPage.previous']()}
+				</a>
+			{:else}
+				<span
+					class="inline-flex cursor-not-allowed items-center gap-1 rounded-md border px-3 py-1.5 text-sm font-medium text-muted-foreground opacity-50"
+					aria-disabled="true"
+				>
+					<ChevronLeft class="h-4 w-4" aria-hidden="true" />
+					{m['questionnaireSubmissionDetailPage.previous']()}
+				</span>
+			{/if}
+
+			{#if data.navigation?.position}
+				<span class="px-2 text-sm text-muted-foreground">
+					{m['questionnaireSubmissionDetailPage.positionLabel']({
+						current: data.navigation.position,
+						total: data.navigation.total
+					})}
+				</span>
+			{/if}
+
+			{#if nextHref}
+				<a
+					href={nextHref}
+					class="inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				>
+					{m['questionnaireSubmissionDetailPage.next']()}
+					<ChevronRight class="h-4 w-4" aria-hidden="true" />
+				</a>
+			{:else}
+				<span
+					class="inline-flex cursor-not-allowed items-center gap-1 rounded-md border px-3 py-1.5 text-sm font-medium text-muted-foreground opacity-50"
+					aria-disabled="true"
+				>
+					{m['questionnaireSubmissionDetailPage.next']()}
+					<ChevronRight class="h-4 w-4" aria-hidden="true" />
+				</span>
+			{/if}
+		</nav>
+	{/if}
+{/snippet}
+
 <div class="container mx-auto max-w-5xl px-4 py-8">
 	<!-- Header -->
 	<div class="mb-8">
@@ -121,58 +178,7 @@
 				{m['questionnaireSubmissionDetailPage.backToSubmissions']()}
 			</a>
 
-			<!-- Next/Previous navigation through the (filtered) submission list -->
-			{#if previousHref || nextHref}
-				<nav
-					class="flex items-center gap-1"
-					aria-label={m['questionnaireSubmissionDetailPage.navLabel']()}
-				>
-					{#if previousHref}
-						<a
-							href={previousHref}
-							class="inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-						>
-							<ChevronLeft class="h-4 w-4" aria-hidden="true" />
-							{m['questionnaireSubmissionDetailPage.previous']()}
-						</a>
-					{:else}
-						<span
-							class="inline-flex cursor-not-allowed items-center gap-1 rounded-md border px-3 py-1.5 text-sm font-medium text-muted-foreground opacity-50"
-							aria-disabled="true"
-						>
-							<ChevronLeft class="h-4 w-4" aria-hidden="true" />
-							{m['questionnaireSubmissionDetailPage.previous']()}
-						</span>
-					{/if}
-
-					{#if data.navigation?.position}
-						<span class="px-2 text-sm text-muted-foreground" aria-live="polite">
-							{m['questionnaireSubmissionDetailPage.positionLabel']({
-								current: data.navigation.position,
-								total: data.navigation.total
-							})}
-						</span>
-					{/if}
-
-					{#if nextHref}
-						<a
-							href={nextHref}
-							class="inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-						>
-							{m['questionnaireSubmissionDetailPage.next']()}
-							<ChevronRight class="h-4 w-4" aria-hidden="true" />
-						</a>
-					{:else}
-						<span
-							class="inline-flex cursor-not-allowed items-center gap-1 rounded-md border px-3 py-1.5 text-sm font-medium text-muted-foreground opacity-50"
-							aria-disabled="true"
-						>
-							{m['questionnaireSubmissionDetailPage.next']()}
-							<ChevronRight class="h-4 w-4" aria-hidden="true" />
-						</span>
-					{/if}
-				</nav>
-			{/if}
+			{@render submissionNav()}
 		</div>
 		<div class="flex items-start justify-between gap-4">
 			<div class="flex-1">
@@ -234,8 +240,17 @@
 							| 'rejected'
 							| 'pending review'
 							| null) || null}
+						returnQuery={data.navigation?.contextQuery ?? ''}
 						{isSubmitting}
 					/>
+				</div>
+			{/if}
+
+			<!-- Repeat the Next/Previous nav at the bottom so reviewers can advance
+				 straight after approving/rejecting, without scrolling back up. -->
+			{#if previousHref || nextHref}
+				<div class="flex justify-end border-t pt-6">
+					{@render submissionNav()}
 				</div>
 			{/if}
 		</div>

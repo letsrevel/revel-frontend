@@ -71,9 +71,27 @@ export const load: PageServerLoad = async ({ params, url, locals, fetch }) => {
 	}
 
 	// Compute Previous/Next neighbors within the loaded, filtered, ordered set.
-	const siblings = siblingsResult.data?.results ?? [];
-	const totalSiblings = siblingsResult.data?.count ?? siblings.length;
-	const currentIndex = siblings.findIndex((s) => s.id === submission_id);
+	let siblings = siblingsResult.data?.results ?? [];
+	let totalSiblings = siblingsResult.data?.count ?? siblings.length;
+	let currentIndex = siblings.findIndex((s) => s.id === submission_id);
+
+	// Edge case: after evaluating, this submission's status may no longer match the
+	// active evaluation_status filter, dropping it out of the filtered set. Fall back
+	// to an unfiltered (search + order_by) list so Next/Previous keeps working.
+	if (currentIndex === -1 && evaluationStatus) {
+		const fallback = await questionnaireListSubmissions({
+			fetch,
+			path: { org_questionnaire_id: id },
+			query: { page: 1, page_size: SIBLING_NAV_LIMIT, search, order_by: orderBy },
+			headers
+		});
+		if (fallback.data?.results) {
+			siblings = fallback.data.results;
+			totalSiblings = fallback.data.count ?? siblings.length;
+			currentIndex = siblings.findIndex((s) => s.id === submission_id);
+		}
+	}
+
 	const previousId = currentIndex > 0 ? siblings[currentIndex - 1].id : null;
 	const nextId =
 		currentIndex >= 0 && currentIndex < siblings.length - 1 ? siblings[currentIndex + 1].id : null;
@@ -116,6 +134,7 @@ export const actions: Actions = {
 		const status = formData.get('status') as string;
 		const score = formData.get('score') as string | null;
 		const comments = formData.get('comments') as string | null;
+		const returnQuery = (formData.get('return_query') as string | null) ?? '';
 
 		// Validate status
 		if (!status || !['approved', 'rejected', 'pending review'].includes(status)) {
@@ -159,7 +178,12 @@ export const actions: Actions = {
 			return fail(500, { error: 'Failed to submit evaluation. Please try again.' });
 		}
 
-		// Redirect back to submissions list
-		throw redirect(303, `/org/${params.slug}/admin/questionnaires/${id}/submissions`);
+		// Stay on this submission (preserving the list's filter/sort context) so the
+		// reviewer can use the Next/Previous nav to move on after approving/rejecting.
+		const suffix = returnQuery ? `?${returnQuery}` : '';
+		throw redirect(
+			303,
+			`/org/${params.slug}/admin/questionnaires/${id}/submissions/${submission_id}${suffix}`
+		);
 	}
 };
