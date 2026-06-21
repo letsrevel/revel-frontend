@@ -4337,7 +4337,20 @@
 		"scanQr": "QR-Code scannen",
 		"initializing": "Kamera wird initialisiert...",
 		"error": "Fehler",
-		"cancel": "Abbrechen"
+		"cancel": "Abbrechen",
+		"instructions": "Positioniere den QR-Code im Rahmen, um den Gast einzuchecken.",
+		"scanSuccess": "QR-Code erfolgreich gescannt! Wird verarbeitet...",
+		"closeLabel": "Scanner schließen",
+		"manualEntryTitle": "Kamera funktioniert nicht?",
+		"manualEntryLabel": "Ticket-Code manuell eingeben",
+		"manualEntryPlaceholder": "Ticket-Code einfügen oder eingeben",
+		"manualEntrySubmit": "Einchecken",
+		"error_permissionDenied": "Kamerazugriff verweigert. Aktiviere die Kameraberechtigungen in deinen Browsereinstellungen oder gib den Ticket-Code unten manuell ein.",
+		"error_notFound": "Auf diesem Gerät wurde keine Kamera gefunden. Gib den Ticket-Code unten manuell ein.",
+		"error_notReadable": "Die Kamera wird bereits von einer anderen App verwendet. Schließe sie und versuche es erneut oder gib den Ticket-Code unten manuell ein.",
+		"error_insecureContext": "Der Kamerazugriff erfordert eine sichere (HTTPS-)Verbindung. Gib den Ticket-Code unten manuell ein.",
+		"error_generic": "Kein Zugriff auf die Kamera möglich. Gib den Ticket-Code unten manuell ein.",
+		"error_processFailed": "Das gescannte Ticket konnte nicht verarbeitet werden. Bitte versuche es erneut."
 	},
 	"questionAnswerDisplay": {
 		"noOptionSelected": "Keine Option ausgewählt",
@@ -4660,7 +4673,11 @@
 		"eventContextTitle": "Event-Kontext",
 		"eventNameLabel": "Event",
 		"viewEventLink": "Event ansehen",
-		"noEvaluationRequired": "Dieser Fragebogen erfordert keine Bewertung. Einreichungen werden automatisch akzeptiert."
+		"noEvaluationRequired": "Dieser Fragebogen erfordert keine Bewertung. Einreichungen werden automatisch akzeptiert.",
+		"previous": "Vorherige",
+		"next": "Nächste",
+		"positionLabel": "{current} von {total}",
+		"navLabel": "Navigation der Einreichungen"
 	},
 	"questionnaireSubmissionPage": {
 		"pageTitle": "{questionnaireName} - {eventName}",
@@ -6546,5 +6563,19 @@
 	"announcements.tabs.scheduled": "Geplant",
 	"announcements.empty.scheduled": "Keine geplanten Ankündigungen",
 	"announcements.empty.scheduledDescription": "Für später geplante Ankündigungen erscheinen hier.",
-	"announcements.schedule.kindLegend": "Planungsart"
+	"announcements.schedule.kindLegend": "Planungsart",
+	"eventGuestPrompt": {
+		"title": "Melde dich an, um mehr von dieser Veranstaltung zu sehen",
+		"subtitle": "Einige Details sind nur für angemeldete Gäste sichtbar.",
+		"cta": "Anmelden",
+		"expandLabel": "Das bekommst du nach der Anmeldung",
+		"item_potluck": "Potluck-Koordination",
+		"item_potluckDesc": "Sieh, was andere mitbringen, und füge deinen eigenen Beitrag hinzu",
+		"item_announcements": "Ankündigungen",
+		"item_announcementsDesc": "Die neuesten Updates der Veranstalter",
+		"item_attendees": "Wer kommt",
+		"item_attendeesDesc": "Die Gästeliste für diese Veranstaltung",
+		"item_dietary": "Ernährungspräferenzen",
+		"item_dietaryDesc": "Ernährungsbedürfnisse und -einschränkungen der Gäste"
+	}
 }

@@ -3,11 +3,17 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import {
 	questionnaireGetSubmissionDetail,
 	questionnaireEvaluateSubmission,
-	questionnaireGetOrgQuestionnaire
+	questionnaireGetOrgQuestionnaire,
+	questionnaireListSubmissions
 } from '$lib/api/client';
 import { log } from '$lib/server/logger';
 
-export const load: PageServerLoad = async ({ params, locals, fetch }) => {
+// How many siblings to load for Next/Previous navigation. Covers the vast
+// majority of questionnaires; submissions beyond this window simply don't get
+// neighbor links (the buttons disable at the edges of the loaded set).
+const SIBLING_NAV_LIMIT = 100;
+
+export const load: PageServerLoad = async ({ params, url, locals, fetch }) => {
 	const { slug, id, submission_id } = params;
 
 	// Ensure user is authenticated
@@ -21,8 +27,16 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 		Authorization: `Bearer ${user.accessToken}`
 	};
 
-	// Fetch submission detail and org questionnaire in parallel
-	const [submissionResult, questionnaireResult] = await Promise.all([
+	// Carry the list's filter/sort context so Next/Previous walks the same
+	// ordered, filtered set the reviewer was looking at.
+	const search = url.searchParams.get('search') || undefined;
+	const evaluationStatus = url.searchParams.get('evaluation_status') || undefined;
+	const orderBy = (url.searchParams.get('order_by') || '-submitted_at') as
+		| 'submitted_at'
+		| '-submitted_at';
+
+	// Fetch submission detail, org questionnaire, and the sibling list in parallel
+	const [submissionResult, questionnaireResult, siblingsResult] = await Promise.all([
 		questionnaireGetSubmissionDetail({
 			fetch,
 			path: { org_questionnaire_id: id, submission_id },
@@ -31,6 +45,18 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 		questionnaireGetOrgQuestionnaire({
 			fetch,
 			path: { org_questionnaire_id: id },
+			headers
+		}),
+		questionnaireListSubmissions({
+			fetch,
+			path: { org_questionnaire_id: id },
+			query: {
+				page: 1,
+				page_size: SIBLING_NAV_LIMIT,
+				search,
+				evaluation_status: evaluationStatus,
+				order_by: orderBy
+			},
 			headers
 		})
 	]);
@@ -44,11 +70,30 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 		throw error(404, 'Submission not found');
 	}
 
+	// Compute Previous/Next neighbors within the loaded, filtered, ordered set.
+	const siblings = siblingsResult.data?.results ?? [];
+	const totalSiblings = siblingsResult.data?.count ?? siblings.length;
+	const currentIndex = siblings.findIndex((s) => s.id === submission_id);
+	const previousId = currentIndex > 0 ? siblings[currentIndex - 1].id : null;
+	const nextId =
+		currentIndex >= 0 && currentIndex < siblings.length - 1 ? siblings[currentIndex + 1].id : null;
+
+	// Preserve the filter/sort query string on neighbor and back links.
+	const contextQuery = url.searchParams.toString();
+
 	return {
 		submission: submissionResult.data,
 		organizationSlug: slug,
 		questionnaireId: id,
-		requiresEvaluation: questionnaireResult.data?.requires_evaluation ?? true
+		requiresEvaluation: questionnaireResult.data?.requires_evaluation ?? true,
+		navigation: {
+			previousId,
+			nextId,
+			// 1-based position; null when the submission falls outside the loaded window
+			position: currentIndex >= 0 ? currentIndex + 1 : null,
+			total: totalSiblings,
+			contextQuery
+		}
 	};
 };
 

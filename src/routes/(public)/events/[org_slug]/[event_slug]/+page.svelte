@@ -19,6 +19,7 @@
 	import DietarySummary from '$lib/components/events/DietarySummary.svelte';
 	import EventResources from '$lib/components/events/EventResources.svelte';
 	import EventAnnouncements from '$lib/components/announcements/EventAnnouncements.svelte';
+	import EventGuestSignInPrompt from '$lib/components/events/EventGuestSignInPrompt.svelte';
 	import AttendeeList from '$lib/components/events/AttendeeList.svelte';
 	import TicketTierList from '$lib/components/tickets/TicketTierList.svelte';
 	import MyTicket from '$lib/components/tickets/MyTicket.svelte';
@@ -748,29 +749,34 @@
 			<div class="space-y-8 lg:col-span-2">
 				<EventDetails {event} />
 
-				<!-- Announcements Section (high visibility, directly under details) -->
-				<EventAnnouncements eventId={event.id} />
+				{#if data.isAuthenticated}
+					<!-- Announcements Section (high visibility, directly under details) -->
+					<EventAnnouncements eventId={event.id} />
 
-				<!-- Potluck Coordination Section -->
-				<!-- Show if potluck is open OR if there are existing items -->
-				{#if event.potluck_open || data.potluckItems.length > 0}
-					<div class="space-y-6">
-						<!-- Dietary Summary -->
-						<DietarySummary
-							eventId={event.id}
-							authToken={authStore.accessToken}
-							isAuthenticated={data.isAuthenticated}
-						/>
+					<!-- Potluck Coordination Section -->
+					<!-- Show if potluck is open OR if there are existing items -->
+					{#if event.potluck_open || data.potluckItems.length > 0}
+						<div class="space-y-6">
+							<!-- Dietary Summary -->
+							<DietarySummary
+								eventId={event.id}
+								authToken={authStore.accessToken}
+								isAuthenticated={data.isAuthenticated}
+							/>
 
-						<!-- Potluck Items -->
-						<PotluckSection
-							{event}
-							permissions={potluckPermissions}
-							isAuthenticated={data.isAuthenticated}
-							{hasRSVPd}
-							initialItems={data.potluckItems}
-						/>
-					</div>
+							<!-- Potluck Items -->
+							<PotluckSection
+								{event}
+								permissions={potluckPermissions}
+								isAuthenticated={data.isAuthenticated}
+								{hasRSVPd}
+								initialItems={data.potluckItems}
+							/>
+						</div>
+					{/if}
+				{:else}
+					<!-- Consolidated sign-in prompt covering all auth-gated sections -->
+					<EventGuestSignInPrompt {event} />
 				{/if}
 
 				<!-- My Ticket (if user has a ticket) -->

@@ -4337,7 +4337,20 @@
 		"scanQr": "Scansiona Codice QR",
 		"initializing": "Inizializzazione fotocamera...",
 		"error": "Errore",
-		"cancel": "Annulla"
+		"cancel": "Annulla",
+		"instructions": "Posiziona il codice QR all'interno del riquadro per effettuare il check-in dell'ospite.",
+		"scanSuccess": "Codice QR scansionato correttamente! Elaborazione in corso...",
+		"closeLabel": "Chiudi scanner",
+		"manualEntryTitle": "La fotocamera non funziona?",
+		"manualEntryLabel": "Inserisci il codice del biglietto manualmente",
+		"manualEntryPlaceholder": "Incolla o digita il codice del biglietto",
+		"manualEntrySubmit": "Check-in",
+		"error_permissionDenied": "Accesso alla fotocamera negato. Abilita i permessi della fotocamera nelle impostazioni del browser oppure inserisci il codice del biglietto qui sotto.",
+		"error_notFound": "Nessuna fotocamera trovata su questo dispositivo. Inserisci il codice del biglietto qui sotto.",
+		"error_notReadable": "La fotocamera è già in uso da un'altra app. Chiudila e riprova oppure inserisci il codice del biglietto qui sotto.",
+		"error_insecureContext": "L'accesso alla fotocamera richiede una connessione sicura (HTTPS). Inserisci il codice del biglietto qui sotto.",
+		"error_generic": "Impossibile accedere alla fotocamera. Inserisci il codice del biglietto qui sotto.",
+		"error_processFailed": "Impossibile elaborare il biglietto scansionato. Riprova."
 	},
 	"questionAnswerDisplay": {
 		"noOptionSelected": "Nessuna opzione selezionata",
@@ -4660,7 +4673,11 @@
 		"eventContextTitle": "Contesto Evento",
 		"eventNameLabel": "Evento",
 		"viewEventLink": "Visualizza evento",
-		"noEvaluationRequired": "Questo questionario non richiede valutazione. Le risposte vengono accettate automaticamente."
+		"noEvaluationRequired": "Questo questionario non richiede valutazione. Le risposte vengono accettate automaticamente.",
+		"previous": "Precedente",
+		"next": "Successiva",
+		"positionLabel": "{current} di {total}",
+		"navLabel": "Navigazione delle risposte"
 	},
 	"questionnaireSubmissionPage": {
 		"pageTitle": "{questionnaireName} - {eventName}",
@@ -6546,5 +6563,19 @@
 	"announcements.tabs.scheduled": "Pianificati",
 	"announcements.empty.scheduled": "Nessun annuncio pianificato",
 	"announcements.empty.scheduledDescription": "Gli annunci pianificati per un invio successivo appariranno qui.",
-	"announcements.schedule.kindLegend": "Tipo di pianificazione"
+	"announcements.schedule.kindLegend": "Tipo di pianificazione",
+	"eventGuestPrompt": {
+		"title": "Accedi per vedere di più su questo evento",
+		"subtitle": "Alcuni dettagli sono visibili solo agli ospiti che hanno effettuato l'accesso.",
+		"cta": "Accedi",
+		"expandLabel": "Cosa potrai vedere",
+		"item_potluck": "Coordinamento potluck",
+		"item_potluckDesc": "Scopri cosa portano gli altri e aggiungi il tuo contributo",
+		"item_announcements": "Annunci",
+		"item_announcementsDesc": "Gli ultimi aggiornamenti degli organizzatori",
+		"item_attendees": "Chi partecipa",
+		"item_attendeesDesc": "L'elenco degli ospiti di questo evento",
+		"item_dietary": "Preferenze alimentari",
+		"item_dietaryDesc": "Esigenze e restrizioni alimentari degli ospiti"
+	}
 }
