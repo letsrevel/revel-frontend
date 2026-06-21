@@ -6,9 +6,7 @@ import { isEventPast } from '$lib/utils/date';
  * not cancelled. `end` is a required string on EventInListSchema (the backend
  * always returns one), so no null handling is needed.
  */
-export function isTicketEventActive(
-	event: Pick<EventInListSchema, 'end' | 'status'>
-): boolean {
+export function isTicketEventActive(event: Pick<EventInListSchema, 'end' | 'status'>): boolean {
 	return !isEventPast(event.end) && event.status !== 'cancelled';
 }
 
@@ -17,9 +15,7 @@ export function isTicketEventActive(
  * Tickets tab can deep-link straight to its management page. Otherwise null
  * (render the picker) — this keeps past/cancelled events reachable.
  */
-export function shouldRedirectToSingle(
-	events: EventInListSchema[]
-): EventInListSchema | null {
+export function shouldRedirectToSingle(events: EventInListSchema[]): EventInListSchema | null {
 	if (events.length === 1 && isTicketEventActive(events[0])) {
 		return events[0];
 	}
@@ -30,9 +26,7 @@ export function shouldRedirectToSingle(
  * Upcoming events first (soonest start first), then past events (most recent
  * first). Pure — returns a new array.
  */
-export function sortTicketEventsForPicker(
-	events: EventInListSchema[]
-): EventInListSchema[] {
+export function sortTicketEventsForPicker(events: EventInListSchema[]): EventInListSchema[] {
 	return [...events].sort((a, b) => {
 		const aPast = isEventPast(a.end);
 		const bPast = isEventPast(b.end);

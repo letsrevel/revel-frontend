@@ -78,10 +78,26 @@ describe('sortTicketEventsForPicker', () => {
 	it('orders upcoming (asc) before past (desc)', () => {
 		vi.useFakeTimers();
 		vi.setSystemTime(NOW);
-		const upLater = ev({ id: 'up-later', start: '2026-10-01T10:00:00Z', end: '2026-10-01T12:00:00Z' });
-		const upSooner = ev({ id: 'up-sooner', start: '2026-07-01T10:00:00Z', end: '2026-07-01T12:00:00Z' });
-		const pastOld = ev({ id: 'past-old', start: '2026-01-01T10:00:00Z', end: '2026-01-01T12:00:00Z' });
-		const pastRecent = ev({ id: 'past-recent', start: '2026-05-01T10:00:00Z', end: '2026-05-01T12:00:00Z' });
+		const upLater = ev({
+			id: 'up-later',
+			start: '2026-10-01T10:00:00Z',
+			end: '2026-10-01T12:00:00Z'
+		});
+		const upSooner = ev({
+			id: 'up-sooner',
+			start: '2026-07-01T10:00:00Z',
+			end: '2026-07-01T12:00:00Z'
+		});
+		const pastOld = ev({
+			id: 'past-old',
+			start: '2026-01-01T10:00:00Z',
+			end: '2026-01-01T12:00:00Z'
+		});
+		const pastRecent = ev({
+			id: 'past-recent',
+			start: '2026-05-01T10:00:00Z',
+			end: '2026-05-01T12:00:00Z'
+		});
 		const sorted = sortTicketEventsForPicker([pastOld, upLater, pastRecent, upSooner]);
 		expect(sorted.map((e) => e.id)).toEqual(['up-sooner', 'up-later', 'past-recent', 'past-old']);
 	});

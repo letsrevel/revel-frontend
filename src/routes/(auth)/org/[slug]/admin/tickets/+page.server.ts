@@ -3,10 +3,7 @@ import type { PageServerLoad } from './$types';
 import { error, redirect } from '@sveltejs/kit';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { log } from '$lib/server/logger';
-import {
-	shouldRedirectToSingle,
-	sortTicketEventsForPicker
-} from '$lib/utils/ticket-event-picker';
+import { shouldRedirectToSingle, sortTicketEventsForPicker } from '$lib/utils/ticket-event-picker';
 
 export const load: PageServerLoad = async ({ parent, params, locals, fetch }) => {
 	const { organization } = await parent();

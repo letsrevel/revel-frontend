@@ -29,10 +29,7 @@ describe('Tickets tab page', () => {
 	});
 
 	it('renders one card per event linking to the per-event tickets page', () => {
-		const events = [
-			ev({ id: 'A', name: 'Summer Gala' }),
-			ev({ id: 'B', name: 'Workshop Night' })
-		];
+		const events = [ev({ id: 'A', name: 'Summer Gala' }), ev({ id: 'B', name: 'Workshop Night' })];
 		render(Page, { props: { data: { organization, events } as never } });
 
 		const galaLink = screen.getByRole('link', { name: /Summer Gala/ });
