@@ -12,10 +12,18 @@
 		submissionId: string;
 		currentStatus?: 'approved' | 'rejected' | 'pending review' | null;
 		isSubmitting?: boolean;
+		/** Filter/sort query string (no leading `?`) to preserve after evaluating */
+		returnQuery?: string;
 		onCancel?: () => void;
 	}
 
-	const { submissionId, currentStatus = null, isSubmitting = false, onCancel }: Props = $props();
+	const {
+		submissionId,
+		currentStatus = null,
+		isSubmitting = false,
+		returnQuery = '',
+		onCancel
+	}: Props = $props();
 
 	// Form state
 	let showAdvancedOptions = $state(false);
@@ -39,6 +47,7 @@
 -->
 <form method="POST" action="?/evaluate">
 	<input type="hidden" name="submission_id" value={submissionId} />
+	<input type="hidden" name="return_query" value={returnQuery} />
 
 	<Card class="p-6">
 		<h3 class="mb-4 text-lg font-semibold">{m['evaluationForm.yourEvaluation']()}</h3>

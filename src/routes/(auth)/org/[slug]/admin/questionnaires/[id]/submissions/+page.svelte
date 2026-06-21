@@ -256,7 +256,8 @@
 								{/if}
 								<td class="px-6 py-4 text-right">
 									<Button
-										href="/org/{data.organizationSlug}/admin/questionnaires/{data.questionnaireId}/submissions/{submission.id}"
+										href="/org/{data.organizationSlug}/admin/questionnaires/{data.questionnaireId}/submissions/{submission.id}{$page
+											.url.search}"
 										variant="outline"
 										size="sm"
 									>
@@ -303,7 +304,8 @@
 					</div>
 
 					<Button
-						href="/org/{data.organizationSlug}/admin/questionnaires/{data.questionnaireId}/submissions/{submission.id}"
+						href="/org/{data.organizationSlug}/admin/questionnaires/{data.questionnaireId}/submissions/{submission.id}{$page
+							.url.search}"
 						variant="outline"
 						size="sm"
 						class="mt-4 w-full"

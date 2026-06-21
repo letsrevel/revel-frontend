@@ -19,7 +19,10 @@
 	// Derived
 	const accessToken = $derived(authStore.accessToken);
 
-	// Fetch announcements
+	// Fetch announcements (only signed-in guests can see them; the backend hides
+	// them from anonymous requests to reduce scraping surface). This component is
+	// only rendered for authenticated users; anonymous guests get the consolidated
+	// EventGuestSignInPrompt instead.
 	const announcementsQuery = createQuery(() => ({
 		queryKey: ['event-announcements', eventId],
 		queryFn: async () => {

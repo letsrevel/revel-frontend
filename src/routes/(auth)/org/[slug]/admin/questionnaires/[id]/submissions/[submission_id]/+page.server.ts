@@ -3,11 +3,17 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import {
 	questionnaireGetSubmissionDetail,
 	questionnaireEvaluateSubmission,
-	questionnaireGetOrgQuestionnaire
+	questionnaireGetOrgQuestionnaire,
+	questionnaireListSubmissions
 } from '$lib/api/client';
 import { log } from '$lib/server/logger';
 
-export const load: PageServerLoad = async ({ params, locals, fetch }) => {
+// How many siblings to load for Next/Previous navigation. Covers the vast
+// majority of questionnaires; submissions beyond this window simply don't get
+// neighbor links (the buttons disable at the edges of the loaded set).
+const SIBLING_NAV_LIMIT = 100;
+
+export const load: PageServerLoad = async ({ params, url, locals, fetch }) => {
 	const { slug, id, submission_id } = params;
 
 	// Ensure user is authenticated
@@ -21,8 +27,16 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 		Authorization: `Bearer ${user.accessToken}`
 	};
 
-	// Fetch submission detail and org questionnaire in parallel
-	const [submissionResult, questionnaireResult] = await Promise.all([
+	// Carry the list's filter/sort context so Next/Previous walks the same
+	// ordered, filtered set the reviewer was looking at.
+	const search = url.searchParams.get('search') || undefined;
+	const evaluationStatus = url.searchParams.get('evaluation_status') || undefined;
+	const orderBy = (url.searchParams.get('order_by') || '-submitted_at') as
+		| 'submitted_at'
+		| '-submitted_at';
+
+	// Fetch submission detail, org questionnaire, and the sibling list in parallel
+	const [submissionResult, questionnaireResult, siblingsResult] = await Promise.all([
 		questionnaireGetSubmissionDetail({
 			fetch,
 			path: { org_questionnaire_id: id, submission_id },
@@ -31,6 +45,18 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 		questionnaireGetOrgQuestionnaire({
 			fetch,
 			path: { org_questionnaire_id: id },
+			headers
+		}),
+		questionnaireListSubmissions({
+			fetch,
+			path: { org_questionnaire_id: id },
+			query: {
+				page: 1,
+				page_size: SIBLING_NAV_LIMIT,
+				search,
+				evaluation_status: evaluationStatus,
+				order_by: orderBy
+			},
 			headers
 		})
 	]);
@@ -44,11 +70,48 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 		throw error(404, 'Submission not found');
 	}
 
+	// Compute Previous/Next neighbors within the loaded, filtered, ordered set.
+	let siblings = siblingsResult.data?.results ?? [];
+	let totalSiblings = siblingsResult.data?.count ?? siblings.length;
+	let currentIndex = siblings.findIndex((s) => s.id === submission_id);
+
+	// Edge case: after evaluating, this submission's status may no longer match the
+	// active evaluation_status filter, dropping it out of the filtered set. Fall back
+	// to an unfiltered (search + order_by) list so Next/Previous keeps working.
+	if (currentIndex === -1 && evaluationStatus) {
+		const fallback = await questionnaireListSubmissions({
+			fetch,
+			path: { org_questionnaire_id: id },
+			query: { page: 1, page_size: SIBLING_NAV_LIMIT, search, order_by: orderBy },
+			headers
+		});
+		if (fallback.data?.results) {
+			siblings = fallback.data.results;
+			totalSiblings = fallback.data.count ?? siblings.length;
+			currentIndex = siblings.findIndex((s) => s.id === submission_id);
+		}
+	}
+
+	const previousId = currentIndex > 0 ? siblings[currentIndex - 1].id : null;
+	const nextId =
+		currentIndex >= 0 && currentIndex < siblings.length - 1 ? siblings[currentIndex + 1].id : null;
+
+	// Preserve the filter/sort query string on neighbor and back links.
+	const contextQuery = url.searchParams.toString();
+
 	return {
 		submission: submissionResult.data,
 		organizationSlug: slug,
 		questionnaireId: id,
-		requiresEvaluation: questionnaireResult.data?.requires_evaluation ?? true
+		requiresEvaluation: questionnaireResult.data?.requires_evaluation ?? true,
+		navigation: {
+			previousId,
+			nextId,
+			// 1-based position; null when the submission falls outside the loaded window
+			position: currentIndex >= 0 ? currentIndex + 1 : null,
+			total: totalSiblings,
+			contextQuery
+		}
 	};
 };
 
@@ -71,6 +134,7 @@ export const actions: Actions = {
 		const status = formData.get('status') as string;
 		const score = formData.get('score') as string | null;
 		const comments = formData.get('comments') as string | null;
+		const returnQuery = (formData.get('return_query') as string | null) ?? '';
 
 		// Validate status
 		if (!status || !['approved', 'rejected', 'pending review'].includes(status)) {
@@ -114,7 +178,12 @@ export const actions: Actions = {
 			return fail(500, { error: 'Failed to submit evaluation. Please try again.' });
 		}
 
-		// Redirect back to submissions list
-		throw redirect(303, `/org/${params.slug}/admin/questionnaires/${id}/submissions`);
+		// Stay on this submission (preserving the list's filter/sort context) so the
+		// reviewer can use the Next/Previous nav to move on after approving/rejecting.
+		const suffix = returnQuery ? `?${returnQuery}` : '';
+		throw redirect(
+			303,
+			`/org/${params.slug}/admin/questionnaires/${id}/submissions/${submission_id}${suffix}`
+		);
 	}
 };

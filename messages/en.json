@@ -4337,7 +4337,20 @@
 		"scanQr": "Scan QR Code",
 		"initializing": "Initializing camera...",
 		"error": "Error",
-		"cancel": "Cancel"
+		"cancel": "Cancel",
+		"instructions": "Position the QR code within the frame to check in the attendee.",
+		"scanSuccess": "QR code scanned successfully! Processing...",
+		"closeLabel": "Close scanner",
+		"manualEntryTitle": "Camera not working?",
+		"manualEntryLabel": "Enter ticket code manually",
+		"manualEntryPlaceholder": "Paste or type the ticket code",
+		"manualEntrySubmit": "Check in",
+		"error_permissionDenied": "Camera access was denied. Enable camera permissions in your browser settings, or enter the ticket code manually below.",
+		"error_notFound": "No camera was found on this device. Enter the ticket code manually below.",
+		"error_notReadable": "The camera is already in use by another app. Close it and try again, or enter the ticket code manually below.",
+		"error_insecureContext": "Camera access requires a secure (HTTPS) connection. Enter the ticket code manually below.",
+		"error_generic": "Couldn't access the camera. Enter the ticket code manually below.",
+		"error_processFailed": "Failed to process the scanned ticket. Please try again."
 	},
 	"questionAnswerDisplay": {
 		"noOptionSelected": "No option selected",
@@ -4660,7 +4673,11 @@
 		"eventContextTitle": "Event Context",
 		"eventNameLabel": "Event",
 		"viewEventLink": "View event",
-		"noEvaluationRequired": "This questionnaire does not require evaluation. Submissions are accepted automatically."
+		"noEvaluationRequired": "This questionnaire does not require evaluation. Submissions are accepted automatically.",
+		"previous": "Previous",
+		"next": "Next",
+		"positionLabel": "{current} of {total}",
+		"navLabel": "Submission navigation"
 	},
 	"questionnaireSubmissionPage": {
 		"pageTitle": "{questionnaireName} - {eventName}",
@@ -6546,5 +6563,19 @@
 	"announcements.tabs.scheduled": "Scheduled",
 	"announcements.empty.scheduled": "No scheduled announcements",
 	"announcements.empty.scheduledDescription": "Announcements scheduled to send later will appear here.",
-	"announcements.schedule.kindLegend": "Schedule type"
+	"announcements.schedule.kindLegend": "Schedule type",
+	"eventGuestPrompt": {
+		"title": "Sign in to see more of this event",
+		"subtitle": "Some details are only visible to signed-in guests.",
+		"cta": "Sign in",
+		"expandLabel": "What you'll get access to",
+		"item_potluck": "Potluck coordination",
+		"item_potluckDesc": "See what others are bringing and add your own",
+		"item_announcements": "Announcements",
+		"item_announcementsDesc": "The latest updates from the organizer",
+		"item_attendees": "Who's coming",
+		"item_attendeesDesc": "The guest list for this event",
+		"item_dietary": "Dietary preferences",
+		"item_dietaryDesc": "Attendees' dietary needs and restrictions"
+	}
 }
