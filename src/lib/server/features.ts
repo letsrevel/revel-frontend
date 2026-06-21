@@ -23,7 +23,10 @@ export async function getFeatures(fetch: typeof globalThis.fetch): Promise<Featu
 
 	try {
 		const { data, error } = await apiApiVersion({ fetch });
-		const value = error || !data ? DEFAULT_FEATURES : resolveFeatures(data.features);
+		if (error || !data) {
+			return DEFAULT_FEATURES;
+		}
+		const value = resolveFeatures(data.features);
 		cache = { value, expiry: Date.now() + TTL_MS };
 		return value;
 	} catch {

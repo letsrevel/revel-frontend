@@ -85,7 +85,9 @@ export const actions: Actions = {
 		updateData.instagram_url = instagramUrl?.trim() || null;
 		updateData.facebook_url = facebookUrl?.trim() || null;
 		updateData.bluesky_url = blueskyUrl?.trim() || null;
-		updateData.telegram_url = telegramUrl?.trim() || null;
+		if (formData.has('telegram_url')) {
+			updateData.telegram_url = telegramUrl?.trim() || null;
+		}
 
 		try {
 			const { data, error: apiError } = await organizationadmincoreUpdateOrganization({
