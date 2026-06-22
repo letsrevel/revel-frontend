@@ -123,6 +123,7 @@
 		name: existingEvent?.name || '',
 		start: toDateTimeLocal(existingEvent?.start) || '',
 		end: toDateTimeLocal(existingEvent?.end) || '',
+		is_open_ended: existingEvent?.is_open_ended ?? false,
 		city_id: existingEvent?.city?.id || orgCity?.id || userCity?.id || null,
 		visibility: existingEvent?.visibility || 'public',
 		event_type: (existingEvent?.event_type as any) || ('public' as any), // Backend API has wrong enum type
@@ -439,6 +440,14 @@
 			}
 		}
 
+		if (!formData.is_open_ended) {
+			if (!formData.end) {
+				errors.end = m['essentialsStep.error_endRequired']();
+			} else if (formData.start && new Date(formData.end) <= new Date(formData.start)) {
+				errors.end = m['essentialsStep.error_endAfterStart']();
+			}
+		}
+
 		// Note: city_id validation moved to Step 2 (LocationSection)
 
 		validationErrors = errors;
@@ -485,7 +494,8 @@
 					event_type: (formData.event_type || 'public') as any,
 					// Include all other fields to prevent them from being reset
 					description: formData.description || null,
-					end: toISOString(formData.end),
+					end: formData.is_open_ended ? null : toISOString(formData.end),
+					is_open_ended: formData.is_open_ended ?? false,
 					address: formData.address || null,
 					address_visibility: formData.address_visibility || 'public',
 					rsvp_before: toISOString(formData.rsvp_before),
@@ -559,7 +569,8 @@
 			const updateData: Partial<EventEditSchema> = {
 				city_id: formData.city_id!, // Now required from LocationSection
 				description: formData.description || null,
-				end: toISOString(formData.end),
+				end: formData.is_open_ended ? null : toISOString(formData.end),
+				is_open_ended: formData.is_open_ended ?? false,
 				address: formData.address || null,
 				address_visibility: formData.address_visibility || 'public',
 				rsvp_before: toISOString(formData.rsvp_before),
