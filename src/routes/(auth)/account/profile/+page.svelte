@@ -65,6 +65,7 @@
 
 	// Check for redirect URL (used when coming from events that require profile completion)
 	const redirectUrl = $derived($page.url.searchParams.get('redirect'));
+	const features = $derived($page.data.features);
 
 	function startCooldown() {
 		resendCooldown = 60; // 60 second cooldown
@@ -622,7 +623,16 @@
 		<!-- Telegram Connection Section -->
 		<div class="mt-12" id="telegram-section">
 			<div class="border-t pt-8">
-				<TelegramConnectionManager authToken={authStore.accessToken} />
+				{#if features.telegram}
+					<TelegramConnectionManager authToken={authStore.accessToken} />
+				{:else}
+					<div
+						class="flex items-center gap-3 rounded-lg border border-dashed bg-muted/40 p-4 text-sm text-muted-foreground"
+					>
+						<Info class="h-4 w-4 shrink-0" aria-hidden="true" />
+						<span>{m['profile.telegramUnavailable']()}</span>
+					</div>
+				{/if}
 			</div>
 		</div>
 	{/if}

@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import type { LayoutServerLoad } from './$types';
 import { env as publicEnv } from '$env/dynamic/public';
 import { getImpersonationInfo } from '$lib/utils/impersonation';
+import { getFeatures } from '$lib/server/features';
 
 /**
  * Root layout server load function
@@ -30,7 +31,8 @@ import { getImpersonationInfo } from '$lib/utils/impersonation';
  * `/api/auth/session-token` instead of `/api/auth/refresh` (impersonation
  * sessions have no refresh cookie).
  */
-export const load: LayoutServerLoad = async ({ cookies, locals }) => {
+export const load: LayoutServerLoad = async ({ cookies, locals, fetch }) => {
+	const features = await getFeatures(fetch);
 	const accessToken = cookies.get('access_token');
 	const hasAccessToken = !!accessToken;
 	const hasRefreshToken = !!cookies.get('refresh_token');
@@ -58,6 +60,7 @@ export const load: LayoutServerLoad = async ({ cookies, locals }) => {
 			fingerprint,
 			impersonated
 		},
+		features,
 		siteVerification: {
 			google: publicEnv.PUBLIC_GOOGLE_SITE_VERIFICATION ?? '',
 			bing: publicEnv.PUBLIC_BING_SITE_VERIFICATION ?? ''

@@ -11,6 +11,7 @@
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
+	import { page } from '$app/stores';
 	import {
 		Mail,
 		Calendar,
@@ -91,6 +92,7 @@
 	}
 
 	const isAuthenticated = $derived(authStore.isAuthenticated);
+	const features = $derived($page.data.features);
 
 	// Landing page URLs based on current locale
 	// Landing pages are NOT paraglide-translated, they use /de/ and /it/ prefixes
@@ -742,22 +744,24 @@
 	</div>
 
 	<!-- Start Organizing CTA -->
-	<div class="rounded-lg border-2 border-primary bg-primary/5 p-8 text-center">
-		<h2 class="mb-4 text-3xl font-bold">{m['learnMore.startOrganizingTitle']()}</h2>
-		<p class="mx-auto mb-6 max-w-2xl text-lg text-muted-foreground">
-			{m['learnMore.startOrganizingDescription']()}
-		</p>
-		<a
-			href="/create-org"
-			class="inline-flex items-center gap-2 rounded-md bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-		>
-			<Building2 class="h-5 w-5" aria-hidden="true" />
-			{m['learnMore.startOrganizing']()}
-		</a>
-		<p class="mt-4 text-sm text-muted-foreground">
-			{m['learnMore.startOrganizingNote']()}
-		</p>
-	</div>
+	{#if features.organization_creation}
+		<div class="rounded-lg border-2 border-primary bg-primary/5 p-8 text-center">
+			<h2 class="mb-4 text-3xl font-bold">{m['learnMore.startOrganizingTitle']()}</h2>
+			<p class="mx-auto mb-6 max-w-2xl text-lg text-muted-foreground">
+				{m['learnMore.startOrganizingDescription']()}
+			</p>
+			<a
+				href="/create-org"
+				class="inline-flex items-center gap-2 rounded-md bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+			>
+				<Building2 class="h-5 w-5" aria-hidden="true" />
+				{m['learnMore.startOrganizing']()}
+			</a>
+			<p class="mt-4 text-sm text-muted-foreground">
+				{m['learnMore.startOrganizingNote']()}
+			</p>
+		</div>
+	{/if}
 </div>
 
 <!-- Fee Calculator Modal -->

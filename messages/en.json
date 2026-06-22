@@ -4304,7 +4304,8 @@
 		"settingsLink_text": "Configure notifications and location",
 		"settingsLink_ariaHidden": "→",
 		"completeToReturn": "Complete your profile to continue. You'll be redirected back after saving.",
-		"savedRedirecting": "Profile updated! Redirecting..."
+		"savedRedirecting": "Profile updated! Redirecting...",
+		"telegramUnavailable": "Telegram is not available on this instance."
 	},
 	"profilePage": {
 		"title": "Profile - Revel",

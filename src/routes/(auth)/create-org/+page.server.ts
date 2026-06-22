@@ -4,10 +4,17 @@ import { organizationCreateOrganization } from '$lib/api/generated/sdk.gen';
 import type { PageServerLoad } from './$types';
 import { extractErrorMessage } from '$lib/utils/errors';
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, parent }) => {
 	// Require authentication
 	if (!locals.user) {
 		throw redirect(303, '/login?returnUrl=/create-org');
+	}
+
+	// Hide create-org when the capability is disabled on this instance.
+	// Server stays the source of truth (POST still 403s); this avoids a dead end.
+	const { features } = await parent();
+	if (!features.organization_creation) {
+		throw redirect(303, '/dashboard');
 	}
 
 	return {
