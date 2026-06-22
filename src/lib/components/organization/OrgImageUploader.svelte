@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { AlertCircle } from 'lucide-svelte';
 	import ImageUploader from '$lib/components/forms/ImageUploader.svelte';
+	import { COVER_ASPECT_RATIO, LOGO_ASPECT_RATIO } from '$lib/utils/image-crop';
 	import { getBackendUrl } from '$lib/config/api';
 	import {
 		organizationadmincoreUploadLogo,
@@ -214,6 +215,9 @@
 			maxSize={5 * 1024 * 1024}
 			aspectRatio="square"
 			disabled={uploadingLogo}
+			crop
+			cropAspectRatio={LOGO_ASPECT_RATIO}
+			cropShape="rect"
 			onFileSelect={(file) => {
 				if (file) {
 					handleLogoFileSelect(file);
@@ -234,6 +238,9 @@
 			accept="image/*"
 			maxSize={10 * 1024 * 1024}
 			disabled={uploadingCover}
+			crop
+			cropAspectRatio={COVER_ASPECT_RATIO}
+			cropShape="rect"
 			onFileSelect={(file) => {
 				if (file) {
 					handleCoverFileSelect(file);

@@ -22,6 +22,7 @@
 		ExternalLink
 	} from 'lucide-svelte';
 	import ImageUploader from '$lib/components/forms/ImageUploader.svelte';
+	import { COVER_ASPECT_RATIO, LOGO_ASPECT_RATIO } from '$lib/utils/image-crop';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import EventQuestionnaireAssignmentModal from './EventQuestionnaireAssignmentModal.svelte';
 	import LocationSection from './LocationSection.svelte';
@@ -906,6 +907,9 @@
 					aspectRatio="square"
 					accept="image/jpeg,image/png,image/webp"
 					maxSize={5 * 1024 * 1024}
+					crop
+					cropAspectRatio={LOGO_ASPECT_RATIO}
+					cropShape="rect"
 					onFileSelect={(file) => {
 						if (file) handleLogoFileSelect(file);
 						else handleRemoveLogo();
@@ -923,6 +927,9 @@
 					aspectRatio="wide"
 					accept="image/jpeg,image/png,image/webp"
 					maxSize={5 * 1024 * 1024}
+					crop
+					cropAspectRatio={COVER_ASPECT_RATIO}
+					cropShape="rect"
 					onFileSelect={(file) => {
 						if (file) handleCoverArtFileSelect(file);
 						else handleRemoveCoverArt();
