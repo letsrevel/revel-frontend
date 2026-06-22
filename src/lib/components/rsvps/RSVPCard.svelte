@@ -4,7 +4,7 @@
 	import { Card } from '$lib/components/ui/card';
 	import { Calendar, MapPin, CheckCircle2, XCircle, HelpCircle } from 'lucide-svelte';
 	import { getImageUrl } from '$lib/utils/url';
-	import { formatEventDateRange } from '$lib/utils/date';
+	import { formatEventDate, formatEventDateRange } from '$lib/utils/date';
 	import {
 		getEventLogo,
 		getEventLogoThumbnail,
@@ -33,6 +33,9 @@
 	// Format event date
 	const eventDate = $derived.by(() => {
 		if (!rsvp.event.start) return null;
+		if (rsvp.event.is_open_ended) {
+			return `${formatEventDate(rsvp.event.start)} · ${m['eventDetails.openEnded']()}`;
+		}
 		return formatEventDateRange(rsvp.event.start, rsvp.event.end || rsvp.event.start);
 	});
 
