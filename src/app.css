@@ -93,6 +93,33 @@
 	}
 }
 
+/* ProseMirror / Tiptap WYSIWYG editor base styles (CSP-safe: bundled, not injected) */
+.ProseMirror {
+	outline: none;
+	min-height: inherit;
+}
+/*
+ * Placeholder text via ::before pseudo-element.
+ * Tiptap Placeholder extension (v3) sets:
+ *   - class="is-empty"              on the focused empty paragraph
+ *   - class="is-empty is-editor-empty"  additionally when the whole doc is empty
+ *   - data-placeholder="…"         on the same element
+ * We target both cases so the placeholder shows on any focused empty paragraph.
+ */
+.ProseMirror p.is-editor-empty:first-child::before,
+.ProseMirror p.is-empty::before {
+	content: attr(data-placeholder);
+	color: hsl(var(--muted-foreground));
+	float: left;
+	height: 0;
+	pointer-events: none;
+}
+
+/* MarkdownEditor WYSIWYG surface: min-height set via CSSOM (CSP-safe) */
+.markdown-editor-surface {
+	min-height: var(--editor-min-h, 9rem);
+}
+
 /* Landscape orientation optimizations for mobile */
 @media (max-height: 500px) and (orientation: landscape) {
 	/* Reduce header height in landscape */

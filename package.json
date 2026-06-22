@@ -69,6 +69,11 @@
 	},
 	"dependencies": {
 		"@tanstack/svelte-query": "^6.0.3",
+		"@tiptap/core": "^3.27.1",
+		"@tiptap/extension-hard-break": "^3.27.1",
+		"@tiptap/extension-placeholder": "^3.27.1",
+		"@tiptap/markdown": "^3.27.1",
+		"@tiptap/starter-kit": "^3.27.1",
 		"clsx": "^2.1.1",
 		"date-fns": "^4.1.0",
 		"heic2any": "^0.0.4",

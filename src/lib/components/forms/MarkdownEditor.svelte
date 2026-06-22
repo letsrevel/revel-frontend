@@ -1,44 +1,22 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
+	import type { Editor } from '@tiptap/core';
 	import * as m from '$lib/paraglide/messages.js';
 	import { cn } from '$lib/utils/cn';
-	import { Eye, EyeOff, Bold, Italic, Link as LinkIcon, List } from 'lucide-svelte';
+	import EditorToolbar from './editor/EditorToolbar.svelte';
+	import LinkDialog from './editor/LinkDialog.svelte';
 
-	/**
-	 * MarkdownEditor Component
-	 *
-	 * A textarea with markdown preview and formatting toolbar.
-	 * Uses basic HTML conversion for preview (safe for common markdown).
-	 *
-	 * @example
-	 * ```svelte
-	 * <MarkdownEditor
-	 *   bind:value={description}
-	 *   label="Event Description"
-	 *   placeholder="Describe your event..."
-	 *   rows={8}
-	 * />
-	 * ```
-	 */
 	interface Props {
-		/** Markdown content */
 		value?: string;
-		/** Unique identifier for the textarea */
 		id?: string;
-		/** Label text displayed above the editor */
 		label?: string;
-		/** Placeholder text */
 		placeholder?: string;
-		/** Number of textarea rows */
 		rows?: number;
-		/** Whether the field is required */
 		required?: boolean;
-		/** Whether the field is disabled */
 		disabled?: boolean;
-		/** Error message to display */
 		error?: string;
-		/** Additional CSS classes */
 		class?: string;
-		/** Callback fired when value changes */
 		onValueChange?: (value: string) => void;
 	}
 
@@ -55,199 +33,184 @@
 		onValueChange
 	}: Props = $props();
 
-	// Generate unique ID if not provided
-	const inputId = $derived(id || `markdown-${Math.random().toString(36).substr(2, 9)}`);
+	// State
+	let editor = $state<Editor | undefined>();
+	let element = $state<HTMLDivElement | undefined>();
+	let sourceMode = $state(false);
+	let linkOpen = $state(false);
+	let linkInitial = $state({ url: '', text: '' });
+	// Echo-loop guard: track the markdown we last emitted so external value
+	// changes (≠ our own output) re-sync the editor, but our own edits don't.
+	let lastEmitted = '';
 
-	// Preview visibility state
-	let showPreview = $state(false);
+	// Derived
+	const inputId = $derived(id || `markdown-${Math.random().toString(36).slice(2, 11)}`);
 
-	// Reference to textarea for formatting operations
-	let textarea = $state<HTMLTextAreaElement>();
-
-	function handleInput(event: Event): void {
-		const target = event.target as HTMLTextAreaElement;
-		value = target.value;
-		onValueChange?.(target.value);
+	// Functions
+	function emit(next: string): void {
+		lastEmitted = next;
+		value = next;
+		onValueChange?.(next);
 	}
 
-	/**
-	 * Simple markdown to HTML converter
-	 * Handles basic markdown syntax safely
-	 */
-	function convertMarkdownToHtml(markdown: string): string {
-		if (!markdown)
-			return `<p class="text-muted-foreground">${m['markdownEditor.nothingToPreview']()}</p>`;
-
-		let html = markdown;
-
-		// Escape HTML to prevent XSS
-		html = html
-			.replace(/&/g, '&amp;')
-			.replace(/</g, '&lt;')
-			.replace(/>/g, '&gt;')
-			.replace(/"/g, '&quot;')
-			.replace(/'/g, '&#039;');
-
-		// Headers
-		html = html.replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>');
-		html = html.replace(/^## (.*$)/gim, '<h2 class="text-xl font-bold mt-6 mb-3">$1</h2>');
-		html = html.replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mt-8 mb-4">$1</h1>');
-
-		// Bold and Italic
-		html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
-		html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-		html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
-
-		// Links
-		html = html.replace(
-			/\[([^\]]+)\]\(([^)]+)\)/g,
-			'<a href="$2" class="text-primary underline" target="_blank" rel="noopener noreferrer">$1</a>'
-		);
-
-		// Unordered lists
-		html = html.replace(/^\* (.+)$/gim, '<li class="ml-4">$1</li>');
-		html = html.replace(/(<li class="ml-4">.*<\/li>)/s, '<ul class="list-disc my-2">$1</ul>');
-
-		// Ordered lists
-		html = html.replace(/^\d+\. (.+)$/gim, '<li class="ml-4">$1</li>');
-
-		// Line breaks
-		html = html.replace(/\n\n/g, '</p><p class="mb-2">');
-		html = html.replace(/\n/g, '<br>');
-
-		// Wrap in paragraph
-		html = `<p class="mb-2">${html}</p>`;
-
-		return html;
+	function handleSourceInput(e: Event): void {
+		emit((e.target as HTMLTextAreaElement).value);
 	}
 
-	const htmlPreview = $derived(convertMarkdownToHtml(value));
-
-	/**
-	 * Insert markdown formatting at cursor position
-	 */
-	function insertFormatting(before: string, after = ''): void {
-		if (!textarea) return;
-
-		const start = textarea.selectionStart;
-		const end = textarea.selectionEnd;
-		const selectedText = value.substring(start, end);
-		const newText =
-			value.substring(0, start) + before + selectedText + after + value.substring(end);
-
-		value = newText;
-		onValueChange?.(newText);
-
-		// Restore cursor position
-		setTimeout(() => {
-			textarea?.focus();
-			const newCursorPos = start + before.length + selectedText.length;
-			textarea?.setSelectionRange(newCursorPos, newCursorPos);
-		}, 0);
+	function openLink(): void {
+		const prev = editor?.getAttributes('link')?.href ?? '';
+		const { from, to } = editor?.state.selection ?? { from: 0, to: 0 };
+		const selected = editor?.state.doc.textBetween(from, to, ' ') ?? '';
+		linkInitial = { url: prev, text: selected };
+		linkOpen = true;
 	}
 
-	function togglePreview(): void {
-		showPreview = !showPreview;
+	function exitSource(): void {
+		sourceMode = false;
+		if (editor) {
+			// Force the external-sync $effect to re-run by temporarily clearing lastEmitted.
+			// Without this, value === lastEmitted (set by emit() during source editing) so
+			// the $effect guard skips the setContent and the WYSIWYG view shows stale content.
+			lastEmitted = '';
+			editor.commands.setContent(value, { contentType: 'markdown', emitUpdate: false });
+			lastEmitted = value;
+		}
 	}
+
+	function applyLink({ url, text }: { url: string; text: string }): void {
+		if (!editor) return;
+		const { from, to } = editor.state.selection;
+		editor
+			.chain()
+			.focus()
+			.insertContentAt({ from, to }, text)
+			.setTextSelection({ from, to: from + text.length })
+			.setLink({ href: url })
+			.run();
+	}
+
+	// Effects
+	onMount(() => {
+		if (!browser || !element) return;
+		let active = true;
+		let ed: Editor | undefined;
+		(async () => {
+			const { Editor } = await import('@tiptap/core');
+			const { createEditorExtensions } = await import('./editor/tiptap-config');
+			if (!active || !element) return;
+			ed = new Editor({
+				element,
+				injectCSS: false, // CSP: no runtime <style>
+				editable: !disabled,
+				extensions: createEditorExtensions(placeholder),
+				editorProps: {
+					attributes: {
+						'aria-multiline': 'true',
+						...(label
+							? { 'aria-labelledby': `${inputId}-label` }
+							: { 'aria-label': placeholder || m['markdownEditor.placeholderDefault']() })
+					}
+				},
+				onCreate: ({ editor: e }) => {
+					// Suppress the update event so mounting doesn't mark pristine forms dirty
+					e.commands.setContent(value, { contentType: 'markdown', emitUpdate: false });
+					lastEmitted = value;
+					// Apply dynamic height via CSSOM (CSP-safe; inline style= attr is blocked by nonce policy)
+					if (element) {
+						element.style.setProperty('--editor-min-h', `${rows * 1.5}rem`);
+					}
+				},
+				onUpdate: ({ editor: e }) => emit(e.getMarkdown())
+			});
+			editor = ed;
+		})();
+		return () => {
+			active = false;
+			ed?.destroy();
+		};
+	});
+
+	// External value changes → re-sync editor (guarded against our own emits)
+	$effect(() => {
+		const v = value;
+		if (editor && v !== lastEmitted && !sourceMode) {
+			lastEmitted = v;
+			editor.commands.setContent(v, { contentType: 'markdown', emitUpdate: false });
+		}
+	});
+
+	// Reflect disabled into the live editor (emitUpdate=false: no spurious update event on mount)
+	$effect(() => {
+		editor?.setEditable(!disabled, false);
+	});
+
+	// Keep the editor DOM's ARIA attributes in sync when label/error change after mount.
+	$effect(() => {
+		const dom = editor?.view?.dom as HTMLElement | undefined;
+		if (!dom) return;
+		dom.setAttribute('aria-multiline', 'true');
+		if (label) {
+			dom.setAttribute('aria-labelledby', `${inputId}-label`);
+			dom.removeAttribute('aria-label');
+		} else {
+			dom.setAttribute('aria-label', placeholder || m['markdownEditor.placeholderDefault']());
+			dom.removeAttribute('aria-labelledby');
+		}
+		if (error) {
+			dom.setAttribute('aria-invalid', 'true');
+			dom.setAttribute('aria-describedby', `${inputId}-error`);
+		} else {
+			dom.removeAttribute('aria-invalid');
+			dom.removeAttribute('aria-describedby');
+		}
+	});
 </script>
 
 <div class={cn('space-y-2', className)}>
 	{#if label}
-		<div class="flex items-center justify-between">
-			<label for={inputId} class="block text-sm font-medium text-gray-900 dark:text-gray-100">
-				{label}
-				{#if required}
-					<span class="text-destructive" aria-label={m['markdownEditor.required']()}>*</span>
-				{/if}
-			</label>
-
-			<button
-				type="button"
-				onclick={togglePreview}
-				class="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-gray-900 dark:hover:text-gray-100"
-				aria-label={showPreview
-					? m['markdownEditor.hidePreviewAriaLabel']()
-					: m['markdownEditor.showPreviewAriaLabel']()}
-			>
-				{#if showPreview}
-					<EyeOff class="h-4 w-4" aria-hidden="true" />
-					<span>{m['markdownEditor.hidePreview']()}</span>
-				{:else}
-					<Eye class="h-4 w-4" aria-hidden="true" />
-					<span>{m['markdownEditor.preview']()}</span>
-				{/if}
-			</button>
-		</div>
+		<label
+			id="{inputId}-label"
+			for={editor && !sourceMode ? undefined : inputId}
+			class="block text-sm font-medium text-gray-900 dark:text-gray-100"
+		>
+			{label}
+			{#if required}<span class="text-destructive" aria-label={m['markdownEditor.required']()}
+					>*</span
+				>{/if}
+		</label>
 	{/if}
 
-	<!-- Formatting Toolbar -->
-	{#if !showPreview && !disabled}
-		<div
-			class="flex flex-wrap gap-1 rounded-md border border-gray-300 bg-gray-50 p-2 dark:border-gray-600 dark:bg-gray-800"
-			role="toolbar"
-			aria-label={m['markdownEditor.toolbarAriaLabel']()}
-		>
-			<button
-				type="button"
-				onclick={() => insertFormatting('**', '**')}
-				class="rounded p-1.5 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
-				aria-label={m['markdownEditor.bold']()}
-				title={m['markdownEditor.bold']()}
-			>
-				<Bold class="h-4 w-4" aria-hidden="true" />
-			</button>
-
-			<button
-				type="button"
-				onclick={() => insertFormatting('*', '*')}
-				class="rounded p-1.5 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
-				aria-label={m['markdownEditor.italic']()}
-				title={m['markdownEditor.italic']()}
-			>
-				<Italic class="h-4 w-4" aria-hidden="true" />
-			</button>
-
-			<button
-				type="button"
-				onclick={() => insertFormatting('[](url)', '')}
-				class="rounded p-1.5 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
-				aria-label={m['markdownEditor.insertLink']()}
-				title={m['markdownEditor.insertLink']()}
-			>
-				<LinkIcon class="h-4 w-4" aria-hidden="true" />
-			</button>
-
-			<button
-				type="button"
-				onclick={() => insertFormatting('* ', '')}
-				class="rounded p-1.5 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
-				aria-label={m['markdownEditor.insertList']()}
-				title={m['markdownEditor.insertList']()}
-			>
-				<List class="h-4 w-4" aria-hidden="true" />
-			</button>
-
-			<div class="ml-auto self-center text-xs text-muted-foreground">
-				{m['markdownEditor.markdownSupported']()}
-			</div>
-		</div>
+	{#if editor && !sourceMode}
+		<EditorToolbar
+			{editor}
+			{disabled}
+			onToggleSource={() => (sourceMode = true)}
+			onInsertLink={openLink}
+		/>
 	{/if}
 
-	<!-- Editor / Preview -->
-	{#if showPreview}
+	{#if browser}
+		<!-- WYSIWYG surface. Kept mounted (toggled via CSS, not {#if}) so switching to
+		     source mode and back doesn't orphan the Tiptap view from its DOM node. -->
 		<div
-			class="prose prose-sm max-w-none rounded-md border-2 border-gray-300 bg-white p-3 dark:prose-invert dark:border-gray-600 dark:bg-gray-800"
-			style="min-height: {rows * 1.5}rem"
-		>
-			{@html htmlPreview}
-		</div>
-	{:else}
+			bind:this={element}
+			class={cn(
+				'markdown-editor-surface prose prose-sm max-w-none rounded-md border-2 px-3 py-2 dark:prose-invert',
+				'focus-within:border-primary focus-within:ring-2 focus-within:ring-primary',
+				error ? 'border-destructive' : 'border-gray-300 dark:border-gray-600',
+				disabled && 'cursor-not-allowed opacity-50'
+			)}
+			class:hidden={!editor || sourceMode}
+		></div>
+	{/if}
+
+	{#if !editor || sourceMode}
+		<!-- SSR / no-JS / source-mode fallback -->
 		<textarea
-			bind:this={textarea}
-			{id}
+			id={inputId}
 			name={inputId}
 			bind:value
-			oninput={handleInput}
+			oninput={handleSourceInput}
 			{placeholder}
 			{rows}
 			{required}
@@ -255,21 +218,36 @@
 			aria-invalid={!!error}
 			aria-describedby={error ? `${inputId}-error` : undefined}
 			class={cn(
-				'flex w-full resize-y rounded-md border-2 px-3 py-2 text-sm transition-colors',
+				'w-full resize-y rounded-md border-2 px-3 py-2 text-sm',
 				'bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100',
 				'placeholder:text-muted-foreground',
 				'focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
 				'disabled:cursor-not-allowed disabled:opacity-50',
-				error
-					? 'border-destructive focus:border-destructive focus:ring-destructive'
-					: 'border-gray-300 dark:border-gray-600'
+				error ? 'border-destructive' : 'border-gray-300 dark:border-gray-600'
 			)}
 		></textarea>
+		{#if sourceMode && editor}
+			<button
+				type="button"
+				class="text-sm text-muted-foreground underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+				onclick={exitSource}
+			>
+				{m['markdownEditor.exitSource']()}
+			</button>
+		{/if}
 	{/if}
 
 	{#if error}
-		<p id="{inputId}-error" class="text-sm text-destructive" role="alert">
-			{error}
-		</p>
+		<p id="{inputId}-error" class="text-sm text-destructive" role="alert">{error}</p>
+	{/if}
+
+	{#if editor}
+		<LinkDialog
+			bind:open={linkOpen}
+			initialUrl={linkInitial.url}
+			initialText={linkInitial.text}
+			onApply={applyLink}
+			onClose={() => (linkOpen = false)}
+		/>
 	{/if}
 </div>
