@@ -1,15 +1,16 @@
 <script lang="ts">
-	import { PUBLIC_VERSION } from '$env/static/public';
+	import { env } from '$env/dynamic/public';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { Github, Bug, Info } from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import * as Tooltip from '$lib/components/ui/tooltip';
 
-	// Frontend version from build-time environment variable (set in Dockerfile)
-	// Falls back to 'dev' for local development
-	// Remove leading 'v' if present since we add it in the template
-	const FRONTEND_VERSION = PUBLIC_VERSION ? PUBLIC_VERSION.replace(/^v/, '') : 'dev';
+	// Frontend version from environment variable (set in Dockerfile).
+	// Read via $env/dynamic/public so it has no compile-time requirement —
+	// a checkout without a populated .env still type-checks and falls back to 'dev'.
+	// Remove leading 'v' if present since we add it in the template.
+	const FRONTEND_VERSION = env.PUBLIC_VERSION ? env.PUBLIC_VERSION.replace(/^v/, '') : 'dev';
 	const FRONTEND_REPO = 'https://github.com/letsrevel/revel-frontend';
 	const BACKEND_REPO = 'https://github.com/letsrevel/revel-backend';
 

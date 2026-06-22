@@ -43,7 +43,8 @@ jobs:
           # Load into the local Docker daemon so the scan step can read it.
           load: true
           # PUBLIC_API_URL and ORIGIN are set at RUNTIME (see #396), not baked at
-          # build time. Only PUBLIC_VERSION is embedded into the bundle.
+          # build time. PUBLIC_VERSION is passed as a build arg and baked into the
+          # image's runtime ENV, read via $env/dynamic/public at runtime (#493).
           build-args: |
             PUBLIC_VERSION=${{ env.VERSION }}
           tags: |

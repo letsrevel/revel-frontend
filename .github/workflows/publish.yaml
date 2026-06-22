@@ -29,8 +29,10 @@ jobs:
 
       # One image for all deployments. PUBLIC_API_URL and ORIGIN are set at
       # RUNTIME (#396), so they are not build args; demo/prod differ only by the
-      # runtime env in their respective compose files. Only PUBLIC_VERSION (shown
-      # in the footer) is embedded at build time.
+      # runtime env in their respective compose files. PUBLIC_VERSION (shown in
+      # the footer) is known only at release time, so it is passed as a build arg
+      # and baked into the image's runtime ENV — read at runtime via
+      # $env/dynamic/public (#493), not inlined into the JS bundle.
       - name: Build and push Docker image
         uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
         with:
