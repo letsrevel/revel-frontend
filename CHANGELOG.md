@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.62.0] - 2026-06-22
+
 ### Added
 - **Organization financials**: new owner-only Financials page (`/org/{slug}/admin/financials`) showing revenue, refunds, net income, and per-VAT-rate breakdowns by currency and event, with year/quarter/month period filtering, sorting, and a multi-currency switcher.
   - On-demand revenue & VAT report download (`RevenueReportButton`) scoped to the selected period.
@@ -14,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Per-event revenue card now shows the same VAT/net-taxable/rate-bucket breakdown.
 - **Event schedule / timeline**: events can display a session timeline (start/end times in the event's timezone, location, description, and a Required badge) on the public page, with an inline editor for organizers to add repeatable sessions.
 - **WYSIWYG description editor**: the raw-markdown editor across all description fields (events, orgs, tiers, questionnaires, polls, resources, venues, profiles, announcements) is now a rich-text editor with a formatting toolbar (bold, italic, strikethrough, headings, lists, blockquote, code), a link-insertion dialog, and a visual/source toggle.
+- **Image cropping for all uploads**: event, organization, and event-series logos and cover/banner images now open a crop-and-reposition modal before upload (previously only profile pictures), so you control the framing instead of the server auto-cropping. Cropped logos preserve PNG transparency.
 - **French (`fr`) language support**: full French translation catalog, language switcher option, and French SEO landing pages.
 - **Top-level org-admin Tickets tab**: ticket management is reachable without drilling into a specific event, via a picker of ticketed events (auto-redirects when there is a single active ticketed event).
 - **Open-ended events**: an explicit "Open-ended event" checkbox replaces the misleading "leave blank" copy; when off, an end time is required. Open-ended events show the start plus an "Open-ended" hint everywhere (detail, header, calendar, admin list, RSVP card, recurring-series templates).
@@ -42,12 +45,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Authenticated landing page now leads with a Dashboard CTA; "Browse Events" is secondary.
 - Discount-code delete now distinguishes hard-deleting unused codes from deactivating used ones, with matching icons, confirm copy, and toasts.
 - Roughly 1,265 previously-hardcoded user-facing strings across the app are now translated (en/de/it/fr).
+- The image cropper now has a draggable zoom slider in place of the +/− zoom buttons, and its rotate controls were removed.
+- The home page's multi-language highlight now lists French alongside English, German, and Italian.
 
 ### Fixed
 - The navbar now reflects login immediately after signing in (including 2FA), without needing a manual page refresh.
 - Eliminated the light-mode flash (FOUC) that dark-mode users saw on initial load and navigation in production.
 - Single-ticket checkout no longer fails when the buyer's display name is empty (falls back to a localized "Guest" placeholder).
 - Ticket expiration countdown is now announced to screen-reader and keyboard users (was hover-only).
+- The language picker now closes when you click elsewhere on the page or press Escape, not only via its toggle or selecting a language.
 
 ## [1.61.1] - 2026-06-14
 
