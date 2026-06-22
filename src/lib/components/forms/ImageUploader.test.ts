@@ -247,15 +247,15 @@ describe('ImageUploader crop mode', () => {
 	beforeEach(() => {
 		global.FileReader = class FileReader {
 			readAsDataURL = vi.fn();
-			onloadend: ((this: FileReader, ev: ProgressEvent) => any) | null = null;
+			onloadend: ((this: FileReader, ev: ProgressEvent) => void) | null = null;
 			result: string | ArrayBuffer | null = 'data:image/png;base64,test';
 			constructor() {
 				setTimeout(() => this.onloadend?.({} as ProgressEvent), 0);
 			}
-		} as any;
+		} as unknown as typeof FileReader;
 	});
 
-	function selectFile() {
+	function selectFile(): void {
 		const input = document.querySelector('input[type="file"]') as HTMLInputElement;
 		const file = new File(['x'], 'pic.png', { type: 'image/png' });
 		Object.defineProperty(input, 'files', { value: [file], configurable: true });
@@ -296,5 +296,20 @@ describe('ImageUploader crop mode', () => {
 		(await screen.findByTestId('cropper-cancel')).click();
 		await tick();
 		expect(onFileSelect).not.toHaveBeenCalled();
+	});
+
+	it('rejects a cropped file whose type no longer matches accept', async () => {
+		const onFileSelect = vi.fn();
+		// Original pic.png passes png-only accept; the cropper stub emits image/jpeg,
+		// which must be re-validated and rejected rather than silently emitted.
+		render(ImageUploader, {
+			props: { label: 'Logo', crop: true, accept: 'image/png', onFileSelect }
+		});
+		selectFile();
+		await tick();
+		(await screen.findByTestId('cropper-save')).click();
+		await tick();
+		expect(onFileSelect).not.toHaveBeenCalled();
+		expect(screen.getByRole('alert')).toBeInTheDocument();
 	});
 });

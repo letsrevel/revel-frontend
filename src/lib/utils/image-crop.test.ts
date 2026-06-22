@@ -22,6 +22,19 @@ describe('computeCropOutputSize', () => {
 		expect(Number.isInteger(out.width)).toBe(true);
 		expect(Number.isInteger(out.height)).toBe(true);
 		expect(out.width).toBe(500);
+		expect(out.height).toBe(167);
+	});
+
+	it('clamps to a minimum of 1px for degenerate input', () => {
+		expect(computeCropOutputSize({ x: 0, y: 0, width: 0, height: 0 }, 1200)).toEqual({
+			width: 1,
+			height: 1
+		});
+		// maxOutputSize <= 0 must not yield a zero-area canvas
+		expect(computeCropOutputSize({ x: 0, y: 0, width: 800, height: 600 }, 0)).toEqual({
+			width: 1,
+			height: 1
+		});
 	});
 
 	it('exposes the canonical aspect ratios', () => {

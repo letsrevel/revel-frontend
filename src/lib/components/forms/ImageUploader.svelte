@@ -174,6 +174,15 @@
 		const baseName = original?.name?.replace(/\.[^.]+$/, '') ?? 'image';
 		const cropped = new File([blob], `${baseName}-cropped.${ext}`, { type: blob.type });
 
+		// Re-validate: cropping transcodes the file, so its MIME type and size can
+		// differ from the original that passed validation before the cropper opened.
+		const validationError = validateFile(cropped);
+		if (validationError) {
+			error = validationError;
+			if (fileInput) fileInput.value = '';
+			return;
+		}
+
 		value = cropped;
 		previewRemoved = false;
 		onFileSelect?.(cropped);

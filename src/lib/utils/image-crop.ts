@@ -15,6 +15,8 @@ export const LOGO_ASPECT_RATIO = 1;
 /**
  * Output canvas size for a cropped image: preserve the crop's aspect ratio,
  * cap the longest side at `maxOutputSize`, never upscale, round to whole pixels.
+ * Dimensions are clamped to a minimum of 1px so degenerate input can never
+ * produce a zero-area canvas (which would make `canvas.toBlob` fail downstream).
  */
 export function computeCropOutputSize(
 	pixels: CropPixels,
@@ -23,7 +25,7 @@ export function computeCropOutputSize(
 	const longest = Math.max(pixels.width, pixels.height);
 	const scale = longest > maxOutputSize ? maxOutputSize / longest : 1;
 	return {
-		width: Math.round(pixels.width * scale),
-		height: Math.round(pixels.height * scale)
+		width: Math.max(1, Math.round(pixels.width * scale)),
+		height: Math.max(1, Math.round(pixels.height * scale))
 	};
 }
