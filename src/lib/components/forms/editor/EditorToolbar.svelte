@@ -23,7 +23,7 @@
 		onToggleSource: () => void;
 		onInsertLink: () => void;
 	}
-	let { editor, disabled = false, onToggleSource, onInsertLink }: Props = $props();
+	const { editor, disabled = false, onToggleSource, onInsertLink }: Props = $props();
 
 	type Cmd = {
 		key: string;
