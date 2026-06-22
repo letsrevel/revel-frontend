@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { cn } from '$lib/utils/cn';
 	import { Upload, X } from 'lucide-svelte';
+	import ImageCropperModal from '$lib/components/common/ImageCropperModal.svelte';
 
 	/**
 	 * ImageUploader Component
@@ -44,6 +45,12 @@
 		aspectRatio?: 'square' | 'wide';
 		/** Callback fired when file is selected */
 		onFileSelect?: (file: File | null) => void;
+		/** Route selected files through the cropper before emitting */
+		crop?: boolean;
+		/** Crop aspect ratio (width/height) when crop is enabled */
+		cropAspectRatio?: number;
+		/** Crop shape when crop is enabled */
+		cropShape?: 'rect' | 'round';
 	}
 
 	let {
@@ -58,7 +65,10 @@
 		error,
 		class: className,
 		aspectRatio = 'wide',
-		onFileSelect
+		onFileSelect,
+		crop = false,
+		cropAspectRatio = 1,
+		cropShape = 'rect'
 	}: Props = $props();
 
 	// Generate unique ID if not provided
@@ -72,6 +82,10 @@
 
 	// Track preview URL from file selection
 	let selectedFilePreview = $state<string | null>(null);
+
+	// Cropper state (only used when `crop` is true)
+	let showCropper = $state(false);
+	let fileToCrop = $state<File | null>(null);
 
 	// File input reference
 	let fileInput: HTMLInputElement;
@@ -131,6 +145,12 @@
 			return;
 		}
 
+		if (crop) {
+			fileToCrop = file;
+			showCropper = true;
+			return;
+		}
+
 		value = file;
 		previewRemoved = false;
 		onFileSelect?.(file);
@@ -141,6 +161,37 @@
 			selectedFilePreview = reader.result as string;
 		};
 		reader.readAsDataURL(file);
+	}
+
+	function handleCropSave(blob: Blob) {
+		const original = fileToCrop;
+		showCropper = false;
+		fileToCrop = null;
+		const ext = outputFormatExt(blob.type) ?? 'jpg';
+		const baseName = original?.name?.replace(/\.[^.]+$/, '') ?? 'image';
+		const cropped = new File([blob], `${baseName}-cropped.${ext}`, { type: blob.type });
+
+		value = cropped;
+		previewRemoved = false;
+		onFileSelect?.(cropped);
+
+		const reader = new FileReader();
+		reader.onloadend = () => {
+			selectedFilePreview = reader.result as string;
+		};
+		reader.readAsDataURL(cropped);
+	}
+
+	function handleCropCancel() {
+		showCropper = false;
+		fileToCrop = null;
+		if (fileInput) fileInput.value = '';
+	}
+
+	function outputFormatExt(mime: string): string | null {
+		if (mime === 'image/png') return 'png';
+		if (mime === 'image/jpeg') return 'jpg';
+		return null;
 	}
 
 	// Handle input change
@@ -312,3 +363,13 @@
 		</p>
 	{/if}
 </div>
+
+{#if showCropper && fileToCrop}
+	<ImageCropperModal
+		file={fileToCrop}
+		aspectRatio={cropAspectRatio}
+		shape={cropShape}
+		onSave={handleCropSave}
+		onCancel={handleCropCancel}
+	/>
+{/if}
