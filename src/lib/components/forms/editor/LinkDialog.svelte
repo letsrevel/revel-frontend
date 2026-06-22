@@ -87,7 +87,7 @@
 			<!-- Fix M3: Cancel only sets open = false; onClose fires via onOpenChange -->
 			<Button
 				variant="outline"
-				onclick={() => (open = false)}>{m['markdownEditor.cancel']()}</Button
+				onclick={() => (open = false)}>{m['common.cancel']()}</Button
 			>
 			<Button onclick={apply}>{m['markdownEditor.linkApply']()}</Button>
 		</Dialog.Footer>
