@@ -181,8 +181,9 @@
 		<EditorToolbar {editor} {disabled} onToggleSource={() => (sourceMode = true)} onInsertLink={openLink} />
 	{/if}
 
-	{#if browser && !sourceMode}
-		<!-- WYSIWYG surface; hidden until enhanced, falls back to textarea below -->
+	{#if browser}
+		<!-- WYSIWYG surface. Kept mounted (toggled via CSS, not {#if}) so switching to
+		     source mode and back doesn't orphan the Tiptap view from its DOM node. -->
 		<div
 			bind:this={element}
 			class={cn(
@@ -191,7 +192,7 @@
 				error ? 'border-destructive' : 'border-gray-300 dark:border-gray-600',
 				disabled && 'cursor-not-allowed opacity-50'
 			)}
-			class:hidden={!editor}
+			class:hidden={!editor || sourceMode}
 		></div>
 	{/if}
 
