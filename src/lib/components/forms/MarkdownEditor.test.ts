@@ -51,7 +51,7 @@ describe('MarkdownEditor (contract)', () => {
 
 		// Let the async editor mount settle (dynamic import in onMount).
 		// In jsdom there is no real Tiptap editor, so we just wait a tick.
-		await waitFor(() => {}, { timeout: 200 });
+		await new Promise((resolve) => setTimeout(resolve, 50));
 
 		// Clear any calls made during initial render (textarea oninput is not fired here).
 		onValueChange.mockClear();
