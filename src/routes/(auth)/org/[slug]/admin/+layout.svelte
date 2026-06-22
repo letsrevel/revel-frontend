@@ -68,6 +68,10 @@
 		...(data.isOwner
 			? [
 					{
+						href: `/org/${data.organization.slug}/admin/financials`,
+						label: m['orgAdmin.nav.financials']()
+					},
+					{
 						href: `/org/${data.organization.slug}/admin/billing`,
 						label: m['orgAdmin.nav.billing'](),
 						badge:

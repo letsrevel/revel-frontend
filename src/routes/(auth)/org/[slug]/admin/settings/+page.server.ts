@@ -46,6 +46,9 @@ export const actions: Actions = {
 		const contactMethodRaw = formData.get('contact_method') as string | null;
 		const contactMethod: 'none' | 'email' | 'form' =
 			contactMethodRaw === 'email' || contactMethodRaw === 'form' ? contactMethodRaw : 'none';
+		const cadenceRaw = formData.get('revenue_report_cadence') as string | null;
+		const revenueReportCadence: 'none' | 'quarterly' | 'monthly' =
+			cadenceRaw === 'quarterly' || cadenceRaw === 'monthly' ? cadenceRaw : 'none';
 		const slug = params.slug;
 
 		// Social media fields
@@ -58,7 +61,8 @@ export const actions: Actions = {
 		const updateData: any = {
 			visibility,
 			accept_membership_requests: acceptNewMembers,
-			contact_method: contactMethod
+			contact_method: contactMethod,
+			revenue_report_cadence: revenueReportCadence
 		};
 
 		// Add optional fields only if they have values
