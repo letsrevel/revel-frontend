@@ -101,7 +101,11 @@
 						<time datetime={event.start} class="block font-medium">
 							{formatEventDate(event.start, event.timezone, false)}
 						</time>
-						{#if event.end}
+						{#if event.is_open_ended}
+							<span class="block text-sm text-muted-foreground">
+								{m['eventDetails.openEnded']()}
+							</span>
+						{:else if event.end}
 							<time datetime={event.end} class="block text-sm text-muted-foreground">
 								{m['eventDetails.dateTime_ends']()}
 								{formatEventDate(event.end, event.timezone, false)}
