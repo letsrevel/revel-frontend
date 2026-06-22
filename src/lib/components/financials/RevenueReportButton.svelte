@@ -77,9 +77,13 @@
 			if (isReady(response.data)) {
 				// Cached report — available immediately, no polling needed.
 				url = getBackendUrl(response.data.download_url as string);
-			} else {
+			} else if (response.data.id) {
 				toast.info(m['financials.report.generating']());
-				url = await pollUntilReady(response.data.id as string);
+				url = await pollUntilReady(response.data.id);
+			} else {
+				// A pending report with no id can't be polled — fail fast rather than
+				// looping against an invalid URL until the timeout.
+				throw new Error('Revenue report is missing an id');
 			}
 			triggerDownload(url);
 			toast.success(m['financials.report.ready']());

@@ -10,7 +10,7 @@
 		OrganizationFinancialsSchema
 	} from '$lib/api/generated';
 	import { formatMoney } from '$lib/utils/format';
-	import { formatEventDate } from '$lib/utils/date';
+	import { formatDate, formatEventDate } from '$lib/utils/date';
 	import CurrencyFinancialsSummary from '$lib/components/financials/CurrencyFinancialsSummary.svelte';
 	import PeriodFilter from '$lib/components/financials/PeriodFilter.svelte';
 	import type { PeriodValue } from '$lib/components/financials/period';
@@ -53,7 +53,10 @@
 	}
 
 	function handlePeriodChange(value: PeriodValue) {
-		updateParams({ year: value.year, month: value.month, quarter: value.quarter });
+		// Reset the currency to the new period's dominant default — a currency
+		// carried over from another period may have no sales here, which would
+		// otherwise leave the view filtered to an empty currency.
+		updateParams({ year: value.year, month: value.month, quarter: value.quarter, currency: null });
 	}
 
 	function toggleOrder() {
@@ -181,7 +184,7 @@
 	{/if}
 
 	{#if financialsQuery.isPending}
-		<div class="flex items-center justify-center py-16">
+		<div class="flex items-center justify-center py-16" role="status">
 			<Loader2 class="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
 			<span class="ml-2 text-sm text-muted-foreground">{m['financials.loading']()}</span>
 		</div>
@@ -203,8 +206,8 @@
 		<!-- Period range -->
 		<p class="text-sm text-muted-foreground">
 			{m['financials.periodRange']({
-				from: formatEventDate(financials.date_from),
-				to: formatEventDate(financials.date_to)
+				from: formatDate(financials.date_from, 'UTC'),
+				to: formatDate(financials.date_to, 'UTC')
 			})}
 		</p>
 
