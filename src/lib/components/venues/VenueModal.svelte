@@ -333,7 +333,7 @@
 											sandbox="allow-scripts"
 											loading="lazy"
 											referrerpolicy="no-referrer-when-downgrade"
-											title="Map preview"
+											title={m['venueModal.mapPreviewTitle']()}
 										></iframe>
 									</div>
 								</div>

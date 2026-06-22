@@ -123,7 +123,9 @@
 				{#if activeFilterCount > 0}
 					<span
 						class="rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground"
-						aria-label="{activeFilterCount} active filters"
+						aria-label={m['mobileOrganizationFilterSheet.activeFiltersLabel']({
+							count: activeFilterCount
+						})}
 					>
 						{activeFilterCount}
 					</span>
@@ -134,7 +136,7 @@
 				type="button"
 				onclick={onClose}
 				class="rounded-sm p-2 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				aria-label="Close filters"
+				aria-label={m['mobileOrganizationFilterSheet.closeFilters']()}
 			>
 				<X class="h-5 w-5" aria-hidden="true" />
 			</button>
@@ -166,7 +168,7 @@
 					<SearchInput
 						value={filters.search ?? ''}
 						onSearch={handleSearch}
-						placeholder="Search organizations..."
+						placeholder={m['mobileOrganizationFilterSheet.searchPlaceholder']()}
 					/>
 				</div>
 
@@ -188,7 +190,7 @@
 						class="flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						<X class="h-4 w-4" aria-hidden="true" />
-						Clear all filters
+						{m['mobileOrganizationFilterSheet.clearAllFilters']()}
 					</button>
 				{/if}
 
@@ -197,8 +199,9 @@
 					onclick={handleApply}
 					class="rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				>
-					Show {totalCount}
-					{totalCount === 1 ? 'organization' : 'organizations'}
+					{totalCount === 1
+						? m['mobileOrganizationFilterSheet.showCountOne']({ count: totalCount })
+						: m['mobileOrganizationFilterSheet.showCountOther']({ count: totalCount })}
 				</button>
 			</div>
 		</div>

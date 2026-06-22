@@ -143,8 +143,10 @@
 					requiresAccount = true;
 				}
 
-				const errorDetail = err?.detail || err?.reason || 'Failed to submit RSVP';
-				throw new Error(typeof errorDetail === 'string' ? errorDetail : 'Failed to submit RSVP');
+				const errorDetail = err?.detail || err?.reason || m['guestRsvpDialog.failedToSubmit']();
+				throw new Error(
+					typeof errorDetail === 'string' ? errorDetail : m['guestRsvpDialog.failedToSubmit']()
+				);
 			}
 
 			// Success - show confirmation message
@@ -326,16 +328,16 @@
 											href="/login?redirect={encodeURIComponent(window.location.pathname)}"
 											class="font-medium underline hover:no-underline"
 										>
-											Log in
+											{m['guestRsvpDialog.logIn']()}
 										</a>
-										{' '}or{' '}
+										{' '}{m['guestRsvpDialog.or']()}{' '}
 										<a
 											href="/register?redirect={encodeURIComponent(window.location.pathname)}"
 											class="font-medium underline hover:no-underline"
 										>
-											create an account
+											{m['guestRsvpDialog.createAnAccount']()}
 										</a>
-										{' '}to continue.
+										{' '}{m['guestRsvpDialog.toContinue']()}
 									</p>
 								{/if}
 							</AlertDescription>

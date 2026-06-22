@@ -71,7 +71,7 @@
 			}
 		} catch (err) {
 			console.error('Failed to load questionnaires:', err);
-			alert('Failed to load questionnaires. Please try again.');
+			alert(m['seriesQuestionnaireAssignmentModal.loadError']());
 		} finally {
 			isLoading = false;
 		}
@@ -157,7 +157,7 @@
 			onClose();
 		} catch (err) {
 			console.error('Failed to save assignments:', err);
-			alert('Failed to save assignments. Please try again.');
+			alert(m['seriesQuestionnaireAssignmentModal.saveError']());
 		} finally {
 			isSaving = false;
 		}
@@ -165,17 +165,17 @@
 
 	// Type labels
 	const typeLabels: Record<string, string> = {
-		admission: 'Admission',
-		membership: 'Membership',
-		feedback: 'Feedback',
-		generic: 'Generic'
+		admission: m['seriesQuestionnaireAssignmentModal.typeAdmission'](),
+		membership: m['seriesQuestionnaireAssignmentModal.typeMembership'](),
+		feedback: m['seriesQuestionnaireAssignmentModal.typeFeedback'](),
+		generic: m['seriesQuestionnaireAssignmentModal.typeGeneric']()
 	};
 
 	// Status labels
 	const statusLabels: Record<string, string> = {
-		draft: 'Draft',
-		ready: 'Ready',
-		published: 'Published'
+		draft: m['seriesQuestionnaireAssignmentModal.statusDraft'](),
+		ready: m['seriesQuestionnaireAssignmentModal.statusReady'](),
+		published: m['seriesQuestionnaireAssignmentModal.statusPublished']()
 	};
 
 	// Check if there are changes
@@ -191,7 +191,7 @@
 		<DialogHeader class="border-b p-6 pb-4">
 			<DialogTitle>{m['seriesQuestionnaireAssignmentModal.assignQuestionnaires']()}</DialogTitle>
 			<p class="mt-1 text-sm text-muted-foreground">
-				Select which questionnaires users must complete for events in "{series.name}"
+				{m['seriesQuestionnaireAssignmentModal.subtitle']({ seriesName: series.name })}
 			</p>
 		</DialogHeader>
 
@@ -203,7 +203,7 @@
 			/>
 			<p class="text-orange-900 dark:text-orange-100">
 				<strong>{m['seriesQuestionnaireAssignmentModal.appliesToAllEvents']()}</strong>
-				{m['seriesQuestionnaireAssignmentModal.allEvents']()} in this series, including future events.
+				{m['seriesQuestionnaireAssignmentModal.allEventsSuffix']()}
 			</p>
 		</div>
 
@@ -216,10 +216,10 @@
 				/>
 				<Input
 					type="text"
-					placeholder="Search questionnaires..."
+					placeholder={m['seriesQuestionnaireAssignmentModal.searchPlaceholder']()}
 					bind:value={searchQuery}
 					class="pl-10"
-					aria-label="Search questionnaires"
+					aria-label={m['seriesQuestionnaireAssignmentModal.searchLabel']()}
 				/>
 			</div>
 		</div>
@@ -237,7 +237,9 @@
 				<div class="py-12 text-center">
 					<FileText class="mx-auto mb-2 h-8 w-8 text-muted-foreground" aria-hidden="true" />
 					<p class="text-sm text-muted-foreground">
-						{searchQuery ? 'No questionnaires match your search' : 'No questionnaires available'}
+						{searchQuery
+							? m['seriesQuestionnaireAssignmentModal.noneMatch']()
+							: m['seriesQuestionnaireAssignmentModal.noneAvailable']()}
 					</p>
 				</div>
 			{:else}
@@ -258,7 +260,9 @@
 								<Checkbox
 									checked={selectedIds.has(questionnaire.id)}
 									onCheckedChange={() => toggleQuestionnaire(questionnaire.id)}
-									aria-label={`Select ${questionnaire.questionnaire.name}`}
+									aria-label={m['seriesQuestionnaireAssignmentModal.selectItem']({
+										name: questionnaire.questionnaire.name
+									})}
 									class="mt-1"
 								/>
 							</div>
@@ -293,7 +297,10 @@
 			<div class="flex items-center justify-between">
 				<div class="text-sm text-muted-foreground">
 					<span class="font-medium text-foreground">{selectedIds.size}</span>
-					{selectedIds.size === 1 ? 'questionnaire' : 'questionnaires'} selected
+					{selectedIds.size === 1
+						? m['seriesQuestionnaireAssignmentModal.countSingular']()
+						: m['seriesQuestionnaireAssignmentModal.countPlural']()}
+					{m['seriesQuestionnaireAssignmentModal.selectedSuffix']()}
 				</div>
 				<div class="flex gap-2">
 					<Button variant="outline" onclick={onClose} disabled={isSaving}
@@ -302,9 +309,9 @@
 					<Button onclick={saveAssignments} disabled={!hasChanges || isSaving}>
 						{#if isSaving}
 							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-							Saving...
+							{m['seriesQuestionnaireAssignmentModal.saving']()}
 						{:else}
-							Save Assignments
+							{m['seriesQuestionnaireAssignmentModal.saveAssignments']()}
 						{/if}
 					</Button>
 				</div>

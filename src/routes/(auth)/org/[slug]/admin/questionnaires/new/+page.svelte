@@ -111,51 +111,53 @@
 	// Questionnaire type labels and descriptions
 	const questionnaireTypes = {
 		admission: {
-			label: 'Admission',
-			description: 'Gate event attendance - attendees must complete this to RSVP'
+			label: m['questionnaireNewPage.typeAdmissionLabel'](),
+			description: m['questionnaireNewPage.typeAdmissionTriggerDescription']()
 		},
 		membership: {
-			label: 'Membership',
-			description: 'Gate organization membership - required for joining the organization'
+			label: m['questionnaireNewPage.typeMembershipLabel'](),
+			description: m['questionnaireNewPage.typeMembershipTriggerDescription']()
 		},
 		feedback: {
-			label: 'Feedback',
-			description: 'Collect post-event feedback from attendees'
+			label: m['questionnaireNewPage.typeFeedbackLabel'](),
+			description: m['questionnaireNewPage.typeFeedbackDescription']()
 		},
 		generic: {
-			label: 'Generic',
-			description: 'General purpose questionnaire for any use case'
+			label: m['questionnaireNewPage.typeGenericLabel'](),
+			description: m['questionnaireNewPage.typeGenericDescription']()
 		}
 	};
 
 	// Get display label for current type
-	const selectedTypeLabel = $derived(questionnaireTypes[questionnaireType]?.label ?? 'Generic');
+	const selectedTypeLabel = $derived(
+		questionnaireTypes[questionnaireType]?.label ?? m['questionnaireNewPage.typeGenericLabel']()
+	);
 
 	// Get current description safely
 	const selectedTypeDescription = $derived(
 		questionnaireTypes[questionnaireType]?.description ??
-			'General purpose questionnaire for any use case'
+			m['questionnaireNewPage.typeGenericDescription']()
 	);
 
 	// Evaluation mode descriptions
 	const evaluationModes = {
 		automatic: {
-			label: 'Automatic',
-			description: 'AI evaluates all responses automatically - fastest approval process'
+			label: m['questionnaireNewPage.evalAutomaticLabel'](),
+			description: m['questionnaireNewPage.evalAutomaticTriggerDescription']()
 		},
 		manual: {
-			label: 'Manual',
-			description: 'Staff manually reviews all submissions - complete control over decisions'
+			label: m['questionnaireNewPage.evalManualLabel'](),
+			description: m['questionnaireNewPage.evalManualTriggerDescription']()
 		},
 		hybrid: {
-			label: 'Hybrid',
-			description: 'AI pre-scores responses, staff makes final approval decision'
+			label: m['questionnaireNewPage.evalHybridLabel'](),
+			description: m['questionnaireNewPage.evalHybridTriggerDescription']()
 		}
 	};
 
 	const selectedEvaluationDescription = $derived(
 		evaluationModes[evaluationMode]?.description ??
-			'AI evaluates all responses automatically - fastest approval process'
+			m['questionnaireNewPage.evalAutomaticTriggerDescription']()
 	);
 
 	// ===== Wrapper functions that delegate to pure helpers and reassign $state =====
@@ -357,12 +359,12 @@
 		class="mb-4 gap-2"
 	>
 		<ArrowLeft class="h-4 w-4" />
-		Back to Questionnaires
+		{m['questionnaireNewPage.backToQuestionnaires']()}
 	</Button>
 
 	<h1 class="text-3xl font-bold tracking-tight">{m['questionnaireNewPage.title']()}</h1>
 	<p class="mt-2 text-sm text-muted-foreground">
-		Create an admission form, membership application, or survey for your events
+		{m['questionnaireNewPage.subtitle']()}
 	</p>
 </div>
 
@@ -395,16 +397,16 @@
 			<!-- Description (markdown) -->
 			<MarkdownEditor
 				id="questionnaire-description"
-				label="Description (optional)"
+				label={m['questionnaireNewPage.descriptionLabel']()}
 				bind:value={description}
-				placeholder="Instructions or introduction shown to users before they start the questionnaire..."
+				placeholder={m['questionnaireNewPage.descriptionPlaceholder']()}
 				rows={3}
 			/>
 
 			<!-- Type -->
 			<div class="space-y-2">
 				<Label for="type">
-					Questionnaire Type
+					{m['questionnaireNewPage.typeFieldLabel']()}
 					<span class="text-destructive">*</span>
 				</Label>
 				<Select
@@ -421,47 +423,55 @@
 						{selectedTypeLabel}
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="admission" label="Admission">
+						<SelectItem value="admission" label={m['questionnaireNewPage.typeAdmissionLabel']()}>
 							<div class="flex flex-col gap-0.5">
-								<div class="font-medium">Admission</div>
+								<div class="font-medium">{m['questionnaireNewPage.typeAdmissionLabel']()}</div>
 								<div class="text-xs text-muted-foreground">
-									Gate event attendance - attendees must complete this to RSVP
+									{m['questionnaireNewPage.typeAdmissionDescription']()}
 								</div>
 							</div>
 						</SelectItem>
-						<SelectItem value="feedback" label="Feedback">
+						<SelectItem value="feedback" label={m['questionnaireNewPage.typeFeedbackLabel']()}>
 							<div class="flex flex-col gap-0.5">
-								<div class="font-medium">Feedback</div>
+								<div class="font-medium">{m['questionnaireNewPage.typeFeedbackLabel']()}</div>
 								<div class="text-xs text-muted-foreground">
-									Collect post-event feedback from attendees
+									{m['questionnaireNewPage.typeFeedbackDescription']()}
 								</div>
 							</div>
 						</SelectItem>
-						<SelectItem value="membership" label="Membership" disabled>
+						<SelectItem
+							value="membership"
+							label={m['questionnaireNewPage.typeMembershipLabel']()}
+							disabled
+						>
 							<div class="flex flex-col gap-0.5">
 								<div class="flex items-center gap-2 font-medium">
-									Membership
+									{m['questionnaireNewPage.typeMembershipLabel']()}
 									<span
 										class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
-										>Coming soon</span
+										>{m['questionnaireNewPage.comingSoon']()}</span
 									>
 								</div>
 								<div class="text-xs text-muted-foreground">
-									Gate organization membership - required for joining
+									{m['questionnaireNewPage.typeMembershipDescription']()}
 								</div>
 							</div>
 						</SelectItem>
-						<SelectItem value="generic" label="Generic" disabled>
+						<SelectItem
+							value="generic"
+							label={m['questionnaireNewPage.typeGenericLabel']()}
+							disabled
+						>
 							<div class="flex flex-col gap-0.5">
 								<div class="flex items-center gap-2 font-medium">
-									Generic
+									{m['questionnaireNewPage.typeGenericLabel']()}
 									<span
 										class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
-										>Coming soon</span
+										>{m['questionnaireNewPage.comingSoon']()}</span
 									>
 								</div>
 								<div class="text-xs text-muted-foreground">
-									General purpose questionnaire for any use case
+									{m['questionnaireNewPage.typeGenericDescription']()}
 								</div>
 							</div>
 						</SelectItem>
@@ -501,7 +511,7 @@
 				<!-- Minimum Score -->
 				<div class="space-y-2">
 					<Label for="min-score">
-						Minimum Score (%)
+						{m['questionnaireNewPage.minScorePctLabel']()}
 						<span class="text-destructive">*</span>
 					</Label>
 					<Input
@@ -514,7 +524,7 @@
 						placeholder="0"
 					/>
 					<p class="text-xs text-muted-foreground">
-						Minimum score required to pass the questionnaire (0-100)
+						{m['questionnaireNewPage.minScorePctDescription']()}
 					</p>
 				</div>
 
@@ -534,42 +544,51 @@
 						}}
 					>
 						<SelectTrigger id="evaluation-mode">
-							{evaluationModes[evaluationMode]?.label ?? 'Manual'}
+							{evaluationModes[evaluationMode]?.label ??
+								m['questionnaireNewPage.evalManualLabel']()}
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="manual" label="Manual">
+							<SelectItem value="manual" label={m['questionnaireNewPage.evalManualLabel']()}>
 								<div class="flex flex-col gap-0.5">
-									<div class="font-medium">Manual</div>
+									<div class="font-medium">{m['questionnaireNewPage.evalManualLabel']()}</div>
 									<div class="text-xs text-muted-foreground">
-										Staff manually reviews all submissions
+										{m['questionnaireNewPage.evalManualDescription']()}
 									</div>
 								</div>
 							</SelectItem>
-							<SelectItem value="hybrid" label="Hybrid" disabled>
+							<SelectItem
+								value="hybrid"
+								label={m['questionnaireNewPage.evalHybridLabel']()}
+								disabled
+							>
 								<div class="flex flex-col gap-0.5">
 									<div class="flex items-center gap-2 font-medium">
-										Hybrid
+										{m['questionnaireNewPage.evalHybridLabel']()}
 										<span
 											class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
-											>Coming soon</span
+											>{m['questionnaireNewPage.comingSoon']()}</span
 										>
 									</div>
 									<div class="text-xs text-muted-foreground">
-										AI pre-scores, staff reviews final decision
+										{m['questionnaireNewPage.evalHybridDescription']()}
 									</div>
 								</div>
 							</SelectItem>
-							<SelectItem value="automatic" label="Automatic" disabled>
+							<SelectItem
+								value="automatic"
+								label={m['questionnaireNewPage.evalAutomaticLabel']()}
+								disabled
+							>
 								<div class="flex flex-col gap-0.5">
 									<div class="flex items-center gap-2 font-medium">
-										Automatic
+										{m['questionnaireNewPage.evalAutomaticLabel']()}
 										<span
 											class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
-											>Coming soon</span
+											>{m['questionnaireNewPage.comingSoon']()}</span
 										>
 									</div>
 									<div class="text-xs text-muted-foreground">
-										AI evaluates all responses automatically
+										{m['questionnaireNewPage.evalAutomaticDescription']()}
 									</div>
 								</div>
 							</SelectItem>
@@ -658,7 +677,7 @@
 				<!-- LLM Guidelines -->
 				<div class="space-y-2">
 					<Label for="llm-guidelines">
-						LLM Guidelines
+						{m['questionnaireNewPage.llmGuidelinesFieldLabel']()}
 						{#if needsLlmGuidelines}
 							<span class="text-destructive">*</span>
 						{/if}
@@ -666,22 +685,20 @@
 					<Textarea
 						id="llm-guidelines"
 						bind:value={llmGuidelines}
-						placeholder="Instructions for the AI when evaluating free-text answers..."
+						placeholder={m['questionnaireNewPage.llmGuidelinesPlaceholder']()}
 						rows={4}
 						class={showLlmWarning ? 'border-destructive' : ''}
 					/>
 					{#if showLlmWarning}
 						<p class="text-sm text-destructive">
-							⚠️ LLM guidelines are required when using automatic/hybrid evaluation with free text
-							questions
+							{m['questionnaireNewPage.llmGuidelinesRequiredWarning']()}
 						</p>
 					{:else}
 						<p class="text-xs text-muted-foreground">
 							{#if needsLlmGuidelines}
-								Required for automatic/hybrid evaluation of free-text questions
+								{m['questionnaireNewPage.llmGuidelinesRequired']()}
 							{:else}
-								Optional guidelines for AI evaluation (only needed for free-text questions with
-								automatic/hybrid mode)
+								{m['questionnaireNewPage.llmGuidelinesOptional']()}
 							{/if}
 						</p>
 					{/if}
@@ -716,12 +733,12 @@
 			<!-- Max Attempts -->
 			<div class="space-y-2">
 				<Label for="max-attempts">
-					Max Attempts
+					{m['questionnaireNewPage.maxAttemptsLabel']()}
 					<span class="text-destructive">*</span>
 				</Label>
 				<Input id="max-attempts" type="number" bind:value={maxAttempts} min="0" step="1" required />
 				<p class="text-xs text-muted-foreground">
-					Maximum number of submission attempts allowed (0 = unlimited)
+					{m['questionnaireNewPage.maxAttemptsDescription']()}
 				</p>
 			</div>
 		</CardContent>
@@ -732,10 +749,13 @@
 		<CardHeader>
 			<div class="flex items-center justify-between">
 				<div>
-					<CardTitle>Questions ({totalQuestionCount})</CardTitle>
+					<CardTitle
+						>{m['questionnaireNewPage.questionsTitleCount']({
+							count: totalQuestionCount
+						})}</CardTitle
+					>
 					<CardDescription>
-						Add questions directly or organize them into sections. Sections help group related
-						questions together.
+						{m['questionnaireNewPage.questionsHelpDescription']()}
 					</CardDescription>
 				</div>
 				<div class="flex flex-wrap gap-2">
@@ -746,7 +766,7 @@
 						class="gap-2"
 					>
 						<Plus class="h-4 w-4" />
-						Multiple Choice
+						{m['questionnaireNewPage.addMultipleChoice']()}
 					</Button>
 					<Button
 						variant="outline"
@@ -755,7 +775,7 @@
 						class="gap-2"
 					>
 						<Plus class="h-4 w-4" />
-						Free Text
+						{m['questionnaireNewPage.addFreeText']()}
 					</Button>
 					<Button
 						variant="outline"
@@ -764,11 +784,11 @@
 						class="gap-2"
 					>
 						<Upload class="h-4 w-4" />
-						File Upload
+						{m['questionnaireNewPage.addFileUpload']()}
 					</Button>
 					<Button variant="secondary" size="sm" onclick={addSection} class="gap-2">
 						<FolderPlus class="h-4 w-4" />
-						Add Section
+						{m['questionnaireNewPage.addSection']()}
 					</Button>
 				</div>
 			</div>
@@ -777,16 +797,20 @@
 			{#if totalQuestionCount === 0 && sections.length === 0}
 				<div class="rounded-lg border border-dashed p-8 text-center">
 					<p class="text-sm text-muted-foreground">
-						No questions yet. Add questions directly or create a section to organize them.
+						{m['questionnaireNewPage.noQuestionsYet']()}
 					</p>
 				</div>
 			{:else}
 				<!-- Top-level questions (not in any section) - drag and drop zone -->
 				<div class="space-y-4">
 					<h3 class="text-sm font-medium text-muted-foreground">
-						Top-level Questions ({topLevelQuestions.length})
+						{m['questionnaireNewPage.topLevelQuestionsHeading']({
+							count: topLevelQuestions.length
+						})}
 					</h3>
-					<p class="text-xs text-muted-foreground">Use the arrow buttons to reorder questions.</p>
+					<p class="text-xs text-muted-foreground">
+						{m['questionnaireNewPage.reorderQuestionsHint']()}
+					</p>
 					<div class="space-y-4">
 						{#each topLevelQuestions as question, index (question.id)}
 							<QuestionEditor
@@ -805,7 +829,7 @@
 					{#if topLevelQuestions.length === 0}
 						<div class="rounded-lg border border-dashed p-4 text-center">
 							<p class="text-sm text-muted-foreground">
-								No top-level questions. Add questions using the buttons below.
+								{m['questionnaireNewPage.noTopLevelQuestions']()}
 							</p>
 						</div>
 					{/if}
@@ -820,7 +844,7 @@
 								class="gap-2"
 							>
 								<Plus class="h-4 w-4" />
-								Multiple Choice
+								{m['questionnaireNewPage.addMultipleChoice']()}
 							</Button>
 							<Button
 								variant="outline"
@@ -829,7 +853,7 @@
 								class="gap-2"
 							>
 								<Plus class="h-4 w-4" />
-								Free Text
+								{m['questionnaireNewPage.addFreeText']()}
 							</Button>
 							<Button
 								variant="outline"
@@ -838,7 +862,7 @@
 								class="gap-2"
 							>
 								<Upload class="h-4 w-4" />
-								File Upload
+								{m['questionnaireNewPage.addFileUpload']()}
 							</Button>
 						</div>
 					{/if}
@@ -849,10 +873,10 @@
 					<div class="space-y-4">
 						<div class="border-t pt-4">
 							<h3 class="mb-2 text-sm font-medium text-muted-foreground">
-								Sections ({sections.length})
+								{m['questionnaireNewPage.sectionsHeading']({ count: sections.length })}
 							</h3>
 							<p class="text-xs text-muted-foreground">
-								Use the arrow buttons to reorder sections and questions.
+								{m['questionnaireNewPage.reorderSectionsHint']()}
 							</p>
 						</div>
 						<div class="space-y-4">
@@ -894,7 +918,7 @@
 						class="gap-2"
 					>
 						<Plus class="h-4 w-4" />
-						Multiple Choice
+						{m['questionnaireNewPage.addMultipleChoice']()}
 					</Button>
 					<Button
 						variant="outline"
@@ -903,7 +927,7 @@
 						class="gap-2"
 					>
 						<Plus class="h-4 w-4" />
-						Free Text
+						{m['questionnaireNewPage.addFreeText']()}
 					</Button>
 					<Button
 						variant="outline"
@@ -912,11 +936,11 @@
 						class="gap-2"
 					>
 						<Upload class="h-4 w-4" />
-						File Upload
+						{m['questionnaireNewPage.addFileUpload']()}
 					</Button>
 					<Button variant="secondary" size="sm" onclick={addSection} class="gap-2">
 						<FolderPlus class="h-4 w-4" />
-						Add Section
+						{m['questionnaireNewPage.addSection']()}
 					</Button>
 				</div>
 			{/if}
@@ -929,7 +953,9 @@
 			<CardContent class="py-4">
 				<div class="flex items-start gap-3">
 					<div class="flex-1">
-						<p class="font-medium text-destructive">Validation Error</p>
+						<p class="font-medium text-destructive">
+							{m['questionnaireNewPage.validationErrorTitle']()}
+						</p>
 						<p class="mt-1 whitespace-pre-wrap text-sm text-destructive/90">{saveError}</p>
 					</div>
 					<Button
@@ -938,7 +964,7 @@
 						onclick={() => (saveError = null)}
 						class="text-destructive hover:text-destructive"
 					>
-						Dismiss
+						{m['questionnaireNewPage.dismiss']()}
 					</Button>
 				</div>
 			</CardContent>
@@ -951,7 +977,7 @@
 			{m['questionnaireNewPage.cancelButton']()}
 		</Button>
 		<Button onclick={saveQuestionnaire} disabled={isSaving}>
-			{isSaving ? 'Saving...' : 'Save Questionnaire'}
+			{isSaving ? m['questionnaireNewPage.savingButton']() : m['questionnaireNewPage.saveButton']()}
 		</Button>
 	</div>
 </div>

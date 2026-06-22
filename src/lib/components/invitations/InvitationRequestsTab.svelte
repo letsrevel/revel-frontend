@@ -73,7 +73,7 @@
 			/>
 			<input
 				type="search"
-				placeholder="Search by name or email..."
+				placeholder={m['invitationRequestsTab.searchPlaceholder']()}
 				value={searchInput}
 				oninput={onSearchInput}
 				class="w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -308,11 +308,14 @@
 		{#if requestsPagination.totalPages > 1}
 			<div class="flex items-center justify-between">
 				<p class="text-sm text-muted-foreground">
-					Showing {(requestsPagination.page - 1) * requestsPagination.pageSize + 1} to
-					{Math.min(
-						requestsPagination.page * requestsPagination.pageSize,
-						requestsPagination.totalCount
-					)} of {requestsPagination.totalCount} requests
+					{m['invitationRequestsTab.showingRange']({
+						from: (requestsPagination.page - 1) * requestsPagination.pageSize + 1,
+						to: Math.min(
+							requestsPagination.page * requestsPagination.pageSize,
+							requestsPagination.totalCount
+						),
+						total: requestsPagination.totalCount
+					})}
 				</p>
 
 				<div class="flex gap-2">

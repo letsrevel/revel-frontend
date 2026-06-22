@@ -346,9 +346,9 @@ class AuthStore {
 			this._user = data;
 
 			// Set user's preferred language if available
-			if (data.language && ['en', 'de', 'it'].includes(data.language)) {
+			if (data.language && ['en', 'de', 'it', 'fr'].includes(data.language)) {
 				console.log('[AUTH STORE] Setting user preferred language:', data.language);
-				setLocale(data.language as 'en' | 'de' | 'it');
+				setLocale(data.language as 'en' | 'de' | 'it' | 'fr');
 			}
 		} catch (err) {
 			// Check if this is a network error (likely ad blocker)

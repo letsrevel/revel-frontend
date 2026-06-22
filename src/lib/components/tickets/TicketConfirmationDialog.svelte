@@ -146,13 +146,13 @@
 				headers: authStore.getAuthHeaders()
 			});
 			if (response.error) {
-				seatLoadError = 'Failed to load available seats';
+				seatLoadError = m['ticketConfirmationDialog.errorLoadSeats']();
 				console.error('Seat availability error:', response.error);
 			} else if (response.data) {
 				seatAvailability = response.data;
 			}
 		} catch (err) {
-			seatLoadError = 'Failed to load available seats';
+			seatLoadError = m['ticketConfirmationDialog.errorLoadSeats']();
 			console.error('Seat availability fetch error:', err);
 		} finally {
 			isLoadingSeats = false;
@@ -186,9 +186,11 @@
 
 	// Format price display
 	const priceDisplay = $derived.by(() => {
-		if (isFree) return 'Free';
+		if (isFree) return m['ticketConfirmationDialog.free']();
 		if (isPwyc) {
-			const maxDisplay = maxAmount ? `${tier.currency} ${maxAmount.toFixed(2)}` : 'any amount';
+			const maxDisplay = maxAmount
+				? `${tier.currency} ${maxAmount.toFixed(2)}`
+				: m['ticketConfirmationDialog.anyAmount']();
 			return `${tier.currency} ${minAmount.toFixed(2)} - ${maxDisplay}`;
 		}
 		const price = typeof tier.price === 'string' ? parseFloat(tier.price) : tier.price;
@@ -197,10 +199,10 @@
 
 	// Dialog title
 	const dialogTitle = $derived.by(() => {
-		if (isFree) return 'Claim Free Ticket';
-		if (isOfflinePayment) return 'Reserve Ticket';
-		if (isPwyc) return 'Get Your Ticket';
-		return 'Confirm Purchase';
+		if (isFree) return m['ticketConfirmationDialog.titleClaimFree']();
+		if (isOfflinePayment) return m['ticketConfirmationDialog.titleReserve']();
+		if (isPwyc) return m['ticketConfirmationDialog.titleGetTicket']();
+		return m['ticketConfirmationDialog.titleConfirmPurchase']();
 	});
 
 	// Dialog icon component
@@ -326,12 +328,17 @@
 	function setPwycErrorMessage(): boolean {
 		if (!isPwyc || pwycValidation.valid) return true;
 		const errorMap: Record<string, string> = {
-			empty: 'Please enter an amount',
-			invalid: 'Please enter a valid number',
-			below_min: `Minimum amount is ${tier.currency} ${minAmount.toFixed(2)}`,
-			above_max: `Maximum amount is ${tier.currency} ${maxAmount?.toFixed(2)}`
+			empty: m['ticketConfirmationDialog.errorEnterAmount'](),
+			invalid: m['ticketConfirmationDialog.errorValidNumber'](),
+			below_min: m['ticketConfirmationDialog.errorMinAmount']({
+				amount: `${tier.currency} ${minAmount.toFixed(2)}`
+			}),
+			above_max: m['ticketConfirmationDialog.errorMaxAmount']({
+				amount: `${tier.currency} ${maxAmount?.toFixed(2)}`
+			})
 		};
-		pwycError = errorMap[pwycValidation.error ?? ''] ?? 'Invalid amount';
+		pwycError =
+			errorMap[pwycValidation.error ?? ''] ?? m['ticketConfirmationDialog.errorInvalidAmount']();
 		return false;
 	}
 
@@ -353,15 +360,15 @@
 		if (emptyIndex >= 0) {
 			guestNameError =
 				emptyIndex === 0
-					? 'Please enter your name'
-					: `Please enter a name for ticket holder ${emptyIndex + 1}`;
+					? m['ticketConfirmationDialog.errorEnterYourName']()
+					: m['ticketConfirmationDialog.errorEnterHolderName']({ number: emptyIndex + 1 });
 			return false;
 		}
 		return true;
 	}
 
 	function extractErrorMessage(err: unknown): string {
-		const fallback = 'Something went wrong. Please try again.';
+		const fallback = m['ticketConfirmationDialog.errorGeneric']();
 		if (!err || typeof err !== 'object') return fallback;
 		const obj = err as Record<string, unknown>;
 		const resp = obj.response as Record<string, unknown> | undefined;
@@ -468,15 +475,15 @@
 			</DialogTitle>
 			<DialogDescription>
 				{#if isFree}
-					Confirm that you'd like to claim this free ticket for the event.
+					{m['ticketConfirmationDialog.descClaimFree']()}
 				{:else if isOfflinePayment}
-					Reserve your spot and complete payment {tier.payment_method === 'at_the_door'
-						? 'at the door'
-						: 'offline'}.
+					{tier.payment_method === 'at_the_door'
+						? m['ticketConfirmationDialog.descReserveAtDoor']()
+						: m['ticketConfirmationDialog.descReserveOffline']()}
 				{:else if isPwyc}
-					Choose how much you'd like to pay for your ticket.
+					{m['ticketConfirmationDialog.descPwyc']()}
 				{:else}
-					Confirm your purchase. You'll be redirected to complete payment.
+					{m['ticketConfirmationDialog.descOnline']()}
 				{/if}
 			</DialogDescription>
 		</DialogHeader>
@@ -531,14 +538,14 @@
 			<!-- Quantity Selector -->
 			{#if showQuantitySelector}
 				<div class="space-y-2">
-					<Label>Number of Tickets</Label>
+					<Label>{m['ticketConfirmationDialog.numberOfTickets']()}</Label>
 					<div class="flex items-center gap-3">
 						<Button
 							variant="outline"
 							size="icon"
 							onclick={decrementQuantity}
 							disabled={quantity <= 1 || isProcessing}
-							aria-label="Decrease quantity"
+							aria-label={m['ticketConfirmationDialog.decreaseQuantity']()}
 						>
 							<Minus class="h-4 w-4" />
 						</Button>
@@ -548,13 +555,13 @@
 							size="icon"
 							onclick={incrementQuantity}
 							disabled={quantity >= effectiveMaxQuantity || isProcessing}
-							aria-label="Increase quantity"
+							aria-label={m['ticketConfirmationDialog.increaseQuantity']()}
 						>
 							<Plus class="h-4 w-4" />
 						</Button>
 						{#if effectiveMaxQuantity < 100}
 							<span class="text-sm text-muted-foreground">
-								(max {effectiveMaxQuantity})
+								{m['ticketConfirmationDialog.maxHint']({ max: effectiveMaxQuantity })}
 							</span>
 						{/if}
 					</div>
@@ -637,7 +644,7 @@
 					<CreditCard class="h-4 w-4" />
 					<AlertDescription>
 						<p class="text-sm">
-							You'll be redirected to our secure payment provider to complete your purchase.
+							{m['ticketConfirmationDialog.securePaymentNotice']()}
 						</p>
 					</AlertDescription>
 				</Alert>
@@ -649,7 +656,9 @@
 					<AlertCircle class="h-4 w-4" />
 					<AlertDescription>
 						<p class="text-sm font-medium">
-							Only {tier.total_available} ticket{tier.total_available === 1 ? '' : 's'} remaining!
+							{tier.total_available === 1
+								? m['ticketConfirmationDialog.onlyOneRemaining']()
+								: m['ticketConfirmationDialog.onlyNRemaining']({ count: tier.total_available })}
 						</p>
 					</AlertDescription>
 				</Alert>
@@ -660,7 +669,7 @@
 				<Alert variant="destructive">
 					<AlertCircle class="h-4 w-4" />
 					<AlertDescription>
-						<p class="font-medium">Unable to complete request</p>
+						<p class="font-medium">{m['ticketConfirmationDialog.unableToComplete']()}</p>
 						<p class="mt-1 text-sm">{apiError}</p>
 					</AlertDescription>
 				</Alert>
@@ -674,26 +683,30 @@
 					{#if showGuestNames && !allGuestNamesFilled}
 						<AlertCircle class="mr-1 inline-block h-4 w-4" />
 						{quantity === 1
-							? 'Please enter your name above'
-							: 'Please enter names for all ticket holders above'}
+							? m['ticketConfirmationDialog.hintEnterYourName']()
+							: m['ticketConfirmationDialog.hintEnterAllNames']()}
 					{:else if isPwyc && !pwycValidation.valid}
 						<AlertCircle class="mr-1 inline-block h-4 w-4" />
 						{#if pwycValidation.error === 'empty'}
-							Please enter a payment amount
+							{m['ticketConfirmationDialog.hintEnterAmount']()}
 						{:else if pwycValidation.error === 'invalid'}
-							Please enter a valid number
+							{m['ticketConfirmationDialog.errorValidNumber']()}
 						{:else if pwycValidation.error === 'below_min'}
-							Amount must be at least {tier.currency} {minAmount.toFixed(2)}
+							{m['ticketConfirmationDialog.hintMinAmount']({
+								amount: `${tier.currency} ${minAmount.toFixed(2)}`
+							})}
 						{:else if pwycValidation.error === 'above_max'}
-							Amount cannot exceed {tier.currency} {maxAmount?.toFixed(2)}
+							{m['ticketConfirmationDialog.hintMaxAmount']({
+								amount: `${tier.currency} ${maxAmount?.toFixed(2)}`
+							})}
 						{/if}
 					{:else if isUserChoiceSeat && selectedSeatIds.length !== quantity}
 						<AlertCircle class="mr-1 inline-block h-4 w-4" />
-						Please select {quantity - selectedSeatIds.length} more seat{quantity -
-							selectedSeatIds.length >
-						1
-							? 's'
-							: ''}
+						{quantity - selectedSeatIds.length === 1
+							? m['ticketConfirmationDialog.hintSelectOneMoreSeat']()
+							: m['ticketConfirmationDialog.hintSelectMoreSeats']({
+									count: quantity - selectedSeatIds.length
+								})}
 					{/if}
 				</p>
 			{/if}
@@ -704,7 +717,7 @@
 					disabled={isProcessing}
 					class="flex-1 sm:flex-initial"
 				>
-					Cancel
+					{m['ticketConfirmationDialog.cancel']()}
 				</Button>
 				<Button
 					onclick={handleConfirm}
@@ -714,18 +727,18 @@
 					{#if isProcessing}
 						<Loader2 class="mr-2 h-4 w-4 animate-spin" />
 						{#if isOnlinePayment}
-							Redirecting to payment...
+							{m['ticketConfirmationDialog.redirectingToPayment']()}
 						{:else}
-							Processing...
+							{m['ticketConfirmationDialog.processing']()}
 						{/if}
 					{:else if isFree}
-						Claim Ticket
+						{m['ticketConfirmationDialog.claimTicket']()}
 					{:else if isOfflinePayment}
-						Reserve Ticket
+						{m['ticketConfirmationDialog.reserveTicket']()}
 					{:else if isPwyc}
-						Continue to Payment
+						{m['ticketConfirmationDialog.continueToPayment']()}
 					{:else}
-						Proceed to Payment
+						{m['ticketConfirmationDialog.proceedToPayment']()}
 					{/if}
 				</Button>
 			</div>

@@ -42,19 +42,19 @@
 		switch (request.status) {
 			case 'pending':
 				return {
-					label: 'Pending',
+					label: m['invitationRequestCard.statusPending'](),
 					class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
 					icon: Clock
 				};
 			case 'approved':
 				return {
-					label: 'Approved',
+					label: m['invitationRequestCard.statusApproved'](),
 					class: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
 					icon: CheckCircle2
 				};
 			case 'rejected':
 				return {
-					label: 'Rejected',
+					label: m['invitationRequestCard.statusRejected'](),
 					class: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
 					icon: XCircle
 				};
@@ -81,20 +81,20 @@
 			});
 		},
 		onSuccess: () => {
-			toast.success('Invitation request cancelled');
+			toast.success(m['invitationRequestCard.requestCancelled']());
 			// Invalidate queries to refresh the list
 			queryClient.invalidateQueries({ queryKey: ['my-invitation-requests'] });
 		},
 		onError: (error: any) => {
 			console.error('Failed to cancel request:', error);
-			toast.error('Failed to cancel request', {
-				description: error.message || 'Please try again'
+			toast.error(m['invitationRequestCard.cancelFailed'](), {
+				description: error.message || m['invitationRequestCard.pleaseTryAgain']()
 			});
 		}
 	}));
 
 	function handleCancel() {
-		if (confirm('Are you sure you want to cancel this invitation request?')) {
+		if (confirm(m['invitationRequestCard.cancelConfirm']())) {
 			cancelMutation.mutate();
 		}
 	}
@@ -189,9 +189,9 @@
 					>
 						{#if cancelMutation.isPending}
 							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-							Cancelling...
+							{m['invitationRequestCard.cancelling']()}
 						{:else}
-							Cancel Request
+							{m['invitationRequestCard.cancelRequest']()}
 						{/if}
 					</button>
 				{/if}
@@ -199,7 +199,7 @@
 					href="/events/{request.event.id}"
 					class="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
-					View Event
+					{m['invitationRequestCard.viewEvent']()}
 				</a>
 			</div>
 		</div>

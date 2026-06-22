@@ -65,7 +65,7 @@
 		aria-valuenow={score}
 		aria-valuemin={0}
 		aria-valuemax={5}
-		aria-label="Password strength"
+		aria-label={m['passwordStrength.ariaLabel']()}
 	>
 		<div
 			class="h-full transition-all duration-300 {barColor}"

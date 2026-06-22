@@ -37,11 +37,11 @@
 			// Check if we got a valid response
 			if (!response.response.ok) {
 				if (response.response.status === 503) {
-					throw new Error('Apple Wallet is not configured for this event');
+					throw new Error(m['addToWallet.notConfigured']());
 				} else if (response.response.status === 404) {
-					throw new Error('Ticket not found');
+					throw new Error(m['addToWallet.ticketNotFound']());
 				} else {
-					throw new Error('Failed to download wallet pass');
+					throw new Error(m['addToWallet.downloadFailed']());
 				}
 			}
 
@@ -68,7 +68,7 @@
 			window.URL.revokeObjectURL(url);
 		} catch (err) {
 			console.error('Failed to download Apple Wallet pass:', err);
-			error = err instanceof Error ? err.message : 'Failed to download wallet pass';
+			error = err instanceof Error ? err.message : m['addToWallet.downloadFailed']();
 		} finally {
 			isDownloading = false;
 		}
@@ -82,8 +82,8 @@
 		onclick={downloadApplePass}
 		disabled={isDownloading}
 		class="inline-flex items-center gap-1.5 rounded-md border bg-background px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {className}"
-		aria-label="Add to Apple Wallet"
-		title="Add to Apple Wallet"
+		aria-label={m['addToWallet.addToAppleWallet']()}
+		title={m['addToWallet.addToAppleWallet']()}
 	>
 		{#if isDownloading}
 			<div
@@ -101,7 +101,7 @@
 		onclick={downloadApplePass}
 		disabled={isDownloading}
 		class="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {className}"
-		aria-label="Add to Apple Wallet"
+		aria-label={m['addToWallet.addToAppleWallet']()}
 	>
 		{#if isDownloading}
 			<div
@@ -121,7 +121,7 @@
 		onclick={downloadApplePass}
 		disabled={isDownloading}
 		class="inline-flex items-center justify-center gap-2 rounded-md bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-gray-100 dark:focus:ring-gray-100 {className}"
-		aria-label="Add to Apple Wallet"
+		aria-label={m['addToWallet.addToAppleWallet']()}
 	>
 		{#if isDownloading}
 			<div

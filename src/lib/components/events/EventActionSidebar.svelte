@@ -379,7 +379,7 @@
     class="hidden lg:block"
   />
 -->
-<aside class={containerClasses} aria-label="Event actions">
+<aside class={containerClasses} aria-label={m['eventActionSidebar.eventActionsAriaLabel']()}>
 	<!-- Card Header -->
 	<div class="flex items-start justify-between gap-2 border-b p-4">
 		<EventStatusBadge {event} />
@@ -593,7 +593,7 @@
 					type="button"
 					onclick={handleDownloadCalendar}
 					class="w-full cursor-pointer rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-					aria-label="Download calendar event"
+					aria-label={m['eventActionSidebar.downloadCalendarAriaLabel']()}
 				>
 					<span class="flex items-center justify-center gap-2">
 						<CalendarDays class="h-4 w-4" aria-hidden="true" />
@@ -717,7 +717,7 @@
 				type="button"
 				onclick={handleDownloadCalendar}
 				class="w-full cursor-pointer rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				aria-label="Download calendar event"
+				aria-label={m['eventActionSidebar.downloadCalendarAriaLabel']()}
 			>
 				<span class="flex items-center justify-center gap-2">
 					<CalendarDays class="h-4 w-4" aria-hidden="true" />

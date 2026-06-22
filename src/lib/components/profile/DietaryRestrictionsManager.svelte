@@ -302,7 +302,7 @@
 	{#if isLoading}
 		<div class="flex items-center justify-center py-8">
 			<Loader2 class="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
-			<span class="sr-only">Loading restrictions...</span>
+			<span class="sr-only">{m['dietaryRestrictionsManager.loading']()}</span>
 		</div>
 	{:else if restrictions.length === 0}
 		<div class="rounded-md border border-dashed p-8 text-center">
@@ -352,7 +352,7 @@
 						{#if restriction.restriction_type === 'severe_allergy'}
 							<div class="flex items-center gap-2 text-sm text-orange-600 dark:text-orange-400">
 								<AlertTriangle class="h-4 w-4" aria-hidden="true" />
-								<span>Severe allergy - please inform event organizers</span>
+								<span>{m['dietaryRestrictionsManager.severeAllergyWarning']()}</span>
 							</div>
 						{/if}
 					</div>
@@ -361,7 +361,9 @@
 						type="button"
 						onclick={() => restriction.id && handleDeleteRestriction(restriction.id)}
 						class="rounded p-2 text-destructive hover:bg-destructive/10"
-						aria-label="Remove {restriction.food_item.name}"
+						aria-label={m['dietaryRestrictionsManager.removeLabel']({
+							name: restriction.food_item.name
+						})}
 					>
 						<Trash2 class="h-4 w-4" aria-hidden="true" />
 					</button>

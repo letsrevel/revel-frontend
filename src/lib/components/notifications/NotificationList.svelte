@@ -66,7 +66,7 @@
 	const hasUnread = $derived(notifications.some((n) => n.read_at === null));
 	const isLoading = $derived(notificationsQuery.isLoading);
 	const isError = $derived(notificationsQuery.isError);
-	const selectedTypeLabel = $derived(notificationType || 'All types');
+	const selectedTypeLabel = $derived(notificationType || m['notificationList.allTypes']());
 
 	// Mark all as read mutation
 	const markAllReadMutation = createMutation(() => ({
@@ -78,10 +78,10 @@
 		onSuccess: () => {
 			// Invalidate all notification-related queries to trigger refetch
 			queryClient.invalidateQueries({ queryKey: ['notifications'], refetchType: 'active' });
-			toast.success('All notifications marked as read');
+			toast.success(m['notificationList.toast_allMarkedRead']());
 		},
 		onError: (error) => {
-			toast.error('Failed to mark all as read');
+			toast.error(m['notificationList.toast_markAllFailed']());
 			console.error('Failed to mark all as read:', error);
 		}
 	}));
@@ -122,9 +122,9 @@
 	// Empty state messages
 	const emptyMessage = $derived.by(() => {
 		if (unreadOnly) {
-			return 'No unread notifications';
+			return m['notificationList.emptyUnread']();
 		}
-		return 'No notifications yet';
+		return m['notificationList.emptyAll']();
 	});
 </script>
 
@@ -135,7 +135,7 @@
 		className
 	)}
 	role="region"
-	aria-label="Notifications"
+	aria-label={m['notificationList.regionAriaLabel']()}
 	aria-live="polite"
 >
 	<!-- Header with filters and actions -->
@@ -154,7 +154,9 @@
 						: 'hover:bg-accent hover:text-accent-foreground'}"
 				>
 					<Filter class="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-					{unreadOnly ? 'Showing unread only' : 'Show unread only'}
+					{unreadOnly
+						? m['notificationList.showingUnreadOnly']()
+						: m['notificationList.showUnreadOnly']()}
 				</Button>
 
 				<!-- Type filter (only show if we have notifications) -->
@@ -168,7 +170,7 @@
 							{selectedTypeLabel}
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="all">All types</SelectItem>
+							<SelectItem value="all">{m['notificationList.allTypes']()}</SelectItem>
 							{#each notificationTypes as type}
 								<SelectItem value={type}>{type}</SelectItem>
 							{/each}
@@ -179,10 +181,11 @@
 				<!-- Count badge -->
 				{#if totalCount > 0}
 					<Badge variant="secondary" class="ml-1 text-xs">
-						{totalCount}
-						{totalCount === 1 ? 'notification' : 'notifications'}
+						{totalCount === 1
+							? m['notificationList.countSingular']({ count: totalCount })
+							: m['notificationList.countPlural']({ count: totalCount })}
 						{#if unreadOnly}
-							<span class="sr-only">unread</span>
+							<span class="sr-only">{m['notificationList.unreadSrLabel']()}</span>
 						{/if}
 					</Badge>
 				{/if}
@@ -196,7 +199,7 @@
 						size="sm"
 						onclick={handleMarkAllRead}
 						disabled={markAllReadMutation.isPending}
-						aria-label="Mark all as read"
+						aria-label={m['notificationList.markAllAsRead']()}
 						class="text-xs"
 					>
 						{#if markAllReadMutation.isPending}
@@ -204,7 +207,7 @@
 						{:else}
 							<CheckCheck class="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
 						{/if}
-						Mark all as read
+						{m['notificationList.markAllAsRead']()}
 					</Button>
 				{/if}
 			</div>
@@ -221,7 +224,7 @@
 	>
 		{#if isLoading}
 			<!-- Skeleton loaders -->
-			<div class="space-y-3" role="status" aria-label="Loading notifications">
+			<div class="space-y-3" role="status" aria-label={m['notificationList.loading']()}>
 				{#each Array(compact ? 3 : 5) as _, i}
 					<Card class="p-4 md:p-6">
 						<div class="flex animate-pulse items-start gap-3">
@@ -248,7 +251,7 @@
 						</div>
 					</Card>
 				{/each}
-				<span class="sr-only">Loading notifications...</span>
+				<span class="sr-only">{m['notificationList.loadingEllipsis']()}</span>
 			</div>
 		{:else if isError}
 			<!-- Error state -->
@@ -256,9 +259,9 @@
 				<div class="flex flex-col items-center gap-3">
 					<BellOff class="h-12 w-12 text-muted-foreground" aria-hidden="true" />
 					<div>
-						<h3 class="text-lg font-semibold">Failed to load notifications</h3>
+						<h3 class="text-lg font-semibold">{m['notificationList.errorTitle']()}</h3>
 						<p class="mt-1 text-sm text-muted-foreground">
-							Please try again later or contact support if the problem persists.
+							{m['notificationList.errorBody']()}
 						</p>
 					</div>
 					<Button
@@ -266,7 +269,7 @@
 						size="sm"
 						onclick={() => queryClient.invalidateQueries({ queryKey: ['notifications'] })}
 					>
-						Try again
+						{m['notificationList.tryAgain']()}
 					</Button>
 				</div>
 			</Card>
@@ -279,15 +282,15 @@
 						<h3 class="text-lg font-semibold">{emptyMessage}</h3>
 						<p class="mt-1 text-sm text-muted-foreground">
 							{#if unreadOnly}
-								All caught up! No new notifications to read.
+								{m['notificationList.emptyUnreadBody']()}
 							{:else}
-								You'll see notifications here when you receive them.
+								{m['notificationList.emptyAllBody']()}
 							{/if}
 						</p>
 					</div>
 					{#if unreadOnly}
 						<Button variant="outline" size="sm" onclick={handleFilterToggle}>
-							Show all notifications
+							{m['notificationList.showAllNotifications']()}
 						</Button>
 					{/if}
 				</div>
@@ -297,7 +300,9 @@
 			<div
 				class="space-y-3"
 				role="list"
-				aria-label={`${notifications.length} ${notifications.length === 1 ? 'notification' : 'notifications'}`}
+				aria-label={notifications.length === 1
+					? m['notificationList.countSingular']({ count: notifications.length })
+					: m['notificationList.countPlural']({ count: notifications.length })}
 			>
 				{#each notifications as notification (notification.id)}
 					<div role="listitem">
@@ -319,7 +324,7 @@
 		<div
 			class="mt-4 flex items-center justify-center gap-2"
 			role="navigation"
-			aria-label="Pagination"
+			aria-label={m['notificationList.pagination']()}
 		>
 			<!-- Previous button -->
 			<Button
@@ -327,9 +332,9 @@
 				size="sm"
 				onclick={() => handlePageChange(currentPage - 1)}
 				disabled={currentPage === 1}
-				aria-label="Previous page"
+				aria-label={m['notificationList.previousPage']()}
 			>
-				Previous
+				{m['notificationList.previous']()}
 			</Button>
 
 			<!-- Page numbers -->
@@ -341,7 +346,7 @@
 							variant={page === currentPage ? 'default' : 'outline'}
 							size="sm"
 							onclick={() => handlePageChange(page)}
-							aria-label={`Page ${page}`}
+							aria-label={m['notificationList.page']({ page })}
 							aria-current={page === currentPage ? 'page' : undefined}
 							class="h-8 w-8 p-0"
 						>
@@ -359,9 +364,9 @@
 				size="sm"
 				onclick={() => handlePageChange(currentPage + 1)}
 				disabled={currentPage === totalPages}
-				aria-label="Next page"
+				aria-label={m['notificationList.nextPage']()}
 			>
-				Next
+				{m['notificationList.next']()}
 			</Button>
 		</div>
 	{/if}

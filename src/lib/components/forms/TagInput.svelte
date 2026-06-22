@@ -312,9 +312,9 @@
 
 	{#if !error && !disabled}
 		<p class="text-xs text-muted-foreground">
-			Press Enter or comma to add a tag
+			{m['tagInput.helpAddTag']()}
 			{#if value.length > 0}
-				• Press Backspace to remove the last tag
+				• {m['tagInput.helpRemoveTag']()}
 			{/if}
 		</p>
 	{/if}

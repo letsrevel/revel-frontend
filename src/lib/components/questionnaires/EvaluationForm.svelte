@@ -159,7 +159,7 @@
 						<span class="text-sm text-muted-foreground">/100</span>
 					</div>
 					<p class="mt-1 text-xs text-muted-foreground">
-						Provide a numeric score between 0 and 100
+						{m['evaluationForm.scoreHelp']()}
 					</p>
 				</div>
 
@@ -169,7 +169,7 @@
 					<Textarea
 						id="comments"
 						name="comments"
-						placeholder="Add evaluation notes or feedback for the submitter..."
+						placeholder={m['evaluationForm.commentsPlaceholder']()}
 						bind:value={comments}
 						rows={4}
 						maxlength={1000}
@@ -184,7 +184,7 @@
 		{#if onCancel}
 			<div class="mt-6 border-t pt-4">
 				<Button type="button" variant="outline" onclick={onCancel} disabled={isSubmitting}>
-					Cancel
+					{m['evaluationForm.cancel']()}
 				</Button>
 			</div>
 		{/if}

@@ -251,12 +251,12 @@
 		}
 
 		if (totalQuestionCount === 0) {
-			errors.questions = 'At least one question is required';
+			errors.questions = m['questionnaireEditPage.error_noQuestions']();
 		}
 
 		const invalidQuestions = allQuestions.filter((q) => !q.text.trim());
 		if (invalidQuestions.length > 0) {
-			errors.questions = 'All questions must have text';
+			errors.questions = m['questionnaireEditPage.error_questionsNeedText']();
 		}
 
 		return Object.keys(errors).length === 0;
@@ -358,7 +358,7 @@
 			window.scrollTo({ top: 0, behavior: 'smooth' });
 		} catch (err) {
 			console.error('Failed to save questionnaire:', err);
-			saveError = 'Failed to save questionnaire. Please try again.';
+			saveError = m['questionnaireEditPage.error_saveFailed']();
 		} finally {
 			isSaving = false;
 		}
@@ -375,7 +375,7 @@
 			<div
 				class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"
 			></div>
-			<p class="mt-4 text-muted-foreground">Loading questionnaire...</p>
+			<p class="mt-4 text-muted-foreground">{m['questionnaireEditPage.loading']()}</p>
 		</div>
 	</div>
 {:else}
@@ -423,16 +423,17 @@
 				<div class="flex gap-3">
 					<Pencil class="h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-500" />
 					<div class="text-sm">
-						<p class="font-medium text-green-800 dark:text-green-200">Edit mode enabled</p>
+						<p class="font-medium text-green-800 dark:text-green-200">
+							{m['questionnaireEditPage.editModeEnabled']()}
+						</p>
 						<p class="mt-1 text-green-700 dark:text-green-300">
-							You can now edit questions, sections, and options. Changes will be saved when you
-							click Save.
+							{m['questionnaireEditPage.editModeDescription']()}
 						</p>
 					</div>
 				</div>
 				<div class="flex shrink-0 gap-2">
 					<Button variant="outline" size="sm" onclick={() => (isEditMode = false)}>
-						Cancel Editing
+						{m['questionnaireEditPage.cancelEditing']()}
 					</Button>
 					<Button size="sm" onclick={saveQuestionnaire} disabled={isSaving || !canEdit}>
 						{isSaving
@@ -450,9 +451,11 @@
 				<div class="flex gap-3">
 					<FileEdit class="h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-500" />
 					<div class="text-sm">
-						<p class="font-medium text-blue-800 dark:text-blue-200">View mode</p>
+						<p class="font-medium text-blue-800 dark:text-blue-200">
+							{m['questionnaireEditPage.viewMode']()}
+						</p>
 						<p class="mt-1 text-blue-700 dark:text-blue-300">
-							Click "Edit Questionnaire" to modify questions, sections, and options.
+							{m['questionnaireEditPage.viewModeDescription']()}
 						</p>
 					</div>
 				</div>
@@ -463,7 +466,7 @@
 					class="shrink-0 gap-2"
 				>
 					<Pencil class="h-4 w-4" />
-					Edit Questionnaire
+					{m['questionnaireEditPage.editQuestionnaire']()}
 				</Button>
 			</div>
 		</div>
@@ -520,7 +523,7 @@
 						class="gap-2"
 					>
 						<CalendarCheck class="h-4 w-4" />
-						Manage Assignments
+						{m['questionnaireEditPage.manageAssignments']()}
 					</Button>
 				</div>
 			</CardHeader>
@@ -575,11 +578,16 @@
 											<div>
 												<p class="font-medium">{series.name}</p>
 												<p class="text-sm text-muted-foreground">
-													{(series as any).event_count || 0}
-													{(series as any).event_count === 1 ? 'event' : 'events'}
+													{(series as any).event_count === 1
+														? m['questionnaireEditPage.eventCount']({
+																count: (series as any).event_count || 0
+															})
+														: m['questionnaireEditPage.eventCountPlural']({
+																count: (series as any).event_count || 0
+															})}
 												</p>
 											</div>
-											<Badge variant="secondary">Series</Badge>
+											<Badge variant="secondary">{m['questionnaireEditPage.seriesBadge']()}</Badge>
 										</div>
 									{/each}
 								</div>
@@ -609,7 +617,7 @@
 								class="gap-2"
 							>
 								<Plus class="h-4 w-4" />
-								Multiple Choice
+								{m['questionnaireEditPage.addMultipleChoice']()}
 							</Button>
 							<Button
 								variant="outline"
@@ -618,7 +626,7 @@
 								class="gap-2"
 							>
 								<Plus class="h-4 w-4" />
-								Free Text
+								{m['questionnaireEditPage.addFreeText']()}
 							</Button>
 							<Button
 								variant="outline"
@@ -627,11 +635,11 @@
 								class="gap-2"
 							>
 								<Upload class="h-4 w-4" />
-								File Upload
+								{m['questionnaireEditPage.addFileUpload']()}
 							</Button>
 							<Button variant="secondary" size="sm" onclick={addSection} class="gap-2">
 								<FolderPlus class="h-4 w-4" />
-								Add Section
+								{m['questionnaireEditPage.addSection']()}
 							</Button>
 						</div>
 					{/if}
@@ -645,7 +653,7 @@
 						</p>
 						{#if canEdit}
 							<p class="mt-2 text-sm text-muted-foreground">
-								Click the buttons above to add questions or sections.
+								{m['questionnaireEditPage.clickButtonsHint']()}
 							</p>
 						{/if}
 					</div>
@@ -653,9 +661,13 @@
 					<!-- Editable mode - same as create page -->
 					<div class="space-y-4">
 						<h3 class="text-sm font-medium text-muted-foreground">
-							Top-level Questions ({topLevelQuestions.length})
+							{m['questionnaireEditPage.topLevelQuestionsHeading']({
+								count: topLevelQuestions.length
+							})}
 						</h3>
-						<p class="text-xs text-muted-foreground">Use the arrow buttons to reorder questions.</p>
+						<p class="text-xs text-muted-foreground">
+							{m['questionnaireEditPage.reorderQuestionsHint']()}
+						</p>
 						<div class="space-y-4">
 							{#each topLevelQuestions as question, index (question.id)}
 								<QuestionEditor
@@ -674,7 +686,7 @@
 						{#if topLevelQuestions.length === 0}
 							<div class="rounded-lg border border-dashed p-4 text-center">
 								<p class="text-sm text-muted-foreground">
-									No top-level questions. Add questions using the buttons below.
+									{m['questionnaireEditPage.noTopLevelQuestions']()}
 								</p>
 							</div>
 						{/if}
@@ -688,7 +700,7 @@
 									class="gap-2"
 								>
 									<Plus class="h-4 w-4" />
-									Multiple Choice
+									{m['questionnaireEditPage.addMultipleChoice']()}
 								</Button>
 								<Button
 									variant="outline"
@@ -697,7 +709,7 @@
 									class="gap-2"
 								>
 									<Plus class="h-4 w-4" />
-									Free Text
+									{m['questionnaireEditPage.addFreeText']()}
 								</Button>
 							</div>
 						{/if}
@@ -708,10 +720,10 @@
 						<div class="space-y-4">
 							<div class="border-t pt-4">
 								<h3 class="mb-2 text-sm font-medium text-muted-foreground">
-									Sections ({sections.length})
+									{m['questionnaireEditPage.sectionsHeading']({ count: sections.length })}
 								</h3>
 								<p class="text-xs text-muted-foreground">
-									Use the arrow buttons to reorder sections and questions.
+									{m['questionnaireEditPage.reorderSectionsHint']()}
 								</p>
 							</div>
 							<div class="space-y-4">
@@ -757,7 +769,7 @@
 							class="gap-2"
 						>
 							<Plus class="h-4 w-4" />
-							Multiple Choice
+							{m['questionnaireEditPage.addMultipleChoice']()}
 						</Button>
 						<Button
 							variant="outline"
@@ -766,7 +778,7 @@
 							class="gap-2"
 						>
 							<Plus class="h-4 w-4" />
-							Free Text
+							{m['questionnaireEditPage.addFreeText']()}
 						</Button>
 						<Button
 							variant="outline"
@@ -775,11 +787,11 @@
 							class="gap-2"
 						>
 							<Upload class="h-4 w-4" />
-							File Upload
+							{m['questionnaireEditPage.addFileUpload']()}
 						</Button>
 						<Button variant="secondary" size="sm" onclick={addSection} class="gap-2">
 							<FolderPlus class="h-4 w-4" />
-							Add Section
+							{m['questionnaireEditPage.addSection']()}
 						</Button>
 					</div>
 				{/if}
@@ -792,7 +804,9 @@
 				<CardContent class="py-4">
 					<div class="flex items-start gap-3">
 						<div class="flex-1">
-							<p class="font-medium text-destructive">Save Error</p>
+							<p class="font-medium text-destructive">
+								{m['questionnaireEditPage.saveErrorTitle']()}
+							</p>
 							<p class="mt-1 whitespace-pre-wrap text-sm text-destructive/90">{saveError}</p>
 						</div>
 						<Button
@@ -801,7 +815,7 @@
 							onclick={() => (saveError = null)}
 							class="text-destructive hover:text-destructive"
 						>
-							Dismiss
+							{m['questionnaireEditPage.dismiss']()}
 						</Button>
 					</div>
 				</CardContent>

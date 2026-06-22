@@ -164,12 +164,16 @@
 >
 	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
 		<DialogHeader>
-			<DialogTitle>{isEdit ? 'Edit' : 'Create'} Invitation Link</DialogTitle>
+			<DialogTitle
+				>{isEdit
+					? m['eventTokenModal.titleEdit']()
+					: m['eventTokenModal.titleCreate']()}</DialogTitle
+			>
 			<DialogDescription>
 				{#if isEdit}
-					Update link settings. The shareable URL will remain the same.
+					{m['eventTokenModal.descEdit']()}
 				{:else}
-					Create a shareable invitation link for this event.
+					{m['eventTokenModal.descCreate']()}
 				{/if}
 			</DialogDescription>
 		</DialogHeader>
@@ -187,7 +191,7 @@
 				<Input
 					id="link-name"
 					bind:value={name}
-					placeholder="e.g., Instagram Followers, VIP Access"
+					placeholder={m['eventTokenModal.namePlaceholder']()}
 					maxlength={150}
 				/>
 			</div>
@@ -211,7 +215,7 @@
 					class="h-4 w-4 rounded border-gray-300"
 				/>
 				<Label for="grants-invitation" class="font-normal">
-					Grant invitation (allows users to RSVP or buy tickets)
+					{m['eventTokenModal.grantInvitation']()}
 				</Label>
 			</div>
 
@@ -225,16 +229,15 @@
 						type="number"
 						bind:value={maxUses}
 						min={0}
-						placeholder="0 = unlimited"
+						placeholder={m['eventTokenModal.maxUsesPlaceholder']()}
 					/>
 					<p class="text-xs text-muted-foreground">
-						Set to 0 for unlimited uses, or specify a number to limit how many people can use this
-						link.
+						{m['eventTokenModal.maxUsesHint']()}
 					</p>
 					{#if isEdit && token && token.uses !== undefined && maxUses < token.uses}
 						<p class="flex items-center gap-1 text-xs text-destructive">
 							<AlertCircle class="h-3 w-3" aria-hidden="true" />
-							Warning: This will disable the link (already {token.uses} uses)
+							{m['eventTokenModal.disableWarning']({ uses: token.uses })}
 						</p>
 					{/if}
 				</div>
@@ -257,7 +260,7 @@
 					{#if showAdvanced}
 						<div class="space-y-3 border-t pt-3">
 							<p class="text-xs text-muted-foreground">
-								Configure special permissions and exceptions for users who use this invitation link.
+								{m['eventTokenModal.advancedDescription']()}
 							</p>
 
 							<!-- Waives Questionnaire -->
@@ -270,10 +273,10 @@
 								/>
 								<div class="flex-1">
 									<Label for="waives-questionnaire" class="font-normal">
-										Waive questionnaire requirement
+										{m['eventTokenModal.waiveQuestionnaire']()}
 									</Label>
 									<p class="text-xs text-muted-foreground">
-										Users can RSVP without completing required questionnaires
+										{m['eventTokenModal.waiveQuestionnaireHint']()}
 									</p>
 								</div>
 							</div>
@@ -288,10 +291,10 @@
 								/>
 								<div class="flex-1">
 									<Label for="waives-purchase" class="font-normal">
-										Waive ticket purchase requirement
+										{m['eventTokenModal.waivePurchase']()}
 									</Label>
 									<p class="text-xs text-muted-foreground">
-										Users get free access even if the ticket tier has a price
+										{m['eventTokenModal.waivePurchaseHint']()}
 									</p>
 								</div>
 							</div>
@@ -306,10 +309,10 @@
 								/>
 								<div class="flex-1">
 									<Label for="overrides-max-attendees" class="font-normal">
-										Override attendee limit
+										{m['eventTokenModal.overrideAttendeeLimit']()}
 									</Label>
 									<p class="text-xs text-muted-foreground">
-										Allow RSVPs even if the event or tier has reached maximum capacity
+										{m['eventTokenModal.overrideAttendeeLimitHint']()}
 									</p>
 								</div>
 							</div>
@@ -324,10 +327,10 @@
 								/>
 								<div class="flex-1">
 									<Label for="waives-membership" class="font-normal">
-										Waive membership requirement
+										{m['eventTokenModal.waiveMembership']()}
 									</Label>
 									<p class="text-xs text-muted-foreground">
-										Users can RSVP without being a member of the organization
+										{m['eventTokenModal.waiveMembershipHint']()}
 									</p>
 								</div>
 							</div>
@@ -345,7 +348,7 @@
 										>{m['eventTokenModal.waiveDeadline']()}</Label
 									>
 									<p class="text-xs text-muted-foreground">
-										Users can RSVP even after the RSVP deadline has passed
+										{m['eventTokenModal.waiveDeadlineHint']()}
 									</p>
 								</div>
 							</div>
@@ -363,7 +366,7 @@
 										>{m['eventTokenModal.waiveApplyDeadline']()}</Label
 									>
 									<p class="text-xs text-muted-foreground">
-										Users can apply even after the application deadline has passed
+										{m['eventTokenModal.waiveApplyDeadlineHint']()}
 									</p>
 								</div>
 							</div>
@@ -374,9 +377,9 @@
 				<!-- Ticket tier selection -->
 				{#if ticketTiers.length > 0}
 					<div class="space-y-3 rounded-lg border border-border p-4">
-						<h4 class="text-sm font-semibold">Assign Ticket Tiers (Optional)</h4>
+						<h4 class="text-sm font-semibold">{m['eventTokenModal.assignTiers']()}</h4>
 						<p class="text-xs text-muted-foreground">
-							Link specific tiers to this invitation link. Leave empty for no tier restriction.
+							{m['eventTokenModal.assignTiersHint']()}
 						</p>
 						{#each ticketTiers as tier}
 							{#if tier.id}
@@ -406,13 +409,13 @@
 
 			<DialogFooter>
 				<Button type="button" variant="outline" onclick={onClose} disabled={isLoading}>
-					Cancel
+					{m['eventTokenModal.cancel']()}
 				</Button>
 				<Button type="submit" disabled={isLoading}>
 					{#if isLoading}
 						<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 					{/if}
-					{isEdit ? 'Save Changes' : 'Create Link'}
+					{isEdit ? m['eventTokenModal.saveChanges']() : m['eventTokenModal.createLink']()}
 				</Button>
 			</DialogFooter>
 		</form>

@@ -167,7 +167,7 @@
 	<h1 class="text-2xl font-bold">{m['referral.referralProgram']()}</h1>
 
 	{#if !referralCode}
-		<p class="mt-4 text-muted-foreground">Loading...</p>
+		<p class="mt-4 text-muted-foreground">{m['referralPage.loading']()}</p>
 	{:else}
 		<!-- Referral Code & Share Link -->
 		<div class="mt-6 rounded-lg border bg-card p-4">

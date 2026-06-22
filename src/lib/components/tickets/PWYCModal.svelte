@@ -85,24 +85,24 @@
 		error = '';
 
 		if (!amount.trim()) {
-			error = 'Please enter an amount';
+			error = m['pwycModal.errorEnterAmount']();
 			return false;
 		}
 
 		const value = parseFloat(amount);
 
 		if (isNaN(value)) {
-			error = 'Please enter a valid number';
+			error = m['pwycModal.errorValidNumber']();
 			return false;
 		}
 
 		if (value < minAmount) {
-			error = `Minimum amount is ${tier.currency}${minAmount.toFixed(2)}`;
+			error = m['pwycModal.errorMinAmount']({ amount: `${tier.currency}${minAmount.toFixed(2)}` });
 			return false;
 		}
 
 		if (maxAmount !== null && value > maxAmount) {
-			error = `Maximum amount is ${tier.currency}${maxAmount.toFixed(2)}`;
+			error = m['pwycModal.errorMaxAmount']({ amount: `${tier.currency}${maxAmount.toFixed(2)}` });
 			return false;
 		}
 
@@ -142,9 +142,9 @@
 					<MarkdownContent content={tier.description} class="mt-1 text-xs text-muted-foreground" />
 				{/if}
 				<div class="mt-2 text-xs text-muted-foreground">
-					Range: {tier.currency}{minAmount.toFixed(2)} - {maxAmount !== null
+					{m['pwycModal.rangeLabel']()}: {tier.currency}{minAmount.toFixed(2)} - {maxAmount !== null
 						? `${tier.currency}${maxAmount.toFixed(2)}`
-						: 'any amount'}
+						: m['pwycModal.anyAmount']()}
 				</div>
 			</div>
 
@@ -207,13 +207,13 @@
 			<p class="text-center text-sm text-amber-600 dark:text-amber-500">
 				<AlertCircle class="mr-1 inline-block h-4 w-4" />
 				{#if amountValidation.error === 'empty'}
-					Please enter a payment amount
+					{m['pwycModal.hintEnterAmount']()}
 				{:else if amountValidation.error === 'invalid'}
-					Please enter a valid number
+					{m['pwycModal.errorValidNumber']()}
 				{:else if amountValidation.error === 'below_min'}
-					Amount must be at least {tier.currency}{minAmount.toFixed(2)}
+					{m['pwycModal.hintMinAmount']({ amount: `${tier.currency}${minAmount.toFixed(2)}` })}
 				{:else if amountValidation.error === 'above_max'}
-					Amount cannot exceed {tier.currency}{maxAmount?.toFixed(2)}
+					{m['pwycModal.hintMaxAmount']({ amount: `${tier.currency}${maxAmount?.toFixed(2)}` })}
 				{/if}
 			</p>
 		{/if}
@@ -221,14 +221,14 @@
 		<!-- Actions -->
 		<div class="flex gap-3">
 			<Button variant="outline" onclick={onClose} disabled={isProcessing} class="flex-1">
-				Cancel
+				{m['pwycModal.cancel']()}
 			</Button>
 			<Button
 				onclick={handleConfirm}
 				disabled={isProcessing || !amountValidation.valid}
 				class="flex-1"
 			>
-				{isProcessing ? 'Processing...' : 'Continue'}
+				{isProcessing ? m['pwycModal.processing']() : m['pwycModal.continue']()}
 			</Button>
 		</div>
 	</DialogContent>

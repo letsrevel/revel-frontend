@@ -207,13 +207,13 @@
 			});
 
 			if (response.error) {
-				seatLoadError = 'Failed to load available seats';
+				seatLoadError = m['guestTicketDialog.failedToLoadSeats']();
 				console.error('Seat availability error:', response.error);
 			} else if (response.data) {
 				seatAvailability = response.data;
 			}
 		} catch (err) {
-			seatLoadError = 'Failed to load available seats';
+			seatLoadError = m['guestTicketDialog.failedToLoadSeats']();
 			console.error('Seat availability fetch error:', err);
 		} finally {
 			isLoadingSeats = false;
@@ -402,8 +402,8 @@
 		if (emptyIndex >= 0) {
 			guestNameError =
 				emptyIndex === 0
-					? 'Please enter your name'
-					: `Please enter a name for ticket holder ${emptyIndex + 1}`;
+					? m['guestTicketDialog.pleaseEnterYourName']()
+					: m['guestTicketDialog.pleaseEnterTicketHolderName']({ number: emptyIndex + 1 });
 			return false;
 		}
 
@@ -423,7 +423,10 @@
 		// Validate seat selection for user_choice mode
 		if (isUserChoiceSeat && selectedSeatIds.length !== quantity) {
 			const remaining = quantity - selectedSeatIds.length;
-			seatSelectionError = `Please select ${remaining} more seat${remaining > 1 ? 's' : ''}`;
+			seatSelectionError =
+				remaining === 1
+					? m['guestTicketDialog.pleaseSelectMoreSeatOne']()
+					: m['guestTicketDialog.pleaseSelectMoreSeats']({ count: remaining });
 			return;
 		}
 		seatSelectionError = '';
@@ -494,9 +497,9 @@
 					requiresAccount = true;
 				}
 
-				const errorDetail = err?.detail || err?.reason || 'Failed to complete checkout';
+				const errorDetail = err?.detail || err?.reason || m['guestTicketDialog.failedToCheckout']();
 				throw new Error(
-					typeof errorDetail === 'string' ? errorDetail : 'Failed to complete checkout'
+					typeof errorDetail === 'string' ? errorDetail : m['guestTicketDialog.failedToCheckout']()
 				);
 			}
 
@@ -606,7 +609,7 @@
 					<!-- Quantity Selector (if applicable) -->
 					{#if showQuantitySelector}
 						<div class="space-y-2">
-							<Label for="quantity">Number of Tickets</Label>
+							<Label for="quantity">{m['guestTicketDialog.numberOfTickets']()}</Label>
 							<div class="flex items-center gap-3">
 								<Button
 									type="button"
@@ -614,7 +617,7 @@
 									size="icon"
 									onclick={decrementQuantity}
 									disabled={quantity <= 1 || isSubmitting}
-									aria-label="Decrease quantity"
+									aria-label={m['guestTicketDialog.decreaseQuantity']()}
 								>
 									<Minus class="h-4 w-4" />
 								</Button>
@@ -629,19 +632,20 @@
 									size="icon"
 									onclick={incrementQuantity}
 									disabled={quantity >= effectiveMaxQuantity || isSubmitting}
-									aria-label="Increase quantity"
+									aria-label={m['guestTicketDialog.increaseQuantity']()}
 								>
 									<Plus class="h-4 w-4" />
 								</Button>
 								<span class="text-sm text-muted-foreground">
 									{#if effectiveMaxQuantity < 100}
-										(Max: {effectiveMaxQuantity})
+										{m['guestTicketDialog.maxQuantity']({ max: effectiveMaxQuantity })}
 									{/if}
 								</span>
 							</div>
 							{#if !isPwyc}
 								<p class="text-sm font-semibold text-primary">
-									Total: {tier.currency}
+									{m['guestTicketDialog.total']()}
+									{tier.currency}
 									{(
 										quantity *
 										(typeof tier.price === 'string' ? parseFloat(tier.price) : tier.price || 0)
@@ -732,16 +736,20 @@
 						<div class="space-y-3">
 							<div class="flex items-center gap-2">
 								<User class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-								<Label class="text-base font-semibold">Ticket Holder Names</Label>
+								<Label class="text-base font-semibold"
+									>{m['guestTicketDialog.ticketHolderNames']()}</Label
+								>
 							</div>
 							<p class="text-sm text-muted-foreground">
-								Enter the name for each ticket holder (will be printed on their ticket)
+								{m['guestTicketDialog.ticketHolderNamesHint']()}
 							</p>
 							<div class="space-y-3">
 								{#each guestNames as name, index (index)}
 									<div class="space-y-2">
 										<Label for="guest-name-{index}">
-											{index === 0 ? 'Your Name' : `Guest ${index + 1} Name`}
+											{index === 0
+												? m['guestTicketDialog.yourName']()
+												: m['guestTicketDialog.guestName']({ number: index + 1 })}
 										</Label>
 										<Input
 											id="guest-name-{index}"
@@ -749,8 +757,9 @@
 											value={name}
 											oninput={(e) => updateGuestName(index, e.currentTarget.value)}
 											placeholder={index === 0
-												? `${formData.first_name} ${formData.last_name}`.trim() || 'Your name'
-												: `Guest ${index + 1} name`}
+												? `${formData.first_name} ${formData.last_name}`.trim() ||
+													m['guestTicketDialog.yourNamePlaceholder']()
+												: m['guestTicketDialog.guestNamePlaceholder']({ number: index + 1 })}
 											disabled={isSubmitting}
 											required
 										/>
@@ -792,7 +801,7 @@
 
 							<!-- Seat selection UI -->
 							<div class="space-y-2">
-								<Label>Select Your Seat</Label>
+								<Label>{m['guestTicketDialog.selectYourSeat']()}</Label>
 								{#if isLoadingSeats}
 									<div class="flex items-center justify-center py-12">
 										<Loader2 class="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
@@ -805,7 +814,7 @@
 								{:else if availableSeats.length === 0}
 									<Alert>
 										<AlertCircle class="h-4 w-4" />
-										<AlertDescription>No seats available for this tier</AlertDescription>
+										<AlertDescription>{m['guestTicketDialog.noSeatsAvailable']()}</AlertDescription>
 									</Alert>
 								{:else}
 									<SeatSelector
@@ -816,7 +825,14 @@
 									/>
 									{#if quantity > 1}
 										<p class="text-sm text-muted-foreground">
-											Selected {selectedSeatIds.length} of {quantity} seat{quantity > 1 ? 's' : ''}
+											{quantity === 1
+												? m['guestTicketDialog.selectedSeatsOne']({
+														selected: selectedSeatIds.length
+													})
+												: m['guestTicketDialog.selectedSeats']({
+														selected: selectedSeatIds.length,
+														total: quantity
+													})}
 										</p>
 									{/if}
 									{#if seatSelectionError}
@@ -832,7 +848,7 @@
 						<Alert>
 							<Info class="h-4 w-4" />
 							<AlertDescription>
-								A seat will be randomly assigned to you after checkout.
+								{m['guestTicketDialog.randomSeatNotice']()}
 							</AlertDescription>
 						</Alert>
 					{/if}
@@ -881,7 +897,7 @@
 
 							<!-- Quick Amount Suggestions -->
 							<div class="space-y-2">
-								<p class="text-sm font-medium">Quick Select</p>
+								<p class="text-sm font-medium">{m['guestTicketDialog.quickSelect']()}</p>
 								<div class="grid grid-cols-3 gap-2">
 									{#each getSuggestions(minAmount(), maxAmount()) as suggested}
 										<Button
@@ -925,7 +941,7 @@
 							<CreditCard class="h-4 w-4" />
 							<AlertDescription>
 								<p class="text-sm">
-									You'll be redirected to our secure payment provider to complete your purchase.
+									{m['guestTicketDialog.onlinePaymentNotice']()}
 								</p>
 							</AlertDescription>
 						</Alert>
@@ -943,16 +959,16 @@
 											href="/login?redirect={encodeURIComponent(window.location.pathname)}"
 											class="font-medium underline hover:no-underline"
 										>
-											Log in
+											{m['guestTicketDialog.logIn']()}
 										</a>
-										{' '}or{' '}
+										{' '}{m['guestTicketDialog.or']()}{' '}
 										<a
 											href="/register?redirect={encodeURIComponent(window.location.pathname)}"
 											class="font-medium underline hover:no-underline"
 										>
-											create an account
+											{m['guestTicketDialog.createAnAccount']()}
 										</a>
-										{' '}to continue.
+										{' '}{m['guestTicketDialog.toContinue']()}
 									</p>
 								{/if}
 							</AlertDescription>

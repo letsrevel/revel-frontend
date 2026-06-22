@@ -101,10 +101,10 @@
 			new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(v);
 
 		if (min !== null && max !== null && (num < min || num > max)) {
-			return `This amount is outside the suggested range (${fmt(min)} \u2013 ${fmt(max)})`;
+			return m['checkInDialog.pwycOutsideRange']({ min: fmt(min), max: fmt(max) });
 		}
 		if (min !== null && max === null && num < min) {
-			return `This amount is below the suggested minimum (${fmt(min)})`;
+			return m['checkInDialog.pwycBelowMin']({ min: fmt(min) });
 		}
 		return null;
 	});
@@ -120,8 +120,9 @@
 		const fmt = (v: number) =>
 			new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(v);
 
-		if (min !== null && max !== null) return `Suggested range: ${fmt(min)} \u2013 ${fmt(max)}`;
-		if (min !== null) return `Suggested minimum: ${fmt(min)}`;
+		if (min !== null && max !== null)
+			return m['checkInDialog.suggestedRange']({ min: fmt(min), max: fmt(max) });
+		if (min !== null) return m['checkInDialog.suggestedMin']({ min: fmt(min) });
 		return null;
 	});
 
@@ -141,13 +142,13 @@
 	function getPaymentMethodLabel(method: string): string {
 		switch (method) {
 			case 'online':
-				return 'Online (Stripe)';
+				return m['checkInDialog.paymentOnline']();
 			case 'offline':
-				return 'Offline';
+				return m['checkInDialog.paymentOffline']();
 			case 'at_the_door':
-				return 'At the Door';
+				return m['checkInDialog.paymentAtTheDoor']();
 			case 'free':
-				return 'Free';
+				return m['checkInDialog.paymentFree']();
 			default:
 				return method;
 		}
@@ -164,25 +165,25 @@
 		switch (status) {
 			case 'pending':
 				return {
-					label: 'Pending Payment',
+					label: m['checkInDialog.statusPendingPayment'](),
 					color: 'text-yellow-700 dark:text-yellow-300',
 					bgColor: 'bg-yellow-100 dark:bg-yellow-900/50'
 				};
 			case 'active':
 				return {
-					label: 'Active',
+					label: m['checkInDialog.statusActive'](),
 					color: 'text-green-700 dark:text-green-300',
 					bgColor: 'bg-green-100 dark:bg-green-900/50'
 				};
 			case 'checked_in':
 				return {
-					label: 'Already Checked In',
+					label: m['checkInDialog.statusAlreadyCheckedIn'](),
 					color: 'text-blue-700 dark:text-blue-300',
 					bgColor: 'bg-blue-100 dark:bg-blue-900/50'
 				};
 			case 'cancelled':
 				return {
-					label: 'Cancelled',
+					label: m['checkInDialog.statusCancelled'](),
 					color: 'text-red-700 dark:text-red-300',
 					bgColor: 'bg-red-100 dark:bg-red-900/50'
 				};
@@ -250,15 +251,15 @@
 			<div class="flex items-center justify-between border-b px-6 py-4">
 				<h2 id="checkin-dialog-title" class="text-xl font-bold">
 					{needsPaymentConfirmation || needsPwycInput
-						? 'Confirm Payment & Check In'
-						: 'Check In Attendee'}
+						? m['checkInDialog.confirmPaymentCheckInTitle']()
+						: m['checkInDialog.checkInAttendeeTitle']()}
 				</h2>
 				<button
 					type="button"
 					onclick={onCancel}
 					disabled={isLoading}
 					class="rounded-full p-1 hover:bg-accent disabled:opacity-50"
-					aria-label="Close dialog"
+					aria-label={m['checkInDialog.closeDialog']()}
 				>
 					<X class="h-5 w-5" />
 				</button>
@@ -287,11 +288,11 @@
 							<p class="text-sm {statusInfo.color}">{m['checkInDialog.ticketCancelled']()}</p>
 						{:else if needsPaymentConfirmation}
 							<p class="text-sm {statusInfo.color}">
-								Please confirm payment has been received before checking in.
+								{m['checkInDialog.confirmPaymentReceived']()}
 							</p>
 						{:else}
 							<p class="text-sm {statusInfo.color}">
-								Please verify the attendee's identity before checking them in.
+								{m['checkInDialog.verifyIdentity']()}
 							</p>
 						{/if}
 					</div>
@@ -305,11 +306,12 @@
 					<div class="divide-y">
 						{#if guestName}
 							<div class="flex items-center justify-between px-4 py-3">
-								<span class="text-sm text-muted-foreground">Guest Name</span>
+								<span class="text-sm text-muted-foreground">{m['checkInDialog.guestName']()}</span>
 								<span class="font-medium text-primary">{guestName}</span>
 							</div>
 							<div class="flex items-center justify-between px-4 py-3">
-								<span class="text-sm text-muted-foreground">Purchased By</span>
+								<span class="text-sm text-muted-foreground">{m['checkInDialog.purchasedBy']()}</span
+								>
 								<span class="font-medium">{getUserDisplayName(ticket.user)}</span>
 							</div>
 						{:else}
@@ -324,7 +326,7 @@
 						</div>
 						{#if seatInfo}
 							<div class="flex items-center justify-between px-4 py-3">
-								<span class="text-sm text-muted-foreground">Seat</span>
+								<span class="text-sm text-muted-foreground">{m['checkInDialog.seat']()}</span>
 								<span class="font-medium text-primary">{seatInfo}</span>
 							</div>
 						{/if}
@@ -362,8 +364,8 @@
 					>
 						<AlertCircle class="h-5 w-5 shrink-0" aria-hidden="true" />
 						<p>
-							<strong>{m['checkInDialog.paymentRequired']()}</strong> Please ensure payment has been
-							received before proceeding.
+							<strong>{m['checkInDialog.paymentRequired']()}</strong>
+							{m['checkInDialog.ensurePaymentReceived']()}
 						</p>
 					</div>
 				{/if}
@@ -371,7 +373,9 @@
 				{#if needsPwycInput}
 					<div class="space-y-2">
 						<label for="checkin-pwyc-price-input" class="block text-sm font-medium text-foreground">
-							Amount paid ({ticket.tier?.currency?.toUpperCase() || 'EUR'})
+							{m['checkInDialog.amountPaid']({
+								currency: ticket.tier?.currency?.toUpperCase() || 'EUR'
+							})}
 						</label>
 						<Input
 							id="checkin-pwyc-price-input"
@@ -420,11 +424,11 @@
 					disabled={!canSubmit || !canCheckIn(ticket.status, needsPaymentConfirmation)}
 				>
 					{#if isLoading}
-						Checking In...
+						{m['checkInDialog.checkingIn']()}
 					{:else if needsPaymentConfirmation || needsPwycInput}
-						Confirm Payment & Check In
+						{m['checkInDialog.confirmPaymentCheckInTitle']()}
 					{:else}
-						Check In
+						{m['checkInDialog.checkIn']()}
 					{/if}
 				</Button>
 			</div>

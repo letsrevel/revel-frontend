@@ -46,21 +46,41 @@
 	const visibilityInfo = $derived.by(() => {
 		switch (resource.visibility) {
 			case 'public':
-				return { icon: Globe, label: 'Public', color: 'text-green-600 dark:text-green-400' };
+				return {
+					icon: Globe,
+					label: m['resourceCard.visibilityPublic'](),
+					color: 'text-green-600 dark:text-green-400'
+				};
 			case 'members-only':
-				return { icon: Users, label: 'Members Only', color: 'text-blue-600 dark:text-blue-400' };
+				return {
+					icon: Users,
+					label: m['resourceCard.visibilityMembersOnly'](),
+					color: 'text-blue-600 dark:text-blue-400'
+				};
 			case 'staff-only':
-				return { icon: Shield, label: 'Staff Only', color: 'text-orange-600 dark:text-orange-400' };
+				return {
+					icon: Shield,
+					label: m['resourceCard.visibilityStaffOnly'](),
+					color: 'text-orange-600 dark:text-orange-400'
+				};
 			case 'attendees-only':
 				return {
 					icon: Ticket,
-					label: 'Attendees Only',
+					label: m['resourceCard.visibilityAttendeesOnly'](),
 					color: 'text-purple-600 dark:text-purple-400'
 				};
 			case 'private':
-				return { icon: Lock, label: 'Private', color: 'text-gray-600 dark:text-gray-400' };
+				return {
+					icon: Lock,
+					label: m['resourceCard.visibilityPrivate'](),
+					color: 'text-gray-600 dark:text-gray-400'
+				};
 			default:
-				return { icon: Lock, label: 'Private', color: 'text-gray-600 dark:text-gray-400' };
+				return {
+					icon: Lock,
+					label: m['resourceCard.visibilityPrivate'](),
+					color: 'text-gray-600 dark:text-gray-400'
+				};
 		}
 	});
 
@@ -68,11 +88,11 @@
 	const typeLabel = $derived.by(() => {
 		switch (resource.resource_type) {
 			case 'file':
-				return 'File';
+				return m['resourceCard.typeFile']();
 			case 'link':
-				return 'Link';
+				return m['resourceCard.typeLink']();
 			case 'text':
-				return 'Text';
+				return m['resourceCard.typeText']();
 			default:
 				return resource.resource_type;
 		}
@@ -81,20 +101,24 @@
 	// Get resource content preview
 	const contentPreview = $derived.by(() => {
 		if (resource.resource_type === 'file') {
-			if (!resource.file_url) return 'No file attached';
+			if (!resource.file_url) return m['resourceCard.noFileAttached']();
 			// Extract filename from path (handle both URLs and paths)
 			try {
 				// Try as URL first (for absolute URLs)
-				return new URL(resource.file_url).pathname.split('/').pop() || 'Unknown file';
+				return (
+					new URL(resource.file_url).pathname.split('/').pop() || m['resourceCard.unknownFile']()
+				);
 			} catch {
 				// If not a valid URL, treat as path
-				return resource.file_url.split('/').pop() || 'Unknown file';
+				return resource.file_url.split('/').pop() || m['resourceCard.unknownFile']();
 			}
 		} else if (resource.resource_type === 'link') {
-			return resource.link || 'No link provided';
+			return resource.link || m['resourceCard.noLinkProvided']();
 		} else if (resource.resource_type === 'text') {
 			const text = resource.text || '';
-			return text.length > 100 ? text.substring(0, 100) + '...' : text || 'No content';
+			return text.length > 100
+				? text.substring(0, 100) + '...'
+				: text || m['resourceCard.noContent']();
 		}
 		return '';
 	});
@@ -149,7 +173,7 @@
 			<!-- Title and Type -->
 			<div class="min-w-0 flex-1">
 				<h3 class="truncate text-lg font-semibold leading-tight">
-					{resource.name || 'Untitled Resource'}
+					{resource.name || m['resourceCard.untitledResource']()}
 				</h3>
 				<p class="text-sm text-muted-foreground">
 					{typeLabel}
@@ -166,7 +190,7 @@
 						onclick={handleEdit}
 						disabled={isDeleting}
 						class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-						aria-label="Edit resource"
+						aria-label={m['resourceCard.editResource']()}
 					>
 						<Edit class="h-4 w-4" aria-hidden="true" />
 					</button>
@@ -177,7 +201,7 @@
 						onclick={handleDelete}
 						disabled={isDeleting}
 						class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-						aria-label="Delete resource"
+						aria-label={m['resourceCard.deleteResource']()}
 					>
 						<Trash2 class="h-4 w-4" aria-hidden="true" />
 					</button>

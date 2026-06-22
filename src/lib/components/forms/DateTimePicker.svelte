@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { cn } from '$lib/utils/cn';
 	import { toDateTimeLocal, toISOString } from '$lib/utils/datetime';
 
@@ -101,7 +102,7 @@
 		<label for={inputId} class="block text-sm font-medium text-gray-900 dark:text-gray-100">
 			{label}
 			{#if required}
-				<span class="text-destructive" aria-label="required">*</span>
+				<span class="text-destructive" aria-label={m['dateTimePicker.required']()}>*</span>
 			{/if}
 		</label>
 	{/if}

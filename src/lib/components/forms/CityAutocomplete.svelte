@@ -187,7 +187,7 @@
 						type="button"
 						onclick={clearSelection}
 						class="rounded p-1 text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-						aria-label="Clear city selection"
+						aria-label={m['cityAutocomplete.clearSelection']()}
 					>
 						<X class="h-4 w-4" aria-hidden="true" />
 					</button>
@@ -210,7 +210,7 @@
 					onfocus={handleFocus}
 					onblur={handleBlur}
 					{disabled}
-					placeholder="Search for a city..."
+					placeholder={m['cityAutocomplete.searchPlaceholder']()}
 					aria-invalid={!!error}
 					aria-describedby={error ? 'city-error' : undefined}
 					aria-autocomplete="list"

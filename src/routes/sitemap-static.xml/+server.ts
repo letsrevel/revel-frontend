@@ -19,8 +19,8 @@ const LANDING_SLUGS = [
 	'community-first-event-platform'
 ];
 
-const LANGS = ['en', 'de', 'it'] as const;
-const PREFIX: Record<(typeof LANGS)[number], string> = { en: '', de: '/de', it: '/it' };
+const LANGS = ['en', 'de', 'it', 'fr'] as const;
+const PREFIX: Record<(typeof LANGS)[number], string> = { en: '', de: '/de', it: '/it', fr: '/fr' };
 
 function escapeXml(s: string): string {
 	return s

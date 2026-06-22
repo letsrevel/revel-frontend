@@ -69,8 +69,8 @@
 			if (error || !orgData) {
 				emailUpdateError =
 					typeof error === 'object' && error && 'detail' in error
-						? (error as { detail?: string }).detail || 'Failed to update email'
-						: 'Failed to update email';
+						? (error as { detail?: string }).detail || m['orgContactEmailModal.failedToUpdate']()
+						: m['orgContactEmailModal.failedToUpdate']();
 				return;
 			}
 
@@ -100,7 +100,7 @@
 			}
 		} catch (err) {
 			console.error('[EMAIL UPDATE] Error:', err);
-			emailUpdateError = 'An unexpected error occurred';
+			emailUpdateError = m['orgContactEmailModal.unexpectedError']();
 		} finally {
 			isUpdatingEmail = false;
 		}
@@ -127,13 +127,15 @@
 	>
 		<div class="w-full max-w-md rounded-lg bg-background p-6 shadow-xl">
 			<div class="mb-4 flex items-start justify-between">
-				<h3 id="email-modal-title" class="text-lg font-semibold">Change Contact Email</h3>
+				<h3 id="email-modal-title" class="text-lg font-semibold">
+					{m['orgContactEmailModal.title']()}
+				</h3>
 				<button
 					type="button"
 					onclick={close}
 					disabled={isUpdatingEmail}
 					class="rounded-md p-1 hover:bg-accent"
-					aria-label="Close"
+					aria-label={m['orgContactEmailModal.close']()}
 				>
 					<X class="h-5 w-5" aria-hidden="true" />
 				</button>
@@ -150,11 +152,12 @@
 							/>
 							<div>
 								<h4 class="font-medium text-green-900 dark:text-green-100">
-									Verification Email Sent
+									{m['orgContactEmailModal.verificationSentTitle']()}
 								</h4>
 								<p class="mt-1 text-sm text-green-800 dark:text-green-200">
-									We've sent a verification link to <strong>{newEmail}</strong>. Please check your
-									inbox and click the link to verify your new contact email.
+									{m['orgContactEmailModal.verificationSentPrefix']()}
+									<strong>{newEmail}</strong>.
+									{m['orgContactEmailModal.verificationSentSuffix']()}
 								</p>
 							</div>
 						</div>
@@ -166,14 +169,14 @@
 							disabled={isUpdatingEmail}
 							class="rounded-md px-4 py-2 text-sm font-medium text-primary hover:bg-accent"
 						>
-							Resend Email
+							{m['orgContactEmailModal.resendEmail']()}
 						</button>
 						<button
 							type="button"
 							onclick={close}
 							class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
 						>
-							Done
+							{m['orgContactEmailModal.done']()}
 						</button>
 					</div>
 				</div>
@@ -181,17 +184,19 @@
 				<!-- Input form -->
 				<div class="space-y-4">
 					<div>
-						<label for="new-email" class="block text-sm font-medium"> New Contact Email </label>
+						<label for="new-email" class="block text-sm font-medium">
+							{m['orgContactEmailModal.newEmailLabel']()}
+						</label>
 						<input
 							id="new-email"
 							type="email"
 							bind:value={newEmail}
 							disabled={isUpdatingEmail}
-							placeholder="organization@example.com"
+							placeholder={m['orgContactEmailModal.emailPlaceholder']()}
 							class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800"
 						/>
 						<p class="mt-1 text-xs text-muted-foreground">
-							If this email is different from your account email, a verification email will be sent.
+							{m['orgContactEmailModal.helperText']()}
 						</p>
 					</div>
 
@@ -216,7 +221,7 @@
 							disabled={isUpdatingEmail}
 							class="rounded-md border px-4 py-2 text-sm font-medium hover:bg-accent"
 						>
-							Cancel
+							{m['orgContactEmailModal.cancel']()}
 						</button>
 						<button
 							type="button"
@@ -229,9 +234,9 @@
 									class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
 									aria-hidden="true"
 								></div>
-								Updating...
+								{m['orgContactEmailModal.updating']()}
 							{:else}
-								Update Email
+								{m['orgContactEmailModal.updateEmail']()}
 							{/if}
 						</button>
 					</div>

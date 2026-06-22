@@ -95,8 +95,7 @@
 			{m['orgCreate.subtitle']()}
 		</p>
 		<p class="mt-2 text-sm text-muted-foreground">
-			You'll be able to add more details, upload images, and customize your organization in the
-			settings page after creation.
+			{m['createOrgPage.customizeHint']()}
 		</p>
 	</div>
 

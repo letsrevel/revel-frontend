@@ -42,13 +42,17 @@
 	// Get privileges granted by this invitation
 	const privileges = $derived.by(() => {
 		const priv: string[] = [];
-		if (invitation.waives_purchase) priv.push('Free admission');
-		if (invitation.waives_questionnaire) priv.push('No questionnaire required');
-		if (invitation.waives_membership_required) priv.push('No membership required');
-		if (invitation.waives_rsvp_deadline) priv.push('Extended RSVP deadline');
-		if (invitation.overrides_max_attendees) priv.push('Priority access (bypasses capacity)');
+		if (invitation.waives_purchase) priv.push(m['invitationCard.privFreeAdmission']());
+		if (invitation.waives_questionnaire) priv.push(m['invitationCard.privNoQuestionnaire']());
+		if (invitation.waives_membership_required) priv.push(m['invitationCard.privNoMembership']());
+		if (invitation.waives_rsvp_deadline) priv.push(m['invitationCard.privExtendedDeadline']());
+		if (invitation.overrides_max_attendees) priv.push(m['invitationCard.privPriorityAccess']());
 		if (invitation.tiers?.length)
-			priv.push(`Assigned tiers: ${invitation.tiers.map((t) => t.name).join(', ')}`);
+			priv.push(
+				m['invitationCard.privAssignedTiers']({
+					tiers: invitation.tiers.map((t) => t.name).join(', ')
+				})
+			);
 		return priv;
 	});
 </script>
@@ -85,7 +89,7 @@
 						class="mt-1 inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300"
 					>
 						<CheckCircle2 class="h-3 w-3" aria-hidden="true" />
-						Special Invitation
+						{m['invitationCard.specialInvitation']()}
 					</div>
 				</div>
 
@@ -126,10 +130,10 @@
 						class="mt-1 inline-flex items-center gap-0.5 text-xs font-medium text-primary hover:underline"
 					>
 						{#if messageExpanded}
-							Show less
+							{m['invitationCard.showLess']()}
 							<ChevronUp class="h-3 w-3" aria-hidden="true" />
 						{:else}
-							Show more
+							{m['invitationCard.showMore']()}
 							<ChevronDown class="h-3 w-3" aria-hidden="true" />
 						{/if}
 					</button>
@@ -165,7 +169,7 @@
 				href="/events/{invitation.event.id}"
 				class="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 			>
-				View Event
+				{m['invitationCard.viewEvent']()}
 			</a>
 		</div>
 	</div>

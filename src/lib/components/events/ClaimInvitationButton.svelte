@@ -43,12 +43,12 @@
 			if (response.error) {
 				const errorDetail = (response.error as any)?.detail;
 				throw new Error(
-					typeof errorDetail === 'string' ? errorDetail : 'Failed to claim invitation'
+					typeof errorDetail === 'string' ? errorDetail : m['claimInvitationButton.failedToClaim']()
 				);
 			}
 
 			showSuccess = true;
-			toast.success('Invitation claimed successfully!');
+			toast.success(m['claimInvitationButton.claimedSuccessfully']());
 
 			onSuccess?.();
 
@@ -62,7 +62,7 @@
 			}, 1000);
 		} catch (err: any) {
 			console.error('Failed to claim invitation:', err);
-			toast.error(err.message || 'Failed to claim invitation');
+			toast.error(err.message || m['claimInvitationButton.failedToClaim']());
 		} finally {
 			isLoading = false;
 		}

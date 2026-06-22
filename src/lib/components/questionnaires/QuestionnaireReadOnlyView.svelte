@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type {
 		QuestionnaireQuestion as Question,
 		QuestionnaireSection as Section
@@ -29,7 +30,9 @@
 				<!-- Display conditional questions for this option -->
 				{#if option.conditionalQuestions && option.conditionalQuestions.length > 0}
 					<div class="ml-6 mt-2 space-y-2 border-l-2 border-primary/30 pl-4">
-						<p class="text-xs font-medium text-muted-foreground">&#8627; If selected, show:</p>
+						<p class="text-xs font-medium text-muted-foreground">
+							&#8627; {m['questionnaireReadOnlyView.ifSelectedShow']()}
+						</p>
 						{#each option.conditionalQuestions as condQ}
 							<div class="rounded border bg-muted/50 p-3">
 								<div class="mb-1 flex items-center gap-2">
@@ -41,7 +44,9 @@
 										{condQ.type === 'multiple_choice' ? 'MC' : 'FT'}
 									</span>
 									{#if condQ.required}
-										<span class="text-xs text-destructive">Required</span>
+										<span class="text-xs text-destructive"
+											>{m['questionnaireReadOnlyView.required']()}</span
+										>
 									{/if}
 								</div>
 								<p class="text-sm">{condQ.text}</p>
@@ -63,7 +68,7 @@
 				{#if option.conditionalSections && option.conditionalSections.length > 0}
 					<div class="ml-6 mt-2 space-y-2 border-l-2 border-green-500/30 pl-4">
 						<p class="text-xs font-medium text-muted-foreground">
-							&#8627; If selected, show section:
+							&#8627; {m['questionnaireReadOnlyView.ifSelectedShowSection']()}
 						</p>
 						{#each option.conditionalSections as condSection}
 							<div class="rounded border border-green-500/50 bg-green-50/50 p-3">
@@ -113,7 +118,7 @@
 					: 'Free Text'}
 		</span>
 		{#if question.required}
-			<span class="text-xs text-destructive">Required</span>
+			<span class="text-xs text-destructive">{m['questionnaireReadOnlyView.required']()}</span>
 		{/if}
 	</div>
 {/snippet}
@@ -121,7 +126,9 @@
 <div class="space-y-4">
 	{#if topLevelQuestions.length > 0}
 		<div class="space-y-3">
-			<h3 class="text-sm font-medium text-muted-foreground">Top-level Questions</h3>
+			<h3 class="text-sm font-medium text-muted-foreground">
+				{m['questionnaireReadOnlyView.topLevelQuestions']()}
+			</h3>
 			{#each topLevelQuestions as question}
 				<div class="rounded-lg border p-4">
 					{@render questionBadge(question)}
@@ -137,7 +144,7 @@
 			<div class="flex items-center justify-between border-b pb-2">
 				<h3 class="font-semibold">{section.name}</h3>
 				<span class="text-sm text-muted-foreground">
-					({section.questions.length} questions)
+					{m['questionnaireReadOnlyView.questionCount']({ count: section.questions.length })}
 				</span>
 			</div>
 			{#if section.description}
@@ -152,7 +159,7 @@
 			{/each}
 			{#if section.questions.length === 0}
 				<div class="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
-					No questions in this section.
+					{m['questionnaireReadOnlyView.noQuestionsInSection']()}
 				</div>
 			{/if}
 		</div>

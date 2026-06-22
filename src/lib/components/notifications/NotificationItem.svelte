@@ -60,7 +60,7 @@
 		onError: (error: any) => {
 			// Revert optimistic update
 			isRead = false;
-			toast.error('Failed to mark notification as read');
+			toast.error(m['notificationItem.toast_markReadFailed']());
 			console.error('Failed to mark notification as read:', error);
 		}
 	}));
@@ -88,7 +88,7 @@
 		onError: (error: any) => {
 			// Revert optimistic update
 			isRead = true;
-			toast.error('Failed to mark notification as unread');
+			toast.error(m['notificationItem.toast_markUnreadFailed']());
 			console.error('Failed to mark notification as unread:', error);
 		}
 	}));
@@ -285,7 +285,10 @@
 			handleClick(e as unknown as MouseEvent);
 		}
 	}}
-	aria-label={`${isWaitlistSpot ? m['notifications.waitlistSpot.title']() : notification.title}. ${isRead ? 'Read' : 'Unread'}. Click to view details.`}
+	aria-label={m['notificationItem.cardAriaLabel']({
+		title: isWaitlistSpot ? m['notifications.waitlistSpot.title']() : notification.title,
+		status: isRead ? m['notificationItem.statusRead']() : m['notificationItem.statusUnread']()
+	})}
 >
 	<div class="flex items-start gap-3">
 		<!-- Unread indicator -->
@@ -366,7 +369,9 @@
 				size="sm"
 				onclick={toggleReadStatus}
 				disabled={markReadMutation.isPending || markUnreadMutation.isPending}
-				aria-label={isRead ? 'Mark as unread' : 'Mark as read'}
+				aria-label={isRead
+					? m['notificationItem.markAsUnread']()
+					: m['notificationItem.markAsRead']()}
 				class="h-8 w-8 p-0"
 			>
 				{#if isRead}

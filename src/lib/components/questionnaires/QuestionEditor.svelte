@@ -375,7 +375,7 @@
 							onclick={onMoveUp}
 							disabled={isFirst}
 							class="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
-							aria-label="Move question up"
+							aria-label={m['questionEditor.moveQuestionUp']()}
 						>
 							<ArrowUp class="h-4 w-4" aria-hidden="true" />
 						</button>
@@ -384,7 +384,7 @@
 							onclick={onMoveDown}
 							disabled={isLast}
 							class="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
-							aria-label="Move question down"
+							aria-label={m['questionEditor.moveQuestionDown']()}
 						>
 							<ArrowDown class="h-4 w-4" aria-hidden="true" />
 						</button>
@@ -401,13 +401,13 @@
 						<div class="flex items-center gap-2">
 							<Badge variant={isNested ? 'secondary' : 'outline'}>
 								{question.type === 'multiple_choice'
-									? 'Multiple Choice'
+									? m['questionEditor.multipleChoice']()
 									: question.type === 'free_text'
-										? 'Free Text'
-										: 'File Upload'}
+										? m['questionEditor.freeText']()
+										: m['questionEditor.fileUpload']()}
 							</Badge>
 							{#if isNested}
-								<Badge variant="outline" class="text-xs">Conditional</Badge>
+								<Badge variant="outline" class="text-xs">{m['questionEditor.conditional']()}</Badge>
 							{/if}
 						</div>
 						<Button
@@ -417,17 +417,17 @@
 							class="gap-2 text-destructive hover:text-destructive"
 						>
 							<Trash2 class="h-4 w-4" />
-							Remove
+							{m['questionEditor.remove']()}
 						</Button>
 					</div>
 
 					<!-- Question text (markdown) -->
 					<MarkdownEditor
 						id="question-{question.id}"
-						label="Question Text (Markdown)"
+						label={m['questionEditor.questionTextLabel']()}
 						value={question.text}
 						onValueChange={(v) => onUpdate({ text: v })}
-						placeholder="Enter your question here... Supports **bold**, *italic*, [links](url), and lists."
+						placeholder={m['questionEditor.questionTextPlaceholder']()}
 						rows={3}
 						required={true}
 					/>
@@ -435,10 +435,10 @@
 					<!-- Hint (markdown) - optional help text shown to users -->
 					<MarkdownEditor
 						id="hint-{question.id}"
-						label="Hint (optional)"
+						label={m['questionEditor.hintLabel']()}
 						value={question.hint || ''}
 						onValueChange={(v) => onUpdate({ hint: v || undefined })}
-						placeholder="Additional context or help shown to users below the question..."
+						placeholder={m['questionEditor.hintPlaceholder']()}
 						rows={2}
 					/>
 
@@ -453,7 +453,7 @@
 							for="required-{question.id}"
 							class="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 						>
-							Required question
+							{m['questionEditor.requiredQuestion']()}
 						</Label>
 					</div>
 
@@ -497,7 +497,7 @@
 							</div>
 							<Button variant="outline" size="sm" onclick={addOption} class="gap-2">
 								<Plus class="h-4 w-4" />
-								Add Option
+								{m['questionEditor.addOption']()}
 							</Button>
 						</div>
 
@@ -516,7 +516,7 @@
 										for="multiple-{question.id}"
 										class="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 									>
-										Allow multiple answers
+										{m['questionEditor.allowMultipleAnswers']()}
 									</Label>
 								</div>
 								<div class="flex items-center space-x-2">
@@ -529,7 +529,7 @@
 										for="shuffle-{question.id}"
 										class="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 									>
-										Shuffle answer options for each user
+										{m['questionEditor.shuffleAnswerOptions']()}
 									</Label>
 								</div>
 							</div>
@@ -545,11 +545,11 @@
 								id="llm-guidelines-{question.id}"
 								value={question.llmGuidelines || ''}
 								oninput={(e) => onUpdate({ llmGuidelines: e.currentTarget.value })}
-								placeholder="Specific instructions for AI evaluation of this question..."
+								placeholder={m['questionEditor.llmGuidelinesPlaceholder']()}
 								rows={3}
 							/>
 							<p class="text-xs text-muted-foreground">
-								Optional question-specific guidelines for AI evaluation
+								{m['questionEditor.llmGuidelinesHelp']()}
 							</p>
 						</div>
 					{/if}
@@ -573,7 +573,7 @@
 								class="flex w-full items-center justify-between text-sm font-medium text-muted-foreground hover:text-foreground"
 								onclick={() => (showAdvanced = !showAdvanced)}
 							>
-								<span>Advanced Settings</span>
+								<span>{m['questionEditor.advancedSettings']()}</span>
 								{#if showAdvanced}
 									<ChevronUp class="h-4 w-4" />
 								{:else}
@@ -586,17 +586,19 @@
 									<!-- Reviewer Notes (markdown) - not shown to users -->
 									<MarkdownEditor
 										id="reviewer-notes-{question.id}"
-										label="Reviewer Notes (internal)"
+										label={m['questionEditor.reviewerNotesLabel']()}
 										value={question.reviewerNotes || ''}
 										onValueChange={(v) => onUpdate({ reviewerNotes: v || undefined })}
-										placeholder="Internal notes for staff reviewing submissions. Not shown to users."
+										placeholder={m['questionEditor.reviewerNotesPlaceholder']()}
 										rows={2}
 									/>
 
 									<!-- Scoring weights -->
 									<div class="grid gap-4 sm:grid-cols-2">
 										<div class="space-y-2">
-											<Label for="positive-weight-{question.id}">Positive Weight</Label>
+											<Label for="positive-weight-{question.id}"
+												>{m['questionEditor.positiveWeight']()}</Label
+											>
 											<Input
 												id="positive-weight-{question.id}"
 												type="number"
@@ -607,10 +609,14 @@
 												max="100"
 												step="0.1"
 											/>
-											<p class="text-xs text-muted-foreground">Points added for correct answer</p>
+											<p class="text-xs text-muted-foreground">
+												{m['questionEditor.pointsAddedForCorrect']()}
+											</p>
 										</div>
 										<div class="space-y-2">
-											<Label for="negative-weight-{question.id}">Negative Weight</Label>
+											<Label for="negative-weight-{question.id}"
+												>{m['questionEditor.negativeWeight']()}</Label
+											>
 											<Input
 												id="negative-weight-{question.id}"
 												type="number"
@@ -621,7 +627,9 @@
 												max="100"
 												step="0.1"
 											/>
-											<p class="text-xs text-muted-foreground">Points deducted for wrong answer</p>
+											<p class="text-xs text-muted-foreground">
+												{m['questionEditor.pointsDeductedForWrong']()}
+											</p>
 										</div>
 									</div>
 
@@ -636,7 +644,7 @@
 											for="fatal-{question.id}"
 											class="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 										>
-											Fatal question (wrong answer = automatic rejection)
+											{m['questionEditor.fatalQuestion']()}
 										</Label>
 									</div>
 								</div>

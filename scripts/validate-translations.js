@@ -134,20 +134,23 @@ function main() {
 	const en = loadJSON('en.json');
 	const de = loadJSON('de.json');
 	const it = loadJSON('it.json');
+	const fr = loadJSON('fr.json');
 	log('✓ All files loaded\n', 'green');
 
 	// Get all keys
 	const enKeys = getAllKeys(en);
 	const deKeys = getAllKeys(de);
 	const itKeys = getAllKeys(it);
+	const frKeys = getAllKeys(fr);
 
 	// Check key count
 	log('=== Key Count ===', 'bold');
 	log(`English: ${enKeys.size} keys`);
 	log(`German:  ${deKeys.size} keys`);
 	log(`Italian: ${itKeys.size} keys`);
+	log(`French:  ${frKeys.size} keys`);
 
-	if (enKeys.size === deKeys.size && deKeys.size === itKeys.size) {
+	if (enKeys.size === deKeys.size && deKeys.size === itKeys.size && itKeys.size === frKeys.size) {
 		log('✓ All languages have the same number of keys\n', 'green');
 	} else {
 		log('✗ Key count mismatch!\n', 'red');
@@ -158,14 +161,18 @@ function main() {
 	log('=== Key Structure Alignment ===', 'bold');
 	const missingInDe = Array.from(enKeys).filter((k) => !deKeys.has(k));
 	const missingInIt = Array.from(enKeys).filter((k) => !itKeys.has(k));
+	const missingInFr = Array.from(enKeys).filter((k) => !frKeys.has(k));
 	const extraInDe = Array.from(deKeys).filter((k) => !enKeys.has(k));
 	const extraInIt = Array.from(itKeys).filter((k) => !enKeys.has(k));
+	const extraInFr = Array.from(frKeys).filter((k) => !enKeys.has(k));
 
 	if (
 		missingInDe.length === 0 &&
 		missingInIt.length === 0 &&
+		missingInFr.length === 0 &&
 		extraInDe.length === 0 &&
-		extraInIt.length === 0
+		extraInIt.length === 0 &&
+		extraInFr.length === 0
 	) {
 		log('✓ All keys are aligned across languages\n', 'green');
 	} else {
@@ -180,6 +187,11 @@ function main() {
 			missingInIt.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
 			if (missingInIt.length > 5) log(`  ... and ${missingInIt.length - 5} more`, 'red');
 		}
+		if (missingInFr.length > 0) {
+			log(`✗ French missing ${missingInFr.length} keys:`, 'red');
+			missingInFr.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
+			if (missingInFr.length > 5) log(`  ... and ${missingInFr.length - 5} more`, 'red');
+		}
 		if (extraInDe.length > 0) {
 			log(`✗ German has ${extraInDe.length} extra keys:`, 'red');
 			extraInDe.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
@@ -187,6 +199,10 @@ function main() {
 		if (extraInIt.length > 0) {
 			log(`✗ Italian has ${extraInIt.length} extra keys:`, 'red');
 			extraInIt.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
+		}
+		if (extraInFr.length > 0) {
+			log(`✗ French has ${extraInFr.length} extra keys:`, 'red');
+			extraInFr.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
 		}
 		log('');
 	}
@@ -196,6 +212,7 @@ function main() {
 	const enEmpty = findEmptyStrings(en);
 	const deEmpty = findEmptyStrings(de);
 	const itEmpty = findEmptyStrings(it);
+	const frEmpty = findEmptyStrings(fr);
 
 	if (enEmpty.length > 0) {
 		log(`✗ English has ${enEmpty.length} empty strings!`, 'red');
@@ -220,14 +237,28 @@ function main() {
 	} else {
 		log('✓ Italian has no empty strings', 'green');
 	}
+
+	if (frEmpty.length > 0) {
+		log(`✗ French has ${frEmpty.length} empty strings!`, 'red');
+		frEmpty.slice(0, 5).forEach((k) => log(`  - ${k}`, 'red'));
+		if (frEmpty.length > 5) log(`  ... and ${frEmpty.length - 5} more`, 'red');
+		hasErrors = true;
+	} else {
+		log('✓ French has no empty strings', 'green');
+	}
 	log('');
 
 	// Check placeholders
 	log('=== Placeholder Validation ===', 'bold');
 	const dePlaceholderIssues = validatePlaceholders(en, de, 'DE');
 	const itPlaceholderIssues = validatePlaceholders(en, it, 'IT');
+	const frPlaceholderIssues = validatePlaceholders(en, fr, 'FR');
 
-	if (dePlaceholderIssues.length === 0 && itPlaceholderIssues.length === 0) {
+	if (
+		dePlaceholderIssues.length === 0 &&
+		itPlaceholderIssues.length === 0 &&
+		frPlaceholderIssues.length === 0
+	) {
 		log('✓ All placeholders are consistent\n', 'green');
 	} else {
 		hasWarnings = true;
@@ -249,19 +280,30 @@ function main() {
 				log(`  ... and ${itPlaceholderIssues.length - 3} more`, 'yellow');
 			}
 		}
+		if (frPlaceholderIssues.length > 0) {
+			log(`⚠ French has ${frPlaceholderIssues.length} placeholder issues:`, 'yellow');
+			frPlaceholderIssues.slice(0, 3).forEach((issue) => {
+				log(`  ${issue.key}: ${issue.issue}`, 'yellow');
+			});
+			if (frPlaceholderIssues.length > 3) {
+				log(`  ... and ${frPlaceholderIssues.length - 3} more`, 'yellow');
+			}
+		}
 		log('');
 	}
 
 	// Summary
 	log('=== Summary ===', 'bold');
 	log(`Total keys: ${enKeys.size}`);
-	log(`Languages: 3 (English, German, Italian)`);
+	log(`Languages: 4 (English, German, Italian, French)`);
 
 	const deCompleteness = (((deKeys.size - deEmpty.length) / enKeys.size) * 100).toFixed(1);
 	const itCompleteness = (((itKeys.size - itEmpty.length) / enKeys.size) * 100).toFixed(1);
+	const frCompleteness = (((frKeys.size - frEmpty.length) / enKeys.size) * 100).toFixed(1);
 
 	log(`German completion: ${deCompleteness}%`);
 	log(`Italian completion: ${itCompleteness}%`);
+	log(`French completion: ${frCompleteness}%`);
 
 	log('');
 

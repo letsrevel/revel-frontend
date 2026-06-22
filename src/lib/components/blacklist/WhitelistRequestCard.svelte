@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { WhitelistRequestSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
@@ -25,7 +26,7 @@
 	const createdAgo = $derived(
 		request.created_at
 			? formatDistanceToNow(new Date(request.created_at), { addSuffix: true })
-			: 'Unknown'
+			: m['whitelistRequestCard.unknown']()
 	);
 
 	// Format decided date
@@ -95,16 +96,22 @@
 					class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-950 dark:text-red-200"
 				>
 					<AlertCircle class="h-3 w-3" />
-					Matches {request.matched_entries_count} blacklist {request.matched_entries_count === 1
-						? 'entry'
-						: 'entries'}
+					{request.matched_entries_count === 1
+						? m['whitelistRequestCard.matchesSingular']({
+								count: String(request.matched_entries_count)
+							})
+						: m['whitelistRequestCard.matchesPlural']({
+								count: String(request.matched_entries_count)
+							})}
 				</span>
 			</div>
 
 			<!-- Message from user -->
 			{#if request.message}
 				<div class="mt-3 rounded-md bg-muted/50 p-2">
-					<p class="text-sm font-medium text-muted-foreground">Message from user:</p>
+					<p class="text-sm font-medium text-muted-foreground">
+						{m['whitelistRequestCard.messageFromUser']()}
+					</p>
 					<p class="text-sm text-foreground">{request.message}</p>
 				</div>
 			{/if}
@@ -113,14 +120,16 @@
 			<div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
 				<span class="flex items-center gap-1">
 					<Calendar class="h-3 w-3" />
-					Requested {createdAgo}
+					{m['whitelistRequestCard.requested']({ date: createdAgo })}
 				</span>
 				{#if request.status !== 'pending' && decidedAgo}
 					<span>
-						{request.status === 'approved' ? 'Approved' : 'Rejected'}
+						{request.status === 'approved'
+							? m['whitelistRequestCard.approvedStatus']()
+							: m['whitelistRequestCard.rejectedStatus']()}
 						{decidedAgo}
 						{#if request.decided_by_name}
-							by {request.decided_by_name}
+							{m['whitelistRequestCard.byName']({ name: request.decided_by_name })}
 						{/if}
 					</span>
 				{/if}
@@ -138,11 +147,11 @@
 					class="text-destructive hover:bg-destructive hover:text-destructive-foreground"
 				>
 					<X class="h-4 w-4" />
-					<span class="sr-only md:not-sr-only md:ml-1">Reject</span>
+					<span class="sr-only md:not-sr-only md:ml-1">{m['whitelistRequestCard.reject']()}</span>
 				</Button>
 				<Button variant="default" size="sm" onclick={handleApprove} disabled={isProcessing}>
 					<Check class="h-4 w-4" />
-					<span class="sr-only md:not-sr-only md:ml-1">Approve</span>
+					<span class="sr-only md:not-sr-only md:ml-1">{m['whitelistRequestCard.approve']()}</span>
 				</Button>
 			</div>
 		{/if}

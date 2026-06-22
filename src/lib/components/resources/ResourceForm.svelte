@@ -64,23 +64,23 @@
 		const newErrors: Record<string, string> = {};
 
 		if (!name.trim()) {
-			newErrors.name = 'Name is required';
+			newErrors.name = m['resourceForm.nameRequired']();
 		}
 
 		if (resourceType === 'file' && !file && !resource?.file_url) {
-			newErrors.file = 'Please select a file';
+			newErrors.file = m['resourceForm.fileRequired']();
 		}
 
 		if (resourceType === 'link') {
 			if (!link.trim()) {
-				newErrors.link = 'Link URL is required';
+				newErrors.link = m['resourceForm.linkRequired']();
 			} else if (!isValidUrl(link)) {
-				newErrors.link = 'Please enter a valid URL';
+				newErrors.link = m['resourceForm.invalidUrl']();
 			}
 		}
 
 		if (resourceType === 'text' && !text.trim()) {
-			newErrors.text = 'Content is required';
+			newErrors.text = m['resourceForm.contentRequired']();
 		}
 
 		validationErrors = newErrors;
@@ -153,8 +153,8 @@
 				id="resource-type-label"
 				class="block text-sm font-medium text-gray-900 dark:text-gray-100"
 			>
-				Resource Type
-				<span class="text-destructive" aria-label="required">*</span>
+				{m['resourceForm.resourceType']()}
+				<span class="text-destructive" aria-label={m['resourceForm.required']()}>*</span>
 			</span>
 			<div class="grid grid-cols-3 gap-3" role="group" aria-labelledby="resource-type-label">
 				<button
@@ -208,8 +208,8 @@
 	<!-- Name -->
 	<div class="space-y-2">
 		<label for="name" class="block text-sm font-medium text-gray-900 dark:text-gray-100">
-			Name
-			<span class="text-destructive" aria-label="required">*</span>
+			{m['resourceForm.name']()}
+			<span class="text-destructive" aria-label={m['resourceForm.required']()}>*</span>
 		</label>
 		<input
 			id="name"
@@ -230,12 +230,12 @@
 	<!-- Description -->
 	<div class="space-y-2">
 		<label for="description" class="block text-sm font-medium text-gray-900 dark:text-gray-100">
-			Description
+			{m['resourceForm.description']()}
 		</label>
 		<MarkdownEditor
 			bind:value={description}
 			id="description"
-			placeholder="Describe this resource..."
+			placeholder={m['resourceForm.descriptionPlaceholder']()}
 			rows={4}
 			disabled={isSubmitting}
 		/>
@@ -251,7 +251,9 @@
 		<div class="space-y-2">
 			<label for="file" class="block text-sm font-medium text-gray-900 dark:text-gray-100">
 				{m['resourceForm.file']()}
-				{#if !resource}<span class="text-destructive" aria-label="required">*</span>{/if}
+				{#if !resource}<span class="text-destructive" aria-label={m['resourceForm.required']()}
+						>*</span
+					>{/if}
 			</label>
 
 			{#if resource?.file_url}
@@ -259,7 +261,7 @@
 					<p class="font-medium">{m['resourceForm.currentFile']()}</p>
 					<p class="truncate text-muted-foreground">{resource.file_url}</p>
 					<p class="mt-2 text-xs text-muted-foreground">
-						Upload a new file to replace the current one
+						{m['resourceForm.replaceFileHint']()}
 					</p>
 				</div>
 			{/if}
@@ -279,7 +281,10 @@
 
 			{#if file}
 				<p class="text-sm text-muted-foreground">
-					Selected: {file.name} ({(file.size / 1024).toFixed(2)} KB)
+					{m['resourceForm.selectedFile']({
+						name: file.name,
+						size: (file.size / 1024).toFixed(2)
+					})}
 				</p>
 			{/if}
 
@@ -292,8 +297,8 @@
 	{:else if resourceType === 'link'}
 		<div class="space-y-2">
 			<label for="link" class="block text-sm font-medium text-gray-900 dark:text-gray-100">
-				URL
-				<span class="text-destructive" aria-label="required">*</span>
+				{m['resourceForm.url']()}
+				<span class="text-destructive" aria-label={m['resourceForm.required']()}>*</span>
 			</label>
 			<input
 				id="link"
@@ -314,13 +319,13 @@
 	{:else if resourceType === 'text'}
 		<div class="space-y-2">
 			<label for="text" class="block text-sm font-medium text-gray-900 dark:text-gray-100">
-				Content
-				<span class="text-destructive" aria-label="required">*</span>
+				{m['resourceForm.content']()}
+				<span class="text-destructive" aria-label={m['resourceForm.required']()}>*</span>
 			</label>
 			<MarkdownEditor
 				bind:value={text}
 				id="text"
-				placeholder="Enter your content here..."
+				placeholder={m['resourceForm.contentPlaceholder']()}
 				rows={8}
 				disabled={isSubmitting}
 			/>
@@ -335,7 +340,7 @@
 	<!-- Visibility -->
 	<div class="space-y-2">
 		<label for="visibility" class="block text-sm font-medium text-gray-900 dark:text-gray-100">
-			Visibility
+			{m['resourceForm.visibility']()}
 		</label>
 		<select
 			id="visibility"
@@ -369,10 +374,10 @@
 		/>
 		<div class="flex-1">
 			<label for="display-on-org" class="text-sm font-medium text-gray-900 dark:text-gray-100">
-				Display on organization page
+				{m['resourceForm.displayOnOrgPage']()}
 			</label>
 			<p class="text-xs text-muted-foreground">
-				Show this resource on your public organization profile
+				{m['resourceForm.displayOnOrgPageHelp']()}
 			</p>
 		</div>
 	</div>
@@ -400,9 +405,9 @@
 					class="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent"
 					aria-hidden="true"
 				></div>
-				Saving...
+				{m['resourceForm.saving']()}
 			{:else}
-				{resource ? 'Update Resource' : 'Create Resource'}
+				{resource ? m['resourceForm.updateResource']() : m['resourceForm.createResource']()}
 			{/if}
 		</button>
 	</div>

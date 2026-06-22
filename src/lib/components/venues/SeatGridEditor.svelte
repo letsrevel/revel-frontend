@@ -603,14 +603,20 @@
 			</div>
 
 			<div>
-				<label for="row-order" class="mb-1.5 block text-sm font-medium"> Row Order </label>
+				<label for="row-order" class="mb-1.5 block text-sm font-medium">
+					{m['seatGridEditor.rowOrder']()}
+				</label>
 				<select
 					id="row-order"
 					bind:value={invertRowOrder}
 					class="rounded-md border border-input bg-background px-3 py-2 text-sm"
 				>
-					<option value={false}>{useLetters ? 'A' : '1'} at top (standard)</option>
-					<option value={true}>{useLetters ? 'A' : '1'} at bottom (inverted)</option>
+					<option value={false}
+						>{m['seatGridEditor.rowOrderTop']({ label: useLetters ? 'A' : '1' })}</option
+					>
+					<option value={true}
+						>{m['seatGridEditor.rowOrderBottom']({ label: useLetters ? 'A' : '1' })}</option
+					>
 				</select>
 			</div>
 
@@ -620,21 +626,20 @@
 					onclick={generateEmptyGrid}
 					class="rounded-md border border-input px-4 py-2 text-sm font-medium hover:bg-accent"
 				>
-					Empty Grid
+					{m['seatGridEditor.emptyGrid']()}
 				</button>
 				<button
 					type="button"
 					onclick={generateFullGrid}
 					class="rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground hover:bg-secondary/80"
 				>
-					Fill All
+					{m['seatGridEditor.fillAll']()}
 				</button>
 			</div>
 		</div>
 
 		<p class="mt-3 text-sm text-muted-foreground">
-			Click cells to toggle seats. Drag from empty to empty to fill area with seats. Hover between
-			labels to add aisles.
+			{m['seatGridEditor.instructions']()}
 		</p>
 	</div>
 
@@ -642,7 +647,10 @@
 	{#if selectedCount > 0}
 		<div class="flex flex-wrap items-center gap-3 rounded-lg border bg-card p-3">
 			<span class="text-sm font-medium">
-				{selectedCount} seat{selectedCount !== 1 ? 's' : ''} selected
+				{m['seatGridEditor.seatsSelected']({
+					count: selectedCount,
+					plural: selectedCount !== 1 ? 's' : ''
+				})}
 			</span>
 			<div class="flex flex-wrap gap-2">
 				<button
@@ -651,7 +659,7 @@
 					class="inline-flex items-center gap-1.5 rounded-md border border-blue-300 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-300 dark:hover:bg-blue-900"
 				>
 					<Accessibility class="h-4 w-4" />
-					Toggle Accessible
+					{m['seatGridEditor.toggleAccessible']()}
 				</button>
 				<button
 					type="button"
@@ -659,21 +667,21 @@
 					class="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-700 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-300 dark:hover:bg-amber-900"
 				>
 					<EyeOff class="h-4 w-4" />
-					Toggle Obstructed
+					{m['seatGridEditor.toggleObstructed']()}
 				</button>
 				<button
 					type="button"
 					onclick={deleteSelected}
 					class="rounded-md bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground hover:bg-destructive/90"
 				>
-					Delete Selected
+					{m['seatGridEditor.deleteSelected']()}
 				</button>
 				<button
 					type="button"
 					onclick={clearSelection}
 					class="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-accent"
 				>
-					Clear Selection
+					{m['seatGridEditor.clearSelection']()}
 				</button>
 			</div>
 		</div>
@@ -689,7 +697,7 @@
 				<!-- Stage centered over columns -->
 				<div class="flex flex-1 justify-center">
 					<div class="rounded-lg bg-muted px-8 py-2 text-sm font-medium text-muted-foreground">
-						STAGE
+						{m['seatGridEditor.stage']()}
 					</div>
 				</div>
 			</div>
@@ -713,7 +721,7 @@
 									type="button"
 									onclick={() => removeVerticalAisle(colIndex - 1)}
 									class="flex h-full w-5 items-center justify-center text-xs text-primary hover:text-destructive"
-									title="Remove aisle after column {colIndex}"
+									title={m['seatGridEditor.removeAisleAfterColumn']({ column: colIndex })}
 								>
 									|
 								</button>
@@ -722,7 +730,7 @@
 									type="button"
 									onclick={() => addVerticalAisle(colIndex - 1)}
 									class="hidden h-6 w-5 items-center justify-center rounded bg-primary/10 text-primary opacity-0 transition-opacity group-hover:flex group-hover:opacity-100"
-									title="Add aisle after column {colIndex}"
+									title={m['seatGridEditor.addAisleAfterColumn']({ column: colIndex })}
 								>
 									<Plus class="h-3 w-3" />
 								</button>
@@ -763,7 +771,9 @@
 									type="button"
 									onclick={() => removeHorizontalAisle(aisleAfterRow)}
 									class="flex h-5 w-full items-center justify-center text-xs text-amber-600 hover:text-destructive dark:text-amber-400"
-									title="Remove aisle after row {getRowLabel(aisleAfterRow)}"
+									title={m['seatGridEditor.removeAisleAfterRow']({
+										row: getRowLabel(aisleAfterRow)
+									})}
 								>
 									—
 								</button>
@@ -772,7 +782,7 @@
 									type="button"
 									onclick={() => addHorizontalAisle(aisleAfterRow)}
 									class="hidden h-6 w-full items-center justify-center rounded bg-primary/10 text-primary opacity-0 transition-opacity group-hover:flex group-hover:opacity-100"
-									title="Add aisle after row {getRowLabel(aisleAfterRow)}"
+									title={m['seatGridEditor.addAisleAfterRow']({ row: getRowLabel(aisleAfterRow) })}
 								>
 									<Plus class="h-3 w-3" />
 								</button>
@@ -829,9 +839,15 @@
 							onmousedown={(e) => handleMouseDown(logicalRow, c, e)}
 							onmouseenter={() => handleMouseMove(logicalRow, c)}
 							onclick={(e) => handleCellClick(logicalRow, c, e)}
-							aria-label="Seat {getSeatLabel(logicalRow, c)}{seatData?.is_accessible
-								? ', accessible'
-								: ''}{seatData?.is_obstructed_view ? ', obstructed view' : ''}"
+							aria-label={m['seatGridEditor.seatLabel']({
+								seat: getSeatLabel(logicalRow, c),
+								accessible: seatData?.is_accessible
+									? m['seatGridEditor.seatAccessibleSuffix']()
+									: '',
+								obstructed: seatData?.is_obstructed_view
+									? m['seatGridEditor.seatObstructedSuffix']()
+									: ''
+							})}
 						>
 							{#if seatData?.exists}
 								<span class="text-[10px]">{getSeatLabel(logicalRow, c)}</span>
@@ -861,32 +877,34 @@
 		<div class="flex flex-wrap items-center gap-4 text-sm md:gap-6">
 			<div class="flex items-center gap-2">
 				<div class="h-6 w-6 rounded bg-green-500"></div>
-				<span>Seat</span>
+				<span>{m['seatGridEditor.legendSeat']()}</span>
 			</div>
 			<div class="flex items-center gap-2">
 				<div class="h-6 w-6 rounded border-2 border-muted-foreground/20 bg-muted/20"></div>
-				<span>Empty</span>
+				<span>{m['seatGridEditor.legendEmpty']()}</span>
 			</div>
 			<div class="flex items-center gap-2">
 				<div class="h-6 w-6 rounded bg-primary ring-2 ring-primary ring-offset-1"></div>
-				<span>Selected</span>
+				<span>{m['seatGridEditor.legendSelected']()}</span>
 			</div>
 			<div class="flex items-center gap-2">
 				<div class="h-6 w-6 rounded bg-amber-500/30 dark:bg-amber-400/20"></div>
-				<span>Aisle</span>
+				<span>{m['seatGridEditor.legendAisle']()}</span>
 			</div>
 			<div class="flex items-center gap-2">
 				<Accessibility class="h-4 w-4 text-blue-500" />
-				<span>Accessible</span>
+				<span>{m['seatGridEditor.legendAccessible']()}</span>
 			</div>
 			<div class="flex items-center gap-2">
 				<EyeOff class="h-4 w-4 text-amber-500" />
-				<span>Obstructed</span>
+				<span>{m['seatGridEditor.legendObstructed']()}</span>
 			</div>
 		</div>
 
 		<div class="text-sm text-muted-foreground">
-			Total: <strong>{totalSeats}</strong> seat{totalSeats !== 1 ? 's' : ''}
+			{m['seatGridEditor.totalLabel']()}
+			<strong>{totalSeats}</strong>
+			{m['seatGridEditor.totalSeatsSuffix']({ plural: totalSeats !== 1 ? 's' : '' })}
 		</div>
 	</div>
 

@@ -299,7 +299,9 @@
 							.join(' ')}
 						{#if fullName && fullName !== data.submission.user.display_name}
 							<div class="ml-[52px]">
-								<p class="text-sm text-muted-foreground">Full name</p>
+								<p class="text-sm text-muted-foreground">
+									{m['questionnaireSubmissionDetailPage.fullNameLabel']()}
+								</p>
 								<p class="text-base">{fullName}</p>
 							</div>
 						{/if}
@@ -308,7 +310,9 @@
 					<!-- Preferred Name (if different from display name) -->
 					{#if data.submission.user.preferred_name && data.submission.user.preferred_name !== data.submission.user.display_name}
 						<div class="ml-[52px]">
-							<p class="text-sm text-muted-foreground">Preferred name</p>
+							<p class="text-sm text-muted-foreground">
+								{m['questionnaireSubmissionDetailPage.preferredNameLabel']()}
+							</p>
 							<p class="text-base">{data.submission.user.preferred_name}</p>
 						</div>
 					{/if}
@@ -386,13 +390,20 @@
 
 			<!-- Questionnaire Information -->
 			<Card class="p-6">
-				<h3 class="mb-4 text-lg font-semibold">Questionnaire</h3>
+				<h3 class="mb-4 text-lg font-semibold">
+					{m['questionnaireSubmissionDetailPage.questionnaireTitle']()}
+				</h3>
 				<div class="space-y-2">
 					<p class="font-medium">{data.submission.questionnaire.name}</p>
 					<div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
 						<span>
-							{data.submission.answers.length}
-							{data.submission.answers.length === 1 ? 'question' : 'questions'} answered
+							{data.submission.answers.length === 1
+								? m['questionnaireSubmissionDetailPage.questionsAnswered']({
+										count: data.submission.answers.length
+									})
+								: m['questionnaireSubmissionDetailPage.questionsAnsweredPlural']({
+										count: data.submission.answers.length
+									})}
 						</span>
 					</div>
 				</div>

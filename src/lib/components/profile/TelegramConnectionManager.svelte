@@ -243,7 +243,9 @@
 					{#if botNameQuery.isLoading}
 						<div class="flex items-center gap-2">
 							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-							<span class="text-sm text-muted-foreground">Loading bot information...</span>
+							<span class="text-sm text-muted-foreground"
+								>{m['telegramConnectionManager.loadingBotInfo']()}</span
+							>
 						</div>
 					{:else if botLink}
 						<a
@@ -258,7 +260,7 @@
 						</a>
 					{:else}
 						<p class="text-sm text-muted-foreground">
-							Unable to load bot information. Please try again later.
+							{m['telegramConnectionManager.botInfoError']()}
 						</p>
 					{/if}
 				</div>

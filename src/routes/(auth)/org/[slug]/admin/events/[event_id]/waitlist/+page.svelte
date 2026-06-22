@@ -383,7 +383,7 @@
 				<Button
 					variant="ghost"
 					size="sm"
-					aria-label="Dismiss"
+					aria-label={m['orgAdmin.waitlist.dismissAriaLabel']()}
 					onclick={() => (capacityBannerOpen = false)}
 				>
 					<X class="h-4 w-4" aria-hidden="true" />

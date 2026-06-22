@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		organizationadmintokensListOrganizationTokens,
@@ -90,10 +91,10 @@
 				queryKey: ['organization', organization.slug, 'tokens']
 			});
 			onCreateModalOpenChange(false);
-			toast.success('Invitation link created successfully');
+			toast.success(m['organizationTokensTab.createSuccess']());
 		},
 		onError: () => {
-			toast.error('Failed to create invitation link');
+			toast.error(m['organizationTokensTab.createFailed']());
 		}
 	}));
 
@@ -123,10 +124,10 @@
 				queryKey: ['organization', organization.slug, 'tokens']
 			});
 			tokenToEdit = null;
-			toast.success('Invitation link updated successfully');
+			toast.success(m['organizationTokensTab.updateSuccess']());
 		},
 		onError: () => {
-			toast.error('Failed to update invitation link');
+			toast.error(m['organizationTokensTab.updateFailed']());
 		}
 	}));
 
@@ -149,10 +150,10 @@
 				queryKey: ['organization', organization.slug, 'tokens']
 			});
 			tokenToDelete = null;
-			toast.success('Invitation link deleted successfully');
+			toast.success(m['organizationTokensTab.deleteSuccess']());
 		},
 		onError: () => {
-			toast.error('Failed to delete invitation link');
+			toast.error(m['organizationTokensTab.deleteFailed']());
 		}
 	}));
 
@@ -188,7 +189,7 @@
 	/>
 	<Input
 		type="search"
-		placeholder="Search invitation links..."
+		placeholder={m['organizationTokensTab.searchPlaceholder']()}
 		bind:value={tokenSearch}
 		class="pl-10"
 	/>
@@ -201,23 +202,23 @@
 	</div>
 {:else if tokensQuery.isError}
 	<div class="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-center">
-		<p class="text-sm text-destructive">Failed to load invitation links</p>
+		<p class="text-sm text-destructive">{m['organizationTokensTab.loadFailed']()}</p>
 	</div>
 {:else if tokens.length === 0}
 	<div class="rounded-lg border border-dashed p-12 text-center">
 		<Link class="mx-auto h-12 w-12 text-muted-foreground" />
 		<h3 class="mt-4 font-semibold">
 			{#if tokenSearch}
-				No invitation links found
+				{m['organizationTokensTab.emptySearchTitle']()}
 			{:else}
-				No invitation links yet
+				{m['organizationTokensTab.emptyTitle']()}
 			{/if}
 		</h3>
 		<p class="mt-2 text-sm text-muted-foreground">
 			{#if tokenSearch}
-				Try adjusting your search query
+				{m['organizationTokensTab.emptySearchDescription']()}
 			{:else}
-				Create shareable links to invite people to join this organization
+				{m['organizationTokensTab.emptyDescription']()}
 			{/if}
 		</p>
 	</div>
@@ -261,23 +262,23 @@
 <Dialog open={!!tokenToDelete}>
 	<DialogContent>
 		<DialogHeader>
-			<DialogTitle>Delete Invitation Link</DialogTitle>
+			<DialogTitle>{m['organizationTokensTab.deleteDialogTitle']()}</DialogTitle>
 			<DialogDescription>
-				Are you sure you want to delete this invitation link? This action cannot be undone.
+				{m['organizationTokensTab.deleteDialogDescription']()}
 			</DialogDescription>
 		</DialogHeader>
 
 		{#if tokenToDelete}
 			<div class="space-y-2 text-sm">
 				<p>
-					<strong>Link:</strong>
-					{tokenToDelete.name || 'Unnamed link'}
+					<strong>{m['organizationTokensTab.linkLabel']()}</strong>
+					{tokenToDelete.name || m['organizationTokensTab.unnamedLink']()}
 				</p>
 				<p>
-					<strong>Uses:</strong>
-					{tokenToDelete.uses ?? 0} time{(tokenToDelete.uses ?? 0) === 1 ? '' : 's'}
+					<strong>{m['organizationTokensTab.usesLabel']()}</strong>
+					{m['organizationTokensTab.usesCount']({ count: tokenToDelete.uses ?? 0 })}
 				</p>
-				<p class="text-muted-foreground">Note: People who already joined will keep their access.</p>
+				<p class="text-muted-foreground">{m['organizationTokensTab.keepAccessNote']()}</p>
 			</div>
 		{/if}
 
@@ -287,7 +288,7 @@
 				onclick={() => (tokenToDelete = null)}
 				disabled={deleteTokenMutation.isPending}
 			>
-				Cancel
+				{m['organizationTokensTab.cancel']()}
 			</Button>
 			<Button
 				variant="destructive"
@@ -297,7 +298,7 @@
 				{#if deleteTokenMutation.isPending}
 					<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 				{/if}
-				Delete Link
+				{m['organizationTokensTab.deleteLink']()}
 			</Button>
 		</DialogFooter>
 	</DialogContent>

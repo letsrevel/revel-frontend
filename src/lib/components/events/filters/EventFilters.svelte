@@ -89,7 +89,7 @@
 		// Use stored name and slug from URL params if available
 		return {
 			id: filters.organizationId,
-			name: filters.organizationName || 'Unknown Organization',
+			name: filters.organizationName || m['eventFilters.unknownOrganization'](),
 			slug: filters.organizationSlug || 'unknown'
 		};
 	});
@@ -97,7 +97,7 @@
 
 <aside
 	class={cn('flex w-full flex-col gap-6 rounded-lg border bg-card p-6', className)}
-	aria-label="Event filters"
+	aria-label={m['eventFilters.eventFilters']()}
 >
 	<!-- Header -->
 	<div class="flex items-center justify-between">

@@ -150,7 +150,7 @@
 			}
 
 			// Show error message
-			errorMessage = error.message || 'Failed to submit RSVP. Please try again or contact support.';
+			errorMessage = error.message || m['eventRSVP.submitFailed']();
 			showSuccess = false;
 		}
 	}));
@@ -366,7 +366,7 @@
 							successType === 'no' && 'focus-visible:ring-red-600'
 						)}
 					>
-						Change response
+						{m['eventRSVP.changeResponse']()}
 					</button>
 				</div>
 			</div>
@@ -388,7 +388,7 @@
 						onclick={handleRetry}
 						class="mt-2 text-sm underline hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive focus-visible:ring-offset-2"
 					>
-						Try again
+						{m['eventRSVP.tryAgain']()}
 					</button>
 				</div>
 			</div>
@@ -459,12 +459,12 @@
 	<!-- Warning Dialog for Claimed Items -->
 	<ConfirmDialog
 		isOpen={showWarningDialog}
-		title="Unclaim Potluck Items?"
+		title={m['eventRSVP.unclaimPotluckItemsTitle']()}
 		message={claimedItemsCount === 1
-			? 'You\'ve claimed 1 potluck item for this event. Changing your RSVP to "Maybe" or "No" will automatically unclaim this item. Are you sure you want to proceed?'
-			: `You've claimed ${claimedItemsCount} potluck items for this event. Changing your RSVP to "Maybe" or "No" will automatically unclaim all these items. Are you sure you want to proceed?`}
-		confirmText="Yes, change RSVP"
-		cancelText="Cancel"
+			? m['eventRSVP.unclaimPotluckItemsMessageOne']()
+			: m['eventRSVP.unclaimPotluckItemsMessageMany']({ count: claimedItemsCount })}
+		confirmText={m['eventRSVP.yesChangeRsvp']()}
+		cancelText={m['eventRSVP.cancel']()}
 		variant="warning"
 		onConfirm={handleWarningConfirm}
 		onCancel={handleWarningCancel}

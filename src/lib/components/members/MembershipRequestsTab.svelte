@@ -103,7 +103,7 @@
 			});
 		},
 		onError: (error: Error) => {
-			alert(`Failed to approve request: ${error.message}`);
+			alert(m['membershipRequestsTab.approveFailed']({ error: error.message }));
 		}
 	}));
 
@@ -131,7 +131,7 @@
 			});
 		},
 		onError: (error: Error) => {
-			alert(`Failed to reject request: ${error.message}`);
+			alert(m['membershipRequestsTab.rejectFailed']({ error: error.message }));
 		}
 	}));
 
@@ -149,7 +149,7 @@
 	// Handlers
 	function handleApproveRequest(request: OrganizationMembershipRequestRetrieve) {
 		if (tiers.length === 0) {
-			toast.error('Cannot approve request: No membership tiers available');
+			toast.error(m['membershipRequestsTab.noTiersAvailable']());
 			return;
 		}
 
@@ -185,7 +185,7 @@
 			requestsPage = 1;
 		}}
 	>
-		Pending
+		{m['membershipRequestsTab.filterPending']()}
 		{#if requestStatusFilter === 'pending' && requestsQuery.data?.count}
 			<span class="ml-1.5 rounded-full bg-primary-foreground px-1.5 py-0.5 text-xs text-primary">
 				{requestsQuery.data.count}
@@ -200,7 +200,7 @@
 			requestsPage = 1;
 		}}
 	>
-		Approved
+		{m['membershipRequestsTab.filterApproved']()}
 		{#if requestStatusFilter === 'approved' && requestsQuery.data?.count}
 			<span class="ml-1.5 rounded-full bg-primary-foreground px-1.5 py-0.5 text-xs text-primary">
 				{requestsQuery.data.count}
@@ -215,7 +215,7 @@
 			requestsPage = 1;
 		}}
 	>
-		Rejected
+		{m['membershipRequestsTab.filterRejected']()}
 		{#if requestStatusFilter === 'rejected' && requestsQuery.data?.count}
 			<span class="ml-1.5 rounded-full bg-primary-foreground px-1.5 py-0.5 text-xs text-primary">
 				{requestsQuery.data.count}
@@ -230,7 +230,7 @@
 			requestsPage = 1;
 		}}
 	>
-		All
+		{m['membershipRequestsTab.filterAll']()}
 		{#if requestStatusFilter === 'all' && requestsQuery.data?.count}
 			<span class="ml-1.5 rounded-full bg-primary-foreground px-1.5 py-0.5 text-xs text-primary">
 				{requestsQuery.data.count}
@@ -277,11 +277,14 @@
 				disabled={!requestsPagination.hasPrev}
 				onclick={() => (requestsPage = requestsPage - 1)}
 			>
-				Previous
+				{m['membershipRequestsTab.previous']()}
 			</Button>
 			<span class="text-sm text-muted-foreground">
-				Page {requestsPagination.page} of {requestsPagination.totalPages}
-				({requestsPagination.totalCount} total)
+				{m['membershipRequestsTab.pageInfo']({
+					page: requestsPagination.page,
+					totalPages: requestsPagination.totalPages,
+					total: requestsPagination.totalCount
+				})}
 			</span>
 			<Button
 				variant="outline"
@@ -289,7 +292,7 @@
 				disabled={!requestsPagination.hasNext}
 				onclick={() => (requestsPage = requestsPage + 1)}
 			>
-				Next
+				{m['membershipRequestsTab.next']()}
 			</Button>
 		</div>
 	{/if}

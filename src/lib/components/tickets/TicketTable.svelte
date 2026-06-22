@@ -161,7 +161,7 @@
 										<span class="font-medium">{guestName}</span>
 									</div>
 									<div class="text-sm text-muted-foreground">
-										(Purchased by {getUserDisplayName(ticket.user)})
+										{m['ticketTable.purchasedBy']({ name: getUserDisplayName(ticket.user) })}
 									</div>
 								{:else}
 									<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -281,7 +281,7 @@
 									onclick={() => window.open(ticket.payment.stripe_dashboard_url, '_blank')}
 								>
 									<ExternalLink class="h-4 w-4" aria-hidden="true" />
-									Manage on Stripe
+									{m['ticketTable.manageOnStripe']()}
 								</Button>
 							{/if}
 							<!-- More actions dropdown -->
@@ -291,7 +291,9 @@
 										<button
 											{...props}
 											class="inline-flex items-center justify-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-											aria-label="More actions for {getUserDisplayName(ticket.user)}"
+											aria-label={m['ticketTable.moreActionsFor']({
+												name: getUserDisplayName(ticket.user)
+											})}
 										>
 											<MoreVertical class="h-4 w-4" aria-hidden="true" />
 										</button>
@@ -314,7 +316,7 @@
 											class="text-destructive focus:text-destructive"
 										>
 											<X class="mr-2 h-4 w-4" aria-hidden="true" />
-											Cancel Ticket
+											{m['ticketTable.cancelTicket']()}
 										</DropdownMenu.Item>
 									{/if}
 									{#if ticket.user?.id}
@@ -323,7 +325,7 @@
 											class="text-destructive focus:text-destructive"
 										>
 											<Ban class="mr-2 h-4 w-4" aria-hidden="true" />
-											Blacklist User
+											{m['ticketTable.blacklistUser']()}
 										</DropdownMenu.Item>
 									{/if}
 								</DropdownMenu.Content>

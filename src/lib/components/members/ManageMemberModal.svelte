@@ -70,7 +70,7 @@
 			? member.user.preferred_name ||
 					(member.user.first_name && member.user.last_name
 						? `${member.user.first_name} ${member.user.last_name}`
-						: member.user.first_name || member.user.email || 'Unknown User')
+						: member.user.first_name || member.user.email || m['manageMemberModal.unknownUser']())
 			: ''
 	);
 
@@ -311,7 +311,7 @@
 								class="w-full justify-start border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-400 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
 							>
 								<Ban class="mr-2 h-4 w-4" />
-								Add to Blacklist
+								{m['manageMemberModal.addToBlacklist']()}
 							</Button>
 						{:else}
 							<div
@@ -322,21 +322,20 @@
 									<div class="flex-1 space-y-3">
 										<div>
 											<p class="text-sm font-medium text-red-900 dark:text-red-100">
-												Blacklist {displayName}?
+												{m['manageMemberModal.blacklistConfirmTitle']({ name: displayName })}
 											</p>
 											<p class="text-sm text-red-800 dark:text-red-200">
-												This person will be blocked from all events in this organization. They will
-												also be removed as a member.
+												{m['manageMemberModal.blacklistConfirmMessage']()}
 											</p>
 										</div>
 										<div class="space-y-2">
 											<Label for="blacklist-reason" class="text-sm text-red-900 dark:text-red-100">
-												Reason (optional)
+												{m['manageMemberModal.reasonOptional']()}
 											</Label>
 											<Textarea
 												id="blacklist-reason"
 												bind:value={blacklistReason}
-												placeholder="Explain why this person is being blacklisted..."
+												placeholder={m['manageMemberModal.blacklistReasonPlaceholder']()}
 												rows={2}
 												disabled={isBlacklisting}
 												class="border-red-300 dark:border-red-700"
@@ -352,7 +351,7 @@
 												{#if isBlacklisting}
 													<Loader2 class="mr-2 h-4 w-4 animate-spin" />
 												{/if}
-												Confirm Blacklist
+												{m['manageMemberModal.confirmBlacklist']()}
 											</Button>
 											<Button
 												variant="outline"
@@ -360,7 +359,7 @@
 												onclick={handleCancelBlacklist}
 												disabled={isBlacklisting}
 											>
-												Cancel
+												{m['manageMemberModal.cancel']()}
 											</Button>
 										</div>
 									</div>

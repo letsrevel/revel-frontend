@@ -199,7 +199,7 @@
 					</Tooltip.Trigger>
 					<Tooltip.Content class="max-w-xs">
 						{#if loadingNotes[`frontend-${FRONTEND_VERSION}`]}
-							<p class="text-xs">Loading...</p>
+							<p class="text-xs">{m['footer.loadingNotes']()}</p>
 						{:else if releaseNotesCache[`frontend-${FRONTEND_VERSION}`]?.length}
 							<ul class="space-y-1 text-xs">
 								{#each releaseNotesCache[`frontend-${FRONTEND_VERSION}`] as note, i (i)}
@@ -207,7 +207,7 @@
 								{/each}
 							</ul>
 						{:else}
-							<p class="text-xs">No release notes</p>
+							<p class="text-xs">{m['footer.noReleaseNotes']()}</p>
 						{/if}
 					</Tooltip.Content>
 				</Tooltip.Root>
@@ -233,7 +233,7 @@
 					</Tooltip.Trigger>
 					<Tooltip.Content class="max-w-xs">
 						{#if loadingNotes[`backend-${backendVersion}`]}
-							<p class="text-xs">Loading...</p>
+							<p class="text-xs">{m['footer.loadingNotes']()}</p>
 						{:else if releaseNotesCache[`backend-${backendVersion}`]?.length}
 							<ul class="space-y-1 text-xs">
 								{#each releaseNotesCache[`backend-${backendVersion}`] as note, i (i)}
@@ -241,7 +241,7 @@
 								{/each}
 							</ul>
 						{:else}
-							<p class="text-xs">No release notes</p>
+							<p class="text-xs">{m['footer.noReleaseNotes']()}</p>
 						{/if}
 					</Tooltip.Content>
 				</Tooltip.Root>

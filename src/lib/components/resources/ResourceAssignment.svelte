@@ -95,7 +95,7 @@
 			{m['resourceAssignment.assignToEvents']()}
 		</h3>
 		<p class="mt-1 text-xs text-muted-foreground">
-			Select events where this resource should be available
+			{m['resourceAssignment.assignDescription']()}
 		</p>
 	</div>
 
@@ -108,10 +108,10 @@
 		<input
 			type="search"
 			bind:value={searchQuery}
-			placeholder="Search events..."
+			placeholder={m['resourceAssignment.searchEventsPlaceholder']()}
 			disabled={disabled || isLoading}
 			class="w-full rounded-md border border-input bg-background py-2 pl-10 pr-4 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-			aria-label="Search events"
+			aria-label={m['resourceAssignment.searchEvents']()}
 		/>
 	</div>
 
@@ -119,7 +119,7 @@
 	<div
 		class="max-h-64 overflow-y-auto rounded-md border"
 		role="listbox"
-		aria-label="Available events"
+		aria-label={m['resourceAssignment.availableEvents']()}
 		aria-multiselectable="true"
 	>
 		{#if error}
@@ -130,12 +130,14 @@
 			<div class="flex items-center justify-center p-8">
 				<div
 					class="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent"
-					aria-label="Loading events"
+					aria-label={m['resourceAssignment.loadingEvents']()}
 				></div>
 			</div>
 		{:else if filteredEvents.length === 0}
 			<div class="p-4 text-center text-sm text-muted-foreground">
-				{searchQuery ? 'No events found' : 'No events available'}
+				{searchQuery
+					? m['resourceAssignment.noEventsFound']()
+					: m['resourceAssignment.noEventsAvailable']()}
 			</div>
 		{:else}
 			<ul class="divide-y">
@@ -189,8 +191,9 @@
 	<!-- Selection Summary -->
 	{#if selectedSet.size > 0}
 		<p class="text-xs text-muted-foreground">
-			{selectedSet.size}
-			{selectedSet.size === 1 ? 'event' : 'events'} selected
+			{selectedSet.size === 1
+				? m['resourceAssignment.oneEventSelected']()
+				: m['resourceAssignment.eventsSelected']({ count: selectedSet.size })}
 		</p>
 	{/if}
 </div>

@@ -101,7 +101,7 @@
 			<div class="mb-4">
 				<label for="stripe-email" class="mb-1.5 block text-sm font-medium">
 					{m['stripeConnectModal.emailLabel']()}
-					<span class="text-destructive" aria-label="required">*</span>
+					<span class="text-destructive" aria-label={m['stripeConnectModal.required']()}>*</span>
 				</label>
 				<input
 					id="stripe-email"

@@ -687,7 +687,7 @@
 								{m['notificationPreferences.failedToLoadTypes']()}
 							</p>
 							<p class="mt-1 text-muted-foreground">
-								{availableTypesQuery.error?.message || 'Unknown error'}
+								{availableTypesQuery.error?.message || m['notificationPreferences.unknownError']()}
 							</p>
 							<Button
 								variant="outline"

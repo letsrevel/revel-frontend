@@ -139,14 +139,14 @@
 		<!-- Name -->
 		<div class="space-y-2">
 			<Label for="name">
-				Questionnaire Name
+				{m['questionnaireFormFields.nameLabel']()}
 				<span class="text-destructive">*</span>
 			</Label>
 			<Input
 				id="name"
 				value={name}
 				oninput={(e) => onNameChange(e.currentTarget.value)}
-				placeholder="e.g., Membership Application 2025"
+				placeholder={m['questionnaireFormFields.namePlaceholder']()}
 				class={nameError ? 'border-destructive' : ''}
 				disabled={!canEdit}
 			/>
@@ -158,7 +158,7 @@
 		<!-- Type -->
 		<div class="space-y-2">
 			<Label for="type">
-				Questionnaire Type
+				{m['questionnaireFormFields.typeLabel']()}
 				<span class="text-destructive">*</span>
 			</Label>
 			<Select
@@ -178,47 +178,55 @@
 					{selectedTypeLabel}
 				</SelectTrigger>
 				<SelectContent>
-					<SelectItem value="admission" label="Admission">
+					<SelectItem value="admission" label={m['questionnaireEditPage.types.admission_label']()}>
 						<div class="flex flex-col gap-0.5">
-							<div class="font-medium">Admission</div>
+							<div class="font-medium">{m['questionnaireEditPage.types.admission_label']()}</div>
 							<div class="text-xs text-muted-foreground">
-								Gate event attendance - attendees must complete this to RSVP
+								{m['questionnaireEditPage.types.admission_description']()}
 							</div>
 						</div>
 					</SelectItem>
-					<SelectItem value="membership" label="Membership" disabled>
+					<SelectItem
+						value="membership"
+						label={m['questionnaireEditPage.types.membership_label']()}
+						disabled
+					>
 						<div class="flex flex-col gap-0.5">
 							<div class="flex items-center gap-2 font-medium">
-								Membership
+								{m['questionnaireEditPage.types.membership_label']()}
 								<span
 									class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
-									>Coming soon</span
+									>{m['questionnaireFormFields.comingSoon']()}</span
 								>
 							</div>
 							<div class="text-xs text-muted-foreground">
-								Gate organization membership - required for joining
+								{m['questionnaireEditPage.types.membership_description']()}
 							</div>
 						</div>
 					</SelectItem>
-					<SelectItem value="feedback" label="Feedback">
+					<SelectItem value="feedback" label={m['questionnaireEditPage.types.feedback_label']()}>
 						<div class="flex flex-col gap-0.5">
-							<div class="font-medium">Feedback</div>
+							<div class="font-medium">{m['questionnaireEditPage.types.feedback_label']()}</div>
 							<div class="text-xs text-muted-foreground">
-								Collect post-event feedback from attendees
+								{m['questionnaireEditPage.types.feedback_description']()}
 							</div>
 						</div>
 					</SelectItem>
-					<SelectItem value="generic" label="Generic" disabled>
+					<SelectItem
+						value="generic"
+						label={m['questionnaireEditPage.types.generic_label']()}
+						disabled
+					>
 						<div class="flex flex-col gap-0.5">
 							<div class="flex items-center gap-2 font-medium">
-								Generic
+								{m['questionnaireEditPage.types.generic_label']()}
 								<span
 									class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
-									>Coming soon</span
+									>{m['questionnaireFormFields.comingSoon']()}</span
 								>
 							</div>
 							<div class="text-xs text-muted-foreground">
-								General purpose questionnaire for any use case
+								{m['questionnaireEditPage.types.generic_description']()}
 							</div>
 						</div>
 					</SelectItem>
@@ -259,7 +267,7 @@
 			<!-- Minimum Score -->
 			<div class="space-y-2">
 				<Label for="min-score">
-					Minimum Score (%)
+					{m['questionnaireFormFields.minScoreLabel']()}
 					<span class="text-destructive">*</span>
 				</Label>
 				<Input
@@ -281,7 +289,7 @@
 			<!-- Evaluation Mode -->
 			<div class="space-y-2">
 				<Label for="evaluation-mode">
-					Evaluation Mode
+					{m['questionnaireFormFields.evaluationModeLabel']()}
 					<span class="text-destructive">*</span>
 				</Label>
 				<Select
@@ -298,39 +306,49 @@
 						{evaluationModes[evaluationMode]?.label ?? 'Manual'}
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="manual" label="Manual">
+						<SelectItem value="manual" label={m['questionnaireEditPage.evaluation.manual_label']()}>
 							<div class="flex flex-col gap-0.5">
-								<div class="font-medium">Manual</div>
+								<div class="font-medium">
+									{m['questionnaireEditPage.evaluation.manual_label']()}
+								</div>
 								<div class="text-xs text-muted-foreground">
-									Staff manually reviews all submissions
+									{m['questionnaireEditPage.evaluation.manual_description']()}
 								</div>
 							</div>
 						</SelectItem>
-						<SelectItem value="hybrid" label="Hybrid" disabled>
+						<SelectItem
+							value="hybrid"
+							label={m['questionnaireEditPage.evaluation.hybrid_label']()}
+							disabled
+						>
 							<div class="flex flex-col gap-0.5">
 								<div class="flex items-center gap-2 font-medium">
-									Hybrid
+									{m['questionnaireEditPage.evaluation.hybrid_label']()}
 									<span
 										class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
-										>Coming soon</span
+										>{m['questionnaireFormFields.comingSoon']()}</span
 									>
 								</div>
 								<div class="text-xs text-muted-foreground">
-									AI pre-scores, staff reviews final decision
+									{m['questionnaireEditPage.evaluation.hybrid_description']()}
 								</div>
 							</div>
 						</SelectItem>
-						<SelectItem value="automatic" label="Automatic" disabled>
+						<SelectItem
+							value="automatic"
+							label={m['questionnaireEditPage.evaluation.automatic_label']()}
+							disabled
+						>
 							<div class="flex flex-col gap-0.5">
 								<div class="flex items-center gap-2 font-medium">
-									Automatic
+									{m['questionnaireEditPage.evaluation.automatic_label']()}
 									<span
 										class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
-										>Coming soon</span
+										>{m['questionnaireFormFields.comingSoon']()}</span
 									>
 								</div>
 								<div class="text-xs text-muted-foreground">
-									AI evaluates all responses automatically
+									{m['questionnaireEditPage.evaluation.automatic_description']()}
 								</div>
 							</div>
 						</SelectItem>
@@ -348,7 +366,7 @@
 <Card>
 	<CardHeader>
 		<CardTitle>{m['questionnaireEditPage.advanced.title']()}</CardTitle>
-		<CardDescription>Optional settings for questionnaire behavior</CardDescription>
+		<CardDescription>{m['questionnaireFormFields.advancedDescription']()}</CardDescription>
 	</CardHeader>
 	<CardContent class="space-y-4">
 		<!-- Shuffle Options -->
@@ -362,7 +380,9 @@
 					class="h-4 w-4 rounded border-gray-300"
 					disabled={!canEdit}
 				/>
-				<Label for="shuffle-questions" class="font-normal">Shuffle questions for each user</Label>
+				<Label for="shuffle-questions" class="font-normal"
+					>{m['questionnaireFormFields.shuffleQuestionsLabel']()}</Label
+				>
 			</div>
 			<div class="flex items-center space-x-2">
 				<input
@@ -373,7 +393,9 @@
 					class="h-4 w-4 rounded border-gray-300"
 					disabled={!canEdit}
 				/>
-				<Label for="shuffle-sections" class="font-normal">Shuffle sections for each user</Label>
+				<Label for="shuffle-sections" class="font-normal"
+					>{m['questionnaireFormFields.shuffleSectionsLabel']()}</Label
+				>
 			</div>
 		</div>
 

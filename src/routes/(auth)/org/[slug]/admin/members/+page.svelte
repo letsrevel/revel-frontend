@@ -135,7 +135,7 @@
 			class="w-full sm:w-auto"
 		>
 			<Plus class="mr-2 h-4 w-4" aria-hidden="true" />
-			Invite members
+			{m['orgAdmin.members.inviteMembers']()}
 		</Button>
 	</div>
 
@@ -169,7 +169,7 @@
 				<TabsTrigger value="members" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
 					<Users class="h-4 w-4 shrink-0" />
 					<span class="hidden sm:inline">{m['orgAdmin.members.tabs.members']()}</span>
-					<span class="sm:hidden">Members</span>
+					<span class="sm:hidden">{m['orgAdmin.members.tabs.membersShort']()}</span>
 					{#if members.length > 0}
 						<span class="hidden text-xs text-muted-foreground lg:inline">({members.length})</span>
 					{/if}
@@ -178,7 +178,7 @@
 				<TabsTrigger value="staff" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
 					<UserCog class="h-4 w-4 shrink-0" />
 					<span class="hidden sm:inline">{m['orgAdmin.members.tabs.staff']()}</span>
-					<span class="sm:hidden">Staff</span>
+					<span class="sm:hidden">{m['orgAdmin.members.tabs.staffShort']()}</span>
 					{#if staff.length > 0}
 						<span class="hidden text-xs text-muted-foreground lg:inline">({staff.length})</span>
 					{/if}
@@ -187,13 +187,13 @@
 				<TabsTrigger value="requests" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
 					<UserPlus class="h-4 w-4 shrink-0" />
 					<span class="hidden sm:inline">{m['orgAdmin.members.tabs.requests']()}</span>
-					<span class="sm:hidden">Requests</span>
+					<span class="sm:hidden">{m['orgAdmin.members.tabs.requestsShort']()}</span>
 				</TabsTrigger>
 
 				<TabsTrigger value="tiers" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
 					<Shield class="h-4 w-4 shrink-0" />
 					<span class="hidden sm:inline">{m['orgAdmin.members.tabs.tiers']()}</span>
-					<span class="sm:hidden">Tiers</span>
+					<span class="sm:hidden">{m['orgAdmin.members.tabs.tiersShort']()}</span>
 					{#if tiers.length > 0}
 						<span class="hidden text-xs text-muted-foreground lg:inline">({tiers.length})</span>
 					{/if}
@@ -207,8 +207,8 @@
 
 				<TabsTrigger value="tokens" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
 					<Link class="h-4 w-4 shrink-0" />
-					<span class="hidden sm:inline">Invite Links</span>
-					<span class="sm:hidden">Links</span>
+					<span class="hidden sm:inline">{m['orgAdmin.members.tabs.tokens']()}</span>
+					<span class="sm:hidden">{m['orgAdmin.members.tabs.tokensShort']()}</span>
 				</TabsTrigger>
 			</TabsList>
 		</div>

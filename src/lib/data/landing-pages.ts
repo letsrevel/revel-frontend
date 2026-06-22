@@ -29,7 +29,7 @@ export interface LandingPageCTA {
 
 export interface LandingPageContent {
 	slug: string;
-	locale: 'en' | 'de' | 'it';
+	locale: 'en' | 'de' | 'it' | 'fr';
 	meta: {
 		title: string;
 		description: string;
@@ -2005,6 +2005,667 @@ const communityFirstEventPlatformIT: LandingPageContent = {
 };
 
 // =============================================================================
+// FRENCH CONTENT
+// =============================================================================
+
+const eventbriteAlternativeFR: LandingPageContent = {
+	slug: 'eventbrite-alternative',
+	locale: 'fr',
+	meta: {
+		title: 'Alternative à Eventbrite – Frais réduits, contrôle total | Revel',
+		description:
+			'Billetterie événementielle open source à seulement 1,5 % + 0,25 € par billet. Auto-hébergement sans aucuns frais. Tes données t’appartiennent. Aucun verrouillage de plateforme. Hébergé en Europe.',
+		keywords:
+			'alternative eventbrite, plateforme de billetterie pas chère, logiciel événementiel, système de billetterie, gestion d’événements'
+	},
+	hero: {
+		headline: 'Fini les frais de plateforme exorbitants',
+		subheadline:
+			'Revel est l’alternative open source à Eventbrite, avec une tarification transparente et un contrôle total sur tes données.'
+	},
+	intro: {
+		paragraphs: [
+			'Frustré·e par Eventbrite, qui prélève 3,7 % plus des frais sur chaque billet vendu ? Tu n’es pas seul·e. Partout, les organisateurs cherchent des alternatives qui ne grignotent pas leurs marges et ne les enferment pas dans une plateforme incontrôlable.',
+			'Revel est une plateforme open source de gestion d’événements avec une tarification simple et équitable : seulement 1,5 % + 0,25 € par billet payant sur notre version hébergée – ou totalement gratuite en auto-hébergement. Tes recettes de billetterie t’appartiennent, pas à un grand groupe.',
+			'Conçue par des organisateurs de communautés en Europe, Revel offre tout ce dont tu as besoin : billetterie, RSVP, gestion des participants, outils de check-in et bien plus. Le tout en gardant tes données et des coûts prévisibles.'
+		]
+	},
+	features: [
+		{
+			icon: 'euro',
+			title: 'Frais transparents et réduits',
+			description:
+				'Seulement 1,5 % + 0,25 € par billet payant. Les événements gratuits restent toujours gratuits. Auto-héberge et ne paie rien du tout.'
+		},
+		{
+			icon: 'server',
+			title: 'Option d’auto-hébergement',
+			description:
+				'Fais tourner Revel avec Docker sur ta propre infrastructure. Aucuns frais de plateforme, contrôle total, sous licence MIT.'
+		},
+		{
+			icon: 'ticket',
+			title: 'Suite de billetterie complète',
+			description:
+				'Plusieurs catégories de billets, achats groupés, check-in par QR code, intégration Apple Wallet et paiements via Stripe.'
+		},
+		{
+			icon: 'shield',
+			title: 'Tes données, tes règles',
+			description:
+				'Aucun traqueur tiers. Aucune revente de données. Conformité totale au RGPD. Hébergé sur une infrastructure européenne.'
+		},
+		{
+			icon: 'users',
+			title: 'Outils communautaires',
+			description:
+				'Organisations, adhésions, rôles et permissions. Construis des communautés durables, pas seulement des événements isolés.'
+		},
+		{
+			icon: 'code',
+			title: 'Open source (MIT)',
+			description:
+				'Un code entièrement transparent. Inspecte-le, modifie-le, contribue. Aucun verrouillage fournisseur, jamais.'
+		}
+	],
+	benefits: {
+		title: 'Pourquoi les organisateurs choisissent Revel',
+		items: [
+			'Garde une plus grande part de tes recettes de billetterie avec des frais jusqu’à 60 % inférieurs à ceux d’Eventbrite',
+			'Versements Stripe directs – plus besoin d’attendre les paiements de la plateforme',
+			'Exporte les données de tes participants à tout moment dans des formats standards',
+			'Aucun risque que des changements de règles de la plateforme paralysent tes événements',
+			'Hébergement européen avec conformité totale au RGPD',
+			'Un développement actif mené par une communauté à l’écoute'
+		]
+	},
+	cta: {
+		title: 'Prêt·e à changer ?',
+		description: 'Découvre Revel en action ou héberge-le toi-même. Aucune carte bancaire requise.',
+		buttons: [
+			{ text: 'Tester la démo en direct', href: 'https://demo.letsrevel.io', variant: 'primary' },
+			{
+				text: 'Auto-héberger (GitHub)',
+				href: 'https://github.com/letsrevel',
+				variant: 'secondary'
+			},
+			{ text: 'Contact', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
+		]
+	},
+	faq: [
+		{
+			question: 'Comment les tarifs de Revel se comparent-ils à ceux d’Eventbrite ?',
+			answer:
+				'Eventbrite facture environ 3,7 % + des frais par billet, plus le traitement des paiements. Revel ne facture que 1,5 % + 0,25 € par billet payant (plus le standard Stripe d’environ 1,5 % + 0,25 €). Les événements gratuits et les déploiements auto-hébergés n’ont aucuns frais de plateforme.'
+		},
+		{
+			question: 'Puis-je migrer mes événements depuis Eventbrite ?',
+			answer:
+				'Oui. Avec Revel, tu peux facilement recréer tes événements grâce à notre éditeur d’événements intuitif. Tu peux exporter tes listes de participants depuis Eventbrite au format CSV et les utiliser pour inviter ta communauté existante à tes nouveaux événements Revel.'
+		},
+		{
+			question: 'Revel est-il vraiment gratuit en auto-hébergement ?',
+			answer:
+				'Absolument. Revel est sous licence MIT, ce qui signifie que tu peux le faire tourner sur tes propres serveurs sans nous payer quoi que ce soit. Tu ne paies que ta propre infrastructure et les frais de paiement de Stripe.'
+		},
+		{
+			question: 'Où Revel est-il hébergé ?',
+			answer:
+				'Notre version hébergée fonctionne sur une infrastructure européenne, garantissant la conformité au RGPD et la souveraineté des données. En auto-hébergement, c’est toi qui décides où se trouvent tes données.'
+		}
+	],
+	relatedPages: ['self-hosted-event-platform', 'privacy-focused-events']
+};
+
+const queerEventManagementFR: LandingPageContent = {
+	slug: 'queer-event-management',
+	locale: 'fr',
+	meta: {
+		title: 'Gestion d’événements pour les communautés LGBTQ+ | Revel',
+		description:
+			'Plateforme d’événements open source par et pour les communautés queer. Contrôles de confidentialité, sélection des participant·es, aucun risque de censure. Hébergée en Europe.',
+		keywords:
+			'plateforme événements lgbtq, événements queer, billetterie événements gay, événements pride, communauté queer'
+	},
+	hero: {
+		headline: 'Un logiciel d’événements qui comprend les communautés queer',
+		subheadline:
+			'Conçu par des organisateur·ices LGBTQ+ pour des événements que les plateformes grand public ne peuvent pas accueillir.'
+	},
+	intro: {
+		paragraphs: [
+			'Les plateformes d’événements grand public n’ont pas été pensées pour les communautés queer. Des règles de contenu vagues qui signalent tes événements. Des algorithmes qui étouffent ta visibilité. Aucune compréhension des espaces plus sûrs ni des besoins propres à chaque communauté.',
+			'Revel, c’est différent. Conçue par des organisateur·ices d’événements queer en Europe, c’est une plateforme open source pour les communautés qui ont besoin de plus qu’une simple billetterie – elles ont besoin de confiance, de respect de la vie privée et de la liberté d’organiser des événements sans craindre d’être déplateformées.',
+			'Que tu organises des soirées Pride, des rencontres queer, des spectacles de drag ou des réunions de communauté, Revel te donne les outils pour bâtir et protéger ta communauté. Gestion des membres, sélection des participant·es, contrôles de visibilité et pleine souveraineté sur tes données – le tout sur une seule plateforme.'
+		]
+	},
+	features: [
+		{
+			icon: 'heart',
+			title: 'Pensé pour la communauté',
+			description:
+				'Organisations, adhésions et outils de développement communautaire. Crée des espaces où ta communauté peut s’épanouir au-delà des événements ponctuels.'
+		},
+		{
+			icon: 'shield',
+			title: 'Aucun risque de censure',
+			description:
+				'Héberge toi-même ou utilise nos serveurs européens. Aucune règle de contenu d’entreprise ne décide quels événements tu as le droit d’organiser.'
+		},
+		{
+			icon: 'clipboard',
+			title: 'Sélection des participant·es',
+			description:
+				'Des questionnaires personnalisés pour t’assurer que les participant·es correspondent aux valeurs de ta communauté. Validation manuelle, approbation automatique ou flux hybrides.'
+		},
+		{
+			icon: 'eye',
+			title: 'Contrôles de confidentialité',
+			description:
+				'Événements publics, réservés aux membres ou sur invitation uniquement. Choisis qui voit quoi et garde tes listes de participant·es privées.'
+		},
+		{
+			icon: 'lock',
+			title: 'Souveraineté des données',
+			description:
+				'Les données de ta communauté restent les tiennes. Aucun traceur tiers, aucune revente de données, conformité totale au RGPD.'
+		},
+		{
+			icon: 'globe',
+			title: 'Hébergement européen',
+			description:
+				'Hébergé sur une infrastructure européenne avec une protection des données solide. Ou héberge toi-même où tu le souhaites.'
+		}
+	],
+	benefits: {
+		title: 'Pourquoi les organisateur·ices LGBTQ+ font confiance à Revel',
+		items: [
+			'Aucun risque que tes événements soient signalés ou supprimés par les règles d’une plateforme',
+			'Sélectionner les participant·es pour des espaces plus sûrs',
+			'Bâtir des adhésions communautaires durables, pas seulement des listes événement par événement',
+			'Garder le contrôle total sur les données de ta communauté',
+			'Conçu par des personnes qui comprennent l’organisation d’événements queer',
+			'Open source et transparent – vois exactement comment ça fonctionne'
+		]
+	},
+	cta: {
+		title: 'Ta communauté mérite de meilleurs outils',
+		description:
+			'Découvre comment fonctionne Revel ou commence dès aujourd’hui à bâtir ta communauté.',
+		buttons: [
+			{ text: 'Tester la démo en direct', href: 'https://demo.letsrevel.io', variant: 'primary' },
+			{
+				text: 'Héberger soi-même (GitHub)',
+				href: 'https://github.com/letsrevel',
+				variant: 'secondary'
+			},
+			{ text: 'Nous contacter', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
+		]
+	},
+	faq: [
+		{
+			question: 'Qu’est-ce qui distingue Revel d’Eventbrite ou de Meetup ?',
+			answer:
+				'Revel a été conçu spécialement pour les communautés qui ont besoin de confidentialité, de sélection des participant·es et d’une liberté face à la censure des plateformes. Nous n’avons aucune règle de contenu qui limite les événements pour adultes ou queer, et nous te donnons le contrôle total de tes données.'
+		},
+		{
+			question: 'Puis-je contrôler qui participe à mes événements ?',
+			answer:
+				'Oui. Revel intègre un puissant système de questionnaires qui te permet d’exiger des participant·es qu’iels répondent à des questions avant d’acheter un billet ou de confirmer leur présence. Tu peux examiner les réponses manuellement, définir des règles d’approbation automatique ou opter pour une approche hybride.'
+		},
+		{
+			question: 'Les données de ma communauté sont-elles en sécurité ?',
+			answer:
+				'Absolument. Nous ne vendons aucune donnée et n’utilisons aucun traceur tiers. Notre version hébergée tourne sur des serveurs européens conformes au RGPD. En auto-hébergement, tu gardes le contrôle total de l’emplacement de tes données.'
+		},
+		{
+			question: 'Puis-je organiser des événements réservés aux membres ?',
+			answer:
+				'Oui. Tu peux créer des organisations avec des niveaux d’adhésion et réserver des événements aux membres, à certains niveaux d’adhésion précis, ou les rendre publics. Tu contrôles la visibilité à chaque niveau.'
+		}
+	],
+	relatedPages: ['kink-event-ticketing', 'privacy-focused-events']
+};
+
+const kinkEventTicketingFR: LandingPageContent = {
+	slug: 'kink-event-ticketing',
+	locale: 'fr',
+	meta: {
+		title: 'Billetterie pour événements Kink & BDSM – Privé & Sécurisé | Revel',
+		description:
+			"Gestion d'événements pour les communautés kink, BDSM et sex-positives. Sélection des participant·es, contrôles de confidentialité, discrétion. Open source, auto-hébergeable.",
+		keywords:
+			'billetterie événement bdsm, événement kink, événements sex positifs, billetterie soirée fétichiste, plateforme événement adulte'
+	},
+	hero: {
+		headline: 'Une gestion d’événements discrète pour les communautés kink',
+		subheadline:
+			'Sélection des participant·es, contrôles de confidentialité et maîtrise totale de tes données. Conçu pour les événements qui exigent de la discrétion.'
+	},
+	intro: {
+		paragraphs: [
+			"Organiser des événements kink et BDSM, c'est concilier vie privée, consentement et confiance – tout en gérant la billetterie, les RSVP et l'administration des participant·es. La plupart des plateformes ne sont pas faites pour ça. Revel, si.",
+			"Développé par des organisateur·rices communautaires qui comprennent les besoins spécifiques des espaces sex-positifs, Revel est un logiciel d'événementiel open source pensé pour la discrétion. Sélectionne les participant·es avec des questionnaires personnalisés. Contrôle précisément qui voit tes événements. Garde les données des participant·es entièrement privées.",
+			'Que tu organises des play parties, des munches, des ateliers ou de grands événements fétichistes, Revel te donne les outils pour préserver la confiance et la sécurité que ta communauté attend – sans compromis sur les fonctionnalités ni crainte de censure de la plateforme.'
+		]
+	},
+	features: [
+		{
+			icon: 'clipboard',
+			title: 'Sélection des participant·es',
+			description:
+				"Questionnaires obligatoires avant l'achat de billet. Examine les candidatures manuellement, approuve automatiquement selon des critères ou combine les deux dans des workflows hybrides."
+		},
+		{
+			icon: 'eye',
+			title: 'Contrôles de visibilité',
+			description:
+				'Annonces publiques, réservées aux membres ou événements entièrement privés sur invitation uniquement. C’est toi qui décides qui a connaissance de tes événements.'
+		},
+		{
+			icon: 'lock',
+			title: 'Discrétion totale',
+			description:
+				'Aucune plateforme susceptible de divulguer ta liste de participant·es. Auto-héberge pour une confidentialité maximale ou utilise nos serveurs européens sécurisés.'
+		},
+		{
+			icon: 'shield',
+			title: 'Aucun risque de déplateformisation',
+			description:
+				'Open source et auto-hébergeable. Aucune politique de contenu imposée par une entreprise. Tes événements, tes règles.'
+		},
+		{
+			icon: 'users',
+			title: 'Adhésion communautaire',
+			description:
+				'Constitue au fil du temps des listes de membres de confiance. Réserve tes événements aux membres vérifié·es de la communauté.'
+		},
+		{
+			icon: 'ticket',
+			title: "Toutes les fonctionnalités d'événement",
+			description:
+				"Plusieurs niveaux de billets, check-in par QR code, passes Apple Wallet, achats groupés – tout ce qu'il te faut pour des événements professionnels."
+		}
+	],
+	benefits: {
+		title: 'Pourquoi les organisateur·rices kink choisissent Revel',
+		items: [
+			'Sélectionner les participant·es selon les standards de la communauté et la culture du consentement',
+			'Garder privées les identités des participant·es et les détails des événements',
+			'Aucun risque de voir tes événements supprimés à cause des politiques de contenu d’une plateforme',
+			'Construire et entretenir des communautés de membres de confiance',
+			'Auto-héberger pour une maîtrise totale des données sensibles',
+			'Conçu par des personnes qui comprennent l’organisation d’événements kink'
+		]
+	},
+	cta: {
+		title: 'Des événements qui respectent la vie privée et le consentement',
+		description: 'Découvre comment Revel protège ta communauté, ou héberge-le toi-même.',
+		buttons: [
+			{ text: 'Tester la démo en ligne', href: 'https://demo.letsrevel.io', variant: 'primary' },
+			{
+				text: 'Auto-héberger (GitHub)',
+				href: 'https://github.com/letsrevel',
+				variant: 'secondary'
+			},
+			{ text: 'Contact', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
+		]
+	},
+	faq: [
+		{
+			question: 'Comment fonctionne la sélection des participant·es ?',
+			answer:
+				"Tu crées des questionnaires avec toutes les questions dont tu as besoin – niveau d'expérience, références communautaires, confirmations de consentement, etc. Les participant·es doivent remplir le questionnaire avant de pouvoir acheter un billet. Tu peux examiner les soumissions manuellement, définir des règles d'approbation automatique ou combiner les deux approches."
+		},
+		{
+			question: 'Puis-je garder mes événements entièrement privés ?',
+			answer:
+				'Oui. Les événements peuvent être configurés sur invitation uniquement, visibles seulement par les membres ou totalement non répertoriés. Tu peux aussi envoyer des invitations directes qui contournent les exigences habituelles pour les invité·es de confiance.'
+		},
+		{
+			question: "Et si j'ai besoin d'une confidentialité maximale ?",
+			answer:
+				'Héberge Revel toi-même sur ta propre infrastructure. Tes données ne touchent jamais nos serveurs. Le logiciel est sous licence MIT et libre d’utilisation – tu ne paies que ton propre hébergement et le traitement des paiements Stripe.'
+		},
+		{
+			question: 'Y a-t-il un risque que mes événements soient censurés ?',
+			answer:
+				'Pas avec Revel. Nous sommes open source, sans politique de contenu restreignant les événements pour adultes. En auto-hébergement, tu disposes d’une autonomie complète. Notre version hébergée tourne sur une infrastructure européenne et nous soutenons explicitement les communautés sex-positives.'
+		}
+	],
+	relatedPages: ['queer-event-management', 'privacy-focused-events', 'self-hosted-event-platform']
+};
+
+const selfHostedEventPlatformFR: LandingPageContent = {
+	slug: 'self-hosted-event-platform',
+	locale: 'fr',
+	meta: {
+		title: 'Gestion d’événements auto-hébergée – Open Source et gratuite | Revel',
+		description:
+			'Plateforme événementielle sous licence MIT à héberger sur tes propres serveurs. Zéro commission, contrôle total, prête pour Docker. Billetterie, RSVP, gestion des membres.',
+		keywords:
+			'gestion d’événements auto-hébergée, billetterie open source, alternative eventbrite auto-hébergée, logiciel de gestion d’événements, plateforme événementielle docker'
+	},
+	hero: {
+		headline: 'Tes événements, tes serveurs, zéro commission',
+		subheadline:
+			'Gestion d’événements sous licence MIT à déployer partout. Billetterie complète, RSVP et outils communautaires – entièrement sous ton contrôle.'
+	},
+	intro: {
+		paragraphs: [
+			'Pourquoi payer des abonnements SaaS mensuels et confier les données de ta communauté à une multinationale ? Revel est un logiciel de gestion d’événements open source que tu peux faire tourner en quelques minutes sur ta propre infrastructure.',
+			'Conçu avec des technologies modernes – Django, PostgreSQL, Redis et Docker – Revel est prêt pour la production et éprouvé sur le terrain. Billetterie complète avec intégration Stripe, RSVP, gestion des membres, sélection des participants, check-in par QR code et bien plus. Toutes les fonctionnalités des plateformes commerciales, sans coûts récurrents ni inquiétudes sur tes données.',
+			'La licence MIT signifie que tu peux l’utiliser, le modifier et l’exploiter comme tu veux. Aucun verrouillage propriétaire. Aucune hausse de tarif surprise. Aucune plateforme qui décide quels événements tu as le droit d’organiser. Ton infrastructure, tes règles.'
+		]
+	},
+	features: [
+		{
+			icon: 'server',
+			title: 'Déploiement prêt pour Docker',
+			description:
+				'Lance-toi en quelques minutes avec Docker Compose. PostgreSQL, Redis, Celery – tout est configuré et prêt à l’emploi.'
+		},
+		{
+			icon: 'euro',
+			title: 'Zéro commission de plateforme',
+			description:
+				'Aucuns frais par billet, aucun coût mensuel. Tu ne paies que ta propre infrastructure et le traitement des paiements par Stripe.'
+		},
+		{
+			icon: 'code',
+			title: 'Sous licence MIT',
+			description:
+				'Utilise-le à des fins commerciales, modifie-le, contribue en retour – ou pas. Aucune restriction, aucune obligation copyleft.'
+		},
+		{
+			icon: 'lock',
+			title: 'Contrôle total des données',
+			description:
+				'Tes données ne quittent jamais tes serveurs. Conformité RGPD totale, parce que c’est toi qui contrôles tout.'
+		},
+		{
+			icon: 'ticket',
+			title: 'Toutes les fonctionnalités incluses',
+			description:
+				'Billetterie, RSVP, organisations, adhésions, questionnaires, check-in par QR code, coordination des repas partagés et plus encore.'
+		},
+		{
+			icon: 'globe',
+			title: 'API moderne',
+			description:
+				'API REST avec documentation OpenAPI. Crée tes propres interfaces, intégrations ou applications mobiles.'
+		}
+	],
+	benefits: {
+		title: 'Pourquoi auto-héberger Revel',
+		items: [
+			'Élimine les coûts SaaS récurrents – ne paie que ton infrastructure',
+			'Souveraineté et confidentialité totales sur tes données',
+			'Aucun risque de changement de politique de plateforme ni de hausse de tarifs',
+			'Adapte et étends le code source selon tes besoins',
+			'Héberge dans n’importe quelle région pour la conformité des données',
+			'Une communauté et un développement actifs'
+		]
+	},
+	cta: {
+		title: 'En ligne en quelques minutes',
+		description: 'Consulte le code, lis la doc, ou teste d’abord la démo hébergée.',
+		buttons: [
+			{ text: 'Voir sur GitHub', href: 'https://github.com/letsrevel', variant: 'primary' },
+			{ text: 'Tester la démo', href: 'https://demo.letsrevel.io', variant: 'secondary' },
+			{ text: 'Nous contacter', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
+		]
+	},
+	faq: [
+		{
+			question: 'Quelle est la configuration requise ?',
+			answer:
+				'Revel tourne partout où Docker fonctionne. Minimum recommandé : 2 cœurs CPU, 4 Go de RAM, 20 Go de stockage. Pour une production avec beaucoup d’événements, nous recommandons 4 cœurs ou plus et 8 Go de RAM ou plus. Il te faut aussi PostgreSQL (avec PostGIS), Redis et un compte Stripe pour les paiements.'
+		},
+		{
+			question: 'Combien de temps prend le déploiement ?',
+			answer:
+				'Avec Docker Compose, tu peux avoir une instance fonctionnelle en moins de 10 minutes. Le dépôt contient des configurations de déploiement et une documentation complètes.'
+		},
+		{
+			question: 'Puis-je quand même obtenir du support en auto-hébergement ?',
+			answer:
+				'Oui. Nous proposons un support communautaire via les issues GitHub. Pour les organisations qui ont besoin de délais de réponse garantis ou de développements sur mesure, contacte-nous pour découvrir nos options de support professionnel.'
+		},
+		{
+			question: 'Quelle est la différence entre l’auto-hébergement et votre version hébergée ?',
+			answer:
+				'Les fonctionnalités sont identiques. Notre version hébergée offre le confort (nous gérons l’infrastructure, les mises à jour, les sauvegardes) en échange d’une petite commission par billet. L’auto-hébergement est gratuit, mais c’est toi qui gères tout.'
+		}
+	],
+	relatedPages: ['eventbrite-alternative', 'privacy-focused-events']
+};
+
+const privacyFocusedEventsFR: LandingPageContent = {
+	slug: 'privacy-focused-events',
+	locale: 'fr',
+	meta: {
+		title: 'Plateforme événementielle respectueuse de la vie privée – Conforme RGPD | Revel',
+		description:
+			'Une gestion événementielle qui respecte la vie privée. Aucune collecte de données, aucun traqueur tiers. Hébergement européen, pleine conformité RGPD. Open source.',
+		keywords:
+			'plateforme événementielle rgpd, événements respect vie privée, logiciel événementiel européen, gestion événements confidentialité, billetterie sans tracking, protection données personnelles'
+	},
+	hero: {
+		headline: 'Une gestion événementielle qui respecte ta vie privée',
+		subheadline:
+			'Aucune collecte de données. Aucun traqueur tiers. Hébergement européen en pleine conformité RGPD.'
+	},
+	intro: {
+		paragraphs: [
+			'La plupart des plateformes événementielles collectent les données de tes participant·es à des fins publicitaires, les partagent avec des tiers et cachent les détails dans de longues politiques de confidentialité. Si la vie privée de ta communauté te tient à cœur – ou si tu dois simplement respecter le RGPD – il te faut une autre approche.',
+			"Revel est une solution de gestion événementielle open source, conçue avec la protection de la vie privée comme principe fondamental, et non comme une réflexion après coup. Nous ne traquons pas les utilisateur·ices à travers le web. Nous ne vendons pas de données. Nous n'avons même pas de modèle économique qui nous y inciterait.",
+			'Hébergée sur une infrastructure européenne en pleine conformité RGPD, ou auto-hébergée pour un contrôle total. Les données de tes participant·es restent les tiennes, et ta communauté peut avoir confiance dans le fait que ses informations sont traitées de façon responsable.'
+		]
+	},
+	features: [
+		{
+			icon: 'shield',
+			title: 'Aucun traqueur tiers',
+			description:
+				'Pas de Google Analytics, pas de pixel Facebook, pas de SDK publicitaire. Nous ne traquons pas tes participant·es à travers le web.'
+		},
+		{
+			icon: 'globe',
+			title: 'Hébergement européen',
+			description:
+				"Notre version hébergée tourne sur une infrastructure européenne, garantissant que tes données restent sous juridiction de l'UE et sous la protection du RGPD."
+		},
+		{
+			icon: 'lock',
+			title: 'Minimisation des données',
+			description:
+				'Nous ne collectons que ce qui est nécessaire aux événements. Aucun profilage, aucune analyse comportementale, aucune monétisation des données.'
+		},
+		{
+			icon: 'server',
+			title: 'Option d’auto-hébergement',
+			description:
+				'Pour un contrôle maximal, fais tourner Revel sur ta propre infrastructure. Tes données ne touchent jamais nos serveurs.'
+		},
+		{
+			icon: 'code',
+			title: 'Code transparent',
+			description:
+				"L'open source signifie que tu peux vérifier exactement comment tes données sont traitées. Aucun tracking caché, aucune surprise."
+		},
+		{
+			icon: 'check',
+			title: 'RGPD by design',
+			description:
+				'Export de données, demandes de suppression, gestion du consentement – la conformité à la vie privée est intégrée à la plateforme.'
+		}
+	],
+	benefits: {
+		title: 'La confidentialité comme fonctionnalité, pas comme simple case à cocher',
+		items: [
+			'Pleine conformité RGPD pour les organisateur·ices et participant·es européen·nes',
+			'Aucune vente ni partage de données avec des annonceurs',
+			'Code open source transparent et auditable',
+			'Hébergement européen avec souveraineté des données',
+			"Option d'auto-hébergement pour un contrôle total",
+			'Des pratiques de confidentialité claires et honnêtes que tu peux expliquer à ta communauté'
+		]
+	},
+	cta: {
+		title: 'Des événements sans surveillance',
+		description:
+			'Découvre comment Revel traite les données, ou fais-le tourner toi-même pour un contrôle total.',
+		buttons: [
+			{ text: 'Tester la démo live', href: 'https://demo.letsrevel.io', variant: 'primary' },
+			{
+				text: 'Auto-héberger (GitHub)',
+				href: 'https://github.com/letsrevel',
+				variant: 'secondary'
+			},
+			{ text: 'Nous contacter', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
+		]
+	},
+	faq: [
+		{
+			question: 'En quoi Revel est-il conforme au RGPD ?',
+			answer:
+				"Nous appliquons la minimisation des données, proposons des outils d'export et de suppression, recueillons un consentement en bonne et due forme et hébergeons sur une infrastructure européenne. Comme c'est open source, tu peux vérifier nos pratiques de traitement des données directement dans le code."
+		},
+		{
+			question: 'Vendez-vous les données des participant·es ?',
+			answer:
+				"Non. Nous n'avons aucun modèle économique publicitaire. Nos revenus proviennent d'une petite commission par billet sur les événements payants (pour les client·es de la version hébergée). Nous n'avons aucun intérêt à monétiser tes données."
+		},
+		{
+			question: 'Quelles données collectez-vous ?',
+			answer:
+				'Uniquement le nécessaire : informations de compte, détails des événements, achats de billets et listes de participant·es. Nous ne traquons aucun comportement de navigation, ne créons aucun profil publicitaire et ne collectons rien au-delà de ce que tu fournis explicitement.'
+		},
+		{
+			question: 'Puis-je obtenir un contrôle total sur mes données ?',
+			answer:
+				'Oui. Auto-héberge Revel sur ta propre infrastructure et tes données ne toucheront jamais nos serveurs. La plateforme est sous licence MIT et gratuite à exploiter.'
+		}
+	],
+	relatedPages: ['self-hosted-event-platform', 'queer-event-management']
+};
+
+const communityFirstEventPlatformFR: LandingPageContent = {
+	slug: 'community-first-event-platform',
+	locale: 'fr',
+	meta: {
+		title: "Plateforme d'événements axée communauté – Bien plus que la billetterie | Revel",
+		description:
+			"Crée des communautés durables, pas seulement des événements. Organisations, niveaux d'adhésion, coordination de repas partagés et bien plus. Héberge toi-même ou utilise la version hébergée.",
+		keywords:
+			"plateforme événementielle communautaire, gestion des membres, organisation d'événements, coordination repas partagé, création de communauté, alternative à meetup"
+	},
+	hero: {
+		headline: 'Crée des communautés, pas seulement des événements',
+		subheadline:
+			"Organisations, adhésions et outils uniques comme la coordination de repas partagés. Revel t'aide à tisser des liens communautaires durables."
+	},
+	intro: {
+		paragraphs: [
+			"La plupart des plateformes événementielles traitent chaque rencontre comme une transaction isolée. Mais les vraies communautés ont besoin de plus : de structure, de continuité et d'outils qui soutiennent des relations dans la durée.",
+			"Revel est pensé d'abord pour les communautés. Crée des organisations avec des niveaux d'adhésion, attribue des rôles et des permissions, et profite de fonctionnalités comme notre système unique de coordination de repas partagés pour rendre tes événements plus collaboratifs et moins de travail pour les organisateurs.",
+			"Que tu animes un club de lecture, un groupe de loisirs, un réseau professionnel ou un fablab, Revel te donne l'infrastructure pour passer de simples rencontres informelles à une communauté florissante, sans abonnements coûteux ni enfermement propriétaire."
+		]
+	},
+	features: [
+		{
+			icon: 'users',
+			title: 'Structure organisationnelle',
+			description:
+				"Crée des espaces communautaires avec des niveaux d'adhésion, pas seulement des listes d'événements. Rôles Owner, Staff et Member avec des permissions granulaires."
+		},
+		{
+			icon: 'clipboard',
+			title: 'Coordination de repas partagés',
+			description:
+				'Système intégré pour coordonner qui apporte quoi. Gère les restrictions alimentaires, les quantités et les articles : fini les tableurs chaotiques.'
+		},
+		{
+			icon: 'shield',
+			title: 'Événements réservés aux membres',
+			description:
+				'Réserve tes événements aux membres, à des niveaux précis, ou garde-les publics. Crée des espaces exclusifs pour ta communauté.'
+		},
+		{
+			icon: 'ticket',
+			title: 'Billetterie intégrée',
+			description:
+				'Événements gratuits, billets payants, RSVP seul ou formule hybride. Gère tout, des rencontres informelles aux conférences professionnelles.'
+		},
+		{
+			icon: 'eye',
+			title: 'Jamais de publicité',
+			description:
+				'Ta communauté mérite mieux que de voir des publicités. Héberge gratuitement toi-même ou utilise notre version hébergée sans publicité.'
+		},
+		{
+			icon: 'code',
+			title: 'Open source (MIT)',
+			description:
+				"Libre d'utilisation, de modification et de déploiement. Aucun enfermement propriétaire. Fais-le tourner sur tes propres serveurs avec un contrôle total."
+		}
+	],
+	benefits: {
+		title: 'Pourquoi les organisateurs de communautés choisissent Revel',
+		items: [
+			"Construis des structures d'adhésion durables, pas seulement des listes d'événements",
+			'Coordonne les repas partagés et les responsabilités collectives sans effort',
+			"Pas d'abonnements coûteux comme Meetup (540 €/an)",
+			'Une expérience sans publicité pour tes membres',
+			'Des événements réservés aux membres pour bâtir des communautés exclusives',
+			'Héberge toi-même pour un contrôle total et zéro frais de plateforme'
+		]
+	},
+	cta: {
+		title: 'Prêt à bâtir ta communauté ?',
+		description: 'Découvre Revel en action ou déploie-le toi-même. Aucune carte bancaire requise.',
+		buttons: [
+			{ text: 'Tester la démo live', href: 'https://demo.letsrevel.io', variant: 'primary' },
+			{
+				text: 'Héberger soi-même (GitHub)',
+				href: 'https://github.com/letsrevel',
+				variant: 'secondary'
+			},
+			{ text: 'Nous contacter', href: 'mailto:contact@letsrevel.io', variant: 'outline' }
+		]
+	},
+	faq: [
+		{
+			question: 'En quoi est-ce différent de Meetup ?',
+			answer:
+				"Meetup coûte 540 €/an et affiche des publicités à tes membres. Revel est gratuit en auto-hébergement et sans publicité dans sa version hébergée. Nous intégrons aussi une billetterie complète et des fonctionnalités uniques comme la coordination de repas partagés, que Meetup n'offre pas."
+		},
+		{
+			question: "Qu'est-ce que la coordination de repas partagés ?",
+			answer:
+				"C'est un système intégré qui permet aux participants de coordonner qui apporte quoi à tes événements. Gère les restrictions alimentaires, les quantités et l'attribution des articles : fini les tableurs chaotiques ou les outils externes. C'est idéal pour les repas partagés, le partage de matériel, la coordination des bénévoles et bien plus."
+		},
+		{
+			question: 'Puis-je créer des événements réservés aux membres ?',
+			answer:
+				"Oui. Tu peux créer des organisations avec des niveaux d'adhésion et réserver tes événements aux seuls membres, à des niveaux précis, ou les garder publics. Tu as un contrôle total sur la visibilité et l'accès."
+		},
+		{
+			question: 'Revel est-il vraiment gratuit ?',
+			answer:
+				"Oui pour l'auto-hébergement (licence MIT). Notre version hébergée ne facture qu'une petite commission sur les ventes de billets payants (1,5 % + 0,25 € par billet). Les événements gratuits et ceux en RSVP seul n'ont aucun frais de plateforme dans les deux versions."
+		},
+		{
+			question: 'Quels types de communautés utilisent Revel ?',
+			answer:
+				"Clubs de lecture, groupes de course, fablabs, réseaux professionnels, communautés de loisirs, groupes d'intérêt spécialisés et bien plus. Toute communauté qui veut plus que de simples listes d'événements profite des fonctionnalités d'organisation et d'adhésion de Revel."
+		}
+	],
+	relatedPages: ['eventbrite-alternative', 'self-hosted-event-platform']
+};
+
+// =============================================================================
 // EXPORTS
 // =============================================================================
 
@@ -2032,6 +2693,14 @@ export const landingPages: Record<string, Record<string, LandingPageContent>> = 
 		'self-hosted-event-platform': selfHostedEventPlatformIT,
 		'privacy-focused-events': privacyFocusedEventsIT,
 		'community-first-event-platform': communityFirstEventPlatformIT
+	},
+	fr: {
+		'eventbrite-alternative': eventbriteAlternativeFR,
+		'queer-event-management': queerEventManagementFR,
+		'kink-event-ticketing': kinkEventTicketingFR,
+		'self-hosted-event-platform': selfHostedEventPlatformFR,
+		'privacy-focused-events': privacyFocusedEventsFR,
+		'community-first-event-platform': communityFirstEventPlatformFR
 	}
 };
 

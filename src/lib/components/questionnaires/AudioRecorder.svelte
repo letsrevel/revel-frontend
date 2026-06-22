@@ -293,7 +293,12 @@
 					{m['audioRecorder.stop']?.() || 'Stop Recording'}
 				</Button>
 
-				<Button variant="ghost" size="sm" onclick={handleCancel} aria-label="Cancel recording">
+				<Button
+					variant="ghost"
+					size="sm"
+					onclick={handleCancel}
+					aria-label={m['audioRecorder.cancelRecording']?.() || 'Cancel recording'}
+				>
 					<X class="h-4 w-4" />
 				</Button>
 			</div>

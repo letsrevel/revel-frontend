@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { BlacklistEntrySchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
 	import { Settings, User, Mail, Phone, MessageCircle, Calendar } from 'lucide-svelte';
@@ -15,7 +16,7 @@
 	const createdAgo = $derived(
 		entry.created_at
 			? formatDistanceToNow(new Date(entry.created_at), { addSuffix: true })
-			: 'Unknown'
+			: m['blacklistEntryCard.unknown']()
 	);
 
 	// Display name from entry
@@ -26,7 +27,7 @@
 		if (entry.first_name) return entry.first_name;
 		if (entry.email) return entry.email;
 		if (entry.telegram_username) return `@${entry.telegram_username}`;
-		return 'Unknown';
+		return m['blacklistEntryCard.unknown']();
 	});
 
 	// Check if linked to a registered user
@@ -52,7 +53,7 @@
 						class="inline-flex items-center rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-900 dark:text-purple-100"
 					>
 						<User class="mr-1 h-3 w-3" />
-						Registered User
+						{m['blacklistEntryCard.registeredUser']()}
 					</span>
 				{/if}
 			</div>
@@ -84,7 +85,9 @@
 			<!-- Reason -->
 			{#if entry.reason}
 				<div class="mt-3 rounded-md bg-muted/50 p-2">
-					<p class="text-sm font-medium text-muted-foreground">Reason:</p>
+					<p class="text-sm font-medium text-muted-foreground">
+						{m['blacklistEntryCard.reasonLabel']()}
+					</p>
 					<p class="text-sm text-foreground">{entry.reason}</p>
 				</div>
 			{/if}
@@ -93,10 +96,10 @@
 			<div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
 				<span class="flex items-center gap-1">
 					<Calendar class="h-3 w-3" />
-					Added {createdAgo}
+					{m['blacklistEntryCard.added']({ date: createdAgo })}
 				</span>
 				{#if entry.created_by_name}
-					<span>by {entry.created_by_name}</span>
+					<span>{m['blacklistEntryCard.byName']({ name: entry.created_by_name })}</span>
 				{/if}
 			</div>
 		</div>
@@ -107,10 +110,10 @@
 				variant="outline"
 				size="sm"
 				onclick={handleManage}
-				aria-label="Manage blacklist entry for {displayName}"
+				aria-label={m['blacklistEntryCard.manageAriaLabel']({ name: displayName })}
 			>
 				<Settings class="h-4 w-4" />
-				<span class="sr-only md:not-sr-only md:ml-2">Manage</span>
+				<span class="sr-only md:not-sr-only md:ml-2">{m['blacklistEntryCard.manage']()}</span>
 			</Button>
 		</div>
 	</div>

@@ -62,8 +62,14 @@
 </script>
 
 <svelte:head>
-	<title>Manage Invitations - {data.event.name} | {data.organization.name} Admin | Revel</title>
-	<meta name="description" content="Manage invitations for {data.event.name}" />
+	<title
+		>{m['eventInvitationsAdmin.headTitle']({ eventName: data.event.name })} | {data.organization
+			.name} Admin | Revel</title
+	>
+	<meta
+		name="description"
+		content={m['eventInvitationsAdmin.headDescription']({ eventName: data.event.name })}
+	/>
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
@@ -125,7 +131,10 @@
 
 	<!-- Tabs -->
 	<div class="border-b border-border">
-		<nav class="-mb-px flex flex-wrap gap-x-4 sm:gap-x-6" aria-label="Tabs">
+		<nav
+			class="-mb-px flex flex-wrap gap-x-4 sm:gap-x-6"
+			aria-label={m['eventInvitationsAdmin.tabsAriaLabel']()}
+		>
 			<button
 				type="button"
 				onclick={() => switchTab('requests')}

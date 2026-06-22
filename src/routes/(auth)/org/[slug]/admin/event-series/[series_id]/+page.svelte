@@ -291,7 +291,7 @@
 
 	<!-- Tabs -->
 	<div class="border-b border-border">
-		<nav class="-mb-px flex gap-4" aria-label="Occurrence tabs">
+		<nav class="-mb-px flex gap-4" aria-label={m['seriesAdminPage.occurrenceTabsAriaLabel']()}>
 			<button
 				type="button"
 				onclick={() => (activeTab = 'upcoming')}
@@ -330,7 +330,7 @@
 				<p
 					class="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground"
 				>
-					No upcoming occurrences yet.
+					{m['seriesAdminPage.noUpcomingOccurrences']()}
 				</p>
 			{:else}
 				<ul class="space-y-4">
@@ -356,13 +356,13 @@
 				<p
 					class="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground"
 				>
-					Loading past occurrences…
+					{m['seriesAdminPage.loadingPastOccurrences']()}
 				</p>
 			{:else if pastOccurrences.length === 0}
 				<p
 					class="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground"
 				>
-					No past occurrences yet.
+					{m['seriesAdminPage.noPastOccurrences']()}
 				</p>
 			{:else}
 				<ul class="space-y-4">

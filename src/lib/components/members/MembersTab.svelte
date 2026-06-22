@@ -108,7 +108,7 @@
 			});
 		},
 		onError: (error: Error) => {
-			alert(`Failed to remove member: ${error.message}`);
+			alert(m['membersTab.removeMemberFailed']({ error: error.message }));
 		}
 	}));
 
@@ -150,7 +150,7 @@
 			manageMemberModalOpen = false;
 		},
 		onError: (error: Error) => {
-			alert(`Failed to update member: ${error.message}`);
+			alert(m['membersTab.updateMemberFailed']({ error: error.message }));
 		}
 	}));
 
@@ -184,7 +184,7 @@
 			manageMemberModalOpen = false;
 		},
 		onError: (error: Error) => {
-			alert(`Failed to promote to staff: ${error.message}`);
+			alert(m['membersTab.promoteStaffFailed']({ error: error.message }));
 		}
 	}));
 
@@ -212,10 +212,10 @@
 			});
 			manageMemberModalOpen = false;
 			memberToManage = null;
-			toast.success('Member has been blacklisted');
+			toast.success(m['membersTab.memberBlacklisted']());
 		},
 		onError: () => {
-			toast.error('Failed to blacklist member');
+			toast.error(m['membersTab.blacklistFailed']());
 		}
 	}));
 

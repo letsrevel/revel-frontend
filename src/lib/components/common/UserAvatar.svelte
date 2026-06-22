@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { cn } from '$lib/utils/cn';
 	import { getBackendUrl } from '$lib/config/api';
 	import * as Dialog from '$lib/components/ui/dialog';
@@ -88,7 +89,7 @@
 	} as const;
 
 	// Get the alt text for the image
-	const altText = $derived(`${displayName}'s avatar`);
+	const altText = $derived(m['userAvatar.altText']({ displayName }));
 
 	// Select the best image URL based on size
 	// Small sizes (xs, sm, md) use thumbnail if available for better performance
@@ -130,7 +131,7 @@
 				'rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
 				'cursor-pointer transition-opacity hover:opacity-80'
 			)}
-			aria-label="View {displayName}'s profile picture"
+			aria-label={m['userAvatar.viewProfilePicture']({ displayName })}
 		>
 			<img
 				src={fullPictureUrl}
@@ -163,8 +164,10 @@
 {#if clickable && expandedPictureUrl}
 	<Dialog.Root bind:open={isDialogOpen}>
 		<Dialog.Content class="max-w-md border-0 bg-transparent p-0 shadow-none sm:max-w-lg">
-			<Dialog.Title class="sr-only">{displayName}'s profile picture</Dialog.Title>
-			<Dialog.Description class="sr-only">Enlarged view of profile picture</Dialog.Description>
+			<Dialog.Title class="sr-only"
+				>{m['userAvatar.profilePictureTitle']({ displayName })}</Dialog.Title
+			>
+			<Dialog.Description class="sr-only">{m['userAvatar.enlargedView']()}</Dialog.Description>
 			<div class="relative">
 				<img
 					src={expandedPictureUrl}
@@ -175,7 +178,7 @@
 					type="button"
 					onclick={() => (isDialogOpen = false)}
 					class="absolute right-2 top-2 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-					aria-label="Close"
+					aria-label={m['userAvatar.close']()}
 				>
 					<X class="h-5 w-5" />
 				</button>

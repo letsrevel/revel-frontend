@@ -70,7 +70,7 @@
 	<Card
 		class={cn('border-2 p-6', statusConfig.bgClass, statusConfig.borderClass)}
 		role="region"
-		aria-label="Automatic evaluation recommendation"
+		aria-label={m['autoEvalRecommendation.regionLabel']()}
 	>
 		<div class="flex items-start gap-4">
 			<!-- Icon -->
@@ -108,9 +108,8 @@
 					class="rounded-md border border-dashed bg-background/50 p-3 text-xs text-muted-foreground"
 				>
 					<p>
-						<strong>{m['autoEvalRecommendation.note']()}</strong> This is an automated recommendation.
-						Please review the submission manually and use your best judgment. You can approve, reject,
-						or change this evaluation at any time.
+						<strong>{m['autoEvalRecommendation.note']()}</strong>
+						{m['autoEvalRecommendation.automatedNoteBody']()}
 					</p>
 				</div>
 			</div>
@@ -128,13 +127,16 @@
 				<div>
 					<h3 class="text-lg font-semibold">{m['autoEvalRecommendation.alreadyEvaluated']()}</h3>
 					<p class="mt-1 text-sm text-muted-foreground">
-						Evaluated manually
 						{#if evaluation.created_at}
-							on {new Date(evaluation.created_at).toLocaleDateString('en-US', {
-								year: 'numeric',
-								month: 'long',
-								day: 'numeric'
+							{m['autoEvalRecommendation.evaluatedManuallyOn']({
+								date: new Date(evaluation.created_at).toLocaleDateString('en-US', {
+									year: 'numeric',
+									month: 'long',
+									day: 'numeric'
+								})
 							})}
+						{:else}
+							{m['autoEvalRecommendation.evaluatedManually']()}
 						{/if}
 					</p>
 				</div>
@@ -147,8 +149,8 @@
 						class="mb-2"
 					>
 						{(evaluation.status as QuestionnaireEvaluationStatus) === 'approved'
-							? 'Approved'
-							: 'Rejected'}
+							? m['autoEvalRecommendation.approved']()
+							: m['autoEvalRecommendation.rejected']()}
 					</Badge>
 
 					{#if evaluation.comments}
@@ -169,8 +171,8 @@
 					class="mt-4 rounded-md border border-dashed bg-background/50 p-3 text-xs text-muted-foreground"
 				>
 					<p>
-						<strong>{m['autoEvalRecommendation.note']()}</strong> You can change this evaluation at any
-						time using the form below.
+						<strong>{m['autoEvalRecommendation.note']()}</strong>
+						{m['autoEvalRecommendation.changeEvaluationNoteBody']()}
 					</p>
 				</div>
 			</div>

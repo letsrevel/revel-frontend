@@ -28,8 +28,8 @@
 			? member.user.preferred_name ||
 					(member.user.first_name && member.user.last_name
 						? `${member.user.first_name} ${member.user.last_name}`
-						: member.user.first_name || member.user.email || 'this member')
-			: 'this member'
+						: member.user.first_name || member.user.email || m['promoteToStaffDialog.thisMember']())
+			: m['promoteToStaffDialog.thisMember']()
 	);
 
 	function handleConfirm() {
@@ -53,7 +53,7 @@
 				<div class="flex-1">
 					<DialogTitle>{m['promoteToStaffDialog.makeStaffMember']()}</DialogTitle>
 					<DialogDescription class="mt-1">
-						Promote {displayName} to staff
+						{m['promoteToStaffDialog.promoteSubtitle']({ name: displayName })}
 					</DialogDescription>
 				</div>
 			</div>
@@ -61,9 +61,9 @@
 
 		<div class="space-y-4 py-4">
 			<p class="text-sm text-muted-foreground">
-				Are you sure you want to make <strong class="font-semibold text-foreground"
-					>{displayName}</strong
-				> a staff member of this organization?
+				{m['promoteToStaffDialog.confirmPrefix']()}
+				<strong class="font-semibold text-foreground">{displayName}</strong>
+				{m['promoteToStaffDialog.confirmSuffix']()}
 			</p>
 
 			<div
@@ -79,8 +79,7 @@
 							{m['promoteToStaffDialog.defaultPermissions']()}
 						</p>
 						<p class="mt-1 text-blue-700 dark:text-blue-300">
-							They will be given default staff permissions. You can customize their permissions
-							after promotion.
+							{m['promoteToStaffDialog.defaultPermissionsDescription']()}
 						</p>
 					</div>
 				</div>
@@ -96,8 +95,7 @@
 					<li>{m['promoteToStaffDialog.viewOrgDetails']()}</li>
 				</ul>
 				<p class="mt-2 text-xs">
-					Additional permissions like creating events or managing members can be granted after
-					promotion.
+					{m['promoteToStaffDialog.additionalPermissionsNote']()}
 				</p>
 			</div>
 		</div>
@@ -107,7 +105,9 @@
 				>{m['promoteToStaffDialog.cancel']()}</Button
 			>
 			<Button onclick={handleConfirm} disabled={isPromoting}>
-				{isPromoting ? 'Promoting...' : m['promoteToStaffDialog.makeStaffMember']()}
+				{isPromoting
+					? m['promoteToStaffDialog.promoting']()
+					: m['promoteToStaffDialog.makeStaffMember']()}
 			</Button>
 		</DialogFooter>
 	</DialogContent>

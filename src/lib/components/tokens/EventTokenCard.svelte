@@ -31,21 +31,25 @@
 
 	async function copyLink() {
 		if (!token.id) {
-			toast.error('Token ID is missing');
+			toast.error(m['eventTokenCard.toastTokenIdMissing']());
 			return;
 		}
 		const url = getEventTokenUrl(token.id, orgSlug, eventSlug);
 		try {
 			await navigator.clipboard.writeText(url);
-			toast.success('Link copied to clipboard!');
+			toast.success(m['eventTokenCard.toastLinkCopied']());
 		} catch {
-			toast.error('Failed to copy link');
+			toast.error(m['eventTokenCard.toastCopyFailed']());
 		}
 	}
 
 	const hasTicketTiers = $derived((token.ticket_tiers?.length ?? 0) > 0);
 	const accessType = $derived(
-		token.grants_invitation ? (hasTicketTiers ? 'Invitation + Ticket' : 'Invitation') : 'View Only'
+		token.grants_invitation
+			? hasTicketTiers
+				? m['eventTokenCard.accessInvitationTicket']()
+				: m['eventTokenCard.accessInvitation']()
+			: m['eventTokenCard.accessViewOnly']()
 	);
 </script>
 
@@ -57,7 +61,7 @@
 			<div class="flex items-center gap-2">
 				<Ticket class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
 				<h3 class="font-semibold">
-					{token.name || 'Unnamed Token'}
+					{token.name || m['eventTokenCard.unnamedToken']()}
 				</h3>
 				<TokenStatusBadge {status} />
 			</div>
@@ -93,8 +97,8 @@
 				variant="ghost"
 				size="sm"
 				onclick={copyLink}
-				aria-label="Copy invitation link"
-				title="Copy Link"
+				aria-label={m['eventTokenCard.copyInvitationLink']()}
+				title={m['eventTokenCard.copyLink']()}
 			>
 				<Copy class="h-4 w-4" aria-hidden="true" />
 			</Button>
@@ -102,8 +106,8 @@
 				variant="ghost"
 				size="sm"
 				onclick={() => onEdit(token)}
-				aria-label="Edit token"
-				title="Edit"
+				aria-label={m['eventTokenCard.editToken']()}
+				title={m['eventTokenCard.edit']()}
 			>
 				<Edit class="h-4 w-4" aria-hidden="true" />
 			</Button>
@@ -111,8 +115,8 @@
 				variant="ghost"
 				size="sm"
 				onclick={() => onDelete(token)}
-				aria-label="Delete token"
-				title="Delete"
+				aria-label={m['eventTokenCard.deleteToken']()}
+				title={m['eventTokenCard.delete']()}
 				class="text-destructive hover:text-destructive"
 			>
 				<Trash2 class="h-4 w-4" aria-hidden="true" />

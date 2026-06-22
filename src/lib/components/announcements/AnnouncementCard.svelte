@@ -173,7 +173,7 @@
 				{#snippet child({ props })}
 					<Button variant="ghost" size="icon" {...props}>
 						<MoreHorizontal class="h-4 w-4" />
-						<span class="sr-only">More actions</span>
+						<span class="sr-only">{m['announcementCard.moreActions']()}</span>
 					</Button>
 				{/snippet}
 			</DropdownMenu.Trigger>

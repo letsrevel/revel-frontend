@@ -101,10 +101,10 @@
 				queryKey: ['event', eventId, 'tokens']
 			});
 			isCreateTokenModalOpen = false;
-			toast.success('Invitation link created successfully!');
+			toast.success(m['invitationLinksTab.linkCreated']());
 		},
 		onError: () => {
-			toast.error('Failed to create invitation link');
+			toast.error(m['invitationLinksTab.createFailed']());
 		}
 	}));
 
@@ -134,10 +134,10 @@
 				queryKey: ['event', eventId, 'tokens']
 			});
 			tokenToEdit = null;
-			toast.success('Invitation link updated successfully!');
+			toast.success(m['invitationLinksTab.linkUpdated']());
 		},
 		onError: () => {
-			toast.error('Failed to update invitation link');
+			toast.error(m['invitationLinksTab.updateFailed']());
 		}
 	}));
 
@@ -160,10 +160,10 @@
 				queryKey: ['event', eventId, 'tokens']
 			});
 			tokenToDelete = null;
-			toast.success('Invitation link deleted successfully!');
+			toast.success(m['invitationLinksTab.linkDeleted']());
 		},
 		onError: () => {
-			toast.error('Failed to delete invitation link');
+			toast.error(m['invitationLinksTab.deleteFailed']());
 		}
 	}));
 

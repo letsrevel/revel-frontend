@@ -298,7 +298,12 @@
 			<!-- Search -->
 			<div class="relative w-full sm:w-64">
 				<Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-				<Input type="search" placeholder="Search..." bind:value={searchQuery} class="pl-9" />
+				<Input
+					type="search"
+					placeholder={m['announcementsAdminPage.searchPlaceholder']()}
+					bind:value={searchQuery}
+					class="pl-9"
+				/>
 			</div>
 		</div>
 

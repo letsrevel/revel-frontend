@@ -46,7 +46,7 @@
 		request.user.preferred_name ||
 			(request.user.first_name && request.user.last_name
 				? `${request.user.first_name} ${request.user.last_name}`
-				: request.user.first_name || request.user.email || 'Unknown User')
+				: request.user.first_name || request.user.email || m['membershipRequestCard.unknownUser']())
 	);
 
 	function handleApprove() {
@@ -135,7 +135,7 @@
 				<!-- Request Date and Status -->
 				<div class="mt-2 flex items-center gap-2">
 					<p class="text-xs text-muted-foreground">
-						Requested {createdAt}
+						{m['membershipRequestCard.requestedAt']({ time: createdAt })}
 					</p>
 					{#if !showActions && request.status}
 						{@const status = request.status as unknown as RequestStatus}
@@ -145,7 +145,9 @@
 								? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
 								: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'}"
 						>
-							{status === 'approved' ? 'Approved' : 'Rejected'}
+							{status === 'approved'
+								? m['membershipRequestCard.approved']()
+								: m['membershipRequestCard.rejected']()}
 						</span>
 					{/if}
 				</div>
@@ -160,7 +162,7 @@
 					size="sm"
 					onclick={openDialog}
 					disabled={isProcessing}
-					aria-label="View request details from {displayName}"
+					aria-label={m['membershipRequestCard.viewRequestAria']({ name: displayName })}
 				>
 					<MessageSquare class="h-4 w-4" />
 					<span class="ml-2">{m['membershipRequestCard.viewRequest']()}</span>
@@ -171,7 +173,7 @@
 					size="sm"
 					onclick={handleApprove}
 					disabled={isProcessing}
-					aria-label="Approve request from {displayName}"
+					aria-label={m['membershipRequestCard.approveRequestAria']({ name: displayName })}
 					class="bg-green-600 hover:bg-green-700"
 				>
 					<CheckCircle class="h-4 w-4" />
@@ -183,7 +185,7 @@
 					size="sm"
 					onclick={handleReject}
 					disabled={isProcessing}
-					aria-label="Reject request from {displayName}"
+					aria-label={m['membershipRequestCard.rejectRequestAria']({ name: displayName })}
 				>
 					<XCircle class="h-4 w-4" />
 					<span class="ml-2">{m['membershipRequestCard.reject']()}</span>
@@ -196,7 +198,7 @@
 					size="sm"
 					onclick={openDialog}
 					disabled={isProcessing}
-					aria-label="View request details from {displayName}"
+					aria-label={m['membershipRequestCard.viewRequestAria']({ name: displayName })}
 				>
 					<MessageSquare class="h-4 w-4" />
 					<span class="ml-2">{m['membershipRequestCard.viewRequest']()}</span>
@@ -212,7 +214,7 @@
 		<DialogHeader>
 			<DialogTitle>{m['membershipRequestCard.membershipRequestFrom']()} {displayName}</DialogTitle>
 			<DialogDescription>
-				Review the request details and approve or reject this membership application.
+				{m['membershipRequestCard.dialogDescription']()}
 			</DialogDescription>
 		</DialogHeader>
 
@@ -294,17 +296,17 @@
 
 			<!-- Request Date -->
 			<div class="text-xs text-muted-foreground">
-				Requested {createdAt}
+				{m['membershipRequestCard.requestedAt']({ time: createdAt })}
 			</div>
 		</div>
 
 		<DialogFooter>
 			<Button variant="outline" onclick={() => (dialogOpen = false)} disabled={isProcessing}>
-				Close
+				{m['membershipRequestCard.close']()}
 			</Button>
 			<Button variant="destructive" onclick={handleReject} disabled={isProcessing}>
 				<XCircle class="mr-2 h-4 w-4" />
-				Reject
+				{m['membershipRequestCard.reject']()}
 			</Button>
 			<Button
 				variant="default"
@@ -313,7 +315,7 @@
 				class="bg-green-600 hover:bg-green-700"
 			>
 				<CheckCircle class="mr-2 h-4 w-4" />
-				Approve
+				{m['membershipRequestCard.approve']()}
 			</Button>
 		</DialogFooter>
 	</DialogContent>

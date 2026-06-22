@@ -104,7 +104,7 @@
 	<div
 		class="inline-flex items-center gap-2 rounded-md border border-yellow-200 bg-yellow-50 px-4 py-2 text-sm font-medium text-yellow-700 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-300 {className}"
 		role="status"
-		aria-label="You have already requested an invitation"
+		aria-label={m['requestInvitationButton.alreadyRequestedAriaLabel']()}
 	>
 		<AlertCircle class="h-4 w-4" aria-hidden="true" />
 		{m['requestInvitationButton.invitationRequested']()}
