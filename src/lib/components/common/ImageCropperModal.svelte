@@ -203,17 +203,8 @@
 	}
 
 	// Zoom controls
-	const ZOOM_STEP = 0.2;
 	const MIN_ZOOM = 0.5;
 	const MAX_ZOOM = 5;
-
-	function zoomIn() {
-		zoom = Math.min(zoom + ZOOM_STEP, MAX_ZOOM);
-	}
-
-	function zoomOut() {
-		zoom = Math.max(zoom - ZOOM_STEP, MIN_ZOOM);
-	}
 
 	// Reset crop
 	function resetCrop() {
@@ -299,26 +290,19 @@
 		<!-- Controls -->
 		{#if !isLoading && !error}
 			<div class="flex items-center justify-between border-t px-4 py-3">
-				<!-- Zoom controls -->
-				<div class="flex items-center gap-1">
-					<button
-						type="button"
-						onclick={zoomOut}
-						class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-						aria-label={m['imageCropper.zoomOut']()}
-						title={m['imageCropper.zoomOut']()}
-					>
-						<ZoomOut class="h-5 w-5" />
-					</button>
-					<button
-						type="button"
-						onclick={zoomIn}
-						class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-						aria-label={m['imageCropper.zoomIn']()}
-						title={m['imageCropper.zoomIn']()}
-					>
-						<ZoomIn class="h-5 w-5" />
-					</button>
+				<!-- Zoom slider -->
+				<div class="flex flex-1 items-center gap-2">
+					<ZoomOut class="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+					<input
+						type="range"
+						min={MIN_ZOOM}
+						max={MAX_ZOOM}
+						step="0.01"
+						bind:value={zoom}
+						aria-label={m['imageCropper.zoom']()}
+						class="h-2 flex-1 cursor-pointer accent-primary"
+					/>
+					<ZoomIn class="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
 				</div>
 
 				<!-- Reset -->

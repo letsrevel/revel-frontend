@@ -2138,8 +2138,7 @@
 		"save": "Enregistrer",
 		"processing": "Traitement...",
 		"heicConverting": "Conversion du format de l'image...",
-		"zoomIn": "Zoomer",
-		"zoomOut": "Dézoomer"
+		"zoom": "Zoom"
 	},
 	"imageUploader": {
 		"error_invalidFileType": "Sélectionne un fichier image valide ({accept})",
