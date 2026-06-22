@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
-	import { formatEventDateRange } from '$lib/utils/date';
+	import { formatEventDate, formatEventDateRange } from '$lib/utils/date';
 	import { getEventFallbackGradient, getEventCoverArt, getEventLogo } from '$lib/utils/event';
 	import { getImageUrl } from '$lib/utils/url';
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
@@ -52,7 +52,11 @@
 	// Date range, rendered in the event's own timezone (#474). The abbreviation is
 	// suppressed here because EventDetails on the same page carries the canonical
 	// "Times shown in {place} ({offset})" label — avoids showing the tz twice.
-	const dateRange = $derived(formatEventDateRange(event.start, event.end, event.timezone, false));
+	const dateRange = $derived(
+		event.is_open_ended
+			? formatEventDate(event.start, event.timezone, false)
+			: formatEventDateRange(event.start, event.end, event.timezone, false)
+	);
 
 	// Fallback gradient if no cover art
 	const fallbackGradient = $derived(getEventFallbackGradient(event.id));
@@ -113,6 +117,9 @@
 					>
 						<Calendar class="h-5 w-5 shrink-0" aria-hidden="true" />
 						<time datetime={event.start} class="group-hover:underline">{dateRange}</time>
+						{#if event.is_open_ended}
+							<span class="ml-1 text-sm opacity-90">· {m['eventDetails.openEnded']()}</span>
+						{/if}
 					</button>
 
 					<!-- Location -->
