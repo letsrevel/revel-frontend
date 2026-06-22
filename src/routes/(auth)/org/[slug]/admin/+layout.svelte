@@ -17,10 +17,16 @@
 	// Get current path
 	const currentPath = $derived($page.url.pathname);
 
-	// Admin navigation items
+	// Admin navigation items.
+	// Order is kept in sync with the dashboard Quick Actions in admin/+page.svelte
+	// (Dashboard leads here since the dashboard is this nav's landing page).
 	const navItems = [
 		{ href: `/org/${data.organization.slug}/admin`, label: m['orgAdmin.nav.dashboard']() },
 		{ href: `/org/${data.organization.slug}/admin/events`, label: m['orgAdmin.nav.events']() },
+		{
+			href: `/org/${data.organization.slug}/admin/event-series`,
+			label: m['orgAdmin.nav.eventSeries']()
+		},
 		{
 			href: `/org/${data.organization.slug}/admin/tickets`,
 			label: m['orgAdmin.nav.tickets']()
@@ -28,10 +34,6 @@
 		{
 			href: `/org/${data.organization.slug}/admin/discount-codes`,
 			label: m['orgAdmin.nav.discountCodes']()
-		},
-		{
-			href: `/org/${data.organization.slug}/admin/event-series`,
-			label: m['orgAdmin.nav.eventSeries']()
 		},
 		{
 			href: `/org/${data.organization.slug}/admin/members`,
@@ -46,16 +48,12 @@
 				: undefined
 		},
 		{
-			href: `/org/${data.organization.slug}/admin/blacklist`,
-			label: 'Blacklist'
+			href: `/org/${data.organization.slug}/admin/polls`,
+			label: m['orgAdmin.nav.polls']()
 		},
 		{
 			href: `/org/${data.organization.slug}/admin/questionnaires`,
 			label: m['orgAdmin.nav.questionnaires']()
-		},
-		{
-			href: `/org/${data.organization.slug}/admin/polls`,
-			label: m['orgAdmin.nav.polls']()
 		},
 		{
 			href: `/org/${data.organization.slug}/admin/resources`,
@@ -65,12 +63,12 @@
 			href: `/org/${data.organization.slug}/admin/venues`,
 			label: m['orgAdmin.nav.venues']()
 		},
+		{
+			href: `/org/${data.organization.slug}/admin/blacklist`,
+			label: 'Blacklist'
+		},
 		...(data.isOwner
 			? [
-					{
-						href: `/org/${data.organization.slug}/admin/financials`,
-						label: m['orgAdmin.nav.financials']()
-					},
 					{
 						href: `/org/${data.organization.slug}/admin/billing`,
 						label: m['orgAdmin.nav.billing'](),
@@ -83,14 +81,18 @@
 								!data.organization.billing_name)
 								? 'warning'
 								: undefined
+					},
+					{
+						href: `/org/${data.organization.slug}/admin/financials`,
+						label: m['orgAdmin.nav.financials']()
 					}
 				]
 			: []),
-		{ href: `/org/${data.organization.slug}/admin/settings`, label: m['orgAdmin.nav.settings']() },
 		{
 			href: `/org/${data.organization.slug}/admin/announcements`,
 			label: m['orgAdmin.nav.announcements']()
-		}
+		},
+		{ href: `/org/${data.organization.slug}/admin/settings`, label: m['orgAdmin.nav.settings']() }
 	];
 
 	// Check if link is active

@@ -15,7 +15,11 @@
 		Ban,
 		MapPin,
 		Megaphone,
-		BarChart3
+		BarChart3,
+		Ticket,
+		Tag,
+		Wallet,
+		CreditCard
 	} from 'lucide-svelte';
 	import { OrganizationDescription } from '$lib/components/organizations';
 	import AnnouncementModal from '$lib/components/announcements/AnnouncementModal.svelte';
@@ -67,9 +71,10 @@
 	const eventsList = $derived(eventsQuery.data?.results ?? []);
 	const tiersList = $derived(tiersQuery.data ?? []);
 
-	// Quick action cards (derived to properly track organization reactivity)
+	// Quick action cards (derived to properly track organization reactivity).
+	// Kept in sync with the admin nav in +layout.svelte: same destinations, same
+	// owner-gating for the financial surfaces (financials + billing).
 	const quickActions = $derived([
-		// Row 1 - Primary actions
 		{
 			title: m['orgAdmin.dashboard.quickActions.events.title'](),
 			description: m['orgAdmin.dashboard.quickActions.events.description'](),
@@ -89,31 +94,30 @@
 			badge: undefined as string | undefined
 		},
 		{
+			title: m['orgAdmin.dashboard.quickActions.tickets.title'](),
+			description: m['orgAdmin.dashboard.quickActions.tickets.description'](),
+			icon: Ticket,
+			href: `/org/${organization.slug}/admin/tickets`,
+			color: 'text-teal-600 dark:text-teal-400',
+			bgColor: 'bg-teal-50 dark:bg-teal-950',
+			badge: undefined as string | undefined
+		},
+		{
+			title: m['orgAdmin.dashboard.quickActions.discountCodes.title'](),
+			description: m['orgAdmin.dashboard.quickActions.discountCodes.description'](),
+			icon: Tag,
+			href: `/org/${organization.slug}/admin/discount-codes`,
+			color: 'text-amber-600 dark:text-amber-400',
+			bgColor: 'bg-amber-50 dark:bg-amber-950',
+			badge: undefined as string | undefined
+		},
+		{
 			title: m['orgAdmin.dashboard.quickActions.members.title'](),
 			description: m['orgAdmin.dashboard.quickActions.members.description'](),
 			icon: Users,
 			href: `/org/${organization.slug}/admin/members`,
 			color: 'text-green-600 dark:text-green-400',
 			bgColor: 'bg-green-50 dark:bg-green-950',
-			badge: undefined as string | undefined
-		},
-		{
-			title: m['orgAdmin.dashboard.quickActions.settings.title'](),
-			description: m['orgAdmin.dashboard.quickActions.settings.description'](),
-			icon: Settings,
-			href: `/org/${organization.slug}/admin/settings`,
-			color: 'text-purple-600 dark:text-purple-400',
-			bgColor: 'bg-purple-50 dark:bg-purple-950',
-			badge: undefined as string | undefined
-		},
-		// Row 2 - Secondary actions
-		{
-			title: m['orgAdmin.dashboard.quickActions.questionnaires.title'](),
-			description: m['orgAdmin.dashboard.quickActions.questionnaires.description'](),
-			icon: ClipboardList,
-			href: `/org/${organization.slug}/admin/questionnaires`,
-			color: 'text-orange-600 dark:text-orange-400',
-			bgColor: 'bg-orange-50 dark:bg-orange-950',
 			badge: undefined as string | undefined
 		},
 		{
@@ -126,21 +130,21 @@
 			badge: undefined as string | undefined
 		},
 		{
+			title: m['orgAdmin.dashboard.quickActions.questionnaires.title'](),
+			description: m['orgAdmin.dashboard.quickActions.questionnaires.description'](),
+			icon: ClipboardList,
+			href: `/org/${organization.slug}/admin/questionnaires`,
+			color: 'text-orange-600 dark:text-orange-400',
+			bgColor: 'bg-orange-50 dark:bg-orange-950',
+			badge: undefined as string | undefined
+		},
+		{
 			title: m['orgAdmin.dashboard.quickActions.resources.title'](),
 			description: m['orgAdmin.dashboard.quickActions.resources.description'](),
 			icon: FolderOpen,
 			href: `/org/${organization.slug}/admin/resources`,
 			color: 'text-cyan-600 dark:text-cyan-400',
 			bgColor: 'bg-cyan-50 dark:bg-cyan-950',
-			badge: undefined as string | undefined
-		},
-		{
-			title: m['orgAdmin.dashboard.quickActions.blacklist.title'](),
-			description: m['orgAdmin.dashboard.quickActions.blacklist.description'](),
-			icon: Ban,
-			href: `/org/${organization.slug}/admin/blacklist`,
-			color: 'text-red-600 dark:text-red-400',
-			bgColor: 'bg-red-50 dark:bg-red-950',
 			badge: undefined as string | undefined
 		},
 		{
@@ -153,12 +157,53 @@
 			badge: undefined as string | undefined
 		},
 		{
+			title: m['orgAdmin.dashboard.quickActions.blacklist.title'](),
+			description: m['orgAdmin.dashboard.quickActions.blacklist.description'](),
+			icon: Ban,
+			href: `/org/${organization.slug}/admin/blacklist`,
+			color: 'text-red-600 dark:text-red-400',
+			bgColor: 'bg-red-50 dark:bg-red-950',
+			badge: undefined as string | undefined
+		},
+		// Owner-only financial surfaces (mirrors the nav's isOwner gating)
+		...(data.isOwner
+			? [
+					{
+						title: m['orgAdmin.dashboard.quickActions.billing.title'](),
+						description: m['orgAdmin.dashboard.quickActions.billing.description'](),
+						icon: CreditCard,
+						href: `/org/${organization.slug}/admin/billing`,
+						color: 'text-slate-600 dark:text-slate-400',
+						bgColor: 'bg-slate-50 dark:bg-slate-950',
+						badge: undefined as string | undefined
+					},
+					{
+						title: m['orgAdmin.dashboard.quickActions.financials.title'](),
+						description: m['orgAdmin.dashboard.quickActions.financials.description'](),
+						icon: Wallet,
+						href: `/org/${organization.slug}/admin/financials`,
+						color: 'text-emerald-600 dark:text-emerald-400',
+						bgColor: 'bg-emerald-50 dark:bg-emerald-950',
+						badge: undefined as string | undefined
+					}
+				]
+			: []),
+		{
 			title: m['announcements.title'](),
 			description: m['announcements.pageDescription'](),
 			icon: Megaphone,
 			href: `/org/${organization.slug}/admin/announcements`,
 			color: 'text-yellow-600 dark:text-yellow-400',
 			bgColor: 'bg-yellow-50 dark:bg-yellow-950',
+			badge: undefined as string | undefined
+		},
+		{
+			title: m['orgAdmin.dashboard.quickActions.settings.title'](),
+			description: m['orgAdmin.dashboard.quickActions.settings.description'](),
+			icon: Settings,
+			href: `/org/${organization.slug}/admin/settings`,
+			color: 'text-purple-600 dark:text-purple-400',
+			bgColor: 'bg-purple-50 dark:bg-purple-950',
 			badge: undefined as string | undefined
 		}
 	]);

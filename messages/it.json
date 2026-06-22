@@ -7931,5 +7931,13 @@
 	"orgSettingsPage.reports.cadenceMonthly": "Mensile",
 	"orgSettingsPage.reports.cadenceHelp": "I report del periodo chiuso vengono inviati al tuo indirizzo di fatturazione al termine di ogni periodo.",
 	"orgSettingsPage.reports.billingEmailRequired": "Aggiungi un’email di fatturazione per attivare l’invio programmato.",
-	"orgSettingsPage.reports.billingEmailLink": "Configura la fatturazione"
+	"orgSettingsPage.reports.billingEmailLink": "Configura la fatturazione",
+	"orgAdmin.dashboard.quickActions.tickets.title": "Biglietti",
+	"orgAdmin.dashboard.quickActions.tickets.description": "Gestisci le vendite di biglietti dei tuoi eventi",
+	"orgAdmin.dashboard.quickActions.discountCodes.title": "Codici sconto",
+	"orgAdmin.dashboard.quickActions.discountCodes.description": "Crea e gestisci i codici sconto",
+	"orgAdmin.dashboard.quickActions.financials.title": "Finanze",
+	"orgAdmin.dashboard.quickActions.financials.description": "Ricavi e IVA per evento",
+	"orgAdmin.dashboard.quickActions.billing.title": "Fatturazione",
+	"orgAdmin.dashboard.quickActions.billing.description": "Fatture, impostazioni IVA e pagamenti"
 }

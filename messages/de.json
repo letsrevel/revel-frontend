@@ -7931,5 +7931,13 @@
 	"orgSettingsPage.reports.cadenceMonthly": "Monatlich",
 	"orgSettingsPage.reports.cadenceHelp": "Berichte für den abgeschlossenen Zeitraum werden nach Ende jedes Zeitraums an Ihre Rechnungsadresse gesendet.",
 	"orgSettingsPage.reports.billingEmailRequired": "Fügen Sie eine Rechnungs-E-Mail hinzu, um die geplante Zustellung zu aktivieren.",
-	"orgSettingsPage.reports.billingEmailLink": "Abrechnung einrichten"
+	"orgSettingsPage.reports.billingEmailLink": "Abrechnung einrichten",
+	"orgAdmin.dashboard.quickActions.tickets.title": "Tickets",
+	"orgAdmin.dashboard.quickActions.tickets.description": "Ticketverkäufe für alle Veranstaltungen verwalten",
+	"orgAdmin.dashboard.quickActions.discountCodes.title": "Rabattcodes",
+	"orgAdmin.dashboard.quickActions.discountCodes.description": "Rabattcodes erstellen und verwalten",
+	"orgAdmin.dashboard.quickActions.financials.title": "Finanzen",
+	"orgAdmin.dashboard.quickActions.financials.description": "Umsatz und MwSt. nach Veranstaltung",
+	"orgAdmin.dashboard.quickActions.billing.title": "Abrechnung",
+	"orgAdmin.dashboard.quickActions.billing.description": "Rechnungen, MwSt.-Einstellungen und Auszahlungen"
 }

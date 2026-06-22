@@ -7931,5 +7931,13 @@
 	"orgSettingsPage.reports.cadenceMonthly": "Monthly",
 	"orgSettingsPage.reports.cadenceHelp": "Reports for the closed period are emailed to your billing address after each period ends.",
 	"orgSettingsPage.reports.billingEmailRequired": "Add a billing email to enable scheduled delivery.",
-	"orgSettingsPage.reports.billingEmailLink": "Set up billing"
+	"orgSettingsPage.reports.billingEmailLink": "Set up billing",
+	"orgAdmin.dashboard.quickActions.tickets.title": "Tickets",
+	"orgAdmin.dashboard.quickActions.tickets.description": "Manage ticket sales across your events",
+	"orgAdmin.dashboard.quickActions.discountCodes.title": "Discount Codes",
+	"orgAdmin.dashboard.quickActions.discountCodes.description": "Create and manage discount codes",
+	"orgAdmin.dashboard.quickActions.financials.title": "Financials",
+	"orgAdmin.dashboard.quickActions.financials.description": "Revenue and VAT broken down by event",
+	"orgAdmin.dashboard.quickActions.billing.title": "Billing",
+	"orgAdmin.dashboard.quickActions.billing.description": "Invoices, VAT settings and payouts"
 }
