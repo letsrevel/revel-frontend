@@ -33,24 +33,63 @@
 		onValueChange
 	}: Props = $props();
 
-	const inputId = $derived(id || `markdown-${Math.random().toString(36).slice(2, 11)}`);
-
+	// State
 	let editor = $state<Editor | undefined>();
 	let element = $state<HTMLDivElement | undefined>();
 	let sourceMode = $state(false);
 	let linkOpen = $state(false);
 	let linkInitial = $state({ url: '', text: '' });
-
 	// Echo-loop guard: track the markdown we last emitted so external value
 	// changes (≠ our own output) re-sync the editor, but our own edits don't.
 	let lastEmitted = '';
 
+	// Derived
+	const inputId = $derived(id || `markdown-${Math.random().toString(36).slice(2, 11)}`);
+
+	// Functions
 	function emit(next: string): void {
 		lastEmitted = next;
 		value = next;
 		onValueChange?.(next);
 	}
 
+	function handleSourceInput(e: Event): void {
+		emit((e.target as HTMLTextAreaElement).value);
+	}
+
+	function openLink(): void {
+		const prev = editor?.getAttributes('link')?.href ?? '';
+		const { from, to } = editor?.state.selection ?? { from: 0, to: 0 };
+		const selected = editor?.state.doc.textBetween(from, to, ' ') ?? '';
+		linkInitial = { url: prev, text: selected };
+		linkOpen = true;
+	}
+
+	function exitSource(): void {
+		sourceMode = false;
+		if (editor) {
+			// Force the external-sync $effect to re-run by temporarily clearing lastEmitted.
+			// Without this, value === lastEmitted (set by emit() during source editing) so
+			// the $effect guard skips the setContent and the WYSIWYG view shows stale content.
+			lastEmitted = '';
+			editor.commands.setContent(value, { contentType: 'markdown', emitUpdate: false });
+			lastEmitted = value;
+		}
+	}
+
+	function applyLink({ url, text }: { url: string; text: string }): void {
+		if (!editor) return;
+		const { from, to } = editor.state.selection;
+		editor
+			.chain()
+			.focus()
+			.insertContentAt({ from, to }, text)
+			.setTextSelection({ from, to: from + text.length })
+			.setLink({ href: url })
+			.run();
+	}
+
+	// Effects
 	onMount(() => {
 		if (!browser || !element) return;
 		let active = true;
@@ -96,7 +135,7 @@
 		const v = value;
 		if (editor && v !== lastEmitted && !sourceMode) {
 			lastEmitted = v;
-			editor.commands.setContent(v, { contentType: 'markdown' });
+			editor.commands.setContent(v, { contentType: 'markdown', emitUpdate: false });
 		}
 	});
 
@@ -125,42 +164,6 @@
 			dom.removeAttribute('aria-describedby');
 		}
 	});
-
-	function handleSourceInput(e: Event): void {
-		emit((e.target as HTMLTextAreaElement).value);
-	}
-
-	function openLink(): void {
-		const prev = editor?.getAttributes('link')?.href ?? '';
-		const { from, to } = editor?.state.selection ?? { from: 0, to: 0 };
-		const selected = editor?.state.doc.textBetween(from, to, ' ') ?? '';
-		linkInitial = { url: prev, text: selected };
-		linkOpen = true;
-	}
-
-	function exitSource(): void {
-		sourceMode = false;
-		if (editor) {
-			// Force the external-sync $effect to re-run by temporarily clearing lastEmitted.
-			// Without this, value === lastEmitted (set by emit() during source editing) so
-			// the $effect guard skips the setContent and the WYSIWYG view shows stale content.
-			lastEmitted = '';
-			editor.commands.setContent(value, { contentType: 'markdown', emitUpdate: false });
-			lastEmitted = value;
-		}
-	}
-
-	function applyLink({ url, text }: { url: string; text: string }): void {
-		if (!editor) return;
-		const { from, to } = editor.state.selection;
-		editor
-			.chain()
-			.focus()
-			.insertContentAt({ from, to }, text)
-			.setTextSelection({ from, to: from + text.length })
-			.setLink({ href: url })
-			.run();
-	}
 </script>
 
 <div class={cn('space-y-2', className)}>
@@ -178,7 +181,12 @@
 	{/if}
 
 	{#if editor && !sourceMode}
-		<EditorToolbar {editor} {disabled} onToggleSource={() => (sourceMode = true)} onInsertLink={openLink} />
+		<EditorToolbar
+			{editor}
+			{disabled}
+			onToggleSource={() => (sourceMode = true)}
+			onInsertLink={openLink}
+		/>
 	{/if}
 
 	{#if browser}

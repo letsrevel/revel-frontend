@@ -27,4 +27,19 @@ describe('LinkDialog', () => {
 		await user.click(screen.getByRole('button', { name: /apply|insert/i }));
 		expect(onApply).toHaveBeenCalledWith({ url: 'https://example.com', text: 'Example' });
 	});
+
+	it('calls onClose but not onApply when the dialog is cancelled via Escape', async () => {
+		// In jsdom, Bits UI Dialog fires onOpenChange (and therefore onClose) on Escape.
+		// This covers the "non-apply close" path: onClose fires, onApply does not.
+		const user = userEvent.setup();
+		const onApply = vi.fn();
+		const onClose = vi.fn();
+		render(LinkDialog, { props: { open: true, onApply, onClose } });
+
+		// Press Escape to dismiss the dialog without applying.
+		await user.keyboard('{Escape}');
+
+		expect(onClose).toHaveBeenCalled();
+		expect(onApply).not.toHaveBeenCalled();
+	});
 });

@@ -40,4 +40,26 @@ describe('MarkdownEditor (contract)', () => {
 		render(MarkdownEditor, { props: { value: '', id: 'd', label: 'L', disabled: true } });
 		expect(screen.getByRole('textbox')).toBeDisabled();
 	});
+
+	it('does not call onValueChange when value prop is updated externally', async () => {
+		// The external-value-sync $effect must not trigger onValueChange for parent-driven
+		// changes — only user edits should fire the callback (echo-loop guard).
+		const onValueChange = vi.fn();
+		const { rerender } = render(MarkdownEditor, {
+			props: { value: 'initial', id: 'd', label: 'L', onValueChange }
+		});
+
+		// Let the async editor mount settle (dynamic import in onMount).
+		// In jsdom there is no real Tiptap editor, so we just wait a tick.
+		await waitFor(() => {}, { timeout: 200 });
+
+		// Clear any calls made during initial render (textarea oninput is not fired here).
+		onValueChange.mockClear();
+
+		// Update the value prop externally (simulates a parent binding change).
+		await rerender({ value: 'parent-updated', id: 'd', label: 'L', onValueChange });
+
+		// The guard should prevent onValueChange from firing for this parent-driven change.
+		expect(onValueChange).not.toHaveBeenCalledWith('parent-updated');
+	});
 });

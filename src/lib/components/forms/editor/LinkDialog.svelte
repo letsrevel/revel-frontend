@@ -28,6 +28,15 @@
 	let text = $state('');
 	let invalid = $state(false);
 
+	function apply(): void {
+		if (!isAllowedLinkScheme(url)) {
+			invalid = true;
+			return;
+		}
+		onApply({ url: url.trim(), text: text.trim() || url.trim() });
+		open = false;
+	}
+
 	// Reset fields each time the dialog opens, reading initial values without
 	// subscribing to them (they only matter at open-time).
 	$effect(() => {
@@ -37,15 +46,6 @@
 			invalid = false;
 		}
 	});
-
-	function apply(): void {
-		if (!isAllowedLinkScheme(url)) {
-			invalid = true;
-			return;
-		}
-		onApply({ url: url.trim(), text: text.trim() || url.trim() });
-		open = false;
-	}
 </script>
 
 <!-- Fix M3: onOpenChange is the single source of onClose for ALL close paths
@@ -53,7 +53,12 @@
      Bits UI Dialog DOES fire onOpenChange when open is set programmatically,
      so the Cancel button only needs to set open = false; onClose fires once
      via onOpenChange for every path. -->
-<Dialog.Root bind:open onOpenChange={(o) => { if (!o) onClose(); }}>
+<Dialog.Root
+	bind:open
+	onOpenChange={(o) => {
+		if (!o) onClose();
+	}}
+>
 	<Dialog.Content>
 		<Dialog.Header>
 			<Dialog.Title>{m['markdownEditor.linkDialogTitle']()}</Dialog.Title>
@@ -77,18 +82,21 @@
 			<label class="block text-sm font-medium" for="{uid}-text"
 				>{m['markdownEditor.linkTextLabel']()}</label
 			>
-			<input id="{uid}-text" bind:value={text} class="w-full rounded-md border-2 px-3 py-2 text-sm" />
+			<input
+				id="{uid}-text"
+				bind:value={text}
+				class="w-full rounded-md border-2 px-3 py-2 text-sm"
+			/>
 			{#if invalid}
 				<!-- Fix M1 + M2: unique id for error element -->
-				<p id="{uid}-error" class="text-sm text-destructive" role="alert">{m['markdownEditor.linkSchemeError']()}</p>
+				<p id="{uid}-error" class="text-sm text-destructive" role="alert">
+					{m['markdownEditor.linkSchemeError']()}
+				</p>
 			{/if}
 		</div>
 		<Dialog.Footer>
 			<!-- Fix M3: Cancel only sets open = false; onClose fires via onOpenChange -->
-			<Button
-				variant="outline"
-				onclick={() => (open = false)}>{m['common.cancel']()}</Button
-			>
+			<Button variant="outline" onclick={() => (open = false)}>{m['common.cancel']()}</Button>
 			<Button onclick={apply}>{m['markdownEditor.linkApply']()}</Button>
 		</Dialog.Footer>
 	</Dialog.Content>

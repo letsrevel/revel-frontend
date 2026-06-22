@@ -21,17 +21,9 @@
 		editor: Editor;
 		disabled?: boolean;
 		onToggleSource: () => void;
-		onInsertLink?: () => void;
+		onInsertLink: () => void;
 	}
 	let { editor, disabled = false, onToggleSource, onInsertLink }: Props = $props();
-
-	// Re-render active states on every editor transaction.
-	let tick = $state(0);
-	$effect(() => {
-		const bump = () => (tick += 1);
-		editor.on('transaction', bump);
-		return () => editor.off('transaction', bump);
-	});
 
 	type Cmd = {
 		key: string;
@@ -41,6 +33,17 @@
 		run: () => void;
 	};
 
+	// State
+	// Re-render active states on every editor transaction.
+	let tick = $state(0);
+	// Roving tabindex: index of the currently focusable button.
+	let focusIndex = $state(0);
+	// Total button count = commands + link + source
+	const EXTRA_BUTTONS = 2;
+	// Reference the toolbar element to find buttons for focus management.
+	let toolbarEl = $state<HTMLDivElement | undefined>(undefined);
+
+	// Derived
 	const commands = $derived.by<Cmd[]>(() => {
 		// Reference tick so the derived recomputes on every transaction.
 		void tick;
@@ -125,14 +128,11 @@
 		];
 	});
 
-	// Roving tabindex: index of the currently focusable button.
-	let focusIndex = $state(0);
-	// Total button count = commands + link + source
-	const EXTRA_BUTTONS = 2;
+	// Link button is at index commands.length; source is last.
+	const linkIndex = $derived(commands.length);
+	const sourceIndex = $derived(commands.length + EXTRA_BUTTONS - 1);
 
-	// Reference the toolbar element to find buttons for focus management.
-	let toolbarEl = $state<HTMLDivElement | undefined>(undefined);
-
+	// Functions
 	function getButtons(): HTMLButtonElement[] {
 		if (!toolbarEl) return [];
 		return Array.from(toolbarEl.querySelectorAll('button'));
@@ -161,9 +161,12 @@
 		}
 	}
 
-	// Link button is at index commands.length; source is last.
-	const linkIndex = $derived(commands.length);
-	const sourceIndex = $derived(commands.length + EXTRA_BUTTONS - 1);
+	// Effects
+	$effect(() => {
+		const bump = () => (tick += 1);
+		editor.on('transaction', bump);
+		return () => editor.off('transaction', bump);
+	});
 </script>
 
 <div
@@ -185,7 +188,7 @@
 			title={cmd.label}
 			onclick={cmd.run}
 			onfocus={() => (focusIndex = i)}
-			class="rounded p-1.5 transition-colors hover:bg-gray-200 aria-pressed:bg-primary/15 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 dark:hover:bg-gray-700"
+			class="rounded p-1.5 transition-colors hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:opacity-50 aria-pressed:bg-primary/15 dark:hover:bg-gray-700"
 		>
 			<cmd.icon class="h-4 w-4" aria-hidden="true" />
 		</button>
@@ -197,9 +200,9 @@
 		{disabled}
 		aria-label={m['markdownEditor.insertLink']()}
 		title={m['markdownEditor.insertLink']()}
-		onclick={() => onInsertLink?.()}
+		onclick={onInsertLink}
 		onfocus={() => (focusIndex = linkIndex)}
-		class="rounded p-1.5 hover:bg-gray-200 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 dark:hover:bg-gray-700"
+		class="rounded p-1.5 hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:opacity-50 dark:hover:bg-gray-700"
 	>
 		<LinkIcon class="h-4 w-4" aria-hidden="true" />
 	</button>
@@ -212,7 +215,7 @@
 		title={m['markdownEditor.viewSource']()}
 		onclick={onToggleSource}
 		onfocus={() => (focusIndex = sourceIndex)}
-		class="ml-auto rounded p-1.5 hover:bg-gray-200 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 dark:hover:bg-gray-700"
+		class="ml-auto rounded p-1.5 hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:opacity-50 dark:hover:bg-gray-700"
 	>
 		<SquareCode class="h-4 w-4" aria-hidden="true" />
 	</button>

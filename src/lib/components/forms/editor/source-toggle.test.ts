@@ -19,7 +19,9 @@ describe('source toggle', () => {
 		await user.clear(ta);
 		await user.type(ta, '## new');
 		// Assert that editing in source mode calls onValueChange with the new markdown
-		await waitFor(() => expect(onValueChange).toHaveBeenCalledWith(expect.stringContaining('## new')));
+		await waitFor(() =>
+			expect(onValueChange).toHaveBeenCalledWith(expect.stringContaining('## new'))
+		);
 		await user.click(screen.getByRole('button', { name: /back to editor|exit source|done/i }));
 		// back in WYSIWYG; value updated
 		await waitFor(() => expect(screen.queryByRole('textbox')).not.toBeInTheDocument());
