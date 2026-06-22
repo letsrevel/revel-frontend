@@ -23,6 +23,33 @@
 
 	// Dropdown open state
 	let isOpen = $state(false);
+	let containerEl = $state<HTMLDivElement>();
+
+	// Close on outside click or Escape. A document listener is used rather than a
+	// fixed overlay because an ancestor stacking/containing context (e.g. a
+	// transformed or sticky header) can confine `position: fixed` to that ancestor,
+	// leaving clicks elsewhere on the page unhandled.
+	$effect(() => {
+		if (!isOpen) return;
+
+		function handlePointerDown(event: PointerEvent) {
+			if (containerEl && !containerEl.contains(event.target as Node)) {
+				isOpen = false;
+			}
+		}
+		function handleKeydown(event: KeyboardEvent) {
+			if (event.key === 'Escape') {
+				isOpen = false;
+			}
+		}
+
+		document.addEventListener('pointerdown', handlePointerDown);
+		document.addEventListener('keydown', handleKeydown);
+		return () => {
+			document.removeEventListener('pointerdown', handlePointerDown);
+			document.removeEventListener('keydown', handleKeydown);
+		};
+	});
 
 	// Switch language
 	async function switchLanguage(lang: string) {
@@ -75,7 +102,7 @@
 </script>
 
 <!-- Language Switcher Dropdown -->
-<div class="relative">
+<div class="relative" bind:this={containerEl}>
 	<!-- Trigger Button - ISO language code -->
 	<button
 		type="button"
@@ -115,14 +142,3 @@
 		</div>
 	{/if}
 </div>
-
-<!-- Click outside to close -->
-{#if isOpen}
-	<button
-		type="button"
-		class="fixed inset-0 z-40"
-		onclick={() => (isOpen = false)}
-		aria-label={m['languageSwitcher.closeMenu']()}
-		tabindex="-1"
-	></button>
-{/if}

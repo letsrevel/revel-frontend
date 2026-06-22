@@ -2413,8 +2413,7 @@
 		"error_claimFailed": "Échec de la réclamation de l'invitation"
 	},
 	"languageSwitcher": {
-		"selectLanguage": "Select language: {name}",
-		"closeMenu": "Close language menu"
+		"selectLanguage": "Select language: {name}"
 	},
 	"learnMore": {
 		"metaTitle": "En savoir plus sur Revel - Plateforme de gestion d'événements communautaires",
@@ -2456,7 +2455,7 @@
 		"notificationsTitle": "Notifications multicanaux",
 		"notificationsDescription": "Reste informé grâce aux notifications dans l'application, par e-mail et sur Telegram. Des contrôles granulaires te permettent de personnaliser ce que tu reçois.",
 		"multiLanguageTitle": "Support multilingue",
-		"multiLanguageDescription": "Disponible en anglais, allemand et italien, avec d'autres langues bientôt disponibles.",
+		"multiLanguageDescription": "Disponible en anglais, allemand, italien et français, avec d'autres langues bientôt disponibles.",
 		"venueManagementTitle": "Gestion des lieux",
 		"venueManagementDescription": "Définis des lieux avec des secteurs, des rangées et des sièges individuels. Attribue les places aux catégories de billets pour les événements à places réservées.",
 		"openSourceTitle": "Open source et porté par la communauté",
