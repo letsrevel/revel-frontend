@@ -109,6 +109,18 @@
 		linkOpen = true;
 	}
 
+	function exitSource(): void {
+		sourceMode = false;
+		if (editor) {
+			// Force the external-sync $effect to re-run by temporarily clearing lastEmitted.
+			// Without this, value === lastEmitted (set by emit() during source editing) so
+			// the $effect guard skips the setContent and the WYSIWYG view shows stale content.
+			lastEmitted = '';
+			editor.commands.setContent(value, { contentType: 'markdown', emitUpdate: false });
+			lastEmitted = value;
+		}
+	}
+
 	function applyLink({ url, text }: { url: string; text: string }): void {
 		if (!editor) return;
 		const { from, to } = editor.state.selection;
@@ -179,7 +191,7 @@
 			<button
 				type="button"
 				class="text-sm text-muted-foreground underline"
-				onclick={() => (sourceMode = false)}
+				onclick={exitSource}
 			>
 				{m['markdownEditor.exitSource']()}
 			</button>
