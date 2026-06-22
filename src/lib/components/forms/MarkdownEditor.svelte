@@ -64,6 +64,14 @@
 				injectCSS: false, // CSP: no runtime <style>
 				editable: !disabled,
 				extensions: createEditorExtensions(placeholder),
+				editorProps: {
+					attributes: {
+						'aria-multiline': 'true',
+						...(label
+							? { 'aria-labelledby': `${inputId}-label` }
+							: { 'aria-label': placeholder || 'Editor' })
+					}
+				},
 				onCreate: ({ editor: e }) => {
 					// Suppress the update event so mounting doesn't mark pristine forms dirty
 					e.commands.setContent(value, { contentType: 'markdown', emitUpdate: false });
@@ -95,6 +103,27 @@
 	// Reflect disabled into the live editor (emitUpdate=false: no spurious update event on mount)
 	$effect(() => {
 		editor?.setEditable(!disabled, false);
+	});
+
+	// Keep the editor DOM's ARIA attributes in sync when label/error change after mount.
+	$effect(() => {
+		const dom = editor?.view?.dom as HTMLElement | undefined;
+		if (!dom) return;
+		dom.setAttribute('aria-multiline', 'true');
+		if (label) {
+			dom.setAttribute('aria-labelledby', `${inputId}-label`);
+			dom.removeAttribute('aria-label');
+		} else {
+			dom.setAttribute('aria-label', placeholder || 'Editor');
+			dom.removeAttribute('aria-labelledby');
+		}
+		if (error) {
+			dom.setAttribute('aria-invalid', 'true');
+			dom.setAttribute('aria-describedby', `${inputId}-error`);
+		} else {
+			dom.removeAttribute('aria-invalid');
+			dom.removeAttribute('aria-describedby');
+		}
 	});
 
 	function handleSourceInput(e: Event): void {
@@ -136,7 +165,11 @@
 
 <div class={cn('space-y-2', className)}>
 	{#if label}
-		<label for={inputId} class="block text-sm font-medium text-gray-900 dark:text-gray-100">
+		<label
+			id="{inputId}-label"
+			for={editor && !sourceMode ? undefined : inputId}
+			class="block text-sm font-medium text-gray-900 dark:text-gray-100"
+		>
 			{label}
 			{#if required}<span class="text-destructive" aria-label={m['markdownEditor.required']()}
 					>*</span
@@ -158,9 +191,6 @@
 				error ? 'border-destructive' : 'border-gray-300 dark:border-gray-600',
 				disabled && 'cursor-not-allowed opacity-50'
 			)}
-			aria-label={label}
-			aria-invalid={!!error}
-			aria-describedby={error ? `${inputId}-error` : undefined}
 			class:hidden={!editor}
 		></div>
 	{/if}
@@ -190,7 +220,7 @@
 		{#if sourceMode && editor}
 			<button
 				type="button"
-				class="text-sm text-muted-foreground underline"
+				class="text-sm text-muted-foreground underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
 				onclick={exitSource}
 			>
 				{m['markdownEditor.exitSource']()}

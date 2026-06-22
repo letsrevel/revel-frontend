@@ -150,6 +150,14 @@
 			focusIndex = (focusIndex - 1 + count) % count;
 			btns[focusIndex]?.focus();
 			e.preventDefault();
+		} else if (e.key === 'Home') {
+			focusIndex = 0;
+			btns[focusIndex]?.focus();
+			e.preventDefault();
+		} else if (e.key === 'End') {
+			focusIndex = count - 1;
+			btns[focusIndex]?.focus();
+			e.preventDefault();
 		}
 	}
 
@@ -177,7 +185,7 @@
 			title={cmd.label}
 			onclick={cmd.run}
 			onfocus={() => (focusIndex = i)}
-			class="rounded p-1.5 transition-colors hover:bg-gray-200 aria-pressed:bg-primary/15 disabled:opacity-50 dark:hover:bg-gray-700"
+			class="rounded p-1.5 transition-colors hover:bg-gray-200 aria-pressed:bg-primary/15 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 dark:hover:bg-gray-700"
 		>
 			<cmd.icon class="h-4 w-4" aria-hidden="true" />
 		</button>
@@ -191,7 +199,7 @@
 		title={m['markdownEditor.insertLink']()}
 		onclick={() => onInsertLink?.()}
 		onfocus={() => (focusIndex = linkIndex)}
-		class="rounded p-1.5 hover:bg-gray-200 disabled:opacity-50 dark:hover:bg-gray-700"
+		class="rounded p-1.5 hover:bg-gray-200 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 dark:hover:bg-gray-700"
 	>
 		<LinkIcon class="h-4 w-4" aria-hidden="true" />
 	</button>
@@ -204,7 +212,7 @@
 		title={m['markdownEditor.viewSource']()}
 		onclick={onToggleSource}
 		onfocus={() => (focusIndex = sourceIndex)}
-		class="ml-auto rounded p-1.5 hover:bg-gray-200 disabled:opacity-50 dark:hover:bg-gray-700"
+		class="ml-auto rounded p-1.5 hover:bg-gray-200 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 dark:hover:bg-gray-700"
 	>
 		<SquareCode class="h-4 w-4" aria-hidden="true" />
 	</button>
