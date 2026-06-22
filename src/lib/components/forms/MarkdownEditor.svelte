@@ -61,7 +61,15 @@
 				injectCSS: false, // CSP: no runtime <style>
 				editable: !disabled,
 				extensions: createEditorExtensions(),
-				onCreate: ({ editor: e }) => e.commands.setContent(value, { contentType: 'markdown' }),
+				onCreate: ({ editor: e }) => {
+					// Suppress the update event so mounting doesn't mark pristine forms dirty
+					e.commands.setContent(value, { contentType: 'markdown', emitUpdate: false });
+					lastEmitted = value;
+					// Apply dynamic height via CSSOM (CSP-safe; inline style= attr is blocked by nonce policy)
+					if (element) {
+						element.style.setProperty('--editor-min-h', `${rows * 1.5}rem`);
+					}
+				},
 				onUpdate: ({ editor: e }) => emit(e.getMarkdown())
 			});
 			editor = ed;
@@ -81,9 +89,9 @@
 		}
 	});
 
-	// Reflect disabled into the live editor
+	// Reflect disabled into the live editor (emitUpdate=false: no spurious update event on mount)
 	$effect(() => {
-		editor?.setEditable(!disabled);
+		editor?.setEditable(!disabled, false);
 	});
 
 	function handleSourceInput(e: Event): void {
@@ -110,12 +118,11 @@
 		<div
 			bind:this={element}
 			class={cn(
-				'prose prose-sm max-w-none rounded-md border-2 px-3 py-2 dark:prose-invert',
+				'markdown-editor-surface prose prose-sm max-w-none rounded-md border-2 px-3 py-2 dark:prose-invert',
 				'focus-within:border-primary focus-within:ring-2 focus-within:ring-primary',
 				error ? 'border-destructive' : 'border-gray-300 dark:border-gray-600',
 				disabled && 'cursor-not-allowed opacity-50'
 			)}
-			style="min-height: {rows * 1.5}rem"
 			aria-label={label}
 			aria-invalid={!!error}
 			aria-describedby={error ? `${inputId}-error` : undefined}
@@ -126,7 +133,7 @@
 	{#if !editor || sourceMode}
 		<!-- SSR / no-JS / source-mode fallback -->
 		<textarea
-			{id}
+			id={inputId}
 			name={inputId}
 			bind:value
 			oninput={handleSourceInput}
@@ -139,6 +146,9 @@
 			class={cn(
 				'w-full resize-y rounded-md border-2 px-3 py-2 text-sm',
 				'bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100',
+				'placeholder:text-muted-foreground',
+				'focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+				'disabled:cursor-not-allowed disabled:opacity-50',
 				error ? 'border-destructive' : 'border-gray-300 dark:border-gray-600'
 			)}
 		></textarea>
