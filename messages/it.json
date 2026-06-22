@@ -7950,5 +7950,11 @@
 	"orgAdmin.dashboard.quickActions.financials.description": "Ricavi e IVA per evento",
 	"orgAdmin.dashboard.quickActions.billing.title": "Fatturazione",
 	"orgAdmin.dashboard.quickActions.billing.description": "Fatture, impostazioni IVA e pagamenti",
-	"markdownEditor.exitSource": "Esci dalla modalità sorgente"
+	"markdownEditor.exitSource": "Esci dalla modalità sorgente",
+	"markdownEditor.linkDialogTitle": "Inserisci link",
+	"markdownEditor.linkUrlLabel": "URL",
+	"markdownEditor.linkTextLabel": "Testo del link",
+	"markdownEditor.linkSchemeError": "Sono consentiti solo link http, https e mailto.",
+	"markdownEditor.linkApply": "Applica",
+	"markdownEditor.cancel": "Annulla"
 }

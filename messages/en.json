@@ -7950,5 +7950,11 @@
 	"orgAdmin.dashboard.quickActions.financials.description": "Revenue and VAT broken down by event",
 	"orgAdmin.dashboard.quickActions.billing.title": "Billing",
 	"orgAdmin.dashboard.quickActions.billing.description": "Invoices, VAT settings and payouts",
-	"markdownEditor.exitSource": "Exit source mode"
+	"markdownEditor.exitSource": "Exit source mode",
+	"markdownEditor.linkDialogTitle": "Insert link",
+	"markdownEditor.linkUrlLabel": "URL",
+	"markdownEditor.linkTextLabel": "Link text",
+	"markdownEditor.linkSchemeError": "Only http, https, and mailto links are allowed.",
+	"markdownEditor.linkApply": "Apply",
+	"markdownEditor.cancel": "Cancel"
 }
