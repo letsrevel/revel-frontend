@@ -112,6 +112,7 @@
 		name: existingEvent?.name || '',
 		start: toDateTimeLocal(existingEvent?.start) || '',
 		end: toDateTimeLocal(existingEvent?.end) || '',
+		is_open_ended: existingEvent?.is_open_ended ?? false,
 		city_id: existingEvent?.city?.id || orgCity?.id || userCity?.id || null,
 		visibility: existingEvent?.visibility || 'public',
 		event_type: (existingEvent?.event_type as any) || ('public' as any),
@@ -425,6 +426,13 @@
 				errors.start = m['eventWizard.error_startFuture']();
 			}
 		}
+		if (!formData.is_open_ended) {
+			if (!formData.end) {
+				errors.end = m['essentialsStep.error_endRequired']();
+			} else if (formData.start && new Date(formData.end) <= new Date(formData.start)) {
+				errors.end = m['essentialsStep.error_endAfterStart']();
+			}
+		}
 		validationErrors = errors;
 		return Object.keys(errors).length === 0;
 	}
@@ -510,7 +518,8 @@
 				visibility: formData.visibility || 'public',
 				event_type: (formData.event_type || 'public') as any,
 				description: formData.description || null,
-				end: toISOString(formData.end),
+				end: formData.is_open_ended ? null : toISOString(formData.end),
+				is_open_ended: formData.is_open_ended ?? false,
 				address: formData.address || null,
 				address_visibility: formData.address_visibility || 'public',
 				rsvp_before: toISOString(formData.rsvp_before),
