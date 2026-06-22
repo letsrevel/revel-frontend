@@ -139,8 +139,12 @@
 		const ctx = canvas.getContext('2d');
 		if (!ctx) throw new Error('Could not get canvas context');
 
-		ctx.fillStyle = '#ffffff';
-		ctx.fillRect(0, 0, outputWidth, outputHeight);
+		// JPEG has no alpha channel, so flatten transparency onto white to avoid
+		// black backgrounds. PNG output keeps the canvas transparent.
+		if (outputFormat === 'image/jpeg') {
+			ctx.fillStyle = '#ffffff';
+			ctx.fillRect(0, 0, outputWidth, outputHeight);
+		}
 
 		// Draw the selected source region into the full output canvas
 		ctx.drawImage(
@@ -206,10 +210,17 @@
 	const MIN_ZOOM = 0.5;
 	const MAX_ZOOM = 5;
 
+	// Forces the Cropper to remount on reset so it re-emits a fresh crop
+	// rectangle (svelte-easy-crop only re-emits on load/drag/zoom-change, not on
+	// an external crop reset — without this, Save could use the pre-reset region).
+	let cropperKey = $state(0);
+
 	// Reset crop
 	function resetCrop() {
 		crop = { x: 0, y: 0 };
 		zoom = 1;
+		croppedPixels = null;
+		cropperKey += 1;
 	}
 
 	// Load image on mount
@@ -272,17 +283,19 @@
 				</div>
 			{:else if imageUrl}
 				<div class="relative h-80">
-					<Cropper
-						image={imageUrl}
-						bind:crop
-						bind:zoom
-						aspect={aspectRatio}
-						cropShape={shape}
-						minZoom={MIN_ZOOM}
-						maxZoom={MAX_ZOOM}
-						showGrid={true}
-						oncropcomplete={handleCropComplete}
-					/>
+					{#key cropperKey}
+						<Cropper
+							image={imageUrl}
+							bind:crop
+							bind:zoom
+							aspect={aspectRatio}
+							cropShape={shape}
+							minZoom={MIN_ZOOM}
+							maxZoom={MAX_ZOOM}
+							showGrid={true}
+							oncropcomplete={handleCropComplete}
+						/>
+					{/key}
 				</div>
 			{/if}
 		</div>
