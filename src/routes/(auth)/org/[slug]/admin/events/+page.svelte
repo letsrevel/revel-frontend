@@ -10,7 +10,7 @@
 	} from '$lib/api/generated/sdk.gen';
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { formatEventDateRange } from '$lib/utils/date';
+	import { formatEventDate, formatEventDateRange } from '$lib/utils/date';
 	import EventCoverImage from '$lib/components/events/EventCoverImage.svelte';
 	import EventBadges from '$lib/components/events/EventBadges.svelte';
 	import DuplicateEventModal from '$lib/components/events/admin/DuplicateEventModal.svelte';
@@ -420,7 +420,11 @@
 										<div class="flex items-center gap-1.5">
 											<Calendar class="h-4 w-4" aria-hidden="true" />
 											<time datetime={event.start}>
-												{formatEventDateRange(event.start, event.end)}
+												{#if event.is_open_ended}
+													{formatEventDate(event.start)} · {m['eventDetails.openEnded']()}
+												{:else}
+													{formatEventDateRange(event.start, event.end)}
+												{/if}
 											</time>
 										</div>
 									</div>

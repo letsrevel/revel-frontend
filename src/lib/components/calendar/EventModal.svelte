@@ -70,7 +70,7 @@
 					<div>
 						<p class="font-medium">{formatDate(event.start)}</p>
 						<p class="text-sm text-muted-foreground">
-							{formatTime(event.start)}{#if event.end}
+							{formatTime(event.start)}{#if !event.is_open_ended && event.end}
 								- {formatTime(event.end)}{/if}
 						</p>
 					</div>
