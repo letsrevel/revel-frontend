@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { CropWindow, defaultValue, type CropValue, type Media } from 'svelte-crop-window';
-	import { X, RotateCcw, RotateCw, ZoomIn, ZoomOut, Check, Loader2 } from 'lucide-svelte';
+	import Cropper from 'svelte-easy-crop';
+	import { computeCropOutputSize, type CropPixels } from '$lib/utils/image-crop';
+	import { X, ZoomIn, ZoomOut, Check, Loader2 } from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
 	/**
 	 * ImageCropperModal Component
 	 *
-	 * A modal dialog for cropping and rotating images before upload.
+	 * A modal dialog for cropping images before upload.
 	 * Supports HEIC/HEIF conversion for iPhone photos.
 	 *
 	 * @example
@@ -57,22 +58,16 @@
 	let imageUrl = $state<string | null>(null);
 	let originalImage = $state<HTMLImageElement | null>(null);
 
-	let cropValue = $state<CropValue>({ ...defaultValue, aspect: aspectRatio });
-
-	// Media object for CropWindow
-	const media = $derived<Media | null>(
-		imageUrl
-			? {
-					content_type: 'image',
-					url: imageUrl
-				}
-			: null
-	);
+	// svelte-easy-crop reactive state
+	let crop = $state({ x: 0, y: 0 });
+	let zoom = $state(1);
+	// Latest crop rectangle in source-image pixels, from oncropcomplete
+	let croppedPixels = $state<CropPixels | null>(null);
 
 	// Check if file is HEIC/HEIF
-	function isHeicFile(file: File): boolean {
-		const type = file.type.toLowerCase();
-		const name = file.name.toLowerCase();
+	function isHeicFile(f: File): boolean {
+		const type = f.type.toLowerCase();
+		const name = f.name.toLowerCase();
 		return (
 			type === 'image/heic' ||
 			type === 'image/heif' ||
@@ -82,10 +77,10 @@
 	}
 
 	// Convert HEIC to JPEG
-	async function convertHeicToJpeg(file: File): Promise<Blob> {
+	async function convertHeicToJpeg(f: File): Promise<Blob> {
 		const heic2any = (await import('heic2any')).default;
 		const result = await heic2any({
-			blob: file,
+			blob: f,
 			toType: 'image/jpeg',
 			quality: 0.92
 		});
@@ -125,72 +120,55 @@
 		}
 	}
 
-	// Apply crop and rotation using canvas
+	// Apply crop using the pixel rectangle reported by svelte-easy-crop
 	async function applyCrop(): Promise<Blob> {
-		if (!originalImage || !imageUrl) {
+		if (!originalImage || !croppedPixels) {
 			throw new Error('Image not loaded');
 		}
 
 		const img = originalImage;
+		const pixels = croppedPixels;
+		const { width: outputWidth, height: outputHeight } = computeCropOutputSize(
+			pixels,
+			maxOutputSize
+		);
 
-		// Calculate output dimensions
-		let outputWidth = maxOutputSize;
-		let outputHeight = maxOutputSize / aspectRatio;
-
-		if (outputHeight > maxOutputSize) {
-			outputHeight = maxOutputSize;
-			outputWidth = maxOutputSize * aspectRatio;
-		}
-
-		// Create canvas
 		const canvas = document.createElement('canvas');
 		canvas.width = outputWidth;
 		canvas.height = outputHeight;
 		const ctx = canvas.getContext('2d');
 		if (!ctx) throw new Error('Could not get canvas context');
 
-		// Calculate the scale factor: how much larger the image is compared to the crop window
-		// cropValue.scale is relative to the crop window height
-		const scaledImageHeight = cropValue.scale * outputHeight;
-		const scaledImageWidth = (img.width / img.height) * scaledImageHeight;
-
-		// Center of the canvas
-		const centerX = outputWidth / 2;
-		const centerY = outputHeight / 2;
-
-		// Position offset (relative values multiplied by output height)
-		const offsetX = cropValue.position.x * outputHeight;
-		const offsetY = cropValue.position.y * outputHeight;
-
-		// Clear canvas
 		ctx.fillStyle = '#ffffff';
 		ctx.fillRect(0, 0, outputWidth, outputHeight);
 
-		// Apply transformations
-		ctx.save();
-		ctx.translate(centerX + offsetX, centerY + offsetY);
-		ctx.rotate((cropValue.rotation * Math.PI) / 180);
-
-		// Draw image centered
+		// Draw the selected source region into the full output canvas
 		ctx.drawImage(
 			img,
-			-scaledImageWidth / 2,
-			-scaledImageHeight / 2,
-			scaledImageWidth,
-			scaledImageHeight
+			pixels.x,
+			pixels.y,
+			pixels.width,
+			pixels.height,
+			0,
+			0,
+			outputWidth,
+			outputHeight
 		);
-
-		ctx.restore();
 
 		// Apply circular mask if shape is round
 		if (shape === 'round') {
 			ctx.globalCompositeOperation = 'destination-in';
 			ctx.beginPath();
-			ctx.arc(centerX, centerY, Math.min(outputWidth, outputHeight) / 2, 0, Math.PI * 2);
+			ctx.arc(
+				outputWidth / 2,
+				outputHeight / 2,
+				Math.min(outputWidth, outputHeight) / 2,
+				0,
+				Math.PI * 2
+			);
 			ctx.fill();
 		}
 
-		// Convert to blob
 		return new Promise((resolve, reject) => {
 			canvas.toBlob(
 				(blob) => {
@@ -219,13 +197,9 @@
 		}
 	}
 
-	// Rotate controls
-	function rotateLeft() {
-		cropValue.rotation = (cropValue.rotation - 90) % 360;
-	}
-
-	function rotateRight() {
-		cropValue.rotation = (cropValue.rotation + 90) % 360;
+	// svelte-easy-crop reports the crop rectangle (percent + pixels) on every change
+	function handleCropComplete(event: { pixels: CropPixels }) {
+		croppedPixels = event.pixels;
 	}
 
 	// Zoom controls
@@ -234,16 +208,17 @@
 	const MAX_ZOOM = 5;
 
 	function zoomIn() {
-		cropValue.scale = Math.min(cropValue.scale + ZOOM_STEP, MAX_ZOOM);
+		zoom = Math.min(zoom + ZOOM_STEP, MAX_ZOOM);
 	}
 
 	function zoomOut() {
-		cropValue.scale = Math.max(cropValue.scale - ZOOM_STEP, MIN_ZOOM);
+		zoom = Math.max(zoom - ZOOM_STEP, MIN_ZOOM);
 	}
 
 	// Reset crop
 	function resetCrop() {
-		cropValue = { ...defaultValue, aspect: aspectRatio };
+		crop = { x: 0, y: 0 };
+		zoom = 1;
 	}
 
 	// Load image on mount
@@ -304,20 +279,18 @@
 						{m['imageCropper.cancel']()}
 					</button>
 				</div>
-			{:else if media}
-				<div class="h-80">
-					<CropWindow
-						bind:value={cropValue}
-						{media}
-						options={{
-							shape,
-							crop_window_margin: 20,
-							overlay_options: {
-								overlay_color: '#000000',
-								line_color: '#ffffff',
-								show_third_lines: true
-							}
-						}}
+			{:else if imageUrl}
+				<div class="relative h-80">
+					<Cropper
+						image={imageUrl}
+						bind:crop
+						bind:zoom
+						aspect={aspectRatio}
+						cropShape={shape}
+						minZoom={MIN_ZOOM}
+						maxZoom={MAX_ZOOM}
+						showGrid={true}
+						oncropcomplete={handleCropComplete}
 					/>
 				</div>
 			{/if}
@@ -356,28 +329,6 @@
 				>
 					{m['imageCropper.reset']()}
 				</button>
-
-				<!-- Rotate controls -->
-				<div class="flex items-center gap-1">
-					<button
-						type="button"
-						onclick={rotateLeft}
-						class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-						aria-label={m['imageCropper.rotateLeft']()}
-						title={m['imageCropper.rotateLeft']()}
-					>
-						<RotateCcw class="h-5 w-5" />
-					</button>
-					<button
-						type="button"
-						onclick={rotateRight}
-						class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-						aria-label={m['imageCropper.rotateRight']()}
-						title={m['imageCropper.rotateRight']()}
-					>
-						<RotateCw class="h-5 w-5" />
-					</button>
-				</div>
 			</div>
 		{/if}
 

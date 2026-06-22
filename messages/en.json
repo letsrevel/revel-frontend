@@ -2162,8 +2162,6 @@
 		"loading": "Loading image...",
 		"loadError": "Failed to load image. Please try again.",
 		"cropError": "Failed to process image. Please try again.",
-		"rotateLeft": "Rotate left",
-		"rotateRight": "Rotate right",
 		"reset": "Reset",
 		"cancel": "Cancel",
 		"save": "Save",

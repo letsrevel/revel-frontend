@@ -32,9 +32,6 @@ overrides:
   uuid@<11.1.1: '>=11.1.1'
   joi@<17.13.4: '>=17.13.4'
 
-patchedDependencies:
-  svelte-crop-window@0.1.1: b91cd598e217f66bfad005e2ffe0690967bb344b6cdd214dacc25947b132e246
-
 importers:
 
   .:
@@ -87,12 +84,12 @@ importers:
       qrcode:
         specifier: ^1.5.4
         version: 1.5.4
-      svelte-crop-window:
-        specifier: ^0.1.1
-        version: 0.1.1(patch_hash=b91cd598e217f66bfad005e2ffe0690967bb344b6cdd214dacc25947b132e246)
       svelte-dnd-action:
         specifier: ^0.9.69
         version: 0.9.70(svelte@5.56.3(@typescript-eslint/types@8.61.0))
+      svelte-easy-crop:
+        specifier: ^5.0.1
+        version: 5.0.1(svelte@5.56.3(@typescript-eslint/types@8.61.0))
       svelte-sonner:
         specifier: ^1.0.5
         version: 1.1.1(svelte@5.56.3(@typescript-eslint/types@8.61.0))
@@ -2822,13 +2819,15 @@ packages:
       svelte: ^4.0.0 || ^5.0.0-next.0
       typescript: '>=5.0.0'
 
-  svelte-crop-window@0.1.1:
-    resolution: {integrity: sha512-N5696nYO38iHuYYaafOR6xWJmh4lnCnRBwdTbMBAiAnILMAmR4LoleIlfeCyUVuxTaDtw3tG9KB2MVntQP4R9w==}
-
   svelte-dnd-action@0.9.70:
     resolution: {integrity: sha512-iVqDAW1PtQArA96dHhM5Lwxj39iKNjIuYE+tqpq9DUaBWfv410SpGGFJ3NzPtvptx+YkXBzMYV3lpey8s07q+w==}
     peerDependencies:
       svelte: '>=3.23.0 || ^5.0.0-next.0'
+
+  svelte-easy-crop@5.0.1:
+    resolution: {integrity: sha512-Dq2rgmPsSEo+K8k49TFGXZAJwJa537AR6hW1RqKEdYj7QKlc4Ya7l4VlSYWlOV8/uAiQ10VyGRdSVAUcZiMwjg==}
+    peerDependencies:
+      svelte: ^5.0.0
 
   svelte-eslint-parser@0.43.0:
     resolution: {integrity: sha512-GpU52uPKKcVnh8tKN5P4UZpJ/fUDndmq7wfsvoVXsyP+aY0anol7Yqo01fyrlaWGMFfm4av5DyrjlaXdLRJvGA==}
@@ -5668,9 +5667,11 @@ snapshots:
     transitivePeerDependencies:
       - picomatch
 
-  svelte-crop-window@0.1.1(patch_hash=b91cd598e217f66bfad005e2ffe0690967bb344b6cdd214dacc25947b132e246): {}
-
   svelte-dnd-action@0.9.70(svelte@5.56.3(@typescript-eslint/types@8.61.0)):
+    dependencies:
+      svelte: 5.56.3(@typescript-eslint/types@8.61.0)
+
+  svelte-easy-crop@5.0.1(svelte@5.56.3(@typescript-eslint/types@8.61.0)):
     dependencies:
       svelte: 5.56.3(@typescript-eslint/types@8.61.0)
 

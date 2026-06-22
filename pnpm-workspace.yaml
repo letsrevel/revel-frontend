@@ -36,10 +36,6 @@ auditConfig:
     # is a build-time (dev) tool that is not shipped. Not applicable.
     - GHSA-gv7w-rqvm-qjhr
 
-# ── Local patches ────────────────────────────────────────────────────────────────
-patchedDependencies:
-  svelte-crop-window@0.1.1: patches/svelte-crop-window@0.1.1.patch
-
 # ── Version overrides ────────────────────────────────────────────────────────────
 # Pre-existing pins (kept) plus the security remediation of 2026-06: each transitive
 # entry bumps a vulnerable range to its first patched version, scoped so it never

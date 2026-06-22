@@ -2162,8 +2162,6 @@
 		"loading": "Bild wird geladen...",
 		"loadError": "Bild konnte nicht geladen werden. Bitte versuche es erneut.",
 		"cropError": "Bild konnte nicht verarbeitet werden. Bitte versuche es erneut.",
-		"rotateLeft": "Nach links drehen",
-		"rotateRight": "Nach rechts drehen",
 		"reset": "Zurücksetzen",
 		"cancel": "Abbrechen",
 		"save": "Speichern",

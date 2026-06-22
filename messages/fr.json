@@ -2133,8 +2133,6 @@
 		"loading": "Chargement de l'image...",
 		"loadError": "Impossible de charger l'image. Réessaie.",
 		"cropError": "Impossible de traiter l'image. Réessaie.",
-		"rotateLeft": "Pivoter à gauche",
-		"rotateRight": "Pivoter à droite",
 		"reset": "Réinitialiser",
 		"cancel": "Annuler",
 		"save": "Enregistrer",
