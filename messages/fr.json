@@ -6120,7 +6120,8 @@
 				"potluckOpen": "Activer la coordination du repas partagé",
 				"acceptInvitationRequests": "Accepter les demandes d'invitation",
 				"publicPronounDistribution": "Afficher publiquement la répartition des pronoms",
-				"canAttendWithoutLogin": "Autoriser la participation des invités"
+				"canAttendWithoutLogin": "Autoriser la participation des invités",
+				"openEnded": "Sans heure de fin (aucune heure de fin affichée aux participants)"
 			},
 			"locked": {
 				"heading": "Champs verrouillés",

@@ -6149,7 +6149,8 @@
 				"potluckOpen": "Enable potluck coordination",
 				"acceptInvitationRequests": "Accept invitation requests",
 				"publicPronounDistribution": "Show pronoun distribution publicly",
-				"canAttendWithoutLogin": "Allow guest attendance"
+				"canAttendWithoutLogin": "Allow guest attendance",
+				"openEnded": "Open-ended (no end time shown to attendees)"
 			},
 			"locked": {
 				"heading": "Locked fields",

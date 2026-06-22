@@ -67,6 +67,7 @@
 		accept_invitation_requests: boolean;
 		public_pronoun_distribution: boolean;
 		can_attend_without_login: boolean;
+		is_open_ended: boolean;
 	}>({
 		requires_ticket: false,
 		waitlist_open: false,
@@ -74,7 +75,8 @@
 		potluck_open: false,
 		accept_invitation_requests: false,
 		public_pronoun_distribution: false,
-		can_attend_without_login: false
+		can_attend_without_login: false,
+		is_open_ended: false
 	});
 	type FlagKey = keyof typeof flags;
 
@@ -132,6 +134,7 @@
 		flags.accept_invitation_requests = !!t.accept_invitation_requests;
 		flags.public_pronoun_distribution = !!t.public_pronoun_distribution;
 		flags.can_attend_without_login = !!t.can_attend_without_login;
+		flags.is_open_ended = !!t.is_open_ended;
 		original = t;
 	});
 
@@ -185,6 +188,7 @@
 			d.public_pronoun_distribution = flags.public_pronoun_distribution;
 		if (flags.can_attend_without_login !== !!original.can_attend_without_login)
 			d.can_attend_without_login = flags.can_attend_without_login;
+		if (flags.is_open_ended !== !!original.is_open_ended) d.is_open_ended = flags.is_open_ended;
 
 		return d;
 	});
@@ -264,6 +268,11 @@
 			key: 'can_attend_without_login',
 			label: m['recurringEvents.templateDialog.toggles.canAttendWithoutLogin'](),
 			testid: 'template-edit-can-attend-without-login'
+		},
+		{
+			key: 'is_open_ended',
+			label: m['recurringEvents.templateDialog.toggles.openEnded'](),
+			testid: 'template-edit-open-ended'
 		}
 	];
 
