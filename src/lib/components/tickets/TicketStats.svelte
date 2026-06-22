@@ -1,8 +1,8 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { AlertTriangle, TrendingUp } from 'lucide-svelte';
-	import { formatMoney } from '$lib/utils/format';
-	import type { EventRevenueSchema } from '$lib/api/generated/types.gen';
+	import CurrencyFinancialsSummary from '$lib/components/financials/CurrencyFinancialsSummary.svelte';
+	import type { EventFinancialsSchema } from '$lib/api/generated/types.gen';
 
 	interface Stats {
 		total: number;
@@ -17,7 +17,7 @@
 		totalCount: number;
 		hasMultiplePages: boolean;
 		/** Whole-event revenue aggregate, or null when it failed to load. */
-		revenue: EventRevenueSchema | null;
+		revenue: EventFinancialsSchema | null;
 	}
 
 	const { stats, totalCount, hasMultiplePages, revenue }: Props = $props();
@@ -35,20 +35,14 @@
 				<TrendingUp class="h-4 w-4 text-primary" aria-hidden="true" />
 				{m['eventTicketsAdmin.revenueTitle']()}
 			</div>
-			<div class="mt-2 flex flex-wrap gap-x-8 gap-y-3">
+			<div class="mt-3 space-y-4">
 				{#each earned as c (c.currency)}
-					<div>
-						<div class="text-2xl font-bold">{formatMoney(c.gross, c.currency)}</div>
-						<div class="text-xs text-muted-foreground">
-							{m['eventTicketsAdmin.revenuePaidTickets']({ count: c.paid_ticket_count })}
-							{#if parseFloat(c.gross) !== parseFloat(c.net)}
-								· {m['eventTicketsAdmin.revenueNet']({ amount: formatMoney(c.net, c.currency) })}
-								· {m['eventTicketsAdmin.revenueRefunded']({
-									amount: formatMoney(c.refunded, c.currency)
-								})}
-							{/if}
+					{#if earned.length > 1}
+						<div class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+							{c.currency}
 						</div>
-					</div>
+					{/if}
+					<CurrencyFinancialsSummary data={c} />
 				{/each}
 			</div>
 		</div>

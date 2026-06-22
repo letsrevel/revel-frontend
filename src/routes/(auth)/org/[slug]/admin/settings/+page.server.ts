@@ -46,6 +46,7 @@ export const actions: Actions = {
 		const contactMethodRaw = formData.get('contact_method') as string | null;
 		const contactMethod: 'none' | 'email' | 'form' =
 			contactMethodRaw === 'email' || contactMethodRaw === 'form' ? contactMethodRaw : 'none';
+		const cadenceRaw = formData.get('revenue_report_cadence') as string | null;
 		const slug = params.slug;
 
 		// Social media fields
@@ -60,6 +61,14 @@ export const actions: Actions = {
 			accept_membership_requests: acceptNewMembers,
 			contact_method: contactMethod
 		};
+
+		// Only owners render the revenue-report cadence control. Touch the field
+		// solely when it was actually submitted, so a staff save (no field) can
+		// never reset an owner's report schedule.
+		if (formData.has('revenue_report_cadence')) {
+			updateData.revenue_report_cadence =
+				cadenceRaw === 'quarterly' || cadenceRaw === 'monthly' ? cadenceRaw : 'none';
+		}
 
 		// Add optional fields only if they have values
 		if (description !== null && description !== undefined) {

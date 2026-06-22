@@ -7,7 +7,7 @@ import {
 	eventadminticketsGetEventRevenue
 } from '$lib/api';
 import { parseTicketOrderBy } from '$lib/components/tickets/ticket-sort';
-import type { EventRevenueSchema } from '$lib/api/generated/types.gen';
+import type { EventFinancialsSchema } from '$lib/api/generated/types.gen';
 import { log } from '$lib/server/logger';
 
 export const load: PageServerLoad = async ({ parent, params, locals, fetch, url }) => {
@@ -87,7 +87,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 
 	// Whole-event revenue aggregate (independent of the current page / filters).
 	// Loaded in parallel with the ticket list; failures degrade to null.
-	const revenuePromise: Promise<EventRevenueSchema | null> = eventadminticketsGetEventRevenue({
+	const revenuePromise: Promise<EventFinancialsSchema | null> = eventadminticketsGetEventRevenue({
 		fetch,
 		path: { event_id: params.event_id },
 		headers

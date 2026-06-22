@@ -9,7 +9,7 @@
 	import OrgTagManager from '$lib/components/organization/OrgTagManager.svelte';
 	import OrgContactEmailModal from '$lib/components/organization/OrgContactEmailModal.svelte';
 	import StripeConnect from '$lib/components/organization/StripeConnect.svelte';
-	import type { CitySchema } from '$lib/api/generated';
+	import type { CitySchema, RevenueReportCadence } from '$lib/api/generated';
 	import {
 		Building2,
 		AlertCircle,
@@ -41,7 +41,13 @@
 	let visibility = $state(data.organization.visibility || 'public');
 	let acceptNewMembers = $state(data.organization.accept_membership_requests || false);
 	let contactMethod = $state<'none' | 'email' | 'form'>(data.organization.contact_method || 'none');
+	let reportCadence = $state<RevenueReportCadence>(
+		data.organization.revenue_report_cadence || 'none'
+	);
 	let isSubmitting = $state(false);
+
+	// Scheduled revenue-report delivery requires a billing email to send to.
+	const billingEmailMissing = $derived(!data.organization.billing_email?.trim());
 
 	// Social media state
 	let instagramUrl = $state(data.organization.instagram_url || '');
@@ -64,6 +70,7 @@
 		visibility = data.organization.visibility || 'public';
 		acceptNewMembers = data.organization.accept_membership_requests || false;
 		contactMethod = data.organization.contact_method || 'none';
+		reportCadence = data.organization.revenue_report_cadence || 'none';
 		instagramUrl = data.organization.instagram_url || '';
 		facebookUrl = data.organization.facebook_url || '';
 		blueskyUrl = data.organization.bluesky_url || '';
@@ -518,6 +525,63 @@
 				{/if}
 			</div>
 		</section>
+
+		<!-- Financial Reports (owner-only — mirrors the owner-only financials/revenue
+		     endpoints; staff with edit_organization must not change report delivery) -->
+		{#if data.isOwner}
+			<section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
+				<h2 class="text-lg font-semibold">{m['orgSettingsPage.reports.heading']()}</h2>
+				<p class="text-sm text-muted-foreground">{m['orgSettingsPage.reports.description']()}</p>
+
+				<div>
+					<label for="revenue_report_cadence" class="block text-sm font-medium">
+						{m['orgSettingsPage.reports.cadenceLabel']()}
+					</label>
+					<!-- A non-`none` cadence requires a billing email (backend 422s otherwise).
+					     When it is missing we display + submit `none` (disabled), so the control
+					     honestly reflects that scheduled delivery is off — no silent surprise on
+					     the next save. The select carries the field `name` so the value posts
+					     natively (no JS needed); the hidden `none` is only rendered when the
+					     select is disabled, so the two never collide. -->
+					{#if billingEmailMissing}
+						<input type="hidden" name="revenue_report_cadence" value="none" />
+					{/if}
+					<select
+						id="revenue_report_cadence"
+						name="revenue_report_cadence"
+						value={billingEmailMissing ? 'none' : reportCadence}
+						onchange={(e) => (reportCadence = e.currentTarget.value as RevenueReportCadence)}
+						disabled={billingEmailMissing}
+						class="mt-1 flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 sm:max-w-xs"
+					>
+						<option value="none">{m['orgSettingsPage.reports.cadenceNone']()}</option>
+						<option value="quarterly">{m['orgSettingsPage.reports.cadenceQuarterly']()}</option>
+						<option value="monthly">{m['orgSettingsPage.reports.cadenceMonthly']()}</option>
+					</select>
+					<p class="mt-1 text-xs text-muted-foreground">
+						{m['orgSettingsPage.reports.cadenceHelp']()}
+					</p>
+
+					{#if billingEmailMissing}
+						<div
+							class="mt-2 flex items-start gap-2 rounded-md border border-orange-200 bg-orange-50 p-3 text-xs text-orange-800 dark:border-orange-900 dark:bg-orange-950 dark:text-orange-200"
+							role="note"
+						>
+							<AlertCircle class="h-4 w-4 shrink-0" aria-hidden="true" />
+							<span>
+								{m['orgSettingsPage.reports.billingEmailRequired']()}
+								<a
+									href="/org/{data.organization.slug}/admin/billing"
+									class="font-medium underline underline-offset-2"
+								>
+									{m['orgSettingsPage.reports.billingEmailLink']()}
+								</a>
+							</span>
+						</div>
+					{/if}
+				</div>
+			</section>
+		{/if}
 
 		<!-- Actions -->
 		<div class="flex items-center justify-end gap-3">
