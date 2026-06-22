@@ -538,16 +538,17 @@
 						{m['orgSettingsPage.reports.cadenceLabel']()}
 					</label>
 					<!-- A non-`none` cadence requires a billing email (backend 422s otherwise).
-					     When it is missing we both submit AND display `none` (disabled), so the
-					     control honestly reflects that scheduled delivery is off — no silent
-					     surprise on the next save. -->
-					<input
-						type="hidden"
-						name="revenue_report_cadence"
-						value={billingEmailMissing ? 'none' : reportCadence}
-					/>
+					     When it is missing we display + submit `none` (disabled), so the control
+					     honestly reflects that scheduled delivery is off — no silent surprise on
+					     the next save. The select carries the field `name` so the value posts
+					     natively (no JS needed); the hidden `none` is only rendered when the
+					     select is disabled, so the two never collide. -->
+					{#if billingEmailMissing}
+						<input type="hidden" name="revenue_report_cadence" value="none" />
+					{/if}
 					<select
 						id="revenue_report_cadence"
+						name="revenue_report_cadence"
 						value={billingEmailMissing ? 'none' : reportCadence}
 						onchange={(e) => (reportCadence = e.currentTarget.value as RevenueReportCadence)}
 						disabled={billingEmailMissing}

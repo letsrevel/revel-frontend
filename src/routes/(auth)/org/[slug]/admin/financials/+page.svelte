@@ -21,16 +21,24 @@
 	const { data }: { data: PageData } = $props();
 	const slug = $derived(data.organization.slug);
 
+	// Parse a URL param to an integer only when it falls within [min, max];
+	// anything else (NaN, out of range) is treated as absent. Keeps crafted URLs
+	// from producing malformed date ranges / backend 422s.
+	function intInRange(value: string | null, min: number, max: number): number | null {
+		if (!value) return null;
+		const n = Number.parseInt(value, 10);
+		return Number.isFinite(n) && n >= min && n <= max ? n : null;
+	}
+
 	// All filter/sort state lives in the URL so views are shareable and survive reload.
 	const params = $derived.by(() => {
 		const sp = $page.url.searchParams;
-		const yearRaw = sp.get('year');
-		const monthRaw = sp.get('month');
-		const quarterRaw = sp.get('quarter');
+		const quarter = intInRange(sp.get('quarter'), 1, 4);
 		return {
-			year: yearRaw ? Number(yearRaw) : new Date().getFullYear(),
-			month: monthRaw ? Number(monthRaw) : null,
-			quarter: quarterRaw ? Number(quarterRaw) : null,
+			year: intInRange(sp.get('year'), 1970, 9999) ?? new Date().getFullYear(),
+			// Month and quarter are mutually exclusive; quarter wins if both appear.
+			month: quarter ? null : intInRange(sp.get('month'), 1, 12),
+			quarter,
 			currency: sp.get('currency'),
 			sort: sp.get('sort') === 'event_start' ? 'event_start' : 'revenue',
 			order: sp.get('order') === 'asc' ? 'asc' : 'desc'

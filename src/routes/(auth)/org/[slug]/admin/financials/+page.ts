@@ -1,11 +1,9 @@
 import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
-// Financials is an interactive, owner-only admin surface with no SEO value, so it
-// renders client-side and fetches via TanStack Query (auth is attached by the
-// client interceptor).
-export const ssr = false;
-
+// Hybrid rendering (the default for authenticated admin pages): the shell +
+// 403 guard render on the server, and the financials data is fetched
+// client-side via TanStack Query (auth is attached by the client interceptor).
 export const load: PageLoad = async ({ parent }) => {
 	const { organization, isOwner } = await parent();
 
