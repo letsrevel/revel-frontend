@@ -31,7 +31,6 @@
 	},
 	"SFwESEssentialsStep": {
 		"clearDescriptiveName": "Scegli un nome chiaro e descrittivo per il tuo evento",
-		"optionalOpenEnded": "Facoltativo - lascia vuoto per eventi senza fine",
 		"whereWillThisEventTakePlace": "Dove si svolgerà questo evento?",
 		"public": "Pubblico",
 		"anyoneCanSee": "Chiunque può vedere l'evento",
@@ -1414,6 +1413,7 @@
 		"details_heading": "Dettagli evento",
 		"dateTime_label": "Data e Ora",
 		"dateTime_ends": "Fine:",
+		"openEnded": "A tempo indeterminato",
 		"attendance_label": "Partecipazione",
 		"attendance_full": "L'evento è al completo",
 		"attendance_spotsLeft": "Solo {count} posti disponibili",
@@ -6149,7 +6149,8 @@
 				"potluckOpen": "Enable potluck coordination",
 				"acceptInvitationRequests": "Accept invitation requests",
 				"publicPronounDistribution": "Show pronoun distribution publicly",
-				"canAttendWithoutLogin": "Allow guest attendance"
+				"canAttendWithoutLogin": "Allow guest attendance",
+				"openEnded": "A tempo indeterminato (nessun orario di fine per i partecipanti)"
 			},
 			"locked": {
 				"heading": "Locked fields",
@@ -6750,6 +6751,10 @@
 	"essentialsStep.slugPlaceholder": "slug-del-tuo-evento",
 	"essentialsStep.startDateTime": "Data e ora di inizio",
 	"essentialsStep.endDateTime": "Data e ora di fine",
+	"essentialsStep.openEndedToggle": "Evento a tempo indeterminato (senza orario di fine)",
+	"essentialsStep.openEndedHelp": "I partecipanti non vedranno un orario di fine. Altrimenti, indica quando termina l'evento.",
+	"essentialsStep.error_endRequired": "Imposta un orario di fine oppure segna l'evento come a tempo indeterminato.",
+	"essentialsStep.error_endAfterStart": "L'orario di fine deve essere successivo a quello di inizio.",
 	"essentialsStep.localTimezoneHint": "Gli orari sono nel tuo fuso orario locale ({timezone})",
 	"essentialsStep.eventVisibilityAriaLabel": "Visibilità dell'evento",
 	"essentialsStep.eventTypeAriaLabel": "Tipo di evento",

@@ -347,33 +347,49 @@
 		</p>
 	</div>
 
-	<!-- End Date/Time -->
+	<!-- Open-ended toggle -->
 	<div class="space-y-2">
-		<label for="event-end" class="block text-sm font-medium">
-			<span class="flex items-center gap-2">
-				<Calendar class="h-4 w-4" aria-hidden="true" />
-				{m['essentialsStep.endDateTime']()}
-			</span>
+		<label class="flex items-center gap-2 text-sm font-medium">
+			<input
+				type="checkbox"
+				checked={formData.is_open_ended ?? false}
+				onchange={(e) => onUpdate({ is_open_ended: e.currentTarget.checked })}
+				class="h-4 w-4 rounded border-input"
+			/>
+			{m['essentialsStep.openEndedToggle']()}
 		</label>
-		<input
-			id="event-end"
-			type="datetime-local"
-			value={formData.end || ''}
-			oninput={(e) => onUpdate({ end: e.currentTarget.value })}
-			aria-invalid={!!validationErrors.end}
-			aria-describedby={validationErrors.end ? 'event-end-error' : undefined}
-			class={cn(
-				'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
-				validationErrors.end && 'border-destructive'
-			)}
-		/>
-		{#if validationErrors.end}
-			<p id="event-end-error" class="text-sm text-destructive" role="alert">
-				{validationErrors.end}
-			</p>
-		{/if}
-		<p class="text-xs text-muted-foreground">{m['SFwESEssentialsStep.optionalOpenEnded']()}</p>
+		<p class="text-xs text-muted-foreground">{m['essentialsStep.openEndedHelp']()}</p>
 	</div>
+
+	<!-- End Date/Time (hidden when open-ended) -->
+	{#if !formData.is_open_ended}
+		<div class="space-y-2">
+			<label for="event-end" class="block text-sm font-medium">
+				<span class="flex items-center gap-2">
+					<Calendar class="h-4 w-4" aria-hidden="true" />
+					{m['essentialsStep.endDateTime']()} <span class="text-destructive">*</span>
+				</span>
+			</label>
+			<input
+				id="event-end"
+				type="datetime-local"
+				value={formData.end || ''}
+				oninput={(e) => onUpdate({ end: e.currentTarget.value })}
+				required
+				aria-invalid={!!validationErrors.end}
+				aria-describedby={validationErrors.end ? 'event-end-error' : undefined}
+				class={cn(
+					'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+					validationErrors.end && 'border-destructive'
+				)}
+			/>
+			{#if validationErrors.end}
+				<p id="event-end-error" class="text-sm text-destructive" role="alert">
+					{validationErrors.end}
+				</p>
+			{/if}
+		</div>
+	{/if}
 
 	<!-- Visibility -->
 	<div class="space-y-2">
