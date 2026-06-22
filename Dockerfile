@@ -23,15 +23,11 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
 # Copy source code
 COPY . .
 
-# Accept build arguments for values that MUST be embedded at build time (Vite
-# inlines $env/static/public values into the bundle). Only PUBLIC_VERSION
-# qualifies. PUBLIC_API_URL and ORIGIN are read at RUNTIME (PUBLIC_API_URL via
-# $env/dynamic/public, ORIGIN by adapter-node), so one prebuilt image can target
-# any backend (see #396).
-ARG PUBLIC_VERSION
-
-# Set as environment variables for the build process
-ENV PUBLIC_VERSION=${PUBLIC_VERSION}
+# All PUBLIC_* values are read at RUNTIME, so nothing needs embedding here and a
+# single prebuilt image can target any deployment (see #396):
+#   - PUBLIC_API_URL via $env/dynamic/public
+#   - PUBLIC_VERSION via $env/dynamic/public (set on the runtime stage below)
+#   - ORIGIN by adapter-node
 
 # Compile Paraglide i18n translations
 # Generates runtime files from messages/*.json (en, de, it)
@@ -62,6 +58,12 @@ COPY --from=builder --chown=appuser:appuser /app/package.json ./package.json
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOST=0.0.0.0
+
+# PUBLIC_VERSION is known at build time (git tag) but read at runtime via
+# $env/dynamic/public, so bake the build arg into the runtime env. Falls back to
+# 'dev' in the footer if unset.
+ARG PUBLIC_VERSION
+ENV PUBLIC_VERSION=${PUBLIC_VERSION}
 
 # RUNTIME configuration (set these when running the container, e.g. via
 # `docker run -e` or compose). PUBLIC_API_URL points the frontend at your

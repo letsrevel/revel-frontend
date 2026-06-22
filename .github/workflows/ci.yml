@@ -37,9 +37,13 @@ jobs:
       - name: Run ESLint
         run: pnpm lint
 
+      # svelte-check resolves $lib/paraglide/messages, which is gitignored and
+      # generated — compile it first or every message reference is a type error.
+      - name: Compile translations
+        run: pnpm paraglide:compile
+
       - name: Run SvelteKit type check
         run: pnpm check
-        continue-on-error: true
 
   # Test translations
   i18n:
