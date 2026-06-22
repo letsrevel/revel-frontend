@@ -22,6 +22,7 @@
 		"paraglide:compile": "node scripts/compile-i18n.js",
 		"i18n:validate": "node scripts/validate-translations.js",
 		"i18n:check-imports": "bash scripts/check-i18n-imports.sh",
+		"i18n:hardcoded": "node scripts/check-i18n-hardcoded.mjs",
 		"i18n:compile": "pnpm paraglide:compile && pnpm i18n:validate",
 		"audit:images": "tsx scripts/audit-image-alt.ts"
 	},

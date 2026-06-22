@@ -1,4 +1,4 @@
-.PHONY: dev build preview format format-check lint lint-fix types i18n-check file-length no-ssr-token audit-images audit-soft-404 audit licensecheck audit-deps check fix test test-coverage test-e2e generate-api bump-version bump-minor release
+.PHONY: dev build preview format format-check lint lint-fix types i18n-check i18n-hardcoded i18n-hardcoded-update file-length no-ssr-token audit-images audit-soft-404 audit licensecheck audit-deps check fix test test-coverage test-e2e generate-api bump-version bump-minor release
 
 # ─────────────────────────────────────────────
 # Development
@@ -35,6 +35,17 @@ types:
 i18n-check:
 	pnpm i18n:compile
 
+# Guard against shipping untranslated user-facing copy: fails if a NEW hardcoded
+# string (toast / aria-label / placeholder / title / alt / visible text) appears
+# outside the catalog. SEO landing pages are excluded; legitimate non-prose lives
+# in scripts/i18n-hardcoded-baseline.json or carries an `i18n-ignore` comment.
+i18n-hardcoded:
+	@node scripts/check-i18n-hardcoded.mjs
+
+# Regenerate the baseline after intentionally accepting non-translatable literals.
+i18n-hardcoded-update:
+	@node scripts/check-i18n-hardcoded.mjs --update
+
 file-length:
 	@./scripts/check-file-length.sh
 
@@ -70,7 +81,7 @@ audit-deps: audit licensecheck
 # ─────────────────────────────────────────────
 
 # Equivalent to backend's `make check`: format, lint, types, i18n, file-length
-check: format-check lint types i18n-check file-length no-ssr-token audit-images
+check: format-check lint types i18n-check i18n-hardcoded file-length no-ssr-token audit-images
 
 # Auto-fix everything that can be auto-fixed
 fix: format lint-fix
