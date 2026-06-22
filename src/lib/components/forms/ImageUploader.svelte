@@ -167,7 +167,7 @@
 		const original = fileToCrop;
 		showCropper = false;
 		fileToCrop = null;
-		const ext = outputFormatExt(blob.type) ?? 'jpg';
+		const ext = outputFormatExt(blob.type);
 		const baseName = original?.name?.replace(/\.[^.]+$/, '') ?? 'image';
 		const cropped = new File([blob], `${baseName}-cropped.${ext}`, { type: blob.type });
 
@@ -188,10 +188,11 @@
 		if (fileInput) fileInput.value = '';
 	}
 
-	function outputFormatExt(mime: string): string | null {
-		if (mime === 'image/png') return 'png';
+	function outputFormatExt(mime: string): string {
 		if (mime === 'image/jpeg') return 'jpg';
-		return null;
+		if (mime === 'image/png') return 'png';
+		if (mime === 'image/webp') return 'webp';
+		return mime.split('/')[1] ?? 'img';
 	}
 
 	// Handle input change
