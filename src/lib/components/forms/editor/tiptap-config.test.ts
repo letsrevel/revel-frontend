@@ -7,10 +7,7 @@ function roundTrip(markdown: string): string {
 	const el = document.createElement('div');
 	const editor = new Editor({
 		element: el,
-		extensions: createEditorExtensions(),
-		content: markdown,
-		// parse incoming content as markdown
-		// (Markdown extension overrides content handling)
+		extensions: createEditorExtensions()
 	});
 	editor.commands.setContent(markdown, { contentType: 'markdown' });
 	const out = editor.getMarkdown().trimEnd();
