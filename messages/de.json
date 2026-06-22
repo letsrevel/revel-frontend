@@ -2162,15 +2162,12 @@
 		"loading": "Bild wird geladen...",
 		"loadError": "Bild konnte nicht geladen werden. Bitte versuche es erneut.",
 		"cropError": "Bild konnte nicht verarbeitet werden. Bitte versuche es erneut.",
-		"rotateLeft": "Nach links drehen",
-		"rotateRight": "Nach rechts drehen",
 		"reset": "Zurücksetzen",
 		"cancel": "Abbrechen",
 		"save": "Speichern",
 		"processing": "Wird verarbeitet...",
 		"heicConverting": "Bildformat wird konvertiert...",
-		"zoomIn": "Vergrößern",
-		"zoomOut": "Verkleinern"
+		"zoom": "Zoom"
 	},
 	"imageUploader": {
 		"error_invalidFileType": "Please select a valid image file ({accept})",
@@ -2445,8 +2442,7 @@
 		"error_claimFailed": "Einladung konnte nicht beansprucht werden"
 	},
 	"languageSwitcher": {
-		"selectLanguage": "Select language: {name}",
-		"closeMenu": "Close language menu"
+		"selectLanguage": "Select language: {name}"
 	},
 	"learnMore": {
 		"metaTitle": "Mehr über Revel erfahren - Community-Event-Management-Plattform",
@@ -2488,7 +2484,7 @@
 		"notificationsTitle": "Multi-Kanal-Benachrichtigungen",
 		"notificationsDescription": "Bleib informiert mit In-App-, E-Mail- und Telegram-Benachrichtigungen. Mit detaillierten Einstellungen kannst du anpassen, was du erhältst.",
 		"multiLanguageTitle": "Mehrsprachige Unterstützung",
-		"multiLanguageDescription": "Verfügbar auf Englisch, Deutsch und Italienisch, weitere Sprachen folgen bald.",
+		"multiLanguageDescription": "Verfügbar auf Englisch, Deutsch, Italienisch und Französisch, weitere Sprachen folgen bald.",
 		"venueManagementTitle": "Veranstaltungsort-Verwaltung",
 		"venueManagementDescription": "Definiere Veranstaltungsorte mit Sektoren, Reihen und einzelnen Sitzplätzen. Weise Sitzplätze Ticketstufen für reservierte Plätze zu.",
 		"openSourceTitle": "Open Source & Community-getrieben",

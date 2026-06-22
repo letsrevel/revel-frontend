@@ -1,7 +1,12 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, fireEvent } from '@testing-library/svelte';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { tick } from 'svelte';
 import userEvent from '@testing-library/user-event';
 import ImageUploader from './ImageUploader.svelte';
+
+vi.mock('$lib/components/common/ImageCropperModal.svelte', async () => ({
+	default: (await import('./__mocks__/CropperModalStub.svelte')).default
+}));
 
 describe('ImageUploader', () => {
 	// Mock FileReader
@@ -235,5 +240,76 @@ describe('ImageUploader', () => {
 
 		const hint = screen.getByText(/JPEG, PNG, WEBP/i);
 		expect(hint).toBeInTheDocument();
+	});
+});
+
+describe('ImageUploader crop mode', () => {
+	beforeEach(() => {
+		global.FileReader = class FileReader {
+			readAsDataURL = vi.fn();
+			onloadend: ((this: FileReader, ev: ProgressEvent) => void) | null = null;
+			result: string | ArrayBuffer | null = 'data:image/png;base64,test';
+			constructor() {
+				setTimeout(() => this.onloadend?.({} as ProgressEvent), 0);
+			}
+		} as unknown as typeof FileReader;
+	});
+
+	function selectFile(): void {
+		const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+		const file = new File(['x'], 'pic.png', { type: 'image/png' });
+		Object.defineProperty(input, 'files', { value: [file], configurable: true });
+		fireEvent.change(input);
+	}
+
+	it('does NOT open the cropper and emits the raw file when crop is off', async () => {
+		const onFileSelect = vi.fn();
+		render(ImageUploader, { props: { label: 'Logo', onFileSelect } });
+		selectFile();
+		await tick();
+		expect(screen.queryByTestId('cropper-modal-stub')).not.toBeInTheDocument();
+		expect(onFileSelect).toHaveBeenCalledWith(expect.any(File));
+	});
+
+	it('opens the cropper on select when crop is on', async () => {
+		render(ImageUploader, { props: { label: 'Logo', crop: true } });
+		selectFile();
+		await tick();
+		expect(await screen.findByTestId('cropper-modal-stub')).toBeInTheDocument();
+	});
+
+	it('emits the cropped blob (as a File) when the cropper saves', async () => {
+		const onFileSelect = vi.fn();
+		render(ImageUploader, { props: { label: 'Logo', crop: true, onFileSelect } });
+		selectFile();
+		await tick();
+		(await screen.findByTestId('cropper-save')).click();
+		await tick();
+		expect(onFileSelect).toHaveBeenCalledWith(expect.any(File));
+	});
+
+	it('leaves value untouched when the cropper is cancelled', async () => {
+		const onFileSelect = vi.fn();
+		render(ImageUploader, { props: { label: 'Logo', crop: true, onFileSelect } });
+		selectFile();
+		await tick();
+		(await screen.findByTestId('cropper-cancel')).click();
+		await tick();
+		expect(onFileSelect).not.toHaveBeenCalled();
+	});
+
+	it('rejects a cropped file whose type no longer matches accept', async () => {
+		const onFileSelect = vi.fn();
+		// Original pic.png passes png-only accept; the cropper stub emits image/jpeg,
+		// which must be re-validated and rejected rather than silently emitted.
+		render(ImageUploader, {
+			props: { label: 'Logo', crop: true, accept: 'image/png', onFileSelect }
+		});
+		selectFile();
+		await tick();
+		(await screen.findByTestId('cropper-save')).click();
+		await tick();
+		expect(onFileSelect).not.toHaveBeenCalled();
+		expect(screen.getByRole('alert')).toBeInTheDocument();
 	});
 });

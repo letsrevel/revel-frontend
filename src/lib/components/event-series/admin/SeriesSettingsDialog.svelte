@@ -8,6 +8,7 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Badge } from '$lib/components/ui/badge';
 	import ImageUploader from '$lib/components/forms/ImageUploader.svelte';
+	import { COVER_ASPECT_RATIO, LOGO_ASPECT_RATIO } from '$lib/utils/image-crop';
 	import { Loader2, Settings as SettingsIcon, Tag as TagIcon, Trash2 } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import {
@@ -385,6 +386,10 @@
 					aspectRatio="square"
 					label={m['eventSeriesEditPage.logo.title']()}
 					disabled={uploadLogoMutation.isPending || deleteLogoMutation.isPending}
+					crop
+					cropAspectRatio={LOGO_ASPECT_RATIO}
+					cropShape="rect"
+					cropOutputFormat="image/png"
 					onFileSelect={handleLogoSelect}
 				/>
 				{#if logoUrl}
@@ -421,6 +426,9 @@
 					aspectRatio="wide"
 					label={m['eventSeriesEditPage.coverArt.title']()}
 					disabled={uploadCoverMutation.isPending || deleteCoverMutation.isPending}
+					crop
+					cropAspectRatio={COVER_ASPECT_RATIO}
+					cropShape="rect"
 					onFileSelect={handleCoverSelect}
 				/>
 				{#if coverArtUrl}

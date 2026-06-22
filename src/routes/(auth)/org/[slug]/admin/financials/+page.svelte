@@ -110,7 +110,7 @@
 		financials ? entryFor(financials.totals, activeCurrency) : undefined
 	);
 
-	let expanded = $state<Record<string, boolean>>({});
+	const expanded = $state<Record<string, boolean>>({});
 	function toggleExpanded(eventId: string) {
 		expanded[eventId] = !expanded[eventId];
 	}

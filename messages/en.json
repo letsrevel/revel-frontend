@@ -2162,15 +2162,12 @@
 		"loading": "Loading image...",
 		"loadError": "Failed to load image. Please try again.",
 		"cropError": "Failed to process image. Please try again.",
-		"rotateLeft": "Rotate left",
-		"rotateRight": "Rotate right",
 		"reset": "Reset",
 		"cancel": "Cancel",
 		"save": "Save",
 		"processing": "Processing...",
 		"heicConverting": "Converting image format...",
-		"zoomIn": "Zoom in",
-		"zoomOut": "Zoom out"
+		"zoom": "Zoom"
 	},
 	"imageUploader": {
 		"error_invalidFileType": "Please select a valid image file ({accept})",
@@ -2445,8 +2442,7 @@
 		"error_claimFailed": "Failed to claim invitation"
 	},
 	"languageSwitcher": {
-		"selectLanguage": "Select language: {name}",
-		"closeMenu": "Close language menu"
+		"selectLanguage": "Select language: {name}"
 	},
 	"learnMore": {
 		"metaTitle": "Learn More About Revel - Community Event Management Platform",
@@ -2488,7 +2484,7 @@
 		"notificationsTitle": "Multi-Channel Notifications",
 		"notificationsDescription": "Stay informed with in-app, email, and Telegram notifications. Granular controls let you customize what you receive.",
 		"multiLanguageTitle": "Multi-Language Support",
-		"multiLanguageDescription": "Available in English, German, and Italian with more languages coming soon.",
+		"multiLanguageDescription": "Available in English, German, Italian, and French, with more languages coming soon.",
 		"venueManagementTitle": "Venue Management",
 		"venueManagementDescription": "Define venues with sectors, rows, and individual seats. Assign seating to ticket tiers for reserved seating events.",
 		"openSourceTitle": "Open Source & Community-Driven",

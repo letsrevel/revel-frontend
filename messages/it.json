@@ -2162,15 +2162,12 @@
 		"loading": "Caricamento immagine...",
 		"loadError": "Impossibile caricare l'immagine. Riprova.",
 		"cropError": "Impossibile elaborare l'immagine. Riprova.",
-		"rotateLeft": "Ruota a sinistra",
-		"rotateRight": "Ruota a destra",
 		"reset": "Ripristina",
 		"cancel": "Annulla",
 		"save": "Salva",
 		"processing": "Elaborazione...",
 		"heicConverting": "Conversione formato immagine...",
-		"zoomIn": "Ingrandisci",
-		"zoomOut": "Riduci"
+		"zoom": "Zoom"
 	},
 	"imageUploader": {
 		"error_invalidFileType": "Please select a valid image file ({accept})",
@@ -2445,8 +2442,7 @@
 		"error_claimFailed": "Richiesta invito fallita"
 	},
 	"languageSwitcher": {
-		"selectLanguage": "Select language: {name}",
-		"closeMenu": "Close language menu"
+		"selectLanguage": "Select language: {name}"
 	},
 	"learnMore": {
 		"metaTitle": "Scopri di più su Revel - Piattaforma di gestione eventi per la comunità",
@@ -2488,7 +2484,7 @@
 		"notificationsTitle": "Notifiche multi-canale",
 		"notificationsDescription": "Rimani informato con notifiche in-app, email e Telegram. Controlli granulari ti permettono di personalizzare ciò che ricevi.",
 		"multiLanguageTitle": "Supporto multilingue",
-		"multiLanguageDescription": "Disponibile in inglese, tedesco e italiano con altre lingue in arrivo presto.",
+		"multiLanguageDescription": "Disponibile in inglese, tedesco, italiano e francese, con altre lingue in arrivo presto.",
 		"venueManagementTitle": "Gestione Location",
 		"venueManagementDescription": "Definisci location con settori, file e posti singoli. Assegna i posti ai livelli di biglietti per eventi con posti riservati.",
 		"openSourceTitle": "Open Source e guidato dalla comunità",
