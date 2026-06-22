@@ -7939,5 +7939,6 @@
 	"orgAdmin.dashboard.quickActions.financials.title": "Finanzen",
 	"orgAdmin.dashboard.quickActions.financials.description": "Umsatz und MwSt. nach Veranstaltung",
 	"orgAdmin.dashboard.quickActions.billing.title": "Abrechnung",
-	"orgAdmin.dashboard.quickActions.billing.description": "Rechnungen, MwSt.-Einstellungen und Auszahlungen"
+	"orgAdmin.dashboard.quickActions.billing.description": "Rechnungen, MwSt.-Einstellungen und Auszahlungen",
+	"markdownEditor.exitSource": "Quellmodus verlassen"
 }

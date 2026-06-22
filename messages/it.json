@@ -7939,5 +7939,6 @@
 	"orgAdmin.dashboard.quickActions.financials.title": "Finanze",
 	"orgAdmin.dashboard.quickActions.financials.description": "Ricavi e IVA per evento",
 	"orgAdmin.dashboard.quickActions.billing.title": "Fatturazione",
-	"orgAdmin.dashboard.quickActions.billing.description": "Fatture, impostazioni IVA e pagamenti"
+	"orgAdmin.dashboard.quickActions.billing.description": "Fatture, impostazioni IVA e pagamenti",
+	"markdownEditor.exitSource": "Esci dalla modalità sorgente"
 }

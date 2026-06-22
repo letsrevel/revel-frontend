@@ -7939,5 +7939,6 @@
 	"orgAdmin.dashboard.quickActions.financials.title": "Financials",
 	"orgAdmin.dashboard.quickActions.financials.description": "Revenue and VAT broken down by event",
 	"orgAdmin.dashboard.quickActions.billing.title": "Billing",
-	"orgAdmin.dashboard.quickActions.billing.description": "Invoices, VAT settings and payouts"
+	"orgAdmin.dashboard.quickActions.billing.description": "Invoices, VAT settings and payouts",
+	"markdownEditor.exitSource": "Exit source mode"
 }

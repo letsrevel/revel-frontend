@@ -7939,5 +7939,6 @@
 	"orgAdmin.dashboard.quickActions.financials.title": "Finances",
 	"orgAdmin.dashboard.quickActions.financials.description": "Recettes et TVA par événement",
 	"orgAdmin.dashboard.quickActions.billing.title": "Facturation",
-	"orgAdmin.dashboard.quickActions.billing.description": "Factures, paramètres de TVA et versements"
+	"orgAdmin.dashboard.quickActions.billing.description": "Factures, paramètres de TVA et versements",
+	"markdownEditor.exitSource": "Quitter le mode source"
 }

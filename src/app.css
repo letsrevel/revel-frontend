@@ -93,6 +93,19 @@
 	}
 }
 
+/* ProseMirror / Tiptap WYSIWYG editor base styles (CSP-safe: bundled, not injected) */
+.ProseMirror {
+	outline: none;
+	min-height: inherit;
+}
+.ProseMirror p.is-editor-empty:first-child::before {
+	content: attr(data-placeholder);
+	color: hsl(var(--muted-foreground));
+	float: left;
+	height: 0;
+	pointer-events: none;
+}
+
 /* Landscape orientation optimizations for mobile */
 @media (max-height: 500px) and (orientation: landscape) {
 	/* Reduce header height in landscape */
