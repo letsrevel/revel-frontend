@@ -1,5 +1,34 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"eventSchedule": {
+		"title": "Programm",
+		"description": "Was wann passiert",
+		"requiredBadge": "Pflicht"
+	},
+	"eventScheduleAdmin": {
+		"title": "Programm",
+		"description": "Füge eine Zeitleiste mit Programmpunkten für diese Veranstaltung hinzu. Die Zeiten sind relativ zum Veranstaltungsbeginn, sodass das Programm auch beim Duplizieren der Veranstaltung korrekt bleibt.",
+		"empty": "Noch keine Programmpunkte. Füge den ersten hinzu, um deine Zeitleiste zu erstellen.",
+		"sessionNumber": "Programmpunkt {number}",
+		"removeSession": "Programmpunkt entfernen",
+		"sessionTitle": "Titel des Programmpunkts",
+		"sessionTitlePlaceholder": "z. B. Einlass, Keynote, Abendessen",
+		"titleRequired": "Ein Titel ist erforderlich",
+		"startRequired": "Eine Startzeit ist erforderlich",
+		"startsAt": "Beginnt um",
+		"beforeStartWarning": "Das liegt vor dem Veranstaltungsbeginn und wird daher auf die Startzeit gesetzt.",
+		"duration": "Dauer",
+		"noDuration": "Keine Dauer",
+		"location": "Ort",
+		"locationPlaceholder": "z. B. Haupthalle, Raum 2",
+		"descriptionLabel": "Beschreibung",
+		"descriptionPlaceholder": "Optionale Details zu diesem Programmpunkt",
+		"required": "Pflicht-Programmpunkt",
+		"requiredHelp": "Hebe diesen Punkt als wichtig für die Teilnehmenden hervor.",
+		"addSession": "Programmpunkt hinzufügen",
+		"saveError": "Das Programm konnte nicht gespeichert werden",
+		"incompleteError": "Jeder Programmpunkt benötigt einen Titel und eine Startzeit."
+	},
 	"SFwESEssentialsStep": {
 		"clearDescriptiveName": "Wähle einen klaren, beschreibenden Namen für deine Veranstaltung",
 		"optionalOpenEnded": "Optional - leer lassen für offene Veranstaltungen",

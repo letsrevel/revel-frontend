@@ -1,5 +1,34 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"eventSchedule": {
+		"title": "Schedule",
+		"description": "What's happening and when",
+		"requiredBadge": "Required"
+	},
+	"eventScheduleAdmin": {
+		"title": "Schedule",
+		"description": "Add a timeline of sessions for this event. Times are relative to the event start, so the schedule stays correct if you duplicate the event.",
+		"empty": "No sessions yet. Add the first one to build your event timeline.",
+		"sessionNumber": "Session {number}",
+		"removeSession": "Remove session",
+		"sessionTitle": "Session title",
+		"sessionTitlePlaceholder": "e.g. Doors open, Keynote, Dinner",
+		"titleRequired": "A session title is required",
+		"startRequired": "A start time is required",
+		"startsAt": "Starts at",
+		"beforeStartWarning": "This is before the event start, so it will be pinned to the start time.",
+		"duration": "Duration",
+		"noDuration": "No duration",
+		"location": "Location",
+		"locationPlaceholder": "e.g. Main hall, Room 2",
+		"descriptionLabel": "Description",
+		"descriptionPlaceholder": "Optional details about this session",
+		"required": "Required session",
+		"requiredHelp": "Highlight this as a session attendees shouldn't miss.",
+		"addSession": "Add session",
+		"saveError": "Failed to save the schedule",
+		"incompleteError": "Each schedule session needs a title and a start time."
+	},
 	"SFwESEssentialsStep": {
 		"clearDescriptiveName": "Choose a clear, descriptive name for your event",
 		"optionalOpenEnded": "Optional - leave blank for open-ended events",
