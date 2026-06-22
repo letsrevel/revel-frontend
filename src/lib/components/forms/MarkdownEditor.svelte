@@ -69,7 +69,7 @@
 						'aria-multiline': 'true',
 						...(label
 							? { 'aria-labelledby': `${inputId}-label` }
-							: { 'aria-label': placeholder || 'Editor' })
+							: { 'aria-label': placeholder || m['markdownEditor.placeholderDefault']() })
 					}
 				},
 				onCreate: ({ editor: e }) => {
@@ -114,7 +114,7 @@
 			dom.setAttribute('aria-labelledby', `${inputId}-label`);
 			dom.removeAttribute('aria-label');
 		} else {
-			dom.setAttribute('aria-label', placeholder || 'Editor');
+			dom.setAttribute('aria-label', placeholder || m['markdownEditor.placeholderDefault']());
 			dom.removeAttribute('aria-labelledby');
 		}
 		if (error) {
