@@ -51,6 +51,8 @@
 		cropAspectRatio?: number;
 		/** Crop shape when crop is enabled */
 		cropShape?: 'rect' | 'round';
+		/** Output format for cropped images */
+		cropOutputFormat?: 'image/jpeg' | 'image/png';
 	}
 
 	let {
@@ -68,7 +70,8 @@
 		onFileSelect,
 		crop = false,
 		cropAspectRatio = 1,
-		cropShape = 'rect'
+		cropShape = 'rect',
+		cropOutputFormat = 'image/jpeg'
 	}: Props = $props();
 
 	// Generate unique ID if not provided
@@ -370,6 +373,7 @@
 		file={fileToCrop}
 		aspectRatio={cropAspectRatio}
 		shape={cropShape}
+		outputFormat={cropOutputFormat}
 		onSave={handleCropSave}
 		onCancel={handleCropCancel}
 	/>

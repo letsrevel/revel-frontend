@@ -218,6 +218,7 @@
 			crop
 			cropAspectRatio={LOGO_ASPECT_RATIO}
 			cropShape="rect"
+			cropOutputFormat="image/png"
 			onFileSelect={(file) => {
 				if (file) {
 					handleLogoFileSelect(file);

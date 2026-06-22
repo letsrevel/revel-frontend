@@ -389,6 +389,7 @@
 					crop
 					cropAspectRatio={LOGO_ASPECT_RATIO}
 					cropShape="rect"
+					cropOutputFormat="image/png"
 					onFileSelect={handleLogoSelect}
 				/>
 				{#if logoUrl}
