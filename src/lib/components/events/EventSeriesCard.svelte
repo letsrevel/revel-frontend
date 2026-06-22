@@ -52,7 +52,10 @@
 
 	// Accessible card label for screen readers
 	const accessibleLabel = $derived.by(() => {
-		const parts = [series.name, `by ${series.organization.name}`];
+		const parts = [
+			series.name,
+			m['eventSeriesCard.byOrganization']({ name: series.organization.name })
+		];
 		if (series.description) {
 			parts.push(series.description);
 		}
@@ -130,7 +133,7 @@
 		<div class="absolute right-2 top-2 z-20">
 			<div
 				class="rounded-full bg-background/90 px-2 py-1 text-xs font-medium backdrop-blur-sm"
-				aria-label="Event Series"
+				aria-label={m['eventSeriesCard.eventSeries']()}
 			>
 				<div class="flex items-center gap-1">
 					<Calendar class="h-3 w-3" aria-hidden="true" />
@@ -191,7 +194,7 @@
 							{/each}
 							{#if series.tags.length > 3}
 								<span class="inline-block px-2 py-0.5 text-xs text-muted-foreground">
-									+{series.tags.length - 3} more
+									{m['eventSeriesCard.moreTags']({ count: series.tags.length - 3 })}
 								</span>
 							{/if}
 						</div>

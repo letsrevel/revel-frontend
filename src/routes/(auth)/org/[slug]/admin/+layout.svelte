@@ -151,7 +151,7 @@
 				<div class="flex shrink-0 items-center gap-2">
 					{#if data.isOwner}
 						<span class="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-							Owner
+							{m['orgAdminLayout.ownerBadge']()}
 						</span>
 					{:else if data.isStaff}
 						<span class="rounded-md bg-accent px-2 py-1 text-xs font-medium"

@@ -56,6 +56,9 @@ jobs:
       - name: Validate translations
         run: node scripts/validate-translations.js
 
+      - name: Guard against new hardcoded (untranslated) strings
+        run: node scripts/check-i18n-hardcoded.mjs
+
       - name: Check translation file formatting
         run: |
           for file in messages/*.json; do

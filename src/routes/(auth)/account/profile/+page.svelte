@@ -144,14 +144,14 @@
 </script>
 
 <svelte:head>
-	<title>Profile - Revel</title>
-	<meta name="description" content="Manage your Revel profile" />
+	<title>{m['profilePage.pageTitle']()}</title>
+	<meta name="description" content={m['profilePage.pageDescription']()} />
 </svelte:head>
 
 <div class="container mx-auto max-w-2xl px-4 py-8">
 	<div class="mb-8">
-		<h1 class="text-3xl font-bold tracking-tight">Profile</h1>
-		<p class="mt-2 text-muted-foreground">Manage your personal information</p>
+		<h1 class="text-3xl font-bold tracking-tight">{m['profilePage.heading']()}</h1>
+		<p class="mt-2 text-muted-foreground">{m['profilePage.subheading']()}</p>
 	</div>
 
 	{#if redirectUrl}
@@ -177,7 +177,7 @@
 					{#if redirectUrl}
 						{m['profile.savedRedirecting']?.() || 'Profile updated! Redirecting...'}
 					{:else}
-						Profile updated successfully
+						{m['profilePage.updatedSuccess']()}
 					{/if}
 				</p>
 			</div>
@@ -467,10 +467,10 @@
 				class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.preferred_name
 					? 'border-destructive'
 					: ''}"
-				placeholder="What should we call you?"
+				placeholder={m['profilePage.preferredNamePlaceholder']()}
 			/>
 			<p class="text-xs text-muted-foreground">
-				This is how you'll appear throughout Revel. Defaults to your first name if not set.
+				{m['profilePage.preferredNameHint']()}
 			</p>
 			{#if errors.preferred_name}
 				<p id="preferred-name-error" class="text-sm text-destructive" role="alert">
@@ -480,7 +480,9 @@
 		</div>
 
 		<div class="space-y-2">
-			<label for="pronouns-select" class="block text-sm font-medium">Pronouns</label>
+			<label for="pronouns-select" class="block text-sm font-medium"
+				>{m['profilePage.pronounsLabel']()}</label
+			>
 			{#if showCustomPronouns}
 				<div class="space-y-2">
 					<input
@@ -496,7 +498,7 @@
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.pronouns
 							? 'border-destructive'
 							: ''}"
-						placeholder="e.g., ze/zir"
+						placeholder={m['profilePage.pronounsPlaceholder']()}
 					/>
 					<button
 						type="button"
@@ -506,7 +508,7 @@
 						}}
 						class="text-sm text-primary underline-offset-4 hover:underline"
 					>
-						Choose from common options
+						{m['profilePage.chooseCommonOptions']()}
 					</button>
 				</div>
 			{:else}
@@ -525,7 +527,7 @@
 				>
 					{#each COMMON_PRONOUNS as option (option)}
 						<option value={option === 'custom' ? 'custom' : option}>
-							{option === 'custom' ? 'Custom...' : option}
+							{option === 'custom' ? m['profilePage.pronounsCustomOption']() : option}
 						</option>
 					{/each}
 				</select>

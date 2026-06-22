@@ -309,7 +309,9 @@
 					<CardTitle class="text-base">
 						{m['questionnaireSummaryPage.mcDistributions']()}
 					</CardTitle>
-					<CardDescription>Answer distribution for multiple choice questions</CardDescription>
+					<CardDescription
+						>{m['questionnaireSummaryPage.mcDistributionsDescription']()}</CardDescription
+					>
 				</CardHeader>
 				<CardContent class="space-y-8">
 					{#each summary.mc_question_stats as mcStat (mcStat.question_id)}

@@ -124,12 +124,16 @@
 >
 	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
 		<DialogHeader>
-			<DialogTitle>{isEdit ? 'Edit' : 'Create'} Invitation Token</DialogTitle>
+			<DialogTitle
+				>{isEdit
+					? m['organizationTokenModal.editTitle']()
+					: m['organizationTokenModal.createTitle']()}</DialogTitle
+			>
 			<DialogDescription>
 				{#if isEdit}
-					Update token settings. The shareable link will remain the same.
+					{m['organizationTokenModal.editDescription']()}
 				{:else}
-					Create a shareable invitation link for your organization.
+					{m['organizationTokenModal.createDescription']()}
 				{/if}
 			</DialogDescription>
 		</DialogHeader>
@@ -147,7 +151,7 @@
 				<Input
 					id="token-name"
 					bind:value={name}
-					placeholder="e.g., Spring 2025 Recruitment"
+					placeholder={m['organizationTokenModal.namePlaceholder']()}
 					maxlength={150}
 				/>
 				<p class="text-xs text-muted-foreground">{m['organizationTokenModal.displayName']()}</p>
@@ -185,15 +189,15 @@
 					type="number"
 					bind:value={maxUses}
 					min={0}
-					placeholder="0 = unlimited"
+					placeholder={m['organizationTokenModal.maxUsesPlaceholder']()}
 				/>
 				<p class="text-xs text-muted-foreground">
-					0 = unlimited uses. Set a number to limit how many people can join.
+					{m['organizationTokenModal.maxUsesHelp']()}
 				</p>
 				{#if isEdit && token && token.uses !== undefined && maxUses < token.uses}
 					<p class="flex items-center gap-1 text-xs text-destructive">
 						<AlertCircle class="h-3 w-3" aria-hidden="true" />
-						Warning: This will disable the token immediately (already {token.uses} uses)
+						{m['organizationTokenModal.disableWarning']({ uses: token.uses })}
 					</p>
 				{/if}
 			</div>
@@ -213,7 +217,7 @@
 					<div class="flex-1">
 						<div class="font-medium">{m['organizationTokenModal.grantMembership']()}</div>
 						<div class="text-sm text-muted-foreground">
-							Users become organization members when claiming
+							{m['organizationTokenModal.grantMembershipDescription']()}
 						</div>
 					</div>
 				</label>
@@ -221,19 +225,19 @@
 				<!-- Membership Tier Selection (conditional) -->
 				{#if grantsMembership && membershipTiers.length > 0}
 					<div class="ml-10 space-y-2">
-						<Label for="membership-tier">Membership Tier</Label>
+						<Label for="membership-tier">{m['organizationTokenModal.membershipTier']()}</Label>
 						<select
 							id="membership-tier"
 							bind:value={membershipTierId}
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 						>
-							<option value="">Select a tier...</option>
+							<option value="">{m['organizationTokenModal.selectTier']()}</option>
 							{#each membershipTiers as tier (tier.id)}
 								<option value={tier.id}>{tier.name}</option>
 							{/each}
 						</select>
 						<p class="text-xs text-muted-foreground">
-							Select which membership tier to assign when users claim this token
+							{m['organizationTokenModal.selectTierHelp']()}
 						</p>
 					</div>
 				{/if}
@@ -250,10 +254,12 @@
 						<div class="flex-1">
 							<div class="flex items-center gap-2 font-medium">
 								<span>{m['organizationTokenModal.grantStaff']()}</span>
-								<span class="text-xs text-muted-foreground">⚠️ Sensitive</span>
+								<span class="text-xs text-muted-foreground"
+									>⚠️ {m['organizationTokenModal.sensitive']()}</span
+								>
 							</div>
 							<div class="text-sm text-muted-foreground">
-								Users become staff with permissions when claiming
+								{m['organizationTokenModal.grantStaffDescription']()}
 							</div>
 						</div>
 					</label>
@@ -261,35 +267,37 @@
 
 				{#if showStaffWarning}
 					<div class="rounded-md bg-yellow-50 p-3 text-sm text-yellow-800">
-						<strong>{m['organizationTokenModal.securityWarning']()}</strong> Staff tokens grant sensitive
-						permissions. Only share privately (email, Slack DM, etc.).
+						<strong>{m['organizationTokenModal.securityWarning']()}</strong>
+						{m['organizationTokenModal.staffWarningBody']()}
 					</div>
 				{/if}
 
 				{#if showBothUncheckedWarning}
 					<div class="rounded-md bg-red-50 p-3 text-sm text-red-800">
-						<strong>{m['organizationTokenModal.error']()}</strong> At least one access type must be selected.
-						The token must grant membership or staff access.
+						<strong>{m['organizationTokenModal.error']()}</strong>
+						{m['organizationTokenModal.bothUncheckedBody']()}
 					</div>
 				{/if}
 
 				{#if showTierRequiredWarning}
 					<div class="rounded-md bg-red-50 p-3 text-sm text-red-800">
-						<strong>{m['organizationTokenModal.error']()}</strong> Membership tier is required when granting
-						membership.
+						<strong>{m['organizationTokenModal.error']()}</strong>
+						{m['organizationTokenModal.tierRequiredBody']()}
 					</div>
 				{/if}
 			</div>
 
 			<DialogFooter>
 				<Button type="button" variant="outline" onclick={onClose} disabled={isLoading}>
-					Cancel
+					{m['organizationTokenModal.cancel']()}
 				</Button>
 				<Button type="submit" disabled={isLoading || !isFormValid}>
 					{#if isLoading}
 						<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
 					{/if}
-					{isEdit ? 'Save Changes' : 'Create Token'}
+					{isEdit
+						? m['organizationTokenModal.saveChanges']()
+						: m['organizationTokenModal.createToken']()}
 				</Button>
 			</DialogFooter>
 		</form>

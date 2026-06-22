@@ -122,7 +122,7 @@
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.email
 							? 'border-destructive'
 							: ''}"
-						placeholder="you@example.com"
+						placeholder={m['passwordResetPage.emailPlaceholder']()}
 					/>
 					{#if errors.email}
 						<p id="email-error" class="text-sm text-destructive" role="alert">

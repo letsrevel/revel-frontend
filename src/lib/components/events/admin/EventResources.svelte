@@ -37,7 +37,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to load resources');
+				throw new Error(m['eventResources.failedToLoad']());
 			}
 
 			return response.data?.results || [];
@@ -125,7 +125,7 @@
 			rel="noopener noreferrer"
 		>
 			<Plus class="h-3 w-3" aria-hidden="true" />
-			Add new resource
+			{m['eventResources.addNewResource']()}
 			<ExternalLink class="h-3 w-3" aria-hidden="true" />
 		</a>
 	</div>
@@ -133,13 +133,13 @@
 	<!-- Resource List -->
 	{#if error}
 		<div class="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-			Failed to load resources
+			{m['eventResources.failedToLoad']()}
 		</div>
 	{:else if isLoading}
 		<div class="flex items-center justify-center py-8">
 			<div
 				class="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent"
-				aria-label="Loading resources"
+				aria-label={m['eventResources.loadingResources']()}
 			></div>
 		</div>
 	{:else if resources.length === 0}
@@ -156,7 +156,7 @@
 				target="_blank"
 				rel="noopener noreferrer"
 			>
-				Create your first resource
+				{m['eventResources.createFirstResource']()}
 				<ExternalLink class="h-3 w-3" aria-hidden="true" />
 			</a>
 		</div>
@@ -206,7 +206,7 @@
 
 						<div class="min-w-0 flex-1">
 							<p class="truncate text-sm font-medium">
-								{resource.name || 'Untitled Resource'}
+								{resource.name || m['eventResources.untitledResource']()}
 							</p>
 							<p class="text-xs text-muted-foreground">
 								{resource.resource_type}
@@ -222,8 +222,9 @@
 
 		{#if selectedSet.size > 0}
 			<p class="text-xs text-muted-foreground">
-				{selectedSet.size}
-				{selectedSet.size === 1 ? 'resource' : 'resources'} attached
+				{selectedSet.size === 1
+					? m['eventResources.resourcesAttachedSingular']({ count: selectedSet.size })
+					: m['eventResources.resourcesAttachedPlural']({ count: selectedSet.size })}
 			</p>
 		{/if}
 	{/if}

@@ -236,7 +236,7 @@
 		/>
 		<input
 			type="search"
-			placeholder="Search by name or email..."
+			placeholder={m['invitationListTab.searchPlaceholder']()}
 			value={searchInput}
 			oninput={onSearchInput}
 			class="w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -949,7 +949,7 @@
 		{#if invitation.waives_questionnaire}
 			<span
 				class="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-				title="Waives questionnaire requirement"
+				title={m['invitationListTab.waivesQuestionnaireTitle']()}
 			>
 				{m['eventInvitationsAdmin.noQuestionnaire']()}
 			</span>
@@ -957,7 +957,7 @@
 		{#if invitation.waives_purchase}
 			<span
 				class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-200"
-				title="Waives purchase requirement (free ticket)"
+				title={m['invitationListTab.waivesPurchaseTitle']()}
 			>
 				{m['eventInvitationsAdmin.free']()}
 			</span>
@@ -965,7 +965,7 @@
 		{#if invitation.waives_membership_required}
 			<span
 				class="inline-flex items-center rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-900 dark:text-purple-200"
-				title="Waives membership requirement"
+				title={m['invitationListTab.waivesMembershipTitle']()}
 			>
 				{m['eventInvitationsAdmin.noMembership']()}
 			</span>
@@ -973,7 +973,7 @@
 		{#if invitation.waives_rsvp_deadline}
 			<span
 				class="inline-flex items-center rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-800 dark:bg-orange-900 dark:text-orange-200"
-				title="Waives RSVP deadline"
+				title={m['invitationListTab.waivesRsvpDeadlineTitle']()}
 			>
 				{m['eventInvitationsAdmin.noDeadline']()}
 			</span>
@@ -981,7 +981,7 @@
 		{#if invitation.overrides_max_attendees}
 			<span
 				class="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900 dark:text-red-200"
-				title="Overrides max attendees limit"
+				title={m['invitationListTab.overridesMaxAttendeesTitle']()}
 			>
 				{m['eventInvitationsAdmin.overrideCap']()}
 			</span>
@@ -990,7 +990,7 @@
 			{#each invitation.tiers as tier}
 				<span
 					class="inline-flex items-center rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
-					title="Assigned tier: {tier.name}"
+					title={m['invitationListTab.assignedTierTitle']({ name: tier.name })}
 				>
 					{tier.name}
 				</span>
@@ -1066,9 +1066,9 @@
 {#snippet tierCheckboxes(selectedIds: string[], onUpdate: (ids: string[]) => void)}
 	{#if ticketTiers.length > 0}
 		<div class="space-y-3 rounded-lg border border-border p-4">
-			<h4 class="text-sm font-semibold">Assign Ticket Tiers (Optional)</h4>
+			<h4 class="text-sm font-semibold">{m['invitationListTab.assignTicketTiersTitle']()}</h4>
 			<p class="text-xs text-muted-foreground">
-				Link specific tiers to this invitation. Leave empty for no tier restriction.
+				{m['invitationListTab.assignTicketTiersDescription']()}
 			</p>
 			{#each ticketTiers as tier}
 				{#if tier.id}

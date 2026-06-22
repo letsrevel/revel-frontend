@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
 	import { page } from '$app/stores';
 	import type { ActionData } from './$types';
@@ -38,12 +39,10 @@
 		<!-- Header -->
 		<div class="text-center">
 			<h1 class="text-3xl font-bold tracking-tight">
-				{success ? 'Password reset successful' : 'Set new password'}
+				{success ? m['resetPasswordPage.headingSuccess']() : m['resetPasswordPage.heading']()}
 			</h1>
 			<p class="mt-2 text-muted-foreground">
-				{success
-					? 'Your password has been successfully reset'
-					: 'Enter a strong password for your account'}
+				{success ? m['resetPasswordPage.subtitleSuccess']() : m['resetPasswordPage.subtitle']()}
 			</p>
 		</div>
 
@@ -60,10 +59,10 @@
 					/>
 					<div class="flex-1 space-y-2">
 						<p class="text-sm font-medium text-green-800 dark:text-green-200">
-							Your password has been reset
+							{m['resetPasswordPage.successHeading']()}
 						</p>
 						<p class="text-sm text-green-700 dark:text-green-300">
-							You can now sign in with your new password.
+							{m['resetPasswordPage.successBody']()}
 						</p>
 					</div>
 				</div>
@@ -74,14 +73,16 @@
 				href="/login"
 				class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 			>
-				Sign in to your account
+				{m['resetPasswordPage.signInToAccount']()}
 			</a>
 		{:else if !token}
 			<!-- Missing Token Error -->
 			<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">
-				<p class="text-sm font-medium text-destructive">Invalid or missing reset token</p>
+				<p class="text-sm font-medium text-destructive">
+					{m['resetPasswordPage.invalidTokenTitle']()}
+				</p>
 				<p class="mt-2 text-sm text-muted-foreground">
-					The password reset link is invalid or has expired. Please request a new password reset.
+					{m['resetPasswordPage.invalidTokenDescription']()}
 				</p>
 			</div>
 
@@ -89,7 +90,7 @@
 				href="/password-reset"
 				class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 			>
-				Request new reset link
+				{m['resetPasswordPage.requestNewLink']()}
 			</a>
 		{:else}
 			<!-- Error Summary -->
@@ -119,7 +120,9 @@
 
 				<!-- New Password Field -->
 				<div class="space-y-2">
-					<label for="password" class="block text-sm font-medium"> New password </label>
+					<label for="password" class="block text-sm font-medium"
+						>{m['resetPasswordPage.newPasswordLabel']()}</label
+					>
 					<div class="relative">
 						<input
 							id="password"
@@ -139,13 +142,15 @@
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.password
 								? 'border-destructive'
 								: ''}"
-							placeholder="Enter your new password"
+							placeholder={m['resetPasswordPage.newPasswordPlaceholder']()}
 						/>
 						<button
 							type="button"
 							onclick={() => (showPassword = !showPassword)}
 							class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-							aria-label={showPassword ? 'Hide password' : 'Show password'}
+							aria-label={showPassword
+								? m['resetPasswordPage.hidePassword']()
+								: m['resetPasswordPage.showPassword']()}
 							tabindex={-1}
 						>
 							{#if showPassword}
@@ -169,7 +174,9 @@
 
 				<!-- Confirm Password Field -->
 				<div class="space-y-2">
-					<label for="confirmPassword" class="block text-sm font-medium"> Confirm password </label>
+					<label for="confirmPassword" class="block text-sm font-medium"
+						>{m['resetPasswordPage.confirmPasswordLabel']()}</label
+					>
 					<div class="relative">
 						<input
 							id="confirmPassword"
@@ -189,13 +196,15 @@
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.confirmPassword
 								? 'border-destructive'
 								: ''}"
-							placeholder="Confirm your new password"
+							placeholder={m['resetPasswordPage.confirmPasswordPlaceholder']()}
 						/>
 						<button
 							type="button"
 							onclick={() => (showConfirmPassword = !showConfirmPassword)}
 							class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-							aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+							aria-label={showConfirmPassword
+								? m['resetPasswordPage.hidePassword']()
+								: m['resetPasswordPage.showPassword']()}
 							tabindex={-1}
 						>
 							{#if showConfirmPassword}
@@ -220,16 +229,18 @@
 				>
 					{#if isSubmitting}
 						<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-						<span>Resetting password...</span>
+						<span>{m['resetPasswordPage.submitting']()}</span>
 					{:else}
-						<span>Reset password</span>
+						<span>{m['resetPasswordPage.submit']()}</span>
 					{/if}
 				</button>
 			</form>
 
 			<!-- Back to Login Link -->
 			<div class="text-center text-sm">
-				<a href="/login" class="text-primary underline-offset-4 hover:underline"> Back to login </a>
+				<a href="/login" class="text-primary underline-offset-4 hover:underline"
+					>{m['resetPasswordPage.backToLogin']()}</a
+				>
 			</div>
 		{/if}
 	</div>

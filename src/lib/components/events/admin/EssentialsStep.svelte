@@ -166,22 +166,22 @@
 		// Define who can see
 		const whoCanSee =
 			visibility === 'public'
-				? 'Everyone'
+				? m['essentialsStep.whoCanSee_everyone']()
 				: visibility === 'unlisted'
-					? 'Only people with the direct link'
+					? m['essentialsStep.whoCanSee_directLink']()
 					: visibility === 'members-only'
-						? 'Only organization members'
+						? m['essentialsStep.whoCanSee_members']()
 						: visibility === 'staff-only'
-							? 'Only organization staff'
-							: 'Only invited users'; // private
+							? m['essentialsStep.whoCanSee_staff']()
+							: m['essentialsStep.whoCanSee_invited'](); // private
 
 		// Define who can attend
 		const whoCanAttend =
 			eventType === 'public'
-				? 'anyone'
+				? m['essentialsStep.whoCanAttend_anyone']()
 				: eventType === 'members-only'
-					? 'only organization members'
-					: 'only invited people'; // private
+					? m['essentialsStep.whoCanAttend_members']()
+					: m['essentialsStep.whoCanAttend_invited'](); // private
 
 		// Special case: public visibility + members-only type → join org CTA
 		const showJoinOrgHint = visibility === 'public' && eventType === 'members-only';
@@ -189,8 +189,8 @@
 		// Build the full "who can view" sentence
 		const viewDescription =
 			visibility === 'unlisted'
-				? 'This event is hidden from search results and listings — only accessible via direct link'
-				: `${whoCanSee} can see this event in search results and listings`;
+				? m['essentialsStep.viewDescription_unlisted']()
+				: m['essentialsStep.viewDescription_default']({ who: whoCanSee });
 
 		return {
 			whoCanSee,
@@ -205,14 +205,14 @@
 	<!-- Event Name -->
 	<div class="space-y-2">
 		<label for="event-name" class="block text-sm font-medium">
-			Event Name <span class="text-destructive">*</span>
+			{m['essentialsStep.eventNameLabel']()} <span class="text-destructive">*</span>
 		</label>
 		<input
 			id="event-name"
 			type="text"
 			value={formData.name || ''}
 			oninput={(e) => onUpdate({ name: e.currentTarget.value })}
-			placeholder="e.g., Community Potluck Dinner"
+			placeholder={m['essentialsStep.eventNamePlaceholder']()}
 			required
 			aria-invalid={!!validationErrors.name}
 			aria-describedby={validationErrors.name ? 'event-name-error' : undefined}
@@ -246,7 +246,7 @@
 						id="event-slug"
 						type="text"
 						bind:value={editedSlug}
-						placeholder="your-event-slug"
+						placeholder={m['essentialsStep.slugPlaceholder']()}
 						disabled={updateSlugMutation.isPending}
 						aria-invalid={!!slugError}
 						aria-describedby={slugError ? 'event-slug-error' : 'event-slug-hint'}
@@ -319,7 +319,7 @@
 		<label for="event-start" class="block text-sm font-medium">
 			<span class="flex items-center gap-2">
 				<Calendar class="h-4 w-4" aria-hidden="true" />
-				Start Date & Time <span class="text-destructive">*</span>
+				{m['essentialsStep.startDateTime']()} <span class="text-destructive">*</span>
 			</span>
 		</label>
 		<input
@@ -341,7 +341,9 @@
 			</p>
 		{/if}
 		<p class="text-xs text-muted-foreground">
-			Times are in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})
+			{m['essentialsStep.localTimezoneHint']({
+				timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+			})}
 		</p>
 	</div>
 
@@ -350,7 +352,7 @@
 		<label for="event-end" class="block text-sm font-medium">
 			<span class="flex items-center gap-2">
 				<Calendar class="h-4 w-4" aria-hidden="true" />
-				End Date & Time
+				{m['essentialsStep.endDateTime']()}
 			</span>
 		</label>
 		<input
@@ -384,7 +386,11 @@
 				{m['SFwESEssentialsStep.visibilitySubLabel']()}
 			</span>
 		</label>
-		<div class="space-y-2" role="radiogroup" aria-label="Event visibility">
+		<div
+			class="space-y-2"
+			role="radiogroup"
+			aria-label={m['essentialsStep.eventVisibilityAriaLabel']()}
+		>
 			<label
 				class="group flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
 			>
@@ -525,7 +531,7 @@
 			</ul>
 		</div>
 
-		<div class="space-y-2" role="radiogroup" aria-label="Event type">
+		<div class="space-y-2" role="radiogroup" aria-label={m['essentialsStep.eventTypeAriaLabel']()}>
 			<label
 				class="group flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
 			>
@@ -614,21 +620,26 @@
 					</svg>
 				</div>
 				<div class="flex-1">
-					<h4 class="text-sm font-medium text-blue-900 dark:text-blue-100">With these settings:</h4>
+					<h4 class="text-sm font-medium text-blue-900 dark:text-blue-100">
+						{m['essentialsStep.withTheseSettings']()}
+					</h4>
 					<div class="mt-2 space-y-1 text-sm text-blue-800 dark:text-blue-200">
 						<p>
-							<strong>Who can view:</strong>
+							<strong>{m['essentialsStep.whoCanView']()}</strong>
 							{combinationExplanation.viewDescription}
 						</p>
 						<p>
-							<strong>Who can attend:</strong>
-							{combinationExplanation.whoCanAttend.charAt(0).toUpperCase() +
-								combinationExplanation.whoCanAttend.slice(1)} can RSVP or get tickets
+							<strong>{m['essentialsStep.whoCanAttend']()}</strong>
+							{m['essentialsStep.whoCanAttendValue']({
+								who:
+									combinationExplanation.whoCanAttend.charAt(0).toUpperCase() +
+									combinationExplanation.whoCanAttend.slice(1)
+							})}
 						</p>
 						{#if combinationExplanation.showJoinOrgHint}
 							<p class="mt-2 rounded-md bg-blue-100 px-2 py-1.5 text-xs dark:bg-blue-900">
-								💡 <strong>Tip:</strong> Non-members will see a "Join Organization" button to become
-								eligible
+								💡 <strong>{m['essentialsStep.tip']()}</strong>
+								{m['essentialsStep.joinOrgHint']()}
 							</p>
 						{/if}
 					</div>
@@ -643,7 +654,7 @@
 			<label class="block text-sm font-medium">
 				<span class="flex items-center gap-2">
 					<Ticket class="h-4 w-4" aria-hidden="true" />
-					Ticketing
+					{m['essentialsStep.ticketing']()}
 				</span>
 			</label>
 
@@ -656,9 +667,9 @@
 					<div class="flex items-start gap-2">
 						<span class="text-orange-600 dark:text-orange-400" aria-hidden="true">⚠️</span>
 						<div class="flex-1 text-orange-800 dark:text-orange-100">
-							<p class="font-medium">Important: This setting cannot be changed after creation</p>
+							<p class="font-medium">{m['essentialsStep.ticketingImmutableWarning']()}</p>
 							<p class="mt-1 text-xs text-orange-700 dark:text-orange-200">
-								Choose carefully whether your event will use tickets or simple RSVPs
+								{m['essentialsStep.ticketingImmutableHint']()}
 							</p>
 						</div>
 					</div>
@@ -679,9 +690,9 @@
 					class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
 				/>
 				<div class="flex-1">
-					<div class="font-medium">Requires Ticket</div>
+					<div class="font-medium">{m['essentialsStep.requiresTicket']()}</div>
 					<div class="text-sm text-muted-foreground">
-						Use paid/free tickets instead of simple RSVPs
+						{m['essentialsStep.requiresTicketDescription']()}
 					</div>
 				</div>
 			</label>
@@ -692,27 +703,27 @@
 					class="rounded-md border border-yellow-200 bg-yellow-50 px-3 py-2 text-xs text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-100"
 					role="alert"
 				>
-					⚠️ This setting cannot be changed after the event is created
+					⚠️ {m['essentialsStep.ticketingImmutableEditWarning']()}
 				</div>
 			{/if}
 		</div>
 
 		<!-- Help text explaining the difference -->
 		<div class="rounded-md bg-muted p-3 text-sm">
-			<p class="font-medium text-foreground">What's the difference?</p>
+			<p class="font-medium text-foreground">{m['essentialsStep.whatsTheDifference']()}</p>
 			<ul class="mt-2 space-y-1.5 text-xs text-muted-foreground">
 				<li class="flex gap-2">
 					<span class="text-primary">•</span>
 					<span
-						><strong>With Tickets:</strong> Attendees purchase or claim tickets. You can set prices,
-						tier limits, and check-in attendees.</span
+						><strong>{m['essentialsStep.withTicketsLabel']()}</strong>
+						{m['essentialsStep.withTicketsDescription']()}</span
 					>
 				</li>
 				<li class="flex gap-2">
 					<span class="text-primary">•</span>
 					<span
-						><strong>Without Tickets (RSVP):</strong> Attendees simply RSVP "Yes" or "Maybe". Simpler
-						but with fewer management features.</span
+						><strong>{m['essentialsStep.withoutTicketsLabel']()}</strong>
+						{m['essentialsStep.withoutTicketsDescription']()}</span
 					>
 				</li>
 			</ul>
@@ -732,7 +743,7 @@
 				href=".."
 				class="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-6 py-3 font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			>
-				Cancel
+				{m['essentialsStep.cancel']()}
 			</a>
 			<button
 				type="submit"
@@ -742,7 +753,11 @@
 					isSaving && 'cursor-not-allowed opacity-50'
 				)}
 			>
-				{isSaving ? 'Creating Event...' : isEditMode ? 'Update & Continue' : 'Create Event'}
+				{isSaving
+					? m['essentialsStep.creatingEvent']()
+					: isEditMode
+						? m['essentialsStep.updateAndContinue']()
+						: m['essentialsStep.createEvent']()}
 			</button>
 		</div>
 	</form>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { Hash } from 'lucide-svelte';
 	import {
 		organizationadminmembersAddTags,
@@ -136,7 +137,7 @@
 	<label for="tags-input" class="block text-sm font-medium">
 		<span class="flex items-center gap-2">
 			<Hash class="h-4 w-4" aria-hidden="true" />
-			Tags
+			{m['orgTagManager.tagsLabel']()}
 		</span>
 	</label>
 	<div class="flex gap-2">
@@ -162,7 +163,7 @@
 						showTagSuggestions = false;
 					}, 200);
 				}}
-				placeholder="Add tags..."
+				placeholder={m['orgTagManager.addTagsPlaceholder']()}
 				class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				autocomplete="off"
 			/>
@@ -215,7 +216,7 @@
 			onclick={() => addTag()}
 			class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 		>
-			Add
+			{m['orgTagManager.add']()}
 		</button>
 	</div>
 	{#if tags.length > 0}
@@ -227,7 +228,7 @@
 						type="button"
 						onclick={() => removeTag(tag)}
 						class="ml-1 rounded-full p-0.5 transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-						aria-label="Remove {tag} tag"
+						aria-label={m['orgTagManager.removeTag']({ tag })}
 					>
 						<svg
 							class="h-3 w-3"

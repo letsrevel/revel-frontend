@@ -172,7 +172,7 @@
 			</div>
 
 			<div class="space-y-3">
-				<h1 class="text-3xl font-bold">Confirmation Failed</h1>
+				<h1 class="text-3xl font-bold">{m['confirmationResult.confirmationFailed']()}</h1>
 				<Alert variant="destructive" class="text-left">
 					<AlertDescription>
 						{result.error || m['guest_attendance.network_error']()}
@@ -191,7 +191,7 @@
 
 			<!-- Error message for screen readers -->
 			<div class="sr-only" role="alert" aria-live="assertive">
-				Confirmation failed. {result.error}
+				{m['confirmationResult.confirmationFailedSr']({ error: result.error ?? '' })}
 			</div>
 		</div>
 	{/if}

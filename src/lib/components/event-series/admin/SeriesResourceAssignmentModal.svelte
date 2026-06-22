@@ -64,7 +64,7 @@
 			}
 		} catch (err) {
 			console.error('Failed to load resources:', err);
-			alert('Failed to load resources. Please try again.');
+			alert(m['seriesResourceAssignmentModal.loadError']());
 		} finally {
 			isLoading = false;
 		}
@@ -152,7 +152,7 @@
 			onClose();
 		} catch (err) {
 			console.error('Failed to save assignments:', err);
-			alert('Failed to save assignments. Please try again.');
+			alert(m['seriesResourceAssignmentModal.saveError']());
 		} finally {
 			isSaving = false;
 		}
@@ -160,9 +160,9 @@
 
 	// Resource type labels
 	const typeLabels: Record<string, string> = {
-		link: 'Link',
-		text: 'Text',
-		file: 'File'
+		link: m['seriesResourceAssignmentModal.typeLink'](),
+		text: m['seriesResourceAssignmentModal.typeText'](),
+		file: m['seriesResourceAssignmentModal.typeFile']()
 	};
 
 	// Resource type icons
@@ -213,7 +213,7 @@
 				<div>
 					<DialogTitle>{m['seriesResourceAssignmentModal.assignResources']()}</DialogTitle>
 					<p class="mt-1 text-sm text-muted-foreground">
-						Select which resources should be available for events in "{series.name}"
+						{m['seriesResourceAssignmentModal.subtitle']({ seriesName: series.name })}
 					</p>
 				</div>
 				<Button
@@ -225,7 +225,7 @@
 					class="gap-2"
 				>
 					<Plus class="h-4 w-4" />
-					New Resource
+					{m['seriesResourceAssignmentModal.newResource']()}
 				</Button>
 			</div>
 		</DialogHeader>
@@ -238,7 +238,7 @@
 			/>
 			<p class="text-orange-900 dark:text-orange-100">
 				<strong>{m['seriesResourceAssignmentModal.appliesToAllEvents']()}</strong>
-				{m['seriesResourceAssignmentModal.allEvents']()} in this series, including future events.
+				{m['seriesResourceAssignmentModal.allEventsSuffix']()}
 			</p>
 		</div>
 
@@ -251,10 +251,10 @@
 				/>
 				<Input
 					type="text"
-					placeholder="Search resources..."
+					placeholder={m['seriesResourceAssignmentModal.searchPlaceholder']()}
 					bind:value={searchQuery}
 					class="pl-10"
-					aria-label="Search resources"
+					aria-label={m['seriesResourceAssignmentModal.searchLabel']()}
 				/>
 			</div>
 		</div>
@@ -272,7 +272,9 @@
 				<div class="py-12 text-center">
 					<Box class="mx-auto mb-2 h-8 w-8 text-muted-foreground" aria-hidden="true" />
 					<p class="text-sm text-muted-foreground">
-						{searchQuery ? 'No resources match your search' : 'No resources available'}
+						{searchQuery
+							? m['seriesResourceAssignmentModal.noneMatch']()
+							: m['seriesResourceAssignmentModal.noneAvailable']()}
 					</p>
 				</div>
 			{:else}
@@ -289,14 +291,18 @@
 							<Checkbox
 								checked={selectedIds.has(resource.id!)}
 								onCheckedChange={() => toggleResource(resource.id!)}
-								aria-label={`Select ${resource.name || 'resource'}`}
+								aria-label={m['seriesResourceAssignmentModal.selectItem']({
+									name: resource.name || m['seriesResourceAssignmentModal.resourceFallback']()
+								})}
 								class="mt-1"
 							/>
 							<div class="min-w-0 flex-1">
 								<div class="flex items-start justify-between gap-2">
 									<div class="flex items-center gap-2">
 										<Icon class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-										<h3 class="line-clamp-1 font-medium">{resource.name || 'Unnamed'}</h3>
+										<h3 class="line-clamp-1 font-medium">
+											{resource.name || m['seriesResourceAssignmentModal.unnamed']()}
+										</h3>
 									</div>
 									<Badge variant="outline" class="flex-shrink-0 text-xs">
 										{typeLabels[resource.resource_type] || resource.resource_type}
@@ -319,7 +325,10 @@
 			<div class="flex items-center justify-between">
 				<div class="text-sm text-muted-foreground">
 					<span class="font-medium text-foreground">{selectedIds.size}</span>
-					{selectedIds.size === 1 ? 'resource' : 'resources'} selected
+					{selectedIds.size === 1
+						? m['seriesResourceAssignmentModal.countSingular']()
+						: m['seriesResourceAssignmentModal.countPlural']()}
+					{m['seriesResourceAssignmentModal.selectedSuffix']()}
 				</div>
 				<div class="flex gap-2">
 					<Button variant="outline" onclick={onClose} disabled={isSaving}
@@ -328,9 +337,9 @@
 					<Button onclick={saveAssignments} disabled={!hasChanges || isSaving}>
 						{#if isSaving}
 							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-							Saving...
+							{m['seriesResourceAssignmentModal.saving']()}
 						{:else}
-							Save Assignments
+							{m['seriesResourceAssignmentModal.saveAssignments']()}
 						{/if}
 					</Button>
 				</div>

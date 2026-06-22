@@ -95,10 +95,10 @@
 		// Build seat details (from ticket.seat)
 		const seatDetails: string[] = [];
 		if (ticket.seat?.row) {
-			seatDetails.push(`Row ${ticket.seat.row}`);
+			seatDetails.push(m['myTicket.rowLabel']({ row: ticket.seat.row }));
 		}
 		if (ticket.seat?.number !== null && ticket.seat?.number !== undefined) {
-			seatDetails.push(`Seat ${ticket.seat.number}`);
+			seatDetails.push(m['myTicket.seatLabel']({ number: ticket.seat.number }));
 		}
 		if (ticket.seat?.label && seatDetails.length === 0) {
 			// Use seat_label only if no row/number info
@@ -135,7 +135,7 @@
 				<div>
 					<h2 class="text-xl font-bold">{eventName}</h2>
 					<p class="text-sm text-muted-foreground">
-						{ticket.tier?.name || 'General Admission'}
+						{ticket.tier?.name || m['myTicket.generalAdmission']()}
 					</p>
 				</div>
 			</div>
@@ -147,14 +147,14 @@
 			<dl class="space-y-2 rounded-lg border border-border bg-muted/30 p-4 text-sm">
 				{#if ticket.guest_name}
 					<div class="flex items-center gap-2">
-						<dt class="sr-only">Ticket Holder</dt>
+						<dt class="sr-only">{m['myTicket.ticketHolder']()}</dt>
 						<User class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
 						<dd class="font-medium">{ticket.guest_name}</dd>
 					</div>
 				{/if}
 				{#if seatInfo}
 					<div class="flex items-center gap-2">
-						<dt class="sr-only">Seat</dt>
+						<dt class="sr-only">{m['myTicket.seat']()}</dt>
 						<Armchair class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
 						<dd>{seatInfo}</dd>
 					</div>
@@ -183,17 +183,15 @@
 					</svg>
 					<div class="flex-1">
 						<p class="font-medium text-orange-900 dark:text-orange-100">
-							Your ticket is pending payment
+							{m['myTicket.pendingPayment']()}
 						</p>
 						<p class="mt-1 text-sm text-orange-800 dark:text-orange-200">
 							{#if ticket.tier?.payment_method === 'online'}
-								Complete your payment to confirm your ticket. Your reservation will expire if
-								payment is not completed.
+								{m['myTicket.pendingOnline']()}
 							{:else if ticket.tier?.payment_method === 'offline'}
-								Please complete your offline payment as instructed by the organizer to confirm your
-								ticket.
+								{m['myTicket.pendingOffline']()}
 							{:else}
-								Complete your payment to confirm your ticket.
+								{m['myTicket.pendingGeneric']()}
 							{/if}
 						</p>
 
@@ -203,7 +201,7 @@
 								class="mt-3 rounded-md border border-orange-300 bg-orange-100 p-3 dark:border-orange-700 dark:bg-orange-900"
 							>
 								<p class="text-sm font-medium text-orange-900 dark:text-orange-100">
-									Payment Instructions:
+									{m['myTicket.paymentInstructions']()}
 								</p>
 								<MarkdownContent
 									content={ticket.tier.manual_payment_instructions}
@@ -223,9 +221,9 @@
 										class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
 										aria-hidden="true"
 									></div>
-									Processing...
+									{m['myTicket.processing']()}
 								{:else}
-									Resume Payment
+									{m['myTicket.resumePayment']()}
 								{/if}
 							</button>
 						{/if}
@@ -260,13 +258,13 @@
 						<div
 							class="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"
 							role="status"
-							aria-label="Generating QR code"
+							aria-label={m['myTicket.generatingQr']()}
 						></div>
 					</div>
 				{:else if qrCodeDataUrl}
 					<img
 						src={qrCodeDataUrl}
-						alt="Ticket QR Code"
+						alt={m['myTicket.qrAlt']()}
 						class="h-64 w-64 rounded-lg border border-border bg-white"
 					/>
 					<p class="text-center text-sm text-muted-foreground">{m['myTicket.showQr']()}</p>
@@ -275,7 +273,7 @@
 					{/if}
 				{:else}
 					<div class="text-center text-sm text-destructive">
-						Unable to generate QR code. Please refresh the page.
+						{m['myTicket.qrError']()}
 					</div>
 				{/if}
 			</div>
@@ -297,9 +295,9 @@
 				>
 					<Ticket class="h-4 w-4" aria-hidden="true" />
 					{#if totalTickets > 1}
-						View All {totalTickets} Tickets
+						{m['myTicket.viewAllTickets']({ count: totalTickets })}
 					{:else}
-						View Ticket Details
+						{m['myTicket.viewTicketDetails']()}
 					{/if}
 				</button>
 			</div>

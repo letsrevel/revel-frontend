@@ -31,6 +31,12 @@
 	});
 </script>
 
-<div class={variantClasses} style={styles} role="status" aria-live="polite" aria-label="Loading">
+<div
+	class={variantClasses}
+	style={styles}
+	role="status"
+	aria-live="polite"
+	aria-label={m['skeleton.loading']()}
+>
 	<span class="sr-only">{m['skeleton.loading']()}</span>
 </div>

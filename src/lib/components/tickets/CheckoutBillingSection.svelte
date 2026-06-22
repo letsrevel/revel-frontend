@@ -206,7 +206,7 @@
 			<div class="space-y-1.5">
 				<Label for="billing-name" class="text-sm font-medium">
 					{m['checkout.billing.billingName']()}
-					<span class="text-destructive" aria-label="required">*</span>
+					<span class="text-destructive" aria-label={m['checkout.billing.required']()}>*</span>
 				</Label>
 				<Input
 					id="billing-name"

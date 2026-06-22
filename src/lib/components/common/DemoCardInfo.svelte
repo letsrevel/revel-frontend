@@ -15,12 +15,12 @@
 		try {
 			await navigator.clipboard.writeText(TEST_CARD_RAW);
 			copied = true;
-			toast.success('Card number copied!');
+			toast.success(m['demoCardInfo.cardNumberCopied']());
 			setTimeout(() => {
 				copied = false;
 			}, 2000);
 		} catch (err) {
-			toast.error('Failed to copy card number');
+			toast.error(m['demoCardInfo.copyFailed']());
 		}
 	}
 </script>
@@ -36,7 +36,7 @@
 					{m['demoCardInfo.demoPaymentTestCard']()}
 				</p>
 				<p class="text-xs text-blue-800 dark:text-blue-200">
-					Use these test credentials for payment:
+					{m['demoCardInfo.useTestCredentials']()}
 				</p>
 
 				<!-- Test Card Number -->
@@ -50,7 +50,7 @@
 						type="button"
 						onclick={copyCardNumber}
 						class="rounded-md border border-blue-300 bg-white p-2 transition-colors hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-blue-900 dark:hover:bg-blue-800"
-						aria-label="Copy card number"
+						aria-label={m['demoCardInfo.copyCardNumber']()}
 					>
 						{#if copied}
 							<Check class="h-4 w-4 text-green-600" aria-hidden="true" />
@@ -63,13 +63,16 @@
 				<!-- Other Fields -->
 				<ul class="mt-2 space-y-1 text-xs text-blue-800 dark:text-blue-200">
 					<li>
-						<strong>{m['demoCardInfo.expiry']()}</strong> Any valid future date (e.g., 12/34)
+						<strong>{m['demoCardInfo.expiry']()}</strong>
+						{m['demoCardInfo.expiryValue']()}
 					</li>
 					<li>
-						<strong>{m['demoCardInfo.cvc']()}</strong> Any 3 digits (4 for Amex)
+						<strong>{m['demoCardInfo.cvc']()}</strong>
+						{m['demoCardInfo.cvcValue']()}
 					</li>
 					<li>
-						<strong>{m['demoCardInfo.otherFields']()}</strong> Any value
+						<strong>{m['demoCardInfo.otherFields']()}</strong>
+						{m['demoCardInfo.otherFieldsValue']()}
 					</li>
 				</ul>
 			</div>

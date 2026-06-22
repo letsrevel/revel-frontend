@@ -196,7 +196,7 @@
 	});
 </script>
 
-<div class={containerClasses} role="list" aria-label="Event quick information">
+<div class={containerClasses} role="list" aria-label={m['eventQuickInfo.eventQuickInformation']()}>
 	<!-- Date & Time -->
 	<div class={itemClasses} role="listitem">
 		<Calendar class={iconClasses} aria-hidden="true" />

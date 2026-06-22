@@ -29,7 +29,12 @@
 		<div
 			class="flex h-6 w-full overflow-hidden rounded-full bg-muted"
 			role="img"
-			aria-label="Status breakdown: {approved} approved, {rejected} rejected, {pendingReview} pending review, {notEvaluated} not evaluated"
+			aria-label={m['statusBreakdownBar.barAriaLabel']({
+				approved,
+				rejected,
+				pendingReview,
+				notEvaluated
+			})}
 		>
 			{#if approved > 0}
 				<div
@@ -82,7 +87,7 @@
 		</div>
 	{:else}
 		<div class="flex h-6 w-full items-center justify-center rounded-full bg-muted">
-			<span class="text-xs text-muted-foreground">No data</span>
+			<span class="text-xs text-muted-foreground">{m['statusBreakdownBar.noData']()}</span>
 		</div>
 	{/if}
 

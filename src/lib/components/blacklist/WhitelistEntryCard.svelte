@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import type { WhitelistEntrySchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
 	import { Trash2, Mail, Calendar, ShieldCheck, AlertCircle } from 'lucide-svelte';
@@ -15,7 +16,9 @@
 	// Format verified date (use decided_at if available, fallback to created_at)
 	const verifiedDate = $derived(entry.decided_at || entry.created_at);
 	const verifiedAgo = $derived(
-		verifiedDate ? formatDistanceToNow(new Date(verifiedDate), { addSuffix: true }) : 'Unknown'
+		verifiedDate
+			? formatDistanceToNow(new Date(verifiedDate), { addSuffix: true })
+			: m['whitelistEntryCard.unknown']()
 	);
 
 	function handleRemove() {
@@ -37,7 +40,7 @@
 					class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-100"
 				>
 					<ShieldCheck class="h-3 w-3" />
-					Verified
+					{m['whitelistEntryCard.verified']()}
 				</span>
 			</div>
 
@@ -53,10 +56,13 @@
 					class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-950 dark:text-amber-200"
 				>
 					<AlertCircle class="h-3 w-3" />
-					Cleared despite matching {entry.matched_entries_count} blacklist {entry.matched_entries_count ===
-					1
-						? 'entry'
-						: 'entries'}
+					{entry.matched_entries_count === 1
+						? m['whitelistEntryCard.clearedMatchingSingular']({
+								count: String(entry.matched_entries_count)
+							})
+						: m['whitelistEntryCard.clearedMatchingPlural']({
+								count: String(entry.matched_entries_count)
+							})}
 				</span>
 			</div>
 
@@ -64,10 +70,10 @@
 			<div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
 				<span class="flex items-center gap-1">
 					<Calendar class="h-3 w-3" />
-					Verified {verifiedAgo}
+					{m['whitelistEntryCard.verifiedAgo']({ date: verifiedAgo })}
 				</span>
 				{#if entry.approved_by_name}
-					<span>by {entry.approved_by_name}</span>
+					<span>{m['whitelistEntryCard.byName']({ name: entry.approved_by_name })}</span>
 				{/if}
 			</div>
 		</div>
@@ -80,10 +86,10 @@
 				onclick={handleRemove}
 				disabled={isRemoving}
 				class="text-destructive hover:bg-destructive hover:text-destructive-foreground"
-				aria-label="Remove {entry.user_display_name} from whitelist"
+				aria-label={m['whitelistEntryCard.removeAriaLabel']({ name: entry.user_display_name })}
 			>
 				<Trash2 class="h-4 w-4" />
-				<span class="sr-only md:not-sr-only md:ml-1">Remove</span>
+				<span class="sr-only md:not-sr-only md:ml-1">{m['whitelistEntryCard.remove']()}</span>
 			</Button>
 		</div>
 	</div>

@@ -41,12 +41,12 @@
 			return response.data;
 		},
 		onSuccess: (evt) => {
-			toast.success(`You've been invited to ${evt.name}!`);
+			toast.success(m['joinEventPage.toast_invited']({ eventName: evt.name }));
 			// Redirect to event page - adjust path based on your routing
 			goto(`/events/${evt.organization.slug}/${evt.slug}`);
 		},
 		onError: () => {
-			toast.error('Failed to claim invitation. The token may be expired or invalid.');
+			toast.error(m['joinEventPage.toast_claimError']());
 		}
 	}));
 

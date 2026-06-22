@@ -40,132 +40,144 @@
 			? staff.user.preferred_name ||
 					(staff.user.first_name && staff.user.last_name
 						? `${staff.user.first_name} ${staff.user.last_name}`
-						: staff.user.first_name || staff.user.email || 'Staff Member')
-			: 'Staff Member'
+						: staff.user.first_name || staff.user.email || m['permissionsEditor.staffMember']())
+			: m['permissionsEditor.staffMember']()
 	);
 
 	// Permission groups for better organization
 	const permissionGroups = [
 		{
-			title: 'Organization Management',
+			title: m['permissionsEditor.groups.organizationManagement'](),
 			permissions: [
 				{
 					key: 'edit_organization',
-					label: 'Edit Organization',
-					description: 'Update organization details and settings'
+					label: m['permissionsEditor.perms.editOrganization.label'](),
+					description: m['permissionsEditor.perms.editOrganization.description']()
 				},
 				{
 					key: 'manage_members',
-					label: 'Manage Members',
-					description: 'Add, remove, and manage organization members'
+					label: m['permissionsEditor.perms.manageMembers.label'](),
+					description: m['permissionsEditor.perms.manageMembers.description']()
 				},
 				{
 					key: 'view_organization_details',
-					label: 'View Organization Details',
-					description: 'Access detailed organization information'
+					label: m['permissionsEditor.perms.viewOrganizationDetails.label'](),
+					description: m['permissionsEditor.perms.viewOrganizationDetails.description']()
 				}
 			]
 		},
 		{
-			title: 'Event Management',
+			title: m['permissionsEditor.groups.eventManagement'](),
 			permissions: [
 				{
 					key: 'create_event',
-					label: 'Create Events',
-					description: 'Create new events for the organization'
+					label: m['permissionsEditor.perms.createEvent.label'](),
+					description: m['permissionsEditor.perms.createEvent.description']()
 				},
 				{
 					key: 'edit_event',
-					label: 'Edit Events',
-					description: 'Modify event details and settings'
+					label: m['permissionsEditor.perms.editEvent.label'](),
+					description: m['permissionsEditor.perms.editEvent.description']()
 				},
 				{
 					key: 'delete_event',
-					label: 'Delete Events',
-					description: 'Delete events from the organization'
+					label: m['permissionsEditor.perms.deleteEvent.label'](),
+					description: m['permissionsEditor.perms.deleteEvent.description']()
 				},
 				{
 					key: 'manage_event',
-					label: 'Manage Events',
-					description: 'Full event management access'
+					label: m['permissionsEditor.perms.manageEvent.label'](),
+					description: m['permissionsEditor.perms.manageEvent.description']()
 				},
 				{
 					key: 'manage_potluck',
-					label: 'Manage Potluck',
-					description: 'Manage potluck coordination for events'
+					label: m['permissionsEditor.perms.managePotluck.label'](),
+					description: m['permissionsEditor.perms.managePotluck.description']()
 				},
-				{ key: 'open_event', label: 'Open Events', description: 'Open events for registration' },
-				{ key: 'close_event', label: 'Close Events', description: 'Close events to registration' }
+				{
+					key: 'open_event',
+					label: m['permissionsEditor.perms.openEvent.label'](),
+					description: m['permissionsEditor.perms.openEvent.description']()
+				},
+				{
+					key: 'close_event',
+					label: m['permissionsEditor.perms.closeEvent.label'](),
+					description: m['permissionsEditor.perms.closeEvent.description']()
+				}
 			]
 		},
 		{
-			title: 'Event Series',
+			title: m['permissionsEditor.groups.eventSeries'](),
 			permissions: [
 				{
 					key: 'create_event_series',
-					label: 'Create Event Series',
-					description: 'Create new event series'
+					label: m['permissionsEditor.perms.createEventSeries.label'](),
+					description: m['permissionsEditor.perms.createEventSeries.description']()
 				},
 				{
 					key: 'edit_event_series',
-					label: 'Edit Event Series',
-					description: 'Modify event series'
+					label: m['permissionsEditor.perms.editEventSeries.label'](),
+					description: m['permissionsEditor.perms.editEventSeries.description']()
 				},
 				{
 					key: 'delete_event_series',
-					label: 'Delete Event Series',
-					description: 'Delete event series'
+					label: m['permissionsEditor.perms.deleteEventSeries.label'](),
+					description: m['permissionsEditor.perms.deleteEventSeries.description']()
 				}
 			]
 		},
 		{
-			title: 'Attendee Management',
+			title: m['permissionsEditor.groups.attendeeManagement'](),
 			permissions: [
 				{
 					key: 'invite_to_event',
-					label: 'Invite to Events',
-					description: 'Send event invitations'
+					label: m['permissionsEditor.perms.inviteToEvent.label'](),
+					description: m['permissionsEditor.perms.inviteToEvent.description']()
 				},
 				{
 					key: 'check_in_attendees',
-					label: 'Check-in Attendees',
-					description: 'Check in attendees at events'
-				},
-				{ key: 'manage_tickets', label: 'Manage Tickets', description: 'Manage event ticketing' }
-			]
-		},
-		{
-			title: 'Questionnaires',
-			permissions: [
-				{
-					key: 'create_questionnaire',
-					label: 'Create Questionnaires',
-					description: 'Create new questionnaires'
+					label: m['permissionsEditor.perms.checkInAttendees.label'](),
+					description: m['permissionsEditor.perms.checkInAttendees.description']()
 				},
 				{
-					key: 'edit_questionnaire',
-					label: 'Edit Questionnaires',
-					description: 'Modify questionnaires'
-				},
-				{
-					key: 'delete_questionnaire',
-					label: 'Delete Questionnaires',
-					description: 'Delete questionnaires'
-				},
-				{
-					key: 'evaluate_questionnaire',
-					label: 'Evaluate Questionnaires',
-					description: 'Review questionnaire responses'
+					key: 'manage_tickets',
+					label: m['permissionsEditor.perms.manageTickets.label'](),
+					description: m['permissionsEditor.perms.manageTickets.description']()
 				}
 			]
 		},
 		{
-			title: 'Announcements',
+			title: m['permissionsEditor.groups.questionnaires'](),
+			permissions: [
+				{
+					key: 'create_questionnaire',
+					label: m['permissionsEditor.perms.createQuestionnaire.label'](),
+					description: m['permissionsEditor.perms.createQuestionnaire.description']()
+				},
+				{
+					key: 'edit_questionnaire',
+					label: m['permissionsEditor.perms.editQuestionnaire.label'](),
+					description: m['permissionsEditor.perms.editQuestionnaire.description']()
+				},
+				{
+					key: 'delete_questionnaire',
+					label: m['permissionsEditor.perms.deleteQuestionnaire.label'](),
+					description: m['permissionsEditor.perms.deleteQuestionnaire.description']()
+				},
+				{
+					key: 'evaluate_questionnaire',
+					label: m['permissionsEditor.perms.evaluateQuestionnaire.label'](),
+					description: m['permissionsEditor.perms.evaluateQuestionnaire.description']()
+				}
+			]
+		},
+		{
+			title: m['permissionsEditor.groups.announcements'](),
 			permissions: [
 				{
 					key: 'send_announcements',
-					label: 'Send Announcements',
-					description: 'Create and send organization announcements'
+					label: m['permissionsEditor.perms.sendAnnouncements.label'](),
+					description: m['permissionsEditor.perms.sendAnnouncements.description']()
 				}
 			]
 		}
@@ -196,8 +208,7 @@
 		<DialogHeader>
 			<DialogTitle>{m['permissionsEditor.editPermissionsFor']()} {displayName}</DialogTitle>
 			<DialogDescription>
-				Configure what this staff member can do within the organization. Changes take effect
-				immediately.
+				{m['permissionsEditor.dialogDescription']()}
 			</DialogDescription>
 		</DialogHeader>
 
@@ -235,7 +246,7 @@
 				>{m['permissionsEditor.cancel']()}</Button
 			>
 			<Button onclick={handleSave} disabled={isSaving}>
-				{isSaving ? 'Saving...' : 'Save Changes'}
+				{isSaving ? m['permissionsEditor.saving']() : m['permissionsEditor.saveChanges']()}
 			</Button>
 		</DialogFooter>
 	</DialogContent>

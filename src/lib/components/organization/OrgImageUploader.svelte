@@ -66,13 +66,13 @@
 			}
 
 			if (!response.data) {
-				throw new Error('Failed to upload logo - no data returned');
+				throw new Error(m['orgImageUploader.uploadLogoNoData']());
 			}
 
 			window.location.reload();
 		} catch (err) {
 			console.error('[LOGO UPLOAD] Error:', err);
-			uploadError = err instanceof Error ? err.message : 'Failed to upload logo';
+			uploadError = err instanceof Error ? err.message : m['orgImageUploader.uploadLogoFailed']();
 			uploadingLogo = false;
 		}
 	}
@@ -100,13 +100,13 @@
 			}
 
 			if (!response.data) {
-				throw new Error('Failed to upload cover art - no data returned');
+				throw new Error(m['orgImageUploader.uploadCoverNoData']());
 			}
 
 			window.location.reload();
 		} catch (err) {
 			console.error('[COVER UPLOAD] Error:', err);
-			uploadError = err instanceof Error ? err.message : 'Failed to upload cover art';
+			uploadError = err instanceof Error ? err.message : m['orgImageUploader.uploadCoverFailed']();
 			uploadingCover = false;
 		}
 	}

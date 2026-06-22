@@ -160,7 +160,7 @@
 			class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
 		>
 			<ArrowLeft class="h-4 w-4" aria-hidden="true" />
-			Account
+			{m['myInvoices.account']()}
 		</a>
 	</div>
 

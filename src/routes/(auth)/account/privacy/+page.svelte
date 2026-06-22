@@ -188,8 +188,7 @@
 									{m['accountPrivacyPage.exportRequestReceived']()}
 								</p>
 								<p class="mt-1 text-sm text-green-700 dark:text-green-300">
-									We'll email you a download link when your data export is ready. This usually takes
-									a few minutes.
+									{m['accountPrivacyPage.exportEmailNote']()}
 								</p>
 							</div>
 						</div>
@@ -375,8 +374,7 @@
 					{m['accountPrivacyPage.dangerZone']()}
 				</h2>
 				<p class="mt-2 text-sm text-muted-foreground">
-					Once you delete your account, there is no going back. All your data will be permanently
-					removed and cannot be recovered.
+					{m['accountPrivacyPage.dangerZoneDescription']()}
 				</p>
 
 				<div class="mt-6">
@@ -446,8 +444,7 @@
 						{m['accountPrivacyPage.modal_title']()}
 					</h2>
 					<p class="mt-1 text-sm text-muted-foreground">
-						This action cannot be undone. We'll send you a confirmation email to verify this
-						request.
+						{m['accountPrivacyPage.modal_confirmationEmailNote']()}
 					</p>
 				</div>
 			</div>
@@ -512,7 +509,7 @@
 						disabled={isSubmitting}
 						class="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 					>
-						Cancel
+						{m['accountPrivacyPage.modal_cancel']()}
 					</button>
 					<button
 						type="submit"

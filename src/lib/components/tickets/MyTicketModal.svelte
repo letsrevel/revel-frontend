@@ -194,10 +194,10 @@
 		// Build seat details (from ticket.seat)
 		const seatDetails: string[] = [];
 		if (ticket.seat?.row) {
-			seatDetails.push(`Row ${ticket.seat.row}`);
+			seatDetails.push(m['myTicketModal.rowLabel']({ row: ticket.seat.row }));
 		}
 		if (ticket.seat?.number !== null && ticket.seat?.number !== undefined) {
-			seatDetails.push(`Seat ${ticket.seat.number}`);
+			seatDetails.push(m['myTicketModal.seatLabel']({ number: ticket.seat.number }));
 		}
 		if (ticket.seat?.label && seatDetails.length === 0) {
 			// Use seat_label only if no row/number info
@@ -271,7 +271,9 @@
 		</DialogHeader>
 
 		{#if !ticket}
-			<div class="py-8 text-center text-muted-foreground">No ticket data available.</div>
+			<div class="py-8 text-center text-muted-foreground">
+				{m['myTicketModal.noTicketData']()}
+			</div>
 		{:else}
 			<div class="space-y-6">
 				<!-- Ticket Summary (when there are multiple tickets or pending payments) -->
@@ -281,13 +283,13 @@
 							{#if activeTicketCount > 0}
 								<span class="flex items-center gap-1.5">
 									<span class="h-2 w-2 rounded-full bg-green-500"></span>
-									<span>{activeTicketCount} active</span>
+									<span>{m['myTicketModal.activeCount']({ count: activeTicketCount })}</span>
 								</span>
 							{/if}
 							{#if pendingTicketCount > 0}
 								<span class="flex items-center gap-1.5">
 									<span class="h-2 w-2 rounded-full bg-orange-500"></span>
-									<span>{pendingTicketCount} pending payment</span>
+									<span>{m['myTicketModal.pendingCount']({ count: pendingTicketCount })}</span>
 								</span>
 							{/if}
 						</div>
@@ -304,20 +306,19 @@
 							size="sm"
 							onclick={goToPrevious}
 							disabled={currentIndex === 0}
-							aria-label="Previous ticket"
+							aria-label={m['myTicketModal.previousTicket']()}
 						>
 							<ChevronLeft class="h-4 w-4" />
 						</Button>
 						<span class="text-sm font-medium">
-							{m['myTicketModal.ticketOf']?.({ current: currentIndex + 1, total: totalTickets }) ??
-								`Ticket ${currentIndex + 1} of ${totalTickets}`}
+							{m['myTicketModal.ticketOf']({ current: currentIndex + 1, total: totalTickets })}
 						</span>
 						<Button
 							variant="ghost"
 							size="sm"
 							onclick={goToNext}
 							disabled={currentIndex === totalTickets - 1}
-							aria-label="Next ticket"
+							aria-label={m['myTicketModal.nextTicket']()}
 						>
 							<ChevronRight class="h-4 w-4" />
 						</Button>
@@ -333,7 +334,7 @@
 						<div>
 							<h2 class="text-xl font-bold">{eventName}</h2>
 							<p class="text-sm text-muted-foreground">
-								{ticket.tier?.name || 'General Admission'}
+								{ticket.tier?.name || m['myTicketModal.generalAdmission']()}
 							</p>
 						</div>
 					</div>
@@ -345,14 +346,14 @@
 					<dl class="space-y-2 rounded-lg border border-border bg-muted/30 p-4 text-sm">
 						{#if ticket.guest_name}
 							<div class="flex items-center gap-2">
-								<dt class="sr-only">Ticket Holder</dt>
+								<dt class="sr-only">{m['myTicketModal.ticketHolder']()}</dt>
 								<User class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
 								<dd class="font-medium">{ticket.guest_name}</dd>
 							</div>
 						{/if}
 						{#if seatInfo}
 							<div class="flex items-center gap-2">
-								<dt class="sr-only">Seat</dt>
+								<dt class="sr-only">{m['myTicketModal.seat']()}</dt>
 								<Armchair class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
 								<dd>{seatInfo}</dd>
 							</div>
@@ -384,23 +385,24 @@
 							<div class="flex-1">
 								<p class="font-medium text-orange-900 dark:text-orange-100">
 									{#if ticketsInGroup > 1}
-										{ticketsInGroup} tickets pending payment
+										{m['myTicketModal.ticketsPendingPayment']({ count: ticketsInGroup })}
 									{:else}
-										Your ticket is pending payment
+										{m['myTicketModal.pendingPayment']()}
 									{/if}
 								</p>
 								<p class="mt-1 text-sm text-orange-800 dark:text-orange-200">
 									{#if ticket.tier?.payment_method === 'online'}
-										Complete your payment to confirm {ticketsInGroup > 1
-											? 'your tickets'
-											: 'your ticket'}. Your reservation will expire if payment is not completed.
+										{ticketsInGroup > 1
+											? m['myTicketModal.pendingOnlinePlural']()
+											: m['myTicketModal.pendingOnline']()}
 									{:else if ticket.tier?.payment_method === 'offline'}
-										Please complete your offline payment as instructed by the organizer to confirm
-										{ticketsInGroup > 1 ? 'your tickets' : 'your ticket'}.
+										{ticketsInGroup > 1
+											? m['myTicketModal.pendingOfflinePlural']()
+											: m['myTicketModal.pendingOffline']()}
 									{:else}
-										Complete your payment to confirm {ticketsInGroup > 1
-											? 'your tickets'
-											: 'your ticket'}.
+										{ticketsInGroup > 1
+											? m['myTicketModal.pendingGenericPlural']()
+											: m['myTicketModal.pendingGeneric']()}
 									{/if}
 								</p>
 
@@ -410,7 +412,7 @@
 										class="mt-3 rounded-md border border-orange-300 bg-orange-100 p-3 dark:border-orange-700 dark:bg-orange-900"
 									>
 										<p class="text-sm font-medium text-orange-900 dark:text-orange-100">
-											Payment Instructions:
+											{m['myTicketModal.paymentInstructions']()}
 										</p>
 										<MarkdownContent
 											content={ticket.tier.manual_payment_instructions}
@@ -434,9 +436,9 @@
 														class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
 														aria-hidden="true"
 													></div>
-													Processing...
+													{m['myTicketModal.processing']()}
 												{:else}
-													Resume Payment
+													{m['myTicketModal.resumePayment']()}
 												{/if}
 											</button>
 										{/if}
@@ -451,10 +453,10 @@
 														class="h-4 w-4 animate-spin rounded-full border-2 border-orange-600 border-t-transparent dark:border-orange-400"
 														aria-hidden="true"
 													></div>
-													Cancelling...
+													{m['myTicketModal.cancelling']()}
 												{:else}
 													<X class="h-4 w-4" aria-hidden="true" />
-													Cancel Reservation
+													{m['myTicketModal.cancelReservation']()}
 												{/if}
 											</button>
 										{/if}
@@ -493,13 +495,13 @@
 								<div
 									class="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"
 									role="status"
-									aria-label="Generating QR code"
+									aria-label={m['myTicketModal.generatingQr']()}
 								></div>
 							</div>
 						{:else if qrCodeDataUrl}
 							<img
 								src={qrCodeDataUrl}
-								alt="Ticket QR Code"
+								alt={m['myTicketModal.qrAlt']()}
 								class="h-64 w-64 rounded-lg border border-border bg-white"
 							/>
 							<p class="text-center text-sm text-muted-foreground">{m['myTicketModal.showQr']()}</p>
@@ -513,7 +515,7 @@
 							</div>
 						{:else}
 							<div class="text-center text-sm text-destructive">
-								Unable to generate QR code. Please refresh the page.
+								{m['myTicketModal.qrError']()}
 							</div>
 						{/if}
 					</div>
@@ -523,7 +525,7 @@
 				{#if ticket.status === 'checked_in' && checkedInDate}
 					<div class="rounded-lg bg-blue-50 p-4 text-sm dark:bg-blue-950/50">
 						<p class="font-medium text-blue-900 dark:text-blue-100">
-							Checked in at {checkedInDate}
+							{m['myTicketModal.checkedInAt']({ date: checkedInDate })}
 						</p>
 					</div>
 				{/if}

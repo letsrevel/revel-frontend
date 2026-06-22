@@ -169,7 +169,7 @@
 			<button
 				type="button"
 				onclick={handleCancel}
-				aria-label="Close modal"
+				aria-label={m['potluckItemEditModal.closeModal']()}
 				class="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			>
 				<X class="h-5 w-5" aria-hidden="true" />
@@ -271,7 +271,7 @@
 						</p>
 					{:else}
 						<p id="edit-quantity-help" class="mt-1 text-xs text-muted-foreground">
-							e.g., "serves 8" or "2 bottles"
+							{m['potluckItemEditModal.quantityHelp']()}
 						</p>
 					{/if}
 				</div>

@@ -430,7 +430,7 @@
 
 	function handleDelete() {
 		if (!tier) return;
-		if (!confirm(`Are you sure you want to delete the "${tier.name}" tier?`)) return;
+		if (!confirm(m['tierForm.deleteConfirm']({ name: tier.name }))) return;
 		tierDeleteMutation.mutate();
 	}
 
@@ -445,21 +445,23 @@
 <Dialog open onOpenChange={onClose}>
 	<DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
 		<DialogHeader>
-			<DialogTitle>{tier ? 'Edit Ticket Tier' : 'Create Ticket Tier'}</DialogTitle>
+			<DialogTitle
+				>{tier ? m['tierForm.editTicketTier']() : m['tierForm.createTicketTier']()}</DialogTitle
+			>
 		</DialogHeader>
 
 		<form onsubmit={handleSubmit} class="space-y-4">
 			<!-- Tier Name -->
 			<div>
 				<Label for="tier-name">
-					Tier Name <span class="text-destructive">*</span>
+					{m['tierForm.tierNameLabel']()} <span class="text-destructive">*</span>
 				</Label>
 				<Input
 					id="tier-name"
 					bind:value={name}
 					required
 					maxlength={150}
-					placeholder="e.g., General Admission, VIP Pass"
+					placeholder={m['tierForm.tierNamePlaceholder']()}
 					disabled={isPending}
 				/>
 			</div>
@@ -471,7 +473,7 @@
 					label={m['tierForm.descriptionOptional']()}
 					bind:value={description}
 					rows={3}
-					placeholder="What's included in this tier?"
+					placeholder={m['tierForm.whatsIncludedPlaceholder']()}
 					disabled={isPending}
 				/>
 			</div>
@@ -489,18 +491,19 @@
 					<option value="offline">{m['tierForm.offline']()}</option>
 					<option value="at_the_door">{m['tierForm.atTheDoor']()}</option>
 					<option value="online" disabled={!organizationStripeConnected}>
-						Online (Stripe) {!organizationStripeConnected ? '- Not Connected' : ''}
+						{m['tierForm.onlineStripe']()}
+						{!organizationStripeConnected ? m['tierForm.notConnectedSuffix']() : ''}
 					</option>
 				</select>
 				<p class="mt-1 text-xs text-muted-foreground">
 					{#if paymentMethod === 'free'}
-						No payment required for this tier
+						{m['tierForm.paymentHelpFree']()}
 					{:else if paymentMethod === 'offline'}
-						Tickets marked as paid manually by admins
+						{m['tierForm.paymentHelpOffline']()}
 					{:else if paymentMethod === 'at_the_door'}
-						Payment collected on-site during check-in
+						{m['tierForm.paymentHelpAtTheDoor']()}
 					{:else if paymentMethod === 'online'}
-						Online payment via Stripe
+						{m['tierForm.paymentHelpOnline']()}
 					{/if}
 				</p>
 			</div>
@@ -534,7 +537,7 @@
 						{/each}
 					</select>
 					<p class="mt-1 text-xs text-muted-foreground">
-						This currency will be used for all prices in this tier
+						{m['tierForm.currencyHelp']()}
 					</p>
 				</div>
 
@@ -597,7 +600,7 @@
 									}}
 									disabled={isPending}
 									class="pl-10"
-									placeholder="No limit"
+									placeholder={m['tierForm.noLimitPlaceholder']()}
 								/>
 							</div>
 						</div>
@@ -702,7 +705,7 @@
 					type="number"
 					min="1"
 					bind:value={totalQuantity}
-					placeholder="Unlimited"
+					placeholder={m['tierForm.unlimitedPlaceholder']()}
 					disabled={isPending}
 				/>
 				<p class="mt-1 text-xs text-muted-foreground">{m['tierForm.unlimitedTickets']()}</p>
@@ -754,9 +757,9 @@
 							class="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary"
 						/>
 						<div>
-							<span class="text-sm font-medium">Only show to linked invitees</span>
+							<span class="text-sm font-medium">{m['tierForm.onlyShowLinkedInvitees']()}</span>
 							<p class="text-xs text-muted-foreground">
-								Only users whose invitation explicitly links to this tier can see it
+								{m['tierForm.onlyShowLinkedInviteesHelp']()}
 							</p>
 						</div>
 					</label>
@@ -787,9 +790,11 @@
 							class="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary"
 						/>
 						<div>
-							<span class="text-sm font-medium">Only allow purchase by linked invitees</span>
+							<span class="text-sm font-medium"
+								>{m['tierForm.onlyAllowPurchaseLinkedInvitees']()}</span
+							>
 							<p class="text-xs text-muted-foreground">
-								Only users whose invitation explicitly links to this tier can purchase it
+								{m['tierForm.onlyAllowPurchaseLinkedInviteesHelp']()}
 							</p>
 						</div>
 					</label>
@@ -799,10 +804,9 @@
 			<!-- Restricted to Membership Tiers -->
 			{#if (purchasableBy === 'members' || purchasableBy === 'invited_and_members') && membershipTiers.length > 0}
 				<div>
-					<Label for="restricted-tiers">Restrict to Membership Tiers (Optional)</Label>
+					<Label for="restricted-tiers">{m['tierForm.restrictToMembershipTiers']()}</Label>
 					<p class="mb-2 text-xs text-muted-foreground">
-						If selected, only members with these tiers can purchase this ticket. Leave empty to
-						allow all members.
+						{m['tierForm.restrictToMembershipTiersHelp']()}
 					</p>
 					<div class="space-y-2 rounded-md border border-input bg-background p-3">
 						{#each membershipTiers as tier}
@@ -863,11 +867,11 @@
 						</option>
 						<option value="random" disabled={!canUseSeatAssignment}>
 							{m['tierForm.seatingConfig.random']?.() ?? 'Random Assignment'}
-							{!canUseSeatAssignment ? '(requires venue)' : ''}
+							{!canUseSeatAssignment ? m['tierForm.requiresVenueSuffix']() : ''}
 						</option>
 						<option value="user_choice" disabled={!canUseSeatAssignment}>
 							{m['tierForm.seatingConfig.userChoice']?.() ?? 'User Selects Seat'}
-							{!canUseSeatAssignment ? '(requires venue)' : ''}
+							{!canUseSeatAssignment ? m['tierForm.requiresVenueSuffix']() : ''}
 						</option>
 					</select>
 					<p class="mt-1 text-xs text-muted-foreground">
@@ -934,7 +938,7 @@
 										<span class="font-medium">{selectedVenue.name}</span>
 										{#if selectedVenue.capacity}
 											<span class="ml-2 text-muted-foreground"
-												>({selectedVenue.capacity} capacity)</span
+												>{m['tierForm.venueCapacity']({ capacity: selectedVenue.capacity })}</span
 											>
 										{/if}
 									{:else}
@@ -984,7 +988,9 @@
 										<option value={sector.id}>
 											{sector.name}
 											{#if sector.code}({sector.code}){/if}
-											{#if sector.capacity}- {sector.capacity} seats{/if}
+											{#if sector.capacity}{m['tierForm.sectorSeats']({
+													capacity: sector.capacity
+												})}{/if}
 										</option>
 									{/each}
 								</select>
@@ -1046,13 +1052,13 @@
 				<div>
 					{#if tier}
 						<Button type="button" variant="destructive" onclick={handleDelete} disabled={isPending}>
-							{tierDeleteMutation.isPending ? 'Deleting...' : 'Delete Tier'}
+							{tierDeleteMutation.isPending ? m['tierForm.deleting']() : m['tierForm.deleteTier']()}
 						</Button>
 					{/if}
 				</div>
 				<div class="flex gap-2">
 					<Button type="button" variant="outline" onclick={onClose} disabled={isPending}>
-						Cancel
+						{m['tierForm.cancel']()}
 					</Button>
 					<Button
 						type="submit"
@@ -1061,7 +1067,11 @@
 							!sectorValid ||
 							(paymentMethod !== 'free' && allowUserCancellation && !refundPolicyValid)}
 					>
-						{isPending ? 'Saving...' : tier ? 'Save Changes' : 'Create Tier'}
+						{isPending
+							? m['tierForm.saving']()
+							: tier
+								? m['tierForm.saveChanges']()
+								: m['tierForm.createTier']()}
 					</Button>
 				</div>
 			</div>

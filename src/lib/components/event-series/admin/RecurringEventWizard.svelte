@@ -456,7 +456,7 @@
 
 <div class="mx-auto max-w-4xl space-y-6">
 	<!-- Step indicator -->
-	<div class="flex items-center gap-4" aria-label="Wizard progress">
+	<div class="flex items-center gap-4" aria-label={m['recurringEventWizard.wizardProgress']()}>
 		<div
 			class={cn(
 				'flex h-10 w-10 items-center justify-center rounded-full border-2 font-semibold transition-colors',
@@ -644,7 +644,7 @@
 					aria-expanded={advancedOpen}
 					class="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 				>
-					<span>Advanced</span>
+					<span>{m['recurringEventWizard.advanced']()}</span>
 					<ChevronDown
 						class={cn('h-4 w-4 transition-transform', advancedOpen && 'rotate-180')}
 						aria-hidden="true"
@@ -687,7 +687,9 @@
 									}}
 									class="w-24"
 								/>
-								<span class="text-sm text-muted-foreground">weeks</span>
+								<span class="text-sm text-muted-foreground"
+									>{m['recurringEventWizard.weeks']()}</span
+								>
 							</div>
 							<p class="text-xs text-muted-foreground">
 								{m['recurringEvents.wizard.generationWindowHelper']({

@@ -65,12 +65,12 @@
 		const content = answer.answer_content;
 
 		if (!Array.isArray(content) || content.length === 0) {
-			return 'No answer provided';
+			return m['questionAnswerDisplay.noAnswerProvided']();
 		}
 
 		if (answer.question_type === 'free_text') {
 			const freeTextContent = content[0] as unknown as FreeTextAnswerContent;
-			return freeTextContent.answer || 'No answer provided';
+			return freeTextContent.answer || m['questionAnswerDisplay.noAnswerProvided']();
 		}
 
 		if (answer.question_type === 'multiple_choice') {
@@ -167,7 +167,9 @@
 						{getQuestionTypeBadge(answer.question_type)}
 					</Badge>
 					{#if isConditional}
-						<Badge variant="outline" class="shrink-0 text-xs">Conditional</Badge>
+						<Badge variant="outline" class="shrink-0 text-xs"
+							>{m['questionAnswerDisplay.conditional']()}</Badge
+						>
 					{/if}
 					<div class="flex-1">
 						<MarkdownContent
@@ -197,7 +199,9 @@
 										<span>{option.option_text}</span>
 										{#if option.is_correct !== undefined}
 											<Badge variant={option.is_correct ? 'default' : 'secondary'} class="ml-2">
-												{option.is_correct ? 'Correct' : 'Incorrect'}
+												{option.is_correct
+													? m['questionAnswerDisplay.correct']()
+													: m['questionAnswerDisplay.incorrect']()}
 											</Badge>
 										{/if}
 									</div>

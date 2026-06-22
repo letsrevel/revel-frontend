@@ -211,7 +211,7 @@
 	<!-- Tabs -->
 	<div class="mb-6">
 		<div class="border-b border-border">
-			<nav class="-mb-px flex gap-6" aria-label="Following tabs">
+			<nav class="-mb-px flex gap-6" aria-label={m['dashboardFollowingPage.tabsLabel']()}>
 				<button
 					type="button"
 					onclick={() => switchTab('organizations')}

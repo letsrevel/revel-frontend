@@ -64,7 +64,7 @@
 					const message = extractErrorMessage(error);
 
 					// Show toast notification to user
-					toast.error('Action failed', {
+					toast.error(m['rootLayout.actionFailed'](), {
 						description: message
 					});
 				}
@@ -124,8 +124,10 @@
 				if (err instanceof TypeError && err.message === 'Failed to fetch') {
 					import('$lib/config/api').then(({ API_BASE_URL_DISPLAY }) => {
 						import('svelte-sonner').then(({ toast }) => {
-							toast.error('API Blocked', {
-								description: `Please disable your ad blocker for ${API_BASE_URL_DISPLAY} to use all features.`,
+							toast.error(m['rootLayout.apiBlocked'](), {
+								description: m['rootLayout.apiBlockedDescription']({
+									url: API_BASE_URL_DISPLAY
+								}),
 								duration: 10000
 							});
 						});

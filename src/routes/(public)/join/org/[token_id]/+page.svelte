@@ -41,12 +41,14 @@
 		},
 		onSuccess: (org) => {
 			toast.success(
-				`You're now a ${token.grants_staff_status ? 'staff member' : 'member'} of ${org.name}!`
+				token.grants_staff_status
+					? m['joinOrgPage.toast_joinedAsStaff']({ organizationName: org.name })
+					: m['joinOrgPage.toast_joinedAsMember']({ organizationName: org.name })
 			);
 			goto(`/org/${org.slug}`);
 		},
 		onError: () => {
-			toast.error('Failed to claim invitation. The token may be expired or invalid.');
+			toast.error(m['joinOrgPage.toast_claimError']());
 		}
 	}));
 

@@ -103,7 +103,7 @@
 			<div class="mb-8 lg:hidden">
 				<aside
 					class="rounded-lg border border-border bg-card p-4 shadow-sm"
-					aria-label="Series management actions"
+					aria-label={m['seriesPublicPage.adminActionsLabel']()}
 				>
 					<h3 class="mb-3 text-sm font-semibold">{m['eventSeriesDetailPage.admin_title']()}</h3>
 					<div class="space-y-2">
@@ -249,7 +249,7 @@
 						{#if totalPages > 1}
 							<nav
 								class="mt-12 flex flex-col items-center justify-between gap-4 sm:flex-row"
-								aria-label="Pagination"
+								aria-label={m['seriesPublicPage.paginationLabel']()}
 							>
 								<!-- Results info -->
 								<p class="text-sm text-muted-foreground">
@@ -262,7 +262,7 @@
 										<a
 											href="?page={currentPage - 1}"
 											class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-											aria-label="Go to previous page"
+											aria-label={m['seriesPublicPage.goToPreviousPage']()}
 										>
 											{m['eventSeriesDetailPage.pagination_previous']()}
 										</a>
@@ -291,7 +291,7 @@
 										<a
 											href="?page={currentPage + 1}"
 											class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-											aria-label="Go to next page"
+											aria-label={m['seriesPublicPage.goToNextPage']()}
 										>
 											{m['eventSeriesDetailPage.pagination_next']()}
 										</a>

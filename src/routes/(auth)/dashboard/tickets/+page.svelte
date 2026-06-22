@@ -208,7 +208,7 @@
 		<!-- Include Past Events Checkbox -->
 		<div>
 			<div class="mb-2">
-				<span class="text-sm font-medium">Options</span>
+				<span class="text-sm font-medium">{m['dashboardTicketsPage.options']()}</span>
 			</div>
 			<label class="flex cursor-pointer items-center gap-2">
 				<input
@@ -227,7 +227,7 @@
 		<!-- Loading State -->
 		<div class="flex items-center justify-center py-12">
 			<Loader2 class="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
-			<span class="sr-only">Loading tickets...</span>
+			<span class="sr-only">{m['dashboardTicketsPage.loading']()}</span>
 		</div>
 	{:else if tickets.length === 0}
 		<!-- Empty State -->
@@ -237,10 +237,10 @@
 			>
 				<Ticket class="h-8 w-8 text-primary" aria-hidden="true" />
 			</div>
-			<h2 class="mb-2 text-xl font-semibold">No tickets found</h2>
+			<h2 class="mb-2 text-xl font-semibold">{m['dashboardTicketsPage.noResults']()}</h2>
 			{#if statusFilter || paymentMethodFilter || debouncedSearch}
 				<p class="mb-4 text-muted-foreground">
-					Try adjusting your filters or search query to see more tickets
+					{m['dashboardTicketsPage.noResultsFiltered']()}
 				</p>
 				<button
 					type="button"
@@ -252,17 +252,17 @@
 					}}
 					class="rounded-lg border bg-background px-6 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
-					Clear Filters
+					{m['dashboardTicketsPage.clearFilters']()}
 				</button>
 			{:else}
 				<p class="mb-4 text-muted-foreground">
-					You don't have any tickets yet. Browse events to find something interesting!
+					{m['dashboardTicketsPage.emptyHint']()}
 				</p>
 				<a
 					href="/events"
 					class="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
-					Browse Events
+					{m['dashboardTicketsPage.browseEvents']()}
 				</a>
 			{/if}
 		</div>

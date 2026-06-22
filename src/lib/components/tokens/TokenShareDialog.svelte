@@ -26,12 +26,12 @@
 		try {
 			await navigator.clipboard.writeText(shareUrl);
 			copied = true;
-			toast.success('Link copied to clipboard!');
+			toast.success(m['tokenShareDialog.linkCopied']());
 			setTimeout(() => {
 				copied = false;
 			}, 2000);
 		} catch (err) {
-			toast.error('Failed to copy link');
+			toast.error(m['tokenShareDialog.copyFailed']());
 		}
 	}
 
@@ -39,7 +39,7 @@
 		if (navigator.share) {
 			try {
 				await navigator.share({
-					title: tokenName || 'Invitation Link',
+					title: tokenName || m['tokenShareDialog.invitationLink'](),
 					url: shareUrl
 				});
 			} catch (err) {
@@ -58,9 +58,9 @@
 			<DialogTitle>{m['tokenShareDialog.shareLink']()}</DialogTitle>
 			<DialogDescription>
 				{#if tokenName}
-					Share this link for "{tokenName}"
+					{m['tokenShareDialog.descriptionNamed']({ name: tokenName })}
 				{:else}
-					Share this invitation link
+					{m['tokenShareDialog.descriptionGeneric']()}
 				{/if}
 			</DialogDescription>
 		</DialogHeader>
@@ -83,7 +83,7 @@
 					size="sm"
 					class="px-3"
 					onclick={copyToClipboard}
-					aria-label="Copy link to clipboard"
+					aria-label={m['tokenShareDialog.copyLinkLabel']()}
 				>
 					{#if copied}
 						<Check class="h-4 w-4" aria-hidden="true" />
@@ -98,7 +98,7 @@
 				{#if supportsNativeShare}
 					<Button type="button" variant="outline" onclick={shareNative}>
 						<Share2 class="mr-2 h-4 w-4" aria-hidden="true" />
-						Share
+						{m['tokenShareDialog.share']()}
 					</Button>
 				{/if}
 				<Button type="button" variant="outline" onclick={onClose}

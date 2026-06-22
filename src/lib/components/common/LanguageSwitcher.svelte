@@ -15,10 +15,11 @@
 	const languages = [
 		{ code: 'en', name: 'English' },
 		{ code: 'de', name: 'Deutsch' },
-		{ code: 'it', name: 'Italiano' }
+		{ code: 'it', name: 'Italiano' },
+		{ code: 'fr', name: 'Français' }
 	] as const;
 
-	type SupportedLanguage = 'en' | 'de' | 'it';
+	type SupportedLanguage = 'en' | 'de' | 'it' | 'fr';
 
 	// Dropdown open state
 	let isOpen = $state(false);

@@ -92,13 +92,13 @@
 			};
 		},
 		onSuccess: async () => {
-			toast.success('Tier order updated');
+			toast.success(m['ticketingStep.tierOrderUpdated']());
 			await queryClient.invalidateQueries({
 				queryKey: ['event-admin', eventId, 'ticket-tiers']
 			});
 		},
 		onError: (_err, _vars, context) => {
-			toast.error('Failed to reorder tiers');
+			toast.error(m['ticketingStep.failedToReorderTiers']());
 			const ctx = context as { previousData?: unknown } | undefined;
 			if (ctx?.previousData) {
 				queryClient.setQueryData(['event-admin', eventId, 'ticket-tiers'], ctx.previousData);

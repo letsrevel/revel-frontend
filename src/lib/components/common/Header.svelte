@@ -66,7 +66,10 @@
 			</a>
 
 			<!-- Desktop Navigation -->
-			<nav class="hidden md:flex md:items-center md:gap-6" aria-label="Main navigation">
+			<nav
+				class="hidden md:flex md:items-center md:gap-6"
+				aria-label={m['header.mainNavigation']()}
+			>
 				{#each navItems as item (item.href)}
 					<a
 						href={item.href}

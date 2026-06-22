@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -165,10 +166,10 @@
 				queryKey: ['organization', organization.slug, 'blacklist']
 			});
 			createModalOpen = false;
-			toast.success('Added to blacklist');
+			toast.success(m['blacklistAdminPage.toastAdded']());
 		},
 		onError: () => {
-			toast.error('Failed to add to blacklist');
+			toast.error(m['blacklistAdminPage.toastAddError']());
 		}
 	}));
 
@@ -199,10 +200,10 @@
 			});
 			editModalOpen = false;
 			editEntry = null;
-			toast.success('Blacklist entry updated');
+			toast.success(m['blacklistAdminPage.toastUpdated']());
 		},
 		onError: () => {
-			toast.error('Failed to update blacklist entry');
+			toast.error(m['blacklistAdminPage.toastUpdateError']());
 		}
 	}));
 
@@ -227,10 +228,10 @@
 			editModalOpen = false;
 			editEntry = null;
 			entryToDelete = null;
-			toast.success('Removed from blacklist');
+			toast.success(m['blacklistAdminPage.toastRemoved']());
 		},
 		onError: () => {
-			toast.error('Failed to remove from blacklist');
+			toast.error(m['blacklistAdminPage.toastRemoveError']());
 		}
 	}));
 
@@ -255,10 +256,10 @@
 			queryClient.invalidateQueries({
 				queryKey: ['organization', organization.slug, 'whitelist']
 			});
-			toast.success('Whitelist request approved');
+			toast.success(m['blacklistAdminPage.toastRequestApproved']());
 		},
 		onError: () => {
-			toast.error('Failed to approve whitelist request');
+			toast.error(m['blacklistAdminPage.toastRequestApproveError']());
 		}
 	}));
 
@@ -280,10 +281,10 @@
 			queryClient.invalidateQueries({
 				queryKey: ['organization', organization.slug, 'whitelist-requests']
 			});
-			toast.success('Whitelist request rejected');
+			toast.success(m['blacklistAdminPage.toastRequestRejected']());
 		},
 		onError: () => {
-			toast.error('Failed to reject whitelist request');
+			toast.error(m['blacklistAdminPage.toastRequestRejectError']());
 		}
 	}));
 
@@ -306,10 +307,10 @@
 				queryKey: ['organization', organization.slug, 'whitelist']
 			});
 			whitelistEntryToDelete = null;
-			toast.success('Removed from whitelist');
+			toast.success(m['blacklistAdminPage.toastWhitelistRemoved']());
 		},
 		onError: () => {
-			toast.error('Failed to remove from whitelist');
+			toast.error(m['blacklistAdminPage.toastWhitelistRemoveError']());
 		}
 	}));
 
@@ -393,8 +394,11 @@
 </script>
 
 <svelte:head>
-	<title>Blacklist Management - {organization.name} | Revel</title>
-	<meta name="description" content="Manage blacklisted users for {organization.name}" />
+	<title>{m['blacklistAdminPage.metaTitle']({ name: organization.name })}</title>
+	<meta
+		name="description"
+		content={m['blacklistAdminPage.metaDescription']({ name: organization.name })}
+	/>
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
@@ -402,14 +406,16 @@
 	<!-- Header -->
 	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 		<div class="min-w-0">
-			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">Blacklist Management</h1>
+			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
+				{m['blacklistAdminPage.title']()}
+			</h1>
 			<p class="mt-1 text-sm text-muted-foreground">
-				Manage blacklisted users and verification requests for your organization.
+				{m['blacklistAdminPage.pageDescription']()}
 			</p>
 		</div>
 		<Button onclick={() => (createModalOpen = true)} class="w-full sm:w-auto">
 			<Plus class="mr-2 h-4 w-4" aria-hidden="true" />
-			Add to Blacklist
+			{m['blacklistAdminPage.addToBlacklist']()}
 		</Button>
 	</div>
 
@@ -419,8 +425,8 @@
 			<TabsList class="h-auto w-full grid-cols-3 gap-0.5 sm:gap-1">
 				<TabsTrigger value="blacklist" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
 					<Ban class="h-4 w-4 shrink-0" />
-					<span class="hidden sm:inline">Blacklist</span>
-					<span class="sm:hidden">Blocked</span>
+					<span class="hidden sm:inline">{m['blacklistAdminPage.tabBlacklist']()}</span>
+					<span class="sm:hidden">{m['blacklistAdminPage.tabBlacklistShort']()}</span>
 					{#if blacklistPagination.totalCount > 0}
 						<span class="hidden text-xs text-muted-foreground lg:inline">
 							({blacklistPagination.totalCount})
@@ -433,8 +439,8 @@
 					class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm"
 				>
 					<ShieldAlert class="h-4 w-4 shrink-0" />
-					<span class="hidden sm:inline">Verification Requests</span>
-					<span class="sm:hidden">Requests</span>
+					<span class="hidden sm:inline">{m['blacklistAdminPage.tabVerificationRequests']()}</span>
+					<span class="sm:hidden">{m['blacklistAdminPage.tabRequestsShort']()}</span>
 					{#if pendingRequestsCount > 0}
 						<span
 							class="rounded-full bg-primary px-1.5 py-0.5 text-xs text-primary-foreground sm:px-2"
@@ -446,8 +452,8 @@
 
 				<TabsTrigger value="verified" class="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm">
 					<ShieldCheck class="h-4 w-4 shrink-0" />
-					<span class="hidden sm:inline">Verified Users</span>
-					<span class="sm:hidden">Verified</span>
+					<span class="hidden sm:inline">{m['blacklistAdminPage.tabVerifiedUsers']()}</span>
+					<span class="sm:hidden">{m['blacklistAdminPage.tabVerifiedShort']()}</span>
 					{#if whitelistPagination.totalCount > 0}
 						<span class="hidden text-xs text-muted-foreground lg:inline">
 							({whitelistPagination.totalCount})
@@ -464,18 +470,17 @@
 				<Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 				<Input
 					type="search"
-					placeholder="Search by name, email, or telegram..."
+					placeholder={m['blacklistAdminPage.searchPlaceholder']()}
 					bind:value={blacklistSearch}
 					class="pl-10"
-					aria-label="Search blacklist"
+					aria-label={m['blacklistAdminPage.searchAriaLabel']()}
 				/>
 			</div>
 
 			<!-- Info Box -->
 			<div class="rounded-lg border border-amber-500/30 bg-amber-50 p-3 dark:bg-amber-950/30">
 				<p class="text-sm text-amber-900 dark:text-amber-100">
-					Blacklisted users cannot access any events from this organization. If someone's name
-					fuzzy-matches a blacklist entry, they will need to request verification.
+					{m['blacklistAdminPage.blacklistInfo']()}
 				</p>
 			</div>
 
@@ -486,16 +491,16 @@
 				</div>
 			{:else if blacklistQuery.isError}
 				<div class="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-center">
-					<p class="text-sm text-destructive">Failed to load blacklist</p>
+					<p class="text-sm text-destructive">{m['blacklistAdminPage.loadBlacklistError']()}</p>
 				</div>
 			{:else if blacklistEntries.length === 0}
 				<div class="rounded-lg border border-dashed p-12 text-center">
 					<Ban class="mx-auto h-12 w-12 text-muted-foreground" />
-					<h3 class="mt-4 font-semibold">No blacklist entries</h3>
+					<h3 class="mt-4 font-semibold">{m['blacklistAdminPage.noEntries']()}</h3>
 					<p class="mt-2 text-sm text-muted-foreground">
 						{blacklistSearch
-							? 'No entries match your search'
-							: 'Add people to the blacklist to prevent them from accessing your events'}
+							? m['blacklistAdminPage.noEntriesMatchSearch']()
+							: m['blacklistAdminPage.noEntriesHint']()}
 					</p>
 				</div>
 			{:else}
@@ -515,10 +520,13 @@
 							onclick={() => (blacklistPage = blacklistPage - 1)}
 						>
 							<ChevronLeft class="h-4 w-4" />
-							Previous
+							{m['blacklistAdminPage.previous']()}
 						</Button>
 						<span class="text-sm text-muted-foreground">
-							Page {blacklistPagination.page} of {blacklistPagination.totalPages}
+							{m['blacklistAdminPage.pageOf']({
+								page: blacklistPagination.page,
+								total: blacklistPagination.totalPages
+							})}
 						</span>
 						<Button
 							variant="outline"
@@ -526,7 +534,7 @@
 							disabled={!blacklistPagination.hasNext}
 							onclick={() => (blacklistPage = blacklistPage + 1)}
 						>
-							Next
+							{m['blacklistAdminPage.next']()}
 							<ChevronRight class="h-4 w-4" />
 						</Button>
 					</div>
@@ -546,7 +554,7 @@
 						requestsPage = 1;
 					}}
 				>
-					Pending
+					{m['blacklistAdminPage.filterPending']()}
 					{#if requestStatusFilter === 'pending' && whitelistRequestsQuery.data?.count}
 						<span
 							class="ml-1.5 rounded-full bg-primary-foreground px-1.5 py-0.5 text-xs text-primary"
@@ -563,7 +571,7 @@
 						requestsPage = 1;
 					}}
 				>
-					Approved
+					{m['blacklistAdminPage.filterApproved']()}
 				</Button>
 				<Button
 					variant={requestStatusFilter === 'rejected' ? 'default' : 'outline'}
@@ -573,7 +581,7 @@
 						requestsPage = 1;
 					}}
 				>
-					Rejected
+					{m['blacklistAdminPage.filterRejected']()}
 				</Button>
 				<Button
 					variant={requestStatusFilter === 'all' ? 'default' : 'outline'}
@@ -583,15 +591,14 @@
 						requestsPage = 1;
 					}}
 				>
-					All
+					{m['blacklistAdminPage.filterAll']()}
 				</Button>
 			</div>
 
 			<!-- Info Box -->
 			<div class="rounded-lg border border-blue-500/30 bg-blue-50 p-3 dark:bg-blue-950/30">
 				<p class="text-sm text-blue-900 dark:text-blue-100">
-					Users whose names fuzzy-match blacklist entries can request verification. Approving a
-					request adds them to the verified users list, allowing full access.
+					{m['blacklistAdminPage.requestsInfo']()}
 				</p>
 			</div>
 
@@ -602,16 +609,18 @@
 				</div>
 			{:else if whitelistRequestsQuery.isError}
 				<div class="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-center">
-					<p class="text-sm text-destructive">Failed to load verification requests</p>
+					<p class="text-sm text-destructive">
+						{m['blacklistAdminPage.loadRequestsError']()}
+					</p>
 				</div>
 			{:else if whitelistRequests.length === 0}
 				<div class="rounded-lg border border-dashed p-12 text-center">
 					<ShieldAlert class="mx-auto h-12 w-12 text-muted-foreground" />
-					<h3 class="mt-4 font-semibold">No verification requests</h3>
+					<h3 class="mt-4 font-semibold">{m['blacklistAdminPage.noRequests']()}</h3>
 					<p class="mt-2 text-sm text-muted-foreground">
 						{requestStatusFilter === 'pending'
-							? 'No pending verification requests'
-							: 'No requests match your filter'}
+							? m['blacklistAdminPage.noPendingRequests']()
+							: m['blacklistAdminPage.noRequestsMatchFilter']()}
 					</p>
 				</div>
 			{:else}
@@ -637,10 +646,13 @@
 							onclick={() => (requestsPage = requestsPage - 1)}
 						>
 							<ChevronLeft class="h-4 w-4" />
-							Previous
+							{m['blacklistAdminPage.previous']()}
 						</Button>
 						<span class="text-sm text-muted-foreground">
-							Page {requestsPagination.page} of {requestsPagination.totalPages}
+							{m['blacklistAdminPage.pageOf']({
+								page: requestsPagination.page,
+								total: requestsPagination.totalPages
+							})}
 						</span>
 						<Button
 							variant="outline"
@@ -648,7 +660,7 @@
 							disabled={!requestsPagination.hasNext}
 							onclick={() => (requestsPage = requestsPage + 1)}
 						>
-							Next
+							{m['blacklistAdminPage.next']()}
 							<ChevronRight class="h-4 w-4" />
 						</Button>
 					</div>
@@ -661,9 +673,7 @@
 			<!-- Info Box -->
 			<div class="rounded-lg border border-green-500/30 bg-green-50 p-3 dark:bg-green-950/30">
 				<p class="text-sm text-green-900 dark:text-green-100">
-					Verified users have been cleared to access your organization despite their names
-					fuzzy-matching blacklist entries. Removing them will require them to request verification
-					again.
+					{m['blacklistAdminPage.verifiedInfo']()}
 				</p>
 			</div>
 
@@ -674,14 +684,14 @@
 				</div>
 			{:else if whitelistQuery.isError}
 				<div class="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-center">
-					<p class="text-sm text-destructive">Failed to load verified users</p>
+					<p class="text-sm text-destructive">{m['blacklistAdminPage.loadVerifiedError']()}</p>
 				</div>
 			{:else if whitelistEntries.length === 0}
 				<div class="rounded-lg border border-dashed p-12 text-center">
 					<ShieldCheck class="mx-auto h-12 w-12 text-muted-foreground" />
-					<h3 class="mt-4 font-semibold">No verified users</h3>
+					<h3 class="mt-4 font-semibold">{m['blacklistAdminPage.noVerifiedUsers']()}</h3>
 					<p class="mt-2 text-sm text-muted-foreground">
-						Users approved through the verification process will appear here
+						{m['blacklistAdminPage.noVerifiedUsersHint']()}
 					</p>
 				</div>
 			{:else}
@@ -705,10 +715,13 @@
 							onclick={() => (whitelistPage = whitelistPage - 1)}
 						>
 							<ChevronLeft class="h-4 w-4" />
-							Previous
+							{m['blacklistAdminPage.previous']()}
 						</Button>
 						<span class="text-sm text-muted-foreground">
-							Page {whitelistPagination.page} of {whitelistPagination.totalPages}
+							{m['blacklistAdminPage.pageOf']({
+								page: whitelistPagination.page,
+								total: whitelistPagination.totalPages
+							})}
 						</span>
 						<Button
 							variant="outline"
@@ -716,7 +729,7 @@
 							disabled={!whitelistPagination.hasNext}
 							onclick={() => (whitelistPage = whitelistPage + 1)}
 						>
-							Next
+							{m['blacklistAdminPage.next']()}
 							<ChevronRight class="h-4 w-4" />
 						</Button>
 					</div>
@@ -751,10 +764,12 @@
 <!-- Whitelist Entry Delete Confirmation -->
 <ConfirmDialog
 	isOpen={!!whitelistEntryToDelete}
-	title="Remove from Verified Users"
-	message="Are you sure you want to remove {whitelistEntryToDelete?.user_display_name} from the verified users list? They will need to request verification again to access your organization."
-	confirmText="Remove"
-	cancelText="Cancel"
+	title={m['blacklistAdminPage.removeVerifiedTitle']()}
+	message={m['blacklistAdminPage.removeVerifiedMessage']({
+		name: whitelistEntryToDelete?.user_display_name ?? ''
+	})}
+	confirmText={m['blacklistAdminPage.removeConfirm']()}
+	cancelText={m['blacklistAdminPage.removeCancel']()}
 	variant="danger"
 	onConfirm={confirmRemoveWhitelistEntry}
 	onCancel={() => (whitelistEntryToDelete = null)}

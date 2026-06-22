@@ -141,9 +141,9 @@
 
 	// Find event name by id for tier display
 	function getEventName(eventId: string | undefined): string {
-		if (!eventId) return 'Unknown event';
+		if (!eventId) return m['scopeAssignment.unknownEvent']();
 		const event = eventsQuery.data?.find((e) => e.id === eventId);
-		return event?.name || 'Unknown event';
+		return event?.name || m['scopeAssignment.unknownEvent']();
 	}
 
 	// Toggle functions
@@ -264,7 +264,11 @@
 					/>
 				</div>
 
-				<div class="max-h-48 overflow-y-auto" role="group" aria-label="Event series">
+				<div
+					class="max-h-48 overflow-y-auto"
+					role="group"
+					aria-label={m['scopeAssignment.eventSeriesGroup']()}
+				>
 					{#if seriesQuery.isLoading}
 						<div class="flex items-center justify-center py-4">
 							<div
@@ -352,7 +356,11 @@
 					/>
 				</div>
 
-				<div class="max-h-48 overflow-y-auto" role="group" aria-label="Events">
+				<div
+					class="max-h-48 overflow-y-auto"
+					role="group"
+					aria-label={m['scopeAssignment.eventsGroup']()}
+				>
 					{#if eventsQuery.isLoading}
 						<div class="flex items-center justify-center py-4">
 							<div
@@ -453,7 +461,11 @@
 						/>
 					</div>
 
-					<div class="max-h-48 overflow-y-auto" role="group" aria-label="Ticket tiers">
+					<div
+						class="max-h-48 overflow-y-auto"
+						role="group"
+						aria-label={m['scopeAssignment.ticketTiersGroup']()}
+					>
 						{#if tiersQuery.isLoading}
 							<div class="flex items-center justify-center py-4">
 								<div

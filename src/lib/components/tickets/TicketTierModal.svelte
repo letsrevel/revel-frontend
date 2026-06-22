@@ -235,7 +235,7 @@
 		<DialogHeader>
 			<DialogTitle class="flex items-center gap-2 text-2xl">
 				<Ticket class="h-6 w-6" aria-hidden="true" />
-				Select Your Ticket
+				{m['ticketTierModal.selectYourTicket']()}
 			</DialogTitle>
 		</DialogHeader>
 

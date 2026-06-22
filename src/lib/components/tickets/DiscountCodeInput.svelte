@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Tag, X, ChevronDown, Loader2 } from 'lucide-svelte';
@@ -61,7 +62,7 @@
 	async function validateDiscountCode() {
 		const code = discountCodeInput.trim().toUpperCase();
 		if (!code) {
-			discountError = 'Please enter a discount code';
+			discountError = m['discountCodeInput.enterCodeError']();
 			return;
 		}
 
@@ -82,7 +83,7 @@
 						? detail
 						: Array.isArray(detail)
 							? detail.map((d: { msg?: string }) => d.msg || String(d)).join(', ')
-							: 'Failed to validate code';
+							: m['discountCodeInput.validateFailed']();
 				return;
 			}
 
@@ -91,11 +92,11 @@
 					discountError = '';
 					onApply(code, response.data);
 				} else {
-					discountError = response.data.message || 'Invalid discount code';
+					discountError = response.data.message || m['discountCodeInput.invalidCode']();
 				}
 			}
 		} catch {
-			discountError = 'Failed to validate discount code';
+			discountError = m['discountCodeInput.validateFailed']();
 		} finally {
 			isValidatingDiscount = false;
 		}
@@ -124,7 +125,7 @@
 	>
 		<span class="flex items-center gap-2">
 			<Tag class="h-4 w-4" aria-hidden="true" />
-			Have a discount code?
+			{m['discountCodeInput.haveCode']()}
 		</span>
 		<ChevronDown
 			class="h-4 w-4 transition-transform {discountOpen ? 'rotate-180' : ''}"
@@ -154,7 +155,7 @@
 							onclick={handleRemove}
 							disabled={isProcessing}
 							class="rounded-md p-1 text-emerald-600 hover:bg-emerald-100 dark:text-emerald-400 dark:hover:bg-emerald-900/50"
-							aria-label="Remove discount code"
+							aria-label={m['discountCodeInput.removeCode']()}
 						>
 							<X class="h-4 w-4" />
 						</button>
@@ -170,11 +171,12 @@
 								{currency}
 								{discountedPrice.toFixed(2)}
 							</span>
-							<span class="text-muted-foreground"> / ticket</span>
+							<span class="text-muted-foreground"> {m['discountCodeInput.perTicket']()}</span>
 
 							{#if quantity > 1}
 								<p class="mt-1 font-medium text-emerald-800 dark:text-emerald-300">
-									Total: {currency}
+									{m['discountCodeInput.total']()}
+									{currency}
 									{(discountedPrice * quantity).toFixed(2)}
 								</p>
 							{/if}
@@ -187,10 +189,10 @@
 					<Input
 						type="text"
 						bind:value={discountCodeInput}
-						placeholder="Enter code"
+						placeholder={m['discountCodeInput.codePlaceholder']()}
 						disabled={isProcessing || isValidatingDiscount}
 						class="flex-1 uppercase"
-						aria-label="Discount code"
+						aria-label={m['discountCodeInput.discountCode']()}
 						aria-invalid={discountError ? 'true' : undefined}
 						aria-describedby={discountError ? 'discount-error' : undefined}
 						oninput={() => {
@@ -212,7 +214,7 @@
 						{#if isValidatingDiscount}
 							<Loader2 class="h-4 w-4 animate-spin" />
 						{:else}
-							Apply
+							{m['discountCodeInput.apply']()}
 						{/if}
 					</Button>
 				</div>

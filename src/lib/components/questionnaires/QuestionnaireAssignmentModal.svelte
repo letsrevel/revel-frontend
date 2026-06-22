@@ -89,7 +89,7 @@
 			}
 		} catch (err) {
 			console.error('Failed to load events:', err);
-			alert('Failed to load events. Please try again.');
+			alert(m['questionnaireAssignmentModal.loadEventsError']());
 		} finally {
 			isLoadingEvents = false;
 		}
@@ -111,7 +111,7 @@
 			}
 		} catch (err) {
 			console.error('Failed to load event series:', err);
-			alert('Failed to load event series. Please try again.');
+			alert(m['questionnaireAssignmentModal.loadSeriesError']());
 		} finally {
 			isLoadingSeries = false;
 		}
@@ -198,7 +198,7 @@
 			onClose();
 		} catch (err) {
 			console.error('Failed to save assignments:', err);
-			alert('Failed to save assignments. Please try again.');
+			alert(m['questionnaireAssignmentModal.saveError']());
 		} finally {
 			isSaving = false;
 		}
@@ -247,8 +247,7 @@
 		<DialogHeader class="border-b p-6 pb-4">
 			<DialogTitle>{m['questionnaireAssignmentModal.assignQuestionnaire']()}</DialogTitle>
 			<p class="mt-1 text-sm text-muted-foreground">
-				Select which events or event series require completion of "{questionnaire.questionnaire
-					.name}"
+				{m['questionnaireAssignmentModal.description']({ name: questionnaire.questionnaire.name })}
 			</p>
 		</DialogHeader>
 
@@ -256,11 +255,11 @@
 			<TabsList class="mx-6 mt-4 grid w-auto grid-cols-2">
 				<TabsTrigger value="events" class="gap-2">
 					<Calendar class="h-4 w-4" aria-hidden="true" />
-					Events ({selectedEventsCount})
+					{m['questionnaireAssignmentModal.eventsTab']({ count: selectedEventsCount })}
 				</TabsTrigger>
 				<TabsTrigger value="series" class="gap-2">
 					<Repeat class="h-4 w-4" aria-hidden="true" />
-					Series ({selectedSeriesCount})
+					{m['questionnaireAssignmentModal.seriesTab']({ count: selectedSeriesCount })}
 				</TabsTrigger>
 			</TabsList>
 
@@ -287,10 +286,10 @@
 						/>
 						<Input
 							type="text"
-							placeholder="Search events by name or location..."
+							placeholder={m['questionnaireAssignmentModal.searchEventsPlaceholder']()}
 							bind:value={searchQueryEvents}
 							class="pl-10"
-							aria-label="Search events"
+							aria-label={m['questionnaireAssignmentModal.searchEventsAriaLabel']()}
 						/>
 					</div>
 				</div>
@@ -307,7 +306,9 @@
 					{:else if filteredEvents.length === 0}
 						<div class="py-12 text-center">
 							<p class="text-sm text-muted-foreground">
-								{searchQueryEvents ? 'No events match your search' : 'No events available'}
+								{searchQueryEvents
+									? m['questionnaireAssignmentModal.noEventsMatch']()
+									: m['questionnaireAssignmentModal.noEventsAvailable']()}
 							</p>
 						</div>
 					{:else}
@@ -328,7 +329,9 @@
 										<Checkbox
 											checked={selectedEventIds.has(event.id)}
 											onCheckedChange={() => toggleEvent(event.id)}
-											aria-label={`Select ${event.name}`}
+											aria-label={m['questionnaireAssignmentModal.selectItem']({
+												name: event.name
+											})}
 											class="mt-1"
 										/>
 									</div>
@@ -379,10 +382,10 @@
 						/>
 						<Input
 							type="text"
-							placeholder="Search series by name..."
+							placeholder={m['questionnaireAssignmentModal.searchSeriesPlaceholder']()}
 							bind:value={searchQuerySeries}
 							class="pl-10"
-							aria-label="Search event series"
+							aria-label={m['questionnaireAssignmentModal.searchSeriesAriaLabel']()}
 						/>
 					</div>
 				</div>
@@ -399,7 +402,9 @@
 					{:else if filteredSeries.length === 0}
 						<div class="py-12 text-center">
 							<p class="text-sm text-muted-foreground">
-								{searchQuerySeries ? 'No series match your search' : 'No event series available'}
+								{searchQuerySeries
+									? m['questionnaireAssignmentModal.noSeriesMatch']()
+									: m['questionnaireAssignmentModal.noSeriesAvailable']()}
 							</p>
 						</div>
 					{:else}
@@ -420,7 +425,9 @@
 										<Checkbox
 											checked={selectedSeriesIds.has(series.id)}
 											onCheckedChange={() => toggleSeries(series.id)}
-											aria-label={`Select ${series.name}`}
+											aria-label={m['questionnaireAssignmentModal.selectItem']({
+												name: series.name
+											})}
 											class="mt-1"
 										/>
 									</div>
@@ -429,7 +436,7 @@
 											<h3 class="line-clamp-1 font-medium">{series.name}</h3>
 											<Badge variant="secondary" class="flex gap-1 text-xs">
 												<Repeat class="h-3 w-3" aria-hidden="true" />
-												Series
+												{m['questionnaireAssignmentModal.seriesBadge']()}
 											</Badge>
 										</div>
 										{#if series.description}
@@ -451,9 +458,11 @@
 			<div class="flex items-center justify-between">
 				<div class="text-sm text-muted-foreground">
 					<span class="font-medium text-foreground">{selectedEventsCount}</span>
-					{selectedEventsCount === 1 ? 'event' : 'events'},
+					{selectedEventsCount === 1
+						? m['questionnaireAssignmentModal.eventSingular']()
+						: m['questionnaireAssignmentModal.eventPlural']()},
 					<span class="font-medium text-foreground">{selectedSeriesCount}</span>
-					{selectedSeriesCount === 1 ? 'series' : 'series'} selected
+					{m['questionnaireAssignmentModal.seriesSelectedSuffix']()}
 				</div>
 				<div class="flex gap-2">
 					<Button variant="outline" onclick={onClose} disabled={isSaving}
@@ -462,9 +471,9 @@
 					<Button onclick={saveAssignments} disabled={!hasChanges || isSaving}>
 						{#if isSaving}
 							<Loader2 class="h-4 w-4 animate-spin" aria-hidden="true" />
-							Saving...
+							{m['questionnaireAssignmentModal.saving']()}
 						{:else}
-							Save Assignments
+							{m['questionnaireAssignmentModal.saveAssignments']()}
 						{/if}
 					</Button>
 				</div>

@@ -82,7 +82,7 @@
 
 <div class="space-y-2">
 	<label for="otp-input-0" class="block text-sm font-medium">
-		Enter 6-digit authentication code
+		{m['twoFactorInput.label']()}
 	</label>
 
 	<div class="flex gap-2" role="group" aria-labelledby="otp-label">
@@ -98,7 +98,7 @@
 				oninput={(e) => handleInput(i, e)}
 				onkeydown={(e) => handleKeydown(i, e)}
 				onpaste={i === 0 ? handlePaste : undefined}
-				aria-label="Digit {i + 1}"
+				aria-label={m['twoFactorInput.digitAriaLabel']({ position: i + 1 })}
 				aria-invalid={!!error}
 				class="h-12 w-12 rounded-md border-2 {error
 					? 'border-destructive'

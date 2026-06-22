@@ -31,25 +31,25 @@
 
 	async function copyLink() {
 		if (!token.id) {
-			toast.error('Token ID is missing');
+			toast.error(m['organizationTokenCard.tokenIdMissing']());
 			return;
 		}
 		const url = getOrganizationTokenUrl(token.id, organizationSlug);
 		try {
 			await navigator.clipboard.writeText(url);
-			toast.success('Link copied to clipboard!');
+			toast.success(m['organizationTokenCard.linkCopied']());
 		} catch {
-			toast.error('Failed to copy link');
+			toast.error(m['organizationTokenCard.copyFailed']());
 		}
 	}
 
 	function getAccessTypeDisplay(): string {
 		if (token.grants_staff_status) {
-			return 'Staff Access';
+			return m['organizationTokenCard.staffAccess']();
 		} else if (token.grants_membership) {
-			return 'Member Access';
+			return m['organizationTokenCard.memberAccess']();
 		}
-		return 'View Only';
+		return m['organizationTokenCard.viewOnly']();
 	}
 
 	const accessType = $derived(getAccessTypeDisplay());
@@ -64,7 +64,7 @@
 			<div class="flex items-center gap-2">
 				<Icon class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
 				<h3 class="font-semibold">
-					{token.name || 'Unnamed Token'}
+					{token.name || m['organizationTokenCard.unnamedToken']()}
 				</h3>
 				<TokenStatusBadge {status} />
 				{#if token.grants_staff_status}
@@ -95,8 +95,8 @@
 				variant="ghost"
 				size="sm"
 				onclick={copyLink}
-				aria-label="Copy invitation link"
-				title="Copy Link"
+				aria-label={m['organizationTokenCard.copyInvitationLinkLabel']()}
+				title={m['organizationTokenCard.copyLinkTitle']()}
 			>
 				<Copy class="h-4 w-4" aria-hidden="true" />
 			</Button>
@@ -105,8 +105,8 @@
 					variant="ghost"
 					size="sm"
 					onclick={() => onEdit(token)}
-					aria-label="Edit token"
-					title="Edit"
+					aria-label={m['organizationTokenCard.editTokenLabel']()}
+					title={m['organizationTokenCard.editTitle']()}
 				>
 					<Edit class="h-4 w-4" aria-hidden="true" />
 				</Button>
@@ -114,8 +114,8 @@
 					variant="ghost"
 					size="sm"
 					onclick={() => onDelete(token)}
-					aria-label="Delete token"
-					title="Delete"
+					aria-label={m['organizationTokenCard.deleteTokenLabel']()}
+					title={m['organizationTokenCard.deleteTitle']()}
 					class="text-destructive hover:text-destructive"
 				>
 					<Trash2 class="h-4 w-4" aria-hidden="true" />

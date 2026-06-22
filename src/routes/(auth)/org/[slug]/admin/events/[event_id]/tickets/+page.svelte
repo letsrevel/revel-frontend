@@ -250,7 +250,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to blacklist user');
+				throw new Error(m['eventTicketsAdmin.blacklistError']());
 			}
 
 			return response.data;
@@ -259,11 +259,11 @@
 			const userName = ticketToBlacklist ? getUserDisplayName(ticketToBlacklist.user) : '';
 			showBlacklistDialog = false;
 			ticketToBlacklist = null;
-			toast.success(`${userName} has been blacklisted`);
+			toast.success(m['eventTicketsAdmin.blacklistSuccess']({ name: userName }));
 			invalidateAll();
 		},
 		onError: () => {
-			toast.error('Failed to blacklist user');
+			toast.error(m['eventTicketsAdmin.blacklistError']());
 		}
 	}));
 
@@ -273,7 +273,7 @@
 	async function openMakeMemberModal(ticket: any) {
 		const user = ticket.user;
 		if (!user?.id) {
-			toast.error('User ID not available');
+			toast.error(m['eventTicketsAdmin.userIdNotAvailable']());
 			return;
 		}
 
@@ -323,7 +323,7 @@
 	 */
 	function openBlacklistDialog(ticket: any) {
 		if (!ticket.user?.id) {
-			toast.error('User ID not available');
+			toast.error(m['eventTicketsAdmin.userIdNotAvailable']());
 			return;
 		}
 		ticketToBlacklist = ticket;
@@ -673,8 +673,11 @@
 		{#if data.tickets.length > 0}
 			<div class="mt-6 flex items-center justify-between">
 				<div class="text-sm text-muted-foreground">
-					Showing page {data.currentPage} of {Math.ceil(data.totalCount / data.pageSize)}
-					({data.totalCount} total tickets)
+					{m['eventTicketsAdmin.paginationShowing']({
+						page: data.currentPage,
+						totalPages: Math.ceil(data.totalCount / data.pageSize),
+						total: data.totalCount
+					})}
 				</div>
 				<div class="flex gap-2">
 					<Button
@@ -683,7 +686,7 @@
 						onclick={() => goToPage(data.currentPage - 1)}
 						disabled={!data.previousPage}
 					>
-						Previous
+						{m['eventTicketsAdmin.paginationPrevious']()}
 					</Button>
 					<Button
 						variant="outline"
@@ -691,7 +694,7 @@
 						onclick={() => goToPage(data.currentPage + 1)}
 						disabled={!data.nextPage}
 					>
-						Next
+						{m['eventTicketsAdmin.paginationNext']()}
 					</Button>
 				</div>
 			</div>
@@ -739,7 +742,7 @@
 					ticketToConfirm = null;
 					pwycPricePaid = '';
 				}}
-				aria-label="Close dialog"
+				aria-label={m['eventTicketsAdmin.closeDialog']()}
 				class="absolute right-4 top-4 rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			>
 				<X class="h-4 w-4" aria-hidden="true" />
@@ -771,7 +774,9 @@
 			{#if pwyc}
 				<div class="mt-4 space-y-2">
 					<label for="pwyc-price-input" class="block text-sm font-medium text-foreground">
-						Amount paid ({ticketToConfirm.tier?.currency?.toUpperCase() || 'EUR'})
+						{m['eventTicketsAdmin.amountPaidLabel']({
+							currency: ticketToConfirm.tier?.currency?.toUpperCase() || 'EUR'
+						})}
 					</label>
 					<Input
 						id="pwyc-price-input"
@@ -814,7 +819,7 @@
 					class="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
 				>
 					{#if confirmPaymentMutation.isPending}
-						Confirming...
+						{m['eventTicketsAdmin.confirmingPayment']()}
 					{:else}
 						{m['eventTicketsAdmin.confirmPaymentButton']()}
 					{/if}
@@ -875,12 +880,14 @@
 <!-- Blacklist Confirmation Dialog -->
 <ConfirmDialog
 	isOpen={showBlacklistDialog}
-	title="Blacklist User"
+	title={m['eventTicketsAdmin.blacklistDialogTitle']()}
 	message={ticketToBlacklist
-		? `Are you sure you want to blacklist ${getUserDisplayName(ticketToBlacklist.user)}? They will be blocked from all events in this organization.`
+		? m['eventTicketsAdmin.blacklistDialogMessage']({
+				name: getUserDisplayName(ticketToBlacklist.user)
+			})
 		: ''}
-	confirmText="Blacklist"
-	cancelText="Cancel"
+	confirmText={m['eventTicketsAdmin.blacklistDialogConfirm']()}
+	cancelText={m['eventTicketsAdmin.blacklistDialogCancel']()}
 	onConfirm={confirmBlacklist}
 	onCancel={cancelBlacklist}
 	variant="danger"

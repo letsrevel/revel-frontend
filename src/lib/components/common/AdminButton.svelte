@@ -98,7 +98,7 @@
 		<!-- Single org - direct button -->
 		<Button variant="ghost" size="sm" class="gap-2 text-sm font-medium" onclick={handleAdminClick}>
 			<Shield class="h-4 w-4" />
-			Admin
+			{m['adminButton.admin']()}
 		</Button>
 	{:else}
 		<!-- Multiple orgs - dropdown -->
@@ -107,7 +107,7 @@
 				{#snippet child({ props })}
 					<Button {...props} variant="ghost" size="sm" class="gap-2 text-sm font-medium">
 						<Shield class="h-4 w-4" />
-						Admin
+						{m['adminButton.admin']()}
 						<ChevronDown class="h-4 w-4" />
 					</Button>
 				{/snippet}

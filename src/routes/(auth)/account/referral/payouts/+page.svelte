@@ -268,13 +268,13 @@
 					disabled={!hasPrevious}
 					onclick={() => (currentPage = Math.max(1, currentPage - 1))}
 				>
-					Previous
+					{m['referralPayoutsPage.previous']()}
 				</Button>
 				<span class="text-sm text-muted-foreground">
-					Page {currentPage}
+					{m['referralPayoutsPage.pageIndicator']({ page: currentPage })}
 				</span>
 				<Button variant="outline" size="sm" disabled={!hasNext} onclick={() => (currentPage += 1)}>
-					Next
+					{m['referralPayoutsPage.next']()}
 				</Button>
 			</div>
 		{/if}

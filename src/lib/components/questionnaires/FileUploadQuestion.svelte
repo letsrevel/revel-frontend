@@ -108,7 +108,7 @@
 
 	// Format accepted MIME types for display
 	function formatAcceptedTypes(acceptStr: string): string {
-		if (acceptStr === '*/*') return 'All files';
+		if (acceptStr === '*/*') return m['fileUploadQuestion.allFiles']();
 		return acceptStr
 			.split(',')
 			.map((type) => {
@@ -136,11 +136,11 @@
 				return fileBaseType === type;
 			});
 			if (!isValid) {
-				return `Invalid file type. Allowed: ${formatAcceptedTypes(accept)}`;
+				return m['fileUploadQuestion.invalidFileType']({ types: formatAcceptedTypes(accept) });
 			}
 		}
 		if (maxSize && file.size > maxSize) {
-			return `File too large. Max: ${formatFileSize(maxSize)}`;
+			return m['fileUploadQuestion.fileTooLarge']({ size: formatFileSize(maxSize) });
 		}
 		return null;
 	}
@@ -157,7 +157,7 @@
 		}
 
 		if (selectedFiles.length + pendingUploads.length >= maxFiles) {
-			uploadError = `Maximum ${maxFiles} file${maxFiles > 1 ? 's' : ''} allowed`;
+			uploadError = m['fileUploadQuestion.maxFilesAllowed']({ count: maxFiles });
 			return;
 		}
 
@@ -177,10 +177,10 @@
 				pendingUploads = pendingUploads.filter((p) => p.file !== file);
 				onFilesChange?.([...selectedFiles, response.data]);
 			} else {
-				throw new Error('Upload failed');
+				throw new Error(m['fileUploadQuestion.uploadFailed']());
 			}
 		} catch (err) {
-			const errorMsg = err instanceof Error ? err.message : 'Upload failed';
+			const errorMsg = err instanceof Error ? err.message : m['fileUploadQuestion.uploadFailed']();
 			uploadError = errorMsg;
 			pendingUploads = pendingUploads.filter((p) => p.file !== file);
 		}
@@ -338,7 +338,7 @@
 							size="icon"
 							class="h-8 w-8 shrink-0"
 							onclick={() => removeFile(file.id)}
-							aria-label="Remove file"
+							aria-label={m['fileUploadQuestion.removeFile']()}
 						>
 							<X class="h-4 w-4" />
 						</Button>
@@ -354,7 +354,7 @@
 					<div class="min-w-0 flex-1">
 						<p class="truncate text-sm font-medium">{pending.file.name}</p>
 						<p class="text-xs text-muted-foreground">
-							{pending.error || 'Uploading...'}
+							{pending.error || m['fileUploadQuestion.uploading']()}
 						</p>
 					</div>
 					<Button
@@ -362,7 +362,7 @@
 						size="icon"
 						class="h-8 w-8 shrink-0"
 						onclick={() => removePendingUpload(pending.file)}
-						aria-label="Cancel upload"
+						aria-label={m['fileUploadQuestion.cancelUpload']()}
 					>
 						<X class="h-4 w-4" />
 					</Button>
@@ -384,7 +384,7 @@
 				ondragleave={handleDragLeave}
 				ondragover={handleDragOver}
 				ondrop={handleDrop}
-				aria-label="Upload file"
+				aria-label={m['fileUploadQuestion.uploadFile']()}
 				class={cn(
 					'flex flex-1 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 transition-all',
 					'hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-800/50',
@@ -400,9 +400,9 @@
 				/>
 				<p class="text-sm font-medium text-gray-900 dark:text-gray-100">
 					{#if isDragging}
-						Drop files here
+						{m['fileUploadQuestion.dropFilesHere']()}
 					{:else}
-						Click to upload
+						{m['fileUploadQuestion.clickToUpload']()}
 					{/if}
 				</p>
 				<p class="text-center text-xs text-muted-foreground">
@@ -435,7 +435,7 @@
 				{disabled}
 			>
 				<Clock class="h-5 w-5" />
-				<span class="text-xs">Recent</span>
+				<span class="text-xs">{m['fileUploadQuestion.recent']()}</span>
 				{#if showRecentFiles}
 					<ChevronUp class="h-3 w-3" />
 				{:else}
@@ -458,7 +458,7 @@
 	<!-- Recent files panel -->
 	{#if showRecentFiles}
 		<div class="rounded-lg border bg-muted/50 p-3">
-			<p class="mb-2 text-sm font-medium">Select from recent uploads</p>
+			<p class="mb-2 text-sm font-medium">{m['fileUploadQuestion.selectFromRecentUploads']()}</p>
 			{#if recentFilesQuery.isPending}
 				<div class="flex items-center justify-center py-4">
 					<Loader2 class="h-5 w-5 animate-spin text-muted-foreground" />
@@ -497,7 +497,9 @@
 					{/each}
 				</div>
 			{:else}
-				<p class="py-4 text-center text-sm text-muted-foreground">No recent files found</p>
+				<p class="py-4 text-center text-sm text-muted-foreground">
+					{m['fileUploadQuestion.noRecentFilesFound']()}
+				</p>
 			{/if}
 		</div>
 	{/if}

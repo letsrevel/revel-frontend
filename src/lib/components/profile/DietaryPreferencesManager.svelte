@@ -187,7 +187,7 @@
 	{#if isLoading}
 		<div class="flex items-center justify-center py-8">
 			<Loader2 class="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
-			<span class="sr-only">Loading preferences...</span>
+			<span class="sr-only">{m['dietaryPreferencesManager.loading']()}</span>
 		</div>
 	{:else if userPreferences.length === 0}
 		<div class="rounded-md border border-dashed p-8 text-center">

@@ -177,7 +177,7 @@
 			});
 
 			if (response.error) {
-				throw new Error('Failed to blacklist user');
+				throw new Error(m['attendeesAdmin.blacklistError']());
 			}
 
 			return response.data;
@@ -186,11 +186,11 @@
 			const userName = rsvpToBlacklist ? getUserDisplayName(rsvpToBlacklist.user) : '';
 			showBlacklistDialog = false;
 			rsvpToBlacklist = null;
-			toast.success(`${userName} has been blacklisted`);
+			toast.success(m['attendeesAdmin.blacklistSuccess']({ name: userName }));
 			invalidateAll();
 		},
 		onError: () => {
-			toast.error('Failed to blacklist user');
+			toast.error(m['attendeesAdmin.blacklistError']());
 		}
 	}));
 
@@ -200,7 +200,7 @@
 	async function openMakeMemberModal(rsvp: RsvpDetailSchema) {
 		const user = rsvp.user;
 		if (!user?.id) {
-			toast.error('User ID not available');
+			toast.error(m['attendeesAdmin.userIdNotAvailable']());
 			return;
 		}
 
@@ -250,7 +250,7 @@
 	 */
 	function openBlacklistDialog(rsvp: RsvpDetailSchema) {
 		if (!rsvp.user?.id) {
-			toast.error('User ID not available');
+			toast.error(m['attendeesAdmin.userIdNotAvailable']());
 			return;
 		}
 		rsvpToBlacklist = rsvp;
@@ -392,8 +392,13 @@
 </script>
 
 <svelte:head>
-	<title>Manage Attendees - {data.event.name} | {organization.name} | Revel</title>
-	<meta name="description" content="Manage RSVPs for {data.event.name}" />
+	<title
+		>{m['attendeesAdmin.headTitle']({ eventName: data.event.name })} | {organization.name} | Revel</title
+	>
+	<meta
+		name="description"
+		content={m['attendeesAdmin.headDescription']({ eventName: data.event.name })}
+	/>
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
@@ -662,7 +667,9 @@
 											onclick={() => openMakeMemberModal(rsvp)}
 											disabled={addMemberMutation.isPending || tiersLoading}
 											class="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:opacity-50"
-											aria-label="Make {getUserDisplayName(rsvp.user)} a member"
+											aria-label={m['attendeesAdmin.makeMemberAriaLabel']({
+												name: getUserDisplayName(rsvp.user)
+											})}
 										>
 											<UserPlus class="h-3 w-3" aria-hidden="true" />
 											{m['makeMemberAction.button']()}
@@ -672,7 +679,9 @@
 										type="button"
 										onclick={() => openEditModal(rsvp)}
 										class="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
-										aria-label="Edit RSVP for {getUserDisplayName(rsvp.user)}"
+										aria-label={m['attendeesAdmin.editRsvpAriaLabel']({
+											name: getUserDisplayName(rsvp.user)
+										})}
 									>
 										<Edit class="h-3 w-3" aria-hidden="true" />
 										{m['attendeesAdmin.actionEdit']()}
@@ -681,7 +690,9 @@
 										type="button"
 										onclick={() => openDeleteDialog(rsvp)}
 										class="inline-flex items-center gap-1 rounded-md bg-destructive px-2 py-1 text-xs font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
-										aria-label="Delete RSVP for {getUserDisplayName(rsvp.user)}"
+										aria-label={m['attendeesAdmin.deleteRsvpAriaLabel']({
+											name: getUserDisplayName(rsvp.user)
+										})}
 									>
 										<Trash2 class="h-3 w-3" aria-hidden="true" />
 										{m['attendeesAdmin.actionDelete']()}
@@ -694,7 +705,9 @@
 													<button
 														{...props}
 														class="inline-flex items-center justify-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-														aria-label="More actions for {getUserDisplayName(rsvp.user)}"
+														aria-label={m['attendeesAdmin.moreActionsForAriaLabel']({
+															name: getUserDisplayName(rsvp.user)
+														})}
 													>
 														<MoreVertical class="h-4 w-4" aria-hidden="true" />
 													</button>
@@ -706,7 +719,7 @@
 													class="text-destructive focus:text-destructive"
 												>
 													<Ban class="mr-2 h-4 w-4" aria-hidden="true" />
-													Blacklist User
+													{m['attendeesAdmin.blacklistUser']()}
 												</DropdownMenu.Item>
 											</DropdownMenu.Content>
 										</DropdownMenu.Root>
@@ -803,7 +816,7 @@
 											<button
 												{...props}
 												class="inline-flex items-center justify-center rounded-md bg-secondary p-2 text-muted-foreground transition-colors hover:bg-secondary/80 hover:text-foreground"
-												aria-label="More actions"
+												aria-label={m['attendeesAdmin.moreActions']()}
 											>
 												<MoreVertical class="h-4 w-4" aria-hidden="true" />
 											</button>
@@ -815,7 +828,7 @@
 											class="text-destructive focus:text-destructive"
 										>
 											<Ban class="mr-2 h-4 w-4" aria-hidden="true" />
-											Blacklist User
+											{m['attendeesAdmin.blacklistUser']()}
 										</DropdownMenu.Item>
 									</DropdownMenu.Content>
 								</DropdownMenu.Root>
@@ -983,12 +996,14 @@
 <!-- Blacklist Confirmation Dialog -->
 <ConfirmDialog
 	isOpen={showBlacklistDialog}
-	title="Blacklist User"
+	title={m['attendeesAdmin.blacklistDialogTitle']()}
 	message={rsvpToBlacklist
-		? `Are you sure you want to blacklist ${getUserDisplayName(rsvpToBlacklist.user)}? They will be blocked from all events in this organization.`
+		? m['attendeesAdmin.blacklistDialogMessage']({
+				name: getUserDisplayName(rsvpToBlacklist.user)
+			})
 		: ''}
-	confirmText="Blacklist"
-	cancelText="Cancel"
+	confirmText={m['attendeesAdmin.blacklistDialogConfirm']()}
+	cancelText={m['attendeesAdmin.blacklistDialogCancel']()}
 	variant="danger"
 	onConfirm={confirmBlacklist}
 	onCancel={cancelBlacklist}

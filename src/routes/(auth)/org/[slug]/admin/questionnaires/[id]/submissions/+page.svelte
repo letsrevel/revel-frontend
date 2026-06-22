@@ -101,7 +101,7 @@
 				variant="outline"
 				size="sm"
 			>
-				View Summary
+				{m['questionnaireSubmissionsPage.viewSummary']()}
 			</Button>
 		</div>
 	</div>
@@ -292,12 +292,16 @@
 
 					<div class="space-y-2 text-sm">
 						<div class="flex justify-between">
-							<span class="text-muted-foreground">Submitted:</span>
+							<span class="text-muted-foreground"
+								>{m['questionnaireSubmissionsPage.submittedLabel']()}</span
+							>
 							<span>{formatDate(submission.submitted_at)}</span>
 						</div>
 						{#if data.requiresEvaluation}
 							<div class="flex justify-between">
-								<span class="text-muted-foreground">Score:</span>
+								<span class="text-muted-foreground"
+									>{m['questionnaireSubmissionsPage.scoreLabel']()}</span
+								>
 								<span>{formatScore(submission.evaluation_score)}</span>
 							</div>
 						{/if}
@@ -321,10 +325,14 @@
 		<!-- Pagination -->
 		<div class="mt-6 flex items-center justify-between">
 			<p class="text-sm text-muted-foreground">
-				Showing {(data.pagination.currentPage - 1) * data.pagination.pageSize + 1} to {Math.min(
-					data.pagination.currentPage * data.pagination.pageSize,
-					data.pagination.count
-				)} of {data.pagination.count} submissions
+				{m['questionnaireSubmissionsPage.paginationShowing']({
+					from: (data.pagination.currentPage - 1) * data.pagination.pageSize + 1,
+					to: Math.min(
+						data.pagination.currentPage * data.pagination.pageSize,
+						data.pagination.count
+					),
+					total: data.pagination.count
+				})}
 			</p>
 
 			<div class="flex items-center gap-2">
@@ -333,7 +341,7 @@
 					size="sm"
 					onclick={() => goToPage(1)}
 					disabled={data.pagination.currentPage === 1}
-					aria-label="Go to first page"
+					aria-label={m['questionnaireSubmissionsPage.gotoFirstPage']()}
 				>
 					<ChevronsLeft class="h-4 w-4" />
 				</Button>
@@ -342,13 +350,16 @@
 					size="sm"
 					onclick={() => goToPage(data.pagination.currentPage - 1)}
 					disabled={!data.pagination.previous}
-					aria-label="Go to previous page"
+					aria-label={m['questionnaireSubmissionsPage.gotoPreviousPage']()}
 				>
 					<ChevronLeft class="h-4 w-4" />
 				</Button>
 
 				<span class="text-sm">
-					Page {data.pagination.currentPage} of {data.pagination.totalPages}
+					{m['questionnaireSubmissionsPage.pageOf']({
+						current: data.pagination.currentPage,
+						total: data.pagination.totalPages
+					})}
 				</span>
 
 				<Button
@@ -356,7 +367,7 @@
 					size="sm"
 					onclick={() => goToPage(data.pagination.currentPage + 1)}
 					disabled={!data.pagination.next}
-					aria-label="Go to next page"
+					aria-label={m['questionnaireSubmissionsPage.gotoNextPage']()}
 				>
 					<ChevronRight class="h-4 w-4" />
 				</Button>
@@ -365,7 +376,7 @@
 					size="sm"
 					onclick={() => goToPage(data.pagination.totalPages)}
 					disabled={data.pagination.currentPage === data.pagination.totalPages}
-					aria-label="Go to last page"
+					aria-label={m['questionnaireSubmissionsPage.gotoLastPage']()}
 				>
 					<ChevronsRight class="h-4 w-4" />
 				</Button>

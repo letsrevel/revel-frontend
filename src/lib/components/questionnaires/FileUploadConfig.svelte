@@ -103,7 +103,7 @@
 			{/each}
 		</div>
 		{#if (allowedMimeTypes?.length || 0) === 0}
-			<p class="text-xs text-destructive">Please select at least one file type</p>
+			<p class="text-xs text-destructive">{m['questionEditor.selectAtLeastOneFileType']()}</p>
 		{/if}
 	</div>
 
@@ -151,7 +151,7 @@
 				min={1}
 				max={10}
 			/>
-			<p class="text-xs text-muted-foreground">1-10 files allowed</p>
+			<p class="text-xs text-muted-foreground">{m['questionEditor.filesRangeAllowed']()}</p>
 		</div>
 	</div>
 </div>

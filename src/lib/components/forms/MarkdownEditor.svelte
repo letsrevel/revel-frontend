@@ -46,7 +46,7 @@
 		value = $bindable(''),
 		id,
 		label,
-		placeholder = 'Enter markdown content...',
+		placeholder = m['markdownEditor.placeholderDefault'](),
 		rows = 6,
 		required = false,
 		disabled = false,
@@ -157,7 +157,7 @@
 			<label for={inputId} class="block text-sm font-medium text-gray-900 dark:text-gray-100">
 				{label}
 				{#if required}
-					<span class="text-destructive" aria-label="required">*</span>
+					<span class="text-destructive" aria-label={m['markdownEditor.required']()}>*</span>
 				{/if}
 			</label>
 
@@ -165,7 +165,9 @@
 				type="button"
 				onclick={togglePreview}
 				class="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-gray-900 dark:hover:text-gray-100"
-				aria-label={showPreview ? 'Hide preview' : 'Show preview'}
+				aria-label={showPreview
+					? m['markdownEditor.hidePreviewAriaLabel']()
+					: m['markdownEditor.showPreviewAriaLabel']()}
 			>
 				{#if showPreview}
 					<EyeOff class="h-4 w-4" aria-hidden="true" />
@@ -183,14 +185,14 @@
 		<div
 			class="flex flex-wrap gap-1 rounded-md border border-gray-300 bg-gray-50 p-2 dark:border-gray-600 dark:bg-gray-800"
 			role="toolbar"
-			aria-label="Markdown formatting toolbar"
+			aria-label={m['markdownEditor.toolbarAriaLabel']()}
 		>
 			<button
 				type="button"
 				onclick={() => insertFormatting('**', '**')}
 				class="rounded p-1.5 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
-				aria-label="Bold"
-				title="Bold"
+				aria-label={m['markdownEditor.bold']()}
+				title={m['markdownEditor.bold']()}
 			>
 				<Bold class="h-4 w-4" aria-hidden="true" />
 			</button>
@@ -199,8 +201,8 @@
 				type="button"
 				onclick={() => insertFormatting('*', '*')}
 				class="rounded p-1.5 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
-				aria-label="Italic"
-				title="Italic"
+				aria-label={m['markdownEditor.italic']()}
+				title={m['markdownEditor.italic']()}
 			>
 				<Italic class="h-4 w-4" aria-hidden="true" />
 			</button>
@@ -209,8 +211,8 @@
 				type="button"
 				onclick={() => insertFormatting('[](url)', '')}
 				class="rounded p-1.5 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
-				aria-label="Insert link"
-				title="Insert link"
+				aria-label={m['markdownEditor.insertLink']()}
+				title={m['markdownEditor.insertLink']()}
 			>
 				<LinkIcon class="h-4 w-4" aria-hidden="true" />
 			</button>
@@ -219,8 +221,8 @@
 				type="button"
 				onclick={() => insertFormatting('* ', '')}
 				class="rounded p-1.5 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
-				aria-label="Insert list"
-				title="Insert list"
+				aria-label={m['markdownEditor.insertList']()}
+				title={m['markdownEditor.insertList']()}
 			>
 				<List class="h-4 w-4" aria-hidden="true" />
 			</button>

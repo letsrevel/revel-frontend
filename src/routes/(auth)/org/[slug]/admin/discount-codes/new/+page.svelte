@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
@@ -88,13 +89,13 @@
 			variant="ghost"
 			size="icon"
 			onclick={() => goto(`/org/${organization.slug}/admin/discount-codes`)}
-			aria-label="Back to discount codes"
+			aria-label={m['discountCodeNewPage.backAriaLabel']()}
 		>
 			<ArrowLeft class="h-5 w-5" />
 		</Button>
 		<div>
-			<h1 class="text-2xl font-bold tracking-tight">New Discount Code</h1>
-			<p class="text-muted-foreground">Create a discount code for ticket checkout.</p>
+			<h1 class="text-2xl font-bold tracking-tight">{m['discountCodeNewPage.title']()}</h1>
+			<p class="text-muted-foreground">{m['discountCodeNewPage.subtitle']()}</p>
 		</div>
 	</div>
 

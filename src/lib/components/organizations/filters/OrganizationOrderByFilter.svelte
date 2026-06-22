@@ -51,7 +51,7 @@
 				onfocus={() => (showTooltip = true)}
 				onblur={() => (showTooltip = false)}
 				class="rounded-sm p-0.5 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				aria-label="Sort order information"
+				aria-label={m['organizationOrderByFilter.sortOrderInfoLabel']()}
 			>
 				<Info class="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
 			</button>
@@ -62,8 +62,7 @@
 				>
 					<p class="font-medium">{m['organizationOrderByFilter.distanceSorting']()}</p>
 					<p class="mt-1 text-muted-foreground">
-						"Nearest First" uses your approximate location from IP address or your selected city in
-						account settings.
+						{m['organizationOrderByFilter.distanceSortingHelp']()}
 					</p>
 					<!-- Tooltip arrow -->
 					<div
@@ -78,7 +77,7 @@
 		value={orderBy}
 		onchange={handleChange}
 		class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-		aria-label="Sort order"
+		aria-label={m['organizationOrderByFilter.sortOrderLabel']()}
 	>
 		{#each options as option (option.value)}
 			<option value={option.value}>

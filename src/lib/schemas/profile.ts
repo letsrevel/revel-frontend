@@ -20,7 +20,7 @@ export const profileUpdateSchema = z.object({
 	last_name: z.string().max(150, 'Last name must be 150 characters or less').default(''),
 	preferred_name: z.string().max(255, 'Preferred name must be 255 characters or less').default(''),
 	pronouns: z.string().max(10, 'Pronouns must be 10 characters or less'),
-	language: z.enum(['en', 'de', 'it']),
+	language: z.enum(['en', 'de', 'it', 'fr']),
 	bio: z.string().max(500, 'Bio must be 500 characters or less').optional().default('')
 });
 

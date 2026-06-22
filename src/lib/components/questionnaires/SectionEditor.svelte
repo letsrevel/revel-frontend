@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { Card, CardContent, CardHeader } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -84,7 +85,7 @@
 					onclick={onMoveUp}
 					disabled={isFirst}
 					class="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
-					aria-label="Move section up"
+					aria-label={m['sectionEditor.moveSectionUp']()}
 				>
 					<ArrowUp class="h-4 w-4" aria-hidden="true" />
 				</button>
@@ -93,7 +94,7 @@
 					onclick={onMoveDown}
 					disabled={isLast}
 					class="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
-					aria-label="Move section down"
+					aria-label={m['sectionEditor.moveSectionDown']()}
 				>
 					<ArrowDown class="h-4 w-4" aria-hidden="true" />
 				</button>
@@ -106,7 +107,7 @@
 						<Input
 							value={section.name}
 							oninput={(e) => onUpdate({ name: e.currentTarget.value })}
-							placeholder="Section name..."
+							placeholder={m['sectionEditor.sectionNamePlaceholder']()}
 							class="text-lg font-semibold"
 						/>
 					</div>
@@ -119,10 +120,10 @@
 					>
 						{#if isExpanded}
 							<ChevronUp class="h-4 w-4" />
-							Collapse
+							{m['sectionEditor.collapse']()}
 						{:else}
 							<ChevronDown class="h-4 w-4" />
-							Expand ({section.questions.length})
+							{m['sectionEditor.expand']({ count: section.questions.length })}
 						{/if}
 					</Button>
 
@@ -133,7 +134,7 @@
 						class="gap-2 text-destructive hover:text-destructive"
 					>
 						<Trash2 class="h-4 w-4" />
-						Remove
+						{m['sectionEditor.remove']()}
 					</Button>
 				</div>
 			</div>
@@ -145,10 +146,10 @@
 			<!-- Section description (markdown) -->
 			<MarkdownEditor
 				id="section-desc-{section.id}"
-				label="Section Description (optional)"
+				label={m['sectionEditor.sectionDescriptionLabel']()}
 				value={section.description || ''}
 				onValueChange={(v) => onUpdate({ description: v || undefined })}
-				placeholder="Instructions or context shown to users at the start of this section..."
+				placeholder={m['sectionEditor.sectionDescriptionPlaceholder']()}
 				rows={2}
 			/>
 
@@ -156,7 +157,7 @@
 			<div class="space-y-4">
 				<div class="flex items-center justify-between border-t pt-4">
 					<Label class="text-base font-medium">
-						Questions ({section.questions.length})
+						{m['sectionEditor.questionsCount']({ count: section.questions.length })}
 					</Label>
 					<div class="flex gap-2">
 						<Button
@@ -166,7 +167,7 @@
 							class="gap-2"
 						>
 							<Plus class="h-4 w-4" />
-							Multiple Choice
+							{m['sectionEditor.multipleChoice']()}
 						</Button>
 						<Button
 							variant="outline"
@@ -175,7 +176,7 @@
 							class="gap-2"
 						>
 							<Plus class="h-4 w-4" />
-							Free Text
+							{m['sectionEditor.freeText']()}
 						</Button>
 						<Button
 							variant="outline"
@@ -184,7 +185,7 @@
 							class="gap-2"
 						>
 							<Upload class="h-4 w-4" />
-							File Upload
+							{m['sectionEditor.fileUpload']()}
 						</Button>
 					</div>
 				</div>
@@ -208,7 +209,7 @@
 				{#if section.questions.length === 0}
 					<div class="rounded-lg border border-dashed p-6 text-center">
 						<p class="text-sm text-muted-foreground">
-							No questions yet. Add questions using the buttons above.
+							{m['sectionEditor.noQuestionsYet']()}
 						</p>
 					</div>
 				{/if}
@@ -223,7 +224,7 @@
 							class="gap-2"
 						>
 							<Plus class="h-4 w-4" />
-							Multiple Choice
+							{m['sectionEditor.multipleChoice']()}
 						</Button>
 						<Button
 							variant="outline"
@@ -232,7 +233,7 @@
 							class="gap-2"
 						>
 							<Plus class="h-4 w-4" />
-							Free Text
+							{m['sectionEditor.freeText']()}
 						</Button>
 						<Button
 							variant="outline"
@@ -241,7 +242,7 @@
 							class="gap-2"
 						>
 							<Upload class="h-4 w-4" />
-							File Upload
+							{m['sectionEditor.fileUpload']()}
 						</Button>
 					</div>
 				{/if}

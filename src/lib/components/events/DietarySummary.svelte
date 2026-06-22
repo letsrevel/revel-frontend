@@ -82,28 +82,28 @@
 		switch (type) {
 			case 'severe_allergy':
 				return {
-					label: 'Severe Allergy',
+					label: m['dietarySummary.severitySevereAllergy'](),
 					color:
 						'bg-red-100 text-red-800 border-red-200 dark:bg-red-950 dark:text-red-400 dark:border-red-900',
 					icon: AlertTriangle
 				};
 			case 'allergy':
 				return {
-					label: 'Allergy',
+					label: m['dietarySummary.severityAllergy'](),
 					color:
 						'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-950 dark:text-orange-400 dark:border-orange-900',
 					icon: AlertCircle
 				};
 			case 'intolerant':
 				return {
-					label: 'Intolerant',
+					label: m['dietarySummary.severityIntolerant'](),
 					color:
 						'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-400 dark:border-yellow-900',
 					icon: Circle
 				};
 			case 'dislike':
 				return {
-					label: 'Dislike',
+					label: m['dietarySummary.severityDislike'](),
 					color:
 						'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700',
 					icon: Frown
@@ -154,7 +154,7 @@
 {:else if isLoading}
 	<div class="flex items-center justify-center py-8">
 		<Loader2 class="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
-		<span class="sr-only">Loading dietary information...</span>
+		<span class="sr-only">{m['dietarySummary.loadingDietaryInfo']()}</span>
 	</div>
 {:else if hasData}
 	<div class="rounded-lg border bg-card">
@@ -177,7 +177,7 @@
 					href={profileDietaryUrl}
 					onclick={(e) => e.stopPropagation()}
 					class="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-					aria-label="Add your dietary preferences and restrictions"
+					aria-label={m['dietarySummary.addDietaryPreferencesAriaLabel']()}
 				>
 					<span>{m['dietary.profile_quickActionButton']()}</span>
 				</a>

@@ -880,19 +880,19 @@
 									{#if isOwner(org.id)}
 										<span
 											class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
-											aria-label="You are the owner"
+											aria-label={m['dashboardPage.ownerBadgeLabel']()}
 										>
 											<Crown class="h-3 w-3" aria-hidden="true" />
-											Owner
+											{m['dashboardPage.ownerBadge']()}
 										</span>
 									{:else if isStaff(org.id)}
 										<!-- Staff Badge -->
 										<span
 											class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-100"
-											aria-label="You are a staff member"
+											aria-label={m['dashboardPage.staffBadgeLabel']()}
 										>
 											<Shield class="h-3 w-3" aria-hidden="true" />
-											Staff
+											{m['dashboardPage.staffBadge']()}
 										</span>
 									{/if}
 								</div>
@@ -914,7 +914,9 @@
 												class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium {statusStyles[
 													membershipStatus
 												]}"
-												aria-label="Membership status: {membershipStatus}"
+												aria-label={m['dashboardPage.membershipStatusLabel']({
+													status: membershipStatus
+												})}
 											>
 												<Check class="h-3 w-3" aria-hidden="true" />
 												{m[`memberStatus.${membershipStatus}`]()}
@@ -925,7 +927,9 @@
 										{#if membershipTier}
 											<span
 												class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-100"
-												aria-label="Membership tier: {membershipTier.name}"
+												aria-label={m['dashboardPage.membershipTierLabel']({
+													tier: membershipTier.name
+												})}
 											>
 												<Award class="h-3 w-3" aria-hidden="true" />
 												{membershipTier.name}

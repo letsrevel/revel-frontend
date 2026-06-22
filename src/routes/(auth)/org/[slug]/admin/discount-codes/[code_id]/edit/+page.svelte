@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
@@ -107,15 +108,16 @@
 			variant="ghost"
 			size="icon"
 			onclick={() => goto(`/org/${organization.slug}/admin/discount-codes`)}
-			aria-label="Back to discount codes"
+			aria-label={m['discountCodeEditPage.backToDiscountCodes']()}
 		>
 			<ArrowLeft class="h-5 w-5" />
 		</Button>
 		<div>
-			<h1 class="text-2xl font-bold tracking-tight">Edit Discount Code</h1>
+			<h1 class="text-2xl font-bold tracking-tight">{m['discountCodeEditPage.title']()}</h1>
 			{#if existingCode}
 				<p class="text-muted-foreground">
-					Editing <span class="font-mono font-semibold">{existingCode.code}</span>
+					{m['discountCodeEditPage.editing']()}
+					<span class="font-mono font-semibold">{existingCode.code}</span>
 				</p>
 			{/if}
 		</div>
@@ -126,13 +128,13 @@
 		<div class="flex items-center justify-center py-12">
 			<div
 				class="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"
-				aria-label="Loading discount code"
+				aria-label={m['discountCodeEditPage.loadingAriaLabel']()}
 			></div>
 		</div>
 	{:else if codeQuery.error}
 		<Alert variant="destructive">
 			<AlertCircle class="h-4 w-4" />
-			<AlertDescription>Failed to load discount code. It may have been deleted.</AlertDescription>
+			<AlertDescription>{m['discountCodeEditPage.loadError']()}</AlertDescription>
 		</Alert>
 	{:else if existingCode}
 		<DiscountCodeForm

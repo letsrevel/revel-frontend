@@ -79,7 +79,7 @@
 		{#if coverImageUrl}
 			<img
 				src={coverImageUrl}
-				alt="{event.name} cover image"
+				alt={m['eventHeader.coverImageAlt']({ name: event.name })}
 				class="h-full w-full object-cover object-center"
 				loading="eager"
 			/>
@@ -108,8 +108,8 @@
 						type="button"
 						onclick={handleDownloadCalendar}
 						class="group flex items-center gap-2 transition-all hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/50"
-						title="Download calendar event"
-						aria-label="Download calendar event for {event.name}"
+						title={m['eventHeader.downloadCalendarEventTitle']()}
+						aria-label={m['eventHeader.downloadCalendarEventFor']({ name: event.name })}
 					>
 						<Calendar class="h-5 w-5 shrink-0" aria-hidden="true" />
 						<time datetime={event.start} class="group-hover:underline">{dateRange}</time>
@@ -142,7 +142,7 @@
 				type="button"
 				onclick={handleShare}
 				class="absolute right-6 top-6 hidden rounded-full bg-white/20 p-3 backdrop-blur-sm transition-all hover:bg-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/50 md:block"
-				aria-label="Share event"
+				aria-label={m['eventHeader.shareEvent']()}
 			>
 				<Share2 class="h-5 w-5 text-white" aria-hidden="true" />
 			</button>
@@ -160,7 +160,7 @@
 				{@const org = event.organization as any}
 				<img
 					src={getImageUrl(org.logo_thumbnail_url || event.organization.logo) || ''}
-					alt="{event.organization.name} logo"
+					alt={m['eventHeader.organizationLogoAlt']({ name: event.organization.name })}
 					class="h-12 w-12 rounded-md object-cover"
 				/>
 			{:else}

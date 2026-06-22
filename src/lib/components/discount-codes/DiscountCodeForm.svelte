@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Button } from '$lib/components/ui/button';
@@ -148,52 +149,52 @@
 		const minPurchaseStr = String(minPurchaseAmount ?? '');
 
 		if (!codeStr.trim()) {
-			errors.code = 'Code is required';
+			errors.code = m['discountCodeForm.errorCodeRequired']();
 		} else if (!/^[\p{L}\p{N}]+$/u.test(codeStr.trim())) {
-			errors.code = 'Code must contain only letters and numbers';
+			errors.code = m['discountCodeForm.errorCodeAlphanumeric']();
 		} else if (codeStr.trim().length > 64) {
-			errors.code = 'Code must be 64 characters or less';
+			errors.code = m['discountCodeForm.errorCodeTooLong']();
 		}
 
 		if (!valueStr.trim()) {
-			errors.discount_value = 'Discount value is required';
+			errors.discount_value = m['discountCodeForm.errorValueRequired']();
 		} else {
 			const val = parseFloat(valueStr);
 			if (isNaN(val) || val <= 0) {
-				errors.discount_value = 'Must be a positive number';
+				errors.discount_value = m['discountCodeForm.errorValuePositive']();
 			} else if (discountType === 'percentage' && val > 100) {
-				errors.discount_value = 'Percentage cannot exceed 100';
+				errors.discount_value = m['discountCodeForm.errorPercentageMax']();
 			}
 		}
 
 		if (discountType === 'fixed_amount' && tierIds.length === 0 && !currencyStr.trim()) {
-			errors.currency = 'Currency is required for fixed amount discounts without tier scope';
+			errors.currency = m['discountCodeForm.errorCurrencyRequired']();
 		}
 
 		if (validFrom && validUntil) {
 			if (new Date(validFrom) >= new Date(validUntil)) {
-				errors.valid_until = 'End date must be after start date';
+				errors.valid_until = m['discountCodeForm.errorEndAfterStart']();
 			}
 		}
 
 		if (maxUsesStr.trim()) {
 			const val = parseInt(maxUsesStr);
 			if (isNaN(val) || val < 1) {
-				errors.max_uses = 'Must be at least 1';
+				errors.max_uses = m['discountCodeForm.errorAtLeastOne']();
 			}
 		}
 
 		if (maxUsesPerUserStr.trim()) {
 			const val = parseInt(maxUsesPerUserStr);
 			if (isNaN(val) || val < 1) {
-				errors.max_uses_per_user = 'Must be at least 1';
+				errors.max_uses_per_user = m['discountCodeForm.errorAtLeastOne']();
 			}
 		}
 
 		if (minPurchaseStr.trim()) {
 			const val = parseFloat(minPurchaseStr);
 			if (isNaN(val) || val < 0) {
-				errors.min_purchase_amount = 'Must be 0 or more';
+				errors.min_purchase_amount = m['discountCodeForm.errorZeroOrMore']();
 			}
 		}
 
@@ -240,12 +241,12 @@
 
 	<!-- Code -->
 	<div class="space-y-2">
-		<Label for="code">Code</Label>
+		<Label for="code">{m['discountCodeForm.codeLabel']()}</Label>
 		<Input
 			id="code"
 			type="text"
 			bind:value={code}
-			placeholder="e.g. SUMMER20"
+			placeholder={m['discountCodeForm.codePlaceholder']()}
 			disabled={isEditing || isSubmitting}
 			maxlength={64}
 			class="uppercase"
@@ -258,7 +259,7 @@
 			}}
 		/>
 		{#if isEditing}
-			<p class="text-xs text-muted-foreground">Code cannot be changed after creation.</p>
+			<p class="text-xs text-muted-foreground">{m['discountCodeForm.codeImmutable']()}</p>
 		{/if}
 		{#if validationErrors.code}
 			<p id="code-error" class="text-sm text-destructive">{validationErrors.code}</p>
@@ -267,7 +268,7 @@
 
 	<!-- Discount Type -->
 	<div class="space-y-2">
-		<Label>Discount Type</Label>
+		<Label>{m['discountCodeForm.discountTypeLabel']()}</Label>
 		<div class="flex gap-4">
 			<label class="flex cursor-pointer items-center gap-2">
 				<input
@@ -278,7 +279,7 @@
 					disabled={isSubmitting}
 					class="h-4 w-4 border-input text-primary focus:ring-primary"
 				/>
-				<span class="text-sm">Percentage (%)</span>
+				<span class="text-sm">{m['discountCodeForm.percentage']()}</span>
 			</label>
 			<label class="flex cursor-pointer items-center gap-2">
 				<input
@@ -289,7 +290,7 @@
 					disabled={isSubmitting}
 					class="h-4 w-4 border-input text-primary focus:ring-primary"
 				/>
-				<span class="text-sm">Fixed Amount</span>
+				<span class="text-sm">{m['discountCodeForm.fixedAmount']()}</span>
 			</label>
 		</div>
 	</div>
@@ -298,9 +299,9 @@
 	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 		<div class="space-y-2">
 			<Label for="discount_value">
-				Discount Value
+				{m['discountCodeForm.discountValueLabel']()}
 				{#if discountType === 'percentage'}
-					<span class="text-muted-foreground">(1-100)</span>
+					<span class="text-muted-foreground">{m['discountCodeForm.range1to100']()}</span>
 				{/if}
 			</Label>
 			<div class="relative">
@@ -334,7 +335,7 @@
 
 		{#if showCurrency}
 			<div class="space-y-2">
-				<Label for="currency">Currency</Label>
+				<Label for="currency">{m['discountCodeForm.currencyLabel']()}</Label>
 				<select
 					id="currency"
 					bind:value={currency}
@@ -355,8 +356,8 @@
 			</div>
 		{:else if discountType === 'fixed_amount' && tierIds.length > 0}
 			<div class="space-y-2">
-				<Label class="text-muted-foreground">Currency</Label>
-				<p class="text-xs text-muted-foreground">Currency is inherited from the linked tier(s).</p>
+				<Label class="text-muted-foreground">{m['discountCodeForm.currencyLabel']()}</Label>
+				<p class="text-xs text-muted-foreground">{m['discountCodeForm.currencyInherited']()}</p>
 			</div>
 		{/if}
 	</div>
@@ -366,24 +367,24 @@
 		<div class="space-y-2">
 			<DateTimePicker
 				id="valid_from"
-				label="Valid From"
+				label={m['discountCodeForm.validFromLabel']()}
 				bind:value={validFrom}
 				disabled={isSubmitting}
 			/>
-			<p class="text-xs text-muted-foreground">Leave empty for immediately valid</p>
+			<p class="text-xs text-muted-foreground">{m['discountCodeForm.validFromHelp']()}</p>
 		</div>
 
 		<div class="space-y-2">
 			<DateTimePicker
 				id="valid_until"
-				label="Valid Until"
+				label={m['discountCodeForm.validUntilLabel']()}
 				bind:value={validUntil}
 				disabled={isSubmitting}
 				error={validationErrors.valid_until}
 				onValueChange={handleValidUntilChange}
 			/>
 			{#if !validationErrors.valid_until}
-				<p class="text-xs text-muted-foreground">Leave empty for no expiry</p>
+				<p class="text-xs text-muted-foreground">{m['discountCodeForm.validUntilHelp']()}</p>
 			{/if}
 		</div>
 	</div>
@@ -391,12 +392,12 @@
 	<!-- Usage Limits -->
 	<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
 		<div class="space-y-2">
-			<Label for="max_uses">Max Total Uses</Label>
+			<Label for="max_uses">{m['discountCodeForm.maxTotalUsesLabel']()}</Label>
 			<Input
 				id="max_uses"
 				type="number"
 				bind:value={maxUses}
-				placeholder="Unlimited"
+				placeholder={m['discountCodeForm.unlimited']()}
 				disabled={isSubmitting}
 				min="1"
 				aria-invalid={validationErrors.max_uses ? 'true' : undefined}
@@ -407,12 +408,12 @@
 					{validationErrors.max_uses}
 				</p>
 			{:else}
-				<p class="text-xs text-muted-foreground">Leave empty for unlimited</p>
+				<p class="text-xs text-muted-foreground">{m['discountCodeForm.maxUsesHelp']()}</p>
 			{/if}
 		</div>
 
 		<div class="space-y-2">
-			<Label for="max_uses_per_user">Max Per User</Label>
+			<Label for="max_uses_per_user">{m['discountCodeForm.maxPerUserLabel']()}</Label>
 			<Input
 				id="max_uses_per_user"
 				type="number"
@@ -430,7 +431,7 @@
 		</div>
 
 		<div class="space-y-2">
-			<Label for="min_purchase_amount">Min Purchase Amount</Label>
+			<Label for="min_purchase_amount">{m['discountCodeForm.minPurchaseLabel']()}</Label>
 			<Input
 				id="min_purchase_amount"
 				type="text"
@@ -450,7 +451,7 @@
 					{validationErrors.min_purchase_amount}
 				</p>
 			{:else}
-				<p class="text-xs text-muted-foreground">Price x quantity threshold</p>
+				<p class="text-xs text-muted-foreground">{m['discountCodeForm.minPurchaseHelp']()}</p>
 			{/if}
 		</div>
 	</div>
@@ -464,16 +465,16 @@
 				disabled={isSubmitting}
 				class="peer sr-only"
 				role="switch"
-				aria-label="Active status"
+				aria-label={m['discountCodeForm.activeStatus']()}
 			/>
 			<div
 				class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:ring-2 peer-focus:ring-ring dark:bg-gray-700"
 			></div>
 		</label>
 		<div>
-			<span class="text-sm font-medium">Active</span>
+			<span class="text-sm font-medium">{m['discountCodeForm.active']()}</span>
 			<p class="text-xs text-muted-foreground">
-				{isActive ? 'Code can be used at checkout' : 'Code is disabled'}
+				{isActive ? m['discountCodeForm.activeOn']() : m['discountCodeForm.activeOff']()}
 			</p>
 		</div>
 	</div>
@@ -496,11 +497,12 @@
 	<!-- Usage stats (edit mode only) -->
 	{#if isEditing && existingCode}
 		<div class="rounded-lg border bg-muted/50 p-4">
-			<h3 class="text-sm font-medium">Usage Statistics</h3>
+			<h3 class="text-sm font-medium">{m['discountCodeForm.usageStatistics']()}</h3>
 			<p class="mt-1 text-2xl font-bold">
 				{existingCode.times_used ?? 0}
 				<span class="text-sm font-normal text-muted-foreground">
-					/ {existingCode.max_uses ?? '∞'} uses
+					/ {existingCode.max_uses ?? '∞'}
+					{m['discountCodeForm.uses']()}
 				</span>
 			</p>
 		</div>
@@ -511,9 +513,9 @@
 		<Button type="submit" disabled={isSubmitting} class="flex-1 sm:flex-initial">
 			{#if isSubmitting}
 				<Loader2 class="mr-2 h-4 w-4 animate-spin" />
-				{isEditing ? 'Saving...' : 'Creating...'}
+				{isEditing ? m['discountCodeForm.saving']() : m['discountCodeForm.creating']()}
 			{:else}
-				{isEditing ? 'Save Changes' : 'Create Discount Code'}
+				{isEditing ? m['discountCodeForm.saveChanges']() : m['discountCodeForm.createCode']()}
 			{/if}
 		</Button>
 	</div>

@@ -33,12 +33,12 @@
 			{#if data.success}
 				<h1 class="text-3xl font-bold tracking-tight">{m['verifyPage.emailVerified']()}</h1>
 				<p class="text-muted-foreground">
-					Your account has been successfully verified. Redirecting you to your profile...
+					{m['verifyPage.successRedirect']()}
 				</p>
 			{:else}
 				<h1 class="text-3xl font-bold tracking-tight">{m['verifyPage.verificationFailed']()}</h1>
 				<p class="text-muted-foreground">
-					{data.error || 'We could not verify your email address.'}
+					{data.error || m['verifyPage.couldNotVerify']()}
 				</p>
 			{/if}
 		</div>
@@ -47,20 +47,20 @@
 		{#if !data.success}
 			<div class="space-y-3 border-t pt-6">
 				<p class="text-sm text-muted-foreground">
-					The verification link may have expired or is invalid.
+					{m['verifyPage.linkExpiredOrInvalid']()}
 				</p>
 				<div class="flex flex-col gap-3 sm:flex-row sm:justify-center">
 					<a
 						href="/register"
 						class="inline-flex h-10 items-center justify-center rounded-md bg-primary px-6 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					>
-						Create new account
+						{m['verifyPage.createNewAccount']()}
 					</a>
 					<a
 						href="/login"
 						class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-6 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					>
-						Back to login
+						{m['verifyPage.backToLogin']()}
 					</a>
 				</div>
 			</div>

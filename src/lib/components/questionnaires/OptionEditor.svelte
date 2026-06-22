@@ -123,12 +123,12 @@
 		<Checkbox
 			checked={option.isCorrect}
 			onCheckedChange={(checked) => onUpdateCorrect(checked === true)}
-			title="Mark as correct answer"
+			title={m['optionEditor.markAsCorrect']()}
 		/>
 		<Input
 			value={option.text}
 			oninput={(e) => onUpdateText(e.currentTarget.value)}
-			placeholder="Option {index + 1}"
+			placeholder={m['optionEditor.optionPlaceholder']({ number: index + 1 })}
 			class="flex-1"
 		/>
 		{#if !isNested}
@@ -137,7 +137,7 @@
 				size="sm"
 				onclick={onToggleExpanded}
 				class="gap-1 text-xs"
-				title="Add conditional questions"
+				title={m['optionEditor.addConditionalQuestions']()}
 			>
 				{#if isExpanded}
 					<ChevronUp class="h-4 w-4" />
@@ -164,7 +164,7 @@
 		<div transition:slide={{ duration: 200 }} class="mt-3 space-y-4 border-t pt-3">
 			<div class="flex items-center justify-between">
 				<Label class="text-sm text-muted-foreground">
-					Conditional content (shown when this option is selected)
+					{m['optionEditor.conditionalContentLabel']()}
 				</Label>
 				<div class="flex gap-1">
 					<Button
@@ -172,40 +172,40 @@
 						size="sm"
 						onclick={() => onAddConditionalQuestion('multiple_choice')}
 						class="gap-1 text-xs"
-						title="Add multiple choice question"
+						title={m['optionEditor.addMultipleChoiceQuestion']()}
 					>
 						<ListChecks class="h-3 w-3" />
-						MC
+						{m['optionEditor.mcAbbrev']()}
 					</Button>
 					<Button
 						variant="outline"
 						size="sm"
 						onclick={() => onAddConditionalQuestion('free_text')}
 						class="gap-1 text-xs"
-						title="Add free text question"
+						title={m['optionEditor.addFreeTextQuestion']()}
 					>
 						<FileText class="h-3 w-3" />
-						FT
+						{m['optionEditor.ftAbbrev']()}
 					</Button>
 					<Button
 						variant="outline"
 						size="sm"
 						onclick={() => onAddConditionalQuestion('file_upload')}
 						class="gap-1 text-xs"
-						title="Add file upload question"
+						title={m['optionEditor.addFileUploadQuestion']()}
 					>
 						<Upload class="h-3 w-3" />
-						FU
+						{m['optionEditor.fuAbbrev']()}
 					</Button>
 					<Button
 						variant="outline"
 						size="sm"
 						onclick={onAddConditionalSection}
 						class="gap-1 text-xs"
-						title="Add section with multiple questions"
+						title={m['optionEditor.addSectionWithQuestions']()}
 					>
 						<FolderPlus class="h-3 w-3" />
-						Section
+						{m['optionEditor.section']()}
 					</Button>
 				</div>
 			</div>
@@ -214,7 +214,7 @@
 			{#if option.conditionalQuestions && option.conditionalQuestions.length > 0}
 				<div class="space-y-3 pl-4">
 					<Label class="text-xs font-medium text-muted-foreground">
-						Questions ({option.conditionalQuestions.length})
+						{m['optionEditor.questionsCount']({ count: option.conditionalQuestions.length })}
 					</Label>
 					{#each option.conditionalQuestions as condQ, condIndex (condQ.id)}
 						<QuestionEditor
@@ -232,7 +232,7 @@
 			{#if option.conditionalSections && option.conditionalSections.length > 0}
 				<div class="space-y-3 pl-4">
 					<Label class="text-xs font-medium text-muted-foreground">
-						Sections ({option.conditionalSections.length})
+						{m['optionEditor.sectionsCount']({ count: option.conditionalSections.length })}
 					</Label>
 					{#each option.conditionalSections as condSection, sectionIndex (condSection.id)}
 						<div class="rounded-md border-2 border-dashed border-primary/40 bg-primary/5 p-4">
@@ -241,7 +241,7 @@
 								<div class="flex items-center justify-between">
 									<div class="flex items-center gap-2">
 										<FolderPlus class="h-4 w-4 text-primary/60" aria-hidden="true" />
-										<Badge variant="outline" class="text-xs">Section</Badge>
+										<Badge variant="outline" class="text-xs">{m['optionEditor.section']()}</Badge>
 									</div>
 									<Button
 										variant="ghost"
@@ -255,27 +255,27 @@
 
 								<!-- Section name -->
 								<div class="space-y-2">
-									<Label class="text-sm">Section Name</Label>
+									<Label class="text-sm">{m['optionEditor.sectionName']()}</Label>
 									<Input
 										value={condSection.name}
 										oninput={(e) =>
 											onUpdateConditionalSection(sectionIndex, {
 												name: e.currentTarget.value
 											})}
-										placeholder="Enter section name..."
+										placeholder={m['optionEditor.sectionNamePlaceholder']()}
 									/>
 								</div>
 
 								<!-- Section description -->
 								<div class="space-y-2">
-									<Label class="text-sm">Description (optional)</Label>
+									<Label class="text-sm">{m['optionEditor.descriptionOptional']()}</Label>
 									<Input
 										value={condSection.description || ''}
 										oninput={(e) =>
 											onUpdateConditionalSection(sectionIndex, {
 												description: e.currentTarget.value || undefined
 											})}
-										placeholder="Brief description of this section..."
+										placeholder={m['optionEditor.sectionDescriptionPlaceholder']()}
 									/>
 								</div>
 
@@ -283,7 +283,7 @@
 								<div class="space-y-3">
 									<div class="flex items-center justify-between">
 										<Label class="text-sm">
-											Questions ({condSection.questions.length})
+											{m['optionEditor.questionsCount']({ count: condSection.questions.length })}
 										</Label>
 										<div class="flex gap-1">
 											<Button
@@ -291,27 +291,30 @@
 												size="sm"
 												onclick={() => onAddQuestionToSection(sectionIndex, 'multiple_choice')}
 												class="gap-1 text-xs"
+												title={m['optionEditor.addMultipleChoiceQuestion']()}
 											>
 												<ListChecks class="h-3 w-3" />
-												MC
+												{m['optionEditor.mcAbbrev']()}
 											</Button>
 											<Button
 												variant="outline"
 												size="sm"
 												onclick={() => onAddQuestionToSection(sectionIndex, 'free_text')}
 												class="gap-1 text-xs"
+												title={m['optionEditor.addFreeTextQuestion']()}
 											>
 												<FileText class="h-3 w-3" />
-												FT
+												{m['optionEditor.ftAbbrev']()}
 											</Button>
 											<Button
 												variant="outline"
 												size="sm"
 												onclick={() => onAddQuestionToSection(sectionIndex, 'file_upload')}
 												class="gap-1 text-xs"
+												title={m['optionEditor.addFileUploadQuestion']()}
 											>
 												<Upload class="h-3 w-3" />
-												FU
+												{m['optionEditor.fuAbbrev']()}
 											</Button>
 										</div>
 									</div>
@@ -331,7 +334,7 @@
 										</div>
 									{:else}
 										<p class="pl-4 text-xs text-muted-foreground">
-											No questions in this section yet.
+											{m['optionEditor.noQuestionsInSection']()}
 										</p>
 									{/if}
 								</div>
@@ -344,8 +347,7 @@
 			<!-- Empty state -->
 			{#if !hasConditionals}
 				<p class="pl-4 text-xs text-muted-foreground">
-					No conditional content. Add questions or sections that will appear when this option is
-					selected.
+					{m['optionEditor.noConditionalContent']()}
 				</p>
 			{/if}
 		</div>

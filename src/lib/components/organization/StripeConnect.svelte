@@ -102,7 +102,7 @@
 						const errorMsg =
 							typeof response.error === 'object' && response.error && 'detail' in response.error
 								? String(response.error.detail)
-								: 'Failed to create Stripe Connect link';
+								: m['stripeConnect.failedToCreateLink']();
 						throw new Error(errorMsg);
 					}
 
@@ -147,8 +147,8 @@
 		if (!isConnected) {
 			return {
 				type: 'not-connected',
-				title: 'Stripe Not Connected',
-				message: 'Connect your Stripe account to accept online payments for events.',
+				title: m['stripeConnect.statusNotConnectedTitle'](),
+				message: m['stripeConnect.statusNotConnectedMessage'](),
 				color: 'gray'
 			};
 		}
@@ -161,18 +161,20 @@
 		if (browser && verifyQuery?.isFetching) {
 			return {
 				type: 'loading',
-				title: 'Verifying...',
-				message: 'Checking your Stripe account status.',
+				title: m['stripeConnect.statusVerifyingTitle'](),
+				message: m['stripeConnect.statusVerifyingMessage'](),
 				color: 'blue'
 			};
 		}
 
 		if (chargesEnabled && detailsSubmitted) {
-			const emailMsg = stripeAccountEmail ? ` Connected with: ${stripeAccountEmail}` : '';
+			const emailMsg = stripeAccountEmail
+				? ` ${m['stripeConnect.connectedWithEmail']({ email: stripeAccountEmail })}`
+				: '';
 			return {
 				type: 'fully-connected',
-				title: 'Stripe Connected',
-				message: `Your Stripe account is fully set up and ready to accept payments.${emailMsg}`,
+				title: m['stripeConnect.statusConnectedTitle'](),
+				message: `${m['stripeConnect.statusConnectedMessage']()}${emailMsg}`,
 				color: 'green'
 			};
 		}
@@ -180,8 +182,8 @@
 		if (!detailsSubmitted) {
 			return {
 				type: 'incomplete',
-				title: 'Setup Incomplete',
-				message: 'Complete your Stripe onboarding to start accepting payments.',
+				title: m['stripeConnect.statusIncompleteTitle'](),
+				message: m['stripeConnect.statusIncompleteMessage'](),
 				color: 'yellow'
 			};
 		}
@@ -189,17 +191,16 @@
 		if (!chargesEnabled) {
 			return {
 				type: 'restricted',
-				title: 'Charges Disabled',
-				message:
-					'Your Stripe account cannot accept charges yet. Complete the verification process.',
+				title: m['stripeConnect.statusRestrictedTitle'](),
+				message: m['stripeConnect.statusRestrictedMessage'](),
 				color: 'red'
 			};
 		}
 
 		return {
 			type: 'unknown',
-			title: 'Unknown Status',
-			message: 'Unable to determine Stripe account status.',
+			title: m['stripeConnect.statusUnknownTitle'](),
+			message: m['stripeConnect.statusUnknownMessage'](),
 			color: 'gray'
 		};
 	});
@@ -364,10 +365,12 @@
 							class="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent"
 							aria-hidden="true"
 						></div>
-						Connecting...
+						{m['stripeConnect.connecting']()}
 					{:else}
 						<ExternalLink class="h-4 w-4" aria-hidden="true" />
-						{isConnected ? 'Complete Stripe Setup' : 'Connect with Stripe'}
+						{isConnected
+							? m['stripeConnect.completeSetup']()
+							: m['stripeConnect.connectWithStripe']()}
 					{/if}
 				</Button>
 			{/if}
@@ -384,10 +387,10 @@
 							class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
 							aria-hidden="true"
 						></div>
-						Verifying...
+						{m['stripeConnect.verifying']()}
 					{:else}
 						<Check class="h-4 w-4" aria-hidden="true" />
-						Verify Account Status
+						{m['stripeConnect.verifyAccountStatus']()}
 					{/if}
 				</Button>
 			{/if}
@@ -400,7 +403,7 @@
 					class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				>
 					<BarChart3 class="h-4 w-4" aria-hidden="true" />
-					Go to Stripe Dashboard
+					{m['stripeConnect.goToDashboard']()}
 					<ExternalLink class="h-3 w-3" aria-hidden="true" />
 				</a>
 			{/if}
@@ -411,14 +414,16 @@
 			{#if !isConnected || status.type === 'incomplete' || status.type === 'restricted'}
 				<Button disabled class="inline-flex items-center gap-2">
 					<ExternalLink class="h-4 w-4" aria-hidden="true" />
-					{isConnected ? 'Complete Stripe Setup' : 'Connect with Stripe'}
+					{isConnected
+						? m['stripeConnect.completeSetup']()
+						: m['stripeConnect.connectWithStripe']()}
 				</Button>
 			{/if}
 
 			{#if isConnected}
 				<Button disabled variant="outline" class="inline-flex items-center gap-2">
 					<Check class="h-4 w-4" aria-hidden="true" />
-					Verify Account Status
+					{m['stripeConnect.verifyAccountStatus']()}
 				</Button>
 			{/if}
 
@@ -430,7 +435,7 @@
 					class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				>
 					<BarChart3 class="h-4 w-4" aria-hidden="true" />
-					Go to Stripe Dashboard
+					{m['stripeConnect.goToDashboard']()}
 					<ExternalLink class="h-3 w-3" aria-hidden="true" />
 				</a>
 			{/if}
@@ -468,8 +473,7 @@
 	<div class="rounded-md bg-muted p-4 text-sm text-muted-foreground">
 		<p class="font-medium">{m['stripeConnect.aboutStripeConnect']()}</p>
 		<p class="mt-1">
-			Stripe Connect allows you to accept online payments for event tickets. When you connect your
-			Stripe account, you'll be able to:
+			{m['stripeConnect.aboutIntro']()}
 		</p>
 		<ul class="mt-2 list-inside list-disc space-y-1">
 			<li>{m['stripeConnect.acceptPayments']()}</li>
@@ -478,8 +482,7 @@
 			<li>{m['stripeConnect.accessAnalytics']()}</li>
 		</ul>
 		<p class="mt-2 text-xs">
-			Revel uses Stripe Connect to securely process payments. Your Stripe account is separate from
-			Revel and you maintain full control over your funds.
+			{m['stripeConnect.aboutFooter']()}
 		</p>
 	</div>
 </section>

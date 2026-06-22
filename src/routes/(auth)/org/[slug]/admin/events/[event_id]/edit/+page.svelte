@@ -60,7 +60,7 @@
 			window.location.reload();
 		},
 		onError: (error: Error) => {
-			alert(`Failed to update status: ${error.message}`);
+			alert(m['eventEditPage.updateStatusAlert']({ message: error.message }));
 		}
 	}));
 
@@ -82,7 +82,7 @@
 					response.error !== null &&
 					'detail' in response.error
 						? (response.error.detail as string)
-						: 'Failed to delete event';
+						: m['eventEditPage.error_deleteFailed']();
 				throw new Error(errorDetail);
 			}
 		},
@@ -92,7 +92,7 @@
 			goto(`/org/${organization.slug}/admin/events`);
 		},
 		onError: (error: Error) => {
-			alert(`Failed to delete event: ${error.message}`);
+			alert(m['eventEditPage.deleteAlert']({ message: error.message }));
 		}
 	}));
 
@@ -180,8 +180,13 @@
 </script>
 
 <svelte:head>
-	<title>Edit Event: {event.name} - {organization.name} Admin | Revel</title>
-	<meta name="description" content="Edit event: {event.name}" />
+	<title
+		>{m['eventEditPage.headTitle']({ eventName: event.name })} - {organization.name} Admin | Revel</title
+	>
+	<meta
+		name="description"
+		content={m['eventEditPage.headDescription']({ eventName: event.name })}
+	/>
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
@@ -191,7 +196,9 @@
 		<div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 			<div>
 				<div class="flex items-center gap-3">
-					<h1 class="text-2xl font-bold tracking-tight md:text-3xl">Edit Event</h1>
+					<h1 class="text-2xl font-bold tracking-tight md:text-3xl">
+						{m['eventEditPage.heading']()}
+					</h1>
 					<!-- Status Badge -->
 					<span
 						class="rounded-full px-3 py-1 text-xs font-medium {currentStatus === 'draft'
@@ -203,16 +210,17 @@
 									: 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'}"
 					>
 						{currentStatus === 'draft'
-							? 'Draft'
+							? m['eventEditPage.statusDraft']()
 							: currentStatus === 'open'
-								? 'Published'
+								? m['eventEditPage.statusPublished']()
 								: currentStatus === 'closed'
-									? 'Closed'
+									? m['eventEditPage.statusClosed']()
 									: currentStatus}
 					</span>
 				</div>
 				<p class="mt-1 text-sm text-muted-foreground">
-					Update details for: <span class="font-semibold">{event.name}</span>
+					{m['eventEditPage.updateDetailsFor']()}
+					<span class="font-semibold">{event.name}</span>
 				</p>
 			</div>
 

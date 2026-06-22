@@ -120,7 +120,7 @@
 				<!-- Name Field -->
 				<div class="space-y-2">
 					<Label for="name">
-						Series Name <span class="text-destructive">*</span>
+						{m['eventSeriesNewPage.nameLabel']()} <span class="text-destructive">*</span>
 					</Label>
 					<Input
 						id="name"

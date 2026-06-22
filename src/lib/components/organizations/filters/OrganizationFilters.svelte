@@ -57,7 +57,7 @@
 
 <aside
 	class={cn('flex w-full flex-col gap-6 rounded-lg border bg-card p-6', className)}
-	aria-label="Organization filters"
+	aria-label={m['organizationFilters.ariaLabel']()}
 >
 	<!-- Header -->
 	<div class="flex items-center justify-between">
@@ -67,7 +67,7 @@
 			{#if activeFilterCount > 0}
 				<span
 					class="rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground"
-					aria-label="{activeFilterCount} active filters"
+					aria-label={m['organizationFilters.activeFiltersLabel']({ count: activeFilterCount })}
 				>
 					{activeFilterCount}
 				</span>
