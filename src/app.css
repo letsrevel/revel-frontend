@@ -98,7 +98,16 @@
 	outline: none;
 	min-height: inherit;
 }
-.ProseMirror p.is-editor-empty:first-child::before {
+/*
+ * Placeholder text via ::before pseudo-element.
+ * Tiptap Placeholder extension (v3) sets:
+ *   - class="is-empty"              on the focused empty paragraph
+ *   - class="is-empty is-editor-empty"  additionally when the whole doc is empty
+ *   - data-placeholder="…"         on the same element
+ * We target both cases so the placeholder shows on any focused empty paragraph.
+ */
+.ProseMirror p.is-editor-empty:first-child::before,
+.ProseMirror p.is-empty::before {
 	content: attr(data-placeholder);
 	color: hsl(var(--muted-foreground));
 	float: left;

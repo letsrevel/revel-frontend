@@ -3,6 +3,7 @@ import type { Extensions } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import { HardBreak } from '@tiptap/extension-hard-break';
 import { Markdown } from '@tiptap/markdown';
+import Placeholder from '@tiptap/extension-placeholder';
 
 export const MARKDOWN_LINK_SCHEMES = ['http', 'https', 'mailto'] as const;
 
@@ -30,7 +31,7 @@ const HardBreakWithBareNewline = HardBreak.extend({
 	renderMarkdown: () => '\n'
 });
 
-export function createEditorExtensions(): Extensions {
+export function createEditorExtensions(placeholder = ''): Extensions {
 	return [
 		StarterKit.configure({
 			heading: { levels: [1, 2, 3] },
@@ -49,6 +50,7 @@ export function createEditorExtensions(): Extensions {
 		HardBreakWithBareNewline,
 		Markdown.configure({
 			markedOptions: { gfm: true, breaks: true }
-		})
+		}),
+		Placeholder.configure({ placeholder })
 	];
 }

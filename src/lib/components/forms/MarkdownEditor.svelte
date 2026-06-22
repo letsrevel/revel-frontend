@@ -63,7 +63,7 @@
 				element,
 				injectCSS: false, // CSP: no runtime <style>
 				editable: !disabled,
-				extensions: createEditorExtensions(),
+				extensions: createEditorExtensions(placeholder),
 				onCreate: ({ editor: e }) => {
 					// Suppress the update event so mounting doesn't mark pristine forms dirty
 					e.commands.setContent(value, { contentType: 'markdown', emitUpdate: false });
