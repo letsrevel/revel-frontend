@@ -3,6 +3,8 @@
  * Week system: Monday-Sunday (ISO 8601 standard)
  */
 
+import { getDateLocale } from './date';
+
 export type CalendarView = 'month' | 'week' | 'year';
 
 /**
@@ -232,10 +234,11 @@ export function isInMonth(date: Date, year: number, month: number): boolean {
  * Format date for display
  */
 export function formatCalendarDate(date: Date, format: 'short' | 'long' = 'short'): string {
+	const locale = getDateLocale();
 	if (format === 'short') {
-		return date.toLocaleDateString(undefined, { day: 'numeric' });
+		return date.toLocaleDateString(locale, { day: 'numeric' });
 	}
-	return date.toLocaleDateString(undefined, {
+	return date.toLocaleDateString(locale, {
 		weekday: 'short',
 		month: 'short',
 		day: 'numeric'
@@ -247,7 +250,7 @@ export function formatCalendarDate(date: Date, format: 'short' | 'long' = 'short
  */
 export function formatMonthYear(year: number, month: number): string {
 	const date = new Date(year, month - 1, 1);
-	return date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+	return date.toLocaleDateString(getDateLocale(), { month: 'long', year: 'numeric' });
 }
 
 /**
@@ -256,9 +259,10 @@ export function formatMonthYear(year: number, month: number): string {
 export function formatWeekRange(year: number, week: number): string {
 	const start = getWeekStartDate(year, week);
 	const end = getWeekEndDate(year, week);
+	const locale = getDateLocale();
 
-	const startStr = start.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-	const endStr = end.toLocaleDateString(undefined, {
+	const startStr = start.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
+	const endStr = end.toLocaleDateString(locale, {
 		month: 'short',
 		day: 'numeric',
 		year: 'numeric'
