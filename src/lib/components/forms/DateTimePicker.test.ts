@@ -145,4 +145,18 @@ describe('DateTimePicker', () => {
 		expect(input).toBeInstanceOf(HTMLInputElement);
 		expect(input.getAttribute('type')).toBe('datetime-local');
 	});
+
+	it('shows an unambiguous textual readback of the selected value (#508)', () => {
+		render(DateTimePicker, {
+			props: { label: 'Start Time', value: '2025-10-20T14:30:00' }
+		});
+		const readback = screen.getByText(/Oct 20, 2025/);
+		expect(readback).toBeInTheDocument();
+		expect(readback.textContent).not.toMatch(/10\/20/); // never numeric month/day
+	});
+
+	it('renders no readback when no value is selected (#508)', () => {
+		render(DateTimePicker, { props: { label: 'Start Time' } });
+		expect(screen.queryByText(/Selected:/)).not.toBeInTheDocument();
+	});
 });
