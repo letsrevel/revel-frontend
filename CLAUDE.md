@@ -627,6 +627,27 @@ lib/components/
 - **Type all function parameters and return values**
 - **Use Zod** for runtime validation of external data (API responses, form inputs)
 
+#### Date & Time Formatting
+
+**Human-facing dates must follow the user's UI language and never be ambiguous.**
+
+- **Format only via `src/lib/utils/date.ts`** helpers (`formatDate`, `formatDateTime`,
+  `formatEventDate`, `formatTimeOfDay`, `formatDateTimeReadback`, …). These resolve the
+  locale from the active UI language via `getDateLocale()` — so switching language switches
+  month names. Calendar-specific display helpers live in `calendar.ts` and use the same locale.
+- **Never render a month as a number** in human-facing output (no `month: 'numeric'`/`'2-digit'`,
+  no bare `toLocaleDateString()`/`dateStyle: 'short'`). Always a textual month (`'short'`/`'long'`).
+  This removes DD/MM vs MM/DD ambiguity, so no per-user region/format preference is needed.
+- **Do not call `toLocaleDateString` / `toLocaleString` / `toLocaleTimeString` or
+  `new Intl.DateTimeFormat(...).format()` directly** in components/routes — add a helper to
+  `date.ts` instead. (`Intl.DateTimeFormat().resolvedOptions().timeZone` for timezone *detection*
+  is fine.) A repo-wide migration + ESLint guardrail enforcing this is tracked in #510.
+- **Machine/ISO formats stay numeric** — `<input>` values, `datetime` attributes, API payloads,
+  and structured data (schema.org) use ISO 8601, not localized strings.
+- For native `<input type="datetime-local">`, show `formatDateTimeReadback(value)` underneath as an
+  unambiguous confirmation (the native control's own display is browser-locale numeric and can't be
+  restyled).
+
 #### Svelte 5 Runes
 
 **IMPORTANT:** This project uses Svelte 5 Runes, not the legacy reactive syntax.
