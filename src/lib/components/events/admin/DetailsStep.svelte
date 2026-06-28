@@ -8,6 +8,7 @@
 		VenueDetailSchema
 	} from '$lib/api/generated/types.gen';
 	import { getBackendUrl } from '$lib/config/api';
+	import { formatDateTimeReadback } from '$lib/utils/date';
 	import {
 		FileText,
 		Users,
@@ -436,6 +437,13 @@
 							oninput={(e) => onUpdate({ rsvp_before: e.currentTarget.value })}
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						/>
+						{#if formData.rsvp_before}
+							<p class="text-xs text-muted-foreground">
+								{m['dateTimePicker.selectedDate']({
+									value: formatDateTimeReadback(formData.rsvp_before)
+								})}
+							</p>
+						{/if}
 						<p class="text-xs text-muted-foreground">
 							{m['detailsStep.rsvpDeadlineHint']({
 								timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -624,6 +632,13 @@
 							oninput={(e) => onUpdate({ check_in_starts_at: e.currentTarget.value })}
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						/>
+						{#if formData.check_in_starts_at}
+							<p class="text-xs text-muted-foreground">
+								{m['dateTimePicker.selectedDate']({
+									value: formatDateTimeReadback(formData.check_in_starts_at)
+								})}
+							</p>
+						{/if}
 						<p class="text-xs text-muted-foreground">
 							{m['detailsStep.checkinOpensAtHint']({
 								timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -643,6 +658,13 @@
 							oninput={(e) => onUpdate({ check_in_ends_at: e.currentTarget.value })}
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						/>
+						{#if formData.check_in_ends_at}
+							<p class="text-xs text-muted-foreground">
+								{m['dateTimePicker.selectedDate']({
+									value: formatDateTimeReadback(formData.check_in_ends_at)
+								})}
+							</p>
+						{/if}
 						<p class="text-xs text-muted-foreground">
 							{m['detailsStep.checkinClosesAtHint']({
 								timezone: Intl.DateTimeFormat().resolvedOptions().timeZone

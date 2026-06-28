@@ -28,6 +28,7 @@
 	import { extractErrorMessage, extractFieldErrors } from '$lib/utils/errors';
 	import { tierFieldLabel } from './tier-field-labels';
 	import { Building2, LayoutGrid, Armchair, Undo2 } from 'lucide-svelte';
+	import { formatDateTimeReadback } from '$lib/utils/date';
 
 	interface Props {
 		tier: TicketTierDetailSchema | null; // null = create new
@@ -721,6 +722,11 @@
 						bind:value={salesStartAt}
 						disabled={isPending}
 					/>
+					{#if salesStartAt}
+						<p class="mt-1 text-xs text-muted-foreground">
+							{m['dateTimePicker.selectedDate']({ value: formatDateTimeReadback(salesStartAt) })}
+						</p>
+					{/if}
 				</div>
 				<div>
 					<Label for="sales-end">{m['tierForm.salesEnd']()}</Label>
@@ -730,6 +736,11 @@
 						bind:value={salesEndAt}
 						disabled={isPending}
 					/>
+					{#if salesEndAt}
+						<p class="mt-1 text-xs text-muted-foreground">
+							{m['dateTimePicker.selectedDate']({ value: formatDateTimeReadback(salesEndAt) })}
+						</p>
+					{/if}
 				</div>
 			</div>
 

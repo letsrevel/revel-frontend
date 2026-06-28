@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { EventCreateSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
+	import { formatDateTimeReadback } from '$lib/utils/date';
 	import { Calendar, Eye, Users, Ticket, Pencil, Check, X, Link, Loader2 } from 'lucide-svelte';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { eventadmincoreEditSlug } from '$lib/api/generated/sdk.gen';
@@ -340,6 +341,11 @@
 				{validationErrors.start}
 			</p>
 		{/if}
+		{#if formData.start}
+			<p class="text-xs text-muted-foreground">
+				{m['dateTimePicker.selectedDate']({ value: formatDateTimeReadback(formData.start) })}
+			</p>
+		{/if}
 		<p class="text-xs text-muted-foreground">
 			{m['essentialsStep.localTimezoneHint']({
 				timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -386,6 +392,11 @@
 			{#if validationErrors.end}
 				<p id="event-end-error" class="text-sm text-destructive" role="alert">
 					{validationErrors.end}
+				</p>
+			{/if}
+			{#if formData.end}
+				<p class="text-xs text-muted-foreground">
+					{m['dateTimePicker.selectedDate']({ value: formatDateTimeReadback(formData.end) })}
 				</p>
 			{/if}
 		</div>
