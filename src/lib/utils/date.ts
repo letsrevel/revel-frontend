@@ -370,6 +370,25 @@ export function formatDateTime(dateString: string, timeZone?: string): string {
 }
 
 /**
+ * Unambiguous textual readback of a datetime input value, shown under a native
+ * <input type="datetime-local"> (whose own display is browser-locale numeric and
+ * cannot be restyled). Month is always textual, in the active UI language.
+ *
+ * Accepts a datetime-local string ("2026-06-07T19:00", parsed as local wall
+ * time) or a full ISO 8601 string. Returns "" for empty/invalid input so callers
+ * can render nothing before a value is picked.
+ *
+ * @param value datetime-local or ISO 8601 string (may be empty/null/undefined)
+ * @returns e.g. "Oct 20, 2025, 2:30 PM" (locale-dependent), or ""
+ */
+export function formatDateTimeReadback(value: string | null | undefined): string {
+	if (!value) return '';
+	const date = new Date(value);
+	if (isNaN(date.getTime())) return '';
+	return formatDateTime(value);
+}
+
+/**
  * Format a date without time for display
  * @param dateString ISO 8601 date-time string
  * @returns Formatted date string (e.g., "Oct 20, 2025" for en-US or "20. Okt. 2025" for de-DE)

@@ -11,6 +11,7 @@ import {
 	formatEventDateRange,
 	formatEventDateForScreenReader,
 	formatDateTime,
+	formatDateTimeReadback,
 	formatDate,
 	formatEventTimezoneLabel
 } from './date';
@@ -113,5 +114,28 @@ describe('formatDateTime and screen-reader format carry the timezone', () => {
 		expect(out).toContain('February');
 		expect(out).toContain('2:00 PM');
 		expect(out).toContain('EST');
+	});
+});
+
+describe('formatDateTimeReadback (#508 picker readback)', () => {
+	it('returns "" for empty/nullish input', () => {
+		expect(formatDateTimeReadback('')).toBe('');
+		expect(formatDateTimeReadback(null)).toBe('');
+		expect(formatDateTimeReadback(undefined)).toBe('');
+	});
+
+	it('returns "" for an invalid datetime string', () => {
+		expect(formatDateTimeReadback('not-a-date')).toBe('');
+	});
+
+	it('renders a textual month and year for a datetime-local value', () => {
+		const out = formatDateTimeReadback('2026-06-07T12:00');
+		expect(out).toContain('2026');
+		expect(out).toContain('Jun'); // en-US short month — textual, never "6"
+		expect(out).not.toMatch(/\b0?6\/0?7\b/); // not numeric m/d
+	});
+
+	it('also accepts a full ISO 8601 string', () => {
+		expect(formatDateTimeReadback('2026-06-07T12:00:00Z')).toContain('2026');
 	});
 });
