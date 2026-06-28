@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.62.1] - 2026-06-28
+
+### Fixed
+- First-time visitors whose browser language is not English no longer see the landing page briefly render in that language and then flip to English; the page now stays in the detected language consistently.
+- The "Welcome to Revel" heading no longer stays stuck in the browser's language while the rest of the page is shown in another language.
+
 ## [1.62.0] - 2026-06-22
 
 ### Added
