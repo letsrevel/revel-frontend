@@ -114,10 +114,10 @@
 					</span>
 					su <span class="revel-shine">Revel</span>
 				{:else}
-					<!-- Other languages using i18n -->
-					{@html m['home.welcomeToRevel']({
-						revel: `<span class="revel-shine">Revel</span>`
-					})}
+					<!-- Other languages using i18n.
+					     Rendered as real markup (not {@html}) so it re-renders on
+					     hydration and follows the active locale. See #505. -->
+					{m['home.welcomeTo']()} <span class="revel-shine">Revel</span>
 				{/if}
 			</h1>
 			<p
