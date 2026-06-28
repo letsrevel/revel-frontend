@@ -4,7 +4,7 @@
  * This file provides utilities for language detection and management.
  */
 
-import { setLocale, getLocale, locales, baseLocale } from '$lib/paraglide/runtime.js';
+import { setLocale, getLocale, locales, baseLocale, cookieName } from '$lib/paraglide/runtime.js';
 import type { Handle } from '@sveltejs/kit';
 
 /**
@@ -28,13 +28,22 @@ function detectLanguage(event: Parameters<Handle>[0]['event']): string {
 		return urlLang;
 	}
 
-	// 2. Check cookie
+	// 2. Check Paraglide's canonical locale cookie.
+	// This is the cookie the client-side Paraglide runtime resolves from
+	// (written by setLocale() on the client), so honouring it here keeps the
+	// server and client on the same locale.
+	const paraglideCookie = event.cookies.get(cookieName);
+	if (paraglideCookie && SUPPORTED_LANGUAGES.includes(paraglideCookie as any)) {
+		return paraglideCookie;
+	}
+
+	// 3. Check legacy user_language cookie
 	const cookieLang = event.cookies.get('user_language');
 	if (cookieLang && SUPPORTED_LANGUAGES.includes(cookieLang as any)) {
 		return cookieLang;
 	}
 
-	// 3. Check Accept-Language header
+	// 4. Check Accept-Language header
 	const acceptLanguage = event.request.headers.get('accept-language');
 	if (acceptLanguage) {
 		const lang = acceptLanguage.split(',')[0]?.split('-')[0];
@@ -43,7 +52,7 @@ function detectLanguage(event: Parameters<Handle>[0]['event']): string {
 		}
 	}
 
-	// 4. Default
+	// 5. Default
 	return DEFAULT_LANGUAGE;
 }
 
@@ -57,13 +66,21 @@ export function i18nHandle(): Handle {
 		// Set the locale for this request
 		setLocale(lang as any);
 
-		// Store language in cookie for persistence
-		event.cookies.set('user_language', lang, {
+		const cookieOptions = {
 			path: '/',
 			maxAge: 60 * 60 * 24 * 365, // 1 year
 			sameSite: 'lax',
 			httpOnly: false // Allow client-side access
-		});
+		} as const;
+
+		// Write Paraglide's canonical locale cookie so the client-side runtime
+		// resolves the SAME locale during hydration. Without this the client falls
+		// back to baseLocale and the whole UI flashes to English on first visit
+		// (the server's own setLocale() does not write this cookie). See #505.
+		event.cookies.set(cookieName, lang, cookieOptions);
+
+		// Keep the legacy cookie for backwards compatibility / explicit reads.
+		event.cookies.set('user_language', lang, cookieOptions);
 
 		// Resolve with lang attribute replacement
 		return resolve(event, {
