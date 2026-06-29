@@ -42,6 +42,11 @@
 
 	const accessToken = $derived(authStore.accessToken);
 
+	// Unambiguous textual readbacks for the native datetime inputs; '' when the
+	// value is empty or unparseable, so the hint is gated on the rendered text.
+	const startReadback = $derived(formatDateTimeReadback(formData.start));
+	const endReadback = $derived(formatDateTimeReadback(formData.end));
+
 	// Slug editing state
 	let isEditingSlug = $state(false);
 	let editedSlug = $state('');
@@ -341,9 +346,9 @@
 				{validationErrors.start}
 			</p>
 		{/if}
-		{#if formData.start}
+		{#if startReadback}
 			<p class="text-xs text-muted-foreground">
-				{m['dateTimePicker.selectedDate']({ value: formatDateTimeReadback(formData.start) })}
+				{m['dateTimePicker.selectedDate']({ value: startReadback })}
 			</p>
 		{/if}
 		<p class="text-xs text-muted-foreground">
@@ -394,9 +399,9 @@
 					{validationErrors.end}
 				</p>
 			{/if}
-			{#if formData.end}
+			{#if endReadback}
 				<p class="text-xs text-muted-foreground">
-					{m['dateTimePicker.selectedDate']({ value: formatDateTimeReadback(formData.end) })}
+					{m['dateTimePicker.selectedDate']({ value: endReadback })}
 				</p>
 			{/if}
 		</div>
