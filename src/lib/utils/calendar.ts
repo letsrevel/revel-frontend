@@ -230,6 +230,11 @@ export function isInMonth(date: Date, year: number, month: number): boolean {
 	return date.getFullYear() === year && date.getMonth() === month - 1;
 }
 
+/** Short weekday name in the active locale, e.g. "Mon". */
+export function formatWeekdayShort(date: Date): string {
+	return date.toLocaleDateString(getDateLocale(), { weekday: 'short' });
+}
+
 /**
  * Format date for display
  */

@@ -408,6 +408,39 @@ export function formatDate(dateString: string, timeZone?: string): string {
 	});
 }
 
+/** Long-month date, no time, e.g. "October 20, 2025". */
+export function formatDateLongMonth(dateString: string, timeZone?: string): string {
+	return new Date(dateString).toLocaleDateString(getDateLocale(), {
+		year: 'numeric',
+		month: 'long',
+		day: 'numeric',
+		...tzOpt(timeZone)
+	});
+}
+
+/** Long-month date + time, e.g. "October 20, 2025, 8:00 PM". */
+export function formatDateTimeVerbose(dateString: string, timeZone?: string): string {
+	const locale = getDateLocale();
+	return new Date(dateString).toLocaleString(locale, {
+		year: 'numeric',
+		month: 'long',
+		day: 'numeric',
+		hour: 'numeric',
+		minute: '2-digit',
+		hour12: locale === 'en-US',
+		...tzOpt(timeZone)
+	});
+}
+
+/** Month + year only, e.g. "October 2025". */
+export function formatMonthYearLabel(dateString: string, timeZone?: string): string {
+	return new Date(dateString).toLocaleDateString(getDateLocale(), {
+		year: 'numeric',
+		month: 'long',
+		...tzOpt(timeZone)
+	});
+}
+
 /**
  * Human label naming the timezone an event's times are shown in, e.g.
  * "London (GMT+1)". Pair it with abbreviation-free times (pass
