@@ -31,10 +31,22 @@ startMetricsServer();
  */
 
 /**
+ * Minimal shape of the fields we read from a decoded access-token JWT.
+ * Every field is optional because the payload is untrusted data.
+ */
+interface JwtPayload {
+	user_id?: string;
+	sub?: string;
+	email?: string;
+	exp?: number;
+	[key: string]: unknown;
+}
+
+/**
  * Decode JWT token to extract user information
  * Note: This is safe as JWT is just base64 encoded, not encrypted
  */
-function decodeJWT(token: string): any | null {
+function decodeJWT(token: string): JwtPayload | null {
 	try {
 		const parts = token.split('.');
 		if (parts.length !== 3) return null;
@@ -42,7 +54,7 @@ function decodeJWT(token: string): any | null {
 		// Decode the payload (second part)
 		const payload = parts[1];
 		const decoded = Buffer.from(payload, 'base64url').toString('utf-8');
-		return JSON.parse(decoded);
+		return JSON.parse(decoded) as JwtPayload;
 	} catch (error) {
 		log.error('jwt_decode_failed', { error });
 		return null;
