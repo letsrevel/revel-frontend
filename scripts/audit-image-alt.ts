@@ -23,7 +23,7 @@ async function main() {
 
 		while ((match = imgTagRegex.exec(text)) !== null) {
 			const fullMatch = match[0];
-			const attrs = match[1];
+			const _attrs = match[1];
 
 			// Calculate the line number of the opening <img
 			const lineNumber = text.slice(0, match.index).split('\n').length;
