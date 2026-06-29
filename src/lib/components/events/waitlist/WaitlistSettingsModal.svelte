@@ -233,7 +233,9 @@
 
 			<div class="space-y-1.5">
 				<div class="flex items-center gap-2">
-					<span class="text-sm font-medium">{m['waitlistSettings.cutoffDate.label']()}</span>
+					<label for="waitlist-cutoff-date" class="text-sm font-medium"
+						>{m['waitlistSettings.cutoffDate.label']()}</label
+					>
 					<button
 						type="button"
 						aria-pressed={!cutoffLocal}
@@ -245,7 +247,11 @@
 						{m['waitlistSettings.notSet']()}
 					</button>
 				</div>
-				<DateTimePicker bind:value={cutoffLocal} error={fieldErrors.waitlist_cutoff_date} />
+				<DateTimePicker
+					id="waitlist-cutoff-date"
+					bind:value={cutoffLocal}
+					error={fieldErrors.waitlist_cutoff_date}
+				/>
 				<p class="text-xs text-muted-foreground">{m['waitlistSettings.cutoffDate.helper']()}</p>
 			</div>
 

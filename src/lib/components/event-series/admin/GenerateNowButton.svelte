@@ -137,7 +137,7 @@
 
 		<div class="mt-4 space-y-2">
 			<DateTimePicker
-				id="generate-now-until"
+				id={`generate-now-until-${series.id}`}
 				bind:value={untilLocal}
 				label={m['recurringEvents.generateNow.untilLabel']()}
 				disabled={generateMutation.isPending}

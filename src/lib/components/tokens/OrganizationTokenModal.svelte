@@ -176,6 +176,7 @@
 				<!-- Expires At (edit only) -->
 				<div class="space-y-2">
 					<DateTimePicker
+						id="org-token-expires-at"
 						bind:value={expiresAt}
 						label={m['organizationTokenModal.expirationDate']()}
 					/>
