@@ -55,7 +55,7 @@
 			const response = await dashboardDashboardRsvps({
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
-					status: statusFilter as any,
+					status: statusFilter ? [statusFilter] : undefined,
 					search: debouncedSearch || undefined,
 					include_past: includePast,
 					page: currentPage,

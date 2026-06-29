@@ -1,6 +1,7 @@
 import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { eventpublicdetailsGetEvent, eventadminrsvpsListRsvps } from '$lib/api';
+import type { RsvpStatus } from '$lib/api/generated/types.gen';
 import { log } from '$lib/server/logger';
 
 export const load: PageServerLoad = async ({ parent, params, locals, fetch, url }) => {
@@ -80,7 +81,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 			fetch,
 			path: { event_id: params.event_id },
 			query: {
-				status: status as any,
+				status: status ? [status as RsvpStatus] : undefined,
 				search,
 				page,
 				page_size: pageSize,
