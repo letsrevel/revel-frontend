@@ -3,6 +3,7 @@
  */
 
 import { getLocale } from '$lib/paraglide/runtime.js';
+import { formatDate } from './date';
 
 /**
  * Format a timestamp as relative time (e.g., "2 hours ago", "yesterday", "3 days ago")
@@ -99,9 +100,5 @@ export function formatRelativeTime(dateString: string): string {
 	}
 
 	// More than a month: show absolute date
-	return date.toLocaleDateString(locale === 'en' ? 'en-US' : locale === 'de' ? 'de-DE' : 'it-IT', {
-		month: 'short',
-		day: 'numeric',
-		year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
-	});
+	return formatDate(dateString);
 }

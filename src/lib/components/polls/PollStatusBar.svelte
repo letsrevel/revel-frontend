@@ -13,6 +13,7 @@
 		pollReopenPollAction
 	} from '$lib/api/generated/sdk.gen';
 	import type { PollDetailSchema } from '$lib/api/generated/types.gen';
+	import { formatDateTime } from '$lib/utils/date';
 
 	interface Props {
 		poll: PollDetailSchema;
@@ -90,17 +91,17 @@
 			<PollStatusBadge status={poll.status} />
 			{#if poll.opened_at}
 				<span class="text-xs text-muted-foreground"
-					>{m['pollStatusBar.openedAt']({ at: new Date(poll.opened_at).toLocaleString() })}</span
+					>{m['pollStatusBar.openedAt']({ at: formatDateTime(poll.opened_at) })}</span
 				>
 			{/if}
 			{#if poll.closed_at}
 				<span class="text-xs text-muted-foreground"
-					>{m['pollStatusBar.closedAt']({ at: new Date(poll.closed_at).toLocaleString() })}</span
+					>{m['pollStatusBar.closedAt']({ at: formatDateTime(poll.closed_at) })}</span
 				>
 			{/if}
 			{#if poll.status === 'open' && poll.closes_at}
 				<span class="text-xs text-muted-foreground"
-					>{m['pollStatusBar.closesAt']({ at: new Date(poll.closes_at).toLocaleString() })}</span
+					>{m['pollStatusBar.closesAt']({ at: formatDateTime(poll.closes_at) })}</span
 				>
 			{/if}
 		</div>

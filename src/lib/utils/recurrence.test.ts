@@ -209,10 +209,11 @@ describe('formatRecurrence — boundary suffix', () => {
 	it('appends until boundary with locale-formatted date', () => {
 		const out = formatRecurrence(
 			base({ weekdays: [0], until: '2026-12-31T00:00:00Z' }),
-			// Pinning locale keeps the Intl output deterministic across CI runners.
-			{ locale: 'en-GB' }
+			// locale is no longer used for date formatting (getDateLocale() drives the
+			// output); the boundary now routes through formatDateLongMonth from date.ts.
+			{ locale: 'en' }
 		);
-		expect(out).toBe('Every Monday until 31 December 2026');
+		expect(out).toBe('Every Monday until December 31, 2026');
 	});
 
 	it('omits boundary when includeBoundary=false', () => {

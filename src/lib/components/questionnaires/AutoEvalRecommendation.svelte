@@ -4,6 +4,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { AlertCircle, CheckCircle, XCircle, Sparkles } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
+	import { formatDateLongMonth } from '$lib/utils/date';
 	import type { EvaluationResponseSchema } from '$lib/api/generated';
 	import type { QuestionnaireEvaluationStatus } from '$lib/utils/questionnaire-types';
 
@@ -129,11 +130,7 @@
 					<p class="mt-1 text-sm text-muted-foreground">
 						{#if evaluation.created_at}
 							{m['autoEvalRecommendation.evaluatedManuallyOn']({
-								date: new Date(evaluation.created_at).toLocaleDateString('en-US', {
-									year: 'numeric',
-									month: 'long',
-									day: 'numeric'
-								})
+								date: formatDateLongMonth(evaluation.created_at)
 							})}
 						{:else}
 							{m['autoEvalRecommendation.evaluatedManually']()}

@@ -4,6 +4,7 @@ import type {
 	Weekday,
 	WeekdayOrdinal
 } from '$lib/types/recurrence';
+import { formatDateLongMonth } from './date';
 
 // --- weekday / ordinal labels ----------------------------------------------
 
@@ -136,18 +137,14 @@ function formatMonthly(rule: RecurrenceDescriptor, interval: number, _locale: st
 	return `Every ${interval} months on the ${nthLabel} ${wdLabel}`;
 }
 
-function formatBoundary(rule: RecurrenceDescriptor, locale: string): string {
+function formatBoundary(rule: RecurrenceDescriptor, _locale: string): string {
 	if (rule.count != null && rule.count > 0) {
 		return rule.count === 1 ? 'for 1 occurrence' : `for ${rule.count} occurrences`;
 	}
 	if (rule.until) {
 		const d = new Date(rule.until);
 		if (!Number.isNaN(d.getTime())) {
-			return `until ${new Intl.DateTimeFormat(locale, {
-				day: 'numeric',
-				month: 'long',
-				year: 'numeric'
-			}).format(d)}`;
+			return `until ${formatDateLongMonth(rule.until!)}`;
 		}
 	}
 	return '';

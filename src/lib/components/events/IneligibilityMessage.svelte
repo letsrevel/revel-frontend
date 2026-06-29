@@ -15,6 +15,7 @@
 		UserCircle
 	} from 'lucide-svelte';
 	import { getMissingProfileFieldLabel } from '$lib/utils/eligibility';
+	import { formatDateTime, formatDateLongMonth } from '$lib/utils/date';
 	import IneligibilityActionButton from './IneligibilityActionButton.svelte';
 	import RetryCountdown from './RetryCountdown.svelte';
 	import * as m from '$lib/paraglide/messages.js';
@@ -62,7 +63,7 @@
 	function formatTime(iso: string): string {
 		const date = new Date(iso);
 		if (isNaN(date.getTime())) return iso;
-		return date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+		return formatDateTime(iso);
 	}
 
 	/**
@@ -96,11 +97,7 @@
 			return m['ineligibilityMessage.deadlineDaysLeft']?.({ days }) ?? `${days} days left to apply`;
 		}
 
-		return date.toLocaleDateString(undefined, {
-			month: 'long',
-			day: 'numeric',
-			year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
-		});
+		return formatDateLongMonth(deadline);
 	}
 
 	/**
