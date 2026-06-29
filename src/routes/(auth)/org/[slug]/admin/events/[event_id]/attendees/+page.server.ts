@@ -1,7 +1,7 @@
 import { error, redirect } from '@sveltejs/kit';
+import { z } from 'zod';
 import type { PageServerLoad } from './$types';
 import { eventpublicdetailsGetEvent, eventadminrsvpsListRsvps } from '$lib/api';
-import type { RsvpStatus } from '$lib/api/generated/types.gen';
 import { log } from '$lib/server/logger';
 
 export const load: PageServerLoad = async ({ parent, params, locals, fetch, url }) => {
@@ -64,8 +64,15 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 		redirect(302, `/org/${params.slug}/admin/events/${params.event_id}/tickets`);
 	}
 
-	// Get query parameters for filtering
-	const status = url.searchParams.get('status') || undefined;
+	// Get query parameters for filtering. `status` is untrusted external input,
+	// so validate it against the allowed RSVP statuses; anything else (incl. a
+	// crafted value that would 422 the API and silently empty the list) falls
+	// back to undefined = "all statuses".
+	const status = z
+		.enum(['yes', 'no', 'maybe'])
+		.optional()
+		.catch(undefined)
+		.parse(url.searchParams.get('status') || undefined);
 	const search = url.searchParams.get('search') || undefined;
 	const page = parseInt(url.searchParams.get('page') || '1');
 	const pageSize = 100; // Fixed page size
@@ -81,7 +88,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 			fetch,
 			path: { event_id: params.event_id },
 			query: {
-				status: status ? [status as RsvpStatus] : undefined,
+				status: status ? [status] : undefined,
 				search,
 				page,
 				page_size: pageSize,
