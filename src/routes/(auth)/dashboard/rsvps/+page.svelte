@@ -5,15 +5,7 @@
 	import { dashboardDashboardRsvps } from '$lib/api/generated/sdk.gen';
 	import type { RsvpStatus } from '$lib/api/generated/types.gen';
 	import RSVPCard from '$lib/components/rsvps/RSVPCard.svelte';
-	import {
-		CheckCircle2,
-		XCircle,
-		HelpCircle,
-		Filter,
-		ChevronLeft,
-		ChevronRight,
-		Loader2
-	} from 'lucide-svelte';
+	import { CheckCircle2, Filter, ChevronLeft, ChevronRight, Loader2 } from 'lucide-svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 
@@ -22,15 +14,28 @@
 	// Get current page from URL params
 	const currentPage = $derived(Number(page.url.searchParams.get('page') || '1'));
 
-	const statusFilters: Array<{ label: string; value: RsvpStatus | null }> = [
-		{ label: m['dashboard.rsvps.status_all'](), value: null },
+	// Canonical status order — keeps the URL (?status=yes,maybe) and the query key
+	// stable regardless of the order chips were toggled in.
+	const STATUS_ORDER: RsvpStatus[] = ['yes', 'maybe', 'no'];
+
+	const statusToggles: Array<{ label: string; value: RsvpStatus }> = [
 		{ label: m['dashboard.rsvps.status_going'](), value: 'yes' },
 		{ label: m['dashboard.rsvps.status_maybe'](), value: 'maybe' },
 		{ label: m['dashboard.rsvps.status_notGoing'](), value: 'no' }
 	];
 
+	// Status is URL-driven (?status=yes,maybe) so the filter is linkable and
+	// restorable — e.g. the dashboard "Upcoming RSVPs" card links straight to
+	// the Going + Maybe scope it counts. An empty selection means "all".
+	function parseStatuses(param: string | null): RsvpStatus[] {
+		if (!param) return [];
+		const tokens = new Set(param.split(','));
+		return STATUS_ORDER.filter((status) => tokens.has(status));
+	}
+
+	const selectedStatuses = $derived(parseStatuses(page.url.searchParams.get('status')));
+
 	// Active filters
-	let statusFilter = $state<RsvpStatus | null>(null);
 	let searchQuery = $state('');
 	let includePast = $state(false);
 
@@ -48,14 +53,20 @@
 
 	// Fetch RSVPs with filters
 	const rsvpsQuery = createQuery(() => ({
-		queryKey: ['dashboard-rsvps', statusFilter, debouncedSearch, includePast, currentPage] as const,
+		queryKey: [
+			'dashboard-rsvps',
+			selectedStatuses,
+			debouncedSearch,
+			includePast,
+			currentPage
+		] as const,
 		queryFn: async () => {
 			if (!accessToken) return { results: [], count: 0 };
 
 			const response = await dashboardDashboardRsvps({
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
-					status: statusFilter ? [statusFilter] : undefined,
+					status: selectedStatuses.length ? selectedStatuses : undefined,
 					search: debouncedSearch || undefined,
 					include_past: includePast,
 					page: currentPage,
@@ -74,10 +85,27 @@
 	const hasNextPage = $derived(currentPage < totalPages);
 	const hasPrevPage = $derived(currentPage > 1);
 
-	// Apply filter
-	function applyStatusFilter(status: RsvpStatus | null) {
-		statusFilter = status;
-		navigateToPage(1); // Reset to first page when filter changes
+	// Write the selected statuses to the URL (canonical order) and reset to the
+	// first page. An empty selection drops the param entirely ("all").
+	function setStatuses(statuses: RsvpStatus[]) {
+		const url = new URL(page.url);
+		const ordered = STATUS_ORDER.filter((status) => statuses.includes(status));
+		if (ordered.length) {
+			url.searchParams.set('status', ordered.join(','));
+		} else {
+			url.searchParams.delete('status');
+		}
+		url.searchParams.delete('page'); // Reset to first page when filter changes
+		goto(url.toString(), { replaceState: true, noScroll: true });
+	}
+
+	// Toggle a single status in/out of the current selection.
+	function toggleStatus(status: RsvpStatus) {
+		setStatuses(
+			selectedStatuses.includes(status)
+				? selectedStatuses.filter((s) => s !== status)
+				: [...selectedStatuses, status]
+		);
 	}
 
 	// Navigate to page
@@ -89,11 +117,6 @@
 			url.searchParams.set('page', pageNum.toString());
 		}
 		goto(url.toString(), { replaceState: true, noScroll: true });
-	}
-
-	// Check if filter is active
-	function isStatusFilterActive(status: RsvpStatus | null): boolean {
-		return statusFilter === status;
 	}
 </script>
 
@@ -148,17 +171,28 @@
 				<span class="text-sm font-medium">{m['dashboard.rsvps.status']()}</span>
 			</div>
 			<div class="flex flex-wrap gap-2">
-				{#each statusFilters as filter}
+				<button
+					type="button"
+					aria-pressed={selectedStatuses.length === 0}
+					onclick={() => setStatuses([])}
+					class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {selectedStatuses.length ===
+					0
+						? 'bg-primary text-primary-foreground hover:bg-primary/90'
+						: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
+				>
+					{m['dashboard.rsvps.status_all']()}
+				</button>
+				{#each statusToggles as toggle}
+					{@const active = selectedStatuses.includes(toggle.value)}
 					<button
 						type="button"
-						onclick={() => applyStatusFilter(filter.value)}
-						class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {isStatusFilterActive(
-							filter.value
-						)
+						aria-pressed={active}
+						onclick={() => toggleStatus(toggle.value)}
+						class="rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring {active
 							? 'bg-primary text-primary-foreground hover:bg-primary/90'
 							: 'bg-background hover:bg-accent hover:text-accent-foreground'}"
 					>
-						{filter.label}
+						{toggle.label}
 					</button>
 				{/each}
 			</div>
@@ -197,16 +231,15 @@
 				<CheckCircle2 class="h-8 w-8 text-primary" aria-hidden="true" />
 			</div>
 			<h2 class="mb-2 text-xl font-semibold">{m['dashboardRsvpsPage.noResults']()}</h2>
-			{#if statusFilter || debouncedSearch}
+			{#if selectedStatuses.length || debouncedSearch}
 				<p class="mb-4 text-muted-foreground">
 					{m['dashboardRsvpsPage.noResultsFiltered']()}
 				</p>
 				<button
 					type="button"
 					onclick={() => {
-						statusFilter = null;
 						searchQuery = '';
-						navigateToPage(1);
+						setStatuses([]);
 					}}
 					class="rounded-lg border bg-background px-6 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
