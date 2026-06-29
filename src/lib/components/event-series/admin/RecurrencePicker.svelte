@@ -4,6 +4,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { RadioGroup, RadioGroupItem } from '$lib/components/ui/radio-group';
 	import { cn } from '$lib/utils/cn';
+	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 	import {
 		FREQUENCIES,
 		WEEKDAYS,
@@ -182,25 +183,21 @@
 
 	const MONTHLY_TYPES = ['day', 'weekday'] as const satisfies readonly MonthlyType[];
 
-	function handleUntilInput(event: Event): void {
-		const raw = (event.target as HTMLInputElement).value;
-		patch({ until: raw ? new Date(raw).toISOString() : null });
+	// ISO state for the until DateTimePicker. Kept in sync with rule.until so
+	// editing an existing rule pre-populates the field.
+	let untilValue = $state('');
+
+	$effect(() => {
+		untilValue = rule.until ?? '';
+	});
+
+	function handleUntilChange(value: string): void {
+		patch({ until: value || null });
 	}
 
 	function handleCountInput(event: Event): void {
 		const raw = (event.target as HTMLInputElement).value;
 		patch({ count: raw ? Math.max(1, Math.floor(Number(raw))) : null });
-	}
-
-	const untilForInput = $derived(rule.until ? toDatetimeLocalValue(rule.until) : '');
-
-	function toDatetimeLocalValue(iso: string): string {
-		const d = new Date(iso);
-		if (Number.isNaN(d.getTime())) return '';
-		const pad = (n: number) => n.toString().padStart(2, '0');
-		return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
-			d.getHours()
-		)}:${pad(d.getMinutes())}`;
 	}
 
 	function frequencyLabel(f: Frequency): string {
@@ -500,12 +497,11 @@
 					<Label for="boundary-until">{m['recurringEvents.picker.boundary.until']()}</Label>
 				</div>
 				{#if selectedBoundary === 'until'}
-					<Input
-						type="datetime-local"
-						value={untilForInput}
-						oninput={handleUntilInput}
+					<DateTimePicker
+						bind:value={untilValue}
+						label={m['recurringEvents.picker.untilLabel']()}
+						onValueChange={handleUntilChange}
 						class="sm:w-72"
-						aria-label={m['recurringEvents.picker.untilLabel']()}
 					/>
 				{/if}
 			</div>
