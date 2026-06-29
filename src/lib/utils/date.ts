@@ -4,20 +4,21 @@
 
 import { getLocale } from '$lib/paraglide/runtime.js';
 
+/** Maps the active Paraglide UI language to a BCP 47 date locale. */
+const LOCALE_MAP: Record<string, string> = {
+	en: 'en-US',
+	de: 'de-DE',
+	it: 'it-IT',
+	fr: 'fr-FR'
+};
+
 /**
  * Get the active UI language as a BCP 47 date locale (e.g. "en-US", "de-DE",
  * "it-IT", "fr-FR"). Drives every human-facing date in the app, so switching
  * the UI language switches month names. Exported so calendar.ts shares it.
  */
 export function getDateLocale(): string {
-	const locale = getLocale();
-	const localeMap: Record<string, string> = {
-		en: 'en-US',
-		de: 'de-DE',
-		it: 'it-IT',
-		fr: 'fr-FR'
-	};
-	return localeMap[locale] || 'en-US';
+	return LOCALE_MAP[getLocale()] || 'en-US';
 }
 
 /**
