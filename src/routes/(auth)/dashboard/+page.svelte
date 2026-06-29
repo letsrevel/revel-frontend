@@ -580,7 +580,7 @@
 			<!-- Upcoming RSVPs -->
 			{#if upcomingRsvpsCount > 0}
 				<a
-					href="/dashboard/rsvps"
+					href="/dashboard/rsvps?status=yes,maybe"
 					class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
 					<div class="flex items-start justify-between">
