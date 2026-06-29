@@ -16,21 +16,9 @@
 
 	let { closesAt = $bindable(), error = null }: Props = $props();
 
-	// Bridge: DateTimePicker stores '' for empty; this component's public API uses null.
-	// We keep a local string state and sync bidirectionally with the parent's nullable value.
-	let pickerValue = $state(closesAt ?? '');
-
-	// Picker → parent: propagate user's selection up as ISO or null.
-	$effect(() => {
-		const next = pickerValue === '' ? null : pickerValue;
-		if (closesAt !== next) closesAt = next;
-	});
-
-	// Parent → picker: propagate external resets (e.g. post-save re-sync) down.
-	$effect(() => {
-		const expected = closesAt ?? '';
-		if (pickerValue !== expected) pickerValue = expected;
-	});
+	// DateTimePicker stores '' for empty; this component's public API uses null.
+	// Controlled-input pattern: closesAt is the single source of truth — read it
+	// into the picker, map the picker's '' back to null on change.
 </script>
 
 <Card>
@@ -40,9 +28,10 @@
 	</CardHeader>
 	<CardContent class="space-y-2">
 		<DateTimePicker
-			bind:value={pickerValue}
+			value={closesAt ?? ''}
 			label={m['pollNewPage.closesAtLabel']()}
 			error={error ?? undefined}
+			onValueChange={(v) => (closesAt = v === '' ? null : v)}
 		/>
 	</CardContent>
 </Card>
