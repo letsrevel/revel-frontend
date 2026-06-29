@@ -16,12 +16,15 @@
 		tomorrow.setDate(tomorrow.getDate() + 1);
 
 		// Create midnight CET time (00:00 in Europe/Paris)
+		// eslint-disable-next-line no-restricted-syntax -- timezone conversion, not display formatting
 		const midnightCET = new Date(tomorrow.toLocaleString('en-US', { timeZone: 'Europe/Paris' }));
 		midnightCET.setHours(0, 0, 0, 0);
 
 		// Convert to user's timezone
+		// eslint-disable-next-line no-restricted-syntax -- timezone conversion, not display formatting
 		const userTime = new Date(midnightCET.toLocaleString('en-US', { timeZone: userTimezone }));
 
+		// eslint-disable-next-line no-restricted-syntax -- fixed-locale demo countdown
 		return userTime.toLocaleTimeString('en-US', {
 			hour: '2-digit',
 			minute: '2-digit',

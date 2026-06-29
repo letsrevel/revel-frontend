@@ -98,12 +98,21 @@ ${events
 		const eventDate = new Date(event.start);
 		const locationParts = [event.city?.name, event.city?.country].filter(Boolean);
 		const location = locationParts.join(', ');
+		// eslint-disable-next-line no-restricted-syntax -- RSS server endpoint, no request locale; fixed en-US by design
+		const eventDateFormatted = event.start
+			? eventDate.toLocaleDateString('en-US', {
+					weekday: 'long',
+					year: 'numeric',
+					month: 'long',
+					day: 'numeric'
+				})
+			: '';
 
 		return `    <item>
       <title>${escapeXml(event.name)}</title>
       <link>${escapeXml(eventUrl)}</link>
       <guid isPermaLink="true">${escapeXml(eventUrl)}</guid>
-      <description><![CDATA[${truncatedDescription}${location ? `\n\nLocation: ${location}` : ''}${event.start ? `\nDate: ${eventDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}` : ''}]]></description>
+      <description><![CDATA[${truncatedDescription}${location ? `\n\nLocation: ${location}` : ''}${eventDateFormatted ? `\nDate: ${eventDateFormatted}` : ''}]]></description>
       <pubDate>${formatRfc822Date(event.created_at || event.start)}</pubDate>
       <dc:creator>${escapeXml(event.organization.name)}</dc:creator>
       <category>${escapeXml(event.organization.name)}</category>${
