@@ -9,8 +9,7 @@
 		DialogTitle
 	} from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
+	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 
 	interface Props {
 		open: boolean;
@@ -47,11 +46,10 @@
 		</DialogHeader>
 		<div class="space-y-3">
 			<div class="space-y-2">
-				<Label for="reopen-closes-at">{m['pollReopenDialog.closesAtLabel']()}</Label>
-				<Input
+				<DateTimePicker
 					id="reopen-closes-at"
-					type="datetime-local"
 					bind:value={closesAt}
+					label={m['pollReopenDialog.closesAtLabel']()}
 					disabled={clearClosesAt}
 				/>
 			</div>
@@ -63,11 +61,7 @@
 		<DialogFooter>
 			<Button variant="outline" onclick={onCancel}>{m['pollReopenDialog.cancel']()}</Button>
 			<Button
-				onclick={() =>
-					onConfirm(
-						clearClosesAt ? null : closesAt ? new Date(closesAt).toISOString() : null,
-						clearClosesAt
-					)}
+				onclick={() => onConfirm(clearClosesAt ? null : closesAt || null, clearClosesAt)}
 				disabled={submitting || !canSubmit}
 			>
 				{m['pollReopenDialog.confirm']()}

@@ -3,9 +3,8 @@
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
 	import { Loader2, RefreshCw } from 'lucide-svelte';
+	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 	import { toast } from 'svelte-sonner';
 	import { organizationadminrecurringeventsGenerateEvents } from '$lib/api/generated/sdk.gen';
 	import type {
@@ -29,10 +28,9 @@
 
 	const queryClient = useQueryClient();
 
-	// `<input type="datetime-local">` stores a naive "YYYY-MM-DDTHH:mm" string.
-	// We convert to a full ISO stamp (browser tz → UTC) at submit time; an empty
-	// string means "use the series' default generation window" and is sent as
-	// no body (the SDK treats `body: null | undefined` as a no-op override).
+	// `DateTimePicker` stores and emits ISO 8601; an empty string means "use the
+	// series' default generation window" and is sent as no body (the SDK treats
+	// `body: null | undefined` as a no-op override).
 	let untilLocal = $state<string>('');
 	let errorBanner = $state<string | null>(null);
 
@@ -62,7 +60,7 @@
 	const generateMutation = createMutation(() => ({
 		mutationFn: async (): Promise<EventDetailSchema[]> => {
 			if (!accessToken) throw new Error('Not authenticated');
-			const body = untilLocal.trim() ? { until: new Date(untilLocal).toISOString() } : null;
+			const body = untilLocal.trim() ? { until: untilLocal } : null;
 			const response = await organizationadminrecurringeventsGenerateEvents({
 				path: { slug: organizationSlug, series_id: series.id },
 				body,
@@ -138,15 +136,11 @@
 		</p>
 
 		<div class="mt-4 space-y-2">
-			<Label for="generate-now-until">
-				{m['recurringEvents.generateNow.untilLabel']()}
-			</Label>
-			<Input
-				id="generate-now-until"
-				type="datetime-local"
+			<DateTimePicker
+				id={`generate-now-until-${series.id}`}
 				bind:value={untilLocal}
+				label={m['recurringEvents.generateNow.untilLabel']()}
 				disabled={generateMutation.isPending}
-				data-testid="generate-now-until"
 			/>
 			<p class="text-xs text-muted-foreground">
 				{m['recurringEvents.generateNow.untilHelper']({

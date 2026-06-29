@@ -7,6 +7,7 @@
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import { CalendarClock, Plus, Trash2, AlertTriangle } from 'lucide-svelte';
 	import { emptyRow, rowCompleteness, startsBeforeAnchor, type ScheduleRow } from './schedule-rows';
+	import { formatDateTimeReadback } from '$lib/utils/date';
 
 	interface Props {
 		/** Editor rows, owned by the parent (bindable). */
@@ -55,6 +56,7 @@
 				{@const titleInvalid = completeness === 'invalid' && !row.title.trim()}
 				{@const startMissing = completeness === 'invalid' && !row.startLocal}
 				{@const startBefore = startsBeforeAnchor(row, eventStart)}
+				{@const startReadback = formatDateTimeReadback(row.startLocal)}
 				<li class="space-y-3 rounded-lg border bg-muted/30 p-4">
 					<div class="flex items-center justify-between">
 						<span class="text-xs font-medium text-muted-foreground">
@@ -131,6 +133,11 @@
 								>
 									<AlertTriangle class="mt-0.5 h-3 w-3 shrink-0" aria-hidden="true" />
 									{m['eventScheduleAdmin.beforeStartWarning']()}
+								</p>
+							{/if}
+							{#if startReadback && !startMissing}
+								<p class="mt-1 text-xs text-muted-foreground">
+									{m['dateTimePicker.selectedDate']({ value: startReadback })}
 								</p>
 							{/if}
 						</div>

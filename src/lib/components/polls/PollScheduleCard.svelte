@@ -7,8 +7,7 @@
 		CardHeader,
 		CardTitle
 	} from '$lib/components/ui/card';
-	import { Label } from '$lib/components/ui/label';
-	import { Input } from '$lib/components/ui/input';
+	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 
 	interface Props {
 		closesAt: string | null;
@@ -16,6 +15,10 @@
 	}
 
 	let { closesAt = $bindable(), error = null }: Props = $props();
+
+	// DateTimePicker stores '' for empty; this component's public API uses null.
+	// Controlled-input pattern: closesAt is the single source of truth — read it
+	// into the picker, map the picker's '' back to null on change.
 </script>
 
 <Card>
@@ -24,21 +27,11 @@
 		<CardDescription>{m['pollNewPage.scheduleDescription']()}</CardDescription>
 	</CardHeader>
 	<CardContent class="space-y-2">
-		<Label for="closes-at">{m['pollNewPage.closesAtLabel']()}</Label>
-		<Input
-			id="closes-at"
-			type="datetime-local"
+		<DateTimePicker
 			value={closesAt ?? ''}
-			oninput={(e) => {
-				const v = (e.currentTarget as HTMLInputElement).value;
-				closesAt = v === '' ? null : v;
-			}}
-			class={error ? 'border-destructive' : ''}
-			aria-invalid={error ? true : undefined}
-			aria-describedby={error ? 'closes-at-error' : undefined}
+			label={m['pollNewPage.closesAtLabel']()}
+			error={error ?? undefined}
+			onValueChange={(v) => (closesAt = v === '' ? null : v)}
 		/>
-		{#if error}
-			<p id="closes-at-error" class="text-sm text-destructive">{error}</p>
-		{/if}
 	</CardContent>
 </Card>

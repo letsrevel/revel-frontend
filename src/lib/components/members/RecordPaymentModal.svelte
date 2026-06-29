@@ -8,6 +8,7 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Loader2 } from 'lucide-svelte';
 	import { CURRENCY_OPTIONS } from '$lib/utils/currencies';
+	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 
 	interface Props {
 		subscription: SubscriptionSchema;
@@ -46,8 +47,7 @@
 			notes
 		};
 		if (occurredAt) {
-			// datetime-local gives us "YYYY-MM-DDTHH:mm"; backend expects ISO8601
-			payload.occurred_at = new Date(occurredAt).toISOString();
+			payload.occurred_at = occurredAt;
 		}
 		onSubmit(payload);
 	}
@@ -108,10 +108,11 @@
 			</div>
 
 			<div class="space-y-1">
-				<Label for="rp-occurred">
-					{m['orgAdmin.members.subscriptions.recordPayment.occurredAt']()}
-				</Label>
-				<Input id="rp-occurred" type="datetime-local" bind:value={occurredAt} />
+				<DateTimePicker
+					id="rp-occurred"
+					bind:value={occurredAt}
+					label={m['orgAdmin.members.subscriptions.recordPayment.occurredAt']()}
+				/>
 				<p class="text-xs text-muted-foreground">
 					{m['orgAdmin.members.subscriptions.recordPayment.occurredAtHint']()}
 				</p>

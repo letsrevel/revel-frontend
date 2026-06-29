@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { formatDateTimeReadback } from '$lib/utils/date';
 	import { ShieldCheck, ChevronDown, ChevronRight } from 'lucide-svelte';
 	import EventQuestionnaires from './EventQuestionnaires.svelte';
 	import type { EventCreateSchema } from '$lib/api/generated/types.gen';
@@ -34,6 +35,8 @@
 		questionnaires = [],
 		onAssignQuestionnaire
 	}: Props = $props();
+
+	const applyBeforeReadback = $derived(formatDateTimeReadback(formData.apply_before));
 </script>
 
 <!-- Admission & Screening Section -->
@@ -131,6 +134,11 @@
 					}) ??
 						`Deadline for submitting invitation requests or questionnaires. Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`}
 				</p>
+				{#if applyBeforeReadback}
+					<p class="text-xs text-muted-foreground">
+						{m['dateTimePicker.selectedDate']({ value: applyBeforeReadback })}
+					</p>
+				{/if}
 			</div>
 		</div>
 	{/if}

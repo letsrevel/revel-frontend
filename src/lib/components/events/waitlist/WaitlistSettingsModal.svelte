@@ -14,6 +14,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import DurationInput from '$lib/components/forms/DurationInput.svelte';
+	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 	import type {
 		WaitlistSettingsSchema,
 		WaitlistSettingsUpdateSchema
@@ -69,27 +70,11 @@
 		return out === 'P' ? null : out;
 	}
 
-	// datetime-local <input> consumes/produces "YYYY-MM-DDTHH:mm" strings; we
-	// round-trip with the backend's ISO timestamp.
-	function isoDateTimeToLocalInput(iso: string | null | undefined): string {
-		if (!iso) return '';
-		const d = new Date(iso);
-		if (isNaN(d.getTime())) return '';
-		const pad = (n: number) => n.toString().padStart(2, '0');
-		return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-	}
-
-	function localInputToIso(local: string): string | null {
-		if (!local) return null;
-		const d = new Date(local);
-		return isNaN(d.getTime()) ? null : d.toISOString();
-	}
-
 	let timeWindowMinutes = $state<number | null>(
 		isoToMinutes(initialValues?.waitlist_time_window ?? null)
 	);
 	let batchSize = $state<number>(initialValues?.waitlist_batch_size ?? 0);
-	let cutoffLocal = $state<string>(isoDateTimeToLocalInput(initialValues?.waitlist_cutoff_date));
+	let cutoffLocal = $state<string>(initialValues?.waitlist_cutoff_date ?? '');
 	let lotteryMode = $state<boolean>(initialValues?.waitlist_lottery_mode ?? false);
 
 	let fieldErrors = $state<Record<string, string>>({});
@@ -128,7 +113,7 @@
 		if (!data) return;
 		timeWindowMinutes = isoToMinutes(data.waitlist_time_window ?? null);
 		batchSize = data.waitlist_batch_size ?? 0;
-		cutoffLocal = isoDateTimeToLocalInput(data.waitlist_cutoff_date);
+		cutoffLocal = data.waitlist_cutoff_date ?? '';
 		lotteryMode = data.waitlist_lottery_mode ?? false;
 		hasHydrated = true;
 	});
@@ -137,7 +122,7 @@
 		return {
 			waitlist_time_window: minutesToIso(timeWindowMinutes),
 			waitlist_batch_size: Number.isFinite(batchSize) ? Math.max(0, Math.floor(batchSize)) : 0,
-			waitlist_cutoff_date: localInputToIso(cutoffLocal),
+			waitlist_cutoff_date: cutoffLocal || null,
 			waitlist_lottery_mode: lotteryMode
 		};
 	}
@@ -248,7 +233,9 @@
 
 			<div class="space-y-1.5">
 				<div class="flex items-center gap-2">
-					<Label for="waitlist-cutoff-date">{m['waitlistSettings.cutoffDate.label']()}</Label>
+					<label for="waitlist-cutoff-date" class="text-sm font-medium"
+						>{m['waitlistSettings.cutoffDate.label']()}</label
+					>
 					<button
 						type="button"
 						aria-pressed={!cutoffLocal}
@@ -260,11 +247,12 @@
 						{m['waitlistSettings.notSet']()}
 					</button>
 				</div>
-				<Input id="waitlist-cutoff-date" type="datetime-local" bind:value={cutoffLocal} />
+				<DateTimePicker
+					id="waitlist-cutoff-date"
+					bind:value={cutoffLocal}
+					error={fieldErrors.waitlist_cutoff_date}
+				/>
 				<p class="text-xs text-muted-foreground">{m['waitlistSettings.cutoffDate.helper']()}</p>
-				{#if fieldErrors.waitlist_cutoff_date}
-					<p class="text-xs text-destructive">{fieldErrors.waitlist_cutoff_date}</p>
-				{/if}
 			</div>
 
 			<div class="space-y-1.5">
