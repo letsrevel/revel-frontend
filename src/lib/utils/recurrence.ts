@@ -68,12 +68,15 @@ export interface FormatRecurrenceOptions {
 //   "The second Tuesday of every month"
 //   "Every day"
 //   "Every 3 days"
-//   "… until 31 December 2026"
+//   "… until December 31, 2026"
 //   "… for 12 occurrences"
 //
-// Locale parameter is plumbed through for future paraglide-backed i18n; the
-// current implementation is English-only. The boundary suffix is appended when
-// `includeBoundary` (default true) and the rule has one.
+// The cadence text ("Every Monday", etc.) is currently English-only; the
+// `locale` option is reserved for future paraglide-backed cadence translations
+// and does not affect output today. The boundary DATE, by contrast, already
+// follows the active UI language via `formatDateLongMonth`/`getDateLocale`. The
+// boundary suffix is appended when `includeBoundary` (default true) and the rule
+// has one.
 export function formatRecurrence(
 	rule: RecurrenceDescriptor,
 	options: FormatRecurrenceOptions = {}
@@ -81,7 +84,7 @@ export function formatRecurrence(
 	const { locale = 'en', includeBoundary = true } = options;
 	const head = formatCadence(rule, locale);
 	if (!includeBoundary) return head;
-	const boundary = formatBoundary(rule, locale);
+	const boundary = formatBoundary(rule);
 	return boundary ? `${head} ${boundary}` : head;
 }
 
@@ -137,14 +140,14 @@ function formatMonthly(rule: RecurrenceDescriptor, interval: number, _locale: st
 	return `Every ${interval} months on the ${nthLabel} ${wdLabel}`;
 }
 
-function formatBoundary(rule: RecurrenceDescriptor, _locale: string): string {
+function formatBoundary(rule: RecurrenceDescriptor): string {
 	if (rule.count != null && rule.count > 0) {
 		return rule.count === 1 ? 'for 1 occurrence' : `for ${rule.count} occurrences`;
 	}
 	if (rule.until) {
 		const d = new Date(rule.until);
 		if (!Number.isNaN(d.getTime())) {
-			return `until ${formatDateLongMonth(rule.until!)}`;
+			return `until ${formatDateLongMonth(rule.until)}`;
 		}
 	}
 	return '';
