@@ -21,6 +21,7 @@
 	} from '$lib/api/queries/waitlist-offers';
 	import type { WaitlistEntrySchema, WaitlistOfferStatus } from '$lib/api/generated/types.gen';
 	import { toast } from 'svelte-sonner';
+	import { formatDateTime } from '$lib/utils/date';
 
 	const { data }: { data: PageData } = $props();
 
@@ -265,16 +266,6 @@
 				toast.success(m['orgAdmin.waitlist.offer.revoke']());
 			},
 			onError: (err) => handleMutationError(err, 'Failed to revoke offer')
-		});
-	}
-
-	function formatDateTime(iso: string): string {
-		return new Date(iso).toLocaleString('en-US', {
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric',
-			hour: 'numeric',
-			minute: '2-digit'
 		});
 	}
 

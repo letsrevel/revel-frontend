@@ -22,6 +22,7 @@
 		type QuestionnaireEvaluationStatus
 	} from '$lib/utils/questionnaire-types';
 	import { resolveSubmissionBadgeStatus } from '$lib/utils/resolve-submission-badge-status';
+	import { formatDateTimeVerbose } from '$lib/utils/date';
 
 	interface Props {
 		data: PageData;
@@ -52,13 +53,7 @@
 
 	function formatDate(dateString: string | null | undefined): string {
 		if (!dateString) return m['questionnaireSubmissionDetailPage.notSubmitted']();
-		return new Date(dateString).toLocaleString('en-US', {
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit'
-		});
+		return formatDateTimeVerbose(dateString);
 	}
 
 	// Check if submission is already evaluated
@@ -90,13 +85,7 @@
 	function formatEventDate(dateString: string | undefined): string {
 		if (!dateString) return '';
 		try {
-			return new Date(dateString).toLocaleString('en-US', {
-				year: 'numeric',
-				month: 'long',
-				day: 'numeric',
-				hour: '2-digit',
-				minute: '2-digit'
-			});
+			return formatDateTimeVerbose(dateString);
 		} catch {
 			return dateString;
 		}

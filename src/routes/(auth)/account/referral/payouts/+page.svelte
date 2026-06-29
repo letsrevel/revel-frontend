@@ -16,6 +16,7 @@
 		ReferralPayoutSchema,
 		ReferralPayoutStatementSchema
 	} from '$lib/api/generated/types.gen';
+	import { formatDate } from '$lib/utils/date';
 
 	const user = $derived(authStore.user);
 	const accessToken = $derived(authStore.accessToken);
@@ -96,14 +97,6 @@
 		dialogOpen = false;
 		selectedPayout = null;
 		statement = null;
-	}
-
-	function formatDate(dateStr: string): string {
-		return new Date(dateStr).toLocaleDateString(undefined, {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric'
-		});
 	}
 
 	function formatPeriod(start: string, end: string): string {

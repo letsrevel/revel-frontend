@@ -50,6 +50,7 @@
 	} from '$lib/api/generated/types.gen';
 	import { getPotluckPermissions } from '$lib/utils/permissions';
 	import { formatEventLocation } from '$lib/utils/event';
+	import { formatDateTime } from '$lib/utils/date';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import * as m from '$lib/paraglide/messages.js';
@@ -785,7 +786,7 @@
 					<MyTicket
 						ticket={userTicket}
 						eventName={event.name}
-						eventDate={event.start ? new Date(event.start).toLocaleString() : undefined}
+						eventDate={event.start ? formatDateTime(event.start) : undefined}
 						eventLocation={formatEventLocation(event)}
 						onResumePayment={handleResumePaymentFromSidebar}
 						isResumingPayment={resumePaymentMutation.isPending}
@@ -990,7 +991,7 @@
 		bind:open={showMyTicketModal}
 		tickets={userTickets}
 		eventName={event.name}
-		eventDate={event.start ? new Date(event.start).toLocaleString() : undefined}
+		eventDate={event.start ? formatDateTime(event.start) : undefined}
 		eventLocation={formatEventLocation(event)}
 		onResumePayment={handleResumePayment}
 		isResumingPayment={resumePaymentMutation.isPending}

@@ -16,6 +16,7 @@
 		ArrowUpDown
 	} from 'lucide-svelte';
 	import { resolveSubmissionBadgeStatus } from '$lib/utils/resolve-submission-badge-status';
+	import { formatDateTime } from '$lib/utils/date';
 
 	interface Props {
 		data: PageData;
@@ -61,13 +62,7 @@
 
 	function formatDate(dateString: string | null | undefined): string {
 		if (!dateString) return m['questionnaireSubmissionsPage.notSubmitted']();
-		return new Date(dateString).toLocaleDateString('en-US', {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit'
-		});
+		return formatDateTime(dateString);
 	}
 
 	function formatScore(score: string | number | null | undefined): string {

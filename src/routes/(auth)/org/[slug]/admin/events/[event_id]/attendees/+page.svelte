@@ -37,6 +37,7 @@
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 	import type { RsvpDetailSchema, MembershipTierSchema } from '$lib/api/generated/types.gen';
 	import * as m from '$lib/paraglide/messages.js';
+	import { formatDateTime } from '$lib/utils/date';
 
 	const { data }: { data: PageData } = $props();
 
@@ -370,13 +371,7 @@
 	 * Format date
 	 */
 	function formatDate(date: string): string {
-		return new Date(date).toLocaleDateString('en-US', {
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric',
-			hour: 'numeric',
-			minute: '2-digit'
-		});
+		return formatDateTime(date);
 	}
 
 	async function handleExportAttendees(): Promise<string> {
