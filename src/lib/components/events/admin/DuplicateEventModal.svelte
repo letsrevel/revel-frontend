@@ -8,6 +8,7 @@
 	import { goto } from '$app/navigation';
 	import { Copy, Loader2 } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
+	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 
 	interface Props {
 		open: boolean;
@@ -39,10 +40,10 @@
 		if (open) {
 			// Suggest name with "Copy of" prefix
 			newName = m['duplicateEventModal.copyOf']({ name: eventName });
-			// Default to current date/time in local format
+			// Default to current date/time + 1 hour as ISO
 			const now = new Date();
 			now.setMinutes(now.getMinutes() + 60); // Add 1 hour
-			newStart = now.toISOString().slice(0, 16);
+			newStart = now.toISOString();
 			errorMessage = null;
 		}
 	});
@@ -56,7 +57,7 @@
 				path: { event_id: eventId },
 				body: {
 					name: newName.trim(),
-					start: new Date(newStart).toISOString()
+					start: newStart
 				},
 				headers: {
 					Authorization: `Bearer ${accessToken}`
@@ -154,18 +155,11 @@
 
 			<!-- New Start Date -->
 			<div class="space-y-2">
-				<label for="duplicate-start" class="block text-sm font-medium">
-					{m['duplicateEventModal.newStart']()} <span class="text-destructive">*</span>
-				</label>
-				<input
-					id="duplicate-start"
-					type="datetime-local"
+				<DateTimePicker
 					bind:value={newStart}
+					label={m['duplicateEventModal.newStart']()}
 					required
 					disabled={duplicateMutation.isPending}
-					class={cn(
-						'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'
-					)}
 				/>
 				<p class="text-xs text-muted-foreground">
 					{m['duplicateEventModal.startHint']()}
