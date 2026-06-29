@@ -641,7 +641,9 @@ lib/components/
 - **Do not call `toLocaleDateString` / `toLocaleString` / `toLocaleTimeString` or
   `new Intl.DateTimeFormat(...).format()` directly** in components/routes — add a helper to
   `date.ts` instead. (`Intl.DateTimeFormat().resolvedOptions().timeZone` for timezone *detection*
-  is fine.) A repo-wide migration + ESLint guardrail enforcing this is tracked in #510.
+  is fine.) **ESLint actively bans `toLocaleDateString`, `toLocaleTimeString`, and `toLocaleString`
+  everywhere except `src/lib/utils/date.ts` and `src/lib/utils/calendar.ts`** (guardrail landed
+  in #510; `resolvedOptions()` for tz detection is not affected).
 - **Machine/ISO formats stay numeric** — `<input>` values, `datetime` attributes, API payloads,
   and structured data (schema.org) use ISO 8601, not localized strings.
 - For native `<input type="datetime-local">`, show `formatDateTimeReadback(value)` underneath as an

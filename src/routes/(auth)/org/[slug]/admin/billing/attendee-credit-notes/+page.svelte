@@ -17,6 +17,7 @@
 	import { extractErrorMessage } from '$lib/utils/errors';
 	import { organizationadminvatListAttendeeCreditNotes } from '$lib/api/generated/sdk.gen';
 	import type { LayoutData } from '../../$types';
+	import { formatDate } from '$lib/utils/date';
 
 	interface Props {
 		data: LayoutData;
@@ -76,14 +77,6 @@
 		} catch {
 			return amount;
 		}
-	}
-
-	function formatDate(dateStr: string): string {
-		return new Date(dateStr).toLocaleDateString(undefined, {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric'
-		});
 	}
 </script>
 

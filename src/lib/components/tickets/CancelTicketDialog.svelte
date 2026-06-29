@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { getLocale } from '$lib/paraglide/runtime.js';
+	import { formatDateTime } from '$lib/utils/date';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		eventpublicticketsCancellationPreview,
@@ -152,15 +152,7 @@
 
 	function formatDeadline(iso: string | null | undefined): string {
 		if (!iso) return m['cancelTicket.deadlineNoDeadline']();
-		const date = new Date(iso);
-		return date.toLocaleString(getLocale(), {
-			weekday: 'short',
-			day: 'numeric',
-			month: 'short',
-			year: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit'
-		});
+		return formatDateTime(iso);
 	}
 
 	function paymentMethodNote(method: PaymentMethod | undefined, hasRefund: boolean): string | null {

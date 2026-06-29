@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import McQuestionChart from '$lib/components/questionnaires/McQuestionChart.svelte';
 	import type { PollResultsSchema } from '$lib/api/generated/types.gen';
+	import { formatDateTime } from '$lib/utils/date';
 
 	interface Props {
 		results: PollResultsSchema;
@@ -78,7 +79,7 @@
 					<li class="rounded-md border bg-muted/30 p-3 text-sm">
 						<p class="whitespace-pre-wrap">{r.answer}</p>
 						<p class="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
-							<span>{new Date(r.answered_at).toLocaleString()}</span>
+							<span>{formatDateTime(r.answered_at)}</span>
 							{#if !staffAnonymous && (r.user_display_name || r.user_email || r.user_id)}
 								{@render voterPill(r.user_display_name, r.user_email, r.user_id)}
 							{/if}

@@ -4,6 +4,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { cn } from '$lib/utils/cn';
 	import OfferExpiryCountdown from './OfferExpiryCountdown.svelte';
+	import { formatDateTime } from '$lib/utils/date';
 
 	interface Props {
 		expiresAt: string;
@@ -71,14 +72,7 @@
 	const livePoliteness = $derived<'assertive' | 'polite'>(isUrgent ? 'assertive' : 'polite');
 
 	const formattedExpiry = $derived(
-		Number.isFinite(targetMs)
-			? new Date(targetMs).toLocaleString(undefined, {
-					month: 'short',
-					day: 'numeric',
-					hour: 'numeric',
-					minute: '2-digit'
-				})
-			: ''
+		Number.isFinite(targetMs) ? formatDateTime(new Date(targetMs).toISOString()) : ''
 	);
 
 	function handleClaim() {

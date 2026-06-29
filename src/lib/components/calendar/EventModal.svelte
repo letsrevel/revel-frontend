@@ -4,7 +4,7 @@
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Calendar, Clock, MapPin, Building2, X } from 'lucide-svelte';
-	import { formatDate } from '$lib/utils/date';
+	import { formatDate, formatTimeOfDay } from '$lib/utils/date';
 	import { getImageUrl } from '$lib/utils/url';
 	import * as m from '$lib/paraglide/messages.js';
 
@@ -38,12 +38,7 @@
 	}
 
 	function formatTime(dateString: string): string {
-		const date = new Date(dateString);
-		return date.toLocaleTimeString(undefined, {
-			hour: 'numeric',
-			minute: '2-digit',
-			hour12: true
-		});
+		return formatTimeOfDay(dateString);
 	}
 </script>
 

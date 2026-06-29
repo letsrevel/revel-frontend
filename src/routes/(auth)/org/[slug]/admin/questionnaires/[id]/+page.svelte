@@ -28,6 +28,7 @@
 	import SectionEditor from '$lib/components/questionnaires/SectionEditor.svelte';
 	import { questionnaireUpdateQuestionnaireStatus } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { formatDate } from '$lib/utils/date';
 	import type { PageData } from './$types';
 	import type {
 		QuestionnaireEvaluationMode,
@@ -552,11 +553,7 @@
 												<p class="font-medium">{event.name}</p>
 												{#if event.start}
 													<p class="text-sm text-muted-foreground">
-														{new Date(event.start).toLocaleDateString('en-US', {
-															month: 'short',
-															day: 'numeric',
-															year: 'numeric'
-														})}
+														{formatDate(event.start)}
 													</p>
 												{/if}
 											</div>

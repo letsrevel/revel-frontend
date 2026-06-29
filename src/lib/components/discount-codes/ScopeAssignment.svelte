@@ -13,6 +13,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Check, Search, ChevronDown } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
+	import { formatDate } from '$lib/utils/date';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {
@@ -400,11 +401,7 @@
 											<p class="truncate">{event.name}</p>
 											{#if event.start}
 												<p class="text-xs text-muted-foreground">
-													{new Date(event.start).toLocaleDateString('en-US', {
-														year: 'numeric',
-														month: 'short',
-														day: 'numeric'
-													})}
+													{formatDate(event.start)}
 												</p>
 											{/if}
 										</div>

@@ -31,6 +31,7 @@
 		organizationadminvatSetInvoicingMode
 	} from '$lib/api/generated/sdk.gen';
 	import type { LayoutData } from '../$types';
+	import { formatDate } from '$lib/utils/date';
 	import {
 		Dialog,
 		DialogContent,
@@ -584,7 +585,7 @@
 					{#if billingQuery?.data?.vat_id_validated_at}
 						<span class="text-xs text-muted-foreground">
 							{m['orgAdmin.billing.vatId.validatedAt']({
-								date: new Date(billingQuery.data.vat_id_validated_at).toLocaleDateString()
+								date: formatDate(billingQuery.data.vat_id_validated_at)
 							})}
 						</span>
 					{/if}

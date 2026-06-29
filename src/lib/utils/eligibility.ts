@@ -7,6 +7,7 @@ import type {
 	RsvpStatus as ApiRsvpStatus,
 	TicketStatus as ApiTicketStatus
 } from '$lib/api/generated/types.gen';
+import { formatDateTime } from './date';
 
 /**
  * RSVP Status - Correctly typed from backend
@@ -229,13 +230,7 @@ export function formatRetryDate(retryOn: string | null | undefined): string | nu
 	if (!retryOn) return null;
 	const date = new Date(retryOn);
 	if (isNaN(date.getTime())) return null;
-	return date.toLocaleString(undefined, {
-		month: 'short',
-		day: 'numeric',
-		year: 'numeric',
-		hour: 'numeric',
-		minute: '2-digit'
-	});
+	return formatDateTime(retryOn);
 }
 
 /**

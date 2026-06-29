@@ -23,6 +23,7 @@
 		UserCircle
 	} from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
+	import { formatDateLongMonth } from '$lib/utils/date';
 	import IneligibilityActionButton from './IneligibilityActionButton.svelte';
 
 	interface Props {
@@ -90,12 +91,7 @@
 			return m['ineligibilityMessage.deadlineDaysLeft']?.({ days }) ?? `${days} days left to apply`;
 		}
 
-		return date.toLocaleDateString(undefined, {
-			month: 'long',
-			day: 'numeric',
-			year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
-			...(timezone ? { timeZone: timezone } : {})
-		});
+		return formatDateLongMonth(deadline, timezone ?? undefined);
 	}
 
 	/**

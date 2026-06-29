@@ -5,6 +5,7 @@
 	import { Card } from '$lib/components/ui/card';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import { Edit, Building2, LayoutGrid, Armchair, ChevronUp, ChevronDown } from 'lucide-svelte';
+	import { formatDateTime } from '$lib/utils/date';
 
 	interface Props {
 		tier: TicketTierDetailSchema;
@@ -56,14 +57,7 @@
 
 	function formatDate(dateString: string | null | undefined): string {
 		if (!dateString) return 'Not set';
-		const date = new Date(dateString);
-		return date.toLocaleString('en-US', {
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit'
-		});
+		return formatDateTime(dateString);
 	}
 
 	const priceDisplay = $derived(() => {

@@ -1,6 +1,12 @@
 <script lang="ts">
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
-	import { formatCalendarDate, getEventsForDay, isToday } from '$lib/utils/calendar';
+	import {
+		formatCalendarDate,
+		getEventsForDay,
+		isToday,
+		formatWeekdayShort
+	} from '$lib/utils/calendar';
+	import { formatTimeOfDay } from '$lib/utils/date';
 	import { Clock, MapPin, Loader2 } from 'lucide-svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
@@ -23,12 +29,7 @@
 	}
 
 	function formatEventTime(dateString: string): string {
-		const date = new Date(dateString);
-		return date.toLocaleTimeString(undefined, {
-			hour: 'numeric',
-			minute: '2-digit',
-			hour12: true
-		});
+		return formatTimeOfDay(dateString);
 	}
 </script>
 
@@ -48,7 +49,7 @@
 					<div class="week-day-header">
 						<div class="week-day-date">
 							<span class="week-day-weekday">
-								{day.toLocaleDateString(undefined, { weekday: 'short' })}
+								{formatWeekdayShort(day)}
 							</span>
 							<span class="week-day-number" class:week-day-number--today={isTodayDate}>
 								{formatCalendarDate(day, 'short')}

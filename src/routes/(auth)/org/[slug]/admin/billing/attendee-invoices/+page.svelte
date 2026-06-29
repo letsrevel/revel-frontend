@@ -41,6 +41,7 @@
 	} from '$lib/api/generated/sdk.gen';
 	import type { AttendeeInvoiceDetailSchema } from '$lib/api/generated/types.gen';
 	import type { LayoutData } from '../../$types';
+	import { formatDate } from '$lib/utils/date';
 
 	interface Props {
 		data: LayoutData;
@@ -247,13 +248,6 @@
 		editBuyerCountry = inv.buyer_vat_country || '';
 		editBuyerAddress = inv.buyer_address || '';
 		isEditing = true;
-	}
-	function formatDate(d: string) {
-		return new Date(d).toLocaleDateString(undefined, {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric'
-		});
 	}
 	function openAction(invoiceId: string, type: 'issue' | 'delete') {
 		actionInvoiceId = invoiceId;

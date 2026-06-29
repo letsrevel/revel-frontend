@@ -22,6 +22,7 @@
 		dashboardDashboardInvoiceDownload
 	} from '$lib/api/generated/sdk.gen';
 	import type { AttendeeInvoiceSchema } from '$lib/api/generated/types.gen';
+	import { formatDate } from '$lib/utils/date';
 
 	const accessToken = $derived(authStore.accessToken);
 
@@ -115,14 +116,6 @@
 		} catch {
 			return `${amount} ${currency.toUpperCase()}`;
 		}
-	}
-
-	function formatDate(dateStr: string): string {
-		return new Date(dateStr).toLocaleDateString(undefined, {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric'
-		});
 	}
 
 	function statusColor(status: string): string {

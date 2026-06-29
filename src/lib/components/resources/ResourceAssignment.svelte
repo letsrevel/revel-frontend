@@ -6,6 +6,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Check, Search } from 'lucide-svelte';
 	import { cn } from '$lib/utils/cn';
+	import { formatDate } from '$lib/utils/date';
 
 	interface Props {
 		organizationId: string;
@@ -173,11 +174,7 @@
 								</p>
 								{#if event.start}
 									<p class="text-xs text-muted-foreground">
-										{new Date(event.start).toLocaleDateString('en-US', {
-											year: 'numeric',
-											month: 'short',
-											day: 'numeric'
-										})}
+										{formatDate(event.start)}
 									</p>
 								{/if}
 							</div>

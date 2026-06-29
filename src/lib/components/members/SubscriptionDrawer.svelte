@@ -27,6 +27,7 @@
 	import CancelSubscriptionDialog from './CancelSubscriptionDialog.svelte';
 	import RefundPaymentDialog from './RefundPaymentDialog.svelte';
 	import { getAvailableActions, formatPlanPrice, getDateLine } from '$lib/utils/subscriptions';
+	import { formatDate } from '$lib/utils/date';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -168,7 +169,7 @@
 	}));
 
 	function fmtDate(d: string | null | undefined): string {
-		return d ? new Date(d).toLocaleDateString() : '—';
+		return d ? formatDate(d) : '—';
 	}
 </script>
 

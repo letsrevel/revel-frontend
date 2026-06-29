@@ -6,6 +6,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Circle, Check, X, Clock, Ticket } from 'lucide-svelte';
 	import { formatRelativeTime } from '$lib/utils/time';
+	import { formatDateTime } from '$lib/utils/date';
 	import { goto } from '$app/navigation';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
@@ -232,13 +233,7 @@
 		if (!timeText && expiresAt) {
 			const d = new Date(expiresAt);
 			if (!isNaN(d.getTime())) {
-				timeText = d.toLocaleString(undefined, {
-					month: 'short',
-					day: 'numeric',
-					year: 'numeric',
-					hour: 'numeric',
-					minute: '2-digit'
-				});
+				timeText = formatDateTime(expiresAt);
 			}
 		}
 

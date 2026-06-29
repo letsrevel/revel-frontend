@@ -13,7 +13,10 @@ import {
 	formatDateTime,
 	formatDateTimeReadback,
 	formatDate,
-	formatEventTimezoneLabel
+	formatEventTimezoneLabel,
+	formatDateLongMonth,
+	formatDateTimeVerbose,
+	formatMonthYearLabel
 } from './date';
 
 // A fixed winter instant (no DST ambiguity):
@@ -137,5 +140,73 @@ describe('formatDateTimeReadback (#508 picker readback)', () => {
 
 	it('also accepts a full ISO 8601 string', () => {
 		expect(formatDateTimeReadback('2026-06-07T12:00:00Z')).toContain('2026');
+	});
+});
+
+describe('formatDateLongMonth (#510)', () => {
+	it('contains the full month name and year, no time', () => {
+		const out = formatDateLongMonth('2026-06-07T12:00:00Z');
+		expect(out).toContain('June');
+		expect(out).toContain('2026');
+	});
+
+	it('contains the day of month', () => {
+		const out = formatDateLongMonth('2026-06-07T12:00:00Z');
+		expect(out).toContain('7');
+	});
+
+	it('does not contain a time component (no colon)', () => {
+		const out = formatDateLongMonth('2026-06-07T12:00:00Z');
+		expect(out).not.toMatch(/\d+:\d+/);
+	});
+
+	it('respects timezone when supplied (date may shift a day)', () => {
+		// 2026-02-06T23:00:00Z is Feb 6 in New York and Feb 7 in Vienna
+		const ny = formatDateLongMonth('2026-02-06T23:00:00Z', 'America/New_York');
+		const vienna = formatDateLongMonth('2026-02-06T23:00:00Z', 'Europe/Vienna');
+		expect(ny).toContain('February');
+		expect(ny).toContain('6');
+		expect(vienna).toContain('February');
+		expect(vienna).toContain('7');
+	});
+});
+
+describe('formatDateTimeVerbose (#510)', () => {
+	it('contains the full month name, year, and a time component', () => {
+		const out = formatDateTimeVerbose('2026-06-07T12:00:00Z');
+		expect(out).toContain('June');
+		expect(out).toContain('2026');
+		expect(out).toMatch(/\d+:\d+/);
+	});
+
+	it('includes AM/PM for en-US locale', () => {
+		const out = formatDateTimeVerbose('2026-06-07T12:00:00Z');
+		expect(out).toMatch(/AM|PM/);
+	});
+
+	it('respects a supplied timezone', () => {
+		// 2026-02-06T19:00:00Z → 2:00 PM EST in New York
+		const out = formatDateTimeVerbose('2026-02-06T19:00:00Z', 'America/New_York');
+		expect(out).toContain('2:00 PM');
+		expect(out).toContain('February');
+	});
+});
+
+describe('formatMonthYearLabel (#510)', () => {
+	it('contains the full month name and year', () => {
+		const out = formatMonthYearLabel('2026-06-07T12:00:00Z');
+		expect(out).toContain('June');
+		expect(out).toContain('2026');
+	});
+
+	it('does not contain a day number', () => {
+		// The string should not contain " 7" or "7," etc. (isolated day digit)
+		const out = formatMonthYearLabel('2026-06-07T12:00:00Z');
+		expect(out).not.toMatch(/\b7\b/);
+	});
+
+	it('does not contain a time component', () => {
+		const out = formatMonthYearLabel('2026-06-07T12:00:00Z');
+		expect(out).not.toMatch(/\d+:\d+/);
 	});
 });

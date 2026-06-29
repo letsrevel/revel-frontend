@@ -24,6 +24,7 @@
 	} from '$lib/api/generated/sdk.gen';
 	import type { PlatformFeeInvoiceSchema } from '$lib/api/generated';
 	import type { LayoutData } from '../../$types';
+	import { formatMonthYearLabel } from '$lib/utils/date';
 
 	interface Props {
 		data: LayoutData;
@@ -105,9 +106,8 @@
 		: null;
 
 	// ─── Helpers ────────────────────────────────────────────────────
-	function formatPeriod(start: string, end: string): string {
-		const startDate = new Date(start);
-		return startDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+	function formatPeriod(start: string, _end: string): string {
+		return formatMonthYearLabel(start);
 	}
 
 	function formatCurrency(amount: string, currency: string): string {
