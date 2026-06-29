@@ -50,8 +50,21 @@ export default [
 			'no-useless-escape': 'warn',
 			'svelte/no-at-html-tags': 'warn',
 			'svelte/no-unused-svelte-ignore': 'warn',
-			'svelte/valid-compile': 'off' // Disable custom element warnings
+			'svelte/valid-compile': 'off', // Disable custom element warnings
+			'no-restricted-syntax': [
+				'error',
+				{
+					selector:
+						'CallExpression[callee.property.name=/^(toLocaleDateString|toLocaleTimeString|toLocaleString)$/]',
+					message:
+						'Do not format dates with toLocale* directly. Use a helper from $lib/utils/date.ts (or calendar.ts) so dates follow the UI language with textual months. See CLAUDE.md "Date & Time Formatting".'
+				}
+			]
 		}
+	},
+	{
+		files: ['src/lib/utils/date.ts', 'src/lib/utils/calendar.ts'],
+		rules: { 'no-restricted-syntax': 'off' }
 	},
 	{
 		ignores: [
