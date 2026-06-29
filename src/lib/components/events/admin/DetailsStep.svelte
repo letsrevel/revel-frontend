@@ -8,6 +8,7 @@
 		VenueDetailSchema
 	} from '$lib/api/generated/types.gen';
 	import { getBackendUrl } from '$lib/config/api';
+	import { formatDateTimeReadback } from '$lib/utils/date';
 	import {
 		FileText,
 		Users,
@@ -110,6 +111,12 @@
 		onUpdate,
 		onUpdateImages
 	}: Props = $props();
+
+	// Unambiguous textual readbacks for the native datetime inputs; '' when the
+	// value is empty or unparseable, so each hint is gated on the rendered text.
+	const rsvpReadback = $derived(formatDateTimeReadback(formData.rsvp_before));
+	const checkInStartReadback = $derived(formatDateTimeReadback(formData.check_in_starts_at));
+	const checkInEndReadback = $derived(formatDateTimeReadback(formData.check_in_ends_at));
 
 	// Modal state for questionnaire assignment
 	let isQuestionnaireModalOpen = $state(false);
@@ -436,6 +443,11 @@
 							oninput={(e) => onUpdate({ rsvp_before: e.currentTarget.value })}
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						/>
+						{#if rsvpReadback}
+							<p class="text-xs text-muted-foreground">
+								{m['dateTimePicker.selectedDate']({ value: rsvpReadback })}
+							</p>
+						{/if}
 						<p class="text-xs text-muted-foreground">
 							{m['detailsStep.rsvpDeadlineHint']({
 								timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -624,6 +636,11 @@
 							oninput={(e) => onUpdate({ check_in_starts_at: e.currentTarget.value })}
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						/>
+						{#if checkInStartReadback}
+							<p class="text-xs text-muted-foreground">
+								{m['dateTimePicker.selectedDate']({ value: checkInStartReadback })}
+							</p>
+						{/if}
 						<p class="text-xs text-muted-foreground">
 							{m['detailsStep.checkinOpensAtHint']({
 								timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -643,6 +660,11 @@
 							oninput={(e) => onUpdate({ check_in_ends_at: e.currentTarget.value })}
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						/>
+						{#if checkInEndReadback}
+							<p class="text-xs text-muted-foreground">
+								{m['dateTimePicker.selectedDate']({ value: checkInEndReadback })}
+							</p>
+						{/if}
 						<p class="text-xs text-muted-foreground">
 							{m['detailsStep.checkinClosesAtHint']({
 								timezone: Intl.DateTimeFormat().resolvedOptions().timeZone

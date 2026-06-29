@@ -4,17 +4,21 @@
 
 import { getLocale } from '$lib/paraglide/runtime.js';
 
+/** Maps the active Paraglide UI language to a BCP 47 date locale. */
+const LOCALE_MAP: Record<string, string> = {
+	en: 'en-US',
+	de: 'de-DE',
+	it: 'it-IT',
+	fr: 'fr-FR'
+};
+
 /**
- * Get the current locale in BCP 47 format (e.g., "en-US", "de-DE", "it-IT")
+ * Get the active UI language as a BCP 47 date locale (e.g. "en-US", "de-DE",
+ * "it-IT", "fr-FR"). Drives every human-facing date in the app, so switching
+ * the UI language switches month names. Exported so calendar.ts shares it.
  */
-function getCurrentLocale(): string {
-	const locale = getLocale();
-	const localeMap: Record<string, string> = {
-		en: 'en-US',
-		de: 'de-DE',
-		it: 'it-IT'
-	};
-	return localeMap[locale] || 'en-US';
+export function getDateLocale(): string {
+	return LOCALE_MAP[getLocale()] || 'en-US';
 }
 
 /**
@@ -88,7 +92,7 @@ export function formatEventDate(
 	withAbbreviation = true
 ): string {
 	const date = new Date(dateString);
-	const locale = getCurrentLocale();
+	const locale = getDateLocale();
 
 	const dayOfWeek = date.toLocaleDateString(locale, { weekday: 'short', ...tzOpt(timeZone) });
 	const month = date.toLocaleDateString(locale, { month: 'short', ...tzOpt(timeZone) });
@@ -121,7 +125,7 @@ export function formatEventDateRange(
 ): string {
 	const start = new Date(startString);
 	const end = new Date(endString);
-	const locale = getCurrentLocale();
+	const locale = getDateLocale();
 
 	const dayOfWeek = start.toLocaleDateString(locale, { weekday: 'short', ...tzOpt(timeZone) });
 	const month = start.toLocaleDateString(locale, { month: 'short', ...tzOpt(timeZone) });
@@ -210,7 +214,7 @@ export function getRSVPDeadlineRelative(deadlineString: string): string {
  */
 export function formatRelativeTime(dateString: string): string {
 	const diffMs = new Date(dateString).getTime() - Date.now();
-	const rtf = new Intl.RelativeTimeFormat(getCurrentLocale(), { numeric: 'auto' });
+	const rtf = new Intl.RelativeTimeFormat(getDateLocale(), { numeric: 'auto' });
 
 	const units: [Intl.RelativeTimeFormatUnit, number][] = [
 		['year', 1000 * 60 * 60 * 24 * 365],
@@ -277,7 +281,7 @@ export function isRSVPClosingSoon(deadlineString: string | null): boolean {
  */
 export function formatEventDateForScreenReader(dateString: string, timeZone?: string): string {
 	const date = new Date(dateString);
-	const locale = getCurrentLocale();
+	const locale = getDateLocale();
 
 	const dayOfWeek = date.toLocaleDateString(locale, { weekday: 'long', ...tzOpt(timeZone) });
 	const month = date.toLocaleDateString(locale, { month: 'long', ...tzOpt(timeZone) });
@@ -333,7 +337,7 @@ function getOrdinalSuffix(day: number): string {
  */
 export function formatTimeOfDay(dateString: string, timeZone?: string): string {
 	const date = new Date(dateString);
-	const locale = getCurrentLocale();
+	const locale = getDateLocale();
 
 	return date.toLocaleTimeString(locale, {
 		hour: 'numeric',
@@ -351,7 +355,7 @@ export function formatTimeOfDay(dateString: string, timeZone?: string): string {
  */
 export function formatDateTime(dateString: string, timeZone?: string): string {
 	const date = new Date(dateString);
-	const locale = getCurrentLocale();
+	const locale = getDateLocale();
 
 	const formatted = date.toLocaleString(locale, {
 		year: 'numeric',
@@ -367,13 +371,32 @@ export function formatDateTime(dateString: string, timeZone?: string): string {
 }
 
 /**
+ * Unambiguous textual readback of a datetime input value, shown under a native
+ * <input type="datetime-local"> (whose own display is browser-locale numeric and
+ * cannot be restyled). Month is always textual, in the active UI language.
+ *
+ * Accepts a datetime-local string ("2026-06-07T19:00", parsed as local wall
+ * time) or a full ISO 8601 string. Returns "" for empty/invalid input so callers
+ * can render nothing before a value is picked.
+ *
+ * @param value datetime-local or ISO 8601 string (may be empty/null/undefined)
+ * @returns e.g. "Oct 20, 2025, 2:30 PM" (locale-dependent), or ""
+ */
+export function formatDateTimeReadback(value: string | null | undefined): string {
+	if (!value) return '';
+	const date = new Date(value);
+	if (isNaN(date.getTime())) return '';
+	return formatDateTime(value);
+}
+
+/**
  * Format a date without time for display
  * @param dateString ISO 8601 date-time string
  * @returns Formatted date string (e.g., "Oct 20, 2025" for en-US or "20. Okt. 2025" for de-DE)
  */
 export function formatDate(dateString: string, timeZone?: string): string {
 	const date = new Date(dateString);
-	const locale = getCurrentLocale();
+	const locale = getDateLocale();
 
 	// Date-only: apply the timezone so the calendar day is correct, but don't
 	// append a tz abbreviation (it reads oddly next to a date with no time).
@@ -402,7 +425,7 @@ export function formatEventTimezoneLabel(
 	timeZone: string,
 	place?: string | null
 ): string {
-	const locale = getCurrentLocale();
+	const locale = getDateLocale();
 	const offset = getTimeZoneAbbreviation(new Date(referenceString), locale, timeZone);
 	const name = place?.trim() || timeZone.split('/').pop()?.replace(/_/g, ' ') || timeZone;
 	return offset ? `${name} (${offset})` : name;

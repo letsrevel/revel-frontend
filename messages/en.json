@@ -6887,6 +6887,7 @@
 	"cityAutocomplete.clearSelection": "Clear city selection",
 	"cityAutocomplete.searchPlaceholder": "Search for a city...",
 	"dateTimePicker.required": "required",
+	"dateTimePicker.selectedDate": "Selected: {value}",
 	"markdownEditor.placeholderDefault": "Write a description…",
 	"markdownEditor.required": "required",
 	"markdownEditor.toolbarAriaLabel": "Text formatting",

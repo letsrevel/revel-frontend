@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { EventCreateSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
+	import { formatDateTimeReadback } from '$lib/utils/date';
 	import { Calendar, Eye, Users, Ticket, Pencil, Check, X, Link, Loader2 } from 'lucide-svelte';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { eventadmincoreEditSlug } from '$lib/api/generated/sdk.gen';
@@ -40,6 +41,11 @@
 	}: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
+
+	// Unambiguous textual readbacks for the native datetime inputs; '' when the
+	// value is empty or unparseable, so the hint is gated on the rendered text.
+	const startReadback = $derived(formatDateTimeReadback(formData.start));
+	const endReadback = $derived(formatDateTimeReadback(formData.end));
 
 	// Slug editing state
 	let isEditingSlug = $state(false);
@@ -340,6 +346,11 @@
 				{validationErrors.start}
 			</p>
 		{/if}
+		{#if startReadback}
+			<p class="text-xs text-muted-foreground">
+				{m['dateTimePicker.selectedDate']({ value: startReadback })}
+			</p>
+		{/if}
 		<p class="text-xs text-muted-foreground">
 			{m['essentialsStep.localTimezoneHint']({
 				timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -386,6 +397,11 @@
 			{#if validationErrors.end}
 				<p id="event-end-error" class="text-sm text-destructive" role="alert">
 					{validationErrors.end}
+				</p>
+			{/if}
+			{#if endReadback}
+				<p class="text-xs text-muted-foreground">
+					{m['dateTimePicker.selectedDate']({ value: endReadback })}
 				</p>
 			{/if}
 		</div>

@@ -28,6 +28,7 @@
 	import { extractErrorMessage, extractFieldErrors } from '$lib/utils/errors';
 	import { tierFieldLabel } from './tier-field-labels';
 	import { Building2, LayoutGrid, Armchair, Undo2 } from 'lucide-svelte';
+	import { formatDateTimeReadback } from '$lib/utils/date';
 
 	interface Props {
 		tier: TicketTierDetailSchema | null; // null = create new
@@ -160,6 +161,10 @@
 	);
 	let salesStartAt = $state(toDatetimeLocal(tier?.sales_start_at));
 	let salesEndAt = $state(toDatetimeLocal(tier?.sales_end_at));
+	// Unambiguous textual readbacks for the native datetime inputs; '' when the
+	// value is empty or unparseable, so each hint is gated on the rendered text.
+	const salesStartReadback = $derived(formatDateTimeReadback(salesStartAt));
+	const salesEndReadback = $derived(formatDateTimeReadback(salesEndAt));
 	let visibility = $state<'public' | 'private' | 'members-only' | 'staff-only'>(
 		(tier?.visibility as 'public' | 'private' | 'members-only' | 'staff-only') ?? 'public'
 	);
@@ -721,6 +726,11 @@
 						bind:value={salesStartAt}
 						disabled={isPending}
 					/>
+					{#if salesStartReadback}
+						<p class="mt-1 text-xs text-muted-foreground">
+							{m['dateTimePicker.selectedDate']({ value: salesStartReadback })}
+						</p>
+					{/if}
 				</div>
 				<div>
 					<Label for="sales-end">{m['tierForm.salesEnd']()}</Label>
@@ -730,6 +740,11 @@
 						bind:value={salesEndAt}
 						disabled={isPending}
 					/>
+					{#if salesEndReadback}
+						<p class="mt-1 text-xs text-muted-foreground">
+							{m['dateTimePicker.selectedDate']({ value: salesEndReadback })}
+						</p>
+					{/if}
 				</div>
 			</div>
 

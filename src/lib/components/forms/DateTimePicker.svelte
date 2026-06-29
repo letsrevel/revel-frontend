@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { cn } from '$lib/utils/cn';
 	import { toDateTimeLocal, toISOString } from '$lib/utils/datetime';
+	import { formatDateTimeReadback } from '$lib/utils/date';
 
 	/**
 	 * DateTimePicker Component
@@ -76,6 +77,10 @@
 		}
 	});
 
+	// Unambiguous textual confirmation of the picked value (the native control's
+	// own display is browser-locale numeric and can't be restyled).
+	const readback = $derived(formatDateTimeReadback(value));
+
 	function handleInput(event: Event): void {
 		const target = event.target as HTMLInputElement;
 		const newValue = target.value;
@@ -132,6 +137,12 @@
 				: 'border-gray-300 dark:border-gray-600'
 		)}
 	/>
+
+	{#if readback}
+		<p class="text-xs text-muted-foreground">
+			{m['dateTimePicker.selectedDate']({ value: readback })}
+		</p>
+	{/if}
 
 	{#if error}
 		<p id="{inputId}-error" class="text-sm text-destructive" role="alert">
