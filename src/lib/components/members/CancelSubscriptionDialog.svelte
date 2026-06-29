@@ -7,6 +7,7 @@
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Label } from '$lib/components/ui/label';
 	import { Loader2 } from 'lucide-svelte';
+	import { formatDate } from '$lib/utils/date';
 
 	interface Props {
 		subscription: SubscriptionSchema;
@@ -29,7 +30,7 @@
 	});
 
 	function fmtDate(d: string | null | undefined): string {
-		return d ? new Date(d).toLocaleDateString() : '—';
+		return d ? formatDate(d) : '—';
 	}
 
 	const canSubmit = $derived(mode === 'period_end' || immediateAck);

@@ -7,6 +7,7 @@
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import StatusBadge from '$lib/components/members/StatusBadge.svelte';
 	import { formatPlanPrice, getDateLine } from '$lib/utils/subscriptions';
+	import { formatDate } from '$lib/utils/date';
 
 	interface Props {
 		orgId: string;
@@ -33,7 +34,7 @@
 	const sub = $derived(subQuery.data);
 
 	function fmtDate(d: string | null | undefined): string {
-		return d ? new Date(d).toLocaleDateString() : '—';
+		return d ? formatDate(d) : '—';
 	}
 </script>
 

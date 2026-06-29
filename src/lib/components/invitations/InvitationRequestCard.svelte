@@ -4,7 +4,7 @@
 	import { Card } from '$lib/components/ui/card';
 	import { Calendar, MapPin, Ticket, Clock, CheckCircle2, XCircle, Loader2 } from 'lucide-svelte';
 	import { getImageUrl } from '$lib/utils/url';
-	import { formatEventDateRange } from '$lib/utils/date';
+	import { formatEventDateRange, formatDate } from '$lib/utils/date';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { eventpublicdiscoveryDeleteInvitationRequest } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -32,10 +32,7 @@
 	});
 
 	// Format created date
-	const createdDate = $derived.by(() => {
-		const date = new Date(request.created_at);
-		return date.toLocaleDateString();
-	});
+	const createdDate = $derived(formatDate(request.created_at));
 
 	// Status display
 	const statusDisplay = $derived.by(() => {

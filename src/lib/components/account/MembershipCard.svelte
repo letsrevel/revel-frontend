@@ -6,6 +6,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import StatusBadge from '$lib/components/members/StatusBadge.svelte';
 	import { formatPlanPrice, getDateLine } from '$lib/utils/subscriptions';
+	import { formatDate } from '$lib/utils/date';
 
 	interface Props {
 		membership: MyMembershipSchema;
@@ -16,7 +17,7 @@
 	const line = $derived(sub ? getDateLine(sub) : null);
 
 	function fmtDate(d: string | null | undefined): string {
-		return d ? new Date(d).toLocaleDateString() : '—';
+		return d ? formatDate(d) : '—';
 	}
 </script>
 

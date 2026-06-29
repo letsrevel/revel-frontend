@@ -3,6 +3,7 @@
 	import type { SubscriptionSchema } from '$lib/api/generated/types.gen';
 	import StatusBadge from './StatusBadge.svelte';
 	import { formatPlanPrice } from '$lib/utils/subscriptions';
+	import { formatDate } from '$lib/utils/date';
 
 	interface Props {
 		sub: SubscriptionSchema;
@@ -14,7 +15,7 @@
 
 	function fmtDate(d: string | null | undefined): string {
 		if (!d) return '—';
-		return new Date(d).toLocaleDateString();
+		return formatDate(d);
 	}
 </script>
 

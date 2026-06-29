@@ -4,7 +4,7 @@
 	import { Card } from '$lib/components/ui/card';
 	import { Calendar, MapPin, Ticket, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-svelte';
 	import { getImageUrl } from '$lib/utils/url';
-	import { formatEventDateRange } from '$lib/utils/date';
+	import { formatEventDateRange, formatDate } from '$lib/utils/date';
 	import { getEventLogo, getEventLogoThumbnail } from '$lib/utils/event';
 
 	interface Props {
@@ -34,10 +34,7 @@
 	});
 
 	// Format created date
-	const createdDate = $derived.by(() => {
-		const date = new Date(invitation.created_at);
-		return date.toLocaleDateString();
-	});
+	const createdDate = $derived(formatDate(invitation.created_at));
 
 	// Get privileges granted by this invitation
 	const privileges = $derived.by(() => {

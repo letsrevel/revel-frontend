@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PaymentSchema2 } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
+	import { formatDate } from '$lib/utils/date';
 
 	interface Props {
 		payments: PaymentSchema2[];
@@ -12,7 +13,7 @@
 
 	function fmtDate(d: string | null | undefined): string {
 		if (!d) return '—';
-		return new Date(d).toLocaleDateString();
+		return formatDate(d);
 	}
 </script>
 
