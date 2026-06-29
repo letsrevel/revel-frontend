@@ -98,7 +98,7 @@ ${events
 		const eventDate = new Date(event.start);
 		const locationParts = [event.city?.name, event.city?.country].filter(Boolean);
 		const location = locationParts.join(', ');
-		// eslint-disable-next-line no-restricted-syntax -- RSS server endpoint, no request locale; fixed en-US by design
+		/* eslint-disable no-restricted-syntax -- RSS server endpoint, no request locale; fixed en-US by design */
 		const eventDateFormatted = event.start
 			? eventDate.toLocaleDateString('en-US', {
 					weekday: 'long',
@@ -107,6 +107,7 @@ ${events
 					day: 'numeric'
 				})
 			: '';
+		/* eslint-enable no-restricted-syntax */
 
 		return `    <item>
       <title>${escapeXml(event.name)}</title>
