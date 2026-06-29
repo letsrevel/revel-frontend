@@ -1,4 +1,5 @@
 import type { Handle, HandleFetch } from '@sveltejs/kit';
+import { z } from 'zod';
 import { sequence } from '@sveltejs/kit/hooks';
 import { env } from '$env/dynamic/private';
 import { i18nHandle } from '$lib/i18n';
@@ -31,20 +32,25 @@ startMetricsServer();
  */
 
 /**
- * Minimal shape of the fields we read from a decoded access-token JWT.
- * Every field is optional because the payload is untrusted data.
+ * Zod schema for the JWT claims we rely on. Every field is optional because the
+ * payload is untrusted data. `.passthrough()` keeps extra standard claims
+ * (iat, jti, …) without requiring them.
  */
-interface JwtPayload {
-	user_id?: string;
-	sub?: string;
-	email?: string;
-	exp?: number;
-	[key: string]: unknown;
-}
+const jwtPayloadSchema = z
+	.object({
+		user_id: z.string().optional(),
+		sub: z.string().optional(),
+		email: z.string().optional(),
+		exp: z.number().optional()
+	})
+	.passthrough();
+
+type JwtPayload = z.infer<typeof jwtPayloadSchema>;
 
 /**
- * Decode JWT token to extract user information
- * Note: This is safe as JWT is just base64 encoded, not encrypted
+ * Decode JWT token to extract user information.
+ * The decoded payload is validated at runtime via Zod so only known claim
+ * shapes are accepted. Returns null on structural or validation failure.
  */
 function decodeJWT(token: string): JwtPayload | null {
 	try {
@@ -54,7 +60,14 @@ function decodeJWT(token: string): JwtPayload | null {
 		// Decode the payload (second part)
 		const payload = parts[1];
 		const decoded = Buffer.from(payload, 'base64url').toString('utf-8');
-		return JSON.parse(decoded) as JwtPayload;
+		const parsed = jwtPayloadSchema.safeParse(JSON.parse(decoded));
+
+		if (!parsed.success) {
+			log.error('jwt_payload_invalid', { issues: parsed.error.issues });
+			return null;
+		}
+
+		return parsed.data;
 	} catch (error) {
 		log.error('jwt_decode_failed', { error });
 		return null;
