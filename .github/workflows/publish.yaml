@@ -17,6 +17,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
+      # Belt-and-suspenders: version consistency (tag == package.json == CHANGELOG) is already
+      # enforced by release.yaml before the release is created. This guards manual `make release`
+      # fallbacks too, where no such check runs.
+      - name: Validate tag format
+        run: |
+          TAG_NAME="${{ github.event.release.tag_name }}"
+          if [[ ! "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Release tag '$TAG_NAME' must be vX.Y.Z (semantic versioning, e.g. v1.0.0)"
+            exit 1
+          fi
+          echo "✅ Tag format is valid: $TAG_NAME"
+
       - name: Log in to GHCR
         uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
         with:
