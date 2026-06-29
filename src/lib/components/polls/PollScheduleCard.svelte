@@ -7,8 +7,7 @@
 		CardHeader,
 		CardTitle
 	} from '$lib/components/ui/card';
-	import { Label } from '$lib/components/ui/label';
-	import { Input } from '$lib/components/ui/input';
+	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 
 	interface Props {
 		closesAt: string | null;
@@ -16,6 +15,22 @@
 	}
 
 	let { closesAt = $bindable(), error = null }: Props = $props();
+
+	// Bridge: DateTimePicker stores '' for empty; this component's public API uses null.
+	// We keep a local string state and sync bidirectionally with the parent's nullable value.
+	let pickerValue = $state(closesAt ?? '');
+
+	// Picker → parent: propagate user's selection up as ISO or null.
+	$effect(() => {
+		const next = pickerValue === '' ? null : pickerValue;
+		if (closesAt !== next) closesAt = next;
+	});
+
+	// Parent → picker: propagate external resets (e.g. post-save re-sync) down.
+	$effect(() => {
+		const expected = closesAt ?? '';
+		if (pickerValue !== expected) pickerValue = expected;
+	});
 </script>
 
 <Card>
@@ -24,21 +39,10 @@
 		<CardDescription>{m['pollNewPage.scheduleDescription']()}</CardDescription>
 	</CardHeader>
 	<CardContent class="space-y-2">
-		<Label for="closes-at">{m['pollNewPage.closesAtLabel']()}</Label>
-		<Input
-			id="closes-at"
-			type="datetime-local"
-			value={closesAt ?? ''}
-			oninput={(e) => {
-				const v = (e.currentTarget as HTMLInputElement).value;
-				closesAt = v === '' ? null : v;
-			}}
-			class={error ? 'border-destructive' : ''}
-			aria-invalid={error ? true : undefined}
-			aria-describedby={error ? 'closes-at-error' : undefined}
+		<DateTimePicker
+			bind:value={pickerValue}
+			label={m['pollNewPage.closesAtLabel']()}
+			error={error ?? undefined}
 		/>
-		{#if error}
-			<p id="closes-at-error" class="text-sm text-destructive">{error}</p>
-		{/if}
 	</CardContent>
 </Card>
