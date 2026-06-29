@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.63.0] - 2026-06-29
+
+### Changed
+- **Localized dates**: every human-facing date now follows your chosen UI language with textual months everywhere — no more browser-locale numeric dates (`6/7/2026`) or mismatched month names. Native `datetime-local` inputs across admin flows (event/poll duplication, generate-now, record-payment, waitlist cutoff, org-token expiry, recurrence end, schedule editor, admission deadline, and more) now share the `DateTimePicker` with an unambiguous textual readback line.
+- Dashboard **Upcoming RSVPs** list filter is now URL-driven multi-select (`?status=yes,maybe`) with accessible toggle chips (All / Going / Maybe / Not going); the dashboard card links straight to the matching Going + Maybe view, so the count and the list agree.
+
+### Fixed
+- The dashboard **Upcoming RSVPs** count now includes both **Going** and **Maybe** responses (was Going only), so a tentative RSVP you're most likely to forget is no longer hidden.
+- Dates no longer ignore the app language — switching the UI language now updates them (e.g. an app set to English or Italian on a French browser no longer shows `Week of 1 Juin – 7 Juin 2026`). French dates also no longer silently fall back to US English formatting.
+
 ## [1.62.1] - 2026-06-28
 
 ### Fixed
