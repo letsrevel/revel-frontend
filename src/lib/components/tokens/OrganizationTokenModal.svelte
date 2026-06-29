@@ -21,7 +21,7 @@
 	import { RadioGroup, RadioGroupItem } from '$lib/components/ui/radio-group';
 	import { AlertCircle, Loader2 } from 'lucide-svelte';
 	import { durationOptions } from '$lib/utils/tokens';
-	import { toDateTimeLocal, toISOString } from '$lib/utils/datetime';
+	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 
 	interface Props {
 		open: boolean;
@@ -65,7 +65,7 @@
 				grantsMembership = token.grants_membership ?? false;
 				grantsStaffStatus = token.grants_staff_status ?? false;
 				membershipTierId = token.membership_tier || '';
-				expiresAt = toDateTimeLocal(token.expires_at);
+				expiresAt = token.expires_at ?? '';
 				duration = '1440'; // Not used in edit mode
 			} else {
 				// Reset to defaults for create
@@ -87,7 +87,7 @@
 			const updateData: OrganizationTokenUpdateSchema = {
 				name: name || null,
 				max_uses: maxUses,
-				expires_at: toISOString(expiresAt),
+				expires_at: expiresAt || null,
 				grants_membership: grantsMembership,
 				grants_staff_status: grantsStaffStatus,
 				membership_tier_id: grantsMembership && membershipTierId ? membershipTierId : null
@@ -175,8 +175,10 @@
 			{:else}
 				<!-- Expires At (edit only) -->
 				<div class="space-y-2">
-					<Label for="expires-at">{m['organizationTokenModal.expirationDate']()}</Label>
-					<Input id="expires-at" type="datetime-local" bind:value={expiresAt} />
+					<DateTimePicker
+						bind:value={expiresAt}
+						label={m['organizationTokenModal.expirationDate']()}
+					/>
 					<p class="text-xs text-muted-foreground">{m['organizationTokenModal.noExpiration']()}</p>
 				</div>
 			{/if}
