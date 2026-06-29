@@ -4,7 +4,7 @@
 	import { Card } from '$lib/components/ui/card';
 	import { Calendar, MapPin, CheckCircle2, XCircle, HelpCircle } from 'lucide-svelte';
 	import { getImageUrl } from '$lib/utils/url';
-	import { formatEventDate, formatEventDateRange } from '$lib/utils/date';
+	import { formatDate, formatEventDate, formatEventDateRange } from '$lib/utils/date';
 	import {
 		getEventLogo,
 		getEventLogoThumbnail,
@@ -46,10 +46,7 @@
 	});
 
 	// Format created date
-	const createdDate = $derived.by(() => {
-		const date = new Date(rsvp.created_at);
-		return date.toLocaleDateString();
-	});
+	const createdDate = $derived(formatDate(rsvp.created_at));
 
 	// Get RSVP status info
 	const statusInfo = $derived.by(() => {

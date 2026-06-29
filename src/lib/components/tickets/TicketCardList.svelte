@@ -4,6 +4,7 @@
 	import { getUserDisplayName } from '$lib/utils/user-display';
 	import { getTicketStatusColor, getTicketStatusLabel } from '$lib/utils/status-colors';
 	import { formatPrice } from '$lib/utils/format';
+	import { formatDate } from '$lib/utils/date';
 	import {
 		getGuestNameIfDifferent,
 		getSeatDisplay,
@@ -173,7 +174,7 @@
 				</div>
 				<div class="flex items-center justify-between">
 					<span class="text-muted-foreground">{m['eventTicketsAdmin.headerPurchased']()}:</span>
-					<span>{new Date(ticket.created_at).toLocaleDateString()}</span>
+					<span>{formatDate(ticket.created_at)}</span>
 				</div>
 				{#if ticket.payment?.vat_amount != null}
 					<div class="mt-2 space-y-1 border-t pt-2">

@@ -4,6 +4,7 @@
 	import { getUserDisplayName } from '$lib/utils/user-display';
 	import { getTicketStatusColor, getTicketStatusLabel } from '$lib/utils/status-colors';
 	import { formatPrice } from '$lib/utils/format';
+	import { formatDate } from '$lib/utils/date';
 	import {
 		getGuestNameIfDifferent,
 		getSeatDisplay,
@@ -237,7 +238,7 @@
 						</div>
 					</td>
 					<td class="px-4 py-3 text-sm text-muted-foreground">
-						{new Date(ticket.created_at).toLocaleDateString()}
+						{formatDate(ticket.created_at)}
 					</td>
 					<td class="px-4 py-3">
 						<div class="flex justify-end gap-2">

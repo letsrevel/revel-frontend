@@ -19,6 +19,7 @@
 		X
 	} from 'lucide-svelte';
 	import QRCode from 'qrcode';
+	import { formatDateTime } from '$lib/utils/date';
 
 	interface Props {
 		open: boolean;
@@ -121,11 +122,9 @@
 	}
 
 	// Format checked in date
-	const checkedInDate = $derived.by(() => {
-		if (!ticket?.checked_in_at) return null;
-		const date = new Date(ticket.checked_in_at);
-		return date.toLocaleString();
-	});
+	const checkedInDate = $derived.by(() =>
+		ticket?.checked_in_at ? formatDateTime(ticket.checked_in_at) : null
+	);
 
 	// Check if ticket is pending and payment method allows resume
 	const canResumePayment = $derived.by(() => {

@@ -8,9 +8,8 @@
 	import { Calendar, MapPin, Ticket, Download, CalendarDays } from 'lucide-svelte';
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
 	import { getImageUrl } from '$lib/utils/url';
-	import { formatEventDateRange } from '$lib/utils/date';
+	import { formatEventDateRange, formatDate } from '$lib/utils/date';
 	import { getEventLogo, getEventLogoThumbnail } from '$lib/utils/event';
-	import { getLocale } from '$lib/paraglide/runtime.js';
 	import { useQueryClient } from '@tanstack/svelte-query';
 
 	const queryClient = useQueryClient();
@@ -72,17 +71,8 @@
 			(ticket.status as string) === 'pending'
 	);
 
-	// Format created date to match event date format (e.g., "Tue, Jan 13, 2025")
-	const createdDate = $derived.by(() => {
-		const date = new Date(ticket.created_at);
-		const locale = getLocale();
-		return date.toLocaleDateString(locale, {
-			weekday: 'short',
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric'
-		});
-	});
+	// Format created date
+	const createdDate = $derived(formatDate(ticket.created_at));
 </script>
 
 <Card class="group overflow-hidden transition-shadow hover:shadow-lg">

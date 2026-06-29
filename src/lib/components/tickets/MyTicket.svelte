@@ -6,6 +6,7 @@
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import DownloadPdfButton from './DownloadPdfButton.svelte';
 	import { Ticket, Calendar, MapPin, User, Armchair } from 'lucide-svelte';
+	import { formatDateTime } from '$lib/utils/date';
 	import QRCode from 'qrcode';
 	import { onMount } from 'svelte';
 
@@ -60,11 +61,9 @@
 	});
 
 	// Format checked in date
-	const checkedInDate = $derived(() => {
-		if (!ticket.checked_in_at) return null;
-		const date = new Date(ticket.checked_in_at);
-		return date.toLocaleString();
-	});
+	const checkedInDate = $derived(
+		ticket.checked_in_at ? formatDateTime(ticket.checked_in_at) : null
+	);
 
 	// Check if ticket is pending and payment method allows resume
 	const canResumePayment = $derived(() => {
@@ -280,9 +279,9 @@
 		{/if}
 
 		<!-- Checked In Info -->
-		{#if ticket.status === 'checked_in' && checkedInDate()}
+		{#if ticket.status === 'checked_in' && checkedInDate}
 			<div class="rounded-lg bg-blue-50 p-4 text-sm">
-				<p class="font-medium text-blue-900">{m['myTicket.checkedInAt']()} {checkedInDate()}</p>
+				<p class="font-medium text-blue-900">{m['myTicket.checkedInAt']()} {checkedInDate}</p>
 			</div>
 		{/if}
 
