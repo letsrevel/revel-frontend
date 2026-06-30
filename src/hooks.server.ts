@@ -121,9 +121,10 @@ async function refreshSession(
 		);
 
 		const decoded = decodeJWT(data.access);
-		if (decoded) {
+		const id = decoded?.user_id || decoded?.sub;
+		if (id) {
 			event.locals.user = {
-				id: decoded.user_id || decoded.sub,
+				id,
 				email: decoded.email,
 				accessToken: data.access
 			};
@@ -276,6 +277,17 @@ const handleCsp: Handle = async ({ event, resolve }) => {
 
 /**
  * Authentication hook
+ *
+ * Decodes the access token from the `access_token` cookie to populate
+ * `event.locals.user` for SSR convenience (page loads, layout data, logging).
+ * The payload is Zod-validated at runtime; expired tokens are rejected.
+ *
+ * NOTE — no signature verification is performed here, by design. The frontend
+ * does not hold the JWT signing secret. Every API call made during SSR (and all
+ * client-side calls) forward the raw cookie value as `Authorization: Bearer …`
+ * to the backend, which is the sole authoritative verifier of the signature and
+ * all registered claims. A forged cookie can influence SSR rendering but cannot
+ * grant access to any protected resource: the backend will 401 the request.
  */
 const handleAuth: Handle = async ({ event, resolve }) => {
 	const accessToken = event.cookies.get('access_token');
@@ -293,11 +305,15 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	// 401 every SSR call, which surfaced as public pages failing to load until
 	// the user manually logged out.
 	const decoded = accessToken ? decodeJWT(accessToken) : null;
+	const userId = decoded?.user_id || decoded?.sub;
 
-	if (accessToken && decoded && !isAccessTokenExpired(decoded)) {
-		// Usable access token — populate locals.user directly.
+	if (accessToken && decoded && userId && !isAccessTokenExpired(decoded)) {
+		// Usable access token — populate locals.user directly. Requiring an id
+		// (user_id/sub) here means a token with no identity claim is treated as
+		// unusable and routed to refresh/clear below, rather than producing a
+		// `locals.user` with an undefined id.
 		event.locals.user = {
-			id: decoded.user_id || decoded.sub,
+			id: userId,
 			email: decoded.email,
 			accessToken
 		};
@@ -312,7 +328,9 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	} else if (accessToken) {
 		// Stale/malformed access token and nothing to refresh with — clear it so
 		// the request (and any public SSR load) proceeds anonymously.
-		log.warning('jwt_unusable', { reason: decoded ? 'expired' : 'malformed' });
+		log.warning('jwt_unusable', {
+			reason: !decoded ? 'malformed' : !userId ? 'no_identity_claim' : 'expired'
+		});
 		event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
 	}
 
