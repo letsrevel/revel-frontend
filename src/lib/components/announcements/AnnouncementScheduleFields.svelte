@@ -25,6 +25,7 @@
 		error?: string;
 	}
 
+	/* eslint-disable prefer-const -- Svelte 5: $bindable() requires `let` destructuring */
 	let {
 		sendMode = $bindable('now'),
 		scheduleKind = $bindable('absolute'),
@@ -36,6 +37,7 @@
 		disabled = false,
 		error
 	}: Props = $props();
+	/* eslint-enable prefer-const */
 
 	// Minimum selectable time for absolute scheduling: now.
 	const nowIso = new Date().toISOString();

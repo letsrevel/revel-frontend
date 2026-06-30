@@ -604,12 +604,12 @@
 					<div class="ml-11 space-y-2">
 						<Label>{m['announcements.form.selectTiers']()}</Label>
 						<div class="space-y-2 rounded-md border p-3">
-							{#each tiers.filter((t) => t.id) as tier (tier.id)}
+							{#each tiers.filter((t): t is MembershipTierSchema & { id: string } => !!t.id) as tier (tier.id)}
 								<div class="flex items-center gap-2">
 									<Checkbox
 										id="tier-{tier.id}"
-										checked={selectedTierIds.includes(tier.id!)}
-										onCheckedChange={() => toggleTier(tier.id!)}
+										checked={selectedTierIds.includes(tier.id)}
+										onCheckedChange={() => toggleTier(tier.id)}
 										disabled={isSaving}
 									/>
 									<Label for="tier-{tier.id}" class="cursor-pointer font-normal">

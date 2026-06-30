@@ -18,12 +18,11 @@ async function main() {
 		const text = await readFile(file, 'utf-8');
 
 		// Find all <img ...> tags (possibly spanning multiple lines)
-		const imgTagRegex = /<img\b([^>]*(?:>|$))/gs;
+		const imgTagRegex = /<img\b[^>]*(?:>|$)/gs;
 		let match: RegExpExecArray | null;
 
 		while ((match = imgTagRegex.exec(text)) !== null) {
 			const fullMatch = match[0];
-			const attrs = match[1];
 
 			// Calculate the line number of the opening <img
 			const lineNumber = text.slice(0, match.index).split('\n').length;

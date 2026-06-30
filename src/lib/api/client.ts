@@ -20,7 +20,7 @@ let failedRequestsQueue: Array<{
 	resolve: (value: Response) => void;
 	reject: (error: unknown) => void;
 	request: Request;
-	options: any;
+	options: unknown;
 }> = [];
 
 /**
