@@ -121,10 +121,11 @@ async function refreshSession(
 		);
 
 		const decoded = decodeJWT(data.access);
-		if (decoded) {
+		const id = decoded?.user_id || decoded?.sub;
+		if (id) {
 			event.locals.user = {
-				id: decoded.user_id || decoded.sub,
-				email: decoded.email,
+				id,
+				email: decoded?.email,
 				accessToken: data.access
 			};
 			return true;
@@ -293,11 +294,15 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	// 401 every SSR call, which surfaced as public pages failing to load until
 	// the user manually logged out.
 	const decoded = accessToken ? decodeJWT(accessToken) : null;
+	const userId = decoded?.user_id || decoded?.sub;
 
-	if (accessToken && decoded && !isAccessTokenExpired(decoded)) {
-		// Usable access token — populate locals.user directly.
+	if (accessToken && decoded && userId && !isAccessTokenExpired(decoded)) {
+		// Usable access token — populate locals.user directly. Requiring an id
+		// (user_id/sub) here means a token with no identity claim is treated as
+		// unusable and routed to refresh/clear below, rather than producing a
+		// `locals.user` with an undefined id.
 		event.locals.user = {
-			id: decoded.user_id || decoded.sub,
+			id: userId,
 			email: decoded.email,
 			accessToken
 		};
@@ -312,7 +317,9 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	} else if (accessToken) {
 		// Stale/malformed access token and nothing to refresh with — clear it so
 		// the request (and any public SSR load) proceeds anonymously.
-		log.warning('jwt_unusable', { reason: decoded ? 'expired' : 'malformed' });
+		log.warning('jwt_unusable', {
+			reason: !decoded ? 'malformed' : !userId ? 'no_identity_claim' : 'expired'
+		});
 		event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
 	}
 
