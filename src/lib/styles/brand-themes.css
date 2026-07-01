@@ -1,0 +1,276 @@
+/* =============================================================================
+ * Brand rebrand — Foundation. Evaluation themes (background-led, bold).
+ *
+ * Candidate brand themes driven by a `data-brand` attribute on <html>,
+ * orthogonal to the dark/light `.dark` toggle (owned by mode-watcher). No
+ * `data-brand` (Legacy) = the untouched current brand from app.css.
+ *
+ * Each theme commits to a distinct SURFACE strategy so they read as clearly
+ * different, not sibling tints:
+ *   gradient — the page background IS the purple→crimson gradient; solid cards.
+ *   midnight — near-black surfaces in BOTH light and dark; neon accents.
+ *   crimson  — crimson-led, warm red/peach backgrounds; purple as accent.
+ *   mono     — stark black & white editorial; gradient reserved for the logo.
+ *
+ * Values are a candidate pass for live A/B evaluation, not final. The variable
+ * NAMES are the stable contract.
+ *
+ * Delete this file + its import in +layout.svelte to remove the experiment.
+ * ============================================================================ */
+
+@import '@fontsource-variable/nata-sans';
+
+/* Shared across all candidate themes. Nata Sans applies ONLY here, so the
+ * typeface is part of the comparison against Legacy's system stack. */
+[data-brand='gradient'],
+[data-brand='midnight'],
+[data-brand='crimson'],
+[data-brand='mono'] {
+	--font-brand: 'Nata Sans Variable', ui-sans-serif, system-ui, -apple-system, sans-serif;
+	font-family: var(--font-brand);
+
+	--logo-from: hsl(270 70% 55%);
+	--logo-to: hsl(3 80% 53%);
+	--gradient-brand: linear-gradient(
+		135deg,
+		hsl(270 72% 56%) 0%,
+		hsl(330 74% 53%) 48%,
+		hsl(3 80% 53%) 100%
+	);
+}
+
+/* ===========================================================================
+ * GRADIENT WASH — the whole page is the brand gradient; content floats on
+ * solid white (light) / ink (dark) cards. Amber primary pops on the gradient.
+ * ======================================================================== */
+[data-brand='gradient'] {
+	--radius: 0.875rem;
+	/* Mid-gradient magenta: the solid fallback for any bg-background surface
+	 * that isn't the body (keeps non-card areas on-brand, not white). */
+	--background: 300 65% 52%;
+	--foreground: 0 0% 100%;
+	--card: 0 0% 100%;
+	--card-foreground: 173 40% 8%;
+	--popover: 0 0% 100%;
+	--popover-foreground: 173 40% 8%;
+	--primary: 38 94% 59%; /* amber CTA — high pop on gradient */
+	--primary-foreground: 30 55% 14%;
+	--secondary: 0 0% 100%;
+	--secondary-foreground: 270 70% 42%;
+	--muted: 300 40% 90%;
+	--muted-foreground: 300 25% 32%;
+	--accent: 270 75% 60%;
+	--accent-foreground: 0 0% 100%;
+	--highlight: 38 94% 59%;
+	--highlight-foreground: 30 55% 14%;
+	--destructive: 0 75% 45%;
+	--destructive-foreground: 0 0% 100%;
+	--border: 300 35% 82%;
+	--input: 300 35% 82%;
+	--ring: 38 94% 59%;
+}
+[data-brand='gradient'].dark {
+	--background: 285 55% 16%;
+	--foreground: 0 0% 98%;
+	--card: 280 30% 12%;
+	--card-foreground: 0 0% 96%;
+	--popover: 280 30% 12%;
+	--popover-foreground: 0 0% 96%;
+	--primary: 38 92% 60%;
+	--primary-foreground: 30 55% 12%;
+	--secondary: 280 25% 20%;
+	--secondary-foreground: 0 0% 96%;
+	--muted: 280 22% 20%;
+	--muted-foreground: 280 12% 70%;
+	--accent: 270 78% 68%;
+	--accent-foreground: 0 0% 100%;
+	--highlight: 38 92% 60%;
+	--highlight-foreground: 30 55% 12%;
+	--destructive: 0 70% 52%;
+	--destructive-foreground: 0 0% 100%;
+	--border: 280 22% 24%;
+	--input: 280 22% 24%;
+	--ring: 38 92% 60%;
+	/* Deeper gradient so dark mode reads as night, not neon. */
+	--gradient-brand: linear-gradient(
+		135deg,
+		hsl(270 55% 20%) 0%,
+		hsl(330 55% 22%) 50%,
+		hsl(3 60% 26%) 100%
+	);
+}
+/* The defining move: paint the body with the brand gradient. Fixed so it
+ * doesn't scroll away. Solid cards/panels sit on top for readable content. */
+[data-brand='gradient'] body {
+	background-image: var(--gradient-brand);
+	background-attachment: fixed;
+}
+
+/* Header home logo. Both the Legacy "Revel" wordmark and the "let's revel."
+ * lockup are always in the DOM (so SSR and client markup match — no hydration
+ * mismatch); these [data-brand] rules swap which one shows, driven by the
+ * pre-paint attribute (so there's no flash). Legacy (no attribute) keeps the
+ * default: lockup hidden via its `hidden` class, "Revel" visible. */
+[data-brand] .revel-logo-legacy {
+	display: none;
+}
+[data-brand] .revel-logo-lockup {
+	display: inline-flex;
+}
+
+/* ===========================================================================
+ * MIDNIGHT — near-black surfaces in BOTH modes; neon purple/crimson/amber.
+ * Ignores light mode on purpose: this theme is always dark & high-contrast.
+ * ======================================================================== */
+[data-brand='midnight'] {
+	--radius: 0.5rem;
+	--background: 173 42% 7%;
+	--foreground: 0 0% 96%;
+	--card: 174 30% 11%;
+	--card-foreground: 0 0% 96%;
+	--popover: 174 30% 11%;
+	--popover-foreground: 0 0% 96%;
+	--primary: 270 80% 66%; /* neon purple */
+	--primary-foreground: 0 0% 100%;
+	--secondary: 226 90% 74%; /* periwinkle glow */
+	--secondary-foreground: 224 60% 14%;
+	--muted: 174 20% 16%;
+	--muted-foreground: 174 12% 66%;
+	--accent: 3 86% 61%; /* neon crimson */
+	--accent-foreground: 0 0% 100%;
+	--highlight: 38 96% 61%;
+	--highlight-foreground: 30 60% 12%;
+	--destructive: 0 74% 55%;
+	--destructive-foreground: 0 0% 100%;
+	--border: 174 22% 19%;
+	--input: 174 22% 19%;
+	--ring: 270 80% 66%;
+}
+[data-brand='midnight'].dark {
+	--background: 173 48% 5%;
+	--foreground: 0 0% 98%;
+	--card: 174 34% 9%;
+	--card-foreground: 0 0% 98%;
+	--popover: 174 34% 9%;
+	--popover-foreground: 0 0% 98%;
+	--primary: 270 82% 70%;
+	--primary-foreground: 0 0% 100%;
+	--secondary: 226 92% 78%;
+	--secondary-foreground: 224 60% 12%;
+	--muted: 174 24% 14%;
+	--muted-foreground: 174 12% 68%;
+	--accent: 3 88% 63%;
+	--accent-foreground: 0 0% 100%;
+	--highlight: 38 96% 62%;
+	--highlight-foreground: 30 60% 10%;
+	--destructive: 0 74% 56%;
+	--destructive-foreground: 0 0% 100%;
+	--border: 174 24% 16%;
+	--input: 174 24% 16%;
+	--ring: 270 82% 70%;
+}
+
+/* ===========================================================================
+ * CRIMSON-LED — crimson is primary; warm red/peach backgrounds; purple accent.
+ * Reads hot/urgent, the opposite temperature of the cool purple themes.
+ * ======================================================================== */
+[data-brand='crimson'] {
+	--radius: 0.5rem;
+	--background: 8 72% 97%;
+	--foreground: 173 40% 10%;
+	--card: 0 0% 100%;
+	--card-foreground: 173 40% 10%;
+	--popover: 0 0% 100%;
+	--popover-foreground: 173 40% 10%;
+	--primary: 3 80% 50%; /* crimson */
+	--primary-foreground: 0 0% 100%;
+	--secondary: 270 60% 93%;
+	--secondary-foreground: 270 55% 30%;
+	--muted: 8 45% 95%;
+	--muted-foreground: 8 18% 38%;
+	--accent: 270 72% 55%; /* purple accent */
+	--accent-foreground: 0 0% 100%;
+	--highlight: 38 94% 56%;
+	--highlight-foreground: 30 55% 14%;
+	--destructive: 0 78% 44%;
+	--destructive-foreground: 0 0% 100%;
+	--border: 8 45% 88%;
+	--input: 8 45% 88%;
+	--ring: 3 80% 50%;
+}
+[data-brand='crimson'].dark {
+	--background: 5 34% 8%;
+	--foreground: 0 0% 96%;
+	--card: 6 28% 12%;
+	--card-foreground: 0 0% 96%;
+	--popover: 6 28% 12%;
+	--popover-foreground: 0 0% 96%;
+	--primary: 3 82% 58%;
+	--primary-foreground: 0 0% 100%;
+	--secondary: 270 30% 22%;
+	--secondary-foreground: 0 0% 95%;
+	--muted: 6 22% 16%;
+	--muted-foreground: 8 14% 66%;
+	--accent: 270 76% 66%;
+	--accent-foreground: 0 0% 100%;
+	--highlight: 38 92% 58%;
+	--highlight-foreground: 30 55% 12%;
+	--destructive: 0 72% 52%;
+	--destructive-foreground: 0 0% 100%;
+	--border: 6 22% 19%;
+	--input: 6 22% 19%;
+	--ring: 3 82% 58%;
+}
+
+/* ===========================================================================
+ * MONO / DECK — stark black & white editorial (the ACIDHAIRS deck look).
+ * Buttons are ink (light) / paper (dark). Gradient survives only on the logo.
+ * Tight radius for a designed, print-like feel.
+ * ======================================================================== */
+[data-brand='mono'] {
+	--radius: 0.25rem;
+	--background: 0 0% 100%;
+	--foreground: 173 30% 6%;
+	--card: 0 0% 100%;
+	--card-foreground: 173 30% 6%;
+	--popover: 0 0% 100%;
+	--popover-foreground: 173 30% 6%;
+	--primary: 173 30% 6%; /* near-black primary */
+	--primary-foreground: 0 0% 100%;
+	--secondary: 0 0% 95%;
+	--secondary-foreground: 173 30% 10%;
+	--muted: 0 0% 96%;
+	--muted-foreground: 0 0% 38%;
+	--accent: 270 72% 55%; /* single purple pop */
+	--accent-foreground: 0 0% 100%;
+	--highlight: 38 94% 56%;
+	--highlight-foreground: 30 55% 14%;
+	--destructive: 3 78% 46%;
+	--destructive-foreground: 0 0% 100%;
+	--border: 0 0% 87%;
+	--input: 0 0% 87%;
+	--ring: 173 30% 6%;
+}
+[data-brand='mono'].dark {
+	--background: 0 0% 4%;
+	--foreground: 0 0% 98%;
+	--card: 0 0% 8%;
+	--card-foreground: 0 0% 98%;
+	--popover: 0 0% 8%;
+	--popover-foreground: 0 0% 98%;
+	--primary: 0 0% 98%; /* paper-white primary */
+	--primary-foreground: 0 0% 6%;
+	--secondary: 0 0% 13%;
+	--secondary-foreground: 0 0% 96%;
+	--muted: 0 0% 12%;
+	--muted-foreground: 0 0% 62%;
+	--accent: 270 78% 68%;
+	--accent-foreground: 0 0% 100%;
+	--highlight: 38 92% 58%;
+	--highlight-foreground: 30 55% 12%;
+	--destructive: 3 76% 56%;
+	--destructive-foreground: 0 0% 100%;
+	--border: 0 0% 17%;
+	--input: 0 0% 17%;
+	--ring: 0 0% 98%;
+}

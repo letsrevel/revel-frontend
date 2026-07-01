@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '../app.css';
+	import '$lib/styles/brand-themes.css';
 	import { onMount } from 'svelte';
 	import { afterNavigate } from '$app/navigation';
 	import { ModeWatcher } from 'mode-watcher';
@@ -11,6 +12,7 @@
 	import DemoBanner from '$lib/components/common/DemoBanner.svelte';
 	import ImpersonationBanner from '$lib/components/common/ImpersonationBanner.svelte';
 	import MaintenanceBanner from '$lib/components/common/MaintenanceBanner.svelte';
+	import BrandSwitcher from '$lib/components/brand/BrandSwitcher.svelte';
 	import type { LayoutData } from './$types';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { ClaimResult } from '$lib/server/token-claim';
@@ -287,5 +289,6 @@
 	<ImpersonationBanner />
 	<DemoBanner />
 	<MaintenanceBanner />
+	<BrandSwitcher />
 	{@render children()}
 </QueryClientProvider>

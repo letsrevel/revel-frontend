@@ -36,6 +36,9 @@ importers:
 
   .:
     dependencies:
+      '@fontsource-variable/nata-sans':
+        specifier: ^5.2.2
+        version: 5.2.2
       '@tanstack/svelte-query':
         specifier: ^6.0.3
         version: 6.1.34(svelte@5.56.3(@typescript-eslint/types@8.61.0))
@@ -685,6 +688,9 @@ packages:
 
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
+
+  '@fontsource-variable/nata-sans@5.2.2':
+    resolution: {integrity: sha512-mmB1brBVq6uOazE6dAfnkE8DTcZAcygllIPhACe8bOeNzmM+HzBQuIPdtW98HYqw+SuYFAzfUe6W3XsYzUUf+Q==}
 
   '@hapi/address@5.1.1':
     resolution: {integrity: sha512-A+po2d/dVoY7cYajycYI43ZbYMXukuopIsqCjh5QzsBCipDtdofHntljDlpccMjIfTy6UOkg+5KPriwYch2bXA==}
@@ -3536,6 +3542,8 @@ snapshots:
       '@floating-ui/utils': 0.2.11
 
   '@floating-ui/utils@0.2.11': {}
+
+  '@fontsource-variable/nata-sans@5.2.2': {}
 
   '@hapi/address@5.1.1':
     dependencies:

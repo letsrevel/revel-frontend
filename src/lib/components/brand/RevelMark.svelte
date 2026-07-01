@@ -1,14 +1,50 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="Revel">
-  <defs>
-    <linearGradient id="revelGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#8C3CDD"/>
-      <stop offset="1" stop-color="#E6332A"/>
-    </linearGradient>
-  </defs>
-  <circle cx="512" cy="512" r="512" fill="url(#revelGrad)"/>
-  <g transform="translate(266,232) scale(0.605)">
-    <g transform="translate(0,926) scale(0.1,-0.1)" fill="#ffffff" stroke="none">
-      <path d="M3277 8954 c-4 -4 -55 -11 -114 -16 -146 -11 -309 -33 -438 -58 -101
+<script lang="ts">
+	// Revel "R" mark — the official ACIDHAIRS logo vector (potrace path from
+	// revel-R-purple.svg). The heart is a reverse-wound subpath (a real hole in
+	// the R body), so it shows whatever is behind it. Fill the body with the
+	// brand gradient (default, via --logo-from/--logo-to) or flat currentColor.
+	interface Props {
+		/** Purple→crimson brand gradient (default) or flat currentColor fill. */
+		gradient?: boolean;
+		class?: string;
+		title?: string;
+		/** Decorative: hide from assistive tech (use when adjacent text names it). */
+		decorative?: boolean;
+	}
+	const {
+		gradient = true,
+		class: className = '',
+		title = 'Revel',
+		decorative = false
+	}: Props = $props();
+
+	// Stable, SSR-safe unique id (no Math.random → no hydration mismatch).
+	const uid = $props.id();
+</script>
+
+<svg
+	viewBox="0 0 816 926"
+	xmlns="http://www.w3.org/2000/svg"
+	class={className}
+	role={decorative ? undefined : 'img'}
+	aria-label={decorative ? undefined : title}
+	aria-hidden={decorative ? 'true' : undefined}
+>
+	{#if gradient}
+		<defs>
+			<linearGradient id={`revel-${uid}`} x1="0" y1="0" x2="0" y2="1">
+				<stop offset="0%" stop-color="var(--logo-from, hsl(270 70% 55%))" />
+				<stop offset="100%" stop-color="var(--logo-to, hsl(3 80% 53%))" />
+			</linearGradient>
+		</defs>
+	{/if}
+	<g
+		transform="translate(0,926) scale(0.1,-0.1)"
+		fill={gradient ? `url(#revel-${uid})` : 'currentColor'}
+		stroke="none"
+	>
+		<path
+			d="M3277 8954 c-4 -4 -55 -11 -114 -16 -146 -11 -309 -33 -438 -58 -101
 -19 -151 -29 -200 -40 -27 -6 -72 -15 -100 -20 -27 -4 -67 -13 -87 -19 -21 -6
 -53 -15 -70 -20 -38 -10 -65 -19 -93 -32 -11 -4 -69 -25 -130 -45 -111 -36
 -347 -147 -441 -207 -119 -75 -151 -98 -193 -134 -24 -21 -65 -54 -90 -74 -89
@@ -73,7 +109,7 @@
 -13 0 -188 197 -213 240 -13 21 -44 69 -70 106 -25 38 -64 103 -85 144 -22 41
 -55 104 -75 140 -19 36 -38 78 -42 93 -3 15 -17 51 -30 80 -52 115 -75 180
 -121 347 -74 267 -93 368 -106 545 -13 188 -4 394 23 500 26 104 89 233 144
-294 44 49 125 97 199 118 78 23 130 31 160 26 17 -2 53 -8 80 -12z"/>
-    </g>
-  </g>
+294 44 49 125 97 199 118 78 23 130 31 160 26 17 -2 53 -8 80 -12z"
+		/>
+	</g>
 </svg>
