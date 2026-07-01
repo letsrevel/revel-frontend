@@ -68,6 +68,7 @@
 		"vitest": "^3.2.6"
 	},
 	"dependencies": {
+		"@fontsource-variable/nata-sans": "^5.2.2",
 		"@tanstack/svelte-query": "^6.0.3",
 		"@tiptap/core": "^3.27.1",
 		"@tiptap/extension-hard-break": "^3.27.1",

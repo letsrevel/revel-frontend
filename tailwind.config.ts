@@ -46,6 +46,10 @@ export default {
 					DEFAULT: 'hsl(var(--accent) / <alpha-value>)',
 					foreground: 'hsl(var(--accent-foreground) / <alpha-value>)'
 				},
+				highlight: {
+					DEFAULT: 'hsl(var(--highlight) / <alpha-value>)',
+					foreground: 'hsl(var(--highlight-foreground) / <alpha-value>)'
+				},
 				popover: {
 					DEFAULT: 'hsl(var(--popover) / <alpha-value>)',
 					foreground: 'hsl(var(--popover-foreground) / <alpha-value>)'
@@ -59,6 +63,9 @@ export default {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
+			},
+			backgroundImage: {
+				'brand-gradient': 'var(--gradient-brand)'
 			}
 		}
 	},
