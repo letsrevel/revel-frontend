@@ -46,6 +46,7 @@ export default {
 					DEFAULT: 'hsl(var(--accent) / <alpha-value>)',
 					foreground: 'hsl(var(--accent-foreground) / <alpha-value>)'
 				},
+				// Brand-experiment only: --highlight/--highlight-foreground are defined solely under [data-brand]; do NOT use in Legacy paths.
 				highlight: {
 					DEFAULT: 'hsl(var(--highlight) / <alpha-value>)',
 					foreground: 'hsl(var(--highlight-foreground) / <alpha-value>)'
@@ -64,6 +65,7 @@ export default {
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
 			},
+			// Brand-experiment only: --gradient-brand is defined solely under [data-brand]; do NOT use in Legacy paths.
 			backgroundImage: {
 				'brand-gradient': 'var(--gradient-brand)'
 			}

@@ -15,7 +15,7 @@
 
 {#if visible}
 	<div
-		class="fixed bottom-4 left-4 z-[60]"
+		class="fixed z-[60]"
 		style="left: max(1rem, env(safe-area-inset-left)); bottom: max(1rem, env(safe-area-inset-bottom));"
 	>
 		{#if open}
