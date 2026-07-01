@@ -23,8 +23,12 @@ function readInitial(): BrandTheme {
 	if (!browser) return 'legacy';
 	const fromDom = document.documentElement.dataset.brand;
 	if (fromDom === 'a' || fromDom === 'b') return fromDom;
-	const stored = localStorage.getItem(STORAGE_KEY);
-	return isBrand(stored) ? stored : 'legacy';
+	try {
+		const stored = localStorage.getItem(STORAGE_KEY);
+		return isBrand(stored) ? stored : 'legacy';
+	} catch {
+		return 'legacy';
+	}
 }
 
 export class BrandThemeStore {

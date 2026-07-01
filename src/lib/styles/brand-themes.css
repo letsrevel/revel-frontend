@@ -17,8 +17,7 @@
  * typeface is part of the A/B comparison against Legacy's system stack. */
 [data-brand='a'],
 [data-brand='b'] {
-	--font-brand:
-		'Nata Sans Variable', ui-sans-serif, system-ui, -apple-system, sans-serif;
+	--font-brand: 'Nata Sans Variable', ui-sans-serif, system-ui, -apple-system, sans-serif;
 	font-family: var(--font-brand);
 
 	--logo-from: hsl(270 70% 55%);
