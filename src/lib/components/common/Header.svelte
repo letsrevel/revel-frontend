@@ -9,6 +9,10 @@
 	import LanguageSwitcher from './LanguageSwitcher.svelte';
 	import { NotificationDropdown } from '$lib/components/notifications';
 	import * as m from '$lib/paraglide/messages.js';
+	// Brand experiment: show the "let's revel." lockup on candidate themes;
+	// Legacy keeps the untouched "Revel" wordmark. Remove with the experiment.
+	import { brandTheme } from '$lib/stores/brandTheme.svelte';
+	import RevelWordmark from '$lib/components/brand/RevelWordmark.svelte';
 
 	// Mobile menu state
 	let mobileMenuOpen = $state(false);
@@ -61,8 +65,14 @@
 	<div class="container mx-auto flex h-16 items-center justify-between px-4">
 		<!-- Logo -->
 		<div class="flex items-center gap-6">
-			<a href="/" class="text-2xl font-bold text-primary transition-colors hover:text-primary/80">
-				Revel
+			<a href="/" class="text-foreground transition-opacity hover:opacity-80" aria-label="Revel">
+				{#if brandTheme.current === 'legacy'}
+					<span class="text-2xl font-bold text-primary transition-colors hover:text-primary/80">
+						Revel
+					</span>
+				{:else}
+					<RevelWordmark />
+				{/if}
 			</a>
 
 			<!-- Desktop Navigation -->
