@@ -57,7 +57,8 @@
 			(() => {
 				try {
 					const brand = localStorage.getItem('revel-brand');
-					if (brand === 'a' || brand === 'b') {
+					// Keep in sync with BRAND_THEMES in brandTheme.svelte.ts.
+					if (['gradient', 'midnight', 'crimson', 'mono'].indexOf(brand) !== -1) {
 						document.documentElement.dataset.brand = brand;
 					}
 				} catch {

@@ -17,27 +17,34 @@ describe('brandTheme store', () => {
 		expect(document.documentElement.dataset.brand).toBeUndefined();
 	});
 
-	it('set("a") writes the attribute and persists', async () => {
+	it('set("midnight") writes the attribute and persists', async () => {
 		const { brandTheme } = await import('./brandTheme.svelte');
-		brandTheme.set('a');
-		expect(brandTheme.current).toBe('a');
-		expect(document.documentElement.dataset.brand).toBe('a');
-		expect(localStorage.getItem('revel-brand')).toBe('a');
+		brandTheme.set('midnight');
+		expect(brandTheme.current).toBe('midnight');
+		expect(document.documentElement.dataset.brand).toBe('midnight');
+		expect(localStorage.getItem('revel-brand')).toBe('midnight');
 	});
 
 	it('set("legacy") removes the attribute', async () => {
 		const { brandTheme } = await import('./brandTheme.svelte');
-		brandTheme.set('b');
+		brandTheme.set('gradient');
 		brandTheme.set('legacy');
 		expect(document.documentElement.dataset.brand).toBeUndefined();
 		expect(localStorage.getItem('revel-brand')).toBe('legacy');
 	});
 
 	it('reads initial value from an existing data-brand attribute', async () => {
-		document.documentElement.dataset.brand = 'b';
+		document.documentElement.dataset.brand = 'crimson';
 		const { BrandThemeStore } = await import('./brandTheme.svelte');
 		const store = new BrandThemeStore();
-		expect(store.current).toBe('b');
+		expect(store.current).toBe('crimson');
+	});
+
+	it('ignores an unknown stored value and falls back to legacy', async () => {
+		localStorage.setItem('revel-brand', 'bogus');
+		const { BrandThemeStore } = await import('./brandTheme.svelte');
+		const store = new BrandThemeStore();
+		expect(store.current).toBe('legacy');
 	});
 
 	it('does not throw when localStorage.setItem throws', async () => {
@@ -45,7 +52,7 @@ describe('brandTheme store', () => {
 			throw new Error('quota');
 		});
 		const { brandTheme } = await import('./brandTheme.svelte');
-		expect(() => brandTheme.set('a')).not.toThrow();
+		expect(() => brandTheme.set('mono')).not.toThrow();
 		spy.mockRestore();
 	});
 });

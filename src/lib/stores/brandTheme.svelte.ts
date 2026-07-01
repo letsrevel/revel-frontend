@@ -1,28 +1,34 @@
 import { browser } from '$app/environment';
 
 /**
- * Brand-identity evaluation (Legacy / A / B). Drives a `data-brand` attribute
- * on <html>, orthogonal to the dark/light mode owned by mode-watcher. `legacy`
- * clears the attribute, falling back to the untouched current brand.
+ * Brand-identity evaluation. Drives a `data-brand` attribute on <html>,
+ * orthogonal to the dark/light mode owned by mode-watcher. `legacy` clears the
+ * attribute, falling back to the untouched current brand.
+ *
+ * Each non-legacy theme commits to a distinct SURFACE strategy (see
+ * `brand-themes.css`) so they read as clearly different, not sibling tints.
  */
-export type BrandTheme = 'legacy' | 'a' | 'b';
+export type BrandTheme = 'legacy' | 'gradient' | 'midnight' | 'crimson' | 'mono';
 
 export const BRAND_THEMES: { value: BrandTheme; label: string; hint: string }[] = [
 	{ value: 'legacy', label: 'Legacy', hint: 'Current brand' },
-	{ value: 'a', label: 'A', hint: 'Loud / expressive' },
-	{ value: 'b', label: 'B', hint: 'Refined / editorial' }
+	{ value: 'gradient', label: 'Gradient', hint: 'Full-page purple→crimson wash' },
+	{ value: 'midnight', label: 'Midnight', hint: 'Near-black, neon accents' },
+	{ value: 'crimson', label: 'Crimson', hint: 'Hot, crimson-led' },
+	{ value: 'mono', label: 'Mono', hint: 'Stark black & white' }
 ];
 
 const STORAGE_KEY = 'revel-brand';
+const VALID = new Set<string>(BRAND_THEMES.map((t) => t.value));
 
 function isBrand(v: unknown): v is BrandTheme {
-	return v === 'legacy' || v === 'a' || v === 'b';
+	return typeof v === 'string' && VALID.has(v);
 }
 
 function readInitial(): BrandTheme {
 	if (!browser) return 'legacy';
 	const fromDom = document.documentElement.dataset.brand;
-	if (fromDom === 'a' || fromDom === 'b') return fromDom;
+	if (isBrand(fromDom) && fromDom !== 'legacy') return fromDom;
 	try {
 		const stored = localStorage.getItem(STORAGE_KEY);
 		return isBrand(stored) ? stored : 'legacy';

@@ -1,7 +1,7 @@
 <script lang="ts">
-	// Brand A/B/Legacy evaluation switcher. Floating, dismissible, gated to
-	// demo/dev so it never appears on real production. Delete with the rest of
-	// the experiment.
+	// Brand evaluation switcher (Legacy + candidate themes). Floating,
+	// dismissible, gated to demo/dev so it never appears on real production.
+	// Delete with the rest of the experiment.
 	import { dev } from '$app/environment';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { brandTheme, BRAND_THEMES } from '$lib/stores/brandTheme.svelte';
@@ -24,7 +24,7 @@
 					<div class="flex items-center gap-2">
 						<RevelMark class="h-5 w-5" />
 						<span class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-							Brand A/B
+							Brand
 						</span>
 					</div>
 					<button
@@ -36,7 +36,7 @@
 						<X class="h-4 w-4" aria-hidden="true" />
 					</button>
 				</div>
-				<div class="grid grid-cols-3 gap-1.5 p-2" role="radiogroup" aria-label="Brand theme">
+				<div class="flex flex-col gap-1 p-2" role="radiogroup" aria-label="Brand theme">
 					{#each BRAND_THEMES as t (t.value)}
 						{@const active = brandTheme.current === t.value}
 						<button

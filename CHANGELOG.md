@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.64.0] - 2026-07-01
 
 ### Added
-- **Brand identity A/B evaluation (demo/staging only)**: a new opt-in brand switcher, visible on the demo/staging environment and in local development, lets testers preview two candidate 2026 rebrands — **A** (loud/expressive) and **B** (refined/editorial) — against the current **Legacy** look, each with full light and dark modes. The default stays Legacy, so normal visitors see no change. Foundation only: the new palette (Hearty Purple / Light Crimson / Amber highlight, purple→crimson gradient) and the Nata Sans typeface are wired through the existing design tokens, with the final visual design of each theme to follow.
+- **Brand identity evaluation (demo/staging only)**: a new opt-in brand switcher, visible on the demo/staging environment and in local development, lets testers preview four candidate 2026 rebrands against the current **Legacy** look — **Gradient** (full-page purple→crimson wash), **Midnight** (near-black with neon accents), **Crimson** (hot, crimson-led), and **Mono** (stark black & white) — each with full light and dark modes. The default stays Legacy, so normal visitors see no change. Foundation only: the new palette (Hearty Purple / Light Crimson / Amber highlight, purple→crimson gradient) and the Nata Sans typeface are wired through the existing design tokens, with the final visual design to follow.
 
 ## [1.63.0] - 2026-06-29
 
