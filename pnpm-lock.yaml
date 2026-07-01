@@ -76,8 +76,8 @@ importers:
         specifier: ^0.469.0
         version: 0.469.0(svelte@5.56.3(@typescript-eslint/types@8.61.0))
       marked:
-        specifier: ^17.0.1
-        version: 17.0.6
+        specifier: ^18.0.5
+        version: 18.0.5
       mode-watcher:
         specifier: ^0.4.1
         version: 0.4.1(svelte@5.56.3(@typescript-eslint/types@8.61.0))
@@ -2243,6 +2243,11 @@ packages:
 
   marked@17.0.6:
     resolution: {integrity: sha512-gB0gkNafnonOw0obSTEGZTT86IuhILt2Wfx0mWH/1Au83kybTayroZ/V6nS25mN7u8ASy+5fMhgB3XPNrOZdmA==}
+    engines: {node: '>= 20'}
+    hasBin: true
+
+  marked@18.0.5:
+    resolution: {integrity: sha512-S6GcvALHg6K4ohtu4E7x0a1AqhAjp6cV8KhLSyN9qVapnzJkusVBxZRcIU9AeYsbe6P1hKDusSbEOzGyyuce6w==}
     engines: {node: '>= 20'}
     hasBin: true
 
@@ -5159,6 +5164,8 @@ snapshots:
       '@jridgewell/sourcemap-codec': 1.5.5
 
   marked@17.0.6: {}
+
+  marked@18.0.5: {}
 
   mdn-data@2.27.1: {}
 
