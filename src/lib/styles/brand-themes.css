@@ -106,6 +106,18 @@
 	background-attachment: fixed;
 }
 
+/* Header home logo. Both the Legacy "Revel" wordmark and the "let's revel."
+ * lockup are always in the DOM (so SSR and client markup match — no hydration
+ * mismatch); these [data-brand] rules swap which one shows, driven by the
+ * pre-paint attribute (so there's no flash). Legacy (no attribute) keeps the
+ * default: lockup hidden via its `hidden` class, "Revel" visible. */
+[data-brand] .revel-logo-legacy {
+	display: none;
+}
+[data-brand] .revel-logo-lockup {
+	display: inline-flex;
+}
+
 /* ===========================================================================
  * MIDNIGHT — near-black surfaces in BOTH modes; neon purple/crimson/amber.
  * Ignores light mode on purpose: this theme is always dark & high-contrast.

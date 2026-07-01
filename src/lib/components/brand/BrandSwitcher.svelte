@@ -11,6 +11,36 @@
 	let open = $state(true);
 	// Show only where evaluation is intended: local dev or the demo/staging env.
 	const visible = $derived(dev || appStore.isDemoMode);
+
+	// Roving-tabindex radiogroup: only the checked radio is in the tab order;
+	// Arrow/Home/End move selection and focus between options (WAI-ARIA pattern).
+	const radios = $state<HTMLButtonElement[]>([]);
+
+	function onRadioKeydown(event: KeyboardEvent, index: number) {
+		const last = BRAND_THEMES.length - 1;
+		let next = index;
+		switch (event.key) {
+			case 'ArrowDown':
+			case 'ArrowRight':
+				next = index === last ? 0 : index + 1;
+				break;
+			case 'ArrowUp':
+			case 'ArrowLeft':
+				next = index === 0 ? last : index - 1;
+				break;
+			case 'Home':
+				next = 0;
+				break;
+			case 'End':
+				next = last;
+				break;
+			default:
+				return;
+		}
+		event.preventDefault();
+		brandTheme.set(BRAND_THEMES[next].value);
+		radios[next]?.focus();
+	}
 </script>
 
 {#if visible}
@@ -37,13 +67,16 @@
 					</button>
 				</div>
 				<div class="flex flex-col gap-1 p-2" role="radiogroup" aria-label="Brand theme">
-					{#each BRAND_THEMES as t (t.value)}
+					{#each BRAND_THEMES as t, i (t.value)}
 						{@const active = brandTheme.current === t.value}
 						<button
+							bind:this={radios[i]}
 							type="button"
 							role="radio"
 							aria-checked={active}
+							tabindex={active ? 0 : -1}
 							onclick={() => brandTheme.set(t.value)}
+							onkeydown={(e) => onRadioKeydown(e, i)}
 							class="rounded-lg border px-2 py-1.5 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-ring {active
 								? 'border-primary bg-primary/10'
 								: 'border-border hover:bg-muted'}"

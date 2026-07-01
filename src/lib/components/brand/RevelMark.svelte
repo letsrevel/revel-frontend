@@ -8,8 +8,15 @@
 		gradient?: boolean;
 		class?: string;
 		title?: string;
+		/** Decorative: hide from assistive tech (use when adjacent text names it). */
+		decorative?: boolean;
 	}
-	const { gradient = true, class: className = '', title = 'Revel' }: Props = $props();
+	const {
+		gradient = true,
+		class: className = '',
+		title = 'Revel',
+		decorative = false
+	}: Props = $props();
 
 	// Stable, SSR-safe unique id (no Math.random → no hydration mismatch).
 	const uid = $props.id();
@@ -19,8 +26,9 @@
 	viewBox="0 0 816 926"
 	xmlns="http://www.w3.org/2000/svg"
 	class={className}
-	role="img"
-	aria-label={title}
+	role={decorative ? undefined : 'img'}
+	aria-label={decorative ? undefined : title}
+	aria-hidden={decorative ? 'true' : undefined}
 >
 	{#if gradient}
 		<defs>

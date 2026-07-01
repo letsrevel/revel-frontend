@@ -3,6 +3,9 @@
 	// typeface (Nata Sans under a brand theme). Text uses currentColor so it
 	// adapts to every theme's foreground; the trailing period picks up the accent.
 	// Used as the header home button. Delete with the rest of the experiment.
+	//
+	// The mark is decorative here: the visible "let's revel." text is the
+	// accessible name (WCAG 2.5.3 Label in Name), so the R must not add "Revel".
 	import RevelMark from './RevelMark.svelte';
 
 	interface Props {
@@ -12,7 +15,7 @@
 </script>
 
 <span class="inline-flex items-center gap-2 {className}">
-	<RevelMark class="h-7 w-auto" />
+	<RevelMark decorative class="h-7 w-auto" />
 	<span class="text-2xl leading-none tracking-tight">
 		<span class="font-light">let’s</span>
 		<span class="font-semibold">revel</span><span class="font-semibold text-accent">.</span>
