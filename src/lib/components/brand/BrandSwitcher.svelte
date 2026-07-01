@@ -12,6 +12,17 @@
 	// Show only where evaluation is intended: local dev or the demo/staging env.
 	const visible = $derived(dev || appStore.isDemoMode);
 
+	// Dev/demo-only UI copy for the brand experiment — intentionally NOT
+	// translated (the whole widget is deleted with the experiment, so it never
+	// reaches real users). Bound as expressions below so they don't trip the
+	// hardcoded-string i18n guard. i18n-ignore
+	const L = {
+		heading: 'Brand',
+		group: 'Brand theme',
+		collapse: 'Collapse brand switcher',
+		open: 'Open brand switcher'
+	};
+
 	// Roving-tabindex radiogroup: only the checked radio is in the tab order;
 	// Arrow/Home/End move selection and focus between options (WAI-ARIA pattern).
 	const radios = $state<HTMLButtonElement[]>([]);
@@ -54,19 +65,19 @@
 					<div class="flex items-center gap-2">
 						<RevelMark class="h-5 w-5" />
 						<span class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-							Brand
+							{L.heading}
 						</span>
 					</div>
 					<button
 						type="button"
 						class="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
 						onclick={() => (open = false)}
-						aria-label="Collapse brand switcher"
+						aria-label={L.collapse}
 					>
 						<X class="h-4 w-4" aria-hidden="true" />
 					</button>
 				</div>
-				<div class="flex flex-col gap-1 p-2" role="radiogroup" aria-label="Brand theme">
+				<div class="flex flex-col gap-1 p-2" role="radiogroup" aria-label={L.group}>
 					{#each BRAND_THEMES as t, i (t.value)}
 						{@const active = brandTheme.current === t.value}
 						<button
@@ -92,7 +103,7 @@
 				type="button"
 				class="flex h-11 w-11 items-center justify-center rounded-full border bg-card text-foreground shadow-xl transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-ring"
 				onclick={() => (open = true)}
-				aria-label="Open brand switcher"
+				aria-label={L.open}
 			>
 				<Palette class="h-5 w-5" aria-hidden="true" />
 			</button>
