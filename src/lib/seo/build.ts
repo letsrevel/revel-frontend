@@ -116,8 +116,23 @@ function getSeriesImage(series: EventSeriesRetrieveSchema): string | undefined {
 	return first ? getBackendUrl(first) : undefined;
 }
 
+const DEFAULT_OG_IMAGE_ALT = 'Revel — Event Management for Communities';
+
 function defaultOgImage(origin: string): string {
 	return `${origin}/og-image.png`;
+}
+
+// Full OG image metadata for the default (non-event/non-org) social card.
+// Dimensions are known and fixed for the static asset, so we advertise them
+// to let unfurlers render the preview without first fetching the image.
+function defaultOgImageMeta(origin: string) {
+	return {
+		image: defaultOgImage(origin),
+		imageAlt: DEFAULT_OG_IMAGE_ALT,
+		imageWidth: 1200,
+		imageHeight: 630,
+		imageType: 'image/png'
+	} as const;
 }
 
 export function buildSeo(input: BuildSeoInput): SeoConfig {
@@ -128,7 +143,7 @@ export function buildSeo(input: BuildSeoInput): SeoConfig {
 
 	switch (input.kind) {
 		case 'home': {
-			const title = 'Revel — Community-Focused Event Management';
+			const title = 'Revel — Event Management for Communities';
 			const description =
 				'Discover community events, connect with organizers, and create unforgettable experiences. Open-source event management and ticketing platform.';
 			return {
@@ -137,19 +152,20 @@ export function buildSeo(input: BuildSeoInput): SeoConfig {
 				canonical,
 				og: {
 					type: 'website',
-					title,
+					title: 'Event Management for Communities',
 					description,
 					url: canonical,
-					image: defaultOgImage(origin),
+					...defaultOgImageMeta(origin),
 					siteName: SITE_NAME,
 					locale: ogLocale,
 					localeAlternate: alts
 				},
 				twitter: {
 					card: 'summary_large_image',
-					title: 'Revel — Community Events',
+					title: 'Event Management for Communities',
 					description: 'Discover community events and create unforgettable experiences',
 					image: defaultOgImage(origin),
+					imageAlt: DEFAULT_OG_IMAGE_ALT,
 					site: TWITTER_SITE
 				},
 				hreflang: sameUrlHreflang(canonical),
@@ -170,7 +186,7 @@ export function buildSeo(input: BuildSeoInput): SeoConfig {
 					title,
 					description,
 					url: canonical,
-					image: defaultOgImage(origin),
+					...defaultOgImageMeta(origin),
 					siteName: SITE_NAME,
 					locale: ogLocale,
 					localeAlternate: alts
@@ -180,6 +196,7 @@ export function buildSeo(input: BuildSeoInput): SeoConfig {
 					title,
 					description: 'Discover community events near you',
 					image: defaultOgImage(origin),
+					imageAlt: DEFAULT_OG_IMAGE_ALT,
 					site: TWITTER_SITE
 				},
 				hreflang: sameUrlHreflang(canonical),
@@ -214,7 +231,7 @@ export function buildSeo(input: BuildSeoInput): SeoConfig {
 					title,
 					description,
 					url: canonical,
-					image: defaultOgImage(origin),
+					...defaultOgImageMeta(origin),
 					siteName: SITE_NAME,
 					locale: ogLocale,
 					localeAlternate: alts
@@ -224,6 +241,7 @@ export function buildSeo(input: BuildSeoInput): SeoConfig {
 					title,
 					description: 'Browse community organizations near you',
 					image: defaultOgImage(origin),
+					imageAlt: DEFAULT_OG_IMAGE_ALT,
 					site: TWITTER_SITE
 				},
 				hreflang: sameUrlHreflang(canonical),
@@ -249,6 +267,7 @@ export function buildSeo(input: BuildSeoInput): SeoConfig {
 					description: desc || description,
 					url: canonical,
 					image,
+					imageAlt: image ? event.name : undefined,
 					siteName: SITE_NAME,
 					locale: ogLocale,
 					localeAlternate: alts
@@ -258,6 +277,7 @@ export function buildSeo(input: BuildSeoInput): SeoConfig {
 					title: event.name,
 					description: truncate(desc, 200) || `Join ${event.name}`,
 					image,
+					imageAlt: image ? event.name : undefined,
 					site: TWITTER_SITE
 				},
 				hreflang: sameUrlHreflang(canonical),
@@ -290,6 +310,7 @@ export function buildSeo(input: BuildSeoInput): SeoConfig {
 					description: desc || description,
 					url: canonical,
 					image,
+					imageAlt: image ? org.name : undefined,
 					siteName: SITE_NAME,
 					locale: ogLocale,
 					localeAlternate: alts
@@ -299,6 +320,7 @@ export function buildSeo(input: BuildSeoInput): SeoConfig {
 					title: org.name,
 					description: truncate(desc, 200) || `${org.name} on Revel`,
 					image,
+					imageAlt: image ? org.name : undefined,
 					site: TWITTER_SITE
 				},
 				hreflang: sameUrlHreflang(canonical),
@@ -331,6 +353,7 @@ export function buildSeo(input: BuildSeoInput): SeoConfig {
 					description: desc || description,
 					url: canonical,
 					image,
+					imageAlt: image ? `${series.name} | ${series.organization.name}` : undefined,
 					siteName: SITE_NAME,
 					locale: ogLocale,
 					localeAlternate: alts
@@ -340,6 +363,7 @@ export function buildSeo(input: BuildSeoInput): SeoConfig {
 					title: `${series.name} | ${series.organization.name}`,
 					description: truncate(desc, 200) || description,
 					image,
+					imageAlt: image ? `${series.name} | ${series.organization.name}` : undefined,
 					site: TWITTER_SITE
 				},
 				hreflang: sameUrlHreflang(canonical),
@@ -366,7 +390,7 @@ export function buildSeo(input: BuildSeoInput): SeoConfig {
 					title,
 					description,
 					url: canonical,
-					image: defaultOgImage(origin),
+					...defaultOgImageMeta(origin),
 					siteName: SITE_NAME,
 					locale: ogLocale,
 					localeAlternate: alts
@@ -376,6 +400,7 @@ export function buildSeo(input: BuildSeoInput): SeoConfig {
 					title,
 					description,
 					image: defaultOgImage(origin),
+					imageAlt: DEFAULT_OG_IMAGE_ALT,
 					site: TWITTER_SITE
 				},
 				hreflang: landingPageHreflang(origin, input.slug),
@@ -403,7 +428,7 @@ export function buildSeo(input: BuildSeoInput): SeoConfig {
 					title: titles[input.doc],
 					description: titles[input.doc],
 					url: canonical,
-					image: defaultOgImage(origin),
+					...defaultOgImageMeta(origin),
 					siteName: SITE_NAME,
 					locale: ogLocale,
 					localeAlternate: alts
@@ -438,7 +463,7 @@ export function buildSeo(input: BuildSeoInput): SeoConfig {
 					title: t,
 					description: t,
 					url: canonical,
-					image: defaultOgImage(origin),
+					...defaultOgImageMeta(origin),
 					siteName: SITE_NAME,
 					locale: ogLocale,
 					localeAlternate: alts

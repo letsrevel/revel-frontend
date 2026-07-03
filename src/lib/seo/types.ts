@@ -13,6 +13,10 @@ export interface SeoConfig {
 		description: string;
 		url: string;
 		image?: string;
+		imageAlt?: string;
+		imageWidth?: number;
+		imageHeight?: number;
+		imageType?: string;
 		siteName: string;
 		locale: string;
 		localeAlternate: string[];
@@ -22,6 +26,7 @@ export interface SeoConfig {
 		title: string;
 		description: string;
 		image?: string;
+		imageAlt?: string;
 		site: string;
 	};
 	hreflang: Array<{ lang: Lang | typeof import('./constants').X_DEFAULT; href: string }>;
