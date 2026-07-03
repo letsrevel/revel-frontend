@@ -27,6 +27,18 @@
 	{/each}
 	{#if config.og.image}
 		<meta property="og:image" content={config.og.image} />
+		{#if config.og.imageAlt}
+			<meta property="og:image:alt" content={config.og.imageAlt} />
+		{/if}
+		{#if config.og.imageWidth}
+			<meta property="og:image:width" content={String(config.og.imageWidth)} />
+		{/if}
+		{#if config.og.imageHeight}
+			<meta property="og:image:height" content={String(config.og.imageHeight)} />
+		{/if}
+		{#if config.og.imageType}
+			<meta property="og:image:type" content={config.og.imageType} />
+		{/if}
 	{/if}
 
 	<meta name="twitter:card" content={config.twitter.card} />
@@ -35,6 +47,9 @@
 	<meta name="twitter:site" content={config.twitter.site} />
 	{#if config.twitter.image}
 		<meta name="twitter:image" content={config.twitter.image} />
+		{#if config.twitter.imageAlt}
+			<meta name="twitter:image:alt" content={config.twitter.imageAlt} />
+		{/if}
 	{/if}
 
 	{#each config.hreflang as alt (alt.lang)}

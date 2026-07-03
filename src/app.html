@@ -17,13 +17,13 @@
 			title="Revel"
 			href="/opensearch.xml"
 		/>
-		<!-- Open Graph preview image -->
-		<meta property="og:image" content="%sveltekit.assets%/og-image.png" />
-		<meta property="og:image:width" content="1200" />
-		<meta property="og:image:height" content="630" />
-		<meta property="og:image:type" content="image/png" />
-		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="twitter:image" content="%sveltekit.assets%/og-image.png" />
+		<!--
+			Open Graph / Twitter image tags are emitted per-page by SeoHead.svelte
+			(src/lib/seo) so each event/org share carries its own cover. They used
+			to be hardcoded here too, which double-emitted og:image and made
+			unfurlers pick the generic card over the specific one. SeoHead's
+			buildSeo() falls back to /og-image.png for all non-event/org pages.
+		-->
 		<!--
 			Anti-FOUC: apply the dark class before first paint so dark-mode users
 			never see a light flash on SSR loads (#440). mode-watcher injects an

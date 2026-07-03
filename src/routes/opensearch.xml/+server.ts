@@ -18,7 +18,6 @@ export const GET: RequestHandler = async ({ url }) => {
   <Url type="text/html" method="get" template="${baseUrl}/events?search={searchTerms}"/>
   <Url type="application/rss+xml" method="get" template="${baseUrl}/feed.xml"/>
   <LongName>Revel - Community Event Platform</LongName>
-  <Image width="16" height="16" type="image/x-icon">${baseUrl}/favicon.ico</Image>
   <Image width="64" height="64" type="image/png">${baseUrl}/favicon.png</Image>
   <Query role="example" searchTerms="music"/>
   <Developer>Revel Team</Developer>
