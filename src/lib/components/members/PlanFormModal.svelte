@@ -35,7 +35,7 @@
 		// Track `open` so reopening the create modal after abandoning a prior
 		// attempt resets the fields. Tracking `plan` alone misses the transition
 		// from closed → open when plan is null both times.
-		open;
+		void open;
 		if (plan) {
 			name = plan.name;
 			description = plan.description ?? '';

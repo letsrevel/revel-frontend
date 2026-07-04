@@ -11,7 +11,7 @@
 		CardHeader,
 		CardTitle
 	} from '$lib/components/ui/card';
-	import { Calendar, MapPin, CheckCircle, Clock, Loader2, Ticket } from 'lucide-svelte';
+	import { Calendar, MapPin, CheckCircle, Loader2, Ticket } from 'lucide-svelte';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { eventpublicdiscoveryClaimInvitation } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { page } from '$app/state';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		eventpublicticketsTicketCheckout,

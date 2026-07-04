@@ -2,7 +2,6 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { Button } from '$lib/components/ui/button';
 	import {
 		Card,
 		CardContent,

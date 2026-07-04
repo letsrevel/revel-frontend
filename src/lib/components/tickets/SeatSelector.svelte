@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { VenueSeatSchema } from '$lib/api/generated/types.gen';
-	import { Armchair, Accessibility, EyeOff, Check } from 'lucide-svelte';
+	import { Accessibility, EyeOff, Check } from 'lucide-svelte';
 
 	interface Props {
 		seats: VenueSeatSchema[];

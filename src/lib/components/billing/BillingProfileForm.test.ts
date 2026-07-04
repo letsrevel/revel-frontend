@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
+import { QueryClient } from '@tanstack/svelte-query';
 import BillingProfileForm from './BillingProfileForm.svelte';
 
 // Mock API functions

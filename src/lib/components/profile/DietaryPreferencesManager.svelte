@@ -8,7 +8,7 @@
 		dietaryUpdateDietaryPreference
 	} from '$lib/api';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import { Plus, Trash2, Info, Loader2 } from 'lucide-svelte';
+	import { Plus, Trash2, Loader2 } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import type {
 		DietaryPreferenceSchema,
