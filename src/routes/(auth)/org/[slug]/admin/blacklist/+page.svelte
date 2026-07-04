@@ -226,7 +226,6 @@
 			});
 			editModalOpen = false;
 			editEntry = null;
-			entryToDelete = null;
 			toast.success(m['blacklistAdminPage.toastRemoved']());
 		},
 		onError: () => {
