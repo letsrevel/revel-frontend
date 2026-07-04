@@ -226,10 +226,10 @@ export function formatRelativeTime(dateString: string): string {
 
 	for (const [unit, ms] of units) {
 		if (Math.abs(diffMs) >= ms) {
-			return rtf.format(Math.round(diffMs / ms), unit);
+			return rtf.format(Math.trunc(diffMs / ms), unit);
 		}
 	}
-	return rtf.format(Math.round(diffMs / 1000), 'second');
+	return rtf.format(Math.trunc(diffMs / 1000), 'second');
 }
 
 /**
