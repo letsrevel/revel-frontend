@@ -1,4 +1,5 @@
 import type { Handle, HandleFetch } from '@sveltejs/kit';
+import { z } from 'zod';
 import { sequence } from '@sveltejs/kit/hooks';
 import { env } from '$env/dynamic/private';
 import { i18nHandle } from '$lib/i18n';
@@ -31,10 +32,27 @@ startMetricsServer();
  */
 
 /**
- * Decode JWT token to extract user information
- * Note: This is safe as JWT is just base64 encoded, not encrypted
+ * Zod schema for the JWT claims we rely on. Every field is optional because the
+ * payload is untrusted data. `.passthrough()` keeps extra standard claims
+ * (iat, jti, …) without requiring them.
  */
-function decodeJWT(token: string): any | null {
+const jwtPayloadSchema = z
+	.object({
+		user_id: z.string().optional(),
+		sub: z.string().optional(),
+		email: z.string().optional(),
+		exp: z.number().optional()
+	})
+	.passthrough();
+
+type JwtPayload = z.infer<typeof jwtPayloadSchema>;
+
+/**
+ * Decode JWT token to extract user information.
+ * The decoded payload is validated at runtime via Zod so only known claim
+ * shapes are accepted. Returns null on structural or validation failure.
+ */
+function decodeJWT(token: string): JwtPayload | null {
 	try {
 		const parts = token.split('.');
 		if (parts.length !== 3) return null;
@@ -42,7 +60,14 @@ function decodeJWT(token: string): any | null {
 		// Decode the payload (second part)
 		const payload = parts[1];
 		const decoded = Buffer.from(payload, 'base64url').toString('utf-8');
-		return JSON.parse(decoded);
+		const parsed = jwtPayloadSchema.safeParse(JSON.parse(decoded));
+
+		if (!parsed.success) {
+			log.error('jwt_payload_invalid', { issues: parsed.error.issues });
+			return null;
+		}
+
+		return parsed.data;
 	} catch (error) {
 		log.error('jwt_decode_failed', { error });
 		return null;
@@ -96,9 +121,10 @@ async function refreshSession(
 		);
 
 		const decoded = decodeJWT(data.access);
-		if (decoded) {
+		const id = decoded?.user_id || decoded?.sub;
+		if (id) {
 			event.locals.user = {
-				id: decoded.user_id || decoded.sub,
+				id,
 				email: decoded.email,
 				accessToken: data.access
 			};
@@ -251,6 +277,17 @@ const handleCsp: Handle = async ({ event, resolve }) => {
 
 /**
  * Authentication hook
+ *
+ * Decodes the access token from the `access_token` cookie to populate
+ * `event.locals.user` for SSR convenience (page loads, layout data, logging).
+ * The payload is Zod-validated at runtime; expired tokens are rejected.
+ *
+ * NOTE — no signature verification is performed here, by design. The frontend
+ * does not hold the JWT signing secret. Every API call made during SSR (and all
+ * client-side calls) forward the raw cookie value as `Authorization: Bearer …`
+ * to the backend, which is the sole authoritative verifier of the signature and
+ * all registered claims. A forged cookie can influence SSR rendering but cannot
+ * grant access to any protected resource: the backend will 401 the request.
  */
 const handleAuth: Handle = async ({ event, resolve }) => {
 	const accessToken = event.cookies.get('access_token');
@@ -268,11 +305,15 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	// 401 every SSR call, which surfaced as public pages failing to load until
 	// the user manually logged out.
 	const decoded = accessToken ? decodeJWT(accessToken) : null;
+	const userId = decoded?.user_id || decoded?.sub;
 
-	if (accessToken && decoded && !isAccessTokenExpired(decoded)) {
-		// Usable access token — populate locals.user directly.
+	if (accessToken && decoded && userId && !isAccessTokenExpired(decoded)) {
+		// Usable access token — populate locals.user directly. Requiring an id
+		// (user_id/sub) here means a token with no identity claim is treated as
+		// unusable and routed to refresh/clear below, rather than producing a
+		// `locals.user` with an undefined id.
 		event.locals.user = {
-			id: decoded.user_id || decoded.sub,
+			id: userId,
 			email: decoded.email,
 			accessToken
 		};
@@ -287,7 +328,9 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	} else if (accessToken) {
 		// Stale/malformed access token and nothing to refresh with — clear it so
 		// the request (and any public SSR load) proceeds anonymously.
-		log.warning('jwt_unusable', { reason: decoded ? 'expired' : 'malformed' });
+		log.warning('jwt_unusable', {
+			reason: !decoded ? 'malformed' : !userId ? 'no_identity_claim' : 'expired'
+		});
 		event.cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
 	}
 
