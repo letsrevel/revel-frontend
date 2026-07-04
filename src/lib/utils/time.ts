@@ -7,98 +7,42 @@ import { formatDate } from './date';
 
 /**
  * Format a timestamp as relative time (e.g., "2 hours ago", "yesterday", "3 days ago")
+ *
+ * Falls back to an absolute date for deltas longer than ~30 days.
+ * Uses a "now" band for deltas under 30 seconds.
+ *
  * @param dateString ISO 8601 date-time string
  * @returns Relative time string
  */
 export function formatRelativeTime(dateString: string): string {
-	const date = new Date(dateString);
-	const now = new Date();
-	const diffMs = now.getTime() - date.getTime();
-	const diffSeconds = Math.floor(diffMs / 1000);
-	const diffMinutes = Math.floor(diffMs / (1000 * 60));
-	const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-	const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+	const diffMs = new Date(dateString).getTime() - Date.now();
+	const absDiffMs = Math.abs(diffMs);
 
-	const locale = getLocale();
+	// More than a month: fallback to absolute date
+	if (absDiffMs > 30 * 24 * 60 * 60 * 1000) {
+		return formatDate(dateString);
+	}
+
+	// Initialize standard formatter.
+	// `numeric: 'auto'` handles lexical conversions natively (e.g., "-1 day" -> "yesterday" / "gestern" / "ieri")
+	const rtf = new Intl.RelativeTimeFormat(getLocale(), { numeric: 'auto', style: 'long' });
 
 	// Just now (less than 30 seconds)
-	if (diffSeconds < 30) {
-		return locale === 'en' ? 'just now' : locale === 'de' ? 'gerade eben' : 'proprio ora';
+	if (absDiffMs < 30 * 1000) {
+		return rtf.format(0, 'second'); // "now" / "jetzt" / "ora"
 	}
 
-	// Less than a minute
-	if (diffMinutes < 1) {
-		return locale === 'en'
-			? `${diffSeconds} seconds ago`
-			: locale === 'de'
-				? `vor ${diffSeconds} Sekunden`
-				: `${diffSeconds} secondi fa`;
-	}
+	const units: [Intl.RelativeTimeFormatUnit, number][] = [
+		['week', 7 * 24 * 60 * 60 * 1000],
+		['day', 24 * 60 * 60 * 1000],
+		['hour', 60 * 60 * 1000],
+		['minute', 60 * 1000]
+	];
 
-	// Less than an hour
-	if (diffMinutes < 60) {
-		const unit = locale === 'en' ? 'minute' : locale === 'de' ? 'Minute' : 'minuto';
-		const units = locale === 'en' ? 'minutes' : locale === 'de' ? 'Minuten' : 'minuti';
-		const word = locale === 'en' ? 'ago' : locale === 'de' ? 'vor' : 'fa';
-
-		if (locale === 'de') {
-			return `vor ${diffMinutes} ${diffMinutes === 1 ? unit : units}`;
+	for (const [unit, ms] of units) {
+		if (absDiffMs >= ms) {
+			return rtf.format(Math.trunc(diffMs / ms), unit);
 		}
-
-		return locale === 'en'
-			? `${diffMinutes} ${diffMinutes === 1 ? unit : units} ago`
-			: `${diffMinutes} ${diffMinutes === 1 ? unit : units} fa`;
 	}
-
-	// Less than a day
-	if (diffHours < 24) {
-		const unit = locale === 'en' ? 'hour' : locale === 'de' ? 'Stunde' : 'ora';
-		const units = locale === 'en' ? 'hours' : locale === 'de' ? 'Stunden' : 'ore';
-		const word = locale === 'en' ? 'ago' : locale === 'de' ? 'vor' : 'fa';
-
-		if (locale === 'de') {
-			return `vor ${diffHours} ${diffHours === 1 ? unit : units}`;
-		}
-
-		return locale === 'en'
-			? `${diffHours} ${diffHours === 1 ? unit : units} ago`
-			: `${diffHours} ${diffHours === 1 ? unit : units} fa`;
-	}
-
-	// Yesterday
-	if (diffDays === 1) {
-		return locale === 'en' ? 'yesterday' : locale === 'de' ? 'gestern' : 'ieri';
-	}
-
-	// Less than a week
-	if (diffDays < 7) {
-		const unit = locale === 'en' ? 'day' : locale === 'de' ? 'Tag' : 'giorno';
-		const units = locale === 'en' ? 'days' : locale === 'de' ? 'Tagen' : 'giorni';
-		const word = locale === 'en' ? 'ago' : locale === 'de' ? 'vor' : 'fa';
-
-		if (locale === 'de') {
-			return `vor ${diffDays} ${units}`;
-		}
-
-		return locale === 'en' ? `${diffDays} ${units} ago` : `${diffDays} ${units} fa`;
-	}
-
-	// Less than a month
-	const diffWeeks = Math.floor(diffDays / 7);
-	if (diffWeeks < 4) {
-		const unit = locale === 'en' ? 'week' : locale === 'de' ? 'Woche' : 'settimana';
-		const units = locale === 'en' ? 'weeks' : locale === 'de' ? 'Wochen' : 'settimane';
-		const word = locale === 'en' ? 'ago' : locale === 'de' ? 'vor' : 'fa';
-
-		if (locale === 'de') {
-			return `vor ${diffWeeks} ${diffWeeks === 1 ? unit : units}`;
-		}
-
-		return locale === 'en'
-			? `${diffWeeks} ${diffWeeks === 1 ? unit : units} ago`
-			: `${diffWeeks} ${diffWeeks === 1 ? unit : units} fa`;
-	}
-
-	// More than a month: show absolute date
-	return formatDate(dateString);
+	return rtf.format(Math.trunc(diffMs / 1000), 'second');
 }
