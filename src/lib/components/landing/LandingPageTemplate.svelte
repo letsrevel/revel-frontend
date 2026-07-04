@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { LandingPageContent, LandingPageFeature } from '$lib/data/landing-pages';
-	import { landingPages, type  } from '$lib/data/landing-pages';
+	import { landingPages } from '$lib/data/landing-pages';
 	import { Button } from '$lib/components/ui/button';
 	import {
 		Ticket,
