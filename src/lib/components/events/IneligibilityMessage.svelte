@@ -116,13 +116,6 @@
 	});
 
 	/**
-	 * Check if the reason is specifically about application deadline
-	 */
-	const isApplicationDeadlinePassed = $derived.by(() => {
-		return eligibility.reason?.includes('application deadline has passed');
-	});
-
-	/**
 	 * Get the Lucide icon component for the current next_step
 	 */
 	function getIconComponent(nextStep: string | null | undefined) {

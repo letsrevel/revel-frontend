@@ -22,7 +22,6 @@
 
 	// Logo with fallback hierarchy: event -> series -> organization
 	const logoPath = $derived(getEventLogo(event));
-	const logoUrl = $derived(getImageUrl(logoPath));
 
 	// Compute location display - prioritize venue info when available
 	const locationDisplay = $derived.by(() => {

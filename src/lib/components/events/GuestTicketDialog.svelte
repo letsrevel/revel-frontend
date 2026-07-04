@@ -123,7 +123,6 @@
 	const seatAssignmentMode = $derived<SeatAssignmentMode>(
 		(tier as any).seat_assignment_mode ?? 'none'
 	);
-	const hasSeatedTier = $derived(seatAssignmentMode !== 'none');
 	const isUserChoiceSeat = $derived(seatAssignmentMode === 'user_choice');
 	const isRandomSeat = $derived(seatAssignmentMode === 'random');
 
@@ -174,10 +173,8 @@
 	const showGuestNames = $derived(effectiveMaxQuantity > 1);
 
 	// Check if all guest names are filled
-	const allGuestNamesFilled = $derived(guestNames.every((name) => name.trim().length > 0));
 
 	// Computed: whether seat selection is valid (need as many seats as quantity)
-	const seatSelectionValid = $derived(!isUserChoiceSeat || selectedSeatIds.length === quantity);
 
 	// PWYC min/max
 	const minAmount = $derived(() => {

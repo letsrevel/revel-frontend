@@ -23,7 +23,7 @@
 			byRow.get(row)!.push(seat);
 		}
 		// Sort seats within each row by number
-		for (const [row, rowSeats] of byRow) {
+		for (const [, rowSeats] of byRow) {
 			rowSeats.sort((a, b) => (a.number || 0) - (b.number || 0));
 		}
 		// Sort rows alphabetically

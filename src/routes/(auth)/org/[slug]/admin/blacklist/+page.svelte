@@ -69,7 +69,6 @@
 	let editModalOpen = $state(false);
 
 	// Delete confirmation states
-	let entryToDelete = $state<BlacklistEntrySchema | null>(null);
 	let whitelistEntryToDelete = $state<WhitelistEntrySchema | null>(null);
 
 	// Fetch blacklist entries
