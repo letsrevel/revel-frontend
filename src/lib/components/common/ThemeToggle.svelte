@@ -43,9 +43,9 @@
 		aria-expanded={dropdownOpen}
 		aria-haspopup="true"
 	>
-		{#if $mode === 'light'}
+		{#if mode.current === 'light'}
 			<Sun class="h-5 w-5" aria-hidden="true" />
-		{:else if $mode === 'dark'}
+		{:else if mode.current === 'dark'}
 			<Moon class="h-5 w-5" aria-hidden="true" />
 		{:else}
 			<Monitor class="h-5 w-5" aria-hidden="true" />
@@ -63,7 +63,7 @@
 				{@const Icon = theme.icon}
 				<button
 					type="button"
-					class="flex w-full items-center gap-3 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground {$mode ===
+					class="flex w-full items-center gap-3 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground {mode.current ===
 					theme.value
 						? 'bg-accent text-accent-foreground'
 						: 'text-popover-foreground'}"
