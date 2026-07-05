@@ -79,7 +79,7 @@
 		"date-fns": "^4.1.0",
 		"heic2any": "^0.0.4",
 		"html5-qrcode": "^2.3.8",
-		"isomorphic-dompurify": "^3.0.0",
+		"isomorphic-dompurify": "^3.18.0",
 		"lucide-svelte": "^0.469.0",
 		"marked": "^17.0.1",
 		"mode-watcher": "^0.4.1",
