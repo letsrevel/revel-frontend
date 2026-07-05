@@ -65,8 +65,9 @@
 		isOpen = false;
 
 		// Update cookie (for non-logged-in users and SSR)
-		document.cookie = `user_language=${lang}; path=/; max-age=31536000; SameSite=Lax`;
-		document.cookie = `${cookieName}=${lang}; path=/; max-age=31536000; SameSite=Lax`;
+		const cookieAttrs = 'path=/; max-age=31536000; SameSite=Lax';
+		document.cookie = `user_language=${lang}; ${cookieAttrs}`;
+		document.cookie = `${cookieName}=${lang}; ${cookieAttrs}`;
 
 		// If user is logged in, persist to backend
 		// IMPORTANT: We must await this call before invalidateAll() to prevent a race condition.
