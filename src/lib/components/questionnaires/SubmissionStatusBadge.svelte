@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { Clock, Check, X, CheckCheck } from 'lucide-svelte';
+	import { Clock, Check, X, CheckCheck } from '@lucide/svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import { cn } from '$lib/utils/cn';
 	import type { SubmissionBadgeStatus } from '$lib/utils/questionnaire-types';

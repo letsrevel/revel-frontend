@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { Globe } from 'lucide-svelte';
+	import { Globe } from '@lucide/svelte';
 	import { formatEventTimezoneLabel } from '$lib/utils/date';
 
 	interface Props {

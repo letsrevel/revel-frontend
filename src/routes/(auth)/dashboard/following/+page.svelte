@@ -10,7 +10,7 @@
 		eventseriesUnfollowEventSeries,
 		eventseriesUpdateEventSeriesFollow
 	} from '$lib/api/generated/sdk.gen';
-	import { Heart, Building2, Calendar, Loader2, ChevronLeft, ChevronRight } from 'lucide-svelte';
+	import { Heart, Building2, Calendar, Loader2, ChevronLeft, ChevronRight } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { toast } from 'svelte-sonner';

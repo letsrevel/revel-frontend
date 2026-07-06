@@ -8,7 +8,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
 	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
-	import { CheckCircle, Loader2 } from 'lucide-svelte';
+	import { CheckCircle, Loader2 } from '@lucide/svelte';
 
 	interface Props {
 		request: OrganizationMembershipRequestRetrieve | null;

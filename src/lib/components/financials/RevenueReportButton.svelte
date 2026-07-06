@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { toast } from 'svelte-sonner';
 	import { Button } from '$lib/components/ui/button';
-	import { Download, Loader2 } from 'lucide-svelte';
+	import { Download, Loader2 } from '@lucide/svelte';
 	import {
 		organizationadminrevenueCreateRevenueReport,
 		organizationadminrevenueGetRevenueReport

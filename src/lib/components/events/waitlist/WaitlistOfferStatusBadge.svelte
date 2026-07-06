@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { WaitlistOfferStatus } from '$lib/api/generated/types.gen';
-	import { Ban, Check, Clock, X } from 'lucide-svelte';
+	import { Ban, Check, Clock, X } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 
 	interface Props {

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { appStore } from '$lib/stores/app.svelte';
-	import { AlertCircle } from 'lucide-svelte';
+	import { AlertCircle } from '@lucide/svelte';
 
 	// Get demo mode from store
 	const isDemoMode = $derived(appStore.isDemoMode);

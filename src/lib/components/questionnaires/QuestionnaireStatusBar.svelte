@@ -8,7 +8,7 @@
 		CardHeader,
 		CardTitle
 	} from '$lib/components/ui/card';
-	import { AlertTriangle, FileCheck, FileEdit, Send } from 'lucide-svelte';
+	import { AlertTriangle, FileCheck, FileEdit, Send } from '@lucide/svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import type { QuestionnaireStatus } from '$lib/api/generated/types.gen';
 

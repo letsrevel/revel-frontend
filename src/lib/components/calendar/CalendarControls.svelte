@@ -10,7 +10,7 @@
 		buildCalendarParams
 	} from '$lib/utils/calendar';
 	import { Button } from '$lib/components/ui/button';
-	import { ChevronLeft, ChevronRight, Calendar } from 'lucide-svelte';
+	import { ChevronLeft, ChevronRight, Calendar } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {

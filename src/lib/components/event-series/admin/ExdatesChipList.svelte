@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { Plus } from 'lucide-svelte';
+	import { Plus } from '@lucide/svelte';
 	import { goto } from '$app/navigation';
 	import { formatEventDate } from '$lib/utils/date';
 	import { parseExdates } from '$lib/utils/recurrence';

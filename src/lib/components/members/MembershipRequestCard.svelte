@@ -13,7 +13,7 @@
 		DialogHeader,
 		DialogTitle
 	} from '$lib/components/ui/dialog';
-	import { CheckCircle, XCircle, MessageSquare } from 'lucide-svelte';
+	import { CheckCircle, XCircle, MessageSquare } from '@lucide/svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 

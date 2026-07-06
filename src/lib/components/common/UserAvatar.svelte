@@ -3,7 +3,7 @@
 	import { cn } from '$lib/utils/cn';
 	import { getBackendUrl } from '$lib/config/api';
 	import * as Dialog from '$lib/components/ui/dialog';
-	import { X } from 'lucide-svelte';
+	import { X } from '@lucide/svelte';
 
 	/**
 	 * UserAvatar Component

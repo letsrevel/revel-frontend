@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { RefundPolicyTier, TicketTierSchema } from '$lib/api/generated/types.gen';
 	import { formatPrice } from '$lib/utils/format';
-	import { ShieldCheck, ShieldOff, Receipt } from 'lucide-svelte';
+	import { ShieldCheck, ShieldOff, Receipt } from '@lucide/svelte';
 
 	interface Props {
 		tier: TicketTierSchema;

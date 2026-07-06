@@ -10,7 +10,7 @@
 	} from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import DurationInput from '$lib/components/forms/DurationInput.svelte';
-	import { Loader2 } from 'lucide-svelte';
+	import { Loader2 } from '@lucide/svelte';
 
 	type Mode = 'issue' | 'reactivate';
 

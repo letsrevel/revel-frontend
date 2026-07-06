@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { toast } from 'svelte-sonner';
-	import { CreditCard, Copy, Check } from 'lucide-svelte';
+	import { CreditCard, Copy, Check } from '@lucide/svelte';
 
 	const isDemoMode = $derived(appStore.isDemoMode);
 	let copied = $state(false);

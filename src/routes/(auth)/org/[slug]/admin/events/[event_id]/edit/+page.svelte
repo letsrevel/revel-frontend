@@ -14,7 +14,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Tooltip from '$lib/components/ui/tooltip';
-	import { CheckCircle, XCircle, FileEdit, Trash2, Ban, MoreVertical, Copy } from 'lucide-svelte';
+	import { CheckCircle, XCircle, FileEdit, Trash2, Ban, MoreVertical, Copy } from '@lucide/svelte';
 
 	const { data }: { data: PageData } = $props();
 

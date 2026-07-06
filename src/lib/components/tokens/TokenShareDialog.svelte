@@ -8,7 +8,7 @@
 		DialogTitle
 	} from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
-	import { Copy, Check, Share2 } from 'lucide-svelte';
+	import { Copy, Check, Share2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 
 	interface Props {

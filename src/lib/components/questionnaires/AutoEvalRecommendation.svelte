@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Card } from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
-	import { AlertCircle, CheckCircle, XCircle, Sparkles } from 'lucide-svelte';
+	import { AlertCircle, CheckCircle, XCircle, Sparkles } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import { formatDateLongMonth } from '$lib/utils/date';
 	import type { EvaluationResponseSchema } from '$lib/api/generated';

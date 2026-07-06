@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
-	import { Gift, X, ChevronDown, Loader2, Check } from 'lucide-svelte';
+	import { Gift, X, ChevronDown, Loader2, Check } from '@lucide/svelte';
 	import { referralValidate } from '$lib/api/generated/sdk.gen';
 	import * as m from '$lib/paraglide/messages.js';
 

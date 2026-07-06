@@ -26,7 +26,7 @@
 		DialogTitle,
 		DialogDescription
 	} from '$lib/components/ui/dialog';
-	import { Plus, Search, Megaphone, Loader2, AlertTriangle } from 'lucide-svelte';
+	import { Plus, Search, Megaphone, Loader2, AlertTriangle } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { formatRelativeTime } from '$lib/utils/time';
 	import type { PageData } from './$types';

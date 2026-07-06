@@ -11,7 +11,7 @@
 	import DemoCardInfo from '$lib/components/common/DemoCardInfo.svelte';
 	import TicketConfirmationDialog from './TicketConfirmationDialog.svelte';
 	import TierCard from './TierCard.svelte';
-	import { Ticket } from 'lucide-svelte';
+	import { Ticket } from '@lucide/svelte';
 
 	interface Props {
 		open: boolean;

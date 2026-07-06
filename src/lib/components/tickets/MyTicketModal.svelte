@@ -17,7 +17,7 @@
 		ChevronLeft,
 		ChevronRight,
 		X
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import QRCode from 'qrcode';
 	import { formatDateTime } from '$lib/utils/date';
 

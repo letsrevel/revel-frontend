@@ -8,12 +8,12 @@
 		ArrowRight,
 		Repeat,
 		ArrowDownUp,
-		Instagram,
-		Facebook,
 		Send,
 		AtSign,
 		Ticket
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
+	import Instagram from '$lib/components/icons/brand/Instagram.svelte';
+	import Facebook from '$lib/components/icons/brand/Facebook.svelte';
 	import ResourceCard from '$lib/components/resources/ResourceCard.svelte';
 	import OrgAnnouncements from '$lib/components/announcements/OrgAnnouncements.svelte';
 	import { EventCard, EventSeriesCard } from '$lib/components/events';

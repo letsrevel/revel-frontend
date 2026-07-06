@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import type { EventSeriesInListSchema } from '$lib/api/generated/types.gen';
-	import { Repeat, Calendar, Edit, Eye, Tag, Plus, Folder } from 'lucide-svelte';
+	import { Repeat, Calendar, Edit, Eye, Tag, Plus, Folder } from '@lucide/svelte';
 	import { getImageUrl } from '$lib/utils/url';
 	import NewSeriesPickerDialog from '$lib/components/event-series/admin/NewSeriesPickerDialog.svelte';
 

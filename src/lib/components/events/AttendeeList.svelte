@@ -7,7 +7,7 @@
 		eventpublicdetailsGetPronounDistribution
 	} from '$lib/api';
 	import type { VisibilityPreference } from '$lib/api/generated/types.gen';
-	import { Users, ChevronDown, ChevronUp, Loader2, Settings, BarChart3 } from 'lucide-svelte';
+	import { Users, ChevronDown, ChevronUp, Loader2, Settings, BarChart3 } from '@lucide/svelte';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 	import { slide } from 'svelte/transition';
 	import PronounDistributionChart from '$lib/components/common/PronounDistributionChart.svelte';

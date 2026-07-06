@@ -11,7 +11,7 @@
 		Check,
 		FileIcon,
 		FolderOpen
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { questionnairefileListFiles, questionnairefileDeleteFile } from '$lib/api/generated';
 	import type { QuestionnaireFileSchema } from '$lib/api/generated';

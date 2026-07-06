@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
-	import { X, Mail, AlertCircle, Loader2 } from 'lucide-svelte';
+	import { X, Mail, AlertCircle, Loader2 } from '@lucide/svelte';
 
 	interface Props {
 		show: boolean;

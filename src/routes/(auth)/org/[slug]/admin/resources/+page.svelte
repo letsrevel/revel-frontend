@@ -8,7 +8,7 @@
 	} from '$lib/api/generated/sdk.gen';
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { Plus, Search, Filter } from 'lucide-svelte';
+	import { Plus, Search, Filter } from '@lucide/svelte';
 	import ResourceList from '$lib/components/resources/ResourceList.svelte';
 	import ResourceModal from '$lib/components/resources/ResourceModal.svelte';
 

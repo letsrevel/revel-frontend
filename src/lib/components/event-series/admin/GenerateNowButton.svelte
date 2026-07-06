@@ -3,7 +3,7 @@
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
-	import { Loader2, RefreshCw } from 'lucide-svelte';
+	import { Loader2, RefreshCw } from '@lucide/svelte';
 	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 	import { toast } from 'svelte-sonner';
 	import { organizationadminrecurringeventsGenerateEvents } from '$lib/api/generated/sdk.gen';

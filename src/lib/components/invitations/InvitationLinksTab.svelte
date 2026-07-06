@@ -5,7 +5,7 @@
 		EventTokenCreateSchema,
 		EventTokenUpdateSchema
 	} from '$lib/api/generated/types.gen';
-	import { Search, Plus, Link, Loader2 } from 'lucide-svelte';
+	import { Search, Plus, Link, Loader2 } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';

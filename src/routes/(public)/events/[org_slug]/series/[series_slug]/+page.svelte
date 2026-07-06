@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Calendar, ArrowLeft, Repeat, ArrowDownUp, Settings } from 'lucide-svelte';
+	import { Calendar, ArrowLeft, Repeat, ArrowDownUp, Settings } from '@lucide/svelte';
 	import { EventCard } from '$lib/components/events';
 	import { getImageUrl } from '$lib/utils/url';
 	import { SeoHead } from '$lib/seo';

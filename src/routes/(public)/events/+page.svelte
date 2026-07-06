@@ -6,7 +6,7 @@
 	import { EventCard } from '$lib/components/events';
 	import { EventFilters, MobileFilterSheet } from '$lib/components/events/filters';
 	import { CalendarView, CalendarControls, EventModal } from '$lib/components/calendar';
-	import { Calendar, Filter, List } from 'lucide-svelte';
+	import { Calendar, Filter, List } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { eventpublicdiscoveryCalendarEvents } from '$lib/api/generated/sdk.gen';

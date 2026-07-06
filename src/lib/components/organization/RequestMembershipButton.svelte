@@ -3,7 +3,7 @@
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { organizationCreateMembershipRequest } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { UserPlus, Send, Check, Crown, Shield, Award } from 'lucide-svelte';
+	import { UserPlus, Send, Check, Crown, Shield, Award } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import type { MembershipTierSchema, MembershipStatus } from '$lib/api/generated/types.gen';

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { ticketwalletDownloadApplePass } from '$lib/api/generated/sdk.gen';
-	import { Wallet } from 'lucide-svelte';
+	import { Wallet } from '@lucide/svelte';
 
 	interface Props {
 		ticketId: string;

@@ -18,7 +18,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
-	import { AlertCircle, Loader2, ChevronDown, ChevronRight } from 'lucide-svelte';
+	import { AlertCircle, Loader2, ChevronDown, ChevronRight } from '@lucide/svelte';
 
 	interface Props {
 		open: boolean;

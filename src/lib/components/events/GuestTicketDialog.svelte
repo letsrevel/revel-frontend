@@ -24,7 +24,7 @@
 		Plus,
 		Minus,
 		User
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { guestUserSchema, createGuestPwycSchema } from '$lib/schemas/guestAttendance';
 	import {
 		eventpublicguestGuestTicketCheckout,

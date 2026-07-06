@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
-	import { Folder, Repeat, ArrowRight } from 'lucide-svelte';
+	import { Folder, Repeat, ArrowRight } from '@lucide/svelte';
 
 	interface Props {
 		open: boolean;

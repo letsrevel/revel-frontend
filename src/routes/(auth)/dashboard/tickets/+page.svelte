@@ -5,7 +5,7 @@
 	import { dashboardDashboardTickets } from '$lib/api/generated/sdk.gen';
 	import type { PaymentMethod, TicketStatus } from '$lib/api/generated/types.gen';
 	import TicketListCard from '$lib/components/tickets/TicketListCard.svelte';
-	import { Ticket, Filter, ChevronLeft, ChevronRight, Loader2 } from 'lucide-svelte';
+	import { Ticket, Filter, ChevronLeft, ChevronRight, Loader2 } from '@lucide/svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 

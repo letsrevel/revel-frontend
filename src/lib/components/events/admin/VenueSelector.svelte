@@ -4,7 +4,7 @@
 	import { organizationadminvenuesListVenues } from '$lib/api/generated/sdk.gen';
 	import type { VenueDetailSchema, VenueSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { Building2, ChevronDown, X, MapPin, Users } from 'lucide-svelte';
+	import { Building2, ChevronDown, X, MapPin, Users } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 
 	interface Props {

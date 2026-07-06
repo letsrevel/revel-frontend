@@ -13,7 +13,7 @@
 	import type { CitySchema } from '$lib/api/generated';
 	import type { VisibilityValue } from '$lib/schemas/preferences';
 	import { toast } from 'svelte-sonner';
-	import { Loader2, Eye, Info, FileText } from 'lucide-svelte';
+	import { Loader2, Eye, Info, FileText } from '@lucide/svelte';
 
 	interface Props {
 		data: PageData;

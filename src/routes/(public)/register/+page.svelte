@@ -5,7 +5,7 @@
 	import type { ActionData, PageData } from './$types';
 	import PasswordStrengthIndicator from '$lib/components/forms/PasswordStrengthIndicator.svelte';
 	import ReferralCodeInput from '$lib/components/referral/ReferralCodeInput.svelte';
-	import { Eye, EyeOff, Loader2 } from 'lucide-svelte';
+	import { Eye, EyeOff, Loader2 } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { SeoHead } from '$lib/seo';
 

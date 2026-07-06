@@ -3,7 +3,7 @@
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
-	import { AlertTriangle, Check, Loader2, Trash2, X } from 'lucide-svelte';
+	import { AlertTriangle, Check, Loader2, Trash2, X } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { organizationadminrecurringeventsCancelOccurrence } from '$lib/api/generated/sdk.gen';
 	import type {

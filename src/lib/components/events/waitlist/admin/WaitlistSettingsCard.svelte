@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { Loader2, Settings } from 'lucide-svelte';
+	import { Loader2, Settings } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import WaitlistSettingsModal from '$lib/components/events/waitlist/WaitlistSettingsModal.svelte';
 	import type { WaitlistSettingsSchema } from '$lib/api/generated/types.gen';

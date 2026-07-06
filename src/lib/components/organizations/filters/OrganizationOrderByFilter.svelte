@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { OrganizationFilters } from '$lib/utils/organizationFilters';
-	import { ArrowUpDown, Info } from 'lucide-svelte';
+	import { ArrowUpDown, Info } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 
 	interface Props {

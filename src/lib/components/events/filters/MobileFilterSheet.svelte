@@ -2,7 +2,7 @@
 	import type { EventFilters as FilterState } from '$lib/utils/filters';
 	import { countActiveFilters, hasActiveFilters } from '$lib/utils/filters';
 	import { cn } from '$lib/utils/cn';
-	import { Filter, X } from 'lucide-svelte';
+	import { Filter, X } from '@lucide/svelte';
 	import SearchInput from './SearchInput.svelte';
 	import DateFilter from './DateFilter.svelte';
 	import TicketedFilter from './TicketedFilter.svelte';

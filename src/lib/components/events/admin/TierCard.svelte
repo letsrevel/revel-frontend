@@ -4,7 +4,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
-	import { Edit, Building2, LayoutGrid, Armchair, ChevronUp, ChevronDown } from 'lucide-svelte';
+	import { Edit, Building2, LayoutGrid, Armchair, ChevronUp, ChevronDown } from '@lucide/svelte';
 	import { formatDateTime } from '$lib/utils/date';
 
 	interface Props {

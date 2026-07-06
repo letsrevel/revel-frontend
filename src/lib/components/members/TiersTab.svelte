@@ -14,7 +14,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
-	import { Shield, Plus, Pencil, Trash2, Loader2 } from 'lucide-svelte';
+	import { Shield, Plus, Pencil, Trash2, Loader2 } from '@lucide/svelte';
 	import TierFormModal from '$lib/components/members/TierFormModal.svelte';
 	import PlansList from '$lib/components/members/PlansList.svelte';
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { XCircle, Loader2 } from 'lucide-svelte';
+	import { XCircle, Loader2 } from '@lucide/svelte';
 	import { organizationadminmembersListMembers } from '$lib/api/generated/sdk.gen';
 
 	interface Props {

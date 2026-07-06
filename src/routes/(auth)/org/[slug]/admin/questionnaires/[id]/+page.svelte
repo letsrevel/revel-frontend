@@ -18,7 +18,7 @@
 		FolderPlus,
 		Pencil,
 		Upload
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import QuestionnaireAssignmentModal from '$lib/components/questionnaires/QuestionnaireAssignmentModal.svelte';
 	import DuplicateQuestionnaireModal from '$lib/components/questionnaires/DuplicateQuestionnaireModal.svelte';
 	import QuestionnaireStatusBar from '$lib/components/questionnaires/QuestionnaireStatusBar.svelte';

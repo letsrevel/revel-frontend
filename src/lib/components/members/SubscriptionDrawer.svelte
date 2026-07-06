@@ -20,7 +20,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
-	import { Loader2 } from 'lucide-svelte';
+	import { Loader2 } from '@lucide/svelte';
 	import StatusBadge from './StatusBadge.svelte';
 	import PaymentsTable from './PaymentsTable.svelte';
 	import RecordPaymentModal from './RecordPaymentModal.svelte';

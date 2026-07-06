@@ -5,7 +5,7 @@
 		VenueSeatInputSchema,
 		VenueSeatBulkUpdateItemSchema
 	} from '$lib/api/generated/types.gen';
-	import { Plus, Accessibility, EyeOff } from 'lucide-svelte';
+	import { Plus, Accessibility, EyeOff } from '@lucide/svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 
 	// Aisle metadata structure stored in sector

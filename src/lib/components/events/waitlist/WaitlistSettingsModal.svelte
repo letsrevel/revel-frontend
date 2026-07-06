@@ -25,7 +25,7 @@
 	} from '$lib/api/queries/waitlist-offers';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
-	import { Loader2 } from 'lucide-svelte';
+	import { Loader2 } from '@lucide/svelte';
 
 	interface Props {
 		open: boolean;

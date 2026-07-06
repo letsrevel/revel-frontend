@@ -3,7 +3,7 @@
 	import type { VenueSchema } from '$lib/api/generated/types.gen';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
-	import { ExternalLink, MapPin, Users } from 'lucide-svelte';
+	import { ExternalLink, MapPin, Users } from '@lucide/svelte';
 	import { sanitizeMapEmbedUrl } from '$lib/utils/maps';
 
 	interface Props {

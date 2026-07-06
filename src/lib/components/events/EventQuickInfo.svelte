@@ -12,7 +12,7 @@
 		Building2,
 		ExternalLink,
 		Info
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import VenueInfoModal from '$lib/components/venues/VenueInfoModal.svelte';
 	import { sanitizeMapEmbedUrl } from '$lib/utils/maps';
 

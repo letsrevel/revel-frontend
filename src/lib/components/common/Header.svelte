@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { Menu } from 'lucide-svelte';
+	import { Menu } from '@lucide/svelte';
 	import MobileNav from './MobileNav.svelte';
 	import UserMenu from './UserMenu.svelte';
 	import ThemeToggle from './ThemeToggle.svelte';

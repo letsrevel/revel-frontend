@@ -5,7 +5,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Checkbox } from '$lib/components/ui/checkbox';
-	import { Check, AlertCircle, Loader2, Receipt } from 'lucide-svelte';
+	import { Check, AlertCircle, Loader2, Receipt } from '@lucide/svelte';
 	import {
 		userbillingGetBillingProfile,
 		eventpublicticketsVatPreview

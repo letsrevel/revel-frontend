@@ -3,7 +3,7 @@
 	import { organizationListMemberAnnouncements } from '$lib/api/generated/sdk.gen';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { Megaphone, Loader2 } from 'lucide-svelte';
+	import { Megaphone, Loader2 } from '@lucide/svelte';
 	import AnnouncementPublicCard from './AnnouncementPublicCard.svelte';
 
 	interface Props {

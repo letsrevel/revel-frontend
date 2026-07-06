@@ -3,7 +3,7 @@
 	import type { EventSeriesRetrieveSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import { getImageUrl } from '$lib/utils/url';
-	import { Calendar, Tag, Users } from 'lucide-svelte';
+	import { Calendar, Tag, Users } from '@lucide/svelte';
 
 	interface Props {
 		series: EventSeriesRetrieveSchema;

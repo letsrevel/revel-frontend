@@ -14,7 +14,7 @@
 		CardHeader,
 		CardTitle
 	} from '$lib/components/ui/card';
-	import { Plus, ArrowLeft, FolderPlus, Upload } from 'lucide-svelte';
+	import { Plus, ArrowLeft, FolderPlus, Upload } from '@lucide/svelte';
 	import QuestionEditor from '$lib/components/questionnaires/QuestionEditor.svelte';
 	import SectionEditor from '$lib/components/questionnaires/SectionEditor.svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';

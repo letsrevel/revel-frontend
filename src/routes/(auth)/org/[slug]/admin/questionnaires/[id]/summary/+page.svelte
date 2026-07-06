@@ -10,7 +10,7 @@
 		CardTitle
 	} from '$lib/components/ui/card';
 	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
-	import { ArrowLeft, Users, FileText, TrendingUp, Clock } from 'lucide-svelte';
+	import { ArrowLeft, Users, FileText, TrendingUp, Clock } from '@lucide/svelte';
 	import StatusBreakdownBar from '$lib/components/questionnaires/StatusBreakdownBar.svelte';
 	import McQuestionChart from '$lib/components/questionnaires/McQuestionChart.svelte';
 	import ScoreStatsCard from '$lib/components/questionnaires/ScoreStatsCard.svelte';

@@ -5,7 +5,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
-	import { Trash2, Plus, Undo2, Receipt } from 'lucide-svelte';
+	import { Trash2, Plus, Undo2, Receipt } from '@lucide/svelte';
 
 	interface Props {
 		/** Optional initial policy (when editing). null = no brackets yet. */

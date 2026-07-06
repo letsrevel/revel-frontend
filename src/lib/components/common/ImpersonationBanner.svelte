@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { AlertTriangle, Clock, User } from 'lucide-svelte';
+	import { AlertTriangle, Clock, User } from '@lucide/svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { getImpersonationInfo, getTokenExpiration } from '$lib/utils/impersonation';
 	import * as m from '$lib/paraglide/messages.js';

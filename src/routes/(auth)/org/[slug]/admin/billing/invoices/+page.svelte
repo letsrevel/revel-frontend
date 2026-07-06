@@ -11,7 +11,7 @@
 		FileText,
 		Loader2,
 		X
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { browser } from '$app/environment';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';

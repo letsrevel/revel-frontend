@@ -6,7 +6,7 @@
 	import { NotificationPreferencesForm } from '$lib/components/notifications';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { notificationpreferenceGetPreferences } from '$lib/api';
-	import { Loader2, AlertCircle } from 'lucide-svelte';
+	import { Loader2, AlertCircle } from '@lucide/svelte';
 	import * as Card from '$lib/components/ui/card';
 
 	interface Props {

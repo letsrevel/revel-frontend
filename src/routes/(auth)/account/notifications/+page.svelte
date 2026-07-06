@@ -4,7 +4,7 @@
 	import { NotificationList } from '$lib/components/notifications';
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
-	import { Settings } from 'lucide-svelte';
+	import { Settings } from '@lucide/svelte';
 
 	interface Props {
 		data: PageData;

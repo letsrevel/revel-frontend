@@ -1,7 +1,15 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
-	import { Home, ArrowLeft, Lock, Search, ServerCrash, AlertCircle, LinkIcon } from 'lucide-svelte';
+	import {
+		Home,
+		ArrowLeft,
+		Lock,
+		Search,
+		ServerCrash,
+		AlertCircle,
+		LinkIcon
+	} from '@lucide/svelte';
 
 	// Get error details from page store
 	const status = $derived($page.status);

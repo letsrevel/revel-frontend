@@ -3,7 +3,7 @@
 	import type { EventCreateSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import { formatDateTimeReadback } from '$lib/utils/date';
-	import { Calendar, Eye, Users, Ticket, Pencil, Check, X, Link, Loader2 } from 'lucide-svelte';
+	import { Calendar, Eye, Users, Ticket, Pencil, Check, X, Link, Loader2 } from '@lucide/svelte';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { eventadmincoreEditSlug } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';

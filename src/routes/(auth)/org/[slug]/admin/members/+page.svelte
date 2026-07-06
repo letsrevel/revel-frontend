@@ -21,7 +21,7 @@
 		CreditCard,
 		Info,
 		ChevronDown
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import MembersTab from '$lib/components/members/MembersTab.svelte';
 	import StaffTab from '$lib/components/members/StaffTab.svelte';
 	import MembershipRequestsTab from '$lib/components/members/MembershipRequestsTab.svelte';

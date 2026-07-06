@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { formatPrice } from '$lib/utils/format';
-	import { Tag } from 'lucide-svelte';
+	import { Tag } from '@lucide/svelte';
 	import type { AdminTicketSchema } from '$lib/api';
 
 	interface Props {

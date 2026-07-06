@@ -8,7 +8,7 @@
 	} from '$lib/api/generated/sdk.gen';
 	import InvitationCard from '$lib/components/invitations/InvitationCard.svelte';
 	import InvitationRequestCard from '$lib/components/invitations/InvitationRequestCard.svelte';
-	import { Mail, Send, Loader2, Filter } from 'lucide-svelte';
+	import { Mail, Send, Loader2, Filter } from '@lucide/svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 

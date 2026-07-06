@@ -2,7 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { page } from '$app/stores';
 	import type { ActionData } from './$types';
-	import { AlertTriangle, Loader2, CheckCircle } from 'lucide-svelte';
+	import { AlertTriangle, Loader2, CheckCircle } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {

@@ -9,7 +9,7 @@
 		ChevronRight,
 		FileText,
 		Loader2
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { browser } from '$app/environment';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { extractErrorMessage } from '$lib/utils/errors';

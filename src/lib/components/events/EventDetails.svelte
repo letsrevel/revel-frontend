@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
 	import { formatEventDate, getRSVPDeadlineRelative, isRSVPClosingSoon } from '$lib/utils/date';
-	import { Users, Clock, Info, Calendar, Eye } from 'lucide-svelte';
+	import { Users, Clock, Info, Calendar, Eye } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import * as m from '$lib/paraglide/messages.js';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';

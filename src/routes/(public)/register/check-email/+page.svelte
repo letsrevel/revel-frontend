@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
-	import { Mail, Loader2 } from 'lucide-svelte';
+	import { Mail, Loader2 } from '@lucide/svelte';
 	import { accountResendVerificationEmail } from '$lib/api/generated/sdk.gen';
 
 	const email = $derived($page.url.searchParams.get('email') || '');

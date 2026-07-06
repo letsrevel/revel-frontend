@@ -6,7 +6,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import { Loader2 } from 'lucide-svelte';
+	import { Loader2 } from '@lucide/svelte';
 	import { CURRENCY_OPTIONS } from '$lib/utils/currencies';
 	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 

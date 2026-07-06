@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { ArrowLeft } from 'lucide-svelte';
+	import { ArrowLeft } from '@lucide/svelte';
 	import type { PageData } from './$types';
 	import RecurringEventWizard from '$lib/components/event-series/admin/RecurringEventWizard.svelte';
 

@@ -6,7 +6,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { Check, AlertCircle, AlertTriangle, Loader2, Shield } from 'lucide-svelte';
+	import { Check, AlertCircle, AlertTriangle, Loader2, Shield } from '@lucide/svelte';
 	import {
 		userbillingGetBillingProfile,
 		userbillingCreateBillingProfile,

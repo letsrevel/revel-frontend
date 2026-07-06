@@ -8,7 +8,7 @@
 
 	import NotificationBadge from './NotificationBadge.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { Bell } from 'lucide-svelte';
+	import { Bell } from '@lucide/svelte';
 
 	// Mock auth token - in real app, get from user store or locals
 	const authToken = 'your-auth-token-here';

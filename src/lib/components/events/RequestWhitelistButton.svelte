@@ -3,7 +3,7 @@
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { organizationCreateWhitelistRequest } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { ShieldCheck, Send, AlertCircle } from 'lucide-svelte';
+	import { ShieldCheck, Send, AlertCircle } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { escapeHtml } from '$lib/utils/sanitize';

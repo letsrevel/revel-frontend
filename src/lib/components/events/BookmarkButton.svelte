@@ -8,7 +8,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
-	import { Bookmark } from 'lucide-svelte';
+	import { Bookmark } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 
 	interface Props {

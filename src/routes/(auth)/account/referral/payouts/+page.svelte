@@ -6,7 +6,7 @@
 	import { getBackendUrl } from '$lib/config/api';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
-	import { FileText, Download, Eye, Loader2, ArrowLeft } from 'lucide-svelte';
+	import { FileText, Download, Eye, Loader2, ArrowLeft } from '@lucide/svelte';
 	import {
 		referralpayoutListPayouts,
 		referralpayoutGetStatement,

@@ -7,7 +7,7 @@
 		OrganizationFilters,
 		MobileOrganizationFilterSheet
 	} from '$lib/components/organizations/filters';
-	import { Users, Filter } from 'lucide-svelte';
+	import { Users, Filter } from '@lucide/svelte';
 	import {
 		parseOrganizationFilters,
 		organizationFiltersToParams,

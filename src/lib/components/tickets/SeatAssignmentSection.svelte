@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Label } from '$lib/components/ui/label';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
-	import { Armchair, Loader2, AlertCircle, Shuffle, DoorOpen } from 'lucide-svelte';
+	import { Armchair, Loader2, AlertCircle, Shuffle, DoorOpen } from '@lucide/svelte';
 	import type { VenueSeatSchema, SectorAvailabilitySchema } from '$lib/api/generated/types.gen';
 	import SeatSelector from './SeatSelector.svelte';
 

@@ -3,7 +3,7 @@
 	import type { OrganizationStaffSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
-	import { UserX, Settings } from 'lucide-svelte';
+	import { UserX, Settings } from '@lucide/svelte';
 	import { formatDistanceToNow } from 'date-fns';
 
 	interface Props {

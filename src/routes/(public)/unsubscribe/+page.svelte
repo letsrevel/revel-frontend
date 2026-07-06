@@ -4,7 +4,7 @@
 	import { NotificationPreferencesForm } from '$lib/components/notifications';
 	import type { NotificationPreferenceSchema } from '$lib/api/generated/types.gen';
 	import { goto } from '$app/navigation';
-	import { Bell } from 'lucide-svelte';
+	import { Bell } from '@lucide/svelte';
 	import { SeoHead } from '$lib/seo';
 
 	const { data }: { data: PageData } = $props();

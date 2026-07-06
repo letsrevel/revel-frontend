@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { goto } from '$app/navigation';
-	import { ArrowLeft, Plus, FolderPlus, Upload } from 'lucide-svelte';
+	import { ArrowLeft, Plus, FolderPlus, Upload } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
