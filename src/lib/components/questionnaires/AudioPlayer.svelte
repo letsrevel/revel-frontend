@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
-	import { Play, Pause, Download } from 'lucide-svelte';
+	import { Play, Pause, Download } from '@lucide/svelte';
 	import { formatAudioDuration } from '$lib/utils/audio';
 	import { audioPreferences } from '$lib/stores/audioPreferences.svelte';
 	import { onMount } from 'svelte';

@@ -15,7 +15,7 @@
 	import PeriodFilter from '$lib/components/financials/PeriodFilter.svelte';
 	import type { PeriodValue } from '$lib/components/financials/period';
 	import RevenueReportButton from '$lib/components/financials/RevenueReportButton.svelte';
-	import { BarChart3, ChevronDown, Loader2, ArrowUpDown } from 'lucide-svelte';
+	import { BarChart3, ChevronDown, Loader2, ArrowUpDown } from '@lucide/svelte';
 	import type { PageData } from './$types';
 
 	const { data }: { data: PageData } = $props();

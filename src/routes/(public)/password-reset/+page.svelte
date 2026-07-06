@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
 	import type { ActionData, PageData } from './$types';
-	import { Loader2, ArrowLeft, Mail } from 'lucide-svelte';
+	import { Loader2, ArrowLeft, Mail } from '@lucide/svelte';
 	import { SeoHead } from '$lib/seo';
 
 	interface Props {

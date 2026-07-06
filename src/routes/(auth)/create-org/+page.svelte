@@ -7,7 +7,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import CityAutocomplete from '$lib/components/forms/CityAutocomplete.svelte';
-	import { AlertCircle, Building2, CheckCircle, Loader2, Mail } from 'lucide-svelte';
+	import { AlertCircle, Building2, CheckCircle, Loader2, Mail } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData, ActionData } from './$types';
 	import type { CitySchema } from '$lib/api/generated';

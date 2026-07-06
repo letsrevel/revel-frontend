@@ -5,7 +5,7 @@
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { getApiUrl } from '$lib/config/api';
-	import { X } from 'lucide-svelte';
+	import { X } from '@lucide/svelte';
 	import ResourceForm from './ResourceForm.svelte';
 
 	interface Props {

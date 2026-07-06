@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { ArrowLeft, Copy, Trash2, Plus, FolderPlus, Upload } from 'lucide-svelte';
+	import { ArrowLeft, Copy, Trash2, Plus, FolderPlus, Upload } from '@lucide/svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import {

@@ -11,7 +11,7 @@
 		TicketTierDetailSchema
 	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { Check, Search, ChevronDown } from 'lucide-svelte';
+	import { Check, Search, ChevronDown } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import { formatDate } from '$lib/utils/date';
 	import * as m from '$lib/paraglide/messages.js';

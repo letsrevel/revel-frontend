@@ -53,7 +53,7 @@ interface Props {
     DropdownMenuTrigger
   } from '$lib/components/ui/dropdown-menu';
   import { Button } from '$lib/components/ui/button';
-  import { Bell } from 'lucide-svelte';
+  import { Bell } from '@lucide/svelte';
 
   let authToken = $derived(/* get from auth store */);
 </script>

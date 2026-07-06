@@ -11,7 +11,7 @@
 	import TierCard from './TierCard.svelte';
 	import DemoCardInfo from '$lib/components/common/DemoCardInfo.svelte';
 	import EligibilityStatusDisplay from '$lib/components/events/EligibilityStatusDisplay.svelte';
-	import { Ticket } from 'lucide-svelte';
+	import { Ticket } from '@lucide/svelte';
 
 	interface Props {
 		tiers: TierSchemaWithId[];

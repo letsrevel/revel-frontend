@@ -12,7 +12,7 @@
 		eventseriesUpdateEventSeriesFollow
 	} from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { Heart, ChevronDown, Loader2 } from 'lucide-svelte';
+	import { Heart, ChevronDown, Loader2 } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { toast } from 'svelte-sonner';

@@ -10,7 +10,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { DollarSign, AlertCircle } from 'lucide-svelte';
+	import { DollarSign, AlertCircle } from '@lucide/svelte';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 

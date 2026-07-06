@@ -9,7 +9,7 @@
 		Send,
 		Trash2,
 		Users
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import WaitlistOfferStatusBadge from '$lib/components/events/waitlist/WaitlistOfferStatusBadge.svelte';
 	import OfferExpiryCountdown from '$lib/components/events/waitlist/OfferExpiryCountdown.svelte';

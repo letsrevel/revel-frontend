@@ -13,7 +13,7 @@
 		AlertCircle,
 		Frown,
 		Circle
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import type { EventDietarySummarySchema, RestrictionType } from '$lib/api/generated/types.gen.js';
 
 	interface Props {

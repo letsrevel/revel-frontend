@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { CitySchema } from '$lib/api/generated/types.gen';
-	import { MapPin, X } from 'lucide-svelte';
+	import { MapPin, X } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import { cityListCities } from '$lib/api';
 	import * as m from '$lib/paraglide/messages.js';

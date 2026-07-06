@@ -21,7 +21,7 @@
 		Calendar,
 		ShieldCheck,
 		UserCircle
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import { formatDateLongMonth } from '$lib/utils/date';
 	import IneligibilityActionButton from './IneligibilityActionButton.svelte';

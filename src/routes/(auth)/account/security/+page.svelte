@@ -2,7 +2,16 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { enhance, applyAction } from '$app/forms';
 	import { invalidate } from '$app/navigation';
-	import { Shield, CheckCircle, XCircle, AlertCircle, Copy, Check, Key, Mail } from 'lucide-svelte';
+	import {
+		Shield,
+		CheckCircle,
+		XCircle,
+		AlertCircle,
+		Copy,
+		Check,
+		Key,
+		Mail
+	} from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import TwoFactorInput from '$lib/components/forms/TwoFactorInput.svelte';
 	import EmailChangeCard from './email-change-card.svelte';

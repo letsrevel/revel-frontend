@@ -6,7 +6,7 @@
 	import { questionnaireDuplicateOrgQuestionnaire } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { goto } from '$app/navigation';
-	import { Copy, Loader2 } from 'lucide-svelte';
+	import { Copy, Loader2 } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 
 	interface Props {

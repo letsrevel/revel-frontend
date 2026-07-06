@@ -26,7 +26,7 @@
 		Eye,
 		ChevronDown,
 		Settings
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import type {
 		NotificationPreferenceSchema,
 		NotificationTypeSettings

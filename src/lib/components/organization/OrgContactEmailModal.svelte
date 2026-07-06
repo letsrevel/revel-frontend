@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { AlertCircle, Check, X } from 'lucide-svelte';
+	import { AlertCircle, Check, X } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import {
 		organizationadmincoreUpdateContactEmail,

@@ -33,7 +33,7 @@
 	import DetailsStep from './DetailsStep.svelte';
 	import EventResources from './EventResources.svelte';
 	import TicketingStep from './TicketingStep.svelte';
-	import { Save } from 'lucide-svelte';
+	import { Save } from '@lucide/svelte';
 
 	interface Props {
 		organization: OrganizationRetrieveSchema;

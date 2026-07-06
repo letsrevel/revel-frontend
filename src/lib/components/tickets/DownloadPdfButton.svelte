@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { ticketwalletDownloadPdf } from '$lib/api/generated/sdk.gen';
 	import { getBackendUrl } from '$lib/config/api';
-	import { FileDown } from 'lucide-svelte';
+	import { FileDown } from '@lucide/svelte';
 
 	interface Props {
 		ticketId: string;

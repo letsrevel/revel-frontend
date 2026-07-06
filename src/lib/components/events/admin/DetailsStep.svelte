@@ -21,7 +21,7 @@
 		AlertTriangle,
 		Info,
 		ExternalLink
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import ImageUploader from '$lib/components/forms/ImageUploader.svelte';
 	import { COVER_ASPECT_RATIO, LOGO_ASPECT_RATIO } from '$lib/utils/image-crop';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';

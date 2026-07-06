@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData, ActionData } from './$types';
 	import { enhance } from '$app/forms';
-	import { Users, Check, X, Calendar, AlertCircle } from 'lucide-svelte';
+	import { Users, Check, X, Calendar, AlertCircle } from '@lucide/svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import { cn } from '$lib/utils/cn';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';

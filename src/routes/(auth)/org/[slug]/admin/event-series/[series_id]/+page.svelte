@@ -3,7 +3,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { ArrowLeft, AlertTriangle, Info, Pause } from 'lucide-svelte';
+	import { ArrowLeft, AlertTriangle, Info, Pause } from '@lucide/svelte';
 	import type { PageData } from './$types';
 	import {
 		organizationadminrecurringeventsGetSeriesDetail,

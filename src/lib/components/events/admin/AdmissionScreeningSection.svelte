@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { formatDateTimeReadback } from '$lib/utils/date';
-	import { ShieldCheck, ChevronDown, ChevronRight } from 'lucide-svelte';
+	import { ShieldCheck, ChevronDown, ChevronRight } from '@lucide/svelte';
 	import EventQuestionnaires from './EventQuestionnaires.svelte';
 	import type { EventCreateSchema } from '$lib/api/generated/types.gen';
 	import type { OrganizationQuestionnaireInListSchema } from '$lib/api/generated';

@@ -14,7 +14,7 @@
 	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { UserPlus, Loader2 } from 'lucide-svelte';
+	import { UserPlus, Loader2 } from '@lucide/svelte';
 	import MembershipRequestCard from '$lib/components/members/MembershipRequestCard.svelte';
 	import ApproveMembershipModal from '$lib/components/members/ApproveMembershipModal.svelte';
 	import { toast } from 'svelte-sonner';

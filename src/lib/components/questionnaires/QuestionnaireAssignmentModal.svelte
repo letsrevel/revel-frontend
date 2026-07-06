@@ -6,7 +6,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Search, MapPin, Loader2, Calendar, Repeat, Info } from 'lucide-svelte';
+	import { Search, MapPin, Loader2, Calendar, Repeat, Info } from '@lucide/svelte';
 	import {
 		eventpublicdiscoveryListEvents,
 		eventseriesListEventSeries,

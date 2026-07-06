@@ -116,7 +116,7 @@ This directory contains a complete notification system with the following compon
   import { NotificationDropdown } from '$lib/components/notifications';
   import { Button } from '$lib/components/ui/button';
   import { authStore } from '$lib/stores/auth.svelte';
-  import { Menu, X } from 'lucide-svelte';
+  import { Menu, X } from '@lucide/svelte';
 
   let authToken = $derived(authStore.accessToken);
   let mobileMenuOpen = $state(false);

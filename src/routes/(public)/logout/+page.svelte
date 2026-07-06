@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { Loader2 } from 'lucide-svelte';
+	import { Loader2 } from '@lucide/svelte';
 
 	/**
 	 * Client-side logout page

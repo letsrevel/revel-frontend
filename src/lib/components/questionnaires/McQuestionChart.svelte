@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { Check } from 'lucide-svelte';
+	import { Check } from '@lucide/svelte';
 
 	interface OptionStat {
 		option_id: string;

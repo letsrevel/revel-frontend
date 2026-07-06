@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { WhitelistEntrySchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
-	import { Trash2, Mail, Calendar, ShieldCheck, AlertCircle } from 'lucide-svelte';
+	import { Trash2, Mail, Calendar, ShieldCheck, AlertCircle } from '@lucide/svelte';
 	import { formatDistanceToNow } from 'date-fns';
 
 	interface Props {

@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData, ActionData } from './$types';
 	import { goto } from '$app/navigation';
-	import { Check, AlertCircle, ChevronLeft, Mail, UserPlus, Link } from 'lucide-svelte';
+	import { Check, AlertCircle, ChevronLeft, Mail, UserPlus, Link } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import InvitationRequestsTab from '$lib/components/invitations/InvitationRequestsTab.svelte';
 	import InvitationListTab from '$lib/components/invitations/InvitationListTab.svelte';

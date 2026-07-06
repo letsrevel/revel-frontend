@@ -17,7 +17,7 @@
 		Send,
 		Trash2,
 		X
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import {
 		Dialog,
 		DialogContent,

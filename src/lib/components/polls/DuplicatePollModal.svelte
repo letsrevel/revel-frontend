@@ -6,7 +6,7 @@
 	import { pollGetPoll, pollDuplicatePollAction } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { goto } from '$app/navigation';
-	import { Copy, Loader2, Lock } from 'lucide-svelte';
+	import { Copy, Loader2, Lock } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import { resultVisibilityRequiresPublicAnonymous } from '$lib/utils/polls';
 	import type { ResourceVisibility } from '$lib/api/generated/types.gen';

@@ -19,7 +19,7 @@
 		ExternalLink,
 		AlertCircle,
 		X
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		telegramGetLinkStatus,

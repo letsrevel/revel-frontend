@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PotluckItemRetrieveSchema } from '$lib/api/generated/types.gen';
-	import { Edit2, Trash2 } from 'lucide-svelte';
+	import { Edit2, Trash2 } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import { canEditPotluckItem, canDeletePotluckItem } from '$lib/utils/permissions';
 	import * as m from '$lib/paraglide/messages.js';

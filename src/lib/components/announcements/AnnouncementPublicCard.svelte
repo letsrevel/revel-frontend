@@ -3,7 +3,7 @@
 	import type { AnnouncementPublicSchema } from '$lib/api/generated/types.gen';
 	import { formatRelativeTime } from '$lib/utils/time';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
-	import { Megaphone, Users, Layers, UserCog, Calendar } from 'lucide-svelte';
+	import { Megaphone, Users, Layers, UserCog, Calendar } from '@lucide/svelte';
 
 	interface Props {
 		announcement: AnnouncementPublicSchema;

@@ -6,7 +6,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import MembershipCard from '$lib/components/account/MembershipCard.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { Loader2 } from 'lucide-svelte';
+	import { Loader2 } from '@lucide/svelte';
 
 	const accessToken = $derived(authStore.accessToken);
 

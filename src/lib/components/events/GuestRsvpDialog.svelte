@@ -13,7 +13,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { RadioGroup, RadioGroupItem } from '$lib/components/ui/radio-group';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
-	import { UserPlus, CheckCircle2, AlertCircle } from 'lucide-svelte';
+	import { UserPlus, CheckCircle2, AlertCircle } from '@lucide/svelte';
 	import { guestRsvpSchema, type GuestRsvpData } from '$lib/schemas/guestAttendance';
 	import { eventpublicguestGuestRsvp } from '$lib/api';
 	import { handleGuestAttendanceError } from '$lib/utils/guestAttendance';

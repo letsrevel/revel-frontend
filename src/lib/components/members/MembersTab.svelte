@@ -19,7 +19,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
-	import { Search, Users, Loader2 } from 'lucide-svelte';
+	import { Search, Users, Loader2 } from '@lucide/svelte';
 	import MemberCard from '$lib/components/members/MemberCard.svelte';
 	import ManageMemberModal from '$lib/components/members/ManageMemberModal.svelte';
 	import PromoteToStaffDialog from '$lib/components/members/PromoteToStaffDialog.svelte';

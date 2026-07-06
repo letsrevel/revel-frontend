@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { AlertCircle, Ban, Loader2, RotateCcw, Users } from 'lucide-svelte';
+	import { AlertCircle, Ban, Loader2, RotateCcw, Users } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import WaitlistOfferStatusBadge from '$lib/components/events/waitlist/WaitlistOfferStatusBadge.svelte';
 	import OfferExpiryCountdown from '$lib/components/events/waitlist/OfferExpiryCountdown.svelte';

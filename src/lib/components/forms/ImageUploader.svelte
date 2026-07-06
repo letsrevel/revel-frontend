@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { cn } from '$lib/utils/cn';
-	import { Upload, X } from 'lucide-svelte';
+	import { Upload, X } from '@lucide/svelte';
 	import ImageCropperModal from '$lib/components/common/ImageCropperModal.svelte';
 
 	/**

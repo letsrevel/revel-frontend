@@ -22,7 +22,6 @@
 		UtensilsCrossed,
 		Bell,
 		Globe,
-		Github,
 		Eye,
 		Building2,
 		MapPin,
@@ -32,7 +31,8 @@
 		Heart,
 		Server,
 		Lock
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
+	import Github from '$lib/components/icons/brand/Github.svelte';
 
 	// Animated letter for Italian welcome (client-side only)
 	const letters = ['a', 'o', 'ə'] as const;

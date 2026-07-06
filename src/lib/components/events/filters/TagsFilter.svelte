@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Tag, X } from 'lucide-svelte';
+	import { Tag, X } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import { tagListTags } from '$lib/api';
 	import { onMount } from 'svelte';

@@ -4,7 +4,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
 	import { createMutation } from '@tanstack/svelte-query';
-	import { Loader2, Save, ChevronDown } from 'lucide-svelte';
+	import { Loader2, Save, ChevronDown } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import { toISOString } from '$lib/utils/datetime';
 	import { Button } from '$lib/components/ui/button';

@@ -25,7 +25,7 @@
 		AlertCircle,
 		Copy,
 		Check
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { formatDateTime } from '$lib/utils/date';
 	import * as m from '$lib/paraglide/messages.js';

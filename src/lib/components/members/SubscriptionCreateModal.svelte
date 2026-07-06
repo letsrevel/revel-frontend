@@ -15,7 +15,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import { Loader2 } from 'lucide-svelte';
+	import { Loader2 } from '@lucide/svelte';
 	import MemberCombobox from './MemberCombobox.svelte';
 	import { CURRENCY_OPTIONS } from '$lib/utils/currencies';
 	import { formatPlanPrice } from '$lib/utils/subscriptions';

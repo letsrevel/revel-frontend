@@ -20,7 +20,7 @@
 		Plus,
 		Minus,
 		Loader2
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import CancellationPolicySummary from './CancellationPolicySummary.svelte';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import type {

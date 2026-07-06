@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData } from './$types';
-	import { CheckCircle, XCircle } from 'lucide-svelte';
+	import { CheckCircle, XCircle } from '@lucide/svelte';
 	import { SeoHead } from '$lib/seo';
 
 	interface Props {

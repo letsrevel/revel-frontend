@@ -4,7 +4,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Button } from '$lib/components/ui/button';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
-	import { AlertCircle, Loader2 } from 'lucide-svelte';
+	import { AlertCircle, Loader2 } from '@lucide/svelte';
 	import type { DiscountCodeSchema, DiscountType } from '$lib/api/generated/types.gen';
 	import ScopeAssignment from './ScopeAssignment.svelte';
 	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';

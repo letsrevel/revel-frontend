@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { CheckCircle, XCircle, Loader2 } from 'lucide-svelte';
+	import { CheckCircle, XCircle, Loader2 } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {

@@ -7,7 +7,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Card } from '$lib/components/ui/card';
 	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
-	import { CheckCheck, Filter, BellOff, Loader2 } from 'lucide-svelte';
+	import { CheckCheck, Filter, BellOff, Loader2 } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import { toast } from 'svelte-sonner';
 	import NotificationItem from './NotificationItem.svelte';

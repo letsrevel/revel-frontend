@@ -7,7 +7,7 @@
 		formatWeekdayShort
 	} from '$lib/utils/calendar';
 	import { formatTimeOfDay } from '$lib/utils/date';
-	import { Clock, MapPin, Loader2 } from 'lucide-svelte';
+	import { Clock, MapPin, Loader2 } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {

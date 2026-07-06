@@ -10,7 +10,7 @@
 		Megaphone,
 		Users,
 		Salad
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 
 	interface Props {
 		event: EventDetailSchema;

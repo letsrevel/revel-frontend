@@ -5,7 +5,7 @@
 	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 	import DurationInput from '$lib/components/forms/DurationInput.svelte';
 	import { cn } from '$lib/utils/cn';
-	import { CalendarClock, Send } from 'lucide-svelte';
+	import { CalendarClock, Send } from '@lucide/svelte';
 
 	export type SendMode = 'now' | 'schedule';
 	export type ScheduleKind = 'absolute' | 'relative';

@@ -5,7 +5,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { AlertTriangle, CalendarClock, Loader2 } from 'lucide-svelte';
+	import { AlertTriangle, CalendarClock, Loader2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { organizationadminrecurringeventsUpdateRecurrence } from '$lib/api/generated/sdk.gen';
 	import type {

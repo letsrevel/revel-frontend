@@ -5,7 +5,7 @@
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import DownloadPdfButton from './DownloadPdfButton.svelte';
-	import { Ticket, Calendar, MapPin, User, Armchair } from 'lucide-svelte';
+	import { Ticket, Calendar, MapPin, User, Armchair } from '@lucide/svelte';
 	import { formatDateTime } from '$lib/utils/date';
 	import QRCode from 'qrcode';
 	import { onMount } from 'svelte';

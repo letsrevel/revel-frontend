@@ -2,7 +2,7 @@
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
 	import { goto } from '$app/navigation';
 	import { formatMonthYear } from '$lib/utils/calendar';
-	import { Calendar, Loader2 } from 'lucide-svelte';
+	import { Calendar, Loader2 } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {

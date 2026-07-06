@@ -4,7 +4,7 @@
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
-	import { CheckCircle, Loader2, Megaphone } from 'lucide-svelte';
+	import { CheckCircle, Loader2, Megaphone } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { eventadmincoreUpdateEventStatus } from '$lib/api/generated/sdk.gen';
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';

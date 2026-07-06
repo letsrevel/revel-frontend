@@ -4,7 +4,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { ArrowUp, ArrowDown, Trash2, Plus, ChevronDown, ChevronUp, Upload } from 'lucide-svelte';
+	import { ArrowUp, ArrowDown, Trash2, Plus, ChevronDown, ChevronUp, Upload } from '@lucide/svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import QuestionEditor from './QuestionEditor.svelte';
 

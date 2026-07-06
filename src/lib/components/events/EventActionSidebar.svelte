@@ -41,7 +41,7 @@
 		Megaphone,
 		ListPlus,
 		Ban
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
 	import AnnouncementModal from '$lib/components/announcements/AnnouncementModal.svelte';
 	import { createQuery } from '@tanstack/svelte-query';

@@ -5,7 +5,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Search, Loader2, Box, AlertCircle, FileText, Link, File, Plus } from 'lucide-svelte';
+	import { Search, Loader2, Box, AlertCircle, FileText, Link, File, Plus } from '@lucide/svelte';
 	import {
 		organizationadminresourcesListResources,
 		organizationadminresourcesUpdateResource,

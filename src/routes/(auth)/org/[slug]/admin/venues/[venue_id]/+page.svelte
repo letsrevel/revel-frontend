@@ -10,7 +10,7 @@
 	} from '$lib/api/generated/sdk.gen';
 	import type { VenueDetailSchema, VenueSectorWithSeatsSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { Plus, ArrowLeft, LayoutGrid } from 'lucide-svelte';
+	import { Plus, ArrowLeft, LayoutGrid } from '@lucide/svelte';
 	import SectorCard from '$lib/components/venues/SectorCard.svelte';
 	import SectorModal from '$lib/components/venues/SectorModal.svelte';
 	import { toast } from 'svelte-sonner';

@@ -6,7 +6,7 @@
 	import { appStore } from '$lib/stores/app.svelte';
 	import { brandTheme, BRAND_THEMES } from '$lib/stores/brandTheme.svelte';
 	import RevelMark from '$lib/components/brand/RevelMark.svelte';
-	import { Palette, X } from 'lucide-svelte';
+	import { Palette, X } from '@lucide/svelte';
 
 	let open = $state(true);
 	// Show only where evaluation is intended: local dev or the demo/staging env.

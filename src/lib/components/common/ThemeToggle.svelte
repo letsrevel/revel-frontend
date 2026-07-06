@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { mode, setMode } from 'mode-watcher';
-	import { Sun, Moon, Monitor } from 'lucide-svelte';
+	import { Sun, Moon, Monitor } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
 	let dropdownOpen = $state(false);

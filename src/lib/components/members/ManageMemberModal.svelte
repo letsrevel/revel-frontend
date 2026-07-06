@@ -10,7 +10,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import { Loader2, UserCog, UserX, AlertTriangle, Ban } from 'lucide-svelte';
+	import { Loader2, UserCog, UserX, AlertTriangle, Ban } from '@lucide/svelte';
 
 	interface Props {
 		member: OrganizationMemberSchema | null;

@@ -9,7 +9,7 @@
 		getEventLogoThumbnail
 	} from '$lib/utils/event';
 	import { getImageUrl } from '$lib/utils/url';
-	import { Calendar } from 'lucide-svelte';
+	import { Calendar } from '@lucide/svelte';
 	import EventBadges from './EventBadges.svelte';
 	import type { UserEventStatus } from './types';
 

@@ -13,7 +13,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import { Loader2, AlertTriangle } from 'lucide-svelte';
+	import { Loader2, AlertTriangle } from '@lucide/svelte';
 
 	interface Props {
 		open: boolean;

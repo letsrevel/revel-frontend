@@ -9,9 +9,8 @@
 		Ban,
 		XCircle,
 		FileText,
-		type Icon
-	} from 'lucide-svelte';
-	import type { ComponentType } from 'svelte';
+		type LucideIcon
+	} from '@lucide/svelte';
 
 	import * as m from '$lib/paraglide/messages.js';
 
@@ -37,7 +36,7 @@
 	interface BadgeConfig {
 		label: string;
 		variant: 'success' | 'default' | 'secondary' | 'destructive' | 'cancelled';
-		icon: ComponentType<Icon>;
+		icon: LucideIcon;
 	}
 
 	/**

@@ -2,7 +2,7 @@
 	import { enhance, applyAction } from '$app/forms';
 	import { page } from '$app/stores';
 	import { invalidateAll } from '$app/navigation';
-	import { AlertTriangle, CheckCircle, Loader2, Mail } from 'lucide-svelte';
+	import { AlertTriangle, CheckCircle, Loader2, Mail } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import type { RevelUserSchema } from '$lib/api/generated/types.gen';

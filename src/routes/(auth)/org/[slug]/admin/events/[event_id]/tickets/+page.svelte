@@ -13,7 +13,7 @@
 	} from '$lib/utils/ticket-helpers';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
-	import { Ticket, AlertTriangle, QrCode, X } from 'lucide-svelte';
+	import { Ticket, AlertTriangle, QrCode, X } from '@lucide/svelte';
 	import {
 		eventadminticketsConfirmTicketPayment,
 		eventadminticketsUnconfirmTicketPayment,

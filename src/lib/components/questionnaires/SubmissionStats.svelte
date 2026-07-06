@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { Clock, Check, TrendingUp } from 'lucide-svelte';
+	import { Clock, Check, TrendingUp } from '@lucide/svelte';
 	import { Card } from '$lib/components/ui/card';
 
 	interface Props {

@@ -13,7 +13,7 @@
 	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Input } from '$lib/components/ui/input';
-	import { Search, UserCog, Loader2 } from 'lucide-svelte';
+	import { Search, UserCog, Loader2 } from '@lucide/svelte';
 	import StaffCard from '$lib/components/members/StaffCard.svelte';
 	import PermissionsEditor from '$lib/components/members/PermissionsEditor.svelte';
 

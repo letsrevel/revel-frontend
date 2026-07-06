@@ -17,7 +17,7 @@
 		FileText,
 		Receipt,
 		CreditCard
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 

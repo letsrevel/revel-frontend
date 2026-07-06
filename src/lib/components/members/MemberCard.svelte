@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { OrganizationMemberSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
-	import { Settings } from 'lucide-svelte';
+	import { Settings } from '@lucide/svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 

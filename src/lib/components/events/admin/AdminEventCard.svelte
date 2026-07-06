@@ -23,7 +23,7 @@
 		Ban,
 		MoreVertical,
 		Copy
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 
 	type CardVariant = 'draft' | 'open' | 'closed' | 'cancelled';
 

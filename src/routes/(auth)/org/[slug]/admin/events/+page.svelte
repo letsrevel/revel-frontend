@@ -28,7 +28,7 @@
 		MoreVertical,
 		Copy,
 		Edit
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 
 	const { data }: { data: PageData } = $props();
 

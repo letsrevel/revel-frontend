@@ -3,7 +3,7 @@
 	import { onDestroy } from 'svelte';
 	import { Html5Qrcode } from 'html5-qrcode';
 	import { Button } from '$lib/components/ui/button';
-	import { X, Camera, AlertCircle, KeyRound } from 'lucide-svelte';
+	import { X, Camera, AlertCircle, KeyRound } from '@lucide/svelte';
 
 	interface Props {
 		isOpen: boolean;

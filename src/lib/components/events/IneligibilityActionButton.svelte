@@ -26,7 +26,7 @@
 		X,
 		ShieldCheck,
 		UserCircle
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 
 	interface Props {
 		nextStep?: NextStep | null;

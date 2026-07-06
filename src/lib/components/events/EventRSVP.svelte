@@ -8,7 +8,7 @@
 	import RSVPButtons from './RSVPButtons.svelte';
 	import ConfirmDialog from '../common/ConfirmDialog.svelte';
 	import IneligibilityMessage from './IneligibilityMessage.svelte';
-	import { Check, AlertCircle } from 'lucide-svelte';
+	import { Check, AlertCircle } from '@lucide/svelte';
 	import { browser } from '$app/environment';
 	import { invalidateAll } from '$app/navigation';
 

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { cn } from '$lib/utils/cn';
-	import { AlertTriangle, X } from 'lucide-svelte';
+	import { AlertTriangle, X } from '@lucide/svelte';
 	import { fade, scale } from 'svelte/transition';
 
 	interface Props {

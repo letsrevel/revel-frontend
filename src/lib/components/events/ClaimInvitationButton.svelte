@@ -3,7 +3,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { eventpublicdiscoveryClaimInvitation } from '$lib/api/generated/sdk.gen';
-	import { Loader2, Check, LogIn } from 'lucide-svelte';
+	import { Loader2, Check, LogIn } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
 	import type { EventTokenSchema } from '$lib/api/generated/types.gen';

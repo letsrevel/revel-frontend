@@ -13,7 +13,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
-	import { Loader2, Plus } from 'lucide-svelte';
+	import { Loader2, Plus } from '@lucide/svelte';
 	import SubscriptionListItem from './SubscriptionListItem.svelte';
 	import SubscriptionCreateModal from './SubscriptionCreateModal.svelte';
 	import SubscriptionDrawer from './SubscriptionDrawer.svelte';

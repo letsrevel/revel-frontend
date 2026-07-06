@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { UserRsvpSchema } from '$lib/api/generated/types.gen';
 	import { Card } from '$lib/components/ui/card';
-	import { Calendar, MapPin, CheckCircle2, XCircle, HelpCircle } from 'lucide-svelte';
+	import { Calendar, MapPin, CheckCircle2, XCircle, HelpCircle } from '@lucide/svelte';
 	import { getImageUrl } from '$lib/utils/url';
 	import { formatDate, formatEventDate, formatEventDateRange } from '$lib/utils/date';
 	import {

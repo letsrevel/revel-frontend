@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { Check, X } from 'lucide-svelte';
+	import { Check, X } from '@lucide/svelte';
 
 	interface Props {
 		password: string;

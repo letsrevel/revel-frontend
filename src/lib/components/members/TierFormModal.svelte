@@ -6,7 +6,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Input } from '$lib/components/ui/input';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
-	import { Loader2 } from 'lucide-svelte';
+	import { Loader2 } from '@lucide/svelte';
 
 	interface Props {
 		tier: MembershipTierSchema | null;

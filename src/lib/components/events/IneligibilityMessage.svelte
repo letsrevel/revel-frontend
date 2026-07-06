@@ -13,7 +13,7 @@
 		XCircle,
 		Calendar,
 		UserCircle
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { getMissingProfileFieldLabel } from '$lib/utils/eligibility';
 	import { formatDateTime, formatDateLongMonth } from '$lib/utils/date';
 	import IneligibilityActionButton from './IneligibilityActionButton.svelte';

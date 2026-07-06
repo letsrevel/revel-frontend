@@ -25,7 +25,15 @@
 		ScheduleAnchor,
 		OffsetDirection
 	} from './AnnouncementScheduleFields.svelte';
-	import { Loader2, ChevronDown, ChevronUp, Users, UserCog, Calendar, Layers } from 'lucide-svelte';
+	import {
+		Loader2,
+		ChevronDown,
+		ChevronUp,
+		Users,
+		UserCog,
+		Calendar,
+		Layers
+	} from '@lucide/svelte';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';

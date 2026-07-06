@@ -12,7 +12,7 @@
 		ListChecks,
 		FolderPlus,
 		Upload
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import { slide } from 'svelte/transition';
 	import QuestionEditor from './QuestionEditor.svelte';

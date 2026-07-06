@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { VenueDetailSchema, CitySchema } from '$lib/api/generated/types.gen';
-	import { MapPin, Users, Edit, Trash2, LayoutGrid } from 'lucide-svelte';
+	import { MapPin, Users, Edit, Trash2, LayoutGrid } from '@lucide/svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 
 	interface Props {

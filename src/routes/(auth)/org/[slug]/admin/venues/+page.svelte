@@ -9,7 +9,7 @@
 	} from '$lib/api/generated/sdk.gen';
 	import type { VenueDetailSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { Plus, Search, Building2 } from 'lucide-svelte';
+	import { Plus, Search, Building2 } from '@lucide/svelte';
 	import VenueCard from '$lib/components/venues/VenueCard.svelte';
 	import VenueModal from '$lib/components/venues/VenueModal.svelte';
 	import { toast } from 'svelte-sonner';

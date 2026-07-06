@@ -10,7 +10,7 @@
 		Copy,
 		CheckCircle,
 		XCircle
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { formatEventDate } from '$lib/utils/date';

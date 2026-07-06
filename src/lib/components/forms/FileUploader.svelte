@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { cn } from '$lib/utils/cn';
 	import { getImageUrl } from '$lib/utils';
-	import { Upload, X, FileIcon, RefreshCw, AlertCircle, Loader2 } from 'lucide-svelte';
+	import { Upload, X, FileIcon, RefreshCw, AlertCircle, Loader2 } from '@lucide/svelte';
 	import type { QuestionnaireFileSchema } from '$lib/api/generated';
 	import { questionnairefileUploadFile, questionnairefileDeleteFile } from '$lib/api/generated';
 	import { Button } from '$lib/components/ui/button';

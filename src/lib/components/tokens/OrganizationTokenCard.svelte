@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { OrganizationTokenSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
-	import { Copy, Edit, Trash2, Users, Shield } from 'lucide-svelte';
+	import { Copy, Edit, Trash2, Users, Shield } from '@lucide/svelte';
 	import TokenStatusBadge from './TokenStatusBadge.svelte';
 	import {
 		getOrganizationTokenStatus,

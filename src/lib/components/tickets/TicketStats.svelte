@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { AlertTriangle, TrendingUp } from 'lucide-svelte';
+	import { AlertTriangle, TrendingUp } from '@lucide/svelte';
 	import CurrencyFinancialsSummary from '$lib/components/financials/CurrencyFinancialsSummary.svelte';
 	import type { EventFinancialsSchema } from '$lib/api/generated/types.gen';
 

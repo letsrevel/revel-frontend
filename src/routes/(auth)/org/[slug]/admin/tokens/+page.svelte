@@ -17,7 +17,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
-	import { Plus, Search, Loader2 } from 'lucide-svelte';
+	import { Plus, Search, Loader2 } from '@lucide/svelte';
 	import OrganizationTokenCard from '$lib/components/tokens/OrganizationTokenCard.svelte';
 	import OrganizationTokenModal from '$lib/components/tokens/OrganizationTokenModal.svelte';
 	import TokenShareDialog from '$lib/components/tokens/TokenShareDialog.svelte';

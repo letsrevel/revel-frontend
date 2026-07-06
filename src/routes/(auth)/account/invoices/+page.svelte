@@ -16,7 +16,7 @@
 		ArrowLeft,
 		ChevronLeft,
 		ChevronRight
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import {
 		dashboardDashboardInvoices,
 		dashboardDashboardInvoiceDownload

@@ -11,7 +11,7 @@
 		organizationadminvenuesUpdateVenue
 	} from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { X, ChevronDown, ChevronRight, Map, HelpCircle } from 'lucide-svelte';
+	import { X, ChevronDown, ChevronRight, Map, HelpCircle } from '@lucide/svelte';
 	import CityAutocomplete from '$lib/components/forms/CityAutocomplete.svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import { toast } from 'svelte-sonner';

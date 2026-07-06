@@ -16,7 +16,7 @@
 		CalendarDays,
 		ExternalLink,
 		Info
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import {
 		isPendingReview,
 		type QuestionnaireEvaluationStatus

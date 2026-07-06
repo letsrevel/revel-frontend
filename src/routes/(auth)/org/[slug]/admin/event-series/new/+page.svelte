@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { ArrowLeft, Loader2 } from 'lucide-svelte';
+	import { ArrowLeft, Loader2 } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';

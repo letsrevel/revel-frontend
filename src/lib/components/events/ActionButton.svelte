@@ -10,7 +10,7 @@
 		getRSVPStatusText,
 		getTicketStatusText
 	} from '$lib/utils/eligibility';
-	import { Ticket, Check, X } from 'lucide-svelte';
+	import { Ticket, Check, X } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 
 	interface Props {

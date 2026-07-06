@@ -7,7 +7,7 @@
 	import type { DiscountCodeCreateSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { ArrowLeft } from 'lucide-svelte';
+	import { ArrowLeft } from '@lucide/svelte';
 	import DiscountCodeForm from '$lib/components/discount-codes/DiscountCodeForm.svelte';
 
 	const organization = $derived($page.data.organization);

@@ -10,17 +10,9 @@
 	import OrgContactEmailModal from '$lib/components/organization/OrgContactEmailModal.svelte';
 	import StripeConnect from '$lib/components/organization/StripeConnect.svelte';
 	import type { CitySchema, RevenueReportCadence } from '$lib/api/generated';
-	import {
-		Building2,
-		AlertCircle,
-		Check,
-		Eye,
-		Mail,
-		Instagram,
-		Facebook,
-		Send,
-		AtSign
-	} from 'lucide-svelte';
+	import { Building2, AlertCircle, Check, Eye, Mail, Send, AtSign } from '@lucide/svelte';
+	import Instagram from '$lib/components/icons/brand/Instagram.svelte';
+	import Facebook from '$lib/components/icons/brand/Facebook.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
 

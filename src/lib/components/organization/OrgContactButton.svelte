@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { Mail, Send, Check } from 'lucide-svelte';
+	import { Mail, Send, Check } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { Button } from '$lib/components/ui/button';

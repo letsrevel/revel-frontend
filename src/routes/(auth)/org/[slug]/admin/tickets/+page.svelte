@@ -3,7 +3,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { formatEventDate } from '$lib/utils/date';
 	import EventStatusBadge from '$lib/components/events/EventStatusBadge.svelte';
-	import { Ticket, ChevronRight, Users } from 'lucide-svelte';
+	import { Ticket, ChevronRight, Users } from '@lucide/svelte';
 
 	const { data }: { data: PageData } = $props();
 

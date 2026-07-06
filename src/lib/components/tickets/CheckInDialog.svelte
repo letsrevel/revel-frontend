@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
-	import { X, AlertCircle, CheckCircle, Clock, XCircle } from 'lucide-svelte';
+	import { X, AlertCircle, CheckCircle, Clock, XCircle } from '@lucide/svelte';
 	import { fade, scale } from 'svelte/transition';
 	import { getUserDisplayName } from '$lib/utils/user-display';
 	import { formatPrice } from '$lib/utils/format';

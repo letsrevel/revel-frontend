@@ -6,7 +6,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import { AlertTriangle, FileText, Loader2 } from 'lucide-svelte';
+	import { AlertTriangle, FileText, Loader2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import {
 		organizationadminrecurringeventsGetSeriesTemplateEvent,

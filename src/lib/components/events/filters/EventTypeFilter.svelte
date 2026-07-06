@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { EventFilters } from '$lib/utils/filters';
-	import { Eye, X } from 'lucide-svelte';
+	import { Eye, X } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import * as m from '$lib/paraglide/messages.js';
 
