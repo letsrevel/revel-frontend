@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { page } from '$app/state';
 	import {
 		MapPin,
 		Settings,
@@ -158,9 +157,9 @@
 	// Reset page when filter changes
 	$effect(() => {
 		// Watch includePastEvents, ticketType and eventsOrderBy
-		includePastEvents;
-		ticketType;
-		eventsOrderBy;
+		void includePastEvents;
+		void ticketType;
+		void eventsOrderBy;
 		eventsPage = 1;
 	});
 </script>

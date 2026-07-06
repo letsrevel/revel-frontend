@@ -1,4 +1,3 @@
-import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import {
 	notificationpreferenceGetPreferences,

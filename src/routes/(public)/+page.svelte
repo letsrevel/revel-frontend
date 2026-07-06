@@ -41,11 +41,6 @@
 	let rotation = $state(0);
 	const isItalian = $derived(browser && getLocale() === 'it');
 
-	// Beta access mailto link with pre-populated subject
-	const betaAccessEmail = 'contact@letsrevel.io';
-	const betaSubject = encodeURIComponent('Beta Access Request - Organization');
-	const betaMailto = `mailto:${betaAccessEmail}?subject=${betaSubject}`;
-
 	onMount(() => {
 		if (getLocale() === 'it') {
 			const interval = setInterval(() => {

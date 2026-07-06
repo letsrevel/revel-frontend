@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { page } from '$app/state';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		eventpublicticketsTicketCheckout,
@@ -138,15 +137,6 @@
 
 	// First user ticket (for backward compatibility)
 	const userTicket = $derived(userTickets.length > 0 ? userTickets[0] : null);
-
-	// Check if user can purchase more tickets
-	const canPurchaseMore = $derived.by(() => {
-		if (!userStatus) return true;
-		if (isUserStatusResponse(userStatus)) {
-			return userStatus.can_purchase_more ?? true;
-		}
-		return false; // Legacy: single ticket = can't buy more
-	});
 
 	// Get per-tier remaining tickets info for the user
 	// Only show user-specific remaining info if they can actually purchase more

@@ -139,15 +139,6 @@
 		return paymentMethod === 'online';
 	});
 
-	// Check if ticket reservation can be cancelled (has pending online payment)
-	const canCancelReservation = $derived.by(() => {
-		if (!ticket) return false;
-		if (ticket.status !== 'pending') return false;
-		if (!ticket.payment?.id) return false;
-		// Only allow cancel for online payments (pending Stripe checkout)
-		return ticket.tier?.payment_method === 'online';
-	});
-
 	// Self-cancellation gate: ticket is active, the tier opted in, and the event
 	// hasn't started. The preview endpoint is still the source of truth for
 	// edge cases (past deadline, etc.) and surfaces them inside the dialog.

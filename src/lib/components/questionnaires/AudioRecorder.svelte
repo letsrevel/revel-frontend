@@ -10,7 +10,7 @@
 		generateRecordingFilename,
 		normalizeAudioMimeType
 	} from '$lib/utils/audio';
-	import { onMount, onDestroy } from 'svelte';
+	import { onDestroy } from 'svelte';
 
 	interface Props {
 		/** Maximum file size in bytes */

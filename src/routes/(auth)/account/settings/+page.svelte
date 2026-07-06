@@ -40,7 +40,7 @@
 
 		isUpdatingGeneral = true;
 		try {
-			const { data: updatedPrefs, error } = await userpreferencesUpdateGeneralPreferences({
+			const { error } = await userpreferencesUpdateGeneralPreferences({
 				headers: {
 					Authorization: `Bearer ${authStore.accessToken}`
 				},

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import type { AnnouncementPublicSchema } from '$lib/api/generated/types.gen';
 	import { organizationListMemberAnnouncements } from '$lib/api/generated/sdk.gen';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { authStore } from '$lib/stores/auth.svelte';

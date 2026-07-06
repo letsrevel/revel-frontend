@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
-	import { Menu, ChevronRight, Home, AlertCircle } from 'lucide-svelte';
+	import { Menu, ChevronRight, Home } from 'lucide-svelte';
 	import type { LayoutData } from './$types';
 
 	interface Props {

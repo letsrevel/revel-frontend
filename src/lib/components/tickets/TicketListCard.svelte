@@ -5,7 +5,7 @@
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
 	import MyTicketModal from './MyTicketModal.svelte';
 	import AddToWalletButton from './AddToWalletButton.svelte';
-	import { Calendar, MapPin, Ticket, Download, CalendarDays } from 'lucide-svelte';
+	import { Calendar, MapPin, Ticket, CalendarDays } from 'lucide-svelte';
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
 	import { getImageUrl } from '$lib/utils/url';
 	import { formatEventDateRange, formatDate } from '$lib/utils/date';

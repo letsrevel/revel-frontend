@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { VenueSeatSchema } from '$lib/api/generated/types.gen';
-	import { Armchair, Accessibility, EyeOff, Check } from 'lucide-svelte';
+	import { Accessibility, EyeOff, Check } from 'lucide-svelte';
 
 	interface Props {
 		seats: VenueSeatSchema[];
@@ -23,7 +23,7 @@
 			byRow.get(row)!.push(seat);
 		}
 		// Sort seats within each row by number
-		for (const [row, rowSeats] of byRow) {
+		for (const [, rowSeats] of byRow) {
 			rowSeats.sort((a, b) => (a.number || 0) - (b.number || 0));
 		}
 		// Sort rows alphabetically

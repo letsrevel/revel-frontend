@@ -1,5 +1,5 @@
-import { redirect, fail } from '@sveltejs/kit';
-import type { PageServerLoad, Actions } from './$types';
+import { redirect } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
 import { API_BASE_URL } from '$lib/config/api';
 import { getAccessTokenCookieOptions } from '$lib/utils/cookies';
 import { log } from '$lib/server/logger';
