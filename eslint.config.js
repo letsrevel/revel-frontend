@@ -21,7 +21,11 @@ export default [
 		}
 	},
 	{
-		files: ['**/*.svelte'],
+		// eslint-plugin-svelte 3 routes *.svelte, *.svelte.ts and *.svelte.js
+		// through svelte-eslint-parser, which needs the TS sub-parser to read
+		// the TypeScript inside rune modules (*.svelte.ts). Without these globs
+		// the `.svelte.ts` stores fail with "Parsing error: Unexpected token".
+		files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],
 		languageOptions: {
 			parserOptions: {
 				parser: ts.parser
@@ -51,6 +55,20 @@ export default [
 			'svelte/no-at-html-tags': 'warn',
 			'svelte/no-unused-svelte-ignore': 'warn',
 			'svelte/valid-compile': 'off', // Disable custom element warnings
+			// Rules newly promoted to `error` by the eslint 10 / @eslint/js 10 /
+			// eslint-plugin-svelte 3 upgrade. Each flags a pre-existing, pervasive
+			// pattern (hundreds of sites) that is worth cleaning up incrementally
+			// but is out of scope for a dependency bump. Downgraded to `warn` to
+			// match this repo's permissive lint posture (CI fails on errors only).
+			// TODO: address and re-promote to `error` in follow-up passes.
+			'no-useless-assignment': 'warn',
+			'svelte/no-navigation-without-resolve': 'warn',
+			'svelte/require-each-key': 'warn',
+			'svelte/prefer-svelte-reactivity': 'warn',
+			'svelte/prefer-writable-derived': 'warn',
+			'svelte/no-useless-mustaches': 'warn',
+			'svelte/no-unnecessary-state-wrap': 'warn',
+			'svelte/no-useless-children-snippet': 'warn',
 			'no-restricted-syntax': [
 				'error',
 				{
