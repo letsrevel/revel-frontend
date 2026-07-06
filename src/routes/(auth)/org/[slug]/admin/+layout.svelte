@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { Menu, ChevronRight, Home } from '@lucide/svelte';
@@ -21,56 +22,64 @@
 	// Order is kept in sync with the dashboard Quick Actions in admin/+page.svelte
 	// (Dashboard leads here since the dashboard is this nav's landing page).
 	const navItems = [
-		{ href: `/org/${data.organization.slug}/admin`, label: m['orgAdmin.nav.dashboard']() },
-		{ href: `/org/${data.organization.slug}/admin/events`, label: m['orgAdmin.nav.events']() },
 		{
-			href: `/org/${data.organization.slug}/admin/event-series`,
+			href: resolve('/(auth)/org/[slug]/admin', { slug: data.organization.slug }),
+			label: m['orgAdmin.nav.dashboard']()
+		},
+		{
+			href: resolve('/(auth)/org/[slug]/admin/events', { slug: data.organization.slug }),
+			label: m['orgAdmin.nav.events']()
+		},
+		{
+			href: resolve('/(auth)/org/[slug]/admin/event-series', { slug: data.organization.slug }),
 			label: m['orgAdmin.nav.eventSeries']()
 		},
 		{
-			href: `/org/${data.organization.slug}/admin/tickets`,
+			href: resolve('/(auth)/org/[slug]/admin/tickets', { slug: data.organization.slug }),
 			label: m['orgAdmin.nav.tickets']()
 		},
 		{
-			href: `/org/${data.organization.slug}/admin/discount-codes`,
+			href: resolve('/(auth)/org/[slug]/admin/discount-codes', { slug: data.organization.slug }),
 			label: m['orgAdmin.nav.discountCodes']()
 		},
 		{
-			href: `/org/${data.organization.slug}/admin/members`,
+			href: resolve('/(auth)/org/[slug]/admin/members', { slug: data.organization.slug }),
 			label: m['orgAdmin.nav.members'](),
 			subItems: data.organization.accept_membership_requests
 				? [
 						{
-							href: `/org/${data.organization.slug}/admin/members/requests`,
+							href: resolve('/(auth)/org/[slug]/admin/members/requests', {
+								slug: data.organization.slug
+							}),
 							label: m['orgAdmin.nav.memberRequests']()
 						}
 					]
 				: undefined
 		},
 		{
-			href: `/org/${data.organization.slug}/admin/polls`,
+			href: resolve('/(auth)/org/[slug]/admin/polls', { slug: data.organization.slug }),
 			label: m['orgAdmin.nav.polls']()
 		},
 		{
-			href: `/org/${data.organization.slug}/admin/questionnaires`,
+			href: resolve('/(auth)/org/[slug]/admin/questionnaires', { slug: data.organization.slug }),
 			label: m['orgAdmin.nav.questionnaires']()
 		},
 		{
-			href: `/org/${data.organization.slug}/admin/resources`,
+			href: resolve('/(auth)/org/[slug]/admin/resources', { slug: data.organization.slug }),
 			label: m['orgAdmin.nav.resources']()
 		},
 		{
-			href: `/org/${data.organization.slug}/admin/venues`,
+			href: resolve('/(auth)/org/[slug]/admin/venues', { slug: data.organization.slug }),
 			label: m['orgAdmin.nav.venues']()
 		},
 		{
-			href: `/org/${data.organization.slug}/admin/blacklist`,
+			href: resolve('/(auth)/org/[slug]/admin/blacklist', { slug: data.organization.slug }),
 			label: 'Blacklist'
 		},
 		...(data.isOwner
 			? [
 					{
-						href: `/org/${data.organization.slug}/admin/billing`,
+						href: resolve('/(auth)/org/[slug]/admin/billing', { slug: data.organization.slug }),
 						label: m['orgAdmin.nav.billing'](),
 						badge:
 							data.organization.is_stripe_connected &&
@@ -83,16 +92,19 @@
 								: undefined
 					},
 					{
-						href: `/org/${data.organization.slug}/admin/financials`,
+						href: resolve('/(auth)/org/[slug]/admin/financials', { slug: data.organization.slug }),
 						label: m['orgAdmin.nav.financials']()
 					}
 				]
 			: []),
 		{
-			href: `/org/${data.organization.slug}/admin/announcements`,
+			href: resolve('/(auth)/org/[slug]/admin/announcements', { slug: data.organization.slug }),
 			label: m['orgAdmin.nav.announcements']()
 		},
-		{ href: `/org/${data.organization.slug}/admin/settings`, label: m['orgAdmin.nav.settings']() }
+		{
+			href: resolve('/(auth)/org/[slug]/admin/settings', { slug: data.organization.slug }),
+			label: m['orgAdmin.nav.settings']()
+		}
 	];
 
 	// Check if link is active
@@ -117,10 +129,19 @@
 
 	// Breadcrumb structure
 	const breadcrumbs = $derived([
-		{ href: '/', label: m['orgAdmin.breadcrumbs.home']() },
-		{ href: '/organizations', label: m['orgAdmin.breadcrumbs.organizations']() },
-		{ href: `/org/${data.organization.slug}`, label: data.organization.name },
-		{ href: `/org/${data.organization.slug}/admin`, label: m['orgAdmin.breadcrumbs.admin']() }
+		{ href: resolve('/(public)', {}), label: m['orgAdmin.breadcrumbs.home']() },
+		{
+			href: resolve('/(public)/organizations', {}),
+			label: m['orgAdmin.breadcrumbs.organizations']()
+		},
+		{
+			href: resolve('/(public)/org/[slug]', { slug: data.organization.slug }),
+			label: data.organization.name
+		},
+		{
+			href: resolve('/(auth)/org/[slug]/admin', { slug: data.organization.slug }),
+			label: m['orgAdmin.breadcrumbs.admin']()
+		}
 	]);
 </script>
 
@@ -183,6 +204,7 @@
 							{#if i === 0}
 								<Home class="h-3.5 w-3.5 text-muted-foreground/70" aria-hidden="true" />
 							{/if}
+							<!-- eslint-disable svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in the nav item list above -->
 							<a
 								href={crumb.href}
 								class="text-muted-foreground/80 transition-colors hover:text-foreground"
@@ -190,6 +212,7 @@
 							>
 								{crumb.label}
 							</a>
+							<!-- eslint-enable svelte/no-navigation-without-resolve -->
 						</li>
 					{/each}
 				</ol>
@@ -200,6 +223,7 @@
 				<ul class="flex gap-6">
 					{#each navItems as item (item.href)}
 						<li>
+							<!-- eslint-disable svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in the nav item list above -->
 							<a
 								href={item.href}
 								class="relative block border-b-2 py-4 text-sm font-medium transition-colors {isActive(
@@ -223,6 +247,7 @@
 									</span>
 								{/if}
 							</a>
+							<!-- eslint-enable svelte/no-navigation-without-resolve -->
 						</li>
 					{/each}
 				</ul>
@@ -253,6 +278,7 @@
 								{#if i === 0}
 									<Home class="h-3.5 w-3.5 text-muted-foreground/70" aria-hidden="true" />
 								{/if}
+								<!-- eslint-disable svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in the nav item list above -->
 								<a
 									href={crumb.href}
 									onclick={closeMobileMenu}
@@ -261,6 +287,7 @@
 								>
 									{crumb.label}
 								</a>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
 							</li>
 						{/each}
 					</ol>
@@ -270,6 +297,7 @@
 				<ul class="space-y-1">
 					{#each navItems as item (item.href)}
 						<li>
+							<!-- eslint-disable svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in the nav item list above -->
 							<a
 								href={item.href}
 								onclick={closeMobileMenu}
@@ -289,6 +317,7 @@
 									></span>
 								{/if}
 							</a>
+							<!-- eslint-enable svelte/no-navigation-without-resolve -->
 						</li>
 					{/each}
 				</ul>

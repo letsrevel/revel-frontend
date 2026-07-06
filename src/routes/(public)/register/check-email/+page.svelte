@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { Mail, Loader2 } from '@lucide/svelte';
@@ -128,7 +129,10 @@
 
 		<!-- Back to Login -->
 		<div class="text-sm">
-			<a href="/login" class="text-primary underline-offset-4 hover:underline">
+			<a
+				href={resolve('/(public)/login', {})}
+				class="text-primary underline-offset-4 hover:underline"
+			>
 				{m['checkEmailPage.backToLogin']()}
 			</a>
 		</div>

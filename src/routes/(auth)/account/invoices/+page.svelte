@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -149,7 +150,7 @@
 	<!-- Header -->
 	<div class="mb-6 flex items-center gap-4">
 		<a
-			href="/account"
+			href={resolve('/(auth)/account', {})}
 			class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
 		>
 			<ArrowLeft class="h-4 w-4" aria-hidden="true" />

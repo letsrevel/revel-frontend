@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { UserRsvpSchema } from '$lib/api/generated/types.gen';
 	import { Card } from '$lib/components/ui/card';
@@ -109,7 +110,7 @@
 				<div class="mb-2">
 					<h3 class="text-lg font-semibold">
 						<a
-							href="/events/{rsvp.event.id}"
+							href={resolve('/(public)/events/[id]', { id: rsvp.event.id })}
 							class="hover:underline focus:underline focus:outline-none"
 						>
 							{rsvp.event.name}
@@ -151,7 +152,7 @@
 			</div>
 
 			<a
-				href="/events/{rsvp.event.id}"
+				href={resolve('/(public)/events/[id]', { id: rsvp.event.id })}
 				class="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 			>
 				{m['rsvpCard.viewEvent']()}

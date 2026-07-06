@@ -241,6 +241,7 @@
 							>
 						</div>
 					{:else if botLink}
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
 						<a
 							href={botLink}
 							target="_blank"
@@ -251,6 +252,7 @@
 							<span>@{botName}</span>
 							<ExternalLink class="h-3 w-3" aria-hidden="true" />
 						</a>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					{:else}
 						<p class="text-sm text-muted-foreground">
 							{m['telegramConnectionManager.botInfoError']()}

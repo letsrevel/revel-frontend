@@ -400,7 +400,7 @@
 		<!-- Link to Payouts -->
 		<div class="mt-6">
 			<a
-				href="/account/referral/payouts"
+				href={resolve('/(auth)/account/referral/payouts', {})}
 				class="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
 			>
 				{m['referral.payouts']()} &rarr;

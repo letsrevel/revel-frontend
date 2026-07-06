@@ -771,12 +771,14 @@
 		<div
 			class="flex flex-col-reverse gap-3 border-t border-border pt-6 sm:flex-row sm:justify-between"
 		>
+			<!-- eslint-disable svelte/no-navigation-without-resolve -- relative parent navigation (..); resolves against the mounting route, not a static route id -->
 			<a
 				href=".."
 				class="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-6 py-3 font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			>
 				{m['essentialsStep.cancel']()}
 			</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			<button
 				type="submit"
 				disabled={isSaving}

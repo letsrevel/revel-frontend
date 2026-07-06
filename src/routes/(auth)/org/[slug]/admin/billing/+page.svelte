@@ -20,6 +20,7 @@
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { browser } from '$app/environment';
 	import { invalidateAll } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
 	import { extractErrorMessage } from '$lib/utils/errors';
@@ -315,28 +316,28 @@
 	<!-- Quick Links -->
 	<div class="flex flex-wrap gap-3">
 		<a
-			href="/org/{slug}/admin/billing/invoices"
+			href={resolve('/(auth)/org/[slug]/admin/billing/invoices', { slug: slug })}
 			class="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
 		>
 			<FileText class="h-4 w-4" aria-hidden="true" />
 			{m['orgAdmin.billing.invoices.title']()}
 		</a>
 		<a
-			href="/org/{slug}/admin/billing/credit-notes"
+			href={resolve('/(auth)/org/[slug]/admin/billing/credit-notes', { slug: slug })}
 			class="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
 		>
 			<Receipt class="h-4 w-4" aria-hidden="true" />
 			{m['orgAdmin.billing.creditNotes.title']()}
 		</a>
 		<a
-			href="/org/{slug}/admin/billing/attendee-invoices"
+			href={resolve('/(auth)/org/[slug]/admin/billing/attendee-invoices', { slug: slug })}
 			class="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
 		>
 			<Users class="h-4 w-4" aria-hidden="true" />
 			{m['orgAdmin.billing.attendeeInvoices.title']()}
 		</a>
 		<a
-			href="/org/{slug}/admin/billing/attendee-credit-notes"
+			href={resolve('/(auth)/org/[slug]/admin/billing/attendee-credit-notes', { slug: slug })}
 			class="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
 		>
 			<Receipt class="h-4 w-4" aria-hidden="true" />

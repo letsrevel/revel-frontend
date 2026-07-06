@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
 	import { formatEventDate, formatEventDateRange } from '$lib/utils/date';
@@ -120,6 +121,7 @@
 
 					<!-- Location -->
 					{#if mapsUrl}
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
 						<a
 							href={mapsUrl}
 							target="_blank"
@@ -131,6 +133,7 @@
 							<span class="group-hover:underline">{locationDisplay}</span>
 							<ExternalLink class="h-4 w-4 opacity-70 group-hover:opacity-100" aria-hidden="true" />
 						</a>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					{:else}
 						<div class="flex items-center gap-2">
 							<MapPin class="h-5 w-5 shrink-0" aria-hidden="true" />
@@ -156,7 +159,7 @@
 	<!-- Note: Always shows organization logo/initial for clarity, not the event logo fallback -->
 	<div class="relative mx-auto max-w-[1920px] px-6 md:px-8">
 		<a
-			href="/org/{event.organization.slug}"
+			href={resolve('/(public)/org/[slug]', { slug: event.organization.slug })}
 			class="group -mt-8 inline-flex items-center gap-3 rounded-lg bg-background p-3 shadow-lg ring-1 ring-border transition-all hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 		>
 			{#if event.organization.logo}

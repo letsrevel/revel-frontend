@@ -237,12 +237,14 @@
 			</h2>
 			<div class="flex flex-wrap justify-center gap-4">
 				{#each content.relatedPages as relatedSlug (relatedSlug)}
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing-page path built from a runtime slug; not a static route id -->
 					<a
 						href={getRelatedPageUrl(relatedSlug)}
 						class="rounded-lg border px-4 py-2 text-sm text-primary transition-colors hover:bg-muted hover:text-primary/80"
 					>
 						{getRelatedPageTitle(relatedSlug)}
 					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				{/each}
 			</div>
 		</div>

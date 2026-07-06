@@ -190,6 +190,7 @@
 						<!-- Pagination controls -->
 						<div class="flex items-center gap-2">
 							{#if hasPrevPage}
+								<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 								<a
 									href="?{organizationFiltersToParams({
 										...currentFilters,
@@ -200,6 +201,7 @@
 								>
 									{m['common.pagination_previous']()}
 								</a>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
 							{:else}
 								<button
 									type="button"
@@ -223,6 +225,7 @@
 							</span>
 
 							{#if hasNextPage}
+								<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 								<a
 									href="?{organizationFiltersToParams({
 										...currentFilters,
@@ -233,6 +236,7 @@
 								>
 									{m['common.pagination_next']()}
 								</a>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
 							{:else}
 								<button
 									type="button"

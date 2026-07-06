@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { organizationadminresourcesListResources } from '$lib/api/generated/sdk.gen';
@@ -114,7 +115,7 @@
 		</div>
 
 		<a
-			href="/org/{organizationSlug}/admin/resources"
+			href={resolve('/(auth)/org/[slug]/admin/resources', { slug: organizationSlug })}
 			class="inline-flex items-center gap-1 rounded text-xs text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			target="_blank"
 			rel="noopener noreferrer"
@@ -146,7 +147,7 @@
 				{m['eventResourcesAdmin.noResourcesAvailable']()}
 			</p>
 			<a
-				href="/org/{organizationSlug}/admin/resources"
+				href={resolve('/(auth)/org/[slug]/admin/resources', { slug: organizationSlug })}
 				class="mt-2 inline-flex items-center gap-1 text-sm text-primary hover:underline"
 				target="_blank"
 				rel="noopener noreferrer"

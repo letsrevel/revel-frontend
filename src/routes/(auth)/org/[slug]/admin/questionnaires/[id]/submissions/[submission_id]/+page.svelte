@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData } from './$types';
 	import { Card } from '$lib/components/ui/card';
@@ -35,7 +36,10 @@
 
 	// Submission list navigation (Next/Previous), preserving filter/sort context
 	const submissionsBasePath = $derived(
-		`/org/${data.organizationSlug}/admin/questionnaires/${data.questionnaireId}/submissions`
+		resolve('/(auth)/org/[slug]/admin/questionnaires/[id]/submissions', {
+			slug: data.organizationSlug,
+			id: data.questionnaireId
+		})
 	);
 	const contextQuery = $derived(
 		data.navigation?.contextQuery ? `?${data.navigation.contextQuery}` : ''
@@ -108,6 +112,7 @@
 			aria-label={m['questionnaireSubmissionDetailPage.navLabel']()}
 		>
 			{#if previousHref}
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve()-derived value; the $derived wrapper prevents the rule from tracing it to resolve() -->
 				<a
 					href={previousHref}
 					class="inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -115,6 +120,7 @@
 					<ChevronLeft class="h-4 w-4" aria-hidden="true" />
 					{m['questionnaireSubmissionDetailPage.previous']()}
 				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			{:else}
 				<span
 					class="inline-flex cursor-not-allowed items-center gap-1 rounded-md border px-3 py-1.5 text-sm font-medium text-muted-foreground opacity-50"
@@ -135,6 +141,7 @@
 			{/if}
 
 			{#if nextHref}
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve()-derived value; the $derived wrapper prevents the rule from tracing it to resolve() -->
 				<a
 					href={nextHref}
 					class="inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -142,6 +149,7 @@
 					{m['questionnaireSubmissionDetailPage.next']()}
 					<ChevronRight class="h-4 w-4" aria-hidden="true" />
 				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			{:else}
 				<span
 					class="inline-flex cursor-not-allowed items-center gap-1 rounded-md border px-3 py-1.5 text-sm font-medium text-muted-foreground opacity-50"
@@ -159,6 +167,7 @@
 	<!-- Header -->
 	<div class="mb-8">
 		<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+			<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve()-derived value; the $derived wrapper prevents the rule from tracing it to resolve() -->
 			<a
 				href="{submissionsBasePath}{contextQuery}"
 				class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
@@ -166,6 +175,7 @@
 				<ArrowLeft class="h-4 w-4" />
 				{m['questionnaireSubmissionDetailPage.backToSubmissions']()}
 			</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 
 			{@render submissionNav()}
 		</div>
@@ -364,7 +374,7 @@
 
 						<!-- View Event Link -->
 						<a
-							href="/events/{eventMetadata.event_id}"
+							href={resolve('/(public)/events/[id]', { id: eventMetadata.event_id })}
 							class="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
 						>
 							<ExternalLink class="h-4 w-4" aria-hidden="true" />

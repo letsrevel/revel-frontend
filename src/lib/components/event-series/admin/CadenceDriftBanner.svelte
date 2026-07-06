@@ -43,12 +43,14 @@
 			<p class="font-medium">{title}</p>
 			<p class="text-muted-foreground">{m['recurringEvents.drift.banner.body']()}</p>
 			<div class="flex flex-wrap gap-2 pt-1">
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- in-page anchor (fragment) supplied via prop; not an internal route -->
 				<a
 					href={reviewAnchor}
 					class="inline-flex items-center rounded-md px-2 py-1 text-sm font-medium underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				>
 					{m['recurringEvents.drift.banner.reviewAnchor']()}
 				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				{#if canEdit && onBulkCancel}
 					<Button
 						variant="destructive"

@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData, ActionData } from './$types';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { Check, AlertCircle, ChevronLeft, Mail, UserPlus, Link } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import InvitationRequestsTab from '$lib/components/invitations/InvitationRequestsTab.svelte';
@@ -85,7 +86,7 @@
 	<div>
 		<div class="mb-4">
 			<a
-				href="/org/{data.organization.slug}/admin/events"
+				href={resolve('/(auth)/org/[slug]/admin/events', { slug: data.organization.slug })}
 				class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
 			>
 				<ChevronLeft class="h-4 w-4" aria-hidden="true" />

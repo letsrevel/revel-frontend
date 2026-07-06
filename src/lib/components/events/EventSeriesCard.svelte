@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { EventSeriesRetrieveSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
@@ -86,7 +87,10 @@
 <article class={containerClasses}>
 	<!-- Clickable overlay link for accessibility -->
 	<a
-		href="/events/{series.organization.slug}/series/{series.slug}"
+		href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {
+			org_slug: series.organization.slug,
+			series_slug: series.slug
+		})}
 		data-sveltekit-preload-data="hover"
 		class="absolute inset-0 z-10"
 		aria-label={accessibleLabel}

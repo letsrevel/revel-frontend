@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
 	import type { UserEventStatus } from './types';
 	import { cn } from '$lib/utils/cn';
@@ -83,7 +84,10 @@
 <article class={containerClasses}>
 	<!-- Clickable overlay link for accessibility -->
 	<a
-		href="/events/{event.organization.slug}/{event.slug}"
+		href={resolve('/(public)/events/[org_slug]/[event_slug]', {
+			org_slug: event.organization.slug,
+			event_slug: event.slug
+		})}
 		data-sveltekit-preload-data="hover"
 		class="absolute inset-0 z-10"
 		aria-label={accessibleLabel}

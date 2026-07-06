@@ -47,7 +47,7 @@
 				{m['unsubscribePage.invalidTokenDescription']()}
 			</p>
 			<a
-				href="/"
+				href={resolve('/(public)', {})}
 				class="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
 			>
 				{m['unsubscribePage.goHome']()}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { EventInvitationRequestSchema } from '$lib/api/generated/types.gen';
 	import { Card } from '$lib/components/ui/card';
@@ -128,7 +129,7 @@
 					<div class="min-w-0">
 						<h3 class="truncate text-lg font-semibold">
 							<a
-								href="/events/{request.event.id}"
+								href={resolve('/(public)/events/[id]', { id: request.event.id })}
 								class="hover:underline focus:underline focus:outline-none"
 							>
 								{request.event.name}
@@ -197,7 +198,7 @@
 					</button>
 				{/if}
 				<a
-					href="/events/{request.event.id}"
+					href={resolve('/(public)/events/[id]', { id: request.event.id })}
 					class="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
 					{m['invitationRequestCard.viewEvent']()}

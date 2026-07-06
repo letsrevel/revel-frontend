@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import type {
 		OrganizationRetrieveSchema,
@@ -80,7 +81,7 @@
 		<!-- Action Links -->
 		<div class="mt-6 flex flex-wrap gap-2">
 			<a
-				href="/org/{organization.slug}"
+				href={resolve('/(public)/org/[slug]', { slug: organization.slug })}
 				class="inline-flex rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			>
 				{m['organizationInfo.viewProfile']()}

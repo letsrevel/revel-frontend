@@ -8,6 +8,7 @@
 	import { CheckCircle2, Filter, ChevronLeft, ChevronRight, Loader2 } from '@lucide/svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 
 	const accessToken = $derived(authStore.accessToken);
 
@@ -252,7 +253,7 @@
 					{m['dashboardRsvpsPage.emptyHint']()}
 				</p>
 				<a
-					href="/events"
+					href={resolve('/(public)/events', {})}
 					class="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
 					{m['dashboardRsvpsPage.browseEvents']()}

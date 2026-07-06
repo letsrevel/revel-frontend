@@ -290,6 +290,7 @@
 							<!-- Pagination controls -->
 							<div class="flex items-center gap-2">
 								{#if hasPrevPage}
+									<!-- eslint-disable svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params) -->
 									<a
 										href="?{filtersToParams({ ...currentFilters, page: currentPage - 1 })}"
 										class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
@@ -297,6 +298,7 @@
 									>
 										{m['common.pagination_previous']()}
 									</a>
+									<!-- eslint-enable svelte/no-navigation-without-resolve -->
 								{:else}
 									<button
 										type="button"
@@ -320,6 +322,7 @@
 								</span>
 
 								{#if hasNextPage}
+									<!-- eslint-disable svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params) -->
 									<a
 										href="?{filtersToParams({ ...currentFilters, page: currentPage + 1 })}"
 										class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
@@ -327,6 +330,7 @@
 									>
 										{m['common.pagination_next']()}
 									</a>
+									<!-- eslint-enable svelte/no-navigation-without-resolve -->
 								{:else}
 									<button
 										type="button"

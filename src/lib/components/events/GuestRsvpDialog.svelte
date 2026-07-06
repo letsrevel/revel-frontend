@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import {
 		Dialog,
@@ -335,19 +336,23 @@
 								{errorMessage}
 								{#if requiresAccount}
 									<p class="mt-2">
+										<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 										<a
-											href="/login?redirect={encodeURIComponent(window.location.pathname)}"
+											href={`${resolve('/(public)/login', {})}?redirect=${encodeURIComponent(window.location.pathname)}`}
 											class="font-medium underline hover:no-underline"
 										>
 											{m['guestRsvpDialog.logIn']()}
 										</a>
+										<!-- eslint-enable svelte/no-navigation-without-resolve -->
 										{m['guestRsvpDialog.or']()}
+										<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 										<a
-											href="/register?redirect={encodeURIComponent(window.location.pathname)}"
+											href={`${resolve('/(public)/register', {})}?redirect=${encodeURIComponent(window.location.pathname)}`}
 											class="font-medium underline hover:no-underline"
 										>
 											{m['guestRsvpDialog.createAnAccount']()}
 										</a>
+										<!-- eslint-enable svelte/no-navigation-without-resolve -->
 										{m['guestRsvpDialog.toContinue']()}
 									</p>
 								{/if}

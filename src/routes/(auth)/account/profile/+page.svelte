@@ -4,6 +4,7 @@
 	import { enhance, applyAction } from '$app/forms';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import type { PageData, ActionData } from './$types';
 	import { COMMON_PRONOUNS } from '$lib/schemas/profile';
 	import type { VisibilityValue } from '$lib/schemas/preferences';
@@ -400,12 +401,14 @@
 				{/if}
 
 				<p class="text-xs text-muted-foreground">{m['profile.email_hint']()}</p>
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 				<a
-					href="/account/security#email"
+					href={`${resolve('/(auth)/account/security', {})}#email`}
 					class="inline-block text-sm text-primary underline-offset-4 hover:underline"
 				>
 					{m['profile.email_changeLink']()}
 				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			</div>
 		</div>
 
@@ -656,7 +659,7 @@
 	<!-- Settings Link -->
 	<div class="mt-8 border-t pt-6">
 		<a
-			href="/account/settings"
+			href={resolve('/(auth)/account/settings', {})}
 			class="inline-flex items-center gap-2 text-sm text-primary underline-offset-4 hover:underline"
 		>
 			<span>{m['profile.settingsLink_text']()}</span>

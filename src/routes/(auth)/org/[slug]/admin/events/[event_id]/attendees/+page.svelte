@@ -2,6 +2,7 @@
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
 	import { goto, invalidateAll } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
 	import {
@@ -406,7 +407,7 @@
 	<div>
 		<div class="mb-4">
 			<a
-				href="/org/{organization.slug}/admin/events"
+				href={resolve('/(auth)/org/[slug]/admin/events', { slug: organization.slug })}
 				class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
 			>
 				<ChevronLeft class="h-4 w-4" aria-hidden="true" />
@@ -422,14 +423,20 @@
 			</div>
 			<div class="flex flex-wrap items-center gap-2">
 				<a
-					href="/org/{organization.slug}/admin/events/{data.event.id}/edit"
+					href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
+						slug: organization.slug,
+						event_id: data.event.id
+					})}
 					class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 				>
 					{m['eventEditor.editEvent']()}
 				</a>
 				{#if data.event.waitlist_open}
 					<a
-						href="/org/{organization.slug}/admin/events/{data.event.id}/waitlist"
+						href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/waitlist', {
+							slug: organization.slug,
+							event_id: data.event.id
+						})}
 						class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 					>
 						{m['eventActionSidebar.manageWaitlist']()}

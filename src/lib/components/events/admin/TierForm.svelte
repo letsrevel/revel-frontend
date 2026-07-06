@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -1119,7 +1120,7 @@
 
 					{#if isBillingError}
 						<a
-							href="/org/{organizationSlug}/admin/billing"
+							href={resolve('/(auth)/org/[slug]/admin/billing', { slug: organizationSlug })}
 							class="mt-2 inline-flex items-center gap-1 text-sm font-medium text-destructive underline hover:text-destructive/80"
 						>
 							{m['tierForm.completeBillingInfo']()}

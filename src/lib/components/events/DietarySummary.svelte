@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { browser } from '$app/environment';
 	import { eventpublicdetailsGetDietarySummary } from '$lib/api';
@@ -26,7 +27,7 @@
 
 	// Build profile URL with redirect back to current page
 	const profileDietaryUrl = $derived.by(() => {
-		const basePath = '/account/profile';
+		const basePath = resolve('/(auth)/account/profile', {});
 		const hash = '#dietary-section';
 		if (browser) {
 			return `${basePath}?redirect=${encodeURIComponent(window.location.pathname)}${hash}`;
@@ -175,6 +176,7 @@
 				</div>
 			</div>
 			<div class="flex items-center gap-2">
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve()-derived value; the $derived wrapper prevents the rule from tracing it to resolve() -->
 				<a
 					href={profileDietaryUrl}
 					onclick={(e) => e.stopPropagation()}
@@ -183,6 +185,7 @@
 				>
 					<span>{m['dietary.profile_quickActionButton']()}</span>
 				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				{#if isExpanded}
 					<ChevronUp class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
 				{:else}
@@ -279,11 +282,13 @@
 		<p class="mt-1 text-sm text-muted-foreground">
 			{m['dietary.eventSummary_emptyStateDescription']()}
 		</p>
+		<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve()-derived value; the $derived wrapper prevents the rule from tracing it to resolve() -->
 		<a
 			href={profileDietaryUrl}
 			class="mt-4 inline-flex items-center gap-1 text-sm text-primary hover:underline"
 		>
 			<span>{m['dietary.profile_quickActionButton']()}</span>
 		</a>
+		<!-- eslint-enable svelte/no-navigation-without-resolve -->
 	</div>
 {/if}

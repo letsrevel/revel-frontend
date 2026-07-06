@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Button } from '$lib/components/ui/button';
@@ -89,7 +90,7 @@
 	<!-- Header -->
 	<div class="flex items-center gap-3">
 		<a
-			href="/org/{slug}/admin/billing"
+			href={resolve('/(auth)/org/[slug]/admin/billing', { slug: slug })}
 			class="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
 			aria-label={m['common.backToBilling']()}
 		>
@@ -172,7 +173,9 @@
 							<td class="px-4 py-3 font-medium">{note.credit_note_number}</td>
 							<td class="px-4 py-3 text-muted-foreground">
 								<a
-									href="/org/{slug}/admin/billing/attendee-invoices"
+									href={resolve('/(auth)/org/[slug]/admin/billing/attendee-invoices', {
+										slug: slug
+									})}
 									class="underline underline-offset-2 hover:text-foreground"
 								>
 									{note.invoice_number}

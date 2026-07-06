@@ -101,13 +101,33 @@
 
 	// Menu items - using derived for reactivity
 	const menuItems = $derived([
-		{ href: '/dashboard', label: m['userMenu.dashboard'](), icon: LayoutDashboard },
-		{ href: '/account/profile', label: m['userMenu.profile'](), icon: User },
-		{ href: '/account/security', label: m['userMenu.security'](), icon: Shield },
-		{ href: '/account/privacy', label: m['userMenu.privacy'](), icon: Lock },
-		{ href: '/account/settings', label: m['userMenu.settings'](), icon: Settings },
-		{ href: '/account/invoices', label: m['userMenu.invoices'](), icon: Receipt },
-		{ href: '/account/memberships', label: m['userMenu.memberships'](), icon: CreditCard }
+		{
+			href: resolve('/(auth)/dashboard', {}),
+			label: m['userMenu.dashboard'](),
+			icon: LayoutDashboard
+		},
+		{ href: resolve('/(auth)/account/profile', {}), label: m['userMenu.profile'](), icon: User },
+		{
+			href: resolve('/(auth)/account/security', {}),
+			label: m['userMenu.security'](),
+			icon: Shield
+		},
+		{ href: resolve('/(auth)/account/privacy', {}), label: m['userMenu.privacy'](), icon: Lock },
+		{
+			href: resolve('/(auth)/account/settings', {}),
+			label: m['userMenu.settings'](),
+			icon: Settings
+		},
+		{
+			href: resolve('/(auth)/account/invoices', {}),
+			label: m['userMenu.invoices'](),
+			icon: Receipt
+		},
+		{
+			href: resolve('/(auth)/account/memberships', {}),
+			label: m['userMenu.memberships'](),
+			icon: CreditCard
+		}
 	]);
 
 	function handleLogout() {
@@ -161,6 +181,7 @@
 
 		{#each menuItems as item (item.href)}
 			{@const Icon = item.icon}
+			<!-- eslint-disable svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in the nav item list above -->
 			<a
 				href={item.href}
 				class="flex items-center gap-3 rounded-md px-4 py-3 text-base transition-colors hover:bg-accent hover:text-accent-foreground"
@@ -169,6 +190,7 @@
 				<Icon class="h-5 w-5" aria-hidden="true" />
 				<span>{item.label}</span>
 			</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 		{/each}
 
 		<!-- Referral Section (Mobile) -->
@@ -178,7 +200,7 @@
 					{m['referral.referralProgram']()}
 				</div>
 				<a
-					href="/account/referral"
+					href={resolve('/(auth)/account/referral', {})}
 					class="flex items-center gap-3 rounded-md px-4 py-2 text-base transition-colors hover:bg-accent hover:text-accent-foreground"
 					onclick={handleItemClick}
 				>
@@ -186,7 +208,7 @@
 					<span>{m['referral.settings']()}</span>
 				</a>
 				<a
-					href="/account/referral/payouts"
+					href={resolve('/(auth)/account/referral/payouts', {})}
 					class="flex items-center gap-3 rounded-md px-4 py-2 text-base transition-colors hover:bg-accent hover:text-accent-foreground"
 					onclick={handleItemClick}
 				>
@@ -206,7 +228,7 @@
 					{#each userOrganizations as org (org.id)}
 						<div class="space-y-1">
 							<a
-								href="/org/{org.slug}"
+								href={resolve('/(public)/org/[slug]', { slug: org.slug })}
 								class="flex items-center gap-3 rounded-md px-4 py-2 text-base transition-colors hover:bg-accent hover:text-accent-foreground"
 								onclick={handleItemClick}
 							>
@@ -215,7 +237,7 @@
 							</a>
 							{#if hasAdminPermissions(org.id)}
 								<a
-									href="/org/{org.slug}/admin"
+									href={resolve('/(auth)/org/[slug]/admin', { slug: org.slug })}
 									class="ml-12 flex items-center gap-2 rounded-md px-4 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
 									onclick={handleItemClick}
 								>
@@ -230,7 +252,7 @@
 				<!-- Create Organization Link (if user doesn't own one and creation is enabled) -->
 				{#if !ownsOrganization() && features.organization_creation}
 					<a
-						href="/create-org"
+						href={resolve('/(auth)/create-org', {})}
 						class="flex items-center gap-3 rounded-md px-4 py-3 text-base transition-colors hover:bg-accent hover:text-accent-foreground"
 						onclick={handleItemClick}
 					>
@@ -288,6 +310,7 @@
 				<div class="p-1">
 					{#each menuItems as item (item.href)}
 						{@const Icon = item.icon}
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in the nav item list above -->
 						<a
 							href={item.href}
 							class="flex items-center gap-3 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
@@ -297,6 +320,7 @@
 							<Icon class="h-4 w-4" aria-hidden="true" />
 							<span>{item.label}</span>
 						</a>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					{/each}
 				</div>
 
@@ -308,7 +332,7 @@
 								{m['referral.referralProgram']()}
 							</div>
 							<a
-								href="/account/referral"
+								href={resolve('/(auth)/account/referral', {})}
 								class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
 								onclick={handleItemClick}
 								role="menuitem"
@@ -317,7 +341,7 @@
 								<span>{m['referral.settings']()}</span>
 							</a>
 							<a
-								href="/account/referral/payouts"
+								href={resolve('/(auth)/account/referral/payouts', {})}
 								class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
 								onclick={handleItemClick}
 								role="menuitem"
@@ -340,7 +364,7 @@
 								{#each userOrganizations as org (org.id)}
 									<div class="space-y-1">
 										<a
-											href="/org/{org.slug}"
+											href={resolve('/(public)/org/[slug]', { slug: org.slug })}
 											class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
 											onclick={handleItemClick}
 											role="menuitem"
@@ -350,7 +374,7 @@
 										</a>
 										{#if hasAdminPermissions(org.id)}
 											<a
-												href="/org/{org.slug}/admin"
+												href={resolve('/(auth)/org/[slug]/admin', { slug: org.slug })}
 												class="ml-7 flex items-center gap-2 rounded-sm px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
 												onclick={handleItemClick}
 												role="menuitem"
@@ -366,7 +390,7 @@
 							<!-- Create Organization Link (if user doesn't own one and creation is enabled) -->
 							{#if !ownsOrganization() && features.organization_creation}
 								<a
-									href="/create-org"
+									href={resolve('/(auth)/create-org', {})}
 									class="flex items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
 									onclick={handleItemClick}
 									role="menuitem"

@@ -433,14 +433,20 @@
 
 								<div class="mt-auto flex flex-wrap gap-2">
 									<a
-										href="/events/{data.organization.slug}/{event.slug}"
+										href={resolve('/(public)/events/[org_slug]/[event_slug]', {
+											org_slug: data.organization.slug,
+											event_slug: event.slug
+										})}
 										class="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
 									>
 										<Eye class="h-4 w-4" aria-hidden="true" />
 										{m['orgAdmin.events.actions.view']()}
 									</a>
 									<a
-										href="/org/{data.organization.slug}/admin/events/{event.id}/edit"
+										href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
+											slug: data.organization.slug,
+											event_id: event.id
+										})}
 										class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
 									>
 										<Edit class="h-4 w-4" aria-hidden="true" />
@@ -448,7 +454,10 @@
 									</a>
 									{#if event.requires_ticket}
 										<a
-											href="/org/{data.organization.slug}/admin/events/{event.id}/tickets"
+											href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/tickets', {
+												slug: data.organization.slug,
+												event_id: event.id
+											})}
 											class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
 										>
 											<Ticket class="h-4 w-4" aria-hidden="true" />
@@ -456,7 +465,10 @@
 										</a>
 									{:else}
 										<a
-											href="/org/{data.organization.slug}/admin/events/{event.id}/attendees"
+											href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/attendees', {
+												slug: data.organization.slug,
+												event_id: event.id
+											})}
 											class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
 										>
 											<Users class="h-4 w-4" aria-hidden="true" />
@@ -464,7 +476,10 @@
 										</a>
 									{/if}
 									<a
-										href="/org/{data.organization.slug}/admin/events/{event.id}/invitations"
+										href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/invitations', {
+											slug: data.organization.slug,
+											event_id: event.id
+										})}
 										class="inline-flex items-center gap-1 rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
 									>
 										<Mail class="h-4 w-4" aria-hidden="true" />

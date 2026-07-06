@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import type {
 		EventDetailSchema,
@@ -609,8 +610,11 @@
 						</p>
 						{#each feedbackQuestionnaires as questionnaireId (questionnaireId)}
 							<a
-								href="/events/{event.organization
-									.slug}/{event.slug}/questionnaire/{questionnaireId}"
+								href={resolve('/(public)/events/[org_slug]/[event_slug]/questionnaire/[id]', {
+									org_slug: event.organization.slug,
+									event_slug: event.slug,
+									id: questionnaireId
+								})}
 								class="flex w-full items-center justify-center gap-2 rounded-md border-2 border-blue-600 bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-blue-500 dark:bg-blue-500"
 							>
 								<MessageSquare class="h-4 w-4" aria-hidden="true" />
@@ -648,7 +652,10 @@
 				<h3 class="mb-3 text-sm font-semibold">{m['eventActionSidebar.manageEvent']()}</h3>
 				<div class="space-y-2">
 					<a
-						href="/org/{event.organization.slug}/admin/events/{event.id}/edit"
+						href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
+							slug: event.organization.slug,
+							event_id: event.id
+						})}
 						class="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						<Settings class="h-4 w-4" aria-hidden="true" />
@@ -656,7 +663,10 @@
 					</a>
 					{#if event.requires_ticket}
 						<a
-							href="/org/{event.organization.slug}/admin/events/{event.id}/tickets"
+							href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/tickets', {
+								slug: event.organization.slug,
+								event_id: event.id
+							})}
 							class="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 						>
 							<Users class="h-4 w-4" aria-hidden="true" />
@@ -664,7 +674,10 @@
 						</a>
 					{:else}
 						<a
-							href="/org/{event.organization.slug}/admin/events/{event.id}/attendees"
+							href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/attendees', {
+								slug: event.organization.slug,
+								event_id: event.id
+							})}
 							class="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 						>
 							<Users class="h-4 w-4" aria-hidden="true" />
@@ -673,7 +686,10 @@
 					{/if}
 					{#if event.waitlist_open}
 						<a
-							href="/org/{event.organization.slug}/admin/events/{event.id}/waitlist"
+							href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/waitlist', {
+								slug: event.organization.slug,
+								event_id: event.id
+							})}
 							class="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 						>
 							<ListPlus class="h-4 w-4" aria-hidden="true" />
@@ -681,7 +697,10 @@
 						</a>
 					{/if}
 					<a
-						href="/org/{event.organization.slug}/admin/events/{event.id}/invitations"
+						href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/invitations', {
+							slug: event.organization.slug,
+							event_id: event.id
+						})}
 						class="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						<Mail class="h-4 w-4" aria-hidden="true" />

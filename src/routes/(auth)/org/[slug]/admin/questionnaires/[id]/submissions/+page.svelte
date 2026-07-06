@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
@@ -86,7 +87,7 @@
 	<!-- Header -->
 	<div class="mb-8">
 		<a
-			href="/org/{data.organizationSlug}/admin/questionnaires"
+			href={resolve('/(auth)/org/[slug]/admin/questionnaires', { slug: data.organizationSlug })}
 			class="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
 		>
 			<ArrowLeft class="h-4 w-4" />

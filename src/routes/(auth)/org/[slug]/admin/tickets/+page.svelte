@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import type { PageData } from './$types';
 	import * as m from '$lib/paraglide/messages.js';
 	import { formatEventDate } from '$lib/utils/date';
@@ -30,7 +31,7 @@
 				{m['orgAdmin.tickets.empty.description']()}
 			</p>
 			<a
-				href="/org/{slug}/admin/events"
+				href={resolve('/(auth)/org/[slug]/admin/events', { slug: slug })}
 				class="mt-4 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			>
 				{m['orgAdmin.tickets.empty.cta']()}
@@ -41,7 +42,10 @@
 			{#each events as event (event.id)}
 				<li>
 					<a
-						href="/org/{slug}/admin/events/{event.id}/tickets"
+						href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/tickets', {
+							slug: slug,
+							event_id: event.id
+						})}
 						class="flex items-center gap-4 rounded-lg border border-border bg-card p-4 transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 					>
 						{#if event.logo_thumbnail_url}

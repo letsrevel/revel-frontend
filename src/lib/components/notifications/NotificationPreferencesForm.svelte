@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import {
 		notificationpreferenceUpdatePreferences,
@@ -540,7 +541,7 @@
 									<p class="text-xs text-muted-foreground">
 										{m['notificationPreferences.telegramNotConnected']()}
 										<a
-											href="/account/profile"
+											href={resolve('/(auth)/account/profile', {})}
 											class="font-medium text-primary underline-offset-4 hover:underline"
 										>
 											{m['notificationPreferences.connectTelegram']()}

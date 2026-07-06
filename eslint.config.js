@@ -49,13 +49,6 @@ export default [
 			'@typescript-eslint/no-unused-expressions': 'warn',
 			'prefer-const': 'error',
 			'svelte/valid-compile': 'off', // Disable custom element warnings
-			// Rules newly promoted to `error` by the eslint 10 / @eslint/js 10 /
-			// eslint-plugin-svelte 3 upgrade. Each flags a pre-existing, pervasive
-			// pattern (hundreds of sites) that is worth cleaning up incrementally
-			// but is out of scope for a dependency bump. Downgraded to `warn` to
-			// match this repo's permissive lint posture (CI fails on errors only).
-			// TODO: address and re-promote to `error` in follow-up passes.
-			'svelte/no-navigation-without-resolve': 'warn',
 			'no-restricted-syntax': [
 				'error',
 				{

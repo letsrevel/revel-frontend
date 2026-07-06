@@ -107,12 +107,14 @@
 		<nav class="flex items-center justify-between rounded-lg border p-4">
 			<span class="font-semibold">My App</span>
 			<div class="flex items-center gap-4">
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- illustrative example component; /notifications is a placeholder, not a real app route -->
 				<a href="/notifications" class="relative">
 					<Button variant="ghost" size="icon">
 						<Bell class="h-5 w-5" />
 						<NotificationBadge {authToken} />
 					</Button>
 				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				<Button variant="outline" size="sm">Profile</Button>
 			</div>
 		</nav>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import type { PageData } from './$types';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -843,7 +844,10 @@
 							</h2>
 						</div>
 						<a
-							href="/events/{event.organization.slug}/series/{event.event_series.slug}"
+							href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {
+								org_slug: event.organization.slug,
+								series_slug: event.event_series.slug
+							})}
 							class="block p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 						>
 							<div class="font-medium">{event.event_series.name}</div>
@@ -910,7 +914,10 @@
 								</h2>
 							</div>
 							<a
-								href="/events/{event.organization.slug}/series/{event.event_series.slug}"
+								href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {
+									org_slug: event.organization.slug,
+									series_slug: event.event_series.slug
+								})}
 								class="block p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 							>
 								<div class="font-medium">{event.event_series.name}</div>

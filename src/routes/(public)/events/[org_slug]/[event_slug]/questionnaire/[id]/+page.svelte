@@ -293,7 +293,10 @@
 	<!-- Header -->
 	<div class="mb-8">
 		<a
-			href="/events/{data.event.organization.slug}/{data.event.slug}"
+			href={resolve('/(public)/events/[org_slug]/[event_slug]', {
+				org_slug: data.event.organization.slug,
+				event_slug: data.event.slug
+			})}
 			class="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
 		>
 			<ArrowLeft class="h-4 w-4" />

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 	import {
 		Card,
@@ -107,7 +108,10 @@
 	<!-- Header -->
 	<div class="mb-8">
 		<a
-			href="/org/{data.organizationSlug}/admin/questionnaires/{data.questionnaireId}"
+			href={resolve('/(auth)/org/[slug]/admin/questionnaires/[id]', {
+				slug: data.organizationSlug,
+				id: data.questionnaireId
+			})}
 			class="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
 		>
 			<ArrowLeft class="h-4 w-4" />

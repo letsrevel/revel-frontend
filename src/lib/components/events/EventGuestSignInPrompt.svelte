@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
@@ -23,7 +24,7 @@
 
 	// Login link that returns the guest to this event page after signing in
 	const loginHref = $derived(
-		`/login?returnUrl=${encodeURIComponent($page.url.pathname + $page.url.search)}`
+		`${resolve('/(public)/login', {})}?returnUrl=${encodeURIComponent($page.url.pathname + $page.url.search)}`
 	);
 
 	interface PerkItem {
@@ -78,12 +79,14 @@
 				<p class="mt-1 text-sm text-muted-foreground">{m['eventGuestPrompt.subtitle']()}</p>
 			</div>
 		</div>
+		<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended returnUrl query cannot be expressed through resolve() -->
 		<a
 			href={loginHref}
 			class="inline-flex shrink-0 items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 		>
 			{m['eventGuestPrompt.cta']()}
 		</a>
+		<!-- eslint-enable svelte/no-navigation-without-resolve -->
 	</div>
 
 	<!-- Collapsible list of what signing in unlocks -->

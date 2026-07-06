@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 	import { X } from '@lucide/svelte';
 	import UserMenu from './UserMenu.svelte';
@@ -93,6 +94,7 @@
 			<ul class="space-y-2">
 				{#each navItems as item (item.href)}
 					<li>
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in the nav item list above -->
 						<a
 							href={item.href}
 							class="block rounded-md px-4 py-3 text-base font-medium transition-colors {isActive(
@@ -105,6 +107,7 @@
 						>
 							{item.label}
 						</a>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					</li>
 				{/each}
 			</ul>
@@ -113,14 +116,14 @@
 			{#if !isAuthenticated}
 				<div class="mt-6 space-y-2 border-t pt-6">
 					<a
-						href="/login"
+						href={resolve('/(public)/login', {})}
 						class="block rounded-md px-4 py-3 text-center text-base font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
 						onclick={handleLinkClick}
 					>
 						{m['auth.login']()}
 					</a>
 					<a
-						href="/register"
+						href={resolve('/(public)/register', {})}
 						class="block rounded-md bg-primary px-4 py-3 text-center text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
 						onclick={handleLinkClick}
 					>

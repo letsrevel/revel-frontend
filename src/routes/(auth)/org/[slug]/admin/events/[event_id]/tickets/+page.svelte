@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto, invalidateAll } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
 	import { fade, scale } from 'svelte/transition';
@@ -571,12 +572,14 @@
 	<!-- Header -->
 	<div class="mb-6">
 		<div class="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
-			<a href="/org/{data.event.organization.slug}/admin" class="hover:underline"
-				>{m['eventTicketsAdmin.breadcrumbDashboard']()}</a
+			<a
+				href={resolve('/(auth)/org/[slug]/admin', { slug: data.event.organization.slug })}
+				class="hover:underline">{m['eventTicketsAdmin.breadcrumbDashboard']()}</a
 			>
 			<span>/</span>
-			<a href="/org/{data.event.organization.slug}/admin/events" class="hover:underline"
-				>{m['eventTicketsAdmin.breadcrumbEvents']()}</a
+			<a
+				href={resolve('/(auth)/org/[slug]/admin/events', { slug: data.event.organization.slug })}
+				class="hover:underline">{m['eventTicketsAdmin.breadcrumbEvents']()}</a
 			>
 			<span>/</span>
 			<span>{data.event.name}</span>
@@ -588,20 +591,28 @@
 			</div>
 			<div class="flex flex-wrap items-center gap-2">
 				<a
-					href="/org/{data.event.organization.slug}/admin/events/{data.event.id}/edit"
+					href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
+						slug: data.event.organization.slug,
+						event_id: data.event.id
+					})}
 					class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 				>
 					{m['eventEditor.editEvent']()}
 				</a>
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 				<a
-					href="/org/{data.event.organization.slug}/admin/events/{data.event.id}/edit?tab=ticketing"
+					href={`${resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', { slug: data.event.organization.slug, event_id: data.event.id })}?tab=ticketing`}
 					class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 				>
 					{m['eventEditor.ticketing']()}
 				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				{#if data.event.waitlist_open}
 					<a
-						href="/org/{data.event.organization.slug}/admin/events/{data.event.id}/waitlist"
+						href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/waitlist', {
+							slug: data.event.organization.slug,
+							event_id: data.event.id
+						})}
 						class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 					>
 						{m['eventActionSidebar.manageWaitlist']()}

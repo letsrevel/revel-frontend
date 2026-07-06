@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { applyAction, enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { ActionData, PageData } from './$types';
@@ -113,6 +114,7 @@
 						<p class="text-sm text-orange-900 dark:text-orange-100">
 							{m['login.demoNotice']()}
 						</p>
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
 						<a
 							href={DEMO_ACCOUNTS_README_URL}
 							target="_blank"
@@ -122,6 +124,7 @@
 							{m['login.viewAllTestAccounts']()}
 							<ExternalLink class="h-3 w-3" aria-hidden="true" />
 						</a>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					</div>
 
 					<form method="POST" action="?/login" use:enhance={handleSubmit} class="space-y-4">
@@ -224,7 +227,7 @@
 								{m['login.password']()}
 							</label>
 							<a
-								href="/password-reset"
+								href={resolve('/(public)/password-reset', {})}
 								class="text-sm text-primary underline-offset-4 hover:underline"
 							>
 								{m['login.forgotPassword']()}
@@ -343,7 +346,10 @@
 		{#if !requires2FA}
 			<div class="text-center text-sm">
 				<span class="text-muted-foreground">{m['login.dontHaveAccount']()}</span>
-				<a href="/register" class="ml-1 text-primary underline-offset-4 hover:underline">
+				<a
+					href={resolve('/(public)/register', {})}
+					class="ml-1 text-primary underline-offset-4 hover:underline"
+				>
 					{m['login.createAccount']()}
 				</a>
 			</div>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
 	import { page } from '$app/stores';
@@ -113,7 +114,7 @@
 		</div>
 
 		<a
-			href="/org/{data.organization.slug}"
+			href={resolve('/(public)/org/[slug]', { slug: data.organization.slug })}
 			target="_blank"
 			rel="noopener noreferrer"
 			class="inline-flex items-center gap-2 rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -563,7 +564,9 @@
 							<span>
 								{m['orgSettingsPage.reports.billingEmailRequired']()}
 								<a
-									href="/org/{data.organization.slug}/admin/billing"
+									href={resolve('/(auth)/org/[slug]/admin/billing', {
+										slug: data.organization.slug
+									})}
 									class="font-medium underline underline-offset-2"
 								>
 									{m['orgSettingsPage.reports.billingEmailLink']()}
@@ -578,7 +581,7 @@
 		<!-- Actions -->
 		<div class="flex items-center justify-end gap-3">
 			<a
-				href="/org/{data.organization.slug}/admin"
+				href={resolve('/(auth)/org/[slug]/admin', { slug: data.organization.slug })}
 				class="rounded-md border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			>
 				{m['orgAdmin.settings.actions.cancel']()}

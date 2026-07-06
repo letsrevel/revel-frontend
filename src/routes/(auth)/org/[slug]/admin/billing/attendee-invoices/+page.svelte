@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { Button } from '$lib/components/ui/button';
@@ -264,7 +265,7 @@
 <div class="space-y-6 px-4">
 	<div class="flex items-center gap-3">
 		<a
-			href="/org/{slug}/admin/billing"
+			href={resolve('/(auth)/org/[slug]/admin/billing', { slug: slug })}
 			class="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
 			aria-label={m['common.backToBilling']()}
 		>
