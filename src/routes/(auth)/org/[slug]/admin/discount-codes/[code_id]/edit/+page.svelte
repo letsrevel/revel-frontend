@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		organizationadmindiscountcodesGetDiscountCode,
@@ -74,7 +75,7 @@
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['discount-codes'] });
 			queryClient.invalidateQueries({ queryKey: ['discount-code', organization.slug, codeId] });
-			goto(`/org/${organization.slug}/admin/discount-codes`);
+			goto(resolve('/(auth)/org/[slug]/admin/discount-codes', { slug: organization.slug }));
 		},
 		onError: (err: Error) => {
 			errorMessage = err.message;
@@ -123,7 +124,8 @@
 		<Button
 			variant="ghost"
 			size="icon"
-			onclick={() => goto(`/org/${organization.slug}/admin/discount-codes`)}
+			onclick={() =>
+				goto(resolve('/(auth)/org/[slug]/admin/discount-codes', { slug: organization.slug }))}
 			aria-label={m['discountCodeEditPage.backToDiscountCodes']()}
 		>
 			<ArrowLeft class="h-5 w-5" />

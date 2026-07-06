@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { dashboardDashboardOrganizations } from '$lib/api/generated/sdk.gen';
@@ -76,7 +77,7 @@
 
 		if (userAdminOrgs.length === 1) {
 			// Single org - navigate directly
-			goto(`/org/${userAdminOrgs[0].slug}/admin`);
+			goto(resolve('/(auth)/org/[slug]/admin', { slug: userAdminOrgs[0].slug }));
 		}
 
 		// Multiple orgs - dropdown will handle it
@@ -84,7 +85,7 @@
 
 	// Navigate to specific org admin
 	function navigateToOrgAdmin(slug: string) {
-		goto(`/org/${slug}/admin`);
+		goto(resolve('/(auth)/org/[slug]/admin', { slug: slug }));
 	}
 
 	// Don't show button if no admin permissions

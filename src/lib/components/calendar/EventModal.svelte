@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { EventInListSchema, EventDetailSchema } from '$lib/api/generated/types.gen';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Calendar, MapPin, Building2 } from '@lucide/svelte';
@@ -27,13 +28,18 @@
 	function handleViewDetails() {
 		if (event) {
 			const slug = event.organization?.slug || '';
-			goto(`/events/${slug}/${event.slug}`);
+			goto(
+				resolve('/(public)/events/[org_slug]/[event_slug]', {
+					org_slug: slug,
+					event_slug: event.slug
+				})
+			);
 		}
 	}
 
 	function handleViewOrganization() {
 		if (event?.organization) {
-			goto(`/org/${event.organization.slug}`);
+			goto(resolve('/(public)/org/[slug]', { slug: event.organization.slug }));
 		}
 	}
 

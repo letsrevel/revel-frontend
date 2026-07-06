@@ -38,6 +38,7 @@
 		params.delete('page');
 		params.delete('status');
 		params.delete('search');
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params)
 		goto(`?${params.toString()}`, { replaceState: true, keepFocus: true });
 	}
 

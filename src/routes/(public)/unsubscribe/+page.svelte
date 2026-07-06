@@ -4,6 +4,7 @@
 	import { NotificationPreferencesForm } from '$lib/components/notifications';
 	import type { NotificationPreferenceSchema } from '$lib/api/generated/types.gen';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { Bell } from '@lucide/svelte';
 	import { SeoHead } from '$lib/seo';
 
@@ -28,7 +29,7 @@
 		success = true;
 		// Redirect to homepage after 3 seconds
 		setTimeout(() => {
-			goto('/');
+			goto(resolve('/(public)', {}));
 		}, 3000);
 	}
 </script>

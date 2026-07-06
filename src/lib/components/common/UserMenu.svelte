@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
@@ -115,7 +116,7 @@
 		authStore.logout();
 		queryClient.clear();
 		// Then navigate to server endpoint to clear cookies
-		goto('/logout');
+		goto(resolve('/(public)/logout', {}));
 	}
 
 	function handleItemClick() {

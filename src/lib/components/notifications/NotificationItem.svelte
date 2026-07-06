@@ -8,6 +8,7 @@
 	import { formatRelativeTime } from '$lib/utils/time';
 	import { formatDateTime } from '$lib/utils/date';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
 	import { cn } from '$lib/utils/cn';
@@ -130,11 +131,12 @@
 		if (url) {
 			// Close the dropdown before navigating
 			onNavigate?.();
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- deep-link path supplied by the notification payload (API-provided), not a static route id
 			goto(url);
 		} else {
 			// Fallback: navigate to notifications page
 			onNavigate?.();
-			goto('/account/notifications');
+			goto(resolve('/(auth)/account/notifications', {}));
 		}
 	}
 
@@ -255,6 +257,7 @@
 			markReadMutation.mutate();
 		}
 		onNavigate?.();
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- deep-link path supplied by the notification payload (API-provided), not a static route id
 		goto(data.claimUrl);
 	}
 </script>

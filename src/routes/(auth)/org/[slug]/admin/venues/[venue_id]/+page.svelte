@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		organizationadminvenuesGetVenue,
@@ -104,7 +105,13 @@
 	}
 
 	function handleManageSeats(sector: VenueSectorWithSeatsSchema) {
-		goto(`/org/${organization.slug}/admin/venues/${venueId}/sectors/${sector.id}`);
+		goto(
+			resolve('/(auth)/org/[slug]/admin/venues/[venue_id]/sectors/[sector_id]', {
+				slug: organization.slug,
+				venue_id: venueId,
+				sector_id: sector.id ?? ''
+			})
+		);
 	}
 
 	function handleModalClose() {
@@ -119,7 +126,7 @@
 	}
 
 	function handleBackToVenues() {
-		goto(`/org/${organization.slug}/admin/venues`);
+		goto(resolve('/(auth)/org/[slug]/admin/venues', { slug: organization.slug }));
 	}
 
 	const venue = $derived(venueQuery.data);

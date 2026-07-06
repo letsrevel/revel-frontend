@@ -58,6 +58,7 @@
 			if (value === null || value === '') sp.delete(key);
 			else sp.set(key, String(value));
 		}
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params)
 		goto(`?${sp.toString()}`, { replaceState: true, keepFocus: true, noScroll: true });
 	}
 

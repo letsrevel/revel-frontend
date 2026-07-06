@@ -16,6 +16,7 @@
 	import { toast } from 'svelte-sonner';
 	import { page } from '$app/stores';
 	import { goto, invalidateAll } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import PollStatusBar from '$lib/components/polls/PollStatusBar.svelte';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import DuplicatePollModal from '$lib/components/polls/DuplicatePollModal.svelte';
@@ -250,7 +251,7 @@
 			});
 			if (res.error) throw new Error('delete');
 			deleteConfirmOpen = false;
-			await goto(`/org/${data.organization.slug}/admin/polls`);
+			await goto(resolve('/(auth)/org/[slug]/admin/polls', { slug: data.organization.slug }));
 		} catch (e) {
 			console.error(e);
 			toast.error(m['pollEditPage.deleteError']());

@@ -50,6 +50,7 @@
 		} else {
 			params.delete('event_id');
 		}
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params)
 		goto(`?${params.toString()}`, { replaceState: true });
 	}
 
@@ -62,6 +63,7 @@
 		} else {
 			params.delete('event_series_id');
 		}
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params)
 		goto(`?${params.toString()}`, { replaceState: true });
 	}
 

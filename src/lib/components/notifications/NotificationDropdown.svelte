@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Bell, CheckCheck } from '@lucide/svelte';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import NotificationBadge from './NotificationBadge.svelte';
@@ -50,7 +51,7 @@
 
 	// Navigate to full notifications page
 	function handleViewAll(): void {
-		goto('/account/notifications');
+		goto(resolve('/(auth)/account/notifications', {}));
 	}
 
 	function handleMarkAllRead(): void {

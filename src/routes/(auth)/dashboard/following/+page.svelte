@@ -83,6 +83,7 @@
 		} else {
 			url.searchParams.set('page', pageNum.toString());
 		}
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- target is derived from the live page URL (base path already applied); resolve() cannot express search params
 		goto(url.toString(), { replaceState: true, noScroll: true });
 	}
 

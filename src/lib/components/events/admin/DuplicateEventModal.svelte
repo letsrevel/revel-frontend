@@ -6,6 +6,7 @@
 	import { eventadmincoreDuplicateEvent } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { Copy, Loader2 } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
@@ -75,7 +76,12 @@
 		},
 		onSuccess: (data) => {
 			// Navigate to the new event's edit page
-			goto(`/org/${organizationSlug}/admin/events/${data.id}/edit`);
+			goto(
+				resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
+					slug: organizationSlug,
+					event_id: data.id
+				})
+			);
 			onClose();
 		},
 		onError: (error: Error) => {

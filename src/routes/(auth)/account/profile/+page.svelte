@@ -293,6 +293,7 @@
 					if (redirectUrl) {
 						// Small delay to show success message before redirecting
 						setTimeout(() => {
+							// eslint-disable-next-line svelte/no-navigation-without-resolve -- post-auth return path read from the ?redirect query param; app-relative, not a static route id
 							goto(redirectUrl);
 						}, 1000);
 					}

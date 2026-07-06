@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { enhance, applyAction } from '$app/forms';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -319,7 +320,7 @@
 					<Button
 						type="button"
 						variant="outline"
-						onclick={() => goto('/dashboard')}
+						onclick={() => goto(resolve('/(auth)/dashboard', {}))}
 						disabled={isSubmitting}
 						class="flex-1"
 					>

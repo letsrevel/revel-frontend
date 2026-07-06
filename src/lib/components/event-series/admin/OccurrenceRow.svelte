@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import {
 		CalendarX,
 		Edit,
@@ -108,11 +109,21 @@
 	}
 
 	function viewEvent(): void {
-		goto(`/events/${organizationSlug}/${event.slug}`);
+		goto(
+			resolve('/(public)/events/[org_slug]/[event_slug]', {
+				org_slug: organizationSlug,
+				event_slug: event.slug
+			})
+		);
 	}
 
 	function editEvent(): void {
-		goto(`/org/${organizationSlug}/admin/events/${event.id}/edit`);
+		goto(
+			resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
+				slug: organizationSlug,
+				event_id: event.id
+			})
+		);
 	}
 
 	function handleCancelOccurrence(): void {

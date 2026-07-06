@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import type { PageData } from './$types';
 	import EventEditor from '$lib/components/events/admin/EventEditor.svelte';
 	import DuplicateEventModal from '$lib/components/events/admin/DuplicateEventModal.svelte';
@@ -89,7 +90,7 @@
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['events'] });
 			// Redirect to events list after deletion
-			goto(`/org/${organization.slug}/admin/events`);
+			goto(resolve('/(auth)/org/[slug]/admin/events', { slug: organization.slug }));
 		},
 		onError: (error: Error) => {
 			alert(m['eventEditPage.deleteAlert']({ message: error.message }));

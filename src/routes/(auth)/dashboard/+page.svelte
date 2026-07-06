@@ -435,6 +435,7 @@
 			url.searchParams.set('week', String(current.week));
 		}
 
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- target is derived from the live page URL (base path already applied); resolve() cannot express search params
 		goto(url.toString(), { keepFocus: true, replaceState: false });
 	}
 

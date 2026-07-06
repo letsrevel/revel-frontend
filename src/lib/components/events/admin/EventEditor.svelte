@@ -29,6 +29,7 @@
 		EventSeriesRetrieveSchema
 	} from '$lib/api/generated/types.gen';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import EssentialsStep from './EssentialsStep.svelte';
 	import DetailsStep from './DetailsStep.svelte';
@@ -578,10 +579,15 @@
 			toast.success(m['eventWizard.eventUpdatedSuccess']());
 
 			if (andExit) {
-				goto(`/org/${organization.slug}/admin/events`);
+				goto(resolve('/(auth)/org/[slug]/admin/events', { slug: organization.slug }));
 			} else if (!isEditMode) {
 				// Creation flow: redirect to edit page so user gets tabs & status management
-				goto(`/org/${organization.slug}/admin/events/${eventId}/edit`);
+				goto(
+					resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
+						slug: organization.slug,
+						event_id: eventId
+					})
+				);
 			}
 		} catch (error) {
 			console.error('Save error:', error);
@@ -632,6 +638,7 @@
 			} else {
 				url.searchParams.set('tab', value);
 			}
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- target is derived from the live page URL (base path already applied); resolve() cannot express search params
 			goto(url.pathname + url.search, { replaceState: true, noScroll: true });
 		}
 	}

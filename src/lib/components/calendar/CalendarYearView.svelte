@@ -27,6 +27,7 @@
 		currentUrl.searchParams.set('view', 'month');
 		currentUrl.searchParams.set('month', String(month));
 		currentUrl.searchParams.set('year', String(year));
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- target is derived from the live page URL (base path already applied); resolve() cannot express search params
 		goto(currentUrl.toString(), { keepFocus: true });
 	}
 </script>

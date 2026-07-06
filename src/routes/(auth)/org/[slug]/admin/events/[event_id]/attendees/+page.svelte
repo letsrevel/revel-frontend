@@ -285,6 +285,7 @@
 		if (searchQuery) params.set('search', searchQuery);
 		if (activeStatusFilter) params.set('status', activeStatusFilter);
 
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params)
 		goto(`?${params.toString()}`, { replaceState: true, keepFocus: true });
 	}
 
@@ -313,6 +314,7 @@
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const params = new URLSearchParams(window.location.search);
 		params.set('page', page.toString());
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params)
 		goto(`?${params.toString()}`, { keepFocus: true });
 	}
 

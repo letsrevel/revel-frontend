@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import type { PageData } from './$types';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -109,7 +110,7 @@
 	}));
 
 	function createEvent(): void {
-		goto(`/org/${organization.slug}/admin/events/new`);
+		goto(resolve('/(auth)/org/[slug]/admin/events/new', { slug: organization.slug }));
 	}
 
 	function publishEvent(eventId: string): void {

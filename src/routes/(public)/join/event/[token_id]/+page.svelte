@@ -3,6 +3,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { Button } from '$lib/components/ui/button';
 	import {
 		Card,
@@ -43,7 +44,12 @@
 		onSuccess: (evt) => {
 			toast.success(m['joinEventPage.toast_invited']({ eventName: evt.name }));
 			// Redirect to event page - adjust path based on your routing
-			goto(`/events/${evt.organization.slug}/${evt.slug}`);
+			goto(
+				resolve('/(public)/events/[org_slug]/[event_slug]', {
+					org_slug: evt.organization.slug,
+					event_slug: evt.slug
+				})
+			);
 		},
 		onError: () => {
 			toast.error(m['joinEventPage.toast_claimError']());
@@ -52,7 +58,8 @@
 
 	function handleClaim() {
 		if (!isAuthenticated) {
-			goto(`/login?redirect=/join/event/${token.id}`);
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()
+			goto(`${resolve('/(public)/login', {})}?redirect=/join/event/${token.id}`);
 			return;
 		}
 

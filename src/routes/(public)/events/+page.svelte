@@ -2,6 +2,7 @@
 	import type { PageData } from './$types';
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 	import { EventCard } from '$lib/components/events';
 	import { EventFilters, MobileFilterSheet } from '$lib/components/events/filters';
@@ -112,12 +113,16 @@
 		}
 
 		const params = filtersToParams(newFilters);
-		goto(`/events?${params}`, { replaceState: false, keepFocus: true });
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()
+		goto(`${resolve('/(public)/events', {})}?${params}`, { replaceState: false, keepFocus: true });
 	}
 
 	function handleClearFilters(): void {
 		const params = filtersToParams(clearFilters());
-		goto(`/events${params.toString() ? `?${params}` : ''}`, { replaceState: false });
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()
+		goto(`${resolve('/(public)/events', {})}${params.toString() ? `?${params}` : ''}`, {
+			replaceState: false
+		});
 	}
 
 	function handleOpenMobileFilters(): void {
@@ -142,6 +147,7 @@
 			url.searchParams.set('week', String(current.week));
 		}
 
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- target is derived from the live page URL (base path already applied); resolve() cannot express search params
 		goto(url.toString(), { keepFocus: true, replaceState: false });
 	}
 

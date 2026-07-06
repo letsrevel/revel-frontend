@@ -28,6 +28,7 @@
 		EventSeriesRetrieveSchema
 	} from '$lib/api/generated/types.gen';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { cn } from '$lib/utils/cn';
 	import EssentialsStep from './EssentialsStep.svelte';
@@ -628,7 +629,7 @@
 			queryClient.invalidateQueries({ queryKey: ['event', eventId] });
 
 			// Redirect to events list
-			goto(`/org/${organization.slug}/admin/events`);
+			goto(resolve('/(auth)/org/[slug]/admin/events', { slug: organization.slug }));
 		} catch (error) {
 			console.error('Step 2 submission error:', error);
 			errorMessage = m['eventWizard.error_failedToSaveDetails']();

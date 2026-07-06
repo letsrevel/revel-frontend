@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { eventpublicattendanceSubmitQuestionnaire } from '$lib/api';
 	import { Button } from '$lib/components/ui/button';
@@ -213,7 +214,12 @@
 			toast.info(m['questionnaireSubmissionPage.toast_pending_title'](), {
 				description: m['questionnaireSubmissionPage.toast_pending_description']()
 			});
-			goto(eventUrl);
+			goto(
+				resolve('/(public)/events/[org_slug]/[event_slug]', {
+					org_slug: data.event.organization.slug,
+					event_slug: data.event.slug
+				})
+			);
 		},
 		onError: (error: Error) => {
 			toast.error(m['questionnaireSubmissionPage.toast_error_title'](), {
@@ -391,7 +397,13 @@
 				<Button
 					type="button"
 					variant="outline"
-					onclick={() => goto(`/events/${data.event.organization.slug}/${data.event.slug}`)}
+					onclick={() =>
+						goto(
+							resolve('/(public)/events/[org_slug]/[event_slug]', {
+								org_slug: data.event.organization.slug,
+								event_slug: data.event.slug
+							})
+						)}
 				>
 					{m['questionnaireSubmissionPage.button_cancel']()}
 				</Button>
