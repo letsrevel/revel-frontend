@@ -49,7 +49,6 @@ export default [
 			'@typescript-eslint/no-inferrable-types': 'warn',
 			'@typescript-eslint/no-unused-expressions': 'warn',
 			'prefer-const': 'error',
-			'svelte/no-at-html-tags': 'warn',
 			'svelte/valid-compile': 'off', // Disable custom element warnings
 			// Rules newly promoted to `error` by the eslint 10 / @eslint/js 10 /
 			// eslint-plugin-svelte 3 upgrade. Each flags a pre-existing, pervasive

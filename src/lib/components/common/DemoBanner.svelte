@@ -47,6 +47,7 @@
 			<div class="flex-1 text-sm">
 				<p class="font-semibold">{m['demoBanner.demoMode']()}</p>
 				<p class="mt-1">
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -- developer-authored i18n template with intentional <link>→anchor markup; interpolated params (time, timezone) are system-derived from browser Intl and carry no markup -->
 					{@html m['demoBanner.description']({
 						time: midnightUserTime,
 						timezone: userTimezone

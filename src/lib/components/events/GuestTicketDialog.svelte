@@ -994,6 +994,7 @@
 					<!-- Subtle login link -->
 					<div class="border-t pt-3 text-center text-xs text-muted-foreground">
 						<p>
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -- static i18n string, no interpolated data; only a developer-authored <a>→login link is injected -->
 							{@html m['guest_attendance.or_login']()
 								.replace('<a>', '<a href="/login" class="text-primary hover:underline">')
 								.replace('</a>', '</a>')}

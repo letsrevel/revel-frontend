@@ -152,6 +152,7 @@
 				<Dialog.Header>
 					<Dialog.Title>{m['requestInvitationButton.requestInvitation']()}</Dialog.Title>
 					<Dialog.Description>
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -- API-derived eventName neutralized via escapeHtml before interpolation into a developer-authored i18n template -->
 						{@html m['requestInvitationButton.submitRequestToEvent']({
 							eventName: `<strong>${escapeHtml(eventName)}</strong>`
 						})}

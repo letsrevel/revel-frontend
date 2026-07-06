@@ -94,6 +94,7 @@
 			{/if}
 			<CardTitle class="text-2xl">{m['joinOrgPage.invitedTitle']()}</CardTitle>
 			<CardDescription class="text-lg">
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -- API-derived organization name neutralized via escapeHtml before interpolation into a developer-authored i18n template -->
 				{@html m['joinOrgPage.joinSubtitle']({
 					organizationName: escapeHtml(token.organization.name)
 				})}
