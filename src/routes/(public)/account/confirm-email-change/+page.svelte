@@ -171,8 +171,7 @@
 							// authStore.accessToken between now and that effect would see
 							// the old token.
 							const data = result.data as
-								| { access_token?: string | null; user?: RevelUserSchema }
-								| undefined;
+								{ access_token?: string | null; user?: RevelUserSchema } | undefined;
 							if (data?.access_token) {
 								authStore.setAccessToken(data.access_token);
 							}

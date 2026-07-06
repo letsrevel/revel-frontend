@@ -32,8 +32,7 @@ export const load: PageServerLoad = async ({ params, url, locals, fetch }) => {
 	const search = url.searchParams.get('search') || undefined;
 	const evaluationStatus = url.searchParams.get('evaluation_status') || undefined;
 	const orderBy = (url.searchParams.get('order_by') || '-submitted_at') as
-		| 'submitted_at'
-		| '-submitted_at';
+		'submitted_at' | '-submitted_at';
 
 	// Fetch submission detail, org questionnaire, and the sibling list in parallel
 	const [submissionResult, questionnaireResult, siblingsResult] = await Promise.all([

@@ -63,10 +63,7 @@ export type UserEventStatusResponse = EventUserStatusResponse;
  * @deprecated The /my-status endpoint now returns EventUserStatusResponse or EventUserEligibility
  */
 export type UserEventStatus =
-	| EventRsvpSchemaActual
-	| EventTicketSchemaActual
-	| EventUserEligibility
-	| UserEventStatusResponse;
+	EventRsvpSchemaActual | EventTicketSchemaActual | EventUserEligibility | UserEventStatusResponse;
 
 /**
  * Type guard to check if status is the new unified response format

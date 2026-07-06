@@ -209,8 +209,7 @@ export function flattenQuestionnaire(questionnaire: QuestionnaireSchema): Flatte
 export function getVisibleQuestionIds(
 	flattened: FlattenedQuestionnaire,
 	selectedOptionIds:
-		| Set<string>
-		| { has(value: string): boolean; [Symbol.iterator](): Iterator<string> }
+		Set<string> | { has(value: string): boolean; [Symbol.iterator](): Iterator<string> }
 ): Set<string> {
 	const visibleIds = new Set<string>();
 
@@ -269,8 +268,7 @@ export function getVisibleQuestionIds(
 export function getVisibleSectionIds(
 	flattened: FlattenedQuestionnaire,
 	selectedOptionIds:
-		| Set<string>
-		| { has(value: string): boolean; [Symbol.iterator](): Iterator<string> }
+		Set<string> | { has(value: string): boolean; [Symbol.iterator](): Iterator<string> }
 ): Set<string> {
 	const visibleIds = new Set<string>();
 
