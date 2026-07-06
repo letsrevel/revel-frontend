@@ -23,11 +23,7 @@ export type TicketOrderBy =
 
 /** Columns the admin table lets you sort by (each toggles asc/desc). */
 export type TicketSortField =
-	| 'tier__name'
-	| 'price'
-	| 'tier__payment_method'
-	| 'status'
-	| 'created_at';
+	'tier__name' | 'price' | 'tier__payment_method' | 'status' | 'created_at';
 
 const VALID_ORDER_BY: readonly TicketOrderBy[] = [
 	'created_at',

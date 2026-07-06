@@ -39,11 +39,7 @@ export type QuestionnaireStatus = ApiQuestionnaireStatus;
  * via resolveSubmissionBadgeStatus() when requiresEvaluation === false.
  */
 export type SubmissionBadgeStatus =
-	| 'approved'
-	| 'rejected'
-	| 'pending review'
-	| 'draft'
-	| 'auto_accepted';
+	'approved' | 'rejected' | 'pending review' | 'draft' | 'auto_accepted';
 
 /**
  * Type guards for questionnaire evaluation status

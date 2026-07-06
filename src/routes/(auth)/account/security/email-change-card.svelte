@@ -191,8 +191,7 @@
 								await applyAction(result);
 								if (result.type === 'failure' && result.data) {
 									const errs = (result.data as Record<string, unknown>).errors as
-										| Record<string, string>
-										| undefined;
+										Record<string, string> | undefined;
 									if (errs?.form === 'throttled') {
 										toast.error(m['accountSecurityPage.emailChange_error_throttled']());
 									}

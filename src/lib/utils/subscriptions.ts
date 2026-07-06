@@ -85,12 +85,7 @@ export function getStatusConfig(status: SubscriptionStatus): StatusConfig {
 }
 
 export type DateLineKind =
-	| 'renewal'
-	| 'cancels'
-	| 'period_ends'
-	| 'paused_since'
-	| 'ended'
-	| 'pending';
+	'renewal' | 'cancels' | 'period_ends' | 'paused_since' | 'ended' | 'pending';
 
 export interface DateLine {
 	kind: DateLineKind;

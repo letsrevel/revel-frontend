@@ -27,8 +27,7 @@ export const load: PageServerLoad = async ({ params, url, locals, fetch }) => {
 	const search = url.searchParams.get('search') || undefined;
 	const evaluationStatusFilter = url.searchParams.get('evaluation_status') || undefined;
 	const orderBy = (url.searchParams.get('order_by') || '-submitted_at') as
-		| 'submitted_at'
-		| '-submitted_at';
+		'submitted_at' | '-submitted_at';
 
 	// Fetch submissions, summary, and org questionnaire in parallel
 	const [submissionsResult, summaryResult, questionnaireResult] = await Promise.all([

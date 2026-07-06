@@ -116,8 +116,7 @@
 
 		// Optimistic update: set the swapped order in the query cache immediately
 		const currentData = queryClient.getQueryData(['event-admin', eventId, 'ticket-tiers']) as
-			| { data?: { results?: TicketTierDetailSchema[] } }
-			| undefined;
+			{ data?: { results?: TicketTierDetailSchema[] } } | undefined;
 		if (currentData?.data?.results) {
 			const newResults = [...currentData.data.results];
 			[newResults[index], newResults[swapIndex]] = [newResults[swapIndex], newResults[index]];

@@ -138,8 +138,8 @@
 						<li class="flex items-start gap-2">
 							<span class="text-primary">✓</span>
 							<span
-								><strong>Pagination:</strong> Navigate through multiple pages of notifications (full
-								mode only)</span
+								><strong>Pagination:</strong> Navigate through multiple pages of notifications (full mode
+								only)</span
 							>
 						</li>
 						<li class="flex items-start gap-2">

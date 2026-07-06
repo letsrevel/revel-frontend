@@ -225,10 +225,7 @@
 					<EvaluationForm
 						submissionId={data.submission.id}
 						currentStatus={(data.submission.evaluation?.status as
-							| 'approved'
-							| 'rejected'
-							| 'pending review'
-							| null) || null}
+							'approved' | 'rejected' | 'pending review' | null) || null}
 						returnQuery={data.navigation?.contextQuery ?? ''}
 						{isSubmitting}
 					/>
