@@ -15,8 +15,7 @@
 		Loader2,
 		Search,
 		Send,
-		Trash2,
-		X
+		Trash2
 	} from '@lucide/svelte';
 	import {
 		Dialog,

@@ -123,7 +123,7 @@
 			setTimeout(() => {
 				manualEntryCopied = false;
 			}, 2000);
-		} catch (err) {
+		} catch {
 			toast.error(m['accountSecurityPage.toast_copyFailed']());
 		}
 	}

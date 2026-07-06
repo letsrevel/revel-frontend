@@ -132,11 +132,6 @@
 		}
 		return String(tier.max_tickets_per_user);
 	});
-
-	// Check if this tier has venue/seating configuration
-	const hasSeatingConfig = $derived(
-		tier.seat_assignment_mode !== 'none' || tier.venue || tier.sector
-	);
 </script>
 
 <Card class="p-4">

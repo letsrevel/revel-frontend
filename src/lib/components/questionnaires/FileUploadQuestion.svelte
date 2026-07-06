@@ -28,8 +28,6 @@
 		maxSize?: number;
 		/** Maximum number of files */
 		maxFiles?: number;
-		/** Whether the field is required */
-		required?: boolean;
 		/** Whether the field is disabled */
 		disabled?: boolean;
 		/** Error message to display */
@@ -44,7 +42,6 @@
 		accept = '*/*',
 		maxSize = 10 * 1024 * 1024,
 		maxFiles = 1,
-		required = false,
 		disabled = false,
 		error,
 		onFilesChange

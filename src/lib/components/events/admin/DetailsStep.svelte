@@ -363,7 +363,6 @@
 		{selectedVenue}
 		organizationSlug={organizationSlug || ''}
 		{validationErrors}
-		{isEditMode}
 		{onUpdate}
 		{onCitySelect}
 		{onVenueSelect}

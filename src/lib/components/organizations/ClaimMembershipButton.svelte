@@ -11,18 +11,11 @@
 	interface Props {
 		tokenId: string;
 		tokenDetails?: OrganizationTokenSchema | null;
-		organizationName?: string;
 		class?: string;
 		onSuccess?: () => void;
 	}
 
-	const {
-		tokenId,
-		tokenDetails,
-		organizationName = m['claimMembershipButton.thisOrganization'](),
-		class: className,
-		onSuccess
-	}: Props = $props();
+	const { tokenId, tokenDetails, class: className, onSuccess }: Props = $props();
 
 	const isAuthenticated = $derived(!!authStore.accessToken);
 	const accessToken = $derived(authStore.accessToken);

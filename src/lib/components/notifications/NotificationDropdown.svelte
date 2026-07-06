@@ -14,10 +14,9 @@
 		authToken: string;
 		pollingInterval?: number;
 		maxItems?: number;
-		class?: string;
 	}
 
-	const { authToken, pollingInterval = 60000, maxItems = 5, class: className }: Props = $props();
+	const { authToken, pollingInterval = 60000, maxItems = 5 }: Props = $props();
 
 	// Control dropdown open state
 	let isOpen = $state(false);

@@ -398,7 +398,6 @@
 	bind:open={showDuplicateModal}
 	eventId={event.id}
 	eventName={event.name}
-	eventStart={event.start}
 	organizationSlug={organization.slug}
 	onClose={closeDuplicateModal}
 />

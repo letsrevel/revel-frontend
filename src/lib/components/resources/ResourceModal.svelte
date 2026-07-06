@@ -77,7 +77,7 @@
 					eventIds.forEach((id: string) => {
 						multipartData.append('event_ids', id);
 					});
-				} catch (e) {
+				} catch {
 					// Ignore parsing errors
 				}
 			}
@@ -291,7 +291,6 @@
 			<!-- Form -->
 			<ResourceForm
 				{resource}
-				{organizationSlug}
 				{organizationId}
 				onSubmit={handleSubmit}
 				{isSubmitting}

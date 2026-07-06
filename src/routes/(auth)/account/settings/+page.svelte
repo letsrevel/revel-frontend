@@ -62,7 +62,7 @@
 					toast.success(m['accountSettingsPage.general.updateSuccess']());
 				}
 			}
-		} catch (err) {
+		} catch {
 			toast.error(m['accountSettingsPage.general.updateError']());
 		} finally {
 			isUpdatingGeneral = false;

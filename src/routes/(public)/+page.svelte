@@ -13,7 +13,6 @@
 	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
 	import {
-		Mail,
 		Calendar,
 		Users,
 		Shield,

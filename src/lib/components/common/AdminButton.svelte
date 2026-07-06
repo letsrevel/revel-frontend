@@ -8,8 +8,6 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 
-	type BuilderProps = any;
-
 	const accessToken = $derived(authStore.accessToken);
 	const permissions = $derived(authStore.permissions);
 

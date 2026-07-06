@@ -231,7 +231,6 @@
 				{isOwner}
 				onEdit={(t) => (tokenToEdit = t)}
 				onDelete={(t) => (tokenToDelete = t)}
-				onShare={(t) => (tokenToShare = t)}
 			/>
 		{/each}
 	</div>

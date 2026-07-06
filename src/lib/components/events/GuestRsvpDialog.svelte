@@ -22,12 +22,11 @@
 	interface Props {
 		open: boolean;
 		eventId: string;
-		eventName: string;
 		onClose: () => void;
 		onSuccess?: () => void;
 	}
 
-	let { open = $bindable(), eventId, eventName, onClose, onSuccess }: Props = $props();
+	let { open = $bindable(), eventId, onClose, onSuccess }: Props = $props();
 
 	// Form state
 	let formData = $state<GuestRsvpData>({

@@ -6,7 +6,6 @@
 	import {
 		Loader2,
 		Info,
-		ExternalLink,
 		ChevronDown,
 		ChevronUp,
 		AlertTriangle,

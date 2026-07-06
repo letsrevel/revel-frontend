@@ -209,7 +209,7 @@ describe('NotificationItem', () => {
 			{ url: '/custom/path', expectedUrl: '/custom/path' }
 		];
 
-		contexts.forEach(({ expectedUrl, ...context }) => {
+		contexts.forEach(({ expectedUrl: _expectedUrl, ...context }) => {
 			const notification = createMockNotification({ context });
 
 			render(NotificationItem, {

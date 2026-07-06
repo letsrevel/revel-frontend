@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { EventDetailSchema } from '$lib/api/generated/types.gen';
 	import { formatEventDate, formatEventDateRange } from '$lib/utils/date';
-	import { getEventFallbackGradient, getEventCoverArt, getEventLogo } from '$lib/utils/event';
+	import { getEventFallbackGradient, getEventCoverArt } from '$lib/utils/event';
 	import { getImageUrl } from '$lib/utils/url';
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
 	import { MapPin, Calendar, Share2, ExternalLink } from '@lucide/svelte';
@@ -19,9 +19,6 @@
 	// Cover art with fallback hierarchy: event -> series -> organization
 	const coverArtPath = $derived(getEventCoverArt(event));
 	const coverImageUrl = $derived(getImageUrl(coverArtPath));
-
-	// Logo with fallback hierarchy: event -> series -> organization
-	const logoPath = $derived(getEventLogo(event));
 
 	// Compute location display - prioritize venue info when available
 	const locationDisplay = $derived.by(() => {

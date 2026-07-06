@@ -227,8 +227,6 @@ describe('TagInput', () => {
 	});
 
 	it('respects maxTags limit', async () => {
-		const user = userEvent.setup();
-
 		render(TagInput, {
 			props: {
 				label: 'Tags',

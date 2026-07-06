@@ -22,8 +22,6 @@
 		Mail,
 		MessageSquare,
 		Clock,
-		Users,
-		Eye,
 		ChevronDown,
 		Settings
 	} from '@lucide/svelte';
@@ -376,14 +374,6 @@
 		// Remove the type from custom settings to revert to defaults
 		const { [type]: _, ...rest } = notificationTypeSettings;
 		notificationTypeSettings = rest;
-	}
-
-	function isNotificationTypeChannelEnabled(
-		type: string,
-		channel: 'in_app' | 'email' | 'telegram'
-	): boolean {
-		const settings = getNotificationTypeSettings(type);
-		return settings.channels.includes(channel);
 	}
 </script>
 

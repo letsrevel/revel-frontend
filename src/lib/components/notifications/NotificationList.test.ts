@@ -353,7 +353,6 @@ describe('NotificationList', () => {
 	});
 
 	it('filters by notification type', async () => {
-		const user = userEvent.setup();
 		const { notificationListNotifications } = require('$lib/api/generated');
 		notificationListNotifications.mockResolvedValue({
 			data: {

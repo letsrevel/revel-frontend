@@ -133,7 +133,7 @@ export function getWeekDays(year: number, week: number): Date[] {
 /**
  * Get all months in a year (1-12)
  */
-export function getYearMonths(year: number): number[] {
+export function getYearMonths(_year: number): number[] {
 	return Array.from({ length: 12 }, (_, i) => i + 1);
 }
 

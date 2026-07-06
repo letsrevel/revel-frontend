@@ -297,7 +297,6 @@
 					<ClaimMembershipButton
 						tokenId={data.organizationTokenDetails.id || ''}
 						tokenDetails={data.organizationTokenDetails}
-						organizationName={organization.name}
 						class="inline-flex items-center gap-2"
 					/>
 					<!-- Request Membership Button (if org accepts members and user is not a member) -->

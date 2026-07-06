@@ -107,7 +107,7 @@
 		markAllReadMutation.mutate();
 	}
 
-	function handleStatusChange(updatedNotification: NotificationSchema): void {
+	function handleStatusChange(_updatedNotification: NotificationSchema): void {
 		// Invalidate the query to refetch
 		queryClient.invalidateQueries({ queryKey: ['notifications'] });
 	}

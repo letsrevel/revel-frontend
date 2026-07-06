@@ -18,10 +18,9 @@
 		isOwner?: boolean;
 		onEdit: (token: OrganizationTokenSchema) => void;
 		onDelete: (token: OrganizationTokenSchema) => void;
-		onShare: (token: OrganizationTokenSchema) => void;
 	}
 
-	const { token, organizationSlug, isOwner = true, onEdit, onDelete, onShare }: Props = $props();
+	const { token, organizationSlug, isOwner = true, onEdit, onDelete }: Props = $props();
 
 	const canEditOrDelete = $derived(isOwner || !token.grants_staff_status);
 

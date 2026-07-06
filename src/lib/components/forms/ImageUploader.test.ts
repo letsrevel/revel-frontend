@@ -107,8 +107,6 @@ describe('ImageUploader', () => {
 	});
 
 	it('validates file type', async () => {
-		const user = userEvent.setup();
-
 		render(ImageUploader, {
 			props: {
 				label: 'Banner',
@@ -132,8 +130,6 @@ describe('ImageUploader', () => {
 	});
 
 	it('validates file size', async () => {
-		const user = userEvent.setup();
-
 		render(ImageUploader, {
 			props: {
 				label: 'Banner',

@@ -45,10 +45,6 @@
 	const verticalAisles = new SvelteSet<number>();
 	const horizontalAisles = new SvelteSet<number>();
 
-	// Hover state for aisle insertion UI
-	let hoveredRowAisle = $state<number | null>(null);
-	let hoveredColAisle = $state<number | null>(null);
-
 	// Seat state: Map of "row-col" -> seat metadata
 	interface SeatData {
 		exists: boolean;
@@ -65,16 +61,6 @@
 
 	// Track if grid has been initialized
 	let initialized = $state(false);
-
-	// Get the display row index (accounts for inversion)
-	function getDisplayRowIndex(index: number): number {
-		return invertRowOrder ? rows - 1 - index : index;
-	}
-
-	// Get the logical row index from display index
-	function getLogicalRowIndex(displayIndex: number): number {
-		return invertRowOrder ? rows - 1 - displayIndex : displayIndex;
-	}
 
 	// Generate row label (A, B, C... or 1, 2, 3...)
 	function getRowLabel(index: number): string {
@@ -207,17 +193,6 @@
 		initialized = true;
 	}
 
-	// Toggle single seat (adds if not exists, removes if exists)
-	function toggleSeat(row: number, col: number) {
-		const key = getCellKey(row, col);
-		const seat = seats.get(key);
-		if (seat?.exists) {
-			seats.delete(key);
-		} else {
-			seats.set(key, { exists: true, is_accessible: false, is_obstructed_view: false });
-		}
-	}
-
 	// Toggle single seat selection (for clicking on existing seats)
 	function selectSeat(row: number, col: number) {
 		const key = getCellKey(row, col);
@@ -229,7 +204,7 @@
 	}
 
 	// Handle cell click
-	function handleCellClick(row: number, col: number, event: MouseEvent) {
+	function handleCellClick(row: number, col: number) {
 		// If we were dragging, the drag handler already processed this
 		if (isSelecting) return;
 
@@ -347,26 +322,6 @@
 		selectedCells.clear();
 	}
 
-	// Add selected cells as seats
-	function addSelectedAsSeats() {
-		if (!isSelecting || !selectionStart || !selectionEnd) return;
-
-		const minRow = Math.min(selectionStart.row, selectionEnd.row);
-		const maxRow = Math.max(selectionStart.row, selectionEnd.row);
-		const minCol = Math.min(selectionStart.col, selectionEnd.col);
-		const maxCol = Math.max(selectionStart.col, selectionEnd.col);
-
-		for (let r = minRow; r <= maxRow; r++) {
-			for (let c = minCol; c <= maxCol; c++) {
-				seats.set(getCellKey(r, c), {
-					exists: true,
-					is_accessible: false,
-					is_obstructed_view: false
-				});
-			}
-		}
-	}
-
 	// Mark selected seats as accessible
 	function markSelectedAccessible() {
 		for (const key of selectedCells) {
@@ -384,24 +339,6 @@
 			if (seat) {
 				seats.set(key, { ...seat, is_obstructed_view: !seat.is_obstructed_view });
 			}
-		}
-	}
-
-	// Toggle vertical aisle (for clicking on existing aisle indicator)
-	function toggleVerticalAisle(col: number) {
-		if (verticalAisles.has(col)) {
-			verticalAisles.delete(col);
-		} else {
-			verticalAisles.add(col);
-		}
-	}
-
-	// Toggle horizontal aisle (for clicking on existing aisle indicator)
-	function toggleHorizontalAisle(row: number) {
-		if (horizontalAisles.has(row)) {
-			horizontalAisles.delete(row);
-		} else {
-			horizontalAisles.add(row);
 		}
 	}
 
@@ -710,11 +647,8 @@
 					{@const colIndex = c}
 					<!-- Aisle indicator/insertion zone before this column (except first) -->
 					{#if colIndex > 0}
-						<!-- svelte-ignore a11y_no_static_element_interactions -->
 						<div
 							class="group relative flex h-12 w-2 cursor-pointer items-center justify-center hover:w-5"
-							onmouseenter={() => (hoveredColAisle = colIndex - 1)}
-							onmouseleave={() => (hoveredColAisle = null)}
 						>
 							{#if verticalAisles.has(colIndex - 1)}
 								<button
@@ -758,13 +692,10 @@
 					{@const hasHorizontalAisle = horizontalAisles.has(aisleAfterRow)}
 					{@const aisleHeight = hasHorizontalAisle ? 'h-5' : 'h-2'}
 					<div class="flex items-center {aisleHeight}">
-						<!-- svelte-ignore a11y_no_static_element_interactions -->
 						<div
 							class="group flex w-14 cursor-pointer items-center justify-center {hasHorizontalAisle
 								? 'h-5'
 								: 'h-2 hover:h-6'}"
-							onmouseenter={() => (hoveredRowAisle = aisleAfterRow)}
-							onmouseleave={() => (hoveredRowAisle = null)}
 						>
 							{#if hasHorizontalAisle}
 								<button
@@ -838,7 +769,7 @@
 							class="{getCellClass(logicalRow, c)} relative"
 							onmousedown={(e) => handleMouseDown(logicalRow, c, e)}
 							onmouseenter={() => handleMouseMove(logicalRow, c)}
-							onclick={(e) => handleCellClick(logicalRow, c, e)}
+							onclick={() => handleCellClick(logicalRow, c)}
 							aria-label={m['seatGridEditor.seatLabel']({
 								seat: getSeatLabel(logicalRow, c),
 								accessible: seatData?.is_accessible

@@ -9,10 +9,9 @@
 
 	interface Props {
 		token: string;
-		onEventNavigate?: (eventId: string) => void;
 	}
 
-	const { token, onEventNavigate }: Props = $props();
+	const { token }: Props = $props();
 
 	// State
 	let isLoading = $state(true);

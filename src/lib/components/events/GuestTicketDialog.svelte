@@ -17,7 +17,6 @@
 		CheckCircle2,
 		AlertCircle,
 		CreditCard,
-		DollarSign,
 		Loader2,
 		MapPin,
 		Info,
@@ -46,7 +45,6 @@
 	interface Props {
 		open: boolean;
 		eventId: string;
-		eventName: string;
 		tier: TierSchemaWithId;
 		/** Maximum tickets the guest can purchase (null = unlimited up to tier availability) */
 		maxQuantity?: number | null;
@@ -59,7 +57,6 @@
 	let {
 		open = $bindable(),
 		eventId,
-		eventName,
 		tier,
 		maxQuantity = null,
 		eventMaxTicketsPerUser = null,

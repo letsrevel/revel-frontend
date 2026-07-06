@@ -12,14 +12,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
-	import {
-		CheckCircle2,
-		Loader2,
-		MessageCircle,
-		ExternalLink,
-		AlertCircle,
-		X
-	} from '@lucide/svelte';
+	import { CheckCircle2, Loader2, MessageCircle, ExternalLink, AlertCircle } from '@lucide/svelte';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		telegramGetLinkStatus,

@@ -13,7 +13,6 @@
 		TicketTierUpdateSchema,
 		MembershipTierSchema,
 		VenueDetailSchema,
-		VenueSectorSchema,
 		SeatAssignmentMode,
 		RefundPolicy
 	} from '$lib/api/generated/types.gen';

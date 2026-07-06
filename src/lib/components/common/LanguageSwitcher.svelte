@@ -1,7 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { getLocale, setLocale, cookieName } from '$lib/paraglide/runtime.js';
-	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { accountUpdateLanguage } from '$lib/api/client';

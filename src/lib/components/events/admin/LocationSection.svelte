@@ -30,7 +30,6 @@
 		selectedVenue: VenueDetailSchema | null;
 		organizationSlug: string;
 		validationErrors: Record<string, string>;
-		isEditMode: boolean;
 		onUpdate: (data: Record<string, unknown>) => void;
 		onCitySelect: (city: CitySchema | null) => void;
 		onVenueSelect: (venue: VenueDetailSchema | null) => void;
@@ -42,7 +41,6 @@
 		selectedVenue,
 		organizationSlug,
 		validationErrors,
-		isEditMode,
 		onUpdate,
 		onCitySelect,
 		onVenueSelect

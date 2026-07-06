@@ -29,7 +29,7 @@
 			} else {
 				resendSuccess = true;
 			}
-		} catch (error) {
+		} catch {
 			resendError = 'An unexpected error occurred. Please try again.';
 		} finally {
 			isResending = false;

@@ -730,7 +730,6 @@
 				onResumePayment={handleResumePaymentFromSidebar}
 				isResumingPayment={resumePaymentMutation.isPending}
 				onGuestRsvpClick={openGuestRsvpDialog}
-				onGuestTicketClick={openGuestTicketDialog}
 				onInvitationRequestSuccess={refreshUserStatus}
 				onWhitelistRequestSuccess={refreshUserStatus}
 			/>
@@ -884,7 +883,6 @@
 						onResumePayment={handleResumePaymentFromSidebar}
 						isResumingPayment={resumePaymentMutation.isPending}
 						onGuestRsvpClick={openGuestRsvpDialog}
-						onGuestTicketClick={openGuestTicketDialog}
 						onInvitationRequestSuccess={refreshUserStatus}
 						onWhitelistRequestSuccess={refreshUserStatus}
 					/>
@@ -960,7 +958,6 @@
 	tiers={ticketTiers}
 	eventId={event.id}
 	isAuthenticated={data.isAuthenticated}
-	hasTicket={!!userTicket}
 	membershipTier={data.membershipTier}
 	canAttendWithoutLogin={event.can_attend_without_login}
 	{tierRemainingTickets}
@@ -1000,7 +997,6 @@
 	<GuestRsvpDialog
 		bind:open={showGuestRsvpDialog}
 		eventId={event.id}
-		eventName={event.name}
 		onClose={closeGuestRsvpDialog}
 		onSuccess={handleGuestAttendanceSuccess}
 	/>
@@ -1011,7 +1007,6 @@
 	<GuestTicketDialog
 		bind:open={showGuestTicketDialog}
 		eventId={event.id}
-		eventName={event.name}
 		tier={selectedTierForGuest}
 		eventMaxTicketsPerUser={event.max_tickets_per_user}
 		onClose={closeGuestTicketDialog}

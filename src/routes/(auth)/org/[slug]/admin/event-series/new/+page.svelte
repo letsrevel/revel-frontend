@@ -2,7 +2,6 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import type { PageData } from './$types';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { ArrowLeft, Loader2 } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -10,8 +9,6 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { organizationadmincoreCreateEventSeries } from '$lib/api/generated';
-
-	const { data }: { data: PageData } = $props();
 
 	const organization = $derived($page.data.organization);
 	const accessToken = $derived(authStore.accessToken);

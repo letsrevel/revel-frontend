@@ -3,14 +3,9 @@
 	import type {
 		EventDetailSchema,
 		OrganizationPermissionsSchema,
-		EventTokenSchema,
-		EventUserEligibility
+		EventTokenSchema
 	} from '$lib/api/generated/types.gen';
-	import type {
-		UserEventStatus,
-		UserEventStatusResponse,
-		EventTicketSchemaActual
-	} from '$lib/utils/eligibility';
+	import type { UserEventStatus, EventTicketSchemaActual } from '$lib/utils/eligibility';
 	import {
 		isRSVP,
 		isTicket,
@@ -64,7 +59,6 @@
 		onResumePayment?: () => void;
 		isResumingPayment?: boolean;
 		onGuestRsvpClick?: () => void;
-		onGuestTicketClick?: () => void;
 		onInvitationRequestSuccess?: () => void;
 		onWhitelistRequestSuccess?: () => void;
 		class?: string;
@@ -83,7 +77,6 @@
 		onResumePayment,
 		isResumingPayment = false,
 		onGuestRsvpClick,
-		onGuestTicketClick,
 		onInvitationRequestSuccess,
 		onWhitelistRequestSuccess,
 		class: className

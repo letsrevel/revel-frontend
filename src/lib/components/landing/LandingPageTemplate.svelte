@@ -81,7 +81,7 @@
 				{content.hero.subheadline}
 			</p>
 			<div class="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row md:mt-10">
-				{#each content.cta.buttons as button, i (button.text)}
+				{#each content.cta.buttons as button (button.text)}
 					{@const variant =
 						button.variant === 'primary'
 							? 'default'
