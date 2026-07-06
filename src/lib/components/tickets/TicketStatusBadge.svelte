@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { CheckCircle, Clock, XCircle, Ticket as TicketIcon } from 'lucide-svelte';
+	import { CheckCircle, Clock, XCircle, Ticket as TicketIcon } from '@lucide/svelte';
 	import { cn } from '$lib/utils';
 
 	interface Props {

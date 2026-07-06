@@ -10,7 +10,7 @@
 		organizationadminvenuesUpdateSector
 	} from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { X } from 'lucide-svelte';
+	import { X } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 
 	interface Props {

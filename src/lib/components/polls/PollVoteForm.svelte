@@ -7,7 +7,7 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { RadioGroup, RadioGroupItem } from '$lib/components/ui/radio-group';
-	import { Loader2, Check, AlertCircle, CornerDownRight } from 'lucide-svelte';
+	import { Loader2, Check, AlertCircle, CornerDownRight } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import * as m from '$lib/paraglide/messages.js';
 	import { toast } from 'svelte-sonner';

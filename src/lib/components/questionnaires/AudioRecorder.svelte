@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
-	import { Mic, Square, X, Loader2 } from 'lucide-svelte';
+	import { Mic, Square, X, Loader2 } from '@lucide/svelte';
 	import {
 		isMediaRecorderSupported,
 		getSupportedMimeType,

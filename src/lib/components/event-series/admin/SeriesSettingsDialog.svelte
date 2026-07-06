@@ -9,7 +9,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import ImageUploader from '$lib/components/forms/ImageUploader.svelte';
 	import { COVER_ASPECT_RATIO, LOGO_ASPECT_RATIO } from '$lib/utils/image-crop';
-	import { Loader2, Settings as SettingsIcon, Tag as TagIcon, Trash2 } from 'lucide-svelte';
+	import { Loader2, Settings as SettingsIcon, Tag as TagIcon, Trash2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import {
 		eventseriesGetEventSeries,

@@ -17,7 +17,15 @@
 		DropdownMenuItem,
 		DropdownMenuTrigger
 	} from '$lib/components/ui/dropdown-menu';
-	import { BarChart3, Copy, Edit, ExternalLink, MoreHorizontal, Play, Trash2 } from 'lucide-svelte';
+	import {
+		BarChart3,
+		Copy,
+		Edit,
+		ExternalLink,
+		MoreHorizontal,
+		Play,
+		Trash2
+	} from '@lucide/svelte';
 	import PollStatusBadge from './PollStatusBadge.svelte';
 	import PollUrlStrip from './PollUrlStrip.svelte';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';

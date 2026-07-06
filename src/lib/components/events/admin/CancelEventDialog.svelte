@@ -18,7 +18,7 @@
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { extractErrorMessage } from '$lib/utils/errors';
-	import { Loader2, AlertTriangle, Info, X } from 'lucide-svelte';
+	import { Loader2, AlertTriangle, Info, X } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 
 	const REASON_MAX_LENGTH = 1000;

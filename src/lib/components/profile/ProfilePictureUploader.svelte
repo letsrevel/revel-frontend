@@ -5,7 +5,7 @@
 	import type { RevelUserSchema } from '$lib/api/generated/types.gen';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 	import ImageCropperModal from '$lib/components/common/ImageCropperModal.svelte';
-	import { Upload, Trash2, Loader2 } from 'lucide-svelte';
+	import { Upload, Trash2, Loader2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 
 	/**

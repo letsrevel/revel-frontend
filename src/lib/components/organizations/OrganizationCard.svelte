@@ -3,7 +3,7 @@
 	import { cn } from '$lib/utils/cn';
 	import { getImageUrl } from '$lib/utils/url';
 	import { stripMarkdown } from '$lib/seo';
-	import { MapPin, Users, Tag } from 'lucide-svelte';
+	import { MapPin, Users, Tag } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {

@@ -28,7 +28,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { formatPrice } from '$lib/utils/format';
 	import { extractErrorMessage } from '$lib/utils/errors';
-	import { Loader2, AlertTriangle, X, CheckCircle2 } from 'lucide-svelte';
+	import { Loader2, AlertTriangle, X, CheckCircle2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 
 	interface Props {

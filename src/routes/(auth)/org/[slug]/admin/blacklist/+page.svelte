@@ -33,7 +33,7 @@
 		Loader2,
 		ChevronLeft,
 		ChevronRight
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import {
 		BlacklistEntryCard,
 		BlacklistEntryModal,

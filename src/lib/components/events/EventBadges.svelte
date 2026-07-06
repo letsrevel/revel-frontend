@@ -4,7 +4,7 @@
 	import { isEventPast, isRSVPClosed } from '$lib/utils/date';
 	import { isEventFull } from '$lib/utils/event';
 	import { cn } from '$lib/utils/cn';
-	import { EyeOff } from 'lucide-svelte';
+	import { EyeOff } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Badge {

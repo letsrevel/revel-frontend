@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Bell, CheckCheck } from 'lucide-svelte';
+	import { Bell, CheckCheck } from '@lucide/svelte';
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';

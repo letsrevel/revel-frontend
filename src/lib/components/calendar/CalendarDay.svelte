@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
 	import { formatCalendarDate } from '$lib/utils/calendar';
-	import { Loader2 } from 'lucide-svelte';
+	import { Loader2 } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {

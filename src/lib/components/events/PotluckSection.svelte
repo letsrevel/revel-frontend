@@ -8,7 +8,7 @@
 	import PotluckItem from './PotluckItem.svelte';
 	import PotluckItemEditModal from './PotluckItemEditModal.svelte';
 	import { cn } from '$lib/utils/cn';
-	import { ChevronDown, ChevronUp, Plus } from 'lucide-svelte';
+	import { ChevronDown, ChevronUp, Plus } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {

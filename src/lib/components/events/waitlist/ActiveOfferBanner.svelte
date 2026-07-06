@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { Sparkles } from 'lucide-svelte';
+	import { Sparkles } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { cn } from '$lib/utils/cn';
 	import OfferExpiryCountdown from './OfferExpiryCountdown.svelte';

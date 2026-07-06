@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { EventFilters } from '$lib/utils/filters';
-	import { ArrowUpDown, Info } from 'lucide-svelte';
+	import { ArrowUpDown, Info } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import * as m from '$lib/paraglide/messages.js';
 

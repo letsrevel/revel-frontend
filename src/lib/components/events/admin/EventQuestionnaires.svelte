@@ -3,7 +3,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
 	import * as Tooltip from '$lib/components/ui/tooltip';
-	import { Plus, X, FileText, AlertTriangle } from 'lucide-svelte';
+	import { Plus, X, FileText, AlertTriangle } from '@lucide/svelte';
 	import type { OrganizationQuestionnaireInListSchema } from '$lib/api/generated';
 	import { questionnaireUnassignEvent } from '$lib/api/generated/sdk.gen';
 	import { invalidateAll } from '$app/navigation';

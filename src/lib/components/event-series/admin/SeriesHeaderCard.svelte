@@ -10,7 +10,7 @@
 		CalendarX,
 		RefreshCw,
 		MoreHorizontal
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import type { EventSeriesRecurrenceDetailSchema } from '$lib/api/generated/types.gen';
 	import RecurrenceSummary from './RecurrenceSummary.svelte';

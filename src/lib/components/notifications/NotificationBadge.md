@@ -26,7 +26,7 @@ The component is already available in the project at:
 <script>
   import NotificationBadge from '$lib/components/notifications/NotificationBadge.svelte';
   import { Button } from '$lib/components/ui/button';
-  import { Bell } from 'lucide-svelte';
+  import { Bell } from '@lucide/svelte';
 
   const authToken = 'your-auth-token';
 </script>

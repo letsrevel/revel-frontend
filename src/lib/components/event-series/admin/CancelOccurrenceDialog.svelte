@@ -4,7 +4,7 @@
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
-	import { AlertTriangle, CalendarX, Loader2 } from 'lucide-svelte';
+	import { AlertTriangle, CalendarX, Loader2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { organizationadminrecurringeventsCancelOccurrence } from '$lib/api/generated/sdk.gen';
 	import type {

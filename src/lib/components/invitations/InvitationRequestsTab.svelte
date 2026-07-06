@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { EventInvitationRequestInternalSchema } from '$lib/api/generated/types.gen';
 	import { enhance } from '$app/forms';
-	import { Users, Check, X, Calendar, Search } from 'lucide-svelte';
+	import { Users, Check, X, Calendar, Search } from '@lucide/svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import { cn } from '$lib/utils/cn';
 	import { getUserDisplayName } from '$lib/utils/user-display';

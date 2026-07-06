@@ -7,7 +7,7 @@
 	import type { PageData, ActionData } from './$types';
 	import { COMMON_PRONOUNS } from '$lib/schemas/profile';
 	import type { VisibilityValue } from '$lib/schemas/preferences';
-	import { Loader2, Check, Info, ShieldCheck, ShieldAlert, Mail, Eye } from 'lucide-svelte';
+	import { Loader2, Check, Info, ShieldCheck, ShieldAlert, Mail, Eye } from '@lucide/svelte';
 	import DietaryPreferencesManager from '$lib/components/profile/DietaryPreferencesManager.svelte';
 	import DietaryRestrictionsManager from '$lib/components/profile/DietaryRestrictionsManager.svelte';
 	import TelegramConnectionManager from '$lib/components/profile/TelegramConnectionManager.svelte';

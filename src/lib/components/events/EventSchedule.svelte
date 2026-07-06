@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { EventScheduleSession } from '$lib/api/generated/types.gen';
 	import { formatTimeOfDay, formatDate } from '$lib/utils/date';
-	import { AlertCircle, MapPin } from 'lucide-svelte';
+	import { AlertCircle, MapPin } from '@lucide/svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import EventTimezoneNote from './EventTimezoneNote.svelte';
 

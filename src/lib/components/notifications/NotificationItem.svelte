@@ -4,7 +4,7 @@
 	import { notificationMarkRead, notificationMarkUnread } from '$lib/api/generated';
 	import { Card } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
-	import { Circle, Check, X, Clock, Ticket } from 'lucide-svelte';
+	import { Circle, Check, X, Clock, Ticket } from '@lucide/svelte';
 	import { formatRelativeTime } from '$lib/utils/time';
 	import { formatDateTime } from '$lib/utils/date';
 	import { goto } from '$app/navigation';

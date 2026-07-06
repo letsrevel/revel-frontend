@@ -15,7 +15,7 @@
 		CircleCheck,
 		Circle,
 		Loader2
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import {
 		referralstripeConnect,
 		referralstripeVerify,

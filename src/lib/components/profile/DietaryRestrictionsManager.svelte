@@ -9,7 +9,7 @@
 		dietaryCreateFoodItem
 	} from '$lib/api';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import { Plus, Trash2, Loader2, AlertTriangle } from 'lucide-svelte';
+	import { Plus, Trash2, Loader2, AlertTriangle } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import type {
 		DietaryRestrictionSchema,

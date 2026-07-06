@@ -25,7 +25,7 @@
 		DialogDescription,
 		DialogFooter
 	} from '$lib/components/ui/dialog';
-	import { Search, Link, Loader2 } from 'lucide-svelte';
+	import { Search, Link, Loader2 } from '@lucide/svelte';
 	import OrganizationTokenCard from '$lib/components/tokens/OrganizationTokenCard.svelte';
 	import OrganizationTokenModal from '$lib/components/tokens/OrganizationTokenModal.svelte';
 	import TokenShareDialog from '$lib/components/tokens/TokenShareDialog.svelte';

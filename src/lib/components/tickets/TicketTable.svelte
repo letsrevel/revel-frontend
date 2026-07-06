@@ -32,7 +32,7 @@
 		ChevronUp,
 		ChevronDown,
 		ChevronsUpDown
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 	import RefundStatusBadge from './RefundStatusBadge.svelte';

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { FileText, Search, Filter } from 'lucide-svelte';
+	import { FileText, Search, Filter } from '@lucide/svelte';
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
 	import * as m from '$lib/paraglide/messages.js';
 	import { getBackendUrl } from '$lib/config/api';

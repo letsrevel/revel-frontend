@@ -3,7 +3,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
-	import { CheckCircle2, XCircle, Loader2 } from 'lucide-svelte';
+	import { CheckCircle2, XCircle, Loader2 } from '@lucide/svelte';
 	import { eventpublicdiscoveryConfirmGuestAction } from '$lib/api';
 	import { handleGuestAttendanceError } from '$lib/utils/guestAttendance';
 

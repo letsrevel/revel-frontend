@@ -17,7 +17,7 @@
 		Clipboard,
 		ChevronDown,
 		ChevronUp
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 
 	interface Props {
 		content: LandingPageContent;

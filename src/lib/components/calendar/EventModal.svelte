@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
-	import { Calendar, MapPin, Building2 } from 'lucide-svelte';
+	import { Calendar, MapPin, Building2 } from '@lucide/svelte';
 	import { formatDate, formatTimeOfDay } from '$lib/utils/date';
 	import { getImageUrl } from '$lib/utils/url';
 	import * as m from '$lib/paraglide/messages.js';

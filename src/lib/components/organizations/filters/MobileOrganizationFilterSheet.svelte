@@ -6,7 +6,7 @@
 		hasActiveOrganizationFilters
 	} from '$lib/utils/organizationFilters';
 	import { cn } from '$lib/utils/cn';
-	import { Filter, X } from 'lucide-svelte';
+	import { Filter, X } from '@lucide/svelte';
 	import SearchInput from '$lib/components/events/filters/SearchInput.svelte';
 	import CityFilter from '$lib/components/events/filters/CityFilter.svelte';
 	import TagsFilter from '$lib/components/events/filters/TagsFilter.svelte';

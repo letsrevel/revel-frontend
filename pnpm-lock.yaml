@@ -72,9 +72,6 @@ importers:
       isomorphic-dompurify:
         specifier: ^3.18.0
         version: 3.18.0
-      lucide-svelte:
-        specifier: ^0.469.0
-        version: 0.469.0(svelte@5.56.3(@typescript-eslint/types@8.61.0))
       marked:
         specifier: ^18.0.5
         version: 18.0.5
@@ -119,8 +116,8 @@ importers:
         specifier: ^2.4.0
         version: 2.19.0(typescript@5.9.3)
       '@lucide/svelte':
-        specifier: ^0.482.0
-        version: 0.482.0(svelte@5.56.3(@typescript-eslint/types@8.61.0))
+        specifier: ^1.23.0
+        version: 1.23.0(svelte@5.56.3(@typescript-eslint/types@8.61.0))
       '@playwright/test':
         specifier: ^1.49.0
         version: 1.60.0
@@ -780,8 +777,8 @@ packages:
   '@lix-js/server-protocol-schema@0.1.1':
     resolution: {integrity: sha512-jBeALB6prAbtr5q4vTuxnRZZv1M2rKe8iNqRQhFJ4Tv7150unEa0vKyz0hs8Gl3fUGsWaNJBh3J8++fpbrpRBQ==}
 
-  '@lucide/svelte@0.482.0':
-    resolution: {integrity: sha512-n2ycHU9cNcleRDwwpEHBJ6pYzVhHIaL3a+9dQa8kns9hB2g05bY+v2p2KP8v0pZwtNhYTHk/F2o2uZ1bVtQGhw==}
+  '@lucide/svelte@1.23.0':
+    resolution: {integrity: sha512-3LQbKXx9vId6Nx4E2Nu2qwgJfdmr5+CVeVJbxe5cy+HcnCRd9QVVtZXqvgBYAV1OJrPmQAf9/3gJWLCpASC/Ng==}
     peerDependencies:
       svelte: ^5
 
@@ -2236,12 +2233,6 @@ packages:
     resolution: {integrity: sha512-RPimw/7aMdv2oqRrxKwvZXcPfwBrn/JZ2xYcY9Hus/6LaS3VOAKVWKWgNLCFSiOm1ESXinjsDlidVU7JlnCN2A==}
     engines: {node: 20 || >=22}
 
-  lucide-svelte@0.469.0:
-    resolution: {integrity: sha512-PMIJ8jrFqVUsXJz4d1yfAQplaGhNOahwwkzbunha8DhpiD73xqX24n8dE1dPpUk3vcrdWVsHc1y/liHHotOnGQ==}
-    deprecated: Package deprecated. Please use @lucide/svelte instead.
-    peerDependencies:
-      svelte: ^3 || ^4 || ^5.0.0-next.42
-
   lz-string@1.5.0:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
     hasBin: true
@@ -3631,7 +3622,7 @@ snapshots:
 
   '@lix-js/server-protocol-schema@0.1.1': {}
 
-  '@lucide/svelte@0.482.0(svelte@5.56.3(@typescript-eslint/types@8.61.0))':
+  '@lucide/svelte@1.23.0(svelte@5.56.3(@typescript-eslint/types@8.61.0))':
     dependencies:
       svelte: 5.56.3(@typescript-eslint/types@8.61.0)
 
@@ -5126,10 +5117,6 @@ snapshots:
   loupe@3.2.1: {}
 
   lru-cache@11.5.1: {}
-
-  lucide-svelte@0.469.0(svelte@5.56.3(@typescript-eslint/types@8.61.0)):
-    dependencies:
-      svelte: 5.56.3(@typescript-eslint/types@8.61.0)
 
   lz-string@1.5.0: {}
 

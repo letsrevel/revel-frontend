@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { MyEventInvitationSchema } from '$lib/api/generated/types.gen';
 	import { Card } from '$lib/components/ui/card';
-	import { Calendar, MapPin, Ticket, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-svelte';
+	import { Calendar, MapPin, Ticket, CheckCircle2, ChevronDown, ChevronUp } from '@lucide/svelte';
 	import { getImageUrl } from '$lib/utils/url';
 	import { formatEventDateRange, formatDate } from '$lib/utils/date';
 	import { getEventLogo, getEventLogoThumbnail } from '$lib/utils/event';

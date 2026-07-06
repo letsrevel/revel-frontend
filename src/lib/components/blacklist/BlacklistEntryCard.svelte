@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { BlacklistEntrySchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
-	import { Settings, User, Mail, Phone, MessageCircle, Calendar } from 'lucide-svelte';
+	import { Settings, User, Mail, Phone, MessageCircle, Calendar } from '@lucide/svelte';
 	import { formatDistanceToNow } from 'date-fns';
 
 	interface Props {

@@ -11,7 +11,7 @@
 		CardHeader,
 		CardTitle
 	} from '$lib/components/ui/card';
-	import { Users, Shield, CheckCircle, Clock, Loader2 } from 'lucide-svelte';
+	import { Users, Shield, CheckCircle, Clock, Loader2 } from '@lucide/svelte';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { organizationClaimInvitation } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';

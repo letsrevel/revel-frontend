@@ -20,7 +20,7 @@
 		Tag,
 		Wallet,
 		CreditCard
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { OrganizationDescription } from '$lib/components/organizations';
 	import AnnouncementModal from '$lib/components/announcements/AnnouncementModal.svelte';
 	import { createQuery } from '@tanstack/svelte-query';

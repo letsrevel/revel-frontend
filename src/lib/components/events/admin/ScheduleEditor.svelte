@@ -5,7 +5,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { DurationInput } from '$lib/components/forms';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
-	import { CalendarClock, Plus, Trash2, AlertTriangle } from 'lucide-svelte';
+	import { CalendarClock, Plus, Trash2, AlertTriangle } from '@lucide/svelte';
 	import { emptyRow, rowCompleteness, startsBeforeAnchor, type ScheduleRow } from './schedule-rows';
 	import { formatDateTimeReadback } from '$lib/utils/date';
 

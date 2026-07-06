@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { AlertTriangle, ArrowLeft, RefreshCw } from 'lucide-svelte';
+	import { AlertTriangle, ArrowLeft, RefreshCw } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import * as m from '$lib/paraglide/messages.js';

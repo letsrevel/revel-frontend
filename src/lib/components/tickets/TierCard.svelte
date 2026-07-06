@@ -8,7 +8,7 @@
 	import { hasTierId } from '$lib/types/tickets';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
-	import { Ticket, Clock, Users, AlertCircle } from 'lucide-svelte';
+	import { Ticket, Clock, Users, AlertCircle } from '@lucide/svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import { formatDate } from '$lib/utils/date';
 

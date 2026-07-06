@@ -16,7 +16,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent } from '$lib/components/ui/card';
-	import { Pencil, Archive, Trash2, Plus, Loader2 } from 'lucide-svelte';
+	import { Pencil, Archive, Trash2, Plus, Loader2 } from '@lucide/svelte';
 	import PlanFormModal, { type PlanFormPayload } from './PlanFormModal.svelte';
 	import { formatPlanPrice } from '$lib/utils/subscriptions';
 

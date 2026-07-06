@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { cn } from '$lib/utils/cn';
-	import { Check, HelpCircle, X, Lock, Loader2 } from 'lucide-svelte';
+	import { Check, HelpCircle, X, Lock, Loader2 } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
 	interface Props {

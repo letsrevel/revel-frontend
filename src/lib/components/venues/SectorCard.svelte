@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { VenueSectorWithSeatsSchema } from '$lib/api/generated/types.gen';
-	import { Users, Edit, Trash2, Grid3X3 } from 'lucide-svelte';
+	import { Users, Edit, Trash2, Grid3X3 } from '@lucide/svelte';
 
 	interface Props {
 		sector: VenueSectorWithSeatsSchema;

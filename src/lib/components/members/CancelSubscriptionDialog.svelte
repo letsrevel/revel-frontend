@@ -6,7 +6,7 @@
 	import { RadioGroup, RadioGroupItem } from '$lib/components/ui/radio-group';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Label } from '$lib/components/ui/label';
-	import { Loader2 } from 'lucide-svelte';
+	import { Loader2 } from '@lucide/svelte';
 	import { formatDate } from '$lib/utils/date';
 
 	interface Props {

@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { format } from 'date-fns';
-	import { Bug, Info, AlertTriangle, AlertCircle, AlertOctagon, X } from 'lucide-svelte';
+	import { Bug, Info, AlertTriangle, AlertCircle, AlertOctagon, X } from '@lucide/svelte';
 
 	const banner = $derived(appStore.banner);
 

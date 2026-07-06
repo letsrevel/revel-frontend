@@ -5,7 +5,7 @@
 	import { getEventFallbackGradient, getEventCoverArt, getEventLogo } from '$lib/utils/event';
 	import { getImageUrl } from '$lib/utils/url';
 	import { downloadRevelEventICalFile } from '$lib/utils/ical';
-	import { MapPin, Calendar, Share2, ExternalLink } from 'lucide-svelte';
+	import { MapPin, Calendar, Share2, ExternalLink } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import { toast } from 'svelte-sonner';
 

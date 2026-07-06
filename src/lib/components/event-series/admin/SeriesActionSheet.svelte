@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { Pause, Play, Settings, FileText, Repeat, CalendarX, RefreshCw, X } from 'lucide-svelte';
+	import { Pause, Play, Settings, FileText, Repeat, CalendarX, RefreshCw, X } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 
 	interface Props {

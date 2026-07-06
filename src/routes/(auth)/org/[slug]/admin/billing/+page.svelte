@@ -16,7 +16,7 @@
 		Shield,
 		Trash2,
 		Users
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { browser } from '$app/environment';
 	import { invalidateAll } from '$app/navigation';

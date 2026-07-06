@@ -5,7 +5,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Card } from '$lib/components/ui/card';
-	import { Check, X, Clock, Loader2, ChevronDown, ChevronUp } from 'lucide-svelte';
+	import { Check, X, Clock, Loader2, ChevronDown, ChevronUp } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 
 	interface Props {

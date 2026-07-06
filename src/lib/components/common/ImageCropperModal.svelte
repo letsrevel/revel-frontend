@@ -2,7 +2,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import Cropper from 'svelte-easy-crop';
 	import { computeCropOutputSize, type CropPixels } from '$lib/utils/image-crop';
-	import { X, ZoomIn, ZoomOut, Check, Loader2 } from 'lucide-svelte';
+	import { X, ZoomIn, ZoomOut, Check, Loader2 } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
 	/**

@@ -19,7 +19,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { RadioGroup, RadioGroupItem } from '$lib/components/ui/radio-group';
-	import { AlertCircle, Loader2 } from 'lucide-svelte';
+	import { AlertCircle, Loader2 } from '@lucide/svelte';
 	import { durationOptions } from '$lib/utils/tokens';
 	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
 

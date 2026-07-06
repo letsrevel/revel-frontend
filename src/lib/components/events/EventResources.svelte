@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
-	import { FileText, Link as LinkIcon, AlignLeft, ExternalLink, Download } from 'lucide-svelte';
+	import { FileText, Link as LinkIcon, AlignLeft, ExternalLink, Download } from '@lucide/svelte';
 	import { getBackendUrl } from '$lib/config/api';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 

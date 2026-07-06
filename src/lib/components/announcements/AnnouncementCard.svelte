@@ -15,7 +15,7 @@
 		Eye,
 		CalendarOff,
 		Loader2
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { formatRelativeTime } from '$lib/utils/time';
 

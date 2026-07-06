@@ -12,7 +12,7 @@
 		ChevronRight,
 		HelpCircle,
 		ArrowLeft
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { extractMapEmbedUrl } from '$lib/utils/maps';
 
 	type LocationMode = 'none' | 'address' | 'venue';

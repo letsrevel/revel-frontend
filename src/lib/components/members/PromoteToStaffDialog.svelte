@@ -10,7 +10,7 @@
 		DialogTitle
 	} from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
-	import { UserCog, AlertCircle } from 'lucide-svelte';
+	import { UserCog, AlertCircle } from '@lucide/svelte';
 
 	interface Props {
 		member: OrganizationMemberSchema | null;

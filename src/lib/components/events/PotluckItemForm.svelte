@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PotluckItemCreateSchema, ItemTypes } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
-	import { X } from 'lucide-svelte';
+	import { X } from '@lucide/svelte';
 
 	interface Props {
 		isOrganizer: boolean;

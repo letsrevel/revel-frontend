@@ -5,7 +5,7 @@
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { eventadminwaitlistListWaitlist, eventadminwaitlistDeleteWaitlistEntry } from '$lib/api';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { AlertCircle, X } from 'lucide-svelte';
+	import { AlertCircle, X } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
 	import WaitlistSettingsCard from '$lib/components/events/waitlist/admin/WaitlistSettingsCard.svelte';

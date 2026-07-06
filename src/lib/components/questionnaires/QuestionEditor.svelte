@@ -14,7 +14,7 @@
 		ChevronDown,
 		ChevronUp,
 		CornerDownRight
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import OptionEditor from './OptionEditor.svelte';

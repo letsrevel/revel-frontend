@@ -37,7 +37,7 @@
 		List,
 		Heart,
 		Bookmark
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { MembershipStatus } from '$lib/api/generated/types.gen';
 

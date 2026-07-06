@@ -11,7 +11,7 @@
 		AlertCircle,
 		X,
 		ZoomIn
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import type { QuestionAnswerDetailSchema } from '$lib/api/generated';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import AudioPlayer from './AudioPlayer.svelte';

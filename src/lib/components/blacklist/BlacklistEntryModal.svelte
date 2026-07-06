@@ -12,7 +12,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import { Loader2, Trash2, User, Mail, Phone, MessageCircle, Calendar } from 'lucide-svelte';
+	import { Loader2, Trash2, User, Mail, Phone, MessageCircle, Calendar } from '@lucide/svelte';
 	import { formatDistanceToNow } from 'date-fns';
 
 	interface Props {

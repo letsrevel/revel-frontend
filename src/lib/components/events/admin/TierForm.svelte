@@ -27,7 +27,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { extractErrorMessage, extractFieldErrors } from '$lib/utils/errors';
 	import { tierFieldLabel } from './tier-field-labels';
-	import { Building2, LayoutGrid, Armchair, Undo2 } from 'lucide-svelte';
+	import { Building2, LayoutGrid, Armchair, Undo2 } from '@lucide/svelte';
 	import { formatDateTimeReadback } from '$lib/utils/date';
 
 	interface Props {

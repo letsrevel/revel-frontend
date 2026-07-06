@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
-	import { ExternalLink, Play, StopCircle, RotateCcw } from 'lucide-svelte';
+	import { ExternalLink, Play, StopCircle, RotateCcw } from '@lucide/svelte';
 	import PollStatusBadge from './PollStatusBadge.svelte';
 	import PollUrlStrip from './PollUrlStrip.svelte';
 	import PollReopenDialog from './PollReopenDialog.svelte';

@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { env } from '$env/dynamic/public';
 	import { appStore } from '$lib/stores/app.svelte';
-	import { Github, Bug, Info } from 'lucide-svelte';
+	import { Bug, Info } from '@lucide/svelte';
+	import Github from '$lib/components/icons/brand/Github.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import * as Tooltip from '$lib/components/ui/tooltip';

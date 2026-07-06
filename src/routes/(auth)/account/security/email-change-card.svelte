@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { enhance, applyAction } from '$app/forms';
-	import { Mail, Eye, EyeOff, AlertTriangle, CheckCircle, ShieldCheck } from 'lucide-svelte';
+	import { Mail, Eye, EyeOff, AlertTriangle, CheckCircle, ShieldCheck } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import type { RevelUserSchema } from '$lib/api/generated/types.gen';

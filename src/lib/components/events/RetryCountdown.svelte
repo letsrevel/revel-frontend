@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Clock } from 'lucide-svelte';
+	import { Clock } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import * as m from '$lib/paraglide/messages.js';
 	import { formatRetryDate } from '$lib/utils/eligibility';

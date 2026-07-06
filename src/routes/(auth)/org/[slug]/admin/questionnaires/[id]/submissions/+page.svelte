@@ -14,7 +14,7 @@
 		ChevronsLeft,
 		ChevronsRight,
 		ArrowUpDown
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { resolveSubmissionBadgeStatus } from '$lib/utils/resolve-submission-badge-status';
 	import { formatDateTime } from '$lib/utils/date';
 

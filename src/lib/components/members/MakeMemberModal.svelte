@@ -5,7 +5,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
 	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
-	import { UserPlus, Loader2 } from 'lucide-svelte';
+	import { UserPlus, Loader2 } from '@lucide/svelte';
 
 	interface UserInfo {
 		id: string;

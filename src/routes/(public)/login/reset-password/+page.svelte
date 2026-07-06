@@ -4,7 +4,7 @@
 	import { page } from '$app/stores';
 	import type { ActionData } from './$types';
 	import PasswordStrengthIndicator from '$lib/components/forms/PasswordStrengthIndicator.svelte';
-	import { Loader2, Eye, EyeOff, CheckCircle } from 'lucide-svelte';
+	import { Loader2, Eye, EyeOff, CheckCircle } from '@lucide/svelte';
 
 	interface Props {
 		form: ActionData;

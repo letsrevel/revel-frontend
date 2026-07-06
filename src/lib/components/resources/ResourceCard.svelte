@@ -14,7 +14,7 @@
 		Shield,
 		Lock,
 		Ticket
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import { getBackendUrl } from '$lib/config/api';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';

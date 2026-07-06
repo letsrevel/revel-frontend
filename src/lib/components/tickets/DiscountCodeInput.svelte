@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
-	import { Tag, X, ChevronDown, Loader2 } from 'lucide-svelte';
+	import { Tag, X, ChevronDown, Loader2 } from '@lucide/svelte';
 	import type { DiscountCodeValidationResponse } from '$lib/api/generated/types.gen';
 	import { eventpublicticketsValidateDiscount } from '$lib/api/generated/sdk.gen';
 

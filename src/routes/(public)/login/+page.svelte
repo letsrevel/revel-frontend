@@ -3,7 +3,7 @@
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { ActionData, PageData } from './$types';
 	import TwoFactorInput from '$lib/components/forms/TwoFactorInput.svelte';
-	import { Eye, EyeOff, Loader2, ArrowLeft, ExternalLink } from 'lucide-svelte';
+	import { Eye, EyeOff, Loader2, ArrowLeft, ExternalLink } from '@lucide/svelte';
 	import { appStore } from '$lib/stores/app.svelte';
 	import {
 		DEMO_ACCOUNTS,

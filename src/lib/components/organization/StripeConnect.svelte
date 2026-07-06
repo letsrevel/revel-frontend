@@ -10,7 +10,7 @@
 		CreditCard,
 		AlertTriangle,
 		BarChart3
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import {

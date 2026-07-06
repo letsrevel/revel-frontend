@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { EventInvitationRequestSchema } from '$lib/api/generated/types.gen';
 	import { Card } from '$lib/components/ui/card';
-	import { Calendar, MapPin, Ticket, Clock, CheckCircle2, XCircle, Loader2 } from 'lucide-svelte';
+	import { Calendar, MapPin, Ticket, Clock, CheckCircle2, XCircle, Loader2 } from '@lucide/svelte';
 	import { getImageUrl } from '$lib/utils/url';
 	import { formatEventDateRange, formatDate } from '$lib/utils/date';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
