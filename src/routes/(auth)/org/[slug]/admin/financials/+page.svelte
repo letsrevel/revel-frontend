@@ -52,6 +52,7 @@
 	});
 
 	function updateParams(next: Record<string, string | number | null>) {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const sp = new URLSearchParams($page.url.searchParams);
 		for (const [key, value] of Object.entries(next)) {
 			if (value === null || value === '') sp.delete(key);

@@ -122,6 +122,7 @@
 	function getRestrictionSummary() {
 		if (!dietarySummary?.restrictions) return [];
 
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local grouping map built and consumed synchronously within this pure helper, never stored
 		const grouped = new Map<
 			string,
 			{ severities: Map<RestrictionType, number>; notes: string[] }

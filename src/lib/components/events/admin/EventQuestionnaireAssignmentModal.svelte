@@ -13,6 +13,7 @@
 		type OrganizationQuestionnaireInListSchema
 	} from '$lib/api/generated';
 	import { invalidateAll } from '$app/navigation';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	interface Props {
 		open: boolean;
@@ -39,12 +40,13 @@
 	let isLoading = $state(true);
 	let isSaving = $state(false);
 	let allQuestionnaires = $state<OrganizationQuestionnaireInListSchema[]>([]);
-	let selectedIds = $state<Set<string>>(new Set());
+	const selectedIds = new SvelteSet<string>();
 
 	// Initialize selected IDs from currently assigned
 	$effect(() => {
 		if (open) {
-			selectedIds = new Set(currentlyAssigned.map((q) => q.id));
+			selectedIds.clear();
+			for (const q of currentlyAssigned) selectedIds.add(q.id);
 			loadQuestionnaires();
 		}
 	});
@@ -86,13 +88,11 @@
 
 	// Toggle questionnaire selection
 	function toggleQuestionnaire(id: string) {
-		const newSet = new Set(selectedIds);
-		if (newSet.has(id)) {
-			newSet.delete(id);
+		if (selectedIds.has(id)) {
+			selectedIds.delete(id);
 		} else {
-			newSet.add(id);
+			selectedIds.add(id);
 		}
-		selectedIds = newSet;
 	}
 
 	// Save assignments

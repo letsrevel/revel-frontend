@@ -279,6 +279,7 @@
 	 * Apply filters and navigate to update URL
 	 */
 	function applyFilters() {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const params = new URLSearchParams();
 
 		if (searchQuery) params.set('search', searchQuery);
@@ -309,6 +310,7 @@
 	 * Navigate to page
 	 */
 	function goToPage(page: number) {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const params = new URLSearchParams(window.location.search);
 		params.set('page', page.toString());
 		goto(`?${params.toString()}`, { keepFocus: true });

@@ -28,6 +28,7 @@
 
 	function switchTab(tab: 'requests' | 'invitations' | 'links') {
 		activeTab = tab;
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const params = new URLSearchParams(window.location.search);
 		params.set('tab', tab);
 		params.delete('page');
@@ -37,6 +38,7 @@
 	}
 
 	function applyFilters() {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via window.location.href
 		const params = new URLSearchParams();
 		params.set('tab', activeTab);
 		if (activeStatusFilter) params.set('status', activeStatusFilter);

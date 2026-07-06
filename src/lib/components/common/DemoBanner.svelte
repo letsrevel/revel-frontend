@@ -12,11 +12,12 @@
 	// Get midnight CET in user's timezone
 	function getMidnightCETInUserTimezone(): string {
 		const now = new Date();
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local var mutated synchronously within this pure function, then discarded
 		const tomorrow = new Date(now);
 		tomorrow.setDate(tomorrow.getDate() + 1);
 
 		// Create midnight CET time (00:00 in Europe/Paris)
-		// eslint-disable-next-line no-restricted-syntax -- timezone conversion, not display formatting
+		// eslint-disable-next-line no-restricted-syntax, svelte/prefer-svelte-reactivity -- timezone conversion, not display formatting; not reactive state, mutated synchronously and discarded
 		const midnightCET = new Date(tomorrow.toLocaleString('en-US', { timeZone: 'Europe/Paris' }));
 		midnightCET.setHours(0, 0, 0, 0);
 

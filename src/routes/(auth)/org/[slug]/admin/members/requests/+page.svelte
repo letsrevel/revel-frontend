@@ -48,6 +48,7 @@
 	 * Apply status filter
 	 */
 	function filterByStatus(status: string | null) {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const params = new URLSearchParams(window.location.search);
 
 		if (status) {

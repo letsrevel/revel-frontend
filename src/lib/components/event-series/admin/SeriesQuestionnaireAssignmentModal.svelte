@@ -13,6 +13,7 @@
 		type EventSeriesRetrieveSchema
 	} from '$lib/api/generated';
 	import { invalidateAll } from '$app/navigation';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	interface Props {
 		open: boolean;
@@ -29,7 +30,7 @@
 	let isLoading = $state(true);
 	let isSaving = $state(false);
 	let allQuestionnaires = $state<OrganizationQuestionnaireInListSchema[]>([]);
-	let selectedIds = $state<Set<string>>(new Set());
+	const selectedIds = new SvelteSet<string>();
 
 	// Get currently assigned questionnaires from series
 	function getCurrentlyAssigned(): string[] {
@@ -50,7 +51,8 @@
 	// Initialize selected IDs from currently assigned
 	$effect(() => {
 		if (open) {
-			selectedIds = new Set(getCurrentlyAssigned());
+			selectedIds.clear();
+			for (const id of getCurrentlyAssigned()) selectedIds.add(id);
 			loadQuestionnaires();
 		}
 	});
@@ -92,13 +94,11 @@
 
 	// Toggle questionnaire selection
 	function toggleQuestionnaire(id: string) {
-		const newSet = new Set(selectedIds);
-		if (newSet.has(id)) {
-			newSet.delete(id);
+		if (selectedIds.has(id)) {
+			selectedIds.delete(id);
 		} else {
-			newSet.add(id);
+			selectedIds.add(id);
 		}
-		selectedIds = newSet;
 	}
 
 	// Save assignments

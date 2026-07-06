@@ -96,6 +96,7 @@
 
 		// Build URL with query params to trigger success message on event page
 		let url = `/events/${result.eventId}`;
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via window.location.href
 		const params = new URLSearchParams();
 
 		if (result.type === 'rsvp' && result.rsvpStatus) {

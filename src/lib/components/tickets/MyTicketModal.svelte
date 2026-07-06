@@ -220,6 +220,7 @@
 	}
 
 	const pendingPaymentGroups = $derived.by((): PaymentGroup[] => {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local grouping map built and consumed synchronously within this $derived.by computation, never stored
 		const groups = new Map<string, UserTicketSchema[]>();
 
 		for (const t of ticketArray) {

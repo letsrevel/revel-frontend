@@ -59,7 +59,6 @@ export default [
 			// match this repo's permissive lint posture (CI fails on errors only).
 			// TODO: address and re-promote to `error` in follow-up passes.
 			'svelte/no-navigation-without-resolve': 'warn',
-			'svelte/prefer-svelte-reactivity': 'warn',
 			'no-restricted-syntax': [
 				'error',
 				{

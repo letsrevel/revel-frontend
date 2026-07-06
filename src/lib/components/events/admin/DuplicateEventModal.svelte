@@ -41,6 +41,7 @@
 			// Suggest name with "Copy of" prefix
 			newName = m['duplicateEventModal.copyOf']({ name: eventName });
 			// Default to current date/time + 1 hour as ISO
+			// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local var mutated synchronously then converted to an ISO string and discarded
 			const now = new Date();
 			now.setMinutes(now.getMinutes() + 60); // Add 1 hour
 			newStart = now.toISOString();

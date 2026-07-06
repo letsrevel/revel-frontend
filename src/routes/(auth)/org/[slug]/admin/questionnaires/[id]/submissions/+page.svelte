@@ -29,6 +29,7 @@
 	const currentOrderBy = $derived(data.filters.orderBy || '-submitted_at');
 
 	function setEvaluationStatusFilter(status: string) {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const params = new URLSearchParams($page.url.searchParams);
 
 		if (status) {
@@ -42,6 +43,7 @@
 	}
 
 	function setOrderBy(orderBy: string) {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const params = new URLSearchParams($page.url.searchParams);
 
 		if (orderBy !== '-submitted_at') {
@@ -55,6 +57,7 @@
 	}
 
 	function goToPage(pageNum: number) {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const params = new URLSearchParams($page.url.searchParams);
 		params.set('page', pageNum.toString());
 		goto(`?${params.toString()}`);

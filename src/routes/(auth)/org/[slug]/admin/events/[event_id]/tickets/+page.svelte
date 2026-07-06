@@ -385,6 +385,7 @@
 	 * Apply filters to URL
 	 */
 	function applyFilters() {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const params = new URLSearchParams();
 		if (searchQuery) params.set('search', searchQuery);
 		if (selectedStatus) params.set('status', selectedStatus);
@@ -432,6 +433,7 @@
 	 * Navigate to page
 	 */
 	function goToPage(pageNum: number) {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const params = new URLSearchParams($page.url.searchParams);
 		params.set('page', pageNum.toString());
 		goto(`?${params.toString()}`, { replaceState: true, keepFocus: true });

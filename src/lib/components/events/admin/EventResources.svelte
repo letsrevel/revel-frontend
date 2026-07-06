@@ -6,6 +6,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { FileText, Link as LinkIcon, AlignLeft, ExternalLink, Plus } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	interface Props {
 		organizationSlug: string;
@@ -46,20 +47,18 @@
 
 	// Local selected set. Writable $derived: resynced from props when they
 	// change, but locally reassignable by toggleResource below.
-	let selectedSet = $derived(new Set(selectedResourceIds));
+	let selectedSet = $derived(new SvelteSet(selectedResourceIds));
 
 	function toggleResource(resourceId: string) {
 		if (disabled) return;
 
-		const newSet = new Set(selectedSet);
-		if (newSet.has(resourceId)) {
-			newSet.delete(resourceId);
+		if (selectedSet.has(resourceId)) {
+			selectedSet.delete(resourceId);
 		} else {
-			newSet.add(resourceId);
+			selectedSet.add(resourceId);
 		}
 
-		selectedSet = newSet;
-		onSelectionChange?.(Array.from(newSet));
+		onSelectionChange?.(Array.from(selectedSet));
 	}
 
 	function isSelected(resourceId: string): boolean {

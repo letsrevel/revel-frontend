@@ -14,6 +14,7 @@
 
 	// Group seats by row for grid display
 	const seatsByRow = $derived(() => {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local grouping map built and consumed synchronously within this function, replaced by a fresh sorted Map before returning
 		const byRow = new Map<string, VenueSeatSchema[]>();
 		for (const seat of seats) {
 			const row = seat.row || '?';

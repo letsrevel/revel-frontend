@@ -74,6 +74,7 @@
 	}
 
 	function toggleWeekday(day: number): void {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: throwaway copy, mutated synchronously and immediately spread into patch(), never stored or read again
 		const next = new Set(selectedWeekdays);
 		if (next.has(day)) {
 			next.delete(day);

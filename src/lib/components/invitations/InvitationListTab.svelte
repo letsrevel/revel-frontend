@@ -13,6 +13,7 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 	import EmailTagInput from '$lib/components/forms/EmailTagInput.svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	interface Pagination {
 		page: number;
@@ -73,8 +74,8 @@
 	});
 
 	// Bulk selection state
-	let selectedRegisteredIds = $state<Set<string>>(new Set());
-	let selectedPendingIds = $state<Set<string>>(new Set());
+	const selectedRegisteredIds = new SvelteSet<string>();
+	const selectedPendingIds = new SvelteSet<string>();
 	let showBulkEditDialog = $state(false);
 	let bulkEditFormData = $state({
 		waives_questionnaire: false,
@@ -137,38 +138,34 @@
 	}
 
 	function toggleRegisteredSelection(id: string) {
-		const newSet = new Set(selectedRegisteredIds);
-		if (newSet.has(id)) {
-			newSet.delete(id);
+		if (selectedRegisteredIds.has(id)) {
+			selectedRegisteredIds.delete(id);
 		} else {
-			newSet.add(id);
+			selectedRegisteredIds.add(id);
 		}
-		selectedRegisteredIds = newSet;
 	}
 
 	function togglePendingSelection(id: string) {
-		const newSet = new Set(selectedPendingIds);
-		if (newSet.has(id)) {
-			newSet.delete(id);
+		if (selectedPendingIds.has(id)) {
+			selectedPendingIds.delete(id);
 		} else {
-			newSet.add(id);
+			selectedPendingIds.add(id);
 		}
-		selectedPendingIds = newSet;
 	}
 
 	function toggleSelectAllRegistered() {
-		if (selectedRegisteredIds.size === registeredInvitations.length) {
-			selectedRegisteredIds = new Set();
-		} else {
-			selectedRegisteredIds = new Set(registeredInvitations.map((inv) => inv.id));
+		const allSelected = selectedRegisteredIds.size === registeredInvitations.length;
+		selectedRegisteredIds.clear();
+		if (!allSelected) {
+			for (const inv of registeredInvitations) selectedRegisteredIds.add(inv.id);
 		}
 	}
 
 	function toggleSelectAllPending() {
-		if (selectedPendingIds.size === pendingInvitations.length) {
-			selectedPendingIds = new Set();
-		} else {
-			selectedPendingIds = new Set(pendingInvitations.map((inv) => inv.id));
+		const allSelected = selectedPendingIds.size === pendingInvitations.length;
+		selectedPendingIds.clear();
+		if (!allSelected) {
+			for (const inv of pendingInvitations) selectedPendingIds.add(inv.id);
 		}
 	}
 
@@ -198,8 +195,8 @@
 	}
 
 	function clearSelections() {
-		selectedRegisteredIds = new Set();
-		selectedPendingIds = new Set();
+		selectedRegisteredIds.clear();
+		selectedPendingIds.clear();
 	}
 
 	function handleEmailTagsChange(tags: string[]) {

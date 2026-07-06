@@ -32,6 +32,7 @@
 	import AdmissionScreeningSection from './AdmissionScreeningSection.svelte';
 	import type { OrganizationQuestionnaireInListSchema } from '$lib/api/generated';
 	import { tagListTags } from '$lib/api/generated/sdk.gen';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	interface Props {
 		formData: Partial<EventCreateSchema> & {
@@ -155,14 +156,12 @@
 		!!formData.accept_invitation_requests ||
 		!!formData.requires_full_profile ||
 		!!formData.apply_before;
-	let openSections = $state<Set<string>>(
-		new Set(
-			[
-				'basic',
-				formData.tags && formData.tags.length > 0 ? 'advanced' : null,
-				hasScreeningSettings ? 'screening' : null
-			].filter((s): s is string => s !== null)
-		)
+	const openSections = new SvelteSet<string>(
+		[
+			'basic',
+			formData.tags && formData.tags.length > 0 ? 'advanced' : null,
+			hasScreeningSettings ? 'screening' : null
+		].filter((s): s is string => s !== null)
 	);
 
 	// Tag input state
@@ -198,13 +197,11 @@
 	 * Toggle accordion section
 	 */
 	function toggleSection(section: string): void {
-		const newSections = new Set(openSections);
-		if (newSections.has(section)) {
-			newSections.delete(section);
+		if (openSections.has(section)) {
+			openSections.delete(section);
 		} else {
-			newSections.add(section);
+			openSections.add(section);
 		}
-		openSections = newSections;
 	}
 
 	/**

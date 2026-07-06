@@ -42,6 +42,7 @@
 	);
 
 	function setEventFilter(eventId: string) {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const params = new URLSearchParams($page.url.searchParams);
 		if (eventId) {
 			params.set('event_id', eventId);
@@ -53,6 +54,7 @@
 	}
 
 	function setSeriesFilter(seriesId: string) {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const params = new URLSearchParams($page.url.searchParams);
 		if (seriesId) {
 			params.set('event_series_id', seriesId);
