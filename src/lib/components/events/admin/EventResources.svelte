@@ -44,13 +44,9 @@
 		}
 	}));
 
-	// Local selected set
-	let selectedSet = $state(new Set(selectedResourceIds));
-
-	// Sync with prop changes
-	$effect(() => {
-		selectedSet = new Set(selectedResourceIds);
-	});
+	// Local selected set. Writable $derived: resynced from props when they
+	// change, but locally reassignable by toggleResource below.
+	let selectedSet = $derived(new Set(selectedResourceIds));
 
 	function toggleResource(resourceId: string) {
 		if (disabled) return;

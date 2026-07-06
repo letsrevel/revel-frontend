@@ -78,7 +78,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 	const pageSize = 100; // Fixed page size
 
 	// Load RSVPs with filters
-	let rsvps: any[] = [];
+	let rsvps: any[];
 	let totalCount = 0;
 	let nextPage: string | null = null;
 	let previousPage: string | null = null;

@@ -53,21 +53,11 @@
 	let eventsSearch = $state('');
 	let tiersSearch = $state('');
 
-	// Local selection sets
-	let seriesSet = $state(new Set(selectedSeriesIds));
-	let eventsSet = $state(new Set(selectedEventIds));
-	let tiersSet = $state(new Set(selectedTierIds));
-
-	// Sync with prop changes
-	$effect(() => {
-		seriesSet = new Set(selectedSeriesIds);
-	});
-	$effect(() => {
-		eventsSet = new Set(selectedEventIds);
-	});
-	$effect(() => {
-		tiersSet = new Set(selectedTierIds);
-	});
+	// Local selection sets. Writable $derived: resynced from props when they
+	// change, but locally reassignable by the toggle handlers below.
+	let seriesSet = $derived(new Set(selectedSeriesIds));
+	let eventsSet = $derived(new Set(selectedEventIds));
+	let tiersSet = $derived(new Set(selectedTierIds));
 
 	// Fetch series
 	const seriesQuery = createQuery<EventSeriesInListSchema[]>(() => ({

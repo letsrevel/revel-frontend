@@ -501,7 +501,7 @@
 							<p class="text-lg font-bold text-primary">
 								{#if discountedPrice !== null}
 									<span class="text-sm text-muted-foreground line-through">{priceDisplay}</span>
-									{' '}{tier.currency}
+									{tier.currency}
 									{discountedPrice.toFixed(2)}
 								{:else}
 									{priceDisplay}

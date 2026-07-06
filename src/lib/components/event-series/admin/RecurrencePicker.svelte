@@ -183,13 +183,10 @@
 
 	const MONTHLY_TYPES = ['day', 'weekday'] as const satisfies readonly MonthlyType[];
 
-	// ISO state for the until DateTimePicker. Kept in sync with rule.until so
-	// editing an existing rule pre-populates the field.
-	let untilValue = $state('');
-
-	$effect(() => {
-		untilValue = rule.until ?? '';
-	});
+	// ISO state for the until DateTimePicker. Writable $derived: kept in sync
+	// with rule.until so editing an existing rule pre-populates the field, but
+	// locally reassignable via the DateTimePicker's bind:value.
+	let untilValue = $derived(rule.until ?? '');
 
 	function handleUntilChange(value: string): void {
 		patch({ until: value || null });

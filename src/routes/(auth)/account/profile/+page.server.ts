@@ -19,7 +19,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		};
 	}
 
-	let user: Awaited<ReturnType<typeof accountMe>>['data'] = undefined;
+	let user: Awaited<ReturnType<typeof accountMe>>['data'];
 	try {
 		const { data } = await accountMe({
 			headers: {

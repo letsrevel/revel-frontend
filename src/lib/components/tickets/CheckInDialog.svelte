@@ -126,6 +126,22 @@
 		return null;
 	});
 
+	/**
+	 * Displayed tier price, including the pwyc min–max range when applicable.
+	 * Built as a single string so the dash/space formatting doesn't depend on
+	 * template whitespace collapsing.
+	 */
+	const tierPriceDisplay = $derived.by(() => {
+		if (ticket?.tier?.price_type === 'pwyc' && ticket.tier?.pwyc_min) {
+			const min = formatPrice(ticket.tier.pwyc_min, ticket.tier.currency);
+			if (ticket.tier.pwyc_max) {
+				return `${min} – ${formatPrice(ticket.tier.pwyc_max, ticket.tier.currency)}`;
+			}
+			return min;
+		}
+		return formatPrice(ticket?.tier?.price, ticket?.tier?.currency);
+	});
+
 	// Pre-fill with pwyc_min on open, reset on close
 	$effect(() => {
 		if (isOpen && needsPwycInput && ticket?.tier) {
@@ -232,7 +248,6 @@
 	{@const statusInfo = getStatusInfo(ticket.status)}
 	{@const guestName = getGuestNameIfDifferent(ticket)}
 	{@const seatInfo = getSeatDisplay(ticket)}
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
 		onclick={handleBackdropClick}
@@ -337,15 +352,7 @@
 						<div class="flex items-center justify-between px-4 py-3">
 							<span class="text-sm text-muted-foreground">{m['checkInDialog.price']()}</span>
 							<span class="font-medium">
-								{#if ticket.tier?.price_type === 'pwyc' && ticket.tier?.pwyc_min}
-									{formatPrice(
-										ticket.tier.pwyc_min,
-										ticket.tier.currency
-									)}{#if ticket.tier.pwyc_max}
-										{' '}&ndash; {formatPrice(ticket.tier.pwyc_max, ticket.tier.currency)}{/if}
-								{:else}
-									{formatPrice(ticket.tier?.price, ticket.tier?.currency)}
-								{/if}
+								{tierPriceDisplay}
 							</span>
 						</div>
 						<div class="flex items-center justify-between px-4 py-3">

@@ -33,7 +33,6 @@
 		onClose: () => void;
 	}
 
-	// eslint-disable-next-line prefer-const -- `open` is bindable so the whole destructure must use `let`.
 	let { open = $bindable(), series, organizationSlug, accessToken, onClose }: Props = $props();
 
 	const queryClient = useQueryClient();

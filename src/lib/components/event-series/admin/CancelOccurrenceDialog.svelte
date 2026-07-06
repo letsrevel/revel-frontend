@@ -33,7 +33,6 @@
 		onClose: () => void;
 	}
 
-	/* eslint-disable prefer-const -- `open` is bindable so the whole destructure must use `let`. */
 	let {
 		open = $bindable(),
 		series,
@@ -43,7 +42,6 @@
 		initialDate = null,
 		onClose
 	}: Props = $props();
-	/* eslint-enable prefer-const */
 
 	const queryClient = useQueryClient();
 

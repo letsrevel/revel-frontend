@@ -360,7 +360,7 @@
 
 		// Determine the price value based on payment method and price type
 		// Normalize all decimal values to ensure dots (not commas) as decimal separator
-		let finalPrice = '0';
+		let finalPrice: string;
 		if (paymentMethod === 'free') {
 			finalPrice = '0';
 		} else if (priceType === 'pwyc') {

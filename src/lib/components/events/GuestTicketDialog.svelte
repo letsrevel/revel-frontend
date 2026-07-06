@@ -958,14 +958,14 @@
 										>
 											{m['guestTicketDialog.logIn']()}
 										</a>
-										{' '}{m['guestTicketDialog.or']()}{' '}
+										{m['guestTicketDialog.or']()}
 										<a
 											href="/register?redirect={encodeURIComponent(window.location.pathname)}"
 											class="font-medium underline hover:no-underline"
 										>
 											{m['guestTicketDialog.createAnAccount']()}
 										</a>
-										{' '}{m['guestTicketDialog.toContinue']()}
+										{m['guestTicketDialog.toContinue']()}
 									</p>
 								{/if}
 							</AlertDescription>

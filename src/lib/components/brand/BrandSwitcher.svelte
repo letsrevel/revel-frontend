@@ -29,7 +29,7 @@
 
 	function onRadioKeydown(event: KeyboardEvent, index: number) {
 		const last = BRAND_THEMES.length - 1;
-		let next = index;
+		let next: number;
 		switch (event.key) {
 			case 'ArrowDown':
 			case 'ArrowRight':

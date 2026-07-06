@@ -48,12 +48,9 @@ export default [
 			'@typescript-eslint/consistent-indexed-object-style': 'off',
 			'@typescript-eslint/consistent-type-definitions': 'off',
 			'@typescript-eslint/no-inferrable-types': 'warn',
-			'@typescript-eslint/no-dynamic-delete': 'warn',
 			'@typescript-eslint/no-unused-expressions': 'warn',
-			'prefer-const': 'warn',
-			'no-useless-escape': 'warn',
+			'prefer-const': 'error',
 			'svelte/no-at-html-tags': 'warn',
-			'svelte/no-unused-svelte-ignore': 'warn',
 			'svelte/valid-compile': 'off', // Disable custom element warnings
 			// Rules newly promoted to `error` by the eslint 10 / @eslint/js 10 /
 			// eslint-plugin-svelte 3 upgrade. Each flags a pre-existing, pervasive
@@ -61,14 +58,9 @@ export default [
 			// but is out of scope for a dependency bump. Downgraded to `warn` to
 			// match this repo's permissive lint posture (CI fails on errors only).
 			// TODO: address and re-promote to `error` in follow-up passes.
-			'no-useless-assignment': 'warn',
 			'svelte/no-navigation-without-resolve': 'warn',
 			'svelte/require-each-key': 'warn',
 			'svelte/prefer-svelte-reactivity': 'warn',
-			'svelte/prefer-writable-derived': 'warn',
-			'svelte/no-useless-mustaches': 'warn',
-			'svelte/no-unnecessary-state-wrap': 'warn',
-			'svelte/no-useless-children-snippet': 'warn',
 			'no-restricted-syntax': [
 				'error',
 				{
@@ -78,6 +70,15 @@ export default [
 						'Do not format dates with toLocale* directly. Use a helper from $lib/utils/date.ts (or calendar.ts) so dates follow the UI language with textual months. See CLAUDE.md "Date & Time Formatting".'
 				}
 			]
+		}
+	},
+	{
+		// Svelte 5 requires `let` for $props()/$derived destructuring; the core
+		// rule flags those. svelte/prefer-const is the runes-aware replacement.
+		files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],
+		rules: {
+			'prefer-const': 'off',
+			'svelte/prefer-const': 'error'
 		}
 	},
 	{

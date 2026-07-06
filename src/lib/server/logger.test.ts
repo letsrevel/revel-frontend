@@ -10,6 +10,9 @@ async function loadLogger(env: Record<string, string | undefined> = {}) {
 	const original: Record<string, string | undefined> = {};
 	for (const [k, v] of Object.entries(env)) {
 		original[k] = process.env[k];
+		// process.env is the real global env object, not a plain map we can restructure;
+		// unsetting a var by dynamic key requires `delete`.
+		// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
 		if (v === undefined) delete process.env[k];
 		else process.env[k] = v;
 	}

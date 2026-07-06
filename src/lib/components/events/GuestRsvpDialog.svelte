@@ -330,14 +330,14 @@
 										>
 											{m['guestRsvpDialog.logIn']()}
 										</a>
-										{' '}{m['guestRsvpDialog.or']()}{' '}
+										{m['guestRsvpDialog.or']()}
 										<a
 											href="/register?redirect={encodeURIComponent(window.location.pathname)}"
 											class="font-medium underline hover:no-underline"
 										>
 											{m['guestRsvpDialog.createAnAccount']()}
 										</a>
-										{' '}{m['guestRsvpDialog.toContinue']()}
+										{m['guestRsvpDialog.toContinue']()}
 									</p>
 								{/if}
 							</AlertDescription>

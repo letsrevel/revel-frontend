@@ -38,7 +38,7 @@
 			/[A-Z]/.test(password) &&
 			/[a-z]/.test(password) &&
 			/\d/.test(password) &&
-			/[!@#$%^&*(),.?":{}|<>\-\[\]=]/.test(password)
+			/[!@#$%^&*(),.?":{}|<>\-[\]=]/.test(password)
 	);
 
 	// Error handling - type assertion needed due to ActionData union

@@ -59,13 +59,9 @@
 		);
 	});
 
-	// Local selected set for better performance
-	let selectedSet = $state(new Set(selectedEventIds));
-
-	// Sync with prop changes
-	$effect(() => {
-		selectedSet = new Set(selectedEventIds);
-	});
+	// Local selected set for better performance. Writable $derived: resynced
+	// from props when they change, but locally reassignable by toggleEvent.
+	let selectedSet = $derived(new Set(selectedEventIds));
 
 	function toggleEvent(eventId: string) {
 		if (disabled) return;

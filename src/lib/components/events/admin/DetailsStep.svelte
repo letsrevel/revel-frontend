@@ -173,17 +173,14 @@
 	let isLoadingSuggestions = $state(false);
 	let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
-	// Description state (for MarkdownEditor)
-	let description = $state(formData.description || '');
+	// Description state (for MarkdownEditor). Writable $derived: resynced with
+	// formData when it changes externally, but locally reassignable via the
+	// editor's bind:value and handleDescriptionChange below.
+	let description = $derived(formData.description || '');
 
 	// Image state
 	let logoFile = $state<File | null>(null);
 	let coverArtFile = $state<File | null>(null);
-
-	// Sync description with formData when it changes externally
-	$effect(() => {
-		description = formData.description || '';
-	});
 
 	// Helper function to get full image URL
 	function getImageUrl(path: string | null | undefined): string | null {

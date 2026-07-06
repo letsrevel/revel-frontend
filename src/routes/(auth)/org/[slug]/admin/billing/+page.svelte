@@ -468,10 +468,8 @@
 							}}
 						>
 							<Select.Trigger id="billing-country" class="w-full">
-								{#snippet children()}
-									{EU_COUNTRIES.find((c) => c.code === countryCode)?.name ||
-										m['orgAdmin.billing.billingInfo.countryPlaceholder']()}
-								{/snippet}
+								{EU_COUNTRIES.find((c) => c.code === countryCode)?.name ||
+									m['orgAdmin.billing.billingInfo.countryPlaceholder']()}
 							</Select.Trigger>
 							<Select.Content>
 								{#each EU_COUNTRIES as country (country.code)}

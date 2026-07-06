@@ -707,7 +707,6 @@
 	{@const pwyc = isPwycTicket(ticketToConfirm)}
 	{@const pwycWarning = pwyc ? getPwycWarning(ticketToConfirm, pwycPricePaid) : null}
 	{@const pwycValid = !pwyc || (pwycPricePaid !== '' && parseFloat(pwycPricePaid) > 0)}
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		role="presentation"
 		onclick={(e) => {

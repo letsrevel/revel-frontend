@@ -99,7 +99,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 		});
 
 	// Load tickets with filters
-	let tickets: any[] = [];
+	let tickets: any[];
 	let totalCount = 0;
 	let nextPage: string | null = null;
 	let previousPage: string | null = null;
