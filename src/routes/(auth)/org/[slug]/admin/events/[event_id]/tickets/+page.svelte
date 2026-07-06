@@ -25,8 +25,9 @@
 		organizationadminblacklistCreateBlacklistEntry,
 		eventadminticketsExportAttendees
 	} from '$lib/api';
+	import type { ComponentProps } from 'svelte';
 	import type { PageData } from './$types';
-	import type { MembershipTierSchema } from '$lib/api/generated/types.gen';
+	import type { AdminTicketSchema, MembershipTierSchema } from '$lib/api/generated/types.gen';
 	import TicketFilters from '$lib/components/tickets/TicketFilters.svelte';
 	import TicketTable from '$lib/components/tickets/TicketTable.svelte';
 	import TicketCardList from '$lib/components/tickets/TicketCardList.svelte';
@@ -54,13 +55,18 @@
 	// Sort state (server-side, persisted in the URL)
 	let selectedOrderBy = $state<TicketOrderBy | undefined>(data.filters.orderBy ?? undefined);
 
+	// CheckInDialog declares a stricter ticket shape than the generated
+	// AdminTicketSchema (non-nullable id/status, no nulls on user name fields),
+	// so store the adapted shape for it.
+	type CheckInDialogTicket = NonNullable<ComponentProps<typeof CheckInDialog>['ticket']>;
+
 	// Confirmation dialogs
 	let showCancelDialog = $state(false);
-	let ticketToCancel = $state<any>(null);
+	let ticketToCancel = $state<AdminTicketSchema | null>(null);
 	let showConfirmPaymentDialog = $state(false);
-	let ticketToConfirm = $state<any>(null);
+	let ticketToConfirm = $state<AdminTicketSchema | null>(null);
 	let showCheckInDialog = $state(false);
-	let ticketToCheckIn = $state<any>(null);
+	let ticketToCheckIn = $state<CheckInDialogTicket | null>(null);
 	let showQRScanner = $state(false);
 
 	// Make member modal state
@@ -71,11 +77,32 @@
 
 	// Blacklist confirmation state
 	let showBlacklistDialog = $state(false);
-	let ticketToBlacklist = $state<any>(null);
+	let ticketToBlacklist = $state<AdminTicketSchema | null>(null);
 
 	// Unconfirm payment confirmation state
 	let showUnconfirmPaymentDialog = $state(false);
-	let ticketToUnconfirm = $state<any>(null);
+	let ticketToUnconfirm = $state<AdminTicketSchema | null>(null);
+
+	/**
+	 * Adapt an AdminTicketSchema to CheckInDialog's stricter ticket shape.
+	 * Only normalizes generator-nullable fields (null -> undefined / ''); the
+	 * data itself is unchanged.
+	 */
+	function toCheckInTicket(ticket: AdminTicketSchema): CheckInDialogTicket {
+		return {
+			...ticket,
+			id: ticket.id ?? '',
+			status: ticket.status ?? '',
+			user: {
+				...ticket.user,
+				email: ticket.user.email ?? undefined,
+				preferred_name: ticket.user.preferred_name ?? undefined,
+				first_name: ticket.user.first_name ?? undefined,
+				last_name: ticket.user.last_name ?? undefined
+			},
+			seat: ticket.seat ?? undefined
+		};
+	}
 
 	// PWYC confirm payment state
 	let pwycPricePaid = $state('');
@@ -270,7 +297,7 @@
 	/**
 	 * Open make member modal
 	 */
-	async function openMakeMemberModal(ticket: any) {
+	async function openMakeMemberModal(ticket: AdminTicketSchema) {
 		const user = ticket.user;
 		if (!user?.id) {
 			toast.error(m['eventTicketsAdmin.userIdNotAvailable']());
@@ -287,7 +314,7 @@
 		userToMakeMember = {
 			id: user.id,
 			displayName: getUserDisplayName(user),
-			email: user.email
+			email: user.email ?? undefined
 		};
 
 		// Load membership tiers if not already loaded
@@ -321,7 +348,7 @@
 	/**
 	 * Open blacklist dialog
 	 */
-	function openBlacklistDialog(ticket: any) {
+	function openBlacklistDialog(ticket: AdminTicketSchema) {
 		if (!ticket.user?.id) {
 			toast.error(m['eventTicketsAdmin.userIdNotAvailable']());
 			return;
@@ -350,7 +377,7 @@
 	/**
 	 * Open unconfirm payment dialog
 	 */
-	function openUnconfirmPaymentDialog(ticket: any) {
+	function openUnconfirmPaymentDialog(ticket: AdminTicketSchema) {
 		ticketToUnconfirm = ticket;
 		showUnconfirmPaymentDialog = true;
 	}
@@ -359,7 +386,7 @@
 	 * Confirm unconfirm payment
 	 */
 	function confirmUnconfirmPayment() {
-		if (ticketToUnconfirm) {
+		if (ticketToUnconfirm?.id) {
 			unconfirmPaymentMutation.mutate(ticketToUnconfirm.id);
 		}
 	}
@@ -442,7 +469,7 @@
 	/**
 	 * Handle confirm payment
 	 */
-	function handleConfirmPayment(ticket: any) {
+	function handleConfirmPayment(ticket: AdminTicketSchema) {
 		ticketToConfirm = ticket;
 		// Pre-fill with pwyc_min for PWYC tiers
 		if (isPwycTicket(ticket)) {
@@ -457,7 +484,7 @@
 	 * Submit confirm payment
 	 */
 	function submitConfirmPayment() {
-		if (ticketToConfirm) {
+		if (ticketToConfirm?.id) {
 			const pricePaid = isPwycTicket(ticketToConfirm) ? pwycPricePaid : undefined;
 			confirmPaymentMutation.mutate({ ticketId: ticketToConfirm.id, pricePaid });
 		}
@@ -466,7 +493,7 @@
 	/**
 	 * Handle cancel ticket
 	 */
-	function handleCancelTicket(ticket: any) {
+	function handleCancelTicket(ticket: AdminTicketSchema) {
 		ticketToCancel = ticket;
 		showCancelDialog = true;
 	}
@@ -475,7 +502,7 @@
 	 * Submit cancel ticket
 	 */
 	function submitCancelTicket() {
-		if (ticketToCancel) {
+		if (ticketToCancel?.id) {
 			cancelTicketMutation.mutate(ticketToCancel.id);
 		}
 	}
@@ -483,8 +510,8 @@
 	/**
 	 * Handle manual check-in
 	 */
-	function handleCheckIn(ticket: any) {
-		ticketToCheckIn = ticket;
+	function handleCheckIn(ticket: AdminTicketSchema) {
+		ticketToCheckIn = toCheckInTicket(ticket);
 		showCheckInDialog = true;
 	}
 
@@ -513,7 +540,7 @@
 			}
 
 			// Show confirmation dialog with ticket info
-			ticketToCheckIn = response.data;
+			ticketToCheckIn = toCheckInTicket(response.data);
 			showCheckInDialog = true;
 			showQRScanner = false;
 		} catch (err) {

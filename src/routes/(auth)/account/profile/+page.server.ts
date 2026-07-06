@@ -105,7 +105,7 @@ export const actions: Actions = {
 				errors: { form: errorMessage },
 				...data
 			});
-		} catch (error: any) {
+		} catch (error) {
 			log.error('profile_update_failed', { error });
 
 			const errorMessage = extractErrorMessage(error, 'An unexpected error occurred');

@@ -31,6 +31,8 @@
 	import { formatDate } from '$lib/utils/date';
 	import type { PageData } from './$types';
 	import type {
+		MinimalEventSchema,
+		MinimalEventSeriesSchema,
 		QuestionnaireEvaluationMode,
 		QuestionnaireStatus
 	} from '$lib/api/generated/types.gen';
@@ -60,6 +62,20 @@
 	}
 
 	const { data }: Props = $props();
+
+	// `event_type` / `event_count` are not part of the generated
+	// MinimalEventSchema / MinimalEventSeriesSchema, so the API never sends
+	// them here and these have always rendered empty / 0 (see report). Read
+	// them defensively so they light up if the backend ever adds the fields.
+	function getEventTypeLabel(event: MinimalEventSchema): string {
+		return 'event_type' in event && typeof event.event_type === 'string' ? event.event_type : '';
+	}
+
+	function getSeriesEventCount(series: MinimalEventSeriesSchema): number | undefined {
+		return 'event_count' in series && typeof series.event_count === 'number'
+			? series.event_count
+			: undefined;
+	}
 
 	// ===== Load and Convert Data =====
 
@@ -557,7 +573,7 @@
 													</p>
 												{/if}
 											</div>
-											<Badge variant="outline">{(event as any).event_type}</Badge>
+											<Badge variant="outline">{getEventTypeLabel(event)}</Badge>
 										</div>
 									{/each}
 								</div>
@@ -575,12 +591,12 @@
 											<div>
 												<p class="font-medium">{series.name}</p>
 												<p class="text-sm text-muted-foreground">
-													{(series as any).event_count === 1
+													{getSeriesEventCount(series) === 1
 														? m['questionnaireEditPage.eventCount']({
-																count: (series as any).event_count || 0
+																count: getSeriesEventCount(series) || 0
 															})
 														: m['questionnaireEditPage.eventCountPlural']({
-																count: (series as any).event_count || 0
+																count: getSeriesEventCount(series) || 0
 															})}
 												</p>
 											</div>

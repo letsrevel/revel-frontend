@@ -30,6 +30,7 @@
 		organizationadminvatDeleteVatId,
 		organizationadminvatSetInvoicingMode
 	} from '$lib/api/generated/sdk.gen';
+	import type { OrganizationBillingInfoUpdateSchema } from '$lib/api/generated/types.gen';
 	import type { LayoutData } from '../$types';
 	import { formatDate } from '$lib/utils/date';
 	import {
@@ -128,19 +129,20 @@
 	const updateBillingMutation = browser
 		? createMutation(() => ({
 				mutationFn: async () => {
-					const body: Record<string, string | number | null> = {};
-					if (countryCode) body.vat_country_code = countryCode;
-					else body.vat_country_code = null;
-					if (vatRate) body.vat_rate = parseFloat(vatRate);
-					else body.vat_rate = null;
-					body.billing_name = billingName || null;
-					body.billing_address = billingAddress || null;
-					body.billing_email = billingEmail || null;
+					// Backend fields are non-nullable strings with '' meaning "clear";
+					// vat_rate is the only nullable field.
+					const body: OrganizationBillingInfoUpdateSchema = {
+						vat_country_code: countryCode || '',
+						vat_rate: vatRate ? parseFloat(vatRate) : null,
+						billing_name: billingName || '',
+						billing_address: billingAddress || '',
+						billing_email: billingEmail || ''
+					};
 
 					const response = await organizationadminvatUpdateBillingInfo({
 						path: { slug },
 						headers: { Authorization: `Bearer ${accessToken}` },
-						body: body as any
+						body
 					});
 					if (response.error) {
 						const msg = extractErrorMessage(

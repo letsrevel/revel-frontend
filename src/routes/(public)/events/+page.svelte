@@ -65,8 +65,8 @@
 					// Apply filters
 					city_id: currentFilters.cityId,
 					organization: currentFilters.organizationId,
-					event_type: currentFilters.eventType as any,
-					visibility: currentFilters.visibility as any,
+					event_type: currentFilters.eventType,
+					visibility: currentFilters.visibility,
 					tags: currentFilters.tags,
 					requires_ticket:
 						currentFilters.ticketType === 'ticketed'

@@ -215,11 +215,9 @@
 								<td class="px-6 py-4">
 									<div class="flex items-center gap-3">
 										<UserAvatar
-											profilePictureUrl={(request.user as any).profile_picture_url}
-											thumbnailUrl={(request.user as any).profile_picture_thumbnail_url}
-											displayName={request.user.first_name ||
-												(request.user as any).username ||
-												'User'}
+											profilePictureUrl={request.user.profile_picture_url}
+											thumbnailUrl={request.user.profile_picture_thumbnail_url}
+											displayName={request.user.first_name || request.user.display_name || 'User'}
 											firstName={request.user.first_name}
 											lastName={request.user.last_name}
 											size="md"
@@ -230,7 +228,7 @@
 												{request.user.last_name}
 											</p>
 											<p class="text-sm text-muted-foreground">
-												@{(request.user as any).username ?? 'N/A'}
+												@{request.user.display_name || 'N/A'}
 											</p>
 										</div>
 									</div>

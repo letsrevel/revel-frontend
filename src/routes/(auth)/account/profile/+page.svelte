@@ -67,6 +67,19 @@
 	const redirectUrl = $derived($page.url.searchParams.get('redirect'));
 	const features = $derived($page.data.features);
 
+	/** True when the error carries a 429 status (top-level or on `error.response`). */
+	function isRateLimitedError(error: unknown): boolean {
+		if (typeof error !== 'object' || error === null) return false;
+		if ('status' in error && error.status === 429) return true;
+		return (
+			'response' in error &&
+			typeof error.response === 'object' &&
+			error.response !== null &&
+			'status' in error.response &&
+			error.response.status === 429
+		);
+	}
+
 	function startCooldown() {
 		resendCooldown = 60; // 60 second cooldown
 		cooldownInterval = setInterval(() => {
@@ -93,11 +106,11 @@
 			});
 			verificationEmailSent = true;
 			startCooldown();
-		} catch (error: any) {
+		} catch (error) {
 			console.error('Failed to resend verification email:', error);
 
 			// Handle 429 Too Many Requests
-			if (error?.status === 429 || error?.response?.status === 429) {
+			if (isRateLimitedError(error)) {
 				verificationError = m['profile.email_rateLimitError']();
 				// Start cooldown even on rate limit to prevent immediate retry
 				startCooldown();

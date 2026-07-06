@@ -96,11 +96,17 @@ export const actions = {
 				const errorMessage = extractErrorMessage(response.error, 'Registration failed');
 
 				// Check if it's an email-specific error
-				const error = response.error as any;
-				if (error.email) {
+				const apiError: unknown = response.error;
+				if (
+					typeof apiError === 'object' &&
+					apiError !== null &&
+					'email' in apiError &&
+					apiError.email
+				) {
 					// Field-specific error
+					const emailError = apiError.email;
 					return fail(400, {
-						errors: { email: Array.isArray(error.email) ? error.email[0] : error.email },
+						errors: { email: Array.isArray(emailError) ? emailError[0] : emailError },
 						email: data.email
 					});
 				}

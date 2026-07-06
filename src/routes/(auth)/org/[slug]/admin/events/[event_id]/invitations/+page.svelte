@@ -18,8 +18,12 @@
 
 	const accessToken = $derived(authStore.accessToken);
 
-	// Active tab state
-	let activeTab = $state<'requests' | 'invitations' | 'links'>(data.activeTab as any);
+	// Active tab state. `data.activeTab` comes from the URL, so narrow it
+	// against the known tabs (falling back to the default tab).
+	const TABS = ['requests', 'invitations', 'links'] as const;
+	let activeTab = $state<'requests' | 'invitations' | 'links'>(
+		TABS.find((t) => t === data.activeTab) ?? 'requests'
+	);
 
 	// Filter states
 	let activeStatusFilter = $state<string | null>(data.filters?.status || null);

@@ -7,7 +7,7 @@ import {
 	eventadminticketsGetEventRevenue
 } from '$lib/api';
 import { parseTicketOrderBy } from '$lib/components/tickets/ticket-sort';
-import type { EventFinancialsSchema } from '$lib/api/generated/types.gen';
+import type { AdminTicketSchema, EventFinancialsSchema } from '$lib/api/generated/types.gen';
 import { log } from '$lib/server/logger';
 
 export const load: PageServerLoad = async ({ parent, params, locals, fetch, url }) => {
@@ -70,9 +70,19 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 		redirect(302, `/org/${params.slug}/admin/events/${params.event_id}/attendees`);
 	}
 
-	// Get query parameters for filtering
-	const status = url.searchParams.get('status') || undefined;
-	const paymentMethod = url.searchParams.get('payment_method') || undefined;
+	// Get query parameters for filtering. `status` and `payment_method` are
+	// untrusted external input, so validate them against the allowed values;
+	// anything else falls back to undefined = "no filter".
+	const status = z
+		.enum(['pending', 'active', 'checked_in', 'cancelled'])
+		.optional()
+		.catch(undefined)
+		.parse(url.searchParams.get('status') || undefined);
+	const paymentMethod = z
+		.enum(['online', 'offline', 'at_the_door', 'free'])
+		.optional()
+		.catch(undefined)
+		.parse(url.searchParams.get('payment_method') || undefined);
 	const search = url.searchParams.get('search') || undefined;
 	const orderBy = parseTicketOrderBy(url.searchParams.get('order_by'));
 	// Validate the untrusted `page` param: coerce to a positive integer, falling
@@ -99,7 +109,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 		});
 
 	// Load tickets with filters
-	let tickets: any[];
+	let tickets: AdminTicketSchema[];
 	let totalCount = 0;
 	let nextPage: string | null = null;
 	let previousPage: string | null = null;
@@ -109,8 +119,8 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 			fetch,
 			path: { event_id: params.event_id },
 			query: {
-				status: status as any,
-				tier__payment_method: paymentMethod as any,
+				status,
+				tier__payment_method: paymentMethod,
 				search,
 				order_by: orderBy,
 				page,

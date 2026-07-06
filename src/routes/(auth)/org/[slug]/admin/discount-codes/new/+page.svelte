@@ -24,11 +24,27 @@
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (response.error) {
-				const err = response.error as any;
-				const detail = err?.detail;
+				const detail =
+					typeof response.error === 'object' &&
+					response.error !== null &&
+					'detail' in response.error
+						? response.error.detail
+						: undefined;
 				if (typeof detail === 'string') throw new Error(detail);
 				if (Array.isArray(detail)) {
-					throw new Error(detail.map((d: any) => d.msg || String(d)).join(', '));
+					throw new Error(
+						detail
+							.map((d: unknown) =>
+								typeof d === 'object' &&
+								d !== null &&
+								'msg' in d &&
+								typeof d.msg === 'string' &&
+								d.msg
+									? d.msg
+									: String(d)
+							)
+							.join(', ')
+					);
 				}
 				throw new Error('Failed to create discount code');
 			}

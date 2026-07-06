@@ -9,6 +9,18 @@
 	let resendSuccess = $state(false);
 	let resendError = $state('');
 
+	/** Read a string property off an unknown error payload, if present. */
+	function stringField(error: unknown, key: 'detail' | 'message'): string | undefined {
+		if (typeof error !== 'object' || error === null) return undefined;
+		if (key === 'detail' && 'detail' in error && typeof error.detail === 'string') {
+			return error.detail;
+		}
+		if (key === 'message' && 'message' in error && typeof error.message === 'string') {
+			return error.message;
+		}
+		return undefined;
+	}
+
 	async function handleResend() {
 		if (!email || isResending) return;
 
@@ -24,8 +36,10 @@
 			});
 
 			if (response.error) {
-				const error = response.error as any;
-				resendError = error?.detail || error?.message || 'Failed to resend verification email';
+				resendError =
+					stringField(response.error, 'detail') ||
+					stringField(response.error, 'message') ||
+					'Failed to resend verification email';
 			} else {
 				resendSuccess = true;
 			}

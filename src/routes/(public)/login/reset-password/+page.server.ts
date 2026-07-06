@@ -3,6 +3,46 @@ import { passwordResetSchema } from '$lib/schemas/auth';
 import { accountResetPassword } from '$lib/api/generated';
 import { log } from '$lib/server/logger';
 
+/** Read the HTTP status from an error shaped like `{ response: { status } }`. */
+function getResponseStatus(error: unknown): unknown {
+	if (
+		typeof error === 'object' &&
+		error !== null &&
+		'response' in error &&
+		typeof error.response === 'object' &&
+		error.response !== null &&
+		'status' in error.response
+	) {
+		return error.response.status;
+	}
+	return undefined;
+}
+
+/** Read the field-errors object from an error shaped like `{ response: { data: { errors } } }`. */
+function getResponseErrors(error: unknown): object {
+	if (
+		typeof error === 'object' &&
+		error !== null &&
+		'response' in error &&
+		typeof error.response === 'object' &&
+		error.response !== null &&
+		'data' in error.response &&
+		typeof error.response.data === 'object' &&
+		error.response.data !== null &&
+		'errors' in error.response.data &&
+		typeof error.response.data.errors === 'object' &&
+		error.response.data.errors !== null
+	) {
+		return error.response.data.errors;
+	}
+	return {};
+}
+
+/** First element of a string array, if the value is one. */
+function firstString(value: unknown): string | undefined {
+	return Array.isArray(value) && typeof value[0] === 'string' ? value[0] : undefined;
+}
+
 export const actions: Actions = {
 	resetPassword: async ({ request }) => {
 		const formData = await request.formData();
@@ -43,25 +83,27 @@ export const actions: Actions = {
 			return {
 				success: true
 			};
-		} catch (error: any) {
+		} catch (error) {
 			log.error('password_reset_error', { error });
 
 			// Check for specific error types
-			if (error?.response?.status === 400) {
-				const apiErrors = error?.response?.data?.errors || {};
+			if (getResponseStatus(error) === 400) {
+				const apiErrors = getResponseErrors(error);
+				const password1 = 'password1' in apiErrors ? apiErrors.password1 : undefined;
+				const password2 = 'password2' in apiErrors ? apiErrors.password2 : undefined;
 
 				// Map backend errors to form errors
 				const errors: Record<string, string> = {};
 
-				if (apiErrors.token) {
+				if ('token' in apiErrors && apiErrors.token) {
 					errors.form = 'Invalid or expired reset token. Please request a new password reset.';
-				} else if (apiErrors.password1 || apiErrors.password2) {
+				} else if (password1 || password2) {
 					errors.password =
-						apiErrors.password1?.[0] ||
-						apiErrors.password2?.[0] ||
+						firstString(password1) ||
+						firstString(password2) ||
 						'Password does not meet requirements';
-				} else if (apiErrors.non_field_errors) {
-					errors.form = apiErrors.non_field_errors[0] || 'Password reset failed';
+				} else if ('non_field_errors' in apiErrors && apiErrors.non_field_errors) {
+					errors.form = firstString(apiErrors.non_field_errors) || 'Password reset failed';
 				} else {
 					errors.form = 'Unable to reset password. Please try again.';
 				}

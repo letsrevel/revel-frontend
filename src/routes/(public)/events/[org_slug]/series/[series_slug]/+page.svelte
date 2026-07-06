@@ -20,10 +20,10 @@
 	// Compute full image URLs
 	const coverUrl = $derived(getImageUrl(series.cover_art));
 	// Prefer thumbnail for logo display (64-80px size)
-	const s = $derived(series as any);
-	const o = $derived(series.organization as any);
-	const logoUrl = $derived(getImageUrl(s.logo_thumbnail_url || series.logo));
-	const orgLogoUrl = $derived(getImageUrl(o.logo_thumbnail_url || series.organization.logo));
+	const logoUrl = $derived(getImageUrl(series.logo_thumbnail_url || series.logo));
+	const orgLogoUrl = $derived(
+		getImageUrl(series.organization.logo_thumbnail_url || series.organization.logo)
+	);
 
 	// Fallback gradient
 	function getSeriesFallbackGradient(seriesId: string): string {

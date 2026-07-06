@@ -11,6 +11,13 @@ import {
 	eventpublicdetailsGetEvent,
 	eventadminticketsListTicketTiers
 } from '$lib/api/generated/sdk.gen';
+import type {
+	EventInvitationListSchema,
+	EventInvitationRequestInternalSchema,
+	InvitationRequestStatus,
+	PendingEventInvitationListSchema,
+	TicketTierDetailSchema
+} from '$lib/api/generated/types.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { log } from '$lib/server/logger';
 
@@ -52,9 +59,15 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 		throw error(403, 'Event does not belong to this organization');
 	}
 
-	// Get query parameters
+	// Get query parameters. `status` is untrusted external input, so narrow it
+	// against the allowed invitation-request statuses; anything else falls back
+	// to undefined = "all statuses".
 	const activeTab = url.searchParams.get('tab') || 'requests';
-	const status = url.searchParams.get('status') || undefined;
+	const INVITATION_REQUEST_STATUSES = ['pending', 'approved', 'rejected'] as const;
+	const rawStatus = url.searchParams.get('status') || undefined;
+	const status: InvitationRequestStatus | undefined = INVITATION_REQUEST_STATUSES.find(
+		(s) => s === rawStatus
+	);
 	const search = url.searchParams.get('search') || undefined;
 	const page = parseInt(url.searchParams.get('page') || '1', 10);
 	const pageSize = parseInt(url.searchParams.get('page_size') || '20', 10);
@@ -64,7 +77,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 	};
 
 	// Load invitation requests
-	let invitationRequests: any[] = [];
+	let invitationRequests: EventInvitationRequestInternalSchema[] = [];
 	let requestsPagination = {
 		page: 1,
 		pageSize: 20,
@@ -79,7 +92,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 			fetch,
 			path: { event_id: params.event_id },
 			query: {
-				status: status ? (status as any) : undefined,
+				status,
 				search,
 				page: activeTab === 'requests' ? page : 1,
 				page_size: activeTab === 'requests' ? pageSize : 20
@@ -105,7 +118,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 	}
 
 	// Load registered invitations
-	let registeredInvitations: any[] = [];
+	let registeredInvitations: EventInvitationListSchema[] = [];
 	let registeredPagination = {
 		page: 1,
 		pageSize: 20,
@@ -145,7 +158,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 	}
 
 	// Load pending invitations
-	let pendingInvitations: any[] = [];
+	let pendingInvitations: PendingEventInvitationListSchema[] = [];
 	let pendingPagination = {
 		page: 1,
 		pageSize: 20,
@@ -185,7 +198,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 	}
 
 	// Load ticket tiers for tier selection in invitation forms
-	let ticketTiers: any[] = [];
+	let ticketTiers: TicketTierDetailSchema[] = [];
 	try {
 		const tierResponse = await eventadminticketsListTicketTiers({
 			fetch,

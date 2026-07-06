@@ -26,8 +26,11 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies }) => 
 	// Get pagination params
 	const page = parseInt(url.searchParams.get('page') || '1', 10);
 	const pageSize = parseInt(url.searchParams.get('page_size') || '20', 10);
-	// Get status filter (pending, approved, rejected)
-	const status = url.searchParams.get('status') || undefined;
+	// Get status filter. It is untrusted external input, so narrow it against
+	// the allowed statuses; anything else falls back to undefined = "all".
+	const MEMBERSHIP_REQUEST_STATUSES = ['pending', 'approved', 'rejected'] as const;
+	const rawStatus = url.searchParams.get('status') || undefined;
+	const status = MEMBERSHIP_REQUEST_STATUSES.find((s) => s === rawStatus);
 
 	try {
 		const response = await organizationadminmembershiprequestsListMembershipRequests({
@@ -35,7 +38,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies }) => 
 			query: {
 				page,
 				page_size: pageSize,
-				status: status ? (status as any) : undefined
+				status
 			},
 			headers: {
 				Authorization: `Bearer ${accessToken}`

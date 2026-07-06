@@ -85,7 +85,7 @@
 		mutationFn: async ({ rsvpId, status }: { rsvpId: string; status: 'yes' | 'maybe' | 'no' }) => {
 			const response = await eventadminrsvpsUpdateRsvp({
 				path: { event_id: data.event.id, rsvp_id: rsvpId },
-				body: { status: status as any }, // Type assertion due to OpenAPI schema issue
+				body: { status },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
@@ -952,7 +952,7 @@
 				>
 				<Button
 					onclick={submitRsvpUpdate}
-					disabled={updateRsvpMutation.isPending || selectedStatus === (editingRsvp.status as any)}
+					disabled={updateRsvpMutation.isPending || selectedStatus === editingRsvp.status}
 				>
 					{updateRsvpMutation.isPending
 						? m['attendeesAdmin.editModalUpdating']()

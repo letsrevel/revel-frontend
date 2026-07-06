@@ -64,7 +64,7 @@
 			const response = await dashboardDashboardTickets({
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
-					status: statusFilter as any,
+					status: statusFilter,
 					tier__payment_method: paymentMethodFilter || undefined,
 					search: debouncedSearch || undefined,
 					include_past: includePast,

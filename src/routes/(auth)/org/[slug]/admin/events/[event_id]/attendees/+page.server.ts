@@ -2,6 +2,7 @@ import { error, redirect } from '@sveltejs/kit';
 import { z } from 'zod';
 import type { PageServerLoad } from './$types';
 import { eventpublicdetailsGetEvent, eventadminrsvpsListRsvps } from '$lib/api';
+import type { RsvpDetailSchema } from '$lib/api/generated/types.gen';
 import { log } from '$lib/server/logger';
 
 export const load: PageServerLoad = async ({ parent, params, locals, fetch, url }) => {
@@ -78,7 +79,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 	const pageSize = 100; // Fixed page size
 
 	// Load RSVPs with filters
-	let rsvps: any[];
+	let rsvps: RsvpDetailSchema[];
 	let totalCount = 0;
 	let nextPage: string | null = null;
 	let previousPage: string | null = null;

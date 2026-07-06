@@ -49,8 +49,7 @@
 
 	// Compute full image URLs
 	// Prefer thumbnail for logo display (64-80px size)
-	const org = $derived(organization as any);
-	const logoUrl = $derived(getImageUrl(org.logo_thumbnail_url || organization.logo));
+	const logoUrl = $derived(getImageUrl(organization.logo_thumbnail_url || organization.logo));
 	const coverUrl = $derived(getImageUrl(organization.cover_art));
 
 	// Compute location display

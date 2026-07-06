@@ -220,6 +220,18 @@
 		queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
 	}
 
+	/**
+	 * Read the (undeclared) runtime `detail` field some backend error payloads carry.
+	 * Returns the detail when it is a non-empty string, otherwise the fallback.
+	 */
+	function errorDetailOr(error: unknown, fallback: string): string {
+		if (typeof error === 'object' && error !== null && 'detail' in error) {
+			const { detail } = error;
+			if (typeof detail === 'string' && detail) return detail;
+		}
+		return fallback;
+	}
+
 	// Type for checkout parameters
 	interface CheckoutParams {
 		tierId: string;
@@ -317,8 +329,7 @@
 				body
 			});
 			if (response.error) {
-				const errorDetail = (response.error as any)?.detail || 'Failed to claim ticket';
-				throw new Error(typeof errorDetail === 'string' ? errorDetail : 'Failed to claim ticket');
+				throw new Error(errorDetailOr(response.error, 'Failed to claim ticket'));
 			}
 			return response.data;
 		},
@@ -338,8 +349,7 @@
 				body
 			});
 			if (response.error) {
-				const errorDetail = (response.error as any)?.detail || 'Failed to checkout';
-				throw new Error(typeof errorDetail === 'string' ? errorDetail : 'Failed to checkout');
+				throw new Error(errorDetailOr(response.error, 'Failed to checkout'));
 			}
 			return response.data;
 		},
@@ -359,8 +369,7 @@
 				body
 			});
 			if (response.error) {
-				const errorDetail = (response.error as any)?.detail || 'Failed to checkout';
-				throw new Error(typeof errorDetail === 'string' ? errorDetail : 'Failed to checkout');
+				throw new Error(errorDetailOr(response.error, 'Failed to checkout'));
 			}
 			return response.data;
 		},
@@ -443,10 +452,7 @@
 			});
 
 			if (response.error) {
-				const errorDetail = (response.error as any)?.detail || 'Failed to resume checkout';
-				throw new Error(
-					typeof errorDetail === 'string' ? errorDetail : 'Failed to resume checkout'
-				);
+				throw new Error(errorDetailOr(response.error, 'Failed to resume checkout'));
 			}
 			return response.data;
 		},
@@ -477,10 +483,7 @@
 			});
 
 			if (response.error) {
-				const errorDetail = (response.error as any)?.detail || 'Failed to cancel reservation';
-				throw new Error(
-					typeof errorDetail === 'string' ? errorDetail : 'Failed to cancel reservation'
-				);
+				throw new Error(errorDetailOr(response.error, 'Failed to cancel reservation'));
 			}
 			return response.data;
 		},
