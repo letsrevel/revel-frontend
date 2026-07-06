@@ -45,8 +45,6 @@ export default [
 			'@typescript-eslint/no-invalid-void-type': 'off',
 			'@typescript-eslint/consistent-indexed-object-style': 'off',
 			'@typescript-eslint/consistent-type-definitions': 'off',
-			'@typescript-eslint/no-inferrable-types': 'warn',
-			'@typescript-eslint/no-unused-expressions': 'warn',
 			'prefer-const': 'error',
 			'svelte/valid-compile': 'off', // Disable custom element warnings
 			'no-restricted-syntax': [
