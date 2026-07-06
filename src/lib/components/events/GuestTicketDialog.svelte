@@ -896,7 +896,7 @@
 							<div class="space-y-2">
 								<p class="text-sm font-medium">{m['guestTicketDialog.quickSelect']()}</p>
 								<div class="grid grid-cols-3 gap-2">
-									{#each getSuggestions(minAmount(), maxAmount()) as suggested}
+									{#each getSuggestions(minAmount(), maxAmount()) as suggested, i (i)}
 										<Button
 											type="button"
 											variant="outline"

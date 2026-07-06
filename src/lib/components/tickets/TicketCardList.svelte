@@ -83,7 +83,7 @@
 {/snippet}
 
 <div class="space-y-4 md:hidden">
-	{#each tickets as ticket}
+	{#each tickets as ticket (ticket.id)}
 		{@const guestName = getGuestNameIfDifferent(ticket)}
 		{@const seatInfo = getSeatDisplay(ticket)}
 		<div class="rounded-lg border bg-card p-4">

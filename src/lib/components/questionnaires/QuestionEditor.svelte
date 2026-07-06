@@ -30,6 +30,7 @@
 	}
 
 	interface Option {
+		id: string;
 		text: string;
 		isCorrect: boolean;
 		// Conditional questions attached to this option
@@ -125,7 +126,13 @@
 		if (question.type === 'multiple_choice') {
 			const newOptions = [
 				...(question.options || []),
-				{ text: '', isCorrect: false, conditionalQuestions: [], conditionalSections: [] }
+				{
+					id: crypto.randomUUID(),
+					text: '',
+					isCorrect: false,
+					conditionalQuestions: [],
+					conditionalSections: []
+				}
 			];
 			onUpdate({ options: newOptions });
 		}
@@ -177,8 +184,8 @@
 			return {
 				...base,
 				options: [
-					{ text: '', isCorrect: false },
-					{ text: '', isCorrect: false }
+					{ id: crypto.randomUUID(), text: '', isCorrect: false },
+					{ id: crypto.randomUUID(), text: '', isCorrect: false }
 				],
 				allowMultipleAnswers: false,
 				shuffleOptions: true

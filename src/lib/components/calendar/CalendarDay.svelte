@@ -47,7 +47,7 @@
 
 	{#if dayEvents.length > 0}
 		<div class="calendar-day-events">
-			{#each visibleEvents as event}
+			{#each visibleEvents as event (event.id)}
 				<button
 					type="button"
 					class="calendar-event-badge"

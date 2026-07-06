@@ -694,7 +694,7 @@
 					{#if viewMode === 'list'}
 						<div class="flex flex-wrap items-center gap-2">
 							<Filter class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-							{#each filterPresets as preset}
+							{#each filterPresets as preset (preset.labelKey)}
 								<!-- Only show "Organizing" filter if user can organize events -->
 								{#if preset.labelKey !== 'dashboard.filters.organizing' || canOrganizeEvents()}
 									<button
@@ -738,7 +738,7 @@
 					<!-- List View -->
 					{#if yourEvents.length > 0}
 						<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-							{#each yourEvents.slice(0, 6) as event}
+							{#each yourEvents.slice(0, 6) as event (event.id)}
 								<EventCard {event} />
 							{/each}
 						</div>
@@ -796,7 +796,7 @@
 
 			{#if upcomingEventsQuery.isLoading}
 				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-					{#each Array(6) as _}
+					{#each Array(6) as _, i (i)}
 						<EventCardSkeleton />
 					{/each}
 				</div>
@@ -814,7 +814,7 @@
 			{:else}
 				<!-- Event Cards -->
 				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-					{#each upcomingEvents.slice(0, 6) as event}
+					{#each upcomingEvents.slice(0, 6) as event (event.id)}
 						<EventCard {event} />
 					{/each}
 				</div>
@@ -832,7 +832,7 @@
 
 			{#if organizationsQuery.isLoading}
 				<div class="space-y-3">
-					{#each Array(3) as _}
+					{#each Array(3) as _, i (i)}
 						<OrganizationCardSkeleton />
 					{/each}
 				</div>
@@ -857,7 +857,7 @@
 			{:else}
 				<!-- Organization Cards -->
 				<div class="space-y-3">
-					{#each organizations.slice(0, 3) as org}
+					{#each organizations.slice(0, 3) as org (org.id)}
 						{@const descriptionText = org.description ? stripMarkdown(org.description) : ''}
 						<div
 							class="flex items-center gap-4 rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"

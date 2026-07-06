@@ -613,7 +613,7 @@
 						<p class="mb-3 text-sm text-blue-800 dark:text-blue-200">
 							{m['eventActionSidebar.feedbackDescription']()}
 						</p>
-						{#each feedbackQuestionnaires as questionnaireId}
+						{#each feedbackQuestionnaires as questionnaireId (questionnaireId)}
 							<a
 								href="/events/{event.organization
 									.slug}/{event.slug}/questionnaire/{questionnaireId}"

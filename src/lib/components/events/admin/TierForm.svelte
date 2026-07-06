@@ -537,7 +537,7 @@
 						disabled={isPending}
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					>
-						{#each SUPPORTED_CURRENCIES as curr}
+						{#each SUPPORTED_CURRENCIES as curr (curr.code)}
 							<option value={curr.code}>{curr.code} - {curr.name}</option>
 						{/each}
 					</select>
@@ -824,7 +824,7 @@
 						{m['tierForm.restrictToMembershipTiersHelp']()}
 					</p>
 					<div class="space-y-2 rounded-md border border-input bg-background p-3">
-						{#each membershipTiers as tier}
+						{#each membershipTiers as tier (tier.id ?? tier.name)}
 							{#if tier.id}
 								<label class="flex cursor-pointer items-start gap-2">
 									<input

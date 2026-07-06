@@ -159,7 +159,7 @@
 							<!-- Tags -->
 							{#if series.tags && series.tags.length > 0}
 								<div class="mt-3 flex flex-wrap gap-2">
-									{#each series.tags as tag}
+									{#each series.tags as tag (tag)}
 										<span
 											class="inline-block rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary"
 										>

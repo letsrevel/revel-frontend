@@ -199,7 +199,7 @@
 			<p class="mt-1 text-sm text-muted-foreground">{m['referral.setupDescription']()}</p>
 
 			<div class="mt-4 space-y-3">
-				{#each [{ done: isStripeFullySetup, label: m['referral.stepStripe']() }, { done: isBillingComplete, label: m['referral.stepBilling']() }, { done: isSelfBillingAgreed, label: m['referral.stepSelfBilling']() }] as step}
+				{#each [{ done: isStripeFullySetup, label: m['referral.stepStripe']() }, { done: isBillingComplete, label: m['referral.stepBilling']() }, { done: isSelfBillingAgreed, label: m['referral.stepSelfBilling']() }] as step, i (i)}
 					<div class="flex items-center gap-3">
 						{#if step.done}
 							<CircleCheck

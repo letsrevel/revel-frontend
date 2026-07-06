@@ -987,7 +987,7 @@
 			</span>
 		{/if}
 		{#if invitation.tiers?.length}
-			{#each invitation.tiers as tier}
+			{#each invitation.tiers as tier (tier.id)}
 				<span
 					class="inline-flex items-center rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
 					title={m['invitationListTab.assignedTierTitle']({ name: tier.name })}
@@ -1070,7 +1070,7 @@
 			<p class="text-xs text-muted-foreground">
 				{m['invitationListTab.assignTicketTiersDescription']()}
 			</p>
-			{#each ticketTiers as tier}
+			{#each ticketTiers as tier (tier.id ?? tier.name)}
 				{#if tier.id}
 					<label class="flex cursor-pointer items-start gap-2">
 						<input

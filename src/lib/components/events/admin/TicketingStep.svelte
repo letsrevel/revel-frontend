@@ -222,7 +222,7 @@
 			{#if (tiersQuery.error as any)?.detail}
 				<div class="mt-2 space-y-1">
 					{#if Array.isArray((tiersQuery.error as any).detail)}
-						{#each (tiersQuery.error as any).detail as detail}
+						{#each (tiersQuery.error as any).detail as detail, i (i)}
 							<p class="text-xs text-destructive/80">
 								• {detail.loc ? detail.loc.join(' → ') + ': ' : ''}{detail.msg}
 							</p>

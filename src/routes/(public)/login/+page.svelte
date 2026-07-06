@@ -138,7 +138,7 @@
 								class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 							>
 								<option value="">{m['login.chooseAccount']()}</option>
-								{#each DEMO_ACCOUNTS as account}
+								{#each DEMO_ACCOUNTS as account (account.email)}
 									<option value={account.email}>
 										{account.name} ({account.role}{account.organization
 											? ` - ${account.organization}`

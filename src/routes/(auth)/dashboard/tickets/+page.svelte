@@ -167,7 +167,7 @@
 				<span class="text-sm font-medium">{m['dashboard.tickets.status']()}</span>
 			</div>
 			<div class="flex flex-wrap gap-2">
-				{#each statusFilters as filter}
+				{#each statusFilters as filter (filter.value ?? 'all')}
 					<button
 						type="button"
 						onclick={() => applyStatusFilter(filter.value)}
@@ -189,7 +189,7 @@
 				<span class="text-sm font-medium">{m['dashboard.tickets.paymentMethod']()}</span>
 			</div>
 			<div class="flex flex-wrap gap-2">
-				{#each paymentMethodFilters as filter}
+				{#each paymentMethodFilters as filter (filter.value ?? 'all')}
 					<button
 						type="button"
 						onclick={() => applyPaymentMethodFilter(filter.value)}

@@ -162,7 +162,7 @@
 				<div class="space-y-2">
 					<Label>{m['organizationTokenModal.duration']()}</Label>
 					<RadioGroup bind:value={duration}>
-						{#each durationOptions as option}
+						{#each durationOptions as option (option.value)}
 							<div class="flex items-center space-x-2">
 								<RadioGroupItem value={option.value.toString()} id={`duration-${option.value}`} />
 								<Label for={`duration-${option.value}`} class="font-normal">

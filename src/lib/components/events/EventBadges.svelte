@@ -115,7 +115,7 @@
 
 {#if badges.length > 0}
 	<div class={cn('flex flex-wrap gap-2', className)}>
-		{#each badges as badge}
+		{#each badges as badge (badge.label)}
 			<span class={getBadgeClasses(badge.variant)}>
 				{#if badge.hasIcon}
 					<EyeOff class="h-3 w-3" aria-hidden="true" />

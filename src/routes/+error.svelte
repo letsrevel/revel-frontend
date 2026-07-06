@@ -152,7 +152,7 @@
 						{m['errorPage.whatYouCanDo']()}
 					</h2>
 					<ul class="space-y-2 text-sm">
-						{#each config.suggestions() as suggestion}
+						{#each config.suggestions() as suggestion, i (i)}
 							<li class="flex items-start gap-2">
 								<span class="mt-1 text-primary" aria-hidden="true">•</span>
 								<span>{suggestion}</span>

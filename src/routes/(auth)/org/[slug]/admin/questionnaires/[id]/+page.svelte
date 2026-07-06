@@ -547,7 +547,7 @@
 									{m['questionnaireEditPage.assignments.individualEventsTitle']()}
 								</h4>
 								<div class="space-y-2">
-									{#each questionnaire.events as event}
+									{#each questionnaire.events as event (event.id)}
 										<div class="flex items-center justify-between rounded-lg border p-3">
 											<div>
 												<p class="font-medium">{event.name}</p>
@@ -570,7 +570,7 @@
 									{m['questionnaireEditPage.assignments.eventSeriesTitle']()}
 								</h4>
 								<div class="space-y-2">
-									{#each questionnaire.event_series as series}
+									{#each questionnaire.event_series as series (series.id)}
 										<div class="flex items-center justify-between rounded-lg border p-3">
 											<div>
 												<p class="font-medium">{series.name}</p>

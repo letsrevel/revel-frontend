@@ -91,7 +91,7 @@
 		<!-- Navigation Links -->
 		<nav class="flex-1 overflow-y-auto p-4" aria-label={m['nav.mobileNavigation']()}>
 			<ul class="space-y-2">
-				{#each navItems as item}
+				{#each navItems as item (item.href)}
 					<li>
 						<a
 							href={item.href}

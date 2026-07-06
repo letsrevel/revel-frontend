@@ -200,7 +200,7 @@
 								{m['dietary.eventSummary_preferencesHeading']()}
 							</h4>
 							<ul class="space-y-2" role="list">
-								{#each dietarySummary.preferences as preference}
+								{#each dietarySummary.preferences as preference (preference.name)}
 									<li class="rounded-md border bg-background p-3">
 										<div class="flex items-baseline justify-between">
 											<span class="font-medium">{preference.name}</span>
@@ -213,7 +213,7 @@
 												<p class="text-xs font-medium text-muted-foreground">
 													{m['dietary.eventSummary_comments']()}
 												</p>
-												{#each preference.comments as comment}
+												{#each preference.comments as comment, i (i)}
 													<p class="text-sm text-muted-foreground">• {comment}</p>
 												{/each}
 											</div>
@@ -231,12 +231,12 @@
 								{m['dietary.eventSummary_restrictionsHeading']()}
 							</h4>
 							<ul class="space-y-2" role="list">
-								{#each getRestrictionSummary() as { foodItem, severities, notes }}
+								{#each getRestrictionSummary() as { foodItem, severities, notes } (foodItem)}
 									<li class="rounded-md border bg-background p-3">
 										<div class="flex items-baseline justify-between">
 											<div class="flex flex-wrap items-center gap-2">
 												<span class="font-medium">{foodItem}</span>
-												{#each severities as [severity, count]}
+												{#each severities as [severity, count] (severity)}
 													{@const info = getSeverityInfo(severity)}
 													{@const SeverityIcon = info.icon}
 													<span
@@ -253,7 +253,7 @@
 												<p class="text-xs font-medium text-muted-foreground">
 													{m['dietary.eventSummary_notes']()}
 												</p>
-												{#each notes as note}
+												{#each notes as note, i (i)}
 													<p class="text-sm text-muted-foreground">• {note}</p>
 												{/each}
 											</div>

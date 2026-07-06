@@ -159,7 +159,7 @@
 						<!-- Tags -->
 						{#if series.tags && series.tags.length > 0}
 							<div class="flex flex-wrap gap-1">
-								{#each series.tags.slice(0, 3) as tag}
+								{#each series.tags.slice(0, 3) as tag (tag)}
 									<span
 										class="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs font-medium"
 									>

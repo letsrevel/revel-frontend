@@ -347,7 +347,7 @@
 				</SelectTrigger>
 				<SelectContent>
 					<SelectItem value="all">{m['orgAdmin.members.filters.allTiers']()}</SelectItem>
-					{#each tiers as tier}
+					{#each tiers as tier (tier.id ?? tier.name)}
 						{#if tier.id}
 							<SelectItem value={tier.id}>{tier.name}</SelectItem>
 						{/if}

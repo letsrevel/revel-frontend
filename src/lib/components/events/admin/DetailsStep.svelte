@@ -787,7 +787,7 @@
 									role="listbox"
 									class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-input bg-popover text-popover-foreground shadow-md"
 								>
-									{#each tagSuggestions as suggestion, index}
+									{#each tagSuggestions as suggestion, index (suggestion)}
 										<button
 											type="button"
 											id="tag-suggestion-{index}"
@@ -842,7 +842,7 @@
 					</div>
 					{#if formData.tags && formData.tags.length > 0}
 						<div class="flex flex-wrap gap-2">
-							{#each formData.tags as tag}
+							{#each formData.tags as tag (tag)}
 								<span
 									class="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm"
 								>
@@ -887,7 +887,7 @@
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						>
 							<option value="">{m['detailsStep.none']()}</option>
-							{#each eventSeries as series}
+							{#each eventSeries as series (series.id)}
 								<option value={series.id}>{series.name}</option>
 							{/each}
 						</select>

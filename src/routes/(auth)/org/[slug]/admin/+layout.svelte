@@ -173,7 +173,7 @@
 				aria-label={m['orgAdmin.layout.breadcrumbNavigation']()}
 			>
 				<ol class="flex items-center gap-1.5 text-xs">
-					{#each breadcrumbs as crumb, i}
+					{#each breadcrumbs as crumb, i (crumb.href)}
 						{#if i > 0}
 							<li aria-hidden="true">
 								<ChevronRight class="h-3.5 w-3.5 text-muted-foreground/50" />
@@ -198,7 +198,7 @@
 			<!-- Desktop Navigation -->
 			<nav class="hidden border-t md:block" aria-label={m['orgAdmin.layout.adminNavigation']()}>
 				<ul class="flex gap-6">
-					{#each navItems as item}
+					{#each navItems as item (item.href)}
 						<li>
 							<a
 								href={item.href}
@@ -243,7 +243,7 @@
 						{m['orgAdmin.layout.navigationHeading']()}
 					</h2>
 					<ol class="flex flex-wrap items-center gap-1.5 text-xs">
-						{#each breadcrumbs as crumb, i}
+						{#each breadcrumbs as crumb, i (crumb.href)}
 							{#if i > 0}
 								<li aria-hidden="true">
 									<ChevronRight class="h-3.5 w-3.5 text-muted-foreground/50" />
@@ -268,7 +268,7 @@
 
 				<!-- Nav Items -->
 				<ul class="space-y-1">
-					{#each navItems as item}
+					{#each navItems as item (item.href)}
 						<li>
 							<a
 								href={item.href}

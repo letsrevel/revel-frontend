@@ -297,7 +297,7 @@
 					<div class="space-y-3">
 						<Label>{m['guest_attendance.rsvp_answer_label']()}</Label>
 						<RadioGroup bind:value={formData.answer} disabled={isSubmitting} class="space-y-2">
-							{#each ['yes', 'no', 'maybe'] as option}
+							{#each ['yes', 'no', 'maybe'] as option (option)}
 								<div class="flex items-center space-x-2">
 									<RadioGroupItem value={option} id="rsvp-{option}" />
 									<Label

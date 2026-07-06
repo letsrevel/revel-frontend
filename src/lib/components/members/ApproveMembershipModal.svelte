@@ -92,7 +92,7 @@
 							<SelectItem value="none" disabled>
 								{m['approveMembershipModal.selectTier']()}
 							</SelectItem>
-							{#each tiers as tier}
+							{#each tiers as tier (tier.id ?? tier.name)}
 								{#if tier.id}
 									<SelectItem value={tier.id}>
 										{tier.name}

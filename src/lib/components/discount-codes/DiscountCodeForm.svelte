@@ -344,7 +344,7 @@
 					aria-invalid={validationErrors.currency ? 'true' : undefined}
 					aria-describedby={validationErrors.currency ? 'currency-error' : undefined}
 				>
-					{#each SUPPORTED_CURRENCIES as curr}
+					{#each SUPPORTED_CURRENCIES as curr (curr.code)}
 						<option value={curr.code}>{curr.code} - {curr.name}</option>
 					{/each}
 				</select>

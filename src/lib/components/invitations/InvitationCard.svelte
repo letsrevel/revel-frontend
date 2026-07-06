@@ -143,7 +143,7 @@
 			<div>
 				<h4 class="mb-2 text-sm font-semibold">{m['invitationCard.specialPrivileges']()}</h4>
 				<ul class="space-y-1">
-					{#each privileges as privilege}
+					{#each privileges as privilege (privilege)}
 						<li class="flex items-center gap-2 text-sm">
 							<CheckCircle2 class="h-4 w-4 shrink-0 text-green-600" aria-hidden="true" />
 							{privilege}

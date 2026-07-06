@@ -115,7 +115,7 @@
 			<DropdownMenu.Content align="end" class="w-56">
 				<DropdownMenu.Label>{m['adminButton.selectOrganization']()}</DropdownMenu.Label>
 				<DropdownMenu.Separator />
-				{#each userAdminOrgs as org}
+				{#each userAdminOrgs as org (org.id)}
 					<DropdownMenu.Item onclick={() => navigateToOrgAdmin(org.slug)}>
 						<div class="flex items-center gap-2">
 							<Shield class="h-4 w-4 text-muted-foreground" />

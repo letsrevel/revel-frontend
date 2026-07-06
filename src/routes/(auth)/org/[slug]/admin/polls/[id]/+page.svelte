@@ -444,7 +444,7 @@
 								<p class="font-medium">{question.question}</p>
 								{#if question.options}
 									<div class="mt-2 space-y-1">
-										{#each question.options as opt}
+										{#each question.options as opt, i (i)}
 											<div class="flex items-center gap-2 text-sm text-muted-foreground">
 												<span>&#9675;</span>
 												<span>{opt.option}</span>

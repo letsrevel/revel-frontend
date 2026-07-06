@@ -381,7 +381,7 @@
 						<p class="text-xs text-muted-foreground">
 							{m['eventTokenModal.assignTiersHint']()}
 						</p>
-						{#each ticketTiers as tier}
+						{#each ticketTiers as tier (tier.id ?? tier.name)}
 							{#if tier.id}
 								<label class="flex cursor-pointer items-start gap-2">
 									<input

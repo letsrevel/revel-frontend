@@ -182,7 +182,7 @@
 				>
 					{m['dashboard.rsvps.status_all']()}
 				</button>
-				{#each statusToggles as toggle}
+				{#each statusToggles as toggle (toggle.value)}
 					{@const active = selectedStatuses.includes(toggle.value)}
 					<button
 						type="button"

@@ -209,7 +209,7 @@
 					role="listbox"
 					class="absolute left-0 top-full z-10 mt-1 max-h-60 w-full min-w-[300px] overflow-auto rounded-md border border-input bg-popover text-popover-foreground shadow-md"
 				>
-					{#each emailSuggestions as suggestion, index}
+					{#each emailSuggestions as suggestion, index (suggestion.email)}
 						<button
 							type="button"
 							id="email-suggestion-{index}"

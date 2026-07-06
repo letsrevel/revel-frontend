@@ -41,7 +41,7 @@
 		</div>
 	{:else}
 		<div class="week-grid">
-			{#each days as day}
+			{#each days as day (day.getTime())}
 				{@const dayEvents = getEventsByDay(day)}
 				{@const isTodayDate = isToday(day)}
 
@@ -61,7 +61,7 @@
 						{#if dayEvents.length === 0}
 							<p class="week-day-empty">{m['calendar.no_events']()}</p>
 						{:else}
-							{#each dayEvents as event}
+							{#each dayEvents as event (event.id)}
 								<button
 									type="button"
 									class="week-event-card"

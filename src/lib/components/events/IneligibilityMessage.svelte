@@ -436,7 +436,7 @@
 							'Please add the following to your profile:'}
 					</p>
 					<ul class="space-y-1 text-sm opacity-80">
-						{#each eligibility.missing_profile_fields as field}
+						{#each eligibility.missing_profile_fields as field (field)}
 							<li class="flex items-center gap-2">
 								<span>•</span>
 								<span>{getMissingProfileFieldLabel(field)}</span>

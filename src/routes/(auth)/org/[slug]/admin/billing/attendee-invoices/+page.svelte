@@ -585,7 +585,7 @@
 										</tr>
 									</thead>
 									<tbody class="divide-y divide-border/50">
-										{#each inv.line_items as item}
+										{#each inv.line_items as item, i (i)}
 											<tr>
 												<td class="py-2 pr-4">{item.description}</td>
 												<td class="py-2 pr-4 text-right font-mono"

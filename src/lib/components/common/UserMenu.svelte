@@ -158,7 +158,7 @@
 			</div>
 		</div>
 
-		{#each menuItems as item}
+		{#each menuItems as item (item.href)}
 			{@const Icon = item.icon}
 			<a
 				href={item.href}
@@ -202,7 +202,7 @@
 					<div class="px-4 text-sm font-semibold text-muted-foreground">
 						{m['userMenu.myOrganizations']()}
 					</div>
-					{#each userOrganizations as org}
+					{#each userOrganizations as org (org.id)}
 						<div class="space-y-1">
 							<a
 								href="/org/{org.slug}"
@@ -285,7 +285,7 @@
 
 				<!-- Menu Items -->
 				<div class="p-1">
-					{#each menuItems as item}
+					{#each menuItems as item (item.href)}
 						{@const Icon = item.icon}
 						<a
 							href={item.href}
@@ -336,7 +336,7 @@
 								<div class="px-3 py-2 text-xs font-semibold text-muted-foreground">
 									{m['userMenu.myOrganizations']()}
 								</div>
-								{#each userOrganizations as org}
+								{#each userOrganizations as org (org.id)}
 									<div class="space-y-1">
 										<a
 											href="/org/{org.slug}"

@@ -173,7 +173,7 @@
 				<div class="flex items-start gap-2 text-sm">
 					<Tag class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
 					<div class="flex flex-wrap gap-1">
-						{#each organization.tags.slice(0, 3) as tag}
+						{#each organization.tags.slice(0, 3) as tag (tag)}
 							<span
 								class="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
 							>

@@ -267,7 +267,7 @@
 
 		<!-- Action Cards Grid -->
 		<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-			{#each quickActions as action}
+			{#each quickActions as action (action.href)}
 				{@const Icon = action.icon}
 				{@const isDisabled = !!action.badge}
 				<button

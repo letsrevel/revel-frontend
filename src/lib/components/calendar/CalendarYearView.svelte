@@ -39,7 +39,7 @@
 		</div>
 	{:else}
 		<div class="year-grid">
-			{#each months as month}
+			{#each months as month (month)}
 				{@const eventCount = getEventsInMonth(month)}
 				{@const monthName = formatMonthYear(year, month)}
 
