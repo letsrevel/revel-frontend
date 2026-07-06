@@ -224,8 +224,7 @@
 				'focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
 				'disabled:cursor-not-allowed disabled:opacity-50',
 				error ? 'border-destructive' : 'border-gray-300 dark:border-gray-600'
-			)}
-		></textarea>
+			)}></textarea>
 		{#if sourceMode && editor}
 			<button
 				type="button"
