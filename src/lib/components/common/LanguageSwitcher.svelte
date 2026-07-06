@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { getLocale, setLocale } from '$lib/paraglide/runtime.js';
+	import { getLocale, setLocale, cookieName } from '$lib/paraglide/runtime.js';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -65,7 +65,9 @@
 		isOpen = false;
 
 		// Update cookie (for non-logged-in users and SSR)
-		document.cookie = `user_language=${lang}; path=/; max-age=31536000; SameSite=Lax`;
+		const cookieAttrs = 'path=/; max-age=31536000; SameSite=Lax';
+		document.cookie = `user_language=${lang}; ${cookieAttrs}`;
+		document.cookie = `${cookieName}=${lang}; ${cookieAttrs}`;
 
 		// If user is logged in, persist to backend
 		// IMPORTANT: We must await this call before invalidateAll() to prevent a race condition.
@@ -92,7 +94,6 @@
 
 		// For regular pages, use Paraglide's locale switching
 		setLocale(typedLang);
-		await invalidateAll();
 	}
 
 	// Get current language details
