@@ -82,7 +82,9 @@ describe('EssentialsStep', () => {
 		});
 
 		const form = screen.getByRole('button', { name: /Create Event/i }).closest('form');
-		await fireEvent.submit(form!);
+		expect(form).not.toBeNull();
+		if (!form) throw new Error('Expected a form element');
+		await fireEvent.submit(form);
 
 		expect(onSubmit).toHaveBeenCalled();
 	});

@@ -300,10 +300,12 @@ export function groupEventsByDate<T extends { start: string }>(events: T[]): Map
 		const date = new Date(event.start);
 		const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
-		if (!grouped.has(key)) {
-			grouped.set(key, []);
+		let dayEvents = grouped.get(key);
+		if (!dayEvents) {
+			dayEvents = [];
+			grouped.set(key, dayEvents);
 		}
-		grouped.get(key)!.push(event);
+		dayEvents.push(event);
 	}
 
 	return grouped;

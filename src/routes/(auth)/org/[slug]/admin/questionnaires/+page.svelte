@@ -108,7 +108,7 @@
 				{questionnaire}
 				organizationSlug={data.organization.slug}
 				organizationId={data.organization.id}
-				accessToken={authStore.accessToken!}
+				accessToken={authStore.accessToken ?? ''}
 			/>
 		{/each}
 	</div>

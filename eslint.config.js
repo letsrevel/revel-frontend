@@ -43,7 +43,6 @@ export default [
 				}
 			],
 			'@typescript-eslint/array-type': 'off',
-			'@typescript-eslint/no-non-null-assertion': 'warn',
 			'@typescript-eslint/no-invalid-void-type': 'off',
 			'@typescript-eslint/consistent-indexed-object-style': 'off',
 			'@typescript-eslint/consistent-type-definitions': 'off',

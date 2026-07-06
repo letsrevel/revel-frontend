@@ -45,13 +45,16 @@
 			if (response.data?.results) {
 				emailSuggestions = response.data.results
 					.filter((member) => member.user.email && !emailTags.includes(member.user.email))
-					.map((member) => ({
-						email: member.user.email!,
-						name:
-							member.user.preferred_name ||
-							[member.user.first_name, member.user.last_name].filter(Boolean).join(' ') ||
-							member.user.email!
-					}));
+					.map((member) => {
+						const email = member.user.email ?? '';
+						return {
+							email,
+							name:
+								member.user.preferred_name ||
+								[member.user.first_name, member.user.last_name].filter(Boolean).join(' ') ||
+								email
+						};
+					});
 				showEmailSuggestions = emailSuggestions.length > 0;
 				selectedEmailIndex = -1;
 			}

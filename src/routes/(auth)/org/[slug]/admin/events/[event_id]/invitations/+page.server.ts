@@ -416,7 +416,7 @@ export const actions: Actions = {
 				fetch,
 				path: { event_id: params.event_id },
 				body: {
-					emails: [email!],
+					emails: [email],
 					custom_message: customMessage ?? undefined,
 					waives_questionnaire: waivesQuestionnaire,
 					waives_purchase: waivesPurchase,

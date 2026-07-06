@@ -91,8 +91,8 @@
 						path: { slug },
 						headers: { Authorization: `Bearer ${accessToken}` }
 					});
-					if (response.error) throw new Error('Failed to load billing info');
-					return response.data!;
+					if (response.error || !response.data) throw new Error('Failed to load billing info');
+					return response.data;
 				},
 				enabled: !!accessToken
 			}))
@@ -149,7 +149,8 @@
 						);
 						throw new Error(msg);
 					}
-					return response.data!;
+					if (!response.data) throw new Error(m['orgAdmin.billing.billingInfo.error']());
+					return response.data;
 				},
 				onSuccess: () => {
 					billingFormDirty = false;
@@ -197,7 +198,8 @@
 						const msg = extractErrorMessage(response.error, m['orgAdmin.billing.vatId.error']());
 						throw new Error(msg);
 					}
-					return { pending: false, data: response.data! } as const;
+					if (!response.data) throw new Error(m['orgAdmin.billing.vatId.error']());
+					return { pending: false, data: response.data } as const;
 				},
 				onSuccess: (result) => {
 					if (result.pending) {
@@ -267,7 +269,8 @@
 						);
 						throw new Error(msg);
 					}
-					return response.data!;
+					if (!response.data) throw new Error(m['orgAdmin.billing.invoicingMode.error']());
+					return response.data;
 				},
 				onSuccess: () => {
 					queryClient.invalidateQueries({ queryKey: ['billing-info', slug] });

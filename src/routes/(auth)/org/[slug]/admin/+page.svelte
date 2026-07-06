@@ -58,8 +58,9 @@
 	const tiersQuery = createQuery(() => ({
 		queryKey: ['membership-tiers', organization?.slug],
 		queryFn: async () => {
+			if (!organization) throw new Error('Organization not loaded');
 			const response = await organizationadminmembersListMembershipTiers({
-				path: { slug: organization!.slug },
+				path: { slug: organization.slug },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (response.error) throw response.error;

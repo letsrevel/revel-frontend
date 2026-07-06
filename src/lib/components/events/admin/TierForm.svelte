@@ -303,11 +303,13 @@
 	}));
 
 	const tierUpdateMutation = createMutation(() => ({
-		mutationFn: (data: TicketTierUpdateSchema) =>
-			eventadminticketsUpdateTicketTier({
-				path: { event_id: eventId, tier_id: tier!.id! },
+		mutationFn: (data: TicketTierUpdateSchema) => {
+			if (!tier?.id) throw new Error('Cannot update tier without an id');
+			return eventadminticketsUpdateTicketTier({
+				path: { event_id: eventId, tier_id: tier.id },
 				body: data
-			}),
+			});
+		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
 			onClose();
@@ -315,10 +317,12 @@
 	}));
 
 	const tierDeleteMutation = createMutation(() => ({
-		mutationFn: () =>
-			eventadminticketsDeleteTicketTier({
-				path: { event_id: eventId, tier_id: tier!.id! }
-			}),
+		mutationFn: () => {
+			if (!tier?.id) throw new Error('Cannot delete tier without an id');
+			return eventadminticketsDeleteTicketTier({
+				path: { event_id: eventId, tier_id: tier.id }
+			});
+		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
 			onClose();

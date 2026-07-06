@@ -57,8 +57,12 @@ export const load: PageServerLoad = async ({ params, locals, parent, fetch }) =>
 		);
 	}
 
+	if (!pollRes.data) {
+		throw error(500, 'Failed to load poll');
+	}
+
 	return {
-		poll: pollRes.data!,
+		poll: pollRes.data,
 		events: eventsRes.data?.results ?? [],
 		tiers: tiersRes.data ?? [],
 		isOwner

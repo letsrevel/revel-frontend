@@ -78,11 +78,11 @@
 						headers: { Authorization: `Bearer ${accessToken}` }
 					});
 
-					if (response.error) {
+					if (response.error || !response.data) {
 						throw new Error('Failed to verify Stripe account');
 					}
 
-					return response.data!;
+					return response.data;
 				},
 				enabled: isConnected && mounted
 			}))
@@ -106,7 +106,8 @@
 						throw new Error(errorMsg);
 					}
 
-					return response.data!;
+					if (!response.data) throw new Error(m['stripeConnect.failedToCreateLink']());
+					return response.data;
 				},
 				onSuccess: (data) => {
 					// Redirect to Stripe onboarding

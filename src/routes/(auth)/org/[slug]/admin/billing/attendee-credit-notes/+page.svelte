@@ -58,8 +58,9 @@
 						},
 						headers: { Authorization: `Bearer ${accessToken}` }
 					});
-					if (response.error) throw new Error('Failed to load attendee credit notes');
-					return response.data!;
+					if (response.error || !response.data)
+						throw new Error('Failed to load attendee credit notes');
+					return response.data;
 				},
 				enabled: !!accessToken
 			}))

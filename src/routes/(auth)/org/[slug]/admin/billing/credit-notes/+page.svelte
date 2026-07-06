@@ -39,8 +39,8 @@
 						query: { page: currentPage, page_size: pageSize },
 						headers: { Authorization: `Bearer ${accessToken}` }
 					});
-					if (response.error) throw new Error('Failed to load credit notes');
-					return response.data!;
+					if (response.error || !response.data) throw new Error('Failed to load credit notes');
+					return response.data;
 				},
 				enabled: !!accessToken
 			}))

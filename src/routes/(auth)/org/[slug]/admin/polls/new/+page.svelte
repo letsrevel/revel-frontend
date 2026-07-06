@@ -211,7 +211,11 @@
 				}
 				return;
 			}
-			await goto(`/org/${data.organization.slug}/admin/polls/${res.data!.id}`);
+			if (!res.data) {
+				saveError = m['pollNewPage.saveError']({ status: res.response.status });
+				return;
+			}
+			await goto(`/org/${data.organization.slug}/admin/polls/${res.data.id}`);
 		} catch (err) {
 			console.error(err);
 			saveError = String(err);

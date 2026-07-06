@@ -226,10 +226,12 @@
 		for (const t of ticketArray) {
 			if (t.status === 'pending' && t.payment?.id && t.tier?.payment_method === 'online') {
 				const paymentId = t.payment.id;
-				if (!groups.has(paymentId)) {
-					groups.set(paymentId, []);
+				let group = groups.get(paymentId);
+				if (!group) {
+					group = [];
+					groups.set(paymentId, group);
 				}
-				groups.get(paymentId)!.push(t);
+				group.push(t);
 			}
 		}
 

@@ -74,11 +74,12 @@
 
 	// Filtered resources based on search
 	const filteredResources = $derived(
-		allResources.filter((r) => {
+		allResources.filter((r): r is AdditionalResourceSchema & { id: string } => {
+			if (!r.id) return false;
 			const query = searchQuery.toLowerCase().trim();
 			if (!query) return true;
 
-			return (
+			return Boolean(
 				(r.name && r.name.toLowerCase().includes(query)) ||
 				(r.description && r.description.toLowerCase().includes(query))
 			);
@@ -283,14 +284,14 @@
 						{@const Icon = getResourceIcon(resource.resource_type)}
 						<button
 							type="button"
-							onclick={() => toggleResource(resource.id!)}
+							onclick={() => toggleResource(resource.id)}
 							class="flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent"
-							class:border-primary={selectedIds.has(resource.id!)}
-							class:bg-accent={selectedIds.has(resource.id!)}
+							class:border-primary={selectedIds.has(resource.id)}
+							class:bg-accent={selectedIds.has(resource.id)}
 						>
 							<Checkbox
-								checked={selectedIds.has(resource.id!)}
-								onCheckedChange={() => toggleResource(resource.id!)}
+								checked={selectedIds.has(resource.id)}
+								onCheckedChange={() => toggleResource(resource.id)}
 								aria-label={m['seriesResourceAssignmentModal.selectItem']({
 									name: resource.name || m['seriesResourceAssignmentModal.resourceFallback']()
 								})}

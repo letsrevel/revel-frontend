@@ -26,8 +26,8 @@
 
 	const { data }: Props = $props();
 
-	const summary = $derived(data.summary!);
-	const questionnaire = $derived(data.questionnaire!);
+	const summary = $derived(data.summary);
+	const questionnaire = $derived(data.questionnaire);
 	const events = $derived(questionnaire?.events ?? []);
 	const eventSeries = $derived(questionnaire?.event_series ?? []);
 

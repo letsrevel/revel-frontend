@@ -52,8 +52,8 @@
 						query: { page: currentPage, page_size: pageSize },
 						headers: { Authorization: `Bearer ${accessToken}` }
 					});
-					if (response.error) throw new Error('Failed to load invoices');
-					return response.data!;
+					if (response.error || !response.data) throw new Error('Failed to load invoices');
+					return response.data;
 				},
 				enabled: !!accessToken
 			}))
@@ -73,8 +73,8 @@
 						path: { slug, invoice_id: selectedInvoiceId },
 						headers: { Authorization: `Bearer ${accessToken}` }
 					});
-					if (response.error) throw new Error('Failed to load invoice');
-					return response.data!;
+					if (response.error || !response.data) throw new Error('Failed to load invoice');
+					return response.data;
 				},
 				enabled: !!accessToken && !!selectedInvoiceId
 			}))
@@ -91,10 +91,10 @@
 					if (response.response.status === 404) {
 						throw new Error(m['orgAdmin.billing.invoices.detail.pdfNotReady']());
 					}
-					if (response.error) {
+					if (response.error || !response.data) {
 						throw new Error(m['orgAdmin.billing.invoices.detail.downloadError']());
 					}
-					return response.data!;
+					return response.data;
 				},
 				onSuccess: (data) => {
 					window.open(getBackendUrl(data.download_url), '_blank');

@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { getLandingPage } from '$lib/data/landing-pages';
+	import { getLandingPageOrThrow } from '$lib/data/landing-pages';
 	import { LandingPageTemplate } from '$lib/components/landing';
 	import { SeoHead, buildSeo } from '$lib/seo';
 	import { landingExtras } from '$lib/seo/landing';
 
 	const SLUG = 'privacy-focused-events';
-	const content = getLandingPage('en', SLUG)!;
+	const content = getLandingPageOrThrow('en', SLUG);
 
 	const seoConfig = $derived(
 		buildSeo({

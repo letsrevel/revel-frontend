@@ -849,12 +849,13 @@
 
 					<!-- PWYC Amount (if applicable) -->
 					{#if isPwyc}
+						{@const maxValue = maxAmount()}
 						<div class="space-y-3">
 							<div class="space-y-2">
 								<Label for="pwyc-amount">{m['guest_attendance.pwyc_label']()}</Label>
 								<div class="text-xs text-muted-foreground">
-									{maxAmount() !== null
-										? m['guest_attendance.pwyc_hint']({ min: minAmount(), max: maxAmount()! })
+									{maxValue !== null
+										? m['guest_attendance.pwyc_hint']({ min: minAmount(), max: maxValue })
 										: m['guest_attendance.pwyc_hint_no_max']({ min: minAmount() })}
 								</div>
 								<div class="relative">

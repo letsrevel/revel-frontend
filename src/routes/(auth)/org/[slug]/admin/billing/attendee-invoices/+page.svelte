@@ -91,8 +91,8 @@
 						},
 						headers
 					});
-					if (response.error) throw new Error('Failed to load attendee invoices');
-					return response.data!;
+					if (response.error || !response.data) throw new Error('Failed to load attendee invoices');
+					return response.data;
 				},
 				enabled: !!accessToken
 			}))
@@ -109,8 +109,8 @@
 						path: { slug, invoice_id: selectedInvoiceId },
 						headers
 					});
-					if (response.error) throw new Error('Failed to load invoice');
-					return response.data!;
+					if (response.error || !response.data) throw new Error('Failed to load invoice');
+					return response.data;
 				},
 				enabled: !!accessToken && !!selectedInvoiceId
 			}))
@@ -131,7 +131,8 @@
 						}
 					});
 					if (response.error) throw new Error(extractErrorMessage(response.error, errMsg()));
-					return response.data!;
+					if (!response.data) throw new Error(errMsg());
+					return response.data;
 				},
 				onSuccess: () => {
 					isEditing = false;
@@ -152,7 +153,8 @@
 						headers
 					});
 					if (response.error) throw new Error(extractErrorMessage(response.error, errMsg()));
-					return response.data!;
+					if (!response.data) throw new Error(errMsg());
+					return response.data;
 				},
 				onSuccess: () => {
 					showIssueDialog = false;
@@ -194,9 +196,9 @@
 						path: { slug, invoice_id: invoiceId },
 						headers
 					});
-					if (response.error)
+					if (response.error || !response.data)
 						throw new Error(m['orgAdmin.billing.attendeeInvoices.downloadError']());
-					return response.data!;
+					return response.data;
 				},
 				onSuccess: (data) => {
 					window.open(getBackendUrl(data.download_url), '_blank');

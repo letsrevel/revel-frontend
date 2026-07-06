@@ -128,10 +128,11 @@
 		>();
 
 		for (const restriction of dietarySummary.restrictions) {
-			if (!grouped.has(restriction.food_item)) {
-				grouped.set(restriction.food_item, { severities: new Map(), notes: [] });
+			let item = grouped.get(restriction.food_item);
+			if (!item) {
+				item = { severities: new Map(), notes: [] };
+				grouped.set(restriction.food_item, item);
 			}
-			const item = grouped.get(restriction.food_item)!;
 			item.severities.set(restriction.severity, restriction.attendee_count);
 
 			// Collect notes

@@ -460,10 +460,15 @@
 		isSaving = true;
 
 		try {
+			const startIso = toISOString(formData.start);
+			if (!formData.name || !startIso) {
+				errorMessage = m['eventWizard.error_fixValidation']();
+				return;
+			}
 			const createData: EventCreateSchema = {
-				name: formData.name!,
-				start: toISOString(formData.start)!,
-				city_id: formData.city_id!,
+				name: formData.name,
+				start: startIso,
+				city_id: formData.city_id,
 				visibility: formData.visibility || 'public',
 				event_type: (formData.event_type || 'public') as any,
 				status: 'draft' as any,
@@ -511,10 +516,15 @@
 		isSaving = true;
 
 		try {
+			const startIso = toISOString(formData.start);
+			if (!formData.name || !startIso || !formData.city_id) {
+				errorMessage = m['eventWizard.error_fixValidation']();
+				return;
+			}
 			const updateData: Partial<EventEditSchema> = {
-				name: formData.name!,
-				start: toISOString(formData.start)!,
-				city_id: formData.city_id!,
+				name: formData.name,
+				start: startIso,
+				city_id: formData.city_id,
 				visibility: formData.visibility || 'public',
 				event_type: (formData.event_type || 'public') as any,
 				description: formData.description || null,

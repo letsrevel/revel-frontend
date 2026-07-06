@@ -121,8 +121,9 @@ export async function syncMcOptions(
 	const localOptionApiIds = new Set<string>();
 	const optionsToSync: { option: QuestionnaireOption; apiId: string }[] = [];
 
-	for (let i = 0; i < (question.options || []).length; i++) {
-		const option = question.options![i];
+	const questionOptions = question.options ?? [];
+	for (let i = 0; i < questionOptions.length; i++) {
+		const option = questionOptions[i];
 		if (option._apiId) {
 			localOptionApiIds.add(option._apiId);
 			await questionnaireUpdateMcOption({

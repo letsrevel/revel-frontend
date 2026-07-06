@@ -76,7 +76,7 @@
 							{m['venueInfo.capacity']()}
 						</p>
 						<p class="text-sm">
-							{m['venueInfo.capacityPeople']({ count: venue.capacity! })}
+							{m['venueInfo.capacityPeople']({ count: venue.capacity ?? 0 })}
 						</p>
 					</div>
 				</div>

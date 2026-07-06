@@ -35,11 +35,11 @@
 				}
 			});
 
-			if (response.error) {
+			if (response.error || !response.data) {
 				throw new Error('Failed to load venue');
 			}
 
-			return response.data!;
+			return response.data;
 		}
 	}));
 

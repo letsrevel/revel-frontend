@@ -487,9 +487,9 @@
 			if (eventId) {
 				// Update existing event - MUST include ALL fields because backend uses PUT (full replacement)
 				const updateData: Partial<EventEditSchema> = {
-					name: formData.name!,
-					start: toISOString(formData.start)!,
-					city_id: formData.city_id!,
+					name: formData.name,
+					start: toISOString(formData.start),
+					city_id: formData.city_id,
 					visibility: formData.visibility || 'public',
 					event_type: (formData.event_type || 'public') as any,
 					// Include all other fields to prevent them from being reset
@@ -519,9 +519,9 @@
 			} else {
 				// Create new event - only essential fields needed
 				const createData: EventCreateSchema = {
-					name: formData.name!,
-					start: toISOString(formData.start)!,
-					city_id: formData.city_id!,
+					name: formData.name,
+					start: toISOString(formData.start),
+					city_id: formData.city_id,
 					visibility: formData.visibility || 'public',
 					event_type: (formData.event_type || 'public') as any, // Backend has wrong enum
 					status: 'draft' as any, // Create as draft by default
@@ -567,7 +567,7 @@
 		try {
 			// Update event with all details - convert datetime-local to ISO with timezone
 			const updateData: Partial<EventEditSchema> = {
-				city_id: formData.city_id!, // Now required from LocationSection
+				city_id: formData.city_id, // Now required from LocationSection
 				description: formData.description || null,
 				end: formData.is_open_ended ? null : toISOString(formData.end),
 				is_open_ended: formData.is_open_ended ?? false,
@@ -851,8 +851,9 @@
 			</div>
 		</div>
 	{:else if currentStep === 3 && formData.requires_ticket && eventId}
+		{@const eventIdValue = eventId}
 		<TicketingStep
-			eventId={eventId!}
+			eventId={eventIdValue}
 			organizationSlug={organization.slug}
 			organizationStripeConnected={organization.is_stripe_connected}
 			{formData}

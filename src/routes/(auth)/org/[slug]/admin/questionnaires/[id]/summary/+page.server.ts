@@ -43,9 +43,13 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 			throw error(404, msg);
 		}
 
-		if (summaryRes.error) {
+		if (summaryRes.error || !summaryRes.data) {
 			const msg = extractErrorMessage(summaryRes.error, 'Failed to load summary');
 			throw error(500, msg);
+		}
+
+		if (!questionnaireRes.data) {
+			throw error(404, 'Questionnaire not found');
 		}
 
 		return {
