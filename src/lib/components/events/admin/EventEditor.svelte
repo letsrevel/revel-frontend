@@ -25,7 +25,8 @@
 		VenueDetailSchema,
 		OrganizationRetrieveSchema,
 		OrganizationQuestionnaireInListSchema,
-		ResourceVisibility
+		ResourceVisibility,
+		EventSeriesRetrieveSchema
 	} from '$lib/api/generated/types.gen';
 	import { goto } from '$app/navigation';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -50,7 +51,7 @@
 		existingEvent?: EventDetailSchema;
 		userCity?: CitySchema | null;
 		orgCity?: CitySchema | null;
-		eventSeries?: Array<{ id: string; [key: string]: unknown }>;
+		eventSeries?: EventSeriesRetrieveSchema[];
 		questionnaires?: Array<{ id: string; [key: string]: unknown }>;
 		initialTab?: 'details' | 'ticketing';
 		/** Optional `start` datetime to seed the form with (create mode only).
@@ -115,7 +116,7 @@
 		is_open_ended: existingEvent?.is_open_ended ?? false,
 		city_id: existingEvent?.city?.id || orgCity?.id || userCity?.id || null,
 		visibility: existingEvent?.visibility || 'public',
-		event_type: (existingEvent?.event_type as any) || ('public' as any),
+		event_type: existingEvent?.event_type || 'public',
 		requires_ticket: existingEvent?.requires_ticket || false,
 		description: existingEvent?.description || '',
 		address: existingEvent?.address || '',
@@ -470,12 +471,12 @@
 				start: startIso,
 				city_id: formData.city_id,
 				visibility: formData.visibility || 'public',
-				event_type: (formData.event_type || 'public') as any,
-				status: 'draft' as any,
+				event_type: formData.event_type || 'public',
+				status: 'draft',
 				requires_ticket: formData.requires_ticket || false,
 				requires_full_profile: formData.requires_full_profile || false,
 				venue_id: formData.venue_id || null
-			} as any;
+			};
 
 			const result = await createEventMutation.mutateAsync(createData);
 			eventId = result.id;
@@ -526,7 +527,7 @@
 				start: startIso,
 				city_id: formData.city_id,
 				visibility: formData.visibility || 'public',
-				event_type: (formData.event_type || 'public') as any,
+				event_type: formData.event_type || 'public',
 				description: formData.description || null,
 				end: formData.is_open_ended ? null : toISOString(formData.end),
 				is_open_ended: formData.is_open_ended ?? false,
@@ -687,7 +688,7 @@
 		{#snippet detailsSection()}
 			<DetailsStep
 				{formData}
-				eventSeries={eventSeries as any}
+				{eventSeries}
 				questionnaires={assignedQuestionnaires}
 				{eventId}
 				organizationId={organization.id}

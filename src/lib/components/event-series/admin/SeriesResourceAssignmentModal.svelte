@@ -36,7 +36,7 @@
 	function getCurrentlyAssigned(): string[] {
 		// Check if series has additional_resources field
 		if ('additional_resources' in series && Array.isArray(series.additional_resources)) {
-			return series.additional_resources.map((r: any) => r.id);
+			return series.additional_resources.map((r: { id: string }) => r.id);
 		}
 		return [];
 	}

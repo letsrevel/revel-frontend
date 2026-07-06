@@ -41,7 +41,9 @@
 			});
 
 			if (response.error) {
-				const errorDetail = (response.error as any)?.detail;
+				const err: unknown = response.error;
+				const errorDetail =
+					typeof err === 'object' && err !== null && 'detail' in err ? err.detail : undefined;
 				throw new Error(
 					typeof errorDetail === 'string' ? errorDetail : m['claimInvitationButton.failedToClaim']()
 				);
@@ -60,9 +62,11 @@
 			setTimeout(() => {
 				window.location.replace(url.toString());
 			}, 1000);
-		} catch (err: any) {
+		} catch (err) {
 			console.error('Failed to claim invitation:', err);
-			toast.error(err.message || m['claimInvitationButton.failedToClaim']());
+			toast.error(
+				(err instanceof Error && err.message) || m['claimInvitationButton.failedToClaim']()
+			);
 		} finally {
 			isLoading = false;
 		}

@@ -33,7 +33,9 @@ describe('buildSeo', () => {
 		expect(cfg.og.localeAlternate).toEqual(['de_DE', 'it_IT', 'fr_FR']);
 		expect(cfg.hreflang.map((h) => h.lang)).toEqual(['en', 'de', 'it', 'fr', 'x-default']);
 		expect(cfg.hreflang.every((h) => h.href === 'https://letsrevel.io/')).toBe(true);
-		expect(cfg.jsonLd.some((j: any) => j['@type'] === 'WebSite')).toBe(true);
+		expect(cfg.jsonLd.some((j) => (j as Record<string, unknown>)['@type'] === 'WebSite')).toBe(
+			true
+		);
 		expect(cfg.robots).toBeUndefined();
 	});
 
@@ -48,7 +50,7 @@ describe('buildSeo', () => {
 		expect(cfg.title).toContain('My Event');
 		expect(cfg.canonical).toBe('https://letsrevel.io/events/acme/my-event');
 		expect(cfg.robots).toBeUndefined();
-		const types = cfg.jsonLd.map((j: any) => j['@type']);
+		const types = cfg.jsonLd.map((j) => (j as Record<string, unknown>)['@type']);
 		expect(types).toContain('Event');
 		expect(types).toContain('BreadcrumbList');
 	});

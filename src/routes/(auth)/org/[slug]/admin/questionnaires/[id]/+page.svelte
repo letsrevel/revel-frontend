@@ -69,7 +69,7 @@
 
 	// Initialize local state from API data
 	function initializeFromApi() {
-		if (!q) return;
+		if (!questionnaire || !q) return;
 
 		const result = initializeFromApiData(questionnaire, q);
 		name = result.name;

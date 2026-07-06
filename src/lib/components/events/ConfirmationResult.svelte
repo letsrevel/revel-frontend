@@ -76,7 +76,7 @@
 			} else {
 				throw new Error('Unexpected response format from confirmation');
 			}
-		} catch (error: any) {
+		} catch (error) {
 			result = {
 				success: false,
 				error: handleGuestAttendanceError(error)

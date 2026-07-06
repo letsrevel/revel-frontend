@@ -47,8 +47,8 @@
 	<div class="flex items-start justify-between gap-4">
 		<!-- Avatar -->
 		<UserAvatar
-			profilePictureUrl={(member.user as any).profile_picture_url}
-			thumbnailUrl={(member.user as any).profile_picture_thumbnail_url}
+			profilePictureUrl={member.user.profile_picture_url}
+			thumbnailUrl={member.user.profile_picture_thumbnail_url}
 			{displayName}
 			firstName={member.user.first_name}
 			lastName={member.user.last_name}

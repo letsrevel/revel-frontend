@@ -66,8 +66,8 @@
 			otpValue = '';
 			otpError = '';
 		},
-		onError: (error: any) => {
-			const errorMessage = error?.message || 'Failed to connect Telegram account';
+		onError: (error: Error) => {
+			const errorMessage = error.message || 'Failed to connect Telegram account';
 			otpError = errorMessage;
 		}
 	}));

@@ -27,9 +27,9 @@
 
 	// Image URLs with backend URL prepended
 	// Prefer social preview for card display (1200x630, matches aspect-video ratio)
-	const coverArtSocialUrl = $derived(getImageUrl((organization as any).cover_art_social_url));
+	const coverArtSocialUrl = $derived(getImageUrl(organization.cover_art_social_url));
 	const coverArtUrl = $derived(getImageUrl(organization.cover_art));
-	const logoThumbnailUrl = $derived(getImageUrl((organization as any).logo_thumbnail_url));
+	const logoThumbnailUrl = $derived(getImageUrl(organization.logo_thumbnail_url));
 	const logoUrl = $derived(getImageUrl(organization.logo));
 	const imageUrl = $derived(!imageError ? coverArtSocialUrl || coverArtUrl : null);
 	const logoDisplayUrl = $derived(logoThumbnailUrl || logoUrl);

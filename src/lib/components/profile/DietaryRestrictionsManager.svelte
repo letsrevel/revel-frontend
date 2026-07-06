@@ -13,6 +13,7 @@
 	import { toast } from 'svelte-sonner';
 	import type {
 		DietaryRestrictionSchema,
+		DietaryRestrictionCreateSchema,
 		RestrictionType,
 		FoodItemSchema
 	} from '$lib/api/generated/types.gen.js';
@@ -110,7 +111,9 @@
 				throw new Error('Either food_item_name or food_item_id must be provided');
 			}
 			const response = await dietaryCreateDietaryRestriction({
-				body: data as any, // Type assertion since API expects one field to be present
+				// The generated schema requires food_item_name only; the backend also
+				// resolves food_item_id at runtime, so cast to the create schema type.
+				body: data as DietaryRestrictionCreateSchema,
 				headers: { Authorization: `Bearer ${authToken}` }
 			});
 			return response.data;

@@ -316,7 +316,7 @@
 				<div class="relative flex items-center gap-3 rounded-lg border bg-card p-3">
 					{#if isImage(file.mime_type) && file.file_url}
 						<img
-							src={getImageUrl((file as any).thumbnail_url || file.file_url)}
+							src={getImageUrl(file.thumbnail_url || file.file_url)}
 							alt={file.original_filename}
 							class="h-10 w-10 rounded object-cover"
 						/>
@@ -477,7 +477,7 @@
 						>
 							{#if isImage(file.mime_type) && file.file_url}
 								<img
-									src={getImageUrl((file as any).thumbnail_url || file.file_url)}
+									src={getImageUrl(file.thumbnail_url || file.file_url)}
 									alt={file.original_filename}
 									class="h-8 w-8 rounded object-cover"
 								/>

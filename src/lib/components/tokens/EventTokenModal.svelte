@@ -91,13 +91,13 @@
 				expiresAt = token.expires_at ?? '';
 
 				// Load advanced invitation options
-				const invitation = token.invitation_payload as any;
-				waivesQuestionnaire = invitation?.waives_questionnaire ?? false;
-				waivesPurchase = invitation?.waives_purchase ?? false;
-				overridesMaxAttendees = invitation?.overrides_max_attendees ?? false;
-				waivesMembershipRequired = invitation?.waives_membership_required ?? false;
-				waivesRsvpDeadline = invitation?.waives_rsvp_deadline ?? false;
-				waivesApplyDeadline = invitation?.waives_apply_deadline ?? false;
+				const invitation = token.invitation_payload;
+				waivesQuestionnaire = invitation?.waives_questionnaire === true;
+				waivesPurchase = invitation?.waives_purchase === true;
+				overridesMaxAttendees = invitation?.overrides_max_attendees === true;
+				waivesMembershipRequired = invitation?.waives_membership_required === true;
+				waivesRsvpDeadline = invitation?.waives_rsvp_deadline === true;
+				waivesApplyDeadline = invitation?.waives_apply_deadline === true;
 				selectedTierIds = token.ticket_tiers?.map((t) => t.id) ?? [];
 			} else {
 				name = '';

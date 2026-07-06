@@ -50,15 +50,15 @@
 			// Optimistic update
 			isRead = true;
 		},
-		onSuccess: (data: any) => {
-			// Update the notification with the new read_at value
+		onSuccess: () => {
+			// The mark-read endpoint returns no body, so set read_at locally
 			const updatedNotification = {
 				...notification,
-				read_at: data.data?.read_at || new Date().toISOString()
+				read_at: new Date().toISOString()
 			};
 			onStatusChange?.(updatedNotification);
 		},
-		onError: (error: any) => {
+		onError: (error) => {
 			// Revert optimistic update
 			isRead = false;
 			toast.error(m['notificationItem.toast_markReadFailed']());
@@ -86,7 +86,7 @@
 			};
 			onStatusChange?.(updatedNotification);
 		},
-		onError: (error: any) => {
+		onError: (error) => {
 			// Revert optimistic update
 			isRead = true;
 			toast.error(m['notificationItem.toast_markUnreadFailed']());

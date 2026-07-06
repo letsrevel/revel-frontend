@@ -82,7 +82,7 @@
 	// Synthesise a minimal org-questionnaire wrapper so initializeFromApiData
 	// can extract topLevelQuestions + sections. Polls have no org wrapper.
 	const fakeOrgWrapper = {
-		questionnaire_type: 'admission',
+		questionnaire_type: 'admission' as const,
 		members_exempt: false,
 		per_event: false,
 		requires_evaluation: false,

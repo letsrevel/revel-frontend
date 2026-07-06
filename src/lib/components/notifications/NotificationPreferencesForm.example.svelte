@@ -8,6 +8,7 @@
 	import { notificationpreferenceGetPreferences } from '$lib/api';
 	import { Loader2, AlertCircle } from '@lucide/svelte';
 	import * as Card from '$lib/components/ui/card';
+	import type { NotificationPreferenceSchema } from '$lib/api/generated/types.gen';
 
 	interface Props {
 		authToken: string;
@@ -29,7 +30,7 @@
 	}));
 
 	// Handle successful save
-	function handlePreferencesSaved(updatedPreferences: any) {
+	function handlePreferencesSaved(updatedPreferences?: NotificationPreferenceSchema) {
 		console.log('Notification preferences updated:', updatedPreferences);
 		// Additional post-save logic here
 		// For example, you might want to:

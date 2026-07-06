@@ -27,7 +27,11 @@
 
 	// Get event location
 	const eventLocation = $derived.by(() => {
-		const event = request.event as any;
+		// venue_name/location are not modeled on the event schema but may be present at runtime
+		const event = request.event as typeof request.event & {
+			venue_name?: string | null;
+			location?: string | null;
+		};
 		return event.venue_name || event.location || null;
 	});
 
@@ -82,7 +86,7 @@
 			// Invalidate queries to refresh the list
 			queryClient.invalidateQueries({ queryKey: ['my-invitation-requests'] });
 		},
-		onError: (error: any) => {
+		onError: (error) => {
 			console.error('Failed to cancel request:', error);
 			toast.error(m['invitationRequestCard.cancelFailed'](), {
 				description: error.message || m['invitationRequestCard.pleaseTryAgain']()
@@ -103,9 +107,9 @@
 		<div class="flex items-start gap-4">
 			<!-- Event Logo/Icon (prefer thumbnail for card display) -->
 			<div class="shrink-0">
-				{#if (request.event as any).logo_thumbnail_url || request.event.logo}
+				{#if request.event.logo_thumbnail_url || request.event.logo}
 					<img
-						src={getImageUrl((request.event as any).logo_thumbnail_url || request.event.logo)}
+						src={getImageUrl(request.event.logo_thumbnail_url || request.event.logo)}
 						alt=""
 						class="h-16 w-16 rounded-lg border object-cover"
 					/>

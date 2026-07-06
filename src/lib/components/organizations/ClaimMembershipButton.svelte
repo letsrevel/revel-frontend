@@ -39,7 +39,9 @@
 			});
 
 			if (response.error) {
-				const errorDetail = (response.error as any)?.detail;
+				const error = response.error;
+				const errorDetail =
+					error && typeof error === 'object' && 'detail' in error ? error.detail : undefined;
 				throw new Error(
 					typeof errorDetail === 'string'
 						? errorDetail
@@ -55,9 +57,11 @@
 			setTimeout(() => {
 				window.location.reload();
 			}, 1000);
-		} catch (err: any) {
+		} catch (err) {
 			console.error('Failed to claim membership:', err);
-			toast.error(err.message || m['claimMembershipButton.error_failedToClaim']());
+			toast.error(
+				(err instanceof Error && err.message) || m['claimMembershipButton.error_failedToClaim']()
+			);
 		} finally {
 			isLoading = false;
 		}

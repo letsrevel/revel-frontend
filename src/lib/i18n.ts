@@ -4,7 +4,14 @@
  * This file provides utilities for language detection and management.
  */
 
-import { setLocale, getLocale, locales, baseLocale, cookieName } from '$lib/paraglide/runtime.js';
+import {
+	setLocale,
+	getLocale,
+	locales,
+	baseLocale,
+	cookieName,
+	type Locale
+} from '$lib/paraglide/runtime.js';
 import type { Handle } from '@sveltejs/kit';
 
 /**
@@ -18,13 +25,20 @@ export const SUPPORTED_LANGUAGES = [...locales];
 export const DEFAULT_LANGUAGE = baseLocale;
 
 /**
+ * Type guard: is the given string one of the supported locales?
+ */
+function isSupportedLanguage(lang: string): lang is Locale {
+	return (SUPPORTED_LANGUAGES as readonly string[]).includes(lang);
+}
+
+/**
  * Detect language from various sources
  * Priority: URL param > Cookie > Accept-Language header > Default
  */
-function detectLanguage(event: Parameters<Handle>[0]['event']): string {
+function detectLanguage(event: Parameters<Handle>[0]['event']): Locale {
 	// 1. Check URL parameter
 	const urlLang = event.url.searchParams.get('lang');
-	if (urlLang && SUPPORTED_LANGUAGES.includes(urlLang as any)) {
+	if (urlLang && isSupportedLanguage(urlLang)) {
 		return urlLang;
 	}
 
@@ -33,13 +47,13 @@ function detectLanguage(event: Parameters<Handle>[0]['event']): string {
 	// (written by setLocale() on the client), so honouring it here keeps the
 	// server and client on the same locale.
 	const paraglideCookie = event.cookies.get(cookieName);
-	if (paraglideCookie && SUPPORTED_LANGUAGES.includes(paraglideCookie as any)) {
+	if (paraglideCookie && isSupportedLanguage(paraglideCookie)) {
 		return paraglideCookie;
 	}
 
 	// 3. Check legacy user_language cookie
 	const cookieLang = event.cookies.get('user_language');
-	if (cookieLang && SUPPORTED_LANGUAGES.includes(cookieLang as any)) {
+	if (cookieLang && isSupportedLanguage(cookieLang)) {
 		return cookieLang;
 	}
 
@@ -47,7 +61,7 @@ function detectLanguage(event: Parameters<Handle>[0]['event']): string {
 	const acceptLanguage = event.request.headers.get('accept-language');
 	if (acceptLanguage) {
 		const lang = acceptLanguage.split(',')[0]?.split('-')[0];
-		if (lang && SUPPORTED_LANGUAGES.includes(lang as any)) {
+		if (lang && isSupportedLanguage(lang)) {
 			return lang;
 		}
 	}
@@ -64,7 +78,7 @@ export function i18nHandle(): Handle {
 		const lang = detectLanguage(event);
 
 		// Set the locale for this request
-		setLocale(lang as any);
+		setLocale(lang);
 
 		const cookieOptions = {
 			path: '/',

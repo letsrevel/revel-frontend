@@ -19,5 +19,5 @@ export type TierSchemaWithId = TicketTierSchema;
  * Type guard to check if a TicketTierSchema has an id
  */
 export function hasTierId(tier: TicketTierSchema): tier is TierSchemaWithId {
-	return 'id' in tier && typeof (tier as any).id === 'string';
+	return 'id' in tier && typeof (tier as { id?: unknown }).id === 'string';
 }

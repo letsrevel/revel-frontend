@@ -24,6 +24,7 @@
 		Minus,
 		User
 	} from '@lucide/svelte';
+	import { z } from 'zod';
 	import { guestUserSchema, createGuestPwycSchema } from '$lib/schemas/guestAttendance';
 	import {
 		eventpublicguestGuestTicketCheckout,
@@ -36,7 +37,8 @@
 	import type {
 		SeatAssignmentMode,
 		VenueSeatSchema,
-		SectorAvailabilitySchema
+		SectorAvailabilitySchema,
+		TicketPurchaseItem
 	} from '$lib/api/generated/types.gen';
 	import SeatSelector from '$lib/components/tickets/SeatSelector.svelte';
 	import CheckoutBillingSection from '$lib/components/tickets/CheckoutBillingSection.svelte';
@@ -117,15 +119,23 @@
 	const isOnlinePayment = $derived(tier.payment_method === 'online');
 
 	// Seat assignment mode
-	const seatAssignmentMode = $derived<SeatAssignmentMode>(
-		(tier as any).seat_assignment_mode ?? 'none'
-	);
+	const seatAssignmentMode = $derived<SeatAssignmentMode>(tier.seat_assignment_mode ?? 'none');
 	const isUserChoiceSeat = $derived(seatAssignmentMode === 'user_choice');
 	const isRandomSeat = $derived(seatAssignmentMode === 'random');
 
 	// Venue/sector info for display
-	const tierVenue = $derived((tier as any).venue ?? null);
-	const tierSector = $derived((tier as any).sector ?? null);
+	const tierVenue = $derived(tier.venue ?? null);
+	const tierSector = $derived(tier.sector ?? null);
+	// NOTE: VenueSectorSchema declares no `description` field, but the template historically
+	// rendered one (masked by an `as any` cast). Preserve that dynamic read type-safely rather
+	// than change behavior; if this branch is meant to show data, the API contract is missing it.
+	const tierSectorDescription = $derived.by(() => {
+		const s: unknown = tierSector;
+		if (s && typeof s === 'object' && 'description' in s && typeof s.description === 'string') {
+			return s.description;
+		}
+		return undefined;
+	});
 
 	// Computed: available seats from the sector
 	const availableSeats = $derived<VenueSeatSchema[]>(
@@ -133,7 +143,7 @@
 	);
 
 	// Tier-level max tickets per user (can override event-level setting)
-	const tierMaxTicketsPerUser = $derived<number | null>((tier as any).max_tickets_per_user ?? null);
+	const tierMaxTicketsPerUser = $derived<number | null>(tier.max_tickets_per_user ?? null);
 
 	// Effective max per user: use tier's value if set, otherwise fall back to event-level
 	const effectiveMaxPerUser = $derived<number | null>(
@@ -328,14 +338,15 @@
 				schema.shape.pwyc.parse(pwycNumber);
 				fieldErrors.pwyc = '';
 			} else {
-				const fieldSchema = (guestUserSchema.shape as any)[field];
-				if (fieldSchema) {
-					fieldSchema.parse((formData as any)[field]);
+				const shape = guestUserSchema.shape;
+				if (field in shape) {
+					const key = field as keyof typeof shape;
+					shape[key].parse(formData[key]);
 					fieldErrors[field] = '';
 				}
 			}
-		} catch (error: any) {
-			if (error.errors && error.errors.length > 0) {
+		} catch (error) {
+			if (error instanceof z.ZodError && error.errors.length > 0) {
 				fieldErrors[field] = error.errors[0].message;
 			}
 		}
@@ -371,10 +382,10 @@
 				});
 			}
 			return true;
-		} catch (error: any) {
-			if (error.errors) {
-				error.errors.forEach((err: any) => {
-					const field = err.path[0];
+		} catch (error) {
+			if (error instanceof z.ZodError) {
+				error.errors.forEach((err) => {
+					const field = String(err.path[0]);
 					if (!fieldErrors[field]) {
 						fieldErrors[field] = err.message;
 					}
@@ -438,7 +449,7 @@
 					? name.trim()
 					: `${formData.first_name} ${formData.last_name}`.trim();
 
-				const ticket: any = {
+				const ticket: TicketPurchaseItem = {
 					guest_name: guestName
 				};
 
@@ -484,14 +495,25 @@
 
 			// Check for API error (400, 422, etc.) - client doesn't throw on HTTP errors
 			if (response.error) {
-				const err = response.error as any;
+				// The runtime error payload can carry eligibility fields (next_step, reason)
+				// that are not part of the declared ResponseMessage type, so narrow from unknown.
+				const err: unknown = response.error;
+				const nextStep =
+					typeof err === 'object' && err !== null && 'next_step' in err ? err.next_step : undefined;
+				const detail =
+					typeof err === 'object' && err !== null && 'detail' in err ? err.detail : undefined;
+				const reason =
+					typeof err === 'object' && err !== null && 'reason' in err ? err.reason : undefined;
 
 				// Check for eligibility response with next_step
-				if (err?.next_step && !GUEST_COMPATIBLE_STEPS.has(err.next_step)) {
+				if (typeof nextStep === 'string' && !GUEST_COMPATIBLE_STEPS.has(nextStep)) {
 					requiresAccount = true;
 				}
 
-				const errorDetail = err?.detail || err?.reason || m['guestTicketDialog.failedToCheckout']();
+				const errorDetail =
+					(typeof detail === 'string' && detail) ||
+					(typeof reason === 'string' && reason) ||
+					m['guestTicketDialog.failedToCheckout']();
 				throw new Error(
 					typeof errorDetail === 'string' ? errorDetail : m['guestTicketDialog.failedToCheckout']()
 				);
@@ -514,7 +536,7 @@
 				showSuccess = true;
 				onSuccess?.();
 			}
-		} catch (error: any) {
+		} catch (error) {
 			errorMessage = handleGuestAttendanceError(error);
 		} finally {
 			isSubmitting = false;
@@ -783,8 +805,8 @@
 											{#if tierSector}
 												<div>
 													{tierSector.name}
-													{#if tierSector.description}
-														<span class="text-xs">({tierSector.description})</span>
+													{#if tierSectorDescription}
+														<span class="text-xs">({tierSectorDescription})</span>
 													{/if}
 												</div>
 											{/if}

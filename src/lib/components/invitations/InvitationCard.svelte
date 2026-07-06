@@ -29,7 +29,11 @@
 
 	// Get event location
 	const eventLocation = $derived.by(() => {
-		const event = invitation.event as any;
+		// venue_name/location are not modeled on the event schema but may be present at runtime
+		const event = invitation.event as typeof invitation.event & {
+			venue_name?: string | null;
+			location?: string | null;
+		};
 		return event.venue_name || event.location || null;
 	});
 

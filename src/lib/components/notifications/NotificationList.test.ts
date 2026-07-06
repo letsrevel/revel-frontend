@@ -74,7 +74,7 @@ describe('NotificationList', () => {
 		return render(QueryClientProvider, {
 			props: {
 				client: queryClient,
-				children: NotificationList as any,
+				children: NotificationList,
 				childProps: props
 			}
 		});

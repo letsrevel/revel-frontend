@@ -9,6 +9,17 @@ vi.mock('$lib/api/generated', () => ({
 	notificationUnreadCount: vi.fn()
 }));
 
+/** Build a fully-typed resolved result for the mocked notificationUnreadCount SDK call. */
+type UnreadCountResult = Awaited<ReturnType<typeof api.notificationUnreadCount>>;
+function unreadCountResult(count: number): UnreadCountResult {
+	return {
+		data: { count },
+		error: undefined,
+		request: new Request('http://localhost/api/notifications/unread-count'),
+		response: new Response()
+	};
+}
+
 describe('NotificationBadge', () => {
 	let queryClient: QueryClient;
 
@@ -26,9 +37,7 @@ describe('NotificationBadge', () => {
 		vi.clearAllMocks();
 
 		// Mock successful API response by default
-		vi.mocked(api.notificationUnreadCount).mockResolvedValue({
-			data: { count: 5 }
-		} as any);
+		vi.mocked(api.notificationUnreadCount).mockResolvedValue(unreadCountResult(5));
 	});
 
 	afterEach(() => {
@@ -39,7 +48,7 @@ describe('NotificationBadge', () => {
 		render(QueryClientProvider, {
 			props: {
 				client: queryClient,
-				children: NotificationBadge as any,
+				children: NotificationBadge,
 				authToken: 'test-token'
 			}
 		});
@@ -53,14 +62,12 @@ describe('NotificationBadge', () => {
 	});
 
 	it('does not render badge when count is 0 by default', async () => {
-		vi.mocked(api.notificationUnreadCount).mockResolvedValue({
-			data: { count: 0 }
-		} as any);
+		vi.mocked(api.notificationUnreadCount).mockResolvedValue(unreadCountResult(0));
 
 		render(QueryClientProvider, {
 			props: {
 				client: queryClient,
-				children: NotificationBadge as any,
+				children: NotificationBadge,
 				authToken: 'test-token'
 			}
 		});
@@ -73,14 +80,12 @@ describe('NotificationBadge', () => {
 	});
 
 	it('renders badge when count is 0 if showZero is true', async () => {
-		vi.mocked(api.notificationUnreadCount).mockResolvedValue({
-			data: { count: 0 }
-		} as any);
+		vi.mocked(api.notificationUnreadCount).mockResolvedValue(unreadCountResult(0));
 
 		render(QueryClientProvider, {
 			props: {
 				client: queryClient,
-				children: NotificationBadge as any,
+				children: NotificationBadge,
 				authToken: 'test-token',
 				showZero: true
 			}
@@ -94,14 +99,12 @@ describe('NotificationBadge', () => {
 	});
 
 	it('displays "99+" when count exceeds maxCount', async () => {
-		vi.mocked(api.notificationUnreadCount).mockResolvedValue({
-			data: { count: 150 }
-		} as any);
+		vi.mocked(api.notificationUnreadCount).mockResolvedValue(unreadCountResult(150));
 
 		render(QueryClientProvider, {
 			props: {
 				client: queryClient,
-				children: NotificationBadge as any,
+				children: NotificationBadge,
 				authToken: 'test-token',
 				maxCount: 99
 			}
@@ -115,14 +118,12 @@ describe('NotificationBadge', () => {
 	});
 
 	it('uses custom maxCount', async () => {
-		vi.mocked(api.notificationUnreadCount).mockResolvedValue({
-			data: { count: 60 }
-		} as any);
+		vi.mocked(api.notificationUnreadCount).mockResolvedValue(unreadCountResult(60));
 
 		render(QueryClientProvider, {
 			props: {
 				client: queryClient,
-				children: NotificationBadge as any,
+				children: NotificationBadge,
 				authToken: 'test-token',
 				maxCount: 50
 			}
@@ -139,7 +140,7 @@ describe('NotificationBadge', () => {
 		render(QueryClientProvider, {
 			props: {
 				client: queryClient,
-				children: NotificationBadge as any,
+				children: NotificationBadge,
 				authToken: 'test-token',
 				onCountChange
 			}
@@ -154,7 +155,7 @@ describe('NotificationBadge', () => {
 		render(QueryClientProvider, {
 			props: {
 				client: queryClient,
-				children: NotificationBadge as any,
+				children: NotificationBadge,
 				authToken: 'my-secret-token'
 			}
 		});
@@ -175,7 +176,7 @@ describe('NotificationBadge', () => {
 		render(QueryClientProvider, {
 			props: {
 				client: queryClient,
-				children: NotificationBadge as any,
+				children: NotificationBadge,
 				authToken: 'test-token'
 			}
 		});
@@ -193,14 +194,12 @@ describe('NotificationBadge', () => {
 	});
 
 	it('has correct ARIA labels for accessibility', async () => {
-		vi.mocked(api.notificationUnreadCount).mockResolvedValue({
-			data: { count: 1 }
-		} as any);
+		vi.mocked(api.notificationUnreadCount).mockResolvedValue(unreadCountResult(1));
 
 		render(QueryClientProvider, {
 			props: {
 				client: queryClient,
-				children: NotificationBadge as any,
+				children: NotificationBadge,
 				authToken: 'test-token'
 			}
 		});
@@ -214,7 +213,7 @@ describe('NotificationBadge', () => {
 		render(QueryClientProvider, {
 			props: {
 				client: queryClient,
-				children: NotificationBadge as any,
+				children: NotificationBadge,
 				authToken: 'test-token',
 				class: 'custom-badge-class'
 			}
@@ -230,7 +229,7 @@ describe('NotificationBadge', () => {
 		render(QueryClientProvider, {
 			props: {
 				client: queryClient,
-				children: NotificationBadge as any,
+				children: NotificationBadge,
 				authToken: 'test-token'
 			}
 		});

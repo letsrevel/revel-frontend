@@ -14,6 +14,7 @@
 		Circle
 	} from '@lucide/svelte';
 	import type { EventDietarySummarySchema, RestrictionType } from '$lib/api/generated/types.gen.js';
+	import type { LucideIcon } from '@lucide/svelte';
 
 	interface Props {
 		eventId: string;
@@ -76,7 +77,7 @@
 	function getSeverityInfo(type: RestrictionType): {
 		label: string;
 		color: string;
-		icon: any;
+		icon: LucideIcon;
 	} {
 		switch (type) {
 			case 'severe_allergy':

@@ -16,9 +16,17 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
 
-	// EventFormData is a flexible type for form state
+	// Form state fields this step reads/writes. The parent passes a wider event
+	// form object; only these fields are used here.
 	interface EventFormData {
-		[key: string]: any;
+		max_tickets_per_user?: number | null;
+		venue_id?: string | null;
+	}
+
+	// Shape of a validation error item returned by the backend (loc/msg pairs).
+	interface ValidationErrorDetail {
+		loc?: Array<string | number>;
+		msg?: string;
 	}
 
 	interface Props {
@@ -75,6 +83,28 @@
 	let showTierForm = $state(false);
 
 	const tiers = $derived(tiersQuery.data?.data?.results ?? []);
+
+	// Normalize the (dynamically-shaped) query error into the fields the template renders.
+	const tiersErrorInfo = $derived.by(
+		(): {
+			message: string | null;
+			detail: string | ValidationErrorDetail[] | null;
+		} => {
+			const err: unknown = tiersQuery.error;
+			if (!err || typeof err !== 'object') {
+				return { message: null, detail: null };
+			}
+			const obj = err as { message?: unknown; detail?: unknown };
+			const message = typeof obj.message === 'string' ? obj.message : null;
+			let detail: string | ValidationErrorDetail[] | null = null;
+			if (typeof obj.detail === 'string') {
+				detail = obj.detail;
+			} else if (Array.isArray(obj.detail)) {
+				detail = obj.detail as ValidationErrorDetail[];
+			}
+			return { message, detail };
+		}
+	);
 	const membershipTiers = $derived(membershipTiersQuery.data ?? []);
 
 	// --- Tier reordering via up/down buttons ---
@@ -217,18 +247,18 @@
 		<div class="rounded-lg border border-destructive bg-destructive/10 p-4" role="alert">
 			<p class="font-medium text-destructive">{m['ticketingStep.errorLoadingTiers']()}</p>
 			<p class="mt-1 text-sm text-destructive/90">
-				{(tiersQuery.error as any)?.message || m['ticketingStep.genericError']()}
+				{tiersErrorInfo.message || m['ticketingStep.genericError']()}
 			</p>
-			{#if (tiersQuery.error as any)?.detail}
+			{#if tiersErrorInfo.detail}
 				<div class="mt-2 space-y-1">
-					{#if Array.isArray((tiersQuery.error as any).detail)}
-						{#each (tiersQuery.error as any).detail as detail, i (i)}
+					{#if Array.isArray(tiersErrorInfo.detail)}
+						{#each tiersErrorInfo.detail as detail, i (i)}
 							<p class="text-xs text-destructive/80">
 								• {detail.loc ? detail.loc.join(' → ') + ': ' : ''}{detail.msg}
 							</p>
 						{/each}
-					{:else if typeof (tiersQuery.error as any).detail === 'string'}
-						<p class="text-xs text-destructive/80">{(tiersQuery.error as any).detail}</p>
+					{:else}
+						<p class="text-xs text-destructive/80">{tiersErrorInfo.detail}</p>
 					{/if}
 				</div>
 			{/if}

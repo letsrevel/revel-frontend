@@ -79,11 +79,11 @@
 		if (result.length >= 2) return result;
 
 		// Priority 3: Event Type (only if we have room)
-		if ((event.event_type as any) === 'members-only') {
+		if (event.event_type === 'members-only') {
 			result.push({ label: m['eventBadges.membersOnly'](), variant: 'secondary' });
-		} else if ((event.event_type as any) === 'private') {
+		} else if (event.event_type === 'private') {
 			result.push({ label: m['eventBadges.private'](), variant: 'secondary' });
-		} else if ((event.event_type as any) === 'public') {
+		} else if (event.event_type === 'public') {
 			result.push({ label: m['eventBadges.public'](), variant: 'outline' });
 		}
 

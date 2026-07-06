@@ -36,14 +36,14 @@
 	function getCurrentlyAssigned(): string[] {
 		// Check if series has questionnaires field
 		if ('questionnaires' in series && Array.isArray(series.questionnaires)) {
-			return series.questionnaires.map((q: any) => q.id);
+			return series.questionnaires.map((q: { id: string }) => q.id);
 		}
 		// Check if series has organization_questionnaires field
 		if (
 			'organization_questionnaires' in series &&
 			Array.isArray(series.organization_questionnaires)
 		) {
-			return series.organization_questionnaires.map((q: any) => q.id);
+			return series.organization_questionnaires.map((q: { id: string }) => q.id);
 		}
 		return [];
 	}
@@ -137,8 +137,8 @@
 				) {
 					// Remove this series from the list
 					const remainingSeriesIds = questionnaire.event_series
-						.filter((s: any) => s.id !== series.id)
-						.map((s: any) => s.id);
+						.filter((s: { id: string }) => s.id !== series.id)
+						.map((s: { id: string }) => s.id);
 
 					const response = await questionnaireReplaceEventSeries({
 						path: { org_questionnaire_id: questionnaireId },

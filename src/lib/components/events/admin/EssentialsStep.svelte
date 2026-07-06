@@ -571,8 +571,8 @@
 					type="radio"
 					name="event_type"
 					value="public"
-					checked={(formData.event_type as any) === 'public'}
-					onchange={(e) => onUpdate({ event_type: e.currentTarget.value as any })}
+					checked={formData.event_type === 'public'}
+					onchange={() => onUpdate({ event_type: 'public' })}
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
@@ -592,8 +592,8 @@
 					type="radio"
 					name="event_type"
 					value="private"
-					checked={(formData.event_type as any) === 'private'}
-					onchange={(e) => onUpdate({ event_type: e.currentTarget.value as any })}
+					checked={formData.event_type === 'private'}
+					onchange={() => onUpdate({ event_type: 'private' })}
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">
@@ -613,8 +613,8 @@
 					type="radio"
 					name="event_type"
 					value="members-only"
-					checked={(formData.event_type as any) === 'members-only'}
-					onchange={(e) => onUpdate({ event_type: e.currentTarget.value as any })}
+					checked={formData.event_type === 'members-only'}
+					onchange={() => onUpdate({ event_type: 'members-only' })}
 					class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring"
 				/>
 				<div class="flex-1">

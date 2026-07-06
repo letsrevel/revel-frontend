@@ -18,11 +18,9 @@
 
 	// Image URLs with backend URL prepended and fallback to organization
 	// Prefer social preview for card display (1200x630, matches aspect-video ratio)
-	const seriesCoverArtSocialUrl = $derived(getImageUrl((series as any).cover_art_social_url));
+	const seriesCoverArtSocialUrl = $derived(getImageUrl(series.cover_art_social_url));
 	const seriesCoverArtUrl = $derived(getImageUrl(series.cover_art));
-	const orgCoverArtSocialUrl = $derived(
-		getImageUrl((series.organization as any).cover_art_social_url)
-	);
+	const orgCoverArtSocialUrl = $derived(getImageUrl(series.organization.cover_art_social_url));
 	const orgCoverArtUrl = $derived(getImageUrl(series.organization.cover_art));
 	const imageUrl = $derived(
 		!imageError
@@ -30,11 +28,9 @@
 			: null
 	);
 
-	const seriesLogoThumbnailUrl = $derived(getImageUrl((series as any).logo_thumbnail_url));
+	const seriesLogoThumbnailUrl = $derived(getImageUrl(series.logo_thumbnail_url));
 	const seriesLogoUrl = $derived(getImageUrl(series.logo));
-	const orgLogoThumbnailUrl = $derived(
-		getImageUrl((series.organization as any).logo_thumbnail_url)
-	);
+	const orgLogoThumbnailUrl = $derived(getImageUrl(series.organization.logo_thumbnail_url));
 	const orgLogoUrl = $derived(getImageUrl(series.organization.logo));
 	const logoUrl = $derived(
 		seriesLogoThumbnailUrl || seriesLogoUrl || orgLogoThumbnailUrl || orgLogoUrl

@@ -41,8 +41,7 @@
 	}
 
 	// Compute full logo URL - prefer thumbnail for small display sizes
-	const org = $derived(organization as any);
-	const logoUrl = $derived(getImageUrl(org.logo_thumbnail_url || organization.logo));
+	const logoUrl = $derived(getImageUrl(organization.logo_thumbnail_url || organization.logo));
 </script>
 
 <section aria-labelledby="organizer-heading" class={cn('space-y-4', className)}>

@@ -3,6 +3,7 @@
  * The SDK functions handle auth automatically via client configuration
  */
 import { client as generatedClient } from './generated/client.gen';
+import type { ResolvedRequestOptions } from './generated/client';
 import { authStore } from '$lib/stores/auth.svelte';
 import { API_BASE_URL } from '$lib/config/api';
 
@@ -20,7 +21,7 @@ let failedRequestsQueue: Array<{
 	resolve: (value: Response) => void;
 	reject: (error: unknown) => void;
 	request: Request;
-	options: any;
+	options: ResolvedRequestOptions;
 }> = [];
 
 /**

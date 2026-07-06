@@ -375,13 +375,13 @@
 		}
 
 		// Build the data object, omitting null values for pwyc fields
-		const baseData: any = {
+		const baseData: TicketTierCreateSchema = {
 			name: name.trim(),
 			description: description.trim() || null,
 			payment_method: paymentMethod,
 			price_type: priceType,
 			price: finalPrice,
-			currency,
+			currency: currency as TicketTierCreateSchema['currency'],
 			manual_payment_instructions: manualPaymentInstructions.trim() || null,
 			total_quantity: totalQuantity ? parseInt(totalQuantity) : null,
 			sales_start_at: salesStartAt ? toTimezoneAwareISO(salesStartAt) : null,
@@ -429,7 +429,7 @@
 
 		if (!tier) {
 			// Create new tier
-			tierCreateMutation.mutate(baseData as TicketTierCreateSchema);
+			tierCreateMutation.mutate(baseData);
 		} else {
 			// Update existing tier
 			tierUpdateMutation.mutate(baseData as TicketTierUpdateSchema);

@@ -184,8 +184,7 @@
 
 	// Check if user has required membership tier for restricted tickets
 	function checkMembershipTierRestriction(): { allowed: boolean; reason?: string } {
-		// Cast to access restricted_to_membership_tiers (from TicketTierDetailSchema)
-		const restrictedTiers = (tier as any).restricted_to_membership_tiers;
+		const restrictedTiers = tier.restricted_to_membership_tiers;
 
 		// If no restrictions, everyone can access
 		if (!restrictedTiers || restrictedTiers.length === 0) {

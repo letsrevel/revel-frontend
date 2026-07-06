@@ -13,6 +13,93 @@ import type {
 	QuestionnaireSection
 } from './questionnaire-form-types';
 
+// ===== Loose API input shapes =====
+//
+// These interfaces model the API questionnaire data the converters READ. The
+// converters are shared by two callers that feed differently-shaped data:
+// `QuestionnaireResponseSchema` (run-together collection names, string weights)
+// and `QuestionnaireSchema` (underscored names, a subset of fields). Every field
+// is therefore optional and weights accept `string | number` — the converters
+// coerce/fall back per field. The `[key: string]: unknown` index signature both
+// satisfies `normalizeQuestionCollections`'s `Record<string, unknown>` constraint
+// and supports the computed collection-name access below.
+
+/** Collection keys under which questions hang (Django reverse-relation names). */
+type QuestionCollectionKey =
+	| 'multiplechoicequestion_questions'
+	| 'freetextquestion_questions'
+	| 'fileuploadquestion_questions';
+
+/** Loose API multiple-choice option item read by the converters. */
+interface ApiOptionInput {
+	id?: string;
+	option?: string;
+	is_correct?: boolean;
+	[key: string]: unknown;
+}
+
+/** Loose API question item (superset across both schema shapes). */
+interface ApiQuestionInput {
+	id?: string;
+	question?: string;
+	hint?: string | null;
+	reviewer_notes?: string | null;
+	is_mandatory?: boolean;
+	order?: number;
+	positive_weight?: string | number | null;
+	negative_weight?: string | number | null;
+	is_fatal?: boolean;
+	allow_multiple_answers?: boolean;
+	shuffle_options?: boolean;
+	llm_guidelines?: string | null;
+	allowed_mime_types?: string[];
+	max_file_size?: number;
+	max_files?: number;
+	depends_on_option_id?: string | null;
+	options?: ApiOptionInput[];
+	[key: string]: unknown;
+}
+
+/** Loose API section item read by the converters. */
+interface ApiSectionInput {
+	id?: string;
+	name?: string;
+	description?: string | null;
+	order?: number;
+	depends_on_option_id?: string | null;
+	multiplechoicequestion_questions?: ApiQuestionInput[];
+	freetextquestion_questions?: ApiQuestionInput[];
+	fileuploadquestion_questions?: ApiQuestionInput[];
+	[key: string]: unknown;
+}
+
+/** Loose API questionnaire body read by `initializeFromApiData`. */
+interface ApiQuestionnaireInput {
+	name?: string;
+	min_score?: string | number | null;
+	evaluation_mode?: string;
+	shuffle_questions?: boolean;
+	shuffle_sections?: boolean;
+	llm_guidelines?: string | null;
+	can_retake_after?: unknown;
+	max_attempts?: number;
+	sections?: ApiSectionInput[];
+	multiplechoicequestion_questions?: ApiQuestionInput[];
+	freetextquestion_questions?: ApiQuestionInput[];
+	fileuploadquestion_questions?: ApiQuestionInput[];
+	[key: string]: unknown;
+}
+
+/** Loose org-questionnaire wrapper read by `initializeFromApiData`. */
+interface ApiOrgQuestionnaireInput {
+	questionnaire_type?: 'admission' | 'membership' | 'feedback' | 'generic';
+	members_exempt?: boolean;
+	per_event?: boolean;
+	requires_evaluation?: boolean;
+	max_submission_age?: unknown;
+	[key: string]: unknown;
+}
+
 // ===== Timedelta Parsing Helpers =====
 
 /**
@@ -61,7 +148,7 @@ function parseTimedeltaToDays(value: unknown): number | null {
 // ===== API → Local Converters =====
 
 /** Convert an API option to local format. */
-export function convertApiOption(apiOption: any): QuestionnaireOption {
+export function convertApiOption(apiOption: ApiOptionInput): QuestionnaireOption {
 	return {
 		id: crypto.randomUUID(),
 		text: apiOption.option || '',
@@ -74,7 +161,7 @@ export function convertApiOption(apiOption: any): QuestionnaireOption {
 
 /** Convert an API MC question to local format. */
 export function convertApiMcQuestion(
-	apiQuestion: any,
+	apiQuestion: ApiQuestionInput,
 	fallbackOrder: number
 ): QuestionnaireQuestion {
 	return {
@@ -85,8 +172,8 @@ export function convertApiMcQuestion(
 		reviewerNotes: apiQuestion.reviewer_notes || undefined,
 		required: apiQuestion.is_mandatory ?? true,
 		order: apiQuestion.order ?? fallbackOrder,
-		positiveWeight: apiQuestion.positive_weight ?? 1.0,
-		negativeWeight: apiQuestion.negative_weight ?? 0.0,
+		positiveWeight: Number(apiQuestion.positive_weight ?? 1.0),
+		negativeWeight: Number(apiQuestion.negative_weight ?? 0.0),
 		isFatal: apiQuestion.is_fatal ?? false,
 		allowMultipleAnswers: apiQuestion.allow_multiple_answers ?? false,
 		shuffleOptions: apiQuestion.shuffle_options ?? true,
@@ -97,7 +184,7 @@ export function convertApiMcQuestion(
 
 /** Convert an API FT question to local format. */
 export function convertApiFtQuestion(
-	apiQuestion: any,
+	apiQuestion: ApiQuestionInput,
 	fallbackOrder: number
 ): QuestionnaireQuestion {
 	return {
@@ -108,8 +195,8 @@ export function convertApiFtQuestion(
 		reviewerNotes: apiQuestion.reviewer_notes || undefined,
 		required: apiQuestion.is_mandatory ?? true,
 		order: apiQuestion.order ?? fallbackOrder,
-		positiveWeight: apiQuestion.positive_weight ?? 1.0,
-		negativeWeight: apiQuestion.negative_weight ?? 0.0,
+		positiveWeight: Number(apiQuestion.positive_weight ?? 1.0),
+		negativeWeight: Number(apiQuestion.negative_weight ?? 0.0),
 		isFatal: apiQuestion.is_fatal ?? false,
 		llmGuidelines: apiQuestion.llm_guidelines || undefined,
 		_apiId: apiQuestion.id
@@ -118,7 +205,7 @@ export function convertApiFtQuestion(
 
 /** Convert an API FU question to local format. */
 export function convertApiFuQuestion(
-	apiQuestion: any,
+	apiQuestion: ApiQuestionInput,
 	fallbackOrder: number
 ): QuestionnaireQuestion {
 	return {
@@ -129,8 +216,8 @@ export function convertApiFuQuestion(
 		reviewerNotes: apiQuestion.reviewer_notes || undefined,
 		required: apiQuestion.is_mandatory ?? true,
 		order: apiQuestion.order ?? fallbackOrder,
-		positiveWeight: parseFloat(apiQuestion.positive_weight) || 1.0,
-		negativeWeight: parseFloat(apiQuestion.negative_weight) || 0.0,
+		positiveWeight: parseFloat(String(apiQuestion.positive_weight ?? '')) || 1.0,
+		negativeWeight: parseFloat(String(apiQuestion.negative_weight ?? '')) || 0.0,
 		isFatal: apiQuestion.is_fatal ?? false,
 		allowedMimeTypes: apiQuestion.allowed_mime_types || ['*/*'],
 		maxFileSize: apiQuestion.max_file_size || 10 * 1024 * 1024,
@@ -144,20 +231,18 @@ export function convertApiFuQuestion(
  * @param conditionalQuestionIds - IDs of questions to exclude (they belong to option conditionals)
  */
 export function convertApiSection(
-	apiSection: any,
+	apiSection: ApiSectionInput,
 	conditionalQuestionIds?: Set<string>
 ): QuestionnaireSection {
 	const mcQuestions = (apiSection.multiplechoicequestion_questions || [])
-		.filter((apiQ: any) => !conditionalQuestionIds?.has(apiQ.id))
-		.map((apiQ: any, i: number) => convertApiMcQuestion(apiQ, apiQ.order ?? i));
+		.filter((apiQ) => !conditionalQuestionIds?.has(apiQ.id ?? ''))
+		.map((apiQ, i: number) => convertApiMcQuestion(apiQ, apiQ.order ?? i));
 	const ftQuestions = (apiSection.freetextquestion_questions || [])
-		.filter((apiQ: any) => !conditionalQuestionIds?.has(apiQ.id))
-		.map((apiQ: any, i: number) =>
-			convertApiFtQuestion(apiQ, apiQ.order ?? mcQuestions.length + i)
-		);
+		.filter((apiQ) => !conditionalQuestionIds?.has(apiQ.id ?? ''))
+		.map((apiQ, i: number) => convertApiFtQuestion(apiQ, apiQ.order ?? mcQuestions.length + i));
 	const fuQuestions = (apiSection.fileuploadquestion_questions || [])
-		.filter((apiQ: any) => !conditionalQuestionIds?.has(apiQ.id))
-		.map((apiQ: any, i: number) =>
+		.filter((apiQ) => !conditionalQuestionIds?.has(apiQ.id ?? ''))
+		.map((apiQ, i: number) =>
 			convertApiFuQuestion(apiQ, apiQ.order ?? mcQuestions.length + ftQuestions.length + i)
 		);
 
@@ -223,14 +308,15 @@ export function normalizeQuestionCollections<T extends Record<string, unknown>>(
  * @param questionnaire - The org-questionnaire wrapper (has `questionnaire_type`, etc.)
  * @param q - The inner questionnaire object (has sections, questions, etc.)
  */
-export function initializeFromApiData(questionnaire: any, rawQ: any): InitFromApiResult {
+export function initializeFromApiData(
+	questionnaire: ApiOrgQuestionnaireInput,
+	rawQ: ApiQuestionnaireInput
+): InitFromApiResult {
 	// Accept both QuestionnaireResponseSchema (run-together collection names)
 	// and QuestionnaireSchema (underscored). Normalize top-level + each section
 	// up-front so every downstream read of `*question_questions` resolves.
 	const q = normalizeQuestionCollections(rawQ);
-	q.sections = (rawQ.sections || []).map((s: Record<string, unknown>) =>
-		normalizeQuestionCollections(s)
-	);
+	q.sections = (rawQ.sections || []).map((s) => normalizeQuestionCollections(s));
 
 	// Basic info
 	const name = q.name || '';
@@ -268,43 +354,49 @@ export function initializeFromApiData(questionnaire: any, rawQ: any): InitFromAp
 	const conditionalSectionIds = new Set<string>();
 
 	for (const mcq of q.multiplechoicequestion_questions || []) {
-		if (mcq.depends_on_option_id) conditionalQuestionIds.add(mcq.id);
+		if (mcq.depends_on_option_id) conditionalQuestionIds.add(mcq.id ?? '');
 	}
 	for (const ftq of q.freetextquestion_questions || []) {
-		if (ftq.depends_on_option_id) conditionalQuestionIds.add(ftq.id);
+		if (ftq.depends_on_option_id) conditionalQuestionIds.add(ftq.id ?? '');
 	}
 	for (const fuq of q.fileuploadquestion_questions || []) {
-		if (fuq.depends_on_option_id) conditionalQuestionIds.add(fuq.id);
+		if (fuq.depends_on_option_id) conditionalQuestionIds.add(fuq.id ?? '');
 	}
 	for (const apiSection of q.sections || []) {
-		if (apiSection.depends_on_option_id) conditionalSectionIds.add(apiSection.id);
+		if (apiSection.depends_on_option_id) conditionalSectionIds.add(apiSection.id ?? '');
 		for (const mcq of apiSection.multiplechoicequestion_questions || []) {
-			if (mcq.depends_on_option_id) conditionalQuestionIds.add(mcq.id);
+			if (mcq.depends_on_option_id) conditionalQuestionIds.add(mcq.id ?? '');
 		}
 		for (const ftq of apiSection.freetextquestion_questions || []) {
-			if (ftq.depends_on_option_id) conditionalQuestionIds.add(ftq.id);
+			if (ftq.depends_on_option_id) conditionalQuestionIds.add(ftq.id ?? '');
 		}
 		for (const fuq of apiSection.fileuploadquestion_questions || []) {
-			if (fuq.depends_on_option_id) conditionalQuestionIds.add(fuq.id);
+			if (fuq.depends_on_option_id) conditionalQuestionIds.add(fuq.id ?? '');
 		}
 	}
 
 	// ===== Step 3: Convert top-level questions (excluding section/conditional) =====
 	const topMc = (q.multiplechoicequestion_questions || [])
-		.filter((apiQ: any) => !sectionQuestionIds.has(apiQ.id) && !conditionalQuestionIds.has(apiQ.id))
-		.map((apiQ: any) => convertApiMcQuestion(apiQ, apiQ.order ?? 0));
+		.filter(
+			(apiQ) => !sectionQuestionIds.has(apiQ.id ?? '') && !conditionalQuestionIds.has(apiQ.id ?? '')
+		)
+		.map((apiQ) => convertApiMcQuestion(apiQ, apiQ.order ?? 0));
 	const topFt = (q.freetextquestion_questions || [])
-		.filter((apiQ: any) => !sectionQuestionIds.has(apiQ.id) && !conditionalQuestionIds.has(apiQ.id))
-		.map((apiQ: any) => convertApiFtQuestion(apiQ, apiQ.order ?? 0));
+		.filter(
+			(apiQ) => !sectionQuestionIds.has(apiQ.id ?? '') && !conditionalQuestionIds.has(apiQ.id ?? '')
+		)
+		.map((apiQ) => convertApiFtQuestion(apiQ, apiQ.order ?? 0));
 	const topFu = (q.fileuploadquestion_questions || [])
-		.filter((apiQ: any) => !sectionQuestionIds.has(apiQ.id) && !conditionalQuestionIds.has(apiQ.id))
-		.map((apiQ: any) => convertApiFuQuestion(apiQ, apiQ.order ?? 0));
+		.filter(
+			(apiQ) => !sectionQuestionIds.has(apiQ.id ?? '') && !conditionalQuestionIds.has(apiQ.id ?? '')
+		)
+		.map((apiQ) => convertApiFuQuestion(apiQ, apiQ.order ?? 0));
 	const topLevelQuestions = [...topMc, ...topFt, ...topFu].sort((a, b) => a.order - b.order);
 
 	// ===== Step 4: Convert sections (excluding conditional sections) =====
 	const sections = (q.sections || [])
-		.filter((apiSection: any) => !conditionalSectionIds.has(apiSection.id))
-		.map((apiSection: any) => convertApiSection(apiSection, conditionalQuestionIds))
+		.filter((apiSection) => !conditionalSectionIds.has(apiSection.id ?? ''))
+		.map((apiSection) => convertApiSection(apiSection, conditionalQuestionIds))
 		.sort((a: QuestionnaireSection, b: QuestionnaireSection) => a.order - b.order);
 
 	// ===== Step 5: Build option map for attaching conditional content =====
@@ -328,14 +420,12 @@ export function initializeFromApiData(questionnaire: any, rawQ: any): InitFromAp
 	}
 
 	// ===== Step 6: Attach conditional questions/sections to parent options =====
-	function attachConditionalQuestion(apiQ: any, type: 'mc' | 'ft' | 'fu') {
-		if (!apiQ.depends_on_option_id || !conditionalQuestionIds.has(apiQ.id)) return;
+	function attachConditionalQuestion(apiQ: ApiQuestionInput, type: 'mc' | 'ft' | 'fu') {
+		if (!apiQ.depends_on_option_id || !conditionalQuestionIds.has(apiQ.id ?? '')) return;
 
 		const parentOption = optionMap.get(apiQ.depends_on_option_id);
 		if (parentOption) {
-			const existingIds = new Set(
-				parentOption.conditionalQuestions?.map((cq: QuestionnaireQuestion) => cq._apiId) || []
-			);
+			const existingIds = new Set(parentOption.conditionalQuestions?.map((cq) => cq._apiId) || []);
 			if (existingIds.has(apiQ.id)) return;
 
 			let convertedQ: QuestionnaireQuestion;
@@ -358,7 +448,7 @@ export function initializeFromApiData(questionnaire: any, rawQ: any): InitFromAp
 	}
 
 	// Conditional questions (MC / FT / FU), both top-level and inside sections.
-	const conditionalCollections: [string, 'mc' | 'ft' | 'fu'][] = [
+	const conditionalCollections: [QuestionCollectionKey, 'mc' | 'ft' | 'fu'][] = [
 		['multiplechoicequestion_questions', 'mc'],
 		['freetextquestion_questions', 'ft'],
 		['fileuploadquestion_questions', 'fu']
@@ -376,7 +466,7 @@ export function initializeFromApiData(questionnaire: any, rawQ: any): InitFromAp
 
 	// Conditional sections
 	for (const apiSection of q.sections || []) {
-		if (apiSection.depends_on_option_id && conditionalSectionIds.has(apiSection.id)) {
+		if (apiSection.depends_on_option_id && conditionalSectionIds.has(apiSection.id ?? '')) {
 			const parentOption = optionMap.get(apiSection.depends_on_option_id);
 			if (parentOption) {
 				const convertedSection: QuestionnaireConditionalSection = {
@@ -387,14 +477,14 @@ export function initializeFromApiData(questionnaire: any, rawQ: any): InitFromAp
 					questions: []
 				};
 				const sectionMc = (apiSection.multiplechoicequestion_questions || [])
-					.filter((mcq: any) => !mcq.depends_on_option_id)
-					.map((mcq: any) => convertApiMcQuestion(mcq, mcq.order ?? 0));
+					.filter((mcq) => !mcq.depends_on_option_id)
+					.map((mcq) => convertApiMcQuestion(mcq, mcq.order ?? 0));
 				const sectionFt = (apiSection.freetextquestion_questions || [])
-					.filter((ftq: any) => !ftq.depends_on_option_id)
-					.map((ftq: any) => convertApiFtQuestion(ftq, ftq.order ?? 0));
+					.filter((ftq) => !ftq.depends_on_option_id)
+					.map((ftq) => convertApiFtQuestion(ftq, ftq.order ?? 0));
 				const sectionFu = (apiSection.fileuploadquestion_questions || [])
-					.filter((fuq: any) => !fuq.depends_on_option_id)
-					.map((fuq: any) => convertApiFuQuestion(fuq, fuq.order ?? 0));
+					.filter((fuq) => !fuq.depends_on_option_id)
+					.map((fuq) => convertApiFuQuestion(fuq, fuq.order ?? 0));
 				convertedSection.questions = [...sectionMc, ...sectionFt, ...sectionFu].sort(
 					(a, b) => a.order - b.order
 				);

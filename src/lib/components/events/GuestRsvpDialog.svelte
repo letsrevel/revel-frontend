@@ -14,6 +14,7 @@
 	import { RadioGroup, RadioGroupItem } from '$lib/components/ui/radio-group';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { UserPlus, CheckCircle2, AlertCircle } from '@lucide/svelte';
+	import { z } from 'zod';
 	import { guestRsvpSchema, type GuestRsvpData } from '$lib/schemas/guestAttendance';
 	import { eventpublicguestGuestRsvp } from '$lib/api';
 	import { handleGuestAttendanceError } from '$lib/utils/guestAttendance';
@@ -83,8 +84,8 @@
 			const fieldSchema = guestRsvpSchema.shape[field];
 			fieldSchema.parse(formData[field]);
 			fieldErrors[field] = '';
-		} catch (error: any) {
-			if (error.errors && error.errors.length > 0) {
+		} catch (error) {
+			if (error instanceof z.ZodError && error.errors.length > 0) {
 				fieldErrors[field] = error.errors[0].message;
 			}
 		}
@@ -103,9 +104,9 @@
 		try {
 			guestRsvpSchema.parse(formData);
 			return true;
-		} catch (error: any) {
-			if (error.errors) {
-				error.errors.forEach((err: any) => {
+		} catch (error) {
+			if (error instanceof z.ZodError) {
+				error.errors.forEach((err) => {
 					const field = err.path[0] as keyof GuestRsvpData;
 					if (!fieldErrors[field]) {
 						fieldErrors[field] = err.message;
@@ -135,14 +136,25 @@
 
 			// Check for API error (400, 422, etc.) - client doesn't throw on HTTP errors
 			if (response.error) {
-				const err = response.error as any;
+				// The runtime error payload can carry eligibility fields (next_step, reason)
+				// that are not part of the declared ResponseMessage type, so narrow from unknown.
+				const err: unknown = response.error;
+				const nextStep =
+					typeof err === 'object' && err !== null && 'next_step' in err ? err.next_step : undefined;
+				const detail =
+					typeof err === 'object' && err !== null && 'detail' in err ? err.detail : undefined;
+				const reason =
+					typeof err === 'object' && err !== null && 'reason' in err ? err.reason : undefined;
 
 				// Check for eligibility response with next_step
-				if (err?.next_step && !GUEST_COMPATIBLE_STEPS.has(err.next_step)) {
+				if (typeof nextStep === 'string' && !GUEST_COMPATIBLE_STEPS.has(nextStep)) {
 					requiresAccount = true;
 				}
 
-				const errorDetail = err?.detail || err?.reason || m['guestRsvpDialog.failedToSubmit']();
+				const errorDetail =
+					(typeof detail === 'string' && detail) ||
+					(typeof reason === 'string' && reason) ||
+					m['guestRsvpDialog.failedToSubmit']();
 				throw new Error(
 					typeof errorDetail === 'string' ? errorDetail : m['guestRsvpDialog.failedToSubmit']()
 				);
@@ -151,7 +163,7 @@
 			// Success - show confirmation message
 			showSuccess = true;
 			onSuccess?.();
-		} catch (error: any) {
+		} catch (error) {
 			errorMessage = handleGuestAttendanceError(error);
 		} finally {
 			isSubmitting = false;

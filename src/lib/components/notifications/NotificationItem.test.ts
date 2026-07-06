@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import NotificationItem from './NotificationItem.svelte';
 import type { NotificationSchema } from '$lib/api/generated/types.gen';
+import type { Component } from 'svelte';
 import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
 
 // Mock the API functions
@@ -42,7 +43,7 @@ function createMockNotification(overrides?: Partial<NotificationSchema>): Notifi
 }
 
 // Helper to render with QueryClient
-function renderWithQuery(component: any, props: any) {
+function renderWithQuery(component: Component, props: Record<string, unknown>) {
 	const queryClient = new QueryClient({
 		defaultOptions: {
 			queries: { retry: false },
@@ -281,7 +282,7 @@ describe('NotificationItem', () => {
 		const { toast } = await import('svelte-sonner');
 
 		// Mock API to fail
-		(notificationMarkRead as any).mockRejectedValueOnce(new Error('Network error'));
+		vi.mocked(notificationMarkRead).mockRejectedValueOnce(new Error('Network error'));
 
 		renderWithQuery(NotificationItem, {
 			notification,

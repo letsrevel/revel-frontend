@@ -160,7 +160,7 @@
 			class="group -mt-8 inline-flex items-center gap-3 rounded-lg bg-background p-3 shadow-lg ring-1 ring-border transition-all hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 		>
 			{#if event.organization.logo}
-				{@const org = event.organization as any}
+				{@const org = event.organization}
 				<img
 					src={getImageUrl(org.logo_thumbnail_url || event.organization.logo) || ''}
 					alt={m['eventHeader.organizationLogoAlt']({ name: event.organization.name })}

@@ -13,7 +13,7 @@ describe('ImageUploader', () => {
 	beforeEach(() => {
 		global.FileReader = class FileReader {
 			readAsDataURL = vi.fn();
-			onloadend: ((this: FileReader, ev: ProgressEvent) => any) | null = null;
+			onloadend: ((this: FileReader, ev: ProgressEvent) => void) | null = null;
 			result: string | ArrayBuffer | null = 'data:image/png;base64,test';
 
 			constructor() {
@@ -23,7 +23,7 @@ describe('ImageUploader', () => {
 					}
 				}, 0);
 			}
-		} as any;
+		} as typeof FileReader;
 	});
 
 	it('renders with label', () => {
