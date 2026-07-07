@@ -43,11 +43,9 @@
 		userCity?: CitySchema | null;
 		orgCity?: CitySchema | null;
 		eventSeries?: EventSeriesRetrieveSchema[];
-		questionnaires?: Array<{ id: string; [key: string]: unknown }>;
 	}
 
 	const { organization, existingEvent, userCity, orgCity, eventSeries = [] }: Props = $props();
-	// questionnaires prop exists but is not currently used
 
 	const queryClient = useQueryClient();
 

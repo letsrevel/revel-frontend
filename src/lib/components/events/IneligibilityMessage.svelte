@@ -24,7 +24,6 @@
 		eligibility: EventUserEligibility;
 		eventId: string;
 		eventSlug: string;
-		eventName: string;
 		organizationSlug: string;
 		organizationName: string;
 		eventTokenDetails?: EventTokenSchema | null;
@@ -369,7 +368,6 @@
     eligibility={eligibilityStatus}
     eventId={event.id}
     eventSlug={event.slug}
-    eventName={event.name}
     organizationSlug={event.organization.slug}
     organizationName={event.organization.name}
   />

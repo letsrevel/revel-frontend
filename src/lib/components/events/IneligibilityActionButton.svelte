@@ -35,7 +35,6 @@
 		organizationSlug: string;
 		organizationName?: string;
 		questionnaireIds?: string[] | null;
-		retryOn?: string | null;
 		disabled?: boolean;
 		eventName?: string;
 		eventTokenDetails?: EventTokenSchema | null;

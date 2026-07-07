@@ -15,13 +15,9 @@
 	import EmailTagInput from '$lib/components/forms/EmailTagInput.svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 
+	// Only totalCount is read here; callers pass wider pagination objects.
 	interface Pagination {
-		page: number;
-		pageSize: number;
 		totalCount: number;
-		totalPages: number;
-		hasNext: boolean;
-		hasPrev: boolean;
 	}
 
 	interface Props {

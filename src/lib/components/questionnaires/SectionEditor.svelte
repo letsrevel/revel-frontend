@@ -35,7 +35,6 @@
 		id: string;
 		name: string;
 		description?: string;
-		order: number;
 		questions: Question[];
 	}
 

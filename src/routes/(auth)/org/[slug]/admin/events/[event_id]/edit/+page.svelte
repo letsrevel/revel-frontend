@@ -388,7 +388,6 @@
 			userCity={data.userCity}
 			orgCity={data.orgCity}
 			eventSeries={data.eventSeries}
-			questionnaires={data.questionnaires}
 			initialTab={($page.url.searchParams.get('tab') as 'details' | 'ticketing') ?? undefined}
 		/>
 	</div>

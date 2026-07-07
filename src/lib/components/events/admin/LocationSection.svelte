@@ -20,7 +20,6 @@
 	interface Props {
 		formData: {
 			venue_id?: string | null;
-			city_id?: number | null;
 			address?: string | null;
 			address_visibility?: ResourceVisibility;
 			location_maps_url?: string | null;

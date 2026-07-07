@@ -53,7 +53,6 @@
 		userCity?: CitySchema | null;
 		orgCity?: CitySchema | null;
 		eventSeries?: EventSeriesRetrieveSchema[];
-		questionnaires?: Array<{ id: string; [key: string]: unknown }>;
 		initialTab?: 'details' | 'ticketing';
 		/** Optional `start` datetime to seed the form with (create mode only).
 		 *  Used by the ExdatesChipList "Create one-off event for this date"
