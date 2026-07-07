@@ -2,41 +2,21 @@
 	import { invalidateAll } from '$app/navigation';
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
-	import {
-		Card,
-		CardContent,
-		CardDescription,
-		CardHeader,
-		CardTitle
-	} from '$lib/components/ui/card';
-	import {
-		ArrowLeft,
-		FileEdit,
-		CalendarCheck,
-		Calendar,
-		Plus,
-		FolderPlus,
-		Pencil,
-		Upload
-	} from '@lucide/svelte';
+	import { Card, CardContent } from '$lib/components/ui/card';
+	import { ArrowLeft, FileEdit, Pencil } from '@lucide/svelte';
 	import QuestionnaireAssignmentModal from '$lib/components/questionnaires/QuestionnaireAssignmentModal.svelte';
 	import DuplicateQuestionnaireModal from '$lib/components/questionnaires/DuplicateQuestionnaireModal.svelte';
 	import QuestionnaireStatusBar from '$lib/components/questionnaires/QuestionnaireStatusBar.svelte';
 	import QuestionnaireFormFields from '$lib/components/questionnaires/QuestionnaireFormFields.svelte';
-	import QuestionnaireReadOnlyView from '$lib/components/questionnaires/QuestionnaireReadOnlyView.svelte';
-	import QuestionEditor from '$lib/components/questionnaires/QuestionEditor.svelte';
-	import SectionEditor from '$lib/components/questionnaires/SectionEditor.svelte';
+	import QuestionnaireEditAssignments from '$lib/components/questionnaires/QuestionnaireEditAssignments.svelte';
+	import QuestionnaireEditQuestionsCard from '$lib/components/questionnaires/QuestionnaireEditQuestionsCard.svelte';
 	import { questionnaireUpdateQuestionnaireStatus } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { formatDate } from '$lib/utils/date';
 	import type { PageData } from './$types';
 	import type {
-		MinimalEventSchema,
-		MinimalEventSeriesSchema,
 		QuestionnaireEvaluationMode,
 		QuestionnaireStatus
 	} from '$lib/api/generated/types.gen';
-	import { Badge } from '$lib/components/ui/badge';
 	import { QuestionnaireBuilder } from '$lib/utils/questionnaire-builder.svelte';
 	import {
 		initializeFromApiData,
@@ -48,20 +28,6 @@
 	}
 
 	const { data }: Props = $props();
-
-	// `event_type` / `event_count` are not part of the generated
-	// MinimalEventSchema / MinimalEventSeriesSchema, so the API never sends
-	// them here and these have always rendered empty / 0 (see report). Read
-	// them defensively so they light up if the backend ever adds the fields.
-	function getEventTypeLabel(event: MinimalEventSchema): string {
-		return 'event_type' in event && typeof event.event_type === 'string' ? event.event_type : '';
-	}
-
-	function getSeriesEventCount(series: MinimalEventSeriesSchema): number | undefined {
-		return 'event_count' in series && typeof series.event_count === 'number'
-			? series.event_count
-			: undefined;
-	}
 
 	// ===== Load and Convert Data =====
 
@@ -424,305 +390,18 @@
 		/>
 
 		<!-- Event Assignments -->
-		<Card>
-			<CardHeader>
-				<div class="flex items-center justify-between">
-					<div>
-						<CardTitle>{m['questionnaireEditPage.assignments.title']()}</CardTitle>
-						<CardDescription>{m['questionnaireEditPage.assignments.description']()}</CardDescription
-						>
-					</div>
-					<Button
-						variant="outline"
-						size="sm"
-						onclick={() => (isAssignmentModalOpen = true)}
-						class="gap-2"
-					>
-						<CalendarCheck class="h-4 w-4" />
-						{m['questionnaireEditPage.manageAssignments']()}
-					</Button>
-				</div>
-			</CardHeader>
-			<CardContent>
-				{#if (questionnaire?.events?.length || 0) === 0 && (questionnaire?.event_series?.length || 0) === 0}
-					<div class="rounded-lg border border-dashed p-8 text-center">
-						<Calendar class="mx-auto mb-2 h-8 w-8 text-muted-foreground" aria-hidden="true" />
-						<p class="text-sm font-medium">
-							{m['questionnaireEditPage.assignments.noAssignments']()}
-						</p>
-						<p class="mt-1 text-xs text-muted-foreground">
-							{m['questionnaireEditPage.assignments.noAssignmentsDescription']()}
-						</p>
-					</div>
-				{:else}
-					<div class="space-y-4">
-						{#if questionnaire?.events && questionnaire.events.length > 0}
-							<div>
-								<h4 class="mb-2 text-sm font-medium">
-									{m['questionnaireEditPage.assignments.individualEventsTitle']()}
-								</h4>
-								<div class="space-y-2">
-									{#each questionnaire.events as event (event.id)}
-										<div class="flex items-center justify-between rounded-lg border p-3">
-											<div>
-												<p class="font-medium">{event.name}</p>
-												{#if event.start}
-													<p class="text-sm text-muted-foreground">
-														{formatDate(event.start)}
-													</p>
-												{/if}
-											</div>
-											<Badge variant="outline">{getEventTypeLabel(event)}</Badge>
-										</div>
-									{/each}
-								</div>
-							</div>
-						{/if}
-
-						{#if questionnaire?.event_series && questionnaire.event_series.length > 0}
-							<div>
-								<h4 class="mb-2 text-sm font-medium">
-									{m['questionnaireEditPage.assignments.eventSeriesTitle']()}
-								</h4>
-								<div class="space-y-2">
-									{#each questionnaire.event_series as series (series.id)}
-										<div class="flex items-center justify-between rounded-lg border p-3">
-											<div>
-												<p class="font-medium">{series.name}</p>
-												<p class="text-sm text-muted-foreground">
-													{getSeriesEventCount(series) === 1
-														? m['questionnaireEditPage.eventCount']({
-																count: getSeriesEventCount(series) || 0
-															})
-														: m['questionnaireEditPage.eventCountPlural']({
-																count: getSeriesEventCount(series) || 0
-															})}
-												</p>
-											</div>
-											<Badge variant="secondary">{m['questionnaireEditPage.seriesBadge']()}</Badge>
-										</div>
-									{/each}
-								</div>
-							</div>
-						{/if}
-					</div>
-				{/if}
-			</CardContent>
-		</Card>
+		<QuestionnaireEditAssignments
+			{questionnaire}
+			onManageAssignments={() => (isAssignmentModalOpen = true)}
+		/>
 
 		<!-- Questions & Sections -->
-		<Card>
-			<CardHeader>
-				<div class="flex items-center justify-between">
-					<div>
-						<CardTitle
-							>{m['questionnaireEditPage.questions.title']()} ({builder.totalQuestionCount})</CardTitle
-						>
-						<CardDescription>{m['questionnaireEditPage.questions.description']()}</CardDescription>
-					</div>
-					{#if canEdit}
-						<div class="flex flex-wrap gap-2">
-							<Button
-								variant="outline"
-								size="sm"
-								onclick={() => builder.addTopLevelQuestion('multiple_choice')}
-								class="gap-2"
-							>
-								<Plus class="h-4 w-4" />
-								{m['questionnaireEditPage.addMultipleChoice']()}
-							</Button>
-							<Button
-								variant="outline"
-								size="sm"
-								onclick={() => builder.addTopLevelQuestion('free_text')}
-								class="gap-2"
-							>
-								<Plus class="h-4 w-4" />
-								{m['questionnaireEditPage.addFreeText']()}
-							</Button>
-							<Button
-								variant="outline"
-								size="sm"
-								onclick={() => builder.addTopLevelQuestion('file_upload')}
-								class="gap-2"
-							>
-								<Upload class="h-4 w-4" />
-								{m['questionnaireEditPage.addFileUpload']()}
-							</Button>
-							<Button
-								variant="secondary"
-								size="sm"
-								onclick={() => builder.addSection()}
-								class="gap-2"
-							>
-								<FolderPlus class="h-4 w-4" />
-								{m['questionnaireEditPage.addSection']()}
-							</Button>
-						</div>
-					{/if}
-				</div>
-			</CardHeader>
-			<CardContent class="space-y-6">
-				{#if builder.totalQuestionCount === 0 && builder.sections.length === 0}
-					<div class="rounded-lg border border-dashed p-8 text-center">
-						<p class="text-sm text-muted-foreground">
-							{m['questionnaireEditPage.questions.empty']()}
-						</p>
-						{#if canEdit}
-							<p class="mt-2 text-sm text-muted-foreground">
-								{m['questionnaireEditPage.clickButtonsHint']()}
-							</p>
-						{/if}
-					</div>
-				{:else if canEdit}
-					<!-- Editable mode - same as create page -->
-					<div class="space-y-4">
-						<h3 class="text-sm font-medium text-muted-foreground">
-							{m['questionnaireEditPage.topLevelQuestionsHeading']({
-								count: builder.topLevelQuestions.length
-							})}
-						</h3>
-						<p class="text-xs text-muted-foreground">
-							{m['questionnaireEditPage.reorderQuestionsHint']()}
-						</p>
-						<div class="space-y-4">
-							{#each builder.topLevelQuestions as question, index (question.id)}
-								<QuestionEditor
-									{question}
-									onUpdate={(updates) => builder.updateTopLevelQuestion(question.id, updates)}
-									onRemove={() => builder.removeTopLevelQuestion(question.id)}
-									onMoveUp={() => builder.moveTopLevelQuestion(index, 'up')}
-									onMoveDown={() => builder.moveTopLevelQuestion(index, 'down')}
-									isFirst={index === 0}
-									isLast={index === builder.topLevelQuestions.length - 1}
-									{showLlmGuidelines}
-								/>
-							{/each}
-						</div>
-
-						{#if builder.topLevelQuestions.length === 0}
-							<div class="rounded-lg border border-dashed p-4 text-center">
-								<p class="text-sm text-muted-foreground">
-									{m['questionnaireEditPage.noTopLevelQuestions']()}
-								</p>
-							</div>
-						{/if}
-
-						{#if builder.topLevelQuestions.length > 0}
-							<div class="flex justify-center gap-2 border-t pt-4">
-								<Button
-									variant="outline"
-									size="sm"
-									onclick={() => builder.addTopLevelQuestion('multiple_choice')}
-									class="gap-2"
-								>
-									<Plus class="h-4 w-4" />
-									{m['questionnaireEditPage.addMultipleChoice']()}
-								</Button>
-								<Button
-									variant="outline"
-									size="sm"
-									onclick={() => builder.addTopLevelQuestion('free_text')}
-									class="gap-2"
-								>
-									<Plus class="h-4 w-4" />
-									{m['questionnaireEditPage.addFreeText']()}
-								</Button>
-							</div>
-						{/if}
-					</div>
-
-					<!-- Sections -->
-					{#if builder.sections.length > 0 || builder.topLevelQuestions.length > 0}
-						<div class="space-y-4">
-							<div class="border-t pt-4">
-								<h3 class="mb-2 text-sm font-medium text-muted-foreground">
-									{m['questionnaireEditPage.sectionsHeading']({ count: builder.sections.length })}
-								</h3>
-								<p class="text-xs text-muted-foreground">
-									{m['questionnaireEditPage.reorderSectionsHint']()}
-								</p>
-							</div>
-							<div class="space-y-4">
-								{#each builder.sections as section, index (section.id)}
-									<SectionEditor
-										{section}
-										onUpdate={(updates) => builder.updateSection(section.id, updates)}
-										onRemove={() => builder.removeSection(section.id)}
-										onMoveUp={() => builder.moveSection(index, 'up')}
-										onMoveDown={() => builder.moveSection(index, 'down')}
-										isFirst={index === 0}
-										isLast={index === builder.sections.length - 1}
-										onAddQuestion={(type) => builder.addQuestionToSection(section.id, type)}
-										onUpdateQuestion={(questionId, updates) =>
-											builder.updateQuestionInSection(section.id, questionId, updates)}
-										onRemoveQuestion={(questionId) =>
-											builder.removeQuestionFromSection(section.id, questionId)}
-										onMoveQuestionUp={(qIndex) =>
-											builder.moveQuestionInSection(section.id, qIndex, 'up')}
-										onMoveQuestionDown={(qIndex) =>
-											builder.moveQuestionInSection(section.id, qIndex, 'down')}
-										{showLlmGuidelines}
-									/>
-								{/each}
-							</div>
-						</div>
-					{/if}
-				{:else}
-					<!-- Read-only mode -->
-					<QuestionnaireReadOnlyView
-						topLevelQuestions={builder.topLevelQuestions}
-						sections={builder.sections}
-					/>
-				{/if}
-
-				{#if errors.questions}
-					<p class="mt-4 text-sm text-destructive">{errors.questions}</p>
-				{/if}
-
-				<!-- Bottom action bar (only in edit mode) -->
-				{#if canEdit && (builder.totalQuestionCount > 0 || builder.sections.length > 0)}
-					<div class="flex justify-center gap-2 border-t pt-4">
-						<Button
-							variant="outline"
-							size="sm"
-							onclick={() => builder.addTopLevelQuestion('multiple_choice')}
-							class="gap-2"
-						>
-							<Plus class="h-4 w-4" />
-							{m['questionnaireEditPage.addMultipleChoice']()}
-						</Button>
-						<Button
-							variant="outline"
-							size="sm"
-							onclick={() => builder.addTopLevelQuestion('free_text')}
-							class="gap-2"
-						>
-							<Plus class="h-4 w-4" />
-							{m['questionnaireEditPage.addFreeText']()}
-						</Button>
-						<Button
-							variant="outline"
-							size="sm"
-							onclick={() => builder.addTopLevelQuestion('file_upload')}
-							class="gap-2"
-						>
-							<Upload class="h-4 w-4" />
-							{m['questionnaireEditPage.addFileUpload']()}
-						</Button>
-						<Button
-							variant="secondary"
-							size="sm"
-							onclick={() => builder.addSection()}
-							class="gap-2"
-						>
-							<FolderPlus class="h-4 w-4" />
-							{m['questionnaireEditPage.addSection']()}
-						</Button>
-					</div>
-				{/if}
-			</CardContent>
-		</Card>
+		<QuestionnaireEditQuestionsCard
+			{builder}
+			{canEdit}
+			{showLlmGuidelines}
+			questionsError={errors.questions}
+		/>
 
 		<!-- Error Display -->
 		{#if saveError}
