@@ -4,18 +4,17 @@
 	import {
 		organizationadmincoreCreateEvent,
 		eventadmincoreUpdateEvent,
-		eventadmincoreUploadLogo,
-		eventadmincoreUploadCoverArt,
-		eventadmincoreDeleteLogo,
-		eventadmincoreDeleteCoverArt,
 		eventpublicdetailsListResources,
-		organizationadminresourcesGetResource,
-		organizationadminresourcesUpdateResource,
-		questionnaireListOrgQuestionnaires,
-		eventadmincoreAddTags,
-		eventadmincoreRemoveTags
+		questionnaireListOrgQuestionnaires
 	} from '$lib/api/generated/sdk.gen';
 	import { toDateTimeLocal, toISOString } from '$lib/utils/datetime';
+	import { saveResourceAssociations, saveTagAssociations } from './event-associations';
+	import { createEventImageMutations } from './event-image-mutations.svelte';
+	import {
+		buildEventCreateData,
+		buildWizardStep1UpdateData,
+		buildWizardStep2UpdateData
+	} from './event-payload';
 	import type {
 		EventCreateSchema,
 		EventEditSchema,
@@ -254,171 +253,9 @@
 		}
 	}));
 
-	// Upload logo mutation
-	const uploadLogoMutation = createMutation(() => ({
-		mutationFn: async ({ id, file }: { id: string; file: File }) => {
-			const response = await eventadmincoreUploadLogo({
-				path: { event_id: id },
-				body: { logo: file }
-			});
-
-			if (!response.data) {
-				throw new Error(m['eventWizard.error_failedToUploadLogo']());
-			}
-
-			return response.data;
-		}
-	}));
-
-	// Upload cover art mutation
-	const uploadCoverArtMutation = createMutation(() => ({
-		mutationFn: async ({ id, file }: { id: string; file: File }) => {
-			const response = await eventadmincoreUploadCoverArt({
-				path: { event_id: id },
-				body: { cover_art: file }
-			});
-
-			if (!response.data) {
-				throw new Error(m['eventWizard.error_failedToUploadCoverArt']());
-			}
-
-			return response.data;
-		}
-	}));
-
-	// Delete logo mutation
-	const deleteLogoMutation = createMutation(() => ({
-		mutationFn: async (id: string) => {
-			const response = await eventadmincoreDeleteLogo({
-				path: { event_id: id }
-			});
-
-			if (response.error) {
-				throw new Error(m['eventWizard.error_failedToDeleteLogo']());
-			}
-
-			return response.data;
-		}
-	}));
-
-	// Delete cover art mutation
-	const deleteCoverArtMutation = createMutation(() => ({
-		mutationFn: async (id: string) => {
-			const response = await eventadmincoreDeleteCoverArt({
-				path: { event_id: id }
-			});
-
-			if (response.error) {
-				throw new Error(m['eventWizard.error_failedToDeleteCoverArt']());
-			}
-
-			return response.data;
-		}
-	}));
-
-	/**
-	 * Save resource associations for the event
-	 * Updates resources to add/remove the event ID from their event_ids array
-	 */
-	async function saveResourceAssociations(currentEventId: string): Promise<void> {
-		// Determine which resources were added and removed
-		const addedResourceIds = selectedResourceIds.filter((id) => !initialResourceIds.includes(id));
-		const removedResourceIds = initialResourceIds.filter((id) => !selectedResourceIds.includes(id));
-
-		// Update all affected resources
-		const updatePromises: Promise<unknown>[] = [];
-
-		// Add event to newly selected resources
-		for (const resourceId of addedResourceIds) {
-			const promise = (async () => {
-				// Fetch current resource state
-				const resourceResponse = await organizationadminresourcesGetResource({
-					path: {
-						slug: organization.slug,
-						resource_id: resourceId
-					}
-				});
-
-				if (resourceResponse.data) {
-					const currentEventIds = resourceResponse.data.event_ids || [];
-					// Add this event if not already present
-					if (!currentEventIds.includes(currentEventId)) {
-						await organizationadminresourcesUpdateResource({
-							path: {
-								slug: organization.slug,
-								resource_id: resourceId
-							},
-							body: {
-								event_ids: [...currentEventIds, currentEventId]
-							}
-						});
-					}
-				}
-			})();
-			updatePromises.push(promise);
-		}
-
-		// Remove event from deselected resources
-		for (const resourceId of removedResourceIds) {
-			const promise = (async () => {
-				// Fetch current resource state
-				const resourceResponse = await organizationadminresourcesGetResource({
-					path: {
-						slug: organization.slug,
-						resource_id: resourceId
-					}
-				});
-
-				if (resourceResponse.data) {
-					const currentEventIds = resourceResponse.data.event_ids || [];
-					// Remove this event
-					await organizationadminresourcesUpdateResource({
-						path: {
-							slug: organization.slug,
-							resource_id: resourceId
-						},
-						body: {
-							event_ids: currentEventIds.filter((id) => id !== currentEventId)
-						}
-					});
-				}
-			})();
-			updatePromises.push(promise);
-		}
-
-		// Wait for all updates to complete
-		await Promise.all(updatePromises);
-	}
-
-	/**
-	 * Save tag associations (add/remove tags)
-	 */
-	async function saveTagAssociations(currentEventId: string): Promise<void> {
-		const currentTags = formData.tags || [];
-
-		// Determine which tags were added and removed
-		const addedTags = currentTags.filter((tag) => !initialTags.includes(tag));
-		const removedTags = initialTags.filter((tag) => !currentTags.includes(tag));
-
-		// Add new tags
-		if (addedTags.length > 0) {
-			await eventadmincoreAddTags({
-				path: { event_id: currentEventId },
-				body: { tags: addedTags }
-			});
-		}
-
-		// Remove deleted tags
-		if (removedTags.length > 0) {
-			await eventadmincoreRemoveTags({
-				path: { event_id: currentEventId },
-				body: { tags: removedTags }
-			});
-		}
-
-		// Update initialTags to current state for future comparisons
-		initialTags = [...currentTags];
-	}
+	// Image mutations (upload/delete logo & cover art) — shared factory
+	const { uploadLogoMutation, uploadCoverArtMutation, deleteLogoMutation, deleteCoverArtMutation } =
+		createEventImageMutations();
 
 	/**
 	 * Validate Step 1 (Essentials)
@@ -485,35 +322,7 @@
 
 			if (eventId) {
 				// Update existing event - MUST include ALL fields because backend uses PUT (full replacement)
-				const updateData: Partial<EventEditSchema> = {
-					name: formData.name,
-					start: toISOString(formData.start),
-					city_id: formData.city_id,
-					visibility: formData.visibility || 'public',
-					event_type: formData.event_type || 'public',
-					// Include all other fields to prevent them from being reset
-					description: formData.description || null,
-					end: formData.is_open_ended ? null : toISOString(formData.end),
-					is_open_ended: formData.is_open_ended ?? false,
-					address: formData.address || null,
-					address_visibility: formData.address_visibility || 'public',
-					rsvp_before: toISOString(formData.rsvp_before),
-					max_attendees: formData.max_attendees || undefined,
-					max_tickets_per_user: formData.max_tickets_per_user ?? 1,
-					waitlist_open: formData.waitlist_open || false,
-					invitation_message: formData.invitation_message || null,
-					check_in_starts_at: toISOString(formData.check_in_starts_at),
-					check_in_ends_at: toISOString(formData.check_in_ends_at),
-					potluck_open: formData.potluck_open || false,
-					accept_invitation_requests: formData.accept_invitation_requests || false,
-					apply_before: toISOString(formData.apply_before),
-					can_attend_without_login: formData.can_attend_without_login || false,
-					requires_full_profile: formData.requires_full_profile || false,
-					event_series_id: formData.event_series_id || null,
-					venue_id: formData.venue_id || null,
-					location_maps_url: formData.location_maps_url || null,
-					location_maps_embed: formData.location_maps_embed || null
-				};
+				const updateData = buildWizardStep1UpdateData(formData);
 				await updateEventMutation.mutateAsync({ id: eventId, data: updateData });
 			} else {
 				// Create new event - only essential fields needed
@@ -522,17 +331,7 @@
 					errorMessage = m['eventWizard.error_fixValidation']();
 					return;
 				}
-				const createData: EventCreateSchema = {
-					name: formData.name,
-					start: startIso,
-					city_id: formData.city_id,
-					visibility: formData.visibility || 'public',
-					event_type: formData.event_type || 'public',
-					status: 'draft', // Create as draft by default
-					requires_ticket: formData.requires_ticket || false, // Send explicit false when unchecked
-					requires_full_profile: formData.requires_full_profile || false,
-					venue_id: formData.venue_id || null
-				};
+				const createData = buildEventCreateData(formData, formData.name, startIso);
 
 				const result = await createEventMutation.mutateAsync(createData);
 				eventId = result.id;
@@ -570,30 +369,7 @@
 
 		try {
 			// Update event with all details - convert datetime-local to ISO with timezone
-			const updateData: Partial<EventEditSchema> = {
-				city_id: formData.city_id, // Now required from LocationSection
-				description: formData.description || null,
-				end: formData.is_open_ended ? null : toISOString(formData.end),
-				is_open_ended: formData.is_open_ended ?? false,
-				address: formData.address || null,
-				address_visibility: formData.address_visibility || 'public',
-				rsvp_before: toISOString(formData.rsvp_before),
-				max_attendees: formData.max_attendees || undefined,
-				max_tickets_per_user: formData.max_tickets_per_user ?? 1,
-				waitlist_open: formData.waitlist_open || false,
-				invitation_message: formData.invitation_message || null,
-				check_in_starts_at: toISOString(formData.check_in_starts_at),
-				check_in_ends_at: toISOString(formData.check_in_ends_at),
-				potluck_open: formData.potluck_open || false,
-				accept_invitation_requests: formData.accept_invitation_requests || false,
-				apply_before: toISOString(formData.apply_before),
-				can_attend_without_login: formData.can_attend_without_login || false,
-				requires_full_profile: formData.requires_full_profile || false,
-				event_series_id: formData.event_series_id || null,
-				venue_id: formData.venue_id || null,
-				location_maps_url: formData.location_maps_url || null,
-				location_maps_embed: formData.location_maps_embed || null
-			};
+			const updateData = buildWizardStep2UpdateData(formData);
 
 			await updateEventMutation.mutateAsync({ id: eventId, data: updateData });
 
@@ -617,10 +393,19 @@
 			}
 
 			// Save resource associations
-			await saveResourceAssociations(eventId);
+			await saveResourceAssociations({
+				organizationSlug: organization.slug,
+				selectedResourceIds,
+				initialResourceIds,
+				eventId
+			});
 
 			// Save tag associations (add/remove tags)
-			await saveTagAssociations(eventId);
+			initialTags = await saveTagAssociations({
+				eventId,
+				currentTags: formData.tags || [],
+				initialTags
+			});
 
 			// Invalidate queries
 			queryClient.invalidateQueries({ queryKey: ['events'] });
