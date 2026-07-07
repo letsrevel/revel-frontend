@@ -5,16 +5,27 @@
 
 	interface Props {
 		tags: string[];
+		/** Draft state is owned by DetailsStep (bound in) so a half-typed tag
+		 *  draft survives collapsing/reopening the Advanced accordion, which
+		 *  unmounts this component — matching the pre-split behavior where
+		 *  these four fields were top-level DetailsStep $state. */
+		tagInput: string;
+		tagSuggestions: string[];
+		showSuggestions: boolean;
+		selectedSuggestionIndex: number;
 		onUpdate: (data: { tags: string[] }) => void;
 	}
 
-	const { tags, onUpdate }: Props = $props();
+	let {
+		tags,
+		tagInput = $bindable(),
+		tagSuggestions = $bindable(),
+		showSuggestions = $bindable(),
+		selectedSuggestionIndex = $bindable(),
+		onUpdate
+	}: Props = $props();
 
-	// Tag input state
-	let tagInput = $state('');
-	let tagSuggestions = $state<string[]>([]);
-	let showSuggestions = $state(false);
-	let selectedSuggestionIndex = $state(-1);
+	// Transient fetch state (spinner + debounce handle) stays local
 	let isLoadingSuggestions = $state(false);
 	let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 

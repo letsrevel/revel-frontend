@@ -160,6 +160,14 @@
 		].filter((s): s is string => s !== null)
 	);
 
+	// Tag draft state — owned here (not in DetailsStepTagsInput) so a half-typed
+	// tag draft survives collapsing/reopening the Advanced accordion, which
+	// unmounts the child. Matches the pre-split top-level $state placement.
+	let tagInput = $state('');
+	let tagSuggestions = $state<string[]>([]);
+	let showSuggestions = $state(false);
+	let selectedSuggestionIndex = $state(-1);
+
 	// Description state (for MarkdownEditor). Writable $derived: resynced with
 	// formData when it changes externally, but locally reassignable via the
 	// editor's bind:value and handleDescriptionChange below.
@@ -573,7 +581,14 @@
 				{/if}
 
 				<!-- Tags -->
-				<DetailsStepTagsInput tags={formData.tags ?? []} {onUpdate} />
+				<DetailsStepTagsInput
+					tags={formData.tags ?? []}
+					bind:tagInput
+					bind:tagSuggestions
+					bind:showSuggestions
+					bind:selectedSuggestionIndex
+					{onUpdate}
+				/>
 
 				<!-- Event Series -->
 				{#if eventSeries.length > 0}
