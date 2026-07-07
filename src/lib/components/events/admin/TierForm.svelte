@@ -24,10 +24,19 @@
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import { DurationInput } from '$lib/components/forms';
 	import RefundPolicyEditor from './RefundPolicyEditor.svelte';
+	import TierFormPricingSection from './TierFormPricingSection.svelte';
+	import TierFormAvailabilitySection from './TierFormAvailabilitySection.svelte';
+	import TierFormSeatingSection from './TierFormSeatingSection.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { extractErrorMessage, extractFieldErrors } from '$lib/utils/errors';
 	import { tierFieldLabel } from './tier-field-labels';
-	import { Building2, LayoutGrid, Armchair, Undo2 } from '@lucide/svelte';
+	import {
+		CURRENCY_SYMBOLS,
+		toDatetimeLocal,
+		toTimezoneAwareISO,
+		normalizeDecimalInput
+	} from './tier-form-helpers';
+	import { Undo2 } from '@lucide/svelte';
 	import { formatDateTimeReadback } from '$lib/utils/date';
 
 	interface Props {
@@ -53,93 +62,6 @@
 	const accessToken = $derived(authStore.accessToken);
 
 	const queryClient = useQueryClient();
-
-	/**
-	 * Convert timezone-aware ISO 8601 string to datetime-local format
-	 * @param isoString - ISO 8601 string (e.g., "2025-10-24T14:30:00-07:00")
-	 * @returns datetime-local format (e.g., "2025-10-24T14:30")
-	 */
-	function toDatetimeLocal(isoString: string | null | undefined): string {
-		if (!isoString) return '';
-
-		// Parse the ISO string to a Date (automatically handles timezone)
-		const date = new Date(isoString);
-
-		// Format as YYYY-MM-DDTHH:mm for datetime-local input
-		const year = date.getFullYear();
-		const month = (date.getMonth() + 1).toString().padStart(2, '0');
-		const day = date.getDate().toString().padStart(2, '0');
-		const hours = date.getHours().toString().padStart(2, '0');
-		const minutes = date.getMinutes().toString().padStart(2, '0');
-
-		return `${year}-${month}-${day}T${hours}:${minutes}`;
-	}
-
-	const CURRENCY_SYMBOLS: Record<string, string> = {
-		AUD: 'A$',
-		BRL: 'R$',
-		CAD: 'C$',
-		CHF: 'CHF',
-		CNY: 'CN¥',
-		CZK: 'Kč',
-		DKK: 'kr',
-		EUR: '€',
-		GBP: '£',
-		HKD: 'HK$',
-		HUF: 'Ft',
-		IDR: 'Rp',
-		ILS: '₪',
-		INR: '₹',
-		ISK: 'kr',
-		JPY: '¥',
-		KRW: '₩',
-		MXN: 'MX$',
-		MYR: 'RM',
-		NOK: 'kr',
-		NZD: 'NZ$',
-		PHP: '₱',
-		PLN: 'zł',
-		RON: 'lei',
-		SEK: 'kr',
-		SGD: 'S$',
-		THB: '฿',
-		TRY: '₺',
-		USD: '$',
-		ZAR: 'R'
-	};
-
-	const SUPPORTED_CURRENCIES = [
-		{ code: 'AUD', name: 'Australian Dollar' },
-		{ code: 'BRL', name: 'Brazilian Real' },
-		{ code: 'CAD', name: 'Canadian Dollar' },
-		{ code: 'CHF', name: 'Swiss Franc' },
-		{ code: 'CNY', name: 'Chinese Yuan' },
-		{ code: 'CZK', name: 'Czech Koruna' },
-		{ code: 'DKK', name: 'Danish Krone' },
-		{ code: 'EUR', name: 'Euro' },
-		{ code: 'GBP', name: 'British Pound' },
-		{ code: 'HKD', name: 'Hong Kong Dollar' },
-		{ code: 'HUF', name: 'Hungarian Forint' },
-		{ code: 'IDR', name: 'Indonesian Rupiah' },
-		{ code: 'ILS', name: 'Israeli New Shekel' },
-		{ code: 'INR', name: 'Indian Rupee' },
-		{ code: 'ISK', name: 'Icelandic Króna' },
-		{ code: 'JPY', name: 'Japanese Yen' },
-		{ code: 'KRW', name: 'South Korean Won' },
-		{ code: 'MXN', name: 'Mexican Peso' },
-		{ code: 'MYR', name: 'Malaysian Ringgit' },
-		{ code: 'NOK', name: 'Norwegian Krone' },
-		{ code: 'NZD', name: 'New Zealand Dollar' },
-		{ code: 'PHP', name: 'Philippine Peso' },
-		{ code: 'PLN', name: 'Polish Złoty' },
-		{ code: 'RON', name: 'Romanian Leu' },
-		{ code: 'SEK', name: 'Swedish Krona' },
-		{ code: 'SGD', name: 'Singapore Dollar' },
-		{ code: 'THB', name: 'Thai Baht' },
-		{ code: 'TRY', name: 'Turkish Lira' },
-		{ code: 'USD', name: 'US Dollar' },
-		{ code: 'ZAR', name: 'South African Rand' }
-	];
 
 	// Form state
 	let name = $state(tier?.name ?? '');
@@ -262,6 +184,9 @@
 		return venue?.sectors || [];
 	});
 
+	// The venue matching the pre-filled venueId (read-only display in the seating section)
+	const selectedVenue = $derived(venuesQuery.data?.find((v) => v.id === venueId));
+
 	// Clear sector when venue changes
 	$effect(() => {
 		if (venueId) {
@@ -277,19 +202,6 @@
 
 	// Get current currency symbol for display
 	const currencySymbol = $derived(CURRENCY_SYMBOLS[currency] || currency);
-
-	/** Normalize decimal input: replace comma with dot, strip invalid chars, allow only one dot */
-	function normalizeDecimalInput(value: string): string {
-		let normalized = value.replace(/,/g, '.');
-		normalized = normalized.replace(/[^\d.]/g, '');
-		const firstDotIndex = normalized.indexOf('.');
-		if (firstDotIndex !== -1) {
-			normalized =
-				normalized.slice(0, firstDotIndex + 1) +
-				normalized.slice(firstDotIndex + 1).replace(/\./g, '');
-		}
-		return normalized;
-	}
 
 	const tierCreateMutation = createMutation(() => ({
 		mutationFn: (data: TicketTierCreateSchema) =>
@@ -329,35 +241,6 @@
 			onClose();
 		}
 	}));
-
-	/**
-	 * Convert datetime-local value to timezone-aware ISO 8601 string
-	 * @param datetimeLocal - Value from <input type="datetime-local"> (e.g., "2025-10-24T14:30")
-	 * @returns ISO 8601 string with timezone (e.g., "2025-10-24T14:30:00-07:00")
-	 */
-	function toTimezoneAwareISO(datetimeLocal: string): string {
-		if (!datetimeLocal) return '';
-
-		// Parse the datetime-local value as a Date in the user's local timezone
-		const date = new Date(datetimeLocal);
-
-		// Convert to ISO 8601 with timezone offset
-		const tzOffset = -date.getTimezoneOffset();
-		const tzHours = Math.floor(Math.abs(tzOffset) / 60)
-			.toString()
-			.padStart(2, '0');
-		const tzMinutes = (Math.abs(tzOffset) % 60).toString().padStart(2, '0');
-		const tzSign = tzOffset >= 0 ? '+' : '-';
-
-		const year = date.getFullYear();
-		const month = (date.getMonth() + 1).toString().padStart(2, '0');
-		const day = date.getDate().toString().padStart(2, '0');
-		const hours = date.getHours().toString().padStart(2, '0');
-		const minutes = date.getMinutes().toString().padStart(2, '0');
-		const seconds = date.getSeconds().toString().padStart(2, '0');
-
-		return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${tzSign}${tzHours}:${tzMinutes}`;
-	}
 
 	function handleSubmit(e: Event) {
 		e.preventDefault();
@@ -519,102 +402,15 @@
 
 			<!-- Price Settings (if not free) -->
 			{#if paymentMethod !== 'free'}
-				<div>
-					<Label for="price-type">{m['tierForm.priceType']()}</Label>
-					<select
-						id="price-type"
-						bind:value={priceType}
-						disabled={isPending}
-						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-					>
-						<option value="fixed">{m['tierForm.fixedPrice']()}</option>
-						<option value="pwyc">{m['tierForm.payWhatYouCan']()}</option>
-					</select>
-				</div>
-
-				<!-- Currency Selection -->
-				<div>
-					<Label for="currency">{m['tierForm.currency']()}</Label>
-					<select
-						id="currency"
-						bind:value={currency}
-						disabled={isPending}
-						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-					>
-						{#each SUPPORTED_CURRENCIES as curr (curr.code)}
-							<option value={curr.code}>{curr.code} - {curr.name}</option>
-						{/each}
-					</select>
-					<p class="mt-1 text-xs text-muted-foreground">
-						{m['tierForm.currencyHelp']()}
-					</p>
-				</div>
-
-				{#if priceType === 'fixed'}
-					<div>
-						<Label for="price">{m['tierForm.price']()}</Label>
-						<div class="relative">
-							<span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-								>{currencySymbol}</span
-							>
-							<Input
-								id="price"
-								type="text"
-								inputmode="decimal"
-								value={price}
-								oninput={(e) => {
-									price = normalizeDecimalInput((e.currentTarget as HTMLInputElement).value);
-								}}
-								required
-								disabled={isPending}
-								class="pl-10"
-							/>
-						</div>
-					</div>
-				{:else}
-					<div class="grid grid-cols-2 gap-4">
-						<div>
-							<Label for="pwyc-min">{m['tierForm.minPrice']()}</Label>
-							<div class="relative">
-								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-									>{currencySymbol}</span
-								>
-								<Input
-									id="pwyc-min"
-									type="text"
-									inputmode="decimal"
-									value={pwycMin}
-									oninput={(e) => {
-										pwycMin = normalizeDecimalInput((e.currentTarget as HTMLInputElement).value);
-									}}
-									required
-									disabled={isPending}
-									class="pl-10"
-								/>
-							</div>
-						</div>
-						<div>
-							<Label for="pwyc-max">{m['tierForm.maxPrice']()}</Label>
-							<div class="relative">
-								<span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-									>{currencySymbol}</span
-								>
-								<Input
-									id="pwyc-max"
-									type="text"
-									inputmode="decimal"
-									value={pwycMax}
-									oninput={(e) => {
-										pwycMax = normalizeDecimalInput((e.currentTarget as HTMLInputElement).value);
-									}}
-									disabled={isPending}
-									class="pl-10"
-									placeholder={m['tierForm.noLimitPlaceholder']()}
-								/>
-							</div>
-						</div>
-					</div>
-				{/if}
+				<TierFormPricingSection
+					bind:priceType
+					bind:currency
+					bind:price
+					bind:pwycMin
+					bind:pwycMax
+					{currencySymbol}
+					{isPending}
+				/>
 			{/if}
 
 			<!-- VAT Rate Override (for paid tiers) -->
@@ -706,365 +502,33 @@
 				</div>
 			{/if}
 
-			<!-- Total Quantity -->
-			<div>
-				<Label for="total-quantity">{m['tierForm.totalTickets']()}</Label>
-				<Input
-					id="total-quantity"
-					type="number"
-					min="1"
-					bind:value={totalQuantity}
-					placeholder={m['tierForm.unlimitedPlaceholder']()}
-					disabled={isPending}
-				/>
-				<p class="mt-1 text-xs text-muted-foreground">{m['tierForm.unlimitedTickets']()}</p>
-			</div>
+			<TierFormAvailabilitySection
+				bind:totalQuantity
+				bind:salesStartAt
+				bind:salesEndAt
+				{salesStartReadback}
+				{salesEndReadback}
+				bind:visibility
+				bind:purchasableBy
+				bind:restrictVisibilityToLinkedInvitations
+				bind:restrictPurchaseToLinkedInvitations
+				bind:restrictedToMembershipTiersIds
+				{membershipTiers}
+				{isPending}
+			/>
 
-			<!-- Sales Period -->
-			<div class="grid grid-cols-2 gap-4">
-				<div>
-					<Label for="sales-start">{m['tierForm.salesStart']()}</Label>
-					<Input
-						id="sales-start"
-						type="datetime-local"
-						bind:value={salesStartAt}
-						disabled={isPending}
-					/>
-					{#if salesStartReadback}
-						<p class="mt-1 text-xs text-muted-foreground">
-							{m['dateTimePicker.selectedDate']({ value: salesStartReadback })}
-						</p>
-					{/if}
-				</div>
-				<div>
-					<Label for="sales-end">{m['tierForm.salesEnd']()}</Label>
-					<Input
-						id="sales-end"
-						type="datetime-local"
-						bind:value={salesEndAt}
-						disabled={isPending}
-					/>
-					{#if salesEndReadback}
-						<p class="mt-1 text-xs text-muted-foreground">
-							{m['dateTimePicker.selectedDate']({ value: salesEndReadback })}
-						</p>
-					{/if}
-				</div>
-			</div>
-
-			<!-- Visibility -->
-			<div>
-				<Label for="visibility">{m['tierForm.visibility']()}</Label>
-				<select
-					id="visibility"
-					bind:value={visibility}
-					disabled={isPending}
-					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-				>
-					<option value="public">{m['tierForm.public']()}</option>
-					<option value="private">{m['tierForm.private']()}</option>
-					<option value="members-only">{m['tierForm.membersOnly']()}</option>
-					<option value="staff-only">{m['tierForm.staffOnly']()}</option>
-				</select>
-
-				{#if visibility === 'private'}
-					<label class="mt-2 flex cursor-pointer items-start gap-2">
-						<input
-							type="checkbox"
-							bind:checked={restrictVisibilityToLinkedInvitations}
-							disabled={isPending}
-							class="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary"
-						/>
-						<div>
-							<span class="text-sm font-medium">{m['tierForm.onlyShowLinkedInvitees']()}</span>
-							<p class="text-xs text-muted-foreground">
-								{m['tierForm.onlyShowLinkedInviteesHelp']()}
-							</p>
-						</div>
-					</label>
-				{/if}
-			</div>
-
-			<!-- Purchasable By -->
-			<div>
-				<Label for="purchasable-by">{m['tierForm.whoCanPurchase']()}</Label>
-				<select
-					id="purchasable-by"
-					bind:value={purchasableBy}
-					disabled={isPending}
-					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-				>
-					<option value="public">{m['tierForm.anyone']()}</option>
-					<option value="members">{m['tierForm.membersOnly']()}</option>
-					<option value="invited">{m['tierForm.invitedOnly']()}</option>
-					<option value="invited_and_members">{m['tierForm.invitedAndMembers']()}</option>
-				</select>
-
-				{#if purchasableBy === 'invited' || purchasableBy === 'invited_and_members'}
-					<label class="mt-2 flex cursor-pointer items-start gap-2">
-						<input
-							type="checkbox"
-							bind:checked={restrictPurchaseToLinkedInvitations}
-							disabled={isPending}
-							class="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary"
-						/>
-						<div>
-							<span class="text-sm font-medium"
-								>{m['tierForm.onlyAllowPurchaseLinkedInvitees']()}</span
-							>
-							<p class="text-xs text-muted-foreground">
-								{m['tierForm.onlyAllowPurchaseLinkedInviteesHelp']()}
-							</p>
-						</div>
-					</label>
-				{/if}
-			</div>
-
-			<!-- Restricted to Membership Tiers -->
-			{#if (purchasableBy === 'members' || purchasableBy === 'invited_and_members') && membershipTiers.length > 0}
-				<div>
-					<Label for="restricted-tiers">{m['tierForm.restrictToMembershipTiers']()}</Label>
-					<p class="mb-2 text-xs text-muted-foreground">
-						{m['tierForm.restrictToMembershipTiersHelp']()}
-					</p>
-					<div class="space-y-2 rounded-md border border-input bg-background p-3">
-						{#each membershipTiers as tier (tier.id ?? tier.name)}
-							{#if tier.id}
-								<label class="flex cursor-pointer items-start gap-2">
-									<input
-										type="checkbox"
-										checked={restrictedToMembershipTiersIds.includes(tier.id)}
-										onchange={(e) => {
-											const checked = e.currentTarget.checked;
-											if (checked && tier.id && !restrictedToMembershipTiersIds.includes(tier.id)) {
-												restrictedToMembershipTiersIds = [
-													...restrictedToMembershipTiersIds,
-													tier.id
-												];
-											} else if (!checked && tier.id) {
-												restrictedToMembershipTiersIds = restrictedToMembershipTiersIds.filter(
-													(id) => id !== tier.id
-												);
-											}
-										}}
-										disabled={isPending}
-										class="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary"
-									/>
-									<div class="flex-1">
-										<span class="text-sm font-medium">{tier.name}</span>
-										{#if tier.description}
-											<p class="text-xs text-muted-foreground">{tier.description}</p>
-										{/if}
-									</div>
-								</label>
-							{/if}
-						{/each}
-					</div>
-				</div>
-			{/if}
-
-			<!-- Seating Configuration Section -->
-			<div class="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
-				<div class="flex items-center gap-2 text-sm font-medium">
-					<Armchair class="h-4 w-4 text-primary" aria-hidden="true" />
-					{m['tierForm.seatingConfig.title']?.() ?? 'Seating Configuration'}
-				</div>
-
-				<!-- Seat Assignment Mode -->
-				<div>
-					<Label for="seat-assignment-mode">
-						{m['tierForm.seatingConfig.mode']?.() ?? 'Seat Assignment Mode'}
-					</Label>
-					<select
-						id="seat-assignment-mode"
-						bind:value={seatAssignmentMode}
-						disabled={isPending}
-						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-					>
-						<option value="none">
-							{m['tierForm.seatingConfig.none']?.() ?? 'General Admission (No Assigned Seats)'}
-						</option>
-						<option value="random" disabled={!canUseSeatAssignment}>
-							{m['tierForm.seatingConfig.random']?.() ?? 'Random Assignment'}
-							{!canUseSeatAssignment ? m['tierForm.requiresVenueSuffix']() : ''}
-						</option>
-						<option value="user_choice" disabled={!canUseSeatAssignment}>
-							{m['tierForm.seatingConfig.userChoice']?.() ?? 'User Selects Seat'}
-							{!canUseSeatAssignment ? m['tierForm.requiresVenueSuffix']() : ''}
-						</option>
-					</select>
-					<p class="mt-1 text-xs text-muted-foreground">
-						{#if !canUseSeatAssignment && seatAssignmentMode === 'none'}
-							{m['tierForm.seatingConfig.noVenueConfigured']?.() ??
-								'To enable seat assignment, configure a venue for this event in Basic Info.'}
-						{:else if seatAssignmentMode === 'none'}
-							{m['tierForm.seatingConfig.noneHelp']?.() ??
-								'No seat assignment - attendees can sit anywhere'}
-						{:else if seatAssignmentMode === 'random'}
-							{m['tierForm.seatingConfig.randomHelp']?.() ??
-								'Seats are randomly assigned to attendees'}
-						{:else}
-							{m['tierForm.seatingConfig.userChoiceHelp']?.() ??
-								'Attendees can select their preferred seat'}
-						{/if}
-					</p>
-				</div>
-
-				<!-- Max Tickets Per User -->
-				<div>
-					<Label for="max-tickets-per-user">
-						{m['tierForm.seatingConfig.maxTickets']?.() ?? 'Max Tickets Per User'}
-					</Label>
-					<Input
-						id="max-tickets-per-user"
-						type="number"
-						min="1"
-						bind:value={maxTicketsPerUser}
-						placeholder={m['tierForm.seatingConfig.inheritFromEvent']?.() ?? 'Inherit from event'}
-						disabled={isPending}
-					/>
-					<p class="mt-1 text-xs text-muted-foreground">
-						{m['tierForm.seatingConfig.maxTicketsHelp']?.() ??
-							'Leave empty to inherit from event (event default is 1)'}
-					</p>
-				</div>
-
-				<!-- Venue & Sector Selection (only when seat assignment is not 'none') -->
-				{#if seatAssignmentMode !== 'none'}
-					<div class="space-y-4 border-t border-border pt-4">
-						<div class="flex items-center gap-2 text-sm font-medium">
-							<Building2 class="h-4 w-4 text-primary" aria-hidden="true" />
-							{m['tierForm.seatingConfig.venueSection']?.() ?? 'Venue & Sector'}
-						</div>
-
-						<!-- Venue (read-only - comes from event) -->
-						<div>
-							<Label>
-								{m['tierForm.seatingConfig.venue']?.() ?? 'Venue'}
-							</Label>
-							{#if venuesQuery.isLoading}
-								<div
-									class="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm text-muted-foreground"
-								>
-									{m['tierForm.seatingConfig.loadingVenues']?.() ?? 'Loading venue...'}
-								</div>
-							{:else}
-								{@const selectedVenue = venuesQuery.data?.find((v) => v.id === venueId)}
-								<div
-									class="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm"
-								>
-									{#if selectedVenue}
-										<span class="font-medium">{selectedVenue.name}</span>
-										{#if selectedVenue.capacity}
-											<span class="ml-2 text-muted-foreground"
-												>{m['tierForm.venueCapacity']({ capacity: selectedVenue.capacity })}</span
-											>
-										{/if}
-									{:else}
-										<span class="text-muted-foreground">
-											{m['tierForm.seatingConfig.noVenueSelected']?.() ??
-												'No venue configured for event'}
-										</span>
-									{/if}
-								</div>
-							{/if}
-							<p class="mt-1 text-xs text-muted-foreground">
-								{m['tierForm.seatingConfig.venueFromEvent']?.() ??
-									'Venue is set at the event level in Basic Info.'}
-							</p>
-						</div>
-
-						<!-- Sector (only when venue is selected) -->
-						{#if venueId && selectedVenueSectors.length > 0}
-							<div>
-								<Label for="tier-sector">
-									<span class="flex items-center gap-1">
-										<LayoutGrid class="h-3.5 w-3.5" aria-hidden="true" />
-										{m['tierForm.seatingConfig.sector']?.() ?? 'Sector'}
-										{#if sectorRequired}
-											<span class="text-destructive">*</span>
-										{/if}
-									</span>
-								</Label>
-								<select
-									id="tier-sector"
-									bind:value={sectorId}
-									disabled={isPending}
-									required={sectorRequired}
-									class="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 {sectorRequired &&
-									!sectorId
-										? 'border-destructive'
-										: 'border-input'}"
-								>
-									<option value={null}>
-										{sectorRequired
-											? (m['tierForm.seatingConfig.selectSectorRequired']?.() ??
-												'Select a sector (required)')
-											: (m['tierForm.seatingConfig.selectSector']?.() ??
-												'Select a sector (optional)')}
-									</option>
-									{#each selectedVenueSectors as sector (sector.id)}
-										<option value={sector.id}>
-											{sector.name}
-											{#if sector.code}({sector.code}){/if}
-											{#if sector.capacity}{m['tierForm.sectorSeats']({
-													capacity: sector.capacity
-												})}{/if}
-										</option>
-									{/each}
-								</select>
-								<p
-									class="mt-1 text-xs {sectorRequired && !sectorId
-										? 'text-destructive'
-										: 'text-muted-foreground'}"
-								>
-									{#if sectorRequired}
-										{m['tierForm.seatingConfig.sectorRequiredHelp']?.() ??
-											'A sector is required for seat assignment modes other than General Admission'}
-									{:else}
-										{m['tierForm.seatingConfig.sectorHelp']?.() ??
-											'Optionally restrict this tier to a specific sector'}
-									{/if}
-								</p>
-
-								<!-- Sector Hard Limit Warning -->
-								{#if sectorId}
-									{@const selectedSector = selectedVenueSectors.find((s) => s.id === sectorId)}
-									{#if selectedSector?.capacity}
-										<div
-											class="mt-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-800 dark:bg-amber-950"
-										>
-											<p class="font-medium text-amber-800 dark:text-amber-200">
-												{m['tierForm.sectorHardLimit.title']()}
-											</p>
-											<p class="mt-1 text-amber-700 dark:text-amber-300">
-												{m['tierForm.sectorHardLimit.description']({
-													capacity: selectedSector.capacity.toString()
-												})}
-											</p>
-										</div>
-									{/if}
-								{/if}
-							</div>
-						{:else if venueId}
-							<p class="text-xs {sectorRequired ? 'text-destructive' : 'text-muted-foreground'}">
-								{#if sectorRequired}
-									{m['tierForm.seatingConfig.noSectorsRequired']?.() ??
-										'This venue has no sectors configured. Sectors are required for this seat assignment mode.'}
-								{:else}
-									{m['tierForm.seatingConfig.noSectors']?.() ??
-										'This venue has no sectors configured.'}
-								{/if}
-							</p>
-						{:else if sectorRequired}
-							<p class="text-xs text-destructive">
-								{m['tierForm.seatingConfig.venueRequiredForSeats']?.() ??
-									'Please select a venue and sector for this seat assignment mode'}
-							</p>
-						{/if}
-					</div>
-				{/if}
-			</div>
+			<TierFormSeatingSection
+				bind:seatAssignmentMode
+				bind:maxTicketsPerUser
+				bind:sectorId
+				{canUseSeatAssignment}
+				{venueId}
+				venuesLoading={venuesQuery.isLoading}
+				{selectedVenue}
+				{selectedVenueSectors}
+				{sectorRequired}
+				{isPending}
+			/>
 
 			<!-- Form Actions -->
 			<div class="flex justify-between gap-2 border-t border-border pt-4">
