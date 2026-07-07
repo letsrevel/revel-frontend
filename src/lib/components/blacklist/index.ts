@@ -3,3 +3,4 @@ export { default as BlacklistEntryModal } from './BlacklistEntryModal.svelte';
 export { default as CreateBlacklistModal } from './CreateBlacklistModal.svelte';
 export { default as WhitelistRequestCard } from './WhitelistRequestCard.svelte';
 export { default as WhitelistEntryCard } from './WhitelistEntryCard.svelte';
+export { default as WhitelistRequestsTab } from './WhitelistRequestsTab.svelte';

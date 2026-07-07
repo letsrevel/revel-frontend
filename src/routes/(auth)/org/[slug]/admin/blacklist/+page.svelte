@@ -38,8 +38,8 @@
 		BlacklistEntryCard,
 		BlacklistEntryModal,
 		CreateBlacklistModal,
-		WhitelistRequestCard,
-		WhitelistEntryCard
+		WhitelistEntryCard,
+		WhitelistRequestsTab
 	} from '$lib/components/blacklist';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import { toast } from 'svelte-sonner';
@@ -542,128 +542,17 @@
 
 		<!-- Verification Requests Tab -->
 		<TabsContent value="verification-requests" class="space-y-4">
-			<!-- Filter Buttons -->
-			<div class="flex flex-wrap items-center gap-2">
-				<Button
-					variant={requestStatusFilter === 'pending' ? 'default' : 'outline'}
-					size="sm"
-					onclick={() => {
-						requestStatusFilter = 'pending';
-						requestsPage = 1;
-					}}
-				>
-					{m['blacklistAdminPage.filterPending']()}
-					{#if requestStatusFilter === 'pending' && whitelistRequestsQuery.data?.count}
-						<span
-							class="ml-1.5 rounded-full bg-primary-foreground px-1.5 py-0.5 text-xs text-primary"
-						>
-							{whitelistRequestsQuery.data.count}
-						</span>
-					{/if}
-				</Button>
-				<Button
-					variant={requestStatusFilter === 'approved' ? 'default' : 'outline'}
-					size="sm"
-					onclick={() => {
-						requestStatusFilter = 'approved';
-						requestsPage = 1;
-					}}
-				>
-					{m['blacklistAdminPage.filterApproved']()}
-				</Button>
-				<Button
-					variant={requestStatusFilter === 'rejected' ? 'default' : 'outline'}
-					size="sm"
-					onclick={() => {
-						requestStatusFilter = 'rejected';
-						requestsPage = 1;
-					}}
-				>
-					{m['blacklistAdminPage.filterRejected']()}
-				</Button>
-				<Button
-					variant={requestStatusFilter === 'all' ? 'default' : 'outline'}
-					size="sm"
-					onclick={() => {
-						requestStatusFilter = 'all';
-						requestsPage = 1;
-					}}
-				>
-					{m['blacklistAdminPage.filterAll']()}
-				</Button>
-			</div>
-
-			<!-- Info Box -->
-			<div class="rounded-lg border border-blue-500/30 bg-blue-50 p-3 dark:bg-blue-950/30">
-				<p class="text-sm text-blue-900 dark:text-blue-100">
-					{m['blacklistAdminPage.requestsInfo']()}
-				</p>
-			</div>
-
-			<!-- Requests List -->
-			{#if whitelistRequestsQuery.isLoading}
-				<div class="flex items-center justify-center py-12">
-					<Loader2 class="h-8 w-8 animate-spin text-muted-foreground" />
-				</div>
-			{:else if whitelistRequestsQuery.isError}
-				<div class="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-center">
-					<p class="text-sm text-destructive">
-						{m['blacklistAdminPage.loadRequestsError']()}
-					</p>
-				</div>
-			{:else if whitelistRequests.length === 0}
-				<div class="rounded-lg border border-dashed p-12 text-center">
-					<ShieldAlert class="mx-auto h-12 w-12 text-muted-foreground" />
-					<h3 class="mt-4 font-semibold">{m['blacklistAdminPage.noRequests']()}</h3>
-					<p class="mt-2 text-sm text-muted-foreground">
-						{requestStatusFilter === 'pending'
-							? m['blacklistAdminPage.noPendingRequests']()
-							: m['blacklistAdminPage.noRequestsMatchFilter']()}
-					</p>
-				</div>
-			{:else}
-				<div class="grid gap-4 md:grid-cols-2">
-					{#each whitelistRequests as request (request.id)}
-						<WhitelistRequestCard
-							{request}
-							onApprove={handleApproveRequest}
-							onReject={handleRejectRequest}
-							isProcessing={approveRequestMutation.isPending || rejectRequestMutation.isPending}
-							showActions={request.status === 'pending'}
-						/>
-					{/each}
-				</div>
-
-				<!-- Pagination -->
-				{#if requestsPagination.totalPages > 1}
-					<div class="flex items-center justify-center gap-2 pt-4">
-						<Button
-							variant="outline"
-							size="sm"
-							disabled={!requestsPagination.hasPrev}
-							onclick={() => (requestsPage = requestsPage - 1)}
-						>
-							<ChevronLeft class="h-4 w-4" />
-							{m['blacklistAdminPage.previous']()}
-						</Button>
-						<span class="text-sm text-muted-foreground">
-							{m['blacklistAdminPage.pageOf']({
-								page: requestsPagination.page,
-								total: requestsPagination.totalPages
-							})}
-						</span>
-						<Button
-							variant="outline"
-							size="sm"
-							disabled={!requestsPagination.hasNext}
-							onclick={() => (requestsPage = requestsPage + 1)}
-						>
-							{m['blacklistAdminPage.next']()}
-							<ChevronRight class="h-4 w-4" />
-						</Button>
-					</div>
-				{/if}
-			{/if}
+			<WhitelistRequestsTab
+				requests={whitelistRequests}
+				isLoading={whitelistRequestsQuery.isLoading}
+				isError={whitelistRequestsQuery.isError}
+				pagination={requestsPagination}
+				bind:statusFilter={requestStatusFilter}
+				bind:currentPage={requestsPage}
+				onApprove={handleApproveRequest}
+				onReject={handleRejectRequest}
+				isProcessing={approveRequestMutation.isPending || rejectRequestMutation.isPending}
+			/>
 		</TabsContent>
 
 		<!-- Verified Users Tab -->
