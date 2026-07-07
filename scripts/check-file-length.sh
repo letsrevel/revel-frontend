@@ -9,6 +9,10 @@
 #   - src/lib/data/            (static data files)
 #   - *.test.ts, *.spec.ts     (test files)
 #   - *.d.ts                   (type declarations)
+#   - src/lib/stores/auth.svelte.ts (517): token race guards + single-flight
+#     refresh thread all state through one class; split rejected twice as
+#     invariant-threatening (#544 Task 12/13 analyses). Cleanup already applied
+#     (580→517). Cap stays 500 for everything else.
 
 set -e
 
@@ -44,6 +48,7 @@ done < <(find src \( -name "*.ts" -o -name "*.js" \) \
     -not -path "*/api/generated/*" \
     -not -path "*/paraglide/*" \
     -not -path "*/data/*" \
+    -not -path "src/lib/stores/auth.svelte.ts" \
     -print0)
 
 if [ "$FAILED" -eq 0 ]; then
