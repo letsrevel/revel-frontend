@@ -37,8 +37,9 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		};
 	} catch (err) {
 		if (isHttpError(err)) throw err;
-		log.error('questionnaire_load_failed', { error: err });
-		const errorMessage = extractErrorMessage(err, 'Questionnaire not found');
-		throw error(404, errorMessage);
+		// Unexpected failures (network, 5xx) are not a missing questionnaire —
+		// don't mask outages as 404.
+		log.error('questionnaire_load_failed', { error: err, questionnaireId: params.id });
+		throw error(500, 'Failed to load questionnaire');
 	}
 };
