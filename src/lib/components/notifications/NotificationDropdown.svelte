@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Bell, CheckCheck } from '@lucide/svelte';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import NotificationBadge from './NotificationBadge.svelte';
@@ -14,10 +15,9 @@
 		authToken: string;
 		pollingInterval?: number;
 		maxItems?: number;
-		class?: string;
 	}
 
-	const { authToken, pollingInterval = 60000, maxItems = 5, class: className }: Props = $props();
+	const { authToken, pollingInterval = 60000, maxItems = 5 }: Props = $props();
 
 	// Control dropdown open state
 	let isOpen = $state(false);
@@ -51,7 +51,7 @@
 
 	// Navigate to full notifications page
 	function handleViewAll(): void {
-		goto('/account/notifications');
+		goto(resolve('/(auth)/account/notifications', {}));
 	}
 
 	function handleMarkAllRead(): void {

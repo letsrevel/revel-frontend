@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Button } from '$lib/components/ui/button';
@@ -39,8 +40,8 @@
 						query: { page: currentPage, page_size: pageSize },
 						headers: { Authorization: `Bearer ${accessToken}` }
 					});
-					if (response.error) throw new Error('Failed to load credit notes');
-					return response.data!;
+					if (response.error || !response.data) throw new Error('Failed to load credit notes');
+					return response.data;
 				},
 				enabled: !!accessToken
 			}))
@@ -69,7 +70,7 @@
 	<!-- Header -->
 	<div class="flex items-center gap-3">
 		<a
-			href="/org/{slug}/admin/billing"
+			href={resolve('/(auth)/org/[slug]/admin/billing', { slug: slug })}
 			class="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
 			aria-label={m['common.backToBilling']()}
 		>
@@ -133,12 +134,14 @@
 						<tr class="transition-colors hover:bg-muted/30">
 							<td class="px-4 py-3 font-medium">{note.credit_note_number}</td>
 							<td class="px-4 py-3 text-muted-foreground">
+								<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 								<a
-									href="/org/{slug}/admin/billing/invoices?invoice={note.invoice_id}"
+									href={`${resolve('/(auth)/org/[slug]/admin/billing/invoices', { slug: slug })}?invoice=${note.invoice_id}`}
 									class="underline underline-offset-2 hover:text-foreground"
 								>
 									{note.invoice_id}
 								</a>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
 							</td>
 							<td class="px-4 py-3 text-right font-mono">
 								{formatCurrency(note.fee_gross)}

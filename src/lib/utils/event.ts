@@ -20,8 +20,8 @@ import type {
  */
 export function getEventAccessDisplay(
 	event: EventInListSchema,
-	userIsMember = false,
-	userIsStaff = false
+	_userIsMember = false,
+	_userIsStaff = false
 ): string {
 	// Note: free_for_members and free_for_staff fields have been removed from the backend.
 	// Pricing/access is now managed through ticket tier membership/staff restrictions.
@@ -148,21 +148,19 @@ export function getEventLogo(
 export function getEventLogoThumbnail(
 	event: MinimalEventSchema | EventDetailSchema | EventInListSchema
 ): string | null {
-	const e = event as any;
-
 	// First priority: Event's own logo thumbnail
-	if (e.logo_thumbnail_url) {
-		return e.logo_thumbnail_url;
+	if (event.logo_thumbnail_url) {
+		return event.logo_thumbnail_url;
 	}
 
 	// Second priority: Event series logo thumbnail
-	if (e.event_series?.logo_thumbnail_url) {
-		return e.event_series.logo_thumbnail_url;
+	if ('event_series' in event && event.event_series?.logo_thumbnail_url) {
+		return event.event_series.logo_thumbnail_url;
 	}
 
 	// Third priority: Organization logo thumbnail
-	if (e.organization?.logo_thumbnail_url) {
-		return e.organization.logo_thumbnail_url;
+	if ('organization' in event && event.organization?.logo_thumbnail_url) {
+		return event.organization.logo_thumbnail_url;
 	}
 
 	return null;
@@ -210,21 +208,19 @@ export function getEventCoverArt(
 export function getEventCoverArtThumbnail(
 	event: MinimalEventSchema | EventDetailSchema | EventInListSchema
 ): string | null {
-	const e = event as any;
-
 	// First priority: Event's own cover art thumbnail
-	if (e.cover_art_thumbnail_url) {
-		return e.cover_art_thumbnail_url;
+	if (event.cover_art_thumbnail_url) {
+		return event.cover_art_thumbnail_url;
 	}
 
 	// Second priority: Event series cover art thumbnail
-	if (e.event_series?.cover_art_thumbnail_url) {
-		return e.event_series.cover_art_thumbnail_url;
+	if ('event_series' in event && event.event_series?.cover_art_thumbnail_url) {
+		return event.event_series.cover_art_thumbnail_url;
 	}
 
 	// Third priority: Organization cover art thumbnail
-	if (e.organization?.cover_art_thumbnail_url) {
-		return e.organization.cover_art_thumbnail_url;
+	if ('organization' in event && event.organization?.cover_art_thumbnail_url) {
+		return event.organization.cover_art_thumbnail_url;
 	}
 
 	return null;
@@ -242,21 +238,19 @@ export function getEventCoverArtThumbnail(
 export function getEventCoverArtSocial(
 	event: MinimalEventSchema | EventDetailSchema | EventInListSchema
 ): string | null {
-	const e = event as any;
-
 	// First priority: Event's own cover art social variant
-	if (e.cover_art_social_url) {
-		return e.cover_art_social_url;
+	if (event.cover_art_social_url) {
+		return event.cover_art_social_url;
 	}
 
 	// Second priority: Event series cover art social variant
-	if (e.event_series?.cover_art_social_url) {
-		return e.event_series.cover_art_social_url;
+	if ('event_series' in event && event.event_series?.cover_art_social_url) {
+		return event.event_series.cover_art_social_url;
 	}
 
 	// Third priority: Organization cover art social variant
-	if (e.organization?.cover_art_social_url) {
-		return e.organization.cover_art_social_url;
+	if ('organization' in event && event.organization?.cover_art_social_url) {
+		return event.organization.cover_art_social_url;
 	}
 
 	return null;

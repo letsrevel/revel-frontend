@@ -48,6 +48,7 @@
 	 * Apply status filter
 	 */
 	function filterByStatus(status: string | null) {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const params = new URLSearchParams(window.location.search);
 
 		if (status) {
@@ -214,11 +215,9 @@
 								<td class="px-6 py-4">
 									<div class="flex items-center gap-3">
 										<UserAvatar
-											profilePictureUrl={(request.user as any).profile_picture_url}
-											thumbnailUrl={(request.user as any).profile_picture_thumbnail_url}
-											displayName={request.user.first_name ||
-												(request.user as any).username ||
-												'User'}
+											profilePictureUrl={request.user.profile_picture_url}
+											thumbnailUrl={request.user.profile_picture_thumbnail_url}
+											displayName={request.user.first_name || request.user.display_name || 'User'}
 											firstName={request.user.first_name}
 											lastName={request.user.last_name}
 											size="md"
@@ -229,7 +228,7 @@
 												{request.user.last_name}
 											</p>
 											<p class="text-sm text-muted-foreground">
-												@{(request.user as any).username ?? 'N/A'}
+												@{request.user.display_name || 'N/A'}
 											</p>
 										</div>
 									</div>
@@ -349,21 +348,25 @@
 
 				<div class="flex gap-2">
 					{#if data.pagination.hasPrev}
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params) -->
 						<a
 							href="?page={data.pagination.page - 1}&page_size={data.pagination.pageSize}"
 							class="inline-flex items-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 						>
 							{m['membershipRequestsPage.pagination_previous']()}
 						</a>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					{/if}
 
 					{#if data.pagination.hasNext}
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params) -->
 						<a
 							href="?page={data.pagination.page + 1}&page_size={data.pagination.pageSize}"
 							class="inline-flex items-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 						>
 							{m['membershipRequestsPage.pagination_next']()}
 						</a>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					{/if}
 				</div>
 			</div>

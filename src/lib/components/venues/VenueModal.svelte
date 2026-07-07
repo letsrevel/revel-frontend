@@ -57,14 +57,25 @@
 	}
 
 	// Helper to extract error message from API response
-	function getErrorMessage(error: any): string {
-		if (error?.detail) {
-			if (typeof error.detail === 'string') return error.detail;
-			if (Array.isArray(error.detail)) {
-				return error.detail.map((d: any) => d.msg || d.message || String(d)).join(', ');
+	function getErrorMessage(error: unknown): string {
+		if (error && typeof error === 'object') {
+			if ('detail' in error && error.detail) {
+				const detail = error.detail;
+				if (typeof detail === 'string') return detail;
+				if (Array.isArray(detail)) {
+					return detail
+						.map((d: unknown) => {
+							if (d && typeof d === 'object') {
+								if ('msg' in d && d.msg) return String(d.msg);
+								if ('message' in d && d.message) return String(d.message);
+							}
+							return String(d);
+						})
+						.join(', ');
+				}
 			}
+			if ('message' in error && error.message) return String(error.message);
 		}
-		if (error?.message) return error.message;
 		return m['orgAdmin.venues.toast.genericError']?.() ?? 'An unexpected error occurred';
 	}
 
@@ -90,7 +101,7 @@
 			queryClient.invalidateQueries({ queryKey: ['organization-venues'] });
 			onSuccess();
 		},
-		onError: (error: any) => {
+		onError: (error) => {
 			const message = getErrorMessage(error);
 			toast.error(m['orgAdmin.venues.toast.createError']() + ': ' + message);
 		}
@@ -120,7 +131,7 @@
 			queryClient.invalidateQueries({ queryKey: ['organization-venues'] });
 			onSuccess();
 		},
-		onError: (error: any) => {
+		onError: (error) => {
 			const message = getErrorMessage(error);
 			toast.error(m['orgAdmin.venues.toast.updateError']() + ': ' + message);
 		}

@@ -2,6 +2,26 @@ import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { potluckUpdatePotluckItem, potluckDeletePotluckItem } from '$lib/api';
 
+/** Read the HTTP status from an error shaped like `{ response: { status } }`. */
+function getResponseStatus(err: unknown): unknown {
+	if (
+		typeof err === 'object' &&
+		err !== null &&
+		'response' in err &&
+		typeof err.response === 'object' &&
+		err.response !== null &&
+		'status' in err.response
+	) {
+		return err.response.status;
+	}
+	return undefined;
+}
+
+/** Read the `message` property from an unknown error, if present. */
+function getErrorMessage(err: unknown): unknown {
+	return typeof err === 'object' && err !== null && 'message' in err ? err.message : undefined;
+}
+
 /**
  * PATCH /api/events/[event_id]/potluck/[item_id]
  * Update a potluck item
@@ -45,20 +65,21 @@ export const PATCH: RequestHandler = async ({ request, params, locals }) => {
 			is_assigned: response.data.is_assigned
 		});
 		return json(response.data);
-	} catch (err: any) {
+	} catch (err) {
+		const status = getResponseStatus(err);
 		console.error('[API/Potluck PATCH] Error updating potluck item:', {
 			error: err,
-			status: err?.response?.status,
-			message: err?.message
+			status,
+			message: getErrorMessage(err)
 		});
 
 		// Preserve 403 Forbidden errors
-		if (err?.response?.status === 403) {
+		if (status === 403) {
 			throw error(403, 'You do not have permission to edit this item');
 		}
 
 		// Preserve 404 Not Found errors
-		if (err?.response?.status === 404) {
+		if (status === 404) {
 			throw error(404, 'Potluck item not found');
 		}
 
@@ -92,20 +113,21 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 
 		console.log('[API/Potluck DELETE] Delete successful');
 		return json({ success: true });
-	} catch (err: any) {
+	} catch (err) {
+		const status = getResponseStatus(err);
 		console.error('[API/Potluck DELETE] Error deleting potluck item:', {
 			error: err,
-			status: err?.response?.status,
-			message: err?.message
+			status,
+			message: getErrorMessage(err)
 		});
 
 		// Preserve 403 Forbidden errors
-		if (err?.response?.status === 403) {
+		if (status === 403) {
 			throw error(403, 'You do not have permission to delete this item');
 		}
 
 		// Preserve 404 Not Found errors
-		if (err?.response?.status === 404) {
+		if (status === 404) {
 			throw error(404, 'Potluck item not found');
 		}
 

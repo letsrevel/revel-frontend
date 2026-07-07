@@ -60,7 +60,7 @@
 		role="region"
 		aria-label={ariaLabel}
 	>
-		<!-- Content is sanitized by DOMPurify before rendering -->
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -- content is sanitized via sanitizeHtml (DOMPurify allowlist) before rendering -->
 		{@html renderedHtml}
 	</div>
 {/if}

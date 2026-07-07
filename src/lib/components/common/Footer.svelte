@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { env } from '$env/dynamic/public';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { Bug, Info } from '@lucide/svelte';
@@ -66,42 +67,54 @@
 			<div class="col-span-2">
 				<h3 class="mb-4 text-lg font-semibold">{m['footer.solutionsTitle']()}</h3>
 				<div class="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
 					<a
 						href="{landingPagePrefix}/eventbrite-alternative"
 						class="text-muted-foreground transition-colors hover:text-foreground"
 					>
 						{m['footer.solutionEventbrite']()}
 					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
 					<a
 						href="{landingPagePrefix}/privacy-focused-events"
 						class="text-muted-foreground transition-colors hover:text-foreground"
 					>
 						{m['footer.solutionPrivacy']()}
 					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
 					<a
 						href="{landingPagePrefix}/self-hosted-event-platform"
 						class="text-muted-foreground transition-colors hover:text-foreground"
 					>
 						{m['footer.solutionSelfHosted']()}
 					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
 					<a
 						href="{landingPagePrefix}/community-first-event-platform"
 						class="text-muted-foreground transition-colors hover:text-foreground"
 					>
 						{m['footer.solutionCommunity']()}
 					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
 					<a
 						href="{landingPagePrefix}/queer-event-management"
 						class="text-muted-foreground transition-colors hover:text-foreground"
 					>
 						{m['footer.solutionQueer']()}
 					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
 					<a
 						href="{landingPagePrefix}/kink-event-ticketing"
 						class="text-muted-foreground transition-colors hover:text-foreground"
 					>
 						{m['footer.solutionKink']()}
 					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				</div>
 			</div>
 
@@ -111,7 +124,7 @@
 				<ul class="space-y-2 text-sm">
 					<li>
 						<a
-							href="/legal/privacy"
+							href={resolve('/(public)/legal/privacy', {})}
 							class="text-muted-foreground transition-colors hover:text-foreground"
 						>
 							{m['footer.privacyPolicy']()}
@@ -119,7 +132,7 @@
 					</li>
 					<li>
 						<a
-							href="/legal/terms"
+							href={resolve('/(public)/legal/terms', {})}
 							class="text-muted-foreground transition-colors hover:text-foreground"
 						>
 							{m['footer.termsOfService']()}
@@ -141,13 +154,16 @@
 				<h3 class="mb-4 text-lg font-semibold">{m['footer.resourcesTitle']()}</h3>
 				<ul class="space-y-2 text-sm">
 					<li>
-						<a href="/events" class="text-muted-foreground transition-colors hover:text-foreground">
+						<a
+							href={resolve('/(public)/events', {})}
+							class="text-muted-foreground transition-colors hover:text-foreground"
+						>
 							{m['nav.browseEvents']()}
 						</a>
 					</li>
 					<li>
 						<a
-							href="/organizations"
+							href={resolve('/(public)/organizations', {})}
 							class="text-muted-foreground transition-colors hover:text-foreground"
 						>
 							{m['nav.organizations']()}

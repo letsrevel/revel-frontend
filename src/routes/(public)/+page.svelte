@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import type { PageData } from './$types';
 	import { SeoHead } from '$lib/seo';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -13,7 +14,6 @@
 	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
 	import {
-		Mail,
 		Calendar,
 		Users,
 		Shield,
@@ -127,26 +127,26 @@
 			<div class="mt-10 flex flex-wrap items-center justify-center gap-4">
 				{#if isAuthenticated}
 					<a
-						href="/dashboard"
+						href={resolve('/(auth)/dashboard', {})}
 						class="rounded-md bg-primary px-6 py-3 text-base font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
 					>
 						{m['userMenu.dashboard']()}
 					</a>
 					<a
-						href="/events"
+						href={resolve('/(public)/events', {})}
 						class="rounded-md border border-primary px-6 py-3 text-base font-semibold text-primary hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
 					>
 						{m['nav.browseEvents']()}
 					</a>
 				{:else}
 					<a
-						href="/events"
+						href={resolve('/(public)/events', {})}
 						class="rounded-md bg-primary px-6 py-3 text-base font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
 					>
 						{m['nav.browseEvents']()}
 					</a>
 					<a
-						href="/register"
+						href={resolve('/(public)/register', {})}
 						class="rounded-md border border-primary px-6 py-3 text-base font-semibold text-primary hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
 					>
 						{m['home.getStarted']()}
@@ -156,7 +156,7 @@
 			{#if !isAuthenticated}
 				<div class="mt-4">
 					<a
-						href="/login"
+						href={resolve('/(public)/login', {})}
 						class="text-sm text-muted-foreground hover:text-foreground hover:underline"
 					>
 						{m['home.alreadyHaveAccount']()}
@@ -585,6 +585,7 @@
 			</p>
 		</div>
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+			<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
 			<a
 				href="{landingPagePrefix}/queer-event-management"
 				class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-md"
@@ -605,7 +606,9 @@
 					<ArrowRight class="h-4 w-4" aria-hidden="true" />
 				</span>
 			</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 
+			<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
 			<a
 				href="{landingPagePrefix}/kink-event-ticketing"
 				class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-md"
@@ -626,7 +629,9 @@
 					<ArrowRight class="h-4 w-4" aria-hidden="true" />
 				</span>
 			</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 
+			<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
 			<a
 				href="{landingPagePrefix}/privacy-focused-events"
 				class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-md"
@@ -647,7 +652,9 @@
 					<ArrowRight class="h-4 w-4" aria-hidden="true" />
 				</span>
 			</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 
+			<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
 			<a
 				href="{landingPagePrefix}/self-hosted-event-platform"
 				class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-md"
@@ -668,7 +675,9 @@
 					<ArrowRight class="h-4 w-4" aria-hidden="true" />
 				</span>
 			</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 
+			<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
 			<a
 				href="{landingPagePrefix}/eventbrite-alternative"
 				class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-md"
@@ -689,7 +698,9 @@
 					<ArrowRight class="h-4 w-4" aria-hidden="true" />
 				</span>
 			</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 
+			<!-- eslint-disable svelte/no-navigation-without-resolve -- locale-prefixed landing path; the prefix comes from getLocale() and cannot map to a single static route id -->
 			<a
 				href="{landingPagePrefix}/community-first-event-platform"
 				class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-md"
@@ -710,6 +721,7 @@
 					<ArrowRight class="h-4 w-4" aria-hidden="true" />
 				</span>
 			</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 		</div>
 	</div>
 
@@ -746,7 +758,7 @@
 				{m['learnMore.startOrganizingDescription']()}
 			</p>
 			<a
-				href="/create-org"
+				href={resolve('/(auth)/create-org', {})}
 				class="inline-flex items-center gap-2 rounded-md bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
 			>
 				<Building2 class="h-5 w-5" aria-hidden="true" />
@@ -761,7 +773,6 @@
 
 <!-- Fee Calculator Modal -->
 {#if showFeeCalculator}
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
 		onclick={(e) => e.target === e.currentTarget && (showFeeCalculator = false)}

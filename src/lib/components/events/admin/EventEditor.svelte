@@ -25,9 +25,11 @@
 		VenueDetailSchema,
 		OrganizationRetrieveSchema,
 		OrganizationQuestionnaireInListSchema,
-		ResourceVisibility
+		ResourceVisibility,
+		EventSeriesRetrieveSchema
 	} from '$lib/api/generated/types.gen';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import EssentialsStep from './EssentialsStep.svelte';
 	import DetailsStep from './DetailsStep.svelte';
@@ -50,7 +52,7 @@
 		existingEvent?: EventDetailSchema;
 		userCity?: CitySchema | null;
 		orgCity?: CitySchema | null;
-		eventSeries?: Array<{ id: string; [key: string]: unknown }>;
+		eventSeries?: EventSeriesRetrieveSchema[];
 		questionnaires?: Array<{ id: string; [key: string]: unknown }>;
 		initialTab?: 'details' | 'ticketing';
 		/** Optional `start` datetime to seed the form with (create mode only).
@@ -115,7 +117,7 @@
 		is_open_ended: existingEvent?.is_open_ended ?? false,
 		city_id: existingEvent?.city?.id || orgCity?.id || userCity?.id || null,
 		visibility: existingEvent?.visibility || 'public',
-		event_type: (existingEvent?.event_type as any) || ('public' as any),
+		event_type: existingEvent?.event_type || 'public',
 		requires_ticket: existingEvent?.requires_ticket || false,
 		description: existingEvent?.description || '',
 		address: existingEvent?.address || '',
@@ -460,17 +462,22 @@
 		isSaving = true;
 
 		try {
+			const startIso = toISOString(formData.start);
+			if (!formData.name || !startIso) {
+				errorMessage = m['eventWizard.error_fixValidation']();
+				return;
+			}
 			const createData: EventCreateSchema = {
-				name: formData.name!,
-				start: toISOString(formData.start)!,
-				city_id: formData.city_id!,
+				name: formData.name,
+				start: startIso,
+				city_id: formData.city_id,
 				visibility: formData.visibility || 'public',
-				event_type: (formData.event_type || 'public') as any,
-				status: 'draft' as any,
+				event_type: formData.event_type || 'public',
+				status: 'draft',
 				requires_ticket: formData.requires_ticket || false,
 				requires_full_profile: formData.requires_full_profile || false,
 				venue_id: formData.venue_id || null
-			} as any;
+			};
 
 			const result = await createEventMutation.mutateAsync(createData);
 			eventId = result.id;
@@ -511,12 +518,17 @@
 		isSaving = true;
 
 		try {
+			const startIso = toISOString(formData.start);
+			if (!formData.name || !startIso || !formData.city_id) {
+				errorMessage = m['eventWizard.error_fixValidation']();
+				return;
+			}
 			const updateData: Partial<EventEditSchema> = {
-				name: formData.name!,
-				start: toISOString(formData.start)!,
-				city_id: formData.city_id!,
+				name: formData.name,
+				start: startIso,
+				city_id: formData.city_id,
 				visibility: formData.visibility || 'public',
-				event_type: (formData.event_type || 'public') as any,
+				event_type: formData.event_type || 'public',
 				description: formData.description || null,
 				end: formData.is_open_ended ? null : toISOString(formData.end),
 				is_open_ended: formData.is_open_ended ?? false,
@@ -567,10 +579,15 @@
 			toast.success(m['eventWizard.eventUpdatedSuccess']());
 
 			if (andExit) {
-				goto(`/org/${organization.slug}/admin/events`);
+				goto(resolve('/(auth)/org/[slug]/admin/events', { slug: organization.slug }));
 			} else if (!isEditMode) {
 				// Creation flow: redirect to edit page so user gets tabs & status management
-				goto(`/org/${organization.slug}/admin/events/${eventId}/edit`);
+				goto(
+					resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
+						slug: organization.slug,
+						event_id: eventId
+					})
+				);
 			}
 		} catch (error) {
 			console.error('Save error:', error);
@@ -621,6 +638,7 @@
 			} else {
 				url.searchParams.set('tab', value);
 			}
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- target is derived from the live page URL (base path already applied); resolve() cannot express search params
 			goto(url.pathname + url.search, { replaceState: true, noScroll: true });
 		}
 	}
@@ -677,7 +695,7 @@
 		{#snippet detailsSection()}
 			<DetailsStep
 				{formData}
-				eventSeries={eventSeries as any}
+				{eventSeries}
 				questionnaires={assignedQuestionnaires}
 				{eventId}
 				organizationId={organization.id}

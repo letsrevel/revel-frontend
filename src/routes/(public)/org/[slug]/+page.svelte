@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import type { PageData } from './$types';
 	import {
 		MapPin,
@@ -49,8 +50,7 @@
 
 	// Compute full image URLs
 	// Prefer thumbnail for logo display (64-80px size)
-	const org = $derived(organization as any);
-	const logoUrl = $derived(getImageUrl(org.logo_thumbnail_url || organization.logo));
+	const logoUrl = $derived(getImageUrl(organization.logo_thumbnail_url || organization.logo));
 	const coverUrl = $derived(getImageUrl(organization.cover_art));
 
 	// Compute location display
@@ -230,6 +230,7 @@
 						{#if hasSocialLinks}
 							<div class="flex items-center gap-3">
 								{#if organization.instagram_url}
+									<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
 									<a
 										href={organization.instagram_url}
 										target="_blank"
@@ -239,8 +240,10 @@
 									>
 										<Instagram class="h-5 w-5" aria-hidden="true" />
 									</a>
+									<!-- eslint-enable svelte/no-navigation-without-resolve -->
 								{/if}
 								{#if organization.facebook_url}
+									<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
 									<a
 										href={organization.facebook_url}
 										target="_blank"
@@ -250,8 +253,10 @@
 									>
 										<Facebook class="h-5 w-5" aria-hidden="true" />
 									</a>
+									<!-- eslint-enable svelte/no-navigation-without-resolve -->
 								{/if}
 								{#if organization.bluesky_url}
+									<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
 									<a
 										href={organization.bluesky_url}
 										target="_blank"
@@ -261,8 +266,10 @@
 									>
 										<AtSign class="h-5 w-5" aria-hidden="true" />
 									</a>
+									<!-- eslint-enable svelte/no-navigation-without-resolve -->
 								{/if}
 								{#if organization.telegram_url}
+									<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
 									<a
 										href={organization.telegram_url}
 										target="_blank"
@@ -272,6 +279,7 @@
 									>
 										<Send class="h-5 w-5" aria-hidden="true" />
 									</a>
+									<!-- eslint-enable svelte/no-navigation-without-resolve -->
 								{/if}
 							</div>
 						{/if}
@@ -284,7 +292,7 @@
 				<!-- Edit Button (if user has permission) -->
 				{#if data.canEdit}
 					<a
-						href="/org/{organization.slug}/admin/settings"
+						href={resolve('/(auth)/org/[slug]/admin/settings', { slug: organization.slug })}
 						class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						<Settings class="h-4 w-4" aria-hidden="true" />
@@ -297,7 +305,6 @@
 					<ClaimMembershipButton
 						tokenId={data.organizationTokenDetails.id || ''}
 						tokenDetails={data.organizationTokenDetails}
-						organizationName={organization.name}
 						class="inline-flex items-center gap-2"
 					/>
 					<!-- Request Membership Button (if org accepts members and user is not a member) -->
@@ -366,7 +373,7 @@
 						</p>
 					</div>
 					<a
-						href="/org/{organization.slug}/resources"
+						href={resolve('/(public)/org/[slug]/resources', { slug: organization.slug })}
 						class="text-sm font-medium text-primary hover:underline"
 					>
 						{m['organizationProfile.resources_viewAll']()}
@@ -502,6 +509,7 @@
 					</button>
 
 					<!-- Calendar View Shortcut -->
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 					<a
 						href="/events?organization={organization.id}&organization_name={encodeURIComponent(
 							organization.name
@@ -511,8 +519,10 @@
 						<CalendarDays class="h-4 w-4" aria-hidden="true" />
 						{m['organizationProfile.events_calendar']()}
 					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 
 					<!-- Browse All Button -->
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 					<a
 						href="/events?organization={organization.id}&organization_name={encodeURIComponent(
 							organization.name
@@ -522,6 +532,7 @@
 						{m['organizationProfile.events_browseAll']()}
 						<ArrowRight class="h-4 w-4" aria-hidden="true" />
 					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				</div>
 			</div>
 

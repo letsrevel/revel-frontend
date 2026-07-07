@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import type { PageData } from './$types';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -220,6 +221,18 @@
 		queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
 	}
 
+	/**
+	 * Read the (undeclared) runtime `detail` field some backend error payloads carry.
+	 * Returns the detail when it is a non-empty string, otherwise the fallback.
+	 */
+	function errorDetailOr(error: unknown, fallback: string): string {
+		if (typeof error === 'object' && error !== null && 'detail' in error) {
+			const { detail } = error;
+			if (typeof detail === 'string' && detail) return detail;
+		}
+		return fallback;
+	}
+
 	// Type for checkout parameters
 	interface CheckoutParams {
 		tierId: string;
@@ -317,8 +330,7 @@
 				body
 			});
 			if (response.error) {
-				const errorDetail = (response.error as any)?.detail || 'Failed to claim ticket';
-				throw new Error(typeof errorDetail === 'string' ? errorDetail : 'Failed to claim ticket');
+				throw new Error(errorDetailOr(response.error, 'Failed to claim ticket'));
 			}
 			return response.data;
 		},
@@ -338,8 +350,7 @@
 				body
 			});
 			if (response.error) {
-				const errorDetail = (response.error as any)?.detail || 'Failed to checkout';
-				throw new Error(typeof errorDetail === 'string' ? errorDetail : 'Failed to checkout');
+				throw new Error(errorDetailOr(response.error, 'Failed to checkout'));
 			}
 			return response.data;
 		},
@@ -359,8 +370,7 @@
 				body
 			});
 			if (response.error) {
-				const errorDetail = (response.error as any)?.detail || 'Failed to checkout';
-				throw new Error(typeof errorDetail === 'string' ? errorDetail : 'Failed to checkout');
+				throw new Error(errorDetailOr(response.error, 'Failed to checkout'));
 			}
 			return response.data;
 		},
@@ -443,10 +453,7 @@
 			});
 
 			if (response.error) {
-				const errorDetail = (response.error as any)?.detail || 'Failed to resume checkout';
-				throw new Error(
-					typeof errorDetail === 'string' ? errorDetail : 'Failed to resume checkout'
-				);
+				throw new Error(errorDetailOr(response.error, 'Failed to resume checkout'));
 			}
 			return response.data;
 		},
@@ -477,10 +484,7 @@
 			});
 
 			if (response.error) {
-				const errorDetail = (response.error as any)?.detail || 'Failed to cancel reservation';
-				throw new Error(
-					typeof errorDetail === 'string' ? errorDetail : 'Failed to cancel reservation'
-				);
+				throw new Error(errorDetailOr(response.error, 'Failed to cancel reservation'));
 			}
 			return response.data;
 		},
@@ -730,7 +734,6 @@
 				onResumePayment={handleResumePaymentFromSidebar}
 				isResumingPayment={resumePaymentMutation.isPending}
 				onGuestRsvpClick={openGuestRsvpDialog}
-				onGuestTicketClick={openGuestTicketDialog}
 				onInvitationRequestSuccess={refreshUserStatus}
 				onWhitelistRequestSuccess={refreshUserStatus}
 			/>
@@ -841,7 +844,10 @@
 							</h2>
 						</div>
 						<a
-							href="/events/{event.organization.slug}/series/{event.event_series.slug}"
+							href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {
+								org_slug: event.organization.slug,
+								series_slug: event.event_series.slug
+							})}
 							class="block p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 						>
 							<div class="font-medium">{event.event_series.name}</div>
@@ -884,7 +890,6 @@
 						onResumePayment={handleResumePaymentFromSidebar}
 						isResumingPayment={resumePaymentMutation.isPending}
 						onGuestRsvpClick={openGuestRsvpDialog}
-						onGuestTicketClick={openGuestTicketDialog}
 						onInvitationRequestSuccess={refreshUserStatus}
 						onWhitelistRequestSuccess={refreshUserStatus}
 					/>
@@ -909,7 +914,10 @@
 								</h2>
 							</div>
 							<a
-								href="/events/{event.organization.slug}/series/{event.event_series.slug}"
+								href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {
+									org_slug: event.organization.slug,
+									series_slug: event.event_series.slug
+								})}
 								class="block p-4 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 							>
 								<div class="font-medium">{event.event_series.name}</div>
@@ -960,7 +968,6 @@
 	tiers={ticketTiers}
 	eventId={event.id}
 	isAuthenticated={data.isAuthenticated}
-	hasTicket={!!userTicket}
 	membershipTier={data.membershipTier}
 	canAttendWithoutLogin={event.can_attend_without_login}
 	{tierRemainingTickets}
@@ -1000,7 +1007,6 @@
 	<GuestRsvpDialog
 		bind:open={showGuestRsvpDialog}
 		eventId={event.id}
-		eventName={event.name}
 		onClose={closeGuestRsvpDialog}
 		onSuccess={handleGuestAttendanceSuccess}
 	/>
@@ -1011,7 +1017,6 @@
 	<GuestTicketDialog
 		bind:open={showGuestTicketDialog}
 		eventId={event.id}
-		eventName={event.name}
 		tier={selectedTierForGuest}
 		eventMaxTicketsPerUser={event.max_tickets_per_user}
 		onClose={closeGuestTicketDialog}

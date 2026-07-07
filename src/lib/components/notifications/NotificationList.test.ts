@@ -74,7 +74,7 @@ describe('NotificationList', () => {
 		return render(QueryClientProvider, {
 			props: {
 				client: queryClient,
-				children: NotificationList as any,
+				children: NotificationList,
 				childProps: props
 			}
 		});
@@ -353,7 +353,6 @@ describe('NotificationList', () => {
 	});
 
 	it('filters by notification type', async () => {
-		const user = userEvent.setup();
 		const { notificationListNotifications } = require('$lib/api/generated');
 		notificationListNotifications.mockResolvedValue({
 			data: {

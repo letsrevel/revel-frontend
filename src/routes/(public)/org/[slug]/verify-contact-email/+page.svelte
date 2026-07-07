@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import type { PageData } from './$types';
 	import { CheckCircle, XCircle, Loader2 } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
@@ -74,7 +75,7 @@
 			<div class="space-y-3 border-t pt-6">
 				{#if data.success && data.organizationSlug}
 					<a
-						href="/org/{data.organizationSlug}/admin/settings"
+						href={resolve('/(auth)/org/[slug]/admin/settings', { slug: data.organizationSlug })}
 						class="inline-flex h-10 items-center justify-center rounded-md bg-primary px-6 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					>
 						{m['orgVerifyContactEmail.goToSettings']()}
@@ -85,13 +86,13 @@
 					</p>
 					<div class="flex flex-col gap-3 sm:flex-row sm:justify-center">
 						<a
-							href="/dashboard"
+							href={resolve('/(auth)/dashboard', {})}
 							class="inline-flex h-10 items-center justify-center rounded-md bg-primary px-6 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						>
 							{m['orgVerifyContactEmail.goToDashboard']()}
 						</a>
 						<a
-							href="/login"
+							href={resolve('/(public)/login', {})}
 							class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-6 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						>
 							{m['orgVerifyContactEmail.backToLogin']()}

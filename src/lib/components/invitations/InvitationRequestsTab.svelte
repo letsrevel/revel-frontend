@@ -320,6 +320,7 @@
 
 				<div class="flex gap-2">
 					{#if requestsPagination.hasPrev}
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 						<a
 							href="?tab=requests&page={requestsPagination.page -
 								1}&page_size={requestsPagination.pageSize}{activeStatusFilter
@@ -329,9 +330,11 @@
 						>
 							{m['eventInvitationsAdmin.previous']()}
 						</a>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					{/if}
 
 					{#if requestsPagination.hasNext}
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 						<a
 							href="?tab=requests&page={requestsPagination.page +
 								1}&page_size={requestsPagination.pageSize}{activeStatusFilter
@@ -341,6 +344,7 @@
 						>
 							{m['eventInvitationsAdmin.next']()}
 						</a>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					{/if}
 				</div>
 			</div>

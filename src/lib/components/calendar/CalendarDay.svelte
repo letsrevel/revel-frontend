@@ -10,7 +10,6 @@
 		isCurrentMonth: boolean;
 		isToday: boolean;
 		isLoading?: boolean;
-		onclick?: (event: MouseEvent) => void;
 		onEventClick?: (event: EventInListSchema) => void;
 	}
 
@@ -20,7 +19,6 @@
 		isCurrentMonth,
 		isToday,
 		isLoading = false,
-		onclick,
 		onEventClick
 	}: Props = $props();
 
@@ -47,11 +45,11 @@
 
 	{#if dayEvents.length > 0}
 		<div class="calendar-day-events">
-			{#each visibleEvents as event}
+			{#each visibleEvents as event (event.id)}
 				<button
 					type="button"
 					class="calendar-event-badge"
-					onclick={(e) => {
+					onclick={() => {
 						onEventClick?.(event);
 					}}
 					aria-label={event.name}

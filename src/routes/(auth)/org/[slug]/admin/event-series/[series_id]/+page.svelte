@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { ArrowLeft, AlertTriangle, Info, Pause } from '@lucide/svelte';
 	import type { PageData } from './$types';
@@ -196,7 +197,7 @@
 	});
 
 	function goBack(): void {
-		goto(`/org/${organization.slug}/admin/event-series`);
+		goto(resolve('/(auth)/org/[slug]/admin/event-series', { slug: organization.slug }));
 	}
 </script>
 

@@ -4,6 +4,7 @@
 	import { NotificationPreferencesForm } from '$lib/components/notifications';
 	import type { NotificationPreferenceSchema } from '$lib/api/generated/types.gen';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { Bell } from '@lucide/svelte';
 	import { SeoHead } from '$lib/seo';
 
@@ -28,7 +29,7 @@
 		success = true;
 		// Redirect to homepage after 3 seconds
 		setTimeout(() => {
-			goto('/');
+			goto(resolve('/(public)', {}));
 		}, 3000);
 	}
 </script>
@@ -46,7 +47,7 @@
 				{m['unsubscribePage.invalidTokenDescription']()}
 			</p>
 			<a
-				href="/"
+				href={resolve('/(public)', {})}
 				class="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
 			>
 				{m['unsubscribePage.goHome']()}

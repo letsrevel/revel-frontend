@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	// 1. Imports
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
@@ -290,7 +291,7 @@
 				<label for="selfBillingCheckbox" class="cursor-pointer text-sm leading-relaxed">
 					{m['billing.form.selfBillingCheckbox']()}
 					<a
-						href="/legal/terms"
+						href={resolve('/(public)/legal/terms', {})}
 						target="_blank"
 						rel="noopener noreferrer"
 						class="text-primary underline-offset-4 hover:underline"

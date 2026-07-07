@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 	import {
 		Card,
@@ -26,8 +27,8 @@
 
 	const { data }: Props = $props();
 
-	const summary = $derived(data.summary!);
-	const questionnaire = $derived(data.questionnaire!);
+	const summary = $derived(data.summary);
+	const questionnaire = $derived(data.questionnaire);
 	const events = $derived(questionnaire?.events ?? []);
 	const eventSeries = $derived(questionnaire?.event_series ?? []);
 
@@ -42,6 +43,7 @@
 	);
 
 	function setEventFilter(eventId: string) {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const params = new URLSearchParams($page.url.searchParams);
 		if (eventId) {
 			params.set('event_id', eventId);
@@ -49,10 +51,12 @@
 		} else {
 			params.delete('event_id');
 		}
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params)
 		goto(`?${params.toString()}`, { replaceState: true });
 	}
 
 	function setSeriesFilter(seriesId: string) {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const params = new URLSearchParams($page.url.searchParams);
 		if (seriesId) {
 			params.set('event_series_id', seriesId);
@@ -60,6 +64,7 @@
 		} else {
 			params.delete('event_series_id');
 		}
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params)
 		goto(`?${params.toString()}`, { replaceState: true });
 	}
 
@@ -103,7 +108,10 @@
 	<!-- Header -->
 	<div class="mb-8">
 		<a
-			href="/org/{data.organizationSlug}/admin/questionnaires/{data.questionnaireId}"
+			href={resolve('/(auth)/org/[slug]/admin/questionnaires/[id]', {
+				slug: data.organizationSlug,
+				id: data.questionnaireId
+			})}
 			class="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
 		>
 			<ArrowLeft class="h-4 w-4" />

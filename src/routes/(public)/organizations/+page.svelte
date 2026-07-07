@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 	import { OrganizationCard } from '$lib/components/organizations';
 	import {
@@ -57,12 +58,19 @@
 		}
 
 		const params = organizationFiltersToParams(newFilters);
-		goto(`/organizations?${params}`, { replaceState: false, keepFocus: true });
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()
+		goto(`${resolve('/(public)/organizations', {})}?${params}`, {
+			replaceState: false,
+			keepFocus: true
+		});
 	}
 
 	function handleClearFilters(): void {
 		const params = organizationFiltersToParams(clearOrganizationFilters());
-		goto(`/organizations${params.toString() ? `?${params}` : ''}`, { replaceState: false });
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()
+		goto(`${resolve('/(public)/organizations', {})}${params.toString() ? `?${params}` : ''}`, {
+			replaceState: false
+		});
 	}
 
 	function handleOpenMobileFilters(): void {
@@ -182,6 +190,7 @@
 						<!-- Pagination controls -->
 						<div class="flex items-center gap-2">
 							{#if hasPrevPage}
+								<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 								<a
 									href="?{organizationFiltersToParams({
 										...currentFilters,
@@ -192,6 +201,7 @@
 								>
 									{m['common.pagination_previous']()}
 								</a>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
 							{:else}
 								<button
 									type="button"
@@ -215,6 +225,7 @@
 							</span>
 
 							{#if hasNextPage}
+								<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 								<a
 									href="?{organizationFiltersToParams({
 										...currentFilters,
@@ -225,6 +236,7 @@
 								>
 									{m['common.pagination_next']()}
 								</a>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
 							{:else}
 								<button
 									type="button"

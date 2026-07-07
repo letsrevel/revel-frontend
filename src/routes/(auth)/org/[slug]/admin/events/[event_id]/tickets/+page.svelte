@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto, invalidateAll } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
 	import { fade, scale } from 'svelte/transition';
@@ -25,8 +26,9 @@
 		organizationadminblacklistCreateBlacklistEntry,
 		eventadminticketsExportAttendees
 	} from '$lib/api';
+	import type { ComponentProps } from 'svelte';
 	import type { PageData } from './$types';
-	import type { MembershipTierSchema } from '$lib/api/generated/types.gen';
+	import type { AdminTicketSchema, MembershipTierSchema } from '$lib/api/generated/types.gen';
 	import TicketFilters from '$lib/components/tickets/TicketFilters.svelte';
 	import TicketTable from '$lib/components/tickets/TicketTable.svelte';
 	import TicketCardList from '$lib/components/tickets/TicketCardList.svelte';
@@ -54,13 +56,18 @@
 	// Sort state (server-side, persisted in the URL)
 	let selectedOrderBy = $state<TicketOrderBy | undefined>(data.filters.orderBy ?? undefined);
 
+	// CheckInDialog declares a stricter ticket shape than the generated
+	// AdminTicketSchema (non-nullable id/status, no nulls on user name fields),
+	// so store the adapted shape for it.
+	type CheckInDialogTicket = NonNullable<ComponentProps<typeof CheckInDialog>['ticket']>;
+
 	// Confirmation dialogs
 	let showCancelDialog = $state(false);
-	let ticketToCancel = $state<any>(null);
+	let ticketToCancel = $state<AdminTicketSchema | null>(null);
 	let showConfirmPaymentDialog = $state(false);
-	let ticketToConfirm = $state<any>(null);
+	let ticketToConfirm = $state<AdminTicketSchema | null>(null);
 	let showCheckInDialog = $state(false);
-	let ticketToCheckIn = $state<any>(null);
+	let ticketToCheckIn = $state<CheckInDialogTicket | null>(null);
 	let showQRScanner = $state(false);
 
 	// Make member modal state
@@ -71,11 +78,32 @@
 
 	// Blacklist confirmation state
 	let showBlacklistDialog = $state(false);
-	let ticketToBlacklist = $state<any>(null);
+	let ticketToBlacklist = $state<AdminTicketSchema | null>(null);
 
 	// Unconfirm payment confirmation state
 	let showUnconfirmPaymentDialog = $state(false);
-	let ticketToUnconfirm = $state<any>(null);
+	let ticketToUnconfirm = $state<AdminTicketSchema | null>(null);
+
+	/**
+	 * Adapt an AdminTicketSchema to CheckInDialog's stricter ticket shape.
+	 * Only normalizes generator-nullable fields (null -> undefined / ''); the
+	 * data itself is unchanged.
+	 */
+	function toCheckInTicket(ticket: AdminTicketSchema): CheckInDialogTicket {
+		return {
+			...ticket,
+			id: ticket.id ?? '',
+			status: ticket.status ?? '',
+			user: {
+				...ticket.user,
+				email: ticket.user.email ?? undefined,
+				preferred_name: ticket.user.preferred_name ?? undefined,
+				first_name: ticket.user.first_name ?? undefined,
+				last_name: ticket.user.last_name ?? undefined
+			},
+			seat: ticket.seat ?? undefined
+		};
+	}
 
 	// PWYC confirm payment state
 	let pwycPricePaid = $state('');
@@ -270,7 +298,7 @@
 	/**
 	 * Open make member modal
 	 */
-	async function openMakeMemberModal(ticket: any) {
+	async function openMakeMemberModal(ticket: AdminTicketSchema) {
 		const user = ticket.user;
 		if (!user?.id) {
 			toast.error(m['eventTicketsAdmin.userIdNotAvailable']());
@@ -287,7 +315,7 @@
 		userToMakeMember = {
 			id: user.id,
 			displayName: getUserDisplayName(user),
-			email: user.email
+			email: user.email ?? undefined
 		};
 
 		// Load membership tiers if not already loaded
@@ -321,7 +349,7 @@
 	/**
 	 * Open blacklist dialog
 	 */
-	function openBlacklistDialog(ticket: any) {
+	function openBlacklistDialog(ticket: AdminTicketSchema) {
 		if (!ticket.user?.id) {
 			toast.error(m['eventTicketsAdmin.userIdNotAvailable']());
 			return;
@@ -350,7 +378,7 @@
 	/**
 	 * Open unconfirm payment dialog
 	 */
-	function openUnconfirmPaymentDialog(ticket: any) {
+	function openUnconfirmPaymentDialog(ticket: AdminTicketSchema) {
 		ticketToUnconfirm = ticket;
 		showUnconfirmPaymentDialog = true;
 	}
@@ -359,7 +387,7 @@
 	 * Confirm unconfirm payment
 	 */
 	function confirmUnconfirmPayment() {
-		if (ticketToUnconfirm) {
+		if (ticketToUnconfirm?.id) {
 			unconfirmPaymentMutation.mutate(ticketToUnconfirm.id);
 		}
 	}
@@ -385,6 +413,7 @@
 	 * Apply filters to URL
 	 */
 	function applyFilters() {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const params = new URLSearchParams();
 		if (searchQuery) params.set('search', searchQuery);
 		if (selectedStatus) params.set('status', selectedStatus);
@@ -393,6 +422,7 @@
 		// Reset to page 1 when filters change
 		params.set('page', '1');
 
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params)
 		goto(`?${params.toString()}`, { replaceState: true, keepFocus: true });
 	}
 
@@ -432,15 +462,17 @@
 	 * Navigate to page
 	 */
 	function goToPage(pageNum: number) {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const params = new URLSearchParams($page.url.searchParams);
 		params.set('page', pageNum.toString());
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params)
 		goto(`?${params.toString()}`, { replaceState: true, keepFocus: true });
 	}
 
 	/**
 	 * Handle confirm payment
 	 */
-	function handleConfirmPayment(ticket: any) {
+	function handleConfirmPayment(ticket: AdminTicketSchema) {
 		ticketToConfirm = ticket;
 		// Pre-fill with pwyc_min for PWYC tiers
 		if (isPwycTicket(ticket)) {
@@ -455,7 +487,7 @@
 	 * Submit confirm payment
 	 */
 	function submitConfirmPayment() {
-		if (ticketToConfirm) {
+		if (ticketToConfirm?.id) {
 			const pricePaid = isPwycTicket(ticketToConfirm) ? pwycPricePaid : undefined;
 			confirmPaymentMutation.mutate({ ticketId: ticketToConfirm.id, pricePaid });
 		}
@@ -464,7 +496,7 @@
 	/**
 	 * Handle cancel ticket
 	 */
-	function handleCancelTicket(ticket: any) {
+	function handleCancelTicket(ticket: AdminTicketSchema) {
 		ticketToCancel = ticket;
 		showCancelDialog = true;
 	}
@@ -473,7 +505,7 @@
 	 * Submit cancel ticket
 	 */
 	function submitCancelTicket() {
-		if (ticketToCancel) {
+		if (ticketToCancel?.id) {
 			cancelTicketMutation.mutate(ticketToCancel.id);
 		}
 	}
@@ -481,8 +513,8 @@
 	/**
 	 * Handle manual check-in
 	 */
-	function handleCheckIn(ticket: any) {
-		ticketToCheckIn = ticket;
+	function handleCheckIn(ticket: AdminTicketSchema) {
+		ticketToCheckIn = toCheckInTicket(ticket);
 		showCheckInDialog = true;
 	}
 
@@ -511,7 +543,7 @@
 			}
 
 			// Show confirmation dialog with ticket info
-			ticketToCheckIn = response.data;
+			ticketToCheckIn = toCheckInTicket(response.data);
 			showCheckInDialog = true;
 			showQRScanner = false;
 		} catch (err) {
@@ -540,12 +572,14 @@
 	<!-- Header -->
 	<div class="mb-6">
 		<div class="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
-			<a href="/org/{data.event.organization.slug}/admin" class="hover:underline"
-				>{m['eventTicketsAdmin.breadcrumbDashboard']()}</a
+			<a
+				href={resolve('/(auth)/org/[slug]/admin', { slug: data.event.organization.slug })}
+				class="hover:underline">{m['eventTicketsAdmin.breadcrumbDashboard']()}</a
 			>
 			<span>/</span>
-			<a href="/org/{data.event.organization.slug}/admin/events" class="hover:underline"
-				>{m['eventTicketsAdmin.breadcrumbEvents']()}</a
+			<a
+				href={resolve('/(auth)/org/[slug]/admin/events', { slug: data.event.organization.slug })}
+				class="hover:underline">{m['eventTicketsAdmin.breadcrumbEvents']()}</a
 			>
 			<span>/</span>
 			<span>{data.event.name}</span>
@@ -557,20 +591,28 @@
 			</div>
 			<div class="flex flex-wrap items-center gap-2">
 				<a
-					href="/org/{data.event.organization.slug}/admin/events/{data.event.id}/edit"
+					href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
+						slug: data.event.organization.slug,
+						event_id: data.event.id
+					})}
 					class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 				>
 					{m['eventEditor.editEvent']()}
 				</a>
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 				<a
-					href="/org/{data.event.organization.slug}/admin/events/{data.event.id}/edit?tab=ticketing"
+					href={`${resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', { slug: data.event.organization.slug, event_id: data.event.id })}?tab=ticketing`}
 					class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 				>
 					{m['eventEditor.ticketing']()}
 				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				{#if data.event.waitlist_open}
 					<a
-						href="/org/{data.event.organization.slug}/admin/events/{data.event.id}/waitlist"
+						href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/waitlist', {
+							slug: data.event.organization.slug,
+							event_id: data.event.id
+						})}
 						class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 					>
 						{m['eventActionSidebar.manageWaitlist']()}
@@ -707,7 +749,6 @@
 	{@const pwyc = isPwycTicket(ticketToConfirm)}
 	{@const pwycWarning = pwyc ? getPwycWarning(ticketToConfirm, pwycPricePaid) : null}
 	{@const pwycValid = !pwyc || (pwycPricePaid !== '' && parseFloat(pwycPricePaid) > 0)}
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		role="presentation"
 		onclick={(e) => {

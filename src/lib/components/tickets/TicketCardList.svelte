@@ -34,21 +34,22 @@
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 	import RefundStatusBadge from './RefundStatusBadge.svelte';
 	import TicketDiscountBadge from './TicketDiscountBadge.svelte';
+	import type { AdminTicketSchema } from '$lib/api';
 
 	interface Props {
-		tickets: any[];
+		tickets: AdminTicketSchema[];
 		checkInPending: boolean;
 		confirmPaymentPending: boolean;
 		cancelTicketPending: boolean;
 		addMemberPending: boolean;
 		unconfirmPaymentPending: boolean;
 		tiersLoading: boolean;
-		onCheckIn: (ticket: any) => void;
-		onConfirmPayment: (ticket: any) => void;
-		onMakeMember: (ticket: any) => void;
-		onCancelTicket: (ticket: any) => void;
-		onBlacklist: (ticket: any) => void;
-		onUnconfirmPayment: (ticket: any) => void;
+		onCheckIn: (ticket: AdminTicketSchema) => void;
+		onConfirmPayment: (ticket: AdminTicketSchema) => void;
+		onMakeMember: (ticket: AdminTicketSchema) => void;
+		onCancelTicket: (ticket: AdminTicketSchema) => void;
+		onBlacklist: (ticket: AdminTicketSchema) => void;
+		onUnconfirmPayment: (ticket: AdminTicketSchema) => void;
 	}
 
 	const {
@@ -83,7 +84,7 @@
 {/snippet}
 
 <div class="space-y-4 md:hidden">
-	{#each tickets as ticket}
+	{#each tickets as ticket (ticket.id)}
 		{@const guestName = getGuestNameIfDifferent(ticket)}
 		{@const seatInfo = getSeatDisplay(ticket)}
 		<div class="rounded-lg border bg-card p-4">
@@ -132,10 +133,10 @@
 					<span
 						class={cn(
 							'rounded-full px-2 py-1 text-xs font-semibold',
-							getTicketStatusColor(ticket.status)
+							getTicketStatusColor(ticket.status ?? '')
 						)}
 					>
-						{getTicketStatusLabel(ticket.status)}
+						{getTicketStatusLabel(ticket.status ?? '')}
 					</span>
 					{#if ticket.status === 'cancelled'}
 						<RefundStatusBadge
@@ -267,7 +268,7 @@
 					<Button
 						size="sm"
 						variant="outline"
-						onclick={() => window.open(ticket.payment.stripe_dashboard_url, '_blank')}
+						onclick={() => window.open(ticket.payment?.stripe_dashboard_url, '_blank')}
 						class="w-full"
 					>
 						<ExternalLink class="h-4 w-4" aria-hidden="true" />

@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import type { PageData } from './$types';
 	import type { EventSeriesInListSchema } from '$lib/api/generated/types.gen';
 	import { Repeat, Calendar, Edit, Eye, Tag, Plus, Folder } from '@lucide/svelte';
@@ -27,14 +28,24 @@
 	 * cover/tags) lives in the settings dialog there.
 	 */
 	function editSeries(seriesId: string): void {
-		goto(`/org/${organization.slug}/admin/event-series/${seriesId}/`);
+		goto(
+			resolve('/(auth)/org/[slug]/admin/event-series/[series_id]', {
+				slug: organization.slug,
+				series_id: seriesId
+			})
+		);
 	}
 
 	/**
 	 * Navigate to public event series page
 	 */
 	function viewSeries(seriesSlug: string): void {
-		goto(`/events/${organization.slug}/series/${seriesSlug}`);
+		goto(
+			resolve('/(public)/events/[org_slug]/series/[series_slug]', {
+				org_slug: organization.slug,
+				series_slug: seriesSlug
+			})
+		);
 	}
 
 	/**
@@ -159,7 +170,7 @@
 						<!-- Tags -->
 						{#if series.tags && series.tags.length > 0}
 							<div class="flex flex-wrap gap-1">
-								{#each series.tags.slice(0, 3) as tag}
+								{#each series.tags.slice(0, 3) as tag (tag)}
 									<span
 										class="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs font-medium"
 									>

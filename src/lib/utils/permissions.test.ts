@@ -235,6 +235,7 @@ describe('Permission Utilities', () => {
 			const message = getPermissionDeniedMessage(
 				mockPermissions,
 				'org-staff',
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any -- intentionally passing an action outside `keyof PermissionMap` to exercise the generic-fallback branch; the literal is asserted on below
 				'some_unknown_action' as any
 			);
 			expect(message).toContain('some_unknown_action');

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { eventpublicattendanceSubmitQuestionnaire } from '$lib/api';
 	import { Button } from '$lib/components/ui/button';
@@ -24,8 +25,7 @@
 		getQuestionsForOption,
 		getSectionsForOption,
 		optionHasDependents,
-		type ConditionalQuestion,
-		type ConditionalSection
+		type ConditionalQuestion
 	} from '$lib/utils/conditional-questions';
 
 	interface Props {
@@ -214,7 +214,12 @@
 			toast.info(m['questionnaireSubmissionPage.toast_pending_title'](), {
 				description: m['questionnaireSubmissionPage.toast_pending_description']()
 			});
-			goto(eventUrl);
+			goto(
+				resolve('/(public)/events/[org_slug]/[event_slug]', {
+					org_slug: data.event.organization.slug,
+					event_slug: data.event.slug
+				})
+			);
 		},
 		onError: (error: Error) => {
 			toast.error(m['questionnaireSubmissionPage.toast_error_title'](), {
@@ -288,7 +293,10 @@
 	<!-- Header -->
 	<div class="mb-8">
 		<a
-			href="/events/{data.event.organization.slug}/{data.event.slug}"
+			href={resolve('/(public)/events/[org_slug]/[event_slug]', {
+				org_slug: data.event.organization.slug,
+				event_slug: data.event.slug
+			})}
 			class="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
 		>
 			<ArrowLeft class="h-4 w-4" />
@@ -392,7 +400,13 @@
 				<Button
 					type="button"
 					variant="outline"
-					onclick={() => goto(`/events/${data.event.organization.slug}/${data.event.slug}`)}
+					onclick={() =>
+						goto(
+							resolve('/(public)/events/[org_slug]/[event_slug]', {
+								org_slug: data.event.organization.slug,
+								event_slug: data.event.slug
+							})
+						)}
 				>
 					{m['questionnaireSubmissionPage.button_cancel']()}
 				</Button>
@@ -528,7 +542,6 @@
 			accept={question.allowed_mime_types?.join(',') || '*/*'}
 			maxSize={question.max_file_size || 10 * 1024 * 1024}
 			maxFiles={question.max_files || 1}
-			required={question.is_mandatory}
 			error={validationErrors.get(question.id)}
 			onFilesChange={(files) => handleFileUploadChange(question.id, files)}
 		/>

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Folder, Repeat, ArrowRight } from '@lucide/svelte';
@@ -11,18 +12,18 @@
 		onClose: () => void;
 	}
 
-	/* eslint-disable prefer-const -- `open` is bindable so the whole destructure must use `let`. */
 	let { open = $bindable(), organizationSlug, onClose }: Props = $props();
-	/* eslint-enable prefer-const */
 
 	function pickRecurring(): void {
 		onClose();
-		goto(`/org/${organizationSlug}/admin/event-series/new-recurring`);
+		goto(
+			resolve('/(auth)/org/[slug]/admin/event-series/new-recurring', { slug: organizationSlug })
+		);
 	}
 
 	function pickEmpty(): void {
 		onClose();
-		goto(`/org/${organizationSlug}/admin/event-series/new`);
+		goto(resolve('/(auth)/org/[slug]/admin/event-series/new', { slug: organizationSlug }));
 	}
 </script>
 

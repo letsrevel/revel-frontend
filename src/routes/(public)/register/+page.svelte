@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { enhance } from '$app/forms';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
@@ -38,7 +39,7 @@
 			/[A-Z]/.test(password) &&
 			/[a-z]/.test(password) &&
 			/\d/.test(password) &&
-			/[!@#$%^&*(),.?":{}|<>\-\[\]=]/.test(password)
+			/[!@#$%^&*(),.?":{}|<>\-[\]=]/.test(password)
 	);
 
 	// Error handling - type assertion needed due to ActionData union
@@ -275,7 +276,7 @@
 				<label for="acceptTerms" class="text-sm">
 					{m['register.acceptTerms']()}
 					<a
-						href="/legal/terms"
+						href={resolve('/(public)/legal/terms', {})}
 						target="_blank"
 						rel="noopener noreferrer"
 						class="text-primary underline-offset-4 hover:underline"
@@ -283,7 +284,7 @@
 					>
 					{m['register.and']()}
 					<a
-						href="/legal/privacy"
+						href={resolve('/(public)/legal/privacy', {})}
 						target="_blank"
 						rel="noopener noreferrer"
 						class="text-primary underline-offset-4 hover:underline">{m['footer.privacyPolicy']()}</a
@@ -329,7 +330,10 @@
 		<!-- Login Link -->
 		<div class="text-center text-sm">
 			<span class="text-muted-foreground">{m['register.alreadyHaveAccount']()}</span>
-			<a href="/login" class="ml-1 text-primary underline-offset-4 hover:underline">
+			<a
+				href={resolve('/(public)/login', {})}
+				class="ml-1 text-primary underline-offset-4 hover:underline"
+			>
 				{m['auth.login']()}
 			</a>
 		</div>

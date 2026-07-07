@@ -20,6 +20,7 @@
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { browser } from '$app/environment';
 	import { invalidateAll } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
 	import { extractErrorMessage } from '$lib/utils/errors';
@@ -30,6 +31,7 @@
 		organizationadminvatDeleteVatId,
 		organizationadminvatSetInvoicingMode
 	} from '$lib/api/generated/sdk.gen';
+	import type { OrganizationBillingInfoUpdateSchema } from '$lib/api/generated/types.gen';
 	import type { LayoutData } from '../$types';
 	import { formatDate } from '$lib/utils/date';
 	import {
@@ -91,8 +93,8 @@
 						path: { slug },
 						headers: { Authorization: `Bearer ${accessToken}` }
 					});
-					if (response.error) throw new Error('Failed to load billing info');
-					return response.data!;
+					if (response.error || !response.data) throw new Error('Failed to load billing info');
+					return response.data;
 				},
 				enabled: !!accessToken
 			}))
@@ -128,19 +130,20 @@
 	const updateBillingMutation = browser
 		? createMutation(() => ({
 				mutationFn: async () => {
-					const body: Record<string, string | number | null> = {};
-					if (countryCode) body.vat_country_code = countryCode;
-					else body.vat_country_code = null;
-					if (vatRate) body.vat_rate = parseFloat(vatRate);
-					else body.vat_rate = null;
-					body.billing_name = billingName || null;
-					body.billing_address = billingAddress || null;
-					body.billing_email = billingEmail || null;
+					// Backend fields are non-nullable strings with '' meaning "clear";
+					// vat_rate is the only nullable field.
+					const body: OrganizationBillingInfoUpdateSchema = {
+						vat_country_code: countryCode || '',
+						vat_rate: vatRate ? parseFloat(vatRate) : null,
+						billing_name: billingName || '',
+						billing_address: billingAddress || '',
+						billing_email: billingEmail || ''
+					};
 
 					const response = await organizationadminvatUpdateBillingInfo({
 						path: { slug },
 						headers: { Authorization: `Bearer ${accessToken}` },
-						body: body as any
+						body
 					});
 					if (response.error) {
 						const msg = extractErrorMessage(
@@ -149,7 +152,8 @@
 						);
 						throw new Error(msg);
 					}
-					return response.data!;
+					if (!response.data) throw new Error(m['orgAdmin.billing.billingInfo.error']());
+					return response.data;
 				},
 				onSuccess: () => {
 					billingFormDirty = false;
@@ -197,7 +201,8 @@
 						const msg = extractErrorMessage(response.error, m['orgAdmin.billing.vatId.error']());
 						throw new Error(msg);
 					}
-					return { pending: false, data: response.data! } as const;
+					if (!response.data) throw new Error(m['orgAdmin.billing.vatId.error']());
+					return { pending: false, data: response.data } as const;
 				},
 				onSuccess: (result) => {
 					if (result.pending) {
@@ -267,7 +272,8 @@
 						);
 						throw new Error(msg);
 					}
-					return response.data!;
+					if (!response.data) throw new Error(m['orgAdmin.billing.invoicingMode.error']());
+					return response.data;
 				},
 				onSuccess: () => {
 					queryClient.invalidateQueries({ queryKey: ['billing-info', slug] });
@@ -310,28 +316,28 @@
 	<!-- Quick Links -->
 	<div class="flex flex-wrap gap-3">
 		<a
-			href="/org/{slug}/admin/billing/invoices"
+			href={resolve('/(auth)/org/[slug]/admin/billing/invoices', { slug: slug })}
 			class="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
 		>
 			<FileText class="h-4 w-4" aria-hidden="true" />
 			{m['orgAdmin.billing.invoices.title']()}
 		</a>
 		<a
-			href="/org/{slug}/admin/billing/credit-notes"
+			href={resolve('/(auth)/org/[slug]/admin/billing/credit-notes', { slug: slug })}
 			class="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
 		>
 			<Receipt class="h-4 w-4" aria-hidden="true" />
 			{m['orgAdmin.billing.creditNotes.title']()}
 		</a>
 		<a
-			href="/org/{slug}/admin/billing/attendee-invoices"
+			href={resolve('/(auth)/org/[slug]/admin/billing/attendee-invoices', { slug: slug })}
 			class="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
 		>
 			<Users class="h-4 w-4" aria-hidden="true" />
 			{m['orgAdmin.billing.attendeeInvoices.title']()}
 		</a>
 		<a
-			href="/org/{slug}/admin/billing/attendee-credit-notes"
+			href={resolve('/(auth)/org/[slug]/admin/billing/attendee-credit-notes', { slug: slug })}
 			class="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
 		>
 			<Receipt class="h-4 w-4" aria-hidden="true" />
@@ -468,10 +474,8 @@
 							}}
 						>
 							<Select.Trigger id="billing-country" class="w-full">
-								{#snippet children()}
-									{EU_COUNTRIES.find((c) => c.code === countryCode)?.name ||
-										m['orgAdmin.billing.billingInfo.countryPlaceholder']()}
-								{/snippet}
+								{EU_COUNTRIES.find((c) => c.code === countryCode)?.name ||
+									m['orgAdmin.billing.billingInfo.countryPlaceholder']()}
 							</Select.Trigger>
 							<Select.Content>
 								{#each EU_COUNTRIES as country (country.code)}

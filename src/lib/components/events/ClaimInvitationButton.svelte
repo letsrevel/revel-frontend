@@ -6,6 +6,7 @@
 	import { Loader2, Check, LogIn } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import type { EventTokenSchema } from '$lib/api/generated/types.gen';
 
 	interface Props {
@@ -28,7 +29,8 @@
 		if (!isAuthenticated) {
 			// Redirect to login with return URL
 			const currentUrl = window.location.pathname + window.location.search;
-			goto(`/login?redirect=${encodeURIComponent(currentUrl)}`);
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()
+			goto(`${resolve('/(public)/login', {})}?redirect=${encodeURIComponent(currentUrl)}`);
 			return;
 		}
 
@@ -41,7 +43,9 @@
 			});
 
 			if (response.error) {
-				const errorDetail = (response.error as any)?.detail;
+				const err: unknown = response.error;
+				const errorDetail =
+					typeof err === 'object' && err !== null && 'detail' in err ? err.detail : undefined;
 				throw new Error(
 					typeof errorDetail === 'string' ? errorDetail : m['claimInvitationButton.failedToClaim']()
 				);
@@ -60,9 +64,11 @@
 			setTimeout(() => {
 				window.location.replace(url.toString());
 			}, 1000);
-		} catch (err: any) {
+		} catch (err) {
 			console.error('Failed to claim invitation:', err);
-			toast.error(err.message || m['claimInvitationButton.failedToClaim']());
+			toast.error(
+				(err instanceof Error && err.message) || m['claimInvitationButton.failedToClaim']()
+			);
 		} finally {
 			isLoading = false;
 		}

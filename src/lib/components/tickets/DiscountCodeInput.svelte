@@ -76,8 +76,9 @@
 			});
 
 			if (response.error) {
-				const err = response.error as any;
-				const detail = err?.detail;
+				const err: unknown = response.error;
+				const detail =
+					err && typeof err === 'object' ? (err as { detail?: unknown }).detail : undefined;
 				discountError =
 					typeof detail === 'string'
 						? detail

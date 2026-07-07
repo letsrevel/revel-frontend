@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData, ActionData } from './$types';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { Check, AlertCircle, ChevronLeft, Mail, UserPlus, Link } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import InvitationRequestsTab from '$lib/components/invitations/InvitationRequestsTab.svelte';
@@ -18,8 +19,12 @@
 
 	const accessToken = $derived(authStore.accessToken);
 
-	// Active tab state
-	let activeTab = $state<'requests' | 'invitations' | 'links'>(data.activeTab as any);
+	// Active tab state. `data.activeTab` comes from the URL, so narrow it
+	// against the known tabs (falling back to the default tab).
+	const TABS = ['requests', 'invitations', 'links'] as const;
+	let activeTab = $state<'requests' | 'invitations' | 'links'>(
+		TABS.find((t) => t === data.activeTab) ?? 'requests'
+	);
 
 	// Filter states
 	let activeStatusFilter = $state<string | null>(data.filters?.status || null);
@@ -28,15 +33,18 @@
 
 	function switchTab(tab: 'requests' | 'invitations' | 'links') {
 		activeTab = tab;
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const params = new URLSearchParams(window.location.search);
 		params.set('tab', tab);
 		params.delete('page');
 		params.delete('status');
 		params.delete('search');
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params)
 		goto(`?${params.toString()}`, { replaceState: true, keepFocus: true });
 	}
 
 	function applyFilters() {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via window.location.href
 		const params = new URLSearchParams();
 		params.set('tab', activeTab);
 		if (activeStatusFilter) params.set('status', activeStatusFilter);
@@ -78,7 +86,7 @@
 	<div>
 		<div class="mb-4">
 			<a
-				href="/org/{data.organization.slug}/admin/events"
+				href={resolve('/(auth)/org/[slug]/admin/events', { slug: data.organization.slug })}
 				class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
 			>
 				<ChevronLeft class="h-4 w-4" aria-hidden="true" />

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
 	import type { UserEventStatus } from './types';
 	import { cn } from '$lib/utils/cn';
@@ -83,7 +84,10 @@
 <article class={containerClasses}>
 	<!-- Clickable overlay link for accessibility -->
 	<a
-		href="/events/{event.organization.slug}/{event.slug}"
+		href={resolve('/(public)/events/[org_slug]/[event_slug]', {
+			org_slug: event.organization.slug,
+			event_slug: event.slug
+		})}
 		data-sveltekit-preload-data="hover"
 		class="absolute inset-0 z-10"
 		aria-label={accessibleLabel}
@@ -179,7 +183,7 @@
 					<div class="flex items-start gap-2 text-sm">
 						<Tag class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
 						<div class="flex flex-wrap gap-1">
-							{#each event.tags.slice(0, 3) as tag}
+							{#each event.tags.slice(0, 3) as tag (tag)}
 								<span
 									class="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
 								>

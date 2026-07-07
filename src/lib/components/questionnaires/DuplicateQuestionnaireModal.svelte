@@ -6,6 +6,7 @@
 	import { questionnaireDuplicateOrgQuestionnaire } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { Copy, Loader2 } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 
@@ -64,7 +65,12 @@
 			return response.data;
 		},
 		onSuccess: (data) => {
-			goto(`/org/${organizationSlug}/admin/questionnaires/${data.id}`);
+			goto(
+				resolve('/(auth)/org/[slug]/admin/questionnaires/[id]', {
+					slug: organizationSlug,
+					id: data.id
+				})
+			);
 			onClose();
 		},
 		onError: (error: Error) => {

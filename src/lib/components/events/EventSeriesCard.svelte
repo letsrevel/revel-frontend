@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { EventSeriesRetrieveSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
@@ -18,11 +19,9 @@
 
 	// Image URLs with backend URL prepended and fallback to organization
 	// Prefer social preview for card display (1200x630, matches aspect-video ratio)
-	const seriesCoverArtSocialUrl = $derived(getImageUrl((series as any).cover_art_social_url));
+	const seriesCoverArtSocialUrl = $derived(getImageUrl(series.cover_art_social_url));
 	const seriesCoverArtUrl = $derived(getImageUrl(series.cover_art));
-	const orgCoverArtSocialUrl = $derived(
-		getImageUrl((series.organization as any).cover_art_social_url)
-	);
+	const orgCoverArtSocialUrl = $derived(getImageUrl(series.organization.cover_art_social_url));
 	const orgCoverArtUrl = $derived(getImageUrl(series.organization.cover_art));
 	const imageUrl = $derived(
 		!imageError
@@ -30,11 +29,9 @@
 			: null
 	);
 
-	const seriesLogoThumbnailUrl = $derived(getImageUrl((series as any).logo_thumbnail_url));
+	const seriesLogoThumbnailUrl = $derived(getImageUrl(series.logo_thumbnail_url));
 	const seriesLogoUrl = $derived(getImageUrl(series.logo));
-	const orgLogoThumbnailUrl = $derived(
-		getImageUrl((series.organization as any).logo_thumbnail_url)
-	);
+	const orgLogoThumbnailUrl = $derived(getImageUrl(series.organization.logo_thumbnail_url));
 	const orgLogoUrl = $derived(getImageUrl(series.organization.logo));
 	const logoUrl = $derived(
 		seriesLogoThumbnailUrl || seriesLogoUrl || orgLogoThumbnailUrl || orgLogoUrl
@@ -90,7 +87,10 @@
 <article class={containerClasses}>
 	<!-- Clickable overlay link for accessibility -->
 	<a
-		href="/events/{series.organization.slug}/series/{series.slug}"
+		href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {
+			org_slug: series.organization.slug,
+			series_slug: series.slug
+		})}
 		data-sveltekit-preload-data="hover"
 		class="absolute inset-0 z-10"
 		aria-label={accessibleLabel}
@@ -185,7 +185,7 @@
 					<div class="flex items-start gap-2 text-sm">
 						<Tag class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
 						<div class="flex flex-wrap gap-1">
-							{#each series.tags.slice(0, 3) as tag}
+							{#each series.tags.slice(0, 3) as tag (tag)}
 								<span
 									class="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
 								>

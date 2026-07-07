@@ -9,6 +9,11 @@
 		isValid?: boolean;
 	}
 
+	// `isValid` is a $bindable prop kept in sync via the $effect below; `false` is the real
+	// initial value observed by any consumer that binds it before the first effect flush.
+	// Dropping the default (-> undefined) would change that public initial-value contract,
+	// so this is intentionally not "dead".
+	// eslint-disable-next-line no-useless-assignment
 	let { password, showRequirements = true, isValid = $bindable(false) }: Props = $props();
 
 	// Check individual requirements
@@ -16,7 +21,7 @@
 	const hasUppercase = $derived(/[A-Z]/.test(password));
 	const hasLowercase = $derived(/[a-z]/.test(password));
 	const hasDigit = $derived(/\d/.test(password));
-	const hasSpecial = $derived(/[!@#$%^&*(),.?":{}|<>\-\[\]=]/.test(password));
+	const hasSpecial = $derived(/[!@#$%^&*(),.?":{}|<>\-[\]=]/.test(password));
 
 	// Calculate strength score (0-5)
 	const score = $derived(

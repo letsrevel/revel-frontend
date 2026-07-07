@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import type { PageData } from './$types';
+	import { resolve } from '$app/paths';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { ArrowLeft, Loader2 } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -10,8 +10,6 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { organizationadmincoreCreateEventSeries } from '$lib/api/generated';
-
-	const { data }: { data: PageData } = $props();
 
 	const organization = $derived($page.data.organization);
 	const accessToken = $derived(authStore.accessToken);
@@ -26,7 +24,7 @@
 	 * Navigate back to series list
 	 */
 	function goBack(): void {
-		goto(`/org/${organization.slug}/admin/event-series`);
+		goto(resolve('/(auth)/org/[slug]/admin/event-series', { slug: organization.slug }));
 	}
 
 	/**
@@ -73,7 +71,12 @@
 			}
 
 			// Navigate to the edit page for the newly created series
-			goto(`/org/${organization.slug}/admin/event-series/${response.data.id}/edit`);
+			goto(
+				resolve('/(auth)/org/[slug]/admin/event-series/[series_id]/edit', {
+					slug: organization.slug,
+					series_id: response.data.id
+				})
+			);
 		} catch (err) {
 			console.error('Failed to create series:', err);
 			error = err instanceof Error ? err.message : m['eventSeriesNewPage.error_createFailed']();

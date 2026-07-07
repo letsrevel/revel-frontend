@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		organizationadminvenuesGetSector,
@@ -37,11 +38,11 @@
 				}
 			});
 
-			if (response.error) {
+			if (response.error || !response.data) {
 				throw new Error('Failed to load sector');
 			}
 
-			return response.data!;
+			return response.data;
 		}
 	}));
 
@@ -165,7 +166,12 @@
 	}
 
 	function handleBackToSectors() {
-		goto(`/org/${organization.slug}/admin/venues/${venueId}`);
+		goto(
+			resolve('/(auth)/org/[slug]/admin/venues/[venue_id]', {
+				slug: organization.slug,
+				venue_id: venueId
+			})
+		);
 	}
 
 	const sector = $derived(sectorQuery.data);

@@ -100,7 +100,7 @@ describe('RSVPButtons', () => {
 	});
 
 	it('highlights selected button', () => {
-		const { container } = render(RSVPButtons, {
+		render(RSVPButtons, {
 			props: {
 				onSelect: vi.fn(),
 				isEligible: true,

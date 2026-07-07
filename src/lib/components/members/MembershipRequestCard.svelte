@@ -66,6 +66,9 @@
 	function openDialog() {
 		dialogOpen = true;
 	}
+
+	// phone_number is not part of MinimalRevelUserSchema but may be present at runtime
+	const phoneNumber = $derived((request.user as { phone_number?: string | null }).phone_number);
 </script>
 
 <div
@@ -76,8 +79,8 @@
 		<div class="flex gap-3">
 			<!-- Avatar -->
 			<UserAvatar
-				profilePictureUrl={(request.user as any).profile_picture_url}
-				thumbnailUrl={(request.user as any).profile_picture_thumbnail_url}
+				profilePictureUrl={request.user.profile_picture_url}
+				thumbnailUrl={request.user.profile_picture_thumbnail_url}
 				{displayName}
 				firstName={request.user.first_name}
 				lastName={request.user.last_name}
@@ -126,9 +129,9 @@
 					<p class="mt-2 truncate text-sm text-muted-foreground">{request.user.email}</p>
 				{/if}
 
-				{#if (request.user as any).phone_number}
+				{#if phoneNumber}
 					<p class="mt-1 truncate text-sm text-muted-foreground">
-						📞 {(request.user as any).phone_number}
+						📞 {phoneNumber}
 					</p>
 				{/if}
 
@@ -263,12 +266,12 @@
 							<dd class="truncate text-foreground">{request.user.email}</dd>
 						</div>
 					{/if}
-					{#if (request.user as any).phone_number}
+					{#if phoneNumber}
 						<div class="flex gap-2">
 							<dt class="font-medium text-muted-foreground">
 								{m['membershipRequestCard.phone']()}
 							</dt>
-							<dd class="text-foreground">{(request.user as any).phone_number}</dd>
+							<dd class="text-foreground">{phoneNumber}</dd>
 						</div>
 					{/if}
 				</dl>

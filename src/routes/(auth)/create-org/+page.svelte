@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { enhance, applyAction } from '$app/forms';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -118,7 +119,7 @@
 					</p>
 					<div class="mt-4">
 						<a
-							href="/dashboard"
+							href={resolve('/(auth)/dashboard', {})}
 							class="inline-flex items-center gap-2 rounded-md bg-yellow-600 px-4 py-2 text-sm font-medium text-white hover:bg-yellow-700 dark:bg-yellow-700 dark:hover:bg-yellow-600"
 						>
 							{m['orgCreate.backToDashboard']()}
@@ -144,7 +145,7 @@
 					</p>
 					<div class="mt-4">
 						<a
-							href="/account/profile"
+							href={resolve('/(auth)/account/profile', {})}
 							class="inline-flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
 						>
 							{m['orgCreate.verifyEmail']()}
@@ -319,7 +320,7 @@
 					<Button
 						type="button"
 						variant="outline"
-						onclick={() => goto('/dashboard')}
+						onclick={() => goto(resolve('/(auth)/dashboard', {}))}
 						disabled={isSubmitting}
 						class="flex-1"
 					>

@@ -38,9 +38,10 @@
 	import RefundStatusBadge from './RefundStatusBadge.svelte';
 	import TicketDiscountBadge from './TicketDiscountBadge.svelte';
 	import { sortDirection, type TicketOrderBy, type TicketSortField } from './ticket-sort';
+	import type { AdminTicketSchema } from '$lib/api';
 
 	interface Props {
-		tickets: any[];
+		tickets: AdminTicketSchema[];
 		/** Active sort, or undefined for the backend default order. */
 		orderBy?: TicketOrderBy;
 		/** Toggle sort on a column. Omit to render non-sortable headers. */
@@ -51,12 +52,12 @@
 		addMemberPending: boolean;
 		unconfirmPaymentPending: boolean;
 		tiersLoading: boolean;
-		onCheckIn: (ticket: any) => void;
-		onConfirmPayment: (ticket: any) => void;
-		onMakeMember: (ticket: any) => void;
-		onCancelTicket: (ticket: any) => void;
-		onBlacklist: (ticket: any) => void;
-		onUnconfirmPayment: (ticket: any) => void;
+		onCheckIn: (ticket: AdminTicketSchema) => void;
+		onConfirmPayment: (ticket: AdminTicketSchema) => void;
+		onMakeMember: (ticket: AdminTicketSchema) => void;
+		onCancelTicket: (ticket: AdminTicketSchema) => void;
+		onBlacklist: (ticket: AdminTicketSchema) => void;
+		onUnconfirmPayment: (ticket: AdminTicketSchema) => void;
 	}
 
 	const {
@@ -140,7 +141,7 @@
 			</tr>
 		</thead>
 		<tbody class="divide-y">
-			{#each tickets as ticket}
+			{#each tickets as ticket (ticket.id)}
 				{@const guestName = getGuestNameIfDifferent(ticket)}
 				{@const seatInfo = getSeatDisplay(ticket)}
 				<tr class="hover:bg-muted/30">
@@ -223,10 +224,10 @@
 							<span
 								class={cn(
 									'inline-flex w-fit rounded-full px-2 py-1 text-xs font-semibold',
-									getTicketStatusColor(ticket.status)
+									getTicketStatusColor(ticket.status ?? '')
 								)}
 							>
-								{getTicketStatusLabel(ticket.status)}
+								{getTicketStatusLabel(ticket.status ?? '')}
 							</span>
 							{#if ticket.status === 'cancelled'}
 								<RefundStatusBadge
@@ -279,7 +280,7 @@
 								<Button
 									size="sm"
 									variant="outline"
-									onclick={() => window.open(ticket.payment.stripe_dashboard_url, '_blank')}
+									onclick={() => window.open(ticket.payment?.stripe_dashboard_url, '_blank')}
 								>
 									<ExternalLink class="h-4 w-4" aria-hidden="true" />
 									{m['ticketTable.manageOnStripe']()}

@@ -1,16 +1,9 @@
 <script lang="ts">
-	import type { PageData } from './$types';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { NotificationList } from '$lib/components/notifications';
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { Settings } from '@lucide/svelte';
-
-	interface Props {
-		data: PageData;
-	}
-
-	const { data }: Props = $props();
 </script>
 
 <svelte:head>

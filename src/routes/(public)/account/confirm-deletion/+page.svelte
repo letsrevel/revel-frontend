@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { enhance } from '$app/forms';
 	import { page } from '$app/stores';
 	import type { ActionData } from './$types';
@@ -60,7 +61,7 @@
 			<!-- Call to Action -->
 			<div class="text-center">
 				<a
-					href="/"
+					href={resolve('/(public)', {})}
 					class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
 					{m['accountDeletion.goToHomepage']()}
@@ -93,7 +94,7 @@
 
 			<div class="text-center">
 				<a
-					href="/account/privacy"
+					href={resolve('/(auth)/account/privacy', {})}
 					class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
 					{m['accountDeletion.goToPrivacySettings']()}
@@ -165,7 +166,7 @@
 
 				<div class="flex gap-3">
 					<a
-						href="/"
+						href={resolve('/(public)', {})}
 						class="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					>
 						{m['accountDeletion.cancel']()}

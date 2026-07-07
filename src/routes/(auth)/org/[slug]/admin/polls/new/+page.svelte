@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { ArrowLeft, Plus, FolderPlus, Upload } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -211,7 +212,16 @@
 				}
 				return;
 			}
-			await goto(`/org/${data.organization.slug}/admin/polls/${res.data!.id}`);
+			if (!res.data) {
+				saveError = m['pollNewPage.saveError']({ status: res.response.status });
+				return;
+			}
+			await goto(
+				resolve('/(auth)/org/[slug]/admin/polls/[id]', {
+					slug: data.organization.slug,
+					id: res.data.id
+				})
+			);
 		} catch (err) {
 			console.error(err);
 			saveError = String(err);

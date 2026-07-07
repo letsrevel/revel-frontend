@@ -32,6 +32,8 @@ import type {
 	QuestionnaireSection
 } from './questionnaire-form-types';
 
+import type { ApiOptionShape, ApiQuestionnaireShape } from './poll-api-sync-types';
+
 import {
 	mcQuestionToEditApiFormat,
 	ftQuestionToEditApiFormat,
@@ -62,7 +64,7 @@ export async function syncMcQuestion(
 	question: QuestionnaireQuestion,
 	authHeader: AuthHeader,
 	orgQuestionnaireId: string,
-	q: any,
+	q: ApiQuestionnaireShape | undefined,
 	sectionId?: string | null,
 	dependsOnOptionId?: string | null
 ) {
@@ -94,21 +96,21 @@ export async function syncMcOptions(
 	question: QuestionnaireQuestion,
 	authHeader: AuthHeader,
 	orgQuestionnaireId: string,
-	q: any
+	q: ApiQuestionnaireShape | undefined
 ) {
 	if (!question._apiId) return;
 
 	// Find existing options from API
-	let existingOptions: any[] = [];
+	let existingOptions: ApiOptionShape[] = [];
 	const topQuestion = (q?.multiplechoicequestion_questions || []).find(
-		(apiQ: any) => apiQ.id === question._apiId
+		(apiQ) => apiQ.id === question._apiId
 	);
 	if (topQuestion) {
 		existingOptions = topQuestion.options || [];
 	} else {
 		for (const section of q?.sections || []) {
 			const sectionQuestion = (section.multiplechoicequestion_questions || []).find(
-				(apiQ: any) => apiQ.id === question._apiId
+				(apiQ) => apiQ.id === question._apiId
 			);
 			if (sectionQuestion) {
 				existingOptions = sectionQuestion.options || [];
@@ -117,12 +119,13 @@ export async function syncMcOptions(
 		}
 	}
 
-	const existingOptionIds = new Set(existingOptions.map((o: any) => o.id).filter(Boolean));
+	const existingOptionIds = new Set(existingOptions.map((o) => o.id).filter(Boolean));
 	const localOptionApiIds = new Set<string>();
 	const optionsToSync: { option: QuestionnaireOption; apiId: string }[] = [];
 
-	for (let i = 0; i < (question.options || []).length; i++) {
-		const option = question.options![i];
+	const questionOptions = question.options ?? [];
+	for (let i = 0; i < questionOptions.length; i++) {
+		const option = questionOptions[i];
 		if (option._apiId) {
 			localOptionApiIds.add(option._apiId);
 			await questionnaireUpdateMcOption({
@@ -284,7 +287,7 @@ export async function createFuQuestion(
 
 /** Create all questions within a newly created section. */
 export async function createSectionQuestions(
-	section: QuestionnaireSection,
+	section: QuestionnaireSection | QuestionnaireConditionalSection,
 	sectionApiId: string,
 	authHeader: AuthHeader,
 	orgQuestionnaireId: string
@@ -306,26 +309,26 @@ export async function syncSectionQuestions(
 	sectionApiId: string,
 	authHeader: AuthHeader,
 	orgQuestionnaireId: string,
-	q: any
+	q: ApiQuestionnaireShape | undefined
 ) {
 	// Filter out conditional questions (managed separately)
-	const apiSection = (q?.sections || []).find((s: any) => s.id === sectionApiId);
+	const apiSection = (q?.sections || []).find((s) => s.id === sectionApiId);
 	const existingMcIds = new Set(
 		(apiSection?.multiplechoicequestion_questions || [])
-			.filter((apiQ: any) => !apiQ.depends_on_option_id)
-			.map((apiQ: any) => apiQ.id)
+			.filter((apiQ) => !apiQ.depends_on_option_id)
+			.map((apiQ) => apiQ.id)
 			.filter(Boolean) as string[]
 	);
 	const existingFtIds = new Set(
 		(apiSection?.freetextquestion_questions || [])
-			.filter((apiQ: any) => !apiQ.depends_on_option_id)
-			.map((apiQ: any) => apiQ.id)
+			.filter((apiQ) => !apiQ.depends_on_option_id)
+			.map((apiQ) => apiQ.id)
 			.filter(Boolean) as string[]
 	);
 	const existingFuIds = new Set(
 		(apiSection?.fileuploadquestion_questions || [])
-			.filter((apiQ: any) => !apiQ.depends_on_option_id)
-			.map((apiQ: any) => apiQ.id)
+			.filter((apiQ) => !apiQ.depends_on_option_id)
+			.map((apiQ) => apiQ.id)
 			.filter(Boolean) as string[]
 	);
 
@@ -391,7 +394,7 @@ export async function syncConditionalQuestions(
 	optionApiId: string,
 	authHeader: AuthHeader,
 	orgQuestionnaireId: string,
-	q: any
+	q: ApiQuestionnaireShape | undefined
 ) {
 	const conditionalQuestions = option.conditionalQuestions || [];
 
@@ -460,7 +463,7 @@ export async function syncConditionalSections(
 	optionApiId: string,
 	authHeader: AuthHeader,
 	orgQuestionnaireId: string,
-	q: any
+	q: ApiQuestionnaireShape | undefined
 ) {
 	const conditionalSections = option.conditionalSections || [];
 
@@ -474,8 +477,8 @@ export async function syncConditionalSections(
 	const localConditionalSectionIds = new Set<string>();
 
 	for (const condSection of conditionalSections) {
-		if ((condSection as any)._apiId) {
-			const apiId = (condSection as any)._apiId;
+		if (condSection._apiId) {
+			const apiId = condSection._apiId;
 			localConditionalSectionIds.add(apiId);
 			await questionnaireUpdateSection({
 				path: { org_questionnaire_id: orgQuestionnaireId, section_id: apiId },
@@ -501,12 +504,7 @@ export async function syncConditionalSections(
 			});
 			const sectionData = sectionResponse.data as { id?: string } | undefined;
 			if (sectionData?.id) {
-				await createSectionQuestions(
-					condSection as any,
-					sectionData.id,
-					authHeader,
-					orgQuestionnaireId
-				);
+				await createSectionQuestions(condSection, sectionData.id, authHeader, orgQuestionnaireId);
 			}
 		}
 	}
@@ -528,14 +526,14 @@ export async function syncConditionalSectionQuestions(
 	sectionApiId: string,
 	authHeader: AuthHeader,
 	orgQuestionnaireId: string,
-	q: any
+	q: ApiQuestionnaireShape | undefined
 ) {
-	const apiSection = (q?.sections || []).find((s: any) => s.id === sectionApiId);
+	const apiSection = (q?.sections || []).find((s) => s.id === sectionApiId);
 	const existingMcIds = new Set<string>(
-		(apiSection?.multiplechoicequestion_questions || []).map((apiQ: any) => apiQ.id).filter(Boolean)
+		(apiSection?.multiplechoicequestion_questions || []).map((apiQ) => apiQ.id).filter(Boolean)
 	);
 	const existingFtIds = new Set<string>(
-		(apiSection?.freetextquestion_questions || []).map((apiQ: any) => apiQ.id).filter(Boolean)
+		(apiSection?.freetextquestion_questions || []).map((apiQ) => apiQ.id).filter(Boolean)
 	);
 
 	const localMcIds = new Set<string>();
@@ -586,7 +584,7 @@ export async function syncConditionalSectionQuestions(
 export async function saveQuestionnaireIncremental(params: {
 	orgQuestionnaireId: string;
 	authHeader: AuthHeader;
-	q: any;
+	q: ApiQuestionnaireShape | undefined;
 	name: string;
 	minScore: number;
 	evaluationMode: QuestionnaireEvaluationMode;
@@ -627,26 +625,26 @@ export async function saveQuestionnaireIncremental(params: {
 	// Track existing NON-CONDITIONAL items for deletion
 	const existingSectionIds = new Set(
 		(q?.sections || [])
-			.filter((s: any) => !s.depends_on_option_id)
-			.map((s: any) => s.id)
+			.filter((s) => !s.depends_on_option_id)
+			.map((s) => s.id)
 			.filter(Boolean) as string[]
 	);
 	const existingTopMcIds = new Set(
 		(q?.multiplechoicequestion_questions || [])
-			.filter((apiQ: any) => !apiQ.depends_on_option_id)
-			.map((apiQ: any) => apiQ.id)
+			.filter((apiQ) => !apiQ.depends_on_option_id)
+			.map((apiQ) => apiQ.id)
 			.filter(Boolean) as string[]
 	);
 	const existingTopFtIds = new Set(
 		(q?.freetextquestion_questions || [])
-			.filter((apiQ: any) => !apiQ.depends_on_option_id)
-			.map((apiQ: any) => apiQ.id)
+			.filter((apiQ) => !apiQ.depends_on_option_id)
+			.map((apiQ) => apiQ.id)
 			.filter(Boolean) as string[]
 	);
 	const existingTopFuIds = new Set(
 		(q?.fileuploadquestion_questions || [])
-			.filter((apiQ: any) => !apiQ.depends_on_option_id)
-			.map((apiQ: any) => apiQ.id)
+			.filter((apiQ) => !apiQ.depends_on_option_id)
+			.map((apiQ) => apiQ.id)
 			.filter(Boolean) as string[]
 	);
 
@@ -691,7 +689,7 @@ export async function saveQuestionnaireIncremental(params: {
 					name: section.name,
 					description: section.description || null,
 					order: section.order,
-					depends_on_option_id: (section as any)._dependsOnOptionId ?? null
+					depends_on_option_id: section._dependsOnOptionId ?? null
 				},
 				headers: authHeader
 			});

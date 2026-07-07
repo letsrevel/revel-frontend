@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
 	import type { ActionData, PageData } from './$types';
@@ -73,7 +74,7 @@
 			<!-- Back to Login -->
 			<div class="text-center">
 				<a
-					href="/login"
+					href={resolve('/(public)/login', {})}
 					class="inline-flex items-center gap-2 text-sm text-primary underline-offset-4 hover:underline"
 				>
 					<ArrowLeft class="h-4 w-4" aria-hidden="true" />
@@ -149,7 +150,7 @@
 			<!-- Back to Login Link -->
 			<div class="text-center">
 				<a
-					href="/login"
+					href={resolve('/(public)/login', {})}
 					class="inline-flex items-center gap-2 text-sm text-primary underline-offset-4 hover:underline"
 				>
 					<ArrowLeft class="h-4 w-4" aria-hidden="true" />

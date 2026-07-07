@@ -107,7 +107,7 @@
 		markAllReadMutation.mutate();
 	}
 
-	function handleStatusChange(updatedNotification: NotificationSchema): void {
+	function handleStatusChange(_updatedNotification: NotificationSchema): void {
 		// Invalidate the query to refetch
 		queryClient.invalidateQueries({ queryKey: ['notifications'] });
 	}
@@ -171,7 +171,7 @@
 						</SelectTrigger>
 						<SelectContent>
 							<SelectItem value="all">{m['notificationList.allTypes']()}</SelectItem>
-							{#each notificationTypes as type}
+							{#each notificationTypes as type (type)}
 								<SelectItem value={type}>{type}</SelectItem>
 							{/each}
 						</SelectContent>
@@ -225,7 +225,7 @@
 		{#if isLoading}
 			<!-- Skeleton loaders -->
 			<div class="space-y-3" role="status" aria-label={m['notificationList.loading']()}>
-				{#each Array(compact ? 3 : 5) as _, i}
+				{#each Array(compact ? 3 : 5) as _, i (i)}
 					<Card class="p-4 md:p-6">
 						<div class="flex animate-pulse items-start gap-3">
 							<!-- Indicator skeleton -->
@@ -339,7 +339,7 @@
 
 			<!-- Page numbers -->
 			<div class="flex items-center gap-1">
-				{#each Array(totalPages) as _, i}
+				{#each Array(totalPages) as _, i (i)}
 					{@const page = i + 1}
 					{#if page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)}
 						<Button

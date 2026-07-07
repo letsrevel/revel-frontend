@@ -8,6 +8,7 @@
 	import { Ticket, Filter, ChevronLeft, ChevronRight, Loader2 } from '@lucide/svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 
 	const accessToken = $derived(authStore.accessToken);
 
@@ -64,7 +65,7 @@
 			const response = await dashboardDashboardTickets({
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
-					status: statusFilter as any,
+					status: statusFilter,
 					tier__payment_method: paymentMethodFilter || undefined,
 					search: debouncedSearch || undefined,
 					include_past: includePast,
@@ -103,6 +104,7 @@
 		} else {
 			url.searchParams.set('page', pageNum.toString());
 		}
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- target is derived from the live page URL (base path already applied); resolve() cannot express search params
 		goto(url.toString(), { replaceState: true, noScroll: true });
 	}
 
@@ -167,7 +169,7 @@
 				<span class="text-sm font-medium">{m['dashboard.tickets.status']()}</span>
 			</div>
 			<div class="flex flex-wrap gap-2">
-				{#each statusFilters as filter}
+				{#each statusFilters as filter (filter.value ?? 'all')}
 					<button
 						type="button"
 						onclick={() => applyStatusFilter(filter.value)}
@@ -189,7 +191,7 @@
 				<span class="text-sm font-medium">{m['dashboard.tickets.paymentMethod']()}</span>
 			</div>
 			<div class="flex flex-wrap gap-2">
-				{#each paymentMethodFilters as filter}
+				{#each paymentMethodFilters as filter (filter.value ?? 'all')}
 					<button
 						type="button"
 						onclick={() => applyPaymentMethodFilter(filter.value)}
@@ -259,7 +261,7 @@
 					{m['dashboardTicketsPage.emptyHint']()}
 				</p>
 				<a
-					href="/events"
+					href={resolve('/(public)/events', {})}
 					class="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
 					{m['dashboardTicketsPage.browseEvents']()}

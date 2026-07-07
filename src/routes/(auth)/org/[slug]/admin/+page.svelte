@@ -2,6 +2,8 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import type { ResolvedPathname } from '$app/types';
 	import type { PageData } from './$types';
 	import {
 		Calendar,
@@ -58,8 +60,9 @@
 	const tiersQuery = createQuery(() => ({
 		queryKey: ['membership-tiers', organization?.slug],
 		queryFn: async () => {
+			if (!organization) throw new Error('Organization not loaded');
 			const response = await organizationadminmembersListMembershipTiers({
-				path: { slug: organization!.slug },
+				path: { slug: organization.slug },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (response.error) throw response.error;
@@ -79,7 +82,7 @@
 			title: m['orgAdmin.dashboard.quickActions.events.title'](),
 			description: m['orgAdmin.dashboard.quickActions.events.description'](),
 			icon: Calendar,
-			href: `/org/${organization.slug}/admin/events`,
+			href: resolve('/(auth)/org/[slug]/admin/events', { slug: organization.slug }),
 			color: 'text-blue-600 dark:text-blue-400',
 			bgColor: 'bg-blue-50 dark:bg-blue-950',
 			badge: undefined as string | undefined
@@ -88,7 +91,7 @@
 			title: m['orgAdmin.dashboard.quickActions.eventSeries.title'](),
 			description: m['orgAdmin.dashboard.quickActions.eventSeries.description'](),
 			icon: Repeat,
-			href: `/org/${organization.slug}/admin/event-series`,
+			href: resolve('/(auth)/org/[slug]/admin/event-series', { slug: organization.slug }),
 			color: 'text-indigo-600 dark:text-indigo-400',
 			bgColor: 'bg-indigo-50 dark:bg-indigo-950',
 			badge: undefined as string | undefined
@@ -97,7 +100,7 @@
 			title: m['orgAdmin.dashboard.quickActions.tickets.title'](),
 			description: m['orgAdmin.dashboard.quickActions.tickets.description'](),
 			icon: Ticket,
-			href: `/org/${organization.slug}/admin/tickets`,
+			href: resolve('/(auth)/org/[slug]/admin/tickets', { slug: organization.slug }),
 			color: 'text-teal-600 dark:text-teal-400',
 			bgColor: 'bg-teal-50 dark:bg-teal-950',
 			badge: undefined as string | undefined
@@ -106,7 +109,7 @@
 			title: m['orgAdmin.dashboard.quickActions.discountCodes.title'](),
 			description: m['orgAdmin.dashboard.quickActions.discountCodes.description'](),
 			icon: Tag,
-			href: `/org/${organization.slug}/admin/discount-codes`,
+			href: resolve('/(auth)/org/[slug]/admin/discount-codes', { slug: organization.slug }),
 			color: 'text-amber-600 dark:text-amber-400',
 			bgColor: 'bg-amber-50 dark:bg-amber-950',
 			badge: undefined as string | undefined
@@ -115,7 +118,7 @@
 			title: m['orgAdmin.dashboard.quickActions.members.title'](),
 			description: m['orgAdmin.dashboard.quickActions.members.description'](),
 			icon: Users,
-			href: `/org/${organization.slug}/admin/members`,
+			href: resolve('/(auth)/org/[slug]/admin/members', { slug: organization.slug }),
 			color: 'text-green-600 dark:text-green-400',
 			bgColor: 'bg-green-50 dark:bg-green-950',
 			badge: undefined as string | undefined
@@ -124,7 +127,7 @@
 			title: m['orgAdmin.dashboard.quickActions.polls.title'](),
 			description: m['orgAdmin.dashboard.quickActions.polls.description'](),
 			icon: BarChart3,
-			href: `/org/${organization.slug}/admin/polls`,
+			href: resolve('/(auth)/org/[slug]/admin/polls', { slug: organization.slug }),
 			color: 'text-cyan-600 dark:text-cyan-400',
 			bgColor: 'bg-cyan-50 dark:bg-cyan-950',
 			badge: undefined as string | undefined
@@ -133,7 +136,7 @@
 			title: m['orgAdmin.dashboard.quickActions.questionnaires.title'](),
 			description: m['orgAdmin.dashboard.quickActions.questionnaires.description'](),
 			icon: ClipboardList,
-			href: `/org/${organization.slug}/admin/questionnaires`,
+			href: resolve('/(auth)/org/[slug]/admin/questionnaires', { slug: organization.slug }),
 			color: 'text-orange-600 dark:text-orange-400',
 			bgColor: 'bg-orange-50 dark:bg-orange-950',
 			badge: undefined as string | undefined
@@ -142,7 +145,7 @@
 			title: m['orgAdmin.dashboard.quickActions.resources.title'](),
 			description: m['orgAdmin.dashboard.quickActions.resources.description'](),
 			icon: FolderOpen,
-			href: `/org/${organization.slug}/admin/resources`,
+			href: resolve('/(auth)/org/[slug]/admin/resources', { slug: organization.slug }),
 			color: 'text-cyan-600 dark:text-cyan-400',
 			bgColor: 'bg-cyan-50 dark:bg-cyan-950',
 			badge: undefined as string | undefined
@@ -151,7 +154,7 @@
 			title: m['orgAdmin.dashboard.quickActions.venues.title'](),
 			description: m['orgAdmin.dashboard.quickActions.venues.description'](),
 			icon: MapPin,
-			href: `/org/${organization.slug}/admin/venues`,
+			href: resolve('/(auth)/org/[slug]/admin/venues', { slug: organization.slug }),
 			color: 'text-pink-600 dark:text-pink-400',
 			bgColor: 'bg-pink-50 dark:bg-pink-950',
 			badge: undefined as string | undefined
@@ -160,7 +163,7 @@
 			title: m['orgAdmin.dashboard.quickActions.blacklist.title'](),
 			description: m['orgAdmin.dashboard.quickActions.blacklist.description'](),
 			icon: Ban,
-			href: `/org/${organization.slug}/admin/blacklist`,
+			href: resolve('/(auth)/org/[slug]/admin/blacklist', { slug: organization.slug }),
 			color: 'text-red-600 dark:text-red-400',
 			bgColor: 'bg-red-50 dark:bg-red-950',
 			badge: undefined as string | undefined
@@ -172,7 +175,7 @@
 						title: m['orgAdmin.dashboard.quickActions.billing.title'](),
 						description: m['orgAdmin.dashboard.quickActions.billing.description'](),
 						icon: CreditCard,
-						href: `/org/${organization.slug}/admin/billing`,
+						href: resolve('/(auth)/org/[slug]/admin/billing', { slug: organization.slug }),
 						color: 'text-slate-600 dark:text-slate-400',
 						bgColor: 'bg-slate-50 dark:bg-slate-950',
 						badge: undefined as string | undefined
@@ -181,7 +184,7 @@
 						title: m['orgAdmin.dashboard.quickActions.financials.title'](),
 						description: m['orgAdmin.dashboard.quickActions.financials.description'](),
 						icon: Wallet,
-						href: `/org/${organization.slug}/admin/financials`,
+						href: resolve('/(auth)/org/[slug]/admin/financials', { slug: organization.slug }),
 						color: 'text-emerald-600 dark:text-emerald-400',
 						bgColor: 'bg-emerald-50 dark:bg-emerald-950',
 						badge: undefined as string | undefined
@@ -192,7 +195,7 @@
 			title: m['announcements.title'](),
 			description: m['announcements.pageDescription'](),
 			icon: Megaphone,
-			href: `/org/${organization.slug}/admin/announcements`,
+			href: resolve('/(auth)/org/[slug]/admin/announcements', { slug: organization.slug }),
 			color: 'text-yellow-600 dark:text-yellow-400',
 			bgColor: 'bg-yellow-50 dark:bg-yellow-950',
 			badge: undefined as string | undefined
@@ -201,21 +204,22 @@
 			title: m['orgAdmin.dashboard.quickActions.settings.title'](),
 			description: m['orgAdmin.dashboard.quickActions.settings.description'](),
 			icon: Settings,
-			href: `/org/${organization.slug}/admin/settings`,
+			href: resolve('/(auth)/org/[slug]/admin/settings', { slug: organization.slug }),
 			color: 'text-purple-600 dark:text-purple-400',
 			bgColor: 'bg-purple-50 dark:bg-purple-950',
 			badge: undefined as string | undefined
 		}
 	]);
 
-	function navigateTo(href: string, disabled = false) {
+	function navigateTo(href: ResolvedPathname, disabled = false) {
 		if (!disabled) {
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in the quickActions[] list above
 			goto(href);
 		}
 	}
 
 	function createEvent() {
-		goto(`/org/${organization.slug}/admin/events/new`);
+		goto(resolve('/(auth)/org/[slug]/admin/events/new', { slug: organization.slug }));
 	}
 </script>
 
@@ -267,7 +271,7 @@
 
 		<!-- Action Cards Grid -->
 		<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-			{#each quickActions as action}
+			{#each quickActions as action (action.href)}
 				{@const Icon = action.icon}
 				{@const isDisabled = !!action.badge}
 				<button

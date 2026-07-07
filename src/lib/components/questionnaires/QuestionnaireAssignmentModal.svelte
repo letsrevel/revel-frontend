@@ -17,6 +17,7 @@
 		type OrganizationQuestionnaireSchema
 	} from '$lib/api/generated';
 	import { invalidateAll } from '$app/navigation';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	interface Props {
 		open: boolean;
@@ -35,14 +36,14 @@
 	let searchQueryEvents = $state('');
 	let isLoadingEvents = $state(true);
 	let allEvents = $state<EventInListSchema[]>([]);
-	let selectedEventIds = $state<Set<string>>(new Set());
+	const selectedEventIds = new SvelteSet<string>();
 	let includePastEvents = $state(false);
 
 	// Series state
 	let searchQuerySeries = $state('');
 	let isLoadingSeries = $state(true);
 	let allSeries = $state<EventSeriesRetrieveSchema[]>([]);
-	let selectedSeriesIds = $state<Set<string>>(new Set());
+	const selectedSeriesIds = new SvelteSet<string>();
 
 	// Saving state
 	let isSaving = $state(false);
@@ -51,12 +52,12 @@
 	$effect(() => {
 		if (open && questionnaire) {
 			// Pre-select already assigned events
-			const assignedEventIds = (questionnaire.events || []).map((e) => e.id);
-			selectedEventIds = new Set(assignedEventIds);
+			selectedEventIds.clear();
+			for (const e of questionnaire.events || []) selectedEventIds.add(e.id);
 
 			// Pre-select already assigned series
-			const assignedSeriesIds = (questionnaire.event_series || []).map((s) => s.id);
-			selectedSeriesIds = new Set(assignedSeriesIds);
+			selectedSeriesIds.clear();
+			for (const s of questionnaire.event_series || []) selectedSeriesIds.add(s.id);
 
 			// Fetch organization events and series
 			loadEvents();
@@ -146,24 +147,20 @@
 
 	// Toggle event selection
 	function toggleEvent(eventId: string) {
-		const newSet = new Set(selectedEventIds);
-		if (newSet.has(eventId)) {
-			newSet.delete(eventId);
+		if (selectedEventIds.has(eventId)) {
+			selectedEventIds.delete(eventId);
 		} else {
-			newSet.add(eventId);
+			selectedEventIds.add(eventId);
 		}
-		selectedEventIds = newSet;
 	}
 
 	// Toggle series selection
 	function toggleSeries(seriesId: string) {
-		const newSet = new Set(selectedSeriesIds);
-		if (newSet.has(seriesId)) {
-			newSet.delete(seriesId);
+		if (selectedSeriesIds.has(seriesId)) {
+			selectedSeriesIds.delete(seriesId);
 		} else {
-			newSet.add(seriesId);
+			selectedSeriesIds.add(seriesId);
 		}
-		selectedSeriesIds = newSet;
 	}
 
 	// Save assignments

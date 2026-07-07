@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData } from './$types';
 	import { CheckCircle, XCircle } from '@lucide/svelte';
@@ -51,13 +52,13 @@
 				</p>
 				<div class="flex flex-col gap-3 sm:flex-row sm:justify-center">
 					<a
-						href="/register"
+						href={resolve('/(public)/register', {})}
 						class="inline-flex h-10 items-center justify-center rounded-md bg-primary px-6 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					>
 						{m['verifyPage.createNewAccount']()}
 					</a>
 					<a
-						href="/login"
+						href={resolve('/(public)/login', {})}
 						class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-6 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					>
 						{m['verifyPage.backToLogin']()}

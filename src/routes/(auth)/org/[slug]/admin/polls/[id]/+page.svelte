@@ -16,6 +16,7 @@
 	import { toast } from 'svelte-sonner';
 	import { page } from '$app/stores';
 	import { goto, invalidateAll } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import PollStatusBar from '$lib/components/polls/PollStatusBar.svelte';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import DuplicatePollModal from '$lib/components/polls/DuplicatePollModal.svelte';
@@ -82,7 +83,7 @@
 	// Synthesise a minimal org-questionnaire wrapper so initializeFromApiData
 	// can extract topLevelQuestions + sections. Polls have no org wrapper.
 	const fakeOrgWrapper = {
-		questionnaire_type: 'admission',
+		questionnaire_type: 'admission' as const,
 		members_exempt: false,
 		per_event: false,
 		requires_evaluation: false,
@@ -250,7 +251,7 @@
 			});
 			if (res.error) throw new Error('delete');
 			deleteConfirmOpen = false;
-			await goto(`/org/${data.organization.slug}/admin/polls`);
+			await goto(resolve('/(auth)/org/[slug]/admin/polls', { slug: data.organization.slug }));
 		} catch (e) {
 			console.error(e);
 			toast.error(m['pollEditPage.deleteError']());
@@ -444,7 +445,7 @@
 								<p class="font-medium">{question.question}</p>
 								{#if question.options}
 									<div class="mt-2 space-y-1">
-										{#each question.options as opt}
+										{#each question.options as opt, i (i)}
 											<div class="flex items-center gap-2 text-sm text-muted-foreground">
 												<span>&#9675;</span>
 												<span>{opt.option}</span>

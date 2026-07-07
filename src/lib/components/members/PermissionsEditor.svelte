@@ -213,11 +213,11 @@
 		</DialogHeader>
 
 		<div class="space-y-6 py-4">
-			{#each permissionGroups as group}
+			{#each permissionGroups as group (group.title)}
 				<div class="space-y-3">
 					<h3 class="text-sm font-semibold text-foreground">{group.title}</h3>
 					<div class="space-y-3">
-						{#each group.permissions as perm}
+						{#each group.permissions as perm (perm.key)}
 							<div class="flex items-start gap-3">
 								<Checkbox
 									id={perm.key}

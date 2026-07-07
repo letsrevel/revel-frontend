@@ -331,7 +331,7 @@
 			<ul
 				class="space-y-1 rounded-md border border-destructive/40 bg-destructive/5 p-2 text-xs text-destructive"
 			>
-				{#each validationErrors as err}
+				{#each validationErrors as err, i (i)}
 					<li>{err}</li>
 				{/each}
 			</ul>

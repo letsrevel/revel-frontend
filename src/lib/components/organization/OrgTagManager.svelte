@@ -172,7 +172,7 @@
 				<div
 					class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-input bg-popover text-popover-foreground shadow-md"
 				>
-					{#each tagSuggestions as suggestion}
+					{#each tagSuggestions as suggestion (suggestion)}
 						<button
 							type="button"
 							onclick={() => addTag(suggestion)}
@@ -221,7 +221,7 @@
 	</div>
 	{#if tags.length > 0}
 		<div class="flex flex-wrap gap-2">
-			{#each tags as tag}
+			{#each tags as tag (tag)}
 				<span class="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm">
 					{tag}
 					<button

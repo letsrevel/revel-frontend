@@ -153,11 +153,12 @@
 						</legend>
 						{#each tiers as tier (tier.id)}
 							{#if tier.id}
+								{@const tierId = tier.id}
 								<label class="flex items-center gap-2 pl-6 text-sm">
 									<input
 										type="checkbox"
-										checked={voteTierIds.includes(tier.id)}
-										onchange={() => (voteTierIds = toggleTier(voteTierIds, tier.id!))}
+										checked={voteTierIds.includes(tierId)}
+										onchange={() => (voteTierIds = toggleTier(voteTierIds, tierId))}
 										class="h-4 w-4"
 									/>
 									{tier.name}
@@ -175,11 +176,12 @@
 						</legend>
 						{#each tiers as tier (tier.id)}
 							{#if tier.id}
+								{@const tierId = tier.id}
 								<label class="flex items-center gap-2 pl-6 text-sm">
 									<input
 										type="checkbox"
-										checked={resultTierIds.includes(tier.id)}
-										onchange={() => (resultTierIds = toggleTier(resultTierIds, tier.id!))}
+										checked={resultTierIds.includes(tierId)}
+										onchange={() => (resultTierIds = toggleTier(resultTierIds, tierId))}
 										class="h-4 w-4"
 									/>
 									{tier.name}

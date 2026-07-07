@@ -16,6 +16,7 @@
 	import { toast } from 'svelte-sonner';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { getImageUrl } from '$lib/utils/url';
 
 	const accessToken = $derived(authStore.accessToken);
@@ -83,6 +84,7 @@
 		} else {
 			url.searchParams.set('page', pageNum.toString());
 		}
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- target is derived from the live page URL (base path already applied); resolve() cannot express search params
 		goto(url.toString(), { replaceState: true, noScroll: true });
 	}
 
@@ -283,7 +285,7 @@
 							<div class="mb-3 flex items-start gap-3">
 								{#if org.logo}
 									<img
-										src={getImageUrl((org as any).logo_thumbnail_url || org.logo)}
+										src={getImageUrl(org.logo_thumbnail_url || org.logo)}
 										alt={org.name}
 										class="h-12 w-12 rounded-lg object-cover"
 									/>
@@ -296,7 +298,7 @@
 								{/if}
 								<div class="min-w-0 flex-1">
 									<a
-										href="/org/{org.slug}"
+										href={resolve('/(public)/org/[slug]', { slug: org.slug })}
 										class="block truncate font-semibold hover:text-primary hover:underline"
 									>
 										{org.name}
@@ -416,7 +418,7 @@
 							<div class="mb-3 flex items-start gap-3">
 								{#if series.logo}
 									<img
-										src={getImageUrl((series as any).logo_thumbnail_url || series.logo)}
+										src={getImageUrl(series.logo_thumbnail_url || series.logo)}
 										alt={series.name}
 										class="h-12 w-12 rounded-lg object-cover"
 									/>
@@ -429,13 +431,16 @@
 								{/if}
 								<div class="min-w-0 flex-1">
 									<a
-										href="/events/{series.organization.slug}/series/{series.slug}"
+										href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {
+											org_slug: series.organization.slug,
+											series_slug: series.slug
+										})}
 										class="block truncate font-semibold hover:text-primary hover:underline"
 									>
 										{series.name}
 									</a>
 									<a
-										href="/org/{series.organization.slug}"
+										href={resolve('/(public)/org/[slug]', { slug: series.organization.slug })}
 										class="truncate text-sm text-muted-foreground hover:underline"
 									>
 										{series.organization.name}

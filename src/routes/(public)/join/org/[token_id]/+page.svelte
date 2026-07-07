@@ -3,6 +3,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { Button } from '$lib/components/ui/button';
 	import {
 		Card,
@@ -45,7 +46,7 @@
 					? m['joinOrgPage.toast_joinedAsStaff']({ organizationName: org.name })
 					: m['joinOrgPage.toast_joinedAsMember']({ organizationName: org.name })
 			);
-			goto(`/org/${org.slug}`);
+			goto(resolve('/(public)/org/[slug]', { slug: org.slug }));
 		},
 		onError: () => {
 			toast.error(m['joinOrgPage.toast_claimError']());
@@ -55,7 +56,8 @@
 	function handleClaim() {
 		if (!isAuthenticated) {
 			// Redirect to login with return URL
-			goto(`/login?redirect=/join/org/${token.id}`);
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()
+			goto(`${resolve('/(public)/login', {})}?redirect=/join/org/${token.id}`);
 			return;
 		}
 
@@ -94,6 +96,7 @@
 			{/if}
 			<CardTitle class="text-2xl">{m['joinOrgPage.invitedTitle']()}</CardTitle>
 			<CardDescription class="text-lg">
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -- API-derived organization name neutralized via escapeHtml before interpolation into a developer-authored i18n template -->
 				{@html m['joinOrgPage.joinSubtitle']({
 					organizationName: escapeHtml(token.organization.name)
 				})}

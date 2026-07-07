@@ -212,6 +212,7 @@
 		<MapPin class={iconClasses} aria-hidden="true" />
 		<div class={textClasses}>
 			{#if mapsUrl}
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
 				<a
 					href={mapsUrl}
 					target="_blank"
@@ -224,7 +225,9 @@
 						<ExternalLink class="h-3 w-3 opacity-70 group-hover:opacity-100" aria-hidden="true" />
 					</span>
 				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				{#if locationDisplay.secondary}
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
 					<a
 						href={mapsUrl}
 						target="_blank"
@@ -233,6 +236,7 @@
 					>
 						{locationDisplay.secondary}
 					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				{/if}
 			{:else}
 				<span class="block">{locationDisplay.primary}</span>

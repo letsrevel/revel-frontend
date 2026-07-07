@@ -6,23 +6,17 @@
 	import { Loader2, Check, LogIn } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import type { OrganizationTokenSchema } from '$lib/api/generated/types.gen';
 
 	interface Props {
 		tokenId: string;
 		tokenDetails?: OrganizationTokenSchema | null;
-		organizationName?: string;
 		class?: string;
 		onSuccess?: () => void;
 	}
 
-	const {
-		tokenId,
-		tokenDetails,
-		organizationName = m['claimMembershipButton.thisOrganization'](),
-		class: className,
-		onSuccess
-	}: Props = $props();
+	const { tokenId, tokenDetails, class: className, onSuccess }: Props = $props();
 
 	const isAuthenticated = $derived(!!authStore.accessToken);
 	const accessToken = $derived(authStore.accessToken);
@@ -33,7 +27,8 @@
 	async function handleClaim() {
 		if (!isAuthenticated) {
 			const currentUrl = window.location.pathname + window.location.search;
-			goto(`/login?redirect=${encodeURIComponent(currentUrl)}`);
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()
+			goto(`${resolve('/(public)/login', {})}?redirect=${encodeURIComponent(currentUrl)}`);
 			return;
 		}
 
@@ -46,7 +41,9 @@
 			});
 
 			if (response.error) {
-				const errorDetail = (response.error as any)?.detail;
+				const error = response.error;
+				const errorDetail =
+					error && typeof error === 'object' && 'detail' in error ? error.detail : undefined;
 				throw new Error(
 					typeof errorDetail === 'string'
 						? errorDetail
@@ -62,9 +59,11 @@
 			setTimeout(() => {
 				window.location.reload();
 			}, 1000);
-		} catch (err: any) {
+		} catch (err) {
 			console.error('Failed to claim membership:', err);
-			toast.error(err.message || m['claimMembershipButton.error_failedToClaim']());
+			toast.error(
+				(err instanceof Error && err.message) || m['claimMembershipButton.error_failedToClaim']()
+			);
 		} finally {
 			isLoading = false;
 		}

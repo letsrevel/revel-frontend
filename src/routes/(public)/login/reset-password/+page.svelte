@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
 	import { page } from '$app/stores';
@@ -70,7 +71,7 @@
 
 			<!-- Login Button -->
 			<a
-				href="/login"
+				href={resolve('/(public)/login', {})}
 				class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 			>
 				{m['resetPasswordPage.signInToAccount']()}
@@ -87,7 +88,7 @@
 			</div>
 
 			<a
-				href="/password-reset"
+				href={resolve('/(public)/password-reset', {})}
 				class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 			>
 				{m['resetPasswordPage.requestNewLink']()}
@@ -238,7 +239,9 @@
 
 			<!-- Back to Login Link -->
 			<div class="text-center text-sm">
-				<a href="/login" class="text-primary underline-offset-4 hover:underline"
+				<a
+					href={resolve('/(public)/login', {})}
+					class="text-primary underline-offset-4 hover:underline"
 					>{m['resetPasswordPage.backToLogin']()}</a
 				>
 			</div>

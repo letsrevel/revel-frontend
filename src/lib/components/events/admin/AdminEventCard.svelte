@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import { formatDateTime } from '$lib/utils/date';
@@ -76,27 +77,57 @@
 	const showManagement = $derived(variant !== 'draft');
 
 	function viewEvent(): void {
-		goto(`/events/${organizationSlug}/${event.slug}`);
+		goto(
+			resolve('/(public)/events/[org_slug]/[event_slug]', {
+				org_slug: organizationSlug,
+				event_slug: event.slug
+			})
+		);
 	}
 
 	function editEvent(): void {
-		goto(`/org/${organizationSlug}/admin/events/${event.id}/edit`);
+		goto(
+			resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
+				slug: organizationSlug,
+				event_id: event.id
+			})
+		);
 	}
 
 	function manageTickets(): void {
-		goto(`/org/${organizationSlug}/admin/events/${event.id}/tickets`);
+		goto(
+			resolve('/(auth)/org/[slug]/admin/events/[event_id]/tickets', {
+				slug: organizationSlug,
+				event_id: event.id
+			})
+		);
 	}
 
 	function manageAttendees(): void {
-		goto(`/org/${organizationSlug}/admin/events/${event.id}/attendees`);
+		goto(
+			resolve('/(auth)/org/[slug]/admin/events/[event_id]/attendees', {
+				slug: organizationSlug,
+				event_id: event.id
+			})
+		);
 	}
 
 	function manageInvitations(): void {
-		goto(`/org/${organizationSlug}/admin/events/${event.id}/invitations`);
+		goto(
+			resolve('/(auth)/org/[slug]/admin/events/[event_id]/invitations', {
+				slug: organizationSlug,
+				event_id: event.id
+			})
+		);
 	}
 
 	function manageWaitlist(): void {
-		goto(`/org/${organizationSlug}/admin/events/${event.id}/waitlist`);
+		goto(
+			resolve('/(auth)/org/[slug]/admin/events/[event_id]/waitlist', {
+				slug: organizationSlug,
+				event_id: event.id
+			})
+		);
 	}
 </script>
 

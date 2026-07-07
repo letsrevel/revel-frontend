@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { organizationadminresourcesListResources } from '$lib/api/generated/sdk.gen';
@@ -6,6 +7,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { FileText, Link as LinkIcon, AlignLeft, ExternalLink, Plus } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	interface Props {
 		organizationSlug: string;
@@ -44,26 +46,20 @@
 		}
 	}));
 
-	// Local selected set
-	let selectedSet = $state(new Set(selectedResourceIds));
-
-	// Sync with prop changes
-	$effect(() => {
-		selectedSet = new Set(selectedResourceIds);
-	});
+	// Local selected set. Writable $derived: resynced from props when they
+	// change, but locally reassignable by toggleResource below.
+	let selectedSet = $derived(new SvelteSet(selectedResourceIds));
 
 	function toggleResource(resourceId: string) {
 		if (disabled) return;
 
-		const newSet = new Set(selectedSet);
-		if (newSet.has(resourceId)) {
-			newSet.delete(resourceId);
+		if (selectedSet.has(resourceId)) {
+			selectedSet.delete(resourceId);
 		} else {
-			newSet.add(resourceId);
+			selectedSet.add(resourceId);
 		}
 
-		selectedSet = newSet;
-		onSelectionChange?.(Array.from(newSet));
+		onSelectionChange?.(Array.from(selectedSet));
 	}
 
 	function isSelected(resourceId: string): boolean {
@@ -119,7 +115,7 @@
 		</div>
 
 		<a
-			href="/org/{organizationSlug}/admin/resources"
+			href={resolve('/(auth)/org/[slug]/admin/resources', { slug: organizationSlug })}
 			class="inline-flex items-center gap-1 rounded text-xs text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			target="_blank"
 			rel="noopener noreferrer"
@@ -151,7 +147,7 @@
 				{m['eventResourcesAdmin.noResourcesAvailable']()}
 			</p>
 			<a
-				href="/org/{organizationSlug}/admin/resources"
+				href={resolve('/(auth)/org/[slug]/admin/resources', { slug: organizationSlug })}
 				class="mt-2 inline-flex items-center gap-1 text-sm text-primary hover:underline"
 				target="_blank"
 				rel="noopener noreferrer"

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import {
 		notificationpreferenceUpdatePreferences,
@@ -22,15 +23,24 @@
 		Mail,
 		MessageSquare,
 		Clock,
-		Users,
-		Eye,
 		ChevronDown,
 		Settings
 	} from '@lucide/svelte';
 	import type {
 		NotificationPreferenceSchema,
-		NotificationTypeSettings
+		NotificationTypeSettings,
+		NotificationType,
+		UpdateNotificationPreferenceSchema
 	} from '$lib/api/generated/types.gen.js';
+
+	// Extract a human-readable message from an unknown API error shape
+	function extractErrorMessage(error: unknown): string {
+		if (error && typeof error === 'object') {
+			if ('detail' in error && error.detail) return String(error.detail);
+			if ('message' in error && error.message) return String(error.message);
+		}
+		return 'Failed to update preferences';
+	}
 
 	interface Props {
 		preferences: NotificationPreferenceSchema | null;
@@ -99,11 +109,12 @@
 		}
 		// Handle potential object wrapper format { notification_types: [...] }
 		if (data && typeof data === 'object' && 'notification_types' in data) {
+			const wrapper = data as { notification_types?: NotificationType[] };
 			console.log(
 				'[NotificationPreferences] Extracting notification_types:',
-				(data as any).notification_types
+				wrapper.notification_types
 			);
-			return (data as any).notification_types ?? [];
+			return wrapper.notification_types ?? [];
 		}
 		console.log('[NotificationPreferences] No types found, returning empty array');
 		return [];
@@ -203,7 +214,7 @@
 		}) => {
 			// In unsubscribe mode, send all fields explicitly (even false values)
 			// In authenticated mode, only send fields that are explicitly set (PATCH requirement)
-			const payload: Record<string, any> = {};
+			const payload: UpdateNotificationPreferenceSchema = {};
 
 			if (isUnsubscribeMode) {
 				// Send all fields explicitly in unsubscribe mode
@@ -247,8 +258,7 @@
 
 				// Check for errors in response
 				if (response.error) {
-					const error = response.error as any;
-					throw new Error(error?.detail || error?.message || 'Failed to update preferences');
+					throw new Error(extractErrorMessage(response.error));
 				}
 
 				return response.data;
@@ -261,8 +271,7 @@
 
 				// Check for errors in response
 				if (response.error) {
-					const error = response.error as any;
-					throw new Error(error?.detail || error?.message || 'Failed to update preferences');
+					throw new Error(extractErrorMessage(response.error));
 				}
 
 				return response.data;
@@ -376,14 +385,6 @@
 		// Remove the type from custom settings to revert to defaults
 		const { [type]: _, ...rest } = notificationTypeSettings;
 		notificationTypeSettings = rest;
-	}
-
-	function isNotificationTypeChannelEnabled(
-		type: string,
-		channel: 'in_app' | 'email' | 'telegram'
-	): boolean {
-		const settings = getNotificationTypeSettings(type);
-		return settings.channels.includes(channel);
 	}
 </script>
 
@@ -540,7 +541,7 @@
 									<p class="text-xs text-muted-foreground">
 										{m['notificationPreferences.telegramNotConnected']()}
 										<a
-											href="/account/profile"
+											href={resolve('/(auth)/account/profile', {})}
 											class="font-medium text-primary underline-offset-4 hover:underline"
 										>
 											{m['notificationPreferences.connectTelegram']()}

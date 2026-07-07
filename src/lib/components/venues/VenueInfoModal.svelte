@@ -76,7 +76,7 @@
 							{m['venueInfo.capacity']()}
 						</p>
 						<p class="text-sm">
-							{m['venueInfo.capacityPeople']({ count: venue.capacity! })}
+							{m['venueInfo.capacityPeople']({ count: venue.capacity ?? 0 })}
 						</p>
 					</div>
 				</div>
@@ -84,6 +84,7 @@
 
 			<!-- Google Maps Link -->
 			{#if hasMapsUrl}
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
 				<a
 					href={venue.location_maps_url}
 					target="_blank"
@@ -93,6 +94,7 @@
 					<ExternalLink class="h-4 w-4" aria-hidden="true" />
 					{m['venueInfo.viewOnMaps']()}
 				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			{/if}
 
 			<!-- Map Embed -->

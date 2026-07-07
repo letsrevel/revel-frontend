@@ -195,7 +195,7 @@
 					<span class="font-medium">{sub.plan.name}</span>
 					<span class="text-muted-foreground"> · {formatPlanPrice(sub.plan)}</span>
 				</div>
-				{#each [getDateLine(sub)] as line}
+				{#each [getDateLine(sub)] as line (line.kind)}
 					<div class="text-xs text-muted-foreground">
 						{#if line.kind === 'renewal'}
 							{m['subscriptions.dateLine.renewal']({ date: fmtDate(line.date) })}

@@ -3,6 +3,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { getBackendUrl } from '$lib/config/api';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
@@ -24,7 +25,7 @@
 	// Redirect non-referrers
 	$effect(() => {
 		if (user && !user.referral_code) {
-			goto('/dashboard');
+			goto(resolve('/(auth)/dashboard', {}));
 		}
 	});
 
@@ -150,7 +151,7 @@
 <div class="container mx-auto max-w-3xl px-4 py-8">
 	<div class="mb-6 flex items-center gap-4">
 		<a
-			href="/account/referral"
+			href={resolve('/(auth)/account/referral', {})}
 			class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
 		>
 			<ArrowLeft class="h-4 w-4" aria-hidden="true" />

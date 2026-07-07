@@ -1,7 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
 import EventRSVP from './EventRSVP.svelte';
 import type { EventUserEligibility, EventRsvpSchema } from '$lib/api/generated/types.gen';
 
@@ -13,28 +12,9 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 import { eventpublicattendanceRsvpEvent } from '$lib/api/generated/sdk.gen';
 
 describe('EventRSVP', () => {
-	let queryClient: QueryClient;
-
 	beforeEach(() => {
-		queryClient = new QueryClient({
-			defaultOptions: {
-				queries: { retry: false },
-				mutations: { retry: false }
-			}
-		});
 		vi.clearAllMocks();
 	});
-
-	function renderWithQueryClient(props: any) {
-		return render(QueryClientProvider, {
-			props: {
-				client: queryClient,
-				children: EventRSVP,
-				// Pass props to the child component
-				...props
-			}
-		});
-	}
 
 	it('does not render when not authenticated', () => {
 		const { container } = render(EventRSVP, {

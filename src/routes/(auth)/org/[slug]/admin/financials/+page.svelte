@@ -52,11 +52,13 @@
 	});
 
 	function updateParams(next: Record<string, string | number | null>) {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const sp = new URLSearchParams($page.url.searchParams);
 		for (const [key, value] of Object.entries(next)) {
 			if (value === null || value === '') sp.delete(key);
 			else sp.set(key, String(value));
 		}
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params)
 		goto(`?${sp.toString()}`, { replaceState: true, keepFocus: true, noScroll: true });
 	}
 

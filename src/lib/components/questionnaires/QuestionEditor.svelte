@@ -19,6 +19,7 @@
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import OptionEditor from './OptionEditor.svelte';
 	import FileUploadConfig from './FileUploadConfig.svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	// Conditional section type (shown when option is selected)
 	interface ConditionalSection {
@@ -30,6 +31,7 @@
 	}
 
 	interface Option {
+		id: string;
 		text: string;
 		isCorrect: boolean;
 		// Conditional questions attached to this option
@@ -87,37 +89,34 @@
 
 	// Collapsible sections state
 	let showAdvanced = $state(false);
-	let expandedOptions = $state<Set<number>>(new Set());
+	const expandedOptions = new SvelteSet<number>();
 	let hasAutoExpandedOnce = $state(false);
 
-	// Auto-expand options that have conditional content on initial load
+	// Auto-expand options that have conditional content on initial load.
+	// Note: .add() merges into the set rather than replacing it; this is only
+	// equivalent to the old replace-semantics because hasAutoExpandedOnce
+	// gates this effect to a single run (when the set is still empty).
 	$effect(() => {
 		if (!hasAutoExpandedOnce && question.options && question.options.length > 0) {
-			const optionsWithContent = new Set<number>();
 			question.options.forEach((opt, index) => {
 				if (
 					(opt.conditionalQuestions?.length || 0) > 0 ||
 					(opt.conditionalSections?.length || 0) > 0
 				) {
-					optionsWithContent.add(index);
+					expandedOptions.add(index);
 				}
 			});
-			if (optionsWithContent.size > 0) {
-				expandedOptions = optionsWithContent;
-			}
 			hasAutoExpandedOnce = true;
 		}
 	});
 
 	// Toggle option expansion for conditional questions
 	function toggleOptionExpanded(index: number) {
-		const newExpanded = new Set(expandedOptions);
-		if (newExpanded.has(index)) {
-			newExpanded.delete(index);
+		if (expandedOptions.has(index)) {
+			expandedOptions.delete(index);
 		} else {
-			newExpanded.add(index);
+			expandedOptions.add(index);
 		}
-		expandedOptions = newExpanded;
 	}
 
 	// Add option to multiple choice
@@ -125,7 +124,13 @@
 		if (question.type === 'multiple_choice') {
 			const newOptions = [
 				...(question.options || []),
-				{ text: '', isCorrect: false, conditionalQuestions: [], conditionalSections: [] }
+				{
+					id: crypto.randomUUID(),
+					text: '',
+					isCorrect: false,
+					conditionalQuestions: [],
+					conditionalSections: []
+				}
 			];
 			onUpdate({ options: newOptions });
 		}
@@ -177,8 +182,8 @@
 			return {
 				...base,
 				options: [
-					{ text: '', isCorrect: false },
-					{ text: '', isCorrect: false }
+					{ id: crypto.randomUUID(), text: '', isCorrect: false },
+					{ id: crypto.randomUUID(), text: '', isCorrect: false }
 				],
 				allowMultipleAnswers: false,
 				shuffleOptions: true
@@ -215,9 +220,7 @@
 			onUpdate({ options: newOptions });
 
 			// Auto-expand the option
-			const newExpanded = new Set(expandedOptions);
-			newExpanded.add(optionIndex);
-			expandedOptions = newExpanded;
+			expandedOptions.add(optionIndex);
 		}
 	}
 
@@ -269,9 +272,7 @@
 			onUpdate({ options: newOptions });
 
 			// Auto-expand the option
-			const newExpanded = new Set(expandedOptions);
-			newExpanded.add(optionIndex);
-			expandedOptions = newExpanded;
+			expandedOptions.add(optionIndex);
 		}
 	}
 

@@ -8,7 +8,6 @@
 
 	interface Props {
 		resource?: AdditionalResourceSchema | null;
-		organizationSlug: string;
 		organizationId: string;
 		onSubmit: (data: FormData) => void;
 		isSubmitting?: boolean;
@@ -17,7 +16,6 @@
 
 	const {
 		resource = null,
-		organizationSlug,
 		organizationId,
 		onSubmit,
 		isSubmitting = false,

@@ -10,6 +10,8 @@
 
 /** An option in a multiple-choice question. */
 export interface QuestionnaireOption {
+	/** Local client-side identity (mirrors QuestionnaireQuestion.id); stable key for rendering. */
+	id: string;
 	text: string;
 	isCorrect: boolean;
 	conditionalQuestions?: QuestionnaireQuestion[];
@@ -88,10 +90,7 @@ export function createQuestion(type: QuestionType, order: number): Questionnaire
 	if (type === 'multiple_choice') {
 		return {
 			...base,
-			options: [
-				{ text: '', isCorrect: false },
-				{ text: '', isCorrect: false }
-			],
+			options: [createOption(), createOption()],
 			allowMultipleAnswers: false,
 			shuffleOptions: true
 		};
@@ -121,7 +120,7 @@ export function createSection(existingSectionsCount: number): QuestionnaireSecti
 
 /** Create a new empty option. */
 export function createOption(): QuestionnaireOption {
-	return { text: '', isCorrect: false };
+	return { id: crypto.randomUUID(), text: '', isCorrect: false };
 }
 
 /** Create a new conditional section. */

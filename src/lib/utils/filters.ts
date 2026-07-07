@@ -217,6 +217,10 @@ export function updateFilter<K extends keyof EventFilters>(
 	const updated = { ...currentFilters };
 
 	if (value === undefined || value === null) {
+		// `key` is a generic `keyof EventFilters`; EventFilters is a plain object consumed by
+		// URL-serialization code elsewhere, so it can't be restructured into a Map just for
+		// this removal.
+		// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
 		delete updated[key];
 	} else {
 		updated[key] = value;

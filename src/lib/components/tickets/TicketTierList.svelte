@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import type { UserEventStatus } from '$lib/utils/eligibility';
@@ -122,7 +123,7 @@
 
 		{#if !isAuthenticated && !canAttendWithoutLogin}
 			<p class="mt-4 text-sm text-muted-foreground">
-				<a href="/login" class="font-medium text-primary hover:underline"
+				<a href={resolve('/(public)/login', {})} class="font-medium text-primary hover:underline"
 					>{m['ticketTierList.signIn']()}</a
 				>
 				to claim your ticket

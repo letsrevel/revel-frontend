@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import NotificationDropdown from './NotificationDropdown.svelte';
 	import { QueryClientProvider, QueryClient } from '@tanstack/svelte-query';
 	import { Button } from '$lib/components/ui/button';
@@ -115,9 +116,15 @@
 
 						<!-- Navigation -->
 						<nav class="hidden items-center gap-6 md:flex">
-							<a href="/" class="text-sm font-medium hover:underline">Home</a>
-							<a href="/events" class="text-sm font-medium hover:underline">Events</a>
-							<a href="/organizations" class="text-sm font-medium hover:underline">Organizations</a>
+							<a href={resolve('/(public)', {})} class="text-sm font-medium hover:underline">Home</a
+							>
+							<a href={resolve('/(public)/events', {})} class="text-sm font-medium hover:underline"
+								>Events</a
+							>
+							<a
+								href={resolve('/(public)/organizations', {})}
+								class="text-sm font-medium hover:underline">Organizations</a
+							>
 						</nav>
 
 						<!-- Right side actions -->

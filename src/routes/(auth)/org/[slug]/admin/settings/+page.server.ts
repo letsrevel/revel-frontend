@@ -1,6 +1,7 @@
 import { fail, type Actions, error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { organizationadmincoreUpdateOrganization } from '$lib/api/generated';
+import type { OrganizationEditSchema, Visibility } from '$lib/api/generated/types.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { log } from '$lib/server/logger';
 
@@ -40,7 +41,11 @@ export const actions: Actions = {
 		const description = formData.get('description') as string;
 		const cityIdValue = formData.get('city_id') as string;
 		const address = formData.get('address') as string;
-		const visibility = (formData.get('visibility') as string) || 'public';
+		// Narrow the untrusted visibility value against the allowed set,
+		// falling back to 'public' (the previous default for missing values).
+		const VISIBILITIES = ['public', 'unlisted', 'private', 'members-only', 'staff-only'] as const;
+		const visibilityRaw = formData.get('visibility');
+		const visibility: Visibility = VISIBILITIES.find((v) => v === visibilityRaw) ?? 'public';
 		const acceptNewMembers = formData.get('accept_membership_requests') === 'true';
 		const contactEmail = formData.get('contact_email') as string;
 		const contactMethodRaw = formData.get('contact_method') as string | null;
@@ -55,8 +60,12 @@ export const actions: Actions = {
 		const blueskyUrl = formData.get('bluesky_url') as string;
 		const telegramUrl = formData.get('telegram_url') as string;
 
-		// Prepare update payload with only editable fields
-		const updateData: any = {
+		// Prepare update payload with only editable fields.
+		// Note: contact_email is NOT part of OrganizationEditSchema — the backend
+		// deliberately excludes it (separate verification flow) and ignores it in
+		// this request; it is kept in the payload type only to preserve the
+		// existing request shape.
+		const updateData: OrganizationEditSchema & { contact_email?: string } = {
 			visibility,
 			accept_membership_requests: acceptNewMembers,
 			contact_method: contactMethod

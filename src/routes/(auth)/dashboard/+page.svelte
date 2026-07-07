@@ -19,6 +19,7 @@
 	import { parseCalendarParams, getCurrentPeriod } from '$lib/utils/calendar';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
 	import {
 		Calendar,
@@ -435,6 +436,7 @@
 			url.searchParams.set('week', String(current.week));
 		}
 
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- target is derived from the live page URL (base path already applied); resolve() cannot express search params
 		goto(url.toString(), { keepFocus: true, replaceState: false });
 	}
 
@@ -458,7 +460,7 @@
 	<!-- Quick Action Bar -->
 	<div class="mb-8 flex flex-wrap gap-3">
 		<a
-			href="/events"
+			href={resolve('/(public)/events', {})}
 			class="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 		>
 			<Sparkles class="h-4 w-4" aria-hidden="true" />
@@ -469,8 +471,9 @@
 			{#if organizations.filter((org) => hasAdminPermissions(org.id)).length === 1}
 				<!-- Single admin org - direct link to create event -->
 				<a
-					href="/org/{organizations.find((org) => hasAdminPermissions(org.id))
-						?.slug}/admin/events/new"
+					href={resolve('/(auth)/org/[slug]/admin/events/new', {
+						slug: organizations.find((org) => hasAdminPermissions(org.id))?.slug ?? ''
+					})}
 					class="inline-flex items-center gap-2 rounded-lg border bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
 					<Calendar class="h-4 w-4" aria-hidden="true" />
@@ -501,7 +504,7 @@
 		{/if}
 
 		<a
-			href="/dashboard/following"
+			href={resolve('/(auth)/dashboard/following', {})}
 			class="inline-flex items-center gap-2 rounded-lg border bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 		>
 			<Heart class="h-4 w-4" aria-hidden="true" />
@@ -511,7 +514,9 @@
 		{#if organizations.filter((org) => hasAdminPermissions(org.id)).length === 1}
 			<!-- Single admin org - direct link -->
 			<a
-				href="/org/{organizations.find((org) => hasAdminPermissions(org.id))?.slug}/admin"
+				href={resolve('/(auth)/org/[slug]/admin', {
+					slug: organizations.find((org) => hasAdminPermissions(org.id))?.slug ?? ''
+				})}
 				class="inline-flex items-center gap-2 rounded-lg border bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 			>
 				<Shield class="h-4 w-4" aria-hidden="true" />
@@ -530,7 +535,7 @@
 		{:else if !ownsOrganization() && features.organization_creation}
 			<!-- User doesn't own an organization - show "Create Organization" CTA -->
 			<a
-				href="/create-org"
+				href={resolve('/(auth)/create-org', {})}
 				class="inline-flex items-center gap-2 rounded-lg border bg-background px-6 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 			>
 				<PlusCircle class="h-4 w-4" aria-hidden="true" />
@@ -545,7 +550,7 @@
 			<!-- Active Tickets -->
 			{#if activeTicketsCount > 0}
 				<a
-					href="/dashboard/tickets"
+					href={resolve('/(auth)/dashboard/tickets', {})}
 					class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
 					<div class="flex items-start justify-between">
@@ -579,8 +584,9 @@
 
 			<!-- Upcoming RSVPs -->
 			{#if upcomingRsvpsCount > 0}
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 				<a
-					href="/dashboard/rsvps?status=yes,maybe"
+					href={`${resolve('/(auth)/dashboard/rsvps', {})}?status=yes,maybe`}
 					class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
 					<div class="flex items-start justify-between">
@@ -613,12 +619,13 @@
 						})}
 					</p>
 				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			{/if}
 
 			<!-- Pending Invitations -->
 			{#if pendingInvitationsCount > 0}
 				<a
-					href="/dashboard/invitations"
+					href={resolve('/(auth)/dashboard/invitations', {})}
 					class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
 					<div class="flex items-start justify-between">
@@ -694,7 +701,7 @@
 					{#if viewMode === 'list'}
 						<div class="flex flex-wrap items-center gap-2">
 							<Filter class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-							{#each filterPresets as preset}
+							{#each filterPresets as preset (preset.labelKey)}
 								<!-- Only show "Organizing" filter if user can organize events -->
 								{#if preset.labelKey !== 'dashboard.filters.organizing' || canOrganizeEvents()}
 									<button
@@ -738,7 +745,7 @@
 					<!-- List View -->
 					{#if yourEvents.length > 0}
 						<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-							{#each yourEvents.slice(0, 6) as event}
+							{#each yourEvents.slice(0, 6) as event (event.id)}
 								<EventCard {event} />
 							{/each}
 						</div>
@@ -785,7 +792,7 @@
 				</h2>
 				{#if upcomingEvents.length > 0}
 					<a
-						href="/events"
+						href={resolve('/(public)/events', {})}
 						class="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
 					>
 						<span>{m['dashboard.activityCards.seeAll']()}</span>
@@ -796,7 +803,7 @@
 
 			{#if upcomingEventsQuery.isLoading}
 				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-					{#each Array(6) as _}
+					{#each Array(6) as _, i (i)}
 						<EventCardSkeleton />
 					{/each}
 				</div>
@@ -814,7 +821,7 @@
 			{:else}
 				<!-- Event Cards -->
 				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-					{#each upcomingEvents.slice(0, 6) as event}
+					{#each upcomingEvents.slice(0, 6) as event (event.id)}
 						<EventCard {event} />
 					{/each}
 				</div>
@@ -832,7 +839,7 @@
 
 			{#if organizationsQuery.isLoading}
 				<div class="space-y-3">
-					{#each Array(3) as _}
+					{#each Array(3) as _, i (i)}
 						<OrganizationCardSkeleton />
 					{/each}
 				</div>
@@ -846,7 +853,7 @@
 					</p>
 					<div class="flex flex-wrap justify-center gap-3">
 						<a
-							href="/events"
+							href={resolve('/(public)/events', {})}
 							class="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
 						>
 							<Sparkles class="h-4 w-4" aria-hidden="true" />
@@ -857,14 +864,14 @@
 			{:else}
 				<!-- Organization Cards -->
 				<div class="space-y-3">
-					{#each organizations.slice(0, 3) as org}
+					{#each organizations.slice(0, 3) as org (org.id)}
 						{@const descriptionText = org.description ? stripMarkdown(org.description) : ''}
 						<div
 							class="flex items-center gap-4 rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"
 						>
 							{#if org.logo}
 								<img
-									src={getImageUrl((org as any).logo_thumbnail_url || org.logo)}
+									src={getImageUrl(org.logo_thumbnail_url || org.logo)}
 									alt=""
 									class="h-16 w-16 rounded-full border object-cover"
 								/>
@@ -942,14 +949,14 @@
 
 							<div class="flex gap-2">
 								<a
-									href="/org/{org.slug}"
+									href={resolve('/(public)/org/[slug]', { slug: org.slug })}
 									class="rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
 								>
 									{m['dashboard.viewProfile']()}
 								</a>
 								{#if hasAdminPermissions(org.id)}
 									<a
-										href="/org/{org.slug}/admin"
+										href={resolve('/(auth)/org/[slug]/admin', { slug: org.slug })}
 										class="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
 									>
 										<Shield class="h-4 w-4" aria-hidden="true" />
@@ -961,6 +968,7 @@
 					{/each}
 
 					{#if organizations.length > 3}
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- target route is not implemented yet (pre-existing link); cannot map to a route id -->
 						<a
 							href="/dashboard/organizations"
 							class="flex items-center justify-center gap-1 rounded-lg border bg-background px-4 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
@@ -968,6 +976,7 @@
 							<span>{m['dashboard.seeAllOrganizations']({ count: organizations.length })}</span>
 							<ChevronRight class="h-4 w-4" aria-hidden="true" />
 						</a>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					{/if}
 				</div>
 			{/if}

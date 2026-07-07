@@ -3,6 +3,21 @@ import { accountDeleteAccountRequest, accountExportData } from '$lib/api/generat
 import { extractErrorMessage } from '$lib/utils/errors';
 import { log } from '$lib/server/logger';
 
+/** Read the HTTP status from an error shaped like `{ response: { status } }`. */
+function getResponseStatus(error: unknown): unknown {
+	if (
+		typeof error === 'object' &&
+		error !== null &&
+		'response' in error &&
+		typeof error.response === 'object' &&
+		error.response !== null &&
+		'status' in error.response
+	) {
+		return error.response.status;
+	}
+	return undefined;
+}
+
 export const actions: Actions = {
 	exportData: async ({ cookies }) => {
 		const accessToken = cookies.get('access_token');
@@ -25,11 +40,11 @@ export const actions: Actions = {
 			return {
 				exportSuccess: true
 			};
-		} catch (error: any) {
+		} catch (error) {
 			log.error('data_export_request_failed', { error });
 
 			// Check for rate limiting (429 Too Many Requests)
-			if (error?.response?.status === 429) {
+			if (getResponseStatus(error) === 429) {
 				const errorMessage = extractErrorMessage(
 					error,
 					'You can only request a data export once every 24 hours. Please try again later.'
@@ -75,11 +90,12 @@ export const actions: Actions = {
 			return {
 				success: true
 			};
-		} catch (error: any) {
+		} catch (error) {
 			log.error('account_deletion_request_failed', { error });
 
 			// Check for specific error types
-			if (error?.response?.status === 400) {
+			const status = getResponseStatus(error);
+			if (status === 400) {
 				const errorMessage = extractErrorMessage(
 					error,
 					'Cannot delete account. You may own organizations that need to be transferred first.'
@@ -87,7 +103,7 @@ export const actions: Actions = {
 				return fail(400, { errors: { form: errorMessage } });
 			}
 
-			if (error?.response?.status === 403) {
+			if (status === 403) {
 				const errorMessage = extractErrorMessage(
 					error,
 					'You cannot delete your account while you own active organizations. Please transfer ownership or delete them first.'

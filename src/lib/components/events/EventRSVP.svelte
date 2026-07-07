@@ -11,6 +11,7 @@
 	import { Check, AlertCircle } from '@lucide/svelte';
 	import { browser } from '$app/environment';
 	import { invalidateAll } from '$app/navigation';
+	import { resolve } from '$app/paths';
 
 	import type { EventDetailSchema, EventTokenSchema } from '$lib/api/generated/types.gen';
 
@@ -412,12 +413,14 @@
 		{#if shouldShowLoginPrompt}
 			<div class="space-y-3">
 				<h3 class="text-sm font-semibold">{m['eventRSVP.willYouAttend']()}</h3>
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 				<a
-					href="/login?redirect={encodeURIComponent(currentPathname)}"
+					href={`${resolve('/(public)/login', {})}?redirect=${encodeURIComponent(currentPathname)}`}
 					class="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
 				>
 					{m['eventRSVP.loginToRSVP']()}
 				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				<p class="text-center text-xs text-muted-foreground">
 					{m['eventRSVP.loginToRSVPDescription']()}
 				</p>

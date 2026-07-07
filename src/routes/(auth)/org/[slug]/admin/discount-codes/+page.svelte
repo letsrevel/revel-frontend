@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		organizationadmindiscountcodesListDiscountCodes,
@@ -223,7 +224,10 @@
 			<p class="text-muted-foreground">{m['discountCodesAdmin.description']()}</p>
 		</div>
 
-		<Button onclick={() => goto(`/org/${organization.slug}/admin/discount-codes/new`)}>
+		<Button
+			onclick={() =>
+				goto(resolve('/(auth)/org/[slug]/admin/discount-codes/new', { slug: organization.slug }))}
+		>
 			<Plus class="mr-2 h-4 w-4" aria-hidden="true" />
 			{m['discountCodesAdmin.newCode']()}
 		</Button>
@@ -296,7 +300,10 @@
 			{#if !searchQuery && activeFilter === 'all' && typeFilter === 'all'}
 				<Button
 					class="mt-4"
-					onclick={() => goto(`/org/${organization.slug}/admin/discount-codes/new`)}
+					onclick={() =>
+						goto(
+							resolve('/(auth)/org/[slug]/admin/discount-codes/new', { slug: organization.slug })
+						)}
 				>
 					<Plus class="mr-2 h-4 w-4" aria-hidden="true" />
 					{m['discountCodesAdmin.newCode']()}
@@ -404,7 +411,12 @@
 										<button
 											type="button"
 											onclick={() =>
-												goto(`/org/${organization.slug}/admin/discount-codes/${code.id}/edit`)}
+												goto(
+													resolve('/(auth)/org/[slug]/admin/discount-codes/[code_id]/edit', {
+														slug: organization.slug,
+														code_id: code.id ?? ''
+													})
+												)}
 											class="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
 											title={m['discountCodesAdmin.actions.edit']()}
 											aria-label={m['discountCodesAdmin.actions.editAria']()}
@@ -517,7 +529,13 @@
 						<Button
 							variant="outline"
 							size="sm"
-							onclick={() => goto(`/org/${organization.slug}/admin/discount-codes/${code.id}/edit`)}
+							onclick={() =>
+								goto(
+									resolve('/(auth)/org/[slug]/admin/discount-codes/[code_id]/edit', {
+										slug: organization.slug,
+										code_id: code.id ?? ''
+									})
+								)}
 							class="flex-1"
 						>
 							<Pencil class="mr-1 h-4 w-4" />

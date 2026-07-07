@@ -162,6 +162,7 @@
 					</Dialog.Title>
 					<Dialog.Description>
 						{#if organizationName}
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -- API-derived organizationName neutralized via escapeHtml in both the i18n and fallback branches before interpolation -->
 							{@html m['requestWhitelistButton.submitRequestToOrg']?.({
 								organizationName: `<strong>${escapeHtml(organizationName)}</strong>`
 							}) ??

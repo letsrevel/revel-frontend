@@ -2,7 +2,11 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { organizationadminresourcesUpdateResource } from '$lib/api/generated/sdk.gen';
-	import type { AdditionalResourceSchema } from '$lib/api/generated/types.gen';
+	import type {
+		AdditionalResourceSchema,
+		AdditionalResourceUpdateSchema,
+		ResourceVisibility
+	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { getApiUrl } from '$lib/config/api';
 	import { X } from '@lucide/svelte';
@@ -77,7 +81,7 @@
 					eventIds.forEach((id: string) => {
 						multipartData.append('event_ids', id);
 					});
-				} catch (e) {
+				} catch {
 					// Ignore parsing errors
 				}
 			}
@@ -122,7 +126,7 @@
 			}
 
 			// Build JSON body (update schema has all optional fields)
-			const body: any = {};
+			const body: AdditionalResourceUpdateSchema = {};
 
 			// Only include fields that are present in the form
 			const name = formData.get('name');
@@ -136,7 +140,9 @@
 			}
 
 			const visibility = formData.get('visibility');
-			if (visibility) body.visibility = visibility;
+			if (typeof visibility === 'string' && visibility) {
+				body.visibility = visibility as ResourceVisibility;
+			}
 
 			const displayOnOrgPage = formData.get('display_on_organization_page');
 			if (displayOnOrgPage !== null) {
@@ -213,7 +219,7 @@
 		}
 	}
 
-	function handleBackdropClick(event: MouseEvent) {
+	function handleBackdropClick(event: MouseEvent | KeyboardEvent) {
 		if (event.target === event.currentTarget) {
 			onClose();
 		}
@@ -240,7 +246,7 @@
 	bind:this={backdropElement}
 	class="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm"
 	onclick={handleBackdropClick}
-	onkeydown={(e) => e.key === 'Enter' && handleBackdropClick(e as any)}
+	onkeydown={(e) => e.key === 'Enter' && handleBackdropClick(e)}
 	role="dialog"
 	aria-modal="true"
 	aria-labelledby="modal-title"
@@ -291,7 +297,6 @@
 			<!-- Form -->
 			<ResourceForm
 				{resource}
-				{organizationSlug}
 				{organizationId}
 				onSubmit={handleSubmit}
 				{isSubmitting}

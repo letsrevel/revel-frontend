@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { getLandingPage } from '$lib/data/landing-pages';
+	import { getLandingPageOrThrow } from '$lib/data/landing-pages';
 	import { LandingPageTemplate } from '$lib/components/landing';
 	import { SeoHead, buildSeo } from '$lib/seo';
 	import { landingExtras } from '$lib/seo/landing';
 
 	const SLUG = 'kink-event-ticketing';
-	const content = getLandingPage('de', SLUG)!;
+	const content = getLandingPageOrThrow('de', SLUG);
 
 	const seoConfig = $derived(
 		buildSeo({

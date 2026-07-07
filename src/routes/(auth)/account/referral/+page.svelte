@@ -4,6 +4,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery, createMutation } from '@tanstack/svelte-query';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { Button } from '$lib/components/ui/button';
 	import {
 		Check,
@@ -34,7 +35,7 @@
 	// Redirect non-referrers
 	$effect(() => {
 		if (user && !user.referral_code) {
-			goto('/dashboard');
+			goto(resolve('/(auth)/dashboard', {}));
 		}
 	});
 
@@ -199,7 +200,7 @@
 			<p class="mt-1 text-sm text-muted-foreground">{m['referral.setupDescription']()}</p>
 
 			<div class="mt-4 space-y-3">
-				{#each [{ done: isStripeFullySetup, label: m['referral.stepStripe']() }, { done: isBillingComplete, label: m['referral.stepBilling']() }, { done: isSelfBillingAgreed, label: m['referral.stepSelfBilling']() }] as step}
+				{#each [{ done: isStripeFullySetup, label: m['referral.stepStripe']() }, { done: isBillingComplete, label: m['referral.stepBilling']() }, { done: isSelfBillingAgreed, label: m['referral.stepSelfBilling']() }] as step, i (i)}
 					<div class="flex items-center gap-3">
 						{#if step.done}
 							<CircleCheck
@@ -399,7 +400,7 @@
 		<!-- Link to Payouts -->
 		<div class="mt-6">
 			<a
-				href="/account/referral/payouts"
+				href={resolve('/(auth)/account/referral/payouts', {})}
 				class="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
 			>
 				{m['referral.payouts']()} &rarr;

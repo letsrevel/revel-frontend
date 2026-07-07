@@ -168,7 +168,7 @@ export const actions: Actions = {
 				org_questionnaire_id: id,
 				submission_id
 			},
-			body: evaluationData as any,
+			body: evaluationData,
 			headers
 		});
 

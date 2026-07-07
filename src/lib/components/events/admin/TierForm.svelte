@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -13,7 +14,6 @@
 		TicketTierUpdateSchema,
 		MembershipTierSchema,
 		VenueDetailSchema,
-		VenueSectorSchema,
 		SeatAssignmentMode,
 		RefundPolicy
 	} from '$lib/api/generated/types.gen';
@@ -304,11 +304,13 @@
 	}));
 
 	const tierUpdateMutation = createMutation(() => ({
-		mutationFn: (data: TicketTierUpdateSchema) =>
-			eventadminticketsUpdateTicketTier({
-				path: { event_id: eventId, tier_id: tier!.id! },
+		mutationFn: (data: TicketTierUpdateSchema) => {
+			if (!tier?.id) throw new Error('Cannot update tier without an id');
+			return eventadminticketsUpdateTicketTier({
+				path: { event_id: eventId, tier_id: tier.id },
 				body: data
-			}),
+			});
+		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
 			onClose();
@@ -316,10 +318,12 @@
 	}));
 
 	const tierDeleteMutation = createMutation(() => ({
-		mutationFn: () =>
-			eventadminticketsDeleteTicketTier({
-				path: { event_id: eventId, tier_id: tier!.id! }
-			}),
+		mutationFn: () => {
+			if (!tier?.id) throw new Error('Cannot delete tier without an id');
+			return eventadminticketsDeleteTicketTier({
+				path: { event_id: eventId, tier_id: tier.id }
+			});
+		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
 			onClose();
@@ -360,7 +364,7 @@
 
 		// Determine the price value based on payment method and price type
 		// Normalize all decimal values to ensure dots (not commas) as decimal separator
-		let finalPrice = '0';
+		let finalPrice: string;
 		if (paymentMethod === 'free') {
 			finalPrice = '0';
 		} else if (priceType === 'pwyc') {
@@ -372,13 +376,13 @@
 		}
 
 		// Build the data object, omitting null values for pwyc fields
-		const baseData: any = {
+		const baseData: TicketTierCreateSchema = {
 			name: name.trim(),
 			description: description.trim() || null,
 			payment_method: paymentMethod,
 			price_type: priceType,
 			price: finalPrice,
-			currency,
+			currency: currency as TicketTierCreateSchema['currency'],
 			manual_payment_instructions: manualPaymentInstructions.trim() || null,
 			total_quantity: totalQuantity ? parseInt(totalQuantity) : null,
 			sales_start_at: salesStartAt ? toTimezoneAwareISO(salesStartAt) : null,
@@ -426,7 +430,7 @@
 
 		if (!tier) {
 			// Create new tier
-			tierCreateMutation.mutate(baseData as TicketTierCreateSchema);
+			tierCreateMutation.mutate(baseData);
 		} else {
 			// Update existing tier
 			tierUpdateMutation.mutate(baseData as TicketTierUpdateSchema);
@@ -537,7 +541,7 @@
 						disabled={isPending}
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					>
-						{#each SUPPORTED_CURRENCIES as curr}
+						{#each SUPPORTED_CURRENCIES as curr (curr.code)}
 							<option value={curr.code}>{curr.code} - {curr.name}</option>
 						{/each}
 					</select>
@@ -824,7 +828,7 @@
 						{m['tierForm.restrictToMembershipTiersHelp']()}
 					</p>
 					<div class="space-y-2 rounded-md border border-input bg-background p-3">
-						{#each membershipTiers as tier}
+						{#each membershipTiers as tier (tier.id ?? tier.name)}
 							{#if tier.id}
 								<label class="flex cursor-pointer items-start gap-2">
 									<input
@@ -1116,7 +1120,7 @@
 
 					{#if isBillingError}
 						<a
-							href="/org/{organizationSlug}/admin/billing"
+							href={resolve('/(auth)/org/[slug]/admin/billing', { slug: organizationSlug })}
 							class="mt-2 inline-flex items-center gap-1 text-sm font-medium text-destructive underline hover:text-destructive/80"
 						>
 							{m['tierForm.completeBillingInfo']()}

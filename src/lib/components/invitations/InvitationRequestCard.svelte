@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { EventInvitationRequestSchema } from '$lib/api/generated/types.gen';
 	import { Card } from '$lib/components/ui/card';
@@ -27,7 +28,11 @@
 
 	// Get event location
 	const eventLocation = $derived.by(() => {
-		const event = request.event as any;
+		// venue_name/location are not modeled on the event schema but may be present at runtime
+		const event = request.event as typeof request.event & {
+			venue_name?: string | null;
+			location?: string | null;
+		};
 		return event.venue_name || event.location || null;
 	});
 
@@ -82,7 +87,7 @@
 			// Invalidate queries to refresh the list
 			queryClient.invalidateQueries({ queryKey: ['my-invitation-requests'] });
 		},
-		onError: (error: any) => {
+		onError: (error) => {
 			console.error('Failed to cancel request:', error);
 			toast.error(m['invitationRequestCard.cancelFailed'](), {
 				description: error.message || m['invitationRequestCard.pleaseTryAgain']()
@@ -103,9 +108,9 @@
 		<div class="flex items-start gap-4">
 			<!-- Event Logo/Icon (prefer thumbnail for card display) -->
 			<div class="shrink-0">
-				{#if (request.event as any).logo_thumbnail_url || request.event.logo}
+				{#if request.event.logo_thumbnail_url || request.event.logo}
 					<img
-						src={getImageUrl((request.event as any).logo_thumbnail_url || request.event.logo)}
+						src={getImageUrl(request.event.logo_thumbnail_url || request.event.logo)}
 						alt=""
 						class="h-16 w-16 rounded-lg border object-cover"
 					/>
@@ -124,7 +129,7 @@
 					<div class="min-w-0">
 						<h3 class="truncate text-lg font-semibold">
 							<a
-								href="/events/{request.event.id}"
+								href={resolve('/(public)/events/[id]', { id: request.event.id })}
 								class="hover:underline focus:underline focus:outline-none"
 							>
 								{request.event.name}
@@ -193,7 +198,7 @@
 					</button>
 				{/if}
 				<a
-					href="/events/{request.event.id}"
+					href={resolve('/(public)/events/[id]', { id: request.event.id })}
 					class="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
 					{m['invitationRequestCard.viewEvent']()}

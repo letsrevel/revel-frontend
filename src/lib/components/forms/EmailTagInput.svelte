@@ -45,13 +45,16 @@
 			if (response.data?.results) {
 				emailSuggestions = response.data.results
 					.filter((member) => member.user.email && !emailTags.includes(member.user.email))
-					.map((member) => ({
-						email: member.user.email!,
-						name:
-							member.user.preferred_name ||
-							[member.user.first_name, member.user.last_name].filter(Boolean).join(' ') ||
-							member.user.email!
-					}));
+					.map((member) => {
+						const email = member.user.email ?? '';
+						return {
+							email,
+							name:
+								member.user.preferred_name ||
+								[member.user.first_name, member.user.last_name].filter(Boolean).join(' ') ||
+								email
+						};
+					});
 				showEmailSuggestions = emailSuggestions.length > 0;
 				selectedEmailIndex = -1;
 			}
@@ -209,7 +212,7 @@
 					role="listbox"
 					class="absolute left-0 top-full z-10 mt-1 max-h-60 w-full min-w-[300px] overflow-auto rounded-md border border-input bg-popover text-popover-foreground shadow-md"
 				>
-					{#each emailSuggestions as suggestion, index}
+					{#each emailSuggestions as suggestion, index (suggestion.email)}
 						<button
 							type="button"
 							id="email-suggestion-{index}"

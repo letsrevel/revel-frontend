@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { MyEventInvitationSchema } from '$lib/api/generated/types.gen';
 	import { Card } from '$lib/components/ui/card';
@@ -29,7 +30,11 @@
 
 	// Get event location
 	const eventLocation = $derived.by(() => {
-		const event = invitation.event as any;
+		// venue_name/location are not modeled on the event schema but may be present at runtime
+		const event = invitation.event as typeof invitation.event & {
+			venue_name?: string | null;
+			location?: string | null;
+		};
 		return event.venue_name || event.location || null;
 	});
 
@@ -76,7 +81,7 @@
 				<div class="mb-2">
 					<h3 class="text-lg font-semibold">
 						<a
-							href="/events/{invitation.event.id}"
+							href={resolve('/(public)/events/[id]', { id: invitation.event.id })}
 							class="hover:underline focus:underline focus:outline-none"
 						>
 							{invitation.event.name}
@@ -143,7 +148,7 @@
 			<div>
 				<h4 class="mb-2 text-sm font-semibold">{m['invitationCard.specialPrivileges']()}</h4>
 				<ul class="space-y-1">
-					{#each privileges as privilege}
+					{#each privileges as privilege (privilege)}
 						<li class="flex items-center gap-2 text-sm">
 							<CheckCircle2 class="h-4 w-4 shrink-0 text-green-600" aria-hidden="true" />
 							{privilege}
@@ -163,7 +168,7 @@
 			</div>
 
 			<a
-				href="/events/{invitation.event.id}"
+				href={resolve('/(public)/events/[id]', { id: invitation.event.id })}
 				class="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 			>
 				{m['invitationCard.viewEvent']()}

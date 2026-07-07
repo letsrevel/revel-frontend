@@ -8,6 +8,7 @@
 	import { formatRelativeTime } from '$lib/utils/time';
 	import { formatDateTime } from '$lib/utils/date';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
 	import { cn } from '$lib/utils/cn';
@@ -50,15 +51,15 @@
 			// Optimistic update
 			isRead = true;
 		},
-		onSuccess: (data: any) => {
-			// Update the notification with the new read_at value
+		onSuccess: () => {
+			// The mark-read endpoint returns no body, so set read_at locally
 			const updatedNotification = {
 				...notification,
-				read_at: data.data?.read_at || new Date().toISOString()
+				read_at: new Date().toISOString()
 			};
 			onStatusChange?.(updatedNotification);
 		},
-		onError: (error: any) => {
+		onError: (error) => {
 			// Revert optimistic update
 			isRead = false;
 			toast.error(m['notificationItem.toast_markReadFailed']());
@@ -86,7 +87,7 @@
 			};
 			onStatusChange?.(updatedNotification);
 		},
-		onError: (error: any) => {
+		onError: (error) => {
 			// Revert optimistic update
 			isRead = true;
 			toast.error(m['notificationItem.toast_markUnreadFailed']());
@@ -130,11 +131,12 @@
 		if (url) {
 			// Close the dropdown before navigating
 			onNavigate?.();
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- deep-link path supplied by the notification payload (API-provided), not a static route id
 			goto(url);
 		} else {
 			// Fallback: navigate to notifications page
 			onNavigate?.();
-			goto('/account/notifications');
+			goto(resolve('/(auth)/account/notifications', {}));
 		}
 	}
 
@@ -255,6 +257,7 @@
 			markReadMutation.mutate();
 		}
 		onNavigate?.();
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- deep-link path supplied by the notification payload (API-provided), not a static route id
 		goto(data.claimUrl);
 	}
 </script>

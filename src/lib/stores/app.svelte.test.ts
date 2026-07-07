@@ -7,6 +7,10 @@ vi.mock('$lib/api/client', () => ({
 	apiApiVersion: vi.fn()
 }));
 
+// The store is exported as a singleton instance; reconstruct fresh instances for
+// isolated tests via its constructor (typed as a zero-arg newable of the same shape).
+const AppStore = appStore.constructor as new () => typeof appStore;
+
 describe('AppStore', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -15,12 +19,12 @@ describe('AppStore', () => {
 	describe('Initial State', () => {
 		it('should start with null backendVersion', () => {
 			// Create a new store instance for testing
-			const store = new (appStore.constructor as any)();
+			const store = new AppStore();
 			expect(store.backendVersion).toBeNull();
 		});
 
 		it('should start as not loading', () => {
-			const store = new (appStore.constructor as any)();
+			const store = new AppStore();
 			expect(store.isLoadingVersion).toBe(false);
 		});
 	});
@@ -34,7 +38,7 @@ describe('AppStore', () => {
 				response: {} as Response
 			});
 
-			const store = new (appStore.constructor as any)();
+			const store = new AppStore();
 			await store.fetchBackendVersion();
 
 			expect(store.backendVersion).toBe('0.4.2');
@@ -44,12 +48,12 @@ describe('AppStore', () => {
 		it('should set version to Unknown on error', async () => {
 			vi.mocked(apiApiVersion).mockResolvedValue({
 				data: undefined,
-				error: { message: 'Network error' } as any,
+				error: { message: 'Network error' },
 				request: {} as Request,
 				response: {} as Response
 			});
 
-			const store = new (appStore.constructor as any)();
+			const store = new AppStore();
 			await store.fetchBackendVersion();
 
 			expect(store.backendVersion).toBe('Unknown');
@@ -57,7 +61,7 @@ describe('AppStore', () => {
 		});
 
 		it('should not fetch if already fetched', async () => {
-			const store = new (appStore.constructor as any)();
+			const store = new AppStore();
 
 			vi.mocked(apiApiVersion).mockResolvedValue({
 				data: { version: '0.4.2' },

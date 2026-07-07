@@ -2,6 +2,7 @@
 	import type { PageData } from './$types';
 	import type { EventInListSchema } from '$lib/api/generated/types.gen';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 	import { EventCard } from '$lib/components/events';
 	import { EventFilters, MobileFilterSheet } from '$lib/components/events/filters';
@@ -65,8 +66,8 @@
 					// Apply filters
 					city_id: currentFilters.cityId,
 					organization: currentFilters.organizationId,
-					event_type: currentFilters.eventType as any,
-					visibility: currentFilters.visibility as any,
+					event_type: currentFilters.eventType,
+					visibility: currentFilters.visibility,
 					tags: currentFilters.tags,
 					requires_ticket:
 						currentFilters.ticketType === 'ticketed'
@@ -112,12 +113,16 @@
 		}
 
 		const params = filtersToParams(newFilters);
-		goto(`/events?${params}`, { replaceState: false, keepFocus: true });
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()
+		goto(`${resolve('/(public)/events', {})}?${params}`, { replaceState: false, keepFocus: true });
 	}
 
 	function handleClearFilters(): void {
 		const params = filtersToParams(clearFilters());
-		goto(`/events${params.toString() ? `?${params}` : ''}`, { replaceState: false });
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()
+		goto(`${resolve('/(public)/events', {})}${params.toString() ? `?${params}` : ''}`, {
+			replaceState: false
+		});
 	}
 
 	function handleOpenMobileFilters(): void {
@@ -142,6 +147,7 @@
 			url.searchParams.set('week', String(current.week));
 		}
 
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- target is derived from the live page URL (base path already applied); resolve() cannot express search params
 		goto(url.toString(), { keepFocus: true, replaceState: false });
 	}
 
@@ -284,6 +290,7 @@
 							<!-- Pagination controls -->
 							<div class="flex items-center gap-2">
 								{#if hasPrevPage}
+									<!-- eslint-disable svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params) -->
 									<a
 										href="?{filtersToParams({ ...currentFilters, page: currentPage - 1 })}"
 										class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
@@ -291,6 +298,7 @@
 									>
 										{m['common.pagination_previous']()}
 									</a>
+									<!-- eslint-enable svelte/no-navigation-without-resolve -->
 								{:else}
 									<button
 										type="button"
@@ -314,6 +322,7 @@
 								</span>
 
 								{#if hasNextPage}
+									<!-- eslint-disable svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params) -->
 									<a
 										href="?{filtersToParams({ ...currentFilters, page: currentPage + 1 })}"
 										class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
@@ -321,6 +330,7 @@
 									>
 										{m['common.pagination_next']()}
 									</a>
+									<!-- eslint-enable svelte/no-navigation-without-resolve -->
 								{:else}
 									<button
 										type="button"

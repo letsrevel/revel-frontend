@@ -89,7 +89,7 @@
   import NotificationList from '$lib/components/notifications/NotificationList.svelte';
 
   let authToken = $derived(/* get from auth store */);
-<\/script>
+${'</'}script>
 
 <DropdownMenu>
   <DropdownMenuTrigger asChild let:builder>

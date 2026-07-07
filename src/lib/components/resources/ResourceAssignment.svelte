@@ -7,6 +7,7 @@
 	import { Check, Search } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import { formatDate } from '$lib/utils/date';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	interface Props {
 		organizationId: string;
@@ -59,26 +60,20 @@
 		);
 	});
 
-	// Local selected set for better performance
-	let selectedSet = $state(new Set(selectedEventIds));
-
-	// Sync with prop changes
-	$effect(() => {
-		selectedSet = new Set(selectedEventIds);
-	});
+	// Local selected set for better performance. Writable $derived: resynced
+	// from props when they change, but locally reassignable by toggleEvent.
+	let selectedSet = $derived(new SvelteSet(selectedEventIds));
 
 	function toggleEvent(eventId: string) {
 		if (disabled) return;
 
-		const newSet = new Set(selectedSet);
-		if (newSet.has(eventId)) {
-			newSet.delete(eventId);
+		if (selectedSet.has(eventId)) {
+			selectedSet.delete(eventId);
 		} else {
-			newSet.add(eventId);
+			selectedSet.add(eventId);
 		}
 
-		selectedSet = newSet;
-		onSelectionChange?.(Array.from(newSet));
+		onSelectionChange?.(Array.from(selectedSet));
 	}
 
 	function isSelected(eventId: string): boolean {

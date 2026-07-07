@@ -13,6 +13,7 @@
 		type EventSeriesRetrieveSchema
 	} from '$lib/api/generated';
 	import { invalidateAll } from '$app/navigation';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	interface Props {
 		open: boolean;
@@ -29,20 +30,20 @@
 	let isLoading = $state(true);
 	let isSaving = $state(false);
 	let allQuestionnaires = $state<OrganizationQuestionnaireInListSchema[]>([]);
-	let selectedIds = $state<Set<string>>(new Set());
+	const selectedIds = new SvelteSet<string>();
 
 	// Get currently assigned questionnaires from series
 	function getCurrentlyAssigned(): string[] {
 		// Check if series has questionnaires field
 		if ('questionnaires' in series && Array.isArray(series.questionnaires)) {
-			return series.questionnaires.map((q: any) => q.id);
+			return series.questionnaires.map((q: { id: string }) => q.id);
 		}
 		// Check if series has organization_questionnaires field
 		if (
 			'organization_questionnaires' in series &&
 			Array.isArray(series.organization_questionnaires)
 		) {
-			return series.organization_questionnaires.map((q: any) => q.id);
+			return series.organization_questionnaires.map((q: { id: string }) => q.id);
 		}
 		return [];
 	}
@@ -50,7 +51,8 @@
 	// Initialize selected IDs from currently assigned
 	$effect(() => {
 		if (open) {
-			selectedIds = new Set(getCurrentlyAssigned());
+			selectedIds.clear();
+			for (const id of getCurrentlyAssigned()) selectedIds.add(id);
 			loadQuestionnaires();
 		}
 	});
@@ -92,13 +94,11 @@
 
 	// Toggle questionnaire selection
 	function toggleQuestionnaire(id: string) {
-		const newSet = new Set(selectedIds);
-		if (newSet.has(id)) {
-			newSet.delete(id);
+		if (selectedIds.has(id)) {
+			selectedIds.delete(id);
 		} else {
-			newSet.add(id);
+			selectedIds.add(id);
 		}
-		selectedIds = newSet;
 	}
 
 	// Save assignments
@@ -137,8 +137,8 @@
 				) {
 					// Remove this series from the list
 					const remainingSeriesIds = questionnaire.event_series
-						.filter((s: any) => s.id !== series.id)
-						.map((s: any) => s.id);
+						.filter((s: { id: string }) => s.id !== series.id)
+						.map((s: { id: string }) => s.id);
 
 					const response = await questionnaireReplaceEventSeries({
 						path: { org_questionnaire_id: questionnaireId },

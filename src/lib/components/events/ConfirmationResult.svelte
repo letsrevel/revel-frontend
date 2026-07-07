@@ -9,10 +9,9 @@
 
 	interface Props {
 		token: string;
-		onEventNavigate?: (eventId: string) => void;
 	}
 
-	const { token, onEventNavigate }: Props = $props();
+	const { token }: Props = $props();
 
 	// State
 	let isLoading = $state(true);
@@ -77,7 +76,7 @@
 			} else {
 				throw new Error('Unexpected response format from confirmation');
 			}
-		} catch (error: any) {
+		} catch (error) {
 			result = {
 				success: false,
 				error: handleGuestAttendanceError(error)
@@ -96,6 +95,7 @@
 
 		// Build URL with query params to trigger success message on event page
 		let url = `/events/${result.eventId}`;
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via window.location.href
 		const params = new URLSearchParams();
 
 		if (result.type === 'rsvp' && result.rsvpStatus) {

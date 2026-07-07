@@ -7,9 +7,7 @@
 		getYearMonths,
 		isToday,
 		isInMonth,
-		formatCalendarDate,
-		getEventsForDay,
-		groupEventsByDate
+		getEventsForDay
 	} from '$lib/utils/calendar';
 	import { CalendarDay, CalendarWeekView, CalendarYearView } from '$lib/components/calendar';
 	import * as m from '$lib/paraglide/messages.js';
@@ -25,9 +23,6 @@
 	}
 
 	const { view, year, month, week, events, onEventClick, isLoading = false }: Props = $props();
-
-	// Group events by date for efficient lookup
-	const eventsByDate = $derived(groupEventsByDate(events));
 
 	// Get calendar data based on view
 	const calendarGrid = $derived(view === 'month' ? getMonthCalendarGrid(year, month) : []);
@@ -75,11 +70,6 @@
 								{isCurrentMonth}
 								isToday={isTodayDate}
 								{isLoading}
-								onclick={(event) => {
-									if (dayEvents.length === 1) {
-										onEventClick?.(dayEvents[0]);
-									}
-								}}
 								{onEventClick}
 							/>
 						{/each}

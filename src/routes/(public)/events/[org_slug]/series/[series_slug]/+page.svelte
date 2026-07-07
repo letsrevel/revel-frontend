@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import type { PageData } from './$types';
 	import { Calendar, ArrowLeft, Repeat, ArrowDownUp, Settings } from '@lucide/svelte';
 	import { EventCard } from '$lib/components/events';
@@ -20,10 +21,10 @@
 	// Compute full image URLs
 	const coverUrl = $derived(getImageUrl(series.cover_art));
 	// Prefer thumbnail for logo display (64-80px size)
-	const s = $derived(series as any);
-	const o = $derived(series.organization as any);
-	const logoUrl = $derived(getImageUrl(s.logo_thumbnail_url || series.logo));
-	const orgLogoUrl = $derived(getImageUrl(o.logo_thumbnail_url || series.organization.logo));
+	const logoUrl = $derived(getImageUrl(series.logo_thumbnail_url || series.logo));
+	const orgLogoUrl = $derived(
+		getImageUrl(series.organization.logo_thumbnail_url || series.organization.logo)
+	);
 
 	// Fallback gradient
 	function getSeriesFallbackGradient(seriesId: string): string {
@@ -88,7 +89,7 @@
 		<!-- Back Button -->
 		<div class="mb-6">
 			<a
-				href="/org/{series.organization.slug}"
+				href={resolve('/(public)/org/[slug]', { slug: series.organization.slug })}
 				class="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
 			>
 				<ArrowLeft class="h-4 w-4" aria-hidden="true" />
@@ -108,7 +109,10 @@
 					<h3 class="mb-3 text-sm font-semibold">{m['eventSeriesDetailPage.admin_title']()}</h3>
 					<div class="space-y-2">
 						<a
-							href="/org/{series.organization.slug}/admin/event-series/{series.id}/edit"
+							href={resolve('/(auth)/org/[slug]/admin/event-series/[series_id]/edit', {
+								slug: series.organization.slug,
+								series_id: series.id
+							})}
 							class="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 						>
 							<Settings class="h-4 w-4" aria-hidden="true" />
@@ -148,7 +152,7 @@
 
 							<!-- Organization Link -->
 							<a
-								href="/org/{series.organization.slug}"
+								href={resolve('/(public)/org/[slug]', { slug: series.organization.slug })}
 								class="mb-2 inline-block text-base font-medium text-primary hover:underline"
 							>
 								{m['eventSeriesDetailPage.byOrganization']({
@@ -159,7 +163,7 @@
 							<!-- Tags -->
 							{#if series.tags && series.tags.length > 0}
 								<div class="mt-3 flex flex-wrap gap-2">
-									{#each series.tags as tag}
+									{#each series.tags as tag (tag)}
 										<span
 											class="inline-block rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary"
 										>
@@ -214,6 +218,7 @@
 						</div>
 
 						<!-- Sort Order Toggle -->
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params) -->
 						<a
 							href="?order_by={orderBy === '-start' ? 'start' : '-start'}"
 							class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -226,6 +231,7 @@
 								? m['eventSeriesDetailPage.sort_newestFirst']()
 								: m['eventSeriesDetailPage.sort_oldestFirst']()}
 						</a>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					</div>
 
 					{#if events.length === 0}
@@ -259,6 +265,7 @@
 								<!-- Pagination controls -->
 								<div class="flex items-center gap-2">
 									{#if hasPrevPage}
+										<!-- eslint-disable svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params) -->
 										<a
 											href="?page={currentPage - 1}"
 											class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -266,6 +273,7 @@
 										>
 											{m['eventSeriesDetailPage.pagination_previous']()}
 										</a>
+										<!-- eslint-enable svelte/no-navigation-without-resolve -->
 									{:else}
 										<button
 											type="button"
@@ -288,6 +296,7 @@
 									</span>
 
 									{#if hasNextPage}
+										<!-- eslint-disable svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params) -->
 										<a
 											href="?page={currentPage + 1}"
 											class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -295,6 +304,7 @@
 										>
 											{m['eventSeriesDetailPage.pagination_next']()}
 										</a>
+										<!-- eslint-enable svelte/no-navigation-without-resolve -->
 									{:else}
 										<button
 											type="button"
@@ -320,7 +330,10 @@
 							<h3 class="mb-3 text-sm font-semibold">{m['eventSeriesDetailPage.admin_title']()}</h3>
 							<div class="space-y-2">
 								<a
-									href="/org/{series.organization.slug}/admin/event-series/{series.id}/edit"
+									href={resolve('/(auth)/org/[slug]/admin/event-series/[series_id]/edit', {
+										slug: series.organization.slug,
+										series_id: series.id
+									})}
 									class="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 								>
 									<Settings class="h-4 w-4" aria-hidden="true" />

@@ -20,7 +20,7 @@
 {#snippet questionOptions(question: Question)}
 	{#if question.type === 'multiple_choice' && question.options}
 		<div class="mt-2 space-y-1">
-			{#each question.options as option}
+			{#each question.options as option (option.id)}
 				<div class="flex items-center gap-2 text-sm">
 					<span class={option.isCorrect ? 'font-medium text-green-600' : 'text-muted-foreground'}>
 						{option.isCorrect ? '\u2713' : '\u25CB'}
@@ -33,7 +33,7 @@
 						<p class="text-xs font-medium text-muted-foreground">
 							&#8627; {m['questionnaireReadOnlyView.ifSelectedShow']()}
 						</p>
-						{#each option.conditionalQuestions as condQ}
+						{#each option.conditionalQuestions as condQ (condQ.id)}
 							<div class="rounded border bg-muted/50 p-3">
 								<div class="mb-1 flex items-center gap-2">
 									<span
@@ -52,7 +52,7 @@
 								<p class="text-sm">{condQ.text}</p>
 								{#if condQ.type === 'multiple_choice' && condQ.options}
 									<div class="mt-1 space-y-0.5">
-										{#each condQ.options as condOpt}
+										{#each condQ.options as condOpt (condOpt.id)}
 											<div class="flex items-center gap-1 text-xs text-muted-foreground">
 												<span>{condOpt.isCorrect ? '\u2713' : '\u25CB'}</span>
 												<span>{condOpt.text}</span>
@@ -70,7 +70,7 @@
 						<p class="text-xs font-medium text-muted-foreground">
 							&#8627; {m['questionnaireReadOnlyView.ifSelectedShowSection']()}
 						</p>
-						{#each option.conditionalSections as condSection}
+						{#each option.conditionalSections as condSection (condSection.id)}
 							<div class="rounded border border-green-500/50 bg-green-50/50 p-3">
 								<p class="mb-2 text-sm font-medium">{condSection.name}</p>
 								{#if condSection.description}
@@ -78,7 +78,7 @@
 										{condSection.description}
 									</p>
 								{/if}
-								{#each condSection.questions as condQ}
+								{#each condSection.questions as condQ (condQ.id)}
 									<div class="mt-2 rounded border bg-background p-2">
 										<div class="mb-1 flex items-center gap-2">
 											<span
@@ -129,7 +129,7 @@
 			<h3 class="text-sm font-medium text-muted-foreground">
 				{m['questionnaireReadOnlyView.topLevelQuestions']()}
 			</h3>
-			{#each topLevelQuestions as question}
+			{#each topLevelQuestions as question (question.id)}
 				<div class="rounded-lg border p-4">
 					{@render questionBadge(question)}
 					<p class="font-medium">{question.text}</p>
@@ -139,7 +139,7 @@
 		</div>
 	{/if}
 
-	{#each sections as section}
+	{#each sections as section (section.id)}
 		<div class="space-y-3 rounded-lg border-2 border-dashed border-muted p-4">
 			<div class="flex items-center justify-between border-b pb-2">
 				<h3 class="font-semibold">{section.name}</h3>
@@ -150,7 +150,7 @@
 			{#if section.description}
 				<p class="text-sm text-muted-foreground">{section.description}</p>
 			{/if}
-			{#each section.questions as question}
+			{#each section.questions as question (question.id)}
 				<div class="rounded-lg border bg-background p-4">
 					{@render questionBadge(question)}
 					<p class="font-medium">{question.text}</p>

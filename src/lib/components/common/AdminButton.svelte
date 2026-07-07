@@ -1,14 +1,13 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { dashboardDashboardOrganizations } from '$lib/api/generated/sdk.gen';
 	import { Shield, ChevronDown } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-
-	type BuilderProps = any;
 
 	const accessToken = $derived(authStore.accessToken);
 	const permissions = $derived(authStore.permissions);
@@ -78,7 +77,7 @@
 
 		if (userAdminOrgs.length === 1) {
 			// Single org - navigate directly
-			goto(`/org/${userAdminOrgs[0].slug}/admin`);
+			goto(resolve('/(auth)/org/[slug]/admin', { slug: userAdminOrgs[0].slug }));
 		}
 
 		// Multiple orgs - dropdown will handle it
@@ -86,7 +85,7 @@
 
 	// Navigate to specific org admin
 	function navigateToOrgAdmin(slug: string) {
-		goto(`/org/${slug}/admin`);
+		goto(resolve('/(auth)/org/[slug]/admin', { slug: slug }));
 	}
 
 	// Don't show button if no admin permissions
@@ -115,7 +114,7 @@
 			<DropdownMenu.Content align="end" class="w-56">
 				<DropdownMenu.Label>{m['adminButton.selectOrganization']()}</DropdownMenu.Label>
 				<DropdownMenu.Separator />
-				{#each userAdminOrgs as org}
+				{#each userAdminOrgs as org (org.id)}
 					<DropdownMenu.Item onclick={() => navigateToOrgAdmin(org.slug)}>
 						<div class="flex items-center gap-2">
 							<Shield class="h-4 w-4 text-muted-foreground" />

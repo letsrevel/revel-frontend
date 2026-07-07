@@ -14,13 +14,16 @@
 
 	// Group seats by row for grid display
 	const seatsByRow = $derived(() => {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local grouping map built and consumed synchronously within this function, replaced by a fresh sorted Map before returning
 		const byRow = new Map<string, VenueSeatSchema[]>();
 		for (const seat of seats) {
 			const row = seat.row || '?';
-			if (!byRow.has(row)) {
-				byRow.set(row, []);
+			let rowSeats = byRow.get(row);
+			if (!rowSeats) {
+				rowSeats = [];
+				byRow.set(row, rowSeats);
 			}
-			byRow.get(row)!.push(seat);
+			rowSeats.push(seat);
 		}
 		// Sort seats within each row by number
 		for (const [, rowSeats] of byRow) {

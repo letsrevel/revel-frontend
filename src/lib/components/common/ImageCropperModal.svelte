@@ -237,7 +237,6 @@
 </script>
 
 <!-- Modal backdrop -->
-<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
 	class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
 	role="dialog"

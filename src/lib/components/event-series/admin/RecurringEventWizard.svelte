@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { toast } from 'svelte-sonner';
 	import { createMutation } from '@tanstack/svelte-query';
@@ -384,7 +385,12 @@
 		},
 		onSuccess: (data) => {
 			toast.success(m['recurringEvents.wizard.createdToast']({ seriesName: seriesName.trim() }));
-			goto(`/org/${organization.slug}/admin/event-series/${data.id}`);
+			goto(
+				resolve('/(auth)/org/[slug]/admin/event-series/[series_id]', {
+					slug: organization.slug,
+					series_id: data.id
+				})
+			);
 		},
 		onError: (error: Error & { fieldErrors?: Record<string, string> }) => {
 			if (error.fieldErrors && Object.keys(error.fieldErrors).length > 0) {

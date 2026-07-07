@@ -15,6 +15,7 @@
 	import { cn } from '$lib/utils/cn';
 	import { formatDate } from '$lib/utils/date';
 	import * as m from '$lib/paraglide/messages.js';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	interface Props {
 		organizationId: string;
@@ -53,21 +54,11 @@
 	let eventsSearch = $state('');
 	let tiersSearch = $state('');
 
-	// Local selection sets
-	let seriesSet = $state(new Set(selectedSeriesIds));
-	let eventsSet = $state(new Set(selectedEventIds));
-	let tiersSet = $state(new Set(selectedTierIds));
-
-	// Sync with prop changes
-	$effect(() => {
-		seriesSet = new Set(selectedSeriesIds);
-	});
-	$effect(() => {
-		eventsSet = new Set(selectedEventIds);
-	});
-	$effect(() => {
-		tiersSet = new Set(selectedTierIds);
-	});
+	// Local selection sets. Writable $derived: resynced from props when they
+	// change, but locally reassignable by the toggle handlers below.
+	let seriesSet = $derived(new SvelteSet(selectedSeriesIds));
+	let eventsSet = $derived(new SvelteSet(selectedEventIds));
+	let tiersSet = $derived(new SvelteSet(selectedTierIds));
 
 	// Fetch series
 	const seriesQuery = createQuery<EventSeriesInListSchema[]>(() => ({
@@ -150,38 +141,32 @@
 	// Toggle functions
 	function toggleSeries(id: string) {
 		if (disabled) return;
-		const newSet = new Set(seriesSet);
-		if (newSet.has(id)) {
-			newSet.delete(id);
+		if (seriesSet.has(id)) {
+			seriesSet.delete(id);
 		} else {
-			newSet.add(id);
+			seriesSet.add(id);
 		}
-		seriesSet = newSet;
-		onSeriesChange?.(Array.from(newSet));
+		onSeriesChange?.(Array.from(seriesSet));
 	}
 
 	function toggleEvent(id: string) {
 		if (disabled) return;
-		const newSet = new Set(eventsSet);
-		if (newSet.has(id)) {
-			newSet.delete(id);
+		if (eventsSet.has(id)) {
+			eventsSet.delete(id);
 			// Remove tiers belonging to this event
 			const eventTiers = tiersQuery.data?.filter((t) => t.event_id === id) || [];
-			const newTierSet = new Set(tiersSet);
 			for (const tier of eventTiers) {
-				if (tier.id) newTierSet.delete(tier.id);
+				if (tier.id) tiersSet.delete(tier.id);
 			}
-			tiersSet = newTierSet;
-			onTiersChange?.(Array.from(newTierSet));
+			onTiersChange?.(Array.from(tiersSet));
 		} else {
-			newSet.add(id);
+			eventsSet.add(id);
 		}
-		eventsSet = newSet;
-		onEventsChange?.(Array.from(newSet));
+		onEventsChange?.(Array.from(eventsSet));
 
 		// Report the scoped event's date so the parent can prefill an expiration default.
-		if (newSet.size === 1) {
-			const scoped = eventsQuery.data?.find((e) => e.id === Array.from(newSet)[0]);
+		if (eventsSet.size === 1) {
+			const scoped = eventsQuery.data?.find((e) => e.id === Array.from(eventsSet)[0]);
 			onScopedEventDateChange?.(scoped?.start ?? null);
 		} else {
 			onScopedEventDateChange?.(null);
@@ -190,24 +175,22 @@
 
 	function toggleTier(id: string) {
 		if (disabled) return;
-		const newSet = new Set(tiersSet);
-		if (newSet.has(id)) {
-			newSet.delete(id);
+		if (tiersSet.has(id)) {
+			tiersSet.delete(id);
 		} else {
-			newSet.add(id);
+			tiersSet.add(id);
 		}
-		tiersSet = newSet;
-		onTiersChange?.(Array.from(newSet));
+		onTiersChange?.(Array.from(tiersSet));
 	}
 
 	// Prune orphan tier IDs when available tiers change (e.g. after event deselected and tiers re-fetched)
 	$effect(() => {
 		if (!tiersQuery.data) return;
 		const validTierIds = new Set(tiersQuery.data.map((t) => t.id).filter(Boolean));
-		const pruned = new Set([...tiersSet].filter((id) => validTierIds.has(id)));
-		if (pruned.size !== tiersSet.size) {
-			tiersSet = pruned;
-			onTiersChange?.(Array.from(pruned));
+		const staleIds = [...tiersSet].filter((id) => !validTierIds.has(id));
+		if (staleIds.length > 0) {
+			for (const id of staleIds) tiersSet.delete(id);
+			onTiersChange?.(Array.from(tiersSet));
 		}
 	});
 

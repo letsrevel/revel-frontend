@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { getLandingPage } from '$lib/data/landing-pages';
+	import { getLandingPageOrThrow } from '$lib/data/landing-pages';
 	import { LandingPageTemplate } from '$lib/components/landing';
 	import { SeoHead, buildSeo } from '$lib/seo';
 	import { landingExtras } from '$lib/seo/landing';
 
 	const SLUG = 'community-first-event-platform';
-	const content = getLandingPage('fr', SLUG)!;
+	const content = getLandingPageOrThrow('fr', SLUG);
 
 	const seoConfig = $derived(
 		buildSeo({

@@ -113,7 +113,7 @@ describe('AuthStore', () => {
 		it('should throw error for invalid credentials', async () => {
 			vi.mocked(authObtainToken).mockResolvedValue({
 				data: undefined,
-				error: { message: 'Invalid credentials' } as any,
+				error: { message: 'Invalid credentials' },
 				request: {} as Request,
 				response: {} as Response
 			});
@@ -184,7 +184,7 @@ describe('AuthStore', () => {
 		it('should throw error for invalid OTP', async () => {
 			vi.mocked(authObtainTokenWithOtp).mockResolvedValue({
 				data: undefined,
-				error: { message: 'Invalid OTP' } as any,
+				error: { message: 'Invalid OTP' },
 				request: {} as Request,
 				response: {} as Response
 			});

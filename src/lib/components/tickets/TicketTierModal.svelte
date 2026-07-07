@@ -19,7 +19,6 @@
 		/** Event ID for fetching seat availability */
 		eventId: string;
 		isAuthenticated: boolean;
-		hasTicket: boolean;
 		membershipTier?: MembershipTierSchema | null;
 		canAttendWithoutLogin?: boolean;
 		/** Per-tier remaining tickets info (from my-status endpoint) */
@@ -57,7 +56,6 @@
 		tiers,
 		eventId,
 		isAuthenticated,
-		hasTicket,
 		membershipTier = null,
 		canAttendWithoutLogin = false,
 		tierRemainingTickets,

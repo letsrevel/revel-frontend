@@ -6,6 +6,7 @@
 	import { eventadmincoreDuplicateEvent } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { Copy, Loader2 } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import DateTimePicker from '$lib/components/forms/DateTimePicker.svelte';
@@ -14,19 +15,11 @@
 		open: boolean;
 		eventId: string;
 		eventName: string;
-		eventStart: string;
 		organizationSlug: string;
 		onClose: () => void;
 	}
 
-	let {
-		open = $bindable(),
-		eventId,
-		eventName,
-		eventStart,
-		organizationSlug,
-		onClose
-	}: Props = $props();
+	let { open = $bindable(), eventId, eventName, organizationSlug, onClose }: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
 
@@ -41,6 +34,7 @@
 			// Suggest name with "Copy of" prefix
 			newName = m['duplicateEventModal.copyOf']({ name: eventName });
 			// Default to current date/time + 1 hour as ISO
+			// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local var mutated synchronously then converted to an ISO string and discarded
 			const now = new Date();
 			now.setMinutes(now.getMinutes() + 60); // Add 1 hour
 			newStart = now.toISOString();
@@ -82,7 +76,12 @@
 		},
 		onSuccess: (data) => {
 			// Navigate to the new event's edit page
-			goto(`/org/${organizationSlug}/admin/events/${data.id}/edit`);
+			goto(
+				resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
+					slug: organizationSlug,
+					event_id: data.id
+				})
+			);
 			onClose();
 		},
 		onError: (error: Error) => {

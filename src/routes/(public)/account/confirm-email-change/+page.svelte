@@ -2,6 +2,7 @@
 	import { enhance, applyAction } from '$app/forms';
 	import { page } from '$app/stores';
 	import { invalidateAll } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { AlertTriangle, CheckCircle, Loader2, Mail } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -64,7 +65,7 @@
 
 			<div class="text-center">
 				<a
-					href="/account/profile"
+					href={resolve('/(auth)/account/profile', {})}
 					class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
 					{m['confirmEmailChange.success_cta']()}
@@ -85,7 +86,7 @@
 
 			<div class="text-center">
 				<a
-					href="/account/security"
+					href={resolve('/(auth)/account/security', {})}
 					class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
 					{m['confirmEmailChange.invalidLink_cta']()}
@@ -144,7 +145,7 @@
 					{#if errors.form === 'expired' || errors.form === 'invalid' || errors.form === 'emailTaken'}
 						<div class="mt-3">
 							<a
-								href="/account/security"
+								href={resolve('/(auth)/account/security', {})}
 								class="text-sm font-medium text-destructive underline-offset-4 hover:underline"
 							>
 								{m['confirmEmailChange.error_cta']()}
@@ -191,7 +192,7 @@
 
 				<div class="flex gap-3">
 					<a
-						href="/"
+						href={resolve('/(public)', {})}
 						class="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 					>
 						{m['confirmEmailChange.confirm_cancel']()}

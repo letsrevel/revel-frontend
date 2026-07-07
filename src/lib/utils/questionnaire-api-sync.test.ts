@@ -67,6 +67,7 @@ function makeFtSubQuestion(apiId: string | undefined): QuestionnaireQuestion {
 
 function makeOption(conditionals: QuestionnaireQuestion[]): QuestionnaireOption {
 	return {
+		id: 'local-opt-id',
 		text: 'Option A',
 		isCorrect: false,
 		_apiId: OPTION_API_ID,

@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
@@ -29,6 +30,7 @@
 	const currentOrderBy = $derived(data.filters.orderBy || '-submitted_at');
 
 	function setEvaluationStatusFilter(status: string) {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const params = new URLSearchParams($page.url.searchParams);
 
 		if (status) {
@@ -38,10 +40,12 @@
 		}
 
 		params.delete('page'); // Reset to first page when filters change
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params)
 		goto(`?${params.toString()}`, { replaceState: true });
 	}
 
 	function setOrderBy(orderBy: string) {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const params = new URLSearchParams($page.url.searchParams);
 
 		if (orderBy !== '-submitted_at') {
@@ -51,12 +55,15 @@
 		}
 
 		params.delete('page'); // Reset to first page when ordering changes
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params)
 		goto(`?${params.toString()}`, { replaceState: true });
 	}
 
 	function goToPage(pageNum: number) {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local URL builder, mutated synchronously then discarded via goto()
 		const params = new URLSearchParams($page.url.searchParams);
 		params.set('page', pageNum.toString());
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params)
 		goto(`?${params.toString()}`);
 	}
 
@@ -80,7 +87,7 @@
 	<!-- Header -->
 	<div class="mb-8">
 		<a
-			href="/org/{data.organizationSlug}/admin/questionnaires"
+			href={resolve('/(auth)/org/[slug]/admin/questionnaires', { slug: data.organizationSlug })}
 			class="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
 		>
 			<ArrowLeft class="h-4 w-4" />

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import {
 		Dialog,
@@ -14,6 +15,7 @@
 	import { RadioGroup, RadioGroupItem } from '$lib/components/ui/radio-group';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { UserPlus, CheckCircle2, AlertCircle } from '@lucide/svelte';
+	import { z } from 'zod';
 	import { guestRsvpSchema, type GuestRsvpData } from '$lib/schemas/guestAttendance';
 	import { eventpublicguestGuestRsvp } from '$lib/api';
 	import { handleGuestAttendanceError } from '$lib/utils/guestAttendance';
@@ -22,12 +24,11 @@
 	interface Props {
 		open: boolean;
 		eventId: string;
-		eventName: string;
 		onClose: () => void;
 		onSuccess?: () => void;
 	}
 
-	let { open = $bindable(), eventId, eventName, onClose, onSuccess }: Props = $props();
+	let { open = $bindable(), eventId, onClose, onSuccess }: Props = $props();
 
 	// Form state
 	let formData = $state<GuestRsvpData>({
@@ -84,8 +85,8 @@
 			const fieldSchema = guestRsvpSchema.shape[field];
 			fieldSchema.parse(formData[field]);
 			fieldErrors[field] = '';
-		} catch (error: any) {
-			if (error.errors && error.errors.length > 0) {
+		} catch (error) {
+			if (error instanceof z.ZodError && error.errors.length > 0) {
 				fieldErrors[field] = error.errors[0].message;
 			}
 		}
@@ -104,9 +105,9 @@
 		try {
 			guestRsvpSchema.parse(formData);
 			return true;
-		} catch (error: any) {
-			if (error.errors) {
-				error.errors.forEach((err: any) => {
+		} catch (error) {
+			if (error instanceof z.ZodError) {
+				error.errors.forEach((err) => {
 					const field = err.path[0] as keyof GuestRsvpData;
 					if (!fieldErrors[field]) {
 						fieldErrors[field] = err.message;
@@ -136,14 +137,25 @@
 
 			// Check for API error (400, 422, etc.) - client doesn't throw on HTTP errors
 			if (response.error) {
-				const err = response.error as any;
+				// The runtime error payload can carry eligibility fields (next_step, reason)
+				// that are not part of the declared ResponseMessage type, so narrow from unknown.
+				const err: unknown = response.error;
+				const nextStep =
+					typeof err === 'object' && err !== null && 'next_step' in err ? err.next_step : undefined;
+				const detail =
+					typeof err === 'object' && err !== null && 'detail' in err ? err.detail : undefined;
+				const reason =
+					typeof err === 'object' && err !== null && 'reason' in err ? err.reason : undefined;
 
 				// Check for eligibility response with next_step
-				if (err?.next_step && !GUEST_COMPATIBLE_STEPS.has(err.next_step)) {
+				if (typeof nextStep === 'string' && !GUEST_COMPATIBLE_STEPS.has(nextStep)) {
 					requiresAccount = true;
 				}
 
-				const errorDetail = err?.detail || err?.reason || m['guestRsvpDialog.failedToSubmit']();
+				const errorDetail =
+					(typeof detail === 'string' && detail) ||
+					(typeof reason === 'string' && reason) ||
+					m['guestRsvpDialog.failedToSubmit']();
 				throw new Error(
 					typeof errorDetail === 'string' ? errorDetail : m['guestRsvpDialog.failedToSubmit']()
 				);
@@ -152,7 +164,7 @@
 			// Success - show confirmation message
 			showSuccess = true;
 			onSuccess?.();
-		} catch (error: any) {
+		} catch (error) {
 			errorMessage = handleGuestAttendanceError(error);
 		} finally {
 			isSubmitting = false;
@@ -297,7 +309,7 @@
 					<div class="space-y-3">
 						<Label>{m['guest_attendance.rsvp_answer_label']()}</Label>
 						<RadioGroup bind:value={formData.answer} disabled={isSubmitting} class="space-y-2">
-							{#each ['yes', 'no', 'maybe'] as option}
+							{#each ['yes', 'no', 'maybe'] as option (option)}
 								<div class="flex items-center space-x-2">
 									<RadioGroupItem value={option} id="rsvp-{option}" />
 									<Label
@@ -324,20 +336,24 @@
 								{errorMessage}
 								{#if requiresAccount}
 									<p class="mt-2">
+										<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 										<a
-											href="/login?redirect={encodeURIComponent(window.location.pathname)}"
+											href={`${resolve('/(public)/login', {})}?redirect=${encodeURIComponent(window.location.pathname)}`}
 											class="font-medium underline hover:no-underline"
 										>
 											{m['guestRsvpDialog.logIn']()}
 										</a>
-										{' '}{m['guestRsvpDialog.or']()}{' '}
+										<!-- eslint-enable svelte/no-navigation-without-resolve -->
+										{m['guestRsvpDialog.or']()}
+										<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 										<a
-											href="/register?redirect={encodeURIComponent(window.location.pathname)}"
+											href={`${resolve('/(public)/register', {})}?redirect=${encodeURIComponent(window.location.pathname)}`}
 											class="font-medium underline hover:no-underline"
 										>
 											{m['guestRsvpDialog.createAnAccount']()}
 										</a>
-										{' '}{m['guestRsvpDialog.toContinue']()}
+										<!-- eslint-enable svelte/no-navigation-without-resolve -->
+										{m['guestRsvpDialog.toContinue']()}
 									</p>
 								{/if}
 							</AlertDescription>
@@ -367,6 +383,7 @@
 				<!-- Subtle login link -->
 				<div class="border-t pt-3 text-center text-xs text-muted-foreground">
 					<p>
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -- static i18n string, no interpolated data; only a developer-authored <a>→login link is injected -->
 						{@html m['guest_attendance.or_login']()
 							.replace('<a>', '<a href="/login" class="text-primary hover:underline">')
 							.replace('</a>', '</a>')}

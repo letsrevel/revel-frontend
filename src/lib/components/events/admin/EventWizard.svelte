@@ -24,9 +24,11 @@
 		VenueDetailSchema,
 		OrganizationRetrieveSchema,
 		OrganizationQuestionnaireInListSchema,
-		ResourceVisibility
+		ResourceVisibility,
+		EventSeriesRetrieveSchema
 	} from '$lib/api/generated/types.gen';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { cn } from '$lib/utils/cn';
 	import EssentialsStep from './EssentialsStep.svelte';
@@ -40,8 +42,7 @@
 		existingEvent?: EventDetailSchema;
 		userCity?: CitySchema | null;
 		orgCity?: CitySchema | null;
-		// Event series and questionnaires can be any objects with id - types will be fixed when backend API is correct
-		eventSeries?: Array<{ id: string; [key: string]: unknown }>;
+		eventSeries?: EventSeriesRetrieveSchema[];
 		questionnaires?: Array<{ id: string; [key: string]: unknown }>;
 	}
 
@@ -126,7 +127,7 @@
 		is_open_ended: existingEvent?.is_open_ended ?? false,
 		city_id: existingEvent?.city?.id || orgCity?.id || userCity?.id || null,
 		visibility: existingEvent?.visibility || 'public',
-		event_type: (existingEvent?.event_type as any) || ('public' as any), // Backend API has wrong enum type
+		event_type: existingEvent?.event_type || 'public',
 		requires_ticket: existingEvent?.requires_ticket || false,
 		description: existingEvent?.description || '',
 		address: existingEvent?.address || '',
@@ -487,11 +488,11 @@
 			if (eventId) {
 				// Update existing event - MUST include ALL fields because backend uses PUT (full replacement)
 				const updateData: Partial<EventEditSchema> = {
-					name: formData.name!,
-					start: toISOString(formData.start)!,
-					city_id: formData.city_id!,
+					name: formData.name,
+					start: toISOString(formData.start),
+					city_id: formData.city_id,
 					visibility: formData.visibility || 'public',
-					event_type: (formData.event_type || 'public') as any,
+					event_type: formData.event_type || 'public',
 					// Include all other fields to prevent them from being reset
 					description: formData.description || null,
 					end: formData.is_open_ended ? null : toISOString(formData.end),
@@ -518,17 +519,22 @@
 				await updateEventMutation.mutateAsync({ id: eventId, data: updateData });
 			} else {
 				// Create new event - only essential fields needed
+				const startIso = toISOString(formData.start);
+				if (!formData.name || !startIso) {
+					errorMessage = m['eventWizard.error_fixValidation']();
+					return;
+				}
 				const createData: EventCreateSchema = {
-					name: formData.name!,
-					start: toISOString(formData.start)!,
-					city_id: formData.city_id!,
+					name: formData.name,
+					start: startIso,
+					city_id: formData.city_id,
 					visibility: formData.visibility || 'public',
-					event_type: (formData.event_type || 'public') as any, // Backend has wrong enum
-					status: 'draft' as any, // Create as draft by default
+					event_type: formData.event_type || 'public',
+					status: 'draft', // Create as draft by default
 					requires_ticket: formData.requires_ticket || false, // Send explicit false when unchecked
 					requires_full_profile: formData.requires_full_profile || false,
 					venue_id: formData.venue_id || null
-				} as any; // Cast to any because requires_ticket is not yet in backend schema
+				};
 
 				const result = await createEventMutation.mutateAsync(createData);
 				eventId = result.id;
@@ -567,7 +573,7 @@
 		try {
 			// Update event with all details - convert datetime-local to ISO with timezone
 			const updateData: Partial<EventEditSchema> = {
-				city_id: formData.city_id!, // Now required from LocationSection
+				city_id: formData.city_id, // Now required from LocationSection
 				description: formData.description || null,
 				end: formData.is_open_ended ? null : toISOString(formData.end),
 				is_open_ended: formData.is_open_ended ?? false,
@@ -623,7 +629,7 @@
 			queryClient.invalidateQueries({ queryKey: ['event', eventId] });
 
 			// Redirect to events list
-			goto(`/org/${organization.slug}/admin/events`);
+			goto(resolve('/(auth)/org/[slug]/admin/events', { slug: organization.slug }));
 		} catch (error) {
 			console.error('Step 2 submission error:', error);
 			errorMessage = m['eventWizard.error_failedToSaveDetails']();
@@ -783,7 +789,7 @@
 		<div class="space-y-6">
 			<DetailsStep
 				{formData}
-				eventSeries={eventSeries as any}
+				{eventSeries}
 				questionnaires={assignedQuestionnaires}
 				{eventId}
 				organizationId={organization.id}
@@ -851,8 +857,9 @@
 			</div>
 		</div>
 	{:else if currentStep === 3 && formData.requires_ticket && eventId}
+		{@const eventIdValue = eventId}
 		<TicketingStep
-			eventId={eventId!}
+			eventId={eventIdValue}
 			organizationSlug={organization.slug}
 			organizationStripeConnected={organization.is_stripe_connected}
 			{formData}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { browser } from '$app/environment';
 	import { createQuery } from '@tanstack/svelte-query';
@@ -31,9 +32,9 @@
 	// Build settings URL with redirect back to current page
 	const settingsUrl = $derived.by(() => {
 		if (browser) {
-			return `/account/settings?redirect=${encodeURIComponent(window.location.pathname)}`;
+			return `${resolve('/(auth)/account/settings', {})}?redirect=${encodeURIComponent(window.location.pathname)}`;
 		}
-		return '/account/settings';
+		return resolve('/(auth)/account/settings', {});
 	});
 
 	// Map visibility preference to translation key
@@ -290,12 +291,14 @@
 							<span class="font-medium text-foreground">{getVisibilityLabel(userVisibility)}</span>
 						</span>
 					</div>
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve()-derived value; the $derived wrapper prevents the rule from tracing it to resolve() -->
 					<a
 						href={settingsUrl}
 						class="text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						{m['attendeeList.manageVisibility']()}
 					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				</div>
 			</div>
 		{/if}

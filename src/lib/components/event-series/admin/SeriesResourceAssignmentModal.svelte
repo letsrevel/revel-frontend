@@ -13,6 +13,7 @@
 		type EventSeriesRetrieveSchema
 	} from '$lib/api/generated';
 	import { invalidateAll } from '$app/navigation';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	interface Props {
 		open: boolean;
@@ -29,13 +30,13 @@
 	let isLoading = $state(true);
 	let isSaving = $state(false);
 	let allResources = $state<AdditionalResourceSchema[]>([]);
-	let selectedIds = $state<Set<string>>(new Set());
+	const selectedIds = new SvelteSet<string>();
 
 	// Get currently assigned resources from series
 	function getCurrentlyAssigned(): string[] {
 		// Check if series has additional_resources field
 		if ('additional_resources' in series && Array.isArray(series.additional_resources)) {
-			return series.additional_resources.map((r: any) => r.id);
+			return series.additional_resources.map((r: { id: string }) => r.id);
 		}
 		return [];
 	}
@@ -43,7 +44,8 @@
 	// Initialize selected IDs from currently assigned
 	$effect(() => {
 		if (open) {
-			selectedIds = new Set(getCurrentlyAssigned());
+			selectedIds.clear();
+			for (const id of getCurrentlyAssigned()) selectedIds.add(id);
 			loadResources();
 		}
 	});
@@ -72,11 +74,12 @@
 
 	// Filtered resources based on search
 	const filteredResources = $derived(
-		allResources.filter((r) => {
+		allResources.filter((r): r is AdditionalResourceSchema & { id: string } => {
+			if (!r.id) return false;
 			const query = searchQuery.toLowerCase().trim();
 			if (!query) return true;
 
-			return (
+			return Boolean(
 				(r.name && r.name.toLowerCase().includes(query)) ||
 				(r.description && r.description.toLowerCase().includes(query))
 			);
@@ -85,13 +88,11 @@
 
 	// Toggle resource selection
 	function toggleResource(id: string) {
-		const newSet = new Set(selectedIds);
-		if (newSet.has(id)) {
-			newSet.delete(id);
+		if (selectedIds.has(id)) {
+			selectedIds.delete(id);
 		} else {
-			newSet.add(id);
+			selectedIds.add(id);
 		}
-		selectedIds = newSet;
 	}
 
 	// Save assignments
@@ -283,14 +284,14 @@
 						{@const Icon = getResourceIcon(resource.resource_type)}
 						<button
 							type="button"
-							onclick={() => toggleResource(resource.id!)}
+							onclick={() => toggleResource(resource.id)}
 							class="flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent"
-							class:border-primary={selectedIds.has(resource.id!)}
-							class:bg-accent={selectedIds.has(resource.id!)}
+							class:border-primary={selectedIds.has(resource.id)}
+							class:bg-accent={selectedIds.has(resource.id)}
 						>
 							<Checkbox
-								checked={selectedIds.has(resource.id!)}
-								onCheckedChange={() => toggleResource(resource.id!)}
+								checked={selectedIds.has(resource.id)}
+								onCheckedChange={() => toggleResource(resource.id)}
 								aria-label={m['seriesResourceAssignmentModal.selectItem']({
 									name: resource.name || m['seriesResourceAssignmentModal.resourceFallback']()
 								})}

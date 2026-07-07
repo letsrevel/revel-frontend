@@ -2717,6 +2717,21 @@ export function getLandingPage(locale: string, slug: string): LandingPageContent
 	return landingPages[locale]?.[slug];
 }
 
+/**
+ * Like {@link getLandingPage} but guarantees a non-null result.
+ * Landing page routes are static and reference known-valid (locale, slug) pairs,
+ * so a miss indicates a misconfigured route rather than a runtime condition;
+ * throwing surfaces that at (SSR) render time with a clear message instead of
+ * silently rendering `undefined`.
+ */
+export function getLandingPageOrThrow(locale: string, slug: string): LandingPageContent {
+	const content = getLandingPage(locale, slug);
+	if (!content) {
+		throw new Error(`Missing landing page content for locale "${locale}" and slug "${slug}"`);
+	}
+	return content;
+}
+
 export function getAllLandingPages(): LandingPageContent[] {
 	return Object.values(landingPages).flatMap((locale) => Object.values(locale));
 }

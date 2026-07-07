@@ -32,6 +32,7 @@
 	import AdmissionScreeningSection from './AdmissionScreeningSection.svelte';
 	import type { OrganizationQuestionnaireInListSchema } from '$lib/api/generated';
 	import { tagListTags } from '$lib/api/generated/sdk.gen';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	interface Props {
 		formData: Partial<EventCreateSchema> & {
@@ -155,14 +156,12 @@
 		!!formData.accept_invitation_requests ||
 		!!formData.requires_full_profile ||
 		!!formData.apply_before;
-	let openSections = $state<Set<string>>(
-		new Set(
-			[
-				'basic',
-				formData.tags && formData.tags.length > 0 ? 'advanced' : null,
-				hasScreeningSettings ? 'screening' : null
-			].filter((s): s is string => s !== null)
-		)
+	const openSections = new SvelteSet<string>(
+		[
+			'basic',
+			formData.tags && formData.tags.length > 0 ? 'advanced' : null,
+			hasScreeningSettings ? 'screening' : null
+		].filter((s): s is string => s !== null)
 	);
 
 	// Tag input state
@@ -173,17 +172,14 @@
 	let isLoadingSuggestions = $state(false);
 	let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
-	// Description state (for MarkdownEditor)
-	let description = $state(formData.description || '');
+	// Description state (for MarkdownEditor). Writable $derived: resynced with
+	// formData when it changes externally, but locally reassignable via the
+	// editor's bind:value and handleDescriptionChange below.
+	let description = $derived(formData.description || '');
 
 	// Image state
 	let logoFile = $state<File | null>(null);
 	let coverArtFile = $state<File | null>(null);
-
-	// Sync description with formData when it changes externally
-	$effect(() => {
-		description = formData.description || '';
-	});
 
 	// Helper function to get full image URL
 	function getImageUrl(path: string | null | undefined): string | null {
@@ -201,13 +197,11 @@
 	 * Toggle accordion section
 	 */
 	function toggleSection(section: string): void {
-		const newSections = new Set(openSections);
-		if (newSections.has(section)) {
-			newSections.delete(section);
+		if (openSections.has(section)) {
+			openSections.delete(section);
 		} else {
-			newSections.add(section);
+			openSections.add(section);
 		}
-		openSections = newSections;
 	}
 
 	/**
@@ -369,7 +363,6 @@
 		{selectedVenue}
 		organizationSlug={organizationSlug || ''}
 		{validationErrors}
-		{isEditMode}
 		{onUpdate}
 		{onCitySelect}
 		{onVenueSelect}
@@ -790,7 +783,7 @@
 									role="listbox"
 									class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-input bg-popover text-popover-foreground shadow-md"
 								>
-									{#each tagSuggestions as suggestion, index}
+									{#each tagSuggestions as suggestion, index (suggestion)}
 										<button
 											type="button"
 											id="tag-suggestion-{index}"
@@ -845,7 +838,7 @@
 					</div>
 					{#if formData.tags && formData.tags.length > 0}
 						<div class="flex flex-wrap gap-2">
-							{#each formData.tags as tag}
+							{#each formData.tags as tag (tag)}
 								<span
 									class="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm"
 								>
@@ -890,7 +883,7 @@
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						>
 							<option value="">{m['detailsStep.none']()}</option>
-							{#each eventSeries as series}
+							{#each eventSeries as series (series.id)}
 								<option value={series.id}>{series.name}</option>
 							{/each}
 						</select>

@@ -58,7 +58,7 @@ describe('NotificationDropdown', () => {
 		vi.clearAllMocks();
 	});
 
-	function renderWithQuery(props: any = {}) {
+	function renderWithQuery(props: Record<string, unknown> = {}) {
 		return render(QueryClientProvider, {
 			props: {
 				client: queryClient,

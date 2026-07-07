@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { Button } from '$lib/components/ui/button';
@@ -15,8 +16,7 @@
 		Loader2,
 		Search,
 		Send,
-		Trash2,
-		X
+		Trash2
 	} from '@lucide/svelte';
 	import {
 		Dialog,
@@ -92,8 +92,8 @@
 						},
 						headers
 					});
-					if (response.error) throw new Error('Failed to load attendee invoices');
-					return response.data!;
+					if (response.error || !response.data) throw new Error('Failed to load attendee invoices');
+					return response.data;
 				},
 				enabled: !!accessToken
 			}))
@@ -110,8 +110,8 @@
 						path: { slug, invoice_id: selectedInvoiceId },
 						headers
 					});
-					if (response.error) throw new Error('Failed to load invoice');
-					return response.data!;
+					if (response.error || !response.data) throw new Error('Failed to load invoice');
+					return response.data;
 				},
 				enabled: !!accessToken && !!selectedInvoiceId
 			}))
@@ -132,7 +132,8 @@
 						}
 					});
 					if (response.error) throw new Error(extractErrorMessage(response.error, errMsg()));
-					return response.data!;
+					if (!response.data) throw new Error(errMsg());
+					return response.data;
 				},
 				onSuccess: () => {
 					isEditing = false;
@@ -153,7 +154,8 @@
 						headers
 					});
 					if (response.error) throw new Error(extractErrorMessage(response.error, errMsg()));
-					return response.data!;
+					if (!response.data) throw new Error(errMsg());
+					return response.data;
 				},
 				onSuccess: () => {
 					showIssueDialog = false;
@@ -195,9 +197,9 @@
 						path: { slug, invoice_id: invoiceId },
 						headers
 					});
-					if (response.error)
+					if (response.error || !response.data)
 						throw new Error(m['orgAdmin.billing.attendeeInvoices.downloadError']());
-					return response.data!;
+					return response.data;
 				},
 				onSuccess: (data) => {
 					window.open(getBackendUrl(data.download_url), '_blank');
@@ -263,7 +265,7 @@
 <div class="space-y-6 px-4">
 	<div class="flex items-center gap-3">
 		<a
-			href="/org/{slug}/admin/billing"
+			href={resolve('/(auth)/org/[slug]/admin/billing', { slug: slug })}
 			class="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
 			aria-label={m['common.backToBilling']()}
 		>
@@ -585,7 +587,7 @@
 										</tr>
 									</thead>
 									<tbody class="divide-y divide-border/50">
-										{#each inv.line_items as item}
+										{#each inv.line_items as item, i (i)}
 											<tr>
 												<td class="py-2 pr-4">{item.description}</td>
 												<td class="py-2 pr-4 text-right font-mono"

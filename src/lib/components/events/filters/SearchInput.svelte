@@ -21,14 +21,10 @@
 		class: className
 	}: Props = $props();
 
-	// Local input state for immediate UI feedback
-	let inputValue = $state(value);
+	// Local input state for immediate UI feedback. Writable $derived: resynced
+	// with the external value, but locally reassignable on every keystroke.
+	let inputValue = $derived(value);
 	let debounceTimeout: ReturnType<typeof setTimeout> | null = null;
-
-	// Sync external value changes
-	$effect(() => {
-		inputValue = value;
-	});
 
 	function handleInput(event: Event): void {
 		const target = event.target as HTMLInputElement;

@@ -59,7 +59,7 @@
 			aria-orientation="vertical"
 			aria-labelledby="theme-menu"
 		>
-			{#each themes as theme}
+			{#each themes as theme (theme.value)}
 				{@const Icon = theme.icon}
 				<button
 					type="button"

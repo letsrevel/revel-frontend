@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Plus } from '@lucide/svelte';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { formatEventDate } from '$lib/utils/date';
 	import { parseExdates } from '$lib/utils/recurrence';
 	import { Button } from '$lib/components/ui/button';
@@ -35,7 +36,9 @@
 			start: iso,
 			event_series_id: seriesId
 		});
-		goto(`/org/${organizationSlug}/admin/events/new?${params.toString()}`);
+		const target = `${resolve('/(auth)/org/[slug]/admin/events/new', { slug: organizationSlug })}?${params.toString()}`;
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() validates the route id; the appended query string cannot be expressed through resolve()
+		goto(target);
 	}
 </script>
 

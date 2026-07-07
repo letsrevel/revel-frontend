@@ -11,8 +11,7 @@
 	import type {
 		OrganizationTokenSchema,
 		OrganizationTokenCreateSchema,
-		OrganizationTokenUpdateSchema,
-		MembershipTierSchema
+		OrganizationTokenUpdateSchema
 	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -250,7 +249,6 @@
 					{isOwner}
 					onEdit={(t) => (tokenToEdit = t)}
 					onDelete={(t) => (tokenToDelete = t)}
-					onShare={(t) => (tokenToShare = t)}
 				/>
 			{/each}
 		{/if}

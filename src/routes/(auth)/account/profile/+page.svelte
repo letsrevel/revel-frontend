@@ -4,6 +4,7 @@
 	import { enhance, applyAction } from '$app/forms';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import type { PageData, ActionData } from './$types';
 	import { COMMON_PRONOUNS } from '$lib/schemas/profile';
 	import type { VisibilityValue } from '$lib/schemas/preferences';
@@ -67,6 +68,19 @@
 	const redirectUrl = $derived($page.url.searchParams.get('redirect'));
 	const features = $derived($page.data.features);
 
+	/** True when the error carries a 429 status (top-level or on `error.response`). */
+	function isRateLimitedError(error: unknown): boolean {
+		if (typeof error !== 'object' || error === null) return false;
+		if ('status' in error && error.status === 429) return true;
+		return (
+			'response' in error &&
+			typeof error.response === 'object' &&
+			error.response !== null &&
+			'status' in error.response &&
+			error.response.status === 429
+		);
+	}
+
 	function startCooldown() {
 		resendCooldown = 60; // 60 second cooldown
 		cooldownInterval = setInterval(() => {
@@ -93,11 +107,11 @@
 			});
 			verificationEmailSent = true;
 			startCooldown();
-		} catch (error: any) {
+		} catch (error) {
 			console.error('Failed to resend verification email:', error);
 
 			// Handle 429 Too Many Requests
-			if (error?.status === 429 || error?.response?.status === 429) {
+			if (isRateLimitedError(error)) {
 				verificationError = m['profile.email_rateLimitError']();
 				// Start cooldown even on rate limit to prevent immediate retry
 				startCooldown();
@@ -280,6 +294,7 @@
 					if (redirectUrl) {
 						// Small delay to show success message before redirecting
 						setTimeout(() => {
+							// eslint-disable-next-line svelte/no-navigation-without-resolve -- post-auth return path read from the ?redirect query param; app-relative, not a static route id
 							goto(redirectUrl);
 						}, 1000);
 					}
@@ -386,12 +401,14 @@
 				{/if}
 
 				<p class="text-xs text-muted-foreground">{m['profile.email_hint']()}</p>
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
 				<a
-					href="/account/security#email"
+					href={`${resolve('/(auth)/account/security', {})}#email`}
 					class="inline-block text-sm text-primary underline-offset-4 hover:underline"
 				>
 					{m['profile.email_changeLink']()}
 				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			</div>
 		</div>
 
@@ -642,7 +659,7 @@
 	<!-- Settings Link -->
 	<div class="mt-8 border-t pt-6">
 		<a
-			href="/account/settings"
+			href={resolve('/(auth)/account/settings', {})}
 			class="inline-flex items-center gap-2 text-sm text-primary underline-offset-4 hover:underline"
 		>
 			<span>{m['profile.settingsLink_text']()}</span>

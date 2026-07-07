@@ -12,14 +12,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
-	import {
-		CheckCircle2,
-		Loader2,
-		MessageCircle,
-		ExternalLink,
-		AlertCircle,
-		X
-	} from '@lucide/svelte';
+	import { CheckCircle2, Loader2, MessageCircle, ExternalLink, AlertCircle } from '@lucide/svelte';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		telegramGetLinkStatus,
@@ -73,8 +66,8 @@
 			otpValue = '';
 			otpError = '';
 		},
-		onError: (error: any) => {
-			const errorMessage = error?.message || 'Failed to connect Telegram account';
+		onError: (error: Error) => {
+			const errorMessage = error.message || 'Failed to connect Telegram account';
 			otpError = errorMessage;
 		}
 	}));
@@ -248,6 +241,7 @@
 							>
 						</div>
 					{:else if botLink}
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- external URL (off-site); not an internal route -->
 						<a
 							href={botLink}
 							target="_blank"
@@ -258,6 +252,7 @@
 							<span>@{botName}</span>
 							<ExternalLink class="h-3 w-3" aria-hidden="true" />
 						</a>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					{:else}
 						<p class="text-sm text-muted-foreground">
 							{m['telegramConnectionManager.botInfoError']()}

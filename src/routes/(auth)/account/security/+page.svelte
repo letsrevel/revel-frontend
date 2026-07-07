@@ -40,6 +40,17 @@
 	let isRequestingPasswordReset = $state(false);
 	let passwordResetRequested = $state(false);
 
+	/** Extract string `errors.form` / `errors.code` from an action failure payload. */
+	function actionErrors(payload: Record<string, unknown>): { form?: string; code?: string } {
+		const out: { form?: string; code?: string } = {};
+		const errors = payload.errors;
+		if (typeof errors === 'object' && errors !== null) {
+			if ('form' in errors && typeof errors.form === 'string') out.form = errors.form;
+			if ('code' in errors && typeof errors.code === 'string') out.code = errors.code;
+		}
+		return out;
+	}
+
 	// Derived state
 	const totpActive = $derived(data.totpActive);
 	const provisioningUri = $derived(form?.provisioningUri);
@@ -123,7 +134,7 @@
 			setTimeout(() => {
 				manualEntryCopied = false;
 			}, 2000);
-		} catch (err) {
+		} catch {
 			toast.error(m['accountSecurityPage.toast_copyFailed']());
 		}
 	}
@@ -155,7 +166,7 @@
 			});
 			passwordResetRequested = true;
 			toast.success(m['accountSecurityPage.toast_passwordResetSent']());
-		} catch (error: any) {
+		} catch (error) {
 			console.error('Failed to request password reset:', error);
 			toast.error(m['accountSecurityPage.toast_passwordResetFailed']());
 		} finally {
@@ -254,8 +265,8 @@
 										} else if (result.type === 'failure' && result.data) {
 											console.log('[2FA Setup] Failure:', result.data);
 											await applyAction(result);
-											const errors = (result.data as any)?.errors;
-											toast.error(errors?.form || m['accountSecurityPage.toast_setupFailed']());
+											const errors = actionErrors(result.data);
+											toast.error(errors.form || m['accountSecurityPage.toast_setupFailed']());
 										}
 									};
 								}}
@@ -353,10 +364,10 @@
 											isSubmitting = false;
 											await applyAction(result);
 											if (result.type === 'failure' && result.data) {
-												const errors = (result.data as any)?.errors;
+												const errors = actionErrors(result.data);
 												toast.error(
-													errors?.code ||
-														errors?.form ||
+													errors.code ||
+														errors.form ||
 														m['accountSecurityPage.toast_verifyFailed']()
 												);
 											}
@@ -427,10 +438,10 @@
 											isSubmitting = false;
 											await applyAction(result);
 											if (result.type === 'failure' && result.data) {
-												const errors = (result.data as any)?.errors;
+												const errors = actionErrors(result.data);
 												toast.error(
-													errors?.code ||
-														errors?.form ||
+													errors.code ||
+														errors.form ||
 														m['accountSecurityPage.toast_disableFailed']()
 												);
 											}

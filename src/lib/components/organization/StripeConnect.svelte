@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery, createMutation } from '@tanstack/svelte-query';
 	import { Button } from '$lib/components/ui/button';
@@ -78,11 +79,11 @@
 						headers: { Authorization: `Bearer ${accessToken}` }
 					});
 
-					if (response.error) {
+					if (response.error || !response.data) {
 						throw new Error('Failed to verify Stripe account');
 					}
 
-					return response.data!;
+					return response.data;
 				},
 				enabled: isConnected && mounted
 			}))
@@ -106,7 +107,8 @@
 						throw new Error(errorMsg);
 					}
 
-					return response.data!;
+					if (!response.data) throw new Error(m['stripeConnect.failedToCreateLink']());
+					return response.data;
 				},
 				onSuccess: (data) => {
 					// Redirect to Stripe onboarding
@@ -460,7 +462,7 @@
 					{m['orgAdmin.billing.nudge.message']()}
 				</p>
 				<a
-					href="/org/{organizationSlug}/admin/billing"
+					href={resolve('/(auth)/org/[slug]/admin/billing', { slug: organizationSlug })}
 					class="mt-2 inline-flex items-center gap-1.5 rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-amber-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 				>
 					{m['orgAdmin.billing.nudge.action']()}

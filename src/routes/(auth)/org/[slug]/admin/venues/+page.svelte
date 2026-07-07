@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		organizationadminvenuesListVenues,
@@ -89,7 +90,12 @@
 	}
 
 	function handleManageSectors(venue: VenueDetailSchema) {
-		goto(`/org/${organization.slug}/admin/venues/${venue.id}`);
+		goto(
+			resolve('/(auth)/org/[slug]/admin/venues/[venue_id]', {
+				slug: organization.slug,
+				venue_id: venue.id ?? ''
+			})
+		);
 	}
 
 	function handleModalClose() {

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery, createMutation } from '@tanstack/svelte-query';
 	import { Button } from '$lib/components/ui/button';
@@ -52,8 +53,8 @@
 						query: { page: currentPage, page_size: pageSize },
 						headers: { Authorization: `Bearer ${accessToken}` }
 					});
-					if (response.error) throw new Error('Failed to load invoices');
-					return response.data!;
+					if (response.error || !response.data) throw new Error('Failed to load invoices');
+					return response.data;
 				},
 				enabled: !!accessToken
 			}))
@@ -73,8 +74,8 @@
 						path: { slug, invoice_id: selectedInvoiceId },
 						headers: { Authorization: `Bearer ${accessToken}` }
 					});
-					if (response.error) throw new Error('Failed to load invoice');
-					return response.data!;
+					if (response.error || !response.data) throw new Error('Failed to load invoice');
+					return response.data;
 				},
 				enabled: !!accessToken && !!selectedInvoiceId
 			}))
@@ -91,10 +92,10 @@
 					if (response.response.status === 404) {
 						throw new Error(m['orgAdmin.billing.invoices.detail.pdfNotReady']());
 					}
-					if (response.error) {
+					if (response.error || !response.data) {
 						throw new Error(m['orgAdmin.billing.invoices.detail.downloadError']());
 					}
-					return response.data!;
+					return response.data;
 				},
 				onSuccess: (data) => {
 					window.open(getBackendUrl(data.download_url), '_blank');
@@ -162,7 +163,7 @@
 	<!-- Header -->
 	<div class="flex items-center gap-3">
 		<a
-			href="/org/{slug}/admin/billing"
+			href={resolve('/(auth)/org/[slug]/admin/billing', { slug: slug })}
 			class="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
 			aria-label={m['common.backToBilling']()}
 		>

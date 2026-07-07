@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { Mail, Loader2 } from '@lucide/svelte';
@@ -8,6 +9,18 @@
 	let isResending = $state(false);
 	let resendSuccess = $state(false);
 	let resendError = $state('');
+
+	/** Read a string property off an unknown error payload, if present. */
+	function stringField(error: unknown, key: 'detail' | 'message'): string | undefined {
+		if (typeof error !== 'object' || error === null) return undefined;
+		if (key === 'detail' && 'detail' in error && typeof error.detail === 'string') {
+			return error.detail;
+		}
+		if (key === 'message' && 'message' in error && typeof error.message === 'string') {
+			return error.message;
+		}
+		return undefined;
+	}
 
 	async function handleResend() {
 		if (!email || isResending) return;
@@ -24,12 +37,14 @@
 			});
 
 			if (response.error) {
-				const error = response.error as any;
-				resendError = error?.detail || error?.message || 'Failed to resend verification email';
+				resendError =
+					stringField(response.error, 'detail') ||
+					stringField(response.error, 'message') ||
+					'Failed to resend verification email';
 			} else {
 				resendSuccess = true;
 			}
-		} catch (error) {
+		} catch {
 			resendError = 'An unexpected error occurred. Please try again.';
 		} finally {
 			isResending = false;
@@ -114,7 +129,10 @@
 
 		<!-- Back to Login -->
 		<div class="text-sm">
-			<a href="/login" class="text-primary underline-offset-4 hover:underline">
+			<a
+				href={resolve('/(public)/login', {})}
+				class="text-primary underline-offset-4 hover:underline"
+			>
 				{m['checkEmailPage.backToLogin']()}
 			</a>
 		</div>

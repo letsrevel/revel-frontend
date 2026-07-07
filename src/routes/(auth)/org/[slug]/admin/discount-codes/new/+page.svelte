@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { organizationadmindiscountcodesCreateDiscountCode } from '$lib/api/generated/sdk.gen';
 	import type { DiscountCodeCreateSchema } from '$lib/api/generated/types.gen';
@@ -24,11 +25,27 @@
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (response.error) {
-				const err = response.error as any;
-				const detail = err?.detail;
+				const detail =
+					typeof response.error === 'object' &&
+					response.error !== null &&
+					'detail' in response.error
+						? response.error.detail
+						: undefined;
 				if (typeof detail === 'string') throw new Error(detail);
 				if (Array.isArray(detail)) {
-					throw new Error(detail.map((d: any) => d.msg || String(d)).join(', '));
+					throw new Error(
+						detail
+							.map((d: unknown) =>
+								typeof d === 'object' &&
+								d !== null &&
+								'msg' in d &&
+								typeof d.msg === 'string' &&
+								d.msg
+									? d.msg
+									: String(d)
+							)
+							.join(', ')
+					);
 				}
 				throw new Error('Failed to create discount code');
 			}
@@ -36,7 +53,7 @@
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['discount-codes'] });
-			goto(`/org/${organization.slug}/admin/discount-codes`);
+			goto(resolve('/(auth)/org/[slug]/admin/discount-codes', { slug: organization.slug }));
 		},
 		onError: (err: Error) => {
 			errorMessage = err.message;
@@ -88,7 +105,8 @@
 		<Button
 			variant="ghost"
 			size="icon"
-			onclick={() => goto(`/org/${organization.slug}/admin/discount-codes`)}
+			onclick={() =>
+				goto(resolve('/(auth)/org/[slug]/admin/discount-codes', { slug: organization.slug }))}
 			aria-label={m['discountCodeNewPage.backAriaLabel']()}
 		>
 			<ArrowLeft class="h-5 w-5" />

@@ -6,6 +6,7 @@
 	import { pollGetPoll, pollDuplicatePollAction } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { Copy, Loader2, Lock } from '@lucide/svelte';
 	import { cn } from '$lib/utils/cn';
 	import { resultVisibilityRequiresPublicAnonymous } from '$lib/utils/polls';
@@ -106,7 +107,7 @@
 			return response.data;
 		},
 		onSuccess: (data) => {
-			goto(`/org/${organizationSlug}/admin/polls/${data.id}`);
+			goto(resolve('/(auth)/org/[slug]/admin/polls/[id]', { slug: organizationSlug, id: data.id }));
 			onClose();
 		},
 		onError: (error: Error) => {

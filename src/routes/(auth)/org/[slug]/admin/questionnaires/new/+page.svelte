@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { DurationInput } from '$lib/components/forms';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -335,7 +336,12 @@
 			}
 
 			// Redirect to the edit page of the newly created questionnaire
-			await goto(`/org/${data.organization.slug}/admin/questionnaires/${response.data.id}`);
+			await goto(
+				resolve('/(auth)/org/[slug]/admin/questionnaires/[id]', {
+					slug: data.organization.slug,
+					id: response.data.id
+				})
+			);
 		} catch (err) {
 			console.error('Failed to save questionnaire:', err);
 			const message = err instanceof Error ? err.message : String(err);

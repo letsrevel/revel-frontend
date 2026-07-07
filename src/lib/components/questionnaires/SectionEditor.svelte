@@ -20,7 +20,7 @@
 		negativeWeight: number;
 		isFatal: boolean;
 		// For multiple choice
-		options?: Array<{ text: string; isCorrect: boolean }>;
+		options?: Array<{ id: string; text: string; isCorrect: boolean }>;
 		allowMultipleAnswers?: boolean;
 		shuffleOptions?: boolean;
 		// For free text

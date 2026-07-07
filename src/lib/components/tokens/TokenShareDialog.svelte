@@ -30,7 +30,7 @@
 			setTimeout(() => {
 				copied = false;
 			}, 2000);
-		} catch (err) {
+		} catch {
 			toast.error(m['tokenShareDialog.copyFailed']());
 		}
 	}

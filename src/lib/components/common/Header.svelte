@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Menu } from '@lucide/svelte';
@@ -27,17 +28,17 @@
 
 	// Navigation items for public users - using translated strings
 	const publicNavItems = $derived([
-		{ href: '/events', label: m['nav.browseEvents']() },
-		{ href: '/organizations', label: m['nav.organizations']() }
+		{ href: resolve('/(public)/events', {}), label: m['nav.browseEvents']() },
+		{ href: resolve('/(public)/organizations', {}), label: m['nav.organizations']() }
 	]);
 
 	// Navigation items for authenticated users - using translated strings
 	const authNavItems = $derived([
-		{ href: '/events', label: m['nav.browseEvents']() },
-		{ href: '/organizations', label: m['nav.organizations']() },
-		{ href: '/dashboard/tickets', label: m['nav.myTickets']() },
-		{ href: '/dashboard/rsvps', label: m['nav.rsvps']() },
-		{ href: '/dashboard/invitations', label: m['nav.invitations']() }
+		{ href: resolve('/(public)/events', {}), label: m['nav.browseEvents']() },
+		{ href: resolve('/(public)/organizations', {}), label: m['nav.organizations']() },
+		{ href: resolve('/(auth)/dashboard/tickets', {}), label: m['nav.myTickets']() },
+		{ href: resolve('/(auth)/dashboard/rsvps', {}), label: m['nav.rsvps']() },
+		{ href: resolve('/(auth)/dashboard/invitations', {}), label: m['nav.invitations']() }
 	]);
 
 	// Determine which nav items to show
@@ -68,7 +69,10 @@
 	<div class="container mx-auto flex h-16 items-center justify-between px-4">
 		<!-- Logo -->
 		<div class="flex items-center gap-6">
-			<a href="/" class="text-foreground transition-opacity hover:opacity-80">
+			<a
+				href={resolve('/(public)', {})}
+				class="text-foreground transition-opacity hover:opacity-80"
+			>
 				<!-- Legacy wordmark (shown when no data-brand is set); its text is the
 				     link's accessible name. -->
 				<span
@@ -87,6 +91,7 @@
 				aria-label={m['header.mainNavigation']()}
 			>
 				{#each navItems as item (item.href)}
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- href is a ResolvedPathname produced by resolve() in the nav item list above -->
 					<a
 						href={item.href}
 						class="text-sm font-medium transition-colors hover:text-primary {isActive(item.href)
@@ -96,6 +101,7 @@
 					>
 						{item.label}
 					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				{/each}
 			</nav>
 		</div>
@@ -126,13 +132,13 @@
 				<!-- Auth Buttons (Desktop) -->
 				<div class="hidden items-center gap-2 md:flex">
 					<a
-						href="/login"
+						href={resolve('/(public)/login', {})}
 						class="rounded-md px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
 					>
 						{m['auth.login']()}
 					</a>
 					<a
-						href="/register"
+						href={resolve('/(public)/register', {})}
 						class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
 					>
 						{m['auth.signUp']()}

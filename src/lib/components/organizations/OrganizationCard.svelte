@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import type { OrganizationRetrieveSchema } from '$lib/api/generated/types.gen';
 	import { cn } from '$lib/utils/cn';
 	import { getImageUrl } from '$lib/utils/url';
@@ -27,9 +28,9 @@
 
 	// Image URLs with backend URL prepended
 	// Prefer social preview for card display (1200x630, matches aspect-video ratio)
-	const coverArtSocialUrl = $derived(getImageUrl((organization as any).cover_art_social_url));
+	const coverArtSocialUrl = $derived(getImageUrl(organization.cover_art_social_url));
 	const coverArtUrl = $derived(getImageUrl(organization.cover_art));
-	const logoThumbnailUrl = $derived(getImageUrl((organization as any).logo_thumbnail_url));
+	const logoThumbnailUrl = $derived(getImageUrl(organization.logo_thumbnail_url));
 	const logoUrl = $derived(getImageUrl(organization.logo));
 	const imageUrl = $derived(!imageError ? coverArtSocialUrl || coverArtUrl : null);
 	const logoDisplayUrl = $derived(logoThumbnailUrl || logoUrl);
@@ -86,7 +87,7 @@
 <article class={containerClasses}>
 	<!-- Clickable overlay link for accessibility -->
 	<a
-		href="/org/{organization.slug}"
+		href={resolve('/(public)/org/[slug]', { slug: organization.slug })}
 		data-sveltekit-preload-data="hover"
 		class="absolute inset-0 z-10"
 		aria-label={accessibleLabel}
@@ -173,7 +174,7 @@
 				<div class="flex items-start gap-2 text-sm">
 					<Tag class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
 					<div class="flex flex-wrap gap-1">
-						{#each organization.tags.slice(0, 3) as tag}
+						{#each organization.tags.slice(0, 3) as tag (tag)}
 							<span
 								class="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
 							>

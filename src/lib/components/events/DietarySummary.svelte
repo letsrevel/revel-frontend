@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { browser } from '$app/environment';
 	import { eventpublicdetailsGetDietarySummary } from '$lib/api';
@@ -6,7 +7,6 @@
 	import {
 		Loader2,
 		Info,
-		ExternalLink,
 		ChevronDown,
 		ChevronUp,
 		AlertTriangle,
@@ -15,6 +15,7 @@
 		Circle
 	} from '@lucide/svelte';
 	import type { EventDietarySummarySchema, RestrictionType } from '$lib/api/generated/types.gen.js';
+	import type { LucideIcon } from '@lucide/svelte';
 
 	interface Props {
 		eventId: string;
@@ -26,7 +27,7 @@
 
 	// Build profile URL with redirect back to current page
 	const profileDietaryUrl = $derived.by(() => {
-		const basePath = '/account/profile';
+		const basePath = resolve('/(auth)/account/profile', {});
 		const hash = '#dietary-section';
 		if (browser) {
 			return `${basePath}?redirect=${encodeURIComponent(window.location.pathname)}${hash}`;
@@ -77,7 +78,7 @@
 	function getSeverityInfo(type: RestrictionType): {
 		label: string;
 		color: string;
-		icon: any;
+		icon: LucideIcon;
 	} {
 		switch (type) {
 			case 'severe_allergy':
@@ -122,16 +123,18 @@
 	function getRestrictionSummary() {
 		if (!dietarySummary?.restrictions) return [];
 
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local grouping map built and consumed synchronously within this pure helper, never stored
 		const grouped = new Map<
 			string,
 			{ severities: Map<RestrictionType, number>; notes: string[] }
 		>();
 
 		for (const restriction of dietarySummary.restrictions) {
-			if (!grouped.has(restriction.food_item)) {
-				grouped.set(restriction.food_item, { severities: new Map(), notes: [] });
+			let item = grouped.get(restriction.food_item);
+			if (!item) {
+				item = { severities: new Map(), notes: [] };
+				grouped.set(restriction.food_item, item);
 			}
-			const item = grouped.get(restriction.food_item)!;
 			item.severities.set(restriction.severity, restriction.attendee_count);
 
 			// Collect notes
@@ -173,6 +176,7 @@
 				</div>
 			</div>
 			<div class="flex items-center gap-2">
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve()-derived value; the $derived wrapper prevents the rule from tracing it to resolve() -->
 				<a
 					href={profileDietaryUrl}
 					onclick={(e) => e.stopPropagation()}
@@ -181,6 +185,7 @@
 				>
 					<span>{m['dietary.profile_quickActionButton']()}</span>
 				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				{#if isExpanded}
 					<ChevronUp class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
 				{:else}
@@ -200,7 +205,7 @@
 								{m['dietary.eventSummary_preferencesHeading']()}
 							</h4>
 							<ul class="space-y-2" role="list">
-								{#each dietarySummary.preferences as preference}
+								{#each dietarySummary.preferences as preference (preference.name)}
 									<li class="rounded-md border bg-background p-3">
 										<div class="flex items-baseline justify-between">
 											<span class="font-medium">{preference.name}</span>
@@ -213,7 +218,7 @@
 												<p class="text-xs font-medium text-muted-foreground">
 													{m['dietary.eventSummary_comments']()}
 												</p>
-												{#each preference.comments as comment}
+												{#each preference.comments as comment, i (i)}
 													<p class="text-sm text-muted-foreground">• {comment}</p>
 												{/each}
 											</div>
@@ -231,12 +236,12 @@
 								{m['dietary.eventSummary_restrictionsHeading']()}
 							</h4>
 							<ul class="space-y-2" role="list">
-								{#each getRestrictionSummary() as { foodItem, severities, notes }}
+								{#each getRestrictionSummary() as { foodItem, severities, notes } (foodItem)}
 									<li class="rounded-md border bg-background p-3">
 										<div class="flex items-baseline justify-between">
 											<div class="flex flex-wrap items-center gap-2">
 												<span class="font-medium">{foodItem}</span>
-												{#each severities as [severity, count]}
+												{#each severities as [severity, count] (severity)}
 													{@const info = getSeverityInfo(severity)}
 													{@const SeverityIcon = info.icon}
 													<span
@@ -253,7 +258,7 @@
 												<p class="text-xs font-medium text-muted-foreground">
 													{m['dietary.eventSummary_notes']()}
 												</p>
-												{#each notes as note}
+												{#each notes as note, i (i)}
 													<p class="text-sm text-muted-foreground">• {note}</p>
 												{/each}
 											</div>
@@ -277,11 +282,13 @@
 		<p class="mt-1 text-sm text-muted-foreground">
 			{m['dietary.eventSummary_emptyStateDescription']()}
 		</p>
+		<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve()-derived value; the $derived wrapper prevents the rule from tracing it to resolve() -->
 		<a
 			href={profileDietaryUrl}
 			class="mt-4 inline-flex items-center gap-1 text-sm text-primary hover:underline"
 		>
 			<span>{m['dietary.profile_quickActionButton']()}</span>
 		</a>
+		<!-- eslint-enable svelte/no-navigation-without-resolve -->
 	</div>
 {/if}

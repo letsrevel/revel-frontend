@@ -36,8 +36,12 @@ export const load: PageServerLoad = async ({ params, locals, fetch }) => {
 		throw error(status >= 400 && status < 500 ? status : 500, message);
 	}
 
+	if (!res.data) {
+		throw error(500, 'Failed to load poll');
+	}
+
 	return {
-		poll: res.data!,
+		poll: res.data,
 		forbidden: false as const,
 		isAuthenticated: !!accessToken
 	};

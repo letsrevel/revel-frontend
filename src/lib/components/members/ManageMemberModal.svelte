@@ -160,7 +160,7 @@
 							{m[`memberStatus.${selectedStatus}`]()}
 						</SelectTrigger>
 						<SelectContent>
-							{#each statuses as status}
+							{#each statuses as status (status)}
 								<SelectItem value={status}>
 									{m[`memberStatus.${status}`]()}
 								</SelectItem>
@@ -208,7 +208,7 @@
 						</SelectTrigger>
 						<SelectContent>
 							<SelectItem value="none">{m['manageMemberModal.noTier']()}</SelectItem>
-							{#each tiers as tier}
+							{#each tiers as tier (tier.id ?? tier.name)}
 								{#if tier.id}
 									<SelectItem value={tier.id}>{tier.name}</SelectItem>
 								{/if}

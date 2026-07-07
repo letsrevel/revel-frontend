@@ -118,16 +118,14 @@
 	);
 
 	// Seat assignment mode
-	const seatAssignmentMode = $derived<SeatAssignmentMode>(
-		(tier as any).seat_assignment_mode ?? 'none'
-	);
+	const seatAssignmentMode = $derived<SeatAssignmentMode>(tier.seat_assignment_mode ?? 'none');
 	const hasSeatedTier = $derived(seatAssignmentMode !== 'none');
 	const isUserChoiceSeat = $derived(seatAssignmentMode === 'user_choice');
 	const isRandomSeat = $derived(seatAssignmentMode === 'random');
 
 	// Venue/sector info for display
-	const tierVenue = $derived((tier as any).venue ?? null);
-	const tierSector = $derived((tier as any).sector ?? null);
+	const tierVenue = $derived(tier.venue ?? null);
+	const tierSector = $derived(tier.sector ?? null);
 
 	// Seat selection state (for user_choice mode)
 	let seatAvailability = $state<SectorAvailabilitySchema | null>(null);
@@ -214,7 +212,7 @@
 	});
 
 	// Tier-level max tickets per user (can override event-level setting)
-	const tierMaxTicketsPerUser = $derived<number | null>((tier as any).max_tickets_per_user ?? null);
+	const tierMaxTicketsPerUser = $derived<number | null>(tier.max_tickets_per_user ?? null);
 
 	// Effective max per user: use tier's value if set, otherwise fall back to event-level
 	const effectiveMaxPerUser = $derived<number | null>(
@@ -501,7 +499,7 @@
 							<p class="text-lg font-bold text-primary">
 								{#if discountedPrice !== null}
 									<span class="text-sm text-muted-foreground line-through">{priceDisplay}</span>
-									{' '}{tier.currency}
+									{tier.currency}
 									{discountedPrice.toFixed(2)}
 								{:else}
 									{priceDisplay}
