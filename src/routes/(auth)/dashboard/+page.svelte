@@ -11,11 +11,22 @@
 		dashboardDashboardCalendar
 	} from '$lib/api/generated/sdk.gen';
 	import { EventCard } from '$lib/components/events';
-	import EventCardSkeleton from '$lib/components/common/EventCardSkeleton.svelte';
-	import OrganizationCardSkeleton from '$lib/components/common/OrganizationCardSkeleton.svelte';
 	import { CalendarView, CalendarControls, EventModal } from '$lib/components/calendar';
-	import { getImageUrl } from '$lib/utils/url';
-	import { stripMarkdown } from '$lib/seo';
+	import {
+		DashboardActivityCards,
+		DashboardUpcomingEvents,
+		DashboardOrganizationsSection
+	} from '$lib/components/dashboard';
+	import {
+		filterPresets,
+		isFilterActive as isFilterActiveFor,
+		type DashboardFilterPreset
+	} from '$lib/components/dashboard/dashboard-filters';
+	import {
+		canOrganizeEvents as userCanOrganizeEvents,
+		hasAdminPermissions as userHasAdminPermissions,
+		ownsOrganization as userOwnsOrganization
+	} from '$lib/components/dashboard/dashboard-permissions';
 	import { parseCalendarParams, getCurrentPeriod } from '$lib/utils/calendar';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -24,23 +35,15 @@
 	import {
 		Calendar,
 		Building2,
-		ChevronRight,
 		Shield,
 		Sparkles,
 		Filter,
-		Ticket,
-		Mail,
-		CheckCircle2,
-		Check,
-		Award,
-		Crown,
 		PlusCircle,
 		List,
 		Heart,
 		Bookmark
 	} from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
-	import type { MembershipStatus } from '$lib/api/generated/types.gen';
 
 	const user = $derived(authStore.user);
 	const accessToken = $derived(authStore.accessToken);
@@ -49,80 +52,6 @@
 
 	// Get user's first name or preferred name
 	const firstName = $derived(user?.preferred_name || user?.first_name || 'there');
-
-	// Filter presets
-	const filterPresets = [
-		{
-			labelKey: 'dashboard.filters.all',
-			filters: {
-				owner: true,
-				staff: true,
-				member: true,
-				rsvp_yes: true,
-				rsvp_maybe: true,
-				got_ticket: true,
-				got_invitation: true,
-				subscriber: true,
-				bookmarked: false
-			}
-		},
-		{
-			labelKey: 'dashboard.filters.organizing',
-			filters: {
-				owner: true,
-				staff: true,
-				member: false,
-				rsvp_yes: false,
-				rsvp_maybe: false,
-				got_ticket: false,
-				got_invitation: false,
-				subscriber: false,
-				bookmarked: false
-			}
-		},
-		{
-			labelKey: 'dashboard.filters.attending',
-			filters: {
-				owner: false,
-				staff: false,
-				member: false,
-				rsvp_yes: true,
-				rsvp_maybe: true,
-				got_ticket: true,
-				got_invitation: false,
-				subscriber: false,
-				bookmarked: false
-			}
-		},
-		{
-			labelKey: 'dashboard.filters.invited',
-			filters: {
-				owner: false,
-				staff: false,
-				member: false,
-				rsvp_yes: false,
-				rsvp_maybe: false,
-				got_ticket: false,
-				got_invitation: true,
-				subscriber: false,
-				bookmarked: false
-			}
-		},
-		{
-			labelKey: 'dashboard.filters.bookmarked',
-			filters: {
-				owner: false,
-				staff: false,
-				member: false,
-				rsvp_yes: false,
-				rsvp_maybe: false,
-				got_ticket: false,
-				got_invitation: false,
-				subscriber: false,
-				bookmarked: true
-			}
-		}
-	];
 
 	// Your Events filter state (default to "All")
 	let yourEventsFilters = $state({ ...filterPresets[0].filters });
@@ -318,97 +247,15 @@
 	const calendarEvents = $derived(calendarQuery.data || []);
 	const isCalendarLoading = $derived(calendarQuery.isLoading);
 
-	// Check if user can organize events (is owner/staff of at least one org)
-	const canOrganizeEvents = $derived(() => {
-		if (!permissions?.organization_permissions) return false;
-
-		// Check if user is owner or has organizing permissions for any org
-		return Object.values(permissions.organization_permissions).some((orgPerms) => {
-			// If owner, they can organize
-			if (orgPerms === 'owner') return true;
-
-			// Check if they have event creation/management permissions
-			if (typeof orgPerms === 'object' && orgPerms.default) {
-				const perms = orgPerms.default;
-				return !!(perms.create_event || perms.manage_event);
-			}
-
-			return false;
-		});
-	});
-
-	// Helper to check if user has admin permissions for an organization
-	function hasAdminPermissions(orgId: string): boolean {
-		if (!permissions?.organization_permissions) {
-			return false;
-		}
-
-		const orgPerms = permissions.organization_permissions[orgId];
-
-		// If user is owner, they have all permissions
-		if (orgPerms === 'owner') {
-			return true;
-		}
-
-		// Check if user has any admin-level permissions
-		if (typeof orgPerms === 'object' && orgPerms.default) {
-			const perms = orgPerms.default;
-			return !!(
-				perms.edit_organization ||
-				perms.manage_members ||
-				perms.create_event ||
-				perms.manage_event
-			);
-		}
-
-		return false;
-	}
-
-	// Helper to get membership status for an organization
-	function getMembershipStatus(orgId: string): MembershipStatus | null {
-		if (!permissions?.memberships) return null;
-		const membership = permissions.memberships[orgId];
-		return membership?.status ? (membership.status as MembershipStatus) : null;
-	}
-
-	// Helper to get membership tier for an organization
-	function getMembershipTier(orgId: string) {
-		if (!permissions?.memberships) return null;
-		const membership = permissions.memberships[orgId];
-		return membership?.tier || null;
-	}
-
-	// Helper to check if user is owner
-	function isOwner(orgId: string): boolean {
-		if (!permissions?.organization_permissions) return false;
-		return permissions.organization_permissions[orgId] === 'owner';
-	}
-
-	// Helper to check if user is staff (not owner)
-	function isStaff(orgId: string): boolean {
-		if (!permissions?.organization_permissions) return false;
-		const orgPerms = permissions.organization_permissions[orgId];
-		return typeof orgPerms === 'object' && orgPerms !== null;
-	}
-
-	// Helper to check if user owns any organization
-	function ownsOrganization(): boolean {
-		if (!permissions?.organization_permissions) return false;
-		return Object.values(permissions.organization_permissions).some((perms) => perms === 'owner');
-	}
-
-	// Status badge styling (matching MemberCard.svelte)
-	const statusStyles: Record<MembershipStatus, string> = {
-		active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
-		paused: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100',
-		cancelled: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100',
-		banned: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
-	};
+	// Permission helpers (pure logic in dashboard-permissions.ts) — thin wrappers
+	// bind the live `permissions` object so template call sites stay unchanged.
+	const canOrganizeEvents = $derived(() => userCanOrganizeEvents(permissions));
+	const hasAdminPermissions = (orgId: string) => userHasAdminPermissions(permissions, orgId);
+	const ownsOrganization = () => userOwnsOrganization(permissions);
 
 	// Helper to check if a filter preset is currently active
-	function isFilterActive(preset: (typeof filterPresets)[0]): boolean {
-		return JSON.stringify(yourEventsFilters) === JSON.stringify(preset.filters);
-	}
+	const isFilterActive = (preset: DashboardFilterPreset) =>
+		isFilterActiveFor(yourEventsFilters, preset);
 
 	// Scroll to organizations section
 	function scrollToOrganizations() {
@@ -417,7 +264,7 @@
 	}
 
 	// Apply filter preset
-	function applyFilterPreset(preset: (typeof filterPresets)[0]) {
+	function applyFilterPreset(preset: DashboardFilterPreset) {
 		yourEventsFilters = { ...preset.filters };
 	}
 
@@ -545,116 +392,7 @@
 	</div>
 
 	<!-- Activity Summary Cards -->
-	{#if activeTicketsCount > 0 || pendingInvitationsCount > 0 || upcomingRsvpsCount > 0}
-		<div class="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-			<!-- Active Tickets -->
-			{#if activeTicketsCount > 0}
-				<a
-					href={resolve('/(auth)/dashboard/tickets', {})}
-					class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-				>
-					<div class="flex items-start justify-between">
-						<div class="flex items-center gap-3">
-							<div class="rounded-full bg-blue-100 p-3 dark:bg-blue-950">
-								<Ticket class="h-6 w-6 text-blue-600 dark:text-blue-400" aria-hidden="true" />
-							</div>
-							<div>
-								<p class="text-sm font-medium text-muted-foreground">
-									{m['dashboard.activityCards.activeTickets']()}
-								</p>
-								<p class="text-3xl font-bold">{activeTicketsCount}</p>
-							</div>
-						</div>
-						<ChevronRight
-							class="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1"
-							aria-hidden="true"
-						/>
-					</div>
-					<p class="mt-4 text-sm text-muted-foreground">
-						{m['dashboard.activityCards.activeTicketsDescription']({
-							count: activeTicketsCount,
-							ticketPlural:
-								activeTicketsCount === 1
-									? m['common.plurals_event']()
-									: m['common.plurals_events']()
-						})}
-					</p>
-				</a>
-			{/if}
-
-			<!-- Upcoming RSVPs -->
-			{#if upcomingRsvpsCount > 0}
-				<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
-				<a
-					href={`${resolve('/(auth)/dashboard/rsvps', {})}?status=yes,maybe`}
-					class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-				>
-					<div class="flex items-start justify-between">
-						<div class="flex items-center gap-3">
-							<div class="rounded-full bg-green-100 p-3 dark:bg-green-950">
-								<CheckCircle2
-									class="h-6 w-6 text-green-600 dark:text-green-400"
-									aria-hidden="true"
-								/>
-							</div>
-							<div>
-								<p class="text-sm font-medium text-muted-foreground">
-									{m['dashboard.activityCards.upcomingRsvps']()}
-								</p>
-								<p class="text-3xl font-bold">{upcomingRsvpsCount}</p>
-							</div>
-						</div>
-						<ChevronRight
-							class="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1"
-							aria-hidden="true"
-						/>
-					</div>
-					<p class="mt-4 text-sm text-muted-foreground">
-						{m['dashboard.activityCards.upcomingRsvpsDescription']({
-							count: upcomingRsvpsCount,
-							eventPlural:
-								upcomingRsvpsCount === 1
-									? m['common.plurals_event']()
-									: m['common.plurals_events']()
-						})}
-					</p>
-				</a>
-				<!-- eslint-enable svelte/no-navigation-without-resolve -->
-			{/if}
-
-			<!-- Pending Invitations -->
-			{#if pendingInvitationsCount > 0}
-				<a
-					href={resolve('/(auth)/dashboard/invitations', {})}
-					class="group rounded-lg border bg-card p-6 transition-all hover:border-primary hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-				>
-					<div class="flex items-start justify-between">
-						<div class="flex items-center gap-3">
-							<div class="rounded-full bg-purple-100 p-3 dark:bg-purple-950">
-								<Mail class="h-6 w-6 text-purple-600 dark:text-purple-400" aria-hidden="true" />
-							</div>
-							<div>
-								<p class="text-sm font-medium text-muted-foreground">
-									{m['dashboard.activityCards.pendingInvitations']()}
-								</p>
-								<p class="text-3xl font-bold">{pendingInvitationsCount}</p>
-							</div>
-						</div>
-						<ChevronRight
-							class="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1"
-							aria-hidden="true"
-						/>
-					</div>
-					<p class="mt-4 text-sm text-muted-foreground">
-						{m['dashboard.activityCards.pendingInvitationsDescription']({
-							count: pendingInvitationsCount,
-							invitationPlural: pendingInvitationsCount === 1 ? 'invitation' : 'invitations'
-						})}
-					</p>
-				</a>
-			{/if}
-		</div>
-	{/if}
+	<DashboardActivityCards {activeTicketsCount} {pendingInvitationsCount} {upcomingRsvpsCount} />
 
 	<!-- Main Content Grid -->
 	<div class="space-y-8">
@@ -784,191 +522,14 @@
 		{/if}
 
 		<!-- Upcoming Events Section -->
-		<section aria-labelledby="upcoming-events-heading">
-			<div class="mb-4 flex items-center justify-between">
-				<h2 id="upcoming-events-heading" class="flex items-center gap-2 text-xl font-semibold">
-					<Sparkles class="h-5 w-5 text-primary" aria-hidden="true" />
-					<span>{m['dashboard.sections.discoverEvents']()}</span>
-				</h2>
-				{#if upcomingEvents.length > 0}
-					<a
-						href={resolve('/(public)/events', {})}
-						class="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-					>
-						<span>{m['dashboard.activityCards.seeAll']()}</span>
-						<ChevronRight class="h-4 w-4" aria-hidden="true" />
-					</a>
-				{/if}
-			</div>
-
-			{#if upcomingEventsQuery.isLoading}
-				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-					{#each Array(6) as _, i (i)}
-						<EventCardSkeleton />
-					{/each}
-				</div>
-			{:else if upcomingEvents.length === 0}
-				<!-- Empty State -->
-				<div class="rounded-lg border bg-card p-8 text-center">
-					<Calendar class="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-					<h3 class="mb-2 text-lg font-semibold">
-						{m['dashboard.emptyStates.noEventsAvailable']()}
-					</h3>
-					<p class="mb-4 text-sm text-muted-foreground">
-						{m['dashboard.emptyStates.noEventsHint']()}
-					</p>
-				</div>
-			{:else}
-				<!-- Event Cards -->
-				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-					{#each upcomingEvents.slice(0, 6) as event (event.id)}
-						<EventCard {event} />
-					{/each}
-				</div>
-			{/if}
-		</section>
+		<DashboardUpcomingEvents {upcomingEvents} isLoading={upcomingEventsQuery.isLoading} />
 
 		<!-- My Organizations Section -->
-		<section id="organizations-section" aria-labelledby="organizations-heading">
-			<div class="mb-4 flex items-center justify-between">
-				<h2 id="organizations-heading" class="flex items-center gap-2 text-xl font-semibold">
-					<Building2 class="h-5 w-5 text-primary" aria-hidden="true" />
-					<span>{m['dashboard.sections.myOrganizations']()}</span>
-				</h2>
-			</div>
-
-			{#if organizationsQuery.isLoading}
-				<div class="space-y-3">
-					{#each Array(3) as _, i (i)}
-						<OrganizationCardSkeleton />
-					{/each}
-				</div>
-			{:else if organizations.length === 0}
-				<!-- Empty State -->
-				<div class="rounded-lg border bg-card p-8 text-center">
-					<Building2 class="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-					<h3 class="mb-2 text-lg font-semibold">{m['dashboard.emptyStates.noOrganizations']()}</h3>
-					<p class="mb-4 text-sm text-muted-foreground">
-						{m['dashboard.emptyStates.noOrganizationsHint']()}
-					</p>
-					<div class="flex flex-wrap justify-center gap-3">
-						<a
-							href={resolve('/(public)/events', {})}
-							class="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-						>
-							<Sparkles class="h-4 w-4" aria-hidden="true" />
-							<span>{m['dashboard.sections.discoverEvents']()}</span>
-						</a>
-					</div>
-				</div>
-			{:else}
-				<!-- Organization Cards -->
-				<div class="space-y-3">
-					{#each organizations.slice(0, 3) as org (org.id)}
-						{@const descriptionText = org.description ? stripMarkdown(org.description) : ''}
-						<div
-							class="flex items-center gap-4 rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"
-						>
-							{#if org.logo}
-								<img
-									src={getImageUrl(org.logo_thumbnail_url || org.logo)}
-									alt=""
-									class="h-16 w-16 rounded-full border object-cover"
-								/>
-							{:else}
-								<div class="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-									<Building2 class="h-8 w-8 text-primary" aria-hidden="true" />
-								</div>
-							{/if}
-
-							<div class="flex-1">
-								<div class="flex items-center gap-2">
-									<h3 class="font-semibold">{org.name}</h3>
-									<!-- Owner Badge -->
-									{#if isOwner(org.id)}
-										<span
-											class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
-											aria-label={m['dashboardPage.ownerBadgeLabel']()}
-										>
-											<Crown class="h-3 w-3" aria-hidden="true" />
-											{m['dashboardPage.ownerBadge']()}
-										</span>
-									{:else if isStaff(org.id)}
-										<!-- Staff Badge -->
-										<span
-											class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-100"
-											aria-label={m['dashboardPage.staffBadgeLabel']()}
-										>
-											<Shield class="h-3 w-3" aria-hidden="true" />
-											{m['dashboardPage.staffBadge']()}
-										</span>
-									{/if}
-								</div>
-
-								{#if descriptionText}
-									<p class="line-clamp-1 text-sm text-muted-foreground">
-										{descriptionText}
-									</p>
-								{/if}
-
-								<!-- Membership Badges -->
-								{#if getMembershipStatus(org.id) || getMembershipTier(org.id)}
-									{@const membershipStatus = getMembershipStatus(org.id)}
-									{@const membershipTier = getMembershipTier(org.id)}
-									<div class="mt-2 flex flex-wrap items-center gap-2">
-										<!-- Status Badge -->
-										{#if membershipStatus}
-											<span
-												class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium {statusStyles[
-													membershipStatus
-												]}"
-												aria-label={m['dashboardPage.membershipStatusLabel']({
-													status: membershipStatus
-												})}
-											>
-												<Check class="h-3 w-3" aria-hidden="true" />
-												{m[`memberStatus.${membershipStatus}`]()}
-											</span>
-										{/if}
-
-										<!-- Tier Badge -->
-										{#if membershipTier}
-											<span
-												class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-100"
-												aria-label={m['dashboardPage.membershipTierLabel']({
-													tier: membershipTier.name
-												})}
-											>
-												<Award class="h-3 w-3" aria-hidden="true" />
-												{membershipTier.name}
-											</span>
-										{/if}
-									</div>
-								{/if}
-							</div>
-
-							<div class="flex gap-2">
-								<a
-									href={resolve('/(public)/org/[slug]', { slug: org.slug })}
-									class="rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
-								>
-									{m['dashboard.viewProfile']()}
-								</a>
-								{#if hasAdminPermissions(org.id)}
-									<a
-										href={resolve('/(auth)/org/[slug]/admin', { slug: org.slug })}
-										class="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-									>
-										<Shield class="h-4 w-4" aria-hidden="true" />
-										<span>{m['dashboard.adminButton']()}</span>
-									</a>
-								{/if}
-							</div>
-						</div>
-					{/each}
-				</div>
-			{/if}
-		</section>
+		<DashboardOrganizationsSection
+			{organizations}
+			isLoading={organizationsQuery.isLoading}
+			{permissions}
+		/>
 	</div>
 
 	<!-- Event Modal (for calendar clicks) -->
