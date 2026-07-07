@@ -30,6 +30,8 @@
 		maxFiles?: number;
 		/** Whether the field is disabled */
 		disabled?: boolean;
+		/** Whether an answer to this question is mandatory (renders aria-required) */
+		required?: boolean;
 		/** Error message to display */
 		error?: string;
 		/** Callback when files change */
@@ -43,6 +45,7 @@
 		maxSize = 10 * 1024 * 1024,
 		maxFiles = 1,
 		disabled = false,
+		required = false,
 		error,
 		onFilesChange
 	}: Props = $props();
@@ -512,6 +515,7 @@
 		{disabled}
 		onchange={handleInputChange}
 		aria-invalid={!!error}
+		aria-required={required}
 		class="sr-only"
 	/>
 
