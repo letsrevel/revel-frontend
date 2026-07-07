@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { EventTokenSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
-	import { Copy, Edit, Trash2, Ticket } from '@lucide/svelte';
+	import { Copy, Edit, Trash2, Ticket, Share2 } from '@lucide/svelte';
 	import TokenStatusBadge from './TokenStatusBadge.svelte';
 	import {
 		getEventTokenStatus,
@@ -19,9 +19,10 @@
 		eventSlug: string;
 		onEdit: (token: EventTokenSchema) => void;
 		onDelete: (token: EventTokenSchema) => void;
+		onShare?: (token: EventTokenSchema) => void;
 	}
 
-	const { token, orgSlug, eventSlug, onEdit, onDelete }: Props = $props();
+	const { token, orgSlug, eventSlug, onEdit, onDelete, onShare }: Props = $props();
 
 	const status = $derived(getEventTokenStatus(token));
 	const usageDisplay = $derived(formatTokenUsage(token.uses, token.max_uses));
@@ -101,6 +102,17 @@
 			>
 				<Copy class="h-4 w-4" aria-hidden="true" />
 			</Button>
+			{#if onShare}
+				<Button
+					variant="ghost"
+					size="sm"
+					onclick={() => onShare(token)}
+					aria-label={m['eventTokenCard.shareToken']()}
+					title={m['eventTokenCard.share']()}
+				>
+					<Share2 class="h-4 w-4" aria-hidden="true" />
+				</Button>
+			{/if}
 			<Button
 				variant="ghost"
 				size="sm"
