@@ -7,31 +7,27 @@
 		CitySchema,
 		VenueDetailSchema
 	} from '$lib/api/generated/types.gen';
-	import { getBackendUrl } from '$lib/config/api';
 	import { formatDateTimeReadback } from '$lib/utils/date';
 	import {
 		FileText,
 		Users,
 		Settings,
-		Image,
 		ChevronDown,
 		ChevronRight,
 		CheckSquare,
-		Hash,
 		AlertTriangle,
 		Info,
 		ExternalLink
 	} from '@lucide/svelte';
-	import ImageUploader from '$lib/components/forms/ImageUploader.svelte';
-	import { COVER_ASPECT_RATIO, LOGO_ASPECT_RATIO } from '$lib/utils/image-crop';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import EventQuestionnaireAssignmentModal from './EventQuestionnaireAssignmentModal.svelte';
 	import LocationSection from './LocationSection.svelte';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import WaitlistAdvancedSection from './WaitlistAdvancedSection.svelte';
 	import AdmissionScreeningSection from './AdmissionScreeningSection.svelte';
+	import DetailsStepTagsInput from './DetailsStepTagsInput.svelte';
+	import DetailsStepMediaSection from './DetailsStepMediaSection.svelte';
 	import type { OrganizationQuestionnaireInListSchema } from '$lib/api/generated';
-	import { tagListTags } from '$lib/api/generated/sdk.gen';
 	import { SvelteSet } from 'svelte/reactivity';
 
 	interface Props {
@@ -164,34 +160,10 @@
 		].filter((s): s is string => s !== null)
 	);
 
-	// Tag input state
-	let tagInput = $state('');
-	let tagSuggestions = $state<string[]>([]);
-	let showSuggestions = $state(false);
-	let selectedSuggestionIndex = $state(-1);
-	let isLoadingSuggestions = $state(false);
-	let searchTimeout: ReturnType<typeof setTimeout> | null = null;
-
 	// Description state (for MarkdownEditor). Writable $derived: resynced with
 	// formData when it changes externally, but locally reassignable via the
 	// editor's bind:value and handleDescriptionChange below.
 	let description = $derived(formData.description || '');
-
-	// Image state
-	let logoFile = $state<File | null>(null);
-	let coverArtFile = $state<File | null>(null);
-
-	// Helper function to get full image URL
-	function getImageUrl(path: string | null | undefined): string | null {
-		if (!path) return null;
-		return getBackendUrl(path);
-	}
-
-	// Compute image URLs with fallback to organization
-	const logoUrl = $derived(getImageUrl(formData.logo) || getImageUrl(formData.organization_logo));
-	const coverArtUrl = $derived(
-		getImageUrl(formData.cover_art) || getImageUrl(formData.organization_cover_art)
-	);
 
 	/**
 	 * Toggle accordion section
@@ -205,150 +177,11 @@
 	}
 
 	/**
-	 * Handle logo file select
-	 */
-	function handleLogoFileSelect(file: File | null): void {
-		logoFile = file;
-		onUpdateImages({ logo: file, deleteLogo: false });
-	}
-
-	/**
-	 * Handle cover art file select
-	 */
-	function handleCoverArtFileSelect(file: File | null): void {
-		coverArtFile = file;
-		onUpdateImages({ coverArt: file, deleteCoverArt: false });
-	}
-
-	/**
-	 * Handle logo removal
-	 */
-	function handleRemoveLogo(): void {
-		logoFile = null;
-		onUpdateImages({ logo: null, deleteLogo: true });
-	}
-
-	/**
-	 * Handle cover art removal
-	 */
-	function handleRemoveCoverArt(): void {
-		coverArtFile = null;
-		onUpdateImages({ coverArt: null, deleteCoverArt: true });
-	}
-
-	/**
 	 * Handle description changes
 	 */
 	function handleDescriptionChange(value: string): void {
 		description = value;
 		onUpdate({ description: value });
-	}
-
-	/**
-	 * Fetch tag suggestions from API
-	 */
-	async function fetchTagSuggestions(search: string): Promise<void> {
-		if (!search.trim()) {
-			tagSuggestions = [];
-			showSuggestions = false;
-			return;
-		}
-
-		isLoadingSuggestions = true;
-
-		try {
-			const response = await tagListTags({
-				query: { search }
-			});
-
-			if (response.data?.results) {
-				// Extract tag names from TagSchema objects and filter out tags that are already added
-				tagSuggestions = response.data.results
-					.map((tag) => tag.name)
-					.filter((tagName) => !(formData.tags || []).includes(tagName));
-				showSuggestions = tagSuggestions.length > 0;
-				selectedSuggestionIndex = -1;
-			}
-		} catch (error) {
-			console.error('Failed to fetch tag suggestions:', error);
-			tagSuggestions = [];
-			showSuggestions = false;
-		} finally {
-			isLoadingSuggestions = false;
-		}
-	}
-
-	/**
-	 * Handle tag input changes (with debouncing)
-	 */
-	function handleTagInput(e: Event): void {
-		const value = (e.target as HTMLInputElement).value;
-		tagInput = value;
-
-		// Clear previous timeout
-		if (searchTimeout) {
-			clearTimeout(searchTimeout);
-		}
-
-		// Debounce search by 300ms
-		searchTimeout = setTimeout(() => {
-			fetchTagSuggestions(value);
-		}, 300);
-	}
-
-	/**
-	 * Add tag
-	 */
-	function addTag(tag?: string): void {
-		const tagToAdd = tag || tagInput.trim();
-		if (tagToAdd && !(formData.tags || []).includes(tagToAdd)) {
-			onUpdate({ tags: [...(formData.tags || []), tagToAdd] });
-			tagInput = '';
-			tagSuggestions = [];
-			showSuggestions = false;
-			selectedSuggestionIndex = -1;
-		}
-	}
-
-	/**
-	 * Remove tag
-	 */
-	function removeTag(tag: string): void {
-		onUpdate({ tags: (formData.tags || []).filter((t) => t !== tag) });
-	}
-
-	/**
-	 * Handle tag input keydown
-	 */
-	function handleTagKeydown(e: KeyboardEvent): void {
-		if (e.key === 'Enter') {
-			e.preventDefault();
-			if (selectedSuggestionIndex >= 0 && tagSuggestions[selectedSuggestionIndex]) {
-				addTag(tagSuggestions[selectedSuggestionIndex]);
-			} else {
-				addTag();
-			}
-		} else if (e.key === 'ArrowDown') {
-			e.preventDefault();
-			if (showSuggestions && tagSuggestions.length > 0) {
-				selectedSuggestionIndex = Math.min(selectedSuggestionIndex + 1, tagSuggestions.length - 1);
-			}
-		} else if (e.key === 'ArrowUp') {
-			e.preventDefault();
-			if (showSuggestions && tagSuggestions.length > 0) {
-				selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, -1);
-			}
-		} else if (e.key === 'Escape') {
-			showSuggestions = false;
-			selectedSuggestionIndex = -1;
-		}
-	}
-
-	/**
-	 * Select a suggestion
-	 */
-	function selectSuggestion(tag: string): void {
-		addTag(tag);
 	}
 
 	// Derived state
@@ -740,135 +573,7 @@
 				{/if}
 
 				<!-- Tags -->
-				<div class="relative space-y-2">
-					<label for="tags-input" class="block text-sm font-medium">
-						<span class="flex items-center gap-2">
-							<Hash class="h-4 w-4" aria-hidden="true" />
-							{m['detailsStep.tags']()}
-						</span>
-					</label>
-					<div class="flex gap-2">
-						<div class="relative flex-1">
-							<input
-								id="tags-input"
-								type="text"
-								value={tagInput}
-								oninput={handleTagInput}
-								onkeydown={handleTagKeydown}
-								onfocus={() => {
-									if (tagInput.trim() && tagSuggestions.length > 0) {
-										showSuggestions = true;
-									}
-								}}
-								onblur={() => {
-									// Delay hiding to allow clicking on suggestions
-									setTimeout(() => {
-										showSuggestions = false;
-									}, 200);
-								}}
-								placeholder={m['detailsStep.addTagsPlaceholder']()}
-								class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-								autocomplete="off"
-								role="combobox"
-								aria-expanded={showSuggestions}
-								aria-controls="tags-suggestions"
-								aria-activedescendant={selectedSuggestionIndex >= 0
-									? `tag-suggestion-${selectedSuggestionIndex}`
-									: undefined}
-							/>
-
-							{#if showSuggestions && tagSuggestions.length > 0}
-								<div
-									id="tags-suggestions"
-									role="listbox"
-									class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-input bg-popover text-popover-foreground shadow-md"
-								>
-									{#each tagSuggestions as suggestion, index (suggestion)}
-										<button
-											type="button"
-											id="tag-suggestion-{index}"
-											role="option"
-											aria-selected={selectedSuggestionIndex === index}
-											onclick={() => selectSuggestion(suggestion)}
-											class="flex w-full cursor-pointer items-center px-3 py-2 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground {selectedSuggestionIndex ===
-											index
-												? 'bg-accent text-accent-foreground'
-												: ''}"
-										>
-											<Hash class="mr-2 h-3 w-3" aria-hidden="true" />
-											{suggestion}
-										</button>
-									{/each}
-								</div>
-							{/if}
-
-							{#if isLoadingSuggestions}
-								<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-									<svg
-										class="h-4 w-4 animate-spin text-muted-foreground"
-										xmlns="http://www.w3.org/2000/svg"
-										fill="none"
-										viewBox="0 0 24 24"
-										aria-hidden="true"
-									>
-										<circle
-											class="opacity-25"
-											cx="12"
-											cy="12"
-											r="10"
-											stroke="currentColor"
-											stroke-width="4"
-										/>
-										<path
-											class="opacity-75"
-											fill="currentColor"
-											d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-										/>
-									</svg>
-								</div>
-							{/if}
-						</div>
-						<button
-							type="button"
-							onclick={() => addTag()}
-							class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-						>
-							{m['detailsStep.add']()}
-						</button>
-					</div>
-					{#if formData.tags && formData.tags.length > 0}
-						<div class="flex flex-wrap gap-2">
-							{#each formData.tags as tag (tag)}
-								<span
-									class="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm"
-								>
-									{tag}
-									<button
-										type="button"
-										onclick={() => removeTag(tag)}
-										class="ml-1 rounded-full p-0.5 transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-										aria-label={m['detailsStep.removeTag']({ tag })}
-									>
-										<svg
-											class="h-3 w-3"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-											aria-hidden="true"
-										>
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												stroke-width="2"
-												d="M6 18L18 6M6 6l12 12"
-											/>
-										</svg>
-									</button>
-								</span>
-							{/each}
-						</div>
-					{/if}
-				</div>
+				<DetailsStepTagsInput tags={formData.tags ?? []} {onUpdate} />
 
 				<!-- Event Series -->
 				{#if eventSeries.length > 0}
@@ -894,69 +599,15 @@
 	</div>
 
 	<!-- Media Section -->
-	<div class="overflow-hidden rounded-lg border border-border">
-		<button
-			type="button"
-			onclick={() => toggleSection('media')}
-			class="flex w-full items-center justify-between bg-muted/50 p-4 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-			aria-expanded={isSectionOpen('media')}
-		>
-			<div class="flex items-center gap-2 font-semibold">
-				<Image class="h-5 w-5" aria-hidden="true" />
-				{m['detailsStep.media']()}
-			</div>
-			{#if isSectionOpen('media')}
-				<ChevronDown class="h-5 w-5" aria-hidden="true" />
-			{:else}
-				<ChevronRight class="h-5 w-5" aria-hidden="true" />
-			{/if}
-		</button>
-
-		{#if isSectionOpen('media')}
-			<div class="space-y-6 p-4">
-				<!-- Logo Upload -->
-				<ImageUploader
-					bind:value={logoFile}
-					preview={logoUrl}
-					label={m['detailsStep.eventLogo']()}
-					aspectRatio="square"
-					accept="image/jpeg,image/png,image/webp"
-					maxSize={5 * 1024 * 1024}
-					crop
-					cropAspectRatio={LOGO_ASPECT_RATIO}
-					cropShape="rect"
-					cropOutputFormat="image/png"
-					onFileSelect={(file) => {
-						if (file) handleLogoFileSelect(file);
-						else handleRemoveLogo();
-					}}
-				/>
-				<p class="-mt-4 text-xs text-muted-foreground">
-					{m['detailsStep.logoHint']()}
-				</p>
-
-				<!-- Cover Art Upload -->
-				<ImageUploader
-					bind:value={coverArtFile}
-					preview={coverArtUrl}
-					label={m['detailsStep.coverArt']()}
-					aspectRatio="wide"
-					accept="image/jpeg,image/png,image/webp"
-					maxSize={5 * 1024 * 1024}
-					crop
-					cropAspectRatio={COVER_ASPECT_RATIO}
-					cropShape="rect"
-					onFileSelect={(file) => {
-						if (file) handleCoverArtFileSelect(file);
-						else handleRemoveCoverArt();
-					}}
-				/>
-				<p class="-mt-4 text-xs text-muted-foreground">
-					{m['detailsStep.coverArtHint']()}
-				</p>
-			</div>
-		{/if}
-	</div>
+	<DetailsStepMediaSection
+		logo={formData.logo}
+		coverArt={formData.cover_art}
+		organizationLogo={formData.organization_logo}
+		organizationCoverArt={formData.organization_cover_art}
+		isOpen={isSectionOpen('media')}
+		onToggle={() => toggleSection('media')}
+		{onUpdateImages}
+	/>
 </div>
 
 <!-- Questionnaire Assignment Modal -->
