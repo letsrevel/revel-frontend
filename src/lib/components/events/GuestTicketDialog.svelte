@@ -1,30 +1,13 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import {
 		Dialog,
 		DialogContent,
 		DialogHeader,
 		DialogTitle,
-		DialogDescription,
-		DialogFooter
+		DialogDescription
 	} from '$lib/components/ui/dialog';
-	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
-	import { Alert, AlertDescription } from '$lib/components/ui/alert';
-	import {
-		Ticket,
-		CheckCircle2,
-		AlertCircle,
-		CreditCard,
-		Loader2,
-		MapPin,
-		Info,
-		Plus,
-		Minus,
-		User
-	} from '@lucide/svelte';
+	import { Ticket } from '@lucide/svelte';
 	import { z } from 'zod';
 	import { guestUserSchema, createGuestPwycSchema } from '$lib/schemas/guestAttendance';
 	import {
@@ -34,16 +17,24 @@
 	} from '$lib/api';
 	import { handleGuestAttendanceError } from '$lib/utils/guestAttendance';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
-	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import type {
 		SeatAssignmentMode,
 		VenueSeatSchema,
 		SectorAvailabilitySchema,
 		TicketPurchaseItem
 	} from '$lib/api/generated/types.gen';
-	import SeatSelector from '$lib/components/tickets/SeatSelector.svelte';
 	import CheckoutBillingSection from '$lib/components/tickets/CheckoutBillingSection.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import GuestTicketSuccess from './GuestTicketSuccess.svelte';
+	import GuestTicketTierInfo from './GuestTicketTierInfo.svelte';
+	import GuestTicketOnlinePaymentNotice from './GuestTicketOnlinePaymentNotice.svelte';
+	import GuestTicketQuantitySelector from './GuestTicketQuantitySelector.svelte';
+	import GuestTicketIdentityFields from './GuestTicketIdentityFields.svelte';
+	import GuestTicketNameInputs from './GuestTicketNameInputs.svelte';
+	import GuestTicketSeatSection from './GuestTicketSeatSection.svelte';
+	import GuestTicketPwycSection from './GuestTicketPwycSection.svelte';
+	import GuestTicketErrorAlert from './GuestTicketErrorAlert.svelte';
+	import GuestTicketFooter from './GuestTicketFooter.svelte';
 
 	interface Props {
 		open: boolean;
@@ -577,363 +568,78 @@
 		</DialogHeader>
 
 		{#if showSuccess}
-			<!-- Success State (Email Confirmation) -->
-			<div class="space-y-4 py-6">
-				<div class="flex flex-col items-center justify-center space-y-3 text-center">
-					<div class="rounded-full bg-primary/10 p-3">
-						<CheckCircle2 class="h-8 w-8 text-primary" aria-hidden="true" />
-					</div>
-					<div class="space-y-1">
-						<h3 class="text-lg font-semibold">{m['guest_attendance.ticket_email_sent_title']()}</h3>
-						<p class="text-sm text-muted-foreground">
-							{m['guest_attendance.ticket_email_sent_body']({ email: formData.email })}
-						</p>
-					</div>
-				</div>
-			</div>
-
-			<DialogFooter>
-				<Button onclick={onClose} class="w-full">
-					{m['guest_attendance.common_close']()}
-				</Button>
-			</DialogFooter>
+			<GuestTicketSuccess email={formData.email} {onClose} />
 		{:else}
 			<!-- Form State -->
 			<form onsubmit={handleSubmit} class="flex min-h-0 flex-1 flex-col">
 				<div class="min-h-0 flex-1 space-y-4 overflow-y-auto py-2 pr-1">
 					<!-- Tier Info Card -->
-					<div class="rounded-lg border border-border bg-muted/50 p-4">
-						<div class="flex items-start justify-between gap-4">
-							<div class="flex-1 space-y-1">
-								<h3 class="font-semibold">{tier.name}</h3>
-								{#if tier.description}
-									<MarkdownContent
-										content={tier.description}
-										class="text-sm text-muted-foreground"
-									/>
-								{/if}
-								{#if !isPwyc}
-									<p class="text-lg font-bold text-primary">
-										{tier.currency}
-										{parseFloat(tier.price).toFixed(2)}
-									</p>
-								{/if}
-							</div>
-							<Ticket class="h-8 w-8 shrink-0 text-muted-foreground" aria-hidden="true" />
-						</div>
-					</div>
+					<GuestTicketTierInfo {tier} {isPwyc} />
 
 					<!-- Quantity Selector (if applicable) -->
 					{#if showQuantitySelector}
-						<div class="space-y-2">
-							<Label for="quantity">{m['guestTicketDialog.numberOfTickets']()}</Label>
-							<div class="flex items-center gap-3">
-								<Button
-									type="button"
-									variant="outline"
-									size="icon"
-									onclick={decrementQuantity}
-									disabled={quantity <= 1 || isSubmitting}
-									aria-label={m['guestTicketDialog.decreaseQuantity']()}
-								>
-									<Minus class="h-4 w-4" />
-								</Button>
-								<div
-									class="flex h-10 w-16 items-center justify-center rounded-md border border-border bg-background"
-								>
-									<span class="text-lg font-semibold">{quantity}</span>
-								</div>
-								<Button
-									type="button"
-									variant="outline"
-									size="icon"
-									onclick={incrementQuantity}
-									disabled={quantity >= effectiveMaxQuantity || isSubmitting}
-									aria-label={m['guestTicketDialog.increaseQuantity']()}
-								>
-									<Plus class="h-4 w-4" />
-								</Button>
-								<span class="text-sm text-muted-foreground">
-									{#if effectiveMaxQuantity < 100}
-										{m['guestTicketDialog.maxQuantity']({ max: effectiveMaxQuantity })}
-									{/if}
-								</span>
-							</div>
-							{#if !isPwyc}
-								<p class="text-sm font-semibold text-primary">
-									{m['guestTicketDialog.total']()}
-									{tier.currency}
-									{(
-										quantity *
-										(typeof tier.price === 'string' ? parseFloat(tier.price) : tier.price || 0)
-									).toFixed(2)}
-								</p>
-							{/if}
-						</div>
+						<GuestTicketQuantitySelector
+							{quantity}
+							{effectiveMaxQuantity}
+							{isPwyc}
+							currency={tier.currency}
+							price={tier.price}
+							{isSubmitting}
+							onIncrement={incrementQuantity}
+							onDecrement={decrementQuantity}
+						/>
 					{/if}
 
-					<!-- Email Field -->
-					<div class="space-y-2">
-						<Label for="guest-ticket-email">{m['guest_attendance.email_label']()}</Label>
-						<Input
-							id="guest-ticket-email"
-							type="email"
-							bind:value={formData.email}
-							onkeydown={handleKeydown}
-							onblur={() => handleBlur('email')}
-							placeholder={m['guest_attendance.email_placeholder']()}
-							disabled={isSubmitting}
-							aria-invalid={fieldErrors.email ? 'true' : 'false'}
-							aria-describedby={fieldErrors.email
-								? 'ticket-email-error ticket-email-hint'
-								: 'ticket-email-hint'}
-							autocomplete="email"
-							required
-						/>
-						<p id="ticket-email-hint" class="text-xs text-muted-foreground">
-							{m['guest_attendance.email_hint']()}
-						</p>
-						{#if fieldErrors.email}
-							<p id="ticket-email-error" class="text-sm text-destructive" role="alert">
-								{fieldErrors.email}
-							</p>
-						{/if}
-					</div>
-
-					<!-- First Name and Last Name -->
-					<div class="grid gap-4 sm:grid-cols-2">
-						<div class="space-y-2">
-							<Label for="guest-ticket-first-name">{m['guest_attendance.first_name_label']()}</Label
-							>
-							<Input
-								id="guest-ticket-first-name"
-								type="text"
-								bind:value={formData.first_name}
-								onkeydown={handleKeydown}
-								onblur={() => handleBlur('first_name')}
-								placeholder={m['guest_attendance.first_name_placeholder']()}
-								disabled={isSubmitting}
-								aria-invalid={fieldErrors.first_name ? 'true' : 'false'}
-								aria-describedby={fieldErrors.first_name ? 'ticket-first-name-error' : undefined}
-								autocomplete="given-name"
-								required
-							/>
-							{#if fieldErrors.first_name}
-								<p id="ticket-first-name-error" class="text-sm text-destructive" role="alert">
-									{fieldErrors.first_name}
-								</p>
-							{/if}
-						</div>
-
-						<div class="space-y-2">
-							<Label for="guest-ticket-last-name">{m['guest_attendance.last_name_label']()}</Label>
-							<Input
-								id="guest-ticket-last-name"
-								type="text"
-								bind:value={formData.last_name}
-								onkeydown={handleKeydown}
-								onblur={() => handleBlur('last_name')}
-								placeholder={m['guest_attendance.last_name_placeholder']()}
-								disabled={isSubmitting}
-								aria-invalid={fieldErrors.last_name ? 'true' : 'false'}
-								aria-describedby={fieldErrors.last_name ? 'ticket-last-name-error' : undefined}
-								autocomplete="family-name"
-								required
-							/>
-							{#if fieldErrors.last_name}
-								<p id="ticket-last-name-error" class="text-sm text-destructive" role="alert">
-									{fieldErrors.last_name}
-								</p>
-							{/if}
-						</div>
-					</div>
+					<!-- Purchaser identity: email + first/last name -->
+					<GuestTicketIdentityFields
+						bind:formData
+						{fieldErrors}
+						{isSubmitting}
+						onKeydown={handleKeydown}
+						onBlur={handleBlur}
+					/>
 
 					<!-- Guest Names for Each Ticket (if applicable) -->
 					{#if showGuestNames}
-						<div class="space-y-3">
-							<div class="flex items-center gap-2">
-								<User class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-								<Label class="text-base font-semibold"
-									>{m['guestTicketDialog.ticketHolderNames']()}</Label
-								>
-							</div>
-							<p class="text-sm text-muted-foreground">
-								{m['guestTicketDialog.ticketHolderNamesHint']()}
-							</p>
-							<div class="space-y-3">
-								{#each guestNames as name, index (index)}
-									<div class="space-y-2">
-										<Label for="guest-name-{index}">
-											{index === 0
-												? m['guestTicketDialog.yourName']()
-												: m['guestTicketDialog.guestName']({ number: index + 1 })}
-										</Label>
-										<Input
-											id="guest-name-{index}"
-											type="text"
-											value={name}
-											oninput={(e) => updateGuestName(index, e.currentTarget.value)}
-											placeholder={index === 0
-												? `${formData.first_name} ${formData.last_name}`.trim() ||
-													m['guestTicketDialog.yourNamePlaceholder']()
-												: m['guestTicketDialog.guestNamePlaceholder']({ number: index + 1 })}
-											disabled={isSubmitting}
-											required
-										/>
-									</div>
-								{/each}
-								{#if guestNameError}
-									<p class="text-sm text-destructive" role="alert">
-										{guestNameError}
-									</p>
-								{/if}
-							</div>
-						</div>
+						<GuestTicketNameInputs
+							{guestNames}
+							firstName={formData.first_name}
+							lastName={formData.last_name}
+							{isSubmitting}
+							{guestNameError}
+							onUpdateName={updateGuestName}
+						/>
 					{/if}
 
 					<!-- Seat Selection (if applicable) -->
-					{#if isUserChoiceSeat}
-						<div class="space-y-3">
-							<!-- Venue/Sector Info -->
-							{#if tierVenue || tierSector}
-								<div class="rounded-lg border border-border bg-muted/30 p-3">
-									<div class="flex items-start gap-2 text-sm text-muted-foreground">
-										<MapPin class="h-4 w-4 shrink-0" aria-hidden="true" />
-										<div class="space-y-0.5">
-											{#if tierVenue}
-												<div class="font-medium text-foreground">{tierVenue.name}</div>
-											{/if}
-											{#if tierSector}
-												<div>
-													{tierSector.name}
-													{#if tierSectorDescription}
-														<span class="text-xs">({tierSectorDescription})</span>
-													{/if}
-												</div>
-											{/if}
-										</div>
-									</div>
-								</div>
-							{/if}
-
-							<!-- Seat selection UI -->
-							<div class="space-y-2">
-								<Label>{m['guestTicketDialog.selectYourSeat']()}</Label>
-								{#if isLoadingSeats}
-									<div class="flex items-center justify-center py-12">
-										<Loader2 class="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
-									</div>
-								{:else if seatLoadError}
-									<Alert variant="destructive">
-										<AlertCircle class="h-4 w-4" />
-										<AlertDescription>{seatLoadError}</AlertDescription>
-									</Alert>
-								{:else if availableSeats.length === 0}
-									<Alert>
-										<AlertCircle class="h-4 w-4" />
-										<AlertDescription>{m['guestTicketDialog.noSeatsAvailable']()}</AlertDescription>
-									</Alert>
-								{:else}
-									<SeatSelector
-										seats={availableSeats}
-										{selectedSeatIds}
-										maxSelectable={quantity}
-										onToggle={toggleSeat}
-									/>
-									{#if quantity > 1}
-										<p class="text-sm text-muted-foreground">
-											{quantity === 1
-												? m['guestTicketDialog.selectedSeatsOne']({
-														selected: selectedSeatIds.length
-													})
-												: m['guestTicketDialog.selectedSeats']({
-														selected: selectedSeatIds.length,
-														total: quantity
-													})}
-										</p>
-									{/if}
-									{#if seatSelectionError}
-										<p class="text-sm text-destructive" role="alert">
-											{seatSelectionError}
-										</p>
-									{/if}
-								{/if}
-							</div>
-						</div>
-					{:else if isRandomSeat}
-						<!-- Random seat assignment info -->
-						<Alert>
-							<Info class="h-4 w-4" />
-							<AlertDescription>
-								{m['guestTicketDialog.randomSeatNotice']()}
-							</AlertDescription>
-						</Alert>
-					{/if}
+					<GuestTicketSeatSection
+						{isUserChoiceSeat}
+						{isRandomSeat}
+						{tierVenue}
+						{tierSector}
+						{tierSectorDescription}
+						{isLoadingSeats}
+						{seatLoadError}
+						{availableSeats}
+						{selectedSeatIds}
+						{quantity}
+						{seatSelectionError}
+						onToggle={toggleSeat}
+					/>
 
 					<!-- PWYC Amount (if applicable) -->
 					{#if isPwyc}
-						{@const maxValue = maxAmount()}
-						<div class="space-y-3">
-							<div class="space-y-2">
-								<Label for="pwyc-amount">{m['guest_attendance.pwyc_label']()}</Label>
-								<div class="text-xs text-muted-foreground">
-									{maxValue !== null
-										? m['guest_attendance.pwyc_hint']({ min: minAmount(), max: maxValue })
-										: m['guest_attendance.pwyc_hint_no_max']({ min: minAmount() })}
-								</div>
-								<div class="relative">
-									<span
-										class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground"
-									>
-										{tier.currency}
-									</span>
-									<Input
-										id="pwyc-amount"
-										type="text"
-										inputmode="decimal"
-										value={formData.pwyc}
-										oninput={(e) => {
-											formData.pwyc = (e.currentTarget as HTMLInputElement).value
-												.replace(/,/g, '.')
-												.replace(/[^\d.]/g, '');
-										}}
-										onkeydown={handleKeydown}
-										onblur={() => handleBlur('pwyc')}
-										class="pl-12 text-lg font-semibold"
-										placeholder={minAmount().toFixed(2)}
-										disabled={isSubmitting}
-										aria-invalid={fieldErrors.pwyc ? 'true' : 'false'}
-										aria-describedby={fieldErrors.pwyc ? 'pwyc-error' : undefined}
-									/>
-								</div>
-								{#if fieldErrors.pwyc}
-									<p id="pwyc-error" class="text-sm text-destructive" role="alert">
-										{fieldErrors.pwyc}
-									</p>
-								{/if}
-							</div>
-
-							<!-- Quick Amount Suggestions -->
-							<div class="space-y-2">
-								<p class="text-sm font-medium">{m['guestTicketDialog.quickSelect']()}</p>
-								<div class="grid grid-cols-3 gap-2">
-									{#each getSuggestions(minAmount(), maxAmount()) as suggested, i (i)}
-										<Button
-											type="button"
-											variant="outline"
-											size="sm"
-											onclick={() => {
-												formData.pwyc = suggested.toFixed(2);
-												fieldErrors.pwyc = '';
-											}}
-											disabled={isSubmitting}
-										>
-											{tier.currency}{suggested.toFixed(2)}
-										</Button>
-									{/each}
-								</div>
-							</div>
-						</div>
+						<GuestTicketPwycSection
+							bind:formData
+							bind:fieldErrors
+							currency={tier.currency}
+							minAmount={minAmount()}
+							maxAmount={maxAmount()}
+							suggestions={getSuggestions(minAmount(), maxAmount())}
+							{isSubmitting}
+							onKeydown={handleKeydown}
+							onBlur={handleBlur}
+						/>
 					{/if}
 
 					<!-- Billing Information (for invoicing) -->
@@ -955,79 +661,16 @@
 
 					<!-- Online Payment Notice -->
 					{#if isOnlinePayment}
-						<Alert>
-							<CreditCard class="h-4 w-4" />
-							<AlertDescription>
-								<p class="text-sm">
-									{m['guestTicketDialog.onlinePaymentNotice']()}
-								</p>
-							</AlertDescription>
-						</Alert>
+						<GuestTicketOnlinePaymentNotice />
 					{/if}
 
 					<!-- Error Message -->
 					{#if errorMessage}
-						<Alert variant="destructive">
-							<AlertCircle class="h-4 w-4" />
-							<AlertDescription>
-								{errorMessage}
-								{#if requiresAccount}
-									<p class="mt-2">
-										<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
-										<a
-											href={`${resolve('/(public)/login', {})}?redirect=${encodeURIComponent(window.location.pathname)}`}
-											class="font-medium underline hover:no-underline"
-										>
-											{m['guestTicketDialog.logIn']()}
-										</a>
-										<!-- eslint-enable svelte/no-navigation-without-resolve -->
-										{m['guestTicketDialog.or']()}
-										<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() validates the path; the appended query/fragment cannot be expressed through resolve() -->
-										<a
-											href={`${resolve('/(public)/register', {})}?redirect=${encodeURIComponent(window.location.pathname)}`}
-											class="font-medium underline hover:no-underline"
-										>
-											{m['guestTicketDialog.createAnAccount']()}
-										</a>
-										<!-- eslint-enable svelte/no-navigation-without-resolve -->
-										{m['guestTicketDialog.toContinue']()}
-									</p>
-								{/if}
-							</AlertDescription>
-						</Alert>
+						<GuestTicketErrorAlert {errorMessage} {requiresAccount} />
 					{/if}
 				</div>
 
-				<div class="shrink-0">
-					<DialogFooter class="gap-2 pt-4 sm:gap-0">
-						<Button
-							type="button"
-							variant="outline"
-							onclick={onClose}
-							disabled={isSubmitting}
-							class="flex-1 sm:flex-initial"
-						>
-							{m['guest_attendance.common_cancel']()}
-						</Button>
-						<Button type="submit" disabled={isSubmitting} class="flex-1 sm:flex-initial">
-							{#if isSubmitting}
-								{m['guest_attendance.submitting']()}
-							{:else}
-								{m['guest_attendance.submit_ticket']()}
-							{/if}
-						</Button>
-					</DialogFooter>
-
-					<!-- Subtle login link -->
-					<div class="border-t pt-3 text-center text-xs text-muted-foreground">
-						<p>
-							<!-- eslint-disable-next-line svelte/no-at-html-tags -- static i18n string, no interpolated data; only a developer-authored <a>→login link is injected -->
-							{@html m['guest_attendance.or_login']()
-								.replace('<a>', '<a href="/login" class="text-primary hover:underline">')
-								.replace('</a>', '</a>')}
-						</p>
-					</div>
-				</div>
+				<GuestTicketFooter {isSubmitting} {onClose} />
 			</form>
 		{/if}
 	</DialogContent>
