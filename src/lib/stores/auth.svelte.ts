@@ -7,6 +7,7 @@ import {
 } from '$lib/api/client';
 import { setLocale } from '$lib/paraglide/runtime.js';
 import { getImpersonationInfo, type ImpersonationInfo } from '$lib/utils/impersonation';
+import { decodeToken } from './jwt';
 
 /**
  * Auth store using Svelte 5 Runes
@@ -73,51 +74,34 @@ class AuthStore {
 	 * Note: This is idempotent - safe to call multiple times
 	 */
 	async initialize(): Promise<void> {
-		console.log('[AUTH STORE] initialize() called', {
-			hasAccessToken: !!this._accessToken,
-			hasUser: !!this._user,
-			isAuthenticated: this.isAuthenticated
-		});
-
 		// Only initialize if we have an access token
 		if (!this._accessToken) {
-			console.log('[AUTH STORE] No access token, skipping initialization');
 			return;
 		}
 
 		// If we already have user data, skip fetching (idempotent)
 		if (this._user && this._permissions) {
-			console.log('[AUTH STORE] User data already loaded, skipping fetch');
 			return;
 		}
 
 		this._isLoading = true;
 		try {
-			console.log('[AUTH STORE] Fetching user data and permissions');
-
 			// Fetch user data if we don't have it
 			if (!this._user) {
 				await this.fetchUserData();
-				console.log('[AUTH STORE] User data fetched successfully');
 			}
 
 			// Fetch permissions if we don't have them
 			if (!this._permissions) {
 				await this.fetchPermissions();
-				console.log('[AUTH STORE] Permissions fetched successfully');
 			}
-		} catch (error) {
+		} catch {
 			// If fetching user data fails, the API interceptor will handle token refresh
 			// If refresh fails, the user will be logged out automatically
-			console.log('[AUTH STORE] Initialize failed:', error);
 			// Clear auth state on failure
 			this.logout();
 		} finally {
 			this._isLoading = false;
-			console.log('[AUTH STORE] initialize() complete', {
-				isAuthenticated: this.isAuthenticated,
-				hasUser: !!this._user
-			});
 		}
 	}
 
@@ -247,17 +231,13 @@ class AuthStore {
 		// IMPORTANT: Do NOT refresh impersonated sessions
 		// Impersonation tokens are intentionally short-lived and non-renewable
 		if (this.isImpersonated) {
-			console.log('[AUTH STORE] Impersonation session - refresh disabled');
 			throw new Error('Impersonation sessions cannot be refreshed');
 		}
 
 		// If refresh is already in progress, wait for it to complete
 		if (this._refreshPromise) {
-			console.log('[AUTH STORE] Refresh already in progress, waiting...');
 			return this._refreshPromise;
 		}
-
-		console.log('[AUTH STORE] Starting token refresh');
 
 		// Create a new refresh promise and store it
 		this._refreshPromise = this._performRefresh();
@@ -297,15 +277,12 @@ class AuthStore {
 				throw new Error('No access token returned');
 			}
 
-			console.log('[AUTH STORE] Token refresh successful, received new access token');
-
 			// Check if user explicitly logged out while refresh was in progress.
 			// If so, discard the refresh result so logout wins the race.
 			// Note: `!_accessToken` is NOT the right check here — during cold
 			// hydration the store is empty by design and refresh is how we
 			// learn the token.
 			if (this._isLoggingOut) {
-				console.log('[AUTH STORE] Logout in progress, discarding new token');
 				return;
 			}
 
@@ -320,8 +297,6 @@ class AuthStore {
 			if (!this._permissions) {
 				await this.fetchPermissions();
 			}
-
-			console.log('[AUTH STORE] Token refresh complete');
 		} catch (error) {
 			console.error('[AUTH STORE] Token refresh failed:', error);
 			// Clear auth state on refresh failure
@@ -347,7 +322,6 @@ class AuthStore {
 
 			// Set user's preferred language if available
 			if (data.language && ['en', 'de', 'it', 'fr'].includes(data.language)) {
-				console.log('[AUTH STORE] Setting user preferred language:', data.language);
 				setLocale(data.language as 'en' | 'de' | 'it' | 'fr');
 			}
 		} catch (err) {
@@ -459,26 +433,6 @@ class AuthStore {
 	}
 
 	/**
-	 * Decode JWT token to get expiration time
-	 * Note: This is safe for client-side as JWT is just base64 encoded, not encrypted
-	 */
-	private decodeToken(token: string): { exp?: number } | null {
-		try {
-			// JWT format: header.payload.signature
-			const parts = token.split('.');
-			if (parts.length !== 3) return null;
-
-			// Decode the payload (second part)
-			const payload = parts[1];
-			const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
-			return JSON.parse(decoded);
-		} catch (error) {
-			console.error('[AUTH STORE] Failed to decode token:', error);
-			return null;
-		}
-	}
-
-	/**
 	 * Schedule automatic token refresh before expiration
 	 *
 	 * Refreshes 5 minutes before the token expires to provide buffer time.
@@ -495,11 +449,10 @@ class AuthStore {
 		if (this._tokenExpiryTimer) {
 			clearTimeout(this._tokenExpiryTimer);
 			this._tokenExpiryTimer = null;
-			console.log('[AUTH STORE] Cleared existing refresh timer');
 		}
 
 		// Decode token to get expiration
-		const decoded = this.decodeToken(token);
+		const decoded = decodeToken(token);
 		if (!decoded || !decoded.exp) {
 			console.warn('[AUTH STORE] Could not decode token expiration, skipping auto-refresh');
 			return;
@@ -508,9 +461,6 @@ class AuthStore {
 		// Calculate time until expiration
 		const expiresAt = decoded.exp * 1000; // Convert to milliseconds
 		const now = Date.now();
-		const expiresInMinutes = Math.round((expiresAt - now) / 60000);
-
-		console.log(`[AUTH STORE] Token expires in ${expiresInMinutes} minutes`);
 
 		// Check if this is an impersonated session
 		const impersonationInfo = getImpersonationInfo(token);
@@ -520,17 +470,11 @@ class AuthStore {
 			const timeUntilExpiry = expiresAt - now;
 
 			if (timeUntilExpiry <= 0) {
-				console.log('[AUTH STORE] Impersonation session expired, logging out');
 				this.logout();
 				return;
 			}
 
-			console.log(
-				`[AUTH STORE] Impersonation session - scheduling logout in ${expiresInMinutes} minutes`
-			);
-
 			this._tokenExpiryTimer = setTimeout(() => {
-				console.log('[AUTH STORE] Impersonation session expired, logging out');
 				this.logout();
 			}, timeUntilExpiry);
 			return;
@@ -539,11 +483,9 @@ class AuthStore {
 		// Regular session: schedule refresh 5 minutes before expiration
 		const refreshBuffer = 5 * 60 * 1000; // 5 minutes in milliseconds
 		const timeUntilRefresh = expiresAt - now - refreshBuffer;
-		const refreshInMinutes = Math.round(timeUntilRefresh / 60000);
 
 		// If token expires in less than 5 minutes, refresh immediately
 		if (timeUntilRefresh <= 0) {
-			console.log('[AUTH STORE] Token expires very soon, refreshing immediately');
 			this.refreshAccessToken().catch((err) => {
 				console.error('[AUTH STORE] Immediate auto-refresh failed:', err);
 				// Don't try to schedule again on failure
@@ -551,13 +493,8 @@ class AuthStore {
 			return;
 		}
 
-		console.log(
-			`[AUTH STORE] Scheduling token refresh in ${refreshInMinutes} minutes (${Math.round(timeUntilRefresh / 1000)}s)`
-		);
-
 		// Schedule the refresh
 		this._tokenExpiryTimer = setTimeout(() => {
-			console.log('[AUTH STORE] Auto-refresh timer triggered');
 			this.refreshAccessToken().catch((err) => {
 				console.error('[AUTH STORE] Auto-refresh failed:', err);
 				// Don't try to schedule again on failure - logout will be called
