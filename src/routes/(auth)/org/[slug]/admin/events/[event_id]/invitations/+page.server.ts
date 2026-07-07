@@ -52,8 +52,10 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 		event = eventResponse.data;
 	} catch (err) {
 		if (isHttpError(err)) throw err;
+		// Unexpected failures (network, 5xx) are not a missing event — don't mask
+		// outages as 404.
 		log.error('event_load_failed', { error: err, eventId: params.event_id });
-		throw error(404, 'Event not found');
+		throw error(500, 'Failed to load event');
 	}
 
 	// Verify event belongs to this organization

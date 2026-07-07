@@ -3,9 +3,10 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import type { GuestTicketFormData } from '$lib/schemas/guestAttendance';
 
 	interface Props {
-		formData: { email: string; first_name: string; last_name: string; pwyc?: string };
+		formData: GuestTicketFormData;
 		fieldErrors: Record<string, string>;
 		currency: string;
 		minAmount: number;

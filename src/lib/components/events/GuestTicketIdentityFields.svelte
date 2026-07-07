@@ -2,9 +2,10 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import type { GuestTicketFormData } from '$lib/schemas/guestAttendance';
 
 	interface Props {
-		formData: { email: string; first_name: string; last_name: string; pwyc?: string };
+		formData: GuestTicketFormData;
 		fieldErrors: Record<string, string>;
 		isSubmitting: boolean;
 		onKeydown: (e: KeyboardEvent) => void;

@@ -9,7 +9,11 @@
 	} from '$lib/components/ui/dialog';
 	import { Ticket } from '@lucide/svelte';
 	import { z } from 'zod';
-	import { guestUserSchema, createGuestPwycSchema } from '$lib/schemas/guestAttendance';
+	import {
+		guestUserSchema,
+		createGuestPwycSchema,
+		type GuestTicketFormData
+	} from '$lib/schemas/guestAttendance';
 	import {
 		eventpublicguestGuestTicketCheckout,
 		eventpublicguestGuestTicketPwycCheckout,
@@ -65,12 +69,7 @@
 	let guestNames = $state<string[]>(['']);
 
 	// Form state (for primary guest - the purchaser)
-	let formData = $state<{
-		email: string;
-		first_name: string;
-		last_name: string;
-		pwyc?: string;
-	}>({
+	let formData = $state<GuestTicketFormData>({
 		email: '',
 		first_name: '',
 		last_name: '',
