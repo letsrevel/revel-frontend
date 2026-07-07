@@ -5,39 +5,35 @@
 	import { resolve } from '$app/paths';
 	import { createMutation } from '@tanstack/svelte-query';
 	import { toast } from 'svelte-sonner';
-	import { fade, scale } from 'svelte/transition';
 	import { getUserDisplayName } from '$lib/utils/user-display';
-	import {
-		needsPaymentConfirmation,
-		isPwycTicket,
-		getPwycWarning
-	} from '$lib/utils/ticket-helpers';
+	import { needsPaymentConfirmation, isPwycTicket } from '$lib/utils/ticket-helpers';
 	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
-	import { Ticket, AlertTriangle, QrCode, X } from '@lucide/svelte';
+	import { Ticket, QrCode } from '@lucide/svelte';
 	import {
 		eventadminticketsConfirmTicketPayment,
 		eventadminticketsUnconfirmTicketPayment,
 		eventadminticketsCancelTicket,
 		eventadminticketsCheckInTicket,
 		eventadminticketsGetTicket,
-		organizationadminmembersListMembershipTiers,
-		organizationadminmembersAddMember,
-		organizationadminblacklistCreateBlacklistEntry,
 		eventadminticketsExportAttendees
 	} from '$lib/api';
-	import type { ComponentProps } from 'svelte';
 	import type { PageData } from './$types';
-	import type { AdminTicketSchema, MembershipTierSchema } from '$lib/api/generated/types.gen';
+	import type { AdminTicketSchema } from '$lib/api/generated/types.gen';
 	import TicketFilters from '$lib/components/tickets/TicketFilters.svelte';
 	import TicketTable from '$lib/components/tickets/TicketTable.svelte';
 	import TicketCardList from '$lib/components/tickets/TicketCardList.svelte';
 	import TicketStats from '$lib/components/tickets/TicketStats.svelte';
+	import ConfirmPaymentDialog from '$lib/components/tickets/ConfirmPaymentDialog.svelte';
 	import {
 		nextOrderBy,
 		type TicketOrderBy,
 		type TicketSortField
 	} from '$lib/components/tickets/ticket-sort';
+	import {
+		toCheckInTicket,
+		type CheckInDialogTicket
+	} from '$lib/components/tickets/checkin-adapter';
+	import { createTicketMemberAdmin } from '$lib/components/tickets/ticket-member-admin.svelte';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import QRScannerModal from '$lib/components/tickets/QRScannerModal.svelte';
 	import CheckInDialog from '$lib/components/tickets/CheckInDialog.svelte';
@@ -56,11 +52,6 @@
 	// Sort state (server-side, persisted in the URL)
 	let selectedOrderBy = $state<TicketOrderBy | undefined>(data.filters.orderBy ?? undefined);
 
-	// CheckInDialog declares a stricter ticket shape than the generated
-	// AdminTicketSchema (non-nullable id/status, no nulls on user name fields),
-	// so store the adapted shape for it.
-	type CheckInDialogTicket = NonNullable<ComponentProps<typeof CheckInDialog>['ticket']>;
-
 	// Confirmation dialogs
 	let showCancelDialog = $state(false);
 	let ticketToCancel = $state<AdminTicketSchema | null>(null);
@@ -70,40 +61,15 @@
 	let ticketToCheckIn = $state<CheckInDialogTicket | null>(null);
 	let showQRScanner = $state(false);
 
-	// Make member modal state
-	let showMakeMemberModal = $state(false);
-	let userToMakeMember = $state<{ id: string; displayName: string; email?: string } | null>(null);
-	let membershipTiers = $state<MembershipTierSchema[]>([]);
-	let tiersLoading = $state(false);
-
-	// Blacklist confirmation state
-	let showBlacklistDialog = $state(false);
-	let ticketToBlacklist = $state<AdminTicketSchema | null>(null);
+	// Membership + blacklist admin actions (state, mutations, handlers).
+	const memberAdmin = createTicketMemberAdmin({
+		getSlug: () => data.event.organization.slug,
+		getAccessToken: () => $page.data.user?.accessToken
+	});
 
 	// Unconfirm payment confirmation state
 	let showUnconfirmPaymentDialog = $state(false);
 	let ticketToUnconfirm = $state<AdminTicketSchema | null>(null);
-
-	/**
-	 * Adapt an AdminTicketSchema to CheckInDialog's stricter ticket shape.
-	 * Only normalizes generator-nullable fields (null -> undefined / ''); the
-	 * data itself is unchanged.
-	 */
-	function toCheckInTicket(ticket: AdminTicketSchema): CheckInDialogTicket {
-		return {
-			...ticket,
-			id: ticket.id ?? '',
-			status: ticket.status ?? '',
-			user: {
-				...ticket.user,
-				email: ticket.user.email ?? undefined,
-				preferred_name: ticket.user.preferred_name ?? undefined,
-				first_name: ticket.user.first_name ?? undefined,
-				last_name: ticket.user.last_name ?? undefined
-			},
-			seat: ticket.seat ?? undefined
-		};
-	}
 
 	// PWYC confirm payment state
 	let pwycPricePaid = $state('');
@@ -232,150 +198,6 @@
 	}));
 
 	/**
-	 * Add member mutation
-	 */
-	const addMemberMutation = createMutation(() => ({
-		mutationFn: async ({ userId, tierId }: { userId: string; tierId: string }) => {
-			const response = await organizationadminmembersAddMember({
-				path: { slug: data.event.organization.slug, user_id: userId },
-				body: { tier_id: tierId },
-				headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
-			});
-
-			if (response.error) {
-				const errorDetail =
-					typeof response.error === 'object' &&
-					response.error !== null &&
-					'detail' in response.error
-						? String(response.error.detail)
-						: m['makeMemberAction.error']();
-				throw new Error(errorDetail);
-			}
-
-			return response.data;
-		},
-		onSuccess: () => {
-			const userName = userToMakeMember?.displayName || '';
-			showMakeMemberModal = false;
-			userToMakeMember = null;
-			toast.success(m['makeMemberAction.success']({ name: userName }));
-			invalidateAll();
-		},
-		onError: (error: Error) => {
-			toast.error(error.message);
-		}
-	}));
-
-	/**
-	 * Blacklist user mutation
-	 */
-	const blacklistMutation = createMutation(() => ({
-		mutationFn: async (userId: string) => {
-			const response = await organizationadminblacklistCreateBlacklistEntry({
-				path: { slug: data.event.organization.slug },
-				body: { user_id: userId, reason: '' },
-				headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
-			});
-
-			if (response.error) {
-				throw new Error(m['eventTicketsAdmin.blacklistError']());
-			}
-
-			return response.data;
-		},
-		onSuccess: () => {
-			const userName = ticketToBlacklist ? getUserDisplayName(ticketToBlacklist.user) : '';
-			showBlacklistDialog = false;
-			ticketToBlacklist = null;
-			toast.success(m['eventTicketsAdmin.blacklistSuccess']({ name: userName }));
-			invalidateAll();
-		},
-		onError: () => {
-			toast.error(m['eventTicketsAdmin.blacklistError']());
-		}
-	}));
-
-	/**
-	 * Open make member modal
-	 */
-	async function openMakeMemberModal(ticket: AdminTicketSchema) {
-		const user = ticket.user;
-		if (!user?.id) {
-			toast.error(m['eventTicketsAdmin.userIdNotAvailable']());
-			return;
-		}
-
-		// Check if already a member
-		if (ticket.membership) {
-			toast.info(m['makeMemberAction.alreadyMember']());
-			return;
-		}
-
-		// Set user info
-		userToMakeMember = {
-			id: user.id,
-			displayName: getUserDisplayName(user),
-			email: user.email ?? undefined
-		};
-
-		// Load membership tiers if not already loaded
-		if (membershipTiers.length === 0) {
-			tiersLoading = true;
-			try {
-				const response = await organizationadminmembersListMembershipTiers({
-					path: { slug: data.event.organization.slug },
-					headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
-				});
-				if (response.data) {
-					membershipTiers = response.data;
-				}
-			} catch (err) {
-				console.error('Failed to load membership tiers:', err);
-			} finally {
-				tiersLoading = false;
-			}
-		}
-
-		showMakeMemberModal = true;
-	}
-
-	/**
-	 * Handle make member confirm
-	 */
-	function handleMakeMemberConfirm(userId: string, tierId: string) {
-		addMemberMutation.mutate({ userId, tierId });
-	}
-
-	/**
-	 * Open blacklist dialog
-	 */
-	function openBlacklistDialog(ticket: AdminTicketSchema) {
-		if (!ticket.user?.id) {
-			toast.error(m['eventTicketsAdmin.userIdNotAvailable']());
-			return;
-		}
-		ticketToBlacklist = ticket;
-		showBlacklistDialog = true;
-	}
-
-	/**
-	 * Confirm blacklist
-	 */
-	function confirmBlacklist() {
-		if (ticketToBlacklist?.user?.id) {
-			blacklistMutation.mutate(ticketToBlacklist.user.id);
-		}
-	}
-
-	/**
-	 * Cancel blacklist
-	 */
-	function cancelBlacklist() {
-		showBlacklistDialog = false;
-		ticketToBlacklist = null;
-	}
-
-	/**
 	 * Open unconfirm payment dialog
 	 */
 	function openUnconfirmPaymentDialog(ticket: AdminTicketSchema) {
@@ -481,6 +303,15 @@
 			pwycPricePaid = '';
 		}
 		showConfirmPaymentDialog = true;
+	}
+
+	/**
+	 * Close confirm payment dialog
+	 */
+	function closeConfirmPaymentDialog() {
+		showConfirmPaymentDialog = false;
+		ticketToConfirm = null;
+		pwycPricePaid = '';
 	}
 
 	/**
@@ -682,14 +513,14 @@
 				checkInPending={checkInTicketMutation.isPending}
 				confirmPaymentPending={confirmPaymentMutation.isPending}
 				cancelTicketPending={cancelTicketMutation.isPending}
-				addMemberPending={addMemberMutation.isPending}
+				addMemberPending={memberAdmin.addMemberPending}
 				unconfirmPaymentPending={unconfirmPaymentMutation.isPending}
-				{tiersLoading}
+				tiersLoading={memberAdmin.tiersLoading}
 				onCheckIn={handleCheckIn}
 				onConfirmPayment={handleConfirmPayment}
-				onMakeMember={openMakeMemberModal}
+				onMakeMember={memberAdmin.openMakeMemberModal}
 				onCancelTicket={handleCancelTicket}
-				onBlacklist={openBlacklistDialog}
+				onBlacklist={memberAdmin.openBlacklistDialog}
 				onUnconfirmPayment={openUnconfirmPaymentDialog}
 			/>
 
@@ -699,14 +530,14 @@
 				checkInPending={checkInTicketMutation.isPending}
 				confirmPaymentPending={confirmPaymentMutation.isPending}
 				cancelTicketPending={cancelTicketMutation.isPending}
-				addMemberPending={addMemberMutation.isPending}
+				addMemberPending={memberAdmin.addMemberPending}
 				unconfirmPaymentPending={unconfirmPaymentMutation.isPending}
-				{tiersLoading}
+				tiersLoading={memberAdmin.tiersLoading}
 				onCheckIn={handleCheckIn}
 				onConfirmPayment={handleConfirmPayment}
-				onMakeMember={openMakeMemberModal}
+				onMakeMember={memberAdmin.openMakeMemberModal}
 				onCancelTicket={handleCancelTicket}
-				onBlacklist={openBlacklistDialog}
+				onBlacklist={memberAdmin.openBlacklistDialog}
 				onUnconfirmPayment={openUnconfirmPaymentDialog}
 			/>
 		{/if}
@@ -745,130 +576,14 @@
 </div>
 
 <!-- Confirm Payment Dialog -->
-{#if showConfirmPaymentDialog && ticketToConfirm}
-	{@const pwyc = isPwycTicket(ticketToConfirm)}
-	{@const pwycWarning = pwyc ? getPwycWarning(ticketToConfirm, pwycPricePaid) : null}
-	{@const pwycValid = !pwyc || (pwycPricePaid !== '' && parseFloat(pwycPricePaid) > 0)}
-	<div
-		role="presentation"
-		onclick={(e) => {
-			if (e.target === e.currentTarget) {
-				showConfirmPaymentDialog = false;
-				ticketToConfirm = null;
-				pwycPricePaid = '';
-			}
-		}}
-		onkeydown={(e) => {
-			if (e.key === 'Escape') {
-				showConfirmPaymentDialog = false;
-				ticketToConfirm = null;
-				pwycPricePaid = '';
-			}
-		}}
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-		transition:fade={{ duration: 150 }}
-	>
-		<div
-			role="dialog"
-			aria-modal="true"
-			aria-labelledby="confirm-payment-dialog-title"
-			class="relative mx-4 w-full max-w-lg rounded-lg border bg-card p-6 shadow-lg"
-			transition:scale={{ duration: 150, start: 0.95 }}
-		>
-			<!-- Close button -->
-			<button
-				type="button"
-				onclick={() => {
-					showConfirmPaymentDialog = false;
-					ticketToConfirm = null;
-					pwycPricePaid = '';
-				}}
-				aria-label={m['eventTicketsAdmin.closeDialog']()}
-				class="absolute right-4 top-4 rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-			>
-				<X class="h-4 w-4" aria-hidden="true" />
-			</button>
-
-			<!-- Icon + Title -->
-			<div class="flex items-start gap-4">
-				<div
-					class="shrink-0 rounded-full bg-blue-100 p-3 text-blue-600 dark:bg-blue-950 dark:text-blue-400"
-					aria-hidden="true"
-				>
-					<AlertTriangle class="h-6 w-6" />
-				</div>
-				<div class="flex-1 pt-1">
-					<h2 id="confirm-payment-dialog-title" class="text-lg font-semibold text-foreground">
-						{m['eventTicketsAdmin.confirmPaymentTitle']()}
-					</h2>
-				</div>
-			</div>
-
-			<!-- Message -->
-			<div class="mt-4 text-sm text-muted-foreground">
-				{ticketToConfirm.status === 'cancelled'
-					? m['eventTicketsAdmin.confirmPaymentMessageReactivate']()
-					: m['eventTicketsAdmin.confirmPaymentMessageActivate']()}
-			</div>
-
-			<!-- PWYC Price Input -->
-			{#if pwyc}
-				<div class="mt-4 space-y-2">
-					<label for="pwyc-price-input" class="block text-sm font-medium text-foreground">
-						{m['eventTicketsAdmin.amountPaidLabel']({
-							currency: ticketToConfirm.tier?.currency?.toUpperCase() || 'EUR'
-						})}
-					</label>
-					<Input
-						id="pwyc-price-input"
-						type="text"
-						inputmode="decimal"
-						value={pwycPricePaid}
-						oninput={(e) => {
-							pwycPricePaid = (e.currentTarget as HTMLInputElement).value
-								.replace(/,/g, '.')
-								.replace(/[^\d.]/g, '');
-						}}
-						placeholder={ticketToConfirm.tier?.pwyc_min || '0.00'}
-						aria-describedby={pwycWarning ? 'pwyc-warning' : undefined}
-					/>
-					{#if pwycWarning}
-						<p id="pwyc-warning" class="text-sm text-orange-600 dark:text-orange-400">
-							{pwycWarning}
-						</p>
-					{/if}
-				</div>
-			{/if}
-
-			<!-- Actions -->
-			<div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-				<button
-					type="button"
-					onclick={() => {
-						showConfirmPaymentDialog = false;
-						ticketToConfirm = null;
-						pwycPricePaid = '';
-					}}
-					class="rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				>
-					{m['eventTicketsAdmin.confirmPaymentCancel']()}
-				</button>
-				<button
-					type="button"
-					onclick={submitConfirmPayment}
-					disabled={confirmPaymentMutation.isPending || !pwycValid}
-					class="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
-				>
-					{#if confirmPaymentMutation.isPending}
-						{m['eventTicketsAdmin.confirmingPayment']()}
-					{:else}
-						{m['eventTicketsAdmin.confirmPaymentButton']()}
-					{/if}
-				</button>
-			</div>
-		</div>
-	</div>
-{/if}
+<ConfirmPaymentDialog
+	isOpen={showConfirmPaymentDialog}
+	ticket={ticketToConfirm}
+	bind:pwycPricePaid
+	isPending={confirmPaymentMutation.isPending}
+	onConfirm={submitConfirmPayment}
+	onClose={closeConfirmPaymentDialog}
+/>
 
 <!-- Cancel Confirmation Dialog -->
 <ConfirmDialog
@@ -907,30 +622,30 @@
 
 <!-- Make Member Modal -->
 <MakeMemberModal
-	user={userToMakeMember}
-	tiers={membershipTiers}
-	open={showMakeMemberModal}
+	user={memberAdmin.userToMakeMember}
+	tiers={memberAdmin.membershipTiers}
+	open={memberAdmin.showMakeMemberModal}
 	onClose={() => {
-		showMakeMemberModal = false;
-		userToMakeMember = null;
+		memberAdmin.showMakeMemberModal = false;
+		memberAdmin.userToMakeMember = null;
 	}}
-	onConfirm={handleMakeMemberConfirm}
-	isProcessing={addMemberMutation.isPending}
+	onConfirm={memberAdmin.handleMakeMemberConfirm}
+	isProcessing={memberAdmin.addMemberPending}
 />
 
 <!-- Blacklist Confirmation Dialog -->
 <ConfirmDialog
-	isOpen={showBlacklistDialog}
+	isOpen={memberAdmin.showBlacklistDialog}
 	title={m['eventTicketsAdmin.blacklistDialogTitle']()}
-	message={ticketToBlacklist
+	message={memberAdmin.ticketToBlacklist
 		? m['eventTicketsAdmin.blacklistDialogMessage']({
-				name: getUserDisplayName(ticketToBlacklist.user)
+				name: getUserDisplayName(memberAdmin.ticketToBlacklist.user)
 			})
 		: ''}
 	confirmText={m['eventTicketsAdmin.blacklistDialogConfirm']()}
 	cancelText={m['eventTicketsAdmin.blacklistDialogCancel']()}
-	onConfirm={confirmBlacklist}
-	onCancel={cancelBlacklist}
+	onConfirm={memberAdmin.confirmBlacklist}
+	onCancel={memberAdmin.cancelBlacklist}
 	variant="danger"
 />
 
