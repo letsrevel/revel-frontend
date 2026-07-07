@@ -542,6 +542,7 @@
 			accept={question.allowed_mime_types?.join(',') || '*/*'}
 			maxSize={question.max_file_size || 10 * 1024 * 1024}
 			maxFiles={question.max_files || 1}
+			required={question.is_mandatory}
 			error={validationErrors.get(question.id)}
 			onFilesChange={(files) => handleFileUploadChange(question.id, files)}
 		/>

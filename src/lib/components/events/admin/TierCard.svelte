@@ -10,7 +10,6 @@
 	interface Props {
 		tier: TicketTierDetailSchema;
 		onEdit: () => void;
-		onDelete?: () => void; // Phase 2: Add delete functionality
 		onMoveUp?: () => void;
 		onMoveDown?: () => void;
 	}

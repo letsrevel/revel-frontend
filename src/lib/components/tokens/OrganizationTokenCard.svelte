@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { OrganizationTokenSchema } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
-	import { Copy, Edit, Trash2, Users, Shield } from '@lucide/svelte';
+	import { Copy, Edit, Trash2, Users, Shield, Share2 } from '@lucide/svelte';
 	import TokenStatusBadge from './TokenStatusBadge.svelte';
 	import {
 		getOrganizationTokenStatus,
@@ -18,9 +18,10 @@
 		isOwner?: boolean;
 		onEdit: (token: OrganizationTokenSchema) => void;
 		onDelete: (token: OrganizationTokenSchema) => void;
+		onShare?: (token: OrganizationTokenSchema) => void;
 	}
 
-	const { token, organizationSlug, isOwner = true, onEdit, onDelete }: Props = $props();
+	const { token, organizationSlug, isOwner = true, onEdit, onDelete, onShare }: Props = $props();
 
 	const canEditOrDelete = $derived(isOwner || !token.grants_staff_status);
 
@@ -99,6 +100,17 @@
 			>
 				<Copy class="h-4 w-4" aria-hidden="true" />
 			</Button>
+			{#if onShare}
+				<Button
+					variant="ghost"
+					size="sm"
+					onclick={() => onShare(token)}
+					aria-label={m['organizationTokenCard.shareTokenLabel']()}
+					title={m['organizationTokenCard.shareTitle']()}
+				>
+					<Share2 class="h-4 w-4" aria-hidden="true" />
+				</Button>
+			{/if}
 			{#if canEditOrDelete}
 				<Button
 					variant="ghost"

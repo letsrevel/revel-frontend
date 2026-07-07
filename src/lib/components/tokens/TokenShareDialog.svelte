@@ -52,7 +52,12 @@
 	const supportsNativeShare = $derived(typeof navigator !== 'undefined' && !!navigator.share);
 </script>
 
-<Dialog bind:open>
+<Dialog
+	{open}
+	onOpenChange={(isOpen) => {
+		if (!isOpen) onClose();
+	}}
+>
 	<DialogContent class="sm:max-w-md">
 		<DialogHeader>
 			<DialogTitle>{m['tokenShareDialog.shareLink']()}</DialogTitle>

@@ -44,7 +44,7 @@
 <div class="calendar-view" role="region" aria-label={m['calendar.label']()}>
 	{#if view === 'month'}
 		<!-- Month View -->
-		<div class="calendar-grid">
+		<div class="calendar-grid" role="grid" aria-label={m['calendar.label']()}>
 			<!-- Weekday headers -->
 			<div class="calendar-header" role="row">
 				{#each weekdayLabels as label, index (index)}
@@ -56,7 +56,7 @@
 			</div>
 
 			<!-- Calendar days -->
-			<div class="calendar-body">
+			<div class="calendar-body" role="rowgroup">
 				{#each calendarGrid as weekRow, weekIndex (weekIndex)}
 					<div class="calendar-week" role="row">
 						{#each weekRow as day (day.getTime())}

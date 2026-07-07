@@ -278,7 +278,6 @@
 						{eventName}
 						{eventTokenDetails}
 						questionnaireIds={eligibility.questionnaires_missing}
-						retryOn={eligibility.retry_on}
 						{onInvitationRequestSuccess}
 						{onWhitelistRequestSuccess}
 						{onGetTicketsClick}

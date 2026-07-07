@@ -25,6 +25,32 @@
 	const maxVisibleEvents = 3;
 	const visibleEvents = $derived(dayEvents.slice(0, maxVisibleEvents));
 	const hiddenCount = $derived(Math.max(0, dayEvents.length - maxVisibleEvents));
+
+	// Whole-cell click-through. This is only unambiguous when the day has exactly
+	// one event: activating the cell opens that event (via the same onEventClick
+	// path the individual badges use, which the parent wires to the EventModal).
+	// Days with 0 or 2+ events keep their per-badge buttons instead.
+	//
+	// The wrapper always stays a `<div role="gridcell">` so every cell in the
+	// calendar row exposes the same ARIA structure. When the cell is clickable,
+	// an absolutely-positioned `<button>` overlays the whole cell and owns the
+	// click/focus/aria-label — it sits on top of the (pointer-events-none)
+	// static event badge so the badge text stays visible while the button
+	// captures the interaction.
+	const singleEvent = $derived(dayEvents.length === 1 ? dayEvents[0] : null);
+	const isCellClickable = $derived(singleEvent !== null && onEventClick !== undefined);
+
+	const cellLabel = $derived(
+		singleEvent
+			? `${formatCalendarDate(date, 'long')}, ${singleEvent.name}`
+			: `${formatCalendarDate(date, 'long')}, ${m['calendar.events_count']({ count: dayEvents.length })}`
+	);
+
+	function handleCellClick(): void {
+		if (singleEvent) {
+			onEventClick?.(singleEvent);
+		}
+	}
 </script>
 
 <div
@@ -32,47 +58,81 @@
 	class:calendar-day--current-month={isCurrentMonth}
 	class:calendar-day--other-month={!isCurrentMonth}
 	class:calendar-day--today={isToday}
-	class:calendar-day--has-events={dayEvents.length > 0}
+	class:calendar-day--clickable={isCellClickable}
 	role="gridcell"
-	aria-label="{formatCalendarDate(date, 'long')}, {dayEvents.length} {m['calendar.events']()}"
+	aria-label={isCellClickable ? undefined : cellLabel}
 >
-	<div class="calendar-day-header">
+	{#if isCellClickable}
+		<button
+			type="button"
+			class="calendar-day-overlay"
+			aria-label={cellLabel}
+			onclick={handleCellClick}
+		></button>
+	{/if}
+	<span class="calendar-day-header">
 		<span class="calendar-day-number">{formatCalendarDate(date, 'short')}</span>
 		{#if isLoading}
 			<Loader2 class="h-3 w-3 animate-spin text-muted-foreground" aria-hidden="true" />
 		{/if}
-	</div>
+	</span>
 
 	{#if dayEvents.length > 0}
-		<div class="calendar-day-events">
-			{#each visibleEvents as event (event.id)}
-				<button
-					type="button"
-					class="calendar-event-badge"
-					onclick={() => {
-						onEventClick?.(event);
-					}}
-					aria-label={event.name}
-				>
+		<span class="calendar-day-events">
+			{#if isCellClickable && singleEvent}
+				<!-- Single event: rendered as a static badge; the whole cell is the button. -->
+				<span class="calendar-event-badge calendar-event-badge--static">
 					<span class="calendar-event-dot" aria-hidden="true"></span>
-					<span class="calendar-event-name">{event.name}</span>
-				</button>
-			{/each}
-
-			{#if hiddenCount > 0}
-				<span class="calendar-more-events" aria-label="{hiddenCount} {m['calendar.more_events']()}">
-					+{hiddenCount}
-					{m['calendar.more']()}
+					<span class="calendar-event-name">{singleEvent.name}</span>
 				</span>
+			{:else}
+				{#each visibleEvents as event (event.id)}
+					<button
+						type="button"
+						class="calendar-event-badge"
+						onclick={() => {
+							onEventClick?.(event);
+						}}
+						aria-label={event.name}
+					>
+						<span class="calendar-event-dot" aria-hidden="true"></span>
+						<span class="calendar-event-name">{event.name}</span>
+					</button>
+				{/each}
+
+				{#if hiddenCount > 0}
+					<span
+						class="calendar-more-events"
+						aria-label="{hiddenCount} {m['calendar.more_events']()}"
+					>
+						+{hiddenCount}
+						{m['calendar.more']()}
+					</span>
+				{/if}
 			{/if}
-		</div>
+		</span>
 	{/if}
 </div>
 
 <style>
 	.calendar-day {
-		@apply relative min-h-20 w-full border-r border-border p-2 text-left transition-colors last:border-r-0 hover:bg-accent focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+		@apply relative block min-h-20 w-full border-r border-border p-2 text-left transition-colors last:border-r-0 hover:bg-accent;
 		@apply md:min-h-24 md:p-3;
+	}
+
+	/* Visual affordance only — the actual interaction lives on .calendar-day-overlay. */
+	.calendar-day--clickable {
+		@apply cursor-pointer;
+	}
+
+	/* Absolutely-positioned button covering a clickable cell. It owns the click
+	   handler, the accessible name, and keyboard focus, while the wrapper stays a
+	   plain `role="gridcell"` div so the row's ARIA structure is uniform across
+	   cells. Transparent so the day number and static event badge remain visible
+	   underneath — it sits above them in the stacking order (positioned content
+	   paints after static content), so it still captures the click. */
+	.calendar-day-overlay {
+		@apply absolute inset-0 z-10 cursor-pointer appearance-none bg-transparent p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
 	}
 
 	.calendar-day--current-month {
@@ -85,10 +145,6 @@
 
 	.calendar-day--today {
 		@apply bg-primary/5;
-	}
-
-	.calendar-day--has-events {
-		@apply cursor-pointer;
 	}
 
 	.calendar-day-header {
@@ -109,6 +165,11 @@
 
 	.calendar-event-badge {
 		@apply flex w-full items-center gap-1 overflow-hidden rounded px-1 py-0.5 text-left text-xs transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring;
+	}
+
+	/* Static badge inside a clickable cell: the cell owns the interaction. */
+	.calendar-event-badge--static {
+		@apply pointer-events-none;
 	}
 
 	.calendar-event-dot {

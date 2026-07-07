@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { initializeFromApiData } from './questionnaire-api-converters';
+import { initializeFromApiData, convertApiOption } from './questionnaire-api-converters';
 
 // Regression guard for the "poll created without questions" bug.
 //
@@ -120,5 +120,28 @@ describe('initializeFromApiData — collection naming', () => {
 		// The converter normalizes a shallow copy; the reactive source must be
 		// left untouched (no run-together keys grafted onto it).
 		expect('multiplechoicequestion_questions' in q).toBe(false);
+	});
+});
+
+// Regression guard for option-identity churn across save → invalidateAll → reload.
+//
+// convertApiOption used to always mint a fresh crypto.randomUUID() for the
+// local `id`, discarding the server-assigned `id`. That churned the option's
+// identity on every reload, defeating keyed `{#each}` reconciliation in the
+// editor (see QuestionEditor.svelte's options list).
+describe('convertApiOption — id reuse', () => {
+	it('reuses the server-provided id instead of minting a new one', () => {
+		const option = convertApiOption({ id: 'opt-server-1', option: 'Yes', is_correct: true });
+
+		expect(option.id).toBe('opt-server-1');
+		expect(option._apiId).toBe('opt-server-1');
+	});
+
+	it('falls back to a generated id when the API option has none', () => {
+		const option = convertApiOption({ option: 'Yes', is_correct: false });
+
+		expect(option.id).toEqual(expect.any(String));
+		expect(option.id.length).toBeGreaterThan(0);
+		expect(option._apiId).toBeUndefined();
 	});
 });

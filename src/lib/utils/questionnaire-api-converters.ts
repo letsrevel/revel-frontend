@@ -150,7 +150,7 @@ function parseTimedeltaToDays(value: unknown): number | null {
 /** Convert an API option to local format. */
 export function convertApiOption(apiOption: ApiOptionInput): QuestionnaireOption {
 	return {
-		id: crypto.randomUUID(),
+		id: apiOption.id ?? crypto.randomUUID(),
 		text: apiOption.option || '',
 		isCorrect: apiOption.is_correct || false,
 		conditionalQuestions: [],

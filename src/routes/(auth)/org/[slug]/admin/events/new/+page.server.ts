@@ -1,11 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import type { CitySchema } from '$lib/api/generated/types.gen';
-import {
-	userpreferencesGetGeneralPreferences,
-	dashboardDashboardEventSeries,
-	questionnaireListOrgQuestionnaires
-} from '$lib/api';
+import { userpreferencesGetGeneralPreferences, dashboardDashboardEventSeries } from '$lib/api';
 import { log } from '$lib/server/logger';
 
 export const load: PageServerLoad = async ({ parent, locals, fetch, url }) => {
@@ -50,33 +46,6 @@ export const load: PageServerLoad = async ({ parent, locals, fetch, url }) => {
 		log.debug('event_series_load_failed', { error: err });
 	}
 
-	// Load organization's questionnaires for dropdown
-	const questionnaires = [];
-	try {
-		const questionnairesResponse = await questionnaireListOrgQuestionnaires({
-			query: {
-				organization_id: organization.id
-			},
-			fetch,
-			headers
-		});
-		// API returns paginated response with results array
-		if (questionnairesResponse.data && 'results' in questionnairesResponse.data) {
-			// Filter to only show questionnaires for this organization
-			const orgQuestionnaires = questionnairesResponse.data.results.filter((q) => {
-				if (typeof q === 'object' && q !== null && 'organization' in q) {
-					const org = q.organization as { id?: string } | null | undefined;
-					return org?.id === organization.id;
-				}
-				return false;
-			});
-			questionnaires.push(...orgQuestionnaires);
-		}
-	} catch (err) {
-		// No questionnaires yet or error - that's ok
-		log.debug('questionnaires_load_failed', { error: err });
-	}
-
 	// Prefill hooks. Driven by `?start=<ISO>&event_series_id=<UUID>` query
 	// params (e.g. from the ExdatesChipList "Create one-off event for this
 	// date" chip action on the recurring-series dashboard). The EventEditor
@@ -89,7 +58,6 @@ export const load: PageServerLoad = async ({ parent, locals, fetch, url }) => {
 		userCity,
 		orgCity: organization.city || null,
 		eventSeries,
-		questionnaires,
 		initialStart,
 		initialEventSeriesId
 	};

@@ -966,18 +966,6 @@
 							</div>
 						</div>
 					{/each}
-
-					{#if organizations.length > 3}
-						<!-- eslint-disable svelte/no-navigation-without-resolve -- target route is not implemented yet (pre-existing link); cannot map to a route id -->
-						<a
-							href="/dashboard/organizations"
-							class="flex items-center justify-center gap-1 rounded-lg border bg-background px-4 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
-						>
-							<span>{m['dashboard.seeAllOrganizations']({ count: organizations.length })}</span>
-							<ChevronRight class="h-4 w-4" aria-hidden="true" />
-						</a>
-						<!-- eslint-enable svelte/no-navigation-without-resolve -->
-					{/if}
 				</div>
 			{/if}
 		</section>

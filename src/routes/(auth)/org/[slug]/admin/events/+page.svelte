@@ -501,6 +501,7 @@
 		bind:open={showDuplicateModal}
 		eventId={duplicateEventData.id}
 		eventName={duplicateEventData.name}
+		eventStart={duplicateEventData.start}
 		organizationSlug={organization.slug}
 		onClose={closeDuplicateModal}
 	/>

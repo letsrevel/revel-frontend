@@ -388,7 +388,6 @@
 			userCity={data.userCity}
 			orgCity={data.orgCity}
 			eventSeries={data.eventSeries}
-			questionnaires={data.questionnaires}
 			initialTab={($page.url.searchParams.get('tab') as 'details' | 'ticketing') ?? undefined}
 		/>
 	</div>
@@ -399,6 +398,7 @@
 	bind:open={showDuplicateModal}
 	eventId={event.id}
 	eventName={event.name}
+	eventStart={event.start}
 	organizationSlug={organization.slug}
 	onClose={closeDuplicateModal}
 />

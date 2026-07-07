@@ -466,7 +466,7 @@
 								<p class="text-xs text-muted-foreground">{m['questionEditor.checkBoxes']()}</p>
 							</div>
 							<div class="space-y-3">
-								{#each question.options || [] as option, index (index)}
+								{#each question.options || [] as option, index (option.id)}
 									<OptionEditor
 										{option}
 										{index}

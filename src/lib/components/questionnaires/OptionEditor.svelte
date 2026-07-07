@@ -27,6 +27,10 @@
 	}
 
 	interface Option {
+		// `id` is not read on the `option` prop itself, but it cannot be dropped:
+		// this same interface types `Question.options`, and those questions flow
+		// into nested <QuestionEditor question={...}>, whose own Option interface
+		// requires `id` (each-key). Removing it fails svelte-check (#541).
 		id: string;
 		text: string;
 		isCorrect: boolean;

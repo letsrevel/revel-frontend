@@ -12,7 +12,6 @@
 	interface Props {
 		tokenId: string;
 		tokenDetails?: EventTokenSchema | null;
-		eventName?: string;
 		class?: string;
 		onSuccess?: () => void;
 	}
@@ -98,7 +97,6 @@
   <ClaimInvitationButton
     tokenId={tokenId}
     tokenDetails={eventTokenDetails}
-    eventName={event.name}
   />
 -->
 {#if grantsInvitation}

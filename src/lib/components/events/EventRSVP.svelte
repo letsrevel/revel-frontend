@@ -401,7 +401,6 @@
 				eligibility={eligibilityStatus}
 				{eventId}
 				eventSlug={event.slug}
-				{eventName}
 				organizationSlug={event.organization.slug}
 				organizationName={event.organization.name}
 				{eventTokenDetails}
