@@ -291,27 +291,6 @@ export function getEventsForDay<T extends { start: string }>(events: T[], date: 
 }
 
 /**
- * Group events by date
- */
-export function groupEventsByDate<T extends { start: string }>(events: T[]): Map<string, T[]> {
-	const grouped = new Map<string, T[]>();
-
-	for (const event of events) {
-		const date = new Date(event.start);
-		const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-
-		let dayEvents = grouped.get(key);
-		if (!dayEvents) {
-			dayEvents = [];
-			grouped.set(key, dayEvents);
-		}
-		dayEvents.push(event);
-	}
-
-	return grouped;
-}
-
-/**
  * Parse calendar params from URL search params
  */
 export function parseCalendarParams(searchParams: URLSearchParams): {
