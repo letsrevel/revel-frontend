@@ -2,12 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { DurationInput } from '$lib/components/forms';
 	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
-	import { Textarea } from '$lib/components/ui/textarea';
-	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
 	import {
 		Card,
 		CardContent,
@@ -18,7 +13,8 @@
 	import { Plus, ArrowLeft, FolderPlus, Upload } from '@lucide/svelte';
 	import QuestionEditor from '$lib/components/questionnaires/QuestionEditor.svelte';
 	import SectionEditor from '$lib/components/questionnaires/SectionEditor.svelte';
-	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
+	import QuestionnaireCreateBasicInfo from '$lib/components/questionnaires/QuestionnaireCreateBasicInfo.svelte';
+	import QuestionnaireCreateAdvancedSettings from '$lib/components/questionnaires/QuestionnaireCreateAdvancedSettings.svelte';
 	import { questionnaireCreateOrgQuestionnaire } from '$lib/api/generated/sdk.gen';
 	import type {
 		SectionCreateSchema,
@@ -87,58 +83,6 @@
 
 	// Saving state
 	let isSaving = $state(false);
-
-	// Questionnaire type labels and descriptions
-	const questionnaireTypes = {
-		admission: {
-			label: m['questionnaireNewPage.typeAdmissionLabel'](),
-			description: m['questionnaireNewPage.typeAdmissionTriggerDescription']()
-		},
-		membership: {
-			label: m['questionnaireNewPage.typeMembershipLabel'](),
-			description: m['questionnaireNewPage.typeMembershipTriggerDescription']()
-		},
-		feedback: {
-			label: m['questionnaireNewPage.typeFeedbackLabel'](),
-			description: m['questionnaireNewPage.typeFeedbackDescription']()
-		},
-		generic: {
-			label: m['questionnaireNewPage.typeGenericLabel'](),
-			description: m['questionnaireNewPage.typeGenericDescription']()
-		}
-	};
-
-	// Get display label for current type
-	const selectedTypeLabel = $derived(
-		questionnaireTypes[questionnaireType]?.label ?? m['questionnaireNewPage.typeGenericLabel']()
-	);
-
-	// Get current description safely
-	const selectedTypeDescription = $derived(
-		questionnaireTypes[questionnaireType]?.description ??
-			m['questionnaireNewPage.typeGenericDescription']()
-	);
-
-	// Evaluation mode descriptions
-	const evaluationModes = {
-		automatic: {
-			label: m['questionnaireNewPage.evalAutomaticLabel'](),
-			description: m['questionnaireNewPage.evalAutomaticTriggerDescription']()
-		},
-		manual: {
-			label: m['questionnaireNewPage.evalManualLabel'](),
-			description: m['questionnaireNewPage.evalManualTriggerDescription']()
-		},
-		hybrid: {
-			label: m['questionnaireNewPage.evalHybridLabel'](),
-			description: m['questionnaireNewPage.evalHybridTriggerDescription']()
-		}
-	};
-
-	const selectedEvaluationDescription = $derived(
-		evaluationModes[evaluationMode]?.description ??
-			m['questionnaireNewPage.evalAutomaticTriggerDescription']()
-	);
 
 	// Validate form
 	function validate(): boolean {
@@ -278,378 +222,32 @@
 <!-- Form -->
 <div class="mx-auto max-w-4xl space-y-6">
 	<!-- Basic Information -->
-	<Card>
-		<CardHeader>
-			<CardTitle>{m['questionnaireNewPage.basicInfoTitle']()}</CardTitle>
-			<CardDescription>{m['questionnaireNewPage.basicInfoDescription']()}</CardDescription>
-		</CardHeader>
-		<CardContent class="space-y-4">
-			<!-- Name -->
-			<div class="space-y-2">
-				<Label for="name">
-					{m['questionnaireNewPage.nameLabel']()}
-					<span class="text-destructive">*</span>
-				</Label>
-				<Input
-					id="name"
-					bind:value={name}
-					placeholder={m['questionnaireNewPage.namePlaceholder']()}
-					class={errors.name ? 'border-destructive' : ''}
-				/>
-				{#if errors.name}
-					<p class="text-sm text-destructive">{errors.name}</p>
-				{/if}
-			</div>
-
-			<!-- Description (markdown) -->
-			<MarkdownEditor
-				id="questionnaire-description"
-				label={m['questionnaireNewPage.descriptionLabel']()}
-				bind:value={description}
-				placeholder={m['questionnaireNewPage.descriptionPlaceholder']()}
-				rows={3}
-			/>
-
-			<!-- Type -->
-			<div class="space-y-2">
-				<Label for="type">
-					{m['questionnaireNewPage.typeFieldLabel']()}
-					<span class="text-destructive">*</span>
-				</Label>
-				<Select
-					type="single"
-					value={questionnaireType}
-					onValueChange={(v) => {
-						// Allow admission and feedback types
-						if (v === 'admission' || v === 'feedback') {
-							questionnaireType = v;
-						}
-					}}
-				>
-					<SelectTrigger id="type">
-						{selectedTypeLabel}
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="admission" label={m['questionnaireNewPage.typeAdmissionLabel']()}>
-							<div class="flex flex-col gap-0.5">
-								<div class="font-medium">{m['questionnaireNewPage.typeAdmissionLabel']()}</div>
-								<div class="text-xs text-muted-foreground">
-									{m['questionnaireNewPage.typeAdmissionDescription']()}
-								</div>
-							</div>
-						</SelectItem>
-						<SelectItem value="feedback" label={m['questionnaireNewPage.typeFeedbackLabel']()}>
-							<div class="flex flex-col gap-0.5">
-								<div class="font-medium">{m['questionnaireNewPage.typeFeedbackLabel']()}</div>
-								<div class="text-xs text-muted-foreground">
-									{m['questionnaireNewPage.typeFeedbackDescription']()}
-								</div>
-							</div>
-						</SelectItem>
-						<SelectItem
-							value="membership"
-							label={m['questionnaireNewPage.typeMembershipLabel']()}
-							disabled
-						>
-							<div class="flex flex-col gap-0.5">
-								<div class="flex items-center gap-2 font-medium">
-									{m['questionnaireNewPage.typeMembershipLabel']()}
-									<span
-										class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
-										>{m['questionnaireNewPage.comingSoon']()}</span
-									>
-								</div>
-								<div class="text-xs text-muted-foreground">
-									{m['questionnaireNewPage.typeMembershipDescription']()}
-								</div>
-							</div>
-						</SelectItem>
-						<SelectItem
-							value="generic"
-							label={m['questionnaireNewPage.typeGenericLabel']()}
-							disabled
-						>
-							<div class="flex flex-col gap-0.5">
-								<div class="flex items-center gap-2 font-medium">
-									{m['questionnaireNewPage.typeGenericLabel']()}
-									<span
-										class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
-										>{m['questionnaireNewPage.comingSoon']()}</span
-									>
-								</div>
-								<div class="text-xs text-muted-foreground">
-									{m['questionnaireNewPage.typeGenericDescription']()}
-								</div>
-							</div>
-						</SelectItem>
-					</SelectContent>
-				</Select>
-				<p class="text-xs text-muted-foreground">
-					{selectedTypeDescription}
-				</p>
-			</div>
-
-			<!-- Requires Evaluation -->
-			<div class="space-y-2">
-				<div class="flex items-center space-x-2">
-					<input
-						id="requires-evaluation"
-						type="checkbox"
-						bind:checked={requiresEvaluation}
-						class="h-4 w-4 rounded border-gray-300"
-						disabled={questionnaireType === 'feedback'}
-					/>
-					<Label for="requires-evaluation" class="font-normal"
-						>{m['questionnaireEditPage.evaluation.requiresEvaluationLabel']()}</Label
-					>
-				</div>
-				{#if questionnaireType === 'feedback'}
-					<p class="text-xs italic text-muted-foreground">
-						{m['questionnaireEditPage.evaluation.feedbackNoEvaluation']()}
-					</p>
-				{:else}
-					<p class="text-xs text-muted-foreground">
-						{m['questionnaireEditPage.evaluation.requiresEvaluationDescription']()}
-					</p>
-				{/if}
-			</div>
-
-			{#if effectiveRequiresEvaluation}
-				<!-- Minimum Score -->
-				<div class="space-y-2">
-					<Label for="min-score">
-						{m['questionnaireNewPage.minScorePctLabel']()}
-						<span class="text-destructive">*</span>
-					</Label>
-					<Input
-						id="min-score"
-						type="number"
-						bind:value={minScore}
-						min="0"
-						max="100"
-						step="1"
-						placeholder="0"
-					/>
-					<p class="text-xs text-muted-foreground">
-						{m['questionnaireNewPage.minScorePctDescription']()}
-					</p>
-				</div>
-
-				<!-- Evaluation Mode -->
-				<div class="space-y-2">
-					<Label for="evaluation-mode">
-						{m['questionnaireNewPage.evaluationModeLabel']()}
-						<span class="text-destructive">*</span>
-					</Label>
-					<Select
-						type="single"
-						value={evaluationMode}
-						onValueChange={(v) => {
-							if (v) {
-								evaluationMode = v as typeof evaluationMode;
-							}
-						}}
-					>
-						<SelectTrigger id="evaluation-mode">
-							{evaluationModes[evaluationMode]?.label ??
-								m['questionnaireNewPage.evalManualLabel']()}
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="manual" label={m['questionnaireNewPage.evalManualLabel']()}>
-								<div class="flex flex-col gap-0.5">
-									<div class="font-medium">{m['questionnaireNewPage.evalManualLabel']()}</div>
-									<div class="text-xs text-muted-foreground">
-										{m['questionnaireNewPage.evalManualDescription']()}
-									</div>
-								</div>
-							</SelectItem>
-							<SelectItem
-								value="hybrid"
-								label={m['questionnaireNewPage.evalHybridLabel']()}
-								disabled
-							>
-								<div class="flex flex-col gap-0.5">
-									<div class="flex items-center gap-2 font-medium">
-										{m['questionnaireNewPage.evalHybridLabel']()}
-										<span
-											class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
-											>{m['questionnaireNewPage.comingSoon']()}</span
-										>
-									</div>
-									<div class="text-xs text-muted-foreground">
-										{m['questionnaireNewPage.evalHybridDescription']()}
-									</div>
-								</div>
-							</SelectItem>
-							<SelectItem
-								value="automatic"
-								label={m['questionnaireNewPage.evalAutomaticLabel']()}
-								disabled
-							>
-								<div class="flex flex-col gap-0.5">
-									<div class="flex items-center gap-2 font-medium">
-										{m['questionnaireNewPage.evalAutomaticLabel']()}
-										<span
-											class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
-											>{m['questionnaireNewPage.comingSoon']()}</span
-										>
-									</div>
-									<div class="text-xs text-muted-foreground">
-										{m['questionnaireNewPage.evalAutomaticDescription']()}
-									</div>
-								</div>
-							</SelectItem>
-						</SelectContent>
-					</Select>
-					<p class="text-xs text-muted-foreground">
-						{selectedEvaluationDescription}
-					</p>
-				</div>
-			{/if}
-		</CardContent>
-	</Card>
+	<QuestionnaireCreateBasicInfo
+		bind:name
+		bind:description
+		bind:questionnaireType
+		bind:requiresEvaluation
+		{effectiveRequiresEvaluation}
+		bind:minScore
+		bind:evaluationMode
+		nameError={errors.name}
+	/>
 
 	<!-- Advanced Settings -->
-	<Card>
-		<CardHeader>
-			<CardTitle>{m['questionnaireNewPage.advancedSettingsTitle']()}</CardTitle>
-			<CardDescription>{m['questionnaireNewPage.advancedSettingsDescription']()}</CardDescription>
-		</CardHeader>
-		<CardContent class="space-y-4">
-			<!-- Shuffle Options -->
-			<div class="space-y-3">
-				<div class="flex items-center space-x-2">
-					<input
-						id="shuffle-questions"
-						type="checkbox"
-						bind:checked={shuffleQuestions}
-						class="h-4 w-4 rounded border-gray-300"
-					/>
-					<Label for="shuffle-questions" class="font-normal"
-						>{m['questionnaireNewPage.shuffleQuestionsLabel']()}</Label
-					>
-				</div>
-				<div class="flex items-center space-x-2">
-					<input
-						id="shuffle-sections"
-						type="checkbox"
-						bind:checked={shuffleSections}
-						class="h-4 w-4 rounded border-gray-300"
-					/>
-					<Label for="shuffle-sections" class="font-normal"
-						>{m['questionnaireNewPage.shuffleSectionsLabel']()}</Label
-					>
-				</div>
-			</div>
-
-			<!-- Members Exempt -->
-			<div class="space-y-2">
-				<div class="flex items-center space-x-2">
-					<input
-						id="members-exempt"
-						type="checkbox"
-						bind:checked={membersExempt}
-						class="h-4 w-4 rounded border-gray-300"
-					/>
-					<Label for="members-exempt" class="font-normal"
-						>{m['questionnaireNewPage.membersExemptLabel']()}</Label
-					>
-				</div>
-				<p class="text-xs text-muted-foreground">
-					{m['questionnaireNewPage.membersExemptDescription']()}
-				</p>
-			</div>
-
-			<!-- Per-Event Completion (only for admission type) -->
-			{#if questionnaireType === 'admission'}
-				<div class="space-y-2">
-					<div class="flex items-center space-x-2">
-						<input
-							id="per-event"
-							type="checkbox"
-							bind:checked={perEvent}
-							class="h-4 w-4 rounded border-gray-300"
-						/>
-						<Label for="per-event" class="font-normal"
-							>{m['questionnaireNewPage.perEventLabel']()}</Label
-						>
-					</div>
-					<p class="text-xs text-muted-foreground">
-						{m['questionnaireNewPage.perEventDescription']()}
-					</p>
-				</div>
-			{/if}
-
-			{#if showLlmGuidelines}
-				<!-- LLM Guidelines -->
-				<div class="space-y-2">
-					<Label for="llm-guidelines">
-						{m['questionnaireNewPage.llmGuidelinesFieldLabel']()}
-						{#if needsLlmGuidelines}
-							<span class="text-destructive">*</span>
-						{/if}
-					</Label>
-					<Textarea
-						id="llm-guidelines"
-						bind:value={llmGuidelines}
-						placeholder={m['questionnaireNewPage.llmGuidelinesPlaceholder']()}
-						rows={4}
-						class={showLlmWarning ? 'border-destructive' : ''}
-					/>
-					{#if showLlmWarning}
-						<p class="text-sm text-destructive">
-							{m['questionnaireNewPage.llmGuidelinesRequiredWarning']()}
-						</p>
-					{:else}
-						<p class="text-xs text-muted-foreground">
-							{#if needsLlmGuidelines}
-								{m['questionnaireNewPage.llmGuidelinesRequired']()}
-							{:else}
-								{m['questionnaireNewPage.llmGuidelinesOptional']()}
-							{/if}
-						</p>
-					{/if}
-				</div>
-			{/if}
-
-			<!-- Duration Settings -->
-			<div class="grid gap-4 sm:grid-cols-2">
-				<DurationInput
-					id="max-submission-age"
-					label={m['questionnaireNewPage.submissionValidityLabel']()}
-					helpText={m['questionnaireNewPage.submissionValidityDescription']()}
-					bind:value={() => maxSubmissionAge, (v) => (maxSubmissionAge = v)}
-					storageUnit="days"
-					defaultUnit="days"
-					emptyValue={null}
-					emptyLabel={m['questionnaireNewPage.submissionValidityNoLimit']()}
-				/>
-
-				<DurationInput
-					id="can-retake-after"
-					label={m['questionnaireNewPage.retakeCooldownLabel']()}
-					helpText={m['questionnaireNewPage.retakeCooldownDescription']()}
-					bind:value={() => canRetakeAfter, (v) => (canRetakeAfter = v)}
-					storageUnit="hours"
-					defaultUnit="hours"
-					emptyValue={null}
-					emptyLabel={m['questionnaireNewPage.retakeCooldownNoLimit']()}
-				/>
-			</div>
-
-			<!-- Max Attempts -->
-			<div class="space-y-2">
-				<Label for="max-attempts">
-					{m['questionnaireNewPage.maxAttemptsLabel']()}
-					<span class="text-destructive">*</span>
-				</Label>
-				<Input id="max-attempts" type="number" bind:value={maxAttempts} min="0" step="1" required />
-				<p class="text-xs text-muted-foreground">
-					{m['questionnaireNewPage.maxAttemptsDescription']()}
-				</p>
-			</div>
-		</CardContent>
-	</Card>
+	<QuestionnaireCreateAdvancedSettings
+		{questionnaireType}
+		bind:shuffleQuestions
+		bind:shuffleSections
+		bind:membersExempt
+		bind:perEvent
+		bind:llmGuidelines
+		bind:maxSubmissionAge
+		bind:canRetakeAfter
+		bind:maxAttempts
+		{showLlmGuidelines}
+		{needsLlmGuidelines}
+		{showLlmWarning}
+	/>
 
 	<!-- Questions & Sections -->
 	<Card>
