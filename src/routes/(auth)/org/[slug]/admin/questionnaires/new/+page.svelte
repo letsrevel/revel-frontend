@@ -27,20 +27,8 @@
 		FileUploadQuestionCreateSchema
 	} from '$lib/api/generated/types.gen';
 	import type { PageData } from './$types';
-	import type {
-		QuestionnaireQuestion as Question,
-		QuestionnaireSection as Section
-	} from '$lib/utils/questionnaire-form-types';
+	import { QuestionnaireBuilder } from '$lib/utils/questionnaire-builder.svelte';
 	import {
-		addTopLevelQuestion as _addTopLevelQuestion,
-		removeTopLevelQuestion as _removeTopLevelQuestion,
-		updateTopLevelQuestion as _updateTopLevelQuestion,
-		addSection as _addSection,
-		removeSection as _removeSection,
-		updateSection as _updateSection,
-		addQuestionToSection as _addQuestionToSection,
-		removeQuestionFromSection as _removeQuestionFromSection,
-		updateQuestionInSection as _updateQuestionInSection,
 		mcQuestionToCreateApiFormat,
 		ftQuestionToCreateApiFormat,
 		fuQuestionToCreateApiFormat,
@@ -78,20 +66,11 @@
 	// Error state for displaying validation errors
 	let saveError = $state<string | null>(null);
 
-	// Top-level questions (not in any section)
-	let topLevelQuestions = $state<Question[]>([]);
-
-	// Sections with their questions
-	let sections = $state<Section[]>([]);
-
-	// Total question count
-	const totalQuestionCount = $derived(
-		topLevelQuestions.length + sections.reduce((sum, s) => sum + s.questions.length, 0)
-	);
+	// Reactive questions/sections model (top-level questions + sections)
+	const builder = new QuestionnaireBuilder();
 
 	// Check if LLM guidelines are needed
-	const allQuestions = $derived([...topLevelQuestions, ...sections.flatMap((s) => s.questions)]);
-	const hasFreeTextQuestions = $derived(allQuestions.some((q) => q.type === 'free_text'));
+	const hasFreeTextQuestions = $derived(builder.allQuestions.some((q) => q.type === 'free_text'));
 	const needsLlmGuidelines = $derived(
 		hasFreeTextQuestions && (evaluationMode === 'automatic' || evaluationMode === 'hybrid')
 	);
@@ -161,84 +140,6 @@
 			m['questionnaireNewPage.evalAutomaticTriggerDescription']()
 	);
 
-	// ===== Wrapper functions that delegate to pure helpers and reassign $state =====
-
-	function addTopLevelQuestion(type: 'multiple_choice' | 'free_text' | 'file_upload') {
-		topLevelQuestions = _addTopLevelQuestion(topLevelQuestions, type);
-	}
-
-	function removeTopLevelQuestion(id: string) {
-		topLevelQuestions = _removeTopLevelQuestion(topLevelQuestions, id);
-	}
-
-	function updateTopLevelQuestion(id: string, updates: Partial<Question>) {
-		topLevelQuestions = _updateTopLevelQuestion(topLevelQuestions, id, updates);
-	}
-
-	function addSection() {
-		sections = _addSection(sections);
-	}
-
-	function removeSection(id: string) {
-		sections = _removeSection(sections, id);
-	}
-
-	function updateSection(id: string, updates: Partial<Section>) {
-		sections = _updateSection(sections, id, updates);
-	}
-
-	function addQuestionToSection(
-		sectionId: string,
-		type: 'multiple_choice' | 'free_text' | 'file_upload'
-	) {
-		sections = _addQuestionToSection(sections, sectionId, type);
-	}
-
-	function removeQuestionFromSection(sectionId: string, questionId: string) {
-		sections = _removeQuestionFromSection(sections, sectionId, questionId);
-	}
-
-	function updateQuestionInSection(
-		sectionId: string,
-		questionId: string,
-		updates: Partial<Question>
-	) {
-		sections = _updateQuestionInSection(sections, sectionId, questionId, updates);
-	}
-
-	// Move top-level question up/down
-	function moveTopLevelQuestion(index: number, direction: 'up' | 'down') {
-		const targetIndex = direction === 'up' ? index - 1 : index + 1;
-		if (targetIndex < 0 || targetIndex >= topLevelQuestions.length) return;
-		const snapshot = $state.snapshot(topLevelQuestions);
-		[snapshot[index], snapshot[targetIndex]] = [snapshot[targetIndex], snapshot[index]];
-		topLevelQuestions = snapshot.map((q, i) => ({ ...q, order: i }));
-	}
-
-	// Move section up/down
-	function moveSection(index: number, direction: 'up' | 'down') {
-		const targetIndex = direction === 'up' ? index - 1 : index + 1;
-		if (targetIndex < 0 || targetIndex >= sections.length) return;
-		const snapshot = $state.snapshot(sections);
-		[snapshot[index], snapshot[targetIndex]] = [snapshot[targetIndex], snapshot[index]];
-		sections = snapshot.map((s, i) => ({ ...s, order: i }));
-	}
-
-	// Move question within a section up/down
-	function moveQuestionInSection(sectionId: string, index: number, direction: 'up' | 'down') {
-		const sectionSnapshot = $state.snapshot(sections);
-		const section = sectionSnapshot.find((s) => s.id === sectionId);
-		if (!section) return;
-		const targetIndex = direction === 'up' ? index - 1 : index + 1;
-		if (targetIndex < 0 || targetIndex >= section.questions.length) return;
-		[section.questions[index], section.questions[targetIndex]] = [
-			section.questions[targetIndex],
-			section.questions[index]
-		];
-		section.questions = section.questions.map((q, i) => ({ ...q, order: i }));
-		sections = sectionSnapshot;
-	}
-
 	// Validate form
 	function validate(): boolean {
 		errors = {};
@@ -247,12 +148,12 @@
 			errors.name = m['questionnaireNewPage.error_nameRequired']();
 		}
 
-		if (totalQuestionCount === 0) {
+		if (builder.totalQuestionCount === 0) {
 			errors.questions = m['questionnaireNewPage.error_noQuestions']();
 		}
 
 		// Validate each question has text
-		const invalidQuestions = allQuestions.filter((q) => !q.text.trim());
+		const invalidQuestions = builder.allQuestions.filter((q) => !q.text.trim());
 		if (invalidQuestions.length > 0) {
 			errors.questions = m['questionnaireNewPage.error_questionsNeedText']();
 		}
@@ -278,16 +179,16 @@
 			}
 
 			// Build sections array for API
-			const apiSections = buildCreateApiSections(sections);
+			const apiSections = buildCreateApiSections(builder.sections);
 
 			// Top-level questions (not in any section)
-			const topLevelMC = topLevelQuestions
+			const topLevelMC = builder.topLevelQuestions
 				.filter((q) => q.type === 'multiple_choice')
 				.map((q) => mcQuestionToCreateApiFormat(q));
-			const topLevelFT = topLevelQuestions
+			const topLevelFT = builder.topLevelQuestions
 				.filter((q) => q.type === 'free_text')
 				.map((q) => ftQuestionToCreateApiFormat(q));
-			const topLevelFU = topLevelQuestions
+			const topLevelFU = builder.topLevelQuestions
 				.filter((q) => q.type === 'file_upload')
 				.map((q) => fuQuestionToCreateApiFormat(q));
 
@@ -757,7 +658,7 @@
 				<div>
 					<CardTitle
 						>{m['questionnaireNewPage.questionsTitleCount']({
-							count: totalQuestionCount
+							count: builder.totalQuestionCount
 						})}</CardTitle
 					>
 					<CardDescription>
@@ -768,7 +669,7 @@
 					<Button
 						variant="outline"
 						size="sm"
-						onclick={() => addTopLevelQuestion('multiple_choice')}
+						onclick={() => builder.addTopLevelQuestion('multiple_choice')}
 						class="gap-2"
 					>
 						<Plus class="h-4 w-4" />
@@ -777,7 +678,7 @@
 					<Button
 						variant="outline"
 						size="sm"
-						onclick={() => addTopLevelQuestion('free_text')}
+						onclick={() => builder.addTopLevelQuestion('free_text')}
 						class="gap-2"
 					>
 						<Plus class="h-4 w-4" />
@@ -786,13 +687,13 @@
 					<Button
 						variant="outline"
 						size="sm"
-						onclick={() => addTopLevelQuestion('file_upload')}
+						onclick={() => builder.addTopLevelQuestion('file_upload')}
 						class="gap-2"
 					>
 						<Upload class="h-4 w-4" />
 						{m['questionnaireNewPage.addFileUpload']()}
 					</Button>
-					<Button variant="secondary" size="sm" onclick={addSection} class="gap-2">
+					<Button variant="secondary" size="sm" onclick={() => builder.addSection()} class="gap-2">
 						<FolderPlus class="h-4 w-4" />
 						{m['questionnaireNewPage.addSection']()}
 					</Button>
@@ -800,7 +701,7 @@
 			</div>
 		</CardHeader>
 		<CardContent class="space-y-6">
-			{#if totalQuestionCount === 0 && sections.length === 0}
+			{#if builder.totalQuestionCount === 0 && builder.sections.length === 0}
 				<div class="rounded-lg border border-dashed p-8 text-center">
 					<p class="text-sm text-muted-foreground">
 						{m['questionnaireNewPage.noQuestionsYet']()}
@@ -811,28 +712,28 @@
 				<div class="space-y-4">
 					<h3 class="text-sm font-medium text-muted-foreground">
 						{m['questionnaireNewPage.topLevelQuestionsHeading']({
-							count: topLevelQuestions.length
+							count: builder.topLevelQuestions.length
 						})}
 					</h3>
 					<p class="text-xs text-muted-foreground">
 						{m['questionnaireNewPage.reorderQuestionsHint']()}
 					</p>
 					<div class="space-y-4">
-						{#each topLevelQuestions as question, index (question.id)}
+						{#each builder.topLevelQuestions as question, index (question.id)}
 							<QuestionEditor
 								{question}
-								onUpdate={(updates) => updateTopLevelQuestion(question.id, updates)}
-								onRemove={() => removeTopLevelQuestion(question.id)}
-								onMoveUp={() => moveTopLevelQuestion(index, 'up')}
-								onMoveDown={() => moveTopLevelQuestion(index, 'down')}
+								onUpdate={(updates) => builder.updateTopLevelQuestion(question.id, updates)}
+								onRemove={() => builder.removeTopLevelQuestion(question.id)}
+								onMoveUp={() => builder.moveTopLevelQuestion(index, 'up')}
+								onMoveDown={() => builder.moveTopLevelQuestion(index, 'down')}
 								isFirst={index === 0}
-								isLast={index === topLevelQuestions.length - 1}
+								isLast={index === builder.topLevelQuestions.length - 1}
 								{showLlmGuidelines}
 							/>
 						{/each}
 					</div>
 
-					{#if topLevelQuestions.length === 0}
+					{#if builder.topLevelQuestions.length === 0}
 						<div class="rounded-lg border border-dashed p-4 text-center">
 							<p class="text-sm text-muted-foreground">
 								{m['questionnaireNewPage.noTopLevelQuestions']()}
@@ -841,12 +742,12 @@
 					{/if}
 
 					<!-- Bottom buttons for adding more top-level questions -->
-					{#if topLevelQuestions.length > 0}
+					{#if builder.topLevelQuestions.length > 0}
 						<div class="flex justify-center gap-2 border-t pt-4">
 							<Button
 								variant="outline"
 								size="sm"
-								onclick={() => addTopLevelQuestion('multiple_choice')}
+								onclick={() => builder.addTopLevelQuestion('multiple_choice')}
 								class="gap-2"
 							>
 								<Plus class="h-4 w-4" />
@@ -855,7 +756,7 @@
 							<Button
 								variant="outline"
 								size="sm"
-								onclick={() => addTopLevelQuestion('free_text')}
+								onclick={() => builder.addTopLevelQuestion('free_text')}
 								class="gap-2"
 							>
 								<Plus class="h-4 w-4" />
@@ -864,7 +765,7 @@
 							<Button
 								variant="outline"
 								size="sm"
-								onclick={() => addTopLevelQuestion('file_upload')}
+								onclick={() => builder.addTopLevelQuestion('file_upload')}
 								class="gap-2"
 							>
 								<Upload class="h-4 w-4" />
@@ -875,33 +776,35 @@
 				</div>
 
 				<!-- Sections - drag and drop zone -->
-				{#if sections.length > 0 || topLevelQuestions.length > 0}
+				{#if builder.sections.length > 0 || builder.topLevelQuestions.length > 0}
 					<div class="space-y-4">
 						<div class="border-t pt-4">
 							<h3 class="mb-2 text-sm font-medium text-muted-foreground">
-								{m['questionnaireNewPage.sectionsHeading']({ count: sections.length })}
+								{m['questionnaireNewPage.sectionsHeading']({ count: builder.sections.length })}
 							</h3>
 							<p class="text-xs text-muted-foreground">
 								{m['questionnaireNewPage.reorderSectionsHint']()}
 							</p>
 						</div>
 						<div class="space-y-4">
-							{#each sections as section, index (section.id)}
+							{#each builder.sections as section, index (section.id)}
 								<SectionEditor
 									{section}
-									onUpdate={(updates) => updateSection(section.id, updates)}
-									onRemove={() => removeSection(section.id)}
-									onMoveUp={() => moveSection(index, 'up')}
-									onMoveDown={() => moveSection(index, 'down')}
+									onUpdate={(updates) => builder.updateSection(section.id, updates)}
+									onRemove={() => builder.removeSection(section.id)}
+									onMoveUp={() => builder.moveSection(index, 'up')}
+									onMoveDown={() => builder.moveSection(index, 'down')}
 									isFirst={index === 0}
-									isLast={index === sections.length - 1}
-									onAddQuestion={(type) => addQuestionToSection(section.id, type)}
+									isLast={index === builder.sections.length - 1}
+									onAddQuestion={(type) => builder.addQuestionToSection(section.id, type)}
 									onUpdateQuestion={(questionId, updates) =>
-										updateQuestionInSection(section.id, questionId, updates)}
+										builder.updateQuestionInSection(section.id, questionId, updates)}
 									onRemoveQuestion={(questionId) =>
-										removeQuestionFromSection(section.id, questionId)}
-									onMoveQuestionUp={(qIndex) => moveQuestionInSection(section.id, qIndex, 'up')}
-									onMoveQuestionDown={(qIndex) => moveQuestionInSection(section.id, qIndex, 'down')}
+										builder.removeQuestionFromSection(section.id, questionId)}
+									onMoveQuestionUp={(qIndex) =>
+										builder.moveQuestionInSection(section.id, qIndex, 'up')}
+									onMoveQuestionDown={(qIndex) =>
+										builder.moveQuestionInSection(section.id, qIndex, 'down')}
 									{showLlmGuidelines}
 								/>
 							{/each}
@@ -915,12 +818,12 @@
 			{/if}
 
 			<!-- Bottom action bar -->
-			{#if totalQuestionCount > 0 || sections.length > 0}
+			{#if builder.totalQuestionCount > 0 || builder.sections.length > 0}
 				<div class="flex flex-wrap justify-center gap-2 border-t pt-4">
 					<Button
 						variant="outline"
 						size="sm"
-						onclick={() => addTopLevelQuestion('multiple_choice')}
+						onclick={() => builder.addTopLevelQuestion('multiple_choice')}
 						class="gap-2"
 					>
 						<Plus class="h-4 w-4" />
@@ -929,7 +832,7 @@
 					<Button
 						variant="outline"
 						size="sm"
-						onclick={() => addTopLevelQuestion('free_text')}
+						onclick={() => builder.addTopLevelQuestion('free_text')}
 						class="gap-2"
 					>
 						<Plus class="h-4 w-4" />
@@ -938,13 +841,13 @@
 					<Button
 						variant="outline"
 						size="sm"
-						onclick={() => addTopLevelQuestion('file_upload')}
+						onclick={() => builder.addTopLevelQuestion('file_upload')}
 						class="gap-2"
 					>
 						<Upload class="h-4 w-4" />
 						{m['questionnaireNewPage.addFileUpload']()}
 					</Button>
-					<Button variant="secondary" size="sm" onclick={addSection} class="gap-2">
+					<Button variant="secondary" size="sm" onclick={() => builder.addSection()} class="gap-2">
 						<FolderPlus class="h-4 w-4" />
 						{m['questionnaireNewPage.addSection']()}
 					</Button>
