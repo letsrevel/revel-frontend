@@ -30,13 +30,20 @@
 	// one event: activating the cell opens that event (via the same onEventClick
 	// path the individual badges use, which the parent wires to the EventModal).
 	// Days with 0 or 2+ events keep their per-badge buttons instead.
+	//
+	// The wrapper always stays a `<div role="gridcell">` so every cell in the
+	// calendar row exposes the same ARIA structure. When the cell is clickable,
+	// an absolutely-positioned `<button>` overlays the whole cell and owns the
+	// click/focus/aria-label — it sits on top of the (pointer-events-none)
+	// static event badge so the badge text stays visible while the button
+	// captures the interaction.
 	const singleEvent = $derived(dayEvents.length === 1 ? dayEvents[0] : null);
 	const isCellClickable = $derived(singleEvent !== null && onEventClick !== undefined);
 
 	const cellLabel = $derived(
 		singleEvent
 			? `${formatCalendarDate(date, 'long')}, ${singleEvent.name}`
-			: `${formatCalendarDate(date, 'long')}, ${dayEvents.length} ${m['calendar.events']()}`
+			: `${formatCalendarDate(date, 'long')}, ${m['calendar.events_count']({ count: dayEvents.length })}`
 	);
 
 	function handleCellClick(): void {
@@ -46,18 +53,23 @@
 	}
 </script>
 
-<svelte:element
-	this={isCellClickable ? 'button' : 'div'}
-	type={isCellClickable ? 'button' : undefined}
+<div
 	class="calendar-day"
 	class:calendar-day--current-month={isCurrentMonth}
 	class:calendar-day--other-month={!isCurrentMonth}
 	class:calendar-day--today={isToday}
 	class:calendar-day--clickable={isCellClickable}
-	role={isCellClickable ? undefined : 'gridcell'}
-	aria-label={cellLabel}
-	onclick={isCellClickable ? handleCellClick : undefined}
+	role="gridcell"
+	aria-label={isCellClickable ? undefined : cellLabel}
 >
+	{#if isCellClickable}
+		<button
+			type="button"
+			class="calendar-day-overlay"
+			aria-label={cellLabel}
+			onclick={handleCellClick}
+		></button>
+	{/if}
 	<span class="calendar-day-header">
 		<span class="calendar-day-number">{formatCalendarDate(date, 'short')}</span>
 		{#if isLoading}
@@ -100,19 +112,27 @@
 			{/if}
 		</span>
 	{/if}
-</svelte:element>
+</div>
 
 <style>
 	.calendar-day {
-		@apply relative block min-h-20 w-full border-r border-border p-2 text-left transition-colors last:border-r-0 hover:bg-accent focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+		@apply relative block min-h-20 w-full border-r border-border p-2 text-left transition-colors last:border-r-0 hover:bg-accent;
 		@apply md:min-h-24 md:p-3;
 	}
 
-	/* Reset native button styling so a clickable cell matches a non-clickable one. */
+	/* Visual affordance only — the actual interaction lives on .calendar-day-overlay. */
 	.calendar-day--clickable {
-		@apply cursor-pointer appearance-none;
-		font: inherit;
-		color: inherit;
+		@apply cursor-pointer;
+	}
+
+	/* Absolutely-positioned button covering a clickable cell. It owns the click
+	   handler, the accessible name, and keyboard focus, while the wrapper stays a
+	   plain `role="gridcell"` div so the row's ARIA structure is uniform across
+	   cells. Transparent so the day number and static event badge remain visible
+	   underneath — it sits above them in the stacking order (positioned content
+	   paints after static content), so it still captures the click. */
+	.calendar-day-overlay {
+		@apply absolute inset-0 z-10 cursor-pointer appearance-none bg-transparent p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
 	}
 
 	.calendar-day--current-month {

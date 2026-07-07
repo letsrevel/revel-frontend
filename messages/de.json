@@ -753,6 +753,7 @@
 		"saturday_short": "Sa",
 		"sunday_short": "So",
 		"events": "Termine",
+		"events_count": "{count} Termine",
 		"event": "Termin",
 		"more": "weitere",
 		"more_events": "weitere Termine",

@@ -40,8 +40,10 @@
 	/**
 	 * Suggest the duplicate's start, prefilled from the source event.
 	 *
-	 * The backend shifts every other date (including `end`, so the original duration is
-	 * preserved) by `newStart - sourceStart`, so only the start needs to be chosen here.
+	 * The backend shifts `end`, `rsvp_before`, `apply_before`, `check_in_starts_at`, and
+	 * `check_in_ends_at` by `newStart - sourceStart` (preserving the original durations), so
+	 * only the start needs to be chosen here. Exception: `waitlist_cutoff_date` is copied
+	 * verbatim (unshifted), so a duplicated event can inherit a stale waitlist cutoff.
 	 * A source start still in the future is reused verbatim. A past start keeps its
 	 * (local) time-of-day and rolls forward to the next future occurrence of that time —
 	 * today if that time is still ahead, otherwise tomorrow — so the field always satisfies

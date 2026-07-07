@@ -724,6 +724,7 @@
 		"saturday_short": "Sam",
 		"sunday_short": "Dim",
 		"events": "événements",
+		"events_count": "{count} événements",
 		"event": "événement",
 		"more": "de plus",
 		"more_events": "événements de plus",
