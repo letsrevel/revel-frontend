@@ -78,7 +78,7 @@
 	<div class="flex h-full flex-col">
 		<!-- Header -->
 		<div class="flex items-center justify-between border-b p-4">
-			<span class="text-lg font-semibold">{m['nav.menu']()}</span>
+			<span role="heading" aria-level="2" class="text-lg font-semibold">{m['nav.menu']()}</span>
 			<button
 				type="button"
 				class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring"

@@ -34,10 +34,10 @@ describe('brandTheme store', () => {
 	});
 
 	it('reads initial value from an existing data-brand attribute', async () => {
-		document.documentElement.dataset.brand = 'crimson';
+		document.documentElement.dataset.brand = 'bubble';
 		const { BrandThemeStore } = await import('./brandTheme.svelte');
 		const store = new BrandThemeStore();
-		expect(store.current).toBe('crimson');
+		expect(store.current).toBe('bubble');
 	});
 
 	it('ignores an unknown stored value and falls back to legacy', async () => {

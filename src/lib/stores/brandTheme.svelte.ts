@@ -8,13 +8,13 @@ import { browser } from '$app/environment';
  * Each non-legacy theme commits to a distinct SURFACE strategy (see
  * `brand-themes.css`) so they read as clearly different, not sibling tints.
  */
-export type BrandTheme = 'legacy' | 'gradient' | 'midnight' | 'crimson' | 'mono';
+export type BrandTheme = 'legacy' | 'gradient' | 'midnight' | 'bubble' | 'mono';
 
 export const BRAND_THEMES: { value: BrandTheme; label: string; hint: string }[] = [
 	{ value: 'legacy', label: 'Legacy', hint: 'Current brand' },
 	{ value: 'gradient', label: 'Gradient', hint: 'Full-page purple→crimson wash' },
-	{ value: 'midnight', label: 'Midnight', hint: 'Near-black, neon accents' },
-	{ value: 'crimson', label: 'Crimson', hint: 'Hot, crimson-led' },
+	{ value: 'midnight', label: 'Midnight', hint: 'Neon on ink; paper by day' },
+	{ value: 'bubble', label: 'Bubble', hint: 'Playful, sticker-round, lavender' },
 	{ value: 'mono', label: 'Mono', hint: 'Stark black & white' }
 ];
 

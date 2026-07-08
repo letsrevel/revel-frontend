@@ -37,7 +37,7 @@
 		<Loader2 class="h-5 w-5 animate-spin" />
 	{:else if memberships.length === 0}
 		<div class="rounded-lg border p-6 text-center">
-			<p class="font-medium">{m['account.memberships.empty.title']()}</p>
+			<h2 class="font-medium">{m['account.memberships.empty.title']()}</h2>
 			<p class="mt-1 text-sm text-muted-foreground">{m['account.memberships.empty.body']()}</p>
 			<Button href="/organizations" variant="outline" class="mt-4">
 				{m['account.memberships.empty.cta']()}

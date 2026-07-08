@@ -5,6 +5,7 @@
 	import { dev } from '$app/environment';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { brandTheme, BRAND_THEMES } from '$lib/stores/brandTheme.svelte';
+	import { fontTheme, FONT_THEMES } from '$lib/stores/fontTheme.svelte';
 	import RevelMark from '$lib/components/brand/RevelMark.svelte';
 	import { Palette, X } from '@lucide/svelte';
 
@@ -19,38 +20,49 @@
 	const L = {
 		heading: 'Brand',
 		group: 'Brand theme',
+		fontHeading: 'Font',
+		fontGroup: 'Font theme',
 		collapse: 'Collapse brand switcher',
 		open: 'Open brand switcher'
 	};
 
-	// Roving-tabindex radiogroup: only the checked radio is in the tab order;
+	// Roving-tabindex radiogroups: only the checked radio is in the tab order;
 	// Arrow/Home/End move selection and focus between options (WAI-ARIA pattern).
-	const radios = $state<HTMLButtonElement[]>([]);
+	const brandRadios = $state<HTMLButtonElement[]>([]);
+	const fontRadios = $state<HTMLButtonElement[]>([]);
 
-	function onRadioKeydown(event: KeyboardEvent, index: number) {
-		const last = BRAND_THEMES.length - 1;
-		let next: number;
+	function rove(event: KeyboardEvent, index: number, count: number): number | null {
+		const last = count - 1;
 		switch (event.key) {
 			case 'ArrowDown':
 			case 'ArrowRight':
-				next = index === last ? 0 : index + 1;
-				break;
+				return index === last ? 0 : index + 1;
 			case 'ArrowUp':
 			case 'ArrowLeft':
-				next = index === 0 ? last : index - 1;
-				break;
+				return index === 0 ? last : index - 1;
 			case 'Home':
-				next = 0;
-				break;
+				return 0;
 			case 'End':
-				next = last;
-				break;
+				return last;
 			default:
-				return;
+				return null;
 		}
+	}
+
+	function onBrandKeydown(event: KeyboardEvent, index: number) {
+		const next = rove(event, index, BRAND_THEMES.length);
+		if (next === null) return;
 		event.preventDefault();
 		brandTheme.set(BRAND_THEMES[next].value);
-		radios[next]?.focus();
+		brandRadios[next]?.focus();
+	}
+
+	function onFontKeydown(event: KeyboardEvent, index: number) {
+		const next = rove(event, index, FONT_THEMES.length);
+		if (next === null) return;
+		event.preventDefault();
+		fontTheme.set(FONT_THEMES[next].value);
+		fontRadios[next]?.focus();
 	}
 </script>
 
@@ -81,13 +93,38 @@
 					{#each BRAND_THEMES as t, i (t.value)}
 						{@const active = brandTheme.current === t.value}
 						<button
-							bind:this={radios[i]}
+							bind:this={brandRadios[i]}
 							type="button"
 							role="radio"
 							aria-checked={active}
 							tabindex={active ? 0 : -1}
 							onclick={() => brandTheme.set(t.value)}
-							onkeydown={(e) => onRadioKeydown(e, i)}
+							onkeydown={(e) => onBrandKeydown(e, i)}
+							class="rounded-lg border px-2 py-1.5 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-ring {active
+								? 'border-primary bg-primary/10'
+								: 'border-border hover:bg-muted'}"
+						>
+							<span class="block text-xs font-medium text-foreground">{t.label}</span>
+							<span class="block text-[10px] leading-tight text-muted-foreground">{t.hint}</span>
+						</button>
+					{/each}
+				</div>
+				<div class="border-t px-3 pt-2">
+					<span class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+						{L.fontHeading}
+					</span>
+				</div>
+				<div class="flex flex-col gap-1 p-2" role="radiogroup" aria-label={L.fontGroup}>
+					{#each FONT_THEMES as t, i (t.value)}
+						{@const active = fontTheme.current === t.value}
+						<button
+							bind:this={fontRadios[i]}
+							type="button"
+							role="radio"
+							aria-checked={active}
+							tabindex={active ? 0 : -1}
+							onclick={() => fontTheme.set(t.value)}
+							onkeydown={(e) => onFontKeydown(e, i)}
 							class="rounded-lg border px-2 py-1.5 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-ring {active
 								? 'border-primary bg-primary/10'
 								: 'border-border hover:bg-muted'}"

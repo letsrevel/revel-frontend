@@ -305,9 +305,9 @@
 							aria-hidden="true"
 						/>
 						<div class="flex-1 space-y-2 text-sm">
-							<p class="font-medium text-green-800 dark:text-green-200">
+							<h3 class="font-medium text-green-800 dark:text-green-200">
 								{m['accountSecurityPage.emailChange_successTitle']()}
-							</p>
+							</h3>
 							<p class="text-green-700 dark:text-green-300">
 								{m['accountSecurityPage.emailChange_successBody']({ new_email: submittedEmail })}
 							</p>

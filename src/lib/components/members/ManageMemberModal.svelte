@@ -269,7 +269,7 @@
 							<div class="flex gap-2">
 								<AlertTriangle class="h-5 w-5 shrink-0 text-destructive" />
 								<div class="flex-1 space-y-2">
-									<p class="text-sm font-medium text-destructive">
+									<p role="heading" aria-level="4" class="text-sm font-medium text-destructive">
 										{m['manageMemberModal.removeConfirmTitle']()}
 									</p>
 									<p class="text-sm text-destructive/90">
@@ -321,7 +321,11 @@
 									<Ban class="h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
 									<div class="flex-1 space-y-3">
 										<div>
-											<p class="text-sm font-medium text-red-900 dark:text-red-100">
+											<p
+												role="heading"
+												aria-level="4"
+												class="text-sm font-medium text-red-900 dark:text-red-100"
+											>
 												{m['manageMemberModal.blacklistConfirmTitle']({ name: displayName })}
 											</p>
 											<p class="text-sm text-red-800 dark:text-red-200">

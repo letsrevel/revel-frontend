@@ -350,7 +350,7 @@
 					{:else}
 						<div class="flex flex-col items-center justify-center py-8 text-center">
 							<FolderOpen class="h-12 w-12 text-muted-foreground/50" aria-hidden="true" />
-							<p class="mt-4 text-sm font-medium">{m['accountPrivacyPage.noFilesTitle']()}</p>
+							<h3 class="mt-4 text-sm font-medium">{m['accountPrivacyPage.noFilesTitle']()}</h3>
 							<p class="mt-1 text-xs text-muted-foreground">
 								{m['accountPrivacyPage.noFilesDescription']()}
 							</p>
@@ -450,7 +450,7 @@
 			</div>
 
 			<div class="mb-6 space-y-2 rounded-md bg-destructive/5 p-4">
-				<p class="text-sm font-medium">{m['accountPrivacyPage.modal_listTitle']()}</p>
+				<h3 class="text-sm font-medium">{m['accountPrivacyPage.modal_listTitle']()}</h3>
 				<ul class="space-y-1 text-sm text-muted-foreground">
 					<li class="flex items-center gap-2">
 						<span class="text-destructive">✗</span>

@@ -48,18 +48,24 @@
 			})();
 		</script>
 		<!--
-			Anti-FOUC for the brand experiment: apply the data-brand attribute
-			before first paint so A/B testers don't see a Legacy flash on SSR
-			loads. Nonced (script-src 'self'). Must stay synchronous. Mirrors the
-			store's storage key ('revel-brand') and attribute ('data-brand').
+			Anti-FOUC for the brand experiment: apply the data-brand and data-font
+			attributes before first paint so A/B testers don't see a Legacy flash
+			on SSR loads. Nonced (script-src 'self'). Must stay synchronous.
+			Mirrors the stores' storage keys ('revel-brand'/'revel-font') and
+			attributes ('data-brand'/'data-font').
 		-->
 		<script nonce="%sveltekit.nonce%">
 			(() => {
 				try {
 					const brand = localStorage.getItem('revel-brand');
 					// Keep in sync with BRAND_THEMES in brandTheme.svelte.ts.
-					if (['gradient', 'midnight', 'crimson', 'mono'].indexOf(brand) !== -1) {
+					if (['gradient', 'midnight', 'bubble', 'mono'].indexOf(brand) !== -1) {
 						document.documentElement.dataset.brand = brand;
+					}
+					const font = localStorage.getItem('revel-font');
+					// Keep in sync with FONT_THEMES in fontTheme.svelte.ts.
+					if (['nata', 'unbounded', 'baloo', 'system'].indexOf(font) !== -1) {
+						document.documentElement.dataset.font = font;
 					}
 				} catch {
 					/* localStorage unavailable — fall back to Legacy */
