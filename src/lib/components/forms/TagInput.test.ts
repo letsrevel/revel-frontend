@@ -4,10 +4,6 @@ import userEvent from '@testing-library/user-event';
 import TagInput from './TagInput.svelte';
 
 describe('TagInput', () => {
-	// NOTE: the component only assigns the input's `id` attribute when the `id`
-	// prop is provided (the auto-generated fallback is used for `for`/`name` but
-	// not the input itself), so tests pass an explicit `id` to get a working
-	// label association for getByLabelText queries.
 	it('renders with label', () => {
 		render(TagInput, {
 			props: {
@@ -17,6 +13,18 @@ describe('TagInput', () => {
 		});
 
 		expect(screen.getByLabelText('Event Tags')).toBeInTheDocument();
+	});
+
+	it('associates the label with the input when no id prop is passed', () => {
+		render(TagInput, {
+			props: {
+				label: 'Event Tags'
+			}
+		});
+
+		// The auto-generated fallback id must land on the input itself,
+		// not just the label's `for` attribute (#569).
+		expect(screen.getByLabelText('Event Tags')).toBeInstanceOf(HTMLInputElement);
 	});
 
 	it('shows required indicator when required', () => {

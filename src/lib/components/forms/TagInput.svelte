@@ -239,7 +239,7 @@
 			<input
 				bind:this={input}
 				type="text"
-				{id}
+				id={inputId}
 				name={inputId}
 				bind:value={inputValue}
 				oninput={handleInput}
