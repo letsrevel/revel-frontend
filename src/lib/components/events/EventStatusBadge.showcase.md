@@ -15,7 +15,7 @@ A visual indicator that displays the current temporal status of an event with se
 
 The badge displays one of the following statuses based on priority:
 
-1. **Cancelled** (Red/Destructive) - Event status is 'rejected'
+1. **Cancelled** (Orange) - Event status is 'cancelled'
 2. **Past** (Gray/Secondary) - Event has ended (wins over Full: an ended event is over, regardless of capacity)
 3. **Full** (Red/Destructive) - Event has reached maximum capacity
 4. **Ongoing** (Green/Success) - Event is currently happening
@@ -82,7 +82,7 @@ The component uses the following logic to determine status (in priority order):
 ### 1. Cancelled
 
 ```typescript
-event.status === 'rejected';
+event.status === 'cancelled';
 ```
 
 ### 2. Past
@@ -134,7 +134,8 @@ The component follows WCAG 2.1 AA guidelines:
 - **Success** (Green): Ongoing, Happening Today
 - **Default** (Blue): Upcoming
 - **Secondary** (Gray): Past
-- **Destructive** (Red): Cancelled, Full
+- **Destructive** (Red): Full
+- **Cancelled** (Orange): Cancelled
 
 ### Icons
 
@@ -143,7 +144,7 @@ Each status includes a relevant icon from `lucide-svelte`:
 - **Calendar**: Upcoming, Happening Today
 - **Clock**: Ongoing
 - **CheckCircle**: Past
-- **XCircle**: Cancelled
+- **Ban**: Cancelled
 - **AlertCircle**: Full
 
 ## Examples
@@ -219,13 +220,13 @@ Each status includes a relevant icon from `lucide-svelte`:
 	event={{
 		start: '2025-12-15T18:00:00Z',
 		end: '2025-12-15T22:00:00Z',
-		status: 'rejected', // Cancelled
+		status: 'cancelled',
 		max_attendees: 50,
 		attendee_count: 25
 		// ... other fields
 	}}
 />
-<!-- Result: Red badge with XCircle icon showing "Cancelled" -->
+<!-- Result: Orange badge with Ban icon showing "Cancelled" -->
 ```
 
 ### Past Event
