@@ -63,10 +63,10 @@
 		// Close dropdown immediately
 		isOpen = false;
 
-		// Update cookie (for non-logged-in users and SSR)
+		// Update the legacy cookie read by the backend's language detector
+		// (for non-logged-in users and SSR).
 		const cookieAttrs = 'path=/; max-age=31536000; SameSite=Lax';
 		document.cookie = `user_language=${lang}; ${cookieAttrs}`;
-		document.cookie = `${cookieName}=${lang}; ${cookieAttrs}`;
 
 		// If user is logged in, persist to backend
 		// IMPORTANT: We must await this call before invalidateAll() to prevent a race condition.
@@ -86,12 +86,19 @@
 		// For SEO pages, navigate directly WITHOUT calling setLocale
 		// The new page will have the correct language based on the URL and cookie
 		if (redirectUrl) {
+			// setLocale is never called on this path, so write Paraglide's canonical
+			// cookie manually — the server-side detector prioritizes it (#531).
+			document.cookie = `${cookieName}=${lang}; ${cookieAttrs}`;
 			// Use window.location for a full page navigation to avoid race conditions
 			window.location.href = redirectUrl;
 			return;
 		}
 
-		// For regular pages, use Paraglide's locale switching
+		// For regular pages, use Paraglide's locale switching. setLocale writes the
+		// canonical cookie itself AND reloads the page. Do NOT write that cookie
+		// before this call: setLocale skips the reload when getLocale() (cookie
+		// strategy) already resolves to the target locale, leaving the UI stuck in
+		// the old language (regression from the paraglide 2.4 -> 2.20 bump).
 		setLocale(typedLang);
 	}
 

@@ -71,97 +71,101 @@
 			{#each visibleOrganizations as org (org.id)}
 				{@const descriptionText = org.description ? stripMarkdown(org.description) : ''}
 				<div
-					class="flex items-center gap-4 rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"
+					class="flex flex-col gap-4 rounded-lg border bg-card p-4 transition-shadow hover:shadow-md sm:flex-row sm:items-center"
 				>
-					{#if org.logo}
-						<img
-							src={getImageUrl(org.logo_thumbnail_url || org.logo)}
-							alt=""
-							class="h-16 w-16 rounded-full border object-cover"
-						/>
-					{:else}
-						<div class="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-							<Building2 class="h-8 w-8 text-primary" aria-hidden="true" />
-						</div>
-					{/if}
-
-					<div class="flex-1">
-						<div class="flex items-center gap-2">
-							<h3 class="font-semibold">{org.name}</h3>
-							<!-- Owner Badge -->
-							{#if isOwner(permissions, org.id)}
-								<span
-									class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
-									aria-label={m['dashboardPage.ownerBadgeLabel']()}
-								>
-									<Crown class="h-3 w-3" aria-hidden="true" />
-									{m['dashboardPage.ownerBadge']()}
-								</span>
-							{:else if isStaff(permissions, org.id)}
-								<!-- Staff Badge -->
-								<span
-									class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-100"
-									aria-label={m['dashboardPage.staffBadgeLabel']()}
-								>
-									<Shield class="h-3 w-3" aria-hidden="true" />
-									{m['dashboardPage.staffBadge']()}
-								</span>
-							{/if}
-						</div>
-
-						{#if descriptionText}
-							<p class="line-clamp-1 text-sm text-muted-foreground">
-								{descriptionText}
-							</p>
+					<div class="flex min-w-0 flex-1 items-center gap-4">
+						{#if org.logo}
+							<img
+								src={getImageUrl(org.logo_thumbnail_url || org.logo)}
+								alt=""
+								class="h-16 w-16 shrink-0 rounded-full border object-cover"
+							/>
+						{:else}
+							<div
+								class="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary/10"
+							>
+								<Building2 class="h-8 w-8 text-primary" aria-hidden="true" />
+							</div>
 						{/if}
 
-						<!-- Membership Badges -->
-						{#if getMembershipStatus(permissions, org.id) || getMembershipTier(permissions, org.id)}
-							{@const membershipStatus = getMembershipStatus(permissions, org.id)}
-							{@const membershipTier = getMembershipTier(permissions, org.id)}
-							<div class="mt-2 flex flex-wrap items-center gap-2">
-								<!-- Status Badge -->
-								{#if membershipStatus}
+						<div class="min-w-0 flex-1">
+							<div class="flex items-center gap-2">
+								<h3 class="font-semibold">{org.name}</h3>
+								<!-- Owner Badge -->
+								{#if isOwner(permissions, org.id)}
 									<span
-										class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium {statusStyles[
-											membershipStatus
-										]}"
-										aria-label={m['dashboardPage.membershipStatusLabel']({
-											status: membershipStatus
-										})}
+										class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+										aria-label={m['dashboardPage.ownerBadgeLabel']()}
 									>
-										<Check class="h-3 w-3" aria-hidden="true" />
-										{m[`memberStatus.${membershipStatus}`]()}
+										<Crown class="h-3 w-3" aria-hidden="true" />
+										{m['dashboardPage.ownerBadge']()}
 									</span>
-								{/if}
-
-								<!-- Tier Badge -->
-								{#if membershipTier}
+								{:else if isStaff(permissions, org.id)}
+									<!-- Staff Badge -->
 									<span
 										class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-100"
-										aria-label={m['dashboardPage.membershipTierLabel']({
-											tier: membershipTier.name
-										})}
+										aria-label={m['dashboardPage.staffBadgeLabel']()}
 									>
-										<Award class="h-3 w-3" aria-hidden="true" />
-										{membershipTier.name}
+										<Shield class="h-3 w-3" aria-hidden="true" />
+										{m['dashboardPage.staffBadge']()}
 									</span>
 								{/if}
 							</div>
-						{/if}
+
+							{#if descriptionText}
+								<p class="line-clamp-1 text-sm text-muted-foreground">
+									{descriptionText}
+								</p>
+							{/if}
+
+							<!-- Membership Badges -->
+							{#if getMembershipStatus(permissions, org.id) || getMembershipTier(permissions, org.id)}
+								{@const membershipStatus = getMembershipStatus(permissions, org.id)}
+								{@const membershipTier = getMembershipTier(permissions, org.id)}
+								<div class="mt-2 flex flex-wrap items-center gap-2">
+									<!-- Status Badge -->
+									{#if membershipStatus}
+										<span
+											class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium {statusStyles[
+												membershipStatus
+											]}"
+											aria-label={m['dashboardPage.membershipStatusLabel']({
+												status: membershipStatus
+											})}
+										>
+											<Check class="h-3 w-3" aria-hidden="true" />
+											{m[`memberStatus.${membershipStatus}`]()}
+										</span>
+									{/if}
+
+									<!-- Tier Badge -->
+									{#if membershipTier}
+										<span
+											class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-100"
+											aria-label={m['dashboardPage.membershipTierLabel']({
+												tier: membershipTier.name
+											})}
+										>
+											<Award class="h-3 w-3" aria-hidden="true" />
+											{membershipTier.name}
+										</span>
+									{/if}
+								</div>
+							{/if}
+						</div>
 					</div>
 
-					<div class="flex gap-2">
+					<div class="flex shrink-0 gap-2">
 						<a
 							href={resolve('/(public)/org/[slug]', { slug: org.slug })}
-							class="rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+							class="flex-1 rounded-md border px-4 py-2 text-center text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground sm:flex-none"
 						>
 							{m['dashboard.viewProfile']()}
 						</a>
 						{#if hasAdminPermissions(permissions, org.id)}
 							<a
 								href={resolve('/(auth)/org/[slug]/admin', { slug: org.slug })}
-								class="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+								class="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:flex-none"
 							>
 								<Shield class="h-4 w-4" aria-hidden="true" />
 								<span>{m['dashboard.adminButton']()}</span>

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.65.1] - 2026-07-08
+
+### Changed
+
+- German UI text is now gender-inclusive throughout: every person reference uses the gender star (`Teilnehmer*innen`, `Nutzer*innen`, …), replacing masculine generics and unifying the previously mixed participle/colon conventions.
+
+### Fixed
+
+- The language switcher works again — picking a language reloads the page in the chosen language instead of silently doing nothing (regression from a dependency upgrade).
+- The Admin button on the dashboard's "My Organizations" cards no longer overflows the screen on mobile; actions now stack below the organization info.
+- German attendee counts no longer use wrong grammar ("5 Teilnehmern" → "5 Teilnehmer*innen").
+
 ## [1.65.0] - 2026-07-08
 
 ### Added
