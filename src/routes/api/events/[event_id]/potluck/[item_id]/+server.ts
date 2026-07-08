@@ -28,18 +28,11 @@ function getErrorMessage(err: unknown): unknown {
  */
 export const PATCH: RequestHandler = async ({ request, params, locals }) => {
 	if (!locals.user?.accessToken) {
-		console.log('[API/Potluck PATCH] User not authenticated');
 		throw error(401, 'Unauthorized');
 	}
 
 	try {
 		const body = await request.json();
-		console.log('[API/Potluck PATCH] Updating item:', {
-			event_id: params.event_id,
-			item_id: params.item_id,
-			user: locals.user.id,
-			body
-		});
 
 		const response = await potluckUpdatePotluckItem({
 			path: { event_id: params.event_id, item_id: params.item_id },
@@ -59,11 +52,6 @@ export const PATCH: RequestHandler = async ({ request, params, locals }) => {
 			throw error(500, 'Failed to update potluck item');
 		}
 
-		console.log('[API/Potluck PATCH] Update successful:', {
-			item_id: response.data.id,
-			is_owned: response.data.is_owned,
-			is_assigned: response.data.is_assigned
-		});
 		return json(response.data);
 	} catch (err) {
 		const status = getResponseStatus(err);
@@ -93,17 +81,10 @@ export const PATCH: RequestHandler = async ({ request, params, locals }) => {
  */
 export const DELETE: RequestHandler = async ({ params, locals }) => {
 	if (!locals.user?.accessToken) {
-		console.log('[API/Potluck DELETE] User not authenticated');
 		throw error(401, 'Unauthorized');
 	}
 
 	try {
-		console.log('[API/Potluck DELETE] Deleting item:', {
-			event_id: params.event_id,
-			item_id: params.item_id,
-			user: locals.user.id
-		});
-
 		await potluckDeletePotluckItem({
 			path: { event_id: params.event_id, item_id: params.item_id },
 			headers: {
@@ -111,7 +92,6 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 			}
 		});
 
-		console.log('[API/Potluck DELETE] Delete successful');
 		return json({ success: true });
 	} catch (err) {
 		const status = getResponseStatus(err);

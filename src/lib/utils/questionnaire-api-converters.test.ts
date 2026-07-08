@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { initializeFromApiData, convertApiOption } from './questionnaire-api-converters';
+import {
+	initializeFromApiData,
+	convertApiOption,
+	convertApiFuQuestion
+} from './questionnaire-api-converters';
 
 // Regression guard for the "poll created without questions" bug.
 //
@@ -143,5 +147,48 @@ describe('convertApiOption — id reuse', () => {
 		expect(option.id).toEqual(expect.any(String));
 		expect(option.id.length).toBeGreaterThan(0);
 		expect(option._apiId).toBeUndefined();
+	});
+});
+
+// Regression guard for file-upload weight parsing (#563).
+//
+// convertApiFuQuestion used `parseFloat(...) || default`, so a stored weight
+// of 0 collapsed to the default (`0 || 1.0 === 1.0`) when the questionnaire
+// was loaded for editing — and would then be saved back as 1.0. MC/FT use
+// `Number(value ?? default)`, which preserves 0; FU must match.
+describe('convertApiFuQuestion — weight parsing', () => {
+	const baseFuQuestion = {
+		id: 'q-fu-1',
+		question: 'Upload proof',
+		hint: null,
+		is_mandatory: true,
+		order: 0
+	};
+
+	it('preserves an explicit weight of 0', () => {
+		const question = convertApiFuQuestion(
+			{ ...baseFuQuestion, positive_weight: 0, negative_weight: 0 },
+			0
+		);
+
+		expect(question.positiveWeight).toBe(0);
+		expect(question.negativeWeight).toBe(0);
+	});
+
+	it('falls back to defaults when weights are absent', () => {
+		const question = convertApiFuQuestion(baseFuQuestion, 0);
+
+		expect(question.positiveWeight).toBe(1.0);
+		expect(question.negativeWeight).toBe(0.0);
+	});
+
+	it('parses decimal-string weights from the API', () => {
+		const question = convertApiFuQuestion(
+			{ ...baseFuQuestion, positive_weight: '2.5', negative_weight: '0.5' },
+			0
+		);
+
+		expect(question.positiveWeight).toBe(2.5);
+		expect(question.negativeWeight).toBe(0.5);
 	});
 });

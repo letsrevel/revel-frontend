@@ -29,13 +29,10 @@ export const POST: RequestHandler = async ({ cookies }) => {
 
 	// No refresh token available
 	if (!refreshToken) {
-		console.log('[API /auth/refresh] No refresh token cookie found');
 		// Clear any stale access token
 		cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
 		throw error(401, 'No refresh token available');
 	}
-
-	console.log('[API /auth/refresh] Attempting token refresh, rememberMe:', rememberMe);
 
 	try {
 		// Call backend to refresh the token
@@ -52,11 +49,6 @@ export const POST: RequestHandler = async ({ cookies }) => {
 			cookies.delete('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
 			throw error(401, 'Token refresh failed');
 		}
-
-		console.log('[API /auth/refresh] Token refresh successful', {
-			hasNewAccessToken: !!data.access,
-			hasNewRefreshToken: !!data.refresh
-		});
 
 		// CRITICAL: Backend returns BOTH new access and refresh tokens
 		// The old refresh token is now blacklisted - we MUST save the new one

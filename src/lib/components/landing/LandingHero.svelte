@@ -19,17 +19,21 @@
 
 	onMount(() => {
 		if (getLocale() === 'it') {
+			let swapTimeout: ReturnType<typeof setTimeout> | undefined;
 			const interval = setInterval(() => {
 				// Always rotate forward by 180° (never backwards)
 				rotation += 180;
 
 				// At 90° (halfway point = 300ms), swap to the next letter
-				setTimeout(() => {
+				swapTimeout = setTimeout(() => {
 					currentLetterIndex = (currentLetterIndex + 1) % letters.length;
 				}, 300);
 			}, 2000);
 
-			return () => clearInterval(interval);
+			return () => {
+				clearInterval(interval);
+				clearTimeout(swapTimeout);
+			};
 		}
 		// No cleanup needed for non-Italian locale
 		return undefined;

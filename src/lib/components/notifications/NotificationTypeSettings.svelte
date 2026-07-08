@@ -32,14 +32,8 @@
 	const availableTypesQuery = createQuery(() => ({
 		queryKey: ['notification-types'],
 		queryFn: async () => {
-			console.log('[NotificationPreferences] Fetching available notification types...');
 			const response = await notificationpreferenceGetAvailableNotificationTypes({
 				headers: { Authorization: `Bearer ${authToken}` }
-			});
-			console.log('[NotificationPreferences] Available notification types response:', {
-				status: response.response?.status,
-				data: response.data,
-				error: response.error
 			});
 			return response;
 		},
@@ -49,44 +43,18 @@
 	}));
 
 	const availableTypes = $derived.by(() => {
-		const fullData = availableTypesQuery.data;
-		const data = fullData?.data;
-
-		console.log('[NotificationPreferences] Deriving available types:', {
-			queryStatus: availableTypesQuery.status,
-			fullData,
-			data,
-			isArray: Array.isArray(data)
-		});
+		const data = availableTypesQuery.data?.data;
 
 		// The API returns Array<NotificationType> directly
 		if (Array.isArray(data)) {
-			console.log('[NotificationPreferences] Data is array, returning directly:', data);
 			return data;
 		}
 		// Handle potential object wrapper format { notification_types: [...] }
 		if (data && typeof data === 'object' && 'notification_types' in data) {
 			const wrapper = data as { notification_types?: NotificationType[] };
-			console.log(
-				'[NotificationPreferences] Extracting notification_types:',
-				wrapper.notification_types
-			);
 			return wrapper.notification_types ?? [];
 		}
-		console.log('[NotificationPreferences] No types found, returning empty array');
 		return [];
-	});
-
-	// Debug effect for available types
-	$effect(() => {
-		console.log('[NotificationPreferences] Effect - Available types changed:', {
-			count: availableTypes.length,
-			types: availableTypes,
-			queryStatus: availableTypesQuery.status,
-			queryEnabled: !!authToken,
-			isError: availableTypesQuery.isError,
-			isLoading: availableTypesQuery.isLoading
-		});
 	});
 
 	// Helper functions for notification type settings
@@ -194,14 +162,6 @@
 			{:else if availableTypes.length === 0}
 				<div class="py-4 text-center text-sm">
 					<p class="text-muted-foreground">{m['notificationPreferences.noTypesAvailable']()}</p>
-					<!-- Debug info -->
-					<details class="mt-3 text-left">
-						<summary class="cursor-pointer text-xs">Debug info</summary>
-						<pre class="mt-2 overflow-auto rounded bg-muted p-2 text-xs">
-Query status: {availableTypesQuery.status}
-Data: {JSON.stringify(availableTypesQuery.data, null, 2)}
-								</pre>
-					</details>
 				</div>
 			{:else}
 				<div class="mb-4 space-y-1 text-sm text-muted-foreground">

@@ -1,5 +1,4 @@
 {
-	"src/lib/components/notifications/NotificationTypeSettings.svelte": ["text: Debug info"],
 	"src/lib/components/venues/VenueModal.svelte": [
 		"placeholder=\"<iframe src=&quot;https://www.google.com/maps/embed?...&quot;>\""
 	]

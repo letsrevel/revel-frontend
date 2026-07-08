@@ -59,6 +59,13 @@ export function hasAdminPermissions(
 	return false;
 }
 
+const MEMBERSHIP_STATUSES: readonly MembershipStatus[] = [
+	'active',
+	'paused',
+	'cancelled',
+	'banned'
+];
+
 // Helper to get membership status for an organization
 export function getMembershipStatus(
 	permissions: OrganizationPermissionsSchema | null,
@@ -66,7 +73,7 @@ export function getMembershipStatus(
 ): MembershipStatus | null {
 	if (!permissions?.memberships) return null;
 	const membership = permissions.memberships[orgId];
-	return membership?.status ? (membership.status as MembershipStatus) : null;
+	return MEMBERSHIP_STATUSES.find((status) => status === membership?.status) ?? null;
 }
 
 // Helper to get membership tier for an organization

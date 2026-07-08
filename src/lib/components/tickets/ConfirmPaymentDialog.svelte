@@ -98,9 +98,15 @@
 						inputmode="decimal"
 						value={pwycPricePaid}
 						oninput={(e) => {
-							pwycPricePaid = (e.currentTarget as HTMLInputElement).value
+							const sanitized = (e.currentTarget as HTMLInputElement).value
 								.replace(/,/g, '.')
 								.replace(/[^\d.]/g, '');
+							// Keep only the first decimal point ("1.2.3" → "1.23") so the raw
+							// value is always a valid decimal before it is sent as price_paid.
+							const [integerPart, ...decimalParts] = sanitized.split('.');
+							pwycPricePaid = decimalParts.length
+								? `${integerPart}.${decimalParts.join('')}`
+								: integerPart;
 						}}
 						placeholder={ticket.tier?.pwyc_min || '0.00'}
 						aria-describedby={pwycWarning ? 'pwyc-warning' : undefined}

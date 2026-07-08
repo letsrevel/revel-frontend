@@ -14,7 +14,8 @@ import {
 	questionnaireUpdateSection,
 	questionnaireDeleteSection,
 	questionnaireDeleteMcQuestion,
-	questionnaireDeleteFtQuestion
+	questionnaireDeleteFtQuestion,
+	questionnaireDeleteFuQuestion
 } from '$lib/api/generated/sdk.gen';
 
 import type {
@@ -27,8 +28,10 @@ import type { AuthHeader, ApiQuestionnaireShape } from './poll-api-sync-types';
 import {
 	syncMcQuestion,
 	syncFtQuestion,
+	syncFuQuestion,
 	createMcQuestion,
 	createFtQuestion,
+	createFuQuestion,
 	createSectionQuestions
 } from './questionnaire-api-sync-questions';
 
@@ -45,12 +48,16 @@ export async function syncConditionalQuestions(
 	// Get existing conditional questions for this option from API
 	const existingConditionalMcIds = new Set<string>();
 	const existingConditionalFtIds = new Set<string>();
+	const existingConditionalFuIds = new Set<string>();
 
 	for (const apiQ of q?.multiplechoicequestion_questions || []) {
 		if (apiQ.depends_on_option_id === optionApiId) existingConditionalMcIds.add(apiQ.id);
 	}
 	for (const apiQ of q?.freetextquestion_questions || []) {
 		if (apiQ.depends_on_option_id === optionApiId) existingConditionalFtIds.add(apiQ.id);
+	}
+	for (const apiQ of q?.fileuploadquestion_questions || []) {
+		if (apiQ.depends_on_option_id === optionApiId) existingConditionalFuIds.add(apiQ.id);
 	}
 	for (const apiSection of q?.sections || []) {
 		for (const apiQ of apiSection.multiplechoicequestion_questions || []) {
@@ -59,10 +66,14 @@ export async function syncConditionalQuestions(
 		for (const apiQ of apiSection.freetextquestion_questions || []) {
 			if (apiQ.depends_on_option_id === optionApiId) existingConditionalFtIds.add(apiQ.id);
 		}
+		for (const apiQ of apiSection.fileuploadquestion_questions || []) {
+			if (apiQ.depends_on_option_id === optionApiId) existingConditionalFuIds.add(apiQ.id);
+		}
 	}
 
 	const localConditionalMcIds = new Set<string>();
 	const localConditionalFtIds = new Set<string>();
+	const localConditionalFuIds = new Set<string>();
 
 	for (const condQ of conditionalQuestions) {
 		if (condQ.type === 'multiple_choice') {
@@ -71,6 +82,13 @@ export async function syncConditionalQuestions(
 				await syncMcQuestion(condQ, authHeader, orgQuestionnaireId, q, null, optionApiId);
 			} else {
 				await createMcQuestion(condQ, null, authHeader, orgQuestionnaireId, optionApiId);
+			}
+		} else if (condQ.type === 'file_upload') {
+			if (condQ._apiId) {
+				localConditionalFuIds.add(condQ._apiId);
+				await syncFuQuestion(condQ, authHeader, orgQuestionnaireId, null, optionApiId);
+			} else {
+				await createFuQuestion(condQ, null, authHeader, orgQuestionnaireId, optionApiId);
 			}
 		} else {
 			if (condQ._apiId) {
@@ -94,6 +112,14 @@ export async function syncConditionalQuestions(
 	for (const existingId of existingConditionalFtIds) {
 		if (!localConditionalFtIds.has(existingId)) {
 			await questionnaireDeleteFtQuestion({
+				path: { org_questionnaire_id: orgQuestionnaireId, question_id: existingId },
+				headers: authHeader
+			});
+		}
+	}
+	for (const existingId of existingConditionalFuIds) {
+		if (!localConditionalFuIds.has(existingId)) {
+			await questionnaireDeleteFuQuestion({
 				path: { org_questionnaire_id: orgQuestionnaireId, question_id: existingId },
 				headers: authHeader
 			});
@@ -179,9 +205,13 @@ export async function syncConditionalSectionQuestions(
 	const existingFtIds = new Set<string>(
 		(apiSection?.freetextquestion_questions || []).map((apiQ) => apiQ.id).filter(Boolean)
 	);
+	const existingFuIds = new Set<string>(
+		(apiSection?.fileuploadquestion_questions || []).map((apiQ) => apiQ.id).filter(Boolean)
+	);
 
 	const localMcIds = new Set<string>();
 	const localFtIds = new Set<string>();
+	const localFuIds = new Set<string>();
 
 	for (const question of section.questions) {
 		if (question.type === 'multiple_choice') {
@@ -190,6 +220,13 @@ export async function syncConditionalSectionQuestions(
 				await syncMcQuestion(question, authHeader, orgQuestionnaireId, q, sectionApiId);
 			} else {
 				await createMcQuestion(question, sectionApiId, authHeader, orgQuestionnaireId);
+			}
+		} else if (question.type === 'file_upload') {
+			if (question._apiId) {
+				localFuIds.add(question._apiId);
+				await syncFuQuestion(question, authHeader, orgQuestionnaireId, sectionApiId);
+			} else {
+				await createFuQuestion(question, sectionApiId, authHeader, orgQuestionnaireId);
 			}
 		} else {
 			if (question._apiId) {
@@ -213,6 +250,14 @@ export async function syncConditionalSectionQuestions(
 	for (const existingId of existingFtIds) {
 		if (!localFtIds.has(existingId)) {
 			await questionnaireDeleteFtQuestion({
+				path: { org_questionnaire_id: orgQuestionnaireId, question_id: existingId },
+				headers: authHeader
+			});
+		}
+	}
+	for (const existingId of existingFuIds) {
+		if (!localFuIds.has(existingId)) {
+			await questionnaireDeleteFuQuestion({
 				path: { org_questionnaire_id: orgQuestionnaireId, question_id: existingId },
 				headers: authHeader
 			});

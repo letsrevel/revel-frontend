@@ -11,7 +11,6 @@
 	 * This ensures the UI updates instantly without waiting for server redirect
 	 */
 	onMount(async () => {
-		console.log('[LOGOUT PAGE] Clearing client-side auth state');
 		// Clear client-side auth state immediately
 		authStore.logout();
 		// Invalidate all data to ensure layout reloads

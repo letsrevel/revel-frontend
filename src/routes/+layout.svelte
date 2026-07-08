@@ -161,15 +161,6 @@
 			return;
 		}
 
-		console.log('[ROOT LAYOUT] Auth sync effect triggered', {
-			hasServerAccessToken,
-			hasRefreshToken,
-			impersonated,
-			hasCurrentToken: !!currentAccessToken,
-			presenceChanged,
-			identityChanged
-		});
-
 		previousServerHasToken = hasServerAccessToken;
 		previousFingerprint = fingerprint;
 
@@ -178,7 +169,6 @@
 		// logout guard, which would block the bootstrap below) so the new
 		// identity is loaded fresh.
 		if (hasServerAccessToken && currentAccessToken && identityChanged) {
-			console.log('[ROOT LAYOUT] Server identity changed, resetting store for swap');
 			authStore.resetForSwap();
 			queryClient.clear();
 			// Release the latch so the new identity can bootstrap below (Case 1).
@@ -192,15 +182,11 @@
 		// token. Note: read authStore.accessToken fresh here — resetForSwap()
 		// above may have just cleared it.
 		if (hasServerAccessToken && !authStore.accessToken) {
-			console.log('[ROOT LAYOUT] Server authenticated, store empty — bootstrapping', {
-				impersonated
-			});
 			bootstrapAuth(impersonated);
 		}
 		// Case 2: Server has no access token, but client store still has one
 		// (logout, or session cleared server-side).
 		else if (!hasServerAccessToken && currentAccessToken) {
-			console.log('[ROOT LAYOUT] No server access cookie, clearing auth state (logout)');
 			authStore.logout();
 			queryClient.clear();
 			initializationPromise = null;
@@ -210,25 +196,15 @@
 		// Impersonation never lands here (it has no refresh cookie), so refresh
 		// is correct.
 		else if (!hasServerAccessToken && hasRefreshToken && !authStore.accessToken) {
-			console.log('[ROOT LAYOUT] No access cookie but refresh cookie exists, refreshing');
 			bootstrapAuth(false);
 		}
-		// Case 4: Already authenticated with an unchanged identity (handled by the
-		// auto-refresh timer + 401 interceptor), or browsing as a guest.
-		else {
-			console.log('[ROOT LAYOUT] No bootstrap needed');
-		}
+		// Case 4 (no-op): already authenticated with an unchanged identity (handled
+		// by the auto-refresh timer + 401 interceptor), or browsing as a guest.
 	});
 
 	// Handle flash messages after navigation (including client-side navigation from login)
 	// Using afterNavigate instead of onMount because login uses use:enhance for client-side navigation
-	afterNavigate(({ from, to }) => {
-		console.log('[ROOT LAYOUT] afterNavigate triggered', {
-			from: from?.url?.pathname,
-			to: to?.url?.pathname,
-			allCookies: document.cookie
-		});
-
+	afterNavigate(() => {
 		// Check for claim flash cookie (from login/signup with pending tokens)
 		const claimFlashCookie = document.cookie
 			.split('; ')
@@ -238,13 +214,9 @@
 			try {
 				// Cookie value is URL-encoded base64 JSON (SvelteKit URL-encodes cookie values)
 				const urlEncodedValue = claimFlashCookie.substring('claim_flash='.length);
-				console.log('[ROOT LAYOUT] Found claim_flash cookie (URL-encoded):', urlEncodedValue);
 				const base64Value = decodeURIComponent(urlEncodedValue);
-				console.log('[ROOT LAYOUT] After URL decode (base64):', base64Value);
 				const jsonString = atob(base64Value);
-				console.log('[ROOT LAYOUT] Decoded JSON:', jsonString);
 				const claims = JSON.parse(jsonString) as ClaimResult[];
-				console.log('[ROOT LAYOUT] Parsed claims:', claims);
 
 				// Show toast for each successful claim
 				for (const claim of claims) {
@@ -259,7 +231,6 @@
 
 				// Delete the cookie after reading
 				document.cookie = 'claim_flash=; path=/; max-age=0';
-				console.log('[ROOT LAYOUT] Processed and cleared claim_flash cookie');
 			} catch (error) {
 				console.warn('[ROOT LAYOUT] Error processing claim_flash cookie:', error);
 				// Clear the cookie even on error

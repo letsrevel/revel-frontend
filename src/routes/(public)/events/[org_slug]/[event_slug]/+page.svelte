@@ -46,21 +46,6 @@
 
 	const { data }: { data: PageData } = $props();
 
-	// Server-side logging for staging diagnostics
-	if (typeof window === 'undefined') {
-		console.log('[EVENT PAGE SSR] Component initializing', {
-			hasEvent: !!data.event,
-			eventId: data.event?.id,
-			eventName: data.event?.name,
-			hasStart: !!data.event?.start,
-			hasEnd: !!data.event?.end,
-			hasTokenDetails: !!data.eventTokenDetails,
-			isAuthenticated: data.isAuthenticated,
-			resourcesCount: data.resources?.length || 0,
-			ticketTiersCount: data.ticketTiers?.length || 0
-		});
-	}
-
 	const queryClient = useQueryClient();
 
 	// Create mutable copies for client-side updates

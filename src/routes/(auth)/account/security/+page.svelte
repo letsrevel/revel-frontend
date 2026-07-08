@@ -57,28 +57,6 @@
 	const setupSuccess = $derived(form?.verified);
 	const disableSuccess = $derived(form?.disabled);
 
-	// Debug logging - track all reactive changes
-	$effect(() => {
-		console.log('[2FA Debug] Reactive state changed:', {
-			'form (full object)': form,
-			provisioningUri: provisioningUri,
-			setupSuccess: setupSuccess,
-			disableSuccess: disableSuccess,
-			showSetupFlow: showSetupFlow,
-			totpActive: totpActive
-		});
-	});
-
-	// Track showSetupFlow changes specifically
-	$effect(() => {
-		console.log('[2FA Debug] showSetupFlow changed to:', showSetupFlow);
-	});
-
-	// Track provisioningUri changes specifically
-	$effect(() => {
-		console.log('[2FA Debug] provisioningUri changed to:', provisioningUri);
-	});
-
 	// Extract manual entry code from provisioning URI
 	const manualEntryCode = $derived.by(() => {
 		if (!provisioningUri) return '';
@@ -246,24 +224,14 @@
 								method="POST"
 								action="?/setup"
 								use:enhance={() => {
-									console.log('[2FA Setup] Form submission starting');
 									isEnabling = true;
 									return async ({ result }) => {
-										console.log('[2FA Setup] Result received:', {
-											type: result.type,
-											status: 'status' in result ? result.status : undefined,
-											data: 'data' in result ? result.data : undefined
-										});
 										isEnabling = false;
 										if (result.type === 'success') {
-											console.log('[2FA Setup] Success! Calling applyAction...');
 											// Apply action to update form prop
 											await applyAction(result);
-											console.log('[2FA Setup] applyAction complete. Setting showSetupFlow = true');
 											showSetupFlow = true;
-											console.log('[2FA Setup] showSetupFlow set to:', showSetupFlow);
 										} else if (result.type === 'failure' && result.data) {
-											console.log('[2FA Setup] Failure:', result.data);
 											await applyAction(result);
 											const errors = actionErrors(result.data);
 											toast.error(errors.form || m['accountSecurityPage.toast_setupFailed']());

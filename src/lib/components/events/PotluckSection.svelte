@@ -237,13 +237,6 @@
 			itemId: string;
 			data: { name: string; item_type: string; quantity: string | null; note: string | null };
 		}): Promise<PotluckItemRetrieveSchema> => {
-			console.log('[PotluckSection] Updating item:', {
-				itemId,
-				data,
-				event_id: event.id,
-				hasManagePermission: permissions.hasManagePermission
-			});
-
 			const response = await fetch(`/api/events/${event.id}/potluck/${itemId}`, {
 				method: 'PATCH',
 				headers: { 'Content-Type': 'application/json' },
@@ -254,11 +247,6 @@
 					quantity: data.quantity || undefined,
 					note: data.note || undefined
 				})
-			});
-
-			console.log('[PotluckSection] Update response:', {
-				status: response.status,
-				ok: response.ok
 			});
 
 			if (!response.ok) {
@@ -274,14 +262,7 @@
 				throw new Error(m['potluck.error_failedToUpdate']());
 			}
 
-			const updatedItem = await response.json();
-			console.log('[PotluckSection] Update successful:', {
-				itemId: updatedItem.id,
-				is_owned: updatedItem.is_owned,
-				is_assigned: updatedItem.is_assigned
-			});
-
-			return updatedItem;
+			return await response.json();
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['potluck-items', event.id] });
@@ -298,20 +279,9 @@
 	// Mutation: Delete item (organizer only)
 	const deleteItemMutation = createMutation<void, Error, string>(() => ({
 		mutationFn: async (itemId: string): Promise<void> => {
-			console.log('[PotluckSection] Deleting item:', {
-				itemId,
-				event_id: event.id,
-				hasManagePermission: permissions.hasManagePermission
-			});
-
 			const response = await fetch(`/api/events/${event.id}/potluck/${itemId}`, {
 				method: 'DELETE',
 				credentials: 'include'
-			});
-
-			console.log('[PotluckSection] Delete response:', {
-				status: response.status,
-				ok: response.ok
 			});
 
 			if (!response.ok) {
@@ -326,8 +296,6 @@
 				}
 				throw new Error(m['potluck.error_failedToDelete']());
 			}
-
-			console.log('[PotluckSection] Delete successful');
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['potluck-items', event.id] });
