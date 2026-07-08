@@ -18,10 +18,25 @@
 	const REVEL_PERCENTAGE = 0.015; // 1.5%
 	const REVEL_FIXED = 0.25; // €0.25
 
-	const stripeFee = $derived(ticketPrice * STRIPE_PERCENTAGE + STRIPE_FIXED);
-	const revelFee = $derived(ticketPrice * REVEL_PERCENTAGE + REVEL_FIXED);
+	// Guard against empty/invalid/non-positive input, which would otherwise
+	// yield NaN/Infinity percentages and negative receivable amounts.
+	const safeTicketPrice = $derived(
+		typeof ticketPrice === 'number' && Number.isFinite(ticketPrice) && ticketPrice > 0
+			? ticketPrice
+			: 0
+	);
+
+	const stripeFee = $derived(
+		safeTicketPrice > 0 ? safeTicketPrice * STRIPE_PERCENTAGE + STRIPE_FIXED : 0
+	);
+	const revelFee = $derived(
+		safeTicketPrice > 0 ? safeTicketPrice * REVEL_PERCENTAGE + REVEL_FIXED : 0
+	);
 	const totalFees = $derived(stripeFee + revelFee);
-	const organizerReceives = $derived(ticketPrice - totalFees);
+	const organizerReceives = $derived(Math.max(safeTicketPrice - totalFees, 0));
+	const feePercentage = $derived(
+		safeTicketPrice > 0 ? ((totalFees / safeTicketPrice) * 100).toFixed(1) : '0.0'
+	);
 
 	function formatCurrency(amount: number): string {
 		return new Intl.NumberFormat('en-EU', {
@@ -129,7 +144,9 @@
 							</span>
 						</div>
 						<p class="mt-1 text-xs text-muted-foreground">
-							{m['learnMore.feeCalculator.perTicketSoldAt']({ price: formatCurrency(ticketPrice) })}
+							{m['learnMore.feeCalculator.perTicketSoldAt']({
+								price: formatCurrency(safeTicketPrice)
+							})}
 						</p>
 					</div>
 				</div>
@@ -138,7 +155,7 @@
 				<p class="text-center text-xs text-muted-foreground">
 					{m['learnMore.feeCalculator.totalFees']({
 						fees: formatCurrency(totalFees),
-						percentage: ((totalFees / ticketPrice) * 100).toFixed(1)
+						percentage: feePercentage
 					})}
 				</p>
 				<p class="text-center text-xs text-muted-foreground/70">

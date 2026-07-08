@@ -268,7 +268,6 @@
 				// Don't call update() - it clears the form prop
 				// Instead, manually update the form fields from the result
 				if (result.type === 'success' && result.data?.user) {
-					console.log('[Enhance] Got success result with user:', result.data.user);
 					const user = result.data.user as typeof data.user;
 					firstName = user?.first_name || '';
 					lastName = user?.last_name || '';

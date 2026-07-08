@@ -131,11 +131,15 @@ export function createTicketMemberAdmin(opts: Options) {
 					path: { slug: opts.getSlug() },
 					headers: { Authorization: `Bearer ${opts.getAccessToken()}` }
 				});
+				if (response.error) {
+					throw new Error(m['makeMemberAction.tiersLoadError']());
+				}
 				if (response.data) {
 					membershipTiers = response.data;
 				}
 			} catch (err) {
 				console.error('Failed to load membership tiers:', err);
+				toast.error(m['makeMemberAction.tiersLoadError']());
 			} finally {
 				tiersLoading = false;
 			}

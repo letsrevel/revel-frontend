@@ -52,7 +52,6 @@ export async function claimPendingTokens(
 	// Check for pending organization token
 	const orgToken = cookies.get('pending_org_token');
 	if (orgToken) {
-		console.log('[TOKEN-CLAIM] Attempting to claim organization token:', orgToken);
 		try {
 			const response = await organizationClaimInvitation({
 				path: { token: orgToken },
@@ -61,10 +60,6 @@ export async function claimPendingTokens(
 			});
 
 			if (response.response.ok && response.data) {
-				console.log(
-					'[TOKEN-CLAIM] Successfully claimed organization invitation:',
-					response.data.name
-				);
 				results.organization = {
 					type: 'organization',
 					success: true,
@@ -93,7 +88,6 @@ export async function claimPendingTokens(
 	// Check for pending event token
 	const eventToken = cookies.get('pending_event_token');
 	if (eventToken) {
-		console.log('[TOKEN-CLAIM] Attempting to claim event token:', eventToken);
 		try {
 			const response = await eventpublicdiscoveryClaimInvitation({
 				path: { token: eventToken },
@@ -102,7 +96,6 @@ export async function claimPendingTokens(
 			});
 
 			if (response.response.ok && response.data) {
-				console.log('[TOKEN-CLAIM] Successfully claimed event invitation:', response.data.name);
 				results.event = {
 					type: 'event',
 					success: true,
@@ -154,6 +147,5 @@ export function setClaimFlashCookie(cookies: Cookies, results: ClaimResults): vo
 		const jsonString = JSON.stringify(successfulClaims);
 		const encodedValue = Buffer.from(jsonString).toString('base64');
 		cookies.set('claim_flash', encodedValue, CLAIM_FLASH_COOKIE_OPTIONS);
-		console.log('[TOKEN-CLAIM] Set claim_flash cookie with', successfulClaims.length, 'claims');
 	}
 }

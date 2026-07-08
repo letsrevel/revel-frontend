@@ -249,9 +249,6 @@
 			}
 			return;
 		}
-
-		// Other actions (log for now)
-		console.log('Action clicked:', nextStep, { eventId, organizationSlug });
 	}
 
 	/**

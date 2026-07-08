@@ -524,7 +524,8 @@
 				<CornerDownRight class="mt-1 h-4 w-4 shrink-0 text-primary/60" aria-hidden="true" />
 			{/if}
 			<div class="flex-1">
-				<Label for={question.id} class="text-base">
+				<!-- FileUploadQuestion renders its file input with id `file-upload-<questionId>` -->
+				<Label for="file-upload-{question.id}" class="text-base">
 					<MarkdownContent content={question.question} inline={true} />
 					{#if question.is_mandatory}
 						<span class="text-destructive">*</span>

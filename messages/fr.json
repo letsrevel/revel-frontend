@@ -814,6 +814,8 @@
 		"plurals_items": "éléments",
 		"plurals_tag": "tag",
 		"plurals_tags": "tags",
+		"plurals_invitation": "invitation",
+		"plurals_invitations": "invitations",
 		"text_found": "trouvés",
 		"text_selected": "sélectionnés",
 		"text_claimed": "réservés",
@@ -2567,6 +2569,7 @@
 		"button": "Rendre membre",
 		"success": "{name} a été ajouté comme membre.",
 		"error": "Échec de l'ajout du membre. Veuillez réessayer.",
+		"tiersLoadError": "Échec du chargement des niveaux d'adhésion. Veuillez réessayer.",
 		"alreadyMember": "Cette personne est déjà membre."
 	},
 	"makeMemberModal": {

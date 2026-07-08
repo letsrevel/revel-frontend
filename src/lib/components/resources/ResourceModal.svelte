@@ -171,11 +171,6 @@
 				}
 			}
 
-			console.log('[ResourceModal] Updating resource:', {
-				resourceId: resource.id,
-				body
-			});
-
 			const response = await organizationadminresourcesUpdateResource({
 				path: { slug: organizationSlug, resource_id: resource.id },
 				body,

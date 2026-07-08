@@ -88,28 +88,22 @@ generatedClient.interceptors.response.use(async (response, request, options) => 
 		request.url.includes('/auth/login');
 
 	if (isAuthEndpoint) {
-		console.log('[API CLIENT] 401 on auth endpoint, not refreshing');
 		return response;
 	}
 
 	// IMPORTANT: Only attempt token refresh if user was previously authenticated
 	// If there's no auth state at all, don't try to refresh (prevents infinite loops)
 	if (!authStore.accessToken && !authStore.isAuthenticated) {
-		console.log('[API CLIENT] No auth state exists, not attempting refresh');
 		return response;
 	}
 
-	console.log('[API CLIENT] Received 401 on:', request.url);
-
 	// If we're already refreshing, queue this request
 	if (isRefreshing) {
-		console.log('[API CLIENT] Token refresh in progress, queuing request');
 		return new Promise((resolve, reject) => {
 			failedRequestsQueue.push({ resolve, reject, request, options });
 		});
 	}
 
-	console.log('[API CLIENT] Starting token refresh');
 	isRefreshing = true;
 
 	try {
@@ -117,8 +111,6 @@ generatedClient.interceptors.response.use(async (response, request, options) => 
 		// This ensures only ONE refresh happens at a time, even if the proactive
 		// timer in auth.svelte.ts also fires
 		await authStore.refreshAccessToken();
-
-		console.log('[API CLIENT] Token refresh successful, retrying requests');
 
 		// Get the new access token
 		const newAccessToken = authStore.accessToken;
@@ -131,10 +123,6 @@ generatedClient.interceptors.response.use(async (response, request, options) => 
 		}
 
 		// Process all queued requests with the new token
-		const queueLength = failedRequestsQueue.length;
-		if (queueLength > 0) {
-			console.log(`[API CLIENT] Processing ${queueLength} queued requests`);
-		}
 		processQueue(null, newAccessToken);
 
 		// Retry the original request with the new token

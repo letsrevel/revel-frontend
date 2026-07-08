@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
 	import { DialogFooter } from '$lib/components/ui/dialog';
@@ -9,6 +10,16 @@
 	}
 
 	const { isSubmitting, onClose }: Props = $props();
+
+	// Split the translated "Already have an account? <a>Log in</a>" string around
+	// its <a> markers so we can render a real anchor instead of {@html}-injecting
+	// translator-editable content (latent XSS channel).
+	const orLoginParts = $derived.by(() => {
+		const message = m['guest_attendance.or_login']();
+		const match = message.match(/^(.*)<a>(.*)<\/a>(.*)$/s);
+		if (!match) return { before: message, link: '', after: '' };
+		return { before: match[1], link: match[2], after: match[3] };
+	});
 </script>
 
 <div class="shrink-0">
@@ -34,10 +45,10 @@
 	<!-- Subtle login link -->
 	<div class="border-t pt-3 text-center text-xs text-muted-foreground">
 		<p>
-			<!-- eslint-disable-next-line svelte/no-at-html-tags -- static i18n string, no interpolated data; only a developer-authored <a>→login link is injected -->
-			{@html m['guest_attendance.or_login']()
-				.replace('<a>', '<a href="/login" class="text-primary hover:underline">')
-				.replace('</a>', '</a>')}
+			{orLoginParts.before}{#if orLoginParts.link}<a
+					href={resolve('/(public)/login', {})}
+					class="text-primary hover:underline">{orLoginParts.link}</a
+				>{/if}{orLoginParts.after}
 		</p>
 	</div>
 </div>

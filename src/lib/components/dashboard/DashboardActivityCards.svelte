@@ -108,7 +108,10 @@
 				<p class="mt-4 text-sm text-muted-foreground">
 					{m['dashboard.activityCards.pendingInvitationsDescription']({
 						count: pendingInvitationsCount,
-						invitationPlural: pendingInvitationsCount === 1 ? 'invitation' : 'invitations'
+						invitationPlural:
+							pendingInvitationsCount === 1
+								? m['common.plurals_invitation']()
+								: m['common.plurals_invitations']()
 					})}
 				</p>
 			</a>
