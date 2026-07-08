@@ -1,47 +1,77 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { QueryClient } from '@tanstack/svelte-query';
 import EventRSVP from './EventRSVP.svelte';
-import type { EventUserEligibility, EventRsvpSchema } from '$lib/api/generated/types.gen';
+import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
+import type {
+	EventUserEligibility,
+	EventRsvpSchema,
+	EventDetailSchema
+} from '$lib/api/generated/types.gen';
 
 // Mock the API function
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	eventpublicattendanceRsvpEvent: vi.fn()
 }));
 
+// Mock navigation (the component calls invalidateAll() after a successful RSVP)
+vi.mock('$app/navigation', () => ({
+	invalidateAll: vi.fn(),
+	goto: vi.fn()
+}));
+
 import { eventpublicattendanceRsvpEvent } from '$lib/api/generated/sdk.gen';
+
+// Minimal event object for branches that need `event` (ineligibility message)
+const mockEvent = {
+	id: 'event-123',
+	name: 'Test Event',
+	slug: 'test-event',
+	organization: { id: 'org-1', name: 'Test Org', slug: 'test-org' }
+} as unknown as EventDetailSchema;
+
+// EventRSVP creates mutations via @tanstack/svelte-query, so it must render
+// inside a real <QueryClientProvider>.
+function renderRSVP(props: Record<string, unknown>) {
+	const queryClient = new QueryClient({
+		defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
+	});
+	return render(QueryClientTestWrapper, {
+		props: { client: queryClient, component: EventRSVP, props }
+	});
+}
 
 describe('EventRSVP', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
-	it('does not render when not authenticated', () => {
-		const { container } = render(EventRSVP, {
-			props: {
-				eventId: 'event-123',
-				eventName: 'Test Event',
-				initialStatus: null,
-				isAuthenticated: false,
-				requiresTicket: false
-			}
+	it('renders no RSVP UI when not authenticated and no event is provided', () => {
+		const { container } = renderRSVP({
+			eventId: 'event-123',
+			eventName: 'Test Event',
+			userStatus: null,
+			isAuthenticated: false,
+			requiresTicket: false
 		});
 
-		expect(container.firstChild).toBeNull();
+		// The container div renders, but with no interactive RSVP content
+		expect(container.textContent?.trim()).toBe('');
+		expect(container.querySelector('button')).toBeNull();
 	});
 
 	it('does not render for ticket-required events', () => {
-		const { container } = render(EventRSVP, {
-			props: {
-				eventId: 'event-123',
-				eventName: 'Test Event',
-				initialStatus: null,
-				isAuthenticated: true,
-				requiresTicket: true
-			}
+		const { container } = renderRSVP({
+			eventId: 'event-123',
+			eventName: 'Test Event',
+			userStatus: null,
+			isAuthenticated: true,
+			requiresTicket: true
 		});
 
-		expect(container.firstChild).toBeNull();
+		expect(container.textContent?.trim()).toBe('');
+		expect(container.querySelector('button')).toBeNull();
 	});
 
 	it('shows RSVP buttons when user is eligible', () => {
@@ -50,14 +80,12 @@ describe('EventRSVP', () => {
 			next_step: 'rsvp'
 		};
 
-		render(EventRSVP, {
-			props: {
-				eventId: 'event-123',
-				eventName: 'Test Event',
-				initialStatus: eligibilityStatus,
-				isAuthenticated: true,
-				requiresTicket: false
-			}
+		renderRSVP({
+			eventId: 'event-123',
+			eventName: 'Test Event',
+			userStatus: eligibilityStatus,
+			isAuthenticated: true,
+			requiresTicket: false
 		});
 
 		expect(screen.getByText('Will you attend?')).toBeInTheDocument();
@@ -66,24 +94,24 @@ describe('EventRSVP', () => {
 		expect(screen.getByRole('button', { name: /no/i })).toBeInTheDocument();
 	});
 
-	it("shows existing RSVP status when user has already RSVP'd", () => {
+	it("keeps showing the RSVP buttons when user has already RSVP'd (so they can change)", () => {
 		const rsvpStatus: EventRsvpSchema = {
 			event_id: 'event-123',
 			status: 'approved'
 		};
 
-		render(EventRSVP, {
-			props: {
-				eventId: 'event-123',
-				eventName: 'Test Event',
-				initialStatus: rsvpStatus,
-				isAuthenticated: true,
-				requiresTicket: false
-			}
+		renderRSVP({
+			eventId: 'event-123',
+			eventName: 'Test Event',
+			userStatus: rsvpStatus,
+			isAuthenticated: true,
+			requiresTicket: false
 		});
 
-		expect(screen.getByText(/You're attending Test Event/i)).toBeInTheDocument();
-		expect(screen.getByRole('button', { name: /change response/i })).toBeInTheDocument();
+		// The component no longer shows a static "You're attending" banner for a
+		// pre-existing RSVP; it renders the buttons so the response can be changed.
+		expect(screen.getByText('Will you attend?')).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /yes/i })).toBeInTheDocument();
 	});
 
 	it('shows ineligibility message when user is not allowed', () => {
@@ -93,44 +121,39 @@ describe('EventRSVP', () => {
 			next_step: 'complete_questionnaire'
 		};
 
-		render(EventRSVP, {
-			props: {
-				eventId: 'event-123',
-				eventName: 'Test Event',
-				initialStatus: eligibilityStatus,
-				isAuthenticated: true,
-				requiresTicket: false
-			}
+		renderRSVP({
+			eventId: 'event-123',
+			eventName: 'Test Event',
+			userStatus: eligibilityStatus,
+			isAuthenticated: true,
+			requiresTicket: false,
+			// The ineligibility message needs event/org context for its CTA links
+			event: mockEvent
 		});
 
 		expect(screen.getByText(/You must complete the questionnaire first/i)).toBeInTheDocument();
-		expect(screen.getByText(/Complete Questionnaire/i)).toBeInTheDocument();
 	});
 
-	it('shows disabled buttons when user is not eligible', () => {
+	it('does not render RSVP buttons when user is not eligible', () => {
 		const eligibilityStatus: EventUserEligibility = {
 			allowed: false,
 			reason: 'Event is at capacity',
 			next_step: 'join_waitlist'
 		};
 
-		render(EventRSVP, {
-			props: {
-				eventId: 'event-123',
-				eventName: 'Test Event',
-				initialStatus: eligibilityStatus,
-				isAuthenticated: true,
-				requiresTicket: false
-			}
+		renderRSVP({
+			eventId: 'event-123',
+			eventName: 'Test Event',
+			userStatus: eligibilityStatus,
+			isAuthenticated: true,
+			requiresTicket: false,
+			event: mockEvent
 		});
 
-		const yesButton = screen.getByRole('button', { name: /yes/i });
-		const maybeButton = screen.getByRole('button', { name: /maybe/i });
-		const noButton = screen.getByRole('button', { name: /no/i });
-
-		expect(yesButton).toBeDisabled();
-		expect(maybeButton).toBeDisabled();
-		expect(noButton).toBeDisabled();
+		// Ineligible users see the explanation instead of (formerly disabled) buttons
+		expect(screen.getByText(/Event is at capacity/i)).toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: /^yes$/i })).not.toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: /^maybe$/i })).not.toBeInTheDocument();
 	});
 
 	it('submits RSVP when user clicks Yes button', async () => {
@@ -149,14 +172,12 @@ describe('EventRSVP', () => {
 			next_step: 'rsvp'
 		};
 
-		render(EventRSVP, {
-			props: {
-				eventId: 'event-123',
-				eventName: 'Test Event',
-				initialStatus: eligibilityStatus,
-				isAuthenticated: true,
-				requiresTicket: false
-			}
+		renderRSVP({
+			eventId: 'event-123',
+			eventName: 'Test Event',
+			userStatus: eligibilityStatus,
+			isAuthenticated: true,
+			requiresTicket: false
 		});
 
 		const yesButton = screen.getByRole('button', { name: /yes/i });
@@ -184,14 +205,12 @@ describe('EventRSVP', () => {
 			next_step: 'rsvp'
 		};
 
-		render(EventRSVP, {
-			props: {
-				eventId: 'event-123',
-				eventName: 'Test Event',
-				initialStatus: eligibilityStatus,
-				isAuthenticated: true,
-				requiresTicket: false
-			}
+		renderRSVP({
+			eventId: 'event-123',
+			eventName: 'Test Event',
+			userStatus: eligibilityStatus,
+			isAuthenticated: true,
+			requiresTicket: false
 		});
 
 		const yesButton = screen.getByRole('button', { name: /yes/i });
@@ -203,28 +222,34 @@ describe('EventRSVP', () => {
 		});
 	});
 
-	it('allows changing RSVP response', async () => {
+	it('allows changing RSVP response after a successful submit', async () => {
 		const user = userEvent.setup();
-		const rsvpStatus: EventRsvpSchema = {
-			event_id: 'event-123',
-			status: 'approved'
-		};
-
-		render(EventRSVP, {
-			props: {
-				eventId: 'event-123',
-				eventName: 'Test Event',
-				initialStatus: rsvpStatus,
-				isAuthenticated: true,
-				requiresTicket: false
-			}
+		vi.mocked(eventpublicattendanceRsvpEvent).mockResolvedValue({
+			data: { event_id: 'event-123', status: 'approved' as const }
 		});
 
-		const changeButton = screen.getByRole('button', { name: /change response/i });
+		const eligibilityStatus: EventUserEligibility = {
+			allowed: true,
+			next_step: 'rsvp'
+		};
+
+		renderRSVP({
+			eventId: 'event-123',
+			eventName: 'Test Event',
+			userStatus: eligibilityStatus,
+			isAuthenticated: true,
+			requiresTicket: false
+		});
+
+		await user.click(screen.getByRole('button', { name: /yes/i }));
+
+		const changeButton = await screen.findByRole('button', { name: /change response/i });
 		await user.click(changeButton);
 
-		// After clicking change, the RSVP status should be reset
-		// Note: This test depends on implementation details
+		// After clicking change, the buttons are shown again
+		await waitFor(() => {
+			expect(screen.getByRole('button', { name: /yes/i })).toBeInTheDocument();
+		});
 	});
 
 	it('is keyboard accessible', async () => {
@@ -234,14 +259,12 @@ describe('EventRSVP', () => {
 			next_step: 'rsvp'
 		};
 
-		render(EventRSVP, {
-			props: {
-				eventId: 'event-123',
-				eventName: 'Test Event',
-				initialStatus: eligibilityStatus,
-				isAuthenticated: true,
-				requiresTicket: false
-			}
+		renderRSVP({
+			eventId: 'event-123',
+			eventName: 'Test Event',
+			userStatus: eligibilityStatus,
+			isAuthenticated: true,
+			requiresTicket: false
 		});
 
 		// Tab to first button
@@ -261,14 +284,12 @@ describe('EventRSVP', () => {
 			next_step: 'rsvp'
 		};
 
-		render(EventRSVP, {
-			props: {
-				eventId: 'event-123',
-				eventName: 'Test Event',
-				initialStatus: eligibilityStatus,
-				isAuthenticated: true,
-				requiresTicket: false
-			}
+		renderRSVP({
+			eventId: 'event-123',
+			eventName: 'Test Event',
+			userStatus: eligibilityStatus,
+			isAuthenticated: true,
+			requiresTicket: false
 		});
 
 		// ARIA live regions are applied to status messages

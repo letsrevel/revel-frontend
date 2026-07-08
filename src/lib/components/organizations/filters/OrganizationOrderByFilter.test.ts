@@ -62,7 +62,11 @@ describe('OrganizationOrderByFilter', () => {
 			}
 		});
 
+		// The info button precedes the select in DOM order, so it receives
+		// focus first; the select is reachable on the next Tab.
 		const select = screen.getByRole('combobox');
+		await user.tab();
+		expect(screen.getByRole('button', { name: 'Sort order information' })).toHaveFocus();
 		await user.tab();
 		expect(select).toHaveFocus();
 	});

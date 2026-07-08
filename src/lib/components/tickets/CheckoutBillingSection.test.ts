@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import CheckoutBillingSection from './CheckoutBillingSection.svelte';
+import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 
 // Mock API functions
 vi.mock('$lib/api/generated/sdk.gen', () => ({
@@ -41,6 +42,7 @@ vi.mock('$lib/paraglide/messages.js', () => ({
 	'checkout.billing.requestInvoiceDescription': () =>
 		'Provide your billing details to receive an invoice.',
 	'checkout.billing.billingName': () => 'Legal Name',
+	'checkout.billing.required': () => 'required',
 	'checkout.billing.billingNamePlaceholder': () => 'Full legal name or company name',
 	'checkout.billing.billingAddress': () => 'Billing Address',
 	'checkout.billing.billingAddressPlaceholder': () => 'Street, city, postal code',
@@ -82,9 +84,12 @@ function renderWithQueryClient(props: Record<string, unknown> = {}) {
 	const queryClient = new QueryClient({
 		defaultOptions: { queries: { retry: false } }
 	});
-	return render(CheckoutBillingSection, {
-		props: { ...defaultProps, ...props },
-		context: new Map([['$$_queryClient', queryClient]])
+	return render(QueryClientTestWrapper, {
+		props: {
+			client: queryClient,
+			component: CheckoutBillingSection,
+			props: { ...defaultProps, ...props }
+		}
 	});
 }
 
@@ -94,15 +99,15 @@ describe('CheckoutBillingSection', () => {
 	});
 
 	describe('collapsed state', () => {
-		it('renders the toggle button with correct label', () => {
+		it('renders the toggle checkbox with correct label', () => {
 			renderWithQueryClient();
-			expect(screen.getByRole('button', { name: /Request Invoice/i })).toBeInTheDocument();
+			expect(screen.getByRole('checkbox', { name: /Request Invoice/i })).toBeInTheDocument();
 		});
 
-		it('toggle button has aria-expanded=false when collapsed', () => {
+		it('toggle checkbox is unchecked when collapsed', () => {
 			renderWithQueryClient();
-			const button = screen.getByRole('button', { name: /Request Invoice/i });
-			expect(button).toHaveAttribute('aria-expanded', 'false');
+			const button = screen.getByRole('checkbox', { name: /Request Invoice/i });
+			expect(button).toHaveAttribute('aria-checked', 'false');
 		});
 
 		it('does not show form fields when collapsed', () => {
@@ -110,9 +115,9 @@ describe('CheckoutBillingSection', () => {
 			expect(screen.queryByLabelText(/Legal Name/i)).not.toBeInTheDocument();
 		});
 
-		it('toggle button is keyboard accessible', () => {
+		it('toggle checkbox is keyboard accessible', () => {
 			renderWithQueryClient();
-			const button = screen.getByRole('button', { name: /Request Invoice/i });
+			const button = screen.getByRole('checkbox', { name: /Request Invoice/i });
 			expect(button).toBeInTheDocument();
 			expect(button.tagName).toBe('BUTTON');
 			expect(button).not.toBeDisabled();
@@ -122,7 +127,7 @@ describe('CheckoutBillingSection', () => {
 	describe('expanded state', () => {
 		it('shows form fields after clicking toggle', async () => {
 			renderWithQueryClient();
-			const button = screen.getByRole('button', { name: /Request Invoice/i });
+			const button = screen.getByRole('checkbox', { name: /Request Invoice/i });
 			await fireEvent.click(button);
 
 			expect(screen.getByLabelText(/Legal Name/i)).toBeInTheDocument();
@@ -132,16 +137,16 @@ describe('CheckoutBillingSection', () => {
 			expect(screen.getByLabelText(/VAT ID/i)).toBeInTheDocument();
 		});
 
-		it('toggle button has aria-expanded=true when open', async () => {
+		it('toggle checkbox is checked when open', async () => {
 			renderWithQueryClient();
-			const button = screen.getByRole('button', { name: /Request Invoice/i });
+			const button = screen.getByRole('checkbox', { name: /Request Invoice/i });
 			await fireEvent.click(button);
-			expect(button).toHaveAttribute('aria-expanded', 'true');
+			expect(button).toHaveAttribute('aria-checked', 'true');
 		});
 
 		it('shows description text when expanded', async () => {
 			renderWithQueryClient();
-			await fireEvent.click(screen.getByRole('button', { name: /Request Invoice/i }));
+			await fireEvent.click(screen.getByRole('checkbox', { name: /Request Invoice/i }));
 			expect(
 				screen.getByText(/Provide your billing details to receive an invoice/i)
 			).toBeInTheDocument();
@@ -149,26 +154,26 @@ describe('CheckoutBillingSection', () => {
 
 		it('does not show save to profile checkbox for unauthenticated users', async () => {
 			renderWithQueryClient({ isAuthenticated: false });
-			await fireEvent.click(screen.getByRole('button', { name: /Request Invoice/i }));
+			await fireEvent.click(screen.getByRole('checkbox', { name: /Request Invoice/i }));
 			expect(screen.queryByText(/Save billing info to my profile/i)).not.toBeInTheDocument();
 		});
 
 		it('shows save to profile checkbox for authenticated users', async () => {
 			renderWithQueryClient({ isAuthenticated: true, authToken: 'token-xyz' });
-			await fireEvent.click(screen.getByRole('button', { name: /Request Invoice/i }));
+			await fireEvent.click(screen.getByRole('checkbox', { name: /Request Invoice/i }));
 			expect(screen.getByText(/Save billing info to my profile/i)).toBeInTheDocument();
 		});
 
 		it('billing name field is marked as required', async () => {
 			renderWithQueryClient();
-			await fireEvent.click(screen.getByRole('button', { name: /Request Invoice/i }));
+			await fireEvent.click(screen.getByRole('checkbox', { name: /Request Invoice/i }));
 			const nameInput = screen.getByLabelText(/Legal Name/i);
 			expect(nameInput).toHaveAttribute('aria-required', 'true');
 		});
 
 		it('collapses section on second click', async () => {
 			renderWithQueryClient();
-			const button = screen.getByRole('button', { name: /Request Invoice/i });
+			const button = screen.getByRole('checkbox', { name: /Request Invoice/i });
 			await fireEvent.click(button);
 			expect(screen.getByLabelText(/Legal Name/i)).toBeInTheDocument();
 			await fireEvent.click(button);
@@ -179,7 +184,7 @@ describe('CheckoutBillingSection', () => {
 	describe('VAT preview', () => {
 		it('shows VAT preview section when VAT ID has a value', async () => {
 			renderWithQueryClient();
-			await fireEvent.click(screen.getByRole('button', { name: /Request Invoice/i }));
+			await fireEvent.click(screen.getByRole('checkbox', { name: /Request Invoice/i }));
 
 			const vatInput = screen.getByLabelText(/VAT ID/i);
 			await fireEvent.input(vatInput, { target: { value: 'ATU12345678' } });
@@ -192,7 +197,7 @@ describe('CheckoutBillingSection', () => {
 
 		it('shows VAT preview totals after fetch', async () => {
 			renderWithQueryClient();
-			await fireEvent.click(screen.getByRole('button', { name: /Request Invoice/i }));
+			await fireEvent.click(screen.getByRole('checkbox', { name: /Request Invoice/i }));
 
 			const vatInput = screen.getByLabelText(/VAT ID/i);
 			await fireEvent.input(vatInput, { target: { value: 'ATU12345678' } });
@@ -207,7 +212,7 @@ describe('CheckoutBillingSection', () => {
 
 		it('shows VAT ID valid status when validation succeeds', async () => {
 			renderWithQueryClient();
-			await fireEvent.click(screen.getByRole('button', { name: /Request Invoice/i }));
+			await fireEvent.click(screen.getByRole('checkbox', { name: /Request Invoice/i }));
 
 			const vatInput = screen.getByLabelText(/VAT ID/i);
 			await fireEvent.input(vatInput, { target: { value: 'ATU12345678' } });
@@ -236,7 +241,7 @@ describe('CheckoutBillingSection', () => {
 			});
 
 			renderWithQueryClient();
-			await fireEvent.click(screen.getByRole('button', { name: /Request Invoice/i }));
+			await fireEvent.click(screen.getByRole('checkbox', { name: /Request Invoice/i }));
 
 			const vatInput = screen.getByLabelText(/VAT ID/i);
 			await fireEvent.input(vatInput, { target: { value: 'DE123456789' } });
@@ -256,7 +261,7 @@ describe('CheckoutBillingSection', () => {
 			});
 
 			renderWithQueryClient();
-			await fireEvent.click(screen.getByRole('button', { name: /Request Invoice/i }));
+			await fireEvent.click(screen.getByRole('checkbox', { name: /Request Invoice/i }));
 
 			const vatInput = screen.getByLabelText(/VAT ID/i);
 			await fireEvent.input(vatInput, { target: { value: 'INVALID' } });
@@ -269,9 +274,9 @@ describe('CheckoutBillingSection', () => {
 	});
 
 	describe('disabled state', () => {
-		it('disables toggle button when disabled prop is true', () => {
+		it('disables toggle checkbox when disabled prop is true', () => {
 			renderWithQueryClient({ disabled: true });
-			const button = screen.getByRole('button', { name: /Request Invoice/i });
+			const button = screen.getByRole('checkbox', { name: /Request Invoice/i });
 			expect(button).toBeDisabled();
 		});
 	});
@@ -295,7 +300,7 @@ describe('CheckoutBillingSection', () => {
 			});
 
 			renderWithQueryClient({ isAuthenticated: true, authToken: 'token-xyz' });
-			await fireEvent.click(screen.getByRole('button', { name: /Request Invoice/i }));
+			await fireEvent.click(screen.getByRole('checkbox', { name: /Request Invoice/i }));
 
 			await waitFor(() => {
 				const nameInput = screen.getByLabelText(/Legal Name/i) as HTMLInputElement;

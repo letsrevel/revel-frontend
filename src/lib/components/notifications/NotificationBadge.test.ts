@@ -1,7 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
+import { QueryClient } from '@tanstack/svelte-query';
 import NotificationBadge from './NotificationBadge.svelte';
+import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import * as api from '$lib/api/generated';
 
 // Mock the API
@@ -44,14 +45,18 @@ describe('NotificationBadge', () => {
 		queryClient.clear();
 	});
 
-	it('renders badge with unread count', async () => {
-		render(QueryClientProvider, {
+	function renderBadge(props: Record<string, unknown> = {}) {
+		return render(QueryClientTestWrapper, {
 			props: {
 				client: queryClient,
-				children: NotificationBadge,
-				authToken: 'test-token'
+				component: NotificationBadge,
+				props: { authToken: 'test-token', ...props }
 			}
 		});
+	}
+
+	it('renders badge with unread count', async () => {
+		renderBadge();
 
 		await waitFor(() => {
 			expect(screen.getByRole('status')).toBeInTheDocument();
@@ -64,13 +69,7 @@ describe('NotificationBadge', () => {
 	it('does not render badge when count is 0 by default', async () => {
 		vi.mocked(api.notificationUnreadCount).mockResolvedValue(unreadCountResult(0));
 
-		render(QueryClientProvider, {
-			props: {
-				client: queryClient,
-				children: NotificationBadge,
-				authToken: 'test-token'
-			}
-		});
+		renderBadge();
 
 		await waitFor(() => {
 			expect(api.notificationUnreadCount).toHaveBeenCalled();
@@ -82,14 +81,7 @@ describe('NotificationBadge', () => {
 	it('renders badge when count is 0 if showZero is true', async () => {
 		vi.mocked(api.notificationUnreadCount).mockResolvedValue(unreadCountResult(0));
 
-		render(QueryClientProvider, {
-			props: {
-				client: queryClient,
-				children: NotificationBadge,
-				authToken: 'test-token',
-				showZero: true
-			}
-		});
+		renderBadge({ showZero: true });
 
 		await waitFor(() => {
 			expect(screen.getByRole('status')).toBeInTheDocument();
@@ -101,14 +93,7 @@ describe('NotificationBadge', () => {
 	it('displays "99+" when count exceeds maxCount', async () => {
 		vi.mocked(api.notificationUnreadCount).mockResolvedValue(unreadCountResult(150));
 
-		render(QueryClientProvider, {
-			props: {
-				client: queryClient,
-				children: NotificationBadge,
-				authToken: 'test-token',
-				maxCount: 99
-			}
-		});
+		renderBadge({ maxCount: 99 });
 
 		await waitFor(() => {
 			expect(screen.getByText('99+')).toBeInTheDocument();
@@ -120,14 +105,7 @@ describe('NotificationBadge', () => {
 	it('uses custom maxCount', async () => {
 		vi.mocked(api.notificationUnreadCount).mockResolvedValue(unreadCountResult(60));
 
-		render(QueryClientProvider, {
-			props: {
-				client: queryClient,
-				children: NotificationBadge,
-				authToken: 'test-token',
-				maxCount: 50
-			}
-		});
+		renderBadge({ maxCount: 50 });
 
 		await waitFor(() => {
 			expect(screen.getByText('50+')).toBeInTheDocument();
@@ -137,14 +115,7 @@ describe('NotificationBadge', () => {
 	it('calls onCountChange callback when count changes', async () => {
 		const onCountChange = vi.fn();
 
-		render(QueryClientProvider, {
-			props: {
-				client: queryClient,
-				children: NotificationBadge,
-				authToken: 'test-token',
-				onCountChange
-			}
-		});
+		renderBadge({ onCountChange });
 
 		await waitFor(() => {
 			expect(onCountChange).toHaveBeenCalledWith(5);
@@ -152,13 +123,7 @@ describe('NotificationBadge', () => {
 	});
 
 	it('includes authorization header in API call', async () => {
-		render(QueryClientProvider, {
-			props: {
-				client: queryClient,
-				children: NotificationBadge,
-				authToken: 'my-secret-token'
-			}
-		});
+		renderBadge({ authToken: 'my-secret-token' });
 
 		await waitFor(() => {
 			expect(api.notificationUnreadCount).toHaveBeenCalledWith({
@@ -173,19 +138,18 @@ describe('NotificationBadge', () => {
 
 		vi.mocked(api.notificationUnreadCount).mockRejectedValue(new Error('Network error'));
 
-		render(QueryClientProvider, {
-			props: {
-				client: queryClient,
-				children: NotificationBadge,
-				authToken: 'test-token'
-			}
-		});
+		renderBadge();
 
-		await waitFor(() => {
-			expect(consoleWarnSpy).toHaveBeenCalledWith(
-				'[NotificationBadge] Failed to fetch unread count'
-			);
-		});
+		// The component sets `retry: 1` on the query, so the error state only
+		// settles after the built-in retry delay — allow more than the default 1s.
+		await waitFor(
+			() => {
+				expect(consoleWarnSpy).toHaveBeenCalledWith(
+					'[NotificationBadge] Failed to fetch unread count'
+				);
+			},
+			{ timeout: 4000 }
+		);
 
 		// Badge should not be rendered on error
 		expect(screen.queryByRole('status')).not.toBeInTheDocument();
@@ -196,13 +160,7 @@ describe('NotificationBadge', () => {
 	it('has correct ARIA labels for accessibility', async () => {
 		vi.mocked(api.notificationUnreadCount).mockResolvedValue(unreadCountResult(1));
 
-		render(QueryClientProvider, {
-			props: {
-				client: queryClient,
-				children: NotificationBadge,
-				authToken: 'test-token'
-			}
-		});
+		renderBadge();
 
 		await waitFor(() => {
 			expect(screen.getByLabelText('1 unread notification')).toBeInTheDocument();
@@ -210,14 +168,7 @@ describe('NotificationBadge', () => {
 	});
 
 	it('applies custom className', async () => {
-		render(QueryClientProvider, {
-			props: {
-				client: queryClient,
-				children: NotificationBadge,
-				authToken: 'test-token',
-				class: 'custom-badge-class'
-			}
-		});
+		renderBadge({ class: 'custom-badge-class' });
 
 		await waitFor(() => {
 			const badge = screen.getByRole('status');
@@ -226,13 +177,7 @@ describe('NotificationBadge', () => {
 	});
 
 	it('has role="status" and aria-live="polite"', async () => {
-		render(QueryClientProvider, {
-			props: {
-				client: queryClient,
-				children: NotificationBadge,
-				authToken: 'test-token'
-			}
-		});
+		renderBadge();
 
 		await waitFor(() => {
 			const badge = screen.getByRole('status');

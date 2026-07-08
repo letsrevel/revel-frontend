@@ -10,7 +10,7 @@ const mockEvent: EventDetailSchema = {
 	slug: 'test-event',
 	event_type: 'public',
 	visibility: 'public',
-	status: 'approved',
+	status: 'open',
 	organization: {
 		id: 'org-1',
 		name: 'Test Organization',
@@ -92,9 +92,19 @@ describe('EventQuickInfo', () => {
 		expect(screen.getByText('Limited spots remaining')).toBeInTheDocument();
 	});
 
-	it('displays RSVP deadline when rsvp_before is set', () => {
-		render(EventQuickInfo, { props: { event: mockEvent } });
+	it('displays RSVP deadline when rsvp_before is set in the future', () => {
+		// Use a future deadline relative to "now" — past deadlines render "RSVP closed"
+		const futureDeadline = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+		const eventWithFutureDeadline = { ...mockEvent, rsvp_before: futureDeadline };
+		render(EventQuickInfo, { props: { event: eventWithFutureDeadline } });
 		expect(screen.getByText(/RSVP by/i)).toBeInTheDocument();
+	});
+
+	it('displays "RSVP closed" when rsvp_before is in the past', () => {
+		const pastDeadline = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+		const eventWithPastDeadline = { ...mockEvent, rsvp_before: pastDeadline };
+		render(EventQuickInfo, { props: { event: eventWithPastDeadline } });
+		expect(screen.getByText('RSVP closed')).toBeInTheDocument();
 	});
 
 	it('does not display RSVP deadline when rsvp_before is not set', () => {
@@ -103,9 +113,15 @@ describe('EventQuickInfo', () => {
 		expect(screen.queryByText(/RSVP/i)).not.toBeInTheDocument();
 	});
 
-	it('handles location without city', () => {
+	it('shows the address when there is no city', () => {
 		const eventWithoutCity = { ...mockEvent, city: null };
 		render(EventQuickInfo, { props: { event: eventWithoutCity } });
+		expect(screen.getByText('123 Test St')).toBeInTheDocument();
+	});
+
+	it('shows "Location TBD" when there is no city and no address', () => {
+		const eventWithoutLocation = { ...mockEvent, city: null, address: null };
+		render(EventQuickInfo, { props: { event: eventWithoutLocation } });
 		expect(screen.getByText('Location TBD')).toBeInTheDocument();
 	});
 

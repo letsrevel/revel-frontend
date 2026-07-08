@@ -2,11 +2,15 @@ import { describe, it, expect, vi, beforeAll, afterEach } from 'vitest';
 import { scrollToFirstInvalid } from './scroll';
 
 beforeAll(() => {
-	// jsdom doesn't implement scrollIntoView. Stub it on the prototype so per-element
-	// `vi.spyOn(el, 'scrollIntoView')` works in each test.
+	// jsdom doesn't implement scrollIntoView. Stub it on the prototype with a plain
+	// no-op (NOT a vi.fn) so per-element `vi.spyOn(el, 'scrollIntoView')` creates a
+	// fresh own-property spy per element. If the prototype method were already a
+	// mock, vi.spyOn would return that shared mock, making every "per-element spy"
+	// alias the same call state and leak calls across tests.
 	if (!Element.prototype.scrollIntoView) {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		(Element.prototype as any).scrollIntoView = vi.fn();
+		Element.prototype.scrollIntoView = function noopScrollIntoView() {
+			// intentional no-op: jsdom has no layout engine to scroll
+		};
 	}
 });
 

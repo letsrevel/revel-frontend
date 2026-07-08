@@ -2,7 +2,8 @@ import { render, screen, waitFor } from '@testing-library/svelte';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import NotificationDropdown from './NotificationDropdown.svelte';
-import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
+import { QueryClient } from '@tanstack/svelte-query';
+import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 
 // Mock the API
 vi.mock('$lib/api/generated', () => ({
@@ -56,14 +57,17 @@ describe('NotificationDropdown', () => {
 			}
 		});
 		vi.clearAllMocks();
+		// bits-ui toggles pointer-events on <body> while a menu is open; jsdom
+		// keeps <body> across tests, so reset to avoid poisoning later clicks.
+		document.body.style.pointerEvents = '';
 	});
 
 	function renderWithQuery(props: Record<string, unknown> = {}) {
-		return render(QueryClientProvider, {
+		return render(QueryClientTestWrapper, {
 			props: {
 				client: queryClient,
-				children: NotificationDropdown,
-				childProps: {
+				component: NotificationDropdown,
+				props: {
 					authToken: 'test-token',
 					...props
 				}
@@ -95,7 +99,7 @@ describe('NotificationDropdown', () => {
 		await user.click(button);
 
 		await waitFor(() => {
-			expect(screen.getByText(/notifications/i)).toBeInTheDocument();
+			expect(screen.getByRole('menu')).toBeInTheDocument();
 		});
 	});
 
@@ -155,7 +159,7 @@ describe('NotificationDropdown', () => {
 		await user.keyboard('{Enter}');
 
 		await waitFor(() => {
-			expect(screen.getByText(/notifications/i)).toBeInTheDocument();
+			expect(screen.getByRole('menu')).toBeInTheDocument();
 		});
 
 		// Escape to close

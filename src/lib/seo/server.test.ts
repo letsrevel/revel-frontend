@@ -23,9 +23,16 @@ describe('resolveLang', () => {
 		expect(resolveLang(req)).toBe('it');
 	});
 
+	it('returns fr when Accept-Language has fr', () => {
+		const req = new Request('https://x.test/', {
+			headers: { 'accept-language': 'fr,en;q=0.5' }
+		});
+		expect(resolveLang(req)).toBe('fr');
+	});
+
 	it('falls back to en for unknown languages', () => {
 		const req = new Request('https://x.test/', {
-			headers: { 'accept-language': 'fr,es;q=0.9' }
+			headers: { 'accept-language': 'es,pt;q=0.9' }
 		});
 		expect(resolveLang(req)).toBe('en');
 	});

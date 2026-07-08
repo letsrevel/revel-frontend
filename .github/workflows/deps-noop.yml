@@ -1,0 +1,44 @@
+# No-op twin of deps.yml — GitHub's documented pattern for path-filtered
+# required checks ("Handling skipped but required checks").
+#
+# "pnpm audit (prod, high+)" and "License compliance" are required status
+# checks on main, but deps.yml only runs on PRs that touch the dependency
+# graph. A required check that never reports blocks the PR forever
+# ("Expected — Waiting for status"). This workflow fires on the exact
+# complement of deps.yml's `paths:` and reports instantly-passing jobs under
+# the same names, so the required contexts always resolve.
+#
+# INVARIANT: the `paths-ignore:` list below must stay the exact complement
+# of the `paths:` list in deps.yml, and the workflow name + job names must
+# match deps.yml verbatim. Drift either double-runs the real checks
+# (harmless) or leaves PRs blocked (not harmless).
+#
+# Frontend mirror of revel-backend/.github/workflows/deps-noop.yaml.
+
+name: Dependency checks
+
+on:
+  pull_request:
+    paths-ignore:
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - Makefile
+      - scripts/check-licenses.mjs
+      - .github/workflows/deps.yml
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: pnpm audit (prod, high+)
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "No dependency-graph changes in this PR — pnpm audit not needed."
+
+  licensecheck:
+    name: License compliance
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "No dependency-graph changes in this PR — licensecheck not needed."

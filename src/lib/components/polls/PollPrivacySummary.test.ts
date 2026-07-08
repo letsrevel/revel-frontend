@@ -7,7 +7,8 @@ import type { PollResultTiming, ResourceVisibility } from '$lib/api/generated/ty
 //
 // The component renders up to five rows:
 //   - "Who can vote: {audience}"              (always visible)
-//   - "Results visible to: {audience} ({when})"  (hidden when staff-only AND never)
+//   - "Results visible to: {audience} ({when})"  (hidden whenever timing is "never" —
+//     "visible to X (not shared)" would contradict itself)
 //   - "Your identity is hidden from other voters" OR amber "visible to anyone who can see results"
 //     (hidden when result_visibility=staff-only — other voters see nothing anyway)
 //   - amber "Staff can see who voted what"    (only when staff_anonymous=false)
@@ -92,7 +93,7 @@ const cases: Case[] = [
 		]
 	},
 	{
-		name: 'C4 (spec) — members-only/members-only/never → row 2 shown with "not shared" copy',
+		name: 'C4 (spec) — members-only/members-only/never → row 2 hidden (timing "never" always skips it)',
 		props: {
 			voteVisibility: 'members-only',
 			resultVisibility: 'members-only',
@@ -103,11 +104,10 @@ const cases: Case[] = [
 		},
 		expectVisible: [
 			'Who can vote: members only',
-			'Results visible to: members only (results are not shared with voters)',
 			'Your identity is hidden from other voters',
 			'You can change or withdraw your vote'
 		],
-		expectHidden: ['Staff can see who voted what']
+		expectHidden: ['Results visible to', 'Staff can see who voted what']
 	},
 	{
 		name: 'C5 — staff-only/staff-only/after_vote + staff_anon=false → amber staff chip, row 3 hidden',

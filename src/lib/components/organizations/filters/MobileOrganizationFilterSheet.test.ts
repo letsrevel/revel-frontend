@@ -25,9 +25,8 @@ describe('MobileOrganizationFilterSheet', () => {
 			props: defaultProps
 		});
 
-		expect(
-			screen.getByRole('dialog', { name: /mobile-organization-filter-title/i })
-		).toBeInTheDocument();
+		// The dialog's accessible name comes from the aria-labelledby'd heading text
+		expect(screen.getByRole('dialog', { name: 'Filters' })).toBeInTheDocument();
 		expect(screen.getByText('Filters')).toBeInTheDocument();
 	});
 
@@ -87,7 +86,9 @@ describe('MobileOrganizationFilterSheet', () => {
 			}
 		});
 
-		const backdrop = screen.getByRole('presentation');
+		// The backdrop is aria-hidden (decorative), so it is excluded from the
+		// default accessibility tree — query it with { hidden: true }.
+		const backdrop = screen.getByRole('presentation', { hidden: true });
 		await user.click(backdrop);
 
 		expect(onClose).toHaveBeenCalledTimes(1);

@@ -4,9 +4,14 @@ import userEvent from '@testing-library/user-event';
 import TagInput from './TagInput.svelte';
 
 describe('TagInput', () => {
+	// NOTE: the component only assigns the input's `id` attribute when the `id`
+	// prop is provided (the auto-generated fallback is used for `for`/`name` but
+	// not the input itself), so tests pass an explicit `id` to get a working
+	// label association for getByLabelText queries.
 	it('renders with label', () => {
 		render(TagInput, {
 			props: {
+				id: 'tags',
 				label: 'Event Tags'
 			}
 		});
@@ -17,6 +22,7 @@ describe('TagInput', () => {
 	it('shows required indicator when required', () => {
 		render(TagInput, {
 			props: {
+				id: 'tags',
 				label: 'Tags',
 				required: true
 			}
@@ -29,6 +35,7 @@ describe('TagInput', () => {
 	it('displays error message', () => {
 		render(TagInput, {
 			props: {
+				id: 'tags',
 				label: 'Tags',
 				error: 'At least one tag is required'
 			}
@@ -40,6 +47,7 @@ describe('TagInput', () => {
 	it('displays existing tags', () => {
 		render(TagInput, {
 			props: {
+				id: 'tags',
 				label: 'Tags',
 				value: ['Music', 'Food', 'Sports']
 			}
@@ -56,6 +64,7 @@ describe('TagInput', () => {
 
 		render(TagInput, {
 			props: {
+				id: 'tags',
 				label: 'Tags',
 				onTagsChange: handleTagsChange
 			}
@@ -73,6 +82,7 @@ describe('TagInput', () => {
 
 		render(TagInput, {
 			props: {
+				id: 'tags',
 				label: 'Tags',
 				onTagsChange: handleTagsChange
 			}
@@ -90,6 +100,7 @@ describe('TagInput', () => {
 
 		render(TagInput, {
 			props: {
+				id: 'tags',
 				label: 'Tags',
 				value: ['Music', 'Food'],
 				onTagsChange: handleTagsChange
@@ -108,6 +119,7 @@ describe('TagInput', () => {
 
 		render(TagInput, {
 			props: {
+				id: 'tags',
 				label: 'Tags',
 				value: ['Music', 'Food'],
 				onTagsChange: handleTagsChange
@@ -126,18 +138,20 @@ describe('TagInput', () => {
 
 		render(TagInput, {
 			props: {
+				id: 'tags',
 				label: 'Tags',
 				suggestions: ['Music', 'Movies', 'Food', 'Sports']
 			}
 		});
 
 		const input = screen.getByLabelText('Tags') as HTMLInputElement;
-		await user.type(input, 'Mu');
+		await user.type(input, 'M');
 
-		// Should show suggestions containing "Mu"
+		// Should show suggestions containing "M" (substring match, case-insensitive)
 		expect(screen.getByRole('listbox')).toBeInTheDocument();
 		expect(screen.getByRole('option', { name: 'Music' })).toBeInTheDocument();
 		expect(screen.getByRole('option', { name: 'Movies' })).toBeInTheDocument();
+		expect(screen.queryByRole('option', { name: 'Sports' })).not.toBeInTheDocument();
 	});
 
 	it('selects suggestion on click', async () => {
@@ -146,6 +160,7 @@ describe('TagInput', () => {
 
 		render(TagInput, {
 			props: {
+				id: 'tags',
 				label: 'Tags',
 				suggestions: ['Music', 'Movies'],
 				onTagsChange: handleTagsChange
@@ -166,6 +181,7 @@ describe('TagInput', () => {
 
 		render(TagInput, {
 			props: {
+				id: 'tags',
 				label: 'Tags',
 				suggestions: ['Music', 'Movies', 'Food']
 			}
@@ -193,6 +209,7 @@ describe('TagInput', () => {
 
 		render(TagInput, {
 			props: {
+				id: 'tags',
 				label: 'Tags',
 				suggestions: ['Music', 'Movies'],
 				onTagsChange: handleTagsChange
@@ -213,6 +230,7 @@ describe('TagInput', () => {
 
 		render(TagInput, {
 			props: {
+				id: 'tags',
 				label: 'Tags',
 				value: ['Music'],
 				onTagsChange: handleTagsChange
@@ -229,6 +247,7 @@ describe('TagInput', () => {
 	it('respects maxTags limit', async () => {
 		render(TagInput, {
 			props: {
+				id: 'tags',
 				label: 'Tags',
 				value: ['Music', 'Food'],
 				maxTags: 2
@@ -237,7 +256,8 @@ describe('TagInput', () => {
 
 		expect(screen.getByText('(2/2)')).toBeInTheDocument();
 
-		const input = screen.getByLabelText('Tags') as HTMLInputElement;
+		// The label text now includes the "(2/2)" counter, so match on prefix
+		const input = screen.getByLabelText(/^Tags/) as HTMLInputElement;
 		expect(input).toHaveAttribute('readonly');
 	});
 
@@ -246,6 +266,7 @@ describe('TagInput', () => {
 
 		render(TagInput, {
 			props: {
+				id: 'tags',
 				label: 'Tags',
 				value: ['Music'],
 				suggestions: ['Music', 'Movies', 'Food']
@@ -265,6 +286,7 @@ describe('TagInput', () => {
 
 		render(TagInput, {
 			props: {
+				id: 'tags',
 				label: 'Tags',
 				suggestions: ['Music', 'Movies']
 			}
@@ -285,6 +307,7 @@ describe('TagInput', () => {
 	it('respects disabled state', () => {
 		render(TagInput, {
 			props: {
+				id: 'tags',
 				label: 'Tags',
 				value: ['Music'],
 				disabled: true
@@ -294,8 +317,12 @@ describe('TagInput', () => {
 		const input = screen.getByLabelText('Tags') as HTMLInputElement;
 		expect(input).toBeDisabled();
 
-		// Remove buttons should not be present when disabled
-		expect(screen.queryByRole('button', { name: /remove/i })).not.toBeInTheDocument();
+		// The "X" remove button should not be present when disabled
+		expect(screen.queryByRole('button', { name: /^remove music$/i })).not.toBeInTheDocument();
+
+		// Tag chips remain visible but are removed from the tab order
+		const tagChip = screen.getByText('Music').closest('[role="button"]');
+		expect(tagChip).toHaveAttribute('tabindex', '-1');
 	});
 
 	it('trims whitespace from tags', async () => {
@@ -304,6 +331,7 @@ describe('TagInput', () => {
 
 		render(TagInput, {
 			props: {
+				id: 'tags',
 				label: 'Tags',
 				onTagsChange: handleTagsChange
 			}
@@ -318,6 +346,7 @@ describe('TagInput', () => {
 	it('is keyboard accessible', () => {
 		render(TagInput, {
 			props: {
+				id: 'tags',
 				label: 'Tags',
 				value: ['Music']
 			}
