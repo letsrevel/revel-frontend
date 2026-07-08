@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.65.0] - 2026-07-08
+
+### Added
+- "See all / Show fewer" toggle on the dashboard organizations section, so you can expand past the first 3 organizations.
+- Share button on event and organization token cards, opening the token share dialog (previously unreachable).
+- Calendar days with exactly one event are now directly clickable, opening that event.
+- Duplicating an event now prefills the new start date from the source event, rolling past start dates forward to the next future date at the same time of day.
+
+### Changed
+- **2026 rebrand — "Bubble" + Nata Sans ships for everyone**: new permanent look with the official brand palette — lavender paper light mode, aubergine club dark mode with a lavender glow primary, crimson heart accent, amber highlight — sticker-round corners, the Nata Sans typeface app-wide, and the "let's revel." lockup replacing the "Revel" wordmark in the header. All color pairs pass WCAG AA contrast and simulated color-blind separation checks; the demo/staging brand switcher is retired.
+- Relative timestamps ("2 hours ago") now use the browser's built-in localization, so they follow the UI language for every locale (including French) instead of only English, German, and Italian.
+- The default social-share card is now the gradient "let's revel" logo, and share titles lead with "Event Management for Communities".
+
+### Fixed
+- Switching the app language now sticks — it no longer reverts on the next page load — and no longer briefly flashes a "500 Server Error" page.
+- Link previews for event and organization pages no longer sometimes show the generic Revel card instead of the event/org cover (duplicate `og:image` tags removed).
+- Event status badges now show "Past" instead of "Full" for events that ended while at capacity.
+- File-upload conditional questions in the questionnaire editor are now created, updated, and deleted correctly (they were silently handled as free-text questions, leaving orphans behind).
+- A file-upload question weight of `0` no longer silently resets to the default `1.0`.
+- The fee calculator no longer shows `Infinity`/`NaN` percentages or negative amounts for empty or invalid ticket prices.
+- Accessibility: the fee-calculator and confirm-payment dialogs now move focus in on open, trap it, close on Escape, and restore focus on close; attendee status filters and invitation selection buttons announce their toggle state; file-upload and poll-form labels now focus their inputs when clicked; required file-upload questions are announced to screen readers; and many visual-only titles across banners, modals, empty states, and menus became real headings.
+
+### Security
+- Upgraded dependencies to patch multiple high-severity vulnerabilities (prototype pollution and denial-of-service issues in form handling, markdown parsing, HTML sanitization, and related libraries).
+- Session token payloads are now validated at runtime; malformed or unexpected tokens are rejected instead of trusted.
+- Removed debug console logging that exposed raw tokens and cookies in the browser console, plus a raw query-state "Debug info" dump on the notification settings page.
+
 ## [1.64.0] - 2026-07-01
 
 ### Added
