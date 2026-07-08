@@ -20,6 +20,19 @@ export default {
 			}
 		},
 		extend: {
+			// Nata Sans is the brand font (imported in app.css); preflight picks
+			// this up, so it applies app-wide without per-component classes.
+			fontFamily: {
+				sans: [
+					'Nata Sans Variable',
+					'ui-sans-serif',
+					'system-ui',
+					'-apple-system',
+					'BlinkMacSystemFont',
+					'Segoe UI',
+					'sans-serif'
+				]
+			},
 			colors: {
 				border: 'hsl(var(--border) / <alpha-value>)',
 				input: 'hsl(var(--input) / <alpha-value>)',
@@ -46,7 +59,7 @@ export default {
 					DEFAULT: 'hsl(var(--accent) / <alpha-value>)',
 					foreground: 'hsl(var(--accent-foreground) / <alpha-value>)'
 				},
-				// Brand-experiment only: --highlight/--highlight-foreground are defined solely under [data-brand]; do NOT use in Legacy paths.
+				// Amber "highlight" pop from the brand palette (badges, callouts).
 				highlight: {
 					DEFAULT: 'hsl(var(--highlight) / <alpha-value>)',
 					foreground: 'hsl(var(--highlight-foreground) / <alpha-value>)'
@@ -64,10 +77,6 @@ export default {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
-			},
-			// Brand-experiment only: --gradient-brand is defined solely under [data-brand]; do NOT use in Legacy paths.
-			backgroundImage: {
-				'brand-gradient': 'var(--gradient-brand)'
 			}
 		}
 	},

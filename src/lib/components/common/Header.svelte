@@ -10,12 +10,6 @@
 	import LanguageSwitcher from './LanguageSwitcher.svelte';
 	import { NotificationDropdown } from '$lib/components/notifications';
 	import * as m from '$lib/paraglide/messages.js';
-	// Brand experiment: the header shows the "let's revel." lockup on candidate
-	// themes and the untouched "Revel" wordmark on Legacy. BOTH are always
-	// rendered so SSR and client markup match (no hydration mismatch);
-	// brand-themes.css toggles them via the pre-paint [data-brand] attribute, so
-	// there is no flash and no dependency on client-only brand state here.
-	// Remove with the experiment.
 	import RevelWordmark from '$lib/components/brand/RevelWordmark.svelte';
 
 	// Mobile menu state
@@ -73,16 +67,9 @@
 				href={resolve('/(public)', {})}
 				class="text-foreground transition-opacity hover:opacity-80"
 			>
-				<!-- Legacy wordmark (shown when no data-brand is set); its text is the
-				     link's accessible name. -->
-				<span
-					class="revel-logo-legacy text-2xl font-bold text-primary transition-colors hover:text-primary/80"
-				>
-					Revel
-				</span>
-				<!-- Candidate-brand lockup, revealed by brand-themes.css under
-				     [data-brand]. Hidden by default so Legacy is unaffected. -->
-				<span class="revel-logo-lockup hidden"><RevelWordmark /></span>
+				<!-- "let's revel." lockup — its visible text is the link's
+				     accessible name (WCAG 2.5.3 Label in Name). -->
+				<RevelWordmark />
 			</a>
 
 			<!-- Desktop Navigation -->

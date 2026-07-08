@@ -68,9 +68,7 @@
 		"vitest": "^4.1.9"
 	},
 	"dependencies": {
-		"@fontsource-variable/baloo-2": "^5.2.7",
 		"@fontsource-variable/nata-sans": "^5.2.2",
-		"@fontsource-variable/unbounded": "^5.2.8",
 		"@tanstack/svelte-query": "^6.0.3",
 		"@tiptap/core": "^3.27.1",
 		"@tiptap/extension-hard-break": "^3.27.1",

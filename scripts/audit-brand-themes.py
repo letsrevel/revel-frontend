@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
-"""Audit brand-themes.css: WCAG contrast + colorblind confusability.
+"""Audit the brand theme tokens: WCAG contrast + colorblind confusability.
 
-Parses [data-brand=...] blocks (light + .dark) from brand-themes.css,
-checks the standard shadcn token pairs against WCAG AA, and simulates
-protanopia/deuteranopia/tritanopia to flag hue-only distinctions between
-semantic colors (primary / accent / destructive / highlight).
+Parses the live theme (:root + .dark in src/app.css) and, if present, any
+[data-brand=...] evaluation blocks. Checks the standard shadcn token pairs
+against WCAG AA and simulates protanopia/deuteranopia/tritanopia to flag
+hue-only distinctions between semantic colors (primary / accent /
+destructive / highlight). Keep this at 0 failures after ANY token edit —
+this is the accessibility contract documented in app.css and CLAUDE.md.
 """
 
 import re
 import sys
 from pathlib import Path
 
-CSS = Path(sys.argv[1] if len(sys.argv) > 1 else "src/lib/styles/brand-themes.css").read_text()
+CSS = Path(sys.argv[1] if len(sys.argv) > 1 else "src/app.css").read_text()
 
 
 def hsl_to_rgb(h, s, ll):
@@ -72,12 +74,27 @@ def deltaE(rgb1, rgb2):
 
 # --- Parse CSS ---
 themes = {}  # (brand, mode) -> {token: (h,s,l)}
-for m in re.finditer(r"\[data-brand='(\w+)'\](\.dark)?\s*(?:body\s*)?\{([^}]+)\}", CSS):
-    brand, dark, body = m.group(1), bool(m.group(2)), m.group(3)
-    key = (brand, "dark" if dark else "light")
+
+
+def parse_tokens(body):
     toks = {}
     for tm in re.finditer(r"--([\w-]+):\s*([\d.]+)\s+([\d.]+)%\s+([\d.]+)%\s*;", body):
         toks[tm.group(1)] = (float(tm.group(2)), float(tm.group(3)), float(tm.group(4)))
+    return toks
+
+
+# The live theme: :root (light) and .dark blocks.
+for sel, mode in ((r":root", "light"), (r"\.dark", "dark")):
+    for m in re.finditer(sel + r"\s*\{([^}]+)\}", CSS):
+        toks = parse_tokens(m.group(1))
+        if toks:
+            themes.setdefault(("default", mode), {}).update(toks)
+
+# Optional evaluation themes ([data-brand=...] blocks), if the file has any.
+for m in re.finditer(r"\[data-brand='(\w+)'\](\.dark)?\s*(?:body\s*)?\{([^}]+)\}", CSS):
+    brand, dark, body = m.group(1), bool(m.group(2)), m.group(3)
+    key = (brand, "dark" if dark else "light")
+    toks = parse_tokens(body)
     if toks:
         themes.setdefault(key, {}).update(toks)
 

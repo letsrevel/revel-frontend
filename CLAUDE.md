@@ -1022,14 +1022,15 @@ The official palette from the ACIDHAIRS brand deck (June 2026, `revel-backend/lo
 | Ink            | `#0D1E1C` | `hsl(173 40% 8%)`   | Text (light) / dark surfaces |
 | White          | `#FFFFFF` | `hsl(0 0% 100%)`    | Text on dark               |
 
-- **Gradient:** Hearty Purple → Light Crimson at 135° (`--gradient-brand`); the logo gradient is `--logo-from`/`--logo-to`.
-- **Typeface:** Nata Sans (Light + Semibold), via `@fontsource-variable/nata-sans` (`--font-brand`). The chunky wide headline face in the deck is ACIDHAIRS's own deck typography, **not** a licensed brand asset — Nata Sans is the brand font. A `data-font` evaluation axis (store: `fontTheme.svelte.ts`) A/B-tests optional display faces for h1–h3 (Unbounded "poster", Baloo 2 "bubbly") over the Nata body.
-- **Where it lives:** candidate themes in `src/lib/styles/brand-themes.css` (driven by `data-brand` on `<html>`, orthogonal to `.dark` and `data-font`); switcher stores in `src/lib/stores/brandTheme.svelte.ts` / `fontTheme.svelte.ts`.
+**The shipped theme is "Bubble"** (decided 2026-07-08): sticker-round `--radius: 1.25rem`, lavender paper light mode, aubergine club dark mode with palette Lavender as the glow primary; crimson only as the "heart" accent, amber as highlight, maroon destructive. Its tokens live in `src/app.css` (`:root` + `.dark`) — that file is the single place to edit for any future rebrand (token NAMES are the stable contract; every component reads them). Retired candidates (gradient/midnight/mono, the crimson study, the pre-2026 purple/cyan brand, and the live A/B switcher) are preserved in git history at commit `3e6d2bb9`.
+
+- **Logo:** the "let's revel." lockup (`RevelWordmark.svelte` + `RevelMark.svelte`); the mark's gradient is `--logo-from`/`--logo-to` (Hearty Purple → Light Crimson).
+- **Typeface:** Nata Sans app-wide, via `@fontsource-variable/nata-sans` (imported in `app.css`) and `fontFamily.sans` in `tailwind.config.ts`. The chunky wide headline face in the deck is ACIDHAIRS's own deck typography, **not** a licensed brand asset — Nata Sans is the brand font, with no display face (evaluated and decided against; see commit `3e6d2bb9` for the Unbounded/Baloo 2 experiments).
 
 ### Theme rules
 
-- **Use tokens, never raw hexes** in components (`bg-primary`, `text-muted-foreground`, …). Palette hexes appear only in `brand-themes.css`/`app.css`.
-- **Every brand theme must respect the light/dark axis.** The app styles content with `dark:` utilities (e.g. `prose dark:prose-invert`), which assume the `.dark` class controls surface darkness. A theme that keeps dark surfaces in light mode breaks readability everywhere.
+- **Use tokens, never raw hexes** in components (`bg-primary`, `text-muted-foreground`, …). Palette hexes appear only in `app.css`.
+- **The theme must respect the light/dark axis.** The app styles content with `dark:` utilities (e.g. `prose dark:prose-invert`), which assume the `.dark` class controls surface darkness. A theme that keeps dark surfaces in light mode breaks readability everywhere.
 - **WCAG AA contract:** every `*-foreground` on its surface ≥ 4.5:1; `--primary` vs `--background` ≥ 3:1 (links, focus rings).
 - **Color-blind safety:** separate semantic colors (primary/accent/destructive/highlight) by _lightness_, not hue alone — protanopia/deuteranopia collapse red/purple/amber hue differences. Never encode meaning by color alone; pair with icon or text.
 - **Validate after any theme edit:** `python3 scripts/audit-brand-themes.py` checks the WCAG pairs and simulated color-blind separation. Keep it at 0 failures.
