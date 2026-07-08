@@ -126,6 +126,7 @@ TEXT_PAIRS = [  # (fg, bg, min_ratio, note)
 SEMANTIC = ["primary", "secondary", "accent", "destructive", "highlight"]
 
 failures = 0
+confusables = 0
 for (brand, mode), toks in sorted(themes.items()):
     print(f"\n=== {brand} / {mode} ===")
     rgb = {k: hsl_to_rgb(*v) for k, v in toks.items() if k not in ("radius",)}
@@ -148,7 +149,14 @@ for (brand, mode), toks in sorted(themes.items()):
                 d = deltaE(simulate(rgb[a], kind), simulate(rgb[b], kind))
                 if d < worst:
                     worst, worst_kind = d, kind
-            flag = "CONFUSABLE" if worst < 60 else "ok        "
+            confusable = worst < 60
+            if confusable:
+                confusables += 1
+            flag = "CONFUSABLE" if confusable else "ok        "
             print(f"  {flag} {a:11s} vs {b:11s}  worst dE={worst:6.1f} ({worst_kind})")
 
 print(f"\nTotal WCAG failures: {failures}")
+print(f"Total colorblind confusables: {confusables}")
+# The a11y contract (app.css / CLAUDE.md) is "0 failures" — make that
+# machine-enforceable so CI or scripted callers can't miss a red audit.
+sys.exit(1 if failures or confusables else 0)
