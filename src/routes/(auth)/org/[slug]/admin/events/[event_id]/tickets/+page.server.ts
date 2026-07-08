@@ -83,6 +83,11 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 		.optional()
 		.catch(undefined)
 		.parse(url.searchParams.get('payment_method') || undefined);
+	const source = z
+		.enum(['pass', 'direct'])
+		.optional()
+		.catch(undefined)
+		.parse(url.searchParams.get('source') || undefined);
 	const search = url.searchParams.get('search') || undefined;
 	const orderBy = parseTicketOrderBy(url.searchParams.get('order_by'));
 	// Validate the untrusted `page` param: coerce to a positive integer, falling
@@ -121,6 +126,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 			query: {
 				status,
 				tier__payment_method: paymentMethod,
+				source,
 				search,
 				order_by: orderBy,
 				page,
@@ -156,6 +162,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 		filters: {
 			status,
 			paymentMethod,
+			source,
 			search,
 			orderBy
 		}

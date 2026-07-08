@@ -48,6 +48,7 @@
 	// Filter states
 	let selectedStatus = $state<string | null>(data.filters.status || null);
 	let selectedPaymentMethod = $state<string | null>(data.filters.paymentMethod || null);
+	let selectedSource = $state<string | null>(data.filters.source || null);
 
 	// Sort state (server-side, persisted in the URL)
 	let selectedOrderBy = $state<TicketOrderBy | undefined>(data.filters.orderBy ?? undefined);
@@ -171,9 +172,11 @@
 	 * Check-in ticket mutation
 	 */
 	const checkInTicketMutation = createMutation(() => ({
-		mutationFn: async ({ ticketId, pricePaid }: { ticketId: string; pricePaid?: string }) => {
+		// `code` is a ticket UUID or a series-pass QR payload (`series:<uuid>`);
+		// the backend resolves pass codes to the holder's ticket for this event.
+		mutationFn: async ({ code, pricePaid }: { code: string; pricePaid?: string }) => {
 			const response = await eventadminticketsCheckInTicket({
-				path: { event_id: data.event.id, ticket_id: ticketId },
+				path: { event_id: data.event.id, code },
 				body: pricePaid ? { price_paid: pricePaid } : undefined,
 				headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
 			});
@@ -240,6 +243,7 @@
 		if (searchQuery) params.set('search', searchQuery);
 		if (selectedStatus) params.set('status', selectedStatus);
 		if (selectedPaymentMethod) params.set('payment_method', selectedPaymentMethod);
+		if (selectedSource) params.set('source', selectedSource);
 		if (selectedOrderBy) params.set('order_by', selectedOrderBy);
 		// Reset to page 1 when filters change
 		params.set('page', '1');
@@ -277,6 +281,14 @@
 	 */
 	function setPaymentMethodFilter(method: string | null) {
 		selectedPaymentMethod = method;
+		applyFilters();
+	}
+
+	/**
+	 * Set ticket source filter (direct purchase vs. series pass)
+	 */
+	function setSourceFilter(source: string | null) {
+		selectedSource = source;
 		applyFilters();
 	}
 
@@ -354,18 +366,41 @@
 	 */
 	function submitCheckIn(pricePaid?: string) {
 		if (ticketToCheckIn) {
-			checkInTicketMutation.mutate({ ticketId: ticketToCheckIn.id, pricePaid });
+			checkInTicketMutation.mutate({ code: ticketToCheckIn.id, pricePaid });
 		}
 	}
 
 	/**
-	 * Handle QR code scan
+	 * Handle QR code scan.
+	 *
+	 * Ticket QRs carry a ticket UUID we can preview via GET before confirming.
+	 * Series-pass QRs carry `series:<uuid>` — there is no preview endpoint for
+	 * those, so we check in directly and report the resolved attendee.
 	 */
-	async function handleQRScan(ticketId: string) {
+	async function handleQRScan(code: string) {
+		if (code.startsWith('series:')) {
+			showQRScanner = false;
+			checkInTicketMutation.mutate(
+				{ code },
+				{
+					onSuccess: (checkedIn) => {
+						toast.success(
+							m['eventTicketsAdmin.passCheckInSuccess']({
+								name: `${checkedIn?.user.first_name ?? ''} ${checkedIn?.user.last_name ?? ''}`.trim()
+							})
+						);
+					},
+					onError: (err) => {
+						toast.error(err instanceof Error ? err.message : m['eventTicketsAdmin.checkInError']());
+					}
+				}
+			);
+			return;
+		}
 		try {
 			// Fetch ticket details
 			const response = await eventadminticketsGetTicket({
-				path: { event_id: data.event.id, ticket_id: ticketId },
+				path: { event_id: data.event.id, ticket_id: code },
 				headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
 			});
 
@@ -481,10 +516,12 @@
 		{searchQuery}
 		{selectedStatus}
 		{selectedPaymentMethod}
+		{selectedSource}
 		{selectedOrderBy}
 		onSearch={handleSearch}
 		onStatusFilter={setStatusFilter}
 		onPaymentMethodFilter={setPaymentMethodFilter}
+		onSourceFilter={setSourceFilter}
 		onSort={setOrderBy}
 	/>
 

@@ -37,6 +37,7 @@
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 	import RefundStatusBadge from './RefundStatusBadge.svelte';
 	import TicketDiscountBadge from './TicketDiscountBadge.svelte';
+	import SeriesPassBadge from './SeriesPassBadge.svelte';
 	import { sortDirection, type TicketOrderBy, type TicketSortField } from './ticket-sort';
 	import type { AdminTicketSchema } from '$lib/api';
 
@@ -193,6 +194,9 @@
 					</td>
 					<td class="px-4 py-3">
 						<div class="font-medium">{ticket.tier?.name || 'N/A'}</div>
+						{#if ticket.series_pass}
+							<SeriesPassBadge seriesPass={ticket.series_pass} class="mt-0.5" />
+						{/if}
 					</td>
 					<td
 						class="px-4 py-3"

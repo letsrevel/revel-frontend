@@ -7,10 +7,12 @@
 		searchQuery: string;
 		selectedStatus: string | null;
 		selectedPaymentMethod: string | null;
+		selectedSource?: string | null;
 		selectedOrderBy?: TicketOrderBy;
 		onSearch: (value: string) => void;
 		onStatusFilter: (status: string | null) => void;
 		onPaymentMethodFilter: (method: string | null) => void;
+		onSourceFilter?: (source: string | null) => void;
 		onSort?: (orderBy: TicketOrderBy | undefined) => void;
 	}
 
@@ -18,10 +20,12 @@
 		searchQuery,
 		selectedStatus,
 		selectedPaymentMethod,
+		selectedSource = null,
 		selectedOrderBy,
 		onSearch,
 		onStatusFilter,
 		onPaymentMethodFilter,
+		onSourceFilter,
 		onSort
 	}: Props = $props();
 
@@ -187,4 +191,43 @@
 			</button>
 		</div>
 	</div>
+
+	<!-- Source Filters (direct purchase vs. series pass) -->
+	{#if onSourceFilter}
+		<div>
+			<h3 class="mb-2 text-sm font-semibold">{m['eventTicketsAdmin.filterBySource']()}</h3>
+			<div class="flex flex-wrap gap-2">
+				<button
+					type="button"
+					onclick={() => onSourceFilter(null)}
+					class="rounded-md border px-3 py-1 text-sm font-medium transition-colors {selectedSource ===
+					null
+						? 'border-primary bg-primary text-primary-foreground'
+						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
+				>
+					{m['eventTicketsAdmin.filterAll']()}
+				</button>
+				<button
+					type="button"
+					onclick={() => onSourceFilter('direct')}
+					class="rounded-md border px-3 py-1 text-sm font-medium transition-colors {selectedSource ===
+					'direct'
+						? 'border-primary bg-primary text-primary-foreground'
+						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
+				>
+					{m['eventTicketsAdmin.sourceDirect']()}
+				</button>
+				<button
+					type="button"
+					onclick={() => onSourceFilter('pass')}
+					class="rounded-md border px-3 py-1 text-sm font-medium transition-colors {selectedSource ===
+					'pass'
+						? 'border-primary bg-primary text-primary-foreground'
+						: 'border-input bg-background hover:bg-accent hover:text-accent-foreground'}"
+				>
+					{m['eventTicketsAdmin.sourcePass']()}
+				</button>
+			</div>
+		</div>
+	{/if}
 </div>

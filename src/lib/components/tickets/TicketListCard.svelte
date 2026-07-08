@@ -4,6 +4,7 @@
 	import type { UserTicketSchema } from '$lib/api/generated/types.gen';
 	import { Card } from '$lib/components/ui/card';
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
+	import SeriesPassBadge from './SeriesPassBadge.svelte';
 	import MyTicketModal from './MyTicketModal.svelte';
 	import AddToWalletButton from './AddToWalletButton.svelte';
 	import { Calendar, MapPin, Ticket, CalendarDays } from '@lucide/svelte';
@@ -108,6 +109,9 @@
 						<p class="text-sm text-muted-foreground">
 							{ticket.tier.name || m['ticketListCard.generalAdmission']()}
 						</p>
+						{#if ticket.series_pass}
+							<SeriesPassBadge seriesPass={ticket.series_pass} class="mt-1" />
+						{/if}
 					</div>
 					<TicketStatusBadge status={ticket.status} />
 				</div>

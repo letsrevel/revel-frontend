@@ -5,7 +5,8 @@ import { log } from '$lib/server/logger';
 import {
 	eventseriesGetEventSeriesBySlugs,
 	eventpublicdiscoveryListEvents,
-	permissionMyPermissions
+	permissionMyPermissions,
+	seriespassListSeriesPasses
 } from '$lib/api';
 import { error as svelteKitError } from '@sveltejs/kit';
 import type { OrganizationPermissionsSchema } from '$lib/api/generated/types.gen';
@@ -65,6 +66,21 @@ export const load: PageServerLoad = async ({ params, url, fetch, locals, request
 			// Don't fail the page if events fail, just show empty
 		}
 
+		// Fetch season passes on sale for this series (visibility-aware).
+		const passesResponse = await seriespassListSeriesPasses({
+			path: { series_id: series.id },
+			fetch,
+			headers
+		});
+
+		if (passesResponse.error) {
+			log.warning('event_series_passes_fetch_failed', {
+				error: passesResponse.error,
+				seriesId: series.id
+			});
+			// Don't fail the page if passes fail, just hide the section
+		}
+
 		// Fetch user permissions (requires authentication)
 		let userPermissions: OrganizationPermissionsSchema | null = null;
 		let canEdit = false;
@@ -102,6 +118,7 @@ export const load: PageServerLoad = async ({ params, url, fetch, locals, request
 		return {
 			seo,
 			series,
+			seriesPasses: passesResponse.data || [],
 			events: eventsResponse.data?.results || [],
 			totalCount: eventsResponse.data?.count || 0,
 			page: eventsPage,

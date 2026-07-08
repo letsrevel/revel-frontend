@@ -8,10 +8,12 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import FollowButton from '$lib/components/common/FollowButton.svelte';
+	import SeriesPassCard from '$lib/components/series-passes/SeriesPassCard.svelte';
 
 	const { data }: { data: PageData } = $props();
 
 	const series = $derived(data.series);
+	const seriesPasses = $derived(data.seriesPasses);
 	const events = $derived(data.events);
 	const totalCount = $derived(data.totalCount);
 	const currentPage = $derived(data.page);
@@ -197,6 +199,29 @@
 							{m['eventSeriesDetailPage.description_heading']({ seriesName: series.name })}
 						</h2>
 						<MarkdownContent content={series.description} class="prose-slate" />
+					</section>
+				{/if}
+
+				<!-- Season Passes Section -->
+				{#if seriesPasses.length > 0}
+					<section aria-labelledby="passes-heading">
+						<div class="mb-6">
+							<h2 id="passes-heading" class="text-2xl font-bold">
+								{m['seriesPass.sectionHeading']()}
+							</h2>
+							<p class="mt-1 text-sm text-muted-foreground">
+								{m['seriesPass.sectionDescription']()}
+							</p>
+						</div>
+						<div class="grid gap-4 sm:grid-cols-2">
+							{#each seriesPasses as pass (pass.id)}
+								<SeriesPassCard
+									{pass}
+									seriesId={series.id}
+									isAuthenticated={data.isAuthenticated}
+								/>
+							{/each}
+						</div>
 					</section>
 				{/if}
 
