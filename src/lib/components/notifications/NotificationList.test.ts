@@ -1,15 +1,16 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 import { render, screen, waitFor } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
+import { QueryClient } from '@tanstack/svelte-query';
+import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import NotificationList from './NotificationList.svelte';
+import { notificationListNotifications, notificationMarkAllRead } from '$lib/api/generated';
 import type { NotificationSchema } from '$lib/api/generated/types.gen';
 
 // Mock API functions
 vi.mock('$lib/api/generated', () => ({
 	notificationListNotifications: vi.fn(),
-	notificationMarkAllRead: vi.fn()
+	notificationMarkAllRead: vi.fn().mockResolvedValue({ data: {} })
 }));
 
 // Mock toast
@@ -24,6 +25,22 @@ vi.mock('svelte-sonner', () => ({
 vi.mock('$app/navigation', () => ({
 	goto: vi.fn()
 }));
+
+/** Build a fully-typed resolved result for the mocked notificationListNotifications SDK call. */
+type ListNotificationsResult = Awaited<ReturnType<typeof notificationListNotifications>>;
+function listResult(page: {
+	count: number;
+	next: string | null;
+	previous: string | null;
+	results: NotificationSchema[];
+}): ListNotificationsResult {
+	return {
+		data: page,
+		error: undefined,
+		request: new Request('http://localhost/api/notifications'),
+		response: new Response()
+	};
+}
 
 // Sample notification data
 const mockNotifications: NotificationSchema[] = [
@@ -71,25 +88,24 @@ describe('NotificationList', () => {
 	});
 
 	function renderComponent(props: { authToken: string; compact?: boolean; maxItems?: number }) {
-		return render(QueryClientProvider, {
+		return render(QueryClientTestWrapper, {
 			props: {
 				client: queryClient,
-				children: NotificationList,
-				childProps: props
+				component: NotificationList,
+				props
 			}
 		});
 	}
 
 	it('renders with loading state initially', () => {
-		const { notificationListNotifications } = require('$lib/api/generated');
-		notificationListNotifications.mockResolvedValue({
-			data: {
+		vi.mocked(notificationListNotifications).mockResolvedValue(
+			listResult({
 				count: 3,
 				next: null,
 				previous: null,
 				results: mockNotifications
-			}
-		});
+			})
+		);
 
 		renderComponent({ authToken: 'test-token' });
 
@@ -98,15 +114,14 @@ describe('NotificationList', () => {
 	});
 
 	it('displays notifications after loading', async () => {
-		const { notificationListNotifications } = require('$lib/api/generated');
-		notificationListNotifications.mockResolvedValue({
-			data: {
+		vi.mocked(notificationListNotifications).mockResolvedValue(
+			listResult({
 				count: 3,
 				next: null,
 				previous: null,
 				results: mockNotifications
-			}
-		});
+			})
+		);
 
 		renderComponent({ authToken: 'test-token' });
 
@@ -119,15 +134,14 @@ describe('NotificationList', () => {
 	});
 
 	it('shows empty state when no notifications', async () => {
-		const { notificationListNotifications } = require('$lib/api/generated');
-		notificationListNotifications.mockResolvedValue({
-			data: {
+		vi.mocked(notificationListNotifications).mockResolvedValue(
+			listResult({
 				count: 0,
 				next: null,
 				previous: null,
 				results: []
-			}
-		});
+			})
+		);
 
 		renderComponent({ authToken: 'test-token' });
 
@@ -138,15 +152,14 @@ describe('NotificationList', () => {
 
 	it('toggles unread filter', async () => {
 		const user = userEvent.setup();
-		const { notificationListNotifications } = require('$lib/api/generated');
-		notificationListNotifications.mockResolvedValue({
-			data: {
+		vi.mocked(notificationListNotifications).mockResolvedValue(
+			listResult({
 				count: 3,
 				next: null,
 				previous: null,
 				results: mockNotifications
-			}
-		});
+			})
+		);
 
 		renderComponent({ authToken: 'test-token' });
 
@@ -163,15 +176,14 @@ describe('NotificationList', () => {
 	});
 
 	it('displays mark all as read button when there are unread notifications', async () => {
-		const { notificationListNotifications } = require('$lib/api/generated');
-		notificationListNotifications.mockResolvedValue({
-			data: {
+		vi.mocked(notificationListNotifications).mockResolvedValue(
+			listResult({
 				count: 3,
 				next: null,
 				previous: null,
 				results: mockNotifications
-			}
-		});
+			})
+		);
 
 		renderComponent({ authToken: 'test-token' });
 
@@ -185,21 +197,15 @@ describe('NotificationList', () => {
 
 	it('calls mark all as read mutation when button clicked', async () => {
 		const user = userEvent.setup();
-		const {
-			notificationListNotifications,
-			notificationMarkAllRead
-		} = require('$lib/api/generated');
 
-		notificationListNotifications.mockResolvedValue({
-			data: {
+		vi.mocked(notificationListNotifications).mockResolvedValue(
+			listResult({
 				count: 3,
 				next: null,
 				previous: null,
 				results: mockNotifications
-			}
-		});
-
-		notificationMarkAllRead.mockResolvedValue({ data: {} });
+			})
+		);
 
 		renderComponent({ authToken: 'test-token' });
 
@@ -219,15 +225,14 @@ describe('NotificationList', () => {
 	});
 
 	it('renders in compact mode with limited items', async () => {
-		const { notificationListNotifications } = require('$lib/api/generated');
-		notificationListNotifications.mockResolvedValue({
-			data: {
+		vi.mocked(notificationListNotifications).mockResolvedValue(
+			listResult({
 				count: 10,
 				next: null,
 				previous: null,
 				results: mockNotifications.slice(0, 3)
-			}
-		});
+			})
+		);
 
 		renderComponent({ authToken: 'test-token', compact: true, maxItems: 3 });
 
@@ -235,23 +240,23 @@ describe('NotificationList', () => {
 			expect(screen.getByText('Event Invitation')).toBeInTheDocument();
 		});
 
-		// Should show "View all" link in compact mode
-		expect(screen.getByText(/view all/i)).toBeInTheDocument();
+		// Compact mode hides the filter toolbar ("View all" now lives in the
+		// dropdown footer, not in the list itself)
+		expect(screen.queryByRole('button', { name: /show unread only/i })).not.toBeInTheDocument();
 
 		// Should not show pagination in compact mode
 		expect(screen.queryByRole('navigation', { name: /pagination/i })).not.toBeInTheDocument();
 	});
 
 	it('shows pagination when there are multiple pages', async () => {
-		const { notificationListNotifications } = require('$lib/api/generated');
-		notificationListNotifications.mockResolvedValue({
-			data: {
+		vi.mocked(notificationListNotifications).mockResolvedValue(
+			listResult({
 				count: 50, // More than one page
 				next: 'http://api.example.com/notifications?page=2',
 				previous: null,
 				results: mockNotifications
-			}
-		});
+			})
+		);
 
 		renderComponent({ authToken: 'test-token' });
 
@@ -266,15 +271,14 @@ describe('NotificationList', () => {
 
 	it('is keyboard accessible', async () => {
 		const user = userEvent.setup();
-		const { notificationListNotifications } = require('$lib/api/generated');
-		notificationListNotifications.mockResolvedValue({
-			data: {
+		vi.mocked(notificationListNotifications).mockResolvedValue(
+			listResult({
 				count: 3,
 				next: null,
 				previous: null,
 				results: mockNotifications
-			}
-		});
+			})
+		);
 
 		renderComponent({ authToken: 'test-token' });
 
@@ -293,8 +297,7 @@ describe('NotificationList', () => {
 	});
 
 	it('handles API errors gracefully', async () => {
-		const { notificationListNotifications } = require('$lib/api/generated');
-		notificationListNotifications.mockRejectedValue(new Error('Network error'));
+		vi.mocked(notificationListNotifications).mockRejectedValue(new Error('Network error'));
 
 		renderComponent({ authToken: 'test-token' });
 
@@ -307,15 +310,14 @@ describe('NotificationList', () => {
 	});
 
 	it('has proper ARIA labels', async () => {
-		const { notificationListNotifications } = require('$lib/api/generated');
-		notificationListNotifications.mockResolvedValue({
-			data: {
+		vi.mocked(notificationListNotifications).mockResolvedValue(
+			listResult({
 				count: 3,
 				next: null,
 				previous: null,
 				results: mockNotifications
-			}
-		});
+			})
+		);
 
 		renderComponent({ authToken: 'test-token' });
 
@@ -332,15 +334,14 @@ describe('NotificationList', () => {
 	});
 
 	it('shows notification count badge', async () => {
-		const { notificationListNotifications } = require('$lib/api/generated');
-		notificationListNotifications.mockResolvedValue({
-			data: {
+		vi.mocked(notificationListNotifications).mockResolvedValue(
+			listResult({
 				count: 3,
 				next: null,
 				previous: null,
 				results: mockNotifications
-			}
-		});
+			})
+		);
 
 		renderComponent({ authToken: 'test-token' });
 
@@ -353,15 +354,14 @@ describe('NotificationList', () => {
 	});
 
 	it('filters by notification type', async () => {
-		const { notificationListNotifications } = require('$lib/api/generated');
-		notificationListNotifications.mockResolvedValue({
-			data: {
+		vi.mocked(notificationListNotifications).mockResolvedValue(
+			listResult({
 				count: 3,
 				next: null,
 				previous: null,
 				results: mockNotifications
-			}
-		});
+			})
+		);
 
 		renderComponent({ authToken: 'test-token' });
 
@@ -369,8 +369,9 @@ describe('NotificationList', () => {
 			expect(screen.getByText('Event Invitation')).toBeInTheDocument();
 		});
 
-		// Should have type filter select
-		const selectTrigger = screen.getByRole('combobox');
-		expect(selectTrigger).toBeInTheDocument();
+		// Should have type filter select (bits-ui trigger renders as a button
+		// with aria-haspopup="listbox", not role="combobox")
+		const selectTrigger = screen.getByRole('button', { name: /all types/i });
+		expect(selectTrigger).toHaveAttribute('aria-haspopup', 'listbox');
 	});
 });

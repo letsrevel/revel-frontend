@@ -2,11 +2,6 @@ import { render, screen, fireEvent } from '@testing-library/svelte';
 import { describe, it, expect, vi } from 'vitest';
 import EssentialsStep from './EssentialsStep.svelte';
 
-// Mock CityAutocomplete
-vi.mock('$lib/components/forms/CityAutocomplete.svelte', () => ({
-	default: vi.fn()
-}));
-
 describe('EssentialsStep', () => {
 	const mockProps = {
 		formData: {
@@ -29,7 +24,9 @@ describe('EssentialsStep', () => {
 
 		expect(screen.getByLabelText(/Event Name/i)).toBeInTheDocument();
 		expect(screen.getByLabelText(/Start Date & Time/i)).toBeInTheDocument();
-		expect(screen.getByText(/City/i)).toBeInTheDocument();
+		// Location/city selection moved out of this step (it lives in the Details
+		// step's Location section); the end date is the remaining required field.
+		expect(screen.getByLabelText(/End Date & Time/i)).toBeInTheDocument();
 	});
 
 	it('calls onUpdate when name input changes', async () => {
@@ -65,7 +62,8 @@ describe('EssentialsStep', () => {
 	it('shows all visibility options', () => {
 		render(EssentialsStep, { props: mockProps });
 
-		expect(screen.getByText('Public')).toBeInTheDocument();
+		// "Public" renders for both the visibility and event_type radio groups
+		expect(screen.getAllByText('Public')).toHaveLength(2);
 		// Renders for both visibility and event_type radios
 		expect(screen.getAllByText('Invitation only').length).toBeGreaterThan(0);
 		expect(screen.getAllByText('Organization members only').length).toBeGreaterThan(0);

@@ -1,5 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/svelte';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { QueryClient } from '@tanstack/svelte-query';
+import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import DetailsStep from './DetailsStep.svelte';
 
 describe('DetailsStep', () => {
@@ -18,24 +20,41 @@ describe('DetailsStep', () => {
 		onUpdateImages: vi.fn()
 	};
 
+	// The Capacity section mounts WaitlistAdvancedSection → WaitlistSettingsModal,
+	// which resolves a QueryClient from Svelte context, so every render needs a
+	// real QueryClientProvider around the component under test.
+	let queryClient: QueryClient;
+
+	beforeEach(() => {
+		queryClient = new QueryClient({
+			defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
+		});
+	});
+
+	function renderStep(props: typeof mockProps = mockProps) {
+		return render(QueryClientTestWrapper, {
+			props: { client: queryClient, component: DetailsStep, props }
+		});
+	}
+
 	it('renders all accordion sections', () => {
-		render(DetailsStep, { props: mockProps });
+		renderStep();
 
 		expect(screen.getByText('Basic Details')).toBeInTheDocument();
 		expect(screen.getByText('RSVP Options')).toBeInTheDocument();
-		expect(screen.getByText('Capacity')).toBeInTheDocument();
+		expect(screen.getByText('Capacity and waitlist')).toBeInTheDocument();
 		expect(screen.getByText('Advanced')).toBeInTheDocument();
 		expect(screen.getByText('Media')).toBeInTheDocument();
 	});
 
 	it('opens Basic Details section by default', () => {
-		render(DetailsStep, { props: mockProps });
+		renderStep();
 
 		expect(screen.getByLabelText('Description')).toBeInTheDocument();
 	});
 
 	it('toggles accordion sections', async () => {
-		render(DetailsStep, { props: mockProps });
+		renderStep();
 
 		const capacityButton = screen.getByRole('button', { name: /Capacity/i });
 
@@ -51,23 +70,23 @@ describe('DetailsStep', () => {
 		expect(screen.queryByLabelText('Maximum Attendees')).not.toBeInTheDocument();
 	});
 
-	it('shows ticketing section when requires_ticket is true', () => {
-		render(DetailsStep, {
-			props: {
-				...mockProps,
-				formData: {
-					...mockProps.formData,
-					requires_ticket: true
-				}
+	it('hides RSVP options when requires_ticket is true (ticketing lives in the tickets step)', () => {
+		renderStep({
+			...mockProps,
+			formData: {
+				...mockProps.formData,
+				requires_ticket: true
 			}
 		});
 
-		expect(screen.getByText('Ticketing')).toBeInTheDocument();
+		// Ticketing configuration moved to the dedicated TicketingStep (step 3),
+		// so DetailsStep renders neither an RSVP nor a Ticketing section here.
 		expect(screen.queryByText('RSVP Options')).not.toBeInTheDocument();
+		expect(screen.queryByText('Ticketing')).not.toBeInTheDocument();
 	});
 
 	it('shows RSVP section when requires_ticket is false', () => {
-		render(DetailsStep, { props: mockProps });
+		renderStep();
 
 		expect(screen.getByText('RSVP Options')).toBeInTheDocument();
 		expect(screen.queryByText('Ticketing')).not.toBeInTheDocument();
@@ -75,11 +94,9 @@ describe('DetailsStep', () => {
 
 	it('calls onUpdate when description changes', async () => {
 		const onUpdate = vi.fn();
-		render(DetailsStep, {
-			props: {
-				...mockProps,
-				onUpdate
-			}
+		renderStep({
+			...mockProps,
+			onUpdate
 		});
 
 		const descriptionTextarea = screen.getByLabelText('Description');
@@ -90,11 +107,9 @@ describe('DetailsStep', () => {
 
 	it('handles tag input', async () => {
 		const onUpdate = vi.fn();
-		render(DetailsStep, {
-			props: {
-				...mockProps,
-				onUpdate
-			}
+		renderStep({
+			...mockProps,
+			onUpdate
 		});
 
 		// Open Advanced section
@@ -111,7 +126,7 @@ describe('DetailsStep', () => {
 	});
 
 	it('is keyboard accessible', async () => {
-		render(DetailsStep, { props: mockProps });
+		renderStep();
 
 		const descriptionTextarea = screen.getByLabelText('Description');
 		descriptionTextarea.focus();

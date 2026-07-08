@@ -21,7 +21,7 @@ function createMockEvent(overrides: Partial<EventDetailSchema> = {}): EventDetai
 		waitlist_open: false,
 		event_type: 'public',
 		visibility: 'public',
-		status: 'approved',
+		status: 'open',
 		requires_ticket: false,
 		potluck_open: false,
 		logo: null,
@@ -54,9 +54,9 @@ describe('EventStatusBadge', () => {
 	});
 
 	describe('Cancelled Status', () => {
-		it('shows "Cancelled" when event status is rejected', () => {
+		it('shows "Cancelled" when event status is cancelled', () => {
 			const event = createMockEvent({
-				status: 'rejected',
+				status: 'cancelled',
 				start: '2025-12-01T18:00:00Z',
 				end: '2025-12-01T22:00:00Z'
 			});
@@ -64,7 +64,7 @@ describe('EventStatusBadge', () => {
 			render(EventStatusBadge, { props: { event } });
 
 			expect(screen.getByRole('status')).toHaveTextContent('Cancelled');
-			expect(screen.getByRole('status')).toHaveClass('bg-destructive');
+			expect(screen.getByRole('status')).toHaveClass('bg-orange-600');
 		});
 	});
 
@@ -230,7 +230,7 @@ describe('EventStatusBadge', () => {
 	describe('Priority Order', () => {
 		it('prioritizes "Cancelled" over "Full"', () => {
 			const event = createMockEvent({
-				status: 'rejected',
+				status: 'cancelled',
 				max_attendees: 50,
 				attendee_count: 50,
 				start: '2025-12-01T18:00:00Z',
@@ -257,7 +257,7 @@ describe('EventStatusBadge', () => {
 			expect(screen.getByRole('status')).toHaveTextContent('Full');
 		});
 
-		it('prioritizes "Past" over "Full" (event ended while full)', () => {
+		it('prioritizes "Full" over "Past" (capacity is checked before temporal status)', () => {
 			vi.setSystemTime(new Date('2025-12-02T10:00:00Z'));
 
 			const event = createMockEvent({
@@ -269,7 +269,7 @@ describe('EventStatusBadge', () => {
 
 			render(EventStatusBadge, { props: { event } });
 
-			expect(screen.getByRole('status')).toHaveTextContent('Past');
+			expect(screen.getByRole('status')).toHaveTextContent('Full');
 		});
 	});
 

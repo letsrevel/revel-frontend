@@ -125,7 +125,12 @@ describe('OrganizationFilters', () => {
 			}
 		});
 
-		// Tab through interactive elements
+		// Tab through interactive elements in DOM order:
+		// city search input → sort-order info button → order-by select
+		await user.tab();
+		expect(screen.getByRole('textbox', { name: 'Search for a city' })).toHaveFocus();
+		await user.tab();
+		expect(screen.getByRole('button', { name: 'Sort order information' })).toHaveFocus();
 		await user.tab();
 		expect(screen.getByRole('combobox')).toHaveFocus(); // Order by select
 	});

@@ -1,13 +1,17 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
+import { QueryClient } from '@tanstack/svelte-query';
 import NotificationPreferencesForm from './NotificationPreferencesForm.svelte';
+import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 import type { NotificationPreferenceSchema } from '$lib/api/generated/types.gen.js';
 
 // Mock the API
 vi.mock('$lib/api', () => ({
-	notificationpreferenceUpdatePreferences: vi.fn()
+	notificationpreferenceUpdatePreferences: vi.fn(),
+	notificationpreferenceUnsubscribe: vi.fn(),
+	telegramGetLinkStatus: vi.fn().mockResolvedValue({ data: { connected: false } }),
+	notificationpreferenceGetAvailableNotificationTypes: vi.fn().mockResolvedValue({ data: [] })
 }));
 
 // Mock svelte-sonner
@@ -39,34 +43,28 @@ describe('NotificationPreferencesForm', () => {
 		vi.clearAllMocks();
 	});
 
+	function renderForm(props: Record<string, unknown>) {
+		return render(QueryClientTestWrapper, {
+			props: { client: queryClient, component: NotificationPreferencesForm, props }
+		});
+	}
+
 	it('renders all form sections', () => {
-		render(QueryClientProvider, {
-			props: {
-				client: queryClient,
-				children: NotificationPreferencesForm,
-				childProps: {
-					preferences: mockPreferences,
-					authToken: 'test-token'
-				}
-			}
+		renderForm({
+			preferences: mockPreferences,
+			authToken: 'test-token'
 		});
 
 		expect(screen.getByText('Master Controls')).toBeInTheDocument();
 		expect(screen.getByText('Notification Channels')).toBeInTheDocument();
 		expect(screen.getByText('Digest Settings')).toBeInTheDocument();
-		expect(screen.getByText('Privacy Settings')).toBeInTheDocument();
+		expect(screen.getByText('Advanced Settings')).toBeInTheDocument();
 	});
 
 	it('displays current preferences correctly', () => {
-		render(QueryClientProvider, {
-			props: {
-				client: queryClient,
-				children: NotificationPreferencesForm,
-				childProps: {
-					preferences: mockPreferences,
-					authToken: 'test-token'
-				}
-			}
+		renderForm({
+			preferences: mockPreferences,
+			authToken: 'test-token'
 		});
 
 		// Check silence all is not checked
@@ -80,26 +78,20 @@ describe('NotificationPreferencesForm', () => {
 		expect(eventRemindersCheckbox).toBeChecked();
 
 		// Check in-app channel is enabled
-		const inAppCheckbox = screen.getByRole('checkbox', { name: /enable in-app notifications/i });
+		const inAppCheckbox = screen.getByRole('checkbox', { name: /^in-app$/i });
 		expect(inAppCheckbox).toBeChecked();
 
 		// Check email channel is enabled
-		const emailCheckbox = screen.getByRole('checkbox', { name: /enable email notifications/i });
+		const emailCheckbox = screen.getByRole('checkbox', { name: /^email$/i });
 		expect(emailCheckbox).toBeChecked();
 	});
 
 	it('disables all controls when silence_all is enabled', async () => {
 		const user = userEvent.setup();
 
-		render(QueryClientProvider, {
-			props: {
-				client: queryClient,
-				children: NotificationPreferencesForm,
-				childProps: {
-					preferences: mockPreferences,
-					authToken: 'test-token'
-				}
-			}
+		renderForm({
+			preferences: mockPreferences,
+			authToken: 'test-token'
 		});
 
 		const silenceAllCheckbox = screen.getByRole('checkbox', {
@@ -113,32 +105,23 @@ describe('NotificationPreferencesForm', () => {
 		const eventRemindersCheckbox = screen.getByRole('checkbox', { name: /event reminders/i });
 		expect(eventRemindersCheckbox).toBeDisabled();
 
-		const inAppCheckbox = screen.getByRole('checkbox', { name: /enable in-app notifications/i });
+		const inAppCheckbox = screen.getByRole('checkbox', { name: /^in-app$/i });
 		expect(inAppCheckbox).toBeDisabled();
 	});
 
 	it('shows time picker only for daily and weekly digest frequencies', async () => {
 		const user = userEvent.setup();
 
-		render(QueryClientProvider, {
-			props: {
-				client: queryClient,
-				children: NotificationPreferencesForm,
-				childProps: {
-					preferences: { ...mockPreferences, digest_frequency: 'immediate' },
-					authToken: 'test-token'
-				}
-			}
+		renderForm({
+			preferences: { ...mockPreferences, digest_frequency: 'immediate' },
+			authToken: 'test-token'
 		});
 
 		// Time picker should not be visible for immediate
 		expect(screen.queryByLabelText('Send time')).not.toBeInTheDocument();
 
-		// Change to daily
-		const frequencySelect = screen.getByRole('combobox', { name: /digest frequency/i });
-		await user.click(frequencySelect);
-
-		const dailyOption = screen.getByRole('option', { name: /daily/i });
+		// Change to daily (digest frequency is a radio group)
+		const dailyOption = screen.getByRole('radio', { name: /^daily$/i });
 		await user.click(dailyOption);
 
 		// Time picker should now be visible
@@ -150,26 +133,20 @@ describe('NotificationPreferencesForm', () => {
 	it('validates that at least one channel is selected', async () => {
 		const user = userEvent.setup();
 
-		render(QueryClientProvider, {
-			props: {
-				client: queryClient,
-				children: NotificationPreferencesForm,
-				childProps: {
-					preferences: mockPreferences,
-					authToken: 'test-token'
-				}
-			}
+		renderForm({
+			preferences: mockPreferences,
+			authToken: 'test-token'
 		});
 
 		// Uncheck all channels
-		const inAppCheckbox = screen.getByRole('checkbox', { name: /enable in-app notifications/i });
-		const emailCheckbox = screen.getByRole('checkbox', { name: /enable email notifications/i });
+		const inAppCheckbox = screen.getByRole('checkbox', { name: /^in-app$/i });
+		const emailCheckbox = screen.getByRole('checkbox', { name: /^email$/i });
 
 		await user.click(inAppCheckbox);
 		await user.click(emailCheckbox);
 
 		// Try to save
-		const saveButton = screen.getByRole('button', { name: /save preferences/i });
+		const saveButton = screen.getByRole('button', { name: /save changes/i });
 		await user.click(saveButton);
 
 		// Should show validation error
@@ -183,18 +160,12 @@ describe('NotificationPreferencesForm', () => {
 	it('enables save button when changes are made', async () => {
 		const user = userEvent.setup();
 
-		render(QueryClientProvider, {
-			props: {
-				client: queryClient,
-				children: NotificationPreferencesForm,
-				childProps: {
-					preferences: mockPreferences,
-					authToken: 'test-token'
-				}
-			}
+		renderForm({
+			preferences: mockPreferences,
+			authToken: 'test-token'
 		});
 
-		const saveButton = screen.getByRole('button', { name: /save preferences/i });
+		const saveButton = screen.getByRole('button', { name: /save changes/i });
 
 		// Initially disabled (no changes)
 		expect(saveButton).toBeDisabled();
@@ -220,16 +191,10 @@ describe('NotificationPreferencesForm', () => {
 			response: {} as Response
 		});
 
-		render(QueryClientProvider, {
-			props: {
-				client: queryClient,
-				children: NotificationPreferencesForm,
-				childProps: {
-					preferences: mockPreferences,
-					onSave: mockOnSave,
-					authToken: 'test-token'
-				}
-			}
+		renderForm({
+			preferences: mockPreferences,
+			onSave: mockOnSave,
+			authToken: 'test-token'
 		});
 
 		// Make a change
@@ -237,7 +202,7 @@ describe('NotificationPreferencesForm', () => {
 		await user.click(eventRemindersCheckbox);
 
 		// Save
-		const saveButton = screen.getByRole('button', { name: /save preferences/i });
+		const saveButton = screen.getByRole('button', { name: /save changes/i });
 		await user.click(saveButton);
 
 		// Wait for mutation to complete
@@ -253,15 +218,9 @@ describe('NotificationPreferencesForm', () => {
 	it('resets changes when reset button is clicked', async () => {
 		const user = userEvent.setup();
 
-		render(QueryClientProvider, {
-			props: {
-				client: queryClient,
-				children: NotificationPreferencesForm,
-				childProps: {
-					preferences: mockPreferences,
-					authToken: 'test-token'
-				}
-			}
+		renderForm({
+			preferences: mockPreferences,
+			authToken: 'test-token'
 		});
 
 		// Make a change
@@ -271,8 +230,8 @@ describe('NotificationPreferencesForm', () => {
 		// Checkbox should be unchecked
 		expect(eventRemindersCheckbox).not.toBeChecked();
 
-		// Click reset
-		const resetButton = screen.getByRole('button', { name: /reset changes/i });
+		// Click reset (labelled "Cancel")
+		const resetButton = screen.getByRole('button', { name: /^cancel$/i });
 		await user.click(resetButton);
 
 		// Checkbox should be checked again (back to original state)
@@ -284,15 +243,9 @@ describe('NotificationPreferencesForm', () => {
 	it('is keyboard accessible', async () => {
 		const user = userEvent.setup();
 
-		render(QueryClientProvider, {
-			props: {
-				client: queryClient,
-				children: NotificationPreferencesForm,
-				childProps: {
-					preferences: mockPreferences,
-					authToken: 'test-token'
-				}
-			}
+		renderForm({
+			preferences: mockPreferences,
+			authToken: 'test-token'
 		});
 
 		// Tab through form elements
@@ -312,34 +265,22 @@ describe('NotificationPreferencesForm', () => {
 	});
 
 	it('handles disabled prop correctly', () => {
-		render(QueryClientProvider, {
-			props: {
-				client: queryClient,
-				children: NotificationPreferencesForm,
-				childProps: {
-					preferences: mockPreferences,
-					disabled: true,
-					authToken: 'test-token'
-				}
-			}
+		renderForm({
+			preferences: mockPreferences,
+			disabled: true,
+			authToken: 'test-token'
 		});
 
 		// All interactive elements should be disabled
 		expect(screen.getByRole('checkbox', { name: /silence all notifications/i })).toBeDisabled();
 		expect(screen.getByRole('checkbox', { name: /event reminders/i })).toBeDisabled();
-		expect(screen.getByRole('button', { name: /save preferences/i })).toBeDisabled();
+		expect(screen.getByRole('button', { name: /save changes/i })).toBeDisabled();
 	});
 
 	it('handles null preferences gracefully', () => {
-		render(QueryClientProvider, {
-			props: {
-				client: queryClient,
-				children: NotificationPreferencesForm,
-				childProps: {
-					preferences: null,
-					authToken: 'test-token'
-				}
-			}
+		renderForm({
+			preferences: null,
+			authToken: 'test-token'
 		});
 
 		// Should render with default values

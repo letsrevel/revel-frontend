@@ -41,7 +41,7 @@ describe('PotluckItem', () => {
 		render(PotluckItem, {
 			props: {
 				item: mockItem,
-				isOrganizer: false,
+				hasManagePermission: false,
 				canClaim: true,
 				onClaim: vi.fn(),
 				onUnclaim: vi.fn()
@@ -60,7 +60,7 @@ describe('PotluckItem', () => {
 		render(PotluckItem, {
 			props: {
 				item: mockOwnedItem,
-				isOrganizer: false,
+				hasManagePermission: false,
 				canClaim: true,
 				onClaim: vi.fn(),
 				onUnclaim: vi.fn()
@@ -77,7 +77,7 @@ describe('PotluckItem', () => {
 		render(PotluckItem, {
 			props: {
 				item: mockClaimedByOther,
-				isOrganizer: false,
+				hasManagePermission: false,
 				canClaim: true,
 				onClaim: vi.fn(),
 				onUnclaim: vi.fn()
@@ -99,7 +99,7 @@ describe('PotluckItem', () => {
 		render(PotluckItem, {
 			props: {
 				item: mockItem,
-				isOrganizer: false,
+				hasManagePermission: false,
 				canClaim: true,
 				onClaim,
 				onUnclaim: vi.fn()
@@ -120,7 +120,7 @@ describe('PotluckItem', () => {
 		render(PotluckItem, {
 			props: {
 				item: mockOwnedItem,
-				isOrganizer: false,
+				hasManagePermission: false,
 				canClaim: true,
 				onClaim: vi.fn(),
 				onUnclaim
@@ -138,7 +138,7 @@ describe('PotluckItem', () => {
 		render(PotluckItem, {
 			props: {
 				item: mockItem,
-				isOrganizer: false,
+				hasManagePermission: false,
 				canClaim: false,
 				onClaim: vi.fn(),
 				onUnclaim: vi.fn()
@@ -147,14 +147,14 @@ describe('PotluckItem', () => {
 
 		const button = screen.getByRole('button', { name: /claim pasta salad/i });
 		expect(button).toBeDisabled();
-		expect(screen.getByText('RSVP to claim')).toBeInTheDocument();
+		expect(screen.getByText('RSVP "Yes" to claim')).toBeInTheDocument();
 	});
 
-	it('shows organizer actions when isOrganizer is true', () => {
+	it('shows edit/delete actions when user has manage permission', () => {
 		render(PotluckItem, {
 			props: {
 				item: mockItem,
-				isOrganizer: true,
+				hasManagePermission: true,
 				canClaim: true,
 				onClaim: vi.fn(),
 				onUnclaim: vi.fn(),
@@ -167,11 +167,11 @@ describe('PotluckItem', () => {
 		expect(screen.getByRole('button', { name: /delete pasta salad/i })).toBeInTheDocument();
 	});
 
-	it('hides organizer actions when isOrganizer is false', () => {
+	it('hides edit/delete actions when user lacks manage permission and does not own the item', () => {
 		render(PotluckItem, {
 			props: {
 				item: mockItem,
-				isOrganizer: false,
+				hasManagePermission: false,
 				canClaim: true,
 				onClaim: vi.fn(),
 				onUnclaim: vi.fn()
@@ -189,7 +189,7 @@ describe('PotluckItem', () => {
 		render(PotluckItem, {
 			props: {
 				item: mockItem,
-				isOrganizer: true,
+				hasManagePermission: true,
 				canClaim: true,
 				onClaim: vi.fn(),
 				onUnclaim: vi.fn(),
@@ -212,7 +212,7 @@ describe('PotluckItem', () => {
 		render(PotluckItem, {
 			props: {
 				item: mockItem,
-				isOrganizer: true,
+				hasManagePermission: true,
 				canClaim: true,
 				onClaim: vi.fn(),
 				onUnclaim: vi.fn(),
@@ -232,7 +232,7 @@ describe('PotluckItem', () => {
 		render(PotluckItem, {
 			props: {
 				item: mockItem,
-				isOrganizer: false,
+				hasManagePermission: false,
 				canClaim: true,
 				onClaim: vi.fn(),
 				onUnclaim: vi.fn()
@@ -246,7 +246,7 @@ describe('PotluckItem', () => {
 		render(PotluckItem, {
 			props: {
 				item: mockClaimedByOther,
-				isOrganizer: false,
+				hasManagePermission: false,
 				canClaim: true,
 				onClaim: vi.fn(),
 				onUnclaim: vi.fn()
@@ -272,7 +272,7 @@ describe('PotluckItem', () => {
 			const { unmount } = render(PotluckItem, {
 				props: {
 					item: { ...mockItem, item_type },
-					isOrganizer: false,
+					hasManagePermission: false,
 					canClaim: true,
 					onClaim: vi.fn(),
 					onUnclaim: vi.fn()
@@ -291,7 +291,7 @@ describe('PotluckItem', () => {
 		render(PotluckItem, {
 			props: {
 				item: mockItem,
-				isOrganizer: true,
+				hasManagePermission: true,
 				canClaim: true,
 				onClaim,
 				onUnclaim: vi.fn(),
@@ -324,7 +324,7 @@ describe('PotluckItem', () => {
 		render(PotluckItem, {
 			props: {
 				item: mockItem,
-				isOrganizer: false,
+				hasManagePermission: false,
 				canClaim: true,
 				onClaim: vi.fn(),
 				onUnclaim: vi.fn()
@@ -339,7 +339,7 @@ describe('PotluckItem', () => {
 		render(PotluckItem, {
 			props: {
 				item: mockItem,
-				isOrganizer: false,
+				hasManagePermission: false,
 				canClaim: true,
 				onClaim: vi.fn(),
 				onUnclaim: vi.fn(),

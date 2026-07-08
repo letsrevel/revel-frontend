@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/svelte';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/svelte-query';
 import BillingProfileForm from './BillingProfileForm.svelte';
+import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
 
 // Mock API functions
 vi.mock('$lib/api/generated/sdk.gen', () => ({
@@ -53,9 +54,8 @@ function renderWithQueryClient(props: Record<string, unknown>) {
 	const queryClient = new QueryClient({
 		defaultOptions: { queries: { retry: false } }
 	});
-	return render(BillingProfileForm, {
-		props,
-		context: new Map([['$$_queryClient', queryClient]])
+	return render(QueryClientTestWrapper, {
+		props: { client: queryClient, component: BillingProfileForm, props }
 	});
 }
 
@@ -64,9 +64,10 @@ describe('BillingProfileForm', () => {
 		vi.clearAllMocks();
 	});
 
-	it('renders the form heading', async () => {
+	it('renders the form with its accessible title', async () => {
 		renderWithQueryClient({ authToken: 'test-token' });
-		expect(screen.getByText('Billing Information')).toBeInTheDocument();
+		// The title is exposed as the form's aria-label (no visible heading anymore)
+		expect(screen.getByRole('form', { name: 'Billing Information' })).toBeInTheDocument();
 	});
 
 	it('renders all required form fields', async () => {
@@ -111,13 +112,15 @@ describe('BillingProfileForm', () => {
 		expect(screen.getByRole('form', { name: /Billing Information/i })).toBeInTheDocument();
 	});
 
-	it('does not show VAT ID section when no billing profile exists', async () => {
+	it('shows only a VAT ID hint (no controls) when no billing profile exists', async () => {
 		renderWithQueryClient({ authToken: 'test-token' });
-		// VAT ID section only appears after profile exists (hasBillingProfile = true)
-		// With 404 response (null profile), the section should not be present
+		// Without a billing profile the VAT ID section renders as an informational
+		// hint: heading + description, but no input or Validate/Remove controls.
 		await waitFor(() => {
-			expect(screen.queryByText('VAT ID')).not.toBeInTheDocument();
+			expect(screen.getByText('VAT ID')).toBeInTheDocument();
 		});
+		expect(screen.queryByRole('button', { name: 'Validate' })).not.toBeInTheDocument();
+		expect(screen.queryByRole('textbox', { name: 'VAT ID' })).not.toBeInTheDocument();
 	});
 
 	it('shows VAT ID section when billing profile exists', async () => {
