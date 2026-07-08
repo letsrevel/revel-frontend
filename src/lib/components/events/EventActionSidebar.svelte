@@ -324,7 +324,7 @@
 			>
 				<div class="flex items-start gap-2">
 					<Ban class="h-5 w-5 shrink-0 text-destructive" aria-hidden="true" />
-					<div class="flex-1 font-semibold text-destructive">
+					<div role="heading" aria-level="3" class="flex-1 font-semibold text-destructive">
 						{m['eventActionSidebar.cancelledBannerTitle']()}
 					</div>
 				</div>

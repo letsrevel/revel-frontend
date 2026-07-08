@@ -79,9 +79,9 @@
 		{:else if !token}
 			<!-- Missing Token Error -->
 			<div role="alert" class="rounded-md border border-destructive bg-destructive/10 p-4">
-				<p class="text-sm font-medium text-destructive">
+				<h2 class="text-sm font-medium text-destructive">
 					{m['resetPasswordPage.invalidTokenTitle']()}
-				</p>
+				</h2>
 				<p class="mt-2 text-sm text-muted-foreground">
 					{m['resetPasswordPage.invalidTokenDescription']()}
 				</p>

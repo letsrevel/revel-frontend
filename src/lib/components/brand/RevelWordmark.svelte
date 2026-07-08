@@ -1,8 +1,8 @@
 <script lang="ts">
-	// "let's revel." lockup — the official R mark + the wordmark set in the brand
-	// typeface (Nata Sans under a brand theme). Text uses currentColor so it
-	// adapts to every theme's foreground; the trailing period picks up the accent.
-	// Used as the header home button. Delete with the rest of the experiment.
+	// "let's revel." lockup — the official R mark + the wordmark in the brand
+	// typeface (Nata Sans). Text uses currentColor so it adapts to light/dark;
+	// the trailing period picks up the crimson accent (the "heart" pop).
+	// Used as the header home button.
 	//
 	// The mark is decorative here: the visible "let's revel." text is the
 	// accessible name (WCAG 2.5.3 Label in Name), so the R must not add "Revel".

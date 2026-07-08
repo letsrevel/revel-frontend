@@ -141,9 +141,9 @@
 				so the visual language stays consistent across surfaces.
 			-->
 			<div class="space-y-3 rounded-md border border-dashed p-3">
-				<p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+				<h4 class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
 					{m['pollNewPage.tiersSectionTitle']()}
-				</p>
+				</h4>
 
 				{#if showVoteTiers}
 					<fieldset class="space-y-2">

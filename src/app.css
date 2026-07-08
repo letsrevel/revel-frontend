@@ -1,57 +1,78 @@
+@import '@fontsource-variable/nata-sans';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * THE BRAND THEME — "Bubble" (2026 ACIDHAIRS rebrand, decided 2026-07-08).
+ * The logo's warmth as UI language: sticker-round corners, lavender paper by
+ * day, aubergine club-light by night with the palette Lavender as the glow
+ * primary. Crimson appears only as the "heart" accent; amber for highlights.
+ *
+ * Derived from the official palette (see "Brand Palette" in CLAUDE.md).
+ * Token NAMES are the stable contract — a future rebrand is an edit to the
+ * values below, nothing else. Retired candidates (gradient/midnight/mono and
+ * the pre-2026 purple/cyan brand) live in git history at commit 3e6d2bb9.
+ *
+ * ACCESSIBILITY CONTRACT — validate any change with
+ * `python3 scripts/audit-brand-themes.py` (keep it at 0 failures):
+ *   - every *-foreground on its surface ≥ 4.5:1 (WCAG AA text);
+ *   - --primary vs --background ≥ 3:1 (links, focus rings);
+ *   - semantic colors separated by LIGHTNESS, not hue alone (color-blind
+ *     safety); never encode meaning by color alone in components.
+ */
 @layer base {
 	:root {
-		--background: 0 0% 100%;
-		--foreground: 270 15% 10%;
+		--background: 268 60% 96%; /* whisper lavender paper */
+		--foreground: 173 40% 8%; /* ink */
 		--card: 0 0% 100%;
-		--card-foreground: 270 15% 10%;
+		--card-foreground: 173 40% 8%;
 		--popover: 0 0% 100%;
-		--popover-foreground: 270 15% 10%;
-		/* Purple/Violet primary */
-		--primary: 270 70% 55%;
+		--popover-foreground: 173 40% 8%;
+		--primary: 270 70% 48%; /* Hearty Purple */
 		--primary-foreground: 0 0% 100%;
-		/* Blue secondary */
-		--secondary: 220 70% 55%;
-		--secondary-foreground: 0 0% 100%;
-		--muted: 270 20% 96%;
-		--muted-foreground: 270 10% 45%;
-		/* Cyan accent */
-		--accent: 190 75% 50%;
+		--secondary: 226 95% 85%; /* periwinkle chip */
+		--secondary-foreground: 226 65% 20%;
+		--muted: 268 40% 92%;
+		--muted-foreground: 268 18% 32%;
+		--accent: 3 76% 44%; /* the heart: crimson pop */
 		--accent-foreground: 0 0% 100%;
-		--destructive: 0 84.2% 60.2%;
+		--highlight: 38 94% 56%; /* amber badge/pop */
+		--highlight-foreground: 30 55% 12%;
+		--destructive: 350 78% 30%; /* maroon, never brand crimson */
 		--destructive-foreground: 0 0% 100%;
-		--border: 270 20% 90%;
-		--input: 270 20% 90%;
-		--ring: 270 70% 55%;
-		--radius: 0.5rem;
+		--border: 268 35% 84%;
+		--input: 268 35% 84%;
+		--ring: 270 70% 48%;
+		--radius: 1.25rem; /* the signature: sticker corners everywhere */
+		/* Logo gradient (RevelMark): Hearty Purple → Light Crimson. */
+		--logo-from: hsl(270 70% 55%);
+		--logo-to: hsl(3 79% 53%);
 	}
 
 	.dark {
-		--background: 270 30% 8%;
-		--foreground: 270 10% 95%;
-		--card: 270 25% 12%;
-		--card-foreground: 270 10% 95%;
-		--popover: 270 25% 12%;
-		--popover-foreground: 270 10% 95%;
-		/* Purple/Violet primary (brighter in dark mode) */
-		--primary: 270 75% 65%;
-		--primary-foreground: 270 30% 8%;
-		/* Blue secondary */
-		--secondary: 220 70% 60%;
-		--secondary-foreground: 270 30% 8%;
+		--background: 270 35% 10%; /* aubergine, not black — backstage light */
+		--foreground: 0 0% 97%;
+		--card: 270 30% 14%;
+		--card-foreground: 0 0% 97%;
+		--popover: 270 30% 14%;
+		--popover-foreground: 0 0% 97%;
+		--primary: 268 60% 72%; /* palette Lavender as the glow, ink label */
+		--primary-foreground: 173 40% 8%;
+		--secondary: 226 45% 26%;
+		--secondary-foreground: 226 90% 88%;
 		--muted: 270 25% 18%;
-		--muted-foreground: 270 10% 65%;
-		/* Cyan accent */
-		--accent: 190 80% 55%;
-		--accent-foreground: 270 30% 8%;
-		--destructive: 0 70% 55%;
+		--muted-foreground: 270 12% 70%;
+		--accent: 3 85% 62%; /* neon heart, ink label */
+		--accent-foreground: 173 40% 8%;
+		--highlight: 38 94% 60%;
+		--highlight-foreground: 30 60% 10%;
+		--destructive: 0 70% 45%;
 		--destructive-foreground: 0 0% 100%;
 		--border: 270 25% 20%;
 		--input: 270 25% 20%;
-		--ring: 270 75% 65%;
+		--ring: 268 60% 72%;
 	}
 }
 

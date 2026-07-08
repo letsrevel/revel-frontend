@@ -40,7 +40,7 @@
 	>
 		<AlertTriangle class="mt-0.5 h-5 w-5 flex-shrink-0 text-destructive" aria-hidden="true" />
 		<div class="flex-1 space-y-2">
-			<p class="font-medium">{title}</p>
+			<h3 class="font-medium">{title}</h3>
 			<p class="text-muted-foreground">{m['recurringEvents.drift.banner.body']()}</p>
 			<div class="flex flex-wrap gap-2 pt-1">
 				<!-- eslint-disable svelte/no-navigation-without-resolve -- in-page anchor (fragment) supplied via prop; not an internal route -->

@@ -247,7 +247,7 @@
 				<!-- Delete Confirmation -->
 				{#if showDeleteConfirm}
 					<div class="rounded-md border border-destructive/50 bg-destructive/10 p-3">
-						<p class="text-sm font-medium text-destructive">
+						<p role="heading" aria-level="4" class="text-sm font-medium text-destructive">
 							{m['blacklistEntry.deleteConfirmTitle']()}
 						</p>
 						<p class="mt-1 text-xs text-muted-foreground">

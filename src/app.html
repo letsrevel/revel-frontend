@@ -47,25 +47,6 @@
 				}
 			})();
 		</script>
-		<!--
-			Anti-FOUC for the brand experiment: apply the data-brand attribute
-			before first paint so A/B testers don't see a Legacy flash on SSR
-			loads. Nonced (script-src 'self'). Must stay synchronous. Mirrors the
-			store's storage key ('revel-brand') and attribute ('data-brand').
-		-->
-		<script nonce="%sveltekit.nonce%">
-			(() => {
-				try {
-					const brand = localStorage.getItem('revel-brand');
-					// Keep in sync with BRAND_THEMES in brandTheme.svelte.ts.
-					if (['gradient', 'midnight', 'crimson', 'mono'].indexOf(brand) !== -1) {
-						document.documentElement.dataset.brand = brand;
-					}
-				} catch {
-					/* localStorage unavailable — fall back to Legacy */
-				}
-			})();
-		</script>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">

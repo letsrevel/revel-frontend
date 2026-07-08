@@ -1008,6 +1008,33 @@ When working on issues or new features, follow this collaborative workflow:
 - **Document decisions:** Explain reasoning in comments
 - **Iterative refinement:** Ask questions rather than make assumptions
 
+## Brand Palette (2026 Rebrand)
+
+The official palette from the ACIDHAIRS brand deck (June 2026, `revel-backend/local_stuff/Revel_Presentation_Branding+Social-Media-Design.pdf`). **This is the single source of truth for brand colors — always derive theme values from it, never invent new hues.**
+
+| Name           | Hex       | HSL                 | Role                       |
+| -------------- | --------- | ------------------- | -------------------------- |
+| Hearty Purple  | `#8C3CDD` | `hsl(270 70% 55%)`  | Primary                    |
+| Light Crimson  | `#E6332A` | `hsl(3 79% 53%)`    | Primary                    |
+| Lavender       | `#AB82DB` | `hsl(268 55% 68%)`  | Secondary                  |
+| Periwinkle     | `#9AB2FF` | `hsl(226 100% 80%)` | Secondary                  |
+| Amber          | `#F9B233` | `hsl(38 94% 59%)`   | Highlight                  |
+| Ink            | `#0D1E1C` | `hsl(173 40% 8%)`   | Text (light) / dark surfaces |
+| White          | `#FFFFFF` | `hsl(0 0% 100%)`    | Text on dark               |
+
+**The shipped theme is "Bubble"** (decided 2026-07-08): sticker-round `--radius: 1.25rem`, lavender paper light mode, aubergine club dark mode with palette Lavender as the glow primary; crimson only as the "heart" accent, amber as highlight, maroon destructive. Its tokens live in `src/app.css` (`:root` + `.dark`) — that file is the single place to edit for any future rebrand (token NAMES are the stable contract; every component reads them). Retired candidates (gradient/midnight/mono, the crimson study, the pre-2026 purple/cyan brand, and the live A/B switcher) are preserved in git history at commit `3e6d2bb9`.
+
+- **Logo:** the "let's revel." lockup (`RevelWordmark.svelte` + `RevelMark.svelte`); the mark's gradient is `--logo-from`/`--logo-to` (Hearty Purple → Light Crimson).
+- **Typeface:** Nata Sans app-wide, via `@fontsource-variable/nata-sans` (imported in `app.css`) and `fontFamily.sans` in `tailwind.config.ts`. The chunky wide headline face in the deck is ACIDHAIRS's own deck typography, **not** a licensed brand asset — Nata Sans is the brand font, with no display face (evaluated and decided against; see commit `3e6d2bb9` for the Unbounded/Baloo 2 experiments).
+
+### Theme rules
+
+- **Use tokens, never raw hexes** in components (`bg-primary`, `text-muted-foreground`, …). Palette hexes appear only in `app.css`.
+- **The theme must respect the light/dark axis.** The app styles content with `dark:` utilities (e.g. `prose dark:prose-invert`), which assume the `.dark` class controls surface darkness. A theme that keeps dark surfaces in light mode breaks readability everywhere.
+- **WCAG AA contract:** every `*-foreground` on its surface ≥ 4.5:1; `--primary` vs `--background` ≥ 3:1 (links, focus rings).
+- **Color-blind safety:** separate semantic colors (primary/accent/destructive/highlight) by _lightness_, not hue alone — protanopia/deuteranopia collapse red/purple/amber hue differences. Never encode meaning by color alone; pair with icon or text.
+- **Validate after any theme edit:** `python3 scripts/audit-brand-themes.py` checks the WCAG pairs and simulated color-blind separation. Keep it at 0 failures.
+
 ## Notes to Claude
 
 - **Access the full backend repository** - The `revel-backend` symlink provides complete access to backend code, schemas, controllers, and documentation. Explore it directly when you need context.

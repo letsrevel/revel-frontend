@@ -196,7 +196,7 @@
 		<!-- Referral Section (Mobile) -->
 		{#if isReferrer}
 			<div class="space-y-2 border-t pt-4">
-				<div class="px-4 text-sm font-semibold text-muted-foreground">
+				<div role="heading" aria-level="3" class="px-4 text-sm font-semibold text-muted-foreground">
 					{m['referral.referralProgram']()}
 				</div>
 				<a
@@ -222,7 +222,11 @@
 		{#if userOrganizations.length > 0 || (!ownsOrganization() && features.organization_creation)}
 			<div class="space-y-2 border-t pt-4">
 				{#if userOrganizations.length > 0}
-					<div class="px-4 text-sm font-semibold text-muted-foreground">
+					<div
+						role="heading"
+						aria-level="3"
+						class="px-4 text-sm font-semibold text-muted-foreground"
+					>
 						{m['userMenu.myOrganizations']()}
 					</div>
 					{#each userOrganizations as org (org.id)}

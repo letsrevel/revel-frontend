@@ -69,7 +69,9 @@
 					aria-hidden="true"
 				/>
 				<div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
-					<span class="font-semibold">{m['impersonationBanner.title']()}</span>
+					<span role="heading" aria-level="2" class="font-semibold"
+						>{m['impersonationBanner.title']()}</span
+					>
 					<span class="flex items-center gap-1">
 						<User class="h-4 w-4" aria-hidden="true" />
 						<span class="font-medium">{authStore.user?.display_name ?? authStore.user?.email}</span>

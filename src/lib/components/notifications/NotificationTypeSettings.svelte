@@ -165,7 +165,7 @@
 				</div>
 			{:else}
 				<div class="mb-4 space-y-1 text-sm text-muted-foreground">
-					<p class="font-medium">{m['notificationPreferences.perTypeSettingsTitle']()}</p>
+					<h3 class="font-medium">{m['notificationPreferences.perTypeSettingsTitle']()}</h3>
 					<ul class="ml-2 list-inside list-disc space-y-1">
 						<li>{m['notificationPreferences.perTypeSettingsDefault']()}</li>
 						<li>{m['notificationPreferences.perTypeSettingsCustom']()}</li>

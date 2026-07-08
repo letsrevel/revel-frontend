@@ -34,7 +34,7 @@
 		<defs>
 			<linearGradient id={`revel-${uid}`} x1="0" y1="0" x2="0" y2="1">
 				<stop offset="0%" stop-color="var(--logo-from, hsl(270 70% 55%))" />
-				<stop offset="100%" stop-color="var(--logo-to, hsl(3 80% 53%))" />
+				<stop offset="100%" stop-color="var(--logo-to, hsl(3 79% 53%))" />
 			</linearGradient>
 		</defs>
 	{/if}
