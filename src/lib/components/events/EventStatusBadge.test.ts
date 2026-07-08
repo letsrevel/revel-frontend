@@ -70,6 +70,8 @@ describe('EventStatusBadge', () => {
 
 	describe('Full Status', () => {
 		it('shows "Full" when event is at capacity', () => {
+			vi.setSystemTime(new Date('2025-12-01T10:00:00Z'));
+
 			const event = createMockEvent({
 				max_attendees: 50,
 				attendee_count: 50,
@@ -84,6 +86,8 @@ describe('EventStatusBadge', () => {
 		});
 
 		it('shows "Full" when attendee count exceeds capacity', () => {
+			vi.setSystemTime(new Date('2025-12-01T10:00:00Z'));
+
 			const event = createMockEvent({
 				max_attendees: 50,
 				attendee_count: 55,
@@ -257,7 +261,7 @@ describe('EventStatusBadge', () => {
 			expect(screen.getByRole('status')).toHaveTextContent('Full');
 		});
 
-		it('prioritizes "Full" over "Past" (capacity is checked before temporal status)', () => {
+		it('prioritizes "Past" over "Full" (an ended event is over, regardless of capacity)', () => {
 			vi.setSystemTime(new Date('2025-12-02T10:00:00Z'));
 
 			const event = createMockEvent({
@@ -269,7 +273,7 @@ describe('EventStatusBadge', () => {
 
 			render(EventStatusBadge, { props: { event } });
 
-			expect(screen.getByRole('status')).toHaveTextContent('Full');
+			expect(screen.getByRole('status')).toHaveTextContent('Past');
 		});
 	});
 

@@ -43,10 +43,10 @@
 	 * Determine the event status based on various conditions
 	 * Priority order:
 	 * 0. Administrative Status (draft, closed, cancelled) - HIGHEST PRIORITY
-	 * 1. Full (if at capacity)
-	 * 2. Happening Today (if start date is today)
+	 * 1. Past (if end time has passed — an ended event is "Past" even if it was full)
+	 * 2. Full (if at capacity)
 	 * 3. Ongoing (if current time is between start and end)
-	 * 4. Past (if end time has passed)
+	 * 4. Happening Today (if start date is today)
 	 * 5. Upcoming (default for future events)
 	 *
 	 * Note: Administrative status takes precedence over temporal status
@@ -82,22 +82,22 @@
 		const startDate = new Date(event.start);
 		const endDate = new Date(event.end);
 
-		// 1. Check if full (has capacity and reached it)
+		// 1. Check if past (an ended event is "Past" even if it was full)
+		if (endDate < now) {
+			return {
+				label: m['eventStatus.past'](),
+				variant: 'secondary',
+				icon: CheckCircle
+			};
+		}
+
+		// 2. Check if full (has capacity and reached it)
 		const maxAttendees = event.max_attendees ?? 0;
 		if (maxAttendees > 0 && event.attendee_count >= maxAttendees) {
 			return {
 				label: m['eventStatus.full'](),
 				variant: 'destructive',
 				icon: AlertCircle
-			};
-		}
-
-		// 2. Check if past
-		if (endDate < now) {
-			return {
-				label: m['eventStatus.past'](),
-				variant: 'secondary',
-				icon: CheckCircle
 			};
 		}
 

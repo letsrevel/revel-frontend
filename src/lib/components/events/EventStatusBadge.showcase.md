@@ -16,8 +16,8 @@ A visual indicator that displays the current temporal status of an event with se
 The badge displays one of the following statuses based on priority:
 
 1. **Cancelled** (Red/Destructive) - Event status is 'rejected'
-2. **Full** (Red/Destructive) - Event has reached maximum capacity
-3. **Past** (Gray/Secondary) - Event has ended
+2. **Past** (Gray/Secondary) - Event has ended (wins over Full: an ended event is over, regardless of capacity)
+3. **Full** (Red/Destructive) - Event has reached maximum capacity
 4. **Ongoing** (Green/Success) - Event is currently happening
 5. **Happening Today** (Green/Success) - Event starts today but hasn't started yet
 6. **Upcoming** (Blue/Default) - Event is scheduled for the future
@@ -85,16 +85,16 @@ The component uses the following logic to determine status (in priority order):
 event.status === 'rejected';
 ```
 
-### 2. Full
-
-```typescript
-event.max_attendees > 0 && event.attendee_count >= event.max_attendees;
-```
-
-### 3. Past
+### 2. Past
 
 ```typescript
 new Date(event.end) < new Date();
+```
+
+### 3. Full
+
+```typescript
+event.max_attendees > 0 && event.attendee_count >= event.max_attendees;
 ```
 
 ### 4. Ongoing
