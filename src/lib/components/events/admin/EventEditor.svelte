@@ -191,9 +191,12 @@
 		}
 	});
 
-	// Fetch resources and questionnaires for existing events
+	// Fetch resources and questionnaires for existing events. Gated on the
+	// access token: on cold hydration these fired before the token refresh
+	// completed and got 401s; the token is reactive, so the effect re-runs
+	// once it lands.
 	$effect(() => {
-		if (existingEvent?.id) {
+		if (existingEvent?.id && authStore.accessToken) {
 			eventpublicdetailsListResources({
 				path: { event_id: existingEvent.id }
 			}).then((response) => {

@@ -66,9 +66,12 @@
 		window.scrollTo({ top: 0, behavior: 'smooth' });
 	});
 
-	// Fetch and pre-select resources and questionnaires when editing an existing event
+	// Fetch and pre-select resources and questionnaires when editing an existing
+	// event. Gated on the access token: on cold hydration these fired before the
+	// token refresh completed and got 401s; the token is reactive, so the effect
+	// re-runs once it lands.
 	$effect(() => {
-		if (existingEvent?.id) {
+		if (existingEvent?.id && authStore.accessToken) {
 			// Fetch resources for this event
 			eventpublicdetailsListResources({
 				path: {

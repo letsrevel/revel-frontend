@@ -73,14 +73,19 @@
 		<p class="text-sm font-medium">{m['guestTicketDialog.quickSelect']()}</p>
 		<div class="grid grid-cols-3 gap-2">
 			{#each suggestions as suggested, i (i)}
+				{@const applySuggestion = () => {
+					formData.pwyc = suggested.toFixed(2);
+					fieldErrors.pwyc = '';
+				}}
+				<!-- pointerdown applies the amount before blur-triggered validation errors
+				     shift the layout and make the subsequent click miss the button;
+				     onclick stays for keyboard activation (idempotent double-fire is fine) -->
 				<Button
 					type="button"
 					variant="outline"
 					size="sm"
-					onclick={() => {
-						formData.pwyc = suggested.toFixed(2);
-						fieldErrors.pwyc = '';
-					}}
+					onpointerdown={applySuggestion}
+					onclick={applySuggestion}
 					disabled={isSubmitting}
 				>
 					{currency}{suggested.toFixed(2)}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import {
 		Dialog,
@@ -278,7 +279,11 @@
 		}
 	});
 
-	// Reset state when dialog opens/closes
+	// Reset state when dialog opens/closes. Only `open` may be tracked here: the
+	// init branch reads other reactive state (formData, tier-derived values), and
+	// tracking those re-runs the effect on unrelated updates (typing a name, a
+	// tier refetch on window focus) which stomps user-entered PWYC amounts and
+	// guest names. `untrack` limits the effect to open/close transitions.
 	$effect(() => {
 		if (!open) {
 			formData = {
@@ -299,21 +304,23 @@
 			seatLoadError = null;
 			seatSelectionError = '';
 		} else {
-			// Initialize guest names with primary guest name if available
-			const primaryName =
-				formData.first_name && formData.last_name
-					? `${formData.first_name} ${formData.last_name}`.trim()
-					: '';
-			guestNames = [primaryName];
+			untrack(() => {
+				// Initialize guest names with primary guest name if available
+				const primaryName =
+					formData.first_name && formData.last_name
+						? `${formData.first_name} ${formData.last_name}`.trim()
+						: '';
+				guestNames = [primaryName];
 
-			if (isPwyc) {
-				// Set default PWYC amount
-				formData.pwyc = minAmount().toFixed(2);
-			}
-			// Fetch seat availability if user_choice mode
-			if (isUserChoiceSeat) {
-				fetchSeatAvailability();
-			}
+				if (isPwyc) {
+					// Set default PWYC amount
+					formData.pwyc = minAmount().toFixed(2);
+				}
+				// Fetch seat availability if user_choice mode
+				if (isUserChoiceSeat) {
+					fetchSeatAvailability();
+				}
+			});
 		}
 	});
 
