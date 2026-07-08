@@ -1,14 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import type { PageData } from './$types';
-	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
-	import {
-		eventpublicticketsTicketCheckout,
-		eventpublicticketsTicketPwycCheckout,
-		eventpublicattendanceGetMyEventStatus,
-		eventpublicdiscoveryResumeCheckout,
-		eventpublicdiscoveryCancelCheckout
-	} from '$lib/api';
+	import { useQueryClient } from '@tanstack/svelte-query';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import EventHeader from '$lib/components/events/EventHeader.svelte';
 	import EventDetails from '$lib/components/events/EventDetails.svelte';
@@ -28,6 +21,8 @@
 	import MyTicketModal from '$lib/components/tickets/MyTicketModal.svelte';
 	import GuestRsvpDialog from '$lib/components/events/GuestRsvpDialog.svelte';
 	import GuestTicketDialog from '$lib/components/events/GuestTicketDialog.svelte';
+	import EventConfirmationBanners from '$lib/components/events/EventConfirmationBanners.svelte';
+	import { createCheckoutController } from '$lib/components/events/event-checkout-controller.svelte';
 	import { SeoHead } from '$lib/seo';
 	import {
 		isRSVP,
@@ -40,14 +35,7 @@
 		getActiveTickets,
 		type EventTicketSchemaActual
 	} from '$lib/utils/eligibility';
-	import type {
-		BatchCheckoutPayload,
-		BatchCheckoutPwycPayload,
-		BatchCheckoutResponse,
-		TicketPurchaseItem,
-		TierRemainingTicketsSchema,
-		BuyerBillingInfoSchema
-	} from '$lib/api/generated/types.gen';
+	import type { TierRemainingTicketsSchema } from '$lib/api/generated/types.gen';
 	import { getPotluckPermissions } from '$lib/utils/permissions';
 	import { formatEventLocation } from '$lib/utils/event';
 	import { formatDateTime } from '$lib/utils/date';
@@ -55,7 +43,6 @@
 	import { browser } from '$app/environment';
 	import * as m from '$lib/paraglide/messages.js';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { toast } from 'svelte-sonner';
 
 	const { data }: { data: PageData } = $props();
 
@@ -221,320 +208,29 @@
 		queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
 	}
 
-	/**
-	 * Read the (undeclared) runtime `detail` field some backend error payloads carry.
-	 * Returns the detail when it is a non-empty string, otherwise the fallback.
-	 */
-	function errorDetailOr(error: unknown, fallback: string): string {
-		if (typeof error === 'object' && error !== null && 'detail' in error) {
-			const { detail } = error;
-			if (typeof detail === 'string' && detail) return detail;
-		}
-		return fallback;
-	}
-
-	// Type for checkout parameters
-	interface CheckoutParams {
-		tierId: string;
-		tickets: TicketPurchaseItem[];
-		discountCode?: string;
-		billingInfo?: BuyerBillingInfoSchema;
-	}
-
-	interface PwycCheckoutParams extends CheckoutParams {
-		pricePerTicket: number;
-	}
-
-	/**
-	 * Refresh user status from the API
-	 */
-	async function refreshUserStatus() {
-		try {
-			const response = await eventpublicattendanceGetMyEventStatus({
-				path: { event_id: event.id }
-			});
-			if (response.data) {
-				userStatus = response.data;
-			}
-		} catch (err) {
-			console.error('Failed to refresh user status:', err);
-		}
-	}
-
-	/**
-	 * Handle successful batch checkout response
-	 */
-	async function handleCheckoutSuccess(response: BatchCheckoutResponse) {
-		if (!response) return;
-
-		// Check if we got tickets directly (free/offline payment)
-		if (response.tickets && response.tickets.length > 0) {
-			// Close the tier modal
-			closeTicketTierModal();
-
-			// Refresh user status to get updated tickets - this updates local state
-			await refreshUserStatus();
-
-			// Also invalidate TanStack Query cache for other components
-			queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
-
-			// Show success toast
-			const ticketCount = response.tickets.length;
-			const firstTicket = response.tickets[0];
-			const isPending = firstTicket?.status === 'pending';
-
-			if (isPending) {
-				// Offline payment - ticket reserved but not yet paid
-				toast.success(
-					m['eventPage.ticketReserved']?.({ count: ticketCount }) ??
-						`${ticketCount} ticket${ticketCount > 1 ? 's' : ''} reserved! Complete payment as instructed.`,
-					{
-						description:
-							m['eventPage.ticketReservedDesc']?.() ?? 'View your ticket for payment details.',
-						duration: 5000
-					}
-				);
-			} else {
-				// Free ticket claimed
-				toast.success(
-					m['eventPage.ticketClaimed']?.({ count: ticketCount }) ??
-						`${ticketCount} ticket${ticketCount > 1 ? 's' : ''} claimed!`,
-					{
-						description: m['eventPage.ticketClaimedDesc']?.() ?? 'Your ticket is ready.',
-						duration: 4000
-					}
-				);
-			}
-
-			// Open ticket modal after a short delay to show the new ticket
-			setTimeout(() => {
-				showMyTicketModal = true;
-			}, 500);
-		}
-		// Check if we got a checkout URL (redirect to Stripe)
-		else if (response.checkout_url) {
-			window.location.href = response.checkout_url;
-		}
-	}
-
-	// Ticket claiming mutation (for free/offline tickets) - batch version
-	const claimTicketMutation = createMutation(() => ({
-		mutationFn: async ({ tierId, tickets, discountCode, billingInfo }: CheckoutParams) => {
-			const body: BatchCheckoutPayload = {
-				tickets,
-				discount_code: discountCode || undefined,
-				billing_info: billingInfo || undefined
-			};
-			const response = await eventpublicticketsTicketCheckout({
-				path: { event_id: event.id, tier_id: tierId },
-				body
-			});
-			if (response.error) {
-				throw new Error(errorDetailOr(response.error, 'Failed to claim ticket'));
-			}
-			return response.data;
+	// Ticket checkout controller — owns purchase/resume/cancel mutations and side effects.
+	const {
+		refreshUserStatus,
+		resumePaymentMutation,
+		cancelReservationMutation,
+		handleClaimTicket,
+		handleCheckout,
+		handleResumePayment,
+		handleResumePaymentFromSidebar,
+		handleCancelReservation
+	} = createCheckoutController({
+		eventId: event.id,
+		queryClient,
+		getUserTickets: () => userTickets,
+		getUserDisplayName: () => userDisplayName,
+		setUserStatus: (status) => {
+			userStatus = status;
 		},
-		onSuccess: handleCheckoutSuccess
-	}));
-
-	// Fixed-price checkout mutation (for online payments) - batch version
-	const checkoutMutation = createMutation(() => ({
-		mutationFn: async ({ tierId, tickets, discountCode, billingInfo }: CheckoutParams) => {
-			const body: BatchCheckoutPayload = {
-				tickets,
-				discount_code: discountCode || undefined,
-				billing_info: billingInfo || undefined
-			};
-			const response = await eventpublicticketsTicketCheckout({
-				path: { event_id: event.id, tier_id: tierId },
-				body
-			});
-			if (response.error) {
-				throw new Error(errorDetailOr(response.error, 'Failed to checkout'));
-			}
-			return response.data;
-		},
-		onSuccess: handleCheckoutSuccess
-	}));
-
-	// PWYC checkout mutation - batch version
-	const pwycCheckoutMutation = createMutation(() => ({
-		mutationFn: async ({ tierId, tickets, pricePerTicket, billingInfo }: PwycCheckoutParams) => {
-			const body: BatchCheckoutPwycPayload = {
-				tickets,
-				price_per_ticket: pricePerTicket,
-				billing_info: billingInfo || undefined
-			};
-			const response = await eventpublicticketsTicketPwycCheckout({
-				path: { event_id: event.id, tier_id: tierId },
-				body
-			});
-			if (response.error) {
-				throw new Error(errorDetailOr(response.error, 'Failed to checkout'));
-			}
-			return response.data;
-		},
-		onSuccess: handleCheckoutSuccess
-	}));
-
-	/**
-	 * Get default guest name for single ticket purchase
-	 * Uses logged-in user's display name when available, falling back to a
-	 * localized placeholder so guest_name is never empty (backend min_length 1).
-	 */
-	function getDefaultGuestName(): string {
-		return userDisplayName.trim() || m['ticketConfirmationDialog.defaultGuestName']();
-	}
-
-	/**
-	 * Handle claiming free/offline tickets
-	 * @param tierId - Tier ID to purchase from
-	 * @param tickets - Optional tickets array (defaults to single ticket with empty guest name)
-	 * @param discountCode - Optional discount code
-	 */
-	async function handleClaimTicket(
-		tierId: string,
-		tickets?: TicketPurchaseItem[],
-		discountCode?: string,
-		billingInfo?: BuyerBillingInfoSchema
-	) {
-		const ticketItems = tickets || [{ guest_name: getDefaultGuestName() }];
-		await claimTicketMutation.mutateAsync({
-			tierId,
-			tickets: ticketItems,
-			discountCode,
-			billingInfo
-		});
-	}
-
-	/**
-	 * Handle paid ticket checkout
-	 * @param tierId - Tier ID to purchase from
-	 * @param isPwyc - Whether this is a PWYC tier
-	 * @param amount - Price per ticket for PWYC tiers
-	 * @param tickets - Optional tickets array (defaults to single ticket with empty guest name)
-	 * @param discountCode - Optional discount code
-	 * @param billingInfo - Optional billing info for invoicing
-	 */
-	async function handleCheckout(
-		tierId: string,
-		isPwyc: boolean,
-		amount?: number,
-		tickets?: TicketPurchaseItem[],
-		discountCode?: string,
-		billingInfo?: BuyerBillingInfoSchema
-	) {
-		const ticketItems = tickets || [{ guest_name: getDefaultGuestName() }];
-
-		if (isPwyc && amount !== undefined) {
-			// PWYC checkout with amount from confirmation dialog
-			await pwycCheckoutMutation.mutateAsync({
-				tierId,
-				tickets: ticketItems,
-				pricePerTicket: amount,
-				billingInfo
-			});
-		} else {
-			// Direct checkout for fixed-price tiers
-			await checkoutMutation.mutateAsync({
-				tierId,
-				tickets: ticketItems,
-				discountCode,
-				billingInfo
-			});
+		onCloseTicketTierModal: closeTicketTierModal,
+		setShowMyTicketModal: (open) => {
+			showMyTicketModal = open;
 		}
-	}
-
-	// Resume payment mutation (for pending tickets with online payment)
-	const resumePaymentMutation = createMutation(() => ({
-		mutationFn: async (paymentId: string) => {
-			const response = await eventpublicdiscoveryResumeCheckout({
-				path: { payment_id: paymentId }
-			});
-
-			if (response.error) {
-				throw new Error(errorDetailOr(response.error, 'Failed to resume checkout'));
-			}
-			return response.data;
-		},
-		onSuccess: (data) => {
-			// The resume endpoint returns a checkout_url - redirect to Stripe
-			if (data?.checkout_url) {
-				window.location.href = data.checkout_url;
-			}
-		},
-		onError: async (error) => {
-			// If session expired (404), refresh user status - tickets may have been cleaned up
-			await refreshUserStatus();
-			toast.error(m['eventPage.resumePaymentFailed']?.() ?? 'Could not resume payment', {
-				description:
-					error.message ||
-					(m['eventPage.resumePaymentFailedDesc']?.() ??
-						'The checkout session may have expired. Please try purchasing again.'),
-				duration: 5000
-			});
-		}
-	}));
-
-	// Cancel reservation mutation (for pending tickets with online payment)
-	const cancelReservationMutation = createMutation(() => ({
-		mutationFn: async (paymentId: string) => {
-			const response = await eventpublicdiscoveryCancelCheckout({
-				path: { payment_id: paymentId }
-			});
-
-			if (response.error) {
-				throw new Error(errorDetailOr(response.error, 'Failed to cancel reservation'));
-			}
-			return response.data;
-		},
-		onSuccess: async () => {
-			// Close the modal
-			showMyTicketModal = false;
-
-			// Refresh user status to update tickets list
-			await refreshUserStatus();
-
-			// Invalidate cache
-			queryClient.invalidateQueries({ queryKey: ['event-status', event.id] });
-
-			toast.success(m['eventPage.reservationCancelled']?.() ?? 'Reservation cancelled', {
-				description:
-					m['eventPage.reservationCancelledDesc']?.() ??
-					'Your ticket reservation has been cancelled.',
-				duration: 4000
-			});
-		},
-		onError: async (error) => {
-			await refreshUserStatus();
-			toast.error(m['eventPage.cancelReservationFailed']?.() ?? 'Could not cancel reservation', {
-				description:
-					error.message ||
-					(m['eventPage.cancelReservationFailedDesc']?.() ??
-						'Please try again or contact support.'),
-				duration: 5000
-			});
-		}
-	}));
-
-	function handleResumePayment(paymentId: string) {
-		resumePaymentMutation.mutate(paymentId);
-	}
-
-	/**
-	 * Wrapper for EventActionSidebar that finds the first pending ticket's payment ID
-	 * The sidebar doesn't know which ticket to resume, so we find it for them
-	 */
-	function handleResumePaymentFromSidebar() {
-		const pendingTicket = userTickets.find((t) => t.status === 'pending' && t.payment?.id);
-		if (pendingTicket?.payment?.id) {
-			handleResumePayment(pendingTicket.payment.id);
-		}
-	}
-
-	function handleCancelReservation(paymentId: string) {
-		cancelReservationMutation.mutate(paymentId);
-	}
+	});
 
 	// Handle payment success/cancelled redirects
 	let paymentSuccess = $state(false);
@@ -619,93 +315,8 @@
 <SeoHead config={data.seo} />
 
 <div class="min-h-screen bg-background">
-	<!-- Payment Success Message -->
-	{#if paymentSuccess}
-		<div class="container mx-auto px-6 pt-4 md:px-8">
-			<div
-				class="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-100"
-				role="alert"
-			>
-				<svg class="h-5 w-5 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-					<path
-						fill-rule="evenodd"
-						d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-						clip-rule="evenodd"
-					/>
-				</svg>
-				<div>
-					<p class="font-medium">{m['eventDetails.payment_successTitle']()}</p>
-					<p class="text-sm">{m['eventDetails.payment_successMessage']()}</p>
-				</div>
-			</div>
-		</div>
-	{/if}
-
-	<!-- Payment Cancelled Message -->
-	{#if paymentCancelled}
-		<div class="container mx-auto px-6 pt-4 md:px-8">
-			<div
-				class="flex items-center gap-2 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-100"
-				role="alert"
-			>
-				<svg class="h-5 w-5 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-					<path
-						fill-rule="evenodd"
-						d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
-						clip-rule="evenodd"
-					/>
-				</svg>
-				<div>
-					<p class="font-medium">{m['eventDetails.payment_cancelledTitle']()}</p>
-					<p class="text-sm">{m['eventDetails.payment_cancelledMessage']()}</p>
-				</div>
-			</div>
-		</div>
-	{/if}
-
-	<!-- RSVP Confirmation Message -->
-	{#if rsvpConfirmed}
-		<div class="container mx-auto px-6 pt-4 md:px-8">
-			<div
-				class="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-100"
-				role="alert"
-			>
-				<svg class="h-5 w-5 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-					<path
-						fill-rule="evenodd"
-						d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-						clip-rule="evenodd"
-					/>
-				</svg>
-				<div>
-					<p class="font-medium">{m['guest_attendance.rsvp_confirmed_title']()}</p>
-					<p class="text-sm">{m['guest_attendance.rsvp_confirmed_body']()}</p>
-				</div>
-			</div>
-		</div>
-	{/if}
-
-	<!-- Ticket Confirmation Message -->
-	{#if ticketConfirmed}
-		<div class="container mx-auto px-6 pt-4 md:px-8">
-			<div
-				class="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-100"
-				role="alert"
-			>
-				<svg class="h-5 w-5 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-					<path
-						fill-rule="evenodd"
-						d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-						clip-rule="evenodd"
-					/>
-				</svg>
-				<div>
-					<p class="font-medium">{m['guest_attendance.ticket_confirmed_title']()}</p>
-					<p class="text-sm">{m['guest_attendance.ticket_confirmed_body']()}</p>
-				</div>
-			</div>
-		</div>
-	{/if}
+	<!-- Post-redirect confirmation banners (payment / RSVP / ticket) -->
+	<EventConfirmationBanners {paymentSuccess} {paymentCancelled} {rsvpConfirmed} {ticketConfirmed} />
 
 	<!-- Active Waitlist Offer Banner (highest priority — surfaces above hero) -->
 	{#if activeOfferExpiresAt}

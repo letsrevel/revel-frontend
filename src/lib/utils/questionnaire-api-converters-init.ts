@@ -1,0 +1,370 @@
+/**
+ * Initialize-from-API orchestration for the questionnaire edit page.
+ *
+ * `initializeFromApiData` parses the full API questionnaire + org-questionnaire
+ * payload into local form state, attaching conditional questions/sections to
+ * their parent options. `normalizeQuestionCollections` bridges the two API
+ * shapes this converter is shared by. The public facade
+ * (`./questionnaire-api-converters`) re-exports both.
+ */
+
+import type {
+	QuestionnaireOption,
+	QuestionnaireQuestion,
+	QuestionnaireConditionalSection,
+	QuestionnaireSection
+} from './questionnaire-form-types';
+
+import {
+	convertApiMcQuestion,
+	convertApiFtQuestion,
+	convertApiFuQuestion,
+	convertApiSection,
+	type ApiQuestionInput,
+	type ApiSectionInput
+} from './questionnaire-api-converters-items';
+
+/** Collection keys under which questions hang (Django reverse-relation names). */
+type QuestionCollectionKey =
+	| 'multiplechoicequestion_questions'
+	| 'freetextquestion_questions'
+	| 'fileuploadquestion_questions';
+
+/** Loose API questionnaire body read by `initializeFromApiData`. */
+interface ApiQuestionnaireInput {
+	name?: string;
+	min_score?: string | number | null;
+	evaluation_mode?: string;
+	shuffle_questions?: boolean;
+	shuffle_sections?: boolean;
+	llm_guidelines?: string | null;
+	can_retake_after?: unknown;
+	max_attempts?: number;
+	sections?: ApiSectionInput[];
+	multiplechoicequestion_questions?: ApiQuestionInput[];
+	freetextquestion_questions?: ApiQuestionInput[];
+	fileuploadquestion_questions?: ApiQuestionInput[];
+	[key: string]: unknown;
+}
+
+/** Loose org-questionnaire wrapper read by `initializeFromApiData`. */
+interface ApiOrgQuestionnaireInput {
+	questionnaire_type?: 'admission' | 'membership' | 'feedback' | 'generic';
+	members_exempt?: boolean;
+	per_event?: boolean;
+	requires_evaluation?: boolean;
+	max_submission_age?: unknown;
+	[key: string]: unknown;
+}
+
+// ===== Timedelta Parsing Helpers =====
+
+/**
+ * Parse a Django timedelta value (number of seconds or "HH:MM:SS" string) to hours.
+ * Returns null for null/undefined/zero values (meaning immediate retake allowed).
+ */
+function parseTimedeltaToHours(value: unknown): number | null {
+	if (!value) return null;
+	if (typeof value === 'number') return Math.round(value / 3600) || null;
+	if (typeof value === 'string') {
+		// Django timedelta string format: "HH:MM:SS" or "D days, HH:MM:SS"
+		const match = value.match(/(?:(\d+)\s+days?,\s*)?(\d+):(\d+):(\d+)/);
+		if (match) {
+			const days = parseInt(match[1] || '0');
+			const hours = parseInt(match[2]);
+			const minutes = parseInt(match[3]);
+			const seconds = parseInt(match[4]);
+			const totalHours = days * 24 + hours + minutes / 60 + seconds / 3600;
+			return Math.round(totalHours) || null;
+		}
+	}
+	return null;
+}
+
+/**
+ * Parse a Django timedelta value (number of seconds or "HH:MM:SS" string) to days.
+ * Returns null for null/undefined/zero values.
+ */
+function parseTimedeltaToDays(value: unknown): number | null {
+	if (!value) return null;
+	if (typeof value === 'number') return Math.round(value / 86400) || null;
+	if (typeof value === 'string') {
+		const match = value.match(/(?:(\d+)\s+days?,\s*)?(\d+):(\d+):(\d+)/);
+		if (match) {
+			const days = parseInt(match[1] || '0');
+			const hours = parseInt(match[2]);
+			const minutes = parseInt(match[3]);
+			const seconds = parseInt(match[4]);
+			const totalDays = days + (hours * 3600 + minutes * 60 + seconds) / 86400;
+			return Math.round(totalDays) || null;
+		}
+	}
+	return null;
+}
+
+// ===== Initialize from API =====
+
+/** Result of initializing local state from API data. */
+export interface InitFromApiResult {
+	name: string;
+	questionnaireType: 'admission' | 'membership' | 'feedback' | 'generic';
+	minScore: number;
+	evaluationMode: 'automatic' | 'manual' | 'hybrid';
+	shuffleQuestions: boolean;
+	shuffleSections: boolean;
+	llmGuidelines: string;
+	canRetakeAfter: number | null;
+	maxAttempts: number;
+	membersExempt: boolean;
+	perEvent: boolean;
+	requiresEvaluation: boolean;
+	maxSubmissionAge: number | null;
+	topLevelQuestions: QuestionnaireQuestion[];
+	sections: QuestionnaireSection[];
+}
+
+/**
+ * Normalize a questionnaire-or-section object so its question collections are
+ * reachable under the Django reverse-relation names this converter reads
+ * (`multiplechoicequestion_questions`, etc.), regardless of whether the source
+ * used those or the underscored `QuestionnaireSchema` names
+ * (`multiple_choice_questions`, etc.).
+ *
+ * The questionnaire admin endpoints return `QuestionnaireResponseSchema`
+ * (run-together names); the poll detail endpoint embeds `QuestionnaireSchema`
+ * (underscored names). This converter is shared by both, so it has to accept
+ * either shape. Returns a shallow copy — the input is reactive `$state` and
+ * must not be mutated.
+ */
+export function normalizeQuestionCollections<T extends Record<string, unknown>>(obj: T): T {
+	if (!obj) return obj;
+	return {
+		...obj,
+		multiplechoicequestion_questions:
+			obj.multiplechoicequestion_questions ?? obj.multiple_choice_questions ?? [],
+		freetextquestion_questions: obj.freetextquestion_questions ?? obj.free_text_questions ?? [],
+		fileuploadquestion_questions:
+			obj.fileuploadquestion_questions ?? obj.file_upload_questions ?? []
+	};
+}
+
+/**
+ * Parse the full API questionnaire + org-questionnaire data into local form state.
+ *
+ * @param questionnaire - The org-questionnaire wrapper (has `questionnaire_type`, etc.)
+ * @param q - The inner questionnaire object (has sections, questions, etc.)
+ */
+export function initializeFromApiData(
+	questionnaire: ApiOrgQuestionnaireInput,
+	rawQ: ApiQuestionnaireInput
+): InitFromApiResult {
+	// Accept both QuestionnaireResponseSchema (run-together collection names)
+	// and QuestionnaireSchema (underscored). Normalize top-level + each section
+	// up-front so every downstream read of `*question_questions` resolves.
+	const q = normalizeQuestionCollections(rawQ);
+	q.sections = (rawQ.sections || []).map((s) => normalizeQuestionCollections(s));
+
+	// Basic info
+	const name = q.name || '';
+	const minScore = Number(q.min_score ?? 0);
+	const evaluationMode = (q.evaluation_mode as 'automatic' | 'manual' | 'hybrid') || 'automatic';
+	const shuffleQuestions = q.shuffle_questions ?? false;
+	const shuffleSections = q.shuffle_sections ?? false;
+	const llmGuidelines = q.llm_guidelines || '';
+	const canRetakeAfter = parseTimedeltaToHours(q.can_retake_after);
+	const maxAttempts = q.max_attempts ?? 0;
+
+	// From org questionnaire
+	const questionnaireType = questionnaire.questionnaire_type || 'admission';
+	const membersExempt = questionnaire.members_exempt ?? false;
+	const perEvent = questionnaire.per_event ?? false;
+	const requiresEvaluation = questionnaire.requires_evaluation ?? true;
+	const maxSubmissionAge = parseTimedeltaToDays(questionnaire.max_submission_age);
+
+	// ===== Step 1: Collect IDs of questions that belong to sections =====
+	const sectionQuestionIds = new Set<string>();
+	for (const apiSection of q.sections || []) {
+		for (const mcq of apiSection.multiplechoicequestion_questions || []) {
+			if (mcq.id) sectionQuestionIds.add(mcq.id);
+		}
+		for (const ftq of apiSection.freetextquestion_questions || []) {
+			if (ftq.id) sectionQuestionIds.add(ftq.id);
+		}
+		for (const fuq of apiSection.fileuploadquestion_questions || []) {
+			if (fuq.id) sectionQuestionIds.add(fuq.id);
+		}
+	}
+
+	// ===== Step 2: Collect IDs of conditional questions/sections =====
+	const conditionalQuestionIds = new Set<string>();
+	const conditionalSectionIds = new Set<string>();
+
+	for (const mcq of q.multiplechoicequestion_questions || []) {
+		if (mcq.depends_on_option_id) conditionalQuestionIds.add(mcq.id ?? '');
+	}
+	for (const ftq of q.freetextquestion_questions || []) {
+		if (ftq.depends_on_option_id) conditionalQuestionIds.add(ftq.id ?? '');
+	}
+	for (const fuq of q.fileuploadquestion_questions || []) {
+		if (fuq.depends_on_option_id) conditionalQuestionIds.add(fuq.id ?? '');
+	}
+	for (const apiSection of q.sections || []) {
+		if (apiSection.depends_on_option_id) conditionalSectionIds.add(apiSection.id ?? '');
+		for (const mcq of apiSection.multiplechoicequestion_questions || []) {
+			if (mcq.depends_on_option_id) conditionalQuestionIds.add(mcq.id ?? '');
+		}
+		for (const ftq of apiSection.freetextquestion_questions || []) {
+			if (ftq.depends_on_option_id) conditionalQuestionIds.add(ftq.id ?? '');
+		}
+		for (const fuq of apiSection.fileuploadquestion_questions || []) {
+			if (fuq.depends_on_option_id) conditionalQuestionIds.add(fuq.id ?? '');
+		}
+	}
+
+	// ===== Step 3: Convert top-level questions (excluding section/conditional) =====
+	const topMc = (q.multiplechoicequestion_questions || [])
+		.filter(
+			(apiQ) => !sectionQuestionIds.has(apiQ.id ?? '') && !conditionalQuestionIds.has(apiQ.id ?? '')
+		)
+		.map((apiQ) => convertApiMcQuestion(apiQ, apiQ.order ?? 0));
+	const topFt = (q.freetextquestion_questions || [])
+		.filter(
+			(apiQ) => !sectionQuestionIds.has(apiQ.id ?? '') && !conditionalQuestionIds.has(apiQ.id ?? '')
+		)
+		.map((apiQ) => convertApiFtQuestion(apiQ, apiQ.order ?? 0));
+	const topFu = (q.fileuploadquestion_questions || [])
+		.filter(
+			(apiQ) => !sectionQuestionIds.has(apiQ.id ?? '') && !conditionalQuestionIds.has(apiQ.id ?? '')
+		)
+		.map((apiQ) => convertApiFuQuestion(apiQ, apiQ.order ?? 0));
+	const topLevelQuestions = [...topMc, ...topFt, ...topFu].sort((a, b) => a.order - b.order);
+
+	// ===== Step 4: Convert sections (excluding conditional sections) =====
+	const sections = (q.sections || [])
+		.filter((apiSection) => !conditionalSectionIds.has(apiSection.id ?? ''))
+		.map((apiSection) => convertApiSection(apiSection, conditionalQuestionIds))
+		.sort((a: QuestionnaireSection, b: QuestionnaireSection) => a.order - b.order);
+
+	// ===== Step 5: Build option map for attaching conditional content =====
+	const optionMap = new Map<string, QuestionnaireOption>();
+
+	for (const question of topLevelQuestions) {
+		if (question.options) {
+			for (const option of question.options) {
+				if (option._apiId) optionMap.set(option._apiId, option);
+			}
+		}
+	}
+	for (const section of sections) {
+		for (const question of section.questions) {
+			if (question.options) {
+				for (const option of question.options) {
+					if (option._apiId) optionMap.set(option._apiId, option);
+				}
+			}
+		}
+	}
+
+	// ===== Step 6: Attach conditional questions/sections to parent options =====
+	function attachConditionalQuestion(apiQ: ApiQuestionInput, type: 'mc' | 'ft' | 'fu') {
+		if (!apiQ.depends_on_option_id || !conditionalQuestionIds.has(apiQ.id ?? '')) return;
+
+		const parentOption = optionMap.get(apiQ.depends_on_option_id);
+		if (parentOption) {
+			const existingIds = new Set(parentOption.conditionalQuestions?.map((cq) => cq._apiId) || []);
+			if (existingIds.has(apiQ.id)) return;
+
+			let convertedQ: QuestionnaireQuestion;
+			if (type === 'mc') {
+				convertedQ = convertApiMcQuestion(apiQ, apiQ.order ?? 0);
+			} else if (type === 'ft') {
+				convertedQ = convertApiFtQuestion(apiQ, apiQ.order ?? 0);
+			} else {
+				convertedQ = convertApiFuQuestion(apiQ, apiQ.order ?? 0);
+			}
+			parentOption.conditionalQuestions = parentOption.conditionalQuestions || [];
+			parentOption.conditionalQuestions.push(convertedQ);
+
+			if (type === 'mc' && convertedQ.options) {
+				for (const opt of convertedQ.options) {
+					if (opt._apiId) optionMap.set(opt._apiId, opt);
+				}
+			}
+		}
+	}
+
+	// Conditional questions (MC / FT / FU), both top-level and inside sections.
+	const conditionalCollections: [QuestionCollectionKey, 'mc' | 'ft' | 'fu'][] = [
+		['multiplechoicequestion_questions', 'mc'],
+		['freetextquestion_questions', 'ft'],
+		['fileuploadquestion_questions', 'fu']
+	];
+	for (const [collection, type] of conditionalCollections) {
+		for (const apiQ of q[collection] || []) {
+			attachConditionalQuestion(apiQ, type);
+		}
+		for (const apiSection of q.sections || []) {
+			for (const apiQ of apiSection[collection] || []) {
+				attachConditionalQuestion(apiQ, type);
+			}
+		}
+	}
+
+	// Conditional sections
+	for (const apiSection of q.sections || []) {
+		if (apiSection.depends_on_option_id && conditionalSectionIds.has(apiSection.id ?? '')) {
+			const parentOption = optionMap.get(apiSection.depends_on_option_id);
+			if (parentOption) {
+				const convertedSection: QuestionnaireConditionalSection = {
+					id: crypto.randomUUID(),
+					name: apiSection.name || '',
+					description: apiSection.description || undefined,
+					order: apiSection.order ?? 0,
+					questions: []
+				};
+				const sectionMc = (apiSection.multiplechoicequestion_questions || [])
+					.filter((mcq) => !mcq.depends_on_option_id)
+					.map((mcq) => convertApiMcQuestion(mcq, mcq.order ?? 0));
+				const sectionFt = (apiSection.freetextquestion_questions || [])
+					.filter((ftq) => !ftq.depends_on_option_id)
+					.map((ftq) => convertApiFtQuestion(ftq, ftq.order ?? 0));
+				const sectionFu = (apiSection.fileuploadquestion_questions || [])
+					.filter((fuq) => !fuq.depends_on_option_id)
+					.map((fuq) => convertApiFuQuestion(fuq, fuq.order ?? 0));
+				convertedSection.questions = [...sectionMc, ...sectionFt, ...sectionFu].sort(
+					(a, b) => a.order - b.order
+				);
+				parentOption.conditionalSections = parentOption.conditionalSections || [];
+				parentOption.conditionalSections.push(convertedSection);
+			}
+		}
+	}
+
+	// Sort conditional content within each option
+	for (const option of optionMap.values()) {
+		if (option.conditionalQuestions && option.conditionalQuestions.length > 1) {
+			option.conditionalQuestions.sort((a, b) => a.order - b.order);
+		}
+		if (option.conditionalSections && option.conditionalSections.length > 1) {
+			option.conditionalSections.sort((a, b) => a.order - b.order);
+		}
+	}
+
+	return {
+		name,
+		questionnaireType,
+		minScore,
+		evaluationMode,
+		shuffleQuestions,
+		shuffleSections,
+		llmGuidelines,
+		canRetakeAfter,
+		maxAttempts,
+		membersExempt,
+		perEvent,
+		requiresEvaluation,
+		maxSubmissionAge,
+		topLevelQuestions,
+		sections
+	};
+}

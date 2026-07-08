@@ -14,31 +14,19 @@
 		eventadminticketsExportAttendees
 	} from '$lib/api';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { cn } from '$lib/utils/cn';
 	import { getUserDisplayName } from '$lib/utils/user-display';
-	import { getRsvpStatusColor, getRsvpStatusLabel } from '$lib/utils/status-colors';
-	import {
-		Users,
-		Edit,
-		Trash2,
-		ChevronLeft,
-		ChevronRight,
-		UserPlus,
-		MoreVertical,
-		Ban
-	} from '@lucide/svelte';
-	import * as Dialog from '$lib/components/ui/dialog';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import { Users, ChevronLeft, ChevronRight } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { Badge } from '$lib/components/ui/badge';
-	import SearchInput from '$lib/components/events/filters/SearchInput.svelte';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import ExportButton from '$lib/components/common/ExportButton.svelte';
 	import MakeMemberModal from '$lib/components/members/MakeMemberModal.svelte';
-	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
+	import AttendeeStats from '$lib/components/attendees/AttendeeStats.svelte';
+	import AttendeeFilters from '$lib/components/attendees/AttendeeFilters.svelte';
+	import AttendeeTable from '$lib/components/attendees/AttendeeTable.svelte';
+	import AttendeeCardList from '$lib/components/attendees/AttendeeCardList.svelte';
+	import EditRsvpDialog from '$lib/components/attendees/EditRsvpDialog.svelte';
 	import type { RsvpDetailSchema, MembershipTierSchema } from '$lib/api/generated/types.gen';
 	import * as m from '$lib/paraglide/messages.js';
-	import { formatDateTime } from '$lib/utils/date';
 
 	const { data }: { data: PageData } = $props();
 
@@ -372,13 +360,6 @@
 		deletingRsvp = null;
 	}
 
-	/**
-	 * Format date
-	 */
-	function formatDate(date: string): string {
-		return formatDateTime(date);
-	}
-
 	async function handleExportAttendees(): Promise<string> {
 		const response = await eventadminticketsExportAttendees({
 			path: { event_id: data.event.id },
@@ -452,124 +433,16 @@
 	</div>
 
 	<!-- Stats (always shown) -->
-	<div class="space-y-4">
-		<!-- Warning for incomplete data -->
-		{#if hasMultiplePages}
-			<div
-				class="flex items-start gap-2 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-100"
-				role="alert"
-			>
-				<svg class="h-5 w-5 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-					<path
-						fill-rule="evenodd"
-						d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
-						clip-rule="evenodd"
-					/>
-				</svg>
-				<div class="text-sm">
-					<p class="font-medium">{m['attendeesAdmin.warningIncompleteData']()}</p>
-					<p>{m['attendeesAdmin.warningTotalRsvps']({ total: data.totalCount })}</p>
-				</div>
-			</div>
-		{/if}
-
-		<!-- Stats grid -->
-		<div class="grid gap-4 sm:grid-cols-4">
-			<div class="rounded-lg border border-border bg-card p-4">
-				<p class="text-sm font-medium text-muted-foreground">{m['attendeesAdmin.statsTotal']()}</p>
-				<p class="mt-1 text-2xl font-bold">{stats.total}</p>
-			</div>
-			<div
-				class="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950"
-			>
-				<p class="text-sm font-medium text-green-700 dark:text-green-300">
-					{m['attendeesAdmin.statsYes']()}
-				</p>
-				<p class="mt-1 text-2xl font-bold text-green-900 dark:text-green-100">{stats.yesCount}</p>
-			</div>
-			<div
-				class="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-950"
-			>
-				<p class="text-sm font-medium text-yellow-700 dark:text-yellow-300">
-					{m['attendeesAdmin.statsMaybe']()}
-				</p>
-				<p class="mt-1 text-2xl font-bold text-yellow-900 dark:text-yellow-100">
-					{stats.maybeCount}
-				</p>
-			</div>
-			<div
-				class="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950"
-			>
-				<p class="text-sm font-medium text-red-700 dark:text-red-300">
-					{m['attendeesAdmin.statsNo']()}
-				</p>
-				<p class="mt-1 text-2xl font-bold text-red-900 dark:text-red-100">{stats.noCount}</p>
-			</div>
-		</div>
-	</div>
+	<AttendeeStats {stats} totalCount={data.totalCount} {hasMultiplePages} />
 
 	<!-- Filters & Search -->
-	<div class="space-y-4">
-		<!-- Search bar -->
-		<SearchInput
-			value={searchInput}
-			onSearch={handleSearch}
-			placeholder={m['attendeesAdmin.searchPlaceholder']()}
-			ariaLabel={m['attendeesAdmin.searchPlaceholder']()}
-		/>
-
-		<!-- Filter buttons -->
-		<div class="flex flex-wrap gap-2">
-			<button
-				type="button"
-				onclick={() => filterByStatus(null)}
-				class={cn(
-					'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-					!activeStatusFilter
-						? 'bg-primary text-primary-foreground'
-						: 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-				)}
-			>
-				{m['attendeesAdmin.filterAll']({ count: data.totalCount })}
-			</button>
-			<button
-				type="button"
-				onclick={() => filterByStatus('yes')}
-				class={cn(
-					'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-					activeStatusFilter === 'yes'
-						? 'bg-green-600 text-white'
-						: 'border border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-950'
-				)}
-			>
-				{m['attendeesAdmin.statsYes']()}
-			</button>
-			<button
-				type="button"
-				onclick={() => filterByStatus('maybe')}
-				class={cn(
-					'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-					activeStatusFilter === 'maybe'
-						? 'bg-yellow-600 text-white'
-						: 'border border-yellow-600 text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-950'
-				)}
-			>
-				{m['attendeesAdmin.statsMaybe']()}
-			</button>
-			<button
-				type="button"
-				onclick={() => filterByStatus('no')}
-				class={cn(
-					'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-					activeStatusFilter === 'no'
-						? 'bg-red-600 text-white'
-						: 'border border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-950'
-				)}
-			>
-				{m['attendeesAdmin.statsNo']()}
-			</button>
-		</div>
-	</div>
+	<AttendeeFilters
+		{searchInput}
+		{activeStatusFilter}
+		totalCount={data.totalCount}
+		onSearch={handleSearch}
+		onStatusFilter={filterByStatus}
+	/>
 
 	<!-- Attendees list -->
 	{#if data.rsvps.length === 0}
@@ -585,265 +458,25 @@
 			</p>
 		</div>
 	{:else}
-		<!-- Desktop table -->
-		<div class="hidden overflow-hidden rounded-lg border border-border md:block">
-			<table class="w-full">
-				<thead class="bg-muted/50">
-					<tr>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
-						>
-							{m['attendeesAdmin.tableHeaderName']()}
-						</th>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
-						>
-							{m['attendeesAdmin.tableHeaderEmail']()}
-						</th>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
-						>
-							{m['attendeesAdmin.tableHeaderStatus']()}
-						</th>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
-						>
-							{m['attendeesAdmin.tableHeaderRsvpDate']()}
-						</th>
-						<th
-							class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground"
-						>
-							{m['attendeesAdmin.tableHeaderActions']()}
-						</th>
-					</tr>
-				</thead>
-				<tbody class="divide-y divide-border bg-card">
-					{#each data.rsvps as rsvp (rsvp.id)}
-						<tr class="hover:bg-muted/50">
-							<td class="whitespace-nowrap px-6 py-4 text-sm font-medium">
-								<div class="flex items-center gap-3">
-									<UserAvatar
-										profilePictureUrl={rsvp.user.profile_picture_url}
-										previewUrl={rsvp.user.profile_picture_preview_url}
-										thumbnailUrl={rsvp.user.profile_picture_thumbnail_url}
-										displayName={getUserDisplayName(rsvp.user)}
-										firstName={rsvp.user.first_name}
-										lastName={rsvp.user.last_name}
-										size="sm"
-										clickable={true}
-									/>
-									<div class="flex flex-col">
-										<div class="flex items-center gap-2">
-											<span>{getUserDisplayName(rsvp.user)}</span>
-											{#if rsvp.user.pronouns}
-												<span class="text-xs text-muted-foreground">({rsvp.user.pronouns})</span>
-											{/if}
-										</div>
-										{#if rsvp.membership}
-											<Badge variant="secondary" class="mt-0.5 w-fit text-xs">
-												{rsvp.membership.tier?.name
-													? m['memberBadge.tierName']({ tier: rsvp.membership.tier.name })
-													: m['memberBadge.member']()}
-											</Badge>
-										{/if}
-									</div>
-								</div>
-							</td>
-							<td class="whitespace-nowrap px-6 py-4 text-sm text-muted-foreground">
-								{rsvp.user.email || 'N/A'}
-							</td>
-							<td class="whitespace-nowrap px-6 py-4 text-sm">
-								<span
-									class={cn(
-										'inline-flex rounded-full px-2 py-1 text-xs font-semibold',
-										getRsvpStatusColor(rsvp.status)
-									)}
-								>
-									{getRsvpStatusLabel(rsvp.status)}
-								</span>
-							</td>
-							<td class="whitespace-nowrap px-6 py-4 text-sm text-muted-foreground">
-								{formatDate(rsvp.created_at)}
-							</td>
-							<td class="whitespace-nowrap px-6 py-4 text-right text-sm">
-								<div class="flex items-center justify-end gap-2">
-									{#if !rsvp.membership && rsvp.user?.id}
-										<button
-											type="button"
-											onclick={() => openMakeMemberModal(rsvp)}
-											disabled={addMemberMutation.isPending || tiersLoading}
-											class="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:opacity-50"
-											aria-label={m['attendeesAdmin.makeMemberAriaLabel']({
-												name: getUserDisplayName(rsvp.user)
-											})}
-										>
-											<UserPlus class="h-3 w-3" aria-hidden="true" />
-											{m['makeMemberAction.button']()}
-										</button>
-									{/if}
-									<button
-										type="button"
-										onclick={() => openEditModal(rsvp)}
-										class="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
-										aria-label={m['attendeesAdmin.editRsvpAriaLabel']({
-											name: getUserDisplayName(rsvp.user)
-										})}
-									>
-										<Edit class="h-3 w-3" aria-hidden="true" />
-										{m['attendeesAdmin.actionEdit']()}
-									</button>
-									<button
-										type="button"
-										onclick={() => openDeleteDialog(rsvp)}
-										class="inline-flex items-center gap-1 rounded-md bg-destructive px-2 py-1 text-xs font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
-										aria-label={m['attendeesAdmin.deleteRsvpAriaLabel']({
-											name: getUserDisplayName(rsvp.user)
-										})}
-									>
-										<Trash2 class="h-3 w-3" aria-hidden="true" />
-										{m['attendeesAdmin.actionDelete']()}
-									</button>
-									<!-- More actions dropdown -->
-									{#if rsvp.user?.id}
-										<DropdownMenu.Root>
-											<DropdownMenu.Trigger>
-												{#snippet child({ props })}
-													<button
-														{...props}
-														class="inline-flex items-center justify-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-														aria-label={m['attendeesAdmin.moreActionsForAriaLabel']({
-															name: getUserDisplayName(rsvp.user)
-														})}
-													>
-														<MoreVertical class="h-4 w-4" aria-hidden="true" />
-													</button>
-												{/snippet}
-											</DropdownMenu.Trigger>
-											<DropdownMenu.Content align="end">
-												<DropdownMenu.Item
-													onclick={() => openBlacklistDialog(rsvp)}
-													class="text-destructive focus:text-destructive"
-												>
-													<Ban class="mr-2 h-4 w-4" aria-hidden="true" />
-													{m['attendeesAdmin.blacklistUser']()}
-												</DropdownMenu.Item>
-											</DropdownMenu.Content>
-										</DropdownMenu.Root>
-									{/if}
-								</div>
-							</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		</div>
+		<AttendeeTable
+			rsvps={data.rsvps}
+			addMemberPending={addMemberMutation.isPending}
+			{tiersLoading}
+			onMakeMember={openMakeMemberModal}
+			onEdit={openEditModal}
+			onDelete={openDeleteDialog}
+			onBlacklist={openBlacklistDialog}
+		/>
 
-		<!-- Mobile cards -->
-		<div class="space-y-4 md:hidden">
-			{#each data.rsvps as rsvp (rsvp.id)}
-				<div class="rounded-lg border border-border bg-card p-4">
-					<div class="space-y-3">
-						<div class="flex items-start justify-between gap-2">
-							<div class="flex items-start gap-3">
-								<UserAvatar
-									profilePictureUrl={rsvp.user.profile_picture_url}
-									previewUrl={rsvp.user.profile_picture_preview_url}
-									thumbnailUrl={rsvp.user.profile_picture_thumbnail_url}
-									displayName={getUserDisplayName(rsvp.user)}
-									firstName={rsvp.user.first_name}
-									lastName={rsvp.user.last_name}
-									size="md"
-									clickable={true}
-								/>
-								<div>
-									<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-										<p class="font-medium">{getUserDisplayName(rsvp.user)}</p>
-										{#if rsvp.user.pronouns}
-											<span class="text-xs text-muted-foreground">({rsvp.user.pronouns})</span>
-										{/if}
-										{#if rsvp.membership}
-											<Badge variant="secondary" class="text-xs">
-												{rsvp.membership.tier?.name
-													? m['memberBadge.tierName']({ tier: rsvp.membership.tier.name })
-													: m['memberBadge.member']()}
-											</Badge>
-										{/if}
-									</div>
-									<p class="text-sm text-muted-foreground">{rsvp.user.email || 'N/A'}</p>
-								</div>
-							</div>
-							<span
-								class={cn(
-									'shrink-0 rounded-full px-2 py-1 text-xs font-semibold',
-									getRsvpStatusColor(rsvp.status)
-								)}
-							>
-								{getRsvpStatusLabel(rsvp.status)}
-							</span>
-						</div>
-
-						<p class="text-xs text-muted-foreground">
-							{m['attendeesAdmin.mobileRsvpdOn']({ date: formatDate(rsvp.created_at) })}
-						</p>
-
-						<div class="flex flex-wrap gap-2 border-t border-border pt-3">
-							{#if !rsvp.membership && rsvp.user?.id}
-								<button
-									type="button"
-									onclick={() => openMakeMemberModal(rsvp)}
-									disabled={addMemberMutation.isPending || tiersLoading}
-									class="inline-flex flex-1 items-center justify-center gap-1 rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:opacity-50"
-								>
-									<UserPlus class="h-4 w-4" aria-hidden="true" />
-									{m['makeMemberAction.button']()}
-								</button>
-							{/if}
-							<button
-								type="button"
-								onclick={() => openEditModal(rsvp)}
-								class="inline-flex flex-1 items-center justify-center gap-1 rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
-							>
-								<Edit class="h-4 w-4" aria-hidden="true" />
-								{m['attendeesAdmin.actionEdit']()}
-							</button>
-							<button
-								type="button"
-								onclick={() => openDeleteDialog(rsvp)}
-								class="inline-flex flex-1 items-center justify-center gap-1 rounded-md bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
-							>
-								<Trash2 class="h-4 w-4" aria-hidden="true" />
-								{m['attendeesAdmin.actionDelete']()}
-							</button>
-							<!-- More actions dropdown for mobile -->
-							{#if rsvp.user?.id}
-								<DropdownMenu.Root>
-									<DropdownMenu.Trigger>
-										{#snippet child({ props })}
-											<button
-												{...props}
-												class="inline-flex items-center justify-center rounded-md bg-secondary p-2 text-muted-foreground transition-colors hover:bg-secondary/80 hover:text-foreground"
-												aria-label={m['attendeesAdmin.moreActions']()}
-											>
-												<MoreVertical class="h-4 w-4" aria-hidden="true" />
-											</button>
-										{/snippet}
-									</DropdownMenu.Trigger>
-									<DropdownMenu.Content align="end">
-										<DropdownMenu.Item
-											onclick={() => openBlacklistDialog(rsvp)}
-											class="text-destructive focus:text-destructive"
-										>
-											<Ban class="mr-2 h-4 w-4" aria-hidden="true" />
-											{m['attendeesAdmin.blacklistUser']()}
-										</DropdownMenu.Item>
-									</DropdownMenu.Content>
-								</DropdownMenu.Root>
-							{/if}
-						</div>
-					</div>
-				</div>
-			{/each}
-		</div>
+		<AttendeeCardList
+			rsvps={data.rsvps}
+			addMemberPending={addMemberMutation.isPending}
+			{tiersLoading}
+			onMakeMember={openMakeMemberModal}
+			onEdit={openEditModal}
+			onDelete={openDeleteDialog}
+			onBlacklist={openBlacklistDialog}
+		/>
 
 		<!-- Pagination -->
 		{#if data.previousPage || data.nextPage}
@@ -881,96 +514,14 @@
 </div>
 
 <!-- Edit RSVP Modal -->
-<Dialog.Root bind:open={showEditModal}>
-	<Dialog.Content class="sm:max-w-md">
-		<Dialog.Header>
-			<Dialog.Title>{m['attendeesAdmin.editModalTitle']()}</Dialog.Title>
-			<Dialog.Description>
-				{#if editingRsvp}
-					{m['attendeesAdmin.editModalDescription']({ name: getUserDisplayName(editingRsvp.user) })}
-				{/if}
-			</Dialog.Description>
-		</Dialog.Header>
-
-		{#if editingRsvp}
-			<div class="space-y-4 py-4">
-				<!-- Current info -->
-				<div class="rounded-lg bg-muted p-3">
-					<p class="text-sm font-medium">{m['attendeesAdmin.editModalCurrentStatus']()}</p>
-					<p class="mt-1">
-						<span
-							class={cn(
-								'inline-flex rounded-full px-2 py-1 text-xs font-semibold',
-								getRsvpStatusColor(editingRsvp.status)
-							)}
-						>
-							{getRsvpStatusLabel(editingRsvp.status)}
-						</span>
-					</p>
-				</div>
-
-				<!-- New status selection -->
-				<div class="space-y-2">
-					<span id="edit-rsvp-status-label" class="text-sm font-medium"
-						>{m['attendeesAdmin.editModalNewStatus']()}</span
-					>
-					<div class="space-y-2" role="radiogroup" aria-labelledby="edit-rsvp-status-label">
-						<label
-							class="flex cursor-pointer items-center gap-3 rounded-lg border border-border p-3 hover:bg-muted/50"
-						>
-							<input
-								type="radio"
-								name="status"
-								value="yes"
-								bind:group={selectedStatus}
-								class="h-4 w-4 text-green-600 focus:ring-green-600"
-							/>
-							<span class="text-sm font-medium">{m['attendeesAdmin.editModalYesLabel']()}</span>
-						</label>
-						<label
-							class="flex cursor-pointer items-center gap-3 rounded-lg border border-border p-3 hover:bg-muted/50"
-						>
-							<input
-								type="radio"
-								name="status"
-								value="maybe"
-								bind:group={selectedStatus}
-								class="h-4 w-4 text-yellow-600 focus:ring-yellow-600"
-							/>
-							<span class="text-sm font-medium">{m['attendeesAdmin.editModalMaybeLabel']()}</span>
-						</label>
-						<label
-							class="flex cursor-pointer items-center gap-3 rounded-lg border border-border p-3 hover:bg-muted/50"
-						>
-							<input
-								type="radio"
-								name="status"
-								value="no"
-								bind:group={selectedStatus}
-								class="h-4 w-4 text-red-600 focus:ring-red-600"
-							/>
-							<span class="text-sm font-medium">{m['attendeesAdmin.editModalNoLabel']()}</span>
-						</label>
-					</div>
-				</div>
-			</div>
-
-			<Dialog.Footer>
-				<Button variant="outline" onclick={closeEditModal}
-					>{m['attendeesAdmin.editModalCancel']()}</Button
-				>
-				<Button
-					onclick={submitRsvpUpdate}
-					disabled={updateRsvpMutation.isPending || selectedStatus === editingRsvp.status}
-				>
-					{updateRsvpMutation.isPending
-						? m['attendeesAdmin.editModalUpdating']()
-						: m['attendeesAdmin.editModalUpdate']()}
-				</Button>
-			</Dialog.Footer>
-		{/if}
-	</Dialog.Content>
-</Dialog.Root>
+<EditRsvpDialog
+	bind:open={showEditModal}
+	rsvp={editingRsvp}
+	bind:selectedStatus
+	isPending={updateRsvpMutation.isPending}
+	onSubmit={submitRsvpUpdate}
+	onCancel={closeEditModal}
+/>
 
 <!-- Delete Confirmation Dialog -->
 <ConfirmDialog

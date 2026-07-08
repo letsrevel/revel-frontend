@@ -23,6 +23,13 @@ export const guestUserSchema = z.object({
 });
 
 /**
+ * Shape of the guest ticket form state, shared by GuestTicketDialog and its
+ * extracted field sections. PWYC is the raw input string here; it is parsed
+ * to a number against createGuestPwycSchema on submit.
+ */
+export type GuestTicketFormData = z.infer<typeof guestUserSchema> & { pwyc?: string };
+
+/**
  * Schema for guest RSVP (includes answer: yes/no/maybe)
  */
 export const guestRsvpSchema = guestUserSchema.extend({

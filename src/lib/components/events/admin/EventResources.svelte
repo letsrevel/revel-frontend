@@ -27,9 +27,11 @@
 
 	const accessToken = $derived(authStore.accessToken);
 
-	// Fetch organization resources
+	// Fetch organization resources. `enabled` waits for the access token so the
+	// query doesn't 401 during cold hydration; it fires once the token lands.
 	const resourcesQuery = createQuery<AdditionalResourceSchema[]>(() => ({
 		queryKey: ['organization-resources-for-event', organizationSlug, eventId],
+		enabled: !!accessToken,
 		queryFn: async () => {
 			const response = await organizationadminresourcesListResources({
 				path: { slug: organizationSlug },

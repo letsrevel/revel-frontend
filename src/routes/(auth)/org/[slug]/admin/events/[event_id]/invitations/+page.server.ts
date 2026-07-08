@@ -20,6 +20,8 @@ import type {
 } from '$lib/api/generated/types.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { log } from '$lib/server/logger';
+import { computePagination, defaultPagination } from './pagination';
+import { parseInvitationOptions } from './invitation-form';
 
 /**
  * Load invitation requests AND invitations for this event
@@ -50,8 +52,10 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 		event = eventResponse.data;
 	} catch (err) {
 		if (isHttpError(err)) throw err;
+		// Unexpected failures (network, 5xx) are not a missing event — don't mask
+		// outages as 404.
 		log.error('event_load_failed', { error: err, eventId: params.event_id });
-		throw error(404, 'Event not found');
+		throw error(500, 'Failed to load event');
 	}
 
 	// Verify event belongs to this organization
@@ -78,14 +82,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 
 	// Load invitation requests
 	let invitationRequests: EventInvitationRequestInternalSchema[] = [];
-	let requestsPagination = {
-		page: 1,
-		pageSize: 20,
-		totalCount: 0,
-		totalPages: 0,
-		hasNext: false,
-		hasPrev: false
-	};
+	let requestsPagination = defaultPagination();
 
 	try {
 		const response = await eventadmininvitationrequestsListInvitationRequests({
@@ -103,15 +100,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 		if (response.data) {
 			invitationRequests = response.data.results || [];
 			const totalCount = response.data.count || 0;
-			const totalPages = Math.ceil(totalCount / (activeTab === 'requests' ? pageSize : 20));
-			requestsPagination = {
-				page: activeTab === 'requests' ? page : 1,
-				pageSize: activeTab === 'requests' ? pageSize : 20,
-				totalCount,
-				totalPages,
-				hasNext: (activeTab === 'requests' ? page : 1) < totalPages,
-				hasPrev: (activeTab === 'requests' ? page : 1) > 1
-			};
+			requestsPagination = computePagination(activeTab === 'requests', page, pageSize, totalCount);
 		}
 	} catch (err) {
 		log.error('invitation_requests_load_failed', { error: err, eventId: params.event_id });
@@ -119,14 +108,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 
 	// Load registered invitations
 	let registeredInvitations: EventInvitationListSchema[] = [];
-	let registeredPagination = {
-		page: 1,
-		pageSize: 20,
-		totalCount: 0,
-		totalPages: 0,
-		hasNext: false,
-		hasPrev: false
-	};
+	let registeredPagination = defaultPagination();
 
 	try {
 		const response = await eventadmininvitationsListInvitations({
@@ -143,15 +125,12 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 		if (response.data) {
 			registeredInvitations = response.data.results || [];
 			const totalCount = response.data.count || 0;
-			const totalPages = Math.ceil(totalCount / (activeTab === 'invitations' ? pageSize : 20));
-			registeredPagination = {
-				page: activeTab === 'invitations' ? page : 1,
-				pageSize: activeTab === 'invitations' ? pageSize : 20,
-				totalCount,
-				totalPages,
-				hasNext: (activeTab === 'invitations' ? page : 1) < totalPages,
-				hasPrev: (activeTab === 'invitations' ? page : 1) > 1
-			};
+			registeredPagination = computePagination(
+				activeTab === 'invitations',
+				page,
+				pageSize,
+				totalCount
+			);
 		}
 	} catch (err) {
 		log.error('registered_invitations_load_failed', { error: err, eventId: params.event_id });
@@ -159,14 +138,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 
 	// Load pending invitations
 	let pendingInvitations: PendingEventInvitationListSchema[] = [];
-	let pendingPagination = {
-		page: 1,
-		pageSize: 20,
-		totalCount: 0,
-		totalPages: 0,
-		hasNext: false,
-		hasPrev: false
-	};
+	let pendingPagination = defaultPagination();
 
 	try {
 		const response = await eventadmininvitationsListPendingInvitations({
@@ -183,15 +155,12 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies, fetch
 		if (response.data) {
 			pendingInvitations = response.data.results || [];
 			const totalCount = response.data.count || 0;
-			const totalPages = Math.ceil(totalCount / (activeTab === 'invitations' ? pageSize : 20));
-			pendingPagination = {
-				page: activeTab === 'invitations' ? page : 1,
-				pageSize: activeTab === 'invitations' ? pageSize : 20,
-				totalCount,
-				totalPages,
-				hasNext: (activeTab === 'invitations' ? page : 1) < totalPages,
-				hasPrev: (activeTab === 'invitations' ? page : 1) > 1
-			};
+			pendingPagination = computePagination(
+				activeTab === 'invitations',
+				page,
+				pageSize,
+				totalCount
+			);
 		}
 	} catch (err) {
 		log.error('pending_invitations_load_failed', { error: err, eventId: params.event_id });
@@ -310,14 +279,7 @@ export const actions: Actions = {
 
 		const formData = await request.formData();
 		const emailsRaw = formData.get('emails') as string | null;
-		const customMessage = (formData.get('custom_message') as string | null) || null;
-		const waivesQuestionnaire = formData.get('waives_questionnaire') === 'true';
-		const waivesPurchase = formData.get('waives_purchase') === 'true';
-		const waivesMembershipRequired = formData.get('waives_membership_required') === 'true';
-		const waivesRsvpDeadline = formData.get('waives_rsvp_deadline') === 'true';
-		const overridesMaxAttendees = formData.get('overrides_max_attendees') === 'true';
-		const tierIdsRaw = formData.get('tier_ids') as string | null;
-		const tierIds: string[] = tierIdsRaw ? JSON.parse(tierIdsRaw) : [];
+		const invitationOptions = parseInvitationOptions(formData);
 
 		if (!emailsRaw) {
 			return fail(400, { errors: { form: 'Emails are required' } });
@@ -339,13 +301,7 @@ export const actions: Actions = {
 				path: { event_id: params.event_id },
 				body: {
 					emails,
-					custom_message: customMessage ?? undefined,
-					waives_questionnaire: waivesQuestionnaire,
-					waives_purchase: waivesPurchase,
-					overrides_max_attendees: overridesMaxAttendees,
-					waives_membership_required: waivesMembershipRequired,
-					waives_rsvp_deadline: waivesRsvpDeadline,
-					tier_ids: tierIds
+					...invitationOptions
 				},
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
@@ -411,14 +367,7 @@ export const actions: Actions = {
 
 		const formData = await request.formData();
 		const email = formData.get('email') as string | null;
-		const customMessage = (formData.get('custom_message') as string | null) || null;
-		const waivesQuestionnaire = formData.get('waives_questionnaire') === 'true';
-		const waivesPurchase = formData.get('waives_purchase') === 'true';
-		const waivesMembershipRequired = formData.get('waives_membership_required') === 'true';
-		const waivesRsvpDeadline = formData.get('waives_rsvp_deadline') === 'true';
-		const overridesMaxAttendees = formData.get('overrides_max_attendees') === 'true';
-		const tierIdsRaw = formData.get('tier_ids') as string | null;
-		const tierIds: string[] = tierIdsRaw ? JSON.parse(tierIdsRaw) : [];
+		const invitationOptions = parseInvitationOptions(formData);
 
 		if (!email) {
 			return fail(400, { errors: { form: 'Email is required' } });
@@ -430,13 +379,7 @@ export const actions: Actions = {
 				path: { event_id: params.event_id },
 				body: {
 					emails: [email],
-					custom_message: customMessage ?? undefined,
-					waives_questionnaire: waivesQuestionnaire,
-					waives_purchase: waivesPurchase,
-					overrides_max_attendees: overridesMaxAttendees,
-					waives_membership_required: waivesMembershipRequired,
-					waives_rsvp_deadline: waivesRsvpDeadline,
-					tier_ids: tierIds
+					...invitationOptions
 				},
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
@@ -463,14 +406,7 @@ export const actions: Actions = {
 
 		const formData = await request.formData();
 		const emailsRaw = formData.get('emails') as string | null;
-		const customMessage = (formData.get('custom_message') as string | null) || null;
-		const waivesQuestionnaire = formData.get('waives_questionnaire') === 'true';
-		const waivesPurchase = formData.get('waives_purchase') === 'true';
-		const waivesMembershipRequired = formData.get('waives_membership_required') === 'true';
-		const waivesRsvpDeadline = formData.get('waives_rsvp_deadline') === 'true';
-		const overridesMaxAttendees = formData.get('overrides_max_attendees') === 'true';
-		const tierIdsRaw = formData.get('tier_ids') as string | null;
-		const tierIds: string[] = tierIdsRaw ? JSON.parse(tierIdsRaw) : [];
+		const invitationOptions = parseInvitationOptions(formData);
 
 		if (!emailsRaw) {
 			return fail(400, { errors: { form: 'Emails are required' } });
@@ -489,13 +425,7 @@ export const actions: Actions = {
 				path: { event_id: params.event_id },
 				body: {
 					emails,
-					custom_message: customMessage ?? undefined,
-					waives_questionnaire: waivesQuestionnaire,
-					waives_purchase: waivesPurchase,
-					overrides_max_attendees: overridesMaxAttendees,
-					waives_membership_required: waivesMembershipRequired,
-					waives_rsvp_deadline: waivesRsvpDeadline,
-					tier_ids: tierIds
+					...invitationOptions
 				},
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});

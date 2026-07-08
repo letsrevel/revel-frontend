@@ -2,12 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { DurationInput } from '$lib/components/forms';
 	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
-	import { Textarea } from '$lib/components/ui/textarea';
-	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
 	import {
 		Card,
 		CardContent,
@@ -18,7 +13,8 @@
 	import { Plus, ArrowLeft, FolderPlus, Upload } from '@lucide/svelte';
 	import QuestionEditor from '$lib/components/questionnaires/QuestionEditor.svelte';
 	import SectionEditor from '$lib/components/questionnaires/SectionEditor.svelte';
-	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
+	import QuestionnaireCreateBasicInfo from '$lib/components/questionnaires/QuestionnaireCreateBasicInfo.svelte';
+	import QuestionnaireCreateAdvancedSettings from '$lib/components/questionnaires/QuestionnaireCreateAdvancedSettings.svelte';
 	import { questionnaireCreateOrgQuestionnaire } from '$lib/api/generated/sdk.gen';
 	import type {
 		SectionCreateSchema,
@@ -27,20 +23,8 @@
 		FileUploadQuestionCreateSchema
 	} from '$lib/api/generated/types.gen';
 	import type { PageData } from './$types';
-	import type {
-		QuestionnaireQuestion as Question,
-		QuestionnaireSection as Section
-	} from '$lib/utils/questionnaire-form-types';
+	import { QuestionnaireBuilder } from '$lib/utils/questionnaire-builder.svelte';
 	import {
-		addTopLevelQuestion as _addTopLevelQuestion,
-		removeTopLevelQuestion as _removeTopLevelQuestion,
-		updateTopLevelQuestion as _updateTopLevelQuestion,
-		addSection as _addSection,
-		removeSection as _removeSection,
-		updateSection as _updateSection,
-		addQuestionToSection as _addQuestionToSection,
-		removeQuestionFromSection as _removeQuestionFromSection,
-		updateQuestionInSection as _updateQuestionInSection,
 		mcQuestionToCreateApiFormat,
 		ftQuestionToCreateApiFormat,
 		fuQuestionToCreateApiFormat,
@@ -78,20 +62,11 @@
 	// Error state for displaying validation errors
 	let saveError = $state<string | null>(null);
 
-	// Top-level questions (not in any section)
-	let topLevelQuestions = $state<Question[]>([]);
-
-	// Sections with their questions
-	let sections = $state<Section[]>([]);
-
-	// Total question count
-	const totalQuestionCount = $derived(
-		topLevelQuestions.length + sections.reduce((sum, s) => sum + s.questions.length, 0)
-	);
+	// Reactive questions/sections model (top-level questions + sections)
+	const builder = new QuestionnaireBuilder();
 
 	// Check if LLM guidelines are needed
-	const allQuestions = $derived([...topLevelQuestions, ...sections.flatMap((s) => s.questions)]);
-	const hasFreeTextQuestions = $derived(allQuestions.some((q) => q.type === 'free_text'));
+	const hasFreeTextQuestions = $derived(builder.allQuestions.some((q) => q.type === 'free_text'));
 	const needsLlmGuidelines = $derived(
 		hasFreeTextQuestions && (evaluationMode === 'automatic' || evaluationMode === 'hybrid')
 	);
@@ -109,136 +84,6 @@
 	// Saving state
 	let isSaving = $state(false);
 
-	// Questionnaire type labels and descriptions
-	const questionnaireTypes = {
-		admission: {
-			label: m['questionnaireNewPage.typeAdmissionLabel'](),
-			description: m['questionnaireNewPage.typeAdmissionTriggerDescription']()
-		},
-		membership: {
-			label: m['questionnaireNewPage.typeMembershipLabel'](),
-			description: m['questionnaireNewPage.typeMembershipTriggerDescription']()
-		},
-		feedback: {
-			label: m['questionnaireNewPage.typeFeedbackLabel'](),
-			description: m['questionnaireNewPage.typeFeedbackDescription']()
-		},
-		generic: {
-			label: m['questionnaireNewPage.typeGenericLabel'](),
-			description: m['questionnaireNewPage.typeGenericDescription']()
-		}
-	};
-
-	// Get display label for current type
-	const selectedTypeLabel = $derived(
-		questionnaireTypes[questionnaireType]?.label ?? m['questionnaireNewPage.typeGenericLabel']()
-	);
-
-	// Get current description safely
-	const selectedTypeDescription = $derived(
-		questionnaireTypes[questionnaireType]?.description ??
-			m['questionnaireNewPage.typeGenericDescription']()
-	);
-
-	// Evaluation mode descriptions
-	const evaluationModes = {
-		automatic: {
-			label: m['questionnaireNewPage.evalAutomaticLabel'](),
-			description: m['questionnaireNewPage.evalAutomaticTriggerDescription']()
-		},
-		manual: {
-			label: m['questionnaireNewPage.evalManualLabel'](),
-			description: m['questionnaireNewPage.evalManualTriggerDescription']()
-		},
-		hybrid: {
-			label: m['questionnaireNewPage.evalHybridLabel'](),
-			description: m['questionnaireNewPage.evalHybridTriggerDescription']()
-		}
-	};
-
-	const selectedEvaluationDescription = $derived(
-		evaluationModes[evaluationMode]?.description ??
-			m['questionnaireNewPage.evalAutomaticTriggerDescription']()
-	);
-
-	// ===== Wrapper functions that delegate to pure helpers and reassign $state =====
-
-	function addTopLevelQuestion(type: 'multiple_choice' | 'free_text' | 'file_upload') {
-		topLevelQuestions = _addTopLevelQuestion(topLevelQuestions, type);
-	}
-
-	function removeTopLevelQuestion(id: string) {
-		topLevelQuestions = _removeTopLevelQuestion(topLevelQuestions, id);
-	}
-
-	function updateTopLevelQuestion(id: string, updates: Partial<Question>) {
-		topLevelQuestions = _updateTopLevelQuestion(topLevelQuestions, id, updates);
-	}
-
-	function addSection() {
-		sections = _addSection(sections);
-	}
-
-	function removeSection(id: string) {
-		sections = _removeSection(sections, id);
-	}
-
-	function updateSection(id: string, updates: Partial<Section>) {
-		sections = _updateSection(sections, id, updates);
-	}
-
-	function addQuestionToSection(
-		sectionId: string,
-		type: 'multiple_choice' | 'free_text' | 'file_upload'
-	) {
-		sections = _addQuestionToSection(sections, sectionId, type);
-	}
-
-	function removeQuestionFromSection(sectionId: string, questionId: string) {
-		sections = _removeQuestionFromSection(sections, sectionId, questionId);
-	}
-
-	function updateQuestionInSection(
-		sectionId: string,
-		questionId: string,
-		updates: Partial<Question>
-	) {
-		sections = _updateQuestionInSection(sections, sectionId, questionId, updates);
-	}
-
-	// Move top-level question up/down
-	function moveTopLevelQuestion(index: number, direction: 'up' | 'down') {
-		const targetIndex = direction === 'up' ? index - 1 : index + 1;
-		if (targetIndex < 0 || targetIndex >= topLevelQuestions.length) return;
-		const snapshot = $state.snapshot(topLevelQuestions);
-		[snapshot[index], snapshot[targetIndex]] = [snapshot[targetIndex], snapshot[index]];
-		topLevelQuestions = snapshot.map((q, i) => ({ ...q, order: i }));
-	}
-
-	// Move section up/down
-	function moveSection(index: number, direction: 'up' | 'down') {
-		const targetIndex = direction === 'up' ? index - 1 : index + 1;
-		if (targetIndex < 0 || targetIndex >= sections.length) return;
-		const snapshot = $state.snapshot(sections);
-		[snapshot[index], snapshot[targetIndex]] = [snapshot[targetIndex], snapshot[index]];
-		sections = snapshot.map((s, i) => ({ ...s, order: i }));
-	}
-
-	// Move question within a section up/down
-	function moveQuestionInSection(sectionId: string, index: number, direction: 'up' | 'down') {
-		const sectionSnapshot = $state.snapshot(sections);
-		const section = sectionSnapshot.find((s) => s.id === sectionId);
-		if (!section) return;
-		const targetIndex = direction === 'up' ? index - 1 : index + 1;
-		if (targetIndex < 0 || targetIndex >= section.questions.length) return;
-		[section.questions[index], section.questions[targetIndex]] = [
-			section.questions[targetIndex],
-			section.questions[index]
-		];
-		section.questions = section.questions.map((q, i) => ({ ...q, order: i }));
-		sections = sectionSnapshot;
-	}
-
 	// Validate form
 	function validate(): boolean {
 		errors = {};
@@ -247,12 +92,12 @@
 			errors.name = m['questionnaireNewPage.error_nameRequired']();
 		}
 
-		if (totalQuestionCount === 0) {
+		if (builder.totalQuestionCount === 0) {
 			errors.questions = m['questionnaireNewPage.error_noQuestions']();
 		}
 
 		// Validate each question has text
-		const invalidQuestions = allQuestions.filter((q) => !q.text.trim());
+		const invalidQuestions = builder.allQuestions.filter((q) => !q.text.trim());
 		if (invalidQuestions.length > 0) {
 			errors.questions = m['questionnaireNewPage.error_questionsNeedText']();
 		}
@@ -278,16 +123,16 @@
 			}
 
 			// Build sections array for API
-			const apiSections = buildCreateApiSections(sections);
+			const apiSections = buildCreateApiSections(builder.sections);
 
 			// Top-level questions (not in any section)
-			const topLevelMC = topLevelQuestions
+			const topLevelMC = builder.topLevelQuestions
 				.filter((q) => q.type === 'multiple_choice')
 				.map((q) => mcQuestionToCreateApiFormat(q));
-			const topLevelFT = topLevelQuestions
+			const topLevelFT = builder.topLevelQuestions
 				.filter((q) => q.type === 'free_text')
 				.map((q) => ftQuestionToCreateApiFormat(q));
-			const topLevelFU = topLevelQuestions
+			const topLevelFU = builder.topLevelQuestions
 				.filter((q) => q.type === 'file_upload')
 				.map((q) => fuQuestionToCreateApiFormat(q));
 
@@ -377,378 +222,32 @@
 <!-- Form -->
 <div class="mx-auto max-w-4xl space-y-6">
 	<!-- Basic Information -->
-	<Card>
-		<CardHeader>
-			<CardTitle>{m['questionnaireNewPage.basicInfoTitle']()}</CardTitle>
-			<CardDescription>{m['questionnaireNewPage.basicInfoDescription']()}</CardDescription>
-		</CardHeader>
-		<CardContent class="space-y-4">
-			<!-- Name -->
-			<div class="space-y-2">
-				<Label for="name">
-					{m['questionnaireNewPage.nameLabel']()}
-					<span class="text-destructive">*</span>
-				</Label>
-				<Input
-					id="name"
-					bind:value={name}
-					placeholder={m['questionnaireNewPage.namePlaceholder']()}
-					class={errors.name ? 'border-destructive' : ''}
-				/>
-				{#if errors.name}
-					<p class="text-sm text-destructive">{errors.name}</p>
-				{/if}
-			</div>
-
-			<!-- Description (markdown) -->
-			<MarkdownEditor
-				id="questionnaire-description"
-				label={m['questionnaireNewPage.descriptionLabel']()}
-				bind:value={description}
-				placeholder={m['questionnaireNewPage.descriptionPlaceholder']()}
-				rows={3}
-			/>
-
-			<!-- Type -->
-			<div class="space-y-2">
-				<Label for="type">
-					{m['questionnaireNewPage.typeFieldLabel']()}
-					<span class="text-destructive">*</span>
-				</Label>
-				<Select
-					type="single"
-					value={questionnaireType}
-					onValueChange={(v) => {
-						// Allow admission and feedback types
-						if (v === 'admission' || v === 'feedback') {
-							questionnaireType = v;
-						}
-					}}
-				>
-					<SelectTrigger id="type">
-						{selectedTypeLabel}
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="admission" label={m['questionnaireNewPage.typeAdmissionLabel']()}>
-							<div class="flex flex-col gap-0.5">
-								<div class="font-medium">{m['questionnaireNewPage.typeAdmissionLabel']()}</div>
-								<div class="text-xs text-muted-foreground">
-									{m['questionnaireNewPage.typeAdmissionDescription']()}
-								</div>
-							</div>
-						</SelectItem>
-						<SelectItem value="feedback" label={m['questionnaireNewPage.typeFeedbackLabel']()}>
-							<div class="flex flex-col gap-0.5">
-								<div class="font-medium">{m['questionnaireNewPage.typeFeedbackLabel']()}</div>
-								<div class="text-xs text-muted-foreground">
-									{m['questionnaireNewPage.typeFeedbackDescription']()}
-								</div>
-							</div>
-						</SelectItem>
-						<SelectItem
-							value="membership"
-							label={m['questionnaireNewPage.typeMembershipLabel']()}
-							disabled
-						>
-							<div class="flex flex-col gap-0.5">
-								<div class="flex items-center gap-2 font-medium">
-									{m['questionnaireNewPage.typeMembershipLabel']()}
-									<span
-										class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
-										>{m['questionnaireNewPage.comingSoon']()}</span
-									>
-								</div>
-								<div class="text-xs text-muted-foreground">
-									{m['questionnaireNewPage.typeMembershipDescription']()}
-								</div>
-							</div>
-						</SelectItem>
-						<SelectItem
-							value="generic"
-							label={m['questionnaireNewPage.typeGenericLabel']()}
-							disabled
-						>
-							<div class="flex flex-col gap-0.5">
-								<div class="flex items-center gap-2 font-medium">
-									{m['questionnaireNewPage.typeGenericLabel']()}
-									<span
-										class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
-										>{m['questionnaireNewPage.comingSoon']()}</span
-									>
-								</div>
-								<div class="text-xs text-muted-foreground">
-									{m['questionnaireNewPage.typeGenericDescription']()}
-								</div>
-							</div>
-						</SelectItem>
-					</SelectContent>
-				</Select>
-				<p class="text-xs text-muted-foreground">
-					{selectedTypeDescription}
-				</p>
-			</div>
-
-			<!-- Requires Evaluation -->
-			<div class="space-y-2">
-				<div class="flex items-center space-x-2">
-					<input
-						id="requires-evaluation"
-						type="checkbox"
-						bind:checked={requiresEvaluation}
-						class="h-4 w-4 rounded border-gray-300"
-						disabled={questionnaireType === 'feedback'}
-					/>
-					<Label for="requires-evaluation" class="font-normal"
-						>{m['questionnaireEditPage.evaluation.requiresEvaluationLabel']()}</Label
-					>
-				</div>
-				{#if questionnaireType === 'feedback'}
-					<p class="text-xs italic text-muted-foreground">
-						{m['questionnaireEditPage.evaluation.feedbackNoEvaluation']()}
-					</p>
-				{:else}
-					<p class="text-xs text-muted-foreground">
-						{m['questionnaireEditPage.evaluation.requiresEvaluationDescription']()}
-					</p>
-				{/if}
-			</div>
-
-			{#if effectiveRequiresEvaluation}
-				<!-- Minimum Score -->
-				<div class="space-y-2">
-					<Label for="min-score">
-						{m['questionnaireNewPage.minScorePctLabel']()}
-						<span class="text-destructive">*</span>
-					</Label>
-					<Input
-						id="min-score"
-						type="number"
-						bind:value={minScore}
-						min="0"
-						max="100"
-						step="1"
-						placeholder="0"
-					/>
-					<p class="text-xs text-muted-foreground">
-						{m['questionnaireNewPage.minScorePctDescription']()}
-					</p>
-				</div>
-
-				<!-- Evaluation Mode -->
-				<div class="space-y-2">
-					<Label for="evaluation-mode">
-						{m['questionnaireNewPage.evaluationModeLabel']()}
-						<span class="text-destructive">*</span>
-					</Label>
-					<Select
-						type="single"
-						value={evaluationMode}
-						onValueChange={(v) => {
-							if (v) {
-								evaluationMode = v as typeof evaluationMode;
-							}
-						}}
-					>
-						<SelectTrigger id="evaluation-mode">
-							{evaluationModes[evaluationMode]?.label ??
-								m['questionnaireNewPage.evalManualLabel']()}
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="manual" label={m['questionnaireNewPage.evalManualLabel']()}>
-								<div class="flex flex-col gap-0.5">
-									<div class="font-medium">{m['questionnaireNewPage.evalManualLabel']()}</div>
-									<div class="text-xs text-muted-foreground">
-										{m['questionnaireNewPage.evalManualDescription']()}
-									</div>
-								</div>
-							</SelectItem>
-							<SelectItem
-								value="hybrid"
-								label={m['questionnaireNewPage.evalHybridLabel']()}
-								disabled
-							>
-								<div class="flex flex-col gap-0.5">
-									<div class="flex items-center gap-2 font-medium">
-										{m['questionnaireNewPage.evalHybridLabel']()}
-										<span
-											class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
-											>{m['questionnaireNewPage.comingSoon']()}</span
-										>
-									</div>
-									<div class="text-xs text-muted-foreground">
-										{m['questionnaireNewPage.evalHybridDescription']()}
-									</div>
-								</div>
-							</SelectItem>
-							<SelectItem
-								value="automatic"
-								label={m['questionnaireNewPage.evalAutomaticLabel']()}
-								disabled
-							>
-								<div class="flex flex-col gap-0.5">
-									<div class="flex items-center gap-2 font-medium">
-										{m['questionnaireNewPage.evalAutomaticLabel']()}
-										<span
-											class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground"
-											>{m['questionnaireNewPage.comingSoon']()}</span
-										>
-									</div>
-									<div class="text-xs text-muted-foreground">
-										{m['questionnaireNewPage.evalAutomaticDescription']()}
-									</div>
-								</div>
-							</SelectItem>
-						</SelectContent>
-					</Select>
-					<p class="text-xs text-muted-foreground">
-						{selectedEvaluationDescription}
-					</p>
-				</div>
-			{/if}
-		</CardContent>
-	</Card>
+	<QuestionnaireCreateBasicInfo
+		bind:name
+		bind:description
+		bind:questionnaireType
+		bind:requiresEvaluation
+		{effectiveRequiresEvaluation}
+		bind:minScore
+		bind:evaluationMode
+		nameError={errors.name}
+	/>
 
 	<!-- Advanced Settings -->
-	<Card>
-		<CardHeader>
-			<CardTitle>{m['questionnaireNewPage.advancedSettingsTitle']()}</CardTitle>
-			<CardDescription>{m['questionnaireNewPage.advancedSettingsDescription']()}</CardDescription>
-		</CardHeader>
-		<CardContent class="space-y-4">
-			<!-- Shuffle Options -->
-			<div class="space-y-3">
-				<div class="flex items-center space-x-2">
-					<input
-						id="shuffle-questions"
-						type="checkbox"
-						bind:checked={shuffleQuestions}
-						class="h-4 w-4 rounded border-gray-300"
-					/>
-					<Label for="shuffle-questions" class="font-normal"
-						>{m['questionnaireNewPage.shuffleQuestionsLabel']()}</Label
-					>
-				</div>
-				<div class="flex items-center space-x-2">
-					<input
-						id="shuffle-sections"
-						type="checkbox"
-						bind:checked={shuffleSections}
-						class="h-4 w-4 rounded border-gray-300"
-					/>
-					<Label for="shuffle-sections" class="font-normal"
-						>{m['questionnaireNewPage.shuffleSectionsLabel']()}</Label
-					>
-				</div>
-			</div>
-
-			<!-- Members Exempt -->
-			<div class="space-y-2">
-				<div class="flex items-center space-x-2">
-					<input
-						id="members-exempt"
-						type="checkbox"
-						bind:checked={membersExempt}
-						class="h-4 w-4 rounded border-gray-300"
-					/>
-					<Label for="members-exempt" class="font-normal"
-						>{m['questionnaireNewPage.membersExemptLabel']()}</Label
-					>
-				</div>
-				<p class="text-xs text-muted-foreground">
-					{m['questionnaireNewPage.membersExemptDescription']()}
-				</p>
-			</div>
-
-			<!-- Per-Event Completion (only for admission type) -->
-			{#if questionnaireType === 'admission'}
-				<div class="space-y-2">
-					<div class="flex items-center space-x-2">
-						<input
-							id="per-event"
-							type="checkbox"
-							bind:checked={perEvent}
-							class="h-4 w-4 rounded border-gray-300"
-						/>
-						<Label for="per-event" class="font-normal"
-							>{m['questionnaireNewPage.perEventLabel']()}</Label
-						>
-					</div>
-					<p class="text-xs text-muted-foreground">
-						{m['questionnaireNewPage.perEventDescription']()}
-					</p>
-				</div>
-			{/if}
-
-			{#if showLlmGuidelines}
-				<!-- LLM Guidelines -->
-				<div class="space-y-2">
-					<Label for="llm-guidelines">
-						{m['questionnaireNewPage.llmGuidelinesFieldLabel']()}
-						{#if needsLlmGuidelines}
-							<span class="text-destructive">*</span>
-						{/if}
-					</Label>
-					<Textarea
-						id="llm-guidelines"
-						bind:value={llmGuidelines}
-						placeholder={m['questionnaireNewPage.llmGuidelinesPlaceholder']()}
-						rows={4}
-						class={showLlmWarning ? 'border-destructive' : ''}
-					/>
-					{#if showLlmWarning}
-						<p class="text-sm text-destructive">
-							{m['questionnaireNewPage.llmGuidelinesRequiredWarning']()}
-						</p>
-					{:else}
-						<p class="text-xs text-muted-foreground">
-							{#if needsLlmGuidelines}
-								{m['questionnaireNewPage.llmGuidelinesRequired']()}
-							{:else}
-								{m['questionnaireNewPage.llmGuidelinesOptional']()}
-							{/if}
-						</p>
-					{/if}
-				</div>
-			{/if}
-
-			<!-- Duration Settings -->
-			<div class="grid gap-4 sm:grid-cols-2">
-				<DurationInput
-					id="max-submission-age"
-					label={m['questionnaireNewPage.submissionValidityLabel']()}
-					helpText={m['questionnaireNewPage.submissionValidityDescription']()}
-					bind:value={() => maxSubmissionAge, (v) => (maxSubmissionAge = v)}
-					storageUnit="days"
-					defaultUnit="days"
-					emptyValue={null}
-					emptyLabel={m['questionnaireNewPage.submissionValidityNoLimit']()}
-				/>
-
-				<DurationInput
-					id="can-retake-after"
-					label={m['questionnaireNewPage.retakeCooldownLabel']()}
-					helpText={m['questionnaireNewPage.retakeCooldownDescription']()}
-					bind:value={() => canRetakeAfter, (v) => (canRetakeAfter = v)}
-					storageUnit="hours"
-					defaultUnit="hours"
-					emptyValue={null}
-					emptyLabel={m['questionnaireNewPage.retakeCooldownNoLimit']()}
-				/>
-			</div>
-
-			<!-- Max Attempts -->
-			<div class="space-y-2">
-				<Label for="max-attempts">
-					{m['questionnaireNewPage.maxAttemptsLabel']()}
-					<span class="text-destructive">*</span>
-				</Label>
-				<Input id="max-attempts" type="number" bind:value={maxAttempts} min="0" step="1" required />
-				<p class="text-xs text-muted-foreground">
-					{m['questionnaireNewPage.maxAttemptsDescription']()}
-				</p>
-			</div>
-		</CardContent>
-	</Card>
+	<QuestionnaireCreateAdvancedSettings
+		{questionnaireType}
+		bind:shuffleQuestions
+		bind:shuffleSections
+		bind:membersExempt
+		bind:perEvent
+		bind:llmGuidelines
+		bind:maxSubmissionAge
+		bind:canRetakeAfter
+		bind:maxAttempts
+		{showLlmGuidelines}
+		{needsLlmGuidelines}
+		{showLlmWarning}
+	/>
 
 	<!-- Questions & Sections -->
 	<Card>
@@ -757,7 +256,7 @@
 				<div>
 					<CardTitle
 						>{m['questionnaireNewPage.questionsTitleCount']({
-							count: totalQuestionCount
+							count: builder.totalQuestionCount
 						})}</CardTitle
 					>
 					<CardDescription>
@@ -768,7 +267,7 @@
 					<Button
 						variant="outline"
 						size="sm"
-						onclick={() => addTopLevelQuestion('multiple_choice')}
+						onclick={() => builder.addTopLevelQuestion('multiple_choice')}
 						class="gap-2"
 					>
 						<Plus class="h-4 w-4" />
@@ -777,7 +276,7 @@
 					<Button
 						variant="outline"
 						size="sm"
-						onclick={() => addTopLevelQuestion('free_text')}
+						onclick={() => builder.addTopLevelQuestion('free_text')}
 						class="gap-2"
 					>
 						<Plus class="h-4 w-4" />
@@ -786,13 +285,13 @@
 					<Button
 						variant="outline"
 						size="sm"
-						onclick={() => addTopLevelQuestion('file_upload')}
+						onclick={() => builder.addTopLevelQuestion('file_upload')}
 						class="gap-2"
 					>
 						<Upload class="h-4 w-4" />
 						{m['questionnaireNewPage.addFileUpload']()}
 					</Button>
-					<Button variant="secondary" size="sm" onclick={addSection} class="gap-2">
+					<Button variant="secondary" size="sm" onclick={() => builder.addSection()} class="gap-2">
 						<FolderPlus class="h-4 w-4" />
 						{m['questionnaireNewPage.addSection']()}
 					</Button>
@@ -800,7 +299,7 @@
 			</div>
 		</CardHeader>
 		<CardContent class="space-y-6">
-			{#if totalQuestionCount === 0 && sections.length === 0}
+			{#if builder.totalQuestionCount === 0 && builder.sections.length === 0}
 				<div class="rounded-lg border border-dashed p-8 text-center">
 					<p class="text-sm text-muted-foreground">
 						{m['questionnaireNewPage.noQuestionsYet']()}
@@ -811,28 +310,28 @@
 				<div class="space-y-4">
 					<h3 class="text-sm font-medium text-muted-foreground">
 						{m['questionnaireNewPage.topLevelQuestionsHeading']({
-							count: topLevelQuestions.length
+							count: builder.topLevelQuestions.length
 						})}
 					</h3>
 					<p class="text-xs text-muted-foreground">
 						{m['questionnaireNewPage.reorderQuestionsHint']()}
 					</p>
 					<div class="space-y-4">
-						{#each topLevelQuestions as question, index (question.id)}
+						{#each builder.topLevelQuestions as question, index (question.id)}
 							<QuestionEditor
 								{question}
-								onUpdate={(updates) => updateTopLevelQuestion(question.id, updates)}
-								onRemove={() => removeTopLevelQuestion(question.id)}
-								onMoveUp={() => moveTopLevelQuestion(index, 'up')}
-								onMoveDown={() => moveTopLevelQuestion(index, 'down')}
+								onUpdate={(updates) => builder.updateTopLevelQuestion(question.id, updates)}
+								onRemove={() => builder.removeTopLevelQuestion(question.id)}
+								onMoveUp={() => builder.moveTopLevelQuestion(index, 'up')}
+								onMoveDown={() => builder.moveTopLevelQuestion(index, 'down')}
 								isFirst={index === 0}
-								isLast={index === topLevelQuestions.length - 1}
+								isLast={index === builder.topLevelQuestions.length - 1}
 								{showLlmGuidelines}
 							/>
 						{/each}
 					</div>
 
-					{#if topLevelQuestions.length === 0}
+					{#if builder.topLevelQuestions.length === 0}
 						<div class="rounded-lg border border-dashed p-4 text-center">
 							<p class="text-sm text-muted-foreground">
 								{m['questionnaireNewPage.noTopLevelQuestions']()}
@@ -841,12 +340,12 @@
 					{/if}
 
 					<!-- Bottom buttons for adding more top-level questions -->
-					{#if topLevelQuestions.length > 0}
+					{#if builder.topLevelQuestions.length > 0}
 						<div class="flex justify-center gap-2 border-t pt-4">
 							<Button
 								variant="outline"
 								size="sm"
-								onclick={() => addTopLevelQuestion('multiple_choice')}
+								onclick={() => builder.addTopLevelQuestion('multiple_choice')}
 								class="gap-2"
 							>
 								<Plus class="h-4 w-4" />
@@ -855,7 +354,7 @@
 							<Button
 								variant="outline"
 								size="sm"
-								onclick={() => addTopLevelQuestion('free_text')}
+								onclick={() => builder.addTopLevelQuestion('free_text')}
 								class="gap-2"
 							>
 								<Plus class="h-4 w-4" />
@@ -864,7 +363,7 @@
 							<Button
 								variant="outline"
 								size="sm"
-								onclick={() => addTopLevelQuestion('file_upload')}
+								onclick={() => builder.addTopLevelQuestion('file_upload')}
 								class="gap-2"
 							>
 								<Upload class="h-4 w-4" />
@@ -875,33 +374,35 @@
 				</div>
 
 				<!-- Sections - drag and drop zone -->
-				{#if sections.length > 0 || topLevelQuestions.length > 0}
+				{#if builder.sections.length > 0 || builder.topLevelQuestions.length > 0}
 					<div class="space-y-4">
 						<div class="border-t pt-4">
 							<h3 class="mb-2 text-sm font-medium text-muted-foreground">
-								{m['questionnaireNewPage.sectionsHeading']({ count: sections.length })}
+								{m['questionnaireNewPage.sectionsHeading']({ count: builder.sections.length })}
 							</h3>
 							<p class="text-xs text-muted-foreground">
 								{m['questionnaireNewPage.reorderSectionsHint']()}
 							</p>
 						</div>
 						<div class="space-y-4">
-							{#each sections as section, index (section.id)}
+							{#each builder.sections as section, index (section.id)}
 								<SectionEditor
 									{section}
-									onUpdate={(updates) => updateSection(section.id, updates)}
-									onRemove={() => removeSection(section.id)}
-									onMoveUp={() => moveSection(index, 'up')}
-									onMoveDown={() => moveSection(index, 'down')}
+									onUpdate={(updates) => builder.updateSection(section.id, updates)}
+									onRemove={() => builder.removeSection(section.id)}
+									onMoveUp={() => builder.moveSection(index, 'up')}
+									onMoveDown={() => builder.moveSection(index, 'down')}
 									isFirst={index === 0}
-									isLast={index === sections.length - 1}
-									onAddQuestion={(type) => addQuestionToSection(section.id, type)}
+									isLast={index === builder.sections.length - 1}
+									onAddQuestion={(type) => builder.addQuestionToSection(section.id, type)}
 									onUpdateQuestion={(questionId, updates) =>
-										updateQuestionInSection(section.id, questionId, updates)}
+										builder.updateQuestionInSection(section.id, questionId, updates)}
 									onRemoveQuestion={(questionId) =>
-										removeQuestionFromSection(section.id, questionId)}
-									onMoveQuestionUp={(qIndex) => moveQuestionInSection(section.id, qIndex, 'up')}
-									onMoveQuestionDown={(qIndex) => moveQuestionInSection(section.id, qIndex, 'down')}
+										builder.removeQuestionFromSection(section.id, questionId)}
+									onMoveQuestionUp={(qIndex) =>
+										builder.moveQuestionInSection(section.id, qIndex, 'up')}
+									onMoveQuestionDown={(qIndex) =>
+										builder.moveQuestionInSection(section.id, qIndex, 'down')}
 									{showLlmGuidelines}
 								/>
 							{/each}
@@ -915,12 +416,12 @@
 			{/if}
 
 			<!-- Bottom action bar -->
-			{#if totalQuestionCount > 0 || sections.length > 0}
+			{#if builder.totalQuestionCount > 0 || builder.sections.length > 0}
 				<div class="flex flex-wrap justify-center gap-2 border-t pt-4">
 					<Button
 						variant="outline"
 						size="sm"
-						onclick={() => addTopLevelQuestion('multiple_choice')}
+						onclick={() => builder.addTopLevelQuestion('multiple_choice')}
 						class="gap-2"
 					>
 						<Plus class="h-4 w-4" />
@@ -929,7 +430,7 @@
 					<Button
 						variant="outline"
 						size="sm"
-						onclick={() => addTopLevelQuestion('free_text')}
+						onclick={() => builder.addTopLevelQuestion('free_text')}
 						class="gap-2"
 					>
 						<Plus class="h-4 w-4" />
@@ -938,13 +439,13 @@
 					<Button
 						variant="outline"
 						size="sm"
-						onclick={() => addTopLevelQuestion('file_upload')}
+						onclick={() => builder.addTopLevelQuestion('file_upload')}
 						class="gap-2"
 					>
 						<Upload class="h-4 w-4" />
 						{m['questionnaireNewPage.addFileUpload']()}
 					</Button>
-					<Button variant="secondary" size="sm" onclick={addSection} class="gap-2">
+					<Button variant="secondary" size="sm" onclick={() => builder.addSection()} class="gap-2">
 						<FolderPlus class="h-4 w-4" />
 						{m['questionnaireNewPage.addSection']()}
 					</Button>
