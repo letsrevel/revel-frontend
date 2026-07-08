@@ -8009,7 +8009,9 @@
 		"walletDownloadFailed": "Échec du téléchargement du pass wallet",
 		"loadError": "Impossible de charger tes pass. Réessaie.",
 		"retry": "Réessayer",
-		"passNotFound": "Pass introuvable"
+		"passNotFound": "Pass introuvable",
+		"eventHintTitle": "Tu participes à toute la série ?",
+		"eventHintCta": "Économise avec un pass de saison — détails sur la page de la série."
 	},
 	"seriesPassAdmin": {
 		"tabLabel": "Pass",

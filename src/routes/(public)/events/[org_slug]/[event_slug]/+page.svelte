@@ -16,6 +16,7 @@
 	import EventGuestSignInPrompt from '$lib/components/events/EventGuestSignInPrompt.svelte';
 	import AttendeeList from '$lib/components/events/AttendeeList.svelte';
 	import TicketTierList from '$lib/components/tickets/TicketTierList.svelte';
+	import SeriesPassHintBanner from '$lib/components/series-passes/SeriesPassHintBanner.svelte';
 	import MyTicket from '$lib/components/tickets/MyTicket.svelte';
 	import TicketTierModal from '$lib/components/tickets/TicketTierModal.svelte';
 	import MyTicketModal from '$lib/components/tickets/MyTicketModal.svelte';
@@ -401,6 +402,16 @@
 						timezone={event.timezone}
 						onSelectTier={handleSelectTier}
 						onGuestTierClick={openGuestTicketDialog}
+					/>
+				{/if}
+
+				<!-- Season-pass discovery hint: the event belongs to a series that
+				     sells passes covering it — point buyers at the series page. -->
+				{#if event.event_series && event.requires_ticket}
+					<SeriesPassHintBanner
+						seriesId={event.event_series.id}
+						orgSlug={event.organization.slug}
+						seriesSlug={event.event_series.slug}
 					/>
 				{/if}
 

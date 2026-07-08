@@ -8009,7 +8009,9 @@
 		"walletDownloadFailed": "Impossibile scaricare il pass per il wallet",
 		"loadError": "Impossibile caricare i tuoi pass. Riprova.",
 		"retry": "Riprova",
-		"passNotFound": "Pass non trovato"
+		"passNotFound": "Pass non trovato",
+		"eventHintTitle": "Partecipi a tutta la serie?",
+		"eventHintCta": "Risparmia con un abbonamento — i dettagli sono nella pagina della serie."
 	},
 	"seriesPassAdmin": {
 		"tabLabel": "Pass",

@@ -8009,7 +8009,9 @@
 		"walletDownloadFailed": "Wallet-Pass konnte nicht heruntergeladen werden",
 		"loadError": "Deine Pässe konnten nicht geladen werden. Bitte versuche es erneut.",
 		"retry": "Erneut versuchen",
-		"passNotFound": "Pass nicht gefunden"
+		"passNotFound": "Pass nicht gefunden",
+		"eventHintTitle": "Bist du bei der ganzen Reihe dabei?",
+		"eventHintCta": "Spare mit einem Saisonpass — Details auf der Seite der Reihe."
 	},
 	"seriesPassAdmin": {
 		"tabLabel": "Pässe",
