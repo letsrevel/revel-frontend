@@ -30,10 +30,10 @@ export const load: PageServerLoad = async ({ url, request, fetch, cookies }) => 
 			fetch
 		});
 
-		log.debug('verify_response_received', { ok: response.response.ok });
+		log.debug('verify_response_received', { ok: response.response?.ok });
 
 		// Check response status - API client returns { data } on success, { error } on failure
-		if (response.response.ok && response.data) {
+		if (response.response?.ok && response.data) {
 			// Backend returns { user: {...}, token: { access: '...', refresh: '...' } }
 			const tokens = response.data.token as { access: string; refresh: string };
 			const { access, refresh } = tokens;
@@ -61,7 +61,7 @@ export const load: PageServerLoad = async ({ url, request, fetch, cookies }) => 
 		}
 
 		// If response was not ok, handle the error
-		if (!response.response.ok && response.error) {
+		if (!response.response?.ok && response.error) {
 			const errorMessage = extractErrorMessage(response.error, 'Verification failed');
 			return {
 				seo,

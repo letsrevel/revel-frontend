@@ -23,7 +23,7 @@ export const actions: Actions = {
 				fetch
 			});
 
-			if (response.response.ok && response.data) {
+			if (response.response?.ok && response.data) {
 				const tokens = response.data.token as { access: string; refresh: string };
 				// Honour the user's existing remember_me preference so a session-only
 				// login doesn't get silently upgraded to a 30-day persistent cookie
@@ -46,7 +46,7 @@ export const actions: Actions = {
 				};
 			}
 
-			const status = response.response.status;
+			const status = response.response?.status;
 			const message = extractErrorMessage(response.error, '').toLowerCase();
 
 			if (status === 429) {

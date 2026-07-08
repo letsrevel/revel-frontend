@@ -3,7 +3,8 @@
 	import { Button } from '$lib/components/ui/button';
 	import { ShieldAlert, Loader2, ChevronLeft, ChevronRight } from '@lucide/svelte';
 	import { WhitelistRequestCard } from '$lib/components/blacklist';
-	import type { WhitelistRequestSchema, Status } from '$lib/api/generated/types.gen';
+	import type { WhitelistRequestSchema } from '$lib/api/generated/types.gen';
+	import type { RequestStatus } from '$lib/types/request-status';
 
 	interface PaginationInfo {
 		page: number;
@@ -18,7 +19,7 @@
 		isLoading: boolean;
 		isError: boolean;
 		pagination: PaginationInfo;
-		statusFilter: Status | 'all';
+		statusFilter: RequestStatus | 'all';
 		currentPage: number;
 		onApprove: (request: WhitelistRequestSchema) => void;
 		onReject: (request: WhitelistRequestSchema) => void;

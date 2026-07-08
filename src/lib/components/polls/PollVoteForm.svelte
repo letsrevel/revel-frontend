@@ -214,7 +214,7 @@
 				// carries `silent: true` to suppress the global "Action failed"
 				// toast in +layout.svelte's mutations.onError (otherwise the user
 				// sees two toasts for one failure).
-				const status = res.response.status;
+				const status = res.response?.status;
 				if (status === 423) {
 					toast.error(m['pollVoterPage.submitErrorClosed']());
 					throw Object.assign(new Error('closed'), { silent: true });

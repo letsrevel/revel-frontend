@@ -35,10 +35,10 @@
 			});
 
 			// Check if we got a valid response
-			if (!response.response.ok) {
-				if (response.response.status === 503) {
+			if (!response.response?.ok) {
+				if (response.response?.status === 503) {
 					throw new Error(m['addToWallet.notConfigured']());
-				} else if (response.response.status === 404) {
+				} else if (response.response?.status === 404) {
 					throw new Error(m['addToWallet.ticketNotFound']());
 				} else {
 					throw new Error(m['addToWallet.downloadFailed']());

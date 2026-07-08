@@ -89,7 +89,7 @@
 						path: { slug, invoice_id: invoiceId },
 						headers: { Authorization: `Bearer ${accessToken}` }
 					});
-					if (response.response.status === 404) {
+					if (response.response?.status === 404) {
 						throw new Error(m['orgAdmin.billing.invoices.detail.pdfNotReady']());
 					}
 					if (response.error || !response.data) {

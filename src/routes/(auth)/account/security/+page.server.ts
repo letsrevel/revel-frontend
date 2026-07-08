@@ -264,7 +264,7 @@ export const actions: Actions = {
 				}
 			});
 
-			if (response.response.ok) {
+			if (response.response?.ok) {
 				return {
 					success: true,
 					emailChange: {
@@ -274,7 +274,7 @@ export const actions: Actions = {
 			}
 
 			// Map backend 400 errors back to field-specific errors.
-			const status = response.response.status;
+			const status = response.response?.status;
 			const message = extractErrorMessage(response.error, '');
 
 			if (status === 429) {

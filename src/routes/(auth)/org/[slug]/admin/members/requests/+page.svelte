@@ -321,7 +321,7 @@
 										</div>
 									{:else}
 										<span class="text-sm text-muted-foreground">
-											{(request.status ?? 'pending') === 'approved' ? 'Approved' : 'Rejected'}
+											{String(request.status ?? 'pending') === 'approved' ? 'Approved' : 'Rejected'}
 										</span>
 									{/if}
 								</td>

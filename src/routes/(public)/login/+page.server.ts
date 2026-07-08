@@ -64,7 +64,7 @@ export const actions = {
 			}
 
 			// Success - check if we have tokens
-			if (response.response.ok && response.data && 'access' in response.data) {
+			if (response.response?.ok && response.data && 'access' in response.data) {
 				const { access, refresh } = response.data;
 
 				// Store access token (1 hour - matches backend ACCESS_TOKEN_LIFETIME)
@@ -92,7 +92,7 @@ export const actions = {
 			}
 
 			// If we reach here, there was an error
-			if (!response.response.ok && response.error) {
+			if (!response.response?.ok && response.error) {
 				const errorMessage = extractErrorMessage(response.error, 'Login failed');
 				return fail(400, {
 					errors: { form: errorMessage },
@@ -155,7 +155,7 @@ export const actions = {
 			});
 
 			// Success - check if we have tokens
-			if (response.response.ok && response.data) {
+			if (response.response?.ok && response.data) {
 				const { access, refresh } = response.data;
 
 				// Store access token (1 hour - matches backend ACCESS_TOKEN_LIFETIME)
@@ -183,7 +183,7 @@ export const actions = {
 			}
 
 			// If we reach here, there was an error
-			if (!response.response.ok && response.error) {
+			if (!response.response?.ok && response.error) {
 				const errorMessage = extractErrorMessage(response.error, 'Invalid code. Please try again.');
 				return fail(400, {
 					errors: { code: errorMessage },

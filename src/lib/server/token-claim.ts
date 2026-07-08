@@ -59,7 +59,7 @@ export async function claimPendingTokens(
 				fetch: fetchFn
 			});
 
-			if (response.response.ok && response.data) {
+			if (response.response?.ok && response.data) {
 				results.organization = {
 					type: 'organization',
 					success: true,
@@ -95,7 +95,7 @@ export async function claimPendingTokens(
 				fetch: fetchFn
 			});
 
-			if (response.response.ok && response.data) {
+			if (response.response?.ok && response.data) {
 				results.event = {
 					type: 'event',
 					success: true,

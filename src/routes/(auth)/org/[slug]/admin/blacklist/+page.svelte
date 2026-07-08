@@ -17,9 +17,9 @@
 		BlacklistEntrySchema,
 		BlacklistCreateSchema,
 		WhitelistRequestSchema,
-		WhitelistEntrySchema,
-		Status
+		WhitelistEntrySchema
 	} from '$lib/api/generated/types.gen';
+	import type { RequestStatus } from '$lib/types/request-status';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Tabs, TabsList, TabsTrigger, TabsContent } from '$lib/components/ui/tabs';
 	import { Input } from '$lib/components/ui/input';
@@ -55,7 +55,7 @@
 	let blacklistSearch = $state('');
 
 	// Filter state for whitelist requests
-	let requestStatusFilter = $state<Status | 'all'>('pending');
+	let requestStatusFilter = $state<RequestStatus | 'all'>('pending');
 	let requestsPage = $state(1);
 
 	// Pagination state
@@ -107,7 +107,11 @@
 			const response = await organizationadminwhitelistListWhitelistRequests({
 				path: { slug: organization.slug },
 				query: {
-					status: requestStatusFilter !== 'all' ? requestStatusFilter : undefined,
+					// TEMPORARY cast (letsrevel/revel-backend#644): generated query param still uses the colliding `Status`.
+					status:
+						requestStatusFilter !== 'all'
+							? (requestStatusFilter as unknown as undefined)
+							: undefined,
 					page: requestsPage,
 					page_size: pageSize
 				},
