@@ -20,10 +20,11 @@
 	import { Label } from '$lib/components/ui/label';
 	import TicketStatusBadge from '$lib/components/tickets/TicketStatusBadge.svelte';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import SearchInput from '$lib/components/events/filters/SearchInput.svelte';
 	import { formatPrice } from '$lib/utils/format';
 	import { formatDate } from '$lib/utils/date';
 	import { extractErrorMessage } from '$lib/utils/errors';
-	import { Loader2, Search } from '@lucide/svelte';
+	import { Loader2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 
 	interface Props {
@@ -38,19 +39,13 @@
 	const queryClient = useQueryClient();
 	const passId = $derived(pass.id ?? '');
 
-	let searchInput = $state('');
 	let debouncedSearch = $state('');
 	let currentPage = $state(1);
-	let searchDebounceTimeout: ReturnType<typeof setTimeout> | null = null;
 
-	$effect(() => {
-		const value = searchInput;
-		if (searchDebounceTimeout) clearTimeout(searchDebounceTimeout);
-		searchDebounceTimeout = setTimeout(() => {
-			debouncedSearch = value;
-			currentPage = 1;
-		}, 300);
-	});
+	function handleSearch(value: string) {
+		debouncedSearch = value;
+		currentPage = 1;
+	}
 
 	const PAGE_SIZE = 20;
 
@@ -157,20 +152,13 @@
 			</DialogDescription>
 		</DialogHeader>
 
-		<!-- Search -->
-		<div class="relative">
-			<Search
-				class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-				aria-hidden="true"
-			/>
-			<Input
-				type="search"
-				bind:value={searchInput}
-				placeholder={m['seriesPassAdmin.holdersSearchPlaceholder']()}
-				class="pl-9"
-				aria-label={m['seriesPassAdmin.holdersSearchPlaceholder']()}
-			/>
-		</div>
+		<!-- Search (SearchInput debounces internally) -->
+		<SearchInput
+			value={debouncedSearch}
+			onSearch={handleSearch}
+			placeholder={m['seriesPassAdmin.holdersSearchPlaceholder']()}
+			ariaLabel={m['seriesPassAdmin.holdersSearchPlaceholder']()}
+		/>
 
 		{#if holdersQuery.isLoading}
 			<div class="flex items-center justify-center py-8" role="status">

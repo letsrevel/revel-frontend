@@ -15,8 +15,11 @@ export const seriesPassQueryKeys = {
 	// Public: passes on sale for a series.
 	list: (seriesId: SeriesId) => ['series-passes', 'list', seriesId] as const,
 
-	// Public: live pro-rata quote for one pass.
-	quote: (passId: PassId) => ['series-passes', 'quote', passId] as const,
+	// Public: live pro-rata quote for one pass (scoped by series so organizer
+	// mutations can invalidate one series' quotes without touching the rest).
+	quote: (seriesId: SeriesId, passId: PassId) =>
+		['series-passes', 'quote', seriesId, passId] as const,
+	quotesPrefix: (seriesId: SeriesId) => ['series-passes', 'quote', seriesId] as const,
 
 	// Buyer: my held passes (paginated).
 	minePrefix: ['series-passes', 'mine'] as const,
@@ -35,8 +38,7 @@ export const seriesPassQueryKeys = {
 			passId,
 			{ page: opts.page ?? 1, search: opts.search ?? '' }
 		] as const,
-	holdersPrefix: (seriesId: SeriesId, passId: PassId) =>
-		['series-passes', 'admin', seriesId, 'holders', passId] as const
+	holdersPrefix: (seriesId: SeriesId) => ['series-passes', 'admin', seriesId, 'holders'] as const
 } as const;
 
 /** After organizer mutations (pass CRUD, tier links, confirm/cancel holders). */
@@ -46,13 +48,10 @@ export async function invalidateAdminPasses(
 ): Promise<void> {
 	await Promise.all([
 		queryClient.invalidateQueries({ queryKey: seriesPassQueryKeys.adminList(seriesId) }),
-		queryClient.invalidateQueries({
-			queryKey: ['series-passes', 'admin', seriesId, 'holders'],
-			exact: false
-		}),
-		// Public list/quote can change too (price, visibility, active flag).
+		queryClient.invalidateQueries({ queryKey: seriesPassQueryKeys.holdersPrefix(seriesId) }),
+		// Public list/quotes can change too (price, visibility, active flag).
 		queryClient.invalidateQueries({ queryKey: seriesPassQueryKeys.list(seriesId) }),
-		queryClient.invalidateQueries({ queryKey: ['series-passes', 'quote'], exact: false })
+		queryClient.invalidateQueries({ queryKey: seriesPassQueryKeys.quotesPrefix(seriesId) })
 	]);
 }
 
@@ -63,8 +62,8 @@ export async function invalidateAfterPurchase(
 	passId: PassId
 ): Promise<void> {
 	await Promise.all([
-		queryClient.invalidateQueries({ queryKey: seriesPassQueryKeys.minePrefix, exact: false }),
-		queryClient.invalidateQueries({ queryKey: seriesPassQueryKeys.quote(passId) }),
+		queryClient.invalidateQueries({ queryKey: seriesPassQueryKeys.minePrefix }),
+		queryClient.invalidateQueries({ queryKey: seriesPassQueryKeys.quote(seriesId, passId) }),
 		queryClient.invalidateQueries({ queryKey: seriesPassQueryKeys.list(seriesId) })
 	]);
 }

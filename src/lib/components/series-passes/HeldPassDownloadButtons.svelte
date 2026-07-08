@@ -41,6 +41,9 @@
 				parseAs: 'stream'
 			});
 			if (!response.response?.ok) {
+				if (response.response?.status === 404) {
+					throw new Error(m['seriesPass.passNotFound']());
+				}
 				throw new Error(m['seriesPass.pdfDownloadFailed']());
 			}
 			saveBlob(await response.response.blob(), `${safeName}-pass.pdf`);
@@ -62,6 +65,9 @@
 			if (!response.response?.ok) {
 				if (response.response?.status === 503) {
 					throw new Error(m['addToWallet.notConfigured']());
+				}
+				if (response.response?.status === 404) {
+					throw new Error(m['seriesPass.passNotFound']());
 				}
 				throw new Error(m['seriesPass.walletDownloadFailed']());
 			}

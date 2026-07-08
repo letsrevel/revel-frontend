@@ -6478,7 +6478,8 @@
 		"errorNoQuestions": "Aggiungi almeno una domanda.",
 		"errorQuestionsNeedText": "Tutte le domande devono avere un testo.",
 		"errorEventRequired": "Scegli un evento — la visibilità Privato/Solo partecipanti lo richiede.",
-		"saveError": "Impossibile creare il sondaggio (HTTP {status})."
+		"saveError": "Impossibile creare il sondaggio (HTTP {status}).",
+		"saveErrorNetwork": "Impossibile salvare il sondaggio: errore di rete. Controlla la connessione e riprova."
 	},
 	"pollEditPage": {
 		"pageTitle": "Modifica sondaggio",
@@ -8005,7 +8006,10 @@
 		"downloadPdf": "Scarica PDF",
 		"addToWallet": "Aggiungi a Apple Wallet",
 		"pdfDownloadFailed": "Impossibile scaricare il PDF del pass",
-		"walletDownloadFailed": "Impossibile scaricare il pass per il wallet"
+		"walletDownloadFailed": "Impossibile scaricare il pass per il wallet",
+		"loadError": "Impossibile caricare i tuoi pass. Riprova.",
+		"retry": "Riprova",
+		"passNotFound": "Pass non trovato"
 	},
 	"seriesPassAdmin": {
 		"tabLabel": "Pass",

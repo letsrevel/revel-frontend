@@ -6478,7 +6478,8 @@
 		"errorNoQuestions": "Füge mindestens eine Frage hinzu.",
 		"errorQuestionsNeedText": "Alle Fragen müssen einen Text haben.",
 		"errorEventRequired": "Wähle ein Event — Privat/Nur Teilnehmende erfordert eines.",
-		"saveError": "Umfrage konnte nicht erstellt werden (HTTP {status})."
+		"saveError": "Umfrage konnte nicht erstellt werden (HTTP {status}).",
+		"saveErrorNetwork": "Umfrage konnte nicht gespeichert werden: Netzwerkfehler. Prüfe deine Verbindung und versuche es erneut."
 	},
 	"pollEditPage": {
 		"pageTitle": "Umfrage bearbeiten",
@@ -8005,7 +8006,10 @@
 		"downloadPdf": "PDF herunterladen",
 		"addToWallet": "Zu Apple Wallet hinzufügen",
 		"pdfDownloadFailed": "Pass-PDF konnte nicht heruntergeladen werden",
-		"walletDownloadFailed": "Wallet-Pass konnte nicht heruntergeladen werden"
+		"walletDownloadFailed": "Wallet-Pass konnte nicht heruntergeladen werden",
+		"loadError": "Deine Pässe konnten nicht geladen werden. Bitte versuche es erneut.",
+		"retry": "Erneut versuchen",
+		"passNotFound": "Pass nicht gefunden"
 	},
 	"seriesPassAdmin": {
 		"tabLabel": "Pässe",

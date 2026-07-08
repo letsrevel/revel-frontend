@@ -6478,7 +6478,8 @@
 		"errorNoQuestions": "Add at least one question.",
 		"errorQuestionsNeedText": "All questions need text.",
 		"errorEventRequired": "Choose an event — Private/Attendees-only visibility requires one.",
-		"saveError": "Failed to create poll (HTTP {status})."
+		"saveError": "Failed to create poll (HTTP {status}).",
+		"saveErrorNetwork": "Failed to save the poll: network error. Check your connection and try again."
 	},
 	"pollEditPage": {
 		"pageTitle": "Edit Poll",
@@ -8005,7 +8006,10 @@
 		"downloadPdf": "Download PDF",
 		"addToWallet": "Add to Apple Wallet",
 		"pdfDownloadFailed": "Failed to download the pass PDF",
-		"walletDownloadFailed": "Failed to download the wallet pass"
+		"walletDownloadFailed": "Failed to download the wallet pass",
+		"loadError": "Couldn't load your passes. Please try again.",
+		"retry": "Retry",
+		"passNotFound": "Pass not found"
 	},
 	"seriesPassAdmin": {
 		"tabLabel": "Passes",

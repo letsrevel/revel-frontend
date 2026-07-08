@@ -31,12 +31,12 @@
 		toTimezoneAwareISO
 	} from '$lib/components/events/admin/tier-form-helpers';
 	import { extractErrorMessage, extractFieldErrors } from '$lib/utils/errors';
+	import { formatDateTimeReadback } from '$lib/utils/date';
 	import PassTierMappingSection from './PassTierMappingSection.svelte';
 	import { toast } from 'svelte-sonner';
 
 	interface Props {
 		seriesId: string;
-		organizationSlug: string;
 		accessToken: string | null;
 		/** Pass to edit; null/undefined = create mode. */
 		pass?: SeriesPassSchema | null;
@@ -63,8 +63,8 @@
 	let salesEndAt = $state(toDatetimeLocal(pass?.sales_end_at));
 	let totalQuantity = $state('');
 
-	// Coverage (create mode only): eventId -> tierId.
-	let tierSelections = $state<Record<string, string | undefined>>({});
+	// Coverage (create mode only): eventId -> tierId | null (explicitly excluded).
+	let tierSelections = $state<Record<string, string | null | undefined>>({});
 
 	let fieldErrors = $state<Record<string, string>>({});
 	let formError = $state('');
@@ -273,7 +273,13 @@
 					<Label for="pass-currency">{m['seriesPassAdmin.currencyLabel']()}</Label>
 					<select
 						id="pass-currency"
-						bind:value={currency}
+						value={currency}
+						onchange={(e) => {
+							currency = e.currentTarget.value;
+							// Old-currency tier picks are ineligible under the new currency —
+							// drop them so the mapping section re-defaults cleanly.
+							tierSelections = {};
+						}}
 						disabled={isPending || isEdit}
 						class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
 					>
@@ -345,6 +351,11 @@
 						bind:value={salesStartAt}
 						disabled={isPending}
 					/>
+					{#if salesStartAt}
+						<p class="mt-1 text-xs text-muted-foreground">
+							{formatDateTimeReadback(salesStartAt)}
+						</p>
+					{/if}
 				</div>
 				<div>
 					<Label for="pass-sales-end">{m['seriesPassAdmin.salesEndLabel']()}</Label>
@@ -354,6 +365,11 @@
 						bind:value={salesEndAt}
 						disabled={isPending}
 					/>
+					{#if salesEndAt}
+						<p class="mt-1 text-xs text-muted-foreground">
+							{formatDateTimeReadback(salesEndAt)}
+						</p>
+					{/if}
 				</div>
 				{#if !isEdit}
 					<div>

@@ -40,10 +40,8 @@ function mockQuote(quote: Partial<SeriesPassQuoteSchema> = {}) {
 			...quote
 		},
 		error: undefined,
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- test double for the fetch Response
-		response: { ok: true } as any
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- RequestResult generic is unwieldy in mocks
-	} as any);
+		response: { ok: true } as unknown as Response
+	} as unknown as ReturnType<typeof seriespassGetSeriesPassQuote>);
 }
 
 describe('SeriesPassCard', () => {

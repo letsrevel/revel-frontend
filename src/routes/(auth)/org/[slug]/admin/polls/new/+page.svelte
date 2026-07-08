@@ -208,12 +208,16 @@
 				if (res.response?.status === 422) {
 					saveError = parseValidationErrors(res.error);
 				} else {
-					saveError = m['pollNewPage.saveError']({ status: res.response?.status ?? 0 });
+					saveError = res.response
+						? m['pollNewPage.saveError']({ status: res.response.status })
+						: m['pollNewPage.saveErrorNetwork']();
 				}
 				return;
 			}
 			if (!res.data) {
-				saveError = m['pollNewPage.saveError']({ status: res.response?.status ?? 0 });
+				saveError = res.response
+					? m['pollNewPage.saveError']({ status: res.response.status })
+					: m['pollNewPage.saveErrorNetwork']();
 				return;
 			}
 			await goto(

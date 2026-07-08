@@ -337,7 +337,6 @@
 	{#if activeTab === 'passes'}
 		<SeriesPassesTab
 			seriesId={data.seriesId}
-			organizationSlug={organization.slug}
 			{accessToken}
 			{canEdit}
 			upcomingEvents={upcomingOccurrences}

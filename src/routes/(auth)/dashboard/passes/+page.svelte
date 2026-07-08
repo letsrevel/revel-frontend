@@ -12,18 +12,21 @@
 
 	const accessToken = $derived(authStore.accessToken);
 
-	const currentPage = $derived(Number(page.url.searchParams.get('page') || '1'));
+	// Clamp untrusted ?page= input: NaN/0/negative all fall back to 1.
+	const currentPage = $derived(Math.max(1, Number(page.url.searchParams.get('page') || '1') || 1));
 	const PAGE_SIZE = 12;
 
 	const passesQuery = createQuery(() => ({
 		queryKey: seriesPassQueryKeys.mine(currentPage),
 		queryFn: async () => {
-			if (!accessToken) return { results: [], count: 0 };
 			const response = await seriespassListMySeriesPasses({
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: { page: currentPage, page_size: PAGE_SIZE }
 			});
-			return response.data || { results: [], count: 0 };
+			if (response.error || !response.data) {
+				throw new Error('Failed to load passes');
+			}
+			return response.data;
 		},
 		enabled: !!accessToken
 	}));
@@ -67,6 +70,17 @@
 		<div class="flex items-center justify-center py-16" role="status">
 			<Loader2 class="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
 			<span class="sr-only">{m['seriesPass.loading']()}</span>
+		</div>
+	{:else if passesQuery.isError}
+		<div class="rounded-lg border border-destructive/40 bg-card p-8 text-center" role="alert">
+			<p class="mb-4 text-sm text-muted-foreground">{m['seriesPass.loadError']()}</p>
+			<button
+				type="button"
+				onclick={() => passesQuery.refetch()}
+				class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+			>
+				{m['seriesPass.retry']()}
+			</button>
 		</div>
 	{:else if passes.length === 0}
 		<div class="rounded-lg border bg-card p-8 text-center">

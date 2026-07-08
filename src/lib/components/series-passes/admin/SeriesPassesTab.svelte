@@ -9,6 +9,7 @@
 	import SeriesPassForm from './SeriesPassForm.svelte';
 	import SeriesPassHoldersDialog from './SeriesPassHoldersDialog.svelte';
 	import { formatPrice } from '$lib/utils/format';
+	import { getPaymentMethodLabel } from '$lib/utils/ticket-helpers';
 	import { formatDateTime } from '$lib/utils/date';
 	import { extractErrorMessage } from '$lib/utils/errors';
 	import { Plus, Users, Pencil, Trash2, Loader2, Ticket } from '@lucide/svelte';
@@ -16,14 +17,13 @@
 
 	interface Props {
 		seriesId: string;
-		organizationSlug: string;
 		accessToken: string | null;
 		canEdit: boolean;
 		/** Upcoming, non-template occurrences — coverage candidates for new passes. */
 		upcomingEvents: EventInListSchema[];
 	}
 
-	const { seriesId, organizationSlug, accessToken, canEdit, upcomingEvents }: Props = $props();
+	const { seriesId, accessToken, canEdit, upcomingEvents }: Props = $props();
 
 	const queryClient = useQueryClient();
 
@@ -31,7 +31,7 @@
 	// list endpoint. Once the admin list endpoint (with coverage/tier links)
 	// lands, this switches to it — see letsrevel/revel-backend#644.
 	const passesQuery = createQuery(() => ({
-		queryKey: seriesPassQueryKeys.list(seriesId),
+		queryKey: seriesPassQueryKeys.adminList(seriesId),
 		queryFn: async () => {
 			const response = await seriespassListSeriesPasses({
 				path: { series_id: seriesId },
@@ -47,8 +47,8 @@
 
 	const passes = $derived(passesQuery.data ?? []);
 
-	let showCreateForm = $state(false);
-	let passToEdit = $state<SeriesPassSchema | null>(null);
+	// undefined = form closed, null = create mode, object = edit mode.
+	let formPass = $state<SeriesPassSchema | null | undefined>(undefined);
 	let passForHolders = $state<SeriesPassSchema | null>(null);
 	let passToDelete = $state<SeriesPassSchema | null>(null);
 
@@ -73,19 +73,6 @@
 			passToDelete = null;
 		}
 	}));
-
-	function paymentMethodLabel(method: string): string {
-		switch (method) {
-			case 'online':
-				return m['seriesPassAdmin.paymentOnline']();
-			case 'offline':
-				return m['seriesPassAdmin.paymentOffline']();
-			case 'free':
-				return m['seriesPassAdmin.paymentFree']();
-			default:
-				return method;
-		}
-	}
 </script>
 
 <section aria-labelledby="passes-heading" class="space-y-4">
@@ -97,7 +84,7 @@
 			<p class="text-sm text-muted-foreground">{m['seriesPassAdmin.tabDescription']()}</p>
 		</div>
 		{#if canEdit}
-			<Button onclick={() => (showCreateForm = true)}>
+			<Button onclick={() => (formPass = null)}>
 				<Plus class="mr-1.5 h-4 w-4" aria-hidden="true" />
 				{m['seriesPassAdmin.newPassButton']()}
 			</Button>
@@ -122,7 +109,7 @@
 					<div class="flex flex-wrap items-start justify-between gap-3">
 						<div class="min-w-0 flex-1">
 							<h3 class="font-semibold">{pass.name}</h3>
-							<dl class="mt-1 space-y-0.5 text-sm text-muted-foreground">
+							<div class="mt-1 space-y-0.5 text-sm text-muted-foreground">
 								<div>
 									<span class="font-medium">{m['seriesPassAdmin.priceLabel']()}:</span>
 									{formatPrice(pass.price, pass.currency, m['seriesPass.free']())}
@@ -136,7 +123,7 @@
 								</div>
 								<div>
 									<span class="font-medium">{m['seriesPassAdmin.paymentMethodLabel']()}:</span>
-									{paymentMethodLabel(pass.payment_method)}
+									{getPaymentMethodLabel(pass.payment_method)}
 								</div>
 								{#if pass.sales_start_at || pass.sales_end_at}
 									<div>
@@ -145,7 +132,7 @@
 										→ {pass.sales_end_at ? formatDateTime(pass.sales_end_at) : '—'}
 									</div>
 								{/if}
-							</dl>
+							</div>
 						</div>
 
 						{#if canEdit}
@@ -154,7 +141,7 @@
 									<Users class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
 									{m['seriesPassAdmin.holdersButton']()}
 								</Button>
-								<Button size="sm" variant="outline" onclick={() => (passToEdit = pass)}>
+								<Button size="sm" variant="outline" onclick={() => (formPass = pass)}>
 									<Pencil class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
 									{m['seriesPassAdmin.editButton']()}
 								</Button>
@@ -176,24 +163,13 @@
 	{/if}
 </section>
 
-{#if showCreateForm}
+{#if formPass !== undefined}
 	<SeriesPassForm
 		{seriesId}
-		{organizationSlug}
 		{accessToken}
+		pass={formPass}
 		{upcomingEvents}
-		onClose={() => (showCreateForm = false)}
-	/>
-{/if}
-
-{#if passToEdit}
-	<SeriesPassForm
-		{seriesId}
-		{organizationSlug}
-		{accessToken}
-		pass={passToEdit}
-		{upcomingEvents}
-		onClose={() => (passToEdit = null)}
+		onClose={() => (formPass = undefined)}
 	/>
 {/if}
 

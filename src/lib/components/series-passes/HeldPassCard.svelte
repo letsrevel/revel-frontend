@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { HeldSeriesPassSchema } from '$lib/api/generated/types.gen';
 	import { Card } from '$lib/components/ui/card';
@@ -11,11 +10,9 @@
 
 	interface Props {
 		heldPass: HeldSeriesPassSchema;
-		/** Org slug is not part of the schema; passes link to the series via its org-agnostic route when available. */
-		orgSlug?: string;
 	}
 
-	const { heldPass, orgSlug }: Props = $props();
+	const { heldPass }: Props = $props();
 
 	let showPassModal = $state(false);
 
@@ -46,42 +43,34 @@
 				<div class="mb-2 flex items-start justify-between gap-2">
 					<div class="min-w-0 flex-1">
 						<h3 class="text-lg font-semibold">{heldPass.series_pass.name}</h3>
-						{#if orgSlug}
-							<a
-								href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {
-									org_slug: orgSlug,
-									series_slug: heldPass.series.slug
-								})}
-								class="text-sm text-muted-foreground hover:underline"
-							>
-								{heldPass.series.name}
-							</a>
-						{:else}
-							<p class="text-sm text-muted-foreground">{heldPass.series.name}</p>
-						{/if}
+						<p class="text-sm text-muted-foreground">{heldPass.series.name}</p>
 					</div>
 					<TicketStatusBadge status={heldPass.status} />
 				</div>
 
 				<dl class="space-y-1.5 text-sm text-muted-foreground">
 					<div>
-						<span class="font-medium">{m['seriesPass.coverageLabel']()}:</span>
-						{m['seriesPass.coverageValue']({
-							remaining: heldPass.remaining_event_count,
-							total: heldPass.total_event_count
-						})}
+						<dt class="inline font-medium">{m['seriesPass.coverageLabel']()}:</dt>
+						<dd class="inline">
+							{m['seriesPass.coverageValue']({
+								remaining: heldPass.remaining_event_count,
+								total: heldPass.total_event_count
+							})}
+						</dd>
 					</div>
 					<div>
-						<span class="font-medium">{m['seriesPass.pricePaidLabel']()}:</span>
-						{formatPrice(
-							heldPass.price_paid,
-							heldPass.series_pass.currency,
-							m['seriesPass.free']()
-						)}
+						<dt class="inline font-medium">{m['seriesPass.pricePaidLabel']()}:</dt>
+						<dd class="inline">
+							{formatPrice(
+								heldPass.price_paid,
+								heldPass.series_pass.currency,
+								m['seriesPass.free']()
+							)}
+						</dd>
 					</div>
 					<div>
-						<span class="font-medium">{m['ticketListCard.purchased']()}</span>
-						{purchasedDate}
+						<dt class="inline font-medium">{m['ticketListCard.purchased']()}</dt>
+						<dd class="inline">{purchasedDate}</dd>
 					</div>
 				</dl>
 

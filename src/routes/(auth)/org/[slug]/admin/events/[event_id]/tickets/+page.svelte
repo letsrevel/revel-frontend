@@ -39,6 +39,7 @@
 	import CheckInDialog from '$lib/components/tickets/CheckInDialog.svelte';
 	import MakeMemberModal from '$lib/components/members/MakeMemberModal.svelte';
 	import ExportButton from '$lib/components/common/ExportButton.svelte';
+	import { isSeriesPassCode } from '$lib/utils/series-pass-qr';
 
 	const { data }: { data: PageData } = $props();
 
@@ -187,8 +188,11 @@
 					response.error !== null &&
 					'detail' in response.error
 						? String(response.error.detail)
-						: 'Failed to check in ticket';
-				throw new Error(errorDetail);
+						: m['eventTicketsAdmin.checkInError']();
+				// silent: the onError below shows the specific message; without the
+				// flag the global mutations.onError in +layout.svelte adds a second
+				// generic "Action failed" toast for the same failure.
+				throw Object.assign(new Error(errorDetail), { silent: true });
 			}
 
 			return response.data;
@@ -197,6 +201,9 @@
 			showCheckInDialog = false;
 			ticketToCheckIn = null;
 			invalidateAll();
+		},
+		onError: (err) => {
+			toast.error(err instanceof Error ? err.message : m['eventTicketsAdmin.checkInError']());
 		}
 	}));
 
@@ -378,7 +385,7 @@
 	 * those, so we check in directly and report the resolved attendee.
 	 */
 	async function handleQRScan(code: string) {
-		if (code.startsWith('series:')) {
+		if (isSeriesPassCode(code)) {
 			showQRScanner = false;
 			checkInTicketMutation.mutate(
 				{ code },
@@ -386,12 +393,9 @@
 					onSuccess: (checkedIn) => {
 						toast.success(
 							m['eventTicketsAdmin.passCheckInSuccess']({
-								name: `${checkedIn?.user.first_name ?? ''} ${checkedIn?.user.last_name ?? ''}`.trim()
+								name: checkedIn ? getUserDisplayName(checkedIn.user) : ''
 							})
 						);
-					},
-					onError: (err) => {
-						toast.error(err instanceof Error ? err.message : m['eventTicketsAdmin.checkInError']());
 					}
 				}
 			);
@@ -534,7 +538,7 @@
 				<Ticket class="mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
 				<h3 class="mb-2 text-lg font-semibold">{m['eventTicketsAdmin.noTicketsFiltered']()}</h3>
 				<p class="text-sm text-muted-foreground">
-					{#if searchQuery || selectedStatus || selectedPaymentMethod}
+					{#if searchQuery || selectedStatus || selectedPaymentMethod || selectedSource}
 						{m['eventTicketsAdmin.noTicketsFiltered']()}
 					{:else}
 						{m['eventTicketsAdmin.noTicketsEmpty']()}

@@ -51,7 +51,12 @@
 			}
 			// Free/offline branch: the pass is already held.
 			if (data.held_pass) {
-				await invalidateAfterPurchase(queryClient, seriesId, pass.id ?? '');
+				try {
+					await invalidateAfterPurchase(queryClient, seriesId, pass.id ?? '');
+				} catch {
+					// Non-critical: never block the success feedback on a cache
+					// invalidation failure — the purchase already went through.
+				}
 				const pending = data.held_pass.status === 'pending';
 				toast.success(pending ? m['seriesPass.passReserved']() : m['seriesPass.passClaimed'](), {
 					description: pending
@@ -61,7 +66,11 @@
 				});
 				onClose();
 				await goto(resolve('/(auth)/dashboard/passes', {}));
+				return;
 			}
+			// Defensive: the schema allows both fields to be absent — never leave
+			// the buyer without feedback on a checkout click.
+			toast.error(m['seriesPass.checkoutFailed']());
 		},
 		onError: (error) => {
 			toast.error(error instanceof Error ? error.message : m['seriesPass.checkoutFailed']());

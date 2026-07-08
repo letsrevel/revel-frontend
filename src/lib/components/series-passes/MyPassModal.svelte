@@ -11,6 +11,7 @@
 	import TicketStatusBadge from '$lib/components/tickets/TicketStatusBadge.svelte';
 	import HeldPassDownloadButtons from './HeldPassDownloadButtons.svelte';
 	import { formatPrice } from '$lib/utils/format';
+	import { seriesPassQrPayload } from '$lib/utils/series-pass-qr';
 	import QRCode from 'qrcode';
 	import { onMount } from 'svelte';
 
@@ -24,9 +25,9 @@
 
 	let qrCodeDataUrl = $state<string | null>(null);
 
-	// The scanner resolves `series:<held pass id>` to the holder's ticket for the
+	// The scanner resolves the pass payload to the holder's ticket for the
 	// event being checked in — one QR valid at every covered event.
-	const qrPayload = $derived(heldPass.id ? `series:${heldPass.id}` : null);
+	const qrPayload = $derived(heldPass.id ? seriesPassQrPayload(heldPass.id) : null);
 
 	onMount(async () => {
 		if (!qrPayload) return;

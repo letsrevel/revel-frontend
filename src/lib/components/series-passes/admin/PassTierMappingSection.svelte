@@ -15,15 +15,21 @@
 		/** Pass currency — tiers in another currency can't back the pass. */
 		currency: string;
 		/** eventId -> selected tierId; absent/undefined = event not covered. */
-		selections: Record<string, string | undefined>;
-		onSelectionsChange: (selections: Record<string, string | undefined>) => void;
+		/**
+		 * eventId -> selection. A tier id means "covered with this tier"; `null`
+		 * means the organizer explicitly excluded the event; `undefined` (absent)
+		 * means "no choice yet" and is eligible for defaulting.
+		 */
+		selections: Record<string, string | null | undefined>;
+		onSelectionsChange: (selections: Record<string, string | null | undefined>) => void;
 		disabled?: boolean;
 	}
 
 	const { events, accessToken, currency, selections, onSelectionsChange, disabled }: Props =
 		$props();
 
-	const eventIds = $derived(events.map((e) => e.id));
+	// Sorted so the cache key is stable across event-list reorderings.
+	const eventIds = $derived(events.map((e) => e.id).toSorted());
 
 	// One query fans out to per-event tier lists; the key pins the event set.
 	const tiersQuery = createQuery(() => ({
@@ -47,22 +53,37 @@
 	const tiersByEvent = $derived(tiersQuery.data ?? {});
 
 	/** Tiers that can back a pass: right currency, no assigned seating, not PWYC. */
+	const eligibleByEvent = $derived.by(() => {
+		const out: Record<string, TicketTierDetailSchema[]> = {};
+		for (const event of events) {
+			out[event.id] = (tiersByEvent[event.id] ?? []).filter(
+				(tier) =>
+					tier.currency?.toUpperCase() === currency.toUpperCase() &&
+					(!tier.seat_assignment_mode || tier.seat_assignment_mode === 'none') &&
+					tier.price_type !== 'pwyc'
+			);
+		}
+		return out;
+	});
+
 	function eligibleTiers(eventId: string): TicketTierDetailSchema[] {
-		return (tiersByEvent[eventId] ?? []).filter(
-			(tier) =>
-				tier.currency?.toUpperCase() === currency.toUpperCase() &&
-				(!tier.seat_assignment_mode || tier.seat_assignment_mode === 'none') &&
-				tier.price_type !== 'pwyc'
-		);
+		return eligibleByEvent[eventId] ?? [];
 	}
 
-	// Default selection: once tiers load, pre-select the first eligible tier for
-	// every event that has one and no explicit choice yet.
+	// Default selection: once per (tier data, currency), pre-select the first
+	// eligible tier for every event with no explicit choice yet. `defaultedKey`
+	// makes this a one-shot per input set — without it the effect re-runs on its
+	// own onSelectionsChange echo and instantly reverts explicit unchecks.
+	let defaultedKey = $state('');
 	$effect(() => {
 		if (!tiersQuery.data) return;
+		const key = `${currency}|${eventIds.join(',')}`;
+		if (defaultedKey === key) return;
+		defaultedKey = key;
 		const next = { ...selections };
 		let changed = false;
 		for (const event of events) {
+			// string = user/default pick, null = explicit exclusion — both final.
 			if (next[event.id] !== undefined) continue;
 			const tiers = eligibleTiers(event.id);
 			if (tiers.length > 0 && tiers[0].id) {
@@ -77,9 +98,11 @@
 		const next = { ...selections };
 		if (include) {
 			const tiers = eligibleTiers(eventId);
-			next[eventId] = tiers[0]?.id ?? undefined;
+			next[eventId] = tiers[0]?.id ?? null;
 		} else {
-			next[eventId] = undefined;
+			// `null`, not delete/undefined: an explicit exclusion must survive the
+			// defaulting pass above.
+			next[eventId] = null;
 		}
 		onSelectionsChange(next);
 	}
@@ -88,7 +111,9 @@
 		onSelectionsChange({ ...selections, [eventId]: tierId });
 	}
 
-	const coveredCount = $derived(Object.values(selections).filter(Boolean).length);
+	const coveredCount = $derived(
+		Object.values(selections).filter((v) => typeof v === 'string').length
+	);
 </script>
 
 <fieldset class="space-y-3" {disabled}>

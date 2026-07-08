@@ -174,7 +174,9 @@
 							: null;
 					saveError = detail
 						? `Failed to create questionnaire: ${detail}`
-						: `Failed to create questionnaire (HTTP ${response.response?.status}).`;
+						: response.response
+							? `Failed to create questionnaire (HTTP ${response.response.status}).`
+							: 'Failed to create questionnaire: network error.';
 					console.error('API error:', response.error);
 				}
 				return;

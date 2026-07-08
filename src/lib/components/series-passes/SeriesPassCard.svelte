@@ -23,7 +23,7 @@
 
 	// Live pro-rata quote (public endpoint, works for anonymous users too).
 	const quoteQuery = createQuery(() => ({
-		queryKey: seriesPassQueryKeys.quote(pass.id ?? ''),
+		queryKey: seriesPassQueryKeys.quote(seriesId, pass.id ?? ''),
 		queryFn: async () => {
 			const response = await seriespassGetSeriesPassQuote({
 				path: { pass_id: pass.id ?? '' }
@@ -51,7 +51,10 @@
 
 	function handleBuyClick() {
 		if (!isAuthenticated) {
-			window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+			// The login action reads `returnUrl` (see login/+page.server.ts); include
+			// the query string so pagination state survives the round trip.
+			const target = window.location.pathname + window.location.search;
+			window.location.href = `/login?returnUrl=${encodeURIComponent(target)}`;
 			return;
 		}
 		showPurchaseDialog = true;
@@ -118,7 +121,11 @@
 				</p>
 			{/if}
 		{:else}
-			<Button class="w-full" onclick={handleBuyClick} disabled={quoteQuery.isLoading}>
+			<Button
+				class="w-full"
+				onclick={handleBuyClick}
+				disabled={quoteQuery.isLoading || !!quoteQuery.error}
+			>
 				{m['seriesPass.buyButton']()}
 			</Button>
 		{/if}

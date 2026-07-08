@@ -17,4 +17,6 @@
 >
 	<CalendarRange class="h-3 w-3 shrink-0" aria-hidden="true" />
 	{m['seriesPassBadge.label']()}
+	<!-- title is hover-only; expose the pass name to screen readers too -->
+	<span class="sr-only">{m['seriesPassBadge.tooltip']({ name: seriesPass.name })}</span>
 </span>

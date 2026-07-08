@@ -200,6 +200,7 @@
 				<button
 					type="button"
 					onclick={() => onSourceFilter(null)}
+					aria-pressed={selectedSource === null}
 					class="rounded-md border px-3 py-1 text-sm font-medium transition-colors {selectedSource ===
 					null
 						? 'border-primary bg-primary text-primary-foreground'
@@ -210,6 +211,7 @@
 				<button
 					type="button"
 					onclick={() => onSourceFilter('direct')}
+					aria-pressed={selectedSource === 'direct'}
 					class="rounded-md border px-3 py-1 text-sm font-medium transition-colors {selectedSource ===
 					'direct'
 						? 'border-primary bg-primary text-primary-foreground'
@@ -220,6 +222,7 @@
 				<button
 					type="button"
 					onclick={() => onSourceFilter('pass')}
+					aria-pressed={selectedSource === 'pass'}
 					class="rounded-md border px-3 py-1 text-sm font-medium transition-colors {selectedSource ===
 					'pass'
 						? 'border-primary bg-primary text-primary-foreground'

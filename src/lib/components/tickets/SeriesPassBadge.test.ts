@@ -11,7 +11,8 @@ describe('SeriesPassBadge', () => {
 
 	it('renders the season pass label', () => {
 		render(SeriesPassBadge, { props: { seriesPass } });
-		expect(screen.getByText(/season pass/i)).toBeInTheDocument();
+		// Both the visible label and the sr-only tooltip text match.
+		expect(screen.getAllByText(/season pass/i).length).toBeGreaterThan(0);
 	});
 
 	it('names the pass in the tooltip', () => {
