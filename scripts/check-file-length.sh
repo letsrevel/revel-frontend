@@ -9,10 +9,9 @@
 #   - src/lib/data/            (static data files)
 #   - *.test.ts, *.spec.ts     (test files)
 #   - *.d.ts                   (type declarations)
-#   - src/lib/stores/auth.svelte.ts (517): token race guards + single-flight
-#     refresh thread all state through one class; split rejected twice as
-#     invariant-threatening (#544 Task 12/13 analyses). Cleanup already applied
-#     (580→517). Cap stays 500 for everything else.
+#
+# Per-file cap overrides: see max_for() below. An override raises the cap for
+# one file (with rationale) instead of un-gating it entirely (#557).
 
 set -e
 
@@ -20,11 +19,25 @@ SVELTE_MAX=${1:-750}
 TS_MAX=${2:-500}
 FAILED=0
 
+# Per-file cap overrides — the only sanctioned way for a file to exceed the
+# default cap. Each entry needs a rationale; the override IS the ceiling
+# (no hardcoded current line counts).
+#   auth.svelte.ts → 550: token race guards + single-flight refresh thread all
+#   state through one class; split rejected twice as invariant-threatening
+#   (#544 Task 12/13 analyses, #557).
+max_for() {
+    case "$1" in
+        src/lib/stores/auth.svelte.ts) echo 550 ;;
+        *) echo "$2" ;;
+    esac
+}
+
 # Check Svelte files
 while IFS= read -r -d '' file; do
     lines=$(wc -l < "$file")
-    if [ "$lines" -gt "$SVELTE_MAX" ]; then
-        echo "❌ $file has $lines lines (max: $SVELTE_MAX)"
+    max=$(max_for "$file" "$SVELTE_MAX")
+    if [ "$lines" -gt "$max" ]; then
+        echo "❌ $file has $lines lines (max: $max)"
         FAILED=1
     fi
 done < <(find src -name "*.svelte" \
@@ -35,8 +48,9 @@ done < <(find src -name "*.svelte" \
 # Check TypeScript/JavaScript files
 while IFS= read -r -d '' file; do
     lines=$(wc -l < "$file")
-    if [ "$lines" -gt "$TS_MAX" ]; then
-        echo "❌ $file has $lines lines (max: $TS_MAX)"
+    max=$(max_for "$file" "$TS_MAX")
+    if [ "$lines" -gt "$max" ]; then
+        echo "❌ $file has $lines lines (max: $max)"
         FAILED=1
     fi
 done < <(find src \( -name "*.ts" -o -name "*.js" \) \
@@ -48,7 +62,6 @@ done < <(find src \( -name "*.ts" -o -name "*.js" \) \
     -not -path "*/api/generated/*" \
     -not -path "*/paraglide/*" \
     -not -path "*/data/*" \
-    -not -path "src/lib/stores/auth.svelte.ts" \
     -print0)
 
 if [ "$FAILED" -eq 0 ]; then
