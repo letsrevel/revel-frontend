@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import { applyAction, enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { ActionData, PageData } from './$types';
@@ -23,6 +24,14 @@
 
 	// Demo mode state
 	const isDemoMode = $derived(appStore.isDemoMode);
+
+	// A relative form action ("?/login") replaces the query string, so the
+	// returnUrl the server action reads (safeReturnUrl) would be dropped.
+	// Thread it through the action URL for every login/2FA submission.
+	const returnUrlSuffix = $derived.by(() => {
+		const returnUrl = page.url.searchParams.get('returnUrl');
+		return returnUrl ? `&returnUrl=${encodeURIComponent(returnUrl)}` : '';
+	});
 
 	// Form state
 	let email = $state(form?.email || '');
@@ -127,7 +136,12 @@
 						<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					</div>
 
-					<form method="POST" action="?/login" use:enhance={handleSubmit} class="space-y-4">
+					<form
+						method="POST"
+						action="?/login{returnUrlSuffix}"
+						use:enhance={handleSubmit}
+						class="space-y-4"
+					>
 						<!-- Demo Account Selector -->
 						<div class="space-y-2">
 							<label for="demo-account" class="block text-sm font-medium">
@@ -192,7 +206,12 @@
 				</div>
 			{:else}
 				<!-- Standard Login Form -->
-				<form method="POST" action="?/login" use:enhance={handleSubmit} class="space-y-6">
+				<form
+					method="POST"
+					action="?/login{returnUrlSuffix}"
+					use:enhance={handleSubmit}
+					class="space-y-6"
+				>
 					<!-- Email Field -->
 					<div class="space-y-2">
 						<label for="email" class="block text-sm font-medium">
@@ -304,7 +323,12 @@
 			{/if}
 		{:else}
 			<!-- 2FA Verification Form -->
-			<form method="POST" action="?/verify2FA" use:enhance={handleSubmit} class="space-y-6">
+			<form
+				method="POST"
+				action="?/verify2FA{returnUrlSuffix}"
+				use:enhance={handleSubmit}
+				class="space-y-6"
+			>
 				<input type="hidden" name="tempToken" value={tempToken} />
 				<input type="hidden" name="rememberMe" value={rememberMe ? 'true' : 'false'} />
 
