@@ -967,6 +967,7 @@
 			"nextPage": "Page suivante"
 		},
 		"seeAllOrganizations": "Voir toutes les {count} organisations",
+		"showFewerOrganizations": "Afficher moins",
 		"followingButton": "Abonnements",
 		"following": {
 			"title": "Abonnements",
@@ -1506,6 +1507,8 @@
 		"registeredUsersTitle": "Utilisateurs inscrits ({count})",
 		"pendingUsersTitle": "En attente (non inscrits) ({count})",
 		"selected": "{count} sélectionnées",
+		"selectAll": "Sélectionner toutes les invitations",
+		"selectInvitation": "Sélectionner l'invitation de {name}",
 		"noTier": "Aucune catégorie",
 		"linksDescription": "Crée des liens d'invitation partageables que n'importe qui peut utiliser pour s'inscrire à cet événement. Parfaits pour les réseaux sociaux, les e-mails ou les QR codes.",
 		"createLink": "Créer un lien",
@@ -2486,7 +2489,6 @@
 		"ticketingFeature4": "Enregistrement par code QR et validation des billets",
 		"feeCalculator": {
 			"title": "Calculateur de frais",
-			"close": "Fermer",
 			"ticketPrice": "Prix du billet",
 			"creditCardFees": "Frais de carte bancaire",
 			"creditCardFeesDescription": "1,5 % + 0,25 € par transaction. Ils reviennent à Stripe - nous n'avons aucun contrôle dessus.",
@@ -7683,7 +7685,6 @@
 	"eventTicketsAdmin.blacklistSuccess": "{name} a été ajouté à la liste noire",
 	"eventTicketsAdmin.userIdNotAvailable": "Identifiant utilisateur non disponible",
 	"eventTicketsAdmin.paginationShowing": "Page {page} sur {totalPages} ({total} billets au total)",
-	"eventTicketsAdmin.closeDialog": "Fermer la boîte de dialogue",
 	"eventTicketsAdmin.amountPaidLabel": "Montant payé ({currency})",
 	"eventTicketsAdmin.confirmingPayment": "Confirmation...",
 	"eventTicketsAdmin.blacklistDialogTitle": "Ajouter l'utilisateur à la liste noire",

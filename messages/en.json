@@ -1080,6 +1080,7 @@
 			"nextPage": "Next page"
 		},
 		"seeAllOrganizations": "See all {count} organizations",
+		"showFewerOrganizations": "Show fewer",
 		"followingButton": "Following",
 		"following": {
 			"title": "Following",
@@ -1619,6 +1620,8 @@
 		"registeredUsersTitle": "Registered Users ({count})",
 		"pendingUsersTitle": "Pending (Unregistered) ({count})",
 		"selected": "{count} selected",
+		"selectAll": "Select all invitations",
+		"selectInvitation": "Select invitation for {name}",
 		"noTier": "No tier",
 		"linksDescription": "Create shareable invitation links that anyone can use to register for this event. Perfect for social media, emails, or QR codes.",
 		"createLink": "Create Link",
@@ -2599,7 +2602,6 @@
 		"ticketingFeature4": "QR code check-in and ticket validation",
 		"feeCalculator": {
 			"title": "Fee Calculator",
-			"close": "Close",
 			"ticketPrice": "Ticket Price",
 			"creditCardFees": "Credit Card Fees",
 			"creditCardFeesDescription": "1.5% + €0.25 per transaction. These go to Stripe - we have no control over them.",
@@ -7712,7 +7714,6 @@
 	"eventTicketsAdmin.blacklistSuccess": "{name} has been blacklisted",
 	"eventTicketsAdmin.userIdNotAvailable": "User ID not available",
 	"eventTicketsAdmin.paginationShowing": "Showing page {page} of {totalPages} ({total} total tickets)",
-	"eventTicketsAdmin.closeDialog": "Close dialog",
 	"eventTicketsAdmin.amountPaidLabel": "Amount paid ({currency})",
 	"eventTicketsAdmin.confirmingPayment": "Confirming...",
 	"eventTicketsAdmin.blacklistDialogTitle": "Blacklist User",
