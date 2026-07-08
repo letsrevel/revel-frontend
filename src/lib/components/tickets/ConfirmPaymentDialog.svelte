@@ -1,9 +1,16 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { fade, scale } from 'svelte/transition';
 	import { isPwycTicket, getPwycWarning } from '$lib/utils/ticket-helpers';
 	import { Input } from '$lib/components/ui/input';
-	import { AlertTriangle, X } from '@lucide/svelte';
+	import {
+		Dialog,
+		DialogContent,
+		DialogDescription,
+		DialogFooter,
+		DialogHeader,
+		DialogTitle
+	} from '$lib/components/ui/dialog';
+	import { AlertTriangle } from '@lucide/svelte';
 	import type { AdminTicketSchema } from '$lib/api/generated/types.gen';
 
 	interface Props {
@@ -26,67 +33,34 @@
 </script>
 
 <!-- Confirm Payment Dialog -->
-{#if isOpen && ticket}
-	{@const pwyc = isPwycTicket(ticket)}
-	{@const pwycWarning = pwyc ? getPwycWarning(ticket, pwycPricePaid) : null}
-	{@const pwycValid = !pwyc || (pwycPricePaid !== '' && parseFloat(pwycPricePaid) > 0)}
-	<div
-		role="presentation"
-		onclick={(e) => {
-			if (e.target === e.currentTarget) {
-				onClose();
-			}
-		}}
-		onkeydown={(e) => {
-			if (e.key === 'Escape') {
-				onClose();
-			}
-		}}
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-		transition:fade={{ duration: 150 }}
-	>
-		<div
-			role="dialog"
-			aria-modal="true"
-			aria-labelledby="confirm-payment-dialog-title"
-			class="relative mx-4 w-full max-w-lg rounded-lg border bg-card p-6 shadow-lg"
-			transition:scale={{ duration: 150, start: 0.95 }}
-		>
-			<!-- Close button -->
-			<button
-				type="button"
-				onclick={onClose}
-				aria-label={m['eventTicketsAdmin.closeDialog']()}
-				class="absolute right-4 top-4 rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-			>
-				<X class="h-4 w-4" aria-hidden="true" />
-			</button>
-
-			<!-- Icon + Title -->
-			<div class="flex items-start gap-4">
-				<div
-					class="shrink-0 rounded-full bg-blue-100 p-3 text-blue-600 dark:bg-blue-950 dark:text-blue-400"
-					aria-hidden="true"
-				>
-					<AlertTriangle class="h-6 w-6" />
+<Dialog open={isOpen && !!ticket} onOpenChange={(open) => !open && onClose()}>
+	<DialogContent class="max-w-lg">
+		{#if ticket}
+			{@const pwyc = isPwycTicket(ticket)}
+			{@const pwycWarning = pwyc ? getPwycWarning(ticket, pwycPricePaid) : null}
+			{@const pwycValid = !pwyc || (pwycPricePaid !== '' && parseFloat(pwycPricePaid) > 0)}
+			<DialogHeader>
+				<div class="flex items-start gap-4">
+					<div
+						class="shrink-0 rounded-full bg-blue-100 p-3 text-blue-600 dark:bg-blue-950 dark:text-blue-400"
+						aria-hidden="true"
+					>
+						<AlertTriangle class="h-6 w-6" />
+					</div>
+					<div class="flex-1 pt-1 text-left">
+						<DialogTitle>{m['eventTicketsAdmin.confirmPaymentTitle']()}</DialogTitle>
+						<DialogDescription class="mt-2">
+							{ticket.status === 'cancelled'
+								? m['eventTicketsAdmin.confirmPaymentMessageReactivate']()
+								: m['eventTicketsAdmin.confirmPaymentMessageActivate']()}
+						</DialogDescription>
+					</div>
 				</div>
-				<div class="flex-1 pt-1">
-					<h2 id="confirm-payment-dialog-title" class="text-lg font-semibold text-foreground">
-						{m['eventTicketsAdmin.confirmPaymentTitle']()}
-					</h2>
-				</div>
-			</div>
-
-			<!-- Message -->
-			<div class="mt-4 text-sm text-muted-foreground">
-				{ticket.status === 'cancelled'
-					? m['eventTicketsAdmin.confirmPaymentMessageReactivate']()
-					: m['eventTicketsAdmin.confirmPaymentMessageActivate']()}
-			</div>
+			</DialogHeader>
 
 			<!-- PWYC Price Input -->
 			{#if pwyc}
-				<div class="mt-4 space-y-2">
+				<div class="space-y-2">
 					<label for="pwyc-price-input" class="block text-sm font-medium text-foreground">
 						{m['eventTicketsAdmin.amountPaidLabel']({
 							currency: ticket.tier?.currency?.toUpperCase() || 'EUR'
@@ -120,7 +94,7 @@
 			{/if}
 
 			<!-- Actions -->
-			<div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+			<DialogFooter class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
 				<button
 					type="button"
 					onclick={onClose}
@@ -140,7 +114,7 @@
 						{m['eventTicketsAdmin.confirmPaymentButton']()}
 					{/if}
 				</button>
-			</div>
-		</div>
-	</div>
-{/if}
+			</DialogFooter>
+		{/if}
+	</DialogContent>
+</Dialog>

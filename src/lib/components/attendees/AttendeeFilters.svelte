@@ -28,6 +28,7 @@
 		<button
 			type="button"
 			onclick={() => onStatusFilter(null)}
+			aria-pressed={!activeStatusFilter}
 			class={cn(
 				'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
 				!activeStatusFilter
@@ -40,6 +41,7 @@
 		<button
 			type="button"
 			onclick={() => onStatusFilter('yes')}
+			aria-pressed={activeStatusFilter === 'yes'}
 			class={cn(
 				'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
 				activeStatusFilter === 'yes'
@@ -52,6 +54,7 @@
 		<button
 			type="button"
 			onclick={() => onStatusFilter('maybe')}
+			aria-pressed={activeStatusFilter === 'maybe'}
 			class={cn(
 				'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
 				activeStatusFilter === 'maybe'
@@ -64,6 +67,7 @@
 		<button
 			type="button"
 			onclick={() => onStatusFilter('no')}
+			aria-pressed={activeStatusFilter === 'no'}
 			class={cn(
 				'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
 				activeStatusFilter === 'no'

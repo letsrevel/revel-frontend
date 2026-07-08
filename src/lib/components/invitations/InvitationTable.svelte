@@ -10,6 +10,7 @@
 	import { Trash2, Edit, CheckSquare, Square } from '@lucide/svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import { Button } from '$lib/components/ui/button';
+	import { getUserDisplayName } from '$lib/utils/user-display';
 
 	interface Props {
 		title: string;
@@ -54,6 +55,12 @@
 		}
 	}
 
+	function invitationLabel(
+		invitation: EventInvitationListSchema | PendingEventInvitationListSchema
+	): string {
+		return 'user' in invitation ? getUserDisplayName(invitation.user) : invitation.email;
+	}
+
 	function toggleSelectAll() {
 		const allSelected = selectedIds.size === invitations.length;
 		selectedIds.clear();
@@ -94,6 +101,8 @@
 								<button
 									type="button"
 									onclick={toggleSelectAll}
+									aria-label={m['eventInvitationsAdmin.selectAll']()}
+									aria-pressed={selectedIds.size === invitations.length && invitations.length > 0}
 									class="flex items-center justify-center text-muted-foreground hover:text-foreground"
 								>
 									{#if selectedIds.size === invitations.length && invitations.length > 0}
@@ -129,6 +138,10 @@
 									<button
 										type="button"
 										onclick={() => toggleSelection(invitation.id)}
+										aria-label={m['eventInvitationsAdmin.selectInvitation']({
+											name: invitationLabel(invitation)
+										})}
+										aria-pressed={selectedIds.has(invitation.id)}
 										class="flex items-center justify-center text-muted-foreground hover:text-foreground"
 									>
 										{#if selectedIds.has(invitation.id)}

@@ -1080,6 +1080,7 @@
 			"nextPage": "Pagina successiva"
 		},
 		"seeAllOrganizations": "Vedi tutte le {count} organizzazioni",
+		"showFewerOrganizations": "Mostra meno",
 		"followingButton": "Seguiti",
 		"following": {
 			"title": "Seguiti",
@@ -1619,6 +1620,8 @@
 		"registeredUsersTitle": "Registered Users ({count})",
 		"pendingUsersTitle": "Pending (Unregistered) ({count})",
 		"selected": "{count} selected",
+		"selectAll": "Seleziona tutti gli inviti",
+		"selectInvitation": "Seleziona l'invito per {name}",
 		"noTier": "No tier",
 		"linksDescription": "Create shareable invitation links that anyone can use to register for this event. Perfect for social media, emails, or QR codes.",
 		"createLink": "Create Link",
@@ -2599,7 +2602,6 @@
 		"ticketingFeature4": "Check-in con codice QR e convalida biglietti",
 		"feeCalculator": {
 			"title": "Calcolatore Commissioni",
-			"close": "Chiudi",
 			"ticketPrice": "Prezzo Biglietto",
 			"creditCardFees": "Commissioni Carta di Credito",
 			"creditCardFeesDescription": "1,5% + €0,25 per transazione. Queste vanno a Stripe - non abbiamo controllo su di esse.",
@@ -7712,7 +7714,6 @@
 	"eventTicketsAdmin.blacklistSuccess": "{name} è stato inserito nella lista nera",
 	"eventTicketsAdmin.userIdNotAvailable": "ID utente non disponibile",
 	"eventTicketsAdmin.paginationShowing": "Pagina {page} di {totalPages} ({total} biglietti in totale)",
-	"eventTicketsAdmin.closeDialog": "Chiudi la finestra",
 	"eventTicketsAdmin.amountPaidLabel": "Importo pagato ({currency})",
 	"eventTicketsAdmin.confirmingPayment": "Conferma in corso...",
 	"eventTicketsAdmin.blacklistDialogTitle": "Inserisci utente nella lista nera",

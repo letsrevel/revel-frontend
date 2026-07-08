@@ -24,6 +24,12 @@
 		permissions: OrganizationPermissionsSchema | null;
 	}
 	let { organizations, isLoading, permissions }: Props = $props();
+
+	const COLLAPSED_COUNT = 3;
+	let showAll = $state(false);
+	const visibleOrganizations = $derived(
+		showAll ? organizations : organizations.slice(0, COLLAPSED_COUNT)
+	);
 </script>
 
 <!-- My Organizations Section -->
@@ -61,8 +67,8 @@
 		</div>
 	{:else}
 		<!-- Organization Cards -->
-		<div class="space-y-3">
-			{#each organizations.slice(0, 3) as org (org.id)}
+		<div id="dashboard-organizations-list" class="space-y-3">
+			{#each visibleOrganizations as org (org.id)}
 				{@const descriptionText = org.description ? stripMarkdown(org.description) : ''}
 				<div
 					class="flex items-center gap-4 rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"
@@ -165,5 +171,19 @@
 				</div>
 			{/each}
 		</div>
+
+		{#if organizations.length > COLLAPSED_COUNT}
+			<button
+				type="button"
+				onclick={() => (showAll = !showAll)}
+				aria-expanded={showAll}
+				aria-controls="dashboard-organizations-list"
+				class="mt-3 w-full rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+			>
+				{showAll
+					? m['dashboard.showFewerOrganizations']()
+					: m['dashboard.seeAllOrganizations']({ count: organizations.length })}
+			</button>
+		{/if}
 	{/if}
 </section>
