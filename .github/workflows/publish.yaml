@@ -59,3 +59,18 @@ jobs:
           tags: |
             ghcr.io/letsrevel/revel-frontend:latest
             ghcr.io/letsrevel/revel-frontend:${{ github.event.release.tag_name }}
+
+      # Ops signal: fires only after the image is pullable from GHCR. Failure
+      # (Discord down, missing secret) must never fail the publish job.
+      - name: Notify Discord
+        continue-on-error: true
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_FRONTEND_WEBHOOK_URL }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+            echo "DISCORD_FRONTEND_WEBHOOK_URL not set, skipping notification"
+            exit 0
+          fi
+          curl -sf --max-time 10 -X POST "$DISCORD_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "{\"content\": \"📦 \`ghcr.io/letsrevel/revel-frontend:${{ github.event.release.tag_name }}\` is published and ready to deploy — ${{ github.event.release.html_url }}\"}"
