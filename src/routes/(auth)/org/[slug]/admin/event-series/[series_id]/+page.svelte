@@ -30,6 +30,7 @@
 	import PauseResumeButton from '$lib/components/event-series/admin/PauseResumeButton.svelte';
 	import CancelDriftedOccurrencesDialog from '$lib/components/event-series/admin/CancelDriftedOccurrencesDialog.svelte';
 	import PublishOccurrenceDialog from '$lib/components/event-series/admin/PublishOccurrenceDialog.svelte';
+	import SeriesPassesTab from '$lib/components/series-passes/admin/SeriesPassesTab.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -84,7 +85,7 @@
 
 	// Past occurrences load lazily once the user switches tabs — cheap to skip on
 	// first paint, and historically long. `enabled` is the only gate.
-	let activeTab = $state<'upcoming' | 'past'>('upcoming');
+	let activeTab = $state<'upcoming' | 'past' | 'passes'>('upcoming');
 
 	const pastQuery = createQuery<EventInListSchema[]>(() => ({
 		queryKey: seriesQueryKeys.occurrences(data.seriesId, { past: true }),
@@ -318,11 +319,29 @@
 			>
 				{m['recurringEvents.dashboard.pastHeading']()}
 			</button>
+			<button
+				type="button"
+				onclick={() => (activeTab = 'passes')}
+				class="border-b-2 px-1 py-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {activeTab ===
+				'passes'
+					? 'border-primary text-primary'
+					: 'border-transparent text-muted-foreground hover:border-border hover:text-foreground'}"
+				aria-current={activeTab === 'passes' ? 'page' : undefined}
+			>
+				{m['seriesPassAdmin.tabLabel']()}
+			</button>
 		</nav>
 	</div>
 
 	<!-- Occurrences list -->
-	{#if activeTab === 'upcoming'}
+	{#if activeTab === 'passes'}
+		<SeriesPassesTab
+			seriesId={data.seriesId}
+			{accessToken}
+			{canEdit}
+			upcomingEvents={upcomingOccurrences}
+		/>
+	{:else if activeTab === 'upcoming'}
 		<section id="upcoming-occurrences" aria-labelledby="upcoming-heading">
 			<h2 id="upcoming-heading" class="sr-only">
 				{m['recurringEvents.dashboard.upcomingHeading']()}

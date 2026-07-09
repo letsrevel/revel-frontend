@@ -92,7 +92,7 @@
 				path: { invoice_id: invoiceId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-			if (response.response.status === 404) {
+			if (response.response?.status === 404) {
 				toast.error(m['myInvoices.pdfNotReady']());
 				return;
 			}

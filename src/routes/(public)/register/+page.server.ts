@@ -78,8 +78,8 @@ export const actions = {
 			});
 
 			// Check response status - API client returns { data } on success, { error } on failure
-			// On successful 201 Created, response.response.ok will be true
-			if (response.response.ok && response.data) {
+			// On successful 201 Created, response.response?.ok will be true
+			if (response.response?.ok && response.data) {
 				log.debug('register_redirecting_to_check_email');
 				// Success - redirect to check-email page
 				throw redirect(
@@ -89,8 +89,8 @@ export const actions = {
 			}
 
 			// If response was not ok, handle the error
-			if (!response.response.ok && response.error) {
-				log.warning('register_error_response', { status: response.response.status });
+			if (!response.response?.ok && response.error) {
+				log.warning('register_error_response', { status: response.response?.status });
 
 				// Extract user-friendly error message from API error
 				const errorMessage = extractErrorMessage(response.error, 'Registration failed');

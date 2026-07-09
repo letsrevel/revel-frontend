@@ -39,6 +39,7 @@
 	import CheckInDialog from '$lib/components/tickets/CheckInDialog.svelte';
 	import MakeMemberModal from '$lib/components/members/MakeMemberModal.svelte';
 	import ExportButton from '$lib/components/common/ExportButton.svelte';
+	import { isSeriesPassCode } from '$lib/utils/series-pass-qr';
 
 	const { data }: { data: PageData } = $props();
 
@@ -48,6 +49,7 @@
 	// Filter states
 	let selectedStatus = $state<string | null>(data.filters.status || null);
 	let selectedPaymentMethod = $state<string | null>(data.filters.paymentMethod || null);
+	let selectedSource = $state<string | null>(data.filters.source || null);
 
 	// Sort state (server-side, persisted in the URL)
 	let selectedOrderBy = $state<TicketOrderBy | undefined>(data.filters.orderBy ?? undefined);
@@ -171,9 +173,11 @@
 	 * Check-in ticket mutation
 	 */
 	const checkInTicketMutation = createMutation(() => ({
-		mutationFn: async ({ ticketId, pricePaid }: { ticketId: string; pricePaid?: string }) => {
+		// `code` is a ticket UUID or a series-pass QR payload (`series:<uuid>`);
+		// the backend resolves pass codes to the holder's ticket for this event.
+		mutationFn: async ({ code, pricePaid }: { code: string; pricePaid?: string }) => {
 			const response = await eventadminticketsCheckInTicket({
-				path: { event_id: data.event.id, ticket_id: ticketId },
+				path: { event_id: data.event.id, code },
 				body: pricePaid ? { price_paid: pricePaid } : undefined,
 				headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
 			});
@@ -184,8 +188,11 @@
 					response.error !== null &&
 					'detail' in response.error
 						? String(response.error.detail)
-						: 'Failed to check in ticket';
-				throw new Error(errorDetail);
+						: m['eventTicketsAdmin.checkInError']();
+				// silent: the onError below shows the specific message; without the
+				// flag the global mutations.onError in +layout.svelte adds a second
+				// generic "Action failed" toast for the same failure.
+				throw Object.assign(new Error(errorDetail), { silent: true });
 			}
 
 			return response.data;
@@ -194,6 +201,9 @@
 			showCheckInDialog = false;
 			ticketToCheckIn = null;
 			invalidateAll();
+		},
+		onError: (err) => {
+			toast.error(err instanceof Error ? err.message : m['eventTicketsAdmin.checkInError']());
 		}
 	}));
 
@@ -240,6 +250,7 @@
 		if (searchQuery) params.set('search', searchQuery);
 		if (selectedStatus) params.set('status', selectedStatus);
 		if (selectedPaymentMethod) params.set('payment_method', selectedPaymentMethod);
+		if (selectedSource) params.set('source', selectedSource);
 		if (selectedOrderBy) params.set('order_by', selectedOrderBy);
 		// Reset to page 1 when filters change
 		params.set('page', '1');
@@ -277,6 +288,14 @@
 	 */
 	function setPaymentMethodFilter(method: string | null) {
 		selectedPaymentMethod = method;
+		applyFilters();
+	}
+
+	/**
+	 * Set ticket source filter (direct purchase vs. series pass)
+	 */
+	function setSourceFilter(source: string | null) {
+		selectedSource = source;
 		applyFilters();
 	}
 
@@ -354,18 +373,38 @@
 	 */
 	function submitCheckIn(pricePaid?: string) {
 		if (ticketToCheckIn) {
-			checkInTicketMutation.mutate({ ticketId: ticketToCheckIn.id, pricePaid });
+			checkInTicketMutation.mutate({ code: ticketToCheckIn.id, pricePaid });
 		}
 	}
 
 	/**
-	 * Handle QR code scan
+	 * Handle QR code scan.
+	 *
+	 * Ticket QRs carry a ticket UUID we can preview via GET before confirming.
+	 * Series-pass QRs carry `series:<uuid>` — there is no preview endpoint for
+	 * those, so we check in directly and report the resolved attendee.
 	 */
-	async function handleQRScan(ticketId: string) {
+	async function handleQRScan(code: string) {
+		if (isSeriesPassCode(code)) {
+			showQRScanner = false;
+			checkInTicketMutation.mutate(
+				{ code },
+				{
+					onSuccess: (checkedIn) => {
+						toast.success(
+							m['eventTicketsAdmin.passCheckInSuccess']({
+								name: checkedIn ? getUserDisplayName(checkedIn.user) : ''
+							})
+						);
+					}
+				}
+			);
+			return;
+		}
 		try {
 			// Fetch ticket details
 			const response = await eventadminticketsGetTicket({
-				path: { event_id: data.event.id, ticket_id: ticketId },
+				path: { event_id: data.event.id, ticket_id: code },
 				headers: { Authorization: `Bearer ${$page.data.user?.accessToken}` }
 			});
 
@@ -481,10 +520,12 @@
 		{searchQuery}
 		{selectedStatus}
 		{selectedPaymentMethod}
+		{selectedSource}
 		{selectedOrderBy}
 		onSearch={handleSearch}
 		onStatusFilter={setStatusFilter}
 		onPaymentMethodFilter={setPaymentMethodFilter}
+		onSourceFilter={setSourceFilter}
 		onSort={setOrderBy}
 	/>
 
@@ -497,7 +538,7 @@
 				<Ticket class="mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
 				<h3 class="mb-2 text-lg font-semibold">{m['eventTicketsAdmin.noTicketsFiltered']()}</h3>
 				<p class="text-sm text-muted-foreground">
-					{#if searchQuery || selectedStatus || selectedPaymentMethod}
+					{#if searchQuery || selectedStatus || selectedPaymentMethod || selectedSource}
 						{m['eventTicketsAdmin.noTicketsFiltered']()}
 					{:else}
 						{m['eventTicketsAdmin.noTicketsEmpty']()}

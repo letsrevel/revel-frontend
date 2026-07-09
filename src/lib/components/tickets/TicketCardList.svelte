@@ -34,6 +34,7 @@
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
 	import RefundStatusBadge from './RefundStatusBadge.svelte';
 	import TicketDiscountBadge from './TicketDiscountBadge.svelte';
+	import SeriesPassBadge from './SeriesPassBadge.svelte';
 	import type { AdminTicketSchema } from '$lib/api';
 
 	interface Props {
@@ -153,6 +154,11 @@
 					<span class="text-muted-foreground">{m['eventTicketsAdmin.headerTier']()}:</span>
 					<span class="font-medium">{ticket.tier?.name || 'N/A'}</span>
 				</div>
+				{#if ticket.series_pass}
+					<div class="flex justify-end">
+						<SeriesPassBadge seriesPass={ticket.series_pass} />
+					</div>
+				{/if}
 				<div class="flex items-center justify-between">
 					<span class="text-muted-foreground">{m['eventTicketsAdmin.headerPrice']()}:</span>
 					<div class="flex flex-col items-end">

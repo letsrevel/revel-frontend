@@ -181,7 +181,8 @@
 			event_started: m['cancelTicket.reason.event_started'](),
 			not_permitted: m['cancelTicket.reason.not_permitted'](),
 			past_deadline: m['cancelTicket.reason.past_deadline'](),
-			not_owner: m['cancelTicket.reason.not_owner']()
+			not_owner: m['cancelTicket.reason.not_owner'](),
+			part_of_series_pass: m['cancelTicket.reason.part_of_series_pass']()
 		} as const;
 		return map[code];
 	}

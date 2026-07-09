@@ -163,7 +163,7 @@
 			});
 
 			if (response.error) {
-				if (response.response.status === 422) {
+				if (response.response?.status === 422) {
 					saveError = parseValidationErrors(response.error);
 					console.error('Validation error:', response.error);
 				} else {
@@ -174,7 +174,9 @@
 							: null;
 					saveError = detail
 						? `Failed to create questionnaire: ${detail}`
-						: `Failed to create questionnaire (HTTP ${response.response.status}).`;
+						: response.response
+							? `Failed to create questionnaire (HTTP ${response.response.status}).`
+							: 'Failed to create questionnaire: network error.';
 					console.error('API error:', response.error);
 				}
 				return;

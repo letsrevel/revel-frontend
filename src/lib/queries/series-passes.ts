@@ -1,0 +1,71 @@
+import type { QueryClient } from '@tanstack/svelte-query';
+
+// Canonical query-key vocabulary for series passes (buyer + organizer surfaces).
+//
+// Mirrors the conventions in `event-series.ts`: readonly tuples, one factory per
+// surface, and helpers for the common invalidation patterns.
+
+type SeriesId = string;
+type PassId = string;
+
+export const seriesPassQueryKeys = {
+	// Root — blanket invalidation.
+	all: ['series-passes'] as const,
+
+	// Public: passes on sale for a series.
+	list: (seriesId: SeriesId) => ['series-passes', 'list', seriesId] as const,
+
+	// Public: live pro-rata quote for one pass (scoped by series so organizer
+	// mutations can invalidate one series' quotes without touching the rest).
+	quote: (seriesId: SeriesId, passId: PassId) =>
+		['series-passes', 'quote', seriesId, passId] as const,
+	quotesPrefix: (seriesId: SeriesId) => ['series-passes', 'quote', seriesId] as const,
+
+	// Buyer: my held passes (paginated).
+	minePrefix: ['series-passes', 'mine'] as const,
+	mine: (page: number) => ['series-passes', 'mine', { page }] as const,
+	// Buyer: the full set, for collapsing pass-derived tickets into their pass.
+	mineAll: ['series-passes', 'mine', 'all'] as const,
+
+	// Organizer: passes configured on a series (admin schema, includes coverage).
+	adminList: (seriesId: SeriesId) => ['series-passes', 'admin', seriesId] as const,
+
+	// Organizer: holders of one pass (paginated, searchable).
+	holders: (seriesId: SeriesId, passId: PassId, opts: { page?: number; search?: string } = {}) =>
+		[
+			'series-passes',
+			'admin',
+			seriesId,
+			'holders',
+			passId,
+			{ page: opts.page ?? 1, search: opts.search ?? '' }
+		] as const,
+	holdersPrefix: (seriesId: SeriesId) => ['series-passes', 'admin', seriesId, 'holders'] as const
+} as const;
+
+/** After organizer mutations (pass CRUD, tier links, confirm/cancel holders). */
+export async function invalidateAdminPasses(
+	queryClient: QueryClient,
+	seriesId: SeriesId
+): Promise<void> {
+	await Promise.all([
+		queryClient.invalidateQueries({ queryKey: seriesPassQueryKeys.adminList(seriesId) }),
+		queryClient.invalidateQueries({ queryKey: seriesPassQueryKeys.holdersPrefix(seriesId) }),
+		// Public list/quotes can change too (price, visibility, active flag).
+		queryClient.invalidateQueries({ queryKey: seriesPassQueryKeys.list(seriesId) }),
+		queryClient.invalidateQueries({ queryKey: seriesPassQueryKeys.quotesPrefix(seriesId) })
+	]);
+}
+
+/** After a buyer purchase: refresh my passes and the quote/sold-out state. */
+export async function invalidateAfterPurchase(
+	queryClient: QueryClient,
+	seriesId: SeriesId,
+	passId: PassId
+): Promise<void> {
+	await Promise.all([
+		queryClient.invalidateQueries({ queryKey: seriesPassQueryKeys.minePrefix }),
+		queryClient.invalidateQueries({ queryKey: seriesPassQueryKeys.quote(seriesId, passId) }),
+		queryClient.invalidateQueries({ queryKey: seriesPassQueryKeys.list(seriesId) })
+	]);
+}

@@ -193,7 +193,7 @@
 						body: { vat_id: vatIdInput.trim().toUpperCase() }
 					});
 					// Handle 503 (VIES unavailable) — saved but pending
-					if (response.response.status === 503) {
+					if (response.response?.status === 503) {
 						queryClient.invalidateQueries({ queryKey: ['billing-info', slug] });
 						return { pending: true } as const;
 					}
