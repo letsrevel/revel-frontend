@@ -127,9 +127,58 @@ describe('handleSsrError', () => {
 				path: '/login',
 				method: 'POST',
 				status_code: 500,
-				request_id: 'req-1'
+				request_id: 'req-1',
+				ip_address: '203.0.113.7',
+				user_agent: 'vitest-ua'
 			})
 		);
+		expect(log.warning).not.toHaveBeenCalled();
 		expect(result).toEqual({ message: 'Internal Error' });
+	});
+
+	it('does NOT count 4xx (scanner 404s) into the metric and logs them at warning', () => {
+		const event = fakeEvent({
+			url: new URL('https://letsrevel.io/w3lls.php'),
+			route: { id: null } as RequestEvent['route'],
+			locals: { requestId: 'req-2' } as RequestEvent['locals']
+		});
+		const result = (handleSsrError as HandleServerError)({
+			error: new Error('Not Found'),
+			event,
+			status: 404,
+			message: 'Not Found'
+		});
+
+		expect(recordSsrError).not.toHaveBeenCalled();
+		expect(log.error).not.toHaveBeenCalled();
+		expect(log.warning).toHaveBeenCalledWith(
+			'ssr_client_error',
+			expect.objectContaining({
+				route_id: null,
+				path: '/w3lls.php',
+				status_code: 404,
+				request_id: 'req-2',
+				ip_address: '203.0.113.7',
+				user_agent: 'vitest-ua'
+			})
+		);
+		expect(result).toEqual({ message: 'Not Found' });
+	});
+
+	it('omits ip_address when getClientAddress throws (prerender)', () => {
+		const event = fakeEvent({
+			locals: { requestId: 'req-3' } as RequestEvent['locals'],
+			getClientAddress: () => {
+				throw new Error('prerendering');
+			}
+		});
+		(handleSsrError as HandleServerError)({
+			error: new Error('render failed'),
+			event,
+			status: 500,
+			message: 'Internal Error'
+		});
+		const [, fields] = vi.mocked(log.error).mock.calls[0];
+		expect(fields?.ip_address).toBeUndefined();
 	});
 });

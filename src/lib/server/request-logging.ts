@@ -67,21 +67,41 @@ export const handleRequestLogging: Handle = async ({ event, resolve }) => {
 
 /**
  * Unhandled SSR error hook. SvelteKit calls this for any error thrown during
- * load/render/actions that it did not turn into an expected HttpError. Logs it
- * at error level with a stack and the request context, and increments the SSR
- * error metric that `FrontendSSRErrors` alerts on. The returned shape becomes
- * `$page.error` — kept minimal so we never leak internals to the browser.
+ * load/render/actions that it did not turn into an expected HttpError, AND for
+ * unmatched routes (status 404). The returned shape becomes `$page.error` —
+ * kept minimal so we never leak internals to the browser.
+ *
+ * Only genuine server faults (status >= 500) are logged at error level and
+ * counted into the SSR error metric that `FrontendSSRErrors` alerts on. Client
+ * errors (4xx — overwhelmingly 404s from bots probing `/*.php`, `/.env`,
+ * `/.git/*`, …) are logged at warning WITHOUT touching the metric, so scanner
+ * noise can never trip the alert. IP/UA are included so scans stay traceable.
  */
 export const handleSsrError: HandleServerError = ({ error, event, status, message }) => {
 	const routeId = event.route.id;
-	recordSsrError(routeId);
-	log.error('unhandled_ssr_error', {
+	let ipAddress: string | undefined;
+	try {
+		ipAddress = event.getClientAddress();
+	} catch {
+		// getClientAddress() throws during prerendering — omit it.
+	}
+	const context = {
 		error,
 		route_id: routeId,
 		path: event.url.pathname,
 		method: event.request.method,
 		status_code: status,
-		request_id: event.locals.requestId
-	});
+		request_id: event.locals.requestId,
+		ip_address: ipAddress,
+		user_agent: event.request.headers.get('user-agent') ?? undefined
+	};
+
+	if (status < 500) {
+		log.warning('ssr_client_error', context);
+		return { message };
+	}
+
+	recordSsrError(routeId);
+	log.error('unhandled_ssr_error', context);
 	return { message };
 };
