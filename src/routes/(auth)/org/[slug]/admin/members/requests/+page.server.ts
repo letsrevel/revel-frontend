@@ -38,8 +38,7 @@ export const load: PageServerLoad = async ({ parent, params, url, cookies }) => 
 			query: {
 				page,
 				page_size: pageSize,
-				// TEMPORARY cast (letsrevel/revel-backend#644): generated query param still uses the colliding `Status`.
-				status: status as unknown as undefined
+				status
 			},
 			headers: {
 				Authorization: `Bearer ${accessToken}`

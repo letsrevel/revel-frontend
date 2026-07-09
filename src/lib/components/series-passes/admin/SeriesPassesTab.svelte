@@ -1,18 +1,19 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import type { EventInListSchema, SeriesPassSchema } from '$lib/api/generated/types.gen';
-	import { seriespassListSeriesPasses, seriespassadminDeleteSeriesPass } from '$lib/api';
+	import type { EventInListSchema, SeriesPassAdminSchema } from '$lib/api/generated/types.gen';
+	import { seriespassadminListSeriesPasses, seriespassadminDeleteSeriesPass } from '$lib/api';
 	import { seriesPassQueryKeys, invalidateAdminPasses } from '$lib/queries/series-passes';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { Button } from '$lib/components/ui/button';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import SeriesPassForm from './SeriesPassForm.svelte';
 	import SeriesPassHoldersDialog from './SeriesPassHoldersDialog.svelte';
+	import SeriesPassCoverageDialog from './SeriesPassCoverageDialog.svelte';
 	import { formatPrice } from '$lib/utils/format';
 	import { getPaymentMethodLabel } from '$lib/utils/ticket-helpers';
 	import { formatDateTime } from '$lib/utils/date';
 	import { extractErrorMessage } from '$lib/utils/errors';
-	import { Plus, Users, Pencil, Trash2, Loader2, Ticket } from '@lucide/svelte';
+	import { Plus, Users, Pencil, Trash2, Loader2, Ticket, CalendarRange } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 
 	interface Props {
@@ -27,13 +28,10 @@
 
 	const queryClient = useQueryClient();
 
-	// NOTE: staff see all active passes (incl. private/staff-only) on the public
-	// list endpoint. Once the admin list endpoint (with coverage/tier links)
-	// lands, this switches to it — see letsrevel/revel-backend#644.
 	const passesQuery = createQuery(() => ({
 		queryKey: seriesPassQueryKeys.adminList(seriesId),
 		queryFn: async () => {
-			const response = await seriespassListSeriesPasses({
+			const response = await seriespassadminListSeriesPasses({
 				path: { series_id: seriesId },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
@@ -48,9 +46,10 @@
 	const passes = $derived(passesQuery.data ?? []);
 
 	// undefined = form closed, null = create mode, object = edit mode.
-	let formPass = $state<SeriesPassSchema | null | undefined>(undefined);
-	let passForHolders = $state<SeriesPassSchema | null>(null);
-	let passToDelete = $state<SeriesPassSchema | null>(null);
+	let formPass = $state<SeriesPassAdminSchema | null | undefined>(undefined);
+	let passForHolders = $state<SeriesPassAdminSchema | null>(null);
+	let passToDelete = $state<SeriesPassAdminSchema | null>(null);
+	let passForCoverage = $state<SeriesPassAdminSchema | null>(null);
 
 	const deleteMutation = createMutation(() => ({
 		mutationFn: async (passId: string) => {
@@ -125,6 +124,11 @@
 									<span class="font-medium">{m['seriesPassAdmin.paymentMethodLabel']()}:</span>
 									{getPaymentMethodLabel(pass.payment_method)}
 								</div>
+								<div>
+									<span class="font-medium">{m['seriesPassAdmin.coverageColumn']()}:</span>
+									{m['seriesPassAdmin.coverageCount']({ count: pass.tier_links.length })}
+									· {m['seriesPassAdmin.holdersCount']({ count: pass.holder_count })}
+								</div>
 								{#if pass.sales_start_at || pass.sales_end_at}
 									<div>
 										<span class="font-medium">{m['seriesPassAdmin.salesWindowLabel']()}:</span>
@@ -137,6 +141,10 @@
 
 						{#if canEdit}
 							<div class="flex flex-wrap gap-2">
+								<Button size="sm" variant="outline" onclick={() => (passForCoverage = pass)}>
+									<CalendarRange class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+									{m['seriesPassAdmin.coverageButton']()}
+								</Button>
 								<Button size="sm" variant="outline" onclick={() => (passForHolders = pass)}>
 									<Users class="mr-1 h-3.5 w-3.5" aria-hidden="true" />
 									{m['seriesPassAdmin.holdersButton']()}
@@ -170,6 +178,16 @@
 		pass={formPass}
 		{upcomingEvents}
 		onClose={() => (formPass = undefined)}
+	/>
+{/if}
+
+{#if passForCoverage}
+	<SeriesPassCoverageDialog
+		{seriesId}
+		pass={passForCoverage}
+		{accessToken}
+		{upcomingEvents}
+		onClose={() => (passForCoverage = null)}
 	/>
 {/if}
 

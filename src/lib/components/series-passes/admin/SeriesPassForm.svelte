@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type {
 		EventInListSchema,
-		SeriesPassSchema,
+		SeriesPassAdminSchema,
 		SeriesPassCreateSchema,
 		SeriesPassUpdateSchema,
 		PaymentMethod,
@@ -39,7 +39,7 @@
 		seriesId: string;
 		accessToken: string | null;
 		/** Pass to edit; null/undefined = create mode. */
-		pass?: SeriesPassSchema | null;
+		pass?: SeriesPassAdminSchema | null;
 		/** Upcoming (non-template) occurrences — coverage candidates for create mode. */
 		upcomingEvents: EventInListSchema[];
 		onClose: () => void;
@@ -58,10 +58,10 @@
 	let currency = $state(pass?.currency?.toUpperCase() ?? 'EUR');
 	let paymentMethod = $state<PaymentMethod>(pass?.payment_method ?? 'online');
 	let purchasableBy = $state<PurchasableBy>(pass?.purchasable_by ?? 'public');
-	let visibility = $state<Visibility>('public');
+	let visibility = $state<Visibility>(pass?.visibility ?? 'public');
 	let salesStartAt = $state(toDatetimeLocal(pass?.sales_start_at));
 	let salesEndAt = $state(toDatetimeLocal(pass?.sales_end_at));
-	let totalQuantity = $state('');
+	let totalQuantity = $state(pass?.total_quantity != null ? String(pass.total_quantity) : '');
 
 	// Coverage (create mode only): eventId -> tierId | null (explicitly excluded).
 	let tierSelections = $state<Record<string, string | null | undefined>>({});
@@ -142,9 +142,6 @@
 		}
 
 		if (isEdit) {
-			// PATCH is exclude_unset and the public schema doesn't expose
-			// visibility/total_quantity — only send what the form actually knows,
-			// so unknown settings are never clobbered with defaults.
 			updateMutationObj.mutate({
 				name: name.trim(),
 				description: description.trim() || null,
@@ -152,8 +149,10 @@
 				pro_rata_discount: normalizeDecimalInput(proRataDiscount) || '0',
 				payment_method: paymentMethod,
 				purchasable_by: purchasableBy,
+				visibility,
 				sales_start_at: salesStartAt ? toTimezoneAwareISO(salesStartAt) : null,
-				sales_end_at: salesEndAt ? toTimezoneAwareISO(salesEndAt) : null
+				sales_end_at: salesEndAt ? toTimezoneAwareISO(salesEndAt) : null,
+				total_quantity: totalQuantity ? parseInt(totalQuantity, 10) : null
 			});
 		} else {
 			createMutationObj.mutate({
@@ -323,22 +322,20 @@
 						<option value="members">{m['seriesPassAdmin.purchasableMembers']()}</option>
 					</select>
 				</div>
-				{#if !isEdit}
-					<div>
-						<Label for="pass-visibility">{m['seriesPassAdmin.visibilityLabel']()}</Label>
-						<select
-							id="pass-visibility"
-							bind:value={visibility}
-							disabled={isPending}
-							class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-						>
-							<option value="public">{m['seriesPassAdmin.visibilityPublic']()}</option>
-							<option value="unlisted">{m['seriesPassAdmin.visibilityUnlisted']()}</option>
-							<option value="members-only">{m['seriesPassAdmin.visibilityMembersOnly']()}</option>
-							<option value="private">{m['seriesPassAdmin.visibilityPrivate']()}</option>
-						</select>
-					</div>
-				{/if}
+				<div>
+					<Label for="pass-visibility">{m['seriesPassAdmin.visibilityLabel']()}</Label>
+					<select
+						id="pass-visibility"
+						bind:value={visibility}
+						disabled={isPending}
+						class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+					>
+						<option value="public">{m['seriesPassAdmin.visibilityPublic']()}</option>
+						<option value="unlisted">{m['seriesPassAdmin.visibilityUnlisted']()}</option>
+						<option value="members-only">{m['seriesPassAdmin.visibilityMembersOnly']()}</option>
+						<option value="private">{m['seriesPassAdmin.visibilityPrivate']()}</option>
+					</select>
+				</div>
 			</div>
 
 			<!-- Sales window / quantity -->
@@ -371,22 +368,20 @@
 						</p>
 					{/if}
 				</div>
-				{#if !isEdit}
-					<div>
-						<Label for="pass-quantity">{m['seriesPassAdmin.quantityLabel']()}</Label>
-						<Input
-							id="pass-quantity"
-							type="number"
-							min="1"
-							bind:value={totalQuantity}
-							placeholder={m['seriesPassAdmin.quantityPlaceholder']()}
-							disabled={isPending}
-						/>
-						{#if fieldErrors.total_quantity}
-							<p class="mt-1 text-sm text-destructive">{fieldErrors.total_quantity}</p>
-						{/if}
-					</div>
-				{/if}
+				<div>
+					<Label for="pass-quantity">{m['seriesPassAdmin.quantityLabel']()}</Label>
+					<Input
+						id="pass-quantity"
+						type="number"
+						min="1"
+						bind:value={totalQuantity}
+						placeholder={m['seriesPassAdmin.quantityPlaceholder']()}
+						disabled={isPending}
+					/>
+					{#if fieldErrors.total_quantity}
+						<p class="mt-1 text-sm text-destructive">{fieldErrors.total_quantity}</p>
+					{/if}
+				</div>
 			</div>
 
 			<!-- Coverage (create only; edited via the coverage actions afterwards) -->
