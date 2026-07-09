@@ -344,8 +344,8 @@
 				}
 			}
 		} catch (error) {
-			if (error instanceof z.ZodError && error.errors.length > 0) {
-				fieldErrors[field] = error.errors[0].message;
+			if (error instanceof z.ZodError && error.issues.length > 0) {
+				fieldErrors[field] = error.issues[0].message;
 			}
 		}
 	}
@@ -382,7 +382,7 @@
 			return true;
 		} catch (error) {
 			if (error instanceof z.ZodError) {
-				error.errors.forEach((err) => {
+				error.issues.forEach((err) => {
 					const field = String(err.path[0]);
 					if (!fieldErrors[field]) {
 						fieldErrors[field] = err.message;
