@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.66.0] - 2026-07-09
+
+### Added
+
+- **Season passes (series passes)**: buy one pass covering every event in a series, and sell them as an organizer.
+  - Series pages show a "Season passes" section with live pro-rata pricing (struck-through full price once events have passed, "N of M events remaining"), payment-method hints, and a purchase dialog supporting free claims, offline reservation (pay at venue), and Stripe checkout.
+  - New "My passes" page (`/dashboard/passes`) listing held passes with status, coverage progress, a pass QR code, and PDF + Apple Wallet downloads; pass-derived tickets are badged "Season pass" in My tickets.
+  - Series admin dashboard gains a "Passes" tab: create/edit/delete passes (price, pro-rata discount, currency, payment method, visibility, sales window, quantity cap, per-event tier mapping) and a searchable holders dialog with offline payment confirmation and cancel-with-reason.
+  - The event ticket admin list badges season-pass tickets and can filter by source (all / direct purchase / season pass), and the QR check-in scanner accepts season-pass codes.
+
+### Fixed
+
+- Icons and bullets on the landing page's secondary feature cards (Build Community, Flexible Ticketing, Potluck Coordination, Multi-Language Support) are clearly visible again in both light and dark mode after the rebrand left them nearly invisible.
+
 ## [1.65.1] - 2026-07-08
 
 ### Changed
