@@ -73,9 +73,9 @@
 
 		<div class="rounded-lg border bg-card p-6 text-center">
 			<div class="mb-4 flex justify-center">
-				<div class="rounded-full bg-secondary/10 p-3">
+				<div class="rounded-full bg-secondary-foreground/10 p-3">
 					<svg
-						class="h-6 w-6 text-secondary"
+						class="h-6 w-6 text-secondary-foreground"
 						fill="none"
 						stroke="currentColor"
 						viewBox="0 0 24 24"
@@ -166,8 +166,8 @@
 			<!-- Ticketing System -->
 			<div class="rounded-lg border bg-card p-6 shadow-sm transition-shadow hover:shadow-md">
 				<div class="mb-4 flex items-center gap-3">
-					<div class="rounded-full bg-secondary/10 p-3">
-						<Ticket class="h-6 w-6 text-secondary" aria-hidden="true" />
+					<div class="rounded-full bg-secondary-foreground/10 p-3">
+						<Ticket class="h-6 w-6 text-secondary-foreground" aria-hidden="true" />
 					</div>
 					<h3 class="text-xl font-semibold">{m['learnMore.ticketingTitle']()}</h3>
 				</div>
@@ -176,19 +176,19 @@
 				</p>
 				<ul class="space-y-2 text-sm text-muted-foreground">
 					<li class="flex items-start gap-2">
-						<span class="text-secondary">•</span>
+						<span class="text-secondary-foreground">•</span>
 						<span>{m['learnMore.ticketingFeature1']()}</span>
 					</li>
 					<li class="flex items-start gap-2">
-						<span class="text-secondary">•</span>
+						<span class="text-secondary-foreground">•</span>
 						<span>{m['learnMore.ticketingFeature2']()}</span>
 					</li>
 					<li class="flex items-start gap-2">
-						<span class="text-secondary">•</span>
+						<span class="text-secondary-foreground">•</span>
 						<span>{m['learnMore.ticketingFeature3']()}</span>
 					</li>
 					<li class="flex items-start gap-2">
-						<span class="text-secondary">•</span>
+						<span class="text-secondary-foreground">•</span>
 						<span>{m['learnMore.ticketingFeature4']()}</span>
 					</li>
 				</ul>
@@ -251,8 +251,8 @@
 			<!-- Potluck Coordination -->
 			<div class="rounded-lg border bg-card p-6 shadow-sm transition-shadow hover:shadow-md">
 				<div class="mb-4 flex items-center gap-3">
-					<div class="rounded-full bg-secondary/10 p-3">
-						<UtensilsCrossed class="h-6 w-6 text-secondary" aria-hidden="true" />
+					<div class="rounded-full bg-secondary-foreground/10 p-3">
+						<UtensilsCrossed class="h-6 w-6 text-secondary-foreground" aria-hidden="true" />
 					</div>
 					<h3 class="text-xl font-semibold">{m['learnMore.potluckTitle']()}</h3>
 				</div>
@@ -261,15 +261,15 @@
 				</p>
 				<ul class="space-y-2 text-sm text-muted-foreground">
 					<li class="flex items-start gap-2">
-						<span class="text-secondary">•</span>
+						<span class="text-secondary-foreground">•</span>
 						<span>{m['learnMore.potluckFeature1']()}</span>
 					</li>
 					<li class="flex items-start gap-2">
-						<span class="text-secondary">•</span>
+						<span class="text-secondary-foreground">•</span>
 						<span>{m['learnMore.potluckFeature2']()}</span>
 					</li>
 					<li class="flex items-start gap-2">
-						<span class="text-secondary">•</span>
+						<span class="text-secondary-foreground">•</span>
 						<span>{m['learnMore.potluckFeature3']()}</span>
 					</li>
 				</ul>
@@ -326,8 +326,8 @@
 			<!-- Multi-language -->
 			<div class="flex gap-4 rounded-lg border bg-card p-6">
 				<div class="flex-shrink-0">
-					<div class="rounded-full bg-secondary/10 p-3">
-						<Globe class="h-6 w-6 text-secondary" aria-hidden="true" />
+					<div class="rounded-full bg-secondary-foreground/10 p-3">
+						<Globe class="h-6 w-6 text-secondary-foreground" aria-hidden="true" />
 					</div>
 				</div>
 				<div>
@@ -458,8 +458,8 @@
 	<!-- Try the Demo Section -->
 	<div class="mb-16 rounded-lg border-2 border-secondary bg-secondary/5 p-8 text-center">
 		<div class="mx-auto mb-4 flex justify-center">
-			<div class="rounded-full bg-secondary/10 p-4">
-				<Eye class="h-8 w-8 text-secondary" aria-hidden="true" />
+			<div class="rounded-full bg-secondary-foreground/10 p-4">
+				<Eye class="h-8 w-8 text-secondary-foreground" aria-hidden="true" />
 			</div>
 		</div>
 		<h2 class="mb-4 text-3xl font-bold">{m['home.tryDemoTitle']()}</h2>
