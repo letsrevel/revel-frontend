@@ -11,6 +11,7 @@
 	import DemoCardInfo from '$lib/components/common/DemoCardInfo.svelte';
 	import TicketConfirmationDialog from './TicketConfirmationDialog.svelte';
 	import TierCard from './TierCard.svelte';
+	import EventSeriesPassOffers from '$lib/components/series-passes/EventSeriesPassOffers.svelte';
 	import { Ticket } from '@lucide/svelte';
 
 	interface Props {
@@ -33,6 +34,8 @@
 		preSelectedTier?: TierSchemaWithId | null;
 		/** Pre-filled discount code (e.g. from URL param) */
 		initialDiscountCode?: string;
+		/** When the event belongs to a series with passes on sale, offer them too. */
+		seriesInfo?: { seriesId: string; orgSlug: string; seriesSlug: string } | null;
 		onClose: () => void;
 		onClaimTicket: (
 			tierId: string,
@@ -64,6 +67,7 @@
 		userName = '',
 		preSelectedTier = null,
 		initialDiscountCode = '',
+		seriesInfo = null,
 		onClose,
 		onClaimTicket,
 		onCheckout,
@@ -238,6 +242,14 @@
 		</DialogHeader>
 
 		<div class="mt-4 space-y-4">
+			{#if seriesInfo}
+				<EventSeriesPassOffers
+					seriesId={seriesInfo.seriesId}
+					orgSlug={seriesInfo.orgSlug}
+					seriesSlug={seriesInfo.seriesSlug}
+					{isAuthenticated}
+				/>
+			{/if}
 			{#if visibleTiers.length === 0}
 				<div class="py-8 text-center text-muted-foreground">
 					<p>{m['ticketTierModal.noTickets']()}</p>

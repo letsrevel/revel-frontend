@@ -571,6 +571,13 @@
 
 <!-- Ticket Tier Selection Modal -->
 <TicketTierModal
+	seriesInfo={event.event_series
+		? {
+				seriesId: event.event_series.id,
+				orgSlug: event.organization.slug,
+				seriesSlug: event.event_series.slug
+			}
+		: null}
 	bind:open={showTicketTierModal}
 	tiers={ticketTiers}
 	eventId={event.id}

@@ -1,8 +1,30 @@
-import { render, screen } from '@testing-library/svelte';
-import { describe, it, expect } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/svelte';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { QueryClient } from '@tanstack/svelte-query';
 import HeldPassCard from './HeldPassCard.svelte';
+import QueryClientTestWrapper from '$lib/test-utils/QueryClientTestWrapper.svelte';
+import { eventseriesGetEventSeries } from '$lib/api/generated/sdk.gen';
 import type { HeldSeriesPassSchema } from '$lib/api/generated/types.gen';
 import { formatPrice } from '$lib/utils/format';
+
+vi.mock('$lib/api/generated/sdk.gen', () => ({
+	eventseriesGetEventSeries: vi.fn(),
+	seriespassDownloadSeriesPassPdf: vi.fn(),
+	seriespassDownloadSeriesPassPkpass: vi.fn()
+}));
+
+function mockSeriesDetail() {
+	vi.mocked(eventseriesGetEventSeries).mockResolvedValue({
+		data: {
+			id: 'series-1',
+			name: 'Yoga Wednesdays',
+			slug: 'yoga-wednesdays',
+			organization: { slug: 'acme' }
+		},
+		error: undefined,
+		response: { ok: true } as unknown as Response
+	} as unknown as ReturnType<typeof eventseriesGetEventSeries>);
+}
 
 function makeHeldPass(overrides: Partial<HeldSeriesPassSchema> = {}): HeldSeriesPassSchema {
 	return {
@@ -30,31 +52,73 @@ function makeHeldPass(overrides: Partial<HeldSeriesPassSchema> = {}): HeldSeries
 }
 
 describe('HeldPassCard', () => {
+	let queryClient: QueryClient;
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mockSeriesDetail();
+		queryClient = new QueryClient({
+			defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
+		});
+	});
+
+	function renderCard(heldPass: HeldSeriesPassSchema) {
+		return render(QueryClientTestWrapper, {
+			props: {
+				client: queryClient,
+				component: HeldPassCard,
+				props: { heldPass }
+			}
+		});
+	}
+
 	it('shows pass name, series name, and coverage', () => {
-		render(HeldPassCard, { props: { heldPass: makeHeldPass() } });
+		renderCard(makeHeldPass());
 		expect(screen.getByText('Full course')).toBeInTheDocument();
 		expect(screen.getByText('Yoga Wednesdays')).toBeInTheDocument();
 		expect(screen.getByText(/4 of 6 events remaining/i)).toBeInTheDocument();
 	});
 
+	it('links the series name once the org slug resolves', async () => {
+		renderCard(makeHeldPass());
+		await waitFor(() => {
+			const link = screen.getByRole('link', { name: 'Yoga Wednesdays' });
+			expect(link).toHaveAttribute(
+				'href',
+				expect.stringContaining('/events/acme/series/yoga-wednesdays')
+			);
+		});
+	});
+
+	it('keeps the series name as plain text when the lookup fails', async () => {
+		vi.mocked(eventseriesGetEventSeries).mockResolvedValue({
+			data: undefined,
+			error: { detail: 'Not found' },
+			response: { ok: false } as unknown as Response
+		} as unknown as ReturnType<typeof eventseriesGetEventSeries>);
+		renderCard(makeHeldPass());
+		expect(screen.getByText('Yoga Wednesdays')).toBeInTheDocument();
+		expect(screen.queryByRole('link', { name: 'Yoga Wednesdays' })).toBeNull();
+	});
+
 	it('reflects series progress in the progressbar', () => {
-		render(HeldPassCard, { props: { heldPass: makeHeldPass() } });
+		renderCard(makeHeldPass());
 		// 2 of 6 events consumed -> 33%
 		expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '33');
 	});
 
 	it('shows the view button for active passes', () => {
-		render(HeldPassCard, { props: { heldPass: makeHeldPass({ status: 'active' }) } });
+		renderCard(makeHeldPass({ status: 'active' }));
 		expect(screen.getByRole('button', { name: /view pass/i })).toBeInTheDocument();
 	});
 
 	it('hides the view button for cancelled passes', () => {
-		render(HeldPassCard, { props: { heldPass: makeHeldPass({ status: 'cancelled' }) } });
+		renderCard(makeHeldPass({ status: 'cancelled' }));
 		expect(screen.queryByRole('button', { name: /view pass/i })).toBeNull();
 	});
 
 	it('shows the price paid', () => {
-		render(HeldPassCard, { props: { heldPass: makeHeldPass() } });
+		renderCard(makeHeldPass());
 		// Price rendering is locale-dependent and may use no-break spaces the DOM
 		// normalizer collapses — compare whitespace-stripped strings.
 		const expected = formatPrice('30.00', 'EUR').replace(/\s/g, '');

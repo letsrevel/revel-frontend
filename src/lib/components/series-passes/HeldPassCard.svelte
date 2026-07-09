@@ -1,6 +1,10 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
 	import type { HeldSeriesPassSchema } from '$lib/api/generated/types.gen';
+	import { eventseriesGetEventSeries } from '$lib/api';
+	import { seriesQueryKeys } from '$lib/queries/event-series';
+	import { createQuery } from '@tanstack/svelte-query';
 	import { Card } from '$lib/components/ui/card';
 	import TicketStatusBadge from '$lib/components/tickets/TicketStatusBadge.svelte';
 	import MyPassModal from './MyPassModal.svelte';
@@ -15,6 +19,25 @@
 	const { heldPass }: Props = $props();
 
 	let showPassModal = $state(false);
+
+	// The held-pass payload carries the series slug but not the org slug the
+	// series route needs — resolve it with a cached lookup. Until it loads (or
+	// if it fails, e.g. the series is no longer visible), the series name
+	// renders as plain text instead of a link.
+	const seriesDetailQuery = createQuery(() => ({
+		queryKey: seriesQueryKeys.detail(heldPass.series.id),
+		queryFn: async () => {
+			const response = await eventseriesGetEventSeries({
+				path: { series_id: heldPass.series.id }
+			});
+			if (response.error || !response.data) {
+				throw new Error('Failed to load series');
+			}
+			return response.data;
+		}
+	}));
+
+	const seriesOrgSlug = $derived(seriesDetailQuery.data?.organization.slug ?? null);
 
 	const purchasedDate = $derived(formatDate(heldPass.created_at));
 	const progressPct = $derived(
@@ -43,7 +66,19 @@
 				<div class="mb-2 flex items-start justify-between gap-2">
 					<div class="min-w-0 flex-1">
 						<h3 class="text-lg font-semibold">{heldPass.series_pass.name}</h3>
-						<p class="text-sm text-muted-foreground">{heldPass.series.name}</p>
+						{#if seriesOrgSlug}
+							<a
+								href={resolve('/(public)/events/[org_slug]/series/[series_slug]', {
+									org_slug: seriesOrgSlug,
+									series_slug: heldPass.series.slug
+								})}
+								class="text-sm text-muted-foreground hover:underline focus:underline focus:outline-none"
+							>
+								{heldPass.series.name}
+							</a>
+						{:else}
+							<p class="text-sm text-muted-foreground">{heldPass.series.name}</p>
+						{/if}
 					</div>
 					<TicketStatusBadge status={heldPass.status} />
 				</div>
