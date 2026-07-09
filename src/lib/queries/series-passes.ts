@@ -24,6 +24,8 @@ export const seriesPassQueryKeys = {
 	// Buyer: my held passes (paginated).
 	minePrefix: ['series-passes', 'mine'] as const,
 	mine: (page: number) => ['series-passes', 'mine', { page }] as const,
+	// Buyer: the full set, for collapsing pass-derived tickets into their pass.
+	mineAll: ['series-passes', 'mine', 'all'] as const,
 
 	// Organizer: passes configured on a series (admin schema, includes coverage).
 	adminList: (seriesId: SeriesId) => ['series-passes', 'admin', seriesId] as const,

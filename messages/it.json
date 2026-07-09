@@ -8010,8 +8010,7 @@
 		"loadError": "Impossibile caricare i tuoi pass. Riprova.",
 		"retry": "Riprova",
 		"passNotFound": "Pass non trovato",
-		"eventHintTitle": "Partecipi a tutta la serie?",
-		"eventHintCta": "Risparmia con un abbonamento — i dettagli sono nella pagina della serie."
+		"viewSeriesLink": "Vedi tutta la serie"
 	},
 	"seriesPassAdmin": {
 		"tabLabel": "Pass",

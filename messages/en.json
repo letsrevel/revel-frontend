@@ -8010,8 +8010,7 @@
 		"loadError": "Couldn't load your passes. Please try again.",
 		"retry": "Retry",
 		"passNotFound": "Pass not found",
-		"eventHintTitle": "Attending the whole series?",
-		"eventHintCta": "Save with a season pass — see the series page for details."
+		"viewSeriesLink": "View the full series"
 	},
 	"seriesPassAdmin": {
 		"tabLabel": "Passes",

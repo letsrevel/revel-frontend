@@ -2,9 +2,16 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { dashboardDashboardTickets } from '$lib/api/generated/sdk.gen';
+	import {
+		dashboardDashboardTickets,
+		seriespassListMySeriesPasses
+	} from '$lib/api/generated/sdk.gen';
 	import type { PaymentMethod, TicketStatus } from '$lib/api/generated/types.gen';
 	import TicketListCard from '$lib/components/tickets/TicketListCard.svelte';
+	import HeldPassCard from '$lib/components/series-passes/HeldPassCard.svelte';
+	import { seriesPassQueryKeys } from '$lib/queries/series-passes';
+	import { groupTicketsWithPasses } from '$lib/utils/ticket-pass-grouping';
+	import type { HeldSeriesPassSchema } from '$lib/api/generated/types.gen';
 	import { Ticket, Filter, ChevronLeft, ChevronRight, Loader2 } from '@lucide/svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -79,7 +86,34 @@
 		enabled: !!accessToken
 	}));
 
+	// Held passes, so pass-derived tickets collapse into one pass card each.
+	// Best-effort: if this query is loading or fails, the plain ticket cards
+	// render instead (see groupTicketsWithPasses).
+	const myPassesQuery = createQuery(() => ({
+		queryKey: seriesPassQueryKeys.mineAll,
+		queryFn: async () => {
+			const response = await seriespassListMySeriesPasses({
+				headers: { Authorization: `Bearer ${accessToken}` },
+				query: { page: 1, page_size: 100 }
+			});
+			if (response.error || !response.data) {
+				throw new Error('Failed to load passes');
+			}
+			return response.data;
+		},
+		enabled: !!accessToken
+	}));
+
+	const passesById = $derived(
+		new Map<string, HeldSeriesPassSchema>(
+			(myPassesQuery.data?.results ?? [])
+				.filter((p): p is HeldSeriesPassSchema & { id: string } => !!p.id)
+				.map((p) => [p.id, p])
+		)
+	);
+
 	const tickets = $derived(ticketsQuery.data?.results || []);
+	const listEntries = $derived(groupTicketsWithPasses(tickets, passesById));
 	const totalCount = $derived(ticketsQuery.data?.count || 0);
 	const totalPages = $derived(Math.ceil(totalCount / 12));
 	const hasNextPage = $derived(currentPage < totalPages);
@@ -271,8 +305,12 @@
 	{:else}
 		<!-- Tickets Grid -->
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-			{#each tickets as ticket (ticket.id)}
-				<TicketListCard {ticket} />
+			{#each listEntries as entry (entry.kind === 'ticket' ? entry.ticket.id : entry.heldPass.id)}
+				{#if entry.kind === 'ticket'}
+					<TicketListCard ticket={entry.ticket} />
+				{:else}
+					<HeldPassCard heldPass={entry.heldPass} />
+				{/if}
 			{/each}
 		</div>
 

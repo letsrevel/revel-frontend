@@ -16,7 +16,7 @@
 	import EventGuestSignInPrompt from '$lib/components/events/EventGuestSignInPrompt.svelte';
 	import AttendeeList from '$lib/components/events/AttendeeList.svelte';
 	import TicketTierList from '$lib/components/tickets/TicketTierList.svelte';
-	import SeriesPassHintBanner from '$lib/components/series-passes/SeriesPassHintBanner.svelte';
+	import EventSeriesPassOffers from '$lib/components/series-passes/EventSeriesPassOffers.svelte';
 	import MyTicket from '$lib/components/tickets/MyTicket.svelte';
 	import TicketTierModal from '$lib/components/tickets/TicketTierModal.svelte';
 	import MyTicketModal from '$lib/components/tickets/MyTicketModal.svelte';
@@ -385,6 +385,16 @@
 					/>
 				{/if}
 
+				<!-- Season passes covering this event (shown with the regular tickets) -->
+				{#if event.event_series && event.requires_ticket && !userTicket}
+					<EventSeriesPassOffers
+						seriesId={event.event_series.id}
+						orgSlug={event.organization.slug}
+						seriesSlug={event.event_series.slug}
+						isAuthenticated={data.isAuthenticated}
+					/>
+				{/if}
+
 				<!-- Ticket Tiers (if event requires tickets and user doesn't have one) -->
 				{#if event.requires_ticket && !userTicket && ticketTiers.length > 0}
 					<TicketTierList
@@ -402,16 +412,6 @@
 						timezone={event.timezone}
 						onSelectTier={handleSelectTier}
 						onGuestTierClick={openGuestTicketDialog}
-					/>
-				{/if}
-
-				<!-- Season-pass discovery hint: the event belongs to a series that
-				     sells passes covering it — point buyers at the series page. -->
-				{#if event.event_series && event.requires_ticket}
-					<SeriesPassHintBanner
-						seriesId={event.event_series.id}
-						orgSlug={event.organization.slug}
-						seriesSlug={event.event_series.slug}
 					/>
 				{/if}
 
