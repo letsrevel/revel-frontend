@@ -22,6 +22,13 @@ updates:
         update-types:
           - minor
           - patch
+    ignore:
+      # @types/node must track the runtime Node major (22 — see `engines`,
+      # Dockerfile, CI), not the latest release; newer majors let code compile
+      # against APIs that don't exist at runtime. Bump manually with Node itself.
+      - dependency-name: '@types/node'
+        update-types:
+          - 'version-update:semver-major'
     labels:
       - dependencies
     commit-message:
