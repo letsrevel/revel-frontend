@@ -46,7 +46,7 @@
 		"@typescript-eslint/parser": "^8.62.1",
 		"@vitest/ui": "^4.1.9",
 		"autoprefixer": "^10.5.2",
-		"bits-ui": "^1.8.0",
+		"bits-ui": "^2.18.1",
 		"eslint": "^10.6.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.20.0",
