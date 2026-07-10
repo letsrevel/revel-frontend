@@ -119,6 +119,26 @@
 		return questions;
 	});
 
+	// Every visible mandatory question answered? Until then the Submit button
+	// stays DISABLED: the backend accepts a partial/empty submission (scored 0
+	// → rejected), which burns one of the limited attempts (#596).
+	const allRequiredAnswered = $derived.by(() => {
+		for (const q of allVisibleQuestions) {
+			if (!q.is_mandatory) continue;
+			if (q.type === 'multiple_choice') {
+				const answers = multipleChoiceAnswers.get(q.id);
+				if (!answers || answers.length === 0) return false;
+			} else if (q.type === 'free_text') {
+				const answer = freeTextAnswers.get(q.id);
+				if (!answer || answer.trim().length === 0) return false;
+			} else if (q.type === 'file_upload') {
+				const files = fileUploadAnswers.get(q.id);
+				if (!files || files.length === 0) return false;
+			}
+		}
+		return true;
+	});
+
 	// Submission mutation
 	const submitMutation = createMutation(() => ({
 		mutationFn: async () => {
@@ -396,31 +416,38 @@
 			{/if}
 
 			<!-- Submit Button -->
-			<div class="flex items-center justify-end gap-4 border-t pt-6">
-				<Button
-					type="button"
-					variant="outline"
-					onclick={() =>
-						goto(
-							resolve('/(public)/events/[org_slug]/[event_slug]', {
-								org_slug: data.event.organization.slug,
-								event_slug: data.event.slug
-							})
-						)}
-				>
-					{m['questionnaireSubmissionPage.button_cancel']()}
-				</Button>
-				<Button type="submit" disabled={submitMutation.isPending}>
-					{#if submitMutation.isPending}
-						<Loader2 class="h-5 w-5 animate-spin" />
-						{m['questionnaireSubmissionPage.button_submitting']()}
-					{:else if submitMutation.isSuccess}
-						<Check class="h-5 w-5" />
-						{m['questionnaireSubmissionPage.button_submitted']()}
-					{:else}
-						{m['questionnaireSubmissionPage.button_submit']()}
-					{/if}
-				</Button>
+			<div class="flex flex-col items-end gap-2 border-t pt-6">
+				{#if !allRequiredAnswered}
+					<p class="text-sm text-muted-foreground">
+						{m['questionnaireSubmissionPage.validation_allRequired']()}
+					</p>
+				{/if}
+				<div class="flex items-center justify-end gap-4">
+					<Button
+						type="button"
+						variant="outline"
+						onclick={() =>
+							goto(
+								resolve('/(public)/events/[org_slug]/[event_slug]', {
+									org_slug: data.event.organization.slug,
+									event_slug: data.event.slug
+								})
+							)}
+					>
+						{m['questionnaireSubmissionPage.button_cancel']()}
+					</Button>
+					<Button type="submit" disabled={submitMutation.isPending || !allRequiredAnswered}>
+						{#if submitMutation.isPending}
+							<Loader2 class="h-5 w-5 animate-spin" />
+							{m['questionnaireSubmissionPage.button_submitting']()}
+						{:else if submitMutation.isSuccess}
+							<Check class="h-5 w-5" />
+							{m['questionnaireSubmissionPage.button_submitted']()}
+						{:else}
+							{m['questionnaireSubmissionPage.button_submit']()}
+						{/if}
+					</Button>
+				</div>
 			</div>
 
 			<!-- Error message -->

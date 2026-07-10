@@ -9,15 +9,21 @@ import {
 } from '$lib/utils/cookies';
 import { extractErrorMessage } from '$lib/utils/errors';
 import { claimPendingTokens, setClaimFlashCookie } from '$lib/server/token-claim';
+import { getDemoMode } from '$lib/server/features';
 import { log } from '$lib/server/logger';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 import { safeReturnUrl } from '$lib/utils/safe-redirect';
 
-export const load: PageServerLoad = ({ url, request }) => {
+export const load: PageServerLoad = async ({ url, request, fetch }) => {
 	const lang = resolveLang(request);
 	const seo = buildSeo({ kind: 'auth', url, lang, page: 'login' });
-	return { seo };
+	// SSR the correct login variant: on demo backends the page shows a
+	// demo-account dropdown instead of the email/password form. Deciding this
+	// client-side (appStore fetching /version after mount) visibly SWAPPED the
+	// form and ate credentials typed in the window (#596).
+	const demo = await getDemoMode(fetch);
+	return { seo, demo };
 };
 
 export const actions = {

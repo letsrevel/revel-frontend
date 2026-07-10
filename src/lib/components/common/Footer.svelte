@@ -199,21 +199,27 @@
 				class="mt-8 flex flex-wrap items-center justify-center gap-4 border-t pt-6 text-xs text-muted-foreground"
 			>
 				<Tooltip.Root>
+					<!-- The link itself is the tooltip trigger (child snippet): a default
+					     Trigger renders a <button> AROUND the <a>, an interactive-inside-
+					     interactive WCAG violation flagged on every page (#595). -->
 					<Tooltip.Trigger
 						onmouseenter={() => fetchReleaseNotes('frontend', FRONTEND_VERSION)}
 						onfocus={() => fetchReleaseNotes('frontend', FRONTEND_VERSION)}
 					>
-						<a
-							href={FRONTEND_REPO}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="flex items-center gap-1.5 transition-colors hover:text-foreground"
-							aria-label="{m['footer.frontend']()} repository on GitHub"
-						>
-							<Github class="h-3.5 w-3.5" aria-hidden="true" />
-							<span>FE v{FRONTEND_VERSION}</span>
-							<Info class="h-3 w-3 text-muted-foreground/70" aria-hidden="true" />
-						</a>
+						{#snippet child({ props })}
+							<a
+								{...props}
+								href={FRONTEND_REPO}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="flex items-center gap-1.5 transition-colors hover:text-foreground"
+								aria-label="{m['footer.frontend']()} repository on GitHub"
+							>
+								<Github class="h-3.5 w-3.5" aria-hidden="true" />
+								<span>FE v{FRONTEND_VERSION}</span>
+								<Info class="h-3 w-3 text-muted-foreground/70" aria-hidden="true" />
+							</a>
+						{/snippet}
 					</Tooltip.Trigger>
 					<Tooltip.Content class="max-w-xs">
 						{#if loadingNotes[`frontend-${FRONTEND_VERSION}`]}
@@ -237,17 +243,20 @@
 						onmouseenter={() => fetchReleaseNotes('backend', backendVersion)}
 						onfocus={() => fetchReleaseNotes('backend', backendVersion)}
 					>
-						<a
-							href={BACKEND_REPO}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="flex items-center gap-1.5 transition-colors hover:text-foreground"
-							aria-label="{m['footer.backend']()} repository on GitHub"
-						>
-							<Github class="h-3.5 w-3.5" aria-hidden="true" />
-							<span>BE v{backendVersion}{isDemoMode ? ' (demo)' : ''}</span>
-							<Info class="h-3 w-3 text-muted-foreground/70" aria-hidden="true" />
-						</a>
+						{#snippet child({ props })}
+							<a
+								{...props}
+								href={BACKEND_REPO}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="flex items-center gap-1.5 transition-colors hover:text-foreground"
+								aria-label="{m['footer.backend']()} repository on GitHub"
+							>
+								<Github class="h-3.5 w-3.5" aria-hidden="true" />
+								<span>BE v{backendVersion}{isDemoMode ? ' (demo)' : ''}</span>
+								<Info class="h-3 w-3 text-muted-foreground/70" aria-hidden="true" />
+							</a>
+						{/snippet}
 					</Tooltip.Trigger>
 					<Tooltip.Content class="max-w-xs">
 						{#if loadingNotes[`backend-${backendVersion}`]}

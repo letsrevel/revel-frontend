@@ -260,4 +260,56 @@ describe('AuthStore', () => {
 			expect(authStore.accessToken).toBe('new-token');
 		});
 	});
+
+	describe('Bootstrap gate', () => {
+		/** True once waitForAuthReady() has resolved (after a microtask flush). */
+		async function isReady(): Promise<boolean> {
+			let resolved = false;
+			void authStore.waitForAuthReady().then(() => {
+				resolved = true;
+			});
+			// Flush microtasks without advancing timers.
+			await Promise.resolve();
+			await Promise.resolve();
+			return resolved;
+		}
+
+		it('resolves immediately when no bootstrap is pending', async () => {
+			expect(await isReady()).toBe(true);
+		});
+
+		it('holds requests while pending and releases on setAccessToken', async () => {
+			authStore.markBootstrapPending();
+			expect(await isReady()).toBe(false);
+
+			authStore.setAccessToken('bootstrapped-token');
+			expect(await isReady()).toBe(true);
+		});
+
+		it('releases on logout (session is truly gone)', async () => {
+			authStore.markBootstrapPending();
+			expect(await isReady()).toBe(false);
+
+			await authStore.logout();
+			expect(await isReady()).toBe(true);
+		});
+
+		it('is a no-op to arm twice', async () => {
+			authStore.markBootstrapPending();
+			authStore.markBootstrapPending();
+			authStore.setAccessToken('token');
+			expect(await isReady()).toBe(true);
+		});
+
+		it('re-arms on resetForSwap so the next identity bootstraps gated', async () => {
+			authStore.setAccessToken('old-identity-token');
+			expect(await isReady()).toBe(true);
+
+			authStore.resetForSwap();
+			expect(await isReady()).toBe(false);
+
+			authStore.setAccessToken('new-identity-token');
+			expect(await isReady()).toBe(true);
+		});
+	});
 });

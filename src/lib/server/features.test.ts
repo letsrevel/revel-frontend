@@ -5,7 +5,7 @@ vi.mock('$lib/api/generated/sdk.gen', () => ({
 }));
 
 import { apiApiVersion } from '$lib/api/generated/sdk.gen';
-import { getFeatures, __resetFeaturesCache } from './features';
+import { getFeatures, getDemoMode, __resetFeaturesCache } from './features';
 import { DEFAULT_FEATURES } from '$lib/utils/features';
 
 const mockedApiApiVersion = vi.mocked(apiApiVersion);
@@ -56,6 +56,42 @@ describe('getFeatures', () => {
 
 		await getFeatures(fakeFetch);
 		await getFeatures(fakeFetch);
+		expect(mockedApiApiVersion).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe('getDemoMode', () => {
+	it('resolves demo from the /version payload', async () => {
+		mockedApiApiVersion.mockResolvedValue({
+			data: { version: '1.0.0', demo: true, features: DEFAULT_FEATURES },
+			error: undefined
+		} as never);
+
+		expect(await getDemoMode(fakeFetch)).toBe(true);
+	});
+
+	it('defaults to false when /version omits demo', async () => {
+		mockedApiApiVersion.mockResolvedValue({
+			data: { version: '1.0.0', features: DEFAULT_FEATURES },
+			error: undefined
+		} as never);
+
+		expect(await getDemoMode(fakeFetch)).toBe(false);
+	});
+
+	it('defaults to false when the call fails', async () => {
+		mockedApiApiVersion.mockRejectedValue(new Error('network'));
+		expect(await getDemoMode(fakeFetch)).toBe(false);
+	});
+
+	it('shares the cache with getFeatures (one upstream call total)', async () => {
+		mockedApiApiVersion.mockResolvedValue({
+			data: { version: '1.0.0', demo: true, features: DEFAULT_FEATURES },
+			error: undefined
+		} as never);
+
+		await getFeatures(fakeFetch);
+		expect(await getDemoMode(fakeFetch)).toBe(true);
 		expect(mockedApiApiVersion).toHaveBeenCalledTimes(1);
 	});
 });

@@ -22,12 +22,14 @@ FAILED=0
 # Per-file cap overrides — the only sanctioned way for a file to exceed the
 # default cap. Each entry needs a rationale; the override IS the ceiling
 # (no hardcoded current line counts).
-#   auth.svelte.ts → 550: token race guards + single-flight refresh thread all
+#   auth.svelte.ts → 620: token race guards + single-flight refresh thread all
 #   state through one class; split rejected twice as invariant-threatening
-#   (#544 Task 12/13 analyses, #557).
+#   (#544 Task 12/13 analyses, #557). Raised 550→620 for the bootstrap gate +
+#   interrupted-rotation retry (#596) — both must share the store's settle
+#   points (setAccessToken/logout), so they belong to the same class.
 max_for() {
     case "$1" in
-        src/lib/stores/auth.svelte.ts) echo 550 ;;
+        src/lib/stores/auth.svelte.ts) echo 620 ;;
         *) echo "$2" ;;
     esac
 }

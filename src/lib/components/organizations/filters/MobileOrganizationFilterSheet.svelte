@@ -166,9 +166,11 @@
 						>{m['mobileOrganizationFilterSheet.search']()}</label
 					>
 					<SearchInput
+						id="mobile-organization-search"
 						value={filters.search ?? ''}
 						onSearch={handleSearch}
 						placeholder={m['mobileOrganizationFilterSheet.searchPlaceholder']()}
+						ariaLabel={m['filters.search.organizationsLabel']()}
 					/>
 				</div>
 

@@ -245,7 +245,7 @@
 			</div>
 
 			<!-- Invitations List -->
-			{#if invitationsQuery.isLoading}
+			{#if invitationsQuery.isPending}
 				<div class="flex items-center justify-center py-12">
 					<Loader2 class="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
 					<span class="sr-only">{m['dashboard.invitations.loadingInvitations']()}</span>
@@ -366,7 +366,7 @@
 			</div>
 
 			<!-- Requests List -->
-			{#if requestsQuery.isLoading}
+			{#if requestsQuery.isPending}
 				<div class="flex items-center justify-center py-12">
 					<Loader2 class="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
 					<span class="sr-only">{m['dashboard.invitations.loadingRequests']()}</span>

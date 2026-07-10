@@ -105,6 +105,11 @@
 				extensions: createEditorExtensions(placeholder),
 				editorProps: {
 					attributes: {
+						// contenteditable divs have an implicit "generic" role, on which
+						// naming (aria-label/labelledby) and aria-multiline are PROHIBITED
+						// (axe aria-prohibited-attr/aria-allowed-attr, #595). role=textbox
+						// is the correct role for a rich-text editing surface.
+						role: 'textbox',
 						'aria-multiline': 'true',
 						...(label
 							? { 'aria-labelledby': `${inputId}-label` }
@@ -148,6 +153,7 @@
 	$effect(() => {
 		const dom = editor?.view?.dom as HTMLElement | undefined;
 		if (!dom) return;
+		dom.setAttribute('role', 'textbox');
 		dom.setAttribute('aria-multiline', 'true');
 		if (label) {
 			dom.setAttribute('aria-labelledby', `${inputId}-label`);

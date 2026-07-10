@@ -1,5 +1,23 @@
+<script lang="ts" module>
+	import { Marked } from 'marked';
+
+	// Scoped parser instance (not the global `marked` singleton) so the
+	// heading demotion below can't leak into other markdown consumers.
+	const markdownParser = new Marked({
+		breaks: true, // Convert \n to <br>
+		gfm: true, // GitHub Flavored Markdown
+		// Demote headings one level (h1→h2, …, capped at h6): the page itself
+		// owns the single <h1>, so user-authored "# Heading" markdown must not
+		// introduce additional h1s (WCAG heading structure, #596).
+		walkTokens: (token) => {
+			if (token.type === 'heading') {
+				token.depth = Math.min(token.depth + 1, 6);
+			}
+		}
+	});
+</script>
+
 <script lang="ts">
-	import { marked } from 'marked';
 	import { cn } from '$lib/utils/cn';
 	import { sanitizeHtml } from '$lib/utils/sanitize';
 
@@ -28,12 +46,6 @@
 
 	const { content, class: className, ariaLabel, inline = false }: Props = $props();
 
-	// Configure marked for safe rendering
-	marked.setOptions({
-		breaks: true, // Convert \n to <br>
-		gfm: true // GitHub Flavored Markdown
-	});
-
 	/**
 	 * Determine if we have valid content to display
 	 */
@@ -45,7 +57,7 @@
 	const renderedHtml = $derived.by(() => {
 		if (!hasContent || !content) return '';
 		try {
-			const raw = inline ? marked.parseInline(content) : marked.parse(content);
+			const raw = inline ? markdownParser.parseInline(content) : markdownParser.parse(content);
 			return sanitizeHtml(typeof raw === 'string' ? raw : String(raw));
 		} catch {
 			// If parsing fails, return the raw content escaped

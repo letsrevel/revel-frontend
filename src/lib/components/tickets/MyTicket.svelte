@@ -143,22 +143,22 @@
 
 		<!-- Ticket Holder & Seat Info -->
 		{#if ticket.guest_name || hasSeatInfo}
-			<dl class="space-y-2 rounded-lg border border-border bg-muted/30 p-4 text-sm">
+			<ul class="space-y-2 rounded-lg border border-border bg-muted/30 p-4 text-sm">
 				{#if ticket.guest_name}
-					<div class="flex items-center gap-2">
-						<dt class="sr-only">{m['myTicket.ticketHolder']()}</dt>
+					<li class="flex items-center gap-2">
+						<span class="sr-only">{m['myTicket.ticketHolder']()}</span>
 						<User class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-						<dd class="font-medium">{ticket.guest_name}</dd>
-					</div>
+						<span class="font-medium">{ticket.guest_name}</span>
+					</li>
 				{/if}
 				{#if seatInfo}
-					<div class="flex items-center gap-2">
-						<dt class="sr-only">{m['myTicket.seat']()}</dt>
+					<li class="flex items-center gap-2">
+						<span class="sr-only">{m['myTicket.seat']()}</span>
 						<Armchair class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-						<dd>{seatInfo}</dd>
-					</div>
+						<span>{seatInfo}</span>
+					</li>
 				{/if}
-			</dl>
+			</ul>
 		{/if}
 
 		<!-- Pending Payment Banner -->
@@ -233,20 +233,20 @@
 
 		<!-- Event Details -->
 		{#if eventDate || eventLocation}
-			<dl class="space-y-2 text-sm">
+			<ul class="space-y-2 text-sm">
 				{#if eventDate}
-					<div class="flex items-center gap-2">
+					<li class="flex items-center gap-2">
 						<Calendar class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-						<dd>{eventDate}</dd>
-					</div>
+						<span>{eventDate}</span>
+					</li>
 				{/if}
 				{#if eventLocation}
-					<div class="flex items-center gap-2">
+					<li class="flex items-center gap-2">
 						<MapPin class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-						<dd>{eventLocation}</dd>
-					</div>
+						<span>{eventLocation}</span>
+					</li>
 				{/if}
-			</dl>
+			</ul>
 		{/if}
 
 		<!-- QR Code -->

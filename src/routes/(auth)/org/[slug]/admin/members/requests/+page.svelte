@@ -140,8 +140,8 @@
 			class={cn(
 				'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
 				activeStatusFilter === 'approved'
-					? 'bg-green-600 text-white'
-					: 'border border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-950'
+					? 'bg-green-700 text-white'
+					: 'border border-green-700 text-green-700 hover:bg-green-50 dark:border-green-500 dark:text-green-500 dark:hover:bg-green-950'
 			)}
 		>
 			{m['membershipRequestsPage.filter_approved']()}
@@ -285,7 +285,7 @@
 												<button
 													type="submit"
 													disabled={processingRequestId === request.id}
-													class="inline-flex items-center gap-1 rounded-md bg-green-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-green-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+													class="inline-flex items-center gap-1 rounded-md bg-green-700 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-green-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 													aria-label="Approve request from {request.user.first_name} {request.user
 														.last_name}"
 												>

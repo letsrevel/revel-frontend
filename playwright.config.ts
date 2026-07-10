@@ -32,9 +32,12 @@ export default defineConfig({
 	testDir: './tests/e2e',
 	fullyParallel: true,
 	forbidOnly: !!process.env.CI,
-	// One local retry: a retried test gets a FRESH context (new token pair),
-	// which heals the known client-auth rotation race (see the E2E findings
-	// issue) without masking real regressions — those fail twice.
+	// One local retry. The client-auth rotation race that originally motivated
+	// this was fixed app-side (#596: API requests wait for the auth bootstrap
+	// gate) — retries: 0 was trialled and no auth flakes remained, but the
+	// local dev backend still throws unrelated transients under 4-worker load
+	// (django-silk profiling middleware deadlocks in Postgres → sporadic 500s),
+	// so one retry stays. Real regressions fail twice.
 	retries: process.env.CI ? 2 : 1,
 	// The journeys hit ONE local backend; unbounded workers overload it
 	// (slow renders, transient 500s). Four is fast and stable.

@@ -19,8 +19,11 @@ let probe: Promise<VersionInfo | null> | undefined;
 function versionInfo(): Promise<VersionInfo | null> {
 	probe ??= (async () => {
 		try {
+			// Generous timeout: the probe races the first burst of parallel-worker
+			// backend load; at 3s it intermittently timed out and silently skipped
+			// an entire project's tests (cached per worker).
 			const response = await fetch(`${API_URL}/api/version`, {
-				signal: AbortSignal.timeout(3_000)
+				signal: AbortSignal.timeout(10_000)
 			});
 			if (!response.ok) return null;
 			return (await response.json()) as VersionInfo;

@@ -8,6 +8,8 @@
 		onSearch: (value: string) => void;
 		placeholder?: string;
 		ariaLabel?: string;
+		/** id for the input, so an external visible <label for=...> can associate. */
+		id?: string;
 		debounceMs?: number;
 		class?: string;
 	}
@@ -17,6 +19,7 @@
 		onSearch,
 		placeholder = m['filters.search.eventsPlaceholder'](),
 		ariaLabel = m['filters.search.eventsLabel'](),
+		id,
 		debounceMs = 300,
 		class: className
 	}: Props = $props();
@@ -58,6 +61,7 @@
 		/>
 		<input
 			type="search"
+			{id}
 			value={inputValue}
 			oninput={handleInput}
 			{placeholder}
