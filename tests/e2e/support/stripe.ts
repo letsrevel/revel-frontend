@@ -27,22 +27,50 @@ export async function completeStripeCheckout(
 ): Promise<void> {
 	await page.waitForURL(/checkout\.stripe\.com/, { timeout: 20_000 });
 
-	// Stripe's hosted form. Email may be prefilled (session created server-side
-	// with the buyer's email) — only fill it when the field is empty & editable.
+	// The hosted page lists payment methods as a radio accordion (Card,
+	// Klarna, iDEAL, …) and only renders the card fields once Card is
+	// expanded. Single-method sessions show the fields directly, so expand
+	// only when they aren't already there. The Card radio is COVERED by a
+	// zero-size "Pay with card" button that intercepts pointer events, so a
+	// normal click can never land — dispatch the click straight to it.
+	const cardNumber = page.getByLabel('Card number');
+	await expect(async () => {
+		if (await cardNumber.isVisible()) return;
+		await page.locator('[data-testid="card-accordion-item-button"]').dispatchEvent('click');
+		await expect(cardNumber).toBeVisible({ timeout: 5_000 });
+	}).toPass({ timeout: 60_000 });
+
+	// Email may be prefilled (session created server-side with the buyer's
+	// email — sometimes rendered as plain text) — only fill an empty input.
 	const email = page.getByLabel('Email');
-	if ((await email.count()) > 0 && (await email.first().inputValue()) === '') {
+	if (
+		(await email.count()) > 0 &&
+		(await email.first().isEditable()) &&
+		(await email.first().inputValue()) === ''
+	) {
 		await email.first().fill('e2e-buyer@example.com');
 	}
 
-	await page.getByLabel('Card number').fill(card.number);
-	await page.getByLabel('Expiration').fill(card.expiry);
-	await page.getByLabel(/CVC|Security code/).fill(card.cvc);
-	await page.getByLabel(/Cardholder name|Name on card/).fill(card.name);
+	// textbox-scoped: plain getByLabel also matches Stripe's decorative
+	// labelled icons (e.g. the CVC card graphic) and trips strict mode.
+	await cardNumber.fill(card.number);
+	await page.getByRole('textbox', { name: 'Expiration' }).fill(card.expiry);
+	await page.getByRole('textbox', { name: /CVC|Security code/ }).fill(card.cvc);
+	// The cardholder-name field is not part of every checkout layout.
+	const holder = page.getByRole('textbox', { name: /Cardholder name|Name on card/ });
+	if ((await holder.count()) > 0) {
+		await holder.first().fill(card.name);
+	}
 
 	// Stripe sometimes shows extra opt-ins (Link, save-my-info) — leave defaults.
-	await page.getByTestId('hosted-payment-submit-button').click();
+	const submit = page.getByTestId('hosted-payment-submit-button');
+	if ((await submit.count()) > 0) {
+		await submit.click();
+	} else {
+		await page.getByRole('button', { name: 'Pay', exact: true }).click();
+	}
 
 	// Back on the app after payment (success URL is app-origin).
-	await page.waitForURL(/localhost:5173/, { timeout: 30_000 });
+	await page.waitForURL(/localhost:5173/, { timeout: 45_000 });
 	await expect(page).not.toHaveURL(/checkout\.stripe\.com/);
 }
