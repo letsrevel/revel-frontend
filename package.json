@@ -27,6 +27,7 @@
 		"audit:images": "tsx scripts/audit-image-alt.ts"
 	},
 	"devDependencies": {
+		"@axe-core/playwright": "^4.12.1",
 		"@eslint/js": "^10.0.1",
 		"@hey-api/openapi-ts": "^0.99.0",
 		"@inlang/paraglide-js": "^2.20.2",

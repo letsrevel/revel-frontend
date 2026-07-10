@@ -27,14 +27,24 @@ export class ApiError extends Error {
 	}
 }
 
-/** Exchange credentials for a JWT pair (POST /api/auth/token/pair). */
+/**
+ * Exchange credentials for a JWT pair (POST /api/auth/token/pair).
+ * Retries transient 5xx responses — the dev backend can hiccup under the
+ * parallel load of a full suite run.
+ */
 export async function obtainTokenPair(email: string, password: string): Promise<TokenPair> {
-	const response = await fetch(`${API_URL}/api/auth/token/pair`, {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ username: email, password })
-	});
-	const text = await response.text();
+	let response: Response;
+	let text: string;
+	for (let attempt = 1; ; attempt++) {
+		response = await fetch(`${API_URL}/api/auth/token/pair`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ username: email, password })
+		});
+		text = await response.text();
+		if (response.status < 500 || attempt >= 3) break;
+		await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
+	}
 	if (!response.ok) {
 		throw new ApiError(response.status, 'POST', '/api/auth/token/pair', text);
 	}

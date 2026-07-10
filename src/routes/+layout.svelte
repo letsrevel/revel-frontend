@@ -239,6 +239,9 @@
 
 	// Fetch backend version on initial mount
 	onMount(async () => {
+		// Hydration marker: interactions dispatched before hydration are silently
+		// lost, so the E2E goto() helper waits for this attribute (tests/e2e).
+		document.body.dataset.hydrated = 'true';
 		await appStore.fetchBackendVersion();
 	});
 </script>
