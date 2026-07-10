@@ -98,8 +98,12 @@ describe('NotificationDropdown', () => {
 		const button = screen.getByRole('button', { name: /open notifications/i });
 		await user.click(button);
 
+		// bits-ui 2 keeps the floating-ui positioning wrapper at
+		// `visibility: hidden` until positioning completes, which never happens
+		// in jsdom (no layout engine). The menu is open (data-state="open") and
+		// visible in real browsers; `hidden: true` includes it in the query here.
 		await waitFor(() => {
-			expect(screen.getByRole('menu')).toBeInTheDocument();
+			expect(screen.getByRole('menu', { hidden: true })).toBeInTheDocument();
 		});
 	});
 
@@ -158,8 +162,10 @@ describe('NotificationDropdown', () => {
 		// Enter to open
 		await user.keyboard('{Enter}');
 
+		// See note in "opens dropdown when button is clicked": jsdom cannot
+		// complete floating-ui positioning, so the menu stays a11y-hidden.
 		await waitFor(() => {
-			expect(screen.getByRole('menu')).toBeInTheDocument();
+			expect(screen.getByRole('menu', { hidden: true })).toBeInTheDocument();
 		});
 
 		// Escape to close
