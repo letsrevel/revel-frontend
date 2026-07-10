@@ -90,6 +90,8 @@ export interface CreatedEvent {
 	/** Public detail path, e.g. /events/<org>/<slug>. */
 	path: string;
 	name: string;
+	/** Set when the event was created with `freeTier: true`. */
+	freeTierId?: string;
 }
 
 /**
@@ -129,8 +131,9 @@ export async function createTicketedEvent(
 		}
 	);
 
+	let freeTierId: string | undefined;
 	if (freeTier) {
-		await api.post(`/api/event-admin/${event.id}/ticket-tier`, {
+		const tier = await api.post<{ id: string }>(`/api/event-admin/${event.id}/ticket-tier`, {
 			name: 'Free Entry',
 			payment_method: 'free',
 			price: '0.00',
@@ -139,6 +142,7 @@ export async function createTicketedEvent(
 			sales_start_at: new Date(Date.now() - dayMs).toISOString(),
 			sales_end_at: end.toISOString()
 		});
+		freeTierId = tier.id;
 	}
 
 	return {
@@ -146,6 +150,58 @@ export async function createTicketedEvent(
 		slug: event.slug,
 		orgSlug,
 		path: `/events/${orgSlug}/${event.slug}`,
-		name
+		name,
+		freeTierId
 	};
+}
+
+/**
+ * API-create a ticket tier on an event owned by a seeded persona. Sales open
+ * immediately. Pass payment_method/price/etc. in `tier` — defaults make a
+ * fixed-price ONLINE (Stripe) tier, which needs the org to be
+ * Stripe-connected (Org Alpha is; see tests/e2e/README.md).
+ */
+export async function createTicketTier(
+	eventId: string,
+	tier: Record<string, unknown> = {},
+	owner: PersonaName = 'owner'
+): Promise<{ id: string; name: string }> {
+	const persona = PERSONAS[owner];
+	const api = await ApiClient.login(persona.email, persona.password);
+	const dayMs = 24 * 60 * 60 * 1000;
+	const name = (tier.name as string) ?? 'Online Tier';
+	const created = await api.post<{ id: string }>(`/api/event-admin/${eventId}/ticket-tier`, {
+		name,
+		payment_method: 'online',
+		price: '10.00',
+		price_type: 'fixed',
+		total_quantity: 100,
+		sales_start_at: new Date(Date.now() - dayMs).toISOString(),
+		sales_end_at: new Date(Date.now() + 30 * dayMs).toISOString(),
+		...tier
+	});
+	return { id: created.id, name };
+}
+
+/**
+ * Claim/reserve a ticket for a throwaway user straight through the public
+ * checkout API — the ARRANGE step for specs whose journey starts from an
+ * already-held ticket (check-in, ticket management). Free/offline tiers only:
+ * an online tier answers with a Stripe checkout URL instead of tickets.
+ */
+export async function claimTicketViaApi(
+	user: ThrowawayUser,
+	eventId: string,
+	tierId: string
+): Promise<{ id: string; status: string }> {
+	const api = await ApiClient.login(user.email, user.password);
+	const response = await api.post<{ tickets?: Array<{ id: string; status: string }> }>(
+		`/api/events/${eventId}/tickets/${tierId}/checkout`,
+		{ tickets: [{ guest_name: `${user.firstName} ${user.lastName}` }] }
+	);
+	const ticket = response.tickets?.[0];
+	if (!ticket) {
+		throw new Error(`Checkout for tier ${tierId} returned no tickets (online tier?)`);
+	}
+	return ticket;
 }

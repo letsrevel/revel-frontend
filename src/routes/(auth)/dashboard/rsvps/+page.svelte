@@ -44,11 +44,14 @@
 	let searchDebounceTimeout: ReturnType<typeof setTimeout> | null = null;
 	let debouncedSearch = $state('');
 
-	// Update debounced search after delay
+	// Update debounced search after delay. searchQuery must be read
+	// SYNCHRONOUSLY here — reads inside the setTimeout callback are not
+	// tracked by $effect, so the effect would never re-run on typing.
 	$effect(() => {
+		const query = searchQuery;
 		if (searchDebounceTimeout) clearTimeout(searchDebounceTimeout);
 		searchDebounceTimeout = setTimeout(() => {
-			debouncedSearch = searchQuery;
+			debouncedSearch = query;
 		}, 300);
 	});
 

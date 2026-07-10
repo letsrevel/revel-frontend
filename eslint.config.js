@@ -80,7 +80,12 @@ export default [
 			'src/lib/api/generated/**',
 			'src/lib/paraglide/**',
 			'*.config.js',
-			'*.config.ts'
+			'*.config.ts',
+			// Transient Playwright output (gitignored); the HTML report ships
+			// minified trace-viewer JS that otherwise floods the lint.
+			'playwright-report/',
+			'test-results/',
+			'.playwright-mcp/'
 		]
 	}
 ];
