@@ -1,6 +1,6 @@
 import { test as base, expect, type Browser, type Page } from '@playwright/test';
-import { obtainTokenPair } from './api';
 import { PERSONAS, type PersonaName } from './personas';
+import { authenticateContext } from './session';
 import { isBackendUp, BACKEND_DOWN_MESSAGE } from './skip';
 
 /**
@@ -21,21 +21,6 @@ import { isBackendUp, BACKEND_DOWN_MESSAGE } from './skip';
  * to that context. (Multiple token pairs per user coexist happily.)
  */
 
-const APP_HOST = 'localhost';
-
-function authCookie(name: string, value: string) {
-	return {
-		name,
-		value,
-		domain: APP_HOST,
-		path: '/',
-		expires: Math.round(Date.now() / 1000) + 60 * 60 * 24 * 7,
-		httpOnly: true,
-		secure: false,
-		sameSite: 'Lax' as const
-	};
-}
-
 interface PersonaFixtures {
 	asOwner: Page;
 	asStaff: Page;
@@ -49,15 +34,8 @@ interface PersonaFixtures {
 
 function personaFixture(name: PersonaName) {
 	return async ({ browser }: { browser: Browser }, use: (page: Page) => Promise<void>) => {
-		const persona = PERSONAS[name];
-		const { access, refresh } = await obtainTokenPair(persona.email, persona.password);
 		const context = await browser.newContext();
-		await context.addCookies([
-			authCookie('access_token', access),
-			authCookie('refresh_token', refresh),
-			// 'true' → hooks.server.ts refreshes with persistent cookie options.
-			authCookie('remember_me', 'true')
-		]);
+		await authenticateContext(context, name);
 		const page = await context.newPage();
 		await use(page);
 		await context.close();

@@ -41,6 +41,11 @@ export const PERSONAS = {
 		'hannah.attendee@example.com',
 		'Plain user with no org membership; follows Org Alpha'
 	),
+	user2: persona(
+		'user2',
+		'ivan.attendee@example.com',
+		'Plain user with no org membership; follows Org Beta (parallel-safe twin of `user`)'
+	),
 	multiOrg: persona(
 		'multiOrg',
 		'karen.multiorg@example.com',

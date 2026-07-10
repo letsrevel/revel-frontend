@@ -9,20 +9,39 @@ import { API_URL } from './api';
  *
  * The probe result is cached for the lifetime of the worker process.
  */
-let probe: Promise<boolean> | undefined;
+interface VersionInfo {
+	demo?: boolean;
+	features?: Record<string, boolean>;
+}
 
-export function isBackendUp(): Promise<boolean> {
+let probe: Promise<VersionInfo | null> | undefined;
+
+function versionInfo(): Promise<VersionInfo | null> {
 	probe ??= (async () => {
 		try {
 			const response = await fetch(`${API_URL}/api/version`, {
 				signal: AbortSignal.timeout(3_000)
 			});
-			return response.ok;
+			if (!response.ok) return null;
+			return (await response.json()) as VersionInfo;
 		} catch {
-			return false;
+			return null;
 		}
 	})();
 	return probe;
+}
+
+export async function isBackendUp(): Promise<boolean> {
+	return (await versionInfo()) !== null;
+}
+
+/**
+ * Whether the backend runs in DEMO_MODE. A few UI flows are deliberately
+ * disabled on demo instances (e.g. /register redirects to /login) — the
+ * affected specs skip themselves with this.
+ */
+export async function isDemoMode(): Promise<boolean> {
+	return (await versionInfo())?.demo === true;
 }
 
 export const BACKEND_DOWN_MESSAGE =

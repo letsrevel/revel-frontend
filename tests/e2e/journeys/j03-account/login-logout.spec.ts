@@ -1,5 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 import { test, expect, PERSONAS } from '../../support/fixtures';
+import { uiLogin } from '../../support/session';
+import { isDemoMode } from '../../support/skip';
 
 // J3 (USER_JOURNEYS.md) — session basics: login (happy + bad credentials),
 // persona-fixture session restore, logout. Also guards #485: the navbar must
@@ -70,22 +72,19 @@ async function logout(page: Page, isMobile: boolean): Promise<void> {
 }
 
 test.describe('J3 login & logout @p0', () => {
-	test('logs in via the form and the navbar reflects the session without a reload (#485)', async ({
+	test('logs in via the UI and the navbar reflects the session without a reload (#485)', async ({
 		page,
 		isMobile
 	}) => {
-		await page.goto('/login');
-		await page.getByLabel('Email address').fill(PERSONAS.user.email);
-		await page.getByLabel('Password', { exact: true }).fill(PERSONAS.user.password);
-		await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-
-		await page.waitForURL(/\/dashboard(\/|$|\?)/);
+		await uiLogin(page, 'user');
 		await expectAuthenticatedChrome(page, isMobile);
 	});
 
 	test('rejects invalid credentials with an accessible error and stays on /login', async ({
 		page
 	}) => {
+		// Demo backends replace the password form with the test-account dropdown.
+		test.skip(await isDemoMode(), 'No password form on DEMO_MODE backends');
 		await page.goto('/login');
 		await page.getByLabel('Email address').fill(PERSONAS.user.email);
 		await page.getByLabel('Password', { exact: true }).fill('definitely-wrong-password');
@@ -112,11 +111,7 @@ test.describe('J3 login & logout @p0', () => {
 		// Log in via the UI so the whole login → logout cycle is exercised on one
 		// real session (logout blacklists the refresh token, so a session this
 		// test fully owns is also the safest thing to burn).
-		await page.goto('/login');
-		await page.getByLabel('Email address').fill(PERSONAS.member.email);
-		await page.getByLabel('Password', { exact: true }).fill(PERSONAS.member.password);
-		await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-		await page.waitForURL(/\/dashboard(\/|$|\?)/);
+		await uiLogin(page, 'member');
 
 		await logout(page, isMobile);
 		await expectLoggedOutChrome(page, isMobile);

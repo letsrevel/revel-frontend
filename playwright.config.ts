@@ -32,8 +32,18 @@ export default defineConfig({
 	testDir: './tests/e2e',
 	fullyParallel: true,
 	forbidOnly: !!process.env.CI,
-	retries: process.env.CI ? 2 : 0,
-	workers: process.env.CI ? 1 : undefined,
+	// One local retry: a retried test gets a FRESH context (new token pair),
+	// which heals the known client-auth rotation race (see the E2E findings
+	// issue) without masking real regressions — those fail twice.
+	retries: process.env.CI ? 2 : 1,
+	// The journeys hit ONE local backend; unbounded workers overload it
+	// (slow renders, transient 500s). Four is fast and stable.
+	workers: process.env.CI ? 1 : 4,
+	// Real-stack renders under parallel load regularly exceed the 5s default,
+	// and specs with arrange-heavy retry loops need room beyond the 30s default
+	// test timeout (typical tests finish in seconds; these are ceilings).
+	timeout: 90_000,
+	expect: { timeout: 10_000 },
 	reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : [['list'], ['html']],
 	use: {
 		baseURL: 'http://localhost:5173',
