@@ -22,8 +22,10 @@
 
 	const { data, form }: Props = $props();
 
-	// Demo mode state
-	const isDemoMode = $derived(appStore.isDemoMode);
+	// Demo mode: the server already knows (data.demo, SSR — so the right
+	// variant renders immediately, no client-side form swap). The appStore
+	// fallback only matters if the server-side /version check failed.
+	const isDemoMode = $derived(data.demo || appStore.isDemoMode);
 
 	// A relative form action ("?/login") replaces the query string, so the
 	// returnUrl the server action reads (safeReturnUrl) would be dropped.

@@ -124,7 +124,7 @@
 </script>
 
 <svelte:head>
-	{m['dashboard.rsvps.title']()} - Revel
+	<title>{m['dashboard.rsvps.title']()} - Revel</title>
 	<meta name="description" content={m['dashboard.rsvps.description']()} />
 </svelte:head>
 
@@ -142,7 +142,7 @@
 		</div>
 
 		<!-- RSVP Count -->
-		{#if !rsvpsQuery.isLoading && totalCount > 0}
+		{#if !rsvpsQuery.isPending && totalCount > 0}
 			<p class="mt-4 text-sm text-muted-foreground">
 				{m['dashboard.rsvps.showing']({
 					count: rsvps.length.toString(),
@@ -219,7 +219,7 @@
 	</div>
 
 	<!-- RSVPs List -->
-	{#if rsvpsQuery.isLoading}
+	{#if rsvpsQuery.isPending}
 		<!-- Loading State -->
 		<div class="flex items-center justify-center py-12">
 			<Loader2 class="h-8 w-8 animate-spin text-primary" aria-hidden="true" />

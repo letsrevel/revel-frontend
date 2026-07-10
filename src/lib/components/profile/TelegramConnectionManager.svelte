@@ -203,7 +203,7 @@
 			<p class="mb-3 text-sm text-muted-foreground">
 				{m['telegram.notConnected_description']()}
 			</p>
-			<Button onclick={handleOpenConnectDialog} class="bg-[#0088cc] hover:bg-[#0088cc]/90">
+			<Button onclick={handleOpenConnectDialog} class="bg-[#0072ab] hover:bg-[#0072ab]/90">
 				<MessageCircle class="mr-2 h-4 w-4" aria-hidden="true" />
 				{m['telegram.buttons_connect']()}
 			</Button>
@@ -246,7 +246,7 @@
 							href={botLink}
 							target="_blank"
 							rel="noopener noreferrer"
-							class="inline-flex items-center gap-2 text-sm text-[#0088cc] underline-offset-4 hover:underline"
+							class="inline-flex items-center gap-2 text-sm text-[#0072ab] underline-offset-4 hover:underline"
 						>
 							<MessageCircle class="h-4 w-4" aria-hidden="true" />
 							<span>@{botName}</span>
@@ -333,7 +333,7 @@
 				type="button"
 				onclick={handleConnectSubmit}
 				disabled={connectMutation.isPending || !otpValue.trim()}
-				class="w-full bg-[#0088cc] hover:bg-[#0088cc]/90 sm:w-auto"
+				class="w-full bg-[#0072ab] hover:bg-[#0072ab]/90 sm:w-auto"
 			>
 				{#if connectMutation.isPending}
 					<Loader2 class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />

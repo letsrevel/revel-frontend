@@ -1,6 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 	import { afterNavigate } from '$app/navigation';
 	import { ModeWatcher } from 'mode-watcher';
 	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
@@ -21,6 +22,20 @@
 	}
 
 	const { data, children }: Props = $props();
+
+	// Arm the auth bootstrap gate SYNCHRONOUSLY, before child components (and
+	// their queries/mutations) initialize: the $effect below that actually
+	// starts the bootstrap runs only AFTER children mounted, so without this a
+	// child's request would race the bootstrap and go out without an
+	// Authorization header ("Unauthorized" errors / empty list states on cold
+	// loads). The API client awaits authStore.waitForAuthReady() per request.
+	if (
+		browser &&
+		(data.auth.hasAccessToken || data.auth.hasRefreshToken) &&
+		!authStore.accessToken
+	) {
+		authStore.markBootstrapPending();
+	}
 
 	const queryClient = new QueryClient({
 		defaultOptions: {

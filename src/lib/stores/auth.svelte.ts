@@ -28,6 +28,14 @@ class AuthStore {
 	// gave a false positive during cold-hydration bootstrap (where the store
 	// is intentionally empty until the bootstrap refresh completes).
 	private _isLoggingOut = false;
+	// Bootstrap gate: while the post-load token bootstrap is pending, API
+	// requests must NOT go out without an Authorization header (they would
+	// surface "Unauthorized" errors / empty states to a logged-in user). The
+	// root layout arms this gate synchronously during hydration when the
+	// server session exists but the in-memory store is still empty; it settles
+	// as soon as a token lands (`setAccessToken`) or the session is truly gone
+	// (`logout`). See waitForAuthReady().
+	private _bootstrapGate: { promise: Promise<void>; resolve: () => void } | null = null;
 
 	// Public computed state using $derived
 	get user() {
@@ -66,6 +74,46 @@ class AuthStore {
 	 */
 	get isImpersonated(): boolean {
 		return this.impersonationInfo.isImpersonated;
+	}
+
+	/**
+	 * Arm the bootstrap gate: subsequent API requests wait (via
+	 * `waitForAuthReady`) until a token lands or the session is cleared.
+	 * Re-armable (used again on server-side session swaps); a no-op while a
+	 * gate is already pending. Must be called SYNCHRONOUSLY before components
+	 * whose queries/mutations need the token are initialized — the root
+	 * layout's component-init script does this (children init after it).
+	 */
+	markBootstrapPending(): void {
+		if (this._bootstrapGate) return;
+		let resolve!: () => void;
+		const promise = new Promise<void>((r) => {
+			resolve = r;
+		});
+		this._bootstrapGate = { promise, resolve };
+	}
+
+	private settleBootstrapGate(): void {
+		this._bootstrapGate?.resolve();
+		this._bootstrapGate = null;
+	}
+
+	/**
+	 * Resolve when it is safe to send an authenticated API request: either no
+	 * bootstrap is pending (guest, or token already in memory) or the pending
+	 * bootstrap settled. Bounded so a stalled bootstrap request can never hang
+	 * the entire API layer — after the cap, requests proceed and surface their
+	 * real 401s.
+	 */
+	async waitForAuthReady(): Promise<void> {
+		const gate = this._bootstrapGate;
+		if (!gate) return;
+		await Promise.race([
+			gate.promise,
+			new Promise<void>((r) => {
+				setTimeout(r, 15_000);
+			})
+		]);
 	}
 
 	/**
@@ -200,6 +248,10 @@ class AuthStore {
 		this._accessToken = null;
 		this._permissions = null;
 
+		// Release any request waiting on the bootstrap gate: the session is
+		// gone, so gated requests should proceed and surface their real 401s.
+		this.settleBootstrapGate();
+
 		// Note: Refresh token cookie will be cleared by server-side hook
 		// or by calling a logout endpoint if needed.
 		//
@@ -260,10 +312,26 @@ class AuthStore {
 			// Call our server-side refresh endpoint
 			// The refresh token is in httpOnly cookie, so client can't access it directly
 			// The server endpoint will read the cookie and call the backend
-			const response = await fetch('/api/auth/refresh', {
+			let response = await fetch('/api/auth/refresh', {
 				method: 'POST',
 				credentials: 'include' // Include cookies
 			});
+
+			// Interrupted-rotation heal: a reload that lands while a previous
+			// page's refresh is still in flight can read the OLD (already
+			// rotated → blacklisted) cookie and 401 here, even though the
+			// rotation's Set-Cookie is about to (or just did) land in the
+			// browser. One delayed retry re-reads the CURRENT cookies and
+			// rescues that case instead of silently logging the user out.
+			if (response.status === 401) {
+				await new Promise((r) => {
+					setTimeout(r, 400);
+				});
+				response = await fetch('/api/auth/refresh', {
+					method: 'POST',
+					credentials: 'include'
+				});
+			}
 
 			if (!response.ok) {
 				console.error('[AUTH STORE] Token refresh failed with status:', response.status);
@@ -377,6 +445,11 @@ class AuthStore {
 	 */
 	setAccessToken(token: string): void {
 		this._accessToken = token;
+		// The Authorization header is now available — release gated requests.
+		// Settling here (not after user/permissions load) is deliberate: those
+		// follow-up fetches use the API client themselves and would deadlock on
+		// the gate otherwise.
+		this.settleBootstrapGate();
 		// Schedule automatic refresh before token expires
 		this.scheduleTokenRefresh(token);
 	}
@@ -392,26 +465,33 @@ class AuthStore {
 	 * schedules a logout at expiry rather than a refresh).
 	 */
 	async loadSessionToken(): Promise<void> {
-		const response = await fetch('/api/auth/session-token', {
-			method: 'GET',
-			credentials: 'include'
-		});
+		try {
+			const response = await fetch('/api/auth/session-token', {
+				method: 'GET',
+				credentials: 'include'
+			});
 
-		if (!response.ok) {
-			throw new Error(`Session token bootstrap failed: ${response.status}`);
+			if (!response.ok) {
+				throw new Error(`Session token bootstrap failed: ${response.status}`);
+			}
+
+			const data = await response.json();
+			if (!data?.access) {
+				throw new Error('No access token returned from session-token endpoint');
+			}
+
+			// Respect a logout that happened while this fetch was in flight.
+			if (this._isLoggingOut) {
+				return;
+			}
+
+			this.setAccessToken(data.access);
+		} catch (error) {
+			// No token is coming from this bootstrap — release gated requests
+			// (unlike refresh failures, this path does not force a logout).
+			this.settleBootstrapGate();
+			throw error;
 		}
-
-		const data = await response.json();
-		if (!data?.access) {
-			throw new Error('No access token returned from session-token endpoint');
-		}
-
-		// Respect a logout that happened while this fetch was in flight.
-		if (this._isLoggingOut) {
-			return;
-		}
-
-		this.setAccessToken(data.access);
 	}
 
 	/**
@@ -430,6 +510,9 @@ class AuthStore {
 		this._user = null;
 		this._accessToken = null;
 		this._permissions = null;
+		// Until the new identity's token lands, API requests must wait again —
+		// otherwise they'd go out unauthenticated during the re-bootstrap.
+		this.markBootstrapPending();
 	}
 
 	/**

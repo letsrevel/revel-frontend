@@ -420,7 +420,7 @@
 							{m['learnMore.pricingHappyToNegotiate']()}
 						</a>
 					</div>
-					<p class="mt-2 text-xs text-muted-foreground/70">
+					<p class="mt-2 text-xs text-muted-foreground">
 						{m['learnMore.feesExcludeVat']()}
 					</p>
 				</div>

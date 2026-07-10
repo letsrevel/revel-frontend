@@ -109,9 +109,11 @@
 		<label for="organization-search" class="text-sm font-medium">{m['common.search_label']()}</label
 		>
 		<SearchInput
+			id="organization-search"
 			value={filters.search ?? ''}
 			onSearch={handleSearch}
 			placeholder={m['filters.search.organizationsPlaceholder']()}
+			ariaLabel={m['filters.search.organizationsLabel']()}
 		/>
 	</div>
 

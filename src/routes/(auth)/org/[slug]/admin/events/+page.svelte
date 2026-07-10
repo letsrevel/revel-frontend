@@ -364,7 +364,9 @@
 
 		<!-- Past Events -->
 		{#if pastEvents.length > 0}
-			<div class="space-y-4 opacity-75">
+			<!-- grayscale (not opacity): opacity-dimming blends buttons toward the page
+			     background and breaks WCAG contrast; grayscale preserves luminance (#595) -->
+			<div class="space-y-4 grayscale">
 				<h2 class="text-lg font-semibold">
 					{m['orgAdmin.events.sections.past']({
 						count: pastEvents.length,

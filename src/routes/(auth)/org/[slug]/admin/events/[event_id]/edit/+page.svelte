@@ -238,7 +238,7 @@
 										type="button"
 										onclick={publishEvent}
 										disabled={updateStatusMutation.isPending}
-										class="inline-flex items-center gap-2 rounded-md bg-green-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+										class="inline-flex items-center gap-2 rounded-md bg-green-700 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-50"
 									>
 										<CheckCircle class="h-4 w-4" aria-hidden="true" />
 										{m['eventEditPage.publishButton']()}
@@ -294,7 +294,7 @@
 										type="button"
 										onclick={reopenEvent}
 										disabled={updateStatusMutation.isPending}
-										class="inline-flex items-center gap-2 rounded-md bg-green-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+										class="inline-flex items-center gap-2 rounded-md bg-green-700 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-50"
 									>
 										<CheckCircle class="h-4 w-4" aria-hidden="true" />
 										{m['eventEditPage.reopenButton']()}

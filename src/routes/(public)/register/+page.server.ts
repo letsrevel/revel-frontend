@@ -1,27 +1,19 @@
 import { fail, redirect, isRedirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { registerSchema } from '$lib/schemas/auth';
-import { accountRegister, apiApiVersion } from '$lib/api/generated/sdk.gen';
+import { accountRegister } from '$lib/api/generated/sdk.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
+import { getDemoMode } from '$lib/server/features';
 import { log } from '$lib/server/logger';
 import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 
 export const load: PageServerLoad = async ({ fetch, cookies, url, request }) => {
-	// Check if backend is in demo mode
-	try {
-		const { data } = await apiApiVersion({ fetch });
-		if (data?.demo) {
-			// In demo mode, redirect to login page
-			throw redirect(303, '/login');
-		}
-	} catch (error) {
-		// Re-throw redirects
-		if (isRedirect(error)) {
-			throw error;
-		}
-		// If version check fails, allow registration to proceed
-		log.error('register_demo_check_failed', { error });
+	// In demo mode, registration is disabled — redirect to login. getDemoMode
+	// is cached and fail-open (false on errors), so registration proceeds if
+	// the version check fails.
+	if (await getDemoMode(fetch)) {
+		throw redirect(303, '/login');
 	}
 
 	const lang = resolveLang(request);

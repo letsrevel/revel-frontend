@@ -171,7 +171,7 @@
 		</div>
 
 		<!-- Ticket Count -->
-		{#if !ticketsQuery.isLoading && totalCount > 0}
+		{#if !ticketsQuery.isPending && totalCount > 0}
 			<p class="mt-4 text-sm text-muted-foreground">
 				{m['dashboard.tickets.showing']({
 					count: tickets.length.toString(),
@@ -259,7 +259,7 @@
 	</div>
 
 	<!-- Tickets List -->
-	{#if ticketsQuery.isLoading}
+	{#if ticketsQuery.isPending}
 		<!-- Loading State -->
 		<div class="flex items-center justify-center py-12">
 			<Loader2 class="h-8 w-8 animate-spin text-primary" aria-hidden="true" />

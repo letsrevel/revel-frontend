@@ -47,7 +47,13 @@ function processQueue(error: unknown | null, token: string | null = null) {
 
 // Use request interceptor to inject Authorization header dynamically
 // This is necessary because the generated client does not support header functions
-generatedClient.interceptors.request.use((request, _options) => {
+generatedClient.interceptors.request.use(async (request, _options) => {
+	// Hold the request while the post-load auth bootstrap is pending: firing
+	// now would go out WITHOUT an Authorization header and surface spurious
+	// "Unauthorized" errors (or empty states) to a logged-in user. No-op for
+	// guests and once a token is in memory (see authStore.markBootstrapPending).
+	await authStore.waitForAuthReady();
+
 	// Get the current access token from auth store
 	const token = authStore.accessToken;
 

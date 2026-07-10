@@ -66,7 +66,7 @@
 		<p class="text-muted-foreground">{m['seriesPass.myPassesDescription']()}</p>
 	</div>
 
-	{#if passesQuery.isLoading}
+	{#if passesQuery.isPending}
 		<div class="flex items-center justify-center py-16" role="status">
 			<Loader2 class="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
 			<span class="sr-only">{m['seriesPass.loading']()}</span>

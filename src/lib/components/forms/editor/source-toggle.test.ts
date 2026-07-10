@@ -14,7 +14,12 @@ describe('source toggle', () => {
 		render(MarkdownEditor, { props: { value: '**hi**', id: 'd', label: 'L', onValueChange } });
 		await waitFor(() => screen.getByRole('button', { name: /source/i }));
 		await user.click(screen.getByRole('button', { name: /source/i }));
-		const ta = screen.getByRole('textbox') as HTMLTextAreaElement;
+		// Two textboxes exist now: the tiptap surface (role=textbox, #595) and
+		// the source textarea — grab the actual <textarea>.
+		const ta = screen
+			.getAllByRole('textbox')
+			.find((el): el is HTMLTextAreaElement => el instanceof HTMLTextAreaElement);
+		if (!ta) throw new Error('source textarea not found');
 		expect(ta.value).toContain('**hi**');
 		await user.clear(ta);
 		await user.type(ta, '## new');
@@ -23,7 +28,7 @@ describe('source toggle', () => {
 			expect(onValueChange).toHaveBeenCalledWith(expect.stringContaining('## new'))
 		);
 		await user.click(screen.getByRole('button', { name: /back to editor|exit source|done/i }));
-		// back in WYSIWYG; value updated
-		await waitFor(() => expect(screen.queryByRole('textbox')).not.toBeInTheDocument());
+		// back in WYSIWYG; the source textarea is gone
+		await waitFor(() => expect(ta).not.toBeInTheDocument());
 	});
 });

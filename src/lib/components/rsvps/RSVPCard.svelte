@@ -125,20 +125,20 @@
 				</div>
 
 				<!-- Event Metadata -->
-				<dl class="space-y-1.5 text-sm">
+				<ul class="space-y-1.5 text-sm">
 					{#if eventDate}
-						<div class="flex items-center gap-2 text-muted-foreground">
+						<li class="flex items-center gap-2 text-muted-foreground">
 							<Calendar class="h-4 w-4 shrink-0" aria-hidden="true" />
-							<dd class="truncate">{eventDate}</dd>
-						</div>
+							<span class="truncate">{eventDate}</span>
+						</li>
 					{/if}
 					{#if eventLocation}
-						<div class="flex items-center gap-2 text-muted-foreground">
+						<li class="flex items-center gap-2 text-muted-foreground">
 							<MapPin class="h-4 w-4 shrink-0" aria-hidden="true" />
-							<dd class="truncate">{eventLocation}</dd>
-						</div>
+							<span class="truncate">{eventLocation}</span>
+						</li>
 					{/if}
-				</dl>
+				</ul>
 			</div>
 		</div>
 

@@ -134,7 +134,7 @@
 <div
 	class={cn(
 		'flex flex-col overflow-hidden rounded-lg border border-border bg-card shadow-sm transition-shadow hover:shadow-md',
-		faded && 'opacity-75'
+		faded && 'grayscale'
 	)}
 >
 	<!-- Cover Image -->
@@ -264,7 +264,7 @@
 				<button
 					type="button"
 					onclick={() => onPublish(event.id)}
-					class="inline-flex items-center gap-1 rounded-md bg-green-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-green-700"
+					class="inline-flex items-center gap-1 rounded-md bg-green-700 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-green-800"
 				>
 					<CheckCircle class="h-4 w-4" aria-hidden="true" />
 					{m['orgAdmin.events.actions.publish']()}
@@ -301,7 +301,7 @@
 				<button
 					type="button"
 					onclick={manageWaitlist}
-					class="inline-flex items-center gap-1 rounded-md bg-amber-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-amber-700"
+					class="inline-flex items-center gap-1 rounded-md bg-amber-700 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-amber-800"
 				>
 					<ListPlus class="h-4 w-4" aria-hidden="true" />
 					{m['orgAdmin.events.actions.waitlist']()}
@@ -311,7 +311,7 @@
 				<button
 					type="button"
 					onclick={() => onReopen(event.id)}
-					class="inline-flex items-center gap-1 rounded-md bg-green-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-green-700"
+					class="inline-flex items-center gap-1 rounded-md bg-green-700 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-green-800"
 				>
 					<CheckCircle class="h-4 w-4" aria-hidden="true" />
 					{m['orgAdmin.events.actions.reopen']()}

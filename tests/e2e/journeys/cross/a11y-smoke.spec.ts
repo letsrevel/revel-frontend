@@ -15,20 +15,13 @@ interface PageCase {
 }
 
 /**
- * KNOWN pre-existing serious/critical violation RULES, baselined 2026-07-10
- * so the smoke can gate NEW violation classes while the backlog is burned
- * down (issue #595). Rule-level (not per-page): which page trips which rule
- * varies with seeded/arranged data, and a flapping gate is worse than a
- * coarser one. DO NOT add to this list — fix the violation instead.
+ * KNOWN pre-existing serious/critical violation RULES, baselined so the smoke
+ * can gate NEW violation classes while a backlog is burned down. Rule-level
+ * (not per-page): which page trips which rule varies with seeded/arranged
+ * data, and a flapping gate is worse than a coarser one. DO NOT add to this
+ * list — fix the violation instead. Burned down to EMPTY in #595.
  */
-const BASELINE = new Set([
-	'nested-interactive', // footer version tooltips (buttons wrapping links), every page
-	'aria-prohibited-attr',
-	'aria-allowed-attr',
-	'color-contrast',
-	'document-title', // /dashboard renders without a <title>
-	'definition-list' // ticket cards' <dl> structure
-]);
+const BASELINE = new Set<string>([]);
 
 const PAGES: PageCase[] = [
 	{ name: 'landing', path: '/' },

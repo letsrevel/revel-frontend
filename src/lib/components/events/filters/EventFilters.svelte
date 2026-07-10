@@ -145,6 +145,7 @@
 	<div class="space-y-2">
 		<label for="event-search" class="text-sm font-medium">{m['common.search_label']()}</label>
 		<SearchInput
+			id="event-search"
 			value={filters.search ?? ''}
 			onSearch={handleSearch}
 			placeholder={m['filters.search.eventsPlaceholder']()}

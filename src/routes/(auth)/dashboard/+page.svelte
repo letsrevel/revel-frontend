@@ -297,6 +297,11 @@
 	}
 </script>
 
+<svelte:head>
+	<title>{m['userMenu.dashboard']()} - Revel</title>
+	<meta name="description" content={m['dashboard.pageSubtitle']()} />
+</svelte:head>
+
 <div class="container mx-auto px-4 py-6 md:py-8">
 	<!-- Welcome Header -->
 	<div class="mb-8">
@@ -527,7 +532,7 @@
 		<!-- My Organizations Section -->
 		<DashboardOrganizationsSection
 			{organizations}
-			isLoading={organizationsQuery.isLoading}
+			isLoading={organizationsQuery.isPending}
 			{permissions}
 		/>
 	</div>

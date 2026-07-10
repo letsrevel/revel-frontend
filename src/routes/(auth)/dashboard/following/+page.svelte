@@ -261,7 +261,7 @@
 	{#if activeTab === 'organizations'}
 		<!-- Organizations Tab -->
 		<div class="space-y-6">
-			{#if orgsQuery.isLoading}
+			{#if orgsQuery.isPending}
 				<div class="flex items-center justify-center py-12">
 					<Loader2 class="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
 				</div>
@@ -394,7 +394,7 @@
 	{:else}
 		<!-- Event Series Tab -->
 		<div class="space-y-6">
-			{#if seriesQuery.isLoading}
+			{#if seriesQuery.isPending}
 				<div class="flex items-center justify-center py-12">
 					<Loader2 class="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
 				</div>
