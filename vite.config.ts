@@ -21,6 +21,12 @@ export default defineConfig({
 		setupFiles: ['./vitest.setup.ts']
 	},
 	resolve: viteResolve,
+	// Playwright's webServer starts `vite preview` and waits on port 5173; the
+	// vite default (4173) left it timing out (see playwright.config.ts).
+	preview: {
+		port: 5173,
+		strictPort: true
+	},
 	server: {
 		host: '0.0.0.0', // Listen on all network interfaces for mobile testing
 		port: 5173,
