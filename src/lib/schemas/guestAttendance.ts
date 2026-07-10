@@ -7,17 +7,17 @@ import * as m from '$lib/paraglide/messages.js';
  */
 export const guestUserSchema = z.object({
 	email: z
-		.string({ required_error: m['guest_attendance.validation_email']() })
+		.string({ error: m['guest_attendance.validation_email']() })
 		.min(1, m['guest_attendance.validation_email']())
 		.email(m['guest_attendance.validation_email']()),
 
 	first_name: z
-		.string({ required_error: m['guest_attendance.validation_first_name']() })
+		.string({ error: m['guest_attendance.validation_first_name']() })
 		.min(1, m['guest_attendance.validation_first_name']())
 		.max(150, m['guest_attendance.validation_first_name']()),
 
 	last_name: z
-		.string({ required_error: m['guest_attendance.validation_last_name']() })
+		.string({ error: m['guest_attendance.validation_last_name']() })
 		.min(1, m['guest_attendance.validation_last_name']())
 		.max(150, m['guest_attendance.validation_last_name']())
 });
@@ -34,7 +34,7 @@ export type GuestTicketFormData = z.infer<typeof guestUserSchema> & { pwyc?: str
  */
 export const guestRsvpSchema = guestUserSchema.extend({
 	answer: z.enum(['yes', 'no', 'maybe'], {
-		required_error: m['guest_attendance.validation_rsvp_answer']()
+		error: m['guest_attendance.validation_rsvp_answer']()
 	})
 });
 
@@ -45,7 +45,7 @@ export const guestRsvpSchema = guestUserSchema.extend({
  */
 export function createGuestPwycSchema(tier: { pwyc_min: number; pwyc_max?: number | null }) {
 	let pwycSchema = z
-		.number({ required_error: m['guest_attendance.validation_pwyc_min']({ min: tier.pwyc_min }) })
+		.number({ error: m['guest_attendance.validation_pwyc_min']({ min: tier.pwyc_min }) })
 		.min(tier.pwyc_min, m['guest_attendance.validation_pwyc_min']({ min: tier.pwyc_min }));
 
 	// Add max validation only if tier.pwyc_max is defined
