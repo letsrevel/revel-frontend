@@ -123,7 +123,7 @@ export const actions: Actions = {
 
 		if (!validation.success) {
 			return fail(400, {
-				errors: { code: validation.error.errors[0].message }
+				errors: { code: validation.error.issues[0].message }
 			});
 		}
 
@@ -183,7 +183,7 @@ export const actions: Actions = {
 
 		if (!validation.success) {
 			return fail(400, {
-				errors: { code: validation.error.errors[0].message }
+				errors: { code: validation.error.issues[0].message }
 			});
 		}
 
@@ -246,7 +246,7 @@ export const actions: Actions = {
 
 		if (!validation.success) {
 			const errors: Record<string, string> = {};
-			validation.error.errors.forEach((e) => {
+			validation.error.issues.forEach((e) => {
 				if (e.path[0]) errors[e.path[0].toString()] = e.message;
 			});
 			return fail(400, { errors });
