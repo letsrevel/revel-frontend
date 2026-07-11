@@ -56,6 +56,11 @@ export const PERSONAS = {
 		'diana.owner@example.com',
 		'Org Beta (tech-innovators-network) owner — questionnaires, no Stripe'
 	),
+	betaMember: persona(
+		'betaMember',
+		'frank.member@example.com',
+		'Org Beta member (General tier), RSVP-yes on its seeded members-only events'
+	),
 	testAdmin: persona(
 		'testAdmin',
 		'test.admin@example.com',

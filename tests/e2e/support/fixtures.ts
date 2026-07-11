@@ -28,6 +28,7 @@ interface PersonaFixtures {
 	asUser: Page;
 	asMultiOrg: Page;
 	asBetaOwner: Page;
+	asBetaMember: Page;
 	asTestAdmin: Page;
 	asTestMember: Page;
 }
@@ -59,6 +60,7 @@ export const test = base.extend<PersonaFixtures & { _backendGuard: void }>({
 	asUser: personaFixture('user'),
 	asMultiOrg: personaFixture('multiOrg'),
 	asBetaOwner: personaFixture('betaOwner'),
+	asBetaMember: personaFixture('betaMember'),
 	asTestAdmin: personaFixture('testAdmin'),
 	asTestMember: personaFixture('testMember')
 });
