@@ -73,9 +73,15 @@ test.describe('J10 manage tickets @p1', () => {
 			.filter({ hasText: /Active/ })
 			.filter({ visible: true })
 			.first();
+		// Scope to a container holding alpha but NOT beta — both tickets are
+		// pending, so a page-wide .first() could hit the wrong row.
 		await page
-			.getByRole('button', { name: 'Confirm Payment' })
+			.locator('tr, article, li, div')
+			.filter({ hasText: alphaName })
+			.filter({ hasNot: page.getByText(`${beta.firstName} ${beta.lastName}`) })
 			.filter({ visible: true })
+			.first()
+			.getByRole('button', { name: 'Confirm Payment' })
 			.first()
 			.click();
 		const confirmDialog = page.getByRole('dialog', { name: 'Confirm Payment' });
