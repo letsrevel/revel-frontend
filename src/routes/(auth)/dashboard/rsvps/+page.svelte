@@ -41,7 +41,6 @@
 	let includePast = $state(false);
 
 	// Debounce search input
-	let searchDebounceTimeout: ReturnType<typeof setTimeout> | null = null;
 	let debouncedSearch = $state('');
 
 	// Update debounced search after delay. searchQuery must be read
@@ -49,10 +48,10 @@
 	// tracked by $effect, so the effect would never re-run on typing.
 	$effect(() => {
 		const query = searchQuery;
-		if (searchDebounceTimeout) clearTimeout(searchDebounceTimeout);
-		searchDebounceTimeout = setTimeout(() => {
+		const timer = setTimeout(() => {
 			debouncedSearch = query;
 		}, 300);
+		return () => clearTimeout(timer);
 	});
 
 	// Fetch RSVPs with filters
