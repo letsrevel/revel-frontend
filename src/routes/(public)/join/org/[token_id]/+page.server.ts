@@ -17,6 +17,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	}
 
 	return {
-		token: response.data
+		token: response.data,
+		tokenId
 	};
 };

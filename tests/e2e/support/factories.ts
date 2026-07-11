@@ -232,6 +232,22 @@ export async function createOrganization(
 	return { id: org.id, slug: org.slug, name, owner, defaultTierId: defaultTier.id };
 }
 
+/** API-create a membership-granting invitation token on a throwaway-owned org. */
+export async function createOrgToken(
+	owner: ThrowawayUser,
+	orgSlug: string,
+	tierId: string,
+	options: { name?: string; maxUses?: number } = {}
+): Promise<{ id: string }> {
+	const api = await ApiClient.login(owner.email, owner.password);
+	return api.post<{ id: string }>(`/api/organization-admin/${orgSlug}/tokens`, {
+		name: options.name ?? uniqueName('Token'),
+		max_uses: options.maxUses ?? 5,
+		grants_membership: true,
+		membership_tier_id: tierId
+	});
+}
+
 /** Add a membership tier to a throwaway-owned org. */
 export async function createMembershipTier(
 	owner: ThrowawayUser,
