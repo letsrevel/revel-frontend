@@ -108,12 +108,14 @@ class AuthStore {
 	async waitForAuthReady(): Promise<void> {
 		const gate = this._bootstrapGate;
 		if (!gate) return;
+		let timeoutId: ReturnType<typeof setTimeout> | undefined = undefined;
 		await Promise.race([
 			gate.promise,
 			new Promise<void>((r) => {
-				setTimeout(r, 15_000);
+				timeoutId = setTimeout(r, 15_000);
 			})
 		]);
+		clearTimeout(timeoutId);
 	}
 
 	/**
