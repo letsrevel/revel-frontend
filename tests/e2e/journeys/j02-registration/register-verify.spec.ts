@@ -14,13 +14,42 @@ import { revealRegistrationForm } from '../../support/auth-forms';
 
 const STRONG_PASSWORD = 'E2e-test-Pass!123';
 
-async function fillRegistrationForm(page: Page, email: string, password: string): Promise<void> {
+async function fillRegistrationForm(
+	page: Page,
+	email: string,
+	password: string,
+	{ expectSubmittable = true }: { expectSubmittable?: boolean } = {}
+): Promise<void> {
 	await gotoHydrated(page, '/register');
 	await revealRegistrationForm(page);
-	await page.getByLabel('Email address').fill(email);
-	await page.getByLabel('Password', { exact: true }).fill(password);
-	await page.getByLabel('Confirm password').fill(password);
-	await page.getByLabel(/I accept the/).check();
+
+	const emailInput = page.getByLabel('Email address');
+	const passwordInput = page.getByLabel('Password', { exact: true });
+	const confirmInput = page.getByLabel('Confirm password');
+	const terms = page.getByLabel(/I accept the/);
+	const submit = page.getByRole('button', { name: 'Create your account' });
+
+	// Outcome-keyed fill loop (same medicine as the questionnaire builder's
+	// Tiptap re-fill): a fill landing in the hydration-settling window can
+	// update the DOM without Svelte's $state ever learning about it, so the
+	// submit button (disabled on $state-derived canSubmit) never enables.
+	// Re-fill until the RENDERED state proves the values landed: the button
+	// enables (strong path) or the strength panel appears (weak path — it
+	// renders only when the password $state is non-empty). fill() replaces
+	// the whole value, so a retry also repairs a corrupted field.
+	await expect(async () => {
+		await emailInput.fill(email);
+		await passwordInput.fill(password);
+		await confirmInput.fill(password);
+		if (!(await terms.isChecked())) await terms.check();
+		await expect(emailInput).toHaveValue(email, { timeout: 2_000 });
+		if (expectSubmittable) {
+			await expect(submit).toBeEnabled({ timeout: 2_000 });
+		} else {
+			await expect(passwordInput).toHaveValue(password, { timeout: 2_000 });
+			await expect(page.getByText('Password strength:')).toBeVisible({ timeout: 2_000 });
+		}
+	}).toPass({ timeout: 45_000 });
 }
 
 test.describe('J2 registration & email verification @p0', () => {
@@ -50,7 +79,7 @@ test.describe('J2 registration & email verification @p0', () => {
 	});
 
 	test('rejects a weak password inline', async ({ page }) => {
-		await fillRegistrationForm(page, uniqueEmail('WeakPw'), 'weak');
+		await fillRegistrationForm(page, uniqueEmail('WeakPw'), 'weak', { expectSubmittable: false });
 
 		// Client-side validation blocks submission with an accessible error.
 		const submit = page.getByRole('button', { name: 'Create your account' });

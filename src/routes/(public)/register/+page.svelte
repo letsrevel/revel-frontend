@@ -61,7 +61,12 @@
 
 	function dismissNudge() {
 		nudgeDismissed = true;
-		requestAnimationFrame(() => document.getElementById('email')?.focus());
+		// Focus synchronously — a deferred handoff (rAF/timeout) can fire
+		// seconds late under load and steal focus from a field the user (or a
+		// password manager) is already typing into, spraying keystrokes into
+		// the email field. The input exists in the DOM under the overlay, so
+		// it is focusable right now.
+		document.getElementById('email')?.focus();
 	}
 
 	function onNudgeKeydown(event: KeyboardEvent) {
@@ -97,6 +102,8 @@
 	// Sync browser autofill/form restoration with reactive state.
 	// Chrome may fill fields before Svelte hydration (SSR) or restore them
 	// from bfcache/session restore without firing input events.
+	let formEl: HTMLFormElement | null = null;
+
 	function syncFormValues() {
 		const get = (id: string) => document.getElementById(id) as HTMLInputElement | null;
 		const emailEl = get('email');
@@ -115,6 +122,16 @@
 		const t1 = setTimeout(syncFormValues, 100);
 		const t2 = setTimeout(syncFormValues, 1000);
 
+		// A value written into the DOM during the hydration-settling window
+		// (browser autofill, password managers) fires its input event before
+		// Svelte's bindings listen, so $state never learns about it and the
+		// submit button stays disabled. The timers above only cover the first
+		// second — recover continuously instead: any later native activity on
+		// the form (typing in another field, focus moving, a checkbox toggle)
+		// re-runs the sync and picks up whatever the bindings missed.
+		const syncEvents = ['input', 'change', 'focusout'] as const;
+		for (const evt of syncEvents) formEl?.addEventListener(evt, syncFormValues);
+
 		// Handle bfcache restoration (back/forward navigation)
 		const handlePageShow = (e: PageTransitionEvent) => {
 			if (e.persisted) {
@@ -127,6 +144,7 @@
 		return () => {
 			clearTimeout(t1);
 			clearTimeout(t2);
+			for (const evt of syncEvents) formEl?.removeEventListener(evt, syncFormValues);
 			window.removeEventListener('pageshow', handlePageShow);
 		};
 	});
@@ -200,6 +218,7 @@
 		<!-- Registration Form -->
 		<form
 			method="POST"
+			bind:this={formEl}
 			use:enhance={() => {
 				// Prevent duplicate submissions
 				if (isSubmitting) return;
