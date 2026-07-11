@@ -183,6 +183,98 @@ export async function createTicketTier(
 	return { id: created.id, name };
 }
 
+export interface CreatedOrg {
+	id: string;
+	slug: string;
+	name: string;
+	/** The throwaway user who owns the org (backend allows ONE org per owner). */
+	owner: ThrowawayUser;
+	/** The "General membership" tier every new org gets from a post-save signal. */
+	defaultTierId: string;
+}
+
+/**
+ * Register a fresh verified user and have them create an organization — the
+ * backend allows one org per owner, so seeded personas (who already own orgs)
+ * can never be the owner here. Every new org automatically gets a
+ * "General membership" tier; its id is returned for approve-with-tier flows.
+ */
+export async function createOrganization(
+	options: { acceptMembershipRequests?: boolean; contactEmail?: string } = {}
+): Promise<CreatedOrg> {
+	const owner = await createVerifiedUser('OrgOwner');
+	const api = await ApiClient.login(owner.email, owner.password);
+	const name = uniqueName('Org');
+	// Defaults to the owner's email, which the backend treats as ALREADY
+	// VERIFIED (it matches a verified account). Pass a different contactEmail
+	// to get an org whose contact email is unverified.
+	const org = await api.post<{ id: string; slug: string }>('/api/organizations/', {
+		name,
+		contact_email: options.contactEmail ?? owner.email
+	});
+
+	if (options.acceptMembershipRequests) {
+		await api.put(`/api/organization-admin/${org.slug}`, {
+			visibility: 'public',
+			accept_membership_requests: true
+		});
+	}
+
+	// Plain array (not paginated).
+	const tiers = await api.get<Array<{ id: string; name: string }>>(
+		`/api/organization-admin/${org.slug}/membership-tiers`
+	);
+	const defaultTier = tiers.find((t) => t.name === 'General membership');
+	if (!defaultTier) {
+		throw new Error(`New org ${org.slug} is missing its default membership tier`);
+	}
+
+	return { id: org.id, slug: org.slug, name, owner, defaultTierId: defaultTier.id };
+}
+
+/** Add a membership tier to a throwaway-owned org. */
+export async function createMembershipTier(
+	owner: ThrowawayUser,
+	orgSlug: string,
+	name: string
+): Promise<{ id: string }> {
+	const api = await ApiClient.login(owner.email, owner.password);
+	return api.post<{ id: string }>(`/api/organization-admin/${orgSlug}/membership-tiers`, { name });
+}
+
+/**
+ * Have a throwaway user request membership of an org (the org must have been
+ * created with `acceptMembershipRequests: true`). Returns the request id the
+ * org admin sees.
+ */
+export async function requestMembership(
+	user: ThrowawayUser,
+	orgSlug: string,
+	message?: string
+): Promise<{ id: string }> {
+	const api = await ApiClient.login(user.email, user.password);
+	return api.post<{ id: string }>(
+		`/api/organizations/${orgSlug}/membership-requests`,
+		message ? { message } : {}
+	);
+}
+
+/**
+ * Approve a pending membership request as the org owner — ARRANGE step for
+ * specs that need an existing MEMBER (staff promotion, status changes).
+ */
+export async function approveMembershipRequest(
+	owner: ThrowawayUser,
+	orgSlug: string,
+	requestId: string,
+	tierId: string
+): Promise<void> {
+	const api = await ApiClient.login(owner.email, owner.password);
+	await api.post(`/api/organization-admin/${orgSlug}/membership-requests/${requestId}/approve`, {
+		tier_id: tierId
+	});
+}
+
 /**
  * Claim/reserve a ticket for a throwaway user straight through the public
  * checkout API — the ARRANGE step for specs whose journey starts from an

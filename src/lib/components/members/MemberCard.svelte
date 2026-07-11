@@ -42,7 +42,7 @@
 </script>
 
 <div
-	class="rounded-lg border border-border bg-card p-4 shadow-sm transition-shadow hover:shadow-md"
+	class="min-w-0 rounded-lg border border-border bg-card p-4 shadow-sm transition-shadow hover:shadow-md"
 >
 	<div class="flex items-start justify-between gap-4">
 		<!-- Avatar -->
