@@ -4,11 +4,12 @@ import { organizationGetOrganizationTokenDetails } from '$lib/api/generated/sdk.
 import type { OrganizationTokenRejectionSchema } from '$lib/api/generated/types.gen';
 import { extractErrorMessage } from '$lib/utils/errors';
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, fetch }) => {
 	const tokenId = params.token_id;
 
 	// Fetch token details (no auth required)
 	const response = await organizationGetOrganizationTokenDetails({
+		fetch,
 		path: { token_id: tokenId }
 	});
 
