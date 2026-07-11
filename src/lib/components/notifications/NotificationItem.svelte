@@ -114,6 +114,15 @@
 		}
 	}
 
+	// Mark-as-read on card open — skipped while either toggle mutation is in
+	// flight, so a rapid body click can't race the explicit read/unread
+	// toggle and clobber its optimistic state.
+	function markReadOnOpen(): void {
+		if (!isRead && !markReadMutation.isPending && !markUnreadMutation.isPending) {
+			markReadMutation.mutate();
+		}
+	}
+
 	// Handle navigation to related content
 	function handleClick(event: MouseEvent): void {
 		// Check if the click was on a link inside the notification body
@@ -121,18 +130,14 @@
 		const target = event.target as HTMLElement;
 		if (target.tagName === 'A' || target.closest('a')) {
 			// Mark as read but don't navigate - let the link handle it
-			if (!isRead) {
-				markReadMutation.mutate();
-			}
+			markReadOnOpen();
 			// Close the dropdown if callback provided
 			onNavigate?.();
 			return;
 		}
 
 		// Mark as read on click (if not already)
-		if (!isRead) {
-			markReadMutation.mutate();
-		}
+		markReadOnOpen();
 
 		// Extract URL from context if available
 		const url = extractUrlFromContext(notification.context);
@@ -261,9 +266,7 @@
 		event.stopPropagation();
 		const data = waitlistSpotData;
 		if (!data) return;
-		if (!isRead) {
-			markReadMutation.mutate();
-		}
+		markReadOnOpen();
 		onNavigate?.();
 		// eslint-disable-next-line svelte/no-navigation-without-resolve -- deep-link path supplied by the notification payload (API-provided), not a static route id
 		goto(data.claimUrl);
