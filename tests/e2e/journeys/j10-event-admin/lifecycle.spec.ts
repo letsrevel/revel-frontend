@@ -46,7 +46,12 @@ test.describe('J10 event lifecycle @p1', () => {
 		const cancelDialog = page.getByRole('dialog', { name: 'Cancel this event' });
 		await cancelDialog.getByLabel('Reason (optional)').fill(reason);
 		await cancelDialog.getByRole('button', { name: 'Cancel event' }).click();
-		await expect(page.getByText('Event cancelled')).toBeVisible({ timeout: 20_000 });
+		// { exact: true } — the edit-page header concatenates "... Event cancelled",
+		// so a substring match resolves to 2 elements (strict-mode violation) with
+		// render-order-dependent timing; the status badge is the exact-text one.
+		await expect(page.getByText('Event cancelled', { exact: true })).toBeVisible({
+			timeout: 20_000
+		});
 
 		// The attendee sees the banner WITH the organizer's reason.
 		const attendeeContext = await browser.newContext();
