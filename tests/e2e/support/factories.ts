@@ -248,6 +248,20 @@ export async function createOrgToken(
 	});
 }
 
+/** API-create an invitation-granting token on an event owned by a seeded persona. */
+export async function createEventToken(
+	eventId: string,
+	options: { name?: string; maxUses?: number; owner?: PersonaName } = {}
+): Promise<{ id: string }> {
+	const persona = PERSONAS[options.owner ?? 'owner'];
+	const api = await ApiClient.login(persona.email, persona.password);
+	return api.post<{ id: string }>(`/api/event-admin/${eventId}/tokens`, {
+		name: options.name ?? uniqueName('EventToken'),
+		max_uses: options.maxUses ?? 5,
+		grants_invitation: true
+	});
+}
+
 /** Add a membership tier to a throwaway-owned org. */
 export async function createMembershipTier(
 	owner: ThrowawayUser,
@@ -289,6 +303,20 @@ export async function approveMembershipRequest(
 	await api.post(`/api/organization-admin/${orgSlug}/membership-requests/${requestId}/approve`, {
 		tier_id: tierId
 	});
+}
+
+/**
+ * RSVP a throwaway user to a non-ticketed event via the public API. Throws
+ * ApiError (status 400) when the event is not accepting RSVPs — specs use
+ * that to assert closed/cancelled events reject new attendance.
+ */
+export async function rsvpViaApi(
+	user: ThrowawayUser,
+	eventId: string,
+	answer: 'yes' | 'no' | 'maybe'
+): Promise<void> {
+	const api = await ApiClient.login(user.email, user.password);
+	await api.post(`/api/events/${eventId}/rsvp/${answer}`);
 }
 
 /**

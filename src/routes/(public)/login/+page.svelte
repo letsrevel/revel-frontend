@@ -27,6 +27,13 @@
 	// fallback only matters if the server-side /version check failed.
 	const isDemoMode = $derived(data.demo || appStore.isDemoMode);
 
+	// On demo backends the account dropdown is the default variant (SSR-decided,
+	// no hydration-time swap — that was #596). An explicit user click on "Show
+	// login form" flips to the real email/password form; the form variant offers
+	// the inverse "Use a demo account" link. Non-demo backends never see either.
+	let showLoginForm = $state(false);
+	const useDemoDropdown = $derived(isDemoMode && !showLoginForm);
+
 	// A relative form action ("?/login") replaces the query string, so the
 	// returnUrl the server action reads (safeReturnUrl) would be dropped.
 	// Thread it through the action URL for every login/2FA submission.
@@ -116,7 +123,7 @@
 		{/if}
 
 		{#if !requires2FA}
-			{#if isDemoMode}
+			{#if useDemoDropdown}
 				<!-- Demo Mode: Account Selector -->
 				<div class="space-y-6">
 					<div
@@ -205,6 +212,22 @@
 							{/if}
 						</button>
 					</form>
+
+					<!-- Toggle to the real email/password form -->
+					<div class="text-center text-sm">
+						<button
+							type="button"
+							onclick={() => {
+								showLoginForm = true;
+								// The toggle unmounts itself in the swap — move focus to the
+								// revealed form so keyboard users aren't dropped on <body>.
+								requestAnimationFrame(() => document.getElementById('email')?.focus());
+							}}
+							class="text-primary underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+						>
+							{m['login.showLoginForm']()}
+						</button>
+					</div>
 				</div>
 			{:else}
 				<!-- Standard Login Form -->
@@ -322,6 +345,23 @@
 						{/if}
 					</button>
 				</form>
+
+				{#if isDemoMode}
+					<!-- Inverse toggle back to the demo-account dropdown -->
+					<div class="mt-4 text-center text-sm">
+						<button
+							type="button"
+							onclick={() => {
+								showLoginForm = false;
+								// Same focus hand-off as the inverse toggle above.
+								requestAnimationFrame(() => document.getElementById('demo-account')?.focus());
+							}}
+							class="text-primary underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+						>
+							{m['login.useADemoAccount']()}
+						</button>
+					</div>
+				{/if}
 			{/if}
 		{:else}
 			<!-- 2FA Verification Form -->

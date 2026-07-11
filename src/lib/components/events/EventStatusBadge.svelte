@@ -138,14 +138,17 @@
 		const baseClasses =
 			'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors';
 
+		// 700-level backgrounds: white text on green/orange-600 is < 4.5:1
+		// (WCAG AA fail — caught by the E2E a11y smoke once cancelled events
+		// appeared); green-700 = 5.02:1, orange-700 = 5.18:1.
 		const variantClasses = {
 			success:
-				'bg-green-600 text-white hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800',
+				'bg-green-700 text-white hover:bg-green-800 dark:bg-green-700 dark:hover:bg-green-800',
 			default: 'bg-primary text-primary-foreground hover:bg-primary/90',
 			secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
 			destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
 			cancelled:
-				'bg-orange-600 text-white hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-800'
+				'bg-orange-700 text-white hover:bg-orange-800 dark:bg-orange-700 dark:hover:bg-orange-800'
 		};
 
 		return cn(baseClasses, variantClasses[variant]);
