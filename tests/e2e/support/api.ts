@@ -70,15 +70,25 @@ export class ApiClient {
 	}
 
 	async request<T>(method: string, path: string, body?: unknown): Promise<T> {
-		const response = await fetch(`${API_URL}${path}`, {
-			method,
-			headers: {
-				Authorization: `Bearer ${this.accessToken}`,
-				...(body !== undefined ? { 'Content-Type': 'application/json' } : {})
-			},
-			body: body !== undefined ? JSON.stringify(body) : undefined
-		});
-		const text = await response.text();
+		// Bounded 5xx retry, mirroring obtainTokenPair: under parallel worker
+		// load the dev backend can transiently 500 (observed: Postgres "sorry,
+		// too many clients already" surfacing as OperationalError). 4xx is
+		// NEVER retried — specs assert on those deliberately.
+		let response: Response;
+		let text: string;
+		for (let attempt = 1; ; attempt++) {
+			response = await fetch(`${API_URL}${path}`, {
+				method,
+				headers: {
+					Authorization: `Bearer ${this.accessToken}`,
+					...(body !== undefined ? { 'Content-Type': 'application/json' } : {})
+				},
+				body: body !== undefined ? JSON.stringify(body) : undefined
+			});
+			text = await response.text();
+			if (response.status < 500 || attempt >= 3) break;
+			await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
+		}
 		if (!response.ok) {
 			throw new ApiError(response.status, method, path, text);
 		}
