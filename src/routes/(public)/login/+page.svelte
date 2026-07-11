@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { applyAction, enhance } from '$app/forms';
@@ -221,7 +222,14 @@
 								showLoginForm = true;
 								// The toggle unmounts itself in the swap — move focus to the
 								// revealed form so keyboard users aren't dropped on <body>.
-								requestAnimationFrame(() => document.getElementById('email')?.focus());
+								// tick(), not rAF: the input only exists after the swap
+								// flushes, but rAF is paint-bound and under load can fire
+								// seconds late, stealing focus from a field the user (or a
+								// password manager) is already typing into — the same
+								// keystroke-spray bug as the register nudge (#608/#609).
+								// tick()'s microtask resolves before any further input
+								// events can interleave.
+								void tick().then(() => document.getElementById('email')?.focus());
 							}}
 							class="text-primary underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						>

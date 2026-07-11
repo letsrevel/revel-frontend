@@ -1,4 +1,4 @@
-import type { BrowserContext, Page } from '@playwright/test';
+import { expect, type BrowserContext, type Page } from '@playwright/test';
 import { obtainTokenPair } from './api';
 import { PERSONAS, type PersonaName } from './personas';
 import { gotoHydrated } from './navigation';
@@ -67,8 +67,17 @@ export async function uiLogin(page: Page, who: PersonaName | Credentials): Promi
 		await page.getByRole('button', { name: /^Sign in as/ }).click();
 	} else {
 		if (demo) await revealLoginForm(page);
-		await page.getByLabel('Email address').fill(persona.email);
-		await page.getByLabel('Password', { exact: true }).fill(persona.password);
+		// Outcome-keyed re-fill: the form-reveal focus handoff (and any other
+		// late focus/hydration race) can spray a fill into the wrong field —
+		// re-fill until the rendered values prove both landed, then submit.
+		const emailInput = page.getByLabel('Email address');
+		const passwordInput = page.getByLabel('Password', { exact: true });
+		await expect(async () => {
+			await emailInput.fill(persona.email);
+			await passwordInput.fill(persona.password);
+			await expect(emailInput).toHaveValue(persona.email, { timeout: 2_000 });
+			await expect(passwordInput).toHaveValue(persona.password, { timeout: 2_000 });
+		}).toPass({ timeout: 30_000 });
 		await page.getByRole('button', { name: 'Sign in', exact: true }).click();
 	}
 	await page.waitForURL(/\/dashboard(\/|$|\?)/);

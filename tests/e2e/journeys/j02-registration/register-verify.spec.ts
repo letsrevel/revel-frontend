@@ -1,56 +1,17 @@
-import type { Page } from '@playwright/test';
 import { test, expect, PERSONAS } from '../../support/fixtures';
-import { gotoHydrated } from '../../support/navigation';
 import { uniqueEmail } from '../../support/factories';
 import { extractLink, waitForEmail } from '../../support/mailpit';
-import { revealRegistrationForm } from '../../support/auth-forms';
+import { fillRegistrationForm } from '../../support/auth-forms';
 
 // J2.1 (USER_JOURNEYS.md) — email registration: form → check-email page →
 // Mailpit verification link → verified. Unhappy paths: weak password,
 // already-registered email. Each run registers a unique throwaway address.
 //
 // On DEMO_MODE backends the form is gated behind a nudge overlay (#600);
-// revealRegistrationForm dismisses it and is a no-op on non-demo backends.
+// fillRegistrationForm dismisses it (via revealRegistrationForm) and is a
+// no-op on non-demo backends.
 
 const STRONG_PASSWORD = 'E2e-test-Pass!123';
-
-async function fillRegistrationForm(
-	page: Page,
-	email: string,
-	password: string,
-	{ expectSubmittable = true }: { expectSubmittable?: boolean } = {}
-): Promise<void> {
-	await gotoHydrated(page, '/register');
-	await revealRegistrationForm(page);
-
-	const emailInput = page.getByLabel('Email address');
-	const passwordInput = page.getByLabel('Password', { exact: true });
-	const confirmInput = page.getByLabel('Confirm password');
-	const terms = page.getByLabel(/I accept the/);
-	const submit = page.getByRole('button', { name: 'Create your account' });
-
-	// Outcome-keyed fill loop (same medicine as the questionnaire builder's
-	// Tiptap re-fill): a fill landing in the hydration-settling window can
-	// update the DOM without Svelte's $state ever learning about it, so the
-	// submit button (disabled on $state-derived canSubmit) never enables.
-	// Re-fill until the RENDERED state proves the values landed: the button
-	// enables (strong path) or the strength panel appears (weak path — it
-	// renders only when the password $state is non-empty). fill() replaces
-	// the whole value, so a retry also repairs a corrupted field.
-	await expect(async () => {
-		await emailInput.fill(email);
-		await passwordInput.fill(password);
-		await confirmInput.fill(password);
-		if (!(await terms.isChecked())) await terms.check();
-		await expect(emailInput).toHaveValue(email, { timeout: 2_000 });
-		if (expectSubmittable) {
-			await expect(submit).toBeEnabled({ timeout: 2_000 });
-		} else {
-			await expect(passwordInput).toHaveValue(password, { timeout: 2_000 });
-			await expect(page.getByText('Password strength:')).toBeVisible({ timeout: 2_000 });
-		}
-	}).toPass({ timeout: 45_000 });
-}
 
 test.describe('J2 registration & email verification @p0', () => {
 	test('registers, receives the verification email, and verifies', async ({ page }) => {

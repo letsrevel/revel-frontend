@@ -264,18 +264,112 @@ export async function createEventToken(
 }
 
 /**
- * API-create direct invitations on an event owned by a seeded persona — the
- * ARRANGE step for inbox specs (creating an EventInvitation fires the
- * INVITATION_RECEIVED in-app notification via a post_save signal).
+ * API-create invitations on an event owned by a seeded persona (or a
+ * ThrowawayUser owner). The backend branches per email: a registered address
+ * gets a direct EventInvitation (which fires the INVITATION_RECEIVED in-app
+ * notification via a post_save signal), an unregistered one gets a
+ * PendingEventInvitation that auto-converts when that email registers.
+ * Waiver flags (`waives_questionnaire`, `waives_purchase`, …) and
+ * `custom_message` go in `options.invitation`.
  */
 export async function inviteToEvent(
 	eventId: string,
 	emails: string[],
-	owner: PersonaName = 'owner'
+	options: { owner?: PersonaName | ThrowawayUser; invitation?: Record<string, unknown> } = {}
 ): Promise<void> {
-	const persona = PERSONAS[owner];
-	const api = await ApiClient.login(persona.email, persona.password);
-	await api.post(`/api/event-admin/${eventId}/invitations`, { emails });
+	const { owner = 'owner' } = options;
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
+	await api.post(`/api/event-admin/${eventId}/invitations`, {
+		emails,
+		...options.invitation
+	});
+}
+
+/**
+ * Create a PUBLISHED admission questionnaire (manual evaluation, one mandatory
+ * free-text question) on the event's org and assign it to the event — from
+ * then on the event's eligibility gate answers `next_step:
+ * "complete_questionnaire"` for users without a submission. Only ever attach
+ * to events the spec created itself, NEVER to seeded events (it would gate
+ * every other spec touching them).
+ */
+export async function attachAdmissionQuestionnaire(
+	event: CreatedEvent,
+	owner: PersonaName | ThrowawayUser = 'owner'
+): Promise<{ id: string; name: string }> {
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
+
+	const org = await api.get<{ id: string }>(`/api/organizations/${event.orgSlug}`);
+	const name = uniqueName('Questionnaire');
+	const questionnaire = await api.post<{ id: string }>(
+		`/api/questionnaires/${org.id}/create-questionnaire`,
+		{
+			name,
+			min_score: 0,
+			evaluation_mode: 'manual',
+			status: 'published',
+			freetextquestion_questions: [{ question: 'Why do you want to attend?', is_mandatory: true }]
+		}
+	);
+	await api.post(`/api/questionnaires/${questionnaire.id}/events/${event.id}`);
+	return { id: questionnaire.id, name };
+}
+
+export interface GuestIdentity {
+	email: string;
+	firstName: string;
+	lastName: string;
+}
+
+/**
+ * Complete a full guest RSVP (no account) via the public API: submit the
+ * guest form payload, then confirm through the emailed token — only the
+ * confirmation actually creates the RSVP row (and its guest RevelUser). The
+ * event must have `can_attend_without_login: true`. ARRANGE step for the
+ * guest→account upgrade journey; the guest UI journey itself is j07.
+ */
+export async function createGuestRsvp(eventId: string, label = 'Guest'): Promise<GuestIdentity> {
+	const email = uniqueEmail(label);
+	const firstName = 'E2E';
+	const lastName = label;
+
+	const rsvp = await fetch(`${API_URL}/api/events/${eventId}/rsvp/yes/public`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ email, first_name: firstName, last_name: lastName })
+	});
+	if (!rsvp.ok) {
+		throw new ApiError(
+			rsvp.status,
+			'POST',
+			`/api/events/${eventId}/rsvp/yes/public`,
+			await rsvp.text()
+		);
+	}
+
+	const message = await waitForEmail({ to: email, subject: 'Confirm your RSVP' });
+	const link = extractLink(message, /confirm-action\?token=/);
+	const token = new URL(link).searchParams.get('token');
+	if (!token) {
+		throw new Error(`Guest confirmation link has no token: ${link}`);
+	}
+	const confirm = await fetch(`${API_URL}/api/events/guest-actions/confirm`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ token })
+	});
+	if (!confirm.ok) {
+		throw new ApiError(
+			confirm.status,
+			'POST',
+			'/api/events/guest-actions/confirm',
+			await confirm.text()
+		);
+	}
+
+	return { email, firstName, lastName };
 }
 
 /** Add a membership tier to a throwaway-owned org. */
