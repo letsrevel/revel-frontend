@@ -262,6 +262,21 @@ export async function createEventToken(
 	});
 }
 
+/**
+ * API-create direct invitations on an event owned by a seeded persona — the
+ * ARRANGE step for inbox specs (creating an EventInvitation fires the
+ * INVITATION_RECEIVED in-app notification via a post_save signal).
+ */
+export async function inviteToEvent(
+	eventId: string,
+	emails: string[],
+	owner: PersonaName = 'owner'
+): Promise<void> {
+	const persona = PERSONAS[owner];
+	const api = await ApiClient.login(persona.email, persona.password);
+	await api.post(`/api/event-admin/${eventId}/invitations`, { emails });
+}
+
 /** Add a membership tier to a throwaway-owned org. */
 export async function createMembershipTier(
 	owner: ThrowawayUser,
