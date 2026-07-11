@@ -3,6 +3,7 @@ import { obtainTokenPair } from './api';
 import { PERSONAS, type PersonaName } from './personas';
 import { gotoHydrated } from './navigation';
 import { isDemoMode } from './skip';
+import { revealLoginForm } from './auth-forms';
 
 /**
  * Authenticate a browser context as a persona by planting a FRESH token pair
@@ -49,20 +50,23 @@ export async function authenticateContext(
 }
 
 /**
- * Log in through the UI. On DEMO backends the login page REPLACES the
- * email/password form with a test-account dropdown as soon as the client
- * learns `demo: true` — filling the form races that swap, so pick the path
- * deterministically from the backend mode. (The dropdown only offers seeded
- * accounts; throwaway users need non-demo backends or authenticateContext.)
+ * Log in through the UI. On DEMO backends the login page defaults to the
+ * test-account dropdown (SSR-decided, #600). Persona NAMES map to seeded
+ * accounts, so they take the dropdown path. Raw CREDENTIALS (a throwaway user
+ * with no dropdown entry) instead reveal the real email/password form via the
+ * "Show login form" toggle and sign in with it. Non-demo backends always use
+ * the password form directly.
  */
 export async function uiLogin(page: Page, who: PersonaName | Credentials): Promise<void> {
 	const persona = typeof who === 'string' ? PERSONAS[who] : who;
 	await gotoHydrated(page, '/login');
-	if (await isDemoMode()) {
+	const demo = await isDemoMode();
+	if (demo && typeof who === 'string') {
 		const select = page.getByLabel('Select Test Account');
 		await select.selectOption(persona.email);
 		await page.getByRole('button', { name: /^Sign in as/ }).click();
 	} else {
+		if (demo) await revealLoginForm(page);
 		await page.getByLabel('Email address').fill(persona.email);
 		await page.getByLabel('Password', { exact: true }).fill(persona.password);
 		await page.getByRole('button', { name: 'Sign in', exact: true }).click();

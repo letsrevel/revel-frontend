@@ -6,7 +6,7 @@
 	import type { ActionData, PageData } from './$types';
 	import PasswordStrengthIndicator from '$lib/components/forms/PasswordStrengthIndicator.svelte';
 	import ReferralCodeInput from '$lib/components/referral/ReferralCodeInput.svelte';
-	import { Eye, EyeOff, Loader2 } from '@lucide/svelte';
+	import { Eye, EyeOff, Loader2, Sparkles, ArrowRight } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import { SeoHead } from '$lib/seo';
 
@@ -45,6 +45,44 @@
 	// Error handling - type assertion needed due to ActionData union
 	const errors = $derived((form?.errors || {}) as Record<string, string>);
 	const hasErrors = $derived(errors && Object.keys(errors).length > 0);
+
+	// Demo mode: the registration form is reachable, but gated behind a nudge
+	// overlay pushing the ready-made demo accounts (#600). data.demo is SSR'd, so
+	// the overlay renders on the initial paint with no hydration-time swap. An
+	// explicit "Register anyway" click reveals the form underneath. Non-demo
+	// backends never see the overlay.
+	let nudgeDismissed = $state(false);
+	const showNudge = $derived(data.demo && !nudgeDismissed);
+
+	// Focus management for the modal nudge (WCAG): trap Tab between its two
+	// controls, dismiss on Escape, and hand focus to the form on dismiss.
+	let nudgeCta = $state<HTMLAnchorElement | null>(null);
+	let nudgeDismiss = $state<HTMLButtonElement | null>(null);
+
+	function dismissNudge() {
+		nudgeDismissed = true;
+		requestAnimationFrame(() => document.getElementById('email')?.focus());
+	}
+
+	function onNudgeKeydown(event: KeyboardEvent) {
+		if (event.key === 'Escape') {
+			dismissNudge();
+			return;
+		}
+		if (event.key !== 'Tab' || !nudgeCta || !nudgeDismiss) return;
+		if (event.shiftKey && document.activeElement === nudgeCta) {
+			event.preventDefault();
+			nudgeDismiss.focus();
+		} else if (!event.shiftKey && document.activeElement === nudgeDismiss) {
+			event.preventDefault();
+			nudgeCta.focus();
+		}
+	}
+
+	// Move focus into the overlay once it is shown.
+	$effect(() => {
+		if (showNudge) nudgeCta?.focus();
+	});
 
 	// Check if form is valid for submission
 	const canSubmit = $derived(
@@ -95,6 +133,54 @@
 </script>
 
 <SeoHead config={data.seo} />
+
+{#if showNudge}
+	<!-- Demo nudge overlay: pushes the ready-made demo accounts, with a dismiss
+	     action that reveals the registration form underneath (#600). -->
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm"
+		role="dialog"
+		aria-modal="true"
+		aria-labelledby="demo-nudge-title"
+		aria-describedby="demo-nudge-body"
+		tabindex="-1"
+		onkeydown={onNudgeKeydown}
+	>
+		<div
+			class="w-full max-w-md space-y-6 rounded-lg border border-border bg-card p-6 text-center shadow-lg"
+		>
+			<div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+				<Sparkles class="h-6 w-6 text-primary" aria-hidden="true" />
+			</div>
+			<div class="space-y-2">
+				<h2 id="demo-nudge-title" class="text-xl font-bold tracking-tight">
+					{m['register.demoNudgeTitle']()}
+				</h2>
+				<p id="demo-nudge-body" class="text-sm text-muted-foreground">
+					{m['register.demoNudgeBody']()}
+				</p>
+			</div>
+			<div class="space-y-3">
+				<a
+					bind:this={nudgeCta}
+					href={resolve('/(public)/login', {})}
+					class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+				>
+					<span>{m['register.demoNudgeUseAccount']()}</span>
+					<ArrowRight class="h-4 w-4" aria-hidden="true" />
+				</a>
+				<button
+					bind:this={nudgeDismiss}
+					type="button"
+					onclick={dismissNudge}
+					class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+				>
+					{m['register.demoNudgeRegisterAnyway']()}
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
 
 <div class="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
 	<div class="w-full max-w-md space-y-8">

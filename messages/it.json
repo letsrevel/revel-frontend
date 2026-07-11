@@ -2508,7 +2508,12 @@
 		"agreementText": "Richiedendo, sarai invitato a questo evento",
 		"toast_success": "Sei stato invitato a {eventName}!",
 		"toast_error": "Richiesta invito fallita. Il token potrebbe essere scaduto o non valido.",
-		"error_claimFailed": "Richiesta invito fallita"
+		"error_claimFailed": "Richiesta invito fallita",
+		"rejectedTitle": "Questo invito non è più valido",
+		"rejectedExpired": "Il tuo invito per {eventName} è scaduto.",
+		"rejectedUsedUp": "Questo link di invito per {eventName} è già stato utilizzato completamente.",
+		"rejectedHint": "Contatta chi organizza per ricevere un nuovo invito.",
+		"rejectedCta": "Sfoglia gli eventi"
 	},
 	"joinOrgPage": {
 		"pageTitle": "Unisciti a {organizationName}",
@@ -2535,7 +2540,12 @@
 		"toast_successStaff": "Ora sei un membro dello staff di {organizationName}!",
 		"toast_successMember": "Ora sei un membro di {organizationName}!",
 		"toast_error": "Richiesta invito fallita. Il token potrebbe essere scaduto o non valido.",
-		"error_claimFailed": "Richiesta invito fallita"
+		"error_claimFailed": "Richiesta invito fallita",
+		"rejectedTitle": "Questo invito non è più valido",
+		"rejectedExpired": "Il tuo invito per {organizationName} è scaduto.",
+		"rejectedUsedUp": "Questo link di invito per {organizationName} è già stato utilizzato completamente.",
+		"rejectedHint": "Contatta chi organizza per ricevere un nuovo invito.",
+		"rejectedCta": "Sfoglia gli eventi"
 	},
 	"languageSwitcher": {
 		"selectLanguage": "Select language: {name}"
@@ -2681,7 +2691,9 @@
 		"viewAllTestAccounts": "Visualizza tutti gli account di test",
 		"selectTestAccount": "Seleziona Account di Test",
 		"chooseAccount": "-- Scegli un account --",
-		"signInAs": "Accedi come"
+		"signInAs": "Accedi come",
+		"showLoginForm": "Mostra il modulo di accesso",
+		"useADemoAccount": "Usa un account demo"
 	},
 	"logoutPage": {
 		"loggingOut": "Disconnessione in corso..."
@@ -4813,7 +4825,11 @@
 		"and": "e",
 		"privacyPolicy": "Informativa sulla Privacy",
 		"creatingAccount": "Creazione account...",
-		"alreadyHaveAccount": "Hai già un account?"
+		"alreadyHaveAccount": "Hai già un account?",
+		"demoNudgeTitle": "Questa è una demo",
+		"demoNudgeBody": "Puoi esplorare Revel subito con un account demo già pronto, senza registrarti.",
+		"demoNudgeUseAccount": "Usa un account demo",
+		"demoNudgeRegisterAnyway": "Registrati comunque"
 	},
 	"requestInvitationButton": {
 		"mustBeLoggedIn": "Devi essere loggato per richiedere un invito",

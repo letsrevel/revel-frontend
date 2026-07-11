@@ -2395,7 +2395,12 @@
 		"agreementText": "En réclamant, tu seras invité à cet événement",
 		"toast_success": "Tu as été invité à {eventName} !",
 		"toast_error": "Échec de la réclamation de l'invitation. Le jeton est peut-être expiré ou invalide.",
-		"error_claimFailed": "Échec de la réclamation de l'invitation"
+		"error_claimFailed": "Échec de la réclamation de l'invitation",
+		"rejectedTitle": "Cette invitation n'est plus valide",
+		"rejectedExpired": "Votre invitation pour {eventName} a expiré.",
+		"rejectedUsedUp": "Ce lien d'invitation pour {eventName} a déjà été entièrement utilisé.",
+		"rejectedHint": "Contactez l'équipe organisatrice pour obtenir une nouvelle invitation.",
+		"rejectedCta": "Parcourir les événements"
 	},
 	"joinOrgPage": {
 		"pageTitle": "Rejoindre {organizationName}",
@@ -2422,7 +2427,12 @@
 		"toast_successStaff": "Tu fais désormais partie de l'équipe de {organizationName} !",
 		"toast_successMember": "Tu es désormais membre de {organizationName} !",
 		"toast_error": "Échec de la réclamation de l'invitation. Le jeton est peut-être expiré ou invalide.",
-		"error_claimFailed": "Échec de la réclamation de l'invitation"
+		"error_claimFailed": "Échec de la réclamation de l'invitation",
+		"rejectedTitle": "Cette invitation n'est plus valide",
+		"rejectedExpired": "Votre invitation pour {organizationName} a expiré.",
+		"rejectedUsedUp": "Ce lien d'invitation pour {organizationName} a déjà été entièrement utilisé.",
+		"rejectedHint": "Contactez l'équipe organisatrice pour obtenir une nouvelle invitation.",
+		"rejectedCta": "Parcourir les événements"
 	},
 	"languageSwitcher": {
 		"selectLanguage": "Select language: {name}"
@@ -2568,7 +2578,9 @@
 		"viewAllTestAccounts": "Voir tous les comptes de test",
 		"selectTestAccount": "Sélectionner un compte de test",
 		"chooseAccount": "-- Choisir un compte --",
-		"signInAs": "Se connecter en tant que"
+		"signInAs": "Se connecter en tant que",
+		"showLoginForm": "Afficher le formulaire de connexion",
+		"useADemoAccount": "Utiliser un compte de démonstration"
 	},
 	"logoutPage": {
 		"loggingOut": "Déconnexion en cours..."
@@ -4784,7 +4796,11 @@
 		"and": "et",
 		"privacyPolicy": "Politique de confidentialité",
 		"creatingAccount": "Création du compte...",
-		"alreadyHaveAccount": "Tu as déjà un compte ?"
+		"alreadyHaveAccount": "Tu as déjà un compte ?",
+		"demoNudgeTitle": "Ceci est une démo",
+		"demoNudgeBody": "Vous pouvez explorer Revel immédiatement avec un compte de démonstration prêt à l'emploi, sans inscription.",
+		"demoNudgeUseAccount": "Utiliser un compte de démonstration",
+		"demoNudgeRegisterAnyway": "S'inscrire quand même"
 	},
 	"requestInvitationButton": {
 		"mustBeLoggedIn": "Tu dois être connecté pour demander une invitation",

@@ -9,18 +9,18 @@ import { buildSeo } from '$lib/seo';
 import { resolveLang } from '$lib/seo/server';
 
 export const load: PageServerLoad = async ({ fetch, cookies, url, request }) => {
-	// In demo mode, registration is disabled — redirect to login. getDemoMode
-	// is cached and fail-open (false on errors), so registration proceeds if
-	// the version check fails.
-	if (await getDemoMode(fetch)) {
-		throw redirect(303, '/login');
-	}
+	// On demo backends the registration form is still reachable, but gated behind
+	// a nudge overlay pushing the ready-made demo accounts (#600). Deciding this
+	// server-side (getDemoMode is cached and fail-open) keeps the overlay in the
+	// SSR render — no hydration-time swap. Non-demo backends see no overlay.
+	const demo = await getDemoMode(fetch);
 
 	const lang = resolveLang(request);
 	const seo = buildSeo({ kind: 'auth', url, lang, page: 'register' });
 
 	return {
 		referralCodeFromCookie: cookies.get('referral_code') || '',
+		demo,
 		seo
 	};
 };

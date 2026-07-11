@@ -2508,7 +2508,12 @@
 		"agreementText": "By claiming, you'll be invited to this event",
 		"toast_success": "You've been invited to {eventName}!",
 		"toast_error": "Failed to claim invitation. The token may be expired or invalid.",
-		"error_claimFailed": "Failed to claim invitation"
+		"error_claimFailed": "Failed to claim invitation",
+		"rejectedTitle": "This invitation is no longer valid",
+		"rejectedExpired": "Your invitation to {eventName} has expired.",
+		"rejectedUsedUp": "This invitation link to {eventName} has already been fully used.",
+		"rejectedHint": "Contact the organizer to get a new invitation.",
+		"rejectedCta": "Browse events"
 	},
 	"joinOrgPage": {
 		"pageTitle": "Join {organizationName}",
@@ -2535,7 +2540,12 @@
 		"toast_successStaff": "You're now a staff member of {organizationName}!",
 		"toast_successMember": "You're now a member of {organizationName}!",
 		"toast_error": "Failed to claim invitation. The token may be expired or invalid.",
-		"error_claimFailed": "Failed to claim invitation"
+		"error_claimFailed": "Failed to claim invitation",
+		"rejectedTitle": "This invitation is no longer valid",
+		"rejectedExpired": "Your invitation to {organizationName} has expired.",
+		"rejectedUsedUp": "This invitation link to {organizationName} has already been fully used.",
+		"rejectedHint": "Contact the organizer to get a new invitation.",
+		"rejectedCta": "Browse events"
 	},
 	"languageSwitcher": {
 		"selectLanguage": "Select language: {name}"
@@ -2681,7 +2691,9 @@
 		"viewAllTestAccounts": "View all test accounts",
 		"selectTestAccount": "Select Test Account",
 		"chooseAccount": "-- Choose an account --",
-		"signInAs": "Sign in as"
+		"signInAs": "Sign in as",
+		"showLoginForm": "Show login form",
+		"useADemoAccount": "Use a demo account"
 	},
 	"logoutPage": {
 		"loggingOut": "Logging out..."
@@ -4813,7 +4825,11 @@
 		"and": "and",
 		"privacyPolicy": "Privacy Policy",
 		"creatingAccount": "Creating account...",
-		"alreadyHaveAccount": "Already have an account?"
+		"alreadyHaveAccount": "Already have an account?",
+		"demoNudgeTitle": "This is a demo",
+		"demoNudgeBody": "You can explore Revel right away with a ready-made demo account — no sign-up needed.",
+		"demoNudgeUseAccount": "Use a demo account",
+		"demoNudgeRegisterAnyway": "Register anyway"
 	},
 	"requestInvitationButton": {
 		"mustBeLoggedIn": "You must be logged in to request an invitation",

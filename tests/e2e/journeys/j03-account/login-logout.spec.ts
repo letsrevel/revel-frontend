@@ -1,7 +1,8 @@
 import type { Locator, Page } from '@playwright/test';
 import { test, expect, PERSONAS } from '../../support/fixtures';
 import { uiLogin } from '../../support/session';
-import { isDemoMode } from '../../support/skip';
+import { gotoHydrated } from '../../support/navigation';
+import { revealLoginForm } from '../../support/auth-forms';
 
 // J3 (USER_JOURNEYS.md) — session basics: login (happy + bad credentials),
 // persona-fixture session restore, logout. Also guards #485: the navbar must
@@ -83,9 +84,10 @@ test.describe('J3 login & logout @p0', () => {
 	test('rejects invalid credentials with an accessible error and stays on /login', async ({
 		page
 	}) => {
-		// Demo backends replace the password form with the test-account dropdown.
-		test.skip(await isDemoMode(), 'No password form on DEMO_MODE backends');
-		await page.goto('/login');
+		// Demo backends default to the test-account dropdown; reveal the real
+		// password form first (#600 — no-op on non-demo backends).
+		await gotoHydrated(page, '/login');
+		await revealLoginForm(page);
 		await page.getByLabel('Email address').fill(PERSONAS.user.email);
 		await page.getByLabel('Password', { exact: true }).fill('definitely-wrong-password');
 		await page.getByRole('button', { name: 'Sign in', exact: true }).click();

@@ -2508,7 +2508,12 @@
 		"agreementText": "Durch Beanspruchen wirst du zu dieser Veranstaltung eingeladen",
 		"toast_success": "Du wurdest zu {eventName} eingeladen!",
 		"toast_error": "Einladung konnte nicht beansprucht werden. Das Token könnte abgelaufen oder ungültig sein.",
-		"error_claimFailed": "Einladung konnte nicht beansprucht werden"
+		"error_claimFailed": "Einladung konnte nicht beansprucht werden",
+		"rejectedTitle": "Diese Einladung ist nicht mehr gültig",
+		"rejectedExpired": "Deine Einladung zu {eventName} ist abgelaufen.",
+		"rejectedUsedUp": "Dieser Einladungslink zu {eventName} wurde bereits vollständig verwendet.",
+		"rejectedHint": "Wende dich an die Organisator*innen, um eine neue Einladung zu erhalten.",
+		"rejectedCta": "Events durchstöbern"
 	},
 	"joinOrgPage": {
 		"pageTitle": "{organizationName} beitreten",
@@ -2535,7 +2540,12 @@
 		"toast_successStaff": "Du bist jetzt Mitarbeiter*in von {organizationName}!",
 		"toast_successMember": "Du bist jetzt Mitglied von {organizationName}!",
 		"toast_error": "Einladung konnte nicht beansprucht werden. Das Token könnte abgelaufen oder ungültig sein.",
-		"error_claimFailed": "Einladung konnte nicht beansprucht werden"
+		"error_claimFailed": "Einladung konnte nicht beansprucht werden",
+		"rejectedTitle": "Diese Einladung ist nicht mehr gültig",
+		"rejectedExpired": "Deine Einladung zu {organizationName} ist abgelaufen.",
+		"rejectedUsedUp": "Dieser Einladungslink zu {organizationName} wurde bereits vollständig verwendet.",
+		"rejectedHint": "Wende dich an die Organisator*innen, um eine neue Einladung zu erhalten.",
+		"rejectedCta": "Events durchstöbern"
 	},
 	"languageSwitcher": {
 		"selectLanguage": "Select language: {name}"
@@ -2681,7 +2691,9 @@
 		"viewAllTestAccounts": "Alle Testkonten anzeigen",
 		"selectTestAccount": "Testkonto auswählen",
 		"chooseAccount": "-- Konto auswählen --",
-		"signInAs": "Anmelden als"
+		"signInAs": "Anmelden als",
+		"showLoginForm": "Anmeldeformular anzeigen",
+		"useADemoAccount": "Demokonto verwenden"
 	},
 	"logoutPage": {
 		"loggingOut": "Abmeldung läuft..."
@@ -4813,7 +4825,11 @@
 		"and": "und",
 		"privacyPolicy": "Datenschutzerklärung",
 		"creatingAccount": "Konto wird erstellt...",
-		"alreadyHaveAccount": "Hast du bereits ein Konto?"
+		"alreadyHaveAccount": "Hast du bereits ein Konto?",
+		"demoNudgeTitle": "Dies ist eine Demo",
+		"demoNudgeBody": "Du kannst Revel sofort mit einem vorbereiteten Demokonto erkunden — ganz ohne Registrierung.",
+		"demoNudgeUseAccount": "Demokonto verwenden",
+		"demoNudgeRegisterAnyway": "Trotzdem registrieren"
 	},
 	"requestInvitationButton": {
 		"mustBeLoggedIn": "Du musst angemeldet sein, um eine Einladung anzufordern",
