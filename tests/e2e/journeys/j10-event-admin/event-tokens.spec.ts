@@ -8,9 +8,8 @@ import { closeDialog } from '../../support/ui';
 // grants-invitation link in the UI; a logged-in user opens the shared
 // /join/event/<code> page and claims → an invitation exists for them.
 //
-// The backend answers 404 (not 410) for expired/used tokens, so the
-// distinct-messaging sub-journey stays blocked on revel-backend#681;
-// everything else runs against the enriched schema.
+// Expired/used-up tokens answer 410 with reason-specific guidance
+// (revel-backend#681) — covered by j01 token-preview.
 
 test.describe('J10 event tokens @p1', () => {
 	test('create link in UI → claim on join page → invitation granted', async ({
