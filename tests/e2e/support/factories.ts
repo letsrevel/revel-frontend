@@ -321,6 +321,71 @@ export async function approveMembershipRequest(
 	});
 }
 
+export interface CreatedPoll {
+	id: string;
+	orgSlug: string;
+	/** Voter share path, e.g. /org/<org>/polls/<id>. */
+	path: string;
+	name: string;
+	/** The single MC question's id + option ids (creation order) for API votes. */
+	questionId: string;
+	optionIds: string[];
+}
+
+/**
+ * API-create a poll with one two-option MC question ("Yes"/"No"), optionally
+ * opening it for votes. Polls are NEVER seeded — every poll spec arranges its
+ * own. Defaults mirror the backend/create-form defaults: members-only vote,
+ * staff-only results, result timing "never", fully anonymous, no vote changes
+ * — override per-scenario via `poll` (e.g. `allow_vote_changes`,
+ * `result_timing`, `result_visibility`).
+ */
+export async function createPoll(
+	options: {
+		owner?: PersonaName | ThrowawayUser;
+		orgSlug?: string;
+		open?: boolean;
+		poll?: Record<string, unknown>;
+	} = {}
+): Promise<CreatedPoll> {
+	const { owner = 'owner', orgSlug = 'revel-events-collective', open = true } = options;
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
+
+	const org = await api.get<{ id: string }>(`/api/organizations/${orgSlug}`);
+	const name = uniqueName('Poll');
+	const poll = await api.post<{
+		id: string;
+		questionnaire: {
+			multiple_choice_questions: Array<{ id: string; options: Array<{ id: string }> }>;
+		} | null;
+	}>(`/api/polls/organizations/${org.id}`, {
+		name,
+		vote_visibility: 'members-only',
+		multiplechoicequestion_questions: [
+			{ question: 'Are you in?', options: [{ option: 'Yes' }, { option: 'No' }] }
+		],
+		...options.poll
+	});
+
+	if (open) {
+		await api.post(`/api/polls/${poll.id}/open`);
+	}
+
+	const question = poll.questionnaire?.multiple_choice_questions[0];
+	if (!question) {
+		throw new Error(`Poll ${poll.id} came back without its MC question`);
+	}
+	return {
+		id: poll.id,
+		orgSlug,
+		path: `/org/${orgSlug}/polls/${poll.id}`,
+		name,
+		questionId: question.id,
+		optionIds: question.options.map((o) => o.id)
+	};
+}
+
 /**
  * RSVP a throwaway user to a non-ticketed event via the public API. Throws
  * ApiError (status 400) when the event is not accepting RSVPs — specs use
