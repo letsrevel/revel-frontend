@@ -83,8 +83,9 @@ test.describe('J10 announcements @p1', () => {
 			.first();
 		await expect(scheduledCard).toBeVisible({ timeout: 20_000 });
 		await scheduledCard.getByRole('button', { name: 'Unschedule' }).click();
-		// The card is removed OPTIMISTICALLY — wait for the completion toast
-		// before navigating, or the reload aborts the in-flight unschedule.
+		// The card only disappears after the server confirms (onSuccess →
+		// invalidate). Wait for the completion toast before navigating — a
+		// reload can otherwise abort the still-pending unschedule request.
 		await expect(page.getByText('Moved back to draft')).toBeVisible({ timeout: 20_000 });
 		await expect(page.getByText(scheduledTitle).filter({ visible: true })).toHaveCount(0, {
 			timeout: 20_000

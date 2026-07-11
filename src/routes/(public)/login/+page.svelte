@@ -217,7 +217,12 @@
 					<div class="text-center text-sm">
 						<button
 							type="button"
-							onclick={() => (showLoginForm = true)}
+							onclick={() => {
+								showLoginForm = true;
+								// The toggle unmounts itself in the swap — move focus to the
+								// revealed form so keyboard users aren't dropped on <body>.
+								requestAnimationFrame(() => document.getElementById('email')?.focus());
+							}}
 							class="text-primary underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						>
 							{m['login.showLoginForm']()}
@@ -346,7 +351,11 @@
 					<div class="mt-4 text-center text-sm">
 						<button
 							type="button"
-							onclick={() => (showLoginForm = false)}
+							onclick={() => {
+								showLoginForm = false;
+								// Same focus hand-off as the inverse toggle above.
+								requestAnimationFrame(() => document.getElementById('demo-account')?.focus());
+							}}
 							class="text-primary underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 						>
 							{m['login.useADemoAccount']()}
