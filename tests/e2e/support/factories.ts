@@ -95,21 +95,22 @@ export interface CreatedEvent {
 }
 
 /**
- * API-create an OPEN, public event (owned by a seeded org owner), optionally
+ * API-create an OPEN, public event (owned by a seeded org owner — or, when
+ * `owner` is a ThrowawayUser, by that user on their own org), optionally
  * with an immediately-purchasable free tier. Specs use this instead of relying
  * on seeded events whose sales windows / capacity drift with the clock.
  */
 export async function createTicketedEvent(
 	options: {
-		owner?: PersonaName;
+		owner?: PersonaName | ThrowawayUser;
 		orgSlug?: string;
 		freeTier?: boolean;
 		event?: Record<string, unknown>;
 	} = {}
 ): Promise<CreatedEvent> {
 	const { owner = 'owner', orgSlug = 'revel-events-collective', freeTier = true } = options;
-	const persona = PERSONAS[owner];
-	const api = await ApiClient.login(persona.email, persona.password);
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
 
 	const name = uniqueName('Event');
 	const dayMs = 24 * 60 * 60 * 1000;
