@@ -2525,6 +2525,7 @@
 		"benefit_staffAccess": "Accesso staff con permessi",
 		"benefit_manageEventsMembers": "Gestire eventi e membri",
 		"benefit_memberAccess": "Accesso da membro all'organizzazione",
+		"benefit_memberTier": "Livello di iscrizione: {tierName}",
 		"benefit_membersOnlyEvents": "Accesso agli eventi riservati ai membri",
 		"benefit_viewDetails": "Visualizzare i dettagli dell'organizzazione",
 		"claimButton": "Richiedi {accessType}",

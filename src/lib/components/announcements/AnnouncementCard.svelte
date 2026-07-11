@@ -70,7 +70,9 @@
 	});
 </script>
 
-<div class="flex items-start gap-4 rounded-lg border bg-card p-4">
+<!-- Stack on small screens: the quick-action buttons are wider than a phone
+     card and would otherwise squeeze the min-w-0 title to zero width. -->
+<div class="flex flex-col gap-3 rounded-lg border bg-card p-4 sm:flex-row sm:items-start sm:gap-4">
 	<!-- Content -->
 	<div class="min-w-0 flex-1">
 		<div class="mb-2 flex items-center gap-2">

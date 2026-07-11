@@ -145,6 +145,14 @@
 							<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
 							<span>{m['joinOrgPage.benefit_memberAccess']()}</span>
 						</li>
+						{#if token.membership_tier_name}
+							<li class="flex items-center gap-2">
+								<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
+								<span>
+									{m['joinOrgPage.benefit_memberTier']({ tierName: token.membership_tier_name })}
+								</span>
+							</li>
+						{/if}
 						<li class="flex items-center gap-2">
 							<CheckCircle class="h-4 w-4 text-green-600" aria-hidden="true" />
 							<span>{m['joinOrgPage.benefit_membersOnlyEvents']()}</span>

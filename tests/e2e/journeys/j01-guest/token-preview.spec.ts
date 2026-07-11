@@ -1,5 +1,11 @@
 import { test, expect } from '../../support/fixtures';
-import { createOrganization, createOrgToken, createVerifiedUser } from '../../support/factories';
+import {
+	createEventToken,
+	createOrganization,
+	createOrgToken,
+	createTicketedEvent,
+	createVerifiedUser
+} from '../../support/factories';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 
@@ -9,11 +15,12 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // page SSR-500'd for every token until the backend exposed the org fields —
 // revel-backend#675).
 //
-// The event-token half (/join/event/[token]) lands with the event-admin
-// group once event-token factories exist.
+// The event half runs against the enriched EventTokenSchema
+// (revel-backend#679); expired/used-token messaging remains blocked on
+// revel-backend#681 (404 for every non-servable token).
 
 test.describe('J1 org token preview @p1', () => {
-	test('guest sees org name, grants, and a sign-in CTA', async ({ page }) => {
+	test('guest sees org name, grants, tier, and a sign-in CTA', async ({ page }) => {
 		const org = await createOrganization();
 		const token = await createOrgToken(org.owner, org.slug, org.defaultTierId);
 
@@ -22,6 +29,21 @@ test.describe('J1 org token preview @p1', () => {
 		await expect(page.getByText("You've been invited!")).toBeVisible();
 		await expect(page.getByText(`Join ${org.name}`, { exact: true })).toBeVisible();
 		await expect(page.getByText('Member Access', { exact: true })).toBeVisible();
+		// The granted tier is named (revel-backend#677).
+		await expect(page.getByText('Membership tier: General membership')).toBeVisible();
+		await expect(page.getByText("What you'll get:")).toBeVisible();
+		await expect(page.getByRole('button', { name: 'Sign In to Claim' })).toBeVisible();
+	});
+
+	test('guest sees event name, date, and a sign-in CTA on an event token', async ({ page }) => {
+		const event = await createTicketedEvent();
+		const token = await createEventToken(event.id);
+
+		await gotoHydrated(page, `/join/event/${token.id}`);
+
+		await expect(page.getByText("You've been invited!")).toBeVisible();
+		await expect(page.getByText(event.name).first()).toBeVisible();
+		await expect(page.getByText('When')).toBeVisible();
 		await expect(page.getByText("What you'll get:")).toBeVisible();
 		await expect(page.getByRole('button', { name: 'Sign In to Claim' })).toBeVisible();
 	});
@@ -50,8 +72,10 @@ test.describe('J1 org token preview @p1', () => {
 		await context.close();
 	});
 
-	test('invalid token shows a 404, not a crash', async ({ page }) => {
-		const response = await page.goto('/join/org/not-a-real-token');
-		expect(response?.status()).toBe(404);
+	test('invalid tokens show a 404, not a crash', async ({ page }) => {
+		const orgResponse = await page.goto('/join/org/not-a-real-token');
+		expect(orgResponse?.status()).toBe(404);
+		const eventResponse = await page.goto('/join/event/not-a-real-token');
+		expect(eventResponse?.status()).toBe(404);
 	});
 });

@@ -2525,6 +2525,7 @@
 		"benefit_staffAccess": "Staff access with permissions",
 		"benefit_manageEventsMembers": "Manage events and members",
 		"benefit_memberAccess": "Member access to organization",
+		"benefit_memberTier": "Membership tier: {tierName}",
 		"benefit_membersOnlyEvents": "Access to members-only events",
 		"benefit_viewDetails": "View organization details",
 		"claimButton": "Claim {accessType}",

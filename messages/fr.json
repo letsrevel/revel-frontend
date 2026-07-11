@@ -2412,6 +2412,7 @@
 		"benefit_staffAccess": "Accès équipe avec autorisations",
 		"benefit_manageEventsMembers": "Gérer les événements et les membres",
 		"benefit_memberAccess": "Accès membre à l'organisation",
+		"benefit_memberTier": "Niveau d'adhésion : {tierName}",
 		"benefit_membersOnlyEvents": "Accès aux événements réservés aux membres",
 		"benefit_viewDetails": "Voir les détails de l'organisation",
 		"claimButton": "Réclamer {accessType}",

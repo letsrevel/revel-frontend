@@ -6,6 +6,7 @@ import {
 	requestMembership
 } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
+import { waitForEmail } from '../../support/mailpit';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { closeDialog, pickSelectOption } from '../../support/ui';
 
@@ -62,6 +63,9 @@ test.describe('J8 member management @p1', () => {
 		await expect(
 			page.getByRole('button', { name: `Approve request from ${applicantName}` })
 		).not.toBeVisible();
+		// The approved applicant is notified by email (regression: BE #673 —
+		// the notification used to die on missing context keys).
+		await waitForEmail({ to: applicant.email, subject: 'pproved' });
 
 		// Reject the other request → pending list is empty.
 		await page.getByRole('button', { name: `Reject request from ${rejectedName}` }).click();

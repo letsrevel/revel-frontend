@@ -2525,6 +2525,7 @@
 		"benefit_staffAccess": "Mitarbeiter*innen-Zugang mit Berechtigungen",
 		"benefit_manageEventsMembers": "Veranstaltungen und Mitglieder verwalten",
 		"benefit_memberAccess": "Mitgliederzugang zur Organisation",
+		"benefit_memberTier": "Mitgliedschaftsstufe: {tierName}",
 		"benefit_membersOnlyEvents": "Zugang zu reinen Mitgliederveranstaltungen",
 		"benefit_viewDetails": "Organisationsdetails ansehen",
 		"claimButton": "{accessType} beanspruchen",
