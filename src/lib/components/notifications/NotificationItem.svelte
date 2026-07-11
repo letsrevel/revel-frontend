@@ -33,8 +33,16 @@
 		class: className
 	}: Props = $props();
 
-	// Reactive state for optimistic updates
-	let isRead = $state(notification.read_at !== null);
+	// Optimistic override for this card's own in-flight mutations. Server
+	// truth (the prop) must win again whenever fresh data arrives — e.g. the
+	// list's mark-all-read invalidation refetch — otherwise cards keep
+	// rendering a stale unread state until a full reload.
+	let optimisticIsRead = $state<boolean | null>(null);
+	$effect(() => {
+		void notification.read_at;
+		optimisticIsRead = null;
+	});
+	const isRead = $derived(optimisticIsRead ?? notification.read_at !== null);
 
 	// Derived values
 	const relativeTime = $derived(formatRelativeTime(notification.created_at));
@@ -49,7 +57,7 @@
 		},
 		onMutate: () => {
 			// Optimistic update
-			isRead = true;
+			optimisticIsRead = true;
 		},
 		onSuccess: () => {
 			// The mark-read endpoint returns no body, so set read_at locally
@@ -61,7 +69,7 @@
 		},
 		onError: (error) => {
 			// Revert optimistic update
-			isRead = false;
+			optimisticIsRead = null;
 			toast.error(m['notificationItem.toast_markReadFailed']());
 			console.error('Failed to mark notification as read:', error);
 		}
@@ -77,7 +85,7 @@
 		},
 		onMutate: () => {
 			// Optimistic update
-			isRead = false;
+			optimisticIsRead = false;
 		},
 		onSuccess: () => {
 			// Update the notification with read_at set to null
@@ -89,7 +97,7 @@
 		},
 		onError: (error) => {
 			// Revert optimistic update
-			isRead = true;
+			optimisticIsRead = null;
 			toast.error(m['notificationItem.toast_markUnreadFailed']());
 			console.error('Failed to mark notification as unread:', error);
 		}
