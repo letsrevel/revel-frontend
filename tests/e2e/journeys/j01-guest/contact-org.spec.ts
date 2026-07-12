@@ -4,7 +4,6 @@ import { createOrganization, createVerifiedUser } from '../../support/factories'
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { waitForEmail } from '../../support/mailpit';
-import { ContactDialogPage } from '../../support/pages/contact-dialog';
 
 // J1.7 (USER_JOURNEYS.md) — public org contact form: a signed-in visitor sends
 // a message from the org page, the organizer receives it by email (subject
@@ -31,14 +30,17 @@ test.describe('J01 contact organizer @p2', () => {
 		await gotoHydrated(page, `/org/${org.slug}`);
 		await waitForClientAuth(page);
 
-		const contactDialog = new ContactDialogPage(page, org.name);
-		await contactDialog.open();
+		await page.getByRole('button', { name: 'Contact organizer' }).click();
+		const dialog = page.getByRole('dialog', { name: `Contact ${org.name}` });
+		await expect(dialog).toBeVisible();
 
 		const subject = `E2E hello ${org.slug}`;
-		await contactDialog.fillForm(subject, 'Is this event wheelchair accessible?');
-		await contactDialog.submit();
+		await dialog.getByLabel(/Subject/).fill(subject);
+		await dialog.getByLabel('Message').fill('Is this event wheelchair accessible?');
+		await dialog.getByRole('button', { name: 'Send message' }).click();
 
-		await contactDialog.expectSuccess();
+		await expect(page.getByText('Your message has been sent.')).toBeVisible();
+		await expect(page.getByText('Message sent', { exact: true })).toBeVisible();
 
 		// The organizer's mailbox (the throwaway owner's address) receives it.
 		const mail = await waitForEmail({ to: org.owner.email, subject: `[${org.name}] ${subject}` });
