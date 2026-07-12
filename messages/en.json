@@ -565,7 +565,16 @@
 		"deleteDialogConfirm": "Delete",
 		"deleteDialogCancel": "Cancel",
 		"error_failedToUpdate": "Failed to update RSVP",
-		"error_failedToDelete": "Failed to delete RSVP"
+		"error_failedToDelete": "Failed to delete RSVP",
+		"createButton": "Add attendee",
+		"createModalTitle": "Add attendee",
+		"createModalDescription": "Create an RSVP for an existing organization member. Search for the member below and choose their attendance status.",
+		"createModalMemberLabel": "Member",
+		"createModalMemberPlaceholder": "Search members by name or email...",
+		"createModalSubmit": "Add attendee",
+		"createModalSubmitting": "Adding...",
+		"createSuccess": "RSVP saved",
+		"createError": "Failed to add attendee"
 	},
 	"attendeesAdminPage": {
 		"title": "Manage Attendees - Revel",
@@ -3288,7 +3297,10 @@
 				"memberCount": "{count} member{plural}",
 				"_plural": "s",
 				"editAriaLabel": "Edit {name}",
-				"deleteAriaLabel": "Delete {name}"
+				"deleteAriaLabel": "Delete {name}",
+				"moveUpAriaLabel": "Move {name} up",
+				"moveDownAriaLabel": "Move {name} down",
+				"reorderFailed": "Failed to reorder tiers"
 			},
 			"plans": {
 				"title": "Plans",

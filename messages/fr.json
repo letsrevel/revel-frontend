@@ -452,7 +452,16 @@
 		"deleteDialogConfirm": "Supprimer",
 		"deleteDialogCancel": "Annuler",
 		"error_failedToUpdate": "Échec de la mise à jour du RSVP",
-		"error_failedToDelete": "Échec de la suppression du RSVP"
+		"error_failedToDelete": "Échec de la suppression du RSVP",
+		"createButton": "Ajouter un participant",
+		"createModalTitle": "Ajouter un participant",
+		"createModalDescription": "Créez un RSVP pour un membre existant de l'organisation. Recherchez le membre ci-dessous et choisissez son statut de présence.",
+		"createModalMemberLabel": "Membre",
+		"createModalMemberPlaceholder": "Rechercher des membres par nom ou e-mail...",
+		"createModalSubmit": "Ajouter un participant",
+		"createModalSubmitting": "Ajout en cours...",
+		"createSuccess": "RSVP enregistré",
+		"createError": "Échec de l'ajout du participant"
 	},
 	"attendeesAdminPage": {
 		"title": "Gérer les participants - Revel",
@@ -3259,7 +3268,10 @@
 				"memberCount": "{count} membre{plural}",
 				"_plural": "s",
 				"editAriaLabel": "Modifier {name}",
-				"deleteAriaLabel": "Supprimer {name}"
+				"deleteAriaLabel": "Supprimer {name}",
+				"moveUpAriaLabel": "Déplacer {name} vers le haut",
+				"moveDownAriaLabel": "Déplacer {name} vers le bas",
+				"reorderFailed": "Échec de la réorganisation des niveaux"
 			},
 			"plans": {
 				"title": "Forfaits",

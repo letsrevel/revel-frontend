@@ -4,7 +4,8 @@
 	import {
 		organizationadminmembersCreateMembershipTier,
 		organizationadminmembersUpdateMembershipTier,
-		organizationadminmembersDeleteMembershipTier
+		organizationadminmembersDeleteMembershipTier,
+		organizationadminmembersReorderMembershipTiers
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		MembershipTierSchema,
@@ -14,9 +15,10 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
-	import { Shield, Plus, Pencil, Trash2, Loader2 } from '@lucide/svelte';
+	import { Shield, Plus, Pencil, Trash2, Loader2, ArrowUp, ArrowDown } from '@lucide/svelte';
 	import TierFormModal from '$lib/components/members/TierFormModal.svelte';
 	import PlansList from '$lib/components/members/PlansList.svelte';
+	import { toast } from 'svelte-sonner';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -125,6 +127,74 @@
 		}
 	}));
 
+	// --- Tier reordering via up/down buttons ---
+	const tiersQueryKey = $derived(['organization', organization.slug, 'membership-tiers']);
+	// Tiers are also cached under a reversed key by the org admin dashboard and the
+	// announcements audience picker — invalidate both so a reorder doesn't leave those
+	// surfaces showing a stale order.
+	const tiersAltQueryKey = $derived(['membership-tiers', organization.slug]);
+
+	function invalidateTierQueries() {
+		queryClient.invalidateQueries({ queryKey: tiersQueryKey });
+		queryClient.invalidateQueries({ queryKey: tiersAltQueryKey });
+	}
+
+	const reorderMutation = createMutation<unknown, unknown, string[]>(() => ({
+		mutationFn: async (tierIds: string[]) => {
+			const response = await organizationadminmembersReorderMembershipTiers({
+				path: { slug: organization.slug },
+				body: { tier_ids: tierIds },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+			// The generated client does not throw on HTTP errors (ThrowOnError = false),
+			// so surface a structured API error explicitly to trigger onError.
+			if (response.error) {
+				throw new Error(m['orgAdmin.members.tiers.reorderFailed']());
+			}
+			return response.data;
+		},
+		// Snapshot the true previous order FIRST, then apply the optimistic reorder — so a
+		// failed request rolls back to the real original, not an already-swapped copy.
+		onMutate: async (tierIds: string[]) => {
+			await queryClient.cancelQueries({ queryKey: tiersQueryKey });
+			const previousData = queryClient.getQueryData<MembershipTierSchema[]>(tiersQueryKey);
+			if (previousData) {
+				const byId = new Map(previousData.map((t) => [t.id, t]));
+				const newData = tierIds
+					.map((id) => byId.get(id))
+					.filter((t): t is MembershipTierSchema => t !== undefined);
+				queryClient.setQueryData(tiersQueryKey, newData);
+			}
+			return { previousData };
+		},
+		onSuccess: () => {
+			invalidateTierQueries();
+		},
+		onError: (_err, _vars, context) => {
+			toast.error(m['orgAdmin.members.tiers.reorderFailed']());
+			const ctx = context as { previousData?: MembershipTierSchema[] } | undefined;
+			if (ctx?.previousData !== undefined) {
+				queryClient.setQueryData(tiersQueryKey, ctx.previousData);
+			}
+			invalidateTierQueries();
+		}
+	}));
+
+	function handleMoveTier(index: number, direction: 'up' | 'down') {
+		const swapIndex = direction === 'up' ? index - 1 : index + 1;
+		if (swapIndex < 0 || swapIndex >= tiers.length) return;
+
+		// Swap whole tiers first (index-aligned with `tiers`), then map to ids so the
+		// order can't desync if the list ever contains a tier without an id.
+		const reordered = [...tiers];
+		[reordered[index], reordered[swapIndex]] = [reordered[swapIndex], reordered[index]];
+		const tierIds = reordered.map((t) => t.id).filter((id): id is string => !!id);
+		// The backend validates the id set exactly; bail rather than send a partial set.
+		if (tierIds.length !== reordered.length) return;
+
+		reorderMutation.mutate(tierIds);
+	}
+
 	// Handlers
 	function handleCreateTier() {
 		tierToEdit = null;
@@ -220,7 +290,7 @@
 	</div>
 {:else}
 	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-		{#each tiers as tier (tier.id)}
+		{#each tiers as tier, index (tier.id)}
 			{@const memberCount = members.filter((mb) => mb.tier?.id === tier.id).length}
 			<div class="rounded-lg border border-border bg-card p-4 shadow-sm">
 				<div class="flex items-start justify-between gap-2">
@@ -241,6 +311,28 @@
 						</p>
 					</div>
 					<div class="flex shrink-0 gap-1">
+						{#if tiers.length >= 2}
+							<Button
+								variant="ghost"
+								size="icon"
+								class="h-8 w-8"
+								onclick={() => handleMoveTier(index, 'up')}
+								disabled={index === 0 || reorderMutation.isPending}
+								aria-label={m['orgAdmin.members.tiers.moveUpAriaLabel']({ name: tier.name })}
+							>
+								<ArrowUp class="h-4 w-4" />
+							</Button>
+							<Button
+								variant="ghost"
+								size="icon"
+								class="h-8 w-8"
+								onclick={() => handleMoveTier(index, 'down')}
+								disabled={index === tiers.length - 1 || reorderMutation.isPending}
+								aria-label={m['orgAdmin.members.tiers.moveDownAriaLabel']({ name: tier.name })}
+							>
+								<ArrowDown class="h-4 w-4" />
+							</Button>
+						{/if}
 						<Button
 							variant="ghost"
 							size="icon"
