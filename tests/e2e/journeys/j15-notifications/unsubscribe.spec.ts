@@ -25,7 +25,7 @@ test.describe('J15 unsubscribe @p2', () => {
 			page.getByRole('heading', { name: 'Unsubscribe from Notifications' })
 		).toBeVisible();
 
-		await page.getByRole('button', { name: 'Save Changes' }).last().click();
+		await page.locator('.bg-card').getByRole('button', { name: 'Save Changes' }).click();
 		await expect(page.getByRole('heading', { name: 'Preferences Updated' })).toBeVisible();
 	});
 });
