@@ -10,6 +10,14 @@
 
 export const API_URL = process.env.PUBLIC_API_URL ?? 'http://localhost:8000';
 
+export function getBackendUrl(path: string): string {
+	if (path.startsWith('http://') || path.startsWith('https://')) {
+		return path;
+	}
+	const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+	return `${API_URL}${normalizedPath}`;
+}
+
 export interface TokenPair {
 	access: string;
 	refresh: string;

@@ -1,5 +1,5 @@
 import { test, expect } from '../../support/fixtures';
-import { API_URL } from '../../support/api';
+import { fetchWithRetry, getBackendUrl } from '../../support/api';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 
@@ -57,7 +57,9 @@ test.describe('J21 referral program @p2', () => {
 			expect(downloadResponse.status()).toBe(200);
 			const { download_url } = (await downloadResponse.json()) as { download_url: string };
 			expect(download_url).toContain('/media/');
-			const pdf = await fetch(`${API_URL}${download_url}`);
+
+			const resolvedUrl = getBackendUrl(download_url);
+			const pdf = await fetchWithRetry(resolvedUrl);
 			expect(pdf.status).toBe(200);
 			expect((await pdf.arrayBuffer()).byteLength).toBeGreaterThan(0);
 		} finally {
