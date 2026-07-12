@@ -9,6 +9,7 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { createDebouncedState } from '$lib/utils';
 
 	const accessToken = $derived(authStore.accessToken);
 
@@ -41,26 +42,14 @@
 	let includePast = $state(false);
 
 	// Debounce search input
-	let searchDebounceTimeout: ReturnType<typeof setTimeout> | null = null;
-	let debouncedSearch = $state('');
-
-	// Update debounced search after delay. searchQuery must be read
-	// SYNCHRONOUSLY here — reads inside the setTimeout callback are not
-	// tracked by $effect, so the effect would never re-run on typing.
-	$effect(() => {
-		const query = searchQuery;
-		if (searchDebounceTimeout) clearTimeout(searchDebounceTimeout);
-		searchDebounceTimeout = setTimeout(() => {
-			debouncedSearch = query;
-		}, 300);
-	});
+	const debouncedSearch = createDebouncedState(() => searchQuery, 300);
 
 	// Fetch RSVPs with filters
 	const rsvpsQuery = createQuery(() => ({
 		queryKey: [
 			'dashboard-rsvps',
 			selectedStatuses,
-			debouncedSearch,
+			debouncedSearch.value,
 			includePast,
 			currentPage
 		] as const,
@@ -71,7 +60,7 @@
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
 					status: selectedStatuses.length ? selectedStatuses : undefined,
-					search: debouncedSearch || undefined,
+					search: debouncedSearch.value || undefined,
 					include_past: includePast,
 					page: currentPage,
 					page_size: 12

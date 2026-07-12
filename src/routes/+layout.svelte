@@ -228,7 +228,9 @@
 				// Cookie value is URL-encoded base64 JSON (SvelteKit URL-encodes cookie values)
 				const urlEncodedValue = claimFlashCookie.substring('claim_flash='.length);
 				const base64Value = decodeURIComponent(urlEncodedValue);
-				const jsonString = atob(base64Value);
+				const binaryString = atob(base64Value);
+				const bytes = Uint8Array.from(binaryString, (c) => c.charCodeAt(0));
+				const jsonString = new TextDecoder().decode(bytes);
 				const claims = JSON.parse(jsonString) as ClaimResult[];
 
 				// Show toast for each successful claim

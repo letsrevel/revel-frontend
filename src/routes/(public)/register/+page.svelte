@@ -111,13 +111,14 @@
 		const confirmEl = get('confirmPassword');
 		const termsEl = get('acceptTerms');
 
-		if (emailEl?.value && !email) email = emailEl.value;
-		if (passwordEl?.value && !password) password = passwordEl.value;
-		if (confirmEl?.value && !confirmPassword) confirmPassword = confirmEl.value;
-		if (termsEl?.checked && !acceptTerms) acceptTerms = termsEl.checked;
+		if (emailEl && emailEl.value !== email) email = emailEl.value;
+		if (passwordEl && passwordEl.value !== password) password = passwordEl.value;
+		if (confirmEl && confirmEl.value !== confirmPassword) confirmPassword = confirmEl.value;
+		if (termsEl && termsEl.checked !== acceptTerms) acceptTerms = termsEl.checked;
 	}
 
 	onMount(() => {
+		const currentFormEl = formEl;
 		// Check for autofill after hydration at staggered intervals
 		const t1 = setTimeout(syncFormValues, 100);
 		const t2 = setTimeout(syncFormValues, 1000);
@@ -130,7 +131,9 @@
 		// the form (typing in another field, focus moving, a checkbox toggle)
 		// re-runs the sync and picks up whatever the bindings missed.
 		const syncEvents = ['input', 'change', 'focusout'] as const;
-		for (const evt of syncEvents) formEl?.addEventListener(evt, syncFormValues);
+		if (currentFormEl) {
+			for (const evt of syncEvents) currentFormEl.addEventListener(evt, syncFormValues);
+		}
 
 		// Handle bfcache restoration (back/forward navigation)
 		const handlePageShow = (e: PageTransitionEvent) => {
@@ -144,7 +147,9 @@
 		return () => {
 			clearTimeout(t1);
 			clearTimeout(t2);
-			for (const evt of syncEvents) formEl?.removeEventListener(evt, syncFormValues);
+			if (currentFormEl) {
+				for (const evt of syncEvents) currentFormEl.removeEventListener(evt, syncFormValues);
+			}
 			window.removeEventListener('pageshow', handlePageShow);
 		};
 	});
