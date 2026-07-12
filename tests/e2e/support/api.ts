@@ -37,9 +37,31 @@ export class ApiError extends Error {
  */
 export async function fetchWithRetry(url: string, init?: RequestInit): Promise<Response> {
 	for (let attempt = 1; ; attempt++) {
-		const response = await fetch(url, init);
-		if (response.status < 500 || attempt >= 3) return response;
-		await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
+		try {
+			const response = await fetch(url, init);
+			if (response.status < 500 || attempt >= 3) return response;
+		} catch (error) {
+			if (attempt >= 3 || init?.signal?.aborted) throw error;
+		}
+		if (init?.signal) {
+			if (init.signal.aborted) {
+				throw new DOMException('The user aborted a request.', 'AbortError');
+			}
+			await new Promise<void>((resolve, reject) => {
+				const onAbort = () => {
+					clearTimeout(timeoutId);
+					init.signal?.removeEventListener('abort', onAbort);
+					reject(new DOMException('The user aborted a request.', 'AbortError'));
+				};
+				const timeoutId = setTimeout(() => {
+					init.signal?.removeEventListener('abort', onAbort);
+					resolve();
+				}, 500 * attempt);
+				init.signal.addEventListener('abort', onAbort);
+			});
+		} else {
+			await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
+		}
 	}
 }
 
