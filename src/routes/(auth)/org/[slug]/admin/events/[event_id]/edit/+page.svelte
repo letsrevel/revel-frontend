@@ -380,16 +380,22 @@
 		</div>
 	</div>
 
-	<!-- Event Editor Component -->
+	<!-- Event Editor Component. Keyed by event id: EventEditor snapshots
+	     existingEvent (incl. the id it saves to) into $state once, so a
+	     client-side navigation between two events' edit pages (e.g. the
+	     duplicate flow's goto) must remount it or it keeps editing the
+	     previous event. -->
 	<div class="rounded-lg border bg-card text-card-foreground shadow-sm">
-		<EventEditor
-			{organization}
-			existingEvent={event}
-			userCity={data.userCity}
-			orgCity={data.orgCity}
-			eventSeries={data.eventSeries}
-			initialTab={($page.url.searchParams.get('tab') as 'details' | 'ticketing') ?? undefined}
-		/>
+		{#key event.id}
+			<EventEditor
+				{organization}
+				existingEvent={event}
+				userCity={data.userCity}
+				orgCity={data.orgCity}
+				eventSeries={data.eventSeries}
+				initialTab={($page.url.searchParams.get('tab') as 'details' | 'ticketing') ?? undefined}
+			/>
+		{/key}
 	</div>
 </div>
 
