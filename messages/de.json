@@ -3297,7 +3297,10 @@
 				"memberCount": "{count} Mitglied{plural}",
 				"_plural": "er",
 				"editAriaLabel": "{name} bearbeiten",
-				"deleteAriaLabel": "{name} löschen"
+				"deleteAriaLabel": "{name} löschen",
+				"moveUpAriaLabel": "{name} nach oben verschieben",
+				"moveDownAriaLabel": "{name} nach unten verschieben",
+				"reorderFailed": "Stufen konnten nicht neu sortiert werden"
 			},
 			"plans": {
 				"title": "Plans",

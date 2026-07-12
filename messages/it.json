@@ -3297,7 +3297,10 @@
 				"memberCount": "{count} membr{plural}",
 				"_plural": "i",
 				"editAriaLabel": "Modifica {name}",
-				"deleteAriaLabel": "Elimina {name}"
+				"deleteAriaLabel": "Elimina {name}",
+				"moveUpAriaLabel": "Sposta {name} su",
+				"moveDownAriaLabel": "Sposta {name} giù",
+				"reorderFailed": "Impossibile riordinare i livelli"
 			},
 			"plans": {
 				"title": "Plans",

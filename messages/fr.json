@@ -3268,7 +3268,10 @@
 				"memberCount": "{count} membre{plural}",
 				"_plural": "s",
 				"editAriaLabel": "Modifier {name}",
-				"deleteAriaLabel": "Supprimer {name}"
+				"deleteAriaLabel": "Supprimer {name}",
+				"moveUpAriaLabel": "Déplacer {name} vers le haut",
+				"moveDownAriaLabel": "Déplacer {name} vers le bas",
+				"reorderFailed": "Échec de la réorganisation des niveaux"
 			},
 			"plans": {
 				"title": "Forfaits",

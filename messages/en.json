@@ -3297,7 +3297,10 @@
 				"memberCount": "{count} member{plural}",
 				"_plural": "s",
 				"editAriaLabel": "Edit {name}",
-				"deleteAriaLabel": "Delete {name}"
+				"deleteAriaLabel": "Delete {name}",
+				"moveUpAriaLabel": "Move {name} up",
+				"moveDownAriaLabel": "Move {name} down",
+				"reorderFailed": "Failed to reorder tiers"
 			},
 			"plans": {
 				"title": "Plans",

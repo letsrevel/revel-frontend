@@ -4,7 +4,8 @@
 	import {
 		organizationadminmembersCreateMembershipTier,
 		organizationadminmembersUpdateMembershipTier,
-		organizationadminmembersDeleteMembershipTier
+		organizationadminmembersDeleteMembershipTier,
+		organizationadminmembersReorderMembershipTiers
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		MembershipTierSchema,
@@ -14,9 +15,10 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
-	import { Shield, Plus, Pencil, Trash2, Loader2 } from '@lucide/svelte';
+	import { Shield, Plus, Pencil, Trash2, Loader2, ArrowUp, ArrowDown } from '@lucide/svelte';
 	import TierFormModal from '$lib/components/members/TierFormModal.svelte';
 	import PlansList from '$lib/components/members/PlansList.svelte';
+	import { toast } from 'svelte-sonner';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -125,6 +127,53 @@
 		}
 	}));
 
+	// --- Tier reordering via up/down buttons ---
+	const tiersQueryKey = $derived(['organization', organization.slug, 'membership-tiers']);
+
+	const reorderMutation = createMutation<unknown, unknown, string[]>(() => ({
+		mutationFn: async (tierIds: string[]) => {
+			return await organizationadminmembersReorderMembershipTiers({
+				path: { slug: organization.slug },
+				body: { tier_ids: tierIds },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+		},
+		onMutate: async () => {
+			await queryClient.cancelQueries({ queryKey: tiersQueryKey });
+			return { previousData: queryClient.getQueryData(tiersQueryKey) };
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: tiersQueryKey });
+		},
+		onError: (_err, _vars, context) => {
+			toast.error(m['orgAdmin.members.tiers.reorderFailed']());
+			const ctx = context as { previousData?: unknown } | undefined;
+			if (ctx?.previousData !== undefined) {
+				queryClient.setQueryData(tiersQueryKey, ctx.previousData);
+			}
+			queryClient.invalidateQueries({ queryKey: tiersQueryKey });
+		}
+	}));
+
+	function handleMoveTier(index: number, direction: 'up' | 'down') {
+		const swapIndex = direction === 'up' ? index - 1 : index + 1;
+		if (swapIndex < 0 || swapIndex >= tiers.length) return;
+
+		// Build the new order by swapping the two tiers.
+		const tierIds = tiers.map((t) => t.id).filter((id): id is string => !!id);
+		[tierIds[index], tierIds[swapIndex]] = [tierIds[swapIndex], tierIds[index]];
+
+		// Optimistic update: swap the two tiers in the shared query cache immediately.
+		const currentData = queryClient.getQueryData<MembershipTierSchema[]>(tiersQueryKey);
+		if (currentData) {
+			const newData = [...currentData];
+			[newData[index], newData[swapIndex]] = [newData[swapIndex], newData[index]];
+			queryClient.setQueryData(tiersQueryKey, newData);
+		}
+
+		reorderMutation.mutate(tierIds);
+	}
+
 	// Handlers
 	function handleCreateTier() {
 		tierToEdit = null;
@@ -220,7 +269,7 @@
 	</div>
 {:else}
 	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-		{#each tiers as tier (tier.id)}
+		{#each tiers as tier, index (tier.id)}
 			{@const memberCount = members.filter((mb) => mb.tier?.id === tier.id).length}
 			<div class="rounded-lg border border-border bg-card p-4 shadow-sm">
 				<div class="flex items-start justify-between gap-2">
@@ -241,6 +290,28 @@
 						</p>
 					</div>
 					<div class="flex shrink-0 gap-1">
+						{#if tiers.length >= 2}
+							<Button
+								variant="ghost"
+								size="icon"
+								class="h-8 w-8"
+								onclick={() => handleMoveTier(index, 'up')}
+								disabled={index === 0 || reorderMutation.isPending}
+								aria-label={m['orgAdmin.members.tiers.moveUpAriaLabel']({ name: tier.name })}
+							>
+								<ArrowUp class="h-4 w-4" />
+							</Button>
+							<Button
+								variant="ghost"
+								size="icon"
+								class="h-8 w-8"
+								onclick={() => handleMoveTier(index, 'down')}
+								disabled={index === tiers.length - 1 || reorderMutation.isPending}
+								aria-label={m['orgAdmin.members.tiers.moveDownAriaLabel']({ name: tier.name })}
+							>
+								<ArrowDown class="h-4 w-4" />
+							</Button>
+						{/if}
 						<Button
 							variant="ghost"
 							size="icon"
