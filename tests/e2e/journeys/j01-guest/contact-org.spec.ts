@@ -29,6 +29,7 @@ test.describe('J01 contact organizer @p2', () => {
 
 		await gotoHydrated(page, `/org/${org.slug}`);
 		await waitForClientAuth(page);
+
 		await page.getByRole('button', { name: 'Contact organizer' }).click();
 		const dialog = page.getByRole('dialog', { name: `Contact ${org.name}` });
 		await expect(dialog).toBeVisible();
@@ -39,13 +40,12 @@ test.describe('J01 contact organizer @p2', () => {
 		await dialog.getByRole('button', { name: 'Send message' }).click();
 
 		await expect(page.getByText('Your message has been sent.')).toBeVisible();
-		// On success the dialog's own title flips to "Message sent" (so the
-		// name-scoped `dialog` locator above is now stale) — assert at page level.
 		await expect(page.getByText('Message sent', { exact: true })).toBeVisible();
 
 		// The organizer's mailbox (the throwaway owner's address) receives it.
 		const mail = await waitForEmail({ to: org.owner.email, subject: `[${org.name}] ${subject}` });
 		expect(mail.Subject).toContain(subject);
+		expect(mail.ReplyTo?.[0]?.Address).toBe(sender.email);
 
 		await context.close();
 	});

@@ -1,5 +1,5 @@
 import { test, expect } from '../../support/fixtures';
-import { API_URL } from '../../support/api';
+import { API_URL, fetchWithRetry } from '../../support/api';
 import { createVerifiedUser } from '../../support/factories';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
@@ -43,7 +43,7 @@ test.describe('J17 GDPR export @p2', () => {
 		// this env), but the protected media is served by the backend — the
 		// signature covers only the path, so re-point the host at the API.
 		const backendLink = link.replace(/^https?:\/\/[^/]+/, API_URL);
-		const response = await fetch(backendLink);
+		const response = await fetchWithRetry(backendLink);
 		expect(response.status).toBe(200);
 		const body = await response.arrayBuffer();
 		expect(body.byteLength).toBeGreaterThan(0);

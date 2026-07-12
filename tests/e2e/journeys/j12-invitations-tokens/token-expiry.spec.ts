@@ -22,7 +22,7 @@ test.describe('J12 token expiry guidance @p2', () => {
 		// Backdate the expiry through the admin API (the factory has no expiry arg).
 		const ownerApi = await ApiClient.login(org.owner.email, org.owner.password);
 		await ownerApi.put(`/api/organization-admin/${org.slug}/tokens/${token.id}`, {
-			expires_at: new Date(Date.now() - 60_000).toISOString()
+			expires_at: new Date(Date.now() - 60 * 60 * 1000).toISOString() // 1 hour ago
 		});
 
 		await gotoHydrated(page, `/join/org/${token.id}`);
