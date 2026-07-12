@@ -22,7 +22,8 @@
 			(src/lib/seo) so each event/org share carries its own cover. They used
 			to be hardcoded here too, which double-emitted og:image and made
 			unfurlers pick the generic card over the specific one. SeoHead's
-			buildSeo() falls back to /og-image.png for all non-event/org pages.
+			buildSeo() falls back to the versioned og-image (OG_IMAGE_PATH in
+			src/lib/seo/constants.ts) for all non-event/org pages.
 		-->
 		<!--
 			Anti-FOUC: apply the dark class before first paint so dark-mode users

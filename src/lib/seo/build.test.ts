@@ -39,6 +39,16 @@ describe('buildSeo', () => {
 		expect(cfg.robots).toBeUndefined();
 	});
 
+	it('home: uses the versioned og-image and og:logo, and keeps og:description within budget', () => {
+		const cfg = buildSeo({ kind: 'home', url: url('/'), lang: 'en' });
+		// Versioned URLs: the assets are immutable-cached and scrapers key
+		// their caches by URL, so the path must change with the artwork (#623).
+		expect(cfg.og.image).toBe('https://letsrevel.io/og-image-v2.png');
+		expect(cfg.og.logo).toBe('https://letsrevel.io/og-logo-v1.png');
+		// Social previews truncate og:description around ~125 chars (#624).
+		expect(cfg.og.description.length).toBeLessThanOrEqual(125);
+	});
+
 	it('event indexable: includes Event + Breadcrumb JSON-LD; no robots tag', () => {
 		const cfg = buildSeo({
 			kind: 'event',
@@ -53,6 +63,7 @@ describe('buildSeo', () => {
 		const types = cfg.jsonLd.map((j) => (j as Record<string, unknown>)['@type']);
 		expect(types).toContain('Event');
 		expect(types).toContain('BreadcrumbList');
+		expect(cfg.og.logo).toBe('https://letsrevel.io/og-logo-v1.png');
 	});
 
 	it('event non-indexable: emits noindex,follow', () => {
