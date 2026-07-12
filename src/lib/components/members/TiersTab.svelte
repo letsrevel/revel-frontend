@@ -129,29 +129,54 @@
 
 	// --- Tier reordering via up/down buttons ---
 	const tiersQueryKey = $derived(['organization', organization.slug, 'membership-tiers']);
+	// Tiers are also cached under a reversed key by the org admin dashboard and the
+	// announcements audience picker — invalidate both so a reorder doesn't leave those
+	// surfaces showing a stale order.
+	const tiersAltQueryKey = $derived(['membership-tiers', organization.slug]);
+
+	function invalidateTierQueries() {
+		queryClient.invalidateQueries({ queryKey: tiersQueryKey });
+		queryClient.invalidateQueries({ queryKey: tiersAltQueryKey });
+	}
 
 	const reorderMutation = createMutation<unknown, unknown, string[]>(() => ({
 		mutationFn: async (tierIds: string[]) => {
-			return await organizationadminmembersReorderMembershipTiers({
+			const response = await organizationadminmembersReorderMembershipTiers({
 				path: { slug: organization.slug },
 				body: { tier_ids: tierIds },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
+			// The generated client does not throw on HTTP errors (ThrowOnError = false),
+			// so surface a structured API error explicitly to trigger onError.
+			if (response.error) {
+				throw new Error(m['orgAdmin.members.tiers.reorderFailed']());
+			}
+			return response.data;
 		},
-		onMutate: async () => {
+		// Snapshot the true previous order FIRST, then apply the optimistic reorder — so a
+		// failed request rolls back to the real original, not an already-swapped copy.
+		onMutate: async (tierIds: string[]) => {
 			await queryClient.cancelQueries({ queryKey: tiersQueryKey });
-			return { previousData: queryClient.getQueryData(tiersQueryKey) };
+			const previousData = queryClient.getQueryData<MembershipTierSchema[]>(tiersQueryKey);
+			if (previousData) {
+				const byId = new Map(previousData.map((t) => [t.id, t]));
+				const newData = tierIds
+					.map((id) => byId.get(id))
+					.filter((t): t is MembershipTierSchema => t !== undefined);
+				queryClient.setQueryData(tiersQueryKey, newData);
+			}
+			return { previousData };
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: tiersQueryKey });
+			invalidateTierQueries();
 		},
 		onError: (_err, _vars, context) => {
 			toast.error(m['orgAdmin.members.tiers.reorderFailed']());
-			const ctx = context as { previousData?: unknown } | undefined;
+			const ctx = context as { previousData?: MembershipTierSchema[] } | undefined;
 			if (ctx?.previousData !== undefined) {
 				queryClient.setQueryData(tiersQueryKey, ctx.previousData);
 			}
-			queryClient.invalidateQueries({ queryKey: tiersQueryKey });
+			invalidateTierQueries();
 		}
 	}));
 
@@ -159,17 +184,13 @@
 		const swapIndex = direction === 'up' ? index - 1 : index + 1;
 		if (swapIndex < 0 || swapIndex >= tiers.length) return;
 
-		// Build the new order by swapping the two tiers.
-		const tierIds = tiers.map((t) => t.id).filter((id): id is string => !!id);
-		[tierIds[index], tierIds[swapIndex]] = [tierIds[swapIndex], tierIds[index]];
-
-		// Optimistic update: swap the two tiers in the shared query cache immediately.
-		const currentData = queryClient.getQueryData<MembershipTierSchema[]>(tiersQueryKey);
-		if (currentData) {
-			const newData = [...currentData];
-			[newData[index], newData[swapIndex]] = [newData[swapIndex], newData[index]];
-			queryClient.setQueryData(tiersQueryKey, newData);
-		}
+		// Swap whole tiers first (index-aligned with `tiers`), then map to ids so the
+		// order can't desync if the list ever contains a tier without an id.
+		const reordered = [...tiers];
+		[reordered[index], reordered[swapIndex]] = [reordered[swapIndex], reordered[index]];
+		const tierIds = reordered.map((t) => t.id).filter((id): id is string => !!id);
+		// The backend validates the id set exactly; bail rather than send a partial set.
+		if (tierIds.length !== reordered.length) return;
 
 		reorderMutation.mutate(tierIds);
 	}

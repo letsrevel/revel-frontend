@@ -52,6 +52,7 @@
 			<div class="space-y-2">
 				<Label for="create-rsvp-member">{m['attendeesAdmin.createModalMemberLabel']()}</Label>
 				<MemberCombobox
+					id="create-rsvp-member"
 					{organization}
 					value={selectedMember}
 					onSelect={(member) => (selectedMember = member)}

@@ -13,9 +13,11 @@
 		value: OrganizationMemberSchema | null;
 		onSelect: (member: OrganizationMemberSchema | null) => void;
 		placeholder?: string;
+		/** Applied to the search input so an external `<label for>` can target it. */
+		id?: string;
 	}
 
-	const { organization, value, onSelect, placeholder = '' }: Props = $props();
+	const { organization, value, onSelect, placeholder = '', id }: Props = $props();
 	const accessToken = $derived(authStore.accessToken);
 
 	const listboxId = $props.id();
@@ -59,6 +61,7 @@
 
 <div class="relative">
 	<Input
+		{id}
 		bind:value={query}
 		onfocus={() => (open = true)}
 		onblur={() => setTimeout(() => (open = false), 150)}
