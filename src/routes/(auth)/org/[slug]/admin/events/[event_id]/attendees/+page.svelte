@@ -8,6 +8,7 @@
 	import {
 		eventadminrsvpsUpdateRsvp,
 		eventadminrsvpsDeleteRsvp,
+		eventadminrsvpsCreateRsvp,
 		organizationadminmembersListMembershipTiers,
 		organizationadminmembersAddMember,
 		organizationadminblacklistCreateBlacklistEntry,
@@ -15,7 +16,7 @@
 	} from '$lib/api';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { getUserDisplayName } from '$lib/utils/user-display';
-	import { Users, ChevronLeft, ChevronRight } from '@lucide/svelte';
+	import { Users, ChevronLeft, ChevronRight, UserPlus } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import ExportButton from '$lib/components/common/ExportButton.svelte';
@@ -25,6 +26,7 @@
 	import AttendeeTable from '$lib/components/attendees/AttendeeTable.svelte';
 	import AttendeeCardList from '$lib/components/attendees/AttendeeCardList.svelte';
 	import EditRsvpDialog from '$lib/components/attendees/EditRsvpDialog.svelte';
+	import CreateRsvpDialog from '$lib/components/attendees/CreateRsvpDialog.svelte';
 	import type { RsvpDetailSchema, MembershipTierSchema } from '$lib/api/generated/types.gen';
 	import * as m from '$lib/paraglide/messages.js';
 
@@ -56,6 +58,9 @@
 	// Blacklist confirmation state
 	let rsvpToBlacklist = $state<RsvpDetailSchema | null>(null);
 	let showBlacklistDialog = $state(false);
+
+	// Create RSVP (on behalf of a member) modal state
+	let showCreateRsvpModal = $state(false);
 
 	// Computed: Has multiple pages
 	const hasMultiplePages = $derived(!!data.nextPage || !!data.previousPage);
@@ -183,6 +188,44 @@
 			toast.error(m['attendeesAdmin.blacklistError']());
 		}
 	}));
+
+	// Create RSVP on behalf of a member mutation
+	const createRsvpMutation = createMutation(() => ({
+		mutationFn: async ({ userId, status }: { userId: string; status: 'yes' | 'maybe' | 'no' }) => {
+			const response = await eventadminrsvpsCreateRsvp({
+				path: { event_id: data.event.id },
+				body: { user_id: userId, status },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+
+			if (response.error) {
+				const errorDetail =
+					typeof response.error === 'object' &&
+					response.error !== null &&
+					'detail' in response.error
+						? String(response.error.detail)
+						: m['attendeesAdmin.createError']();
+				throw new Error(errorDetail);
+			}
+
+			return response.data;
+		},
+		onSuccess: () => {
+			showCreateRsvpModal = false;
+			toast.success(m['attendeesAdmin.createSuccess']());
+			invalidateAll();
+		},
+		onError: (error: Error) => {
+			toast.error(error.message);
+		}
+	}));
+
+	/**
+	 * Handle create RSVP submit
+	 */
+	function handleCreateRsvp(userId: string, status: 'yes' | 'maybe' | 'no') {
+		createRsvpMutation.mutate({ userId, status });
+	}
 
 	/**
 	 * Open make member modal
@@ -409,6 +452,10 @@
 				<p class="mt-1 text-sm text-muted-foreground">{data.event.name}</p>
 			</div>
 			<div class="flex flex-wrap items-center gap-2">
+				<Button variant="outline" size="sm" onclick={() => (showCreateRsvpModal = true)}>
+					<UserPlus class="h-4 w-4" aria-hidden="true" />
+					{m['attendeesAdmin.createButton']()}
+				</Button>
 				<a
 					href={resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
 						slug: organization.slug,
@@ -554,6 +601,15 @@
 	}}
 	onConfirm={handleMakeMemberConfirm}
 	isProcessing={addMemberMutation.isPending}
+/>
+
+<!-- Create RSVP (on behalf of a member) Modal -->
+<CreateRsvpDialog
+	bind:open={showCreateRsvpModal}
+	{organization}
+	isPending={createRsvpMutation.isPending}
+	onSubmit={handleCreateRsvp}
+	onCancel={() => (showCreateRsvpModal = false)}
 />
 
 <!-- Blacklist Confirmation Dialog -->

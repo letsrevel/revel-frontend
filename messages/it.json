@@ -565,7 +565,16 @@
 		"deleteDialogConfirm": "Delete",
 		"deleteDialogCancel": "Cancel",
 		"error_failedToUpdate": "Failed to update RSVP",
-		"error_failedToDelete": "Failed to delete RSVP"
+		"error_failedToDelete": "Failed to delete RSVP",
+		"createButton": "Aggiungi partecipante",
+		"createModalTitle": "Aggiungi partecipante",
+		"createModalDescription": "Crea un RSVP per un membro esistente dell'organizzazione. Cerca il membro qui sotto e scegli il suo stato di partecipazione.",
+		"createModalMemberLabel": "Membro",
+		"createModalMemberPlaceholder": "Cerca membri per nome o email...",
+		"createModalSubmit": "Aggiungi partecipante",
+		"createModalSubmitting": "Aggiunta in corso...",
+		"createSuccess": "RSVP salvato",
+		"createError": "Impossibile aggiungere il partecipante"
 	},
 	"attendeesAdminPage": {
 		"title": "Gestisci Partecipanti - Revel",

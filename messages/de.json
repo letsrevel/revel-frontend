@@ -565,7 +565,16 @@
 		"deleteDialogConfirm": "Delete",
 		"deleteDialogCancel": "Cancel",
 		"error_failedToUpdate": "Failed to update RSVP",
-		"error_failedToDelete": "Failed to delete RSVP"
+		"error_failedToDelete": "Failed to delete RSVP",
+		"createButton": "Teilnehmer*in hinzufügen",
+		"createModalTitle": "Teilnehmer*in hinzufügen",
+		"createModalDescription": "Erstelle eine Zusage für ein bestehendes Organisationsmitglied. Suche unten nach dem Mitglied und wähle seinen Teilnahmestatus.",
+		"createModalMemberLabel": "Mitglied",
+		"createModalMemberPlaceholder": "Mitglieder nach Name oder E-Mail suchen...",
+		"createModalSubmit": "Teilnehmer*in hinzufügen",
+		"createModalSubmitting": "Wird hinzugefügt...",
+		"createSuccess": "Zusage gespeichert",
+		"createError": "Teilnehmer*in konnte nicht hinzugefügt werden"
 	},
 	"attendeesAdminPage": {
 		"title": "Teilnehmer*innen verwalten - Revel",
