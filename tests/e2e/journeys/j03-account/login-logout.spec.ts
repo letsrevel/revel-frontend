@@ -32,10 +32,15 @@ async function expectAuthenticatedChrome(page: Page, isMobile: boolean): Promise
 	if (isMobile) {
 		await openMobileNav(page);
 		const drawer = mobileDrawer(page);
-		// The drawer body scrolls; Log Out sits at the bottom of the menu.
+		// The drawer body scrolls; Log Out sits at the bottom of the menu. The
+		// authenticated nav is still settling as client auth bootstraps, so the
+		// button can detach mid-scroll ("element is not stable") — retry the
+		// scroll+viewport assertion together, re-resolving the locator each pass.
 		const logoutButton = drawer.getByRole('button', { name: 'Log Out' });
-		await logoutButton.scrollIntoViewIfNeeded();
-		await expect(logoutButton).toBeInViewport();
+		await expect(async () => {
+			await logoutButton.scrollIntoViewIfNeeded();
+			await expect(logoutButton).toBeInViewport({ timeout: 1_000 });
+		}).toPass({ timeout: 15_000 });
 		await expect(drawer.getByRole('link', { name: 'Login', exact: true })).toBeHidden();
 		await drawer.getByRole('button', { name: 'Close menu' }).click();
 	} else {
@@ -48,9 +53,12 @@ async function expectLoggedOutChrome(page: Page, isMobile: boolean): Promise<voi
 	if (isMobile) {
 		await openMobileNav(page);
 		const drawer = mobileDrawer(page);
+		// Same re-render race as the authenticated variant (see above).
 		const loginLink = drawer.getByRole('link', { name: 'Login', exact: true });
-		await loginLink.scrollIntoViewIfNeeded();
-		await expect(loginLink).toBeInViewport();
+		await expect(async () => {
+			await loginLink.scrollIntoViewIfNeeded();
+			await expect(loginLink).toBeInViewport({ timeout: 1_000 });
+		}).toPass({ timeout: 15_000 });
 		await expect(drawer.getByRole('button', { name: 'Log Out' })).toBeHidden();
 		await drawer.getByRole('button', { name: 'Close menu' }).click();
 	} else {
