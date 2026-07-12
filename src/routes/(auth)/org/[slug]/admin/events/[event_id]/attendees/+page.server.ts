@@ -65,15 +65,19 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 		redirect(302, `/org/${params.slug}/admin/events/${params.event_id}/tickets`);
 	}
 
-	// Get query parameters for filtering. `status` is untrusted external input,
-	// so validate it against the allowed RSVP statuses; anything else (incl. a
-	// crafted value that would 422 the API and silently empty the list) falls
-	// back to undefined = "all statuses".
-	const status = z
-		.enum(['yes', 'no', 'maybe'])
-		.optional()
-		.catch(undefined)
-		.parse(url.searchParams.get('status') || undefined);
+	// Get query parameters for filtering. `status` is untrusted external input:
+	// a comma-separated list of RSVP statuses (`status__in` on the backend).
+	// Validate each entry against the allowed statuses and drop anything else
+	// (incl. crafted values that would 422 the API and silently empty the list);
+	// dedupe while preserving order. An empty result degrades to "all statuses".
+	const statusItemSchema = z.enum(['yes', 'no', 'maybe']).optional().catch(undefined);
+	const statuses = (url.searchParams.get('status') || '')
+		.split(',')
+		.map((s) => s.trim())
+		.filter((s) => s.length > 0)
+		.map((s) => statusItemSchema.parse(s))
+		.filter((s): s is 'yes' | 'no' | 'maybe' => s !== undefined)
+		.filter((s, i, arr) => arr.indexOf(s) === i);
 	const search = url.searchParams.get('search') || undefined;
 	const page = parseInt(url.searchParams.get('page') || '1');
 	const pageSize = 100; // Fixed page size
@@ -89,7 +93,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 			fetch,
 			path: { event_id: params.event_id },
 			query: {
-				status: status ? [status] : undefined,
+				status: statuses.length ? statuses : undefined,
 				search,
 				page,
 				page_size: pageSize,
@@ -121,7 +125,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 		currentPage: page,
 		pageSize,
 		filters: {
-			status,
+			status: statuses,
 			search
 		}
 	};
