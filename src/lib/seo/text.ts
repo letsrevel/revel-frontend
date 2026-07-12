@@ -2,6 +2,23 @@
  * Text processing utilities for SEO — stripping markup for plain-text descriptions.
  */
 
+/** Truncate a string to `max` characters, ellipsizing when it overflows. */
+export function truncate(s: string, max: number): string {
+	if (!s) return '';
+	if (s.length <= max) return s;
+	return s.slice(0, max - 3) + '...';
+}
+
+/** Strip HTML tags and collapse whitespace for plain-text descriptions. */
+export function stripHtml(html: string | null | undefined): string {
+	if (!html) return '';
+	return html
+		.replace(/<[^>]*>/g, '')
+		.replace(/&nbsp;/g, ' ')
+		.replace(/\s+/g, ' ')
+		.trim();
+}
+
 /**
  * Strip markdown formatting from a string for plain text descriptions.
  * Handles common markdown syntax: headers, bold, italic, links, lists, code blocks, etc.

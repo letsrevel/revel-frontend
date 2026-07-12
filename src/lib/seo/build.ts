@@ -5,8 +5,17 @@ import type {
 	EventSeriesRetrieveSchema
 } from '$lib/api/generated/types.gen';
 import { getBackendUrl } from '$lib/config/api';
-import { LANGS, OG_LOCALE, SITE_NAME, TWITTER_SITE, type Lang } from './constants';
+import {
+	LANGS,
+	OG_IMAGE_PATH,
+	OG_LOCALE,
+	OG_LOGO_PATH,
+	SITE_NAME,
+	TWITTER_SITE,
+	type Lang
+} from './constants';
 import type { SeoConfig } from './types';
+import { truncate, stripHtml } from './text';
 import { sameUrlHreflang, landingPageHreflang } from './hreflang';
 import {
 	generateEventJsonLd,
@@ -56,21 +65,6 @@ export type BuildSeoInput =
 			page: 'login' | 'register' | 'password-reset' | 'verify' | 'unsubscribe';
 	  };
 
-function truncate(s: string, max: number): string {
-	if (!s) return '';
-	if (s.length <= max) return s;
-	return s.slice(0, max - 3) + '...';
-}
-
-function stripHtml(html: string | null | undefined): string {
-	if (!html) return '';
-	return html
-		.replace(/<[^>]*>/g, '')
-		.replace(/&nbsp;/g, ' ')
-		.replace(/\s+/g, ' ')
-		.trim();
-}
-
 function alternateLocales(lang: Lang): string[] {
 	return LANGS.filter((l) => l !== lang).map((l) => OG_LOCALE[l]);
 }
@@ -119,7 +113,7 @@ function getSeriesImage(series: EventSeriesRetrieveSchema): string | undefined {
 const DEFAULT_OG_IMAGE_ALT = 'Revel — Event Management for Communities';
 
 function defaultOgImage(origin: string): string {
-	return `${origin}/og-image.png`;
+	return `${origin}${OG_IMAGE_PATH}`;
 }
 
 // Full OG image metadata for the default (non-event/non-org) social card.
@@ -136,6 +130,13 @@ function defaultOgImageMeta(origin: string) {
 }
 
 export function buildSeo(input: BuildSeoInput): SeoConfig {
+	const cfg = buildSeoConfig(input);
+	// og:logo is site-wide brand metadata (the square R mark), identical on
+	// every page regardless of which og:image the page uses.
+	return { ...cfg, og: { ...cfg.og, logo: `${input.url.origin}${OG_LOGO_PATH}` } };
+}
+
+function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 	const origin = input.url.origin;
 	const canonical = input.url.toString();
 	const alts = alternateLocales(input.lang);
@@ -146,6 +147,10 @@ export function buildSeo(input: BuildSeoInput): SeoConfig {
 			const title = 'Revel — Event Management for Communities';
 			const description =
 				'Discover community events, connect with organizers, and create unforgettable experiences. Open-source event management and ticketing platform.';
+			// og:description has a tighter budget than the meta description:
+			// social previews truncate around ~125 chars on mobile (#624).
+			const ogDescription =
+				'Discover community events, connect with organizers, and create unforgettable experiences on Revel, the open-source platform.';
 			return {
 				title,
 				description,
@@ -153,7 +158,7 @@ export function buildSeo(input: BuildSeoInput): SeoConfig {
 				og: {
 					type: 'website',
 					title: 'Event Management for Communities',
-					description,
+					description: ogDescription,
 					url: canonical,
 					...defaultOgImageMeta(origin),
 					siteName: SITE_NAME,
@@ -213,6 +218,9 @@ export function buildSeo(input: BuildSeoInput): SeoConfig {
 			const title = 'Discover Organizations | Revel';
 			const description =
 				'Browse and discover community organizations on Revel. Find event organizers, communities, and groups creating amazing experiences.';
+			// Shorter variant for social previews (~125-char budget, #624).
+			const ogDescription =
+				'Browse community organizations on Revel — event organizers, communities, and groups creating amazing experiences.';
 			const ld: object[] = [
 				generateBreadcrumbJsonLd([
 					{ name: 'Home', url: origin },
@@ -229,7 +237,7 @@ export function buildSeo(input: BuildSeoInput): SeoConfig {
 				og: {
 					type: 'website',
 					title,
-					description,
+					description: ogDescription,
 					url: canonical,
 					...defaultOgImageMeta(origin),
 					siteName: SITE_NAME,

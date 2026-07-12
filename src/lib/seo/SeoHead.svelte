@@ -25,6 +25,9 @@
 	{#each config.og.localeAlternate as alt (alt)}
 		<meta property="og:locale:alternate" content={alt} />
 	{/each}
+	{#if config.og.logo}
+		<meta property="og:logo" content={config.og.logo} />
+	{/if}
 	{#if config.og.image}
 		<meta property="og:image" content={config.og.image} />
 		{#if config.og.imageAlt}

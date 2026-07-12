@@ -17,6 +17,7 @@ export interface SeoConfig {
 		imageWidth?: number;
 		imageHeight?: number;
 		imageType?: string;
+		logo?: string;
 		siteName: string;
 		locale: string;
 		localeAlternate: string[];

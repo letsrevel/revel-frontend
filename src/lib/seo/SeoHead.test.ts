@@ -57,6 +57,17 @@ describe('<SeoHead>', () => {
 		expect(robots?.getAttribute('content')).toBe('noindex,follow');
 	});
 
+	it('renders og:logo when set and omits it otherwise', () => {
+		render(SeoHead, { config: cfg });
+		expect(document.head.querySelector('meta[property="og:logo"]')).toBeNull();
+		document.head.innerHTML = '';
+		render(SeoHead, {
+			config: { ...cfg, og: { ...cfg.og, logo: 'https://letsrevel.io/og-logo-v1.png' } }
+		});
+		const logo = document.head.querySelector('meta[property="og:logo"]');
+		expect(logo?.getAttribute('content')).toBe('https://letsrevel.io/og-logo-v1.png');
+	});
+
 	it('renders one <script type="application/ld+json"> per JSON-LD block', () => {
 		render(SeoHead, { config: cfg });
 		const scripts = document.head.querySelectorAll('script[type="application/ld+json"]');
