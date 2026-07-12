@@ -28,23 +28,33 @@ export class ApiError extends Error {
 }
 
 /**
+ * fetch() with the same bounded 5xx retry ApiClient uses. Unauthenticated
+ * ARRANGE calls (register, verify, guest RSVP) bypass ApiClient, so they need
+ * their own guard against the dev backend's transient 500s under parallel
+ * load (observed: Postgres "sorry, too many clients already" when the
+ * threaded runserver piles connections past max_connections at peak). 4xx is
+ * returned as-is — callers assert on those deliberately.
+ */
+export async function fetchWithRetry(url: string, init?: RequestInit): Promise<Response> {
+	for (let attempt = 1; ; attempt++) {
+		const response = await fetch(url, init);
+		if (response.status < 500 || attempt >= 3) return response;
+		await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
+	}
+}
+
+/**
  * Exchange credentials for a JWT pair (POST /api/auth/token/pair).
  * Retries transient 5xx responses — the dev backend can hiccup under the
  * parallel load of a full suite run.
  */
 export async function obtainTokenPair(email: string, password: string): Promise<TokenPair> {
-	let response: Response;
-	let text: string;
-	for (let attempt = 1; ; attempt++) {
-		response = await fetch(`${API_URL}/api/auth/token/pair`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ username: email, password })
-		});
-		text = await response.text();
-		if (response.status < 500 || attempt >= 3) break;
-		await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
-	}
+	const response = await fetchWithRetry(`${API_URL}/api/auth/token/pair`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ username: email, password })
+	});
+	const text = await response.text();
 	if (!response.ok) {
 		throw new ApiError(response.status, 'POST', '/api/auth/token/pair', text);
 	}
