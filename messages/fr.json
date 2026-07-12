@@ -419,6 +419,7 @@
 		"statsNo": "Non",
 		"searchPlaceholder": "Rechercher par nom ou e-mail...",
 		"filterAll": "Tous ({count})",
+		"filterByStatus": "Filtrer par statut",
 		"noRsvpsHeading": "Aucun RSVP trouvé",
 		"noRsvpsFiltered": "Essaie d'ajuster tes filtres ou ta recherche.",
 		"noRsvpsEmpty": "Personne n'a encore répondu à cet événement.",

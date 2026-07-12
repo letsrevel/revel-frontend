@@ -36,7 +36,7 @@
 	// Filter state
 	let searchQuery = $state(data.filters.search || '');
 	let searchInput = $state(searchQuery); // For debouncing
-	let activeStatusFilter = $state<string | null>(data.filters.status || null);
+	let activeStatusFilters = $state<string[]>(data.filters.status ?? []);
 
 	// Modal states
 	let editingRsvp = $state<RsvpDetailSchema | null>(null);
@@ -272,7 +272,7 @@
 		const params = new URLSearchParams();
 
 		if (searchQuery) params.set('search', searchQuery);
-		if (activeStatusFilter) params.set('status', activeStatusFilter);
+		if (activeStatusFilters.length) params.set('status', activeStatusFilters.join(','));
 
 		// eslint-disable-next-line svelte/no-navigation-without-resolve -- same-route query-only update; the relative "?"+params string preserves the current pathname (resolve() cannot express search params)
 		goto(`?${params.toString()}`, { replaceState: true, keepFocus: true });
@@ -292,7 +292,13 @@
 	 * Filter by status
 	 */
 	function filterByStatus(status: string | null) {
-		activeStatusFilter = status;
+		if (status === null) {
+			activeStatusFilters = [];
+		} else if (activeStatusFilters.includes(status)) {
+			activeStatusFilters = activeStatusFilters.filter((s) => s !== status);
+		} else {
+			activeStatusFilters = [...activeStatusFilters, status];
+		}
 		applyFilters();
 	}
 
@@ -438,7 +444,7 @@
 	<!-- Filters & Search -->
 	<AttendeeFilters
 		{searchInput}
-		{activeStatusFilter}
+		{activeStatusFilters}
 		totalCount={data.totalCount}
 		onSearch={handleSearch}
 		onStatusFilter={filterByStatus}
@@ -450,7 +456,7 @@
 			<Users class="mx-auto h-12 w-12 text-muted-foreground" aria-hidden="true" />
 			<h3 class="mt-4 text-lg font-semibold">{m['attendeesAdmin.noRsvpsHeading']()}</h3>
 			<p class="mt-2 text-sm text-muted-foreground">
-				{#if activeStatusFilter || searchQuery}
+				{#if activeStatusFilters.length || searchQuery}
 					{m['attendeesAdmin.noRsvpsFiltered']()}
 				{:else}
 					{m['attendeesAdmin.noRsvpsEmpty']()}

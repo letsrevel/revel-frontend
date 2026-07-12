@@ -532,6 +532,7 @@
 		"statsNo": "No",
 		"searchPlaceholder": "Search by name or email...",
 		"filterAll": "All ({count})",
+		"filterByStatus": "Nach Status filtern",
 		"noRsvpsHeading": "No RSVPs found",
 		"noRsvpsFiltered": "Try adjusting your filters or search query.",
 		"noRsvpsEmpty": "No one has RSVP'd to this event yet.",
