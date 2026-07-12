@@ -46,8 +46,8 @@ test.describe('J03 notification preferences @p2', () => {
 		await expect(sendTime).toBeVisible();
 		await sendTime.fill('09:00');
 
-		// The advanced per-type section carries its own "Save Changes"; the
-		// master form's is the last one on the page.
+		// The settings page's general-preferences section has its own "Save
+		// Changes" button; the notification form's master save is the last one.
 		await page.getByRole('button', { name: 'Save Changes' }).last().click();
 		await expect(page.getByText('Notification preferences updated successfully')).toBeVisible();
 

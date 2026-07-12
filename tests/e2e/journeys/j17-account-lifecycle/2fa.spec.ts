@@ -20,10 +20,10 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // retries in an outcome-keyed loop — a code minted near a 30s boundary can
 // expire between generate and verify.
 
-/** Fill the 6-digit TwoFactorInput; each box is #otp-input-N. */
+/** Fill the 6-digit TwoFactorInput; each box is labelled "Digit N". */
 async function fillOtp(page: Page, code: string): Promise<void> {
 	for (let i = 0; i < 6; i++) {
-		await page.locator(`#otp-input-${i}`).fill(code[i]);
+		await page.getByLabel(`Digit ${i + 1}`, { exact: true }).fill(code[i]);
 	}
 }
 
