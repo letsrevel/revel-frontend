@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import { API_URL, ApiClient, ApiError } from './api';
+import { API_URL, ApiClient, ApiError, fetchWithRetry } from './api';
 import { extractLink, waitForEmail } from './mailpit';
 import { PERSONAS, type PersonaName } from './personas';
 
@@ -48,7 +48,7 @@ export async function createVerifiedUser(label: string): Promise<ThrowawayUser> 
 	const firstName = 'E2E';
 	const lastName = label;
 
-	const register = await fetch(`${API_URL}/api/account/register`, {
+	const register = await fetchWithRetry(`${API_URL}/api/account/register`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({
@@ -71,7 +71,7 @@ export async function createVerifiedUser(label: string): Promise<ThrowawayUser> 
 	if (!token) {
 		throw new Error(`Verification link has no token: ${link}`);
 	}
-	const verify = await fetch(`${API_URL}/api/account/verify`, {
+	const verify = await fetchWithRetry(`${API_URL}/api/account/verify`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ token })
@@ -335,7 +335,7 @@ export async function createGuestRsvp(eventId: string, label = 'Guest'): Promise
 	const firstName = 'E2E';
 	const lastName = label;
 
-	const rsvp = await fetch(`${API_URL}/api/events/${eventId}/rsvp/yes/public`, {
+	const rsvp = await fetchWithRetry(`${API_URL}/api/events/${eventId}/rsvp/yes/public`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ email, first_name: firstName, last_name: lastName })
@@ -355,7 +355,7 @@ export async function createGuestRsvp(eventId: string, label = 'Guest'): Promise
 	if (!token) {
 		throw new Error(`Guest confirmation link has no token: ${link}`);
 	}
-	const confirm = await fetch(`${API_URL}/api/events/guest-actions/confirm`, {
+	const confirm = await fetchWithRetry(`${API_URL}/api/events/guest-actions/confirm`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ token })
