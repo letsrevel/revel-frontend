@@ -19,6 +19,7 @@ export interface MailpitMessageSummary {
 	ID: string;
 	From: MailpitAddress;
 	To: MailpitAddress[];
+	ReplyTo?: MailpitAddress[];
 	Subject: string;
 	Created: string;
 }

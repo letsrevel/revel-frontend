@@ -4,6 +4,7 @@ import { createOrganization, createVerifiedUser } from '../../support/factories'
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { waitForEmail } from '../../support/mailpit';
+import { ContactDialogPage } from '../../support/pages/contact-dialog';
 
 // J1.7 (USER_JOURNEYS.md) — public org contact form: a signed-in visitor sends
 // a message from the org page, the organizer receives it by email (subject
@@ -29,23 +30,20 @@ test.describe('J01 contact organizer @p2', () => {
 
 		await gotoHydrated(page, `/org/${org.slug}`);
 		await waitForClientAuth(page);
-		await page.getByRole('button', { name: 'Contact organizer' }).click();
-		const dialog = page.getByRole('dialog', { name: `Contact ${org.name}` });
-		await expect(dialog).toBeVisible();
+
+		const contactDialog = new ContactDialogPage(page, org.name);
+		await contactDialog.open();
 
 		const subject = `E2E hello ${org.slug}`;
-		await dialog.getByLabel(/Subject/).fill(subject);
-		await dialog.getByLabel('Message').fill('Is this event wheelchair accessible?');
-		await dialog.getByRole('button', { name: 'Send message' }).click();
+		await contactDialog.fillForm(subject, 'Is this event wheelchair accessible?');
+		await contactDialog.submit();
 
-		await expect(page.getByText('Your message has been sent.')).toBeVisible();
-		// On success the dialog's own title flips to "Message sent" (so the
-		// name-scoped `dialog` locator above is now stale) — assert at page level.
-		await expect(page.getByText('Message sent', { exact: true })).toBeVisible();
+		await contactDialog.expectSuccess();
 
 		// The organizer's mailbox (the throwaway owner's address) receives it.
 		const mail = await waitForEmail({ to: org.owner.email, subject: `[${org.name}] ${subject}` });
 		expect(mail.Subject).toContain(subject);
+		expect(mail.ReplyTo?.[0]?.Address).toBe(sender.email);
 
 		await context.close();
 	});
