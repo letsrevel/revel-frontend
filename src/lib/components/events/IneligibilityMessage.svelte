@@ -28,6 +28,9 @@
 		organizationName: string;
 		eventTokenDetails?: EventTokenSchema | null;
 		applyBefore?: string | null;
+		/** Refresh eligibility after a successful invitation/whitelist request. */
+		onInvitationRequestSuccess?: () => void;
+		onWhitelistRequestSuccess?: () => void;
 		class?: string;
 	}
 
@@ -39,6 +42,8 @@
 		organizationName,
 		eventTokenDetails,
 		applyBefore,
+		onInvitationRequestSuccess,
+		onWhitelistRequestSuccess,
 		class: className
 	}: Props = $props();
 
@@ -474,6 +479,8 @@
 						{organizationSlug}
 						{eventTokenDetails}
 						questionnaireIds={eligibility.questionnaires_missing}
+						{onInvitationRequestSuccess}
+						{onWhitelistRequestSuccess}
 					/>
 				</div>
 			{/if}
