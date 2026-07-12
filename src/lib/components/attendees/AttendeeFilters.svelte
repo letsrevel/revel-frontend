@@ -5,13 +5,14 @@
 
 	interface Props {
 		searchInput: string;
-		activeStatusFilter: string | null;
+		activeStatusFilters: string[];
 		totalCount: number;
 		onSearch: (value: string) => void;
 		onStatusFilter: (status: string | null) => void;
 	}
 
-	const { searchInput, activeStatusFilter, totalCount, onSearch, onStatusFilter }: Props = $props();
+	const { searchInput, activeStatusFilters, totalCount, onSearch, onStatusFilter }: Props =
+		$props();
 </script>
 
 <div class="space-y-4">
@@ -24,14 +25,14 @@
 	/>
 
 	<!-- Filter buttons -->
-	<div class="flex flex-wrap gap-2">
+	<div class="flex flex-wrap gap-2" role="group" aria-label={m['attendeesAdmin.filterByStatus']()}>
 		<button
 			type="button"
 			onclick={() => onStatusFilter(null)}
-			aria-pressed={!activeStatusFilter}
+			aria-pressed={activeStatusFilters.length === 0}
 			class={cn(
 				'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-				!activeStatusFilter
+				activeStatusFilters.length === 0
 					? 'bg-primary text-primary-foreground'
 					: 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
 			)}
@@ -41,10 +42,10 @@
 		<button
 			type="button"
 			onclick={() => onStatusFilter('yes')}
-			aria-pressed={activeStatusFilter === 'yes'}
+			aria-pressed={activeStatusFilters.includes('yes')}
 			class={cn(
 				'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-				activeStatusFilter === 'yes'
+				activeStatusFilters.includes('yes')
 					? 'bg-green-600 text-white'
 					: 'border border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-950'
 			)}
@@ -54,10 +55,10 @@
 		<button
 			type="button"
 			onclick={() => onStatusFilter('maybe')}
-			aria-pressed={activeStatusFilter === 'maybe'}
+			aria-pressed={activeStatusFilters.includes('maybe')}
 			class={cn(
 				'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-				activeStatusFilter === 'maybe'
+				activeStatusFilters.includes('maybe')
 					? 'bg-yellow-600 text-white'
 					: 'border border-yellow-600 text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-950'
 			)}
@@ -67,10 +68,10 @@
 		<button
 			type="button"
 			onclick={() => onStatusFilter('no')}
-			aria-pressed={activeStatusFilter === 'no'}
+			aria-pressed={activeStatusFilters.includes('no')}
 			class={cn(
 				'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-				activeStatusFilter === 'no'
+				activeStatusFilters.includes('no')
 					? 'bg-red-600 text-white'
 					: 'border border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-950'
 			)}
