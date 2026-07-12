@@ -10,6 +10,14 @@
 
 export const API_URL = process.env.PUBLIC_API_URL ?? 'http://localhost:8000';
 
+export function getBackendUrl(path: string): string {
+	if (path.startsWith('http://') || path.startsWith('https://')) {
+		return path;
+	}
+	const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+	return `${API_URL}${normalizedPath}`;
+}
+
 export interface TokenPair {
 	access: string;
 	refresh: string;
@@ -37,9 +45,31 @@ export class ApiError extends Error {
  */
 export async function fetchWithRetry(url: string, init?: RequestInit): Promise<Response> {
 	for (let attempt = 1; ; attempt++) {
-		const response = await fetch(url, init);
-		if (response.status < 500 || attempt >= 3) return response;
-		await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
+		try {
+			const response = await fetch(url, init);
+			if (response.status < 500 || attempt >= 3) return response;
+		} catch (error) {
+			if (attempt >= 3 || init?.signal?.aborted) throw error;
+		}
+		if (init?.signal) {
+			if (init.signal.aborted) {
+				throw new DOMException('The user aborted a request.', 'AbortError');
+			}
+			await new Promise<void>((resolve, reject) => {
+				const onAbort = () => {
+					clearTimeout(timeoutId);
+					init.signal?.removeEventListener('abort', onAbort);
+					reject(new DOMException('The user aborted a request.', 'AbortError'));
+				};
+				const timeoutId = setTimeout(() => {
+					init.signal?.removeEventListener('abort', onAbort);
+					resolve();
+				}, 500 * attempt);
+				init.signal.addEventListener('abort', onAbort);
+			});
+		} else {
+			await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
+		}
 	}
 }
 
@@ -84,21 +114,15 @@ export class ApiClient {
 		// load the dev backend can transiently 500 (observed: Postgres "sorry,
 		// too many clients already" surfacing as OperationalError). 4xx is
 		// NEVER retried — specs assert on those deliberately.
-		let response: Response;
-		let text: string;
-		for (let attempt = 1; ; attempt++) {
-			response = await fetch(`${API_URL}${path}`, {
-				method,
-				headers: {
-					Authorization: `Bearer ${this.accessToken}`,
-					...(body !== undefined ? { 'Content-Type': 'application/json' } : {})
-				},
-				body: body !== undefined ? JSON.stringify(body) : undefined
-			});
-			text = await response.text();
-			if (response.status < 500 || attempt >= 3) break;
-			await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
-		}
+		const response = await fetchWithRetry(`${API_URL}${path}`, {
+			method,
+			headers: {
+				Authorization: `Bearer ${this.accessToken}`,
+				...(body !== undefined ? { 'Content-Type': 'application/json' } : {})
+			},
+			body: body !== undefined ? JSON.stringify(body) : undefined
+		});
+		const text = await response.text();
 		if (!response.ok) {
 			throw new ApiError(response.status, method, path, text);
 		}
