@@ -3382,6 +3382,14 @@ export type OrganizationAdminDetailSchema = {
     billing_email: string;
     invoicing_mode: InvoicingMode;
     revenue_report_cadence: RevenueReportCadence;
+    /**
+     * Membership Grace Period Days
+     */
+    membership_grace_period_days: number;
+    /**
+     * Membership Refund Policy
+     */
+    membership_refund_policy: string;
 };
 
 /**
@@ -3443,6 +3451,14 @@ export type OrganizationEditSchema = {
     accept_membership_requests?: boolean;
     contact_method?: ContactMethod;
     revenue_report_cadence?: RevenueReportCadence;
+    /**
+     * Membership Grace Period Days
+     */
+    membership_grace_period_days?: number;
+    /**
+     * Membership Refund Policy
+     */
+    membership_refund_policy?: string;
 };
 
 /**
