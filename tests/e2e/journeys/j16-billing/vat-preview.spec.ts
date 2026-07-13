@@ -43,17 +43,14 @@ test.describe('J16 VAT preview @p2', () => {
 		// when the external service is unavailable or won't validate the IDs.
 		const api = await ApiClient.login(buyer.email, buyer.password);
 		for (const vatId of [DOMESTIC_VAT_ID, CROSS_BORDER_VAT_ID]) {
+			let probe: { vat_id_valid: boolean | null } | null = null;
 			try {
-				const probe = await api.post<{ vat_id_valid: boolean | null }>(
+				probe = await api.post<{ vat_id_valid: boolean | null }>(
 					`/api/events/${event.id}/tickets/vat-preview`,
 					{
 						billing_info: { billing_name: 'Probe', vat_id: vatId },
 						items: [{ tier_id: tier.id, count: 1 }]
 					}
-				);
-				test.skip(
-					probe.vat_id_valid !== true,
-					`VIES did not validate ${vatId} (service down or registration changed)`
 				);
 			} catch (err) {
 				test.skip(
@@ -61,6 +58,10 @@ test.describe('J16 VAT preview @p2', () => {
 					`VIES probe request failed: ${err instanceof Error ? err.message : String(err)}`
 				);
 			}
+			test.skip(
+				probe?.vat_id_valid !== true,
+				`VIES did not validate ${vatId} (service down or registration changed)`
+			);
 		}
 
 		const context = await browser.newContext();
