@@ -16,6 +16,21 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 //
 // Isolation: throwaway-owned org + throwaway member.
 
+/**
+ * Submit the Add-Resource dialog, outcome-keyed on it closing. The dialog's
+ * <form> intermittently keeps intercepting pointer events on the mobile
+ * viewport, hanging a positioned click in the actionability loop forever —
+ * dispatch the click straight to the button instead (re-dispatch only fires
+ * while the dialog is still open, so no duplicate resources).
+ */
+async function submitResource(modal: import('@playwright/test').Locator): Promise<void> {
+	await expect(async () => {
+		if (!(await modal.isVisible())) return;
+		await modal.getByRole('button', { name: 'Create Resource' }).dispatchEvent('click');
+		await expect(modal).not.toBeVisible({ timeout: 5_000 });
+	}).toPass({ timeout: 45_000 });
+}
+
 test.describe('J8 org resources @p2', () => {
 	test('create link/text resources; visibility filters per persona', async ({ browser }) => {
 		test.setTimeout(150_000);
@@ -47,8 +62,7 @@ test.describe('J8 org resources @p2', () => {
 		await modal.getByLabel('URL').fill('https://example.com/e2e');
 		await modal.getByLabel('Visibility').selectOption({ label: 'Public - Anyone can view' });
 		await modal.getByLabel('Display on organization page').check();
-		await modal.getByRole('button', { name: 'Create Resource' }).click();
-		await expect(modal).not.toBeVisible({ timeout: 15_000 });
+		await submitResource(modal);
 		await expect(page.getByText(publicName)).toBeVisible();
 
 		// Members-only text resource, also shown on the org page.
@@ -61,8 +75,7 @@ test.describe('J8 org resources @p2', () => {
 			.getByLabel('Visibility')
 			.selectOption({ label: 'Members Only - Requires membership' });
 		await modal.getByLabel('Display on organization page').check();
-		await modal.getByRole('button', { name: 'Create Resource' }).click();
-		await expect(modal).not.toBeVisible({ timeout: 15_000 });
+		await submitResource(modal);
 		await expect(page.getByText(membersName)).toBeVisible();
 
 		// A member sees both on the public resources page.

@@ -4,6 +4,7 @@ import {
 	createTicketedEvent,
 	createTicketTier,
 	createVerifiedUser,
+	issueDraftInvoiceFor,
 	setOrgInvoicingMode,
 	startOnlineCheckout
 } from '../../support/factories';
@@ -11,24 +12,23 @@ import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 import { completeStripeCheckout } from '../../support/stripe';
 
-// J22 (USER_JOURNEYS.md) — buyer-side attendee invoicing: with the org in
-// AUTO invoicing mode, a paid online purchase generates an ISSUED invoice
-// that the buyer finds under /account/invoices, with the PDF served from a
-// signed URL in a new tab.
+// J22 (USER_JOURNEYS.md) — buyer-side attendee invoicing: a paid online
+// purchase with billing info generates an invoice that, once issued, the
+// buyer finds under /account/invoices with the PDF served from a signed URL.
 //
 // Requires the full Stripe test-mode setup (tests/e2e/README.md) — the
-// invoice is generated from the webhook's payment record. No org in the
-// seed has invoicing enabled, so the arrange flips Org Alpha to 'auto'
-// (idempotent, deliberately not reverted; see setOrgInvoicingMode).
+// invoice is generated from the webhook's payment record. The suite pins Org
+// Alpha (the only Stripe-connected org) to HYBRID invoicing — the mode is
+// read at webhook time and mixed modes would race parallel workers' checkouts
+// (see setOrgInvoicingMode) — so the arrange issues the draft via the admin
+// API; the organizer-side draft→issue UI journey is j22 hybrid-flow.
 
 test.describe('J22 buyer invoices @p2', () => {
-	test('auto-invoiced purchase → issued invoice in /account/invoices → PDF', async ({
-		browser
-	}) => {
+	test('invoiced purchase → issued invoice in /account/invoices → PDF', async ({ browser }) => {
 		// Stripe hosted checkout + webhook + invoice generation.
 		test.setTimeout(240_000);
 
-		await setOrgInvoicingMode('auto');
+		await setOrgInvoicingMode('hybrid');
 		const [event, buyer] = await Promise.all([
 			createTicketedEvent({ freeTier: false }),
 			createVerifiedUser('Invoiced')
@@ -50,8 +50,11 @@ test.describe('J22 buyer invoices @p2', () => {
 		await page.goto(checkoutUrl);
 		await completeStripeCheckout(page);
 
-		// The invoice is generated when the webhook lands (inline Celery) — a
-		// fresh buyer has exactly one, so poll for its Issued table row.
+		// Hybrid mode leaves the generated invoice as a draft — wait for it and
+		// issue it as the org owner (API arrange; the UI journey is hybrid-flow).
+		await issueDraftInvoiceFor(buyer.email);
+
+		// A fresh buyer has exactly one invoice — poll for its Issued table row.
 		const invoiceRow = page.getByRole('row').filter({ hasText: 'Issued' });
 		await expect(async () => {
 			await gotoHydrated(page, '/account/invoices');
