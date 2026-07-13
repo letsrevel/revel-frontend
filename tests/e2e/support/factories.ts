@@ -415,6 +415,84 @@ export async function approveMembershipRequest(
 	});
 }
 
+/**
+ * Look up an org member's user id via the org-admin members list (the search
+ * param matches email). Factory emails contain `+`, so the query is always
+ * URI-encoded.
+ */
+async function findMemberUserId(api: ApiClient, orgSlug: string, email: string): Promise<string> {
+	const page = await api.get<{ results: Array<{ user: { id: string; email: string } }> }>(
+		`/api/organization-admin/${orgSlug}/members?search=${encodeURIComponent(email)}`
+	);
+	const member = page.results.find((m) => m.user.email === email) ?? page.results[0];
+	if (!member) {
+		throw new Error(`No member matching ${email} in org ${orgSlug}`);
+	}
+	return member.user.id;
+}
+
+/** Set an existing member's status (active/paused/cancelled/banned) as the org owner. */
+export async function setMemberStatus(
+	owner: ThrowawayUser,
+	orgSlug: string,
+	memberEmail: string,
+	status: 'active' | 'paused' | 'cancelled' | 'banned'
+): Promise<void> {
+	const api = await ApiClient.login(owner.email, owner.password);
+	const userId = await findMemberUserId(api, orgSlug, memberEmail);
+	await api.put(`/api/organization-admin/${orgSlug}/members/${userId}`, { status });
+}
+
+/**
+ * Promote an existing MEMBER to staff, optionally with a narrow permission
+ * map (unset keys keep the backend defaults — everything false except
+ * view_organization_details). Returns the promoted user's id for follow-up
+ * permission updates.
+ */
+export async function addStaff(
+	owner: ThrowawayUser,
+	orgSlug: string,
+	memberEmail: string,
+	permissions?: Record<string, boolean>
+): Promise<string> {
+	const api = await ApiClient.login(owner.email, owner.password);
+	const userId = await findMemberUserId(api, orgSlug, memberEmail);
+	await api.post(
+		`/api/organization-admin/${orgSlug}/staff/${userId}`,
+		permissions ? { default: permissions, event_overrides: {} } : undefined
+	);
+	return userId;
+}
+
+/** Replace a staff member's org-wide permission map (owner-only endpoint). */
+export async function setStaffPermissions(
+	owner: ThrowawayUser,
+	orgSlug: string,
+	userId: string,
+	permissions: Record<string, boolean>
+): Promise<void> {
+	const api = await ApiClient.login(owner.email, owner.password);
+	await api.put(`/api/organization-admin/${orgSlug}/staff/${userId}/permissions`, {
+		default: permissions,
+		event_overrides: {}
+	});
+}
+
+/**
+ * API-create a blacklist entry on a throwaway-owned org. Passing the email of
+ * a REGISTERED user auto-links the entry to that account, which immediately
+ * applies the consequences (staff stripped, membership set to BANNED, event
+ * access blocked) via the backend's post_save signal.
+ */
+export async function addToBlacklist(
+	owner: ThrowawayUser,
+	orgSlug: string,
+	entry: Record<string, unknown>
+): Promise<{ id: string }> {
+	const api = await ApiClient.login(owner.email, owner.password);
+	return api.post<{ id: string }>(`/api/organization-admin/${orgSlug}/blacklist`, entry);
+}
+
 export interface CreatedPoll {
 	id: string;
 	orgSlug: string;
