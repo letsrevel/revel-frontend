@@ -4869,6 +4869,7 @@
 		"messageOptional": "Nachricht (Optional)",
 		"messagePlaceholder": "Erzähle den Organisierenden, warum du beitreten möchtest...",
 		"characters": "Zeichen",
+		"refundPolicy": "Rückerstattungsrichtlinie",
 		"requestSubmittedDesc": "Deine Mitgliedschaftsanfrage wurde an {organizationName} gesendet. Du wirst benachrichtigt, wenn sie geprüft wurde.",
 		"requestDesc": "Stelle eine Anfrage, um Mitglied von {organizationName} zu werden. Eine Mitgliedschaft kann Zugang zu Events und Ticket-Stufen nur für Mitglieder gewähren, das Überspringen von Prüfungs-Fragebögen ermöglichen sowie Mitgliedschaftsvorteile oder Rabatte bieten, die die Organisierenden anbieten.",
 		"cancel": "Abbrechen",

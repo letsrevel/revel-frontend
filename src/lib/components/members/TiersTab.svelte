@@ -13,6 +13,7 @@
 		OrganizationMemberSchema
 	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { reorderByIds, swapAndCollectIds } from '$lib/utils/reorder';
 	import { Button } from '$lib/components/ui/button';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Shield, Plus, Pencil, Trash2, Loader2, ArrowUp, ArrowDown } from '@lucide/svelte';
@@ -159,11 +160,7 @@
 			await queryClient.cancelQueries({ queryKey: tiersQueryKey });
 			const previousData = queryClient.getQueryData<MembershipTierSchema[]>(tiersQueryKey);
 			if (previousData) {
-				const byId = new Map(previousData.map((t) => [t.id, t]));
-				const newData = tierIds
-					.map((id) => byId.get(id))
-					.filter((t): t is MembershipTierSchema => t !== undefined);
-				queryClient.setQueryData(tiersQueryKey, newData);
+				queryClient.setQueryData(tiersQueryKey, reorderByIds(previousData, tierIds));
 			}
 			return { previousData };
 		},
@@ -184,13 +181,9 @@
 		const swapIndex = direction === 'up' ? index - 1 : index + 1;
 		if (swapIndex < 0 || swapIndex >= tiers.length) return;
 
-		// Swap whole tiers first (index-aligned with `tiers`), then map to ids so the
-		// order can't desync if the list ever contains a tier without an id.
-		const reordered = [...tiers];
-		[reordered[index], reordered[swapIndex]] = [reordered[swapIndex], reordered[index]];
-		const tierIds = reordered.map((t) => t.id).filter((id): id is string => !!id);
-		// The backend validates the id set exactly; bail rather than send a partial set.
-		if (tierIds.length !== reordered.length) return;
+		// Swap whole tiers, then collect ids in the new order (bails on a null id).
+		const tierIds = swapAndCollectIds(tiers, index, swapIndex);
+		if (!tierIds) return;
 
 		reorderMutation.mutate(tierIds);
 	}

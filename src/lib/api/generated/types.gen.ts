@@ -1248,6 +1248,10 @@ export type OrganizationRetrieveSchema = {
      * Contact Email
      */
     contact_email?: string | null;
+    /**
+     * Membership Refund Policy
+     */
+    membership_refund_policy?: string;
 };
 
 /**

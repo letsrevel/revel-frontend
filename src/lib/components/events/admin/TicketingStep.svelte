@@ -14,6 +14,7 @@
 	import TierCard from './TierCard.svelte';
 	import TierForm from './TierForm.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { reorderByIds, swapAndCollectIds } from '$lib/utils/reorder';
 	import { toast } from 'svelte-sonner';
 
 	// Form state fields this step reads/writes. The parent passes a wider event
@@ -110,16 +111,30 @@
 	// --- Tier reordering via up/down buttons ---
 	const reorderMutation = createMutation<unknown, unknown, string[]>(() => ({
 		mutationFn: async (tierIds: string[]) => {
-			return await eventadminticketsReorderTicketTiers({
+			const response = await eventadminticketsReorderTicketTiers({
 				path: { event_id: eventId },
 				body: { tier_ids: tierIds }
 			});
+			// The generated client does not throw on HTTP errors (ThrowOnError = false),
+			// so surface a structured API error explicitly to trigger onError.
+			if (response.error) {
+				throw new Error(m['ticketingStep.failedToReorderTiers']());
+			}
+			return response.data;
 		},
-		onMutate: async () => {
+		// Snapshot the true previous order FIRST, then apply the optimistic reorder — so a
+		// failed request rolls back to the real original, not an already-swapped copy.
+		onMutate: async (tierIds: string[]) => {
 			await queryClient.cancelQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
-			return {
-				previousData: queryClient.getQueryData(['event-admin', eventId, 'ticket-tiers'])
-			};
+			const previousData = queryClient.getQueryData(['event-admin', eventId, 'ticket-tiers']) as
+				{ data?: { results?: TicketTierDetailSchema[] } } | undefined;
+			if (previousData?.data?.results) {
+				queryClient.setQueryData(['event-admin', eventId, 'ticket-tiers'], {
+					...previousData,
+					data: { ...previousData.data, results: reorderByIds(previousData.data.results, tierIds) }
+				});
+			}
+			return { previousData };
 		},
 		onSuccess: async () => {
 			toast.success(m['ticketingStep.tierOrderUpdated']());
@@ -133,6 +148,9 @@
 			if (ctx?.previousData) {
 				queryClient.setQueryData(['event-admin', eventId, 'ticket-tiers'], ctx.previousData);
 			}
+			// Reconcile with server truth after rollback: the request may have applied
+			// server-side before failing (e.g. a lost response), so refetch to be sure.
+			queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
 		}
 	}));
 
@@ -140,21 +158,10 @@
 		const swapIndex = direction === 'up' ? index - 1 : index + 1;
 		if (swapIndex < 0 || swapIndex >= tiers.length) return;
 
-		// Build new order by swapping the two tiers
-		const tierIds = tiers.map((t) => t.id).filter((id): id is string => !!id);
-		[tierIds[index], tierIds[swapIndex]] = [tierIds[swapIndex], tierIds[index]];
-
-		// Optimistic update: set the swapped order in the query cache immediately
-		const currentData = queryClient.getQueryData(['event-admin', eventId, 'ticket-tiers']) as
-			{ data?: { results?: TicketTierDetailSchema[] } } | undefined;
-		if (currentData?.data?.results) {
-			const newResults = [...currentData.data.results];
-			[newResults[index], newResults[swapIndex]] = [newResults[swapIndex], newResults[index]];
-			queryClient.setQueryData(['event-admin', eventId, 'ticket-tiers'], {
-				...currentData,
-				data: { ...currentData.data, results: newResults }
-			});
-		}
+		// Swap whole tiers, then collect ids in the new order (bails on a null id). The
+		// optimistic cache write now happens in onMutate, after the snapshot.
+		const tierIds = swapAndCollectIds(tiers, index, swapIndex);
+		if (!tierIds) return;
 
 		reorderMutation.mutate(tierIds);
 	}

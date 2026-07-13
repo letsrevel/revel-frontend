@@ -318,6 +318,7 @@
 						membershipStatus={data.membershipStatus}
 						isOwner={data.isOwner}
 						isStaff={data.isStaff}
+						membershipRefundPolicy={organization.membership_refund_policy}
 					/>
 				{/if}
 

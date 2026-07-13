@@ -6,6 +6,7 @@
 	import { UserPlus, Send, Check, Crown, Shield, Award } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
+	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import type { MembershipTierSchema, MembershipStatus } from '$lib/api/generated/types.gen';
 
 	interface Props {
@@ -17,6 +18,8 @@
 		membershipStatus?: MembershipStatus | null;
 		isOwner?: boolean;
 		isStaff?: boolean;
+		/** Org-level refund policy (markdown); shown before the user submits when set. */
+		membershipRefundPolicy?: string | null;
 		class?: string;
 	}
 
@@ -29,6 +32,7 @@
 		membershipStatus = null,
 		isOwner = false,
 		isStaff = false,
+		membershipRefundPolicy = null,
 		class: className
 	}: Props = $props();
 
@@ -240,6 +244,22 @@
 							{message.length}/500 {m['requestMembershipButton.characters']()}
 						</p>
 					</div>
+
+					{#if membershipRefundPolicy && membershipRefundPolicy.trim()}
+						<!-- Label is a styled <p>, not a heading: MarkdownContent floors user
+						     headings at <h2>, which would sit out of order under an <h3> here.
+						     The region is exposed to AT via MarkdownContent's aria-label. -->
+						<div class="rounded-md border border-border bg-muted/40 p-3">
+							<p class="mb-1 text-sm font-medium">
+								{m['requestMembershipButton.refundPolicy']()}
+							</p>
+							<MarkdownContent
+								content={membershipRefundPolicy}
+								ariaLabel={m['requestMembershipButton.refundPolicy']()}
+								class="prose-sm max-w-none text-sm text-muted-foreground"
+							/>
+						</div>
+					{/if}
 
 					{#if requestMutation.isError}
 						<div
