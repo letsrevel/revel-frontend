@@ -165,10 +165,10 @@ export async function createTicketedEvent(
 export async function createTicketTier(
 	eventId: string,
 	tier: Record<string, unknown> = {},
-	owner: PersonaName = 'owner'
+	owner: PersonaName | ThrowawayUser = 'owner'
 ): Promise<{ id: string; name: string }> {
-	const persona = PERSONAS[owner];
-	const api = await ApiClient.login(persona.email, persona.password);
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
 	const dayMs = 24 * 60 * 60 * 1000;
 	const name = (tier.name as string) ?? 'Online Tier';
 	const created = await api.post<{ id: string }>(`/api/event-admin/${eventId}/ticket-tier`, {
@@ -201,7 +201,14 @@ export interface CreatedOrg {
  * "General membership" tier; its id is returned for approve-with-tier flows.
  */
 export async function createOrganization(
-	options: { acceptMembershipRequests?: boolean; contactEmail?: string } = {}
+	options: {
+		acceptMembershipRequests?: boolean;
+		contactEmail?: string;
+		/** New orgs default to PRIVATE visibility, which also hides their public
+		 * series pages (series visibility derives from the org's) — set this for
+		 * specs that browse the org's public surfaces as an outsider. */
+		publicVisibility?: boolean;
+	} = {}
 ): Promise<CreatedOrg> {
 	const owner = await createVerifiedUser('OrgOwner');
 	const api = await ApiClient.login(owner.email, owner.password);
@@ -214,10 +221,10 @@ export async function createOrganization(
 		contact_email: options.contactEmail ?? owner.email
 	});
 
-	if (options.acceptMembershipRequests) {
+	if (options.acceptMembershipRequests || options.publicVisibility) {
 		await api.put(`/api/organization-admin/${org.slug}`, {
 			visibility: 'public',
-			accept_membership_requests: true
+			accept_membership_requests: options.acceptMembershipRequests ?? false
 		});
 	}
 
@@ -348,6 +355,119 @@ export async function attachQuestionnaire(
 		}
 	);
 	await api.post(`/api/questionnaires/${created.id}/events/${event.id}`);
+	return { id: created.id, name };
+}
+
+/** Look up a throwaway user's own id — admin on-behalf endpoints want a user_id. */
+export async function getUserId(user: ThrowawayUser): Promise<string> {
+	const api = await ApiClient.login(user.email, user.password);
+	const me = await api.get<{ id: string }>('/api/account/me');
+	return me.id;
+}
+
+/**
+ * Admin-create an RSVP on behalf of a registered user — the ARRANGE step for
+ * specs that need attendance state the public API refuses to create (e.g. a
+ * YES RSVP on an already-finished event for the feedback-questionnaire gate).
+ */
+export async function rsvpOnBehalf(
+	owner: PersonaName | ThrowawayUser,
+	eventId: string,
+	userId: string,
+	status: 'yes' | 'no' | 'maybe'
+): Promise<void> {
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
+	await api.post(`/api/event-admin/${eventId}/rsvps`, { user_id: userId, status });
+}
+
+export interface CreatedSeries {
+	id: string;
+	slug: string;
+	orgSlug: string;
+	name: string;
+	/** Public series path, e.g. /events/<org>/series/<slug>. */
+	path: string;
+}
+
+/**
+ * API-create a plain (non-recurring, grouping-only) event series. Events join
+ * it by passing `event_series_id` to createTicketedEvent. Series accumulate on
+ * the org profile with no cleanup — prefer a THROWAWAY org unless the spec
+ * needs Org Alpha's Stripe connection.
+ */
+export async function createEventSeries(
+	owner: PersonaName | ThrowawayUser,
+	orgSlug: string
+): Promise<CreatedSeries> {
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
+	const name = uniqueName('Series');
+	const series = await api.post<{ id: string; slug: string }>(
+		`/api/organization-admin/${orgSlug}/create-event-series`,
+		{ name }
+	);
+	return {
+		id: series.id,
+		slug: series.slug,
+		orgSlug,
+		name,
+		path: `/events/${orgSlug}/series/${series.slug}`
+	};
+}
+
+/**
+ * API-create a season pass on an event series. `tier_links` maps each covered
+ * event to the backing tier the materialized tickets will use. Coverage rules
+ * (backend validate_events_coverable): covered events must be OPEN, ticketed,
+ * in a NON-recurring series, not questionnaire-gated; backing tiers must not
+ * be seated or pay-what-you-can; the quote is only purchasable while at least
+ * 2 covered events are still upcoming.
+ */
+export async function createSeriesPass(
+	owner: PersonaName | ThrowawayUser,
+	seriesId: string,
+	pass: Record<string, unknown> & { tier_links: Array<{ event_id: string; tier_id: string }> }
+): Promise<{ id: string; name: string }> {
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
+	const name = (pass.name as string) ?? uniqueName('Pass');
+	const created = await api.post<{ id: string }>(`/api/event-series-admin/${seriesId}/passes/`, {
+		name,
+		price: '10.00',
+		pro_rata_discount: '0.00',
+		currency: 'EUR',
+		payment_method: 'free',
+		...pass
+	});
+	return { id: created.id, name };
+}
+
+/**
+ * Create a PUBLISHED questionnaire on the org and attach it at the EVENT
+ * SERIES level — passing once then satisfies the gate for every event in the
+ * series (as long as the wrapper keeps per_event=false, the default). Same
+ * isolation rule as attachQuestionnaire: THROWAWAY orgs only.
+ */
+export async function attachQuestionnaireToSeries(
+	series: CreatedSeries,
+	questionnaire: Record<string, unknown>,
+	owner: ThrowawayUser
+): Promise<{ id: string; name: string }> {
+	const api = await ApiClient.login(owner.email, owner.password);
+	const org = await api.get<{ id: string }>(`/api/organizations/${series.orgSlug}`);
+	const name = (questionnaire.name as string) ?? uniqueName('Questionnaire');
+	const created = await api.post<{ id: string }>(
+		`/api/questionnaires/${org.id}/create-questionnaire`,
+		{
+			name,
+			min_score: 0,
+			evaluation_mode: 'manual',
+			status: 'published',
+			...questionnaire
+		}
+	);
+	await api.post(`/api/questionnaires/${created.id}/event-series/${series.id}`);
 	return { id: created.id, name };
 }
 
@@ -705,11 +825,13 @@ export async function startOnlineCheckout(
 
 /**
  * Set a seeded org's attendee invoicing mode (dedicated endpoint — the
- * billing-info PATCH silently ignores the field). Specs that need
- * `tier.invoicing_available` (checkout billing form, buyer invoices) flip Org
- * Alpha to 'auto' and deliberately DON'T revert: a finally-revert would race
- * parallel workers running the other invoicing spec, and 'auto' is harmless to
- * every other suite (it only reveals the optional "Request Invoice" checkbox).
+ * billing-info PATCH silently ignores the field). The suite-wide convention is
+ * that every invoicing spec flips Org Alpha to 'hybrid' and DOESN'T revert:
+ * the mode is read at WEBHOOK time, so two specs standing on different modes
+ * would race each other's checkouts (an 'auto' flip mid-run turns another
+ * spec's expected draft into an issued invoice, and vice versa). 'hybrid' is
+ * harmless to non-invoicing suites — it only reveals the optional "Request
+ * Invoice" checkbox on online checkouts.
  */
 export async function setOrgInvoicingMode(
 	mode: 'none' | 'hybrid' | 'auto',
@@ -719,6 +841,39 @@ export async function setOrgInvoicingMode(
 	const persona = PERSONAS[owner];
 	const api = await ApiClient.login(persona.email, persona.password);
 	await api.patch(`/api/organization-admin/${orgSlug}/invoicing`, { mode });
+}
+
+/**
+ * Wait for the DRAFT attendee invoice a hybrid-mode checkout generated (the
+ * Stripe webhook + inline Celery make it eventually-consistent) and ISSUE it
+ * as the org owner — the ARRANGE step for buyer-side invoice specs now that
+ * the suite pins Org Alpha to 'hybrid' (auto-issue no longer happens; the
+ * organizer-side issue journey itself is j22 hybrid-flow).
+ */
+export async function issueDraftInvoiceFor(
+	buyerEmail: string,
+	orgSlug = 'revel-events-collective',
+	timeoutMs = 120_000
+): Promise<void> {
+	const persona = PERSONAS.owner;
+	const api = await ApiClient.login(persona.email, persona.password);
+	const deadline = Date.now() + timeoutMs;
+	for (;;) {
+		const page = await api.get<{ results: Array<{ id: string; status: string }> }>(
+			`/api/organization-admin/${orgSlug}/attendee-invoices?search=${encodeURIComponent(buyerEmail)}`
+		);
+		const invoice = page.results[0];
+		if (invoice) {
+			if (invoice.status === 'draft') {
+				await api.post(`/api/organization-admin/${orgSlug}/attendee-invoices/${invoice.id}/issue`);
+			}
+			return;
+		}
+		if (Date.now() > deadline) {
+			throw new Error(`No attendee invoice for ${buyerEmail} within ${timeoutMs}ms`);
+		}
+		await new Promise((resolve) => setTimeout(resolve, 2_000));
+	}
 }
 
 /**
