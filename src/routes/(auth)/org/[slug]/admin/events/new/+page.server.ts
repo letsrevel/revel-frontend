@@ -6,11 +6,15 @@ import { log } from '$lib/server/logger';
 
 export const load: PageServerLoad = async ({ parent, locals, fetch, url }) => {
 	const parentData = await parent();
-	const { organization } = parentData;
+	const { organization, canCreateEvent } = parentData;
 	const user = locals.user;
 
 	if (!user) {
 		throw error(401, 'You must be logged in to create events');
+	}
+
+	if (!canCreateEvent) {
+		throw error(403, 'You do not have permission to create events for this organization');
 	}
 
 	const headers: HeadersInit = {
