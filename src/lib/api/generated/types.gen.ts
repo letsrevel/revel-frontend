@@ -15090,7 +15090,7 @@ export type OrganizationadmincoreUpdateOrganization68928E7eResponses = {
     /**
      * OK
      */
-    200: OrganizationRetrieveSchema;
+    200: OrganizationAdminDetailSchema;
 };
 
 export type OrganizationadmincoreUpdateOrganization68928E7eResponse = OrganizationadmincoreUpdateOrganization68928E7eResponses[keyof OrganizationadmincoreUpdateOrganization68928E7eResponses];
