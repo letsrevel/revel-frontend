@@ -49,6 +49,12 @@
 			: formatPrice(pass.price, pass.currency, m['seriesPass.free']())
 	);
 
+	const isButtonDisabled = $derived.by(() => {
+		const loading = quoteQuery.isLoading;
+		const error = quoteQuery.error;
+		return loading || !!error;
+	});
+
 	function handleBuyClick() {
 		if (!isAuthenticated) {
 			// The login action reads `returnUrl` (see login/+page.server.ts); include
@@ -121,11 +127,7 @@
 				</p>
 			{/if}
 		{:else}
-			<Button
-				class="w-full"
-				onclick={handleBuyClick}
-				disabled={quoteQuery.isLoading || !!quoteQuery.error}
-			>
+			<Button class="w-full" onclick={handleBuyClick} disabled={isButtonDisabled}>
 				{m['seriesPass.buyButton']()}
 			</Button>
 		{/if}
