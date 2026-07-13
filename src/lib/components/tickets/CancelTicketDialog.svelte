@@ -128,7 +128,14 @@
 	}));
 
 	const preview = $derived(previewQuery.data);
-	const isLoadingPreview = $derived(previewQuery.isLoading || previewQuery.isFetching);
+	// Read both properties unconditionally so TanStack tracks them both —
+	// `||` short-circuiting would leave `isFetching` untracked while
+	// `isLoading` is true (tracked-properties notification gotcha).
+	const isLoadingPreview = $derived.by(() => {
+		const loading = previewQuery.isLoading;
+		const fetching = previewQuery.isFetching;
+		return loading || fetching;
+	});
 
 	// If cancel mutation returned a 409 with stable code, surface it.
 	const blockedCode = $derived.by<CancellationBlockReason | null>(() => {
