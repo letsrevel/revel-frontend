@@ -246,10 +246,13 @@
 					</div>
 
 					{#if membershipRefundPolicy && membershipRefundPolicy.trim()}
+						<!-- Label is a styled <p>, not a heading: MarkdownContent floors user
+						     headings at <h2>, which would sit out of order under an <h3> here.
+						     The region is exposed to AT via MarkdownContent's aria-label. -->
 						<div class="rounded-md border border-border bg-muted/40 p-3">
-							<h3 class="mb-1 text-sm font-medium">
+							<p class="mb-1 text-sm font-medium">
 								{m['requestMembershipButton.refundPolicy']()}
-							</h3>
+							</p>
 							<MarkdownContent
 								content={membershipRefundPolicy}
 								ariaLabel={m['requestMembershipButton.refundPolicy']()}

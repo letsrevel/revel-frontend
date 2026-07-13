@@ -14,6 +14,7 @@
 	import TierCard from './TierCard.svelte';
 	import TierForm from './TierForm.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { reorderByIds, swapAndCollectIds } from '$lib/utils/reorder';
 	import { toast } from 'svelte-sonner';
 
 	// Form state fields this step reads/writes. The parent passes a wider event
@@ -128,13 +129,9 @@
 			const previousData = queryClient.getQueryData(['event-admin', eventId, 'ticket-tiers']) as
 				{ data?: { results?: TicketTierDetailSchema[] } } | undefined;
 			if (previousData?.data?.results) {
-				const byId = new Map(previousData.data.results.map((t) => [t.id, t]));
-				const newResults = tierIds
-					.map((id) => byId.get(id))
-					.filter((t): t is TicketTierDetailSchema => t !== undefined);
 				queryClient.setQueryData(['event-admin', eventId, 'ticket-tiers'], {
 					...previousData,
-					data: { ...previousData.data, results: newResults }
+					data: { ...previousData.data, results: reorderByIds(previousData.data.results, tierIds) }
 				});
 			}
 			return { previousData };
@@ -151,6 +148,9 @@
 			if (ctx?.previousData) {
 				queryClient.setQueryData(['event-admin', eventId, 'ticket-tiers'], ctx.previousData);
 			}
+			// Reconcile with server truth after rollback: the request may have applied
+			// server-side before failing (e.g. a lost response), so refetch to be sure.
+			queryClient.invalidateQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
 		}
 	}));
 
@@ -158,14 +158,10 @@
 		const swapIndex = direction === 'up' ? index - 1 : index + 1;
 		if (swapIndex < 0 || swapIndex >= tiers.length) return;
 
-		// Swap whole tiers first (index-aligned with `tiers`), then map to ids so the
-		// order can't desync if the list ever contains a tier without an id. The
+		// Swap whole tiers, then collect ids in the new order (bails on a null id). The
 		// optimistic cache write now happens in onMutate, after the snapshot.
-		const reordered = [...tiers];
-		[reordered[index], reordered[swapIndex]] = [reordered[swapIndex], reordered[index]];
-		const tierIds = reordered.map((t) => t.id).filter((id): id is string => !!id);
-		// The backend validates the id set exactly; bail rather than send a partial set.
-		if (tierIds.length !== reordered.length) return;
+		const tierIds = swapAndCollectIds(tiers, index, swapIndex);
+		if (!tierIds) return;
 
 		reorderMutation.mutate(tierIds);
 	}
