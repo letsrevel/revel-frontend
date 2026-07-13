@@ -577,20 +577,132 @@ export async function rsvpViaApi(
  * checkout API — the ARRANGE step for specs whose journey starts from an
  * already-held ticket (check-in, ticket management). Free/offline tiers only:
  * an online tier answers with a Stripe checkout URL instead of tickets.
+ * Pass `seatId` on USER_CHOICE tiers (ids come from `listAvailableSeats`).
  */
 export async function claimTicketViaApi(
 	user: ThrowawayUser,
 	eventId: string,
-	tierId: string
+	tierId: string,
+	options: { seatId?: string } = {}
 ): Promise<{ id: string; status: string }> {
 	const api = await ApiClient.login(user.email, user.password);
 	const response = await api.post<{ tickets?: Array<{ id: string; status: string }> }>(
 		`/api/events/${eventId}/tickets/${tierId}/checkout`,
-		{ tickets: [{ guest_name: `${user.firstName} ${user.lastName}` }] }
+		{
+			tickets: [{ guest_name: `${user.firstName} ${user.lastName}`, seat_id: options.seatId }]
+		}
 	);
 	const ticket = response.tickets?.[0];
 	if (!ticket) {
 		throw new Error(`Checkout for tier ${tierId} returned no tickets (online tier?)`);
 	}
 	return ticket;
+}
+
+/**
+ * Delete the "General Admission" tier that a backend post-save signal
+ * auto-creates on every ticketed event. Specs arranging offline/at-the-door
+ * tiers must drop it: its card renders the same "Reserve Ticket" button as
+ * theirs and trips Playwright's strict mode in the tier dialog.
+ */
+export async function deleteDefaultTier(
+	eventId: string,
+	owner: PersonaName = 'owner'
+): Promise<void> {
+	const persona = PERSONAS[owner];
+	const api = await ApiClient.login(persona.email, persona.password);
+	const tiers = await api.get<{ results: Array<{ id: string; name: string }> }>(
+		`/api/event-admin/${eventId}/ticket-tiers`
+	);
+	const defaultTier = tiers.results.find((t) => t.name === 'General Admission');
+	if (defaultTier) {
+		await api.delete(`/api/event-admin/${eventId}/ticket-tier/${defaultTier.id}`);
+	}
+}
+
+/**
+ * Start an ONLINE (Stripe) checkout via the public API and return the hosted
+ * checkout URL — the ARRANGE step for specs that need a PAID ticket but whose
+ * journey under test starts after the purchase (self-cancel, buyer invoices).
+ * The caller drives the returned URL with completeStripeCheckout(); ticket
+ * activation still arrives via the `stripe listen` webhook.
+ */
+export async function startOnlineCheckout(
+	user: ThrowawayUser,
+	eventId: string,
+	tierId: string,
+	options: { billingInfo?: Record<string, unknown> } = {}
+): Promise<string> {
+	const api = await ApiClient.login(user.email, user.password);
+	const response = await api.post<{ checkout_url?: string }>(
+		`/api/events/${eventId}/tickets/${tierId}/checkout`,
+		{
+			tickets: [{ guest_name: `${user.firstName} ${user.lastName}` }],
+			// An attendee invoice is only generated when the buyer supplied
+			// billing info at checkout (payment.buyer_billing_snapshot).
+			billing_info: options.billingInfo
+		}
+	);
+	if (!response.checkout_url) {
+		throw new Error(`Checkout for tier ${tierId} returned no checkout_url (not an online tier?)`);
+	}
+	return response.checkout_url;
+}
+
+/**
+ * Set a seeded org's attendee invoicing mode (dedicated endpoint — the
+ * billing-info PATCH silently ignores the field). Specs that need
+ * `tier.invoicing_available` (checkout billing form, buyer invoices) flip Org
+ * Alpha to 'auto' and deliberately DON'T revert: a finally-revert would race
+ * parallel workers running the other invoicing spec, and 'auto' is harmless to
+ * every other suite (it only reveals the optional "Request Invoice" checkbox).
+ */
+export async function setOrgInvoicingMode(
+	mode: 'none' | 'hybrid' | 'auto',
+	orgSlug = 'revel-events-collective',
+	owner: PersonaName = 'owner'
+): Promise<void> {
+	const persona = PERSONAS[owner];
+	const api = await ApiClient.login(persona.email, persona.password);
+	await api.patch(`/api/organization-admin/${orgSlug}/invoicing`, { mode });
+}
+
+/**
+ * Look up the bootstrap-seeded "Revel Concert Hall" (10×10 seat grid, rows
+ * A–J) on Org Alpha — specs attach it to their OWN arranged tiers via
+ * venue_id/sector_id so seat availability never collides with the seeded
+ * classical-music-evening event (availability is per event, not per venue).
+ */
+export async function getSeededConcertHall(): Promise<{ venueId: string; sectorId: string }> {
+	const persona = PERSONAS.owner;
+	const api = await ApiClient.login(persona.email, persona.password);
+	const venues = await api.get<{ results: Array<{ id: string; name: string }> }>(
+		`/api/organization-admin/revel-events-collective/venues?page_size=50`
+	);
+	const hall = venues.results.find((v) => v.name === 'Revel Concert Hall');
+	if (!hall) {
+		throw new Error('Seeded "Revel Concert Hall" venue not found — re-run make bootstrap-tests');
+	}
+	// Plain array (not paginated), unlike the venues list.
+	const sectors = await api.get<Array<{ id: string; name: string }>>(
+		`/api/organization-admin/revel-events-collective/venues/${hall.id}/sectors`
+	);
+	const floor = sectors.find((s) => s.name === 'Main Floor');
+	if (!floor) {
+		throw new Error('Seeded "Main Floor" sector not found on Revel Concert Hall');
+	}
+	return { venueId: hall.id, sectorId: floor.id };
+}
+
+/** List a tier's seats with availability (public checkout endpoint). */
+export async function listAvailableSeats(
+	user: ThrowawayUser,
+	eventId: string,
+	tierId: string
+): Promise<Array<{ id: string; label: string; available: boolean }>> {
+	const api = await ApiClient.login(user.email, user.password);
+	const sector = await api.get<{
+		seats: Array<{ id: string; label: string; available: boolean }>;
+	}>(`/api/events/${eventId}/tickets/${tierId}/seats`);
+	return sector.seats;
 }
