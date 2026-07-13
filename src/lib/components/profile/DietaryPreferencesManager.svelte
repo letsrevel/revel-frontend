@@ -126,7 +126,15 @@
 	const availablePreferences = $derived(
 		(availablePreferencesQuery.data as DietaryPreferenceSchema[] | undefined) ?? []
 	);
-	const isLoading = $derived(userPreferencesQuery.isLoading || availablePreferencesQuery.isLoading);
+	// Read both queries' properties unconditionally: `||` short-circuiting
+	// would leave the second query's props untracked (TanStack notifies only
+	// on tracked-property changes), freezing it in its loading state forever
+	// when it resolves first. Same bug as the venue sectors page.
+	const isLoading = $derived.by(() => {
+		const userLoading = userPreferencesQuery.isLoading;
+		const availableLoading = availablePreferencesQuery.isLoading;
+		return userLoading || availableLoading;
+	});
 	const isAddingPreference = $derived(addPreferenceMutation.isPending);
 
 	// Get preferences that user hasn't added yet

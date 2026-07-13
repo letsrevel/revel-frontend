@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
@@ -16,8 +16,8 @@
 	import SectorModal from '$lib/components/venues/SectorModal.svelte';
 	import { toast } from 'svelte-sonner';
 
-	const organization = $derived($page.data.organization);
-	const venueId = $derived($page.params.venue_id);
+	const organization = $derived(page.data.organization);
+	const venueId = $derived(page.params.venue_id);
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
 
@@ -131,8 +131,30 @@
 
 	const venue = $derived(venueQuery.data);
 	const sectors = $derived(sectorsQuery.data || []);
-	const isLoading = $derived(venueQuery.isLoading || sectorsQuery.isLoading);
-	const error = $derived(venueQuery.error || sectorsQuery.error);
+	// `isLoading`/`error` must read every query's property unconditionally
+	// (never via `||` short-circuiting) — see the comment inside `isLoading`.
+	const isLoading = $derived.by(() => {
+		// TanStack Query only pushes an update into Svelte state for a query
+		// once one of that query's *own* result properties has actually been
+		// read (its "tracked properties" optimization skips notifying
+		// subscribers otherwise). `venueQuery.isLoading || sectorsQuery.isLoading`
+		// short-circuits: while venueQuery.isLoading is still true, the `||`
+		// never evaluates `sectorsQuery.isLoading`, so sectorsQuery.isLoading
+		// (and .data) never get tracked. If sectorsQuery resolves first, its
+		// update is silently dropped and sectorsQuery.isLoading is frozen at
+		// `true` forever, which keeps this derived (and the {#if} chain that
+		// depends on it) stuck on the loading branch permanently. Reading both
+		// operands into locals first forces both properties to be tracked on
+		// every evaluation, regardless of which one is truthy.
+		const venueLoading = venueQuery.isLoading;
+		const sectorsLoading = sectorsQuery.isLoading;
+		return venueLoading || sectorsLoading;
+	});
+	const error = $derived.by(() => {
+		const venueError = venueQuery.error;
+		const sectorsError = sectorsQuery.error;
+		return venueError || sectorsError;
+	});
 </script>
 
 <svelte:head>
