@@ -95,6 +95,9 @@
 						type="button"
 						onclick={() => onEdit(rsvp)}
 						class="inline-flex flex-1 items-center justify-center gap-1 rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
+						aria-label={m['attendeesAdmin.editRsvpAriaLabel']({
+							name: getUserDisplayName(rsvp.user)
+						})}
 					>
 						<Edit class="h-4 w-4" aria-hidden="true" />
 						{m['attendeesAdmin.actionEdit']()}
@@ -103,6 +106,9 @@
 						type="button"
 						onclick={() => onDelete(rsvp)}
 						class="inline-flex flex-1 items-center justify-center gap-1 rounded-md bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
+						aria-label={m['attendeesAdmin.deleteRsvpAriaLabel']({
+							name: getUserDisplayName(rsvp.user)
+						})}
 					>
 						<Trash2 class="h-4 w-4" aria-hidden="true" />
 						{m['attendeesAdmin.actionDelete']()}
@@ -115,7 +121,9 @@
 									<button
 										{...props}
 										class="inline-flex items-center justify-center rounded-md bg-secondary p-2 text-muted-foreground transition-colors hover:bg-secondary/80 hover:text-foreground"
-										aria-label={m['attendeesAdmin.moreActions']()}
+										aria-label={m['attendeesAdmin.moreActionsForAriaLabel']({
+											name: getUserDisplayName(rsvp.user)
+										})}
 									>
 										<MoreVertical class="h-4 w-4" aria-hidden="true" />
 									</button>

@@ -29,6 +29,10 @@
 		event?: EventDetailSchema;
 		eventTokenDetails?: EventTokenSchema | null;
 		onGuestRsvpClick?: () => void;
+		/** Refresh eligibility after an invitation request succeeds (the gate
+		 * renders from parent-owned userStatus, which nothing else updates). */
+		onInvitationRequestSuccess?: () => void;
+		onWhitelistRequestSuccess?: () => void;
 		class?: string;
 	}
 
@@ -41,6 +45,8 @@
 		event,
 		eventTokenDetails,
 		onGuestRsvpClick,
+		onInvitationRequestSuccess,
+		onWhitelistRequestSuccess,
 		class: className
 	}: Props = $props();
 
@@ -405,6 +411,8 @@
 				organizationName={event.organization.name}
 				{eventTokenDetails}
 				applyBefore={event.apply_before}
+				{onInvitationRequestSuccess}
+				{onWhitelistRequestSuccess}
 			/>
 		{/if}
 

@@ -33,10 +33,25 @@ export async function completeStripeCheckout(
 	// only when they aren't already there. The Card radio is COVERED by a
 	// zero-size "Pay with card" button that intercepts pointer events, so a
 	// normal click can never land — dispatch the click straight to it.
-	const cardNumber = page.getByLabel('Card number');
+	// Role-scoped: the adaptive-pricing layout (shown when Stripe geolocates
+	// the runner outside the session's currency zone) names the field the
+	// same but getByLabel stops matching it.
+	const cardNumber = page.getByRole('textbox', { name: 'Card number' }).first();
 	await expect(async () => {
 		if (await cardNumber.isVisible()) return;
-		await page.locator('[data-testid="card-accordion-item-button"]').dispatchEvent('click');
+		// Adaptive pricing variant: a "Choose a currency:" toggle precedes the
+		// form. Selecting the original (€) price gets the standard layout —
+		// match the € button specifically so retries don't flip currencies.
+		const euro = page
+			.getByRole('group', { name: /Choose a currency/ })
+			.getByRole('button', { name: /€/, disabled: false });
+		if ((await euro.count()) > 0) {
+			await euro.first().click();
+		}
+		const accordion = page.locator('[data-testid="card-accordion-item-button"]');
+		if ((await accordion.count()) > 0) {
+			await accordion.dispatchEvent('click');
+		}
 		await expect(cardNumber).toBeVisible({ timeout: 5_000 });
 	}).toPass({ timeout: 60_000 });
 

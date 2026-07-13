@@ -429,6 +429,8 @@
 					{event}
 					{eventTokenDetails}
 					{onGuestRsvpClick}
+					{onInvitationRequestSuccess}
+					{onWhitelistRequestSuccess}
 				/>
 			{:else}
 				<!-- Ticket purchase flow -->
