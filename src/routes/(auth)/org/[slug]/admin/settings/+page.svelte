@@ -37,6 +37,11 @@
 	let reportCadence = $state<RevenueReportCadence>(
 		data.organization.revenue_report_cadence || 'none'
 	);
+	// Subscription policy (rides the same PUT as revenue_report_cadence). Both fields
+	// have backend defaults (7 / ""), so they MUST always round-trip — an omitted PUT
+	// silently resets them (the telegram_url data-loss class from #491).
+	let gracePeriodDays = $state<number>(data.organization.membership_grace_period_days ?? 7);
+	let refundPolicy = $state(data.organization.membership_refund_policy || '');
 	let isSubmitting = $state(false);
 
 	// Scheduled revenue-report delivery requires a billing email to send to.
@@ -64,6 +69,8 @@
 		acceptNewMembers = data.organization.accept_membership_requests || false;
 		contactMethod = data.organization.contact_method || 'none';
 		reportCadence = data.organization.revenue_report_cadence || 'none';
+		gracePeriodDays = data.organization.membership_grace_period_days ?? 7;
+		refundPolicy = data.organization.membership_refund_policy || '';
 		instagramUrl = data.organization.instagram_url || '';
 		facebookUrl = data.organization.facebook_url || '';
 		blueskyUrl = data.organization.bluesky_url || '';
@@ -516,6 +523,52 @@
 						<span>{m['orgAdmin.settings.membership.contactMethodVerifyHint']()}</span>
 					</div>
 				{/if}
+			</div>
+		</section>
+
+		<!-- Subscription policy — rules for paid memberships. Both fields always render
+		     and post (via the number input's name and the markdown hidden input) so the
+		     PUT always round-trips them; the server also guards with formData.has(). -->
+		<section class="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
+			<h2 class="text-lg font-semibold">
+				{m['orgSettingsPage.subscriptionPolicy.heading']()}
+			</h2>
+			<p class="text-sm text-muted-foreground">
+				{m['orgSettingsPage.subscriptionPolicy.description']()}
+			</p>
+
+			<!-- Grace period (days) -->
+			<div>
+				<label for="membership_grace_period_days" class="block text-sm font-medium">
+					{m['orgSettingsPage.subscriptionPolicy.gracePeriodLabel']()}
+				</label>
+				<input
+					type="number"
+					id="membership_grace_period_days"
+					name="membership_grace_period_days"
+					min="0"
+					step="1"
+					inputmode="numeric"
+					bind:value={gracePeriodDays}
+					class="mt-1 flex w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 sm:max-w-xs"
+				/>
+				<p class="mt-1 text-xs text-muted-foreground">
+					{m['orgSettingsPage.subscriptionPolicy.gracePeriodHelp']()}
+				</p>
+			</div>
+
+			<!-- Refund policy (markdown) -->
+			<div>
+				<MarkdownEditor
+					bind:value={refundPolicy}
+					label={m['orgSettingsPage.subscriptionPolicy.refundPolicyLabel']()}
+					placeholder={m['orgSettingsPage.subscriptionPolicy.refundPolicyPlaceholder']()}
+					rows={6}
+				/>
+				<input type="hidden" name="membership_refund_policy" value={refundPolicy} />
+				<p class="mt-1 text-xs text-muted-foreground">
+					{m['orgSettingsPage.subscriptionPolicy.refundPolicyHelp']()}
+				</p>
 			</div>
 		</section>
 

@@ -8,8 +8,8 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // list), archived in place, and deleted when unused (native confirm()).
 //
 // The design doc's "org policy fields" (membership_grace_period_days /
-// membership_refund_policy) have NO editing UI and aren't even exposed by the
-// backend API — deliberately not covered here. FE #631 / BE #695 track it.
+// membership_refund_policy) are edited on the org admin Settings page, not here
+// — see org-policy.spec.ts (delivered with FE #631 / BE #695).
 //
 // Runs in a throwaway org so tier/plan state never collides across
 // parallel projects or re-runs.

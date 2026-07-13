@@ -79,6 +79,20 @@ export const actions: Actions = {
 				cadenceRaw === 'quarterly' || cadenceRaw === 'monthly' ? cadenceRaw : 'none';
 		}
 
+		// Subscription policy fields ride the same PUT. OrganizationEditSchema gives them
+		// defaults (7 / ""), so omitting them silently resets — touch each only when it was
+		// actually submitted, and round-trip it faithfully (the #491 data-loss class).
+		if (formData.has('membership_grace_period_days')) {
+			const graceRaw = formData.get('membership_grace_period_days') as string;
+			const grace = Number.parseInt(graceRaw, 10);
+			updateData.membership_grace_period_days = Number.isNaN(grace) || grace < 0 ? 0 : grace;
+		}
+
+		if (formData.has('membership_refund_policy')) {
+			updateData.membership_refund_policy =
+				(formData.get('membership_refund_policy') as string) ?? '';
+		}
+
 		// Add optional fields only if they have values
 		if (description !== null && description !== undefined) {
 			updateData.description = description;
