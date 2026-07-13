@@ -47,51 +47,53 @@ test.describe('J22 buyer invoices @p2', () => {
 		const context = await browser.newContext();
 		await authenticateContext(context, buyer);
 		const page = await context.newPage();
-		await page.goto(checkoutUrl);
-		await completeStripeCheckout(page);
+		try {
+			await page.goto(checkoutUrl);
+			await completeStripeCheckout(page);
 
-		// Hybrid mode leaves the generated invoice as a draft — wait for it and
-		// issue it as the org owner (API arrange; the UI journey is hybrid-flow).
-		await issueDraftInvoiceFor(buyer.email);
+			// Hybrid mode leaves the generated invoice as a draft — wait for it and
+			// issue it as the org owner (API arrange; the UI journey is hybrid-flow).
+			await issueDraftInvoiceFor(buyer.email);
 
-		// A fresh buyer has exactly one invoice — poll for its Issued table row.
-		const invoiceRow = page.getByRole('row').filter({ hasText: 'Issued' });
-		await expect(async () => {
-			await gotoHydrated(page, '/account/invoices');
-			await expect(invoiceRow).toBeVisible({ timeout: 5_000 });
-		}).toPass({ timeout: 90_000 });
-		await waitForClientAuth(page);
+			// A fresh buyer has exactly one invoice — poll for its Issued table row.
+			const invoiceRow = page.getByRole('row').filter({ hasText: 'Issued' });
+			await expect(async () => {
+				await gotoHydrated(page, '/account/invoices');
+				await expect(invoiceRow).toBeVisible({ timeout: 5_000 });
+			}).toPass({ timeout: 90_000 });
+			await waitForClientAuth(page);
 
-		// Gross amount (€10.00) renders in the row.
-		await expect(invoiceRow.getByText(/10[.,]00/).first()).toBeVisible();
+			// Gross amount (€10.00) renders in the row.
+			await expect(invoiceRow.getByText(/10[.,]00/).first()).toBeVisible();
 
-		// Detail dialog opens from the invoice-number button; Escape closes it
-		// (the footer Close and the X share the same accessible name).
-		await invoiceRow.getByRole('button', { name: /View details/ }).click();
-		const detail = page.getByRole('dialog', { name: 'Invoice Details' });
-		await expect(detail).toBeVisible({ timeout: 15_000 });
-		await page.keyboard.press('Escape');
-		await expect(detail).not.toBeVisible({ timeout: 15_000 });
+			// Detail dialog opens from the invoice-number button; Escape closes it
+			// (the footer Close and the X share the same accessible name).
+			await invoiceRow.getByRole('button', { name: /View details/ }).click();
+			const detail = page.getByRole('dialog', { name: 'Invoice Details' });
+			await expect(detail).toBeVisible({ timeout: 15_000 });
+			await page.keyboard.press('Escape');
+			await expect(detail).not.toBeVisible({ timeout: 15_000 });
 
-		// "Download PDF" resolves a signed URL from the API and window.open()s
-		// it — Chromium turns the PDF into a download, so the popup never
-		// commits a URL. Assert the journey at the network layer instead:
-		// capture the resolved download_url and fetch the PDF from it (a 404
-		// means the PDF is still rendering — the loop clicks again).
-		await expect(async () => {
-			const responsePromise = page.waitForResponse(
-				(r) => /\/api\/dashboard\/invoices\/[^/]+\/download/.test(r.url()),
-				{ timeout: 10_000 }
-			);
-			await invoiceRow.getByRole('button', { name: /Download PDF/ }).click();
-			const response = await responsePromise;
-			expect(response.status()).toBe(200);
-			const { download_url } = (await response.json()) as { download_url: string };
-			const pdf = await page.request.get(getBackendUrl(download_url));
-			expect(pdf.status()).toBe(200);
-			expect(pdf.headers()['content-type'] ?? '').toContain('pdf');
-		}).toPass({ timeout: 60_000 });
-
-		await context.close();
+			// "Download PDF" resolves a signed URL from the API and window.open()s
+			// it — Chromium turns the PDF into a download, so the popup never
+			// commits a URL. Assert the journey at the network layer instead:
+			// capture the resolved download_url and fetch the PDF from it (a 404
+			// means the PDF is still rendering — the loop clicks again).
+			await expect(async () => {
+				const responsePromise = page.waitForResponse(
+					(r) => /\/api\/dashboard\/invoices\/[^/]+\/download/.test(r.url()),
+					{ timeout: 10_000 }
+				);
+				await invoiceRow.getByRole('button', { name: /Download PDF/ }).click();
+				const response = await responsePromise;
+				expect(response.status()).toBe(200);
+				const { download_url } = (await response.json()) as { download_url: string };
+				const pdf = await page.request.get(getBackendUrl(download_url));
+				expect(pdf.status()).toBe(200);
+				expect(pdf.headers()['content-type'] ?? '').toContain('pdf');
+			}).toPass({ timeout: 60_000 });
+		} finally {
+			await context.close();
+		}
 	});
 });

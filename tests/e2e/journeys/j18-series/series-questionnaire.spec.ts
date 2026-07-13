@@ -60,51 +60,55 @@ test.describe('J18 series questionnaire @p3', () => {
 		const context = await browser.newContext();
 		await authenticateContext(context, user);
 		const page = await context.newPage();
+		try {
+			// Both events start gated by the series questionnaire.
+			await gotoHydrated(page, eventB.path);
+			await waitForClientAuth(page);
+			await expect(
+				page
+					.getByRole('button', { name: 'Complete Questionnaire' })
+					.filter({ visible: true })
+					.first()
+			).toBeVisible({ timeout: 15_000 });
 
-		// Both events start gated by the series questionnaire.
-		await gotoHydrated(page, eventB.path);
-		await waitForClientAuth(page);
-		await expect(
-			page.getByRole('button', { name: 'Complete Questionnaire' }).filter({ visible: true }).first()
-		).toBeVisible({ timeout: 15_000 });
-
-		// Pass it from event A.
-		await gotoHydrated(page, eventA.path);
-		await page
-			.getByRole('button', { name: 'Complete Questionnaire' })
-			.filter({ visible: true })
-			.first()
-			.click();
-		await page.waitForURL(/\/questionnaire\//);
-		await page.waitForLoadState('networkidle');
-		const radio = page.getByRole('radio', { name: CORRECT });
-		const submit = page.getByRole('button', { name: 'Submit Questionnaire' });
-		const eventAUrl = new RegExp(`/${eventA.slug}(?:\\?|$)`);
-		await expect(async () => {
-			if (eventAUrl.test(page.url())) return;
-			await radio.check();
-			await expect(radio).toBeChecked();
-			await expect(submit).toBeEnabled();
-			await submit.click();
-			await page.waitForURL(eventAUrl, { timeout: 8_000 });
-		}).toPass({ timeout: 40_000 });
-
-		// Approved (inline auto-eval) → event A's gate yields to the RSVP card…
-		await expect(async () => {
+			// Pass it from event A.
 			await gotoHydrated(page, eventA.path);
+			await page
+				.getByRole('button', { name: 'Complete Questionnaire' })
+				.filter({ visible: true })
+				.first()
+				.click();
+			await page.waitForURL(/\/questionnaire\//);
+			await page.waitForLoadState('networkidle');
+			const radio = page.getByRole('radio', { name: CORRECT });
+			const submit = page.getByRole('button', { name: 'Submit Questionnaire' });
+			const eventAUrl = new RegExp(`/${eventA.slug}(?:\\?|$)`);
+			await expect(async () => {
+				if (eventAUrl.test(page.url())) return;
+				await radio.check();
+				await expect(radio).toBeChecked();
+				await expect(submit).toBeEnabled();
+				await submit.click();
+				await page.waitForURL(eventAUrl, { timeout: 8_000 });
+			}).toPass({ timeout: 40_000 });
+
+			// Approved (inline auto-eval) → event A's gate yields to the RSVP card…
+			await expect(async () => {
+				await gotoHydrated(page, eventA.path);
+				await expect(page.getByRole('heading', { name: 'Will you attend?' })).toBeVisible({
+					timeout: 3_000
+				});
+			}).toPass({ timeout: 30_000 });
+
+			// …and event B is unlocked WITHOUT a second submission.
+			await gotoHydrated(page, eventB.path);
+			await waitForClientAuth(page);
 			await expect(page.getByRole('heading', { name: 'Will you attend?' })).toBeVisible({
-				timeout: 3_000
+				timeout: 15_000
 			});
-		}).toPass({ timeout: 30_000 });
-
-		// …and event B is unlocked WITHOUT a second submission.
-		await gotoHydrated(page, eventB.path);
-		await waitForClientAuth(page);
-		await expect(page.getByRole('heading', { name: 'Will you attend?' })).toBeVisible({
-			timeout: 15_000
-		});
-		await expect(page.getByRole('button', { name: 'Complete Questionnaire' })).toBeHidden();
-
-		await context.close();
+			await expect(page.getByRole('button', { name: 'Complete Questionnaire' })).toBeHidden();
+		} finally {
+			await context.close();
+		}
 	});
 });

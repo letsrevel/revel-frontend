@@ -51,43 +51,45 @@ test.describe('J5 waitlist offer @p3', () => {
 		const context = await browser.newContext();
 		await authenticateContext(context, waiter);
 		const page = await context.newPage();
-		await gotoHydrated(page, event.path);
-		await waitForClientAuth(page);
-		await expect(page.getByText("You've been selected!")).toBeVisible({ timeout: 15_000 });
-		await expect(page.getByText('Time remaining')).toBeVisible();
-
-		// "Claim spot" scrolls to the action sidebar — the RSVP card is the
-		// actual accept surface (the offer reserved the seat on a full event).
-		await page.getByRole('button', { name: 'Claim spot' }).click();
-		await expect(
-			page.getByRole('heading', { name: 'Will you attend?' }).filter({ visible: true }).first()
-		).toBeVisible();
-		await page
-			.getByRole('button', { name: /^RSVP Yes/ })
-			.filter({ visible: true })
-			.first()
-			.click();
-		await expect(page.getByRole('status').filter({ hasText: "You're attending" })).toBeVisible({
-			timeout: 15_000
-		});
-
-		// Claiming consumed the offer and the waitlist entry — after a reload the
-		// banner is gone and the attending state persists (reload-retry: the
-		// status arrives via a client-side query and can lag a beat).
-		await expect(async () => {
+		try {
 			await gotoHydrated(page, event.path);
+			await waitForClientAuth(page);
+			await expect(page.getByText("You've been selected!")).toBeVisible({ timeout: 15_000 });
+			await expect(page.getByText('Time remaining')).toBeVisible();
+
+			// "Claim spot" scrolls to the action sidebar — the RSVP card is the
+			// actual accept surface (the offer reserved the seat on a full event).
+			await page.getByRole('button', { name: 'Claim spot' }).click();
+			await expect(
+				page.getByRole('heading', { name: 'Will you attend?' }).filter({ visible: true }).first()
+			).toBeVisible();
+			await page
+				.getByRole('button', { name: /^RSVP Yes/ })
+				.filter({ visible: true })
+				.first()
+				.click();
 			await expect(page.getByRole('status').filter({ hasText: "You're attending" })).toBeVisible({
-				timeout: 5_000
+				timeout: 15_000
 			});
-		}).toPass({ timeout: 45_000 });
-		await expect(page.getByText("You've been selected!")).toBeHidden();
 
-		// The offer is CLAIMED on the admin side (no pending offer left to revoke).
-		const offers = await ownerApi.get<{ results: Array<{ status: string }> }>(
-			`/api/event-admin/${event.id}/waitlist-offers`
-		);
-		expect(offers.results[0]?.status).toBe('claimed');
+			// Claiming consumed the offer and the waitlist entry — after a reload the
+			// banner is gone and the attending state persists (reload-retry: the
+			// status arrives via a client-side query and can lag a beat).
+			await expect(async () => {
+				await gotoHydrated(page, event.path);
+				await expect(page.getByRole('status').filter({ hasText: "You're attending" })).toBeVisible({
+					timeout: 5_000
+				});
+			}).toPass({ timeout: 45_000 });
+			await expect(page.getByText("You've been selected!")).toBeHidden();
 
-		await context.close();
+			// The offer is CLAIMED on the admin side (no pending offer left to revoke).
+			const offers = await ownerApi.get<{ results: Array<{ status: string }> }>(
+				`/api/event-admin/${event.id}/waitlist-offers`
+			);
+			expect(offers.results[0]?.status).toBe('claimed');
+		} finally {
+			await context.close();
+		}
 	});
 });

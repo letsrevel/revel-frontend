@@ -67,43 +67,45 @@ test.describe('J11 feedback questionnaire @p3', () => {
 		const context = await browser.newContext();
 		await authenticateContext(context, attendee);
 		const page = await context.newPage();
-		await gotoHydrated(page, event.path);
-		await waitForClientAuth(page);
-
-		// The finished event greets the attendee with the feedback offer.
-		await expect(
-			page.getByText('Feedback Available').filter({ visible: true }).first()
-		).toBeVisible({ timeout: 15_000 });
-		await page
-			.getByRole('link', { name: 'Give Feedback' })
-			.or(page.getByRole('button', { name: 'Give Feedback' }))
-			.filter({ visible: true })
-			.first()
-			.click();
-		await page.waitForURL(/\/questionnaire\//);
-		await page.waitForLoadState('networkidle');
-
-		// Answer + submit (same drop-proof loop as the admission fills). Unlike
-		// admission questionnaires the page does NOT navigate back — with no
-		// evaluation to run it lands on the "You're all set!" completion status.
-		const radio = page.getByRole('radio', { name: ANSWER });
-		const submit = page.getByRole('button', { name: 'Submit Questionnaire' });
-		const done = page.getByRole('status').filter({ hasText: "You're all set!" });
-		await expect(async () => {
-			if (await done.isVisible()) return;
-			await radio.check();
-			await expect(radio).toBeChecked();
-			await expect(submit).toBeEnabled();
-			await submit.click();
-			await expect(done).toBeVisible({ timeout: 8_000 });
-		}).toPass({ timeout: 40_000 });
-
-		// One-shot: with the submission recorded, the offer is gone for good.
-		await expect(async () => {
+		try {
 			await gotoHydrated(page, event.path);
-			await expect(page.getByText('Feedback Available')).toBeHidden({ timeout: 3_000 });
-		}).toPass({ timeout: 30_000 });
+			await waitForClientAuth(page);
 
-		await context.close();
+			// The finished event greets the attendee with the feedback offer.
+			await expect(
+				page.getByText('Feedback Available').filter({ visible: true }).first()
+			).toBeVisible({ timeout: 15_000 });
+			await page
+				.getByRole('link', { name: 'Give Feedback' })
+				.or(page.getByRole('button', { name: 'Give Feedback' }))
+				.filter({ visible: true })
+				.first()
+				.click();
+			await page.waitForURL(/\/questionnaire\//);
+			await page.waitForLoadState('networkidle');
+
+			// Answer + submit (same drop-proof loop as the admission fills). Unlike
+			// admission questionnaires the page does NOT navigate back — with no
+			// evaluation to run it lands on the "You're all set!" completion status.
+			const radio = page.getByRole('radio', { name: ANSWER });
+			const submit = page.getByRole('button', { name: 'Submit Questionnaire' });
+			const done = page.getByRole('status').filter({ hasText: "You're all set!" });
+			await expect(async () => {
+				if (await done.isVisible()) return;
+				await radio.check();
+				await expect(radio).toBeChecked();
+				await expect(submit).toBeEnabled();
+				await submit.click();
+				await expect(done).toBeVisible({ timeout: 8_000 });
+			}).toPass({ timeout: 40_000 });
+
+			// One-shot: with the submission recorded, the offer is gone for good.
+			await expect(async () => {
+				await gotoHydrated(page, event.path);
+				await expect(page.getByText('Feedback Available')).toBeHidden({ timeout: 3_000 });
+			}).toPass({ timeout: 30_000 });
+		} finally {
+			await context.close();
+		}
 	});
 });

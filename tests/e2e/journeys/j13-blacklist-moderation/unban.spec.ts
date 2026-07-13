@@ -44,51 +44,58 @@ test.describe('J13 unban @p3', () => {
 		const victimContext = await browser.newContext();
 		await authenticateContext(victimContext, victim);
 		const victimPage = await victimContext.newPage();
-		const bannedResponse = await victimPage.goto(`/org/${org.slug}`);
-		expect(bannedResponse?.status()).toBe(404);
+		try {
+			const bannedResponse = await victimPage.goto(`/org/${org.slug}`);
+			expect(bannedResponse?.status()).toBe(404);
 
-		// The owner removes the entry through the blacklist page's detail modal.
-		const ownerContext = await browser.newContext();
-		await authenticateContext(ownerContext, org.owner);
-		const ownerPage = await ownerContext.newPage();
-		await gotoHydrated(ownerPage, `/org/${org.slug}/admin/blacklist`);
-		await waitForClientAuth(ownerPage);
-		// The org has exactly one entry — the victim's (linked by email).
-		await ownerPage
-			.getByRole('button', { name: /^Manage blacklist entry for / })
-			.first()
-			.click();
-		const entryModal = ownerPage.getByRole('dialog', { name: /Blacklist Entry/ });
-		await expect(entryModal).toBeVisible();
-		await entryModal.getByRole('button', { name: 'Remove from Blacklist' }).click();
-		await entryModal.getByRole('button', { name: 'Confirm Remove' }).click();
-		await expect(entryModal).not.toBeVisible({ timeout: 15_000 });
-		await expect(ownerPage.getByText('Removed from blacklist')).toBeVisible({ timeout: 15_000 });
+			// The owner removes the entry through the blacklist page's detail modal.
+			const ownerContext = await browser.newContext();
+			await authenticateContext(ownerContext, org.owner);
+			const ownerPage = await ownerContext.newPage();
+			try {
+				await gotoHydrated(ownerPage, `/org/${org.slug}/admin/blacklist`);
+				await waitForClientAuth(ownerPage);
+				// The org has exactly one entry — the victim's (linked by email).
+				await ownerPage
+					.getByRole('button', { name: /^Manage blacklist entry for / })
+					.first()
+					.click();
+				const entryModal = ownerPage.getByRole('dialog', { name: /Blacklist Entry/ });
+				await expect(entryModal).toBeVisible();
+				await entryModal.getByRole('button', { name: 'Remove from Blacklist' }).click();
+				await entryModal.getByRole('button', { name: 'Confirm Remove' }).click();
+				await expect(entryModal).not.toBeVisible({ timeout: 15_000 });
+				await expect(ownerPage.getByText('Removed from blacklist')).toBeVisible({
+					timeout: 15_000
+				});
 
-		// Membership lands on CANCELLED — explicitly not reactivated (a member's
-		// status is single-valued, so Cancelled on the card rules out Active).
-		await gotoHydrated(ownerPage, `/org/${org.slug}/admin/members`);
-		await waitForClientAuth(ownerPage);
-		const memberCard = ownerPage
-			.locator('article, li, div')
-			.filter({ hasText: victimName })
-			.filter({ hasText: /Cancelled/ })
-			.first();
-		await expect(memberCard).toBeVisible({ timeout: 15_000 });
+				// Membership lands on CANCELLED — explicitly not reactivated (a member's
+				// status is single-valued, so Cancelled on the card rules out Active).
+				await gotoHydrated(ownerPage, `/org/${org.slug}/admin/members`);
+				await waitForClientAuth(ownerPage);
+				const memberCard = ownerPage
+					.locator('article, li, div')
+					.filter({ hasText: victimName })
+					.filter({ hasText: /Cancelled/ })
+					.first();
+				await expect(memberCard).toBeVisible({ timeout: 15_000 });
+			} finally {
+				await ownerContext.close();
+			}
 
-		// Visibility returns for the victim: org page and event page load again
-		// (the event greets them as an ordinary eligible visitor).
-		await expect(async () => {
-			const response = await victimPage.goto(`/org/${org.slug}`);
-			expect(response?.status()).toBe(200);
-		}).toPass({ timeout: 30_000 });
-		await gotoHydrated(victimPage, event.path);
-		await waitForClientAuth(victimPage);
-		await expect(victimPage.getByRole('heading', { name: 'Will you attend?' })).toBeVisible({
-			timeout: 15_000
-		});
-
-		await victimContext.close();
-		await ownerContext.close();
+			// Visibility returns for the victim: org page and event page load again
+			// (the event greets them as an ordinary eligible visitor).
+			await expect(async () => {
+				const response = await victimPage.goto(`/org/${org.slug}`);
+				expect(response?.status()).toBe(200);
+			}).toPass({ timeout: 30_000 });
+			await gotoHydrated(victimPage, event.path);
+			await waitForClientAuth(victimPage);
+			await expect(victimPage.getByRole('heading', { name: 'Will you attend?' })).toBeVisible({
+				timeout: 15_000
+			});
+		} finally {
+			await victimContext.close();
+		}
 	});
 });
