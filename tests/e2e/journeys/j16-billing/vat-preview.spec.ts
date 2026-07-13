@@ -16,8 +16,8 @@ import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 // UI reacts to the billing fields.
 //
 // The billing section only renders when the org has attendee invoicing
-// enabled AND the tier is online — the arrange flips Org Alpha (AT, 20%) to
-// 'auto' (idempotent, deliberately not reverted; see setOrgInvoicingMode).
+// enabled AND the tier is online — the arrange pins Org Alpha (AT, 20%) to
+// 'hybrid', the suite-wide invoicing mode (see setOrgInvoicingMode).
 //
 // VAT IDs are validated against the LIVE EU VIES service (no backend stub),
 // so the spec uses two real, stable registrations — Red Bull GmbH (AT,
@@ -31,7 +31,7 @@ test.describe('J16 VAT preview @p2', () => {
 	test('domestic B2B pays VAT; EU B2B with valid VAT ID gets reverse charge', async ({
 		browser
 	}) => {
-		await setOrgInvoicingMode('auto');
+		await setOrgInvoicingMode('hybrid');
 		const [event, buyer] = await Promise.all([
 			createTicketedEvent({ freeTier: false }),
 			createVerifiedUser('VatPreview')
