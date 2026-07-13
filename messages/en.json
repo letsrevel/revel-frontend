@@ -4869,6 +4869,7 @@
 		"messageOptional": "Message (Optional)",
 		"messagePlaceholder": "Tell the organizers why you'd like to join...",
 		"characters": "characters",
+		"refundPolicy": "Refund policy",
 		"requestSubmittedDesc": "Your membership request has been sent to {organizationName}. You'll be notified when it's reviewed.",
 		"requestDesc": "Submit a request to become a member of {organizationName}. Membership can grant access to members-only events and ticket tiers, the ability to skip screening questionnaires, and any membership perks or discounts the organizers offer.",
 		"cancel": "Cancel",

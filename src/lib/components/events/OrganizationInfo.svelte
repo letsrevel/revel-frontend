@@ -98,6 +98,7 @@
 					{membershipStatus}
 					{isOwner}
 					{isStaff}
+					membershipRefundPolicy={organization.membership_refund_policy}
 					class="inline-flex"
 				/>
 			{/if}

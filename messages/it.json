@@ -4869,6 +4869,7 @@
 		"messageOptional": "Messaggio (Opzionale)",
 		"messagePlaceholder": "Racconta agli organizzatori perché vorresti unirti...",
 		"characters": "caratteri",
+		"refundPolicy": "Politica di rimborso",
 		"requestSubmittedDesc": "La tua richiesta di iscrizione è stata inviata a {organizationName}. Sarai avvisato quando verrà esaminata.",
 		"requestDesc": "Invia una richiesta per diventare membro di {organizationName}. L'iscrizione può dare accesso a eventi e livelli di biglietto riservati ai membri, la possibilità di saltare i questionari di selezione e gli eventuali vantaggi o sconti offerti dagli organizzatori.",
 		"cancel": "Annulla",

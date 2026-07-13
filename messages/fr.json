@@ -4840,6 +4840,7 @@
 		"messageOptional": "Message (facultatif)",
 		"messagePlaceholder": "Explique aux organisateurs pourquoi tu aimerais rejoindre...",
 		"characters": "caractères",
+		"refundPolicy": "Politique de remboursement",
 		"requestSubmittedDesc": "Ta demande d'adhésion a été envoyée à {organizationName}. Tu seras notifié lorsqu'elle sera examinée.",
 		"requestDesc": "Envoie une demande pour devenir membre de {organizationName}. L'adhésion peut donner accès à des événements et des catégories de billets réservés aux membres, la possibilité de sauter les questionnaires de sélection, ainsi qu'aux avantages ou réductions d'adhésion proposés par les organisateurs.",
 		"cancel": "Annuler",
