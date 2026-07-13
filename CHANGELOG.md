@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.67.0] - 2026-07-13
+
+### Added
+
+- **Org subscription policy editing**: a new "Subscription policy" section on the org admin **Settings** page lets owners set the membership **grace period** (days) and **refund policy** (rich text). Every save round-trips both fields, so editing one setting never silently wipes the others.
+- **Member-facing refund policy**: the organization's membership refund policy is now shown to prospective members in the Request-Membership dialog before they submit.
+- **RSVP on behalf of an attendee**: org admins can create an RSVP for someone directly from an event's attendees list.
+- **Reorderable membership tiers**: membership tiers can now be reordered from the org Members admin.
+- **Multi-select RSVP status filter**: the attendees list can be filtered by several RSVP statuses at once.
+- Richer link previews: a versioned Open Graph share image and a dedicated square `og:logo` mark for social and chat unfurls.
+
+### Fixed
+
+- Reordering ticketing steps now rolls back cleanly when a save fails, instead of leaving the steps in the wrong order.
+- The `/join/org` invitation page no longer crashes during server-side rendering when opening an org invite link.
+- Following an invitation link (`/join/event`, `/join/org`) is more reliable — server-side page loads no longer fail with internal connection errors.
+- Organization and event names containing accented or international characters now render correctly in flash notifications (fixed garbled text).
+- The registration form no longer drops values when the browser autofills fields mid-typing.
+- Dashboard search now cancels superseded queries correctly, preventing stale results from a previous search term.
+- Assorted UI fixes surfaced by end-to-end testing: mobile layout overflow on narrow screens, a notification item showing stale content, focus being stolen on the login and registration forms, and low-contrast status badges.
+
 ## [1.66.0] - 2026-07-09
 
 ### Added
