@@ -1,4 +1,4 @@
-import { authenticator } from 'otplib';
+import { generateSync } from 'otplib';
 import type { Page } from '@playwright/test';
 import { test, expect } from '../../support/fixtures';
 import { obtainTokenPair } from '../../support/api';
@@ -35,7 +35,7 @@ async function submitOtpUntil(
 	success: () => Promise<void>
 ): Promise<void> {
 	for (let attempt = 1; ; attempt++) {
-		await fillOtp(page, authenticator.generate(secret));
+		await fillOtp(page, generateSync({ secret }));
 		const submit = page.getByRole('button', { name: submitName });
 		await expect(submit).toBeEnabled();
 		await submit.click();
