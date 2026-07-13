@@ -75,9 +75,18 @@
 		enabled: open && !!accessToken
 	}));
 
-	const sub = $derived(subQuery.data);
+	const sub = $derived(subQuery.data as SubscriptionSchema);
 	const payments = $derived(paymentsQuery.data ?? []);
 	const actions = $derived(sub ? getAvailableActions(sub) : null);
+
+	const isLoading = $derived.by(() => {
+		const loading = subQuery.isLoading;
+		const data = subQuery.data;
+		// Force tracking of paymentsQuery properties on mount to prevent stale signals
+		const _payLoading = paymentsQuery.isLoading;
+		const _payData = paymentsQuery.data;
+		return loading || !data;
+	});
 
 	let recordOpen = $state(false);
 	let cancelOpen = $state(false);
@@ -175,7 +184,7 @@
 
 <Dialog {open} onOpenChange={(v: boolean) => (!v ? onClose() : null)}>
 	<DialogContent class="sm:max-w-3xl">
-		{#if subQuery.isLoading || !sub}
+		{#if isLoading}
 			<Loader2 class="h-5 w-5 animate-spin" />
 		{:else}
 			<DialogHeader>

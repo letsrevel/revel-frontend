@@ -37,6 +37,13 @@
 
 	const existingCode = $derived(codeQuery.data ?? null);
 
+	const queryStatus = $derived.by(() => {
+		const loading = codeQuery.isLoading;
+		const error = codeQuery.error;
+		const data = codeQuery.data; // Explicit tracking to prevent future regressions
+		return { loading, error, data };
+	});
+
 	// Update mutation
 	const updateMut = createMutation(() => ({
 		mutationFn: async (data: DiscountCodeUpdateSchema) => {
@@ -142,14 +149,14 @@
 	</div>
 
 	<!-- Content -->
-	{#if codeQuery.isLoading}
+	{#if queryStatus.loading}
 		<div class="flex items-center justify-center py-12">
 			<div
 				class="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"
 				aria-label={m['discountCodeEditPage.loadingAriaLabel']()}
 			></div>
 		</div>
-	{:else if codeQuery.error}
+	{:else if queryStatus.error}
 		<Alert variant="destructive">
 			<AlertCircle class="h-4 w-4" />
 			<AlertDescription>{m['discountCodeEditPage.loadError']()}</AlertDescription>
