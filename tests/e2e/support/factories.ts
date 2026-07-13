@@ -317,6 +317,40 @@ export async function attachAdmissionQuestionnaire(
 	return { id: questionnaire.id, name };
 }
 
+/**
+ * Create a PUBLISHED questionnaire with a caller-supplied question payload on
+ * the event's org and assign it to the event — the generalized sibling of
+ * attachAdmissionQuestionnaire for specs that need conditional questions,
+ * automatic evaluation, or attempt/cooldown settings. Same isolation rule:
+ * only ever attach to events the spec created itself — and prefer a
+ * THROWAWAY org: questionnaires accumulate on the org's admin index, and
+ * crowding Org Alpha's pushes the seeded wine-tasting card (which
+ * manual-review navigates by) off the page.
+ */
+export async function attachQuestionnaire(
+	event: CreatedEvent,
+	questionnaire: Record<string, unknown>,
+	owner: PersonaName | ThrowawayUser = 'owner'
+): Promise<{ id: string; name: string }> {
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
+
+	const org = await api.get<{ id: string }>(`/api/organizations/${event.orgSlug}`);
+	const name = (questionnaire.name as string) ?? uniqueName('Questionnaire');
+	const created = await api.post<{ id: string }>(
+		`/api/questionnaires/${org.id}/create-questionnaire`,
+		{
+			name,
+			min_score: 0,
+			evaluation_mode: 'manual',
+			status: 'published',
+			...questionnaire
+		}
+	);
+	await api.post(`/api/questionnaires/${created.id}/events/${event.id}`);
+	return { id: created.id, name };
+}
+
 export interface GuestIdentity {
 	email: string;
 	firstName: string;
@@ -380,6 +414,26 @@ export async function createMembershipTier(
 ): Promise<{ id: string }> {
 	const api = await ApiClient.login(owner.email, owner.password);
 	return api.post<{ id: string }>(`/api/organization-admin/${orgSlug}/membership-tiers`, { name });
+}
+
+/**
+ * API-create a subscription plan on a membership tier of a throwaway-owned
+ * org (defaults: €15.00 monthly). ARRANGE step for the subscription-lifecycle
+ * journey — plan AUTHORING through the UI is j23 plans-admin.
+ */
+export async function createSubscriptionPlan(
+	owner: ThrowawayUser,
+	orgSlug: string,
+	tierId: string,
+	plan: Record<string, unknown> = {}
+): Promise<{ id: string; name: string }> {
+	const api = await ApiClient.login(owner.email, owner.password);
+	const name = (plan.name as string) ?? uniqueName('Plan');
+	const created = await api.post<{ id: string }>(
+		`/api/organization-admin/${orgSlug}/tiers/${tierId}/plans`,
+		{ name, price: '15.00', currency: 'EUR', ...plan }
+	);
+	return { id: created.id, name };
 }
 
 /**
