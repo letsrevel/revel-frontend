@@ -110,16 +110,34 @@
 	// --- Tier reordering via up/down buttons ---
 	const reorderMutation = createMutation<unknown, unknown, string[]>(() => ({
 		mutationFn: async (tierIds: string[]) => {
-			return await eventadminticketsReorderTicketTiers({
+			const response = await eventadminticketsReorderTicketTiers({
 				path: { event_id: eventId },
 				body: { tier_ids: tierIds }
 			});
+			// The generated client does not throw on HTTP errors (ThrowOnError = false),
+			// so surface a structured API error explicitly to trigger onError.
+			if (response.error) {
+				throw new Error(m['ticketingStep.failedToReorderTiers']());
+			}
+			return response.data;
 		},
-		onMutate: async () => {
+		// Snapshot the true previous order FIRST, then apply the optimistic reorder — so a
+		// failed request rolls back to the real original, not an already-swapped copy.
+		onMutate: async (tierIds: string[]) => {
 			await queryClient.cancelQueries({ queryKey: ['event-admin', eventId, 'ticket-tiers'] });
-			return {
-				previousData: queryClient.getQueryData(['event-admin', eventId, 'ticket-tiers'])
-			};
+			const previousData = queryClient.getQueryData(['event-admin', eventId, 'ticket-tiers']) as
+				{ data?: { results?: TicketTierDetailSchema[] } } | undefined;
+			if (previousData?.data?.results) {
+				const byId = new Map(previousData.data.results.map((t) => [t.id, t]));
+				const newResults = tierIds
+					.map((id) => byId.get(id))
+					.filter((t): t is TicketTierDetailSchema => t !== undefined);
+				queryClient.setQueryData(['event-admin', eventId, 'ticket-tiers'], {
+					...previousData,
+					data: { ...previousData.data, results: newResults }
+				});
+			}
+			return { previousData };
 		},
 		onSuccess: async () => {
 			toast.success(m['ticketingStep.tierOrderUpdated']());
@@ -140,21 +158,14 @@
 		const swapIndex = direction === 'up' ? index - 1 : index + 1;
 		if (swapIndex < 0 || swapIndex >= tiers.length) return;
 
-		// Build new order by swapping the two tiers
-		const tierIds = tiers.map((t) => t.id).filter((id): id is string => !!id);
-		[tierIds[index], tierIds[swapIndex]] = [tierIds[swapIndex], tierIds[index]];
-
-		// Optimistic update: set the swapped order in the query cache immediately
-		const currentData = queryClient.getQueryData(['event-admin', eventId, 'ticket-tiers']) as
-			{ data?: { results?: TicketTierDetailSchema[] } } | undefined;
-		if (currentData?.data?.results) {
-			const newResults = [...currentData.data.results];
-			[newResults[index], newResults[swapIndex]] = [newResults[swapIndex], newResults[index]];
-			queryClient.setQueryData(['event-admin', eventId, 'ticket-tiers'], {
-				...currentData,
-				data: { ...currentData.data, results: newResults }
-			});
-		}
+		// Swap whole tiers first (index-aligned with `tiers`), then map to ids so the
+		// order can't desync if the list ever contains a tier without an id. The
+		// optimistic cache write now happens in onMutate, after the snapshot.
+		const reordered = [...tiers];
+		[reordered[index], reordered[swapIndex]] = [reordered[swapIndex], reordered[index]];
+		const tierIds = reordered.map((t) => t.id).filter((id): id is string => !!id);
+		// The backend validates the id set exactly; bail rather than send a partial set.
+		if (tierIds.length !== reordered.length) return;
 
 		reorderMutation.mutate(tierIds);
 	}
