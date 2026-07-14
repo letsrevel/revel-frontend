@@ -5,6 +5,8 @@ name: E2E
 on:
   pull_request:
     branches: [main]
+  push:
+    branches: [feature/593-e2e-ci] # TEMP: validation only, removed before merge
   workflow_dispatch:
     inputs:
       backend_image_tag:
@@ -22,7 +24,7 @@ permissions:
 jobs:
   e2e:
     name: E2E Release Gate
-    if: github.event_name == 'workflow_dispatch' || startsWith(github.head_ref, 'release/v')
+    if: github.event_name != 'pull_request' || startsWith(github.head_ref, 'release/v')
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
