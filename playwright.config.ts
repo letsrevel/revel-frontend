@@ -44,11 +44,7 @@ export default defineConfig({
 	// CI runners share 4 vCPUs between the preview server, the backend stack
 	// and the browsers — the workflow tunes this via E2E_WORKERS (see
 	// .github/workflows/e2e.yml). Local default stays 4 (PgBouncer backend).
-	workers: process.env.E2E_WORKERS
-		? Number(process.env.E2E_WORKERS)
-		: process.env.CI
-			? 1
-			: 4,
+	workers: process.env.E2E_WORKERS ? Number(process.env.E2E_WORKERS) : process.env.CI ? 1 : 4,
 	// Real-stack renders under parallel load regularly exceed the 5s default,
 	// and specs with arrange-heavy retry loops need room beyond the 30s default
 	// test timeout (typical tests finish in seconds; these are ceilings).
