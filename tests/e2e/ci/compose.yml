@@ -1,0 +1,83 @@
+# CI-only stack for the e2e release gate (.github/workflows/e2e.yml).
+# The backend is the RELEASED image — what production runs — not a source
+# build (spec: docs/superpowers/specs/2026-07-14-e2e-ci-design.md §2).
+# Postgres/Redis ports are deliberately unpublished: only the backend (8000)
+# and Mailpit (1025/8025) need to be reachable from the runner/Playwright.
+name: revel-e2e-ci
+
+services:
+  postgres:
+    image: postgis/postgis:17-3.5
+    # Raised max_connections replaces the local PgBouncer topology; tmpfs
+    # because the DB is throwaway and the suite is I/O-hungry.
+    command: postgres -c max_connections=270
+    tmpfs:
+      - /var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: revel
+      POSTGRES_PASSWORD: revel-password
+      POSTGRES_DB: revel
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U revel -d revel']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - '127.0.0.1:1025:1025'
+      - '127.0.0.1:8025:8025'
+    healthcheck:
+      test: ['CMD', '/mailpit', 'readyz']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    image: ${E2E_BACKEND_IMAGE:-ghcr.io/letsrevel/revel:latest}
+    # entrypoint.sh runs `manage.py migrate --noinput` first whenever the
+    # command is gunicorn, so --wait covers migrations via start_period.
+    command: >
+      gunicorn revel.wsgi:application
+      --worker-class gthread
+      --workers 4
+      --threads 4
+      --bind 0.0.0.0:8000
+      --timeout 60
+    env_file:
+      - backend.env
+    environment:
+      # Injected by the workflow; never present in backend.env.
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      CONNECTED_TEST_STRIPE_ID: ${CONNECTED_TEST_STRIPE_ID:-}
+    ports:
+      - '127.0.0.1:8000:8000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailpit:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'python',
+          '-c',
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/healthcheck', timeout=5)"
+        ]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+      start_period: 90s
