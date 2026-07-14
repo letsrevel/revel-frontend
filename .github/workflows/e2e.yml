@@ -1,0 +1,115 @@
+name: E2E
+
+# Release gate ONLY — e2e never blocks day-to-day PRs (spec §1). Runs on
+# release/v* PRs against the RELEASED backend image, plus manual dispatch.
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      backend_image_tag:
+        description: 'Backend image tag (ghcr.io/letsrevel/revel:<tag>)'
+        required: false
+        default: 'latest'
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: E2E Release Gate
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.head_ref, 'release/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      E2E_BACKEND_IMAGE: ghcr.io/letsrevel/revel:${{ inputs.backend_image_tag || vars.E2E_BACKEND_IMAGE_TAG || 'latest' }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Install pnpm
+        # Version is read from the "packageManager" field in package.json
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Compile translations
+        run: pnpm paraglide:compile
+
+      # Pinned CLI version — bump deliberately. Headless: an explicit
+      # STRIPE_API_KEY means the CLI never enters the browser device-auth flow.
+      - name: Install Stripe CLI
+        run: |
+          curl -fsSL -o /tmp/stripe.deb \
+            https://github.com/stripe/stripe-cli/releases/download/v1.43.8/stripe_1.43.8_linux_amd64.deb
+          sudo dpkg -i /tmp/stripe.deb
+          stripe --version
+
+      - name: Capture webhook signing secret
+        env:
+          STRIPE_API_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+        run: |
+          SECRET="$(stripe listen --print-secret)"
+          echo "::add-mask::$SECRET"
+          echo "STRIPE_WEBHOOK_SECRET=$SECRET" >> "$GITHUB_ENV"
+
+      - name: Start backend stack
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          CONNECTED_TEST_STRIPE_ID: ${{ secrets.CONNECTED_TEST_STRIPE_ID }}
+          # STRIPE_WEBHOOK_SECRET comes from GITHUB_ENV (previous step)
+        run: docker compose -f tests/e2e/ci/compose.yml up -d --wait
+
+      - name: Seed database
+        run: |
+          docker compose -f tests/e2e/ci/compose.yml exec -T backend python manage.py bootstrap
+          docker compose -f tests/e2e/ci/compose.yml exec -T backend python manage.py bootstrap_test_events
+          # live_emails defaults False → addresses get scrambled to the
+          # internal catchall and every Mailpit assertion breaks.
+          docker compose -f tests/e2e/ci/compose.yml exec -T backend python manage.py shell -c \
+            "from common.models.site import SiteSettings; s = SiteSettings.get_solo(); s.live_emails = True; s.save()"
+
+      - name: Start Stripe webhook forwarder
+        env:
+          STRIPE_API_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+        run: |
+          nohup stripe listen --forward-to localhost:8000/api/stripe/webhook \
+            > /tmp/stripe-listen.log 2>&1 &
+          sleep 3
+          grep -q "Ready" /tmp/stripe-listen.log || { cat /tmp/stripe-listen.log; exit 1; }
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps
+
+      - name: Run e2e suite
+        env:
+          E2E_WORKERS: 2
+          PUBLIC_API_URL: http://localhost:8000
+        run: pnpm exec playwright test
+
+      - name: Collect backend logs
+        if: always()
+        run: |
+          docker compose -f tests/e2e/ci/compose.yml logs backend > /tmp/backend.log 2>&1 || true
+          cat /tmp/stripe-listen.log >> /tmp/backend.log 2>/dev/null || true
+
+      - name: Upload report and traces
+        if: failure()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: e2e-report
+          path: |
+            playwright-report/
+            test-results/
+            /tmp/backend.log
+          retention-days: 14
