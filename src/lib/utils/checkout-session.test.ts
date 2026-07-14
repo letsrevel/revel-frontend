@@ -6,6 +6,7 @@ import {
 } from '$lib/api/generated/sdk.gen';
 import {
 	createCheckoutSession,
+	createReservationRetry,
 	resolveCheckoutUrl,
 	CheckoutSessionError
 } from './checkout-session';
@@ -166,5 +167,86 @@ describe('resolveCheckoutUrl', () => {
 				'user'
 			)
 		).rejects.toBeInstanceOf(CheckoutSessionError);
+	});
+});
+
+describe('createReservationRetry', () => {
+	const FINGERPRINT = JSON.stringify({ tierId: 'tier-1', tickets: [{ guest_name: 'A' }] });
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it('returns null when nothing is held', async () => {
+		const retry = createReservationRetry('user');
+		await expect(retry.resume(FINGERPRINT)).resolves.toBeNull();
+		expect(eventpublicticketsCheckoutSession).not.toHaveBeenCalled();
+	});
+
+	it('resumes an identical purchase with only the session call, then clears', async () => {
+		mockResult(eventpublicticketsCheckoutSession, {
+			data: { checkout_url: 'https://stripe.test/s/resumed' },
+			error: undefined,
+			response: { status: 200 }
+		});
+		const retry = createReservationRetry('user');
+		retry.remember(RESERVATION_ID, FINGERPRINT);
+		await expect(retry.resume(FINGERPRINT)).resolves.toBe('https://stripe.test/s/resumed');
+		expect(eventpublicticketsCheckoutSession).toHaveBeenCalledWith({
+			path: { reservation_id: RESERVATION_ID }
+		});
+		// Consumed: a later purchase must reserve afresh.
+		await expect(retry.resume(FINGERPRINT)).resolves.toBeNull();
+		expect(eventpublicticketsCheckoutSession).toHaveBeenCalledTimes(1);
+	});
+
+	it('drops the handle when the purchase parameters changed', async () => {
+		const retry = createReservationRetry('user');
+		retry.remember(RESERVATION_ID, FINGERPRINT);
+		const changed = JSON.stringify({ tierId: 'tier-1', tickets: [{ guest_name: 'B' }] });
+		await expect(retry.resume(changed)).resolves.toBeNull();
+		expect(eventpublicticketsCheckoutSession).not.toHaveBeenCalled();
+		// Dropped entirely — even the original fingerprint no longer resumes.
+		await expect(retry.resume(FINGERPRINT)).resolves.toBeNull();
+	});
+
+	it('falls back to a fresh reserve when the reservation expired (404)', async () => {
+		mockResult(eventpublicticketsCheckoutSession, {
+			data: undefined,
+			error: { detail: 'No pending reservation found.' },
+			response: { status: 404 }
+		});
+		const retry = createReservationRetry('user');
+		retry.remember(RESERVATION_ID, FINGERPRINT);
+		await expect(retry.resume(FINGERPRINT)).resolves.toBeNull();
+		await expect(retry.resume(FINGERPRINT)).resolves.toBeNull();
+		expect(eventpublicticketsCheckoutSession).toHaveBeenCalledTimes(1);
+	});
+
+	it('keeps the handle across retryable failures so the next attempt retries the session', async () => {
+		vi.mocked(eventpublicticketsCheckoutSession)
+			.mockResolvedValueOnce({
+				data: undefined,
+				error: { detail: 'Stripe is down' },
+				response: { status: 500 }
+			} as Awaited<ReturnType<SessionOp>>)
+			.mockResolvedValueOnce({
+				data: { checkout_url: 'https://stripe.test/s/second-try' },
+				error: undefined,
+				response: { status: 200 }
+			} as Awaited<ReturnType<SessionOp>>);
+		const retry = createReservationRetry('user');
+		retry.remember(RESERVATION_ID, FINGERPRINT);
+		await expect(retry.resume(FINGERPRINT)).rejects.toBeInstanceOf(CheckoutSessionError);
+		await expect(retry.resume(FINGERPRINT)).resolves.toBe('https://stripe.test/s/second-try');
+		expect(eventpublicticketsCheckoutSession).toHaveBeenCalledTimes(2);
+	});
+
+	it('clear() drops the handle', async () => {
+		const retry = createReservationRetry('guest');
+		retry.remember(RESERVATION_ID, FINGERPRINT);
+		retry.clear();
+		await expect(retry.resume(FINGERPRINT)).resolves.toBeNull();
+		expect(eventpublicguestGuestCheckoutSession).not.toHaveBeenCalled();
 	});
 });

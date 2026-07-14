@@ -14,7 +14,11 @@ import type {
 	BuyerBillingInfoSchema
 } from '$lib/api/generated/types.gen';
 import type { EventTicketSchemaActual, UserEventStatus } from '$lib/utils/eligibility';
-import { resolveCheckoutUrl, CheckoutSessionError } from '$lib/utils/checkout-session';
+import {
+	createReservationRetry,
+	resolveCheckoutUrl,
+	CheckoutSessionError
+} from '$lib/utils/checkout-session';
 import * as m from '$lib/paraglide/messages.js';
 import { toast } from 'svelte-sonner';
 
@@ -93,6 +97,40 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 		}
 	}
 
+	// Held reservation from a session step that is pending or failed — an
+	// identical retry (same fingerprint) replays only the idempotent session
+	// call instead of re-reserving, which would strand the first reservation
+	// and can trip max_tickets_per_user (PENDING tickets count toward it).
+	const reservationRetry = createReservationRetry('user');
+
+	function sessionFailureError(error: CheckoutSessionError): Error {
+		return new Error(
+			m['eventPage.paymentStartFailed']?.() ??
+				'Your tickets are reserved, but the payment could not be started. Use “Resume Payment” on your pending ticket to try again.',
+			{ cause: error }
+		);
+	}
+
+	/**
+	 * Resume a previously reserved purchase whose session step didn't complete
+	 * (retryable failure, or the buyer came back from Stripe and bought again
+	 * with identical parameters). Returns a redirect-ready response, or `null`
+	 * when there is nothing to resume and the caller should reserve afresh.
+	 */
+	async function resumeHeldCheckout(fingerprint: string): Promise<BatchCheckoutResponse | null> {
+		try {
+			const checkoutUrl = await reservationRetry.resume(fingerprint);
+			return checkoutUrl
+				? { checkout_url: checkoutUrl, tickets: [], requires_payment: true }
+				: null;
+		} catch (error) {
+			if (error instanceof CheckoutSessionError) {
+				throw sessionFailureError(error);
+			}
+			throw error;
+		}
+	}
+
 	/**
 	 * Two-step online checkout (#464): the checkout endpoints only RESERVE
 	 * (returning `reservation_id`); the Stripe URL comes from a second,
@@ -101,24 +139,28 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 	 * into the response so the success handler stays payment-agnostic.
 	 *
 	 * If the session step fails the reservation is still held server-side:
-	 * refresh the user status so the pending ticket's "Resume payment" action
-	 * (which recreates the session) appears, then surface a retryable error.
+	 * the handle is kept so an identical retry resumes it, the user status is
+	 * refreshed so the pending ticket's "Resume Payment" action (which also
+	 * recreates the session) appears, and a retryable error is surfaced.
 	 */
 	async function withCheckoutSessionUrl(
-		data: BatchCheckoutResponse
+		data: BatchCheckoutResponse,
+		fingerprint: string
 	): Promise<BatchCheckoutResponse> {
+		if (data.requires_payment && data.reservation_id) {
+			reservationRetry.remember(data.reservation_id, fingerprint);
+		}
 		try {
 			const checkoutUrl = await resolveCheckoutUrl(data, 'user');
 			return checkoutUrl ? { ...data, checkout_url: checkoutUrl } : data;
 		} catch (error) {
 			if (error instanceof CheckoutSessionError) {
+				if (error.expired) {
+					reservationRetry.clear();
+				}
 				await refreshUserStatus();
 				queryClient.invalidateQueries({ queryKey: ['event-status', eventId] });
-				throw new Error(
-					m['eventPage.paymentStartFailed']?.() ??
-						'Your tickets are reserved, but the payment could not be started. Use “Resume payment” on your pending ticket to try again.',
-					{ cause: error }
-				);
+				throw sessionFailureError(error);
 			}
 			throw error;
 		}
@@ -182,7 +224,11 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 
 	// Ticket claiming mutation (for free/offline tickets) - batch version
 	const claimTicketMutation = createMutation(() => ({
-		mutationFn: async ({ tierId, tickets, discountCode, billingInfo }: CheckoutParams) => {
+		mutationFn: async (params: CheckoutParams) => {
+			const fingerprint = JSON.stringify(params);
+			const resumed = await resumeHeldCheckout(fingerprint);
+			if (resumed) return resumed;
+			const { tierId, tickets, discountCode, billingInfo } = params;
 			const body: BatchCheckoutPayload = {
 				tickets,
 				discount_code: discountCode || undefined,
@@ -195,14 +241,18 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 			if (response.error) {
 				throw new Error(errorDetailOr(response.error, 'Failed to claim ticket'));
 			}
-			return withCheckoutSessionUrl(response.data);
+			return withCheckoutSessionUrl(response.data, fingerprint);
 		},
 		onSuccess: handleCheckoutSuccess
 	}));
 
 	// Fixed-price checkout mutation (for online payments) - batch version
 	const checkoutMutation = createMutation(() => ({
-		mutationFn: async ({ tierId, tickets, discountCode, billingInfo }: CheckoutParams) => {
+		mutationFn: async (params: CheckoutParams) => {
+			const fingerprint = JSON.stringify(params);
+			const resumed = await resumeHeldCheckout(fingerprint);
+			if (resumed) return resumed;
+			const { tierId, tickets, discountCode, billingInfo } = params;
 			const body: BatchCheckoutPayload = {
 				tickets,
 				discount_code: discountCode || undefined,
@@ -215,14 +265,18 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 			if (response.error) {
 				throw new Error(errorDetailOr(response.error, 'Failed to checkout'));
 			}
-			return withCheckoutSessionUrl(response.data);
+			return withCheckoutSessionUrl(response.data, fingerprint);
 		},
 		onSuccess: handleCheckoutSuccess
 	}));
 
 	// PWYC checkout mutation - batch version
 	const pwycCheckoutMutation = createMutation(() => ({
-		mutationFn: async ({ tierId, tickets, pricePerTicket, billingInfo }: PwycCheckoutParams) => {
+		mutationFn: async (params: PwycCheckoutParams) => {
+			const fingerprint = JSON.stringify(params);
+			const resumed = await resumeHeldCheckout(fingerprint);
+			if (resumed) return resumed;
+			const { tierId, tickets, pricePerTicket, billingInfo } = params;
 			const body: BatchCheckoutPwycPayload = {
 				tickets,
 				price_per_ticket: pricePerTicket,
@@ -235,7 +289,7 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 			if (response.error) {
 				throw new Error(errorDetailOr(response.error, 'Failed to checkout'));
 			}
-			return withCheckoutSessionUrl(response.data);
+			return withCheckoutSessionUrl(response.data, fingerprint);
 		},
 		onSuccess: handleCheckoutSuccess
 	}));

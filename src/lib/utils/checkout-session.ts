@@ -94,6 +94,62 @@ export async function createCheckoutSession(
 }
 
 /**
+ * Tracks a reservation whose session step is pending or failed, so that an
+ * IDENTICAL retry replays only the (idempotent) session call instead of
+ * re-reserving — a second reserve would strand the first reservation and can
+ * trip `max_tickets_per_user`, which counts PENDING tickets.
+ *
+ * The `fingerprint` is a serialization of the purchase parameters (tier,
+ * tickets, amount, billing, …): a retry with DIFFERENT parameters must not
+ * resume the old reservation (it was priced/snapshotted at reserve time), so
+ * a mismatch drops the handle and the caller reserves afresh — the stale
+ * reservation is reclaimed server-side on expiry.
+ */
+export function createReservationRetry(kind: CheckoutSessionKind) {
+	let held: { reservationId: string; fingerprint: string } | null = null;
+
+	return {
+		/** Record a reservation the moment the reserve step returns it. */
+		remember(reservationId: string, fingerprint: string): void {
+			held = { reservationId, fingerprint };
+		},
+
+		/** Drop the handle (e.g. when the owning dialog closes). */
+		clear(): void {
+			held = null;
+		},
+
+		/**
+		 * Try to resume a held reservation for an identical purchase. Returns
+		 * the Stripe URL, or `null` when there is nothing to resume (no held
+		 * reservation, different parameters, or the reservation expired) — in
+		 * all `null` cases the caller should reserve afresh.
+		 *
+		 * @throws CheckoutSessionError on a still-retryable session failure
+		 *         (the handle is kept for the next attempt).
+		 */
+		async resume(fingerprint: string): Promise<string | null> {
+			if (!held) return null;
+			if (held.fingerprint !== fingerprint) {
+				held = null;
+				return null;
+			}
+			try {
+				const checkoutUrl = await createCheckoutSession(kind, held.reservationId);
+				held = null;
+				return checkoutUrl;
+			} catch (error) {
+				if (error instanceof CheckoutSessionError && error.expired) {
+					held = null;
+					return null;
+				}
+				throw error;
+			}
+		}
+	};
+}
+
+/**
  * Resolve the Stripe URL for a reserve response, chaining the session call
  * when the new two-step contract applies.
  *
