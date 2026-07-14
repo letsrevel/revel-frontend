@@ -14,6 +14,7 @@ import type {
 	BuyerBillingInfoSchema
 } from '$lib/api/generated/types.gen';
 import type { EventTicketSchemaActual, UserEventStatus } from '$lib/utils/eligibility';
+import { resolveCheckoutUrl, CheckoutSessionError } from '$lib/utils/checkout-session';
 import * as m from '$lib/paraglide/messages.js';
 import { toast } from 'svelte-sonner';
 
@@ -93,6 +94,37 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 	}
 
 	/**
+	 * Two-step online checkout (#464): the checkout endpoints only RESERVE
+	 * (returning `reservation_id`); the Stripe URL comes from a second,
+	 * idempotent checkout-session call. Chain it here, inside the mutation, so
+	 * the pending/disabled state spans both requests, and merge the URL back
+	 * into the response so the success handler stays payment-agnostic.
+	 *
+	 * If the session step fails the reservation is still held server-side:
+	 * refresh the user status so the pending ticket's "Resume payment" action
+	 * (which recreates the session) appears, then surface a retryable error.
+	 */
+	async function withCheckoutSessionUrl(
+		data: BatchCheckoutResponse
+	): Promise<BatchCheckoutResponse> {
+		try {
+			const checkoutUrl = await resolveCheckoutUrl(data, 'user');
+			return checkoutUrl ? { ...data, checkout_url: checkoutUrl } : data;
+		} catch (error) {
+			if (error instanceof CheckoutSessionError) {
+				await refreshUserStatus();
+				queryClient.invalidateQueries({ queryKey: ['event-status', eventId] });
+				throw new Error(
+					m['eventPage.paymentStartFailed']?.() ??
+						'Your tickets are reserved, but the payment could not be started. Use “Resume payment” on your pending ticket to try again.',
+					{ cause: error }
+				);
+			}
+			throw error;
+		}
+	}
+
+	/**
 	 * Handle successful batch checkout response
 	 */
 	async function handleCheckoutSuccess(response: BatchCheckoutResponse) {
@@ -163,7 +195,7 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 			if (response.error) {
 				throw new Error(errorDetailOr(response.error, 'Failed to claim ticket'));
 			}
-			return response.data;
+			return withCheckoutSessionUrl(response.data);
 		},
 		onSuccess: handleCheckoutSuccess
 	}));
@@ -183,7 +215,7 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 			if (response.error) {
 				throw new Error(errorDetailOr(response.error, 'Failed to checkout'));
 			}
-			return response.data;
+			return withCheckoutSessionUrl(response.data);
 		},
 		onSuccess: handleCheckoutSuccess
 	}));
@@ -203,7 +235,7 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 			if (response.error) {
 				throw new Error(errorDetailOr(response.error, 'Failed to checkout'));
 			}
-			return response.data;
+			return withCheckoutSessionUrl(response.data);
 		},
 		onSuccess: handleCheckoutSuccess
 	}));

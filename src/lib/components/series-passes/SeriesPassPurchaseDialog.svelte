@@ -2,8 +2,13 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
-	import type { SeriesPassSchema, SeriesPassQuoteSchema } from '$lib/api/generated/types.gen';
+	import type {
+		SeriesPassSchema,
+		SeriesPassQuoteSchema,
+		SeriesPassCheckoutResponseSchema
+	} from '$lib/api/generated/types.gen';
 	import { seriespassCheckoutSeriesPass } from '$lib/api';
+	import { createCheckoutSession, CheckoutSessionError } from '$lib/utils/checkout-session';
 	import { invalidateAfterPurchase } from '$lib/queries/series-passes';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
@@ -33,15 +38,38 @@
 	const isFree = $derived(pass.payment_method === 'free' || parseFloat(quote.price) === 0);
 	const isOnline = $derived(pass.payment_method === 'online' && !isFree);
 
+	// Two-step online checkout (#464): reserve holds the pass and returns a
+	// `reservation_id`; a second idempotent call creates the Stripe session.
+	// Kept across a failed session step so retrying skips re-reserving.
+	let reservationId: string | null = null;
+
 	const checkoutMutation = createMutation(() => ({
-		mutationFn: async () => {
+		mutationFn: async (): Promise<SeriesPassCheckoutResponseSchema> => {
+			// Retry after a partial failure: only the session step needs to run
+			// again. A 404 means the reservation expired — reserve afresh below.
+			if (reservationId) {
+				try {
+					return { checkout_url: await createCheckoutSession('series-pass', reservationId) };
+				} catch (error) {
+					if (error instanceof CheckoutSessionError && error.expired) {
+						reservationId = null;
+					} else {
+						throw error;
+					}
+				}
+			}
 			const response = await seriespassCheckoutSeriesPass({
 				path: { pass_id: pass.id ?? '' }
 			});
 			if (response.error || !response.data) {
 				throw new Error(extractErrorMessage(response.error, m['seriesPass.checkoutFailed']()));
 			}
-			return response.data;
+			const data = response.data;
+			if (data.requires_payment && data.reservation_id) {
+				reservationId = data.reservation_id;
+				return { ...data, checkout_url: await createCheckoutSession('series-pass', reservationId) };
+			}
+			return data;
 		},
 		onSuccess: async (data) => {
 			// Stripe branch: hand the browser to the hosted checkout page.
@@ -73,6 +101,12 @@
 			toast.error(m['seriesPass.checkoutFailed']());
 		},
 		onError: (error) => {
+			if (error instanceof CheckoutSessionError) {
+				// Reserve succeeded but the Stripe session didn't: the pass is still
+				// held server-side and the retry button reuses the reservation.
+				toast.error(m['seriesPass.paymentStartFailed']());
+				return;
+			}
 			toast.error(error instanceof Error ? error.message : m['seriesPass.checkoutFailed']());
 		}
 	}));

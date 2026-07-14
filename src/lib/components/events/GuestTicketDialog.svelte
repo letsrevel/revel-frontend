@@ -21,6 +21,7 @@
 		eventpublicticketsGetTierSeatAvailability
 	} from '$lib/api';
 	import { handleGuestAttendanceError } from '$lib/utils/guestAttendance';
+	import { createCheckoutSession, CheckoutSessionError } from '$lib/utils/checkout-session';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import type {
 		SeatAssignmentMode,
@@ -82,6 +83,12 @@
 	let showSuccess = $state(false);
 	let errorMessage = $state<string | null>(null);
 	let requiresAccount = $state(false);
+
+	// Two-step online checkout (#464): the reserve call holds capacity and the
+	// session call fetches the Stripe URL. When the session step fails, keep
+	// the reservation handle so a retry submit skips re-reserving (the session
+	// endpoint is idempotent server-side).
+	let reservationId = $state<string | null>(null);
 
 	// Billing section
 	let billingSection: CheckoutBillingSection | undefined = $state();
@@ -297,6 +304,7 @@
 			showSuccess = false;
 			requiresAccount = false;
 			guestNameError = '';
+			reservationId = null;
 			quantity = 1;
 			guestNames = [''];
 			selectedSeatIds = [];
@@ -438,6 +446,22 @@
 		errorMessage = null;
 
 		try {
+			// Retry after a partial failure (#464): the reservation is still held —
+			// only the Stripe-session step needs to run again (idempotent). A 404
+			// means it expired server-side; fall through and reserve afresh.
+			if (reservationId) {
+				try {
+					window.location.href = await createCheckoutSession('guest', reservationId);
+					return;
+				} catch (error) {
+					if (error instanceof CheckoutSessionError && error.expired) {
+						reservationId = null;
+					} else {
+						throw error;
+					}
+				}
+			}
+
 			let response;
 
 			// Build tickets array - one for each ticket
@@ -518,8 +542,13 @@
 			}
 
 			// Check response type
-			if (response.data && 'checkout_url' in response.data && response.data.checkout_url) {
-				// Online payment - redirect to Stripe
+			if (response.data && response.data.requires_payment && response.data.reservation_id) {
+				// Online payment - reserve succeeded, now create the Stripe session
+				// and redirect. Keep the handle for an idempotent retry on failure.
+				reservationId = response.data.reservation_id;
+				window.location.href = await createCheckoutSession('guest', reservationId);
+			} else if (response.data && 'checkout_url' in response.data && response.data.checkout_url) {
+				// Online payment - redirect to Stripe (legacy single-call shape)
 				window.location.href = response.data.checkout_url;
 			} else if (response.data && 'message' in response.data && response.data.message) {
 				// Email confirmation flow - show success
@@ -535,7 +564,10 @@
 				onSuccess?.();
 			}
 		} catch (error) {
-			errorMessage = handleGuestAttendanceError(error);
+			errorMessage =
+				error instanceof CheckoutSessionError
+					? m['guestTicketDialog.paymentStartFailed']()
+					: handleGuestAttendanceError(error);
 		} finally {
 			isSubmitting = false;
 		}
