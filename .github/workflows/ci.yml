@@ -84,6 +84,49 @@ jobs:
       - name: Run unit tests
         run: pnpm test
 
+  # Backend-free regression e2e specs (CSP + dark-mode-FOUC guards), full
+  # 5-browser matrix. Not the release-gate e2e suite (see e2e.yml) — these
+  # only need the built frontend, no backend stack.
+  regression-e2e:
+    name: Regression E2E
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Install pnpm
+        # Version is read from the "packageManager" field in package.json
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Tests render components that import $lib/paraglide/messages (gitignored,
+      # generated) — compile first, same as the lint job.
+      - name: Compile translations
+        run: pnpm paraglide:compile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps
+
+      # CSP + dark-mode-FOUC guards on the 5-browser matrix. No backend:
+      # regression specs only need the built frontend (tests/e2e/README.md).
+      - name: Run regression specs
+        run: pnpm exec playwright test tests/e2e/regression
+
+      - name: Upload report
+        if: failure()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: regression-e2e-report
+          path: playwright-report/
+          retention-days: 7
+
   # Test translations
   i18n:
     name: Translation Validation
