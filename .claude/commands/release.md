@@ -51,6 +51,12 @@ Bump level requested (may be empty): $ARGUMENTS
    The PR body is a review copy only — on merge the workflow re-extracts the section from the
    merged `CHANGELOG.md` as the canonical release notes. Print the PR URL.
 
+10. **Wait for the E2E Release Gate.** The **E2E Release Gate** check runs the full Playwright
+    suite against the released backend image (`ghcr.io/letsrevel/revel:latest`). If it fails:
+    the release would break prod — fix on `main` via a normal PR (or cut the backend release
+    first if the failure is contract drift), then update this release PR and re-check. Do NOT
+    merge a release PR with a red gate.
+
 ## Notes
 - Tag/release name is always `vX.Y.Z` (required by `publish.yaml`); the branch is
   `release/vX.Y.Z`; the PR title / squash commit is `chore(release): vX.Y.Z`.

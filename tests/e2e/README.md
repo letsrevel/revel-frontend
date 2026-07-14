@@ -27,6 +27,21 @@ pnpm test:e2e --project=chromium   # desktop journeys only
 pnpm test:e2e tests/e2e/regression # CSP/FOUC guards (no backend needed)
 ```
 
+## CI
+
+E2E does **not** run on regular PRs (FE and BE are developed in parallel;
+red-against-released-BE would be noise). Two workflows:
+
+- **`e2e.yml` — release gate.** Runs the full suite (Stripe included) on
+  `release/v*` PRs against `ghcr.io/letsrevel/revel:latest` — the released
+  backend, i.e. what production runs. Red gate = prod would break: fix on
+  `main` (or release the backend first), the release PR updates, the gate
+  re-runs. Manual runs: `gh workflow run e2e.yml -f backend_image_tag=<tag>`.
+  Pin a backend version for all runs via the `E2E_BACKEND_IMAGE_TAG` repo
+  variable. Stack definition: `tests/e2e/ci/compose.yml` + `backend.env`.
+- **`ci.yml` → Regression E2E.** The `regression/` specs (CSP/FOUC,
+  5 browsers, no backend) run on every PR.
+
 ## Layout
 
 - `journeys/jNN-*/` — one directory per USER_JOURNEYS.md journey; specs import
