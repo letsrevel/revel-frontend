@@ -51,11 +51,13 @@ Bump level requested (may be empty): $ARGUMENTS
    The PR body is a review copy only — on merge the workflow re-extracts the section from the
    merged `CHANGELOG.md` as the canonical release notes. Print the PR URL.
 
-10. **Wait for the E2E Release Gate.** The **E2E Release Gate** check runs the full Playwright
-    suite against the released backend image (`ghcr.io/letsrevel/revel:latest`). If it fails:
-    the release would break prod — fix on `main` via a normal PR (or cut the backend release
-    first if the failure is contract drift), then update this release PR and re-check. Do NOT
-    merge a release PR with a red gate.
+10. **Run the full e2e suite locally before merging.** There is no CI e2e gate (deliberate:
+    GH runners take 40+ min for a suite that runs in ~6 locally — see the 2026-07-14 CI-wiring
+    spec outcome). Ask the user to run `pnpm test:e2e` against their local stack (backend via
+    `make run-e2e`, env contract in `tests/e2e/README.md`), with the backend checkout at (or
+    release-equivalent to) the latest released backend — release-first discipline: if this FE
+    release needs unreleased backend changes, cut the backend release first. Do NOT merge a
+    release PR with a red suite.
 
 ## Notes
 - Tag/release name is always `vX.Y.Z` (required by `publish.yaml`); the branch is

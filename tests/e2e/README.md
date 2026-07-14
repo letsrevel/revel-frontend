@@ -29,18 +29,17 @@ pnpm test:e2e tests/e2e/regression # CSP/FOUC guards (no backend needed)
 
 ## CI
 
-E2E does **not** run on regular PRs (FE and BE are developed in parallel;
-red-against-released-BE would be noise). Two workflows:
+Only the `regression/` specs run in CI: the **Regression E2E** job in
+`ci.yml` (CSP/FOUC guards, 5 browsers, no backend) runs on every PR.
 
-- **`e2e.yml` — release gate.** Runs the full suite (Stripe included) on
-  `release/v*` PRs against `ghcr.io/letsrevel/revel:latest` — the released
-  backend, i.e. what production runs. Red gate = prod would break: fix on
-  `main` (or release the backend first), the release PR updates, the gate
-  re-runs. Manual runs: `gh workflow run e2e.yml -f backend_image_tag=<tag>`.
-  Pin a backend version for all runs via the `E2E_BACKEND_IMAGE_TAG` repo
-  variable. Stack definition: `tests/e2e/ci/compose.yml` + `backend.env`.
-- **`ci.yml` → Regression E2E.** The `regression/` specs (CSP/FOUC,
-  5 browsers, no backend) run on every PR.
+The journey suite does **not** run in CI — evaluated and rejected 2026-07-14
+(#593): a full-stack release-gate workflow was built and validated, but GH's
+4-vCPU runners took 40+ minutes for a suite that runs in ~6 locally, which is
+unusable for release turnaround. Instead, `/release` step 10 requires a green
+local full-suite run before merging a release PR (release-first discipline:
+the backend release this FE release depends on must be cut first). Journey
+specs also self-skip on machines without the backend stack, so `pnpm test:e2e`
+stays safe everywhere.
 
 ## Layout
 
