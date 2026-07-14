@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.68.0] - 2026-07-14
+
+### Changed
+
+- **Two-step online checkout**: online (Stripe) purchases — tickets, guest checkout, pay-what-you-can, and season passes — now reserve your spot first and then start payment as a separate step. Interrupted checkouts can be resumed via the existing **Resume Payment** action, expired reservations fall back to a fresh reservation automatically, and a failure to start payment shows a clear, retryable error message in every UI language.
+
+### Fixed
+
+- The membership subscription drawer no longer gets permanently stuck on a loading spinner.
+- The season-pass purchase button is now disabled when the price quote fails to load, instead of remaining clickable.
+- The discount-code edit page shows an error message instead of a blank page when the code fails to load.
+
 ## [1.67.0] - 2026-07-13
 
 ### Added
