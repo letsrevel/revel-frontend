@@ -85,8 +85,8 @@ jobs:
         run: pnpm test
 
   # Backend-free regression e2e specs (CSP + dark-mode-FOUC guards), full
-  # 5-browser matrix. Not the release-gate e2e suite (see e2e.yml) — these
-  # only need the built frontend, no backend stack.
+  # 5-browser matrix. Not the journey suite (that runs locally only — see
+  # tests/e2e/README.md § CI) — these need the built frontend, no backend.
   regression-e2e:
     name: Regression E2E
     runs-on: ubuntu-latest
