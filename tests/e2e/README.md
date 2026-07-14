@@ -12,7 +12,7 @@ the built frontend.
 | Dependency | Where | Notes |
 | --- | --- | --- |
 | Backend | `http://localhost:8000` | `make run` in `revel-backend`, DB seeded via `make bootstrap` |
-| Reset | `make reset-events && make bootstrap` (backend repo) | Bootstrap is **not** re-runnable on a dirty DB; run this before a full suite run for determinism |
+| Reset | `make reset-events && make bootstrap-tests` (backend repo) | `reset_events` clears test pollution and re-runs the main bootstrap, but **not** `bootstrap_test_events` — without `make bootstrap-tests` the j05 eligibility-matrix suite 404s. Bootstrap is **not** re-runnable on a dirty DB; run this before a full suite run for determinism |
 | Celery | inline/eager | Questionnaire auto-eval, exports, etc. complete synchronously |
 | Mailpit | `http://localhost:8025` | Captures all outbound email; override with `E2E_MAILPIT_URL` |
 | Stripe | `stripe listen` forwarding to the backend | Backend `.env` needs `CONNECTED_TEST_STRIPE_ID` **at bootstrap time**, or online checkout fails |
