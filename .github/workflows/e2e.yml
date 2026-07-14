@@ -74,8 +74,10 @@ jobs:
 
       - name: Seed database
         run: |
+          # `bootstrap` already runs bootstrap_events + bootstrap_test_events +
+          # generate_test_jwts internally (backend v1.71.0); calling
+          # bootstrap_test_events again dies on non-idempotent create_user.
           docker compose -f tests/e2e/ci/compose.yml exec -T backend python manage.py bootstrap
-          docker compose -f tests/e2e/ci/compose.yml exec -T backend python manage.py bootstrap_test_events
           # live_emails defaults False → addresses get scrambled to the
           # internal catchall and every Mailpit assertion breaks.
           docker compose -f tests/e2e/ci/compose.yml exec -T backend python manage.py shell -c \
@@ -87,7 +89,13 @@ jobs:
         run: |
           nohup stripe listen --forward-to localhost:8000/api/stripe/webhook \
             > /tmp/stripe-listen.log 2>&1 &
-          sleep 3
+          # Poll for readiness — a fixed sleep races the CLI's startup.
+          # (Safe to cat on failure: the whsec_ value it echoes is already
+          # masked via ::add-mask:: in the capture step.)
+          for i in $(seq 1 15); do
+            grep -q "Ready" /tmp/stripe-listen.log && break
+            sleep 2
+          done
           grep -q "Ready" /tmp/stripe-listen.log || { cat /tmp/stripe-listen.log; exit 1; }
 
       - name: Install Playwright browsers
