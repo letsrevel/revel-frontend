@@ -9,7 +9,11 @@ import { formatPrice } from '$lib/utils/format';
 
 vi.mock('$lib/api/generated/sdk.gen', () => ({
 	seriespassGetSeriesPassQuote: vi.fn(),
-	seriespassCheckoutSeriesPass: vi.fn()
+	seriespassCheckoutSeriesPass: vi.fn(),
+	// Imported by the checkout-session helper the purchase dialog uses (#464).
+	seriespassSeriesPassCheckoutSession: vi.fn(),
+	eventpublicticketsCheckoutSession: vi.fn(),
+	eventpublicguestGuestCheckoutSession: vi.fn()
 }));
 
 function makePass(overrides: Partial<SeriesPassSchema> = {}): SeriesPassSchema {

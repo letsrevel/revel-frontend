@@ -21,6 +21,11 @@
 		eventpublicticketsGetTierSeatAvailability
 	} from '$lib/api';
 	import { handleGuestAttendanceError } from '$lib/utils/guestAttendance';
+	import {
+		createCheckoutSession,
+		createReservationRetry,
+		CheckoutSessionError
+	} from '$lib/utils/checkout-session';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import type {
 		SeatAssignmentMode,
@@ -82,6 +87,14 @@
 	let showSuccess = $state(false);
 	let errorMessage = $state<string | null>(null);
 	let requiresAccount = $state(false);
+
+	// Two-step online checkout (#464): the reserve call holds capacity and the
+	// session call fetches the Stripe URL. When the session step fails, the
+	// reservation handle is kept (keyed by the purchase parameters) so an
+	// IDENTICAL resubmit replays only the idempotent session call — while an
+	// edited submit (different amount/names/billing) reserves afresh instead
+	// of resuming a reservation priced with the old parameters.
+	const reservationRetry = createReservationRetry('guest');
 
 	// Billing section
 	let billingSection: CheckoutBillingSection | undefined = $state();
@@ -297,6 +310,7 @@
 			showSuccess = false;
 			requiresAccount = false;
 			guestNameError = '';
+			reservationRetry.clear();
 			quantity = 1;
 			guestNames = [''];
 			selectedSeatIds = [];
@@ -438,8 +452,6 @@
 		errorMessage = null;
 
 		try {
-			let response;
-
 			// Build tickets array - one for each ticket
 			const tickets = guestNames.map((name, index) => {
 				// For single ticket (no guest names shown), use primary guest name
@@ -462,10 +474,32 @@
 			});
 
 			const billingInfo = billingSection?.getBillingInfo() || undefined;
+			const pwycNumber = parseFloat(formData.pwyc || '0');
+
+			// The full purchase, serialized — the key that decides whether a
+			// resubmit may resume a held reservation or must reserve afresh.
+			const fingerprint = JSON.stringify({
+				email: formData.email,
+				first_name: formData.first_name,
+				last_name: formData.last_name,
+				tickets,
+				billing_info: billingInfo,
+				price_per_ticket: isPwyc ? pwycNumber : undefined
+			});
+
+			// Retry after a partial failure (#464): an identical resubmit replays
+			// only the idempotent Stripe-session step; an expired reservation or
+			// changed parameters fall through and reserve afresh.
+			const resumedUrl = await reservationRetry.resume(fingerprint);
+			if (resumedUrl) {
+				window.location.href = resumedUrl;
+				return;
+			}
+
+			let response;
 
 			if (isPwyc) {
 				// PWYC checkout
-				const pwycNumber = parseFloat(formData.pwyc || '0');
 				response = await eventpublicguestGuestTicketPwycCheckout({
 					path: { event_id: eventId, tier_id: tier.id },
 					body: {
@@ -518,8 +552,13 @@
 			}
 
 			// Check response type
-			if (response.data && 'checkout_url' in response.data && response.data.checkout_url) {
-				// Online payment - redirect to Stripe
+			if (response.data && response.data.requires_payment && response.data.reservation_id) {
+				// Online payment - reserve succeeded, now create the Stripe session
+				// and redirect. Keep the handle for an idempotent retry on failure.
+				reservationRetry.remember(response.data.reservation_id, fingerprint);
+				window.location.href = await createCheckoutSession('guest', response.data.reservation_id);
+			} else if (response.data && 'checkout_url' in response.data && response.data.checkout_url) {
+				// Online payment - redirect to Stripe (legacy single-call shape)
 				window.location.href = response.data.checkout_url;
 			} else if (response.data && 'message' in response.data && response.data.message) {
 				// Email confirmation flow - show success
@@ -535,7 +574,10 @@
 				onSuccess?.();
 			}
 		} catch (error) {
-			errorMessage = handleGuestAttendanceError(error);
+			errorMessage =
+				error instanceof CheckoutSessionError
+					? m['guestTicketDialog.paymentStartFailed']()
+					: handleGuestAttendanceError(error);
 		} finally {
 			isSubmitting = false;
 		}

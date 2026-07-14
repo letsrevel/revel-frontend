@@ -798,8 +798,11 @@ export async function deleteDefaultTier(
  * Start an ONLINE (Stripe) checkout via the public API and return the hosted
  * checkout URL — the ARRANGE step for specs that need a PAID ticket but whose
  * journey under test starts after the purchase (self-cancel, buyer invoices).
- * The caller drives the returned URL with completeStripeCheckout(); ticket
- * activation still arrives via the `stripe listen` webhook.
+ * Two requests since #464/BE#632: the checkout endpoint only RESERVES
+ * (returning a `reservation_id`); the checkout-session endpoint creates the
+ * Stripe session. The caller drives the returned URL with
+ * completeStripeCheckout(); ticket activation still arrives via the
+ * `stripe listen` webhook.
  */
 export async function startOnlineCheckout(
 	user: ThrowawayUser,
@@ -808,7 +811,7 @@ export async function startOnlineCheckout(
 	options: { billingInfo?: Record<string, unknown> } = {}
 ): Promise<string> {
 	const api = await ApiClient.login(user.email, user.password);
-	const response = await api.post<{ checkout_url?: string }>(
+	const reserve = await api.post<{ reservation_id?: string; requires_payment?: boolean }>(
 		`/api/events/${eventId}/tickets/${tierId}/checkout`,
 		{
 			tickets: [{ guest_name: `${user.firstName} ${user.lastName}` }],
@@ -817,10 +820,18 @@ export async function startOnlineCheckout(
 			billing_info: options.billingInfo
 		}
 	);
-	if (!response.checkout_url) {
-		throw new Error(`Checkout for tier ${tierId} returned no checkout_url (not an online tier?)`);
+	if (!reserve.requires_payment || !reserve.reservation_id) {
+		throw new Error(`Checkout for tier ${tierId} returned no reservation_id (not an online tier?)`);
 	}
-	return response.checkout_url;
+	const session = await api.post<{ checkout_url?: string }>(
+		`/api/events/reservations/${reserve.reservation_id}/checkout-session`
+	);
+	if (!session.checkout_url) {
+		throw new Error(
+			`Checkout-session for reservation ${reserve.reservation_id} returned no checkout_url`
+		);
+	}
+	return session.checkout_url;
 }
 
 /**
