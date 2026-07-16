@@ -97,7 +97,7 @@ describe('EventRSVP', () => {
 	it("keeps showing the RSVP buttons when user has already RSVP'd (so they can change)", () => {
 		const rsvpStatus: EventRsvpSchema = {
 			event_id: 'event-123',
-			status: 'approved'
+			status: 'yes'
 		};
 
 		renderRSVP({
@@ -161,7 +161,7 @@ describe('EventRSVP', () => {
 		const mockRsvpResponse = {
 			data: {
 				event_id: 'event-123',
-				status: 'approved' as const
+				status: 'yes' as const
 			}
 		};
 
@@ -225,7 +225,7 @@ describe('EventRSVP', () => {
 	it('allows changing RSVP response after a successful submit', async () => {
 		const user = userEvent.setup();
 		vi.mocked(eventpublicattendanceRsvpEvent).mockResolvedValue({
-			data: { event_id: 'event-123', status: 'approved' as const }
+			data: { event_id: 'event-123', status: 'yes' as const }
 		});
 
 		const eligibilityStatus: EventUserEligibility = {

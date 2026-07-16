@@ -288,6 +288,26 @@
 							})}
 						</p>
 					</div>
+
+					<!-- Accept RSVP notes -->
+					<div class="space-y-2">
+						<label
+							class="flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-accent"
+						>
+							<input
+								type="checkbox"
+								checked={formData.accept_rsvp_notes || false}
+								onchange={(e) => onUpdate({ accept_rsvp_notes: e.currentTarget.checked })}
+								class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring"
+							/>
+							<div class="flex-1">
+								<div class="font-medium">{m['detailsStep.acceptRsvpNotes']()}</div>
+								<div class="text-sm text-muted-foreground">
+									{m['detailsStep.acceptRsvpNotesHint']()}
+								</div>
+							</div>
+						</label>
+					</div>
 				</div>
 			{/if}
 		</div>

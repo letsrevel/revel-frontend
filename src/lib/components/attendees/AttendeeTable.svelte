@@ -8,6 +8,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Badge } from '$lib/components/ui/badge';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
+	import RsvpNoteCell from './RsvpNoteCell.svelte';
 	import type { RsvpDetailSchema } from '$lib/api/generated/types.gen';
 
 	interface Props {
@@ -50,6 +51,11 @@
 					class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
 				>
 					{m['attendeesAdmin.tableHeaderStatus']()}
+				</th>
+				<th
+					class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
+				>
+					{m['attendeesAdmin.tableHeaderNote']()}
 				</th>
 				<th
 					class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
@@ -107,6 +113,11 @@
 						>
 							{getRsvpStatusLabel(rsvp.status)}
 						</span>
+					</td>
+					<td class="max-w-xs px-6 py-4 text-sm">
+						{#if rsvp.note}
+							<RsvpNoteCell note={rsvp.note} />
+						{/if}
 					</td>
 					<td class="whitespace-nowrap px-6 py-4 text-sm text-muted-foreground">
 						{formatDateTime(rsvp.created_at)}

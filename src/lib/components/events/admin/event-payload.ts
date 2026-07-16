@@ -39,6 +39,7 @@ export function buildEventCreateData(
 		status: 'draft', // Create as draft by default
 		requires_ticket: formData.requires_ticket || false, // Send explicit false when unchecked
 		requires_full_profile: formData.requires_full_profile || false,
+		accept_rsvp_notes: formData.accept_rsvp_notes || false,
 		venue_id: formData.venue_id || null
 	};
 }
@@ -72,6 +73,7 @@ export function buildWizardStep1UpdateData(
 		check_in_ends_at: toISOString(formData.check_in_ends_at),
 		potluck_open: formData.potluck_open || false,
 		accept_invitation_requests: formData.accept_invitation_requests || false,
+		accept_rsvp_notes: formData.accept_rsvp_notes || false,
 		apply_before: toISOString(formData.apply_before),
 		can_attend_without_login: formData.can_attend_without_login || false,
 		requires_full_profile: formData.requires_full_profile || false,
@@ -105,6 +107,7 @@ export function buildWizardStep2UpdateData(
 		check_in_ends_at: toISOString(formData.check_in_ends_at),
 		potluck_open: formData.potluck_open || false,
 		accept_invitation_requests: formData.accept_invitation_requests || false,
+		accept_rsvp_notes: formData.accept_rsvp_notes || false,
 		apply_before: toISOString(formData.apply_before),
 		can_attend_without_login: formData.can_attend_without_login || false,
 		requires_full_profile: formData.requires_full_profile || false,
@@ -145,6 +148,7 @@ export function buildEditorUpdateData(
 		check_in_ends_at: toISOString(formData.check_in_ends_at),
 		potluck_open: formData.potluck_open || false,
 		accept_invitation_requests: formData.accept_invitation_requests || false,
+		accept_rsvp_notes: formData.accept_rsvp_notes || false,
 		public_pronoun_distribution: formData.public_pronoun_distribution || false,
 		apply_before: toISOString(formData.apply_before),
 		can_attend_without_login: formData.can_attend_without_login || false,

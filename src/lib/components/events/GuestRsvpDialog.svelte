@@ -12,6 +12,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import { Textarea } from '$lib/components/ui/textarea';
 	import { RadioGroup, RadioGroupItem } from '$lib/components/ui/radio-group';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { UserPlus, CheckCircle2, AlertCircle } from '@lucide/svelte';
@@ -24,11 +25,13 @@
 	interface Props {
 		open: boolean;
 		eventId: string;
+		/** Whether the event accepts an optional note with RSVPs. */
+		acceptsNotes?: boolean;
 		onClose: () => void;
 		onSuccess?: () => void;
 	}
 
-	let { open = $bindable(), eventId, onClose, onSuccess }: Props = $props();
+	let { open = $bindable(), eventId, acceptsNotes = false, onClose, onSuccess }: Props = $props();
 
 	// Form state
 	let formData = $state<GuestRsvpData>({
@@ -37,6 +40,9 @@
 		last_name: '',
 		answer: 'yes'
 	});
+
+	// Optional note for the organizers (only when the event accepts notes)
+	let note = $state('');
 
 	// UI state
 	let isSubmitting = $state(false);
@@ -72,6 +78,7 @@
 				last_name: '',
 				answer: 'yes'
 			};
+			note = '';
 			fieldErrors = {};
 			errorMessage = null;
 			showSuccess = false;
@@ -131,7 +138,8 @@
 				body: {
 					email: formData.email,
 					first_name: formData.first_name,
-					last_name: formData.last_name
+					last_name: formData.last_name,
+					...(acceptsNotes && note.trim() ? { note: note.trim() } : {})
 				}
 			});
 
@@ -337,6 +345,29 @@
 							</p>
 						{/if}
 					</div>
+
+					<!-- Optional note for the organizers -->
+					{#if acceptsNotes}
+						<div class="space-y-2">
+							<Label for="guest-rsvp-note">{m['rsvpNoteDialog.noteLabel']()}</Label>
+							<Textarea
+								id="guest-rsvp-note"
+								bind:value={note}
+								maxlength={500}
+								rows={3}
+								disabled={isSubmitting}
+								placeholder={m['rsvpNoteDialog.notePlaceholder']()}
+								aria-describedby="guest-rsvp-note-counter"
+							/>
+							<p
+								id="guest-rsvp-note-counter"
+								class="text-right text-xs text-muted-foreground"
+								aria-live="polite"
+							>
+								{m['rsvpNoteDialog.counter']({ count: note.length, max: 500 })}
+							</p>
+						</div>
+					{/if}
 
 					<!-- Error Message -->
 					{#if errorMessage}

@@ -6,6 +6,7 @@
 	import { isRSVP, isEligibility, isUserStatusResponse } from '$lib/utils/eligibility';
 	import { cn } from '$lib/utils/cn';
 	import RSVPButtons from './RSVPButtons.svelte';
+	import RsvpNoteDialog from './RsvpNoteDialog.svelte';
 	import ConfirmDialog from '../common/ConfirmDialog.svelte';
 	import IneligibilityMessage from './IneligibilityMessage.svelte';
 	import { Check, AlertCircle } from '@lucide/svelte';
@@ -13,7 +14,11 @@
 	import { invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 
-	import type { EventDetailSchema, EventTokenSchema } from '$lib/api/generated/types.gen';
+	import type {
+		EventDetailSchema,
+		EventRsvpSchema,
+		EventTokenSchema
+	} from '$lib/api/generated/types.gen';
 
 	interface Props {
 		eventId: string;
@@ -65,23 +70,73 @@
 	let pendingAnswer = $state<'yes' | 'no' | 'maybe' | null>(null);
 	let claimedItemsCount = $state<number>(0);
 
+	// RSVP-note capture (only when the organizer opted in on the event)
+	const acceptsNotes = $derived(event?.accept_rsvp_notes === true);
+	let showNoteDialog = $state(false);
+	let noteDialogAnswer = $state<'yes' | 'no' | 'maybe'>('yes');
+	// Set when the organizer disabled notes mid-flight and the RSVP was
+	// re-submitted without the note (see the mutation's 400 fallback).
+	let noteNotSaved = $state(false);
+
+	// Last known stored note — from my-status on load, from the RSVP response
+	// after a submit (onSuccess writes it back into userStatus). Prefilling it
+	// in the dialog is what prevents accidental clears: every submission
+	// overwrites the stored note wholesale.
+	const currentNote = $derived.by(() => {
+		if (!userStatus) return '';
+		if (isUserStatusResponse(userStatus)) return userStatus.rsvp?.note ?? '';
+		if (isRSVP(userStatus)) return userStatus.note ?? '';
+		return '';
+	});
+
+	/**
+	 * The RSVP endpoint has two 400 shapes: the EventUserEligibility object
+	 * (carries `allowed`) and a plain `{detail}` when a note is sent while the
+	 * event no longer accepts notes. Detect the latter by shape, not wording.
+	 */
+	function isNoteRejection(error: unknown): boolean {
+		return (
+			typeof error === 'object' &&
+			error !== null &&
+			'detail' in error &&
+			typeof (error as { detail: unknown }).detail === 'string' &&
+			!('allowed' in error)
+		);
+	}
+
+	function extractErrorDetail(error: unknown): string | null {
+		if (typeof error === 'object' && error !== null && 'detail' in error) {
+			const detail = (error as { detail: unknown }).detail;
+			if (typeof detail === 'string') return detail;
+		}
+		return null;
+	}
+
 	// Mutation: RSVP to event
 	const rsvpMutation = createMutation(() => ({
-		mutationFn: async (answer: 'yes' | 'no' | 'maybe') => {
-			const response = await eventpublicattendanceRsvpEvent({
-				path: { event_id: eventId, answer }
+		mutationFn: async ({ answer, note }: { answer: 'yes' | 'no' | 'maybe'; note?: string }) => {
+			let response = await eventpublicattendanceRsvpEvent({
+				path: { event_id: eventId, answer },
+				...(note !== undefined ? { body: { note } } : {})
 			});
 
-			if (!response.data) {
-				throw new Error('No data returned from RSVP');
+			// The organizer disabled notes mid-flight: the RSVP itself is still
+			// valid, so retry once without the note and tell the user it was
+			// dropped rather than failing the whole action.
+			if (note !== undefined && response.error && isNoteRejection(response.error)) {
+				noteNotSaved = true;
+				response = await eventpublicattendanceRsvpEvent({
+					path: { event_id: eventId, answer }
+				});
 			}
 
-			// Backend returns EventRsvpSchema with status = 'yes' | 'no' | 'maybe' (the user's answer)
-			// But the generated type says status: Status = 'draft' | 'ready' | 'published'
-			// We know the actual runtime type is EventRsvpSchemaActual
-			return response.data as unknown as { event_id: string; status: 'yes' | 'no' | 'maybe' };
+			if (response.error || !response.data) {
+				throw new Error(extractErrorDetail(response.error) ?? 'No data returned from RSVP');
+			}
+
+			return response.data;
 		},
-		onMutate: async (answer: 'yes' | 'no' | 'maybe') => {
+		onMutate: async ({ answer }: { answer: 'yes' | 'no' | 'maybe'; note?: string }) => {
 			// Clear any previous errors
 			errorMessage = null;
 			showSuccess = false;
@@ -98,18 +153,20 @@
 			return { previousStatus };
 		},
 		onSuccess: (
-			data: { event_id: string; status: 'yes' | 'no' | 'maybe' },
-			answer: 'yes' | 'no' | 'maybe'
+			data: EventRsvpSchema,
+			{ answer }: { answer: 'yes' | 'no' | 'maybe'; note?: string }
 		) => {
 			// Determine if this is a new RSVP or a change
 			const wasAttending = userStatus && isRSVP(userStatus) && userStatus.status === 'yes';
 			const isNowAttending = answer === 'yes';
 
-			// Update local status with server response (backend returns the user's answer in status field)
-			userStatus = data as { event_id: string; status: 'yes' | 'no' | 'maybe' };
+			// Update local status with server response (backend returns the user's
+			// answer in status field, and echoes the stored note — which keeps the
+			// derived currentNote prefill fresh for the next dialog open)
+			userStatus = data;
 
 			// Store the user's answer and type for styling
-			userAnswer = data.status; // Backend returns the actual answer in status field
+			userAnswer = data.status;
 			successType = data.status;
 
 			// Update event attendee count if event object is provided
@@ -148,7 +205,7 @@
 		},
 		onError: (
 			error: Error,
-			_answer: 'yes' | 'no' | 'maybe',
+			_variables: { answer: 'yes' | 'no' | 'maybe'; note?: string },
 			context: { previousStatus: UserEventStatus | null } | undefined
 		) => {
 			// Rollback optimistic update
@@ -184,6 +241,8 @@
 	 * Handle RSVP selection
 	 */
 	async function handleRSVPSelect(answer: 'yes' | 'no' | 'maybe'): Promise<void> {
+		noteNotSaved = false;
+
 		// Check if user is changing from "yes" to "maybe" or "no"
 		const wasAttendingYes = currentRsvpAnswer === 'yes';
 		const isChangingToNotYes = answer === 'maybe' || answer === 'no';
@@ -201,8 +260,35 @@
 			}
 		}
 
-		// No warning needed, proceed with RSVP
-		rsvpMutation.mutate(answer);
+		// No warning needed — capture a note first when the event accepts them
+		if (acceptsNotes) {
+			openNoteDialog(answer);
+			return;
+		}
+		rsvpMutation.mutate({ answer });
+	}
+
+	/**
+	 * Open the note-capture dialog for the chosen answer
+	 */
+	function openNoteDialog(answer: 'yes' | 'no' | 'maybe'): void {
+		noteDialogAnswer = answer;
+		showNoteDialog = true;
+	}
+
+	/**
+	 * Handle note dialog confirmation
+	 */
+	function handleNoteConfirm(note: string): void {
+		showNoteDialog = false;
+		rsvpMutation.mutate({ answer: noteDialogAnswer, note });
+	}
+
+	/**
+	 * Handle note dialog cancellation — no RSVP is submitted
+	 */
+	function handleNoteCancel(): void {
+		showNoteDialog = false;
 	}
 
 	/**
@@ -210,10 +296,14 @@
 	 */
 	function handleWarningConfirm(): void {
 		showWarningDialog = false;
-		if (pendingAnswer) {
-			rsvpMutation.mutate(pendingAnswer);
-			pendingAnswer = null;
+		if (!pendingAnswer) return;
+		const answer = pendingAnswer;
+		pendingAnswer = null;
+		if (acceptsNotes) {
+			openNoteDialog(answer);
+			return;
 		}
+		rsvpMutation.mutate({ answer });
 	}
 
 	/**
@@ -363,6 +453,9 @@
 				<Check class="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
 				<div class="flex-1">
 					<p class="font-semibold">{successMessage}</p>
+					{#if noteNotSaved}
+						<p class="mt-1 text-sm">{m['eventRSVP.noteNotSaved']()}</p>
+					{/if}
 					<button
 						type="button"
 						onclick={handleChangeResponse}
@@ -465,6 +558,16 @@
 			</div>
 		{/if}
 	</div>
+
+	<!-- Optional-note capture before submitting the RSVP -->
+	<RsvpNoteDialog
+		open={showNoteDialog}
+		answer={noteDialogAnswer}
+		initialNote={currentNote}
+		isSubmitting={rsvpMutation.isPending}
+		onConfirm={handleNoteConfirm}
+		onCancel={handleNoteCancel}
+	/>
 
 	<!-- Warning Dialog for Claimed Items -->
 	<ConfirmDialog

@@ -621,6 +621,7 @@
 	<GuestRsvpDialog
 		bind:open={showGuestRsvpDialog}
 		eventId={event.id}
+		acceptsNotes={event.accept_rsvp_notes}
 		onClose={closeGuestRsvpDialog}
 		onSuccess={handleGuestAttendanceSuccess}
 	/>

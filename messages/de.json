@@ -539,6 +539,7 @@
 		"tableHeaderName": "Name",
 		"tableHeaderEmail": "Email",
 		"tableHeaderStatus": "Status",
+		"tableHeaderNote": "Notiz",
 		"tableHeaderRsvpDate": "RSVP Date",
 		"tableHeaderActions": "Actions",
 		"statusLabelYes": "Yes",
@@ -574,7 +575,11 @@
 		"createModalSubmit": "Teilnehmer*in hinzufügen",
 		"createModalSubmitting": "Wird hinzugefügt...",
 		"createSuccess": "Zusage gespeichert",
-		"createError": "Teilnehmer*in konnte nicht hinzugefügt werden"
+		"createError": "Teilnehmer*in konnte nicht hinzugefügt werden",
+		"noteLabel": "Notiz",
+		"noteFieldLabel": "Notiz (optional)",
+		"noteExpand": "Mehr anzeigen",
+		"noteCollapse": "Weniger anzeigen"
 	},
 	"attendeesAdminPage": {
 		"title": "Teilnehmer*innen verwalten - Revel",
@@ -1148,6 +1153,8 @@
 		"rsvpOptions": "Zusageoptionen",
 		"rsvpDeadline": "Zusagefrist",
 		"rsvpDeadlineHint": "Letztes Datum und Uhrzeit für Zusagen (Zeitzone: {timezone})",
+		"acceptRsvpNotes": "Notiz bei Zusagen erlauben",
+		"acceptRsvpNotesHint": "Teilnehmer*innen können ihrer Zusage eine optionale kurze Notiz (max. 500 Zeichen) hinzufügen.",
 		"capacity": "Kapazität und Warteliste",
 		"maxAttendees": "Maximale Teilnehmer*innenzahl",
 		"unlimited": "Unbegrenzt",
@@ -4990,6 +4997,19 @@
 		"no_label": "Absage - Ich nehme nicht teil",
 		"no_button": "Nein"
 	},
+	"rsvpNoteDialog": {
+		"title": "Zusage bestätigen",
+		"description": "Du antwortest mit „{answer}“. Du kannst optional eine Notiz für die Organisator*innen hinzufügen.",
+		"answerYes": "Ja, ich komme",
+		"answerMaybe": "Vielleicht",
+		"answerNo": "Nein, ich kann nicht",
+		"noteLabel": "Notiz an die Organisator*innen (optional)",
+		"notePlaceholder": "Gibt es etwas, das die Organisator*innen wissen sollten?",
+		"counter": "{count}/{max}",
+		"cancel": "Abbrechen",
+		"confirm": "Zusage bestätigen",
+		"submitting": "Wird gesendet…"
+	},
 	"rsvpCard": {
 		"rsvpd": "RSVP'd",
 		"going": "Going",
@@ -6183,6 +6203,7 @@
 				"requiresFullProfile": "Require complete attendee profile",
 				"potluckOpen": "Enable potluck coordination",
 				"acceptInvitationRequests": "Accept invitation requests",
+				"acceptRsvpNotes": "Notiz bei Zusagen erlauben",
 				"publicPronounDistribution": "Show pronoun distribution publicly",
 				"canAttendWithoutLogin": "Allow guest attendance",
 				"openEnded": "Zeitlich offen (keine Endzeit für Teilnehmer*innen)"
@@ -6887,6 +6908,7 @@
 	"eventRSVP.unclaimPotluckItemsMessageMany": "Du hast {count} Potluck-Beiträge für diese Veranstaltung übernommen. Wenn du deine Zusage auf \"Vielleicht\" oder \"Nein\" änderst, werden all diese Beiträge automatisch freigegeben. Möchtest du wirklich fortfahren?",
 	"eventRSVP.yesChangeRsvp": "Ja, Zusage ändern",
 	"eventRSVP.cancel": "Abbrechen",
+	"eventRSVP.noteNotSaved": "Deine Zusage wurde gespeichert, aber die Notiz nicht — diese Veranstaltung akzeptiert keine Notizen mehr.",
 	"eventSeriesCard.byOrganization": "von {name}",
 	"eventSeriesCard.eventSeries": "Veranstaltungsreihe",
 	"eventSeriesCard.moreTags": "+{count} weitere",

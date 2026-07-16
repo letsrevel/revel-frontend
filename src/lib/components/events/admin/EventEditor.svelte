@@ -125,6 +125,7 @@
 		check_in_ends_at: toDateTimeLocal(existingEvent?.check_in_ends_at) || null,
 		potluck_open: existingEvent?.potluck_open || false,
 		accept_invitation_requests: existingEvent?.accept_invitation_requests || false,
+		accept_rsvp_notes: existingEvent?.accept_rsvp_notes || false,
 		public_pronoun_distribution: existingEvent?.public_pronoun_distribution || false,
 		apply_before: toDateTimeLocal(existingEvent?.apply_before) || null,
 		can_attend_without_login: existingEvent?.can_attend_without_login || false,

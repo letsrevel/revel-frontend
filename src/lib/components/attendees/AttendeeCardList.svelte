@@ -8,6 +8,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Badge } from '$lib/components/ui/badge';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
+	import RsvpNoteCell from './RsvpNoteCell.svelte';
 	import type { RsvpDetailSchema } from '$lib/api/generated/types.gen';
 
 	interface Props {
@@ -78,6 +79,13 @@
 				<p class="text-xs text-muted-foreground">
 					{m['attendeesAdmin.mobileRsvpdOn']({ date: formatDateTime(rsvp.created_at) })}
 				</p>
+
+				{#if rsvp.note}
+					<p class="text-xs">
+						<span class="font-medium">{m['attendeesAdmin.noteLabel']()}:</span>
+						<RsvpNoteCell note={rsvp.note} />
+					</p>
+				{/if}
 
 				<div class="flex flex-wrap gap-2 border-t border-border pt-3">
 					{#if !rsvp.membership && rsvp.user?.id}

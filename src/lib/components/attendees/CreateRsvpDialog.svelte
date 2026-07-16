@@ -3,7 +3,9 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
+	import { Textarea } from '$lib/components/ui/textarea';
 	import MemberCombobox from '$lib/components/members/MemberCombobox.svelte';
+	import { eventadminrsvpsListRsvps } from '$lib/api';
 	import type {
 		OrganizationAdminDetailSchema,
 		OrganizationMemberSchema
@@ -12,29 +14,68 @@
 	interface Props {
 		open: boolean;
 		organization: OrganizationAdminDetailSchema;
+		eventId: string;
+		accessToken: string | null;
 		isPending: boolean;
-		onSubmit: (userId: string, status: 'yes' | 'maybe' | 'no') => void;
+		onSubmit: (userId: string, status: 'yes' | 'maybe' | 'no', note: string) => void;
 		onCancel: () => void;
 	}
 
-	let { open = $bindable(), organization, isPending, onSubmit, onCancel }: Props = $props();
+	let {
+		open = $bindable(),
+		organization,
+		eventId,
+		accessToken,
+		isPending,
+		onSubmit,
+		onCancel
+	}: Props = $props();
 
 	let selectedMember = $state<OrganizationMemberSchema | null>(null);
 	let selectedStatus = $state<'yes' | 'maybe' | 'no'>('yes');
+	let note = $state('');
 
 	// Reset the form whenever the dialog is (re)opened
 	$effect(() => {
 		if (open) {
 			selectedMember = null;
 			selectedStatus = 'yes';
+			note = '';
 		}
 	});
 
 	const selectedUserId = $derived(selectedMember?.user.id ?? null);
 
+	/**
+	 * Select a member and best-effort prefill from their existing RSVP. The
+	 * admin create endpoint is a wholesale upsert (an omitted note clears a
+	 * stored one), so re-creating an RSVP must carry the current note along.
+	 */
+	async function handleMemberSelect(member: OrganizationMemberSchema | null) {
+		selectedMember = member;
+		note = '';
+		const email = member?.user.email;
+		if (!member || !email) return;
+		try {
+			const response = await eventadminrsvpsListRsvps({
+				path: { event_id: eventId },
+				query: { search: email, include_past: true },
+				headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined
+			});
+			const existing = response.data?.results?.find((r) => r.user.id === member.user.id);
+			// Guard against a stale response after the admin picked someone else.
+			if (existing && selectedMember?.user.id === member.user.id) {
+				note = existing.note ?? '';
+				selectedStatus = existing.status;
+			}
+		} catch {
+			// Prefill is best-effort — creating without it still works.
+		}
+	}
+
 	function handleSubmit() {
 		if (!selectedUserId) return;
-		onSubmit(selectedUserId, selectedStatus);
+		onSubmit(selectedUserId, selectedStatus, note);
 	}
 </script>
 
@@ -55,7 +96,7 @@
 					id="create-rsvp-member"
 					{organization}
 					value={selectedMember}
-					onSelect={(member) => (selectedMember = member)}
+					onSelect={handleMemberSelect}
 					placeholder={m['attendeesAdmin.createModalMemberPlaceholder']()}
 				/>
 			</div>
@@ -103,6 +144,26 @@
 						<span class="text-sm font-medium">{m['attendeesAdmin.editModalNoLabel']()}</span>
 					</label>
 				</div>
+			</div>
+
+			<!-- Note (allowed regardless of the event setting — phone/offline RSVPs) -->
+			<div class="space-y-2">
+				<Label for="create-rsvp-note">{m['attendeesAdmin.noteFieldLabel']()}</Label>
+				<Textarea
+					id="create-rsvp-note"
+					bind:value={note}
+					maxlength={500}
+					rows={3}
+					disabled={isPending}
+					aria-describedby="create-rsvp-note-counter"
+				/>
+				<p
+					id="create-rsvp-note-counter"
+					class="text-right text-xs text-muted-foreground"
+					aria-live="polite"
+				>
+					{m['rsvpNoteDialog.counter']({ count: note.length, max: 500 })}
+				</p>
 			</div>
 		</div>
 

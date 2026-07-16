@@ -58,21 +58,13 @@
 	// Grouped boolean flags. A single reactive object lets us drive the toggle
 	// rows off a small config array below rather than duplicating identical
 	// markup per field.
-	const flags = $state<{
-		requires_ticket: boolean;
-		waitlist_open: boolean;
-		requires_full_profile: boolean;
-		potluck_open: boolean;
-		accept_invitation_requests: boolean;
-		public_pronoun_distribution: boolean;
-		can_attend_without_login: boolean;
-		is_open_ended: boolean;
-	}>({
+	const flags = $state({
 		requires_ticket: false,
 		waitlist_open: false,
 		requires_full_profile: false,
 		potluck_open: false,
 		accept_invitation_requests: false,
+		accept_rsvp_notes: false,
 		public_pronoun_distribution: false,
 		can_attend_without_login: false,
 		is_open_ended: false
@@ -131,6 +123,7 @@
 		flags.requires_full_profile = !!t.requires_full_profile;
 		flags.potluck_open = !!t.potluck_open;
 		flags.accept_invitation_requests = !!t.accept_invitation_requests;
+		flags.accept_rsvp_notes = !!t.accept_rsvp_notes;
 		flags.public_pronoun_distribution = !!t.public_pronoun_distribution;
 		flags.can_attend_without_login = !!t.can_attend_without_login;
 		flags.is_open_ended = !!t.is_open_ended;
@@ -183,6 +176,8 @@
 		if (flags.potluck_open !== !!original.potluck_open) d.potluck_open = flags.potluck_open;
 		if (flags.accept_invitation_requests !== !!original.accept_invitation_requests)
 			d.accept_invitation_requests = flags.accept_invitation_requests;
+		if (flags.accept_rsvp_notes !== !!original.accept_rsvp_notes)
+			d.accept_rsvp_notes = flags.accept_rsvp_notes;
 		if (flags.public_pronoun_distribution !== !!original.public_pronoun_distribution)
 			d.public_pronoun_distribution = flags.public_pronoun_distribution;
 		if (flags.can_attend_without_login !== !!original.can_attend_without_login)
@@ -257,6 +252,11 @@
 			key: 'accept_invitation_requests',
 			label: m['recurringEvents.templateDialog.toggles.acceptInvitationRequests'](),
 			testid: 'template-edit-accept-invitation-requests'
+		},
+		{
+			key: 'accept_rsvp_notes',
+			label: m['recurringEvents.templateDialog.toggles.acceptRsvpNotes'](),
+			testid: 'template-edit-accept-rsvp-notes'
 		},
 		{
 			key: 'public_pronoun_distribution',
