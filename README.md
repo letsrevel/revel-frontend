@@ -28,6 +28,37 @@ Unlike the Backend, this was _shamelessly_ vibe coded using Claude Code. This co
 
 ---
 
+## 📸 Screenshots
+
+<p align="center">
+  <img src="docs/images/event-detail.png" alt="Event detail page (dark mode)" width="800"/>
+  <br/>
+  <em>Event detail page in dark mode</em>
+</p>
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="docs/images/event-discovery-dark.png" alt="Event discovery (dark mode)" width="400"/>
+      <br/>
+      <em>Event discovery — dark mode</em>
+    </td>
+    <td align="center" width="50%">
+      <img src="docs/images/event-discovery-light.png" alt="Event discovery (light mode)" width="400"/>
+      <br/>
+      <em>The same page in light mode</em>
+    </td>
+  </tr>
+</table>
+
+<p align="center">
+  <img src="docs/images/mobile.png" alt="Mobile views" width="800"/>
+  <br/>
+  <em>Mobile-first: home, event detail, and discovery on a phone</em>
+</p>
+
+---
+
 ## 🌟 Philosophy & Design Principles
 
 This frontend embodies Revel's core values:
