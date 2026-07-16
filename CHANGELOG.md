@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.69.0] - 2026-07-16
+
+### Added
+
+- **Attendee notes on RSVPs**: organizers can opt in per event ("Accept a note with RSVPs" in the RSVP options, also available on recurring-series templates) to collect an optional note (up to 500 characters) with each RSVP, including guest RSVPs. Attendees see a note dialog when RSVPing and can edit or clear their note by RSVPing again. Organizers see notes in the attendees list, and can add or edit a note when creating or editing an RSVP on an attendee's behalf.
+
 ## [1.68.1] - 2026-07-16
 
 ### Fixed
