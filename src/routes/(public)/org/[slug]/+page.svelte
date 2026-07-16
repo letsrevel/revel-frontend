@@ -172,10 +172,18 @@
 		<!-- Cover Image or Gradient -->
 		<div class="relative h-48 w-full md:h-64 lg:h-80">
 			{#if coverUrl}
+				<!-- Blurred backdrop fills the ultra-wide strip; the real image is never cropped -->
+				<img
+					src={coverUrl}
+					alt=""
+					aria-hidden="true"
+					class="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl brightness-75"
+					loading="eager"
+				/>
 				<img
 					src={coverUrl}
 					alt="{organization.name} cover"
-					class="h-full w-full object-cover"
+					class="relative h-full w-full object-contain"
 					loading="eager"
 				/>
 				<!-- Gradient overlay -->
