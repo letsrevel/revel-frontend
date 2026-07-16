@@ -539,6 +539,7 @@
 		"tableHeaderName": "Name",
 		"tableHeaderEmail": "Email",
 		"tableHeaderStatus": "Status",
+		"tableHeaderNote": "Note",
 		"tableHeaderRsvpDate": "RSVP Date",
 		"tableHeaderActions": "Actions",
 		"statusLabelYes": "Yes",
@@ -574,7 +575,11 @@
 		"createModalSubmit": "Add attendee",
 		"createModalSubmitting": "Adding...",
 		"createSuccess": "RSVP saved",
-		"createError": "Failed to add attendee"
+		"createError": "Failed to add attendee",
+		"noteLabel": "Note",
+		"noteFieldLabel": "Note (optional)",
+		"noteExpand": "Show more",
+		"noteCollapse": "Show less"
 	},
 	"attendeesAdminPage": {
 		"title": "Manage Attendees - Revel",
@@ -1148,6 +1153,8 @@
 		"rsvpOptions": "RSVP Options",
 		"rsvpDeadline": "RSVP Deadline",
 		"rsvpDeadlineHint": "Last date and time to RSVP (timezone: {timezone})",
+		"acceptRsvpNotes": "Accept a note with RSVPs",
+		"acceptRsvpNotesHint": "Attendees can attach an optional short note (max 500 characters) when they RSVP.",
 		"capacity": "Capacity and waitlist",
 		"maxAttendees": "Maximum Attendees",
 		"unlimited": "Unlimited",
@@ -4990,6 +4997,21 @@
 		"no_label": "RSVP No - I'm not attending",
 		"no_button": "No"
 	},
+	"rsvpNoteDialog": {
+		"title": "Confirm your RSVP",
+		"description": "You're answering “{answer}”. You can add an optional note for the organizers.",
+		"answerYes": "Yes, I'll attend",
+		"answerMaybe": "Maybe",
+		"answerNo": "No, I can't attend",
+		"noteLabel": "Note for the organizers (optional)",
+		"notePlaceholder": "Anything the organizers should know…",
+		"counter": "{count}/{max}",
+		"cancel": "Cancel",
+		"confirmYes": "RSVP Yes",
+		"confirmMaybe": "RSVP Maybe",
+		"confirmNo": "RSVP No",
+		"submitting": "Submitting…"
+	},
 	"rsvpCard": {
 		"rsvpd": "RSVP'd",
 		"going": "Going",
@@ -6183,6 +6205,7 @@
 				"requiresFullProfile": "Require complete attendee profile",
 				"potluckOpen": "Enable potluck coordination",
 				"acceptInvitationRequests": "Accept invitation requests",
+				"acceptRsvpNotes": "Accept a note with RSVPs",
 				"publicPronounDistribution": "Show pronoun distribution publicly",
 				"canAttendWithoutLogin": "Allow guest attendance",
 				"openEnded": "Open-ended (no end time shown to attendees)"
@@ -6887,6 +6910,7 @@
 	"eventRSVP.unclaimPotluckItemsMessageMany": "You've claimed {count} potluck items for this event. Changing your RSVP to \"Maybe\" or \"No\" will automatically unclaim all these items. Are you sure you want to proceed?",
 	"eventRSVP.yesChangeRsvp": "Yes, change RSVP",
 	"eventRSVP.cancel": "Cancel",
+	"eventRSVP.noteNotSaved": "Your RSVP was recorded, but the note wasn't saved — this event no longer accepts RSVP notes.",
 	"eventSeriesCard.byOrganization": "by {name}",
 	"eventSeriesCard.eventSeries": "Event Series",
 	"eventSeriesCard.moreTags": "+{count} more",

@@ -15,6 +15,7 @@
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import EssentialsStep from '$lib/components/events/admin/EssentialsStep.svelte';
 	import DetailsStep from '$lib/components/events/admin/DetailsStep.svelte';
+	import { buildRecurringTemplateCreateData } from '$lib/components/events/admin/event-payload';
 	import RecurrencePicker from './RecurrencePicker.svelte';
 	import RecurrenceSummary from './RecurrenceSummary.svelte';
 	import { mutualExclusionGuard } from '$lib/utils/recurrence';
@@ -81,6 +82,7 @@
 		check_in_ends_at: null,
 		potluck_open: false,
 		accept_invitation_requests: false,
+		accept_rsvp_notes: false,
 		apply_before: null,
 		can_attend_without_login: false,
 		requires_full_profile: false,
@@ -314,33 +316,7 @@
 				throw new Error(m['eventWizard.error_fixValidation']());
 			}
 
-			const eventPayload: EventCreateSchema = {
-				name,
-				start: startIso,
-				city_id: cityId,
-				visibility: formData.visibility ?? 'public',
-				// Backend enum is wider than our generated type — matches EventWizard pattern
-				event_type: (formData.event_type ?? 'public') as EventCreateSchema['event_type'],
-				end: toISOString(formData.end),
-				description: formData.description?.trim() || null,
-				address: formData.address?.trim() || null,
-				address_visibility: formData.address_visibility ?? 'public',
-				rsvp_before: toISOString(formData.rsvp_before),
-				max_attendees: formData.max_attendees || undefined,
-				max_tickets_per_user: formData.max_tickets_per_user ?? 1,
-				waitlist_open: formData.waitlist_open ?? false,
-				invitation_message: formData.invitation_message?.trim() || null,
-				check_in_starts_at: toISOString(formData.check_in_starts_at),
-				check_in_ends_at: toISOString(formData.check_in_ends_at),
-				potluck_open: formData.potluck_open ?? false,
-				accept_invitation_requests: formData.accept_invitation_requests ?? false,
-				apply_before: toISOString(formData.apply_before),
-				can_attend_without_login: formData.can_attend_without_login ?? false,
-				requires_full_profile: formData.requires_full_profile ?? false,
-				venue_id: formData.venue_id ?? null,
-				location_maps_url: formData.location_maps_url ?? null,
-				location_maps_embed: formData.location_maps_embed ?? null
-			};
+			const eventPayload = buildRecurringTemplateCreateData(formData, name, startIso, cityId);
 
 			const body: RecurringEventCreateSchema = {
 				event: eventPayload,

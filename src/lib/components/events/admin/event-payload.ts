@@ -39,7 +39,51 @@ export function buildEventCreateData(
 		status: 'draft', // Create as draft by default
 		requires_ticket: formData.requires_ticket || false, // Send explicit false when unchecked
 		requires_full_profile: formData.requires_full_profile || false,
+		accept_rsvp_notes: formData.accept_rsvp_notes || false,
 		venue_id: formData.venue_id || null
+	};
+}
+
+/**
+ * Build the event-template payload for RecurringEventWizard's create flow.
+ * Unlike `buildEventCreateData` (draft essentials only), the recurring wizard
+ * submits the full template in one shot, so every DetailsStep-driven field must
+ * be echoed here — an omitted optional boolean silently falls back to the
+ * backend default. `name`/`startIso`/`cityId` are passed explicitly because the
+ * caller validates them (non-null) before invoking.
+ */
+export function buildRecurringTemplateCreateData(
+	formData: EventFormPayloadData,
+	name: string,
+	startIso: string,
+	cityId: number
+): EventCreateSchema {
+	return {
+		name,
+		start: startIso,
+		city_id: cityId,
+		visibility: formData.visibility ?? 'public',
+		event_type: formData.event_type ?? 'public',
+		end: toISOString(formData.end),
+		description: formData.description?.trim() || null,
+		address: formData.address?.trim() || null,
+		address_visibility: formData.address_visibility ?? 'public',
+		rsvp_before: toISOString(formData.rsvp_before),
+		max_attendees: formData.max_attendees || undefined,
+		max_tickets_per_user: formData.max_tickets_per_user ?? 1,
+		waitlist_open: formData.waitlist_open ?? false,
+		invitation_message: formData.invitation_message?.trim() || null,
+		check_in_starts_at: toISOString(formData.check_in_starts_at),
+		check_in_ends_at: toISOString(formData.check_in_ends_at),
+		potluck_open: formData.potluck_open ?? false,
+		accept_invitation_requests: formData.accept_invitation_requests ?? false,
+		accept_rsvp_notes: formData.accept_rsvp_notes ?? false,
+		apply_before: toISOString(formData.apply_before),
+		can_attend_without_login: formData.can_attend_without_login ?? false,
+		requires_full_profile: formData.requires_full_profile ?? false,
+		venue_id: formData.venue_id ?? null,
+		location_maps_url: formData.location_maps_url ?? null,
+		location_maps_embed: formData.location_maps_embed ?? null
 	};
 }
 
@@ -72,6 +116,7 @@ export function buildWizardStep1UpdateData(
 		check_in_ends_at: toISOString(formData.check_in_ends_at),
 		potluck_open: formData.potluck_open || false,
 		accept_invitation_requests: formData.accept_invitation_requests || false,
+		accept_rsvp_notes: formData.accept_rsvp_notes || false,
 		apply_before: toISOString(formData.apply_before),
 		can_attend_without_login: formData.can_attend_without_login || false,
 		requires_full_profile: formData.requires_full_profile || false,
@@ -105,6 +150,7 @@ export function buildWizardStep2UpdateData(
 		check_in_ends_at: toISOString(formData.check_in_ends_at),
 		potluck_open: formData.potluck_open || false,
 		accept_invitation_requests: formData.accept_invitation_requests || false,
+		accept_rsvp_notes: formData.accept_rsvp_notes || false,
 		apply_before: toISOString(formData.apply_before),
 		can_attend_without_login: formData.can_attend_without_login || false,
 		requires_full_profile: formData.requires_full_profile || false,
@@ -145,6 +191,7 @@ export function buildEditorUpdateData(
 		check_in_ends_at: toISOString(formData.check_in_ends_at),
 		potluck_open: formData.potluck_open || false,
 		accept_invitation_requests: formData.accept_invitation_requests || false,
+		accept_rsvp_notes: formData.accept_rsvp_notes || false,
 		public_pronoun_distribution: formData.public_pronoun_distribution || false,
 		apply_before: toISOString(formData.apply_before),
 		can_attend_without_login: formData.can_attend_without_login || false,

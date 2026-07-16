@@ -44,6 +44,7 @@
 	let editingRsvp = $state<RsvpDetailSchema | null>(null);
 	let showEditModal = $state(false);
 	let selectedStatus = $state<'yes' | 'maybe' | 'no'>('yes');
+	let selectedNote = $state('');
 
 	// Delete confirmation state
 	let deletingRsvp = $state<RsvpDetailSchema | null>(null);
@@ -76,10 +77,18 @@
 
 	// Update RSVP mutation
 	const updateRsvpMutation = createMutation(() => ({
-		mutationFn: async ({ rsvpId, status }: { rsvpId: string; status: 'yes' | 'maybe' | 'no' }) => {
+		mutationFn: async ({
+			rsvpId,
+			status,
+			note
+		}: {
+			rsvpId: string;
+			status: 'yes' | 'maybe' | 'no';
+			note: string;
+		}) => {
 			const response = await eventadminrsvpsUpdateRsvp({
 				path: { event_id: data.event.id, rsvp_id: rsvpId },
-				body: { status },
+				body: { status, note },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
@@ -191,10 +200,18 @@
 
 	// Create RSVP on behalf of a member mutation
 	const createRsvpMutation = createMutation(() => ({
-		mutationFn: async ({ userId, status }: { userId: string; status: 'yes' | 'maybe' | 'no' }) => {
+		mutationFn: async ({
+			userId,
+			status,
+			note
+		}: {
+			userId: string;
+			status: 'yes' | 'maybe' | 'no';
+			note: string;
+		}) => {
 			const response = await eventadminrsvpsCreateRsvp({
 				path: { event_id: data.event.id },
-				body: { user_id: userId, status },
+				body: { user_id: userId, status, note },
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
@@ -223,8 +240,8 @@
 	/**
 	 * Handle create RSVP submit
 	 */
-	function handleCreateRsvp(userId: string, status: 'yes' | 'maybe' | 'no') {
-		createRsvpMutation.mutate({ userId, status });
+	function handleCreateRsvp(userId: string, status: 'yes' | 'maybe' | 'no', note: string) {
+		createRsvpMutation.mutate({ userId, status, note });
 	}
 
 	/**
@@ -361,7 +378,8 @@
 	 */
 	function openEditModal(rsvp: RsvpDetailSchema) {
 		editingRsvp = rsvp;
-		selectedStatus = rsvp.status as 'yes' | 'maybe' | 'no';
+		selectedStatus = rsvp.status;
+		selectedNote = rsvp.note ?? '';
 		showEditModal = true;
 	}
 
@@ -381,7 +399,8 @@
 
 		updateRsvpMutation.mutate({
 			rsvpId: editingRsvp.id,
-			status: selectedStatus
+			status: selectedStatus,
+			note: selectedNote
 		});
 	}
 
@@ -571,6 +590,7 @@
 	bind:open={showEditModal}
 	rsvp={editingRsvp}
 	bind:selectedStatus
+	bind:selectedNote
 	isPending={updateRsvpMutation.isPending}
 	onSubmit={submitRsvpUpdate}
 	onCancel={closeEditModal}
@@ -607,6 +627,8 @@
 <CreateRsvpDialog
 	bind:open={showCreateRsvpModal}
 	{organization}
+	eventId={data.event.id}
+	{accessToken}
 	isPending={createRsvpMutation.isPending}
 	onSubmit={handleCreateRsvp}
 	onCancel={() => (showCreateRsvpModal = false)}

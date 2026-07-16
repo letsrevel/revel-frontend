@@ -54,6 +54,25 @@ async function confirmUnclaimDialogIfShown(page: Page): Promise<void> {
 	}
 }
 
+/**
+ * The seeded potluck event accepts RSVP notes (backend #710 bootstrap), so
+ * every RSVP click opens the note-confirm dialog (#651) — after the unclaim
+ * warning, when both fire. Confirm it when it shows, tolerating the seed
+ * flag being off.
+ */
+async function confirmNoteDialogIfShown(page: Page): Promise<void> {
+	const confirmButton = page
+		.getByRole('dialog', { name: 'Confirm your RSVP' })
+		.getByRole('button', { name: /^RSVP (Yes|Maybe|No)$/ });
+	const shown = await confirmButton
+		.waitFor({ state: 'visible', timeout: 2_000 })
+		.then(() => true)
+		.catch(() => false);
+	if (shown) {
+		await confirmButton.click();
+	}
+}
+
 test.describe('J5 RSVP flow with potluck auto-release @p0', () => {
 	test('YES → add & claim potluck item → NO releases it', async ({ browser, isMobile }) => {
 		const context = await browser.newContext();
@@ -65,6 +84,7 @@ test.describe('J5 RSVP flow with potluck auto-release @p0', () => {
 		// --- RSVP YES ---
 		await openRsvpButtons(page);
 		await page.getByRole('button', { name: /^RSVP Yes/ }).click();
+		await confirmNoteDialogIfShown(page);
 		await expect(page.getByRole('status').filter({ hasText: "You're attending" })).toBeVisible();
 
 		// --- Attendee experience: add & claim our own potluck item ---
@@ -90,6 +110,7 @@ test.describe('J5 RSVP flow with potluck auto-release @p0', () => {
 		await openRsvpButtons(page);
 		await page.getByRole('button', { name: /^RSVP No/ }).click();
 		await confirmUnclaimDialogIfShown(page);
+		await confirmNoteDialogIfShown(page);
 		// Released + no longer attending → the claim button renders disabled.
 		await expect(page.getByRole('button', { name: `Claim ${itemName}` }).first()).toBeDisabled();
 
@@ -97,6 +118,7 @@ test.describe('J5 RSVP flow with potluck auto-release @p0', () => {
 		await gotoHydrated(page, EVENT_PATH);
 		await openRsvpButtons(page);
 		await page.getByRole('button', { name: /^RSVP Yes/ }).click();
+		await confirmNoteDialogIfShown(page);
 		await expect(page.getByRole('status').filter({ hasText: "You're attending" })).toBeVisible();
 		await openPotluckSection(page);
 		await expect(page.getByRole('button', { name: `Claim ${itemName}` }).first()).toBeEnabled();
@@ -105,6 +127,7 @@ test.describe('J5 RSVP flow with potluck auto-release @p0', () => {
 		await openRsvpButtons(page);
 		await page.getByRole('button', { name: /^RSVP No/ }).click();
 		await confirmUnclaimDialogIfShown(page);
+		await confirmNoteDialogIfShown(page);
 		await expect(page.getByRole('button', { name: `Claim ${itemName}` }).first()).toBeDisabled();
 
 		await context.close();

@@ -539,6 +539,7 @@
 		"tableHeaderName": "Name",
 		"tableHeaderEmail": "Email",
 		"tableHeaderStatus": "Status",
+		"tableHeaderNote": "Nota",
 		"tableHeaderRsvpDate": "RSVP Date",
 		"tableHeaderActions": "Actions",
 		"statusLabelYes": "Yes",
@@ -574,7 +575,11 @@
 		"createModalSubmit": "Aggiungi partecipante",
 		"createModalSubmitting": "Aggiunta in corso...",
 		"createSuccess": "RSVP salvato",
-		"createError": "Impossibile aggiungere il partecipante"
+		"createError": "Impossibile aggiungere il partecipante",
+		"noteLabel": "Nota",
+		"noteFieldLabel": "Nota (facoltativa)",
+		"noteExpand": "Mostra di più",
+		"noteCollapse": "Mostra meno"
 	},
 	"attendeesAdminPage": {
 		"title": "Gestisci Partecipanti - Revel",
@@ -1148,6 +1153,8 @@
 		"rsvpOptions": "Opzioni di RSVP",
 		"rsvpDeadline": "Scadenza RSVP",
 		"rsvpDeadlineHint": "Data e ora ultime per l'RSVP (fuso orario: {timezone})",
+		"acceptRsvpNotes": "Accetta una nota con gli RSVP",
+		"acceptRsvpNotesHint": "I partecipanti possono allegare una breve nota facoltativa (max 500 caratteri) al loro RSVP.",
 		"capacity": "Capienza e lista d'attesa",
 		"maxAttendees": "Numero massimo di partecipanti",
 		"unlimited": "Illimitato",
@@ -4990,6 +4997,21 @@
 		"no_label": "Conferma No - Non parteciperò",
 		"no_button": "No"
 	},
+	"rsvpNoteDialog": {
+		"title": "Conferma il tuo RSVP",
+		"description": "Stai rispondendo “{answer}”. Puoi aggiungere una nota facoltativa per gli organizzatori.",
+		"answerYes": "Sì, parteciperò",
+		"answerMaybe": "Forse",
+		"answerNo": "No, non posso venire",
+		"noteLabel": "Nota per gli organizzatori (facoltativa)",
+		"notePlaceholder": "Qualcosa che gli organizzatori dovrebbero sapere…",
+		"counter": "{count}/{max}",
+		"cancel": "Annulla",
+		"confirmYes": "RSVP Sì",
+		"confirmMaybe": "RSVP Forse",
+		"confirmNo": "RSVP No",
+		"submitting": "Invio in corso…"
+	},
 	"rsvpCard": {
 		"rsvpd": "RSVP'd",
 		"going": "Going",
@@ -6183,6 +6205,7 @@
 				"requiresFullProfile": "Require complete attendee profile",
 				"potluckOpen": "Enable potluck coordination",
 				"acceptInvitationRequests": "Accept invitation requests",
+				"acceptRsvpNotes": "Accetta una nota con gli RSVP",
 				"publicPronounDistribution": "Show pronoun distribution publicly",
 				"canAttendWithoutLogin": "Allow guest attendance",
 				"openEnded": "A tempo indeterminato (nessun orario di fine per i partecipanti)"
@@ -6887,6 +6910,7 @@
 	"eventRSVP.unclaimPotluckItemsMessageMany": "Hai preso in carico {count} elementi del potluck per questo evento. Cambiando la tua risposta in \"Forse\" o \"No\" tutti questi elementi verranno automaticamente liberati. Vuoi davvero continuare?",
 	"eventRSVP.yesChangeRsvp": "Sì, cambia risposta",
 	"eventRSVP.cancel": "Annulla",
+	"eventRSVP.noteNotSaved": "Il tuo RSVP è stato registrato, ma la nota non è stata salvata — questo evento non accetta più note RSVP.",
 	"eventSeriesCard.byOrganization": "di {name}",
 	"eventSeriesCard.eventSeries": "Serie di eventi",
 	"eventSeriesCard.moreTags": "+{count} altri",
