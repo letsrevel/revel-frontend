@@ -4,6 +4,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
+	import { cn } from '$lib/utils/cn';
 	import type { RsvpStatus } from '$lib/api/generated/types.gen';
 
 	interface Props {
@@ -33,6 +34,25 @@
 		if (answer === 'maybe') return m['rsvpNoteDialog.answerMaybe']();
 		return m['rsvpNoteDialog.answerNo']();
 	});
+
+	// The confirm CTA mirrors the RSVP button the user clicked: same label
+	// ("RSVP Yes/Maybe/No") and the selected-state color of RSVPButtons.
+	const confirmLabel = $derived.by(() => {
+		if (answer === 'yes') return m['rsvpNoteDialog.confirmYes']();
+		if (answer === 'maybe') return m['rsvpNoteDialog.confirmMaybe']();
+		return m['rsvpNoteDialog.confirmNo']();
+	});
+
+	const confirmClasses = $derived(
+		cn(
+			answer === 'yes' &&
+				'bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:text-white dark:hover:bg-green-600',
+			answer === 'maybe' &&
+				'bg-yellow-500 text-white hover:bg-yellow-600 dark:bg-yellow-600 dark:text-white dark:hover:bg-yellow-700',
+			answer === 'no' &&
+				'bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:text-white dark:hover:bg-red-600'
+		)
+	);
 </script>
 
 <Dialog.Root {open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
@@ -64,8 +84,8 @@
 			<Button variant="outline" onclick={onCancel} disabled={isSubmitting}>
 				{m['rsvpNoteDialog.cancel']()}
 			</Button>
-			<Button onclick={() => onConfirm(note)} disabled={isSubmitting}>
-				{isSubmitting ? m['rsvpNoteDialog.submitting']() : m['rsvpNoteDialog.confirm']()}
+			<Button onclick={() => onConfirm(note)} disabled={isSubmitting} class={confirmClasses}>
+				{isSubmitting ? m['rsvpNoteDialog.submitting']() : confirmLabel}
 			</Button>
 		</Dialog.Footer>
 	</Dialog.Content>

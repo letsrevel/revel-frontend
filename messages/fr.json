@@ -4978,7 +4978,9 @@
 		"notePlaceholder": "Quelque chose que les organisateurs devraient savoir…",
 		"counter": "{count}/{max}",
 		"cancel": "Annuler",
-		"confirm": "Confirmer le RSVP",
+		"confirmYes": "RSVP Oui",
+		"confirmMaybe": "RSVP Peut-être",
+		"confirmNo": "RSVP Non",
 		"submitting": "Envoi en cours…"
 	},
 	"rsvpCard": {

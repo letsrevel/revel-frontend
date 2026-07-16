@@ -46,7 +46,9 @@ async function confirmNoteDialog(page: Page): Promise<void> {
 	const persisted = page.waitForResponse(
 		(r) => r.request().method() === 'POST' && /\/rsvp\//.test(r.url()) && r.ok()
 	);
-	await noteDialog(page).getByRole('button', { name: 'Confirm RSVP' }).click();
+	await noteDialog(page)
+		.getByRole('button', { name: /^RSVP (Yes|Maybe|No)$/ })
+		.click();
 	await persisted;
 }
 

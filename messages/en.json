@@ -5007,7 +5007,9 @@
 		"notePlaceholder": "Anything the organizers should know…",
 		"counter": "{count}/{max}",
 		"cancel": "Cancel",
-		"confirm": "Confirm RSVP",
+		"confirmYes": "RSVP Yes",
+		"confirmMaybe": "RSVP Maybe",
+		"confirmNo": "RSVP No",
 		"submitting": "Submitting…"
 	},
 	"rsvpCard": {

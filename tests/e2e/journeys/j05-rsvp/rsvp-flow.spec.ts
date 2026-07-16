@@ -63,7 +63,7 @@ async function confirmUnclaimDialogIfShown(page: Page): Promise<void> {
 async function confirmNoteDialogIfShown(page: Page): Promise<void> {
 	const confirmButton = page
 		.getByRole('dialog', { name: 'Confirm your RSVP' })
-		.getByRole('button', { name: 'Confirm RSVP' });
+		.getByRole('button', { name: /^RSVP (Yes|Maybe|No)$/ });
 	const shown = await confirmButton
 		.waitFor({ state: 'visible', timeout: 2_000 })
 		.then(() => true)
