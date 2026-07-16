@@ -47,9 +47,11 @@
 	const selectedUserId = $derived(selectedMember?.user.id ?? null);
 
 	/**
-	 * Select a member and best-effort prefill from their existing RSVP. The
-	 * admin create endpoint is a wholesale upsert (an omitted note clears a
-	 * stored one), so re-creating an RSVP must carry the current note along.
+	 * Select a member and best-effort prefill the NOTE from their existing
+	 * RSVP. The admin create endpoint is a wholesale upsert (an omitted note
+	 * clears a stored one), so re-creating an RSVP must carry the current note
+	 * along. The status radio is a deliberate choice — never prefill it, and
+	 * never overwrite a note the admin has already started typing.
 	 */
 	async function handleMemberSelect(member: OrganizationMemberSchema | null) {
 		selectedMember = member;
@@ -63,10 +65,10 @@
 				headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined
 			});
 			const existing = response.data?.results?.find((r) => r.user.id === member.user.id);
-			// Guard against a stale response after the admin picked someone else.
-			if (existing && selectedMember?.user.id === member.user.id) {
-				note = existing.note ?? '';
-				selectedStatus = existing.status;
+			// Guard against a stale response (admin picked someone else meanwhile)
+			// and against clobbering a note typed while the lookup was in flight.
+			if (existing?.note && selectedMember?.user.id === member.user.id && note === '') {
+				note = existing.note;
 			}
 		} catch {
 			// Prefill is best-effort — creating without it still works.

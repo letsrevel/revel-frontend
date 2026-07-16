@@ -8,7 +8,7 @@
 
 	const TRUNCATE_AT = 80;
 	let expanded = $state(false);
-	const isLong = $derived(note.length > TRUNCATE_AT);
+	const isLong = $derived(note.length > TRUNCATE_AT); // i18n-ignore (bare ellipsis below)
 	const shown = $derived(expanded || !isLong ? note : note.slice(0, TRUNCATE_AT) + '…');
 </script>
 

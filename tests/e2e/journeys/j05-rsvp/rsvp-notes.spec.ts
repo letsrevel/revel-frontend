@@ -36,6 +36,20 @@ function makeNotesEvent(acceptNotes: boolean) {
 	});
 }
 
+/**
+ * Confirm the note dialog and wait for the RSVP POST to land server-side.
+ * The success banner is transient (auto-hides, and invalidateAll re-renders
+ * the card), so callers assert the button's pressed state instead — gating
+ * on the response keeps a follow-up reload from racing the persist.
+ */
+async function confirmNoteDialog(page: Page): Promise<void> {
+	const persisted = page.waitForResponse(
+		(r) => r.request().method() === 'POST' && /\/rsvp\//.test(r.url()) && r.ok()
+	);
+	await noteDialog(page).getByRole('button', { name: 'Confirm RSVP' }).click();
+	await persisted;
+}
+
 test.describe('J5 RSVP notes @p2', () => {
 	test('RSVP with a note lands in the admin attendee list', async ({ browser, asOwner }) => {
 		const [event, attendee] = await Promise.all([
@@ -56,14 +70,16 @@ test.describe('J5 RSVP notes @p2', () => {
 		await expect(dialog).toBeVisible();
 		const note = `${uniqueName('Note')} — bringing a plus one`;
 		await dialog.getByLabel(NOTE_LABEL).fill(note);
-		await dialog.getByRole('button', { name: 'Confirm RSVP' }).click();
-		await expect(page.getByRole('status').filter({ hasText: "You're attending" })).toBeVisible();
+		await confirmNoteDialog(page);
 		await context.close();
 
-		// The note shows on the admin Manage Attendees page.
+		// The note shows on the admin Manage Attendees page. It renders twice
+		// (desktop table + mobile card list, one CSS-hidden) — filter to visible.
 		await gotoHydrated(asOwner, `/org/${event.orgSlug}/admin/events/${event.id}/attendees`);
 		await waitForClientAuth(asOwner);
-		await expect(asOwner.getByText(note)).toBeVisible({ timeout: 15_000 });
+		await expect(asOwner.getByText(note).filter({ visible: true })).toBeVisible({
+			timeout: 15_000
+		});
 	});
 
 	test('no note dialog when the event does not accept notes', async ({ browser }) => {
@@ -106,8 +122,7 @@ test.describe('J5 RSVP notes @p2', () => {
 		const dialog = noteDialog(page);
 		await expect(dialog).toBeVisible();
 		await dialog.getByLabel(NOTE_LABEL).fill(firstNote);
-		await dialog.getByRole('button', { name: 'Confirm RSVP' }).click();
-		await expect(page.getByRole('status').filter({ hasText: "You're attending" })).toBeVisible();
+		await confirmNoteDialog(page);
 
 		// A fresh load pulls the stored note from my-status and prefills it.
 		await gotoHydrated(page, event.path);
@@ -120,8 +135,11 @@ test.describe('J5 RSVP notes @p2', () => {
 		// Editing overwrites the stored note.
 		const secondNote = uniqueName('Second');
 		await dialog.getByLabel(NOTE_LABEL).fill(secondNote);
-		await dialog.getByRole('button', { name: 'Confirm RSVP' }).click();
-		await expect(page.getByRole('status').filter({ hasText: 'You might attend' })).toBeVisible();
+		await confirmNoteDialog(page);
+		await expect(page.getByRole('button', { name: /^RSVP Maybe/ })).toHaveAttribute(
+			'aria-pressed',
+			'true'
+		);
 
 		// The updated note round-trips; clearing the textarea clears it.
 		await gotoHydrated(page, event.path);
@@ -131,8 +149,11 @@ test.describe('J5 RSVP notes @p2', () => {
 		await expect(dialog).toBeVisible();
 		await expect(dialog.getByLabel(NOTE_LABEL)).toHaveValue(secondNote);
 		await dialog.getByLabel(NOTE_LABEL).fill('');
-		await dialog.getByRole('button', { name: 'Confirm RSVP' }).click();
-		await expect(page.getByRole('status').filter({ hasText: "You're attending" })).toBeVisible();
+		await confirmNoteDialog(page);
+		await expect(page.getByRole('button', { name: /^RSVP Yes/ })).toHaveAttribute(
+			'aria-pressed',
+			'true'
+		);
 
 		// Cleared for real (server-side), not just locally.
 		await gotoHydrated(page, event.path);
