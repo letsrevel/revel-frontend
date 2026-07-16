@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.68.1] - 2026-07-16
+
+### Fixed
+
+- Organization cover images are no longer cropped in the org profile hero: the full image is shown centered, with a blurred copy of itself filling the rest of the banner strip. Non-panoramic covers (e.g. Facebook-format cover art) previously lost most of their height to the crop.
+
 ## [1.68.0] - 2026-07-14
 
 ### Changed
