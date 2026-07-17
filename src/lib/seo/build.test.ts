@@ -66,6 +66,23 @@ describe('buildSeo', () => {
 		expect(cfg.og.logo).toBe('https://letsrevel.io/og-logo-v1.png');
 	});
 
+	it('event: strips markdown from the description (meta, og and twitter)', () => {
+		const cfg = buildSeo({
+			kind: 'event',
+			url: url('/events/acme/my-event'),
+			lang: 'en',
+			event: {
+				...fakeEvent,
+				description: '# Big Party\n## *A night to remember*\nCome join **all of us**!'
+			} as typeof fakeEvent,
+			indexable: true
+		});
+		const clean = 'Big Party A night to remember Come join all of us!';
+		expect(cfg.description).toBe(clean);
+		expect(cfg.og.description).toBe(clean);
+		expect(cfg.twitter.description).toBe(clean);
+	});
+
 	it('event non-indexable: emits noindex,follow', () => {
 		const cfg = buildSeo({
 			kind: 'event',
