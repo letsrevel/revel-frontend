@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.69.1] - 2026-07-17
+
+### Fixed
+
+- `robots.txt` no longer exempts search crawlers (Googlebot, Bingbot, and others) from the private-area disallows: per-bot `Allow: /` groups silently replaced the `*` rules, letting those bots crawl `/dashboard`, `/account`, `/api/`, org admin pages, and duplicate-content `?page=` URLs. Crawl policy is now coherent: search crawlers allowed under the shared rules, AI-training bots blocked.
+- Raw Markdown (`#`, `**`, `*`) no longer leaks into search-result and social-share descriptions for events, organizations, and series — descriptions are stripped of Markdown and HTML before being used as meta text.
+
 ## [1.69.0] - 2026-07-16
 
 ### Added
