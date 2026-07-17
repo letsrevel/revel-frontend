@@ -3,4 +3,4 @@ export type { Lang } from './constants';
 export type { SeoConfig, Robots } from './types';
 export { buildSeo, type BuildSeoInput, type SeoPageSlug } from './build';
 export { default as SeoHead } from './SeoHead.svelte';
-export { stripMarkdown } from './text';
+export { stripMarkdown, stripMarkup } from './text';

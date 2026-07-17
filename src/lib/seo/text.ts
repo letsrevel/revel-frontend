@@ -20,6 +20,15 @@ export function stripHtml(html: string | null | undefined): string {
 }
 
 /**
+ * Strip both Markdown and HTML markup for plain-text descriptions.
+ * Markdown must be stripped first: its rules are line-anchored (headings,
+ * lists, blockquotes) and stripHtml collapses the newlines they match on.
+ */
+export function stripMarkup(s: string | null | undefined): string {
+	return stripHtml(stripMarkdown(s));
+}
+
+/**
  * Strip markdown formatting from a string for plain text descriptions.
  * Handles common markdown syntax: headers, bold, italic, links, lists, code blocks, etc.
  */

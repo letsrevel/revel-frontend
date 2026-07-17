@@ -15,7 +15,7 @@ import {
 	type Lang
 } from './constants';
 import type { SeoConfig } from './types';
-import { truncate, stripHtml } from './text';
+import { truncate, stripMarkup } from './text';
 import { sameUrlHreflang, landingPageHreflang } from './hreflang';
 import {
 	generateEventJsonLd,
@@ -259,7 +259,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 
 		case 'event': {
 			const event = input.event;
-			const desc = stripHtml(event.description);
+			const desc = stripMarkup(event.description);
 			const truncated = truncate(desc, 155);
 			const image = getEventImage(event);
 			const title = `${event.name} | Revel`;
@@ -303,7 +303,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 
 		case 'org': {
 			const org = input.org;
-			const desc = stripHtml(org.description);
+			const desc = stripMarkup(org.description);
 			const truncated = truncate(desc, 155);
 			const image = getOrgImage(org);
 			const title = `${org.name} | Revel`;
@@ -345,7 +345,7 @@ function buildSeoConfig(input: BuildSeoInput): SeoConfig {
 
 		case 'series': {
 			const series = input.series;
-			const desc = stripHtml(series.description);
+			const desc = stripMarkup(series.description);
 			const truncated = truncate(desc, 155);
 			const image = getSeriesImage(series);
 			const title = `${series.name} | ${series.organization.name} | Revel`;
