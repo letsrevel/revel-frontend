@@ -17,23 +17,20 @@
 	} from '$lib/schemas/guestAttendance';
 	import {
 		eventpublicguestGuestTicketCheckout,
-		eventpublicguestGuestTicketPwycCheckout,
-		eventpublicticketsGetTierSeatAvailability
+		eventpublicguestGuestTicketPwycCheckout
 	} from '$lib/api';
 	import { handleGuestAttendanceError } from '$lib/utils/guestAttendance';
+	import { releaseAnonymousHolds } from '$lib/utils/seat-holds';
+	import type { SeatHoldController } from '$lib/components/tickets/seat-hold-controller.svelte';
 	import {
 		createCheckoutSession,
 		createReservationRetry,
 		CheckoutSessionError
 	} from '$lib/utils/checkout-session';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
-	import type {
-		SeatAssignmentMode,
-		VenueSeatSchema,
-		SectorAvailabilitySchema,
-		TicketPurchaseItem
-	} from '$lib/api/generated/types.gen';
+	import type { SeatAssignmentMode, TicketPurchaseItem } from '$lib/api/generated/types.gen';
 	import CheckoutBillingSection from '$lib/components/tickets/CheckoutBillingSection.svelte';
+	import { bestAvailableFailureMessage } from '$lib/components/tickets/purchase-error';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import GuestTicketSuccess from './GuestTicketSuccess.svelte';
 	import GuestTicketTierInfo from './GuestTicketTierInfo.svelte';
@@ -112,21 +109,27 @@
 	let fieldErrors = $state<Record<string, string>>({});
 	let guestNameError = $state('');
 
-	// Seat selection state
-	let seatAvailability = $state<SectorAvailabilitySchema | null>(null);
-	let isLoadingSeats = $state(false);
-	let seatLoadError = $state<string | null>(null);
-	let selectedSeatIds = $state<string[]>([]);
+	// Seat selection IS the caller's server-side hold (#657): the controller is
+	// instantiated by GuestTicketSeatSection and handed up for submit/close.
+	let seatController = $state<SeatHoldController | null>(null);
+	const heldSeatIds = $derived(seatController?.myHolds ?? []);
 	let seatSelectionError = $state('');
+	let accessibleRequired = $state(false);
+	let bestAvailableError = $state('');
+	// Set when checkout took over the holds (they must NOT be released on close):
+	// online reserve consumes them; the email flow keeps them for confirmation.
+	let purchaseHandedOff = false;
 
 	// Computed values
 	const isPwyc = $derived(tier.price_type === 'pwyc');
 	const isOnlinePayment = $derived(tier.payment_method === 'online');
 
-	// Seat assignment mode
+	// Seat assignment mode ('random' was removed in seating phase 1; legacy tiers
+	// were migrated server-side to best_available or user_choice)
 	const seatAssignmentMode = $derived<SeatAssignmentMode>(tier.seat_assignment_mode ?? 'none');
 	const isUserChoiceSeat = $derived(seatAssignmentMode === 'user_choice');
-	const isRandomSeat = $derived(seatAssignmentMode === 'random');
+	const isBestAvailableSeat = $derived(seatAssignmentMode === 'best_available');
+	const hasSeatSection = $derived(isUserChoiceSeat || isBestAvailableSeat);
 
 	// Venue/sector info for display
 	const tierVenue = $derived(tier.venue ?? null);
@@ -141,11 +144,6 @@
 		}
 		return undefined;
 	});
-
-	// Computed: available seats from the sector
-	const availableSeats = $derived<VenueSeatSchema[]>(
-		seatAvailability?.seats?.filter((s) => s.available && s.id) ?? []
-	);
 
 	// Tier-level max tickets per user (can override event-level setting)
 	const tierMaxTicketsPerUser = $derived<number | null>(tier.max_tickets_per_user ?? null);
@@ -202,48 +200,6 @@
 		return typeof tier.pwyc_max === 'string' ? parseFloat(tier.pwyc_max) : tier.pwyc_max;
 	});
 
-	// Fetch seat availability when dialog opens with user_choice mode
-	async function fetchSeatAvailability() {
-		if (!isUserChoiceSeat || !eventId || !tier.id) return;
-
-		isLoadingSeats = true;
-		seatLoadError = null;
-
-		try {
-			const response = await eventpublicticketsGetTierSeatAvailability({
-				path: { event_id: eventId, tier_id: tier.id }
-				// No auth headers for guest users
-			});
-
-			if (response.error) {
-				seatLoadError = m['guestTicketDialog.failedToLoadSeats']();
-				console.error('Seat availability error:', response.error);
-			} else if (response.data) {
-				seatAvailability = response.data;
-			}
-		} catch (err) {
-			seatLoadError = m['guestTicketDialog.failedToLoadSeats']();
-			console.error('Seat availability fetch error:', err);
-		} finally {
-			isLoadingSeats = false;
-		}
-	}
-
-	// Toggle seat selection
-	function toggleSeat(seatId: string) {
-		// Clear error when user makes a selection
-		seatSelectionError = '';
-
-		const index = selectedSeatIds.indexOf(seatId);
-		if (index >= 0) {
-			// Deselect
-			selectedSeatIds = selectedSeatIds.filter((id) => id !== seatId);
-		} else if (selectedSeatIds.length < quantity) {
-			// Select (up to quantity)
-			selectedSeatIds = [...selectedSeatIds, seatId];
-		}
-	}
-
 	// Quantity control functions
 	function incrementQuantity() {
 		if (quantity < effectiveMaxQuantity) {
@@ -277,16 +233,23 @@
 		}
 	});
 
-	// Adjust seat selection when quantity changes (remove excess selections)
+	// Release the newest excess holds when quantity shrinks
 	$effect(() => {
-		if (selectedSeatIds.length > quantity) {
-			selectedSeatIds = selectedSeatIds.slice(0, quantity);
+		if (seatController && heldSeatIds.length > quantity) {
+			void seatController.trimTo(quantity);
 		}
 	});
 
-	// Close dialog if user becomes authenticated (e.g. token refresh after page load)
+	// Close dialog if user becomes authenticated (token refresh or in-tab login).
+	// IDENTITY CRITICAL: guest holds belong to the guest-cookie identity — with a
+	// Bearer token present an SDK release would target the authed user instead,
+	// so release via the raw no-auth registry path BEFORE the force-close.
 	$effect(() => {
 		if (open && authStore.isAuthenticated) {
+			if (untrack(() => seatController)) {
+				purchaseHandedOff = true; // skip the SDK release in the reset effect
+				void releaseAnonymousHolds();
+			}
 			open = false;
 			onClose();
 		}
@@ -313,12 +276,18 @@
 			reservationRetry.clear();
 			quantity = 1;
 			guestNames = [''];
-			selectedSeatIds = [];
-			seatAvailability = null;
-			seatLoadError = null;
 			seatSelectionError = '';
+			accessibleRequired = false;
+			bestAvailableError = '';
+			// Closed without handing off to checkout: release the server holds
+			// (fire-and-forget — never block closing; they expire anyway).
+			const controller = untrack(() => seatController);
+			seatController = null;
+			if (controller && !purchaseHandedOff) void controller.releaseAll();
+			purchaseHandedOff = false;
 		} else {
 			untrack(() => {
+				purchaseHandedOff = false;
 				// Initialize guest names with primary guest name if available
 				const primaryName =
 					formData.first_name && formData.last_name
@@ -329,10 +298,6 @@
 				if (isPwyc) {
 					// Set default PWYC amount
 					formData.pwyc = minAmount().toFixed(2);
-				}
-				// Fetch seat availability if user_choice mode
-				if (isUserChoiceSeat) {
-					fetchSeatAvailability();
 				}
 			});
 		}
@@ -437,9 +402,9 @@
 		// Validate billing section if open
 		if (billingSection && !billingSection.validate()) return;
 
-		// Validate seat selection for user_choice mode
-		if (isUserChoiceSeat && selectedSeatIds.length !== quantity) {
-			const remaining = quantity - selectedSeatIds.length;
+		// Validate seat selection for user_choice mode (selection = live holds)
+		if (isUserChoiceSeat && heldSeatIds.length !== quantity) {
+			const remaining = quantity - heldSeatIds.length;
 			seatSelectionError =
 				remaining === 1
 					? m['guestTicketDialog.pleaseSelectMoreSeatOne']()
@@ -447,6 +412,7 @@
 			return;
 		}
 		seatSelectionError = '';
+		bestAvailableError = '';
 
 		isSubmitting = true;
 		errorMessage = null;
@@ -463,9 +429,11 @@
 					guest_name: guestName
 				};
 
-				// Add seat_id for user_choice mode
-				if (isUserChoiceSeat && selectedSeatIds[index]) {
-					ticket.seat_id = selectedSeatIds[index];
+				// Add seat_id for user_choice mode (the buyer's held seats). Other
+				// modes send an explicit null — best_available seats are assigned
+				// server-side from the buyer's live holds, never via seat_id.
+				if (isUserChoiceSeat && heldSeatIds[index]) {
+					ticket.seat_id = heldSeatIds[index];
 				} else {
 					ticket.seat_id = null;
 				}
@@ -492,8 +460,31 @@
 			// changed parameters fall through and reserve afresh.
 			const resumedUrl = await reservationRetry.resume(fingerprint);
 			if (resumedUrl) {
+				// The resumed reservation consumed the holds when it was created.
+				purchaseHandedOff = true;
 				window.location.href = resumedUrl;
 				return;
+			}
+
+			// best_available + online payment: hold the best adjacent block now —
+			// the reserve call below consumes it. Free/offline tiers skip this
+			// (purchase happens at email-confirm time, after any hold expired).
+			if (isBestAvailableSeat && isOnlinePayment && seatController) {
+				// Retry after a failed checkout: drop any stale block first so the
+				// server picks a fresh one instead of stacking holds (mirrors
+				// TicketConfirmationDialog.handleConfirm). Unconditional because in
+				// best_available mode myHolds is never seeded from the server, so a
+				// prior session's holds on this guest cookie are invisible locally.
+				await seatController.releaseAll();
+				const holdResult = await seatController.holdBestAvailable(
+					tier.id,
+					quantity,
+					accessibleRequired
+				);
+				if (!holdResult.ok) {
+					bestAvailableError = bestAvailableFailureMessage(holdResult);
+					return;
+				}
 			}
 
 			let response;
@@ -550,6 +541,10 @@
 					typeof errorDetail === 'string' ? errorDetail : m['guestTicketDialog.failedToCheckout']()
 				);
 			}
+
+			// Checkout succeeded: holds are checkout's responsibility now (online:
+			// consumed by the reserve; email flow: kept live for confirmation).
+			purchaseHandedOff = true;
 
 			// Check response type
 			if (response.data && response.data.requires_payment && response.data.reservation_id) {
@@ -659,21 +654,26 @@
 						/>
 					{/if}
 
-					<!-- Seat Selection (if applicable) -->
-					<GuestTicketSeatSection
-						{isUserChoiceSeat}
-						{isRandomSeat}
-						{tierVenue}
-						{tierSector}
-						{tierSectorDescription}
-						{isLoadingSeats}
-						{seatLoadError}
-						{availableSeats}
-						{selectedSeatIds}
-						{quantity}
-						{seatSelectionError}
-						onToggle={toggleSeat}
-					/>
+					<!-- Seat Selection: only mounted for seated tiers (the section
+					     instantiates the seat-hold controller + queries on mount) -->
+					{#if hasSeatSection}
+						<GuestTicketSeatSection
+							{isUserChoiceSeat}
+							{isBestAvailableSeat}
+							{isOnlinePayment}
+							{tierVenue}
+							{tierSector}
+							{tierSectorDescription}
+							{eventId}
+							{quantity}
+							{isSubmitting}
+							{seatSelectionError}
+							{bestAvailableError}
+							{accessibleRequired}
+							onAccessibleRequiredChange={(value) => (accessibleRequired = value)}
+							onController={(controller) => (seatController = controller)}
+						/>
+					{/if}
 
 					<!-- PWYC Amount (if applicable) -->
 					{#if isPwyc}

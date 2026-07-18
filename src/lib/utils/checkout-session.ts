@@ -120,6 +120,17 @@ export function createReservationRetry(kind: CheckoutSessionKind) {
 		},
 
 		/**
+		 * Pure peek: would `resume(fingerprint)` attempt to resume this handle?
+		 * No network call, and the handle is never consumed or dropped — callers
+		 * use it to skip work that only a fresh reserve needs (e.g. re-holding a
+		 * best-available seat block, which the resumed reservation already
+		 * consumed at reserve time).
+		 */
+		wouldResume(fingerprint: string): boolean {
+			return held !== null && held.fingerprint === fingerprint;
+		},
+
+		/**
 		 * Try to resume a held reservation for an identical purchase. Returns
 		 * the Stripe URL, or `null` when there is nothing to resume (no held
 		 * reservation, different parameters, or the reservation expired) — in

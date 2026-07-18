@@ -6,7 +6,8 @@
 		eventadminticketsCreateTicketTier,
 		eventadminticketsUpdateTicketTier,
 		eventadminticketsDeleteTicketTier,
-		organizationadminvenuesListVenues
+		organizationadminvenuesListVenues,
+		eventpublicseatingGetChart
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		TicketTierDetailSchema,
@@ -14,6 +15,7 @@
 		TicketTierUpdateSchema,
 		MembershipTierSchema,
 		VenueDetailSchema,
+		VenueChartSchema,
 		SeatAssignmentMode,
 		RefundPolicy
 	} from '$lib/api/generated/types.gen';
@@ -36,6 +38,7 @@
 		toTimezoneAwareISO,
 		normalizeDecimalInput
 	} from './tier-form-helpers';
+	import { buildTierSeatingFields, retainedSectorIdForMode } from './tier-seating-payload';
 	import { Undo2 } from '@lucide/svelte';
 	import { formatDateTimeReadback } from '$lib/utils/date';
 
@@ -149,6 +152,7 @@
 	// Seat assignment modes other than 'none' require an event venue
 	const canUseSeatAssignment = $derived(hasEventVenue);
 	let sectorId = $state<string | null>(tier?.sector?.id ?? null);
+	let priceCategoryId = $state<string | null>(tier?.price_category?.id ?? null);
 
 	// Fetch venues for the organization (fetch when seat assignment is not 'none' OR when we have a venue pre-selected)
 	const venuesQuery = createQuery<VenueDetailSchema[]>(() => ({
@@ -170,33 +174,95 @@
 		enabled: !!accessToken && (seatAssignmentMode !== 'none' || !!venueId)
 	}));
 
-	// Sector is required when seat assignment is random or user_choice
-	const sectorRequired = $derived(
-		seatAssignmentMode === 'random' || seatAssignmentMode === 'user_choice'
-	);
+	// Fetch the venue seating chart — price categories only exist on the chart.
+	// Public endpoint; the Bearer header lets admins of draft/private events resolve it.
+	const chartQuery = createQuery<VenueChartSchema>(() => ({
+		queryKey: ['seating-chart', eventId],
+		queryFn: async () => {
+			const response = await eventpublicseatingGetChart({
+				path: { event_id: eventId },
+				headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined
+			});
+
+			if (response.error !== undefined || !response.data) {
+				throw new Error('Failed to load seating chart');
+			}
+
+			return response.data;
+		},
+		enabled: !!venueId
+	}));
+
+	// Sector is required when attendees pick their own seat
+	const sectorRequired = $derived(seatAssignmentMode === 'user_choice');
 	// When sector is required, both venue and sector must be selected
 	const sectorValid = $derived(!sectorRequired || (!!venueId && !!sectorId));
 
-	// Get sectors from the selected venue
+	// Price category is required for best-available auto-assignment
+	const categoryRequired = $derived(seatAssignmentMode === 'best_available');
+	const priceCategories = $derived(chartQuery.data?.price_categories ?? []);
+	const categoryValid = $derived(!categoryRequired || (!!venueId && !!priceCategoryId));
+
+	// Standing sectors can't back a user_choice tier — their "spots" are never
+	// holdable server-side. VenueSectorSchema has no `kind`, so join against the
+	// chart (which does) to know which sectors to hide from the picker.
+	const standingSectorIds = $derived(
+		new Set((chartQuery.data?.sectors ?? []).filter((s) => s.kind === 'standing').map((s) => s.id))
+	);
+
+	// Get sectors from the selected venue (minus standing ones once the chart is loaded)
 	const selectedVenueSectors = $derived.by(() => {
 		if (!venueId || !venuesQuery.data) return [];
 		const venue = venuesQuery.data.find((v) => v.id === venueId);
-		return venue?.sectors || [];
+		const sectors = venue?.sectors || [];
+		if (standingSectorIds.size === 0) return sectors;
+		return sectors.filter((s) => !s.id || !standingSectorIds.has(s.id));
+	});
+
+	// The inverse pool: standing sectors CAN back a GA (none) tier — linking one
+	// turns its capacity into a hard sale-time cap. Empty until the chart loads.
+	const standingVenueSectors = $derived.by(() => {
+		if (!venueId || !venuesQuery.data) return [];
+		const venue = venuesQuery.data.find((v) => v.id === venueId);
+		return (venue?.sectors || []).filter((s) => !!s.id && standingSectorIds.has(s.id));
 	});
 
 	// The venue matching the pre-filled venueId (read-only display in the seating section)
 	const selectedVenue = $derived(venuesQuery.data?.find((v) => v.id === venueId));
 
-	// Clear sector when venue changes
+	// Keep the sector consistent with venue, mode and sector kind: standing
+	// sectors are only valid on GA (none) tiers, seated ones on user_choice.
+	// Only clear once venues AND the chart are loaded — standing-ness comes from
+	// the chart — so the edit-mode prefill (incl. a GA tier's standing sector)
+	// survives the fetches.
 	$effect(() => {
-		if (venueId) {
-			// If sector doesn't belong to current venue, clear it
-			const venueHasSector = selectedVenueSectors.some((s) => s.id === sectorId);
-			if (!venueHasSector && sectorId !== null) {
-				sectorId = null;
-			}
-		} else {
+		if (!venueId) {
 			sectorId = null;
+			return;
+		}
+		if (sectorId === null || !venuesQuery.data || !chartQuery.data) return;
+		const retained = retainedSectorIdForMode(seatAssignmentMode, sectorId, standingSectorIds);
+		if (retained !== sectorId) {
+			sectorId = retained;
+			return;
+		}
+		// Sector must still belong to the current venue (best_available keeps its
+		// state untouched — the payload builder nulls it there).
+		if (seatAssignmentMode === 'best_available') return;
+		const pool = seatAssignmentMode === 'none' ? standingVenueSectors : selectedVenueSectors;
+		if (!pool.some((s) => s.id === sectorId)) {
+			sectorId = null;
+		}
+	});
+
+	// Clear price category when it no longer exists in the loaded chart
+	// (only once the chart is loaded, so the edit-mode prefill survives the fetch)
+	$effect(() => {
+		if (chartQuery.data && priceCategoryId !== null) {
+			const chartHasCategory = priceCategories.some((c) => c.id === priceCategoryId);
+			if (!chartHasCategory) {
+				priceCategoryId = null;
+			}
 		}
 	});
 
@@ -290,8 +356,9 @@
 			// Venue and seating configuration
 			seat_assignment_mode: seatAssignmentMode,
 			max_tickets_per_user: maxTicketsPerUser ? parseInt(maxTicketsPerUser) : null,
-			venue_id: seatAssignmentMode !== 'none' ? venueId : null,
-			sector_id: seatAssignmentMode !== 'none' ? sectorId : null,
+			// Per-mode venue/sector/price-category nulling mirrors server validation
+			// (see tier-seating-payload.ts).
+			...buildTierSeatingFields(seatAssignmentMode, venueId, sectorId, priceCategoryId),
 			// Cancellation & refund policy (only meaningful for paid tiers)
 			allow_user_cancellation: paymentMethod === 'free' ? false : allowUserCancellation,
 			cancellation_deadline_hours:
@@ -521,12 +588,19 @@
 				bind:seatAssignmentMode
 				bind:maxTicketsPerUser
 				bind:sectorId
+				bind:priceCategoryId
 				{canUseSeatAssignment}
 				{venueId}
 				venuesLoading={venuesQuery.isLoading}
 				{selectedVenue}
 				{selectedVenueSectors}
+				standingSectors={standingVenueSectors}
 				{sectorRequired}
+				{priceCategories}
+				chartLoading={chartQuery.isLoading}
+				chartError={chartQuery.isError}
+				onRetryChart={() => chartQuery.refetch()}
+				{categoryRequired}
 				{isPending}
 			/>
 
@@ -548,6 +622,7 @@
 						disabled={isPending ||
 							!name.trim() ||
 							!sectorValid ||
+							!categoryValid ||
 							(paymentMethod !== 'free' && allowUserCancellation && !refundPolicyValid)}
 					>
 						{isPending

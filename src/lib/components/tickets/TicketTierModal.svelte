@@ -52,6 +52,20 @@
 			billingInfo?: BuyerBillingInfoSchema
 		) => void;
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
+		/**
+		 * Peek: would an identical retry resume a held checkout reservation
+		 * instead of reserving afresh? Same argument shape as onCheckout (the
+		 * fingerprint must match the mutation the payload would hit). Used to
+		 * skip re-holding a best-available seat block on retry.
+		 */
+		hasResumableCheckout?: (
+			tierId: string,
+			isPwyc: boolean,
+			amount?: number,
+			tickets?: TicketPurchaseItem[],
+			discountCode?: string,
+			billingInfo?: BuyerBillingInfoSchema
+		) => boolean;
 	}
 
 	let {
@@ -71,7 +85,8 @@
 		onClose,
 		onClaimTicket,
 		onCheckout,
-		onGuestTierClick
+		onGuestTierClick,
+		hasResumableCheckout
 	}: Props = $props();
 
 	/**
@@ -230,6 +245,28 @@
 			throw error; // Re-throw so TicketConfirmationDialog can handle it
 		}
 	}
+
+	// Peek for the confirmation dialog: mirrors handleConfirm's routing (PWYC →
+	// checkout with amount, otherwise claim/checkout share one params shape) so
+	// the fingerprint matches the mutation the payload would actually hit.
+	function checkResumableCheckout(payload: {
+		amount?: number;
+		tickets: TicketPurchaseItem[];
+		discountCode?: string;
+		billingInfo?: BuyerBillingInfoSchema;
+	}): boolean {
+		if (!selectedTier || !hasResumableCheckout) return false;
+		const { amount, tickets, discountCode, billingInfo } = payload;
+		const isPwyc = selectedTier.price_type === 'pwyc';
+		return hasResumableCheckout(
+			selectedTier.id,
+			isPwyc,
+			isPwyc ? amount : undefined,
+			tickets,
+			discountCode,
+			billingInfo
+		);
+	}
 </script>
 
 <Dialog bind:open>
@@ -289,6 +326,7 @@
 		{eventId}
 		onClose={closeConfirmation}
 		onConfirm={handleConfirm}
+		hasResumableCheckout={checkResumableCheckout}
 		{isProcessing}
 		maxQuantity={getMaxQuantityForTier(selectedTier.id)}
 		{eventMaxTicketsPerUser}

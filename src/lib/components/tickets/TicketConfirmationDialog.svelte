@@ -26,11 +26,12 @@
 	import type {
 		TicketPurchaseItem,
 		SeatAssignmentMode,
-		SectorAvailabilitySchema,
 		DiscountCodeValidationResponse,
 		BuyerBillingInfoSchema
 	} from '$lib/api/generated/types.gen';
-	import { eventpublicticketsGetTierSeatAvailability } from '$lib/api/generated/sdk.gen';
+	import { untrack } from 'svelte';
+	import type { SeatHoldController } from './seat-hold-controller.svelte';
+	import { bestAvailableFailureMessage, extractPurchaseErrorMessage } from './purchase-error';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import DiscountCodeInput from './DiscountCodeInput.svelte';
@@ -53,6 +54,8 @@
 		eventId: string;
 		onClose: () => void;
 		onConfirm: (payload: ConfirmPayload) => void | Promise<void>;
+		/** Peek: would onConfirm resume a held reservation? (skips the re-hold) */
+		hasResumableCheckout?: (payload: ConfirmPayload) => boolean;
 		isProcessing?: boolean;
 		/** Maximum tickets the user can purchase (null = unlimited up to tier availability) */
 		maxQuantity?: number | null;
@@ -70,6 +73,7 @@
 		eventId,
 		onClose,
 		onConfirm,
+		hasResumableCheckout = () => false,
 		isProcessing = false,
 		maxQuantity = null,
 		eventMaxTicketsPerUser = null,
@@ -119,54 +123,24 @@
 
 	// Seat assignment mode
 	const seatAssignmentMode = $derived<SeatAssignmentMode>(tier.seat_assignment_mode ?? 'none');
-	const hasSeatedTier = $derived(seatAssignmentMode !== 'none');
 	const isUserChoiceSeat = $derived(seatAssignmentMode === 'user_choice');
-	const isRandomSeat = $derived(seatAssignmentMode === 'random');
+	const isBestAvailable = $derived(seatAssignmentMode === 'best_available');
 
 	// Venue/sector info for display
 	const tierVenue = $derived(tier.venue ?? null);
 	const tierSector = $derived(tier.sector ?? null);
 
-	// Seat selection state (for user_choice mode)
-	let seatAvailability = $state<SectorAvailabilitySchema | null>(null);
-	let isLoadingSeats = $state(false);
-	let seatLoadError = $state<string | null>(null);
-	let selectedSeatIds = $state<string[]>([]);
-
-	// Fetch seat availability when dialog opens with user_choice mode
-	async function fetchSeatAvailability() {
-		if (!isUserChoiceSeat || !eventId || !tier.id) return;
-		isLoadingSeats = true;
-		seatLoadError = null;
-		try {
-			const response = await eventpublicticketsGetTierSeatAvailability({
-				path: { event_id: eventId, tier_id: tier.id },
-				headers: authStore.getAuthHeaders()
-			});
-			if (response.error) {
-				seatLoadError = m['ticketConfirmationDialog.errorLoadSeats']();
-				console.error('Seat availability error:', response.error);
-			} else if (response.data) {
-				seatAvailability = response.data;
-			}
-		} catch (err) {
-			seatLoadError = m['ticketConfirmationDialog.errorLoadSeats']();
-			console.error('Seat availability fetch error:', err);
-		} finally {
-			isLoadingSeats = false;
-		}
-	}
-
-	// Toggle seat selection
-	function toggleSeat(seatId: string) {
-		seatSelectionError = '';
-		const index = selectedSeatIds.indexOf(seatId);
-		if (index >= 0) {
-			selectedSeatIds = selectedSeatIds.filter((id) => id !== seatId);
-		} else if (selectedSeatIds.length < quantity) {
-			selectedSeatIds = [...selectedSeatIds, seatId];
-		}
-	}
+	// Seat-hold controller, instantiated by SeatAssignmentSection while the
+	// dialog is open with a seated tier ("selection state IS the server hold").
+	let seatController = $state<SeatHoldController | null>(null);
+	// Selected seats = the caller's live server holds (selection order preserved)
+	const heldSeatIds = $derived(seatController?.myHolds ?? []);
+	// best_available options/errors
+	let accessibleRequired = $state(false);
+	let bestAvailableError = $state('');
+	let isHoldingSeats = $state(false);
+	// Set when the purchase path took over the holds (they must NOT be released)
+	let purchaseHandedOff = false;
 
 	// PWYC min/max
 	const minAmount = $derived.by(() => {
@@ -261,7 +235,7 @@
 	const canSubmit = $derived.by(() => {
 		if (showGuestNames && !allGuestNamesFilled) return false;
 		if (isPwyc && !pwycValidation.valid) return false;
-		if (isUserChoiceSeat && selectedSeatIds.length !== quantity) return false;
+		if (isUserChoiceSeat && heldSeatIds.length !== quantity) return false;
 		return true;
 	});
 
@@ -278,17 +252,20 @@
 			apiError = '';
 			quantity = 1;
 			guestNames = [userName || ''];
-			selectedSeatIds = [];
-			seatAvailability = null;
-			seatLoadError = null;
+			accessibleRequired = false;
+			bestAvailableError = '';
 			discountResult = null;
 			appliedDiscountCode = '';
 			discountCodeInputRef?.resetInput(initialDiscountCode, !!initialDiscountCode);
+			// Closed without claim/checkout handoff: release the server holds
+			// (fire-and-forget — never block closing).
+			const controller = untrack(() => seatController);
+			seatController = null;
+			if (controller && !purchaseHandedOff) void controller.releaseAll();
+			purchaseHandedOff = false;
 		} else {
 			guestNames = [userName || ''];
-			if (isUserChoiceSeat) {
-				fetchSeatAvailability();
-			}
+			purchaseHandedOff = false;
 		}
 	});
 
@@ -303,11 +280,21 @@
 		}
 	});
 
-	// Adjust seat selection when quantity changes (remove excess selections)
+	// Quantity decreased below held seats: release the newest excess holds;
+	// clear the pick-more-seats error once enough seats are held.
 	$effect(() => {
-		if (selectedSeatIds.length > quantity) {
-			selectedSeatIds = selectedSeatIds.slice(0, quantity);
+		if (seatController && seatController.myHolds.length > quantity) {
+			void seatController.trimTo(quantity);
 		}
+		if (heldSeatIds.length === quantity) seatSelectionError = '';
+	});
+
+	// Safety net: Cancel unmounts this dialog in the same tick (the tier modal
+	// clears selectedTier), so the !open branch above may never run — release
+	// un-handed-off holds on teardown too (no-op after a normal close).
+	$effect(() => () => {
+		const controller = untrack(() => seatController);
+		if (controller && !purchaseHandedOff) void controller.releaseAll();
 	});
 
 	function incrementQuantity() {
@@ -365,32 +352,19 @@
 		return true;
 	}
 
-	function extractErrorMessage(err: unknown): string {
-		const fallback = m['ticketConfirmationDialog.errorGeneric']();
-		if (!err || typeof err !== 'object') return fallback;
-		const obj = err as Record<string, unknown>;
-		const resp = obj.response as Record<string, unknown> | undefined;
-		const data = resp?.data as Record<string, unknown> | undefined;
-		if (typeof data?.detail === 'string') return data.detail;
-		if (Array.isArray(data?.detail)) {
-			return data.detail.map((d: { msg?: string }) => d.msg || String(d)).join(', ');
-		}
-		if (typeof obj.detail === 'string') return obj.detail;
-		if (typeof obj.message === 'string') return obj.message;
-		return fallback;
-	}
-
 	async function handleConfirm() {
+		if (isHoldingSeats) return;
 		apiError = '';
+		bestAvailableError = '';
 		if (!setGuestNameErrorMessage()) return;
 		if (!setPwycErrorMessage()) return;
 
 		// Validate billing section if open
 		if (billingSection && !billingSection.validate()) return;
 
-		// For user_choice seats, validate seat selection
-		if (isUserChoiceSeat && selectedSeatIds.length !== quantity) {
-			const remaining = quantity - selectedSeatIds.length;
+		// For user_choice seats, validate the held selection
+		if (isUserChoiceSeat && heldSeatIds.length !== quantity) {
+			const remaining = quantity - heldSeatIds.length;
 			seatSelectionError =
 				m['ticketConfirmationDialog.selectMoreSeats']?.({ count: remaining }) ??
 				`Please select ${remaining} more seat${remaining > 1 ? 's' : ''}`;
@@ -403,8 +377,8 @@
 		const tickets: TicketPurchaseItem[] = guestNames.map((name, index) => {
 			const trimmed = name.trim() || (!showGuestNames ? getDefaultGuestName() : '');
 			const ticket: TicketPurchaseItem = { guest_name: trimmed };
-			if (isUserChoiceSeat && selectedSeatIds[index]) {
-				ticket.seat_id = selectedSeatIds[index];
+			if (isUserChoiceSeat && heldSeatIds[index]) {
+				ticket.seat_id = heldSeatIds[index];
 			}
 			return ticket;
 		});
@@ -412,16 +386,40 @@
 		const payload: ConfirmPayload = { tickets };
 		if (isPwyc && pwycAmount.trim()) payload.amount = parseFloat(pwycAmount);
 		if (appliedDiscountCode && discountResult?.valid) payload.discountCode = appliedDiscountCode;
-
-		// Attach billing info if provided
 		const billingInfo = billingSection?.getBillingInfo();
 		if (billingInfo) payload.billingInfo = billingInfo;
 
+		// best_available: hold the server-picked adjacent block BEFORE checkout
+		// (the purchase consumes these live holds; tickets carry no seat_id) —
+		// skipped when an identical retry resumes a reservation whose holds it consumed.
+		if (isBestAvailable && !hasResumableCheckout(payload)) {
+			if (!seatController) return;
+			isHoldingSeats = true;
+			try {
+				// Retry after a failed confirm: drop any stale block first so the
+				// server picks a fresh one instead of stacking holds.
+				if (seatController.myHolds.length > 0) await seatController.releaseAll();
+				const result = await seatController.holdBestAvailable(
+					tier.id,
+					quantity,
+					accessibleRequired
+				);
+				if (!result.ok) {
+					bestAvailableError = bestAvailableFailureMessage(result);
+					return;
+				}
+			} finally {
+				isHoldingSeats = false;
+			}
+		}
+
 		try {
 			await onConfirm(payload);
+			// The purchase path now owns the holds — do not release them on close.
+			purchaseHandedOff = true;
 		} catch (err: unknown) {
 			console.error('Ticket purchase error:', err);
-			apiError = extractErrorMessage(err);
+			apiError = extractPurchaseErrorMessage(err, m['ticketConfirmationDialog.errorGeneric']());
 		}
 	}
 
@@ -464,7 +462,7 @@
 </script>
 
 <Dialog bind:open>
-	<DialogContent class="max-h-[90vh] overflow-hidden sm:max-w-lg">
+	<DialogContent class="flex max-h-[90vh] flex-col sm:max-w-lg">
 		<DialogHeader>
 			<DialogTitle class="flex items-center gap-2 text-xl">
 				{@const Icon = dialogIcon}
@@ -486,7 +484,7 @@
 			</DialogDescription>
 		</DialogHeader>
 
-		<div class="max-h-[60vh] space-y-4 overflow-y-auto py-2">
+		<div class="min-h-0 flex-1 space-y-4 overflow-y-auto py-2">
 			<!-- Tier Information Card -->
 			<div class="rounded-lg border border-border bg-muted/50 p-4">
 				<div class="flex items-start justify-between gap-4">
@@ -517,20 +515,20 @@
 			<!-- Cancellation Policy (no-ops until backend exposes the fields on the public tier schema) -->
 			<CancellationPolicySummary {tier} />
 
-			<!-- Seat Assignment Info / Selection -->
+			<!-- Seat Assignment Info / Selection (owns the SeatHoldController) -->
 			<SeatAssignmentSection
 				{isUserChoiceSeat}
-				{isRandomSeat}
-				{hasSeatedTier}
+				{isBestAvailable}
 				{tierVenue}
 				{tierSector}
+				{eventId}
 				{quantity}
-				{selectedSeatIds}
+				isProcessing={isProcessing || isHoldingSeats}
 				{seatSelectionError}
-				{isLoadingSeats}
-				{seatLoadError}
-				{seatAvailability}
-				onToggleSeat={toggleSeat}
+				{bestAvailableError}
+				{accessibleRequired}
+				onAccessibleRequiredChange={(value) => (accessibleRequired = value)}
+				onController={(controller) => (seatController = controller)}
 			/>
 
 			<!-- Quantity Selector -->
@@ -698,12 +696,12 @@
 								amount: `${tier.currency} ${maxAmount?.toFixed(2)}`
 							})}
 						{/if}
-					{:else if isUserChoiceSeat && selectedSeatIds.length !== quantity}
+					{:else if isUserChoiceSeat && heldSeatIds.length !== quantity}
 						<AlertCircle class="mr-1 inline-block h-4 w-4" />
-						{quantity - selectedSeatIds.length === 1
+						{quantity - heldSeatIds.length === 1
 							? m['ticketConfirmationDialog.hintSelectOneMoreSeat']()
 							: m['ticketConfirmationDialog.hintSelectMoreSeats']({
-									count: quantity - selectedSeatIds.length
+									count: quantity - heldSeatIds.length
 								})}
 					{/if}
 				</p>
@@ -719,10 +717,10 @@
 				</Button>
 				<Button
 					onclick={handleConfirm}
-					disabled={isProcessing || !canSubmit}
+					disabled={isProcessing || isHoldingSeats || !canSubmit}
 					class="flex-1 sm:flex-initial"
 				>
-					{#if isProcessing}
+					{#if isProcessing || isHoldingSeats}
 						<Loader2 class="mr-2 h-4 w-4 animate-spin" />
 						{#if isOnlinePayment}
 							{m['ticketConfirmationDialog.redirectingToPayment']()}

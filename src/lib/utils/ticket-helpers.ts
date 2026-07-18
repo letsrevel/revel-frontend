@@ -29,9 +29,11 @@ export function getSeatDisplay(ticket: any): string | null {
 	if (tier?.sector?.name) parts.push(tier.sector.name);
 
 	if (seat) {
-		if (seat.row) parts.push(`Row ${seat.row}`);
+		// Prefer row_label; fall back to the transitional `row` alias while it still exists
+		const row = seat.row_label ?? seat.row;
+		if (row) parts.push(`Row ${row}`);
 		if (seat.number) parts.push(`Seat ${seat.number}`);
-		if (seat.label && !seat.row && !seat.number) parts.push(seat.label);
+		if (seat.label && !row && !seat.number) parts.push(seat.label);
 		if (seat.is_accessible) parts.push('\u267F');
 		if (seat.is_obstructed_view) parts.push('\u26A0\uFE0F Obstructed');
 	}

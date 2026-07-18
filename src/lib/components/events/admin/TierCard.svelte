@@ -119,7 +119,7 @@
 	const seatAssignmentDisplay = $derived(() => {
 		const modes: Record<string, string> = {
 			none: m['tierCard.seatAssignment.none']?.() ?? 'General Admission',
-			random: m['tierCard.seatAssignment.random']?.() ?? 'Random Assignment',
+			best_available: m['tierCard.seatAssignment.bestAvailable']?.() ?? 'Best Available',
 			user_choice: m['tierCard.seatAssignment.userChoice']?.() ?? 'User Selects Seat'
 		};
 		return modes[tier.seat_assignment_mode] || modes.none;

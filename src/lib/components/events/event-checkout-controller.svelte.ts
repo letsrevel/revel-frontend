@@ -362,6 +362,33 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 		}
 	}
 
+	/**
+	 * Peek: would `handleClaimTicket`/`handleCheckout` with these arguments
+	 * resume the held reservation instead of reserving afresh? Pure — no
+	 * network call, and the handle is left untouched.
+	 *
+	 * Used by the confirmation dialog to skip re-holding a best-available seat
+	 * block on an identical retry: the resumed reservation already consumed its
+	 * holds at reserve time, so holding a fresh block would only orphan it.
+	 * MUST build the params exactly like the mutations above do (same shapes,
+	 * same key order) — the fingerprint is JSON.stringify of the params object.
+	 */
+	function hasResumableCheckout(
+		tierId: string,
+		isPwyc: boolean,
+		amount?: number,
+		tickets?: TicketPurchaseItem[],
+		discountCode?: string,
+		billingInfo?: BuyerBillingInfoSchema
+	): boolean {
+		const ticketItems = tickets || [{ guest_name: getDefaultGuestName() }];
+		const params =
+			isPwyc && amount !== undefined
+				? { tierId, tickets: ticketItems, pricePerTicket: amount, billingInfo }
+				: { tierId, tickets: ticketItems, discountCode, billingInfo };
+		return reservationRetry.wouldResume(JSON.stringify(params));
+	}
+
 	// Resume payment mutation (for pending tickets with online payment)
 	const resumePaymentMutation = createMutation(() => ({
 		mutationFn: async (paymentId: string) => {
@@ -459,6 +486,7 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 		cancelReservationMutation,
 		handleClaimTicket,
 		handleCheckout,
+		hasResumableCheckout,
 		handleResumePayment,
 		handleResumePaymentFromSidebar,
 		handleCancelReservation

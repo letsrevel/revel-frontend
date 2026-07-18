@@ -25,6 +25,7 @@ const LABELS: Record<string, () => string> = {
 	max_tickets_per_user: () => m['tierForm.field.max_tickets_per_user'](),
 	venue_id: () => m['tierForm.field.venue_id'](),
 	sector_id: () => m['tierForm.field.sector_id'](),
+	price_category_id: () => m['tierForm.field.price_category_id'](),
 	allow_user_cancellation: () => m['tierForm.field.allow_user_cancellation'](),
 	cancellation_deadline_hours: () => m['tierForm.field.cancellation_deadline_hours'](),
 	refund_policy: () => m['tierForm.field.refund_policy'](),

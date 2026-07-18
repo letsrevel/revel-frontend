@@ -182,9 +182,11 @@
 		}
 
 		// Build seat details (from ticket.seat)
+		// Prefer row_label; fall back to the transitional `row` alias while it still exists
+		const seatRow = ticket.seat?.row_label ?? ticket.seat?.row;
 		const seatDetails: string[] = [];
-		if (ticket.seat?.row) {
-			seatDetails.push(m['myTicketModal.rowLabel']({ row: ticket.seat.row }));
+		if (seatRow) {
+			seatDetails.push(m['myTicketModal.rowLabel']({ row: seatRow }));
 		}
 		if (ticket.seat?.number !== null && ticket.seat?.number !== undefined) {
 			seatDetails.push(m['myTicketModal.seatLabel']({ number: ticket.seat.number }));
@@ -207,7 +209,7 @@
 			ticket?.tier?.venue?.name ||
 			ticket?.tier?.sector?.name ||
 			ticket?.seat?.label ||
-			ticket?.seat?.row ||
+			(ticket?.seat?.row_label ?? ticket?.seat?.row) ||
 			(ticket?.seat?.number !== null && ticket?.seat?.number !== undefined)
 		)
 	);
