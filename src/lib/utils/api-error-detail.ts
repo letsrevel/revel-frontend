@@ -1,10 +1,11 @@
 /**
  * Extract the backend's human-readable `detail` from an SDK error envelope
- * (`response.error`). Handles the two shapes django-ninja produces: a plain
- * `{ detail: string }` body (e.g. the price-category duplicate-name and
- * tier-referenced delete guards) and a pydantic-style `{ detail: [{ msg }] }`
- * validation list. Returns `null` when no readable detail is present so the
- * caller can fall back to a localized generic message.
+ * (`response.error`) or any raw error body. Handles the two shapes
+ * django-ninja produces: a plain `{ detail: string }` body (e.g. the
+ * price-category duplicate-name and tier-referenced delete guards) and a
+ * pydantic-style `{ detail: [{ msg }] }` validation list. Returns `null` when
+ * no readable detail is present so the caller can fall back to a localized
+ * generic message.
  */
 export function extractApiErrorDetail(error: unknown): string | null {
 	if (!error || typeof error !== 'object') return null;

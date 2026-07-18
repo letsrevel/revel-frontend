@@ -40,7 +40,7 @@
 	const requestMutation = createMutation(() => ({
 		mutationFn: async (messageText: string) => {
 			if (!accessToken) {
-				throw new Error(m['requestWhitelistButton.mustBeLoggedIn']?.() ?? 'You must be logged in');
+				throw new Error(m['requestWhitelistButton.mustBeLoggedIn']());
 			}
 
 			const response = await organizationCreateWhitelistRequest({
@@ -57,7 +57,7 @@
 				throw new Error(
 					typeof response.error === 'object' && response.error && 'detail' in response.error
 						? String(response.error.detail)
-						: (m['requestWhitelistButton.failedToSubmit']?.() ?? 'Failed to submit request')
+						: m['requestWhitelistButton.failedToSubmit']()
 				);
 			}
 
@@ -109,11 +109,10 @@
 	<div
 		class="inline-flex items-center gap-2 rounded-md border border-yellow-200 bg-yellow-50 px-4 py-2 text-sm font-medium text-yellow-700 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-300 {className}"
 		role="status"
-		aria-label={m['requestWhitelistButton.alreadyRequested']?.() ??
-			'You have already requested verification'}
+		aria-label={m['requestWhitelistButton.alreadyRequested']()}
 	>
 		<AlertCircle class="h-4 w-4" aria-hidden="true" />
-		{m['requestWhitelistButton.verificationRequested']?.() ?? 'Verification requested'}
+		{m['requestWhitelistButton.verificationRequested']()}
 	</div>
 {:else}
 	<Dialog.Root open={showDialog} onOpenChange={handleDialogChange}>
@@ -121,7 +120,7 @@
 			class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 {className}"
 		>
 			<ShieldCheck class="h-4 w-4" aria-hidden="true" />
-			{m['requestWhitelistButton.requestVerification']?.() ?? 'Request Verification'}
+			{m['requestWhitelistButton.requestVerification']()}
 		</Dialog.Trigger>
 
 		<Dialog.Content class="sm:max-w-[500px]">
@@ -147,29 +146,26 @@
 						</svg>
 					</div>
 					<Dialog.Title class="text-xl font-semibold">
-						{m['requestWhitelistButton.requestSubmitted']?.() ?? 'Verification Request Submitted'}
+						{m['requestWhitelistButton.requestSubmitted']()}
 					</Dialog.Title>
 					<Dialog.Description class="mt-2">
-						{m['requestWhitelistButton.requestSubmittedBody']?.() ??
-							'Your request has been submitted. The organization admins will review it and get back to you.'}
+						{m['requestWhitelistButton.requestSubmittedBody']()}
 					</Dialog.Description>
 				</div>
 			{:else}
 				<!-- Request Form -->
 				<Dialog.Header>
 					<Dialog.Title>
-						{m['requestWhitelistButton.requestVerification']?.() ?? 'Request Verification'}
+						{m['requestWhitelistButton.requestVerification']()}
 					</Dialog.Title>
 					<Dialog.Description>
 						{#if organizationName}
 							<!-- eslint-disable-next-line svelte/no-at-html-tags -- API-derived organizationName neutralized via escapeHtml in both the i18n and fallback branches before interpolation -->
-							{@html m['requestWhitelistButton.submitRequestToOrg']?.({
+							{@html m['requestWhitelistButton.submitRequestToOrg']({
 								organizationName: `<strong>${escapeHtml(organizationName)}</strong>`
-							}) ??
-								`Submit a verification request to <strong>${escapeHtml(organizationName)}</strong>`}
+							})}
 						{:else}
-							{m['requestWhitelistButton.submitRequestDescription']?.() ??
-								"Submit a verification request to access this organization's events."}
+							{m['requestWhitelistButton.submitRequestDescription']()}
 						{/if}
 					</Dialog.Description>
 				</Dialog.Header>
@@ -183,20 +179,18 @@
 				>
 					<div>
 						<label for="whitelist-message" class="block text-sm font-medium">
-							{m['requestWhitelistButton.messageOptional']?.() ?? 'Message (optional)'}
+							{m['requestWhitelistButton.messageOptional']()}
 						</label>
 						<textarea
 							id="whitelist-message"
 							bind:value={message}
-							placeholder={m['requestWhitelistButton.messagePlaceholder']?.() ??
-								'Explain why you should be verified (e.g., how the organizers know you)...'}
+							placeholder={m['requestWhitelistButton.messagePlaceholder']()}
 							rows="4"
 							maxlength="500"
 							class="mt-1 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
 						></textarea>
 						<p class="mt-1 text-xs text-muted-foreground">
-							{m['requestWhitelistButton.characterCount']?.({ count: message.length }) ??
-								`${message.length}/500 characters`}
+							{m['requestWhitelistButton.characterCount']({ count: message.length })}
 						</p>
 					</div>
 
@@ -206,8 +200,7 @@
 							role="alert"
 						>
 							{requestMutation.error?.message ||
-								(m['requestWhitelistButton.failedToSubmitTryAgain']?.() ??
-									'Failed to submit request. Please try again.')}
+								m['requestWhitelistButton.failedToSubmitTryAgain']()}
 						</div>
 					{/if}
 
@@ -218,7 +211,7 @@
 							onclick={() => (showDialog = false)}
 							disabled={requestMutation.isPending}
 						>
-							{m['requestWhitelistButton.cancel']?.() ?? 'Cancel'}
+							{m['requestWhitelistButton.cancel']()}
 						</Button>
 						<Button type="submit" disabled={requestMutation.isPending}>
 							{#if requestMutation.isPending}
@@ -226,10 +219,10 @@
 									class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent"
 									aria-hidden="true"
 								></div>
-								{m['requestWhitelistButton.submitting']?.() ?? 'Submitting...'}
+								{m['requestWhitelistButton.submitting']()}
 							{:else}
 								<Send class="mr-2 h-4 w-4" aria-hidden="true" />
-								{m['requestWhitelistButton.submitRequest']?.() ?? 'Submit Request'}
+								{m['requestWhitelistButton.submitRequest']()}
 							{/if}
 						</Button>
 					</Dialog.Footer>

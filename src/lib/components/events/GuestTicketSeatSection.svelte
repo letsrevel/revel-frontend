@@ -6,6 +6,15 @@
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { AlertCircle, Loader2, MapPin, Info, Armchair } from '@lucide/svelte';
 	import SeatSelector from '$lib/components/tickets/SeatSelector.svelte';
+	import SeatMap from '$lib/components/tickets/SeatMap.svelte';
+	import SeatViewToggle from '$lib/components/tickets/SeatViewToggle.svelte';
+	import {
+		defaultSeatViewMode,
+		readSeatViewPref,
+		standingCountsFrom,
+		writeSeatViewPref,
+		type SeatViewMode
+	} from '$lib/components/tickets/seat-view-toggle';
 	import { SeatHoldController } from '$lib/components/tickets/seat-hold-controller.svelte';
 	import { holdConflictMessage } from '$lib/components/tickets/purchase-error';
 	import { buildSeatViews } from '$lib/components/tickets/seating-view';
@@ -17,9 +26,10 @@
 		isBestAvailableSeat: boolean;
 		/**
 		 * Online-payment tiers reserve immediately, so best_available holds a block
-		 * at confirm time (checkbox shown). Free/offline tiers finalize later via
-		 * the email-confirm flow — a 10-minute hold would expire before then, so
-		 * the server assigns seats at confirmation instead (notice shown).
+		 * at confirm time. Free/offline tiers finalize later via the email-confirm
+		 * flow — a 10-minute hold would expire before then, so the server assigns
+		 * seats at confirmation instead (notice shown). The accessible-seating
+		 * checkbox is shown for BOTH: email flows carry the opt-in in the token.
 		 */
 		isOnlinePayment: boolean;
 		tierVenue: { name: string } | null;
@@ -63,7 +73,7 @@
 	// Focus target for the conflict alert: the seat button the user pressed
 	// becomes disabled when the failed hold resolves, which would silently drop
 	// keyboard focus to <body> (WCAG 2.4.3) — so we move it to the alert.
-	let conflictAlertEl: HTMLDivElement | undefined;
+	let conflictAlertEl = $state<HTMLDivElement>();
 
 	// This component only mounts while the dialog is open with a seated tier
 	// (bits-ui unmounts DialogContent when closed), so instantiating here scopes
@@ -134,12 +144,33 @@
 		});
 	});
 
+	// The map must render the SAME seats as the list: scope the chart to the
+	// tier's sector so other sectors' seats don't show as crossed-out
+	// "unavailable" (SeatMap has no seatViews filter of its own).
+	const mapChart = $derived.by(() => {
+		if (!chart || !tierSector?.id) return chart;
+		return { ...chart, sectors: (chart.sectors ?? []).filter((s) => s.id === tierSector.id) };
+	});
+
 	const heldCount = $derived(controller?.myHolds.length ?? 0);
 
 	function handleToggle(seatId: string): void {
 		conflictMessage = '';
 		void controller?.toggleSeat(seatId);
 	}
+
+	// Map/List view: an explicit choice (this tap or an earlier one this
+	// session) wins; otherwise the default derives from chart complexity (map
+	// for multi-sector/shaped/large charts, list for small single-sector ones).
+	let explicitViewMode = $state<SeatViewMode | null>(readSeatViewPref());
+	const seatViewMode = $derived(explicitViewMode ?? (chart ? defaultSeatViewMode(chart) : 'list'));
+
+	function handleViewModeChange(mode: SeatViewMode): void {
+		explicitViewMode = mode;
+		writeSeatViewPref(mode);
+	}
+
+	const standingCounts = $derived(standingCountsFrom(availability?.standing));
 </script>
 
 {#if isUserChoiceSeat || isBestAvailableSeat}
@@ -183,7 +214,7 @@
 					<div role="status" class="flex items-center justify-center py-12">
 						<Loader2 class="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
 						<span class="sr-only">
-							{m['ticketConfirmationDialog.loadingSeats']?.() ?? 'Loading available seats...'}
+							{m['ticketConfirmationDialog.loadingSeats']()}
 						</span>
 					</div>
 				{:else if seatLoadFailed}
@@ -197,12 +228,38 @@
 						<AlertDescription>{m['guestTicketDialog.noSeatsAvailable']()}</AlertDescription>
 					</Alert>
 				{:else}
-					<SeatSelector
-						seats={seatViews}
-						onToggle={handleToggle}
-						maxReached={heldCount >= quantity}
-						disabled={isSubmitting}
-					/>
+					<!-- Map/List toggle sits OUTSIDE the map surface (touch-action:
+					     none there), so the dialog stays scrollable from this row. -->
+					<div class="flex justify-end">
+						<SeatViewToggle mode={seatViewMode} onModeChange={handleViewModeChange} />
+					</div>
+					{#if seatViewMode === 'map' && mapChart}
+						<!-- Height bounded like the list cap; pan/zoom reaches clipped content. -->
+						<div class="max-h-72 overflow-hidden rounded-lg border border-border bg-background">
+							<SeatMap
+								chart={mapChart}
+								seats={seatViews}
+								onToggle={handleToggle}
+								maxReached={heldCount >= quantity}
+								disabled={isSubmitting}
+								{standingCounts}
+							/>
+						</div>
+						<!-- Hold notice for the map view (the list renders its own inside
+						     SeatSelector); region exists before content so it announces. -->
+						<p role="status" class="text-center text-xs text-muted-foreground">
+							{#if heldCount > 0}
+								{m['seatSelector.heldForTenMinutes']()}
+							{/if}
+						</p>
+					{:else}
+						<SeatSelector
+							seats={seatViews}
+							onToggle={handleToggle}
+							maxReached={heldCount >= quantity}
+							disabled={isSubmitting}
+						/>
+					{/if}
 				{/if}
 				<!-- 409 conflict + validation errors (polite live region) -->
 				<div aria-live="polite">
@@ -221,18 +278,21 @@
 					{/if}
 				</div>
 			</div>
-		{:else if holdsAtCheckout}
-			<!-- best_available + online payment: block is held when checkout starts -->
+		{:else}
+			<!-- best_available: online payment holds a block at checkout; the
+			     email-confirm flow assigns seats server-side at confirmation (a
+			     10-minute hold would expire before the email is opened). The
+			     accessible-seating opt-in applies to BOTH — email flows embed it in
+			     the confirmation token and assign from the accessible pool. -->
 			<div class="rounded-lg border border-border bg-muted/30 p-4">
 				<div class="flex items-start gap-3">
 					<Armchair class="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
 					<div class="flex-1 space-y-1">
 						<p class="font-medium text-foreground">
-							{m['ticketConfirmationDialog.bestAvailableTitle']?.() ?? 'Best available seats'}
+							{m['ticketConfirmationDialog.bestAvailableTitle']()}
 						</p>
 						<p class="text-sm text-muted-foreground">
-							{m['ticketConfirmationDialog.bestAvailableDesc']?.() ??
-								'Your seats will be assigned automatically — adjacent seats, best block available.'}
+							{m['ticketConfirmationDialog.bestAvailableDesc']()}
 						</p>
 						<div class="mt-3 flex items-center gap-2">
 							<Checkbox
@@ -245,13 +305,20 @@
 								for="guest-accessible-seats-required"
 								class="cursor-pointer text-sm font-normal"
 							>
-								{m['ticketConfirmationDialog.accessibleSeatsLabel']?.() ??
-									'I need wheelchair-accessible seats'}
+								{m['ticketConfirmationDialog.accessibleSeatsLabel']()}
 							</Label>
 						</div>
 					</div>
 				</div>
 			</div>
+			{#if !holdsAtCheckout}
+				<Alert>
+					<Info class="h-4 w-4" />
+					<AlertDescription>
+						{m['guestTicketDialog.bestAvailableEmailNotice']()}
+					</AlertDescription>
+				</Alert>
+			{/if}
 			<div aria-live="polite">
 				{#if bestAvailableError}
 					<Alert variant="destructive">
@@ -260,16 +327,6 @@
 					</Alert>
 				{/if}
 			</div>
-		{:else}
-			<!-- best_available + email-confirm flow: no hold (it would expire before
-			     the email is opened) — the server assigns seats at confirmation -->
-			<Alert>
-				<Info class="h-4 w-4" />
-				<AlertDescription>
-					{m['guestTicketDialog.bestAvailableEmailNotice']?.() ??
-						'Your seats will be assigned automatically when you confirm your email.'}
-				</AlertDescription>
-			</Alert>
 		{/if}
 	</div>
 {/if}

@@ -365,9 +365,7 @@
 		// For user_choice seats, validate the held selection
 		if (isUserChoiceSeat && heldSeatIds.length !== quantity) {
 			const remaining = quantity - heldSeatIds.length;
-			seatSelectionError =
-				m['ticketConfirmationDialog.selectMoreSeats']?.({ count: remaining }) ??
-				`Please select ${remaining} more seat${remaining > 1 ? 's' : ''}`;
+			seatSelectionError = m['ticketConfirmationDialog.selectMoreSeats']({ count: remaining });
 			return;
 		}
 		seatSelectionError = '';

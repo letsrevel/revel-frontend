@@ -219,6 +219,24 @@ describe('SeatHoldController', () => {
 			expect(controller.myHolds).toEqual([]);
 		});
 
+		it("passes an unknown conflict_reason through as 'unavailable'", async () => {
+			mockResult(eventpublicseatingHoldSeats, {
+				error: {
+					held_seat_ids: [],
+					conflicts: ['s1'],
+					conflict_reason: 'something-new',
+					expires_at: null
+				},
+				status: 409
+			});
+			const onConflict = vi.fn();
+			const controller = setup({ onConflict });
+
+			await controller.toggleSeat('s1');
+
+			expect(onConflict).toHaveBeenCalledExactlyOnceWith(['s1'], 'unavailable');
+		});
+
 		it('ignores selects beyond the current quantity', async () => {
 			mockResult(eventpublicseatingHoldSeats, {
 				data: { held_seat_ids: ['s1'], conflicts: [], expires_at: EXPIRES_AT }
@@ -275,7 +293,53 @@ describe('SeatHoldController', () => {
 			});
 		});
 
-		it('surfaces the backend detail when no adjacent block fits (plain 409)', async () => {
+		it("reports reason 'no_block' when the unified 409 body says no adjacent block fits", async () => {
+			mockResult(eventpublicseatingHoldBestAvailable, {
+				error: {
+					held_seat_ids: [],
+					conflicts: [],
+					conflict_reason: 'no_block',
+					expires_at: null
+				},
+				status: 409
+			});
+			const controller = setup();
+
+			const result = await controller.holdBestAvailable('tier-1', 4, false);
+
+			expect(result).toEqual({
+				ok: false,
+				heldSeatIds: [],
+				message: undefined,
+				reason: 'no_block'
+			});
+			expect(controller.myHolds).toEqual([]);
+		});
+
+		it("reports reason 'unavailable' when the unified 409 body says seats were taken", async () => {
+			mockResult(eventpublicseatingHoldBestAvailable, {
+				error: {
+					held_seat_ids: [],
+					conflicts: ['s1'],
+					conflict_reason: 'unavailable',
+					expires_at: null
+				},
+				status: 409
+			});
+			const controller = setup();
+
+			const result = await controller.holdBestAvailable('tier-1', 2, false);
+
+			expect(result).toEqual({
+				ok: false,
+				heldSeatIds: [],
+				message: undefined,
+				reason: 'unavailable'
+			});
+		});
+
+		it("defaults to 'unavailable' and keeps the detail on a legacy plain-detail 409", async () => {
+			// The unified shape replaced this body; detailFrom stays defensive.
 			mockResult(eventpublicseatingHoldBestAvailable, {
 				error: { detail: 'Not enough adjacent seats available for this request.' },
 				status: 409

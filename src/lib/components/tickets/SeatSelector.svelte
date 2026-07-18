@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import { rowsFromSeatViews, type SeatView } from './seating-view';
+	import { rowsFromSeatViews, seatAriaLabel, type SeatView } from './seating-view';
 	import { Accessibility, EyeOff, Check, X, LoaderCircle } from '@lucide/svelte';
 
 	interface Props {
@@ -16,37 +16,6 @@
 
 	const rows = $derived(rowsFromSeatViews(seats));
 	const hasMine = $derived(seats.some((seat) => seat.status === 'mine'));
-
-	/** Localized status fragment for the accessible name (null = no suffix needed). */
-	function statusLabel(seat: SeatView): string | null {
-		switch (seat.status) {
-			case 'sold':
-				return m['seatSelector.statusSold']?.() ?? 'sold';
-			case 'held':
-				return m['seatSelector.statusHeld']?.() ?? 'held by someone else';
-			case 'blocked':
-				return m['seatSelector.statusBlocked']?.() ?? 'unavailable';
-			case 'pending':
-				return m['seatSelector.statusPending']?.() ?? 'updating';
-			default:
-				return null;
-		}
-	}
-
-	function seatAriaLabel(seat: SeatView): string {
-		let label = `${m['seatSelector.seat']?.() ?? 'Seat'} ${seat.label}`;
-		if (seat.isAccessible) {
-			label += `, ${m['seatSelector.accessible']?.() ?? 'accessible'}`;
-		}
-		if (seat.isObstructedView) {
-			label += `, ${m['seatSelector.obstructedView']?.() ?? 'obstructed view'}`;
-		}
-		const status = statusLabel(seat);
-		if (status) {
-			label += `, ${status}`;
-		}
-		return label;
-	}
 
 	function isSeatDisabled(seat: SeatView): boolean {
 		if (disabled) return true;
@@ -94,7 +63,7 @@
 	<!-- Stage indicator -->
 	<div class="flex justify-center">
 		<div class="rounded-lg bg-muted px-6 py-1.5 text-xs font-medium text-muted-foreground">
-			{m['seatSelector.stage']?.() ?? 'STAGE'}
+			{m['seatSelector.stage']()}
 		</div>
 	</div>
 
@@ -159,7 +128,7 @@
 	     appears (regions inserted with their content are often not announced) -->
 	<p role="status" class="text-center text-xs text-muted-foreground">
 		{#if hasMine}
-			{m['seatSelector.heldForTenMinutes']?.() ?? 'Selected seats are held for you for 10 minutes.'}
+			{m['seatSelector.heldForTenMinutes']()}
 		{/if}
 	</p>
 
@@ -171,11 +140,11 @@
 			>
 				<Check class="h-2 w-2 text-primary-foreground" aria-hidden="true" />
 			</div>
-			<span>{m['seatSelector.legendSelected']?.() ?? 'Selected'}</span>
+			<span>{m['seatSelector.legendSelected']()}</span>
 		</div>
 		<div class="flex items-center gap-1">
 			<div class="h-3 w-3 rounded border border-border bg-background"></div>
-			<span>{m['seatSelector.legendAvailable']?.() ?? 'Available'}</span>
+			<span>{m['seatSelector.legendAvailable']()}</span>
 		</div>
 		<div class="flex items-center gap-1">
 			<div
@@ -183,15 +152,15 @@
 			>
 				<X class="h-2 w-2 text-muted-foreground/70" aria-hidden="true" />
 			</div>
-			<span>{m['seatSelector.legendUnavailable']?.() ?? 'Unavailable'}</span>
+			<span>{m['seatSelector.legendUnavailable']()}</span>
 		</div>
 		<div class="flex items-center gap-1">
 			<Accessibility class="h-3 w-3 text-blue-500" aria-hidden="true" />
-			<span>{m['seatSelector.legendAccessible']?.() ?? 'Accessible'}</span>
+			<span>{m['seatSelector.legendAccessible']()}</span>
 		</div>
 		<div class="flex items-center gap-1">
 			<EyeOff class="h-3 w-3 text-amber-600 dark:text-amber-400" aria-hidden="true" />
-			<span>{m['seatSelector.legendObstructed']?.() ?? 'Obstructed'}</span>
+			<span>{m['seatSelector.legendObstructed']()}</span>
 		</div>
 	</div>
 </div>

@@ -10,7 +10,7 @@
 		organizationadminvenuesUpdatePriceCategory
 	} from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { extractApiErrorDetail } from './api-error-detail';
+	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 	import { X } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 
@@ -59,16 +59,14 @@
 
 			if (response.error) {
 				throw new Error(
-					extractApiErrorDetail(response.error) ??
-						m['orgAdmin.priceCategories.toast.createError']?.() ??
-						'Failed to create price category'
+					extractApiErrorDetail(response.error) ?? m['orgAdmin.priceCategories.toast.createError']()
 				);
 			}
 
 			return response.data;
 		},
 		onSuccess: () => {
-			toast.success(m['orgAdmin.priceCategories.toast.created']?.() ?? 'Price category created');
+			toast.success(m['orgAdmin.priceCategories.toast.created']());
 			queryClient.invalidateQueries({ queryKey: listQueryKey });
 			onSuccess();
 		},
@@ -92,16 +90,14 @@
 
 			if (response.error) {
 				throw new Error(
-					extractApiErrorDetail(response.error) ??
-						m['orgAdmin.priceCategories.toast.updateError']?.() ??
-						'Failed to update price category'
+					extractApiErrorDetail(response.error) ?? m['orgAdmin.priceCategories.toast.updateError']()
 				);
 			}
 
 			return response.data;
 		},
 		onSuccess: () => {
-			toast.success(m['orgAdmin.priceCategories.toast.updated']?.() ?? 'Price category updated');
+			toast.success(m['orgAdmin.priceCategories.toast.updated']());
 			queryClient.invalidateQueries({ queryKey: listQueryKey });
 			onSuccess();
 		},
@@ -200,8 +196,8 @@
 		<div class="flex items-center justify-between border-b px-6 py-4">
 			<h2 id="price-category-modal-title" class="text-xl font-semibold">
 				{isEditing
-					? (m['orgAdmin.priceCategories.form.editTitle']?.() ?? 'Edit Price Category')
-					: (m['orgAdmin.priceCategories.form.createTitle']?.() ?? 'Create Price Category')}
+					? m['orgAdmin.priceCategories.form.editTitle']()
+					: m['orgAdmin.priceCategories.form.createTitle']()}
 			</h2>
 			<button
 				type="button"
@@ -226,15 +222,14 @@
 				<!-- Name -->
 				<div>
 					<label for="price-category-name" class="mb-1.5 block text-sm font-medium">
-						{m['orgAdmin.priceCategories.form.nameLabel']?.() ?? 'Name'}
+						{m['orgAdmin.priceCategories.form.nameLabel']()}
 					</label>
 					<input
 						id="price-category-name"
 						type="text"
 						bind:this={nameInput}
 						bind:value={name}
-						placeholder={m['orgAdmin.priceCategories.form.namePlaceholder']?.() ??
-							'e.g., Gold, Silver, Balcony'}
+						placeholder={m['orgAdmin.priceCategories.form.namePlaceholder']()}
 						required
 						maxlength="100"
 						class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -244,7 +239,7 @@
 				<!-- Color -->
 				<div>
 					<label for="price-category-color" class="mb-1.5 block text-sm font-medium">
-						{m['orgAdmin.priceCategories.form.colorLabel']?.() ?? 'Color'}
+						{m['orgAdmin.priceCategories.form.colorLabel']()}
 					</label>
 					<div class="flex items-center gap-3">
 						<input
@@ -260,15 +255,14 @@
 						>
 					</div>
 					<p class="mt-1 text-xs text-muted-foreground">
-						{m['orgAdmin.priceCategories.form.colorHelp']?.() ??
-							'Used to color seats of this category on the seating chart.'}
+						{m['orgAdmin.priceCategories.form.colorHelp']()}
 					</p>
 				</div>
 
 				<!-- Display Order -->
 				<div>
 					<label for="price-category-display-order" class="mb-1.5 block text-sm font-medium">
-						{m['orgAdmin.priceCategories.form.displayOrderLabel']?.() ?? 'Display Order'}
+						{m['orgAdmin.priceCategories.form.displayOrderLabel']()}
 					</label>
 					<input
 						id="price-category-display-order"
@@ -278,8 +272,7 @@
 						class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					/>
 					<p class="mt-1 text-xs text-muted-foreground">
-						{m['orgAdmin.priceCategories.form.displayOrderHelp']?.() ??
-							'Lower numbers appear first'}
+						{m['orgAdmin.priceCategories.form.displayOrderHelp']()}
 					</p>
 				</div>
 			</div>
@@ -301,12 +294,12 @@
 				>
 					{#if isPending}
 						{isEditing
-							? (m['orgAdmin.priceCategories.form.saving']?.() ?? 'Saving...')
-							: (m['orgAdmin.priceCategories.form.creating']?.() ?? 'Creating...')}
+							? m['orgAdmin.priceCategories.form.saving']()
+							: m['orgAdmin.priceCategories.form.creating']()}
 					{:else}
 						{isEditing
-							? (m['orgAdmin.priceCategories.form.save']?.() ?? 'Save')
-							: (m['orgAdmin.priceCategories.form.create']?.() ?? 'Create Category')}
+							? m['orgAdmin.priceCategories.form.save']()
+							: m['orgAdmin.priceCategories.form.create']()}
 					{/if}
 				</button>
 			</div>

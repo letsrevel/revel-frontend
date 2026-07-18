@@ -557,11 +557,10 @@
 					/>
 					<div class="flex-1">
 						<div class="font-medium">
-							{m['detailsStep.publicPronounDistribution']?.() ?? 'Public pronoun distribution'}
+							{m['detailsStep.publicPronounDistribution']()}
 						</div>
 						<div class="text-sm text-muted-foreground">
-							{m['detailsStep.publicPronounDistributionHint']?.() ??
-								'Show pronoun distribution statistics to all attendees, not just staff'}
+							{m['detailsStep.publicPronounDistributionHint']()}
 						</div>
 					</div>
 				</label>

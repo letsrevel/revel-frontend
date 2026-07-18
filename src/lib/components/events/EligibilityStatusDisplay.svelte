@@ -71,24 +71,22 @@
 		const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
 
 		if (diff < 0) {
-			return m['ineligibilityMessage.deadlinePassed']?.() ?? 'Deadline has passed';
+			return m['ineligibilityMessage.deadlinePassed']();
 		}
 
 		if (days === 0 && hours < 24) {
 			if (hours <= 1) {
-				return m['ineligibilityMessage.deadlineLessThanOneHour']?.() ?? 'Less than 1 hour left';
+				return m['ineligibilityMessage.deadlineLessThanOneHour']();
 			}
-			return (
-				m['ineligibilityMessage.deadlineHoursLeft']?.({ hours }) ?? `${hours} hours left to apply`
-			);
+			return m['ineligibilityMessage.deadlineHoursLeft']({ hours });
 		}
 
 		if (days === 1) {
-			return m['ineligibilityMessage.deadlineTomorrow']?.() ?? 'Tomorrow';
+			return m['ineligibilityMessage.deadlineTomorrow']();
 		}
 
 		if (days < 7) {
-			return m['ineligibilityMessage.deadlineDaysLeft']?.({ days }) ?? `${days} days left to apply`;
+			return m['ineligibilityMessage.deadlineDaysLeft']({ days });
 		}
 
 		return formatDateLongMonth(deadline, timezone ?? undefined);
@@ -228,8 +226,7 @@
 			{#if eligibility.missing_profile_fields && eligibility.missing_profile_fields.length > 0}
 				<div class="mt-2 space-y-1.5">
 					<p class="text-sm font-medium">
-						{m['eligibilityStatusDisplay.missingProfileFields']?.() ??
-							'Please add the following to your profile:'}
+						{m['eligibilityStatusDisplay.missingProfileFields']()}
 					</p>
 					<ul class="space-y-1 text-sm text-muted-foreground">
 						{#each eligibility.missing_profile_fields as field (field)}
@@ -257,10 +254,7 @@
 				>
 					<Calendar class="h-4 w-4 shrink-0" aria-hidden="true" />
 					<span>
-						<strong
-							>{m['ineligibilityMessage.applicationDeadline']?.() ??
-								'Application deadline'}:</strong
-						>
+						<strong>{m['ineligibilityMessage.applicationDeadline']()}:</strong>
 						{formatDeadline(applyBefore)}
 					</span>
 				</div>

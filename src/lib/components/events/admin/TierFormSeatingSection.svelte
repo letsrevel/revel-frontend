@@ -63,13 +63,13 @@
 <div class="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
 	<div class="flex items-center gap-2 text-sm font-medium">
 		<Armchair class="h-4 w-4 text-primary" aria-hidden="true" />
-		{m['tierForm.seatingConfig.title']?.() ?? 'Seating Configuration'}
+		{m['tierForm.seatingConfig.title']()}
 	</div>
 
 	<!-- Seat Assignment Mode -->
 	<div>
 		<Label for="seat-assignment-mode">
-			{m['tierForm.seatingConfig.mode']?.() ?? 'Seat Assignment Mode'}
+			{m['tierForm.seatingConfig.mode']()}
 		</Label>
 		<select
 			id="seat-assignment-mode"
@@ -78,30 +78,26 @@
 			class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 		>
 			<option value="none">
-				{m['tierForm.seatingConfig.none']?.() ?? 'General Admission (No Assigned Seats)'}
+				{m['tierForm.seatingConfig.none']()}
 			</option>
 			<option value="best_available" disabled={!canUseSeatAssignment}>
-				{m['tierForm.seatingConfig.bestAvailable']?.() ?? 'Best Available (Auto-Assigned Seats)'}
+				{m['tierForm.seatingConfig.bestAvailable']()}
 				{!canUseSeatAssignment ? m['tierForm.requiresVenueSuffix']() : ''}
 			</option>
 			<option value="user_choice" disabled={!canUseSeatAssignment}>
-				{m['tierForm.seatingConfig.userChoice']?.() ?? 'User Selects Seat'}
+				{m['tierForm.seatingConfig.userChoice']()}
 				{!canUseSeatAssignment ? m['tierForm.requiresVenueSuffix']() : ''}
 			</option>
 		</select>
 		<p class="mt-1 text-xs text-muted-foreground">
 			{#if !canUseSeatAssignment && seatAssignmentMode === 'none'}
-				{m['tierForm.seatingConfig.noVenueConfigured']?.() ??
-					'To enable seat assignment, configure a venue for this event in Basic Info.'}
+				{m['tierForm.seatingConfig.noVenueConfigured']()}
 			{:else if seatAssignmentMode === 'none'}
-				{m['tierForm.seatingConfig.noneHelp']?.() ??
-					'No seat assignment - attendees can sit anywhere'}
+				{m['tierForm.seatingConfig.noneHelp']()}
 			{:else if seatAssignmentMode === 'best_available'}
-				{m['tierForm.seatingConfig.bestAvailableHelp']?.() ??
-					'The best available adjacent seats in the chosen price category are assigned automatically at purchase'}
+				{m['tierForm.seatingConfig.bestAvailableHelp']()}
 			{:else}
-				{m['tierForm.seatingConfig.userChoiceHelp']?.() ??
-					'Attendees can select their preferred seat'}
+				{m['tierForm.seatingConfig.userChoiceHelp']()}
 			{/if}
 		</p>
 	</div>
@@ -109,19 +105,18 @@
 	<!-- Max Tickets Per User -->
 	<div>
 		<Label for="max-tickets-per-user">
-			{m['tierForm.seatingConfig.maxTickets']?.() ?? 'Max Tickets Per User'}
+			{m['tierForm.seatingConfig.maxTickets']()}
 		</Label>
 		<Input
 			id="max-tickets-per-user"
 			type="number"
 			min="1"
 			bind:value={maxTicketsPerUser}
-			placeholder={m['tierForm.seatingConfig.inheritFromEvent']?.() ?? 'Inherit from event'}
+			placeholder={m['tierForm.seatingConfig.inheritFromEvent']()}
 			disabled={isPending}
 		/>
 		<p class="mt-1 text-xs text-muted-foreground">
-			{m['tierForm.seatingConfig.maxTicketsHelp']?.() ??
-				'Leave empty to inherit from event (event default is 1)'}
+			{m['tierForm.seatingConfig.maxTicketsHelp']()}
 		</p>
 	</div>
 
@@ -133,7 +128,7 @@
 			<Label for="tier-standing-sector">
 				<span class="flex items-center gap-1">
 					<LayoutGrid class="h-3.5 w-3.5" aria-hidden="true" />
-					{m['tierForm.seatingConfig.standingSector']?.() ?? 'Standing sector'}
+					{m['tierForm.seatingConfig.standingSector']()}
 				</span>
 			</Label>
 			<select
@@ -143,7 +138,7 @@
 				class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 			>
 				<option value={null}>
-					{m['tierForm.seatingConfig.standingSectorNone']?.() ?? 'None (no capacity limit)'}
+					{m['tierForm.seatingConfig.standingSectorNone']()}
 				</option>
 				{#each standingSectors as sector (sector.id)}
 					<option value={sector.id}>
@@ -154,8 +149,7 @@
 				{/each}
 			</select>
 			<p class="mt-1 text-xs text-muted-foreground">
-				{m['tierForm.seatingConfig.standingSectorHelp']?.() ??
-					"Optional: link a standing sector to cap this tier's sales at the sector capacity."}
+				{m['tierForm.seatingConfig.standingSectorHelp']()}
 			</p>
 
 			<!-- Same hard-limit warning as the user_choice sector picker -->
@@ -184,19 +178,19 @@
 		<div class="space-y-4 border-t border-border pt-4">
 			<div class="flex items-center gap-2 text-sm font-medium">
 				<Building2 class="h-4 w-4 text-primary" aria-hidden="true" />
-				{m['tierForm.seatingConfig.venueSection']?.() ?? 'Venue & Sector'}
+				{m['tierForm.seatingConfig.venueSection']()}
 			</div>
 
 			<!-- Venue (read-only - comes from event; not a Label: no control to point at) -->
 			<div>
 				<span class="text-sm font-medium leading-none">
-					{m['tierForm.seatingConfig.venue']?.() ?? 'Venue'}
+					{m['tierForm.seatingConfig.venue']()}
 				</span>
 				{#if venuesLoading}
 					<div
 						class="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm text-muted-foreground"
 					>
-						{m['tierForm.seatingConfig.loadingVenues']?.() ?? 'Loading venue...'}
+						{m['tierForm.seatingConfig.loadingVenues']()}
 					</div>
 				{:else}
 					<div
@@ -211,14 +205,13 @@
 							{/if}
 						{:else}
 							<span class="text-muted-foreground">
-								{m['tierForm.seatingConfig.noVenueSelected']?.() ?? 'No venue configured for event'}
+								{m['tierForm.seatingConfig.noVenueSelected']()}
 							</span>
 						{/if}
 					</div>
 				{/if}
 				<p class="mt-1 text-xs text-muted-foreground">
-					{m['tierForm.seatingConfig.venueFromEvent']?.() ??
-						'Venue is set at the event level in Basic Info.'}
+					{m['tierForm.seatingConfig.venueFromEvent']()}
 				</p>
 			</div>
 
@@ -229,7 +222,7 @@
 						<Label for="tier-sector">
 							<span class="flex items-center gap-1">
 								<LayoutGrid class="h-3.5 w-3.5" aria-hidden="true" />
-								{m['tierForm.seatingConfig.sector']?.() ?? 'Sector'}
+								{m['tierForm.seatingConfig.sector']()}
 								{#if sectorRequired}
 									<span class="text-destructive">*</span>
 								{/if}
@@ -249,9 +242,8 @@
 						>
 							<option value={null}>
 								{sectorRequired
-									? (m['tierForm.seatingConfig.selectSectorRequired']?.() ??
-										'Select a sector (required)')
-									: (m['tierForm.seatingConfig.selectSector']?.() ?? 'Select a sector (optional)')}
+									? m['tierForm.seatingConfig.selectSectorRequired']()
+									: m['tierForm.seatingConfig.selectSector']()}
 							</option>
 							{#each selectedVenueSectors as sector (sector.id)}
 								<option value={sector.id}>
@@ -270,11 +262,9 @@
 								: 'text-muted-foreground'}"
 						>
 							{#if sectorRequired}
-								{m['tierForm.seatingConfig.sectorRequiredHelp']?.() ??
-									'A sector is required for seat assignment modes other than General Admission'}
+								{m['tierForm.seatingConfig.sectorRequiredHelp']()}
 							{:else}
-								{m['tierForm.seatingConfig.sectorHelp']?.() ??
-									'Optionally restrict this tier to a specific sector'}
+								{m['tierForm.seatingConfig.sectorHelp']()}
 							{/if}
 						</p>
 
@@ -300,16 +290,14 @@
 				{:else if venueId}
 					<p class="text-xs {sectorRequired ? 'text-destructive' : 'text-muted-foreground'}">
 						{#if sectorRequired}
-							{m['tierForm.seatingConfig.noSectorsRequired']?.() ??
-								'This venue has no sectors configured. Sectors are required for this seat assignment mode.'}
+							{m['tierForm.seatingConfig.noSectorsRequired']()}
 						{:else}
-							{m['tierForm.seatingConfig.noSectors']?.() ?? 'This venue has no sectors configured.'}
+							{m['tierForm.seatingConfig.noSectors']()}
 						{/if}
 					</p>
 				{:else if sectorRequired}
 					<p class="text-xs text-destructive">
-						{m['tierForm.seatingConfig.venueRequiredForSeats']?.() ??
-							'Please select a venue and sector for this seat assignment mode'}
+						{m['tierForm.seatingConfig.venueRequiredForSeats']()}
 					</p>
 				{/if}
 			{/if}
@@ -320,7 +308,7 @@
 					<Label for="tier-price-category">
 						<span class="flex items-center gap-1">
 							<Tag class="h-3.5 w-3.5" aria-hidden="true" />
-							{m['tierForm.seatingConfig.priceCategory']?.() ?? 'Price Category'}
+							{m['tierForm.seatingConfig.priceCategory']()}
 							{#if categoryRequired}
 								<span class="text-destructive">*</span>
 							{/if}
@@ -330,17 +318,16 @@
 						<div
 							class="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm text-muted-foreground"
 						>
-							{m['tierForm.seatingConfig.loadingChart']?.() ?? 'Loading seating chart...'}
+							{m['tierForm.seatingConfig.loadingChart']()}
 						</div>
 					{:else if chartError}
 						<div
 							class="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm text-muted-foreground"
 						>
-							{m['tierForm.seatingConfig.priceCategory']?.() ?? 'Price Category'}
+							{m['tierForm.seatingConfig.priceCategory']()}
 						</div>
 						<p class="mt-1 text-xs text-destructive" role="alert">
-							{m['tierForm.seatingConfig.chartLoadFailed']?.() ??
-								'Failed to load the seating chart. Check your connection and try again.'}
+							{m['tierForm.seatingConfig.chartLoadFailed']()}
 						</p>
 						{#if onRetryChart}
 							<Button
@@ -351,7 +338,7 @@
 								onclick={onRetryChart}
 								disabled={isPending}
 							>
-								{m['tierForm.seatingConfig.chartRetry']?.() ?? 'Try again'}
+								{m['tierForm.seatingConfig.chartRetry']()}
 							</Button>
 						{/if}
 					{:else if sortedPriceCategories.length > 0}
@@ -368,8 +355,7 @@
 								: 'border-input'}"
 						>
 							<option value={null}>
-								{m['tierForm.seatingConfig.selectPriceCategoryRequired']?.() ??
-									'Select a price category (required)'}
+								{m['tierForm.seatingConfig.selectPriceCategoryRequired']()}
 							</option>
 							{#each sortedPriceCategories as category (category.id)}
 								<option value={category.id}>{category.name}</option>
@@ -391,18 +377,16 @@
 								? 'text-destructive'
 								: 'text-muted-foreground'}"
 						>
-							{m['tierForm.seatingConfig.priceCategoryRequiredHelp']?.() ??
-								'Seats are auto-assigned from this price category. A price category is required for Best Available.'}
+							{m['tierForm.seatingConfig.priceCategoryRequiredHelp']()}
 						</p>
 					{:else}
 						<div
 							class="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm text-muted-foreground"
 						>
-							{m['tierForm.seatingConfig.priceCategory']?.() ?? 'Price Category'}
+							{m['tierForm.seatingConfig.priceCategory']()}
 						</div>
 						<p class="mt-1 text-xs text-destructive">
-							{m['tierForm.seatingConfig.noPriceCategories']?.() ??
-								"This venue's seating chart has no price categories, so Best Available cannot be used. Add price categories to the venue's seating chart first."}
+							{m['tierForm.seatingConfig.noPriceCategories']()}
 						</p>
 					{/if}
 				</div>

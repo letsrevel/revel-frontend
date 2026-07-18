@@ -7,7 +7,7 @@
 	} from '$lib/api/generated/sdk.gen';
 	import type { PriceCategorySchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { extractApiErrorDetail } from './api-error-detail';
+	import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 	import { Plus, Edit, Trash2, Tag } from '@lucide/svelte';
 	import PriceCategoryModal from './PriceCategoryModal.svelte';
 	import { toast } from 'svelte-sonner';
@@ -72,12 +72,11 @@
 			return response.data;
 		},
 		onSuccess: () => {
-			toast.success(m['orgAdmin.priceCategories.delete.success']?.() ?? 'Price category deleted');
+			toast.success(m['orgAdmin.priceCategories.delete.success']());
 			queryClient.invalidateQueries({ queryKey: listQueryKey });
 		},
 		onError: (error: Error) => {
-			const lead =
-				m['orgAdmin.priceCategories.delete.error']?.() ?? 'Failed to delete price category';
+			const lead = m['orgAdmin.priceCategories.delete.error']();
 			toast.error(error.message ? `${lead}: ${error.message}` : lead);
 		}
 	}));
@@ -93,12 +92,7 @@
 	}
 
 	function handleDelete(categoryId: string) {
-		if (
-			confirm(
-				m['orgAdmin.priceCategories.delete.confirm']?.() ??
-					'Delete this price category? Seats using it will lose their category and can be repainted.'
-			)
-		) {
+		if (confirm(m['orgAdmin.priceCategories.delete.confirm']())) {
 			deleteMutation.mutate(categoryId);
 		}
 	}
@@ -127,11 +121,10 @@
 	<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 		<div>
 			<h2 id="price-categories-heading" class="text-xl font-bold tracking-tight">
-				{m['orgAdmin.priceCategories.sectionTitle']?.() ?? 'Price Categories'}
+				{m['orgAdmin.priceCategories.sectionTitle']()}
 			</h2>
 			<p class="text-sm text-muted-foreground">
-				{m['orgAdmin.priceCategories.sectionDescription']?.() ??
-					'Group seats into price levels — Best Available tiers auto-assign seats from a category.'}
+				{m['orgAdmin.priceCategories.sectionDescription']()}
 			</p>
 		</div>
 
@@ -141,18 +134,17 @@
 			class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 		>
 			<Plus class="h-5 w-5" aria-hidden="true" />
-			{m['orgAdmin.priceCategories.createButton']?.() ?? 'Add Price Category'}
+			{m['orgAdmin.priceCategories.createButton']()}
 		</button>
 	</div>
 
 	{#if categoriesQuery.error}
 		<div class="rounded-md bg-destructive/10 p-4 text-destructive" role="alert">
 			<p class="font-semibold">
-				{m['orgAdmin.priceCategories.error.title']?.() ?? 'Error loading price categories'}
+				{m['orgAdmin.priceCategories.error.title']()}
 			</p>
 			<p class="mt-1 text-sm">
-				{m['orgAdmin.priceCategories.error.description']?.() ??
-					'Failed to load price categories. Please try again.'}
+				{m['orgAdmin.priceCategories.error.description']()}
 			</p>
 		</div>
 	{:else if categoriesQuery.isLoading}
@@ -162,7 +154,7 @@
 				aria-hidden="true"
 			></div>
 			<span class="sr-only">
-				{m['orgAdmin.priceCategories.loading']?.() ?? 'Loading price categories...'}
+				{m['orgAdmin.priceCategories.loading']()}
 			</span>
 		</div>
 	{:else if categories.length === 0}
@@ -171,11 +163,10 @@
 		>
 			<Tag class="mx-auto h-10 w-10 text-muted-foreground" aria-hidden="true" />
 			<h3 class="mt-3 text-lg font-semibold">
-				{m['orgAdmin.priceCategories.empty.title']?.() ?? 'No price categories yet'}
+				{m['orgAdmin.priceCategories.empty.title']()}
 			</h3>
 			<p class="mt-2 text-sm text-muted-foreground">
-				{m['orgAdmin.priceCategories.empty.description']?.() ??
-					'Price categories group seats into price levels (e.g., Gold, Silver). Ticket tiers with Best Available seating assign seats from a price category.'}
+				{m['orgAdmin.priceCategories.empty.description']()}
 			</p>
 			<button
 				type="button"
@@ -183,7 +174,7 @@
 				class="mt-4 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			>
 				<Plus class="h-5 w-5" aria-hidden="true" />
-				{m['orgAdmin.priceCategories.createButton']?.() ?? 'Add Price Category'}
+				{m['orgAdmin.priceCategories.createButton']()}
 			</button>
 		</div>
 	{:else}
@@ -202,9 +193,9 @@
 							<p class="text-xs text-muted-foreground">
 								<span class="font-mono">{category.color}</span>
 								<span aria-hidden="true"> · </span>
-								{m['orgAdmin.priceCategories.card.order']?.({
+								{m['orgAdmin.priceCategories.card.order']({
 									order: String(category.display_order ?? 0)
-								}) ?? `Order: ${category.display_order ?? 0}`}
+								})}
 							</p>
 						</div>
 					</div>
@@ -213,22 +204,18 @@
 						<button
 							type="button"
 							onclick={() => handleEdit(category)}
-							class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-							aria-label={m['orgAdmin.priceCategories.card.edit']?.({ name: category.name }) ??
-								`Edit price category ${category.name}`}
-							title={m['orgAdmin.priceCategories.card.edit']?.({ name: category.name }) ??
-								`Edit price category ${category.name}`}
+							class="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
+							aria-label={m['orgAdmin.priceCategories.card.edit']({ name: category.name })}
+							title={m['orgAdmin.priceCategories.card.edit']({ name: category.name })}
 						>
 							<Edit class="h-4 w-4" />
 						</button>
 						<button
 							type="button"
 							onclick={() => category.id && handleDelete(category.id)}
-							class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-							aria-label={m['orgAdmin.priceCategories.card.delete']?.({ name: category.name }) ??
-								`Delete price category ${category.name}`}
-							title={m['orgAdmin.priceCategories.card.delete']?.({ name: category.name }) ??
-								`Delete price category ${category.name}`}
+							class="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
+							aria-label={m['orgAdmin.priceCategories.card.delete']({ name: category.name })}
+							title={m['orgAdmin.priceCategories.card.delete']({ name: category.name })}
 						>
 							<Trash2 class="h-4 w-4" />
 						</button>

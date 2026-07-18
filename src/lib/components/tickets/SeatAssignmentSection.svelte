@@ -11,6 +11,15 @@
 	import { holdConflictMessage } from './purchase-error';
 	import { buildSeatViews } from './seating-view';
 	import SeatSelector from './SeatSelector.svelte';
+	import SeatMap from './SeatMap.svelte';
+	import SeatViewToggle from './SeatViewToggle.svelte';
+	import {
+		defaultSeatViewMode,
+		readSeatViewPref,
+		standingCountsFrom,
+		writeSeatViewPref,
+		type SeatViewMode
+	} from './seat-view-toggle';
 
 	interface Props {
 		isUserChoiceSeat: boolean;
@@ -50,7 +59,7 @@
 	// Focus target for the conflict alert: the seat button the user pressed
 	// becomes disabled when the failed hold resolves, which would silently drop
 	// keyboard focus to <body> (WCAG 2.4.3) — so we move it to the alert.
-	let conflictAlertEl: HTMLDivElement | undefined;
+	let conflictAlertEl = $state<HTMLDivElement>();
 
 	// This component only mounts while the dialog is open (bits-ui unmounts
 	// DialogContent when closed), so instantiating here scopes the queries and
@@ -123,12 +132,33 @@
 		});
 	});
 
+	// The map must render the SAME seats as the list: scope the chart to the
+	// tier's sector so other sectors' seats don't show as crossed-out
+	// "unavailable" (SeatMap has no seatViews filter of its own).
+	const mapChart = $derived.by(() => {
+		if (!chart || !tierSector?.id) return chart;
+		return { ...chart, sectors: (chart.sectors ?? []).filter((s) => s.id === tierSector.id) };
+	});
+
 	const heldCount = $derived(controller?.myHolds.length ?? 0);
 
 	function handleToggle(seatId: string): void {
 		conflictMessage = '';
 		void controller?.toggleSeat(seatId);
 	}
+
+	// Map/List view: an explicit choice (this tap or an earlier one this
+	// session) wins; otherwise the default derives from chart complexity (map
+	// for multi-sector/shaped/large charts, list for small single-sector ones).
+	let explicitViewMode = $state<SeatViewMode | null>(readSeatViewPref());
+	const seatViewMode = $derived(explicitViewMode ?? (chart ? defaultSeatViewMode(chart) : 'list'));
+
+	function handleViewModeChange(mode: SeatViewMode): void {
+		explicitViewMode = mode;
+		writeSeatViewPref(mode);
+	}
+
+	const standingCounts = $derived(standingCountsFrom(availability?.standing));
 </script>
 
 {#if isUserChoiceSeat}
@@ -137,11 +167,11 @@
 		<div class="flex items-center justify-between">
 			<span class="flex items-center gap-2 text-sm font-medium leading-none">
 				<Armchair class="h-4 w-4" />
-				{m['ticketConfirmationDialog.selectSeats']?.() ?? 'Select Your Seats'}
+				{m['ticketConfirmationDialog.selectSeats']()}
 			</span>
 			<span aria-live="polite" class="text-sm text-muted-foreground">
 				{heldCount} / {quantity}
-				{m['ticketConfirmationDialog.seatsSelected']?.() ?? 'selected'}
+				{m['ticketConfirmationDialog.seatsSelected']()}
 			</span>
 		</div>
 
@@ -160,7 +190,7 @@
 			<div class="flex items-center justify-center py-8">
 				<Loader2 class="h-6 w-6 animate-spin text-muted-foreground" />
 				<span class="ml-2 text-sm text-muted-foreground">
-					{m['ticketConfirmationDialog.loadingSeats']?.() ?? 'Loading available seats...'}
+					{m['ticketConfirmationDialog.loadingSeats']()}
 				</span>
 			</div>
 		{:else if seatLoadFailed}
@@ -172,21 +202,46 @@
 			<Alert>
 				<AlertCircle class="h-4 w-4" />
 				<AlertDescription>
-					{m['ticketConfirmationDialog.noSeatsAvailable']?.() ??
-						'No seats available for selection.'}
+					{m['ticketConfirmationDialog.noSeatsAvailable']()}
 				</AlertDescription>
 			</Alert>
 		{:else}
-			<!-- Seat Selection Grid (SeatSelector caps its own grid height so the
-			     hold notice and legend stay visible) -->
-			<div class="rounded-lg border border-border bg-background p-3">
-				<SeatSelector
-					seats={seatViews}
-					onToggle={handleToggle}
-					maxReached={heldCount >= quantity}
-					disabled={isProcessing}
-				/>
+			<!-- Map/List toggle sits OUTSIDE the map surface (touch-action: none
+			     there), so the dialog stays scrollable from this row on mobile. -->
+			<div class="flex justify-end">
+				<SeatViewToggle mode={seatViewMode} onModeChange={handleViewModeChange} />
 			</div>
+			{#if seatViewMode === 'map' && mapChart}
+				<!-- Height bounded like the list cap; pan/zoom reaches clipped content. -->
+				<div class="max-h-72 overflow-hidden rounded-lg border border-border bg-background">
+					<SeatMap
+						chart={mapChart}
+						seats={seatViews}
+						onToggle={handleToggle}
+						maxReached={heldCount >= quantity}
+						disabled={isProcessing}
+						{standingCounts}
+					/>
+				</div>
+				<!-- Hold notice for the map view (the list renders its own inside
+				     SeatSelector); region exists before content so it announces. -->
+				<p role="status" class="text-center text-xs text-muted-foreground">
+					{#if heldCount > 0}
+						{m['seatSelector.heldForTenMinutes']()}
+					{/if}
+				</p>
+			{:else}
+				<!-- Seat Selection Grid (SeatSelector caps its own grid height so the
+				     hold notice and legend stay visible) -->
+				<div class="rounded-lg border border-border bg-background p-3">
+					<SeatSelector
+						seats={seatViews}
+						onToggle={handleToggle}
+						maxReached={heldCount >= quantity}
+						disabled={isProcessing}
+					/>
+				</div>
+			{/if}
 			<!-- 409 conflict + validation errors (polite live region) -->
 			<div aria-live="polite">
 				{#if conflictMessage}
@@ -213,11 +268,10 @@
 			<Armchair class="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
 			<div class="flex-1 space-y-1">
 				<p class="font-medium text-foreground">
-					{m['ticketConfirmationDialog.bestAvailableTitle']?.() ?? 'Best available seats'}
+					{m['ticketConfirmationDialog.bestAvailableTitle']()}
 				</p>
 				<p class="text-sm text-muted-foreground">
-					{m['ticketConfirmationDialog.bestAvailableDesc']?.() ??
-						'Your seats will be assigned automatically — adjacent seats, best block available.'}
+					{m['ticketConfirmationDialog.bestAvailableDesc']()}
 				</p>
 				{#if tierVenue || tierSector}
 					<p class="mt-2 text-sm">
@@ -239,8 +293,7 @@
 						disabled={isProcessing}
 					/>
 					<Label for="accessible-seats-required" class="cursor-pointer text-sm font-normal">
-						{m['ticketConfirmationDialog.accessibleSeatsLabel']?.() ??
-							'I need wheelchair-accessible seats'}
+						{m['ticketConfirmationDialog.accessibleSeatsLabel']()}
 					</Label>
 				</div>
 			</div>
@@ -261,11 +314,10 @@
 			<DoorOpen class="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
 			<div class="space-y-1">
 				<p class="font-medium text-foreground">
-					{m['ticketConfirmationDialog.generalEntrance']?.() ?? 'General Entrance'}
+					{m['ticketConfirmationDialog.generalEntrance']()}
 				</p>
 				<p class="text-sm text-muted-foreground">
-					{m['ticketConfirmationDialog.generalEntranceDesc']?.() ??
-						'This ticket grants general admission without assigned seating.'}
+					{m['ticketConfirmationDialog.generalEntranceDesc']()}
 				</p>
 				<p class="mt-2 text-sm font-medium">{tierVenue.name}</p>
 			</div>

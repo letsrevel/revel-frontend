@@ -446,12 +446,15 @@
 
 			// The full purchase, serialized — the key that decides whether a
 			// resubmit may resume a held reservation or must reserve afresh.
+			// accessible_required is part of it: toggling it must re-hold a block
+			// from the right pool instead of resuming the old reservation.
 			const fingerprint = JSON.stringify({
 				email: formData.email,
 				first_name: formData.first_name,
 				last_name: formData.last_name,
 				tickets,
 				billing_info: billingInfo,
+				accessible_required: accessibleRequired,
 				price_per_ticket: isPwyc ? pwycNumber : undefined
 			});
 
@@ -499,7 +502,11 @@
 						last_name: formData.last_name,
 						tickets,
 						price_per_ticket: pwycNumber,
-						billing_info: billingInfo
+						billing_info: billingInfo,
+						// Whole-checkout accessible-seating opt-in (best_available):
+						// online flows pair it with the held block; email flows embed
+						// it in the confirmation token for confirm-time assignment.
+						accessible_required: accessibleRequired
 					}
 				});
 			} else {
@@ -511,7 +518,11 @@
 						first_name: formData.first_name,
 						last_name: formData.last_name,
 						tickets,
-						billing_info: billingInfo
+						billing_info: billingInfo,
+						// Whole-checkout accessible-seating opt-in (best_available):
+						// online flows pair it with the held block; email flows embed
+						// it in the confirmation token for confirm-time assignment.
+						accessible_required: accessibleRequired
 					}
 				});
 			}

@@ -118,16 +118,16 @@
 
 	const seatAssignmentDisplay = $derived(() => {
 		const modes: Record<string, string> = {
-			none: m['tierCard.seatAssignment.none']?.() ?? 'General Admission',
-			best_available: m['tierCard.seatAssignment.bestAvailable']?.() ?? 'Best Available',
-			user_choice: m['tierCard.seatAssignment.userChoice']?.() ?? 'User Selects Seat'
+			none: m['tierCard.seatAssignment.none'](),
+			best_available: m['tierCard.seatAssignment.bestAvailable'](),
+			user_choice: m['tierCard.seatAssignment.userChoice']()
 		};
 		return modes[tier.seat_assignment_mode] || modes.none;
 	});
 
 	const maxTicketsDisplay = $derived(() => {
 		if (tier.max_tickets_per_user === null || tier.max_tickets_per_user === undefined) {
-			return m['tierCard.maxTickets.inherit']?.() ?? 'Inherited from event';
+			return m['tierCard.maxTickets.inherit']();
 		}
 		return String(tier.max_tickets_per_user);
 	});
@@ -199,7 +199,7 @@
 					<dt class="text-muted-foreground">
 						<span class="flex items-center gap-1">
 							<Armchair class="h-3 w-3" aria-hidden="true" />
-							{m['tierCard.seatAssignment.label']?.() ?? 'Seating'}
+							{m['tierCard.seatAssignment.label']()}
 						</span>
 					</dt>
 					<dd class="font-medium">{seatAssignmentDisplay()}</dd>
@@ -208,7 +208,7 @@
 				<!-- Max Tickets Per User -->
 				<div>
 					<dt class="text-muted-foreground">
-						{m['tierCard.maxTicketsPerUser']?.() ?? 'Max per user'}
+						{m['tierCard.maxTicketsPerUser']()}
 					</dt>
 					<dd class="font-medium">{maxTicketsDisplay()}</dd>
 				</div>
@@ -219,7 +219,7 @@
 						<dt class="text-muted-foreground">
 							<span class="flex items-center gap-1">
 								<Building2 class="h-3 w-3" aria-hidden="true" />
-								{m['tierCard.venueAndSector']?.() ?? 'Venue & Sector'}
+								{m['tierCard.venueAndSector']()}
 							</span>
 						</dt>
 						<dd class="flex items-center gap-2 font-medium">

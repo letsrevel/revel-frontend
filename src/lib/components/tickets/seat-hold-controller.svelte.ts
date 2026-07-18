@@ -43,23 +43,28 @@ export interface SeatHoldControllerOptions {
 }
 
 /**
- * Why a hold 409'd: 'capacity' = the caller already holds too many seats for
- * this event (per-identity cap), 'unavailable' = seats taken/blocked/invalid.
+ * Why a hold 409'd (unified HoldResponseSchema.conflict_reason): 'capacity' =
+ * the caller already holds too many seats for this event (per-identity cap),
+ * 'unavailable' = seats taken/blocked/invalid, 'no_block' = best-available
+ * found no adjacent block that fits the request.
  */
-export type HoldConflictReason = 'capacity' | 'unavailable';
+export type HoldConflictReason = 'capacity' | 'unavailable' | 'no_block';
 
 export interface BestAvailableHoldResult {
 	ok: boolean;
 	heldSeatIds: string[];
-	/** Backend detail for the failure, when it provided one (already localized server-side). */
+	/** Backend `detail`, kept defensively (the unified 409 body carries none). */
 	message?: string;
-	/** Discriminates cap-exceeded from no-block-available failures (409 body). */
+	/** Failure discriminator from the unified 409 body's conflict_reason. */
 	reason?: HoldConflictReason;
 }
 
 const CHART_STALE_TIME_MS = 5 * 60 * 1000;
 
-/** Read a string `detail` off an unknown error body (plain HttpError 409s carry one). */
+/**
+ * Read a string `detail` off an unknown error body. Kept defensively: the
+ * unified hold 409s carry conflict_reason instead of a plain detail now.
+ */
 function detailFrom(error: unknown): string | undefined {
 	if (typeof error === 'object' && error !== null && 'detail' in error) {
 		const { detail } = error as { detail: unknown };
@@ -79,11 +84,13 @@ function conflictsFrom(error: unknown): string[] {
 	return [];
 }
 
-/** Read conflict_reason off an unknown 409 body; anything but 'capacity' means unavailable. */
+/** Read conflict_reason off an unknown 409 body; unknown/absent means unavailable. */
 function conflictReasonFrom(error: unknown): HoldConflictReason {
 	if (typeof error === 'object' && error !== null && 'conflict_reason' in error) {
 		const { conflict_reason } = error as HoldResponseSchema;
-		if (conflict_reason === 'capacity') return 'capacity';
+		if (conflict_reason === 'capacity' || conflict_reason === 'no_block') {
+			return conflict_reason;
+		}
 	}
 	return 'unavailable';
 }

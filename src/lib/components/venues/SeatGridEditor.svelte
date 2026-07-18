@@ -1,13 +1,13 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import type {
-		VenueSeatSchema,
-		VenueSeatInputSchema,
-		VenueSeatBulkUpdateItemSchema
-	} from '$lib/api/generated/types.gen';
-	import { Accessibility, EyeOff } from '@lucide/svelte';
+	import type { VenueSeatSchema, PriceCategorySchema } from '$lib/api/generated/types.gen';
+	import { createQuery } from '@tanstack/svelte-query';
+	import { organizationadminvenuesListPriceCategories } from '$lib/api/generated/sdk.gen';
+	import { authStore } from '$lib/stores/auth.svelte';
+	import { Accessibility, EyeOff, Paintbrush, Eraser } from '@lucide/svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import type { SeatData } from './seat-grid-types';
+	import { buildSeatSavePlan, readExistingPaint, type SeatSavePlan } from './seat-grid-save';
 	import SeatGridConfig from './SeatGridConfig.svelte';
 	import SeatGrid from './SeatGrid.svelte';
 
@@ -21,22 +21,56 @@
 	interface Props {
 		existingSeats: VenueSeatSchema[];
 		sectorMetadata?: { aisles?: AisleMetadata } | null;
-		onSave: (seats: VenueSeatInputSchema[]) => void;
-		onUpdate: (seats: VenueSeatBulkUpdateItemSchema[]) => void;
-		onDelete: (labels: string[]) => void;
-		onMetadataChange: (metadata: { aisles: AisleMetadata }) => void;
+		organizationSlug: string;
+		venueId: string;
+		onPersist: (plan: SeatSavePlan, metadata: { aisles: AisleMetadata }) => void;
 		isSaving: boolean;
 	}
 
-	const {
-		existingSeats,
-		sectorMetadata,
-		onSave,
-		onUpdate,
-		onDelete,
-		onMetadataChange,
-		isSaving
-	}: Props = $props();
+	const { existingSeats, sectorMetadata, organizationSlug, venueId, onPersist, isSaving }: Props =
+		$props();
+
+	const accessToken = $derived(authStore.accessToken);
+
+	// Venue price categories for the paint palette. Same key as
+	// PriceCategorySection so both share one cache entry.
+	const categoriesQuery = createQuery<PriceCategorySchema[]>(() => ({
+		queryKey: ['org-admin', organizationSlug, 'venue', venueId, 'price-categories'],
+		queryFn: async () => {
+			const response = await organizationadminvenuesListPriceCategories({
+				path: { slug: organizationSlug, venue_id: venueId },
+				headers: {
+					Authorization: `Bearer ${accessToken}`
+				}
+			});
+
+			if (response.error || !response.data) {
+				throw new Error('Failed to load price categories');
+			}
+
+			return response.data;
+		}
+	}));
+	const priceCategories = $derived(categoriesQuery.data ?? []);
+
+	// Active paint chip: null = paint mode off; categoryId null = eraser
+	let activePaint = $state<{ categoryId: string | null } | null>(null);
+	const eraserActive = $derived(activePaint !== null && activePaint.categoryId === null);
+
+	function togglePaint(categoryId: string | null) {
+		activePaint = activePaint && activePaint.categoryId === categoryId ? null : { categoryId };
+	}
+
+	// Apply the active paint chip to every selected seat
+	function paintSelected() {
+		if (!activePaint) return;
+		for (const key of selectedCells) {
+			const seat = seats.get(key);
+			if (seat?.exists) {
+				seats.set(key, { ...seat, priceCategoryId: activePaint.categoryId });
+			}
+		}
+	}
 
 	// Grid configuration
 	let rows = $state(10);
@@ -184,11 +218,20 @@
 			maxRow = Math.max(maxRow, rowIndex);
 			maxCol = Math.max(maxCol, colNum);
 
-			// Store seat with its accessibility flags from backend
+			// Store seat with its accessibility flags from backend. Paint is
+			// hydrated defensively: the admin response does not expose
+			// price_category_id yet, so unknown baselines stay undefined
+			// (untouched paint is then never sent on save — reloading and
+			// re-saving a painted venue cannot unpaint anything).
+			// KNOWN DISPLAY GAP: current paint is not shown on reload — the
+			// admin read lacks price_category_id; backend follow-up will expose
+			// it, at which point hydration below starts working unchanged.
+			const persistedPaint = readExistingPaint(seat);
 			seats.set(getCellKey(rowIndex, colNum), {
 				exists: true,
 				is_accessible: seat.is_accessible ?? false,
-				is_obstructed_view: seat.is_obstructed_view ?? false
+				is_obstructed_view: seat.is_obstructed_view ?? false,
+				...(persistedPaint !== undefined ? { priceCategoryId: persistedPaint } : {})
 			});
 		}
 
@@ -267,81 +310,22 @@
 		selectedCells.clear();
 	}
 
-	// Get all seats as API format
-	function getAllSeatsForApi(): VenueSeatInputSchema[] {
-		const result: VenueSeatInputSchema[] = [];
-
-		for (const [key, seatData] of seats) {
-			if (!seatData.exists) continue;
-
-			const [row, col] = key.split('-').map(Number);
-			const label = getSeatLabel(row, col);
-
-			result.push({
-				label,
-				row: getRowLabel(row),
-				number: col + 1,
-				position: {
-					x: getXPosition(col),
-					y: getYPosition(row)
-				},
-				is_accessible: seatData.is_accessible,
-				is_obstructed_view: seatData.is_obstructed_view,
-				is_active: true
-			});
-		}
-
-		return result;
-	}
-
-	// Save changes
+	// Save changes: build the full persistence plan (creates/updates/deletes/
+	// paint batches, with explicit row_order/adjacency_index ranks) and hand it
+	// to the page, which sequences bulk ops -> paint -> metadata.
 	function handleSave() {
-		const allSeats = getAllSeatsForApi();
-		const existingLabels = new Set(existingSeats.map((s) => s.label));
-		const newLabels = new Set(allSeats.map((s) => s.label));
+		const plan = buildSeatSavePlan({
+			cells: seats,
+			existingSeats,
+			rows,
+			invertRowOrder,
+			getRowLabel,
+			getSeatLabel,
+			getXPosition,
+			getYPosition
+		});
 
-		// Separate into new seats (to create) and existing seats (to update)
-		const seatsToCreate: VenueSeatInputSchema[] = [];
-		const seatsToUpdate: VenueSeatBulkUpdateItemSchema[] = [];
-
-		for (const seat of allSeats) {
-			if (existingLabels.has(seat.label)) {
-				// This seat exists, needs update (position may have changed due to aisles)
-				seatsToUpdate.push({
-					label: seat.label,
-					row: seat.row,
-					number: seat.number,
-					position: seat.position,
-					is_accessible: seat.is_accessible,
-					is_obstructed_view: seat.is_obstructed_view,
-					is_active: seat.is_active
-				});
-			} else {
-				// This is a new seat
-				seatsToCreate.push(seat);
-			}
-		}
-
-		// Labels to delete (exist in backend but not in current grid)
-		const toDelete = [...existingLabels].filter((l) => !newLabels.has(l));
-
-		// Create new seats
-		if (seatsToCreate.length > 0) {
-			onSave(seatsToCreate);
-		}
-
-		// Update existing seats (for position changes due to aisles)
-		if (seatsToUpdate.length > 0) {
-			onUpdate(seatsToUpdate);
-		}
-
-		// Delete removed seats
-		if (toDelete.length > 0) {
-			onDelete(toDelete);
-		}
-
-		// Save metadata (aisles and row order)
-		onMetadataChange({
+		onPersist(plan, {
 			aisles: {
 				verticalAisles: [...verticalAisles].sort((a, b) => a - b),
 				horizontalAisles: [...horizontalAisles].sort((a, b) => a - b),
@@ -373,6 +357,65 @@
 		onGenerateFull={generateFullGrid}
 	/>
 
+	<!-- Price category palette (seat painting) -->
+	<div class="rounded-lg border bg-card p-4">
+		<div class="mb-3 flex items-center gap-2">
+			<Paintbrush class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+			<h3 class="font-semibold">{m['seatGridEditor.paint.title']()}</h3>
+		</div>
+
+		{#if priceCategories.length === 0}
+			<p class="text-sm text-muted-foreground">
+				{m['seatGridEditor.paint.noCategories']()}
+			</p>
+		{:else}
+			<div
+				class="flex flex-wrap items-center gap-2"
+				role="group"
+				aria-label={m['seatGridEditor.paint.paletteLabel']()}
+			>
+				{#each priceCategories as category (category.id)}
+					{@const categoryId = category.id}
+					{#if categoryId}
+						{@const isActive = activePaint?.categoryId === categoryId}
+						<button
+							type="button"
+							onclick={() => togglePaint(categoryId)}
+							aria-pressed={isActive}
+							class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors {isActive
+								? 'border-primary bg-primary/10 ring-2 ring-primary ring-offset-1'
+								: 'border-input hover:bg-accent'}"
+						>
+							<span
+								class="h-3.5 w-3.5 shrink-0 rounded-full border border-black/20"
+								style="background-color: {category.color};"
+								aria-hidden="true"
+							></span>
+							{category.name}
+						</button>
+					{/if}
+				{/each}
+				<button
+					type="button"
+					onclick={() => togglePaint(null)}
+					aria-pressed={eraserActive}
+					class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors {eraserActive
+						? 'border-primary bg-primary/10 ring-2 ring-primary ring-offset-1'
+						: 'border-input hover:bg-accent'}"
+				>
+					<Eraser class="h-3.5 w-3.5" aria-hidden="true" />
+					{m['seatGridEditor.paint.unpainted']()}
+				</button>
+			</div>
+
+			{#if activePaint}
+				<p class="mt-2 text-xs text-muted-foreground" role="status">
+					{m['seatGridEditor.paint.activeHint']()}
+				</p>
+			{/if}
+		{/if}
+	</div>
+
 	<!-- Selection Actions -->
 	{#if selectedCount > 0}
 		<div class="flex flex-wrap items-center gap-3 rounded-lg border bg-card p-3">
@@ -399,6 +442,16 @@
 					<EyeOff class="h-4 w-4" />
 					{m['seatGridEditor.toggleObstructed']()}
 				</button>
+				{#if activePaint}
+					<button
+						type="button"
+						onclick={paintSelected}
+						class="inline-flex items-center gap-1.5 rounded-md border border-input px-3 py-1.5 text-sm font-medium hover:bg-accent"
+					>
+						<Paintbrush class="h-4 w-4" />
+						{m['seatGridEditor.paint.applyToSelected']()}
+					</button>
+				{/if}
 				<button
 					type="button"
 					onclick={deleteSelected}
@@ -429,6 +482,8 @@
 		{getRowLabel}
 		{getSeatLabel}
 		{getCellKey}
+		{activePaint}
+		{priceCategories}
 	/>
 
 	<!-- Legend & Stats -->
@@ -458,6 +513,18 @@
 				<EyeOff class="h-4 w-4 text-amber-500" />
 				<span>{m['seatGridEditor.legendObstructed']()}</span>
 			</div>
+			{#if priceCategories.length > 0}
+				<div class="flex items-center gap-2">
+					<div class="flex overflow-hidden rounded" aria-hidden="true">
+						{#each priceCategories.slice(0, 3) as category (category.id)}
+							<div class="h-6 w-2" style="background-color: {category.color};"></div>
+						{/each}
+					</div>
+					<span>
+						{m['seatGridEditor.legendPainted']()}
+					</span>
+				</div>
+			{/if}
 		</div>
 
 		<div class="text-sm text-muted-foreground">
