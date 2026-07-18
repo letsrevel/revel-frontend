@@ -200,3 +200,79 @@ test.describe('J19.2 price categories @p2', () => {
 		await context.close();
 	});
 });
+
+// J19.3 (USER_JOURNEYS.md) — seat PAINTING in the grid editor: the sector page's
+// paint palette lists the venue's price categories as chips; selecting a chip
+// turns painting on, and clicking a seat cell paints it. Saving fires the venue
+// paint endpoint (PUT …/seats/paint) for the touched seats — proven here by the
+// "Seat pricing updated" toast (the persisted paint is NOT re-read on reload
+// yet, a known display gap, so we assert the save round-trip via UI feedback
+// only, never painted state after a reload).
+//
+// Isolation: throwaway org + venue + sector arranged via API; nothing seeded is
+// touched. The sector is created WITH four seats so the editor hydrates a real
+// grid the paint clicks can land on.
+test.describe('J19.3 seat painting @p2', () => {
+	test('paint palette → select chip → click seat → save fires the paint endpoint', async ({
+		browser
+	}) => {
+		test.setTimeout(150_000);
+
+		// Arrange (API): venue + a price category + a seated sector carrying a
+		// 2×2 grid (A1/A2/B1/B2) the editor can re-derive from labels.
+		const org = await createOrganization();
+		const api = await ApiClient.login(org.owner.email, org.owner.password);
+		const venueName = uniqueName('Venue');
+		const venue = await api.post<{ id: string }>(`/api/organization-admin/${org.slug}/venues`, {
+			name: venueName
+		});
+		await createPriceCategory(org.slug, venue.id, { name: 'Amber', color: '#f9b233' }, org.owner);
+		const sector = await api.post<{ id: string }>(
+			`/api/organization-admin/${org.slug}/venues/${venue.id}/sectors`,
+			{
+				name: 'Stalls',
+				code: 'STL',
+				seats: [
+					{ label: 'A1', row: 'A', number: 1, position: { x: 0, y: 0 } },
+					{ label: 'A2', row: 'A', number: 2, position: { x: 1, y: 0 } },
+					{ label: 'B1', row: 'B', number: 1, position: { x: 0, y: 1 } },
+					{ label: 'B2', row: 'B', number: 2, position: { x: 1, y: 1 } }
+				]
+			}
+		);
+
+		const context = await browser.newContext();
+		await authenticateContext(context, org.owner);
+		const page = await context.newPage();
+
+		await gotoHydrated(page, `/org/${org.slug}/admin/venues/${venue.id}/sectors/${sector.id}`);
+		await waitForClientAuth(page);
+		await expect(page.getByRole('heading', { name: 'Seats - Stalls' })).toBeVisible();
+
+		// The grid hydrated from the four arranged seats.
+		await expect(page.getByText('Total:')).toContainText('4', { timeout: 15_000 });
+
+		// The paint palette lists the venue's category as a chip. Selecting it
+		// turns painting on (the "Painting is on" status confirms).
+		const palette = page.getByRole('group', { name: 'Price category palette' });
+		await expect(palette).toBeVisible();
+		const amberChip = palette.getByRole('button', { name: 'Amber' });
+		await expect(amberChip).toBeVisible();
+		await amberChip.click();
+		await expect(amberChip).toHaveAttribute('aria-pressed', 'true');
+		await expect(page.getByText('Painting is on', { exact: false })).toBeVisible();
+
+		// Clicking a seat cell paints it: its accessible name gains the category.
+		const seatA1 = page.getByRole('button', { name: 'Seat A1', exact: true });
+		await expect(seatA1).toBeVisible();
+		await seatA1.click();
+		await expect(page.getByRole('button', { name: 'Seat A1, Amber', exact: true })).toBeVisible();
+
+		// Save: existing-seat paint changes go to the paint endpoint after the
+		// bulk ops. The paint toast proves that request succeeded.
+		await page.getByRole('button', { name: 'Save Changes' }).click();
+		await expect(page.getByText('Seat pricing updated')).toBeVisible({ timeout: 15_000 });
+
+		await context.close();
+	});
+});

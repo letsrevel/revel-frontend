@@ -104,11 +104,7 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 	const reservationRetry = createReservationRetry('user');
 
 	function sessionFailureError(error: CheckoutSessionError): Error {
-		return new Error(
-			m['eventPage.paymentStartFailed']?.() ??
-				'Your tickets are reserved, but the payment could not be started. Use “Resume Payment” on your pending ticket to try again.',
-			{ cause: error }
-		);
+		return new Error(m['eventPage.paymentStartFailed'](), { cause: error });
 	}
 
 	/**
@@ -190,25 +186,16 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 
 			if (isPending) {
 				// Offline payment - ticket reserved but not yet paid
-				toast.success(
-					m['eventPage.ticketReserved']?.({ count: ticketCount }) ??
-						`${ticketCount} ticket${ticketCount > 1 ? 's' : ''} reserved! Complete payment as instructed.`,
-					{
-						description:
-							m['eventPage.ticketReservedDesc']?.() ?? 'View your ticket for payment details.',
-						duration: 5000
-					}
-				);
+				toast.success(m['eventPage.ticketReserved']({ count: ticketCount }), {
+					description: m['eventPage.ticketReservedDesc'](),
+					duration: 5000
+				});
 			} else {
 				// Free ticket claimed
-				toast.success(
-					m['eventPage.ticketClaimed']?.({ count: ticketCount }) ??
-						`${ticketCount} ticket${ticketCount > 1 ? 's' : ''} claimed!`,
-					{
-						description: m['eventPage.ticketClaimedDesc']?.() ?? 'Your ticket is ready.',
-						duration: 4000
-					}
-				);
+				toast.success(m['eventPage.ticketClaimed']({ count: ticketCount }), {
+					description: m['eventPage.ticketClaimedDesc'](),
+					duration: 4000
+				});
 			}
 
 			// Open ticket modal after a short delay to show the new ticket
@@ -410,11 +397,8 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 		onError: async (error) => {
 			// If session expired (404), refresh user status - tickets may have been cleaned up
 			await refreshUserStatus();
-			toast.error(m['eventPage.resumePaymentFailed']?.() ?? 'Could not resume payment', {
-				description:
-					error.message ||
-					(m['eventPage.resumePaymentFailedDesc']?.() ??
-						'The checkout session may have expired. Please try purchasing again.'),
+			toast.error(m['eventPage.resumePaymentFailed'](), {
+				description: error.message || m['eventPage.resumePaymentFailedDesc'](),
 				duration: 5000
 			});
 		}
@@ -442,20 +426,15 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 			// Invalidate cache
 			queryClient.invalidateQueries({ queryKey: ['event-status', eventId] });
 
-			toast.success(m['eventPage.reservationCancelled']?.() ?? 'Reservation cancelled', {
-				description:
-					m['eventPage.reservationCancelledDesc']?.() ??
-					'Your ticket reservation has been cancelled.',
+			toast.success(m['eventPage.reservationCancelled'](), {
+				description: m['eventPage.reservationCancelledDesc'](),
 				duration: 4000
 			});
 		},
 		onError: async (error) => {
 			await refreshUserStatus();
-			toast.error(m['eventPage.cancelReservationFailed']?.() ?? 'Could not cancel reservation', {
-				description:
-					error.message ||
-					(m['eventPage.cancelReservationFailedDesc']?.() ??
-						'Please try again or contact support.'),
+			toast.error(m['eventPage.cancelReservationFailed'](), {
+				description: error.message || m['eventPage.cancelReservationFailedDesc'](),
 				duration: 5000
 			});
 		}

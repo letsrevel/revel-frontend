@@ -7,12 +7,8 @@
 </script>
 
 <svelte:head>
-	<title>{m['notificationsPage.pageTitle']?.() || 'Notifications'} - Revel</title>
-	<meta
-		name="description"
-		content={m['notificationsPage.pageDescription']?.() ||
-			'View and manage your event notifications and updates'}
-	/>
+	<title>{m['notificationsPage.pageTitle']()} - Revel</title>
+	<meta name="description" content={m['notificationsPage.pageDescription']()} />
 </svelte:head>
 
 <div class="container mx-auto max-w-4xl px-4 py-8">
@@ -20,18 +16,17 @@
 	<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 		<div>
 			<h1 class="text-3xl font-bold tracking-tight">
-				{m['notificationsPage.title']?.() || 'Notifications'}
+				{m['notificationsPage.title']()}
 			</h1>
 			<p class="mt-2 text-muted-foreground">
-				{m['notificationsPage.description']?.() ||
-					'View and manage your event notifications and updates'}
+				{m['notificationsPage.description']()}
 			</p>
 		</div>
 
 		<!-- Settings Button -->
 		<Button href="/account/settings" variant="outline" size="sm" class="shrink-0">
 			<Settings class="mr-2 h-4 w-4" aria-hidden="true" />
-			{m['notificationsPage.settingsButton']?.() || 'Settings'}
+			{m['notificationsPage.settingsButton']()}
 		</Button>
 	</div>
 

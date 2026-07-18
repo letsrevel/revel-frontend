@@ -2,7 +2,9 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Plus, Accessibility, EyeOff } from '@lucide/svelte';
 	import type { SvelteMap, SvelteSet } from 'svelte/reactivity';
+	import type { PriceCategorySchema } from '$lib/api/generated/types.gen';
 	import type { SeatData } from './seat-grid-types';
+	import { paintTextColor } from './seat-grid-save';
 
 	interface Props {
 		seats: SvelteMap<string, SeatData>;
@@ -15,6 +17,10 @@
 		getRowLabel: (index: number) => string;
 		getSeatLabel: (rowIndex: number, colIndex: number) => string;
 		getCellKey: (row: number, col: number) => string;
+		/** Active paint chip: `null` = paint mode off; `categoryId: null` = eraser. */
+		activePaint?: { categoryId: string | null } | null;
+		/** Venue price categories, for painted-cell colors and names. */
+		priceCategories?: PriceCategorySchema[];
 	}
 
 	const {
@@ -27,8 +33,23 @@
 		invertRowOrder,
 		getRowLabel,
 		getSeatLabel,
-		getCellKey
+		getCellKey,
+		activePaint = null,
+		priceCategories = []
 	}: Props = $props();
+
+	const categoryById = $derived(
+		new Map(priceCategories.flatMap((c) => (c.id ? [[c.id, c] as const] : [])))
+	);
+
+	// Apply the active paint chip to a cell holding a seat
+	function paintCell(key: string) {
+		if (!activePaint) return;
+		const seat = seats.get(key);
+		if (seat?.exists) {
+			seats.set(key, { ...seat, priceCategoryId: activePaint.categoryId });
+		}
+	}
 
 	// Selection state
 	let isSelecting = $state(false);
@@ -52,6 +73,23 @@
 
 		const key = getCellKey(row, col);
 		const seat = seats.get(key);
+
+		if (activePaint) {
+			if (seat?.exists) {
+				// Painting mode: clicking a seat paints it instead of selecting
+				paintCell(key);
+			} else if (activePaint.categoryId !== null) {
+				// Painting an empty cell creates the seat already painted
+				// (the eraser deliberately does nothing on empty cells)
+				seats.set(key, {
+					exists: true,
+					is_accessible: false,
+					is_obstructed_view: false,
+					priceCategoryId: activePaint.categoryId
+				});
+			}
+			return;
+		}
 
 		if (seat?.exists) {
 			// Clicking on existing seat: add to selection
@@ -109,6 +147,19 @@
 		const maxRow = Math.max(selectionStart.row, selectionEnd.row);
 		const minCol = Math.min(selectionStart.col, selectionEnd.col);
 		const maxCol = Math.max(selectionStart.col, selectionEnd.col);
+
+		if (activePaint) {
+			// Painting mode: drag paints every existing seat in the rectangle
+			for (let r = minRow; r <= maxRow; r++) {
+				for (let c = minCol; c <= maxCol; c++) {
+					paintCell(getCellKey(r, c));
+				}
+			}
+			isSelecting = false;
+			selectionStart = null;
+			selectionEnd = null;
+			return;
+		}
 
 		// Check if both start and end cells are empty
 		const startKey = getCellKey(selectionStart.row, selectionStart.col);
@@ -346,19 +397,28 @@
 					{/if}
 					{@const cellKey = getCellKey(logicalRow, c)}
 					{@const seatData = seats.get(cellKey)}
+					{@const paint =
+						seatData?.exists && seatData.priceCategoryId
+							? categoryById.get(seatData.priceCategoryId)
+							: undefined}
+					{@const paintOverridden = selectedCells.has(cellKey) || isInSelectionRect(logicalRow, c)}
 					<button
 						type="button"
 						class="{getCellClass(logicalRow, c)} relative"
+						style={paint && !paintOverridden
+							? `background-color: ${paint.color}; color: ${paintTextColor(paint.color)};`
+							: undefined}
+						title={paint?.name}
 						onmousedown={(e) => handleMouseDown(logicalRow, c, e)}
 						onmouseenter={() => handleMouseMove(logicalRow, c)}
 						onclick={() => handleCellClick(logicalRow, c)}
-						aria-label={m['seatGridEditor.seatLabel']({
+						aria-label={`${m['seatGridEditor.seatLabel']({
 							seat: getSeatLabel(logicalRow, c),
 							accessible: seatData?.is_accessible ? m['seatGridEditor.seatAccessibleSuffix']() : '',
 							obstructed: seatData?.is_obstructed_view
 								? m['seatGridEditor.seatObstructedSuffix']()
 								: ''
-						})}
+						})}${paint ? `, ${paint.name}` : ''}`}
 					>
 						{#if seatData?.exists}
 							<span class="text-[10px]">{getSeatLabel(logicalRow, c)}</span>

@@ -9,6 +9,7 @@
 		organizationadminvenuesBulkCreateSeats,
 		organizationadminvenuesBulkDeleteSeats,
 		organizationadminvenuesBulkUpdateSeats,
+		organizationadminvenuesPaintSeats,
 		organizationadminvenuesUpdateSector
 	} from '$lib/api/generated/sdk.gen';
 	import type {
@@ -16,8 +17,9 @@
 		VenueSeatInputSchema,
 		VenueSeatBulkUpdateItemSchema
 	} from '$lib/api/generated/types.gen';
+	import type { PaintBatch, SeatSavePlan } from '$lib/components/venues/seat-grid-save';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { ArrowLeft } from '@lucide/svelte';
+	import { ArrowLeft, Users } from '@lucide/svelte';
 	import SeatGridEditor, { type AisleMetadata } from '$lib/components/venues/SeatGridEditor.svelte';
 	import { toast } from 'svelte-sonner';
 
@@ -124,6 +126,31 @@
 		}
 	}));
 
+	// Paint mutation (price-category painting of existing seats, one batch per call)
+	const paintMutation = createMutation(() => ({
+		mutationFn: async (batch: PaintBatch) => {
+			const response = await organizationadminvenuesPaintSeats({
+				path: { slug: organization.slug, venue_id: venueId },
+				body: { seat_ids: batch.seat_ids, price_category_id: batch.price_category_id },
+				headers: {
+					Authorization: `Bearer ${accessToken}`
+				}
+			});
+
+			if (response.error) {
+				throw new Error('Failed to paint seats');
+			}
+
+			return response.data;
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['sector'] });
+		},
+		onError: () => {
+			toast.error(m['orgAdmin.seats.toast.paintError']());
+		}
+	}));
+
 	// Sector metadata update mutation (for aisles and row order)
 	const updateSectorMutation = createMutation(() => ({
 		mutationFn: async (metadata: { aisles: AisleMetadata }) => {
@@ -149,20 +176,35 @@
 		}
 	}));
 
-	function handleSave(seats: VenueSeatInputSchema[]) {
-		bulkCreateMutation.mutate(seats);
-	}
+	// Orchestrated save: bulk create/update/delete first, then paint batches
+	// (existing seats only — new seats carry their paint in the create
+	// payload), then sector metadata. Each mutation surfaces its own toast.
+	async function handlePersist(plan: SeatSavePlan, metadata: { aisles: AisleMetadata }) {
+		try {
+			const bulkOps: Promise<unknown>[] = [];
+			if (plan.creates.length > 0) {
+				bulkOps.push(bulkCreateMutation.mutateAsync(plan.creates));
+			}
+			if (plan.updates.length > 0) {
+				bulkOps.push(bulkUpdateMutation.mutateAsync(plan.updates));
+			}
+			if (plan.deleteLabels.length > 0) {
+				bulkOps.push(bulkDeleteMutation.mutateAsync(plan.deleteLabels));
+			}
+			await Promise.all(bulkOps);
 
-	function handleUpdate(seats: VenueSeatBulkUpdateItemSchema[]) {
-		bulkUpdateMutation.mutate(seats);
-	}
+			for (const batch of plan.paintBatches) {
+				await paintMutation.mutateAsync(batch);
+			}
+			if (plan.paintBatches.length > 0) {
+				toast.success(m['orgAdmin.seats.toast.painted']());
+			}
 
-	function handleDelete(labels: string[]) {
-		bulkDeleteMutation.mutate(labels);
-	}
-
-	function handleMetadataChange(metadata: { aisles: AisleMetadata }) {
-		updateSectorMutation.mutate(metadata);
+			await updateSectorMutation.mutateAsync(metadata);
+		} catch {
+			// Each mutation's onError handler has already surfaced a toast;
+			// stop the sequence so later steps don't run against a failed save.
+		}
 	}
 
 	function handleBackToSectors() {
@@ -181,7 +223,15 @@
 		bulkCreateMutation.isPending ||
 			bulkDeleteMutation.isPending ||
 			bulkUpdateMutation.isPending ||
+			paintMutation.isPending ||
 			updateSectorMutation.isPending
+	);
+
+	// The admin sector response does not expose `kind` yet — read it
+	// defensively so the standing empty state activates the moment the
+	// backend adds the field. Standing sectors have no seats to edit.
+	const isStandingSector = $derived(
+		sector ? (sector as { kind?: string }).kind === 'standing' : false
 	);
 </script>
 
@@ -225,15 +275,32 @@
 			<p class="text-muted-foreground">{m['orgAdmin.seats.pageDescription']()}</p>
 		</div>
 
-		<!-- Seat Grid Editor -->
-		<SeatGridEditor
-			existingSeats={sector.seats || []}
-			sectorMetadata={sector.metadata as { aisles?: AisleMetadata } | null}
-			onSave={handleSave}
-			onUpdate={handleUpdate}
-			onDelete={handleDelete}
-			onMetadataChange={handleMetadataChange}
-			{isSaving}
-		/>
+		{#if isStandingSector}
+			<!-- Standing sectors have no seat map: explain instead of the editor -->
+			<div class="rounded-lg border bg-card p-8 text-center">
+				<Users class="mx-auto h-10 w-10 text-muted-foreground" aria-hidden="true" />
+				<h2 class="mt-3 text-lg font-semibold">
+					{m['orgAdmin.seats.standing.title']()}
+				</h2>
+				<p class="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
+					{m['orgAdmin.seats.standing.description']()}
+				</p>
+				{#if sector.capacity != null}
+					<p class="mt-3 text-sm">
+						{m['orgAdmin.sectors.form.capacityLabel']()}: <strong>{sector.capacity}</strong>
+					</p>
+				{/if}
+			</div>
+		{:else}
+			<!-- Seat Grid Editor -->
+			<SeatGridEditor
+				existingSeats={sector.seats || []}
+				sectorMetadata={sector.metadata as { aisles?: AisleMetadata } | null}
+				organizationSlug={organization.slug}
+				{venueId}
+				onPersist={handlePersist}
+				{isSaving}
+			/>
+		{/if}
 	{/if}
 </div>

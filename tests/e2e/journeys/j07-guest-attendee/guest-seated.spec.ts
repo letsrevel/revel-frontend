@@ -1,14 +1,17 @@
 import { test, expect } from '../../support/fixtures';
 import { gotoHydrated } from '../../support/navigation';
-import { API_URL } from '../../support/api';
+import { API_URL, ApiClient } from '../../support/api';
 import {
+	createOrganization,
+	createPriceCategory,
 	createTicketedEvent,
 	createTicketTier,
 	deleteDefaultTier,
 	getSeatingAvailability,
 	getSeatingChart,
 	getSeededConcertHall,
-	uniqueEmail
+	uniqueEmail,
+	uniqueName
 } from '../../support/factories';
 import { extractLink, waitForEmail } from '../../support/mailpit';
 
@@ -194,5 +197,78 @@ test.describe('J7 guest seated checkout @p2', () => {
 				)
 				.catch(() => undefined);
 		}
+	});
+});
+
+// J7 (USER_JOURNEYS.md) — guest BEST_AVAILABLE checkout surface: a FREE
+// best-available guest tier never lets the buyer pick seats (the server assigns
+// the best adjacent block), but it MUST still expose the wheelchair-accessible
+// opt-in — free/offline tiers carry it in the emailed confirmation token and
+// assign from the accessible pool. This asserts the accessible checkbox and the
+// email-assignment notice render together in the guest dialog.
+//
+// Isolation: throwaway org + venue + price category; a guest-enabled event on
+// that org with a single best_available FREE tier (best_available requires a
+// price category — backend TicketTierCreateSchema validator). Nothing seeded is
+// touched, and no seats are held (best_available never holds at the email flow).
+test.describe('J7 guest best-available accessible @p2', () => {
+	test('best_available free guest tier shows the accessible opt-in and email-assignment notice', async ({
+		page
+	}) => {
+		test.setTimeout(120_000);
+
+		const org = await createOrganization();
+		const api = await ApiClient.login(org.owner.email, org.owner.password);
+		const venue = await api.post<{ id: string }>(`/api/organization-admin/${org.slug}/venues`, {
+			name: uniqueName('Venue')
+		});
+		const category = await createPriceCategory(org.slug, venue.id, { name: 'Galleria' }, org.owner);
+		const event = await createTicketedEvent({
+			owner: org.owner,
+			orgSlug: org.slug,
+			freeTier: false,
+			event: { can_attend_without_login: true, venue_id: venue.id }
+		});
+		// The backend auto-creates a "General Admission" tier; drop it so the only
+		// "Get Ticket" CTA belongs to our best_available tier (strict-mode safe).
+		await deleteDefaultTier(event.id, org.owner);
+		await createTicketTier(
+			event.id,
+			{
+				name: 'Guest Best Available Free',
+				payment_method: 'free',
+				price: '0.00',
+				price_type: 'fixed',
+				seat_assignment_mode: 'best_available',
+				price_category_id: category.id,
+				venue_id: venue.id,
+				max_tickets_per_user: 1
+			},
+			org.owner
+		);
+
+		await gotoHydrated(page, event.path);
+
+		// Open the guest dialog (idempotent loop — clicks during hydration are
+		// occasionally dropped, same pattern as the seated flow above).
+		const guestDialog = page.getByRole('dialog', { name: 'Get tickets without an account' });
+		const tierCta = page.getByRole('button', { name: 'Get Ticket', exact: true }).first();
+		await expect(async () => {
+			if (await guestDialog.isVisible()) return;
+			await tierCta.click();
+			await expect(guestDialog).toBeVisible({ timeout: 5_000 });
+		}).toPass({ timeout: 60_000 });
+
+		// Best-available section: no seat picker, but the accessible opt-in and
+		// the "assigned when you confirm your email" notice render together.
+		await expect(guestDialog.getByText('Best available seats')).toBeVisible({ timeout: 15_000 });
+		await expect(
+			guestDialog.getByRole('checkbox', { name: 'I need wheelchair-accessible seats' })
+		).toBeVisible();
+		await expect(
+			guestDialog.getByText(
+				'Your seats will be assigned automatically when you confirm your email.'
+			)
+		).toBeVisible();
 	});
 });

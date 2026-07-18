@@ -70,8 +70,7 @@
 
 	async function startRecording() {
 		if (!isSupported || !mimeType) {
-			errorMessage =
-				m['audioRecorder.notSupported']?.() || 'Audio recording is not supported in this browser';
+			errorMessage = m['audioRecorder.notSupported']();
 			recordingState = 'error';
 			return;
 		}
@@ -110,7 +109,7 @@
 
 			recorder.onerror = (event) => {
 				console.error('MediaRecorder error:', event);
-				errorMessage = m['audioRecorder.recordingError']?.() || 'Recording failed';
+				errorMessage = m['audioRecorder.recordingError']();
 				recordingState = 'error';
 				cleanup();
 			};
@@ -137,18 +136,14 @@
 
 			if (err instanceof DOMException) {
 				if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-					errorMessage =
-						m['audioRecorder.permissionDenied']?.() ||
-						'Microphone access denied. Please enable it in browser settings.';
+					errorMessage = m['audioRecorder.permissionDenied']();
 				} else if (err.name === 'NotFoundError') {
-					errorMessage =
-						m['audioRecorder.noMicrophone']?.() ||
-						'No microphone found. Please connect a microphone.';
+					errorMessage = m['audioRecorder.noMicrophone']();
 				} else {
-					errorMessage = m['audioRecorder.recordingError']?.() || 'Failed to start recording';
+					errorMessage = m['audioRecorder.recordingError']();
 				}
 			} else {
-				errorMessage = m['audioRecorder.recordingError']?.() || 'Failed to start recording';
+				errorMessage = m['audioRecorder.recordingError']();
 			}
 
 			recordingState = 'error';
@@ -170,7 +165,7 @@
 		}
 
 		if (audioChunks.length === 0) {
-			errorMessage = m['audioRecorder.noAudioRecorded']?.() || 'No audio was recorded';
+			errorMessage = m['audioRecorder.noAudioRecorded']();
 			recordingState = 'error';
 			cleanup();
 			return;
@@ -186,9 +181,7 @@
 
 		// Check file size
 		if (blob.size > maxSize) {
-			errorMessage =
-				m['audioRecorder.fileTooLarge']?.() ||
-				`Recording is too large. Maximum size: ${Math.round(maxSize / 1024 / 1024)}MB`;
+			errorMessage = m['audioRecorder.fileTooLarge']();
 			recordingState = 'error';
 			cleanup();
 			return;
@@ -236,24 +229,23 @@
 			disabled={disabled || !isSupported}
 		>
 			<Mic class="h-4 w-4" />
-			{m['audioRecorder.recordAudio']?.() || 'Record Audio'}
+			{m['audioRecorder.recordAudio']()}
 		</Button>
 
 		{#if !isSupported}
 			<p class="text-xs text-muted-foreground">
-				{m['audioRecorder.notSupported']?.() || 'Audio recording is not supported in this browser'}
+				{m['audioRecorder.notSupported']()}
 			</p>
 		{:else}
 			<p class="text-xs text-muted-foreground">
-				{m['audioRecorder.maxDuration']?.({ duration: formattedRemaining }) ||
-					`Max duration: ${formattedRemaining}`}
+				{m['audioRecorder.maxDuration']({ duration: formattedRemaining })}
 			</p>
 		{/if}
 	{:else if recordingState === 'requesting'}
 		<!-- Requesting permission -->
 		<div class="flex items-center gap-2 text-sm text-muted-foreground">
 			<Loader2 class="h-4 w-4 animate-spin" />
-			{m['audioRecorder.requestingPermission']?.() || 'Requesting microphone access...'}
+			{m['audioRecorder.requestingPermission']()}
 		</div>
 	{:else if recordingState === 'recording'}
 		<!-- Recording state -->
@@ -276,8 +268,7 @@
 						? 'font-medium text-destructive'
 						: 'text-muted-foreground'}"
 				>
-					{m['audioRecorder.timeRemaining']?.({ time: formattedRemaining }) ||
-						`${formattedRemaining} remaining`}
+					{m['audioRecorder.timeRemaining']({ time: formattedRemaining })}
 				</span>
 			</div>
 
@@ -290,14 +281,14 @@
 					onclick={stopRecording}
 				>
 					<Square class="h-4 w-4" />
-					{m['audioRecorder.stop']?.() || 'Stop Recording'}
+					{m['audioRecorder.stop']()}
 				</Button>
 
 				<Button
 					variant="ghost"
 					size="sm"
 					onclick={handleCancel}
-					aria-label={m['audioRecorder.cancelRecording']?.() || 'Cancel recording'}
+					aria-label={m['audioRecorder.cancelRecording']()}
 				>
 					<X class="h-4 w-4" />
 				</Button>
@@ -307,7 +298,7 @@
 		<!-- Processing state -->
 		<div class="flex items-center gap-2 text-sm text-muted-foreground">
 			<Loader2 class="h-4 w-4 animate-spin" />
-			{m['audioRecorder.processing']?.() || 'Processing recording...'}
+			{m['audioRecorder.processing']()}
 		</div>
 	{:else if recordingState === 'error'}
 		<!-- Error state -->
@@ -315,10 +306,10 @@
 			<p class="text-sm text-destructive">{errorMessage}</p>
 			<div class="flex gap-2">
 				<Button variant="outline" size="sm" onclick={handleRetry}>
-					{m['audioRecorder.tryAgain']?.() || 'Try Again'}
+					{m['audioRecorder.tryAgain']()}
 				</Button>
 				<Button variant="ghost" size="sm" onclick={handleCancel}>
-					{m['audioRecorder.cancel']?.() || 'Cancel'}
+					{m['audioRecorder.cancel']()}
 				</Button>
 			</div>
 		</div>

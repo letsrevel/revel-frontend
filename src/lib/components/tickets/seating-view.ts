@@ -14,6 +14,7 @@ import type {
 	SeatingAvailabilitySchema,
 	VenueChartSchema
 } from '$lib/api/generated/types.gen';
+import * as m from '$lib/paraglide/messages.js';
 
 export type SeatStatus = 'available' | 'sold' | 'held' | 'blocked' | 'mine' | 'pending';
 
@@ -148,4 +149,40 @@ export function rowsFromSeatViews(seats: SeatView[]): SeatRow[] {
 			a.rowLabel.localeCompare(b.rowLabel, undefined, { numeric: true, sensitivity: 'base' })
 	);
 	return rows;
+}
+
+/**
+ * Localized status fragment for a seat's accessible name (null = no suffix
+ * needed). Shared by SeatSelector (button grid) and SeatMap (SVG map) so the
+ * a11y wording stays identical across both seat pickers.
+ */
+export function seatStatusLabel(seat: SeatView): string | null {
+	switch (seat.status) {
+		case 'sold':
+			return m['seatSelector.statusSold']();
+		case 'held':
+			return m['seatSelector.statusHeld']();
+		case 'blocked':
+			return m['seatSelector.statusBlocked']();
+		case 'pending':
+			return m['seatSelector.statusPending']();
+		default:
+			return null;
+	}
+}
+
+/** Full accessible name for a seat: label, attributes, then status. */
+export function seatAriaLabel(seat: SeatView): string {
+	let label = `${m['seatSelector.seat']()} ${seat.label}`;
+	if (seat.isAccessible) {
+		label += `, ${m['seatSelector.accessible']()}`;
+	}
+	if (seat.isObstructedView) {
+		label += `, ${m['seatSelector.obstructedView']()}`;
+	}
+	const status = seatStatusLabel(seat);
+	if (status) {
+		label += `, ${status}`;
+	}
+	return label;
 }

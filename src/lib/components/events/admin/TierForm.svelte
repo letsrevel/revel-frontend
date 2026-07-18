@@ -506,16 +506,14 @@
 				<div>
 					<MarkdownEditor
 						id="payment-instructions"
-						label={m['tierForm.paymentInstructions']?.() ?? 'Payment Instructions'}
+						label={m['tierForm.paymentInstructions']()}
 						bind:value={manualPaymentInstructions}
 						rows={3}
-						placeholder={m['tierForm.paymentInstructionsPlaceholder']?.() ??
-							'e.g., Bank transfer to IBAN XX..., or pay in cash at the door'}
+						placeholder={m['tierForm.paymentInstructionsPlaceholder']()}
 						disabled={isPending}
 					/>
 					<p class="mt-1 text-xs text-muted-foreground">
-						{m['tierForm.paymentInstructionsHelp']?.() ??
-							'Instructions shown to attendees after reserving their ticket'}
+						{m['tierForm.paymentInstructionsHelp']()}
 					</p>
 				</div>
 			{/if}

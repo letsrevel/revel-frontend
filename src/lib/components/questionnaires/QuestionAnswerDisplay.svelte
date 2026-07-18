@@ -86,7 +86,7 @@
 			const fileNames = files.map((f) => f.original_filename).filter(Boolean);
 			return fileNames.length > 0
 				? fileNames.join(', ')
-				: m['questionAnswerDisplay.noFilesUploaded']?.() || 'No files uploaded';
+				: m['questionAnswerDisplay.noFilesUploaded']();
 		}
 
 		return m['questionAnswerDisplay.unknownAnswerFormat']();
@@ -132,11 +132,11 @@
 	function getQuestionTypeBadge(questionType: string): string {
 		switch (questionType) {
 			case 'multiple_choice':
-				return m['questionAnswerDisplay.multipleChoice']?.() || 'Multiple Choice';
+				return m['questionAnswerDisplay.multipleChoice']();
 			case 'free_text':
-				return m['questionAnswerDisplay.freeText']?.() || 'Free Text';
+				return m['questionAnswerDisplay.freeText']();
 			case 'file_upload':
-				return m['questionAnswerDisplay.fileUpload']?.() || 'File Upload';
+				return m['questionAnswerDisplay.fileUpload']();
 			default:
 				return questionType;
 		}
@@ -238,8 +238,7 @@
 															getImageUrl(file.file_url as string) as string,
 															file.original_filename
 														)}
-													aria-label={m['questionAnswerDisplay.previewImage']?.() ||
-														'Preview image'}
+													aria-label={m['questionAnswerDisplay.previewImage']()}
 												>
 													<img
 														src={getImageUrl(file.thumbnail_url || file.file_url)}
@@ -282,8 +281,7 @@
 																	getImageUrl(file.file_url as string) as string,
 																	file.original_filename
 																)}
-															aria-label={m['questionAnswerDisplay.previewImage']?.() ||
-																'Preview image'}
+															aria-label={m['questionAnswerDisplay.previewImage']()}
 														>
 															<ZoomIn class="h-4 w-4" />
 														</Button>
@@ -295,15 +293,14 @@
 														href={getImageUrl(file.file_url)}
 														target="_blank"
 														rel="noopener noreferrer"
-														aria-label={m['questionAnswerDisplay.downloadFile']?.() ||
-															'Download file'}
+														aria-label={m['questionAnswerDisplay.downloadFile']()}
 													>
 														<Download class="h-4 w-4" />
 													</Button>
 												</div>
 											{:else}
 												<span class="text-xs text-muted-foreground">
-													{m['questionAnswerDisplay.fileUnavailable']?.() || 'Unavailable'}
+													{m['questionAnswerDisplay.fileUnavailable']()}
 												</span>
 											{/if}
 										</div>
@@ -312,7 +309,7 @@
 							</div>
 						{:else}
 							<p class="text-sm italic text-muted-foreground">
-								{m['questionAnswerDisplay.noFilesUploaded']?.() || 'No files uploaded'}
+								{m['questionAnswerDisplay.noFilesUploaded']()}
 							</p>
 						{/if}
 					{:else}
@@ -332,7 +329,7 @@
 		class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
 		role="dialog"
 		aria-modal="true"
-		aria-label={m['questionAnswerDisplay.imagePreview']?.() || 'Image preview'}
+		aria-label={m['questionAnswerDisplay.imagePreview']()}
 		tabindex="-1"
 		onclick={(e) => {
 			if (e.target === e.currentTarget) closeImagePreview();
@@ -348,7 +345,7 @@
 				size="icon"
 				class="absolute -right-2 -top-2 z-10 h-10 w-10 rounded-full bg-background shadow-lg hover:bg-accent"
 				onclick={closeImagePreview}
-				aria-label={m['questionAnswerDisplay.closePreview']?.() || 'Close preview'}
+				aria-label={m['questionAnswerDisplay.closePreview']()}
 			>
 				<X class="h-5 w-5" />
 			</Button>
