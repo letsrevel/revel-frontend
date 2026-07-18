@@ -105,6 +105,22 @@
 		return y;
 	}
 
+	// Parse a row label ("A", "AA", or "3") into a zero-based row index; -1 if unparseable
+	function parseRowLabelToIndex(rowLabel: string): number {
+		if (/^\d+$/.test(rowLabel)) {
+			return parseInt(rowLabel, 10) - 1;
+		}
+		if (/^[A-Z]+$/i.test(rowLabel)) {
+			const upper = rowLabel.toUpperCase();
+			let index = 0;
+			for (let i = 0; i < upper.length; i++) {
+				index = index * 26 + (upper.charCodeAt(i) - 64);
+			}
+			return index - 1;
+		}
+		return -1;
+	}
+
 	// Initialize grid from existing seats and metadata
 	function initializeFromExisting() {
 		seats.clear();
@@ -125,31 +141,61 @@
 		// Try to infer grid size from existing seats
 		let maxRow = 0;
 		let maxCol = 0;
+		let sawNumericRow = false;
+		let sawLetterRow = false;
 
 		for (const seat of existingSeats) {
-			// Parse label to get row and column
-			const match = seat.label.match(/^([A-Z]+)(\d+)$/i);
-			if (match) {
-				const rowLabel = match[1].toUpperCase();
-				const colNum = parseInt(match[2], 10) - 1;
+			let rowIndex = -1;
+			let colNum = -1;
+			let rowIsNumeric = false;
 
-				// Convert row label to index
-				let rowIndex = 0;
-				for (let i = 0; i < rowLabel.length; i++) {
-					rowIndex = rowIndex * 26 + (rowLabel.charCodeAt(i) - 64);
-				}
-				rowIndex--;
-
-				maxRow = Math.max(maxRow, rowIndex);
-				maxCol = Math.max(maxCol, colNum);
-
-				// Store seat with its accessibility flags from backend
-				seats.set(getCellKey(rowIndex, colNum), {
-					exists: true,
-					is_accessible: seat.is_accessible ?? false,
-					is_obstructed_view: seat.is_obstructed_view ?? false
-				});
+			// Prefer the explicit row/number fields (row_label, with the transitional
+			// `row` alias as fallback) — labels alone are ambiguous for numeric rows
+			const rowLabel = seat.row_label ?? seat.row;
+			if (rowLabel && seat.number !== null && seat.number !== undefined) {
+				rowIndex = parseRowLabelToIndex(rowLabel);
+				colNum = seat.number - 1;
+				rowIsNumeric = /^\d+$/.test(rowLabel);
 			}
+
+			// Fall back to parsing the label ("A1" letter-row or "1-1" numeric-row style)
+			if (rowIndex < 0 || colNum < 0) {
+				const letterMatch = seat.label.match(/^([A-Z]+)(\d+)$/i);
+				const numericMatch = seat.label.match(/^(\d+)-(\d+)$/);
+				if (letterMatch) {
+					rowIndex = parseRowLabelToIndex(letterMatch[1]);
+					colNum = parseInt(letterMatch[2], 10) - 1;
+					rowIsNumeric = false;
+				} else if (numericMatch) {
+					rowIndex = parseRowLabelToIndex(numericMatch[1]);
+					colNum = parseInt(numericMatch[2], 10) - 1;
+					rowIsNumeric = true;
+				}
+			}
+
+			if (rowIndex < 0 || colNum < 0) continue;
+
+			if (rowIsNumeric) {
+				sawNumericRow = true;
+			} else {
+				sawLetterRow = true;
+			}
+
+			maxRow = Math.max(maxRow, rowIndex);
+			maxCol = Math.max(maxCol, colNum);
+
+			// Store seat with its accessibility flags from backend
+			seats.set(getCellKey(rowIndex, colNum), {
+				exists: true,
+				is_accessible: seat.is_accessible ?? false,
+				is_obstructed_view: seat.is_obstructed_view ?? false
+			});
+		}
+
+		// Numeric row labels only round-trip if the label generator stays numeric —
+		// otherwise saving would relabel every seat and bulk-delete the originals
+		if (sawNumericRow && !sawLetterRow) {
+			useLetters = false;
 		}
 
 		// Set grid size to accommodate existing seats

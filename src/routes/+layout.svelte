@@ -9,6 +9,7 @@
 	import { appStore } from '$lib/stores/app.svelte';
 	import { Toaster, toast } from 'svelte-sonner';
 	import { extractErrorMessage, isAuthError } from '$lib/utils/errors';
+	import { hasAnonymousHolds, releaseAnonymousHolds } from '$lib/utils/seat-holds';
 	import DemoBanner from '$lib/components/common/DemoBanner.svelte';
 	import ImpersonationBanner from '$lib/components/common/ImpersonationBanner.svelte';
 	import MaintenanceBanner from '$lib/components/common/MaintenanceBanner.svelte';
@@ -132,6 +133,11 @@
 				// request was in flight — don't load a stale identity's data.
 				if (generation !== bootstrapGeneration) return;
 				await authStore.initialize();
+				// Seat holds taken while anonymous are foreign to the authed identity
+				// and would 409 the checkout — release them best-effort (the record is
+				// only ever written while unauthenticated; the util swallows errors,
+				// so this never blocks or fails the bootstrap).
+				if (hasAnonymousHolds()) void releaseAnonymousHolds();
 			})
 			.catch((err) => {
 				console.error('[ROOT LAYOUT] Auth bootstrap failed:', err);

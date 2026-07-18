@@ -57,6 +57,37 @@ export function getLocalizedError(errorMessage: string | undefined): string {
 		return m['guest_attendance.token_invalid']();
 	}
 
+	// Seat errors surfaced at checkout/confirm time (#657, seating phase 1).
+	// Backend strings (batch_ticket_service.py):
+	//   409 "One or more selected seats are held by another buyer."
+	if (lowerMessage.includes('held by another buyer')) {
+		return (
+			m['guestAttendance.seatHeldConflict']?.() ??
+			'One of the selected seats is currently held by another buyer. Please try again in a few minutes or pick different seats.'
+		);
+	}
+	//   400 "One or more selected seats are no longer available."
+	//   400 "One or more selected seats are invalid or not in the correct sector."
+	if (
+		lowerMessage.includes('seat') &&
+		(lowerMessage.includes('no longer available') ||
+			lowerMessage.includes('not in the correct sector'))
+	) {
+		return (
+			m['guestAttendance.seatTaken']?.() ??
+			'One of the selected seats has just been sold. Please pick different seats.'
+		);
+	}
+	//   400 "Seat selection is required for this ticket tier." — hits guests whose
+	//   confirmation token predates the migration of legacy 'random' tiers to
+	//   user_choice (token minted with seat_id=null).
+	if (lowerMessage.includes('seat selection is required')) {
+		return (
+			m['guestAttendance.seatSelectionRequired']?.() ??
+			'This ticket now requires choosing seats. Please start again and select your seats.'
+		);
+	}
+
 	// Pattern: Tickets unavailable
 	if (
 		lowerMessage.includes('ticket') &&

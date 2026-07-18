@@ -14,6 +14,7 @@
 	import { Plus, ArrowLeft, LayoutGrid } from '@lucide/svelte';
 	import SectorCard from '$lib/components/venues/SectorCard.svelte';
 	import SectorModal from '$lib/components/venues/SectorModal.svelte';
+	import PriceCategorySection from '$lib/components/venues/PriceCategorySection.svelte';
 	import { toast } from 'svelte-sonner';
 
 	const organization = $derived(page.data.organization);
@@ -239,6 +240,9 @@
 				{/each}
 			</div>
 		{/if}
+
+		<!-- Price categories (used by Best Available ticket tiers) -->
+		<PriceCategorySection organizationSlug={organization.slug} {venueId} />
 	{/if}
 </div>
 

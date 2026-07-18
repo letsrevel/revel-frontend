@@ -45,22 +45,37 @@ async function search(query: string): Promise<MailpitMessageSummary[]> {
 }
 
 /**
+ * The backend rewrites every recipient unless SiteSettings.live_emails is on:
+ * `local@domain.tld` → `<catchall-user>+local_at_domain_dot_tld@<catchall-domain>`
+ * (see revel-backend src/common/tasks.py to_safe_email_address). The catchall
+ * user/domain are DB config; match the encoded local-part with a wildcard so
+ * the helper works against both live and intercepted mailboxes.
+ */
+function interceptedForm(to: string): string {
+	return to.replace('@', '_at_').replaceAll('.', '_dot_');
+}
+
+/**
  * Poll until an email to `to` (optionally with `subject` as a substring)
- * arrives; resolves with the full message (HTML + text bodies).
+ * arrives; resolves with the full message (HTML + text bodies). Matches both
+ * the raw recipient and the backend's intercepted (safe-rewritten) form.
  */
 export async function waitForEmail(
 	{ to, subject }: { to: string; subject?: string },
 	timeoutMs = 20_000
 ): Promise<MailpitMessage> {
 	const deadline = Date.now() + timeoutMs;
-	const query = subject ? `to:"${to}" subject:"${subject}"` : `to:"${to}"`;
+	const subjectPart = subject ? ` subject:"${subject}"` : '';
+	const queries = [`to:"${to}"${subjectPart}`, `to:"+${interceptedForm(to)}@"${subjectPart}`];
 	for (;;) {
-		const [match] = await search(query);
-		if (match) {
-			return await mailpit<MailpitMessage>(`/message/${match.ID}`);
+		for (const query of queries) {
+			const [match] = await search(query);
+			if (match) {
+				return await mailpit<MailpitMessage>(`/message/${match.ID}`);
+			}
 		}
 		if (Date.now() > deadline) {
-			throw new Error(`No email matching ${query} within ${timeoutMs}ms`);
+			throw new Error(`No email matching ${queries.join(' OR ')} within ${timeoutMs}ms`);
 		}
 		await new Promise((resolve) => setTimeout(resolve, 500));
 	}

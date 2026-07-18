@@ -201,6 +201,7 @@
 		cancelReservationMutation,
 		handleClaimTicket,
 		handleCheckout,
+		hasResumableCheckout,
 		handleResumePayment,
 		handleResumePaymentFromSidebar,
 		handleCancelReservation
@@ -593,6 +594,7 @@
 	onClose={closeTicketTierModal}
 	onClaimTicket={handleClaimTicket}
 	onCheckout={handleCheckout}
+	{hasResumableCheckout}
 	onGuestTierClick={openGuestTicketDialog}
 />
 
