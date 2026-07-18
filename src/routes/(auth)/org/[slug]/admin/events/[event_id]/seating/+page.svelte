@@ -4,6 +4,8 @@
 	import type { PageData } from './$types';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import SeatOverridesPanel from '$lib/components/events/admin/seating/SeatOverridesPanel.svelte';
+	import BoxOfficeSellPanel from '$lib/components/events/admin/seating/BoxOfficeSellPanel.svelte';
+	import { Tabs, TabsList, TabsTrigger, TabsContent } from '$lib/components/ui/tabs';
 
 	const { data }: { data: PageData } = $props();
 
@@ -11,6 +13,8 @@
 	const accessToken = $derived(authStore.accessToken);
 
 	const pageTitle = $derived(m['orgAdmin.seating.pageTitle']());
+
+	let activeTab = $state('overrides');
 </script>
 
 <svelte:head>
@@ -27,5 +31,20 @@
 		</p>
 	</div>
 
-	<SeatOverridesPanel eventId={data.eventId} {accessToken} />
+	<Tabs bind:value={activeTab} class="w-full">
+		<TabsList class="grid w-full grid-cols-2 sm:inline-grid sm:w-auto">
+			<TabsTrigger value="overrides">
+				{m['orgAdmin.seating.tabOverrides']?.() ?? 'Overrides'}
+			</TabsTrigger>
+			<TabsTrigger value="box-office">
+				{m['orgAdmin.seating.tabBoxOffice']?.() ?? 'Sell at the door'}
+			</TabsTrigger>
+		</TabsList>
+		<TabsContent value="overrides" class="mt-6">
+			<SeatOverridesPanel eventId={data.eventId} {accessToken} />
+		</TabsContent>
+		<TabsContent value="box-office" class="mt-6">
+			<BoxOfficeSellPanel eventId={data.eventId} {accessToken} />
+		</TabsContent>
+	</Tabs>
 </div>

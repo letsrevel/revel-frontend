@@ -46,6 +46,8 @@
 		tier?: TicketTier;
 		guest_name?: string;
 		seat?: TicketSeat;
+		/** Sector name from the scan payload (CheckInResponseSchema.sector_name). */
+		sector_name?: string;
 		price_paid?: string | null;
 	}
 
