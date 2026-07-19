@@ -21,6 +21,8 @@
 	import { Minus, Plus, RotateCcw } from '@lucide/svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import DesignerToolbar from './DesignerToolbar.svelte';
+	import DesignerLegend from './DesignerLegend.svelte';
+	import { buildCategoryStyleMap, resolveSeatCategory } from './designer-colors';
 	import {
 		idsInRect,
 		nextSeatInDirection,
@@ -94,6 +96,8 @@
 	let saveIssues = $state<DesignerSavePlan | null>(null);
 
 	// --- derived --------------------------------------------------------------
+	// id → {color, name} for painted seats; drives fill accent + a11y suffix.
+	const categoryStyles = $derived(buildCategoryStyleMap(priceCategories));
 	const changedCount = $derived(countChangedSeats(model, seatPos, baselinePos));
 	const shapesDirty = $derived(anyShapeChanged(model.sectors, shapes, baselineShapes));
 	const dirty = $derived(changedCount > 0 || shapesDirty);
@@ -434,6 +438,9 @@
 		if (seat.isObstructedView) {
 			label += `, ${m['seatSelector.obstructedView']()}`;
 		}
+		// Category color is never the only signal: pair it with the name.
+		const category = resolveSeatCategory(seat.priceCategoryId, categoryStyles);
+		if (category) label += `, ${category.name}`;
 		return label;
 	}
 
@@ -592,12 +599,13 @@
 					</g>
 				{/each}
 
-				<!-- Seats -->
+				<!-- Seats (colored by painted price category; selection = halo on top) -->
 				{#each model.seats as seat (seat.id)}
 					{@const p = seatPos.get(seat.id) ?? seat}
 					{@const cx = px(p.x + 0.5)}
 					{@const cy = py(p.y + 0.5)}
 					{@const selected = selection.has(seat.id)}
+					{@const category = resolveSeatCategory(seat.priceCategoryId, categoryStyles)}
 					<g
 						data-seat-id={seat.id}
 						role="button"
@@ -612,15 +620,28 @@
 						onkeydown={(event) => onSeatKeydown(event, seat)}
 					>
 						<title>{seatLabel(seat)}</title>
+						<!-- Selection halo: theme-token ring outlined by the surface, so it
+						     stays unambiguous over ANY category color. Drawn behind the seat. -->
 						{#if selected}
 							<circle
 								{cx}
 								{cy}
-								r={SEAT_R + 3}
-								class="fill-none stroke-primary/40"
-								stroke-width="2"
+								r={SEAT_R + 4}
+								class="fill-none stroke-background"
+								stroke-width="4"
 							/>
-							<circle {cx} {cy} r={SEAT_R} class="fill-primary stroke-primary" />
+							<circle {cx} {cy} r={SEAT_R + 4} class="fill-none stroke-primary" stroke-width="2" />
+						{/if}
+						{#if category}
+							<circle
+								{cx}
+								{cy}
+								r={SEAT_R}
+								fill={category.color}
+								fill-opacity="0.22"
+								stroke={category.color}
+								stroke-width="2.5"
+							/>
 						{:else}
 							<circle {cx} {cy} r={SEAT_R} class="fill-background stroke-border" stroke-width="2" />
 						{/if}
@@ -629,9 +650,7 @@
 							y={cy}
 							text-anchor="middle"
 							dominant-baseline="central"
-							class="pointer-events-none text-[8px] {selected
-								? 'fill-primary-foreground'
-								: 'fill-muted-foreground'}"
+							class="pointer-events-none text-[8px] fill-muted-foreground"
 						>
 							{seat.label}
 						</text>
@@ -705,21 +724,5 @@
 	</div>
 
 	<!-- Price-category legend (painting lives in the grid editor) -->
-	{#if priceCategories.length > 0}
-		<div class="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-			<span class="font-medium">
-				{m['seatDesigner.categoriesLegend']()}
-			</span>
-			{#each priceCategories as category (category.id ?? category.name)}
-				<span class="inline-flex items-center gap-1.5">
-					<span
-						class="inline-block h-3 w-3 rounded-full border border-border"
-						style="background: {category.color}"
-						aria-hidden="true"
-					></span>
-					{category.name}
-				</span>
-			{/each}
-		</div>
-	{/if}
+	<DesignerLegend categories={priceCategories} />
 </div>
