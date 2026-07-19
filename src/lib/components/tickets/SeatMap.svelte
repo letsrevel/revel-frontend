@@ -11,11 +11,20 @@
 	 * name in the seat's accessible name and hover title.
 	 */
 	import * as m from '$lib/paraglide/messages.js';
-	import type { PriceCategorySchema, VenueChartSchema } from '$lib/api/generated/types.gen';
+	import type {
+		Coordinate2d,
+		PriceCategorySchema,
+		VenueChartSchema
+	} from '$lib/api/generated/types.gen';
 	import { Minus, Plus, RotateCcw } from '@lucide/svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { computeSeatMapLayout, type SeatPoint, type SectorLayout } from './seat-map-layout';
-	import { applyTransform, stageDirectionAngle } from './sector-transform';
+	import {
+		applyTransform,
+		sectorWorldCenter,
+		stageDirectionAngle,
+		worldAngleFromUp
+	} from './sector-transform';
 	import { rowsFromSeatViews, seatAriaLabel, type SeatView } from './seating-view';
 
 	interface Props {
@@ -32,6 +41,12 @@
 		interactive?: boolean;
 		/** Standing-zone occupancy, keyed by sector id. */
 		standingCounts?: Record<string, { capacity: number; taken: number }>;
+		/**
+		 * World position of the venue stage (from `Venue.metadata.stage`). When
+		 * given, the scoped single-sector view points its stage indicator at the
+		 * stage's ACTUAL direction; absent, it falls back to world "up".
+		 */
+		stage?: Coordinate2d | null;
 	}
 
 	const {
@@ -41,7 +56,8 @@
 		maxReached = false,
 		disabled = false,
 		interactive = true,
-		standingCounts
+		standingCounts,
+		stage = null
 	}: Props = $props();
 
 	const uid = $props.id();
@@ -451,7 +467,10 @@
 	stage off at the correct relative angle instead of always at the top.
 -->
 {#snippet stageArrow(sector: SectorLayout)}
-	{@const angle = stageDirectionAngle(sector.transform)}
+	{@const worldAngle = stage
+		? worldAngleFromUp(sectorWorldCenter(sector.transform, sector.width, sector.height), stage)
+		: 0}
+	{@const angle = stageDirectionAngle(sector.transform, worldAngle)}
 	{@const rad = (angle * Math.PI) / 180}
 	{@const dirX = Math.sin(rad)}
 	{@const dirY = -Math.cos(rad)}

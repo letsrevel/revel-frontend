@@ -7763,7 +7763,7 @@
 	"seatDesigner.open": "Open layout designer",
 	"seatDesigner.title": "Layout designer",
 	"seatDesigner.pageTitle": "Layout designer – {venueName}",
-	"seatDesigner.pageDescription": "Position seats freely and draw sector shapes. Seat creation and pricing stay in the grid editor.",
+	"seatDesigner.pageDescription": "Arrange each sector as a block and place the stage. Seat-by-seat layout and pricing stay in the grid editor.",
 	"seatDesigner.backToVenue": "Back to venue",
 	"seatDesigner.loading": "Loading layout designer",
 	"seatDesigner.empty": "This venue has no sectors yet. Create sectors and seats from the venue page first.",
@@ -7785,8 +7785,8 @@
 	"seatDesigner.saved": "Layout saved",
 	"seatDesigner.saveError": "Failed to save the layout",
 	"seatDesigner.unsavedChanges": "You have unsaved layout changes. Leave anyway?",
-	"seatDesigner.instructions": "Click or drag on the canvas to select seats (Shift adds to the selection), then drag them to a new spot. Keyboard: Tab to the seats, arrow keys move focus, Enter selects, arrows then nudge the selection (Shift for a larger step), Escape deselects.",
-	"seatDesigner.shapeInstructions": "Click the canvas to add shape vertices (3 or more). Drag a vertex to move it; focus one and press Delete to remove it, or use arrow keys to nudge. Press Done to finish.",
+	"seatDesigner.instructions": "Drag the selected block to move it, or drag its round handle to rotate (hold Alt for free rotation). Arrow keys nudge it, [ and ] rotate by 15°, Escape deselects. Drag empty canvas, hold Space, or use the middle mouse button to pan.",
+	"seatDesigner.shapeInstructions": "Click the canvas to add outline points (3 or more). Drag a point to move it, click a dashed midpoint to insert one, focus a point and press Delete to remove it. Press Done to finish.",
 	"seatDesigner.shapeTooFewPoints": "A sector shape needs at least 3 points.",
 	"seatDesigner.seatsOutsideShape": "{sector}: these seats are outside the sector shape:",
 	"seatDesigner.canvasLabel": "Seat layout canvas",
@@ -8332,5 +8332,13 @@
 	"seriesPassBadge": {
 		"label": "Season pass",
 		"tooltip": "From season pass “{name}”"
-	}
+	},
+	"seatDesigner.selectTarget": "Selection",
+	"seatDesigner.selectNone": "None",
+	"seatDesigner.stageName": "Stage",
+	"seatDesigner.drawShape": "Draw shape",
+	"seatDesigner.addVertex": "Add shape point",
+	"seatDesigner.rotateHandle": "Rotate {name}",
+	"seatDesigner.sectorBlockLabel": "Sector {name}, rotated {rotation}°",
+	"seatDesigner.selectPrompt": "Select a sector or the stage from the picker (or click it) to move, rotate, or reshape it. Drag empty space to pan."
 }

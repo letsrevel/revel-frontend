@@ -7763,7 +7763,7 @@
 	"seatDesigner.open": "Layout-Designer öffnen",
 	"seatDesigner.title": "Layout-Designer",
 	"seatDesigner.pageTitle": "Layout-Designer – {venueName}",
-	"seatDesigner.pageDescription": "Platziere Plätze frei und zeichne Sektorformen. Das Erstellen und Bepreisen von Plätzen bleibt im Raster-Editor.",
+	"seatDesigner.pageDescription": "Ordne jeden Sektor als Block an und platziere die Bühne. Die Platzierung einzelner Sitze und die Preise bleiben im Raster-Editor.",
 	"seatDesigner.backToVenue": "Zurück zum Veranstaltungsort",
 	"seatDesigner.loading": "Layout-Designer wird geladen",
 	"seatDesigner.empty": "Dieser Veranstaltungsort hat noch keine Sektoren. Erstelle Sektoren und Plätze zuerst auf der Veranstaltungsort-Seite.",
@@ -7785,8 +7785,8 @@
 	"seatDesigner.saved": "Layout gespeichert",
 	"seatDesigner.saveError": "Layout konnte nicht gespeichert werden",
 	"seatDesigner.unsavedChanges": "Du hast ungespeicherte Layout-Änderungen. Trotzdem verlassen?",
-	"seatDesigner.instructions": "Klicke oder ziehe auf der Leinwand, um Plätze auszuwählen (Shift fügt zur Auswahl hinzu), und ziehe sie dann an eine neue Stelle. Tastatur: Mit Tab zu den Plätzen, Pfeiltasten bewegen den Fokus, Enter wählt aus, Pfeiltasten verschieben dann die Auswahl (Shift für einen größeren Schritt), Escape hebt die Auswahl auf.",
-	"seatDesigner.shapeInstructions": "Klicke auf die Leinwand, um Formecken hinzuzufügen (3 oder mehr). Ziehe eine Ecke, um sie zu bewegen; fokussiere eine und drücke Entf, um sie zu entfernen, oder verschiebe sie mit den Pfeiltasten. Drücke Fertig zum Abschließen.",
+	"seatDesigner.instructions": "Ziehe den ausgewählten Block, um ihn zu verschieben, oder ziehe den runden Griff, um ihn zu drehen (Alt für freie Drehung). Pfeiltasten verschieben ihn, [ und ] drehen um 15°, Escape hebt die Auswahl auf. Ziehe die leere Fläche, halte die Leertaste gedrückt oder nutze die mittlere Maustaste zum Verschieben der Ansicht.",
+	"seatDesigner.shapeInstructions": "Klicke auf die Fläche, um Umrisspunkte hinzuzufügen (mindestens 3). Ziehe einen Punkt zum Verschieben, klicke einen gestrichelten Mittelpunkt zum Einfügen, wähle einen Punkt und drücke Entf zum Entfernen. Drücke Fertig zum Abschließen.",
 	"seatDesigner.shapeTooFewPoints": "Eine Sektorform benötigt mindestens 3 Punkte.",
 	"seatDesigner.seatsOutsideShape": "{sector}: Diese Plätze liegen außerhalb der Sektorform:",
 	"seatDesigner.canvasLabel": "Sitzplan-Leinwand",
@@ -8332,5 +8332,13 @@
 	"seriesPassBadge": {
 		"label": "Saisonpass",
 		"tooltip": "Aus Saisonpass „{name}“"
-	}
+	},
+	"seatDesigner.selectTarget": "Auswahl",
+	"seatDesigner.selectNone": "Keine",
+	"seatDesigner.stageName": "Bühne",
+	"seatDesigner.drawShape": "Form zeichnen",
+	"seatDesigner.addVertex": "Punkt hinzufügen",
+	"seatDesigner.rotateHandle": "{name} drehen",
+	"seatDesigner.sectorBlockLabel": "Sektor {name}, um {rotation}° gedreht",
+	"seatDesigner.selectPrompt": "Wähle einen Sektor oder die Bühne aus der Liste (oder klicke darauf), um ihn zu verschieben, zu drehen oder umzuformen. Ziehe den leeren Bereich, um die Ansicht zu verschieben."
 }

@@ -1,171 +1,152 @@
 import { describe, it, expect } from 'vitest';
 import type { Coordinate2d } from '$lib/api/generated/types.gen';
-import type { DesignerModel, DesignerSeat, DesignerSector } from './designer-model';
+import type { SectorTransform } from '$lib/components/tickets/sector-transform';
+import type { DesignerBlock, DesignerModel, StageModel } from './designer-model';
 import {
-	anyShapeChanged,
 	buildSavePlan,
-	countChangedSeats,
-	positionsDiffer,
-	seatBatchErrorMessage,
-	shapeUpdateErrorMessage,
+	mergeStageIntoMetadata,
+	mergeTransformIntoMetadata,
+	sectorUpdateErrorMessage,
+	serializeStage,
+	stagesEqual,
+	transformsEqual,
 	type SavePlanInput
 } from './designer-save';
 
-function sector(id: string, overrides: Partial<DesignerSector> = {}): DesignerSector {
+function block(id: string, overrides: Partial<DesignerBlock> = {}): DesignerBlock {
 	return {
 		id,
 		name: `Sector ${id}`,
-		origin: { x: 0, y: 0 },
-		frameOffset: { x: 0, y: 0 },
-		hasCompletePositions: true,
+		kind: 'seated',
+		seats: [],
 		shape: null,
 		width: 4,
 		height: 4,
+		transform: { x: 0, y: 0, rotation: 0 },
+		shapeFrameOffset: { x: 0, y: 0 },
+		metadata: null,
 		hasSeats: true,
+		hasCompletePositions: false,
 		...overrides
 	};
 }
 
-function dSeat(id: string, sectorId: string, x: number, y: number): DesignerSeat {
-	return {
-		id,
-		label: id.toUpperCase(),
-		sectorId,
-		x,
-		y,
-		isAccessible: false,
-		isObstructedView: false
-	};
-}
-
-function positionsOf(seats: DesignerSeat[]): Map<string, Coordinate2d> {
-	return new Map(seats.map((seat) => [seat.id, { x: seat.x, y: seat.y }]));
-}
+const stage = (overrides: Partial<StageModel> = {}): StageModel => ({
+	position: { x: 0, y: 0 },
+	shape: null,
+	...overrides
+});
 
 function makeInput(model: DesignerModel, overrides: Partial<SavePlanInput> = {}): SavePlanInput {
+	const transforms = new Map(model.blocks.map((b) => [b.id, b.transform]));
+	const shapes = new Map(model.blocks.map((b) => [b.id, b.shape]));
 	return {
 		model,
-		positions: positionsOf(model.seats),
-		baselinePositions: positionsOf(model.seats),
-		shapes: new Map(),
-		baselineShapes: new Map(),
+		transforms,
+		baselineTransforms: new Map(transforms),
+		shapes,
+		baselineShapes: new Map(shapes),
+		stage: model.stage,
+		baselineStage: model.stage,
 		...overrides
 	};
 }
 
-describe('positionsDiffer', () => {
-	it('is epsilon-tolerant and handles missing values', () => {
-		expect(positionsDiffer({ x: 1, y: 1 }, { x: 1, y: 1.0001 })).toBe(false);
-		expect(positionsDiffer({ x: 1, y: 1 }, { x: 1, y: 1.01 })).toBe(true);
-		expect(positionsDiffer(undefined, { x: 1, y: 1 })).toBe(true);
-		expect(positionsDiffer(undefined, undefined)).toBe(false);
+describe('transformsEqual / stagesEqual', () => {
+	it('are epsilon-tolerant', () => {
+		expect(transformsEqual({ x: 1, y: 1, rotation: 0 }, { x: 1, y: 1.0001, rotation: 0 })).toBe(
+			true
+		);
+		expect(transformsEqual({ x: 1, y: 1, rotation: 0 }, { x: 1, y: 1, rotation: 15 })).toBe(false);
+		expect(stagesEqual(stage(), stage())).toBe(true);
+		expect(stagesEqual(stage(), stage({ position: { x: 2, y: 0 } }))).toBe(false);
+	});
+});
+
+describe('metadata merges', () => {
+	it('preserves existing keys when merging a transform', () => {
+		const merged = mergeTransformIntoMetadata(
+			{ aisles: { verticalAisles: [1] } },
+			{
+				x: 2,
+				y: 3,
+				rotation: 45
+			}
+		);
+		expect(merged).toEqual({
+			aisles: { verticalAisles: [1] },
+			transform: { x: 2, y: 3, rotation: 45 }
+		});
+	});
+
+	it('preserves existing venue keys when merging a stage', () => {
+		const merged = mergeStageIntoMetadata({ other: true }, stage({ position: { x: 1, y: 2 } }));
+		expect(merged).toEqual({ other: true, stage: { position: { x: 1, y: 2 }, shape: null } });
+	});
+
+	it('serializeStage rounds and includes the label', () => {
+		const s = serializeStage(stage({ position: { x: 1.00004, y: 2 }, label: 'Main' }));
+		expect(s).toEqual({ position: { x: 1, y: 2 }, shape: null, label: 'Main' });
 	});
 });
 
 describe('buildSavePlan', () => {
-	it('returns an empty plan when nothing changed', () => {
-		const model: DesignerModel = {
-			sectors: [sector('a')],
-			seats: [dSeat('s1', 'a', 0, 0)],
-			width: 4,
-			height: 4
-		};
-		const plan = buildSavePlan(makeInput(model));
+	const model = (): DesignerModel => ({
+		blocks: [block('a', { transform: { x: 0, y: 10, rotation: 0 } })],
+		stage: stage(),
+		venueMetadata: null
+	});
+
+	it('is empty when nothing changed', () => {
+		const plan = buildSavePlan(makeInput(model()));
 		expect(plan.isEmpty).toBe(true);
-		expect(plan.seatBatches).toEqual([]);
-		expect(plan.shapeUpdates).toEqual([]);
 	});
 
-	it('writes only the changed seats for a complete-positions sector, in the persist frame', () => {
-		const sec = sector('a', { origin: { x: 0, y: 10 }, frameOffset: { x: 5, y: 7 } });
-		const seats = [dSeat('s1', 'a', 0, 10), dSeat('s2', 'a', 1, 10)];
-		const model: DesignerModel = { sectors: [sec], seats, width: 4, height: 12 };
-		const positions = positionsOf(seats);
-		positions.set('s2', { x: 2.5, y: 11 });
-
-		const plan = buildSavePlan(makeInput(model, { positions }));
-		expect(plan.seatBatches).toHaveLength(1);
-		expect(plan.seatBatches[0].sectorId).toBe('a');
-		// persisted = global - origin + frameOffset
-		expect(plan.seatBatches[0].seats).toEqual([{ label: 'S2', position: { x: 7.5, y: 8 } }]);
-	});
-
-	it('materializes ALL seats of a sector that lacked complete positions', () => {
-		const sec = sector('a', { hasCompletePositions: false });
-		const seats = [dSeat('s1', 'a', 0, 0), dSeat('s2', 'a', 1, 0), dSeat('s3', 'a', 2, 0)];
-		const model: DesignerModel = { sectors: [sec], seats, width: 4, height: 4 };
-		const positions = positionsOf(seats);
-		positions.set('s1', { x: 0, y: 2 });
-
-		const plan = buildSavePlan(makeInput(model, { positions }));
-		expect(plan.seatBatches).toHaveLength(1);
-		expect(plan.seatBatches[0].seats.map((s) => s.label)).toEqual(['S1', 'S2', 'S3']);
-	});
-
-	it('splits seat writes into batches of batchSize', () => {
-		const sec = sector('a', { hasCompletePositions: false });
-		const seats = [dSeat('s1', 'a', 0, 0), dSeat('s2', 'a', 1, 0), dSeat('s3', 'a', 2, 0)];
-		const model: DesignerModel = { sectors: [sec], seats, width: 4, height: 4 };
-		const positions = positionsOf(seats);
-		positions.set('s1', { x: 0, y: 2 });
-
-		const plan = buildSavePlan(makeInput(model, { positions, batchSize: 2 }));
-		expect(plan.seatBatches.map((b) => b.seats.length)).toEqual([2, 1]);
-	});
-
-	it('emits shape updates in the persist frame, and null to clear', () => {
-		const secA = sector('a', { origin: { x: 0, y: 0 }, frameOffset: { x: 1, y: 1 } });
-		const secB = sector('b', {
-			origin: { x: 0, y: 6 },
-			shape: [
-				{ x: 0, y: 6 },
-				{ x: 2, y: 6 },
-				{ x: 1, y: 8 }
-			]
+	it('emits merged metadata for a moved sector, preserving aisles', () => {
+		const m = model();
+		m.blocks[0].metadata = { aisles: { verticalAisles: [2] } };
+		const transforms = new Map<string, SectorTransform>([['a', { x: 3, y: 12, rotation: 30 }]]);
+		const plan = buildSavePlan(
+			makeInput(m, { transforms, baselineTransforms: new Map([['a', m.blocks[0].transform]]) })
+		);
+		expect(plan.sectorUpdates).toHaveLength(1);
+		expect(plan.sectorUpdates[0].metadata).toEqual({
+			aisles: { verticalAisles: [2] },
+			transform: { x: 3, y: 12, rotation: 30 }
 		});
-		const model: DesignerModel = { sectors: [secA, secB], seats: [], width: 4, height: 10 };
-		const triangle = [
+		expect(plan.sectorUpdates[0].shape).toBeUndefined();
+	});
+
+	it('maps an edited outline back into the persist frame', () => {
+		const m: DesignerModel = {
+			blocks: [block('a', { shapeFrameOffset: { x: 1, y: 1 } })],
+			stage: stage(),
+			venueMetadata: null
+		};
+		const triangle: Coordinate2d[] = [
 			{ x: 0, y: 0 },
 			{ x: 3, y: 0 },
 			{ x: 0, y: 3 }
 		];
 		const plan = buildSavePlan(
-			makeInput(model, {
-				shapes: new Map<string, Coordinate2d[] | null>([
-					['a', triangle],
-					['b', null]
-				]),
-				baselineShapes: new Map<string, Coordinate2d[] | null>([
-					['a', null],
-					['b', secB.shape]
-				])
+			makeInput(m, {
+				shapes: new Map([['a', triangle]]),
+				baselineShapes: new Map([['a', null]])
 			})
 		);
-		expect(plan.shapeUpdates).toEqual([
-			{
-				sectorId: 'a',
-				sectorName: 'Sector a',
-				shape: [
-					{ x: 1, y: 1 },
-					{ x: 4, y: 1 },
-					{ x: 1, y: 4 }
-				]
-			},
-			{ sectorId: 'b', sectorName: 'Sector b', shape: null }
+		expect(plan.sectorUpdates[0].shape).toEqual([
+			{ x: 1, y: 1 },
+			{ x: 4, y: 1 },
+			{ x: 1, y: 4 }
 		]);
+		expect(plan.sectorUpdates[0].metadata).toBeUndefined();
 	});
 
-	it('flags an edited shape with fewer than 3 points and withholds all writes for that sector', () => {
-		const sec = sector('a');
-		const seats = [dSeat('s1', 'a', 0, 0)];
-		const model: DesignerModel = { sectors: [sec], seats, width: 4, height: 4 };
-		const positions = positionsOf(seats);
-		positions.set('s1', { x: 1, y: 1 });
-
+	it('flags an outline with fewer than 3 points and withholds the sector', () => {
+		const m = model();
 		const plan = buildSavePlan(
-			makeInput(model, {
-				positions,
-				shapes: new Map<string, Coordinate2d[] | null>([
+			makeInput(m, {
+				shapes: new Map([
 					[
 						'a',
 						[
@@ -173,114 +154,82 @@ describe('buildSavePlan', () => {
 							{ x: 1, y: 1 }
 						]
 					]
-				])
+				]),
+				baselineShapes: new Map([['a', null]])
 			})
 		);
 		expect(plan.invalidShapeSectors).toEqual([{ sectorId: 'a', sectorName: 'Sector a' }]);
-		expect(plan.seatBatches).toEqual([]);
-		expect(plan.shapeUpdates).toEqual([]);
+		expect(plan.sectorUpdates).toEqual([]);
 		expect(plan.isEmpty).toBe(false);
 	});
 
-	it('reports moved seats outside the shape as violations and withholds the sector writes', () => {
-		const triangle = [
-			{ x: 0, y: 0 },
-			{ x: 4, y: 0 },
-			{ x: 0, y: 4 }
-		];
-		const sec = sector('a', { shape: triangle });
-		const seats = [dSeat('s1', 'a', 1, 1), dSeat('s2', 'a', 0.5, 0.5)];
-		const model: DesignerModel = { sectors: [sec], seats, width: 4, height: 4 };
-		const positions = positionsOf(seats);
-		positions.set('s1', { x: 5, y: 5 }); // clearly outside
-
-		const plan = buildSavePlan(
-			makeInput(model, {
-				positions,
-				shapes: new Map<string, Coordinate2d[] | null>([['a', triangle]]),
-				baselineShapes: new Map<string, Coordinate2d[] | null>([['a', triangle]])
-			})
-		);
-		expect(plan.violations).toEqual([
-			{ sectorId: 'a', sectorName: 'Sector a', seatLabels: ['S1'] }
-		]);
-		expect(plan.seatBatches).toEqual([]);
-	});
-
-	it('validates ALL sector seats when the shape itself changed', () => {
-		const sec = sector('a');
-		// s2 never moved, but the new shape strands it.
-		const seats = [dSeat('s1', 'a', 1, 1), dSeat('s2', 'a', 3.5, 3.5)];
-		const model: DesignerModel = { sectors: [sec], seats, width: 6, height: 6 };
-		const smallTriangle = [
+	it('reports seats stranded by a changed outline (only for complete-position sectors)', () => {
+		const seated = block('a', {
+			hasCompletePositions: true,
+			seats: [
+				{ id: 's1', label: 'A1', x: 1, y: 1 },
+				{ id: 's2', label: 'A2', x: 9, y: 9 }
+			]
+		});
+		const m: DesignerModel = { blocks: [seated], stage: stage(), venueMetadata: null };
+		const triangle: Coordinate2d[] = [
 			{ x: 0, y: 0 },
 			{ x: 3, y: 0 },
 			{ x: 0, y: 3 }
 		];
 		const plan = buildSavePlan(
-			makeInput(model, {
-				shapes: new Map<string, Coordinate2d[] | null>([['a', smallTriangle]])
+			makeInput(m, {
+				shapes: new Map([['a', triangle]]),
+				baselineShapes: new Map([['a', null]])
 			})
 		);
 		expect(plan.violations).toEqual([
-			{ sectorId: 'a', sectorName: 'Sector a', seatLabels: ['S2'] }
+			{ sectorId: 'a', sectorName: 'Sector a', seatLabels: ['A2'] }
 		]);
-		expect(plan.shapeUpdates).toEqual([]);
+		expect(plan.sectorUpdates).toEqual([]);
 	});
-});
 
-describe('countChangedSeats / anyShapeChanged', () => {
-	it('counts epsilon-significant moves and detects shape edits', () => {
-		const seats = [dSeat('s1', 'a', 0, 0), dSeat('s2', 'a', 1, 0)];
-		const model: DesignerModel = { sectors: [sector('a')], seats, width: 4, height: 4 };
-		const positions = positionsOf(seats);
-		positions.set('s2', { x: 1, y: 1 });
-		expect(countChangedSeats(model, positions, positionsOf(seats))).toBe(1);
-
-		const tri = [
+	it('skips the containment guard for grid-only sectors', () => {
+		const grid = block('a', {
+			hasCompletePositions: false,
+			seats: [{ id: 's1', label: 'A1', x: 9, y: 9 }]
+		});
+		const m: DesignerModel = { blocks: [grid], stage: stage(), venueMetadata: null };
+		const triangle: Coordinate2d[] = [
 			{ x: 0, y: 0 },
-			{ x: 1, y: 0 },
-			{ x: 0, y: 1 }
+			{ x: 3, y: 0 },
+			{ x: 0, y: 3 }
 		];
-		expect(
-			anyShapeChanged(
-				[{ id: 'a' }],
-				new Map<string, Coordinate2d[] | null>([['a', tri]]),
-				new Map<string, Coordinate2d[] | null>([['a', null]])
-			)
-		).toBe(true);
-		expect(anyShapeChanged([{ id: 'a' }], new Map(), new Map())).toBe(false);
+		const plan = buildSavePlan(
+			makeInput(m, {
+				shapes: new Map([['a', triangle]]),
+				baselineShapes: new Map([['a', null]])
+			})
+		);
+		expect(plan.violations).toEqual([]);
+		expect(plan.sectorUpdates).toHaveLength(1);
+	});
+
+	it('emits a stage venue update merged with existing venue metadata', () => {
+		const m: DesignerModel = {
+			blocks: [],
+			stage: stage(),
+			venueMetadata: { capacityNote: 'x' }
+		};
+		const moved = stage({ position: { x: 4, y: -8 } });
+		const plan = buildSavePlan(makeInput(m, { stage: moved, baselineStage: m.stage }));
+		expect(plan.stageUpdate).toEqual({
+			metadata: { capacityNote: 'x', stage: { position: { x: 4, y: -8 }, shape: null } }
+		});
+		expect(plan.isEmpty).toBe(false);
 	});
 });
 
-describe('error messages', () => {
-	const batch = {
-		sectorId: 'a',
-		sectorName: 'Floor',
-		seats: [
-			{ label: 'A1', position: { x: 0, y: 0 } },
-			{ label: 'A2', position: { x: 1, y: 0 } }
-		]
-	};
-
-	it('prefers the backend detail for seat batches', () => {
-		const message = seatBatchErrorMessage(
-			{ detail: "Seat 'A1' position is outside the sector shape." },
-			batch,
-			'Failed to save'
-		);
-		expect(message).toBe("Floor: Seat 'A1' position is outside the sector shape.");
-	});
-
-	it('falls back to the batch seat labels when no detail is present', () => {
-		expect(seatBatchErrorMessage({}, batch, 'Failed to save')).toBe(
-			'Floor: Failed to save (A1, A2)'
-		);
-	});
-
-	it('composes shape update errors the same way', () => {
-		const update = { sectorId: 'a', sectorName: 'Floor', shape: null };
-		expect(shapeUpdateErrorMessage({ detail: 'Nope' }, update, 'x')).toBe('Floor: Nope');
-		expect(shapeUpdateErrorMessage(undefined, update, 'Failed')).toBe('Floor: Failed');
+describe('error message helpers', () => {
+	it('prefers backend detail', () => {
+		expect(
+			sectorUpdateErrorMessage({ detail: 'Bad shape' }, { sectorName: 'Floor' }, 'Failed')
+		).toBe('Floor: Bad shape');
+		expect(sectorUpdateErrorMessage({}, { sectorName: 'Floor' }, 'Failed')).toBe('Floor: Failed');
 	});
 });

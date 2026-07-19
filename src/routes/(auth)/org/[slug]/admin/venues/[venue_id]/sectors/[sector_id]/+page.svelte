@@ -151,12 +151,15 @@
 		}
 	}));
 
-	// Sector metadata update mutation (for aisles and row order)
+	// Sector metadata update mutation (for aisles and row order). Merge into the
+	// existing metadata so we never clobber other keys — notably the layout
+	// designer's `transform` (sector-block placement) stored in the same blob.
 	const updateSectorMutation = createMutation(() => ({
 		mutationFn: async (metadata: { aisles: AisleMetadata }) => {
+			const existing = (sectorQuery.data?.metadata ?? {}) as Record<string, unknown>;
 			const response = await organizationadminvenuesUpdateSector({
 				path: { slug: organization.slug, venue_id: venueId, sector_id: sectorId },
-				body: { metadata },
+				body: { metadata: { ...existing, aisles: metadata.aisles } },
 				headers: {
 					Authorization: `Bearer ${accessToken}`
 				}

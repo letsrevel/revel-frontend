@@ -1,244 +1,291 @@
 /**
- * Designer scene model: turns the org-admin sector list into a single global
- * canvas (layout units) the designer can edit, while remembering how to map
- * every sector back into the coordinate frame the backend stores.
+ * Designer scene model (v2 — sector-block arranger + stage).
  *
- * Unlike the public map's computeSeatMapLayout — which normalizes seat
- * positions and sector shapes independently to their own minima (fine for
- * display, lossy for editing) — the designer keeps each sector's seats and
- * shape in ONE shared frame: the sector's raw stored coordinates when seat
- * positions exist, or the derived grid frame otherwise. Sectors are stacked
- * vertically like the public map; `frameOffset` records the translation from
- * the stacked global frame back to the persisted frame, so saving is exact
- * (`persisted = global - origin + frameOffset`) and containment checks are
- * WYSIWYG (translation-invariant).
+ * The designer arranges whole sectors as rigid BLOCKS on a venue floor plan and
+ * places/shapes the stage — it never moves individual seats (seat-by-seat
+ * layout stays in the grid editor). To guarantee the designer canvas and the
+ * buyer-facing seat map agree pixel-for-pixel, every block's LOCAL geometry
+ * (seat dots, outline shape, size) and its initial placement come straight from
+ * `computeSeatMapLayout` — the exact same pure layer `SeatMap.svelte` renders.
+ * Editing writes only the block's `SectorTransform` (world placement) and its
+ * outline `shape`; seats keep their sector-local positions.
+ *
+ * Two extra pieces the buyer layer does not need are computed here:
+ * - `shapeFrameOffset` per block — the translation from the normalized local
+ *   frame back to the sector's PERSISTED frame, so an edited outline saves into
+ *   the same coordinate space the backend (and the buyer) expect
+ *   (`persisted = local + shapeFrameOffset`).
+ * - the `stage` — read from `Venue.metadata.stage`, or a sensible default (a
+ *   wide bar centered above the blocks' world bounding box) when none is stored.
  */
 import type {
 	ChartSectorSchema,
 	Coordinate2d,
-	VenueSeatSchema,
 	VenueSectorWithSeatsSchema
 } from '$lib/api/generated/types.gen';
-import { computeSeatMapLayout, SECTOR_GAP } from '$lib/components/tickets/seat-map-layout';
-import { roundCoord } from './designer-geometry';
+import { computeSeatMapLayout } from '$lib/components/tickets/seat-map-layout';
+import { applyTransform, type SectorTransform } from '$lib/components/tickets/sector-transform';
 
-/** A seat placed on the designer's global canvas (layout units). */
-export interface DesignerSeat {
+/** A seat dot in a block's LOCAL frame (1 unit = one seat cell). */
+export interface DesignerSeatDot {
 	id: string;
 	label: string;
-	sectorId: string;
 	x: number;
 	y: number;
-	isAccessible: boolean;
-	isObstructedView: boolean;
-	/** Painted price-category id (from the grid editor); null when unpainted. */
-	priceCategoryId: string | null;
 }
 
-export interface DesignerSector {
+/** A sector rendered as a rigid, movable/rotatable block. */
+export interface DesignerBlock {
 	id: string;
 	name: string;
-	/** Top-left corner of the sector's bounding box on the global canvas. */
-	origin: Coordinate2d;
-	/** Translation from global back to the persisted frame (the bbox minimum). */
-	frameOffset: Coordinate2d;
-	/** True when every active seat already has a stored position (raw frame). */
-	hasCompletePositions: boolean;
-	/** Stored shape mapped onto the global canvas; null when absent. */
+	kind: 'seated' | 'standing';
+	/** Seat dots in the block's local frame (never edited by the designer). */
+	seats: DesignerSeatDot[];
+	/** Outline polygon in the block's local frame; null when the sector has none. */
 	shape: Coordinate2d[] | null;
+	/** Local frame size (units) — the block spans local [0,width] × [0,height]. */
 	width: number;
 	height: number;
+	/** Initial world placement (parsed metadata.transform, or stacked default). */
+	transform: SectorTransform;
+	/** local → persisted frame translation for saving the outline shape. */
+	shapeFrameOffset: Coordinate2d;
+	/** The sector's existing metadata blob, preserved on save (aisles etc.). */
+	metadata: Record<string, unknown> | null;
+	/** True when the sector has at least one active seat. */
 	hasSeats: boolean;
+	/**
+	 * True when every active seat already has a stored position. Only then does
+	 * the backend validate seats against a changed outline, so only then does the
+	 * save guard pre-check containment.
+	 */
+	hasCompletePositions: boolean;
+}
+
+/** The venue stage: a positionable, shapeable element in world coordinates. */
+export interface StageModel {
+	/** World position of the stage's local origin (its shape's center). */
+	position: Coordinate2d;
+	/** Outline polygon LOCAL to `position` (vertices around the origin); null = default bar. */
+	shape: Coordinate2d[] | null;
+	label?: string;
 }
 
 export interface DesignerModel {
-	sectors: DesignerSector[];
-	seats: DesignerSeat[];
-	width: number;
-	height: number;
+	blocks: DesignerBlock[];
+	stage: StageModel;
+	/** The venue's existing metadata blob, preserved on save (merge stage into it). */
+	venueMetadata: Record<string, unknown> | null;
 }
 
-/** Canvas footprint for sectors with no seats and no shape (still selectable). */
-export const EMPTY_SECTOR_WIDTH = 6;
-export const EMPTY_SECTOR_HEIGHT = 3;
-
-/** Map a designer-global point back into the sector's persisted frame. */
-export function toPersistFrame(
-	global: Coordinate2d,
-	sector: Pick<DesignerSector, 'origin' | 'frameOffset'>
-): Coordinate2d {
-	return {
-		x: roundCoord(global.x - sector.origin.x + sector.frameOffset.x),
-		y: roundCoord(global.y - sector.origin.y + sector.frameOffset.y)
-	};
-}
+/** Units of clear space between the blocks' bounding box and a default stage. */
+export const STAGE_GAP = 3;
+/** Default stage bar half-height (units). */
+const STAGE_HALF_HEIGHT = 0.75;
 
 function collate(a: string, b: string): number {
 	return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
 }
 
-type ActiveSeat = VenueSeatSchema & { id: string };
-
-function activeSeats(sector: VenueSectorWithSeatsSchema): ActiveSeat[] {
-	return (sector.seats ?? []).filter(
-		(seat): seat is ActiveSeat => seat.is_active !== false && typeof seat.id === 'string'
-	);
+function asMetadata(value: unknown): Record<string, unknown> | null {
+	return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : null;
 }
 
-/**
- * Adapter for the grid-derivation path: a single-sector chart with positions
- * stripped, so computeSeatMapLayout applies its row_label/number grid rules
- * (the same ones the public map uses for grid-editor sectors).
- */
-function gridChartSector(
-	sector: VenueSectorWithSeatsSchema,
-	seats: ActiveSeat[]
-): ChartSectorSchema {
+/** Map an admin sector (with seats) into the buyer chart-sector shape. */
+function toChartSector(sector: VenueSectorWithSeatsSchema & { id: string }): ChartSectorSchema {
 	return {
-		id: sector.id ?? '',
+		id: sector.id,
 		name: sector.name,
-		kind: 'seated',
-		shape: null,
-		display_order: 0,
-		seats: seats.map((seat) => ({
-			id: seat.id,
-			label: seat.label,
-			row_label: seat.row_label ?? seat.row ?? null,
-			number: seat.number ?? null,
-			position: null,
-			is_active: true
-		}))
+		kind: sector.kind ?? 'seated',
+		shape: sector.shape ?? null,
+		capacity: sector.capacity ?? null,
+		display_order: sector.display_order ?? 0,
+		metadata: sector.metadata ?? null,
+		seats: (sector.seats ?? [])
+			.filter((seat): seat is typeof seat & { id: string } => typeof seat.id === 'string')
+			.map((seat) => ({
+				id: seat.id,
+				label: seat.label,
+				row_label: seat.row_label ?? seat.row ?? null,
+				number: seat.number ?? null,
+				position: seat.position ?? null,
+				is_active: seat.is_active,
+				price_category_id: seat.price_category_id ?? null
+			}))
 	};
 }
 
-/** Sector-local seat coordinates in the frame we will persist back into. */
-function localSeatPoints(
+/**
+ * The translation from a sector's normalized local frame back to its persisted
+ * frame, matching `seat-map-layout`'s normalization:
+ * - complete seat positions → shared minimum over seat positions ∪ shape;
+ * - otherwise (grid-derived) → the shape's own bounding-box minimum (seats have
+ *   no stored frame), or the origin when there is no shape.
+ */
+function computeShapeFrameOffset(
 	sector: VenueSectorWithSeatsSchema,
-	seats: ActiveSeat[],
-	complete: boolean
-): Map<string, Coordinate2d> {
-	const local = new Map<string, Coordinate2d>();
+	rawShape: Coordinate2d[] | null
+): Coordinate2d {
+	const active = (sector.seats ?? []).filter((seat) => seat.is_active !== false);
+	const complete = active.length > 0 && active.every((seat) => Boolean(seat.position));
 	if (complete) {
-		for (const seat of seats) {
-			const position = seat.position as Coordinate2d;
-			local.set(seat.id, { x: position.x, y: position.y });
-		}
-		return local;
+		const frame: Coordinate2d[] = [...active.map((seat) => seat.position as Coordinate2d)];
+		if (rawShape) frame.push(...rawShape);
+		return { x: Math.min(...frame.map((p) => p.x)), y: Math.min(...frame.map((p) => p.y)) };
 	}
-	if (seats.length === 0) return local;
-	// Partially-positioned sector: grid-derive a layout for the seats that lack a
-	// stored position, but keep the REAL stored coordinate for any seat that
-	// already has one. Grid-deriving all seats here would discard the curated
-	// positions of the placed seats and, since the materialize-all save writes
-	// every seat once the sector is incomplete, permanently overwrite them with
-	// grid coordinates on the next edit (silent data loss).
+	if (rawShape) {
+		return { x: Math.min(...rawShape.map((p) => p.x)), y: Math.min(...rawShape.map((p) => p.y)) };
+	}
+	return { x: 0, y: 0 };
+}
+
+/** World-space AABB of a block's local [0,width]×[0,height] frame under a transform. */
+export function blockWorldBounds(
+	block: Pick<DesignerBlock, 'width' | 'height'>,
+	transform: SectorTransform
+): { minX: number; minY: number; maxX: number; maxY: number } {
+	const corners = [
+		{ x: 0, y: 0 },
+		{ x: block.width, y: 0 },
+		{ x: block.width, y: block.height },
+		{ x: 0, y: block.height }
+	].map((corner) => applyTransform(corner, transform));
+	const xs = corners.map((c) => c.x);
+	const ys = corners.map((c) => c.y);
+	return {
+		minX: Math.min(...xs),
+		minY: Math.min(...ys),
+		maxX: Math.max(...xs),
+		maxY: Math.max(...ys)
+	};
+}
+
+/** Union of every block's world AABB (empty → a unit box at the origin). */
+export function blocksWorldBounds(
+	blocks: readonly DesignerBlock[],
+	transformOf: (id: string) => SectorTransform
+): { minX: number; minY: number; maxX: number; maxY: number } {
+	if (blocks.length === 0) return { minX: 0, minY: 0, maxX: 1, maxY: 1 };
+	let minX = Infinity;
+	let minY = Infinity;
+	let maxX = -Infinity;
+	let maxY = -Infinity;
+	for (const block of blocks) {
+		const b = blockWorldBounds(block, transformOf(block.id));
+		minX = Math.min(minX, b.minX);
+		minY = Math.min(minY, b.minY);
+		maxX = Math.max(maxX, b.maxX);
+		maxY = Math.max(maxY, b.maxY);
+	}
+	return { minX, minY, maxX, maxY };
+}
+
+/** Defensive parse of `Venue.metadata.stage`; null when absent or malformed. */
+export function parseStage(
+	metadata: Record<string, unknown> | null | undefined
+): StageModel | null {
+	const raw = asMetadata(metadata?.stage);
+	if (!raw) return null;
+	const position = asMetadata(raw.position);
+	const px = position?.x;
+	const py = position?.y;
+	if (typeof px !== 'number' || !Number.isFinite(px)) return null;
+	if (typeof py !== 'number' || !Number.isFinite(py)) return null;
+	let shape: Coordinate2d[] | null = null;
+	if (Array.isArray(raw.shape)) {
+		const points = raw.shape
+			.map(asMetadata)
+			.filter((p): p is Record<string, unknown> => p !== null)
+			.filter((p) => typeof p.x === 'number' && typeof p.y === 'number')
+			.map((p) => ({ x: p.x as number, y: p.y as number }));
+		shape = points.length >= 3 ? points : null;
+	}
+	const label = typeof raw.label === 'string' ? raw.label : undefined;
+	return { position: { x: px, y: py }, shape, label };
+}
+
+/** A default stage: a wide bar centered above the blocks' world bounding box. */
+export function defaultStage(blocks: readonly DesignerBlock[]): StageModel {
+	const bounds = blocksWorldBounds(blocks, (id) => {
+		const block = blocks.find((b) => b.id === id);
+		return block?.transform ?? { x: 0, y: 0, rotation: 0 };
+	});
+	const spanX = Math.max(bounds.maxX - bounds.minX, 4);
+	const halfWidth = Math.max(2, Math.min(spanX * 0.4, 10));
+	const shape: Coordinate2d[] = [
+		{ x: -halfWidth, y: -STAGE_HALF_HEIGHT },
+		{ x: halfWidth, y: -STAGE_HALF_HEIGHT },
+		{ x: halfWidth, y: STAGE_HALF_HEIGHT },
+		{ x: -halfWidth, y: STAGE_HALF_HEIGHT }
+	];
+	return {
+		position: {
+			x: (bounds.minX + bounds.maxX) / 2,
+			y: bounds.minY - STAGE_GAP - STAGE_HALF_HEIGHT
+		},
+		shape
+	};
+}
+
+/**
+ * Build the designer model from the admin sector list (with seats) and the
+ * venue metadata. Local geometry and initial transforms come from
+ * `computeSeatMapLayout` (so the canvas matches the buyer map); the stage comes
+ * from `venue.metadata.stage` or a default centered above the blocks.
+ */
+export function buildDesignerModel(
+	rawSectors: VenueSectorWithSeatsSchema[],
+	venueMetadata: Record<string, unknown> | null | undefined
+): DesignerModel {
+	const withIds = rawSectors.filter(
+		(sector): sector is VenueSectorWithSeatsSchema & { id: string } => typeof sector.id === 'string'
+	);
 	const layout = computeSeatMapLayout({
 		venue_id: '',
 		venue_name: '',
 		updated_at: '',
-		sectors: [gridChartSector(sector, seats)]
+		sectors: withIds.map(toChartSector)
 	});
-	for (const point of layout.sectors[0]?.seats ?? []) {
-		local.set(point.seatId, { x: point.x, y: point.y });
+	const rawById = new Map(withIds.map((s) => [s.id, s]));
+
+	const blocks: DesignerBlock[] = [];
+	for (const laid of [...layout.sectors].sort((a, b) => collate(a.name, b.name))) {
+		const raw = rawById.get(laid.id);
+		if (!raw) continue;
+		const rawShape = raw.shape && raw.shape.length >= 3 ? raw.shape.map((p) => ({ ...p })) : null;
+		const activeSeats = (raw.seats ?? []).filter((seat) => seat.is_active !== false);
+		blocks.push({
+			id: laid.id,
+			name: laid.name,
+			kind: laid.kind,
+			seats: laid.seats.map((seat) => ({
+				id: seat.seatId,
+				label: seat.label,
+				x: seat.x,
+				y: seat.y
+			})),
+			shape: laid.shape ? laid.shape.map((p) => ({ ...p })) : null,
+			width: laid.width,
+			height: laid.height,
+			transform: { ...laid.transform },
+			shapeFrameOffset: computeShapeFrameOffset(raw, rawShape),
+			metadata: asMetadata(raw.metadata),
+			hasSeats: laid.seats.length > 0,
+			hasCompletePositions:
+				activeSeats.length > 0 && activeSeats.every((seat) => Boolean(seat.position))
+		});
 	}
-	for (const seat of seats) {
-		if (seat.position) {
-			const position = seat.position as Coordinate2d;
-			local.set(seat.id, { x: position.x, y: position.y });
-		}
-	}
-	return local;
+	// Preserve the buyer's display order for a stable list/tab order.
+	blocks.sort(
+		(a, b) =>
+			a.transform.y - b.transform.y || a.transform.x - b.transform.x || collate(a.name, b.name)
+	);
+
+	const stage = parseStage(venueMetadata) ?? defaultStage(blocks);
+	return { blocks, stage, venueMetadata: asMetadata(venueMetadata) };
 }
 
-/**
- * Build the designer model. Sectors stack vertically in display_order (name as
- * a numeric-aware tiebreak) with SECTOR_GAP units between bounding boxes.
- */
-export function buildDesignerModel(rawSectors: VenueSectorWithSeatsSchema[]): DesignerModel {
-	const ordered = rawSectors
-		.filter(
-			(sector): sector is VenueSectorWithSeatsSchema & { id: string } =>
-				typeof sector.id === 'string'
-		)
-		.sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0) || collate(a.name, b.name));
-
-	const sectors: DesignerSector[] = [];
-	const seats: DesignerSeat[] = [];
-	let cursorY = 0;
-	let width = 0;
-
-	for (const sector of ordered) {
-		const active = activeSeats(sector);
-		const complete = active.length > 0 && active.every((seat) => Boolean(seat.position));
-		const local = localSeatPoints(sector, active, complete);
-		const shapeLocal =
-			sector.shape && sector.shape.length >= 3
-				? sector.shape.map((p) => ({ x: p.x, y: p.y }))
-				: null;
-
-		// Bounding box over seat cells ([x, x+1] × [y, y+1]) and shape vertices.
-		const xs: number[] = [];
-		const ys: number[] = [];
-		for (const point of local.values()) {
-			xs.push(point.x, point.x + 1);
-			ys.push(point.y, point.y + 1);
-		}
-		for (const vertex of shapeLocal ?? []) {
-			xs.push(vertex.x);
-			ys.push(vertex.y);
-		}
-		if (xs.length === 0) {
-			xs.push(0, EMPTY_SECTOR_WIDTH);
-			ys.push(0, EMPTY_SECTOR_HEIGHT);
-		}
-		const minX = Math.min(...xs);
-		const minY = Math.min(...ys);
-		const sectorWidth = Math.max(...xs) - minX;
-		const sectorHeight = Math.max(...ys) - minY;
-
-		const origin = { x: 0, y: cursorY };
-		const frameOffset = { x: minX, y: minY };
-		const toGlobal = (p: Coordinate2d): Coordinate2d => ({
-			x: p.x - minX + origin.x,
-			y: p.y - minY + origin.y
-		});
-
-		for (const seat of active) {
-			const point = local.get(seat.id);
-			if (!point) continue;
-			const global = toGlobal(point);
-			seats.push({
-				id: seat.id,
-				label: seat.label,
-				sectorId: sector.id,
-				x: global.x,
-				y: global.y,
-				isAccessible: seat.is_accessible ?? false,
-				isObstructedView: seat.is_obstructed_view ?? false,
-				priceCategoryId: seat.price_category_id ?? null
-			});
-		}
-
-		sectors.push({
-			id: sector.id,
-			name: sector.name,
-			origin,
-			frameOffset,
-			hasCompletePositions: complete,
-			shape: shapeLocal ? shapeLocal.map(toGlobal) : null,
-			width: sectorWidth,
-			height: sectorHeight,
-			hasSeats: active.length > 0
-		});
-
-		cursorY += sectorHeight + SECTOR_GAP;
-		width = Math.max(width, sectorWidth);
-	}
-
-	return {
-		sectors,
-		seats,
-		width,
-		height: sectors.length > 0 ? cursorY - SECTOR_GAP : 0
-	};
+/** Local center of a block (the pivot for rotation). */
+export function blockLocalCenter(block: Pick<DesignerBlock, 'width' | 'height'>): Coordinate2d {
+	return { x: block.width / 2, y: block.height / 2 };
 }

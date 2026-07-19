@@ -82,18 +82,74 @@ export function applyTransform(local: Coordinate2d, t: SectorTransform): Coordin
 }
 
 /**
- * The on-screen angle (degrees clockwise from screen-up) at which the fixed
- * venue stage sits relative to this sector's LOCAL frame.
+ * The on-screen angle (degrees clockwise from screen-up) at which the venue
+ * stage sits relative to this sector's LOCAL frame.
  *
- * The stage is world "up" (toward −Y). The sector group is rendered with
- * `rotate(rotation)`, which maps a local direction at angle α (clockwise from
- * up) to world angle α + rotation. World-up is world angle 0, so the local
- * angle that faces the stage is α = −rotation. For rotation 0 the stage is
- * straight up (0°); a section turned 90° clockwise sees the stage to its local
- * left (270°).
+ * The sector group is rendered with `rotate(rotation)`, which maps a local
+ * direction at angle α (clockwise from up) to world angle α + rotation. So the
+ * local angle that faces a stage sitting at `worldAngleToStage` (world degrees
+ * clockwise from up) is α = worldAngleToStage − rotation.
+ *
+ * `worldAngleToStage` defaults to 0 (world "up"), reproducing the historical
+ * fixed-stage behaviour: for rotation 0 the stage is straight up (0°); a
+ * section turned 90° clockwise sees the stage to its local left (270°). Pass
+ * the real angle (see {@link worldAngleFromUp}) once the venue stage has a
+ * stored position.
  */
-export function stageDirectionAngle(t: SectorTransform): number {
-	return normalizeDegrees(-t.rotation);
+export function stageDirectionAngle(t: SectorTransform, worldAngleToStage = 0): number {
+	return normalizeDegrees(worldAngleToStage - t.rotation);
+}
+
+/**
+ * On-screen angle (degrees clockwise from screen-up, y-down) of the vector
+ * `from → to`. Up = 0, right = 90, down = 180, left = 270. Returns 0 for a
+ * zero-length vector.
+ */
+export function worldAngleFromUp(from: Coordinate2d, to: Coordinate2d): number {
+	const dx = to.x - from.x;
+	const dy = to.y - from.y;
+	if (dx === 0 && dy === 0) return 0;
+	return normalizeDegrees((Math.atan2(dx, -dy) * 180) / Math.PI);
+}
+
+/**
+ * World-space center of a sector whose local frame is `[0,width] × [0,height]`,
+ * placed by transform `t`. Used to point the buyer map's stage indicator from
+ * the sector toward the real stage.
+ */
+export function sectorWorldCenter(t: SectorTransform, width: number, height: number): Coordinate2d {
+	return applyTransform({ x: width / 2, y: height / 2 }, t);
+}
+
+/** Inverse of {@link applyTransform}: map a world point back into local space. */
+export function inverseTransform(world: Coordinate2d, t: SectorTransform): Coordinate2d {
+	const rad = (t.rotation * Math.PI) / 180;
+	const cos = Math.cos(rad);
+	const sin = Math.sin(rad);
+	const dx = world.x - t.x;
+	const dy = world.y - t.y;
+	return {
+		x: dx * cos + dy * sin,
+		y: -dx * sin + dy * cos
+	};
+}
+
+/**
+ * Translation `(x, y)` that pins `localCenter` at `worldCenter` for the given
+ * rotation — so rotating a block spins it around its own center instead of the
+ * local origin: `applyTransform(localCenter, {x, y, rotation}) === worldCenter`.
+ */
+export function rotateAboutCenter(
+	rotation: number,
+	localCenter: Coordinate2d,
+	worldCenter: Coordinate2d
+): SectorTransform {
+	const rad = (rotation * Math.PI) / 180;
+	const cos = Math.cos(rad);
+	const sin = Math.sin(rad);
+	const rcx = localCenter.x * cos - localCenter.y * sin;
+	const rcy = localCenter.x * sin + localCenter.y * cos;
+	return { x: worldCenter.x - rcx, y: worldCenter.y - rcy, rotation };
 }
 
 /**

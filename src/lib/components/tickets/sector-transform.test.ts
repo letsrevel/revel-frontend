@@ -2,10 +2,14 @@ import { describe, it, expect } from 'vitest';
 import {
 	applyTransform,
 	defaultStackedTransform,
+	inverseTransform,
 	normalizeDegrees,
 	parseSectorTransform,
+	rotateAboutCenter,
 	SECTOR_GAP,
+	sectorWorldCenter,
 	stageDirectionAngle,
+	worldAngleFromUp,
 	type SectorTransform
 } from './sector-transform';
 
@@ -84,6 +88,47 @@ describe('stageDirectionAngle', () => {
 		expect(stageDirectionAngle({ x: 0, y: 0, rotation: -90 })).toBe(90);
 		expect(stageDirectionAngle({ x: 0, y: 0, rotation: 180 })).toBe(180);
 		expect(stageDirectionAngle({ x: 0, y: 0, rotation: 30 })).toBe(330);
+	});
+
+	it('honors an explicit world angle toward the stage', () => {
+		// Stage to world-right (90°), sector unrotated -> local-right (90°).
+		expect(stageDirectionAngle({ x: 0, y: 0, rotation: 0 }, 90)).toBe(90);
+		// Same stage angle with a 90°-rotated sector -> straight up (0°).
+		expect(stageDirectionAngle({ x: 0, y: 0, rotation: 90 }, 90)).toBe(0);
+	});
+});
+
+describe('worldAngleFromUp', () => {
+	it('is clockwise-from-up between two world points', () => {
+		expect(worldAngleFromUp({ x: 0, y: 0 }, { x: 0, y: -1 })).toBe(0);
+		expect(worldAngleFromUp({ x: 0, y: 0 }, { x: 5, y: 0 })).toBe(90);
+		expect(worldAngleFromUp({ x: 0, y: 0 }, { x: 0, y: 3 })).toBe(180);
+		expect(worldAngleFromUp({ x: 2, y: 2 }, { x: 2, y: 2 })).toBe(0);
+	});
+});
+
+describe('inverseTransform / sectorWorldCenter / rotateAboutCenter', () => {
+	it('inverseTransform round-trips applyTransform', () => {
+		const t: SectorTransform = { x: 7, y: -3, rotation: 42 };
+		const local = { x: 2, y: 5 };
+		const back = inverseTransform(applyTransform(local, t), t);
+		close(back.x, local.x, 1e-9);
+		close(back.y, local.y, 1e-9);
+	});
+
+	it('sectorWorldCenter maps the local center through the transform', () => {
+		const center = sectorWorldCenter({ x: 10, y: 0, rotation: 0 }, 4, 2);
+		expect(center).toEqual({ x: 12, y: 1 });
+	});
+
+	it('rotateAboutCenter pins the local center at the world center', () => {
+		const worldCenter = { x: 5, y: 8 };
+		const localCenter = { x: 3, y: 1 };
+		const t = rotateAboutCenter(120, localCenter, worldCenter);
+		const placed = applyTransform(localCenter, t);
+		close(placed.x, worldCenter.x, 1e-9);
+		close(placed.y, worldCenter.y, 1e-9);
+		expect(t.rotation).toBe(120);
 	});
 });
 

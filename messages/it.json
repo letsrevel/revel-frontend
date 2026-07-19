@@ -7763,7 +7763,7 @@
 	"seatDesigner.open": "Apri il designer del layout",
 	"seatDesigner.title": "Designer del layout",
 	"seatDesigner.pageTitle": "Designer del layout – {venueName}",
-	"seatDesigner.pageDescription": "Posiziona liberamente i posti e disegna le forme dei settori. La creazione e i prezzi dei posti restano nell'editor a griglia.",
+	"seatDesigner.pageDescription": "Disponi ogni settore come un blocco e posiziona il palco. La disposizione dei singoli posti e i prezzi restano nell’editor a griglia.",
 	"seatDesigner.backToVenue": "Torna al luogo",
 	"seatDesigner.loading": "Caricamento del designer del layout",
 	"seatDesigner.empty": "Questo luogo non ha ancora settori. Crea prima settori e posti dalla pagina del luogo.",
@@ -7785,8 +7785,8 @@
 	"seatDesigner.saved": "Layout salvato",
 	"seatDesigner.saveError": "Impossibile salvare il layout",
 	"seatDesigner.unsavedChanges": "Hai modifiche al layout non salvate. Uscire comunque?",
-	"seatDesigner.instructions": "Clicca o trascina sulla tela per selezionare i posti (Shift aggiunge alla selezione), poi trascinali in un nuovo punto. Tastiera: Tab per raggiungere i posti, le frecce spostano il focus, Invio seleziona, le frecce spostano poi la selezione (Shift per un passo più grande), Esc annulla la selezione.",
-	"seatDesigner.shapeInstructions": "Clicca sulla tela per aggiungere i vertici della forma (3 o più). Trascina un vertice per spostarlo; selezionane uno e premi Canc per rimuoverlo, oppure usa le frecce per spostarlo. Premi Fatto per terminare.",
+	"seatDesigner.instructions": "Trascina il blocco selezionato per spostarlo o trascina la maniglia rotonda per ruotarlo (tieni premuto Alt per la rotazione libera). Le frecce lo spostano, [ e ] lo ruotano di 15°, Esc deseleziona. Trascina la tela vuota, tieni premuto Spazio o usa il tasto centrale del mouse per spostare la vista.",
+	"seatDesigner.shapeInstructions": "Clicca sulla tela per aggiungere punti del contorno (almeno 3). Trascina un punto per spostarlo, clicca un punto tratteggiato per inserirne uno, seleziona un punto e premi Canc per rimuoverlo. Premi Fatto per terminare.",
 	"seatDesigner.shapeTooFewPoints": "La forma di un settore richiede almeno 3 punti.",
 	"seatDesigner.seatsOutsideShape": "{sector}: questi posti sono fuori dalla forma del settore:",
 	"seatDesigner.canvasLabel": "Tela del layout dei posti",
@@ -8332,5 +8332,13 @@
 	"seriesPassBadge": {
 		"label": "Abbonamento",
 		"tooltip": "Dall'abbonamento “{name}”"
-	}
+	},
+	"seatDesigner.selectTarget": "Selezione",
+	"seatDesigner.selectNone": "Nessuno",
+	"seatDesigner.stageName": "Palco",
+	"seatDesigner.drawShape": "Disegna forma",
+	"seatDesigner.addVertex": "Aggiungi punto",
+	"seatDesigner.rotateHandle": "Ruota {name}",
+	"seatDesigner.sectorBlockLabel": "Settore {name}, ruotato di {rotation}°",
+	"seatDesigner.selectPrompt": "Seleziona un settore o il palco dal menu (o cliccalo) per spostarlo, ruotarlo o modificarne la forma. Trascina lo spazio vuoto per spostare la vista."
 }
