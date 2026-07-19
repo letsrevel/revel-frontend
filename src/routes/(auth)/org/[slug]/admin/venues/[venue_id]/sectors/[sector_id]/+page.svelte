@@ -227,12 +227,9 @@
 			updateSectorMutation.isPending
 	);
 
-	// The admin sector response does not expose `kind` yet — read it
-	// defensively so the standing empty state activates the moment the
-	// backend adds the field. Standing sectors have no seats to edit.
-	const isStandingSector = $derived(
-		sector ? (sector as { kind?: string }).kind === 'standing' : false
-	);
+	// Standing sectors have no seats to edit — show the empty state instead of
+	// the grid editor. Admin sector reads expose `kind` (BE #734).
+	const isStandingSector = $derived(sector?.kind === 'standing');
 </script>
 
 <svelte:head>

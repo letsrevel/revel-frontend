@@ -3947,7 +3947,6 @@
 	"orgAdmin.sectors.form.kindLabel": "Tipo di settore",
 	"orgAdmin.sectors.form.kindSeated": "Con posti (mappa dei posti)",
 	"orgAdmin.sectors.form.kindStanding": "In piedi (ingresso generale)",
-	"orgAdmin.sectors.form.kindKeepCurrent": "Mantieni il tipo attuale",
 	"orgAdmin.sectors.form.kindHelp": "I settori con posti hanno una mappa dei posti; i settori in piedi vendono l'ingresso generale fino a una capienza.",
 	"orgAdmin.sectors.form.kindLockedHint": "Il tipo non può cambiare finché il settore ha dei posti. Elimina prima i suoi posti.",
 	"orgAdmin.sectors.form.standingCapacityLabel": "Capienza (limite in piedi)",
