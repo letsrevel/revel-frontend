@@ -31,6 +31,8 @@ export interface DesignerSeat {
 	y: number;
 	isAccessible: boolean;
 	isObstructedView: boolean;
+	/** Painted price-category id (from the grid editor); null when unpainted. */
+	priceCategoryId: string | null;
 }
 
 export interface DesignerSector {
@@ -212,7 +214,8 @@ export function buildDesignerModel(rawSectors: VenueSectorWithSeatsSchema[]): De
 				x: global.x,
 				y: global.y,
 				isAccessible: seat.is_accessible ?? false,
-				isObstructedView: seat.is_obstructed_view ?? false
+				isObstructedView: seat.is_obstructed_view ?? false,
+				priceCategoryId: seat.price_category_id ?? null
 			});
 		}
 

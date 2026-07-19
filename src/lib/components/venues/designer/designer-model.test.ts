@@ -187,6 +187,22 @@ describe('buildDesignerModel', () => {
 		expect(model.sectors[0].width).toBe(EMPTY_SECTOR_WIDTH);
 	});
 
+	it('threads each seat painted price-category id (null when unpainted)', () => {
+		const sectors: VenueSectorWithSeatsSchema[] = [
+			{
+				id: 'sec-1',
+				name: 'Floor',
+				seats: [
+					seat('s1', 'A1', { position: { x: 0, y: 0 }, price_category_id: 'gold' }),
+					seat('s2', 'A2', { position: { x: 1, y: 0 } })
+				]
+			}
+		];
+		const model = buildDesignerModel(sectors);
+		expect(mustSeat(model, 's1').priceCategoryId).toBe('gold');
+		expect(mustSeat(model, 's2').priceCategoryId).toBeNull();
+	});
+
 	it('ignores stored shapes with fewer than 3 vertices', () => {
 		const sectors: VenueSectorWithSeatsSchema[] = [
 			{
