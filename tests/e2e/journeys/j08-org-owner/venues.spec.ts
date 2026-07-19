@@ -204,10 +204,9 @@ test.describe('J19.2 price categories @p2', () => {
 // J19.3 (USER_JOURNEYS.md) — seat PAINTING in the grid editor: the sector page's
 // paint palette lists the venue's price categories as chips; selecting a chip
 // turns painting on, and clicking a seat cell paints it. Saving fires the venue
-// paint endpoint (PUT …/seats/paint) for the touched seats — proven here by the
-// "Seat pricing updated" toast (the persisted paint is NOT re-read on reload
-// yet, a known display gap, so we assert the save round-trip via UI feedback
-// only, never painted state after a reload).
+// paint endpoint (PUT …/seats/paint) for the touched seats, and the paint
+// ROUND-TRIPS: the seat read exposes price_category_id (BE #734), so a reload
+// re-hydrates the painted seat — asserted here after a full navigation.
 //
 // Isolation: throwaway org + venue + sector arranged via API; nothing seeded is
 // touched. The sector is created WITH four seats so the editor hydrates a real
@@ -272,6 +271,16 @@ test.describe('J19.3 seat painting @p2', () => {
 		// bulk ops. The paint toast proves that request succeeded.
 		await page.getByRole('button', { name: 'Save Changes' }).click();
 		await expect(page.getByText('Seat pricing updated')).toBeVisible({ timeout: 15_000 });
+
+		// Round-trip (BE #734): reload and confirm the paint re-hydrates from the
+		// seat read — A1 keeps its category in its accessible name, A2 stays plain.
+		await gotoHydrated(page, `/org/${org.slug}/admin/venues/${venue.id}/sectors/${sector.id}`);
+		await waitForClientAuth(page);
+		await expect(page.getByText('Total:')).toContainText('4', { timeout: 15_000 });
+		await expect(page.getByRole('button', { name: 'Seat A1, Amber', exact: true })).toBeVisible({
+			timeout: 15_000
+		});
+		await expect(page.getByRole('button', { name: 'Seat A2', exact: true })).toBeVisible();
 
 		await context.close();
 	});

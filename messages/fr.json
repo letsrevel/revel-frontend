@@ -3918,7 +3918,6 @@
 	"orgAdmin.sectors.form.kindLabel": "Type de secteur",
 	"orgAdmin.sectors.form.kindSeated": "Avec places (plan des places)",
 	"orgAdmin.sectors.form.kindStanding": "Debout (admission générale)",
-	"orgAdmin.sectors.form.kindKeepCurrent": "Conserver le type actuel",
 	"orgAdmin.sectors.form.kindHelp": "Les secteurs avec places obtiennent un plan des places ; les secteurs debout vendent l'admission générale jusqu'à une capacité.",
 	"orgAdmin.sectors.form.kindLockedHint": "Le type ne peut pas changer tant que le secteur a des places. Supprime d'abord ses places.",
 	"orgAdmin.sectors.form.standingCapacityLabel": "Capacité (limite debout)",

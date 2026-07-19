@@ -3947,7 +3947,6 @@
 	"orgAdmin.sectors.form.kindLabel": "Sector type",
 	"orgAdmin.sectors.form.kindSeated": "Seated (seat map)",
 	"orgAdmin.sectors.form.kindStanding": "Standing (general admission)",
-	"orgAdmin.sectors.form.kindKeepCurrent": "Keep current type",
 	"orgAdmin.sectors.form.kindHelp": "Seated sectors get a seat map; standing sectors sell general admission up to a capacity.",
 	"orgAdmin.sectors.form.kindLockedHint": "The type cannot change while the sector has seats. Delete its seats first.",
 	"orgAdmin.sectors.form.standingCapacityLabel": "Capacity (standing limit)",

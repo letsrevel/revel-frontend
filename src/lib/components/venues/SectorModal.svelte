@@ -38,10 +38,9 @@
 	let code = $state(sector?.code ?? '');
 	let capacity = $state<number | undefined>(sector?.capacity ?? undefined);
 	let displayOrder = $state(sector?.display_order ?? 0);
-	// The admin sector response does not expose `kind`, so when editing a
-	// seatless sector we cannot prefill it — '' means "keep current" (omitted
-	// from the payload). With seats the kind is provably 'seated' (locked).
-	let kind = $state<Kind | ''>(sector ? (hasSeats ? 'seated' : '') : 'seated');
+	// The admin sector read now exposes `kind` (BE #734), so prefill it directly.
+	// A sector with seats is locked to its current kind (backend 422s a change).
+	let kind = $state<Kind>(sector?.kind ?? 'seated');
 
 	const isStanding = $derived(kind === 'standing');
 
@@ -113,9 +112,9 @@
 				capacity: capacity || undefined,
 				display_order: displayOrder
 			};
-			// Only send kind when the admin picked one ('' = keep current);
-			// locked sectors (with seats) never send it.
-			if (kind !== '' && !hasSeats) {
+			// Locked sectors (with seats) never send kind; seatless sectors may
+			// change it.
+			if (!hasSeats) {
 				data.kind = kind;
 			}
 			updateMutationFn.mutate(data);
@@ -127,9 +126,7 @@
 				display_order: displayOrder,
 				seats: []
 			};
-			if (kind !== '') {
-				data.kind = kind;
-			}
+			data.kind = kind;
 			createMutationFn.mutate(data);
 		}
 	}
@@ -217,11 +214,6 @@
 						disabled={hasSeats}
 						class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50"
 					>
-						{#if isEditing && !hasSeats}
-							<option value="">
-								{m['orgAdmin.sectors.form.kindKeepCurrent']()}
-							</option>
-						{/if}
 						<option value="seated">
 							{m['orgAdmin.sectors.form.kindSeated']()}
 						</option>

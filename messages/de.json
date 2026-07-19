@@ -3947,7 +3947,6 @@
 	"orgAdmin.sectors.form.kindLabel": "Sektortyp",
 	"orgAdmin.sectors.form.kindSeated": "Bestuhlt (Sitzplan)",
 	"orgAdmin.sectors.form.kindStanding": "Stehplatz (freie Platzwahl)",
-	"orgAdmin.sectors.form.kindKeepCurrent": "Aktuellen Typ beibehalten",
 	"orgAdmin.sectors.form.kindHelp": "Bestuhlte Sektoren erhalten einen Sitzplan; Stehplatzsektoren verkaufen freie Platzwahl bis zu einer Kapazität.",
 	"orgAdmin.sectors.form.kindLockedHint": "Der Typ kann nicht geändert werden, solange der Sektor Plätze hat. Lösche zuerst seine Plätze.",
 	"orgAdmin.sectors.form.standingCapacityLabel": "Kapazität (Stehplatzlimit)",

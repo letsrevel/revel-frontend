@@ -80,15 +80,12 @@ export function deriveAdjacencyIndex(colIndex: number): number {
 }
 
 /**
- * Read a seat's persisted paint from the admin response, defensively.
- *
- * The admin seats response does not expose `price_category_id` today (only the
- * public event chart does), so this returns `undefined` (= baseline unknown).
- * The moment the backend adds the field, hydration and diffing start working
- * without a frontend change.
+ * Read a seat's persisted paint (its `price_category_id`) from the admin seats
+ * response (BE #734). `undefined` = baseline unknown (never sent on save), `null`
+ * = explicitly unpainted, a string = the painted category id.
  */
 export function readExistingPaint(seat: VenueSeatSchema): string | null | undefined {
-	return (seat as { price_category_id?: string | null }).price_category_id;
+	return seat.price_category_id;
 }
 
 /** Black or white — whichever is readable on the given hex swatch color. */

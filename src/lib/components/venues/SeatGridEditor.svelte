@@ -218,14 +218,10 @@
 			maxRow = Math.max(maxRow, rowIndex);
 			maxCol = Math.max(maxCol, colNum);
 
-			// Store seat with its accessibility flags from backend. Paint is
-			// hydrated defensively: the admin response does not expose
-			// price_category_id yet, so unknown baselines stay undefined
-			// (untouched paint is then never sent on save — reloading and
-			// re-saving a painted venue cannot unpaint anything).
-			// KNOWN DISPLAY GAP: current paint is not shown on reload — the
-			// admin read lacks price_category_id; backend follow-up will expose
-			// it, at which point hydration below starts working unchanged.
+			// Store seat with its accessibility flags and painted category from
+			// the backend (price_category_id, BE #734), so existing paint shows on
+			// reload. An undefined (untouched) baseline is never sent on save, so
+			// reloading and re-saving a painted venue cannot unpaint anything.
 			const persistedPaint = readExistingPaint(seat);
 			seats.set(getCellKey(rowIndex, colNum), {
 				exists: true,
