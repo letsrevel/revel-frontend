@@ -1,9 +1,7 @@
 /**
- * Interaction controller for the sector-block arranger (runes-in-a-class,
- * mirroring seat-hold-controller). Owns all editable designer state (per-block
- * transforms/outlines, the stage, selection/mode) plus the pointer/keyboard
- * handlers and the world↔canvas mapping, so SeatMapDesigner.svelte stays a thin
- * view. The transform arithmetic lives in the pure designer-interactions module.
+ * Interaction controller for the sector-block arranger (runes-in-a-class).
+ * Owns editable designer state + pointer/keyboard handlers; pure math lives in
+ * designer-interactions. SeatMapDesigner.svelte stays a thin view.
  */
 import type { Coordinate2d } from '$lib/api/generated/types.gen';
 import { SvelteMap } from 'svelte/reactivity';
@@ -368,22 +366,24 @@ export class DesignerController {
 		}
 		const world = this.clientToWorld(current.x, current.y);
 		if (!world) return;
+		// Follow the pointer 1:1 mid-drag (snapping here makes the block trail the
+		// cursor in steps); snap-to-grid is applied once on release.
 		if (active.kind === 'move-sector') {
 			this.transforms.set(
 				active.sectorId,
-				translatedTransform(active.start, active.grab, world, this.snapOn)
+				translatedTransform(active.start, active.grab, world, false)
 			);
 		} else if (active.kind === 'move-stage') {
 			this.stage = {
 				...this.stage,
-				position: translatedPoint(active.start, active.grab, world, this.snapOn)
+				position: translatedPoint(active.start, active.grab, world, false)
 			};
 		} else if (active.kind === 'rotate') {
 			const raw =
 				active.startRotation + (angleFromCenter(active.center, world) - active.startAngle);
 			this.transforms.set(
 				active.sectorId,
-				rotatedTransform(active.center, active.localCenter, raw, this.snapOn)
+				rotatedTransform(active.center, active.localCenter, raw, false)
 			);
 		} else if (active.kind === 'vertex' && this.selectedPolygon) {
 			const local = snapOrRound(this.worldToLocal(world), this.snapOn);
@@ -397,8 +397,28 @@ export class DesignerController {
 	onCanvasPointerEnd(event: PointerEvent): void {
 		this.pointers.delete(event.pointerId);
 		if (this.drag && this.drag.id === event.pointerId) {
+			if (this.snapOn) this.snapDragResult(this.drag);
 			if (this.drag.kind === 'pan' && this.drag.deselectOnUp && !this.drag.moved) this.deselect();
 			this.drag = null;
+		}
+	}
+
+	/** Snap the just-finished move/rotate to the grid on release (drop-snap). */
+	private snapDragResult(active: Drag): void {
+		if (active.kind === 'move-sector') {
+			const t = this.transforms.get(active.sectorId);
+			if (t)
+				this.transforms.set(active.sectorId, { ...t, ...snapOrRound({ x: t.x, y: t.y }, true) });
+		} else if (active.kind === 'move-stage') {
+			this.stage = { ...this.stage, position: snapOrRound(this.stage.position, true) };
+		} else if (active.kind === 'rotate') {
+			const t = this.transforms.get(active.sectorId);
+			// Re-apply with snap on, pinning the same center so the block stays put.
+			if (t)
+				this.transforms.set(
+					active.sectorId,
+					rotatedTransform(active.center, active.localCenter, t.rotation, true)
+				);
 		}
 	}
 	private rotateSelectedBy(delta: number): void {
