@@ -3809,6 +3809,7 @@
 	"orgAdmin.priceCategories.toast.updateError": "Failed to update price category",
 	"orgAdmin.priceCategories.toast.updated": "Price category updated",
 	"orgAdmin.seats.backToSectors": "Back to sectors",
+	"orgAdmin.seats.backToDesigner": "Back to designer",
 	"orgAdmin.seats.error.description": "Failed to load seats. Please try again.",
 	"orgAdmin.seats.error.title": "Error loading seats",
 	"orgAdmin.seats.grid.columnsLabel": "Columns",

@@ -84,7 +84,7 @@ test.describe('J6 seat selection @p2', () => {
 		// loop only clicks when the seat isn't already pressed — a second click
 		// would RELEASE the hold. The pressed state plus the 10-minute-hold notice
 		// prove the server hold is live before reserving.
-		const seatB3 = confirmDialog.getByRole('button', { name: 'Seat B3', exact: true });
+		const seatB3 = confirmDialog.getByRole('button', { name: /^Seat B3(,|$)/ });
 		const success = page.getByRole('dialog', { name: 'Your Ticket', exact: true });
 		await expect(async () => {
 			if (await success.isVisible()) return;

@@ -3780,6 +3780,7 @@
 	"orgAdmin.priceCategories.toast.updateError": "Impossible de mettre à jour la catégorie de prix",
 	"orgAdmin.priceCategories.toast.updated": "Catégorie de prix mise à jour",
 	"orgAdmin.seats.backToSectors": "Retour aux secteurs",
+	"orgAdmin.seats.backToDesigner": "Retour au concepteur",
 	"orgAdmin.seats.error.description": "Échec du chargement des places. Réessaie.",
 	"orgAdmin.seats.error.title": "Erreur lors du chargement des places",
 	"orgAdmin.seats.grid.columnsLabel": "Colonnes",

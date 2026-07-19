@@ -19,7 +19,7 @@
 	} from '$lib/api/generated/types.gen';
 	import type { PaintBatch, SeatSavePlan } from '$lib/components/venues/seat-grid-save';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { ArrowLeft, Users } from '@lucide/svelte';
+	import { ArrowLeft, LayoutDashboard, Users } from '@lucide/svelte';
 	import SeatGridEditor, { type AisleMetadata } from '$lib/components/venues/SeatGridEditor.svelte';
 	import { toast } from 'svelte-sonner';
 
@@ -216,6 +216,15 @@
 		);
 	}
 
+	function handleBackToDesigner() {
+		goto(
+			resolve('/(auth)/org/[slug]/admin/venues/[venue_id]/designer', {
+				slug: organization.slug,
+				venue_id: venueId
+			})
+		);
+	}
+
 	const sector = $derived(sectorQuery.data);
 	const isLoading = $derived(sectorQuery.isLoading);
 	const error = $derived(sectorQuery.error);
@@ -241,15 +250,26 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<!-- Back button -->
-	<button
-		type="button"
-		onclick={handleBackToSectors}
-		class="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-	>
-		<ArrowLeft class="h-4 w-4" />
-		{m['orgAdmin.seats.backToSectors']()}
-	</button>
+	<!-- Back navigation: to the sector list, or back to the layout designer so
+	     the grid-editor ⇄ designer round-trip is not a dead end. -->
+	<div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+		<button
+			type="button"
+			onclick={handleBackToSectors}
+			class="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+		>
+			<ArrowLeft class="h-4 w-4" />
+			{m['orgAdmin.seats.backToSectors']()}
+		</button>
+		<button
+			type="button"
+			onclick={handleBackToDesigner}
+			class="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+		>
+			<LayoutDashboard class="h-4 w-4" />
+			{m['orgAdmin.seats.backToDesigner']?.() ?? 'Back to designer'}
+		</button>
+	</div>
 
 	{#if error}
 		<div class="rounded-md bg-destructive/10 p-4 text-destructive" role="alert">

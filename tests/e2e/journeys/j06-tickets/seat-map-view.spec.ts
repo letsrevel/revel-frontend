@@ -92,7 +92,7 @@ test.describe('J6 seat map view @p2', () => {
 			// Tap B2 ON THE MAP — each tap is a hold round-trip (briefly "…, updating"
 			// while the POST is in flight, so the exact-name locator only resolves
 			// once it settles). A second click would release, hence the guarded loop.
-			const mapSeat = seatMap.getByRole('button', { name: 'Seat B2', exact: true });
+			const mapSeat = seatMap.getByRole('button', { name: /^Seat B2(,|$)/ });
 			await expect(async () => {
 				if ((await mapSeat.getAttribute('aria-pressed')) !== 'true') {
 					await mapSeat.click();
@@ -107,7 +107,7 @@ test.describe('J6 seat map view @p2', () => {
 			// Toggle back to the LIST — the same seat is still selected (shared state).
 			await displayToggle.getByRole('button', { name: 'List' }).click();
 			await expect(seatMap).toBeHidden();
-			const listSeat = confirmDialog.getByRole('button', { name: 'Seat B2', exact: true });
+			const listSeat = confirmDialog.getByRole('button', { name: /^Seat B2(,|$)/ });
 			await expect(listSeat).toHaveAttribute('aria-pressed', 'true', { timeout: 10_000 });
 		} finally {
 			await context.close();

@@ -3809,6 +3809,7 @@
 	"orgAdmin.priceCategories.toast.updateError": "Preiskategorie konnte nicht aktualisiert werden",
 	"orgAdmin.priceCategories.toast.updated": "Preiskategorie aktualisiert",
 	"orgAdmin.seats.backToSectors": "Zurück zu Sektoren",
+	"orgAdmin.seats.backToDesigner": "Zurück zum Designer",
 	"orgAdmin.seats.error.description": "Plätze konnten nicht geladen werden. Bitte versuche es erneut.",
 	"orgAdmin.seats.error.title": "Fehler beim Laden der Plätze",
 	"orgAdmin.seats.grid.columnsLabel": "Spalten",

@@ -3809,6 +3809,7 @@
 	"orgAdmin.priceCategories.toast.updateError": "Impossibile aggiornare la categoria di prezzo",
 	"orgAdmin.priceCategories.toast.updated": "Categoria di prezzo aggiornata",
 	"orgAdmin.seats.backToSectors": "Torna ai settori",
+	"orgAdmin.seats.backToDesigner": "Torna al designer",
 	"orgAdmin.seats.error.description": "Impossibile caricare i posti. Riprova.",
 	"orgAdmin.seats.error.title": "Errore nel caricamento dei posti",
 	"orgAdmin.seats.grid.columnsLabel": "Colonne",

@@ -234,8 +234,11 @@
 						<SeatViewToggle mode={seatViewMode} onModeChange={handleViewModeChange} />
 					</div>
 					{#if seatViewMode === 'map' && mapChart}
-						<!-- Height bounded like the list cap; pan/zoom reaches clipped content. -->
-						<div class="max-h-72 overflow-hidden rounded-lg border border-border bg-background">
+						<!-- Tall map surface (the seated dialog widens for it); pan/zoom
+						     reaches anything beyond the box. -->
+						<div
+							class="h-[58vh] shrink-0 overflow-hidden rounded-lg border border-border bg-background"
+						>
 							<SeatMap
 								chart={mapChart}
 								seats={seatViews}

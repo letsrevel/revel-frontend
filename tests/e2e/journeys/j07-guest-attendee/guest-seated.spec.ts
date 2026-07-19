@@ -90,7 +90,7 @@ test.describe('J7 guest seated checkout @p2', () => {
 			// Tap B2 — the tap IS the anonymous server hold (this first hold mints
 			// the guest cookie). Only click while not pressed: a second click would
 			// release the hold. Pressed state + the held notice prove the hold.
-			const seatButton = guestDialog.getByRole('button', { name: 'Seat B2', exact: true });
+			const seatButton = guestDialog.getByRole('button', { name: /^Seat B2(,|$)/ });
 			await expect(async () => {
 				if ((await seatButton.getAttribute('aria-pressed')) !== 'true') {
 					await seatButton.click();
