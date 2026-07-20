@@ -71,7 +71,7 @@
 	const OFFSET_Y = PAD + STAGE_H + 12 + LABEL_H;
 	/** Room around a scoped sector for its angled stage indicator (compact so
 	    the seats stay the dominant content). */
-	const SCOPED_MARGIN = 46;
+	const SCOPED_MARGIN = 52;
 
 	const layout = $derived(computeSeatMapLayout(chart));
 
@@ -478,34 +478,51 @@
 	{@const halfH = (sector.height * CELL) / 2}
 	{@const cx = SCOPED_MARGIN + halfW}
 	{@const cy = SCOPED_MARGIN + halfH}
-	<!-- Distance from center to the sector's bounding-box edge along the stage
-	     direction, plus a small gap — so the indicator hugs the seats instead of
-	     floating a half-diagonal away. -->
+	<!-- Distance from centre to the sector's bounding-box edge along the stage
+	     direction, so the bar hugs the seats instead of floating a half-diagonal
+	     away. -->
 	{@const edge =
 		1 / Math.max(Math.abs(dirX) / Math.max(halfW, 1), Math.abs(dirY) / Math.max(halfH, 1))}
-	{@const radius = edge + 30}
-	{@const px = cx + dirX * radius}
-	{@const py = cy + dirY * radius}
+	{@const BAR_THICK = 18}
+	{@const gap = 9}
+	{@const bx = cx + dirX * (edge + gap + BAR_THICK / 2)}
+	{@const by = cy + dirY * (edge + gap + BAR_THICK / 2)}
+	<!-- Bar width tracks the sector's smaller side so it reads as a stage facing
+	     the seats, but stays modest so an angled bar never spills past the margin. -->
+	{@const barW = Math.min(Math.max(Math.min(sector.width, sector.height) * CELL * 0.6, 60), 88)}
+	<!-- Past 90° the bar's own rotation would flip the label upside-down. -->
+	{@const flip = angle > 90 && angle < 270}
 	<g role="img" aria-label={stageLabel}>
+		<!-- Short connector tying the bar to the seat block it faces. -->
 		<line
-			x1={cx + dirX * (radius - 14)}
-			y1={cy + dirY * (radius - 14)}
-			x2={cx + dirX * (radius - 30)}
-			y2={cy + dirY * (radius - 30)}
-			class="stroke-muted-foreground"
+			x1={cx + dirX * edge}
+			y1={cy + dirY * edge}
+			x2={cx + dirX * (edge + gap)}
+			y2={cy + dirY * (edge + gap)}
+			class="stroke-muted-foreground/50"
 			stroke-width="2"
 			stroke-linecap="round"
 		/>
-		<rect x={px - 30} y={py - 11} width="60" height="22" rx="8" class="fill-muted" />
-		<text
-			x={px}
-			y={py}
-			text-anchor="middle"
-			dominant-baseline="central"
-			class="fill-muted-foreground text-[11px] font-medium tracking-widest"
-		>
-			{stageLabel}
-		</text>
+		<!-- Bar rotated to sit perpendicular to the stage direction (the sector is
+		     drawn un-rotated, so this angle conveys where the stage actually is). -->
+		<g transform="translate({bx} {by}) rotate({angle})">
+			<rect
+				x={-barW / 2}
+				y={-BAR_THICK / 2}
+				width={barW}
+				height={BAR_THICK}
+				rx="8"
+				class="fill-muted"
+			/>
+			<text
+				text-anchor="middle"
+				dominant-baseline="central"
+				transform={flip ? 'rotate(180)' : undefined}
+				class="fill-muted-foreground text-[11px] font-medium tracking-widest"
+			>
+				{stageLabel}
+			</text>
+		</g>
 	</g>
 {/snippet}
 
