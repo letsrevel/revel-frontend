@@ -13,6 +13,7 @@
 		organizationadminvenuesUpdateSector
 	} from '$lib/api/generated/sdk.gen';
 	import type {
+		AffectedTierSchema,
 		PriceCategorySchema,
 		SeatPaintResultSchema,
 		VenueSectorWithSeatsSchema,
@@ -20,7 +21,8 @@
 		VenueSeatBulkUpdateItemSchema
 	} from '$lib/api/generated/types.gen';
 	import {
-		mergeUnderCoveredTiers,
+		liveRepricedTiers,
+		mergeAffectedTiers,
 		type PaintBatch,
 		type SeatSavePlan
 	} from '$lib/components/venues/seat-grid-save';
@@ -209,38 +211,93 @@
 		return [...ids];
 	}
 
-	// Precise coverage warning (BE #746): the paint endpoint reports the tiers
-	// its operation left under-covered — user-choice, category-priced tiers on
-	// the painted sectors whose price map misses a painted category. Their
-	// seats in those categories are refused at checkout, so the admin painting
-	// them is the person who must hear about it. Silent when nothing is
-	// affected (the common case).
-	function warnAboutUnderCoveredTiers(results: SeatPaintResultSchema[]) {
-		const tiers = mergeUnderCoveredTiers(results);
-		if (tiers.length === 0) return;
-		const lines = tiers.map((tier) =>
-			m['orgAdmin.seats.toast.underCoveredTier']({
-				tier: tier.tier_name,
-				event: tier.event_name,
-				categories: (tier.missing_categories ?? []).map((category) => category.name).join(', ')
-			})
-		);
-		toast.warning(m['orgAdmin.seats.toast.underCoveredTitle'](), {
-			description: lines.join(' · '),
-			duration: 12_000,
-			action: {
-				label: m['orgAdmin.seats.toast.underCoveredAction'](),
-				onClick: () => {
-					const target =
-						resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
-							slug: organization.slug,
-							event_id: tiers[0].event_id
-						}) + '?tab=ticketing';
-					/* eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve()-built route with a ?tab query suffix the rule can't see through */
-					void goto(target);
-				}
-			}
+	/** One human-readable repricing line: tier, event, and its price moves. */
+	function repriceLine(tier: AffectedTierSchema): string {
+		const changes = (tier.price_changes ?? [])
+			.map((change) =>
+				m['orgAdmin.seats.toast.repricedMove']({
+					count: String(change.seat_count),
+					from: change.from_price ?? m['orgAdmin.seats.toast.notSellable'](),
+					to: change.to_price ?? m['orgAdmin.seats.toast.notSellable']()
+				})
+			)
+			.join(', ');
+		return m['orgAdmin.seats.toast.repricedTier']({
+			tier: tier.tier_name,
+			event: tier.event_name,
+			changes
 		});
+	}
+
+	// Blast-radius report (BE #747): the paint response names every live,
+	// category-priced tier the paint changed the economics of — seats moved
+	// between price zones (fails OPEN: sales continue at the new price) and/or
+	// a coverage gap (fails closed: checkout refuses those seats). Two separate
+	// toasts because the two hazards need different reactions; both silent
+	// when nothing is affected (the common case).
+	function reportAffectedTiers(tiers: AffectedTierSchema[]) {
+		const gapTiers = tiers.filter((tier) => (tier.missing_categories ?? []).length > 0);
+		const repricedTiers = tiers.filter((tier) => (tier.price_changes ?? []).length > 0);
+
+		if (repricedTiers.length > 0) {
+			toast.warning(m['orgAdmin.seats.toast.repricedTitle'](), {
+				description: repricedTiers.map(repriceLine).join(' · '),
+				duration: 12_000
+			});
+		}
+		if (gapTiers.length > 0) {
+			const lines = gapTiers.map((tier) =>
+				m['orgAdmin.seats.toast.underCoveredTier']({
+					tier: tier.tier_name,
+					event: tier.event_name,
+					categories: (tier.missing_categories ?? []).map((category) => category.name).join(', ')
+				})
+			);
+			toast.warning(m['orgAdmin.seats.toast.underCoveredTitle'](), {
+				description: lines.join(' · '),
+				duration: 12_000,
+				action: {
+					label: m['orgAdmin.seats.toast.underCoveredAction'](),
+					onClick: () => {
+						const target =
+							resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
+								slug: organization.slug,
+								event_id: gapTiers[0].event_id
+							}) + '?tab=ticketing';
+						/* eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve()-built route with a ?tab query suffix the rule can't see through */
+						void goto(target);
+					}
+				}
+			});
+		}
+	}
+
+	/**
+	 * Dry-run the save's paint batches (?preview=true, BE #747): the endpoint
+	 * computes the identical affected-tiers report without writing. Returns
+	 * null when any preview call fails — the save then proceeds and the REAL
+	 * paint surfaces the error through the mutation's own handler.
+	 */
+	async function previewAffectedTiers(batches: PaintBatch[]): Promise<AffectedTierSchema[] | null> {
+		try {
+			const results = await Promise.all(
+				batches.map(async (batch) => {
+					const response = await organizationadminvenuesPaintSeats({
+						path: { slug: organization.slug, venue_id: venueId },
+						query: { preview: true },
+						body: { seat_ids: batch.seat_ids, price_category_id: batch.price_category_id },
+						headers: { Authorization: `Bearer ${accessToken}` }
+					});
+					if (response.error !== undefined || !response.data) {
+						throw new Error('Paint preview failed');
+					}
+					return response.data;
+				})
+			);
+			return mergeAffectedTiers(results);
+		} catch {
+			return null;
+		}
 	}
 
 	// Fallback for saves that painted ONLY via seat creation: creates don't go
@@ -272,10 +329,31 @@
 		});
 	}
 
-	// Orchestrated save: bulk create/update/delete first, then paint batches
-	// (existing seats only — new seats carry their paint in the create
-	// payload), then sector metadata. Each mutation surfaces its own toast.
+	// Orchestrated save: paint preview + live-sales confirmation first (nothing
+	// written yet, so cancelling aborts the WHOLE save cleanly), then bulk
+	// create/update/delete, then paint batches (existing seats only — new
+	// seats carry their paint in the create payload), then sector metadata.
+	// Each mutation surfaces its own toast.
 	async function handlePersist(plan: SeatSavePlan, metadata: { aisles: AisleMetadata }) {
+		// Confirmation step (#674): a repricing on an event that is ON SALE
+		// rewrites the economics of a live on-sale for every event at the venue
+		// — an after-the-fact toast is not enough there. The dry-run preview
+		// returns the identical report without writing, and it runs BEFORE any
+		// mutation (paint batches only touch existing seats, so the not-yet-run
+		// creates cannot change its answer).
+		if (plan.paintBatches.length > 0) {
+			const previewed = await previewAffectedTiers(plan.paintBatches);
+			const liveReprices = liveRepricedTiers(previewed ?? []);
+			if (liveReprices.length > 0) {
+				const message = [
+					m['orgAdmin.seats.repriceConfirm.intro'](),
+					...liveReprices.map(repriceLine),
+					m['orgAdmin.seats.repriceConfirm.question']()
+				].join('\n');
+				if (!confirm(message)) return;
+			}
+		}
+
 		try {
 			const bulkOps: Promise<unknown>[] = [];
 			if (plan.creates.length > 0) {
@@ -300,7 +378,7 @@
 
 			await updateSectorMutation.mutateAsync(metadata);
 			if (paintResults.length > 0) {
-				warnAboutUnderCoveredTiers(paintResults);
+				reportAffectedTiers(mergeAffectedTiers(paintResults));
 			} else {
 				warnAboutCreatedPaint(plan);
 			}

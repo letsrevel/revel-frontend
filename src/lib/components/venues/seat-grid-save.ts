@@ -1,8 +1,8 @@
 // Pure helpers turning the seat-grid editor state into API payloads:
 // bulk create/update/delete plus paint batches for the venue paint endpoint.
 import type {
+	AffectedTierSchema,
 	SeatPaintResultSchema,
-	UnderCoveredTierSchema,
 	VenueSeatSchema,
 	VenueSeatInputSchema,
 	VenueSeatBulkUpdateItemSchema
@@ -10,27 +10,29 @@ import type {
 import type { SeatData } from './seat-grid-types';
 
 /**
- * Union of the under-covered tiers across a save's paint-batch results
- * (BE #746): one entry per tier, missing categories deduped by id. Each batch
- * reports the tier's CURRENT gap (not the delta), so later batches can repeat
- * earlier findings — without the merge one save would toast the same tier
- * once per batch.
+ * Union of the affected tiers across a save's paint-batch results (BE #747):
+ * one entry per tier, price changes concatenated (each batch reports its own
+ * moves), missing categories deduped by id (each batch reports the tier's
+ * CURRENT gap, not the delta, so later batches can repeat earlier findings) —
+ * without the merge one save would toast the same tier once per batch.
  */
-export function mergeUnderCoveredTiers(
+export function mergeAffectedTiers(
 	results: readonly SeatPaintResultSchema[]
-): UnderCoveredTierSchema[] {
-	const byTier = new Map<string, UnderCoveredTierSchema>();
+): AffectedTierSchema[] {
+	const byTier = new Map<string, AffectedTierSchema>();
 	for (const result of results) {
-		for (const tier of result.under_covered_tiers ?? []) {
+		for (const tier of result.affected_tiers ?? []) {
 			const existing = byTier.get(tier.tier_id);
 			if (!existing) {
 				byTier.set(tier.tier_id, {
 					...tier,
+					price_changes: [...(tier.price_changes ?? [])],
 					missing_categories: [...(tier.missing_categories ?? [])]
 				});
 				continue;
 			}
 
+			existing.price_changes = [...(existing.price_changes ?? []), ...(tier.price_changes ?? [])];
 			const merged = existing.missing_categories ?? [];
 			const seen = new Set(merged.map((category) => category.id));
 			for (const category of tier.missing_categories ?? []) {
@@ -40,6 +42,19 @@ export function mergeUnderCoveredTiers(
 		}
 	}
 	return [...byTier.values()];
+}
+
+/**
+ * The affected tiers that warrant a CONFIRMATION rather than an
+ * after-the-fact toast: the paint moves live money — a price change on an
+ * event that is on sale (open). Draft/closed/cancelled events are reported in
+ * the toast only; coverage gaps fail closed (checkout refuses the seats) so
+ * they never need a confirmation either.
+ */
+export function liveRepricedTiers(tiers: readonly AffectedTierSchema[]): AffectedTierSchema[] {
+	return tiers.filter(
+		(tier) => tier.event_status === 'open' && (tier.price_changes ?? []).length > 0
+	);
 }
 
 /** One PUT `…/venues/{venue_id}/seats/paint` call: seats sharing one target category. */

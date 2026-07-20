@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import type { VenueSeatSchema } from '$lib/api/generated/types.gen';
+import type { AffectedTierSchema, VenueSeatSchema } from '$lib/api/generated/types.gen';
 import type { SeatData } from './seat-grid-types';
 import {
 	buildSeatSavePlan,
 	buildRowOrderLookup,
 	deriveAdjacencyIndex,
-	mergeUnderCoveredTiers,
+	liveRepricedTiers,
+	mergeAffectedTiers,
 	paintTextColor,
 	readExistingPaint,
 	type SeatSavePlanInput
@@ -398,39 +399,76 @@ describe('paintTextColor', () => {
 	});
 });
 
-describe('mergeUnderCoveredTiers', () => {
+describe('mergeAffectedTiers', () => {
 	const gap = (id: string, name: string) => ({ id, name, color: '#f00' });
-	const tier = (tierId: string, cats: Array<{ id: string; name: string; color: string }>) => ({
+	const move = (count: number, from: string | null, to: string | null) => ({
+		seat_count: count,
+		from_price: from,
+		to_price: to
+	});
+	const tier = (
+		tierId: string,
+		overrides: Partial<AffectedTierSchema> = {}
+	): AffectedTierSchema => ({
 		tier_id: tierId,
 		tier_name: `Tier ${tierId}`,
 		event_id: `event-${tierId}`,
 		event_name: `Event ${tierId}`,
-		missing_categories: cats
+		event_status: 'open',
+		price_changes: [],
+		missing_categories: [],
+		...overrides
 	});
 
 	it('returns empty for no results or clean paints', () => {
-		expect(mergeUnderCoveredTiers([])).toEqual([]);
-		expect(
-			mergeUnderCoveredTiers([{ painted: 3 }, { painted: 1, under_covered_tiers: [] }])
-		).toEqual([]);
+		expect(mergeAffectedTiers([])).toEqual([]);
+		expect(mergeAffectedTiers([{ painted: 3 }, { painted: 1, affected_tiers: [] }])).toEqual([]);
 	});
 
-	it('dedupes a tier repeated across batches and unions its missing categories', () => {
-		const merged = mergeUnderCoveredTiers([
-			{ painted: 1, under_covered_tiers: [tier('t1', [gap('a', 'A')])] },
-			{ painted: 1, under_covered_tiers: [tier('t1', [gap('a', 'A'), gap('b', 'B')])] },
-			{ painted: 1, under_covered_tiers: [tier('t2', [gap('b', 'B')])] }
+	it('dedupes a tier across batches: price changes concatenated, gaps unioned', () => {
+		const merged = mergeAffectedTiers([
+			{
+				painted: 1,
+				affected_tiers: [
+					tier('t1', {
+						price_changes: [move(2, '80.00', '30.00')],
+						missing_categories: [gap('a', 'A')]
+					})
+				]
+			},
+			{
+				painted: 1,
+				affected_tiers: [
+					tier('t1', {
+						price_changes: [move(1, null, '30.00')],
+						missing_categories: [gap('a', 'A'), gap('b', 'B')]
+					}),
+					tier('t2', { missing_categories: [gap('b', 'B')] })
+				]
+			}
 		]);
 		expect(merged.map((t) => t.tier_id)).toEqual(['t1', 't2']);
+		expect(merged[0].price_changes).toEqual([move(2, '80.00', '30.00'), move(1, null, '30.00')]);
 		expect(merged[0].missing_categories?.map((c) => c.id)).toEqual(['a', 'b']);
 	});
 
 	it('does not mutate the input results', () => {
-		const first = tier('t1', [gap('a', 'A')]);
-		mergeUnderCoveredTiers([
-			{ painted: 1, under_covered_tiers: [first] },
-			{ painted: 1, under_covered_tiers: [tier('t1', [gap('b', 'B')])] }
+		const first = tier('t1', { price_changes: [move(1, '80.00', '30.00')] });
+		mergeAffectedTiers([
+			{ painted: 1, affected_tiers: [first] },
+			{ painted: 1, affected_tiers: [tier('t1', { price_changes: [move(1, '30.00', '80.00')] })] }
 		]);
-		expect(first.missing_categories.map((c) => c.id)).toEqual(['a']);
+		expect(first.price_changes).toEqual([move(1, '80.00', '30.00')]);
+	});
+
+	describe('liveRepricedTiers', () => {
+		it('keeps only price changes on OPEN events (live money)', () => {
+			const tiers = [
+				tier('live', { price_changes: [move(1, '80.00', '30.00')] }),
+				tier('draft', { event_status: 'draft', price_changes: [move(1, '80.00', '30.00')] }),
+				tier('gap-only', { missing_categories: [gap('a', 'A')] })
+			];
+			expect(liveRepricedTiers(tiers).map((t) => t.tier_id)).toEqual(['live']);
+		});
 	});
 });

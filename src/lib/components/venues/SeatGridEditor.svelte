@@ -5,7 +5,7 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import { organizationadminvenuesListPriceCategories } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { Accessibility, EyeOff, Paintbrush, Eraser, Tag } from '@lucide/svelte';
+	import { Accessibility, EyeOff, Paintbrush, Eraser, Tag, TriangleAlert } from '@lucide/svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import type { SeatData } from './seat-grid-types';
 	import { buildSeatSavePlan, readExistingPaint, type SeatSavePlan } from './seat-grid-save';
@@ -371,8 +371,15 @@
 		</div>
 
 		<!-- What painting achieves — otherwise the palette reads as purely cosmetic. -->
-		<p class="mb-3 text-xs text-muted-foreground">
+		<p class="mb-1 text-xs text-muted-foreground">
 			{m['seatGridEditor.paint.explainer']()}
+		</p>
+		<!-- Blast radius BEFORE the paint commits (#674): the editor is opened in
+		     the context of one event, which is exactly what makes the venue-wide,
+		     immediate effect of repainting surprising. -->
+		<p class="mb-3 flex items-start gap-1.5 text-xs text-amber-700 dark:text-amber-400">
+			<TriangleAlert class="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+			{m['seatGridEditor.paint.venueWideCaution']()}
 		</p>
 
 		{#if priceCategories.length === 0}
