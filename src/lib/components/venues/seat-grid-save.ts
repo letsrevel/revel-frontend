@@ -1,11 +1,46 @@
 // Pure helpers turning the seat-grid editor state into API payloads:
 // bulk create/update/delete plus paint batches for the venue paint endpoint.
 import type {
+	SeatPaintResultSchema,
+	UnderCoveredTierSchema,
 	VenueSeatSchema,
 	VenueSeatInputSchema,
 	VenueSeatBulkUpdateItemSchema
 } from '$lib/api/generated/types.gen';
 import type { SeatData } from './seat-grid-types';
+
+/**
+ * Union of the under-covered tiers across a save's paint-batch results
+ * (BE #746): one entry per tier, missing categories deduped by id. Each batch
+ * reports the tier's CURRENT gap (not the delta), so later batches can repeat
+ * earlier findings — without the merge one save would toast the same tier
+ * once per batch.
+ */
+export function mergeUnderCoveredTiers(
+	results: readonly SeatPaintResultSchema[]
+): UnderCoveredTierSchema[] {
+	const byTier = new Map<string, UnderCoveredTierSchema>();
+	for (const result of results) {
+		for (const tier of result.under_covered_tiers ?? []) {
+			const existing = byTier.get(tier.tier_id);
+			if (!existing) {
+				byTier.set(tier.tier_id, {
+					...tier,
+					missing_categories: [...(tier.missing_categories ?? [])]
+				});
+				continue;
+			}
+
+			const merged = existing.missing_categories ?? [];
+			const seen = new Set(merged.map((category) => category.id));
+			for (const category of tier.missing_categories ?? []) {
+				if (!seen.has(category.id)) merged.push(category);
+			}
+			existing.missing_categories = merged;
+		}
+	}
+	return [...byTier.values()];
+}
 
 /** One PUT `…/venues/{venue_id}/seats/paint` call: seats sharing one target category. */
 export interface PaintBatch {

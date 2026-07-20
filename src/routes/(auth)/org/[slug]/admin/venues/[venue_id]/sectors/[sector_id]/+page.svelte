@@ -14,11 +14,16 @@
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		PriceCategorySchema,
+		SeatPaintResultSchema,
 		VenueSectorWithSeatsSchema,
 		VenueSeatInputSchema,
 		VenueSeatBulkUpdateItemSchema
 	} from '$lib/api/generated/types.gen';
-	import type { PaintBatch, SeatSavePlan } from '$lib/components/venues/seat-grid-save';
+	import {
+		mergeUnderCoveredTiers,
+		type PaintBatch,
+		type SeatSavePlan
+	} from '$lib/components/venues/seat-grid-save';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { ArrowLeft, LayoutDashboard, Users } from '@lucide/svelte';
 	import SeatGridEditor, { type AisleMetadata } from '$lib/components/venues/SeatGridEditor.svelte';
@@ -192,30 +197,59 @@
 		}
 	}));
 
-	// Categories this save painted seats INTO (paint batches for existing
-	// seats + creates carrying inline paint). Erasing never opens a coverage
-	// gap — unpainted seats always sell at a tier's base price.
-	function paintedCategoryIds(plan: SeatSavePlan): string[] {
+	// Categories NEW seats were created into (inline paint on the create
+	// payload). Erasing never opens a coverage gap — unpainted seats always
+	// sell at a tier's base price.
+	function createdCategoryIds(plan: SeatSavePlan): string[] {
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: built fresh per call and consumed synchronously
 		const ids = new Set<string>();
-		for (const batch of plan.paintBatches) {
-			if (batch.price_category_id) ids.add(batch.price_category_id);
-		}
 		for (const create of plan.creates) {
 			if (create.price_category_id) ids.add(create.price_category_id);
 		}
 		return [...ids];
 	}
 
-	// Painting a category into a sector can silently under-cover any seat-picker
-	// tier that prices this sector by category: the backend allows the paint and
-	// flags the gap on the TIER (pricing_gaps), so those seats become unsellable
-	// on that tier with no signal here. No endpoint lists the tiers referencing
-	// a venue, so this warning is advisory — it fires whenever seats were
-	// painted into a category. Precise detection (naming the affected tiers)
-	// needs backend support; tracked in revel-backend#746.
-	function warnAboutTierCoverage(plan: SeatSavePlan) {
-		const ids = paintedCategoryIds(plan);
+	// Precise coverage warning (BE #746): the paint endpoint reports the tiers
+	// its operation left under-covered — user-choice, category-priced tiers on
+	// the painted sectors whose price map misses a painted category. Their
+	// seats in those categories are refused at checkout, so the admin painting
+	// them is the person who must hear about it. Silent when nothing is
+	// affected (the common case).
+	function warnAboutUnderCoveredTiers(results: SeatPaintResultSchema[]) {
+		const tiers = mergeUnderCoveredTiers(results);
+		if (tiers.length === 0) return;
+		const lines = tiers.map((tier) =>
+			m['orgAdmin.seats.toast.underCoveredTier']({
+				tier: tier.tier_name,
+				event: tier.event_name,
+				categories: (tier.missing_categories ?? []).map((category) => category.name).join(', ')
+			})
+		);
+		toast.warning(m['orgAdmin.seats.toast.underCoveredTitle'](), {
+			description: lines.join(' · '),
+			duration: 12_000,
+			action: {
+				label: m['orgAdmin.seats.toast.underCoveredAction'](),
+				onClick: () => {
+					const target =
+						resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
+							slug: organization.slug,
+							event_id: tiers[0].event_id
+						}) + '?tab=ticketing';
+					/* eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve()-built route with a ?tab query suffix the rule can't see through */
+					void goto(target);
+				}
+			}
+		});
+	}
+
+	// Fallback for saves that painted ONLY via seat creation: creates don't go
+	// through the paint endpoint, so there is no precise report for them. (When
+	// any paint batch runs it reports the tiers' CURRENT gap — creates are
+	// persisted first, so their categories are already reflected and the
+	// precise path covers the mixed case.)
+	function warnAboutCreatedPaint(plan: SeatSavePlan) {
+		const ids = createdCategoryIds(plan);
 		if (ids.length === 0) return;
 		// Palette cache is warm whenever painting was possible; fall back to a
 		// generic phrase if it isn't.
@@ -255,15 +289,21 @@
 			}
 			await Promise.all(bulkOps);
 
+			const paintResults: SeatPaintResultSchema[] = [];
 			for (const batch of plan.paintBatches) {
-				await paintMutation.mutateAsync(batch);
+				const result = await paintMutation.mutateAsync(batch);
+				if (result) paintResults.push(result);
 			}
 			if (plan.paintBatches.length > 0) {
 				toast.success(m['orgAdmin.seats.toast.painted']());
 			}
 
 			await updateSectorMutation.mutateAsync(metadata);
-			warnAboutTierCoverage(plan);
+			if (paintResults.length > 0) {
+				warnAboutUnderCoveredTiers(paintResults);
+			} else {
+				warnAboutCreatedPaint(plan);
+			}
 		} catch {
 			// Each mutation's onError handler has already surfaced a toast;
 			// stop the sequence so later steps don't run against a failed save.

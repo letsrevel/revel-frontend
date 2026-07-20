@@ -5,6 +5,7 @@ import {
 	buildSeatSavePlan,
 	buildRowOrderLookup,
 	deriveAdjacencyIndex,
+	mergeUnderCoveredTiers,
 	paintTextColor,
 	readExistingPaint,
 	type SeatSavePlanInput
@@ -394,5 +395,42 @@ describe('paintTextColor', () => {
 	it('falls back to black for malformed colors', () => {
 		expect(paintTextColor('not-a-color')).toBe('#000000');
 		expect(paintTextColor('#12')).toBe('#000000');
+	});
+});
+
+describe('mergeUnderCoveredTiers', () => {
+	const gap = (id: string, name: string) => ({ id, name, color: '#f00' });
+	const tier = (tierId: string, cats: Array<{ id: string; name: string; color: string }>) => ({
+		tier_id: tierId,
+		tier_name: `Tier ${tierId}`,
+		event_id: `event-${tierId}`,
+		event_name: `Event ${tierId}`,
+		missing_categories: cats
+	});
+
+	it('returns empty for no results or clean paints', () => {
+		expect(mergeUnderCoveredTiers([])).toEqual([]);
+		expect(
+			mergeUnderCoveredTiers([{ painted: 3 }, { painted: 1, under_covered_tiers: [] }])
+		).toEqual([]);
+	});
+
+	it('dedupes a tier repeated across batches and unions its missing categories', () => {
+		const merged = mergeUnderCoveredTiers([
+			{ painted: 1, under_covered_tiers: [tier('t1', [gap('a', 'A')])] },
+			{ painted: 1, under_covered_tiers: [tier('t1', [gap('a', 'A'), gap('b', 'B')])] },
+			{ painted: 1, under_covered_tiers: [tier('t2', [gap('b', 'B')])] }
+		]);
+		expect(merged.map((t) => t.tier_id)).toEqual(['t1', 't2']);
+		expect(merged[0].missing_categories?.map((c) => c.id)).toEqual(['a', 'b']);
+	});
+
+	it('does not mutate the input results', () => {
+		const first = tier('t1', [gap('a', 'A')]);
+		mergeUnderCoveredTiers([
+			{ painted: 1, under_covered_tiers: [first] },
+			{ painted: 1, under_covered_tiers: [tier('t1', [gap('b', 'B')])] }
+		]);
+		expect(first.missing_categories.map((c) => c.id)).toEqual(['a']);
 	});
 });
