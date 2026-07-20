@@ -1,0 +1,84 @@
+name: Publish Beta
+
+# Label-triggered, single-slot beta publishing. See the backend repo's
+# docs/superpowers/specs/2026-07-20-beta-environment-design.md
+#
+# `pull_request` (NOT pull_request_target): PR-authored code must never run
+# with access to this repo's secrets. Fork PRs get a read-only token and the
+# push fails by design.
+on:
+  pull_request:
+    types: [labeled, unlabeled, synchronize]
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: publish-beta
+  cancel-in-progress: true
+
+jobs:
+  publish-beta:
+    if: contains(github.event.pull_request.labels.*.name, 'beta')
+    runs-on: ubuntu-latest
+    name: Publish Beta Image
+
+    steps:
+      - name: Enforce a single beta claimant
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          THIS_PR: ${{ github.event.pull_request.number }}
+        run: |
+          OTHERS=$(gh pr list --repo "$GITHUB_REPOSITORY" --label beta \
+                     --state open --json number \
+                     --jq "[.[] | select(.number != $THIS_PR)] | length")
+          if [ "$OTHERS" -gt 0 ]; then
+            echo "::error::Another open PR already holds the 'beta' label. One slot, one claimant — remove it there first."
+            exit 1
+          fi
+          echo "✅ This PR is the sole beta claimant"
+
+      - name: Checkout PR head
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Compute short SHA
+        id: sha
+        run: echo "short=$(echo '${{ github.event.pull_request.head.sha }}' | cut -c1-7)" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
+
+      # PUBLIC_API_URL / ORIGIN are RUNTIME env (#396) and deliberately absent
+      # here — one image targets any deployment. PUBLIC_VERSION is baked so the
+      # footer identifies exactly which commit a tester is looking at.
+      - name: Build and push image
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          build-args: |
+            PUBLIC_VERSION=beta-${{ steps.sha.outputs.short }}
+          tags: |
+            ghcr.io/letsrevel/revel-frontend:beta
+            ghcr.io/letsrevel/revel-frontend:beta-${{ steps.sha.outputs.short }}
+
+      - name: Summary
+        run: |
+          {
+            echo "### 🧪 Beta image published"
+            echo ""
+            echo '`ghcr.io/letsrevel/revel-frontend:beta` → `beta-${{ steps.sha.outputs.short }}`'
+            echo ""
+            echo 'Deploy: `ssh personal "cd infra/revel-beta && ./deploy.sh"`'
+          } >> "$GITHUB_STEP_SUMMARY"
