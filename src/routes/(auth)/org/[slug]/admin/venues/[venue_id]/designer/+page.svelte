@@ -14,15 +14,14 @@
 	import { resolve } from '$app/paths';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
-		organizationadminvenuesBulkUpdateSeats,
 		organizationadminvenuesGetVenue,
-		organizationadminvenuesListPriceCategories,
 		organizationadminvenuesListSectors,
-		organizationadminvenuesUpdateSector
+		organizationadminvenuesUpdateSector,
+		organizationadminvenuesUpdateVenue
 	} from '$lib/api/generated/sdk.gen';
 	import type {
-		PriceCategorySchema,
 		VenueDetailSchema,
+		VenueSectorUpdateSchema,
 		VenueSectorWithSeatsSchema
 	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -33,8 +32,8 @@
 		type DesignerModel
 	} from '$lib/components/venues/designer/designer-model';
 	import {
-		seatBatchErrorMessage,
-		shapeUpdateErrorMessage,
+		sectorUpdateErrorMessage,
+		stageUpdateErrorMessage,
 		type DesignerSavePlan
 	} from '$lib/components/venues/designer/designer-save';
 	import { toast } from 'svelte-sonner';
@@ -70,51 +69,44 @@
 		}
 	}));
 
-	const categoriesQuery = createQuery<PriceCategorySchema[]>(() => ({
-		queryKey: ['venue-price-categories', organization.slug, venueId],
-		queryFn: async () => {
-			const response = await organizationadminvenuesListPriceCategories({
-				path: { slug: organization.slug, venue_id: venueId },
-				headers: authHeaders
-			});
-			if (response.error) throw new Error('Failed to load price categories');
-			return response.data ?? [];
-		}
-	}));
-
-	// Freeze the model on first successful load: the designer's global frame
-	// (sector origins, persist offsets) must not shift under unsaved edits when
-	// the sector queries refetch after a save.
+	// Freeze the model on first successful load: the designer's world frame
+	// (initial transforms, shape-persist offsets) must not shift under unsaved
+	// edits when the venue/sector queries refetch after a save.
 	let model = $state<DesignerModel | null>(null);
 	$effect(() => {
 		const sectors = sectorsQuery.data;
-		if (sectors && !model) {
-			model = buildDesignerModel(sectors);
+		const venueData = venueQuery.data;
+		if (sectors && venueData && !model) {
+			model = buildDesignerModel(sectors, venueData.metadata ?? null);
 		}
 	});
 
 	const saveMutation = createMutation(() => ({
 		mutationFn: async (plan: DesignerSavePlan) => {
 			const genericError = m['seatDesigner.saveError']();
-			// Shapes first: seat position writes validate against the stored shape.
-			for (const update of plan.shapeUpdates) {
+			// Per-sector transform/shape updates (metadata merges preserve aisles).
+			for (const update of plan.sectorUpdates) {
+				const body: VenueSectorUpdateSchema = {};
+				if (update.metadata !== undefined) body.metadata = update.metadata;
+				if (update.shape !== undefined) body.shape = update.shape;
 				const response = await organizationadminvenuesUpdateSector({
 					path: { slug: organization.slug, venue_id: venueId, sector_id: update.sectorId },
-					body: { shape: update.shape },
+					body,
 					headers: authHeaders
 				});
 				if (response.error) {
-					throw new Error(shapeUpdateErrorMessage(response.error, update, genericError));
+					throw new Error(sectorUpdateErrorMessage(response.error, update, genericError));
 				}
 			}
-			for (const batch of plan.seatBatches) {
-				const response = await organizationadminvenuesBulkUpdateSeats({
-					path: { slug: organization.slug, venue_id: venueId, sector_id: batch.sectorId },
-					body: { seats: batch.seats },
+			// Venue metadata update carries the stage (merged into existing metadata).
+			if (plan.stageUpdate) {
+				const response = await organizationadminvenuesUpdateVenue({
+					path: { slug: organization.slug, venue_id: venueId },
+					body: { metadata: plan.stageUpdate.metadata },
 					headers: authHeaders
 				});
 				if (response.error) {
-					throw new Error(seatBatchErrorMessage(response.error, batch, genericError));
+					throw new Error(stageUpdateErrorMessage(response.error, genericError));
 				}
 			}
 		},
@@ -180,14 +172,12 @@
 	const isLoading = $derived.by(() => {
 		const venueLoading = venueQuery.isLoading;
 		const sectorsLoading = sectorsQuery.isLoading;
-		const categoriesLoading = categoriesQuery.isLoading;
-		return venueLoading || sectorsLoading || categoriesLoading;
+		return venueLoading || sectorsLoading;
 	});
 	const error = $derived.by(() => {
 		const venueError = venueQuery.error;
 		const sectorsError = sectorsQuery.error;
-		const categoriesError = categoriesQuery.error;
-		return venueError || sectorsError || categoriesError;
+		return venueError || sectorsError;
 	});
 	const pageTitle = $derived(
 		venue ? m['seatDesigner.pageTitle']({ venueName: venue.name }) : m['seatDesigner.title']()
@@ -232,7 +222,7 @@
 			</p>
 		</div>
 
-		{#if model.sectors.length === 0}
+		{#if model.blocks.length === 0}
 			<div
 				class="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center dark:border-gray-600"
 			>
@@ -243,7 +233,6 @@
 		{:else}
 			<SeatMapDesigner
 				{model}
-				priceCategories={categoriesQuery.data ?? []}
 				isSaving={saveMutation.isPending}
 				onSave={handleSave}
 				onDirtyChange={(value) => (dirty = value)}

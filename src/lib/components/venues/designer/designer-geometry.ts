@@ -29,9 +29,48 @@ export function snapValue(value: number, step = 0.5): number {
 	return Math.round(value / step) * step;
 }
 
+/** Rotation snap increment for the block arranger, in degrees. */
+export const ROTATION_SNAP = 15;
+
+/** Snap a rotation (degrees) to the nearest `step`°, normalized into [0, 360). */
+export function snapAngle(deg: number, step = ROTATION_SNAP): number {
+	if (step <= 0) return ((deg % 360) + 360) % 360;
+	const snapped = Math.round(deg / step) * step;
+	return ((snapped % 360) + 360) % 360;
+}
+
+/** Midpoint of two points (used to seed an edge-inserted shape vertex). */
+export function midpoint(a: Coordinate2d, b: Coordinate2d): Coordinate2d {
+	return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+}
+
+/** Insert `point` into `points` at `index` (clamped), returning a new array. */
+export function insertVertex(
+	points: readonly Coordinate2d[],
+	index: number,
+	point: Coordinate2d
+): Coordinate2d[] {
+	const clamped = Math.max(0, Math.min(index, points.length));
+	return [...points.slice(0, clamped), point, ...points.slice(clamped)];
+}
+
+/** Remove the vertex at `index`, returning a new array (or null if <1 left). */
+export function removeVertex(
+	points: readonly Coordinate2d[],
+	index: number
+): Coordinate2d[] | null {
+	const next = points.filter((_, i) => i !== index);
+	return next.length > 0 ? next : null;
+}
+
 /** Snap a point to the grid. */
 export function snapPoint(point: Coordinate2d, step = 0.5): Coordinate2d {
 	return { x: snapValue(point.x, step), y: snapValue(point.y, step) };
+}
+
+/** Snap to the grid when `snapOn`, otherwise just round off float drift. */
+export function snapOrRound(point: Coordinate2d, snapOn: boolean): Coordinate2d {
+	return snapOn ? snapPoint(point) : { x: roundCoord(point.x), y: roundCoord(point.y) };
 }
 
 /** Round a persisted coordinate to 3 decimals (kills float drift, keeps 0.5 grid). */

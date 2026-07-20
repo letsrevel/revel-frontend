@@ -460,7 +460,9 @@
 </script>
 
 <Dialog bind:open>
-	<DialogContent class="flex max-h-[90vh] flex-col sm:max-w-lg">
+	<DialogContent
+		class="flex max-h-[92vh] flex-col {isUserChoiceSeat ? 'sm:max-w-4xl' : 'sm:max-w-lg'}"
+	>
 		<DialogHeader>
 			<DialogTitle class="flex items-center gap-2 text-xl">
 				{@const Icon = dialogIcon}

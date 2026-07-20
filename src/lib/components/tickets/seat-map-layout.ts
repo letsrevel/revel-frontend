@@ -16,10 +16,13 @@
  *   sector.metadata.aisles contract the grid editor writes
  *   (verticalAisles/horizontalAisles gaps + invertRowOrder).
  * - Standing sectors become a seatless zone sized relative to capacity.
- * - Sectors are stacked vertically in display_order with a fixed gap; shape
- *   polygons without positioned seats are normalized to the sector's local
- *   origin (no global venue coordinates in v1) and rendered as a backdrop by
- *   the component.
+ * - Each sector carries a SectorTransform (from sector-transform.ts) that
+ *   places+rotates its whole LOCAL frame into venue "world" space: a parsed
+ *   `metadata.transform`, or an implicit stacked transform (defaultStacked-
+ *   Transform) reproducing today's vertical display_order stacking for
+ *   un-arranged sectors. Seats and shapes stay in sector-local coordinates —
+ *   the transform is applied ON TOP by the renderer. The overall world
+ *   bounding box (rotated sector AABBs unioned) drives the viewBox.
  */
 import type {
 	ChartSeatSchema,
@@ -27,6 +30,18 @@ import type {
 	Coordinate2d,
 	VenueChartSchema
 } from '$lib/api/generated/types.gen';
+import {
+	applyTransform,
+	defaultStackedTransform,
+	parseSectorTransform,
+	SECTOR_GAP,
+	type SectorTransform
+} from './sector-transform';
+
+// Re-exported for the historical consumers that imported it from here
+// (designer-model.ts, designer-model.test.ts); its home is sector-transform.ts.
+export { SECTOR_GAP };
+export type { SectorTransform };
 
 /** The aisle contract written by SeatGridEditor into sector.metadata.aisles. */
 export interface AisleLayoutMetadata {
@@ -52,8 +67,8 @@ export interface SectorLayout {
 	kind: 'seated' | 'standing';
 	/** Backdrop polygon, normalized to the sector's local origin; null if absent. */
 	shape: Coordinate2d[] | null;
-	/** Top-left corner of the sector in overall layout units. */
-	origin: Coordinate2d;
+	/** Places+rotates this sector's local frame into venue world space. */
+	transform: SectorTransform;
 	seats: SeatPoint[];
 	width: number;
 	height: number;
@@ -61,14 +76,15 @@ export interface SectorLayout {
 
 export interface SeatMapLayout {
 	sectors: SectorLayout[];
+	/** World bounding-box size (accounts for rotated sectors). */
 	width: number;
 	height: number;
+	/** World bounding-box minimum — the renderer offsets by (−minX, −minY). */
+	minX: number;
+	minY: number;
 	/** Spacing unit (always 1.0 — consumers multiply by their px-per-unit). */
 	unit: number;
 }
-
-/** Vertical padding (in units) between stacked sectors. */
-export const SECTOR_GAP = 2;
 
 const EMPTY_AISLES: AisleLayoutMetadata = {
 	verticalAisles: [],
@@ -231,7 +247,7 @@ function seatedSectorLayout(sector: ChartSectorSchema): SectorLayout | null {
 		name: sector.name,
 		kind: 'seated',
 		shape,
-		origin: { x: 0, y: 0 },
+		transform: { x: 0, y: 0, rotation: 0 },
 		seats: points,
 		width,
 		height
@@ -256,17 +272,44 @@ function standingSectorLayout(sector: ChartSectorSchema): SectorLayout {
 		name: sector.name,
 		kind: 'standing',
 		shape: normalizeShape(sector.shape),
-		origin: { x: 0, y: 0 },
+		transform: { x: 0, y: 0, rotation: 0 },
 		seats: [],
 		width,
 		height
 	};
 }
 
+/** World-space AABB of a sector's local [0,w]×[0,h] frame under its transform. */
+function worldBounds(laid: SectorLayout): {
+	minX: number;
+	minY: number;
+	maxX: number;
+	maxY: number;
+} {
+	const corners: Coordinate2d[] = [
+		{ x: 0, y: 0 },
+		{ x: laid.width, y: 0 },
+		{ x: laid.width, y: laid.height },
+		{ x: 0, y: laid.height }
+	].map((corner) => applyTransform(corner, laid.transform));
+	const xs = corners.map((c) => c.x);
+	const ys = corners.map((c) => c.y);
+	return {
+		minX: Math.min(...xs),
+		minY: Math.min(...ys),
+		maxX: Math.max(...xs),
+		maxY: Math.max(...ys)
+	};
+}
+
 /**
- * Full-chart layout: sectors stacked vertically in display_order (name as a
- * stable tiebreak) with SECTOR_GAP units between them. Seated sectors without
- * any renderable content (no active seats, no shape) are skipped.
+ * Full-chart layout: each sector is placed by its SectorTransform — a parsed
+ * `metadata.transform`, or an implicit stacked transform reproducing today's
+ * display_order stacking (name as a stable tiebreak, SECTOR_GAP between
+ * boxes). Seated sectors without any renderable content (no active seats, no
+ * shape) are skipped. The overall world bounding box (rotated sector AABBs
+ * unioned) drives the viewBox; a chart with no explicit transforms is
+ * byte-for-byte the old stacked layout.
  */
 export function computeSeatMapLayout(chart: VenueChartSchema): SeatMapLayout {
 	const ordered = [...(chart.sectors ?? [])].sort(
@@ -274,23 +317,47 @@ export function computeSeatMapLayout(chart: VenueChartSchema): SeatMapLayout {
 	);
 
 	const sectors: SectorLayout[] = [];
-	let cursorY = 0;
-	let width = 0;
+	// Cursor state for un-arranged (default-stacked) sectors only.
+	let stackedIndex = 0;
+	let stackedHeight = 0;
 	for (const sector of ordered) {
 		const laid =
 			(sector.kind ?? 'seated') === 'standing'
 				? standingSectorLayout(sector)
 				: seatedSectorLayout(sector);
 		if (!laid) continue;
-		laid.origin = { x: 0, y: cursorY };
-		cursorY += laid.height + SECTOR_GAP;
-		width = Math.max(width, laid.width);
+		const parsed = parseSectorTransform(sector.metadata);
+		if (parsed) {
+			laid.transform = parsed;
+		} else {
+			laid.transform = defaultStackedTransform(stackedIndex, stackedHeight);
+			stackedIndex += 1;
+			stackedHeight += laid.height;
+		}
 		sectors.push(laid);
+	}
+
+	if (sectors.length === 0) {
+		return { sectors, width: 0, height: 0, minX: 0, minY: 0, unit: 1 };
+	}
+
+	let minX = Infinity;
+	let minY = Infinity;
+	let maxX = -Infinity;
+	let maxY = -Infinity;
+	for (const laid of sectors) {
+		const bounds = worldBounds(laid);
+		minX = Math.min(minX, bounds.minX);
+		minY = Math.min(minY, bounds.minY);
+		maxX = Math.max(maxX, bounds.maxX);
+		maxY = Math.max(maxY, bounds.maxY);
 	}
 	return {
 		sectors,
-		width,
-		height: sectors.length > 0 ? cursorY - SECTOR_GAP : 0,
+		width: maxX - minX,
+		height: maxY - minY,
+		minX,
+		minY,
 		unit: 1
 	};
 }

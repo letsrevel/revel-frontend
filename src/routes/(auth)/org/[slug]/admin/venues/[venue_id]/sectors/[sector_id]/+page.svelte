@@ -19,7 +19,7 @@
 	} from '$lib/api/generated/types.gen';
 	import type { PaintBatch, SeatSavePlan } from '$lib/components/venues/seat-grid-save';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { ArrowLeft, Users } from '@lucide/svelte';
+	import { ArrowLeft, LayoutDashboard, Users } from '@lucide/svelte';
 	import SeatGridEditor, { type AisleMetadata } from '$lib/components/venues/SeatGridEditor.svelte';
 	import { toast } from 'svelte-sonner';
 
@@ -28,6 +28,18 @@
 	const sectorId = $derived($page.params.sector_id);
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
+
+	// After any seat/metadata write, refresh every view that renders this sector's
+	// geometry. Crucially, EVICT the venue-wide sector list (`venue-sectors`) that
+	// the layout designer freezes into its model on first load — invalidation alone
+	// leaves the stale cache in place, and the designer would rebuild from it on the
+	// next visit (seat/aisle edits wouldn't show up). Removing it forces a fresh
+	// fetch. The public seating chart reflects seat changes too.
+	function invalidateSectorViews() {
+		queryClient.invalidateQueries({ queryKey: ['sector'] });
+		queryClient.removeQueries({ queryKey: ['venue-sectors', organization.slug, venueId] });
+		queryClient.invalidateQueries({ queryKey: ['seating-chart'] });
+	}
 
 	// Sector query
 	const sectorQuery = createQuery<VenueSectorWithSeatsSchema>(() => ({
@@ -67,7 +79,7 @@
 		},
 		onSuccess: () => {
 			toast.success(m['orgAdmin.seats.toast.saved']());
-			queryClient.invalidateQueries({ queryKey: ['sector'] });
+			invalidateSectorViews();
 		},
 		onError: () => {
 			toast.error(m['orgAdmin.seats.toast.saveError']());
@@ -93,7 +105,7 @@
 		},
 		onSuccess: () => {
 			toast.success(m['orgAdmin.seats.toast.deleted']());
-			queryClient.invalidateQueries({ queryKey: ['sector'] });
+			invalidateSectorViews();
 		},
 		onError: () => {
 			toast.error(m['orgAdmin.seats.toast.deleteError']());
@@ -119,7 +131,7 @@
 		},
 		onSuccess: () => {
 			toast.success(m['orgAdmin.seats.toast.updated']());
-			queryClient.invalidateQueries({ queryKey: ['sector'] });
+			invalidateSectorViews();
 		},
 		onError: () => {
 			toast.error(m['orgAdmin.seats.toast.updateError']());
@@ -144,19 +156,22 @@
 			return response.data;
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['sector'] });
+			invalidateSectorViews();
 		},
 		onError: () => {
 			toast.error(m['orgAdmin.seats.toast.paintError']());
 		}
 	}));
 
-	// Sector metadata update mutation (for aisles and row order)
+	// Sector metadata update mutation (for aisles and row order). Merge into the
+	// existing metadata so we never clobber other keys — notably the layout
+	// designer's `transform` (sector-block placement) stored in the same blob.
 	const updateSectorMutation = createMutation(() => ({
 		mutationFn: async (metadata: { aisles: AisleMetadata }) => {
+			const existing = (sectorQuery.data?.metadata ?? {}) as Record<string, unknown>;
 			const response = await organizationadminvenuesUpdateSector({
 				path: { slug: organization.slug, venue_id: venueId, sector_id: sectorId },
-				body: { metadata },
+				body: { metadata: { ...existing, aisles: metadata.aisles } },
 				headers: {
 					Authorization: `Bearer ${accessToken}`
 				}
@@ -169,7 +184,7 @@
 			return response.data;
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['sector'] });
+			invalidateSectorViews();
 		},
 		onError: () => {
 			toast.error(m['orgAdmin.seats.toast.metadataError']());
@@ -216,6 +231,15 @@
 		);
 	}
 
+	function handleBackToDesigner() {
+		goto(
+			resolve('/(auth)/org/[slug]/admin/venues/[venue_id]/designer', {
+				slug: organization.slug,
+				venue_id: venueId
+			})
+		);
+	}
+
 	const sector = $derived(sectorQuery.data);
 	const isLoading = $derived(sectorQuery.isLoading);
 	const error = $derived(sectorQuery.error);
@@ -241,15 +265,26 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<!-- Back button -->
-	<button
-		type="button"
-		onclick={handleBackToSectors}
-		class="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-	>
-		<ArrowLeft class="h-4 w-4" />
-		{m['orgAdmin.seats.backToSectors']()}
-	</button>
+	<!-- Back navigation: to the sector list, or back to the layout designer so
+	     the grid-editor ⇄ designer round-trip is not a dead end. -->
+	<div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+		<button
+			type="button"
+			onclick={handleBackToSectors}
+			class="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+		>
+			<ArrowLeft class="h-4 w-4" />
+			{m['orgAdmin.seats.backToSectors']()}
+		</button>
+		<button
+			type="button"
+			onclick={handleBackToDesigner}
+			class="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+		>
+			<LayoutDashboard class="h-4 w-4" />
+			{m['orgAdmin.seats.backToDesigner']?.() ?? 'Back to designer'}
+		</button>
+	</div>
 
 	{#if error}
 		<div class="rounded-md bg-destructive/10 p-4 text-destructive" role="alert">

@@ -1,43 +1,42 @@
 /**
- * Save-plan builder for the freeform designer (pure, unit-testable).
+ * Save-plan builder for the sector-block arranger (pure, unit-testable).
  *
- * Turns the designer's edited state (global seat positions + global sector
- * shapes) into the exact write payloads the backend expects:
+ * Turns the designer's edited state into the write payloads the backend
+ * expects, WITHOUT ever moving seats:
  *
- * - Seat positions go through the per-sector bulk-update endpoint, identified
- *   by label, only for CHANGED seats — except in sectors that did not yet have
- *   complete positions, where the first position write materializes ALL active
- *   seats (the public map's position passthrough only kicks in when every seat
- *   of a sector has a position).
- * - Shapes go through the sector update endpoint ({shape} partial update).
- *   Shape updates must be applied BEFORE seat batches so seat writes validate
- *   against the new polygon.
- * - Containment is pre-validated with the backend's own point-in-polygon
- *   algorithm; offending sectors produce `violations` (with the seats listed)
- *   and get NO writes, mirroring the atomic 400 the backend would return.
+ * - For each CHANGED sector, one sector PUT carrying `metadata` (the sector's
+ *   existing blob with `transform` merged in — `aisles` and any other keys are
+ *   preserved) and/or `shape` (the outline mapped back into the persisted frame,
+ *   or null to clear it).
+ * - When the stage changed, one venue PUT carrying `metadata` (the venue's
+ *   existing blob with `stage` merged in).
+ *
+ * A sector whose outline changed is pre-validated: the polygon must have ≥3
+ * valid vertices (else `invalidShapeSectors`), and — only for sectors whose
+ * seats already have stored positions — every seat must fall inside the new
+ * outline (else `violations`), mirroring the atomic 400 the backend returns.
  */
-import type { Coordinate2d, VenueSeatBulkUpdateItemSchema } from '$lib/api/generated/types.gen';
+import type { Coordinate2d } from '$lib/api/generated/types.gen';
 import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
-import { pointInPolygon, polygonIsValid, shapesEqual } from './designer-geometry';
-import { toPersistFrame, type DesignerModel, type DesignerSector } from './designer-model';
+import type { SectorTransform } from '$lib/components/tickets/sector-transform';
+import { pointInPolygon, polygonIsValid, roundCoord, shapesEqual } from './designer-geometry';
+import type { DesignerBlock, DesignerModel, StageModel } from './designer-model';
 
-/** Positions closer than this (per axis) count as unchanged. */
-export const POSITION_EPSILON = 1e-3;
+/** Per-axis tolerance below which a transform/position counts as unchanged. */
+export const TRANSFORM_EPSILON = 1e-3;
 
-/** Seats per bulk-update request. */
-export const SEAT_BATCH_SIZE = 200;
-
-export interface SeatBatch {
+export interface SectorUpdate {
 	sectorId: string;
 	sectorName: string;
-	seats: VenueSeatBulkUpdateItemSchema[];
+	/** Merged sector metadata (existing blob + transform); undefined when unchanged. */
+	metadata?: Record<string, unknown>;
+	/** Persist-frame outline, or null to clear; undefined when the outline is unchanged. */
+	shape?: Coordinate2d[] | null;
 }
 
-export interface ShapeUpdate {
-	sectorId: string;
-	sectorName: string;
-	/** Persist-frame polygon, or null to clear the shape. */
-	shape: Coordinate2d[] | null;
+export interface StageUpdate {
+	/** Merged venue metadata (existing blob + stage). */
+	metadata: Record<string, unknown>;
 }
 
 export interface ShapeViolation {
@@ -52,165 +51,192 @@ export interface InvalidShapeSector {
 }
 
 export interface DesignerSavePlan {
-	/** Apply first (seat writes validate against the stored shape). */
-	shapeUpdates: ShapeUpdate[];
-	seatBatches: SeatBatch[];
-	/** Sectors whose writes were withheld because seats fall outside the shape. */
+	sectorUpdates: SectorUpdate[];
+	stageUpdate: StageUpdate | null;
+	/** Sectors whose writes were withheld because seats fall outside the outline. */
 	violations: ShapeViolation[];
-	/** Sectors whose edited shape has fewer than 3 vertices (or is degenerate). */
+	/** Sectors whose edited outline has fewer than 3 (or degenerate) vertices. */
 	invalidShapeSectors: InvalidShapeSector[];
 	isEmpty: boolean;
 }
 
-export function positionsDiffer(
-	a: Coordinate2d | undefined,
-	b: Coordinate2d | undefined,
-	epsilon = POSITION_EPSILON
+export function transformsEqual(
+	a: SectorTransform,
+	b: SectorTransform,
+	epsilon = TRANSFORM_EPSILON
 ): boolean {
-	if (!a || !b) return Boolean(a) !== Boolean(b);
-	return Math.abs(a.x - b.x) > epsilon || Math.abs(a.y - b.y) > epsilon;
+	return (
+		Math.abs(a.x - b.x) <= epsilon &&
+		Math.abs(a.y - b.y) <= epsilon &&
+		Math.abs(a.rotation - b.rotation) <= epsilon
+	);
 }
 
-function chunk<T>(items: T[], size: number): T[][] {
-	const chunks: T[][] = [];
-	for (let i = 0; i < items.length; i += size) {
-		chunks.push(items.slice(i, i + size));
-	}
-	return chunks;
+export function stagesEqual(a: StageModel, b: StageModel, epsilon = TRANSFORM_EPSILON): boolean {
+	if (Math.abs(a.position.x - b.position.x) > epsilon) return false;
+	if (Math.abs(a.position.y - b.position.y) > epsilon) return false;
+	if ((a.label ?? '') !== (b.label ?? '')) return false;
+	return shapesEqual(a.shape, b.shape, epsilon);
+}
+
+/** Merge a transform into a sector's metadata blob without disturbing other keys. */
+export function mergeTransformIntoMetadata(
+	metadata: Record<string, unknown> | null,
+	transform: SectorTransform
+): Record<string, unknown> {
+	return {
+		...(metadata ?? {}),
+		transform: {
+			x: roundCoord(transform.x),
+			y: roundCoord(transform.y),
+			rotation: roundCoord(transform.rotation)
+		}
+	};
+}
+
+/** Serialize a stage into the venue-metadata `stage` value. */
+export function serializeStage(stage: StageModel): Record<string, unknown> {
+	const value: Record<string, unknown> = {
+		position: { x: roundCoord(stage.position.x), y: roundCoord(stage.position.y) },
+		shape: stage.shape ? stage.shape.map((p) => ({ x: roundCoord(p.x), y: roundCoord(p.y) })) : null
+	};
+	if (stage.label) value.label = stage.label;
+	return value;
+}
+
+/** Merge a stage into the venue metadata blob without disturbing other keys. */
+export function mergeStageIntoMetadata(
+	metadata: Record<string, unknown> | null,
+	stage: StageModel
+): Record<string, unknown> {
+	return { ...(metadata ?? {}), stage: serializeStage(stage) };
+}
+
+/** Map an edited local outline into the sector's persisted frame. */
+function toPersistedShape(local: Coordinate2d[], block: DesignerBlock): Coordinate2d[] {
+	return local.map((p) => ({
+		x: roundCoord(p.x + block.shapeFrameOffset.x),
+		y: roundCoord(p.y + block.shapeFrameOffset.y)
+	}));
 }
 
 export interface SavePlanInput {
 	model: DesignerModel;
-	/** Current global seat positions, keyed by seat id (must cover all seats). */
-	positions: ReadonlyMap<string, Coordinate2d>;
-	baselinePositions: ReadonlyMap<string, Coordinate2d>;
-	/** Current global sector shapes (null = no shape), keyed by sector id. */
+	/** Current world placements, keyed by sector id (covers every block). */
+	transforms: ReadonlyMap<string, SectorTransform>;
+	baselineTransforms: ReadonlyMap<string, SectorTransform>;
+	/** Current LOCAL outlines (null = no outline), keyed by sector id. */
 	shapes: ReadonlyMap<string, Coordinate2d[] | null>;
 	baselineShapes: ReadonlyMap<string, Coordinate2d[] | null>;
-	batchSize?: number;
+	stage: StageModel;
+	baselineStage: StageModel;
 }
 
 export function buildSavePlan(input: SavePlanInput): DesignerSavePlan {
-	const { model, positions, baselinePositions, shapes, baselineShapes } = input;
-	const batchSize = input.batchSize ?? SEAT_BATCH_SIZE;
+	const { model, transforms, baselineTransforms, shapes, baselineShapes, stage, baselineStage } =
+		input;
 
-	const shapeUpdates: ShapeUpdate[] = [];
-	const seatBatches: SeatBatch[] = [];
+	const sectorUpdates: SectorUpdate[] = [];
 	const violations: ShapeViolation[] = [];
 	const invalidShapeSectors: InvalidShapeSector[] = [];
 
-	for (const sector of model.sectors) {
-		const currentShape = shapes.get(sector.id) ?? null;
-		const baseShape = baselineShapes.get(sector.id) ?? null;
-		const shapeChanged = !shapesEqual(currentShape, baseShape);
+	for (const block of model.blocks) {
+		const transform = transforms.get(block.id) ?? block.transform;
+		const baseTransform = baselineTransforms.get(block.id) ?? block.transform;
+		const transformChanged = !transformsEqual(transform, baseTransform);
 
-		if (shapeChanged && currentShape && !polygonIsValid(currentShape)) {
-			invalidShapeSectors.push({ sectorId: sector.id, sectorName: sector.name });
+		const shape = shapes.get(block.id) ?? null;
+		const baseShape = baselineShapes.get(block.id) ?? null;
+		const shapeChanged = !shapesEqual(shape, baseShape);
+
+		if (!transformChanged && !shapeChanged) continue;
+
+		if (shapeChanged && shape && !polygonIsValid(shape)) {
+			invalidShapeSectors.push({ sectorId: block.id, sectorName: block.name });
 			continue;
 		}
 
-		const sectorSeats = model.seats.filter((seat) => seat.sectorId === sector.id);
-		const changed = sectorSeats.filter((seat) =>
-			positionsDiffer(positions.get(seat.id), baselinePositions.get(seat.id))
-		);
-		// Materialize the whole sector on the first position write, otherwise the
-		// public map keeps falling back to the derived grid (position passthrough
-		// requires every seat to have one).
-		const writeSeats = changed.length > 0 && !sector.hasCompletePositions ? sectorSeats : changed;
-
-		// Pre-validate containment against the *edited* shape. When the shape
-		// itself changed, every seat of the sector must fit (a shape that
-		// strands unwritten seats would make all future seat writes 400).
-		if (currentShape) {
-			const toCheck = shapeChanged ? sectorSeats : writeSeats;
-			const offending = toCheck.filter((seat) => {
-				const position = positions.get(seat.id);
-				return position !== undefined && !pointInPolygon(position, currentShape);
-			});
+		// A shrunk outline can strand seats the backend already knows the position
+		// of; guard those exactly as the backend would (grid-only sectors have no
+		// stored positions, so the backend cannot validate them — skip the guard).
+		if (shapeChanged && shape && block.hasCompletePositions) {
+			const offending = block.seats.filter((seat) => !pointInPolygon(seat, shape));
 			if (offending.length > 0) {
 				violations.push({
-					sectorId: sector.id,
-					sectorName: sector.name,
+					sectorId: block.id,
+					sectorName: block.name,
 					seatLabels: offending.map((seat) => seat.label)
 				});
 				continue;
 			}
 		}
 
+		const update: SectorUpdate = { sectorId: block.id, sectorName: block.name };
+		if (transformChanged) {
+			update.metadata = mergeTransformIntoMetadata(block.metadata, transform);
+		}
 		if (shapeChanged) {
-			shapeUpdates.push({
-				sectorId: sector.id,
-				sectorName: sector.name,
-				shape: currentShape ? currentShape.map((p) => toPersistFrame(p, sector)) : null
-			});
+			update.shape = shape ? toPersistedShape(shape, block) : null;
 		}
-
-		if (writeSeats.length > 0) {
-			const items: VenueSeatBulkUpdateItemSchema[] = writeSeats.map((seat) => {
-				const position = positions.get(seat.id) ?? { x: seat.x, y: seat.y };
-				return { label: seat.label, position: toPersistFrame(position, sector) };
-			});
-			for (const seats of chunk(items, batchSize)) {
-				seatBatches.push({ sectorId: sector.id, sectorName: sector.name, seats });
-			}
-		}
+		sectorUpdates.push(update);
 	}
 
+	const stageChanged = !stagesEqual(stage, baselineStage);
+	const stageUpdate: StageUpdate | null = stageChanged
+		? { metadata: mergeStageIntoMetadata(model.venueMetadata, stage) }
+		: null;
+
 	return {
-		shapeUpdates,
-		seatBatches,
+		sectorUpdates,
+		stageUpdate,
 		violations,
 		invalidShapeSectors,
 		isEmpty:
-			shapeUpdates.length === 0 &&
-			seatBatches.length === 0 &&
+			sectorUpdates.length === 0 &&
+			stageUpdate === null &&
 			violations.length === 0 &&
 			invalidShapeSectors.length === 0
 	};
 }
 
-/** Count of seats whose current position differs from the baseline. */
-export function countChangedSeats(
-	model: DesignerModel,
-	positions: ReadonlyMap<string, Coordinate2d>,
-	baselinePositions: ReadonlyMap<string, Coordinate2d>
-): number {
-	let count = 0;
-	for (const seat of model.seats) {
-		if (positionsDiffer(positions.get(seat.id), baselinePositions.get(seat.id))) count++;
-	}
-	return count;
-}
-
-/** True when any sector's shape differs from its baseline. */
-export function anyShapeChanged(
-	sectors: readonly Pick<DesignerSector, 'id'>[],
-	shapes: ReadonlyMap<string, Coordinate2d[] | null>,
-	baselineShapes: ReadonlyMap<string, Coordinate2d[] | null>
+/** True when any block's transform differs from its baseline. */
+export function anyTransformChanged(
+	blocks: readonly Pick<DesignerBlock, 'id' | 'transform'>[],
+	transforms: ReadonlyMap<string, SectorTransform>,
+	baselineTransforms: ReadonlyMap<string, SectorTransform>
 ): boolean {
-	return sectors.some(
-		(sector) => !shapesEqual(shapes.get(sector.id) ?? null, baselineShapes.get(sector.id) ?? null)
+	return blocks.some(
+		(block) =>
+			!transformsEqual(
+				transforms.get(block.id) ?? block.transform,
+				baselineTransforms.get(block.id) ?? block.transform
+			)
 	);
 }
 
-/**
- * Human-readable message for a failed seat batch: the backend's detail (it
- * names the first offending seat) when present, otherwise the fallback with
- * the batch's seat labels listed.
- */
-export function seatBatchErrorMessage(error: unknown, batch: SeatBatch, fallback: string): string {
-	const detail = extractApiErrorDetail(error);
-	if (detail) return `${batch.sectorName}: ${detail}`;
-	const labels = batch.seats.map((seat) => seat.label).join(', ');
-	return `${batch.sectorName}: ${fallback} (${labels})`;
+/** True when any block's outline differs from its baseline. */
+export function anyShapeChanged(
+	blocks: readonly Pick<DesignerBlock, 'id'>[],
+	shapes: ReadonlyMap<string, Coordinate2d[] | null>,
+	baselineShapes: ReadonlyMap<string, Coordinate2d[] | null>
+): boolean {
+	return blocks.some(
+		(block) => !shapesEqual(shapes.get(block.id) ?? null, baselineShapes.get(block.id) ?? null)
+	);
 }
 
-/** Human-readable message for a failed sector shape update. */
-export function shapeUpdateErrorMessage(
+/** Human-readable message for a failed sector update. */
+export function sectorUpdateErrorMessage(
 	error: unknown,
-	update: ShapeUpdate,
+	update: Pick<SectorUpdate, 'sectorName'>,
 	fallback: string
 ): string {
 	const detail = extractApiErrorDetail(error);
 	return `${update.sectorName}: ${detail ?? fallback}`;
+}
+
+/** Human-readable message for a failed venue (stage) update. */
+export function stageUpdateErrorMessage(error: unknown, fallback: string): string {
+	const detail = extractApiErrorDetail(error);
+	return detail ?? fallback;
 }

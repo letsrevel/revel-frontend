@@ -112,7 +112,7 @@ test.describe('J10 box-office seat overrides @p2', () => {
 		await gotoHydrated(owner, seatingAdminPath(event));
 		await waitForClientAuth(owner);
 		await toggleSeatCheckbox(owner, 'Seat B2', { exact: true });
-		await expect(owner.getByRole('checkbox', { name: 'Seat B2', exact: true })).toBeChecked();
+		await expect(owner.getByRole('checkbox', { name: /^Seat B2(,|$)/ })).toBeChecked();
 		await owner.getByLabel('Reason (required)').fill('camera platform');
 		await owner.getByRole('button', { name: 'Apply override' }).click();
 
@@ -148,13 +148,13 @@ test.describe('J10 box-office seat overrides @p2', () => {
 			await expect(owner.getByText('0 override(s) applied, 1 released.')).toBeVisible({
 				timeout: 15_000
 			});
-			await expect(owner.getByRole('checkbox', { name: 'Seat B2', exact: true })).toBeVisible({
+			await expect(owner.getByRole('checkbox', { name: /^Seat B2(,|$)/ })).toBeVisible({
 				timeout: 15_000
 			});
 
 			// BUYER: reopen (reload → fresh availability) — the seat is free again.
 			const reopened = await openConfirmDialog(page, event);
-			await expect(reopened.getByRole('button', { name: 'Seat B2', exact: true })).toBeVisible({
+			await expect(reopened.getByRole('button', { name: /^Seat B2(,|$)/ })).toBeVisible({
 				timeout: 15_000
 			});
 			await expect(reopened.getByRole('button', { name: 'Seat B2, unavailable' })).toHaveCount(0);

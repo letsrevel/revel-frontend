@@ -11,10 +11,20 @@
 	 * name in the seat's accessible name and hover title.
 	 */
 	import * as m from '$lib/paraglide/messages.js';
-	import type { PriceCategorySchema, VenueChartSchema } from '$lib/api/generated/types.gen';
+	import type {
+		Coordinate2d,
+		PriceCategorySchema,
+		VenueChartSchema
+	} from '$lib/api/generated/types.gen';
 	import { Minus, Plus, RotateCcw } from '@lucide/svelte';
 	import { SvelteMap } from 'svelte/reactivity';
-	import { computeSeatMapLayout, type SeatPoint } from './seat-map-layout';
+	import { computeSeatMapLayout, type SeatPoint, type SectorLayout } from './seat-map-layout';
+	import {
+		applyTransform,
+		sectorWorldCenter,
+		stageDirectionAngle,
+		worldAngleFromUp
+	} from './sector-transform';
 	import { rowsFromSeatViews, seatAriaLabel, type SeatView } from './seating-view';
 
 	interface Props {
@@ -31,6 +41,12 @@
 		interactive?: boolean;
 		/** Standing-zone occupancy, keyed by sector id. */
 		standingCounts?: Record<string, { capacity: number; taken: number }>;
+		/**
+		 * World position of the venue stage (from `Venue.metadata.stage`). When
+		 * given, the scoped single-sector view points its stage indicator at the
+		 * stage's ACTUAL direction; absent, it falls back to world "up".
+		 */
+		stage?: Coordinate2d | null;
 	}
 
 	const {
@@ -40,7 +56,8 @@
 		maxReached = false,
 		disabled = false,
 		interactive = true,
-		standingCounts
+		standingCounts,
+		stage = null
 	}: Props = $props();
 
 	const uid = $props.id();
@@ -52,10 +69,58 @@
 	const STAGE_H = 24;
 	const LABEL_H = 16;
 	const OFFSET_Y = PAD + STAGE_H + 12 + LABEL_H;
+	/** Room around a scoped sector for its angled stage indicator (compact so
+	    the seats stay the dominant content). */
+	const SCOPED_MARGIN = 52;
 
 	const layout = $derived(computeSeatMapLayout(chart));
-	const contentW = $derived(Math.max(layout.width * CELL + PAD * 2, 240));
-	const contentH = $derived(OFFSET_Y + layout.height * CELL + PAD);
+
+	// A chart filtered to a single sector (the common tier picker) renders that
+	// sector UN-ROTATED so its rows stay axis-aligned and scannable; the stage
+	// indicator instead points at the angle the sector actually faces the stage
+	// (stageDirectionAngle). A full multi-sector map honors each sector's
+	// rotation and draws one stage marker at the venue's world "up".
+	const scoped = $derived(layout.sectors.length === 1);
+	const onlySector = $derived(scoped ? layout.sectors[0] : null);
+
+	const contentW = $derived(
+		onlySector
+			? Math.max(onlySector.width * CELL + SCOPED_MARGIN * 2, 240)
+			: Math.max(layout.width * CELL + PAD * 2, 240)
+	);
+	const contentH = $derived(
+		onlySector
+			? onlySector.height * CELL + SCOPED_MARGIN * 2
+			: OFFSET_Y + layout.height * CELL + PAD
+	);
+
+	const stageLabel = m['seatSelector.stage']();
+
+	/** World-space AABB of a sector's local frame under its transform (units). */
+	function worldAABB(sector: SectorLayout) {
+		const corners: Array<{ x: number; y: number }> = [
+			{ x: 0, y: 0 },
+			{ x: sector.width, y: 0 },
+			{ x: sector.width, y: sector.height },
+			{ x: 0, y: sector.height }
+		].map((corner) => applyTransform(corner, sector.transform));
+		const xs = corners.map((c) => c.x);
+		const ys = corners.map((c) => c.y);
+		return {
+			minX: Math.min(...xs),
+			minY: Math.min(...ys),
+			maxX: Math.max(...xs),
+			maxY: Math.max(...ys)
+		};
+	}
+
+	/** Map world units to canvas pixels (full-map placement). */
+	function canvasX(worldX: number): number {
+		return PAD + (worldX - layout.minX) * CELL;
+	}
+	function canvasY(worldY: number): number {
+		return OFFSET_Y + (worldY - layout.minY) * CELL;
+	}
 
 	const seatById = $derived(new Map(seats.map((seat) => [seat.id, seat])));
 	const categoryById = $derived(
@@ -311,12 +376,163 @@
 	{/if}
 {/snippet}
 
+<!--
+	Sector body in sector-LOCAL coordinates (origin 0,0). The caller wraps it in
+	a <g transform="translate(...) rotate(...)"> so placement/rotation are purely
+	visual: seat <g> roles, aria-labels, roving tabindex, onToggle and category
+	coloring are untouched by the group transform. Seats carry no visible number
+	label, so nothing needs counter-rotating for legibility; the sector name is
+	drawn upright OUTSIDE this group by the caller.
+-->
+{#snippet sectorBody(sector: SectorLayout)}
+	{#if sector.kind === 'standing'}
+		{@const counts = standingCountText(sector.id)}
+		{@const zoneLabel = counts
+			? `${sector.name}, ${standingLabelText}, ${counts}`
+			: `${sector.name}, ${standingLabelText}`}
+		<g role="img" aria-label={zoneLabel}>
+			<title>{zoneLabel}</title>
+			<rect
+				x="0"
+				y="0"
+				width={sector.width * CELL}
+				height={sector.height * CELL}
+				rx="12"
+				class="fill-muted/40 stroke-border"
+				stroke-dasharray="6 4"
+				stroke-width="1.5"
+			/>
+			<text
+				x={(sector.width * CELL) / 2}
+				y={(sector.height * CELL) / 2}
+				text-anchor="middle"
+				dominant-baseline="central"
+				class="fill-muted-foreground text-[11px]"
+			>
+				{counts ? `${standingLabelText} · ${counts}` : standingLabelText}
+			</text>
+		</g>
+	{:else}
+		{#if sector.shape}
+			<polygon
+				points={sector.shape.map((p) => `${p.x * CELL},${p.y * CELL}`).join(' ')}
+				class="fill-muted/30 stroke-border/60"
+				stroke-width="1"
+			/>
+		{:else}
+			<rect
+				x={-6}
+				y={-6}
+				width={sector.width * CELL + 12}
+				height={sector.height * CELL + 12}
+				rx="10"
+				class="fill-muted/20 stroke-border/50"
+				stroke-width="1"
+			/>
+		{/if}
+		{#each sector.seats as pt (pt.seatId)}
+			{@const view = seatById.get(pt.seatId)}
+			{@const cx = (pt.x + 0.5) * CELL}
+			{@const cy = (pt.y + 0.5) * CELL}
+			{#if interactive && view}
+				<g
+					data-seat-id={pt.seatId}
+					role="button"
+					tabindex={pt.seatId === activeRovingId ? 0 : -1}
+					aria-label={seatLabelFor(pt, view)}
+					aria-pressed={view.status === 'mine'}
+					aria-disabled={canToggle(view) ? undefined : true}
+					aria-busy={view.status === 'pending' ? true : undefined}
+					class="{canToggle(view)
+						? 'cursor-pointer'
+						: 'cursor-not-allowed'} outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
+					onclick={() => handleSeatClick(view)}
+					onkeydown={(event) => handleSeatKeydown(event, view)}
+				>
+					{@render seatShape(pt, view, cx, cy)}
+				</g>
+			{:else}
+				<g data-seat-id={pt.seatId} aria-hidden="true">
+					{@render seatShape(pt, view, cx, cy)}
+				</g>
+			{/if}
+		{/each}
+	{/if}
+{/snippet}
+
+<!--
+	Scoped-view stage indicator: a "STAGE" pill placed at the angle the sector
+	faces the venue stage (stageDirectionAngle, degrees clockwise from
+	screen-up). The sector renders un-rotated, so an angled section shows the
+	stage off at the correct relative angle instead of always at the top.
+-->
+{#snippet stageArrow(sector: SectorLayout)}
+	{@const worldAngle = stage
+		? worldAngleFromUp(sectorWorldCenter(sector.transform, sector.width, sector.height), stage)
+		: 0}
+	{@const angle = stageDirectionAngle(sector.transform, worldAngle)}
+	{@const rad = (angle * Math.PI) / 180}
+	{@const dirX = Math.sin(rad)}
+	{@const dirY = -Math.cos(rad)}
+	{@const halfW = (sector.width * CELL) / 2}
+	{@const halfH = (sector.height * CELL) / 2}
+	{@const cx = SCOPED_MARGIN + halfW}
+	{@const cy = SCOPED_MARGIN + halfH}
+	<!-- Distance from centre to the sector's bounding-box edge along the stage
+	     direction, so the bar hugs the seats instead of floating a half-diagonal
+	     away. -->
+	{@const edge =
+		1 / Math.max(Math.abs(dirX) / Math.max(halfW, 1), Math.abs(dirY) / Math.max(halfH, 1))}
+	{@const BAR_THICK = 18}
+	{@const gap = 9}
+	{@const bx = cx + dirX * (edge + gap + BAR_THICK / 2)}
+	{@const by = cy + dirY * (edge + gap + BAR_THICK / 2)}
+	<!-- Bar width tracks the sector's smaller side so it reads as a stage facing
+	     the seats, but stays modest so an angled bar never spills past the margin. -->
+	{@const barW = Math.min(Math.max(Math.min(sector.width, sector.height) * CELL * 0.6, 60), 88)}
+	<!-- Past 90° the bar's own rotation would flip the label upside-down. -->
+	{@const flip = angle > 90 && angle < 270}
+	<g role="img" aria-label={stageLabel}>
+		<!-- Short connector tying the bar to the seat block it faces. -->
+		<line
+			x1={cx + dirX * edge}
+			y1={cy + dirY * edge}
+			x2={cx + dirX * (edge + gap)}
+			y2={cy + dirY * (edge + gap)}
+			class="stroke-muted-foreground/50"
+			stroke-width="2"
+			stroke-linecap="round"
+		/>
+		<!-- Bar rotated to sit perpendicular to the stage direction (the sector is
+		     drawn un-rotated, so this angle conveys where the stage actually is). -->
+		<g transform="translate({bx} {by}) rotate({angle})">
+			<rect
+				x={-barW / 2}
+				y={-BAR_THICK / 2}
+				width={barW}
+				height={BAR_THICK}
+				rx="8"
+				class="fill-muted"
+			/>
+			<text
+				text-anchor="middle"
+				dominant-baseline="central"
+				transform={flip ? 'rotate(180)' : undefined}
+				class="fill-muted-foreground text-[11px] font-medium tracking-widest"
+			>
+				{stageLabel}
+			</text>
+		</g>
+	</g>
+{/snippet}
+
 <div class="relative">
 	<svg
 		bind:this={svgEl}
 		use:wheelZoom
 		viewBox="0 0 {contentW} {contentH}"
-		class="h-auto w-full touch-none select-none"
+		preserveAspectRatio="xMidYMid meet"
+		class="h-full w-full touch-none select-none"
 		role="group"
 		aria-label={m['seatMap.label']()}
 		onpointerdown={onPointerDown}
@@ -338,106 +554,64 @@
 			</pattern>
 		</defs>
 		<g transform="translate({tx} {ty}) scale({scale})">
-			<!-- Stage marker -->
-			<rect x={contentW / 2 - 60} y={PAD} width="120" height={STAGE_H} rx="8" class="fill-muted" />
-			<text
-				x={contentW / 2}
-				y={PAD + STAGE_H / 2}
-				text-anchor="middle"
-				dominant-baseline="central"
-				class="fill-muted-foreground text-[11px] font-medium tracking-widest"
-			>
-				{m['seatSelector.stage']()}
-			</text>
+			{#if onlySector}
+				<!-- Scoped single-sector view: render un-rotated with the stage arrow
+				     at the angle this sector faces the stage. -->
+				{@render stageArrow(onlySector)}
+				<text
+					x={SCOPED_MARGIN + 2}
+					y={SCOPED_MARGIN - 6}
+					class="fill-muted-foreground text-[11px] font-medium"
+				>
+					{onlySector.name}
+				</text>
+				<g transform="translate({SCOPED_MARGIN} {SCOPED_MARGIN})">
+					{@render sectorBody(onlySector)}
+				</g>
+			{:else}
+				<!-- Full map: one stage marker at the venue's world "up", each sector
+				     placed+rotated by its transform. -->
+				<g role="img" aria-label={stageLabel}>
+					<rect
+						x={contentW / 2 - 60}
+						y={PAD}
+						width="120"
+						height={STAGE_H}
+						rx="8"
+						class="fill-muted"
+					/>
+					<text
+						x={contentW / 2}
+						y={PAD + STAGE_H / 2}
+						text-anchor="middle"
+						dominant-baseline="central"
+						class="fill-muted-foreground text-[11px] font-medium tracking-widest"
+					>
+						{stageLabel}
+					</text>
+				</g>
 
-			{#each layout.sectors as sector (sector.id)}
-				{@const sx = PAD + sector.origin.x * CELL}
-				{@const sy = OFFSET_Y + sector.origin.y * CELL}
-				<g>
-					<text x={sx + 2} y={sy - 6} class="fill-muted-foreground text-[11px] font-medium">
+				{#each layout.sectors as sector (sector.id)}
+					{@const aabb = worldAABB(sector)}
+					<!-- Sector name upright in canvas space (never rotated), centered
+					     above the sector's world bounding box. -->
+					<text
+						x={canvasX((aabb.minX + aabb.maxX) / 2)}
+						y={canvasY(aabb.minY) - 6}
+						text-anchor="middle"
+						class="fill-muted-foreground text-[11px] font-medium"
+					>
 						{sector.name}
 					</text>
-					{#if sector.kind === 'standing'}
-						{@const counts = standingCountText(sector.id)}
-						<g
-							role="img"
-							aria-label={counts
-								? `${sector.name}, ${standingLabelText}, ${counts}`
-								: `${sector.name}, ${standingLabelText}`}
-						>
-							<title
-								>{counts
-									? `${sector.name}, ${standingLabelText}, ${counts}`
-									: `${sector.name}, ${standingLabelText}`}</title
-							>
-							<rect
-								x={sx}
-								y={sy}
-								width={sector.width * CELL}
-								height={sector.height * CELL}
-								rx="12"
-								class="fill-muted/40 stroke-border"
-								stroke-dasharray="6 4"
-								stroke-width="1.5"
-							/>
-							<text
-								x={sx + (sector.width * CELL) / 2}
-								y={sy + (sector.height * CELL) / 2}
-								text-anchor="middle"
-								dominant-baseline="central"
-								class="fill-muted-foreground text-[11px]"
-							>
-								{counts ? `${standingLabelText} · ${counts}` : standingLabelText}
-							</text>
-						</g>
-					{:else}
-						{#if sector.shape}
-							<polygon
-								points={sector.shape.map((p) => `${sx + p.x * CELL},${sy + p.y * CELL}`).join(' ')}
-								class="fill-muted/30 stroke-border/60"
-								stroke-width="1"
-							/>
-						{:else}
-							<rect
-								x={sx - 6}
-								y={sy - 6}
-								width={sector.width * CELL + 12}
-								height={sector.height * CELL + 12}
-								rx="10"
-								class="fill-muted/20 stroke-border/50"
-								stroke-width="1"
-							/>
-						{/if}
-						{#each sector.seats as pt (pt.seatId)}
-							{@const view = seatById.get(pt.seatId)}
-							{@const cx = sx + (pt.x + 0.5) * CELL}
-							{@const cy = sy + (pt.y + 0.5) * CELL}
-							{#if interactive && view}
-								<g
-									data-seat-id={pt.seatId}
-									role="button"
-									tabindex={pt.seatId === activeRovingId ? 0 : -1}
-									aria-label={seatLabelFor(pt, view)}
-									aria-pressed={view.status === 'mine'}
-									aria-disabled={canToggle(view) ? undefined : true}
-									aria-busy={view.status === 'pending' ? true : undefined}
-									class="{canToggle(view)
-										? 'cursor-pointer'
-										: 'cursor-not-allowed'} outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
-									onclick={() => handleSeatClick(view)}
-									onkeydown={(event) => handleSeatKeydown(event, view)}
-								>
-									{@render seatShape(pt, view, cx, cy)}
-								</g>
-							{:else}
-								<g data-seat-id={pt.seatId} aria-hidden="true">
-									{@render seatShape(pt, view, cx, cy)}
-								</g>
-							{/if}
-						{/each}
-					{/if}
-				</g>
-			{/each}
+					<g
+						transform="translate({canvasX(sector.transform.x)} {canvasY(
+							sector.transform.y
+						)}) rotate({sector.transform.rotation})"
+					>
+						{@render sectorBody(sector)}
+					</g>
+				{/each}
+			{/if}
 		</g>
 	</svg>
 

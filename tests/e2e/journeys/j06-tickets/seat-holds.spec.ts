@@ -111,7 +111,7 @@ test.describe('J19 seat holds @p2', () => {
 			// The map is rendered with B2 free — this availability snapshot is now
 			// the client's cache; nothing refetches it until the buyer's next tap.
 			await expect(confirmDialog.getByText('STAGE')).toBeVisible({ timeout: 15_000 });
-			const freeSeat = confirmDialog.getByRole('button', { name: 'Seat B2', exact: true });
+			const freeSeat = confirmDialog.getByRole('button', { name: /^Seat B2(,|$)/ });
 			await expect(freeSeat).toBeEnabled();
 
 			// NOW the rival grabs B2 through the API — the buyer's map is stale.
@@ -138,7 +138,7 @@ test.describe('J19 seat holds @p2', () => {
 
 			// Recovery: a different free seat still holds fine (hold-aware loop —
 			// a second click would release), and the next tap clears the conflict.
-			const altSeat = confirmDialog.getByRole('button', { name: 'Seat B4', exact: true });
+			const altSeat = confirmDialog.getByRole('button', { name: /^Seat B4(,|$)/ });
 			await expect(async () => {
 				if ((await altSeat.getAttribute('aria-pressed')) !== 'true') {
 					await altSeat.click();
@@ -192,7 +192,7 @@ test.describe('J19 seat holds @p2', () => {
 
 		// Tap C3 — the first anonymous hold mints the signed guest cookie and
 		// records the event in sessionStorage for release-on-login.
-		const seat = guestDialog.getByRole('button', { name: 'Seat C3', exact: true });
+		const seat = guestDialog.getByRole('button', { name: /^Seat C3(,|$)/ });
 		await expect(async () => {
 			if ((await seat.getAttribute('aria-pressed')) !== 'true') {
 				await seat.click();

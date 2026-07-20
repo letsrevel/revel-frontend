@@ -146,6 +146,56 @@ describe('SeatMap', () => {
 		});
 	});
 
+	describe('sector transforms', () => {
+		it('keeps a rotated single sector interactive with a stage indicator', () => {
+			// A scoped sector rotated 90°: it renders un-rotated (readable) but the
+			// group transform / stage placement must not break seat a11y.
+			const rotated = makeChart(
+				[chartSeat('a1'), chartSeat('a2'), chartSeat('b1')],
+				{},
+				{ metadata: { transform: { x: 4, y: 6, rotation: 90 } } }
+			);
+			const onToggle = renderMap({ chart: rotated });
+			expect(screen.getByRole('img', { name: 'STAGE' })).toBeInTheDocument();
+			const a1 = seatButton('Seat A1');
+			expect(a1).toHaveAttribute('aria-pressed', 'false');
+			return fireEvent.click(a1).then(() => {
+				expect(onToggle).toHaveBeenCalledExactlyOnceWith('a1');
+			});
+		});
+
+		it('renders a full multi-sector map with one stage marker and every sector', () => {
+			const twoSectors: VenueChartSchema = {
+				venue_id: 'venue-1',
+				venue_name: 'Test Hall',
+				updated_at: '2026-07-18T00:00:00Z',
+				price_categories: [],
+				sectors: [
+					{ id: 'sec-1', name: 'Stalls', kind: 'seated', seats: [chartSeat('a1')] },
+					{
+						id: 'sec-2',
+						name: 'Balcony',
+						kind: 'seated',
+						seats: [chartSeat('c1', { id: 'c1' })],
+						metadata: { transform: { x: 12, y: 0, rotation: 30 } }
+					}
+				]
+			};
+			renderMap({
+				chart: twoSectors,
+				seats: [view('a1'), view('c1')]
+			});
+			// A single stage marker for the whole venue.
+			expect(screen.getAllByRole('img', { name: 'STAGE' })).toHaveLength(1);
+			// Both sectors' seats render as buttons.
+			expect(seatButton('Seat A1')).toBeInTheDocument();
+			expect(seatButton('Seat C1')).toBeInTheDocument();
+			// Both sector names render (upright, outside the rotated group).
+			expect(screen.getByText('Stalls')).toBeInTheDocument();
+			expect(screen.getByText('Balcony')).toBeInTheDocument();
+		});
+	});
+
 	describe('onToggle', () => {
 		it('fires for an available seat and for my held seat', async () => {
 			const onToggle = renderMap({

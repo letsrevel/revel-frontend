@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
 	idsInRect,
+	insertVertex,
+	midpoint,
 	nextSeatInDirection,
 	nudgeDelta,
 	nudgeStep,
@@ -8,11 +10,47 @@ import {
 	pointsEqual,
 	polygonIsValid,
 	rectFromCorners,
+	removeVertex,
 	roundCoord,
 	shapesEqual,
+	snapAngle,
+	snapOrRound,
 	snapPoint,
 	snapValue
 } from './designer-geometry';
+
+describe('snapAngle', () => {
+	it('snaps to the nearest 15° and normalizes into [0, 360)', () => {
+		expect(snapAngle(7)).toBe(0);
+		expect(snapAngle(8)).toBe(15);
+		expect(snapAngle(-10)).toBe(360 - 15);
+		expect(snapAngle(372)).toBe(15);
+	});
+});
+
+describe('snapOrRound', () => {
+	it('snaps to the grid when on, rounds drift when off', () => {
+		expect(snapOrRound({ x: 1.2, y: 1.3 }, true)).toEqual({ x: 1, y: 1.5 });
+		expect(snapOrRound({ x: 1.23456, y: 2 }, false)).toEqual({ x: 1.235, y: 2 });
+	});
+});
+
+describe('vertex list helpers', () => {
+	it('inserts, removes, and midpoints', () => {
+		const base = [
+			{ x: 0, y: 0 },
+			{ x: 2, y: 0 }
+		];
+		expect(midpoint(base[0], base[1])).toEqual({ x: 1, y: 0 });
+		expect(insertVertex(base, 1, { x: 1, y: 0 })).toEqual([
+			{ x: 0, y: 0 },
+			{ x: 1, y: 0 },
+			{ x: 2, y: 0 }
+		]);
+		expect(removeVertex(base, 0)).toEqual([{ x: 2, y: 0 }]);
+		expect(removeVertex([{ x: 0, y: 0 }], 0)).toBeNull();
+	});
+});
 
 describe('snapValue / snapPoint', () => {
 	it('snaps to the nearest 0.5 by default', () => {

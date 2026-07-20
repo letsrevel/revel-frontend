@@ -368,8 +368,12 @@ describe('computeSeatMapLayout — sector stacking', () => {
 			])
 		);
 		expect(layout.sectors.map((s) => s.id)).toEqual(['first', 'second']);
-		expect(layout.sectors[0].origin).toEqual({ x: 0, y: 0 });
-		expect(layout.sectors[1].origin).toEqual({ x: 0, y: 3 + SECTOR_GAP });
+		// Un-arranged sectors get an implicit stacked transform (rotation 0).
+		expect(layout.sectors[0].transform).toEqual({ x: 0, y: 0, rotation: 0 });
+		expect(layout.sectors[1].transform).toEqual({ x: 0, y: 3 + SECTOR_GAP, rotation: 0 });
+		// World bounds match the old stacked extents exactly (backward compatible).
+		expect(layout.minX).toBe(0);
+		expect(layout.minY).toBe(0);
 		expect(layout.width).toBe(2);
 		expect(layout.height).toBe(3 + SECTOR_GAP + 1);
 		expect(layout.unit).toBe(1);
@@ -389,7 +393,72 @@ describe('computeSeatMapLayout — sector stacking', () => {
 			sectors: [],
 			width: 0,
 			height: 0,
+			minX: 0,
+			minY: 0,
 			unit: 1
 		});
+	});
+});
+
+describe('computeSeatMapLayout — sector transforms', () => {
+	it('honors a parsed metadata.transform instead of stacking', () => {
+		const layout = computeSeatMapLayout(
+			chart([
+				sector('s1', [seat('a1'), seat('a2', { adjacency_index: 1, number: 2 })], {
+					metadata: { transform: { x: 5, y: 8, rotation: 0 } }
+				})
+			])
+		);
+		expect(layout.sectors[0].transform).toEqual({ x: 5, y: 8, rotation: 0 });
+		// A single un-rotated sector at (5,8): local 2x1 seats -> world bounds
+		// [5..7] x [8..9]; minX/minY track the placement.
+		expect(layout.minX).toBe(5);
+		expect(layout.minY).toBe(8);
+		expect(layout.width).toBe(2);
+		expect(layout.height).toBe(1);
+	});
+
+	it('computes world bounds for a rotated sector (90° swaps extents)', () => {
+		// A 2-wide, 1-tall sector rotated 90° clockwise about local origin, then
+		// placed at (10, 20). Local corners (0,0),(2,0),(2,1),(0,1) ->
+		// world (10,20),(10,22),(9,22),(9,21): bbox x[9..10] (w=1), y[20..22] (h=2).
+		const layout = computeSeatMapLayout(
+			chart([
+				sector('s1', [seat('a1'), seat('a2', { adjacency_index: 1, number: 2 })], {
+					metadata: { transform: { x: 10, y: 20, rotation: 90 } }
+				})
+			])
+		);
+		expect(layout.sectors[0].transform.rotation).toBe(90);
+		expect(layout.minX).toBeCloseTo(9, 6);
+		expect(layout.minY).toBeCloseTo(20, 6);
+		expect(layout.width).toBeCloseTo(1, 6);
+		expect(layout.height).toBeCloseTo(2, 6);
+		// Seats themselves stay in sector-LOCAL coords (the transform is applied
+		// by the renderer, not baked into the points).
+		expect(layout.sectors[0].seats).toEqual([
+			{ seatId: 'a1', label: 'A1', x: 0, y: 0 },
+			{ seatId: 'a2', label: 'A2', x: 1, y: 0 }
+		]);
+	});
+
+	it('unions transformed and default-stacked sectors into one world box', () => {
+		const layout = computeSeatMapLayout(
+			chart([
+				// Explicitly placed far to the right; does not consume stacking space.
+				sector('placed', [seat('a1')], {
+					display_order: 1,
+					metadata: { transform: { x: 20, y: 0, rotation: 0 } }
+				}),
+				// Un-arranged: stacks from the top-left as today.
+				sector('stacked', [seat('b1')], { display_order: 2 })
+			])
+		);
+		const placed = layout.sectors.find((s) => s.id === 'placed');
+		const stacked = layout.sectors.find((s) => s.id === 'stacked');
+		expect(placed?.transform).toEqual({ x: 20, y: 0, rotation: 0 });
+		expect(stacked?.transform).toEqual({ x: 0, y: 0, rotation: 0 });
+		expect(layout.minX).toBe(0);
+		expect(layout.width).toBe(21);
 	});
 });

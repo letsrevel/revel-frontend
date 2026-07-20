@@ -49,14 +49,27 @@ export class DesignerViewport {
 		this.ty = 0;
 	}
 
+	/**
+	 * Uniform meet-scale + letterbox offsets: the SVG renders its viewBox with
+	 * `preserveAspectRatio="xMidYMid meet"`, so the content is scaled UNIFORMLY
+	 * to fit and centered, leaving padding on the longer axis. A naive
+	 * per-axis `client/rect * viewBox` mapping ignores that padding and skews one
+	 * axis — which made dragged blocks lag the cursor horizontally.
+	 */
+	private fit(rect: DOMRect): { scale: number; offX: number; offY: number; w: number; h: number } {
+		const { w, h } = this.content();
+		const scale = Math.min(rect.width / w, rect.height / h);
+		return { scale, offX: (rect.width - w * scale) / 2, offY: (rect.height - h * scale) / 2, w, h };
+	}
+
 	/** Client (px) → viewBox coordinates; null when the SVG has no box yet. */
 	clientToView(clientX: number, clientY: number): Coordinate2d | null {
 		const rect = this.svgEl?.getBoundingClientRect();
 		if (!rect || rect.width === 0 || rect.height === 0) return null;
-		const { w, h } = this.content();
+		const { scale, offX, offY } = this.fit(rect);
 		return {
-			x: ((clientX - rect.left) / rect.width) * w,
-			y: ((clientY - rect.top) / rect.height) * h
+			x: (clientX - rect.left - offX) / scale,
+			y: (clientY - rect.top - offY) / scale
 		};
 	}
 
@@ -70,13 +83,13 @@ export class DesignerViewport {
 		};
 	}
 
-	/** Pan by a client-pixel delta (converted through the viewBox scale). */
+	/** Pan by a client-pixel delta (converted through the uniform meet scale). */
 	panByClientDelta(dxClient: number, dyClient: number): void {
 		const rect = this.svgEl?.getBoundingClientRect();
 		if (!rect || rect.width === 0 || rect.height === 0) return;
-		const { w, h } = this.content();
-		this.tx += (dxClient / rect.width) * w;
-		this.ty += (dyClient / rect.height) * h;
+		const { scale } = this.fit(rect);
+		this.tx += dxClient / scale;
+		this.ty += dyClient / scale;
 	}
 
 	/** Svelte action: non-passive wheel-zoom listener on the SVG element. */

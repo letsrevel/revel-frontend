@@ -5,18 +5,18 @@ import { ApiClient } from '../../support/api';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 
-// J8 (USER_JOURNEYS.md) — freeform seat-map DESIGNER smoke (#659): the venue's
-// /designer route renders every sector's seats on one SVG canvas, a seat can be
-// selected and keyboard-nudged (the a11y path — more deterministic than drag in
-// e2e), and Save persists the layout. The unsaved-changes guard fires a
-// confirm() when navigating away with pending edits.
+// J8 (USER_JOURNEYS.md) — sector-block DESIGNER smoke: the venue's /designer
+// route renders each SECTOR as a block (plus the stage) on one SVG canvas. A
+// block can be selected and keyboard-ROTATED (the a11y path — [ and ] rotate by
+// 15°, more deterministic than drag in e2e), which makes the layout dirty, and
+// Save persists the arrangement (sector.metadata.transform / venue.metadata).
+// The unsaved-changes guard fires a confirm() when navigating away dirty.
 //
-// Position round-trip is unit-tested (designer-save / designer-geometry); this
-// smoke proves the route + render + save wiring end to end. Persistence across
-// a reload is NOT asserted here (that is the unit tests' job).
+// Transform/save round-trip is unit-tested (designer-save / designer-interactions);
+// this smoke proves the route + render + rotate + save wiring end to end.
 //
 // Isolation: throwaway org + venue + a seated sector arranged via API, so the
-// designer has a real grid to draw; nothing seeded is touched.
+// designer has a real block; nothing seeded is touched.
 
 interface DesignerFixture {
 	page: Page;
@@ -53,29 +53,30 @@ async function openDesigner(browser: Browser): Promise<DesignerFixture> {
 }
 
 test.describe('J8 venue designer @p2', () => {
-	test('canvas renders seats → select → keyboard nudge → save', async ({ browser }) => {
+	test('canvas renders sector blocks → select → keyboard rotate → save', async ({ browser }) => {
 		test.setTimeout(150_000);
 
 		const { page, close } = await openDesigner(browser);
 
-		// The canvas renders and carries the arranged seats.
+		// The canvas renders and carries the arranged sector as a block.
 		await expect(page.getByRole('application', { name: 'Seat layout canvas' })).toBeVisible({
 			timeout: 15_000
 		});
-		const seatA1 = page.getByRole('button', { name: 'Seat A1, Stalls', exact: true });
-		await expect(seatA1).toBeVisible();
+		const block = page.getByRole('button', { name: /^Sector Stalls, rotated 0°/ });
+		await expect(block).toBeVisible();
 
 		// Save starts disabled (no pending edits yet).
 		const saveButton = page.getByRole('button', { name: 'Save layout' });
 		await expect(saveButton).toBeDisabled();
 
-		// Select the seat (click), then keyboard-nudge it — the a11y path: a
-		// focused, selected seat moves with an arrow key, which makes the layout
-		// dirty (Save enables).
-		await seatA1.click();
-		await expect(seatA1).toHaveAttribute('aria-pressed', 'true');
-		await seatA1.focus();
-		await page.keyboard.press('ArrowRight');
+		// Select the block (click), then keyboard-rotate it — the a11y path: a
+		// focused, selected block rotates 15° with "]", which makes the layout
+		// dirty (Save enables) and updates the block's accessible name.
+		await block.click();
+		await expect(block).toHaveAttribute('aria-pressed', 'true');
+		await block.focus();
+		await page.keyboard.press(']');
+		await expect(page.getByRole('button', { name: /^Sector Stalls, rotated 15°/ })).toBeVisible();
 		await expect(saveButton).toBeEnabled();
 
 		// Save persists the plan; the toast confirms the round-trip succeeded.
@@ -95,13 +96,13 @@ test.describe('J8 venue designer @p2', () => {
 		await expect(page.getByRole('application', { name: 'Seat layout canvas' })).toBeVisible({
 			timeout: 15_000
 		});
-		const seatA1 = page.getByRole('button', { name: 'Seat A1, Stalls', exact: true });
-		await expect(seatA1).toBeVisible();
+		const block = page.getByRole('button', { name: /^Sector Stalls/ });
+		await expect(block).toBeVisible();
 
 		// Make the layout dirty without saving.
-		await seatA1.click();
-		await seatA1.focus();
-		await page.keyboard.press('ArrowRight');
+		await block.click();
+		await block.focus();
+		await page.keyboard.press(']');
 		await expect(page.getByRole('button', { name: 'Save layout' })).toBeEnabled();
 
 		// Navigating away now must prompt: beforeNavigate calls confirm(). Dismiss
