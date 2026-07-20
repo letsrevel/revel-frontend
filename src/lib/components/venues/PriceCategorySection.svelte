@@ -116,7 +116,11 @@
 	);
 </script>
 
-<section class="space-y-4" aria-labelledby="price-categories-heading">
+<section
+	id="price-categories"
+	class="scroll-mt-24 space-y-4"
+	aria-labelledby="price-categories-heading"
+>
 	<!-- Section header -->
 	<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 		<div>

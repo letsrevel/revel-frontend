@@ -6,7 +6,7 @@
 	 * SeatMapDesigner.
 	 */
 	import * as m from '$lib/paraglide/messages.js';
-	import { Magnet, PencilRuler, Trash2 } from '@lucide/svelte';
+	import { LayoutGrid, Magnet, PencilRuler, Trash2 } from '@lucide/svelte';
 
 	interface SectorOption {
 		id: string;
@@ -115,10 +115,8 @@
 
 	{#if selectedSectorId}
 		<!-- eslint-disable svelte/no-navigation-without-resolve -- opaque href prop: the route passes a resolve()d sector-editor path -->
-		<a
-			href={sectorEditorHref(selectedSectorId)}
-			class="text-sm font-medium text-primary underline-offset-4 hover:underline"
-		>
+		<a href={sectorEditorHref(selectedSectorId)} class={buttonClass(false)}>
+			<LayoutGrid class="h-4 w-4" aria-hidden="true" />
 			{m['seatDesigner.gridEditor']()}
 		</a>
 		<!-- eslint-enable svelte/no-navigation-without-resolve -->

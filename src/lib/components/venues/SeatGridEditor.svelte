@@ -1,10 +1,11 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { resolve } from '$app/paths';
 	import type { VenueSeatSchema, PriceCategorySchema } from '$lib/api/generated/types.gen';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { organizationadminvenuesListPriceCategories } from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { Accessibility, EyeOff, Paintbrush, Eraser } from '@lucide/svelte';
+	import { Accessibility, EyeOff, Paintbrush, Eraser, Tag } from '@lucide/svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import type { SeatData } from './seat-grid-types';
 	import { buildSeatSavePlan, readExistingPaint, type SeatSavePlan } from './seat-grid-save';
@@ -52,6 +53,15 @@
 		}
 	}));
 	const priceCategories = $derived(categoriesQuery.data ?? []);
+
+	// Price categories are created/managed on the venue page (PriceCategorySection),
+	// not here — deep-link there so the empty palette isn't a dead end.
+	const manageCategoriesHref = $derived(
+		resolve('/(auth)/org/[slug]/admin/venues/[venue_id]', {
+			slug: organizationSlug,
+			venue_id: venueId
+		}) + '#price-categories'
+	);
 
 	// Active paint chip: null = paint mode off; categoryId null = eraser
 	let activePaint = $state<{ categoryId: string | null } | null>(null);
@@ -355,15 +365,29 @@
 
 	<!-- Price category palette (seat painting) -->
 	<div class="rounded-lg border bg-card p-4">
-		<div class="mb-3 flex items-center gap-2">
+		<div class="mb-1 flex items-center gap-2">
 			<Paintbrush class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
 			<h3 class="font-semibold">{m['seatGridEditor.paint.title']()}</h3>
 		</div>
+
+		<!-- What painting achieves — otherwise the palette reads as purely cosmetic. -->
+		<p class="mb-3 text-xs text-muted-foreground">
+			{m['seatGridEditor.paint.explainer']()}
+		</p>
 
 		{#if priceCategories.length === 0}
 			<p class="text-sm text-muted-foreground">
 				{m['seatGridEditor.paint.noCategories']()}
 			</p>
+			<!-- eslint-disable svelte/no-navigation-without-resolve -- href built with resolve() above, plus a hash fragment -->
+			<a
+				href={manageCategoriesHref}
+				class="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-primary underline-offset-4 hover:underline"
+			>
+				<Tag class="h-4 w-4" aria-hidden="true" />
+				{m['seatGridEditor.paint.manageCategories']()}
+			</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 		{:else}
 			<div
 				class="flex flex-wrap items-center gap-2"

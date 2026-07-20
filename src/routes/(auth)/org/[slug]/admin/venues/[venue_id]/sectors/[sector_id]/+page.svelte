@@ -29,6 +29,18 @@
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
 
+	// After any seat/metadata write, refresh every view that renders this sector's
+	// geometry. Crucially, EVICT the venue-wide sector list (`venue-sectors`) that
+	// the layout designer freezes into its model on first load — invalidation alone
+	// leaves the stale cache in place, and the designer would rebuild from it on the
+	// next visit (seat/aisle edits wouldn't show up). Removing it forces a fresh
+	// fetch. The public seating chart reflects seat changes too.
+	function invalidateSectorViews() {
+		queryClient.invalidateQueries({ queryKey: ['sector'] });
+		queryClient.removeQueries({ queryKey: ['venue-sectors', organization.slug, venueId] });
+		queryClient.invalidateQueries({ queryKey: ['seating-chart'] });
+	}
+
 	// Sector query
 	const sectorQuery = createQuery<VenueSectorWithSeatsSchema>(() => ({
 		queryKey: ['sector', organization.slug, venueId, sectorId],
@@ -67,7 +79,7 @@
 		},
 		onSuccess: () => {
 			toast.success(m['orgAdmin.seats.toast.saved']());
-			queryClient.invalidateQueries({ queryKey: ['sector'] });
+			invalidateSectorViews();
 		},
 		onError: () => {
 			toast.error(m['orgAdmin.seats.toast.saveError']());
@@ -93,7 +105,7 @@
 		},
 		onSuccess: () => {
 			toast.success(m['orgAdmin.seats.toast.deleted']());
-			queryClient.invalidateQueries({ queryKey: ['sector'] });
+			invalidateSectorViews();
 		},
 		onError: () => {
 			toast.error(m['orgAdmin.seats.toast.deleteError']());
@@ -119,7 +131,7 @@
 		},
 		onSuccess: () => {
 			toast.success(m['orgAdmin.seats.toast.updated']());
-			queryClient.invalidateQueries({ queryKey: ['sector'] });
+			invalidateSectorViews();
 		},
 		onError: () => {
 			toast.error(m['orgAdmin.seats.toast.updateError']());
@@ -144,7 +156,7 @@
 			return response.data;
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['sector'] });
+			invalidateSectorViews();
 		},
 		onError: () => {
 			toast.error(m['orgAdmin.seats.toast.paintError']());
@@ -172,7 +184,7 @@
 			return response.data;
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['sector'] });
+			invalidateSectorViews();
 		},
 		onError: () => {
 			toast.error(m['orgAdmin.seats.toast.metadataError']());
