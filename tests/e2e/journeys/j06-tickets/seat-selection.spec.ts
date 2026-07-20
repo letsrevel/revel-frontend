@@ -1,6 +1,7 @@
 import { test, expect } from '../../support/fixtures';
 import {
 	claimTicketViaApi,
+	createCategoryPricedVenue,
 	createTicketedEvent,
 	createTicketTier,
 	createVerifiedUser,
@@ -102,6 +103,92 @@ test.describe('J6 seat selection @p2', () => {
 
 		// The ticket carries the chosen seat ("Venue • Sector • Row B, Seat 3").
 		await expect(success.getByText(/Row B, Seat 3/)).toBeVisible();
+
+		await context.close();
+	});
+
+	// Per-seat-category pricing (#668, BE #739): a user_choice tier prices row A
+	// via a painted category (55.00) while unpainted row B falls back to the
+	// tier's base price (20.00). The dialog shows the price legend and range,
+	// each seat's accessible name carries its resolved price, the selection
+	// total sums server-resolved prices, and the issued (pending offline)
+	// ticket shows the per-ticket amount due — price_paid, not tier.price.
+	//
+	// Isolation: own venue via createCategoryPricedVenue — painting a shared
+	// venue would break concurrently-saved category-priced tiers (coverage is
+	// validated against every painted category in the sector).
+	test('per-seat-category pricing: legend, seat prices, total, amount on ticket', async ({
+		browser
+	}) => {
+		const venue = await createCategoryPricedVenue('revel-events-collective');
+		const [event, buyer] = await Promise.all([
+			createTicketedEvent({ freeTier: false, event: { venue_id: venue.venueId } }),
+			createVerifiedUser('PricedSeatBuyer')
+		]);
+		await deleteDefaultTier(event.id);
+		await createTicketTier(event.id, {
+			name: 'Priced Seats',
+			payment_method: 'offline',
+			price: '20.00',
+			seat_assignment_mode: 'user_choice',
+			venue_id: venue.venueId,
+			sector_id: venue.sectorId,
+			category_prices: { [venue.category.id]: '55.00' }
+		});
+
+		const context = await browser.newContext();
+		await authenticateContext(context, buyer);
+		const page = await context.newPage();
+		await gotoHydrated(page, event.path);
+		await waitForClientAuth(page);
+
+		const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
+		const confirmDialog = page.getByRole('dialog', { name: 'Reserve Ticket' });
+		await expect(async () => {
+			if (await confirmDialog.isVisible()) return;
+			if (!(await tierDialog.isVisible())) {
+				await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
+			}
+			await tierDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
+			await expect(confirmDialog).toBeVisible({ timeout: 8_000 });
+		}).toPass({ timeout: 60_000 });
+
+		// Price range on the tier card (min base 20.00 – max category 55.00) and
+		// the legend pairing each category (and the unpainted fallback) with its
+		// resolved price.
+		await expect(confirmDialog.getByText('EUR 20.00 - EUR 55.00')).toBeVisible();
+		const legend = confirmDialog.getByRole('list', { name: 'Seat prices' });
+		await expect(legend).toBeVisible({ timeout: 15_000 });
+		await expect(legend.getByText(venue.category.name)).toBeVisible();
+		await expect(legend.getByText('€55.00')).toBeVisible();
+		await expect(legend.getByText('Standard seats')).toBeVisible();
+		await expect(legend.getByText('€20.00')).toBeVisible();
+
+		// Each seat's accessible name carries its own resolved price (dumb
+		// server-side lookup: painted → category price, unpainted → base).
+		const seatA1 = confirmDialog.getByRole('button', { name: 'Seat A1, €55.00' });
+		await expect(seatA1).toBeVisible();
+		await expect(confirmDialog.getByRole('button', { name: 'Seat B1, €20.00' })).toBeVisible();
+
+		// Selecting the painted seat shows the running estimate for the held set.
+		const success = page.getByRole('dialog', { name: 'Your Ticket', exact: true });
+		await expect(async () => {
+			if (await success.isVisible()) return;
+			if ((await seatA1.getAttribute('aria-pressed')) !== 'true') {
+				await seatA1.click();
+			}
+			await expect(seatA1).toHaveAttribute('aria-pressed', 'true', { timeout: 5_000 });
+			await expect(confirmDialog.getByText('Selected seats: €55.00')).toBeVisible({
+				timeout: 5_000
+			});
+			await confirmDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
+			await expect(success).toBeVisible({ timeout: 8_000 });
+		}).toPass({ timeout: 60_000 });
+
+		// The pending offline ticket shows the per-ticket amount due — the
+		// category price actually charged, not the tier's base price.
+		await expect(success.getByText(/Row A, Seat 1/)).toBeVisible();
+		await expect(success.getByText('Amount due: €55.00')).toBeVisible();
 
 		await context.close();
 	});

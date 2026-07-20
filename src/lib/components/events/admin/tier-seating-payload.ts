@@ -42,6 +42,38 @@ export function buildTierSeatingFields(
 }
 
 /**
+ * The `category_prices` field for the tier create/update payload (#668).
+ *
+ * PUT semantics with three-way write behavior: omitted/null leaves the stored
+ * map untouched, `{}` clears it, non-empty replaces it wholesale. Update always
+ * sends the full payload, so blindly serializing the map would WIPE every
+ * price on an unrelated field edit — the map is therefore sent ONLY when it
+ * actually changed (returns undefined otherwise, spread-omitted by the caller).
+ *
+ * Empty inputs are dropped (an empty string is "no price", not "price 0"), and
+ * a non-user_choice mode clears a previously stored map the same way stale
+ * venue/sector links are nulled above.
+ */
+export function buildCategoryPricesPayload(
+	mode: SeatAssignmentMode,
+	baseline: Readonly<Record<string, string>>,
+	current: Readonly<Record<string, string>>
+): Record<string, string> | undefined {
+	const normalized: Record<string, string> = {};
+	if (mode === 'user_choice') {
+		for (const [categoryId, value] of Object.entries(current)) {
+			const trimmed = value.trim().replace(',', '.');
+			if (trimmed !== '') normalized[categoryId] = trimmed;
+		}
+	}
+	const baselineKeys = Object.keys(baseline);
+	const changed =
+		baselineKeys.length !== Object.keys(normalized).length ||
+		baselineKeys.some((key) => baseline[key] !== normalized[key]);
+	return changed ? normalized : undefined;
+}
+
+/**
  * The sector selection that survives a switch to `mode`.
  *
  * Standing sectors are only valid on GA (none) tiers, seated sectors only on

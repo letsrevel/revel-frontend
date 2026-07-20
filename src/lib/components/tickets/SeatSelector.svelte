@@ -1,5 +1,8 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import type { TierSeatPricingSchema } from '$lib/api/generated/types.gen';
+	import { formatMoney } from '$lib/utils/format';
+	import { resolveSeatPrice } from './seat-pricing';
 	import { rowsFromSeatViews, seatAriaLabel, type SeatView } from './seating-view';
 	import { Accessibility, EyeOff, Check, X, LoaderCircle } from '@lucide/svelte';
 
@@ -10,9 +13,30 @@
 		maxReached?: boolean;
 		/** Disable the whole grid (e.g. while confirming the purchase). */
 		disabled?: boolean;
+		/** Server-resolved per-category prices (user_choice tiers, #668). */
+		seatPricing?: TierSeatPricingSchema | null;
+		/** Tier currency for price display (seat_pricing carries bare decimals). */
+		currency?: string | null;
 	}
 
-	const { seats, onToggle, maxReached = false, disabled = false }: Props = $props();
+	const {
+		seats,
+		onToggle,
+		maxReached = false,
+		disabled = false,
+		seatPricing = null,
+		currency = null
+	}: Props = $props();
+
+	/** Shared accessible name + per-seat price (dumb server-resolved lookup). */
+	function seatLabelWithPrice(seat: SeatView): string {
+		const base = seatAriaLabel(seat);
+		const info = resolveSeatPrice(seatPricing, seat.priceCategoryId);
+		if (info?.available && info.price != null) {
+			return `${base}, ${formatMoney(info.price, currency)}`;
+		}
+		return base;
+	}
 
 	const rows = $derived(rowsFromSeatViews(seats));
 	const hasMine = $derived(seats.some((seat) => seat.status === 'mine'));
@@ -90,7 +114,8 @@
 								aria-pressed={seat.status === 'mine'}
 								aria-busy={seat.status === 'pending'}
 								aria-disabled={seat.status === 'pending' ? true : undefined}
-								aria-label={seatAriaLabel(seat)}
+								aria-label={seatLabelWithPrice(seat)}
+								title={seatLabelWithPrice(seat)}
 							>
 								{#if seat.status === 'mine'}
 									<Check class="h-4 w-4" aria-hidden="true" />

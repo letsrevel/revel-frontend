@@ -14,8 +14,11 @@
 	import type {
 		Coordinate2d,
 		PriceCategorySchema,
+		TierSeatPricingSchema,
 		VenueChartSchema
 	} from '$lib/api/generated/types.gen';
+	import { formatMoney } from '$lib/utils/format';
+	import { resolveSeatPrice } from './seat-pricing';
 	import { Minus, Plus, RotateCcw } from '@lucide/svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { computeSeatMapLayout, type SeatPoint, type SectorLayout } from './seat-map-layout';
@@ -47,6 +50,10 @@
 		 * stage's ACTUAL direction; absent, it falls back to world "up".
 		 */
 		stage?: Coordinate2d | null;
+		/** Server-resolved per-category prices (user_choice tiers, #668). */
+		seatPricing?: TierSeatPricingSchema | null;
+		/** Tier currency for price display (seat_pricing carries bare decimals). */
+		currency?: string | null;
 	}
 
 	const {
@@ -57,7 +64,9 @@
 		disabled = false,
 		interactive = true,
 		standingCounts,
-		stage = null
+		stage = null,
+		seatPricing = null,
+		currency = null
 	}: Props = $props();
 
 	const uid = $props.id();
@@ -147,13 +156,19 @@
 		return categoryId ? categoryById.get(categoryId) : undefined;
 	}
 
-	/** Accessible name: shared SeatSelector wording + price-category suffix. */
+	/** Accessible name: shared SeatSelector wording + category & price suffix. */
 	function seatLabelFor(pt: SeatPoint, view: SeatView | undefined): string {
-		const base = view
+		let label = view
 			? seatAriaLabel(view)
 			: `${m['seatSelector.seat']()} ${pt.label}, ${m['seatSelector.statusBlocked']()}`;
 		const category = categoryFor(pt.seatId);
-		return category ? `${base}, ${category.name}` : base;
+		if (category) label += `, ${category.name}`;
+		// Dumb server-resolved lookup — never a locally recomputed fallback chain.
+		const priceInfo = resolveSeatPrice(seatPricing, seatCategoryId.get(pt.seatId) ?? null);
+		if (priceInfo?.available && priceInfo.price != null) {
+			label += `, ${formatMoney(priceInfo.price, currency)}`;
+		}
+		return label;
 	}
 
 	// --- toggling -----------------------------------------------------------

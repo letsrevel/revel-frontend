@@ -1057,11 +1057,9 @@ export async function releaseHoldsViaApi(
 
 /**
  * API-create a venue price category (POST /organization-admin/{slug}/venues/
- * {venue_id}/price-categories). NOTE: categories can only be PAINTED onto
- * seats at seed time — `default_price_category` has no admin-API writer — so
- * a category created here is an empty pool until the backend grows a painting
- * endpoint. Best-available arranges need a seeded painted event instead
- * (see getSeededBestAvailableEvent).
+ * {venue_id}/price-categories). Seats can be painted with it via
+ * PUT /venues/{venue_id}/seats/paint, or inline at seat creation
+ * (`price_category_id` on the seat input) — see createCategoryPricedVenue.
  */
 export async function createPriceCategory(
 	orgSlug: string,
@@ -1077,6 +1075,55 @@ export async function createPriceCategory(
 		{ name, color: '#7c3aed', display_order: 0, ...payload }
 	);
 	return { id: created.id, name };
+}
+
+export interface CategoryPricedVenue {
+	venueId: string;
+	sectorId: string;
+	/** Painted onto every row-A seat; rows B stays unpainted. */
+	category: { id: string; name: string };
+}
+
+/**
+ * Create an ISOLATED venue for per-seat-category pricing specs (#668): one
+ * seated sector with rows A–B × 4 seats, where row A is painted with a fresh
+ * price category (inline `price_category_id`) and row B stays unpainted.
+ *
+ * Isolation matters: painting a new category onto a SHARED venue would make
+ * any category-priced tier being saved concurrently by another worker
+ * under-covered (the backend validates coverage against every category
+ * painted in the tier's sector), so pricing specs must bring their own venue.
+ */
+export async function createCategoryPricedVenue(
+	orgSlug: string,
+	owner: PersonaName | ThrowawayUser = 'owner'
+): Promise<CategoryPricedVenue> {
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
+	const venue = await api.post<{ id: string }>(`/api/organization-admin/${orgSlug}/venues`, {
+		name: uniqueName('Priced Hall')
+	});
+	const category = await createPriceCategory(
+		orgSlug,
+		venue.id,
+		{ name: uniqueName('Front'), color: '#f9b233' },
+		owner
+	);
+	const seats = ['A', 'B'].flatMap((row, rowIndex) =>
+		Array.from({ length: 4 }, (_, i) => ({
+			label: `${row}${i + 1}`,
+			row,
+			number: i + 1,
+			row_order: rowIndex,
+			adjacency_index: i + 1,
+			price_category_id: row === 'A' ? category.id : null
+		}))
+	);
+	const sector = await api.post<{ id: string }>(
+		`/api/organization-admin/${orgSlug}/venues/${venue.id}/sectors`,
+		{ name: 'Orchestra', seats }
+	);
+	return { venueId: venue.id, sectorId: sector.id, category };
 }
 
 export interface SeededBestAvailableEvent {

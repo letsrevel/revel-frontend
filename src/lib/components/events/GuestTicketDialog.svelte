@@ -685,6 +685,8 @@
 							{accessibleRequired}
 							onAccessibleRequiredChange={(value) => (accessibleRequired = value)}
 							onController={(controller) => (seatController = controller)}
+							seatPricing={tier.seat_pricing ?? null}
+							currency={tier.currency}
 						/>
 					{/if}
 

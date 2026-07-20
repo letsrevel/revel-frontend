@@ -157,8 +157,45 @@ describe('buildSeatViews', () => {
 			adjacencyIndex: 0,
 			isAccessible: true,
 			isObstructedView: true,
-			status: 'available'
+			status: 'available',
+			priceCategoryId: null
 		});
+	});
+
+	it('blocks seats painted with a category the tier cannot sell (#668)', () => {
+		const views = buildSeatViews(
+			chart([
+				sector('s1', [
+					seat('a1', { price_category_id: 'gold' }),
+					seat('a2', { price_category_id: 'late', number: 2, adjacency_index: 1 }),
+					seat('a3', { number: 3, adjacency_index: 2 })
+				])
+			]),
+			availability(),
+			{ ...noSelection, unavailableCategoryIds: new Set(['late']) }
+		);
+		expect(views.map((v) => [v.id, v.status, v.priceCategoryId])).toEqual([
+			['a1', 'available', 'gold'],
+			['a2', 'blocked', 'late'],
+			['a3', 'available', null]
+		]);
+	});
+
+	it("never blocks the caller's own holds or pending seats by category", () => {
+		const views = buildSeatViews(
+			chart([
+				sector('s1', [
+					seat('a1', { price_category_id: 'late' }),
+					seat('a2', { price_category_id: 'late', number: 2, adjacency_index: 1 })
+				])
+			]),
+			availability(),
+			{ myHolds: ['a1'], pending: ['a2'], unavailableCategoryIds: new Set(['late']) }
+		);
+		expect(views.map((v) => [v.id, v.status])).toEqual([
+			['a1', 'mine'],
+			['a2', 'pending']
+		]);
 	});
 });
 

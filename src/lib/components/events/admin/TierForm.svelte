@@ -38,7 +38,11 @@
 		toTimezoneAwareISO,
 		normalizeDecimalInput
 	} from './tier-form-helpers';
-	import { buildTierSeatingFields, retainedSectorIdForMode } from './tier-seating-payload';
+	import {
+		buildCategoryPricesPayload,
+		buildTierSeatingFields,
+		retainedSectorIdForMode
+	} from './tier-seating-payload';
 	import { Undo2 } from '@lucide/svelte';
 	import { formatDateTimeReadback } from '$lib/utils/date';
 
@@ -154,6 +158,16 @@
 	let sectorId = $state<string | null>(tier?.sector?.id ?? null);
 	let priceCategoryId = $state<string | null>(tier?.price_category?.id ?? null);
 
+	// Per-seat-category prices for user_choice tiers (#668). The baseline is
+	// what the server stored; the payload builder sends the map ONLY when it
+	// diverges from this (PUT + three-way write semantics: omit = untouched,
+	// {} = clear, non-empty = replace), so an unrelated edit can't wipe prices.
+	const initialCategoryPrices: Record<string, string> = Object.fromEntries(
+		Object.entries(tier?.category_prices ?? {}).map(([id, value]) => [id, String(value)])
+	);
+	// svelte-ignore state_referenced_locally -- deliberate init-time snapshot copy
+	let categoryPrices = $state<Record<string, string>>({ ...initialCategoryPrices });
+
 	// Fetch venues for the organization (fetch when seat assignment is not 'none' OR when we have a venue pre-selected)
 	const venuesQuery = createQuery<VenueDetailSchema[]>(() => ({
 		queryKey: ['organization-venues', organizationSlug],
@@ -253,6 +267,24 @@
 		if (!pool.some((s) => s.id === sectorId)) {
 			sectorId = null;
 		}
+	});
+
+	// Categories offered in the per-seat pricing editor (#668): those painted on
+	// an active seat of the selected sector, plus any category the tier already
+	// prices (stale extras stay editable/clearable instead of vanishing).
+	const sectorPricingCategories = $derived.by(() => {
+		if (seatAssignmentMode !== 'user_choice' || !sectorId || !chartQuery.data) return [];
+		const sector = (chartQuery.data.sectors ?? []).find((s) => s.id === sectorId);
+		const painted = new Set<string>();
+		for (const seat of sector?.seats ?? []) {
+			if (seat.is_active !== false && seat.price_category_id) {
+				painted.add(seat.price_category_id);
+			}
+		}
+		return priceCategories.filter(
+			(category) =>
+				!!category.id && (painted.has(category.id) || (categoryPrices[category.id] ?? '') !== '')
+		);
 	});
 
 	// Clear price category when it no longer exists in the loaded chart
@@ -367,6 +399,17 @@
 					: null,
 			refund_policy: paymentMethod !== 'free' && allowUserCancellation ? refundPolicy : null
 		};
+
+		// Sent ONLY when dirty (omit = leave the stored map untouched, {} =
+		// clear, non-empty = replace) — see buildCategoryPricesPayload.
+		const categoryPricesPayload = buildCategoryPricesPayload(
+			seatAssignmentMode,
+			initialCategoryPrices,
+			categoryPrices
+		);
+		if (categoryPricesPayload !== undefined) {
+			baseData.category_prices = categoryPricesPayload;
+		}
 
 		// Only include pwyc fields if price_type is 'pwyc' and they have values
 		if (priceType === 'pwyc') {
@@ -587,6 +630,10 @@
 				bind:maxTicketsPerUser
 				bind:sectorId
 				bind:priceCategoryId
+				bind:categoryPrices
+				pricingCategories={sectorPricingCategories}
+				pricingGaps={tier?.pricing_gaps ?? []}
+				{currencySymbol}
 				{canUseSeatAssignment}
 				{venueId}
 				venuesLoading={venuesQuery.isLoading}

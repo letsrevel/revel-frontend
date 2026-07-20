@@ -165,6 +165,24 @@
 				: m['ticketConfirmationDialog.anyAmount']();
 			return `${tier.currency} ${minAmount.toFixed(2)} - ${maxDisplay}`;
 		}
+		// Category-priced tier (#668): a single tier.price would be dishonest, so
+		// show the server-resolved range across sellable categories + unpainted.
+		if (isUserChoiceSeat && tier.seat_pricing) {
+			const prices = [
+				...(tier.seat_pricing.categories ?? [])
+					.filter((c) => c.available !== false && c.price != null)
+					.map((c) => parseFloat(c.price as string)),
+				parseFloat(tier.seat_pricing.unpainted)
+			].filter((p) => Number.isFinite(p));
+			if (prices.length > 0) {
+				const min = Math.min(...prices);
+				const max = Math.max(...prices);
+				if (min !== max) {
+					return `${tier.currency} ${min.toFixed(2)} - ${tier.currency} ${max.toFixed(2)}`;
+				}
+				return `${tier.currency} ${min.toFixed(2)}`;
+			}
+		}
 		const price = typeof tier.price === 'string' ? parseFloat(tier.price) : tier.price;
 		return `${tier.currency} ${price.toFixed(2)}`;
 	});
@@ -529,6 +547,8 @@
 				{accessibleRequired}
 				onAccessibleRequiredChange={(value) => (accessibleRequired = value)}
 				onController={(controller) => (seatController = controller)}
+				seatPricing={tier.seat_pricing ?? null}
+				currency={tier.currency}
 			/>
 
 			<!-- Quantity Selector -->

@@ -14,10 +14,12 @@
 		MapPin,
 		User,
 		Armchair,
+		Banknote,
 		ChevronLeft,
 		ChevronRight,
 		X
 	} from '@lucide/svelte';
+	import { formatMoney } from '$lib/utils/format';
 	import QRCode from 'qrcode';
 	import { formatDateTime } from '$lib/utils/date';
 
@@ -214,6 +216,17 @@
 		)
 	);
 
+	// Per-ticket amount (#668): with per-seat-category pricing two tickets on
+	// the same tier can cost different amounts, and offline/at-the-door tickets
+	// issue with no confirmation screen — this row is where the buyer learns
+	// what THIS seat costs. Hidden at 0 so free tickets stay uncluttered.
+	const pricePaidDisplay = $derived.by(() => {
+		if (ticket?.price_paid == null) return null;
+		const parsed = Number.parseFloat(ticket.price_paid);
+		if (!Number.isFinite(parsed) || parsed <= 0) return null;
+		return formatMoney(ticket.price_paid, ticket.tier?.currency);
+	});
+
 	// Group pending tickets by payment ID for online payments
 	interface PaymentGroup {
 		paymentId: string;
@@ -337,7 +350,7 @@
 				</div>
 
 				<!-- Ticket Holder & Seat Info -->
-				{#if ticket.guest_name || hasSeatInfo}
+				{#if ticket.guest_name || hasSeatInfo || pricePaidDisplay}
 					<dl class="space-y-2 rounded-lg border border-border bg-muted/30 p-4 text-sm">
 						{#if ticket.guest_name}
 							<div class="flex items-center gap-2">
@@ -351,6 +364,17 @@
 								<dt class="sr-only">{m['myTicketModal.seat']()}</dt>
 								<Armchair class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
 								<dd>{seatInfo}</dd>
+							</div>
+						{/if}
+						{#if pricePaidDisplay}
+							<div class="flex items-center gap-2">
+								<dt class="sr-only">{m['eventTicketsAdmin.headerPrice']()}</dt>
+								<Banknote class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+								<dd>
+									{ticket.status === 'pending'
+										? m['myTicket.amountDue']({ amount: pricePaidDisplay })
+										: m['myTicket.pricePaid']({ amount: pricePaidDisplay })}
+								</dd>
 							</div>
 						{/if}
 					</dl>
