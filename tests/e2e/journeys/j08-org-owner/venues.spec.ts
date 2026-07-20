@@ -4,6 +4,7 @@ import {
 	createPriceCategory,
 	createTicketedEvent,
 	createTicketTier,
+	deleteDefaultTier,
 	uniqueName
 } from '../../support/factories';
 import { ApiClient } from '../../support/api';
@@ -281,6 +282,110 @@ test.describe('J19.3 seat painting @p2', () => {
 			timeout: 15_000
 		});
 		await expect(page.getByRole('button', { name: 'Seat A2', exact: true })).toBeVisible();
+
+		await context.close();
+	});
+
+	// J19.4 repricing guard (#674, BE #747): repainting a seat between two
+	// PRICED categories changes what buyers are charged for every event at the
+	// venue and fails OPEN — coverage stays complete, so nothing else fires.
+	// The editor previews the paint (?preview=true), demands confirmation when
+	// an on-sale (open) event is repriced, and reports the precise move after
+	// applying. Isolation: throwaway org + own venue (painting a shared venue
+	// would break concurrently-saved category-priced tiers).
+	test('repaint between priced categories → confirm on live event → precise reprice toast', async ({
+		browser
+	}) => {
+		test.setTimeout(150_000);
+
+		const org = await createOrganization();
+		const api = await ApiClient.login(org.owner.email, org.owner.password);
+		const venue = await api.post<{ id: string }>(`/api/organization-admin/${org.slug}/venues`, {
+			name: uniqueName('Venue')
+		});
+		const gold = await createPriceCategory(
+			org.slug,
+			venue.id,
+			{ name: 'Gold', color: '#f9b233' },
+			org.owner
+		);
+		await createPriceCategory(org.slug, venue.id, { name: 'Silver', color: '#9ab2ff' }, org.owner);
+		const sector = await api.post<{ id: string }>(
+			`/api/organization-admin/${org.slug}/venues/${venue.id}/sectors`,
+			{
+				name: 'Stalls',
+				code: 'STL',
+				seats: [
+					{ label: 'A1', row: 'A', number: 1, price_category_id: gold.id },
+					{ label: 'A2', row: 'A', number: 2, price_category_id: gold.id },
+					{ label: 'B1', row: 'B', number: 1 },
+					{ label: 'B2', row: 'B', number: 2 }
+				]
+			}
+		);
+		// An OPEN (on-sale) event whose user_choice tier prices BOTH categories:
+		// the repaint keeps coverage complete, so only the repricing guard fires.
+		const event = await createTicketedEvent({
+			owner: org.owner,
+			orgSlug: org.slug,
+			freeTier: false,
+			event: { venue_id: venue.id }
+		});
+		await deleteDefaultTier(event.id, org.owner);
+		const silver = await api.get<Array<{ id: string; name: string }>>(
+			`/api/organization-admin/${org.slug}/venues/${venue.id}/price-categories`
+		);
+		const silverId = silver.find((c) => c.name === 'Silver')?.id;
+		if (!silverId) throw new Error('Silver category missing');
+		await createTicketTier(
+			event.id,
+			{
+				name: 'Stalls Tier',
+				payment_method: 'offline',
+				price: '10.00',
+				seat_assignment_mode: 'user_choice',
+				venue_id: venue.id,
+				sector_id: sector.id,
+				category_prices: { [gold.id]: '80.00', [silverId]: '30.00' }
+			},
+			org.owner
+		);
+
+		const context = await browser.newContext();
+		await authenticateContext(context, org.owner);
+		const page = await context.newPage();
+		await gotoHydrated(page, `/org/${org.slug}/admin/venues/${venue.id}/sectors/${sector.id}`);
+		await waitForClientAuth(page);
+		await expect(page.getByText('Total:')).toContainText('4', { timeout: 15_000 });
+
+		// The palette states the venue-wide blast radius BEFORE any paint.
+		await expect(
+			page.getByText('Paint applies to every event at this venue', { exact: false })
+		).toBeVisible();
+
+		// Repaint A1: Gold (80.00) → Silver (30.00). The save previews the paint
+		// and must ask for confirmation naming the tier, event and price move.
+		const palette = page.getByRole('group', { name: 'Price category palette' });
+		await palette.getByRole('button', { name: 'Silver' }).click();
+		await page.getByRole('button', { name: 'Seat A1, Gold', exact: true }).click();
+
+		let confirmMessage = '';
+		page.once('dialog', (dialog) => {
+			confirmMessage = dialog.message();
+			void dialog.accept();
+		});
+		await page.getByRole('button', { name: 'Save Changes' }).click();
+
+		// Accepted: the paint applies and the precise repricing toast follows.
+		await expect(page.getByText('Seat pricing updated')).toBeVisible({ timeout: 15_000 });
+		await expect(page.getByText('Repainted seats changed price zone')).toBeVisible({
+			timeout: 15_000
+		});
+		await expect(page.getByText(/1 seat\(s\) 80\.00 → 30\.00/)).toBeVisible();
+		expect(confirmMessage).toContain('ON SALE');
+		expect(confirmMessage).toContain('Stalls Tier');
+		expect(confirmMessage).toContain(event.name);
+		expect(confirmMessage).toContain('1 seat(s) 80.00 → 30.00');
 
 		await context.close();
 	});

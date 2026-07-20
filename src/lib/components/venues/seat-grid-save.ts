@@ -1,8 +1,8 @@
 // Pure helpers turning the seat-grid editor state into API payloads:
 // bulk create/update/delete plus paint batches for the venue paint endpoint.
 import type {
+	AffectedTierSchema,
 	SeatPaintResultSchema,
-	UnderCoveredTierSchema,
 	VenueSeatSchema,
 	VenueSeatInputSchema,
 	VenueSeatBulkUpdateItemSchema
@@ -10,27 +10,29 @@ import type {
 import type { SeatData } from './seat-grid-types';
 
 /**
- * Union of the under-covered tiers across a save's paint-batch results
- * (BE #746): one entry per tier, missing categories deduped by id. Each batch
- * reports the tier's CURRENT gap (not the delta), so later batches can repeat
- * earlier findings — without the merge one save would toast the same tier
- * once per batch.
+ * Union of the affected tiers across a save's paint-batch results (BE #747):
+ * one entry per tier, price changes concatenated (each batch reports its own
+ * moves), missing categories deduped by id (each batch reports the tier's
+ * CURRENT gap, not the delta, so later batches can repeat earlier findings) —
+ * without the merge one save would toast the same tier once per batch.
  */
-export function mergeUnderCoveredTiers(
+export function mergeAffectedTiers(
 	results: readonly SeatPaintResultSchema[]
-): UnderCoveredTierSchema[] {
-	const byTier = new Map<string, UnderCoveredTierSchema>();
+): AffectedTierSchema[] {
+	const byTier = new Map<string, AffectedTierSchema>();
 	for (const result of results) {
-		for (const tier of result.under_covered_tiers ?? []) {
+		for (const tier of result.affected_tiers ?? []) {
 			const existing = byTier.get(tier.tier_id);
 			if (!existing) {
 				byTier.set(tier.tier_id, {
 					...tier,
+					price_changes: [...(tier.price_changes ?? [])],
 					missing_categories: [...(tier.missing_categories ?? [])]
 				});
 				continue;
 			}
 
+			existing.price_changes = [...(existing.price_changes ?? []), ...(tier.price_changes ?? [])];
 			const merged = existing.missing_categories ?? [];
 			const seen = new Set(merged.map((category) => category.id));
 			for (const category of tier.missing_categories ?? []) {
@@ -42,35 +44,23 @@ export function mergeUnderCoveredTiers(
 	return [...byTier.values()];
 }
 
+/**
+ * The affected tiers that warrant a CONFIRMATION rather than an
+ * after-the-fact toast: the paint moves live money — a price change on an
+ * event that is on sale (open). Draft/closed/cancelled events are reported in
+ * the toast only; coverage gaps fail closed (checkout refuses the seats) so
+ * they never need a confirmation either.
+ */
+export function liveRepricedTiers(tiers: readonly AffectedTierSchema[]): AffectedTierSchema[] {
+	return tiers.filter(
+		(tier) => tier.event_status === 'open' && (tier.price_changes ?? []).length > 0
+	);
+}
+
 /** One PUT `…/venues/{venue_id}/seats/paint` call: seats sharing one target category. */
 export interface PaintBatch {
 	price_category_id: string | null;
 	seat_ids: string[];
-}
-
-/**
- * Seats a save moved OUT of a category they were already painted with —
- * repainted to another category or unpainted (#674). Both silently change
- * what buyers are charged for every event at the venue (a repaint charges the
- * new category's price, an unpaint drops to the tier's flat price), and both
- * fail OPEN: coverage stays complete, so none of the under-coverage signals
- * fire. Fresh paint on an unpainted seat is excluded — that's the normal
- * workflow, and its hazard (under-coverage) is reported by the paint
- * endpoint. `baseline` maps seat id → persisted category id (null =
- * unpainted) captured BEFORE the save's mutations run.
- */
-export function countRepricedSeats(
-	batches: readonly PaintBatch[],
-	baseline: ReadonlyMap<string, string | null>
-): number {
-	let count = 0;
-	for (const batch of batches) {
-		for (const seatId of batch.seat_ids) {
-			const previous = baseline.get(seatId);
-			if (previous != null && previous !== batch.price_category_id) count++;
-		}
-	}
-	return count;
 }
 
 /** Everything one editor save must persist, in the order the page applies it. */
