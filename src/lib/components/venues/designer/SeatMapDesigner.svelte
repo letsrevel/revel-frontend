@@ -240,17 +240,9 @@
 					{@const t = c.transformOf(block.id)}
 					{@const shape = c.shapes.get(block.id) ?? null}
 					{@const selected = c.selection?.kind === 'sector' && c.selection.id === block.id}
-					{@const aabb = c.worldBoundsOf(block)}
-					<text
-						x={c.px((aabb.minX + aabb.maxX) / 2)}
-						y={c.py(aabb.minY) - 6}
-						text-anchor="middle"
-						class="pointer-events-none text-[11px] font-medium {selected
-							? 'fill-primary'
-							: 'fill-muted-foreground'}"
-					>
-						{block.name}
-					</text>
+					{@const labelX = (block.width * CELL) / 2}
+					{@const labelNorm = ((t.rotation % 360) + 360) % 360}
+					{@const labelFlip = labelNorm > 90 && labelNorm < 270}
 					<g
 						data-block-id={block.id}
 						role="button"
@@ -263,6 +255,21 @@
 						onkeydown={(event) => c.onElementKeydown(event, { kind: 'sector', id: block.id })}
 					>
 						<title>{blockLabel(block)}</title>
+						<!-- Name hugs the sector's top edge and rotates with it; once the
+						     block turns past 90° the label flips 180° (about its own centre,
+						     so it never drifts) to stay right-side-up. -->
+						<text
+							x={labelX}
+							y={-10}
+							text-anchor="middle"
+							dominant-baseline="central"
+							transform={labelFlip ? `rotate(180 ${labelX} -10)` : undefined}
+							class="pointer-events-none text-[11px] font-medium {selected
+								? 'fill-primary'
+								: 'fill-muted-foreground'}"
+						>
+							{block.name}
+						</text>
 						{#if shape && shape.length >= 3}
 							<polygon
 								points={shape.map((p) => `${p.x * CELL},${p.y * CELL}`).join(' ')}
