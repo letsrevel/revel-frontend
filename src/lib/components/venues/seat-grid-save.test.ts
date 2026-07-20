@@ -5,6 +5,7 @@ import {
 	buildSeatSavePlan,
 	buildRowOrderLookup,
 	deriveAdjacencyIndex,
+	countRepricedSeats,
 	mergeUnderCoveredTiers,
 	paintTextColor,
 	readExistingPaint,
@@ -432,5 +433,42 @@ describe('mergeUnderCoveredTiers', () => {
 			{ painted: 1, under_covered_tiers: [tier('t1', [gap('b', 'B')])] }
 		]);
 		expect(first.missing_categories.map((c) => c.id)).toEqual(['a']);
+	});
+});
+
+describe('countRepricedSeats', () => {
+	const baseline = new Map<string, string | null>([
+		['s1', 'premium'],
+		['s2', 'premium'],
+		['s3', null],
+		['s4', 'standard']
+	]);
+
+	it('counts repaints between categories and unpaints of painted seats', () => {
+		expect(
+			countRepricedSeats(
+				[
+					{ price_category_id: 'standard', seat_ids: ['s1'] }, // premium -> standard
+					{ price_category_id: null, seat_ids: ['s2'] } // premium -> unpainted
+				],
+				baseline
+			)
+		).toBe(2);
+	});
+
+	it('ignores fresh paint on unpainted seats and unknown seats', () => {
+		expect(
+			countRepricedSeats([{ price_category_id: 'premium', seat_ids: ['s3', 'ghost'] }], baseline)
+		).toBe(0);
+	});
+
+	it('ignores a batch that matches the baseline (defensive: plan should not send it)', () => {
+		expect(
+			countRepricedSeats([{ price_category_id: 'standard', seat_ids: ['s4'] }], baseline)
+		).toBe(0);
+	});
+
+	it('is zero for no batches', () => {
+		expect(countRepricedSeats([], baseline)).toBe(0);
 	});
 });

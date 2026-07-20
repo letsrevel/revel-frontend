@@ -48,6 +48,31 @@ export interface PaintBatch {
 	seat_ids: string[];
 }
 
+/**
+ * Seats a save moved OUT of a category they were already painted with —
+ * repainted to another category or unpainted (#674). Both silently change
+ * what buyers are charged for every event at the venue (a repaint charges the
+ * new category's price, an unpaint drops to the tier's flat price), and both
+ * fail OPEN: coverage stays complete, so none of the under-coverage signals
+ * fire. Fresh paint on an unpainted seat is excluded — that's the normal
+ * workflow, and its hazard (under-coverage) is reported by the paint
+ * endpoint. `baseline` maps seat id → persisted category id (null =
+ * unpainted) captured BEFORE the save's mutations run.
+ */
+export function countRepricedSeats(
+	batches: readonly PaintBatch[],
+	baseline: ReadonlyMap<string, string | null>
+): number {
+	let count = 0;
+	for (const batch of batches) {
+		for (const seatId of batch.seat_ids) {
+			const previous = baseline.get(seatId);
+			if (previous != null && previous !== batch.price_category_id) count++;
+		}
+	}
+	return count;
+}
+
 /** Everything one editor save must persist, in the order the page applies it. */
 export interface SeatSavePlan {
 	creates: VenueSeatInputSchema[];

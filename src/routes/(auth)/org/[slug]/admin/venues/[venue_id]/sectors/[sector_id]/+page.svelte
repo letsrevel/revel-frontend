@@ -20,6 +20,7 @@
 		VenueSeatBulkUpdateItemSchema
 	} from '$lib/api/generated/types.gen';
 	import {
+		countRepricedSeats,
 		mergeUnderCoveredTiers,
 		type PaintBatch,
 		type SeatSavePlan
@@ -272,10 +273,33 @@
 		});
 	}
 
+	// Silent-repricing warning (#674): seats moved OUT of a category they were
+	// already painted with (repainted or unpainted) change what buyers are
+	// charged for every event at this venue — and unlike under-coverage this
+	// fails OPEN (sales continue at the new price, nothing else fires). Which
+	// tiers/events are actually affected needs BE #747; until then the wording
+	// is conditional but the seat detection is exact.
+	function warnAboutRepricedSeats(repricedCount: number) {
+		if (repricedCount === 0) return;
+		toast.warning(m['orgAdmin.seats.toast.repricedTitle'](), {
+			description: m['orgAdmin.seats.toast.repricedDesc']({ count: String(repricedCount) }),
+			duration: 12_000
+		});
+	}
+
 	// Orchestrated save: bulk create/update/delete first, then paint batches
 	// (existing seats only — new seats carry their paint in the create
 	// payload), then sector metadata. Each mutation surfaces its own toast.
 	async function handlePersist(plan: SeatSavePlan, metadata: { aisles: AisleMetadata }) {
+		// Snapshot the persisted paint BEFORE any mutation: each success
+		// invalidates the sector query, so by the time the toasts run the
+		// refetched data would already show the new paint (baseline lost).
+
+		const baselinePaint = new Map<string, string | null>(
+			(sectorQuery.data?.seats ?? [])
+				.filter((seat): seat is typeof seat & { id: string } => !!seat.id)
+				.map((seat) => [seat.id, seat.price_category_id ?? null])
+		);
 		try {
 			const bulkOps: Promise<unknown>[] = [];
 			if (plan.creates.length > 0) {
@@ -304,6 +328,7 @@
 			} else {
 				warnAboutCreatedPaint(plan);
 			}
+			warnAboutRepricedSeats(countRepricedSeats(plan.paintBatches, baselinePaint));
 		} catch {
 			// Each mutation's onError handler has already surfaced a toast;
 			// stop the sequence so later steps don't run against a failed save.
