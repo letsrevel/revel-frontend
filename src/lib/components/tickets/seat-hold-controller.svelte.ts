@@ -140,6 +140,7 @@ export class SeatHoldController {
 				if (response.error !== undefined || !response.data) {
 					throw new Error('Failed to load seat availability');
 				}
+				this.#refetchChartIfStale(response.data.chart_updated_at);
 				return response.data;
 			}
 		}));
@@ -159,6 +160,24 @@ export class SeatHoldController {
 		const added = held.filter((id) => !this.myHolds.includes(id));
 		this.myHolds = [...kept, ...added];
 		this.holdExpiresAt = this.myHolds.length > 0 ? (expiresAt ?? null) : null;
+	}
+
+	/**
+	 * Availability echoes the chart's `updated_at` (#668): a stale chart used to
+	 * mean wrong colours, with per-seat-category pricing it means wrong PRICES.
+	 * When the echo moves past the cached chart, invalidate it — TanStack
+	 * refetches the active chart query immediately, bypassing its staleTime.
+	 */
+	#refetchChartIfStale(chartUpdatedAt: string | null | undefined): void {
+		if (!chartUpdatedAt) return;
+		const chart = this.#queryClient.getQueryData<VenueChartSchema>([
+			'seating-chart',
+			this.#opts.eventId
+		]);
+		if (!chart?.updated_at || chart.updated_at === chartUpdatedAt) return;
+		void this.#queryClient.invalidateQueries({
+			queryKey: ['seating-chart', this.#opts.eventId]
+		});
 	}
 
 	#recordAnonymousHoldIfNeeded(): void {

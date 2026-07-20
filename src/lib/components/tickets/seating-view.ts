@@ -28,6 +28,8 @@ export interface SeatView {
 	isAccessible: boolean;
 	isObstructedView: boolean;
 	status: SeatStatus;
+	/** Painted price category (null = unpainted), for per-seat price lookup. */
+	priceCategoryId: string | null;
 }
 
 export interface SeatRow {
@@ -44,6 +46,12 @@ export interface BuildSeatViewsOptions {
 	myHolds: string[];
 	/** Seat ids with an in-flight hold/release request (rendered busy). */
 	pending: string[];
+	/**
+	 * Categories the tier can't sell (painted but unpriced, #668): their seats
+	 * render as blocked — checkout would refuse them, so quoting availability
+	 * would sell the buyer a 400.
+	 */
+	unavailableCategoryIds?: ReadonlySet<string>;
 }
 
 /** Map a sparse-availability value to a SeatStatus (defensive: unknown → blocked). */
@@ -63,7 +71,8 @@ function toSeatView(seat: ChartSeatSchema, status: SeatStatus): SeatView {
 		adjacencyIndex: seat.adjacency_index ?? 0,
 		isAccessible: seat.is_accessible ?? false,
 		isObstructedView: seat.is_obstructed_view ?? false,
-		status
+		status,
+		priceCategoryId: seat.price_category_id ?? null
 	};
 }
 
@@ -100,6 +109,11 @@ export function buildSeatViews(
 				status = 'pending';
 			} else if (mine.has(seat.id)) {
 				status = 'mine';
+			} else if (
+				seat.price_category_id &&
+				opts.unavailableCategoryIds?.has(seat.price_category_id)
+			) {
+				status = 'blocked';
 			} else {
 				status = statusFromAvailability(seatStatusMap[seat.id]);
 			}

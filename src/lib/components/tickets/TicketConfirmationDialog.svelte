@@ -39,6 +39,7 @@
 	import GuestNameInputs from './GuestNameInputs.svelte';
 	import PwycInput from './PwycInput.svelte';
 	import SeatAssignmentSection from './SeatAssignmentSection.svelte';
+	import { tierPriceDisplay } from './tier-price-display';
 
 	interface ConfirmPayload {
 		amount?: number;
@@ -156,18 +157,11 @@
 		return typeof tier.pwyc_max === 'string' ? parseFloat(tier.pwyc_max) : tier.pwyc_max;
 	});
 
-	// Format price display
-	const priceDisplay = $derived.by(() => {
-		if (isFree) return m['ticketConfirmationDialog.free']();
-		if (isPwyc) {
-			const maxDisplay = maxAmount
-				? `${tier.currency} ${maxAmount.toFixed(2)}`
-				: m['ticketConfirmationDialog.anyAmount']();
-			return `${tier.currency} ${minAmount.toFixed(2)} - ${maxDisplay}`;
-		}
-		const price = typeof tier.price === 'string' ? parseFloat(tier.price) : tier.price;
-		return `${tier.currency} ${price.toFixed(2)}`;
-	});
+	// Headline price: flat/PWYC/free wording, or the honest server-resolved
+	// range for category-priced tiers (#668) — see tier-price-display.ts.
+	const priceDisplay = $derived(
+		tierPriceDisplay(tier, { isFree, isPwyc, isUserChoiceSeat, minAmount, maxAmount })
+	);
 
 	// Dialog title
 	const dialogTitle = $derived.by(() => {
@@ -529,6 +523,8 @@
 				{accessibleRequired}
 				onAccessibleRequiredChange={(value) => (accessibleRequired = value)}
 				onController={(controller) => (seatController = controller)}
+				seatPricing={tier.seat_pricing ?? null}
+				currency={tier.currency}
 			/>
 
 			<!-- Quantity Selector -->

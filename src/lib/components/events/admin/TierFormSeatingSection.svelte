@@ -3,9 +3,10 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { Building2, LayoutGrid, Armchair, Tag } from '@lucide/svelte';
+	import { Building2, LayoutGrid, Armchair, Tag, TriangleAlert } from '@lucide/svelte';
 	import type {
 		SeatAssignmentMode,
+		TierPricingGapSchema,
 		VenueDetailSchema,
 		VenueSectorSchema,
 		PriceCategorySchema
@@ -16,6 +17,13 @@
 		maxTicketsPerUser: string;
 		sectorId: string | null;
 		priceCategoryId: string | null;
+		/** Per-category prices for user_choice tiers, keyed by category id (#668). */
+		categoryPrices: Record<string, string>;
+		/** Categories offered in the pricing editor (painted in sector ∪ priced). */
+		pricingCategories: PriceCategorySchema[];
+		/** Server-flagged coverage gaps (painted categories the tier doesn't price). */
+		pricingGaps: TierPricingGapSchema[];
+		currencySymbol: string;
 		canUseSeatAssignment: boolean;
 		venueId: string | null;
 		venuesLoading: boolean;
@@ -36,6 +44,10 @@
 		maxTicketsPerUser = $bindable(),
 		sectorId = $bindable(),
 		priceCategoryId = $bindable(),
+		categoryPrices = $bindable(),
+		pricingCategories,
+		pricingGaps,
+		currencySymbol,
 		canUseSeatAssignment,
 		venueId,
 		venuesLoading,
@@ -57,6 +69,18 @@
 		[...priceCategories].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
 	);
 	const selectedPriceCategory = $derived(priceCategories.find((c) => c.id === priceCategoryId));
+
+	// Per-seat-category pricing rows (user_choice, #668), in category order.
+	const sortedPricingCategories = $derived(
+		[...pricingCategories].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
+	);
+	const gapNames = $derived(pricingGaps.map((gap) => gap.name).join(', '));
+
+	// Keep money inputs dot-decimal as the user types (mirrors the VAT input).
+	function handlePriceInput(categoryId: string, event: Event): void {
+		const raw = (event.currentTarget as HTMLInputElement).value;
+		categoryPrices = { ...categoryPrices, [categoryId]: raw.replace(',', '.') };
+	}
 </script>
 
 <!-- Seating Configuration Section -->
@@ -299,6 +323,76 @@
 					<p class="text-xs text-destructive">
 						{m['tierForm.seatingConfig.venueRequiredForSeats']()}
 					</p>
+				{/if}
+
+				<!-- Per-seat-category prices (#668): seats painted with a category sell
+				     at that category's price; unpainted seats sell at the base price. -->
+				{#if sectorId && sortedPricingCategories.length > 0}
+					<div class="space-y-3 border-t border-border pt-4">
+						<div class="flex items-center gap-2 text-sm font-medium">
+							<Tag class="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+							{m['tierForm.categoryPrices.title']()}
+						</div>
+						<p class="text-xs text-muted-foreground">
+							{m['tierForm.categoryPrices.help']()}
+						</p>
+
+						{#if pricingGaps.length > 0}
+							<div
+								class="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-800 dark:bg-amber-950"
+								role="alert"
+							>
+								<p class="flex items-center gap-1.5 font-medium text-amber-800 dark:text-amber-200">
+									<TriangleAlert class="h-4 w-4 shrink-0" aria-hidden="true" />
+									{m['tierForm.categoryPrices.gapsTitle']()}
+								</p>
+								<p class="mt-1 text-amber-700 dark:text-amber-300">
+									{m['tierForm.categoryPrices.gapsDescription']({ categories: gapNames })}
+								</p>
+							</div>
+						{/if}
+
+						<div class="space-y-2">
+							{#each sortedPricingCategories as category (category.id)}
+								{#if category.id}
+									<div class="flex items-center gap-3">
+										<Label
+											for="category-price-{category.id}"
+											class="flex min-w-0 flex-1 items-center gap-1.5 font-normal"
+										>
+											<span
+												class="inline-block h-3 w-3 shrink-0 rounded-full border border-border"
+												style="background-color: {category.color}"
+												aria-hidden="true"
+											></span>
+											<span class="truncate">{category.name}</span>
+										</Label>
+										<div class="relative w-32">
+											<span
+												class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground"
+												aria-hidden="true"
+											>
+												{currencySymbol}
+											</span>
+											<Input
+												id="category-price-{category.id}"
+												type="text"
+												inputmode="decimal"
+												class="pl-8"
+												value={categoryPrices[category.id] ?? ''}
+												oninput={(e) => category.id && handlePriceInput(category.id, e)}
+												placeholder={m['tierForm.categoryPrices.placeholder']()}
+												disabled={isPending}
+											/>
+										</div>
+									</div>
+								{/if}
+							{/each}
+						</div>
+						<p class="text-xs text-muted-foreground">
+							{m['tierForm.categoryPrices.unpaintedHelp']()}
+						</p>
+					</div>
 				{/if}
 			{/if}
 

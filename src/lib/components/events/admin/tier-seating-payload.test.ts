@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { buildTierSeatingFields, retainedSectorIdForMode } from './tier-seating-payload';
+import {
+	buildCategoryPricesPayload,
+	buildTierSeatingFields,
+	retainedSectorIdForMode
+} from './tier-seating-payload';
 
 const VENUE = 'venue-1';
 const SECTOR = 'sector-1';
@@ -129,5 +133,46 @@ describe('retainedSectorIdForMode', () => {
 	it('clears everything not provably standing when the standing set is empty (chart not consulted)', () => {
 		expect(retainedSectorIdForMode('none', SECTOR, new Set())).toBeNull();
 		expect(retainedSectorIdForMode('user_choice', SECTOR, new Set())).toBe(SECTOR);
+	});
+});
+
+describe('buildCategoryPricesPayload', () => {
+	it('omits the field when nothing changed (unrelated edits cannot wipe prices)', () => {
+		expect(buildCategoryPricesPayload('user_choice', {}, {})).toBeUndefined();
+		expect(
+			buildCategoryPricesPayload('user_choice', { [CATEGORY]: '50.00' }, { [CATEGORY]: '50.00' })
+		).toBeUndefined();
+	});
+
+	it('sends the full replacement map when a price changes or appears', () => {
+		expect(buildCategoryPricesPayload('user_choice', {}, { [CATEGORY]: '50.00' })).toEqual({
+			[CATEGORY]: '50.00'
+		});
+		expect(
+			buildCategoryPricesPayload(
+				'user_choice',
+				{ [CATEGORY]: '50.00' },
+				{ [CATEGORY]: '60.00', extra: '10.00' }
+			)
+		).toEqual({ [CATEGORY]: '60.00', extra: '10.00' });
+	});
+
+	it('clears with {} when every price is emptied', () => {
+		expect(
+			buildCategoryPricesPayload('user_choice', { [CATEGORY]: '50.00' }, { [CATEGORY]: '' })
+		).toEqual({});
+	});
+
+	it('drops empty inputs and normalizes comma decimals', () => {
+		expect(
+			buildCategoryPricesPayload('user_choice', {}, { [CATEGORY]: ' 12,50 ', other: '   ' })
+		).toEqual({ [CATEGORY]: '12.50' });
+	});
+
+	it('clears a stored map when the mode leaves user_choice, and stays silent otherwise', () => {
+		expect(
+			buildCategoryPricesPayload('best_available', { [CATEGORY]: '50.00' }, { [CATEGORY]: '50.00' })
+		).toEqual({});
+		expect(buildCategoryPricesPayload('none', {}, {})).toBeUndefined();
 	});
 });

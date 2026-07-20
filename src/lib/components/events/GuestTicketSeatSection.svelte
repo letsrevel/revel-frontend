@@ -17,9 +17,15 @@
 	} from '$lib/components/tickets/seat-view-toggle';
 	import { SeatHoldController } from '$lib/components/tickets/seat-hold-controller.svelte';
 	import { holdConflictMessage } from '$lib/components/tickets/purchase-error';
+	import {
+		estimatedSeatTotal,
+		priceLegendEntries,
+		unavailableCategoryIds
+	} from '$lib/components/tickets/seat-pricing';
 	import { buildSeatViews } from '$lib/components/tickets/seating-view';
-	import type { VenueChartSchema } from '$lib/api/generated/types.gen';
+	import type { TierSeatPricingSchema, VenueChartSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { formatMoney } from '$lib/utils/format';
 
 	interface Props {
 		isUserChoiceSeat: boolean;
@@ -46,6 +52,10 @@
 		onAccessibleRequiredChange: (value: boolean) => void;
 		/** Hands the seat-hold controller up to the dialog (submit/close lifecycle). */
 		onController: (controller: SeatHoldController) => void;
+		/** Server-resolved per-category prices (user_choice tiers, #668). */
+		seatPricing?: TierSeatPricingSchema | null;
+		/** Tier currency for price display (seat_pricing carries bare decimals). */
+		currency?: string | null;
 	}
 
 	const {
@@ -62,7 +72,9 @@
 		bestAvailableError,
 		accessibleRequired,
 		onAccessibleRequiredChange,
-		onController
+		onController,
+		seatPricing = null,
+		currency = null
 	}: Props = $props();
 
 	// Best-available tiers only hold seats when the purchase reserves immediately.
@@ -135,12 +147,17 @@
 		controller.seedFromAvailability(collectValidSeatIds(chart));
 	});
 
+	// Categories the tier can't sell (painted after the tier was saved): their
+	// seats render blocked — checkout would refuse them (#668).
+	const blockedCategoryIds = $derived(unavailableCategoryIds(seatPricing));
+
 	const seatViews = $derived.by(() => {
 		if (!controller || !chart || !availability) return [];
 		return buildSeatViews(chart, availability, {
 			sectorId: tierSector?.id ?? null,
 			myHolds: controller.myHolds,
-			pending: controller.pendingSeatIds
+			pending: controller.pendingSeatIds,
+			unavailableCategoryIds: blockedCategoryIds
 		});
 	});
 
@@ -171,6 +188,17 @@
 	}
 
 	const standingCounts = $derived(standingCountsFrom(availability?.standing));
+
+	// --- per-seat-category pricing (#668) -----------------------------------
+	const legendEntries = $derived(priceLegendEntries(seatPricing, chart, tierSector?.id ?? null));
+	// Legend only earns its space when prices actually differ by seat.
+	const showPriceLegend = $derived(
+		legendEntries.length > 1 || legendEntries.some((entry) => !entry.available)
+	);
+	/** Display estimate — the authoritative amount is computed at checkout. */
+	const estimatedTotal = $derived(
+		estimatedSeatTotal(seatPricing, chart, controller?.myHolds ?? [])
+	);
 </script>
 
 {#if isUserChoiceSeat || isBestAvailableSeat}
@@ -233,6 +261,32 @@
 					<div class="flex justify-end">
 						<SeatViewToggle mode={seatViewMode} onModeChange={handleViewModeChange} />
 					</div>
+					{#if showPriceLegend}
+						<!-- Price legend: color always paired with name/price text (#668). -->
+						<ul
+							class="flex flex-wrap gap-x-4 gap-y-1 text-xs"
+							aria-label={m['seatPricing.legend']()}
+						>
+							{#each legendEntries as entry (entry.id ?? 'unpainted')}
+								<li class="flex items-center gap-1.5">
+									<span
+										class="inline-block h-3 w-3 shrink-0 rounded-full border-2 bg-background"
+										style={entry.color ? `border-color: ${entry.color}` : undefined}
+										class:border-border={!entry.color}
+										aria-hidden="true"
+									></span>
+									<span class="text-muted-foreground">
+										{entry.name ?? m['seatPricing.standardSeats']()}
+									</span>
+									{#if entry.available && entry.price != null}
+										<span class="font-medium">{formatMoney(entry.price, currency)}</span>
+									{:else}
+										<span class="text-muted-foreground">{m['seatPricing.notAvailable']()}</span>
+									{/if}
+								</li>
+							{/each}
+						</ul>
+					{/if}
 					{#if seatViewMode === 'map' && mapChart}
 						<!-- Tall map surface (the seated dialog widens for it); pan/zoom
 						     reaches anything beyond the box. -->
@@ -246,6 +300,8 @@
 								maxReached={heldCount >= quantity}
 								disabled={isSubmitting}
 								{standingCounts}
+								{seatPricing}
+								{currency}
 							/>
 						</div>
 						<!-- Hold notice for the map view (the list renders its own inside
@@ -261,7 +317,18 @@
 							onToggle={handleToggle}
 							maxReached={heldCount >= quantity}
 							disabled={isSubmitting}
+							{seatPricing}
+							{currency}
 						/>
+					{/if}
+					{#if estimatedTotal !== null}
+						<!-- Estimate only: the charged amount is computed at checkout under
+						     the tier lock (holds never lock a price, #668). -->
+						<p aria-live="polite" class="text-right text-sm font-medium">
+							{m['seatPricing.selectedSeatsTotal']({
+								total: formatMoney(estimatedTotal, currency)
+							})}
+						</p>
 					{/if}
 				{/if}
 				<!-- 409 conflict + validation errors (polite live region) -->
