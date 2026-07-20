@@ -13,6 +13,7 @@
 		organizationadminvenuesUpdateSector
 	} from '$lib/api/generated/sdk.gen';
 	import type {
+		PriceCategorySchema,
 		VenueSectorWithSeatsSchema,
 		VenueSeatInputSchema,
 		VenueSeatBulkUpdateItemSchema
@@ -191,6 +192,52 @@
 		}
 	}));
 
+	// Categories this save painted seats INTO (paint batches for existing
+	// seats + creates carrying inline paint). Erasing never opens a coverage
+	// gap — unpainted seats always sell at a tier's base price.
+	function paintedCategoryIds(plan: SeatSavePlan): string[] {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: built fresh per call and consumed synchronously
+		const ids = new Set<string>();
+		for (const batch of plan.paintBatches) {
+			if (batch.price_category_id) ids.add(batch.price_category_id);
+		}
+		for (const create of plan.creates) {
+			if (create.price_category_id) ids.add(create.price_category_id);
+		}
+		return [...ids];
+	}
+
+	// Painting a category into a sector can silently under-cover any seat-picker
+	// tier that prices this sector by category: the backend allows the paint and
+	// flags the gap on the TIER (pricing_gaps), so those seats become unsellable
+	// on that tier with no signal here. No endpoint lists the tiers referencing
+	// a venue, so this warning is advisory — it fires whenever seats were
+	// painted into a category. Precise detection (naming the affected tiers)
+	// needs backend support; tracked in revel-backend#746.
+	function warnAboutTierCoverage(plan: SeatSavePlan) {
+		const ids = paintedCategoryIds(plan);
+		if (ids.length === 0) return;
+		// Palette cache is warm whenever painting was possible; fall back to a
+		// generic phrase if it isn't.
+		const categories = queryClient.getQueryData<PriceCategorySchema[]>([
+			'org-admin',
+			organization.slug,
+			'venue',
+			venueId,
+			'price-categories'
+		]);
+		const names = ids
+			.map((id) => categories?.find((category) => category.id === id)?.name)
+			.filter((name): name is string => !!name);
+		toast.warning(m['orgAdmin.seats.toast.paintCoverageTitle'](), {
+			description: m['orgAdmin.seats.toast.paintCoverageDesc']({
+				categories:
+					names.length > 0 ? names.join(', ') : m['orgAdmin.seats.toast.paintCoverageFallback']()
+			}),
+			duration: 10_000
+		});
+	}
+
 	// Orchestrated save: bulk create/update/delete first, then paint batches
 	// (existing seats only — new seats carry their paint in the create
 	// payload), then sector metadata. Each mutation surfaces its own toast.
@@ -216,6 +263,7 @@
 			}
 
 			await updateSectorMutation.mutateAsync(metadata);
+			warnAboutTierCoverage(plan);
 		} catch {
 			// Each mutation's onError handler has already surfaced a toast;
 			// stop the sequence so later steps don't run against a failed save.

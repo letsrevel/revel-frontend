@@ -165,7 +165,6 @@
 	const initialCategoryPrices: Record<string, string> = Object.fromEntries(
 		Object.entries(tier?.category_prices ?? {}).map(([id, value]) => [id, String(value)])
 	);
-	// svelte-ignore state_referenced_locally -- deliberate init-time snapshot copy
 	let categoryPrices = $state<Record<string, string>>({ ...initialCategoryPrices });
 
 	// Fetch venues for the organization (fetch when seat assignment is not 'none' OR when we have a venue pre-selected)
@@ -275,6 +274,7 @@
 	const sectorPricingCategories = $derived.by(() => {
 		if (seatAssignmentMode !== 'user_choice' || !sectorId || !chartQuery.data) return [];
 		const sector = (chartQuery.data.sectors ?? []).find((s) => s.id === sectorId);
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: built fresh per derivation and consumed synchronously
 		const painted = new Set<string>();
 		for (const seat of sector?.seats ?? []) {
 			if (seat.is_active !== false && seat.price_category_id) {
