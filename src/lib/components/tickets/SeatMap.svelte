@@ -20,6 +20,8 @@
 	import { formatMoney } from '$lib/utils/format';
 	import { resolveSeatPrice } from './seat-pricing';
 	import { Minus, Plus, RotateCcw } from '@lucide/svelte';
+	import type { SectorTarget } from '$lib/components/events/venue-overview';
+	import SeatMapSectorTarget from './SeatMapSectorTarget.svelte';
 	import { SeatMapViewport } from './seat-map-viewport.svelte';
 	import { computeSeatMapLayout, type SeatPoint, type SectorLayout } from './seat-map-layout';
 	import {
@@ -61,6 +63,16 @@
 		seatPricing?: TierSeatPricingSchema | null;
 		/** Tier currency for price display (seat_pricing carries bare decimals). */
 		currency?: string | null;
+		/**
+		 * Map-first overview mode (#679): when set, the full map renders WHOLE
+		 * SECTORS as the click targets — a sector with a target is clickable and
+		 * keyboard-focusable (tier names + prices in its accessible name and
+		 * visible overlay), every other sector is a dimmed inert ghost. Seats are
+		 * never individually interactive in this mode.
+		 */
+		sectorTargets?: SectorTarget[] | null;
+		/** Fired with the sector id when an overview sector target is activated. */
+		onSectorSelect?: (sectorId: string) => void;
 	}
 
 	const {
@@ -74,8 +86,19 @@
 		standingCounts,
 		stage = null,
 		seatPricing = null,
-		currency = null
+		currency = null,
+		sectorTargets = null,
+		onSectorSelect
 	}: Props = $props();
+
+	// Overview mode: whole sectors are the interaction unit (see Props docs).
+	const overview = $derived(sectorTargets != null);
+	const targetsById = $derived(new Map((sectorTargets ?? []).map((t) => [t.sectorId, t])));
+
+	function handleSectorSelect(sectorId: string): void {
+		if (viewport.suppressClick) return;
+		onSectorSelect?.(sectorId);
+	}
 
 	const uid = $props.id();
 
@@ -397,14 +420,16 @@
 {/snippet}
 
 <!--
-	Ghost sector for the whole-venue context view: real footprint and seat
-	positions, but dimmed uniform dots — deliberately NOT the sold/blocked X
-	pattern, because these seats aren't unavailable, they're sold through a
-	different ticket. One inert labelled group; nothing focusable inside.
+	Ghost sector for the whole-venue context view and the map-first overview:
+	real footprint and seat positions, but dimmed uniform dots — deliberately
+	NOT the sold/blocked X pattern, because these seats aren't unavailable,
+	they're just not sold through this surface (`label` says why: "sold through
+	a different ticket" in context mode, "no tickets on sale" in overview
+	mode). One inert labelled group; nothing focusable inside.
 -->
-{#snippet ghostSector(sector: SectorLayout)}
-	<g role="img" aria-label="{sector.name}: {m['seatMap.otherTicketSector']()}" class="opacity-60">
-		<title>{sector.name}: {m['seatMap.otherTicketSector']()}</title>
+{#snippet ghostSector(sector: SectorLayout, label: string)}
+	<g role="img" aria-label="{sector.name}: {label}" class="opacity-60">
+		<title>{sector.name}: {label}</title>
 		{#if sector.kind === 'standing'}
 			<rect
 				x="0"
@@ -584,7 +609,13 @@
 
 				{#each layout.sectors as sector (sector.id)}
 					{@const aabb = worldAABB(sector)}
-					{@const ghost = activeSectorId != null && sector.id !== activeSectorId}
+					{@const target = overview ? targetsById.get(sector.id) : undefined}
+					{@const ghost = overview
+						? !target
+						: activeSectorId != null && sector.id !== activeSectorId}
+					{@const groupTransform = `translate(${canvasX(sector.transform.x)} ${canvasY(
+						sector.transform.y
+					)}) rotate(${sector.transform.rotation})`}
 					<!-- Sector name upright in canvas space (never rotated), centered
 					     above the sector's world bounding box. -->
 					<text
@@ -597,17 +628,35 @@
 					>
 						{sector.name}
 					</text>
-					<g
-						transform="translate({canvasX(sector.transform.x)} {canvasY(
-							sector.transform.y
-						)}) rotate({sector.transform.rotation})"
-					>
-						{#if ghost}
-							{@render ghostSector(sector)}
-						{:else}
-							{@render sectorBody(sector)}
-						{/if}
-					</g>
+					{#if target}
+						<SeatMapSectorTarget
+							{sector}
+							{target}
+							cell={CELL}
+							seatR={SEAT_R}
+							{groupTransform}
+							box={{
+								x: canvasX(aabb.minX),
+								y: canvasY(aabb.minY),
+								width: (aabb.maxX - aabb.minX) * CELL,
+								height: (aabb.maxY - aabb.minY) * CELL
+							}}
+							onSelect={() => handleSectorSelect(sector.id)}
+						/>
+					{:else}
+						<g transform={groupTransform}>
+							{#if ghost}
+								{@render ghostSector(
+									sector,
+									overview
+										? m['venueOverview.sectorNotForSale']()
+										: m['seatMap.otherTicketSector']()
+								)}
+							{:else}
+								{@render sectorBody(sector)}
+							{/if}
+						</g>
+					{/if}
 				{/each}
 			{/if}
 		</g>

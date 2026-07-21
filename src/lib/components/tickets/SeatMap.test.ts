@@ -67,6 +67,8 @@ interface RenderOptions {
 	interactive?: boolean;
 	activeSectorId?: string | null;
 	standingCounts?: Record<string, { capacity: number; taken: number }>;
+	sectorTargets?: Array<{ sectorId: string; label: string; lines: string[] }> | null;
+	onSectorSelect?: (sectorId: string) => void;
 }
 
 function renderMap(options: RenderOptions = {}) {
@@ -228,6 +230,76 @@ describe('SeatMap', () => {
 			).toBeInTheDocument();
 			expect(screen.queryByRole('button', { name: /Seat C1/ })).not.toBeInTheDocument();
 			expect(onToggle).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('map-first overview mode (#679)', () => {
+		const overviewChart: VenueChartSchema = {
+			venue_id: 'venue-1',
+			venue_name: 'Test Hall',
+			updated_at: '2026-07-18T00:00:00Z',
+			price_categories: [],
+			sectors: [
+				{ id: 'sec-1', name: 'Stalls', kind: 'seated', seats: [chartSeat('a1')] },
+				{
+					id: 'sec-2',
+					name: 'Balcony',
+					kind: 'seated',
+					seats: [chartSeat('c1', { id: 'c1' })],
+					metadata: { transform: { x: 12, y: 0, rotation: 30 } }
+				}
+			]
+		};
+		const targets = [
+			{
+				sectorId: 'sec-1',
+				label: 'Stalls: Front, EUR 20.00; Front Best, EUR 20.00 - EUR 45.00',
+				lines: ['Front · EUR 20.00', 'Front Best · EUR 20.00 - EUR 45.00']
+			}
+		];
+
+		function renderOverview() {
+			const onSectorSelect = vi.fn();
+			renderMap({
+				chart: overviewChart,
+				seats: [],
+				interactive: false,
+				sectorTargets: targets,
+				onSectorSelect
+			});
+			return onSectorSelect;
+		}
+
+		it('renders a sold sector as a focusable button with tiers + prices in its name and overlay', () => {
+			renderOverview();
+			const sector = screen.getByRole('button', {
+				name: 'Stalls: Front, EUR 20.00; Front Best, EUR 20.00 - EUR 45.00'
+			});
+			expect(sector).toHaveAttribute('tabindex', '0');
+			// Visible overlay repeats the tier/price info (never color alone).
+			expect(screen.getByText('Front · EUR 20.00')).toBeInTheDocument();
+			expect(screen.getByText('Front Best · EUR 20.00 - EUR 45.00')).toBeInTheDocument();
+			// No seat is individually interactive in overview mode.
+			expect(screen.queryByRole('button', { name: /Seat/ })).not.toBeInTheDocument();
+		});
+
+		it('fires onSectorSelect on click and on Enter/Space', async () => {
+			const onSectorSelect = renderOverview();
+			const sector = screen.getByRole('button', { name: /^Stalls:/ });
+			await fireEvent.click(sector);
+			expect(onSectorSelect).toHaveBeenCalledExactlyOnceWith('sec-1');
+			await fireEvent.keyDown(sector, { key: 'Enter' });
+			expect(onSectorSelect).toHaveBeenCalledTimes(2);
+			await fireEvent.keyDown(sector, { key: ' ' });
+			expect(onSectorSelect).toHaveBeenCalledTimes(3);
+		});
+
+		it('renders a sector sold by no purchasable tier as an inert not-for-sale ghost', () => {
+			const onSectorSelect = renderOverview();
+			// NOT the context-mode "different ticket" wording, and not clickable.
+			expect(screen.getByRole('img', { name: 'Balcony: no tickets on sale' })).toBeInTheDocument();
+			expect(screen.queryByRole('button', { name: /^Balcony/ })).not.toBeInTheDocument();
+			expect(onSectorSelect).not.toHaveBeenCalled();
 		});
 	});
 

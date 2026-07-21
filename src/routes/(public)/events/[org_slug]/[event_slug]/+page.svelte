@@ -22,6 +22,8 @@
 	import MyTicketModal from '$lib/components/tickets/MyTicketModal.svelte';
 	import GuestRsvpDialog from '$lib/components/events/GuestRsvpDialog.svelte';
 	import GuestTicketDialog from '$lib/components/events/GuestTicketDialog.svelte';
+	import VenueOverviewDialog from '$lib/components/events/VenueOverviewDialog.svelte';
+	import { eventHasSeatingMap } from '$lib/components/events/venue-overview';
 	import EventConfirmationBanners from '$lib/components/events/EventConfirmationBanners.svelte';
 	import { createCheckoutController } from '$lib/components/events/event-checkout-controller.svelte';
 	import { SeoHead } from '$lib/seo';
@@ -144,8 +146,13 @@
 	let showMyTicketModal = $state(false);
 	let showGuestRsvpDialog = $state(false);
 	let showGuestTicketDialog = $state(false);
+	let showVenueOverview = $state(false);
 	let selectedTierForGuest = $state<TierSchemaWithId | null>(null);
 	let preSelectedTier = $state<TierSchemaWithId | null>(null);
+
+	// Map-first entry point (#679): only when a purchasable tier sells a venue
+	// sector (the chart itself is fetched lazily when the dialog opens).
+	const hasSeatingMap = $derived(eventHasSeatingMap(ticketTiers, tierRemainingTickets));
 
 	// Handle modals
 	function openTicketTierModal() {
@@ -413,6 +420,11 @@
 						timezone={event.timezone}
 						onSelectTier={handleSelectTier}
 						onGuestTierClick={openGuestTicketDialog}
+						onViewSeatingMap={hasSeatingMap
+							? () => {
+									showVenueOverview = true;
+								}
+							: undefined}
 					/>
 				{/if}
 
@@ -626,6 +638,20 @@
 		acceptsNotes={event.accept_rsvp_notes}
 		onClose={closeGuestRsvpDialog}
 		onSuccess={handleGuestAttendanceSuccess}
+	/>
+{/if}
+
+<!-- Whole-venue seating overview (map-first tier selection, #679) -->
+{#if hasSeatingMap}
+	<VenueOverviewDialog
+		bind:open={showVenueOverview}
+		eventId={event.id}
+		tiers={ticketTiers}
+		isAuthenticated={data.isAuthenticated}
+		canAttendWithoutLogin={event.can_attend_without_login}
+		{tierRemainingTickets}
+		onSelectTier={handleSelectTier}
+		onGuestTierClick={openGuestTicketDialog}
 	/>
 {/if}
 
