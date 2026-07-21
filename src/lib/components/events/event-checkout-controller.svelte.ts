@@ -13,6 +13,7 @@ import type {
 	TicketPurchaseItem,
 	BuyerBillingInfoSchema
 } from '$lib/api/generated/types.gen';
+import { seatingBodyFields, type SeatingCheckoutFields } from '$lib/types/tickets';
 import type { EventTicketSchemaActual, UserEventStatus } from '$lib/utils/eligibility';
 import {
 	createReservationRetry,
@@ -40,6 +41,8 @@ interface CheckoutParams {
 	tickets: TicketPurchaseItem[];
 	discountCode?: string;
 	billingInfo?: BuyerBillingInfoSchema;
+	/** Best-available seating fields (zone + accessible opt-in), when seated. */
+	seating?: SeatingCheckoutFields;
 }
 
 interface PwycCheckoutParams extends CheckoutParams {
@@ -215,11 +218,12 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 			const fingerprint = JSON.stringify(params);
 			const resumed = await resumeHeldCheckout(fingerprint);
 			if (resumed) return resumed;
-			const { tierId, tickets, discountCode, billingInfo } = params;
+			const { tierId, tickets, discountCode, billingInfo, seating } = params;
 			const body: BatchCheckoutPayload = {
 				tickets,
 				discount_code: discountCode || undefined,
-				billing_info: billingInfo || undefined
+				billing_info: billingInfo || undefined,
+				...seatingBodyFields(seating)
 			};
 			const response = await eventpublicticketsTicketCheckout({
 				path: { event_id: eventId, tier_id: tierId },
@@ -239,11 +243,12 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 			const fingerprint = JSON.stringify(params);
 			const resumed = await resumeHeldCheckout(fingerprint);
 			if (resumed) return resumed;
-			const { tierId, tickets, discountCode, billingInfo } = params;
+			const { tierId, tickets, discountCode, billingInfo, seating } = params;
 			const body: BatchCheckoutPayload = {
 				tickets,
 				discount_code: discountCode || undefined,
-				billing_info: billingInfo || undefined
+				billing_info: billingInfo || undefined,
+				...seatingBodyFields(seating)
 			};
 			const response = await eventpublicticketsTicketCheckout({
 				path: { event_id: eventId, tier_id: tierId },
@@ -263,11 +268,12 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 			const fingerprint = JSON.stringify(params);
 			const resumed = await resumeHeldCheckout(fingerprint);
 			if (resumed) return resumed;
-			const { tierId, tickets, pricePerTicket, billingInfo } = params;
+			const { tierId, tickets, pricePerTicket, billingInfo, seating } = params;
 			const body: BatchCheckoutPwycPayload = {
 				tickets,
 				price_per_ticket: pricePerTicket,
-				billing_info: billingInfo || undefined
+				billing_info: billingInfo || undefined,
+				...seatingBodyFields(seating)
 			};
 			const response = await eventpublicticketsTicketPwycCheckout({
 				path: { event_id: eventId, tier_id: tierId },
@@ -300,14 +306,16 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 		tierId: string,
 		tickets?: TicketPurchaseItem[],
 		discountCode?: string,
-		billingInfo?: BuyerBillingInfoSchema
+		billingInfo?: BuyerBillingInfoSchema,
+		seating?: SeatingCheckoutFields
 	) {
 		const ticketItems = tickets || [{ guest_name: getDefaultGuestName() }];
 		await claimTicketMutation.mutateAsync({
 			tierId,
 			tickets: ticketItems,
 			discountCode,
-			billingInfo
+			billingInfo,
+			seating
 		});
 	}
 
@@ -326,7 +334,8 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 		amount?: number,
 		tickets?: TicketPurchaseItem[],
 		discountCode?: string,
-		billingInfo?: BuyerBillingInfoSchema
+		billingInfo?: BuyerBillingInfoSchema,
+		seating?: SeatingCheckoutFields
 	) {
 		const ticketItems = tickets || [{ guest_name: getDefaultGuestName() }];
 
@@ -336,7 +345,8 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 				tierId,
 				tickets: ticketItems,
 				pricePerTicket: amount,
-				billingInfo
+				billingInfo,
+				seating
 			});
 		} else {
 			// Direct checkout for fixed-price tiers
@@ -344,7 +354,8 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 				tierId,
 				tickets: ticketItems,
 				discountCode,
-				billingInfo
+				billingInfo,
+				seating
 			});
 		}
 	}
@@ -366,13 +377,14 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 		amount?: number,
 		tickets?: TicketPurchaseItem[],
 		discountCode?: string,
-		billingInfo?: BuyerBillingInfoSchema
+		billingInfo?: BuyerBillingInfoSchema,
+		seating?: SeatingCheckoutFields
 	): boolean {
 		const ticketItems = tickets || [{ guest_name: getDefaultGuestName() }];
 		const params =
 			isPwyc && amount !== undefined
-				? { tierId, tickets: ticketItems, pricePerTicket: amount, billingInfo }
-				: { tierId, tickets: ticketItems, discountCode, billingInfo };
+				? { tierId, tickets: ticketItems, pricePerTicket: amount, billingInfo, seating }
+				: { tierId, tickets: ticketItems, discountCode, billingInfo, seating };
 		return reservationRetry.wouldResume(JSON.stringify(params));
 	}
 

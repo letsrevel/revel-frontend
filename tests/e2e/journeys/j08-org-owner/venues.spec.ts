@@ -94,8 +94,10 @@ test.describe('J19.2 price categories @p2', () => {
 
 		// Arrange (API): throwaway org + venue; a category ("Velvet") that a
 		// best-available tier on a fresh event references, arming the delete
-		// guard. Tier creation only needs the category to exist on a venue of
-		// the event's org — painted seats are irrelevant for validation.
+		// guard. Pricing convergence: the reference lives in the tier's
+		// category_prices map (the guard checks `category_prices__has_key`), and
+		// a seated tier needs a sector — so paint a small sector with the
+		// category and bind the tier to it.
 		const org = await createOrganization();
 		const api = await ApiClient.login(org.owner.email, org.owner.password);
 		const venueName = uniqueName('Venue');
@@ -103,10 +105,24 @@ test.describe('J19.2 price categories @p2', () => {
 			name: venueName
 		});
 		const velvet = await createPriceCategory(org.slug, venue.id, { name: 'Velvet' }, org.owner);
+		const guardSector = await api.post<{ id: string }>(
+			`/api/organization-admin/${org.slug}/venues/${venue.id}/sectors`,
+			{
+				name: 'Velvet Floor',
+				kind: 'seated',
+				seats: Array.from({ length: 2 }, (_, i) => ({
+					label: `A${i + 1}`,
+					row: 'A',
+					number: i + 1,
+					price_category_id: velvet.id
+				}))
+			}
+		);
 		const event = await createTicketedEvent({
 			owner: org.owner,
 			orgSlug: org.slug,
-			freeTier: false
+			freeTier: false,
+			event: { venue_id: venue.id }
 		});
 		await createTicketTier(
 			event.id,
@@ -115,7 +131,9 @@ test.describe('J19.2 price categories @p2', () => {
 				payment_method: 'free',
 				price: '0.00',
 				seat_assignment_mode: 'best_available',
-				price_category_id: velvet.id
+				venue_id: venue.id,
+				sector_id: guardSector.id,
+				category_prices: { [velvet.id]: '0.00' }
 			},
 			org.owner
 		);

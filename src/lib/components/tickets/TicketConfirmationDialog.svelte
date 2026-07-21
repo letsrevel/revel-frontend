@@ -40,12 +40,18 @@
 	import PwycInput from './PwycInput.svelte';
 	import SeatAssignmentSection from './SeatAssignmentSection.svelte';
 	import { tierPriceDisplay } from './tier-price-display';
+	import { isMappedBestAvailable } from './seat-zones';
+	import { pwycErrorMessage, validatePwycAmount } from './pwyc-validation';
 
 	interface ConfirmPayload {
 		amount?: number;
 		tickets: TicketPurchaseItem[];
 		discountCode?: string;
 		billingInfo?: BuyerBillingInfoSchema;
+		/** Buyer's zone on a MAPPED best-available tier (mandatory there, absent otherwise). */
+		priceCategoryId?: string;
+		/** Accessible-seating opt-in (best-available tiers). */
+		accessibleRequired?: boolean;
 	}
 
 	interface Props {
@@ -139,6 +145,10 @@
 	// best_available options/errors
 	let accessibleRequired = $state(false);
 	let bestAvailableError = $state('');
+	// Mapped best-available tier: the buyer must name a zone — no default, even
+	// with a single zone (the request always carries an explicit id).
+	const mappedBestAvailable = $derived(isBestAvailable && isMappedBestAvailable(tier));
+	let selectedZoneId = $state<string | null>(null);
 	let isHoldingSeats = $state(false);
 	// Set when the purchase path took over the holds (they must NOT be released)
 	let purchaseHandedOff = false;
@@ -158,10 +168,8 @@
 	});
 
 	// Headline price: flat/PWYC/free wording, or the honest server-resolved
-	// range for category-priced tiers (#668) — see tier-price-display.ts.
-	const priceDisplay = $derived(
-		tierPriceDisplay(tier, { isFree, isPwyc, isUserChoiceSeat, minAmount, maxAmount })
-	);
+	// range for category-priced tiers (either mode) — see tier-price-display.ts.
+	const priceDisplay = $derived(tierPriceDisplay(tier, { isFree, isPwyc, minAmount, maxAmount }));
 
 	// Dialog title
 	const dialogTitle = $derived.by(() => {
@@ -212,24 +220,17 @@
 	// Check if all guest names are filled (at least the first character)
 	const allGuestNamesFilled = $derived(guestNames.every((name) => name.trim().length > 0));
 
-	// PWYC validation state for canSubmit and UI hints
-	const pwycValidation = $derived.by(() => {
-		if (!isPwyc) return { valid: true, error: null as string | null };
-		const trimmed = pwycAmount.trim();
-		if (!trimmed) return { valid: false, error: 'empty' as const };
-		const value = parseFloat(trimmed);
-		if (isNaN(value)) return { valid: false, error: 'invalid' as const };
-		if (value < minAmount) return { valid: false, error: 'below_min' as const };
-		if (maxAmount !== null && value > maxAmount)
-			return { valid: false, error: 'above_max' as const };
-		return { valid: true, error: null };
-	});
+	// PWYC validation state for canSubmit and UI hints (see pwyc-validation.ts)
+	const pwycValidation = $derived(
+		isPwyc ? validatePwycAmount(pwycAmount, minAmount, maxAmount) : { valid: true, error: null }
+	);
 
 	// Check if form is valid for submission
 	const canSubmit = $derived.by(() => {
 		if (showGuestNames && !allGuestNamesFilled) return false;
 		if (isPwyc && !pwycValidation.valid) return false;
 		if (isUserChoiceSeat && heldSeatIds.length !== quantity) return false;
+		if (mappedBestAvailable && !selectedZoneId) return false;
 		return true;
 	});
 
@@ -248,6 +249,7 @@
 			guestNames = [userName || ''];
 			accessibleRequired = false;
 			bestAvailableError = '';
+			selectedZoneId = null;
 			discountResult = null;
 			appliedDiscountCode = '';
 			discountCodeInputRef?.resetInput(initialDiscountCode, !!initialDiscountCode);
@@ -306,18 +308,7 @@
 	// Set PWYC error message based on validation state
 	function setPwycErrorMessage(): boolean {
 		if (!isPwyc || pwycValidation.valid) return true;
-		const errorMap: Record<string, string> = {
-			empty: m['ticketConfirmationDialog.errorEnterAmount'](),
-			invalid: m['ticketConfirmationDialog.errorValidNumber'](),
-			below_min: m['ticketConfirmationDialog.errorMinAmount']({
-				amount: `${tier.currency} ${minAmount.toFixed(2)}`
-			}),
-			above_max: m['ticketConfirmationDialog.errorMaxAmount']({
-				amount: `${tier.currency} ${maxAmount?.toFixed(2)}`
-			})
-		};
-		pwycError =
-			errorMap[pwycValidation.error ?? ''] ?? m['ticketConfirmationDialog.errorInvalidAmount']();
+		pwycError = pwycErrorMessage(pwycValidation.error, tier.currency, minAmount, maxAmount);
 		return false;
 	}
 
@@ -380,6 +371,15 @@
 		if (appliedDiscountCode && discountResult?.valid) payload.discountCode = appliedDiscountCode;
 		const billingInfo = billingSection?.getBillingInfo();
 		if (billingInfo) payload.billingInfo = billingInfo;
+		if (isBestAvailable) {
+			// Mapped tier: the zone is mandatory and rides on hold AND checkout
+			// (the backend 409s on a mismatch between the held block and checkout).
+			if (mappedBestAvailable) {
+				if (!selectedZoneId) return;
+				payload.priceCategoryId = selectedZoneId;
+			}
+			payload.accessibleRequired = accessibleRequired;
+		}
 
 		// best_available: hold the server-picked adjacent block BEFORE checkout
 		// (the purchase consumes these live holds; tickets carry no seat_id) —
@@ -394,7 +394,8 @@
 				const result = await seatController.holdBestAvailable(
 					tier.id,
 					quantity,
-					accessibleRequired
+					accessibleRequired,
+					mappedBestAvailable ? selectedZoneId : null
 				);
 				if (!result.ok) {
 					bestAvailableError = bestAvailableFailureMessage(result);
@@ -522,6 +523,8 @@
 				{bestAvailableError}
 				{accessibleRequired}
 				onAccessibleRequiredChange={(value) => (accessibleRequired = value)}
+				{selectedZoneId}
+				onZoneChange={(zoneId) => (selectedZoneId = zoneId)}
 				onController={(controller) => (seatController = controller)}
 				seatPricing={tier.seat_pricing ?? null}
 				currency={tier.currency}
@@ -624,6 +627,7 @@
 					discountCode={appliedDiscountCode && discountResult?.valid
 						? appliedDiscountCode
 						: undefined}
+					priceCategoryId={mappedBestAvailable ? selectedZoneId : null}
 					isAuthenticated={!!authStore.accessToken}
 					authToken={authStore.accessToken}
 					disabled={isProcessing}
@@ -699,6 +703,9 @@
 							: m['ticketConfirmationDialog.hintSelectMoreSeats']({
 									count: quantity - heldSeatIds.length
 								})}
+					{:else if mappedBestAvailable && !selectedZoneId}
+						<AlertCircle class="mr-1 inline-block h-4 w-4" />
+						{m['seatZones.selectHint']()}
 					{/if}
 				</p>
 			{/if}

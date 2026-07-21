@@ -115,19 +115,27 @@ function isSeatedTier(tier: TicketTierDetailSchema): boolean {
 }
 
 /**
- * Does a seated tier apply to a seat in the given sector/category? Each
- * constraint the tier declares (sector, price_category) must match; a tier
- * that declares neither is venue-wide and applies to any seat.
+ * Does a seated tier apply to a seat in the given sector/category? The
+ * declared sector must match, and with a non-empty `category_prices` map
+ * (the single pricing mechanism, both modes) the seat's painted category
+ * decides: an unpriced painted category is not sellable through the tier
+ * (user_choice: a coverage gap checkout refuses; best_available: not one of
+ * the tier's zones), and an UNPAINTED seat is sellable only outside mapped
+ * best_available (there the pool is filtered to the chosen zone, so an
+ * unpainted seat is never a candidate).
  */
 function tierMatchesSeat(
 	tier: TicketTierDetailSchema,
 	sectorId: string | null,
 	categoryId: string | null
 ): boolean {
-	const tierCategory = tier.price_category?.id ?? null;
 	const tierSector = tier.sector?.id ?? null;
-	if (tierCategory !== null && tierCategory !== categoryId) return false;
 	if (tierSector !== null && tierSector !== sectorId) return false;
+	const priced = tier.category_prices ?? {};
+	if (Object.keys(priced).length > 0) {
+		if (categoryId === null) return tier.seat_assignment_mode !== 'best_available';
+		return categoryId in priced;
+	}
 	return true;
 }
 

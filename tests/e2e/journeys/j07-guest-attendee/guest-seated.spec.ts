@@ -207,10 +207,12 @@ test.describe('J7 guest seated checkout @p2', () => {
 // assign from the accessible pool. This asserts the accessible checkbox and the
 // email-assignment notice render together in the guest dialog.
 //
-// Isolation: throwaway org + venue + price category; a guest-enabled event on
-// that org with a single best_available FREE tier (best_available requires a
-// price category — backend TicketTierCreateSchema validator). Nothing seeded is
-// touched, and no seats are held (best_available never holds at the email flow).
+// Isolation: throwaway org + venue + painted sector; a guest-enabled event on
+// that org with a single MAPPED best_available FREE tier (pricing convergence:
+// a seated tier requires a sector, and the tier's category_prices keys define
+// its zones — so the guest dialog must also show the mandatory zone picker,
+// auto-selected for a single zone). Nothing seeded is touched, and no seats
+// are held (best_available never holds at the email flow).
 test.describe('J7 guest best-available accessible @p2', () => {
 	test('best_available free guest tier shows the accessible opt-in and email-assignment notice', async ({
 		page
@@ -223,6 +225,21 @@ test.describe('J7 guest best-available accessible @p2', () => {
 			name: uniqueName('Venue')
 		});
 		const category = await createPriceCategory(org.slug, venue.id, { name: 'Galleria' }, org.owner);
+		// A seated tier of either mode now requires a sector; paint its seats so
+		// the tier's single zone has a real pool.
+		const sector = await api.post<{ id: string; seats: Array<{ id: string }> }>(
+			`/api/organization-admin/${org.slug}/venues/${venue.id}/sectors`,
+			{
+				name: 'Stalls',
+				kind: 'seated',
+				seats: Array.from({ length: 4 }, (_, i) => ({
+					label: `A${i + 1}`,
+					row: 'A',
+					number: i + 1,
+					price_category_id: category.id
+				}))
+			}
+		);
 		const event = await createTicketedEvent({
 			owner: org.owner,
 			orgSlug: org.slug,
@@ -240,8 +257,9 @@ test.describe('J7 guest best-available accessible @p2', () => {
 				price: '0.00',
 				price_type: 'fixed',
 				seat_assignment_mode: 'best_available',
-				price_category_id: category.id,
 				venue_id: venue.id,
+				sector_id: sector.id,
+				category_prices: { [category.id]: '0.00' },
 				max_tickets_per_user: 1
 			},
 			org.owner
@@ -270,5 +288,13 @@ test.describe('J7 guest best-available accessible @p2', () => {
 				'Your seats will be assigned automatically when you confirm your email.'
 			)
 		).toBeVisible();
+
+		// Mapped tier (pricing convergence): the mandatory zone picker renders in
+		// the guest dialog too, and the single zone auto-selects once the
+		// availability snapshot loads (the request still names it explicitly).
+		await expect(guestDialog.getByText('Seating zone', { exact: true })).toBeVisible();
+		await expect(guestDialog.getByRole('radio', { name: /Galleria/ })).toBeChecked({
+			timeout: 8_000
+		});
 	});
 });

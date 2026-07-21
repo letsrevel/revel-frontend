@@ -6,6 +6,7 @@
 		TierRemainingTicketsSchema
 	} from '$lib/api/generated/types.gen';
 	import { hasTierId } from '$lib/types/tickets';
+	import { tierPriceDisplay } from './tier-price-display';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
 	import { Ticket, Clock, Users, AlertCircle } from '@lucide/svelte';
@@ -103,8 +104,9 @@
 			});
 		}
 
-		const price = typeof tier.price === 'string' ? parseFloat(tier.price) : tier.price;
-		return `${tier.currency} ${price.toFixed(2)}`;
+		// Category-priced tiers (either seated mode) show the honest server-resolved
+		// range; flat tiers keep their single price — see tier-price-display.ts.
+		return tierPriceDisplay(tier, { isFree: false, isPwyc: false, minAmount: 0, maxAmount: null });
 	});
 
 	// Check if sales are active

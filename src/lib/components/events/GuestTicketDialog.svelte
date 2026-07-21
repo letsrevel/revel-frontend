@@ -31,6 +31,13 @@
 	import type { SeatAssignmentMode, TicketPurchaseItem } from '$lib/api/generated/types.gen';
 	import CheckoutBillingSection from '$lib/components/tickets/CheckoutBillingSection.svelte';
 	import { bestAvailableFailureMessage } from '$lib/components/tickets/purchase-error';
+	import { isMappedBestAvailable } from '$lib/components/tickets/seat-zones';
+	import {
+		guestCheckoutBody,
+		guestCheckoutFingerprint,
+		guestPwycCheckoutBody,
+		type GuestCheckoutArgs
+	} from './guest-checkout-payload';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import GuestTicketSuccess from './GuestTicketSuccess.svelte';
 	import GuestTicketTierInfo from './GuestTicketTierInfo.svelte';
@@ -116,6 +123,9 @@
 	let seatSelectionError = $state('');
 	let accessibleRequired = $state(false);
 	let bestAvailableError = $state('');
+	// Mapped best-available tier: the buyer must name a zone — no default, even
+	// with a single zone; it rides on every hold/checkout request.
+	let selectedZoneId = $state<string | null>(null);
 	// Set when checkout took over the holds (they must NOT be released on close):
 	// online reserve consumes them; the email flow keeps them for confirmation.
 	let purchaseHandedOff = false;
@@ -129,6 +139,7 @@
 	const seatAssignmentMode = $derived<SeatAssignmentMode>(tier.seat_assignment_mode ?? 'none');
 	const isUserChoiceSeat = $derived(seatAssignmentMode === 'user_choice');
 	const isBestAvailableSeat = $derived(seatAssignmentMode === 'best_available');
+	const mappedBestAvailable = $derived(isBestAvailableSeat && isMappedBestAvailable(tier));
 	const hasSeatSection = $derived(isUserChoiceSeat || isBestAvailableSeat);
 
 	// Venue/sector info for display
@@ -279,6 +290,7 @@
 			seatSelectionError = '';
 			accessibleRequired = false;
 			bestAvailableError = '';
+			selectedZoneId = null;
 			// Closed without handing off to checkout: release the server holds
 			// (fire-and-forget — never block closing; they expire anyway).
 			const controller = untrack(() => seatController);
@@ -414,6 +426,12 @@
 		seatSelectionError = '';
 		bestAvailableError = '';
 
+		// Mapped best-available tier: the zone is mandatory (single-zone included).
+		if (mappedBestAvailable && !selectedZoneId) {
+			bestAvailableError = m['seatZones.selectHint']();
+			return;
+		}
+
 		isSubmitting = true;
 		errorMessage = null;
 
@@ -444,19 +462,19 @@
 			const billingInfo = billingSection?.getBillingInfo() || undefined;
 			const pwycNumber = parseFloat(formData.pwyc || '0');
 
-			// The full purchase, serialized — the key that decides whether a
-			// resubmit may resume a held reservation or must reserve afresh.
-			// accessible_required is part of it: toggling it must re-hold a block
-			// from the right pool instead of resuming the old reservation.
-			const fingerprint = JSON.stringify({
+			// Fingerprint + bodies come from guest-checkout-payload.ts; the zone is
+			// set only on a mapped best-available tier (uninvited zones are 400s).
+			const checkoutArgs: GuestCheckoutArgs = {
 				email: formData.email,
-				first_name: formData.first_name,
-				last_name: formData.last_name,
+				firstName: formData.first_name,
+				lastName: formData.last_name,
 				tickets,
-				billing_info: billingInfo,
-				accessible_required: accessibleRequired,
-				price_per_ticket: isPwyc ? pwycNumber : undefined
-			});
+				billingInfo,
+				accessibleRequired,
+				priceCategoryId: mappedBestAvailable ? (selectedZoneId ?? undefined) : undefined,
+				pricePerTicket: isPwyc ? pwycNumber : undefined
+			};
+			const fingerprint = guestCheckoutFingerprint(checkoutArgs);
 
 			// Retry after a partial failure (#464): an identical resubmit replays
 			// only the idempotent Stripe-session step; an expired reservation or
@@ -482,7 +500,8 @@
 				const holdResult = await seatController.holdBestAvailable(
 					tier.id,
 					quantity,
-					accessibleRequired
+					accessibleRequired,
+					checkoutArgs.priceCategoryId ?? null
 				);
 				if (!holdResult.ok) {
 					bestAvailableError = bestAvailableFailureMessage(holdResult);
@@ -490,42 +509,15 @@
 				}
 			}
 
-			let response;
-
-			if (isPwyc) {
-				// PWYC checkout
-				response = await eventpublicguestGuestTicketPwycCheckout({
-					path: { event_id: eventId, tier_id: tier.id },
-					body: {
-						email: formData.email,
-						first_name: formData.first_name,
-						last_name: formData.last_name,
-						tickets,
-						price_per_ticket: pwycNumber,
-						billing_info: billingInfo,
-						// Whole-checkout accessible-seating opt-in (best_available):
-						// online flows pair it with the held block; email flows embed
-						// it in the confirmation token for confirm-time assignment.
-						accessible_required: accessibleRequired
-					}
-				});
-			} else {
-				// Fixed-price checkout
-				response = await eventpublicguestGuestTicketCheckout({
-					path: { event_id: eventId, tier_id: tier.id },
-					body: {
-						email: formData.email,
-						first_name: formData.first_name,
-						last_name: formData.last_name,
-						tickets,
-						billing_info: billingInfo,
-						// Whole-checkout accessible-seating opt-in (best_available):
-						// online flows pair it with the held block; email flows embed
-						// it in the confirmation token for confirm-time assignment.
-						accessible_required: accessibleRequired
-					}
-				});
-			}
+			const response = isPwyc
+				? await eventpublicguestGuestTicketPwycCheckout({
+						path: { event_id: eventId, tier_id: tier.id },
+						body: guestPwycCheckoutBody(checkoutArgs)
+					})
+				: await eventpublicguestGuestTicketCheckout({
+						path: { event_id: eventId, tier_id: tier.id },
+						body: guestCheckoutBody(checkoutArgs)
+					});
 
 			// Check for API error (400, 422, etc.) - client doesn't throw on HTTP errors
 			if (response.error) {
@@ -684,6 +676,8 @@
 							{bestAvailableError}
 							{accessibleRequired}
 							onAccessibleRequiredChange={(value) => (accessibleRequired = value)}
+							{selectedZoneId}
+							onZoneChange={(zoneId) => (selectedZoneId = zoneId)}
 							onController={(controller) => (seatController = controller)}
 							seatPricing={tier.seat_pricing ?? null}
 							currency={tier.currency}
@@ -717,6 +711,7 @@
 							price={tier.price}
 							{isPwyc}
 							pwycAmount={isPwyc ? formData.pwyc : undefined}
+							priceCategoryId={mappedBestAvailable ? selectedZoneId : null}
 							isAuthenticated={false}
 							disabled={isSubmitting}
 						/>

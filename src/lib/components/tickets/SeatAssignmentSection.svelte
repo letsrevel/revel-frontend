@@ -10,7 +10,8 @@
 	import { formatMoney } from '$lib/utils/format';
 	import { SeatHoldController } from './seat-hold-controller.svelte';
 	import { holdConflictMessage } from './purchase-error';
-	import { estimatedSeatTotal, priceLegendEntries, unavailableCategoryIds } from './seat-pricing';
+	import { estimatedSeatTotal, priceLegendEntries, sellableCategoryIds } from './seat-pricing';
+	import { zoneOptions } from './seat-zones';
 	import { buildSeatViews } from './seating-view';
 	import SeatSelector from './SeatSelector.svelte';
 	import SeatMap from './SeatMap.svelte';
@@ -37,9 +38,12 @@
 		bestAvailableError: string;
 		accessibleRequired: boolean;
 		onAccessibleRequiredChange: (value: boolean) => void;
+		/** Buyer's chosen zone on a MAPPED best-available tier (mandatory there). */
+		selectedZoneId?: string | null;
+		onZoneChange?: (zoneId: string | null) => void;
 		/** Hands the seat-hold controller up to the dialog (confirm/close lifecycle). */
 		onController: (controller: SeatHoldController) => void;
-		/** Server-resolved per-category prices (user_choice tiers, #668). */
+		/** Server-resolved zone→price legend (category-priced tiers, either mode). */
 		seatPricing?: TierSeatPricingSchema | null;
 		/** Tier currency for price display (seat_pricing carries bare decimals). */
 		currency?: string | null;
@@ -57,6 +61,8 @@
 		bestAvailableError,
 		accessibleRequired,
 		onAccessibleRequiredChange,
+		selectedZoneId = null,
+		onZoneChange = undefined,
 		onController,
 		seatPricing = null,
 		currency = null
@@ -131,9 +137,10 @@
 		controller.seedFromAvailability(collectValidSeatIds(chart));
 	});
 
-	// Categories the tier can't sell (painted after the tier was saved): their
-	// seats render blocked — checkout would refuse them (#668).
-	const blockedCategoryIds = $derived(unavailableCategoryIds(seatPricing));
+	// ALLOW-list of categories this tier sells (null = flat tier): painted
+	// seats outside it render blocked — including categories painted after the
+	// tier payload was fetched — checkout would refuse them with a 400.
+	const sellableIds = $derived(sellableCategoryIds(seatPricing));
 
 	const seatViews = $derived.by(() => {
 		if (!controller || !chart || !availability) return [];
@@ -141,7 +148,7 @@
 			sectorId: tierSector?.id ?? null,
 			myHolds: controller.myHolds,
 			pending: controller.pendingSeatIds,
-			unavailableCategoryIds: blockedCategoryIds
+			sellableCategoryIds: sellableIds
 		});
 	});
 
@@ -172,6 +179,37 @@
 	}
 
 	const standingCounts = $derived(standingCountsFrom(availability?.standing));
+
+	// --- zone picker (mapped best-available tiers) ---------------------------
+	// The options are the tier's sellable zones (seat_pricing.categories);
+	// selectability compares the per-zone availability snapshot against the
+	// requested quantity (exact predicate — see seat-zones.ts). Until the
+	// snapshot loads every zone stays selectable; the server is the authority.
+	const zoneOpts = $derived(
+		isBestAvailable
+			? zoneOptions(
+					seatPricing,
+					availability ? (availability.zones ?? null) : null,
+					tierSector?.id ?? null,
+					quantity,
+					accessibleRequired
+				)
+			: []
+	);
+
+	// Single-zone convenience: preselect the only zone (the REQUEST still names
+	// it explicitly — the backend has no default). A selection whose zone
+	// disappeared (tier refetch) is cleared rather than silently submitted.
+	$effect(() => {
+		if (zoneOpts.length === 0) return;
+		if (selectedZoneId && !zoneOpts.some((zone) => zone.id === selectedZoneId)) {
+			onZoneChange?.(null);
+			return;
+		}
+		if (!selectedZoneId && zoneOpts.length === 1 && zoneOpts[0].selectable) {
+			onZoneChange?.(zoneOpts[0].id);
+		}
+	});
 
 	// --- per-seat-category pricing (#668) -----------------------------------
 	const legendEntries = $derived(priceLegendEntries(seatPricing, chart, tierSector?.id ?? null));
@@ -346,6 +384,51 @@
 							</span>
 						{/if}
 					</p>
+				{/if}
+				{#if zoneOpts.length > 0}
+					<!-- Mapped tier: the buyer names a zone; seats are auto-assigned
+					     within it. Mandatory — the backend deliberately has no default,
+					     so the picker renders even for a single-zone tier. -->
+					<fieldset class="mt-3">
+						<legend class="text-sm font-medium">{m['seatZones.legend']()}</legend>
+						<p class="mt-0.5 text-xs text-muted-foreground">{m['seatZones.help']()}</p>
+						<div class="mt-2 space-y-1.5">
+							{#each zoneOpts as zone (zone.id)}
+								<label
+									class="flex cursor-pointer items-center gap-2.5 rounded-md border p-2.5 text-sm transition-colors {selectedZoneId ===
+									zone.id
+										? 'border-primary bg-primary/5'
+										: 'border-border'} {!zone.selectable ? 'cursor-not-allowed opacity-60' : ''}"
+								>
+									<input
+										type="radio"
+										name="seat-zone"
+										value={zone.id}
+										checked={selectedZoneId === zone.id}
+										onchange={() => onZoneChange?.(zone.id)}
+										disabled={isProcessing || !zone.selectable}
+										class="h-4 w-4 accent-primary"
+									/>
+									<span
+										class="inline-block h-3 w-3 shrink-0 rounded-full border-2 bg-background"
+										style={zone.color ? `border-color: ${zone.color}` : undefined}
+										aria-hidden="true"
+									></span>
+									<span class="min-w-0 flex-1 truncate">{zone.name}</span>
+									{#if !zone.selectable}
+										<span class="shrink-0 text-xs text-muted-foreground">
+											{zone.freeSeats === 0
+												? m['seatZones.soldOut']()
+												: m['seatZones.notEnough']({ count: quantity })}
+										</span>
+									{/if}
+									{#if zone.price != null}
+										<span class="shrink-0 font-medium">{formatMoney(zone.price, currency)}</span>
+									{/if}
+								</label>
+							{/each}
+						</div>
+					</fieldset>
 				{/if}
 				<div class="mt-3 flex items-center gap-2">
 					<Checkbox

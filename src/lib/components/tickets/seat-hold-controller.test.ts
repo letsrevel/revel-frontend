@@ -268,11 +268,16 @@ describe('SeatHoldController', () => {
 			});
 			const controller = setup();
 
-			const result = await controller.holdBestAvailable('tier-1', 2, false);
+			const result = await controller.holdBestAvailable('tier-1', 2, false, null);
 
 			expect(eventpublicseatingHoldBestAvailable).toHaveBeenCalledExactlyOnceWith({
 				path: { event_id: 'event-1' },
-				body: { tier_id: 'tier-1', quantity: 2, accessible_required: false }
+				body: {
+					tier_id: 'tier-1',
+					quantity: 2,
+					accessible_required: false,
+					price_category_id: null
+				}
 			});
 			expect(result).toEqual({ ok: true, heldSeatIds: ['s1', 's2'] });
 			expect(controller.myHolds).toEqual(['s1', 's2']);
@@ -285,11 +290,30 @@ describe('SeatHoldController', () => {
 			});
 			const controller = setup();
 
-			await controller.holdBestAvailable('tier-1', 1, true);
+			await controller.holdBestAvailable('tier-1', 1, true, null);
 
 			expect(eventpublicseatingHoldBestAvailable).toHaveBeenCalledWith({
 				path: { event_id: 'event-1' },
-				body: { tier_id: 'tier-1', quantity: 1, accessible_required: true }
+				body: { tier_id: 'tier-1', quantity: 1, accessible_required: true, price_category_id: null }
+			});
+		});
+
+		it('passes the chosen zone through (mapped tier: price_category_id is mandatory)', async () => {
+			mockResult(eventpublicseatingHoldBestAvailable, {
+				data: { held_seat_ids: ['s3'], conflicts: [], expires_at: EXPIRES_AT }
+			});
+			const controller = setup();
+
+			await controller.holdBestAvailable('tier-1', 1, false, 'zone-gold');
+
+			expect(eventpublicseatingHoldBestAvailable).toHaveBeenCalledWith({
+				path: { event_id: 'event-1' },
+				body: {
+					tier_id: 'tier-1',
+					quantity: 1,
+					accessible_required: false,
+					price_category_id: 'zone-gold'
+				}
 			});
 		});
 
@@ -305,7 +329,7 @@ describe('SeatHoldController', () => {
 			});
 			const controller = setup();
 
-			const result = await controller.holdBestAvailable('tier-1', 4, false);
+			const result = await controller.holdBestAvailable('tier-1', 4, false, null);
 
 			expect(result).toEqual({
 				ok: false,
@@ -328,7 +352,7 @@ describe('SeatHoldController', () => {
 			});
 			const controller = setup();
 
-			const result = await controller.holdBestAvailable('tier-1', 2, false);
+			const result = await controller.holdBestAvailable('tier-1', 2, false, null);
 
 			expect(result).toEqual({
 				ok: false,
@@ -346,7 +370,7 @@ describe('SeatHoldController', () => {
 			});
 			const controller = setup();
 
-			const result = await controller.holdBestAvailable('tier-1', 4, false);
+			const result = await controller.holdBestAvailable('tier-1', 4, false, null);
 
 			expect(result).toEqual({
 				ok: false,
@@ -369,7 +393,7 @@ describe('SeatHoldController', () => {
 			});
 			const controller = setup();
 
-			const result = await controller.holdBestAvailable('tier-1', 4, false);
+			const result = await controller.holdBestAvailable('tier-1', 4, false, null);
 
 			expect(result).toEqual({
 				ok: false,
@@ -385,7 +409,7 @@ describe('SeatHoldController', () => {
 			);
 			const controller = setup();
 
-			const result = await controller.holdBestAvailable('tier-1', 2, false);
+			const result = await controller.holdBestAvailable('tier-1', 2, false, null);
 
 			expect(result).toEqual({ ok: false, heldSeatIds: [] });
 		});
@@ -397,7 +421,7 @@ describe('SeatHoldController', () => {
 				data: { held_seat_ids: ['s1', 's2', 's3'], conflicts: [], expires_at: EXPIRES_AT }
 			});
 			const controller = setup({ getQuantity: () => 3 });
-			await controller.holdBestAvailable('tier-1', 3, false);
+			await controller.holdBestAvailable('tier-1', 3, false, null);
 
 			await controller.trimTo(1);
 
@@ -423,7 +447,7 @@ describe('SeatHoldController', () => {
 				() => deferredRelease as never
 			);
 			const controller = setup({ getQuantity: () => 3 });
-			await controller.holdBestAvailable('tier-1', 3, false);
+			await controller.holdBestAvailable('tier-1', 3, false, null);
 
 			const trimPromise = controller.trimTo(2); // excess = ['s3'], release in flight
 			expect(controller.pendingSeatIds).toEqual(['s3']);

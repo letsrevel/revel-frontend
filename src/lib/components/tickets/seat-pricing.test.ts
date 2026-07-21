@@ -9,7 +9,7 @@ import {
 	estimatedSeatTotal,
 	priceLegendEntries,
 	resolveSeatPrice,
-	unavailableCategoryIds
+	sellableCategoryIds
 } from './seat-pricing';
 
 function seat(id: string, overrides: Partial<ChartSeatSchema> = {}): ChartSeatSchema {
@@ -73,6 +73,14 @@ describe('resolveSeatPrice', () => {
 		});
 	});
 
+	it('marks unpainted seats unavailable when unpainted is null (mapped best-available tier)', () => {
+		expect(resolveSeatPrice({ ...pricing, unpainted: null }, null)).toEqual({
+			price: null,
+			available: false,
+			categoryName: null
+		});
+	});
+
 	it('marks an unpriced (available=false) category unavailable', () => {
 		expect(resolveSeatPrice(pricing, 'late')).toEqual({
 			price: null,
@@ -90,13 +98,14 @@ describe('resolveSeatPrice', () => {
 	});
 });
 
-describe('unavailableCategoryIds', () => {
-	it('collects categories without an honest price', () => {
-		expect([...unavailableCategoryIds(pricing)]).toEqual(['late']);
+describe('sellableCategoryIds', () => {
+	it('collects only categories with an honest price (allow-list)', () => {
+		expect([...(sellableCategoryIds(pricing) ?? [])]).toEqual(['gold', 'silver']);
 	});
 
-	it('is empty without pricing', () => {
-		expect(unavailableCategoryIds(null).size).toBe(0);
+	it('is null without pricing (flat tier — nothing category-blocked)', () => {
+		expect(sellableCategoryIds(null)).toBeNull();
+		expect(sellableCategoryIds(undefined)).toBeNull();
 	});
 });
 

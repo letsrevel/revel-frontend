@@ -266,16 +266,27 @@ export class SeatHoldController {
 	 * Hold the best adjacent block for a tier (best_available mode). The held
 	 * seats are adopted as the caller's selection, but consumers must NOT send
 	 * seat_ids at purchase — the backend consumes the buyer's live holds.
+	 *
+	 * `priceCategoryId` is the buyer's chosen zone: MANDATORY on a mapped tier
+	 * (non-empty `category_prices`, single-zone included), must stay null on an
+	 * unmapped one — the backend 400s on a missing, unknown, or uninvited zone
+	 * rather than guessing.
 	 */
 	holdBestAvailable = async (
 		tierId: string,
 		quantity: number,
-		accessibleRequired: boolean
+		accessibleRequired: boolean,
+		priceCategoryId: string | null
 	): Promise<BestAvailableHoldResult> => {
 		try {
 			const response = await eventpublicseatingHoldBestAvailable({
 				path: { event_id: this.#opts.eventId },
-				body: { tier_id: tierId, quantity, accessible_required: accessibleRequired }
+				body: {
+					tier_id: tierId,
+					quantity,
+					accessible_required: accessibleRequired,
+					price_category_id: priceCategoryId
+				}
 			});
 			if (response.data !== undefined && response.error === undefined) {
 				const held = response.data.held_seat_ids ?? [];

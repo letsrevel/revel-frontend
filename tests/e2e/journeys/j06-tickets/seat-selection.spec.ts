@@ -2,13 +2,17 @@ import { test, expect } from '../../support/fixtures';
 import {
 	claimTicketViaApi,
 	createCategoryPricedVenue,
+	createPriceCategory,
 	createTicketedEvent,
 	createTicketTier,
 	createVerifiedUser,
 	deleteDefaultTier,
+	getSeatingChart,
 	getSeededConcertHall,
 	listAvailableSeats
 } from '../../support/factories';
+import { PERSONAS } from '../../support/personas';
+import { ApiClient } from '../../support/api';
 import { authenticateContext } from '../../support/session';
 import { gotoHydrated, waitForClientAuth } from '../../support/navigation';
 
@@ -189,6 +193,96 @@ test.describe('J6 seat selection @p2', () => {
 		// category price actually charged, not the tier's base price.
 		await expect(success.getByText(/Row A, Seat 1/)).toBeVisible();
 		await expect(success.getByText('Amount due: €55.00')).toBeVisible();
+
+		await context.close();
+	});
+
+	// Painting a category onto seats is a venue-wide op that always succeeds —
+	// a tier whose map doesn't price it then has seats it cannot sell. With the
+	// dialog OPEN the tier payload goes stale while the chart refetches (the
+	// availability response echoes chart_updated_at, and any hold round-trip
+	// refetches availability), so the repainted seat's category id is absent
+	// from seat_pricing entirely. The allow-list rule must grey it out like a
+	// sold seat — the checkout 400 is only the backstop, and reaching it is the
+	// worst possible place to fail.
+	test('mid-dialog repaint with a category the tier does not sell greys the seat out', async ({
+		browser
+	}) => {
+		const venue = await createCategoryPricedVenue('revel-events-collective');
+		const [event, buyer] = await Promise.all([
+			createTicketedEvent({ freeTier: false, event: { venue_id: venue.venueId } }),
+			createVerifiedUser('RepaintBuyer')
+		]);
+		await deleteDefaultTier(event.id);
+		await createTicketTier(event.id, {
+			name: 'Priced Seats',
+			payment_method: 'offline',
+			price: '20.00',
+			seat_assignment_mode: 'user_choice',
+			venue_id: venue.venueId,
+			sector_id: venue.sectorId,
+			category_prices: { [venue.category.id]: '55.00' }
+		});
+
+		const context = await browser.newContext();
+		await authenticateContext(context, buyer);
+		const page = await context.newPage();
+		await gotoHydrated(page, event.path);
+		await waitForClientAuth(page);
+
+		const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
+		const confirmDialog = page.getByRole('dialog', { name: 'Reserve Ticket' });
+		await expect(async () => {
+			if (await confirmDialog.isVisible()) return;
+			if (!(await tierDialog.isVisible())) {
+				await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
+			}
+			await tierDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
+			await expect(confirmDialog).toBeVisible({ timeout: 8_000 });
+		}).toPass({ timeout: 60_000 });
+
+		// B1 starts unpainted and sellable at the base price.
+		await expect(confirmDialog.getByRole('button', { name: 'Seat B1, €20.00' })).toBeVisible({
+			timeout: 15_000
+		});
+
+		// NOW, dialog open: paint B1 with a brand-new category the tier has
+		// never heard of (venue-wide op — never blocked by this tier's config).
+		const late = await createPriceCategory(
+			'revel-events-collective',
+			venue.venueId,
+			{ name: 'Late Paint' },
+			'owner'
+		);
+		const chart = await getSeatingChart(event.id);
+		const b1 = chart.sectors
+			.find((sector) => sector.id === venue.sectorId)
+			?.seats?.find((seat) => seat.label === 'B1');
+		if (!b1) throw new Error('Seat B1 missing from the category-priced venue');
+		const owner = await ApiClient.login(PERSONAS.owner.email, PERSONAS.owner.password);
+		await owner.put(
+			`/api/organization-admin/revel-events-collective/venues/${venue.venueId}/seats/paint`,
+			{ seat_ids: [b1.id], price_category_id: late.id }
+		);
+
+		// Trigger the refetch chain WITHOUT refreshing the tier payload: a hold
+		// round-trip refetches availability, whose chart_updated_at echo has
+		// moved, which invalidates and refetches the chart. Only click while
+		// unpressed — a second tap would release the hold.
+		const seatA1 = confirmDialog.getByRole('button', { name: 'Seat A1, €55.00' });
+		await expect(async () => {
+			if ((await seatA1.getAttribute('aria-pressed')) !== 'true') {
+				await seatA1.click();
+			}
+			await expect(seatA1).toHaveAttribute('aria-pressed', 'true', { timeout: 5_000 });
+		}).toPass({ timeout: 60_000 });
+
+		// The repainted seat greys out in place: disabled, "unavailable" aria,
+		// no price quoted — while the tier's stale seat_pricing never listed
+		// the new category at all.
+		const b1Blocked = confirmDialog.getByRole('button', { name: 'Seat B1, unavailable' });
+		await expect(b1Blocked).toBeVisible({ timeout: 15_000 });
+		await expect(b1Blocked).toBeDisabled();
 
 		await context.close();
 	});

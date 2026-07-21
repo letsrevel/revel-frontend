@@ -156,12 +156,12 @@
 	// Seat assignment modes other than 'none' require an event venue
 	const canUseSeatAssignment = $derived(hasEventVenue);
 	let sectorId = $state<string | null>(tier?.sector?.id ?? null);
-	let priceCategoryId = $state<string | null>(tier?.price_category?.id ?? null);
 
-	// Per-seat-category prices for user_choice tiers (#668). The baseline is
-	// what the server stored; the payload builder sends the map ONLY when it
-	// diverges from this (PUT + three-way write semantics: omit = untouched,
-	// {} = clear, non-empty = replace), so an unrelated edit can't wipe prices.
+	// Per-category prices — the single pricing mechanism for BOTH seated modes
+	// (pricing convergence). The baseline is what the server stored; the payload
+	// builder sends the map ONLY when it diverges from this (PUT + three-way
+	// write semantics: omit = untouched, {} = clear, non-empty = replace), so an
+	// unrelated edit can't wipe prices.
 	const initialCategoryPrices: Record<string, string> = Object.fromEntries(
 		Object.entries(tier?.category_prices ?? {}).map(([id, value]) => [id, String(value)])
 	);
@@ -206,15 +206,13 @@
 		enabled: !!venueId
 	}));
 
-	// Sector is required when attendees pick their own seat
-	const sectorRequired = $derived(seatAssignmentMode === 'user_choice');
+	// A seated tier of EITHER mode requires a sector (pricing convergence: the
+	// removed price-category FK used to supply the venue for best_available).
+	const sectorRequired = $derived(seatAssignmentMode !== 'none');
 	// When sector is required, both venue and sector must be selected
 	const sectorValid = $derived(!sectorRequired || (!!venueId && !!sectorId));
 
-	// Price category is required for best-available auto-assignment
-	const categoryRequired = $derived(seatAssignmentMode === 'best_available');
 	const priceCategories = $derived(chartQuery.data?.price_categories ?? []);
-	const categoryValid = $derived(!categoryRequired || (!!venueId && !!priceCategoryId));
 
 	// Standing sectors can't back a user_choice tier — their "spots" are never
 	// holdable server-side. VenueSectorSchema has no `kind`, so join against the
@@ -259,20 +257,20 @@
 			sectorId = retained;
 			return;
 		}
-		// Sector must still belong to the current venue (best_available keeps its
-		// state untouched — the payload builder nulls it there).
-		if (seatAssignmentMode === 'best_available') return;
+		// Sector must still belong to the current venue.
 		const pool = seatAssignmentMode === 'none' ? standingVenueSectors : selectedVenueSectors;
 		if (!pool.some((s) => s.id === sectorId)) {
 			sectorId = null;
 		}
 	});
 
-	// Categories offered in the per-seat pricing editor (#668): those painted on
-	// an active seat of the selected sector, plus any category the tier already
-	// prices (stale extras stay editable/clearable instead of vanishing).
+	// Categories offered in the pricing editor (both seated modes): those
+	// painted on an active seat of the selected sector, plus any category the
+	// tier already prices (stale extras stay editable/clearable instead of
+	// vanishing). On user_choice a non-empty map must cover every painted
+	// category; on best_available the priced subset DEFINES the sellable zones.
 	const sectorPricingCategories = $derived.by(() => {
-		if (seatAssignmentMode !== 'user_choice' || !sectorId || !chartQuery.data) return [];
+		if (seatAssignmentMode === 'none' || !sectorId || !chartQuery.data) return [];
 		const sector = (chartQuery.data.sectors ?? []).find((s) => s.id === sectorId);
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: built fresh per derivation and consumed synchronously
 		const painted = new Set<string>();
@@ -285,17 +283,6 @@
 			(category) =>
 				!!category.id && (painted.has(category.id) || (categoryPrices[category.id] ?? '') !== '')
 		);
-	});
-
-	// Clear price category when it no longer exists in the loaded chart
-	// (only once the chart is loaded, so the edit-mode prefill survives the fetch)
-	$effect(() => {
-		if (chartQuery.data && priceCategoryId !== null) {
-			const chartHasCategory = priceCategories.some((c) => c.id === priceCategoryId);
-			if (!chartHasCategory) {
-				priceCategoryId = null;
-			}
-		}
 	});
 
 	// Get current currency symbol for display
@@ -388,9 +375,9 @@
 			// Venue and seating configuration
 			seat_assignment_mode: seatAssignmentMode,
 			max_tickets_per_user: maxTicketsPerUser ? parseInt(maxTicketsPerUser) : null,
-			// Per-mode venue/sector/price-category nulling mirrors server validation
+			// Per-mode venue/sector nulling mirrors server validation
 			// (see tier-seating-payload.ts).
-			...buildTierSeatingFields(seatAssignmentMode, venueId, sectorId, priceCategoryId),
+			...buildTierSeatingFields(seatAssignmentMode, venueId, sectorId),
 			// Cancellation & refund policy (only meaningful for paid tiers)
 			allow_user_cancellation: paymentMethod === 'free' ? false : allowUserCancellation,
 			cancellation_deadline_hours:
@@ -629,7 +616,6 @@
 				bind:seatAssignmentMode
 				bind:maxTicketsPerUser
 				bind:sectorId
-				bind:priceCategoryId
 				bind:categoryPrices
 				pricingCategories={sectorPricingCategories}
 				pricingGaps={tier?.pricing_gaps ?? []}
@@ -641,11 +627,9 @@
 				{selectedVenueSectors}
 				standingSectors={standingVenueSectors}
 				{sectorRequired}
-				{priceCategories}
 				chartLoading={chartQuery.isLoading}
 				chartError={chartQuery.isError}
 				onRetryChart={() => chartQuery.refetch()}
-				{categoryRequired}
 				{isPending}
 			/>
 
@@ -667,7 +651,6 @@
 						disabled={isPending ||
 							!name.trim() ||
 							!sectorValid ||
-							!categoryValid ||
 							(paymentMethod !== 'free' && allowUserCancellation && !refundPolicyValid)}
 					>
 						{isPending

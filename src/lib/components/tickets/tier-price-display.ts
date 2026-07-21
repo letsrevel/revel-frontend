@@ -1,10 +1,12 @@
 /**
  * Headline price string for the purchase dialogs' tier card.
  *
- * For a category-priced user_choice tier (#668) a single `tier.price` would be
- * dishonest — the buyer pays the price of the seat they pick — so the display
- * becomes the server-resolved range across sellable categories plus the
- * unpainted fallback. Flat/PWYC/free tiers keep their existing wording.
+ * For a category-priced tier (either seated mode — `category_prices` is the
+ * single pricing mechanism) a single `tier.price` would be dishonest — the
+ * buyer pays the price of the seat/zone they pick — so the display becomes the
+ * server-resolved range across sellable categories plus the unpainted fallback
+ * (null on mapped best-available tiers, where no unpainted seat is buyable).
+ * Flat/PWYC/free tiers keep their existing wording.
  *
  * No runes here — plain function so this stays unit-testable.
  */
@@ -14,7 +16,6 @@ import type { TicketTierSchema } from '$lib/api/generated/types.gen';
 export interface TierPriceDisplayFlags {
 	isFree: boolean;
 	isPwyc: boolean;
-	isUserChoiceSeat: boolean;
 	/** PWYC bounds, already parsed by the dialog. */
 	minAmount: number;
 	maxAmount: number | null;
@@ -28,12 +29,12 @@ export function tierPriceDisplay(tier: TicketTierSchema, flags: TierPriceDisplay
 			: m['ticketConfirmationDialog.anyAmount']();
 		return `${tier.currency} ${flags.minAmount.toFixed(2)} - ${maxDisplay}`;
 	}
-	if (flags.isUserChoiceSeat && tier.seat_pricing) {
+	if (tier.seat_pricing) {
 		const prices = [
 			...(tier.seat_pricing.categories ?? [])
 				.filter((c) => c.available !== false && c.price != null)
 				.map((c) => parseFloat(c.price as string)),
-			parseFloat(tier.seat_pricing.unpainted)
+			...(tier.seat_pricing.unpainted != null ? [parseFloat(tier.seat_pricing.unpainted)] : [])
 		].filter((p) => Number.isFinite(p));
 		if (prices.length > 0) {
 			const min = Math.min(...prices);

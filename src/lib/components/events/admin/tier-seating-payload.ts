@@ -1,12 +1,13 @@
 /**
  * Pure per-mode seating fields for the ticket-tier create/update payload.
  *
- * Mirrors server-side per-mode validation: venue only when the tier touches the
- * venue, sector required for user_choice, price category only for
- * best_available. A NONE (general admission) tier MAY link a *standing* sector
- * — its capacity then becomes a hard sale-time cap — so 'none' passes the
- * sector through instead of stripping it. Stale values from a previous mode
- * MUST be nulled (not omitted) because update always sends the full payload.
+ * Mirrors server-side per-mode validation after the pricing convergence: a
+ * seated tier of EITHER mode requires a sector (the removed price-category FK
+ * used to supply the venue for best_available; it no longer exists). A NONE
+ * (general admission) tier MAY link a *standing* sector — its capacity then
+ * becomes a hard sale-time cap — so 'none' passes the sector through instead
+ * of stripping it. Stale values from a previous mode MUST be nulled (not
+ * omitted) because update always sends the full payload.
  */
 
 import type { SeatAssignmentMode } from '$lib/api/generated/types.gen';
@@ -14,14 +15,12 @@ import type { SeatAssignmentMode } from '$lib/api/generated/types.gen';
 export interface TierSeatingFields {
 	venue_id: string | null;
 	sector_id: string | null;
-	price_category_id: string | null;
 }
 
 export function buildTierSeatingFields(
 	mode: SeatAssignmentMode,
 	venueId: string | null,
-	sectorId: string | null,
-	priceCategoryId: string | null
+	sectorId: string | null
 ): TierSeatingFields {
 	if (mode === 'none') {
 		// GA: optional standing-sector capacity cap. The venue rides along only
@@ -30,19 +29,22 @@ export function buildTierSeatingFields(
 		// fully null so editing back to GA clears every seating link.
 		return {
 			venue_id: sectorId ? venueId : null,
-			sector_id: sectorId,
-			price_category_id: null
+			sector_id: sectorId
 		};
 	}
 	return {
 		venue_id: venueId,
-		sector_id: mode === 'user_choice' ? sectorId : null,
-		price_category_id: mode === 'best_available' ? priceCategoryId : null
+		sector_id: sectorId
 	};
 }
 
 /**
- * The `category_prices` field for the tier create/update payload (#668).
+ * The `category_prices` field for the tier create/update payload — the single
+ * pricing mechanism for BOTH seated modes (pricing convergence). On a
+ * user_choice tier a non-empty map must price every painted category (full
+ * coverage); on a best_available tier the map's keys DEFINE its sellable
+ * zones, so partial coverage is the feature. An empty map means flat
+ * `tier.price` across the sector in either mode.
  *
  * PUT semantics with three-way write behavior: omitted/null leaves the stored
  * map untouched, `{}` clears it, non-empty replaces it wholesale. Update always
@@ -51,8 +53,8 @@ export function buildTierSeatingFields(
  * actually changed (returns undefined otherwise, spread-omitted by the caller).
  *
  * Empty inputs are dropped (an empty string is "no price", not "price 0"), and
- * a non-user_choice mode clears a previously stored map the same way stale
- * venue/sector links are nulled above.
+ * switching to a non-seated mode clears a previously stored map the same way
+ * stale venue/sector links are nulled above.
  */
 export function buildCategoryPricesPayload(
 	mode: SeatAssignmentMode,
@@ -60,7 +62,7 @@ export function buildCategoryPricesPayload(
 	current: Readonly<Record<string, string>>
 ): Record<string, string> | undefined {
 	const normalized: Record<string, string> = {};
-	if (mode === 'user_choice') {
+	if (mode !== 'none') {
 		for (const [categoryId, value] of Object.entries(current)) {
 			const trimmed = value.trim().replace(',', '.');
 			if (trimmed !== '') normalized[categoryId] = trimmed;
@@ -77,9 +79,8 @@ export function buildCategoryPricesPayload(
  * The sector selection that survives a switch to `mode`.
  *
  * Standing sectors are only valid on GA (none) tiers, seated sectors only on
- * user_choice — switching between those modes clears a selection of the wrong
- * kind instead of silently submitting it. best_available keeps the state (the
- * payload builder nulls it), so toggling modes doesn't lose a valid pick.
+ * the seated modes — switching between those clears a selection of the wrong
+ * kind instead of silently submitting it.
  */
 export function retainedSectorIdForMode(
 	mode: SeatAssignmentMode,
@@ -88,6 +89,5 @@ export function retainedSectorIdForMode(
 ): string | null {
 	if (sectorId === null) return null;
 	if (mode === 'none') return standingSectorIds.has(sectorId) ? sectorId : null;
-	if (mode === 'user_choice') return standingSectorIds.has(sectorId) ? null : sectorId;
-	return sectorId;
+	return standingSectorIds.has(sectorId) ? null : sectorId;
 }

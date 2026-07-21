@@ -140,6 +140,9 @@ test.describe('J19 self-service seating @p2', () => {
 			event: { venue_id: venueId }
 		});
 		await deleteDefaultTier(event.id, org.owner); // auto "General Admission" trips strict mode
+		// Pricing convergence: the tier names its sector, and its category_prices
+		// keys DEFINE its sellable zones — painting + the map is what scopes the
+		// pool to the category (the FK is gone).
 		const tier = await createTicketTier(
 			event.id,
 			{
@@ -147,7 +150,9 @@ test.describe('J19 self-service seating @p2', () => {
 				payment_method: 'free',
 				price: '0.00',
 				seat_assignment_mode: 'best_available',
-				price_category_id: category.id
+				venue_id: venueId,
+				sector_id: sector.id,
+				category_prices: { [category.id]: '0.00' }
 			},
 			org.owner
 		);
@@ -288,6 +293,14 @@ async function claimTwoBestAvailableFree(
 	).toBeVisible();
 	await expect(confirmDialog.getByText('Select Your Seats')).toBeHidden();
 	await expect(confirmDialog.getByText('STAGE')).toBeHidden();
+
+	// Mapped tier (pricing convergence): the mandatory zone picker renders and
+	// the single zone auto-selects once availability loads — the claim button
+	// stays gated until then, so wait for the check before claiming.
+	await expect(confirmDialog.getByText('Seating zone', { exact: true })).toBeVisible();
+	await expect(confirmDialog.getByRole('radio', { name: /Galleria/ })).toBeChecked({
+		timeout: 8_000
+	});
 
 	// Quantity 2 — the second guest-name input appears; the first is prefilled
 	// with the buyer's profile name but re-filled when empty (canSubmit requires

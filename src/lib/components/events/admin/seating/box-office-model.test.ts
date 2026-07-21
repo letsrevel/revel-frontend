@@ -130,15 +130,20 @@ describe('seat lookups', () => {
 });
 
 describe('tiersForSeat', () => {
+	// Pricing convergence: a tier's sellable categories are its non-empty
+	// `category_prices` keys (the FK is gone). A mapped best_available tier
+	// additionally never sells UNPAINTED seats (pool filtered to the zone).
 	const premium = tier({
 		id: 't-premium',
 		name: 'Premium',
-		price_category: { name: 'Premium', color: '#f00', id: 'cat-premium' }
+		seat_assignment_mode: 'best_available',
+		category_prices: { 'cat-premium': '80.00' }
 	});
 	const standard = tier({
 		id: 't-standard',
 		name: 'Standard',
-		price_category: { name: 'Standard', color: '#0f0', id: 'cat-standard' }
+		seat_assignment_mode: 'best_available',
+		category_prices: { 'cat-standard': '45.00' }
 	});
 	const balconyOnly = tier({
 		id: 't-balcony',
@@ -158,14 +163,28 @@ describe('tiersForSeat', () => {
 		]);
 	});
 
-	it('matches a category-bound tier and the venue-wide tier for a premium seat', () => {
+	it('matches a category-priced tier and the venue-wide tier for a premium seat', () => {
 		const result = tiersForSeat(all, { sectorId: 'sec-stalls', categoryId: 'cat-premium' });
 		expect(result.map((t) => t.id)).toEqual(['t-premium', 't-any']);
 	});
 
-	it('matches a sector-bound tier and the venue-wide tier for a balcony seat', () => {
+	it('matches a sector-bound tier and the venue-wide tier for a balcony seat (mapped best_available never sells unpainted seats)', () => {
 		const result = tiersForSeat(all, { sectorId: 'sec-balcony', categoryId: null });
 		expect(result.map((t) => t.id)).toEqual(['t-balcony', 't-any']);
+	});
+
+	it('a mapped user_choice tier still sells unpainted seats (flat fallback), best_available does not', () => {
+		const userChoicePriced = tier({
+			id: 't-uc',
+			name: 'UC priced',
+			seat_assignment_mode: 'user_choice',
+			category_prices: { 'cat-premium': '80.00' }
+		});
+		const result = tiersForSeat([premium, userChoicePriced], {
+			sectorId: 'sec-stalls',
+			categoryId: null
+		});
+		expect(result.map((t) => t.id)).toEqual(['t-uc']);
 	});
 
 	it('falls back to all seated tiers when nothing matches', () => {

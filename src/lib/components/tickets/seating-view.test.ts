@@ -162,7 +162,7 @@ describe('buildSeatViews', () => {
 		});
 	});
 
-	it('blocks seats painted with a category the tier cannot sell (#668)', () => {
+	it('blocks seats painted with a category outside the sellable allow-list (#668)', () => {
 		const views = buildSeatViews(
 			chart([
 				sector('s1', [
@@ -172,13 +172,42 @@ describe('buildSeatViews', () => {
 				])
 			]),
 			availability(),
-			{ ...noSelection, unavailableCategoryIds: new Set(['late']) }
+			{ ...noSelection, sellableCategoryIds: new Set(['gold']) }
 		);
 		expect(views.map((v) => [v.id, v.status, v.priceCategoryId])).toEqual([
 			['a1', 'available', 'gold'],
 			['a2', 'blocked', 'late'],
 			['a3', 'available', null]
 		]);
+	});
+
+	it('blocks a painted category the (stale) tier payload never listed — checkout would 400', () => {
+		// The chart refetches mid-dialog (staleness echo) while the tier prop
+		// does not: a freshly painted category id is absent from the allow-list
+		// entirely and must grey out exactly like a listed-but-unpriced one.
+		const views = buildSeatViews(
+			chart([
+				sector('s1', [
+					seat('a1', { price_category_id: 'brand-new' }),
+					seat('a2', { number: 2, adjacency_index: 1 })
+				])
+			]),
+			availability(),
+			{ ...noSelection, sellableCategoryIds: new Set(['gold']) }
+		);
+		expect(views.map((v) => [v.id, v.status])).toEqual([
+			['a1', 'blocked'],
+			['a2', 'available'] // unpainted seats are never category-filtered
+		]);
+	});
+
+	it('blocks nothing by category on a flat tier (allow-list null)', () => {
+		const views = buildSeatViews(
+			chart([sector('s1', [seat('a1', { price_category_id: 'anything' })])]),
+			availability(),
+			{ ...noSelection, sellableCategoryIds: null }
+		);
+		expect(views[0].status).toBe('available');
 	});
 
 	it("never blocks the caller's own holds or pending seats by category", () => {
@@ -190,7 +219,7 @@ describe('buildSeatViews', () => {
 				])
 			]),
 			availability(),
-			{ myHolds: ['a1'], pending: ['a2'], unavailableCategoryIds: new Set(['late']) }
+			{ myHolds: ['a1'], pending: ['a2'], sellableCategoryIds: new Set(['gold']) }
 		);
 		expect(views.map((v) => [v.id, v.status])).toEqual([
 			['a1', 'mine'],

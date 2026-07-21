@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import type { TierSchemaWithId } from '$lib/types/tickets';
+	import type { SeatingCheckoutFields, TierSchemaWithId } from '$lib/types/tickets';
 	import type {
 		MembershipTierSchema,
 		TicketPurchaseItem,
@@ -41,7 +41,8 @@
 			tierId: string,
 			tickets?: TicketPurchaseItem[],
 			discountCode?: string,
-			billingInfo?: BuyerBillingInfoSchema
+			billingInfo?: BuyerBillingInfoSchema,
+			seating?: SeatingCheckoutFields
 		) => void;
 		onCheckout?: (
 			tierId: string,
@@ -49,7 +50,8 @@
 			amount?: number,
 			tickets?: TicketPurchaseItem[],
 			discountCode?: string,
-			billingInfo?: BuyerBillingInfoSchema
+			billingInfo?: BuyerBillingInfoSchema,
+			seating?: SeatingCheckoutFields
 		) => void;
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 		/**
@@ -64,7 +66,8 @@
 			amount?: number,
 			tickets?: TicketPurchaseItem[],
 			discountCode?: string,
-			billingInfo?: BuyerBillingInfoSchema
+			billingInfo?: BuyerBillingInfoSchema,
+			seating?: SeatingCheckoutFields
 		) => boolean;
 	}
 
@@ -196,18 +199,29 @@
 		tickets: TicketPurchaseItem[];
 		discountCode?: string;
 		billingInfo?: BuyerBillingInfoSchema;
+		priceCategoryId?: string;
+		accessibleRequired?: boolean;
 	}): Promise<void> {
 		if (!selectedTier || isProcessing) return;
 
 		isProcessing = true;
 		const { amount, tickets, discountCode, billingInfo } = payload;
+		const seating = seatingFieldsFrom(payload);
 		const isOnline = selectedTier.payment_method === 'online';
 		const isPwyc = selectedTier.price_type === 'pwyc';
 
 		try {
 			// PWYC tiers require the PWYC endpoint regardless of payment method
 			if (isPwyc && onCheckout) {
-				await onCheckout(selectedTier.id, true, amount, tickets, discountCode, billingInfo);
+				await onCheckout(
+					selectedTier.id,
+					true,
+					amount,
+					tickets,
+					discountCode,
+					billingInfo,
+					seating
+				);
 			}
 			// Free tickets or offline/at-the-door (reservation) - non-PWYC
 			else if (
@@ -215,11 +229,19 @@
 				selectedTier.payment_method === 'offline' ||
 				selectedTier.payment_method === 'at_the_door'
 			) {
-				await onClaimTicket(selectedTier.id, tickets, discountCode, billingInfo);
+				await onClaimTicket(selectedTier.id, tickets, discountCode, billingInfo, seating);
 			}
 			// Online payment (fixed price)
 			else if (isOnline && onCheckout) {
-				await onCheckout(selectedTier.id, false, undefined, tickets, discountCode, billingInfo);
+				await onCheckout(
+					selectedTier.id,
+					false,
+					undefined,
+					tickets,
+					discountCode,
+					billingInfo,
+					seating
+				);
 			}
 
 			// For online payments (Stripe redirect), keep loading state visible.
@@ -246,6 +268,22 @@
 		}
 	}
 
+	// The dialog's seating fields as the controller's `seating` argument;
+	// undefined when neither field is set, so non-seated payloads keep their
+	// historical fingerprint shape.
+	function seatingFieldsFrom(payload: {
+		priceCategoryId?: string;
+		accessibleRequired?: boolean;
+	}): SeatingCheckoutFields | undefined {
+		if (payload.priceCategoryId === undefined && payload.accessibleRequired === undefined) {
+			return undefined;
+		}
+		return {
+			priceCategoryId: payload.priceCategoryId,
+			accessibleRequired: payload.accessibleRequired
+		};
+	}
+
 	// Peek for the confirmation dialog: mirrors handleConfirm's routing (PWYC →
 	// checkout with amount, otherwise claim/checkout share one params shape) so
 	// the fingerprint matches the mutation the payload would actually hit.
@@ -254,6 +292,8 @@
 		tickets: TicketPurchaseItem[];
 		discountCode?: string;
 		billingInfo?: BuyerBillingInfoSchema;
+		priceCategoryId?: string;
+		accessibleRequired?: boolean;
 	}): boolean {
 		if (!selectedTier || !hasResumableCheckout) return false;
 		const { amount, tickets, discountCode, billingInfo } = payload;
@@ -264,7 +304,8 @@
 			isPwyc ? amount : undefined,
 			tickets,
 			discountCode,
-			billingInfo
+			billingInfo,
+			seatingFieldsFrom(payload)
 		);
 	}
 </script>

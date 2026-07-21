@@ -5,14 +5,15 @@ import TierFormSeatingSection from './TierFormSeatingSection.svelte';
 import type {
 	PriceCategorySchema,
 	SeatAssignmentMode,
+	TierPricingGapSchema,
 	VenueSectorSchema
 } from '$lib/api/generated/types.gen';
 
 // TierFormSeatingSection is a pure props section (the chart/venues queries and
 // the per-mode payload/validity gating live in TierForm), so no sdk mock or
 // QueryClientProvider is needed — the gating flags are exercised via props the
-// same way TierForm computes them (sectorRequired = user_choice,
-// categoryRequired = best_available).
+// same way TierForm computes them (sectorRequired = any seated mode; pricing
+// rows come from the painted-in-sector ∪ priced categories).
 
 const sectors: VenueSectorSchema[] = [
 	{ id: 'sector-1', name: 'Main Floor', code: 'MF', capacity: 100 }
@@ -23,7 +24,7 @@ const standingSectors: VenueSectorSchema[] = [
 	{ id: 'standing-2', name: 'Terrace', code: 'TER', capacity: 80 }
 ];
 
-const priceCategories: PriceCategorySchema[] = [
+const pricingCategories: PriceCategorySchema[] = [
 	{ id: 'pc-gold', name: 'Gold', color: '#f9b233', display_order: 1 },
 	{ id: 'pc-silver', name: 'Silver', color: '#9ab2ff', display_order: 0 }
 ];
@@ -32,17 +33,17 @@ function renderSection(
 	overrides: Partial<{
 		seatAssignmentMode: SeatAssignmentMode;
 		sectorId: string | null;
-		priceCategoryId: string | null;
+		categoryPrices: Record<string, string>;
+		pricingCategories: PriceCategorySchema[];
+		pricingGaps: TierPricingGapSchema[];
 		canUseSeatAssignment: boolean;
 		venueId: string | null;
 		selectedVenueSectors: VenueSectorSchema[];
 		standingSectors: VenueSectorSchema[];
 		sectorRequired: boolean;
-		priceCategories: PriceCategorySchema[];
 		chartLoading: boolean;
 		chartError: boolean;
 		onRetryChart: () => void;
-		categoryRequired: boolean;
 	}> = {}
 ) {
 	return render(TierFormSeatingSection, {
@@ -50,7 +51,10 @@ function renderSection(
 			seatAssignmentMode: 'none' as SeatAssignmentMode,
 			maxTicketsPerUser: '',
 			sectorId: null,
-			priceCategoryId: null,
+			categoryPrices: {},
+			pricingCategories: [],
+			pricingGaps: [],
+			currencySymbol: '€',
 			canUseSeatAssignment: true,
 			venueId: 'venue-1',
 			venuesLoading: false,
@@ -58,10 +62,8 @@ function renderSection(
 			selectedVenueSectors: sectors,
 			standingSectors: [],
 			sectorRequired: false,
-			priceCategories,
 			chartLoading: false,
 			chartError: false,
-			categoryRequired: false,
 			isPending: false,
 			...overrides
 		}
@@ -83,7 +85,7 @@ describe('TierFormSeatingSection', () => {
 		});
 
 		it('labels the best_available option and shows its help text when selected', () => {
-			renderSection({ seatAssignmentMode: 'best_available', categoryRequired: true });
+			renderSection({ seatAssignmentMode: 'best_available', sectorRequired: true });
 			const modeSelect = screen.getByRole('combobox', { name: 'Seat Assignment Mode' });
 			expect(
 				within(modeSelect).getByRole('option', { name: /Best Available/i })
@@ -104,101 +106,76 @@ describe('TierFormSeatingSection', () => {
 		});
 	});
 
-	describe('best_available mode', () => {
-		it('renders a required price-category select ordered by display_order, and no sector select', () => {
-			renderSection({ seatAssignmentMode: 'best_available', categoryRequired: true });
+	describe('best_available mode (pricing convergence: same sector + pricing UI as user_choice)', () => {
+		it('renders a required sector select — the removed price-category FK used to supply the venue', () => {
+			renderSection({ seatAssignmentMode: 'best_available', sectorRequired: true });
 
-			const categorySelect = screen.getByRole('combobox', { name: /Price Category/ });
-			expect(categorySelect).toBeRequired();
-			const options = within(categorySelect).getAllByRole('option');
-			expect(options.map((o) => o.textContent?.trim())).toEqual([
-				'Select a price category (required)',
-				'Silver',
-				'Gold'
-			]);
+			const sectorSelect = screen.getByRole('combobox', { name: /Sector/ });
+			expect(sectorSelect).toBeRequired();
+			expect(within(sectorSelect).getByRole('option', { name: /Main Floor/ })).toBeInTheDocument();
 
-			// Sector selection belongs to user_choice only.
-			expect(screen.queryByRole('combobox', { name: /Sector/ })).not.toBeInTheDocument();
-		});
-
-		it('marks the empty required category select with the destructive border', () => {
-			renderSection({
-				seatAssignmentMode: 'best_available',
-				categoryRequired: true,
-				priceCategoryId: null
-			});
-			expect(screen.getByRole('combobox', { name: /Price Category/ }).className).toContain(
-				'border-destructive'
-			);
-		});
-
-		it('drops the destructive border once a category is selected and shows its color swatch', () => {
-			renderSection({
-				seatAssignmentMode: 'best_available',
-				categoryRequired: true,
-				priceCategoryId: 'pc-gold'
-			});
-			const categorySelect = screen.getByRole('combobox', { name: /Price Category/ });
-			expect(categorySelect.className).not.toContain('border-destructive');
-			// Swatch is decorative (aria-hidden) and paired with the category name
-			// (jsdom serializes the hex to rgb, so match on the parsed style).
-			const swatch = Array.from(
-				document.querySelectorAll<HTMLElement>('span[aria-hidden="true"]')
-			).find((el) => el.style.backgroundColor !== '');
-			expect(swatch).toBeDefined();
-			expect(swatch?.style.backgroundColor).toBe('rgb(249, 178, 51)');
-			expect(swatch?.parentElement?.textContent).toContain('Gold');
-		});
-
-		it('explains the blocked state when the chart has no price categories', () => {
-			renderSection({
-				seatAssignmentMode: 'best_available',
-				categoryRequired: true,
-				priceCategories: []
-			});
+			// The old FK picker is gone for good.
 			expect(screen.queryByRole('combobox', { name: /Price Category/ })).not.toBeInTheDocument();
-			expect(screen.getByText(/no price categories/i)).toBeInTheDocument();
 		});
 
-		it('shows a loading state while the chart query is pending', () => {
+		it('renders zone-pricing rows with zone copy, ordered by display_order', () => {
 			renderSection({
 				seatAssignmentMode: 'best_available',
-				categoryRequired: true,
+				sectorRequired: true,
+				sectorId: 'sector-1',
+				pricingCategories
+			});
+
+			expect(screen.getByText('Zone pricing')).toBeInTheDocument();
+			// Zones help + the per-zone-capacity pattern note (the one organizer
+			// capability whose expression changed in the convergence).
+			expect(screen.getByText(/buyers pick one of the priced zones/i)).toBeInTheDocument();
+			expect(screen.getByText(/give each zone its own tier/i)).toBeInTheDocument();
+			// user_choice-only copy stays out.
+			expect(screen.queryByText(/sell at this tier's base price/i)).not.toBeInTheDocument();
+
+			const inputs = screen.getAllByRole('textbox');
+			expect(inputs.map((input) => input.id)).toEqual([
+				'category-price-pc-silver',
+				'category-price-pc-gold'
+			]);
+		});
+
+		it('never shows the coverage-gap warning (partial coverage IS the feature)', () => {
+			renderSection({
+				seatAssignmentMode: 'best_available',
+				sectorRequired: true,
+				sectorId: 'sector-1',
+				pricingCategories,
+				pricingGaps: [{ id: 'pc-silver', name: 'Silver' }] as TierPricingGapSchema[]
+			});
+			expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+		});
+
+		it('shows a loading state for the pricing block while the chart query is pending', () => {
+			renderSection({
+				seatAssignmentMode: 'best_available',
+				sectorRequired: true,
+				sectorId: 'sector-1',
 				chartLoading: true
 			});
 			expect(screen.getByText('Loading seating chart...')).toBeInTheDocument();
-			expect(screen.queryByRole('combobox', { name: /Price Category/ })).not.toBeInTheDocument();
 		});
 
-		it('shows a distinct load-failure state with a working retry button when the chart query errored', async () => {
+		it('shows a load-failure state with a working retry button when the chart query errored', async () => {
 			const user = userEvent.setup();
 			const onRetryChart = vi.fn();
 			renderSection({
 				seatAssignmentMode: 'best_available',
-				categoryRequired: true,
-				priceCategories: [],
+				sectorRequired: true,
+				sectorId: 'sector-1',
 				chartError: true,
 				onRetryChart
 			});
 
 			expect(screen.getByRole('alert')).toHaveTextContent(/failed to load the seating chart/i);
-			// The failure must NOT be misreported as an empty chart.
-			expect(screen.queryByText(/no price categories/i)).not.toBeInTheDocument();
-			expect(screen.queryByRole('combobox', { name: /Price Category/ })).not.toBeInTheDocument();
-
 			await user.click(screen.getByRole('button', { name: 'Try again' }));
 			expect(onRetryChart).toHaveBeenCalledOnce();
-		});
-
-		it('prefers the loading state over a previous error while refetching', () => {
-			renderSection({
-				seatAssignmentMode: 'best_available',
-				categoryRequired: true,
-				chartLoading: true,
-				chartError: true
-			});
-			expect(screen.getByText('Loading seating chart...')).toBeInTheDocument();
-			expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 		});
 	});
 
@@ -221,6 +198,19 @@ describe('TierFormSeatingSection', () => {
 			expect(screen.getByRole('combobox', { name: /Sector/ }).className).toContain(
 				'border-destructive'
 			);
+		});
+
+		it('keeps the full-coverage copy and shows the coverage-gap warning', () => {
+			renderSection({
+				seatAssignmentMode: 'user_choice',
+				sectorRequired: true,
+				sectorId: 'sector-1',
+				pricingCategories,
+				pricingGaps: [{ id: 'pc-silver', name: 'Silver' }] as TierPricingGapSchema[]
+			});
+			expect(screen.getByText('Seat category prices')).toBeInTheDocument();
+			expect(screen.getByText(/sell at this tier's base price/i)).toBeInTheDocument();
+			expect(screen.getByRole('alert')).toHaveTextContent(/Silver/);
 		});
 	});
 
@@ -281,7 +271,7 @@ describe('TierFormSeatingSection', () => {
 
 			renderSection({
 				seatAssignmentMode: 'best_available',
-				categoryRequired: true,
+				sectorRequired: true,
 				standingSectors
 			});
 			expect(screen.queryByRole('combobox', { name: /Standing Sector/i })).not.toBeInTheDocument();

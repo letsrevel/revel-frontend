@@ -45,7 +45,10 @@ export function resolveSeatPrice(
 ): SeatPriceInfo | null {
 	if (!pricing) return null;
 	if (!categoryId) {
-		return { price: pricing.unpainted, available: true, categoryName: null };
+		// `unpainted` is null when no unpainted seat can be bought through this
+		// tier (every mapped best-available tier): no honest price exists.
+		const unpainted = pricing.unpainted ?? null;
+		return { price: unpainted, available: unpainted != null, categoryName: null };
 	}
 	const category = (pricing.categories ?? []).find((c) => c.id === categoryId);
 	if (!category) {
@@ -60,13 +63,25 @@ export function resolveSeatPrice(
 	};
 }
 
-/** Ids of categories whose seats must render unselectable (no honest price). */
-export function unavailableCategoryIds(
+/**
+ * ALLOW-list of categories this tier can honestly sell, or null when the tier
+ * has no pricing (flat tier — every seat sellable, grey nothing out).
+ *
+ * An allow-list, not a deny-list, on purpose: a painted seat is unsellable iff
+ * its category is NOT among `seat_pricing.categories` (with a price). A
+ * deny-list of the listed-but-unavailable ids would miss a category the stale
+ * tier payload has never heard of — e.g. painted onto the sector mid-dialog,
+ * where the chart refetches (staleness echo) but the tier prop does not. Such
+ * a seat must grey out like a sold one; the checkout 400 is only the backstop.
+ * Unpainted seats are never filtered by this set (their price is `unpainted`).
+ */
+export function sellableCategoryIds(
 	pricing: TierSeatPricingSchema | null | undefined
-): Set<string> {
+): ReadonlySet<string> | null {
+	if (!pricing) return null;
 	const ids = new Set<string>();
-	for (const category of pricing?.categories ?? []) {
-		if (category.available === false || category.price == null) {
+	for (const category of pricing.categories ?? []) {
+		if (category.available !== false && category.price != null) {
 			ids.add(category.id);
 		}
 	}
@@ -121,8 +136,8 @@ export function priceLegendEntries(
 			id: null,
 			name: null,
 			color: null,
-			price: pricing.unpainted,
-			available: true
+			price: pricing.unpainted ?? null,
+			available: pricing.unpainted != null
 		});
 	}
 	return entries;

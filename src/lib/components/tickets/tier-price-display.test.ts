@@ -16,7 +16,6 @@ function tier(overrides: Partial<TicketTierSchema> = {}): TicketTierSchema {
 const flat = {
 	isFree: false,
 	isPwyc: false,
-	isUserChoiceSeat: false,
 	minAmount: 0,
 	maxAmount: null
 };
@@ -40,10 +39,8 @@ describe('tierPriceDisplay', () => {
 		);
 	});
 
-	it('renders the category range for a priced user_choice tier (#668)', () => {
-		expect(
-			tierPriceDisplay(tier({ seat_pricing: pricing }), { ...flat, isUserChoiceSeat: true })
-		).toBe('EUR 20.00 - EUR 55.00');
+	it('renders the category range for any category-priced tier (single pricing mechanism)', () => {
+		expect(tierPriceDisplay(tier({ seat_pricing: pricing }), flat)).toBe('EUR 20.00 - EUR 55.00');
 	});
 
 	it('ignores unavailable categories when computing the range', () => {
@@ -51,15 +48,22 @@ describe('tierPriceDisplay', () => {
 			...pricing,
 			categories: (pricing.categories ?? []).slice(1)
 		};
-		expect(
-			tierPriceDisplay(tier({ seat_pricing: only }), { ...flat, isUserChoiceSeat: true })
-		).toBe('EUR 20.00');
+		expect(tierPriceDisplay(tier({ seat_pricing: only }), flat)).toBe('EUR 20.00');
 	});
 
-	it('falls back to tier.price when seat_pricing is absent or not user_choice', () => {
-		expect(tierPriceDisplay(tier(), { ...flat, isUserChoiceSeat: true })).toBe('EUR 20.00');
-		expect(
-			tierPriceDisplay(tier({ seat_pricing: pricing }), { ...flat, isUserChoiceSeat: false })
-		).toBe('EUR 20.00');
+	it('excludes a null unpainted fallback (mapped best-available: no unpainted seat is buyable)', () => {
+		const mapped: TierSeatPricingSchema = {
+			categories: [
+				{ id: 'gold', name: 'Gold', color: '#f9b233', price: '80.00', available: true },
+				{ id: 'silver', name: 'Silver', color: '#9ab2ff', price: '45.00', available: true }
+			],
+			unpainted: null
+		};
+		expect(tierPriceDisplay(tier({ seat_pricing: mapped }), flat)).toBe('EUR 45.00 - EUR 80.00');
+	});
+
+	it('falls back to tier.price when seat_pricing is absent', () => {
+		expect(tierPriceDisplay(tier(), flat)).toBe('EUR 20.00');
+		expect(tierPriceDisplay(tier({ seat_pricing: null }), flat)).toBe('EUR 20.00');
 	});
 });

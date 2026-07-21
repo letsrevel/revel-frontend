@@ -1148,7 +1148,12 @@ export interface SeededBestAvailableEvent {
  * event caps tickets at 4 per user, so a reused identity stops claiming),
  * and never assert absolute availability counts.
  */
-export async function getSeededBestAvailableEvent(): Promise<SeededBestAvailableEvent> {
+export async function getSeededBestAvailableEvent(
+	// The seeded event now carries TWO best_available tiers (pricing
+	// convergence): "Galleria" (mapped, single zone) and "Platea — Best
+	// Available" (mapped, two zones at two prices). Pin by name.
+	tierName = 'Galleria'
+): Promise<SeededBestAvailableEvent> {
 	const eventName = 'La Traviata — Season Opening';
 	const listPath = `/api/events/?search=${encodeURIComponent('La Traviata')}`;
 	const listResponse = await fetchWithRetry(`${API_URL}${listPath}`);
@@ -1174,10 +1179,12 @@ export async function getSeededBestAvailableEvent(): Promise<SeededBestAvailable
 		name: string;
 		seat_assignment_mode: string;
 	}>;
-	const tier = tiers.find((t) => t.seat_assignment_mode === 'best_available');
+	const tier = tiers.find(
+		(t) => t.seat_assignment_mode === 'best_available' && t.name === tierName
+	);
 	if (!tier) {
 		throw new Error(
-			`No best_available tier on seeded "${eventName}" (expected "Galleria") — re-run make bootstrap`
+			`No best_available tier "${tierName}" on seeded "${eventName}" — re-run make bootstrap`
 		);
 	}
 	return {

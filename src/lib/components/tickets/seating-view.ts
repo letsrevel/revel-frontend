@@ -47,11 +47,14 @@ export interface BuildSeatViewsOptions {
 	/** Seat ids with an in-flight hold/release request (rendered busy). */
 	pending: string[];
 	/**
-	 * Categories the tier can't sell (painted but unpriced, #668): their seats
-	 * render as blocked — checkout would refuse them, so quoting availability
-	 * would sell the buyer a 400.
+	 * ALLOW-list of categories the tier can sell (see seat-pricing.ts
+	 * `sellableCategoryIds`). null/absent = flat tier, nothing category-blocked.
+	 * When present, a PAINTED seat whose category is not in the set renders
+	 * blocked — including ids the (possibly stale) tier payload has never
+	 * listed — because checkout refuses those seats; quoting availability
+	 * would sell the buyer a 400. Unpainted seats are never filtered here.
 	 */
-	unavailableCategoryIds?: ReadonlySet<string>;
+	sellableCategoryIds?: ReadonlySet<string> | null;
 }
 
 /** Map a sparse-availability value to a SeatStatus (defensive: unknown → blocked). */
@@ -111,7 +114,8 @@ export function buildSeatViews(
 				status = 'mine';
 			} else if (
 				seat.price_category_id &&
-				opts.unavailableCategoryIds?.has(seat.price_category_id)
+				opts.sellableCategoryIds != null &&
+				!opts.sellableCategoryIds.has(seat.price_category_id)
 			) {
 				status = 'blocked';
 			} else {

@@ -16,12 +16,11 @@
 		seatAssignmentMode: SeatAssignmentMode;
 		maxTicketsPerUser: string;
 		sectorId: string | null;
-		priceCategoryId: string | null;
-		/** Per-category prices for user_choice tiers, keyed by category id (#668). */
+		/** Per-category prices — the single pricing mechanism for both seated modes. */
 		categoryPrices: Record<string, string>;
 		/** Categories offered in the pricing editor (painted in sector ∪ priced). */
 		pricingCategories: PriceCategorySchema[];
-		/** Server-flagged coverage gaps (painted categories the tier doesn't price). */
+		/** Server-flagged coverage gaps (user_choice only; empty for best_available by design). */
 		pricingGaps: TierPricingGapSchema[];
 		currencySymbol: string;
 		canUseSeatAssignment: boolean;
@@ -31,11 +30,9 @@
 		selectedVenueSectors: VenueSectorSchema[];
 		standingSectors: VenueSectorSchema[];
 		sectorRequired: boolean;
-		priceCategories: PriceCategorySchema[];
 		chartLoading: boolean;
 		chartError: boolean;
 		onRetryChart?: () => void;
-		categoryRequired: boolean;
 		isPending: boolean;
 	}
 
@@ -43,7 +40,6 @@
 		seatAssignmentMode = $bindable(),
 		maxTicketsPerUser = $bindable(),
 		sectorId = $bindable(),
-		priceCategoryId = $bindable(),
 		categoryPrices = $bindable(),
 		pricingCategories,
 		pricingGaps,
@@ -55,26 +51,19 @@
 		selectedVenueSectors,
 		standingSectors,
 		sectorRequired,
-		priceCategories,
 		chartLoading,
 		chartError,
 		onRetryChart,
-		categoryRequired,
 		isPending
 	}: Props = $props();
 
-	// Price categories ordered for display; the swatch pairs color with the name
-	// so meaning is never conveyed by color alone.
-	const sortedPriceCategories = $derived(
-		[...priceCategories].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
-	);
-	const selectedPriceCategory = $derived(priceCategories.find((c) => c.id === priceCategoryId));
-
-	// Per-seat-category pricing rows (user_choice, #668), in category order.
+	// Pricing rows (both seated modes), in category order. The swatch pairs
+	// color with the name so meaning is never conveyed by color alone.
 	const sortedPricingCategories = $derived(
 		[...pricingCategories].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
 	);
 	const gapNames = $derived(pricingGaps.map((gap) => gap.name).join(', '));
+	const isBestAvailable = $derived(seatAssignmentMode === 'best_available');
 
 	// Keep money inputs dot-decimal as the user types (mirrors the VAT input).
 	function handlePriceInput(categoryId: string, event: Event): void {
@@ -239,8 +228,8 @@
 				</p>
 			</div>
 
-			<!-- Sector (user_choice only; only when venue is selected) -->
-			{#if seatAssignmentMode === 'user_choice'}
+			<!-- Sector (both seated modes require one; only when venue is selected) -->
+			{#if seatAssignmentMode === 'user_choice' || seatAssignmentMode === 'best_available'}
 				{#if venueId && selectedVenueSectors.length > 0}
 					<div>
 						<Label for="tier-sector">
@@ -325,19 +314,48 @@
 					</p>
 				{/if}
 
-				<!-- Per-seat-category prices (#668): seats painted with a category sell
-				     at that category's price; unpainted seats sell at the base price. -->
-				{#if sectorId && sortedPricingCategories.length > 0}
+				<!-- Per-category prices — the ONE pricing mechanism for both seated
+				     modes. user_choice: seats painted with a category sell at that
+				     category's price, a non-empty map must cover every painted
+				     category, unpainted seats sell at the base price. best_available:
+				     the priced categories DEFINE the tier's sellable zones — partial
+				     coverage is the feature, so no gap warning here by design. -->
+				{#if sectorId && chartError}
+					<div class="space-y-2 border-t border-border pt-4">
+						<p class="text-xs text-destructive" role="alert">
+							{m['tierForm.seatingConfig.chartLoadFailed']()}
+						</p>
+						{#if onRetryChart}
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onclick={onRetryChart}
+								disabled={isPending}
+							>
+								{m['tierForm.seatingConfig.chartRetry']()}
+							</Button>
+						{/if}
+					</div>
+				{:else if sectorId && chartLoading}
+					<p class="border-t border-border pt-4 text-xs text-muted-foreground">
+						{m['tierForm.seatingConfig.loadingChart']()}
+					</p>
+				{:else if sectorId && sortedPricingCategories.length > 0}
 					<div class="space-y-3 border-t border-border pt-4">
 						<div class="flex items-center gap-2 text-sm font-medium">
 							<Tag class="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-							{m['tierForm.categoryPrices.title']()}
+							{isBestAvailable
+								? m['tierForm.categoryPrices.zonesTitle']()
+								: m['tierForm.categoryPrices.title']()}
 						</div>
 						<p class="text-xs text-muted-foreground">
-							{m['tierForm.categoryPrices.help']()}
+							{isBestAvailable
+								? m['tierForm.categoryPrices.zonesHelp']()
+								: m['tierForm.categoryPrices.help']()}
 						</p>
 
-						{#if pricingGaps.length > 0}
+						{#if pricingGaps.length > 0 && !isBestAvailable}
 							<div
 								class="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-800 dark:bg-amber-950"
 								role="alert"
@@ -390,100 +408,12 @@
 							{/each}
 						</div>
 						<p class="text-xs text-muted-foreground">
-							{m['tierForm.categoryPrices.unpaintedHelp']()}
+							{isBestAvailable
+								? m['tierForm.categoryPrices.zonesCapacityNote']()
+								: m['tierForm.categoryPrices.unpaintedHelp']()}
 						</p>
 					</div>
 				{/if}
-			{/if}
-
-			<!-- Price category (best_available only) -->
-			{#if seatAssignmentMode === 'best_available'}
-				<div>
-					<Label for="tier-price-category">
-						<span class="flex items-center gap-1">
-							<Tag class="h-3.5 w-3.5" aria-hidden="true" />
-							{m['tierForm.seatingConfig.priceCategory']()}
-							{#if categoryRequired}
-								<span class="text-destructive">*</span>
-							{/if}
-						</span>
-					</Label>
-					{#if chartLoading}
-						<div
-							class="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm text-muted-foreground"
-						>
-							{m['tierForm.seatingConfig.loadingChart']()}
-						</div>
-					{:else if chartError}
-						<div
-							class="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm text-muted-foreground"
-						>
-							{m['tierForm.seatingConfig.priceCategory']()}
-						</div>
-						<p class="mt-1 text-xs text-destructive" role="alert">
-							{m['tierForm.seatingConfig.chartLoadFailed']()}
-						</p>
-						{#if onRetryChart}
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								class="mt-2"
-								onclick={onRetryChart}
-								disabled={isPending}
-							>
-								{m['tierForm.seatingConfig.chartRetry']()}
-							</Button>
-						{/if}
-					{:else if sortedPriceCategories.length > 0}
-						<select
-							id="tier-price-category"
-							bind:value={priceCategoryId}
-							disabled={isPending}
-							required={categoryRequired}
-							aria-invalid={categoryRequired && !priceCategoryId ? true : undefined}
-							aria-describedby="tier-price-category-help"
-							class="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 {categoryRequired &&
-							!priceCategoryId
-								? 'border-destructive'
-								: 'border-input'}"
-						>
-							<option value={null}>
-								{m['tierForm.seatingConfig.selectPriceCategoryRequired']()}
-							</option>
-							{#each sortedPriceCategories as category (category.id)}
-								<option value={category.id}>{category.name}</option>
-							{/each}
-						</select>
-						{#if selectedPriceCategory}
-							<p class="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-								<span
-									class="inline-block h-3 w-3 shrink-0 rounded-full border border-border"
-									style="background-color: {selectedPriceCategory.color}"
-									aria-hidden="true"
-								></span>
-								{selectedPriceCategory.name}
-							</p>
-						{/if}
-						<p
-							id="tier-price-category-help"
-							class="mt-1 text-xs {categoryRequired && !priceCategoryId
-								? 'text-destructive'
-								: 'text-muted-foreground'}"
-						>
-							{m['tierForm.seatingConfig.priceCategoryRequiredHelp']()}
-						</p>
-					{:else}
-						<div
-							class="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm text-muted-foreground"
-						>
-							{m['tierForm.seatingConfig.priceCategory']()}
-						</div>
-						<p class="mt-1 text-xs text-destructive">
-							{m['tierForm.seatingConfig.noPriceCategories']()}
-						</p>
-					{/if}
-				</div>
 			{/if}
 		</div>
 	{/if}

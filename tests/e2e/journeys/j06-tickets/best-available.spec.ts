@@ -76,6 +76,13 @@ async function claimTwoBestAvailable(
 	await expect(confirmDialog.getByText('Select Your Seats')).toBeHidden();
 	await expect(confirmDialog.getByText('STAGE')).toBeHidden();
 
+	// Pricing convergence: Galleria is a MAPPED single-zone tier, so the zone
+	// picker renders (the zone is mandatory — no server default) and the only
+	// zone auto-selects client-side once availability loads.
+	await expect(confirmDialog.getByText('Seating zone', { exact: true })).toBeVisible();
+	const zoneRadio = confirmDialog.getByRole('radio', { name: /Galleria/ });
+	await expect(zoneRadio).toBeChecked({ timeout: 8_000 });
+
 	// Quantity 2 — the second guest-name input appears; the first is prefilled
 	// with the buyer's profile name but is re-filled when empty (defensive:
 	// canSubmit requires every name once quantity > 1).
@@ -170,6 +177,82 @@ test.describe('J19 best available @p2', () => {
 			const newSeats = allSeats.filter((s) => !firstLabels.has(`${s.row}-${s.number}`));
 			expect(newSeats).toHaveLength(2);
 			expect(new Set(allSeats.map((s) => `${s.row}-${s.number}`)).size).toBe(4);
+		} finally {
+			await context.close();
+		}
+	});
+
+	// Pricing convergence: "Platea — Best Available" prices TWO zones in one
+	// tier (Platea Premium €80 / Platea €45), so the buyer's zone decides both
+	// the seat pool and the price. The zone is mandatory: with two zones nothing
+	// auto-selects, the confirm stays gated until one is chosen, and the
+	// reserved pending ticket must carry the CHOSEN zone's price — display
+	// price === charged price, end to end.
+	test('multi-zone best available: zone picker gates confirm and the chosen zone decides the price', async ({
+		browser
+	}) => {
+		test.setTimeout(180_000);
+
+		const [seeded, buyer] = await Promise.all([
+			getSeededBestAvailableEvent('Platea — Best Available'),
+			createVerifiedUser('ZonePick')
+		]);
+
+		const context = await browser.newContext();
+		await authenticateContext(context, buyer);
+		const page = await context.newPage();
+		try {
+			await gotoHydrated(page, seeded.eventPath);
+			await waitForClientAuth(page);
+
+			const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
+			const tierCard = tierDialog
+				.locator('.bg-card')
+				.filter({ has: page.getByRole('heading', { name: seeded.tier.name, exact: true }) });
+			const confirmDialog = page.getByRole('dialog', { name: 'Reserve Ticket' });
+			const zonePicker = confirmDialog.getByText('Seating zone', { exact: true });
+			await expect(async () => {
+				if (await zonePicker.isVisible()) return;
+				if (!(await tierDialog.isVisible())) {
+					await page
+						.getByRole('button', { name: 'Get Tickets', exact: true })
+						.filter({ visible: true })
+						.first()
+						.click();
+				}
+				await tierCard.getByRole('button', { name: 'Reserve Ticket' }).click();
+				await expect(zonePicker).toBeVisible({ timeout: 8_000 });
+			}).toPass({ timeout: 60_000 });
+
+			// Both zones render with their prices; with two zones nothing
+			// auto-selects and the confirm is gated on the choice.
+			const premiumZone = confirmDialog.getByRole('radio', { name: /Platea Premium/ });
+			const stallsZone = confirmDialog.getByRole('radio', { name: /^(?!.*Premium).*Platea/ });
+			await expect(premiumZone).toBeVisible();
+			await expect(stallsZone).toBeVisible();
+			await expect(premiumZone).not.toBeChecked();
+			await expect(stallsZone).not.toBeChecked();
+			await expect(confirmDialog.getByText('€80.00')).toBeVisible();
+			await expect(confirmDialog.getByText('€45.00')).toBeVisible();
+			const reserve = confirmDialog.getByRole('button', { name: 'Reserve Ticket', exact: true });
+			await expect(reserve).toBeDisabled();
+			await expect(confirmDialog.getByText('Choose a seating zone to continue')).toBeVisible();
+
+			// Pick the cheaper zone and reserve (idempotent loop — a retried click
+			// releases the stale block and re-holds server-side).
+			await stallsZone.check();
+			await expect(reserve).toBeEnabled();
+			const success = page.getByRole('dialog', { name: 'Your Ticket', exact: true });
+			await expect(async () => {
+				if (await success.isVisible()) return;
+				await reserve.click();
+				await expect(success).toBeVisible({ timeout: 10_000 });
+			}).toPass({ timeout: 40_000 });
+
+			// The pending offline reservation carries the CHOSEN zone's price —
+			// €45.00, not the premium €80.00 and not a fallback.
+			await expect(success.getByText('Amount due: €45.00')).toBeVisible();
+			await expect(success.getByText(SEAT_RE)).toBeVisible();
 		} finally {
 			await context.close();
 		}
