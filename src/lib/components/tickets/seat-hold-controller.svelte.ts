@@ -34,8 +34,16 @@ import { clearAnonymousHoldRecord, recordAnonymousHold } from '$lib/utils/seat-h
 export interface SeatHoldControllerOptions {
 	/** The event whose seating is being sold. */
 	eventId: string;
-	/** Current desired ticket quantity (holds are capped to it). */
+	/** Current desired ticket quantity (the counter the taps drive). */
 	getQuantity: () => number;
+	/** Hard purchase ceiling (tier/user/event limits) — taps never grow past it. */
+	getMaxQuantity: () => number;
+	/**
+	 * Selecting seats DRIVES the counter: called when a tap (or a seeded
+	 * reload selection) needs the quantity raised to `next` (≤ max). The
+	 * consumer must update the state `getQuantity` reads — synchronously.
+	 */
+	onAutoGrowQuantity: (next: number) => void;
 	/** Whether the buyer is authenticated (anon holds are registry-tracked). */
 	isAuthenticated: () => boolean;
 	/** Called with the conflicting seat ids after a 409 (availability already refetching). */
@@ -192,30 +200,40 @@ export class SeatHoldController {
 
 	/**
 	 * Adopt the caller's server-side holds after an availability (re)load.
-	 * Restricted to the consumer's selectable seats and capped to the current
-	 * quantity (excess holds are left to expire server-side; call trimTo to
-	 * release them eagerly).
+	 * Restricted to the consumer's selectable seats and capped to the MAX
+	 * purchasable quantity — NOT the current counter, which resets to 1 on a
+	 * page reload: capping there rendered the buyer's own surviving holds as
+	 * foreign "held by someone else" seats. The counter is grown to match the
+	 * adopted selection instead (taps drive the counter, and so does a
+	 * restored selection). Holds beyond the max are left to expire server-side.
 	 */
 	seedFromAvailability = (validSeatIds: Set<string>): void => {
 		this.#validSeatIds = validSeatIds;
 		const availability = this.availabilityQuery.data;
 		if (!availability) return;
-		const quantity = Math.max(0, this.#opts.getQuantity());
-		const mine = (availability.my_holds ?? []).filter((id) => validSeatIds.has(id));
-		this.myHolds = mine.slice(0, quantity);
+		const max = Math.max(1, this.#opts.getMaxQuantity());
+		const mine = (availability.my_holds ?? []).filter((id) => validSeatIds.has(id)).slice(0, max);
+		this.myHolds = mine;
 		this.holdExpiresAt = this.myHolds.length > 0 ? (availability.my_holds_expire_at ?? null) : null;
+		if (mine.length > this.#opts.getQuantity()) {
+			this.#opts.onAutoGrowQuantity(mine.length);
+		}
 	};
 
 	/**
 	 * Hold-on-tap toggle. Selecting POSTs a hold (all-or-nothing; a 409 calls
 	 * onConflict with the conflicting seat ids); deselecting releases the hold.
-	 * Serialized per seat: taps on a pending seat are ignored. Selecting beyond
-	 * the current quantity is a no-op (the consumer shows the hint).
+	 * Serialized per seat: taps on a pending seat are ignored. Selecting past
+	 * the current counter GROWS it (taps drive the counter) — only the max
+	 * purchasable quantity is a hard stop.
 	 */
 	toggleSeat = async (seatId: string): Promise<void> => {
 		if (this.pendingSeatIds.includes(seatId)) return;
 		const isMine = this.myHolds.includes(seatId);
-		if (!isMine && this.myHolds.length >= this.#opts.getQuantity()) return;
+		if (!isMine && this.myHolds.length >= this.#opts.getQuantity()) {
+			if (this.myHolds.length >= this.#opts.getMaxQuantity()) return;
+			this.#opts.onAutoGrowQuantity(this.myHolds.length + 1);
+		}
 
 		this.pendingSeatIds = [...this.pendingSeatIds, seatId];
 		try {

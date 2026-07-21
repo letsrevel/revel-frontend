@@ -35,6 +35,7 @@
 	import { checkoutTotal } from '$lib/components/tickets/checkout-total';
 	import { pwycSuggestions } from '$lib/components/tickets/pwyc-validation';
 	import {
+		GUEST_COMPATIBLE_STEPS,
 		guestCheckoutBody,
 		guestCheckoutFingerprint,
 		guestPwycCheckoutBody,
@@ -105,14 +106,6 @@
 	// Billing section
 	let billingSection: CheckoutBillingSection | undefined = $state();
 	const invoicingAvailable = $derived(!!tier.invoicing_available);
-
-	// Next steps that guests can perform without an account
-	const GUEST_COMPATIBLE_STEPS = new Set([
-		'purchase_ticket',
-		'rsvp',
-		'wait_for_event_to_open',
-		'wait_for_open_spot'
-	]);
 
 	// Validation errors
 	let fieldErrors = $state<Record<string, string>>({});
@@ -679,6 +672,10 @@
 							{tierSectorDescription}
 							{eventId}
 							{quantity}
+							maxQuantity={effectiveMaxQuantity}
+							onQuantityAutoGrow={(next) => {
+								if (next > quantity && next <= effectiveMaxQuantity) quantity = next;
+							}}
 							{isSubmitting}
 							{seatSelectionError}
 							{bestAvailableError}

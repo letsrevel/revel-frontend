@@ -203,6 +203,89 @@ test.describe('J6 seat selection @p2', () => {
 		await context.close();
 	});
 
+	// Taps DRIVE the quantity counter (no pre-incrementing), and a reload
+	// restores the buyer's full held selection as their own — the seed adopts
+	// up to the MAX purchasable quantity and grows the counter to match
+	// (previously it capped at the reset counter of 1, rendering the buyer's
+	// own surviving holds as foreign "held by someone else" seats).
+	test('taps grow the counter; reload restores the whole selection as mine', async ({
+		browser
+	}) => {
+		const hall = await getSeededConcertHall();
+		const [event, buyer] = await Promise.all([
+			createTicketedEvent({ freeTier: false, event: { venue_id: hall.venueId } }),
+			createVerifiedUser('TapGrow')
+		]);
+		await deleteDefaultTier(event.id);
+		await createTicketTier(event.id, {
+			name: 'Tap Grow Seats',
+			payment_method: 'offline',
+			price: '15.00',
+			seat_assignment_mode: 'user_choice',
+			venue_id: hall.venueId,
+			sector_id: hall.sectorId,
+			max_tickets_per_user: 4
+		});
+
+		const context = await browser.newContext();
+		await authenticateContext(context, buyer);
+		const page = await context.newPage();
+
+		const openDialog = async () => {
+			await gotoHydrated(page, event.path);
+			await waitForClientAuth(page);
+			const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
+			const confirmDialog = page.getByRole('dialog', { name: 'Reserve Ticket' });
+			await expect(async () => {
+				if (await confirmDialog.isVisible()) return;
+				if (!(await tierDialog.isVisible())) {
+					await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
+				}
+				await tierDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
+				await expect(confirmDialog).toBeVisible({ timeout: 8_000 });
+			}).toPass({ timeout: 60_000 });
+			return confirmDialog;
+		};
+
+		let confirmDialog = await openDialog();
+
+		// Tap B2 WITHOUT touching the stepper: 1/1. Tap B3: the counter GROWS
+		// to 2 and the seat holds — no manual increment needed. Only click
+		// while unpressed (a second tap would release the hold).
+		const seatB2 = confirmDialog.getByRole('button', { name: /^Seat B2(,|$)/ });
+		const seatB3 = confirmDialog.getByRole('button', { name: /^Seat B3(,|$)/ });
+		await expect(async () => {
+			if ((await seatB2.getAttribute('aria-pressed')) !== 'true') {
+				await seatB2.click();
+			}
+			await expect(seatB2).toHaveAttribute('aria-pressed', 'true', { timeout: 5_000 });
+			await expect(confirmDialog.getByText('1 / 1 selected')).toBeVisible({ timeout: 5_000 });
+		}).toPass({ timeout: 60_000 });
+		await expect(async () => {
+			if ((await seatB3.getAttribute('aria-pressed')) !== 'true') {
+				await seatB3.click();
+			}
+			await expect(seatB3).toHaveAttribute('aria-pressed', 'true', { timeout: 5_000 });
+			await expect(confirmDialog.getByText('2 / 2 selected')).toBeVisible({ timeout: 5_000 });
+		}).toPass({ timeout: 60_000 });
+
+		// Reload and reopen: BOTH seats come back as the buyer's own selection
+		// (pressed, not foreign-held) and the counter is restored to 2.
+		confirmDialog = await openDialog();
+		await expect(confirmDialog.getByRole('button', { name: /^Seat B2(,|$)/ })).toHaveAttribute(
+			'aria-pressed',
+			'true',
+			{ timeout: 15_000 }
+		);
+		await expect(confirmDialog.getByRole('button', { name: /^Seat B3(,|$)/ })).toHaveAttribute(
+			'aria-pressed',
+			'true'
+		);
+		await expect(confirmDialog.getByText('2 / 2 selected')).toBeVisible();
+
+		await context.close();
+	});
+
 	// Painting a category onto seats is a venue-wide op that always succeeds —
 	// a tier whose map doesn't price it then has seats it cannot sell. With the
 	// dialog OPEN the tier payload goes stale while the chart refetches (the

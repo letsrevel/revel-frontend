@@ -35,6 +35,10 @@
 		tierSector: { id?: string | null; name: string } | null;
 		eventId: string;
 		quantity: number;
+		/** Hard purchase ceiling — seat taps grow the counter up to this. */
+		maxQuantity: number;
+		/** Taps drive the counter: raise the dialog's quantity to `next`. */
+		onQuantityAutoGrow: (next: number) => void;
 		isProcessing: boolean;
 		/** Parent validation error ("select N more seats"). */
 		seatSelectionError: string;
@@ -60,6 +64,8 @@
 		tierSector,
 		eventId,
 		quantity,
+		maxQuantity,
+		onQuantityAutoGrow,
 		isProcessing,
 		seatSelectionError,
 		bestAvailableError,
@@ -90,6 +96,8 @@
 			? new SeatHoldController({
 					eventId,
 					getQuantity: () => quantity,
+					getMaxQuantity: () => maxQuantity,
+					onAutoGrowQuantity: onQuantityAutoGrow,
 					isAuthenticated: () => !!authStore.accessToken,
 					onConflict: (_seatIds, reason) => {
 						conflictMessage = holdConflictMessage(reason);
@@ -326,7 +334,7 @@
 						chart={mapChart}
 						seats={seatViews}
 						onToggle={handleToggle}
-						maxReached={heldCount >= quantity}
+						maxReached={heldCount >= maxQuantity}
 						disabled={isProcessing}
 						activeSectorId={effectiveScope === 'venue' ? (tierSector?.id ?? null) : null}
 						{standingCounts}
@@ -348,7 +356,7 @@
 					<SeatSelector
 						seats={seatViews}
 						onToggle={handleToggle}
-						maxReached={heldCount >= quantity}
+						maxReached={heldCount >= maxQuantity}
 						disabled={isProcessing}
 						{seatPricing}
 						{currency}

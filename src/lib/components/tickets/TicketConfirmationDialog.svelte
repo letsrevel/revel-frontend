@@ -523,6 +523,10 @@
 				{tierSector}
 				{eventId}
 				{quantity}
+				maxQuantity={effectiveMaxQuantity}
+				onQuantityAutoGrow={(next) => {
+					if (next > quantity && next <= effectiveMaxQuantity) quantity = next;
+				}}
 				isProcessing={isProcessing || isHoldingSeats}
 				{seatSelectionError}
 				{bestAvailableError}

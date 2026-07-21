@@ -116,10 +116,13 @@ export class SeatMapViewport {
 		if (!prev) return;
 		const current = { x: event.clientX, y: event.clientY };
 		if (this.#pointers.size === 1) {
-			// Nothing to pan at base scale (the map fits the box) — and swallowing
-			// the drag would fight the browser's dialog scroll under pan-y. Keep
-			// tracking the pointer so a pinch starting later has fresh anchors.
-			if (this.scale > 1) {
+			// A MOUSE drag pans at any scale (dragging never conflicts with
+			// desktop scrolling — the wheel owns that). TOUCH pans only once
+			// zoomed in: at base scale the map fits the box, so the finger's
+			// drag belongs to the dialog scroll under touch-action: pan-y, and
+			// swallowing it here would fight the browser. Keep tracking the
+			// pointer either way so a pinch starting later has fresh anchors.
+			if (this.scale > 1 || event.pointerType === 'mouse') {
 				const rect = this.#opts.getSvg()?.getBoundingClientRect();
 				if (rect && rect.width > 0 && rect.height > 0) {
 					this.tx += ((current.x - prev.x) / rect.width) * this.#opts.getContentW();

@@ -20,6 +20,14 @@ import type {
 	TicketPurchaseItem
 } from '$lib/api/generated/types.gen';
 
+/** Next steps a guest can complete without an account (eligibility check). */
+export const GUEST_COMPATIBLE_STEPS: ReadonlySet<string> = new Set([
+	'purchase_ticket',
+	'rsvp',
+	'wait_for_event_to_open',
+	'wait_for_open_spot'
+]);
+
 export interface GuestCheckoutArgs {
 	email: string;
 	firstName: string;
