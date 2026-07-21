@@ -6,6 +6,7 @@ import type {
 	VenueChartSchema
 } from '$lib/api/generated/types.gen';
 import SeatMap from './SeatMap.svelte';
+import { formatMoney } from '$lib/utils/format';
 import type { SeatView } from './seating-view';
 
 // SeatMap is a pure props component: the chart provides geometry, the seats
@@ -69,6 +70,21 @@ interface RenderOptions {
 	standingCounts?: Record<string, { capacity: number; taken: number }>;
 	sectorTargets?: Array<{ sectorId: string; label: string; lines: string[] }> | null;
 	onSectorSelect?: (sectorId: string) => void;
+	interactiveSectors?: Array<{
+		sectorId: string;
+		seatPricing: {
+			categories: Array<{
+				id: string;
+				name: string;
+				color: string;
+				price: string | null;
+				available: boolean;
+			}>;
+			unpainted: string | null;
+		} | null;
+		currency: string | null;
+		maxReached: boolean;
+	}> | null;
 }
 
 function renderMap(options: RenderOptions = {}) {
@@ -300,6 +316,100 @@ describe('SeatMap', () => {
 			expect(screen.getByRole('img', { name: 'Balcony: no tickets on sale' })).toBeInTheDocument();
 			expect(screen.queryByRole('button', { name: /^Balcony/ })).not.toBeInTheDocument();
 			expect(onSectorSelect).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('hybrid overview: seat-selectable + target + ghost sectors (#657 phase 2)', () => {
+		// Three sectors coexisting in ONE overview: sec-1 stays a whole-sector
+		// target, sec-2 renders real interactive seats with ITS tier's pricing,
+		// sec-3 is an unsold ghost.
+		const hybridChart: VenueChartSchema = {
+			venue_id: 'venue-1',
+			venue_name: 'Test Hall',
+			updated_at: '2026-07-18T00:00:00Z',
+			price_categories: [{ id: 'cat-1', name: 'Gold', color: '#aa0000', display_order: 0 }],
+			sectors: [
+				{ id: 'sec-1', name: 'Stalls', kind: 'seated', seats: [chartSeat('a1')] },
+				{
+					id: 'sec-2',
+					name: 'Balcony',
+					kind: 'seated',
+					seats: [
+						chartSeat('c1', { id: 'c1', price_category_id: 'cat-1' }),
+						chartSeat('c2', { id: 'c2' })
+					]
+				},
+				{ id: 'sec-3', name: 'Gallery', kind: 'seated', seats: [chartSeat('d1', { id: 'd1' })] }
+			]
+		};
+		const targets = [{ sectorId: 'sec-1', label: 'Stalls: Front, EUR 20.00', lines: [] }];
+		const gold45 = formatMoney('45.00', 'EUR');
+		const base20 = formatMoney('20.00', 'EUR');
+		const balconyPricing = {
+			categories: [
+				{ id: 'cat-1', name: 'Gold', color: '#aa0000', price: '45.00', available: true }
+			],
+			unpainted: '20.00'
+		};
+
+		function renderHybrid(options: Partial<RenderOptions> = {}) {
+			const onToggle = vi.fn();
+			const onSectorSelect = vi.fn();
+			renderMap({
+				chart: hybridChart,
+				seats: [view('c1', { id: 'c1' }), view('c2', { id: 'c2' })],
+				interactive: false,
+				sectorTargets: targets,
+				onSectorSelect,
+				onToggle,
+				interactiveSectors: [
+					{ sectorId: 'sec-2', seatPricing: balconyPricing, currency: 'EUR', maxReached: false }
+				],
+				...options
+			});
+			return { onToggle, onSectorSelect };
+		}
+
+		it('renders all three sector treatments at once', () => {
+			renderHybrid();
+			// Target sector: one whole-sector button, no per-seat buttons.
+			expect(screen.getByRole('button', { name: /^Stalls:/ })).toBeInTheDocument();
+			expect(screen.queryByRole('button', { name: /Seat A1/ })).not.toBeInTheDocument();
+			// Seat-selectable sector: individual seat buttons.
+			expect(screen.getByRole('button', { name: /^Seat C2/ })).toBeInTheDocument();
+			// Unsold sector: inert not-for-sale ghost.
+			expect(screen.getByRole('img', { name: 'Gallery: no tickets on sale' })).toBeInTheDocument();
+			expect(screen.queryByRole('button', { name: /Seat D1/ })).not.toBeInTheDocument();
+		});
+
+		it('labels interactive seats with the SECTOR tier’s resolved prices', () => {
+			renderHybrid();
+			// Painted seat: category name + category price; unpainted: fallback.
+			expect(screen.getByRole('button', { name: `Seat C1, Gold, ${gold45}` })).toBeInTheDocument();
+			expect(screen.getByRole('button', { name: `Seat C2, ${base20}` })).toBeInTheDocument();
+		});
+
+		it('toggles interactive seats and still fires sector targets', async () => {
+			const { onToggle, onSectorSelect } = renderHybrid();
+			await fireEvent.click(screen.getByRole('button', { name: `Seat C2, ${base20}` }));
+			expect(onToggle).toHaveBeenCalledExactlyOnceWith('c2');
+			await fireEvent.click(screen.getByRole('button', { name: /^Stalls:/ }));
+			expect(onSectorSelect).toHaveBeenCalledExactlyOnceWith('sec-1');
+		});
+
+		it('applies the per-sector maxReached cap (mine stays togglable)', async () => {
+			const { onToggle } = renderHybrid({
+				seats: [view('c1', { id: 'c1', status: 'mine' }), view('c2', { id: 'c2' })],
+				interactiveSectors: [
+					{ sectorId: 'sec-2', seatPricing: balconyPricing, currency: 'EUR', maxReached: true }
+				]
+			});
+			const available = screen.getByRole('button', { name: `Seat C2, ${base20}` });
+			expect(available).toHaveAttribute('aria-disabled', 'true');
+			await fireEvent.click(available);
+			expect(onToggle).not.toHaveBeenCalled();
+			await fireEvent.click(screen.getByRole('button', { name: `Seat C1, Gold, ${gold45}` }));
+			expect(onToggle).toHaveBeenCalledExactlyOnceWith('c1');
 		});
 	});
 

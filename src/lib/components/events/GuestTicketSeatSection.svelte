@@ -27,6 +27,13 @@
 		sellableCategoryIds
 	} from '$lib/components/tickets/seat-pricing';
 	import { zoneOptions } from '$lib/components/tickets/seat-zones';
+	import SeatSectorSwitchDialog from '$lib/components/tickets/SeatSectorSwitchDialog.svelte';
+	import {
+		buildSectorOverview,
+		switchTargetsFor,
+		type SectorOverviewEntry
+	} from './venue-overview';
+	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import { buildSeatViews } from '$lib/components/tickets/seating-view';
 	import type { TierSeatPricingSchema, VenueChartSchema } from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -45,7 +52,6 @@
 		isOnlinePayment: boolean;
 		tierVenue: { name: string } | null;
 		tierSector: { id?: string | null; name: string } | null;
-		tierSectorDescription: string | undefined;
 		eventId: string;
 		quantity: number;
 		/** Hard purchase ceiling — seat taps grow the counter up to this. */
@@ -62,6 +68,11 @@
 		/** Buyer's chosen zone on a MAPPED best-available tier (mandatory there). */
 		selectedZoneId?: string | null;
 		onZoneChange?: (zoneId: string | null) => void;
+		/** All tiers of the event: other sold sectors become switch targets in
+		 * whole-venue scope (clicking one prompts a section+tier switch). */
+		allTiers?: TierSchemaWithId[] | null;
+		/** Buyer confirmed the switch prompt: swap to this tier's dialog. */
+		onSwitchTier?: (tier: TierSchemaWithId) => void;
 		/** Hands the seat-hold controller up to the dialog (submit/close lifecycle). */
 		onController: (controller: SeatHoldController) => void;
 		/** Server-resolved zone→price legend (category-priced tiers, either mode). */
@@ -76,7 +87,6 @@
 		isOnlinePayment,
 		tierVenue,
 		tierSector,
-		tierSectorDescription,
 		eventId,
 		quantity,
 		maxQuantity,
@@ -88,6 +98,8 @@
 		onAccessibleRequiredChange,
 		selectedZoneId = null,
 		onZoneChange = undefined,
+		allTiers = null,
+		onSwitchTier = undefined,
 		onController,
 		seatPricing = null,
 		currency = null
@@ -95,6 +107,18 @@
 
 	// Best-available tiers only hold seats when the purchase reserves immediately.
 	const holdsAtCheckout = $derived(isBestAvailableSeat && isOnlinePayment);
+
+	// NOTE: VenueSectorSchema declares no `description` field, but the template
+	// historically rendered one (masked by an `as any` cast upstream). Preserve
+	// that dynamic read type-safely; if this is meant to show data, the API
+	// contract is missing it.
+	const tierSectorDescription = $derived.by(() => {
+		const s: unknown = tierSector;
+		if (s && typeof s === 'object' && 'description' in s && typeof s.description === 'string') {
+			return s.description;
+		}
+		return undefined;
+	});
 
 	// Inline 409-conflict message (a seat was grabbed between render and tap)
 	let conflictMessage = $state('');
@@ -198,6 +222,25 @@
 		if (!chart || !tierSector?.id || effectiveScope === 'venue') return chart;
 		return { ...chart, sectors: (chart.sectors ?? []).filter((s) => s.id === tierSector.id) };
 	});
+
+	// Whole-venue scope: other SOLD sectors are switch targets (prompted, never
+	// silent) — mirrors SeatAssignmentSection. Guests have no per-user
+	// remaining info, so purchasability uses the tier fields alone.
+	const sectorEntries = $derived(
+		effectiveScope === 'venue' && chart && allTiers && onSwitchTier
+			? buildSectorOverview(chart, allTiers)
+			: []
+	);
+	const switchTargets = $derived.by(() => {
+		if (sectorEntries.length === 0) return null;
+		const targets = switchTargetsFor(sectorEntries, tierSector?.id);
+		return targets.length > 0 ? targets : null;
+	});
+	let switchEntry = $state<SectorOverviewEntry | null>(null);
+
+	function handleSectorTarget(sectorId: string): void {
+		switchEntry = sectorEntries.find((entry) => entry.sectorId === sectorId) ?? null;
+	}
 
 	const heldCount = $derived(controller?.myHolds.length ?? 0);
 
@@ -360,7 +403,21 @@
 								onToggle={handleToggle}
 								maxReached={heldCount >= maxQuantity}
 								disabled={isSubmitting}
-								activeSectorId={effectiveScope === 'venue' ? (tierSector?.id ?? null) : null}
+								activeSectorId={effectiveScope === 'venue' && !switchTargets
+									? (tierSector?.id ?? null)
+									: null}
+								sectorTargets={switchTargets}
+								interactiveSectors={switchTargets && tierSector?.id
+									? [
+											{
+												sectorId: tierSector.id,
+												seatPricing: seatPricing ?? null,
+												currency: currency ?? null,
+												maxReached: heldCount >= maxQuantity
+											}
+										]
+									: null}
+								onSectorSelect={handleSectorTarget}
 								{standingCounts}
 								{seatPricing}
 								{currency}
@@ -510,3 +567,13 @@
 		{/if}
 	</div>
 {/if}
+
+<SeatSectorSwitchDialog
+	entry={switchEntry}
+	heldCount={controller?.myHolds.length ?? 0}
+	onPick={(tier) => {
+		switchEntry = null;
+		onSwitchTier?.(tier);
+	}}
+	onCancel={() => (switchEntry = null)}
+/>

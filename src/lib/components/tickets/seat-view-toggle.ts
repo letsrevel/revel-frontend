@@ -82,6 +82,33 @@ export function writeSeatMapScopePref(scope: SeatMapScope): void {
 }
 
 /**
+ * Tier-list map preference: once the buyer opens the seating map from the
+ * tier modal, subsequent tier-modal opens this session auto-open the overview
+ * (fired once per modal open — the list stays reachable by closing it).
+ */
+export const TIER_MAP_PREF_KEY = 'revel:tier-map-pref';
+
+/** Whether the buyer chose the map from the tier modal this session (SSR-safe). */
+export function readTierMapPref(): boolean {
+	if (typeof window === 'undefined') return false;
+	try {
+		return window.sessionStorage.getItem(TIER_MAP_PREF_KEY) === 'map';
+	} catch {
+		return false;
+	}
+}
+
+/** Remember the buyer's map-first choice for the session (SSR-safe, best-effort). */
+export function writeTierMapPref(): void {
+	if (typeof window === 'undefined') return;
+	try {
+		window.sessionStorage.setItem(TIER_MAP_PREF_KEY, 'map');
+	} catch {
+		// Storage unavailable — the tier list stays the default next time.
+	}
+}
+
+/**
  * Adapt the availability payload's standing map (unknown-shaped JSON values)
  * into SeatMap's standingCounts prop. Entries without a numeric capacity are
  * dropped (a remaining/total readout is meaningless without one — the map

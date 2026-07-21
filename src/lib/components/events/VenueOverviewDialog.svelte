@@ -1,10 +1,13 @@
 <script lang="ts">
 	/**
 	 * Map-first tier selection (#679): a whole-venue overview where every
-	 * sector shows which tier(s) sell it at what price. Picking a sector routes
-	 * into the existing purchase flow — 1:1 sectors go straight to the tier's
-	 * dialog, sectors sold by several tiers open a small chooser first.
-	 * Sectors sold by no purchasable tier render ghosted and inert.
+	 * sector shows which tier(s) sell it at what price. A sector sold by
+	 * EXACTLY ONE purchasable user_choice tier renders its seats directly
+	 * selectable (real server holds, Continue hands them to the purchase
+	 * dialog — see VenueOverviewMap); other sold sectors route into the
+	 * existing purchase flow — 1:1 sectors go straight to the tier's dialog,
+	 * sectors sold by several tiers open a small chooser first. Sectors sold
+	 * by no purchasable tier render ghosted and inert.
 	 */
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
@@ -19,13 +22,12 @@
 		DialogDescription
 	} from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
-	import SeatMap from '$lib/components/tickets/SeatMap.svelte';
-	import { Loader2, Map as MapIcon } from '@lucide/svelte';
+	import VenueOverviewMap from './VenueOverviewMap.svelte';
+	import { Map as MapIcon } from '@lucide/svelte';
 	import {
 		buildSectorOverview,
-		parseStageMetadata,
+		seatSellingTier,
 		type SectorOverviewEntry,
-		type SectorTarget,
 		type SectorTierMode
 	} from './venue-overview';
 
@@ -37,6 +39,8 @@
 		canAttendWithoutLogin?: boolean;
 		/** Per-tier remaining tickets info (my-status endpoint), when known. */
 		tierRemainingTickets?: TierRemainingTicketsSchema[];
+		/** Event-level max tickets per user (seat-selection cap fallback). */
+		eventMaxTicketsPerUser?: number | null;
 		/** Route an authenticated buyer into the tier's purchase dialog. */
 		onSelectTier: (tier: TierSchemaWithId) => void;
 		/** Route a guest buyer into the guest ticket dialog (same as TierCard). */
@@ -50,14 +54,16 @@
 		isAuthenticated,
 		canAttendWithoutLogin = false,
 		tierRemainingTickets,
+		eventMaxTicketsPerUser = null,
 		onSelectTier,
 		onGuestTierClick
 	}: Props = $props();
 
 	const CHART_STALE_TIME_MS = 5 * 60 * 1000;
 
-	// Same query key/staleTime as SeatHoldController, so the purchase dialogs
-	// and the overview share one cached chart. Fetched lazily on first open.
+	// Same query key/staleTime as SeatHoldController, so the purchase dialogs,
+	// the seat layer and this shell share one cached chart (the shell only
+	// needs it for the venue name + chooser entries). Fetched lazily on open.
 	const chartQuery = createQuery<VenueChartSchema, Error>(() => ({
 		queryKey: ['seating-chart', eventId],
 		staleTime: CHART_STALE_TIME_MS,
@@ -77,25 +83,17 @@
 		return buildSectorOverview(chart, tiers, { remaining: tierRemainingTickets });
 	});
 
-	// Sector click targets for SeatMap's overview mode: accessible name and
-	// visible overlay both carry the tier name(s) + price(s).
-	const sectorTargets = $derived(
-		entries
-			.filter((entry) => entry.options.length > 0)
-			.map((entry): SectorTarget => ({
-				sectorId: entry.sectorId,
-				label: `${entry.sectorName}: ${entry.options
-					.map((option) => `${option.tier.name}, ${option.priceDisplay}`)
-					.join('; ')}`,
-				lines: entry.options.map((option) => `${option.tier.name} · ${option.priceDisplay}`)
-			}))
-	);
-
-	const stage = $derived(chartQuery.data ? parseStageMetadata(chartQuery.data.metadata) : null);
-
 	// Buyers who must sign in first (mirrors TierCard's login-CTA branch): the
 	// chooser doubles as the sector detail sheet with a sign-in CTA.
 	const needsLogin = $derived(!isAuthenticated && !canAttendWithoutLogin);
+
+	// Seat-level selection available? Then the hint invites tapping seats too.
+	const hasSelectableSeats = $derived(
+		!needsLogin && entries.some((entry) => seatSellingTier(entry) !== null)
+	);
+	const hintText = $derived(
+		hasSelectableSeats ? m['venueOverview.hintWithSeats']() : m['venueOverview.hint']()
+	);
 
 	// 1:N chooser state (also used for 1:1 when sign-in is required).
 	let chooserEntry = $state<SectorOverviewEntry | null>(null);
@@ -149,37 +147,24 @@
 			</DialogTitle>
 			<DialogDescription>
 				{#if chartQuery.data}
-					{chartQuery.data.venue_name} — {m['venueOverview.hint']()}
+					{chartQuery.data.venue_name} — {hintText}
 				{:else}
-					{m['venueOverview.hint']()}
+					{hintText}
 				{/if}
 			</DialogDescription>
 		</DialogHeader>
 
-		<div class="min-h-0 flex-1 overflow-hidden rounded-lg border bg-muted/20">
-			{#if chartQuery.isPending}
-				<div
-					class="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground"
-					role="status"
-				>
-					<Loader2 class="h-6 w-6 animate-spin" aria-hidden="true" />
-					<p class="text-sm">{m['venueOverview.loading']()}</p>
-				</div>
-			{:else if chartQuery.isError || !chartQuery.data}
-				<div class="flex h-full items-center justify-center p-6">
-					<p class="text-sm text-destructive" role="alert">{m['venueOverview.loadError']()}</p>
-				</div>
-			{:else}
-				<SeatMap
-					chart={chartQuery.data}
-					seats={[]}
-					interactive={false}
-					{sectorTargets}
-					onSectorSelect={handleSectorSelect}
-					{stage}
-				/>
-			{/if}
-		</div>
+		<!-- Seat layer + targets; mounts only while the dialog is open, so its
+		     hold controller releases un-handed-off holds on close. -->
+		<VenueOverviewMap
+			{eventId}
+			{tiers}
+			{needsLogin}
+			{tierRemainingTickets}
+			{eventMaxTicketsPerUser}
+			onSectorTarget={handleSectorSelect}
+			onContinue={route}
+		/>
 	</DialogContent>
 </Dialog>
 

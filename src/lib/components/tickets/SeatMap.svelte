@@ -20,7 +20,8 @@
 	import { formatMoney } from '$lib/utils/format';
 	import { resolveSeatPrice } from './seat-pricing';
 	import { Minus, Plus, RotateCcw } from '@lucide/svelte';
-	import type { SectorTarget } from '$lib/components/events/venue-overview';
+	import type { SectorSeatConfig, SectorTarget } from '$lib/components/events/venue-overview';
+	import SeatMapGhostSector from './SeatMapGhostSector.svelte';
 	import SeatMapSectorTarget from './SeatMapSectorTarget.svelte';
 	import { SeatMapViewport } from './seat-map-viewport.svelte';
 	import { computeSeatMapLayout, type SeatPoint, type SectorLayout } from './seat-map-layout';
@@ -73,6 +74,14 @@
 		sectorTargets?: SectorTarget[] | null;
 		/** Fired with the sector id when an overview sector target is activated. */
 		onSectorSelect?: (sectorId: string) => void;
+		/**
+		 * Seat-level selection INSIDE overview mode: sectors listed here render
+		 * their real interactive seat bodies (statuses from `seats`, per-sector
+		 * pricing/currency/cap from the config) while sectors with a target stay
+		 * whole-sector click targets and the rest render as ghosts. Ignored
+		 * outside overview mode.
+		 */
+		interactiveSectors?: SectorSeatConfig[] | null;
 	}
 
 	const {
@@ -88,12 +97,38 @@
 		seatPricing = null,
 		currency = null,
 		sectorTargets = null,
-		onSectorSelect
+		onSectorSelect,
+		interactiveSectors = null
 	}: Props = $props();
 
-	// Overview mode: whole sectors are the interaction unit (see Props docs).
+	// Overview mode: whole sectors are the interaction unit (see Props docs) —
+	// except sectors with a seat config, whose seats stay individually tappable.
 	const overview = $derived(sectorTargets != null);
 	const targetsById = $derived(new Map((sectorTargets ?? []).map((t) => [t.sectorId, t])));
+	const seatConfigById = $derived(new Map((interactiveSectors ?? []).map((c) => [c.sectorId, c])));
+	const seatSectorId = $derived(
+		new Map(
+			(chart.sectors ?? []).flatMap((sector) =>
+				(sector.seats ?? []).map((seat) => [seat.id, sector.id] as const)
+			)
+		)
+	);
+
+	/** Per-sector seat config for a seat, when its sector has one. */
+	function sectorConfigFor(seatId: string): SectorSeatConfig | undefined {
+		const sectorId = seatSectorId.get(seatId);
+		return sectorId ? seatConfigById.get(sectorId) : undefined;
+	}
+
+	/** A configured sector's own cap wins over the map-wide maxReached prop. */
+	function seatMaxReached(seatId: string): boolean {
+		return sectorConfigFor(seatId)?.maxReached ?? maxReached;
+	}
+
+	/** Seats are interactive map-wide, or per sector via interactiveSectors. */
+	function seatInteractive(seatId: string): boolean {
+		return interactive || sectorConfigFor(seatId) !== undefined;
+	}
 
 	function handleSectorSelect(sectorId: string): void {
 		if (viewport.suppressClick) return;
@@ -194,19 +229,25 @@
 			: `${m['seatSelector.seat']()} ${pt.label}, ${m['seatSelector.statusBlocked']()}`;
 		const category = categoryFor(pt.seatId);
 		if (category) label += `, ${category.name}`;
-		// Dumb server-resolved lookup — never a locally recomputed fallback chain.
-		const priceInfo = resolveSeatPrice(seatPricing, seatCategoryId.get(pt.seatId) ?? null);
+		// Dumb server-resolved lookup — never a locally recomputed fallback
+		// chain. A configured sector's own tier pricing wins over the map-wide
+		// seatPricing prop (each overview sector is sold by a different tier).
+		const config = sectorConfigFor(pt.seatId);
+		const priceInfo = resolveSeatPrice(
+			config ? config.seatPricing : seatPricing,
+			seatCategoryId.get(pt.seatId) ?? null
+		);
 		if (priceInfo?.available && priceInfo.price != null) {
-			label += `, ${formatMoney(priceInfo.price, currency)}`;
+			label += `, ${formatMoney(priceInfo.price, config ? config.currency : currency)}`;
 		}
 		return label;
 	}
 
 	// --- toggling -----------------------------------------------------------
 	function canToggle(view: SeatView): boolean {
-		if (!interactive || disabled || !onToggle) return false;
+		if (!seatInteractive(view.id) || disabled || !onToggle) return false;
 		if (view.status === 'mine') return true;
-		return view.status === 'available' && !maxReached;
+		return view.status === 'available' && !seatMaxReached(view.id);
 	}
 
 	function handleSeatClick(view: SeatView) {
@@ -309,7 +350,8 @@
 			{cx}
 			{cy}
 			r={SEAT_R}
-			class="fill-background {category ? '' : 'stroke-border'} {maxReached || disabled
+			class="fill-background {category ? '' : 'stroke-border'} {seatMaxReached(pt.seatId) ||
+			disabled
 				? 'opacity-50'
 				: ''}"
 			stroke={category?.color}
@@ -393,7 +435,7 @@
 			{@const view = seatById.get(pt.seatId)}
 			{@const cx = (pt.x + 0.5) * CELL}
 			{@const cy = (pt.y + 0.5) * CELL}
-			{#if interactive && view}
+			{#if seatInteractive(pt.seatId) && view}
 				<g
 					data-seat-id={pt.seatId}
 					role="button"
@@ -417,58 +459,6 @@
 			{/if}
 		{/each}
 	{/if}
-{/snippet}
-
-<!--
-	Ghost sector for the whole-venue context view and the map-first overview:
-	real footprint and seat positions, but dimmed uniform dots — deliberately
-	NOT the sold/blocked X pattern, because these seats aren't unavailable,
-	they're just not sold through this surface (`label` says why: "sold through
-	a different ticket" in context mode, "no tickets on sale" in overview
-	mode). One inert labelled group; nothing focusable inside.
--->
-{#snippet ghostSector(sector: SectorLayout, label: string)}
-	<g role="img" aria-label="{sector.name}: {label}" class="opacity-60">
-		<title>{sector.name}: {label}</title>
-		{#if sector.kind === 'standing'}
-			<rect
-				x="0"
-				y="0"
-				width={sector.width * CELL}
-				height={sector.height * CELL}
-				rx="12"
-				class="fill-muted/25 stroke-border/60"
-				stroke-dasharray="6 4"
-				stroke-width="1.5"
-			/>
-		{:else}
-			{#if sector.shape}
-				<polygon
-					points={sector.shape.map((p) => `${p.x * CELL},${p.y * CELL}`).join(' ')}
-					class="fill-muted/20 stroke-border/40"
-					stroke-width="1"
-				/>
-			{:else}
-				<rect
-					x={-6}
-					y={-6}
-					width={sector.width * CELL + 12}
-					height={sector.height * CELL + 12}
-					rx="10"
-					class="fill-muted/15 stroke-border/40"
-					stroke-width="1"
-				/>
-			{/if}
-			{#each sector.seats as pt (pt.seatId)}
-				<circle
-					cx={(pt.x + 0.5) * CELL}
-					cy={(pt.y + 0.5) * CELL}
-					r={SEAT_R - 3}
-					class="fill-muted-foreground/15"
-				/>
-			{/each}
-		{/if}
-	</g>
 {/snippet}
 
 <!--
@@ -609,9 +599,10 @@
 
 				{#each layout.sectors as sector (sector.id)}
 					{@const aabb = worldAABB(sector)}
-					{@const target = overview ? targetsById.get(sector.id) : undefined}
+					{@const seatSelectable = overview && seatConfigById.has(sector.id)}
+					{@const target = overview && !seatSelectable ? targetsById.get(sector.id) : undefined}
 					{@const ghost = overview
-						? !target
+						? !target && !seatSelectable
 						: activeSectorId != null && sector.id !== activeSectorId}
 					{@const groupTransform = `translate(${canvasX(sector.transform.x)} ${canvasY(
 						sector.transform.y
@@ -646,12 +637,14 @@
 					{:else}
 						<g transform={groupTransform}>
 							{#if ghost}
-								{@render ghostSector(
-									sector,
-									overview
+								<SeatMapGhostSector
+									{sector}
+									cell={CELL}
+									seatR={SEAT_R}
+									label={overview
 										? m['venueOverview.sectorNotForSale']()
-										: m['seatMap.otherTicketSector']()
-								)}
+										: m['seatMap.otherTicketSector']()}
+								/>
 							{:else}
 								{@render sectorBody(sector)}
 							{/if}

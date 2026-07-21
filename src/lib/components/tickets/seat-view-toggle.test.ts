@@ -8,10 +8,13 @@ import type {
 import SeatViewToggle from './SeatViewToggle.svelte';
 import {
 	SEAT_VIEW_PREF_KEY,
+	TIER_MAP_PREF_KEY,
 	defaultSeatViewMode,
 	readSeatViewPref,
+	readTierMapPref,
 	standingCountsFrom,
-	writeSeatViewPref
+	writeSeatViewPref,
+	writeTierMapPref
 } from './seat-view-toggle';
 
 function seat(id: string, overrides: Partial<ChartSeatSchema> = {}): ChartSeatSchema {
@@ -105,6 +108,27 @@ describe('seat view preference persistence', () => {
 	it('treats unknown stored values as unset', () => {
 		window.sessionStorage.setItem(SEAT_VIEW_PREF_KEY, 'grid');
 		expect(readSeatViewPref()).toBeNull();
+	});
+});
+
+describe('tier-list map preference persistence', () => {
+	beforeEach(() => {
+		window.sessionStorage.clear();
+	});
+
+	it('is off when nothing is stored', () => {
+		expect(readTierMapPref()).toBe(false);
+	});
+
+	it('round-trips the map-first choice through sessionStorage', () => {
+		writeTierMapPref();
+		expect(window.sessionStorage.getItem(TIER_MAP_PREF_KEY)).toBe('map');
+		expect(readTierMapPref()).toBe(true);
+	});
+
+	it('treats unknown stored values as unset', () => {
+		window.sessionStorage.setItem(TIER_MAP_PREF_KEY, 'yes');
+		expect(readTierMapPref()).toBe(false);
 	});
 });
 

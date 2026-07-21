@@ -12,6 +12,13 @@
 	import { holdConflictMessage } from './purchase-error';
 	import { estimatedSeatTotal, priceLegendEntries, sellableCategoryIds } from './seat-pricing';
 	import { zoneOptions } from './seat-zones';
+	import SeatSectorSwitchDialog from './SeatSectorSwitchDialog.svelte';
+	import {
+		buildSectorOverview,
+		switchTargetsFor,
+		type SectorOverviewEntry
+	} from '$lib/components/events/venue-overview';
+	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import { buildSeatViews } from './seating-view';
 	import SeatSelector from './SeatSelector.svelte';
 	import SeatMap from './SeatMap.svelte';
@@ -49,6 +56,12 @@
 		/** Buyer's chosen zone on a MAPPED best-available tier (mandatory there). */
 		selectedZoneId?: string | null;
 		onZoneChange?: (zoneId: string | null) => void;
+		/** All tiers of the event: other sold sectors become switch targets in
+		 * whole-venue scope (clicking one prompts a section+tier switch). */
+		allTiers?: TierSchemaWithId[] | null;
+		tierRemainingTickets?: import('$lib/api/generated/types.gen').TierRemainingTicketsSchema[];
+		/** Buyer confirmed the switch prompt: swap to this tier's dialog. */
+		onSwitchTier?: (tier: TierSchemaWithId) => void;
 		/** Hands the seat-hold controller up to the dialog (confirm/close lifecycle). */
 		onController: (controller: SeatHoldController) => void;
 		/** Server-resolved zone→price legend (category-priced tiers, either mode). */
@@ -73,6 +86,9 @@
 		onAccessibleRequiredChange,
 		selectedZoneId = null,
 		onZoneChange = undefined,
+		allTiers = null,
+		tierRemainingTickets = undefined,
+		onSwitchTier = undefined,
 		onController,
 		seatPricing = null,
 		currency = null
@@ -183,6 +199,26 @@
 		if (!chart || !tierSector?.id || effectiveScope === 'venue') return chart;
 		return { ...chart, sectors: (chart.sectors ?? []).filter((s) => s.id === tierSector.id) };
 	});
+
+	// Whole-venue scope with the event's tier list available: other SOLD
+	// sectors become labelled click targets — clicking one prompts a
+	// section+tier switch (never a silent swap; held seats are named in the
+	// prompt). Without the tier list the old inert-ghost rendering applies.
+	const sectorEntries = $derived(
+		effectiveScope === 'venue' && chart && allTiers && onSwitchTier
+			? buildSectorOverview(chart, allTiers, { remaining: tierRemainingTickets })
+			: []
+	);
+	const switchTargets = $derived.by(() => {
+		if (sectorEntries.length === 0) return null;
+		const targets = switchTargetsFor(sectorEntries, tierSector?.id);
+		return targets.length > 0 ? targets : null;
+	});
+	let switchEntry = $state<SectorOverviewEntry | null>(null);
+
+	function handleSectorTarget(sectorId: string): void {
+		switchEntry = sectorEntries.find((entry) => entry.sectorId === sectorId) ?? null;
+	}
 
 	const heldCount = $derived(controller?.myHolds.length ?? 0);
 
@@ -336,7 +372,21 @@
 						onToggle={handleToggle}
 						maxReached={heldCount >= maxQuantity}
 						disabled={isProcessing}
-						activeSectorId={effectiveScope === 'venue' ? (tierSector?.id ?? null) : null}
+						activeSectorId={effectiveScope === 'venue' && !switchTargets
+							? (tierSector?.id ?? null)
+							: null}
+						sectorTargets={switchTargets}
+						interactiveSectors={switchTargets && tierSector?.id
+							? [
+									{
+										sectorId: tierSector.id,
+										seatPricing: seatPricing ?? null,
+										currency: currency ?? null,
+										maxReached: heldCount >= maxQuantity
+									}
+								]
+							: null}
+						onSectorSelect={handleSectorTarget}
 						{standingCounts}
 						{seatPricing}
 						{currency}
@@ -497,3 +547,13 @@
 		</div>
 	</div>
 {/if}
+
+<SeatSectorSwitchDialog
+	entry={switchEntry}
+	heldCount={controller?.myHolds.length ?? 0}
+	onPick={(tier) => {
+		switchEntry = null;
+		onSwitchTier?.(tier);
+	}}
+	onCancel={() => (switchEntry = null)}
+/>

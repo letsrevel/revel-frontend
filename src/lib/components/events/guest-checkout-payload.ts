@@ -13,12 +13,26 @@
  *
  * No runes here — plain functions so this stays unit-testable.
  */
+import * as m from '$lib/paraglide/messages.js';
 import type {
 	BuyerBillingInfoSchema,
 	GuestBatchCheckoutPayload,
 	GuestBatchCheckoutPwycPayload,
 	TicketPurchaseItem
 } from '$lib/api/generated/types.gen';
+
+/**
+ * Localized validation error for the per-ticket guest-name inputs, or '' when
+ * every shown name is filled (single-ticket dialogs skip the inputs entirely).
+ */
+export function guestNamesError(guestNames: string[], showGuestNames: boolean): string {
+	if (!showGuestNames) return '';
+	const emptyIndex = guestNames.findIndex((name) => !name.trim());
+	if (emptyIndex < 0) return '';
+	return emptyIndex === 0
+		? m['guestTicketDialog.pleaseEnterYourName']()
+		: m['guestTicketDialog.pleaseEnterTicketHolderName']({ number: emptyIndex + 1 });
+}
 
 /** Next steps a guest can complete without an account (eligibility check). */
 export const GUEST_COMPATIBLE_STEPS: ReadonlySet<string> = new Set([

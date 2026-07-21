@@ -608,6 +608,11 @@
 	onCheckout={handleCheckout}
 	{hasResumableCheckout}
 	onGuestTierClick={openGuestTicketDialog}
+	onViewSeatingMap={hasSeatingMap
+		? () => {
+				showVenueOverview = true;
+			}
+		: undefined}
 />
 
 <!-- My Ticket Modal -->
@@ -650,6 +655,7 @@
 		isAuthenticated={data.isAuthenticated}
 		canAttendWithoutLogin={event.can_attend_without_login}
 		{tierRemainingTickets}
+		eventMaxTicketsPerUser={event.max_tickets_per_user}
 		onSelectTier={handleSelectTier}
 		onGuestTierClick={openGuestTicketDialog}
 	/>
@@ -657,12 +663,19 @@
 
 <!-- Guest Ticket Dialog -->
 {#if !data.isAuthenticated && event.can_attend_without_login && event.requires_ticket && selectedTierForGuest}
-	<GuestTicketDialog
-		bind:open={showGuestTicketDialog}
-		eventId={event.id}
-		tier={selectedTierForGuest}
-		eventMaxTicketsPerUser={event.max_tickets_per_user}
-		onClose={closeGuestTicketDialog}
-		onSuccess={handleGuestAttendanceSuccess}
-	/>
+	{#key selectedTierForGuest.id}
+		<GuestTicketDialog
+			bind:open={showGuestTicketDialog}
+			eventId={event.id}
+			tier={selectedTierForGuest}
+			allTiers={ticketTiers}
+			eventMaxTicketsPerUser={event.max_tickets_per_user}
+			onClose={closeGuestTicketDialog}
+			onSuccess={handleGuestAttendanceSuccess}
+			onSwitchTier={(tier) => {
+				selectedTierForGuest = tier;
+				showGuestTicketDialog = true;
+			}}
+		/>
+	{/key}
 {/if}

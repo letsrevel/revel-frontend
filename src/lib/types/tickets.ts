@@ -23,6 +23,20 @@ export function hasTierId(tier: TicketTierSchema): tier is TierSchemaWithId {
 }
 
 /**
+ * Payload the ticket confirmation dialog hands to the purchase path.
+ */
+export interface TicketConfirmPayload {
+	amount?: number;
+	tickets: import('$lib/api/generated/types.gen').TicketPurchaseItem[];
+	discountCode?: string;
+	billingInfo?: import('$lib/api/generated/types.gen').BuyerBillingInfoSchema;
+	/** Buyer's zone on a MAPPED best-available tier (mandatory there, absent otherwise). */
+	priceCategoryId?: string;
+	/** Accessible-seating opt-in (best-available tiers). */
+	accessibleRequired?: boolean;
+}
+
+/**
  * Best-available seating fields riding on a checkout (pricing convergence):
  * `priceCategoryId` is the buyer's zone — MANDATORY on a mapped best-available
  * tier (non-empty `category_prices`), must be absent otherwise (the backend

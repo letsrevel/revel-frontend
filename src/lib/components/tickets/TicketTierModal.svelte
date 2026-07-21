@@ -8,11 +8,13 @@
 		BuyerBillingInfoSchema
 	} from '$lib/api/generated/types.gen';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
+	import { Button } from '$lib/components/ui/button';
 	import DemoCardInfo from '$lib/components/common/DemoCardInfo.svelte';
 	import TicketConfirmationDialog from './TicketConfirmationDialog.svelte';
 	import TierCard from './TierCard.svelte';
 	import EventSeriesPassOffers from '$lib/components/series-passes/EventSeriesPassOffers.svelte';
-	import { Ticket } from '@lucide/svelte';
+	import { Map as MapIcon, Ticket } from '@lucide/svelte';
+	import { readTierMapPref, writeTierMapPref } from './seat-view-toggle';
 
 	interface Props {
 		open: boolean;
@@ -55,6 +57,13 @@
 		) => void;
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
 		/**
+		 * Map-first entry point: opens the whole-venue seating overview (same
+		 * dialog instance the page renders). Only passed when the event has a
+		 * mapped venue; once used, subsequent modal opens this session auto-open
+		 * the overview (remembered via the tier-map session preference).
+		 */
+		onViewSeatingMap?: () => void;
+		/**
 		 * Peek: would an identical retry resume a held checkout reservation
 		 * instead of reserving afresh? Same argument shape as onCheckout (the
 		 * fingerprint must match the mutation the payload would hit). Used to
@@ -89,6 +98,7 @@
 		onClaimTicket,
 		onCheckout,
 		onGuestTierClick,
+		onViewSeatingMap,
 		hasResumableCheckout
 	}: Props = $props();
 
@@ -168,6 +178,29 @@
 			wasPreSelected = false;
 		}
 	});
+
+	// Remembered map preference: after the buyer used the map button once this
+	// session, auto-open the overview on every subsequent modal open — ONCE per
+	// open (no loop: closing the overview reveals the tier list), and never
+	// when a pre-selected tier is jumping straight to its confirmation.
+	let autoOpenedMap = false;
+	$effect(() => {
+		if (!open) {
+			autoOpenedMap = false;
+			return;
+		}
+		if (autoOpenedMap || preSelectedTier) return;
+		autoOpenedMap = true;
+		if (onViewSeatingMap && readTierMapPref()) {
+			onViewSeatingMap();
+		}
+	});
+
+	// Using the map button remembers the preference for this session.
+	function handleViewSeatingMap(): void {
+		writeTierMapPref();
+		onViewSeatingMap?.();
+	}
 
 	// Filter hidden tiers (same as TicketTierList)
 	const visibleTiers = $derived(tiers.filter((tier) => tier.payment_method !== 'hidden'));
@@ -328,6 +361,13 @@
 					{isAuthenticated}
 				/>
 			{/if}
+			<!-- Map-first entry point: same wording/icon as TicketTierList's button. -->
+			{#if onViewSeatingMap}
+				<Button variant="outline" class="w-full sm:w-auto" onclick={handleViewSeatingMap}>
+					<MapIcon class="mr-2 h-4 w-4" aria-hidden="true" />
+					{m['venueOverview.viewMap']()}
+				</Button>
+			{/if}
 			{#if visibleTiers.length === 0}
 				<div class="py-8 text-center text-muted-foreground">
 					<p>{m['ticketTierModal.noTickets']()}</p>
@@ -359,19 +399,30 @@
 	</DialogContent>
 </Dialog>
 
-<!-- Confirmation Dialog for Selected Tier -->
+<!-- Confirmation Dialog for Selected Tier. Keyed by tier id: a section
+     switch swaps selectedTier, and the remount both resets the dialog's
+     per-tier state cleanly and releases the old tier's held seats via its
+     teardown effect. -->
 {#if selectedTier}
-	<TicketConfirmationDialog
-		bind:open={showConfirmation}
-		tier={selectedTier}
-		{eventId}
-		onClose={closeConfirmation}
-		onConfirm={handleConfirm}
-		hasResumableCheckout={checkResumableCheckout}
-		{isProcessing}
-		maxQuantity={getMaxQuantityForTier(selectedTier.id)}
-		{eventMaxTicketsPerUser}
-		{userName}
-		{initialDiscountCode}
-	/>
+	{#key selectedTier.id}
+		<TicketConfirmationDialog
+			bind:open={showConfirmation}
+			tier={selectedTier}
+			{eventId}
+			onClose={closeConfirmation}
+			onConfirm={handleConfirm}
+			hasResumableCheckout={checkResumableCheckout}
+			{isProcessing}
+			maxQuantity={getMaxQuantityForTier(selectedTier.id)}
+			{eventMaxTicketsPerUser}
+			{userName}
+			{initialDiscountCode}
+			allTiers={visibleTiers}
+			{tierRemainingTickets}
+			onSwitchTier={(tier) => {
+				selectedTier = tier;
+				showConfirmation = true;
+			}}
+		/>
+	{/key}
 {/if}

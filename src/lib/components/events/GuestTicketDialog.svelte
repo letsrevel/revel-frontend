@@ -37,6 +37,7 @@
 	import {
 		GUEST_COMPATIBLE_STEPS,
 		guestCheckoutBody,
+		guestNamesError,
 		guestCheckoutFingerprint,
 		guestPwycCheckoutBody,
 		type GuestCheckoutArgs
@@ -57,6 +58,10 @@
 		open: boolean;
 		eventId: string;
 		tier: TierSchemaWithId;
+		/** All event tiers: enables whole-venue switch targets on the seat map. */
+		allTiers?: TierSchemaWithId[] | null;
+		/** Buyer confirmed a section switch: reopen this dialog on the other tier. */
+		onSwitchTier?: (tier: TierSchemaWithId) => void;
 		/** Maximum tickets the guest can purchase (null = unlimited up to tier availability) */
 		maxQuantity?: number | null;
 		/** Event-level max tickets per user (fallback when tier's max is null) */
@@ -69,6 +74,8 @@
 		open = $bindable(),
 		eventId,
 		tier,
+		allTiers = null,
+		onSwitchTier = undefined,
 		maxQuantity = null,
 		eventMaxTicketsPerUser = null,
 		onClose,
@@ -153,16 +160,6 @@
 	// Venue/sector info for display
 	const tierVenue = $derived(tier.venue ?? null);
 	const tierSector = $derived(tier.sector ?? null);
-	// NOTE: VenueSectorSchema declares no `description` field, but the template historically
-	// rendered one (masked by an `as any` cast). Preserve that dynamic read type-safely rather
-	// than change behavior; if this branch is meant to show data, the API contract is missing it.
-	const tierSectorDescription = $derived.by(() => {
-		const s: unknown = tierSector;
-		if (s && typeof s === 'object' && 'description' in s && typeof s.description === 'string') {
-			return s.description;
-		}
-		return undefined;
-	});
 
 	// Tier-level max tickets per user (can override event-level setting)
 	const tierMaxTicketsPerUser = $derived<number | null>(tier.max_tickets_per_user ?? null);
@@ -257,6 +254,14 @@
 		if (seatController && heldSeatIds.length > quantity) {
 			void seatController.trimTo(quantity);
 		}
+	});
+
+	// Safety net: a section switch remounts this dialog via {#key} WITHOUT
+	// flipping `open`, so the close-reset effect never runs — release
+	// un-handed-off holds on teardown too (no-op after a normal close).
+	$effect(() => () => {
+		const controller = untrack(() => seatController);
+		if (controller && !purchaseHandedOff) void controller.releaseAll();
 	});
 
 	// Close dialog if user becomes authenticated (token refresh or in-tab login).
@@ -392,24 +397,10 @@
 		}
 	}
 
-	// Validate guest names
+	// Validate guest names (pure logic in guest-checkout-payload.ts)
 	function validateGuestNames(): boolean {
-		guestNameError = '';
-
-		// Only validate if showing guest name inputs (multi-ticket)
-		if (!showGuestNames) return true;
-
-		// Check if any guest name is empty
-		const emptyIndex = guestNames.findIndex((name) => !name.trim());
-		if (emptyIndex >= 0) {
-			guestNameError =
-				emptyIndex === 0
-					? m['guestTicketDialog.pleaseEnterYourName']()
-					: m['guestTicketDialog.pleaseEnterTicketHolderName']({ number: emptyIndex + 1 });
-			return false;
-		}
-
-		return true;
+		guestNameError = guestNamesError(guestNames, showGuestNames);
+		return guestNameError === '';
 	}
 
 	async function handleSubmit(e: SubmitEvent) {
@@ -669,7 +660,6 @@
 							{isOnlinePayment}
 							{tierVenue}
 							{tierSector}
-							{tierSectorDescription}
 							{eventId}
 							{quantity}
 							maxQuantity={effectiveMaxQuantity}
@@ -683,6 +673,14 @@
 							onAccessibleRequiredChange={(value) => (accessibleRequired = value)}
 							{selectedZoneId}
 							onZoneChange={(zoneId) => (selectedZoneId = zoneId)}
+							{allTiers}
+							onSwitchTier={onSwitchTier
+								? (nextTier) => {
+										// The switch remounts this dialog on the new tier; the old
+										// instance's close-reset releases the held seats.
+										onSwitchTier(nextTier);
+									}
+								: undefined}
 							onController={(controller) => (seatController = controller)}
 							seatPricing={tier.seat_pricing ?? null}
 							currency={tier.currency}

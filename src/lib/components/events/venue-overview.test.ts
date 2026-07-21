@@ -6,6 +6,10 @@ import {
 	eventHasSeatingMap,
 	isTierPurchasable,
 	parseStageMetadata,
+	seatSellingTier,
+	sectorTargetFrom,
+	switchTargetsFor,
+	tierMaxSelectable,
 	tierPriceLabel
 } from './venue-overview';
 
@@ -178,6 +182,84 @@ describe('buildSectorOverview', () => {
 	});
 });
 
+describe('seatSellingTier', () => {
+	function entryFor(tiers: TierSchemaWithId[], sectorId: string) {
+		const entries = buildSectorOverview(chart(), tiers, { now: NOW });
+		const entry = entries.find((candidate) => candidate.sectorId === sectorId);
+		if (!entry) throw new Error(`missing sector ${sectorId}`);
+		return entry;
+	}
+
+	it('returns the tier for a sector sold by exactly one purchasable user_choice tier', () => {
+		const uc = sectorTier('galleria', { id: 't-uc' });
+		expect(seatSellingTier(entryFor([uc], 'galleria'))?.id).toBe('t-uc');
+	});
+
+	it('returns null for a single best-available tier (server assigns blocks)', () => {
+		const ba = sectorTier('galleria', { id: 't-ba', seat_assignment_mode: 'best_available' });
+		expect(seatSellingTier(entryFor([ba], 'galleria'))).toBeNull();
+	});
+
+	it('returns null for a multi-tier sector, even when one tier is user_choice', () => {
+		// The seeded Platea shape: user_choice + best_available → chooser flow.
+		const uc = sectorTier('platea', { id: 't-uc' });
+		const ba = sectorTier('platea', { id: 't-ba', seat_assignment_mode: 'best_available' });
+		expect(seatSellingTier(entryFor([uc, ba], 'platea'))).toBeNull();
+	});
+
+	it('returns null for an unsold sector', () => {
+		expect(seatSellingTier(entryFor([], 'palco-2'))).toBeNull();
+	});
+
+	it('ignores unpurchasable siblings: a sold-out second tier does not block seat selection', () => {
+		const uc = sectorTier('galleria', { id: 't-uc' });
+		const soldOut = sectorTier('galleria', { id: 't-out', total_available: 0 });
+		expect(seatSellingTier(entryFor([uc, soldOut], 'galleria'))?.id).toBe('t-uc');
+	});
+});
+
+describe('tierMaxSelectable', () => {
+	it('caps at tier inventory', () => {
+		expect(tierMaxSelectable(tier({ total_available: 5 }), undefined, null)).toBe(5);
+	});
+
+	it('uses the tier-level per-user max over the event-level one', () => {
+		expect(tierMaxSelectable(tier({ max_tickets_per_user: 2 }), undefined, 6)).toBe(2);
+	});
+
+	it('falls back to the event-level per-user max', () => {
+		expect(tierMaxSelectable(tier(), undefined, 3)).toBe(3);
+	});
+
+	it('applies the personal remaining quota when supplied', () => {
+		const remaining: TierRemainingTicketsSchema = {
+			tier_id: 'tier-1',
+			sold_out: false,
+			remaining: 1
+		};
+		expect(tierMaxSelectable(tier({ max_tickets_per_user: 4 }), remaining, null)).toBe(1);
+	});
+
+	it('takes the tightest of all limits', () => {
+		const remaining: TierRemainingTicketsSchema = {
+			tier_id: 'tier-1',
+			sold_out: false,
+			remaining: 3
+		};
+		expect(
+			tierMaxSelectable(tier({ total_available: 10, max_tickets_per_user: 2 }), remaining, 5)
+		).toBe(2);
+	});
+
+	it('defaults to 100 without limits and never drops below 1', () => {
+		expect(tierMaxSelectable(tier(), undefined, null)).toBe(100);
+		// Non-positive limits are ignored (mirrors effectiveMaxQuantity's > 0 guards).
+		expect(
+			tierMaxSelectable(tier({ total_available: 0, max_tickets_per_user: 0 }), undefined, 0)
+		).toBe(100);
+	});
+});
+
 describe('tierPriceLabel', () => {
 	it('renders free, PWYC bounds, and flat prices', () => {
 		expect(tierPriceLabel(tier({ payment_method: 'free' }))).toBe('Free');
@@ -226,4 +308,48 @@ describe('parseStageMetadata', () => {
 			expect(parseStageMetadata(meta)).toBeNull();
 		}
 	);
+});
+
+describe('switchTargetsFor', () => {
+	it('turns every OTHER sold sector into a labelled target, skipping the active and unsold ones', () => {
+		const entries = buildSectorOverview(
+			chart(),
+			[
+				sectorTier('platea', { id: 't-platea', name: 'Platea' }),
+				sectorTier('galleria', {
+					id: 't-galleria',
+					name: 'Galleria',
+					seat_assignment_mode: 'best_available'
+				})
+				// palco-2 sold by nothing → never a target
+			],
+			{ now: NOW }
+		);
+		const targets = switchTargetsFor(entries, 'platea');
+		expect(targets.map((t) => t.sectorId)).toEqual(['galleria']);
+		expect(targets[0].label).toContain('Galleria');
+		expect(targets[0].lines[0]).toContain('EUR 20.00');
+	});
+
+	it('sectorTargetFrom carries tier names and prices in name AND overlay lines', () => {
+		const entries = buildSectorOverview(
+			chart(),
+			[
+				sectorTier('platea', { id: 't-a', name: 'Platea', price: '45.00' }),
+				sectorTier('platea', {
+					id: 't-b',
+					name: 'Platea BA',
+					price: '45.00',
+					seat_assignment_mode: 'best_available'
+				})
+			],
+			{ now: NOW }
+		);
+		const platea = entries.find((e) => e.sectorId === 'platea');
+		if (!platea) throw new Error('platea entry missing');
+		const target = sectorTargetFrom(platea);
+		expect(target.label).toContain('Platea, EUR 45.00');
+		expect(target.label).toContain('Platea BA');
+		expect(target.lines).toHaveLength(2);
+	});
 });

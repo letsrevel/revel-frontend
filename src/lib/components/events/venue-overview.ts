@@ -16,6 +16,7 @@
 import type {
 	Coordinate2d,
 	TierRemainingTicketsSchema,
+	TierSeatPricingSchema,
 	VenueChartSchema
 } from '$lib/api/generated/types.gen';
 import type { TierSchemaWithId } from '$lib/types/tickets';
@@ -50,6 +51,21 @@ export interface SectorOverviewEntry {
 	sectorName: string;
 	/** Purchasable tiers selling this sector, in backend display order. */
 	options: SectorTierOption[];
+}
+
+/**
+ * A sector whose seats render fully interactive in the overview map (seat-level
+ * selection): SeatMap uses this to resolve per-sector prices and the per-tier
+ * selection cap without disturbing the single-tier purchase dialogs.
+ */
+export interface SectorSeatConfig {
+	sectorId: string;
+	/** Server-resolved seat pricing of the sector's selling tier (null = flat). */
+	seatPricing: TierSeatPricingSchema | null;
+	/** Selling tier's currency (seat_pricing carries bare decimals). */
+	currency: string | null;
+	/** Selection cap reached for this sector's selling tier. */
+	maxReached: boolean;
 }
 
 export interface SectorOverviewOptions {
@@ -131,6 +147,73 @@ export function buildSectorOverview(
 			)
 			.map((tier) => ({ tier, priceDisplay: tierPriceLabel(tier), mode: tierSectorMode(tier) }))
 	}));
+}
+
+/** SectorTarget for a sold sector: accessible name and overlay lines both
+ * carry tier name(s) + price(s) — information never by color alone. */
+export function sectorTargetFrom(entry: SectorOverviewEntry): SectorTarget {
+	return {
+		sectorId: entry.sectorId,
+		label: `${entry.sectorName}: ${entry.options
+			.map((option) => `${option.tier.name}, ${option.priceDisplay}`)
+			.join('; ')}`,
+		lines: entry.options.map((option) => `${option.tier.name} · ${option.priceDisplay}`)
+	};
+}
+
+/**
+ * Click targets for the purchase dialog's whole-venue scope: every OTHER
+ * sector that at least one purchasable tier sells becomes a labelled target —
+ * clicking one prompts the buyer to switch section (and tier). The active
+ * sector renders its interactive seats; unsold sectors stay ghosts.
+ */
+export function switchTargetsFor(
+	entries: SectorOverviewEntry[],
+	activeSectorId: string | null | undefined
+): SectorTarget[] {
+	return entries
+		.filter((entry) => entry.sectorId !== activeSectorId && entry.options.length > 0)
+		.map(sectorTargetFrom);
+}
+
+/**
+ * The tier whose seats the buyer can pick DIRECTLY on the overview map: a
+ * sector qualifies iff it is sold by EXACTLY ONE purchasable tier and that
+ * tier assigns seats via user_choice. Best-available sectors keep the
+ * whole-sector target flow (the server assigns blocks — seats aren't pickable
+ * there by design), and multi-tier sectors keep the chooser (the buyer must
+ * name a tier before a seat means anything).
+ */
+export function seatSellingTier(entry: SectorOverviewEntry): TierSchemaWithId | null {
+	if (entry.options.length !== 1) return null;
+	const option = entry.options[0];
+	return option.mode === 'user_choice' ? option.tier : null;
+}
+
+/**
+ * Effective selection cap for a tier, mirroring the purchase dialog's
+ * `effectiveMaxQuantity` fed by TicketTierModal's `getMaxQuantityForTier`:
+ * tier inventory, tier-level max per user (falling back to the event-level
+ * one), and — when the my-status endpoint supplied it — the buyer's personal
+ * remaining quota. Never below 1 (the overview only offers purchasable tiers).
+ */
+export function tierMaxSelectable(
+	tier: TierSchemaWithId,
+	remaining: TierRemainingTicketsSchema | undefined,
+	eventMaxTicketsPerUser: number | null | undefined
+): number {
+	let max = 100;
+	if (tier.total_available != null && tier.total_available > 0) {
+		max = Math.min(max, tier.total_available);
+	}
+	const perUser = tier.max_tickets_per_user ?? eventMaxTicketsPerUser ?? null;
+	if (perUser != null && perUser > 0) {
+		max = Math.min(max, perUser);
+	}
+	if (remaining?.remaining != null && remaining.remaining > 0) {
+		max = Math.min(max, remaining.remaining);
+	}
+	return Math.max(1, max);
 }
 
 /**

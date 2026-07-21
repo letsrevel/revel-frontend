@@ -48,3 +48,15 @@ export function tierPriceDisplay(tier: TicketTierSchema, flags: TierPriceDisplay
 	const price = typeof tier.price === 'string' ? parseFloat(tier.price) : tier.price;
 	return `${tier.currency} ${price.toFixed(2)}`;
 }
+
+/** Purchase-dialog title by payment kind (free / reserve / PWYC / online). */
+export function tierDialogTitle(flags: {
+	isFree: boolean;
+	isOfflinePayment: boolean;
+	isPwyc: boolean;
+}): string {
+	if (flags.isFree) return m['ticketConfirmationDialog.titleClaimFree']();
+	if (flags.isOfflinePayment) return m['ticketConfirmationDialog.titleReserve']();
+	if (flags.isPwyc) return m['ticketConfirmationDialog.titleGetTicket']();
+	return m['ticketConfirmationDialog.titleConfirmPurchase']();
+}

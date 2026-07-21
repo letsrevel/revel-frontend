@@ -12,12 +12,14 @@
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { Ticket, DollarSign, AlertCircle, CreditCard, Wallet, Loader2 } from '@lucide/svelte';
 	import CancellationPolicySummary from './CancellationPolicySummary.svelte';
-	import type { TierSchemaWithId } from '$lib/types/tickets';
+	import type {
+		TicketConfirmPayload as ConfirmPayload,
+		TierSchemaWithId
+	} from '$lib/types/tickets';
 	import type {
 		TicketPurchaseItem,
 		SeatAssignmentMode,
-		DiscountCodeValidationResponse,
-		BuyerBillingInfoSchema
+		DiscountCodeValidationResponse
 	} from '$lib/api/generated/types.gen';
 	import { untrack } from 'svelte';
 	import type { SeatHoldController } from './seat-hold-controller.svelte';
@@ -32,20 +34,9 @@
 	import TicketQuantitySelector from './TicketQuantitySelector.svelte';
 	import { checkoutTotal } from './checkout-total';
 	import { formatMoney } from '$lib/utils/format';
-	import { tierPriceDisplay } from './tier-price-display';
+	import { tierDialogTitle, tierPriceDisplay } from './tier-price-display';
 	import { isMappedBestAvailable } from './seat-zones';
 	import { pwycErrorMessage, pwycSuggestions, validatePwycAmount } from './pwyc-validation';
-
-	interface ConfirmPayload {
-		amount?: number;
-		tickets: TicketPurchaseItem[];
-		discountCode?: string;
-		billingInfo?: BuyerBillingInfoSchema;
-		/** Buyer's zone on a MAPPED best-available tier (mandatory there, absent otherwise). */
-		priceCategoryId?: string;
-		/** Accessible-seating opt-in (best-available tiers). */
-		accessibleRequired?: boolean;
-	}
 
 	interface Props {
 		open: boolean;
@@ -65,6 +56,11 @@
 		userName?: string;
 		/** Pre-filled discount code (e.g. from URL param) */
 		initialDiscountCode?: string;
+		/** All event tiers: enables whole-venue switch targets on the seat map. */
+		allTiers?: TierSchemaWithId[] | null;
+		tierRemainingTickets?: import('$lib/api/generated/types.gen').TierRemainingTicketsSchema[];
+		/** Buyer confirmed a section switch: swap this dialog to the other tier. */
+		onSwitchTier?: (tier: TierSchemaWithId) => void;
 	}
 
 	let {
@@ -78,7 +74,10 @@
 		maxQuantity = null,
 		eventMaxTicketsPerUser = null,
 		userName = '',
-		initialDiscountCode = ''
+		initialDiscountCode = '',
+		allTiers = null,
+		tierRemainingTickets = undefined,
+		onSwitchTier = undefined
 	}: Props = $props();
 
 	// Quantity state
@@ -181,13 +180,8 @@
 		})
 	);
 
-	// Dialog title
-	const dialogTitle = $derived.by(() => {
-		if (isFree) return m['ticketConfirmationDialog.titleClaimFree']();
-		if (isOfflinePayment) return m['ticketConfirmationDialog.titleReserve']();
-		if (isPwyc) return m['ticketConfirmationDialog.titleGetTicket']();
-		return m['ticketConfirmationDialog.titleConfirmPurchase']();
-	});
+	// Dialog title (shared helper — see tier-price-display.ts)
+	const dialogTitle = $derived(tierDialogTitle({ isFree, isOfflinePayment, isPwyc }));
 
 	// Dialog icon component
 	const dialogIcon = $derived.by(() => {
@@ -534,6 +528,9 @@
 				onAccessibleRequiredChange={(value) => (accessibleRequired = value)}
 				{selectedZoneId}
 				onZoneChange={(zoneId) => (selectedZoneId = zoneId)}
+				{allTiers}
+				{tierRemainingTickets}
+				{onSwitchTier}
 				onController={(controller) => (seatController = controller)}
 				seatPricing={tier.seat_pricing ?? null}
 				currency={tier.currency}
