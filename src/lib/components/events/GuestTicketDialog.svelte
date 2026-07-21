@@ -637,6 +637,7 @@
 							{quantity}
 							{effectiveMaxQuantity}
 							{isPwyc}
+							isCategoryPriced={!!tier.seat_pricing}
 							currency={tier.currency}
 							price={tier.price}
 							{isSubmitting}

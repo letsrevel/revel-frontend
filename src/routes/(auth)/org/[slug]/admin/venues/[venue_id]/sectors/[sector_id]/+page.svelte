@@ -14,6 +14,7 @@
 	} from '$lib/api/generated/sdk.gen';
 	import type {
 		AffectedTierSchema,
+		UnsellableZoneTierSchema,
 		PriceCategorySchema,
 		SeatPaintResultSchema,
 		VenueSectorWithSeatsSchema,
@@ -23,6 +24,7 @@
 	import {
 		liveRepricedTiers,
 		mergeAffectedTiers,
+		mergeUnsellableZoneTiers,
 		type PaintBatch,
 		type SeatSavePlan
 	} from '$lib/components/venues/seat-grid-save';
@@ -229,13 +231,25 @@
 		});
 	}
 
+	/** One human-readable stranded-zone line: tier, event, and the empty zones. */
+	function unsellableLine(tier: UnsellableZoneTierSchema): string {
+		return m['orgAdmin.seats.toast.unsellableTier']({
+			tier: tier.tier_name,
+			event: tier.event_name,
+			zones: (tier.zones ?? []).map((zone) => zone.name).join(', ')
+		});
+	}
+
 	// Blast-radius report (BE #747): the paint response names every live,
 	// category-priced tier the paint changed the economics of — seats moved
 	// between price zones (fails OPEN: sales continue at the new price) and/or
 	// a coverage gap (fails closed: checkout refuses those seats). Two separate
 	// toasts because the two hazards need different reactions; both silent
 	// when nothing is affected (the common case).
-	function reportAffectedTiers(tiers: AffectedTierSchema[]) {
+	function reportAffectedTiers(
+		tiers: AffectedTierSchema[],
+		unsellable: UnsellableZoneTierSchema[]
+	) {
 		const gapTiers = tiers.filter((tier) => (tier.missing_categories ?? []).length > 0);
 		const repricedTiers = tiers.filter((tier) => (tier.price_changes ?? []).length > 0);
 
@@ -243,6 +257,27 @@
 			toast.warning(m['orgAdmin.seats.toast.repricedTitle'](), {
 				description: repricedTiers.map(repriceLine).join(' · '),
 				duration: 12_000
+			});
+		}
+		// Stranded zones (priced, not painted — typically caused by unpainting a
+		// category's last seat): every best-available request for them 409s.
+		// Current-state report, so it keeps firing until the defect is fixed.
+		if (unsellable.length > 0) {
+			toast.warning(m['orgAdmin.seats.toast.unsellableTitle'](), {
+				description: unsellable.map(unsellableLine).join(' · '),
+				duration: 12_000,
+				action: {
+					label: m['orgAdmin.seats.toast.underCoveredAction'](),
+					onClick: () => {
+						const target =
+							resolve('/(auth)/org/[slug]/admin/events/[event_id]/edit', {
+								slug: organization.slug,
+								event_id: unsellable[0].event_id
+							}) + '?tab=ticketing';
+						/* eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve()-built route with a ?tab query suffix the rule can't see through */
+						void goto(target);
+					}
+				}
 			});
 		}
 		if (gapTiers.length > 0) {
@@ -278,7 +313,12 @@
 	 * null when any preview call fails — the save then proceeds and the REAL
 	 * paint surfaces the error through the mutation's own handler.
 	 */
-	async function previewAffectedTiers(batches: PaintBatch[]): Promise<AffectedTierSchema[] | null> {
+	interface PaintPreview {
+		affected: AffectedTierSchema[];
+		unsellable: UnsellableZoneTierSchema[];
+	}
+
+	async function previewAffectedTiers(batches: PaintBatch[]): Promise<PaintPreview | null> {
 		try {
 			const results = await Promise.all(
 				batches.map(async (batch) => {
@@ -294,7 +334,10 @@
 					return response.data;
 				})
 			);
-			return mergeAffectedTiers(results);
+			return {
+				affected: mergeAffectedTiers(results),
+				unsellable: mergeUnsellableZoneTiers(results)
+			};
 		} catch {
 			return null;
 		}
@@ -343,11 +386,23 @@
 		// creates cannot change its answer).
 		if (plan.paintBatches.length > 0) {
 			const previewed = await previewAffectedTiers(plan.paintBatches);
-			const liveReprices = liveRepricedTiers(previewed ?? []);
+			const liveReprices = liveRepricedTiers(previewed?.affected ?? []);
 			if (liveReprices.length > 0) {
+				// Stranded zones ride along in the SAME confirmation when one is
+				// shown (preview and real paint return identical reports) — but they
+				// never gate on their own: only moved money does (affected_tiers
+				// stays the sole basis for the confirm, per the BE contract).
+				const strandedLines =
+					(previewed?.unsellable.length ?? 0) > 0
+						? [
+								m['orgAdmin.seats.repriceConfirm.unsellableIntro'](),
+								...(previewed?.unsellable ?? []).map(unsellableLine)
+							]
+						: [];
 				const message = [
 					m['orgAdmin.seats.repriceConfirm.intro'](),
 					...liveReprices.map(repriceLine),
+					...strandedLines,
 					m['orgAdmin.seats.repriceConfirm.question']()
 				].join('\n');
 				if (!confirm(message)) return;
@@ -378,7 +433,10 @@
 
 			await updateSectorMutation.mutateAsync(metadata);
 			if (paintResults.length > 0) {
-				reportAffectedTiers(mergeAffectedTiers(paintResults));
+				reportAffectedTiers(
+					mergeAffectedTiers(paintResults),
+					mergeUnsellableZoneTiers(paintResults)
+				);
 			} else {
 				warnAboutCreatedPaint(plan);
 			}

@@ -619,6 +619,7 @@
 				bind:categoryPrices
 				pricingCategories={sectorPricingCategories}
 				pricingGaps={tier?.pricing_gaps ?? []}
+				unsellableZones={tier?.unsellable_zones ?? []}
 				{currencySymbol}
 				{canUseSeatAssignment}
 				{venueId}

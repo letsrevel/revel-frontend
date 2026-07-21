@@ -8,6 +8,8 @@
 		quantity: number;
 		effectiveMaxQuantity: number;
 		isPwyc: boolean;
+		/** Category-priced tier (seat_pricing present): hide the flat total. */
+		isCategoryPriced?: boolean;
 		currency: string;
 		price: string | number;
 		isSubmitting: boolean;
@@ -19,6 +21,7 @@
 		quantity,
 		effectiveMaxQuantity,
 		isPwyc,
+		isCategoryPriced = false,
 		currency,
 		price,
 		isSubmitting,
@@ -61,7 +64,10 @@
 			{/if}
 		</span>
 	</div>
-	{#if !isPwyc}
+	<!-- Flat unit-price total only: on a category-priced tier the buyer pays
+	     per seat/zone, so quoting price × quantity here would be dishonest —
+	     the sticky footer total (checkout-total.ts) owns the number there. -->
+	{#if !isPwyc && !isCategoryPriced}
 		<p class="text-sm font-semibold text-primary">
 			{m['guestTicketDialog.total']()}
 			{currency}

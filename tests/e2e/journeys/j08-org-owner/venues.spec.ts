@@ -407,4 +407,114 @@ test.describe('J19.3 seat painting @p2', () => {
 
 		await context.close();
 	});
+
+	// Stranded zones (priced, not painted): unpainting the LAST seat of a
+	// category some best-available tier prices leaves that zone accepted by
+	// resolve_requested_zone but empty — every buyer 409s. The paint preview
+	// carries `unsellable_zone_tiers` (byte-identical to the real paint), the
+	// confirm names the stranded zone alongside the price move, the post-paint
+	// toast reports it, and the tier form shows the `unsellable_zones` warning.
+	test('unpainting the last seat of a priced zone → confirm names it → stranded-zone toast + tier-form warning', async ({
+		browser
+	}) => {
+		test.setTimeout(150_000);
+
+		const org = await createOrganization();
+		const api = await ApiClient.login(org.owner.email, org.owner.password);
+		const venue = await api.post<{ id: string }>(`/api/organization-admin/${org.slug}/venues`, {
+			name: uniqueName('Venue')
+		});
+		const gold = await createPriceCategory(
+			org.slug,
+			venue.id,
+			{ name: 'Gold', color: '#f9b233' },
+			org.owner
+		);
+		const silver = await createPriceCategory(
+			org.slug,
+			venue.id,
+			{ name: 'Silver', color: '#9ab2ff' },
+			org.owner
+		);
+		// Silver stays painted on B1: with the sector's paint entirely gone the
+		// report deliberately stays silent (initial-setup quietness), so the
+		// stranded-Gold case needs SOME remaining paint.
+		const sector = await api.post<{ id: string }>(
+			`/api/organization-admin/${org.slug}/venues/${venue.id}/sectors`,
+			{
+				name: 'Stalls',
+				code: 'STL',
+				seats: [
+					{ label: 'A1', row: 'A', number: 1, price_category_id: gold.id },
+					{ label: 'B1', row: 'B', number: 1, price_category_id: silver.id }
+				]
+			}
+		);
+		const event = await createTicketedEvent({
+			owner: org.owner,
+			orgSlug: org.slug,
+			freeTier: false,
+			event: { venue_id: venue.id }
+		});
+		await deleteDefaultTier(event.id, org.owner);
+		await createTicketTier(
+			event.id,
+			{
+				name: 'BA Gold',
+				payment_method: 'offline',
+				price: '10.00',
+				seat_assignment_mode: 'best_available',
+				venue_id: venue.id,
+				sector_id: sector.id,
+				category_prices: { [gold.id]: '80.00' }
+			},
+			org.owner
+		);
+
+		const context = await browser.newContext();
+		await authenticateContext(context, org.owner);
+		const page = await context.newPage();
+		await gotoHydrated(page, `/org/${org.slug}/admin/venues/${venue.id}/sectors/${sector.id}`);
+		await waitForClientAuth(page);
+		await expect(page.getByText('Total:')).toContainText('2', { timeout: 15_000 });
+
+		// Erase A1's Gold paint — the zone's only seat.
+		const palette = page.getByRole('group', { name: 'Price category palette' });
+		await palette.getByRole('button', { name: 'Unpainted' }).click();
+		await page.getByRole('button', { name: 'Seat A1, Gold', exact: true }).click();
+
+		let confirmMessage = '';
+		page.once('dialog', (dialog) => {
+			confirmMessage = dialog.message();
+			void dialog.accept();
+		});
+		await page.getByRole('button', { name: 'Save Changes' }).click();
+
+		// The confirm gates on the price move (open event) and ALSO names the
+		// zone the paint strands; accepting applies the paint and both toasts
+		// follow, the stranded-zone one naming tier, event and zone.
+		await expect(page.getByText('Seat pricing updated')).toBeVisible({ timeout: 15_000 });
+		await expect(page.getByText('Some tiers now price zones with no seats')).toBeVisible({
+			timeout: 15_000
+		});
+		await expect(page.getByText(/“BA Gold” \(.*\) prices empty zones: Gold/)).toBeVisible();
+		expect(confirmMessage).toContain('NO seats');
+		expect(confirmMessage).toContain('Gold');
+
+		// The tier form independently shows the persistent warning (detail
+		// schema `unsellable_zones` — priced, not painted; the mirror image of
+		// pricing_gaps, which stays silent for best_available).
+		await gotoHydrated(page, `/org/${org.slug}/admin/events/${event.id}/edit?tab=ticketing`);
+		await waitForClientAuth(page);
+		await page.getByRole('button', { name: 'Edit BA Gold' }).click();
+		const tierDialog = page.getByRole('dialog', { name: 'Edit Ticket Tier' });
+		await expect(tierDialog.getByText('Priced zones without seats')).toBeVisible({
+			timeout: 15_000
+		});
+		await expect(
+			tierDialog.getByText(/No active seat in this sector is painted with: Gold/)
+		).toBeVisible();
+
+		await context.close();
+	});
 });

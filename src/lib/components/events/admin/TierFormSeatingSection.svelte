@@ -7,6 +7,7 @@
 	import type {
 		SeatAssignmentMode,
 		TierPricingGapSchema,
+		TierUnsellableZoneSchema,
 		VenueDetailSchema,
 		VenueSectorSchema,
 		PriceCategorySchema
@@ -22,6 +23,9 @@
 		pricingCategories: PriceCategorySchema[];
 		/** Server-flagged coverage gaps (user_choice only; empty for best_available by design). */
 		pricingGaps: TierPricingGapSchema[];
+		/** Zones this tier PRICES but that are painted on no active seat (best_available
+		 * only): every buyer request for them 409s — always a misconfiguration. */
+		unsellableZones: TierUnsellableZoneSchema[];
 		currencySymbol: string;
 		canUseSeatAssignment: boolean;
 		venueId: string | null;
@@ -43,6 +47,7 @@
 		categoryPrices = $bindable(),
 		pricingCategories,
 		pricingGaps,
+		unsellableZones,
 		currencySymbol,
 		canUseSeatAssignment,
 		venueId,
@@ -63,6 +68,7 @@
 		[...pricingCategories].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
 	);
 	const gapNames = $derived(pricingGaps.map((gap) => gap.name).join(', '));
+	const unsellableNames = $derived(unsellableZones.map((zone) => zone.name).join(', '));
 	const isBestAvailable = $derived(seatAssignmentMode === 'best_available');
 
 	// Keep money inputs dot-decimal as the user types (mirrors the VAT input).
@@ -354,6 +360,24 @@
 								? m['tierForm.categoryPrices.zonesHelp']()
 								: m['tierForm.categoryPrices.help']()}
 						</p>
+
+						{#if isBestAvailable && unsellableZones.length > 0}
+							<!-- Priced-but-unpainted zones (the OPPOSITE of pricing_gaps):
+							     resolve_requested_zone accepts them, the picker finds no
+							     seats, every buyer gets a 409. Never intentional. -->
+							<div
+								class="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-800 dark:bg-amber-950"
+								role="alert"
+							>
+								<p class="flex items-center gap-1.5 font-medium text-amber-800 dark:text-amber-200">
+									<TriangleAlert class="h-4 w-4 shrink-0" aria-hidden="true" />
+									{m['tierForm.categoryPrices.unsellableTitle']()}
+								</p>
+								<p class="mt-1 text-amber-700 dark:text-amber-300">
+									{m['tierForm.categoryPrices.unsellableDescription']({ zones: unsellableNames })}
+								</p>
+							</div>
+						{/if}
 
 						{#if pricingGaps.length > 0 && !isBestAvailable}
 							<div

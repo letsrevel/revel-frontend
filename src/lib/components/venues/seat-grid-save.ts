@@ -3,6 +3,7 @@
 import type {
 	AffectedTierSchema,
 	SeatPaintResultSchema,
+	UnsellableZoneTierSchema,
 	VenueSeatSchema,
 	VenueSeatInputSchema,
 	VenueSeatBulkUpdateItemSchema
@@ -39,6 +40,37 @@ export function mergeAffectedTiers(
 				if (!seen.has(category.id)) merged.push(category);
 			}
 			existing.missing_categories = merged;
+		}
+	}
+	return [...byTier.values()];
+}
+
+/**
+ * Union of the unsellable-zone tiers across a save's paint-batch results:
+ * tiers that PRICE a zone painted on no active seat of their sector (priced,
+ * not painted — the mirror image of a coverage gap; every best-available
+ * request for such a zone 409s). Each batch reports CURRENT state, not this
+ * paint's delta, so later batches repeat earlier findings — merged per tier
+ * with zones deduped by id, mirroring mergeAffectedTiers. Does not mutate
+ * inputs.
+ */
+export function mergeUnsellableZoneTiers(
+	results: readonly SeatPaintResultSchema[]
+): UnsellableZoneTierSchema[] {
+	const byTier = new Map<string, UnsellableZoneTierSchema>();
+	for (const result of results) {
+		for (const tier of result.unsellable_zone_tiers ?? []) {
+			const existing = byTier.get(tier.tier_id);
+			if (!existing) {
+				byTier.set(tier.tier_id, { ...tier, zones: [...(tier.zones ?? [])] });
+				continue;
+			}
+			const merged = existing.zones ?? [];
+			const seen = new Set(merged.map((zone) => zone.id));
+			for (const zone of tier.zones ?? []) {
+				if (!seen.has(zone.id)) merged.push(zone);
+			}
+			existing.zones = merged;
 		}
 	}
 	return [...byTier.values()];

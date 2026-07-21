@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import type { AffectedTierSchema, VenueSeatSchema } from '$lib/api/generated/types.gen';
+import type {
+	AffectedTierSchema,
+	UnsellableZoneTierSchema,
+	VenueSeatSchema
+} from '$lib/api/generated/types.gen';
 import type { SeatData } from './seat-grid-types';
 import {
 	buildSeatSavePlan,
@@ -7,6 +11,7 @@ import {
 	deriveAdjacencyIndex,
 	liveRepricedTiers,
 	mergeAffectedTiers,
+	mergeUnsellableZoneTiers,
 	paintTextColor,
 	readExistingPaint,
 	type SeatSavePlanInput
@@ -450,6 +455,53 @@ describe('mergeAffectedTiers', () => {
 		expect(merged.map((t) => t.tier_id)).toEqual(['t1', 't2']);
 		expect(merged[0].price_changes).toEqual([move(2, '80.00', '30.00'), move(1, null, '30.00')]);
 		expect(merged[0].missing_categories?.map((c) => c.id)).toEqual(['a', 'b']);
+	});
+
+	describe('mergeUnsellableZoneTiers', () => {
+		const zone = (id: string, name: string) => ({ id, name, color: '#00f' });
+		const uTier = (
+			tierId: string,
+			zones: Array<{ id: string; name: string; color: string }>
+		): UnsellableZoneTierSchema => ({
+			tier_id: tierId,
+			tier_name: `Tier ${tierId}`,
+			event_id: `event-${tierId}`,
+			event_name: `Event ${tierId}`,
+			event_status: 'open',
+			zones
+		});
+
+		it('returns empty for no results or clean paints', () => {
+			expect(mergeUnsellableZoneTiers([])).toEqual([]);
+			expect(
+				mergeUnsellableZoneTiers([{ painted: 3 }, { painted: 1, unsellable_zone_tiers: [] }])
+			).toEqual([]);
+		});
+
+		it('dedupes tiers across batches with zones unioned by id (current-state reports repeat)', () => {
+			const merged = mergeUnsellableZoneTiers([
+				{ painted: 1, unsellable_zone_tiers: [uTier('t1', [zone('a', 'A')])] },
+				{
+					painted: 1,
+					unsellable_zone_tiers: [
+						uTier('t1', [zone('a', 'A'), zone('b', 'B')]),
+						uTier('t2', [zone('b', 'B')])
+					]
+				}
+			]);
+			expect(merged.map((t) => t.tier_id)).toEqual(['t1', 't2']);
+			expect(merged[0].zones.map((z) => z.id)).toEqual(['a', 'b']);
+			expect(merged[1].zones.map((z) => z.id)).toEqual(['b']);
+		});
+
+		it('does not mutate the input results', () => {
+			const first = uTier('t1', [zone('a', 'A')]);
+			mergeUnsellableZoneTiers([
+				{ painted: 1, unsellable_zone_tiers: [first] },
+				{ painted: 1, unsellable_zone_tiers: [uTier('t1', [zone('b', 'B')])] }
+			]);
+			expect(first.zones.map((z) => z.id)).toEqual(['a']);
+		});
 	});
 
 	it('does not mutate the input results', () => {

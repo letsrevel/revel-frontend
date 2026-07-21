@@ -6,6 +6,7 @@ import type {
 	PriceCategorySchema,
 	SeatAssignmentMode,
 	TierPricingGapSchema,
+	TierUnsellableZoneSchema,
 	VenueSectorSchema
 } from '$lib/api/generated/types.gen';
 
@@ -36,6 +37,7 @@ function renderSection(
 		categoryPrices: Record<string, string>;
 		pricingCategories: PriceCategorySchema[];
 		pricingGaps: TierPricingGapSchema[];
+		unsellableZones: TierUnsellableZoneSchema[];
 		canUseSeatAssignment: boolean;
 		venueId: string | null;
 		selectedVenueSectors: VenueSectorSchema[];
@@ -54,6 +56,7 @@ function renderSection(
 			categoryPrices: {},
 			pricingCategories: [],
 			pricingGaps: [],
+			unsellableZones: [],
 			currencySymbol: '€',
 			canUseSeatAssignment: true,
 			venueId: 'venue-1',
@@ -139,6 +142,30 @@ describe('TierFormSeatingSection', () => {
 				'category-price-pc-silver',
 				'category-price-pc-gold'
 			]);
+		});
+
+		it('warns about priced zones painted on no seat (unsellable_zones — the opposite of a gap)', () => {
+			renderSection({
+				seatAssignmentMode: 'best_available',
+				sectorRequired: true,
+				sectorId: 'sector-1',
+				pricingCategories,
+				unsellableZones: [{ id: 'pc-gold', name: 'Gold', color: '#f9b233' }]
+			});
+			const alert = screen.getByRole('alert');
+			expect(alert).toHaveTextContent('Priced zones without seats');
+			expect(alert).toHaveTextContent(/Gold/);
+		});
+
+		it('does not show the unsellable warning outside best_available', () => {
+			renderSection({
+				seatAssignmentMode: 'user_choice',
+				sectorRequired: true,
+				sectorId: 'sector-1',
+				pricingCategories,
+				unsellableZones: [{ id: 'pc-gold', name: 'Gold', color: '#f9b233' }]
+			});
+			expect(screen.queryByText('Priced zones without seats')).not.toBeInTheDocument();
 		});
 
 		it('never shows the coverage-gap warning (partial coverage IS the feature)', () => {
