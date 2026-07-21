@@ -34,6 +34,7 @@
 	import { tierFieldLabel } from './tier-field-labels';
 	import {
 		CURRENCY_SYMBOLS,
+		isBillingInfoRequiredError,
 		toDatetimeLocal,
 		toTimezoneAwareISO,
 		normalizeDecimalInput
@@ -666,7 +667,7 @@
 			{#if error}
 				{@const fieldErrors = extractFieldErrors(error)}
 				{@const errorMsg = extractErrorMessage(error)}
-				{@const isBillingError = errorMsg.toLowerCase().includes('billing information is required')}
+				{@const isBillingError = isBillingInfoRequiredError(errorMsg)}
 				<div class="rounded-lg bg-destructive/10 p-3" role="alert">
 					<p class="font-medium text-destructive">{m['tierForm.error']()}</p>
 
