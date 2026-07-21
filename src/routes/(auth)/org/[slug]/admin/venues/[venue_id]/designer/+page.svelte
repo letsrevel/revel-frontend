@@ -33,7 +33,7 @@
 	} from '$lib/components/venues/designer/designer-model';
 	import {
 		sectorUpdateErrorMessage,
-		stageUpdateErrorMessage,
+		venueUpdateErrorMessage,
 		type DesignerSavePlan
 	} from '$lib/components/venues/designer/designer-save';
 	import { toast } from 'svelte-sonner';
@@ -84,7 +84,7 @@
 	const saveMutation = createMutation(() => ({
 		mutationFn: async (plan: DesignerSavePlan) => {
 			const genericError = m['seatDesigner.saveError']();
-			// Per-sector transform/shape updates (metadata merges preserve aisles).
+			// Per-sector transform/shape/floor updates (metadata merges preserve aisles).
 			for (const update of plan.sectorUpdates) {
 				const body: VenueSectorUpdateSchema = {};
 				if (update.metadata !== undefined) body.metadata = update.metadata;
@@ -98,15 +98,16 @@
 					throw new Error(sectorUpdateErrorMessage(response.error, update, genericError));
 				}
 			}
-			// Venue metadata update carries the stage (merged into existing metadata).
-			if (plan.stageUpdate) {
+			// Venue metadata update carries the stage and/or floor plan (merged
+			// into existing metadata — unknown keys survive).
+			if (plan.venueUpdate) {
 				const response = await organizationadminvenuesUpdateVenue({
 					path: { slug: organization.slug, venue_id: venueId },
-					body: { metadata: plan.stageUpdate.metadata },
+					body: { metadata: plan.venueUpdate.metadata },
 					headers: authHeaders
 				});
 				if (response.error) {
-					throw new Error(stageUpdateErrorMessage(response.error, genericError));
+					throw new Error(venueUpdateErrorMessage(response.error, genericError));
 				}
 			}
 		},

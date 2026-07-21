@@ -25,6 +25,7 @@ import type {
 } from '$lib/api/generated/types.gen';
 import { computeSeatMapLayout } from '$lib/components/tickets/seat-map-layout';
 import { applyTransform, type SectorTransform } from '$lib/components/tickets/sector-transform';
+import { explicitFloorId, parseFloors, type VenueFloor } from '../venue-floors';
 
 /** A seat dot in a block's LOCAL frame (1 unit = one seat cell). */
 export interface DesignerSeatDot {
@@ -52,6 +53,12 @@ export interface DesignerBlock {
 	shapeFrameOffset: Coordinate2d;
 	/** The sector's existing metadata blob, preserved on save (aisles etc.). */
 	metadata: Record<string, unknown> | null;
+	/**
+	 * EXPLICIT floor assignment (`metadata.floor` naming a known floor id), or
+	 * null — implicitly the first floor by convention; nothing is written until
+	 * the block is deliberately moved.
+	 */
+	floorId: string | null;
 	/** True when the sector has at least one active seat. */
 	hasSeats: boolean;
 	/**
@@ -76,6 +83,8 @@ export interface DesignerModel {
 	stage: StageModel;
 	/** The venue's existing metadata blob, preserved on save (merge stage into it). */
 	venueMetadata: Record<string, unknown> | null;
+	/** Ordered floor plan from `venue.metadata.floors`; [] = flattened plane. */
+	floors: VenueFloor[];
 }
 
 /** Units of clear space between the blocks' bounding box and a default stage. */
@@ -240,6 +249,7 @@ export function buildDesignerModel(
 	const withIds = rawSectors.filter(
 		(sector): sector is VenueSectorWithSeatsSchema & { id: string } => typeof sector.id === 'string'
 	);
+	const floors = parseFloors(venueMetadata);
 	const layout = computeSeatMapLayout({
 		venue_id: '',
 		venue_name: '',
@@ -270,6 +280,7 @@ export function buildDesignerModel(
 			transform: { ...laid.transform },
 			shapeFrameOffset: computeShapeFrameOffset(raw, rawShape),
 			metadata: asMetadata(raw.metadata),
+			floorId: explicitFloorId(asMetadata(raw.metadata), floors),
 			hasSeats: laid.seats.length > 0,
 			hasCompletePositions:
 				activeSeats.length > 0 && activeSeats.every((seat) => Boolean(seat.position))
@@ -282,7 +293,7 @@ export function buildDesignerModel(
 	);
 
 	const stage = parseStage(venueMetadata) ?? defaultStage(blocks);
-	return { blocks, stage, venueMetadata: asMetadata(venueMetadata) };
+	return { blocks, stage, venueMetadata: asMetadata(venueMetadata), floors };
 }
 
 /** Local center of a block (the pivot for rotation). */

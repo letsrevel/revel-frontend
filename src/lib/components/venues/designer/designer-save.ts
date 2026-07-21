@@ -5,11 +5,12 @@
  * expects, WITHOUT ever moving seats:
  *
  * - For each CHANGED sector, one sector PUT carrying `metadata` (the sector's
- *   existing blob with `transform` merged in — `aisles` and any other keys are
- *   preserved) and/or `shape` (the outline mapped back into the persisted frame,
- *   or null to clear it).
- * - When the stage changed, one venue PUT carrying `metadata` (the venue's
- *   existing blob with `stage` merged in).
+ *   existing blob with `transform` and/or `floor` merged in — `aisles` and any
+ *   other keys are preserved) and/or `shape` (the outline mapped back into the
+ *   persisted frame, or null to clear it).
+ * - When the stage and/or the floor plan changed, one venue PUT carrying
+ *   `metadata` (the venue's existing blob with `stage`/`floors` merged in —
+ *   only the pieces that actually changed are re-serialized).
  *
  * A sector whose outline changed is pre-validated: the polygon must have ≥3
  * valid vertices (else `invalidShapeSectors`), and — only for sectors whose
@@ -20,6 +21,12 @@ import type { Coordinate2d } from '$lib/api/generated/types.gen';
 import { extractApiErrorDetail } from '$lib/utils/api-error-detail';
 import type { SectorTransform } from '$lib/components/tickets/sector-transform';
 import { pointInPolygon, polygonIsValid, roundCoord, shapesEqual } from './designer-geometry';
+import {
+	floorsEqual,
+	mergeFloorIntoSectorMetadata,
+	mergeFloorsIntoMetadata,
+	type VenueFloor
+} from '../venue-floors';
 import type { DesignerBlock, DesignerModel, StageModel } from './designer-model';
 
 /** Per-axis tolerance below which a transform/position counts as unchanged. */
@@ -28,14 +35,14 @@ export const TRANSFORM_EPSILON = 1e-3;
 export interface SectorUpdate {
 	sectorId: string;
 	sectorName: string;
-	/** Merged sector metadata (existing blob + transform); undefined when unchanged. */
+	/** Merged sector metadata (existing blob + transform/floor); undefined when unchanged. */
 	metadata?: Record<string, unknown>;
 	/** Persist-frame outline, or null to clear; undefined when the outline is unchanged. */
 	shape?: Coordinate2d[] | null;
 }
 
-export interface StageUpdate {
-	/** Merged venue metadata (existing blob + stage). */
+export interface VenueUpdate {
+	/** Merged venue metadata (existing blob + stage and/or floors). */
 	metadata: Record<string, unknown>;
 }
 
@@ -52,7 +59,7 @@ export interface InvalidShapeSector {
 
 export interface DesignerSavePlan {
 	sectorUpdates: SectorUpdate[];
-	stageUpdate: StageUpdate | null;
+	venueUpdate: VenueUpdate | null;
 	/** Sectors whose writes were withheld because seats fall outside the outline. */
 	violations: ShapeViolation[];
 	/** Sectors whose edited outline has fewer than 3 (or degenerate) vertices. */
@@ -130,11 +137,21 @@ export interface SavePlanInput {
 	baselineShapes: ReadonlyMap<string, Coordinate2d[] | null>;
 	stage: StageModel;
 	baselineStage: StageModel;
+	/** Edited floor plan (#680); defaults keep floor-less saves unchanged. */
+	floors?: readonly VenueFloor[];
+	baselineFloors?: readonly VenueFloor[];
+	/** EXPLICIT floor assignments (null = implicit first floor), keyed by sector id. */
+	floorIds?: ReadonlyMap<string, string | null>;
+	baselineFloorIds?: ReadonlyMap<string, string | null>;
 }
 
 export function buildSavePlan(input: SavePlanInput): DesignerSavePlan {
 	const { model, transforms, baselineTransforms, shapes, baselineShapes, stage, baselineStage } =
 		input;
+	const floors = input.floors ?? model.floors;
+	const baselineFloors = input.baselineFloors ?? model.floors;
+	const floorIds = input.floorIds ?? new Map<string, string | null>();
+	const baselineFloorIds = input.baselineFloorIds ?? new Map<string, string | null>();
 
 	const sectorUpdates: SectorUpdate[] = [];
 	const violations: ShapeViolation[] = [];
@@ -149,7 +166,15 @@ export function buildSavePlan(input: SavePlanInput): DesignerSavePlan {
 		const baseShape = baselineShapes.get(block.id) ?? null;
 		const shapeChanged = !shapesEqual(shape, baseShape);
 
-		if (!transformChanged && !shapeChanged) continue;
+		// `.has()` (not `??`): null is a meaningful value here — "implicit first
+		// floor" — and must not fall back to the model baseline.
+		const floorId = floorIds.has(block.id) ? (floorIds.get(block.id) ?? null) : block.floorId;
+		const baseFloorId = baselineFloorIds.has(block.id)
+			? (baselineFloorIds.get(block.id) ?? null)
+			: block.floorId;
+		const floorChanged = floorId !== baseFloorId;
+
+		if (!transformChanged && !shapeChanged && !floorChanged) continue;
 
 		if (shapeChanged && shape && !polygonIsValid(shape)) {
 			invalidShapeSectors.push({ sectorId: block.id, sectorName: block.name });
@@ -172,8 +197,13 @@ export function buildSavePlan(input: SavePlanInput): DesignerSavePlan {
 		}
 
 		const update: SectorUpdate = { sectorId: block.id, sectorName: block.name };
-		if (transformChanged) {
-			update.metadata = mergeTransformIntoMetadata(block.metadata, transform);
+		if (transformChanged || floorChanged) {
+			// Chain the merges over the SAME existing blob so a combined
+			// move+refloor write preserves aisles and every unknown key once.
+			let metadata = block.metadata;
+			if (floorChanged) metadata = mergeFloorIntoSectorMetadata(metadata, floorId);
+			if (transformChanged) metadata = mergeTransformIntoMetadata(metadata, transform);
+			update.metadata = metadata ?? undefined;
 		}
 		if (shapeChanged) {
 			update.shape = shape ? toPersistedShape(shape, block) : null;
@@ -181,19 +211,27 @@ export function buildSavePlan(input: SavePlanInput): DesignerSavePlan {
 		sectorUpdates.push(update);
 	}
 
+	// Venue metadata write: re-serialize only the pieces that changed, so an
+	// untouched stage blob (possibly carrying keys we don't model) survives a
+	// floors-only save byte-for-byte, and vice versa.
 	const stageChanged = !stagesEqual(stage, baselineStage);
-	const stageUpdate: StageUpdate | null = stageChanged
-		? { metadata: mergeStageIntoMetadata(model.venueMetadata, stage) }
-		: null;
+	const planChanged = !floorsEqual(floors, baselineFloors);
+	let venueUpdate: VenueUpdate | null = null;
+	if (stageChanged || planChanged) {
+		let metadata = model.venueMetadata ?? {};
+		if (planChanged) metadata = mergeFloorsIntoMetadata(metadata, floors);
+		if (stageChanged) metadata = mergeStageIntoMetadata(metadata, stage);
+		venueUpdate = { metadata };
+	}
 
 	return {
 		sectorUpdates,
-		stageUpdate,
+		venueUpdate,
 		violations,
 		invalidShapeSectors,
 		isEmpty:
 			sectorUpdates.length === 0 &&
-			stageUpdate === null &&
+			venueUpdate === null &&
 			violations.length === 0 &&
 			invalidShapeSectors.length === 0
 	};
@@ -235,8 +273,8 @@ export function sectorUpdateErrorMessage(
 	return `${update.sectorName}: ${detail ?? fallback}`;
 }
 
-/** Human-readable message for a failed venue (stage) update. */
-export function stageUpdateErrorMessage(error: unknown, fallback: string): string {
+/** Human-readable message for a failed venue (stage/floors) update. */
+export function venueUpdateErrorMessage(error: unknown, fallback: string): string {
 	const detail = extractApiErrorDetail(error);
 	return detail ?? fallback;
 }

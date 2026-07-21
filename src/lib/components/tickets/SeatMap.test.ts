@@ -68,6 +68,7 @@ interface RenderOptions {
 	interactive?: boolean;
 	activeSectorId?: string | null;
 	standingCounts?: Record<string, { capacity: number; taken: number }>;
+	hideStage?: boolean;
 	sectorTargets?: Array<{ sectorId: string; label: string; lines: string[] }> | null;
 	onSectorSelect?: (sectorId: string) => void;
 	interactiveSectors?: Array<{
@@ -519,6 +520,56 @@ describe('SeatMap', () => {
 
 			await fireEvent.keyDown(b1, { key: 'ArrowUp' });
 			expect(a1).toHaveAttribute('tabindex', '0');
+		});
+	});
+
+	describe('multi-floor rendering (#680)', () => {
+		const twoSectors: VenueChartSchema = {
+			venue_id: 'venue-1',
+			venue_name: 'Test Hall',
+			updated_at: '2026-07-18T00:00:00Z',
+			price_categories: [],
+			sectors: [
+				{ id: 'sec-1', name: 'Stalls', kind: 'seated', seats: [chartSeat('a1')] },
+				{ id: 'sec-2', name: 'Balcony', kind: 'seated', seats: [chartSeat('c1', { id: 'c1' })] }
+			]
+		};
+
+		it('hideStage suppresses even the fallback stage pill (non-first floors)', () => {
+			renderMap({ chart: twoSectors, seats: [view('a1')], hideStage: true });
+			expect(screen.queryByRole('img', { name: 'STAGE' })).not.toBeInTheDocument();
+			expect(screen.queryByText('STAGE')).not.toBeInTheDocument();
+		});
+
+		it('a floor-filtered chart with ONE target sector keeps overview mode (never the scoped view)', () => {
+			// One sector + a sector target: the whole-sector click target must
+			// render — the scoped single-sector branch would swallow it.
+			const onSectorSelect = vi.fn();
+			renderMap({
+				chart: makeChart([chartSeat('a1')]),
+				seats: [],
+				interactive: false,
+				sectorTargets: [
+					{ sectorId: 'sec-1', label: 'Stalls: Front, EUR 20.00', lines: ['Front · EUR 20.00'] }
+				],
+				onSectorSelect
+			});
+			expect(screen.getByRole('button', { name: 'Stalls: Front, EUR 20.00' })).toBeInTheDocument();
+		});
+
+		it('a floor-filtered chart with ONE ghost sector keeps the ghost treatment', () => {
+			// activeSectorId set (venue scope) but the only sector on this floor is
+			// another tier's: it must render as an inert ghost, not as the scoped
+			// interactive view.
+			renderMap({
+				chart: makeChart([chartSeat('a1')]),
+				seats: [],
+				activeSectorId: 'sec-other'
+			});
+			expect(
+				screen.getByRole('img', { name: 'Stalls: sold through a different ticket' })
+			).toBeInTheDocument();
+			expect(screen.queryByRole('button', { name: /Seat A1/ })).not.toBeInTheDocument();
 		});
 	});
 });

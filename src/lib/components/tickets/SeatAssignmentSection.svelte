@@ -21,9 +21,15 @@
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import { buildSeatViews } from './seating-view';
 	import SeatSelector from './SeatSelector.svelte';
+	import FloorSwitcher from './FloorSwitcher.svelte';
 	import SeatMap from './SeatMap.svelte';
 	import SeatViewToggle from './SeatViewToggle.svelte';
 	import SeatScopeToggle from './SeatScopeToggle.svelte';
+	import {
+		filterChartToFloor,
+		parseFloors,
+		sectorFloorId
+	} from '$lib/components/venues/venue-floors';
 	import {
 		defaultSeatViewMode,
 		readSeatMapScopePref,
@@ -193,10 +199,37 @@
 		writeSeatMapScopePref(scope);
 	}
 
+	// Multi-floor venues (#680): whole-venue scope renders ONE floor at a time
+	// (chips in the toggle row), defaulting to the floor the TIER's sector
+	// lives on. Filtering touches only the chart handed to SeatMap — holds,
+	// switch targets and seat views stay computed on the full chart, so a
+	// floor switch never releases a held seat.
+	const floorList = $derived(chart ? parseFloors(chart.metadata) : []);
+	const tierFloorId = $derived.by(() => {
+		if (!chart || floorList.length === 0 || !tierSector?.id) return null;
+		const sector = (chart.sectors ?? []).find((candidate) => candidate.id === tierSector.id);
+		return sector ? sectorFloorId(sector.metadata, floorList) : null;
+	});
+	let pickedFloorId = $state<string | null>(null);
+	const activeFloorId = $derived(
+		pickedFloorId && floorList.some((floor) => floor.id === pickedFloorId)
+			? pickedFloorId
+			: (tierFloorId ?? floorList[0]?.id ?? null)
+	);
+	// The stage belongs to the FIRST (ground) floor by convention (it has no
+	// floor field), so other floors hide even the fallback pill.
+	const hideStage = $derived(
+		effectiveScope === 'venue' && floorList.length > 1 && activeFloorId !== floorList[0].id
+	);
+
 	// Section scope filters the chart to the tier's sector; venue scope hands
-	// SeatMap the full chart plus the active sector for ghost rendering.
+	// SeatMap the full chart (floor-filtered on multi-floor venues) plus the
+	// active sector for ghost rendering.
 	const mapChart = $derived.by(() => {
-		if (!chart || !tierSector?.id || effectiveScope === 'venue') return chart;
+		if (!chart || !tierSector?.id) return chart;
+		if (effectiveScope === 'venue') {
+			return floorList.length > 1 ? filterChartToFloor(chart, floorList, activeFloorId) : chart;
+		}
 		return { ...chart, sectors: (chart.sectors ?? []).filter((s) => s.id === tierSector.id) };
 	});
 
@@ -331,6 +364,13 @@
 			<!-- Map/List toggle sits OUTSIDE the map surface (touch-action: none
 			     there), so the dialog stays scrollable from this row on mobile. -->
 			<div class="flex flex-wrap items-center justify-end gap-2">
+				{#if seatViewMode === 'map' && effectiveScope === 'venue' && floorList.length > 1}
+					<FloorSwitcher
+						floors={floorList}
+						{activeFloorId}
+						onFloorChange={(floorId) => (pickedFloorId = floorId)}
+					/>
+				{/if}
 				{#if seatViewMode === 'map' && canShowVenueScope}
 					<SeatScopeToggle scope={effectiveScope} onScopeChange={handleScopeChange} />
 				{/if}
@@ -390,6 +430,7 @@
 						{standingCounts}
 						{seatPricing}
 						{currency}
+						{hideStage}
 					/>
 				</div>
 				<!-- Hold notice for the map view (the list renders its own inside

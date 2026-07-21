@@ -42,6 +42,7 @@ import {
 	stagesEqual,
 	type DesignerSavePlan
 } from './designer-save';
+import { DesignerFloorState } from './designer-floors.svelte';
 import { DesignerViewport } from './designer-viewport.svelte';
 
 export const CELL = 32; // px per world unit
@@ -100,6 +101,8 @@ export class DesignerController {
 	readonly baselineShapes: SvelteMap<string, Coordinate2d[] | null>;
 	stage = $state<StageModel>({ position: { x: 0, y: 0 }, shape: null });
 	private baselineStage: StageModel;
+	/** Floor plan + per-block assignments (#680); owns its own dirty/baseline. */
+	readonly floorState: DesignerFloorState;
 
 	selection = $state<Selection | null>(null);
 	mode = $state<'arrange' | 'shape'>('arrange');
@@ -121,6 +124,7 @@ export class DesignerController {
 		this.baselineShapes = new SvelteMap(model.blocks.map((b) => [b.id, cloneShape(b.shape)]));
 		this.stage = cloneStage(model.stage);
 		this.baselineStage = cloneStage(model.stage);
+		this.floorState = new DesignerFloorState(model);
 		this.vp = new DesignerViewport({ pad: PAD, offsetY: PAD, cell: CELL }, () => ({
 			w: this.contentW,
 			h: this.contentH
@@ -186,7 +190,8 @@ export class DesignerController {
 		const t = anyTransformChanged(this.model.blocks, this.transforms, this.baselineTransforms);
 		const s = anyShapeChanged(this.model.blocks, this.shapes, this.baselineShapes);
 		const st = !stagesEqual(this.stage, this.baselineStage);
-		return t || s || st;
+		const f = this.floorState.dirty;
+		return t || s || st || f;
 	});
 
 	selectSector(id: string): void {
@@ -502,7 +507,8 @@ export class DesignerController {
 			shapes: this.shapes,
 			baselineShapes: this.baselineShapes,
 			stage: this.stage,
-			baselineStage: this.baselineStage
+			baselineStage: this.baselineStage,
+			...this.floorState.saveInput
 		});
 		if (plan.violations.length > 0 || plan.invalidShapeSectors.length > 0) {
 			this.saveIssues = plan;
@@ -515,5 +521,6 @@ export class DesignerController {
 		for (const [id, t] of this.transforms) this.baselineTransforms.set(id, { ...t });
 		for (const [id, s] of this.shapes) this.baselineShapes.set(id, cloneShape(s));
 		this.baselineStage = cloneStage(this.stage);
+		this.floorState.commitBaseline();
 	}
 }

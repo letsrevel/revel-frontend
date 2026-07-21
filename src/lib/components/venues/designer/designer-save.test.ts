@@ -12,6 +12,7 @@ import {
 	transformsEqual,
 	type SavePlanInput
 } from './designer-save';
+import type { VenueFloor } from '../venue-floors';
 
 function block(id: string, overrides: Partial<DesignerBlock> = {}): DesignerBlock {
 	return {
@@ -25,6 +26,7 @@ function block(id: string, overrides: Partial<DesignerBlock> = {}): DesignerBloc
 		transform: { x: 0, y: 0, rotation: 0 },
 		shapeFrameOffset: { x: 0, y: 0 },
 		metadata: null,
+		floorId: null,
 		hasSeats: true,
 		hasCompletePositions: false,
 		...overrides
@@ -94,7 +96,8 @@ describe('buildSavePlan', () => {
 	const model = (): DesignerModel => ({
 		blocks: [block('a', { transform: { x: 0, y: 10, rotation: 0 } })],
 		stage: stage(),
-		venueMetadata: null
+		venueMetadata: null,
+		floors: []
 	});
 
 	it('is empty when nothing changed', () => {
@@ -121,7 +124,8 @@ describe('buildSavePlan', () => {
 		const m: DesignerModel = {
 			blocks: [block('a', { shapeFrameOffset: { x: 1, y: 1 } })],
 			stage: stage(),
-			venueMetadata: null
+			venueMetadata: null,
+			floors: []
 		};
 		const triangle: Coordinate2d[] = [
 			{ x: 0, y: 0 },
@@ -171,7 +175,7 @@ describe('buildSavePlan', () => {
 				{ id: 's2', label: 'A2', x: 9, y: 9 }
 			]
 		});
-		const m: DesignerModel = { blocks: [seated], stage: stage(), venueMetadata: null };
+		const m: DesignerModel = { blocks: [seated], stage: stage(), venueMetadata: null, floors: [] };
 		const triangle: Coordinate2d[] = [
 			{ x: 0, y: 0 },
 			{ x: 3, y: 0 },
@@ -194,7 +198,7 @@ describe('buildSavePlan', () => {
 			hasCompletePositions: false,
 			seats: [{ id: 's1', label: 'A1', x: 9, y: 9 }]
 		});
-		const m: DesignerModel = { blocks: [grid], stage: stage(), venueMetadata: null };
+		const m: DesignerModel = { blocks: [grid], stage: stage(), venueMetadata: null, floors: [] };
 		const triangle: Coordinate2d[] = [
 			{ x: 0, y: 0 },
 			{ x: 3, y: 0 },
@@ -214,14 +218,118 @@ describe('buildSavePlan', () => {
 		const m: DesignerModel = {
 			blocks: [],
 			stage: stage(),
-			venueMetadata: { capacityNote: 'x' }
+			venueMetadata: { capacityNote: 'x' },
+			floors: []
 		};
 		const moved = stage({ position: { x: 4, y: -8 } });
 		const plan = buildSavePlan(makeInput(m, { stage: moved, baselineStage: m.stage }));
-		expect(plan.stageUpdate).toEqual({
+		expect(plan.venueUpdate).toEqual({
 			metadata: { capacityNote: 'x', stage: { position: { x: 4, y: -8 }, shape: null } }
 		});
 		expect(plan.isEmpty).toBe(false);
+	});
+});
+
+describe('buildSavePlan — floors (#680)', () => {
+	const ground: VenueFloor = { id: 'g', name: 'Ground floor', order: 0 };
+	const upper: VenueFloor = { id: 'u', name: 'Upper floor', order: 1 };
+
+	const flooredModel = (): DesignerModel => ({
+		blocks: [
+			block('a', {
+				metadata: { transform: { x: 1, y: 2, rotation: 0 }, aisles: { verticalAisles: [3] } }
+			})
+		],
+		stage: stage(),
+		venueMetadata: {
+			stage: { position: { x: 0, y: -4 }, futureKey: 'kept' },
+			floors: [ground, upper]
+		},
+		floors: [ground, upper]
+	});
+
+	it('a floor move writes merged sector metadata without clobbering transform/aisles', () => {
+		const m = flooredModel();
+		const plan = buildSavePlan(
+			makeInput(m, {
+				floors: m.floors,
+				baselineFloors: m.floors,
+				floorIds: new Map([['a', 'u']]),
+				baselineFloorIds: new Map([['a', null]])
+			})
+		);
+		expect(plan.sectorUpdates).toHaveLength(1);
+		expect(plan.sectorUpdates[0].metadata).toEqual({
+			transform: { x: 1, y: 2, rotation: 0 },
+			aisles: { verticalAisles: [3] },
+			floor: 'u'
+		});
+		expect(plan.sectorUpdates[0].shape).toBeUndefined();
+		expect(plan.venueUpdate).toBeNull();
+	});
+
+	it('a combined move+refloor chains both merges over the same blob', () => {
+		const m = flooredModel();
+		const plan = buildSavePlan(
+			makeInput(m, {
+				transforms: new Map([['a', { x: 7, y: 8, rotation: 15 }]]),
+				baselineTransforms: new Map([['a', m.blocks[0].transform]]),
+				floorIds: new Map([['a', 'u']]),
+				baselineFloorIds: new Map([['a', null]])
+			})
+		);
+		expect(plan.sectorUpdates[0].metadata).toEqual({
+			transform: { x: 7, y: 8, rotation: 15 },
+			aisles: { verticalAisles: [3] },
+			floor: 'u'
+		});
+	});
+
+	it('an unchanged floor assignment writes nothing', () => {
+		const m = flooredModel();
+		const plan = buildSavePlan(
+			makeInput(m, {
+				floorIds: new Map([['a', 'u']]),
+				baselineFloorIds: new Map([['a', 'u']])
+			})
+		);
+		expect(plan.isEmpty).toBe(true);
+	});
+
+	it('a floors-only change merges floors WITHOUT re-serializing the stage blob', () => {
+		const m = flooredModel();
+		const renamed = [{ ...ground, name: 'Parterre' }, upper];
+		const plan = buildSavePlan(makeInput(m, { floors: renamed, baselineFloors: m.floors }));
+		expect(plan.sectorUpdates).toEqual([]);
+		expect(plan.venueUpdate).toEqual({
+			metadata: {
+				// The stored stage blob (with keys we do not model) survives verbatim.
+				stage: { position: { x: 0, y: -4 }, futureKey: 'kept' },
+				floors: [
+					{ id: 'g', name: 'Parterre', order: 0 },
+					{ id: 'u', name: 'Upper floor', order: 1 }
+				]
+			}
+		});
+		expect(plan.isEmpty).toBe(false);
+	});
+
+	it('stage + floors changed together merge both into one venue write', () => {
+		const m = flooredModel();
+		const plan = buildSavePlan(
+			makeInput(m, {
+				stage: stage({ position: { x: 5, y: -9 } }),
+				baselineStage: m.stage,
+				floors: [ground],
+				baselineFloors: [ground, upper]
+			})
+		);
+		expect(plan.venueUpdate).toEqual({
+			metadata: {
+				stage: { position: { x: 5, y: -9 }, shape: null },
+				floors: [{ id: 'g', name: 'Ground floor', order: 0 }]
+			}
+		});
 	});
 });
 

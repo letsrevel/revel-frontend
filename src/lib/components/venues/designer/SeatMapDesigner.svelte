@@ -18,6 +18,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { Coordinate2d } from '$lib/api/generated/types.gen';
 	import { Minus, Plus, RotateCcw } from '@lucide/svelte';
+	import DesignerFloorBar from './DesignerFloorBar.svelte';
 	import DesignerToolbar from './DesignerToolbar.svelte';
 	import { CELL, HANDLE_PX, DesignerController } from './designer-controller.svelte';
 	import { midpoint } from './designer-geometry';
@@ -45,6 +46,18 @@
 	$effect(() => {
 		onDirtyChange?.(c.dirty);
 	});
+
+	// Each floor is its own canvas: only the active floor's blocks render (all
+	// of them when the venue has no floors — the flattened plane).
+	const visibleBlocks = $derived(model.blocks.filter((block) => c.floorState.isVisible(block.id)));
+
+	function activateFloor(floorId: string): void {
+		c.floorState.activeFloorId = floorId;
+		// A selection living on another floor would be an invisible drag/rotate
+		// target — drop it (the stage is only selectable while visible too).
+		if (c.selectedSectorId && !c.floorState.isVisible(c.selectedSectorId)) c.deselect();
+		if (c.stageSelected && !c.floorState.stageVisible) c.deselect();
+	}
 
 	const DEFAULT_STAGE_HALF = 4; // fallback stage bar half-width (units)
 
@@ -128,7 +141,7 @@
 
 <div class="space-y-4">
 	<DesignerToolbar
-		blocks={model.blocks}
+		blocks={visibleBlocks}
 		selectionValue={c.selectionValue}
 		selectedSectorId={c.selectedSectorId}
 		mode={c.mode}
@@ -144,6 +157,12 @@
 		onExitShapeMode={() => c.exitShapeMode()}
 		onClearShape={() => c.clearShape()}
 		onSave={() => c.save()}
+	/>
+
+	<DesignerFloorBar
+		floorState={c.floorState}
+		selectedSectorId={c.selectedSectorId}
+		onActivateFloor={activateFloor}
 	/>
 
 	<p id="{uid}-instructions" class="text-sm text-muted-foreground">
@@ -194,49 +213,52 @@
 			onpointercancel={(event) => c.onCanvasPointerEnd(event)}
 		>
 			<g transform="translate({c.vp.tx} {c.vp.ty}) scale({c.vp.scale})">
-				<!-- Stage -->
-				<g
-					role="button"
-					tabindex="0"
-					aria-label={stageName}
-					aria-pressed={c.stageSelected}
-					class="cursor-move outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
-					transform="translate({c.px(c.stage.position.x)} {c.py(c.stage.position.y)})"
-					onpointerdown={(event) => c.onStagePointerDown(event)}
-					onkeydown={(event) => c.onElementKeydown(event, { kind: 'stage' })}
-				>
-					<title>{stageName}</title>
-					{#if c.stage.shape}
-						<polygon
-							points={c.stage.shape.map((p) => `${p.x * CELL},${p.y * CELL}`).join(' ')}
-							class="fill-muted {c.stageSelected ? 'stroke-primary' : 'stroke-border'}"
-							stroke-width={c.stageSelected ? 2.5 : 1.5}
-						/>
-					{:else}
-						<rect
-							x={-DEFAULT_STAGE_HALF * CELL}
-							y={-0.75 * CELL}
-							width={DEFAULT_STAGE_HALF * 2 * CELL}
-							height={1.5 * CELL}
-							rx="8"
-							class="fill-muted {c.stageSelected ? 'stroke-primary' : 'stroke-border'}"
-							stroke-width={c.stageSelected ? 2.5 : 1.5}
-						/>
-					{/if}
-					<text
-						text-anchor="middle"
-						dominant-baseline="central"
-						class="pointer-events-none fill-muted-foreground text-[11px] font-medium tracking-widest"
+				<!-- Stage: the venue's single stage has no floor field; by convention it
+				     belongs to the FIRST (ground) floor, so other floors hide it. -->
+				{#if c.floorState.stageVisible}
+					<g
+						role="button"
+						tabindex="0"
+						aria-label={stageName}
+						aria-pressed={c.stageSelected}
+						class="cursor-move outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
+						transform="translate({c.px(c.stage.position.x)} {c.py(c.stage.position.y)})"
+						onpointerdown={(event) => c.onStagePointerDown(event)}
+						onkeydown={(event) => c.onElementKeydown(event, { kind: 'stage' })}
 					>
-						{m['seatSelector.stage']()}
-					</text>
-					{#if c.stageSelected && c.mode === 'shape'}
-						{@render vertexEditor(c.stage.shape, stageName)}
-					{/if}
-				</g>
+						<title>{stageName}</title>
+						{#if c.stage.shape}
+							<polygon
+								points={c.stage.shape.map((p) => `${p.x * CELL},${p.y * CELL}`).join(' ')}
+								class="fill-muted {c.stageSelected ? 'stroke-primary' : 'stroke-border'}"
+								stroke-width={c.stageSelected ? 2.5 : 1.5}
+							/>
+						{:else}
+							<rect
+								x={-DEFAULT_STAGE_HALF * CELL}
+								y={-0.75 * CELL}
+								width={DEFAULT_STAGE_HALF * 2 * CELL}
+								height={1.5 * CELL}
+								rx="8"
+								class="fill-muted {c.stageSelected ? 'stroke-primary' : 'stroke-border'}"
+								stroke-width={c.stageSelected ? 2.5 : 1.5}
+							/>
+						{/if}
+						<text
+							text-anchor="middle"
+							dominant-baseline="central"
+							class="pointer-events-none fill-muted-foreground text-[11px] font-medium tracking-widest"
+						>
+							{m['seatSelector.stage']()}
+						</text>
+						{#if c.stageSelected && c.mode === 'shape'}
+							{@render vertexEditor(c.stage.shape, stageName)}
+						{/if}
+					</g>
+				{/if}
 
-				<!-- Sector blocks -->
-				{#each model.blocks as block (block.id)}
+				<!-- Sector blocks (only the active floor's when the venue has floors) -->
+				{#each visibleBlocks as block (block.id)}
 					{@const t = c.transformOf(block.id)}
 					{@const shape = c.shapes.get(block.id) ?? null}
 					{@const selected = c.selection?.kind === 'sector' && c.selection.id === block.id}

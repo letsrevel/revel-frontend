@@ -60,6 +60,13 @@
 		 * stage's ACTUAL direction; absent, it falls back to world "up".
 		 */
 		stage?: Coordinate2d | null;
+		/**
+		 * Suppress the full-map stage marker entirely (#680): on a multi-floor
+		 * venue the stage belongs to the FIRST floor by convention (it has no
+		 * floor field), so other floors' views must not render even the
+		 * top-center fallback pill.
+		 */
+		hideStage?: boolean;
 		/** Server-resolved per-category prices (user_choice tiers, #668). */
 		seatPricing?: TierSeatPricingSchema | null;
 		/** Tier currency for price display (seat_pricing carries bare decimals). */
@@ -94,6 +101,7 @@
 		activeSectorId = null,
 		standingCounts,
 		stage = null,
+		hideStage = false,
 		seatPricing = null,
 		currency = null,
 		sectorTargets = null,
@@ -155,7 +163,11 @@
 	// indicator instead points at the angle the sector actually faces the stage
 	// (stageDirectionAngle). A full multi-sector map honors each sector's
 	// rotation and draws one stage marker at the venue's world "up".
-	const scoped = $derived(layout.sectors.length === 1);
+	// Whole-venue contexts (overview targets or venue scope with an active
+	// sector) must NEVER collapse to the scoped view — a floor-filtered chart
+	// (#680) can hold a single sector whose target/ghost rendering, not the
+	// scoped stage-arrow view, is what the caller asked for.
+	const scoped = $derived(layout.sectors.length === 1 && !overview && activeSectorId == null);
 	const onlySector = $derived(scoped ? layout.sectors[0] : null);
 
 	const contentW = $derived(
@@ -577,25 +589,27 @@
 				     each sector placed+rotated by its transform. -->
 				{@const stageX = stage ? canvasX(stage.x) : contentW / 2}
 				{@const stageY = stage ? canvasY(stage.y) : PAD + STAGE_H / 2}
-				<g role="img" aria-label={stageLabel}>
-					<rect
-						x={stageX - 60}
-						y={stageY - STAGE_H / 2}
-						width="120"
-						height={STAGE_H}
-						rx="8"
-						class="fill-muted"
-					/>
-					<text
-						x={stageX}
-						y={stageY}
-						text-anchor="middle"
-						dominant-baseline="central"
-						class="fill-muted-foreground text-[11px] font-medium tracking-widest"
-					>
-						{stageLabel}
-					</text>
-				</g>
+				{#if !hideStage}
+					<g role="img" aria-label={stageLabel}>
+						<rect
+							x={stageX - 60}
+							y={stageY - STAGE_H / 2}
+							width="120"
+							height={STAGE_H}
+							rx="8"
+							class="fill-muted"
+						/>
+						<text
+							x={stageX}
+							y={stageY}
+							text-anchor="middle"
+							dominant-baseline="central"
+							class="fill-muted-foreground text-[11px] font-medium tracking-widest"
+						>
+							{stageLabel}
+						</text>
+					</g>
+				{/if}
 
 				{#each layout.sectors as sector (sector.id)}
 					{@const aabb = worldAABB(sector)}

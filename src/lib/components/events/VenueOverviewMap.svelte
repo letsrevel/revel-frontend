@@ -20,8 +20,10 @@
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { Button } from '$lib/components/ui/button';
 	import { AlertCircle, Loader2 } from '@lucide/svelte';
+	import FloorSwitcher from '$lib/components/tickets/FloorSwitcher.svelte';
 	import SeatMap from '$lib/components/tickets/SeatMap.svelte';
 	import { SeatHoldController } from '$lib/components/tickets/seat-hold-controller.svelte';
+	import { filterChartToFloor, parseFloors } from '$lib/components/venues/venue-floors';
 	import { checkoutTotal } from '$lib/components/tickets/checkout-total';
 	import { holdConflictMessage } from '$lib/components/tickets/purchase-error';
 	import { sellableCategoryIds } from '$lib/components/tickets/seat-pricing';
@@ -99,6 +101,25 @@
 	);
 
 	const stage = $derived(chart ? parseStageMetadata(chart.metadata) : null);
+
+	// Multi-floor venues (#680): with >1 floor the overview shows ONE floor at
+	// a time (chips below), defaulting to the first. Filtering happens on the
+	// chart handed to SeatMap only — targets, seat configs and holds are all
+	// computed on the FULL chart, so sectors on other floors simply wait on
+	// their floor's view and switching floors never releases anything.
+	const floorList = $derived(chart ? parseFloors(chart.metadata) : []);
+	let pickedFloorId = $state<string | null>(null);
+	const activeFloorId = $derived(
+		pickedFloorId && floorList.some((floor) => floor.id === pickedFloorId)
+			? pickedFloorId
+			: (floorList[0]?.id ?? null)
+	);
+	const displayChart = $derived(
+		chart && floorList.length > 1 ? filterChartToFloor(chart, floorList, activeFloorId) : chart
+	);
+	// The stage has no floor field; by convention it renders on the FIRST
+	// (ground) floor only.
+	const hideStage = $derived(floorList.length > 1 && activeFloorId !== floorList[0].id);
 
 	const remainingById = $derived(
 		new Map((tierRemainingTickets ?? []).map((info) => [info.tier_id, info]))
@@ -261,9 +282,18 @@
 		<p class="text-sm text-destructive" role="alert">{m['venueOverview.loadError']()}</p>
 	</div>
 {:else}
+	{#if floorList.length > 1}
+		<div class="flex flex-wrap items-center justify-end gap-2">
+			<FloorSwitcher
+				floors={floorList}
+				{activeFloorId}
+				onFloorChange={(floorId) => (pickedFloorId = floorId)}
+			/>
+		</div>
+	{/if}
 	<div class="min-h-0 flex-1 overflow-hidden rounded-lg border bg-muted/20">
 		<SeatMap
-			{chart}
+			chart={displayChart ?? chart}
 			seats={seatViews}
 			interactive={false}
 			{sectorTargets}
@@ -271,6 +301,7 @@
 			{interactiveSectors}
 			onToggle={handleToggle}
 			{stage}
+			{hideStage}
 		/>
 	</div>
 
