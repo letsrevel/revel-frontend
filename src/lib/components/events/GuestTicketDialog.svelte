@@ -32,6 +32,8 @@
 	import CheckoutBillingSection from '$lib/components/tickets/CheckoutBillingSection.svelte';
 	import { bestAvailableFailureMessage } from '$lib/components/tickets/purchase-error';
 	import { isMappedBestAvailable } from '$lib/components/tickets/seat-zones';
+	import { checkoutTotal } from '$lib/components/tickets/checkout-total';
+	import { pwycSuggestions } from '$lib/components/tickets/pwyc-validation';
 	import {
 		guestCheckoutBody,
 		guestCheckoutFingerprint,
@@ -141,6 +143,19 @@
 	const isBestAvailableSeat = $derived(seatAssignmentMode === 'best_available');
 	const mappedBestAvailable = $derived(isBestAvailableSeat && isMappedBestAvailable(tier));
 	const hasSeatSection = $derived(isUserChoiceSeat || isBestAvailableSeat);
+
+	// Running total pinned in the sticky footer (see checkout-total.ts).
+	const footerTotal = $derived(
+		checkoutTotal({
+			tier,
+			quantity,
+			heldSeatIds,
+			chart: seatController?.chartQuery.data ?? null,
+			selectedZoneId,
+			pwycAmount: formData.pwyc ?? '',
+			discountedPrice: null
+		})
+	);
 
 	// Venue/sector info for display
 	const tierVenue = $derived(tier.venue ?? null);
@@ -591,14 +606,6 @@
 			}
 		}
 	}
-
-	// Quick PWYC suggestions
-	function getSuggestions(min: number, max: number | null): number[] {
-		if (max !== null) {
-			return [min, Math.round((min + max) / 2), max];
-		}
-		return [min, min * 2, min * 3];
-	}
 </script>
 
 <Dialog bind:open>
@@ -692,7 +699,7 @@
 							currency={tier.currency}
 							minAmount={minAmount()}
 							maxAmount={maxAmount()}
-							suggestions={getSuggestions(minAmount(), maxAmount())}
+							suggestions={pwycSuggestions(minAmount(), maxAmount())}
 							{isSubmitting}
 							onKeydown={handleKeydown}
 							onBlur={handleBlur}
@@ -728,7 +735,13 @@
 					{/if}
 				</div>
 
-				<GuestTicketFooter {isSubmitting} {onClose} />
+				<GuestTicketFooter
+					{isSubmitting}
+					{onClose}
+					total={footerTotal}
+					currency={tier.currency}
+					isFree={tier.payment_method === 'free'}
+				/>
 			</form>
 		{/if}
 	</DialogContent>

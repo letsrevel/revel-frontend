@@ -53,6 +53,35 @@ export function writeSeatViewPref(mode: SeatViewMode): void {
 }
 
 /**
+ * Map scope: the tier's own section (readable seat sizes, the default) or the
+ * whole venue for spatial context (other sectors render as inert ghosts).
+ */
+export type SeatMapScope = 'section' | 'venue';
+
+export const SEAT_MAP_SCOPE_PREF_KEY = 'revel:seat-map-scope-pref';
+
+/** The buyer's explicit map-scope choice for this session, if any (SSR-safe). */
+export function readSeatMapScopePref(): SeatMapScope | null {
+	if (typeof window === 'undefined') return null;
+	try {
+		const raw = window.sessionStorage.getItem(SEAT_MAP_SCOPE_PREF_KEY);
+		return raw === 'section' || raw === 'venue' ? raw : null;
+	} catch {
+		return null;
+	}
+}
+
+/** Remember an explicit map-scope choice for the session (SSR-safe, best-effort). */
+export function writeSeatMapScopePref(scope: SeatMapScope): void {
+	if (typeof window === 'undefined') return;
+	try {
+		window.sessionStorage.setItem(SEAT_MAP_SCOPE_PREF_KEY, scope);
+	} catch {
+		// Storage unavailable — the section default applies next time.
+	}
+}
+
+/**
  * Adapt the availability payload's standing map (unknown-shaped JSON values)
  * into SeatMap's standingCounts prop. Entries without a numeric capacity are
  * dropped (a remaining/total readout is meaningless without one — the map

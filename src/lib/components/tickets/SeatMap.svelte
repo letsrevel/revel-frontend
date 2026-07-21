@@ -20,7 +20,7 @@
 	import { formatMoney } from '$lib/utils/format';
 	import { resolveSeatPrice } from './seat-pricing';
 	import { Minus, Plus, RotateCcw } from '@lucide/svelte';
-	import { SvelteMap } from 'svelte/reactivity';
+	import { SeatMapViewport } from './seat-map-viewport.svelte';
 	import { computeSeatMapLayout, type SeatPoint, type SectorLayout } from './seat-map-layout';
 	import {
 		applyTransform,
@@ -42,6 +42,13 @@
 		disabled?: boolean;
 		/** false renders a purely presentational map (no focusable seats). */
 		interactive?: boolean;
+		/**
+		 * Whole-venue context mode: when set on a multi-sector chart, only this
+		 * sector is interactive; every other sector renders as a GHOST — dimmed
+		 * uniform seats, no status glyphs (an X pattern would read as sold-out,
+		 * which is a lie: those seats just aren't sold through this ticket).
+		 */
+		activeSectorId?: string | null;
 		/** Standing-zone occupancy, keyed by sector id. */
 		standingCounts?: Record<string, { capacity: number; taken: number }>;
 		/**
@@ -63,6 +70,7 @@
 		maxReached = false,
 		disabled = false,
 		interactive = true,
+		activeSectorId = null,
 		standingCounts,
 		stage = null,
 		seatPricing = null,
@@ -179,7 +187,7 @@
 	}
 
 	function handleSeatClick(view: SeatView) {
-		if (suppressClick) return;
+		if (viewport.suppressClick) return;
 		rovingId = view.id;
 		if (!canToggle(view)) return;
 		onToggle?.(view.id);
@@ -226,101 +234,14 @@
 	}
 
 	// --- pan & zoom (viewBox-fixed, inner <g> transform) --------------------
+	// All interaction state/behavior lives in SeatMapViewport (cooperative
+	// wheel/touch rules documented there); this component only renders it.
 	let svgEl = $state<SVGSVGElement>();
-	let scale = $state(1);
-	let tx = $state(0);
-	let ty = $state(0);
-
-	const MIN_SCALE = 0.5;
-	const MAX_SCALE = 5;
-
-	function zoomAt(px: number, py: number, factor: number) {
-		const next = Math.min(Math.max(scale * factor, MIN_SCALE), MAX_SCALE);
-		const k = next / scale;
-		tx = px - (px - tx) * k;
-		ty = py - (py - ty) * k;
-		scale = next;
-	}
-
-	function zoomBy(factor: number) {
-		zoomAt(contentW / 2, contentH / 2, factor);
-	}
-
-	function resetView() {
-		scale = 1;
-		tx = 0;
-		ty = 0;
-	}
-
-	function clientToView(clientX: number, clientY: number): { x: number; y: number } | null {
-		const rect = svgEl?.getBoundingClientRect();
-		if (!rect || rect.width === 0 || rect.height === 0) return null;
-		return {
-			x: ((clientX - rect.left) / rect.width) * contentW,
-			y: ((clientY - rect.top) / rect.height) * contentH
-		};
-	}
-
-	/** Wheel zoom needs a non-passive listener (Svelte's onwheel is passive). */
-	function wheelZoom(node: SVGSVGElement) {
-		const onWheel = (event: WheelEvent) => {
-			event.preventDefault();
-			const point = clientToView(event.clientX, event.clientY);
-			const factor = Math.pow(1.0015, -event.deltaY);
-			if (point) {
-				zoomAt(point.x, point.y, factor);
-			} else {
-				zoomBy(factor);
-			}
-		};
-		node.addEventListener('wheel', onWheel, { passive: false });
-		return {
-			destroy: () => node.removeEventListener('wheel', onWheel)
-		};
-	}
-
-	// Single-pointer drag pans; two pointers pinch-zoom. A drag beyond a small
-	// threshold suppresses the click that fires on release (so panning over a
-	// seat never toggles it).
-	const pointers = new SvelteMap<number, { x: number; y: number }>();
-	let suppressClick = false;
-
-	function onPointerDown(event: PointerEvent) {
-		pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-		if (pointers.size === 1) suppressClick = false;
-	}
-
-	function onPointerMove(event: PointerEvent) {
-		const prev = pointers.get(event.pointerId);
-		if (!prev) return;
-		const current = { x: event.clientX, y: event.clientY };
-		if (pointers.size === 1) {
-			const rect = svgEl?.getBoundingClientRect();
-			if (rect && rect.width > 0 && rect.height > 0) {
-				tx += ((current.x - prev.x) / rect.width) * contentW;
-				ty += ((current.y - prev.y) / rect.height) * contentH;
-			}
-			if (Math.abs(current.x - prev.x) + Math.abs(current.y - prev.y) > 2) {
-				suppressClick = true;
-			}
-		} else if (pointers.size === 2) {
-			const other = [...pointers.entries()].find(([id]) => id !== event.pointerId)?.[1];
-			if (other) {
-				const prevDist = Math.hypot(prev.x - other.x, prev.y - other.y);
-				const nextDist = Math.hypot(current.x - other.x, current.y - other.y);
-				if (prevDist > 0) {
-					const mid = clientToView((current.x + other.x) / 2, (current.y + other.y) / 2);
-					if (mid) zoomAt(mid.x, mid.y, nextDist / prevDist);
-				}
-				suppressClick = true;
-			}
-		}
-		pointers.set(event.pointerId, current);
-	}
-
-	function onPointerEnd(event: PointerEvent) {
-		pointers.delete(event.pointerId);
-	}
+	const viewport = new SeatMapViewport({
+		getSvg: () => svgEl,
+		getContentW: () => contentW,
+		getContentH: () => contentH
+	});
 
 	// --- standing zones -----------------------------------------------------
 	const standingLabelText = m['seatMap.standing']();
@@ -476,6 +397,56 @@
 {/snippet}
 
 <!--
+	Ghost sector for the whole-venue context view: real footprint and seat
+	positions, but dimmed uniform dots — deliberately NOT the sold/blocked X
+	pattern, because these seats aren't unavailable, they're sold through a
+	different ticket. One inert labelled group; nothing focusable inside.
+-->
+{#snippet ghostSector(sector: SectorLayout)}
+	<g role="img" aria-label="{sector.name}: {m['seatMap.otherTicketSector']()}" class="opacity-60">
+		<title>{sector.name}: {m['seatMap.otherTicketSector']()}</title>
+		{#if sector.kind === 'standing'}
+			<rect
+				x="0"
+				y="0"
+				width={sector.width * CELL}
+				height={sector.height * CELL}
+				rx="12"
+				class="fill-muted/25 stroke-border/60"
+				stroke-dasharray="6 4"
+				stroke-width="1.5"
+			/>
+		{:else}
+			{#if sector.shape}
+				<polygon
+					points={sector.shape.map((p) => `${p.x * CELL},${p.y * CELL}`).join(' ')}
+					class="fill-muted/20 stroke-border/40"
+					stroke-width="1"
+				/>
+			{:else}
+				<rect
+					x={-6}
+					y={-6}
+					width={sector.width * CELL + 12}
+					height={sector.height * CELL + 12}
+					rx="10"
+					class="fill-muted/15 stroke-border/40"
+					stroke-width="1"
+				/>
+			{/if}
+			{#each sector.seats as pt (pt.seatId)}
+				<circle
+					cx={(pt.x + 0.5) * CELL}
+					cy={(pt.y + 0.5) * CELL}
+					r={SEAT_R - 3}
+					class="fill-muted-foreground/15"
+				/>
+			{/each}
+		{/if}
+	</g>
+{/snippet}
+
+<!--
 	Scoped-view stage indicator: a "STAGE" pill placed at the angle the sector
 	faces the venue stage (stageDirectionAngle, degrees clockwise from
 	screen-up). The sector renders un-rotated, so an angled section shows the
@@ -544,17 +515,17 @@
 <div class="relative">
 	<svg
 		bind:this={svgEl}
-		use:wheelZoom
+		use:viewport.wheelZoom
 		viewBox="0 0 {contentW} {contentH}"
 		preserveAspectRatio="xMidYMid meet"
-		class="h-full w-full touch-none select-none"
+		class="h-full w-full select-none {viewport.captureTouch ? 'touch-none' : 'touch-pan-y'}"
 		role="group"
 		aria-label={m['seatMap.label']()}
-		onpointerdown={onPointerDown}
-		onpointermove={onPointerMove}
-		onpointerup={onPointerEnd}
-		onpointercancel={onPointerEnd}
-		onpointerleave={onPointerEnd}
+		onpointerdown={viewport.onPointerDown}
+		onpointermove={viewport.onPointerMove}
+		onpointerup={viewport.onPointerEnd}
+		onpointercancel={viewport.onPointerEnd}
+		onpointerleave={viewport.onPointerEnd}
 	>
 		<defs>
 			<pattern
@@ -568,14 +539,16 @@
 				<line x1="0" y1="0" x2="0" y2="5" class="stroke-muted-foreground/30" stroke-width="2" />
 			</pattern>
 		</defs>
-		<g transform="translate({tx} {ty}) scale({scale})">
+		<g transform="translate({viewport.tx} {viewport.ty}) scale({viewport.scale})">
 			{#if onlySector}
 				<!-- Scoped single-sector view: render un-rotated with the stage arrow
-				     at the angle this sector faces the stage. -->
+				     at the angle this sector faces the stage. The name sits BELOW the
+				     seats — the stage indicator owns the top edge (they used to
+				     collide when the stage direction was near "up"). -->
 				{@render stageArrow(onlySector)}
 				<text
 					x={SCOPED_MARGIN + 2}
-					y={SCOPED_MARGIN - 6}
+					y={SCOPED_MARGIN + onlySector.height * CELL + 16}
 					class="fill-muted-foreground text-[11px] font-medium"
 				>
 					{onlySector.name}
@@ -584,20 +557,23 @@
 					{@render sectorBody(onlySector)}
 				</g>
 			{:else}
-				<!-- Full map: one stage marker at the venue's world "up", each sector
-				     placed+rotated by its transform. -->
+				<!-- Full map: one stage marker — at the venue's ACTUAL stage position
+				     when the designer placed one, else the world-"up" fallback — and
+				     each sector placed+rotated by its transform. -->
+				{@const stageX = stage ? canvasX(stage.x) : contentW / 2}
+				{@const stageY = stage ? canvasY(stage.y) : PAD + STAGE_H / 2}
 				<g role="img" aria-label={stageLabel}>
 					<rect
-						x={contentW / 2 - 60}
-						y={PAD}
+						x={stageX - 60}
+						y={stageY - STAGE_H / 2}
 						width="120"
 						height={STAGE_H}
 						rx="8"
 						class="fill-muted"
 					/>
 					<text
-						x={contentW / 2}
-						y={PAD + STAGE_H / 2}
+						x={stageX}
+						y={stageY}
 						text-anchor="middle"
 						dominant-baseline="central"
 						class="fill-muted-foreground text-[11px] font-medium tracking-widest"
@@ -608,13 +584,16 @@
 
 				{#each layout.sectors as sector (sector.id)}
 					{@const aabb = worldAABB(sector)}
+					{@const ghost = activeSectorId != null && sector.id !== activeSectorId}
 					<!-- Sector name upright in canvas space (never rotated), centered
 					     above the sector's world bounding box. -->
 					<text
 						x={canvasX((aabb.minX + aabb.maxX) / 2)}
 						y={canvasY(aabb.minY) - 6}
 						text-anchor="middle"
-						class="fill-muted-foreground text-[11px] font-medium"
+						class="{ghost
+							? 'fill-muted-foreground/60'
+							: 'fill-muted-foreground'} text-[11px] font-medium"
 					>
 						{sector.name}
 					</text>
@@ -623,12 +602,30 @@
 							sector.transform.y
 						)}) rotate({sector.transform.rotation})"
 					>
-						{@render sectorBody(sector)}
+						{#if ghost}
+							{@render ghostSector(sector)}
+						{:else}
+							{@render sectorBody(sector)}
+						{/if}
 					</g>
 				{/each}
 			{/if}
 		</g>
 	</svg>
+
+	<!-- Bare-wheel hint: the wheel scrolled the dialog (never hijacked); this
+	     just teaches the zoom chord. Decorative, ignored by AT — the zoom
+	     buttons below are the accessible path. -->
+	{#if viewport.showWheelHint}
+		<div
+			aria-hidden="true"
+			class="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center"
+		>
+			<span class="rounded-full bg-foreground/80 px-3 py-1.5 text-xs text-background shadow">
+				{m['seatMap.wheelZoomHint']()}
+			</span>
+		</div>
+	{/if}
 
 	<!-- Zoom controls -->
 	<div class="absolute right-2 top-2 flex flex-col gap-1">
@@ -636,7 +633,7 @@
 			type="button"
 			class={controlClass}
 			aria-label={m['seatMap.zoomIn']()}
-			onclick={() => zoomBy(1.25)}
+			onclick={() => viewport.zoomBy(1.25)}
 		>
 			<Plus class="h-4 w-4" aria-hidden="true" />
 		</button>
@@ -644,7 +641,7 @@
 			type="button"
 			class={controlClass}
 			aria-label={m['seatMap.zoomOut']()}
-			onclick={() => zoomBy(0.8)}
+			onclick={() => viewport.zoomBy(0.8)}
 		>
 			<Minus class="h-4 w-4" aria-hidden="true" />
 		</button>
@@ -652,7 +649,7 @@
 			type="button"
 			class={controlClass}
 			aria-label={m['seatMap.zoomReset']()}
-			onclick={resetView}
+			onclick={viewport.resetView}
 		>
 			<RotateCcw class="h-4 w-4" aria-hidden="true" />
 		</button>

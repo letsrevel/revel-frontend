@@ -65,6 +65,7 @@ interface RenderOptions {
 	maxReached?: boolean;
 	disabled?: boolean;
 	interactive?: boolean;
+	activeSectorId?: string | null;
 	standingCounts?: Record<string, { capacity: number; taken: number }>;
 }
 
@@ -193,6 +194,60 @@ describe('SeatMap', () => {
 			// Both sector names render (upright, outside the rotated group).
 			expect(screen.getByText('Stalls')).toBeInTheDocument();
 			expect(screen.getByText('Balcony')).toBeInTheDocument();
+		});
+
+		it('renders other sectors as inert labelled ghosts in whole-venue context mode', () => {
+			const twoSectors: VenueChartSchema = {
+				venue_id: 'venue-1',
+				venue_name: 'Test Hall',
+				updated_at: '2026-07-18T00:00:00Z',
+				price_categories: [],
+				sectors: [
+					{ id: 'sec-1', name: 'Stalls', kind: 'seated', seats: [chartSeat('a1')] },
+					{
+						id: 'sec-2',
+						name: 'Balcony',
+						kind: 'seated',
+						seats: [chartSeat('c1', { id: 'c1' })],
+						metadata: { transform: { x: 12, y: 0, rotation: 30 } }
+					}
+				]
+			};
+			// seatViews cover ONLY the active sector, exactly like the dialogs.
+			const onToggle = renderMap({
+				chart: twoSectors,
+				seats: [view('a1')],
+				activeSectorId: 'sec-1'
+			});
+			// Active sector: fully interactive.
+			expect(seatButton('Seat A1')).toBeInTheDocument();
+			// Ghost sector: one labelled inert group, its seat is NOT a button and
+			// NOT the sold/blocked X treatment.
+			expect(
+				screen.getByRole('img', { name: 'Balcony: sold through a different ticket' })
+			).toBeInTheDocument();
+			expect(screen.queryByRole('button', { name: /Seat C1/ })).not.toBeInTheDocument();
+			expect(onToggle).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('cooperative wheel zoom', () => {
+		function mapTransform(): string {
+			const svg = screen.getByRole('group', { name: 'Seat map' });
+			return svg.querySelector('g')?.getAttribute('transform') ?? '';
+		}
+
+		it('zooms only with Ctrl/Cmd held — a bare wheel is a scroll, not a hijack', async () => {
+			renderMap();
+			const svg = screen.getByRole('group', { name: 'Seat map' });
+			const before = mapTransform();
+
+			await fireEvent.wheel(svg, { deltaY: -120 });
+			expect(mapTransform()).toBe(before); // untouched — the dialog scrolls
+			expect(screen.getByText('Hold Ctrl (or ⌘) and scroll to zoom')).toBeInTheDocument();
+
+			await fireEvent.wheel(svg, { deltaY: -120, ctrlKey: true });
+			expect(mapTransform()).not.toBe(before);
 		});
 	});
 

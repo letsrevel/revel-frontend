@@ -8,11 +8,15 @@
 	import SeatSelector from '$lib/components/tickets/SeatSelector.svelte';
 	import SeatMap from '$lib/components/tickets/SeatMap.svelte';
 	import SeatViewToggle from '$lib/components/tickets/SeatViewToggle.svelte';
+	import SeatScopeToggle from '$lib/components/tickets/SeatScopeToggle.svelte';
 	import {
 		defaultSeatViewMode,
+		readSeatMapScopePref,
 		readSeatViewPref,
 		standingCountsFrom,
+		writeSeatMapScopePref,
 		writeSeatViewPref,
+		type SeatMapScope,
 		type SeatViewMode
 	} from '$lib/components/tickets/seat-view-toggle';
 	import { SeatHoldController } from '$lib/components/tickets/seat-hold-controller.svelte';
@@ -170,11 +174,20 @@
 		});
 	});
 
-	// The map must render the SAME seats as the list: scope the chart to the
-	// tier's sector so other sectors' seats don't show as crossed-out
-	// "unavailable" (SeatMap has no seatViews filter of its own).
+	// Map scope: the tier's own section (default) or the whole venue for
+	// context — the tier's sector stays interactive, other sectors render as
+	// inert ghosts (activeSectorId below). Mirrors SeatAssignmentSection.
+	let mapScope = $state<SeatMapScope>(readSeatMapScopePref() ?? 'section');
+	const canShowVenueScope = $derived((chart?.sectors?.length ?? 0) > 1 && !!tierSector?.id);
+	const effectiveScope = $derived(canShowVenueScope && mapScope === 'venue' ? 'venue' : 'section');
+
+	function handleScopeChange(scope: SeatMapScope): void {
+		mapScope = scope;
+		writeSeatMapScopePref(scope);
+	}
+
 	const mapChart = $derived.by(() => {
-		if (!chart || !tierSector?.id) return chart;
+		if (!chart || !tierSector?.id || effectiveScope === 'venue') return chart;
 		return { ...chart, sectors: (chart.sectors ?? []).filter((s) => s.id === tierSector.id) };
 	});
 
@@ -295,7 +308,10 @@
 				{:else}
 					<!-- Map/List toggle sits OUTSIDE the map surface (touch-action:
 					     none there), so the dialog stays scrollable from this row. -->
-					<div class="flex justify-end">
+					<div class="flex flex-wrap items-center justify-end gap-2">
+						{#if seatViewMode === 'map' && canShowVenueScope}
+							<SeatScopeToggle scope={effectiveScope} onScopeChange={handleScopeChange} />
+						{/if}
 						<SeatViewToggle mode={seatViewMode} onModeChange={handleViewModeChange} />
 					</div>
 					{#if showPriceLegend}
@@ -336,6 +352,7 @@
 								onToggle={handleToggle}
 								maxReached={heldCount >= quantity}
 								disabled={isSubmitting}
+								activeSectorId={effectiveScope === 'venue' ? (tierSector?.id ?? null) : null}
 								{standingCounts}
 								{seatPricing}
 								{currency}

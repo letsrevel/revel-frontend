@@ -9,7 +9,8 @@ import {
 	deleteDefaultTier,
 	getSeatingChart,
 	getSeededConcertHall,
-	listAvailableSeats
+	listAvailableSeats,
+	uniqueName
 } from '../../support/factories';
 import { PERSONAS } from '../../support/personas';
 import { ApiClient } from '../../support/api';
@@ -174,7 +175,9 @@ test.describe('J6 seat selection @p2', () => {
 		await expect(seatA1).toBeVisible();
 		await expect(confirmDialog.getByRole('button', { name: 'Seat B1, €20.00' })).toBeVisible();
 
-		// Selecting the painted seat shows the running estimate for the held set.
+		// Selecting the painted seat shows the running estimate for the held set —
+		// and the STICKY FOOTER total, which stays in view however far the seat
+		// map pushes the in-flow estimate below the fold.
 		const success = page.getByRole('dialog', { name: 'Your Ticket', exact: true });
 		await expect(async () => {
 			if (await success.isVisible()) return;
@@ -185,6 +188,9 @@ test.describe('J6 seat selection @p2', () => {
 			await expect(confirmDialog.getByText('Selected seats: €55.00')).toBeVisible({
 				timeout: 5_000
 			});
+			await expect(
+				confirmDialog.locator('p', { hasText: /^Total/ }).filter({ hasText: '€55.00' })
+			).toBeVisible();
 			await confirmDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
 			await expect(success).toBeVisible({ timeout: 8_000 });
 		}).toPass({ timeout: 60_000 });
@@ -283,6 +289,97 @@ test.describe('J6 seat selection @p2', () => {
 		const b1Blocked = confirmDialog.getByRole('button', { name: 'Seat B1, unavailable' });
 		await expect(b1Blocked).toBeVisible({ timeout: 15_000 });
 		await expect(b1Blocked).toBeDisabled();
+
+		await context.close();
+	});
+
+	// Whole-venue context (map scope toggle): the tier's sector stays fully
+	// interactive while every other sector renders as a labelled inert ghost —
+	// spatial context without pretending foreign seats are sold out. The sticky
+	// footer total is visible throughout (flat tier: price × quantity).
+	test('whole-venue scope shows other sectors as inert ghosts, own seats stay selectable', async ({
+		browser
+	}) => {
+		const owner = await ApiClient.login(PERSONAS.owner.email, PERSONAS.owner.password);
+		const venue = await owner.post<{ id: string }>(
+			'/api/organization-admin/revel-events-collective/venues',
+			{ name: uniqueName('Venue') }
+		);
+		const front = await owner.post<{ id: string }>(
+			`/api/organization-admin/revel-events-collective/venues/${venue.id}/sectors`,
+			{
+				name: 'Front Floor',
+				kind: 'seated',
+				seats: [
+					{ label: 'A1', row: 'A', number: 1 },
+					{ label: 'A2', row: 'A', number: 2 }
+				]
+			}
+		);
+		await owner.post(`/api/organization-admin/revel-events-collective/venues/${venue.id}/sectors`, {
+			name: 'Rear Balcony',
+			kind: 'seated',
+			seats: [
+				{ label: 'B1', row: 'B', number: 1 },
+				{ label: 'B2', row: 'B', number: 2 }
+			]
+		});
+		const [event, buyer] = await Promise.all([
+			createTicketedEvent({ freeTier: false, event: { venue_id: venue.id } }),
+			createVerifiedUser('VenueScope')
+		]);
+		await deleteDefaultTier(event.id);
+		await createTicketTier(event.id, {
+			name: 'Front Seats',
+			payment_method: 'offline',
+			price: '20.00',
+			seat_assignment_mode: 'user_choice',
+			venue_id: venue.id,
+			sector_id: front.id
+		});
+
+		const context = await browser.newContext();
+		await authenticateContext(context, buyer);
+		const page = await context.newPage();
+		await gotoHydrated(page, event.path);
+		await waitForClientAuth(page);
+
+		const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
+		const confirmDialog = page.getByRole('dialog', { name: 'Reserve Ticket' });
+		await expect(async () => {
+			if (await confirmDialog.isVisible()) return;
+			if (!(await tierDialog.isVisible())) {
+				await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
+			}
+			await tierDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
+			await expect(confirmDialog).toBeVisible({ timeout: 8_000 });
+		}).toPass({ timeout: 60_000 });
+
+		// Multi-sector chart defaults to the map view; scope starts at the tier's
+		// own section, so the other sector is nowhere in sight.
+		const sectionBtn = confirmDialog.getByRole('button', { name: 'This section' });
+		await expect(sectionBtn).toBeVisible({ timeout: 15_000 });
+		await expect(sectionBtn).toHaveAttribute('aria-pressed', 'true');
+		await expect(confirmDialog.getByText('Rear Balcony')).toBeHidden();
+		// Flat tier: the sticky footer total shows price × quantity immediately.
+		await expect(
+			confirmDialog.locator('p', { hasText: /^Total/ }).filter({ hasText: '€20.00' })
+		).toBeVisible();
+
+		// Whole venue: the other sector appears as ONE labelled inert ghost (no
+		// seat buttons of its own), while the tier's seats remain selectable.
+		await confirmDialog.getByRole('button', { name: 'Whole venue' }).click();
+		await expect(
+			confirmDialog.getByRole('img', { name: 'Rear Balcony: sold through a different ticket' })
+		).toBeVisible();
+		await expect(confirmDialog.getByRole('button', { name: /Seat B1/ })).toBeHidden();
+		const seatA1 = confirmDialog.getByRole('button', { name: /^Seat A1/ });
+		await expect(async () => {
+			if ((await seatA1.getAttribute('aria-pressed')) !== 'true') {
+				await seatA1.click();
+			}
+			await expect(seatA1).toHaveAttribute('aria-pressed', 'true', { timeout: 5_000 });
+		}).toPass({ timeout: 60_000 });
 
 		await context.close();
 	});

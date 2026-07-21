@@ -26,6 +26,14 @@ export function validatePwycAmount(
 	return { valid: true, error: null };
 }
 
+/** Quick-amount suggestions: min/midpoint/max, or min multiples when uncapped. */
+export function pwycSuggestions(minAmount: number, maxAmount: number | null): number[] {
+	if (maxAmount !== null) {
+		return [minAmount, Math.round((minAmount + maxAmount) / 2), maxAmount];
+	}
+	return [minAmount, minAmount * 2, minAmount * 3];
+}
+
 /** Localized inline error for an invalid PWYC amount. */
 export function pwycErrorMessage(
 	error: PwycValidationError | null,

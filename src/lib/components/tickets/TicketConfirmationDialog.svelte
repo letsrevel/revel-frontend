@@ -9,18 +9,8 @@
 		DialogFooter
 	} from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
-	import { Label } from '$lib/components/ui/label';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
-	import {
-		Ticket,
-		DollarSign,
-		AlertCircle,
-		CreditCard,
-		Wallet,
-		Plus,
-		Minus,
-		Loader2
-	} from '@lucide/svelte';
+	import { Ticket, DollarSign, AlertCircle, CreditCard, Wallet, Loader2 } from '@lucide/svelte';
 	import CancellationPolicySummary from './CancellationPolicySummary.svelte';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
 	import type {
@@ -39,9 +29,12 @@
 	import GuestNameInputs from './GuestNameInputs.svelte';
 	import PwycInput from './PwycInput.svelte';
 	import SeatAssignmentSection from './SeatAssignmentSection.svelte';
+	import TicketQuantitySelector from './TicketQuantitySelector.svelte';
+	import { checkoutTotal } from './checkout-total';
+	import { formatMoney } from '$lib/utils/format';
 	import { tierPriceDisplay } from './tier-price-display';
 	import { isMappedBestAvailable } from './seat-zones';
-	import { pwycErrorMessage, validatePwycAmount } from './pwyc-validation';
+	import { pwycErrorMessage, pwycSuggestions, validatePwycAmount } from './pwyc-validation';
 
 	interface ConfirmPayload {
 		amount?: number;
@@ -170,6 +163,23 @@
 	// Headline price: flat/PWYC/free wording, or the honest server-resolved
 	// range for category-priced tiers (either mode) — see tier-price-display.ts.
 	const priceDisplay = $derived(tierPriceDisplay(tier, { isFree, isPwyc, minAmount, maxAmount }));
+
+	// Running total pinned in the sticky footer: the in-flow estimates can
+	// scroll away under the seat map, this line cannot (see checkout-total.ts).
+	const footerTotal = $derived(
+		checkoutTotal({
+			tier,
+			quantity,
+			heldSeatIds,
+			chart: seatController?.chartQuery.data ?? null,
+			selectedZoneId,
+			pwycAmount,
+			discountedPrice:
+				appliedDiscountCode && discountResult?.valid
+					? (discountResult.discounted_price ?? null)
+					: null
+		})
+	);
 
 	// Dialog title
 	const dialogTitle = $derived.by(() => {
@@ -423,13 +433,8 @@
 		}
 	}
 
-	// Quick amount suggestions for PWYC
-	const pwycSuggestions = $derived.by(() => {
-		if (maxAmount !== null) {
-			return [minAmount, Math.round((minAmount + maxAmount) / 2), maxAmount];
-		}
-		return [minAmount, minAmount * 2, minAmount * 3];
-	});
+	// Quick amount suggestions for PWYC (shared helper, see pwyc-validation.ts)
+	const suggestions = $derived(pwycSuggestions(minAmount, maxAmount));
 
 	// Discount code callbacks
 	function handleDiscountApply(code: string, result: DiscountCodeValidationResponse) {
@@ -532,35 +537,13 @@
 
 			<!-- Quantity Selector -->
 			{#if showQuantitySelector}
-				<div class="space-y-2">
-					<Label>{m['ticketConfirmationDialog.numberOfTickets']()}</Label>
-					<div class="flex items-center gap-3">
-						<Button
-							variant="outline"
-							size="icon"
-							onclick={decrementQuantity}
-							disabled={quantity <= 1 || isProcessing}
-							aria-label={m['ticketConfirmationDialog.decreaseQuantity']()}
-						>
-							<Minus class="h-4 w-4" />
-						</Button>
-						<span class="w-12 text-center text-xl font-bold">{quantity}</span>
-						<Button
-							variant="outline"
-							size="icon"
-							onclick={incrementQuantity}
-							disabled={quantity >= effectiveMaxQuantity || isProcessing}
-							aria-label={m['ticketConfirmationDialog.increaseQuantity']()}
-						>
-							<Plus class="h-4 w-4" />
-						</Button>
-						{#if effectiveMaxQuantity < 100}
-							<span class="text-sm text-muted-foreground">
-								{m['ticketConfirmationDialog.maxHint']({ max: effectiveMaxQuantity })}
-							</span>
-						{/if}
-					</div>
-				</div>
+				<TicketQuantitySelector
+					{quantity}
+					{effectiveMaxQuantity}
+					{isProcessing}
+					onIncrement={incrementQuantity}
+					onDecrement={decrementQuantity}
+				/>
 			{/if}
 
 			<!-- Guest Names -->
@@ -603,7 +586,7 @@
 					{pwycAmount}
 					{pwycError}
 					{isProcessing}
-					suggestions={pwycSuggestions}
+					{suggestions}
 					onAmountChange={(value) => {
 						pwycAmount = value;
 						pwycError = '';
@@ -707,6 +690,18 @@
 						<AlertCircle class="mr-1 inline-block h-4 w-4" />
 						{m['seatZones.selectHint']()}
 					{/if}
+				</p>
+			{/if}
+			<!-- Always-visible total: the buyer must never reach the confirm button
+			     without the money in view (the in-flow estimates scroll away). -->
+			{#if footerTotal !== null}
+				<p class="flex w-full items-center justify-between border-t border-border pt-2 text-sm">
+					<span class="text-muted-foreground">{m['checkoutFooter.total']()}</span>
+					<span class="text-base font-bold">
+						{isFree
+							? m['ticketConfirmationDialog.free']()
+							: formatMoney(footerTotal, tier.currency)}
+					</span>
 				</p>
 			{/if}
 			<div class="flex w-full gap-2 sm:justify-end">
