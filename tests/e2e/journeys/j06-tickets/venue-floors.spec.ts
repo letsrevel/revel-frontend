@@ -39,6 +39,7 @@ async function arrangeFlooredEvent(): Promise<FlooredEvent> {
 		{
 			name: 'Ground Stalls',
 			kind: 'seated',
+			// Seat writes still use `row` (becomes `row_label` in the Phase-2 rename).
 			seats: [
 				{ label: 'A1', row: 'A', number: 1 },
 				{ label: 'A2', row: 'A', number: 2 },

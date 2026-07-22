@@ -110,6 +110,7 @@ test.describe('J19.2 price categories @p2', () => {
 			{
 				name: 'Velvet Floor',
 				kind: 'seated',
+				// Seat writes still use `row` (becomes `row_label` in the Phase-2 rename).
 				seats: Array.from({ length: 2 }, (_, i) => ({
 					label: `A${i + 1}`,
 					row: 'A',

@@ -232,6 +232,7 @@ test.describe('J7 guest best-available accessible @p2', () => {
 			{
 				name: 'Stalls',
 				kind: 'seated',
+				// Seat writes still use `row` (becomes `row_label` in the Phase-2 rename).
 				seats: Array.from({ length: 4 }, (_, i) => ({
 					label: `A${i + 1}`,
 					row: 'A',

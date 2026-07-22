@@ -158,9 +158,10 @@ export function rowsFromSeatViews(seats: SeatView[]): SeatRow[] {
 			seats: rowSeats
 		});
 	}
-	// Numeric-aware collation: rows "1", "2", ..., "10" (not 1, 10, 2) — every
-	// seat written through the grid editor currently has row_order 0, so this
-	// label tiebreak is the effective ordering for editor-built venues.
+	// Numeric-aware collation: rows "1", "2", ..., "10" (not 1, 10, 2). The grid
+	// editor now writes real per-sector row_order ranks (seat-grid-save.ts), but
+	// venues saved before that still carry row_order 0 everywhere — for those the
+	// label tiebreak remains the effective ordering.
 	rows.sort(
 		(a, b) =>
 			a.rowOrder - b.rowOrder ||

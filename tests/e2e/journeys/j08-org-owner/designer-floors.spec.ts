@@ -32,6 +32,7 @@ async function openDesigner(browser: Browser): Promise<FloorsFixture> {
 	});
 	await api.post(`/api/organization-admin/${org.slug}/venues/${venue.id}/sectors`, {
 		name: 'Stalls',
+		// Seat writes still use `row` (becomes `row_label` in the Phase-2 rename).
 		seats: [
 			{ label: 'A1', row: 'A', number: 1, position: { x: 0, y: 0 } },
 			{ label: 'A2', row: 'A', number: 2, position: { x: 1, y: 0 } }

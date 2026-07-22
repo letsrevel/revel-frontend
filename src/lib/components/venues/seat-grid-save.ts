@@ -236,6 +236,7 @@ export function buildSeatSavePlan(input: SeatSavePlanInput): SeatSavePlan {
 
 		const base = {
 			label,
+			// Write contract still uses `row`; becomes `row_label` in the Phase-2 rename.
 			row: input.getRowLabel(row),
 			number: col + 1,
 			position: { x: input.getXPosition(col), y: input.getYPosition(row) },

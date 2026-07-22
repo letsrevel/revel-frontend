@@ -25,6 +25,7 @@ import {
 	eventpublicseatingReleaseSeats
 } from '$lib/api';
 import type {
+	HoldConflictReason,
 	HoldResponseSchema,
 	SeatingAvailabilitySchema,
 	VenueChartSchema
@@ -54,9 +55,20 @@ export interface SeatHoldControllerOptions {
  * Why a hold 409'd (unified HoldResponseSchema.conflict_reason): 'capacity' =
  * the caller already holds too many seats for this event (per-identity cap),
  * 'unavailable' = seats taken/blocked/invalid, 'no_block' = best-available
- * found no adjacent block that fits the request.
+ * found no adjacent block that fits the request. Re-exported from the
+ * generated client so value drift is a compile error, not a silent fallback.
  */
-export type HoldConflictReason = 'capacity' | 'unavailable' | 'no_block';
+export type { HoldConflictReason };
+
+/**
+ * Every generated conflict reason, as a Record so adding a value to the
+ * backend enum fails compilation here until the handling is reviewed.
+ */
+const KNOWN_CONFLICT_REASONS: Record<HoldConflictReason, true> = {
+	capacity: true,
+	unavailable: true,
+	no_block: true
+};
 
 export interface BestAvailableHoldResult {
 	ok: boolean;
@@ -96,7 +108,7 @@ function conflictsFrom(error: unknown): string[] {
 function conflictReasonFrom(error: unknown): HoldConflictReason {
 	if (typeof error === 'object' && error !== null && 'conflict_reason' in error) {
 		const { conflict_reason } = error as HoldResponseSchema;
-		if (conflict_reason === 'capacity' || conflict_reason === 'no_block') {
+		if (conflict_reason && conflict_reason in KNOWN_CONFLICT_REASONS) {
 			return conflict_reason;
 		}
 	}

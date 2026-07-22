@@ -191,6 +191,24 @@ describe('buildSeatSavePlan — creates', () => {
 		expect(byLabel.get('C1')).toBe(2);
 	});
 
+	it('derives adjacency_index from the logical column, not the aisle-shifted x position', () => {
+		// A vertical aisle after column 2 shifts the rendered x of later seats,
+		// but physical adjacency still steps by one across the aisle (the backend
+		// scores contiguity on adjacency_index, never on position or seat number).
+		const cells = new Map<string, SeatData>([
+			['0-0', seat()],
+			['0-1', seat()],
+			['0-2', seat()] // sits just past the aisle
+		]);
+		const input = { ...makeInput(cells), getXPosition: (c: number) => (c >= 2 ? c + 1.5 : c) };
+
+		const plan = buildSeatSavePlan(input);
+
+		const byLabel = new Map(plan.creates.map((s) => [s.label, s]));
+		expect(byLabel.get('A3')?.adjacency_index).toBe(2);
+		expect(byLabel.get('A3')?.position).toEqual({ x: 3.5, y: 0 });
+	});
+
 	it('skips non-existing cells and malformed keys', () => {
 		const cells = new Map<string, SeatData>([
 			['0-0', { ...seat(), exists: false }],

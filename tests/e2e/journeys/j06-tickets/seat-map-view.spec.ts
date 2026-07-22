@@ -113,4 +113,92 @@ test.describe('J6 seat map view @p2', () => {
 			await context.close();
 		}
 	});
+
+	// Pan & zoom smoke (#659 + the mouse-pan-at-any-zoom fix): the map's inner
+	// <g> carries the whole viewport as `translate(tx ty) scale(s)`, so the
+	// transform attribute IS the observable state. Zoom buttons are the
+	// accessible path (a bare wheel deliberately scrolls the dialog instead);
+	// a mouse drag pans at any scale and must suppress the release-click so
+	// panning over a seat never holds it. Reset restores the exact initial
+	// transform.
+	test('zoom buttons rescale the map, mouse drag pans without selecting, reset restores', async ({
+		browser
+	}) => {
+		test.setTimeout(180_000);
+
+		const hall = await getSeededConcertHall();
+		const [event, buyer] = await Promise.all([
+			createTicketedEvent({ freeTier: false, event: { venue_id: hall.venueId } }),
+			createVerifiedUser('ZoomBuyer')
+		]);
+		await deleteDefaultTier(event.id);
+		await createTicketTier(event.id, {
+			name: 'Choose Your Seat',
+			payment_method: 'offline',
+			price: '25.00',
+			seat_assignment_mode: 'user_choice',
+			venue_id: hall.venueId,
+			sector_id: hall.sectorId
+		});
+
+		const context = await browser.newContext();
+		try {
+			await authenticateContext(context, buyer);
+			const page = await context.newPage();
+			await gotoHydrated(page, event.path);
+			await waitForClientAuth(page);
+
+			const tierDialog = page.getByRole('dialog', { name: 'Select Your Ticket' });
+			const confirmDialog = page.getByRole('dialog', { name: 'Reserve Ticket' });
+			await expect(async () => {
+				if (await confirmDialog.isVisible()) return;
+				if (!(await tierDialog.isVisible())) {
+					await page.getByRole('button', { name: 'Get Tickets', exact: true }).click();
+				}
+				await tierDialog.getByRole('button', { name: 'Reserve Ticket' }).click();
+				await expect(confirmDialog).toBeVisible({ timeout: 8_000 });
+			}).toPass({ timeout: 60_000 });
+
+			const displayToggle = confirmDialog.getByRole('group', { name: 'Seat display' });
+			await expect(displayToggle).toBeVisible({ timeout: 15_000 });
+			await displayToggle.getByRole('button', { name: 'Map' }).click();
+			const seatMap = confirmDialog.getByRole('group', { name: 'Seat map' });
+			await expect(seatMap).toBeVisible({ timeout: 15_000 });
+
+			// The viewport <g> is the svg's only direct group child.
+			const surface = seatMap.locator('> g');
+			const initial = await surface.getAttribute('transform');
+			expect(initial).toBe('translate(0 0) scale(1)');
+
+			// Zoom in ×2 clicks: 1 → 1.25 → 1.5625 (exact float products).
+			await confirmDialog.getByRole('button', { name: 'Zoom in' }).click();
+			await expect(surface).toHaveAttribute('transform', /scale\(1\.25\)/);
+			await confirmDialog.getByRole('button', { name: 'Zoom in' }).click();
+			await expect(surface).toHaveAttribute('transform', /scale\(1\.5625\)/);
+
+			// Mouse-drag pan: translate changes, and the release-click is
+			// suppressed — the drag must not put a hold on the seat under the
+			// pointer (no seat may end up pressed).
+			const beforePan = await surface.getAttribute('transform');
+			if (beforePan === null) throw new Error('Seat map viewport has no transform');
+			const box = await seatMap.boundingBox();
+			if (!box) throw new Error('Seat map has no bounding box');
+			const { x, y, width, height } = box;
+			await page.mouse.move(x + width / 2, y + height / 2);
+			await page.mouse.down();
+			await page.mouse.move(x + width / 2 + 60, y + height / 2 + 40, { steps: 8 });
+			await page.mouse.up();
+			await expect(surface).not.toHaveAttribute('transform', beforePan);
+			await expect(seatMap.locator('[aria-pressed="true"]')).toHaveCount(0);
+
+			// Zoom out steps back down (1.5625 × 0.8 = 1.25), reset restores the
+			// exact initial transform.
+			await confirmDialog.getByRole('button', { name: 'Zoom out' }).click();
+			await expect(surface).toHaveAttribute('transform', /scale\(1\.25\)/);
+			await confirmDialog.getByRole('button', { name: 'Reset zoom' }).click();
+			await expect(surface).toHaveAttribute('transform', 'translate(0 0) scale(1)');
+		} finally {
+			await context.close();
+		}
+	});
 });
