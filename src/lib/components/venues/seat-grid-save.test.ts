@@ -328,8 +328,9 @@ describe('buildSeatSavePlan — paint batches', () => {
 	});
 
 	it('never unpaints on a reload-and-save round trip: untouched seats are absent from paintBatches', () => {
-		// Admin read lacks price_category_id, so a previously painted venue
-		// hydrates every cell with priceCategoryId undefined (= untouched).
+		// This admin read carries no price_category_id (the field is
+		// schema-optional), so every cell hydrates with priceCategoryId
+		// undefined (= untouched).
 		// Saving without touching paint must send NO paint batches at all —
 		// especially not an unpaint (null) batch that would wipe existing paint.
 		const cells = new Map<string, SeatData>([
@@ -368,11 +369,11 @@ describe('buildSeatSavePlan — paint batches', () => {
 });
 
 describe('readExistingPaint', () => {
-	it('returns undefined when the response has no price_category_id (current admin schema)', () => {
+	it('returns undefined when the response omits price_category_id (schema-optional)', () => {
 		expect(readExistingPaint(existing('A1', 'id-1'))).toBeUndefined();
 	});
 
-	it('passes through null and string values once the backend exposes them', () => {
+	it('passes through null and string values from the response', () => {
 		expect(
 			readExistingPaint({ label: 'A1', price_category_id: null } as VenueSeatSchema)
 		).toBeNull();

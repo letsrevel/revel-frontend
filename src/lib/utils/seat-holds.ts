@@ -9,11 +9,20 @@
  *
  * IDENTITY CRITICAL: `releaseAnonymousHolds()` must reach the backend WITHOUT
  * an Authorization header so the guest-cookie identity is the one releasing.
- * The generated SDK client injects the Bearer token via an interceptor, so we
- * deliberately use a raw `fetch` here — the guest cookie still rides along via
- * `credentials: 'include'`.
+ * The shared SDK client injects the Bearer token via an interceptor, so the
+ * release call goes through a bare, interceptor-free client instead — the
+ * guest cookie still rides along via `credentials: 'include'`.
  */
+// Import from the generated modules directly (not `$lib/api`) so this module
+// never loads the shared client whose interceptors this call must avoid.
+import { eventpublicseatingReleaseSeats } from '$lib/api/generated/sdk.gen';
+import { createClient, createConfig } from '$lib/api/generated/client';
 import { API_BASE_URL } from '$lib/config/api';
+
+/** Bare client: no auth interceptor, so no Bearer injection (see module doc). */
+const anonymousClient = createClient(
+	createConfig({ baseUrl: API_BASE_URL, credentials: 'include' })
+);
 
 const STORAGE_KEY = 'revel:anon-seat-holds';
 
@@ -73,10 +82,11 @@ export async function releaseAnonymousHolds(): Promise<void> {
 	try {
 		await Promise.allSettled(
 			eventIds.map((eventId) =>
-				fetch(`${API_BASE_URL}/api/events/${eventId}/seating/holds`, {
-					method: 'DELETE',
-					// Guest-hold cookie rides along; NO Authorization header (see module doc).
-					credentials: 'include'
+				// Bare client: guest-hold cookie rides along; NO Authorization header
+				// (see module doc). Omitting the body releases all of the event's holds.
+				eventpublicseatingReleaseSeats({
+					client: anonymousClient,
+					path: { event_id: eventId }
 				})
 			)
 		);

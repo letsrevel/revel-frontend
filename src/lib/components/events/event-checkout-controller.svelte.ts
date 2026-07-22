@@ -106,8 +106,13 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 	// and can trip max_tickets_per_user (PENDING tickets count toward it).
 	const reservationRetry = createReservationRetry('user');
 
+	// An expired reservation was released server-side — there is no pending
+	// ticket left to "Resume Payment" on, so it gets its own message.
 	function sessionFailureError(error: CheckoutSessionError): Error {
-		return new Error(m['eventPage.paymentStartFailed'](), { cause: error });
+		const message = error.expired
+			? m['eventPage.paymentStartFailedExpired']()
+			: m['eventPage.paymentStartFailed']();
+		return new Error(message, { cause: error });
 	}
 
 	/**

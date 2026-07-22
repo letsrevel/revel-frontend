@@ -71,19 +71,19 @@ describe('anonymous seat-hold registry', () => {
 
 			await releaseAnonymousHolds();
 
+			// The generated client invokes fetch with a single Request object.
 			expect(fetchMock).toHaveBeenCalledTimes(2);
-			expect(fetchMock).toHaveBeenCalledWith('http://api.test/api/events/event-1/seating/holds', {
-				method: 'DELETE',
-				credentials: 'include'
-			});
-			expect(fetchMock).toHaveBeenCalledWith('http://api.test/api/events/event-2/seating/holds', {
-				method: 'DELETE',
-				credentials: 'include'
-			});
-			// IDENTITY CRITICAL: the guest-cookie identity must release the holds,
-			// so no Authorization header may ever be attached.
-			for (const [, init] of fetchMock.mock.calls as [string, RequestInit][]) {
-				expect(init.headers ?? {}).not.toHaveProperty('Authorization');
+			const requests = fetchMock.mock.calls.map(([request]) => request as Request);
+			expect(requests.map((request) => request.url)).toEqual([
+				'http://api.test/api/events/event-1/seating/holds',
+				'http://api.test/api/events/event-2/seating/holds'
+			]);
+			for (const request of requests) {
+				expect(request.method).toBe('DELETE');
+				expect(request.credentials).toBe('include');
+				// IDENTITY CRITICAL: the guest-cookie identity must release the holds,
+				// so no Authorization header may ever be attached.
+				expect(request.headers.get('Authorization')).toBeNull();
 			}
 		});
 

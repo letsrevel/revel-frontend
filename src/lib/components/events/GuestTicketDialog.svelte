@@ -571,9 +571,13 @@
 				onSuccess?.();
 			}
 		} catch (error) {
+			// An expired reservation was released server-side — retrying starts over,
+			// so it gets its own message instead of "your tickets are reserved".
 			errorMessage =
 				error instanceof CheckoutSessionError
-					? m['guestTicketDialog.paymentStartFailed']()
+					? error.expired
+						? m['guestTicketDialog.paymentStartFailedExpired']()
+						: m['guestTicketDialog.paymentStartFailed']()
 					: handleGuestAttendanceError(error);
 		} finally {
 			isSubmitting = false;

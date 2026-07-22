@@ -2,11 +2,12 @@
 	/**
 	 * Freeform layout designer route (#659, designer part 2).
 	 *
-	 * Loads the venue's sectors (with seats) and price categories, freezes the
+	 * Loads the venue (stage/floors metadata) and its sectors, freezes the
 	 * designer model on first load (so the persisted-frame math stays stable
-	 * across refetches), and orchestrates the save plan: sector shape updates
-	 * first (seat writes validate against the stored polygon), then per-sector
-	 * seat position batches. Unsaved changes are guarded on navigation.
+	 * across refetches), and orchestrates the save plan: per-sector shape and
+	 * metadata updates plus a venue metadata update when stage or floors
+	 * changed. Sectors move as rigid blocks — individual seat layout stays in
+	 * the grid editor. Unsaved changes are guarded on navigation.
 	 */
 	import * as m from '$lib/paraglide/messages.js';
 	import { page } from '$app/state';
