@@ -56,8 +56,10 @@ test.describe('J10 box-office reseat @p2', () => {
 		await gotoHydrated(page, `/org/${event.orgSlug}/admin/events/${event.id}/tickets`);
 		await waitForClientAuth(page);
 		await expect(page.getByRole('heading', { name: 'Manage Tickets' })).toBeVisible();
+		// Generous ceiling: under 4-worker load the local backend's first list
+		// render is regularly slow (the suite keeps one retry for the same reason).
 		await expect(page.getByText(holderName).filter({ visible: true }).first()).toBeVisible({
-			timeout: 15_000
+			timeout: 20_000
 		});
 
 		// Open the reseat dialog from the row's actions menu (desktop table and

@@ -170,26 +170,33 @@ test.describe('J6 seat map view @p2', () => {
 			const initial = await surface.getAttribute('transform');
 			expect(initial).toBe('translate(0 0) scale(1)');
 
-			// Zoom in ×2 clicks: 1 → 1.25 → 1.5625 (exact float products).
+			// Mouse-drag pan (works at any scale): drag FROM the B2 seat element —
+			// dragging from the svg's box center can land on the dialog overlay
+			// (the map is inside a scrollable dialog, so the geometric center may
+			// be clipped out of view) and a pointerdown there dismisses the
+			// dialog. The seat itself is scrolled into view and visible. The
+			// release-click must be suppressed: the drag must not hold the seat
+			// under the pointer.
+			const dragSeat = seatMap.getByRole('button', { name: /^Seat B2(,|$)/ });
+			await dragSeat.hover();
+			const seatBox = await dragSeat.boundingBox();
+			if (!seatBox) throw new Error('Seat B2 has no bounding box');
+			const startX = seatBox.x + seatBox.width / 2;
+			const startY = seatBox.y + seatBox.height / 2;
+			await page.mouse.move(startX, startY);
+			await page.mouse.down();
+			await page.mouse.move(startX + 40, startY + 25, { steps: 8 });
+			await page.mouse.up();
+			await expect(surface).not.toHaveAttribute('transform', initial);
+			await expect(confirmDialog).toBeVisible();
+			await expect(seatMap.locator('[aria-pressed="true"]')).toHaveCount(0);
+
+			// Zoom in ×2 clicks: scale 1 → 1.25 → 1.5625 (exact float products;
+			// the pan offset above only changes the translate part).
 			await confirmDialog.getByRole('button', { name: 'Zoom in' }).click();
 			await expect(surface).toHaveAttribute('transform', /scale\(1\.25\)/);
 			await confirmDialog.getByRole('button', { name: 'Zoom in' }).click();
 			await expect(surface).toHaveAttribute('transform', /scale\(1\.5625\)/);
-
-			// Mouse-drag pan: translate changes, and the release-click is
-			// suppressed — the drag must not put a hold on the seat under the
-			// pointer (no seat may end up pressed).
-			const beforePan = await surface.getAttribute('transform');
-			if (beforePan === null) throw new Error('Seat map viewport has no transform');
-			const box = await seatMap.boundingBox();
-			if (!box) throw new Error('Seat map has no bounding box');
-			const { x, y, width, height } = box;
-			await page.mouse.move(x + width / 2, y + height / 2);
-			await page.mouse.down();
-			await page.mouse.move(x + width / 2 + 60, y + height / 2 + 40, { steps: 8 });
-			await page.mouse.up();
-			await expect(surface).not.toHaveAttribute('transform', beforePan);
-			await expect(seatMap.locator('[aria-pressed="true"]')).toHaveCount(0);
 
 			// Zoom out steps back down (1.5625 × 0.8 = 1.25), reset restores the
 			// exact initial transform.
