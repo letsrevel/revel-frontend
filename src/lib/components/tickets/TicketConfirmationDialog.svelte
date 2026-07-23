@@ -9,28 +9,21 @@
 		DialogFooter
 	} from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
-	import { Label } from '$lib/components/ui/label';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
-	import {
-		Ticket,
-		DollarSign,
-		AlertCircle,
-		CreditCard,
-		Wallet,
-		Plus,
-		Minus,
-		Loader2
-	} from '@lucide/svelte';
+	import { Ticket, DollarSign, AlertCircle, CreditCard, Wallet, Loader2 } from '@lucide/svelte';
 	import CancellationPolicySummary from './CancellationPolicySummary.svelte';
-	import type { TierSchemaWithId } from '$lib/types/tickets';
+	import type {
+		TicketConfirmPayload as ConfirmPayload,
+		TierSchemaWithId
+	} from '$lib/types/tickets';
 	import type {
 		TicketPurchaseItem,
 		SeatAssignmentMode,
-		SectorAvailabilitySchema,
-		DiscountCodeValidationResponse,
-		BuyerBillingInfoSchema
+		DiscountCodeValidationResponse
 	} from '$lib/api/generated/types.gen';
-	import { eventpublicticketsGetTierSeatAvailability } from '$lib/api/generated/sdk.gen';
+	import { untrack } from 'svelte';
+	import type { SeatHoldController } from './seat-hold-controller.svelte';
+	import { bestAvailableFailureMessage, extractPurchaseErrorMessage } from './purchase-error';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import MarkdownContent from '$lib/components/common/MarkdownContent.svelte';
 	import DiscountCodeInput from './DiscountCodeInput.svelte';
@@ -38,13 +31,12 @@
 	import GuestNameInputs from './GuestNameInputs.svelte';
 	import PwycInput from './PwycInput.svelte';
 	import SeatAssignmentSection from './SeatAssignmentSection.svelte';
-
-	interface ConfirmPayload {
-		amount?: number;
-		tickets: TicketPurchaseItem[];
-		discountCode?: string;
-		billingInfo?: BuyerBillingInfoSchema;
-	}
+	import TicketQuantitySelector from './TicketQuantitySelector.svelte';
+	import { checkoutTotal } from './checkout-total';
+	import { formatMoney } from '$lib/utils/format';
+	import { tierDialogTitle, tierPriceDisplay } from './tier-price-display';
+	import { isMappedBestAvailable } from './seat-zones';
+	import { pwycErrorMessage, pwycSuggestions, validatePwycAmount } from './pwyc-validation';
 
 	interface Props {
 		open: boolean;
@@ -53,6 +45,8 @@
 		eventId: string;
 		onClose: () => void;
 		onConfirm: (payload: ConfirmPayload) => void | Promise<void>;
+		/** Peek: would onConfirm resume a held reservation? (skips the re-hold) */
+		hasResumableCheckout?: (payload: ConfirmPayload) => boolean;
 		isProcessing?: boolean;
 		/** Maximum tickets the user can purchase (null = unlimited up to tier availability) */
 		maxQuantity?: number | null;
@@ -62,6 +56,13 @@
 		userName?: string;
 		/** Pre-filled discount code (e.g. from URL param) */
 		initialDiscountCode?: string;
+		/** All event tiers: enables whole-venue switch targets on the seat map. */
+		allTiers?: TierSchemaWithId[] | null;
+		tierRemainingTickets?: import('$lib/api/generated/types.gen').TierRemainingTicketsSchema[];
+		/** Buyer confirmed a section switch: swap this dialog to the other tier. */
+		onSwitchTier?: (tier: TierSchemaWithId) => void;
+		/** Opened BY a section switch: scroll the seating UI into view. */
+		focusSeating?: boolean;
 	}
 
 	let {
@@ -70,11 +71,16 @@
 		eventId,
 		onClose,
 		onConfirm,
+		hasResumableCheckout = () => false,
 		isProcessing = false,
 		maxQuantity = null,
 		eventMaxTicketsPerUser = null,
 		userName = '',
-		initialDiscountCode = ''
+		initialDiscountCode = '',
+		allTiers = null,
+		tierRemainingTickets = undefined,
+		onSwitchTier = undefined,
+		focusSeating = false
 	}: Props = $props();
 
 	// Quantity state
@@ -119,54 +125,28 @@
 
 	// Seat assignment mode
 	const seatAssignmentMode = $derived<SeatAssignmentMode>(tier.seat_assignment_mode ?? 'none');
-	const hasSeatedTier = $derived(seatAssignmentMode !== 'none');
 	const isUserChoiceSeat = $derived(seatAssignmentMode === 'user_choice');
-	const isRandomSeat = $derived(seatAssignmentMode === 'random');
+	const isBestAvailable = $derived(seatAssignmentMode === 'best_available');
 
 	// Venue/sector info for display
 	const tierVenue = $derived(tier.venue ?? null);
 	const tierSector = $derived(tier.sector ?? null);
 
-	// Seat selection state (for user_choice mode)
-	let seatAvailability = $state<SectorAvailabilitySchema | null>(null);
-	let isLoadingSeats = $state(false);
-	let seatLoadError = $state<string | null>(null);
-	let selectedSeatIds = $state<string[]>([]);
-
-	// Fetch seat availability when dialog opens with user_choice mode
-	async function fetchSeatAvailability() {
-		if (!isUserChoiceSeat || !eventId || !tier.id) return;
-		isLoadingSeats = true;
-		seatLoadError = null;
-		try {
-			const response = await eventpublicticketsGetTierSeatAvailability({
-				path: { event_id: eventId, tier_id: tier.id },
-				headers: authStore.getAuthHeaders()
-			});
-			if (response.error) {
-				seatLoadError = m['ticketConfirmationDialog.errorLoadSeats']();
-				console.error('Seat availability error:', response.error);
-			} else if (response.data) {
-				seatAvailability = response.data;
-			}
-		} catch (err) {
-			seatLoadError = m['ticketConfirmationDialog.errorLoadSeats']();
-			console.error('Seat availability fetch error:', err);
-		} finally {
-			isLoadingSeats = false;
-		}
-	}
-
-	// Toggle seat selection
-	function toggleSeat(seatId: string) {
-		seatSelectionError = '';
-		const index = selectedSeatIds.indexOf(seatId);
-		if (index >= 0) {
-			selectedSeatIds = selectedSeatIds.filter((id) => id !== seatId);
-		} else if (selectedSeatIds.length < quantity) {
-			selectedSeatIds = [...selectedSeatIds, seatId];
-		}
-	}
+	// Seat-hold controller, instantiated by SeatAssignmentSection while the
+	// dialog is open with a seated tier ("selection state IS the server hold").
+	let seatController = $state<SeatHoldController | null>(null);
+	// Selected seats = the caller's live server holds (selection order preserved)
+	const heldSeatIds = $derived(seatController?.myHolds ?? []);
+	// best_available options/errors
+	let accessibleRequired = $state(false);
+	let bestAvailableError = $state('');
+	// Mapped best-available tier: the buyer must name a zone — no default, even
+	// with a single zone (the request always carries an explicit id).
+	const mappedBestAvailable = $derived(isBestAvailable && isMappedBestAvailable(tier));
+	let selectedZoneId = $state<string | null>(null);
+	let isHoldingSeats = $state(false);
+	// Set when the purchase path took over the holds (they must NOT be released)
+	let purchaseHandedOff = false;
 
 	// PWYC min/max
 	const minAmount = $derived.by(() => {
@@ -182,26 +162,29 @@
 		return typeof tier.pwyc_max === 'string' ? parseFloat(tier.pwyc_max) : tier.pwyc_max;
 	});
 
-	// Format price display
-	const priceDisplay = $derived.by(() => {
-		if (isFree) return m['ticketConfirmationDialog.free']();
-		if (isPwyc) {
-			const maxDisplay = maxAmount
-				? `${tier.currency} ${maxAmount.toFixed(2)}`
-				: m['ticketConfirmationDialog.anyAmount']();
-			return `${tier.currency} ${minAmount.toFixed(2)} - ${maxDisplay}`;
-		}
-		const price = typeof tier.price === 'string' ? parseFloat(tier.price) : tier.price;
-		return `${tier.currency} ${price.toFixed(2)}`;
-	});
+	// Headline price: flat/PWYC/free wording, or the honest server-resolved
+	// range for category-priced tiers (either mode) — see tier-price-display.ts.
+	const priceDisplay = $derived(tierPriceDisplay(tier, { isFree, isPwyc, minAmount, maxAmount }));
 
-	// Dialog title
-	const dialogTitle = $derived.by(() => {
-		if (isFree) return m['ticketConfirmationDialog.titleClaimFree']();
-		if (isOfflinePayment) return m['ticketConfirmationDialog.titleReserve']();
-		if (isPwyc) return m['ticketConfirmationDialog.titleGetTicket']();
-		return m['ticketConfirmationDialog.titleConfirmPurchase']();
-	});
+	// Running total pinned in the sticky footer: the in-flow estimates can
+	// scroll away under the seat map, this line cannot (see checkout-total.ts).
+	const footerTotal = $derived(
+		checkoutTotal({
+			tier,
+			quantity,
+			heldSeatIds,
+			chart: seatController?.chartQuery.data ?? null,
+			selectedZoneId,
+			pwycAmount,
+			discountedPrice:
+				appliedDiscountCode && discountResult?.valid
+					? (discountResult.discounted_price ?? null)
+					: null
+		})
+	);
+
+	// Dialog title (shared helper — see tier-price-display.ts)
+	const dialogTitle = $derived(tierDialogTitle({ isFree, isOfflinePayment, isPwyc }));
 
 	// Dialog icon component
 	const dialogIcon = $derived.by(() => {
@@ -244,24 +227,17 @@
 	// Check if all guest names are filled (at least the first character)
 	const allGuestNamesFilled = $derived(guestNames.every((name) => name.trim().length > 0));
 
-	// PWYC validation state for canSubmit and UI hints
-	const pwycValidation = $derived.by(() => {
-		if (!isPwyc) return { valid: true, error: null as string | null };
-		const trimmed = pwycAmount.trim();
-		if (!trimmed) return { valid: false, error: 'empty' as const };
-		const value = parseFloat(trimmed);
-		if (isNaN(value)) return { valid: false, error: 'invalid' as const };
-		if (value < minAmount) return { valid: false, error: 'below_min' as const };
-		if (maxAmount !== null && value > maxAmount)
-			return { valid: false, error: 'above_max' as const };
-		return { valid: true, error: null };
-	});
+	// PWYC validation state for canSubmit and UI hints (see pwyc-validation.ts)
+	const pwycValidation = $derived(
+		isPwyc ? validatePwycAmount(pwycAmount, minAmount, maxAmount) : { valid: true, error: null }
+	);
 
 	// Check if form is valid for submission
 	const canSubmit = $derived.by(() => {
 		if (showGuestNames && !allGuestNamesFilled) return false;
 		if (isPwyc && !pwycValidation.valid) return false;
-		if (isUserChoiceSeat && selectedSeatIds.length !== quantity) return false;
+		if (isUserChoiceSeat && heldSeatIds.length !== quantity) return false;
+		if (mappedBestAvailable && !selectedZoneId) return false;
 		return true;
 	});
 
@@ -278,17 +254,21 @@
 			apiError = '';
 			quantity = 1;
 			guestNames = [userName || ''];
-			selectedSeatIds = [];
-			seatAvailability = null;
-			seatLoadError = null;
+			accessibleRequired = false;
+			bestAvailableError = '';
+			selectedZoneId = null;
 			discountResult = null;
 			appliedDiscountCode = '';
 			discountCodeInputRef?.resetInput(initialDiscountCode, !!initialDiscountCode);
+			// Closed without claim/checkout handoff: release the server holds
+			// (fire-and-forget — never block closing).
+			const controller = untrack(() => seatController);
+			seatController = null;
+			if (controller && !purchaseHandedOff) void controller.releaseAll();
+			purchaseHandedOff = false;
 		} else {
 			guestNames = [userName || ''];
-			if (isUserChoiceSeat) {
-				fetchSeatAvailability();
-			}
+			purchaseHandedOff = false;
 		}
 	});
 
@@ -303,11 +283,21 @@
 		}
 	});
 
-	// Adjust seat selection when quantity changes (remove excess selections)
+	// Quantity decreased below held seats: release the newest excess holds;
+	// clear the pick-more-seats error once enough seats are held.
 	$effect(() => {
-		if (selectedSeatIds.length > quantity) {
-			selectedSeatIds = selectedSeatIds.slice(0, quantity);
+		if (seatController && seatController.myHolds.length > quantity) {
+			void seatController.trimTo(quantity);
 		}
+		if (heldSeatIds.length === quantity) seatSelectionError = '';
+	});
+
+	// Safety net: Cancel unmounts this dialog in the same tick (the tier modal
+	// clears selectedTier), so the !open branch above may never run — release
+	// un-handed-off holds on teardown too (no-op after a normal close).
+	$effect(() => () => {
+		const controller = untrack(() => seatController);
+		if (controller && !purchaseHandedOff) void controller.releaseAll();
 	});
 
 	function incrementQuantity() {
@@ -325,18 +315,7 @@
 	// Set PWYC error message based on validation state
 	function setPwycErrorMessage(): boolean {
 		if (!isPwyc || pwycValidation.valid) return true;
-		const errorMap: Record<string, string> = {
-			empty: m['ticketConfirmationDialog.errorEnterAmount'](),
-			invalid: m['ticketConfirmationDialog.errorValidNumber'](),
-			below_min: m['ticketConfirmationDialog.errorMinAmount']({
-				amount: `${tier.currency} ${minAmount.toFixed(2)}`
-			}),
-			above_max: m['ticketConfirmationDialog.errorMaxAmount']({
-				amount: `${tier.currency} ${maxAmount?.toFixed(2)}`
-			})
-		};
-		pwycError =
-			errorMap[pwycValidation.error ?? ''] ?? m['ticketConfirmationDialog.errorInvalidAmount']();
+		pwycError = pwycErrorMessage(pwycValidation.error, tier.currency, minAmount, maxAmount);
 		return false;
 	}
 
@@ -365,35 +344,20 @@
 		return true;
 	}
 
-	function extractErrorMessage(err: unknown): string {
-		const fallback = m['ticketConfirmationDialog.errorGeneric']();
-		if (!err || typeof err !== 'object') return fallback;
-		const obj = err as Record<string, unknown>;
-		const resp = obj.response as Record<string, unknown> | undefined;
-		const data = resp?.data as Record<string, unknown> | undefined;
-		if (typeof data?.detail === 'string') return data.detail;
-		if (Array.isArray(data?.detail)) {
-			return data.detail.map((d: { msg?: string }) => d.msg || String(d)).join(', ');
-		}
-		if (typeof obj.detail === 'string') return obj.detail;
-		if (typeof obj.message === 'string') return obj.message;
-		return fallback;
-	}
-
 	async function handleConfirm() {
+		if (isHoldingSeats) return;
 		apiError = '';
+		bestAvailableError = '';
 		if (!setGuestNameErrorMessage()) return;
 		if (!setPwycErrorMessage()) return;
 
 		// Validate billing section if open
 		if (billingSection && !billingSection.validate()) return;
 
-		// For user_choice seats, validate seat selection
-		if (isUserChoiceSeat && selectedSeatIds.length !== quantity) {
-			const remaining = quantity - selectedSeatIds.length;
-			seatSelectionError =
-				m['ticketConfirmationDialog.selectMoreSeats']?.({ count: remaining }) ??
-				`Please select ${remaining} more seat${remaining > 1 ? 's' : ''}`;
+		// For user_choice seats, validate the held selection
+		if (isUserChoiceSeat && heldSeatIds.length !== quantity) {
+			const remaining = quantity - heldSeatIds.length;
+			seatSelectionError = m['ticketConfirmationDialog.selectMoreSeats']({ count: remaining });
 			return;
 		}
 		seatSelectionError = '';
@@ -403,8 +367,8 @@
 		const tickets: TicketPurchaseItem[] = guestNames.map((name, index) => {
 			const trimmed = name.trim() || (!showGuestNames ? getDefaultGuestName() : '');
 			const ticket: TicketPurchaseItem = { guest_name: trimmed };
-			if (isUserChoiceSeat && selectedSeatIds[index]) {
-				ticket.seat_id = selectedSeatIds[index];
+			if (isUserChoiceSeat && heldSeatIds[index]) {
+				ticket.seat_id = heldSeatIds[index];
 			}
 			return ticket;
 		});
@@ -412,16 +376,50 @@
 		const payload: ConfirmPayload = { tickets };
 		if (isPwyc && pwycAmount.trim()) payload.amount = parseFloat(pwycAmount);
 		if (appliedDiscountCode && discountResult?.valid) payload.discountCode = appliedDiscountCode;
-
-		// Attach billing info if provided
 		const billingInfo = billingSection?.getBillingInfo();
 		if (billingInfo) payload.billingInfo = billingInfo;
+		if (isBestAvailable) {
+			// Mapped tier: the zone is mandatory and rides on hold AND checkout
+			// (the backend 409s on a mismatch between the held block and checkout).
+			if (mappedBestAvailable) {
+				if (!selectedZoneId) return;
+				payload.priceCategoryId = selectedZoneId;
+			}
+			payload.accessibleRequired = accessibleRequired;
+		}
+
+		// best_available: hold the server-picked adjacent block BEFORE checkout
+		// (the purchase consumes these live holds; tickets carry no seat_id) —
+		// skipped when an identical retry resumes a reservation whose holds it consumed.
+		if (isBestAvailable && !hasResumableCheckout(payload)) {
+			if (!seatController) return;
+			isHoldingSeats = true;
+			try {
+				// Retry after a failed confirm: drop any stale block first so the
+				// server picks a fresh one instead of stacking holds.
+				if (seatController.myHolds.length > 0) await seatController.releaseAll();
+				const result = await seatController.holdBestAvailable(
+					tier.id,
+					quantity,
+					accessibleRequired,
+					mappedBestAvailable ? selectedZoneId : null
+				);
+				if (!result.ok) {
+					bestAvailableError = bestAvailableFailureMessage(result);
+					return;
+				}
+			} finally {
+				isHoldingSeats = false;
+			}
+		}
 
 		try {
 			await onConfirm(payload);
+			// The purchase path now owns the holds — do not release them on close.
+			purchaseHandedOff = true;
 		} catch (err: unknown) {
 			console.error('Ticket purchase error:', err);
-			apiError = extractErrorMessage(err);
+			apiError = extractPurchaseErrorMessage(err, m['ticketConfirmationDialog.errorGeneric']());
 		}
 	}
 
@@ -432,13 +430,8 @@
 		}
 	}
 
-	// Quick amount suggestions for PWYC
-	const pwycSuggestions = $derived.by(() => {
-		if (maxAmount !== null) {
-			return [minAmount, Math.round((minAmount + maxAmount) / 2), maxAmount];
-		}
-		return [minAmount, minAmount * 2, minAmount * 3];
-	});
+	// Quick amount suggestions for PWYC (shared helper, see pwyc-validation.ts)
+	const suggestions = $derived(pwycSuggestions(minAmount, maxAmount));
 
 	// Discount code callbacks
 	function handleDiscountApply(code: string, result: DiscountCodeValidationResponse) {
@@ -464,7 +457,9 @@
 </script>
 
 <Dialog bind:open>
-	<DialogContent class="max-h-[90vh] overflow-hidden sm:max-w-lg">
+	<DialogContent
+		class="flex max-h-[92vh] flex-col {isUserChoiceSeat ? 'sm:max-w-4xl' : 'sm:max-w-lg'}"
+	>
 		<DialogHeader>
 			<DialogTitle class="flex items-center gap-2 text-xl">
 				{@const Icon = dialogIcon}
@@ -486,7 +481,7 @@
 			</DialogDescription>
 		</DialogHeader>
 
-		<div class="max-h-[60vh] space-y-4 overflow-y-auto py-2">
+		<div class="min-h-0 flex-1 space-y-4 overflow-y-auto py-2">
 			<!-- Tier Information Card -->
 			<div class="rounded-lg border border-border bg-muted/50 p-4">
 				<div class="flex items-start justify-between gap-4">
@@ -517,53 +512,43 @@
 			<!-- Cancellation Policy (no-ops until backend exposes the fields on the public tier schema) -->
 			<CancellationPolicySummary {tier} />
 
-			<!-- Seat Assignment Info / Selection -->
+			<!-- Seat Assignment Info / Selection (owns the SeatHoldController) -->
 			<SeatAssignmentSection
 				{isUserChoiceSeat}
-				{isRandomSeat}
-				{hasSeatedTier}
+				{isBestAvailable}
 				{tierVenue}
 				{tierSector}
+				{eventId}
 				{quantity}
-				{selectedSeatIds}
+				maxQuantity={effectiveMaxQuantity}
+				onQuantityAutoGrow={(next) => {
+					if (next > quantity && next <= effectiveMaxQuantity) quantity = next;
+				}}
+				isProcessing={isProcessing || isHoldingSeats}
 				{seatSelectionError}
-				{isLoadingSeats}
-				{seatLoadError}
-				{seatAvailability}
-				onToggleSeat={toggleSeat}
+				{bestAvailableError}
+				{accessibleRequired}
+				onAccessibleRequiredChange={(value) => (accessibleRequired = value)}
+				{selectedZoneId}
+				onZoneChange={(zoneId) => (selectedZoneId = zoneId)}
+				{allTiers}
+				{tierRemainingTickets}
+				{onSwitchTier}
+				{focusSeating}
+				onController={(controller) => (seatController = controller)}
+				seatPricing={tier.seat_pricing ?? null}
+				currency={tier.currency}
 			/>
 
 			<!-- Quantity Selector -->
 			{#if showQuantitySelector}
-				<div class="space-y-2">
-					<Label>{m['ticketConfirmationDialog.numberOfTickets']()}</Label>
-					<div class="flex items-center gap-3">
-						<Button
-							variant="outline"
-							size="icon"
-							onclick={decrementQuantity}
-							disabled={quantity <= 1 || isProcessing}
-							aria-label={m['ticketConfirmationDialog.decreaseQuantity']()}
-						>
-							<Minus class="h-4 w-4" />
-						</Button>
-						<span class="w-12 text-center text-xl font-bold">{quantity}</span>
-						<Button
-							variant="outline"
-							size="icon"
-							onclick={incrementQuantity}
-							disabled={quantity >= effectiveMaxQuantity || isProcessing}
-							aria-label={m['ticketConfirmationDialog.increaseQuantity']()}
-						>
-							<Plus class="h-4 w-4" />
-						</Button>
-						{#if effectiveMaxQuantity < 100}
-							<span class="text-sm text-muted-foreground">
-								{m['ticketConfirmationDialog.maxHint']({ max: effectiveMaxQuantity })}
-							</span>
-						{/if}
-					</div>
-				</div>
+				<TicketQuantitySelector
+					{quantity}
+					{effectiveMaxQuantity}
+					{isProcessing}
+					onIncrement={incrementQuantity}
+					onDecrement={decrementQuantity}
+				/>
 			{/if}
 
 			<!-- Guest Names -->
@@ -606,7 +591,7 @@
 					{pwycAmount}
 					{pwycError}
 					{isProcessing}
-					suggestions={pwycSuggestions}
+					{suggestions}
 					onAmountChange={(value) => {
 						pwycAmount = value;
 						pwycError = '';
@@ -630,6 +615,7 @@
 					discountCode={appliedDiscountCode && discountResult?.valid
 						? appliedDiscountCode
 						: undefined}
+					priceCategoryId={mappedBestAvailable ? selectedZoneId : null}
 					isAuthenticated={!!authStore.accessToken}
 					authToken={authStore.accessToken}
 					disabled={isProcessing}
@@ -698,14 +684,29 @@
 								amount: `${tier.currency} ${maxAmount?.toFixed(2)}`
 							})}
 						{/if}
-					{:else if isUserChoiceSeat && selectedSeatIds.length !== quantity}
+					{:else if isUserChoiceSeat && heldSeatIds.length !== quantity}
 						<AlertCircle class="mr-1 inline-block h-4 w-4" />
-						{quantity - selectedSeatIds.length === 1
+						{quantity - heldSeatIds.length === 1
 							? m['ticketConfirmationDialog.hintSelectOneMoreSeat']()
 							: m['ticketConfirmationDialog.hintSelectMoreSeats']({
-									count: quantity - selectedSeatIds.length
+									count: quantity - heldSeatIds.length
 								})}
+					{:else if mappedBestAvailable && !selectedZoneId}
+						<AlertCircle class="mr-1 inline-block h-4 w-4" />
+						{m['seatZones.selectHint']()}
 					{/if}
+				</p>
+			{/if}
+			<!-- Always-visible total: the buyer must never reach the confirm button
+			     without the money in view (the in-flow estimates scroll away). -->
+			{#if footerTotal !== null}
+				<p class="flex w-full items-center justify-between border-t border-border pt-2 text-sm">
+					<span class="text-muted-foreground">{m['checkoutFooter.total']()}</span>
+					<span class="text-base font-bold">
+						{isFree
+							? m['ticketConfirmationDialog.free']()
+							: formatMoney(footerTotal, tier.currency)}
+					</span>
 				</p>
 			{/if}
 			<div class="flex w-full gap-2 sm:justify-end">
@@ -719,10 +720,10 @@
 				</Button>
 				<Button
 					onclick={handleConfirm}
-					disabled={isProcessing || !canSubmit}
+					disabled={isProcessing || isHoldingSeats || !canSubmit}
 					class="flex-1 sm:flex-initial"
 				>
-					{#if isProcessing}
+					{#if isProcessing || isHoldingSeats}
 						<Loader2 class="mr-2 h-4 w-4 animate-spin" />
 						{#if isOnlinePayment}
 							{m['ticketConfirmationDialog.redirectingToPayment']()}

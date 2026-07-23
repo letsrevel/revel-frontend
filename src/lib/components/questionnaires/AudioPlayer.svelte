@@ -165,7 +165,7 @@
 <div
 	class="flex w-full items-center gap-2 rounded-lg border bg-card p-3 {className}"
 	role="group"
-	aria-label={m['audioPlayer.playerLabel']?.() || 'Audio player'}
+	aria-label={m['audioPlayer.playerLabel']()}
 >
 	<!-- Play/Pause Button -->
 	<Button
@@ -174,9 +174,7 @@
 		class="h-8 w-8 shrink-0"
 		onclick={togglePlayPause}
 		disabled={!isLoaded}
-		aria-label={isPlaying
-			? m['audioPlayer.pause']?.() || 'Pause'
-			: m['audioPlayer.play']?.() || 'Play'}
+		aria-label={isPlaying ? m['audioPlayer.pause']() : m['audioPlayer.play']()}
 	>
 		{#if isPlaying}
 			<Pause class="h-4 w-4" />
@@ -196,7 +194,7 @@
 			oninput={handleSeek}
 			disabled={!isLoaded || !isFinite(duration)}
 			class="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-muted accent-primary disabled:cursor-not-allowed disabled:opacity-50 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-primary [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary"
-			aria-label={m['audioPlayer.seekLabel']?.() || 'Seek'}
+			aria-label={m['audioPlayer.seekLabel']()}
 			aria-valuemin={0}
 			aria-valuemax={100}
 			aria-valuenow={Math.round(progress)}
@@ -214,10 +212,7 @@
 		onValueChange={handleSpeedChange}
 		value={String(audioPreferences.playbackSpeed)}
 	>
-		<SelectTrigger
-			class="h-7 w-14 shrink-0 px-2 text-xs"
-			aria-label={m['audioPlayer.speed']?.() || 'Playback speed'}
-		>
+		<SelectTrigger class="h-7 w-14 shrink-0 px-2 text-xs" aria-label={m['audioPlayer.speed']()}>
 			{speedLabel}
 		</SelectTrigger>
 		<SelectContent>
@@ -238,7 +233,7 @@
 		target="_blank"
 		rel="noopener noreferrer"
 		download={filename}
-		aria-label={m['audioPlayer.download']?.() || 'Download audio'}
+		aria-label={m['audioPlayer.download']()}
 	>
 		<Download class="h-4 w-4" />
 	</Button>

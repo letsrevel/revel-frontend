@@ -20,18 +20,24 @@ export function getGuestNameIfDifferent(ticket: any): string | null {
 export function getSeatDisplay(ticket: any): string | null {
 	const tier = ticket.tier;
 	const seat = ticket.seat;
+	// Scan payloads (CheckInResponseSchema) expose sector_name at the top level;
+	// AdminTicketSchema nests it under tier.sector. Prefer the tier sector, then
+	// fall back to the explicit scan field.
+	const sectorName = tier?.sector?.name ?? ticket.sector_name ?? null;
 
-	if (!tier?.venue && !tier?.sector && !seat) return null;
+	if (!tier?.venue && !sectorName && !seat) return null;
 
 	const parts: string[] = [];
 
 	if (tier?.venue?.name) parts.push(tier.venue.name);
-	if (tier?.sector?.name) parts.push(tier.sector.name);
+	if (sectorName) parts.push(sectorName);
 
 	if (seat) {
-		if (seat.row) parts.push(`Row ${seat.row}`);
+		// Prefer row_label; fall back to the transitional `row` alias while it still exists
+		const row = seat.row_label ?? seat.row;
+		if (row) parts.push(`Row ${row}`);
 		if (seat.number) parts.push(`Seat ${seat.number}`);
-		if (seat.label && !seat.row && !seat.number) parts.push(seat.label);
+		if (seat.label && !row && !seat.number) parts.push(seat.label);
 		if (seat.is_accessible) parts.push('\u267F');
 		if (seat.is_obstructed_view) parts.push('\u26A0\uFE0F Obstructed');
 	}

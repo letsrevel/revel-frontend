@@ -781,10 +781,10 @@ export async function claimTicketViaApi(
  */
 export async function deleteDefaultTier(
 	eventId: string,
-	owner: PersonaName = 'owner'
+	owner: PersonaName | ThrowawayUser = 'owner'
 ): Promise<void> {
-	const persona = PERSONAS[owner];
-	const api = await ApiClient.login(persona.email, persona.password);
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
 	const tiers = await api.get<{ results: Array<{ id: string; name: string }> }>(
 		`/api/event-admin/${eventId}/ticket-tiers`
 	);
@@ -914,15 +914,283 @@ export async function getSeededConcertHall(): Promise<{ venueId: string; sectorI
 	return { venueId: hall.id, sectorId: floor.id };
 }
 
-/** List a tier's seats with availability (public checkout endpoint). */
+/**
+ * List an event's seats with availability via the seating phase-1 endpoints
+ * (GET /seating/chart joined with GET /seating/availability). The availability
+ * map is SPARSE — a seat id absent from it is available; present values are
+ * 'sold' | 'held' | 'blocked'. Replaces the legacy per-tier
+ * /tickets/{tier}/seats endpoint (chart + availability are per event).
+ */
 export async function listAvailableSeats(
 	user: ThrowawayUser,
-	eventId: string,
-	tierId: string
+	eventId: string
 ): Promise<Array<{ id: string; label: string; available: boolean }>> {
 	const api = await ApiClient.login(user.email, user.password);
-	const sector = await api.get<{
-		seats: Array<{ id: string; label: string; available: boolean }>;
-	}>(`/api/events/${eventId}/tickets/${tierId}/seats`);
-	return sector.seats;
+	const chart = await api.get<{
+		sectors: Array<{
+			kind?: string | null;
+			seats?: Array<{ id: string; label: string; is_active?: boolean }>;
+		}>;
+	}>(`/api/events/${eventId}/seating/chart`);
+	const availability = await api.get<{ seats?: Record<string, string> }>(
+		`/api/events/${eventId}/seating/availability`
+	);
+	const taken = availability.seats ?? {};
+	return chart.sectors.flatMap((sector) =>
+		(sector.seats ?? [])
+			.filter((seat) => seat.is_active !== false)
+			.map((seat) => ({ id: seat.id, label: seat.label, available: !(seat.id in taken) }))
+	);
+}
+
+// ---- Seating phase 1/2 arrange helpers (J19) ----
+
+/** Render-ready seating chart, as served by GET /events/{id}/seating/chart. */
+export interface SeatingChart {
+	venue_id: string;
+	venue_name: string;
+	price_categories: Array<{ id: string; name: string; color: string; display_order: number }>;
+	sectors: Array<{
+		id: string;
+		name: string;
+		kind?: string;
+		capacity?: number | null;
+		seats?: Array<{
+			id: string;
+			label: string;
+			row_label?: string | null;
+			number?: number | null;
+			is_accessible?: boolean;
+			is_active?: boolean;
+			price_category_id?: string | null;
+		}>;
+	}>;
+}
+
+/** Sparse availability map — a seat id absent from `seats` is available. */
+export interface SeatingAvailability {
+	seats: Record<string, 'sold' | 'held' | 'blocked'>;
+	standing: Record<string, { capacity: number | null; taken: number }>;
+	my_holds: string[];
+	my_holds_expire_at: string | null;
+}
+
+/**
+ * Raw chart fetcher (GET /events/{id}/seating/chart). Anonymous when no
+ * identity is given — the chart is public for public events.
+ */
+export async function getSeatingChart(
+	eventId: string,
+	as?: PersonaName | ThrowawayUser
+): Promise<SeatingChart> {
+	const path = `/api/events/${eventId}/seating/chart`;
+	if (as) {
+		const credentials = typeof as === 'string' ? PERSONAS[as] : as;
+		const api = await ApiClient.login(credentials.email, credentials.password);
+		return api.get<SeatingChart>(path);
+	}
+	const response = await fetchWithRetry(`${API_URL}${path}`);
+	if (!response.ok) {
+		throw new ApiError(response.status, 'GET', path, await response.text());
+	}
+	return (await response.json()) as SeatingChart;
+}
+
+/**
+ * Raw availability fetcher (GET /events/{id}/seating/availability). Pass an
+ * identity to see that caller's `my_holds`; anonymous fetches carry no hold
+ * identity (no cookie jar), so `my_holds` is always empty there.
+ */
+export async function getSeatingAvailability(
+	eventId: string,
+	as?: PersonaName | ThrowawayUser
+): Promise<SeatingAvailability> {
+	const path = `/api/events/${eventId}/seating/availability`;
+	if (as) {
+		const credentials = typeof as === 'string' ? PERSONAS[as] : as;
+		const api = await ApiClient.login(credentials.email, credentials.password);
+		return api.get<SeatingAvailability>(path);
+	}
+	const response = await fetchWithRetry(`${API_URL}${path}`);
+	if (!response.ok) {
+		throw new ApiError(response.status, 'GET', path, await response.text());
+	}
+	return (await response.json()) as SeatingAvailability;
+}
+
+/**
+ * Acquire 10-minute TTL holds on specific seats as the given identity — the
+ * ARRANGE step for foreign-hold conflicts (another buyer's live hold renders
+ * as `held` and blocks user-choice checkout). All-or-nothing server-side:
+ * throws ApiError 409 (conflict_reason 'unavailable' | 'capacity') when any
+ * requested seat can't be held. Holds expire on their own; release explicitly
+ * via releaseHoldsViaApi when the spec needs the seats freed sooner.
+ */
+export async function holdSeatsViaApi(
+	user: PersonaName | ThrowawayUser,
+	eventId: string,
+	seatIds: string[]
+): Promise<{ held_seat_ids: string[]; expires_at: string | null }> {
+	const credentials = typeof user === 'string' ? PERSONAS[user] : user;
+	const api = await ApiClient.login(credentials.email, credentials.password);
+	return api.post<{ held_seat_ids: string[]; expires_at: string | null }>(
+		`/api/events/${eventId}/seating/holds`,
+		{ seat_ids: seatIds }
+	);
+}
+
+/**
+ * Release the identity's live holds on an event — all of them by default, or
+ * a subset when `seatIds` is given. Safe to call with nothing held.
+ */
+export async function releaseHoldsViaApi(
+	user: PersonaName | ThrowawayUser,
+	eventId: string,
+	seatIds?: string[]
+): Promise<void> {
+	const credentials = typeof user === 'string' ? PERSONAS[user] : user;
+	const api = await ApiClient.login(credentials.email, credentials.password);
+	await api.request('DELETE', `/api/events/${eventId}/seating/holds`, {
+		seat_ids: seatIds ?? null
+	});
+}
+
+/**
+ * API-create a venue price category (POST /organization-admin/{slug}/venues/
+ * {venue_id}/price-categories). Seats can be painted with it via
+ * PUT /venues/{venue_id}/seats/paint, or inline at seat creation
+ * (`price_category_id` on the seat input) — see createCategoryPricedVenue.
+ */
+export async function createPriceCategory(
+	orgSlug: string,
+	venueId: string,
+	payload: Record<string, unknown> = {},
+	owner: PersonaName | ThrowawayUser = 'owner'
+): Promise<{ id: string; name: string }> {
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
+	const name = (payload.name as string) ?? uniqueName('Category');
+	const created = await api.post<{ id: string }>(
+		`/api/organization-admin/${orgSlug}/venues/${venueId}/price-categories`,
+		{ name, color: '#7c3aed', display_order: 0, ...payload }
+	);
+	return { id: created.id, name };
+}
+
+export interface CategoryPricedVenue {
+	venueId: string;
+	sectorId: string;
+	/** Painted onto every row-A seat; rows B stays unpainted. */
+	category: { id: string; name: string };
+}
+
+/**
+ * Create an ISOLATED venue for per-seat-category pricing specs (#668): one
+ * seated sector with rows A–B × 4 seats, where row A is painted with a fresh
+ * price category (inline `price_category_id`) and row B stays unpainted.
+ *
+ * Isolation matters: painting a new category onto a SHARED venue would make
+ * any category-priced tier being saved concurrently by another worker
+ * under-covered (the backend validates coverage against every category
+ * painted in the tier's sector), so pricing specs must bring their own venue.
+ */
+export async function createCategoryPricedVenue(
+	orgSlug: string,
+	owner: PersonaName | ThrowawayUser = 'owner'
+): Promise<CategoryPricedVenue> {
+	const credentials = typeof owner === 'string' ? PERSONAS[owner] : owner;
+	const api = await ApiClient.login(credentials.email, credentials.password);
+	const venue = await api.post<{ id: string }>(`/api/organization-admin/${orgSlug}/venues`, {
+		name: uniqueName('Priced Hall')
+	});
+	const category = await createPriceCategory(
+		orgSlug,
+		venue.id,
+		{ name: uniqueName('Front'), color: '#f9b233' },
+		owner
+	);
+	const seats = ['A', 'B'].flatMap((row, rowIndex) =>
+		Array.from({ length: 4 }, (_, i) => ({
+			label: `${row}${i + 1}`,
+			row,
+			number: i + 1,
+			row_order: rowIndex,
+			adjacency_index: i + 1,
+			price_category_id: row === 'A' ? category.id : null
+		}))
+	);
+	const sector = await api.post<{ id: string }>(
+		`/api/organization-admin/${orgSlug}/venues/${venue.id}/sectors`,
+		{ name: 'Orchestra', seats }
+	);
+	return { venueId: venue.id, sectorId: sector.id, category };
+}
+
+export interface SeededBestAvailableEvent {
+	eventId: string;
+	/** Public detail path, e.g. /events/org-0/teatro-grande-traviata. */
+	eventPath: string;
+	eventName: string;
+	/** The BEST_AVAILABLE tier (offline payment, painted "Galleria" pool). */
+	tier: { id: string; name: string };
+}
+
+/**
+ * Buyer-side lookup of the seeded showcase event for best-available arranges:
+ * "La Traviata — Season Opening" at Teatro Grande, whose "Galleria" tier is
+ * BEST_AVAILABLE on a seed-painted ~570-seat price-category pool (showcase
+ * seeder #717). Painted pools are seed-only (see createPriceCategory) and the
+ * showcase org owners are not discoverable via API, so specs consume this
+ * SHARED event directly through the public endpoints (event list + tiers, no
+ * auth) instead of arranging their own.
+ *
+ * Because availability is shared: buy as a FRESH createVerifiedUser (the
+ * event caps tickets at 4 per user, so a reused identity stops claiming),
+ * and never assert absolute availability counts.
+ */
+export async function getSeededBestAvailableEvent(
+	// The seeded event now carries TWO best_available tiers (pricing
+	// convergence): "Galleria" (mapped, single zone) and "Platea — Best
+	// Available" (mapped, two zones at two prices). Pin by name.
+	tierName = 'Galleria'
+): Promise<SeededBestAvailableEvent> {
+	const eventName = 'La Traviata — Season Opening';
+	const listPath = `/api/events/?search=${encodeURIComponent('La Traviata')}`;
+	const listResponse = await fetchWithRetry(`${API_URL}${listPath}`);
+	if (!listResponse.ok) {
+		throw new ApiError(listResponse.status, 'GET', listPath, await listResponse.text());
+	}
+	const list = (await listResponse.json()) as {
+		results: Array<{ id: string; name: string; slug: string; organization: { slug: string } }>;
+	};
+	const event = list.results.find((e) => e.name === eventName);
+	if (!event) {
+		throw new Error(
+			`Seeded showcase event "${eventName}" not found via public search — showcase seed (#717) missing, re-run make bootstrap`
+		);
+	}
+	const tiersPath = `/api/events/${event.id}/tickets/tiers`;
+	const tiersResponse = await fetchWithRetry(`${API_URL}${tiersPath}`);
+	if (!tiersResponse.ok) {
+		throw new ApiError(tiersResponse.status, 'GET', tiersPath, await tiersResponse.text());
+	}
+	const tiers = (await tiersResponse.json()) as Array<{
+		id: string;
+		name: string;
+		seat_assignment_mode: string;
+	}>;
+	const tier = tiers.find(
+		(t) => t.seat_assignment_mode === 'best_available' && t.name === tierName
+	);
+	if (!tier) {
+		throw new Error(
+			`No best_available tier "${tierName}" on seeded "${eventName}" — re-run make bootstrap`
+		);
+	}
+	return {
+		eventId: event.id,
+		eventPath: `/events/${event.organization.slug}/${event.slug}`,
+		eventName,
+		tier: { id: tier.id, name: tier.name }
+	};
 }

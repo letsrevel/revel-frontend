@@ -13,6 +13,7 @@ import type {
 	TicketPurchaseItem,
 	BuyerBillingInfoSchema
 } from '$lib/api/generated/types.gen';
+import { seatingBodyFields, type SeatingCheckoutFields } from '$lib/types/tickets';
 import type { EventTicketSchemaActual, UserEventStatus } from '$lib/utils/eligibility';
 import {
 	createReservationRetry,
@@ -40,6 +41,8 @@ interface CheckoutParams {
 	tickets: TicketPurchaseItem[];
 	discountCode?: string;
 	billingInfo?: BuyerBillingInfoSchema;
+	/** Best-available seating fields (zone + accessible opt-in), when seated. */
+	seating?: SeatingCheckoutFields;
 }
 
 interface PwycCheckoutParams extends CheckoutParams {
@@ -103,12 +106,13 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 	// and can trip max_tickets_per_user (PENDING tickets count toward it).
 	const reservationRetry = createReservationRetry('user');
 
+	// An expired reservation was released server-side — there is no pending
+	// ticket left to "Resume Payment" on, so it gets its own message.
 	function sessionFailureError(error: CheckoutSessionError): Error {
-		return new Error(
-			m['eventPage.paymentStartFailed']?.() ??
-				'Your tickets are reserved, but the payment could not be started. Use “Resume Payment” on your pending ticket to try again.',
-			{ cause: error }
-		);
+		const message = error.expired
+			? m['eventPage.paymentStartFailedExpired']()
+			: m['eventPage.paymentStartFailed']();
+		return new Error(message, { cause: error });
 	}
 
 	/**
@@ -190,25 +194,16 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 
 			if (isPending) {
 				// Offline payment - ticket reserved but not yet paid
-				toast.success(
-					m['eventPage.ticketReserved']?.({ count: ticketCount }) ??
-						`${ticketCount} ticket${ticketCount > 1 ? 's' : ''} reserved! Complete payment as instructed.`,
-					{
-						description:
-							m['eventPage.ticketReservedDesc']?.() ?? 'View your ticket for payment details.',
-						duration: 5000
-					}
-				);
+				toast.success(m['eventPage.ticketReserved']({ count: ticketCount }), {
+					description: m['eventPage.ticketReservedDesc'](),
+					duration: 5000
+				});
 			} else {
 				// Free ticket claimed
-				toast.success(
-					m['eventPage.ticketClaimed']?.({ count: ticketCount }) ??
-						`${ticketCount} ticket${ticketCount > 1 ? 's' : ''} claimed!`,
-					{
-						description: m['eventPage.ticketClaimedDesc']?.() ?? 'Your ticket is ready.',
-						duration: 4000
-					}
-				);
+				toast.success(m['eventPage.ticketClaimed']({ count: ticketCount }), {
+					description: m['eventPage.ticketClaimedDesc'](),
+					duration: 4000
+				});
 			}
 
 			// Open ticket modal after a short delay to show the new ticket
@@ -228,11 +223,12 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 			const fingerprint = JSON.stringify(params);
 			const resumed = await resumeHeldCheckout(fingerprint);
 			if (resumed) return resumed;
-			const { tierId, tickets, discountCode, billingInfo } = params;
+			const { tierId, tickets, discountCode, billingInfo, seating } = params;
 			const body: BatchCheckoutPayload = {
 				tickets,
 				discount_code: discountCode || undefined,
-				billing_info: billingInfo || undefined
+				billing_info: billingInfo || undefined,
+				...seatingBodyFields(seating)
 			};
 			const response = await eventpublicticketsTicketCheckout({
 				path: { event_id: eventId, tier_id: tierId },
@@ -252,11 +248,12 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 			const fingerprint = JSON.stringify(params);
 			const resumed = await resumeHeldCheckout(fingerprint);
 			if (resumed) return resumed;
-			const { tierId, tickets, discountCode, billingInfo } = params;
+			const { tierId, tickets, discountCode, billingInfo, seating } = params;
 			const body: BatchCheckoutPayload = {
 				tickets,
 				discount_code: discountCode || undefined,
-				billing_info: billingInfo || undefined
+				billing_info: billingInfo || undefined,
+				...seatingBodyFields(seating)
 			};
 			const response = await eventpublicticketsTicketCheckout({
 				path: { event_id: eventId, tier_id: tierId },
@@ -276,11 +273,12 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 			const fingerprint = JSON.stringify(params);
 			const resumed = await resumeHeldCheckout(fingerprint);
 			if (resumed) return resumed;
-			const { tierId, tickets, pricePerTicket, billingInfo } = params;
+			const { tierId, tickets, pricePerTicket, billingInfo, seating } = params;
 			const body: BatchCheckoutPwycPayload = {
 				tickets,
 				price_per_ticket: pricePerTicket,
-				billing_info: billingInfo || undefined
+				billing_info: billingInfo || undefined,
+				...seatingBodyFields(seating)
 			};
 			const response = await eventpublicticketsTicketPwycCheckout({
 				path: { event_id: eventId, tier_id: tierId },
@@ -313,14 +311,16 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 		tierId: string,
 		tickets?: TicketPurchaseItem[],
 		discountCode?: string,
-		billingInfo?: BuyerBillingInfoSchema
+		billingInfo?: BuyerBillingInfoSchema,
+		seating?: SeatingCheckoutFields
 	) {
 		const ticketItems = tickets || [{ guest_name: getDefaultGuestName() }];
 		await claimTicketMutation.mutateAsync({
 			tierId,
 			tickets: ticketItems,
 			discountCode,
-			billingInfo
+			billingInfo,
+			seating
 		});
 	}
 
@@ -339,7 +339,8 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 		amount?: number,
 		tickets?: TicketPurchaseItem[],
 		discountCode?: string,
-		billingInfo?: BuyerBillingInfoSchema
+		billingInfo?: BuyerBillingInfoSchema,
+		seating?: SeatingCheckoutFields
 	) {
 		const ticketItems = tickets || [{ guest_name: getDefaultGuestName() }];
 
@@ -349,7 +350,8 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 				tierId,
 				tickets: ticketItems,
 				pricePerTicket: amount,
-				billingInfo
+				billingInfo,
+				seating
 			});
 		} else {
 			// Direct checkout for fixed-price tiers
@@ -357,9 +359,38 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 				tierId,
 				tickets: ticketItems,
 				discountCode,
-				billingInfo
+				billingInfo,
+				seating
 			});
 		}
+	}
+
+	/**
+	 * Peek: would `handleClaimTicket`/`handleCheckout` with these arguments
+	 * resume the held reservation instead of reserving afresh? Pure — no
+	 * network call, and the handle is left untouched.
+	 *
+	 * Used by the confirmation dialog to skip re-holding a best-available seat
+	 * block on an identical retry: the resumed reservation already consumed its
+	 * holds at reserve time, so holding a fresh block would only orphan it.
+	 * MUST build the params exactly like the mutations above do (same shapes,
+	 * same key order) — the fingerprint is JSON.stringify of the params object.
+	 */
+	function hasResumableCheckout(
+		tierId: string,
+		isPwyc: boolean,
+		amount?: number,
+		tickets?: TicketPurchaseItem[],
+		discountCode?: string,
+		billingInfo?: BuyerBillingInfoSchema,
+		seating?: SeatingCheckoutFields
+	): boolean {
+		const ticketItems = tickets || [{ guest_name: getDefaultGuestName() }];
+		const params =
+			isPwyc && amount !== undefined
+				? { tierId, tickets: ticketItems, pricePerTicket: amount, billingInfo, seating }
+				: { tierId, tickets: ticketItems, discountCode, billingInfo, seating };
+		return reservationRetry.wouldResume(JSON.stringify(params));
 	}
 
 	// Resume payment mutation (for pending tickets with online payment)
@@ -383,11 +414,8 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 		onError: async (error) => {
 			// If session expired (404), refresh user status - tickets may have been cleaned up
 			await refreshUserStatus();
-			toast.error(m['eventPage.resumePaymentFailed']?.() ?? 'Could not resume payment', {
-				description:
-					error.message ||
-					(m['eventPage.resumePaymentFailedDesc']?.() ??
-						'The checkout session may have expired. Please try purchasing again.'),
+			toast.error(m['eventPage.resumePaymentFailed'](), {
+				description: error.message || m['eventPage.resumePaymentFailedDesc'](),
 				duration: 5000
 			});
 		}
@@ -415,20 +443,15 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 			// Invalidate cache
 			queryClient.invalidateQueries({ queryKey: ['event-status', eventId] });
 
-			toast.success(m['eventPage.reservationCancelled']?.() ?? 'Reservation cancelled', {
-				description:
-					m['eventPage.reservationCancelledDesc']?.() ??
-					'Your ticket reservation has been cancelled.',
+			toast.success(m['eventPage.reservationCancelled'](), {
+				description: m['eventPage.reservationCancelledDesc'](),
 				duration: 4000
 			});
 		},
 		onError: async (error) => {
 			await refreshUserStatus();
-			toast.error(m['eventPage.cancelReservationFailed']?.() ?? 'Could not cancel reservation', {
-				description:
-					error.message ||
-					(m['eventPage.cancelReservationFailedDesc']?.() ??
-						'Please try again or contact support.'),
+			toast.error(m['eventPage.cancelReservationFailed'](), {
+				description: error.message || m['eventPage.cancelReservationFailedDesc'](),
 				duration: 5000
 			});
 		}
@@ -459,6 +482,7 @@ export function createCheckoutController(deps: CheckoutControllerDeps) {
 		cancelReservationMutation,
 		handleClaimTicket,
 		handleCheckout,
+		hasResumableCheckout,
 		handleResumePayment,
 		handleResumePaymentFromSidebar,
 		handleCancelReservation

@@ -69,7 +69,7 @@
 <div class="space-y-4">
 	<!-- Allowed File Types -->
 	<div class="space-y-2">
-		<Label>{m['questionEditor.allowedFileTypes']?.() || 'Allowed File Types'}</Label>
+		<Label>{m['questionEditor.allowedFileTypes']()}</Label>
 		<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
 			{#each FILE_TYPE_CATEGORIES as category (category.id)}
 				{@const isSelected = category.mimeTypes.every((mime) => allowedMimeTypes?.includes(mime))}
@@ -110,9 +110,7 @@
 	<div class="grid gap-4 sm:grid-cols-2">
 		<!-- Max File Size -->
 		<div class="space-y-2">
-			<Label for="maxsize-{questionId}"
-				>{m['questionEditor.maxFileSize']?.() || 'Maximum File Size'}</Label
-			>
+			<Label for="maxsize-{questionId}">{m['questionEditor.maxFileSize']()}</Label>
 			<Select
 				type="single"
 				value={String(maxFileSize || 5242880)}
@@ -137,9 +135,7 @@
 
 		<!-- Max Number of Files -->
 		<div class="space-y-2">
-			<Label for="maxfiles-{questionId}"
-				>{m['questionEditor.maxFiles']?.() || 'Maximum Number of Files'}</Label
-			>
+			<Label for="maxfiles-{questionId}">{m['questionEditor.maxFiles']()}</Label>
 			<Input
 				id="maxfiles-{questionId}"
 				type="number"

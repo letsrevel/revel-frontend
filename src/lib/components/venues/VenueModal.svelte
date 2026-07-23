@@ -11,7 +11,8 @@
 		organizationadminvenuesUpdateVenue
 	} from '$lib/api/generated/sdk.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { X, ChevronDown, ChevronRight, Map, HelpCircle } from '@lucide/svelte';
+	import { ChevronDown, ChevronRight, Map, HelpCircle } from '@lucide/svelte';
+	import * as Dialog from '$lib/components/ui/dialog';
 	import CityAutocomplete from '$lib/components/forms/CityAutocomplete.svelte';
 	import MarkdownEditor from '$lib/components/forms/MarkdownEditor.svelte';
 	import { toast } from 'svelte-sonner';
@@ -76,7 +77,7 @@
 			}
 			if ('message' in error && error.message) return String(error.message);
 		}
-		return m['orgAdmin.venues.toast.genericError']?.() ?? 'An unexpected error occurred';
+		return m['orgAdmin.venues.toast.genericError']();
 	}
 
 	// Create mutation
@@ -164,43 +165,39 @@
 		selectedCity = city;
 	}
 
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape') {
+	// The parent mounts this component only while the modal should be shown, so
+	// the dialog opens on mount and every close path funnels through onClose().
+	let open = $state(true);
+
+	function handleOpenChange(next: boolean) {
+		if (!next) {
+			// Gate dismissal like the Cancel button: closing mid-flight would drop
+			// the pending mutation's outcome (PriceCategoryModal semantics).
+			if (isPending) {
+				open = true;
+				return;
+			}
 			onClose();
 		}
 	}
 </script>
 
-<svelte:window onkeydown={handleKeydown} />
-
-<!-- Modal backdrop -->
-<div
-	class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-	role="dialog"
-	aria-modal="true"
-	aria-labelledby="venue-modal-title"
->
-	<!-- Modal content -->
-	<div class="flex max-h-[90vh] w-full max-w-lg flex-col rounded-lg bg-background shadow-xl">
-		<!-- Header -->
-		<div class="flex shrink-0 items-center justify-between border-b px-6 py-4">
-			<h2 id="venue-modal-title" class="text-xl font-semibold">
+<Dialog.Root bind:open onOpenChange={handleOpenChange}>
+	<Dialog.Content
+		class="flex max-h-[90vh] flex-col sm:max-w-lg"
+		escapeKeydownBehavior={isPending ? 'ignore' : 'close'}
+		interactOutsideBehavior={isPending ? 'ignore' : 'close'}
+	>
+		<Dialog.Header>
+			<Dialog.Title>
 				{isEditing
 					? m['orgAdmin.venues.form.editTitle']()
 					: m['orgAdmin.venues.form.createTitle']()}
-			</h2>
-			<button
-				type="button"
-				onclick={onClose}
-				class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-				aria-label={m['orgAdmin.venues.form.cancel']()}
-			>
-				<X class="h-5 w-5" />
-			</button>
-		</div>
+			</Dialog.Title>
+		</Dialog.Header>
 
 		<!-- Form -->
-		<form onsubmit={handleSubmit} class="flex-1 overflow-y-auto p-6">
+		<form onsubmit={handleSubmit} class="min-h-0 flex-1 overflow-y-auto">
 			<div class="space-y-4">
 				<!-- Name -->
 				<div>
@@ -333,7 +330,7 @@
 							{#if locationMapsEmbed}
 								<div>
 									<p class="mb-2 text-sm font-medium">
-										{m['locationSection.mapsPreview']?.() ?? 'Preview'}
+										{m['locationSection.mapsPreview']()}
 									</p>
 									<div class="overflow-hidden rounded-lg border">
 										<iframe
@@ -377,5 +374,5 @@
 				</button>
 			</div>
 		</form>
-	</div>
-</div>
+	</Dialog.Content>
+</Dialog.Root>

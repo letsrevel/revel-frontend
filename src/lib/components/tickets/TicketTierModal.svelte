@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import type { TierSchemaWithId } from '$lib/types/tickets';
+	import type { SeatingCheckoutFields, TierSchemaWithId } from '$lib/types/tickets';
 	import type {
 		MembershipTierSchema,
 		TicketPurchaseItem,
@@ -8,11 +8,13 @@
 		BuyerBillingInfoSchema
 	} from '$lib/api/generated/types.gen';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
+	import { Button } from '$lib/components/ui/button';
 	import DemoCardInfo from '$lib/components/common/DemoCardInfo.svelte';
 	import TicketConfirmationDialog from './TicketConfirmationDialog.svelte';
 	import TierCard from './TierCard.svelte';
 	import EventSeriesPassOffers from '$lib/components/series-passes/EventSeriesPassOffers.svelte';
-	import { Ticket } from '@lucide/svelte';
+	import { Map as MapIcon, Ticket } from '@lucide/svelte';
+	import { readTierMapPref, writeTierMapPref } from './seat-view-toggle';
 
 	interface Props {
 		open: boolean;
@@ -41,7 +43,8 @@
 			tierId: string,
 			tickets?: TicketPurchaseItem[],
 			discountCode?: string,
-			billingInfo?: BuyerBillingInfoSchema
+			billingInfo?: BuyerBillingInfoSchema,
+			seating?: SeatingCheckoutFields
 		) => void;
 		onCheckout?: (
 			tierId: string,
@@ -49,9 +52,32 @@
 			amount?: number,
 			tickets?: TicketPurchaseItem[],
 			discountCode?: string,
-			billingInfo?: BuyerBillingInfoSchema
+			billingInfo?: BuyerBillingInfoSchema,
+			seating?: SeatingCheckoutFields
 		) => void;
 		onGuestTierClick?: (tier: TierSchemaWithId) => void;
+		/**
+		 * Map-first entry point: opens the whole-venue seating overview (same
+		 * dialog instance the page renders). Only passed when the event has a
+		 * mapped venue; once used, subsequent modal opens this session auto-open
+		 * the overview (remembered via the tier-map session preference).
+		 */
+		onViewSeatingMap?: () => void;
+		/**
+		 * Peek: would an identical retry resume a held checkout reservation
+		 * instead of reserving afresh? Same argument shape as onCheckout (the
+		 * fingerprint must match the mutation the payload would hit). Used to
+		 * skip re-holding a best-available seat block on retry.
+		 */
+		hasResumableCheckout?: (
+			tierId: string,
+			isPwyc: boolean,
+			amount?: number,
+			tickets?: TicketPurchaseItem[],
+			discountCode?: string,
+			billingInfo?: BuyerBillingInfoSchema,
+			seating?: SeatingCheckoutFields
+		) => boolean;
 	}
 
 	let {
@@ -71,7 +97,9 @@
 		onClose,
 		onClaimTicket,
 		onCheckout,
-		onGuestTierClick
+		onGuestTierClick,
+		onViewSeatingMap,
+		hasResumableCheckout
 	}: Props = $props();
 
 	/**
@@ -130,6 +158,9 @@
 	let selectedTier = $state<TierSchemaWithId | null>(null);
 	let isProcessing = $state(false);
 	let wasPreSelected = $state(false);
+	// The next confirmation dialog was opened BY a section switch: it should
+	// scroll its seating UI into view (the keyed remount lands at the top).
+	let focusSeating = $state(false);
 
 	// Pre-selection: when modal opens with a preSelectedTier, jump straight to confirmation
 	$effect(() => {
@@ -151,6 +182,29 @@
 		}
 	});
 
+	// Remembered map preference: after the buyer used the map button once this
+	// session, auto-open the overview on every subsequent modal open — ONCE per
+	// open (no loop: closing the overview reveals the tier list), and never
+	// when a pre-selected tier is jumping straight to its confirmation.
+	let autoOpenedMap = false;
+	$effect(() => {
+		if (!open) {
+			autoOpenedMap = false;
+			return;
+		}
+		if (autoOpenedMap || preSelectedTier) return;
+		autoOpenedMap = true;
+		if (onViewSeatingMap && readTierMapPref()) {
+			onViewSeatingMap();
+		}
+	});
+
+	// Using the map button remembers the preference for this session.
+	function handleViewSeatingMap(): void {
+		writeTierMapPref();
+		onViewSeatingMap?.();
+	}
+
 	// Filter hidden tiers (same as TicketTierList)
 	const visibleTiers = $derived(tiers.filter((tier) => tier.payment_method !== 'hidden'));
 
@@ -161,12 +215,14 @@
 	function handleTierClick(tier: TierSchemaWithId): void {
 		selectedTier = tier;
 		showConfirmation = true;
+		focusSeating = false;
 	}
 
 	// Close confirmation dialog
 	function closeConfirmation(): void {
 		showConfirmation = false;
 		selectedTier = null;
+		focusSeating = false;
 		// If user came from inline TierCard, close the entire modal
 		// (they already see the tier list on the page — showing the modal's tier list is redundant)
 		if (wasPreSelected) {
@@ -181,18 +237,29 @@
 		tickets: TicketPurchaseItem[];
 		discountCode?: string;
 		billingInfo?: BuyerBillingInfoSchema;
+		priceCategoryId?: string;
+		accessibleRequired?: boolean;
 	}): Promise<void> {
 		if (!selectedTier || isProcessing) return;
 
 		isProcessing = true;
 		const { amount, tickets, discountCode, billingInfo } = payload;
+		const seating = seatingFieldsFrom(payload);
 		const isOnline = selectedTier.payment_method === 'online';
 		const isPwyc = selectedTier.price_type === 'pwyc';
 
 		try {
 			// PWYC tiers require the PWYC endpoint regardless of payment method
 			if (isPwyc && onCheckout) {
-				await onCheckout(selectedTier.id, true, amount, tickets, discountCode, billingInfo);
+				await onCheckout(
+					selectedTier.id,
+					true,
+					amount,
+					tickets,
+					discountCode,
+					billingInfo,
+					seating
+				);
 			}
 			// Free tickets or offline/at-the-door (reservation) - non-PWYC
 			else if (
@@ -200,11 +267,19 @@
 				selectedTier.payment_method === 'offline' ||
 				selectedTier.payment_method === 'at_the_door'
 			) {
-				await onClaimTicket(selectedTier.id, tickets, discountCode, billingInfo);
+				await onClaimTicket(selectedTier.id, tickets, discountCode, billingInfo, seating);
 			}
 			// Online payment (fixed price)
 			else if (isOnline && onCheckout) {
-				await onCheckout(selectedTier.id, false, undefined, tickets, discountCode, billingInfo);
+				await onCheckout(
+					selectedTier.id,
+					false,
+					undefined,
+					tickets,
+					discountCode,
+					billingInfo,
+					seating
+				);
 			}
 
 			// For online payments (Stripe redirect), keep loading state visible.
@@ -230,6 +305,47 @@
 			throw error; // Re-throw so TicketConfirmationDialog can handle it
 		}
 	}
+
+	// The dialog's seating fields as the controller's `seating` argument;
+	// undefined when neither field is set, so non-seated payloads keep their
+	// historical fingerprint shape.
+	function seatingFieldsFrom(payload: {
+		priceCategoryId?: string;
+		accessibleRequired?: boolean;
+	}): SeatingCheckoutFields | undefined {
+		if (payload.priceCategoryId === undefined && payload.accessibleRequired === undefined) {
+			return undefined;
+		}
+		return {
+			priceCategoryId: payload.priceCategoryId,
+			accessibleRequired: payload.accessibleRequired
+		};
+	}
+
+	// Peek for the confirmation dialog: mirrors handleConfirm's routing (PWYC →
+	// checkout with amount, otherwise claim/checkout share one params shape) so
+	// the fingerprint matches the mutation the payload would actually hit.
+	function checkResumableCheckout(payload: {
+		amount?: number;
+		tickets: TicketPurchaseItem[];
+		discountCode?: string;
+		billingInfo?: BuyerBillingInfoSchema;
+		priceCategoryId?: string;
+		accessibleRequired?: boolean;
+	}): boolean {
+		if (!selectedTier || !hasResumableCheckout) return false;
+		const { amount, tickets, discountCode, billingInfo } = payload;
+		const isPwyc = selectedTier.price_type === 'pwyc';
+		return hasResumableCheckout(
+			selectedTier.id,
+			isPwyc,
+			isPwyc ? amount : undefined,
+			tickets,
+			discountCode,
+			billingInfo,
+			seatingFieldsFrom(payload)
+		);
+	}
 </script>
 
 <Dialog bind:open>
@@ -249,6 +365,13 @@
 					seriesSlug={seriesInfo.seriesSlug}
 					{isAuthenticated}
 				/>
+			{/if}
+			<!-- Map-first entry point: same wording/icon as TicketTierList's button. -->
+			{#if onViewSeatingMap}
+				<Button variant="outline" class="w-full sm:w-auto" onclick={handleViewSeatingMap}>
+					<MapIcon class="mr-2 h-4 w-4" aria-hidden="true" />
+					{m['venueOverview.viewMap']()}
+				</Button>
 			{/if}
 			{#if visibleTiers.length === 0}
 				<div class="py-8 text-center text-muted-foreground">
@@ -281,18 +404,32 @@
 	</DialogContent>
 </Dialog>
 
-<!-- Confirmation Dialog for Selected Tier -->
+<!-- Confirmation Dialog for Selected Tier. Keyed by tier id: a section
+     switch swaps selectedTier, and the remount both resets the dialog's
+     per-tier state cleanly and releases the old tier's held seats via its
+     teardown effect. -->
 {#if selectedTier}
-	<TicketConfirmationDialog
-		bind:open={showConfirmation}
-		tier={selectedTier}
-		{eventId}
-		onClose={closeConfirmation}
-		onConfirm={handleConfirm}
-		{isProcessing}
-		maxQuantity={getMaxQuantityForTier(selectedTier.id)}
-		{eventMaxTicketsPerUser}
-		{userName}
-		{initialDiscountCode}
-	/>
+	{#key selectedTier.id}
+		<TicketConfirmationDialog
+			bind:open={showConfirmation}
+			tier={selectedTier}
+			{eventId}
+			onClose={closeConfirmation}
+			onConfirm={handleConfirm}
+			hasResumableCheckout={checkResumableCheckout}
+			{isProcessing}
+			maxQuantity={getMaxQuantityForTier(selectedTier.id)}
+			{eventMaxTicketsPerUser}
+			{userName}
+			{initialDiscountCode}
+			allTiers={visibleTiers}
+			{tierRemainingTickets}
+			{focusSeating}
+			onSwitchTier={(tier) => {
+				selectedTier = tier;
+				showConfirmation = true;
+				focusSeating = true;
+			}}
+		/>
+	{/key}
 {/if}

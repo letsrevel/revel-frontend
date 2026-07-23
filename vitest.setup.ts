@@ -11,6 +11,25 @@ import { vi, afterAll } from 'vitest';
 vi.mock('$env/dynamic/public', () => ({ env: {} }));
 vi.mock('$env/dynamic/private', () => ({ env: {} }));
 
+// jsdom has no ResizeObserver, but Svelte's bind:clientWidth/clientHeight
+// (used by SeatMap to size its home view) requires one. A no-op stub is
+// enough: jsdom never lays out, so the dimensions would be 0 anyway and
+// components must handle the unmeasured case regardless.
+if (typeof globalThis.ResizeObserver === 'undefined') {
+	class ResizeObserverStub {
+		observe(): void {
+			// no-op: jsdom never lays out
+		}
+		unobserve(): void {
+			// no-op
+		}
+		disconnect(): void {
+			// no-op
+		}
+	}
+	globalThis.ResizeObserver = ResizeObserverStub as unknown as typeof ResizeObserver;
+}
+
 // bits-ui 2's body scroll-lock schedules a ~24ms setTimeout on dialog unmount
 // to restore document.body styles (dist/internal/body-scroll-lock.svelte.js).
 // If a file's last test unmounted a dialog, that timer can fire after vitest

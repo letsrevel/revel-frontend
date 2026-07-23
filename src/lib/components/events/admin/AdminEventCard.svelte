@@ -23,7 +23,8 @@
 		ListPlus,
 		Ban,
 		MoreVertical,
-		Copy
+		Copy,
+		Armchair
 	} from '@lucide/svelte';
 
 	type CardVariant = 'draft' | 'open' | 'closed' | 'cancelled';
@@ -129,6 +130,15 @@
 			})
 		);
 	}
+
+	function manageSeating(): void {
+		goto(
+			resolve('/(auth)/org/[slug]/admin/events/[event_id]/seating', {
+				slug: organizationSlug,
+				event_id: event.id
+			})
+		);
+	}
 </script>
 
 <div
@@ -182,6 +192,12 @@
 							<Copy class="mr-2 h-4 w-4" />
 							{m['orgAdmin.events.actions.duplicate']()}
 						</DropdownMenu.Item>
+						{#if showManagement && event.requires_ticket}
+							<DropdownMenu.Item onclick={manageSeating}>
+								<Armchair class="mr-2 h-4 w-4" />
+								{m['orgAdmin.events.actions.seating']()}
+							</DropdownMenu.Item>
+						{/if}
 						<DropdownMenu.Separator />
 						{#if variant === 'open' && onClose}
 							<DropdownMenu.Item

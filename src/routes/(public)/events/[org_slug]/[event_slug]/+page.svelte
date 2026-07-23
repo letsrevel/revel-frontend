@@ -22,6 +22,8 @@
 	import MyTicketModal from '$lib/components/tickets/MyTicketModal.svelte';
 	import GuestRsvpDialog from '$lib/components/events/GuestRsvpDialog.svelte';
 	import GuestTicketDialog from '$lib/components/events/GuestTicketDialog.svelte';
+	import VenueOverviewDialog from '$lib/components/events/VenueOverviewDialog.svelte';
+	import { eventHasSeatingMap } from '$lib/components/events/venue-overview';
 	import EventConfirmationBanners from '$lib/components/events/EventConfirmationBanners.svelte';
 	import { createCheckoutController } from '$lib/components/events/event-checkout-controller.svelte';
 	import { SeoHead } from '$lib/seo';
@@ -144,8 +146,16 @@
 	let showMyTicketModal = $state(false);
 	let showGuestRsvpDialog = $state(false);
 	let showGuestTicketDialog = $state(false);
+	let showVenueOverview = $state(false);
 	let selectedTierForGuest = $state<TierSchemaWithId | null>(null);
+	// The next guest dialog was opened BY a section switch: it should scroll
+	// its seating UI into view (the keyed remount lands at the top).
+	let guestFocusSeating = $state(false);
 	let preSelectedTier = $state<TierSchemaWithId | null>(null);
+
+	// Map-first entry point (#679): only when a purchasable tier sells a venue
+	// sector (the chart itself is fetched lazily when the dialog opens).
+	const hasSeatingMap = $derived(eventHasSeatingMap(ticketTiers, tierRemainingTickets));
 
 	// Handle modals
 	function openTicketTierModal() {
@@ -180,11 +190,13 @@
 			selectedTierForGuest = tier;
 		}
 		showGuestTicketDialog = true;
+		guestFocusSeating = false;
 	}
 
 	function closeGuestTicketDialog() {
 		showGuestTicketDialog = false;
 		selectedTierForGuest = null;
+		guestFocusSeating = false;
 	}
 
 	async function handleGuestAttendanceSuccess() {
@@ -201,6 +213,7 @@
 		cancelReservationMutation,
 		handleClaimTicket,
 		handleCheckout,
+		hasResumableCheckout,
 		handleResumePayment,
 		handleResumePaymentFromSidebar,
 		handleCancelReservation
@@ -412,6 +425,11 @@
 						timezone={event.timezone}
 						onSelectTier={handleSelectTier}
 						onGuestTierClick={openGuestTicketDialog}
+						onViewSeatingMap={hasSeatingMap
+							? () => {
+									showVenueOverview = true;
+								}
+							: undefined}
 					/>
 				{/if}
 
@@ -593,7 +611,13 @@
 	onClose={closeTicketTierModal}
 	onClaimTicket={handleClaimTicket}
 	onCheckout={handleCheckout}
+	{hasResumableCheckout}
 	onGuestTierClick={openGuestTicketDialog}
+	onViewSeatingMap={hasSeatingMap
+		? () => {
+				showVenueOverview = true;
+			}
+		: undefined}
 />
 
 <!-- My Ticket Modal -->
@@ -627,14 +651,38 @@
 	/>
 {/if}
 
+<!-- Whole-venue seating overview (map-first tier selection, #679) -->
+{#if hasSeatingMap}
+	<VenueOverviewDialog
+		bind:open={showVenueOverview}
+		eventId={event.id}
+		tiers={ticketTiers}
+		isAuthenticated={data.isAuthenticated}
+		canAttendWithoutLogin={event.can_attend_without_login}
+		{tierRemainingTickets}
+		eventMaxTicketsPerUser={event.max_tickets_per_user}
+		onSelectTier={handleSelectTier}
+		onGuestTierClick={openGuestTicketDialog}
+	/>
+{/if}
+
 <!-- Guest Ticket Dialog -->
 {#if !data.isAuthenticated && event.can_attend_without_login && event.requires_ticket && selectedTierForGuest}
-	<GuestTicketDialog
-		bind:open={showGuestTicketDialog}
-		eventId={event.id}
-		tier={selectedTierForGuest}
-		eventMaxTicketsPerUser={event.max_tickets_per_user}
-		onClose={closeGuestTicketDialog}
-		onSuccess={handleGuestAttendanceSuccess}
-	/>
+	{#key selectedTierForGuest.id}
+		<GuestTicketDialog
+			bind:open={showGuestTicketDialog}
+			eventId={event.id}
+			tier={selectedTierForGuest}
+			allTiers={ticketTiers}
+			eventMaxTicketsPerUser={event.max_tickets_per_user}
+			onClose={closeGuestTicketDialog}
+			onSuccess={handleGuestAttendanceSuccess}
+			focusSeating={guestFocusSeating}
+			onSwitchTier={(tier) => {
+				selectedTierForGuest = tier;
+				showGuestTicketDialog = true;
+				guestFocusSeating = true;
+			}}
+		/>
+	{/key}
 {/if}

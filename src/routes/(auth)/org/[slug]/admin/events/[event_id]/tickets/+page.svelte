@@ -37,6 +37,7 @@
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import QRScannerModal from '$lib/components/tickets/QRScannerModal.svelte';
 	import CheckInDialog from '$lib/components/tickets/CheckInDialog.svelte';
+	import ReseatDialog from '$lib/components/tickets/ReseatDialog.svelte';
 	import MakeMemberModal from '$lib/components/members/MakeMemberModal.svelte';
 	import ExportButton from '$lib/components/common/ExportButton.svelte';
 	import { isSeriesPassCode } from '$lib/utils/series-pass-qr';
@@ -62,6 +63,8 @@
 	let showCheckInDialog = $state(false);
 	let ticketToCheckIn = $state<CheckInDialogTicket | null>(null);
 	let showQRScanner = $state(false);
+	let showReseatDialog = $state(false);
+	let ticketToReseat = $state<AdminTicketSchema | null>(null);
 
 	// Membership + blacklist admin actions (state, mutations, handlers).
 	const memberAdmin = createTicketMemberAdmin({
@@ -422,6 +425,14 @@
 		}
 	}
 
+	/**
+	 * Open the reseat dialog for a seated ticket.
+	 */
+	function handleReseat(ticket: AdminTicketSchema) {
+		ticketToReseat = ticket;
+		showReseatDialog = true;
+	}
+
 	async function handleExportAttendees(): Promise<string> {
 		const response = await eventadminticketsExportAttendees({
 			path: { event_id: data.event.id },
@@ -563,6 +574,7 @@
 				onCancelTicket={handleCancelTicket}
 				onBlacklist={memberAdmin.openBlacklistDialog}
 				onUnconfirmPayment={openUnconfirmPaymentDialog}
+				onReseat={handleReseat}
 			/>
 
 			<!-- Mobile Cards -->
@@ -580,6 +592,7 @@
 				onCancelTicket={handleCancelTicket}
 				onBlacklist={memberAdmin.openBlacklistDialog}
 				onUnconfirmPayment={openUnconfirmPaymentDialog}
+				onReseat={handleReseat}
 			/>
 		{/if}
 
@@ -659,6 +672,19 @@
 	isOpen={showQRScanner}
 	onClose={() => (showQRScanner = false)}
 	onScan={handleQRScan}
+/>
+
+<!-- Reseat (move seat) Dialog -->
+<ReseatDialog
+	open={showReseatDialog}
+	ticket={ticketToReseat}
+	eventId={data.event.id}
+	accessToken={$page.data.user?.accessToken ?? null}
+	onClose={() => {
+		showReseatDialog = false;
+		ticketToReseat = null;
+	}}
+	onReseated={() => invalidateAll()}
 />
 
 <!-- Make Member Modal -->

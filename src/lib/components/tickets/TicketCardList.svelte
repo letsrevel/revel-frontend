@@ -28,7 +28,8 @@
 		UserPlus,
 		MoreVertical,
 		Ban,
-		Undo2
+		Undo2,
+		Armchair
 	} from '@lucide/svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import UserAvatar from '$lib/components/common/UserAvatar.svelte';
@@ -51,6 +52,8 @@
 		onCancelTicket: (ticket: AdminTicketSchema) => void;
 		onBlacklist: (ticket: AdminTicketSchema) => void;
 		onUnconfirmPayment: (ticket: AdminTicketSchema) => void;
+		/** Move a seated ticket to another seat. Omit to hide the action. */
+		onReseat?: (ticket: AdminTicketSchema) => void;
 	}
 
 	const {
@@ -66,7 +69,8 @@
 		onMakeMember,
 		onCancelTicket,
 		onBlacklist,
-		onUnconfirmPayment
+		onUnconfirmPayment,
+		onReseat
 	}: Props = $props();
 </script>
 
@@ -297,6 +301,12 @@
 						{/snippet}
 					</DropdownMenu.Trigger>
 					<DropdownMenu.Content align="end">
+						{#if onReseat && ticket.seat?.id && ticket.status !== 'cancelled'}
+							<DropdownMenu.Item onclick={() => onReseat(ticket)}>
+								<Armchair class="mr-2 h-4 w-4" aria-hidden="true" />
+								{m['ticketCardList.moveSeat']?.() ?? 'Move seat'}
+							</DropdownMenu.Item>
+						{/if}
 						{#if canUnconfirmPayment(ticket)}
 							<DropdownMenu.Item
 								onclick={() => onUnconfirmPayment(ticket)}

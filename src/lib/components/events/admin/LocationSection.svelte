@@ -169,7 +169,7 @@
 	<div class="flex items-center justify-between">
 		<h3 class="flex items-center gap-2 font-semibold">
 			<MapPin class="h-5 w-5" aria-hidden="true" />
-			{m['locationSection.title']?.() ?? 'Location'}
+			{m['locationSection.title']()}
 		</h3>
 		{#if locationMode !== 'none'}
 			<button
@@ -178,7 +178,7 @@
 				class="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
 			>
 				<ArrowLeft class="h-4 w-4" aria-hidden="true" />
-				{m['locationSection.changeLocationType']?.() ?? 'Change location type'}
+				{m['locationSection.changeLocationType']()}
 			</button>
 		{/if}
 	</div>
@@ -194,9 +194,9 @@
 			>
 				<MapPin class="h-8 w-8 text-muted-foreground" aria-hidden="true" />
 				<div>
-					<p class="font-medium">{m['locationSection.addAddress']?.() ?? 'Add Address'}</p>
+					<p class="font-medium">{m['locationSection.addAddress']()}</p>
 					<p class="text-sm text-muted-foreground">
-						{m['locationSection.addAddressHint']?.() ?? 'Enter a custom address for this event'}
+						{m['locationSection.addAddressHint']()}
 					</p>
 				</div>
 			</button>
@@ -210,9 +210,9 @@
 				>
 					<Building2 class="h-8 w-8 text-muted-foreground" aria-hidden="true" />
 					<div>
-						<p class="font-medium">{m['locationSection.selectVenue']?.() ?? 'Select Venue'}</p>
+						<p class="font-medium">{m['locationSection.selectVenue']()}</p>
 						<p class="text-sm text-muted-foreground">
-							{m['locationSection.selectVenueHint']?.() ?? "Choose from your organization's venues"}
+							{m['locationSection.selectVenueHint']()}
 						</p>
 					</div>
 				</button>
@@ -228,7 +228,7 @@
 				value={selectedCity}
 				onSelect={handleCitySelect}
 				error={validationErrors.city_id}
-				label={m['locationSection.cityLabel']?.() ?? 'City'}
+				label={m['locationSection.cityLabel']()}
 				description=""
 			/>
 			{#if validationErrors.city_id}
@@ -242,7 +242,7 @@
 				<label for="location-address" class="block text-sm font-medium">
 					<span class="flex items-center gap-2">
 						<MapPin class="h-4 w-4" aria-hidden="true" />
-						{m['locationSection.addressLabel']?.() ?? 'Address'}
+						{m['locationSection.addressLabel']()}
 					</span>
 				</label>
 				<input
@@ -250,7 +250,7 @@
 					type="text"
 					value={formData.address || ''}
 					oninput={(e) => onUpdate({ address: e.currentTarget.value || null })}
-					placeholder={m['locationSection.addressPlaceholder']?.() ?? 'Enter the event address'}
+					placeholder={m['locationSection.addressPlaceholder']()}
 					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				/>
 			</div>
@@ -260,7 +260,7 @@
 				<label for="location-address-visibility" class="block text-sm font-medium">
 					<span class="flex items-center gap-2">
 						<Eye class="h-4 w-4" aria-hidden="true" />
-						{m['locationSection.addressVisibility']?.() ?? 'Address Visibility'}
+						{m['locationSection.addressVisibility']()}
 					</span>
 				</label>
 				<select
@@ -270,19 +270,14 @@
 						onUpdate({ address_visibility: e.currentTarget.value as ResourceVisibility })}
 					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 				>
-					<option value="public">{m['detailsStep.addressVisibilityPublic']?.() ?? 'Public'}</option>
-					<option value="members-only"
-						>{m['detailsStep.addressVisibilityMembersOnly']?.() ?? 'Members Only'}</option
+					<option value="public">{m['detailsStep.addressVisibilityPublic']()}</option>
+					<option value="members-only">{m['detailsStep.addressVisibilityMembersOnly']()}</option>
+					<option value="attendees-only">{m['detailsStep.addressVisibilityAttendeesOnly']()}</option
 					>
-					<option value="attendees-only"
-						>{m['detailsStep.addressVisibilityAttendeesOnly']?.() ?? 'Attendees Only'}</option
-					>
-					<option value="private"
-						>{m['detailsStep.addressVisibilityPrivate']?.() ?? 'Invitation only'}</option
-					>
+					<option value="private">{m['detailsStep.addressVisibilityPrivate']()}</option>
 				</select>
 				<p class="text-xs text-muted-foreground">
-					{m['detailsStep.addressVisibilityHint']?.() ?? 'Control who can see the event address'}
+					{m['detailsStep.addressVisibilityHint']()}
 				</p>
 			</div>
 
@@ -296,7 +291,7 @@
 				>
 					<div class="flex items-center gap-2 text-sm font-medium">
 						<Map class="h-4 w-4" aria-hidden="true" />
-						{m['locationSection.mapsSection']?.() ?? 'Maps Integration (optional)'}
+						{m['locationSection.mapsSection']()}
 					</div>
 					{#if mapsExpanded}
 						<ChevronDown class="h-4 w-4" aria-hidden="true" />
@@ -314,21 +309,18 @@
 							<HelpCircle class="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
 							<div class="space-y-2">
 								<p class="font-medium">
-									{m['detailsStep.mapsHelpTitle']?.() ?? 'How to add a map'}
+									{m['detailsStep.mapsHelpTitle']()}
 								</p>
 								<ol class="list-inside list-decimal space-y-1 text-xs">
 									<li>
-										{m['detailsStep.mapsHelpStep1']?.() ??
-											'Open your location in Google Maps (or another maps service)'}
+										{m['detailsStep.mapsHelpStep1']()}
 									</li>
-									<li>{m['detailsStep.mapsHelpStep2']?.() ?? 'Click the "Share" button'}</li>
+									<li>{m['detailsStep.mapsHelpStep2']()}</li>
 									<li>
-										{m['detailsStep.mapsHelpStep3']?.() ??
-											'Copy the link and paste it in the "Maps Link" field below'}
+										{m['detailsStep.mapsHelpStep3']()}
 									</li>
 									<li>
-										{m['detailsStep.mapsHelpStep4']?.() ??
-											'For the embedded map: click "Embed a map", copy the entire HTML code, and paste it below'}
+										{m['detailsStep.mapsHelpStep4']()}
 									</li>
 								</ol>
 							</div>
@@ -337,46 +329,43 @@
 						<!-- Maps URL -->
 						<div class="space-y-2">
 							<label for="location-maps-url" class="block text-sm font-medium">
-								{m['locationSection.mapsUrl']?.() ?? 'Maps Link'}
+								{m['locationSection.mapsUrl']()}
 							</label>
 							<input
 								id="location-maps-url"
 								type="url"
 								value={formData.location_maps_url || ''}
 								oninput={(e) => onUpdate({ location_maps_url: e.currentTarget.value || null })}
-								placeholder={m['detailsStep.mapsUrlPlaceholder']?.() ??
-									'https://maps.google.com/...'}
+								placeholder={m['detailsStep.mapsUrlPlaceholder']()}
 								class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 							/>
 							<p class="text-xs text-muted-foreground">
-								{m['locationSection.mapsUrlHint']?.() ??
-									'Shareable link to the location (e.g., Google Maps)'}
+								{m['locationSection.mapsUrlHint']()}
 							</p>
 						</div>
 
 						<!-- Maps Embed -->
 						<div class="space-y-2">
 							<label for="location-maps-embed" class="block text-sm font-medium">
-								{m['locationSection.mapsEmbed']?.() ?? 'Embed Code'}
+								{m['locationSection.mapsEmbed']()}
 							</label>
 							<textarea
 								id="location-maps-embed"
 								value={formData.location_maps_embed || ''}
 								oninput={(e) => handleMapsEmbedInput(e.currentTarget.value || null)}
-								placeholder={m['detailsStep.mapsEmbedPlaceholder']?.() ??
-									'<iframe src="https://www.google.com/maps/embed?..." ...></iframe>'}
+								placeholder={m['detailsStep.mapsEmbedPlaceholder']()}
 								rows={3}
 								class="flex w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 							></textarea>
 							<p class="text-xs text-muted-foreground">
-								{m['locationSection.mapsEmbedHint']?.() ?? 'Paste iframe HTML from Google Maps'}
+								{m['locationSection.mapsEmbedHint']()}
 							</p>
 						</div>
 
 						<!-- Preview -->
 						{#if formData.location_maps_embed}
 							<div class="space-y-2">
-								<p class="text-sm font-medium">{m['detailsStep.mapsPreview']?.() ?? 'Preview'}</p>
+								<p class="text-sm font-medium">{m['detailsStep.mapsPreview']()}</p>
 								<div class="overflow-hidden rounded-lg border">
 									<iframe
 										src={formData.location_maps_embed}
@@ -386,7 +375,7 @@
 										sandbox="allow-scripts"
 										loading="lazy"
 										referrerpolicy="no-referrer-when-downgrade"
-										title={m['detailsStep.mapsPreviewTitle']?.() ?? 'Map preview'}
+										title={m['detailsStep.mapsPreviewTitle']()}
 									></iframe>
 								</div>
 							</div>
@@ -409,7 +398,7 @@
 					<label class="block text-sm font-medium">
 						<span class="flex items-center gap-2">
 							<MapPin class="h-4 w-4" aria-hidden="true" />
-							{m['locationSection.cityLabel']?.() ?? 'City'}
+							{m['locationSection.cityLabel']()}
 						</span>
 					</label>
 					<div
@@ -418,7 +407,7 @@
 						{formatCity(selectedVenue.city)}
 					</div>
 					<p class="text-xs text-muted-foreground">
-						{m['locationSection.cityFromVenue']?.() ?? 'City is set from the selected venue'}
+						{m['locationSection.cityFromVenue']()}
 					</p>
 				</div>
 			{/if}
@@ -429,7 +418,7 @@
 					<label class="block text-sm font-medium">
 						<span class="flex items-center gap-2">
 							<MapPin class="h-4 w-4" aria-hidden="true" />
-							{m['locationSection.addressLabel']?.() ?? 'Address'}
+							{m['locationSection.addressLabel']()}
 						</span>
 					</label>
 					<div
@@ -438,7 +427,7 @@
 						{selectedVenue.address}
 					</div>
 					<p class="text-xs text-muted-foreground">
-						{m['locationSection.addressFromVenue']?.() ?? 'Address is set from the selected venue'}
+						{m['locationSection.addressFromVenue']()}
 					</p>
 				</div>
 			{/if}

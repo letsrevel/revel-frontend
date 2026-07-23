@@ -54,7 +54,7 @@
 				toast.error(m['accountSettingsPage.general.updateError']());
 			} else {
 				if (redirectUrl) {
-					toast.success(m['settings.savedRedirecting']?.() || 'Settings saved! Redirecting...');
+					toast.success(m['settings.savedRedirecting']());
 					setTimeout(() => {
 						// eslint-disable-next-line svelte/no-navigation-without-resolve -- post-auth return path read from the ?redirect query param; app-relative, not a static route id
 						goto(redirectUrl);
@@ -88,8 +88,7 @@
 		>
 			<p class="text-sm text-blue-800 dark:text-blue-200">
 				<Info class="mr-2 inline-block h-4 w-4" aria-hidden="true" />
-				{m['settings.updateToReturn']?.() ||
-					"Update your settings to continue. You'll be redirected back after saving."}
+				{m['settings.updateToReturn']()}
 			</p>
 		</div>
 	{/if}

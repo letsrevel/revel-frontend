@@ -17,23 +17,31 @@
 	} from '$lib/schemas/guestAttendance';
 	import {
 		eventpublicguestGuestTicketCheckout,
-		eventpublicguestGuestTicketPwycCheckout,
-		eventpublicticketsGetTierSeatAvailability
+		eventpublicguestGuestTicketPwycCheckout
 	} from '$lib/api';
 	import { handleGuestAttendanceError } from '$lib/utils/guestAttendance';
+	import { releaseAnonymousHolds } from '$lib/utils/seat-holds';
+	import type { SeatHoldController } from '$lib/components/tickets/seat-hold-controller.svelte';
 	import {
 		createCheckoutSession,
 		createReservationRetry,
 		CheckoutSessionError
 	} from '$lib/utils/checkout-session';
 	import type { TierSchemaWithId } from '$lib/types/tickets';
-	import type {
-		SeatAssignmentMode,
-		VenueSeatSchema,
-		SectorAvailabilitySchema,
-		TicketPurchaseItem
-	} from '$lib/api/generated/types.gen';
+	import type { SeatAssignmentMode, TicketPurchaseItem } from '$lib/api/generated/types.gen';
 	import CheckoutBillingSection from '$lib/components/tickets/CheckoutBillingSection.svelte';
+	import { bestAvailableFailureMessage } from '$lib/components/tickets/purchase-error';
+	import { isMappedBestAvailable } from '$lib/components/tickets/seat-zones';
+	import { checkoutTotal } from '$lib/components/tickets/checkout-total';
+	import { pwycSuggestions } from '$lib/components/tickets/pwyc-validation';
+	import {
+		GUEST_COMPATIBLE_STEPS,
+		guestCheckoutBody,
+		guestNamesError,
+		guestCheckoutFingerprint,
+		guestPwycCheckoutBody,
+		type GuestCheckoutArgs
+	} from './guest-checkout-payload';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import GuestTicketSuccess from './GuestTicketSuccess.svelte';
 	import GuestTicketTierInfo from './GuestTicketTierInfo.svelte';
@@ -50,6 +58,12 @@
 		open: boolean;
 		eventId: string;
 		tier: TierSchemaWithId;
+		/** All event tiers: enables whole-venue switch targets on the seat map. */
+		allTiers?: TierSchemaWithId[] | null;
+		/** Buyer confirmed a section switch: reopen this dialog on the other tier. */
+		onSwitchTier?: (tier: TierSchemaWithId) => void;
+		/** Opened BY a section switch: scroll the seating UI into view. */
+		focusSeating?: boolean;
 		/** Maximum tickets the guest can purchase (null = unlimited up to tier availability) */
 		maxQuantity?: number | null;
 		/** Event-level max tickets per user (fallback when tier's max is null) */
@@ -62,6 +76,9 @@
 		open = $bindable(),
 		eventId,
 		tier,
+		allTiers = null,
+		onSwitchTier = undefined,
+		focusSeating = false,
 		maxQuantity = null,
 		eventMaxTicketsPerUser = null,
 		onClose,
@@ -100,52 +117,52 @@
 	let billingSection: CheckoutBillingSection | undefined = $state();
 	const invoicingAvailable = $derived(!!tier.invoicing_available);
 
-	// Next steps that guests can perform without an account
-	const GUEST_COMPATIBLE_STEPS = new Set([
-		'purchase_ticket',
-		'rsvp',
-		'wait_for_event_to_open',
-		'wait_for_open_spot'
-	]);
-
 	// Validation errors
 	let fieldErrors = $state<Record<string, string>>({});
 	let guestNameError = $state('');
 
-	// Seat selection state
-	let seatAvailability = $state<SectorAvailabilitySchema | null>(null);
-	let isLoadingSeats = $state(false);
-	let seatLoadError = $state<string | null>(null);
-	let selectedSeatIds = $state<string[]>([]);
+	// Seat selection IS the caller's server-side hold (#657): the controller is
+	// instantiated by GuestTicketSeatSection and handed up for submit/close.
+	let seatController = $state<SeatHoldController | null>(null);
+	const heldSeatIds = $derived(seatController?.myHolds ?? []);
 	let seatSelectionError = $state('');
+	let accessibleRequired = $state(false);
+	let bestAvailableError = $state('');
+	// Mapped best-available tier: the buyer must name a zone — no default, even
+	// with a single zone; it rides on every hold/checkout request.
+	let selectedZoneId = $state<string | null>(null);
+	// Set when checkout took over the holds (they must NOT be released on close):
+	// online reserve consumes them; the email flow keeps them for confirmation.
+	let purchaseHandedOff = false;
 
 	// Computed values
 	const isPwyc = $derived(tier.price_type === 'pwyc');
 	const isOnlinePayment = $derived(tier.payment_method === 'online');
 
-	// Seat assignment mode
+	// Seat assignment mode ('random' was removed in seating phase 1; legacy tiers
+	// were migrated server-side to best_available or user_choice)
 	const seatAssignmentMode = $derived<SeatAssignmentMode>(tier.seat_assignment_mode ?? 'none');
 	const isUserChoiceSeat = $derived(seatAssignmentMode === 'user_choice');
-	const isRandomSeat = $derived(seatAssignmentMode === 'random');
+	const isBestAvailableSeat = $derived(seatAssignmentMode === 'best_available');
+	const mappedBestAvailable = $derived(isBestAvailableSeat && isMappedBestAvailable(tier));
+	const hasSeatSection = $derived(isUserChoiceSeat || isBestAvailableSeat);
+
+	// Running total pinned in the sticky footer (see checkout-total.ts).
+	const footerTotal = $derived(
+		checkoutTotal({
+			tier,
+			quantity,
+			heldSeatIds,
+			chart: seatController?.chartQuery.data ?? null,
+			selectedZoneId,
+			pwycAmount: formData.pwyc ?? '',
+			discountedPrice: null
+		})
+	);
 
 	// Venue/sector info for display
 	const tierVenue = $derived(tier.venue ?? null);
 	const tierSector = $derived(tier.sector ?? null);
-	// NOTE: VenueSectorSchema declares no `description` field, but the template historically
-	// rendered one (masked by an `as any` cast). Preserve that dynamic read type-safely rather
-	// than change behavior; if this branch is meant to show data, the API contract is missing it.
-	const tierSectorDescription = $derived.by(() => {
-		const s: unknown = tierSector;
-		if (s && typeof s === 'object' && 'description' in s && typeof s.description === 'string') {
-			return s.description;
-		}
-		return undefined;
-	});
-
-	// Computed: available seats from the sector
-	const availableSeats = $derived<VenueSeatSchema[]>(
-		seatAvailability?.seats?.filter((s) => s.available && s.id) ?? []
-	);
 
 	// Tier-level max tickets per user (can override event-level setting)
 	const tierMaxTicketsPerUser = $derived<number | null>(tier.max_tickets_per_user ?? null);
@@ -202,48 +219,6 @@
 		return typeof tier.pwyc_max === 'string' ? parseFloat(tier.pwyc_max) : tier.pwyc_max;
 	});
 
-	// Fetch seat availability when dialog opens with user_choice mode
-	async function fetchSeatAvailability() {
-		if (!isUserChoiceSeat || !eventId || !tier.id) return;
-
-		isLoadingSeats = true;
-		seatLoadError = null;
-
-		try {
-			const response = await eventpublicticketsGetTierSeatAvailability({
-				path: { event_id: eventId, tier_id: tier.id }
-				// No auth headers for guest users
-			});
-
-			if (response.error) {
-				seatLoadError = m['guestTicketDialog.failedToLoadSeats']();
-				console.error('Seat availability error:', response.error);
-			} else if (response.data) {
-				seatAvailability = response.data;
-			}
-		} catch (err) {
-			seatLoadError = m['guestTicketDialog.failedToLoadSeats']();
-			console.error('Seat availability fetch error:', err);
-		} finally {
-			isLoadingSeats = false;
-		}
-	}
-
-	// Toggle seat selection
-	function toggleSeat(seatId: string) {
-		// Clear error when user makes a selection
-		seatSelectionError = '';
-
-		const index = selectedSeatIds.indexOf(seatId);
-		if (index >= 0) {
-			// Deselect
-			selectedSeatIds = selectedSeatIds.filter((id) => id !== seatId);
-		} else if (selectedSeatIds.length < quantity) {
-			// Select (up to quantity)
-			selectedSeatIds = [...selectedSeatIds, seatId];
-		}
-	}
-
 	// Quantity control functions
 	function incrementQuantity() {
 		if (quantity < effectiveMaxQuantity) {
@@ -277,16 +252,31 @@
 		}
 	});
 
-	// Adjust seat selection when quantity changes (remove excess selections)
+	// Release the newest excess holds when quantity shrinks
 	$effect(() => {
-		if (selectedSeatIds.length > quantity) {
-			selectedSeatIds = selectedSeatIds.slice(0, quantity);
+		if (seatController && heldSeatIds.length > quantity) {
+			void seatController.trimTo(quantity);
 		}
 	});
 
-	// Close dialog if user becomes authenticated (e.g. token refresh after page load)
+	// Safety net: a section switch remounts this dialog via {#key} WITHOUT
+	// flipping `open`, so the close-reset effect never runs — release
+	// un-handed-off holds on teardown too (no-op after a normal close).
+	$effect(() => () => {
+		const controller = untrack(() => seatController);
+		if (controller && !purchaseHandedOff) void controller.releaseAll();
+	});
+
+	// Close dialog if user becomes authenticated (token refresh or in-tab login).
+	// IDENTITY CRITICAL: guest holds belong to the guest-cookie identity — with a
+	// Bearer token present an SDK release would target the authed user instead,
+	// so release via the raw no-auth registry path BEFORE the force-close.
 	$effect(() => {
 		if (open && authStore.isAuthenticated) {
+			if (untrack(() => seatController)) {
+				purchaseHandedOff = true; // skip the SDK release in the reset effect
+				void releaseAnonymousHolds();
+			}
 			open = false;
 			onClose();
 		}
@@ -313,12 +303,19 @@
 			reservationRetry.clear();
 			quantity = 1;
 			guestNames = [''];
-			selectedSeatIds = [];
-			seatAvailability = null;
-			seatLoadError = null;
 			seatSelectionError = '';
+			accessibleRequired = false;
+			bestAvailableError = '';
+			selectedZoneId = null;
+			// Closed without handing off to checkout: release the server holds
+			// (fire-and-forget — never block closing; they expire anyway).
+			const controller = untrack(() => seatController);
+			seatController = null;
+			if (controller && !purchaseHandedOff) void controller.releaseAll();
+			purchaseHandedOff = false;
 		} else {
 			untrack(() => {
+				purchaseHandedOff = false;
 				// Initialize guest names with primary guest name if available
 				const primaryName =
 					formData.first_name && formData.last_name
@@ -329,10 +326,6 @@
 				if (isPwyc) {
 					// Set default PWYC amount
 					formData.pwyc = minAmount().toFixed(2);
-				}
-				// Fetch seat availability if user_choice mode
-				if (isUserChoiceSeat) {
-					fetchSeatAvailability();
 				}
 			});
 		}
@@ -407,24 +400,10 @@
 		}
 	}
 
-	// Validate guest names
+	// Validate guest names (pure logic in guest-checkout-payload.ts)
 	function validateGuestNames(): boolean {
-		guestNameError = '';
-
-		// Only validate if showing guest name inputs (multi-ticket)
-		if (!showGuestNames) return true;
-
-		// Check if any guest name is empty
-		const emptyIndex = guestNames.findIndex((name) => !name.trim());
-		if (emptyIndex >= 0) {
-			guestNameError =
-				emptyIndex === 0
-					? m['guestTicketDialog.pleaseEnterYourName']()
-					: m['guestTicketDialog.pleaseEnterTicketHolderName']({ number: emptyIndex + 1 });
-			return false;
-		}
-
-		return true;
+		guestNameError = guestNamesError(guestNames, showGuestNames);
+		return guestNameError === '';
 	}
 
 	async function handleSubmit(e: SubmitEvent) {
@@ -437,9 +416,9 @@
 		// Validate billing section if open
 		if (billingSection && !billingSection.validate()) return;
 
-		// Validate seat selection for user_choice mode
-		if (isUserChoiceSeat && selectedSeatIds.length !== quantity) {
-			const remaining = quantity - selectedSeatIds.length;
+		// Validate seat selection for user_choice mode (selection = live holds)
+		if (isUserChoiceSeat && heldSeatIds.length !== quantity) {
+			const remaining = quantity - heldSeatIds.length;
 			seatSelectionError =
 				remaining === 1
 					? m['guestTicketDialog.pleaseSelectMoreSeatOne']()
@@ -447,6 +426,13 @@
 			return;
 		}
 		seatSelectionError = '';
+		bestAvailableError = '';
+
+		// Mapped best-available tier: the zone is mandatory (single-zone included).
+		if (mappedBestAvailable && !selectedZoneId) {
+			bestAvailableError = m['seatZones.selectHint']();
+			return;
+		}
 
 		isSubmitting = true;
 		errorMessage = null;
@@ -463,9 +449,11 @@
 					guest_name: guestName
 				};
 
-				// Add seat_id for user_choice mode
-				if (isUserChoiceSeat && selectedSeatIds[index]) {
-					ticket.seat_id = selectedSeatIds[index];
+				// Add seat_id for user_choice mode (the buyer's held seats). Other
+				// modes send an explicit null — best_available seats are assigned
+				// server-side from the buyer's live holds, never via seat_id.
+				if (isUserChoiceSeat && heldSeatIds[index]) {
+					ticket.seat_id = heldSeatIds[index];
 				} else {
 					ticket.seat_id = null;
 				}
@@ -476,54 +464,62 @@
 			const billingInfo = billingSection?.getBillingInfo() || undefined;
 			const pwycNumber = parseFloat(formData.pwyc || '0');
 
-			// The full purchase, serialized — the key that decides whether a
-			// resubmit may resume a held reservation or must reserve afresh.
-			const fingerprint = JSON.stringify({
+			// Fingerprint + bodies come from guest-checkout-payload.ts; the zone is
+			// set only on a mapped best-available tier (uninvited zones are 400s).
+			const checkoutArgs: GuestCheckoutArgs = {
 				email: formData.email,
-				first_name: formData.first_name,
-				last_name: formData.last_name,
+				firstName: formData.first_name,
+				lastName: formData.last_name,
 				tickets,
-				billing_info: billingInfo,
-				price_per_ticket: isPwyc ? pwycNumber : undefined
-			});
+				billingInfo,
+				accessibleRequired,
+				priceCategoryId: mappedBestAvailable ? (selectedZoneId ?? undefined) : undefined,
+				pricePerTicket: isPwyc ? pwycNumber : undefined
+			};
+			const fingerprint = guestCheckoutFingerprint(checkoutArgs);
 
 			// Retry after a partial failure (#464): an identical resubmit replays
 			// only the idempotent Stripe-session step; an expired reservation or
 			// changed parameters fall through and reserve afresh.
 			const resumedUrl = await reservationRetry.resume(fingerprint);
 			if (resumedUrl) {
+				// The resumed reservation consumed the holds when it was created.
+				purchaseHandedOff = true;
 				window.location.href = resumedUrl;
 				return;
 			}
 
-			let response;
-
-			if (isPwyc) {
-				// PWYC checkout
-				response = await eventpublicguestGuestTicketPwycCheckout({
-					path: { event_id: eventId, tier_id: tier.id },
-					body: {
-						email: formData.email,
-						first_name: formData.first_name,
-						last_name: formData.last_name,
-						tickets,
-						price_per_ticket: pwycNumber,
-						billing_info: billingInfo
-					}
-				});
-			} else {
-				// Fixed-price checkout
-				response = await eventpublicguestGuestTicketCheckout({
-					path: { event_id: eventId, tier_id: tier.id },
-					body: {
-						email: formData.email,
-						first_name: formData.first_name,
-						last_name: formData.last_name,
-						tickets,
-						billing_info: billingInfo
-					}
-				});
+			// best_available + online payment: hold the best adjacent block now —
+			// the reserve call below consumes it. Free/offline tiers skip this
+			// (purchase happens at email-confirm time, after any hold expired).
+			if (isBestAvailableSeat && isOnlinePayment && seatController) {
+				// Retry after a failed checkout: drop any stale block first so the
+				// server picks a fresh one instead of stacking holds (mirrors
+				// TicketConfirmationDialog.handleConfirm). Unconditional because in
+				// best_available mode myHolds is never seeded from the server, so a
+				// prior session's holds on this guest cookie are invisible locally.
+				await seatController.releaseAll();
+				const holdResult = await seatController.holdBestAvailable(
+					tier.id,
+					quantity,
+					accessibleRequired,
+					checkoutArgs.priceCategoryId ?? null
+				);
+				if (!holdResult.ok) {
+					bestAvailableError = bestAvailableFailureMessage(holdResult);
+					return;
+				}
 			}
+
+			const response = isPwyc
+				? await eventpublicguestGuestTicketPwycCheckout({
+						path: { event_id: eventId, tier_id: tier.id },
+						body: guestPwycCheckoutBody(checkoutArgs)
+					})
+				: await eventpublicguestGuestTicketCheckout({
+						path: { event_id: eventId, tier_id: tier.id },
+						body: guestCheckoutBody(checkoutArgs)
+					});
 
 			// Check for API error (400, 422, etc.) - client doesn't throw on HTTP errors
 			if (response.error) {
@@ -551,6 +547,10 @@
 				);
 			}
 
+			// Checkout succeeded: holds are checkout's responsibility now (online:
+			// consumed by the reserve; email flow: kept live for confirmation).
+			purchaseHandedOff = true;
+
 			// Check response type
 			if (response.data && response.data.requires_payment && response.data.reservation_id) {
 				// Online payment - reserve succeeded, now create the Stripe session
@@ -574,9 +574,13 @@
 				onSuccess?.();
 			}
 		} catch (error) {
+			// An expired reservation was released server-side — retrying starts over,
+			// so it gets its own message instead of "your tickets are reserved".
 			errorMessage =
 				error instanceof CheckoutSessionError
-					? m['guestTicketDialog.paymentStartFailed']()
+					? error.expired
+						? m['guestTicketDialog.paymentStartFailedExpired']()
+						: m['guestTicketDialog.paymentStartFailed']()
 					: handleGuestAttendanceError(error);
 		} finally {
 			isSubmitting = false;
@@ -593,18 +597,12 @@
 			}
 		}
 	}
-
-	// Quick PWYC suggestions
-	function getSuggestions(min: number, max: number | null): number[] {
-		if (max !== null) {
-			return [min, Math.round((min + max) / 2), max];
-		}
-		return [min, min * 2, min * 3];
-	}
 </script>
 
 <Dialog bind:open>
-	<DialogContent class="flex max-h-[90vh] flex-col sm:max-w-lg">
+	<DialogContent
+		class="flex max-h-[92vh] flex-col {isUserChoiceSeat ? 'sm:max-w-4xl' : 'sm:max-w-lg'}"
+	>
 		<DialogHeader class="shrink-0">
 			<DialogTitle class="flex items-center gap-2 text-xl">
 				<Ticket class="h-5 w-5 text-primary" aria-hidden="true" />
@@ -630,6 +628,7 @@
 							{quantity}
 							{effectiveMaxQuantity}
 							{isPwyc}
+							isCategoryPriced={!!tier.seat_pricing}
 							currency={tier.currency}
 							price={tier.price}
 							{isSubmitting}
@@ -659,21 +658,38 @@
 						/>
 					{/if}
 
-					<!-- Seat Selection (if applicable) -->
-					<GuestTicketSeatSection
-						{isUserChoiceSeat}
-						{isRandomSeat}
-						{tierVenue}
-						{tierSector}
-						{tierSectorDescription}
-						{isLoadingSeats}
-						{seatLoadError}
-						{availableSeats}
-						{selectedSeatIds}
-						{quantity}
-						{seatSelectionError}
-						onToggle={toggleSeat}
-					/>
+					<!-- Seat Selection: only mounted for seated tiers (the section
+					     instantiates the seat-hold controller + queries on mount).
+					     A section switch remounts this dialog on the new tier; the
+					     old instance's close-reset releases the held seats. -->
+					{#if hasSeatSection}
+						<GuestTicketSeatSection
+							{isUserChoiceSeat}
+							{isBestAvailableSeat}
+							{isOnlinePayment}
+							{tierVenue}
+							{tierSector}
+							{eventId}
+							{quantity}
+							maxQuantity={effectiveMaxQuantity}
+							onQuantityAutoGrow={(next) => {
+								if (next > quantity && next <= effectiveMaxQuantity) quantity = next;
+							}}
+							{isSubmitting}
+							{seatSelectionError}
+							{bestAvailableError}
+							{accessibleRequired}
+							onAccessibleRequiredChange={(value) => (accessibleRequired = value)}
+							{selectedZoneId}
+							onZoneChange={(zoneId) => (selectedZoneId = zoneId)}
+							{allTiers}
+							{focusSeating}
+							{onSwitchTier}
+							onController={(controller) => (seatController = controller)}
+							seatPricing={tier.seat_pricing ?? null}
+							currency={tier.currency}
+						/>
+					{/if}
 
 					<!-- PWYC Amount (if applicable) -->
 					{#if isPwyc}
@@ -683,7 +699,7 @@
 							currency={tier.currency}
 							minAmount={minAmount()}
 							maxAmount={maxAmount()}
-							suggestions={getSuggestions(minAmount(), maxAmount())}
+							suggestions={pwycSuggestions(minAmount(), maxAmount())}
 							{isSubmitting}
 							onKeydown={handleKeydown}
 							onBlur={handleBlur}
@@ -702,6 +718,7 @@
 							price={tier.price}
 							{isPwyc}
 							pwycAmount={isPwyc ? formData.pwyc : undefined}
+							priceCategoryId={mappedBestAvailable ? selectedZoneId : null}
 							isAuthenticated={false}
 							disabled={isSubmitting}
 						/>
@@ -718,7 +735,13 @@
 					{/if}
 				</div>
 
-				<GuestTicketFooter {isSubmitting} {onClose} />
+				<GuestTicketFooter
+					{isSubmitting}
+					{onClose}
+					total={footerTotal}
+					currency={tier.currency}
+					isFree={tier.payment_method === 'free'}
+				/>
 			</form>
 		{/if}
 	</DialogContent>
