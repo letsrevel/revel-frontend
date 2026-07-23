@@ -148,6 +148,9 @@
 	let showGuestTicketDialog = $state(false);
 	let showVenueOverview = $state(false);
 	let selectedTierForGuest = $state<TierSchemaWithId | null>(null);
+	// The next guest dialog was opened BY a section switch: it should scroll
+	// its seating UI into view (the keyed remount lands at the top).
+	let guestFocusSeating = $state(false);
 	let preSelectedTier = $state<TierSchemaWithId | null>(null);
 
 	// Map-first entry point (#679): only when a purchasable tier sells a venue
@@ -187,11 +190,13 @@
 			selectedTierForGuest = tier;
 		}
 		showGuestTicketDialog = true;
+		guestFocusSeating = false;
 	}
 
 	function closeGuestTicketDialog() {
 		showGuestTicketDialog = false;
 		selectedTierForGuest = null;
+		guestFocusSeating = false;
 	}
 
 	async function handleGuestAttendanceSuccess() {
@@ -672,9 +677,11 @@
 			eventMaxTicketsPerUser={event.max_tickets_per_user}
 			onClose={closeGuestTicketDialog}
 			onSuccess={handleGuestAttendanceSuccess}
+			focusSeating={guestFocusSeating}
 			onSwitchTier={(tier) => {
 				selectedTierForGuest = tier;
 				showGuestTicketDialog = true;
+				guestFocusSeating = true;
 			}}
 		/>
 	{/key}

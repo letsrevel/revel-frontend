@@ -158,6 +158,9 @@
 	let selectedTier = $state<TierSchemaWithId | null>(null);
 	let isProcessing = $state(false);
 	let wasPreSelected = $state(false);
+	// The next confirmation dialog was opened BY a section switch: it should
+	// scroll its seating UI into view (the keyed remount lands at the top).
+	let focusSeating = $state(false);
 
 	// Pre-selection: when modal opens with a preSelectedTier, jump straight to confirmation
 	$effect(() => {
@@ -212,12 +215,14 @@
 	function handleTierClick(tier: TierSchemaWithId): void {
 		selectedTier = tier;
 		showConfirmation = true;
+		focusSeating = false;
 	}
 
 	// Close confirmation dialog
 	function closeConfirmation(): void {
 		showConfirmation = false;
 		selectedTier = null;
+		focusSeating = false;
 		// If user came from inline TierCard, close the entire modal
 		// (they already see the tier list on the page — showing the modal's tier list is redundant)
 		if (wasPreSelected) {
@@ -419,9 +424,11 @@
 			{initialDiscountCode}
 			allTiers={visibleTiers}
 			{tierRemainingTickets}
+			{focusSeating}
 			onSwitchTier={(tier) => {
 				selectedTier = tier;
 				showConfirmation = true;
+				focusSeating = true;
 			}}
 		/>
 	{/key}

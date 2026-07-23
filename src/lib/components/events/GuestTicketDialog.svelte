@@ -62,6 +62,8 @@
 		allTiers?: TierSchemaWithId[] | null;
 		/** Buyer confirmed a section switch: reopen this dialog on the other tier. */
 		onSwitchTier?: (tier: TierSchemaWithId) => void;
+		/** Opened BY a section switch: scroll the seating UI into view. */
+		focusSeating?: boolean;
 		/** Maximum tickets the guest can purchase (null = unlimited up to tier availability) */
 		maxQuantity?: number | null;
 		/** Event-level max tickets per user (fallback when tier's max is null) */
@@ -76,6 +78,7 @@
 		tier,
 		allTiers = null,
 		onSwitchTier = undefined,
+		focusSeating = false,
 		maxQuantity = null,
 		eventMaxTicketsPerUser = null,
 		onClose,
@@ -656,7 +659,9 @@
 					{/if}
 
 					<!-- Seat Selection: only mounted for seated tiers (the section
-					     instantiates the seat-hold controller + queries on mount) -->
+					     instantiates the seat-hold controller + queries on mount).
+					     A section switch remounts this dialog on the new tier; the
+					     old instance's close-reset releases the held seats. -->
 					{#if hasSeatSection}
 						<GuestTicketSeatSection
 							{isUserChoiceSeat}
@@ -678,13 +683,8 @@
 							{selectedZoneId}
 							onZoneChange={(zoneId) => (selectedZoneId = zoneId)}
 							{allTiers}
-							onSwitchTier={onSwitchTier
-								? (nextTier) => {
-										// The switch remounts this dialog on the new tier; the old
-										// instance's close-reset releases the held seats.
-										onSwitchTier(nextTier);
-									}
-								: undefined}
+							{focusSeating}
+							{onSwitchTier}
 							onController={(controller) => (seatController = controller)}
 							seatPricing={tier.seat_pricing ?? null}
 							currency={tier.currency}

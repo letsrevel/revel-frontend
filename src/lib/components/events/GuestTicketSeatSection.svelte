@@ -79,6 +79,10 @@
 		allTiers?: TierSchemaWithId[] | null;
 		/** Buyer confirmed the switch prompt: swap to this tier's dialog. */
 		onSwitchTier?: (tier: TierSchemaWithId) => void;
+		/** Dialog opened via a section switch: scroll the seating UI into view
+		 * once it renders — the keyed remount resets the dialog's scroll to the
+		 * top, hiding the sector the buyer just picked. */
+		focusSeating?: boolean;
 		/** Hands the seat-hold controller up to the dialog (submit/close lifecycle). */
 		onController: (controller: SeatHoldController) => void;
 		/** Server-resolved zone→price legend (category-priced tiers, either mode). */
@@ -106,6 +110,7 @@
 		onZoneChange = undefined,
 		allTiers = null,
 		onSwitchTier = undefined,
+		focusSeating = false,
 		onController,
 		seatPricing = null,
 		currency = null
@@ -275,6 +280,29 @@
 
 	const heldCount = $derived(controller?.myHolds.length ?? 0);
 
+	// After a section switch the dialog remounts scrolled to the top; once the
+	// seat UI has actually rendered, bring it into view so the buyer lands on
+	// the sector they just picked instead of the tier header.
+	let seatingRootEl = $state<HTMLDivElement>();
+	let focusSeatingDone = false;
+	$effect(() => {
+		if (!focusSeating || focusSeatingDone || !seatingRootEl) return;
+		if (isLoadingSeats || seatViews.length === 0) return;
+		focusSeatingDone = true;
+		const el = seatingRootEl;
+		// The dialog is still mounting/animating when this first passes, and
+		// bits-ui's open autofocus scrolls the content back to the top — so a
+		// single post-tick scroll gets undone. Re-assert across the opening
+		// frames instead; the loop is short and idempotent, and the last
+		// assert (after the dialog settles) wins.
+		const started = performance.now();
+		const assertScroll = () => {
+			el.scrollIntoView({ block: 'start' });
+			if (performance.now() - started < 400) requestAnimationFrame(assertScroll);
+		};
+		requestAnimationFrame(assertScroll);
+	});
+
 	function handleToggle(seatId: string): void {
 		conflictMessage = '';
 		void controller?.toggleSeat(seatId);
@@ -359,7 +387,7 @@
 
 		{#if isUserChoiceSeat}
 			<!-- Seat selection UI: selection state IS the server hold -->
-			<div class="space-y-2">
+			<div bind:this={seatingRootEl} class="space-y-2">
 				<div class="flex items-center justify-between">
 					<span class="text-sm font-medium leading-none"
 						>{m['guestTicketDialog.selectYourSeat']()}</span

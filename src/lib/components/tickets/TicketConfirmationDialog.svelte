@@ -61,6 +61,8 @@
 		tierRemainingTickets?: import('$lib/api/generated/types.gen').TierRemainingTicketsSchema[];
 		/** Buyer confirmed a section switch: swap this dialog to the other tier. */
 		onSwitchTier?: (tier: TierSchemaWithId) => void;
+		/** Opened BY a section switch: scroll the seating UI into view. */
+		focusSeating?: boolean;
 	}
 
 	let {
@@ -77,7 +79,8 @@
 		initialDiscountCode = '',
 		allTiers = null,
 		tierRemainingTickets = undefined,
-		onSwitchTier = undefined
+		onSwitchTier = undefined,
+		focusSeating = false
 	}: Props = $props();
 
 	// Quantity state
@@ -531,6 +534,7 @@
 				{allTiers}
 				{tierRemainingTickets}
 				{onSwitchTier}
+				{focusSeating}
 				onController={(controller) => (seatController = controller)}
 				seatPricing={tier.seat_pricing ?? null}
 				currency={tier.currency}
