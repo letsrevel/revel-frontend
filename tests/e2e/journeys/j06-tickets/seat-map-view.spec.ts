@@ -170,6 +170,20 @@ test.describe('J6 seat map view @p2', () => {
 			const initial = await surface.getAttribute('transform');
 			expect(initial).toBe('translate(0 0) scale(1)');
 
+			// Fit-all regression guard: the svg must FILL its fixed-height frame
+			// (h-full chain) so `meet` letterboxes the whole chart into view —
+			// without it the svg takes its intrinsic aspect-ratio height and the
+			// frame's overflow-hidden clips the bottom of the venue.
+			const fit = await seatMap.evaluate((svg) => {
+				const frame = svg.closest('div.overflow-hidden');
+				if (!frame) return null;
+				const svgRect = svg.getBoundingClientRect();
+				const frameRect = frame.getBoundingClientRect();
+				return { svgH: svgRect.height, frameH: frameRect.height };
+			});
+			if (!fit) throw new Error('Seat map frame not found');
+			expect(Math.abs(fit.svgH - fit.frameH)).toBeLessThan(4);
+
 			// Mouse-drag pan (works at any scale): drag FROM the B2 seat element —
 			// dragging from the svg's box center can land on the dialog overlay
 			// (the map is inside a scrollable dialog, so the geometric center may

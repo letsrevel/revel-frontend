@@ -280,7 +280,7 @@ function standingSectorLayout(sector: ChartSectorSchema): SectorLayout {
 }
 
 /** World-space AABB of a sector's local [0,w]×[0,h] frame under its transform. */
-function worldBounds(laid: SectorLayout): {
+export function worldBounds(laid: SectorLayout): {
 	minX: number;
 	minY: number;
 	maxX: number;

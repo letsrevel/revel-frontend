@@ -22,6 +22,55 @@ const MIN_SCALE = 0.5;
 const MAX_SCALE = 5;
 const WHEEL_HINT_MS = 1600;
 
+/** Readability floor for the DEFAULT view: a seat cell rendered smaller than
+    this many px is unreadable, so the home view zooms past fit-all instead.
+    Deliberately small — fitting the whole chart in frame is strongly
+    preferred; only genuinely huge venues overflow and need panning. */
+export const MIN_HOME_CELL_PX = 12;
+
+export interface SeatMapViewTransform {
+	scale: number;
+	tx: number;
+	ty: number;
+}
+
+const BASE_VIEW: SeatMapViewTransform = { scale: 1, tx: 0, ty: 0 };
+
+/**
+ * Default ("home") view for a freshly rendered map: fit-all at base scale —
+ * the svg letterboxes its whole viewBox into the box (`meet`) — unless that
+ * would render seat cells below `minCellPx`. Then zoom just enough to hit the
+ * floor, centred on `focus` (the sector the buyer is here to buy, in canvas
+ * coordinates), accepting overflow + panning.
+ */
+export function homeViewFor(args: {
+	/** Rendered CSS box of the map (px). */
+	boxW: number;
+	boxH: number;
+	/** viewBox dimensions (canvas units). */
+	contentW: number;
+	contentH: number;
+	/** Canvas units per seat cell (SeatMap's CELL). */
+	cell: number;
+	minCellPx?: number;
+	/** Canvas-space point to centre when zooming past fit-all. */
+	focus?: { x: number; y: number } | null;
+}): SeatMapViewTransform {
+	const { boxW, boxH, contentW, contentH, cell, minCellPx = MIN_HOME_CELL_PX, focus = null } = args;
+	if (boxW <= 0 || boxH <= 0 || contentW <= 0 || contentH <= 0 || cell <= 0) {
+		return BASE_VIEW;
+	}
+	// px per canvas unit once `meet` letterboxes the viewBox into the box.
+	const k = Math.min(boxW / contentW, boxH / contentH);
+	const renderedCell = cell * k;
+	if (renderedCell >= minCellPx) return BASE_VIEW;
+	const scale = Math.min(minCellPx / renderedCell, MAX_SCALE);
+	const cx = focus?.x ?? contentW / 2;
+	const cy = focus?.y ?? contentH / 2;
+	// Centre the focus point: canvas centre maps to the box centre (xMidYMid).
+	return { scale, tx: contentW / 2 - cx * scale, ty: contentH / 2 - cy * scale };
+}
+
 export interface SeatMapViewportOptions {
 	getSvg: () => SVGSVGElement | undefined;
 	getContentW: () => number;
@@ -37,6 +86,10 @@ export class SeatMapViewport {
 
 	/** Set once a drag/pinch moved far enough that the release-click must be ignored. */
 	suppressClick = false;
+
+	/** The default view resetView returns to — fit-all, or the readability
+	    zoom homeViewFor computed for an oversized chart. */
+	home: SeatMapViewTransform = { scale: 1, tx: 0, ty: 0 };
 
 	#opts: SeatMapViewportOptions;
 	#pointers = new SvelteMap<number, { x: number; y: number }>();
@@ -63,10 +116,15 @@ export class SeatMapViewport {
 		this.zoomAt(this.#opts.getContentW() / 2, this.#opts.getContentH() / 2, factor);
 	};
 
+	/** Replace the home view (does not move the current view). */
+	setHome(view: SeatMapViewTransform): void {
+		this.home = view;
+	}
+
 	resetView = (): void => {
-		this.scale = 1;
-		this.tx = 0;
-		this.ty = 0;
+		this.scale = this.home.scale;
+		this.tx = this.home.tx;
+		this.ty = this.home.ty;
 	};
 
 	#clientToView(clientX: number, clientY: number): { x: number; y: number } | null {

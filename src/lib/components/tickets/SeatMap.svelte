@@ -23,14 +23,14 @@
 	import type { SectorSeatConfig, SectorTarget } from '$lib/components/events/venue-overview';
 	import SeatMapGhostSector from './SeatMapGhostSector.svelte';
 	import SeatMapSectorTarget from './SeatMapSectorTarget.svelte';
-	import { SeatMapViewport } from './seat-map-viewport.svelte';
-	import { computeSeatMapLayout, type SeatPoint, type SectorLayout } from './seat-map-layout';
+	import { homeViewFor, SeatMapViewport } from './seat-map-viewport.svelte';
 	import {
-		applyTransform,
-		sectorWorldCenter,
-		stageDirectionAngle,
-		worldAngleFromUp
-	} from './sector-transform';
+		computeSeatMapLayout,
+		worldBounds,
+		type SeatPoint,
+		type SectorLayout
+	} from './seat-map-layout';
+	import { sectorWorldCenter, stageDirectionAngle, worldAngleFromUp } from './sector-transform';
 	import { rowsFromSeatViews, seatAriaLabel, type SeatView } from './seating-view';
 
 	interface Props {
@@ -183,24 +183,6 @@
 
 	const stageLabel = m['seatSelector.stage']();
 
-	/** World-space AABB of a sector's local frame under its transform (units). */
-	function worldAABB(sector: SectorLayout) {
-		const corners: Array<{ x: number; y: number }> = [
-			{ x: 0, y: 0 },
-			{ x: sector.width, y: 0 },
-			{ x: sector.width, y: sector.height },
-			{ x: 0, y: sector.height }
-		].map((corner) => applyTransform(corner, sector.transform));
-		const xs = corners.map((c) => c.x);
-		const ys = corners.map((c) => c.y);
-		return {
-			minX: Math.min(...xs),
-			minY: Math.min(...ys),
-			maxX: Math.max(...xs),
-			maxY: Math.max(...ys)
-		};
-	}
-
 	/** Map world units to canvas pixels (full-map placement). */
 	function canvasX(worldX: number): number {
 		return PAD + (worldX - layout.minX) * CELL;
@@ -317,6 +299,44 @@
 		getSvg: () => svgEl,
 		getContentW: () => contentW,
 		getContentH: () => contentH
+	});
+
+	// Rendered CSS box of the map (the wrapper is h-full, so this is the
+	// host's fixed-height frame) — needed to decide whether fit-all keeps
+	// seats readable (homeViewFor).
+	let boxW = $state(0);
+	let boxH = $state(0);
+
+	/** Canvas-space centre of the sector the buyer is here to buy — the focus
+	    when the home view must zoom past fit-all. activeSectorId marks it in
+	    plain venue scope; in overview mode it's the seat-selectable sector. */
+	const focusCenter = $derived.by(() => {
+		const focusId = activeSectorId ?? interactiveSectors?.[0]?.sectorId ?? null;
+		if (!focusId || onlySector) return null;
+		const sector = layout.sectors.find((candidate) => candidate.id === focusId);
+		if (!sector) return null;
+		const aabb = worldBounds(sector);
+		return {
+			x: canvasX((aabb.minX + aabb.maxX) / 2),
+			y: canvasY((aabb.minY + aabb.maxY) / 2)
+		};
+	});
+
+	// Keep the home view current (it's also the Reset target), but only SNAP
+	// the live view to it when the content itself changes — first measure, or
+	// a scope/floor switch swapping the chart — never on a mere resize, which
+	// must not steal the user's pan/zoom.
+	let contentKey = '';
+	$effect(() => {
+		const key = `${contentW}x${contentH}`;
+		viewport.setHome(
+			homeViewFor({ boxW, boxH, contentW, contentH, cell: CELL, focus: focusCenter })
+		);
+		if (boxW === 0 || boxH === 0) return;
+		if (key !== contentKey) {
+			contentKey = key;
+			viewport.resetView();
+		}
 	});
 
 	// --- standing zones -----------------------------------------------------
@@ -539,7 +559,10 @@
 	</g>
 {/snippet}
 
-<div class="relative">
+<!-- h-full: the svg must FILL the host's fixed-height frame so the viewBox
+     letterboxes into it (`meet`) — without it the svg takes its intrinsic
+     aspect-ratio height and the frame's overflow-hidden clips the chart. -->
+<div class="relative h-full" bind:clientWidth={boxW} bind:clientHeight={boxH}>
 	<svg
 		bind:this={svgEl}
 		use:viewport.wheelZoom
@@ -612,7 +635,7 @@
 				{/if}
 
 				{#each layout.sectors as sector (sector.id)}
-					{@const aabb = worldAABB(sector)}
+					{@const aabb = worldBounds(sector)}
 					{@const seatSelectable = overview && seatConfigById.has(sector.id)}
 					{@const target = overview && !seatSelectable ? targetsById.get(sector.id) : undefined}
 					{@const ghost = overview
