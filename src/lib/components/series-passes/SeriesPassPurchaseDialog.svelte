@@ -7,6 +7,7 @@
 		SeriesPassQuoteSchema,
 		SeriesPassCheckoutResponseSchema
 	} from '$lib/api/generated/types.gen';
+	import type { TicketPaymentMethod } from '$lib/utils/api-type-overrides';
 	import { seriespassCheckoutSeriesPass } from '$lib/api';
 	import { createCheckoutSession, CheckoutSessionError } from '$lib/utils/checkout-session';
 	import { invalidateAfterPurchase } from '$lib/queries/series-passes';
@@ -35,8 +36,12 @@
 
 	const queryClient = useQueryClient();
 
-	const isFree = $derived(pass.payment_method === 'free' || parseFloat(quote.price) === 0);
-	const isOnline = $derived(pass.payment_method === 'online' && !isFree);
+	// `payment_method` is generated as the (wrong, too-narrow) subscription
+	// `PaymentMethod` enum due to a BE OpenAPI schema-name collision — see
+	// `$lib/utils/api-type-overrides`.
+	const passPaymentMethod = $derived(pass.payment_method as unknown as TicketPaymentMethod);
+	const isFree = $derived(passPaymentMethod === 'free' || parseFloat(quote.price) === 0);
+	const isOnline = $derived(passPaymentMethod === 'online' && !isFree);
 
 	// Two-step online checkout (#464): reserve holds the pass and returns a
 	// `reservation_id`; a second idempotent call creates the Stripe session.

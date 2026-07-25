@@ -345,10 +345,15 @@
 		}
 
 		// Build the data object, omitting null values for pwyc fields
+		//
+		// `payment_method` is generated as the (wrong, too-narrow) subscription
+		// `PaymentMethod` enum due to a BE OpenAPI schema-name collision — see
+		// `$lib/utils/api-type-overrides`. All 4 `paymentMethod` values below are
+		// what the backend actually accepts for a ticket tier.
 		const baseData: TicketTierCreateSchema = {
 			name: name.trim(),
 			description: description.trim() || null,
-			payment_method: paymentMethod,
+			payment_method: paymentMethod as unknown as TicketTierCreateSchema['payment_method'],
 			price_type: priceType,
 			price: finalPrice,
 			currency: currency as TicketTierCreateSchema['currency'],
