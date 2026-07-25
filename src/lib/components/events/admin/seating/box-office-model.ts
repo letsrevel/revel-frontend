@@ -23,11 +23,6 @@ import type {
 import type { SeatStatus } from '$lib/components/tickets/seating-view';
 import * as m from '$lib/paraglide/messages.js';
 
-// `BoxOfficeSellRequest.payment_method` is generated as the (wrong, too-narrow)
-// subscription `PaymentMethod` enum due to a BE OpenAPI schema-name collision —
-// see `$lib/utils/api-type-overrides` for details. 'at_the_door' | 'free' are
-// exactly what the backend expects for a door sale.
-
 /** Payment methods a box-office sale may use (spec §2). */
 export type BoxOfficePaymentMethod = 'at_the_door' | 'free';
 
@@ -82,7 +77,7 @@ export function buildSellRequest(args: BuildSellArgs): BoxOfficeSellRequest | nu
 	const body: BoxOfficeSellRequest = {
 		seat_id: args.seatId,
 		tier_id: args.tierId,
-		payment_method: args.paymentMethod as unknown as BoxOfficeSellRequest['payment_method'],
+		payment_method: args.paymentMethod,
 		email
 	};
 

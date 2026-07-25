@@ -9,10 +9,10 @@
 	import type {
 		CancellationBlockReason,
 		CancellationPreviewSchema,
+		PaymentMethod,
 		RefundWindowSchema,
 		TicketCancellationResponseSchema
 	} from '$lib/api/generated/types.gen';
-	import type { TicketPaymentMethod } from '$lib/utils/api-type-overrides';
 	import {
 		Dialog,
 		DialogContent,
@@ -128,12 +128,6 @@
 	}));
 
 	const preview = $derived(previewQuery.data);
-	// `payment_method` is generated as the (wrong, too-narrow) subscription
-	// `PaymentMethod` enum due to a BE OpenAPI schema-name collision — see
-	// `$lib/utils/api-type-overrides`.
-	const previewPaymentMethod = $derived(
-		preview?.payment_method as unknown as TicketPaymentMethod | undefined
-	);
 	// Read both properties unconditionally so TanStack tracks them both —
 	// `||` short-circuiting would leave `isFetching` untracked while
 	// `isLoading` is true (tracked-properties notification gotcha).
@@ -168,10 +162,7 @@
 		return formatDateTime(iso);
 	}
 
-	function paymentMethodNote(
-		method: TicketPaymentMethod | undefined,
-		hasRefund: boolean
-	): string | null {
+	function paymentMethodNote(method: PaymentMethod | undefined, hasRefund: boolean): string | null {
 		if (!method) return null;
 		switch (method) {
 			// online/offline notes describe how a refund is delivered — they
@@ -232,7 +223,7 @@
 	const showExpiredWindowNote = $derived(
 		!!preview &&
 			refundAmountNum === 0 &&
-			previewPaymentMethod !== 'free' &&
+			preview.payment_method !== 'free' &&
 			lastExpiredWindow !== null
 	);
 
@@ -291,7 +282,7 @@
 							<span class="text-3xl font-bold text-foreground">
 								{formatPrice(preview.refund_amount, preview.currency, '')}
 							</span>
-						{:else if previewPaymentMethod === 'free'}
+						{:else if preview.payment_method === 'free'}
 							<span class="text-base text-muted-foreground">
 								{m['cancelTicket.refundFreeTicket']()}
 							</span>
@@ -326,9 +317,9 @@
 						</p>
 					{/if}
 
-					{#if paymentMethodNote(previewPaymentMethod, refundAmountNum > 0)}
+					{#if paymentMethodNote(preview.payment_method, refundAmountNum > 0)}
 						<p class="mt-3 text-xs text-muted-foreground">
-							{paymentMethodNote(previewPaymentMethod, refundAmountNum > 0)}
+							{paymentMethodNote(preview.payment_method, refundAmountNum > 0)}
 						</p>
 					{/if}
 				</div>

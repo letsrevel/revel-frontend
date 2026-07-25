@@ -7,7 +7,6 @@
 		seriespassListMySeriesPasses
 	} from '$lib/api/generated/sdk.gen';
 	import type { PaymentMethod, TicketStatus } from '$lib/api/generated/types.gen';
-	import type { TicketPaymentMethod } from '$lib/utils/api-type-overrides';
 	import TicketListCard from '$lib/components/tickets/TicketListCard.svelte';
 	import HeldPassCard from '$lib/components/series-passes/HeldPassCard.svelte';
 	import { seriesPassQueryKeys } from '$lib/queries/series-passes';
@@ -32,11 +31,7 @@
 		{ label: m['dashboard.tickets.status_cancelled'](), value: 'cancelled' }
 	];
 
-	// `tier__payment_method` is generated as the (wrong, too-narrow) subscription
-	// `PaymentMethod` enum due to a BE OpenAPI schema-name collision — see
-	// `$lib/utils/api-type-overrides`. All 4 values below are what the backend
-	// actually filters on.
-	const paymentMethodFilters: Array<{ label: string; value: TicketPaymentMethod | null }> = [
+	const paymentMethodFilters: Array<{ label: string; value: PaymentMethod | null }> = [
 		{ label: m['dashboard.tickets.payment_all'](), value: null },
 		{ label: m['dashboard.tickets.payment_free'](), value: 'free' },
 		{ label: m['dashboard.tickets.payment_paid'](), value: 'online' },
@@ -46,7 +41,7 @@
 
 	// Active filters
 	let statusFilter = $state<TicketStatus | null>(null);
-	let paymentMethodFilter = $state<TicketPaymentMethod | null>(null);
+	let paymentMethodFilter = $state<PaymentMethod | null>(null);
 	let searchQuery = $state('');
 	let includePast = $state(false);
 
@@ -70,8 +65,7 @@
 				headers: { Authorization: `Bearer ${accessToken}` },
 				query: {
 					status: statusFilter,
-					tier__payment_method:
-						(paymentMethodFilter as unknown as PaymentMethod | null) || undefined,
+					tier__payment_method: paymentMethodFilter || undefined,
 					search: debouncedSearch.value || undefined,
 					include_past: includePast,
 					page: currentPage,
@@ -123,7 +117,7 @@
 		navigateToPage(1); // Reset to first page when filter changes
 	}
 
-	function applyPaymentMethodFilter(method: TicketPaymentMethod | null) {
+	function applyPaymentMethodFilter(method: PaymentMethod | null) {
 		paymentMethodFilter = method;
 		navigateToPage(1);
 	}
@@ -145,7 +139,7 @@
 		return statusFilter === status;
 	}
 
-	function isPaymentMethodFilterActive(method: TicketPaymentMethod | null): boolean {
+	function isPaymentMethodFilterActive(method: PaymentMethod | null): boolean {
 		return paymentMethodFilter === method;
 	}
 </script>

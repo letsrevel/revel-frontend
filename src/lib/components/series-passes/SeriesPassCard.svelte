@@ -1,7 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
 	import type { SeriesPassSchema, SeriesPassQuoteSchema } from '$lib/api/generated/types.gen';
-	import type { TicketPaymentMethod } from '$lib/utils/api-type-overrides';
 	import { seriespassGetSeriesPassQuote } from '$lib/api';
 	import { seriesPassQueryKeys } from '$lib/queries/series-passes';
 	import { createQuery } from '@tanstack/svelte-query';
@@ -38,11 +37,6 @@
 	}));
 
 	const quote = $derived<SeriesPassQuoteSchema | undefined>(quoteQuery.data);
-
-	// `payment_method` is generated as the (wrong, too-narrow) subscription
-	// `PaymentMethod` enum due to a BE OpenAPI schema-name collision — see
-	// `$lib/utils/api-type-overrides`.
-	const passPaymentMethod = $derived(pass.payment_method as unknown as TicketPaymentMethod);
 
 	// Show the season price struck through when the pro-rata discount kicked in.
 	const isDiscounted = $derived(
@@ -109,12 +103,12 @@
 	{/if}
 
 	<!-- Payment method hint -->
-	{#if passPaymentMethod === 'offline' || passPaymentMethod === 'at_the_door'}
+	{#if pass.payment_method === 'offline' || pass.payment_method === 'at_the_door'}
 		<p class="flex items-center gap-1.5 text-xs text-muted-foreground">
 			<HandCoins class="h-3.5 w-3.5" aria-hidden="true" />
 			{m['seriesPass.payOffline']()}
 		</p>
-	{:else if passPaymentMethod === 'online'}
+	{:else if pass.payment_method === 'online'}
 		<p class="flex items-center gap-1.5 text-xs text-muted-foreground">
 			<CreditCard class="h-3.5 w-3.5" aria-hidden="true" />
 			{m['seriesPass.payOnline']()}

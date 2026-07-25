@@ -7,13 +7,8 @@ import {
 	eventadminticketsGetEventRevenue
 } from '$lib/api';
 import { parseTicketOrderBy } from '$lib/components/tickets/ticket-sort';
-import type {
-	AdminTicketSchema,
-	EventFinancialsSchema,
-	PaymentMethod
-} from '$lib/api/generated/types.gen';
+import type { AdminTicketSchema, EventFinancialsSchema } from '$lib/api/generated/types.gen';
 import { log } from '$lib/server/logger';
-import type { TicketPaymentMethod } from '$lib/utils/api-type-overrides';
 
 export const load: PageServerLoad = async ({ parent, params, locals, fetch, url }) => {
 	const parentData = await parent();
@@ -83,11 +78,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 		.optional()
 		.catch(undefined)
 		.parse(url.searchParams.get('status') || undefined);
-	// `tier__payment_method` is generated as the (wrong, too-narrow) subscription
-	// `PaymentMethod` enum due to a BE OpenAPI schema-name collision — see
-	// `$lib/utils/api-type-overrides`. All 4 values below are what the backend
-	// actually filters on.
-	const paymentMethod: TicketPaymentMethod | undefined = z
+	const paymentMethod = z
 		.enum(['online', 'offline', 'at_the_door', 'free'])
 		.optional()
 		.catch(undefined)
@@ -134,7 +125,7 @@ export const load: PageServerLoad = async ({ parent, params, locals, fetch, url 
 			path: { event_id: params.event_id },
 			query: {
 				status,
-				tier__payment_method: paymentMethod as unknown as PaymentMethod | undefined,
+				tier__payment_method: paymentMethod,
 				source,
 				search,
 				order_by: orderBy,

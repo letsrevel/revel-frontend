@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { EventUserEligibility, EventTokenSchema } from '$lib/api/generated/types.gen';
-	import type { EventReasonCode } from '$lib/utils/api-type-overrides';
 	import { cn } from '$lib/utils/cn';
 	import {
 		AlertCircle,
@@ -53,19 +52,12 @@
 	const SPOTS_RESERVED_REASON = 'Spots are currently reserved for waitlist members.';
 	const WAITING_FOR_BATCH_REASON = 'You are on the waitlist. Waiting for your turn.';
 
-	// `reason_code` is generated as the (wrong, too-narrow) membership-eligibility
-	// `ReasonCode` enum due to a BE OpenAPI schema-name collision — see
-	// `$lib/utils/api-type-overrides`. The event-eligibility values below are
-	// exactly what this endpoint actually returns.
-	const reasonCode = $derived(
-		eligibility.reason_code as unknown as EventReasonCode | null | undefined
-	);
-
 	const isSpotsReserved = $derived(
-		reasonCode === 'spots_reserved_for_waitlist' || eligibility.reason === SPOTS_RESERVED_REASON
+		eligibility.reason_code === 'spots_reserved_for_waitlist' ||
+			eligibility.reason === SPOTS_RESERVED_REASON
 	);
 	const isWaitingForBatch = $derived(
-		reasonCode === 'on_waitlist_waiting_for_batch' ||
+		eligibility.reason_code === 'on_waitlist_waiting_for_batch' ||
 			eligibility.reason === WAITING_FOR_BATCH_REASON
 	);
 
