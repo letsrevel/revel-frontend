@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { toast } from 'svelte-sonner';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		organizationadminsubscriptionsListSubscriptions,
@@ -117,7 +118,7 @@
 				drawerSubId = id;
 			}, DIALOG_CLOSE_MS);
 		},
-		onError: (err: Error) => alert(`Failed to create subscription: ${err.message}`)
+		onError: (err: Error) => toast.error(err.message)
 	}));
 </script>
 
