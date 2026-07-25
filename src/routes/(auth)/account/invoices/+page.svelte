@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { formatMoney } from '$lib/utils/format';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -110,13 +111,7 @@
 
 	// ─── Helpers ─────────────────────────────────────────────────────
 	function formatCurrency(amount: string, currency: string): string {
-		try {
-			return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(
-				parseFloat(amount)
-			);
-		} catch {
-			return `${amount} ${currency.toUpperCase()}`;
-		}
+		return formatMoney(amount, currency);
 	}
 
 	function statusColor(status: string): string {

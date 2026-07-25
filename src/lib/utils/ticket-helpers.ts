@@ -1,4 +1,5 @@
 import * as m from '$lib/paraglide/messages.js';
+import { formatMoney } from '$lib/utils/format';
 import { getUserDisplayName } from '$lib/utils/user-display';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -119,8 +120,7 @@ export function getPwycWarning(ticket: any, value: string): string | null {
 	const max = ticket.tier?.pwyc_max ? parseFloat(ticket.tier.pwyc_max) : null;
 
 	const currency = ticket.tier?.currency?.toUpperCase() || 'EUR';
-	const fmt = (v: number) =>
-		new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(v);
+	const fmt = (v: number) => formatMoney(v, currency);
 
 	if (min !== null && max !== null && (num < min || num > max)) {
 		return `This amount is outside the suggested range (${fmt(min)} \u2013 ${fmt(max)})`;

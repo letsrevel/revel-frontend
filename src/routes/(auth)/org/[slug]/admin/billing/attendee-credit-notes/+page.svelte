@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { formatMoney } from '$lib/utils/format';
 	import * as m from '$lib/paraglide/messages.js';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Button } from '$lib/components/ui/button';
@@ -72,13 +73,7 @@
 	);
 
 	function formatCurrency(amount: string, currency = 'EUR'): string {
-		try {
-			return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(
-				parseFloat(amount)
-			);
-		} catch {
-			return amount;
-		}
+		return formatMoney(amount, currency);
 	}
 </script>
 
