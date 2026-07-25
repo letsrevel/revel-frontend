@@ -3393,6 +3393,7 @@
 					"submit": "Marquer comme remboursé"
 				},
 				"emptyFiltered": "Aucun abonnement correspondant sur cette page.",
+				"pageOf": "Page {page} sur {total}",
 				"openDrawer": "Ouvrir les détails de l'abonnement",
 				"metrics": {
 					"mrr": "Revenu récurrent mensuel",

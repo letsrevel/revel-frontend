@@ -3422,6 +3422,7 @@
 					"submit": "Mark refunded"
 				},
 				"emptyFiltered": "No matching subscriptions on this page.",
+				"pageOf": "Pagina {page} di {total}",
 				"openDrawer": "Open subscription details",
 				"metrics": {
 					"mrr": "Ricavo ricorrente mensile",

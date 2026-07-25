@@ -3422,6 +3422,7 @@
 					"submit": "Mark refunded"
 				},
 				"emptyFiltered": "No matching subscriptions on this page.",
+				"pageOf": "Seite {page} von {total}",
 				"openDrawer": "Open subscription details",
 				"metrics": {
 					"mrr": "Monatlich wiederkehrender Umsatz",
