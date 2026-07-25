@@ -89,6 +89,13 @@
 		 * outside overview mode.
 		 */
 		interactiveSectors?: SectorSeatConfig[] | null;
+		/**
+		 * Browse-everything contexts (the venue overview dialog): the home view
+		 * always fits the whole venue in frame, never zooming to a focus sector.
+		 * Without this, a venue with one seat-selectable sector homes zoomed onto
+		 * it and the remaining sector targets render clipped out of frame.
+		 */
+		fitAllHome?: boolean;
 	}
 
 	const {
@@ -106,7 +113,8 @@
 		currency = null,
 		sectorTargets = null,
 		onSectorSelect,
-		interactiveSectors = null
+		interactiveSectors = null,
+		fitAllHome = false
 	}: Props = $props();
 
 	// Overview mode: whole sectors are the interaction unit (see Props docs) —
@@ -311,6 +319,7 @@
 	    when the home view must zoom past fit-all. activeSectorId marks it in
 	    plain venue scope; in overview mode it's the seat-selectable sector. */
 	const focusCenter = $derived.by(() => {
+		if (fitAllHome) return null;
 		const focusId = activeSectorId ?? interactiveSectors?.[0]?.sectorId ?? null;
 		if (!focusId || onlySector) return null;
 		const sector = layout.sectors.find((candidate) => candidate.id === focusId);

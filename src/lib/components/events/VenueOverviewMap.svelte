@@ -302,6 +302,7 @@
 			onToggle={handleToggle}
 			{stage}
 			{hideStage}
+			fitAllHome
 		/>
 	</div>
 
