@@ -3293,6 +3293,19 @@
 				"archived": "Archivé",
 				"edit": "Modifier",
 				"archive": "Archiver",
+				"badge": {
+					"online": "En ligne · Stripe",
+					"offline": "Hors ligne · manuel",
+					"soldOut": "Complet",
+					"paused": "Ventes suspendues"
+				},
+				"occupancy": "{active} actif(s)",
+				"occupancyCapped": "{active} / {cap} actif(s)",
+				"migrate": {
+					"title": "Migrer les abonnés vers le prix actuel",
+					"body": "Les abonnés existants conservent le prix auquel ils se sont inscrits. Cela planifie une migration de {count} abonnés actifs vers le prix actuel ({price}). Pas de proratisation — le nouveau prix s'applique à partir du prochain renouvellement de chaque abonné. Les abonnés sont notifiés.",
+					"queued": "Migration planifiée pour {count} abonnés"
+				},
 				"delete": {
 					"title": "Supprimer le forfait",
 					"body": "Cela supprime définitivement le forfait. S'il y a des abonnés, archive-le plutôt.",

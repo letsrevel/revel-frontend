@@ -16,8 +16,9 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent } from '$lib/components/ui/card';
-	import { Pencil, Archive, Trash2, Plus, Loader2 } from '@lucide/svelte';
+	import { Pencil, Archive, Trash2, Plus, Loader2, RefreshCw } from '@lucide/svelte';
 	import PlanFormModal, { type PlanFormPayload } from './PlanFormModal.svelte';
+	import MigrateSubscribersDialog from './MigrateSubscribersDialog.svelte';
 	import { formatPlanPrice } from '$lib/utils/subscriptions';
 
 	interface Props {
@@ -46,6 +47,7 @@
 
 	let editing = $state<PlanSchema | null>(null);
 	let formOpen = $state(false);
+	let migrating = $state<PlanSchema | null>(null);
 
 	const createMut = createMutation(() => ({
 		mutationFn: async (payload: PlanFormPayload) => {
@@ -175,6 +177,37 @@
 							<div class="min-w-0 flex-1">
 								<p class="truncate font-medium">{p.name}</p>
 								<p class="text-sm text-muted-foreground">{formatPlanPrice(p)}</p>
+								<div class="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
+									<span class="rounded-full bg-muted px-2 py-0.5 text-muted-foreground">
+										{p.payment_method === 'online'
+											? m['orgAdmin.members.plans.badge.online']()
+											: m['orgAdmin.members.plans.badge.offline']()}
+									</span>
+									<span class="text-muted-foreground">
+										{p.max_subscriptions != null
+											? m['orgAdmin.members.plans.occupancyCapped']({
+													active: p.active_subscription_count,
+													cap: p.max_subscriptions
+												})
+											: m['orgAdmin.members.plans.occupancy']({
+													active: p.active_subscription_count
+												})}
+									</span>
+									{#if p.max_subscriptions != null && p.active_subscription_count >= p.max_subscriptions}
+										<span
+											class="rounded-full bg-red-100 px-2 py-0.5 text-red-900 dark:bg-red-900/30 dark:text-red-100"
+										>
+											{m['orgAdmin.members.plans.badge.soldOut']()}
+										</span>
+									{/if}
+									{#if p.sales_status === 'paused'}
+										<span
+											class="rounded-full bg-amber-100 px-2 py-0.5 text-amber-900 dark:bg-amber-900/30 dark:text-amber-100"
+										>
+											{m['orgAdmin.members.plans.badge.paused']()}
+										</span>
+									{/if}
+								</div>
 								{#if p.is_active === false}
 									<p class="mt-1 text-xs text-muted-foreground">
 										{m['orgAdmin.members.plans.archived']()}
@@ -191,6 +224,17 @@
 								>
 									<Pencil class="h-3.5 w-3.5" />
 								</Button>
+								{#if p.payment_method === 'online' && p.active_subscription_count > 0}
+									<Button
+										size="icon"
+										variant="ghost"
+										class="h-7 w-7"
+										aria-label={m['orgAdmin.members.plans.migrate.title']()}
+										onclick={() => (migrating = p)}
+									>
+										<RefreshCw class="h-3.5 w-3.5" />
+									</Button>
+								{/if}
 								{#if p.is_active !== false}
 									<Button
 										size="icon"
@@ -231,3 +275,12 @@
 	{organization}
 	isSaving={createMut.isPending || updateMut.isPending}
 />
+
+{#if migrating}
+	<MigrateSubscribersDialog
+		{organization}
+		plan={migrating}
+		open={!!migrating}
+		onClose={() => (migrating = null)}
+	/>
+{/if}

@@ -3322,6 +3322,19 @@
 				"archived": "Archived",
 				"edit": "Edit",
 				"archive": "Archive",
+				"badge": {
+					"online": "Online · Stripe",
+					"offline": "Offline · manuale",
+					"soldOut": "Esaurito",
+					"paused": "Vendite sospese"
+				},
+				"occupancy": "{active} attivi",
+				"occupancyCapped": "{active} / {cap} attivi",
+				"migrate": {
+					"title": "Migra gli abbonati al prezzo attuale",
+					"body": "Gli abbonati esistenti mantengono il prezzo a cui si sono iscritti. Questo pianifica la migrazione di {count} abbonati attivi al prezzo attuale ({price}). Nessun conguaglio proporzionale — il nuovo prezzo si applica dal prossimo rinnovo di ciascun abbonato. Gli abbonati vengono notificati.",
+					"queued": "Migrazione pianificata per {count} abbonati"
+				},
 				"delete": {
 					"title": "Delete plan",
 					"body": "This permanently deletes the plan. If subscribers exist, archive it instead.",
