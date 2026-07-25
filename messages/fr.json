@@ -3393,7 +3393,14 @@
 					"submit": "Marquer comme remboursé"
 				},
 				"emptyFiltered": "Aucun abonnement correspondant sur cette page.",
-				"openDrawer": "Ouvrir les détails de l'abonnement"
+				"openDrawer": "Ouvrir les détails de l'abonnement",
+				"metrics": {
+					"mrr": "Revenu récurrent mensuel",
+					"active": "Abonnés actifs",
+					"new30d": "Nouveaux (30 jours)",
+					"churn30d": "Résiliations (30 jours)",
+					"mixedCurrency": "Plusieurs devises — MRR indisponible"
+				}
 			},
 			"grantsInfo": {
 				"title": "Que confère l'adhésion ?",

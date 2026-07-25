@@ -3422,7 +3422,14 @@
 					"submit": "Mark refunded"
 				},
 				"emptyFiltered": "No matching subscriptions on this page.",
-				"openDrawer": "Open subscription details"
+				"openDrawer": "Open subscription details",
+				"metrics": {
+					"mrr": "Ricavo ricorrente mensile",
+					"active": "Abbonati attivi",
+					"new30d": "Nuovi (30 giorni)",
+					"churn30d": "Abbandoni (30 giorni)",
+					"mixedCurrency": "Valute multiple — MRR non disponibile"
+				}
 			},
 			"grantsInfo": {
 				"title": "Cosa offre l'iscrizione?",

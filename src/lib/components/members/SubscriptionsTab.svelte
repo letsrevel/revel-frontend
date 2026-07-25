@@ -17,6 +17,7 @@
 	import SubscriptionListItem from './SubscriptionListItem.svelte';
 	import SubscriptionCreateModal from './SubscriptionCreateModal.svelte';
 	import SubscriptionDrawer from './SubscriptionDrawer.svelte';
+	import SubscriptionMetrics from './SubscriptionMetrics.svelte';
 	import { onDestroy } from 'svelte';
 
 	// Buffer matching the bits-ui Dialog close animation. Chaining a Dialog
@@ -109,6 +110,7 @@
 </script>
 
 <div class="space-y-3">
+	<SubscriptionMetrics {organization} />
 	<div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 		<div class="flex flex-1 flex-col gap-2 sm:flex-row">
 			<Input

@@ -3422,7 +3422,14 @@
 					"submit": "Mark refunded"
 				},
 				"emptyFiltered": "No matching subscriptions on this page.",
-				"openDrawer": "Open subscription details"
+				"openDrawer": "Open subscription details",
+				"metrics": {
+					"mrr": "Monatlich wiederkehrender Umsatz",
+					"active": "Aktive Abonnent*innen",
+					"new30d": "Neu (30 Tage)",
+					"churn30d": "Abgewandert (30 Tage)",
+					"mixedCurrency": "Mehrere Währungen — MRR nicht verfügbar"
+				}
 			},
 			"grantsInfo": {
 				"title": "Was gewährt eine Mitgliedschaft?",
