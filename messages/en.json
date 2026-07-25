@@ -3322,6 +3322,21 @@
 				"archived": "Archived",
 				"edit": "Edit",
 				"archive": "Archive",
+				"badge": {
+					"online": "Online · Stripe",
+					"offline": "Offline · manual",
+					"soldOut": "Sold out",
+					"paused": "Sales paused"
+				},
+				"occupancy": "{active} active",
+				"occupancyCapped": "{active} / {cap} active",
+				"migrate": {
+					"title": "Migrate subscribers to current price",
+					"body": "Existing subscribers keep the price they signed up at. This queues a migration of {count} active subscribers to the current price ({price}). No proration — the new price applies from each subscriber's next renewal. Subscribers are notified.",
+					"queued": "Migration queued for {count} subscribers",
+					"confirm": "Migrate",
+					"failed": "Failed to start migration"
+				},
 				"delete": {
 					"title": "Delete plan",
 					"body": "This permanently deletes the plan. If subscribers exist, archive it instead.",
@@ -3341,10 +3356,27 @@
 					"errors": {
 						"nameRequired": "Name is required",
 						"priceInvalid": "Price must be 0 or more",
-						"periodInvalid": "Period count must be between 1 and 120"
+						"periodInvalid": "Period count must be between 1 and 120",
+						"maxSubsInvalid": "Maximum subscriptions must be 1 or more, or empty for unlimited"
 					},
 					"periodMonth": "month(s)",
-					"periodYear": "year(s)"
+					"periodYear": "year(s)",
+					"paymentMethod": "Payment method",
+					"paymentOffline": "Offline — you record payments",
+					"paymentOnline": "Online — Stripe auto-billing",
+					"paymentMethodHelp": "Online plans bill members automatically through Stripe. Offline plans are recorded by you (cash, bank transfer, …).",
+					"paymentOnlineNeedsStripe": "Connect Stripe in Billing settings to offer online plans.",
+					"paymentMethodImmutable": "Payment method can't be changed — archive and recreate the plan to switch.",
+					"maxSubscriptions": "Maximum subscriptions",
+					"maxSubscriptionsUnlimited": "Unlimited",
+					"maxSubscriptionsHelp": "Cap on concurrent subscribers. Spots free up when a subscription ends.",
+					"pauseSales": "Pause sales",
+					"pauseSalesHelp": "Members can't subscribe or switch into this plan while paused. Current subscribers are unaffected; you can still enroll people manually."
+				},
+				"errors": {
+					"createFailed": "Failed to create plan: {detail}",
+					"updateFailed": "Failed to update plan: {detail}",
+					"archiveFailed": "Failed to archive plan: {detail}"
 				}
 			},
 			"subscriptions": {
@@ -3362,6 +3394,7 @@
 					"currency": "Currency",
 					"notes": "Notes",
 					"submit": "Create",
+					"onlineExcluded": "Online (Stripe) plans aren't listed — members subscribe to those themselves so they can approve the payment.",
 					"errors": {
 						"userRequired": "Pick a member",
 						"planRequired": "Pick a plan"
@@ -3380,6 +3413,14 @@
 					"pause": "Pause",
 					"resume": "Resume",
 					"cancel": "Cancel",
+					"onlinePayments": "Payments for this subscription arrive automatically via Stripe.",
+					"revive": "Revive",
+					"reviveDone": "Subscription revived",
+					"reviveOfflineTitle": "Revive subscription",
+					"reviveOfflineBody": "Record the payment you received to restart this membership.",
+					"reviveOnlineTitle": "Restart subscription",
+					"reviveOnlineBody": "This restarts the subscription in Stripe. The member is asked to complete the payment — their membership resumes once they've paid.",
+					"reviveOnlineDone": "Revival started — the member has been asked to complete payment.",
 					"payments": "Payments",
 					"paymentsEmpty": "No payments yet.",
 					"refund": "Refund",
@@ -3422,7 +3463,16 @@
 					"submit": "Mark refunded"
 				},
 				"emptyFiltered": "No matching subscriptions on this page.",
-				"openDrawer": "Open subscription details"
+				"pageOf": "Page {page} of {total}",
+				"openDrawer": "Open subscription details",
+				"metrics": {
+					"mrr": "Monthly recurring revenue",
+					"active": "Active subscribers",
+					"new30d": "New (30 days)",
+					"churn30d": "Churned (30 days)",
+					"mixedCurrency": "Multiple currencies — MRR unavailable",
+					"error": "Couldn't load subscription metrics."
+				}
 			},
 			"grantsInfo": {
 				"title": "What does membership grant?",
@@ -7205,6 +7255,8 @@
 	"permissionsEditor.perms.editOrganization.description": "Update organization details and settings",
 	"permissionsEditor.perms.manageMembers.label": "Manage Members",
 	"permissionsEditor.perms.manageMembers.description": "Add, remove, and manage organization members",
+	"permissionsEditor.perms.manageSubscriptions.label": "Manage subscriptions",
+	"permissionsEditor.perms.manageSubscriptions.description": "Create and manage membership plans, subscriptions and payments",
 	"permissionsEditor.perms.viewOrganizationDetails.label": "View Organization Details",
 	"permissionsEditor.perms.viewOrganizationDetails.description": "Access detailed organization information",
 	"permissionsEditor.perms.createEvent.label": "Create Events",

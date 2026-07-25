@@ -10,7 +10,7 @@
 		OrganizationMembershipRequestRetrieve,
 		MembershipTierSchema,
 		OrganizationAdminDetailSchema,
-		Status
+		MembershipRequestStatus
 	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -30,7 +30,7 @@
 	const queryClient = useQueryClient();
 
 	// Filter state
-	let requestStatusFilter = $state<Status | 'all'>('pending');
+	let requestStatusFilter = $state<MembershipRequestStatus | 'all'>('pending');
 	let requestsPage = $state(1);
 
 	// Approve membership request modal state

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { toast } from 'svelte-sonner';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		organizationadminsubscriptionsGetSubscription,
@@ -26,6 +27,7 @@
 	import RecordPaymentModal from './RecordPaymentModal.svelte';
 	import CancelSubscriptionDialog from './CancelSubscriptionDialog.svelte';
 	import RefundPaymentDialog from './RefundPaymentDialog.svelte';
+	import StaffReviveModal from './StaffReviveModal.svelte';
 	import { getAvailableActions, formatPlanPrice, getDateLine } from '$lib/utils/subscriptions';
 	import { formatDate } from '$lib/utils/date';
 
@@ -79,6 +81,13 @@
 	const payments = $derived(paymentsQuery.data ?? []);
 	const actions = $derived(sub ? getAvailableActions(sub) : null);
 
+	// Stripe stops billing once a subscription is cancelled or expired, so the
+	// "payments arrive automatically" reassurance would be misleading there.
+	const TERMINAL_STATUSES = ['cancelled', 'expired'];
+	const showOnlinePaymentsNote = $derived(
+		!!sub && sub.plan.payment_method === 'online' && !TERMINAL_STATUSES.includes(sub.status)
+	);
+
 	const isLoading = $derived.by(() => {
 		const loading = subQuery.isLoading;
 		const data = subQuery.data;
@@ -90,6 +99,7 @@
 
 	let recordOpen = $state(false);
 	let cancelOpen = $state(false);
+	let reviveOpen = $state(false);
 	let refundTarget = $state<PaymentSchema2 | null>(null);
 
 	function invalidateAll() {
@@ -114,7 +124,7 @@
 			invalidateAll();
 			recordOpen = false;
 		},
-		onError: (err: Error) => alert(`Failed to record payment: ${err.message}`)
+		onError: (err: Error) => toast.error(err.message)
 	}));
 
 	const cancelMut = createMutation(() => ({
@@ -131,7 +141,7 @@
 			invalidateAll();
 			cancelOpen = false;
 		},
-		onError: (err: Error) => alert(`Failed to cancel: ${err.message}`)
+		onError: (err: Error) => toast.error(err.message)
 	}));
 
 	const pauseMut = createMutation(() => ({
@@ -144,7 +154,7 @@
 			return res.data;
 		},
 		onSuccess: invalidateAll,
-		onError: (err: Error) => alert(`Failed to pause: ${err.message}`)
+		onError: (err: Error) => toast.error(err.message)
 	}));
 
 	const resumeMut = createMutation(() => ({
@@ -157,7 +167,7 @@
 			return res.data;
 		},
 		onSuccess: invalidateAll,
-		onError: (err: Error) => alert(`Failed to resume: ${err.message}`)
+		onError: (err: Error) => toast.error(err.message)
 	}));
 
 	const refundMut = createMutation(() => ({
@@ -174,7 +184,7 @@
 			invalidateAll();
 			refundTarget = null;
 		},
-		onError: (err: Error) => alert(`Failed to refund: ${err.message}`)
+		onError: (err: Error) => toast.error(err.message)
 	}));
 
 	function fmtDate(d: string | null | undefined): string {
@@ -254,7 +264,18 @@
 						{m['orgAdmin.members.subscriptions.drawer.cancel']()}
 					</Button>
 				{/if}
+				{#if actions?.revive}
+					<Button size="sm" variant="outline" onclick={() => (reviveOpen = true)}>
+						{m['orgAdmin.members.subscriptions.drawer.revive']()}
+					</Button>
+				{/if}
 			</div>
+
+			{#if showOnlinePaymentsNote}
+				<p class="text-xs text-muted-foreground">
+					{m['orgAdmin.members.subscriptions.drawer.onlinePayments']()}
+				</p>
+			{/if}
 
 			<div class="pt-2">
 				<h4 class="mb-2 text-sm font-semibold">
@@ -273,6 +294,14 @@
 				onClose={() => (recordOpen = false)}
 				onSubmit={(p) => recordMut.mutate(p)}
 				isSubmitting={recordMut.isPending}
+			/>
+			<StaffReviveModal
+				{sub}
+				{subId}
+				{organization}
+				open={reviveOpen}
+				onClose={() => (reviveOpen = false)}
+				onSuccess={invalidateAll}
 			/>
 			<CancelSubscriptionDialog
 				subscription={sub}

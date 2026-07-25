@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { toast } from 'svelte-sonner';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		organizationadminsubscriptionsListSubscriptions,
@@ -8,7 +9,8 @@
 	import type {
 		SubscriptionSchema,
 		OrganizationAdminDetailSchema,
-		SubscriptionCreateSchema
+		SubscriptionCreateSchema,
+		SubscriptionStatus
 	} from '$lib/api/generated/types.gen';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -17,6 +19,7 @@
 	import SubscriptionListItem from './SubscriptionListItem.svelte';
 	import SubscriptionCreateModal from './SubscriptionCreateModal.svelte';
 	import SubscriptionDrawer from './SubscriptionDrawer.svelte';
+	import SubscriptionMetrics from './SubscriptionMetrics.svelte';
 	import { onDestroy } from 'svelte';
 
 	// Buffer matching the bits-ui Dialog close animation. Chaining a Dialog
@@ -33,9 +36,11 @@
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
 
+	const PAGE_SIZE = 25;
+
 	let search = $state('');
 	let debounced = $state('');
-	let statusFilter = $state<string>('all');
+	let statusFilter = $state<SubscriptionStatus | 'all'>('all');
 	let pageNum = $state(1);
 	let createOpen = $state(false);
 	let drawerSubId = $state<string | null>(null);
@@ -53,17 +58,27 @@
 		return () => clearTimeout(timer);
 	});
 
+	$effect(() => {
+		void statusFilter;
+		pageNum = 1;
+	});
+
 	const subsQuery = createQuery(() => ({
 		queryKey: [
 			'organization',
 			organization.slug,
 			'subscriptions',
-			{ search: debounced, page: pageNum }
+			{ search: debounced, page: pageNum, status: statusFilter }
 		],
 		queryFn: async () => {
 			const res = await organizationadminsubscriptionsListSubscriptions({
 				path: { slug: organization.slug },
-				query: { page: pageNum, page_size: 100, search: debounced || undefined },
+				query: {
+					page: pageNum,
+					page_size: PAGE_SIZE,
+					search: debounced || undefined,
+					status: statusFilter === 'all' ? undefined : statusFilter
+				},
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 			if (res.error) throw new Error('Failed to load subscriptions');
@@ -73,9 +88,8 @@
 	}));
 
 	const subs = $derived((subsQuery.data?.results ?? []) as SubscriptionSchema[]);
-	const filtered = $derived(
-		statusFilter === 'all' ? subs : subs.filter((s) => s.status === statusFilter)
-	);
+	const totalCount = $derived(subsQuery.data?.count ?? 0);
+	const totalPages = $derived(Math.max(1, Math.ceil(totalCount / PAGE_SIZE)));
 
 	const createMut = createMutation(() => ({
 		mutationFn: async (payload: SubscriptionCreateSchema) => {
@@ -104,11 +118,12 @@
 				drawerSubId = id;
 			}, DIALOG_CLOSE_MS);
 		},
-		onError: (err: Error) => alert(`Failed to create subscription: ${err.message}`)
+		onError: (err: Error) => toast.error(err.message)
 	}));
 </script>
 
 <div class="space-y-3">
+	<SubscriptionMetrics {organization} />
 	<div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 		<div class="flex flex-1 flex-col gap-2 sm:flex-row">
 			<Input
@@ -138,9 +153,9 @@
 
 	{#if subsQuery.isLoading}
 		<Loader2 class="h-5 w-5 animate-spin" />
-	{:else if filtered.length === 0}
+	{:else if subs.length === 0}
 		<p class="text-sm text-muted-foreground">
-			{#if statusFilter !== 'all' && subs.length > 0}
+			{#if statusFilter !== 'all' || debounced}
 				{m['orgAdmin.members.subscriptions.emptyFiltered']()}
 			{:else}
 				{m['orgAdmin.members.subscriptions.empty']()}
@@ -162,7 +177,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each filtered as s (s.id)}
+					{#each subs as s (s.id)}
 						<SubscriptionListItem sub={s} onClick={() => (drawerSubId = s.id ?? null)} />
 					{/each}
 				</tbody>
@@ -171,10 +186,31 @@
 
 		<!-- Mobile cards -->
 		<div class="grid gap-2 md:hidden">
-			{#each filtered as s (s.id)}
+			{#each subs as s (s.id)}
 				<SubscriptionListItem sub={s} onClick={() => (drawerSubId = s.id ?? null)} />
 			{/each}
 		</div>
+
+		{#if totalPages > 1}
+			<div class="flex items-center justify-between">
+				<p class="text-sm text-muted-foreground">
+					{m['orgAdmin.members.subscriptions.pageOf']({ page: pageNum, total: totalPages })}
+				</p>
+				<div class="flex gap-2">
+					<Button variant="outline" size="sm" disabled={pageNum <= 1} onclick={() => pageNum--}>
+						{m['membershipRequestsTab.previous']()}
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						disabled={pageNum >= totalPages}
+						onclick={() => pageNum++}
+					>
+						{m['membershipRequestsTab.next']()}
+					</Button>
+				</div>
+			</div>
+		{/if}
 	{/if}
 </div>
 

@@ -26,12 +26,6 @@ export type TicketStatus = ApiTicketStatus; // 'pending' | 'active' | 'checked_i
 export type InvitationRequestStatus = 'pending' | 'approved' | 'rejected';
 
 /**
- * Membership Request Status - From OrganizationMembershipRequest.Status backend enum
- * The generated types show this as just 'string', but backend actually uses a TextChoices enum
- */
-export type MembershipRequestStatus = 'pending' | 'approved' | 'rejected';
-
-/**
  * Legacy alias for backward compatibility
  * @deprecated Use RsvpStatus instead
  */

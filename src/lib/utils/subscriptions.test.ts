@@ -16,13 +16,20 @@ const basePlan: PlanSchema = {
 	currency: 'EUR',
 	period_unit: 'month',
 	period_count: 1,
-	is_active: true
+	is_active: true,
+	payment_method: 'offline'
 } as PlanSchema;
 
-function makeSub(
-	status: MySubscriptionSchema['status'],
-	over: Partial<MySubscriptionSchema> = {}
-): MySubscriptionSchema {
+interface MakeSubOptions extends Partial<MySubscriptionSchema> {
+	status: MySubscriptionSchema['status'];
+	payment_method?: 'online' | 'offline';
+}
+
+function makeSub({
+	status,
+	payment_method = 'offline',
+	...over
+}: MakeSubOptions): MySubscriptionSchema {
 	return {
 		id: 's1',
 		plan_id: 'p1',
@@ -34,7 +41,7 @@ function makeSub(
 		cancelled_at: null,
 		created_at: '2026-05-14T00:00:00Z',
 		updated_at: '2026-05-14T00:00:00Z',
-		plan: basePlan,
+		plan: { ...basePlan, payment_method },
 		organization_name: 'Sunset Yoga',
 		organization_slug: 'sunset-yoga',
 		organization_logo_url: null,
@@ -44,14 +51,52 @@ function makeSub(
 
 describe('getAvailableActions', () => {
 	it.each([
-		['pending', { recordPayment: true, pause: false, resume: false, cancel: true }],
-		['active', { recordPayment: true, pause: true, resume: false, cancel: true }],
-		['past_due', { recordPayment: true, pause: false, resume: false, cancel: true }],
-		['paused', { recordPayment: false, pause: false, resume: true, cancel: true }],
-		['cancelled', { recordPayment: false, pause: false, resume: false, cancel: false }],
-		['expired', { recordPayment: false, pause: false, resume: false, cancel: false }]
+		['pending', { recordPayment: true, pause: false, resume: false, cancel: true, revive: false }],
+		['active', { recordPayment: true, pause: true, resume: false, cancel: true, revive: false }],
+		['past_due', { recordPayment: true, pause: false, resume: false, cancel: true, revive: false }],
+		['paused', { recordPayment: false, pause: false, resume: true, cancel: true, revive: false }],
+		[
+			'cancelled',
+			{ recordPayment: false, pause: false, resume: false, cancel: false, revive: false }
+		],
+		['expired', { recordPayment: false, pause: false, resume: false, cancel: false, revive: true }]
 	])('returns the right action set for %s', (status, expected) => {
-		expect(getAvailableActions(makeSub(status as never))).toEqual(expected);
+		expect(getAvailableActions(makeSub({ status: status as never }))).toEqual(expected);
+	});
+});
+
+describe('getAvailableActions online/offline', () => {
+	it('offers recordPayment for offline active subs only', () => {
+		expect(
+			getAvailableActions(makeSub({ status: 'active', payment_method: 'offline' })).recordPayment
+		).toBe(true);
+		expect(
+			getAvailableActions(makeSub({ status: 'active', payment_method: 'online' })).recordPayment
+		).toBe(false);
+	});
+
+	it('offers revive only for expired subs, any payment method', () => {
+		expect(
+			getAvailableActions(makeSub({ status: 'expired', payment_method: 'offline' })).revive
+		).toBe(true);
+		expect(
+			getAvailableActions(makeSub({ status: 'expired', payment_method: 'online' })).revive
+		).toBe(true);
+		expect(
+			getAvailableActions(makeSub({ status: 'active', payment_method: 'offline' })).revive
+		).toBe(false);
+		expect(
+			getAvailableActions(makeSub({ status: 'cancelled', payment_method: 'online' })).revive
+		).toBe(false);
+	});
+
+	it('keeps pause/resume/cancel identical across payment methods', () => {
+		for (const pm of ['online', 'offline'] as const) {
+			const active = getAvailableActions(makeSub({ status: 'active', payment_method: pm }));
+			expect(active).toMatchObject({ pause: true, resume: false, cancel: true });
+			const paused = getAvailableActions(makeSub({ status: 'paused', payment_method: pm }));
+			expect(paused).toMatchObject({ pause: false, resume: true, cancel: true });
+		}
 	});
 });
 
@@ -89,29 +134,31 @@ describe('getStatusConfig', () => {
 
 describe('getDateLine', () => {
 	it('active → "Next renewal: …"', () => {
-		const line = getDateLine(makeSub('active'));
+		const line = getDateLine(makeSub({ status: 'active' }));
 		expect(line.kind).toBe('renewal');
 	});
 	it('active + cancel_at_period_end → "Cancels on …"', () => {
-		const line = getDateLine(makeSub('active', { cancel_at_period_end: true }));
+		const line = getDateLine(makeSub({ status: 'active', cancel_at_period_end: true }));
 		expect(line.kind).toBe('cancels');
 	});
 	it('past_due → "Period ends …"', () => {
-		const line = getDateLine(makeSub('past_due'));
+		const line = getDateLine(makeSub({ status: 'past_due' }));
 		expect(line.kind).toBe('period_ends');
 	});
 	it('paused → "Paused since …"', () => {
-		const line = getDateLine(makeSub('paused'));
+		const line = getDateLine(makeSub({ status: 'paused' }));
 		expect(line.kind).toBe('paused_since');
 	});
 	it('cancelled → "Ended …"', () => {
-		const line = getDateLine(makeSub('cancelled', { cancelled_at: '2026-05-01T00:00:00Z' }));
+		const line = getDateLine(
+			makeSub({ status: 'cancelled', cancelled_at: '2026-05-01T00:00:00Z' })
+		);
 		expect(line.kind).toBe('ended');
 	});
 	it('expired → "Ended …"', () => {
-		expect(getDateLine(makeSub('expired')).kind).toBe('ended');
+		expect(getDateLine(makeSub({ status: 'expired' })).kind).toBe('ended');
 	});
 	it('pending → kind: pending', () => {
-		expect(getDateLine(makeSub('pending')).kind).toBe('pending');
+		expect(getDateLine(makeSub({ status: 'pending' })).kind).toBe('pending');
 	});
 });

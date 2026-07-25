@@ -27,9 +27,17 @@
 		members: OrganizationMemberSchema[];
 		isLoading: boolean;
 		isError: boolean;
+		canManageSubscriptions?: boolean;
 	}
 
-	const { organization, tiers, members, isLoading, isError }: Props = $props();
+	const {
+		organization,
+		tiers,
+		members,
+		isLoading,
+		isError,
+		canManageSubscriptions = false
+	}: Props = $props();
 
 	const accessToken = $derived(authStore.accessToken);
 	const queryClient = useQueryClient();
@@ -346,9 +354,11 @@
 						</Button>
 					</div>
 				</div>
-				<div class="mt-3 border-t pt-3">
-					<PlansList {organization} {tier} />
-				</div>
+				{#if canManageSubscriptions}
+					<div class="mt-3 border-t pt-3">
+						<PlansList {organization} {tier} />
+					</div>
+				{/if}
 			</div>
 		{/each}
 	</div>

@@ -80,6 +80,7 @@
 			return !!(
 				perms.edit_organization ||
 				perms.manage_members ||
+				perms.manage_subscriptions ||
 				perms.create_event ||
 				perms.manage_event
 			);

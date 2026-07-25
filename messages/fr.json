@@ -3293,6 +3293,21 @@
 				"archived": "Archivé",
 				"edit": "Modifier",
 				"archive": "Archiver",
+				"badge": {
+					"online": "En ligne · Stripe",
+					"offline": "Hors ligne · manuel",
+					"soldOut": "Complet",
+					"paused": "Ventes suspendues"
+				},
+				"occupancy": "{active} actif(s)",
+				"occupancyCapped": "{active} / {cap} actif(s)",
+				"migrate": {
+					"title": "Migrer les abonnés vers le prix actuel",
+					"body": "Les abonnés existants conservent le prix auquel ils se sont inscrits. Cela planifie une migration de {count} abonnés actifs vers le prix actuel ({price}). Pas de proratisation — le nouveau prix s'applique à partir du prochain renouvellement de chaque abonné. Les abonnés sont notifiés.",
+					"queued": "Migration planifiée pour {count} abonnés",
+					"confirm": "Migrer",
+					"failed": "Impossible de lancer la migration"
+				},
 				"delete": {
 					"title": "Supprimer le forfait",
 					"body": "Cela supprime définitivement le forfait. S'il y a des abonnés, archive-le plutôt.",
@@ -3312,10 +3327,27 @@
 					"errors": {
 						"nameRequired": "Le nom est obligatoire",
 						"priceInvalid": "Le prix doit être de 0 ou plus",
-						"periodInvalid": "Le nombre de périodes doit être compris entre 1 et 120"
+						"periodInvalid": "Le nombre de périodes doit être compris entre 1 et 120",
+						"maxSubsInvalid": "Le nombre maximum d'abonnements doit être de 1 ou plus, ou vide pour illimité"
 					},
 					"periodMonth": "mois",
-					"periodYear": "an(s)"
+					"periodYear": "an(s)",
+					"paymentMethod": "Méthode de paiement",
+					"paymentOffline": "Hors ligne — vous enregistrez les paiements",
+					"paymentOnline": "En ligne — facturation automatique via Stripe",
+					"paymentMethodHelp": "Les forfaits en ligne facturent automatiquement les membres via Stripe. Les forfaits hors ligne sont enregistrés par vous (espèces, virement, …).",
+					"paymentOnlineNeedsStripe": "Connectez Stripe dans les paramètres de facturation pour proposer des forfaits en ligne.",
+					"paymentMethodImmutable": "La méthode de paiement ne peut pas être modifiée — archivez ce forfait et créez-en un nouveau pour en changer.",
+					"maxSubscriptions": "Abonnements maximum",
+					"maxSubscriptionsUnlimited": "Illimité",
+					"maxSubscriptionsHelp": "Plafond d'abonnés simultanés. Des places se libèrent lorsqu'un abonnement se termine.",
+					"pauseSales": "Suspendre les ventes",
+					"pauseSalesHelp": "Les membres ne peuvent pas s'abonner ou passer à ce forfait tant qu'il est suspendu. Les abonnés actuels ne sont pas concernés ; vous pouvez toujours inscrire des personnes manuellement."
+				},
+				"errors": {
+					"createFailed": "Échec de la création du forfait : {detail}",
+					"updateFailed": "Échec de la modification du forfait : {detail}",
+					"archiveFailed": "Échec de l'archivage du forfait : {detail}"
 				}
 			},
 			"subscriptions": {
@@ -3333,6 +3365,7 @@
 					"currency": "Devise",
 					"notes": "Notes",
 					"submit": "Créer",
+					"onlineExcluded": "Les forfaits en ligne (Stripe) ne sont pas listés — les membres s'y abonnent eux-mêmes afin de pouvoir autoriser le paiement.",
 					"errors": {
 						"userRequired": "Choisis un membre",
 						"planRequired": "Choisis un forfait"
@@ -3351,6 +3384,14 @@
 					"pause": "Mettre en pause",
 					"resume": "Reprendre",
 					"cancel": "Annuler",
+					"onlinePayments": "Les paiements de cet abonnement arrivent automatiquement via Stripe.",
+					"revive": "Réactiver",
+					"reviveDone": "Abonnement réactivé",
+					"reviveOfflineTitle": "Réactiver l'abonnement",
+					"reviveOfflineBody": "Enregistre le paiement que tu as reçu pour relancer cette adhésion.",
+					"reviveOnlineTitle": "Relancer l'abonnement",
+					"reviveOnlineBody": "Cela relance l'abonnement dans Stripe. Il est demandé au membre de finaliser le paiement — son adhésion reprend dès qu'il a payé.",
+					"reviveOnlineDone": "Réactivation lancée — il a été demandé au membre de finaliser le paiement.",
 					"payments": "Paiements",
 					"paymentsEmpty": "Aucun paiement pour l'instant.",
 					"refund": "Rembourser",
@@ -3393,7 +3434,16 @@
 					"submit": "Marquer comme remboursé"
 				},
 				"emptyFiltered": "Aucun abonnement correspondant sur cette page.",
-				"openDrawer": "Ouvrir les détails de l'abonnement"
+				"pageOf": "Page {page} sur {total}",
+				"openDrawer": "Ouvrir les détails de l'abonnement",
+				"metrics": {
+					"mrr": "Revenu récurrent mensuel",
+					"active": "Abonnés actifs",
+					"new30d": "Nouveaux (30 jours)",
+					"churn30d": "Résiliations (30 jours)",
+					"mixedCurrency": "Plusieurs devises — MRR indisponible",
+					"error": "Impossible de charger les statistiques d'abonnement."
+				}
 			},
 			"grantsInfo": {
 				"title": "Que confère l'adhésion ?",
@@ -7176,6 +7226,8 @@
 	"permissionsEditor.perms.editOrganization.description": "Mettre à jour les détails et les paramètres de l'organisation",
 	"permissionsEditor.perms.manageMembers.label": "Gérer les membres",
 	"permissionsEditor.perms.manageMembers.description": "Ajouter, retirer et gérer les membres de l'organisation",
+	"permissionsEditor.perms.manageSubscriptions.label": "Gérer les abonnements",
+	"permissionsEditor.perms.manageSubscriptions.description": "Créer et gérer les formules d'adhésion, les abonnements et les paiements",
 	"permissionsEditor.perms.viewOrganizationDetails.label": "Voir les détails de l'organisation",
 	"permissionsEditor.perms.viewOrganizationDetails.description": "Accéder aux informations détaillées de l'organisation",
 	"permissionsEditor.perms.createEvent.label": "Créer des événements",

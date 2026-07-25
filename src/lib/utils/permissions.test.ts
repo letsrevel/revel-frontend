@@ -246,4 +246,24 @@ describe('Permission Utilities', () => {
 			expect(message).toBe('');
 		});
 	});
+
+	describe('manage_subscriptions', () => {
+		it('is included in the owner allowed-actions list', () => {
+			const perms = {
+				organization_permissions: { 'org-1': 'owner' }
+			} as OrganizationPermissionsSchema;
+			expect(getAllowedActions(perms, 'org-1')).toContain('manage_subscriptions');
+		});
+
+		it('is granted to staff with the flag and denied without', () => {
+			const withFlag = {
+				organization_permissions: { 'org-1': { default: { manage_subscriptions: true } } }
+			} as unknown as OrganizationPermissionsSchema;
+			const withoutFlag = {
+				organization_permissions: { 'org-1': { default: { manage_members: true } } }
+			} as unknown as OrganizationPermissionsSchema;
+			expect(canPerformAction(withFlag, 'org-1', 'manage_subscriptions')).toBe(true);
+			expect(canPerformAction(withoutFlag, 'org-1', 'manage_subscriptions')).toBe(false);
+		});
+	});
 });
