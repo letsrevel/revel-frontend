@@ -1,6 +1,10 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
-	import type { PlanSchema, PlanCreateSchema } from '$lib/api/generated/types.gen';
+	import type {
+		PlanSchema,
+		PlanCreateSchema,
+		OrganizationAdminDetailSchema
+	} from '$lib/api/generated/types.gen';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
@@ -17,10 +21,11 @@
 		open: boolean;
 		onClose: () => void;
 		onSave: (payload: PlanFormPayload) => void;
+		organization: OrganizationAdminDetailSchema;
 		isSaving?: boolean;
 	}
 
-	const { plan, open, onClose, onSave, isSaving = false }: Props = $props();
+	const { plan, open, onClose, onSave, organization, isSaving = false }: Props = $props();
 
 	let name = $state('');
 	let description = $state('');
@@ -29,6 +34,9 @@
 	let periodUnit = $state<'month' | 'year'>('month');
 	let periodCount = $state(1);
 	let isActive = $state(true);
+	let paymentMethod = $state<'online' | 'offline'>('offline');
+	let salesPaused = $state(false);
+	let maxSubscriptions = $state('');
 	let errors = $state<{ name?: string; price?: string; period?: string }>({});
 
 	$effect(() => {
@@ -44,6 +52,9 @@
 			periodUnit = plan.period_unit;
 			periodCount = plan.period_count ?? 1;
 			isActive = plan.is_active ?? true;
+			paymentMethod = plan.payment_method;
+			salesPaused = plan.sales_status === 'paused';
+			maxSubscriptions = plan.max_subscriptions == null ? '' : String(plan.max_subscriptions);
 		} else {
 			name = '';
 			description = '';
@@ -52,6 +63,9 @@
 			periodUnit = 'month';
 			periodCount = 1;
 			isActive = true;
+			paymentMethod = 'offline';
+			salesPaused = false;
+			maxSubscriptions = '';
 		}
 		errors = {};
 	});
@@ -84,7 +98,10 @@
 			currency: currency as PlanCreateSchema['currency'],
 			period_unit: periodUnit,
 			period_count: periodCount,
-			is_active: isActive
+			is_active: isActive,
+			sales_status: salesPaused ? 'paused' : 'open',
+			max_subscriptions: maxSubscriptions === '' ? null : Number(maxSubscriptions),
+			...(plan ? {} : { payment_method: paymentMethod })
 		} as PlanCreateSchema);
 	}
 </script>
@@ -110,6 +127,56 @@
 				<Input id="plan-name" bind:value={name} maxlength={255} required disabled={isSaving} />
 				{#if errors.name}<p class="text-sm text-destructive">{errors.name}</p>{/if}
 			</div>
+
+			{#if plan}
+				<div class="space-y-1 text-sm">
+					<span class="font-medium">{m['orgAdmin.members.plans.form.paymentMethod']()}</span>
+					<span class="text-muted-foreground">
+						{plan.payment_method === 'online'
+							? m['orgAdmin.members.plans.form.paymentOnline']()
+							: m['orgAdmin.members.plans.form.paymentOffline']()}
+					</span>
+					<p class="text-xs text-muted-foreground">
+						{m['orgAdmin.members.plans.form.paymentMethodImmutable']()}
+					</p>
+				</div>
+			{:else}
+				<fieldset class="space-y-1">
+					<legend class="text-sm font-medium">
+						{m['orgAdmin.members.plans.form.paymentMethod']()}
+					</legend>
+					<div class="flex gap-4">
+						<label class="flex items-center gap-2 text-sm">
+							<input
+								type="radio"
+								name="payment-method"
+								value="offline"
+								bind:group={paymentMethod}
+								disabled={isSaving}
+							/>
+							{m['orgAdmin.members.plans.form.paymentOffline']()}
+						</label>
+						<label
+							class="flex items-center gap-2 text-sm"
+							class:opacity-50={!organization.is_stripe_connected}
+						>
+							<input
+								type="radio"
+								name="payment-method"
+								value="online"
+								bind:group={paymentMethod}
+								disabled={isSaving || !organization.is_stripe_connected}
+							/>
+							{m['orgAdmin.members.plans.form.paymentOnline']()}
+						</label>
+					</div>
+					<p class="text-xs text-muted-foreground">
+						{organization.is_stripe_connected
+							? m['orgAdmin.members.plans.form.paymentMethodHelp']()
+							: m['orgAdmin.members.plans.form.paymentOnlineNeedsStripe']()}
+					</p>
+				</fieldset>
+			{/if}
 
 			<div class="space-y-1">
 				<Label for="plan-desc">{m['orgAdmin.members.plans.form.description']()}</Label>
@@ -172,6 +239,38 @@
 				</div>
 			</div>
 			{#if errors.period}<p class="text-sm text-destructive">{errors.period}</p>{/if}
+
+			<div class="space-y-1">
+				<Label for="plan-max-subs">{m['orgAdmin.members.plans.form.maxSubscriptions']()}</Label>
+				<Input
+					id="plan-max-subs"
+					type="number"
+					min="1"
+					bind:value={maxSubscriptions}
+					placeholder={m['orgAdmin.members.plans.form.maxSubscriptionsUnlimited']()}
+					disabled={isSaving}
+				/>
+				<p class="text-xs text-muted-foreground">
+					{m['orgAdmin.members.plans.form.maxSubscriptionsHelp']()}
+				</p>
+			</div>
+
+			<div class="flex items-center gap-2">
+				<Checkbox
+					id="plan-sales-paused"
+					checked={salesPaused}
+					onCheckedChange={(checked) => {
+						salesPaused = checked === true;
+					}}
+					disabled={isSaving}
+				/>
+				<div>
+					<Label for="plan-sales-paused">{m['orgAdmin.members.plans.form.pauseSales']()}</Label>
+					<p class="text-xs text-muted-foreground">
+						{m['orgAdmin.members.plans.form.pauseSalesHelp']()}
+					</p>
+				</div>
+			</div>
 
 			<div class="flex items-center gap-2">
 				<Checkbox

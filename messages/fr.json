@@ -3315,7 +3315,18 @@
 						"periodInvalid": "Le nombre de périodes doit être compris entre 1 et 120"
 					},
 					"periodMonth": "mois",
-					"periodYear": "an(s)"
+					"periodYear": "an(s)",
+					"paymentMethod": "Méthode de paiement",
+					"paymentOffline": "Hors ligne — vous enregistrez les paiements",
+					"paymentOnline": "En ligne — facturation automatique via Stripe",
+					"paymentMethodHelp": "Les forfaits en ligne facturent automatiquement les membres via Stripe. Les forfaits hors ligne sont enregistrés par vous (espèces, virement, …).",
+					"paymentOnlineNeedsStripe": "Connectez Stripe dans les paramètres de facturation pour proposer des forfaits en ligne.",
+					"paymentMethodImmutable": "La méthode de paiement ne peut pas être modifiée — archivez ce forfait et créez-en un nouveau pour en changer.",
+					"maxSubscriptions": "Abonnements maximum",
+					"maxSubscriptionsUnlimited": "Illimité",
+					"maxSubscriptionsHelp": "Plafond d'abonnés simultanés. Des places se libèrent lorsqu'un abonnement se termine.",
+					"pauseSales": "Suspendre les ventes",
+					"pauseSalesHelp": "Les membres ne peuvent pas s'abonner ou passer à ce forfait tant qu'il est suspendu. Les abonnés actuels ne sont pas concernés ; vous pouvez toujours inscrire des personnes manuellement."
 				}
 			},
 			"subscriptions": {

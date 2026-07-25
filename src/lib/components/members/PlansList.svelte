@@ -228,5 +228,6 @@
 		editing = null;
 	}}
 	onSave={handleSave}
+	{organization}
 	isSaving={createMut.isPending || updateMut.isPending}
 />

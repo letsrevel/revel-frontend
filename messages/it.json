@@ -3344,7 +3344,18 @@
 						"periodInvalid": "Period count must be between 1 and 120"
 					},
 					"periodMonth": "month(s)",
-					"periodYear": "year(s)"
+					"periodYear": "year(s)",
+					"paymentMethod": "Metodo di pagamento",
+					"paymentOffline": "Offline — registri tu i pagamenti",
+					"paymentOnline": "Online — addebito automatico con Stripe",
+					"paymentMethodHelp": "I piani online addebitano automaticamente i membri tramite Stripe. I piani offline vengono registrati da te (contanti, bonifico, …).",
+					"paymentOnlineNeedsStripe": "Collega Stripe nelle impostazioni di fatturazione per offrire piani online.",
+					"paymentMethodImmutable": "Il metodo di pagamento non può essere modificato — archivia il piano e creane uno nuovo per cambiarlo.",
+					"maxSubscriptions": "Abbonamenti massimi",
+					"maxSubscriptionsUnlimited": "Illimitato",
+					"maxSubscriptionsHelp": "Limite di iscritti simultanei. I posti si liberano quando un abbonamento termina.",
+					"pauseSales": "Sospendi le vendite",
+					"pauseSalesHelp": "I membri non possono iscriversi o passare a questo piano mentre è sospeso. Gli abbonati attuali non sono interessati; puoi comunque iscrivere persone manualmente."
 				}
 			},
 			"subscriptions": {

@@ -3344,7 +3344,18 @@
 						"periodInvalid": "Period count must be between 1 and 120"
 					},
 					"periodMonth": "month(s)",
-					"periodYear": "year(s)"
+					"periodYear": "year(s)",
+					"paymentMethod": "Zahlungsmethode",
+					"paymentOffline": "Offline — Sie erfassen die Zahlungen",
+					"paymentOnline": "Online — automatische Abrechnung über Stripe",
+					"paymentMethodHelp": "Online-Pläne rechnen Mitglieder*innen automatisch über Stripe ab. Offline-Pläne erfassen Sie selbst (Bar, Überweisung, …).",
+					"paymentOnlineNeedsStripe": "Verbinden Sie Stripe in den Abrechnungseinstellungen, um Online-Pläne anzubieten.",
+					"paymentMethodImmutable": "Die Zahlungsmethode kann nicht geändert werden — archivieren Sie den Plan und erstellen Sie einen neuen, um zu wechseln.",
+					"maxSubscriptions": "Maximale Abonnements",
+					"maxSubscriptionsUnlimited": "Unbegrenzt",
+					"maxSubscriptionsHelp": "Obergrenze für gleichzeitige Abonnent*innen. Plätze werden frei, sobald ein Abonnement endet.",
+					"pauseSales": "Verkauf pausieren",
+					"pauseSalesHelp": "Mitglieder*innen können sich nicht für diesen Plan anmelden oder zu ihm wechseln, solange er pausiert ist. Bestehende Abonnent*innen sind nicht betroffen; Sie können weiterhin Personen manuell eintragen."
 				}
 			},
 			"subscriptions": {

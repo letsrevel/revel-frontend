@@ -3344,7 +3344,18 @@
 						"periodInvalid": "Period count must be between 1 and 120"
 					},
 					"periodMonth": "month(s)",
-					"periodYear": "year(s)"
+					"periodYear": "year(s)",
+					"paymentMethod": "Payment method",
+					"paymentOffline": "Offline — you record payments",
+					"paymentOnline": "Online — Stripe auto-billing",
+					"paymentMethodHelp": "Online plans bill members automatically through Stripe. Offline plans are recorded by you (cash, bank transfer, …).",
+					"paymentOnlineNeedsStripe": "Connect Stripe in Billing settings to offer online plans.",
+					"paymentMethodImmutable": "Payment method can't be changed — archive and recreate the plan to switch.",
+					"maxSubscriptions": "Maximum subscriptions",
+					"maxSubscriptionsUnlimited": "Unlimited",
+					"maxSubscriptionsHelp": "Cap on concurrent subscribers. Spots free up when a subscription ends.",
+					"pauseSales": "Pause sales",
+					"pauseSalesHelp": "Members can't subscribe or switch into this plan while paused. Current subscribers are unaffected; you can still enroll people manually."
 				}
 			},
 			"subscriptions": {
