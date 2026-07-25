@@ -3,7 +3,8 @@
 	import type {
 		PlanSchema,
 		PlanCreateSchema,
-		OrganizationAdminDetailSchema
+		OrganizationAdminDetailSchema,
+		SubscriptionPaymentMethod
 	} from '$lib/api/generated/types.gen';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
@@ -34,10 +35,13 @@
 	let periodUnit = $state<'month' | 'year'>('month');
 	let periodCount = $state(1);
 	let isActive = $state(true);
-	let paymentMethod = $state<'online' | 'offline'>('offline');
+	let paymentMethod = $state<SubscriptionPaymentMethod>('offline');
 	let salesPaused = $state(false);
-	let maxSubscriptions = $state('');
-	let errors = $state<{ name?: string; price?: string; period?: string }>({});
+	// Svelte writes `null` (not '') back into a `type="number"` binding when the
+	// field is emptied, so the cleared cap has to survive as a nullish value —
+	// `Number(null)` is 0, which would silently make the plan permanently sold out.
+	let maxSubscriptions = $state<string | number | null>('');
+	let errors = $state<{ name?: string; price?: string; period?: string; maxSubs?: string }>({});
 
 	$effect(() => {
 		// Track `open` so reopening the create modal after abandoning a prior
@@ -70,6 +74,12 @@
 		errors = {};
 	});
 
+	/** `null` = unlimited (field left empty or cleared). */
+	function normalizedCap(): number | null {
+		if (maxSubscriptions == null || maxSubscriptions === '') return null;
+		return Number(maxSubscriptions);
+	}
+
 	function validate(): boolean {
 		errors = {};
 		if (!name.trim()) {
@@ -83,6 +93,11 @@
 		}
 		if (!Number.isInteger(periodCount) || periodCount < 1 || periodCount > 120) {
 			errors.period = m['orgAdmin.members.plans.form.errors.periodInvalid']();
+			return false;
+		}
+		const cap = normalizedCap();
+		if (cap !== null && (!Number.isInteger(cap) || cap < 1)) {
+			errors.maxSubs = m['orgAdmin.members.plans.form.errors.maxSubsInvalid']();
 			return false;
 		}
 		return true;
@@ -100,7 +115,7 @@
 			period_count: periodCount,
 			is_active: isActive,
 			sales_status: salesPaused ? 'paused' : 'open',
-			max_subscriptions: maxSubscriptions === '' ? null : Number(maxSubscriptions),
+			max_subscriptions: normalizedCap(),
 			...(plan ? {} : { payment_method: paymentMethod })
 		} as PlanCreateSchema);
 	}
@@ -250,6 +265,7 @@
 					placeholder={m['orgAdmin.members.plans.form.maxSubscriptionsUnlimited']()}
 					disabled={isSaving}
 				/>
+				{#if errors.maxSubs}<p class="text-sm text-destructive">{errors.maxSubs}</p>{/if}
 				<p class="text-xs text-muted-foreground">
 					{m['orgAdmin.members.plans.form.maxSubscriptionsHelp']()}
 				</p>

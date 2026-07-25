@@ -40,6 +40,41 @@ describe('PlanFormModal payment method', () => {
 		);
 	});
 
+	// Svelte writes `null` into a `type="number"` binding when the field is
+	// cleared; `Number(null)` is 0, which would cap the plan at zero seats and
+	// leave it permanently "sold out".
+	it('sends max_subscriptions: null when the cap is typed then cleared', async () => {
+		const user = userEvent.setup();
+		const onSave = vi.fn();
+		render(PlanFormModal, {
+			props: { plan: null, open: true, onClose: vi.fn(), onSave, organization: orgConnected }
+		});
+		await user.type(screen.getByLabelText(/name/i), 'Monthly');
+		const cap = screen.getByLabelText(/maximum subscriptions/i);
+		await user.type(cap, '20');
+		await user.clear(cap);
+		await user.click(screen.getByRole('button', { name: /create/i }));
+		expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ max_subscriptions: null }));
+	});
+
+	// `min="1"` on the input is the first line of defence and stops this in a real
+	// browser, so the attribute is dropped here to reach the script-side guard —
+	// the one that still has to hold if the markup ever changes.
+	it('rejects a cap of 0 instead of saving a sold-out plan', async () => {
+		const user = userEvent.setup();
+		const onSave = vi.fn();
+		render(PlanFormModal, {
+			props: { plan: null, open: true, onClose: vi.fn(), onSave, organization: orgConnected }
+		});
+		await user.type(screen.getByLabelText(/name/i), 'Monthly');
+		const cap = screen.getByLabelText(/maximum subscriptions/i);
+		cap.removeAttribute('min');
+		await user.type(cap, '0');
+		await user.click(screen.getByRole('button', { name: /create/i }));
+		expect(onSave).not.toHaveBeenCalled();
+		expect(screen.getByText(/must be 1 or more/i)).toBeInTheDocument();
+	});
+
 	it('shows payment method as read-only when editing', () => {
 		const plan = {
 			id: 'p1',

@@ -2,9 +2,6 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import type { OrganizationMembershipRequestRetrieve } from '$lib/api/generated/types.gen';
 	import { Button } from '$lib/components/ui/button';
-
-	// Note: The API's Status type is for announcements ('draft' | 'sent'), but membership requests use different values
-	type RequestStatus = 'pending' | 'approved' | 'rejected';
 	import {
 		Dialog,
 		DialogContent,
@@ -141,7 +138,7 @@
 						{m['membershipRequestCard.requestedAt']({ time: createdAt })}
 					</p>
 					{#if !showActions && request.status}
-						{@const status = request.status as unknown as RequestStatus}
+						{@const status = request.status}
 						<span
 							class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {status ===
 							'approved'

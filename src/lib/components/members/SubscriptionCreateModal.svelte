@@ -53,15 +53,22 @@
 		enabled: open && !!accessToken
 	}));
 
-	// Group plans by tier (preserves backend order: tier asc, plan asc).
 	// Online plans are excluded: the backend refuses staff-created subscriptions on them,
 	// because only the member themselves can approve the payment.
+	const selectablePlans = $derived(
+		(plansQuery.data ?? []).filter((p) => p.payment_method !== 'online')
+	);
+	// Derived from the UNfiltered list on purpose — the hint explains why online
+	// plans are missing, so it must key off their existence, not their absence.
+	const hasOnlinePlans = $derived(
+		(plansQuery.data ?? []).some((p) => p.payment_method === 'online')
+	);
+
+	// Group plans by tier (preserves backend order: tier asc, plan asc).
 	const plansByTier = $derived.by(() => {
-		const all = plansQuery.data ?? [];
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- not reactive state: local grouping map built and consumed synchronously within this $derived.by computation, never stored
 		const groups = new Map<string, { tierName: string; plans: PlanSchema[] }>();
-		for (const p of all) {
-			if (p.payment_method === 'online') continue;
+		for (const p of selectablePlans) {
 			let g = groups.get(p.tier_id);
 			if (!g) {
 				g = { tierName: p.tier_name, plans: [] };
@@ -74,7 +81,7 @@
 
 	// Sync currency to selected plan's currency
 	$effect(() => {
-		const p = (plansQuery.data ?? []).find((pl) => pl.id === planId);
+		const p = selectablePlans.find((pl) => pl.id === planId);
 		if (p) currency = p.currency;
 	});
 
@@ -137,7 +144,7 @@
 					value={selectedMember}
 					onSelect={(member) => (selectedMember = member)}
 				/>
-				{#if errors.user}<p class="text-sm text-red-600">{errors.user}</p>{/if}
+				{#if errors.user}<p class="text-sm text-destructive">{errors.user}</p>{/if}
 			</div>
 
 			<div class="space-y-1">
@@ -156,8 +163,8 @@
 						</optgroup>
 					{/each}
 				</select>
-				{#if errors.plan}<p class="text-sm text-red-600">{errors.plan}</p>{/if}
-				{#if (plansQuery.data ?? []).some((p) => p.payment_method === 'online')}
+				{#if errors.plan}<p class="text-sm text-destructive">{errors.plan}</p>{/if}
+				{#if hasOnlinePlans}
 					<p class="text-xs text-muted-foreground">
 						{m['orgAdmin.members.subscriptions.create.onlineExcluded']()}
 					</p>

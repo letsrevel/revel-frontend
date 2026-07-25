@@ -3333,7 +3333,9 @@
 				"migrate": {
 					"title": "Abonnent*innen auf aktuellen Preis migrieren",
 					"body": "Bestehende Abonnent*innen behalten den Preis, zu dem sie sich angemeldet haben. Dies plant eine Migration von {count} aktiven Abonnent*innen auf den aktuellen Preis ({price}). Keine anteilige Berechnung — der neue Preis gilt ab der nächsten Verlängerung jedes Abonnements. Abonnent*innen werden benachrichtigt.",
-					"queued": "Migration für {count} Abonnent*innen geplant"
+					"queued": "Migration für {count} Abonnent*innen geplant",
+					"confirm": "Migrieren",
+					"failed": "Migration konnte nicht gestartet werden"
 				},
 				"delete": {
 					"title": "Delete plan",
@@ -3354,7 +3356,8 @@
 					"errors": {
 						"nameRequired": "Name is required",
 						"priceInvalid": "Price must be 0 or more",
-						"periodInvalid": "Period count must be between 1 and 120"
+						"periodInvalid": "Period count must be between 1 and 120",
+						"maxSubsInvalid": "Die maximale Anzahl an Abonnements muss mindestens 1 sein — oder leer für unbegrenzt"
 					},
 					"periodMonth": "month(s)",
 					"periodYear": "year(s)",
@@ -3369,6 +3372,11 @@
 					"maxSubscriptionsHelp": "Obergrenze für gleichzeitige Abonnent*innen. Plätze werden frei, sobald ein Abonnement endet.",
 					"pauseSales": "Verkauf pausieren",
 					"pauseSalesHelp": "Mitglieder*innen können sich nicht für diesen Plan anmelden oder zu ihm wechseln, solange er pausiert ist. Bestehende Abonnent*innen sind nicht betroffen; Sie können weiterhin Personen manuell eintragen."
+				},
+				"errors": {
+					"createFailed": "Plan konnte nicht erstellt werden: {detail}",
+					"updateFailed": "Plan konnte nicht aktualisiert werden: {detail}",
+					"archiveFailed": "Plan konnte nicht archiviert werden: {detail}"
 				}
 			},
 			"subscriptions": {
@@ -3462,7 +3470,8 @@
 					"active": "Aktive Abonnent*innen",
 					"new30d": "Neu (30 Tage)",
 					"churn30d": "Abgewandert (30 Tage)",
-					"mixedCurrency": "Mehrere Währungen — MRR nicht verfügbar"
+					"mixedCurrency": "Mehrere Währungen — MRR nicht verfügbar",
+					"error": "Abonnement-Kennzahlen konnten nicht geladen werden."
 				}
 			},
 			"grantsInfo": {

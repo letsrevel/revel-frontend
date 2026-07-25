@@ -3333,7 +3333,9 @@
 				"migrate": {
 					"title": "Migra gli abbonati al prezzo attuale",
 					"body": "Gli abbonati esistenti mantengono il prezzo a cui si sono iscritti. Questo pianifica la migrazione di {count} abbonati attivi al prezzo attuale ({price}). Nessun conguaglio proporzionale — il nuovo prezzo si applica dal prossimo rinnovo di ciascun abbonato. Gli abbonati vengono notificati.",
-					"queued": "Migrazione pianificata per {count} abbonati"
+					"queued": "Migrazione pianificata per {count} abbonati",
+					"confirm": "Migra",
+					"failed": "Impossibile avviare la migrazione"
 				},
 				"delete": {
 					"title": "Delete plan",
@@ -3354,7 +3356,8 @@
 					"errors": {
 						"nameRequired": "Name is required",
 						"priceInvalid": "Price must be 0 or more",
-						"periodInvalid": "Period count must be between 1 and 120"
+						"periodInvalid": "Period count must be between 1 and 120",
+						"maxSubsInvalid": "Il numero massimo di abbonamenti deve essere almeno 1, oppure vuoto per illimitato"
 					},
 					"periodMonth": "month(s)",
 					"periodYear": "year(s)",
@@ -3369,6 +3372,11 @@
 					"maxSubscriptionsHelp": "Limite di iscritti simultanei. I posti si liberano quando un abbonamento termina.",
 					"pauseSales": "Sospendi le vendite",
 					"pauseSalesHelp": "I membri non possono iscriversi o passare a questo piano mentre è sospeso. Gli abbonati attuali non sono interessati; puoi comunque iscrivere persone manualmente."
+				},
+				"errors": {
+					"createFailed": "Impossibile creare il piano: {detail}",
+					"updateFailed": "Impossibile aggiornare il piano: {detail}",
+					"archiveFailed": "Impossibile archiviare il piano: {detail}"
 				}
 			},
 			"subscriptions": {
@@ -3462,7 +3470,8 @@
 					"active": "Abbonati attivi",
 					"new30d": "Nuovi (30 giorni)",
 					"churn30d": "Abbandoni (30 giorni)",
-					"mixedCurrency": "Valute multiple — MRR non disponibile"
+					"mixedCurrency": "Valute multiple — MRR non disponibile",
+					"error": "Impossibile caricare le metriche degli abbonamenti."
 				}
 			},
 			"grantsInfo": {

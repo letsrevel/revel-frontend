@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { toast } from 'svelte-sonner';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import {
 		organizationadminsubscriptionsListPlans,
@@ -49,6 +50,18 @@
 	let formOpen = $state(false);
 	let migrating = $state<PlanSchema | null>(null);
 
+	function invalidatePlans() {
+		queryClient.invalidateQueries({
+			queryKey: ['organization', organization.slug, 'tier', tier.id, 'plans']
+		});
+		// The staff "create subscription" picker keys its org-wide plan list on
+		// ['organization', slug, 'plans', …] — invalidate that prefix too, or a
+		// freshly created plan stays missing from the picker until it goes stale.
+		queryClient.invalidateQueries({
+			queryKey: ['organization', organization.slug, 'plans']
+		});
+	}
+
 	const createMut = createMutation(() => ({
 		mutationFn: async (payload: PlanFormPayload) => {
 			const res = await organizationadminsubscriptionsCreatePlan({
@@ -60,12 +73,11 @@
 			return res.data;
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: ['organization', organization.slug, 'tier', tier.id, 'plans']
-			});
+			invalidatePlans();
 			formOpen = false;
 		},
-		onError: (err: Error) => alert(`Failed to create plan: ${err.message}`)
+		onError: (err: Error) =>
+			toast.error(m['orgAdmin.members.plans.errors.createFailed']({ detail: err.message }))
 	}));
 
 	const updateMut = createMutation(() => ({
@@ -79,13 +91,12 @@
 			return res.data;
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: ['organization', organization.slug, 'tier', tier.id, 'plans']
-			});
+			invalidatePlans();
 			formOpen = false;
 			editing = null;
 		},
-		onError: (err: Error) => alert(`Failed to update plan: ${err.message}`)
+		onError: (err: Error) =>
+			toast.error(m['orgAdmin.members.plans.errors.updateFailed']({ detail: err.message }))
 	}));
 
 	const archiveMut = createMutation(() => ({
@@ -97,11 +108,9 @@
 			if (res.error) throw new Error('Failed to archive plan');
 			return res.data;
 		},
-		onSuccess: () =>
-			queryClient.invalidateQueries({
-				queryKey: ['organization', organization.slug, 'tier', tier.id, 'plans']
-			}),
-		onError: (err: Error) => alert(`Failed to archive plan: ${err.message}`)
+		onSuccess: invalidatePlans,
+		onError: (err: Error) =>
+			toast.error(m['orgAdmin.members.plans.errors.archiveFailed']({ detail: err.message }))
 	}));
 
 	const deleteMut = createMutation(() => ({
@@ -114,10 +123,7 @@
 				throw new Error(m['orgAdmin.members.plans.delete.inUse']());
 			}
 		},
-		onSuccess: () =>
-			queryClient.invalidateQueries({
-				queryKey: ['organization', organization.slug, 'tier', tier.id, 'plans']
-			})
+		onSuccess: invalidatePlans
 	}));
 
 	function openCreate() {

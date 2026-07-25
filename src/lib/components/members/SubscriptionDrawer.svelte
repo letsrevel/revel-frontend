@@ -81,6 +81,13 @@
 	const payments = $derived(paymentsQuery.data ?? []);
 	const actions = $derived(sub ? getAvailableActions(sub) : null);
 
+	// Stripe stops billing once a subscription is cancelled or expired, so the
+	// "payments arrive automatically" reassurance would be misleading there.
+	const TERMINAL_STATUSES = ['cancelled', 'expired'];
+	const showOnlinePaymentsNote = $derived(
+		!!sub && sub.plan.payment_method === 'online' && !TERMINAL_STATUSES.includes(sub.status)
+	);
+
 	const isLoading = $derived.by(() => {
 		const loading = subQuery.isLoading;
 		const data = subQuery.data;
@@ -264,7 +271,7 @@
 				{/if}
 			</div>
 
-			{#if sub.plan.payment_method === 'online'}
+			{#if showOnlinePaymentsNote}
 				<p class="text-xs text-muted-foreground">
 					{m['orgAdmin.members.subscriptions.drawer.onlinePayments']()}
 				</p>
@@ -290,6 +297,7 @@
 			/>
 			<StaffReviveModal
 				{sub}
+				{subId}
 				{organization}
 				open={reviveOpen}
 				onClose={() => (reviveOpen = false)}

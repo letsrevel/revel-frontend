@@ -68,4 +68,36 @@ describe('SubscriptionMetrics', () => {
 		renderMetrics();
 		expect(await screen.findByText(/multiple currencies/i)).toBeInTheDocument();
 	});
+
+	// Zero-state orgs get `mrr_currency: ""` from the backend. Handing that to
+	// Intl.NumberFormat throws a RangeError mid-render and blanks the whole tab.
+	it('renders an em dash instead of throwing when the org has no currency yet', async () => {
+		vi.mocked(organizationadminsubscriptionsGetSubscriptionMetrics).mockResolvedValue({
+			data: {
+				...metrics,
+				active_count: 0,
+				mrr: '0',
+				mrr_currency: '',
+				new_subscribers_30d: 0,
+				churned_30d: 0,
+				churn_rate_30d: 0
+			},
+			error: undefined
+		} as never);
+		const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+		renderMetrics();
+		expect(await screen.findByText('—')).toBeInTheDocument();
+		expect(screen.getByText(/monthly recurring revenue/i)).toBeInTheDocument();
+		expect(errorSpy).not.toHaveBeenCalled();
+		errorSpy.mockRestore();
+	});
+
+	it('renders a muted failure line when the metrics request errors', async () => {
+		vi.mocked(organizationadminsubscriptionsGetSubscriptionMetrics).mockResolvedValue({
+			data: undefined,
+			error: { detail: 'boom' }
+		} as never);
+		renderMetrics();
+		expect(await screen.findByText(/couldn't load subscription metrics/i)).toBeInTheDocument();
+	});
 });

@@ -3304,7 +3304,9 @@
 				"migrate": {
 					"title": "Migrer les abonnés vers le prix actuel",
 					"body": "Les abonnés existants conservent le prix auquel ils se sont inscrits. Cela planifie une migration de {count} abonnés actifs vers le prix actuel ({price}). Pas de proratisation — le nouveau prix s'applique à partir du prochain renouvellement de chaque abonné. Les abonnés sont notifiés.",
-					"queued": "Migration planifiée pour {count} abonnés"
+					"queued": "Migration planifiée pour {count} abonnés",
+					"confirm": "Migrer",
+					"failed": "Impossible de lancer la migration"
 				},
 				"delete": {
 					"title": "Supprimer le forfait",
@@ -3325,7 +3327,8 @@
 					"errors": {
 						"nameRequired": "Le nom est obligatoire",
 						"priceInvalid": "Le prix doit être de 0 ou plus",
-						"periodInvalid": "Le nombre de périodes doit être compris entre 1 et 120"
+						"periodInvalid": "Le nombre de périodes doit être compris entre 1 et 120",
+						"maxSubsInvalid": "Le nombre maximum d'abonnements doit être de 1 ou plus, ou vide pour illimité"
 					},
 					"periodMonth": "mois",
 					"periodYear": "an(s)",
@@ -3340,6 +3343,11 @@
 					"maxSubscriptionsHelp": "Plafond d'abonnés simultanés. Des places se libèrent lorsqu'un abonnement se termine.",
 					"pauseSales": "Suspendre les ventes",
 					"pauseSalesHelp": "Les membres ne peuvent pas s'abonner ou passer à ce forfait tant qu'il est suspendu. Les abonnés actuels ne sont pas concernés ; vous pouvez toujours inscrire des personnes manuellement."
+				},
+				"errors": {
+					"createFailed": "Échec de la création du forfait : {detail}",
+					"updateFailed": "Échec de la modification du forfait : {detail}",
+					"archiveFailed": "Échec de l'archivage du forfait : {detail}"
 				}
 			},
 			"subscriptions": {
@@ -3433,7 +3441,8 @@
 					"active": "Abonnés actifs",
 					"new30d": "Nouveaux (30 jours)",
 					"churn30d": "Résiliations (30 jours)",
-					"mixedCurrency": "Plusieurs devises — MRR indisponible"
+					"mixedCurrency": "Plusieurs devises — MRR indisponible",
+					"error": "Impossible de charger les statistiques d'abonnement."
 				}
 			},
 			"grantsInfo": {

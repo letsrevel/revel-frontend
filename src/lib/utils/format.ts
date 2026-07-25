@@ -55,3 +55,16 @@ export function formatMoney(
 		}).format(safe);
 	}
 }
+
+/**
+ * Format a 0..1 ratio as a locale-aware percentage (e.g. `0.0667` → "6.7%" in
+ * en, "6,7 %" in de). Pinned to the UI language like the currency helpers so
+ * SSR and CSR agree.
+ */
+export function formatPercent(ratio: number | null | undefined, maximumFractionDigits = 1): string {
+	const safe = Number.isFinite(ratio) ? (ratio as number) : 0;
+	return new Intl.NumberFormat(getDateLocale(), {
+		style: 'percent',
+		maximumFractionDigits
+	}).format(safe);
+}

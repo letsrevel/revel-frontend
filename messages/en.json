@@ -3333,7 +3333,9 @@
 				"migrate": {
 					"title": "Migrate subscribers to current price",
 					"body": "Existing subscribers keep the price they signed up at. This queues a migration of {count} active subscribers to the current price ({price}). No proration — the new price applies from each subscriber's next renewal. Subscribers are notified.",
-					"queued": "Migration queued for {count} subscribers"
+					"queued": "Migration queued for {count} subscribers",
+					"confirm": "Migrate",
+					"failed": "Failed to start migration"
 				},
 				"delete": {
 					"title": "Delete plan",
@@ -3354,7 +3356,8 @@
 					"errors": {
 						"nameRequired": "Name is required",
 						"priceInvalid": "Price must be 0 or more",
-						"periodInvalid": "Period count must be between 1 and 120"
+						"periodInvalid": "Period count must be between 1 and 120",
+						"maxSubsInvalid": "Maximum subscriptions must be 1 or more, or empty for unlimited"
 					},
 					"periodMonth": "month(s)",
 					"periodYear": "year(s)",
@@ -3369,6 +3372,11 @@
 					"maxSubscriptionsHelp": "Cap on concurrent subscribers. Spots free up when a subscription ends.",
 					"pauseSales": "Pause sales",
 					"pauseSalesHelp": "Members can't subscribe or switch into this plan while paused. Current subscribers are unaffected; you can still enroll people manually."
+				},
+				"errors": {
+					"createFailed": "Failed to create plan: {detail}",
+					"updateFailed": "Failed to update plan: {detail}",
+					"archiveFailed": "Failed to archive plan: {detail}"
 				}
 			},
 			"subscriptions": {
@@ -3462,7 +3470,8 @@
 					"active": "Active subscribers",
 					"new30d": "New (30 days)",
 					"churn30d": "Churned (30 days)",
-					"mixedCurrency": "Multiple currencies — MRR unavailable"
+					"mixedCurrency": "Multiple currencies — MRR unavailable",
+					"error": "Couldn't load subscription metrics."
 				}
 			},
 			"grantsInfo": {

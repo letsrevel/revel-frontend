@@ -9,6 +9,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { TriangleAlert } from '@lucide/svelte';
+	import { formatMoney, formatPercent } from '$lib/utils/format';
 
 	interface Props {
 		organization: OrganizationAdminDetailSchema;
@@ -18,7 +19,9 @@
 	const accessToken = $derived(authStore.accessToken);
 
 	const metricsQuery = createQuery(() => ({
-		queryKey: ['organization', organization.slug, 'subscription-metrics'],
+		// Nested under the 'subscriptions' prefix so every mutation that already
+		// invalidates ['organization', slug, 'subscriptions'] refreshes the header too.
+		queryKey: ['organization', organization.slug, 'subscriptions', 'metrics'],
 		queryFn: async () => {
 			const res = await organizationadminsubscriptionsGetSubscriptionMetrics({
 				path: { slug: organization.slug },
@@ -34,17 +37,22 @@
 
 	const mrrDisplay = $derived.by(() => {
 		if (!metrics || metrics.mixed_currency_warning) return null;
-		return new Intl.NumberFormat(undefined, {
-			style: 'currency',
-			currency: metrics.mrr_currency,
-			minimumFractionDigits: 2
-		}).format(Number(metrics.mrr));
+		// The backend sends an empty currency when the org has no active
+		// subscriptions — there is nothing to denominate, so show an em dash
+		// rather than an arbitrary currency (and never hand '' to Intl, which
+		// throws a RangeError).
+		if (!metrics.mrr_currency) return '—';
+		return formatMoney(metrics.mrr, metrics.mrr_currency);
 	});
 
-	const churnDisplay = $derived(metrics ? `${(metrics.churn_rate_30d * 100).toFixed(1)}%` : null);
+	const churnDisplay = $derived(metrics ? formatPercent(metrics.churn_rate_30d) : null);
 </script>
 
-{#if metrics}
+{#if metricsQuery.isError}
+	<p class="text-sm text-muted-foreground">
+		{m['orgAdmin.members.subscriptions.metrics.error']()}
+	</p>
+{:else if metrics}
 	<div class="grid grid-cols-2 gap-2 lg:grid-cols-4">
 		<Card>
 			<CardContent class="p-3">

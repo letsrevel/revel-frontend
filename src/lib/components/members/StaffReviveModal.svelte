@@ -26,13 +26,15 @@
 
 	interface Props {
 		sub: SubscriptionSchema;
+		/** Non-null id from the drawer — `sub.id` is optional in the generated schema. */
+		subId: string;
 		organization: OrganizationAdminDetailSchema;
 		open: boolean;
 		onClose: () => void;
 		onSuccess: () => void;
 	}
 
-	const { sub, organization, open, onClose, onSuccess }: Props = $props();
+	const { sub, subId, organization, open, onClose, onSuccess }: Props = $props();
 	const accessToken = $derived(authStore.accessToken);
 
 	// ONLINE revival mints a Stripe Checkout the MEMBER completes — staff cannot
@@ -57,7 +59,7 @@
 	const reviveMut = createMutation(() => ({
 		mutationFn: async (body: RevivalRequestSchema) => {
 			const res = await organizationadminsubscriptionsReviveSubscription({
-				path: { slug: organization.slug, sub_id: sub.id ?? '' },
+				path: { slug: organization.slug, sub_id: subId },
 				body,
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
@@ -137,7 +139,9 @@
 				</Button>
 				<Button type="submit" disabled={reviveMut.isPending}>
 					{#if reviveMut.isPending}<Loader2 class="mr-2 h-4 w-4 animate-spin" />{/if}
-					{m['orgAdmin.members.subscriptions.drawer.revive']()}
+					{isOnline
+						? m['orgAdmin.members.subscriptions.drawer.reviveOnlineTitle']()
+						: m['orgAdmin.members.subscriptions.drawer.revive']()}
 				</Button>
 			</div>
 		</form>
